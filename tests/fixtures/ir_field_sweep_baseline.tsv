@@ -289,6 +289,7 @@ hwp5rb	issue6542/156678235_mid_para_vpos_rewind.hwp	sections[].paragraphs[].cont
 hwp5rb	issue6549/16418295_square_rowbreak_table.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	17
 hwp5rb	issue6575/156489219_satellite_pm_release.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	36
 hwp5rb	issue6575/156489219_satellite_pm_release.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	13
+hwp5rb	issue6598/2744465_fingerprint_appraisal.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	33
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457

@@ -3794,6 +3794,35 @@ fn para_controls_only_tac_topbottom_objects(para: &Paragraph) -> bool {
         })
 }
 
+/// [#6535 잔여] 문단이 **쪽 기준 앵커**(`vert_rel_to == Page`) 자리차지 블록을 품는가.
+///
+/// 그런 블록의 저장 `vertical_pos` 는 흐름 좌표가 아니라 **절대배치의 산물**이라 대개
+/// `0` 이다(`#6535`). 그 `0` 을 "한컴이 여기서 쪽을 끊었다"는 리셋 신호로 읽으면, 남은
+/// 자리에 들어가는 표가 혼자 새 쪽으로 밀려 본문 없는 쪽이 생긴다.
+///
+/// 실측 `36399617_결재문서본문_외부강의신고 결재신청.hwpx` (한/글 1쪽, rhwp 2쪽):
+///
+/// ```text
+/// pi=15 까지 cur_h=639.0 / 본문 990.2  → 잔여 351.2
+/// pi=16  text="끝."  Table wrap=TopAndBottom vrel=Page tac=false  h=22234(296.5px)
+///        line_segs=[(vpos 0, lh 1200)]
+/// → cv==0 && pv=46278>5000 이 리셋으로 읽혀 flush_column, 2쪽의 used=0.0px
+/// ```
+fn para_hosts_page_anchored_block(para: &Paragraph) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    let is_page_anchored_block = |common: &crate::model::shape::CommonObjAttr| {
+        !common.treat_as_char
+            && matches!(common.vert_rel_to, VertRelTo::Page)
+            && matches!(common.text_wrap, TextWrap::TopAndBottom)
+    };
+    para.controls.iter().any(|c| match c {
+        Control::Table(t) => is_page_anchored_block(&t.common),
+        Control::Picture(p) => is_page_anchored_block(&p.common),
+        Control::Shape(sh) => is_page_anchored_block(sh.common()),
+        _ => false,
+    })
+}
+
 fn paragraph_saved_vpos_reset_starts_new_page_after(
     current_para: &Paragraph,
     next_para: &Paragraph,
@@ -7695,7 +7724,10 @@ impl TypesetEngine {
                         (cv == 0
                             && pv > 5000
                             && !hwp3_content_vpos_zero_reset
-                            && !para_is_page_bottom_fixed_table_anchor(para))
+                            && !para_is_page_bottom_fixed_table_anchor(para)
+                            // [#6535 잔여] 쪽-앵커 블록의 vpos=0 은 절대배치 산물이지
+                            // 쪽 리셋 신호가 아니다.
+                            && !para_hosts_page_anchored_block(para))
                             || near_page_top_reset
                             || native_near_top_reset
                             || stored_top_collision_reset

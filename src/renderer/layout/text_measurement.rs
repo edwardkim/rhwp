@@ -1123,7 +1123,20 @@ pub(crate) fn char_width_decision<'a>(
         };
     }
     if c == '\u{2007}' {
-        let base_width_px = font_size * 0.5;
+        // [#6597] 고정폭 빈칸(HWP5 문자 컨트롤 31 → `U+2007`)의 전진폭은 **0.25em** 이다.
+        //
+        // 한/글 오라클 PDF 를 `rawdict` 글자 origin 델타로 재면 **일반 공백의 정확히
+        // 절반**이다 (문서 `30307`, 글꼴 14.99pt):
+        //
+        // ```text
+        // `권고일자<FW> : `(13쪽)          `자` advance 14.992 → 다음까지 18.710 ⇒ 3.718pt
+        // ` ○<FW><FW>국민소통창구와`(5쪽)   `○` advance 14.992 → 22.428 ⇒ 7.436/2 = 3.718pt
+        // (대조) 일반 공백 U+0020                                        7.436pt
+        // ```
+        //
+        // 3.718 / 14.992 = 0.248em. 종전 `0.5` 는 정확히 두 배라, 이 문서의 글머리
+        // ` ○<FW><FW>` 줄이 전부 10px 오른쪽으로 밀렸다(컨트롤 31 이 35회).
+        let base_width_px = font_size * 0.25;
         let final_width_px = base_width_px * ratio
             + glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size)
             + style.extra_char_spacing;
