@@ -2244,14 +2244,33 @@ impl LayoutEngine {
         // 텍스트 세그먼트 분리: 갭이 8 이상이면 컨트롤 위치
         let mut segments: Vec<(usize, usize)> = Vec::new(); // (start_char_idx, end_char_idx)
 
-        // 선행 컨트롤 감지: 첫 텍스트 문자 앞에 컨트롤이 있으면 빈 세그먼트 추가
-        // 확장 컨트롤은 8 UTF-16 유닛을 차지하므로, offsets[0] / 8 = 선행 컨트롤 수
-        if !offsets.is_empty() && offsets[0] >= 8 {
-            let num_leading = (offsets[0] / 8) as usize;
-            let tables_to_prepend = num_leading.min(inline_tables.len());
-            for _ in 0..tables_to_prepend {
-                segments.push((0, 0)); // 빈 세그먼트 → 표가 텍스트 앞에 배치됨
-            }
+        // 선행 컨트롤 감지: 첫 텍스트 문자 앞에 컨트롤이 있으면 빈 세그먼트 추가.
+        //
+        // [#6601] 종전에는 `offsets[0] / 8` 로 셌다. 그 값은 **모든** 선행 컨트롤을
+        // 세므로(구역정의·단정의 등 비-인라인 포함) 실제보다 크게 나오고, 그만큼 빈
+        // 세그먼트를 더 앞세워 **표와 텍스트의 순서가 뒤집힌다.**
+        //
+        // 실측 `36331407_결재문서본문.hwpx` pi=0:
+        //
+        // ```text
+        // controls = [구역정의(0), 단정의(0), 표(0), 표(3)]   text = "   " (3칸)
+        // offsets[0] = 24 → num_leading = 3 → 빈 세그먼트 2개
+        //   배치 순서  빈 · 표0 · 빈 · 표1 · 텍스트   ← 공백 45px 이 두 표 뒤로
+        //   한/글      표0 · 텍스트 · 표1            ← 공백이 두 표 사이 (33.75pt)
+        // ```
+        //
+        // 선행 개수는 **인라인 표 중 문자 위치가 0 인 것**으로 센다.
+        let control_positions_for_lead = para.control_text_positions();
+        let leading_inline_tables = inline_tables
+            .iter()
+            .filter(|(ctrl_idx, _)| {
+                control_positions_for_lead
+                    .get(*ctrl_idx)
+                    .is_some_and(|&position| position == 0)
+            })
+            .count();
+        for _ in 0..leading_inline_tables {
+            segments.push((0, 0)); // 빈 세그먼트 → 표가 텍스트 앞에 배치됨
         }
 
         let mut seg_start = 0;
@@ -2348,35 +2367,8 @@ impl LayoutEngine {
             .collect();
 
         // 5. 총 폭과 정렬 계산 (TAC 표는 outMargin 좌/우 포함 폭 — Issue #3396)
-        // [#6601] 정렬 폭은 **선언 폭**을 우선한다 — `table_widths` 는 열별 셀 폭
-        // (`col_span == 1` max 합)이라 병합 셀이 많은 표에서 과소합산된다. 같은 함수
-        // 안의 줄넘김 검사(`should_wrap_middle_anchored_table`)는 선언 폭 기반
-        // `table_footprint` 를 쓰므로, 둘이 갈리면 정렬이 줄 폭을 잘못 나눠 준다.
-        //
-        // 실측 `36331407_결재문서본문.hwpx` pi=0 (TAC 표 2개, 한글 2024 는 나란히):
-        //
-        // ```text
-        // table_widths = [172.96, **124.95**]      선언 폭은 33920HU = 452.3px
-        // total 350.3 → Center 시작 x 가 +165.0    (실제로 필요한 건 +23.6)
-        // 그 165.0 때문에 341.7 + 455.9 = 797.6 > 680.3 → 둘째 표가 줄을 넘는다
-        // 선언 폭을 쓰면 176.6 + 455.9 = 632.5 < 680.3 → 한 줄에 나란히
-        // ```
-        //
-        // `#5785` 가 `is_tac_table_inline` 에 세운 계약과 같다.
-        let table_declared_widths: Vec<f64> = inline_tables
-            .iter()
-            .zip(table_widths.iter())
-            .map(|((_, t), colsum)| {
-                let declared = hwpunit_to_px(t.flow_width_hu() as i32, self.dpi);
-                if declared > 0.0 {
-                    declared
-                } else {
-                    *colsum
-                }
-            })
-            .collect();
         let total_width: f64 = seg_widths.iter().sum::<f64>()
-            + table_declared_widths.iter().sum::<f64>()
+            + table_widths.iter().sum::<f64>()
             + table_om_px.iter().map(|(l, r)| l + r).sum::<f64>();
         let available_width = col_area.width - margin_left - margin_right;
         let start_x = match alignment {
