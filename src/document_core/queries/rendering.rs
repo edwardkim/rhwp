@@ -530,7 +530,27 @@ fn floating_stack_picture_common(ctrl: &Control) -> Option<&crate::model::shape:
 /// 그림 높이 하나 안에서 겹칠 때만 반환한다. 본문 정규화와 #1995 낱장 배치 억제가 같은
 /// 저장 형상을 판정하도록 이 조건을 한 곳에 둔다.
 fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<(i32, i32)> {
-    use crate::model::shape::TextWrap;
+    use crate::model::shape::{HorzAlign, TextWrap, VertAlign};
+
+    fn horizontal_start_twice(offset: i64, size: i64, align: HorzAlign) -> i64 {
+        match align {
+            HorzAlign::Left | HorzAlign::Inside => offset.saturating_mul(2),
+            HorzAlign::Center => offset.saturating_mul(2).saturating_sub(size),
+            HorzAlign::Right | HorzAlign::Outside => offset
+                .saturating_mul(-2)
+                .saturating_sub(size.saturating_mul(2)),
+        }
+    }
+
+    fn vertical_start_twice(offset: i64, size: i64, align: VertAlign) -> i64 {
+        match align {
+            VertAlign::Top | VertAlign::Inside => offset.saturating_mul(2),
+            VertAlign::Center => offset.saturating_mul(2).saturating_sub(size),
+            VertAlign::Bottom | VertAlign::Outside => offset
+                .saturating_mul(-2)
+                .saturating_sub(size.saturating_mul(2)),
+        }
+    }
     if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
         return None;
     }
@@ -538,8 +558,11 @@ fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<
         return None;
     }
     let mut count = 0usize;
-    let mut min_voff = i32::MAX;
-    let mut max_voff = i32::MIN;
+    let mut common_frame = None;
+    let mut overlap_left = i64::MIN;
+    let mut overlap_right = i64::MAX;
+    let mut overlap_top = i64::MIN;
+    let mut overlap_bottom = i64::MAX;
     let mut min_pic_h = i32::MAX;
     let mut min_pic_w = i32::MAX;
     let mut max_pic_h = i32::MIN;
@@ -552,25 +575,59 @@ fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<
         {
             return None;
         }
-        let voff = common.vertical_offset as i32;
-        min_voff = min_voff.min(voff);
-        max_voff = max_voff.max(voff);
+        let frame = (
+            common.horz_rel_to,
+            common.horz_align,
+            common.width_criterion,
+            common.vert_rel_to,
+            common.vert_align,
+            common.height_criterion,
+        );
+        if let Some(expected) = common_frame {
+            if frame != expected {
+                return None;
+            }
+        } else {
+            common_frame = Some(frame);
+        }
+
+        // Compare alignment-relative physical origins in doubled HWPUNIT so
+        // center alignment retains half-size terms without rounding. The
+        // shared frame origin cancels only after alignment is applied.
+        let width = i64::from(common.width);
+        let height = i64::from(common.height);
+        let left = horizontal_start_twice(
+            i64::from(common.horizontal_offset as i32),
+            width,
+            common.horz_align,
+        );
+        let top = vertical_start_twice(
+            i64::from(common.vertical_offset as i32),
+            height,
+            common.vert_align,
+        );
+        let right = left.saturating_add(width.saturating_mul(2));
+        let bottom = top.saturating_add(height.saturating_mul(2));
+        overlap_left = overlap_left.max(left);
+        overlap_right = overlap_right.min(right);
+        overlap_top = overlap_top.max(top);
+        overlap_bottom = overlap_bottom.min(bottom);
         min_pic_h = min_pic_h.min(common.height as i32);
         min_pic_w = min_pic_w.min(common.width as i32);
         max_pic_h = max_pic_h.max(common.height as i32);
         count += 1;
     }
-    // [#2004] 세로오프셋이 동일하거나(#1995: 전부 0) 이미지 높이보다 작은 band 안에서
-    // varying(156714340: 0/-3360/-2940 …)이어 서로 크게 겹치면 "겹침 스택"으로 판정한다.
-    // 오프셋 spread ≥ 이미지 높이면 이미 세로로 벌어진 정상 배치이므로 제외.
-    (count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64)
+    // A touching edge has zero overlap and is an ordinary adjacent layout.
+    // Keep the inequalities strict on both axes so the compatibility rewrite
+    // cannot invent flow at either horizontal or vertical boundaries.
+    (count >= 2 && overlap_left < overlap_right && overlap_top < overlap_bottom)
         .then_some((min_pic_w, max_pic_h))
 }
 
 /// 한 문단이 "동일 위치·겹침불허·전면급 부동 그림 다수" 스택인지.
 /// 한글은 이런 그림을 쪽당 1장씩 배치하지만 rhwp 는 앵커 쪽에 겹쳐 그린다(#2004 부동 변종).
-/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 동일 세로오프셋 +
-/// 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
+/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 같은 기준틀의
+/// 2D 교집합 + 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
 fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
     floating_image_stack_extents(para, min_height_hu).is_some()
 }
