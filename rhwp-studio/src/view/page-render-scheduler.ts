@@ -1,10 +1,11 @@
-export type PageRenderWorkClass = 'visible' | 'prefetch';
+export type PageRenderWorkClass = 'visible' | 'retained-transition' | 'prefetch';
 
 export interface PageRenderWork {
   pageIndex: number;
   /** 낮을수록 먼저 실행한다. 같은 priority는 먼저 들어온 page가 우선한다. */
   priority: number;
   rasterKey: string;
+  workClass: PageRenderWorkClass;
   isValid(): boolean;
   run(): void;
 }
@@ -44,6 +45,7 @@ export interface PageRenderSchedulerSnapshot {
   visibleSlices: number;
   visibleExecuted: number;
   prefetchExecuted: number;
+  prefetchAdmissionRejected: number;
   staleDropped: number;
   maxQueueDepth: number;
 }
@@ -95,6 +97,7 @@ export class PageRenderScheduler {
   private visibleSlices = 0;
   private visibleExecuted = 0;
   private prefetchExecuted = 0;
+  private prefetchAdmissionRejected = 0;
   private staleDropped = 0;
   private maxQueueDepth = 0;
 
@@ -161,6 +164,12 @@ export class PageRenderScheduler {
     this.cancelDeferredTask();
   }
 
+  /** retained 예산상 보존 이득이 없어 dispatch 전에 거절한 선택 prefetch를 기록한다. */
+  recordPrefetchAdmissionRejected(count = 1): void {
+    if (!Number.isFinite(count) || count <= 0) return;
+    this.prefetchAdmissionRejected += Math.floor(count);
+  }
+
   snapshot(): PageRenderSchedulerSnapshot {
     return {
       generation: this.generation,
@@ -171,6 +180,7 @@ export class PageRenderScheduler {
       visibleSlices: this.visibleSlices,
       visibleExecuted: this.visibleExecuted,
       prefetchExecuted: this.prefetchExecuted,
+      prefetchAdmissionRejected: this.prefetchAdmissionRejected,
       staleDropped: this.staleDropped,
       maxQueueDepth: this.maxQueueDepth,
     };
@@ -234,6 +244,19 @@ export class PageRenderScheduler {
       || this.prefetch.size === 0
     ) return;
 
+    // 이미 붙어 있는 surface의 target DPR 전환은 speculative allocation이 아니다. 한 task에
+    // 한 쪽만 처리해 입력 기회를 남기되, 다음 idle frame을 기다리는 불필요한 공백은 두지 않는다.
+    if (this.peekNext(this.prefetch)?.work.workClass === 'retained-transition') {
+      this.deferredTask = {
+        kind: 'timeout',
+        id: this.host.setTimeout(() => {
+          this.deferredTask = null;
+          this.runOnePrefetch({ didTimeout: true, timeRemaining: () => 0 });
+        }, 0),
+      };
+      return;
+    }
+
     if (this.host.requestIdle) {
       this.deferredTask = {
         kind: 'idle',
@@ -275,6 +298,12 @@ export class PageRenderScheduler {
   }
 
   private takeNext(queue: Map<number, QueuedWork>): QueuedWork | null {
+    const selected = this.peekNext(queue);
+    if (selected) queue.delete(selected.work.pageIndex);
+    return selected;
+  }
+
+  private peekNext(queue: Map<number, QueuedWork>): QueuedWork | null {
     let selected: QueuedWork | null = null;
     for (const queued of queue.values()) {
       if (
@@ -286,7 +315,6 @@ export class PageRenderScheduler {
         )
       ) selected = queued;
     }
-    if (selected) queue.delete(selected.work.pageIndex);
     return selected;
   }
 

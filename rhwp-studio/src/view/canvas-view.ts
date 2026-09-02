@@ -69,6 +69,7 @@ import {
   PageRenderScheduler,
   type PageRenderSchedulerSnapshot,
   type PageRenderWork,
+  type PageRenderWorkClass,
 } from './page-render-scheduler.ts';
 
 /** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
@@ -96,6 +97,11 @@ interface PageSurfaceBundle extends PageSurfaceCacheEntry {
   leaseId: number;
 }
 
+interface PageSurfaceDescriptor {
+  lookupKey: string;
+  estimatedPixelCount: number;
+}
+
 export class CanvasView {
   private virtualScroll: VirtualScroll;
   private canvasPool: CanvasPool;
@@ -119,6 +125,8 @@ export class CanvasView {
   private pageRenderScheduler: PageRenderScheduler;
   private nextSurfaceLeaseId = 0;
   private renderWorkGeneration = 0;
+  /** 아직 active surface가 없는 선택 prefetch만 담는다. active DPR 전환은 plan 예약에 포함된다. */
+  private pendingPrefetchSurfaceReservations = new Map<number, number>();
   private lastScrollSample: { x: number; y: number; at: number } | null = null;
   private previousEffectiveDpr = new Map<number, number>();
   private renderSurfaceEnvironmentKey: string | null = null;
@@ -545,6 +553,8 @@ export class CanvasView {
       this.lastScrollSample = null;
     }
     const generation = ++this.renderWorkGeneration;
+    // 새 visibility generation은 이전 방향에서 승인했지만 아직 실행하지 않은 선택 예약을 승계하지 않는다.
+    this.pendingPrefetchSurfaceReservations?.clear();
     const motion = isScroll
       ? this.sampleScrollMotion(scrollX, scrollY)
       : { direction: 0 as const, speed: 0 };
@@ -701,6 +711,13 @@ export class CanvasView {
         canvas?.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey
         || (!canvas && this.pageSurfaceLru.hasLookup(descriptor.lookupKey))
       ) return [];
+      const workClass: PageRenderWorkClass = canvas
+        ? 'retained-transition'
+        : 'prefetch';
+      if (
+        workClass === 'prefetch'
+        && !this.tryReservePrefetchSurface(pageIdx, descriptor.estimatedPixelCount)
+      ) return [];
       // 속도는 overscan을 늘리지 않고 같은 기존 ±1행 후보 중 진행 반대편의 priority만
       // 낮춘다. 빠르게 이동할수록 다음 행을 먼저 채우되 후보 집합 자체는 바뀌지 않는다.
       const isBehind = motion.direction > 0
@@ -715,31 +732,89 @@ export class CanvasView {
         pageIdx,
         descriptor.lookupKey,
         order + reverseDirectionPenalty,
-        'prefetch',
+        workClass,
         generation,
+        descriptor.estimatedPixelCount,
       )];
     });
+  }
+
+  /** reclaim 가능한 LRU를 제외한 mandatory+pending 안에 완성 surface 하나가 들어갈 때만 승인한다. */
+  private tryReservePrefetchSurface(pageIdx: number, estimatedPixelCount: number): boolean {
+    const reservations = this.pendingPrefetchSurfaceReservations
+      ?? (this.pendingPrefetchSurfaceReservations = new Map());
+    if (reservations.has(pageIdx)) return true;
+    if (!Number.isFinite(estimatedPixelCount) || estimatedPixelCount <= 0) {
+      this.pageRenderScheduler.recordPrefetchAdmissionRejected();
+      return false;
+    }
+    const snapshot = this.pageSurfaceLru.snapshot();
+    if (
+      snapshot.overBudgetMandatory
+      || snapshot.reservedPixels + estimatedPixelCount > snapshot.pixelBudget
+    ) {
+      this.pageRenderScheduler.recordPrefetchAdmissionRejected();
+      return false;
+    }
+    reservations.set(pageIdx, Math.ceil(estimatedPixelCount));
+    this.reconcilePageSurfaceBudget();
+    return true;
+  }
+
+  private releasePrefetchSurfaceReservation(pageIdx: number): void {
+    if (!this.pendingPrefetchSurfaceReservations?.delete(pageIdx)) return;
+    this.reconcilePageSurfaceBudget();
+  }
+
+  /** visible raster 뒤 actual 값이 달라졌다면 idle dispatch 시점의 예산으로 다시 판정한다. */
+  private hasValidPrefetchSurfaceReservation(pageIdx: number, estimatedPixelCount: number): boolean {
+    const expectedPixels = Math.ceil(estimatedPixelCount);
+    if (this.pendingPrefetchSurfaceReservations?.get(pageIdx) !== expectedPixels) return false;
+    const snapshot = this.pageSurfaceLru.snapshot();
+    if (!snapshot.overBudgetMandatory && snapshot.totalAccountedPixels <= snapshot.pixelBudget) {
+      return true;
+    }
+    this.pageRenderScheduler.recordPrefetchAdmissionRejected();
+    this.releasePrefetchSurfaceReservation(pageIdx);
+    return false;
   }
 
   private createPageRenderWork(
     pageIdx: number,
     rasterKey: string,
     priority: number,
-    workClass: 'visible' | 'prefetch',
+    workClass: PageRenderWorkClass,
     generation: number,
+    reservationPixels = 0,
   ): PageRenderWork {
     return {
       pageIndex: pageIdx,
       priority,
       rasterKey,
+      workClass,
       isValid: () => {
-        if (this.disposed || generation !== this.renderWorkGeneration) return false;
+        if (this.disposed || generation !== this.renderWorkGeneration) {
+          if (workClass === 'prefetch') this.releasePrefetchSurfaceReservation(pageIdx);
+          return false;
+        }
         const desired = workClass === 'visible'
           ? this.currentVisiblePages.includes(pageIdx)
           : this.currentRetainedPages.includes(pageIdx);
-        return desired && this.pageSurfaceDescriptor(pageIdx)?.lookupKey === rasterKey;
+        const reservationValid = workClass !== 'prefetch'
+          || this.hasValidPrefetchSurfaceReservation(pageIdx, reservationPixels);
+        const valid = desired
+          && reservationValid
+          && this.pageSurfaceDescriptor(pageIdx)?.lookupKey === rasterKey;
+        if (!valid && workClass === 'prefetch') this.releasePrefetchSurfaceReservation(pageIdx);
+        return valid;
       },
-      run: () => this.renderScheduledPage(pageIdx, rasterKey),
+      run: () => {
+        try {
+          this.renderScheduledPage(pageIdx, rasterKey);
+        } finally {
+          if (workClass === 'prefetch') this.releasePrefetchSurfaceReservation(pageIdx);
+        }
+      },
     };
   }
 
@@ -755,6 +830,8 @@ export class CanvasView {
     } else {
       this.renderPage(pageIdx);
     }
+    // active DPR 전환은 renderPage를 거치지 않으므로 새 실제 surface 크기를 여기서 확정한다.
+    this.reconcilePageSurfaceBudget();
     if (this.headerFooterEditState && this.currentVisiblePages.includes(pageIdx)) {
       this.renderHeaderFooterEditOverlays();
     }
@@ -966,16 +1043,19 @@ export class CanvasView {
 
   private cancelPendingPrefetch(): void {
     this.renderWorkGeneration += 1;
+    this.pendingPrefetchSurfaceReservations?.clear();
     // 일부 prototype 단위 테스트와 문서 교체 초기화는 constructor가 만든 scheduler보다
     // 먼저 정리 경계를 재현한다. production 인스턴스에는 항상 존재하지만 정리 자체는
     // 멱등이어야 하므로 없는 경우도 안전하게 허용한다.
     this.pageRenderScheduler?.cancelAll();
+    this.reconcilePageSurfaceBudget();
   }
 
   private refreshRenderSurfacePlan(rerenderChangedPages: boolean): void {
     if (this.pages.length === 0 || this.currentRetainedPages.length === 0) {
       this.renderSurfacePlan = null;
       this.renderSurfaceDecisions.clear();
+      this.pendingPrefetchSurfaceReservations?.clear();
       return;
     }
 
@@ -1080,7 +1160,7 @@ export class CanvasView {
     canvas.dataset.rhwpSurfaceBudgetState = plan?.withinBudget === false ? 'exceeded' : 'within';
   }
 
-  private pageSurfaceDescriptor(pageIdx: number): { lookupKey: string; estimatedPixelCount: number } | null {
+  private pageSurfaceDescriptor(pageIdx: number): PageSurfaceDescriptor | null {
     const page = this.pages[pageIdx];
     const decision = this.renderSurfaceDecisions.get(pageIdx);
     if (!page || !decision) return null;
@@ -1208,18 +1288,27 @@ export class CanvasView {
       return;
     }
     let reservedPixels = 0;
+    const visiblePages = new Set(this.currentVisiblePages);
     for (const decision of plan.decisions) {
       const descriptor = this.pageSurfaceDescriptor(decision.pageIndex);
       if (!descriptor) continue;
       const activeCanvas = this.canvasPool.getCanvas(decision.pageIndex);
       if (activeCanvas) {
+        const exactTarget = activeCanvas.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey;
         const actualPixels = Number(activeCanvas.dataset.rhwpActualSurfacePixels);
-        reservedPixels += Number.isFinite(actualPixels) && actualPixels > 0
+        reservedPixels += exactTarget && Number.isFinite(actualPixels) && actualPixels > 0
           ? actualPixels
           : descriptor.estimatedPixelCount;
-      } else if (!lru.hasLookup(descriptor.lookupKey)) {
+      } else if (visiblePages.has(decision.pageIndex) && !lru.hasLookup(descriptor.lookupKey)) {
         reservedPixels += descriptor.estimatedPixelCount;
       }
+    }
+    for (const [pageIdx, pixels] of this.pendingPrefetchSurfaceReservations ?? []) {
+      const descriptor = this.pageSurfaceDescriptor(pageIdx);
+      if (!descriptor) continue;
+      const activeCanvas = this.canvasPool.getCanvas(pageIdx);
+      if (activeCanvas || lru.hasLookup(descriptor.lookupKey)) continue;
+      reservedPixels += pixels;
     }
     lru.reconcile(plan.retainedPixelBudget, reservedPixels);
   }

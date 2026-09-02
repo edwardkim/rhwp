@@ -76,12 +76,18 @@ function work(
   pageIndex: number,
   priority: number,
   output: number[],
-  options: { valid?: () => boolean; costMs?: number; host?: FakeHost } = {},
+  options: {
+    valid?: () => boolean;
+    costMs?: number;
+    host?: FakeHost;
+    workClass?: 'visible' | 'retained-transition' | 'prefetch';
+  } = {},
 ): PageRenderWork {
   return {
     pageIndex,
     priority,
     rasterKey: `page:${pageIndex}`,
+    workClass: options.workClass ?? 'prefetch',
     isValid: options.valid ?? (() => true),
     run: () => {
       output.push(pageIndex);
@@ -226,4 +232,35 @@ test('requestIdleCallback이 없으면 timeout fallback도 매번 한 page만 �
   assert.equal(host.timers.size, 1);
   host.runTimer();
   assert.deepEqual(output, [0, 1]);
+});
+
+test('예산 때문에 거절한 선택 prefetch를 scheduler 진단에 누적한다', () => {
+  const scheduler = new PageRenderScheduler(new FakeHost());
+  scheduler.recordPrefetchAdmissionRejected();
+  scheduler.recordPrefetchAdmissionRejected(2);
+  assert.equal(scheduler.snapshot().prefetchAdmissionRejected, 3);
+});
+
+test('active target-DPR 전환은 speculative idle 뒤에도 task 경계별로 즉시 이어간다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host);
+  const output: number[] = [];
+  scheduler.setDesiredWork(1, [], [
+    work(4, 0, output, { workClass: 'prefetch' }),
+    work(18, 1, output, { workClass: 'retained-transition' }),
+    work(19, 2, output, { workClass: 'retained-transition' }),
+  ], false);
+
+  assert.equal(host.idles.size, 1);
+  host.runIdle();
+  assert.deepEqual(output, [4]);
+  assert.equal(host.idles.size, 0);
+  assert.equal(host.timers.size, 1, '첫 active 전환은 다음 idle frame을 기다리지 않는다');
+
+  host.runTimer();
+  assert.deepEqual(output, [4, 18]);
+  assert.equal(host.timers.size, 1, '한 task에 한 쪽만 실행하고 다음 전환도 새 task로 양보한다');
+  host.runTimer();
+  assert.deepEqual(output, [4, 18, 19]);
+  assert.equal(host.timers.size, 0);
 });

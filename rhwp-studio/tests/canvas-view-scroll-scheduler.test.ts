@@ -262,8 +262,23 @@ test('CanvasView 방향 전환은 overscan 후보를 늘리지 않고 진행 방
     const view = Object.create(CanvasView.prototype) as Record<string, any>;
     Object.assign(view, {
       canvasPool: { getCanvas: () => undefined },
-      pageSurfaceLru: { hasLookup: () => false },
-      pageSurfaceDescriptor: (page: number) => ({ lookupKey: `page:${page}` }),
+      pageSurfaceLru: {
+        hasLookup: () => false,
+        snapshot: () => ({
+          pixelBudget: 1_000_000,
+          reservedPixels: 0,
+          cachedPixels: 0,
+          totalAccountedPixels: 0,
+          overBudgetMandatory: false,
+        }),
+      },
+      pageRenderScheduler: { recordPrefetchAdmissionRejected: () => undefined },
+      pendingPrefetchSurfaceReservations: new Map(),
+      reconcilePageSurfaceBudget: () => undefined,
+      pageSurfaceDescriptor: (page: number) => ({
+        lookupKey: `page:${page}`,
+        estimatedPixelCount: 20_000,
+      }),
     });
     const invoke = (motion: { direction: -1 | 1; speed: number }) => (
       view.buildPrefetchRenderWork([0, 3], [1, 2], motion, 1) as Array<{
@@ -284,6 +299,130 @@ test('CanvasView 방향 전환은 overscan 후보를 늘리지 않고 진행 방
       backward.find(work => work.pageIndex === 0)!.priority
         < backward.find(work => work.pageIndex === 3)!.priority,
     );
+  } finally {
+    await vite.close();
+  }
+});
+
+test('낡은 active surface는 detach admission 전에 목표 DPR 크기로 예약한다', async () => {
+  const studioRoot = fileURLToPath(new URL('..', import.meta.url));
+  const vite = await createServer({
+    root: studioRoot,
+    appType: 'custom',
+    logLevel: 'silent',
+    server: { middlewareMode: true },
+  });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const reconciled: Array<{ budget: number; reserved: number }> = [];
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    Object.assign(view, {
+      currentVisiblePages: [18, 19],
+      pendingPrefetchSurfaceReservations: new Map(),
+      renderSurfacePlan: {
+        retainedPixelBudget: 40_000,
+        decisions: [{ pageIndex: 18 }, { pageIndex: 19 }],
+      },
+      canvasPool: {
+        getCanvas: (page: number) => ({
+          dataset: {
+            rhwpSurfaceCacheLookupKey: `old:${page}`,
+            rhwpActualSurfacePixels: '30000',
+          },
+        }),
+      },
+      pageSurfaceDescriptor: (page: number) => ({
+        lookupKey: `target:${page}`,
+        estimatedPixelCount: 7_500,
+      }),
+      pageSurfaceLru: {
+        hasLookup: () => false,
+        reconcile: (budget: number, reserved: number) => reconciled.push({ budget, reserved }),
+      },
+    });
+
+    view.reconcilePageSurfaceBudget();
+    assert.deepEqual(reconciled, [{ budget: 40_000, reserved: 15_000 }]);
+  } finally {
+    await vite.close();
+  }
+});
+
+test('비가시 missing 후보는 승인 전 mandatory 예약에서 제외하고 실제 headroom으로 gate한다', async () => {
+  const studioRoot = fileURLToPath(new URL('..', import.meta.url));
+  const vite = await createServer({
+    root: studioRoot,
+    appType: 'custom',
+    logLevel: 'silent',
+    server: { middlewareMode: true },
+  });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const rejected: number[] = [];
+    const reservations = new Map<number, number>();
+    let reconciledReserved = 0;
+    let cachedPixels = 15;
+    let visiblePixels = 70;
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    Object.assign(view, {
+      currentVisiblePages: [4],
+      pendingPrefetchSurfaceReservations: reservations,
+      renderSurfacePlan: {
+        retainedPixelBudget: 100,
+        decisions: [
+          { pageIndex: 4 },
+          { pageIndex: 5 },
+          { pageIndex: 6 },
+        ],
+      },
+      canvasPool: { getCanvas: () => undefined },
+      pageSurfaceDescriptor: (page: number) => ({
+        lookupKey: `page:${page}`,
+        estimatedPixelCount: page === 4 ? visiblePixels : 20,
+      }),
+      pageSurfaceLru: {
+        hasLookup: () => false,
+        reconcile: (budget: number, reserved: number) => {
+          reconciledReserved = reserved;
+          cachedPixels = Math.min(cachedPixels, Math.max(0, budget - reserved));
+        },
+        snapshot: () => {
+          return {
+            pixelBudget: 100,
+            reservedPixels: reconciledReserved,
+            cachedPixels,
+            totalAccountedPixels: reconciledReserved + cachedPixels,
+            overBudgetMandatory: reconciledReserved > 100,
+          };
+        },
+      },
+      pageRenderScheduler: {
+        recordPrefetchAdmissionRejected: (count = 1) => rejected.push(count),
+      },
+    });
+
+    view.reconcilePageSurfaceBudget();
+    assert.equal(
+      reconciledReserved,
+      70,
+      'visible missing만 mandatory이며 비가시 후보 둘은 아직 승인되지 않는다',
+    );
+    assert.equal(view.tryReservePrefetchSurface(5, 35), false);
+    assert.deepEqual([...reservations], []);
+    assert.deepEqual(rejected, [1]);
+
+    assert.equal(view.tryReservePrefetchSurface(5, 20), true);
+    assert.deepEqual([...reservations], [[5, 20]]);
+    assert.equal(cachedPixels, 10, '승인한 진행 방향 prefetch는 오래된 LRU headroom만 회수한다');
+    visiblePixels = 85;
+    view.reconcilePageSurfaceBudget();
+    assert.equal(
+      view.hasValidPrefetchSurfaceReservation(5, 20),
+      false,
+      'visible raster 뒤 actual ledger가 커지면 idle dispatch 직전에 승인을 회수한다',
+    );
+    assert.deepEqual([...reservations], []);
+    assert.deepEqual(rejected, [1, 1]);
   } finally {
     await vite.close();
   }

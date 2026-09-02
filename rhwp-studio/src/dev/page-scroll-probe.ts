@@ -48,6 +48,7 @@ interface ProbeView {
       visibleSlices: number;
       visibleExecuted: number;
       prefetchExecuted: number;
+      prefetchAdmissionRejected: number;
       staleDropped: number;
       maxQueueDepth: number;
     };
