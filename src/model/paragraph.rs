@@ -692,6 +692,21 @@ impl Paragraph {
         }
     }
 
+    /// Return only line segments backed by document state.
+    ///
+    /// Layout may append a suffix while fitting an HWPX RowBreak cell to its
+    /// declared height. That suffix is a rendering projection, not file data.
+    /// Every persistence adapter must start from this view so format writers
+    /// cannot disagree about where source state ends.
+    #[inline]
+    pub fn serializable_line_segs(&self) -> &[LineSeg] {
+        let source_len = self
+            .line_segs
+            .len()
+            .saturating_sub(self.layout_only_fill_lines);
+        &self.line_segs[..source_len]
+    }
+
     /// Clear only the derived single-line width memo.
     #[inline]
     pub fn invalidate_single_line_overflow_memo(&self) {
@@ -714,6 +729,10 @@ impl Paragraph {
     /// Replace stored rows and their validity state at one owner boundary.
     pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
         self.line_segs = line_segs;
+        // A fresh vector has no renderer-appended suffix and cannot reuse a
+        // source-position snapshot owned by the replaced rows.
+        self.layout_only_fill_lines = 0;
+        self.source_line_seg_vertical_pos = None;
         // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
         // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
         self.hwpx_axis_shift = 0;
@@ -1278,7 +1297,7 @@ impl Paragraph {
         // 새 절반의 vpos=0 은 배치 전 placeholder 로, 호출측 recalc 가
         // ignore_reset_at 으로 흐름에 연결한다.
         let orig_vpos = orig_line_seg.as_ref().map(|o| o.vertical_pos).unwrap_or(0);
-        self.line_segs = vec![LineSeg {
+        self.replace_line_segs(vec![LineSeg {
             text_start: 0,
             vertical_pos: orig_vpos,
             line_height: lh,
@@ -1288,7 +1307,7 @@ impl Paragraph {
             segment_width: sw,
             tag,
             ..Default::default()
-        }];
+        }]);
 
         // 5. range_tags 분할
         let mut new_range_tags: Vec<RangeTag> = Vec::new();
@@ -1530,7 +1549,7 @@ impl Paragraph {
         // 재생성하면 편집발 vpos 재계산이 이를 저장 단/쪽 리셋으로 오인해 병합
         // 문단을 구역 상단 좌표에 동결시킨다 (밴드 내 range-delete 시 +1 팬텀 쪽).
         let orig_vpos = orig_line_seg.as_ref().map(|o| o.vertical_pos).unwrap_or(0);
-        self.line_segs = vec![LineSeg {
+        self.replace_line_segs(vec![LineSeg {
             text_start: 0,
             vertical_pos: orig_vpos,
             line_height: lh,
@@ -1540,7 +1559,7 @@ impl Paragraph {
             segment_width: sw,
             tag,
             ..Default::default()
-        }];
+        }]);
 
         // 5. range_tags 결합 (other의 start/end에 utf16_end 추가)
         for rt in &other.range_tags {

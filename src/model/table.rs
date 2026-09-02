@@ -482,7 +482,14 @@ impl Cell {
                 char_count_msb: true, // 셀 문단은 항상 MSB 설정
                 text: String::new(),
                 char_shapes: tpl_para.char_shapes.iter().take(1).cloned().collect(),
-                line_segs: tpl_para.line_segs.iter().take(1).cloned().collect(),
+                // A new source paragraph may inherit source metrics, never a
+                // renderer-only fill line whose suffix ownership would be lost.
+                line_segs: tpl_para
+                    .serializable_line_segs()
+                    .iter()
+                    .take(1)
+                    .cloned()
+                    .collect(),
                 para_shape_id: tpl_para.para_shape_id,
                 style_id: tpl_para.style_id,
                 raw_header_extra,
@@ -1894,11 +1901,15 @@ impl Table {
                             char_offsets: para.char_offsets.clone(),
                             char_shapes: para.char_shapes.clone(),
                             line_segs: para.line_segs.clone(),
+                            hwpx_axis_shift: para.hwpx_axis_shift,
+                            layout_only_fill_lines: para.layout_only_fill_lines,
+                            source_line_seg_vertical_pos: para.source_line_seg_vertical_pos.clone(),
                             range_tags: para.range_tags.clone(),
                             para_shape_id: para.para_shape_id,
                             style_id: para.style_id,
                             raw_header_extra: para.raw_header_extra.clone(),
                             has_para_text: para.has_para_text,
+                            stored_text_partition_dirty: para.stored_text_partition_dirty,
                             ..Default::default()
                         });
                     }

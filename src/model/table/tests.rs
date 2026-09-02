@@ -73,6 +73,20 @@ fn test_cell_new_empty() {
 }
 
 #[test]
+fn new_cell_template_never_promotes_a_layout_only_line() {
+    let mut template = Cell::new_empty(0, 0, 3_600, 1_000, 1);
+    template.paragraphs[0].line_segs = vec![crate::model::paragraph::LineSeg {
+        text_start: 77,
+        ..Default::default()
+    }];
+    template.paragraphs[0].layout_only_fill_lines = 1;
+
+    let created = Cell::new_from_template(1, 0, 3_600, 1_000, &template);
+    assert!(created.paragraphs[0].line_segs.is_empty());
+    assert!(created.paragraphs[0].serializable_line_segs().is_empty());
+}
+
+#[test]
 fn paragraph_frame_padding_keeps_all_zero_table_boundary() {
     let cell = Cell {
         padding: Padding {
@@ -387,6 +401,33 @@ fn test_merge_cells_2x2_full() {
     assert_eq!(merged.height, 2000); // 1000 * 2
                                      // row_sizes 갱신: 각 행에 셀 1개(행0만 주 셀), 행1은 0개
     assert_eq!(table.row_sizes, vec![1, 0]);
+}
+
+#[test]
+fn merge_preserves_layout_only_suffix_ownership_with_the_full_vector() {
+    let mut table = make_table(1, 2);
+    let secondary = table.cell_index_at(0, 1).expect("secondary cell");
+    let para = &mut table.cells[secondary].paragraphs[0];
+    para.text = "secondary".to_string();
+    para.char_count = 10;
+    para.line_segs = vec![
+        crate::model::paragraph::LineSeg {
+            text_start: 0,
+            ..Default::default()
+        },
+        crate::model::paragraph::LineSeg {
+            text_start: 9,
+            ..Default::default()
+        },
+    ];
+    para.layout_only_fill_lines = 1;
+
+    table.merge_cells(0, 0, 0, 1).expect("merge cells");
+    let merged = table.cell_at(0, 0).expect("merged cell");
+    let copied = merged.paragraphs.last().expect("secondary paragraph");
+    assert_eq!(copied.line_segs.len(), 2);
+    assert_eq!(copied.layout_only_fill_lines, 1);
+    assert_eq!(copied.serializable_line_segs().len(), 1);
 }
 
 #[test]
