@@ -2,9 +2,10 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 1 완료 — Stage 2 승인 대기**. 제품 최적화는 미착수.
+- 상태: **Stage 1 완료 — 2026-09-02 Stage 2 승인**. 제품 최적화는 이 보고 범위에서 미착수.
 - 승인: 계획 커밋 `da1c4d9d6` 뒤 작업지시자의 `진행해줘`.
-- 직접 기준선: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`.
+- 측정 당시 직접 기준선: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`.
+- 현재 restack 기준선: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`; 성능 수치는 재자격화 후 사용.
 - 계획: [수행](../plans/task_m100_6042.md), [구현](../plans/task_m100_6042_impl.md).
 
 ## 1. 이번 단계의 경계
@@ -209,6 +210,7 @@ empty snapshot 계약을 Stage 2 실행 기반 회귀 테스트에 포함한다.
 - `git diff --check`, 문서 상대 링크, fixture/source hash, fixed-base ancestry와 변경 범위를 확인한다.
   원본·관찰기 오류 자료·최종 표본을 구분했고, JSON 재집계 스크립트와 환경 hash를 함께 남긴다.
 
-다음 승인은 **Stage 2: 기존 좌표 의미를 보존하는 행/X 인덱스·visibility snapshot 및 빈 문서 전환 경계**다.
-위 시간 경보선도 함께 검토하되 4ms scheduler 후보는 아직 채택하지 않는다. Stage 3 LRU나 Stage 4
-scheduler를 미리 구현하지 않고, push·PR 생성·Ready 전환 없이 여기서 멈춘다.
+2026-09-02 사용자가 **Stage 2: 기존 좌표 의미를 보존하는 행/X 인덱스·visibility snapshot 및 빈 문서
+전환 경계** 착수를 승인했다. 위 시간 경보선은 현재 restack before에서 재자격화하며 4ms scheduler 후보는
+아직 채택하지 않는다. Stage 3 LRU나 Stage 4 scheduler를 미리 구현하지 않고, Stage 2 보고·커밋 뒤
+다음 승인 게이트에서 멈춘다.
