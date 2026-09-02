@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "7e9cc555-768b-4275-8a8b-e35297e2e0ab",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6275/by_saved_version/pr6275_issue6208_print_method_nup-2020.pdf",
+  "output_filename": "pr6275_issue6208_print_method_nup-2020.pdf",
+  "size": 24114,
+  "sha256": "37c0be765cf9651e4ae7d83cb1f8f1bd3a1369d7714b233c37a60d6a0a4de5ea",
+  "server": {
+    "job_id": "7e9cc555-768b-4275-8a8b-e35297e2e0ab",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "print_method_nup.hwp",
+    "output_filename": "pr6275_issue6208_print_method_nup-2020.pdf",
+    "size": 24114,
+    "sha256": "37c0be765cf9651e4ae7d83cb1f8f1bd3a1369d7714b233c37a60d6a0a4de5ea",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 11370,
+    "worker_elapsed_ms": 10803,
+    "worker_bits": 32
+  }
+}

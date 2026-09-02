@@ -1,0 +1,87 @@
+{
+  "id": "layer1_set_cell",
+  "layer": 1,
+  "goal": "export-tables 왕복",
+  "steps": [
+    {
+      "id": "discover",
+      "command": [
+        "rhwp",
+        "export-tables",
+        "양식.hwpx",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "tables"
+      ]
+    },
+    {
+      "id": "dry-run",
+      "command": [
+        "rhwp",
+        "edit",
+        "set-cell",
+        "양식.hwpx",
+        "--table",
+        "12",
+        "--row",
+        "1",
+        "--col",
+        "1",
+        "--text",
+        "1,234",
+        "--dry-run",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "oldText",
+        "newText",
+        "overflow"
+      ]
+    },
+    {
+      "id": "execute",
+      "command": [
+        "rhwp",
+        "edit",
+        "set-cell",
+        "양식.hwpx",
+        "--table",
+        "12",
+        "--row",
+        "1",
+        "--col",
+        "1",
+        "--text",
+        "1,234",
+        "-o",
+        "작성본.hwpx",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "readFields": [
+        "newText",
+        "changedPages",
+        "outputFormat"
+      ]
+    },
+    {
+      "id": "reread",
+      "command": [
+        "rhwp",
+        "export-tables",
+        "작성본.hwpx",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "tables"
+      ]
+    }
+  ]
+}

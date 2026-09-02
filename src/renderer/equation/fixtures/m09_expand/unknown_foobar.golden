@@ -1,0 +1,15 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: FOOBAR
+honesty: unknown-command-text
+
+=== ast ===
+Text(
+    "FOOBAR",
+)
+
+=== layout ===
+Text("FOOBAR") x=0.0000 y=0.0000 w=81.9000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">FOOBAR</text>

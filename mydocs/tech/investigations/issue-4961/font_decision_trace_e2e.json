@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "issue": 4961,
+  "options": {
+    "maxCharacters": 4096
+  },
+  "documents": [
+    {
+      "id": "format-parity-hwp",
+      "format": "hwp",
+      "path": "samples/3-10월_교육_통합_2022.hwp",
+      "page": 0,
+      "expectedStatus": "complete",
+      "expectedCounts": {
+        "runsSeen": 175,
+        "charactersSeen": 440,
+        "recordsEmitted": 440,
+        "recordsOmitted": 0
+      },
+      "expectedLayoutHash": "ecc09cc1b2bfc374f5f94871a26a0a6f7e0263fa08eba4f586e4518ad2955251"
+    },
+    {
+      "id": "format-parity-hwpx",
+      "format": "hwpx",
+      "path": "samples/3-10월_교육_통합_2022.hwpx",
+      "page": 0,
+      "expectedStatus": "complete",
+      "expectedCounts": {
+        "runsSeen": 175,
+        "charactersSeen": 440,
+        "recordsEmitted": 440,
+        "recordsOmitted": 0
+      },
+      "expectedLayoutHash": "ecc09cc1b2bfc374f5f94871a26a0a6f7e0263fa08eba4f586e4518ad2955251"
+    },
+    {
+      "id": "exact-face",
+      "format": "hwp",
+      "path": "samples/143E433F503322BD33.hwp",
+      "page": 0,
+      "expectedStatus": "complete",
+      "expectedCounts": {
+        "runsSeen": 194,
+        "charactersSeen": 1336,
+        "recordsEmitted": 1336,
+        "recordsOmitted": 0
+      },
+      "expectedLayoutHash": "234a429072626a8d57f988ce1be89db5cc64449bc05eaf567ab36bdb5f76384a"
+    },
+    {
+      "id": "missing-face",
+      "format": "hwp",
+      "path": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "page": 0,
+      "expectedStatus": "complete",
+      "expectedCounts": {
+        "runsSeen": 136,
+        "charactersSeen": 607,
+        "recordsEmitted": 607,
+        "recordsOmitted": 0
+      },
+      "expectedLayoutHash": "c65f1f61d1057761a84abb0a00750d5febc7ae6d9e036a3409dd0d29d9dfa85c"
+    },
+    {
+      "id": "subst-counterpart-hwp",
+      "format": "hwp",
+      "path": "samples/[2027] 온새미로 1 본교재.hwp",
+      "page": 0,
+      "expectedStatus": "complete",
+      "expectedCounts": {
+        "runsSeen": 46,
+        "charactersSeen": 41,
+        "recordsEmitted": 41,
+        "recordsOmitted": 0
+      },
+      "expectedLayoutHash": "4cc30e2ffa7cabe850ceb85e8d41796eac590091a3786710660760dc24bc515b"
+    },
+    {
+      "id": "document-substitute-hwpx",
+      "format": "hwpx",
+      "path": "samples/[2027] 온새미로 1 본교재.hwpx",
+      "page": 0,
+      "expectedStatus": "complete",
+      "expectedCounts": {
+        "runsSeen": 46,
+        "charactersSeen": 41,
+        "recordsEmitted": 41,
+        "recordsOmitted": 0
+      },
+      "expectedLayoutHash": "6dc1c3429ae84ef2c29615d42996e106acdc149cbdebcfc8ac116c587fc54004"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "exact-face",
+      "documentId": "exact-face",
+      "recordId": "page:0:run:1:char:0",
+      "expected": {
+        "sourceStatus": "complete",
+        "character": "초",
+        "documentFace": "바탕",
+        "substFont": null,
+        "normalizedFace": "바탕",
+        "layoutStepKind": null,
+        "metricMatchKind": "exact",
+        "metricCharacterMatch": "hit",
+        "widthSource": "embeddedMetric"
+      }
+    },
+    {
+      "id": "missing-face",
+      "documentId": "missing-face",
+      "recordId": "page:0:run:46:char:1",
+      "expected": {
+        "sourceStatus": "complete",
+        "character": "1",
+        "documentFace": "HCI Poppy",
+        "substFont": null,
+        "normalizedFace": "Palatino Linotype",
+        "layoutStepKind": "styleSubstitution",
+        "metricMatchKind": "exact",
+        "metricCharacterMatch": "hit",
+        "widthSource": "embeddedMetric"
+      }
+    },
+    {
+      "id": "document-substitute",
+      "documentId": "document-substitute-hwpx",
+      "recordId": "page:0:run:3:char:0",
+      "expected": {
+        "sourceStatus": "complete",
+        "character": "2",
+        "documentFace": "KoPubWorld돋움체 Light",
+        "substFont": "HCR Batang",
+        "normalizedFace": "KoPubWorld돋움체 Light",
+        "layoutStepKind": "documentSubstFont",
+        "metricMatchKind": "none",
+        "metricCharacterMatch": "notApplicable",
+        "widthSource": "heuristicHalfwidth"
+      }
+    }
+  ],
+  "comparisons": {
+    "portableFormatParity": [
+      "format-parity-hwp",
+      "format-parity-hwpx"
+    ],
+    "substFeatureDetection": {
+      "withoutSubstFont": "subst-counterpart-hwp",
+      "withSubstFont": "document-substitute-hwpx"
+    }
+  }
+}

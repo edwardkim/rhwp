@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/strategist/engagement.py",
+  "corpus": "corpus/smartcity-rfp",
+  "entryCount": 4,
+  "truncatedSearches": [],
+  "failures": [],
+  "entries": [
+    {
+      "id": "EV-1",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "필수기능",
+      "file": "rfp_공고.hwpx",
+      "section": 0,
+      "paragraph": 1,
+      "charOffset": 3,
+      "length": 2,
+      "quote": "본 사업의 핵심은 도시 데이터 플랫폼 구축이다.",
+      "context": "…본 사업의 핵심은 도시 데이터 플랫폼 구축이다.…",
+      "command": "rhwp search corpus/smartcity-rfp/rfp_공고.hwpx --json -- 필수기능",
+      "page": 0
+    },
+    {
+      "id": "EV-2",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "데이터 플랫폼",
+      "file": "과업지시서.hwp",
+      "section": 0,
+      "paragraph": 2,
+      "charOffset": 6,
+      "length": 3,
+      "quote": "총사업비는 3,180백만원(부가세 별도)으로 한다.",
+      "context": "…총사업비는 3,180백만원(부가세 별도)으로 한다.…",
+      "command": "rhwp search corpus/smartcity-rfp/과업지시서.hwp --json -- 데이터 플랫폼",
+      "page": 1
+    },
+    {
+      "id": "EV-3",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "표준 API",
+      "file": "rfp_공고.hwpx",
+      "section": 0,
+      "paragraph": 3,
+      "charOffset": 9,
+      "length": 3,
+      "quote": "수행기간은 계약일로부터 14개월이다.",
+      "context": "…수행기간은 계약일로부터 14개월이다.…",
+      "command": "rhwp search corpus/smartcity-rfp/rfp_공고.hwpx --json -- 표준 API",
+      "page": 1
+    },
+    {
+      "id": "EV-4",
+      "kind": "search",
+      "question": "Q1",
+      "keyword": "OpenAPI",
+      "file": "과업지시서.hwp",
+      "section": 0,
+      "paragraph": 4,
+      "charOffset": 12,
+      "length": 3,
+      "quote": "기술평가 80점, 가격평가 20점으로 합산한다.",
+      "context": "…기술평가 80점, 가격평가 20점으로 합산한다.…",
+      "command": "rhwp search corpus/smartcity-rfp/과업지시서.hwp --json -- OpenAPI"
+    }
+  ],
+  "_skillMeta": {
+    "id": "dense_q1",
+    "issue": 5335
+  }
+}

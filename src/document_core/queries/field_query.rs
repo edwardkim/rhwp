@@ -299,6 +299,15 @@ impl DocumentCore {
         };
 
         let outer_ctrl = path[0].0;
+        let inner_para = path.last().map(|entry| entry.2).unwrap_or(0);
+        self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_para);
+        self.recalculate_cell_paragraph_vpos_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            inner_para,
+            None,
+        );
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             section.raw_stream = None;
@@ -885,6 +894,7 @@ impl DocumentCore {
                             cell_para.insert_text_at(0, value);
                         }
                         rebuild_char_offsets(cell_para);
+                        cell_para.replace_line_segs(Vec::new());
                     }
                     Ok(())
                 } else {
@@ -958,6 +968,7 @@ impl DocumentCore {
 
         // char_offsets 재생성: FIELD_BEGIN/END 갭, 탭 폭, UTF-16 code unit 크기 반영
         rebuild_char_offsets(para);
+        para.replace_line_segs(Vec::new());
 
         Ok(())
     }
@@ -1060,6 +1071,13 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            self.document
+                .sections
+                .get(section_idx)
+                .and_then(|section| section.paragraphs.get(para_idx))
+                .ok_or_else(|| HwpError::InvalidField("문단 위치 초과".into()))?,
+        );
         let para = self
             .document
             .sections
@@ -1073,7 +1091,19 @@ impl DocumentCore {
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             section.raw_stream = None;
         }
+        self.reflow_paragraph(section_idx, para_idx);
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
         self.recompose_section(section_idx);
+        self.paginate();
         Ok(r#"{"ok":true}"#.to_string())
     }
 
@@ -1134,7 +1164,15 @@ impl DocumentCore {
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             section.raw_stream = None;
         }
+        self.reflow_cell_paragraph(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        );
         self.recompose_section(section_idx);
+        self.paginate();
         Ok(r#"{"ok":true}"#.to_string())
     }
 
@@ -1466,6 +1504,7 @@ fn collect_fields_from_paragraph(
                                 extra_properties: 0,
                                 ctrl_data_name: Some(fname.clone()),
                                 instance_id: None,
+                                raw_type: None,
                                 memo_index: 0,
                                 memo_paragraphs: Vec::new(),
                                 memo_text_direction: None,
@@ -2215,6 +2254,7 @@ fn insert_click_here_field_in_para(
         field_id,
         ctrl_id: tags::FIELD_CLICKHERE,
         instance_id: None,
+        raw_type: None,
         ctrl_data_name: if name.is_empty() {
             None
         } else {
@@ -2422,7 +2462,7 @@ mod tests {
     use super::*;
     use crate::model::control::{Control, Field, FieldType};
     use crate::model::document::Section;
-    use crate::model::paragraph::{FieldRange, Paragraph};
+    use crate::model::paragraph::{FieldRange, LineSeg, Paragraph};
     use crate::model::table::{Cell, Table};
 
     fn make_field_control(ctrl_id: u32) -> Control {
@@ -2434,6 +2474,7 @@ mod tests {
             field_id: ctrl_id,
             ctrl_id,
             instance_id: None,
+            raw_type: None,
             ctrl_data_name: None,
             memo_index: 0,
             memo_paragraphs: Vec::new(),
@@ -2839,6 +2880,7 @@ mod tests {
 
     #[test]
     fn set_cell_field_text_updates_text_metadata() {
+        modest_cell_field_fill_reaches_frame_consumers_before_serialization();
         let cell_para = Paragraph {
             text: "기존값".into(),
             char_count: 4,
@@ -2883,5 +2925,86 @@ mod tests {
         assert_eq!(updated.text, "새값");
         assert_eq!(updated.char_count, 3);
         assert_eq!(updated.char_offsets, vec![0, 1]);
+    }
+
+    fn modest_cell_field_fill_reaches_frame_consumers_before_serialization() {
+        let initial = "old";
+        let cell_para = Paragraph {
+            text: initial.into(),
+            char_count: 4,
+            char_offsets: vec![0, 1, 2],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 1_000,
+                text_height: 900,
+                baseline_distance: 800,
+                segment_width: 1,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.document.sections.push(Section {
+            paragraphs: vec![Paragraph {
+                controls: vec![Control::Table(Box::new(Table {
+                    cells: vec![Cell {
+                        field_name: Some("셀필드".into()),
+                        paragraphs: vec![cell_para],
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                }))],
+                ..Default::default()
+            }],
+            ..Default::default()
+        });
+        let location = FieldLocation {
+            section_index: 0,
+            para_index: 0,
+            nested_path: vec![NestedEntry::TableCell {
+                control_index: 0,
+                cell_index: 0,
+                para_index: 0,
+            }],
+        };
+
+        core.set_cell_field_text(&location, "moderately wider field value")
+            .unwrap();
+
+        let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+        let dpi = 96.0;
+        let measured = {
+            let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+                panic!("expected table control");
+            };
+            let para = &table.cells[0].paragraphs[0];
+            assert!(para.line_segs.is_empty());
+            let composed = crate::renderer::composer::compose_paragraph(para);
+            crate::renderer::composer::estimate_composed_line_width(&composed.lines[0], &styles)
+        };
+        let width_hwp = crate::renderer::px_to_hwpunit(measured / 1.2, dpi);
+        let inner_width = crate::renderer::hwpunit_to_px(width_hwp, dpi);
+        assert!(measured > inner_width && measured < inner_width * 1.8);
+
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            panic!("expected table control");
+        };
+        let para = &table.cells[0].paragraphs[0];
+        let mut composed = crate::renderer::composer::compose_paragraph(para);
+        crate::renderer::composer::recompose_cell_lines_in_frame(
+            &mut composed,
+            para,
+            crate::renderer::composer::ParagraphBox::content(0..width_hwp),
+            &styles,
+            dpi,
+            false,
+        );
+
+        assert!(
+            composed.lines.len() > 1,
+            "the shared cell consumer must see a fresh boundary before save/reload"
+        );
+        assert!(composed.lines[1].char_start > 0);
     }
 }

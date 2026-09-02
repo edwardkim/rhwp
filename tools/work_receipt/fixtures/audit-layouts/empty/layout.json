@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "empty",
+  "title": "빈 폴더",
+  "why": "직속 *.capsule.json 0개 = usage exit 2, stdout 0바이트.",
+  "notes": "audit_contract empty_dir",
+  "members": [],
+  "ignored": [
+    "notes.txt"
+  ],
+  "recursive": false,
+  "exit": 2,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/empty",
+    "total": 0,
+    "reproduced": 0,
+    "failed": [],
+    "reproducedRate": 0.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/empty",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

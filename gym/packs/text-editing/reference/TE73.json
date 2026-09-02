@@ -1,0 +1,19 @@
+{
+  "id": "TE73",
+  "steps": [
+    {
+      "answer": {
+        "off": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "국어"
+          ],
+          "path": "matches[0].offset"
+        }
+      }
+    }
+  ]
+}

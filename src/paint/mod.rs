@@ -16,6 +16,8 @@ pub mod profile;
 pub mod replay_order;
 pub mod resources;
 pub mod schema;
+pub(crate) mod shaping_glyph;
+pub(crate) mod shaping_glyph_vertical;
 pub mod text_shape;
 pub mod text_v2;
 pub mod text_variants;
@@ -57,12 +59,13 @@ pub use paint_op::{
 pub use profile::RenderProfile;
 pub use replay_order::{
     paint_op_replay_plane, paint_op_replay_plane_with_layer, render_layer_replay_plane,
-    PaintReplayPlane,
+    FlowStaticOcclusion, PaintReplayPlane,
 };
 pub use resources::{
-    font_blob_resource_key, image_resource_key, parse_source_image_key, resource_digest_hex,
-    source_image_key, svg_resource_key, FontBlobResourceId, ImageResourceId, ResourceArena,
-    SourceImageVariant, SvgResourceId, RESOURCE_KEY_ALGORITHM,
+    font_blob_resource_key, image_resource_key, parse_font_blob_resource_key,
+    parse_source_image_key, resource_digest_hex, source_image_key, svg_resource_key,
+    FontBlobResourceId, ImageResourceId, ResourceArena, SourceImageVariant, SvgResourceId,
+    RESOURCE_KEY_ALGORITHM,
 };
 pub use schema::{
     LayerTreeSchema, LAYER_TREE_SCHEMA, PAGE_LAYER_TREE_COORDINATE_SYSTEM,

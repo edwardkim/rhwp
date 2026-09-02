@@ -468,7 +468,7 @@ fn actual_hwp3_password_fixture_keeps_icon_outline_at_column_origin_without_fill
 
 #[test]
 fn actual_hwp3_password_fixture_keeps_regular_page_background_opaque() {
-    let mut document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+    let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
         .expect("실제 HWP3 fixture를 열어야 함");
     let svg = document
         .render_page_svg(0)

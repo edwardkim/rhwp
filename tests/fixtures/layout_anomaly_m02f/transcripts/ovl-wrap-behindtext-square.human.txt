@@ -1,0 +1,6 @@
+# transcript ovl-wrap-behindtext-square
+# family=overlap
+# hypothesis=도형 wrap=BehindText 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: ovl-wrap-behindtext-square.synth
+status: CLEAN

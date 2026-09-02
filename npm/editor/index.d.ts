@@ -11,7 +11,7 @@ export interface EditorOptions {
   width?: string;
   /** iframe 높이 (기본: '100%') */
   height?: string;
-  /** 모든 method 요청 제한 시간 override(ms, 기본: 일반 10000, load/export 60000) */
+  /** 모든 method 요청 제한 시간 override(ms, 기본: 일반 10000, load/trace/export 60000) */
   requestTimeoutMs?: number;
   /** v1 협상 제한 시간(ms, 기본: 1000) */
   handshakeTimeoutMs?: number;
@@ -139,6 +139,55 @@ export interface RendererDiagnosticsV1 {
   page: { index: number; canvaskit: CanvasKitRendererDiagnostics | null };
 }
 
+export interface FontDecisionTraceBackendV1 {
+  status: string;
+  certainty: 'observed' | 'resolved' | 'planned' | 'notObserved' | 'unsupported';
+  requested: string | null;
+  candidates: string[];
+  resolved: string | null;
+  source: string | null;
+  capabilities: string[];
+  failures: string[];
+}
+
+export interface FontDecisionTraceV1 {
+  schemaVersion: 1;
+  status: 'complete' | 'truncated' | 'unsupported' | 'failed';
+  scope: {
+    pageIndex: number;
+    requestedLimits: { maxCharacters: number };
+    appliedLimits: { maxCharacters: number };
+  };
+  counts: {
+    runsSeen: number;
+    charactersSeen: number;
+    recordsEmitted: number;
+    recordsOmitted: number | null;
+  };
+  records: Array<{
+    recordId: string;
+    source: { character: string; codePoint: number; [key: string]: unknown };
+    document: { face: string | null; altType: number | null; languageSlot: number | null; [key: string]: unknown };
+    layoutName: { normalizedFace: string | null; cssFamilyChain: string[]; [key: string]: unknown };
+    layoutMetric: Record<string, unknown>;
+    paint: {
+      native: FontDecisionTraceBackendV1;
+      canvas2d: FontDecisionTraceBackendV1;
+      canvaskit: FontDecisionTraceBackendV1;
+    };
+    provenance: Array<Record<string, unknown>>;
+    oracle: Record<string, unknown>;
+  }>;
+  backendSummary: Record<string, { status: string; reasons: string[] }>;
+  reasons: Array<{ code: string; detail: string | null }>;
+  layoutHash: { algorithm: 'sha256'; value: string | null };
+  normalizedHash: { algorithm: 'sha256'; value: string | null };
+}
+
+export interface FontDecisionTraceOptions {
+  maxCharacters?: number;
+}
+
 export interface LoadFileOptions {
   /** 미저장 변경 확인 없이 문서 교체 */
   skipUnsavedGuard?: boolean;
@@ -151,6 +200,90 @@ export interface LoadFileOptions {
   suppressDialogs?: boolean;
 }
 
+export interface RhwpBodyParagraphTargetV1 {
+  kind: 'body_paragraph';
+  section: number;
+  paragraph: number;
+  charOffset: 0;
+  length: number;
+}
+
+export interface RhwpDocumentStateV1 {
+  schemaVersion: 1;
+  format: 'hwp' | 'hwpx';
+  documentEpoch: number;
+  changeSeq: number;
+  dirty: boolean;
+  pageCount: number;
+  documentSha256: string;
+}
+
+export interface RhwpSelectionContextV1 {
+  schemaVersion: 1;
+  documentEpoch: number;
+  changeSeq: number;
+  /** 1부터 시작하는 UI 페이지 번호 */
+  page: number;
+  editable: boolean;
+  collapsed: boolean;
+  target: RhwpBodyParagraphTargetV1 | null;
+  selectedTextSha256: string | null;
+}
+
+export interface RhwpApplyTextCommandV1 {
+  schemaVersion: 1;
+  commandId: string;
+  expectedDocumentEpoch: number;
+  expectedChangeSeq: number;
+  expectedDocumentSha256: string;
+  target: RhwpBodyParagraphTargetV1;
+  expectedBeforeSha256: string;
+  expectedFormatSha256: string;
+  expectedAdjacentContextSha256: string;
+  replacement: string;
+}
+
+export interface RhwpRevertTextCommandV1 {
+  schemaVersion: 1;
+  commandId: string;
+  expectedDocumentEpoch: number;
+  expectedChangeSeq: number;
+  expectedAfterDocumentSha256: string;
+  expectedAfterSha256: string;
+}
+
+export interface RhwpTextCommandReceiptV1 {
+  schemaVersion: 1;
+  commandId: string;
+  operation: 'apply' | 'revert';
+  documentEpoch: number;
+  beforeChangeSeq: number;
+  afterChangeSeq: number;
+  beforeDocumentSha256: string;
+  afterDocumentSha256: string;
+  beforeTextSha256: string;
+  afterTextSha256: string;
+  formatSha256: string;
+  adjacentContextSha256: string;
+  pageCountBefore: number;
+  pageCountAfter: number;
+  target: RhwpBodyParagraphTargetV1;
+}
+
+export interface RhwpDocumentChangedEventV1 {
+  schemaVersion: 1;
+  reason: 'agent_apply' | 'agent_revert';
+  documentEpoch: number;
+  changeSeq: number;
+  commandId: string;
+}
+
+export interface RhwpDocumentAgentError extends Error {
+  code: string;
+  /** TRANSACTION_FAILED/RENDER_FAILED에서 snapshot 복구 성공 여부 */
+  recovered?: boolean;
+}
+
 export declare class RhwpEditor {
   private constructor();
   /** HWP 파일을 로드합니다 */
@@ -161,6 +294,8 @@ export declare class RhwpEditor {
   getPageSvg(page?: number): Promise<string>;
   /** 선택된 renderer와 페이지별 readiness 진단을 반환합니다 */
   getRendererDiagnostics(page?: number): Promise<RendererDiagnosticsV1>;
+  /** 현재 snapshot만 읽는 bounded font 결정 계보를 반환합니다 */
+  getFontDecisionTrace(page?: number, options?: FontDecisionTraceOptions): Promise<FontDecisionTraceV1>;
   /** 현재 문서를 HWP 바이너리로 내보냅니다 */
   exportHwp(): Promise<Uint8Array>;
   /** 현재 문서를 HWPX(ZIP+XML) 바이너리로 내보냅니다 */
@@ -178,10 +313,101 @@ export declare class RhwpEditor {
    * 스튜디오가 notify-saved-v1 capability를 광고하지 않으면 요청 없이 실패합니다.
    */
   notifySaved(fileName?: string): Promise<{ ok: true; wasDirty: boolean }>;
+  /** 현재 문서의 에이전트 명령 fence와 SHA-256 상태 */
+  getDocumentState(): Promise<RhwpDocumentStateV1>;
+  /** 현재 캐럿/선택의 exact body paragraph 컨텍스트 */
+  getSelectionContext(): Promise<RhwpSelectionContextV1>;
+  /** exact preimage fence를 검증하고 문단 전체를 한 트랜잭션으로 교체 */
+  applyTextCommand(command: RhwpApplyTextCommandV1): Promise<RhwpTextCommandReceiptV1>;
+  /** 가장 최근에 성공한 exact command를 한 트랜잭션으로 되돌림 */
+  revertTextCommand(command: RhwpRevertTextCommandV1): Promise<RhwpTextCommandReceiptV1>;
+  /** exact body paragraph target으로 캐럿과 뷰포트 이동 */
+  focusTarget(target: RhwpBodyParagraphTargetV1): Promise<{ focused: boolean; page: number }>;
+  /** agent apply/revert가 commit된 뒤 strict v1 변경 이벤트 구독 */
+  onDocumentChanged(listener: (event: RhwpDocumentChangedEventV1) => void): () => void;
   /** iframe 엘리먼트를 반환합니다 */
   readonly element: HTMLIFrameElement;
+  // ── 브리지 표면 ────────────────────────────────────────────────
+
+  /** studio 커맨드·메뉴. `list()` 는 레지스트리 전체, `menuModel()` 은 실제 메뉴 구조 */
+  readonly commands: {
+    list(): Promise<CommandInfo[]>;
+    menuModel(): Promise<MenuNode[]>;
+    isEnabled(id: string): Promise<boolean>;
+    execute(
+      id: string,
+      params?: Record<string, unknown>,
+      options?: { allowDialog?: boolean },
+    ): Promise<CommandResult>;
+    context(): Promise<Record<string, unknown>>;
+  };
+
+  /** 플러그인 수명. 올릴 수 있는 이름은 studio 의 allowlist 가 정한다 */
+  readonly plugins: {
+    list(): Promise<Array<{ id: string; apiVersion: number; active: boolean }>>;
+    load(id: string): Promise<{ id: string; methods: string[] }>;
+    unload(id: string): Promise<{ ok: true }>;
+    invoke(id: string, method: string, args?: unknown[]): Promise<unknown>;
+  };
+
+  /** HwpCtrl API — `plugins.load('hwpctrl')` 이후 사용 */
+  readonly hwpctrl: {
+    call(method: string, args?: unknown[]): Promise<unknown>;
+    /** 여러 호출을 한 메시지·한 트랜잭션으로. undo 도 1스텝 */
+    batch(build: ((h: Record<string, (...args: unknown[]) => unknown>) => void)
+      | Array<{ m: string; a?: unknown[] }>): Promise<unknown[]>;
+    exportBytes(format?: 'hwp' | 'hwpx' | 'hml'): Promise<Uint8Array>;
+    undo(): Promise<CommandResult>;
+    redo(): Promise<CommandResult>;
+  };
+
+  /** 메뉴·툴바·상태표시줄 표시. 숨겨도 커맨드는 실행된다 */
+  readonly chrome: {
+    get(): Promise<ChromeVisibility>;
+    set(visibility: Partial<ChromeVisibility>): Promise<ChromeVisibility>;
+  };
+
   /** 에디터를 제거합니다 */
   destroy(): void;
+}
+
+export interface CommandInfo {
+  id: string;
+  label: string;
+  shortcutLabel?: string;
+  icon?: string;
+  enabled: boolean;
+  opensDialog?: boolean;
+}
+
+export interface MenuItemNode {
+  commandId?: string;
+  label: string;
+  enabled: boolean;
+  submenu?: MenuItemNode[];
+}
+
+export interface MenuNode {
+  menuId: string;
+  label: string;
+  items: MenuItemNode[];
+}
+
+export type CommandResult =
+  | { ok: true }
+  | { ok: false; reason: string; message?: string };
+
+export interface ChromeVisibility {
+  menu: boolean;
+  toolbar: boolean;
+  statusbar: boolean;
+}
+
+export interface StudioOptions extends EditorOptions {
+  /** 부팅 직후 올릴 플러그인 id 목록 (예: `['hwpctrl']`) */
+  plugins?: string[];
+  /** 초기 chrome 표시 상태 */
+  chrome?: Partial<ChromeVisibility>;
 }
 
 /**
@@ -199,4 +425,15 @@ export declare class RhwpEditor {
 export declare function createEditor(
   container: string | HTMLElement,
   options?: EditorOptions,
+): Promise<RhwpEditor>;
+
+/**
+ * studio 인스턴스를 만들어 컨테이너에 심습니다.
+ *
+ * `createEditor` 의 상위 집합입니다. 컨테이너 이동은 지원하지 않습니다 — iframe 을 DOM
+ * 이동시키면 브라우저가 문서를 재로드하므로, 옮기려면 `destroy()` 후 다시 만듭니다.
+ */
+export declare function createStudio(
+  container: string | HTMLElement,
+  options?: StudioOptions,
 ): Promise<RhwpEditor>;

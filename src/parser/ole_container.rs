@@ -64,6 +64,23 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
     if cfb_bytes.len() < 8 {
         return None;
     }
+    // [#5582] HWPX 의 `BinData/*.ole` 는 CFB 앞에 u32 LE 길이 프리픽스를 붙인다
+    // (00128 실측: `00 B8 02 00` = 178,176 = 뒤따르는 CFB 크기). HWPX 적재 경로는
+    // `normalize_ole_bytes`(#2263)가 이미 벗기지만, 이 함수는 다른 유입 경로
+    // (HWP5 bindata·도구성 호출)도 받으므로 방어적으로 같은 정규화를 둔다.
+    // 선언 길이가 실제 잔여 길이와 일치할 때만 벗긴다 — 우연히 D0CF 로 이어지는
+    // 다른 형식을 오인하지 않게.
+    const CFB_MAGIC: [u8; 4] = [0xD0, 0xCF, 0x11, 0xE0];
+    let cfb_bytes = if cfb_bytes[0..4] != CFB_MAGIC
+        && cfb_bytes.len() >= 12
+        && cfb_bytes[4..8] == CFB_MAGIC
+        && u32::from_le_bytes([cfb_bytes[0], cfb_bytes[1], cfb_bytes[2], cfb_bytes[3]]) as usize
+            == cfb_bytes.len() - 4
+    {
+        &cfb_bytes[4..]
+    } else {
+        cfb_bytes
+    };
     let cursor = Cursor::new(cfb_bytes);
     let mut comp = CompoundFile::open(cursor).ok()?;
 
@@ -96,7 +113,10 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
                     container.ooxml_chart = Some(buf);
                 }
             }
-        } else if name == "Contents" {
+        } else if name.eq_ignore_ascii_case("contents") {
+            // [#5582] 한컴 산출 변형은 대문자 `CONTENTS` 도 쓴다(00128 실측). 차트가
+            // 아닌 일반 내장 개체의 CONTENTS 는 차트 파싱이 실패하고, 렌더 경로가
+            // 그 실패를 폴백 사유로 강등해 EMF/WMF 미리보기로 내려간다.
             if let Ok(mut s) = comp.open_stream(&path) {
                 let mut buf = Vec::new();
                 if s.read_to_end(&mut buf).is_ok() && !buf.is_empty() {
@@ -123,7 +143,7 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
         // (이미 preview_emf가 None인 경우만)
         if let Ok(entries) = std::panic::catch_unwind(|| {
             let cursor = Cursor::new(cfb_bytes);
-            CompoundFile::open(cursor).ok().map(|mut comp| {
+            CompoundFile::open(cursor).ok().map(|comp| {
                 comp.walk()
                     .filter(|e| e.is_stream())
                     .map(|e| e.path().to_string_lossy().to_string())
@@ -185,8 +205,96 @@ pub fn ole_root_clsid(cfb_bytes: &[u8]) -> Option<[u8; 16]> {
     crate::parser::cfb_reader::root_clsid(cfb_bytes)
 }
 
+/// 중첩 OLE CFB 의 **모든** 스트림을 `(경로, 바이트)` 로 열거한다. (#4100)
+///
+/// [`parse_ole_container`] 는 아는 이름 4종만 뽑으므로 **재포장에 쓸 수 없다** — 나머지가
+/// 소실된다. 차트 편집은 `OOXMLChartContents` 하나만 갈고 나머지(레거시 `Contents`,
+/// `\x02OlePres000` EMF)는 바이트 그대로 되실어야 하므로 전수 열거가 필요하다.
+///
+/// 경로는 플랫폼 무관 표기로 정규화한다 — Windows 의 `cfb` 는 `/BinData\BIN0001.OLE`
+/// 처럼 구분자를 섞어 돌려주는데, 반환값을 **이름으로 비교**하는 소비자가 있다.
+///
+/// #4055 스파이크가 코퍼스 28종에서 "아는 4종 밖 스트림 0건"을 실측했다. 그래도 이름을
+/// 고정하지 않고 전수로 도는 이유는, 그 관찰이 코퍼스의 성질이지 포맷의 보장이 아니라서다.
+pub fn all_ole_streams(cfb_bytes: &[u8]) -> Option<Vec<(String, Vec<u8>)>> {
+    if cfb_bytes.len() < 8 {
+        return None;
+    }
+    let mut comp = CompoundFile::open(Cursor::new(cfb_bytes)).ok()?;
+    let paths: Vec<std::path::PathBuf> = comp
+        .walk()
+        .filter(|e| e.is_stream())
+        .map(|e| e.path().to_path_buf())
+        .collect();
+
+    let mut out = Vec::with_capacity(paths.len());
+    for path in paths {
+        let mut buf = Vec::new();
+        let mut stream = comp.open_stream(&path).ok()?;
+        stream.read_to_end(&mut buf).ok()?;
+        out.push((path.to_string_lossy().replace('\\', "/"), buf));
+    }
+    Some(out)
+}
+
 fn contains_bytes(haystack: &[u8], needle: &[u8]) -> bool {
     !needle.is_empty() && haystack.windows(needle.len()).any(|w| w == needle)
+}
+
+/// [#5725] `Contents` 가 한글 수식 편집기 봉투면 수식 스크립트를 꺼낸다.
+///
+/// 봉투 구조 (2921145 `BinData/ole1.ole` 실측):
+/// - offset 0..32: 시그니처 `Hwp 5.0 Equation Editor(HwpEq5x)` (정확히 32바이트)
+/// - offset 52: u32 LE 버전 (실측 5)
+/// - offset 68: u32 LE 스크립트 바이트 길이
+/// - offset 72: UTF-16LE 수식 스크립트
+///
+/// 이 OLE 들의 `\x02OlePres000` 은 전부 28바이트 스텁(헤더만)이라 미리보기
+/// 폴백으로는 그릴 것이 없다 — 스크립트가 유일한 출처다.
+pub fn parse_equation_contents_script(data: &[u8]) -> Option<String> {
+    const SIG: &[u8] = b"Hwp 5.0 Equation Editor";
+    if data.len() < 72 || !data.starts_with(SIG) {
+        return None;
+    }
+    let len = u32::from_le_bytes([data[68], data[69], data[70], data[71]]) as usize;
+    if len == 0 || !len.is_multiple_of(2) || data.len() < 72 + len {
+        return None;
+    }
+    let units: Vec<u16> = data[72..72 + len]
+        .chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect();
+    let script = String::from_utf16_lossy(&units)
+        .trim_end_matches('\0')
+        .to_string();
+    if script.trim().is_empty() {
+        None
+    } else {
+        Some(script)
+    }
+}
+
+/// [#5724] `Contents` 페이로드가 선두 매직 기준으로 WMF(placeable/표준)인지 판별.
+pub fn raw_contents_is_wmf(data: &[u8]) -> bool {
+    if data.len() < 18 {
+        return false;
+    }
+    // Aldus placeable metafile
+    if data.starts_with(&[0xD7, 0xCD, 0xC6, 0x9A]) {
+        return true;
+    }
+    // 표준 WMF: mtType(1|2) + mtHeaderSize=9 + mtVersion(0x0100|0x0300)
+    let mt_type = u16::from_le_bytes([data[0], data[1]]);
+    let header_size = u16::from_le_bytes([data[2], data[3]]);
+    let version = u16::from_le_bytes([data[4], data[5]]);
+    (mt_type == 1 || mt_type == 2) && header_size == 9 && (version == 0x0100 || version == 0x0300)
+}
+
+/// [#5724] `Contents` 페이로드가 EMF 인지 판별 (EMR_HEADER: type=1, offset 40 `" EMF"`).
+pub fn raw_contents_is_emf(data: &[u8]) -> bool {
+    data.len() >= 44
+        && u32::from_le_bytes([data[0], data[1], data[2], data[3]]) == 1
+        && &data[40..44] == b" EMF"
 }
 
 /// 바이트 슬라이스의 선두 매직으로 이미지 포맷을 판별

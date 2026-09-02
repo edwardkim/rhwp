@@ -7,7 +7,7 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject};
+use crate::model::shape::common_obj_offsets;
 
 impl DocumentCore {
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
@@ -574,10 +574,12 @@ impl DocumentCore {
             outer_margin_top: 283,
             outer_margin_bottom: 283,
             raw_ctrl_data,
+            raw_ctrl_seal: None,
             raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
             dirty: true,
+            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),
@@ -1002,10 +1004,12 @@ impl DocumentCore {
             outer_margin_top: outer_margin,
             outer_margin_bottom: outer_margin,
             raw_ctrl_data,
+            raw_ctrl_seal: None,
             raw_table_record_attr: 0x04000006,
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
             dirty: true,
+            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),
@@ -1215,17 +1219,21 @@ impl DocumentCore {
         let start = page_hint.min(total_pages.saturating_sub(1));
 
         // page_hint부터 뒤쪽 탐색
+        // [#4117] hover 경로가 이 질의를 표 진입마다 부르므로, 캐시 히트에서
+        // 트리 전체를 clone 하는 build_page_tree_cached 대신 참조로 읽는다.
         let mut found = false;
         for page_num in start..total_pages {
-            let tree = self.build_page_tree_cached(page_num as u32)?;
-            if find_table_cells(
-                &tree.root,
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                page_num,
-                &mut cells,
-            ) {
+            let found_here = self.with_page_tree_cached(page_num as u32, |tree| {
+                Ok(find_table_cells(
+                    &tree.root,
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    page_num,
+                    &mut cells,
+                ))
+            })?;
+            if found_here {
                 found = true;
             } else if found {
                 break;
@@ -1235,27 +1243,31 @@ impl DocumentCore {
         // page_hint에서 못 찾았으면 앞쪽 탐색 (페이지 분할 표가 hint 이전 페이지에서 시작될 수 있음)
         if !found && start > 0 {
             for page_num in (0..start).rev() {
-                let tree = self.build_page_tree_cached(page_num as u32)?;
-                if find_table_cells(
-                    &tree.root,
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    page_num,
-                    &mut cells,
-                ) {
+                let found_here = self.with_page_tree_cached(page_num as u32, |tree| {
+                    Ok(find_table_cells(
+                        &tree.root,
+                        section_idx,
+                        parent_para_idx,
+                        control_idx,
+                        page_num,
+                        &mut cells,
+                    ))
+                })?;
+                if found_here {
                     found = true;
                     // 이 페이지에서 찾음 — hint까지 다시 정방향 탐색하여 누락된 페이지 수집
                     for fwd in (page_num + 1)..=start {
-                        let tree2 = self.build_page_tree_cached(fwd as u32)?;
-                        if !find_table_cells(
-                            &tree2.root,
-                            section_idx,
-                            parent_para_idx,
-                            control_idx,
-                            fwd,
-                            &mut cells,
-                        ) {
+                        let found_fwd = self.with_page_tree_cached(fwd as u32, |tree| {
+                            Ok(find_table_cells(
+                                &tree.root,
+                                section_idx,
+                                parent_para_idx,
+                                control_idx,
+                                fwd,
+                                &mut cells,
+                            ))
+                        })?;
+                        if !found_fwd {
                             break;
                         }
                     }

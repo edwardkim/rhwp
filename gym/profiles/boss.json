@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "boss",
+  "title": "보스 코스",
+  "description": "사다리 완주급 고난도 어트랙션만.",
+  "packs": [
+    "expert-challenges"
+  ]
+}

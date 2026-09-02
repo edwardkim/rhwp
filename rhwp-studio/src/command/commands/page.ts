@@ -6,6 +6,7 @@ import { SectionSettingsDialog } from '@/ui/section-settings-dialog';
 import { ColumnSettingsDialog } from '@/ui/column-settings-dialog';
 import { NewNumberDialog } from '@/ui/new-number-dialog';
 import { InsertFieldInHeaderFooterCommand } from '@/engine/command';
+import { emitHeaderFooterModeChanged } from '@/engine/header-footer-mode';
 
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -75,7 +76,7 @@ function enterHeaderFooterEditing(
   ensureHeaderFooter(services, ih, bodyPos, target, isHeader);
   cursor.enterHeaderFooterMode(isHeader, target.sectionIndex, target.applyTo, currentPage);
 
-  services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
+  emitHeaderFooterModeChanged(services.eventBus, cursor);
   (ih as any).updateCaret?.();
   (ih as any).textarea?.focus();
 }
@@ -90,7 +91,12 @@ function insertHfField(
   const cursor = (ih as any).cursor;
   if (!cursor || !cursor.isInHeaderFooter()) return;
   const isHeader = cursor.headerFooterMode === 'header';
-  const target = { sectionIdx: cursor.hfSectionIdx, isHeader, applyTo: cursor.hfApplyTo };
+  const target = {
+    sectionIdx: cursor.hfSectionIdx,
+    isHeader,
+    applyTo: cursor.hfApplyTo,
+    previewPage: cursor.hfPreviewPage,
+  };
   const paraIdx = cursor.hfParaIdx;
   const charOffset = cursor.hfCharOffset;
   try {
@@ -146,7 +152,7 @@ function navigateHeaderFooter(
     result.applyTo!,
     result.pageIndex!,
   );
-  services.eventBus.emit('headerFooterModeChanged', result.isHeader ? 'header' : 'footer');
+  emitHeaderFooterModeChanged(services.eventBus, cursor);
   (ih as any).updateCaret?.();
   (ih as any).textarea?.focus();
 }
@@ -195,7 +201,7 @@ function applyHfTemplate(
       // (`apply_hf_template_native` 1~2단계) 적용 대상 좌표에 HF 가 있음이 보장된다 —
       // 존재 확인이 필요 없다 (Task #3206).
       cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, cursor?.rect?.pageIndex ?? 0);
-      services.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
+      emitHeaderFooterModeChanged(services.eventBus, cursor);
     }
   } catch (e) {
     console.warn('[page] 마당 적용 실패:', e);
@@ -213,6 +219,7 @@ function applyHfTemplate(
 export const pageCommands: CommandDef[] = [
   {
     id: 'page:setup',
+    opensDialog: true,
     label: '편집 용지',
     icon: 'icon-page-setup',
     shortcutLabel: 'F7',
@@ -227,6 +234,7 @@ export const pageCommands: CommandDef[] = [
   },
   {
     id: 'page:page-border',
+    opensDialog: true,
     label: '쪽 테두리/배경',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -268,7 +276,7 @@ export const pageCommands: CommandDef[] = [
       // 현재 보고 있는 페이지 기억
       const hfPage = cursor.rect?.pageIndex ?? 0;
       cursor.exitHeaderFooterMode();
-      services.eventBus.emit('headerFooterModeChanged', 'none');
+      emitHeaderFooterModeChanged(services.eventBus, cursor);
       // 해당 페이지의 본문 첫 문단 시작점으로 커서 이동
       try {
         const pageInfo = services.wasm.getPageInfo(hfPage);
@@ -298,7 +306,7 @@ export const pageCommands: CommandDef[] = [
       const applyTo = cursor.hfApplyTo;
       // 편집 모드 탈출
       cursor.exitHeaderFooterMode();
-      services.eventBus.emit('headerFooterModeChanged', 'none');
+      emitHeaderFooterModeChanged(services.eventBus, cursor);
       // 컨트롤 삭제 — [Task #3207] snapshot 으로 기록해 undo 로 되살릴 수 있게 한다.
       // 모드 탈출은 위에서 이미 끝났으므로 여기 커서는 본문이다.
       const bodyPos = ih.getPosition();
@@ -333,6 +341,7 @@ export const pageCommands: CommandDef[] = [
   },
   {
     id: 'page:new-page-num',
+    opensDialog: true,
     label: '새 번호로 시작',
     canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
     execute(services) {
@@ -600,6 +609,7 @@ export const pageCommands: CommandDef[] = [
   },
   {
     id: 'page:col-settings',
+    opensDialog: true,
     label: '다단 설정',
     shortcutLabel: 'Ctrl+Alt+Enter',
     canExecute: (ctx) => ctx.hasDocument,
@@ -614,6 +624,7 @@ export const pageCommands: CommandDef[] = [
   // ─── 구역 설정 ──────────────────────────────────
   {
     id: 'page:section-settings',
+    opensDialog: true,
     label: '구역 설정',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {

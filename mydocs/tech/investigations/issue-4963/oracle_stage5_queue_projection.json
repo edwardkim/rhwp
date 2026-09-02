@@ -1,0 +1,816 @@
+{
+  "actionableRanks": [],
+  "candidateCount": 17,
+  "candidates": [
+    {
+      "availableProfiles": [
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_all_related_fonts_missing.json",
+          "documentFace": "문체부 바탕체",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "all-related-fonts-missing",
+          "queueRank": 1,
+          "sha256": "967fe8c83a1a1a4e103b9218e1d9ea4e3b43c487f87705007aa7b5a3ed3546f7"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_document_subst_font_only.json",
+          "documentFace": "문체부 바탕체",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "document-subst-font-only",
+          "queueRank": 1,
+          "sha256": "5835c5c97220b1be0da66f474c2aedee6233fda7ceac369b7610c948d128b25d"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_exact_installed.json",
+          "documentFace": "문체부 바탕체",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-installed",
+          "queueRank": 1,
+          "sha256": "2b0059e5ba67be55fec28a3326903762bd2c8ff354de0f08487447783e41d607"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_exact_removed.json",
+          "documentFace": "문체부 바탕체",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-removed",
+          "queueRank": 1,
+          "sha256": "83131367a71a3bd8b173d116f9f65e3903ccf2ad9810b640d336420ddfdde861"
+        }
+      ],
+      "disposition": "complete-acceptance-ladder",
+      "documentFace": "문체부 바탕체",
+      "nextAction": "reuse-tracked-profiles",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_all_related_fonts_missing.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_document_subst_font_only.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "exact-installed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_exact_installed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "exact-removed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_mbatang_exact_removed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        }
+      },
+      "queueRank": 1,
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤명조120",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 2,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤고딕110",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 3,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "산돌명조 L",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 4,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤고딕310",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 5,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤고딕120",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 6,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_all_related_fonts_missing.json",
+          "documentFace": "KoPubWorld돋움체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "all-related-fonts-missing",
+          "queueRank": 7,
+          "sha256": "d2b75f37b789f03c95382bc793f5ff4ed1a7c06e7a54f289c7ee26efc0d7f4c5"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_document_subst_font_only.json",
+          "documentFace": "KoPubWorld돋움체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "document-subst-font-only",
+          "queueRank": 7,
+          "sha256": "17ce42c5af78cc6a739791848191d5f23f60fc4314228a8b86046c3b93671e3a"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_exact_installed.json",
+          "documentFace": "KoPubWorld돋움체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-installed",
+          "queueRank": 7,
+          "sha256": "e1952e4136b6ad756c9b51f424e56db032389f4848960f7e75342a322794beca"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_exact_removed.json",
+          "documentFace": "KoPubWorld돋움체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-removed",
+          "queueRank": 7,
+          "sha256": "1f822eb4cf8f16187bf5463c8c458288db549fcf711f9027289d197231d2f29a"
+        }
+      ],
+      "disposition": "complete-acceptance-ladder",
+      "documentFace": "KoPubWorld돋움체 Light",
+      "nextAction": "reuse-tracked-profiles",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_all_related_fonts_missing.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_document_subst_font_only.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "exact-installed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_exact_installed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "exact-removed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_dotum_light_exact_removed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        }
+      },
+      "queueRank": 7,
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "availableProfiles": [
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_all_related_fonts_missing.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "all-related-fonts-missing",
+          "queueRank": 8,
+          "sha256": "9b3818f561dfd6ab6cf3f1d595ec12d4594eed6393471b00e1bdbf998a5f61fb"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_document_subst_font_only.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "document-subst-font-only",
+          "queueRank": 8,
+          "sha256": "861859b308df21f307fe4cb7a29c6fdad499dc0a98ebbe58e5934b13bdf32ba2"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_installed.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-installed",
+          "queueRank": 8,
+          "sha256": "94e5cb958a10b9e9398091f81bc07547b22e89781070918ee6287c724fc8b26d"
+        },
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_removed.json",
+          "documentFace": "KoPubWorld바탕체 Light",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-removed",
+          "queueRank": 8,
+          "sha256": "2e8e7b44f36737447bb02cdda50d6188e0eaa196963d0c48bbbd97ca2518fc3d"
+        }
+      ],
+      "disposition": "complete-acceptance-ladder",
+      "documentFace": "KoPubWorld바탕체 Light",
+      "nextAction": "reuse-tracked-profiles",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_all_related_fonts_missing.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_document_subst_font_only.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "exact-installed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_installed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        },
+        "exact-removed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_kopubworld_batang_light_exact_removed.json"
+          ],
+          "reason": "A controlled disposable-environment profile is tracked and hash-addressed.",
+          "status": "observed-primary"
+        }
+      },
+      "queueRank": 8,
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "availableProfiles": [
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_malgun_gothic_exact_installed.json",
+          "documentFace": "맑은 고딕",
+          "oracleAuthority": "acceptance-primary",
+          "questionId": "exact-installed",
+          "queueRank": 9,
+          "sha256": "d6babf795f4d133a69c1362f8517f89cdef525751cb7c7319466d07ddefd56a6"
+        }
+      ],
+      "disposition": "terminal-protected-partial",
+      "documentFace": "맑은 고딕",
+      "nextAction": "reuse-exact-profile-and-preserve-system-font",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The protected exact provider prevents an all-related-fonts-missing state.",
+          "status": "blocked-protected-ambient-exact"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "The protected exact provider prevents isolation of a substitution-only state.",
+          "status": "blocked-protected-ambient-exact"
+        },
+        "exact-installed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/windows_hwp2020_malgun_gothic_exact_installed.json"
+          ],
+          "reason": "The existing HWP 2020 exact-installed profile is reusable.",
+          "status": "observed-primary"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "The exact provider is an ambient Windows system font and is not removed by this contract.",
+          "status": "blocked-protected-ambient-exact"
+        }
+      },
+      "queueRank": 9,
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "availableProfiles": [
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/historical_hanyang_sinmyeongjo_exact_installed.json",
+          "documentFace": "한양신명조",
+          "oracleAuthority": "secondary-historical",
+          "questionId": "exact-installed",
+          "queueRank": 10,
+          "sha256": "ffdf07da245c821868c4bfdcfd08a5bc099b0f21aa14f21b6ba2e02dcf04d6b0"
+        }
+      ],
+      "disposition": "terminal-protected-partial",
+      "documentFace": "한양신명조",
+      "nextAction": "reuse-historical-profile-and-preserve-hft",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The bundled exact provider prevents an all-related-fonts-missing state.",
+          "status": "blocked-immutable-hft"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "The bundled exact provider prevents isolation of a substitution-only state.",
+          "status": "blocked-immutable-hft"
+        },
+        "exact-installed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/historical_hanyang_sinmyeongjo_exact_installed.json"
+          ],
+          "reason": "Hash-matched Hancom 2022 HFT evidence is reusable as secondary historical evidence.",
+          "status": "observed-historical"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A bundled HFT provider is not removed by this contract.",
+          "status": "blocked-immutable-hft"
+        }
+      },
+      "queueRank": 10,
+      "sourceReadiness": "ready-existing-hft-evidence"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤명조320",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 11,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤명조130",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 12,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [
+        {
+          "artifact": "mydocs/tech/investigations/issue-4963/profiles/historical_human_myeongjo_exact_installed.json",
+          "documentFace": "휴먼명조",
+          "oracleAuthority": "secondary-historical",
+          "questionId": "exact-installed",
+          "queueRank": 13,
+          "sha256": "981c3d43a690d6d248045bb2f8998e675222e1fac9c29439d79b1ec6c620ca5a"
+        }
+      ],
+      "disposition": "terminal-protected-partial",
+      "documentFace": "휴먼명조",
+      "nextAction": "preserve-provider-and-reuse-blocked-disposition",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/oracle_stage4_rank13_blocked_disposition.json"
+          ],
+          "reason": "Exact readback survived with zero managed related fonts; the provider is outside the mutable set.",
+          "status": "blocked-immutable-or-unmanaged-font"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/oracle_stage4_rank13_blocked_disposition.json"
+          ],
+          "reason": "Exact readback survived with zero managed related fonts; the provider is outside the mutable set.",
+          "status": "blocked-immutable-or-unmanaged-font"
+        },
+        "exact-installed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/profiles/historical_human_myeongjo_exact_installed.json"
+          ],
+          "reason": "Hash-matched Hancom 2022 exact-installed evidence remains reusable.",
+          "status": "observed-historical"
+        },
+        "exact-removed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/oracle_stage4_rank13_blocked_disposition.json"
+          ],
+          "reason": "Exact readback survived with zero managed related fonts; the provider is outside the mutable set.",
+          "status": "blocked-immutable-or-unmanaged-font"
+        }
+      },
+      "queueRank": 13,
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤고딕320",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 14,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "-윤고딕130",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 15,
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-read-only-capability-mismatch",
+      "documentFace": "한컴 윤고딕 230",
+      "nextAction": "preserve-read-only-disposition",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
+          ],
+          "reason": "The ambient English alias remains outside the managed set; this read-only lane does not remove it or create missing states.",
+          "status": "blocked-protected-ambient-alias"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
+          ],
+          "reason": "The ambient English alias remains outside the managed set; this read-only lane does not remove it or create missing states.",
+          "status": "blocked-protected-ambient-alias"
+        },
+        "exact-installed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
+          ],
+          "reason": "The restored document face falls back to HCRBatang and the PDF does not use the exact SFNT bytes.",
+          "status": "blocked-document-face-name-resolution"
+        },
+        "exact-removed": {
+          "evidence": [
+            "mydocs/tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json"
+          ],
+          "reason": "The ambient English alias remains outside the managed set; this read-only lane does not remove it or create missing states.",
+          "status": "blocked-protected-ambient-alias"
+        }
+      },
+      "queueRank": 16,
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "availableProfiles": [],
+      "disposition": "terminal-source-unavailable",
+      "documentFace": "산돌고딕 M",
+      "nextAction": "source-discovery-only",
+      "questions": {
+        "all-related-fonts-missing": {
+          "evidence": [],
+          "reason": "The related font set cannot be proven complete while the exact source is unavailable.",
+          "status": "blocked-no-related-font-inventory"
+        },
+        "curated-official-successor-only": {
+          "evidence": [],
+          "reason": "No direct publisher or byte-lineage anchor establishes an official successor.",
+          "status": "not-provided-no-direct-anchor"
+        },
+        "document-subst-font-only": {
+          "evidence": [],
+          "reason": "No document substitution relation has been directly established for this face.",
+          "status": "blocked-no-direct-relation-anchor"
+        },
+        "exact-installed": {
+          "evidence": [],
+          "reason": "No exact source bytes are available to establish the exact-installed anchor.",
+          "status": "blocked-source-unavailable"
+        },
+        "exact-removed": {
+          "evidence": [],
+          "reason": "A removed-state comparison is not meaningful without an exact-installed anchor.",
+          "status": "blocked-no-exact-anchor"
+        }
+      },
+      "queueRank": 17,
+      "sourceReadiness": "source-unavailable"
+    }
+  ],
+  "canonicalSha256": "3ac48bf6df9c223d0fd67552b7021375407d40538bda548b630eefe95f871804",
+  "counts": {
+    "complete-acceptance-ladder": 3,
+    "terminal-protected-partial": 3,
+    "terminal-read-only-capability-mismatch": 1,
+    "terminal-source-unavailable": 10
+  },
+  "inputs": {
+    "profileInventorySha256": "b94686f99a918be791928a5d97abe6af9acb66f92266c9e50a32a5611ccf7583",
+    "rank13BlockedDispositionSha256": "7c6506dc23ce9d5983147ee62ef6e6dc46e8bbaceb2656c6414d92a4952c2796",
+    "rank16ReadOnlyDispositionSha256": "dbf596fd79aa4b0d55a00f5761d8e93b7a006606eddc44455937815e9bc1eeda",
+    "rank8AcceptanceLadderSha256": "d6e8a4371dd049a899a88fb975d6499ed435154b72e1fc804b701addf3cb75ec",
+    "readinessSha256": "76338ef972a7a279e6cd499d103b9e5c8836ad942dd4ce9134c5142a669e91db",
+    "stage3ContractSha256": "52d27ea8aac1b8b666213fecea6dc38bc4a1cc0378ba9827f1fe0e2201b06c7f",
+    "stage4AcceptanceProjectionSha256": "bfa4a622ca9e6bffae2b9ab4df5ff7c298898ff10c083be4d4c0dba2aa10843c"
+  },
+  "issue": 4963,
+  "kind": "font-oracle-stage5-queue-projection",
+  "policy": {
+    "privateCorpusRemeasurementRequired": false,
+    "productBehaviorChanged": false,
+    "questionIds": [
+      "exact-installed",
+      "exact-removed",
+      "document-subst-font-only",
+      "curated-official-successor-only",
+      "all-related-fonts-missing"
+    ],
+    "remeasurementTrigger": [
+      "input-or-font-bytes-changed",
+      "oracle-environment-identity-changed",
+      "profile-schema-or-canonicalization-changed",
+      "blocked-provider-became-safely-inventoried-and-restorable"
+    ]
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "hostNameIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "recommendedExecutionOrder": [],
+  "schemaVersion": 1,
+  "stage": "W5-5C"
+}

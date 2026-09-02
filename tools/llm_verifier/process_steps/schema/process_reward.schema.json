@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/v-step/process_reward.schema.json",
+  "title": "ProcessReward",
+  "description": "한 편집 스텝의 과정 보상. pass/fail 집계만. 순위 필드 없음.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pass",
+    "checkCount",
+    "passCount",
+    "failCount",
+    "failedChecks",
+    "worstExitClass",
+    "consistent"
+  ],
+  "properties": {
+    "pass": { "type": "boolean" },
+    "checkCount": { "type": "integer", "minimum": 0 },
+    "passCount": { "type": "integer", "minimum": 0 },
+    "failCount": { "type": "integer", "minimum": 0 },
+    "failedChecks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["verify", "layout-anomaly", "pageCount", "fill-verify"]
+      }
+    },
+    "worstExitClass": { "type": "integer", "enum": [0, 1, 2, 3, 4] },
+    "consistent": { "type": "boolean" }
+  }
+}

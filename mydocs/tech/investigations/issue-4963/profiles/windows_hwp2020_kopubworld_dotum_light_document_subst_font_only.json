@@ -1,0 +1,175 @@
+{
+  "candidate": {
+    "documentFace": "KoPubWorld돋움체 Light",
+    "queueRank": 7
+  },
+  "environment": {
+    "ambientFontManifestSha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "d3098221fa0b03f34d8902c1aa7faf25db5df05b02ba3bfba70a61736902df0d"
+    },
+    "exportRoute": {
+      "reason": null,
+      "status": "observed",
+      "value": "HAction.FileSaveAsPdf"
+    },
+    "hancomVersion": {
+      "reason": null,
+      "status": "observed",
+      "value": "11, 0, 0, 9136"
+    },
+    "locale": {
+      "reason": null,
+      "status": "observed",
+      "value": "ko-KR"
+    },
+    "oracleAuthority": "acceptance-primary",
+    "os": {
+      "reason": null,
+      "status": "observed",
+      "value": "Microsoft Windows 11 Pro"
+    },
+    "pdfProducer": {
+      "reason": null,
+      "status": "observed",
+      "value": "Hancom PDF 1.3.0.550"
+    },
+    "processReset": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    },
+    "rebooted": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    }
+  },
+  "exactMissingState": "document-subst-font-only",
+  "execution": {
+    "evidenceClass": "oracle-run",
+    "finishedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T12:57:37.1113776Z"
+    },
+    "measurementDate": "2026-08-22",
+    "repeatIndex": 1,
+    "startedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T12:57:24.2811762Z"
+    }
+  },
+  "fontState": {
+    "installedFontSha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18"
+    },
+    "readbackFace": {
+      "reason": null,
+      "status": "observed",
+      "value": "함초롬바탕"
+    },
+    "readbackFontType": {
+      "reason": null,
+      "status": "observed",
+      "value": 5
+    },
+    "relatedFaceSet": [
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld바탕체 Light"
+    ],
+    "requestedFace": "KoPubWorld돋움체 Light"
+  },
+  "input": {
+    "fixtureContractVersion": "w5-oracle-typesetting-v1-subst-v1",
+    "fixtureGeneratorCommit": "04c1d874d67b84afced3061b80d4e22d4d827f72",
+    "sha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e"
+    },
+    "sourceFormat": {
+      "reason": null,
+      "status": "observed",
+      "value": "hwpx"
+    }
+  },
+  "issue": 4963,
+  "kind": "font-oracle-profile",
+  "observations": {
+    "firstTypesettingDivergence": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "characterIndex": 18,
+        "lineIndex": 0,
+        "pageIndex": 0,
+        "plane": "selection"
+      }
+    },
+    "glyphOutlineDigest": {
+      "reason": "The selected HCR fallback source bytes were outside the managed two-font set.",
+      "status": "unavailable",
+      "value": null
+    },
+    "hmtxAdvance": {
+      "reason": "The selected HCR fallback hmtx source was not frozen by this controlled run.",
+      "status": "unavailable",
+      "value": null
+    },
+    "lineCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 30
+    },
+    "pageCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 1
+    },
+    "pdfObservedAdvance": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "advance": 7.774934,
+        "glyphOrCid": "U+AC00/15",
+        "unit": "pdf-user-space"
+      }
+    },
+    "subsetFontName": {
+      "reason": null,
+      "status": "observed",
+      "value": "INPILL+HCRBatang-Bold"
+    }
+  },
+  "privacy": {
+    "absoluteFontPathIncluded": false,
+    "fontBytesEmbedded": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "questionId": "document-subst-font-only",
+  "relationEvidence": {
+    "anchor": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "declaredSubstitutionFace": "KoPubWorld바탕체 Light",
+        "exportSubsetFontName": "INPILL+HCRBatang-Bold",
+        "exportUsedSubstitution": false,
+        "firstDivergenceComparedWith": "exact-installed",
+        "fixtureRelationAnchor": "fixture-declared-substFont",
+        "installedSubstitutionFontSha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+        "pdfObservationCanonicalSha256": "67efdc0b5877cc05d919a5a29accf3a20c58f0e7a863ea30461e525b313f9a02",
+        "pdfSha256": "966fe6438fc03e24f0ef5760402bbd67cb48cfcaffb7fc84024955bc54b16f31",
+        "runEvidenceSha256": "b896a67b25af771acbf2b628121e800b3b0701e973b429ca04e8ba246a2fe59f",
+        "typesettingProjectionSha256": "c5b00c879412d9f370ed2291b7f24b1cb5dfdd69efd892da20e6a280eecc5f36"
+      }
+    },
+    "type": "document-substitution"
+  },
+  "schemaVersion": 2
+}

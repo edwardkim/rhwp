@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_capability_registry.md
-last_verified: 2026-07-26
+last_verified: 2026-08-20
 ---
 
 # 에이전트 capability 카탈로그
@@ -37,6 +37,25 @@ last_verified: 2026-07-26
 | `CAP-660` | `rhwp-exam-ingest` | 시험지 자료를 HWPX로 변환. 일반 문서 양식 생성은 책임 밖 | [ingest 명령](cli_commands.md#build-from-ingest) | [Skill](../../.claude/skills/rhwp-exam-ingest/SKILL.md) | — | active · rhwp maintainers |
 | `CAP-4561` | `rhwp-contributor` | 기여 1건의 공식 절차 안내(이슈→분석→구현→검증 게이트→증빙→PR). 리뷰·머지 판단은 책임 밖 | [CONTRIBUTING](../../CONTRIBUTING.md) | [Skill](../../.claude/skills/rhwp-contributor/SKILL.md) | — | active · rhwp maintainers |
 | `CAP-3398` | `bug-hunter` | 실사례 여정과 정답지 대조로 재현 가능한 결함을 발굴. 수정 구현은 요청 시 별도 작업 | [버그 헌팅 playbook](bug_hunting_playbook.md) | [에이전트](../../.claude/agents/bug-hunter.md) | [Skill](../../.agents/skills/bug-hunter/SKILL.md) | active · rhwp maintainers |
+| `CAP-5324` | `rhwp-bug-hunter` | 실 에이전트가 playbook 6단으로 재현 가능한 결함을 헌팅한다. 정답지 우선·fidelity_compare 문자 멀티셋(소실/과잉/치환)·이슈 3필수. gym·새 CLI·DocumentCore 수정은 책임 밖 | [버그 헌팅 playbook](bug_hunting_playbook.md) | [Skill](../../.claude/skills/rhwp-bug-hunter/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-4893` | `rhwp-fde` | 고객 문서 증상의 실시간 접수·트리아지·응급처치·에스컬레이션·회신. 코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [FDE playbook](fde_playbook.md) | [Skill](../../.claude/skills/rhwp-fde/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-4900` | `rhwp-chief` | 고객 요청 큐의 상시 자율 처리(트리아지 게이트→goal 라우팅→실행→검증→회신)와 needs-agent 요청의 커버리지 재축적. 코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [Chief playbook](chief_playbook.md) | [Skill](../../.claude/skills/rhwp-chief/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5296` | `rhwp-doc-triage` | 긴 HWP/HWPX 를 전문 덤프 없이 info→explain→export-structure→digest→search→extract-data 로 좁혀 파악. 편집·보안 판정·표 왕복·서식 채움은 책임 밖(해당 스킬로 인계) | [CLI 명령어 매뉴얼](cli_commands.md) | [Skill](../../.claude/skills/rhwp-doc-triage/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-4903` | `rhwp-strategist` | 고객 목표+문서 코퍼스에서 코퍼스 전수 지도→좌표 박힌 근거 대장→산출물 골격→주장-근거 연결 게이트까지의 전략 산출물 파이프라인. 전략 판단은 에이전트 몫이되 근거 대장 밖 주장은 게이트가 거부. 근거 없는 전망·예측 생성·코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖 | [Strategist playbook](strategist_playbook.md) | [Skill](../../.claude/skills/rhwp-strategist/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5307` | `rhwp-security-sweep` | 배포 전/수신 후 보안 스윕. inspect 3축(hidden-text/injection/unicode)과 edit redact --dry-run·redact/sanitize 짝·재스윕 게이트. 새 CLI·탐지 로직 발명·gym·워터마크 제거는 책임 밖 | [CLI 명령어 매뉴얼](cli_commands.md) | [Skill](../../.claude/skills/rhwp-security-sweep/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5312` | `rhwp-visual-regression` | 실 에이전트가 편집/변환 전후 레이아웃 회귀를 `render-diff`(자기 라운드트립·두 파일·`--batch` geom_inventory.tsv)·`ir-diff --json`(차이=exit 3)·thumbnail/export-png 로 숫자 판정한다. STRUCT_MISMATCH 는 노드 경로로 읽고 반사 실패하지 않는다. gym·새 CLI·이웃 스킬 재작성은 책임 밖 | [레시피 06](recipes/06_visual_regression_before_after.md) | [Skill](../../.claude/skills/rhwp-visual-regression/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5313` | `rhwp-explore` | 실 에이전트가 처음 보는 HWP/HWPX 에서 `rhwp explore --json` 메뉴로 다음 명령·스킬을 고른다. gym·새 CLI·편집 로직·이웃 스킬 재작성은 책임 밖 | [CLI explore](cli_commands.md) | [Skill](../../.claude/skills/rhwp-explore/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5331` | `rhwp-recipes` | 실 에이전트가 요청을 mydocs/manual/recipes/ 여덟 장(01·02·03·04·05·06·09·10) 중 한 장으로 고른다. 07·08 결번 정직 표지. gym·새 CLI·이웃 스킬(form-fill/table-exchange/security-sweep/bulk-pipeline/visual-regression) 재작성은 책임 밖 | [레시피 01](recipes/01_fill_form_and_submit.md) | [Skill](../../.claude/skills/rhwp-recipes/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5293` | `rhwp-mcp-session` | 실 에이전트 호스트에 rhwp mcp-serve 를 붙이고 세션(hwp_open→hwp_doc_*→hwp_close)과 무상태 도구를 고른다. 도구 정의의 단일 출처는 capabilities --mcp 와 tools/list. gym 트레이스·온보딩 닥터·안전 편집·출처 표지·문서 트리아지·새 CLI/도구 발명은 책임 밖 | [MCP 통합 가이드](mcp_integration_guide.md) | [Skill](../../.claude/skills/rhwp-mcp-session/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5295` | `rhwp-provenance` | 봉투 출처 표지(untrustedContent/untrustedFields)와 export-provenance-map 을 읽어 문서 파생 값을 데이터로 격리. 금지 프롬프트 자리·주입 경계(B1~B5) 적용. 새 CLI 추가·문서 검열·gym 시나리오·온보딩/MCP/safe-edit/doc-triage 스킬 변경은 책임 밖 | [봉투 출처 계약](../tech/envelope_provenance.md) | [Skill](../../.claude/skills/rhwp-provenance/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5300` | `rhwp-form-fill` | 실 에이전트가 HWP/HWPX 서식 누름틀을 조사하고(`fields`) 단건·순번(`이름[N]`)·메일머지(`batch fill`)로 채운 뒤 `--dry-run`/`--verify`/`sanitize` 로 제출본을 닫는다. gym·새 edit 로직·표 칸 set-cell·온보딩/MCP/안전편집/출처/트리아지 스킬 재작성은 책임 밖 | [서식 자동화 가이드](form_filling_guide.md) — 레시피 01·05를 포함한 단일 권위 문서 | [Skill](../../.claude/skills/rhwp-form-fill/SKILL.md) | — | active · rhwp maintainers |
+| `CAP-5706` | `rhwp-skill-router` | 요청→intent→capability→skill→실행 그래프. 스킬 본문 구현·리뷰 머지는 비범위 | [에이전트 스킬 라우터](agent_skill_router.md) | [Skill](../../.claude/skills/rhwp-skill-router/SKILL.md) | — | active · rhwp maintainers |
+| `LEGACY-316959379` | `rhwp-onboarding` | 한 명령으로 바이너리 확인·자가검증·MCP 배선·첫 레시피. gym·새 CLI·이웃 스킬 재작성은 책임 밖 | [에이전트 온보딩](agent_onboarding.md) | [Skill](../../.claude/skills/rhwp-onboarding/SKILL.md) | — | active · rhwp maintainers |
+| `LEGACY-ffb20d80a` | `rhwp-table-exchange` | 표↔CSV 왕복(export-tables→table-to-csv→csv-to-table). 병합 풀기·표 크기 변경·새 CLI는 책임 밖 | [레시피 02](recipes/02_table_csv_roundtrip.md) | [Skill](../../.claude/skills/rhwp-table-exchange/SKILL.md) | — | active · rhwp maintainers |
+| `LEGACY-1ac20c359` | `rhwp-safe-edit` | 원본 불변 편집(1층 edit·3층 run, dry-run/verify). 새 edit action·gym은 책임 밖 | [CLI 명령어 매뉴얼](cli_commands.md) | [Skill](../../.claude/skills/rhwp-safe-edit/SKILL.md) | — | active · rhwp maintainers |
+| `LEGACY-5bd8f7147` | `rhwp-bulk-pipeline` | 폴더 대량 처리(rhwp batch stdin/NDJSON, N=성공+실패). 전역 암호·새 batch 축은 책임 밖 | [CLI 명령어 매뉴얼](cli_commands.md) | [Skill](../../.claude/skills/rhwp-bulk-pipeline/SKILL.md) | — | active · rhwp maintainers |
+| `LEGACY-7e7b3261b` | `rhwp-work-receipt` | 작업 영수증·감사·계보(replay/audit/lineage). 서명·귀속 축·새 CLI는 책임 밖 | [CLI 명령어 매뉴얼](cli_commands.md) | [Skill](../../.claude/skills/rhwp-work-receipt/SKILL.md) | — | active · rhwp maintainers |
+| `LEGACY-c5fba42e9` | `rhwp-codex` | 에이전트 대전 항해(요청→장 번호). 생성 장 수기 수정·새 CLI는 책임 밖 | [에이전트 대전](agent_codex/README.md) | [Skill](../../.claude/skills/rhwp-codex/SKILL.md) | — | active · rhwp maintainers |
 
 `—`는 해당 런타임용 어댑터가 아직 없다는 뜻이며, capability 자체가 없다는 뜻은 아니다.
 

@@ -1,0 +1,68 @@
+{
+  "id": "uni-zw-u+2060-run1-hwp",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "zero_width",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "is_zero_width",
+    "note": "WORD JOINER"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/zero_width/U+2060-run1.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "compareRenderedRaw": true,
+    "detectionIsNotFailure": true
+  },
+  "pair": null,
+  "why": "WORD JOINER ×1 → severity low. 연속 열이 high.",
+  "note": "U+00AD/U+180E 는 이 축에 없다.",
+  "human": "유니코드 기만 검사: synth:unicode/zero_width/U+2060-run1.hwp — 탐지 1건\n  보이는 모습: 제출방법\n  실제 순서  : 제출<U+2060>방법\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/zero_width/U+2060-run1.hwp",
+    "kindFilter": "all",
+    "scannedChars": 7,
+    "findings": [
+      {
+        "kind": "zero_width",
+        "codepoint": "U+2060",
+        "severity": "low",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 1,
+        "excerpt": "제출<U+2060>방법",
+        "rendered": "제출방법",
+        "raw": "제출<U+2060>방법",
+        "why": "사람 눈에 보이지 않는 문자입니다 — 화면에 없는 내용이 LLM 이 읽는 텍스트에는 남습니다"
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 0,
+      "medium": 0,
+      "low": 1
+    },
+    "kindCounts": {
+      "zero_width": 1,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 0
+    }
+  }
+}

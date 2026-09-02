@@ -13,6 +13,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CI_WORKFLOW = REPO_ROOT / ".github/workflows/ci.yml"
 BUILD_ARCHIVE_WORKFLOW = REPO_ROOT / ".github/workflows/build-nextest-archives.yml"
+RUN_ARCHIVE_WORKFLOW = REPO_ROOT / ".github/workflows/run-nextest-archives.yml"
 RELEASE_BINARY_WORKFLOW = REPO_ROOT / ".github/workflows/release-binary.yml"
 
 
@@ -52,6 +53,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.ci = CI_WORKFLOW.read_text(encoding="utf-8")
         cls.builder = BUILD_ARCHIVE_WORKFLOW.read_text(encoding="utf-8")
+        cls.runner = RUN_ARCHIVE_WORKFLOW.read_text(encoding="utf-8")
         cls.release_binary = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
 
     def test_manual_release_grade_input_is_explicit_boolean_opt_in(self) -> None:
@@ -116,25 +118,97 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             "steps.test-policy.outputs.timeout_minutes || '60' }}",
             preflight,
         )
+        self.assertIn(
+            "security_sweep_samples_json: ${{ "
+            "steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}",
+            preflight,
+        )
 
-    def test_all_archive_builders_receive_the_same_policy(self) -> None:
-        for name in (
-            "build-test-archive-slow",
-            "build-test-archive-a",
-            "build-test-archive-b",
+    def test_new_sample_security_sweep_list_flows_to_archive_workers(self) -> None:
+        self.assertIn("security_sweep_samples_json:", self.runner)
+        self.assertIn(
+            "RHWP_SECURITY_SWEEP_SAMPLES_JSON: "
+            "${{ inputs.security_sweep_samples_json }}",
+            self.runner,
+        )
+        for job_name in (
+            "test-archive-a-shard-1",
+            "test-archive-b-shard-1",
+            "test-archive-c-shard-1",
+            "test-archive-d-shard-1",
         ):
-            with self.subTest(job=name):
-                job = job_body(self.ci, name)
+            with self.subTest(job=job_name):
+                worker = job_body(self.ci, job_name)
                 self.assertIn(
-                    "cargo_profile: ${{ needs.preflight.outputs.test_profile "
-                    "|| 'release' }}",
-                    job,
+                    "security_sweep_samples_json: ${{ "
+                    "needs.preflight.outputs.security_sweep_samples_json || '[]' }}",
+                    worker,
                 )
-                self.assertIn(
-                    "timeout_minutes: ${{ fromJSON("
-                    "needs.preflight.outputs.test_archive_timeout_minutes || '60') }}",
-                    job,
-                )
+
+    def test_archive_builders_split_lib_and_three_integration_targets(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci); self.assertIn("build-test-archive-c:", ci); self.assertIn("build-test-archive-d:", ci)
+        self.assertNotIn("test-slow-shard:", ci); self.assertNotIn('partition: "hash:1/2"', ci); self.assertNotIn('partition: "hash:2/2"', ci); self.assertEqual(4, ci.count('partition: "hash:1/1"'))
+        self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration-b", ci); self.assertIn("target_group: integration-c", ci); self.assertIn("target_group: integration-d", ci)
+        self.assertIn("cargo metadata --no-deps --format-version 1", builder)
+        self.assertIn("scripts/select-nextest-archive-targets.mjs", builder)
+        self.assertIn(
+            "duration_policy='tests/suites/nextest-target-duration-policy.json'",
+            builder,
+        )
+        self.assertIn('--policy "${duration_policy}"', builder)
+        self.assertIn('--manifest tests/suites/manifest.json', builder)
+        self.assertIn('--rebalance-by-duration "${duration_policy}"', builder)
+        self.assertNotIn("index % 2", builder)
+        self.assertIn("cargo_target_args+=(--lib)", builder)
+        self.assertIn('cargo_target_args+=(--test "${target}")', builder)
+        self.assertNotIn("--tests", builder)
+        self.assertIn("--profile ci-duration-observation", runner)
+        self.assertIn("scripts/collect-nextest-target-durations.mjs", runner)
+        self.assertIn("nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
+
+    def test_duration_policy_collects_devel_and_same_repository_pr_b_c_d_measurements(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        policy = (root / "tests/suites/nextest-target-duration-policy.json").read_text()
+        config = (root / ".config/nextest.toml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        selector = (root / "scripts/select-nextest-archive-targets.mjs").read_text()
+        collector = (root / "scripts/collect-nextest-target-durations.mjs").read_text()
+        refresh = (root / "scripts/refresh-nextest-target-duration-policy.mjs").read_text()
+
+        self.assertIn('"schema_version": 2', policy)
+        self.assertIn('"fallback_seconds_per_test": 60', policy)
+        self.assertIn('"parallelism_factor": 4', policy)
+        self.assertIn('"cases": {}', policy)
+        self.assertIn('"test_cases": {}', policy)
+        self.assertIn("[profile.ci-duration-observation.junit]", config)
+        self.assertIn("github.event_name == 'push'", runner)
+        self.assertIn("github.ref == 'refs/heads/devel'", runner)
+        self.assertIn("github.event_name == 'pull_request'", runner)
+        self.assertIn(
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            runner,
+        )
+        self.assertIn("inputs.archive_label == 'b'", runner)
+        self.assertIn("inputs.archive_label == 'c'", runner)
+        self.assertIn("inputs.archive_label == 'd'", runner)
+        self.assertIn("retention-days: 3", runner)
+        self.assertIn("retention-days: 30", runner)
+        self.assertIn("estimatedSeconds", selector)
+        self.assertIn("estimatedWallSeconds", selector)
+        self.assertIn("maxTestcaseSeconds", selector)
+        self.assertIn("parallelismFactor", selector)
+        self.assertIn("<testcase", collector)
+        self.assertIn("JUnit report contains no target durations", collector)
+        self.assertIn("collectDurationMeasurement", collector)
+        self.assertIn("case_durations", collector)
+        self.assertIn("exactly one B, C, and D report", refresh)
+        self.assertIn("identical run, ref, and sha provenance", refresh)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
@@ -149,35 +223,59 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("Unknown test profile", step)
         self.assertNotIn('"${GITHUB_EVENT_NAME}" == "pull_request"', step)
 
-    def test_reusable_builder_accepts_explicit_policy_and_uses_dynamic_timeout(self) -> None:
-        self.assertIn("      cargo_profile:\n", self.builder)
-        self.assertIn("      timeout_minutes:\n", self.builder)
-        self.assertIn("        type: string", self.builder)
-        self.assertIn("        type: number", self.builder)
-        self.assertIn("    timeout-minutes: ${{ inputs.timeout_minutes }}", self.builder)
-        self.assertIn(
-            '--cargo-profile "${{ inputs.cargo_profile }}"',
-            self.builder,
-        )
-        self.assertNotIn("- name: Select cargo profile", self.builder)
-        self.assertNotIn("steps.profile.outputs.cargo_profile", self.builder)
+    def test_reusable_builder_isolates_partition_artifacts(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        self.assertIn("inputs.target_group", builder)
+        self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
+        self.assertIn("archive-expected-${{ github.run_id }}-${{ inputs.archive_label }}", builder)
+        self.assertIn("test-archive-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
+
+    def test_builder_prepares_derived_suites_before_compiling_the_archive(self) -> None:
+        prepare = "node scripts/rust-test-suite-manifest.mjs --prepare"
+        archive = "cargo nextest archive"
+        self.assertIn(prepare, self.builder)
+        self.assertIn(archive, self.builder)
+        self.assertLess(self.builder.index(prepare), self.builder.index(archive))
+
+    def test_four_workers_validate_each_archive_coverage(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        for name in ("test-archive-a-shard-1:", "test-archive-b-shard-1:", "test-archive-c-shard-1:", "test-archive-d-shard-1:"):
+            self.assertIn(name, ci)
+        self.assertIn("Archive A shard total mismatch", ci); self.assertIn("Archive B shard total mismatch", ci); self.assertIn("Archive C shard total mismatch", ci); self.assertIn("Archive D shard total mismatch", ci)
+        self.assertIn("name: Build & Test", ci)
 
     def test_reusable_builder_rejects_profile_timeout_mismatches(self) -> None:
         step = step_body(self.builder, "Validate test archive policy")
         script = step.split("        run: |\n", maxsplit=1)[1]
         script = "\n".join(line.removeprefix("          ") for line in script.splitlines())
 
-        for profile, timeout, expected in (
-            ("release-test", "30", 0),
-            ("release", "60", 0),
-            ("release-test", "60", 1),
-            ("release", "30", 1),
-            ("debug", "60", 1),
+        for profile, timeout, target_group, expected in (
+            ("release-test", "30", "lib", 0),
+            ("release", "60", "integration-b", 0),
+            ("release", "60", "integration-c", 0),
+            ("release", "60", "integration-d", 0),
+            ("release-test", "60", "lib", 1),
+            ("release", "30", "integration-b", 1),
+            ("debug", "60", "lib", 1),
+            ("release", "60", "integration", 1),
+            ("release-test", "30", "unknown", 1),
         ):
-            with self.subTest(profile=profile, timeout=timeout):
+            with self.subTest(profile=profile, timeout=timeout, target_group=target_group):
                 result = run_script(
                     script,
-                    {"CARGO_PROFILE": profile, "TIMEOUT_MINUTES": timeout},
+                    {
+                        "CARGO_PROFILE": profile,
+                        "TIMEOUT_MINUTES": timeout,
+                        "TARGET_GROUP": target_group,
+                    },
                 )
                 self.assertEqual(result.returncode, expected, result.stderr)
 
@@ -189,6 +287,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             "ref",
             "cargo_profile",
             "timeout_minutes",
+            "target_group",
             "cache_exact_hit",
             "cache_save_eligible",
         ):
@@ -202,6 +301,19 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             self.builder,
         )
 
+    def test_internal_workspace_crates_have_a_required_execution_gate(self) -> None:
+        step = step_body(self.ci, "Test internal Rust crates")
+        self.assertIn("cargo test --workspace", step)
+        for package in (
+            "rhwp",
+            "rhwp-subsecond",
+            "rhwp-native-ffi",
+            "batch-convert",
+        ):
+            with self.subTest(package=package):
+                self.assertIn(f"--exclude {package}", step)
+        self.assertIn("--lib", step)
+
     def test_required_check_and_release_artifact_contracts_stay_stable(self) -> None:
         self.assertIn("name: Build & Test", self.ci)
         self.assertIn(
@@ -209,6 +321,42 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             self.release_binary,
         )
         self.assertIn("wasm-pack build --target web --release", self.ci)
+
+    def test_duration_policy_is_pinned_for_prs_and_refreshed_only_from_devel(self) -> None:
+        nextest = (REPO_ROOT / ".config/nextest.toml").read_text()
+
+        self.assertIn('[profile.ci-duration-observation.junit]\npath = "junit.xml"', nextest)
+        self.assertNotIn('path = "target/nextest/ci-duration-observation/junit.xml"', nextest)
+        self.assertIn("resolve-nextest-duration-policy:", self.ci)
+        self.assertIn("refresh-nextest-target-duration-data:", self.ci)
+        self.assertIn("ci-metrics/nextest-target-durations", self.ci)
+        self.assertIn("github.ref == 'refs/heads/devel'", self.ci)
+        self.assertIn("duration_policy_sha:", self.builder)
+        self.assertIn(
+            "duration_policy_ref='ci-metrics/nextest-target-durations'",
+            self.builder,
+        )
+        self.assertIn(
+            'refs/heads/${duration_policy_ref}:refs/remotes/origin/${duration_policy_ref}',
+            self.builder,
+        )
+        self.assertIn(
+            'git merge-base --is-ancestor "${{ inputs.duration_policy_sha }}"',
+            self.builder,
+        )
+        self.assertIn(
+            'git show "${{ inputs.duration_policy_sha }}:nextest-target-duration-policy.json"',
+            self.builder,
+        )
+        self.assertIn("duration_policy_source=metrics-ref", self.builder)
+        self.assertIn(
+            "duration_policy_source=fallback:metrics-policy-unavailable",
+            self.builder,
+        )
+        self.assertNotIn(
+            'git fetch --depth=1 origin "${{ inputs.duration_policy_sha }}"',
+            self.builder,
+        )
 
 
 if __name__ == "__main__":

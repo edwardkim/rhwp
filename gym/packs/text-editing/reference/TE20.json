@@ -1,0 +1,21 @@
+{
+  "id": "TE20",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "국어",
+        "--replace",
+        "언어",
+        "--occurrence",
+        "0",
+        "-o",
+        "{sub:once20.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

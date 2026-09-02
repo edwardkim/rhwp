@@ -1,0 +1,46 @@
+{
+  "id": "AU02",
+  "tier": 2,
+  "title": "작업 영수증 발급",
+  "input": "samples/table-001.hwp",
+  "instructions": "위와 같은 편집 계획을 replay 로 실행해 **작업 캡슐**을 capsules/work.capsule.json 으로 제출하라. 채점기는 캡슐 폴더를 전수 감사해 재현율을 본다. 힌트: rhwp replay --capsule.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/work.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "전수 재현율 1.0",
+      "op": "value_eq",
+      "value": 1.0,
+      "path": "reproducedRate",
+      "cmd": [
+        "audit",
+        "{file:capsules}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "캡슐 1건 이상",
+      "op": "value_ge",
+      "value": 1,
+      "path": "total",
+      "cmd": [
+        "audit",
+        "{file:capsules}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

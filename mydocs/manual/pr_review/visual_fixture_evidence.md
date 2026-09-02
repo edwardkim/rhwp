@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-08-30
 ---
 
 # 시각·fixture 증적
@@ -16,14 +16,43 @@ renderer, layout, typeset, paint, WASM 출력, HWP/HWPX/PDF fixture, 페이지 �
 blocker가 될 수 있지만, parser·serializer 구조 보존 PR은 visual 차이를 참고 자료로 기록하고 그 차이만으로
 merge를 보류하지 않는다.
 
+renderer/layout/typeset/paint 등 사용자-visible 렌더링 경로가 바뀌고 HWP/HWPX/PDF fixture가 함께 있으면,
+reviewer는 source PR이 첨부한 before/after나 수치만으로 "시각 검증 완료"라고 쓰지 않는다. 통합 head에서
+직접 만든 기준 PDF·visual sweep 또는 reviewer가 직접 연 기준 PDF/PNG 판정이 있어야 수용 근거가 된다.
+
+직접 visual sweep 또는 동등한 판정을 수행하지 못한 경우 review 문서의 최종 판정은 다음처럼 제한한다.
+
+- `머지 보류`: PR 주장이 시각 결과 자체인데 기준 산출물 또는 maintainer 직접 판정이 없다.
+  코드·회귀 테스트만 통과했거나 원 PR 증적만 확인한 경우도 이 판정이다.
+- `메인터너 보정 후 수용 가능`: 원 head의 시각 증적은 불충분하지만, 범위가 제한된 보정 commit과
+  그 commit의 직접 기준 PDF·visual sweep 검증을 같은 integration head에서 제시할 수 있을 때만 쓴다.
+  보정 전 원 head를 `승인`으로 쓰지 않는다.
+
+이 상태에서는 "원 PR 증적 확인", "numeric/contract test 통과", "IR sweep baseline 통과" 같은 표현을
+"visual sweep 통과"와 섞지 않는다.
+
 visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두 기록한다.
 
+- 문서 비교 절차의 정본인 [PDF/SVG visual sweep 가이드](../verification/visual_sweep_guide.md#github-merge-comment)와
+  적용한 command·판정 범위
 - compare, overlay, review PNG의 임시 output 경로
 - 검토한 페이지 수와 자동 후보 수
 - pixel match, visual_accuracy_proxy_percent
 - 사람이 확인한 결과와 PR 주장과의 관계
 
+대표 review PNG는 파일 경로와 수치만 확인하지 않는다. PR comment나 archive 증적으로 쓰기 전에 실제
+이미지를 열어 다음을 확인한다.
+
+- HWP/PDF 본문 렌더와 visual_sweep이 덧그린 도구 라벨을 구분해 본다.
+- 도구 라벨의 한글 glyph, metric 수치, overlay legend가 tofu·`??`·잘림 없이 판독 가능한지 본다.
+- 낮은 `visual_accuracy_proxy_percent`를 “전체 fidelity 통과”처럼 쓰지 않고, PR 주장과 직접 연결되는
+  blocker 해소 근거인지 별도 residual인지 분리해 적는다.
+- 증적 생성 도구의 폰트·라벨 문제처럼 제품 렌더와 무관한 결함은 별도 issue로 등록하고, 해당 PR
+  comment에는 그 한계를 함께 쓴다.
+
 Codex 또는 Claude가 이미지를 확인했더라도 작업지시자 승인 전에는 시각 판정을 최종 통과라고 단정하지 않는다.
+직접 증적이 충분하면 review 문서의 판정은 `승인`으로 기록할 수 있으나, 이는 GitHub approve나 merge
+승인이 아니며 최신 CI와 작업지시자 승인 게이트는 별도다.
 원본 HWP/HWPX, 기준 PDF, visual sweep 결과의 출처·역할·SHA-256을 구분해 보존한다.
 
 ## 원본 fixture와 기준 PDF 보존
@@ -36,21 +65,47 @@ PR 또는 관련 issue 본문·comment에 첨부된 HWP/HWPX/PDF/PNG와 외부�
 두 경로, SHA-256 동일 여부, 기준인지 참고 보고서인지를 적는다. 원본 HWP/HWPX가 없으면 독립 시각 검증과
 장기 재현이 불가하다는 사실을 review 문서에 명시한다.
 
-## 3.5.1 기준 PDF 미첨부 시 HWP 2020 MCP
+## 3.5.1 기준 PDF 미첨부 시 버전별 HWP MCP
 
-PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청보다 먼저 HWP 2020 MCP로 기준 PDF를
-산출한다. client 설치와 환경 준비는 [HWP 2020 MCP 사용법](../mcp_hwp2020Convert_usage.md)을 따른다.
+PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청보다 먼저 다음 명령으로 마지막 저장
+제품 메타데이터를 확인해 해당 MCP로 기준 PDF를 산출한다.
 
-- 최종 기준 PDF는 output에만 두지 않고 pdf/{원본 stem}-2020.pdf에 저장한다.
+```bash
+rhwp info --json <원본 HWP 또는 HWPX>
+```
+
+`lastSavedWith.product`가 `hancom-office-2024`이면 [HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의
+통합 Windows service에서 engine `2024`를 사용한다. `lastSavedWith`가 `null`이거나 product가 `null`,
+또는 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·`hancom-office-2022`이면 같은
+service의 engine `2020`을 사용한다.
+이 판정은 HWP5 `HwpSummaryInformation.revisionNumber`와 HWPX `version.xml/appVersion`의 마지막 저장
+메타데이터를 사용한다. 확장자와 파일 포맷 `version`만으로 서비스를 선택하지 않는다.
+
+PR review 기준 PDF 파일명은 engine bucket 기준으로 끝낸다. `hancom-office-2024` 저장본은
+`-2024.pdf`, `null` 또는 2022 이하 저장본은 `-2020.pdf`를 사용한다. 이 메타데이터는 원 작성 제품의
+증명이 아니며 재저장·삭제·변조될 수 있으므로, `null` 또는 product 미상 파일은 review 문서에
+그 사실을 함께 기록한다.
+
+- 최종 기준 PDF는 output에만 두지 않고 2020 bucket은 `pdf/{원본 stem}-2020.pdf`, 2024 bucket은
+  `pdf/{원본 stem}-2024.pdf`에 저장한다.
 - 50MB 미만 MCP 산출 PDF는 commit 가능한 장기 증적이다. 큰 PDF는 pdf-large와 Git LFS 정책을 따른다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
+- 원격 service는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 - 원본 크기와 예상 페이지 수를 먼저 확인한다. 페이지가 많거나 거대·중첩 표, 성능 sample은
   timeout_seconds를 900–1800초로 늘린다.
 - VS Code MCP 호출이 timeout되어도 서버 job이 성공했을 수 있다. CLI로 재호출해 로컬 PDF 수신까지 확인한다.
 
-성공 조건은 CLI status success, server run_status 0, validation ok, pdf 아래의 실제 PDF 존재와
-file 또는 pdfinfo 확인이다. review 문서에는 원본 경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256,
-MCP job id, run_status·validation·페이지 수, 사용한 visual sweep asset과 지표를 적는다.
+통합 Windows MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, 요청한 `--engine`과
+비동기 `start`·`status` 응답의 `engine` 일치, client/server byte 수와 SHA-256 일치를 확인한다.
+`null` 또는 2022 이하 저장본에는 `--engine 2020`, 2024 저장본에는 `--engine 2024`를 명시한다.
+`server.engine`은 concrete backend 식별자일 수 있으므로 저장 버전별 engine 선택의 판정 기준으로
+사용하지 않는다.
+`engine_profile`과 `hancom_version`은 서버가 제공할 때만 추가 증적으로 기록하며, 부재만으로 실패로
+판단하지 않는다.
+공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
+review 문서에는 MCP 선택 전 `info --json`의 `format`·`lastSavedWith` 값, 사용한 서비스 버전, 원본
+경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256, MCP job id, 서비스별 status·validation metadata·페이지 수,
+사용한 visual sweep asset과 지표를 적는다.
 
 ## 대표 asset과 안정 URL
 
@@ -60,11 +115,19 @@ visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요�
 - review 문서에는 임시 output 경로와 최종 asset 경로를 둘 다 적는다.
 - 여러 페이지를 검증해도 모든 PNG를 기계적으로 보존할 필요는 없다. 결론을 증명하는 정상 page와
   보완 요청·후속 issue 판단에 필요한 후보 page를 대표 asset으로 남긴다.
-- GitHub comment에는 output 경로 link만 남기지 않는다. devel에 반영된 asset의 raw URL을 Markdown image로
-  실제 표시되게 넣는다.
+- GitHub merge comment에는 [Visual Sweep 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
+  direct link로 남긴다. output 경로 link만 남기지 않고, merge commit에 반영된 asset의 **commit SHA 고정**
+  raw URL을 Markdown image로 실제 표시한다. raw URL은 PNG 표시용 증적이며 문서 비교 방법의 인용은
+  Visual Sweep 정본과 review 문서가 담당한다.
+- 시각 검증을 `승인`의 근거로 쓰면, merge 전 개별 review 문서에 `Merge 후 contributor PR
+  comment 계획`을 작성한다. 계획에는 실제 확인 페이지·후보 수·지표·사람의 결론과 한계, representative PNG의
+  안정 경로, `<merge-commit-sha>` 고정 raw URL 형식, merge 뒤 `--body-file` 게시·API 재조회 조건을 넣는다.
+  이 계획이 없으면 merge 뒤 임시 산출물에서 수치를 추정해 comment하지 않고 review 기록부터 보완한다.
 
 ~~~markdown
-![PR N visual review](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/pr/assets/<file>.png)
+- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름
+
+![PR N visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<file>.png)
 ~~~
 
 ### asset 반영 경로

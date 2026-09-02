@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-11
+last_verified: 2026-08-14
 ---
 
 # Collaborator 매개 외부 PR 처리
@@ -47,6 +47,10 @@ git diff --check upstream/devel...HEAD
 - 통합 branch의 code·test 보정은 contributor source를 rewrite하지 않는다. 완료하면 원본 저장소의 임시
   head branch로 push해 `devel` 대상 통합 PR을 만들고, 그 PR이 merge된 뒤 원 PR은 merge된 통합 PR을
   링크한 comment와 함께 close한다.
+- 체리픽 통합 PR은 원 PR 번호별 archive 검토 기록과 필요한 오늘할일을 **같은 통합 branch/PR**에 포함한다.
+  통합 PR 번호만을 위한 별도 `pr_N_review.md`·`pr_N_review_impl.md`는 만들지 않으며, 검토 기록을
+  옮기거나 보완하기 위한 별도 docs-only PR도 만들지 않는다. 문서 보완이 남으면 동일 통합 PR의 code
+  candidate CI가 녹색인 뒤 trailing docs-only commit으로만 이어 붙인다.
 - PR head가 최신 `devel`과 이미 같은 history를 공유하더라도, integration branch의 기준은 항상
   `upstream/devel`이다. merge commit은 cherry-pick하지 않고 기능·test·문서 commit만 적용한다.
 - 주 작업공간이 dirty이면 checkout·cherry-pick을 시작하지 않는다. 사용자 변경의 소유와 상태를 먼저
@@ -90,6 +94,12 @@ source branch의 오늘할일이 최신 `upstream/devel`보다 오래된 경우�
 
 contributor 원 commit을 rewrite하지 않는다. review 문서·오늘할일·보정 code는 별도 commit으로 나누고,
 보정이 있으면 review 문서에 contributor 원 변경과 collaborator 추가 변경을 구분한다.
+
+최종 판정은 [공통 세 상태](../pr_review_workflow.md#11-최종-판정-용어와-원격-조치의-분리)로 기록한다.
+원 contributor head가 그대로 검증되면 `승인`, blocker가 남으면 `머지 보류`, 원 head에는 blocker가 있지만
+정확히 기록한 collaborator 보정이 있는 integration head를 검증 대상으로 삼을 때만 `메인터너 보정 후 수용 가능`이다.
+마지막 경우 review 문서는 원 PR 번호·원 head SHA·보정 SHA·integration head SHA를 각각 적고, 원 contributor
+PR을 직접 merge 대상으로 표시하지 않는다. 이 분류는 remote push, PR comment, close 또는 merge를 승인하지 않는다.
 
 ### 9.3.0 LFS 대상 사전 판독
 
@@ -268,3 +278,29 @@ code 또는 test 보정이 하나라도 있으면 fast-pass가 아니며 최신 
 원 코드 PR을 merge한 뒤에는 [merge 후속 처리](post_merge.md)를 적용한다. 이미 완료된 원 PR의
 review·asset·오늘할일만 반영한 별도 fast-pass PR은 issue close/comment와 오늘할일 생성을 반복하지 않되,
 devel sync와 branch/worktree/target 정리는 수행한다.
+
+### 9.4.1 명시 지시된 maintainer `--admin` merge 예외
+
+일반 collaborator는 외부 contributor PR도 `--admin`으로 branch protection을 우회하지 않는다. 단,
+maintainer 권한을 가진 실행자가 작업지시자로부터 **해당 PR의 `--admin` merge 명시 지시**를 받은 경우에는
+다음 조건을 모두 만족할 때만 사용할 수 있다.
+
+- code candidate와 review·오늘할일 trailing head 각각의 최신 GitHub Actions가 성공했고, 실패·대기 중인
+  check가 없다.
+- trailing head의 `mergeable`은 `MERGEABLE`, `mergeStateStatus`는 `CLEAN`이며, merge 직전에 다시
+  조회한 head SHA가 명령의 `--match-head-commit` 값과 같다.
+- trailing commit은 review, 오늘할일, stage·절차 문서만 추가한다. source, test, fixture, workflow,
+  baseline, sample 변경이 trailing commit에 섞이면 이 예외를 적용하지 않는다.
+- 이 옵션은 contributor 원 commit의 rebase·amend·force-push, source branch 권한 우회, reviewer 부족,
+  실패한 검증, 오래된 code candidate, 충돌을 우회하는 용도로 사용하지 않는다.
+
+위 조건에서는 다음과 같이 squash merge할 수 있다. 권한이 없는 collaborator의 토큰에서는 명령이 실패할
+수 있으며, 그 경우 정상 merge 경로로 되돌아간다.
+
+~~~bash
+gh pr merge N --repo edwardkim/rhwp --squash --admin \
+  --match-head-commit <latest-trailing-head>
+~~~
+
+merge 뒤에는 이 PR에 contributor 원 변경과 collaborator review 기록이 모두 포함됐는지와 issue 상태를
+확인하기 위해 [merge 후속 처리](post_merge.md)를 적용한다.

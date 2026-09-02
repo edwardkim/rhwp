@@ -31,7 +31,7 @@ rhwp의 공식 실행 진입로인 CLI와 MCP는 같은 실행 파일 관문을 
 
 | 진입로 | 전제 | 근거 |
 | --- | --- | --- |
-| CLI | `rhwp` 실행 파일이 `PATH` 에 있다 | `Cargo.toml:17-19` `[[bin]] name = "rhwp"` |
+| CLI | `rhwp` 실행 파일이 `PATH` 에 있다 | `Cargo.toml:20-22` `[[bin]] name = "rhwp"` |
 | MCP | 호스트가 `rhwp mcp-serve` 를 자식으로 띄운다 | `src/mcp_serve.rs` 가 stdio JSON-RPC 서버 |
 
 둘 다 **바이너리를 구한 뒤에야** 시작된다. 임의 실행 파일 반입이 막힌 샌드박스나

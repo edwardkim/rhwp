@@ -1,0 +1,24 @@
+{
+  "id": "T13",
+  "title": "9쪽은 long-doc 없음",
+  "scenario": "S23",
+  "argv": [
+    "explore",
+    "samples/nine.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S23.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "triage-overview"
+    ],
+    "first": "triage-overview",
+    "firstCommand": "rhwp digest <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X05",
+  "notGym": true,
+  "usesExistingCommand": true
+}

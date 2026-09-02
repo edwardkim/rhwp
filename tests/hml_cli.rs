@@ -132,16 +132,20 @@ fn info_reports_hml_contract_fields() {
 
 #[test]
 fn help_lists_hml_for_supported_document_commands() {
-    let output = Command::new(rhwp_bin())
-        .arg("--help")
-        .output()
-        .expect("run rhwp --help");
-    let stdout = String::from_utf8_lossy(&output.stdout);
-
     for command in ["export-svg", "export-pdf", "info", "dump"] {
+        let output = Command::new(rhwp_bin())
+            .args([command, "--help"])
+            .output()
+            .expect("run command help");
+        let stdout = String::from_utf8_lossy(&output.stdout);
         let expected = format!("{command} <파일.hwp|파일.hwpx|파일.hml>");
         assert!(stdout.contains(&expected), "missing `{expected}` in help");
     }
+    let output = Command::new(rhwp_bin())
+        .args(["export-hml", "--help"])
+        .output()
+        .expect("run export-hml help");
+    let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
         stdout.contains("export-hml <입력.hml> -o <출력.hml>"),
         "missing export-hml usage: {stdout}"

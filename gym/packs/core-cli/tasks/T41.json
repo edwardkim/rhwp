@@ -1,0 +1,28 @@
+{
+  "id": "T41",
+  "tier": 2,
+  "title": "조판 은닉 글자 수",
+  "input": "samples/issue1892_hwp3_tab_roundtrip.hwp",
+  "instructions": "T41 은 입문·코어 온램프를 두껍게 하는 과제다. T11 은 주입 신호만 본다. 이번에는 조판으로 숨겨진 글자 수를 센다. 표본은 `samples/issue1892_hwp3_tab_roundtrip.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: inspect hidden-text <문서> --json. 제출은 answer.json 에 {\"hidden\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. inspect hidden-text 의 hiddenCharCount. 문서를 고치지 마라.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "조판 은닉 글자 수",
+      "op": "answer_eq",
+      "answer": "hidden",
+      "cmd": [
+        "inspect",
+        "hidden-text",
+        "{input}",
+        "--json"
+      ],
+      "path": "hiddenCharCount",
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

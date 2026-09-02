@@ -280,7 +280,7 @@ export class StyleEditDialog extends ModalDialog {
     }
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const name = this.nameInput.value.trim();
     const englishName = this.enNameInput.value.trim();
     const styleType = this.typePara?.checked ? 0 : (this.styleInfo.type ?? 0);
@@ -288,17 +288,17 @@ export class StyleEditDialog extends ModalDialog {
 
     if (!name) {
       alert('스타일 이름을 입력하세요.');
-      return;
+      return false;
     }
     if (name.length > MAX_STYLE_NAME_LEN || englishName.length > MAX_STYLE_NAME_LEN) {
       alert(`스타일 이름/영문 이름은 ${MAX_STYLE_NAME_LEN}자를 넘을 수 없습니다.`);
-      return;
+      return false;
     }
 
     // [Task #3387] 스타일 정의와 글자/문단 모양은 **두 번의 뮤테이션**이다. 따로 기록하면
     // undo 가 두 번 필요하고 그 사이에 모양만 빠진 스타일이 남는다 — #2366 계산식과 동형으로
     // 한 스냅샷 안에서 둘을 끝낸다.
-    const apply = (wasm: WasmBridge): void => {
+    const apply = (wasm: WasmBridge): boolean => {
       if (this.addMode) {
         const baseParaShapeId = this.baseInfo.paraProps?.paraShapeId;
         const baseCharShapeId = this.baseInfo.charProps?.charShapeId;
@@ -307,36 +307,52 @@ export class StyleEditDialog extends ModalDialog {
           ...(typeof baseParaShapeId === 'number' ? { baseParaShapeId } : {}),
           ...(typeof baseCharShapeId === 'number' ? { baseCharShapeId } : {}),
         }));
-        // 의미상 실패(음수 ID)면 throw 해 무변 스냅샷 엔트리를 막는다.
-        if (!(newId >= 0)) throw new Error('[StyleEditDialog] 스타일 생성 실패');
         if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {
-          wasm.updateStyleShapes(newId, this.charModsJson, this.paraModsJson);
+          if (!wasm.updateStyleShapes(newId, this.charModsJson, this.paraModsJson)) {
+            throw new Error('[StyleEditDialog] 생성한 스타일의 모양 적용 실패');
+          }
         }
+        return true;
       } else {
-        wasm.updateStyle(this.styleInfo.id, JSON.stringify({
+        if (!wasm.updateStyle(this.styleInfo.id, JSON.stringify({
           name, englishName, nextStyleId,
-        }));
-        if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {
-          wasm.updateStyleShapes(this.styleInfo.id, this.charModsJson, this.paraModsJson);
+        }))) {
+          // style ID가 이미 사라진 경우에는 실제 뮤테이션이 없으므로 snapshot도 남기지 않는다.
+          return false;
         }
+        if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {
+          if (!wasm.updateStyleShapes(this.styleInfo.id, this.charModsJson, this.paraModsJson)) {
+            throw new Error('[StyleEditDialog] 스타일 모양 적용 실패');
+          }
+        }
+        return true;
       }
     };
 
     try {
       const ih = this.services?.getInputHandler();
+      let saved = false;
       if (ih) {
         ih.executeOperation({
           kind: 'snapshot',
           operationType: this.addMode ? 'createStyle' : 'updateStyle',
-          operation: (wasm) => { apply(wasm); return ih.getPosition(); },
+          operation: (wasm) => {
+            saved = apply(wasm);
+            return saved ? ih.getPosition() : null;
+          },
         });
       } else {
-        apply(this.wasm);
-        this.eventBus.emit('document-changed');
+        saved = apply(this.wasm);
+        if (saved) {
+          this.eventBus.emit('document-changed');
+        }
       }
+      if (!saved) return false;
       this.onSave?.();
+      return true;
     } catch (err) {
       console.warn('[StyleEditDialog] 저장 실패:', err);
+      return false;
     }
   }
 

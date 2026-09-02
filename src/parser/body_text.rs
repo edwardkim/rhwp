@@ -27,8 +27,25 @@ use crate::model::page::{
     BindingMethod, ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef,
 };
 use crate::model::paragraph::{
-    CharShapeRef, ColumnBreakType, FieldRange, LineSeg, Paragraph, RangeTag,
+    CharShapeRef, ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph, RangeTag,
+    TitleMark,
 };
+
+/// `PARA_TEXT` 한 레코드에서 뽑아낸 문단 본문 축 정보.
+struct ParaTextParts {
+    text: String,
+    char_offsets: Vec<u32>,
+    field_ranges: Vec<FieldRange>,
+    tab_extended: Vec<[u16; 7]>,
+    title_marks: Vec<TitleMark>,
+    orphan_field_ends: Vec<OrphanFieldEnd>,
+    /// [#5174] PARA_TEXT 에 묶음 빈칸 **제어코드**(0x001E)가 실제로 있었는가.
+    ///
+    /// 리터럴 `a0 00` 과 갈라야 저장에서 원본 표기를 되돌릴 수 있다. PARA_HEADER 의
+    /// `control_mask` 비트 30 을 그대로 믿으면 안 된다 — 한컴 원본에도 제어코드는 있는데
+    /// 비트가 없는 문단이 있다(한글 2022 오라클 실측 9경로).
+    nb_space_control: bool,
+}
 
 /// BodyText 파싱 에러
 #[derive(Debug)]
@@ -84,6 +101,8 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
         }
     }
 
+    link_orphan_field_ends(&mut section.paragraphs);
+
     // 확장 바탕쪽 파싱: 마지막 문단 이후의 LIST_HEADER (level=1)
     // HWP 바이너리에서 확장 바탕쪽(마지막 쪽, 임의 쪽)은 Section 스트림 끝에 저장되지만,
     // level=1로 태그되어 마지막 문단의 자식으로 오인됨.
@@ -122,10 +141,92 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     Ok(section)
 }
 
+/// 다단락 필드의 종료 마커에 짝 `fieldBegin` 의 id 를 채운다.
+///
+/// PARA_TEXT 의 종료 마커에는 짝 id 가 없어서(`04 00 6b 6c 63 09 01 00 …` — ctrl_id
+/// 자리에 필드 종류만) 문단 단위 파싱만으로는 알 수 없다. 섹션을 순서대로 훑으며
+/// 아직 닫히지 않은 필드를 쌓아 두고 연결한다.
+///
+/// 매달린 참조(`beginIDRef="0"`)를 그대로 내보내면 **한글이 파일을 열지 못한다**
+/// (01752 실측). 짝을 못 찾은 종료 마커는 8유닛 슬롯만 지키고 id 는 0 으로 남긴다.
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
+    // (필드 인스턴스 id, HWP5 ctrl_id)
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+
+    for para in paragraphs.iter_mut() {
+        // 이 문단의 종료 마커는 **앞서 열린** 필드를 닫는다.
+        for ofe in para.orphan_field_ends.iter_mut() {
+            if ofe.begin_id_ref == 0 {
+                if let Some((id, ctrl_id)) = open_fields.pop() {
+                    ofe.begin_id_ref = id;
+                    ofe.begin_ctrl_id = ctrl_id;
+                }
+            }
+        }
+
+        // 이 문단에서 열리고 여기서 닫히지 않은 필드를 쌓는다.
+        for (i, ctrl) in para.controls.iter().enumerate() {
+            let Control::Field(field) = ctrl else {
+                continue;
+            };
+            let closed_here = para.field_ranges.iter().any(|fr| fr.control_idx == i);
+            if !closed_here && field.field_id != 0 {
+                open_fields.push((field.field_id, field.ctrl_id));
+            }
+        }
+    }
+}
+
+/// [#4827] 문단↔표↔셀 상호재귀 깊이 상한.
+///
+/// 셀 안의 문단이 다시 표를 품는 사이클(`parse_paragraph`→`parse_ctrl_header`→
+/// `parse_control`→`parse_table_control`→`parse_cell`→`parse_paragraph_list`→
+/// `parse_paragraph`)에 상한이 없으면, 손상 문서가 스택을 고갈시켜 SIGSEGV(패닉과 달리
+/// `catch_unwind` 로 못 잡음) 를 낸다. 레코드 레벨은 10비트(≤1023)라 표 중첩이 최대 ~341겹까지
+/// 파일로 도달 가능하고, 그 깊이가 스레드 기본 스택 한계 근처라 크래시/완주가 비결정적으로 갈린다
+/// (#4822 §2). 이 재귀 계열은 머리말/꼬리말·각주/미주·글상자·캡션까지 **전부 `parse_paragraph` 를
+/// 경유**하므로, 그 진입 깊이를 스레드-로컬로 세어 한 곳에서 전 경로를 막는다(파라미터를 여러
+/// 호출부에 관통시키지 않는다). HWPX `MAX_HWPX_SECTION_DEPTH`(#4759)·HWP3(#4285)·HWP5 묶음
+/// 개체(#4761)·HML 의 형제 가드와 같은 취지·같은 값이다. 실문서의 표 중첩은 이에 한참 못 미친다.
+pub(crate) const MAX_HWP5_SECTION_DEPTH: u32 = 64;
+
+thread_local! {
+    static HWP5_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+/// `parse_paragraph` 진입 시 재귀 깊이를 +1 하고 이탈(Drop, 오류 전파·조기 반환 포함) 시
+/// 되돌리는 RAII 가드. 상한 초과면 스택을 고갈시키기 전에 오류로 거부한다.
+struct SectionDepthGuard;
+
+impl SectionDepthGuard {
+    fn enter() -> Result<SectionDepthGuard, BodyTextError> {
+        HWP5_SECTION_DEPTH.with(|d| {
+            if d.get() >= MAX_HWP5_SECTION_DEPTH {
+                return Err(BodyTextError::ParseError(format!(
+                    "문단 중첩이 {MAX_HWP5_SECTION_DEPTH} 단계를 초과했습니다(표·셀 상호재귀 상한)"
+                )));
+            }
+            d.set(d.get() + 1);
+            Ok(SectionDepthGuard)
+        })
+    }
+}
+
+impl Drop for SectionDepthGuard {
+    fn drop(&mut self) {
+        HWP5_SECTION_DEPTH.with(|d| d.set(d.get().saturating_sub(1)));
+    }
+}
+
 /// 문단 레코드 그룹에서 Paragraph 구성
 ///
 /// records[0] = PARA_HEADER, records[1..] = 자식 레코드
 pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
+    // [#4827] 문단↔표↔셀 상호재귀 깊이 상한 — 위 `SectionDepthGuard` 참고. 진입 즉시 +1,
+    // 반환(오류·조기 반환 포함) 시 -1. 상한 초과 시 `parse_paragraph_list` 의 `if let Ok(..)`
+    // 가 해당 하위 트리만 절단하고 나머지는 정상 파싱한다.
+    let _depth_guard = SectionDepthGuard::enter()?;
+
     if records.is_empty() || records[0].tag_id != tags::HWPTAG_PARA_HEADER {
         return Err(BodyTextError::ParseError("PARA_HEADER 레코드 없음".into()));
     }
@@ -145,12 +246,20 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
 
         match record.tag_id {
             tags::HWPTAG_PARA_TEXT => {
-                let (text, offsets, field_ranges, tab_ext) = parse_para_text(&record.data);
-                para.text = text;
-                para.char_offsets = offsets;
-                para.field_ranges = field_ranges;
-                para.tab_extended = tab_ext;
+                let parts = parse_para_text(&record.data);
+                para.text = parts.text;
+                para.char_offsets = parts.char_offsets;
+                para.field_ranges = parts.field_ranges;
+                para.tab_extended = parts.tab_extended;
+                para.title_marks = parts.title_marks;
+                para.orphan_field_ends = parts.orphan_field_ends;
                 para.has_para_text = true;
+                // [#5174] 묶음 빈칸 표기 출처는 **텍스트 축이 권위**다. PARA_HEADER 가 비트
+                // 30 을 빠뜨린 문단이 한컴 원본에도 있어(오라클 실측 9경로), 헤더만 믿으면
+                // 그 문단이 저장에서 리터럴로 강등된다. 헤더 값 위에 OR 로 얹는다.
+                if parts.nb_space_control {
+                    para.control_mask |= 1u32 << 0x001E;
+                }
             }
             tags::HWPTAG_PARA_CHAR_SHAPE => {
                 para.char_shapes = parse_para_char_shape(&record.data);
@@ -268,11 +377,22 @@ fn parse_para_header(data: &[u8]) -> Paragraph {
 /// HWP의 텍스트는 UTF-16LE로 저장되며, 0x0000~0x001F 범위는 컨트롤 문자.
 /// - 확장 컨트롤 문자: 8 code unit (16바이트) 차지
 /// - 인라인 컨트롤 문자: 1 code unit (2바이트) 차지
-fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16; 7]>) {
-    let mut text = String::new();
-    let mut char_offsets: Vec<u32> = Vec::new();
+fn parse_para_text(data: &[u8]) -> ParaTextParts {
+    // 벌크빌드(#4860): 출력 버퍼를 입력 길이 기준으로 미리 예약하고, 평문 런(plain run)은
+    // code unit 단위 push 대신 일괄 extend 로 채운다. SIMD 아님 — 순수 메모리/할당
+    // 최적화이며 스칼라 구현과 byte-identical.
+    //
+    // char_offsets 는 "출력 문자 수 ≤ 입력 code unit 수" 라서 n_units 가 정확한 상한 →
+    // 재할당 0. text 는 UTF-16→UTF-8 이라 정확한 상한을 못 잡으므로 입력 바이트 수를
+    // 예약값으로 쓴다(ASCII 는 여유, 전각은 doubling 1회 이내).
+    let n_units = data.len() / 2;
+    let mut text = String::with_capacity(data.len());
+    let mut char_offsets: Vec<u32> = Vec::with_capacity(n_units);
     let mut field_ranges: Vec<FieldRange> = Vec::new();
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
+    let mut title_marks: Vec<TitleMark> = Vec::new();
+    let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
+    let mut nb_space_control = false;
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -284,6 +404,35 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
     while pos + 1 < data.len() {
         let code_unit_pos = (pos / 2) as u32; // UTF-16 코드 유닛 인덱스
         let ch = u16::from_le_bytes([data[pos], data[pos + 1]]);
+
+        // 평문 런 빠른 경로 (bulk build) — #4860 실측: 디코드 비용은 스캔이 아니라
+        // String/offsets 메모리 쓰기가 지배한다. 평문 code unit(`ch >= 0x20 && 비서로게이트`)
+        // 은 아래 루프 마지막 else 분기가 pos+=2 로 방출하는 단일 BMP 문자 집합과 정확히
+        // 같다. 이 집합을 런으로 묶어 offsets 는 연속 범위로, text 는 chunk 디코드로 각각
+        // 한 번에 extend 해 문자별 분기 캐스케이드와 개별 push 오버헤드를 없앤다. 런 안의
+        // 모든 code unit 은 BMP 비서로게이트 스칼라라 `char::from_u32` 가 항상 Some 이다
+        // (unwrap_or 폴백은 도달 불가 — byte-identity 를 깨지 않는다).
+        if ch >= 0x20 && !(0xD800..=0xDFFF).contains(&ch) {
+            let run_start = pos;
+            let start_cu = code_unit_pos;
+            loop {
+                pos += 2;
+                if pos + 1 >= data.len() {
+                    break;
+                }
+                let next = u16::from_le_bytes([data[pos], data[pos + 1]]);
+                if next < 0x20 || (0xD800..=0xDFFF).contains(&next) {
+                    break;
+                }
+            }
+            let end_cu = (pos / 2) as u32;
+            char_offsets.extend(start_cu..end_cu);
+            text.extend(data[run_start..pos].chunks_exact(2).map(|c| {
+                char::from_u32(u16::from_le_bytes([c[0], c[1]]) as u32).unwrap_or('\u{FFFD}')
+            }));
+            char_count += (end_cu - start_cu) as usize;
+            continue;
+        }
 
         if ch == 0 {
             pos += 2;
@@ -328,11 +477,33 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
             } else if ch == 0x0004 {
                 // FIELD_END: 인라인 컨트롤 → controls[]에 대응하지 않음
                 if let Some((start_idx, field_ctrl_idx)) = field_stack.pop() {
+                    // HWP5 는 인라인 개체도 char_count 를 전진시키므로(8유닛 슬롯)
+                    // 텍스트 축 0길이가 곧 "안쪽이 비었다"를 뜻한다 — 별도 보정 불필요.
                     field_ranges.push(FieldRange {
                         start_char_idx: start_idx,
                         end_char_idx: char_count,
                         control_idx: field_ctrl_idx,
                         end_field_id: 0,
+                        inner_slot_count: ctrl_idx.saturating_sub(field_ctrl_idx + 1),
+                    });
+                } else {
+                    // 짝 FIELD_BEGIN 이 **앞 문단**에 있는 다단락 필드의 종료 마커.
+                    //
+                    // 종전에는 스택이 비면 아무것도 남기지 않고 흘려보냈다. 그러면 이
+                    // 8유닛 슬롯이 IR 에서 사라져 문단 축이 그만큼 짧아지고, 원본
+                    // lineseg 의 `textpos` 가 범위 밖을 가리켜 그 문단의 조판이 통째로
+                    // 버려진다(01752 문단 13 실측: 한컴 lineseg 11 / rhwp 6, 쪽수 1→2).
+                    //
+                    // HWPX 파서는 이미 같은 것을 `orphan_field_ends` 로 보존한다
+                    // (Task #1556). HWP5 쪽만 비어 있었다.
+                    orphan_field_ends.push(OrphanFieldEnd {
+                        char_idx: char_count,
+                        // HWP5 PARA_TEXT 의 종료 마커는 짝 id 를 싣지 않는다
+                        // (`04 00 6b 6c 63 09 01 00 …`). `link_orphan_field_ends` 가
+                        // 섹션을 훑어 채운다.
+                        begin_id_ref: 0,
+                        field_id: 0,
+                        begin_ctrl_id: 0,
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {
@@ -340,6 +511,30 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
                 ctrl_idx += 1;
             }
             // inline 컨트롤 (4-9, 19-20 중 0x04 제외): ctrl_idx 증가 없음
+            //
+            // 제목 차례 표시(0x08 + `Mtit`/`Mign`)는 CTRL_HEADER 가 없어 `controls[]` 에
+            // 실을 자리가 없다. 그렇다고 그냥 흘려보내면 8유닛 슬롯이 IR 에서 사라져
+            // 저장본의 문단 축이 그만큼 짧아지고, 한글은 어긋난 `textpos` 를 만나면
+            // 본문을 통째로 버린다(10k 스윕 F-절단군). `title_marks` 로 위치만 보존한다.
+            if ch == 0x0008 && pos + 5 < data.len() {
+                let ctrl_id = u32::from_le_bytes([
+                    data[pos + 2],
+                    data[pos + 3],
+                    data[pos + 4],
+                    data[pos + 5],
+                ]);
+                match ctrl_id {
+                    tags::CTRL_TITLE_MARK_IGNORE_ON => title_marks.push(TitleMark {
+                        char_idx: char_count,
+                        ignore: true,
+                    }),
+                    tags::CTRL_TITLE_MARK_IGNORE_OFF => title_marks.push(TitleMark {
+                        char_idx: char_count,
+                        ignore: false,
+                    }),
+                    _ => {}
+                }
+            }
             // 자동번호(0x12) / 새번호(0x12): 텍스트에 공백 placeholder 추가
             // → apply_auto_numbers_to_composed에서 "  " (연속 2공백)으로 번호 삽입
             if ch == 0x0012 {
@@ -353,7 +548,13 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
             match ch {
                 0x0018 => {
                     char_offsets.push(code_unit_pos);
-                    text.push('-'); // 하이픈 (HWP 5.0 표 7: 코드 24)
+                    // 하이픈 (HWP 5.0 표 7: 코드 24) — 줄바꿈 자리에서만 보이는
+                    // **소프트 하이픈**이다. 한글은 텍스트 추출에 싣지 않는다.
+                    // 종전처럼 '-'(U+002D)로 내리면 실제 하이픈과 구별할 수 없어
+                    // HWPX 저장본이 `pertinent` 를 `per-tinent` 로 만든다
+                    // (10k 스윕 G-순수증식). #4675 가 U+2007 을 `<hp:fwSpace/>` 로
+                    // 옮긴 것과 같은 계열 — 고유 코드포인트로 받아 요소로 되돌린다.
+                    text.push('\u{00AD}');
                     char_count += 1;
                 }
                 0x0019 => {
@@ -365,6 +566,9 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
                     char_offsets.push(code_unit_pos);
                     text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
                     char_count += 1;
+                    // [#5174] 표기 출처를 남긴다 — 같은 U+00A0 이라도 리터럴 `a0 00` 이었던
+                    // 문단은 저장에서 리터럴로 되돌려야 한글이 그 글자를 버리지 않는다.
+                    nb_space_control = true;
                 }
                 0x001F => {
                     char_offsets.push(code_unit_pos);
@@ -398,7 +602,15 @@ fn parse_para_text(data: &[u8]) -> (String, Vec<u32>, Vec<FieldRange>, Vec<[u16;
         }
     }
 
-    (text, char_offsets, field_ranges, tab_extended)
+    ParaTextParts {
+        text,
+        char_offsets,
+        field_ranges,
+        tab_extended,
+        title_marks,
+        orphan_field_ends,
+        nb_space_control,
+    }
 }
 
 /// extended 컨트롤 문자 여부 (CTRL_HEADER 레코드가 있는 컨트롤)
@@ -519,6 +731,10 @@ pub fn parse_paragraph_list(records: &[Record]) -> Vec<Paragraph> {
         }
     }
 
+    // 셀·각주 같은 중첩 문단 목록도 자기 안에서 필드가 여러 문단에 걸칠 수 있다.
+    // 최상위에서만 연결하면 그 안의 종료 마커가 짝을 못 찾아 저장에서 빠진다.
+    link_orphan_field_ends(&mut paragraphs);
+
     paragraphs
 }
 
@@ -606,6 +822,9 @@ fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16
     sd.hide_master_page = sd.flags & 0x0004 != 0; // bit 2 (HWP5 스펙, 첫쪽 바탕쪽 감춤)
     sd.hide_border = sd.flags & 0x0008 != 0;
     sd.hide_fill = sd.flags & 0x0010 != 0;
+    // [#5717] bit 8/9: 구역 첫 쪽에만 테두리/배경 표시 (HWPX visibility SHOW_FIRST 대응)
+    sd.first_page_border = sd.flags & 0x0100 != 0;
+    sd.first_page_fill = sd.flags & 0x0200 != 0;
     sd.hide_empty_line = sd.flags & 0x00080000 != 0; // bit 19: 빈 줄 감추기
     sd.page_num_type = ((sd.flags >> 20) & 0x03) as u8; // bit 20-21: 쪽 번호 종류 (0=이어서, 1=홀수, 2=짝수)
 
@@ -755,11 +974,23 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord], section_flags: u32) ->
         let para_records = &records[start + 1..end];
         let paragraphs = parse_paragraph_list(para_records);
 
+        // [#6334] 확장 바탕쪽(마지막 쪽·임의 쪽)은 기본 홀/짝 바탕쪽을 **대체**한다.
+        //
+        // HWPX 는 `pageDuplicate` 로 "겹치게 하기" 의도를 명시하지만 HWP5 에는 그 속성이
+        // 없고 overlap 비트만 있다. 그런데 그 비트는 의도를 구분하지 못한다 — 한컴의
+        // HWPX -> HWP5 저장본은 `pageDuplicate="0"`(겹치지 않음)인 바탕쪽도 overlap 비트를
+        // 함께 세운다(`parser/hwpx/section.rs` 의 같은 지점 주석). 그래서 종전처럼
+        // `replace_base: false` 로 두면 확장 바탕쪽이 `rendering.rs` 의 `replace_exts`
+        // 필터(`!overlap || replace_base`)에 **절대 들어가지 못하고** 항상 덧그려진다.
+        //
+        // 한컴 정답지가 대체임을 보인다 — `pdf/exam_science-2022.pdf` 4쪽의 바탕쪽 글자는
+        // `32 32`·`* 확인 사항` 뿐이고 기본 짝수 바탕쪽의 `31` 이 없다. 종전 rhwp 는 두 겹을
+        // 그려 `['31','32']` 와 `['32','32', …]` 가 18.0 x 15.3px 겹쳤다.
         master_pages.push(MasterPage {
             apply_to,
             is_extension,
             overlap,
-            replace_base: false,
+            replace_base: is_extension,
             ext_flags,
             page_front: false, // HWP5 바이너리 바탕쪽엔 pageFront 개념 없음
             text_direction: 0, // HWP5 바이너리 바탕쪽엔 textDirection 개념 없음

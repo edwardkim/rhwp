@@ -2,14 +2,16 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_integration_guide.md
-last_verified: 2026-07-30
+last_verified: 2026-08-24
 ---
 
 # MCP 통합 가이드 — AI 에이전트 호스트에 rhwp 붙이기
 
 rhwp 를 MCP(Model Context Protocol) 도구로 소비하는 **두 경로**를 공식화한다.
 반대 방향(한컴 앱을 원격 구동하는 내부 검증용 클라이언트)은
-[HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md)이 다루며 본 문서와 무관하다.
+[HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md)이 다루며 본 문서와 무관하다. 2022 이하 저장본은
+통합 Windows service의 engine `2020`, 2024 저장본은 engine `2024`를 선택한다. 원격 변환 service는
+rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 
 | 경로 | 무엇 | 언제 |
 |---|---|---|
@@ -30,7 +32,12 @@ rhwp 를 MCP(Model Context Protocol) 도구로 소비하는 **두 경로**를 �
 ```
 
 `rhwp` 가 PATH 에 없으면 `command` 에 절대 경로를 쓴다. 전송은 stdio 뿐이므로
-네트워크 포트·인증 설정이 없다. 서버는 stdin EOF 에서 종료한다.
+네트워크 포트·인증 설정이 없다. 서버는 stdin EOF 에서 종료한다. 저장소 루트
+[`.mcp.json`](../../.mcp.json)이 Claude Code 용으로 이미 rhwp 를 붙여 둔다.
+
+**다른 호스트에 붙이려면** — Claude Desktop·Cursor·Cline·Continue·Windsurf·
+VS Code·Zed·Goose·Gemini CLI 등 18개 호스트별 설정은
+[`mcp_attach_kit.md`](mcp_attach_kit.md)에 모아 두었다.
 
 ### 프로토콜 표면
 
@@ -39,7 +46,7 @@ rhwp 를 MCP(Model Context Protocol) 도구로 소비하는 **두 경로**를 �
 | `initialize` | `protocolVersion`(클라이언트 제안 에코), `capabilities.tools`, `serverInfo{name:"rhwp",version}` |
 | `notifications/initialized` | (알림 — 무응답) |
 | `ping` | `{}` |
-| `tools/list` | 선언 도구 전부 + 세션 도구 3종. 각 항목은 MCP 필수 3종(`name`/`description`/`inputSchema`) |
+| `tools/list` | 선언 도구 전부 + 세션 도구. 각 항목은 MCP 필수 3종(`name`/`description`/`inputSchema`) |
 | `tools/call` | `content[0].text` 에 CLI 와 동일한 JSON 봉투. JSON 이면 `structuredContent` 로도 병행 제공 |
 
 지원하지 않는 메서드는 JSON-RPC `-32601`, 파싱 불가 입력은 `-32700`,
@@ -130,8 +137,9 @@ rhwp capabilities --mcp | jq -c '.tools[] | {name, cli: .cli.args, required: .in
 | 문서 규모·형식 파악 | `hwp_info` |
 | 본문 읽기 (1회) | `hwp_export_text` / (반복) `hwp_open`→`hwp_doc_text` |
 | "어느 쪽에 있나" | `hwp_search` (페이지·셀 주소 동봉) |
-| 조문·개요 구조 | `hwp_export_structure` |
-| 표 격자(병합 보존) | `hwp_export_tables` |
+| 조문·개요 구조 | (1회) `hwp_export_structure` / (반복) `hwp_open`→`hwp_doc_structure` |
+| 날짜·금액·수량 추출 | (1회) `hwp_extract_data` / (반복) `hwp_open`→`hwp_doc_extract_data` |
+| 표 격자(병합 보존) | (1회) `hwp_export_tables` / (반복) `hwp_open`→`hwp_doc_tables` |
 | 누름틀 조사 → 채우기 | `hwp_fields` → `hwp_fill_fields` |
 | 표 좌표로 값 쓰기 | `hwp_set_cell` |
 | 문구 일괄 치환 | `hwp_replace_text` |

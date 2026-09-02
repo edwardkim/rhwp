@@ -1,0 +1,23 @@
+{
+  "id": "EX02",
+  "tier": 2,
+  "title": "본문 텍스트 추출 — 페이지 수",
+  "input": "samples/20250130-hongbo.hwp",
+  "instructions": "export-text 로 이 문서의 본문을 뽑아, 추출된 텍스트가 몇 페이지에 걸치는지(pageCount) 보고하라. 답 형식: {\"pages\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "페이지 수 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "export-text",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

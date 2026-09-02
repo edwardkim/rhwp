@@ -19,7 +19,7 @@ use super::body_text::serialize_section;
 use super::content_loss::{
     ContentLoss, ContentLossReason, ContentLossReport, SerializedDocument, SerializedFormat,
 };
-use super::doc_info::serialize_doc_info;
+use super::doc_info::{serialize_doc_info, surgical_update_section_count};
 use super::header::serialize_file_header;
 use super::mini_cfb;
 use super::SerializeError;
@@ -107,14 +107,93 @@ fn serialize_hwp_inner(
         serialize_file_header(&doc.header)
     };
 
-    // 2. DocInfo 직렬화
-    let doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);
-
     // 3. BodyText 섹션별 직렬화
+    //
+    // [#5142] HWPX 는 한 section 파일 안에 `<hp:secPr>` 를 여러 개 둘 수 있고,
+    // 파서는 이를 IR 구역 하나(문단 중간 SectionDef 컨트롤들)로 읽는다. HWP5 로
+    // 그대로 몰아 저장하면 한글이 개방을 거부한다(06544: 63 secPr → Open=false,
+    // 0자·1쪽). 한글은 이런 문서를 구역을 나눠 저장하므로, 문단 중간의 SectionDef
+    // 경계마다 별도 BodyText/SectionN 스트림으로 가른다. 원본 스트림 재사용이
+    // 허용된 구역(HWP5 라운드트립)은 원본 바이트가 이미 한글이 수용한 형상이므로
+    // 가르지 않는다. HWP5 출처(네이티브·marker-HWPX)도 가르지 않는다 — 한글은
+    // HWP5 단일 스트림 안 다중 secd 를 수용하며(#505 계보), 가르면 rebuild 왕복의
+    // IR 형상(구역 수)이 바뀐다. 거부는 순수 HWPX 출처(x2h)에서만 관측됐다.
+    let split_multi_sec_pr = doc.layout_profile().hwpx_stored_layout();
     let mut section_bytes_list = Vec::new();
     for section in &doc.sections {
-        let section_bytes = serialize_section(section);
-        section_bytes_list.push(section_bytes);
+        let split_starts: Vec<usize> =
+            if !split_multi_sec_pr || section.raw_provenance_permits_reuse() {
+                Vec::new()
+            } else {
+                section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .skip(1)
+                    .filter(|(_, p)| {
+                        p.controls
+                            .iter()
+                            .any(|c| matches!(c, crate::model::control::Control::SectionDef(_)))
+                    })
+                    .map(|(i, _)| i)
+                    .collect()
+            };
+        if split_starts.is_empty() {
+            section_bytes_list.push(serialize_section(section));
+            continue;
+        }
+        let mut starts = Vec::with_capacity(split_starts.len() + 1);
+        starts.push(0usize);
+        starts.extend(split_starts);
+        for (k, &start) in starts.iter().enumerate() {
+            let end = starts
+                .get(k + 1)
+                .copied()
+                .unwrap_or(section.paragraphs.len());
+            let paragraphs = section.paragraphs[start..end].to_vec();
+            let section_def = paragraphs
+                .first()
+                .and_then(|p| {
+                    p.controls.iter().find_map(|c| match c {
+                        crate::model::control::Control::SectionDef(sd) => Some((**sd).clone()),
+                        _ => None,
+                    })
+                })
+                .unwrap_or_else(|| section.section_def.clone());
+            let sub = crate::model::document::Section {
+                section_def,
+                paragraphs,
+                raw_stream: None,
+                raw_provenance: None,
+            };
+            section_bytes_list.push(serialize_section(&sub));
+        }
+    }
+
+    // 2. DocInfo 직렬화 — DOCUMENT_PROPERTIES.section_count 는 **실제로 방출한
+    // BodyText/SectionN 스트림 수**로 확정한다 (#6156).
+    //
+    // 한글은 이 값을 구역 스트림 탐색의 상한으로 읽으므로, 선언값이 실제보다
+    // 크면 없는 구역에서 손상 판정을 내고(forceopen 도 실패) 작으면 뒤쪽 구역이
+    // 렌더링되지 않는다. 어느 쪽이든 이 값의 권위는 입력 모델이 아니라 이 자리 —
+    // "몇 개를 실제로 썼는가" 를 아는 유일한 지점이다.
+    //
+    // 종전에는 `section_bytes_list.len() != doc.sections.len()` 일 때만 보정해서
+    // #5142 분할로 스트림이 늘어난 경우만 잡았고, 입력이 이미 어긋난 경우
+    // (선언 2 / IR 구역 1)는 두 값이 같아 원본 선언값이 그대로 실려 나갔다.
+    // HWP5 네이티브 왕복은 DOCUMENT_PROPERTIES 를 raw 로 통과시키므로 불일치가
+    // 왕복해도 남는다 — 그래서 모델이 아니라 방출 바이트를 고친다.
+    let emitted_sections = section_bytes_list.len().min(u16::MAX as usize) as u16;
+    let mut doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);
+    if doc.doc_properties.section_count != emitted_sections {
+        // raw 통과(스트림·레코드) 경로에서도 다른 바이트를 건드리지 않도록 국소 패치.
+        // 레코드가 없는 병리적 스트림에서만 모델 writer 로 재생성한다.
+        if surgical_update_section_count(&mut doc_info_bytes, emitted_sections).is_err() {
+            let mut props = doc.doc_properties.clone();
+            props.section_count = emitted_sections;
+            props.raw_data = None;
+            doc_info_bytes = serialize_doc_info(&doc.doc_info, &props);
+        }
     }
 
     // 4. 압축 여부 결정

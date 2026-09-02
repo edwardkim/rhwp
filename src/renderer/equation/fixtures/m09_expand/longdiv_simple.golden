@@ -1,0 +1,40 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: LONGDIV{3}{2}{6}
+honesty: longdiv-simplified-row
+
+=== ast ===
+Row(
+    [
+        Number(
+            "2",
+        ),
+        Symbol(
+            "÷",
+        ),
+        Number(
+            "3",
+        ),
+        Symbol(
+            "=",
+        ),
+        Number(
+            "6",
+        ),
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=67.0000 h=20.0000 bl=16.0000
+  Number("2") x=0.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+  Symbol("÷") x=11.0000 y=0.0000 w=18.0000 h=20.0000 bl=16.0000
+  Number("3") x=29.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+  Symbol("=") x=40.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+  Number("6") x=56.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="20.00" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">÷</text>
+<text x="29.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<text x="48.00" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="56.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">6</text>

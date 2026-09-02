@@ -27,6 +27,30 @@ pub struct BinDataEntry {
 /// IR 로 재생성하더라도 이 블록만은 원본을 보존해야 손실이 없다. self-closing
 /// (`<opf:metadata/>`) 형태도 처리한다. 형태를 인식하지 못하면 `None` 을 돌려
 /// 호출자가 하드코딩 기본값으로 폴백하도록 한다.
+/// [#3557] 원본 content.hpf 에서 `Scripts/` 항목의 `<opf:item .../>` 태그 원문과
+/// 그 id 목록을 추출한다 — 스크립트 파트는 IR 로 모델링되지 않으므로 매니페스트
+/// 참조도 원문 그대로 보존해야 패키지가 정합한다(zip 통과는 mod.rs).
+fn extract_script_items(original: &str) -> Vec<(String, String)> {
+    let mut out = Vec::new();
+    let mut rest = original;
+    while let Some(start) = rest.find("<opf:item ") {
+        let tail = &rest[start..];
+        let Some(end) = tail.find("/>") else { break };
+        let tag = &tail[..end + 2];
+        if tag.contains("href=\"Scripts/") {
+            let id = tag
+                .split("id=\"")
+                .nth(1)
+                .and_then(|t| t.split('"').next())
+                .unwrap_or("")
+                .to_string();
+            out.push((id, tag.to_string()));
+        }
+        rest = &tail[end + 2..];
+    }
+    out
+}
+
 fn extract_metadata_block(original: &str) -> Option<&str> {
     let open = original.find("<opf:metadata>")?;
     let close = original[open..].find("</opf:metadata>")? + open + "</opf:metadata>".len();
@@ -167,6 +191,15 @@ pub fn write_content_hpf(
         ],
     )?;
 
+    // [#3557] Scripts/* 항목 — 원본 태그 원문 splice(id·media-type 보존).
+    let script_items: Vec<(String, String)> =
+        original_str.map(extract_script_items).unwrap_or_default();
+    for (_, tag) in &script_items {
+        w.get_mut()
+            .write_all(tag.as_bytes())
+            .map_err(|e| SerializeError::XmlError(format!("script item splice: {e}")))?;
+    }
+
     for entry in bin_data {
         empty_tag(
             &mut w,
@@ -196,6 +229,16 @@ pub fn write_content_hpf(
             "opf:itemref",
             &[("idref", id.as_str()), ("linear", "yes")],
         )?;
+    }
+    // [#3557] Scripts spine 참조 — 한컴 원본은 스크립트 항목도 spine 에 나열한다.
+    for (id, _) in &script_items {
+        if !id.is_empty() {
+            empty_tag(
+                &mut w,
+                "opf:itemref",
+                &[("idref", id.as_str()), ("linear", "yes")],
+            )?;
+        }
     }
     end_tag(&mut w, "opf:spine")?;
 

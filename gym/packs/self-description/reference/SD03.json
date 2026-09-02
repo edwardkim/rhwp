@@ -1,0 +1,17 @@
+{
+  "id": "SD03",
+  "steps": [
+    {
+      "answer": {
+        "missing": {
+          "cmd": [
+            "export-agent-manifest",
+            "--json"
+          ],
+          "path": "missingAxes",
+          "len": true
+        }
+      }
+    }
+  ]
+}

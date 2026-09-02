@@ -1,0 +1,17 @@
+{
+  "id": "SR07",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

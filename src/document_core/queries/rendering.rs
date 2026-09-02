@@ -2,13 +2,14 @@
 
 use super::super::helpers::color_ref_to_css;
 use crate::document_core::{
-    DeferredPaginationJobState, DeferredPaginationStepResult, DeferredPaginationTargetStatus,
-    DocumentCore, PendingPaginationJob,
+    header_footer_apply_from_u8, DeferredPaginationJobState, DeferredPaginationStepResult,
+    DeferredPaginationTargetStatus, DocumentCore, PendingPaginationJob,
 };
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
-use crate::model::page::ColumnDef;
+use crate::model::header_footer::HeaderFooterApply;
+use crate::model::page::{ColumnDef, PageAreas};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::style::Alignment;
 use crate::paint::{
@@ -16,24 +17,28 @@ use crate::paint::{
     PageLayerTree, RenderProfile,
 };
 use crate::renderer::canvas::CanvasRenderer;
-use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
+use crate::renderer::composer::{
+    compose_paragraph, compose_paragraph_with_horizontal_shaping,
+    compose_section_with_horizontal_shaping, ComposedParagraph,
+};
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
 use crate::renderer::html::HtmlRenderer;
-use crate::renderer::layer_renderer::LayerRenderer;
-use crate::renderer::layout::{
-    estimate_text_width, resolved_to_text_style, CellContext, LayoutEngine,
+use crate::renderer::kerning::{
+    ExactFontRegistryRegistration, ExactFontSlot, MAX_KERNING_REGISTRY_SLOTS,
 };
+use crate::renderer::layer_renderer::LayerRenderer;
+use crate::renderer::layout::{estimate_text_width, resolved_to_text_style, CellContext};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::pagination::{MasterPageRef, PageContent, PaginationResult, Paginator};
+use crate::renderer::pagination::{
+    HeaderFooterRef, MasterPageRef, PageContent, PaginationResult, Paginator,
+};
 use crate::renderer::render_tree::{
     BoundingBox, FieldMarkerType, PageRenderTree, RenderNode, RenderNodeType, TextRunNode,
 };
-use crate::renderer::style_resolver::resolve_styles;
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use crate::renderer::typeset::TypesetEngine;
 use crate::renderer::TextStyle;
-use std::cell::RefCell;
 use std::fmt::Write as _;
 
 const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
@@ -331,6 +336,180 @@ fn load_bounded_embedded_font_bytes(
     bytes_by_id
 }
 
+fn collect_exact_font_slots_from_paragraphs(
+    paragraphs: &[Paragraph],
+    slots: &mut std::collections::HashSet<ExactFontSlot>,
+    remaining_work_units: &mut usize,
+    depth: usize,
+) {
+    const MAX_EXACT_FONT_TRAVERSAL_DEPTH: usize = 128;
+    if depth > MAX_EXACT_FONT_TRAVERSAL_DEPTH
+        || slots.len() >= MAX_KERNING_REGISTRY_SLOTS
+        || *remaining_work_units == 0
+    {
+        return;
+    }
+    for paragraph in paragraphs {
+        if *remaining_work_units == 0 {
+            return;
+        }
+        *remaining_work_units -= 1;
+        let composed = compose_paragraph(paragraph);
+        for run in composed.lines.iter().flat_map(|line| &line.runs) {
+            if *remaining_work_units == 0 {
+                return;
+            }
+            *remaining_work_units -= 1;
+            if !run.text.is_empty() {
+                slots.insert(ExactFontSlot::new(run.char_style_id, run.lang_index));
+                if slots.len() >= MAX_KERNING_REGISTRY_SLOTS {
+                    return;
+                }
+            }
+        }
+        for control in &paragraph.controls {
+            if *remaining_work_units == 0 {
+                return;
+            }
+            *remaining_work_units -= 1;
+            match control {
+                Control::Table(table) => {
+                    if let Some(caption) = &table.caption {
+                        collect_exact_font_slots_from_paragraphs(
+                            &caption.paragraphs,
+                            slots,
+                            remaining_work_units,
+                            depth + 1,
+                        );
+                    }
+                    for cell in &table.cells {
+                        collect_exact_font_slots_from_paragraphs(
+                            &cell.paragraphs,
+                            slots,
+                            remaining_work_units,
+                            depth + 1,
+                        );
+                    }
+                }
+                Control::Shape(shape) => collect_exact_font_slots_from_shape(
+                    shape,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Picture(picture) => {
+                    if let Some(caption) = &picture.caption {
+                        collect_exact_font_slots_from_paragraphs(
+                            &caption.paragraphs,
+                            slots,
+                            remaining_work_units,
+                            depth + 1,
+                        );
+                    }
+                }
+                Control::Header(header) => collect_exact_font_slots_from_paragraphs(
+                    &header.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Footer(footer) => collect_exact_font_slots_from_paragraphs(
+                    &footer.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Footnote(note) => collect_exact_font_slots_from_paragraphs(
+                    &note.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Endnote(note) => collect_exact_font_slots_from_paragraphs(
+                    &note.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::HiddenComment(comment) => collect_exact_font_slots_from_paragraphs(
+                    &comment.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Field(field) if !field.memo_paragraphs.is_empty() => {
+                    collect_exact_font_slots_from_paragraphs(
+                        &field.memo_paragraphs,
+                        slots,
+                        remaining_work_units,
+                        depth + 1,
+                    )
+                }
+                _ => {}
+            }
+            if slots.len() >= MAX_KERNING_REGISTRY_SLOTS {
+                return;
+            }
+        }
+    }
+}
+
+fn collect_exact_font_slots_from_shape(
+    shape: &crate::model::shape::ShapeObject,
+    slots: &mut std::collections::HashSet<ExactFontSlot>,
+    remaining_work_units: &mut usize,
+    depth: usize,
+) {
+    if depth > 128 || slots.len() >= MAX_KERNING_REGISTRY_SLOTS || *remaining_work_units == 0 {
+        return;
+    }
+    *remaining_work_units -= 1;
+    if let Some(drawing) = shape.drawing() {
+        if let Some(text_box) = &drawing.text_box {
+            collect_exact_font_slots_from_paragraphs(
+                &text_box.paragraphs,
+                slots,
+                remaining_work_units,
+                depth + 1,
+            );
+        }
+        if let Some(caption) = &drawing.caption {
+            collect_exact_font_slots_from_paragraphs(
+                &caption.paragraphs,
+                slots,
+                remaining_work_units,
+                depth + 1,
+            );
+        }
+    }
+    match shape {
+        crate::model::shape::ShapeObject::Group(group) => {
+            if let Some(caption) = &group.caption {
+                collect_exact_font_slots_from_paragraphs(
+                    &caption.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                );
+            }
+            for child in &group.children {
+                collect_exact_font_slots_from_shape(child, slots, remaining_work_units, depth + 1);
+            }
+        }
+        crate::model::shape::ShapeObject::Picture(picture) => {
+            if let Some(caption) = &picture.caption {
+                collect_exact_font_slots_from_paragraphs(
+                    &caption.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                );
+            }
+        }
+        _ => {}
+    }
+}
+
 // ── [#2004] 부동 전면 이미지 스택 → 인라인 재분류 (render-전용, 원본 무손상) ──
 
 /// 부동(tac=false) 그림/그림-도형의 공통 속성(읽기).
@@ -345,43 +524,85 @@ fn floating_stack_picture_common(ctrl: &Control) -> Option<&crate::model::shape:
     }
 }
 
-/// 한 문단이 "동일 위치·겹침불허·전면급 부동 그림 다수" 스택인지.
-/// 한글은 이런 그림을 쪽당 1장씩 배치하지만 rhwp 는 앵커 쪽에 겹쳐 그린다(#2004 부동 변종).
-/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 동일 세로오프셋 +
-/// 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
-fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
+/// 동일 위치·겹침불허·전면급 부동 그림 스택의 폭·높이 범위.
+///
+/// 모든 control이 비-TAC Square 그림/그림-도형이고, 가시 텍스트가 없으며, 세로 offset이
+/// 그림 높이 하나 안에서 겹칠 때만 반환한다. 본문 정규화와 #1995 낱장 배치 억제가 같은
+/// 저장 형상을 판정하도록 이 조건을 한 곳에 둔다.
+fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<(i32, i32)> {
     use crate::model::shape::TextWrap;
     if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
-        return false;
+        return None;
     }
     if para.controls.is_empty() {
-        return false;
+        return None;
     }
     let mut count = 0usize;
     let mut min_voff = i32::MAX;
     let mut max_voff = i32::MIN;
     let mut min_pic_h = i32::MAX;
+    let mut min_pic_w = i32::MAX;
+    let mut max_pic_h = i32::MIN;
     for ctrl in &para.controls {
-        let Some(common) = floating_stack_picture_common(ctrl) else {
-            return false;
-        };
+        let common = floating_stack_picture_common(ctrl)?;
         if common.treat_as_char
             || !matches!(common.text_wrap, TextWrap::Square)
             || common.allow_overlap
             || (common.height as i32) < min_height_hu
         {
-            return false;
+            return None;
         }
         let voff = common.vertical_offset as i32;
         min_voff = min_voff.min(voff);
         max_voff = max_voff.max(voff);
         min_pic_h = min_pic_h.min(common.height as i32);
+        min_pic_w = min_pic_w.min(common.width as i32);
+        max_pic_h = max_pic_h.max(common.height as i32);
         count += 1;
     }
     // [#2004] 세로오프셋이 동일하거나(#1995: 전부 0) 이미지 높이보다 작은 band 안에서
     // varying(156714340: 0/-3360/-2940 …)이어 서로 크게 겹치면 "겹침 스택"으로 판정한다.
     // 오프셋 spread ≥ 이미지 높이면 이미 세로로 벌어진 정상 배치이므로 제외.
-    count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64
+    (count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64)
+        .then_some((min_pic_w, max_pic_h))
+}
+
+/// 한 문단이 "동일 위치·겹침불허·전면급 부동 그림 다수" 스택인지.
+/// 한글은 이런 그림을 쪽당 1장씩 배치하지만 rhwp 는 앵커 쪽에 겹쳐 그린다(#2004 부동 변종).
+/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 동일 세로오프셋 +
+/// 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
+fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
+    floating_image_stack_extents(para, min_height_hu).is_some()
+}
+
+/// [#4770] 본문 그림 스택이 "앵커 쪽에 겹친 채 남는" 저장 형상인지.
+///
+/// 두 조건이 함께 성립해야 한다:
+/// 1. 저장 첫 줄이 그림 폭 이상 오른쪽에서 시작(cs ≥ min 그림 폭) — 저작 한글이
+///    빈 줄을 Square 배제로 그림 **옆에** 끼운 흔적.
+/// 2. 첫 그림이 앵커 위치의 본문 하단에 물리적으로 들어감(저장 vpos + max 그림
+///    높이 ≤ 본문 하단 절대 좌표) — 들어가지 않으면 한글은 겹침불허 캐스케이드로 낱장 분산한다.
+///
+/// HPV 코호트 s2/pi1007(그림 24장 150×212mm, cs=42520·vpos=5040, 한글 1쪽)은 둘 다
+/// 성립 → 스택 유지. #2004 본문 96장(cs=0·vpos=53602, 한글 96쪽)과 셀 스택 픽스처
+/// (cs-옆끼임이나 그림 h≈65k 가 잔여에 안 들어감, 한글 8쪽)는 성립하지 않아 기존
+/// 낱장 분산이 보존된다. **셀 내부 스택에는 적용하지 않는다** — 컨테이너가 쪽이
+/// 아니라 셀이라 잔여 판정의 기준이 다르다.
+///
+/// `vertical_pos`는 페이지 상단 기준 절대 좌표이므로 `body_bottom_hu`와 비교해야 한다.
+/// 이 계약은 본문 정규화와 typeset의 #1995 낱장 배치 억제가 함께 사용한다.
+pub(crate) fn body_pile_stays_on_anchor_page(
+    para: &Paragraph,
+    min_height_hu: i32,
+    body_bottom_hu: i32,
+) -> bool {
+    let Some((min_pic_w, max_pic_h)) = floating_image_stack_extents(para, min_height_hu) else {
+        return false;
+    };
+    para.line_segs.first().is_some_and(|seg| {
+        seg.column_start >= min_pic_w
+            && seg.vertical_pos.saturating_add(max_pic_h) <= body_bottom_hu
+    })
 }
 
 /// 문단의 그림/그림-도형을 인라인(tac=true)으로 재분류(정규화본에만 적용, 원본 무손상).
@@ -471,10 +692,17 @@ fn uses_hwp3_origin_page_tolerance(document: &Document) -> bool {
 }
 
 pub(crate) fn uses_hwp3_origin_flow_spacing_before(document: &Document) -> bool {
-    // HWP3-origin HWP5 변환본은 parser 단계에서 ParaShape spacing 계열을 절반으로
-    // 정규화하므로, 본문 흐름 계산에서는 원래 spacing_before를 복원한다.
-    // 원본 HWP3는 HWP3 parser가 만든 spacing 값을 기준으로 삼아 여기서 재확대하지 않는다.
-    document.layout_profile().hwp3_layout()
+    // HWP3→HWP5 변환본은 parser 가 ParaShape spacing 을 절반으로 정규화하므로
+    // 본문 흐름에서만 원래 spacing_before 를 복원(*2)한다.
+    // 원본 HWP3 는 parser 가 만든 값을 그대로 쓰고 여기서 재확대하지 않는다.
+    // 그 HWPX export 도 IR 이 같은 스케일이다. 마커만으로 hwp3_layout 을 켜면
+    // *2 가 한 번 더 들어가 sample16은 64→65, sample11은 151→152로 갈라진다
+    // (#3518, #3737). HWP5 변환본의 HWPX는 hwp5-origin 마커가 있어 절반
+    // 정규화가 있었던 경우만 *2를 유지한다.
+    let profile = document.layout_profile();
+    profile.hwp3_layout()
+        && !profile.hwp3_native_layout()
+        && (!profile.hwpx_container() || profile.hwp5_origin_hwpx())
 }
 
 fn should_insert_hwp3_title_filler_page(
@@ -543,6 +771,7 @@ fn insert_hwp3_title_filler_page(result: &mut PaginationResult, section_index: u
     let blank = PageContent {
         page_index: 0,
         page_number: 1,
+        page_number_restarted: false,
         section_index,
         layout: first_page.layout.clone(),
         column_contents: Vec::new(),
@@ -553,6 +782,7 @@ fn insert_hwp3_title_filler_page(result: &mut PaginationResult, section_index: u
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     for (page_idx, page) in result.pages.iter_mut().enumerate() {
@@ -746,6 +976,196 @@ fn apply_page_number_layouts_for_section(result: &mut PaginationResult, section:
 }
 
 impl DocumentCore {
+    /// Exact registry의 한 immutable snapshot에서 W9와 Q2-B contexts를 함께
+    /// 만든다. 둘 중 하나만 남는 부분 갱신은 허용하지 않는다.
+    pub(crate) fn refresh_exact_font_measurement_contexts(&mut self) {
+        let (kerning, shaping) = self
+            .layout_engine
+            .exact_font_measurement_context_snapshots();
+        self.styles.kerning_measurement_context = kerning;
+        self.styles.horizontal_shaping_context = shaping;
+    }
+
+    fn ensure_exact_font_measurement_contexts(&mut self) {
+        let generation = self.layout_engine.exact_font_source_registry_counts().3;
+        let slot_count = self.layout_engine.exact_font_source_registry_counts().0;
+        let (instance_request_count, instance_request_generation) = self
+            .layout_engine
+            .horizontal_shaping_instance_request_counts();
+        let current = self
+            .styles
+            .kerning_measurement_context
+            .as_ref()
+            .zip(self.styles.horizontal_shaping_context.as_ref())
+            .is_some_and(|(kerning, shaping)| {
+                kerning.registry_generation() == generation
+                    && shaping.registry_generation() == generation
+                    && shaping.instance_request_generation() == instance_request_generation
+                    && shaping.instance_request_count() == instance_request_count
+            });
+        if (slot_count == 0
+            && (self.styles.kerning_measurement_context.is_some()
+                || self.styles.horizontal_shaping_context.is_some()))
+            || (slot_count > 0 && !current)
+        {
+            self.refresh_exact_font_measurement_contexts();
+        }
+    }
+
+    pub(crate) fn recompose_all_with_horizontal_shaping(&mut self) {
+        self.composed = self
+            .document
+            .sections
+            .iter()
+            .map(|section| compose_section_with_horizontal_shaping(section, &self.styles))
+            .collect();
+    }
+
+    /// 현재 문서에서 실제 텍스트 run이 참조하는 embedded face만 exact slot registry에
+    /// 선등록한다. 개별 32 MiB·문서 layout owner 총 64 MiB 상한은 기존 page lowering과
+    /// 동일하며, 초과·손상 source는 추측 없이 등록하지 않는다.
+    pub(crate) fn rebuild_embedded_exact_font_sources(&mut self) {
+        self.layout_engine.clear_exact_font_sources();
+        self.styles.kerning_measurement_context = None;
+        self.styles.horizontal_shaping_context = None;
+        let has_embedded_source = self
+            .document
+            .doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .any(|font| {
+                (font.is_embedded && font.resolved_bin_data_id.is_some())
+                    || font.subst_font.as_ref().is_some_and(|substitute| {
+                        substitute.is_embedded && substitute.resolved_bin_data_id.is_some()
+                    })
+            });
+        if !has_embedded_source {
+            return;
+        }
+
+        let mut slot_set = std::collections::HashSet::new();
+        let mut remaining_work_units = 1_000_000usize;
+        for section in &self.document.sections {
+            collect_exact_font_slots_from_paragraphs(
+                &section.paragraphs,
+                &mut slot_set,
+                &mut remaining_work_units,
+                0,
+            );
+            for master_page in &section.section_def.master_pages {
+                collect_exact_font_slots_from_paragraphs(
+                    &master_page.paragraphs,
+                    &mut slot_set,
+                    &mut remaining_work_units,
+                    0,
+                );
+            }
+        }
+        let mut slots = slot_set.into_iter().collect::<Vec<_>>();
+        slots.sort_by_key(|slot| (slot.char_shape_id, slot.language_index));
+
+        let mut embedded_font_ids = Vec::new();
+        for slot in &slots {
+            let Some(font_id) = self
+                .document
+                .doc_info
+                .char_shapes
+                .get(slot.char_shape_id as usize)
+                .and_then(|shape| shape.font_ids.get(slot.language_index))
+                .copied()
+            else {
+                continue;
+            };
+            let Some(font) = self
+                .document
+                .doc_info
+                .font_faces
+                .get(slot.language_index)
+                .and_then(|fonts| fonts.get(font_id as usize))
+            else {
+                continue;
+            };
+            if font.is_embedded {
+                if let Some(bin_data_id) = font.resolved_bin_data_id {
+                    embedded_font_ids.push(bin_data_id);
+                }
+            }
+            if let Some(bin_data_id) = font
+                .subst_font
+                .as_ref()
+                .filter(|substitute| substitute.is_embedded)
+                .and_then(|substitute| substitute.resolved_bin_data_id)
+            {
+                embedded_font_ids.push(bin_data_id);
+            }
+        }
+        let font_bytes_by_id = load_bounded_embedded_font_bytes(
+            &self.document.bin_data_content,
+            &embedded_font_ids,
+            MAX_EMBEDDED_FONT_BYTES,
+            MAX_EMBEDDED_FONT_BYTES_PER_PAGE,
+        );
+
+        for slot in slots {
+            let Some(font_id) = self
+                .document
+                .doc_info
+                .char_shapes
+                .get(slot.char_shape_id as usize)
+                .and_then(|shape| shape.font_ids.get(slot.language_index))
+                .copied()
+            else {
+                continue;
+            };
+            let Some(font) = self
+                .document
+                .doc_info
+                .font_faces
+                .get(slot.language_index)
+                .and_then(|fonts| fonts.get(font_id as usize))
+            else {
+                continue;
+            };
+
+            let primary = font
+                .is_embedded
+                .then_some(font.resolved_bin_data_id)
+                .flatten()
+                .and_then(|bin_data_id| {
+                    let bytes = font_bytes_by_id.get(&bin_data_id)?;
+                    let face_index = resolve_embedded_font_face_index(bytes, &font.name, None)?;
+                    Some((&bytes[..], face_index))
+                });
+            let substitute = font
+                .subst_font
+                .as_ref()
+                .filter(|substitute| substitute.is_embedded)
+                .and_then(|substitute| {
+                    let bin_data_id = substitute.resolved_bin_data_id?;
+                    let bytes = font_bytes_by_id.get(&bin_data_id)?;
+                    let face_index =
+                        resolve_embedded_font_face_index(bytes, substitute.face.as_str(), None)?;
+                    Some((&bytes[..], face_index))
+                });
+            let Some((bytes, face_index)) = primary.or(substitute) else {
+                continue;
+            };
+            match self
+                .layout_engine
+                .register_exact_font_source(slot, bytes, face_index)
+            {
+                Ok(ExactFontRegistryRegistration::Registered)
+                | Ok(ExactFontRegistryRegistration::AlreadyRegistered) => {}
+                Err(_) => {
+                    // Registry 상한·충돌은 fail-closed다. 문서 로드는 유지하고 해당 slot의
+                    // kerning source만 없는 상태로 둔다.
+                }
+            }
+        }
+        self.refresh_exact_font_measurement_contexts();
+    }
+
     /// 페이지 렌더 트리를 생성하여 반환한다 (native bridge / 외부 렌더러용).
     pub fn build_page_render_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
         let tree = self.build_page_tree(page_num)?;
@@ -764,6 +1184,14 @@ impl DocumentCore {
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
         let _overflows = self.layout_engine.take_overflows();
+        let idx = page_num as usize;
+        let fingerprint = self
+            .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
+        if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
+            if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
+                return Ok(tree.clone());
+            }
+        }
         let show_editor_visuals = profile.shows_editor_visuals();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: show_editor_visuals && self.show_paragraph_marks,
@@ -772,7 +1200,7 @@ impl DocumentCore {
             clip_enabled: self.clip_enabled,
             debug_overlay: show_editor_visuals && self.debug_overlay,
         };
-        self.with_page_tree_cached(page_num, |tree| {
+        let layer_tree = self.with_page_tree_cached(page_num, |tree| {
             let mut used_font_slots = Vec::new();
             let mut nodes = vec![&tree.root];
             while let Some(node) = nodes.pop() {
@@ -927,7 +1355,20 @@ impl DocumentCore {
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
-        })
+        })?;
+        {
+            let mut cache = self.page_layer_tree_cache.borrow_mut();
+            if cache.len() <= idx {
+                cache.resize_with(idx + 1, Vec::new);
+            }
+            let variants = &mut cache[idx];
+            variants.retain(|(value, _)| *value != fingerprint);
+            if variants.len() >= 4 {
+                variants.remove(0);
+            }
+            variants.push((fingerprint, layer_tree.clone()));
+        }
+        Ok(layer_tree)
     }
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
@@ -980,6 +1421,7 @@ impl DocumentCore {
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.debug_overlay = self.debug_overlay;
+        renderer.annotate_metric_font = self.annotate_metric_font;
         renderer.render_tree(&tree);
         Ok(renderer.output().to_string())
     }
@@ -998,6 +1440,7 @@ impl DocumentCore {
         // WASM에서도 문서 내장 face 사용량을 수집한다. 실제 CSS 생성은 아래의
         // embedded-only 경로가 담당하므로 시스템 font file I/O는 발생하지 않는다.
         renderer.inner_mut().font_embed_mode = crate::renderer::svg::FontEmbedMode::Style;
+        renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
         renderer.render_page(&layer_tree)?;
         let mut svg = renderer.output().to_string();
 
@@ -1660,25 +2103,26 @@ impl DocumentCore {
     }
 
     /// [Task #2222] 레이어 출력옵션 5종과 profile의 비트 지문 — JSON 캐시 키.
-    /// [Task #3315] 그림 바이트 생략 여부를 최상위 비트에 함께 접는다.
+    /// [Task #3315/#4969] 그림·font 바이트 생략 여부를 서로 다른 비트에 함께 접는다.
     fn layer_output_options_fingerprint(
         &self,
         profile: RenderProfile,
         options: crate::paint::LayerJsonOptions,
-    ) -> u8 {
-        let profile_bits = match profile {
+    ) -> u16 {
+        let profile_bits: u16 = match profile {
             RenderProfile::FastPreview => 0,
             RenderProfile::Screen => 1,
             RenderProfile::Print => 2,
             RenderProfile::HighQuality => 3,
         };
-        u8::from(self.show_paragraph_marks)
-            | (u8::from(self.show_control_codes) << 1)
-            | (u8::from(self.show_transparent_borders) << 2)
-            | (u8::from(self.clip_enabled) << 3)
-            | (u8::from(self.debug_overlay) << 4)
+        u16::from(self.show_paragraph_marks)
+            | (u16::from(self.show_control_codes) << 1)
+            | (u16::from(self.show_transparent_borders) << 2)
+            | (u16::from(self.clip_enabled) << 3)
+            | (u16::from(self.debug_overlay) << 4)
             | (profile_bits << 5)
-            | (u8::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_font_bytes) << 8)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -1761,6 +2205,16 @@ impl DocumentCore {
         let (mime, bytes) =
             crate::renderer::image_resolver::emitted_image_bytes(&data, variant.bakes_watermark());
         Some((mime, bytes.into_owned()))
+    }
+
+    /// Portable font resource key로 현재 document generation의 exact source bytes를 받는다.
+    ///
+    /// key의 길이·BLAKE3 digest와 registry owner를 다시 대조한다. 등록되지 않았거나 오래된
+    /// key, 비정규 표기, 32 MiB 상한 초과는 모두 `None`으로 닫힌다.
+    pub fn get_source_font_bytes_native(&self, key: &str) -> Option<Vec<u8>> {
+        self.layout_engine
+            .exact_font_source_bytes_for_resource_key(key)
+            .map(|bytes| bytes.to_vec())
     }
 
     /// 본문(flow) 그림의 **배치 정보만** 작은 JSON 으로 반환한다 (Task #3315).
@@ -1980,16 +2434,18 @@ impl DocumentCore {
     /// 파싱할 필요가 없다. 특히 그림이 본문 layer에만 있는 페이지에서는 빈 overlay 배열과
     /// imageCount/rawSvgCount/flowImageCount/flowRawSvgCount/hasBehind/hasFront만
     /// 반환하여 입력 중 대용량 JSON 직렬화/파싱을 피한다.
+    ///
+    /// [#5763] `flowStaticOccluded` 는 flow 그림 밑에 불투명 채우기가 깔려 있어 flow-static
+    /// 분리가 그림을 지우는 페이지 표시다 — 소비자는 이 값이 참이면 분리하지 않는다.
     pub fn get_page_overlay_images_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::model::image::ImageEffect;
         use crate::model::shape::TextWrap;
         use crate::paint::{
-            paint_op_replay_plane_with_layer, LayerNode, LayerNodeKind, PaintOp, PaintReplayPlane,
-            ResolvedImageKind, ResolvedImagePayload,
+            paint_op_replay_plane_with_layer, FlowStaticOcclusion, LayerNode, LayerNodeKind,
+            PaintOp, PaintReplayPlane, ResolvedImageKind, ResolvedImagePayload,
         };
         use crate::renderer::render_tree::RenderLayerInfo;
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
-        use base64::Engine;
 
         fn effect_str(value: ImageEffect) -> &'static str {
             match value {
@@ -2061,7 +2517,7 @@ impl DocumentCore {
                             None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
                     } else if detected == "application/postscript" {
-                        match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                        match crate::renderer::image_resolver::eps_renderable_bytes(data) {
                             Some((m, bytes)) => (m, std::borrow::Cow::Owned(bytes)),
                             None => (detected, std::borrow::Cow::Borrowed(&data[..])),
                         }
@@ -2125,6 +2581,7 @@ impl DocumentCore {
             );
         }
 
+        #[allow(clippy::too_many_arguments)]
         fn collect(
             node: &LayerNode,
             behind: &mut String,
@@ -2135,6 +2592,8 @@ impl DocumentCore {
             flow_raw_svg_count: &mut usize,
             has_behind: &mut bool,
             has_front: &mut bool,
+            occlusion: &mut FlowStaticOcclusion,
+            page_background: &mut Option<(Option<String>, bool)>,
             inherited_layer: Option<RenderLayerInfo>,
         ) {
             let active_layer = node.layer.or(inherited_layer);
@@ -2151,6 +2610,8 @@ impl DocumentCore {
                             flow_raw_svg_count,
                             has_behind,
                             has_front,
+                            occlusion,
+                            page_background,
                             active_layer,
                         );
                     }
@@ -2165,6 +2626,8 @@ impl DocumentCore {
                     flow_raw_svg_count,
                     has_behind,
                     has_front,
+                    occlusion,
+                    page_background,
                     active_layer,
                 ),
                 LayerNodeKind::Leaf { ops } => {
@@ -2174,6 +2637,22 @@ impl DocumentCore {
                             PaintReplayPlane::BehindText => *has_behind = true,
                             PaintReplayPlane::InFrontOfText => *has_front = true,
                             _ => {}
+                        }
+                        // [#5763] flow-static 분리 가능 여부는 paint 순서에 달렸다 —
+                        // 여기서 순서대로 먹인다.
+                        occlusion.observe(plane, op);
+                        // [#5780] DOM flow 그림 갈래는 canvas 대신 DIV 라 Background
+                        // plane 을 실을 자리가 없다 — 쪽 배경을 요약으로 넘겨 소비자가
+                        // DIV 배경(단색) 또는 canvas 폴백(그라데이션/이미지)을 고른다.
+                        if let PaintOp::PageBackground { background, .. } = op {
+                            if page_background.is_none() {
+                                let css = background
+                                    .background_color
+                                    .map(crate::document_core::helpers::color_ref_to_css);
+                                let complex =
+                                    background.gradient.is_some() || background.image.is_some();
+                                *page_background = Some((css, complex));
+                            }
                         }
                         match op {
                             PaintOp::Image {
@@ -2231,6 +2710,8 @@ impl DocumentCore {
         let mut flow_raw_svg_count = 0usize;
         let mut has_behind = false;
         let mut has_front = false;
+        let mut occlusion = FlowStaticOcclusion::default();
+        let mut page_background: Option<(Option<String>, bool)> = None;
         collect(
             &tree.root,
             &mut behind,
@@ -2241,19 +2722,35 @@ impl DocumentCore {
             &mut flow_raw_svg_count,
             &mut has_behind,
             &mut has_front,
+            &mut occlusion,
+            &mut page_background,
             None,
         );
 
+        // [#5780] 쪽 배경 요약: 단색이면 css 문자열, 그라데이션/이미지 배경이면
+        // complex 플래그 — DOM flow 그림 갈래가 배경을 잃지 않게 한다.
+        let (page_background_css, page_background_complex) = match &page_background {
+            Some((css, complex)) => (css.clone(), *complex),
+            None => (None, false),
+        };
+        let page_background_css_json = match &page_background_css {
+            Some(css) => format!("\"{}\"", crate::document_core::helpers::json_escape(css)),
+            None => "null".to_string(),
+        };
+
         Ok(format!(
-            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{},\"rawSvgCount\":{},\"flowImageCount\":{},\"flowRawSvgCount\":{},\"hasBehind\":{},\"hasFront\":{}}}",
+            "{{\"behind\":[{}],\"front\":[{}],\"imageCount\":{},\"rawSvgCount\":{},\"flowImageCount\":{},\"flowRawSvgCount\":{},\"flowStaticOccluded\":{},\"hasBehind\":{},\"hasFront\":{},\"pageBackgroundCss\":{},\"pageBackgroundComplex\":{}}}",
             behind,
             front,
             image_count,
             raw_svg_count,
             flow_image_count,
             flow_raw_svg_count,
+            occlusion.occluded(),
             has_behind,
-            has_front
+            has_front,
+            page_background_css_json,
+            page_background_complex
         ))
     }
 
@@ -2273,6 +2770,27 @@ impl DocumentCore {
         let mb = hwpunit_to_px(page_def.margin_bottom as i32, self.dpi);
         let mh = hwpunit_to_px(page_def.margin_header as i32, self.dpi);
         let mf = hwpunit_to_px(page_def.margin_footer as i32, self.dpi);
+        // [#4971] 위 여섯은 PageDef 원본 값이다. 실제 본문 상자는 제본 여백이 더해지고
+        // 맞쪽 제본의 짝수 쪽에서는 좌우가 뒤바뀌므로(model/page.rs), 그리기·히트테스트가
+        // 쓸 값은 해석된 결과여야 한다. 규칙이 사는 곳은 PageAreas 하나뿐이므로 여기서
+        // 다시 유도하지 않고 그대로 물어본다.
+        let areas = PageAreas::from_page_def_for_page(page_def, page_content.page_number);
+        let body_left = hwpunit_to_px(areas.body_area.left, self.dpi);
+        let body_right = hwpunit_to_px(areas.body_area.right, self.dpi);
+        let header_x = hwpunit_to_px(areas.header_area.left, self.dpi);
+        let header_y = hwpunit_to_px(areas.header_area.top, self.dpi);
+        let header_width = hwpunit_to_px(areas.header_area.width(), self.dpi);
+        let header_height = hwpunit_to_px(areas.header_area.height(), self.dpi);
+        let footer_x = hwpunit_to_px(areas.footer_area.left, self.dpi);
+        let footer_y = hwpunit_to_px(areas.footer_area.top, self.dpi);
+        let footer_width = hwpunit_to_px(areas.footer_area.width(), self.dpi);
+        let footer_height = hwpunit_to_px(areas.footer_area.height(), self.dpi);
+        // 본문 경계를 다시 PageDef 필드로 되돌리려면(눈금자 핀 드래그) 두 가지가 더 필요하다:
+        // 제본 여백은 왼쪽 경계에만 더해지고, 맞쪽 제본의 짝수 쪽은 좌우가 뒤바뀐다.
+        let gutter = hwpunit_to_px(page_def.margin_gutter as i32, self.dpi);
+        let binding_mirrored = page_def.binding == crate::model::page::BindingMethod::DuplexSided
+            && page_content.page_number != 0
+            && page_content.page_number.is_multiple_of(2);
         let pbf_left = hwpunit_to_px(page_border_fill.spacing_left as i32, self.dpi);
         let pbf_right = hwpunit_to_px(page_border_fill.spacing_right as i32, self.dpi);
         let pbf_top = hwpunit_to_px(page_border_fill.spacing_top as i32, self.dpi);
@@ -2318,12 +2836,19 @@ impl DocumentCore {
             .collect::<Vec<_>>()
             .join(",");
         Ok(format!(
-            "{{\"pageIndex\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
+            "{{\"pageIndex\":{},\"pageNumber\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
             \"marginLeft\":{:.1},\"marginRight\":{:.1},\"marginTop\":{:.1},\"marginBottom\":{:.1},\
             \"marginHeader\":{:.1},\"marginFooter\":{:.1},\
+            \"headerArea\":{{\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}},\
+            \"footerArea\":{{\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}},\
+            \"bodyLeft\":{:.1},\"bodyRight\":{:.1},\"marginGutter\":{:.1},\
+            \"bindingMirrored\":{},\
             \"pageBorderLeft\":{:.1},\"pageBorderRight\":{:.1},\"pageBorderTop\":{:.1},\"pageBorderBottom\":{:.1},\
             \"columns\":[{}]}}",
             page_content.page_index,
+            // 문서가 매기는 쪽번호 — `쪽 > 새 번호로 시작`(NewNumber)을 반영한 값이다.
+            // 물리 순번(pageIndex + 1)과 다를 수 있고, 상태 표시줄·인쇄물이 보여야 할 숫자는 이쪽이다.
+            page_content.page_number,
             page_content.layout.page_width,
             page_content.layout.page_height,
             page_content.section_index,
@@ -2333,6 +2858,18 @@ impl DocumentCore {
             mb,
             mh,
             mf,
+            header_x,
+            header_y,
+            header_width,
+            header_height,
+            footer_x,
+            footer_y,
+            footer_width,
+            footer_height,
+            body_left,
+            body_right,
+            gutter,
+            binding_mirrored,
             page_border_left,
             page_border_right,
             page_border_top,
@@ -2463,12 +3000,8 @@ impl DocumentCore {
 
     /// 재조판 + 재페이지네이션 수행
     fn recompose_and_paginate(&mut self) -> u32 {
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
+        self.rebuild_embedded_exact_font_sources();
+        self.recompose_all_with_horizontal_shaping();
         self.mark_all_sections_dirty();
         self.paginate();
         self.page_count()
@@ -2744,11 +3277,18 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::model::page::BindingMethod;
 
-        let section = self
-            .document
-            .sections
-            .get_mut(section_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 {} 범위 초과",
+                section_idx
+            )));
+        }
+        // 저장 line_segs 가 계산된 전제는 "본문이 접히는 폭"이다. 바뀌었는지는 아래에서
+        // 같은 함수로 다시 재어 비교한다 — 필드를 손으로 나열하면 용지 높이처럼 줄바꿈과
+        // 무관한 필드가 섞여 쓸데없이 전 구역을 다시 접고, 제본 여백·가로세로 뒤바꿈 규칙이
+        // 두 벌이 된다.
+        let wrap_width_before = self.body_wrap_width(section_idx);
+        let section = &mut self.document.sections[section_idx];
         let pd = &mut section.section_def.page_def;
 
         use super::super::helpers::{json_bool, json_u32};
@@ -2814,13 +3354,28 @@ impl DocumentCore {
         // FIX 3: raw_stream 무효화 → 직렬화 시 모델에서 재구성
         section.raw_stream = None;
 
+        // [#4956] 본문 가로 상자가 바뀌었으면 이 구역 본문을 새 폭으로 다시 접는다.
+        //
+        // 저장 분할은 파일이 기록해 둔 "이 용지 폭에서의 줄 나눔"이다. 본문 폭이 바뀌면 그
+        // 전제가 깨지는데, 본문 재래핑 게이트(`paragraph_layout`/`typeset`/`height_measurer`
+        // 의 `para.line_segs.is_empty()`)는 저장 분할이 있으면 무조건 신뢰한다 — 그래서 여백만
+        // 바꾸면 줄은 그대로 두고 글자만 눌러 짜여 본문 밖으로 넘쳤다(실측: 본문 폭 657.7→438.6
+        // 인데 3쪽 텍스트가 x 709.6 까지, run 수 109 불변).
+        //
+        // 비우기만 하고 재계산을 조판에 맡기지 않는다. 저장 분할이 없는 문단은 NO_LS 계급이
+        // 되고, 그 계급은 쪽 나눔에서 문단 위 간격을 0 으로 세는데(typeset.rs) 렌더는 그대로
+        // 그려, 여백을 조금만 건드려도 쪽 나눔과 그리기가 문단마다 spacing_before 만큼
+        // 어긋난다. reflow_body_paragraphs_in_section 은 비우고 곧바로 다시 접어 그 계급에
+        // 머무르지 않게 한다.
+        //
+        // 범위는 이 구역의 본문 문단뿐이다 — 표 셀 폭은 용지 여백이 아니라 표 자신이 정하므로
+        // 셀 문단의 저장 분할은 여전히 유효하다.
+        if self.body_wrap_width(section_idx) != wrap_width_before {
+            self.reflow_body_paragraphs_in_section(section_idx);
+        }
+
         // 재조판 + 재페이지네이션
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
+        self.recompose_all_with_horizontal_shaping();
         self.mark_all_sections_dirty();
         self.paginate();
 
@@ -2830,7 +3385,6 @@ impl DocumentCore {
 
     /// 텍스트 레이아웃 정보 (네이티브 에러 타입)
     pub fn get_page_text_layout_native(&self, page_num: u32) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
@@ -2838,7 +3392,7 @@ impl DocumentCore {
         // 렌더 트리에서 TextRun 노드를 재귀적으로 수집
         fn collect_text_runs(node: &RenderNode, runs: &mut Vec<String>) {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
-                let positions = compute_char_positions(&text_run.text, &text_run.style);
+                let positions = text_run.replay_positions_for(&text_run.text);
                 let char_x: Vec<String> = positions.iter().map(|v| format!("{:.1}", v)).collect();
 
                 let escaped_text = super::super::helpers::json_escape(&text_run.text);
@@ -2931,6 +3485,40 @@ impl DocumentCore {
         collect_text_runs(&tree.root, &mut runs);
 
         Ok(format!("{{\"runs\":[{}]}}", runs.join(",")))
+    }
+
+    /// [#4694] 셀/글상자 안 ole 노드의 컨테이너 문맥 방출 — Image 방출(#1151/#1161)과
+    /// 동형. 이것이 비면 studio 선택 ref 가 본문 직속과 구분 불가한 3좌표로 떨어져,
+    /// 같은 문단에 앵커된 다른 차트를 조용히 여는 오매칭이 성립한다. 단일 레벨 스칼라
+    /// (`cellIdx`/`cellParaIdx`/`outerTableControlIdx`)는 studio 의 by_path 폴백 조립과의
+    /// 하위호환, `cellPath` 가 정본이다. 본문 직속(None)은 빈 문자열 — 기존 JSON 그대로.
+    fn ole_layout_context_json(ctx: Option<&crate::renderer::layout::CellContext>) -> String {
+        let Some(ctx) = ctx else {
+            return String::new();
+        };
+        let mut out = String::new();
+        if let [entry] = ctx.path.as_slice() {
+            out.push_str(&format!(
+                ",\"cellIdx\":{},\"cellParaIdx\":{},\"outerTableControlIdx\":{}",
+                entry.cell_index, entry.cell_para_index, entry.control_index
+            ));
+        }
+        let entries: Vec<String> = ctx
+            .path
+            .iter()
+            .map(|e| {
+                format!(
+                    "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                    e.control_index, e.cell_index, e.cell_para_index
+                )
+            })
+            .collect();
+        out.push_str(&format!(
+            ",\"parentParaIdx\":{},\"cellPath\":[{}]",
+            ctx.parent_para_index,
+            entries.join(",")
+        ));
+        out
     }
 
     /// 컨트롤(표, 이미지 등) 레이아웃 정보 (네이티브 에러 타입)
@@ -3156,7 +3744,7 @@ impl DocumentCore {
                         .filter(|control_ref| control_ref.kind == "ole")
                     {
                         controls.push(format!(
-                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x,
                             node.bbox.y,
                             node.bbox.width,
@@ -3164,6 +3752,7 @@ impl DocumentCore {
                             control_ref.section_index,
                             control_ref.para_index,
                             control_ref.control_index,
+                            DocumentCore::ole_layout_context_json(raw_node.cell_context.as_ref()),
                             layer_str
                         ));
                         return;
@@ -3176,7 +3765,7 @@ impl DocumentCore {
                         .filter(|control_ref| control_ref.kind == "ole")
                     {
                         controls.push(format!(
-                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}}}",
+                            "{{\"type\":\"ole\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x,
                             node.bbox.y,
                             node.bbox.width,
@@ -3184,6 +3773,7 @@ impl DocumentCore {
                             control_ref.section_index,
                             control_ref.para_index,
                             control_ref.control_index,
+                            DocumentCore::ole_layout_context_json(placeholder_node.cell_context.as_ref()),
                             layer_str
                         ));
                         return;
@@ -3420,7 +4010,10 @@ impl DocumentCore {
     /// 구역을 재조판하고 dirty로 표시한다.
     pub(crate) fn recompose_section(&mut self, section_idx: usize) {
         self.invalidate_page_tree_cache();
-        self.composed[section_idx] = compose_section(&self.document.sections[section_idx]);
+        self.composed[section_idx] = compose_section_with_horizontal_shaping(
+            &self.document.sections[section_idx],
+            &self.styles,
+        );
         self.mark_section_dirty(section_idx);
         // 전체 문단 dirty (모두 재측정 필요)
         if section_idx < self.dirty_paragraphs.len() {
@@ -3482,7 +4075,8 @@ impl DocumentCore {
     pub(crate) fn recompose_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        self.composed[section_idx][para_idx] = compose_paragraph(para);
+        self.composed[section_idx][para_idx] =
+            compose_paragraph_with_horizontal_shaping(para, &self.styles);
         self.mark_section_dirty(section_idx);
         self.mark_paragraph_dirty(section_idx, para_idx);
     }
@@ -3491,7 +4085,7 @@ impl DocumentCore {
     pub(crate) fn insert_composed_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let composed = compose_paragraph(para);
+        let composed = compose_paragraph_with_horizontal_shaping(para, &self.styles);
         self.composed[section_idx].insert(para_idx, composed);
         self.mark_section_dirty(section_idx);
         // measured_sections: 인덱스 조정으로 기존 측정값 재사용 (전체 재측정 회피)
@@ -3575,8 +4169,8 @@ impl DocumentCore {
     /// 원본 IR 은 그대로 두고, 거기서 파생된 렌더 상태를 전부 원본에서 다시 만든다.
     ///
     /// `document` 는 읽기만 한다 — 편집이 아니라 **메모된 파생본이 더는 원본과 대응하지
-    /// 않게 된 순간**에 부르는 연산이다. 스냅샷을 되돌려 문서를 통째로 갈아끼운 직후,
-    /// 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
+    /// 않게 된 순간**에 부르는 연산이다. 문서를 통째로 갈아끼운 직후(`set_document`,
+    /// 스냅샷 복원), 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
     ///
     /// 증분 게이트(`dirty_sections`·`section_revisions`·`measured_sections`·`table.dirty`)는
     /// 모두 "원본이 그대로면 파생본을 재사용한다"는 한 가지 규칙이라, 원본이 그대로인 채
@@ -3584,16 +4178,13 @@ impl DocumentCore {
     /// 상태를 전부 비우고 재조판까지 한 번에 끝낸다 — 돌아온 뒤 "나중에 다시 계산해야
     /// 한다"고 남겨 두는 표식은 없다.
     ///
-    /// 파생 순서는 소비 순서와 같다: 스타일 → 문단 구성 → (정규화·측정) → 페이지네이션 →
-    /// 페이지 트리. 앞 단계를 뒤 단계보다 늦게 만들면 같은 패스 안에서 옛 값이 섞인다.
+    /// 파생 순서는 소비 순서와 같다: 스타일 → exact source/context → 문단 구성 →
+    /// (정규화·측정) → 페이지네이션 → 페이지 트리. 앞 단계를 뒤 단계보다 늦게
+    /// 만들면 같은 패스 안에서 옛 값이 섞인다.
     pub(crate) fn rebuild_derived_state(&mut self) {
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
+        self.rebuild_resolved_styles();
+        self.rebuild_embedded_exact_font_sources();
+        self.recompose_all_with_horizontal_shaping();
         self.mark_all_sections_dirty();
         self.measured_tables.clear();
         self.measured_sections.clear();
@@ -3669,10 +4260,11 @@ impl DocumentCore {
                 }
             },
         };
-        let profile = self.document.layout_profile();
+        let profile = self.effective_layout_profile();
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
+            .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before);
         let column_def = Self::find_initial_column_def(paragraphs);
@@ -3686,7 +4278,7 @@ impl DocumentCore {
         let measured = if self
             .measured_sections
             .get(section_index)
-            .is_some_and(|cached| !cached.paragraphs.is_empty())
+            .is_some_and(|cached| !cached.fallback_paragraphs.is_empty())
         {
             measurer.measure_section_selective(
                 paragraphs,
@@ -3864,7 +4456,7 @@ impl DocumentCore {
         if self.measured_sections.len() <= section_index {
             self.measured_sections
                 .resize_with(section_index + 1, || MeasuredSection {
-                    paragraphs: Vec::new(),
+                    fallback_paragraphs: Vec::new(),
                     tables: Vec::new(),
                 });
         }
@@ -3967,6 +4559,9 @@ impl DocumentCore {
     }
 
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
+        // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
+        // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
+        self.ensure_exact_font_measurement_contexts();
         #[cfg(not(target_arch = "wasm32"))]
         let issue2424_profile_enabled =
             std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");
@@ -3976,7 +4571,7 @@ impl DocumentCore {
         let issue2424_warm_sections = self
             .measured_sections
             .iter()
-            .filter(|section| !section.paragraphs.is_empty())
+            .filter(|section| !section.fallback_paragraphs.is_empty())
             .count();
         let issue2424_dirty_sections = self
             .dirty_sections
@@ -4000,9 +4595,11 @@ impl DocumentCore {
         let hwp3_origin_flow_spacing_before = uses_hwp3_origin_flow_spacing_before(&self.document);
         // [#2403] 소스분기 파생 일원화 — HWPX 시멘틱/HWP5→HWPX 마커/HWP3 변환본
         // 판단은 Document::layout_profile 이 단일 소유 (Issue #1770 규칙 승계).
-        let profile = self.document.layout_profile();
+        // 세션 호환 모드(hangul2024)는 effective_layout_profile 이 합성한다.
+        let profile = self.effective_layout_profile();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
+            .with_legacy_hwp3_stored_geometry(profile.legacy_hwp3_stored_geometry())
             .with_native_hwp5(profile.native_hwp5_layout())
             .with_hwp3_origin_flow_spacing_before(hwp3_origin_flow_spacing_before)
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
@@ -4063,7 +4660,7 @@ impl DocumentCore {
         self.dirty_sections.truncate(sec_count);
         while self.measured_sections.len() < sec_count {
             self.measured_sections.push(MeasuredSection {
-                paragraphs: Vec::new(),
+                fallback_paragraphs: Vec::new(),
                 tables: Vec::new(),
             });
         }
@@ -4162,7 +4759,7 @@ impl DocumentCore {
 
             // 증분 측정: 이전 측정 데이터가 있으면 문단/표 수준 선택적 캐싱
             let issue2424_measure_started = issue2424_profile_enabled.then(std::time::Instant::now);
-            let measured = if !self.measured_sections[idx].paragraphs.is_empty() {
+            let measured = if !self.measured_sections[idx].fallback_paragraphs.is_empty() {
                 let dirty_paras = self
                     .dirty_paragraphs
                     .get(idx)
@@ -4213,7 +4810,8 @@ impl DocumentCore {
                 .map(|v| v == "1")
                 .unwrap_or(false);
             let mut result = if use_paginator {
-                paginator.paginate_with_measured_opts(
+                let profile = self.document.layout_profile();
+                paginator.paginate_with_measured_profile(
                     para_src,
                     &measured,
                     &section.section_def.page_def,
@@ -4223,9 +4821,10 @@ impl DocumentCore {
                     crate::renderer::pagination::PaginationOpts {
                         hide_empty_line: section.section_def.hide_empty_line,
                         respect_vpos_reset: self.respect_vpos_reset,
-                        is_hwp3_variant: self.document.layout_profile().hwp3_layout(),
+                        is_hwp3_variant: profile.hwp3_layout(),
                         footnote_shape: Some(section.section_def.footnote_shape.clone()),
                     },
+                    profile,
                 )
             } else {
                 use crate::renderer::pagination::{DeferredEndnote, EndnoteDeferral, EndnoteRef};
@@ -4385,6 +4984,16 @@ impl DocumentCore {
                 }
             }
 
+            // [#5802] 이 구역 정의가 반영되기 **전**의 carry 스냅샷 — 아래 재선택
+            // 블록의 슬롯(종류×홀짝) 단위 상속 폴백이 쓴다. 현재 구역 정의까지 섞인
+            // carry 로 폴백하면 정의 문단 앞 쪽들이 자기 구역의 (나중) 정의를 미리
+            // 쓰게 되므로, 앞 구역까지의 상태를 따로 보관한다.
+            let carry_hf_before_section = (
+                carry_header_odd.clone(),
+                carry_header_even.clone(),
+                carry_footer_odd.clone(),
+                carry_footer_even.clone(),
+            );
             // 머리말/꼬리말 carry 업데이트:
             // 페이지 active_header뿐 아니라 구역에 정의된 머리말 컨트롤도 carry에 반영
             // (짝수 페이지가 없어도 Even 머리말이 다음 구역에 상속되어야 함)
@@ -4469,7 +5078,14 @@ impl DocumentCore {
                     p.controls.iter().any(|c| matches!(c, Control::NewNumber(nn) if nn.number_type == AutoNumberType::Page))
                 );
                 if !has_new_number {
+                    // [Issue #6206] 표 셀 안 `newNum` 은 위 최상위 스캔(`has_new_number`)에
+                    // 걸리지 않는다. 그런 구역에도 carry 를 더하되, 재시작이 발화한 쪽부터는
+                    // 멈춘다 — `새 번호로 시작` 값은 절대값이라 carry 를 얹으면 안 된다.
+                    // (재시작 앞 쪽들은 종전대로 앞 구역에서 이어져야 한다.)
                     for page in &mut result.pages {
+                        if page.page_number_restarted {
+                            break;
+                        }
                         page.page_number += carry_last_page_number;
                     }
                 }
@@ -4626,11 +5242,32 @@ impl DocumentCore {
                     }
                     let (header, footer) = active.active(page.page_number);
                     // 이 구역에 없는 종류는 건드리지 않는다 — 앞 구역에서 상속받은 것이 살아 있다.
+                    //
+                    // [#5802] 종류는 있어도 **슬롯(홀짝)** 이 비면 앞 구역 carry 의 같은
+                    // 홀짝 슬롯을 상속한다. 종전에는 종류 단위로 통째 덮어써, 홀수
+                    // 머리말만 정의한 구역의 짝수 쪽(611쪽 보고서 ~300쪽)이 앞 구역의
+                    // 짝수 정의를 잃고 빈 머리말이 됐다. 폴백은 홀짝 교차 없이 같은
+                    // 슬롯만 본다 — 홀수 전용 정의가 짝수 쪽에 번지지 않게.
+                    let is_odd = page.page_number % 2 == 1;
+                    let (prev_h_odd, prev_h_even, prev_f_odd, prev_f_even) =
+                        &carry_hf_before_section;
                     if has_header {
-                        page.active_header = header;
+                        page.active_header = header.or_else(|| {
+                            if is_odd {
+                                prev_h_odd.clone()
+                            } else {
+                                prev_h_even.clone()
+                            }
+                        });
                     }
                     if has_footer {
-                        page.active_footer = footer;
+                        page.active_footer = footer.or_else(|| {
+                            if is_odd {
+                                prev_f_odd.clone()
+                            } else {
+                                prev_f_even.clone()
+                            }
+                        });
                     }
                 }
             }
@@ -4809,17 +5446,18 @@ impl DocumentCore {
             }
             let section = &self.document.sections[idx];
             let pd = &section.section_def.page_def;
-            let body_h_hu = pd.height as i32
-                - pd.margin_top as i32
-                - pd.margin_bottom as i32
-                - pd.margin_header as i32
-                - pd.margin_footer as i32;
+            let body_area = PageAreas::from_page_def(pd).body_area;
+            let body_h_hu = body_area.height();
+            let body_bottom_hu = body_area.bottom;
             let min_height_hu = (body_h_hu / 2).max(1);
             let matches: Vec<usize> = section
                 .paragraphs
                 .iter()
                 .enumerate()
-                .filter(|(_, p)| para_is_floating_image_stack(p, min_height_hu))
+                .filter(|(_, p)| {
+                    para_is_floating_image_stack(p, min_height_hu)
+                        && !body_pile_stays_on_anchor_page(p, min_height_hu, body_bottom_hu)
+                })
                 .map(|(i, _)| i)
                 .collect();
             // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
@@ -5201,6 +5839,129 @@ impl DocumentCore {
         }
     }
 
+    /// 프로덕션 조판(`TypesetEngine::format_paragraph`)이 부여하는 문단 높이.
+    /// dump-pages 가 fallback `MeasuredSection` 이 아니라 이 값을 말한다 (#4628).
+    pub fn production_paragraph_height(
+        &self,
+        section_idx: usize,
+        para_index: usize,
+        column_width_px: Option<f64>,
+    ) -> Option<f64> {
+        let col_w =
+            column_width_px.or_else(|| self.dump_paragraph_column_width(section_idx, para_index));
+        self.dump_production_paragraph_height(section_idx, para_index, col_w)
+            .map(|h| h.total)
+    }
+
+    /// HeightMeasurer fallback `total_height`. 프로덕션 페이지네이션은 읽지 않는다 (#4628).
+    pub fn fallback_measured_paragraph_total_height(
+        &self,
+        section_idx: usize,
+        para_index: usize,
+    ) -> Option<f64> {
+        self.measured_sections
+            .get(section_idx)?
+            .get_paragraph_height(para_index)
+    }
+
+    fn dump_section_typesetter(&self, sec_idx: usize) -> TypesetEngine {
+        let typesetter = TypesetEngine::new(self.dpi);
+        typesetter.apply_section_format_context(
+            self.section_render_paragraphs(sec_idx),
+            &self.styles,
+            self.effective_layout_profile(),
+        );
+        typesetter
+    }
+
+    fn dump_paragraph_column_width(&self, sec_idx: usize, para_index: usize) -> Option<f64> {
+        use crate::renderer::pagination::PageItem;
+        let pr = self.pagination.get(sec_idx)?;
+        for page in &pr.pages {
+            for cc in &page.column_contents {
+                let hit = cc.items.iter().any(|item| {
+                    matches!(item, PageItem::FullParagraph { para_index: pi } if *pi == para_index)
+                });
+                if hit {
+                    return Self::dump_column_width_px(page, cc);
+                }
+            }
+        }
+        pr.pages
+            .first()?
+            .layout
+            .column_areas
+            .first()
+            .map(|area| area.width)
+    }
+
+    fn dump_production_paragraph_height(
+        &self,
+        sec_idx: usize,
+        para_index: usize,
+        column_width_px: Option<f64>,
+    ) -> Option<crate::renderer::typeset::DumpFormattedParagraphHeight> {
+        let typesetter = self.dump_section_typesetter(sec_idx);
+        let body_len = self.section_render_paragraphs(sec_idx).len();
+        let pr = self.pagination.get(sec_idx)?;
+        let paragraphs: std::borrow::Cow<'_, [Paragraph]> = if pr.endnote_paragraphs.is_empty() {
+            std::borrow::Cow::Borrowed(self.section_render_paragraphs(sec_idx))
+        } else {
+            std::borrow::Cow::Owned(
+                self.section_render_paragraphs(sec_idx)
+                    .iter()
+                    .chain(pr.endnote_paragraphs.iter())
+                    .cloned()
+                    .collect(),
+            )
+        };
+        self.dump_production_paragraph_height_with(
+            &typesetter,
+            sec_idx,
+            para_index,
+            body_len,
+            paragraphs.as_ref(),
+            column_width_px,
+        )
+    }
+
+    fn dump_production_paragraph_height_with(
+        &self,
+        typesetter: &crate::renderer::typeset::TypesetEngine,
+        sec_idx: usize,
+        para_index: usize,
+        body_len: usize,
+        paragraphs: &[Paragraph],
+        column_width_px: Option<f64>,
+    ) -> Option<crate::renderer::typeset::DumpFormattedParagraphHeight> {
+        let para = paragraphs.get(para_index)?;
+        let composed = if para_index < body_len {
+            self.section_render_composed(sec_idx).get(para_index)
+        } else {
+            None
+        };
+        Some(typesetter.dump_formatted_paragraph_height(
+            para,
+            composed,
+            &self.styles,
+            column_width_px,
+            para_index >= body_len,
+        ))
+    }
+
+    fn dump_column_width_px(
+        page: &crate::renderer::pagination::PageContent,
+        cc: &crate::renderer::pagination::ColumnContent,
+    ) -> Option<f64> {
+        cc.zone_layout
+            .as_ref()
+            .unwrap_or(&page.layout)
+            .column_areas
+            .get(cc.column_index as usize)
+            .or(page.layout.column_areas.first())
+            .map(|area| area.width)
+    }
+
     /// [#3697] 페이지네이션 결과를 기계 계약 JSON 으로 덤프 (#3608 1-C).
     ///
     /// 텍스트 덤프(`dump_page_items`)와 같은 순회·같은 구역 전처리
@@ -5218,7 +5979,7 @@ impl DocumentCore {
             let ctx = self.page_dump_section_ctx(sec_idx, pr, global_page);
             let paragraphs: &[Paragraph] = &ctx.paragraphs;
             let body_len = ctx.body_len;
-            let measured = self.measured_sections.get(sec_idx);
+            let typesetter = self.dump_section_typesetter(sec_idx);
 
             // 미주 항목(pi >= body_len)의 원본 위치 — 텍스트 덤프의 `src=...` 와 동일.
             let endnote_source_json = |para_index: usize| -> serde_json::Value {
@@ -5254,19 +6015,22 @@ impl DocumentCore {
                     for item in &cc.items {
                         let v = match item {
                             PageItem::FullParagraph { para_index } => {
-                                let height = measured
-                                    .and_then(|m| m.get_measured_paragraph(*para_index))
+                                let col_w = Self::dump_column_width_px(page, cc);
+                                let height = self
+                                    .dump_production_paragraph_height_with(
+                                        &typesetter,
+                                        sec_idx,
+                                        *para_index,
+                                        body_len,
+                                        paragraphs,
+                                        col_w,
+                                    )
                                     .map(|mp| {
-                                        let lh_sum: f64 = mp.line_heights.iter().sum();
-                                        let ls_sum: f64 = mp.line_spacings.iter().sum();
                                         serde_json::json!({
-                                            "total": mp.spacing_before
-                                                + lh_sum
-                                                + ls_sum
-                                                + mp.spacing_after,
+                                            "total": mp.total,
                                             "spacingBefore": mp.spacing_before,
-                                            "lineHeightSum": lh_sum,
-                                            "lineSpacingSum": ls_sum,
+                                            "lineHeightSum": mp.line_height_sum,
+                                            "lineSpacingSum": mp.line_spacing_sum,
                                             "spacingAfter": mp.spacing_after,
                                         })
                                     });
@@ -5476,7 +6240,7 @@ impl DocumentCore {
             let paragraphs: &[Paragraph] = &ctx.paragraphs;
             let body_len = ctx.body_len;
             let extra_by_page = &ctx.extra_by_page;
-            let measured = self.measured_sections.get(sec_idx);
+            let typesetter = self.dump_section_typesetter(sec_idx);
 
             for (local_idx, page) in pr.pages.iter().enumerate() {
                 if let Some(pf) = page_filter {
@@ -5562,22 +6326,26 @@ impl DocumentCore {
                                         }
                                     })
                                     .unwrap_or_default();
-                                let height = measured
-                                    .and_then(|m| m.get_measured_paragraph(*para_index))
+                                let col_w = Self::dump_column_width_px(page, cc);
+                                let height = self
+                                    .dump_production_paragraph_height_with(
+                                        &typesetter,
+                                        sec_idx,
+                                        *para_index,
+                                        body_len,
+                                        paragraphs,
+                                        col_w,
+                                    )
                                     .map(|mp| {
-                                        let sb = mp.spacing_before;
-                                        let sa = mp.spacing_after;
-                                        let lh_sum: f64 = mp.line_heights.iter().sum();
-                                        let ls_sum: f64 = mp.line_spacings.iter().sum();
-                                        let lines = lh_sum + ls_sum;
+                                        let lines = mp.line_height_sum + mp.line_spacing_sum;
                                         format!(
                                             "h={:.1} (sb={:.1} lines={:.1} lh={:.1} ls={:.1} sa={:.1})",
-                                            sb + lines + sa,
-                                            sb,
+                                            mp.total,
+                                            mp.spacing_before,
                                             lines,
-                                            lh_sum,
-                                            ls_sum,
-                                            sa
+                                            mp.line_height_sum,
+                                            mp.line_spacing_sum,
+                                            mp.spacing_after,
                                         )
                                     })
                                     .unwrap_or_default();
@@ -5826,9 +6594,33 @@ impl DocumentCore {
         for i in from..cache.len() {
             cache[i] = None;
         }
+        // 대표 HF tree는 일반 pagination tree와 다른 active target을 담는다. 부분
+        // 무효화의 원인이 HF 자체가 아니더라도 body/쪽번호/페이지 기하가 바뀔 수 있어
+        // 단일 entry를 보수적으로 비운다 (#6452).
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         let mut json_cache = self.layer_tree_json_cache.borrow_mut();
         for i in from..json_cache.len() {
             json_cache[i].clear();
+        }
+        let mut layer_cache = self.page_layer_tree_cache.borrow_mut();
+        for i in from..layer_cache.len() {
+            layer_cache[i].clear();
+        }
+    }
+
+    /// 한 페이지의 렌더 트리와 그 파생 표현을 함께 무효화한다.
+    pub(crate) fn invalidate_page_tree_cache_page(&self, page_num: u32) {
+        let idx = page_num as usize;
+        if let Some(slot) = self.page_tree_cache.borrow_mut().get_mut(idx) {
+            *slot = None;
+        }
+        // 대표 HF tree도 페이지 숨김 상태를 포함하므로 함께 무효화한다 (#6452).
+        self.header_footer_preview_tree_cache.borrow_mut().take();
+        if let Some(variants) = self.layer_tree_json_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
+        }
+        if let Some(variants) = self.page_layer_tree_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
         }
     }
 
@@ -6042,6 +6834,7 @@ impl DocumentCore {
                     border_fill_id: run_border_fill_id,
                     baseline: template.baseline,
                     field_marker: FieldMarkerType::None,
+                    layout_positions: None,
                     display_text: None,
                 },
                 BoundingBox::new(x, template.run_y, width, template.run_height),
@@ -6079,6 +6872,14 @@ impl DocumentCore {
         {
             variants.clear();
         }
+        if let Some(variants) = self
+            .page_layer_tree_cache
+            .borrow_mut()
+            .get_mut(template.page_index)
+        {
+            variants.clear();
+        }
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         Some(FocusedPageTreePatch {
             page_index: template.page_index as u32,
             dirty_rect: BoundingBox::new(
@@ -6093,7 +6894,9 @@ impl DocumentCore {
     /// 페이지 렌더 트리 캐시 전체 무효화.
     pub(crate) fn invalidate_page_tree_cache(&self) {
         self.page_tree_cache.borrow_mut().clear();
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         self.layer_tree_json_cache.borrow_mut().clear();
+        self.page_layer_tree_cache.borrow_mut().clear();
         // [Task #1949] IR 이 바뀌는 재조판 경계에서 셀 단위 레이아웃 캐시(포인터 키)도
         // 함께 비워 다른 IR 의 셀 포인터 재사용으로 인한 오재사용을 방지한다.
         self.layout_engine.clear_layout_caches();
@@ -6161,15 +6964,99 @@ impl DocumentCore {
         build(tree)
     }
 
+    /// 머리말/꼬리말 정의가 속한 구역의 대표 편집 페이지를 반환한다.
+    ///
+    /// 대표 페이지는 구역 첫 페이지다. 물리 홀짝과 무관한 편집 표면일 뿐 pagination의
+    /// active_header/active_footer나 문서 IR을 바꾸지 않는다.
+    pub(crate) fn header_footer_preview_page_for_section(
+        &self,
+        section_idx: usize,
+    ) -> Result<u32, HwpError> {
+        let result = self
+            .pagination
+            .get(section_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
+        result
+            .pages
+            .first()
+            .map(|page| page.page_index)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("구역 {}에 편집할 페이지가 없습니다", section_idx))
+            })
+    }
+
+    fn header_footer_ref_for_edit_target(
+        &self,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<HeaderFooterRef, HwpError> {
+        let apply = header_footer_apply_from_u8(apply_to);
+        let (para_index, control_index) = self
+            .find_header_footer_control(section_idx, is_header, apply)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "머리말/꼬리말 편집 target을 찾을 수 없습니다: sec={}, is_header={}, apply_to={}",
+                    section_idx, is_header, apply_to
+                ))
+            })?;
+        Ok(HeaderFooterRef {
+            para_index,
+            control_index,
+            source_section_index: section_idx,
+            table_path: Vec::new(),
+        })
+    }
+
+    /// 구역 첫 페이지에 요청한 HF 정의를 임시로 투영한 렌더 트리.
+    ///
+    /// 실제 page tree cache와 섞지 않고 마지막 편집 target 한 건만 재사용한다. 선택
+    /// 드래그는 hit-test와 selection geometry를 프레임마다 연속 조회하므로, 캐시가
+    /// 없으면 같은 대표 페이지를 매번 full build하게 된다 (#6452).
+    pub(crate) fn build_header_footer_edit_preview_tree(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<PageRenderTree, HwpError> {
+        if self.header_footer_preview_page_for_section(section_idx)? != page_num {
+            return Err(HwpError::RenderError(format!(
+                "쪽 {}은 구역 {}의 대표 HF 편집 페이지가 아닙니다",
+                page_num, section_idx
+            )));
+        }
+        let key = (page_num, section_idx, is_header, apply_to);
+        if let Some((cached_key, tree)) = self.header_footer_preview_tree_cache.borrow().as_ref() {
+            if *cached_key == key {
+                return Ok(tree.clone());
+            }
+        }
+
+        let tree = self.build_page_tree_with_header_footer_override(
+            page_num,
+            Some((section_idx, is_header, apply_to)),
+        )?;
+        *self.header_footer_preview_tree_cache.borrow_mut() = Some((key, tree.clone()));
+        Ok(tree)
+    }
+
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
+        self.build_page_tree_with_header_footer_override(page_num, None)
+    }
+
+    fn build_page_tree_with_header_footer_override(
+        &self,
+        page_num: u32,
+        header_footer_override: Option<(usize, bool, u8)>,
+    ) -> Result<PageRenderTree, HwpError> {
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;
 
         // [#4126/#4128 회귀 가드] 콜드 캐럿 질의의 O(pages) 빌드 폭증 판별용 작업량 카운터.
-        crate::diagnostics::perf_counters::PAGE_TREE_BUILDS
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        crate::diagnostics::perf_counters::record_page_tree_build();
 
         self.layout_engine
             .set_show_transparent_borders(self.show_transparent_borders);
@@ -6180,7 +7067,7 @@ impl DocumentCore {
         // 단일 소유 (Issue #1770 규칙 승계). set_layout_profile 의 결합 부수효과
         // (variant → flow spacing_before)는 다음 줄이 종전 순서대로 덮어쓴다.
         self.layout_engine
-            .set_layout_profile(self.document.layout_profile());
+            .set_layout_profile(self.effective_layout_profile());
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
             uses_hwp3_origin_flow_spacing_before(&self.document),
         );
@@ -6199,7 +7086,24 @@ impl DocumentCore {
                     af.cell_path.clone(),
                 )
             }));
-        let (page_content, paragraphs, composed) = self.find_page(page_num)?;
+        let (base_page_content, paragraphs, composed) = self.find_page(page_num)?;
+        let overridden_page_content =
+            if let Some((section_idx, is_header, apply_to)) = header_footer_override {
+                let mut page_content = base_page_content.clone();
+                let target =
+                    self.header_footer_ref_for_edit_target(section_idx, is_header, apply_to)?;
+                if is_header {
+                    page_content.active_header = Some(target);
+                } else {
+                    page_content.active_footer = Some(target);
+                }
+                Some(page_content)
+            } else {
+                None
+            };
+        let page_content = overridden_page_content
+            .as_ref()
+            .unwrap_or(base_page_content);
         // 구역의 각주 모양 정보
         let footnote_shape = if page_content.section_index < self.document.sections.len() {
             &self.document.sections[page_content.section_index]
@@ -6325,6 +7229,22 @@ impl DocumentCore {
             .unwrap_or(true);
         self.layout_engine
             .set_current_page_is_section_first(is_section_first_page);
+
+        // [#5717] 구역정의 "첫 쪽에만 테두리/배경 표시" (flags bit 8/9,
+        // HWPX visibility SHOW_FIRST) — 켜진 구역은 첫 쪽 밖에서 억제한다.
+        let (first_page_border, first_page_fill) = self
+            .document
+            .sections
+            .get(page_content.section_index)
+            .map(|s| {
+                (
+                    s.section_def.first_page_border,
+                    s.section_def.first_page_fill,
+                )
+            })
+            .unwrap_or((false, false));
+        self.layout_engine
+            .set_page_border_fill_first_page_only(first_page_border, first_page_fill);
 
         let wrap_around_paras = self
             .pagination
@@ -6462,7 +7382,7 @@ impl DocumentCore {
     }
 
     pub(crate) fn rebuild_section(&mut self, section_idx: usize) {
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
         self.recompose_section(section_idx);
         self.paginate();
     }
@@ -6814,7 +7734,10 @@ struct PageDumpSectionCtx<'a> {
 
 /// [#3697] dump-pages JSON 의 문단 미리보기 — 텍스트 덤프와 같은 제어문자 제거 + 40자.
 /// 기계 소비자용이므로 텍스트 덤프의 "(빈)" 대체 표기는 쓰지 않는다 (빈 문단 = "").
-fn para_text_preview(para: Option<&Paragraph>) -> String {
+///
+/// [세션 노드 경로 확장] `mcp_serve::session_doc_tree` 의 문단 노드 미리보기도 이 함수를
+/// 그대로 쓴다 — 같은 문서에서 미리보기 규칙(제어문자 제거·40자 절단)이 갈리면 안 된다.
+pub fn para_text_preview(para: Option<&Paragraph>) -> String {
     para.map(|p| {
         p.text
             .chars()
@@ -7595,6 +8518,8 @@ mod tests {
             wrap_around_paras: vec![],
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");
@@ -7717,6 +8642,7 @@ mod tests {
                 ..Default::default()
             }],
             raw_stream: None,
+            raw_provenance: None,
         });
 
         let mut core = DocumentCore::new_empty();
@@ -7835,6 +8761,7 @@ mod tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
 
         let mut core = DocumentCore::new_empty();
@@ -7881,6 +8808,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -7951,6 +8879,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8014,6 +8943,7 @@ mod tests {
                 section_def,
                 paragraphs: vec![Paragraph::default()],
                 raw_stream: None,
+                raw_provenance: None,
             }
         }
 
@@ -8071,6 +9001,7 @@ mod tests {
             section_def: SectionDef::default(),
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         core.set_document(document);
         core.paginate();

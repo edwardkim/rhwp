@@ -1,0 +1,18 @@
+{
+  "source": "samples/field-01.hwp",
+  "output": "out/field-filled.hwp",
+  "outputFormat": "hwp5",
+  "verify": {
+    "identical": true,
+    "diffCount": 0
+  },
+  "filledCount": 1,
+  "notFound": [],
+  "ambiguous": [],
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "verify-ok",
+    "outputKept": true
+  }
+}

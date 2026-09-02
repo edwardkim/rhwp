@@ -39,6 +39,7 @@ const MAX_MEMO_ENTRIES: usize = 64;
 #[derive(Clone, Copy)]
 enum Conversion {
     Bmp,
+    CmykJpeg,
     Pcx,
     Tiff,
     GrayscaleJpeg,
@@ -174,7 +175,7 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
             })
         }
         "application/postscript" => {
-            dos_eps_preview_bytes(data).map(|(mime, data)| ResolvedImagePayload {
+            eps_renderable_bytes(data).map(|(mime, data)| ResolvedImagePayload {
                 data,
                 mime,
                 kind: ResolvedImageKind::FormatConverted,
@@ -229,7 +230,7 @@ pub(crate) fn emitted_image_bytes(
         "image/x-emf" => {
             crate::emf::convert_to_standalone_svg(data).map(|svg| ("image/svg+xml", svg))
         }
-        "application/postscript" => dos_eps_preview_bytes(data),
+        "application/postscript" => eps_renderable_bytes(data),
         "image/jpeg" if bakes_watermark => watermark_jpeg_bytes_to_hancom_baked_png_bytes(data)
             .or_else(|| grayscale_jpeg_bytes_to_png_bytes(data))
             .map(|png| ("image/png", png)),
@@ -291,6 +292,69 @@ pub(crate) fn is_watermark_image(image: &ImageNode) -> bool {
 ///
 /// 브라우저는 SVG `<image>` 내부의 `data:image/bmp` URI를 표준 지원하지 않으므로,
 /// SVG 임베딩 전에 PNG로 변환해 호환성을 확보한다.
+/// [#6310] 4성분(CMYK/YCCK) JPEG 인가 — SOF 성분 수로 판정한다.
+///
+/// PDF `DCTDecode` 는 성분 수를 스트림이 아니라 `/ColorSpace` 선언에서 가져가므로,
+/// 4성분 JPEG 을 `/DeviceRGB` 로 박으면 3성분으로 읽혀 행 보폭이 어긋난다 —
+/// 같은 그림이 가로로 반복되고 색이 번진다(156745900 1쪽 로고).
+pub fn jpeg_is_four_component(data: &[u8]) -> bool {
+    if !data.starts_with(&[0xFF, 0xD8]) {
+        return false;
+    }
+
+    let mut i = 2usize;
+    while i < data.len() {
+        // JPEG은 marker 앞에 fill byte(0xFF)를 하나 이상 둘 수 있다. 첫 0xFF를
+        // marker로 해석하면 뒤의 SOF를 건너뛰어 유효한 CMYK JPEG을 놓친다.
+        while data.get(i) == Some(&0xFF) {
+            i += 1;
+        }
+        let Some(&marker) = data.get(i) else {
+            break;
+        };
+        i += 1;
+
+        // 독립 마커(SOI/EOI/TEM/RSTn)는 길이 필드가 없다.
+        if marker == 0xD8 || marker == 0xD9 || marker == 0x01 || (0xD0..=0xD7).contains(&marker) {
+            continue;
+        }
+        let Some(len_bytes) = data.get(i..i + 2) else {
+            return false;
+        };
+        let len = u16::from_be_bytes([len_bytes[0], len_bytes[1]]) as usize;
+        if len < 2 || i + len > data.len() {
+            return false;
+        }
+
+        // SOF0/1/2 = baseline / extended / progressive. 성분 수는 length field 뒤
+        // 여섯 번째 바이트다(precision, height, width 다음).
+        if matches!(marker, 0xC0..=0xC2) {
+            return data.get(i + 7).copied() == Some(4);
+        }
+        if marker == 0xDA {
+            break;
+        }
+        i += len;
+    }
+    false
+}
+
+/// [#6310] 4성분 JPEG 을 PNG(RGB)로 정규화한다.
+///
+/// 한컴은 같은 그림을 3성분 RGB 로 다시 인코딩해 내보낸다(원본 616KB → 14KB).
+/// rhwp 는 원본 바이트를 그대로 실어 왔으므로 여기서 한 번 정규화한다.
+pub fn cmyk_jpeg_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    memoized(Conversion::CmykJpeg, data, || {
+        use image::ImageFormat;
+        let img = decode_image_with_format_limited(data, ImageFormat::Jpeg)?;
+        let mut out = Vec::new();
+        image::DynamicImage::ImageRgb8(img.to_rgb8())
+            .write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+            .ok()?;
+        Some(out)
+    })
+}
+
 pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Bmp, data, || {
         use image::ImageFormat;
@@ -361,6 +425,21 @@ fn oversized_bmp_to_downscaled_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
 /// WMF/TIFF 프리뷰의 오프셋·길이를 담는다 (Adobe EPSF 3.0 §5.2). 프리뷰가
 /// 있으면 기존 변환기(WMF→SVG, TIFF→PNG)로 잇는다. 프리뷰가 없거나 손상이면
 /// None — 호출부가 원본으로 되돌아간다.
+/// EPS 를 화면에 그릴 수 있는 바이트로 바꾼다 — 두 갈래의 **단일 진입점**.
+///
+/// 1. DOS EPS 바이너리 프리뷰(WMF/TIFF, #4062) — 원본 그림 그대로의 축소판이라 우선한다.
+/// 2. Adobe Illustrator 아트워크 → SVG (`crate::eps`, #5513) — 프리뷰가 없는 텍스트 EPS 는
+///    이쪽으로만 살아난다.
+///
+/// 변환 사슬은 `resolve_image_payload`·`emitted_image_bytes`·`svg.rs`·`html.rs`·`web_canvas.rs`
+/// 다섯 곳에서 쓴다. 갈래 선택을 여기 한 곳에 두지 않으면 백엔드마다 다른 그림이 나온다.
+pub fn eps_renderable_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
+    if let Some(preview) = dos_eps_preview_bytes(data) {
+        return Some(preview);
+    }
+    crate::eps::convert_ai_artwork_to_svg(data).map(|svg| ("image/svg+xml", svg))
+}
+
 pub(crate) fn dos_eps_preview_bytes(data: &[u8]) -> Option<(&'static str, Vec<u8>)> {
     if data.len() < 30 || !data.starts_with(&[0xC5, 0xD0, 0xD3, 0xC6]) {
         return None;
@@ -936,6 +1015,30 @@ pub(crate) fn detect_image_mime_type(data: &[u8]) -> &'static str {
         return "image/svg+xml";
     }
     "application/octet-stream"
+}
+
+/// 이 바이트를 백엔드가 실제로 **그릴 수 있는가**.
+///
+/// 변환 사슬(`resolve_image_payload`)을 태워도 남는 형식 — 프리뷰 없는 텍스트 EPS/AI,
+/// 정체불명 바이트 — 은 브라우저도 resvg 도 skia 도 디코드하지 못해 그 자리가 그냥
+/// **빈 공간**이 된다. 한글은 그럴 때 "그림 미지정" 과 똑같이 편집 화면에서 점선 테두리 +
+/// 그림-없음 아이콘을 그린다(인쇄 등가 출력에서는 미출력). 레이아웃이 그 판정을 내리려면
+/// 술어가 mime 판정 옆 한 곳에 있어야 한다 — 사본을 두면 "그리는 쪽"과 "없다고 보는 쪽"이
+/// 조용히 갈라진다.
+///
+/// WMF·EMF·TIFF·PCX 는 변환기가 있으므로 **형식만 보고** 그릴 수 있다고 본다. 변환이
+/// 실패하는 개별 파손 바이트까지 잡으려면 여기서 변환을 한 번 더 돌려야 하는데, 그 비용은
+/// 매 페이지 조판마다 붙는다. 지금 동작(변환 실패 시 원본 그대로 → 빈 공간)은 그대로 두고
+/// 판정만 넓히지 않는다.
+pub fn is_displayable_image_data(data: &[u8]) -> bool {
+    match detect_image_mime_type(data) {
+        "image/png" | "image/jpeg" | "image/gif" | "image/webp" | "image/bmp" | "image/svg+xml"
+        | "image/tiff" | "image/x-pcx" | "image/x-wmf" | "image/x-emf" => true,
+        // EPS/AI 는 DOS EPS 바이너리 프리뷰(WMF/TIFF)를 품고 있을 때만 그릴 수 있다 (#4062).
+        // 순수 텍스트 PostScript 는 해석기가 없다.
+        "application/postscript" => eps_renderable_bytes(data).is_some(),
+        _ => false,
+    }
 }
 
 fn decode_image_with_format_limited(

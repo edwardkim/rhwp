@@ -202,9 +202,23 @@ fn issue_2020_passport_corner_quote_does_not_leave_extra_gap() {
 
     let open_gap = chars[yeo_idx].0 - chars[open_idx].0;
     let close_gap = chars[je_idx].0 - chars[close_idx].0;
+    // [#6478] **반각 기대를 뒤집는다 — 오라클이 반증했다.**
+    //
+    // 이 테스트는 "한컴이 돋움체 낫표를 반각으로 조판한다"(#2020)를 못박고 있었는데,
+    // 바로 이 문서를 한글 2022 로 다시 재니 **전각**이다.
+    //
+    //   p1 「 DotumChe size=9.96pt  bbox 폭 9.96  다음 글자까지 9.96
+    //   p1 「 DotumChe size=8.04pt  bbox 폭 8.04  다음 글자까지 7.92
+    //
+    // 설치된 어떤 폰트도 `「`(U+300C)를 반각으로 갖고 있지 않다 — Windows
+    // batang.ttc/gulim.ttc 8종과 한컴 동봉 HBATANG/HDOTUM 모두 **1.0 em** 이다.
+    // 진짜 반각 낫표는 `｢`(U+FF62)로 코드포인트가 다르고 `is_unicode_halfwidth_form`
+    // 이 따로 처리한다.
+    //
+    // 한글 9.96pt = 13.28px 이므로 전각 전진은 13px 근처다.
     assert!(
-        open_gap <= 8.5 && close_gap <= 8.5,
-        "낫표 advance 는 반각 수준이어야 함: open_gap={open_gap:.2}, close_gap={close_gap:.2}, line={line_text}"
+        (12.0..=14.5).contains(&open_gap) && (12.0..=14.5).contains(&close_gap),
+        "낫표 advance 는 전각이어야 함 (한글 2022 실측 9.96pt = 13.28px):          open_gap={open_gap:.2}, close_gap={close_gap:.2}, line={line_text}"
     );
 }
 

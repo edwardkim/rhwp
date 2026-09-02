@@ -1,0 +1,29 @@
+{
+  "id": "TE09",
+  "tier": 2,
+  "title": "실문서 본문 검색",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서(보험 기사)에서 '보험료' 가 몇 번 나오는지 answer.json 에 {\"hits\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "일치 건수",
+      "op": "answer_eq",
+      "answer": "hits",
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "보험료"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

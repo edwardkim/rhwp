@@ -1,0 +1,11 @@
+{
+  "id": "repeat_search",
+  "task": "387쪽 문서 검색 3회",
+  "choice": "session",
+  "first_tool": "hwp_open",
+  "why": "재파싱 비용이 이긴다.",
+  "forbidden": [
+    "invented_tools",
+    "relative_paths"
+  ]
+}

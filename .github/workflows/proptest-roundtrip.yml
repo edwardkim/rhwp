@@ -1,0 +1,390 @@
+name: Proptest roundtrip
+
+# M04-4 / #5388 — fuzz/README 가 범위 밖으로 둔 왕복 정합성(#2740) 계층.
+# nextest archive 정규 shard 도 tests/cases 원본을 돌리지만, 여기 잡은
+# debug + 이름 필터로 싸고 명시적으로 돌린다. 10분 퍼지가 아니다.
+#
+# M04-2 `prop_hwpx_roundtrip` · M04-3 `prop_hwp5_roundtrip` 원본이 없으면
+# skip (본체가 아직 안 들어와도 실패하지 않는다). 배선 확인용
+# `prop_roundtrip_ci` 는 항상 돈다.
+
+on:
+  pull_request:
+    branches: [main, devel]
+  push:
+    branches: [main, devel]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: proptest-roundtrip-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  trusted_postmerge_reuse:
+    uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    with:
+      workflow_file: proptest-roundtrip.yml
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
+
+  preflight:
+    name: Proptest preflight
+    runs-on: ubuntu-latest
+    needs: [trusted_postmerge_reuse]
+    outputs:
+      fast_pass: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'true' || steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
+    steps:
+      # 문서 전용 devel PR과 검증된 코드 후보 뒤의 review-only tail도 `prop roundtrip`
+      # check 이름은 남겨야 한다. workflow-level paths-ignore를 쓰면 required check가
+      # 사라질 수 있으므로 job 조건으로 skip한다.
+      - name: Detect review-only or trusted trailing review tail
+        id: detect
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            function setResult(fastPass, reason) {
+              core.setOutput('fast_pass', fastPass ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.info(`fast_pass=${fastPass} reason=${reason}`);
+            }
+
+            function setPendingBaseMergeResult(reason, candidateSha, mergeSha, sourceParentSha) {
+              core.setOutput('fast_pass', 'pending-base-merge-tree');
+              core.setOutput('reason', reason);
+              core.setOutput('candidate_sha', candidateSha);
+              core.setOutput('base_merge_sha', mergeSha);
+              core.setOutput('source_parent_sha', sourceParentSha);
+              core.info(
+                `fast_pass=pending-base-merge-tree reason=${reason} candidate_sha=${candidateSha} `
+                + `base_merge_sha=${mergeSha} source_parent_sha=${sourceParentSha}`,
+              );
+            }
+
+            if (context.eventName !== 'pull_request') {
+              setResult(false, `non-pull-request:${context.eventName}`);
+              return;
+            }
+            const pr = context.payload.pull_request;
+            if (!pr || pr.base.ref !== 'devel') {
+              setResult(false, `non-devel-base:${pr?.base?.ref || 'unknown'}`);
+              return;
+            }
+
+            function isAllowedReviewPath(file) {
+              const filename = file.filename;
+              if (filename.startsWith('mydocs/')) {
+                return true;
+              }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              if (file.status !== 'added') {
+                return false;
+              }
+              return isSampleReferencePath(filename);
+            }
+
+            function isSampleReferencePath(filename) {
+              return (
+                filename.startsWith('samples/')
+                && (
+                  filename.endsWith('.pdf')
+                  || filename.endsWith('.png')
+                )
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
+            }
+
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isCurrentBaseUpdateMerge(commit, baseSha) {
+              const parents = commit.parents || [];
+              return parents.length === 2
+                && parents.filter((parent) => parent.sha === baseSha).length === 1;
+            }
+
+            function isProptestExecutionPath(filename) {
+              return filename === '.github/workflows/proptest-roundtrip.yml'
+                || filename === 'scripts/run-prop-roundtrip.mjs'
+                || filename === 'scripts/tests/run-prop-roundtrip.test.mjs'
+                || filename === 'scripts/rust-test-suite-manifest.mjs'
+                || filename.startsWith('tools/proptest_roundtrip/');
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            if (files.length > 0 && files.every((file) => isAllowedReviewPath(file))) {
+              setResult(true, 'review-only-devel-pr');
+              return;
+            }
+            if (files.some((file) => (
+              isProptestExecutionPath(file.filename)
+              || isProptestExecutionPath(file.previous_filename || '')
+            ))) {
+              setResult(false, 'proptest-execution-surface-change');
+              return;
+            }
+
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            const reviewOnlyCandidates = [];
+            let codeCandidateSha = '';
+            let newerTailCommit = null;
+            let baseMergeBridge = null;
+            for (let index = commits.length - 1; index >= 0; index -= 1) {
+              const commit = commits[index];
+              const parents = commit.parents || [];
+              if (isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
+                if (newerTailCommit && newerTailCommit.parents[0].sha !== commit.sha) {
+                  setResult(false, 'code-or-non-mydocs-change');
+                  return;
+                }
+                if (baseMergeBridge) {
+                  setResult(false, `multiple-current-base-update-merges:${commit.sha}`);
+                  return;
+                }
+                const sourceParent = parents.find((parent) => parent.sha !== pr.base.sha);
+                if (!sourceParent) {
+                  setResult(false, 'current-base-source-parent-unavailable');
+                  return;
+                }
+                baseMergeBridge = {
+                  mergeSha: commit.sha,
+                  sourceParentSha: sourceParent.sha,
+                };
+                newerTailCommit = { parents: [{ sha: sourceParent.sha }] };
+                core.info(`including current-base update merge bridge ${commit.sha}`);
+                continue;
+              }
+              const detail = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: commit.sha,
+              });
+              const commitFiles = detail.data.files || [];
+              if (commitFiles.length === 0 || commitFiles.length >= 300) {
+                setResult(false, `unusable-file-list:${commit.sha}`);
+                return;
+              }
+              if (!commitFiles.every((file) => isAllowedReviewPath(file))) {
+                codeCandidateSha = commit.sha;
+                break;
+              }
+              if (parents.length !== 1
+                || (newerTailCommit && newerTailCommit.parents[0].sha !== commit.sha)) {
+                setResult(false, 'code-or-non-mydocs-change');
+                return;
+              }
+              reviewOnlyCandidates.push(commit.sha);
+              if (reviewOnlyCandidates.length > 20) {
+                setResult(false, 'review-tail-too-long');
+                return;
+              }
+              newerTailCommit = commit;
+            }
+            if (reviewOnlyCandidates.length === 0 && !codeCandidateSha) {
+              setResult(false, 'code-or-non-mydocs-change');
+              return;
+            }
+            if (codeCandidateSha) {
+              if (!newerTailCommit || newerTailCommit.parents[0].sha !== codeCandidateSha) {
+                setResult(false, 'code-or-non-mydocs-change');
+                return;
+              }
+              reviewOnlyCandidates.push(codeCandidateSha);
+            }
+
+            const candidateRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'proptest-roundtrip.yml',
+              event: 'pull_request',
+              per_page: 100,
+            });
+            for (const candidateSha of reviewOnlyCandidates) {
+              const latestCandidateRun = candidateRuns
+                .filter((run) => (
+                  run.event === 'pull_request'
+                  && run.head_sha === candidateSha
+                  && run.head_branch === pr.head.ref
+                  && run.head_repository?.id === pr.head.repo?.id
+                ))
+                .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
+              if (!latestCandidateRun || latestCandidateRun.status !== 'completed') {
+                core.info(`candidate not reusable yet: ${candidateSha}`);
+                continue;
+              }
+              const runCreatedAt = Date.parse(latestCandidateRun.created_at || '');
+              const pullCreatedAt = Date.parse(pr.created_at || '');
+              if (latestCandidateRun.conclusion !== 'success'
+                || !Number.isFinite(runCreatedAt)
+                || !Number.isFinite(pullCreatedAt)
+                || runCreatedAt < pullCreatedAt) {
+                setResult(false, 'review-tail-candidate-run-unavailable');
+                return;
+              }
+              if (baseMergeBridge) {
+                setPendingBaseMergeResult(
+                  `proptest-run-green:${latestCandidateRun.conclusion}`,
+                  candidateSha,
+                  baseMergeBridge.mergeSha,
+                  baseMergeBridge.sourceParentSha,
+                );
+                return;
+              }
+              setResult(true, `trusted-mydocs-tail:${candidateSha}`);
+              return;
+            }
+
+            setResult(false, 'review-tail-candidate-run-unavailable');
+
+      # 기준선 병합을 fast-pass bridge로 쓸 때는 untrusted source를 실행하지 않는다.
+      # 자동 3-way merge tree가 같거나, 충돌 해소가 mydocs로 한정될 때만 재사용한다.
+      - name: Check out current-base merge tree inputs
+        id: checkout-base-merge-tree
+        if: ${{ steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          fetch-depth: 0
+          lfs: false
+          persist-credentials: false
+
+      - name: Verify current-base merge tree
+        id: verify-base-merge-tree
+        if: ${{ always() && steps.detect.outputs.fast_pass == 'pending-base-merge-tree' }}
+        shell: bash
+        env:
+          BASE_MERGE_SHA: ${{ steps.detect.outputs.base_merge_sha }}
+          SOURCE_PARENT_SHA: ${{ steps.detect.outputs.source_parent_sha }}
+          CURRENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+
+          fail() {
+            printf 'verified=false\nreason=%s\n' "$1" >> "$GITHUB_OUTPUT"
+          }
+
+          if ! git cat-file -e "${BASE_MERGE_SHA}^{commit}" \
+            || ! git cat-file -e "${SOURCE_PARENT_SHA}^{commit}" \
+            || ! git cat-file -e "${CURRENT_BASE_SHA}^{commit}"; then
+            fail 'current-base-merge-input-unavailable'
+            exit 0
+          fi
+
+          if ! expected_tree="$(git merge-tree --write-tree "${SOURCE_PARENT_SHA}" "${CURRENT_BASE_SHA}" 2>/dev/null)"; then
+            resolution_check="$(mktemp)"
+            trap 'rm -f "${resolution_check}"' EXIT
+            if ! git show "${CURRENT_BASE_SHA}:scripts/verify_review_only_merge_resolution.py" \
+              > "${resolution_check}"; then
+              fail 'current-base-merge-resolution-check-unavailable'
+            elif resolution_reason="$(python3 "${resolution_check}" \
+              --repository . --base-sha "${CURRENT_BASE_SHA}" "${BASE_MERGE_SHA}")"; then
+              printf 'verified=true\nreason=%s\n' "${resolution_reason}" >> "$GITHUB_OUTPUT"
+            else
+              fail 'current-base-merge-resolution-not-mydocs'
+            fi
+            exit 0
+          fi
+          expected_tree="${expected_tree%%$'\n'*}"
+          actual_tree="$(git show -s --format=%T "${BASE_MERGE_SHA}")"
+          if [[ "${expected_tree}" != "${actual_tree}" ]]; then
+            fail 'current-base-merge-tree-mismatch'
+            exit 0
+          fi
+
+          printf 'verified=true\nreason=current-base-merge-tree-match\n' >> "$GITHUB_OUTPUT"
+
+      - name: Finalize fast pass
+        id: finalize
+        if: ${{ always() }}
+        shell: bash
+        env:
+          DETECTED_FAST_PASS: ${{ steps.detect.outputs.fast_pass || 'false' }}
+          DETECTED_REASON: ${{ steps.detect.outputs.reason || 'preflight-unavailable' }}
+          MERGE_TREE_VERIFIED: ${{ steps.verify-base-merge-tree.outputs.verified || 'false' }}
+          MERGE_TREE_REASON: ${{ steps.verify-base-merge-tree.outputs.reason || 'not-required' }}
+        run: |
+          set -euo pipefail
+          fast_pass='false'
+          reason="${DETECTED_REASON}"
+          case "${DETECTED_FAST_PASS}" in
+            true)
+              fast_pass='true'
+              ;;
+            pending-base-merge-tree)
+              if [[ "${MERGE_TREE_VERIFIED}" == 'true' ]]; then
+                fast_pass='true'
+                if [[ "${MERGE_TREE_REASON}" == 'current-base-merge-resolution-mydocs-only' ]]; then
+                  reason='current-base-update-merge-resolution-mydocs-only-green'
+                else
+                  reason='current-base-update-merge-tree-green'
+                fi
+              else
+                reason="${MERGE_TREE_REASON}"
+              fi
+              ;;
+          esac
+          printf 'fast_pass=%s\nreason=%s\n' "${fast_pass}" "${reason}" >> "$GITHUB_OUTPUT"
+
+  proptest-roundtrip:
+    name: prop roundtrip
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: preflight
+    if: ${{ always() && needs.preflight.result == 'success' && needs.preflight.outputs.fast_pass != 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+        with:
+          toolchain: 1.93.1
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
+        with:
+          shared-key: proptest-roundtrip
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
+
+      - name: Check property runner contract
+        run: node --test scripts/tests/run-prop-roundtrip.test.mjs
+
+      - name: Prepare derived Rust test suites
+        run: node scripts/rust-test-suite-manifest.mjs --prepare
+
+      - name: Run property roundtrip cases
+        run: node scripts/run-prop-roundtrip.mjs --cargo-test

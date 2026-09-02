@@ -1,0 +1,4981 @@
+{
+  "schemaVersion": "v-repeat.1.0",
+  "claim": "V-repeat",
+  "shardId": "006",
+  "records": [
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000145",
+      "uniquenessKey": "fa402d262b91dcbd|k=11|exitClass",
+      "artifact": {
+        "artifactId": "fa402d262b91dcbd",
+        "command": "replace-text",
+        "sample": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+        "argv": [
+          "edit",
+          "replace-text",
+          "--verify",
+          "--json",
+          "samples/gov/국가인권위원회/예규/2016/0081.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+          "replacedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 10,
+          "4": 1
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 10,
+        "isTie": false,
+        "majorityFrac": 0.9090909090909091
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.09090909090909094
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "rare_page"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000146",
+      "uniquenessKey": "fa402d262b91dcbd|k=13|exitClass",
+      "artifact": {
+        "artifactId": "fa402d262b91dcbd",
+        "command": "replace-text",
+        "sample": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+        "argv": [
+          "edit",
+          "replace-text",
+          "--verify",
+          "--json",
+          "samples/gov/국가인권위원회/예규/2016/0081.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+          "replacedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 13,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 12,
+          "4": 1
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 12,
+        "isTie": false,
+        "majorityFrac": 0.9230769230769231
+      },
+      "variance": {
+        "n": 13,
+        "distinct": 2,
+        "disagreement": 0.07692307692307687
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "rare_page"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000147",
+      "uniquenessKey": "fa402d262b91dcbd|k=15|exitClass",
+      "artifact": {
+        "artifactId": "fa402d262b91dcbd",
+        "command": "replace-text",
+        "sample": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+        "argv": [
+          "edit",
+          "replace-text",
+          "--verify",
+          "--json",
+          "samples/gov/국가인권위원회/예규/2016/0081.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+          "replacedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 15,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 13,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 14,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/예규/2016/0081.hwpx",
+            "replacedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 14,
+          "4": 1
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 14,
+        "isTie": false,
+        "majorityFrac": 0.9333333333333333
+      },
+      "variance": {
+        "n": 15,
+        "distinct": 2,
+        "disagreement": 0.06666666666666665
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "rare_page"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000148",
+      "uniquenessKey": "eae556b280fecee5|k=3|redactedCount",
+      "artifact": {
+        "artifactId": "eae556b280fecee5",
+        "command": "redact",
+        "sample": "samples/gov/관세청/예규/2016/0084.hwpx",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/관세청/예규/2016/0084.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+          "redactedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 3,
+      "check": {
+        "name": "redactedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "redactedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "4": 3
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 1.0
+      },
+      "variance": {
+        "n": 3,
+        "distinct": 1,
+        "disagreement": 0.0,
+        "sampleVariance": 0.0,
+        "mean": 4.0,
+        "min": 4.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "4",
+        "tie": false,
+        "pass": true,
+        "numeric": 4.0
+      },
+      "profile": "exit_mix"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000149",
+      "uniquenessKey": "eae556b280fecee5|k=5|redactedCount",
+      "artifact": {
+        "artifactId": "eae556b280fecee5",
+        "command": "redact",
+        "sample": "samples/gov/관세청/예규/2016/0084.hwpx",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/관세청/예규/2016/0084.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+          "redactedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "redactedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "redactedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "4": 4,
+          "5": 1
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.8
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.19999999999999996,
+        "sampleVariance": 0.19999999999999998,
+        "mean": 4.2,
+        "min": 4.0,
+        "max": 5.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "4.2",
+        "tie": false,
+        "pass": true,
+        "numeric": 4.2
+      },
+      "profile": "exit_mix"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000150",
+      "uniquenessKey": "eae556b280fecee5|k=7|redactedCount",
+      "artifact": {
+        "artifactId": "eae556b280fecee5",
+        "command": "redact",
+        "sample": "samples/gov/관세청/예규/2016/0084.hwpx",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/관세청/예규/2016/0084.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+          "redactedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "redactedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "redactedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "4": 6,
+          "5": 1
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 6,
+        "isTie": false,
+        "majorityFrac": 0.8571428571428571
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.1428571428571429,
+        "sampleVariance": 0.14285714285714288,
+        "mean": 4.142857142857143,
+        "min": 4.0,
+        "max": 5.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "4.142857",
+        "tie": false,
+        "pass": true,
+        "numeric": 4.142857142857143
+      },
+      "profile": "exit_mix"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000151",
+      "uniquenessKey": "eae556b280fecee5|k=9|redactedCount",
+      "artifact": {
+        "artifactId": "eae556b280fecee5",
+        "command": "redact",
+        "sample": "samples/gov/관세청/예규/2016/0084.hwpx",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/관세청/예규/2016/0084.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+          "redactedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 9,
+      "check": {
+        "name": "redactedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "redactedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "4": 7,
+          "5": 2
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 7,
+        "isTie": false,
+        "majorityFrac": 0.7777777777777778
+      },
+      "variance": {
+        "n": 9,
+        "distinct": 2,
+        "disagreement": 0.2222222222222222,
+        "sampleVariance": 0.19444444444444445,
+        "mean": 4.222222222222222,
+        "min": 4.0,
+        "max": 5.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "4.222222",
+        "tie": false,
+        "pass": true,
+        "numeric": 4.222222222222222
+      },
+      "profile": "exit_mix"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000152",
+      "uniquenessKey": "eae556b280fecee5|k=11|redactedCount",
+      "artifact": {
+        "artifactId": "eae556b280fecee5",
+        "command": "redact",
+        "sample": "samples/gov/관세청/예규/2016/0084.hwpx",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/관세청/예규/2016/0084.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+          "redactedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "redactedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "redactedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "4": 9,
+          "5": 2
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 9,
+        "isTie": false,
+        "majorityFrac": 0.8181818181818182
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.18181818181818177,
+        "sampleVariance": 0.16363636363636364,
+        "mean": 4.181818181818182,
+        "min": 4.0,
+        "max": 5.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "4.181818",
+        "tie": false,
+        "pass": true,
+        "numeric": 4.181818181818182
+      },
+      "profile": "exit_mix"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000153",
+      "uniquenessKey": "eae556b280fecee5|k=13|redactedCount",
+      "artifact": {
+        "artifactId": "eae556b280fecee5",
+        "command": "redact",
+        "sample": "samples/gov/관세청/예규/2016/0084.hwpx",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/관세청/예규/2016/0084.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+          "redactedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 13,
+      "check": {
+        "name": "redactedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "redactedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "4": 10,
+          "5": 3
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 10,
+        "isTie": false,
+        "majorityFrac": 0.7692307692307693
+      },
+      "variance": {
+        "n": 13,
+        "distinct": 2,
+        "disagreement": 0.23076923076923073,
+        "sampleVariance": 0.19230769230769232,
+        "mean": 4.230769230769231,
+        "min": 4.0,
+        "max": 5.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "4.230769",
+        "tie": false,
+        "pass": true,
+        "numeric": 4.230769230769231
+      },
+      "profile": "exit_mix"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000154",
+      "uniquenessKey": "eae556b280fecee5|k=15|redactedCount",
+      "artifact": {
+        "artifactId": "eae556b280fecee5",
+        "command": "redact",
+        "sample": "samples/gov/관세청/예규/2016/0084.hwpx",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/관세청/예규/2016/0084.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+          "redactedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 15,
+      "check": {
+        "name": "redactedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "redactedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 3,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 13,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 14,
+          "exitClass": 0,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/관세청/예규/2016/0084.hwpx",
+            "redactedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "4": 12,
+          "5": 3
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 12,
+        "isTie": false,
+        "majorityFrac": 0.8
+      },
+      "variance": {
+        "n": 15,
+        "distinct": 2,
+        "disagreement": 0.19999999999999996,
+        "sampleVariance": 0.17142857142857143,
+        "mean": 4.2,
+        "min": 4.0,
+        "max": 5.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "4.2",
+        "tie": false,
+        "pass": true,
+        "numeric": 4.2
+      },
+      "profile": "exit_mix"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000155",
+      "uniquenessKey": "ffbb8221591b3125|k=3|verify.identical",
+      "artifact": {
+        "artifactId": "ffbb8221591b3125",
+        "command": "set-cell",
+        "sample": "samples/gov/소방청/예규/2016/0087.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/소방청/예규/2016/0087.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+          "changedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 3,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 2,
+          "true": 1
+        },
+        "majority": "false",
+        "plurality": "false",
+        "majorityCount": 2,
+        "isTie": false,
+        "majorityFrac": 0.6666666666666666
+      },
+      "variance": {
+        "n": 3,
+        "distinct": 2,
+        "disagreement": 0.33333333333333337
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "false",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "majority_wrong"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000156",
+      "uniquenessKey": "ffbb8221591b3125|k=5|verify.identical",
+      "artifact": {
+        "artifactId": "ffbb8221591b3125",
+        "command": "set-cell",
+        "sample": "samples/gov/소방청/예규/2016/0087.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/소방청/예규/2016/0087.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+          "changedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 3,
+          "true": 2
+        },
+        "majority": "false",
+        "plurality": "false",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 0.6
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.4
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "false",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "majority_wrong"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000157",
+      "uniquenessKey": "ffbb8221591b3125|k=7|verify.identical",
+      "artifact": {
+        "artifactId": "ffbb8221591b3125",
+        "command": "set-cell",
+        "sample": "samples/gov/소방청/예규/2016/0087.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/소방청/예규/2016/0087.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+          "changedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 4,
+          "true": 3
+        },
+        "majority": "false",
+        "plurality": "false",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.5714285714285714
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.4285714285714286
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "false",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "majority_wrong"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000158",
+      "uniquenessKey": "ffbb8221591b3125|k=9|verify.identical",
+      "artifact": {
+        "artifactId": "ffbb8221591b3125",
+        "command": "set-cell",
+        "sample": "samples/gov/소방청/예규/2016/0087.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/소방청/예규/2016/0087.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+          "changedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 9,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 6,
+          "true": 3
+        },
+        "majority": "false",
+        "plurality": "false",
+        "majorityCount": 6,
+        "isTie": false,
+        "majorityFrac": 0.6666666666666666
+      },
+      "variance": {
+        "n": 9,
+        "distinct": 2,
+        "disagreement": 0.33333333333333337
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "false",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "majority_wrong"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000159",
+      "uniquenessKey": "ffbb8221591b3125|k=11|verify.identical",
+      "artifact": {
+        "artifactId": "ffbb8221591b3125",
+        "command": "set-cell",
+        "sample": "samples/gov/소방청/예규/2016/0087.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/소방청/예규/2016/0087.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+          "changedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 7,
+          "true": 4
+        },
+        "majority": "false",
+        "plurality": "false",
+        "majorityCount": 7,
+        "isTie": false,
+        "majorityFrac": 0.6363636363636364
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.36363636363636365
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "false",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "majority_wrong"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000160",
+      "uniquenessKey": "ffbb8221591b3125|k=13|verify.identical",
+      "artifact": {
+        "artifactId": "ffbb8221591b3125",
+        "command": "set-cell",
+        "sample": "samples/gov/소방청/예규/2016/0087.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/소방청/예규/2016/0087.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+          "changedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 13,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 8,
+          "true": 5
+        },
+        "majority": "false",
+        "plurality": "false",
+        "majorityCount": 8,
+        "isTie": false,
+        "majorityFrac": 0.6153846153846154
+      },
+      "variance": {
+        "n": 13,
+        "distinct": 2,
+        "disagreement": 0.3846153846153846
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "false",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "majority_wrong"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000161",
+      "uniquenessKey": "ffbb8221591b3125|k=15|verify.identical",
+      "artifact": {
+        "artifactId": "ffbb8221591b3125",
+        "command": "set-cell",
+        "sample": "samples/gov/소방청/예규/2016/0087.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/소방청/예규/2016/0087.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+          "changedCount": 4,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 15,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 13,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 14,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/소방청/예규/2016/0087.hwpx",
+            "changedCount": 4,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 10,
+          "true": 5
+        },
+        "majority": "false",
+        "plurality": "false",
+        "majorityCount": 10,
+        "isTie": false,
+        "majorityFrac": 0.6666666666666666
+      },
+      "variance": {
+        "n": 15,
+        "distinct": 2,
+        "disagreement": 0.33333333333333337
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "false",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "majority_wrong"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000162",
+      "uniquenessKey": "2c03dad45af7020d|k=3|removedCount",
+      "artifact": {
+        "artifactId": "2c03dad45af7020d",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+          "removedCount": 3,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 3,
+      "check": {
+        "name": "removedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "removedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "3": 1,
+          "4": 2
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 2,
+        "isTie": false,
+        "majorityFrac": 0.6666666666666666
+      },
+      "variance": {
+        "n": 3,
+        "distinct": 2,
+        "disagreement": 0.33333333333333337,
+        "sampleVariance": 0.33333333333333337,
+        "mean": 3.6666666666666665,
+        "min": 3.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "3.666667",
+        "tie": false,
+        "pass": false,
+        "numeric": 3.6666666666666665
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000163",
+      "uniquenessKey": "2c03dad45af7020d|k=5|removedCount",
+      "artifact": {
+        "artifactId": "2c03dad45af7020d",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+          "removedCount": 3,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "removedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "removedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "3": 2,
+          "4": 3
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 0.6
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.4,
+        "sampleVariance": 0.3,
+        "mean": 3.6,
+        "min": 3.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "3.6",
+        "tie": false,
+        "pass": false,
+        "numeric": 3.6
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000164",
+      "uniquenessKey": "2c03dad45af7020d|k=7|removedCount",
+      "artifact": {
+        "artifactId": "2c03dad45af7020d",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+          "removedCount": 3,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "removedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "removedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "3": 3,
+          "4": 4
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.5714285714285714
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.4285714285714286,
+        "sampleVariance": 0.2857142857142857,
+        "mean": 3.5714285714285716,
+        "min": 3.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "3.571429",
+        "tie": false,
+        "pass": false,
+        "numeric": 3.5714285714285716
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000165",
+      "uniquenessKey": "2c03dad45af7020d|k=9|removedCount",
+      "artifact": {
+        "artifactId": "2c03dad45af7020d",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+          "removedCount": 3,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 9,
+      "check": {
+        "name": "removedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "removedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "3": 3,
+          "4": 6
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 6,
+        "isTie": false,
+        "majorityFrac": 0.6666666666666666
+      },
+      "variance": {
+        "n": 9,
+        "distinct": 2,
+        "disagreement": 0.33333333333333337,
+        "sampleVariance": 0.25,
+        "mean": 3.6666666666666665,
+        "min": 3.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "3.666667",
+        "tie": false,
+        "pass": false,
+        "numeric": 3.6666666666666665
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000166",
+      "uniquenessKey": "2c03dad45af7020d|k=11|removedCount",
+      "artifact": {
+        "artifactId": "2c03dad45af7020d",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+          "removedCount": 3,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "removedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "removedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "3": 4,
+          "4": 7
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 7,
+        "isTie": false,
+        "majorityFrac": 0.6363636363636364
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.36363636363636365,
+        "sampleVariance": 0.2545454545454545,
+        "mean": 3.6363636363636362,
+        "min": 3.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "3.636364",
+        "tie": false,
+        "pass": false,
+        "numeric": 3.6363636363636362
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000167",
+      "uniquenessKey": "2c03dad45af7020d|k=13|removedCount",
+      "artifact": {
+        "artifactId": "2c03dad45af7020d",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+          "removedCount": 3,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 13,
+      "check": {
+        "name": "removedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "removedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "3": 5,
+          "4": 8
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 8,
+        "isTie": false,
+        "majorityFrac": 0.6153846153846154
+      },
+      "variance": {
+        "n": 13,
+        "distinct": 2,
+        "disagreement": 0.3846153846153846,
+        "sampleVariance": 0.25641025641025644,
+        "mean": 3.6153846153846154,
+        "min": 3.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "3.615385",
+        "tie": false,
+        "pass": false,
+        "numeric": 3.6153846153846154
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000168",
+      "uniquenessKey": "2c03dad45af7020d|k=15|removedCount",
+      "artifact": {
+        "artifactId": "2c03dad45af7020d",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+          "removedCount": 3,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 15,
+      "check": {
+        "name": "removedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "removedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 11,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 12,
+          "exitClass": 0,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 3,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 13,
+          "exitClass": 3,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 14,
+          "exitClass": 4,
+          "observed": "4",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/예규/2016/0093.hwpx",
+            "removedCount": 4,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "3": 5,
+          "4": 10
+        },
+        "majority": "4",
+        "plurality": "4",
+        "majorityCount": 10,
+        "isTie": false,
+        "majorityFrac": 0.6666666666666666
+      },
+      "variance": {
+        "n": 15,
+        "distinct": 2,
+        "disagreement": 0.33333333333333337,
+        "sampleVariance": 0.2380952380952381,
+        "mean": 3.6666666666666665,
+        "min": 3.0,
+        "max": 4.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "3.666667",
+        "tie": false,
+        "pass": false,
+        "numeric": 3.6666666666666665
+      },
+      "profile": "three_way"
+    }
+  ]
+}

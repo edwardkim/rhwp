@@ -1,0 +1,27 @@
+{
+  "id": "OP09",
+  "tier": 2,
+  "title": "누름틀 수 라이브 재계산 (field-01)",
+  "input": "samples/field-01.hwp",
+  "axis": "검증",
+  "instructions": "서식의 누름틀 개수를 answer.json 에 {\"fields\": N} 으로 제출하라. 채점기가 fields --json 의 fieldCount 를 다시 센다. 힌트: rhwp fields.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "필드 수 라이브 대조",
+      "op": "answer_eq",
+      "answer": "fields",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fieldCount"
+    }
+  ]
+}

@@ -1,0 +1,503 @@
+name: Trusted post-merge CI reuse
+
+on:
+  workflow_call:
+    inputs:
+      workflow_file:
+        description: Source workflow filename whose successful PR run may be reused.
+        required: true
+        type: string
+      caller_event_name:
+        description: Original caller event name; workflow_call itself is not evidence.
+        required: true
+        type: string
+      caller_ref:
+        description: Original caller Git ref.
+        required: true
+        type: string
+      caller_sha:
+        description: Original caller commit SHA.
+        required: true
+        type: string
+      require_duration_artifacts:
+        description: Require B/C duration artifacts before permitting CI worker reuse.
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      reuse:
+        description: Whether the caller may skip its workers.
+        value: ${{ jobs.verify.outputs.reuse }}
+      reason:
+        description: Fail-closed verification result.
+        value: ${{ jobs.verify.outputs.reason }}
+      source_run_id:
+        description: Exact successful PR workflow run used as evidence.
+        value: ${{ jobs.verify.outputs.source_run_id }}
+
+permissions: {}
+
+jobs:
+  verify:
+    name: Verify trusted post-merge reuse
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      reuse: ${{ steps.evaluate.outputs.reuse || steps.defaults.outputs.reuse }}
+      reason: ${{ steps.evaluate.outputs.reason || steps.defaults.outputs.reason }}
+      source_run_id: ${{ steps.evaluate.outputs.source_run_id || '' }}
+    steps:
+      - name: Default to full verification
+        id: defaults
+        shell: bash
+        run: |
+          printf 'reuse=false\nreason=not-a-devel-push\n' >> "$GITHUB_OUTPUT"
+
+      # pull_request runs execute refs/pull/N/merge, while the Actions API exposes
+      # only the source head as workflow_run.head_sha. Preserve the actual tested
+      # merge commit and tree in an immutable run artifact so a later devel push
+      # can prove that its merge tree is byte-for-byte identical.
+      - name: Capture PR merge-tree evidence
+        id: pr-merge-tree
+        if: ${{ inputs.caller_event_name == 'pull_request' && startsWith(inputs.caller_ref, 'refs/pull/') }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CALLER_SHA: ${{ inputs.caller_sha }}
+          WORKFLOW_FILE: ${{ inputs.workflow_file }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const mergeSha = process.env.CALLER_SHA;
+            const pullRequest = context.payload.pull_request;
+            if (
+              !/^[0-9a-f]{40}$/.test(mergeSha || '')
+              || !pullRequest
+              || pullRequest.head?.repo?.full_name !== process.env.GITHUB_REPOSITORY
+              || !/^[0-9a-f]{40}$/.test(pullRequest.base?.sha || '')
+              || !/^[0-9a-f]{40}$/.test(pullRequest.head?.sha || '')
+            ) {
+              core.warning('PR merge-tree identity is unavailable; no reuse evidence will be published.');
+              return;
+            }
+            try {
+              const { data: commit } = await github.rest.repos.getCommit({
+                ...context.repo,
+                ref: mergeSha,
+              });
+              const parents = (commit.parents || []).map((parent) => parent.sha);
+              const treeSha = commit.commit?.tree?.sha || '';
+              if (
+                commit.sha !== mergeSha
+                || parents.length !== 2
+                || parents[0] !== pullRequest.base.sha
+                || parents[1] !== pullRequest.head.sha
+                || !/^[0-9a-f]{40}$/.test(treeSha)
+              ) {
+                core.warning('PR merge ref does not match the event base/head pair; no evidence will be published.');
+                return;
+              }
+              const artifactName = `trusted-postmerge-merge-tree-v1-${mergeSha}-${treeSha}`;
+              fs.writeFileSync('trusted-postmerge-merge-tree.json', `${JSON.stringify({
+                schema: 1,
+                repository: process.env.GITHUB_REPOSITORY,
+                workflow_file: process.env.WORKFLOW_FILE,
+                run_id: String(context.runId),
+                merge_sha: mergeSha,
+                parents,
+                tree_sha: treeSha,
+              }, null, 2)}\n`);
+              core.setOutput('artifact_name', artifactName);
+              core.info(`Captured exact PR merge-tree evidence: ${artifactName}`);
+            } catch (error) {
+              core.warning(`Could not capture PR merge-tree evidence. ${error.message}`);
+            }
+
+      - name: Upload PR merge-tree evidence
+        if: ${{ steps.pr-merge-tree.outputs.artifact_name != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.pr-merge-tree.outputs.artifact_name }}
+          path: trusted-postmerge-merge-tree.json
+          retention-days: 7
+          if-no-files-found: error
+
+      # Resolve the merge's pre-PR source parent before any local verifier code
+      # is checked out. An initial rollout has no base verifier and therefore
+      # falls back to full CI; later PRs use this immutable pre-merge revision.
+      - name: Resolve trusted source base parent
+        id: source-base
+        if: ${{ inputs.caller_event_name == 'push' && inputs.caller_ref == 'refs/heads/devel' }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CALLER_SHA: ${{ inputs.caller_sha }}
+        with:
+          script: |
+            try {
+              const mergeSha = process.env.CALLER_SHA;
+              if (!/^[0-9a-f]{40}$/.test(mergeSha)) {
+                core.setOutput('sha', '');
+                core.warning('Caller SHA is unavailable; running full.');
+                return;
+              }
+              const { data: commit } = await github.rest.repos.getCommit({
+                ...context.repo,
+                ref: mergeSha,
+              });
+              const parents = (commit.parents || []).map((parent) => parent.sha);
+              if (commit.sha !== mergeSha || new Set(parents).size !== parents.length) {
+                core.setOutput('sha', '');
+                core.warning('Post-merge commit identity is unavailable; running full.');
+                return;
+              }
+              if (parents.length === 2) {
+                core.setOutput('sha', parents[0]);
+                return;
+              }
+              if (parents.length !== 1) {
+                core.setOutput('sha', '');
+                core.warning('Post-merge reuse requires one squash parent or two merge parents.');
+                return;
+              }
+              const pullRequests = await github.paginate(
+                github.rest.repos.listPullRequestsAssociatedWithCommit,
+                { ...context.repo, commit_sha: mergeSha, per_page: 100 },
+              );
+              const matching = pullRequests.filter((candidate) => (
+                candidate.state === 'closed'
+                && candidate.merged_at
+                && candidate.merge_commit_sha === mergeSha
+                && candidate.base?.ref === 'devel'
+                && candidate.head?.repo?.full_name === process.env.GITHUB_REPOSITORY
+                && /^[0-9a-f]{40}$/.test(candidate.head?.sha || '')
+              ));
+              if (matching.length !== 1) {
+                core.setOutput('sha', '');
+                core.warning('Squash post-merge reuse requires exactly one same-repository merged PR.');
+                return;
+              }
+              core.setOutput('sha', parents[0]);
+            } catch (error) {
+              core.setOutput('sha', '');
+              core.warning(`Could not resolve merge base; running full. ${error.message}`);
+            }
+
+      # This checkout is the pre-PR devel parent. It never checks out or executes
+      # the merged PR head, including a verifier changed by that PR.
+      - name: Checkout trusted verifier
+        if: ${{ steps.source-base.outputs.sha != '' }}
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.source-base.outputs.sha }}
+          sparse-checkout: |
+            scripts/verify-trusted-postmerge-ci-reuse.mjs
+          sparse-checkout-cone-mode: false
+
+      - name: Evaluate exact PR workflow evidence
+        id: evaluate
+        if: ${{ steps.source-base.outputs.sha != '' }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          WORKFLOW_FILE: ${{ inputs.workflow_file }}
+          REQUIRE_DURATION_ARTIFACTS: ${{ inputs.require_duration_artifacts }}
+          CALLER_EVENT_NAME: ${{ inputs.caller_event_name }}
+          CALLER_REF: ${{ inputs.caller_ref }}
+          CALLER_SHA: ${{ inputs.caller_sha }}
+        with:
+          script: |
+            const path = require('node:path');
+            const { pathToFileURL } = require('node:url');
+            const { owner, repo } = context.repo;
+            let classifyReviewOnlyCommit;
+            let evaluateTrustedPostMergeReuse;
+            try {
+              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse } = await import(pathToFileURL(path.join(
+                process.env.GITHUB_WORKSPACE,
+                'scripts/verify-trusted-postmerge-ci-reuse.mjs',
+              )).href));
+            } catch (error) {
+              core.warning(`Trusted base has no compatible verifier; running full. ${error.message}`);
+              core.setOutput('reuse', 'false');
+              core.setOutput('reason', 'trusted-base-verifier-unavailable');
+              core.setOutput('source_run_id', '');
+              return;
+            }
+
+            async function collectEvidence() {
+              const mergeSha = process.env.CALLER_SHA;
+              const mergeCommit = (await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: mergeSha,
+              })).data;
+              const pullRequests = await github.paginate(
+                github.rest.repos.listPullRequestsAssociatedWithCommit,
+                { owner, repo, commit_sha: mergeSha, per_page: 100 },
+              );
+              const pullRequest = pullRequests.filter((candidate) => (
+                candidate.state === 'closed'
+                && candidate.merged_at
+                && candidate.merge_commit_sha === mergeSha
+                && candidate.base?.ref === 'devel'
+                && candidate.head?.repo?.full_name === process.env.GITHUB_REPOSITORY
+              ));
+              if (pullRequest.length !== 1) {
+                return { mergeCommit, pullRequests, pullFiles: [], workflowRuns: [] };
+              }
+              const pr = pullRequest[0];
+              const mergeParents = (mergeCommit.parents || []).map((parent) => parent.sha);
+              const baseParent = mergeParents.length === 1
+                ? mergeParents[0]
+                : mergeParents.find((sha) => sha !== pr.head.sha);
+              const [sourceCommit, comparison, pullFiles, workflowRuns] = await Promise.all([
+                github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }).then((response) => response.data),
+                baseParent
+                  ? github.rest.repos.compareCommits({ owner, repo, base: baseParent, head: pr.head.sha })
+                    .then((response) => response.data)
+                  : Promise.resolve({ merge_base_commit: { sha: '' } }),
+                github.paginate(github.rest.pulls.listFiles, {
+                  owner, repo, pull_number: pr.number, per_page: 100,
+                }),
+                github.paginate(github.rest.actions.listWorkflowRuns, {
+                  owner,
+                  repo,
+                  workflow_id: process.env.WORKFLOW_FILE,
+                  event: 'pull_request',
+                  branch: pr.head.ref,
+                  per_page: 100,
+                }),
+              ]);
+              const prCommitHeaders = await github.paginate(
+                github.rest.pulls.listCommits,
+                { owner, repo, pull_number: pr.number, per_page: 100 },
+              );
+              const prCommits = [];
+              for (let index = prCommitHeaders.length - 1; index >= 0; index -= 1) {
+                const commit = (await github.rest.repos.getCommit({
+                  owner,
+                  repo,
+                  ref: prCommitHeaders[index].sha,
+                })).data;
+                prCommits.unshift(commit);
+                if (classifyReviewOnlyCommit(commit).kind !== "review") {
+                  break;
+                }
+              }
+              const mergeTreeEvidenceByRunId = {};
+              const createdAt = Date.parse(pr.created_at || '');
+              const mergedAt = Date.parse(pr.merged_at || '');
+              const finalHeadRuns = workflowRuns.filter((run) => (
+                run.event === 'pull_request'
+                && run.head_sha === pr.head.sha
+                && run.head_branch === pr.head.ref
+                && run.head_repository?.full_name === process.env.GITHUB_REPOSITORY
+                && Number.isFinite(createdAt)
+                && Number.isFinite(mergedAt)
+                && Date.parse(run.created_at || '') >= createdAt
+                && Date.parse(run.updated_at || '') <= mergedAt
+              )).sort((left, right) => (
+                Date.parse(right.updated_at || '') - Date.parse(left.updated_at || '')
+                || Number(right.run_attempt || 0) - Number(left.run_attempt || 0)
+                || Number(right.id || 0) - Number(left.id || 0)
+              ));
+              const finalHeadRun = finalHeadRuns[0];
+              async function recordMergeTreeEvidence(workflowRun, artifacts) {
+                if (
+                  workflowRun?.event !== 'pull_request'
+                  || workflowRun?.head_branch !== pr.head.ref
+                  || workflowRun?.head_repository?.full_name !== process.env.GITHUB_REPOSITORY
+                  || !/^[0-9a-f]{40}$/.test(workflowRun?.head_sha || '')
+                ) {
+                  return;
+                }
+                const evidenceArtifacts = artifacts
+                  .filter((artifact) => artifact.expired !== true)
+                  .map((artifact) => ({
+                    artifact,
+                    match: /^trusted-postmerge-merge-tree-v1-([0-9a-f]{40})-([0-9a-f]{40})$/
+                      .exec(artifact.name || ''),
+                  }))
+                  .filter(({ match }) => match !== null);
+                if (evidenceArtifacts.length === 1) {
+                  const [, testedMergeSha, encodedTreeSha] = evidenceArtifacts[0].match;
+                  const testedMerge = (await github.rest.repos.getCommit({
+                    owner,
+                    repo,
+                    ref: testedMergeSha,
+                  })).data;
+                  const testedParents = (testedMerge.parents || []).map((parent) => parent.sha);
+                  const testedTreeSha = testedMerge.commit?.tree?.sha || '';
+                  if (
+                    testedMerge.sha === testedMergeSha
+                    && testedParents.length === 2
+                    && testedParents[1] === workflowRun.head_sha
+                    && testedTreeSha === encodedTreeSha
+                  ) {
+                    mergeTreeEvidenceByRunId[String(workflowRun.id)] = {
+                      sha: testedMergeSha,
+                      parents: testedParents,
+                      treeSha: testedTreeSha,
+                    };
+                  }
+                }
+              }
+              if (finalHeadRun?.status === 'completed' && finalHeadRun?.conclusion === 'success') {
+                const artifacts = await github.paginate(
+                  github.rest.actions.listWorkflowRunArtifacts,
+                  { owner, repo, run_id: finalHeadRun.id, per_page: 100 },
+                );
+                await recordMergeTreeEvidence(finalHeadRun, artifacts);
+              }
+              const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
+                .includes(process.env.WORKFLOW_FILE);
+              const reviewOnlyWorker = {
+                "proptest-roundtrip.yml": {
+                  preflight: "Proptest preflight",
+                  worker: "prop roundtrip",
+                },
+                "adapter-diff.yml": {
+                  preflight: "adapter inter-diff preflight",
+                  worker: "adapter inter-diff",
+                },
+              }[process.env.WORKFLOW_FILE];
+              const fullLaneRunIds = [];
+              if (requireFullLaneEvidence) {
+                for (const workflowRun of workflowRuns) {
+                  if (workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
+                    continue;
+                  }
+                  if (process.env.WORKFLOW_FILE === "ci.yml") {
+                    const artifacts = await github.paginate(
+                      github.rest.actions.listWorkflowRunArtifacts,
+                      { owner, repo, run_id: workflowRun.id, per_page: 100 },
+                    );
+                    const expected = new Set(["b", "c", "d"].map((label) => (
+                      `nextest-target-durations-${workflowRun.id}-${label}`
+                    )));
+                    const available = new Set(artifacts.map((artifact) => artifact.name));
+                    if ([...expected].every((name) => available.has(name))) {
+                      fullLaneRunIds.push(String(workflowRun.id));
+                      await recordMergeTreeEvidence(workflowRun, artifacts);
+                    }
+                    continue;
+                  }
+                  const jobs = await github.paginate(
+                    github.rest.actions.listJobsForWorkflowRun,
+                    { owner, repo, run_id: workflowRun.id, per_page: 100 },
+                  );
+                  if (jobs.some((job) => (
+                    /^Analyze \(.+\)$/.test(job.name || "")
+                    && job.status === "completed"
+                    && job.conclusion === "success"
+                  ))) {
+                    fullLaneRunIds.push(String(workflowRun.id));
+                    const artifacts = await github.paginate(
+                      github.rest.actions.listWorkflowRunArtifacts,
+                      { owner, repo, run_id: workflowRun.id, per_page: 100 },
+                    );
+                    await recordMergeTreeEvidence(workflowRun, artifacts);
+                  }
+                }
+              }
+              const reviewOnlyFastPassRunIds = [];
+              if (reviewOnlyWorker) {
+                for (const workflowRun of workflowRuns) {
+                  if (workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
+                    continue;
+                  }
+                  const jobs = await github.paginate(
+                    github.rest.actions.listJobsForWorkflowRun,
+                    { owner, repo, run_id: workflowRun.id, per_page: 100 },
+                  );
+                  const preflightSucceeded = jobs.some((job) => (
+                    job.name === reviewOnlyWorker.preflight
+                    && job.status === "completed"
+                    && job.conclusion === "success"
+                  ));
+                  const workerSkipped = jobs.some((job) => (
+                    job.name === reviewOnlyWorker.worker
+                    && job.status === "completed"
+                    && job.conclusion === "skipped"
+                  ));
+                  if (preflightSucceeded && workerSkipped) {
+                    reviewOnlyFastPassRunIds.push(String(workflowRun.id));
+                  }
+                }
+              }
+              const evidence = {
+                mergeCommit,
+                pullRequests,
+                sourceCommit,
+                mergeBaseSha: comparison.merge_base_commit?.sha || '',
+                pullFiles,
+                prCommits,
+                workflowRuns,
+                mergeTreeEvidenceByRunId,
+              };
+              if (requireFullLaneEvidence) {
+                evidence.fullLaneRunIds = fullLaneRunIds;
+              }
+              if (reviewOnlyWorker) {
+                evidence.reviewOnlyFastPassRunIds = reviewOnlyFastPassRunIds;
+              }
+              return evidence;
+            }
+
+            let result;
+            try {
+              const evidence = await collectEvidence();
+              result = evaluateTrustedPostMergeReuse({
+                eventName: process.env.CALLER_EVENT_NAME,
+                ref: process.env.CALLER_REF,
+                repository: process.env.GITHUB_REPOSITORY,
+                mergeSha: process.env.CALLER_SHA,
+                ...evidence,
+              });
+            } catch (error) {
+              core.warning(`Trusted post-merge reuse is unavailable; running full. ${error.message}`);
+              result = {
+                reuse: false,
+                reason: 'evidence-collection-error',
+                sourceRunId: '',
+                pullNumber: '',
+              };
+            }
+            if (result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true') {
+              try {
+                const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+                  owner,
+                  repo,
+                  run_id: Number(result.sourceRunId),
+                  per_page: 100,
+                });
+                const expected = new Set([
+                  `nextest-target-durations-${result.sourceRunId}-b`,
+                  `nextest-target-durations-${result.sourceRunId}-c`,
+                  `nextest-target-durations-${result.sourceRunId}-d`,
+                ]);
+                const available = new Set(artifacts.map((artifact) => artifact.name));
+                if (![...expected].every((name) => available.has(name))) {
+                  result = {
+                    reuse: false,
+                    reason: 'candidate-duration-artifacts-unavailable',
+                    sourceRunId: '',
+                    pullNumber: '',
+                  };
+                }
+              } catch (error) {
+                core.warning(`Could not inspect candidate duration artifacts; running full. ${error.message}`);
+                result = {
+                  reuse: false,
+                  reason: 'candidate-duration-artifact-check-error',
+                  sourceRunId: '',
+                  pullNumber: '',
+                };
+              }
+            }
+            core.setOutput('reuse', result.reuse ? 'true' : 'false');
+            core.setOutput('reason', result.reason);
+            core.setOutput('source_run_id', result.sourceRunId || '');
+            core.info(`reuse=${result.reuse} reason=${result.reason} source_run_id=${result.sourceRunId || 'none'}`);

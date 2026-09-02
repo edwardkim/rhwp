@@ -85,6 +85,12 @@ copy(resolve(__dirname, 'options.js'), resolve(DIST, 'options.js'));
 // 아이콘
 mkdirSync(resolve(DIST, 'icons'), { recursive: true });
 copy(resolve(__dirname, 'icons'), resolve(DIST, 'icons'));
+// viewer.html 의 apple-touch-icon 참조. 확장 manifest 아이콘은 128px까지만
+// 필요하지만, Studio viewer가 요청하는 256px 정적 자산도 패키지에 포함한다.
+copy(
+  resolve(ROOT, 'rhwp-studio', 'public', 'icons', 'icon-256.png'),
+  resolve(DIST, 'icons', 'icon-256.png'),
+);
 
 // i18n
 copy(resolve(__dirname, '_locales'), resolve(DIST, '_locales'));
@@ -134,6 +140,7 @@ const REQUIRED_DIST_FILES = [
   'viewer.html',
   'print.html', // print-surface.ts 가 확장 루트 기준으로 연다
   'theme-init.js',
+  'icons/icon-256.png', // viewer.html apple-touch-icon
   'wasm/rhwp.js',
   'wasm/rhwp_bg.wasm',
 ];

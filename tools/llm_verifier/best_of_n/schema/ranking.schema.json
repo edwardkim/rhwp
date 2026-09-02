@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/best_of_n_ranking.json",
+  "title": "V-bon ranking output",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "claim",
+    "kind",
+    "setId",
+    "n",
+    "intendedChangedCount",
+    "winnerId",
+    "rankFields",
+    "ranking"
+  ],
+  "not": {
+    "anyOf": [
+      { "required": ["process_steps"] },
+      { "required": ["processSteps"] },
+      { "required": ["proseScore"] }
+    ]
+  },
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "claim": { "const": "V-bon" },
+    "kind": { "const": "bestOfNRanking" },
+    "rankFields": {
+      "const": ["changedCount", "invalid", "verify.identical", "exitClass"]
+    },
+    "winnerId": { "type": "string" },
+    "ranking": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidateId",
+          "expectedRank",
+          "changedCount",
+          "invalid",
+          "exitClass",
+          "key"
+        ]
+      }
+    }
+  }
+}

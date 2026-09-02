@@ -60,6 +60,8 @@ FORM = "samples/field-01.hwp"
 GOV = "samples/2022년 국립국어원 업무계획.hwp"
 TRADE = "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp"
 ODD = "samples/143E433F503322BD33.hwp"
+# [#4100] 차트가 있는 실사용 보고서 — 차트 명령의 봉투를 비지 않게 한다.
+CHART = "samples/issue2006/1790387_prep_final_report.hwpx"
 
 PLAN_A = {
     "planVersion": "1.0",
@@ -71,7 +73,13 @@ PLAN_A = {
 
 LIVE = {
     "info": ([ "info", DOC, "--json"], "문서 신상 — 형식·쪽수·구역·글꼴"),
+    "word-count": (["word-count", DOC, "--json"], "문서 분량 — 구역·문단·글자·어절·쪽"),
+    "bookmarks": (["bookmarks", DOC, "--json"], "문서 책갈피 목록"),
+    "headers-footers": (["headers-footers", FORM, "--json"], "문서 머리말/꼬리말 목록"),
+    "charts": (["charts", CHART, "--json"], "문서 차트 목록 — --chart N 순번"),
+    "header-footer": (["header-footer", FORM, "--header", "--json"], "구역 머리말/꼬리말 한 건"),
     "explain": (["explain", FORM, "--json"], "메타·구조·표·누름틀 한 봉투 요약"),
+    "explore": (["explore", DOC, "--json"], "이 문서로 무엇을 할지 — 문서별 행동 메뉴 라우팅"),
     "digest": (["digest", GOV, "--json"], "요약·RAG 청킹 — 개요와 발췌"),
     "search": (["search", GOV, "국어", "--json"], "주소(쪽) 붙은 전수 검색"),
     "export-text": (["export-text", DOC, "-p", "0", "--json"], "쪽 단위 평문"),
@@ -79,6 +87,8 @@ LIVE = {
     "fields": (["fields", FORM, "--json"], "누름틀 필드 대장"),
     "export-tables": (["export-tables", DOC, "--json"], "표 전량 — 좌표·병합 보존"),
     "table-to-csv": (["table-to-csv", DOC, "--table", "1", "-o", "{tmp}/t1.csv", "--json"], "표 → CSV 추출"),
+    # [#4100] 차트 → CSV. 차트가 있는 문서라야 봉투가 비지 않는다.
+    "chart-to-csv": (["chart-to-csv", CHART, "--chart", "1", "--json"], "차트 숫자 → CSV 추출 (행=카테고리, 열=계열)"),
     "extract-data": (["extract-data", TRADE, "--json"], "날짜·금액·수량 인식 추출"),
     "ir-diff": (["ir-diff", FORM, FORM, "--json"], "IR 구조 비교 — 자기 대조는 identical"),
     "inspect injection": (["inspect", "injection", ODD, "--json"], "프롬프트 주입 신호 스윕"),
@@ -86,7 +96,10 @@ LIVE = {
     "inspect unicode": (["inspect", "unicode", ODD, "--json"], "화면-바이트 불일치 스윕"),
     "edit replace-text": (["edit", "replace-text", DOC, "--find", "규제", "--replace", "코덱스검증", "--dry-run", "--json"], "문구 치환 (dry-run — 디스크 무변경 예고 봉투)"),
     "edit set-cell": (["edit", "set-cell", DOC, "--table", "1", "--row", "0", "--col", "0", "--text", "코덱스", "--dry-run", "--json"], "표 셀 교정 (dry-run)"),
+    "edit set-chart-data": (["edit", "set-chart-data", CHART, "--chart", "1", "--data", "{\"series\":[]}", "--dry-run", "--json"], "차트 숫자 데이터 기록 (dry-run)"),
+    "edit insert-number": (["edit", "insert-number", FORM, "--count", "3", "--dry-run", "--json"], "쪽 새 번호로 시작 (dry-run)"),
     "edit fill-fields": (["edit", "fill-fields", FORM, "--data", "{\"회사명\": \"코덱스\"}", "--dry-run", "--json"], "누름틀 채움 (dry-run)"),
+    "edit apply-endnote-shape": (["edit", "apply-endnote-shape", FORM, "--props", "{\"startNumber\":2}", "--dry-run", "--json"], "미주 모양 적용 (dry-run)"),
     "edit redact": (["edit", "redact", FORM, "--dry-run", "--json"], "개인정보 탐지 (dry-run = 읽기 전용 탐지)"),
     "run": (["run", "{plan_a}", "--json"], "계획서 원자 실행 — 선검증 후 단 한 번 저장"),
     "replay": (["replay", "--plan-json", "{plan_a_inline}", "--json"], "작업 영수증 발급(attest) — 3해시"),
@@ -102,6 +115,7 @@ CONTRACT_ONLY_REASON = {
     "batch": "NDJSON 스트림(stdin 목록) 명령 — 단일 봉투 표본 형식과 달라 계약만 싣는다. 실행 규약은 rhwp-bulk-pipeline 스킬 참조.",
     "mcp-serve": "상주 서버 — 표본 실행이 세션을 남긴다. 통합 규약은 rhwp-mcp-session 스킬과 mcp_integration_guide 참조.",
     "keygen": "비밀키 파일을 만드는 명령 — 표본이라도 키 재료를 저장소 문서에 싣지 않는다.",
+    "armor": "nonce 격벽이 호출마다 무작위(getrandom)라 표본 실행 봉투가 매번 달라 결정론이 깨진다 — 계약(플래그·봉투 필드·출처)은 아래가 전부이며 자기서술에서 생성됐다. 실측 검증은 tests/armor_contract.rs 가 정본.",
     "verify-signature": "표본에 실키 체인 픽스처가 필요하고 키 생성이 무작위라 표본 결정론이 깨진다 — 전 경로 실측은 tests/signing_contract.rs 가 정본.",
     "harness": "키 생성 무작위(공개키·서명)로 표본 결정론이 깨진다 — 루프 절차와 실측은 tests/harness_contract.rs 와 mydocs/tech/agent_harness_no1.md 가 정본.",
     "harness init": "harness 공통 사유와 같다 — 키 무작위.",
@@ -121,20 +135,24 @@ COMMON_REASON = "입력 합성 비용 또는 산출 부피 때문에 표본 실�
 # 가족 분류 — (장 파일 이름, 제목, 소속 명령 판별자)
 FAMILIES = [
     ("10_조회", "조회 — 문서를 읽고 파악한다",
-     ["info", "explain", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
+     ["info", "word-count", "bookmarks", "form-value", "headers-footers", "header-footer", "charts", "explain", "explore", "digest", "search", "export-text", "export-structure", "fields", "dump-pages", "extract-pages"]),
     ("20_표와_데이터", "표·데이터 — 구조화 수확과 왕복",
-     ["export-tables", "table-to-csv", "csv-to-table", "extract-data", "scan"]),
+     ["export-tables", "table-to-csv", "csv-to-table", "extract-data", "scan",
+      # [#4100] 차트 숫자 데이터도 같은 CSV 왕복 규약을 쓴다 — 표와 한 가족이다.
+      "charts", "chart-to-csv", "csv-to-chart"]),
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
-     ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit insert-image", "edit redact", "edit sanitize", "run"]),
+     ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit apply-endnote-shape", "edit set-chart-data", "edit insert-number", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
-     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "split-document"]),
+     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document",
+      "export-png-gpu", "gpu-info"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
+      "layout-anomaly",
       "keygen", "verify-signature", "harness",
       "harness init", "harness wrap", "harness-status", "anchor", "gate", "bundle", "disclose", "settle",
       "audit-report", "recall-scope", "conformance"]),
     ("60_보안", "보안 — 받은 문서를 의심한다",
-     ["inspect", "inspect injection", "inspect hidden-text", "inspect unicode"]),
+     ["inspect", "inspect injection", "inspect hidden-text", "inspect unicode", "armor", "threat-scan"]),
     ("70_자기서술", "자기서술 — 도구가 도구를 설명한다",
      ["capabilities", "export-provenance-map", "export-ir-schema", "export-plan-schema",
       "export-capabilities-schema", "export-agent-manifest", "export-ontology", "export-doclang-schema"]),

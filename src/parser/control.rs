@@ -8,24 +8,16 @@ use super::byte_reader::ByteReader;
 use super::record::Record;
 use super::tags;
 
-use std::collections::HashMap;
-
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, UnknownControl,
+    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumCtrl,
+    PageNumberPos, PageStartsOn, UnknownControl,
 };
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
-use crate::model::image::{ImageEffect, Picture};
-use crate::model::shape::{
-    ArcShape, Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, CurveShape,
-    DrawingObjAttr, EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, PolygonShape,
-    RectangleShape, ShapeComponentAttr, ShapeObject, TextWrap, VertAlign, VertRelTo,
-};
-use crate::model::style::{Fill, ShapeBorderLine};
+use crate::model::shape::{Caption, CaptionDirection, CaptionVertAlign};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::Padding;
-use crate::model::Point;
 
 /// ctrl_id 기반으로 컨트롤 파싱
 ///
@@ -44,6 +36,10 @@ pub fn parse_control(ctrl_id: u32, ctrl_data: &[u8], child_records: &[Record]) -
         tags::CTRL_PAGE_NUM_POS => parse_page_num_pos(ctrl_data),
         tags::CTRL_PAGE_HIDE => parse_page_hide(ctrl_data),
         tags::CTRL_BOOKMARK => parse_bookmark(ctrl_data),
+        tags::CTRL_INDEX_MARK => parse_index_mark(ctrl_data),
+        tags::CTRL_PAGE_NUM_CTRL => parse_page_num_ctrl(ctrl_data),
+        // [#4397] 'tdut'(덧말) — 상수 이름과 달리 CTRL_CHAR_OVERLAP 이 'tdut' 다.
+        tags::CTRL_CHAR_OVERLAP => parse_ruby(ctrl_data),
         tags::CTRL_TCPS => parse_char_overlap(ctrl_data),
         tags::CTRL_EQUATION => parse_equation_control(ctrl_data, child_records),
         tags::CTRL_FORM => parse_form_control(ctrl_data, child_records),
@@ -131,6 +127,9 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         field_id,
         ctrl_id,
         instance_id: None,
+        // [#4896] HWP5 는 ctrl_id 자체가 종류라 원문 문자열이 없다 — 직렬화기가
+        // `tags::OWPML_EXTRA_FIELD_TYPES` 로 ctrl_id 에서 이름을 되찾는다.
+        raw_type: None,
         ctrl_data_name: None,
         memo_index,
         memo_paragraphs: Vec::new(),
@@ -344,6 +343,9 @@ fn parse_cell(records: &[Record]) -> Cell {
     // bit 19~20: 줄바꿈 방식
     // bit 21~22: 세로 정렬 (0=top, 1=center, 2=bottom)
     cell.text_direction = ((list_attr >> 16) & 0x07) as u8;
+    // [#4898] 줄바꿈 방식(bit 19~20)도 싣는다 — 종전엔 읽지 않아 저장에서 0(BREAK)으로
+    // 굳었고, SQUEEZE 셀의 줄 수·높이가 달라져 한글 쪽수까지 흔들렸다.
+    cell.line_wrap = ((list_attr >> 19) & 0x03) as u8;
     let v_align = ((list_attr >> 21) & 0x03) as u8;
     cell.vertical_align = match v_align {
         1 => VerticalAlign::Center,
@@ -723,6 +725,42 @@ fn parse_bookmark(ctrl_data: &[u8]) -> Control {
     Control::Bookmark(bm)
 }
 
+/// 쪽 번호 시작 쪽 파싱 ('pgct')
+///
+/// ctrl_data 는 `u32` 하나다(실측 11문서·102건 전부 8바이트 CTRL_HEADER).
+fn parse_page_num_ctrl(ctrl_data: &[u8]) -> Control {
+    let raw = if ctrl_data.len() >= 4 {
+        u32::from_le_bytes([ctrl_data[0], ctrl_data[1], ctrl_data[2], ctrl_data[3]])
+    } else {
+        0
+    };
+    Control::PageNumCtrl(PageNumCtrl {
+        page_starts_on: PageStartsOn::from_hwp5(raw),
+    })
+}
+
+/// 찾아보기 표식 파싱 ('idxm')
+///
+/// ctrl_data 레이아웃 (ctrl_id 4바이트는 이미 제거된 상태) — 실측 06926:
+///   WORD(2) + WCHAR[n]  첫째 키
+///   WORD(2) + WCHAR[m]  둘째 키
+///   4바이트 예약(전부 0)
+///
+/// arm 이 없으면 `Control::Unknown` 이 되는데, 그러면 HWPX 저장기가 슬롯으로는
+/// 세어 놓고 XML 은 내지 않아 문단 축이 8유닛 짧아진다 — 한글은 범위를 넘는
+/// `textpos` 를 만나면 파일을 아예 열지 못한다.
+fn parse_index_mark(ctrl_data: &[u8]) -> Control {
+    let mut im = IndexMark::default();
+    let mut r = ByteReader::new(ctrl_data);
+    if let Ok(first) = r.read_hwp_string() {
+        im.first_key = first;
+    }
+    if let Ok(second) = r.read_hwp_string() {
+        im.second_key = second;
+    }
+    Control::IndexMark(im)
+}
+
 /// 글자 겹침 파싱 (HWP 스펙 표 152)
 ///
 /// ctrl_data 레이아웃 (ctrl_id 4바이트는 이미 제거된 상태):
@@ -733,6 +771,25 @@ fn parse_bookmark(ctrl_data: &[u8]) -> Control {
 ///   UINT8(1): 펼침
 ///   UINT8(1): charshape 아이디 수(cnt)
 ///   UINT[cnt](4×cnt): charshape_id 배열
+/// [#4397] 덧말('tdut') CTRL_HEADER payload 파싱 — HWP5 스펙 표 151.
+///
+/// `mainText`(HWP string) + `subText`(HWP string) + 덧말 위치/Fsizeratio/Option/
+/// Style number/정렬 (UINT32 ×5). 종전에는 arm 이 없어 `Control::Unknown` 으로
+/// 떨어졌고, HWPX→HWP5 저장도 최소 CTRL_HEADER(짝 맞춤, #4677)만 내 내용이
+/// 통째로 소실됐다 — 저장측(serialize_control)과 함께 양방향을 잇는다.
+fn parse_ruby(ctrl_data: &[u8]) -> Control {
+    let mut ruby = crate::model::control::Ruby::default();
+    let mut r = ByteReader::new(ctrl_data);
+    ruby.main_text = r.read_hwp_string().unwrap_or_default();
+    ruby.ruby_text = r.read_hwp_string().unwrap_or_default();
+    ruby.pos_type = r.read_u32().unwrap_or(0) as u8;
+    ruby.sz_ratio = r.read_u32().unwrap_or(0) as u8;
+    ruby.option = r.read_u32().unwrap_or(0);
+    ruby.style_id_ref = r.read_u32().unwrap_or(0) as u16;
+    ruby.align = r.read_u32().unwrap_or(0) as u8;
+    Control::Ruby(ruby)
+}
+
 fn parse_char_overlap(ctrl_data: &[u8]) -> Control {
     let mut co = CharOverlap::default();
     if ctrl_data.len() < 2 {
@@ -936,7 +993,14 @@ fn parse_form_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
         ..Default::default()
     };
 
-    // ctrl_data에서 width/height 추출 (bytes 12-19)
+    // [#6266] ctrl_data 는 다른 개체와 같은 `CommonObjAttr` 다 — 종전에는 앞
+    // 12바이트(attr·세로/가로 오프셋)를 버리고 width/height 만 읽어 배치를
+    // 잃었고, 그래서 렌더러가 양식 개체를 인라인 말고는 놓을 수 없었다.
+    if !ctrl_data.is_empty() {
+        form.common = parse_common_obj_attr(ctrl_data);
+    }
+    // width/height 는 종전 오프셋(12..20)을 그대로 유지한다 — 이 두 필드는
+    // 직렬화·왕복이 이미 참조하고 있어 값의 출처를 바꾸지 않는다.
     if ctrl_data.len() >= 20 {
         let mut r = ByteReader::new(ctrl_data);
         let _attr = r.read_u32().unwrap_or(0);

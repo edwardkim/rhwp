@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "word-count__default",
+  "command": "word-count",
+  "family": "query",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp word-count <파일> --json ",
+  "whyThisMode": "숫자만 실린다",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "구역·문단·글자·어절·쪽 수는 엔진이 IR 본문을 센 숫자다. 본문 문자열은 싣지 않는다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "sectionCount": "R",
+    "paragraphCount": "R",
+    "charCount": "R",
+    "wordCount": "R",
+    "pageCount": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "봉투 통째로 엔진 데이터로 다뤄도 된다. 표지가 false 인지 확인.",
+  "trap": "숫자를 근거로 '짧은 문서는 안전'이라고 쓰지 않는다. 1쪽에도 주입문이 있다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "system_prompt",
+    "tool_name",
+    "tool_arg_path",
+    "tool_arg_output",
+    "shell_command",
+    "url_destination",
+    "http_request_body",
+    "run_plan_json",
+    "email_recipient",
+    "next_cli_subcommand",
+    "filename_from_title",
+    "scheduler_payload"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-word-count.hwp",
+    "sectionCount": 0,
+    "paragraphCount": 0,
+    "charCount": 0,
+    "wordCount": 0,
+    "pageCount": 0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

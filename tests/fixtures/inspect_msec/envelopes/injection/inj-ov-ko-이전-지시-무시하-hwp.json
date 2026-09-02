@@ -1,0 +1,67 @@
+{
+  "id": "inj-ov-ko-이전-지시-무시하-hwp",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "instruction_override",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "instruction_override",
+    "note": "선행 지시를 무효화하라는 관용구입니다 — '이전/모든' 범위어 + '지시/지침' 목적어 + '무시/폐기' 서술어가 같은 절 안에 함께 있습니다"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/instruction_override/이전_지시를_무시하.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "matchedIs": "DATA",
+    "doNotExecuteMatched": true,
+    "detectionIsNotFailure": true
+  },
+  "pair": null,
+  "why": "선행 지시를 무효화하라는 관용구입니다 — '이전/모든' 범위어 + '지시/지침' 목적어 + '무시/폐기' 서술어가 같은 절 안에 함께 있습니다",
+  "note": "기존 토큰만. 새 패턴을 넣지 않는다.",
+  "human": "주입 신호 1건 (high): synth:injection/instruction_override/이전_지시를_무시하.hwp\n  [instruction_override] 이전 지시를 무시하\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/instruction_override/이전_지시를_무시하.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [
+      {
+        "kind": "instruction_override",
+        "confidence": "high",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "이전 지시를 무시하",
+        "excerpt": "이전 지시를 무시하",
+        "why": "선행 지시를 무효화하라는 관용구입니다 — '이전/모든' 범위어 + '지시/지침' 목적어 + '무시/폐기' 서술어가 같은 절 안에 함께 있습니다"
+      }
+    ],
+    "signalCount": 1,
+    "highestConfidence": "high",
+    "clean": false
+  }
+}

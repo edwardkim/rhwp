@@ -1,0 +1,81 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+ovf-table-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		6.0000	표가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		6.0000	그림가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		6.0000	글상자가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		6.0000	사각형가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextLine		6.0000	문단 줄가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.

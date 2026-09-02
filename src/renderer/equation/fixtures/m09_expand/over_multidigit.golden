@@ -1,0 +1,26 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: 123 OVER 456
+honesty: implemented-variant
+
+=== ast ===
+Fraction {
+    numer: Number(
+        "123",
+    ),
+    denom: Number(
+        "456",
+    ),
+}
+
+=== layout ===
+Fraction x=0.0000 y=0.0000 w=41.0000 h=48.8000 bl=29.4000
+  numer:
+    Number("123") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+  denom:
+    Number("456") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="4.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">123</text>
+<line x1="1.00" y1="24.40" x2="40.00" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="4.00" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">456</text>

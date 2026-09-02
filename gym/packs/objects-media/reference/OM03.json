@@ -1,0 +1,19 @@
+{
+  "id": "OM03",
+  "steps": [
+    {
+      "answer": {
+        "width": {
+          "cmd": [
+            "thumbnail",
+            "{input}",
+            "-o",
+            "{sub:thumb.png}",
+            "--json"
+          ],
+          "path": "width"
+        }
+      }
+    }
+  ]
+}

@@ -1,9 +1,8 @@
 //! 내부 클립보드 + HTML 내보내기 관련 native 메서드
 
 use super::super::helpers::{
-    border_line_type_to_u8_val, clipboard_color_to_css, clipboard_escape_html, color_ref_to_css,
-    detect_clipboard_image_mime, get_textbox_from_shape, get_textbox_from_shape_mut,
-    utf16_pos_to_char_idx,
+    clipboard_color_to_css, clipboard_escape_html, detect_clipboard_image_mime,
+    get_textbox_from_shape, get_textbox_from_shape_mut, utf16_pos_to_char_idx,
 };
 use super::super::queries::field_query::rebuild_char_offsets;
 use crate::document_core::{ClipboardData, DocumentCore};
@@ -20,6 +19,27 @@ const PASTE_CASCADE_STEP_HU: u32 = 567;
 /// `table_extract::MAX_NEST_DEPTH`/`explain::MAX_NEST_DEPTH`/`hidden_text::MAX_NEST_DEPTH`와
 /// 같은 값·형태 — 병적으로 깊은 중첩 문서에서 export 재귀가 스택을 태우지 않게 막는다.
 const MAX_NEST_DEPTH: usize = 8;
+
+/// [#4275] HTML 내보내기에 쓸 셀 BorderFill — `table.zones` 가 덮어쓴 유효 값.
+/// 셀 고유 `border_fill_id` 만 보면 cellzone 회색 헤더 등이 빠진다.
+fn html_cell_border_fill_id(
+    table: &crate::model::table::Table,
+    cell: &crate::model::table::Cell,
+) -> u16 {
+    table
+        .zones
+        .iter()
+        .rev()
+        .find(|zone| {
+            zone.border_fill_id > 0
+                && zone.start_row <= cell.row
+                && cell.row <= zone.end_row
+                && zone.start_col <= cell.col
+                && cell.col <= zone.end_col
+        })
+        .map(|zone| zone.border_fill_id)
+        .unwrap_or(cell.border_fill_id)
+}
 
 /// 셀 HTML 내보내기에서 지원하지 않는 컨트롤을 경고 주석에 남기기 위한 표시 이름.
 /// `Control::Table`/`Control::Picture`는 `control_to_html`이 직접 처리하므로 이 경로를
@@ -39,6 +59,8 @@ fn control_kind_label(control: &Control) -> &'static str {
         Control::NewNumber(_) => "NewNumber",
         Control::PageNumberPos(_) => "PageNumberPos",
         Control::Bookmark(_) => "Bookmark",
+        Control::IndexMark(_) => "IndexMark",
+        Control::PageNumCtrl(_) => "PageNumCtrl",
         Control::Hyperlink(_) => "Hyperlink",
         Control::Ruby(_) => "Ruby",
         Control::CharOverlap(_) => "CharOverlap",
@@ -83,7 +105,8 @@ fn clipboard_control_char_code(ctrl: &Control) -> u16 {
         Control::Footnote(_) | Control::Endnote(_) => 0x0011,
         Control::AutoNumber(_) | Control::NewNumber(_) => 0x0012,
         Control::PageNumberPos(_) | Control::PageHide(_) => 0x0015,
-        Control::Bookmark(_) => 0x0016,
+        Control::Bookmark(_) | Control::IndexMark(_) => 0x0016,
+        Control::PageNumCtrl(_) => 0x0015,
         Control::CharOverlap(_) => 0x0017,
     }
 }
@@ -105,11 +128,11 @@ fn recompute_clipboard_control_mask(para: &Paragraph) -> u32 {
     mask
 }
 
-fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
+pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
     // [#4149] clip 사본이지만 다중 문단 붙여넣기에서 중간 문단이 통째로 문서에
     // 스플라이스되어 렌더 입력이 될 수 있다 — 컨트롤 제거로 compose 입력이
     // 바뀌므로 단일줄 과밀 memo 를 무효화한다.
-    para.invalidate_single_line_overflow_memo();
+    para.invalidate_layout_inputs();
     let old_controls = std::mem::take(&mut para.controls);
     let old_records = std::mem::take(&mut para.ctrl_data_records);
     let mut index_map = vec![None; old_controls.len()];
@@ -162,7 +185,7 @@ fn text_to_split_logical_offset(para: &Paragraph, text_offset: usize) -> usize {
     text_offset + before_count
 }
 
-fn clip_paragraph_text_range_for_clipboard(
+pub(super) fn clip_paragraph_text_range_for_clipboard(
     source: &Paragraph,
     start_char_offset: usize,
     end_char_offset: usize,
@@ -1711,8 +1734,6 @@ impl DocumentCore {
     /// 처리할 때는 `depth + 1`을 넘겨, 그 컨트롤이 표이면 `control_to_html`이
     /// 상한을 검사한 뒤 그 값으로 재귀한다.
     fn table_to_html_at_depth(&self, table: &crate::model::table::Table, depth: usize) -> String {
-        use crate::renderer::style_resolver::ResolvedBorderStyle;
-
         let mut html = String::from(
             "<table style=\"border-collapse:collapse;\" cellpadding=\"0\" cellspacing=\"0\">\n",
         );
@@ -1733,8 +1754,10 @@ impl DocumentCore {
                 // (styles.border_styles는 0-based). 다른 소비처(예:
                 // renderer/layout/table_layout.rs, document_core/queries/hidden_text.rs)와
                 // 동일하게 -1 보정한다. [#4412]
-                if cell.border_fill_id > 0 {
-                    let idx = (cell.border_fill_id as usize).saturating_sub(1);
+                // [#4275] cellzone overlay 가 있으면 그 유효 id 를 쓴다.
+                let fill_id = html_cell_border_fill_id(table, cell);
+                if fill_id > 0 {
+                    let idx = (fill_id as usize).saturating_sub(1);
                     if let Some(bs) = self.styles.border_styles.get(idx) {
                         self.apply_border_fill_css(&mut td_style, bs);
                     }
@@ -2221,7 +2244,6 @@ mod clipboard_border_fill_offset_tests {
     use crate::document_core::DocumentCore;
     use crate::model::style::{BorderFill, BorderLine, BorderLineType, Fill, FillType, SolidFill};
     use crate::model::table::{Cell, Table};
-    use crate::renderer::style_resolver::resolve_styles;
 
     /// 4방향 동일한 실선 테두리 + 단색 채우기를 갖는 BorderFill을 만든다.
     fn border_fill(border_color: u32, fill_color: u32) -> BorderFill {
@@ -2260,7 +2282,7 @@ mod clipboard_border_fill_offset_tests {
             border_fill(0x00FF00, 0xFFFF00), // index 3 → id 4 (REAL, 테두리#00ff00/배경#00ffff)
             border_fill(0x008CFF, 0xFF00FF), // index 4 → id 5 (decoy2, 테두리#ff8c00/배경#ff00ff)
         ];
-        core.styles = resolve_styles(&core.document.doc_info, core.dpi);
+        core.rebuild_resolved_styles();
 
         let table = Table {
             row_count: 1,

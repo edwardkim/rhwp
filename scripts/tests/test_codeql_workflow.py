@@ -13,6 +13,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CODEQL_WORKFLOW = REPO_ROOT / ".github/workflows/codeql.yml"
+RUST_PR_CODEQL_CONFIG = REPO_ROOT / ".github/codeql/rust-pr.yml"
 
 
 def job_body(workflow: str, job_name: str) -> str:
@@ -75,6 +76,12 @@ class CodeQLWorkflowTests(unittest.TestCase):
             workflow.index("!allowedSecurityConclusions.has(securityCheck.conclusion)"),
             workflow.index("return { state: 'green' };"),
         )
+
+    def test_trusted_postmerge_reuse_receives_original_caller_identity(self) -> None:
+        trusted_reuse = job_body(self.workflow, "trusted_postmerge_reuse")
+        self.assertIn("caller_event_name: ${{ github.event_name }}", trusted_reuse)
+        self.assertIn("caller_ref: ${{ github.ref }}", trusted_reuse)
+        self.assertIn("caller_sha: ${{ github.sha }}", trusted_reuse)
 
     def test_green_analyze_jobs_cannot_reuse_a_failed_security_check(self) -> None:
         outputs = self._run_preflight("failure")
@@ -172,9 +179,21 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn("name: Analyze (${{ matrix.language }})", analyze)
         self.assertIn("name: Skip unselected language", analyze)
         self.assertIn(f"if: ${{{{ !{selected} }}}}", analyze)
-        self.assertGreaterEqual(analyze.count(f"if: ${{{{ {selected} }}}}"), 3)
+        self.assertEqual(analyze.count(f"if: ${{{{ {selected} }}}}"), 2)
         self.assertIn(
-            "if: ${{ matrix.language == 'rust' && " + selected + " }}",
+            "if: ${{ matrix.language != 'rust' && " + selected + " }}",
+            analyze,
+        )
+        self.assertIn(
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name == 'pull_request' }}",
+            analyze,
+        )
+        self.assertIn(
+            "if: ${{ matrix.language == 'rust' && "
+            + selected
+            + " && github.event_name != 'pull_request' }}",
             analyze,
         )
         job_if = next(
@@ -236,18 +255,35 @@ class CodeQLWorkflowTests(unittest.TestCase):
             self.assertEqual(outputs["classification_status"], "full")
             self.assertEqual(outputs["reason"], reason)
 
-    def test_blocking_lane_uses_default_build_mode_without_manual_prebuild(self) -> None:
+    def test_rust_lane_uses_explicit_none_build_mode_without_manual_prebuild(self) -> None:
         analyze = job_body(self.workflow, "analyze")
         self.assertIn("language: [javascript-typescript, python, rust]", analyze)
         self.assertIn("languages: ${{ matrix.language }}", analyze)
         self.assertIn("security-events: write", analyze)
         self.assertIn("contents: read", analyze)
         self.assertIn("Perform CodeQL Analysis", analyze)
-        self.assertNotIn("build-mode:", analyze)
+        rust_init = analyze.split("      - name: Initialize CodeQL (Rust)\n", 1)[1].split(
+            "\n      - name:", 1
+        )[0]
+        self.assertIn("languages: rust", rust_init)
+        self.assertIn("build-mode: none", rust_init)
+        self.assertIn("config-file: .github/codeql/rust-pr.yml", rust_init)
+        rust_full_init = analyze.split(
+            "      - name: Initialize CodeQL (Rust full scan)\n", 1
+        )[1].split("\n      - name:", 1)[0]
+        self.assertIn("languages: rust", rust_full_init)
+        self.assertIn("build-mode: none", rust_full_init)
+        self.assertNotIn("config-file:", rust_full_init)
         self.assertNotIn("actions/cache/", analyze)
         self.assertNotIn("cargo build", analyze)
         self.assertNotIn("rust-blocking-results", analyze)
         self.assertNotIn("actions/upload-artifact", analyze)
+
+    def test_pr_rust_config_limits_scanning_to_production_paths(self) -> None:
+        config = RUST_PR_CODEQL_CONFIG.read_text(encoding="utf-8")
+        self.assertIn("paths:\n", config)
+        for path in ("src/**", "crates/**", "rhwp-desk/src/**", "build.rs"):
+            self.assertIn(f"  - {path}\n", config)
 
     def test_temporary_measurement_jobs_and_artifacts_are_absent(self) -> None:
         workflow = self.workflow
@@ -417,14 +453,19 @@ PREFLIGHT_SCRIPT
             )
             completed = subprocess.run(
                 ["bash"],
-                input=self.language_script,
+                # Windows text pipes translate LF to CRLF.  Feed Bash bytes so
+                # the YAML shell block keeps its POSIX line endings.
+                input=self.language_script.encode("utf-8"),
                 check=False,
-                text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=env,
             )
-            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stderr.decode("utf-8", errors="replace"),
+            )
             output.seek(0)
             return dict(
                 line.rstrip("\n").split("=", maxsplit=1)

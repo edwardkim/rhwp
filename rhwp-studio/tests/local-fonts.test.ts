@@ -18,6 +18,10 @@ import {
 } from '../src/core/local-fonts.ts';
 import { analyzeDocumentFonts } from '../src/core/document-font-status.ts';
 import { fontFamilyChainForDisplay } from '../src/core/font-substitution.ts';
+import {
+  rememberRawCanvasFontDescriptor,
+  resetRawCanvasFontDescriptorForTests,
+} from '../src/core/canvas-font-raw.ts';
 
 const STORAGE_KEY = 'rhwp-local-fonts';
 
@@ -134,6 +138,59 @@ function createProbeDocument(installedFamilies: readonly string[]): unknown {
   };
 }
 
+function createPatchedProbeDocument(installedFamilies: readonly string[]): {
+  document: unknown;
+  patchedSetCount: () => number;
+  rawSetCount: () => number;
+} {
+  const installed = new Set(installedFamilies);
+  let patchedSetCalls = 0;
+  let rawSetCalls = 0;
+  const context = {
+    rawFont: '',
+    measureText(text: string) {
+      const fallback = this.rawFont.split(',').pop()?.trim() ?? 'sans-serif';
+      const target = firstQuotedFontFamily(this.rawFont);
+      const fallbackWidth = fallback.includes('monospace') ? 12 : fallback.includes('serif') ? 10 : 11;
+      const width = target && installed.has(target) ? fallbackWidth + 3 : fallbackWidth;
+      return { width: text.length * width };
+    },
+  };
+  const rawDescriptor: PropertyDescriptor = {
+    configurable: true,
+    get(this: typeof context) {
+      return this.rawFont;
+    },
+    set(this: typeof context, value: string) {
+      rawSetCalls++;
+      this.rawFont = value;
+    },
+  };
+  rememberRawCanvasFontDescriptor(rawDescriptor);
+  Object.defineProperty(context, 'font', {
+    configurable: true,
+    get: rawDescriptor.get,
+    set(this: typeof context, value: string) {
+      patchedSetCalls++;
+      rawDescriptor.set!.call(this, value.replace(/"KoPub바탕체 Light"/u, 'monospace'));
+    },
+  });
+  return {
+    document: {
+      createElement(tagName: string) {
+        if (tagName !== 'canvas') return {};
+        return {
+          getContext(contextId: string) {
+            return contextId === '2d' ? context : null;
+          },
+        };
+      },
+    },
+    patchedSetCount: () => patchedSetCalls,
+    rawSetCount: () => rawSetCalls,
+  };
+}
+
 function utf16Be(value: string): Uint8Array {
   const bytes = new Uint8Array(value.length * 2);
   for (let index = 0; index < value.length; index += 1) {
@@ -213,16 +270,19 @@ test('저장된 localStorage snapshot 로드는 queryLocalFonts를 호출하지 
     assert.equal(queryCount, 0);
     assert.deepEqual(getLocalFonts(), sortedKo(['로컬A', '로컬B']));
     assert.deepEqual(getDetectedLocalFonts(), sortedKo(['로컬A', '로컬B', '함초롬바탕']));
+    assert.equal(analyzeDocumentFonts(['새 문서 글꼴']).shouldPromptLocalAccess, true);
     assert.deepEqual(getLocalFontState(), {
       supported: true,
       method: 'local-font-access',
       loaded: true,
       stored: true,
       source: 'local-font-access',
-      complete: true,
+      complete: false,
       storage: 'local-storage',
       count: 3,
-      checkedFamilies: sortedKo(['로컬A', '로컬B', '함초롬바탕']),
+      checkedFamilies: [],
+      probedFamilies: [],
+      unresolvedFamilies: [],
       detectedAt: '2026-06-21T00:00:00.000Z',
       lastError: null,
     });
@@ -499,9 +559,52 @@ test('SFNT 지역화 이름을 보존해 HWP 한글 full name을 영문 family�
     assert.deepEqual(report.fonts.map(item => [item.fontName, item.status, item.source]), [
       ['08서울한강체 M', 'available', 'local'],
     ]);
-    assert.match(cssChain, /^"08SeoulHangang"/);
-    assert.equal(stored.version, 2);
+    assert.equal(firstQuotedFontFamily(cssChain), record?.fullName);
+    assert.equal(stored.version, 3);
     assert.equal('blob' in (stored.fontRecords?.[0] ?? {}), false);
+  } finally {
+    await clearStoredLocalFonts();
+    resetLocalFontsForTests();
+    restoreGlobals(originals);
+  }
+});
+
+test('여러 style이 있는 local family는 요청 face의 full name을 Canvas chain 첫 항목으로 둔다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = {
+    browser: g.browser,
+    chrome: g.chrome,
+    document: g.document,
+    localStorage: g.localStorage,
+    queryLocalFonts: g.queryLocalFonts,
+  };
+  const storage = createStorage();
+
+  resetLocalFontsForTests();
+  g.browser = undefined;
+  g.chrome = undefined;
+  g.localStorage = storage;
+  g.queryLocalFonts = async () => [{
+    family: 'KoPub Batang',
+    fullName: 'KoPub Batang Light',
+    postscriptName: 'KoPubBatang-Light',
+    style: 'Light',
+    blob: async () => new Blob([createSfntWithNameRecords([
+      { nameId: 1, value: 'KoPub바탕체' },
+      { nameId: 2, value: 'Light' },
+      { nameId: 4, value: 'KoPub바탕체 Light' },
+      { nameId: 6, value: 'KoPubBatang-Light' },
+    ])]),
+  }];
+
+  try {
+    await detectLocalFonts({ force: true, includeRegistered: true });
+    const record = resolveLocalFont('KoPub바탕체 Light');
+    const chain = fontFamilyChainForDisplay('KoPub바탕체 Light');
+
+    assert.equal(record?.style, 'Light');
+    assert.equal(firstQuotedFontFamily(chain), record?.fullName);
+    assert.notEqual(firstQuotedFontFamily(chain), record?.family);
   } finally {
     await clearStoredLocalFonts();
     resetLocalFontsForTests();
@@ -861,6 +964,102 @@ test('Local Font Access API가 없으면 문서 후보 글꼴만 probe snapshot�
     assert.equal(state.complete, false);
     assert.deepEqual(state.checkedFamilies, sortedKo(['문서로컬', '없는글꼴', '함초롬바탕']));
   } finally {
+    await clearStoredLocalFonts();
+    resetLocalFontsForTests();
+    restoreGlobals(originals);
+  }
+});
+
+test('Local Font Access가 문서 face를 누락하면 미해소 후보만 probe해 exact face를 보존한다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = {
+    browser: g.browser,
+    chrome: g.chrome,
+    document: g.document,
+    localStorage: g.localStorage,
+    queryLocalFonts: g.queryLocalFonts,
+  };
+  let storedSnapshot: LocalFontSnapshot | null = null;
+  let queryCount = 0;
+
+  resetLocalFontsForTests();
+  g.browser = undefined;
+  g.chrome = undefined;
+  g.localStorage = {
+    get length() {
+      return storedSnapshot ? 1 : 0;
+    },
+    clear() {
+      storedSnapshot = null;
+    },
+    getItem() {
+      return null;
+    },
+    key() {
+      return storedSnapshot ? STORAGE_KEY : null;
+    },
+    removeItem() {
+      storedSnapshot = null;
+    },
+    setItem(_key: string, value: string) {
+      storedSnapshot = JSON.parse(value) as LocalFontSnapshot;
+    },
+  } as Storage;
+  g.queryLocalFonts = async () => {
+    queryCount++;
+    return [{
+      family: '열거된 글꼴',
+      fullName: '열거된 글꼴 Regular',
+      postscriptName: 'Enumerated-Regular',
+      style: 'Regular',
+    }];
+  };
+  const patchedProbe = createPatchedProbeDocument(['KoPub바탕체 Light']);
+  g.document = patchedProbe.document;
+
+  try {
+    const fonts = await detectLocalFonts({
+      force: true,
+      includeRegistered: true,
+      candidateFamilies: ['열거된 글꼴 Regular', 'KoPub바탕체 Light', '없는글꼴'],
+    });
+    const state = getLocalFontState();
+    const chain = fontFamilyChainForDisplay('KoPub바탕체 Light');
+
+    assert.equal(queryCount, 1);
+    assert.equal(patchedProbe.patchedSetCount(), 0);
+    assert.ok(patchedProbe.rawSetCount() > 0);
+    assert.ok(patchedProbe.rawSetCount() <= 48);
+    assert.ok(fonts.includes('KoPub바탕체 Light'));
+    assert.equal(resolveLocalFont('KoPub바탕체 Light')?.fullName, 'KoPub바탕체 Light');
+    assert.equal(resolveLocalFont('KoPub바탕체 Light')?.detectionSource, 'font-presence-probe');
+    assert.equal(resolveLocalFont('열거된 글꼴 Regular')?.detectionSource, 'local-font-access');
+    assert.match(chain, /^"KoPub바탕체 Light"/u);
+    assert.deepEqual(
+      state.checkedFamilies,
+      sortedKo(['열거된 글꼴 Regular', 'KoPub바탕체 Light', '없는글꼴']),
+    );
+    assert.equal(storedSnapshot?.version, 3);
+    assert.deepEqual(storedSnapshot?.probedFamilies, ['KoPub바탕체 Light']);
+    assert.deepEqual(storedSnapshot?.unresolvedFamilies, ['없는글꼴']);
+    assert.deepEqual(state.probedFamilies, ['KoPub바탕체 Light']);
+    assert.deepEqual(state.unresolvedFamilies, ['없는글꼴']);
+    assert.equal(state.complete, false);
+
+    const rawSetCount = patchedProbe.rawSetCount();
+    assert.deepEqual(
+      await detectLocalFonts({
+        candidateFamilies: ['KoPub바탕체 Light'],
+        includeRegistered: true,
+      }),
+      fonts,
+    );
+    assert.equal(queryCount, 1);
+    assert.equal(patchedProbe.rawSetCount(), rawSetCount);
+    assert.equal(await loadLocalFontBytes('KoPub바탕체 Light'), null);
+    assert.equal(queryCount, 1);
+  } finally {
+    resetRawCanvasFontDescriptorForTests();
     await clearStoredLocalFonts();
     resetLocalFontsForTests();
     restoreGlobals(originals);

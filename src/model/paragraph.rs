@@ -1,10 +1,10 @@
 //! 문단 (Paragraph, CharRun, LineSeg, RangeTag)
 
-use super::control::Control;
+use super::control::{Control, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Paragraph {
     /// 문자 수 (제어 문자 포함)
     pub char_count: u32,
@@ -18,6 +18,11 @@ pub struct Paragraph {
     pub column_type: ColumnBreakType,
     /// 원본 break_type 바이트 (라운드트립 보존용, 0이면 column_type에서 재구성)
     pub raw_break_type: u8,
+    /// `column_type=Page` 가 원본의 명시적 쪽나눔이 아니라 파서가 저장 당시
+    /// 자연 쪽 경계(HWP3 pgy 감소·break_flag)에서 승격한 합성값인지 여부.
+    /// 합성 나눔은 rhwp 조판(원본 쪽배치 정합)에만 쓰고, 저장 포맷으로 내보내면
+    /// 한글 재조판의 자연 경계와 이중 작용해 빈 쪽을 만든다(07615 264→329쪽).
+    pub page_break_synthesized: bool,
     /// 문단 텍스트 (UTF-16에서 변환된 문자열)
     pub text: String,
     /// 텍스트 문자별 UTF-16 코드 유닛 위치 (LineSeg/CharShapeRef 위치와 매핑용)
@@ -27,6 +32,47 @@ pub struct Paragraph {
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
     pub line_segs: Vec<LineSeg>,
+    /// [#5961] `line_segs[*].text_start` 를 HWP5 문단 축으로 올리는 데 필요한 보정폭.
+    ///
+    /// `LineSeg::text_start` 는 파서가 **파일 값을 그대로** 담으므로 출처마다 축이 다르다.
+    /// HWP5·HWP3·HML 은 확장 제어 하나가 8 UTF-16 유닛을 차지하는 HWP5 축이고, HWPX 는
+    /// `hp:secPr`(구역 머리 run 소속)이 자리를 차지하지 않는 더 짧은 축이다. 반면 같은
+    /// 문단의 `char_count`·`char_offsets`·`char_shapes` 는 **출처와 무관하게 언제나
+    /// HWP5 축**이다. 그래서 HWPX 출처의 구역 첫 문단은 IR 안에서 두 축이 섞인다.
+    ///
+    /// 그 상태로 `text_start` 를 `char_offsets` 에 투영하면 줄이 보정폭만큼 **일찍**
+    /// 끊긴다. 한글 2024 에 직접 물어 확인한 실측(코퍼스 36497307 문단 0): 한글은 둘째
+    /// 줄을 글자 54 에서 끊는데(본문 시작 pos 24, 줄 시작 pos 78), 보정 없이 투영하면
+    /// 46 이 나온다 — 정확히 8유닛 어긋난다. HWPX 500건 표본 중 49건(9.9%)이 해당한다.
+    ///
+    /// **파일에 실리는 값이 아니라 IR 안에서만 의미가 있다**(`layout_only_fill_lines` 와
+    /// 같은 계약). 직렬화기는 이 값을 무시하고 `text_start` 를 원본 그대로 쓴다 — 축을
+    /// 파일 쪽에서 옮기면 x2x 재수출이 왕복마다 8씩 흘러내려 3회 만에 0 으로 무너지고
+    /// (실측), h2x 의 #5943 재기준화와도 충돌한다. 읽을 때만 올려 본다.
+    ///
+    /// 소비는 [`Paragraph::line_seg_text_start`] 로만 한다.
+    pub hwpx_axis_shift: u32,
+    /// [#4677] `line_segs` **끝쪽** 몇 줄이 조판 전용 보강 줄인가.
+    ///
+    /// HWPX RowBreak 표 셀은 문단별 `<hp:linesegarray>` 를 생략하면서도 셀 높이는 남긴다.
+    /// 그 높이에 맞춰 줄을 보강해야 쪽 나눔이 한컴과 같아지지만
+    /// (`DocumentCore::fit_hwpx_rowbreak_synthetic_cell_lines`), 그 줄은 **본문에 없는 줄**
+    /// 이라 HWP5 로 저장하면 안 된다 — 한글 2022 는 그런 셀 문단을 만나면 본문 전체를
+    /// 버리고 빈 1쪽 문서로 연다(rhwp 재파싱은 통과하는 함정).
+    ///
+    /// 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다. `line_segs` 를 통째로 다시
+    /// 계산하는 경로(reflow)는 이 값을 0 으로 되돌린다.
+    pub layout_only_fill_lines: usize,
+    /// [#5847] 원본 파일이 싣고 있던 `line_segs[*].vertical_pos` 스냅샷 (쪽-상대
+    /// 좌표). 구역 안에 캐시 없는 문단이 하나라도 있으면 reflow 의 구역 단위 vpos
+    /// 재계산이 **원본 캐시 보유 문단까지** 문서 누적 좌표로 덮어쓰는데, 그 내부
+    /// 좌표가 HWPX 로 그대로 나가면 한글 2022 가 캐시를 신뢰해 조판이 무너진다
+    /// (08818: 81쪽 → 5쪽). 렌더러는 재계산 좌표를 계속 쓰고, HWPX 직렬화기만
+    /// 이 스냅샷으로 원본 좌표를 되돌린다. 합성(reflow) 문단·합성 lineseg 보유
+    /// 문단은 None. 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다.
+    /// (`serde(skip)` — IR dump/ir-sweep 축의 필드 집합을 바꾸지 않는다.)
+    #[serde(skip_serializing)]
+    pub source_line_seg_vertical_pos: Option<Vec<i32>>,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -52,12 +98,20 @@ pub struct Paragraph {
     /// TAB 확장 데이터 (라운드트립 보존용)
     /// 각 탭 문자의 7 code unit (탭 너비, 종류 등) — text 내 '\t' 순서와 1:1 대응
     pub tab_extended: Vec<[u16; 7]>,
+    /// 제목 차례 표시 (`<hp:t>` 안의 `<hp:titleMark/>`, HWP5 인라인 `Mtit`/`Mign`)
+    ///
+    /// 텍스트가 아니라 **텍스트 축 위에 놓인 8유닛 슬롯**이라 `text` 에 싣지 않는다.
+    /// 대신 `field_ranges`·`tab_extended` 와 같은 부수 채널로 위치만 보존한다 —
+    /// `text` 에 문자를 넣으면 추출·렌더·비교 축이 전부 달라진다.
+    pub title_marks: Vec<TitleMark>,
     /// 문단 번호 시작 방식 오버라이드
     /// None = 앞 번호 목록에 이어 (기본)
     /// Some(NumberingRestart) = 이전 번호 이어 / 새 번호 시작
     pub numbering_restart: Option<NumberingRestart>,
-    /// [#4149] 셀 단일줄 과밀 판정 memo — `recompose_stored_single_line_if_overflowing`
-    /// 전용 파생 캐시. 판정 입력은 (text, char_shapes, 셀 내폭)뿐이다. 제약:
+    /// [#4149] 문단 조판 입력 상태. 낮은 63비트는 셀 단일줄 과밀 판정 memo,
+    /// 최상위 비트는 저장 LineSeg의 텍스트 분할이 text/char_shapes 변이 뒤
+    /// 무효가 되었음을 기록한다. 두 상태는 같은 입력에서 함께 무효화된다.
+    /// 과밀 판정 입력은 (text, char_shapes, 셀 내폭)뿐이다. 제약:
     /// - 직렬화 금지: `Paragraph` 는 serde derive 가 없고 HWP/HWPX 저장기는 필드를
     ///   명시 기록하므로 파일로 새지 않는다. 새 직렬화 경로를 추가하면 이 필드를 제외할 것.
     /// - 스레드: `DocumentCore` 의 `Send` 단언이 `Arc<Vec<Paragraph>>`
@@ -79,10 +133,13 @@ pub struct Paragraph {
 ///
 /// `Relaxed` 순서로 충분하다 — 값은 (문단, 폭)의 결정적 함수라 경합 시 최악이
 /// 중복 측정일 뿐 오답이 없다.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, serde::Serialize)]
 pub struct SingleLineOverflowMemo(std::sync::atomic::AtomicU64);
 
 impl SingleLineOverflowMemo {
+    const STORED_PARTITION_DIRTY: u64 = 1 << 63;
+    const OVERFLOW_MEMO_MASK: u64 = !Self::STORED_PARTITION_DIRTY;
+
     /// 셀 내폭(px) → memo 폭 키.
     #[inline]
     pub fn width_key(cell_inner_width_px: f64) -> u32 {
@@ -92,7 +149,7 @@ impl SingleLineOverflowMemo {
     /// 저장된 판정 조회 — 폭 키가 일치할 때만 `Some(overflowed)`.
     #[inline]
     pub fn get(&self, width_key: u32) -> Option<bool> {
-        let v = self.0.load(std::sync::atomic::Ordering::Relaxed);
+        let v = self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::OVERFLOW_MEMO_MASK;
         if v != 0 && (v >> 1) as u32 == width_key {
             Some(v & 1 == 1)
         } else {
@@ -106,20 +163,49 @@ impl SingleLineOverflowMemo {
         if width_key == 0 {
             return;
         }
-        let v = ((width_key as u64) << 1) | (overflowed as u64);
-        self.0.store(v, std::sync::atomic::Ordering::Relaxed);
+        let memo = ((width_key as u64) << 1) | (overflowed as u64);
+        let _ = self.0.fetch_update(
+            std::sync::atomic::Ordering::Relaxed,
+            std::sync::atomic::Ordering::Relaxed,
+            |current| Some((current & Self::STORED_PARTITION_DIRTY) | memo),
+        );
     }
 
-    /// 미판정 상태로 되돌린다.
+    /// Clear the width memo and record that stored row text boundaries no
+    /// longer describe the paragraph's current layout inputs.
+    #[inline]
+    pub fn invalidate_layout_inputs(&self) {
+        self.0.store(
+            Self::STORED_PARTITION_DIRTY,
+            std::sync::atomic::Ordering::Relaxed,
+        );
+    }
+
+    #[inline]
+    pub fn stored_partition_is_dirty(&self) -> bool {
+        self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::STORED_PARTITION_DIRTY != 0
+    }
+
+    /// Publish freshly computed rows and reset every value derived from the
+    /// superseded partition in one transition.
+    #[inline]
+    fn publish_current_partition(&self) {
+        self.0.store(0, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Clear only the width memo, preserving text-partition provenance.
     #[inline]
     pub fn clear(&self) {
-        self.0.store(0, std::sync::atomic::Ordering::Relaxed);
+        self.0.fetch_and(
+            Self::STORED_PARTITION_DIRTY,
+            std::sync::atomic::Ordering::Relaxed,
+        );
     }
 
     /// 미판정 여부 (invalidation 검증용).
     #[inline]
     pub fn is_unjudged(&self) -> bool {
-        self.0.load(std::sync::atomic::Ordering::Relaxed) == 0
+        self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::OVERFLOW_MEMO_MASK == 0
     }
 }
 
@@ -220,7 +306,7 @@ pub enum ColumnBreakType {
 }
 
 /// 글자 모양 참조 (문단 내 위치별 글자 모양)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct CharShapeRef {
     /// 글자 모양이 바뀌는 시작 위치
     pub start_pos: u32,
@@ -232,7 +318,7 @@ pub struct CharShapeRef {
 ///
 /// **표준**: `mydocs/tech/document_ir_lineseg_standard.md` (Task #604)
 /// 모든 i32 필드는 HWPUNIT (1 inch = 7200 HWPUNIT).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct LineSeg {
     /// 본 줄이 차지하는 텍스트 시작 위치 (UTF-16 code unit, 문단 시작 기준)
     pub text_start: u32,
@@ -352,7 +438,7 @@ impl LineSeg {
 }
 
 /// 영역 태그 (HWPTAG_PARA_RANGE_TAG)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct RangeTag {
     /// 영역 시작
     pub start: u32,
@@ -362,8 +448,29 @@ pub struct RangeTag {
     pub tag: u32,
 }
 
+/// 제목 차례 표시 — 이 문단을 제목 차례에 넣을지 표시하는 인라인 마커.
+///
+/// HWP5 는 컨트롤 문자 `0x08` + ctrl_id 로 PARA_TEXT 안에 직접 싣는다(CTRL_HEADER 없음).
+/// 실측(한글 2022 양방향, 06699 한 문서에서 둘 다 확인):
+///
+/// | HWP5 ctrl_id | HWPX |
+/// |---|---|
+/// | `Mtit` | `<hp:titleMark ignore="1"/>` |
+/// | `Mign` | `<hp:titleMark ignore="0"/>` |
+///
+/// 8 code unit 을 점유하므로 이 마커를 버리면 문단 축이 그만큼 짧아지고,
+/// 한글은 축이 어긋난 `<hp:lineseg textpos>` 를 만나면 본문을 통째로 버린다
+/// (10k 스윕 F-절단군 — 77 문서·2,237 개).
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
+pub struct TitleMark {
+    /// `text` 문자열 내 삽입 위치 (이 인덱스의 문자 **앞**에 놓인다)
+    pub char_idx: usize,
+    /// `ignore` 속성 — `true` 면 `Mtit`, `false` 면 `Mign`
+    pub ignore: bool,
+}
+
 /// 필드 텍스트 범위 (0x03 FIELD_BEGIN ~ 0x04 FIELD_END 사이 텍스트)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct FieldRange {
     /// text 문자열 내 시작 인덱스 (포함)
     pub start_char_idx: usize,
@@ -378,13 +485,22 @@ pub struct FieldRange {
     /// 항상 소실된다. 고아(다단락) fieldEnd 는 `OrphanFieldEnd::field_id` 로 이미 보존하므로,
     /// 같은 문단 내 짝(matched) 경로에도 대칭적으로 보존한다.
     pub end_field_id: u32,
+    /// FIELD_BEGIN 과 FIELD_END **사이에 있는 컨트롤 슬롯 수**.
+    ///
+    /// 표·그림처럼 텍스트 문자를 만들지 않는 인라인 개체를 감싼 누름틀은
+    /// `start_char_idx == end_char_idx`(텍스트 축 0길이)가 된다. 이때 직렬화기가
+    /// fieldEnd 를 자기 fieldBegin 직후에 놓으면 개체가 필드 **밖으로** 밀려나
+    /// 빈 누름틀이 되고, 한글은 빈 누름틀의 안내문("이곳을 마우스로 누르고 …")을
+    /// 본문으로 표시한다(10k 스윕 G-순수증식 16경로 근인). 이 값만큼 슬롯을
+    /// 지나서 fieldEnd 를 놓으면 원본 범위가 보존된다.
+    pub inner_slot_count: usize,
 }
 
 /// 고아 FIELD_END (0x04) — 짝이 되는 FIELD_BEGIN 이 다른 문단에 있는
 /// 다단락 필드의 종료 마커. begin 문단에서 `Control::Field` 로 보존되는 것과 달리,
 /// end 문단에는 컨트롤·FieldRange 가 없어 8유닛 슬롯을 표현할 산출물이 없다.
 /// 이를 기록해 직렬화기가 `<hp:fieldEnd>` 를 같은 위치에 복원한다 (Task #1556).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct OrphanFieldEnd {
     /// text 문자열 내 위치 (이 인덱스 직전에 8유닛 fieldEnd 슬롯이 놓인다).
     /// 텍스트 끝이면 `text.chars().count()`.
@@ -393,6 +509,11 @@ pub struct OrphanFieldEnd {
     pub begin_id_ref: u32,
     /// `<hp:fieldEnd fieldid="..">` — 필드 인스턴스 id.
     pub field_id: u32,
+    /// 짝 필드의 HWP5 `ctrl_id`(`%clk` 등). HWP5 저장기가 종료 마커를 쓸 때 쓴다.
+    ///
+    /// 0 이면 모른다는 뜻이고, 그때는 HWP5 저장에서 마커를 내지 않는다 — 필드 종류를
+    /// 지어내면 한글이 짝을 못 맞춘다. HWPX 에서 들어온 고아 마커가 이 경우다.
+    pub begin_ctrl_id: u32,
 }
 
 impl Paragraph {
@@ -446,8 +567,8 @@ impl Paragraph {
             Control::Header(_) | Control::Footer(_) => 0x0010,
             Control::Footnote(_) | Control::Endnote(_) => 0x0011,
             Control::AutoNumber(_) | Control::NewNumber(_) => 0x0012,
-            Control::PageNumberPos(_) | Control::PageHide(_) => 0x0015,
-            Control::Bookmark(_) => 0x0016,
+            Control::PageNumberPos(_) | Control::PageHide(_) | Control::PageNumCtrl(_) => 0x0015,
+            Control::Bookmark(_) | Control::IndexMark(_) => 0x0016,
             Control::CharOverlap(_) => 0x0017,
         }
     }
@@ -571,10 +692,32 @@ impl Paragraph {
         }
     }
 
-    /// [#4149] 단일줄 과밀 판정 memo 무효화 — text/char_shapes 를 바꾸는 경로 필수.
+    /// Clear only the derived single-line width memo.
     #[inline]
     pub fn invalidate_single_line_overflow_memo(&self) {
         self.single_line_overflow_memo.clear();
+    }
+
+    /// Invalidate every layout result derived from text or CharShapeRef input.
+    /// Existing rows remain as edit-reflow metric templates, but cannot be
+    /// admitted or serialized as the current text partition.
+    #[inline]
+    pub fn invalidate_layout_inputs(&self) {
+        self.single_line_overflow_memo.invalidate_layout_inputs();
+    }
+
+    #[inline]
+    pub fn stored_text_partition_is_dirty(&self) -> bool {
+        self.single_line_overflow_memo.stored_partition_is_dirty()
+    }
+
+    /// Replace stored rows and their validity state at one owner boundary.
+    pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
+        self.line_segs = line_segs;
+        // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
+        // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
+        self.hwpx_axis_shift = 0;
+        self.single_line_overflow_memo.publish_current_partition();
     }
 
     /// 문자의 UTF-16 코드 유닛 수를 반환한다.
@@ -583,6 +726,18 @@ impl Paragraph {
             2
         } else {
             1
+        }
+    }
+
+    /// `PARA_TEXT`에서 한 문자가 차지하는 UTF-16 code unit 수를 반환한다.
+    ///
+    /// 탭은 Rust 문자열에서는 한 문자지만 HWP5에서는 7개 확장 데이터 unit이 뒤따르는
+    /// 8-unit 확장 문자다. 문단 좌표와 `char_count`는 이 스트림 폭을 사용해야 한다.
+    fn char_stream_len(c: char) -> u32 {
+        if c == '\t' {
+            CTRL_CHAR_CODE_UNITS
+        } else {
+            Self::char_utf16_len(c)
         }
     }
 
@@ -603,8 +758,6 @@ impl Paragraph {
         if self.char_offsets.is_empty() {
             return;
         }
-        // [#4149] 인라인 컨트롤 삽입은 char_shapes 경계를 옮긴다 — memo 무효화 (보수적).
-        self.invalidate_single_line_overflow_memo();
         let text_len = self.text.chars().count();
         let safe_offset = char_offset.min(text_len);
         // 컨트롤이 삽입되는 UTF-16 위치 — char_offsets 시프트 전에 계산한다.
@@ -616,25 +769,61 @@ impl Paragraph {
                 .text
                 .chars()
                 .nth(last_idx)
-                .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+                .map(Self::char_stream_len)
                 .unwrap_or(1);
             self.char_offsets[last_idx] + last_w
         };
         for co in self.char_offsets[safe_offset..].iter_mut() {
             *co += 8;
         }
+        self.shift_position_metadata_for_stream_insertion(insert_pos, 8);
+    }
+
+    /// 선행 확장 제어문자가 들어갈 만큼 첫 텍스트 앞 스트림 좌표를 확보한다.
+    ///
+    /// `SectionDef`·`ColumnDef`처럼 문단 첫 글자보다 앞에 와야 하는 확장 제어문자는 각각
+    /// 8 UTF-16 code unit을 쓴다. 이미 확보된 선행 공간은 보존하고 부족한 만큼만 모든
+    /// 텍스트 좌표를 민다. `char_offsets`와 같은 좌표계를 쓰는 글자모양, range tag,
+    /// 줄 시작도 함께 갱신해야 한다.
+    ///
+    /// 호출 전에 제어문자를 `controls`의 선두에 넣고, 그 연속 개수를 넘긴다.
+    pub(crate) fn reserve_leading_extended_control_slots(&mut self, control_count: usize) {
+        const EXTENDED_CONTROL_CODE_UNITS: u32 = 8;
+
+        let required_room = u32::try_from(control_count)
+            .unwrap_or(u32::MAX)
+            .saturating_mul(EXTENDED_CONTROL_CODE_UNITS);
+        let existing_room = self.char_offsets.first().copied().unwrap_or(0);
+        let shift = required_room.saturating_sub(existing_room);
+        if shift == 0 {
+            return;
+        }
+
+        for offset in &mut self.char_offsets {
+            *offset += shift;
+        }
+        self.shift_position_metadata_for_stream_insertion(existing_room, shift);
+    }
+
+    /// 스트림 삽입으로 이동한 텍스트 좌표와 같은 기준을 쓰는 문단 메타데이터를 갱신한다.
+    fn shift_position_metadata_for_stream_insertion(&mut self, insert_pos: u32, shift: u32) {
+        if shift == 0 {
+            return;
+        }
+        // [#4149] 제어문자 삽입은 char_shapes 경계를 옮긴다 — memo 무효화 (보수적).
+        self.invalidate_single_line_overflow_memo();
         // 문단 시작(pos 0)에 고정된 첫 스타일은 유지(insert_text_at 과 동일).
         for cs in &mut self.char_shapes {
             if cs.start_pos > insert_pos || (cs.start_pos == insert_pos && cs.start_pos > 0) {
-                cs.start_pos += 8;
+                cs.start_pos += shift;
             }
         }
         for rt in &mut self.range_tags {
             if rt.start >= insert_pos {
-                rt.start += 8;
+                rt.start += shift;
             }
             if rt.end >= insert_pos {
-                rt.end += 8;
+                rt.end += shift;
             }
         }
         // [#4347] 줄 시작도 같은 좌표계(UTF-16 code unit)를 쓴다 — 함께 밀지 않으면 저장된
@@ -643,7 +832,7 @@ impl Paragraph {
         // 첫 줄은 문단 시작에 고정한다 — 넣은 컨트롤이 그 줄에 든다(char_shapes 와 같은 규약).
         for seg in &mut self.line_segs {
             if seg.text_start > insert_pos || (seg.text_start == insert_pos && seg.text_start > 0) {
-                seg.text_start += 8;
+                seg.text_start += shift;
             }
         }
     }
@@ -704,7 +893,7 @@ impl Paragraph {
             // 텍스트 끝 이후 (인라인 컨트롤 뒤): 마지막 문자의 UTF-16 위치 + 폭 + 후행 갭
             let last_idx = self.char_offsets.len() - 1;
             let last_char_end =
-                self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx]);
+                self.char_offsets[last_idx] + Self::char_stream_len(text_chars[last_idx]);
             // 후행 컨트롤 수 = char_offset - text_len
             let trailing_ctrl_count = (char_offset - text_len) as u32;
             last_char_end + trailing_ctrl_count * 8
@@ -713,7 +902,7 @@ impl Paragraph {
                 0
             } else if !self.char_offsets.is_empty() {
                 let prev_idx = effective_char_offset - 1;
-                self.char_offsets[prev_idx] + Self::char_utf16_len(text_chars[prev_idx])
+                self.char_offsets[prev_idx] + Self::char_stream_len(text_chars[prev_idx])
             } else {
                 0
             }
@@ -721,7 +910,7 @@ impl Paragraph {
             self.char_offsets[effective_char_offset]
         } else if !self.char_offsets.is_empty() {
             let last_idx = self.char_offsets.len() - 1;
-            self.char_offsets[last_idx] + Self::char_utf16_len(text_chars[last_idx])
+            self.char_offsets[last_idx] + Self::char_stream_len(text_chars[last_idx])
         } else {
             // 텍스트가 비어있을 때: 기존 컨트롤 뒤에 삽입 (각 컨트롤 = 8 code units)
             (self.controls.len() as u32) * 8
@@ -730,7 +919,7 @@ impl Paragraph {
 
         // 새 텍스트의 UTF-16 총 길이
         let new_chars: Vec<char> = new_text.chars().collect();
-        let utf16_delta: u32 = new_chars.iter().map(|c| Self::char_utf16_len(*c)).sum();
+        let utf16_delta: u32 = new_chars.iter().map(|c| Self::char_stream_len(*c)).sum();
 
         // 1. 텍스트 삽입
         self.text.insert_str(byte_offset, new_text);
@@ -745,7 +934,7 @@ impl Paragraph {
         let mut pos = utf16_insert_pos;
         for c in &new_chars {
             new_offsets.push(pos);
-            pos += Self::char_utf16_len(*c);
+            pos += Self::char_stream_len(*c);
         }
         // char_offset 위치에 새 오프셋 삽입
         let mut updated_offsets = Vec::with_capacity(self.char_offsets.len() + new_offsets.len());
@@ -795,7 +984,7 @@ impl Paragraph {
         }
 
         // 6. char_count 갱신
-        self.char_count += new_chars.len() as u32;
+        self.char_count += utf16_delta;
 
         effective_char_offset
     }
@@ -836,7 +1025,7 @@ impl Paragraph {
         };
         let utf16_delta: u32 = text_chars[char_offset..del_end]
             .iter()
-            .map(|c| Self::char_utf16_len(*c))
+            .map(|c| Self::char_stream_len(*c))
             .sum();
         let utf16_end = utf16_start + utf16_delta;
 
@@ -926,7 +1115,7 @@ impl Paragraph {
             .retain(|fr| fr.start_char_idx <= fr.end_char_idx);
 
         // 6. char_count 갱신
-        self.char_count -= actual_count as u32;
+        self.char_count -= utf16_delta;
 
         actual_count
     }
@@ -976,9 +1165,12 @@ impl Paragraph {
             self.char_offsets[split_pos]
         } else if !self.char_offsets.is_empty() {
             let last = self.char_offsets.len() - 1;
-            self.char_offsets[last] + Self::char_utf16_len(text_chars[last])
+            self.char_offsets[last] + Self::char_stream_len(text_chars[last])
         } else {
-            split_pos as u32
+            text_chars[..split_pos]
+                .iter()
+                .map(|character| Self::char_stream_len(*character))
+                .sum()
         };
 
         // === 새 문단 구성 ===
@@ -994,6 +1186,18 @@ impl Paragraph {
             .map(|&off| off - utf16_split)
             .collect();
         self.char_offsets.truncate(split_pos);
+
+        // 2-1. 제목 차례 표시 분할 — 문자 인덱스 기준이라 뒤 절반은 원점을 옮긴다.
+        let new_title_marks: Vec<TitleMark> = self
+            .title_marks
+            .iter()
+            .filter(|m| m.char_idx >= split_pos)
+            .map(|m| TitleMark {
+                char_idx: m.char_idx - split_pos,
+                ignore: m.ignore,
+            })
+            .collect();
+        self.title_marks.retain(|m| m.char_idx < split_pos);
 
         // 3. char_shapes 분할
         let mut new_char_shapes: Vec<CharShapeRef> = Vec::new();
@@ -1119,6 +1323,7 @@ impl Paragraph {
                     end_char_idx: fr.end_char_idx - split_pos,
                     control_idx: fr.control_idx,
                     end_field_id: fr.end_field_id,
+                    inner_slot_count: fr.inner_slot_count,
                 });
             } else if fr.end_char_idx <= split_pos {
                 // 완전히 원래 문단 쪽
@@ -1130,6 +1335,8 @@ impl Paragraph {
                     end_char_idx: split_pos,
                     control_idx: fr.control_idx,
                     end_field_id: fr.end_field_id,
+                    // 문단이 잘려 안쪽 슬롯 소속이 불확실해진다 — 보수적으로 0.
+                    inner_slot_count: 0,
                 });
             }
         }
@@ -1182,10 +1389,11 @@ impl Paragraph {
 
         // 6. char_count 갱신
         //    원본 문단에 남은 controls는 각각 8 code unit을 차지하므로 반영 필요
-        let new_text_char_count = new_text.chars().count() as u32;
+        let kept_text_code_units: u32 = self.text.chars().map(Self::char_stream_len).sum();
+        let new_text_code_units: u32 = new_text.chars().map(Self::char_stream_len).sum();
         let ctrl_code_units: u32 = self.controls.len() as u32 * 8;
-        self.char_count = split_pos as u32 + ctrl_code_units + 1; // +1 for paragraph end marker
-        let new_char_count = new_text_char_count + new_controls.len() as u32 * 8 + 1;
+        self.char_count = kept_text_code_units + ctrl_code_units + 1; // +1 for paragraph end marker
+        let new_char_count = new_text_code_units + new_controls.len() as u32 * 8 + 1;
 
         // 7. has_para_text: 빈 문단(텍스트 없고 컨트롤 없음)이면 PARA_TEXT 불필요
         //    HWP 프로그램은 cc=1(빈 문단)에 PARA_TEXT가 있으면 파일 손상으로 판단
@@ -1197,11 +1405,25 @@ impl Paragraph {
         let new_control_mask =
             Self::compute_control_mask_for(&new_text, &new_controls, &new_field_ranges);
 
+        // PARA_HEADER instanceId는 문단별 식별자다. Enter로 만든 문단이 원문 tail을
+        // 그대로 복제하면 동일한 비영 ID가 반복된다. 새 문단의 ID만 초기화하고 뒤의
+        // 변경 추적 suffix는 보존한다. 병합 undo는 `apply_meta`가 원래 tail을 복원한다.
+        let mut new_raw_header_extra = self.raw_header_extra.clone();
+        if new_raw_header_extra.len() >= 10 {
+            new_raw_header_extra[6..10].fill(0);
+        }
+
         Paragraph {
             text: new_text,
             char_offsets: new_char_offsets,
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
+            // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).
+            layout_only_fill_lines: 0,
+            // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).
+            source_line_seg_vertical_pos: None,
+            // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
+            hwpx_axis_shift: 0,
             range_tags: new_range_tags,
             field_ranges: new_field_ranges, // 새 문단으로 이관된 필드 범위
             orphan_field_ends: Vec::new(),
@@ -1210,13 +1432,15 @@ impl Paragraph {
             style_id: self.style_id,
             column_type: ColumnBreakType::None,
             raw_break_type: 0,
+            page_break_synthesized: false,
             control_mask: new_control_mask,
             controls: new_controls,
             ctrl_data_records: new_ctrl_data_records,
             char_count_msb: false,
-            raw_header_extra: self.raw_header_extra.clone(),
+            raw_header_extra: new_raw_header_extra,
             has_para_text: new_has_para_text,
             tab_extended: Vec::new(),
+            title_marks: new_title_marks,
             numbering_restart: None,
             // [#4149] 분할 산출 문단은 미판정으로 시작한다.
             single_line_overflow_memo: SingleLineOverflowMemo::default(),
@@ -1249,7 +1473,7 @@ impl Paragraph {
         let utf16_end: u32 = if !self.char_offsets.is_empty() {
             let last = self.char_offsets.len() - 1;
             let text_chars: Vec<char> = self.text.chars().collect();
-            self.char_offsets[last] + Self::char_utf16_len(text_chars[last])
+            self.char_offsets[last] + Self::char_stream_len(text_chars[last])
         } else {
             0
         } + trailing_ctrl_units;
@@ -1260,6 +1484,14 @@ impl Paragraph {
         // 2. char_offsets 결합 (other의 오프셋에 utf16_end 추가)
         for &off in &other.char_offsets {
             self.char_offsets.push(off + utf16_end);
+        }
+
+        // 2-1. 제목 차례 표시 결합 — 문자 인덱스 축이라 앞 문단 길이만큼 민다.
+        for m in &other.title_marks {
+            self.title_marks.push(TitleMark {
+                char_idx: m.char_idx + self_text_len,
+                ignore: m.ignore,
+            });
         }
 
         // 3. char_shapes 결합 (other의 start_pos에 utf16_end 추가)
@@ -1328,6 +1560,7 @@ impl Paragraph {
                 end_char_idx: fr.end_char_idx + self_text_len,
                 control_idx: fr.control_idx + ctrl_offset,
                 end_field_id: fr.end_field_id,
+                inner_slot_count: fr.inner_slot_count,
             });
         }
 
@@ -1352,7 +1585,7 @@ impl Paragraph {
         // 6. char_count 갱신: 텍스트 + 컨트롤(각 8 code unit) + 문단끝(1)
         //    split_at의 ctrl_code_units 계산과 정합. HWPX 직렬화가 char_count에서
         //    컨트롤 수를 역산하므로 컨트롤 유닛 포함 필수.
-        self.char_count = (self_text_len + other.text.chars().count()) as u32
+        self.char_count = self.text.chars().map(Self::char_stream_len).sum::<u32>()
             + self.controls.len() as u32 * 8
             + 1;
 
@@ -1536,6 +1769,49 @@ impl Paragraph {
         positions
     }
 
+    /// Return each control's source `PARA_TEXT` UTF-16 start position.
+    ///
+    /// `char_offsets` point after every control gap preceding a visible
+    /// character. Consumers which anchor geometry in the raw stream therefore
+    /// need to reconstruct the individual starts inside that gap instead of
+    /// using the visible-text position alone.
+    pub(crate) fn control_utf16_positions(&self) -> Vec<u32> {
+        let text_positions = self.control_text_positions();
+        let text_chars = self.text.chars().collect::<Vec<_>>();
+        let text_end = self
+            .char_offsets
+            .last()
+            .zip(text_chars.last())
+            .map(|(offset, ch)| *offset + ch.len_utf16() as u32)
+            .unwrap_or_else(|| text_chars.iter().map(|ch| ch.len_utf16() as u32).sum());
+        let mut raw_positions = vec![text_end; text_positions.len()];
+
+        let mut group_start = 0;
+        while group_start < text_positions.len() {
+            let text_position = text_positions[group_start];
+            let mut group_end = group_start + 1;
+            while text_positions.get(group_end) == Some(&text_position) {
+                group_end += 1;
+            }
+
+            let count = (group_end - group_start) as u32;
+            let first_raw = self
+                .char_offsets
+                .get(text_position)
+                .copied()
+                .map(|offset| offset.saturating_sub(count * CTRL_CHAR_CODE_UNITS))
+                .unwrap_or(text_end);
+            for (ordinal, raw_position) in
+                raw_positions[group_start..group_end].iter_mut().enumerate()
+            {
+                *raw_position = first_raw + ordinal as u32 * CTRL_CHAR_CODE_UNITS;
+            }
+            group_start = group_end;
+        }
+
+        raw_positions
+    }
+
     /// 편집/커서 이동용 control position 을 반환한다.
     ///
     /// [`Self::control_text_positions`] 는 HWP/HWPX record stream 의 raw text position 을
@@ -1566,6 +1842,49 @@ impl Paragraph {
             }
         }
         positions
+    }
+
+    /// [#5961] `line_segs[idx].text_start` 를 **HWP5 문단 축**으로 올려 반환한다.
+    ///
+    /// `char_count`·`char_offsets`·`char_shapes` 와 같은 자를 쓰게 해 주는 유일한
+    /// 진입점이다. `text_start` 를 그 셋과 비교하거나 그 셋으로 투영하는 곳은 반드시
+    /// 이 메서드를 거쳐야 한다 — 날값을 쓰면 HWPX 출처 구역 첫 문단에서 축이 섞인다
+    /// ([`Paragraph::hwpx_axis_shift`] 참고).
+    ///
+    /// 반대로 **같은 문단의 두 `text_start` 를 서로 비교**하는 곳은 이 메서드를 쓰면 안
+    /// 된다. 균일 보정이라 차이가 상쇄되므로 날값 비교가 이미 옳고, 굳이 거치면 의미만
+    /// 흐려진다.
+    ///
+    /// 문단 시작(0)은 두 축에서 같은 자리이므로 올리지 않는다. 보정폭이 0 인 문단
+    /// (HWP5·HWP3·HML 출처, 그리고 구역 첫 문단이 아닌 HWPX 문단)은 날값과 같다.
+    pub fn line_seg_text_start(&self, idx: usize) -> u32 {
+        let raw = self.line_segs.get(idx).map_or(0, |seg| seg.text_start);
+        self.line_seg_text_start_of(raw)
+    }
+
+    /// [#5961] 이 문단에 속한 `text_start` 값 하나를 HWP5 축으로 올린다.
+    ///
+    /// 인덱스를 들고 있지 않은 호출부(이미 `&LineSeg` 를 쥔 자리)를 위한 형태로,
+    /// [`Paragraph::line_seg_text_start`] 와 같은 규칙을 쓴다.
+    pub fn line_seg_text_start_of(&self, raw_text_start: u32) -> u32 {
+        if raw_text_start == 0 || self.hwpx_axis_shift == 0 {
+            return raw_text_start;
+        }
+        let lifted = raw_text_start + self.hwpx_axis_shift;
+        // 올린 값이 **문단 끝을 넘으면** 그 줄은 올릴 값이 아니었다. `char_count` 는
+        // 출처와 무관하게 언제나 HWP5 축이고 줄은 문단 안에서 시작하므로, 넘는다는
+        // 것은 그 `text_start` 가 이미 HWP5 축이었다는 직접 증거다 — 보정폭은 파서가
+        // 만들어 넣은 슬롯 수에서 오지만, 그 슬롯을 세어 `textpos` 를 적는 생산자도
+        // 있다(`issue5595_rotated_picture_topbottom.hwpx` 문단 0: 컨트롤 3개에
+        // `cc=25`, 둘째 줄 `ts=24` — 이미 24 를 세고 있어 40 으로 올리면 문단 끝을
+        // 15 넘는다). 끝 마커를 가리키는 `text_start == char_count` 는 정상이므로
+        // 판정은 `>` 다(`line_segs_within_text` 와 같은 경계). 축 증거가 없는 합성 IR
+        // (`char_count == 0`)에는 이 판정을 걸지 않는다 — #5563 비교 축과 같은 규약.
+        if self.char_count > 0 && lifted > self.char_count {
+            raw_text_start
+        } else {
+            lifted
+        }
     }
 
     /// `char_offsets` 중 UTF-16 위치 `utf16_pos` 이상인 첫 번째 codepoint 의

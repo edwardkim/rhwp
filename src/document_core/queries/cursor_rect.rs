@@ -1,16 +1,24 @@
 //! 커서 좌표/히트테스트/셀 커서/경로 기반 조작 관련 native 메서드
 
 use super::super::helpers::{
-    color_ref_to_css, find_char_at_x, find_logical_control_positions, has_table_control,
-    is_treat_as_char_object_control, navigable_text_len, utf16_pos_to_char_idx, LineInfoResult,
+    find_char_at_x, find_logical_control_positions, is_treat_as_char_object_control,
+    navigable_text_len, LineInfoResult,
 };
-use crate::document_core::DocumentCore;
+use crate::document_core::{header_footer_apply_to_u8, DocumentCore};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::path::PathSegment;
 use crate::renderer::layout::{CellContext, CellPathEntry};
 use crate::renderer::render_tree::TextRunNode;
+
+/// 묶음 개체(GSO Group)인가. 자식 Image 노드는 외곽 Group의 control_index를 물려받는다.
+fn is_group_shape_control(ctrl: &Control) -> bool {
+    matches!(
+        ctrl,
+        Control::Shape(shape)
+            if matches!(shape.as_ref(), crate::model::shape::ShapeObject::Group(_))
+    )
+}
 
 /// 글자겹침 TextRun의 논리적 char_count (1) 반환, 아니면 실제 글자 수 반환.
 ///
@@ -1595,6 +1603,7 @@ impl DocumentCore {
                             Some(ctx)
                         } else {
                             Some(CellContext {
+                                in_textbox: false,
                                 parent_para_index: pi,
                                 path: vec![CellPathEntry {
                                     control_index: ci,
@@ -1683,7 +1692,11 @@ impl DocumentCore {
                 current_table_meta.map(|(si, _, _)| si)
             };
             let table_meta = if let Some(ref ctx) = table_ctx {
-                table_section_index.map(|si| (si, ctx.parent_para_index, ctx.path[0].control_index))
+                table_section_index.and_then(|si| {
+                    ctx.path
+                        .first()
+                        .map(|e| (si, ctx.parent_para_index, e.control_index))
+                })
             } else if let RenderNodeType::Table(ref tn) = node.node_type {
                 match (tn.section_index, tn.para_index, tn.control_index) {
                     (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
@@ -1854,7 +1867,7 @@ impl DocumentCore {
                 page_num, cursor_x, run.bbox_y, run.bbox_h
             );
             if let Some(ref ctx) = run.cell_context {
-                let outer = &ctx.path[0];
+                let outer = ctx.path.first();
                 let tb = if run.is_textbox {
                     ",\"isTextBox\":true"
                 } else {
@@ -1872,9 +1885,13 @@ impl DocumentCore {
                     })
                     .collect();
                 let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
-                format!("{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}}}",
-                    base, ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
-                    cell_path, tb, cursor_rect)
+                if let Some(outer) = outer {
+                    format!("{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}}}",
+                        base, ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
+                        cell_path, tb, cursor_rect)
+                } else {
+                    format!("{{{}{}}}", base, cursor_rect)
+                }
             } else {
                 format!("{{{}{}}}", base, cursor_rect)
             }
@@ -1916,7 +1933,9 @@ impl DocumentCore {
             let Some(ctx) = run.cell_context.as_ref() else {
                 return false;
             };
-            let outer = &ctx.path[0];
+            let Some(outer) = ctx.path.first() else {
+                return false;
+            };
             textbox_bboxes.iter().any(|tb| {
                 tb.section_index == run.section_index
                     && tb.parent_para_index == ctx.parent_para_index
@@ -1970,6 +1989,12 @@ impl DocumentCore {
                             .and_then(|para| {
                                 let ctrl = para.controls.get(ci)?;
                                 if !is_treat_as_char_object_control(ctrl) {
+                                    return None;
+                                }
+                                // 묶음 자식 Image는 외곽 Group 인덱스를 물려받고 paint bbox가
+                                // 페이지 전체로 팽창될 수 있다. 그 bbox를 본문 인라인 hit로
+                                // 등록하면 표/셀 검사보다 먼저 선점한다 (#4753).
+                                if is_group_shape_control(ctrl) {
                                     return None;
                                 }
                                 find_logical_control_positions(para).get(ci).copied()
@@ -2033,10 +2058,10 @@ impl DocumentCore {
         for cb in &mut cell_bboxes {
             let same_cell_run = runs.iter().find(|r| {
                 r.table_id == cb.table_id
-                    && r.cell_context
-                        .as_ref()
-                        .map(|ctx| ctx.innermost().cell_index == cb.cell_index)
-                        .unwrap_or(false)
+                    && r.cell_context.as_ref().is_some_and(|ctx| {
+                        ctx.innermost()
+                            .is_some_and(|e| e.cell_index == cb.cell_index)
+                    })
             });
             let template_run = same_cell_run.or_else(|| {
                 runs.iter()
@@ -2053,7 +2078,9 @@ impl DocumentCore {
                     }
                     cb.section_index = run.section_index;
                     cb.parent_para_index = cell_ctx.parent_para_index;
-                    cb.control_index = cell_ctx.path[0].control_index;
+                    if let Some(first) = cell_ctx.path.first() {
+                        cb.control_index = first.control_index;
+                    }
                     cb.cell_context = Some(cell_ctx);
                     cb.has_meta = true;
                 }
@@ -2063,7 +2090,10 @@ impl DocumentCore {
         // is_textbox 정확 판별: document의 실제 컨트롤 타입으로 재확인
         for run in &mut runs {
             if let Some(ref ctx) = run.cell_context {
-                let outer = &ctx.path[0];
+                let Some(outer) = ctx.path.first() else {
+                    run.is_textbox = false;
+                    continue;
+                };
                 if outer.cell_index == 0 {
                     let is_shape = self
                         .document
@@ -2090,10 +2120,13 @@ impl DocumentCore {
         for cb in &mut cell_bboxes {
             if let Some(ref mut ctx) = cb.cell_context {
                 self.repair_unwrapped_wrapper_cell_context(cb.section_index, ctx);
-                let outer = &ctx.path[0];
-                cb.parent_para_index = ctx.parent_para_index;
-                cb.control_index = outer.control_index;
-                cb.cell_index = ctx.innermost().cell_index;
+                if let Some(outer) = ctx.path.first() {
+                    cb.parent_para_index = ctx.parent_para_index;
+                    cb.control_index = outer.control_index;
+                }
+                if let Some(inner) = ctx.innermost() {
+                    cb.cell_index = inner.cell_index;
+                }
             }
         }
 
@@ -2387,14 +2420,13 @@ impl DocumentCore {
             let cell_runs: Vec<&RunInfo> = runs
                 .iter()
                 .filter(|r| {
-                    r.cell_context
-                        .as_ref()
-                        .map(|ctx| {
-                            r.table_id == cb.table_id
-                                && ctx.parent_para_index == cb.parent_para_index
-                                && ctx.innermost().cell_index == cb.cell_index
-                        })
-                        .unwrap_or(false)
+                    r.cell_context.as_ref().is_some_and(|ctx| {
+                        r.table_id == cb.table_id
+                            && ctx.parent_para_index == cb.parent_para_index
+                            && ctx
+                                .innermost()
+                                .is_some_and(|e| e.cell_index == cb.cell_index)
+                    })
                 })
                 .collect();
 
@@ -2437,29 +2469,29 @@ impl DocumentCore {
             if cb.has_meta {
                 let caret_h = (cb.h - 4.0).max(12.0);
                 if let Some(ref ctx) = cb.cell_context {
-                    let outer = &ctx.path[0];
-                    let inner = ctx.innermost();
-                    let path_entries: Vec<String> = ctx
-                        .path
-                        .iter()
-                        .map(|e| {
-                            format!(
-                                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
-                                e.control_index, e.cell_index, e.cell_para_index
-                            )
-                        })
-                        .collect();
-                    return Ok(format!(
-                        "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":0,\
-                         \"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{},\
-                         \"cellPath\":[{}],\
-                         \"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                        cb.section_index, inner.cell_para_index,
-                        ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
-                        path_entries.join(","),
-                        page_num,
-                        cb.x + 2.0, cb.y + 2.0, caret_h
-                    ));
+                    if let (Some(outer), Some(inner)) = (ctx.path.first(), ctx.innermost()) {
+                        let path_entries: Vec<String> = ctx
+                            .path
+                            .iter()
+                            .map(|e| {
+                                format!(
+                                    "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                                    e.control_index, e.cell_index, e.cell_para_index
+                                )
+                            })
+                            .collect();
+                        return Ok(format!(
+                            "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":0,\
+                             \"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{},\
+                             \"cellPath\":[{}],\
+                             \"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+                            cb.section_index, inner.cell_para_index,
+                            ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
+                            path_entries.join(","),
+                            page_num,
+                            cb.x + 2.0, cb.y + 2.0, caret_h
+                        ));
+                    }
                 }
                 return Ok(format!(
                     "{{\"sectionIndex\":{},\"paragraphIndex\":0,\"charOffset\":0,\
@@ -2607,36 +2639,39 @@ impl DocumentCore {
                 field.field_type_str(),
             );
             if let Some(ctx) = cell_context {
-                let outer = &ctx.path[0];
-                let tb = if matches!(
-                    self.document
-                        .sections
-                        .get(section_index)
-                        .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
-                        .and_then(|p| p.controls.get(outer.control_index)),
-                    Some(Control::Shape(_))
-                ) {
-                    ",\"isTextBox\":true"
+                if let Some(outer) = ctx.path.first() {
+                    let tb = if matches!(
+                        self.document
+                            .sections
+                            .get(section_index)
+                            .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+                            .and_then(|p| p.controls.get(outer.control_index)),
+                        Some(Control::Shape(_))
+                    ) {
+                        ",\"isTextBox\":true"
+                    } else {
+                        ""
+                    };
+                    let path_entries: Vec<String> = ctx
+                        .path
+                        .iter()
+                        .map(|e| {
+                            format!(
+                                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                                e.control_index, e.cell_index, e.cell_para_index
+                            )
+                        })
+                        .collect();
+                    let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
+                    format!(
+                        "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
+                        base, ctx.parent_para_index, outer.control_index,
+                        outer.cell_index, outer.cell_para_index,
+                        cell_path, tb, field_info, cursor_rect,
+                    )
                 } else {
-                    ""
-                };
-                let path_entries: Vec<String> = ctx
-                    .path
-                    .iter()
-                    .map(|e| {
-                        format!(
-                            "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
-                            e.control_index, e.cell_index, e.cell_para_index
-                        )
-                    })
-                    .collect();
-                let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
-                format!(
-                    "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
-                    base, ctx.parent_para_index, outer.control_index,
-                    outer.cell_index, outer.cell_para_index,
-                    cell_path, tb, field_info, cursor_rect,
-                )
+                    format!("{{{}{}{}}}", base, field_info, cursor_rect)
+                }
             } else {
                 format!("{{{}{}{}}}", base, field_info, cursor_rect)
             }
@@ -3019,7 +3054,7 @@ impl DocumentCore {
         use crate::model::control::Control;
         use crate::renderer::layout::{layout_rect_to_bbox, PartialTableCellProbe, ProbeCutPlan};
         use crate::renderer::pagination::PageItem;
-        use crate::renderer::render_tree::{LayoutFrame, RenderNode, RenderNodeType};
+        use crate::renderer::render_tree::{PageLayoutContext, RenderNode, RenderNodeType};
         use FastCellRectOutcome::{Hit, NoHit, Unsupported};
 
         let Ok((page_content, paragraphs, _composed)) = self.find_page(page_num) else {
@@ -3125,7 +3160,7 @@ impl DocumentCore {
         self.layout_engine
             .set_show_control_codes(self.show_control_codes);
         self.layout_engine
-            .set_layout_profile(self.document.layout_profile());
+            .set_layout_profile(self.effective_layout_profile());
         self.layout_engine.set_hwp3_origin_flow_spacing_before(
             super::rendering::uses_hwp3_origin_flow_spacing_before(&self.document),
         );
@@ -3251,7 +3286,7 @@ impl DocumentCore {
 
         // ── 대상 셀 하나만 방출하는 프로브 레이아웃 ──
         // [#4277] 캐럿 rect 프로브도 paint 트리가 아니라 흐름 상태만 만든다.
-        let mut scratch_frame = LayoutFrame::new(
+        let mut scratch_frame = PageLayoutContext::new(
             page_content.page_index,
             layout.page_width,
             layout.page_height,
@@ -3488,6 +3523,7 @@ impl DocumentCore {
                             Some(ctx)
                         } else {
                             Some(CellContext {
+                                in_textbox: false,
                                 parent_para_index: pi,
                                 path: vec![CellPathEntry {
                                     control_index: ci,
@@ -3942,8 +3978,6 @@ impl DocumentCore {
         delta: i32,
         preferred_x: f64,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
-
         let path = Self::parse_cell_path(path_json)?;
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
@@ -4267,6 +4301,10 @@ impl DocumentCore {
 
     /// 머리말/꼬리말 내 커서 좌표를 반환한다.
     ///
+    /// `preview_page_hint`가 구역 대표 페이지이면 그 페이지에 요청한 정의를 투영한다.
+    /// 그 밖의 유효한 페이지는 실제 적용 정의가 일치할 때만 사용하며, 음수이면 실제 적용
+    /// 페이지를 앞에서부터 찾는 CLI·구버전 호출부 호환 경로로 동작한다.
+    ///
     /// 반환: JSON `{"pageIndex":N,"x":F,"y":F,"height":F}`
     pub fn get_cursor_rect_in_header_footer_native(
         &self,
@@ -4275,7 +4313,7 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
         char_offset: usize,
-        preferred_page: i32,
+        preview_page_hint: i32,
     ) -> Result<String, HwpError> {
         use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -4370,18 +4408,38 @@ impl DocumentCore {
             None
         }
 
-        // preferred_page가 지정되면 해당 페이지를 먼저 탐색
+        // 대표 페이지 힌트가 지정되면 해당 페이지를 먼저 탐색한다. 대표 페이지가 아닌
+        // 힌트에서는 실제 적용 정의가 일치해야 하므로 클릭 페이지가 편집 surface를 바꾸지 않는다.
         let total_pages = self.page_count();
-        let page_order: Vec<u32> = if preferred_page >= 0 && (preferred_page as u32) < total_pages {
-            let pref = preferred_page as u32;
-            std::iter::once(pref)
-                .chain((0..total_pages).filter(move |&p| p != pref))
-                .collect()
-        } else {
-            (0..total_pages).collect()
-        };
+        let page_order: Vec<u32> =
+            if preview_page_hint >= 0 && (preview_page_hint as u32) < total_pages {
+                let preview = preview_page_hint as u32;
+                std::iter::once(preview)
+                    .chain((0..total_pages).filter(move |&page| page != preview))
+                    .collect()
+            } else {
+                (0..total_pages).collect()
+            };
         for page_num in page_order {
-            let tree = self.build_page_tree(page_num)?;
+            let actual_target = self.resolve_header_footer_target(page_num, is_header);
+            let is_preview_page = preview_page_hint >= 0
+                && page_num == preview_page_hint as u32
+                && self
+                    .header_footer_preview_page_for_section(section_idx)
+                    .is_ok_and(|preview| preview == page_num);
+            if actual_target != (section_idx, apply_to) && !is_preview_page {
+                continue;
+            }
+            let tree = if actual_target == (section_idx, apply_to) {
+                self.build_page_tree_cached(page_num)?
+            } else {
+                self.build_header_footer_edit_preview_tree(
+                    page_num,
+                    section_idx,
+                    is_header,
+                    apply_to,
+                )?
+            };
             // 루트의 자식에서 Header/Footer 노드 찾기
             for child in &tree.root.children {
                 if is_target_node(&child.node_type) {
@@ -4510,8 +4568,6 @@ impl DocumentCore {
 
     /// 해당 페이지에서 활성화된 머리말/꼬리말의 (source_section_index, apply_to)를 반환한다.
     fn get_active_hf_info(&self, page_num: u32, is_header: bool) -> Option<(usize, u8)> {
-        use crate::model::header_footer::HeaderFooterApply;
-
         let mut offset = 0u32;
         for (_si, pr) in self.pagination.iter().enumerate() {
             let count = pr.pages.len() as u32;
@@ -4529,16 +4585,8 @@ impl DocumentCore {
                         if let Some(para) = section.paragraphs.get(r.para_index) {
                             if let Some(ctrl) = para.controls.get(r.control_index) {
                                 let apply_to = match ctrl {
-                                    Control::Header(h) => match h.apply_to {
-                                        HeaderFooterApply::Both => 0,
-                                        HeaderFooterApply::Even => 1,
-                                        HeaderFooterApply::Odd => 2,
-                                    },
-                                    Control::Footer(f) => match f.apply_to {
-                                        HeaderFooterApply::Both => 0,
-                                        HeaderFooterApply::Even => 1,
-                                        HeaderFooterApply::Odd => 2,
-                                    },
+                                    Control::Header(h) => header_footer_apply_to_u8(h.apply_to),
+                                    Control::Footer(f) => header_footer_apply_to_u8(f.apply_to),
                                     _ => 0,
                                 };
                                 return Some((source_sec, apply_to));
@@ -4565,10 +4613,47 @@ impl DocumentCore {
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
+        let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, is_header);
+        self.hit_test_in_header_footer_target_native(
+            page_num,
+            section_idx,
+            is_header,
+            apply_to,
+            x,
+            y,
+        )
+    }
+
+    /// 대표 편집 페이지에서 명시한 HF target으로 내부 텍스트를 히트테스트한다.
+    ///
+    /// 일반 페이지는 실제 active target과 일치할 때만 허용하고, target source section의
+    /// 첫 페이지에서만 가상 대표 트리를 사용한다.
+    pub fn hit_test_in_header_footer_target_native(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+        x: f64,
+        y: f64,
+    ) -> Result<String, HwpError> {
         use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let tree = self.build_page_tree(page_num)?;
+        let actual_target = self.resolve_header_footer_target(page_num, is_header);
+        let is_preview_page = self
+            .header_footer_preview_page_for_section(section_idx)
+            .is_ok_and(|preview| preview == page_num);
+        if actual_target != (section_idx, apply_to) && !is_preview_page {
+            return Ok("{\"hit\":false}".to_string());
+        }
+        let tree = if actual_target == (section_idx, apply_to) {
+            self.build_page_tree_cached(page_num)?
+        } else {
+            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
+        };
+        let resolved_section_idx = section_idx;
+        let resolved_apply_to = apply_to;
 
         // Header/Footer 서브트리 찾기
         let hf_node = tree.root.children.iter().find(|child| {
@@ -4635,8 +4720,13 @@ impl DocumentCore {
         if runs.is_empty() {
             // TextRun이 없는 경우 — 빈 머리말/꼬리말
             return Ok(format!(
-                "{{\"hit\":true,\"paraIndex\":0,\"charOffset\":0,\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                page_num, hf_node.bbox.x, hf_node.bbox.y, 12.0
+                "{{\"hit\":true,\"sectionIndex\":{},\"applyTo\":{},\"paraIndex\":0,\"charOffset\":0,\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+                resolved_section_idx,
+                resolved_apply_to,
+                page_num,
+                hf_node.bbox.x,
+                hf_node.bbox.y,
+                12.0
             ));
         }
 
@@ -4679,7 +4769,13 @@ impl DocumentCore {
             (model_idx * display_len + run.char_count / 2) / run.char_count
         }
 
-        fn format_hf_hit(run: &HfRunInfo, char_offset: usize, page_num: u32) -> String {
+        fn format_hf_hit(
+            run: &HfRunInfo,
+            char_offset: usize,
+            page_num: u32,
+            section_idx: usize,
+            apply_to: u8,
+        ) -> String {
             let cursor_x = if char_offset <= run.char_start {
                 run.bbox_x
             } else {
@@ -4695,8 +4791,15 @@ impl DocumentCore {
             let ascent = run.font_size * 0.8;
             let cursor_y = run.bbox_y + run.baseline - ascent;
             format!(
-                "{{\"hit\":true,\"paraIndex\":{},\"charOffset\":{},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                run.hf_para_idx, char_offset, page_num, cursor_x, cursor_y, run.font_size
+                "{{\"hit\":true,\"sectionIndex\":{},\"applyTo\":{},\"paraIndex\":{},\"charOffset\":{},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+                section_idx,
+                apply_to,
+                run.hf_para_idx,
+                char_offset,
+                page_num,
+                cursor_x,
+                cursor_y,
+                run.font_size
             )
         }
 
@@ -4710,7 +4813,13 @@ impl DocumentCore {
                 let local_x = x - run.bbox_x;
                 let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
                 let char_offset = model_index_in_run(run, display_idx);
-                return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
+                return Ok(format_hf_hit(
+                    run,
+                    run.char_start + char_offset,
+                    page_num,
+                    resolved_section_idx,
+                    resolved_apply_to,
+                ));
             }
         }
 
@@ -4722,13 +4831,21 @@ impl DocumentCore {
         if !same_line.is_empty() {
             if x < same_line[0].bbox_x {
                 let run = same_line[0];
-                return Ok(format_hf_hit(run, run.char_start, page_num));
+                return Ok(format_hf_hit(
+                    run,
+                    run.char_start,
+                    page_num,
+                    resolved_section_idx,
+                    resolved_apply_to,
+                ));
             }
             let last = same_line.last().unwrap();
             return Ok(format_hf_hit(
                 last,
                 last.char_start + last.char_count,
                 page_num,
+                resolved_section_idx,
+                resolved_apply_to,
             ));
         }
 
@@ -4752,7 +4869,13 @@ impl DocumentCore {
 
         if x < line_runs[0].bbox_x {
             let run = line_runs[0];
-            return Ok(format_hf_hit(run, run.char_start, page_num));
+            return Ok(format_hf_hit(
+                run,
+                run.char_start,
+                page_num,
+                resolved_section_idx,
+                resolved_apply_to,
+            ));
         }
 
         for run in &line_runs {
@@ -4760,7 +4883,13 @@ impl DocumentCore {
                 let local_x = x - run.bbox_x;
                 let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
                 let char_offset = model_index_in_run(run, display_idx);
-                return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
+                return Ok(format_hf_hit(
+                    run,
+                    run.char_start + char_offset,
+                    page_num,
+                    resolved_section_idx,
+                    resolved_apply_to,
+                ));
             }
         }
 
@@ -4769,7 +4898,212 @@ impl DocumentCore {
             last,
             last.char_start + last.char_count,
             page_num,
+            resolved_section_idx,
+            resolved_apply_to,
         ))
+    }
+
+    /// 머리말/꼬리말 내부 선택 영역의 줄별 사각형을 계산한다.
+    ///
+    /// 선택은 `(section_idx, is_header, apply_to)` 정의에 속하고, 이 API는 요청한 한
+    /// 페이지에 그 정의가 실제 active target일 때만 페이지 지역 사각형을 반환한다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn get_selection_rects_in_header_footer_native(
+        &self,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+        page_num: u32,
+        start_hf_para_idx: usize,
+        start_char_offset: usize,
+        end_hf_para_idx: usize,
+        end_char_offset: usize,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        let actual_target = self.resolve_header_footer_target(page_num, is_header);
+        let is_preview_page = self
+            .header_footer_preview_page_for_section(section_idx)
+            .is_ok_and(|preview| preview == page_num);
+        if actual_target != (section_idx, apply_to) && !is_preview_page {
+            return Ok("[]".to_string());
+        }
+
+        {
+            let paragraphs = self.get_hf_paragraphs_ref(section_idx, is_header, apply_to)?;
+            if start_hf_para_idx >= paragraphs.len() || end_hf_para_idx >= paragraphs.len() {
+                return Err(HwpError::RenderError(format!(
+                    "머리말/꼬리말 문단 범위 초과 (start={}, end={}, total={})",
+                    start_hf_para_idx,
+                    end_hf_para_idx,
+                    paragraphs.len()
+                )));
+            }
+            let start_len = paragraphs[start_hf_para_idx].text.chars().count();
+            let end_len = paragraphs[end_hf_para_idx].text.chars().count();
+            if start_char_offset > start_len || end_char_offset > end_len {
+                return Err(HwpError::RenderError(format!(
+                    "머리말/꼬리말 문자 범위 초과 (start={}/{}, end={}/{})",
+                    start_char_offset, start_len, end_char_offset, end_len
+                )));
+            }
+        }
+
+        let tree = if actual_target == (section_idx, apply_to) {
+            self.build_page_tree_cached(page_num)?
+        } else {
+            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
+        };
+        let Some(hf_node) = tree.root.children.iter().find(|child| {
+            if is_header {
+                matches!(child.node_type, RenderNodeType::Header)
+            } else {
+                matches!(child.node_type, RenderNodeType::Footer)
+            }
+        }) else {
+            return Ok("[]".to_string());
+        };
+
+        #[derive(Clone)]
+        struct HfRunInfo {
+            hf_para_idx: usize,
+            char_start: usize,
+            char_count: usize,
+            char_positions: Vec<f64>,
+            bbox_x: f64,
+            bbox_y: f64,
+            bbox_w: f64,
+            bbox_h: f64,
+        }
+
+        fn collect_runs(node: &RenderNode, runs: &mut Vec<HfRunInfo>) {
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                if let (Some(marker_para), Some(char_start)) = (tr.para_index, tr.char_start) {
+                    if marker_para >= usize::MAX - 1000 && tr.cell_context.is_none() {
+                        runs.push(HfRunInfo {
+                            hf_para_idx: usize::MAX - marker_para,
+                            char_start,
+                            char_count: effective_char_count(tr),
+                            char_positions: compute_char_positions(tr.display_or_text(), &tr.style),
+                            bbox_x: node.bbox.x,
+                            bbox_y: node.bbox.y,
+                            bbox_w: node.bbox.width,
+                            bbox_h: node.bbox.height,
+                        });
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_runs(child, runs);
+            }
+        }
+
+        fn cmp_pos(a_para: usize, a_off: usize, b_para: usize, b_off: usize) -> std::cmp::Ordering {
+            a_para.cmp(&b_para).then_with(|| a_off.cmp(&b_off))
+        }
+
+        fn display_index_for_model_offset(run: &HfRunInfo, char_offset: usize) -> usize {
+            let local_model = char_offset
+                .saturating_sub(run.char_start)
+                .min(run.char_count);
+            let display_len = run.char_positions.len().saturating_sub(1);
+            if display_len == 0 || display_len == run.char_count || run.char_count == 0 {
+                local_model.min(display_len)
+            } else {
+                ((local_model * display_len + run.char_count / 2) / run.char_count).min(display_len)
+            }
+        }
+
+        fn x_at(run: &HfRunInfo, char_offset: usize) -> f64 {
+            if char_offset <= run.char_start {
+                return run.bbox_x;
+            }
+            let display_idx = display_index_for_model_offset(run, char_offset);
+            run.char_positions
+                .get(display_idx)
+                .map(|x| run.bbox_x + x)
+                .unwrap_or(run.bbox_x + run.bbox_w)
+        }
+
+        let ((start_para, start_offset), (end_para, end_offset)) = if cmp_pos(
+            start_hf_para_idx,
+            start_char_offset,
+            end_hf_para_idx,
+            end_char_offset,
+        )
+            == std::cmp::Ordering::Greater
+        {
+            (
+                (end_hf_para_idx, end_char_offset),
+                (start_hf_para_idx, start_char_offset),
+            )
+        } else {
+            (
+                (start_hf_para_idx, start_char_offset),
+                (end_hf_para_idx, end_char_offset),
+            )
+        };
+        if (start_para, start_offset) == (end_para, end_offset) {
+            return Ok("[]".to_string());
+        }
+
+        let mut runs = Vec::new();
+        collect_runs(hf_node, &mut runs);
+        runs.sort_by(|a, b| {
+            a.hf_para_idx
+                .cmp(&b.hf_para_idx)
+                .then_with(|| {
+                    a.bbox_y
+                        .partial_cmp(&b.bbox_y)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+                .then_with(|| {
+                    a.bbox_x
+                        .partial_cmp(&b.bbox_x)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+        });
+
+        let mut rects = Vec::new();
+        for run in runs {
+            let run_start = (run.hf_para_idx, run.char_start);
+            let run_end = (run.hf_para_idx, run.char_start + run.char_count);
+            if cmp_pos(run_end.0, run_end.1, start_para, start_offset)
+                != std::cmp::Ordering::Greater
+                || cmp_pos(run_start.0, run_start.1, end_para, end_offset)
+                    != std::cmp::Ordering::Less
+            {
+                continue;
+            }
+
+            let selected_start = if run.hf_para_idx == start_para {
+                start_offset.max(run.char_start)
+            } else {
+                run.char_start
+            };
+            let selected_end = if run.hf_para_idx == end_para {
+                end_offset.min(run.char_start + run.char_count)
+            } else {
+                run.char_start + run.char_count
+            };
+            if selected_end <= selected_start {
+                continue;
+            }
+
+            let x1 = x_at(&run, selected_start);
+            let x2 = x_at(&run, selected_end);
+            rects.push(format!(
+                "{{\"pageIndex\":{},\"x\":{:.2},\"y\":{:.2},\"width\":{:.2},\"height\":{:.2}}}",
+                page_num,
+                x1,
+                run.bbox_y,
+                (x2 - x1).max(1.0),
+                run.bbox_h
+            ));
+        }
+
+        Ok(format!("[{}]", rects.join(",")))
     }
 
     /// 각주 영역 히트테스트

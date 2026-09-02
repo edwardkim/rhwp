@@ -282,21 +282,41 @@ fn resolve_master_page_hrefs<'a, 'b>(
 /// 파서 내부 호출 사슬 전체에 매니페스트 맵을 배선하는 대신, 진입 시점에 참조 문자열만
 /// 정규화한다. 실제 바이트 적재(`id = 위치+1`)와 같은 기준을 쓰므로 결과가 일치하고,
 /// 이미 정규형인 문서는 문자열이 바뀌지 않아 무영향이다.
+/// [#5747] 치환은 **단일 패스**여야 한다. 종전에는 항목마다 전체 XML 을 순차
+/// 문자열 치환했는데, 산출 이름공간(`image1`, `image2`, …)이 아직 처리하지 않은
+/// 입력 이름과 겹쳐 앞 회차가 바꾼 참조를 뒤 회차가 또 바꿨다 — 매니페스트
+/// 이름 번호와 위치가 어긋난 문서(156532835: `image15, image14, image4, …`)에서
+/// 참조 19개 중 12개가 다른 BinData 로 착지해 그림이 통째로 뒤바뀌었다
+/// (10k HWPX 2,283건 중 34건 오배선 실측). id → 위치+1 맵을 먼저 만들고 각
+/// `binaryItemIDRef` 값을 정확히 한 번만 다시 쓴다. 맵에 없는 참조(BinData
+/// 항목이 아닌 것)는 그대로 둔다.
 fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
-    let mut out = xml.to_string();
-    for (i, item) in bin_data_items.iter().enumerate() {
-        let canonical_id = i + 1;
-        let digits: String = item.id.chars().filter(|c| c.is_ascii_digit()).collect();
-        if digits.parse::<usize>() == Ok(canonical_id) {
-            continue; // 이미 숫자 불변식을 만족 — 건드리지 않는다.
-        }
-        let from = format!("binaryItemIDRef=\"{}\"", item.id);
-        if !out.contains(&from) {
-            continue;
-        }
-        let to = format!("binaryItemIDRef=\"image{}\"", canonical_id);
-        out = out.replace(&from, &to);
+    let canonical: HashMap<&str, String> = bin_data_items
+        .iter()
+        .enumerate()
+        .map(|(i, item)| (item.id.as_str(), format!("image{}", i + 1)))
+        .collect();
+    if canonical.is_empty() {
+        return xml.to_string();
     }
+    const KEY: &str = "binaryItemIDRef=\"";
+    let mut out = String::with_capacity(xml.len());
+    let mut rest = xml;
+    while let Some(pos) = rest.find(KEY) {
+        let value_start = pos + KEY.len();
+        out.push_str(&rest[..value_start]);
+        rest = &rest[value_start..];
+        let Some(end) = rest.find('"') else {
+            break;
+        };
+        let value = &rest[..end];
+        match canonical.get(value) {
+            Some(canon) => out.push_str(canon),
+            None => out.push_str(value),
+        }
+        rest = &rest[end..]; // 닫는 따옴표부터 이어 붙인다.
+    }
+    out.push_str(rest);
     out
 }
 
@@ -328,6 +348,21 @@ fn attach_hwpx_master_page(
 }
 
 /// HWPX 파일 바이트 데이터를 파싱하여 Document IR로 변환
+/// [Issue #6208] HWPX `settings.xml` 의 인쇄 방식.
+///
+/// ```xml
+/// <config:config-item-set name="PrintInfo">
+///   <config:config-item name="PrintMethod" type="short">4</config:config-item>
+/// ```
+///
+/// HWP5 `HWPTAG_DOC_DATA` 키 `0x0006_4006` 과 같은 값이다. 항목이 없으면 `None`.
+fn parse_settings_print_method(xml: &str) -> Option<u32> {
+    let at = xml.find(r#"name="PrintMethod""#)?;
+    let close = xml[at..].find('>')? + at + 1;
+    let end = xml[close..].find('<')? + close;
+    xml[close..end].trim().parse().ok()
+}
+
 pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // 1. ZIP 컨테이너 열기
     let mut reader = reader::HwpxReader::open(data)?;
@@ -352,11 +387,32 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         "Preview/PrvText.txt",
         "Preview/PrvImage.png",
         crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
+        crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {
-        if let Ok(bytes) = reader.read_file_bytes(path) {
+        let entry = if *path == "Preview/PrvImage.png" {
+            reader.read_file_bytes_limited(path, super::MAX_THUMBNAIL_BYTES)
+        } else {
+            reader.read_file_bytes(path)
+        };
+        if let Ok(bytes) = entry {
             hwpx_aux_entries.push((path.to_string(), bytes));
+        }
+    }
+    // [#3557] Scripts/* — IR 로 모델링되지 않는 패키지 스크립트를 원본 그대로
+    // 보존한다. 소실되면 문서 동작이 조용히 사라지는데 --verify(IR 대조)로는
+    // 잡히지 않는다. content.hpf 의 opf:item/spine 참조는 write_content_hpf 가
+    // 원본 블록에서 그대로 splice 하고, ZIP 방출은 serializer/hwpx/mod.rs 가
+    // 이 aux 엔트리를 통과시킨다.
+    let script_paths: Vec<String> = reader
+        .file_names()
+        .into_iter()
+        .filter(|n| n.starts_with("Scripts/"))
+        .collect();
+    for path in script_paths {
+        if let Ok(bytes) = reader.read_file_bytes(&path) {
+            hwpx_aux_entries.push((path, bytes));
         }
     }
 
@@ -386,6 +442,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     let hwpml_version = header::parse_hwpx_hwpml_version(&header_xml);
     // 무손실: 원본 HWPML 버전을 보존해 직렬화 때 그대로 재방출(하드코딩 금지).
     doc_info.hwpml_version = hwpml_version.clone();
+    // [Issue #6208] 인쇄 방식(모아 찍기 등)을 **파생**으로 읽는다 — 보존은 위
+    // `settings.xml` aux passthrough 가 그대로 담당한다. HWP5 는 같은 값을
+    // `HWPTAG_DOC_DATA` 의 키 `0x0006_4006` 에 싣는다.
+    doc_info.print_method = hwpx_aux_entries
+        .iter()
+        .find(|(path, _)| path == "settings.xml")
+        .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
+        .and_then(parse_settings_print_method);
 
     // BinData 목록을 DocInfo에 등록
     // [Task #873] isEmbeded="0" 인 외부 file 참조 (예: HWP3 → HWPX 변환본 의 절대 경로)
@@ -410,6 +474,21 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     }
 
     // 4. section*.xml → Section 변환
+    //
+    // [#4916 계열] rhwp 자기 산출 HWPX(HWP5-origin 마커)는 각주·미주 subList
+    // lineseg 의 vpos=0 보정(task 1692)을 건너뛴다 — HWP5 원본 저장값의 왕복
+    // 보존이 마커 계약(#1770)이다. 가드는 구역 파싱 동안만 유효(RAII).
+    let has_hwp5_origin = hwpx_aux_entries
+        .iter()
+        .any(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH);
+    let has_hwp3_origin = hwpx_aux_entries
+        .iter()
+        .any(|(path, _)| path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH);
+    let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(has_hwp5_origin);
+    // 원본 HWP3→HWPX 만 — 변환본 HWPX(hwp5-origin)는 8유닛 슬롯과 기존 HWP5
+    // TAC 계약을 쓴다.
+    let _hwp3_origin_guard =
+        section::Hwp3OriginSourceGuard::set(has_hwp3_origin && !has_hwp5_origin);
     let mut sections = Vec::new();
     for (section_idx, section_href) in package_info.section_files.iter().enumerate() {
         let section_xml = reader.read_file(section_href)?;
@@ -553,7 +632,8 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // _LinkDoc, Scripts/JScriptVersion) 은 Stage 2.2 의 blank2010.hwp
     // fallback 으로 보강. cfb_writer (`src/serializer/cfb_writer.rs:155`)
     // 가 Document::extra_streams 를 그대로 OLE 스트림으로 작성.
-    let contract = contract_streams::extract_contract_streams(&mut reader);
+    let contract =
+        contract_streams::extract_contract_streams(&mut reader, super::MAX_THUMBNAIL_BYTES);
 
     let mut doc = Document {
         header: model_header,
@@ -572,6 +652,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             hwpx_lineage: false,
         },
     };
+    // HWP3-origin 마커가 있으면 계보를 복원한다 — 직파싱 HWP3 와 같은
+    // 레이아웃 계약(저장-스텝)을 밟아 왕복 등식이 성립한다.
+    if doc
+        .hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+        .is_some()
+    {
+        doc.provenance.hwp3_lineage = true;
+    }
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 영역 Picture.external_path 영역
     // 전달. 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은

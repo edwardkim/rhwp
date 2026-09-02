@@ -1,0 +1,21 @@
+{
+  "id": "FJ69",
+  "steps": [
+    {
+      "answer": {
+        "filledCount": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"작성자\": \"메모예고작성\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "filledCount"
+        }
+      }
+    }
+  ]
+}

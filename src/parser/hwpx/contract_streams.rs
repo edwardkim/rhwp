@@ -62,7 +62,10 @@ pub(super) struct ContractStreams {
 ///
 /// HWPX 에 동등 파일이 없으면 해당 스트림은 생략. cfb_writer 가 한컴 정답지
 /// 와 비교하여 추가 fallback (HwpSummary / DocOptions/_LinkDoc) 가 필요.
-pub(super) fn extract_contract_streams(reader: &mut HwpxReader) -> ContractStreams {
+pub(super) fn extract_contract_streams(
+    reader: &mut HwpxReader,
+    max_preview_image_bytes: usize,
+) -> ContractStreams {
     let mut streams = Vec::new();
 
     // PrvText.txt (UTF-8) → /PrvText (UTF-16 LE, HWP5 spec).
@@ -75,7 +78,7 @@ pub(super) fn extract_contract_streams(reader: &mut HwpxReader) -> ContractStrea
 
     // PrvImage.png → /PrvImage (PNG passthrough). 미존재 시 blank2010 fallback.
     let prv_image = reader
-        .read_file_bytes("Preview/PrvImage.png")
+        .read_file_bytes_limited("Preview/PrvImage.png", max_preview_image_bytes)
         .unwrap_or_else(|_| FALLBACK_PRV_IMAGE.to_vec());
     streams.push(("/PrvImage".to_string(), prv_image));
 

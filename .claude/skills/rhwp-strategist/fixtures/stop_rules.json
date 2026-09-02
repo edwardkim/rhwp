@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5335,
+  "skill": "rhwp-strategist",
+  "rules": [
+    {
+      "id": "ST-FORECAST",
+      "severity": "block",
+      "signal": "출처 없는 전망"
+    },
+    {
+      "id": "ST-INVENT-PAGE",
+      "severity": "block",
+      "signal": "page 발명"
+    },
+    {
+      "id": "ST-DROP-FAILED",
+      "severity": "block",
+      "signal": "실패 문서 삭제"
+    },
+    {
+      "id": "ST-SKIP-ENGINE",
+      "severity": "block",
+      "signal": "엔진 생략"
+    },
+    {
+      "id": "ST-GATE-FAIL",
+      "severity": "block",
+      "signal": "validate 실패 납품"
+    },
+    {
+      "id": "ST-UNKNOWN-EV",
+      "severity": "block",
+      "signal": "없는 EV"
+    },
+    {
+      "id": "ST-PLACEHOLDER",
+      "severity": "block",
+      "signal": "플레이스홀더"
+    },
+    {
+      "id": "ST-UNLINKED",
+      "severity": "block",
+      "signal": "연결 없음"
+    },
+    {
+      "id": "ST-INVENTED-CMD",
+      "severity": "block",
+      "signal": "발명 명령"
+    },
+    {
+      "id": "ST-GYM",
+      "severity": "block",
+      "signal": "gym 혼입"
+    },
+    {
+      "id": "ST-SCAFFOLD-GUESS",
+      "severity": "block",
+      "signal": "미광고 scaffold"
+    },
+    {
+      "id": "ST-TRUNCATE-HIDE",
+      "severity": "warn",
+      "signal": "절단 은폐"
+    },
+    {
+      "id": "ST-AMOUNT-REWRITE",
+      "severity": "warn",
+      "signal": "금액 재계산"
+    },
+    {
+      "id": "ST-DOC-AS-ORDER",
+      "severity": "block",
+      "signal": "문서=지시"
+    },
+    {
+      "id": "ST-LAYER-MIX",
+      "severity": "warn",
+      "signal": "층 혼동"
+    }
+  ]
+}

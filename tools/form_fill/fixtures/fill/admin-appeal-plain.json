@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "admin-appeal-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "admin-appeal",
+  "title": "행정심판 청구서 고유 이름 채움",
+  "family": "쟁송",
+  "genre": "심판",
+  "sample": "fixtures/forms/행정심판청구서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "피청구인",
+  "fieldCount": 11,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/행정심판청구서.hwp",
+    "--data",
+    "{\"피청구인\": \"세종특별자치시\", \"처분내용\": \"건축허가 거부\", \"처분일\": \"2026. 6. 1.\"}",
+    "-o",
+    "out/admin-appeal-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "피청구인": "세종특별자치시",
+    "처분내용": "건축허가 거부",
+    "처분일": "2026. 6. 1."
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/행정심판청구서.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "피청구인",
+        "occurrence": 0,
+        "value": "세종특별자치시"
+      },
+      {
+        "name": "처분내용",
+        "occurrence": 0,
+        "value": "건축허가 거부"
+      },
+      {
+        "name": "처분일",
+        "occurrence": 0,
+        "value": "2026. 6. 1."
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/admin-appeal-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

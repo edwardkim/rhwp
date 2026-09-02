@@ -10,6 +10,17 @@
  */
 
 import { EditorTransport } from './transport.js';
+import {
+  assertCapability,
+  validateApplyTextCommand,
+  validateBodyParagraphTarget,
+  validateDocumentState,
+  validateDocumentChangedEvent,
+  validateFocusTargetResult,
+  validateRevertTextCommand,
+  validateSelectionContext,
+  validateTextCommandReceipt,
+} from './document-agent-contract.js';
 
 const DEFAULT_STUDIO_URL = 'https://edwardkim.github.io/rhwp/';
 
@@ -87,6 +98,10 @@ export class RhwpEditor {
   constructor(iframe, transport) {
     this._iframe = iframe;
     this._transport = transport;
+    this._documentChangedListeners = new Set();
+    this._offDocumentChanged = null;
+    this._lastDocumentEpoch = null;
+    this._lastDocumentChangeSeq = null;
   }
 
   /**
@@ -132,12 +147,15 @@ export class RhwpEditor {
    * ```
    */
   async loadFile(data, fileName = 'document.hwp', options = {}) {
-    return this._request('loadFile', {
+    const result = await this._request('loadFile', {
       data,
       fileName,
       skipUnsavedGuard: options.skipUnsavedGuard === true,
       suppressDialogs: options.suppressDialogs === undefined || options.suppressDialogs === true,
     });
+    this._lastDocumentEpoch = null;
+    this._lastDocumentChangeSeq = null;
+    return result;
   }
 
   /**
@@ -171,6 +189,29 @@ export class RhwpEditor {
     const result = await this._request('getRendererDiagnostics', { page });
     if (result?.schemaVersion !== 1 || result?.page?.index !== page) {
       throw new Error('Studio returned invalid renderer diagnostics v1');
+    }
+    return result;
+  }
+
+  /** 현재 문자의 layout/paint font 결정 계보를 bounded trace로 반환합니다. */
+  async getFontDecisionTrace(page = 0, options = {}) {
+    if (!Number.isSafeInteger(page) || page < 0) {
+      throw new TypeError('page must be a non-negative safe integer');
+    }
+    const maxCharacters = options.maxCharacters ?? 1024;
+    if (!Number.isSafeInteger(maxCharacters) || maxCharacters < 1 || maxCharacters > 4096) {
+      throw new TypeError('maxCharacters must be a safe integer in 1..=4096');
+    }
+    if (!this._transport.supports('font-decision-trace-v1')) {
+      throw new Error('Font decision trace v1 is not supported by this Studio');
+    }
+    const result = await this._request('getFontDecisionTrace', {
+      page,
+      limits: { maxCharacters },
+    });
+    if (result?.schemaVersion !== 1 || result?.scope?.pageIndex !== page
+      || !Array.isArray(result?.records)) {
+      throw new Error('Studio returned invalid font decision trace v1');
     }
     return result;
   }
@@ -236,6 +277,100 @@ export class RhwpEditor {
     return this._request('notifySaved', params);
   }
 
+  /** 현재 문서의 에이전트 명령 fence와 SHA-256 상태를 반환합니다. */
+  async getDocumentState() {
+    assertCapability(this._transport, 'document-state-v1');
+    const state = validateDocumentState(await this._request('getDocumentState'));
+    this._rememberDocumentVersion(state.documentEpoch, state.changeSeq);
+    return state;
+  }
+
+  /** 현재 캐럿/선택을 body paragraph exact target으로 정규화해 반환합니다. */
+  async getSelectionContext() {
+    assertCapability(this._transport, 'selection-context-v1');
+    const selection = validateSelectionContext(await this._request('getSelectionContext'));
+    this._rememberDocumentVersion(selection.documentEpoch, selection.changeSeq);
+    return selection;
+  }
+
+  /** exact preimage fence를 검증하고 한 Studio 트랜잭션으로 문단 전체를 교체합니다. */
+  async applyTextCommand(command) {
+    assertCapability(this._transport, 'document-agent-command-v1');
+    const validCommand = validateApplyTextCommand(command);
+    const receipt = validateTextCommandReceipt(await this._request('applyTextCommand', {
+      command: validCommand,
+    }));
+    this._rememberDocumentVersion(receipt.documentEpoch, receipt.afterChangeSeq);
+    return receipt;
+  }
+
+  /** 가장 최근에 성공한 exact command를 한 Studio 트랜잭션으로 되돌립니다. */
+  async revertTextCommand(command) {
+    assertCapability(this._transport, 'document-agent-command-v1');
+    const validCommand = validateRevertTextCommand(command);
+    const receipt = validateTextCommandReceipt(await this._request('revertTextCommand', {
+      command: validCommand,
+    }));
+    this._rememberDocumentVersion(receipt.documentEpoch, receipt.afterChangeSeq);
+    return receipt;
+  }
+
+  /** exact body paragraph target으로 캐럿과 뷰포트를 이동합니다. */
+  async focusTarget(target) {
+    assertCapability(this._transport, 'target-navigation-v1');
+    const validTarget = validateBodyParagraphTarget(target);
+    return validateFocusTargetResult(await this._request('focusTarget', {
+      target: validTarget,
+    }));
+  }
+
+  /** agent apply/revert가 commit된 뒤 strict v1 변경 이벤트를 구독합니다. */
+  onDocumentChanged(listener) {
+    assertCapability(this._transport, 'document-change-events-v1');
+    if (typeof listener !== 'function') throw new TypeError('listener must be a function');
+    this._documentChangedListeners.add(listener);
+    if (!this._offDocumentChanged) {
+      this._offDocumentChanged = this._transport.on('documentChanged', (payload) => {
+        let event;
+        try {
+          event = validateDocumentChangedEvent(payload);
+        } catch {
+          return;
+        }
+        if (!this._isFreshDocumentEvent(event.documentEpoch, event.changeSeq)) return;
+        this._rememberDocumentVersion(event.documentEpoch, event.changeSeq);
+        for (const subscriber of this._documentChangedListeners) {
+          try { subscriber(event); } catch { /* 한 listener가 다른 listener를 막지 않는다. */ }
+        }
+      });
+    }
+    return () => {
+      this._documentChangedListeners.delete(listener);
+      if (this._documentChangedListeners.size === 0) {
+        this._offDocumentChanged?.();
+        this._offDocumentChanged = null;
+      }
+    };
+  }
+
+  _isFreshDocumentEvent(epoch, changeSeq) {
+    if (this._lastDocumentEpoch === null) return true;
+    if (epoch !== this._lastDocumentEpoch) return epoch > this._lastDocumentEpoch;
+    return this._lastDocumentChangeSeq === null || changeSeq > this._lastDocumentChangeSeq;
+  }
+
+  _rememberDocumentVersion(epoch, changeSeq) {
+    if (this._lastDocumentEpoch === null || epoch > this._lastDocumentEpoch) {
+      this._lastDocumentEpoch = epoch;
+      this._lastDocumentChangeSeq = changeSeq;
+      return;
+    }
+    if (epoch === this._lastDocumentEpoch
+        && (this._lastDocumentChangeSeq === null || changeSeq > this._lastDocumentChangeSeq)) {
+      this._lastDocumentChangeSeq = changeSeq;
+    }
+  }
+
   /**
    * iframe 엘리먼트를 반환합니다.
    */
@@ -243,11 +378,116 @@ export class RhwpEditor {
     return this._iframe;
   }
 
+  // ── 브리지 표면 (studio 자동화·플러그인·창 제어) ─────────────────
+
+  /**
+   * studio 의 커맨드·메뉴를 다룹니다.
+   *
+   * `list()` 는 레지스트리 전체이고 `menuModel()` 은 실제 메뉴 구조입니다 — 같지 않습니다.
+   * 메뉴에 없는 커맨드(컨텍스트 메뉴·단축키 전용)도 실행할 수 있습니다.
+   */
+  get commands() {
+    return {
+      list: () => this._request('automation.list'),
+      menuModel: () => this._request('automation.menuModel'),
+      isEnabled: (id) => this._request('automation.isEnabled', { id }),
+      /**
+       * 커맨드 실행. 대화상자를 여는 커맨드는 기본 거절(`needs-dialog`)이다 —
+       * 자동화가 그것을 열면 사람이 누를 때까지 응답이 멈춘다.
+       * 사용자가 앞에 있는 통합에서는 `{ allowDialog: true }` 로 푼다.
+       */
+      execute: (id, params, options = {}) => this._request('automation.execute', {
+        id, params, allowDialog: options.allowDialog === true,
+      }),
+      context: () => this._request('automation.context'),
+    };
+  }
+
+  /** 플러그인을 올리고 내립니다. 올릴 수 있는 이름은 studio 가 정합니다(allowlist). */
+  get plugins() {
+    return {
+      list: () => this._request('plugin.list'),
+      load: (id) => this._request('plugin.load', { id }),
+      unload: (id) => this._request('plugin.unload', { id }),
+      invoke: (id, method, args = []) => this._request('plugin.invoke', { id, method, args }),
+    };
+  }
+
+  /**
+   * HwpCtrl API — studio 가 들고 있는 **그 문서**를 조작합니다.
+   *
+   * `hwpctrl` 플러그인이 올라와 있어야 합니다(`plugins.load('hwpctrl')`).
+   */
+  get hwpctrl() {
+    const invoke = (method, args) =>
+      this._request('plugin.invoke', { id: 'hwpctrl', method: 'invoke', args: [method, args] });
+    return {
+      call: invoke,
+      /**
+       * 여러 호출을 **한 메시지·한 트랜잭션**으로 보냅니다. undo 도 1스텝입니다.
+       *
+       * 콜백은 부모에서 실행되지 않습니다 — 호출을 기록해 배열로 직렬화한 뒤 한 번에 보냅니다.
+       * 함수 문자열을 iframe 에서 평가하는 경로는 만들지 않습니다.
+       */
+      batch: (build) => {
+        const ops = [];
+        const recorder = new Proxy({}, {
+          get: (_t, name) => (...args) => { ops.push({ m: String(name), a: args }); return recorder; },
+        });
+        if (typeof build === 'function') build(recorder);
+        else if (Array.isArray(build)) ops.push(...build);
+        return this._request('plugin.invoke', { id: 'hwpctrl', method: 'batch', args: [ops] });
+      },
+      exportBytes: (format) =>
+        this._request('plugin.invoke', { id: 'hwpctrl', method: 'exportBytes', args: [format] }),
+      undo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'undo', args: [] }),
+      redo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'redo', args: [] }),
+    };
+  }
+
+  /** 메뉴·툴바·상태표시줄 표시. 숨겨도 커맨드는 그대로 실행됩니다. */
+  get chrome() {
+    return {
+      get: () => this._request('chrome.get'),
+      set: (visibility) => this._request('chrome.set', { visibility }),
+    };
+  }
+
   /**
    * 에디터를 제거합니다.
+   *
+   * iframe 과 채널을 회수합니다. **다른 컨테이너로 옮기려면 destroy 후 다시 만들어야 합니다** —
+   * iframe 을 DOM 이동시키면 브라우저가 문서를 재로드해 편집 상태가 사라집니다.
    */
   destroy() {
+    this._offDocumentChanged?.();
+    this._offDocumentChanged = null;
+    this._documentChangedListeners.clear();
     this._transport.destroy();
     this._iframe.remove();
   }
+}
+
+/**
+ * studio 인스턴스를 만들어 컨테이너에 심습니다.
+ *
+ * `createEditor` 의 상위 집합입니다 — 같은 것을 만들고, 플러그인 로드와 창 제어 초기값을
+ * 함께 처리합니다.
+ *
+ * @example
+ * ```javascript
+ * const studio = await createStudio('#app', { plugins: ['hwpctrl'], chrome: { menu: false } });
+ * await studio.hwpctrl.batch(h => { h.SetTextFile('안녕', 'TEXT', ''); });
+ * ```
+ */
+export async function createStudio(container, options = {}) {
+  const studio = await createEditor(container, options);
+  try {
+    if (options.chrome) await studio.chrome.set(options.chrome);
+    for (const id of options.plugins ?? []) await studio.plugins.load(id);
+  } catch (error) {
+    studio.destroy();
+    throw error;
+  }
+  return studio;
 }

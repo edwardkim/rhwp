@@ -1,0 +1,16 @@
+token	kind	confidence	const
+<|im_start|>	role_impersonation	high	ROLE_TOKENS
+<|im_end|>	role_impersonation	high	ROLE_TOKENS
+<|system|>	role_impersonation	high	ROLE_TOKENS
+<|user|>	role_impersonation	high	ROLE_TOKENS
+<|assistant|>	role_impersonation	high	ROLE_TOKENS
+<|endoftext|>	role_impersonation	high	ROLE_TOKENS
+<|start_header_id|>	role_impersonation	high	ROLE_TOKENS
+<|end_header_id|>	role_impersonation	high	ROLE_TOKENS
+<|eot_id|>	role_impersonation	high	ROLE_TOKENS
+[INST]	role_impersonation	high	ROLE_TOKENS
+[/INST]	role_impersonation	high	ROLE_TOKENS
+<<SYS>>	role_impersonation	high	ROLE_TOKENS
+<</SYS>>	role_impersonation	high	ROLE_TOKENS
+시스템 프롬프트	role_impersonation	high	ROLE_TOKENS
+시스템 메시지:	role_impersonation	high	ROLE_TOKENS

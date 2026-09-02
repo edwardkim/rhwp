@@ -1,0 +1,55 @@
+{
+  "id": "AU06",
+  "tier": 3,
+  "title": "선택적 공개 왕복",
+  "input": "samples/table-001.hwp",
+  "instructions": "작업 캡슐을 **가림**(salt 커밋)한 뒤 개봉으로 **바이트 완전 복원**해 복원본 restored.json 과 가림본 redacted.json, 개봉 opening.json 을 제출하라. 힌트: rhwp disclose redact → disclose restore.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "work.capsule.json",
+      "redacted.json",
+      "opening.json",
+      "restored.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가림 복원 무결 (redacted+opening 이 무손실)",
+      "op": "value_eq",
+      "value": true,
+      "path": "byteIdentical",
+      "cmd": [
+        "disclose",
+        "restore",
+        "{file:redacted.json}",
+        "--opening",
+        "{file:opening.json}",
+        "-o",
+        "{file:_grader_restore.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "복원본이 원본 캡슐과 바이트 동일 (복원 스텝 load-bearing)",
+      "op": "same_hash",
+      "files": [
+        "restored.json",
+        "work.capsule.json"
+      ]
+    },
+    {
+      "name": "가림이 실제로 일어남 (가림본 != 원본 캡슐)",
+      "op": "files_differ",
+      "files": [
+        "redacted.json",
+        "work.capsule.json"
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

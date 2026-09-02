@@ -91,6 +91,28 @@ pub struct LoadFail {
     pub message: String,
 }
 
+/// 경로에서 DocumentCore 를 연다. 실패 메시지는 stderr, 종료 코드는 호출부가 쓴다.
+pub fn open_core(path: &str) -> Result<rhwp::document_core::DocumentCore, i32> {
+    let data = read_file(path).map_err(|m| {
+        eprintln!("오류: {m}");
+        EXIT_RUNTIME
+    })?;
+    load_core(&data).map_err(|fail| {
+        eprintln!("오류: 문서를 열 수 없습니다 - {path}: {}", fail.message);
+        EXIT_RUNTIME
+    })
+}
+
+/// 누름틀 표시 이름 — ctrl_data_name 이 비면 command.
+pub fn field_display_name(field: &rhwp::document_core::queries::field_query::FieldInfo) -> String {
+    field
+        .field
+        .ctrl_data_name
+        .clone()
+        .filter(|n| !n.is_empty())
+        .unwrap_or_else(|| field.field.command.clone())
+}
+
 /// 바이트에서 DocumentCore 를 연다.
 pub fn load_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, LoadFail> {
     rhwp::document_core::DocumentCore::from_bytes(data).map_err(|e| {
@@ -163,6 +185,112 @@ pub fn closest<'a, I: Iterator<Item = &'a str>>(input: &str, candidates: I) -> O
     }
     // 거리가 이름 길이의 절반을 넘으면 힌트로서 가치가 없다.
     best.and_then(|(d, name)| (d <= name.len().div_ceil(2)).then_some(name))
+}
+
+/// 위치 인자 파일 하나 + `--json`.
+pub struct OneFile {
+    pub json: bool,
+    pub path: String,
+}
+
+pub fn one_file(args: &[String], usage: &str) -> Result<OneFile, i32> {
+    let mut json = false;
+    let mut path: Option<String> = None;
+    for arg in args {
+        match arg.as_str() {
+            "--json" => json = true,
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!("사용법: {usage}");
+                return Err(EXIT_USAGE);
+            }
+            other => {
+                if path.is_some() {
+                    eprintln!("오류: 파일이 너무 많습니다 - {other}");
+                    eprintln!("사용법: {usage}");
+                    return Err(EXIT_USAGE);
+                }
+                path = Some(other.to_string());
+            }
+        }
+    }
+    let Some(path) = path else {
+        eprintln!("오류: 파일 경로가 필요합니다.");
+        eprintln!("사용법: {usage}");
+        return Err(EXIT_USAGE);
+    };
+    Ok(OneFile { json, path })
+}
+
+/// 파일 둘 + `--json`.
+pub fn two_files(args: &[String], usage: &str) -> Result<(bool, String, String), i32> {
+    let mut json = false;
+    let mut paths: Vec<String> = Vec::new();
+    for arg in args {
+        match arg.as_str() {
+            "--json" => json = true,
+            other if other.starts_with('-') => {
+                eprintln!("오류: 알 수 없는 옵션입니다 - {other}");
+                eprintln!("사용법: {usage}");
+                return Err(EXIT_USAGE);
+            }
+            other => paths.push(other.to_string()),
+        }
+    }
+    if paths.len() != 2 {
+        eprintln!("오류: 파일 두 개가 필요합니다.");
+        eprintln!("사용법: {usage}");
+        return Err(EXIT_USAGE);
+    }
+    Ok((json, paths[0].clone(), paths[1].clone()))
+}
+
+/// 파일 하나 + `--json` + 값 플래그 하나.
+pub fn one_file_value(
+    args: &[String],
+    usage: &str,
+    flag: &str,
+) -> Result<(OneFile, Option<String>), i32> {
+    let mut json = false;
+    let mut path: Option<String> = None;
+    let mut value: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        let arg = args[i].as_str();
+        if arg == "--json" {
+            json = true;
+            i += 1;
+            continue;
+        }
+        if arg == flag {
+            let Some(v) = args.get(i + 1) else {
+                eprintln!("오류: {flag} 뒤에 값이 필요합니다.");
+                eprintln!("사용법: {usage}");
+                return Err(EXIT_USAGE);
+            };
+            value = Some(v.clone());
+            i += 2;
+            continue;
+        }
+        if arg.starts_with('-') {
+            eprintln!("오류: 알 수 없는 옵션입니다 - {arg}");
+            eprintln!("사용법: {usage}");
+            return Err(EXIT_USAGE);
+        }
+        if path.is_some() {
+            eprintln!("오류: 파일이 너무 많습니다 - {arg}");
+            eprintln!("사용법: {usage}");
+            return Err(EXIT_USAGE);
+        }
+        path = Some(arg.to_string());
+        i += 1;
+    }
+    let Some(path) = path else {
+        eprintln!("오류: 파일 경로가 필요합니다.");
+        eprintln!("사용법: {usage}");
+        return Err(EXIT_USAGE);
+    };
+    Ok((OneFile { json, path }, value))
 }
 
 fn levenshtein(a: &str, b: &str) -> usize {

@@ -4,9 +4,14 @@ import {
   normalizeZoomAnchor,
   type ZoomAnchor,
 } from './zoom-anchor.ts';
+import { MAX_DOCUMENT_ZOOM, MIN_DOCUMENT_ZOOM } from './page-arrangement.ts';
+import {
+  DEFAULT_PAGE_MOVEMENT,
+  normalizePageMovementSettings,
+  type PageMovementSettings,
+} from './page-movement.ts';
+import type { ZoomFitMode } from './zoom-fit.ts';
 
-const MIN_ZOOM = 0.25;
-const MAX_ZOOM = 4.0;
 const ZOOM_SETTLE_EPSILON = 0.001;
 const ZOOM_SMOOTHING_TIME_MS = 16;
 const WHEEL_ZOOM_SENSITIVITY = 0.00625;
@@ -27,6 +32,8 @@ export class ViewportManager {
   private zoomAnimating = false;
   private zoomTarget = 1.0;
   private zoomAnchor: ZoomAnchor = CENTER_ZOOM_ANCHOR;
+  private zoomFitMode: ZoomFitMode = 'none';
+  private pageMovement: PageMovementSettings = { ...DEFAULT_PAGE_MOVEMENT };
   private onScrollBound: () => void;
   private onWheelBound: (e: WheelEvent) => void;
   private onZoomAnimationFrameBound: (timestamp: number) => void;
@@ -123,6 +130,24 @@ export class ViewportManager {
     if (!e.ctrlKey && !e.metaKey) {
       if (
         this.container
+        && this.pageMovement.direction === 'horizontal'
+        && this.pageMovement.wheelHorizontal
+        && !e.shiftKey
+      ) {
+        // 트랙패드의 가로 우세 입력도 브라우저 native 스크롤에 맡기지 않는다.
+        // 두 축을 더하면 대각선 제스처가 과속하므로 우세한 signed delta 하나만 쓴다.
+        const horizontalDelta = Math.abs(deltaX) > Math.abs(deltaY)
+          ? deltaX
+          : deltaY;
+        if (horizontalDelta !== 0) {
+          e.preventDefault();
+          this.setScrollLeft(this.container.scrollLeft + horizontalDelta);
+        }
+        return;
+      }
+      if (
+        this.container
+        && this.pageMovement.direction === 'vertical'
         && !e.shiftKey
         && deltaY !== 0
         && Math.abs(deltaY) >= Math.abs(deltaX)
@@ -180,15 +205,33 @@ export class ViewportManager {
     return { width: this.viewportWidth, height: this.viewportHeight };
   }
 
+  setPageMovement(value: PageMovementSettings): void {
+    this.pageMovement = normalizePageMovementSettings(value);
+  }
+
   getZoom(): number {
     return this.zoom;
   }
 
-  setZoom(zoom: number, anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR): void {
+  /** 지금 배율이 어떤 맞춤에서 나왔는지 — 수치로 바꾼 직후에는 'none' 이다. */
+  getZoomFitMode(): ZoomFitMode {
+    return this.zoomFitMode;
+  }
+
+  /**
+   * 배율을 정한다. `fitMode` 는 이 배율이 어떤 맞춤 규칙에서 나왔는지다 — 기본값
+   * 'none'(수치 지정)이라 휠·가로바·수치 명령은 저장된 맞춤을 자동으로 푼다.
+   */
+  setZoom(
+    zoom: number,
+    anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR,
+    fitMode: ZoomFitMode = 'none',
+  ): void {
     this.cancelZoomAnimation();
     this.zoomAnchor = normalizeZoomAnchor(anchor);
     this.zoom = this.clampZoom(zoom);
     this.zoomTarget = this.zoom;
+    this.updateZoomFitMode(fitMode);
     this.eventBus.emit('zoom-changed', this.zoom, this.zoomAnchor);
   }
 
@@ -196,13 +239,18 @@ export class ViewportManager {
     this.smoothZoomTo(this.zoomTarget + delta, anchor);
   }
 
-  smoothZoomTo(zoom: number, anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR): void {
+  smoothZoomTo(
+    zoom: number,
+    anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR,
+    fitMode: ZoomFitMode = 'none',
+  ): void {
     this.zoomAnchor = normalizeZoomAnchor(anchor);
     this.zoomTarget = this.clampZoom(zoom);
     if (Math.abs(this.zoomTarget - this.zoom) <= ZOOM_SETTLE_EPSILON) {
-      this.setZoom(this.zoomTarget, this.zoomAnchor);
+      this.setZoom(this.zoomTarget, this.zoomAnchor, fitMode);
       return;
     }
+    this.updateZoomFitMode(fitMode);
     this.zoomAnimating = true;
     if (this.zoomAnimationFrame === null) {
       this.zoomAnimationFrame = requestAnimationFrame(this.onZoomAnimationFrameBound);
@@ -235,6 +283,12 @@ export class ViewportManager {
     }
   }
 
+  private updateZoomFitMode(mode: ZoomFitMode): void {
+    if (this.zoomFitMode === mode) return;
+    this.zoomFitMode = mode;
+    this.eventBus.emit('zoom-fit-mode-changed', mode);
+  }
+
   private cancelZoomAnimation(): void {
     if (this.zoomAnimationFrame !== null) {
       cancelAnimationFrame(this.zoomAnimationFrame);
@@ -246,7 +300,7 @@ export class ViewportManager {
   }
 
   private clampZoom(zoom: number): number {
-    return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
+    return Math.max(MIN_DOCUMENT_ZOOM, Math.min(MAX_DOCUMENT_ZOOM, zoom));
   }
 
   setScrollTop(y: number): void {

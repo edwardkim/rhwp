@@ -1,0 +1,45 @@
+{
+  "issue": 5485,
+  "claimId": "M-tbl",
+  "showcase": [
+    "C-block_2x2-all",
+    "C-header_plus_note-first",
+    "C-table001_header-first",
+    "D-hwp_table_test_t0-col_long_first",
+    "D-hwp_table_test_t0-row_short_1",
+    "D-table_001-both-2x2",
+    "E-occ-table001_header",
+    "E-scan-hwp_table_test_t0",
+    "R-hwp_table_test_t0-ctrl-lf",
+    "R-hwp_table_test_t0-preview",
+    "R-recipe02-edited",
+    "T-hwp_table_test_t0-bom",
+    "T-hwp_table_test_t0-extract",
+    "T-recipe02-rfc4180",
+    "T-table_001-extract",
+    "T-unknown-table-99999",
+    "V-hwp_table_test_t0-exit3-diff2",
+    "V-hwpx_basic_01-identical",
+    "V-recipe02-verify-ok"
+  ],
+  "families": {
+    "covered": 81,
+    "dimension": 90,
+    "export-tables": 37,
+    "dry-run": 24,
+    "table-to-csv": 36,
+    "verify": 31
+  },
+  "commands": [
+    "export-tables",
+    "table-to-csv",
+    "csv-to-table"
+  ],
+  "forbidden": [
+    "new CLI",
+    "DocumentCore edit invention",
+    "merge split/join writer",
+    "gym/",
+    "other live seats"
+  ]
+}

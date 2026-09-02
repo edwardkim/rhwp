@@ -1,0 +1,569 @@
+{
+  "schemaVersion": "1.0",
+  "claim": "V-replay",
+  "kind": "thirdPartyReplayDecision",
+  "axis": "third-party-replay",
+  "rowCount": 126000,
+  "shardRows": 4200,
+  "columns": [
+    "case_id",
+    "plan",
+    "expect_sha",
+    "reproduced",
+    "tool_version",
+    "verdict",
+    "mode",
+    "source",
+    "plan_sha256",
+    "output_sha256",
+    "expected_tool_version",
+    "input_path",
+    "action",
+    "exit_class",
+    "labor_accepted",
+    "evidence_kind",
+    "implementer_claim",
+    "sha_defect",
+    "family"
+  ],
+  "verdicts": [
+    "LABOR_ACCEPTED",
+    "LABOR_REJECTED",
+    "ATTEST_NOT_THIRD_PARTY",
+    "PROSE_NOT_EVIDENCE",
+    "NO_EXPECT_SHA",
+    "INVALID_EXPECT_SHA",
+    "TOOL_VERSION_MISSING",
+    "TOOL_VERSION_MISMATCH",
+    "NO_PLAN"
+  ],
+  "uniqueness": "plan,expect_sha,reproduced,toolVersion,verdict",
+  "byVerdict": {
+    "ATTEST_NOT_THIRD_PARTY": 14000,
+    "INVALID_EXPECT_SHA": 14000,
+    "LABOR_ACCEPTED": 14000,
+    "LABOR_REJECTED": 14000,
+    "NO_EXPECT_SHA": 14000,
+    "NO_PLAN": 14000,
+    "PROSE_NOT_EVIDENCE": 14000,
+    "TOOL_VERSION_MISMATCH": 14000,
+    "TOOL_VERSION_MISSING": 14000
+  },
+  "shards": [
+    {
+      "path": "corpus/shard_0000.tsv",
+      "rows": 4200,
+      "first": "v-replay-000001",
+      "last": "v-replay-004200",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0001.tsv",
+      "rows": 4200,
+      "first": "v-replay-004201",
+      "last": "v-replay-008400",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0002.tsv",
+      "rows": 4200,
+      "first": "v-replay-008401",
+      "last": "v-replay-012600",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0003.tsv",
+      "rows": 4200,
+      "first": "v-replay-012601",
+      "last": "v-replay-016800",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0004.tsv",
+      "rows": 4200,
+      "first": "v-replay-016801",
+      "last": "v-replay-021000",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0005.tsv",
+      "rows": 4200,
+      "first": "v-replay-021001",
+      "last": "v-replay-025200",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0006.tsv",
+      "rows": 4200,
+      "first": "v-replay-025201",
+      "last": "v-replay-029400",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0007.tsv",
+      "rows": 4200,
+      "first": "v-replay-029401",
+      "last": "v-replay-033600",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0008.tsv",
+      "rows": 4200,
+      "first": "v-replay-033601",
+      "last": "v-replay-037800",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0009.tsv",
+      "rows": 4200,
+      "first": "v-replay-037801",
+      "last": "v-replay-042000",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0010.tsv",
+      "rows": 4200,
+      "first": "v-replay-042001",
+      "last": "v-replay-046200",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0011.tsv",
+      "rows": 4200,
+      "first": "v-replay-046201",
+      "last": "v-replay-050400",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0012.tsv",
+      "rows": 4200,
+      "first": "v-replay-050401",
+      "last": "v-replay-054600",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0013.tsv",
+      "rows": 4200,
+      "first": "v-replay-054601",
+      "last": "v-replay-058800",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0014.tsv",
+      "rows": 4200,
+      "first": "v-replay-058801",
+      "last": "v-replay-063000",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0015.tsv",
+      "rows": 4200,
+      "first": "v-replay-063001",
+      "last": "v-replay-067200",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0016.tsv",
+      "rows": 4200,
+      "first": "v-replay-067201",
+      "last": "v-replay-071400",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0017.tsv",
+      "rows": 4200,
+      "first": "v-replay-071401",
+      "last": "v-replay-075600",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0018.tsv",
+      "rows": 4200,
+      "first": "v-replay-075601",
+      "last": "v-replay-079800",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0019.tsv",
+      "rows": 4200,
+      "first": "v-replay-079801",
+      "last": "v-replay-084000",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0020.tsv",
+      "rows": 4200,
+      "first": "v-replay-084001",
+      "last": "v-replay-088200",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0021.tsv",
+      "rows": 4200,
+      "first": "v-replay-088201",
+      "last": "v-replay-092400",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0022.tsv",
+      "rows": 4200,
+      "first": "v-replay-092401",
+      "last": "v-replay-096600",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0023.tsv",
+      "rows": 4200,
+      "first": "v-replay-096601",
+      "last": "v-replay-100800",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0024.tsv",
+      "rows": 4200,
+      "first": "v-replay-100801",
+      "last": "v-replay-105000",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0025.tsv",
+      "rows": 4200,
+      "first": "v-replay-105001",
+      "last": "v-replay-109200",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0026.tsv",
+      "rows": 4200,
+      "first": "v-replay-109201",
+      "last": "v-replay-113400",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0027.tsv",
+      "rows": 4200,
+      "first": "v-replay-113401",
+      "last": "v-replay-117600",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 466,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 466,
+        "TOOL_VERSION_MISSING": 466
+      }
+    },
+    {
+      "path": "corpus/shard_0028.tsv",
+      "rows": 4200,
+      "first": "v-replay-117601",
+      "last": "v-replay-121800",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 467,
+        "INVALID_EXPECT_SHA": 466,
+        "LABOR_ACCEPTED": 467,
+        "LABOR_REJECTED": 467,
+        "NO_EXPECT_SHA": 466,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 466,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    },
+    {
+      "path": "corpus/shard_0029.tsv",
+      "rows": 4200,
+      "first": "v-replay-121801",
+      "last": "v-replay-126000",
+      "byVerdict": {
+        "ATTEST_NOT_THIRD_PARTY": 466,
+        "INVALID_EXPECT_SHA": 467,
+        "LABOR_ACCEPTED": 466,
+        "LABOR_REJECTED": 466,
+        "NO_EXPECT_SHA": 467,
+        "NO_PLAN": 467,
+        "PROSE_NOT_EVIDENCE": 467,
+        "TOOL_VERSION_MISMATCH": 467,
+        "TOOL_VERSION_MISSING": 467
+      }
+    }
+  ],
+  "notes": [
+    "Implementer prose is stored in implementer_claim and is not an input to decide().",
+    "Only replay/capsule reproduced and expect-output-sha256 fields decide labor.",
+    "Rows are distinct axis tuples. Comment padding is not used."
+  ]
+}

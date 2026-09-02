@@ -35,11 +35,19 @@ LINE_RE = re.compile(
     r"^(\s*)TextLine\s+y=\s*([0-9.]+)\.\.\s*[0-9.]+\s+h=\s*([0-9.]+)\s.*?pi=(\d+)\s+line=(\d+)\s+vpos=(-?\d+)"
 )
 PAGE_RE = re.compile(r"^Page\s")
-NODE_RE = re.compile(r"^(\s*)([A-Za-z]\w*)\s")
+# dump-extents 는 미분류 노드를 전부 "기타"로 인쇄한다 — `[A-Za-z]` 앵커는 이 라벨을
+# 스택에 못 올려 글상자·도형류 FOREIGN 가드가 사문화됐다(#4533 ④-c: 통계청 156667809
+# ·근무성적 113424·누리과정 위양성의 실체). 모든 노드 행은 ` y=` 를 가지므로 그걸 앵커로 쓴다.
+NODE_RE = re.compile(r"^(\s*)(\S+)\s+y=")
 # 이 컨테이너 아래 줄은 본문 흐름 좌표계가 아니다 — 셀·글상자·도형·머리/꼬리말·각주.
+# "기타" = dump-extents 의 미분류 컨테이너(글상자·도형·이미지 등 전부).
 FOREIGN = {
     "Table", "TableCell", "Header", "Footer", "FootnoteArea", "TextBox",
     "Shape", "Group", "Rect", "Ellipse", "Path", "Equation", "MasterPage", "Image",
+    # dump-extents 는 무명 컨테이너(도형·캡션 등)를 "기타" 로 찍는다 — 옛 NODE_RE
+    # ([A-Za-z]만)가 이를 스택에서 투명하게 만들어 글상자 내부 줄이 본문으로
+    # 샜다(누리과정 7240000 FP 실측). 노드 토큰을 \S+ 로 넓히고 여기서 거른다.
+    "기타",
 }
 HU_PER_PX = 75.0
 
@@ -97,15 +105,54 @@ def analyze(exe: Path, path: Path, threshold: float):
             if line == 0 and pi not in cols.setdefault(col, {}):
                 cols[col][pi] = (y, vpos)
         for col, first in cols.items():
-            ordered = [(pi, y, v) for pi, (y, v) in sorted(first.items()) if v > 0]
+            # 조우(렌더 트리) 순서를 유지한다 — pi 로 정렬하면 컬럼 직속으로 샌
+            # 지역-사다리 줄(글상자 pi0, vpos 500대)이 맨 앞으로 끌려와 되돌아감
+            # 분할이 무력화되고 본문 중앙값을 오염시킨다(환경위성 156489219 FP).
+            # 조우순이면 그런 줄은 vpos 되돌아감으로 갈라져 4줄 미만 분절 스킵에
+            # 걸린다.
+            ordered = [(pi, y, v) for pi, (y, v) in first.items() if v > 0]
+            # 샌드위치 외래 줄 드롭: pi 가 역행했는데 **나중에 원 수열이 재개**
+            # 되면(같은 쪽에서 running-max 이상 pi 재등장) 그 역행 줄은 본문이
+            # 아니라 컬럼 직속으로 샌 글상자/도형 줄이다(세종 p20: ..pi382,
+            # pi0(글상자), pi383.. 실측). 구역 재시작은 복귀가 없어 보존된다.
+            if ordered:
+                runmax = []
+                m = -1
+                for pi, _, _ in ordered:
+                    runmax.append(m)
+                    m = max(m, pi)
+                later_max = [0] * len(ordered)
+                m = -1
+                for i in range(len(ordered) - 1, -1, -1):
+                    later_max[i] = m
+                    m = max(m, ordered[i][0])
+                ordered = [
+                    row
+                    for i, row in enumerate(ordered)
+                    if not (row[0] < runmax[i] and later_max[i] >= runmax[i])
+                ]
             # vpos 되돌아감 = 쪽 중간 리베이스(구역/리스트 재시작) 신호 — 분절을 갈라
             # 각자의 중앙값으로 판정한다. 리베이스된 블록은 자기 기준으로 자기일관이라
             # 조용해지고, 같은 분절 안의 상대 이동(진짜 결함)만 남는다.
             segments = []
             cur = []
             prev_v = None
+            saw_rewind = False
             for pi, y, v in ordered:
-                if prev_v is not None and v < prev_v - 100:
+                # 되돌아감 = 리베이스 신호(기존). **큰 전방 점프**(>30000u=400px)
+                # 도 분절을 끊는다 — 컬럼 직속으로 샌 글상자 줄(로컬 vpos)이
+                # 되돌아감으로 갈라진 뒤 다음 본문 세그먼트에 합류해 +741px 로
+                # 오검출되는 샌드위치 형상(세종 5690000-202000006 p20 실측).
+                # 정상 문서의 거대 개체 줄 뒤 갭도 같은 기준으로 갈라지지만,
+                # 각 분절이 자기 중앙값으로 판정되므로 위양성이 늘지 않는다.
+                # 전방-분할은 **되돌아감을 본 뒤에만** — 샌드위치(외래 줄 뒤
+                # 본문 복귀) 격리용이지, 성긴 서식 문서의 정상 큰 갭을 쪼개
+                # 커버리지를 죽이는 용도가 아니다(물품검수조서 20590905:
+                # 무조건 분할 시 9줄이 전부 4줄 미만 분절로 SKIP 실측).
+                is_rewind = prev_v is not None and v < prev_v - 100
+                if is_rewind:
+                    saw_rewind = True
+                if prev_v is not None and (is_rewind or (saw_rewind and v > prev_v + 30_000)):
                     segments.append(cur)
                     cur = []
                 cur.append((pi, y, v))
@@ -115,6 +162,14 @@ def analyze(exe: Path, path: Path, threshold: float):
                 if len(seg) < 4:
                     continue
                 med = statistics.median(y - v / HU_PER_PX for _, y, v in seg)
+                # 귀속 교정: 결함이 분절 중후반의 다수 줄을 밀면 중앙값이 밀린
+                # 편에 붙어 **정위치 줄이 편차로 오지목**된다(기장군·아세안·
+                # 2135039 등 5사례). 분절 머리(첫 3줄)는 결함 지점 위에서 쪽
+                # 원점을 세우므로, 머리 기준과 중앙값이 갈리면 머리를 기준으로
+                # 삼는다 — 판정(DRIFT 여부)은 불변, 어느 줄을 짚는지만 바뀐다.
+                head = statistics.median(y - v / HU_PER_PX for _, y, v in seg[:3])
+                if abs(head - med) > threshold:
+                    med = head
                 checked += 1
                 for pi, y, v in seg:
                     dev = (y - v / HU_PER_PX) - med

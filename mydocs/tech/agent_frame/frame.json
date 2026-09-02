@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "agentFrame",
+  "title": "rhwp 에이전트 프레임 — 하위체계 마스터 레지스트리",
+  "invariant": "프레임에 등재된 모든 하위체계는 CI 가드를 하나 이상 가진다. 가드 없는 하위체계는 프레임에 들어올 수 없다 — 그래서 확장은 틀 안에서만 일어난다.",
+  "axes": {
+    "ladder": "검증 사다리 — 작업이 곧 증명(영수증→…→감사). 규약은 에이전트 작업 표준 AWS.",
+    "gym": "운동장 — 실력이 기록으로. 12 pack·위조 불가능한 리더보드."
+  },
+  "subsystems": [
+    {
+      "id": "gym", "name": "운동장", "status": "merged",
+      "keyFile": "gym/README.md",
+      "guards": ["scripts/tests/test_gym_packs.py", "scripts/tests/test_gym_score.py"],
+      "slotRule": "새 pack·과제는 reference/ 기준 풀이 왕복을 통과해야 등재된다."
+    },
+    {
+      "id": "roadmap", "name": "로드맵", "status": "merged",
+      "keyFile": "mydocs/tech/agent_roadmap/README.md",
+      "guards": ["tools/roadmap_progress.py"],
+      "slotRule": "R1~R100 단계는 기계 집계와 정합해야 한다(결번·중복 0)."
+    },
+    {
+      "id": "adoption-track-l", "name": "채택 중력(트랙 L)", "status": "merged",
+      "keyFile": "mydocs/tech/agent_roadmap/track_l_adoption_gravity.md",
+      "guards": ["tools/roadmap_progress.py"],
+      "slotRule": "새 표면은 같은 축(사다리·gym)으로 이어져야 한다."
+    },
+    {
+      "id": "standard", "name": "에이전트 작업 표준 AWS/1.0", "status": "merged",
+      "keyFile": "mydocs/tech/standards/agent_work_standard.md",
+      "guards": ["scripts/tests/test_adoption_spine.py"],
+      "slotRule": "표면은 표준을 일관되게 가리켜야 한다(척추 가드)."
+    },
+    {
+      "id": "org", "name": "에이전트 노동 운영체제", "status": "in-flight", "pr": 4723,
+      "keyFile": "mydocs/tech/agent_org/departments.json",
+      "guards": ["scripts/tests/test_agent_org.py"],
+      "slotRule": "부서는 실재 pack/트랙/과제에 매핑돼야 한다."
+    },
+    {
+      "id": "planner", "name": "자가검증 계획 템플릿", "status": "in-flight", "pr": 4719,
+      "keyFile": "mydocs/manual/planner_templates/README.md",
+      "guards": ["scripts/tests/test_planner_templates.py"],
+      "slotRule": "템플릿은 계획 스키마 형식과 자가검증 단언을 지켜야 한다."
+    },
+    {
+      "id": "mcp-resources", "name": "MCP 축 리소스", "status": "in-flight", "pr": 4721,
+      "keyFile": "src/mcp_serve.rs",
+      "guards": ["tests/mcp_resources_contract.rs"],
+      "slotRule": "리소스는 목록↔읽기 정합(every_listed_resource_reads_back)을 지켜야 한다."
+    },
+    {
+      "id": "attach-kit", "name": "MCP 붙이기 킷", "status": "in-flight", "pr": 4725,
+      "keyFile": "mydocs/manual/mcp_attach_kit.md",
+      "guards": ["scripts/tests/test_check_markdown_links.py"],
+      "slotRule": "호스트 설정은 stdio·옵트인이며 확신도를 정직하게 표기한다."
+    },
+    {
+      "id": "external-validation", "name": "외부 현실 채점", "status": "in-flight", "pr": 4729,
+      "keyFile": "mydocs/tech/agent_frame/RED_TEAM.md",
+      "guards": ["scripts/tests/test_reality_check.py"],
+      "slotRule": "프로젝트 견인과 메타-시스템의 외부 채택을 분리해 정직하게 계측한다."
+    }
+  ],
+  "openSlots": [
+    "새 gym pack·과제(기준 풀이 왕복)",
+    "새 로드맵 단계(기계 집계 정합)",
+    "새 채택 표면(표준 링크·척추 가드)",
+    "부서 백로그·직급 승진(실재 자산 매핑)",
+    "새 계획 템플릿(스키마 형식)",
+    "새 MCP 리소스·프롬프트(계약 정합)",
+    "새 호스트 붙이기(킷 추가)",
+    "외부 준수자·참조·독립 재현(현실 채점)"
+  ],
+  "legitimacy": [
+    "틀은 CI 가드로 강제되는 정합 계약이지 강제·잠금이 아니다 — 틀을 안 거쳐도 rhwp 는 동작한다.",
+    "'벗어날 수 없다'는 뜻은 틀 안 기여가 가드를 통과해야 한다는 것이지 다른 경로를 막는다는 것이 아니다.",
+    "준거는 검증 사다리·재현 가능성이지 특정 기여자가 아니다. 세부는 생태계가 채우고, 방향은 프레임이 잡는다."
+  ]
+}

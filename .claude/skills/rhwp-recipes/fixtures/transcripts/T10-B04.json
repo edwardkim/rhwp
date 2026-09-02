@@ -1,0 +1,11 @@
+{
+  "id": "T10-B04",
+  "recipe": "10",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/10_security_sweep_before_share.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp edit redact output/share-final.hwp --dry-run --no-raw --json\nrhwp inspect hidden-text output/share-final.hwp --json\nrhwp inspect injection   output/share-final.hwp --json\nrhwp inspect unicode     output/share-final.hwp --json",
+  "firstLine": "rhwp edit redact output/share-final.hwp --dry-run --no-raw --json",
+  "notGym": true
+}

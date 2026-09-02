@@ -1,0 +1,10 @@
+{
+  "id": "T20",
+  "issue": 5312,
+  "command": "render-diff <A> <B>",
+  "status": "STRUCT_MISMATCH",
+  "exit": 1,
+  "stdout": "페이지 수: A=1 B=1\n최대 변위: 495.93 px (page 0)\n임계 초과 페이지: 1 / 구조 불일치 페이지: 1 (임계 1.00px)\n  page   0: max= 495.93 mean= 13.40 nodes=39/37  [STRUCT]\n       495.93px  Page/Body2/Column0/TextLine10/TextRun0\n         0.00px  Page\n         0.00px  Page/PageBg0\n      Δ TextRun: 15→13 (-2)\nstatus: STRUCT_MISMATCH\n",
+  "source": "skill catalog",
+  "notGym": true
+}

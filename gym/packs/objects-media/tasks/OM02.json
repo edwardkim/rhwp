@@ -1,0 +1,37 @@
+{
+  "id": "OM02",
+  "tier": 3,
+  "title": "두 번째 필드 지목 채움",
+  "input": "samples/field-01.hwp",
+  "instructions": "필드를 조사해 **두 번째** 필드에만 '지목채움' 을 넣은 second.hwp 를 제출하라. 첫 번째 필드는 비어 있어야 한다 — 채점은 두 자리를 각각 확인한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "second.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "두 번째 필드 == 지목채움",
+      "op": "value_eq",
+      "value": "지목채움",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:second.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "첫 번째 필드는 비어 있음",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:second.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -82,12 +82,12 @@ fn group_label_matches_replay_plane(
     }
 }
 use super::composer::{
-    char_overlap_size_ratio, decode_pua_overlap_number, expand_pua_render_text,
-    pua_to_display_text, CharOverlapInfo,
+    char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
+    expand_pua_render_text, CharOverlapInfo,
 };
 use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
-use super::layout::{compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters};
+use super::layout::{forces_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::control::FormType;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
@@ -380,6 +380,15 @@ pub struct WebCanvasRenderer {
     /// 보수적인 ink envelope와 겹치지 않을 때만 Canvas 호출 전에 건너뛴다.
     partial_clip: Option<BoundingBox>,
     partial_context_saved: bool,
+    /// [#6028] soft-wrap 줄의 마지막 텍스트 run 이 가진 줄-말미 공백 수 —
+    /// svg.rs 와 같은 계약(밑줄/취소선 길이에서 제외). 문단 마지막 줄·강제
+    /// 줄바꿈 줄(서명란 밑줄 공백)은 대상 아님.
+    soft_wrap_decoration_trim: Option<(u32, usize)>,
+    /// [#6117] layer tree 재생 경로의 트림 대상 — 줄 그룹이 정하고 그 run 에만
+    /// 적용한다. RenderNode 경로가 node.id 로 짝짓는 것을 여기서는 run 주소로
+    /// 짝짓는다(한 번의 트리 순회 안에서만 유효하며 그 범위에서 안정적이다).
+    layer_decoration_trim: Option<(usize, usize)>,
+    active_decoration_trim: usize,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -404,6 +413,9 @@ impl WebCanvasRenderer {
             render_profile: RenderProfile::Screen,
             partial_clip: None,
             partial_context_saved: false,
+            soft_wrap_decoration_trim: None,
+            layer_decoration_trim: None,
+            active_decoration_trim: 0,
         })
     }
 
@@ -513,6 +525,31 @@ impl WebCanvasRenderer {
             return;
         }
 
+        // [#6028] soft-wrap 줄-말미 공백 트림 대상 특정 (svg.rs 와 동일 규칙).
+        if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+            self.soft_wrap_decoration_trim = node
+                .children
+                .iter()
+                .rev()
+                .find_map(|child| {
+                    if let RenderNodeType::TextRun(run) = &child.node_type {
+                        if run.text.chars().any(|ch| ch != ' ') {
+                            if run.is_para_end || run.is_line_break_end {
+                                return Some(None);
+                            }
+                            let trailing =
+                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
+                            if trailing > 0 {
+                                return Some(Some((child.id, trailing)));
+                            }
+                            return Some(None);
+                        }
+                    }
+                    None
+                })
+                .flatten();
+        }
+
         match &node.node_type {
             RenderNodeType::Page(page) => {
                 self.begin_page(page.width, page.height);
@@ -521,7 +558,12 @@ impl WebCanvasRenderer {
                 self.render_page_background(&node.bbox, bg);
             }
             RenderNodeType::TextRun(run) => {
+                self.active_decoration_trim = match self.soft_wrap_decoration_trim {
+                    Some((id, trim)) if id == node.id => trim,
+                    _ => 0,
+                };
                 self.render_text_run(&node.bbox, run);
+                self.active_decoration_trim = 0;
             }
             RenderNodeType::Rectangle(rect) => {
                 self.render_rectangle(&node.bbox, rect, false);
@@ -631,7 +673,15 @@ impl WebCanvasRenderer {
                 self.render_page_background(bbox, background);
             }
             PaintOp::TextRun { bbox, run } => {
+                // [#6117] 줄 그룹이 정한 트림을 이 run 에 적용한다(RenderNode
+                // 경로의 `render_node` 와 같은 배선).
+                let key = (&**run) as *const TextRunNode as usize;
+                self.active_decoration_trim = match self.layer_decoration_trim {
+                    Some((run_key, trim)) if run_key == key => trim,
+                    _ => 0,
+                };
                 self.render_text_run(bbox, run);
+                self.active_decoration_trim = 0;
             }
             PaintOp::FootnoteMarker { bbox, marker } => {
                 self.render_footnote_marker(bbox, marker);
@@ -789,11 +839,12 @@ impl WebCanvasRenderer {
             let _ = self.ctx.fill_text(run.display_or_text(), 0.0, 0.0);
             self.ctx.restore();
         } else {
-            self.draw_text(
+            self.draw_text_positioned(
                 run.display_or_text(),
                 bbox.x,
                 bbox.y + run.baseline,
                 &run.style,
+                run.validated_layout_positions_for(run.display_or_text()),
             );
         }
         if self.show_paragraph_marks || self.show_control_codes {
@@ -807,7 +858,7 @@ impl WebCanvasRenderer {
                 12.0
             };
             if !run.text.is_empty() && !is_marker {
-                let char_positions = compute_char_positions(&run.text, &run.style);
+                let char_positions = run.replay_positions_for(&run.text);
                 let mark_font_size = font_size * 0.5;
                 self.ctx.set_fill_style_str("#0066FF");
                 self.ctx
@@ -1158,7 +1209,9 @@ impl WebCanvasRenderer {
             if !self.render_profile.shows_editor_visuals() {
                 return;
             }
-            self.set_line_dash(&StrokeDash::Dash);
+            // 한글 편집 화면의 테두리는 굵은 파선이 아니라 잔 점선이다 — 오라클 화면
+            // 실측(2px on / 2px off)에 맞춘다. `svg.rs` 의 stroke-dasharray 와 같은 값.
+            self.set_line_dash(&StrokeDash::Dot);
             self.ctx.set_stroke_style_str("#999999");
             self.ctx.set_line_width(1.0);
             self.ctx
@@ -1232,8 +1285,25 @@ impl WebCanvasRenderer {
                 group_kind,
                 ..
             } => {
+                // [#6117] soft-wrap 줄-말미 공백 트림(#6028)은 RenderNode 경로에만
+                // 배선돼 있었다. studio 는 **layer tree** 를 재생하므로 그 경로에서
+                // 트림이 서지 않아 밑줄이 배분 정렬로 늘어난 말미 공백까지 그어져
+                // 칸 우측 괘선을 넘었다(교육부 법령안 4문서 4~20px). 줄 그룹이
+                // layer tree 에도 보존되므로(`GroupKind::TextLine`) 같은 규칙을
+                // 여기서 세운다 — 판별·값 모두 svg.rs·RenderNode 경로와 같다.
+                let restore_trim = if let GroupKind::TextLine(_) = group_kind {
+                    let prev = self.layer_decoration_trim;
+                    self.layer_decoration_trim =
+                        crate::renderer::layer_renderer::line_decoration_trim_target(children);
+                    Some(prev)
+                } else {
+                    None
+                };
                 for child in children {
                     self.render_layer_node(child, active_layer);
+                }
+                if let Some(prev) = restore_trim {
+                    self.layer_decoration_trim = prev;
                 }
                 if self.should_render_group_label(active_layer) {
                     let label = match group_kind {
@@ -1684,7 +1754,7 @@ impl WebCanvasRenderer {
         }
 
         let canvas_grad = match grad.gradient_type {
-            2 | 3 | 4 => {
+            2..=4 => {
                 // Radial / Conical / Square → radialGradient
                 let cx = x + w * (grad.center_x as f64 / 100.0);
                 let cy = y + h * (grad.center_y as f64 / 100.0);
@@ -1992,7 +2062,7 @@ impl WebCanvasRenderer {
             } else {
                 1.0
             };
-            let r = (shadow.color >> 0) & 0xFF;
+            let r = shadow.color & 0xFF;
             let g = (shadow.color >> 8) & 0xFF;
             let b = (shadow.color >> 16) & 0xFF;
             let color = format!("rgba({},{},{},{:.2})", r, g, b, opacity);
@@ -2207,6 +2277,17 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
+        self.draw_text_positioned(text, x, y, style, None);
+    }
+
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        layout_positions: Option<&[f64]>,
+    ) {
         // [Task #1067] inline 컨트롤 placeholder (U+FFFC OBJECT REPLACEMENT CHARACTER) skip.
         // svg.rs::draw_text 와 동일 정합.
         let text: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
@@ -2230,6 +2311,10 @@ impl Renderer for WebCanvasRenderer {
 
         // 위첨자/아래첨자: 글꼴 크기 축소 + y좌표 조정
         let (font_size, y) = style.script_draw_metrics(base_font_size, y);
+        // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
+        let (font_size, ratio) =
+            crate::renderer::condensed_ratio_draw_params(font_size, style.ratio);
+        let has_ratio = (ratio - 1.0).abs() > 0.01;
         let font_family = super::canvas_font_family_chain(&style.font_family);
 
         let font = format!(
@@ -2242,15 +2327,11 @@ impl Renderer for WebCanvasRenderer {
         );
         self.ctx.set_font(&font);
 
-        // 장평 적용
-        let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
-
         // 클러스터 분할
         let clusters = split_into_clusters(text);
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
-        let char_positions = compute_char_positions(text, style);
+        let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
 
         // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
         if crate::model::color::char_shade(style.shade_color).is_some() {
@@ -2266,51 +2347,10 @@ impl Renderer for WebCanvasRenderer {
         let has_effect =
             style.outline_type > 0 || style.shadow_type > 0 || style.emboss || style.engrave;
 
-        // Task #352: 3+ 연속 '-' 시퀀스를 단일 가로선으로 통합 (svg.rs 와 동일).
-        // underline 이 있으면 dash leader 라인 생략 (이중선 방지).
-        let suppress_dash_leader_line = !matches!(style.underline, UnderlineType::None);
-        let dash_run_groups: Vec<(usize, usize)> = {
-            let mut groups = Vec::new();
-            let mut run_start: Option<usize> = None;
-            for (idx, (_, cs)) in clusters.iter().enumerate() {
-                if cs == "-" {
-                    if run_start.is_none() {
-                        run_start = Some(idx);
-                    }
-                } else if let Some(s) = run_start.take() {
-                    if idx - s >= 3 {
-                        groups.push((s, idx));
-                    }
-                }
-            }
-            if let Some(s) = run_start {
-                if clusters.len() - s >= 3 {
-                    groups.push((s, clusters.len()));
-                }
-            }
-            groups
-        };
-        let dash_line_y_offset = -font_size * 0.32;
-        let dash_line_stroke_w = (font_size * 0.07).max(0.5f64);
-        let cluster_in_dash_run = |cluster_idx: usize| -> Option<(f64, f64)> {
-            for &(s, e) in &dash_run_groups {
-                if cluster_idx == s {
-                    let start_char_idx = clusters[s].0;
-                    let last = &clusters[e - 1];
-                    let end_char_idx = last.0 + last.1.chars().count();
-                    let x1 = char_positions.get(start_char_idx).copied().unwrap_or(0.0);
-                    let x2 = char_positions
-                        .get(end_char_idx)
-                        .copied()
-                        .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0));
-                    return Some((x1, x2));
-                }
-                if cluster_idx > s && cluster_idx < e {
-                    return Some((f64::NAN, f64::NAN));
-                }
-            }
-            None
-        };
+        // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
+        // 한글 2022 정본은 하이픈을 낱글자 글리프로 그리고, 그 탄력 분배는 이미
+        // 레이아웃이 `extra_dash_advance` 로 만들어 `char_positions` 에 담는다.
+        // svg.rs 와 같은 결정이다.
 
         if has_effect {
             self.draw_text_with_effects(
@@ -2346,23 +2386,7 @@ impl Renderer for WebCanvasRenderer {
         } else {
             // 기본 렌더링 (효과 없음)
             self.ctx.set_fill_style_str(&color_to_css(style.color));
-            // dash leader 라인 먼저 그리기 (underline 이 없을 때만)
-            if !suppress_dash_leader_line {
-                for &(s, _) in &dash_run_groups {
-                    if let Some((x1_rel, x2_rel)) = cluster_in_dash_run(s) {
-                        if x1_rel.is_finite() {
-                            let line_y = y + dash_line_y_offset;
-                            self.ctx.set_stroke_style_str(&color_to_css(style.color));
-                            self.ctx.set_line_width(dash_line_stroke_w);
-                            self.ctx.begin_path();
-                            self.ctx.move_to(x + x1_rel, line_y);
-                            self.ctx.line_to(x + x2_rel, line_y);
-                            self.ctx.stroke();
-                        }
-                    }
-                }
-            }
-            for (cluster_idx, (char_idx, cluster_str)) in clusters.iter().enumerate() {
+            for (char_idx, cluster_str) in clusters.iter() {
                 if cluster_str == " " || cluster_str == "\t" || cluster_str == "\u{2007}" {
                     continue;
                 }
@@ -2370,10 +2394,6 @@ impl Renderer for WebCanvasRenderer {
                     self.ctx.set_font(&old_hangul_font);
                 } else {
                     self.ctx.set_font(&font);
-                }
-                // dash leader 시퀀스: 글리프 스킵 (라인이 위에서 이미 그려짐)
-                if cluster_in_dash_run(cluster_idx).is_some() {
-                    continue;
                 }
                 // XML/HTML 무효 제어문자 건너뜀 (SVG의 escape_xml과 동일)
                 if cluster_str
@@ -2414,7 +2434,13 @@ impl Renderer for WebCanvasRenderer {
 
                 // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
                 let needs_halfwidth_scale = (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
-                    || is_halfwidth_cjk_quote(ch))
+                    || forces_halfwidth_cjk_quote(
+                        &style.font_family,
+                        style.bold,
+                        style.italic,
+                        ch,
+                        style.font_size,
+                    ))
                     && !has_ratio;
 
                 if needs_halfwidth_scale {
@@ -2462,17 +2488,30 @@ impl Renderer for WebCanvasRenderer {
             }
         }
 
+        // [#6028] soft-wrap 줄-말미 공백은 장식선 길이에서 제외 (svg.rs 동일 계약).
+        let decoration_width = {
+            let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
+            let trim = self.active_decoration_trim.min(trailing);
+            let n = text.chars().count();
+            char_positions
+                .get(n - trim)
+                .copied()
+                .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
+        };
         // 밑줄 처리
         if !matches!(style.underline, UnderlineType::None) {
-            let text_width = *char_positions.last().unwrap_or(&0.0);
+            let text_width = decoration_width;
             let ul_color = if style.underline_color != 0 {
                 color_to_css(style.underline_color)
             } else {
                 color_to_css(style.color)
             };
+            // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측, 고정
+            // 2.0px 은 큰 글꼴에서 디센더 관통). 선 모양 내부 기하는 캔버스 경로
+            // 현행 유지 — 오프셋만 SVG/Skia 와 같은 계약을 쓴다.
             let ul_y = match style.underline {
                 UnderlineType::Top => y - font_size + 1.0,
-                _ => y + 2.0,
+                _ => y + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO,
             };
             self.draw_line_shape_canvas(
                 x,
@@ -2486,7 +2525,7 @@ impl Renderer for WebCanvasRenderer {
 
         // 취소선 처리
         if style.strikethrough {
-            let text_width = *char_positions.last().unwrap_or(&0.0);
+            let text_width = decoration_width;
             let strike_y = y - font_size * 0.3;
             let st_color = if style.strike_color != 0 {
                 color_to_css(style.strike_color)
@@ -2562,9 +2601,12 @@ impl Renderer for WebCanvasRenderer {
                 1 => draw_line(&self.ctx, ly, 0.5, &[]),         // 실선
                 2 => draw_line(&self.ctx, ly, 0.5, &[3.0, 3.0]), // 파선
                 3 => {
-                    // 점선 ··· — round cap으로 원형 점 표현 (한컴 동등)
+                    // 점선 ··· — round cap 으로 원형 점 표현 (한컴 동등).
+                    // 두께·간격은 폰트 크기를 따른다 (svg.rs 와 같은 출처).
+                    let (w, dash, gap) =
+                        crate::renderer::render_tree::tab_dot_leader_stroke(font_size);
                     self.ctx.set_line_cap("round");
-                    draw_line(&self.ctx, ly, 1.0, &[0.1, 3.0]);
+                    draw_line(&self.ctx, ly, w, &[dash, gap]);
                     self.ctx.set_line_cap("butt");
                 }
                 4 => draw_line(&self.ctx, ly, 0.5, &[6.0, 2.0, 1.0, 2.0]), // 일점쇄선
@@ -2674,7 +2716,7 @@ impl Renderer for WebCanvasRenderer {
             } else {
                 1.0
             };
-            let r = (shadow.color >> 0) & 0xFF;
+            let r = shadow.color & 0xFF;
             let g = (shadow.color >> 8) & 0xFF;
             let b = (shadow.color >> 16) & 0xFF;
             self.ctx
@@ -2819,7 +2861,7 @@ impl Renderer for WebCanvasRenderer {
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
             } else if mime_type == "application/postscript" {
-                match crate::renderer::image_resolver::dos_eps_preview_bytes(data) {
+                match crate::renderer::image_resolver::eps_renderable_bytes(data) {
                     Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime),
                     None => (std::borrow::Cow::Borrowed(data), mime_type),
                 }
@@ -3183,16 +3225,7 @@ impl WebCanvasRenderer {
             self.ctx.set_text_baseline("middle");
 
             for ch in chars.iter() {
-                let display_str = {
-                    let cp = *ch as u32;
-                    if (0x2460..=0x2473).contains(&cp) {
-                        format!("{}", cp - 0x2460 + 1)
-                    } else if let Some(s) = pua_to_display_text(*ch) {
-                        s
-                    } else {
-                        ch.to_string()
-                    }
-                };
+                let display_str = char_overlap_display_text(*ch, is_circle || is_rect);
                 let _ = self.ctx.fill_text(&display_str, cx, cy);
             }
 
@@ -3204,14 +3237,7 @@ impl WebCanvasRenderer {
             let display_str = if let Some((number, _)) = boxed_pua {
                 number.to_string()
             } else {
-                let cp = *ch as u32;
-                if (0x2460..=0x2473).contains(&cp) {
-                    format!("{}", cp - 0x2460 + 1)
-                } else if let Some(s) = pua_to_display_text(*ch) {
-                    s
-                } else {
-                    ch.to_string()
-                }
+                char_overlap_display_text(*ch, is_circle || is_rect)
             };
 
             let cx = bbox_x + i as f64 * box_size + box_size / 2.0;
@@ -3437,7 +3463,7 @@ impl WebCanvasRenderer {
         while cx < x2 {
             let next = (cx + wave_w).min(x2);
             let cy = if up { y1 - wave_h } else { y1 + wave_h };
-            let _ = self.ctx.quadratic_curve_to((cx + next) / 2.0, cy, next, y1);
+            self.ctx.quadratic_curve_to((cx + next) / 2.0, cy, next, y1);
             cx = next;
             up = !up;
         }
@@ -3489,6 +3515,26 @@ impl WebCanvasRenderer {
     ) {
         let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
         match mode {
+            ImageFillMode::Zoom => {
+                let (img_w, img_h) = match parse_image_dimensions_canvas(data) {
+                    Some((w, h)) if w > 0 && h > 0 => (w as f64, h as f64),
+                    _ => {
+                        self.draw_image(data, bbox.x, bbox.y, bbox.width, bbox.height);
+                        return;
+                    }
+                };
+                let scale = (bbox.width / img_w).min(bbox.height / img_h);
+                let w = img_w * scale;
+                let h = img_h * scale;
+                let x = bbox.x + (bbox.width - w) / 2.0;
+                let y = bbox.y + (bbox.height - h) / 2.0;
+                self.ctx.save();
+                self.ctx.begin_path();
+                self.ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+                self.ctx.clip();
+                self.draw_image(data, x, y, w, h);
+                self.ctx.restore();
+            }
             ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
                 // crop이 있으면 source rect 기반 drawImage 사용
                 if let Some(crop_rect) = crop {

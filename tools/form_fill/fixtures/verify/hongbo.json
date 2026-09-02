@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "hongbo-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "hongbo",
+  "title": "보도자료 서식 --verify",
+  "family": "홍보",
+  "genre": "보도",
+  "sample": "samples/20250130-hongbo.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#4781",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "기관명",
+  "fieldCount": 12,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/20250130-hongbo.hwp",
+    "--data",
+    "{\"기관명\": \"한국수자원공사\"}",
+    "-o",
+    "out/hongbo-verify.hwp",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "기관명": "한국수자원공사"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/20250130-hongbo.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "기관명",
+        "occurrence": 0,
+        "value": "한국수자원공사"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/hongbo-verify.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

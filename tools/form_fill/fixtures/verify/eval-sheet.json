@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "eval-sheet-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "eval-sheet",
+  "title": "평가표 --verify",
+  "family": "평가",
+  "genre": "채점",
+  "sample": "fixtures/forms/평가표.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "평가회차",
+  "fieldCount": 29,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/평가표.hwp",
+    "--data",
+    "{\"평가회차\": \"1차\"}",
+    "-o",
+    "out/eval-sheet-verify.hwp",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "평가회차": "1차"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/평가표.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "평가회차",
+        "occurrence": 0,
+        "value": "1차"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/eval-sheet-verify.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

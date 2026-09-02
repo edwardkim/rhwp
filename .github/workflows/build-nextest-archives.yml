@@ -1,20 +1,8 @@
-name: Build Nextest Archives
+name: Build Nextest Archive
 
 on:
   workflow_call:
     inputs:
-      builder:
-        description: Archive builder ownership label.
-        required: true
-        type: string
-      archive_labels:
-        description: Space-separated archive labels owned by this builder.
-        required: true
-        type: string
-      expected_count_suffix:
-        description: Unique artifact suffix for this builder's expected runnable counts.
-        required: true
-        type: string
       cargo_profile:
         description: Cargo profile selected by the caller's event policy.
         required: true
@@ -24,9 +12,22 @@ on:
         required: true
         type: number
 
+      archive_label:
+        description: Stable archive partition label.
+        required: true
+        type: string
+      target_group:
+        description: Cargo test target group assigned to this archive.
+        required: true
+        type: string
+      duration_policy_sha:
+        description: Pinned ci-metrics policy commit for integration B/C/D selection.
+        required: false
+        type: string
+        default: ''
 jobs:
   build:
-    name: Build test archive (${{ inputs.archive_labels }})
+    name: Build test archive (${{ inputs.archive_label }})
     runs-on: ubuntu-latest
     # [#4029] 빠른 release-test는 30분, cold release-grade는 60분을 caller가 전달한다.
     # 정상 소요시간 목표가 아니라 hang을 실패로 드러내는 상한이다.
@@ -40,6 +41,7 @@ jobs:
         env:
           CARGO_PROFILE: ${{ inputs.cargo_profile }}
           TIMEOUT_MINUTES: ${{ inputs.timeout_minutes }}
+          TARGET_GROUP: ${{ inputs.target_group }}
         run: |
           case "${CARGO_PROFILE}:${TIMEOUT_MINUTES}" in
             release-test:30|release:60)
@@ -50,15 +52,43 @@ jobs:
               ;;
           esac
 
+          case "${TARGET_GROUP}" in
+            lib|integration-b|integration-c|integration-d)
+              ;;
+            *)
+              echo "::error::invalid test archive target group: ${TARGET_GROUP}"
+              exit 1
+              ;;
+          esac
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # [Task #1109 / #1192 C] ubuntu-latest runner 의 미사용 사전 설치 toolchain 제거하여
+      # [Task #1109 / #1192 C] ubuntu-latest runner의 미사용 사전 설치 toolchain을 제거해
       # 테스트 빌드 시 디스크 한도 초과를 줄인다.
       - name: Free disk space (remove unused pre-installed toolchains)
         run: |
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /usr/share/dotnet
-          df -h
+          set -euo pipefail
+          echo 'Disk space before cleanup:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
+          available_gb=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+          if (( available_gb < 30 )); then
+            echo "Low disk space: ${available_gb}GB available; inspecting and removing unused toolchains."
+            for path in /usr/local/lib/android /usr/share/dotnet; do
+              if [[ -e "${path}" ]]; then
+                sudo du -sh "${path}"
+              else
+                echo "${path}: absent"
+              fi
+            done
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet
+          else
+            echo "Skip cleanup: ${available_gb}GB available"
+          fi
+
+          echo 'Disk space after cleanup:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
@@ -66,25 +96,32 @@ jobs:
           toolchain: 1.93.1
 
       - name: Install cargo-nextest
-        uses: taiki-e/install-action@6c6fd71fe4fb72c3697d269963d0e15df8adedad # v2.85.10
+        uses: taiki-e/install-action@37f7c5781271959fb65b6b35224e28652ff2b63d # v2.87.0
         with:
           tool: nextest
 
-      # [#2393] 수동 restore/save 캐시 → rust-cache (적중률·정리 자동화).
-      # 저장 정책은 종전과 동일하게 devel/main push 로 한정.
+      # [#2393] 수동 restore/save 캐시를 rust-cache로 관리한다. 저장 정책은 종전과
+      # 동일하게 devel/main push로 한정한다.
       - name: Rust build cache
         id: rust-cache
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
         with:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
-      # build가 timeout으로 취소돼도 그 전에 선택 정책과 restore 결과가 Job Summary에 남는다.
+      - name: Inspect disk space after Rust build cache
+        run: |
+          set -euo pipefail
+          echo 'Disk space after Rust build cache:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
+
       - name: Summarize test archive policy
         if: ${{ always() }}
         env:
           CARGO_PROFILE: ${{ inputs.cargo_profile }}
           TIMEOUT_MINUTES: ${{ inputs.timeout_minutes }}
+          TARGET_GROUP: ${{ inputs.target_group }}
           CACHE_EXACT_HIT: ${{ steps.rust-cache.outputs.cache-hit || 'false' }}
           CACHE_SAVE_ELIGIBLE: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
         run: |
@@ -97,102 +134,108 @@ jobs:
             printf "| ref | \`%s\` |\n" "${GITHUB_REF}"
             printf "| cargo_profile | \`%s\` |\n" "${CARGO_PROFILE}"
             printf "| timeout_minutes | \`%s\` |\n" "${TIMEOUT_MINUTES}"
+            printf "| target_group | \`%s\` |\n" "${TARGET_GROUP}"
             printf "| cache_exact_hit | \`%s\` |\n" "${CACHE_EXACT_HIT}"
             printf "| cache_save_eligible | \`%s\` |\n" "${CACHE_SAVE_ELIGIBLE}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
-      # [#3888] Cargo metadata의 test target을 slow + regular 세 archive에 독점 배정한다.
-      # --test/--lib/--bin selector가 archive 생성과 동시에 해당 target만 compile한다.
-      - name: Build and allocate default-feature test archives
-        env:
-          BUILDER: ${{ inputs.builder }}
-          ARCHIVE_LABELS: ${{ inputs.archive_labels }}
+      # [#6251] lib는 별도 archive로, integration target은 B/C/D 세 archive에 시간 기준으로 배정해
+      # compile/link 임계 경로를 병렬화한다. integration 목록은 파생 suite 준비 뒤
+      # metadata에서 구한다.
+      - name: Build default-feature test archive
         run: |
-          echo "profile=${{ inputs.cargo_profile }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
-          cargo metadata --format-version 1 --no-deps > cargo-metadata.json
-          node .github/scripts/plan_nextest_target_archives.mjs \
-            --input cargo-metadata.json \
-            --output-dir ci-target-archives \
+          set -euo pipefail
+          echo "profile=${{ inputs.cargo_profile }} target_group=${{ inputs.target_group }} event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
+          node scripts/rust-test-suite-manifest.mjs --prepare
+
+          cargo_target_args=()
+          case "${{ inputs.target_group }}" in
+            lib)
+              cargo_target_args+=(--lib)
+              ;;
+            integration-b|integration-c|integration-d)
+              duration_policy='tests/suites/nextest-target-duration-policy.json'
+              duration_policy_ref='ci-metrics/nextest-target-durations'
+              if [[ -n "${{ inputs.duration_policy_sha }}" ]]; then
+                candidate_policy='target/nextest-duration-policy.json'
+                mkdir -p "$(dirname "${candidate_policy}")"
+                # GitHub does not promise arbitrary SHA fetches. Fetch the advertised
+                # metrics ref instead, then require the PR-pinned SHA to be in its
+                # append-only history before reading the policy blob from that SHA.
+                if git fetch --no-tags origin \
+                  "refs/heads/${duration_policy_ref}:refs/remotes/origin/${duration_policy_ref}" \
+                  && git merge-base --is-ancestor "${{ inputs.duration_policy_sha }}" \
+                    "refs/remotes/origin/${duration_policy_ref}" \
+                  && git show "${{ inputs.duration_policy_sha }}:nextest-target-duration-policy.json" \
+                    > "${candidate_policy}"; then
+                  duration_policy="${candidate_policy}"
+                  printf 'duration_policy_sha=%s\n' "${{ inputs.duration_policy_sha }}"
+                  printf 'duration_policy_source=metrics-ref\n'
+                else
+                  echo "::warning::Duration policy ${{ inputs.duration_policy_sha }} is unavailable from ${duration_policy_ref}; using the committed fallback."
+                  printf 'duration_policy_source=fallback:metrics-policy-unavailable\n'
+                fi
+              else
+                echo 'duration_policy_sha=fallback:committed'
+                echo 'duration_policy_source=fallback:no-pinned-policy'
+              fi
+
+              # `regression_suite_NNN`는 고정 workload 이름이 아니다. 현재 source 구성에
+              # 대응하는 개별 testcase 측정값으로 harness를 다시 pack한 뒤 archive를 만든다.
+              node scripts/rust-test-suite-manifest.mjs \
+                --rebalance-by-duration "${duration_policy}"
+
+              mapfile -t selected_targets < <(
+                cargo metadata --no-deps --format-version 1 \
+                  | node scripts/select-nextest-archive-targets.mjs \
+                    --group "${{ inputs.target_group }}" \
+                    --policy "${duration_policy}" \
+                    --manifest tests/suites/manifest.json
+              )
+              if (( ${#selected_targets[@]} == 0 )); then
+                echo "::error::integration target group selected no targets: ${{ inputs.target_group }}"
+                exit 1
+              fi
+              for target in "${selected_targets[@]}"; do
+                cargo_target_args+=(--test "${target}")
+              done
+              printf 'selected_targets=%s\n' "${#selected_targets[@]}"
+              ;;
+          esac
+
+          cargo nextest archive \
             --package rhwp \
-            --slow-test-target overflow_cell_baseline
+            --cargo-profile "${{ inputs.cargo_profile }}" \
+            "${cargo_target_args[@]}" \
+            --archive-file tests.tar.zst
+          stat --printf='archive=%n bytes=%s\n' tests.tar.zst
 
-          for label in ${ARCHIVE_LABELS}; do
-            owner=$(jq -r ".archives[\"${label}\"].builder" ci-target-archives/assignment.json)
-            if [[ "$owner" != "$BUILDER" ]]; then
-              echo "::error::archive ${label} belongs to builder ${owner}, not ${BUILDER}"
-              exit 1
-            fi
-            mapfile -t target_args < "ci-target-archives/${label}.args"
-            if [[ "${#target_args[@]}" == "0" ]]; then
-              echo "::error::archive ${label} has no Cargo target selector"
-              exit 1
-            fi
-            archive="tests-${label}.tar.zst"
-            cargo nextest archive \
-              --package rhwp \
-              --cargo-profile "${{ inputs.cargo_profile }}" \
-              "${target_args[@]}" \
-              --archive-file "$archive"
-            stat --printf='archive=%n bytes=%s\n' "$archive"
+          cargo nextest list \
+            --package rhwp \
+            --cargo-profile "${{ inputs.cargo_profile }}" \
+            "${cargo_target_args[@]}" \
+            --message-format json > nextest-list.json
+          runnable=$(node .github/scripts/count_nextest_runnable.mjs --input nextest-list.json)
+          if ! [[ "$runnable" =~ ^[0-9]+$ ]] || [[ "$runnable" == "0" ]]; then
+            echo "::error::archive runnable count is invalid: ${runnable}"
+            exit 1
+          fi
+          printf '%s\n' "$runnable" > archive-expected-total.txt
+          echo "archive=${{ inputs.archive_label }} expected_runnable=${runnable}"
 
-            cargo nextest list \
-              --package rhwp \
-              --cargo-profile "${{ inputs.cargo_profile }}" \
-              "${target_args[@]}" \
-              --message-format json > "nextest-list-${label}.json"
-            runnable=$(node .github/scripts/count_nextest_runnable.mjs --input "nextest-list-${label}.json")
-            if ! [[ "$runnable" =~ ^[0-9]+$ ]]; then
-              echo "::error::archive ${label} runnable count is invalid: ${runnable}"
-              exit 1
-            fi
-            printf '%s\n' "$runnable" > "archive-expected-${label}.txt"
-            echo "archive=${label} expected_runnable=${runnable}"
-          done
-
-      - name: Upload slow test archive
-        if: ${{ contains(format(' {0} ', inputs.archive_labels), ' slow ') }}
+      - name: Upload test archive
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test-archive-${{ github.run_id }}-slow
-          path: tests-slow.tar.zst
+          name: test-archive-${{ github.run_id }}-${{ inputs.archive_label }}
+          path: tests.tar.zst
           compression-level: 0
           retention-days: 1
           if-no-files-found: error
 
-      - name: Upload test archive 1
-        if: ${{ contains(format(' {0} ', inputs.archive_labels), ' 1 ') }}
+      - name: Upload archive expected count
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test-archive-${{ github.run_id }}-1
-          path: tests-1.tar.zst
-          compression-level: 0
-          retention-days: 1
-          if-no-files-found: error
-
-      - name: Upload test archive 2
-        if: ${{ contains(format(' {0} ', inputs.archive_labels), ' 2 ') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: test-archive-${{ github.run_id }}-2
-          path: tests-2.tar.zst
-          compression-level: 0
-          retention-days: 1
-          if-no-files-found: error
-
-      - name: Upload test archive 3
-        if: ${{ contains(format(' {0} ', inputs.archive_labels), ' 3 ') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: test-archive-${{ github.run_id }}-3
-          path: tests-3.tar.zst
-          compression-level: 0
-          retention-days: 1
-          if-no-files-found: error
-
-      - name: Upload archive expected counts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: archive-expected-${{ github.run_id }}-${{ inputs.expected_count_suffix }}
-          path: archive-expected-*.txt
+          name: archive-expected-${{ github.run_id }}-${{ inputs.archive_label }}
+          path: archive-expected-total.txt
           retention-days: 1
           if-no-files-found: error

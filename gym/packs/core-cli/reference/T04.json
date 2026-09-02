@@ -1,0 +1,18 @@
+{
+  "id": "T04",
+  "steps": [
+    {
+      "answer": {
+        "itemCount": {
+          "cmd": [
+            "extract-data",
+            "{input}",
+            "--json"
+          ],
+          "path": "items",
+          "len": true
+        }
+      }
+    }
+  ]
+}

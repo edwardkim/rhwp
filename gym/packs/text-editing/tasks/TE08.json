@@ -1,0 +1,33 @@
+{
+  "id": "TE08",
+  "tier": 2,
+  "title": "치환 선확인(dry-run)",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "'규제' → '점검' 치환을 **적용하지 않고** 미리 확인해 바뀔 건수를 answer.json 에 {\"planned\": N} 으로 제출하라. 원본은 건드리지 마라. 힌트: rhwp edit replace-text --dry-run.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "예정 치환 건수",
+      "op": "answer_eq",
+      "answer": "planned",
+      "path": "replacedCount",
+      "cmd": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "점검",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

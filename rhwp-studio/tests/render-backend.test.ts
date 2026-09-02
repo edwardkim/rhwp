@@ -1,8 +1,10 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
+  clampRenderScale,
   resolveCanvasKitRenderMode,
   resolveCanvasKitRenderModeRequest,
   resolveCanvasKitSurfaceRequest,
@@ -10,6 +12,7 @@ import {
   resolveRenderBackendRequest,
   resolveRenderProfile,
 } from '../src/view/render-backend.ts';
+import type { PageInfo } from '../src/core/types.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
@@ -75,6 +78,14 @@ test('render backend module does not expose a persistent CanvasKit opt-in path',
   const source = readFileSync(new URL('../src/view/render-backend.ts', import.meta.url), 'utf8');
   assert.equal(source.includes('rhwp.renderBackend'), false);
   assert.equal(source.includes('persistRenderBackend'), false);
+});
+
+test('render scale mirrors the Rust canvas lower bound at low zoom', () => {
+  const pageInfo = { width: 1122.5, height: 1587.4 } as PageInfo;
+
+  assert.equal(clampRenderScale(pageInfo, 0.1), 0.25);
+  assert.equal(clampRenderScale(pageInfo, 0.2), 0.25);
+  assert.equal(clampRenderScale(pageInfo, 0.5), 0.5);
 });
 
 test('CanvasKit readiness classification keeps new diagnostic suffixes unexpected', () => {
@@ -174,7 +185,7 @@ test('CanvasKit text replay preserves LayerTree positions for regular runs', () 
 
 test('CanvasKit text replay uses positioned fallback glyphs and external text visuals', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(source, /const candidateFonts = \[font\][\s\S]*?selectedFontIndices[\s\S]*?canvas\.drawGlyphs/);
+  assert.match(codeOnly(source), /const candidateFonts = \[font\][\s\S]*?selectedFontIndices[\s\S]*?canvas\.drawGlyphs/);
   assert.match(source, /case 'charOverlap':\s+this\.renderCharOverlap/);
   assert.match(source, /case 'textControlMark':\s+this\.renderTextControlMark/);
   assert.match(source, /case 'tabLeader':\s+this\.renderTabLeader/);
@@ -182,10 +193,10 @@ test('CanvasKit text replay uses positioned fallback glyphs and external text vi
   assert.doesNotMatch(source, /case 'charOverlap':[\s\S]{0,200}unsupportedOps\.add\(op\.type\)/);
 });
 
-test('CanvasKit auto preflight permits text marks but blocks missing structural control markers', () => {
+test('CanvasKit auto preflight permits text marks and structural control markers', () => {
   const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /viewOption:showParagraphMarks/);
-  assert.match(source, /viewOption:showControlCodes/);
+  assert.doesNotMatch(source, /viewOption:showControlCodes/);
 });
 
 test('CanvasKit contains malformed images and bounds both decode caches', () => {
@@ -196,12 +207,12 @@ test('CanvasKit contains malformed images and bounds both decode caches', () => 
   );
   assert.match(source, /try \{\s*image = this\.canvasKit\.MakeImageFromEncoded/);
   assert.match(source, /image:decodeFailed/);
-  assert.match(source, /MAX_IMAGE_CACHE_ENTRIES = 128/);
-  assert.match(source, /MAX_IMAGE_FAILURE_CACHE_ENTRIES = 128/);
+  assert.match(codeOnly(source), /MAX_IMAGE_CACHE_ENTRIES = 128/);
+  assert.match(codeOnly(source), /MAX_IMAGE_FAILURE_CACHE_ENTRIES = 128/);
   assert.match(source, /replayableEncodedImageHeader\(bytes\)/);
-  assert.match(admissionSource, /CANVASKIT_MAX_IMAGE_DIMENSION = 8192/);
-  assert.match(admissionSource, /CANVASKIT_MAX_DECODED_IMAGE_PIXELS = 32 \* 1024 \* 1024/);
-  assert.match(source, /MAX_IMAGE_CACHE_PIXELS = 64 \* 1024 \* 1024/);
+  assert.match(codeOnly(admissionSource), /CANVASKIT_MAX_IMAGE_DIMENSION = 8192/);
+  assert.match(codeOnly(admissionSource), /CANVASKIT_MAX_DECODED_IMAGE_PIXELS = 32 \* 1024 \* 1024/);
+  assert.match(codeOnly(source), /MAX_IMAGE_CACHE_PIXELS = 64 \* 1024 \* 1024/);
   assert.match(source, /oldest\?\.image\.delete\?\.\(\)/);
   assert.match(source, /'base64DecodeFailed'/);
   assert.match(source, /'encodedImageRejected'/);
@@ -213,16 +224,16 @@ test('CanvasKit contains malformed images and bounds both decode caches', () => 
 
 test('CanvasKit distinguishes missing-picture editor and print replay', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(source, /op\.kind === 'missingPicture'/);
-  assert.match(source, /profile === 'print' \|\| profile === 'highQuality'/);
-  assert.match(source, /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
+  assert.match(codeOnly(source), /op\.kind === 'missingPicture'/);
+  assert.match(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  assert.match(codeOnly(source), /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
   assert.match(source, /\.every\(Number\.isFinite\)/);
 });
 
 test('CanvasKit form replay accepts the canonical LayerTree form type names', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(source, /op\.formType === 'checkBox'/);
-  assert.match(source, /op\.formType === 'radioButton'/);
+  assert.match(codeOnly(source), /op\.formType === 'checkBox'/);
+  assert.match(codeOnly(source), /op\.formType === 'radioButton'/);
 });
 
 test('PageLayerTree bridge verifies the returned profile instead of relabeling it', () => {
@@ -304,7 +315,7 @@ test('CanvasKit replay plane caps master-page layers at behindText (#2318)', () 
 
 test('CanvasKit renderer source replays the root once per replay plane', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(source, /for \(const replayPlane of CANVASKIT_REPLAY_PLANES\)/);
+  assert.match(codeOnly(source), /for \(const replayPlane of CANVASKIT_REPLAY_PLANES\)/);
   assert.match(source, /layerPaintOpReplayPlane\(op,\s*activeLayer\) !== replayPlane/);
 });
 
@@ -315,7 +326,22 @@ test('PageRenderer uses filtered canvas layers for background, behind, and front
   assert.match(source, /createOrReuseFilteredCanvasLayer\(\s*pageIdx,\s*canvas,\s*renderScale,\s*'front'/);
   assert.match(source, /createFilteredCanvasLayer\(\s*pageIdx,\s*sourceCanvas,\s*renderScale,\s*layerKind,/);
   assert.match(source, /layer\.style\.background\s*=\s*'transparent'/);
-  assert.match(source, /collectLayerPlaneSummary\(root,\s*summary,\s*null\)/);
+  // [#5763] 트리 폴백 경로도 flow-static 가림 판정을 함께 누적한다.
+  assert.match(source, /collectLayerPlaneSummary\(root,\s*summary,\s*null,\s*\{\s*opaqueFlowFills:\s*\[\]\s*\}\)/);
+});
+
+test('[#5763] PageRenderer skips the flow-static split when an opaque flow fill sits under a flow image', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
+  // 요약에 판정 필드가 있고, 분리 결정이 그 값을 본다.
+  assert.match(source, /flowStaticOccluded: boolean;/);
+  assert.match(source, /!layers\.flowStaticOccluded/);
+  // 좁은 질의(WASM 요약)에서 읽고, 없으면(구형 WASM) 종전대로 분리를 허용한다.
+  assert.match(source, /wrapper\.flowStaticOccluded === true/);
+  // 캐시 서명에 포함돼야 판정이 바뀌었을 때 재계산된다.
+  assert.match(source, /flowStaticOccluded \? 1 : 0/);
+  // 트리 폴백도 같은 규칙(불투명 채우기 → 겹치는 그림)을 쓴다.
+  assert.match(source, /function opaqueFlowFillBbox\(/);
+  assert.match(source, /scan\.opaqueFlowFills\.some\(/);
 });
 
 test('CanvasKit and comparison canvas bitmap extents preserve fractional page edges', () => {
@@ -337,10 +363,10 @@ test('PageRenderer prefers lightweight overlay summary before full PageLayerTree
   assert.match(source, /getLayerPlaneSummaryFromTree\(pageIdx\)/);
   assert.match(source, /this\.layerSummaryCache\.set\(pageIdx,\s*\{ key: cacheKey,\s*summary: treeSummary \}\)/);
   assert.match(source, /this\.wasm\.getPageLayerTree\(pageIdx\)/);
-  assert.match(source, /typeof wrapper\?\.hasBehind !== 'boolean'/);
-  assert.match(source, /const rawSvgCount = finiteCount\(wrapper\.rawSvgCount\)/);
-  assert.match(source, /const flowImageCount =/);
-  assert.match(source, /const flowRawSvgCount =/);
+  assert.match(codeOnly(source), /typeof wrapper\?\.hasBehind !== 'boolean'/);
+  assert.match(codeOnly(source), /const rawSvgCount = finiteCount\(wrapper\.rawSvgCount\)/);
+  assert.match(codeOnly(source), /const flowImageCount =/);
+  assert.match(codeOnly(source), /const flowRawSvgCount =/);
   assert.match(source, /flowStaticCount/);
 });
 
@@ -353,7 +379,7 @@ test('PageRenderer skips full flow-image JSON when the summary has no flow image
 test('CanvasView forwards text-edit invalidation as static overlay reuse context', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
   assert.match(source, /type PageRenderContext/);
-  assert.match(source, /reason === 'text-edit'/);
+  assert.match(codeOnly(source), /reason === 'text-edit'/);
   assert.match(source, /allowStaticOverlayReuse:\s*true/);
   assert.match(source, /allowStaticOverlayReuse:\s*false/);
   assert.match(source, /renderCanvas\(pageIndex,\s*canvas,\s*renderContext\)/);
@@ -369,7 +395,10 @@ test('#3137 stable text edit forwards a validated focused patch to partial Canva
   assert.match(canvasView, /candidate\.pageIndex !== pageIndex/);
   assert.match(canvasView, /\.\.\.\(validFocusedPagePatch \? \{ focusedPagePatch: validFocusedPagePatch \} : \{\}\)/);
   assert.match(pageRenderer, /context\.focusedPagePatch\?\.pageIndex === pageIdx/);
-  assert.match(pageRenderer, /this\.renderFocusedPagePatch\(pageIdx,\s*canvas,\s*renderScale,\s*context\)/);
+  assert.match(
+    pageRenderer,
+    /this\.renderFocusedPagePatch\(pageIdx,\s*canvas,\s*renderScale,\s*displayScale,\s*context\)/,
+  );
   assert.match(pageRenderer, /layers\.imageCount > 0 \|\| layers\.rawSvgCount > 0/);
   assert.match(pageRenderer, /this\.wasm\.renderPagePatchToCanvasFiltered\(/);
   assert.match(wasmBridge, /renderPagePatchToCanvasFilteredWithProfile/);
@@ -402,7 +431,7 @@ test('PageRenderer reuses static overlay canvases only when the overlay key matc
   assert.match(source, /export interface PageRenderContext/);
   assert.match(source, /export interface PageRenderResult/);
   assert.match(source, /needsTextEditStaticLayerVerification/);
-  assert.match(source, /context\.reason === 'text-edit' && context\.allowStaticOverlayReuse === true/);
+  assert.match(codeOnly(source), /context\.reason === 'text-edit' && context\.allowStaticOverlayReuse === true/);
   assert.match(source, /if \(!allowReuse\) \{/);
   assert.match(source, /this\.removePageLayers\(parent,\s*pageIdx\);/);
   assert.match(source, /reusableLayer\?\.dataset\.rhwpStaticOverlayKey === key/);
@@ -418,7 +447,7 @@ test('PageRenderer reuses layer summaries on the text-edit fast path', () => {
   const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   assert.match(source, /layerSummaryCache = new Map<number,\s*LayerSummaryCacheEntry>\(\)/);
   assert.match(source, /buildLayerSummaryCacheKey\(pageIdx,\s*canvas,\s*renderScale\)/);
-  assert.match(source, /context\.reason === 'text-edit' && context\.allowStaticOverlayReuse === true/);
+  assert.match(codeOnly(source), /context\.reason === 'text-edit' && context\.allowStaticOverlayReuse === true/);
   assert.match(source, /cached\?\.key === cacheKey/);
   assert.match(source, /return \{ \.\.\.cached\.summary \}/);
   assert.match(source, /rememberLayerPlaneSummary\(pageIdx,\s*canvas,\s*renderScale,\s*layers\)/);
@@ -446,8 +475,20 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   // [#3315] DOM <img> 는 생산자가 정한 src 를 그대로 쓴다 — 전체 트리 경로의 data URL 이든
   // 좁은 질의 경로의 신원 키별 object URL 이든 조립부는 분기하지 않는다.
   assert.match(source, /element\.src = image\.src/);
-  assert.match(source, /HWP_UNITS_PER_CSS_PIXEL = 75/);
-  assert.match(source, /applyFlowImageCrop\(element, image, displayScale\)/);
+  assert.match(codeOnly(source), /HWP_UNITS_PER_CSS_PIXEL = 75/);
+  // [#6099] 90/270° 프레임은 회전 전 치수로 만들어지므로 crop 사영도 프레임
+  // 치수를 받는다.
+  assert.match(source, /applyFlowImageCrop\(element, image, displayScale, frameWidth, frameHeight\)/);
+});
+
+// [#6099] 90° 회전 그림: image.bbox 는 회전 후 외접 상자다. 프레임을 그 크기로
+// 만들고 rotate 를 다시 걸면 이중 회전이 된다 — 프레임은 회전 전 치수(swap)로
+// 만들고 같은 중심에서 rotate 해야 한다(2197981: 한글 712×506 vs 503×452 정사각형).
+test('PageRenderer builds quarter-turned flow image frames with pre-rotation dims (#6099)', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /quarterTurned \? image\.bbox\.height : image\.bbox\.width/);
+  assert.match(source, /image\.bbox\.x \+ \(image\.bbox\.width - frameWidth\) \/ 2/);
+  assert.match(source, /frameX - \(needsClipWrapper \? visibleBbox\.x : 0\)/);
 });
 
 // [#3315] 편집마다 전체 레이어 트리(그림 1장에 6.6MB)를 받던 자리를 좁은 질의가 대체한다.
@@ -531,7 +572,7 @@ test('PageRenderer deferred image rerender preserves static layer reuse policy',
   assert.match(source, /reuseStaticOverlay/);
   // [#3315] 재시도 키는 개수·overlay 서명만으로는 그림 **내용** 변화를 못 본다. 문서 신원과
   // 그림 신원 키를 함께 들어야 blanket 리셋 없이 재사용 판정이 성립한다.
-  assert.match(source, /const retryKey = this\.buildImageRetryKey\(/);
+  assert.match(codeOnly(source), /const retryKey = this\.buildImageRetryKey\(/);
   const keyBuilder = source.slice(source.indexOf('private buildImageRetryKey('));
   const keyBody = keyBuilder.slice(0, keyBuilder.indexOf('\n  }'));
   assert.match(keyBody, /getPageSourceImageKeys\(pageIdx\)/, '그림 신원 키를 재료로 쓴다');
@@ -551,9 +592,9 @@ test('PageRenderer deferred image rerender preserves static layer reuse policy',
   );
   assert.match(source, /retryKey !== null && this\.imageRetryCounts\.get\(pageIdx\) === retryKey/,
     'null 키로는 재사용 조기 반환이 일어나면 안 된다');
-  assert.match(source, /IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500/);
+  assert.match(codeOnly(source), /IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500/);
   assert.match(source, /RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = \[0, 32, 96, 240\]/);
-  assert.match(source, /const job: ReRenderJob/);
+  assert.match(codeOnly(source), /const job: ReRenderJob/);
   assert.match(source, /if \(rawSvgCount > 0\)/);
   assert.match(source, /earlyRawSvgTimers/);
   assert.match(
@@ -601,7 +642,7 @@ test('순수 RawSvg 프리페치는 PageLayerTree bbox 계약으로 SVG URL을 �
 
 test('CanvasView renders visible pages before deferred prefetch work', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
-  assert.match(source, /for \(const pageIdx of visiblePages\)/);
+  assert.match(codeOnly(source), /for \(const pageIdx of visiblePages\)/);
   assert.match(source, /this\.schedulePrefetchPages\(prefetchPages\.filter/);
   assert.match(source, /requestIdleCallback\(run, \{ timeout: 1000 \}\)/);
   assert.match(source, /cancelPendingPrefetch\(\)/);

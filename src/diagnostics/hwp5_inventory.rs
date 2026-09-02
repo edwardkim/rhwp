@@ -10,6 +10,10 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::diagnostics::{
+    read_hwp5_body_text_section_limited, read_hwp5_doc_info_limited,
+    MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+};
 use crate::parser::cfb_reader::CfbReader;
 use crate::parser::header;
 use crate::parser::record::Record;
@@ -218,9 +222,12 @@ pub fn build_inventory(path: &Path, section_filter: Option<u32>) -> Result<Hwp5I
     let section_count = cfb.section_count();
 
     let mut items = Vec::new();
-    let doc_info = cfb
-        .read_doc_info(compressed)
-        .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
+    let doc_info = read_hwp5_doc_info_limited(
+        &mut cfb,
+        compressed,
+        MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+    )
+    .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
     append_record_items(
         &mut items,
         &sample,
@@ -238,9 +245,14 @@ pub fn build_inventory(path: &Path, section_filter: Option<u32>) -> Result<Hwp5I
             }
         }
         let stream_path = body_text_stream_path(&cfb, section, distribution);
-        let section_data = cfb
-            .read_body_text_section(section, compressed, distribution)
-            .map_err(|error| format!("BodyText Section{section} 읽기 실패: {error}"))?;
+        let section_data = read_hwp5_body_text_section_limited(
+            &mut cfb,
+            section,
+            compressed,
+            distribution,
+            MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+        )
+        .map_err(|error| format!("BodyText Section{section} 읽기 실패: {error}"))?;
         append_record_items(
             &mut items,
             &sample,

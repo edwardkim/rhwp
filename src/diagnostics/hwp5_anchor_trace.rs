@@ -8,6 +8,9 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::diagnostics::{
+    read_hwp5_body_text_section_limited, MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+};
 use crate::parser::cfb_reader::CfbReader;
 use crate::parser::header;
 use crate::parser::record::Record;
@@ -148,13 +151,14 @@ fn run_inner(options: &Options) -> Result<String, String> {
         .map_err(|error| format!("FileHeader 읽기 실패: {error}"))?;
     let file_header = header::parse_file_header(&header_data)
         .map_err(|error| format!("FileHeader 파싱 실패: {error}"))?;
-    let section_data = cfb
-        .read_body_text_section(
-            options.section,
-            file_header.flags.compressed,
-            file_header.flags.distribution,
-        )
-        .map_err(|error| format!("BodyText Section{} 읽기 실패: {error}", options.section))?;
+    let section_data = read_hwp5_body_text_section_limited(
+        &mut cfb,
+        options.section,
+        file_header.flags.compressed,
+        file_header.flags.distribution,
+        MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+    )
+    .map_err(|error| format!("BodyText Section{} 읽기 실패: {error}", options.section))?;
     let records = Record::read_all(&section_data).map_err(|error| {
         format!(
             "BodyText Section{} record 파싱 실패: {error}",

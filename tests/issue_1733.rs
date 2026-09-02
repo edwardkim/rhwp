@@ -1,17 +1,14 @@
 //! Issue #1733: 국제고속선기준 tail/vpos-reset 잔여 over-pagination 회귀 방지.
 //!
-//! [#2559 트레이드] 한컴 2024/PDF 기준은 242쪽이지만, 빈 꼬리말 밴드를 각주에
-//! 회수한 뒤 두 포맷 모두 241쪽이 된다. 각주가 있어도 한컴이 밴드를 본문에
-//! 전부 내주지 않는 경계 문서이므로, 이 차이는 현재 알고 있는 잔여다. #2559의
-//! 대표 과다분할 완화 효과를 되돌리지 않도록 241쪽을 명시적으로 고정하며, 후속
-//! 각주-꼬리말 세분화에서 한컴 기준 242쪽으로 복원할 대상이다.
+//! HWP 2020 MCP PDF 기준인 242쪽을 HWP와 HWPX 모두 유지한다. HWPX의 일반
+//! 텍스트 LINE_SEG 0 vpos는 writer-local 재시작일 수 있으므로, 그 표식을
+//! 무조건 물리 쪽 경계로 확장해 tail-only 쪽을 만들지 않아야 한다.
 
 use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
 
 const HANCOM_PDF_PAGE_COUNT: u32 = 242;
-const CURRENT_PAGE_COUNT_PIN: u32 = 241;
 
 fn load_doc(sample: &str) -> HwpDocument {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -21,21 +18,45 @@ fn load_doc(sample: &str) -> HwpDocument {
         .unwrap_or_else(|err| panic!("parse {}: {err:?}", path.display()))
 }
 
-fn assert_current_page_count_pin(sample: &str) {
+fn assert_hancom_pdf_page_count(sample: &str) {
     let doc = load_doc(sample);
     assert_eq!(
         doc.page_count(),
-        CURRENT_PAGE_COUNT_PIN,
-        "{sample} should retain the documented #2559 page-count pin; HWP 2024/PDF oracle is {HANCOM_PDF_PAGE_COUNT}"
+        HANCOM_PDF_PAGE_COUNT,
+        "{sample} should match the HWP 2020 MCP PDF page-count oracle"
+    );
+}
+
+fn assert_hwpx_reset_fragment_keeps_its_source_page() {
+    let doc = load_doc("samples/task1725/text_footnote_tail_overpagination.hwpx");
+    let source_page = doc.dump_page_items(Some(56));
+    let following_page = doc.dump_page_items(Some(57));
+
+    assert!(
+        source_page.contains("PartialParagraph  pi=1217  lines=0..3"),
+        "HWPX reset 전 fragment는 저장된 57쪽 owner에 남아야 한다\n{source_page}"
+    );
+    assert!(
+        following_page.contains("PartialParagraph  pi=1217  lines=3..5")
+            && following_page.contains("FullParagraph  pi=1218"),
+        "reset 다음 쪽은 pi=1217 tail과 후속 본문을 함께 가져야 한다\n{following_page}"
+    );
+
+    let local_cursor_page = doc.dump_page_items(Some(219));
+    assert!(
+        local_cursor_page.contains("FullParagraph  pi=4726")
+            && local_cursor_page.contains("FullParagraph  pi=4731"),
+        "현재 flow anchor와 맞지 않는 HWPX local reset은 별도 물리 쪽을 만들면 안 된다\n{local_cursor_page}"
     );
 }
 
 #[test]
-fn issue_1733_hwpx_retains_documented_page_count_pin() {
-    assert_current_page_count_pin("samples/task1725/text_footnote_tail_overpagination.hwpx");
+fn issue_1733_hwpx_matches_hancom_pdf_page_count() {
+    assert_hancom_pdf_page_count("samples/task1725/text_footnote_tail_overpagination.hwpx");
+    assert_hwpx_reset_fragment_keeps_its_source_page();
 }
 
 #[test]
-fn issue_1733_hwp_retains_documented_page_count_pin() {
-    assert_current_page_count_pin("samples/task1725/text_footnote_tail_overpagination.hwp");
+fn issue_1733_hwp_matches_hancom_pdf_page_count() {
+    assert_hancom_pdf_page_count("samples/task1725/text_footnote_tail_overpagination.hwp");
 }

@@ -1,0 +1,6 @@
+{
+  "invocation": "rhwp export-capabilities-schema --json",
+  "why": "외부 소비자 코드 생성의 스키마 출처",
+  "bare": "rhwp export-capabilities-schema --bare",
+  "companion": "rhwp export-ir-schema --json"
+}

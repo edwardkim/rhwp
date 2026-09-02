@@ -1,0 +1,218 @@
+{
+  "adjudication": {
+    "applicationOrderStatus": "not-observable-because-on-off-differential-is-zero",
+    "causalLimits": [
+      "This observation is limited to Hancom 2020 11.0.0.9136 PDF export.",
+      "Equal K0/K1 output does not prove that both paths are always-kerned or always-unkerned.",
+      "Supplementary table/text-box pairs use different LineSeg lanes and are not causal gates."
+    ],
+    "classification": "flag-preserved-no-pdf-layout-differential",
+    "featureFlagCreatesPdfLayoutDifferential": false,
+    "featureFlagSurvivesOpen": true,
+    "hancomObservationRole": "version-scoped-negative-compatibility-observation",
+    "implementationTruthSource": "opentype-capability-contract"
+  },
+  "canonicalSha256": "8fce761f58c742a9a6d4fcf1cbfdf7a3037acd8f14f028e5f2c5cd41f64ff1ee",
+  "environment": {
+    "documentFaceSelectable": true,
+    "embeddedFontNames": [
+      "INPILL+NotoSansKR-Regular"
+    ],
+    "hancomVersion": "11, 0, 0, 9136"
+  },
+  "hwpmlReadback": {
+    "allFixtureAxesPreserved": true,
+    "allFixtureFacesExact": true,
+    "allFixtureFlagsPreserved": true,
+    "charShapeCount": 24,
+    "contextCounts": {
+      "body": 18,
+      "table-cell": 2,
+      "text-box": 2
+    },
+    "fixtureContextCount": 22,
+    "fixtureFlagCounts": {
+      "off": 11,
+      "on": 11
+    },
+    "formatVersion": "2.91",
+    "subVersion": "10.0.0.0"
+  },
+  "inputs": {
+    "fixtureSha256": "53eb9568bb12e0dbfb9f6878998452464f17827be6ed1c664bb6c3bfb4872fe8",
+    "fontSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+    "hwpmlReadbackSha256": "27e7aef7117ff601405a1631b788321eb55a93efa233c2de4aeeb7eded4cde4f",
+    "pdfSha256": "104ed4e91d3c5978fc0c0e47a4ec90d193bd64ecd97622c38aab7b5d73df5ad3"
+  },
+  "issue": 4968,
+  "kind": "kerning-q2-hancom-adjudication",
+  "nextGate": "revise-Q2-expected-truth-before-product-mutation",
+  "openTypeReference": {
+    "capability": "gpos-kern",
+    "pairDesignUnits": {
+      "AV": -18,
+      "HH": 0,
+      "To": -76,
+      "WA": 0
+    },
+    "unitsPerEm": 1000
+  },
+  "pdfLayout": {
+    "allControlledOnOffPositionsEqual": true,
+    "bodyRunCount": 18,
+    "controlledGroupCount": 9,
+    "groups": [
+      {
+        "lineSegLane": "stored-line-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "ce4cd599c9955aca4d2b0e9cfd398d0ee752c3aa473be2cda04e5e86a804cd84",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "ce4cd599c9955aca4d2b0e9cfd398d0ee752c3aa473be2cda04e5e86a804cd84",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 100,
+        "spacing": 0
+      },
+      {
+        "lineSegLane": "fresh-candidate-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "ec08afd3ccca4df150c25a61ce46e10cf9a125949b625e44b15dfdd08a0106ab",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "ec08afd3ccca4df150c25a61ce46e10cf9a125949b625e44b15dfdd08a0106ab",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 100,
+        "spacing": -5
+      },
+      {
+        "lineSegLane": "stored-line-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "79f223d9106c689bc50a7496b9c9e970cf57cdba550b1cda59dba0838bb16bf4",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "79f223d9106c689bc50a7496b9c9e970cf57cdba550b1cda59dba0838bb16bf4",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 100,
+        "spacing": -10
+      },
+      {
+        "lineSegLane": "fresh-candidate-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "c6d8caee2b079627adc2009f36d08f0f61bb18c477dbf733db65e4098f959eae",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "c6d8caee2b079627adc2009f36d08f0f61bb18c477dbf733db65e4098f959eae",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 90,
+        "spacing": 0
+      },
+      {
+        "lineSegLane": "stored-line-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "516d5fb448396bf8457dd08bc8ae37c588742feca8a1af53eabdfa06e428be2a",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "516d5fb448396bf8457dd08bc8ae37c588742feca8a1af53eabdfa06e428be2a",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 90,
+        "spacing": -5
+      },
+      {
+        "lineSegLane": "fresh-candidate-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "f11119bc8bb03ad9f170f7fb40e86774ffe88ef6f5b4db9b7ba0a7890b187ef3",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "f11119bc8bb03ad9f170f7fb40e86774ffe88ef6f5b4db9b7ba0a7890b187ef3",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 90,
+        "spacing": -10
+      },
+      {
+        "lineSegLane": "stored-line-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "5d5e1abf47bc2aff775df5814b56ea52b14c13ba1cbb0105e31ca4cd8b479816",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "5d5e1abf47bc2aff775df5814b56ea52b14c13ba1cbb0105e31ca4cd8b479816",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 80,
+        "spacing": 0
+      },
+      {
+        "lineSegLane": "fresh-candidate-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "66775942cefff0a5e748214640522e00ccbe090982075f0c99f686a09575c323",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "66775942cefff0a5e748214640522e00ccbe090982075f0c99f686a09575c323",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 80,
+        "spacing": -5
+      },
+      {
+        "lineSegLane": "stored-line-lane",
+        "maximumAbsoluteDelta": 0,
+        "offPositionsSha256": "83784e752c3d2ecd6cf1ac962c65e4453e07ec26137e5166b3546edca9a2cc2d",
+        "onOffPositionsEqual": true,
+        "onPositionsSha256": "83784e752c3d2ecd6cf1ac962c65e4453e07ec26137e5166b3546edca9a2cc2d",
+        "pairGapDeltas": {
+          "AV": 0,
+          "HH": 0,
+          "To": 0,
+          "WA": 0
+        },
+        "ratio": 80,
+        "spacing": -10
+      }
+    ],
+    "maximumAbsoluteOnOffDelta": 0,
+    "supplementaryContextOnOffPositionsEqual": {
+      "table-cell": true,
+      "text-box": true
+    },
+    "supplementaryContextsAreNonCausal": true
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "privateCorpusAccessed": false,
+    "rawHwpmlIncluded": false,
+    "rawPdfIncluded": false,
+    "rawVmIdentityIncluded": false
+  },
+  "schemaVersion": 1,
+  "stage": "W9-Q2",
+  "status": "complete"
+}

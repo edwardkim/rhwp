@@ -1,0 +1,38 @@
+{
+  "id": "OP41",
+  "tier": 3,
+  "title": "이중 오라클 — 필드 수와 쪽수 (field-01)",
+  "input": "samples/field-01.hwp",
+  "axis": "검증",
+  "instructions": "field-01 의 누름틀 수와 쪽수를 answer.json 에 {\"fields\": N, \"pages\": M} 으로 제출하라. 두 라이브 오라클이 모두 맞아야 한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "필드 수",
+      "op": "answer_eq",
+      "answer": "fields",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fieldCount"
+    },
+    {
+      "name": "쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

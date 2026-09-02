@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/amount.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "1,000,000원",
+        "replace": "10,000,000원"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/amount.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"1,000,000원\",\"replace\":\"10,000,000원\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "07b626d36659476ad13a3071c2d12fc9bcacbe35e6ffda4e23dd53ada7070ee4",
+    "planSha256": "b55af5fd90f3b97b89f29a57781f199726de664871bb18ac6b2c7d3c14726979",
+    "outputSha256": "97ff17c0ffba202f977838bdec6656f8f9651f11d6eb57816d1e8a444eaffb0f",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

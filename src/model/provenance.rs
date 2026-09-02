@@ -53,6 +53,7 @@ pub struct LayoutCompatibilityProfile {
     hwpx_container: bool,
     hwp5_origin_hwpx: bool,
     native_hwp5_layout: bool,
+    hangul2024_layout: bool,
 }
 
 impl LayoutCompatibilityProfile {
@@ -72,6 +73,7 @@ impl LayoutCompatibilityProfile {
             hwpx_container,
             hwp5_origin_hwpx,
             native_hwp5_layout,
+            hangul2024_layout: false,
         }
     }
 
@@ -85,6 +87,14 @@ impl LayoutCompatibilityProfile {
     /// 계약 분기. 기존 `is_hwp3_source` 동치.
     pub fn hwp3_native_layout(&self) -> bool {
         self.hwp3_native_layout
+    }
+
+    /// Stored LineSeg horizontal origins whose legacy HWP3 provenance is not
+    /// reproducible from the common ParaShape alone. This covers native HWP3
+    /// and HWP3-lineage conversion layouts, while keeping the decision out of
+    /// the DocInfo-derived style aggregate.
+    pub fn legacy_hwp3_stored_geometry(&self) -> bool {
+        self.hwp3_native_layout || self.hwp3_layout
     }
 
     /// 원본 HWP3가 비밀번호로 복호화된 문서인지 여부.
@@ -102,6 +112,27 @@ impl LayoutCompatibilityProfile {
     /// 기존 기본값(false)을 유지한다.
     pub(crate) fn with_hwp3_password_layout(mut self, enabled: bool) -> Self {
         self.hwp3_password_layout = enabled;
+        self
+    }
+
+    /// 한글 2024 계열 조판 규칙을 에뮬레이션할지 여부 (opt-in, 기본 false =
+    /// 현행 2022 계열).
+    ///
+    /// 한글 2024(13.x)는 2018~2022(및 2022 구패치)와 조판 규칙이 다르며, 실측으로
+    /// 확정된 첫 델타는 "자리차지(TAC) 표 앵커 문단의 선행 앵커 줄 세그먼트 계상
+    /// 제거"다(2022 재저장본은 앵커 문단 lineseg 2개, 2024 재저장본은 1개 —
+    /// `output/poc/hangul_version_compat_phase0_20260818/REPORT.md` Phase 1).
+    /// 출처(provenance)가 아니라 사용자가 고른 목표 조판 세대이므로 파서가 아닌
+    /// 세션 설정이 켠다. 자동 감지 금지 — HWPX `appVersion` 추정은 과거 오탐
+    /// 회귀로 제거된 이력이 있다(`parser/hwpx/mod.rs`).
+    pub fn hangul2024_layout(&self) -> bool {
+        self.hangul2024_layout
+    }
+
+    /// 한글 2024 계열 조판 에뮬레이션을 표시한다. 세션 설정(CLI `--compat 2024`
+    /// 등)만 이 값을 켠다.
+    pub(crate) fn with_hangul2024_layout(mut self, enabled: bool) -> Self {
+        self.hangul2024_layout = enabled;
         self
     }
 

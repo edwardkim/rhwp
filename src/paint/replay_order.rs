@@ -3,7 +3,7 @@ use serde::Serialize;
 use crate::model::shape::TextWrap;
 use crate::paint::layer_tree::{LayerNode, LayerNodeKind};
 use crate::paint::paint_op::PaintOp;
-use crate::renderer::render_tree::RenderLayerInfo;
+use crate::renderer::render_tree::{BoundingBox, RenderLayerInfo};
 
 /// Logical replay planes for PageLayerTree direct paint backends.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
@@ -107,6 +107,70 @@ fn layer_node_has_replay_plane_with_layer(
         LayerNodeKind::Leaf { ops } => ops
             .iter()
             .any(|op| paint_op_replay_plane_with_layer(op, active_layer) == target),
+    }
+}
+
+/// [#5763] flow 그림을 canvas 아래 별도 평면으로 분리해도 되는지 paint 순서대로 누적 판정한다.
+///
+/// `flow-static` 분리(#516·#3315)는 flow plane 의 `Image`/`RawSvg` 만 canvas **아래**
+/// 평면(studio 의 DOM `<img>` layer, 또는 flow-static canvas)으로 내리고, 나머지 본문은
+/// `flow-dynamic` 으로 그 **위에** 그린다. 그림 밑에 깔린 불투명 채우기(그림을 담은 표 칸의
+/// 흰 배경 등)는 `flow-dynamic` 에 남으므로, 그대로 분리하면 그 채우기가 그림을 덮어 그림이
+/// 통째로 사라진다.
+///
+/// 그래서 **paint 순서상 앞선 불투명 flow 채우기와 겹치는 flow 그림**이 하나라도 있으면 그
+/// 페이지는 분리 대상이 아니다. 호출부는 layer tree 를 paint 순서대로 훑으며 `observe` 를
+/// 먹이고 `occluded()` 로 판정한다.
+#[derive(Debug, Default)]
+pub struct FlowStaticOcclusion {
+    opaque_fills: Vec<BoundingBox>,
+    occluded: bool,
+}
+
+impl FlowStaticOcclusion {
+    /// paint 순서대로 op 하나를 관찰한다.
+    pub fn observe(&mut self, plane: PaintReplayPlane, op: &PaintOp) {
+        if plane != PaintReplayPlane::Flow {
+            return;
+        }
+        match op {
+            PaintOp::Image { bbox, .. } | PaintOp::RawSvg { bbox, .. } => {
+                if self.opaque_fills.iter().any(|prior| prior.intersects(bbox)) {
+                    self.occluded = true;
+                }
+            }
+            _ => {
+                if let Some(bbox) = opaque_flow_fill_bbox(op) {
+                    self.opaque_fills.push(bbox);
+                }
+            }
+        }
+    }
+
+    /// 분리하면 flow 그림이 가려지는 페이지인가.
+    pub fn occluded(&self) -> bool {
+        self.occluded
+    }
+}
+
+/// 뒤에 오는 그림을 덮을 수 있는 불투명 채우기면 그 bbox 를 준다.
+///
+/// 채우기 색·패턴·그라데이션이 없으면 덮지 않는다(테두리만 있는 도형 포함). `opacity` 가 1
+/// 미만이면 밑이 비치므로 덮는 것으로 보지 않는다.
+fn opaque_flow_fill_bbox(op: &PaintOp) -> Option<BoundingBox> {
+    let (bbox, style, has_gradient) = match op {
+        PaintOp::Rectangle { bbox, rect } => (bbox, &rect.style, rect.gradient.is_some()),
+        PaintOp::Ellipse { bbox, ellipse } => (bbox, &ellipse.style, ellipse.gradient.is_some()),
+        PaintOp::Path { bbox, path } => (bbox, &path.style, path.gradient.is_some()),
+        _ => return None,
+    };
+    if style.opacity < 1.0 {
+        return None;
+    }
+    if style.fill_color.is_some() || style.pattern.is_some() || has_gradient {
+        Some(*bbox)
+    } else {
+        None
     }
 }
 

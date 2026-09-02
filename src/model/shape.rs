@@ -27,7 +27,7 @@ pub(crate) mod common_obj_offsets {
 }
 
 /// 개체 공통 속성 (모든 개체에 공통)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct CommonObjAttr {
     /// 컨트롤 ID
     pub ctrl_id: u32,
@@ -112,7 +112,7 @@ pub struct CommonObjAttr {
 }
 
 /// HWPX 개체 `numberingType` (캡션 번호 범주)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ObjectNumberingType {
     #[default]
     None,
@@ -122,7 +122,7 @@ pub enum ObjectNumberingType {
 }
 
 /// HWPX 개체 `dropcapstyle` (드롭캡 표시 방식). OWPML Core 스키마 `DropCapStyleType`.
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum DropCapStyle {
     #[default]
     None,
@@ -132,7 +132,7 @@ pub enum DropCapStyle {
 }
 
 /// 세로 위치 기준
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum VertRelTo {
     #[default]
     Paper,
@@ -141,7 +141,7 @@ pub enum VertRelTo {
 }
 
 /// 세로 정렬 방식
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum VertAlign {
     #[default]
     Top,
@@ -152,7 +152,7 @@ pub enum VertAlign {
 }
 
 /// 가로 위치 기준
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum HorzRelTo {
     #[default]
     Paper,
@@ -162,7 +162,7 @@ pub enum HorzRelTo {
 }
 
 /// 가로 정렬 방식
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum HorzAlign {
     #[default]
     Left,
@@ -173,7 +173,7 @@ pub enum HorzAlign {
 }
 
 /// 크기 기준 (너비/높이)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum SizeCriterion {
     /// 종이 기준 (퍼센트)
     Paper,
@@ -203,7 +203,7 @@ pub enum TextWrap {
 /// 텍스트가 흐르는 방향 (attr bit 24-25)
 ///
 /// HWPX `textFlow` 속성값과 대응한다.
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum TextFlow {
     #[default]
     BothSides,
@@ -213,7 +213,7 @@ pub enum TextFlow {
 }
 
 /// 개체 요소 속성 (그리기 개체 공통)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ShapeComponentAttr {
     /// SHAPE_COMPONENT 내 ctrl_id (라운드트립 보존용, 0이면 기본값 사용)
     pub ctrl_id: u32,
@@ -231,6 +231,12 @@ pub struct ShapeComponentAttr {
     pub original_width: u32,
     /// 초기 높이
     pub original_height: u32,
+    /// [#4669] HWPX 원본이 `orgSz width="0"`을 기록했고 HWP 저장 계약을 위해
+    /// 유효한 extent로 materialize한 경우 true.
+    pub original_width_was_zero: bool,
+    /// [#4669] HWPX 원본이 `orgSz height="0"`을 기록했고 HWP 저장 계약을 위해
+    /// 유효한 extent로 materialize한 경우 true.
+    pub original_height_was_zero: bool,
     /// 현재 폭
     pub current_width: u32,
     /// 현재 높이
@@ -281,6 +287,8 @@ impl Default for ShapeComponentAttr {
             local_file_version: 0,
             original_width: 0,
             original_height: 0,
+            original_width_was_zero: false,
+            original_height_was_zero: false,
             current_width: 0,
             current_height: 0,
             current_width_was_zero: false,
@@ -303,7 +311,7 @@ impl Default for ShapeComponentAttr {
 }
 
 /// 그리기 개체 공통 속성
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct DrawingObjAttr {
     /// 개체 요소 속성
     pub shape_attr: ShapeComponentAttr,
@@ -330,7 +338,7 @@ pub struct DrawingObjAttr {
 }
 
 /// 글상자 (그리기 개체 내 텍스트)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct TextBox {
     /// LIST_HEADER list_attr (라운드트립 보존용)
     pub list_attr: u32,
@@ -358,7 +366,7 @@ pub struct TextBox {
 }
 
 /// 그리기 개체 종류
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub enum ShapeObject {
     /// 직선
     Line(LineShape),
@@ -466,6 +474,16 @@ impl ShapeObject {
         }
     }
 
+    /// 도형이 줄 흐름에서 차지하는 세로 범위 (HWPUNIT).
+    ///
+    /// 저장 프레임(`common.height`)과 개체 요소의 실제 표시 높이
+    /// (`shape_attr.current_height`)는 어긋날 수 있다 — 한글은 둘 중 큰 값을
+    /// 조판 높이로 쓴다. 조판·측정·렌더가 각자 이 식을 다시 쓰면 같은 속성에
+    /// 정의가 여러 벌 생기므로(#4333) 이 메서드가 유일한 정의다.
+    pub fn flow_height_hu(&self) -> i32 {
+        (self.common().height as i32).max(self.shape_attr().current_height as i32)
+    }
+
     /// 개체 요소 속성 가변 참조 반환
     pub fn shape_attr_mut(&mut self) -> &mut ShapeComponentAttr {
         match self {
@@ -500,7 +518,7 @@ impl ShapeObject {
 }
 
 /// 직선 개체 (HWPTAG_SHAPE_COMPONENT_LINE)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct LineShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -517,7 +535,7 @@ pub struct LineShape {
 }
 
 /// 연결선 타입 (9종)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 #[repr(u32)]
 pub enum LinkLineType {
     #[default]
@@ -563,7 +581,7 @@ impl LinkLineType {
 }
 
 /// 연결선 제어점
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct ConnectorControlPoint {
     pub x: i32,
     pub y: i32,
@@ -571,7 +589,7 @@ pub struct ConnectorControlPoint {
 }
 
 /// 연결선 추가 데이터 (SC_LINE 확장)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct ConnectorData {
     /// 연결선 타입
     pub link_type: LinkLineType,
@@ -590,7 +608,7 @@ pub struct ConnectorData {
 }
 
 /// 사각형 개체 (HWPTAG_SHAPE_COMPONENT_RECTANGLE)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct RectangleShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -605,7 +623,7 @@ pub struct RectangleShape {
 }
 
 /// 타원 개체 (HWPTAG_SHAPE_COMPONENT_ELLIPSE)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct EllipseShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -630,7 +648,7 @@ pub struct EllipseShape {
 }
 
 /// 호 개체 (HWPTAG_SHAPE_COMPONENT_ARC)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct ArcShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -647,7 +665,7 @@ pub struct ArcShape {
 }
 
 /// 다각형 개체 (HWPTAG_SHAPE_COMPONENT_POLYGON)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct PolygonShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -660,7 +678,7 @@ pub struct PolygonShape {
 }
 
 /// 곡선 개체 (HWPTAG_SHAPE_COMPONENT_CURVE)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct CurveShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -673,7 +691,7 @@ pub struct CurveShape {
 }
 
 /// 묶음 개체 (HWPTAG_SHAPE_COMPONENT_CONTAINER)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct GroupShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -686,7 +704,7 @@ pub struct GroupShape {
 }
 
 /// 캡션 정보
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Caption {
     /// 방향 (0: left, 1: right, 2: top, 3: bottom)
     pub direction: CaptionDirection,
@@ -705,7 +723,7 @@ pub struct Caption {
 }
 
 /// 캡션 방향
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum CaptionDirection {
     Left,
     Right,
@@ -715,7 +733,7 @@ pub enum CaptionDirection {
 }
 
 /// Left/Right 캡션의 세로 정렬
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum CaptionVertAlign {
     #[default]
     Top,
@@ -728,7 +746,7 @@ pub enum CaptionVertAlign {
 // ============================================================
 
 /// 차트 종류 (1차 범위: Bar/Column/Line/Pie/Area/Scatter)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum ChartType {
     Bar,
     Column,
@@ -741,7 +759,7 @@ pub enum ChartType {
 }
 
 /// 범례 위치
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum LegendPosition {
     #[default]
     Right,
@@ -756,14 +774,14 @@ pub enum LegendPosition {
 }
 
 /// 범례
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Legend {
     pub position: LegendPosition,
     pub visible: bool,
 }
 
 /// 축
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Axis {
     pub label: Option<String>,
     pub labels: Vec<String>,
@@ -772,7 +790,7 @@ pub struct Axis {
 }
 
 /// 데이터 시리즈 (한 줄기 막대/선 등)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct DataSeries {
     /// 시리즈 이름 (범례 표시용)
     pub name: String,
@@ -785,7 +803,7 @@ pub struct DataSeries {
 }
 
 /// 차트 개체 (GSO + HWPTAG_CHART_DATA)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct ChartShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -814,7 +832,7 @@ pub struct ChartShape {
 // ============================================================
 
 /// OLE 프리뷰 이미지 포맷
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize)]
 pub enum OlePreviewFormat {
     Wmf,
     Emf,
@@ -823,14 +841,14 @@ pub enum OlePreviewFormat {
 }
 
 /// OLE 프리뷰 이미지
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct OlePreview {
     pub format: OlePreviewFormat,
     pub bytes: Vec<u8>,
 }
 
 /// OLE 표시 방식 (DrawingAspect)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum OleDrawingAspect {
     #[default]
     Content,
@@ -840,7 +858,7 @@ pub enum OleDrawingAspect {
 }
 
 /// OLE 개체 (HWPTAG_SHAPE_COMPONENT_OLE)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct OleShape {
     /// 공통 속성
     pub common: CommonObjAttr,
@@ -860,6 +878,11 @@ pub struct OleShape {
     pub preview: Option<OlePreview>,
     /// OLE 레코드 원본 바이트 (라운드트립 보존)
     pub raw_tag_data: Vec<u8>,
+    /// [#4495] raw_tag_data 출처 봉인 — 봉인 시점 OLE payload 모델 필드
+    /// (extent_x/extent_y/bin_data_id)의 다이제스트. 저장 시 그 필드들이 봉인과
+    /// 같을 때만 raw 를 재사용한다. None 은 종전 계약(raw 우선) 유지.
+    #[serde(skip)]
+    pub raw_tag_seal: Option<[u8; 32]>,
     /// 캡션
     pub caption: Option<Caption>,
     /// [#3546] HWPX `<hp:chart chartIDRef="...">` 출신 표식 — chartIDRef 원문.
@@ -872,6 +895,10 @@ pub struct OleShape {
     /// None 으로 접힌다(둘 다 미관측 변형 — 이 경우 switch 래핑은
     /// 재방출되지 않는다).
     pub chart_switch_fallback: Option<Box<OleShape>>,
+    /// [#4669] HWPX `<hp:ole id="...">` 원문 — `instid` 와 별개 값이다(한컴
+    /// 원산 파일 실측: id=2141242094 / instid=1067500271). 종전에는 `instid` 만
+    /// 파싱해 재방출 `id` 가 instance_id(또는 "0")로 되쓰였다. HWP5 출신은 None.
+    pub hwpx_ole_id: Option<u32>,
 }
 
 #[cfg(test)]

@@ -1,0 +1,36 @@
+{
+  "id": "SD05",
+  "tier": 2,
+  "title": "문서 온톨로지",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 온톨로지의 클래스 수와 속성 수를 answer.json 에 {\"classes\": N, \"properties\": M} 으로 제출하라. 힌트: rhwp export-ontology.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "클래스 수",
+      "op": "answer_eq",
+      "answer": "classes",
+      "path": "classCount",
+      "cmd": [
+        "export-ontology",
+        "--json"
+      ]
+    },
+    {
+      "name": "속성 수",
+      "op": "answer_eq",
+      "answer": "properties",
+      "path": "propertyCount",
+      "cmd": [
+        "export-ontology",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

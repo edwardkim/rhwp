@@ -1,0 +1,22 @@
+{
+  "id": "SE05",
+  "steps": [
+    {
+      "answer": {
+        "findings": {
+          "cmd": [
+            "inspect",
+            "unicode",
+            "{input}",
+            "--json"
+          ],
+          "path": "findingCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

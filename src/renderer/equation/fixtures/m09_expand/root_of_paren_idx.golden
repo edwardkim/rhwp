@@ -1,0 +1,43 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: ROOT
+script: ROOT(n) of {x+y}
+honesty: root-aliases-sqrt
+
+=== ast ===
+Sqrt {
+    index: Some(
+        Text(
+            "n",
+        ),
+    ),
+    body: Row(
+        [
+            Text(
+                "x",
+            ),
+            Symbol(
+                "+",
+            ),
+            Text(
+                "y",
+            ),
+        ],
+    ),
+}
+
+=== layout ===
+Sqrt x=0.0000 y=0.0000 w=55.1850 h=24.0000 bl=18.0000
+  index:
+    Text("n") x=0.0000 y=0.0000 w=8.0850 h=14.0000 bl=11.2000
+  body:
+    Row x=15.0850 y=2.0000 w=39.1000 h=20.0000 bl=16.0000
+      Text("x") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Symbol("+") x=11.5500 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Text("y") x=27.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M2.09,13.40 L4.09,14.40 L10.09,24.00 L13.09,0.00 L55.19,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="0.00" y="11.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">n</text>
+<text x="15.09" y="18.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="34.64" y="18.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">+</text>
+<text x="42.64" y="18.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">y</text>

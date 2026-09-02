@@ -1,0 +1,73 @@
+{
+  "protocol": "DAP/1.0",
+  "operation": "agent.handoff",
+  "tool": "rhwp-handoff-orchestrator",
+  "handoffVersion": "1.0",
+  "taskId": "t-ord",
+  "taskSha256": "fb42deddf4b660ae9546f8f51bf0a2b2f49ec56fe4c3878be86d071c0403393c",
+  "status": "error",
+  "code": 1000,
+  "outcome": "handoff",
+  "agentsTried": [
+    "primary"
+  ],
+  "acceptedAgent": null,
+  "attempts": [
+    {
+      "agent": "primary",
+      "attempt": 1,
+      "category": "timeout",
+      "findings": [
+        {
+          "check": "adapter",
+          "code": "timeout",
+          "reason": "timeout"
+        }
+      ],
+      "nextAction": {
+        "action": "retry",
+        "why": "timeout — 재시도 여지가 있다"
+      }
+    },
+    {
+      "agent": "primary",
+      "attempt": 2,
+      "category": "timeout",
+      "findings": [
+        {
+          "check": "adapter",
+          "code": "timeout",
+          "reason": "timeout"
+        }
+      ],
+      "nextAction": {
+        "action": "selfExecute",
+        "why": "timeout — 위임을 접고 자체 실행으로 전환한다"
+      }
+    }
+  ],
+  "result": null,
+  "capabilities": [],
+  "collectedOutputs": [],
+  "nextAction": {
+    "action": "selfExecute",
+    "why": "timeout — 위임을 접고 자체 실행으로 전환한다"
+  },
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "journal": "output/handoff/t-ord/handoff.journal.ndjson",
+  "_skillMeta": {
+    "exit": 1,
+    "command": "python",
+    "trigger": null,
+    "exception": null,
+    "stdoutSilentOnFail": false,
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true,
+    "neverGitAddA": true,
+    "neverStealNamedWorktrees": true,
+    "neverInventDocumentCore": true,
+    "noNewCli": true,
+    "branch": "timeout"
+  }
+}

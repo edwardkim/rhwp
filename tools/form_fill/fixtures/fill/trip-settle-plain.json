@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "trip-settle-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "trip-settle",
+  "title": "출장여비 정산서 고유 이름 채움",
+  "family": "회계",
+  "genre": "정산",
+  "sample": "fixtures/forms/출장여비정산서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "출장자",
+  "fieldCount": 25,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/출장여비정산서.hwp",
+    "--data",
+    "{\"출장자\": \"홍길동\", \"소속\": \"기획조정실\", \"출장지\": \"대전광역시\"}",
+    "-o",
+    "out/trip-settle-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "출장자": "홍길동",
+    "소속": "기획조정실",
+    "출장지": "대전광역시"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/출장여비정산서.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "출장자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "소속",
+        "occurrence": 0,
+        "value": "기획조정실"
+      },
+      {
+        "name": "출장지",
+        "occurrence": 0,
+        "value": "대전광역시"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/trip-settle-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

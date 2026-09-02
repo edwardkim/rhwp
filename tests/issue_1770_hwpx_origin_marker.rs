@@ -32,7 +32,7 @@ fn convert_hwp_pagination_matches_hwpx_source() {
     assert_eq!(hwpx_pages, 4, "#1770 전제: HWPX 원본 4쪽");
 
     let hwp_bytes = hwpx.export_hwp_with_adapter().expect("convert");
-    let mut conv = rhwp::wasm_api::HwpDocument::from_bytes(&hwp_bytes).expect("reparse");
+    let conv = rhwp::wasm_api::HwpDocument::from_bytes(&hwp_bytes).expect("reparse");
     assert_eq!(
         conv.page_count(),
         hwpx_pages,

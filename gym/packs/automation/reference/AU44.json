@@ -1,0 +1,15 @@
+{
+  "id": "AU44",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-complex.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"적합L2복합\"}]}",
+        "--capsule",
+        "{sub:ladder/work.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

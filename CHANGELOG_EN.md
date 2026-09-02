@@ -6,6 +6,106 @@ This document records the major changes of the rhwp project.
 
 ## [Unreleased]
 
+## [0.8.6] — 2026-09-02
+
+> Cumulative PATCH release prepared from provenance for 262 PRs found in the 2,214-commit feature baseline
+> after v0.8.4. Later versioning, validation, and release-record commits are tracked separately from that measured
+> range. It improves document fidelity, Studio editing, CLI and agent surfaces, input safety, and release
+> reliability while keeping the existing JSON envelope major.
+
+### Typesetting, rendering, and fonts
+
+- Added `HwpDocument.setExactFontInstance(optionsJson)` and `clearExactFontInstance(optionsJson)`. They apply
+  `boundedHorizontalLtrV1` variable-font requests only to exact slots registered by the host, with strict JSON
+  validation and idempotent per-slot clearing. Axes are never inferred from parser data or font names (#4969).
+- Connected exact-font kerning, bounded common-shaping replay, and vertical layout to the typesetting and
+  CanvasKit paths in guarded stages. Unsupported or malformed inputs retain the established safe fallback.
+- Fixed page ownership and placement for stored RowBreak tables, physical frames, LineSegs, space-taking
+  objects, table widths, text-box vpos, superscript advance, empty-line TAC pictures, and overlapping Square
+  pictures against Hancom oracle output.
+- Added opt-in `--compat 2024` handling for Hancom 2024 table-anchor line accounting. The default policy does
+  not switch merely because of a version number (#5525).
+
+### Open, save, and round-trip preservation
+
+- Preserve `hp:ole` shape-component children (`offset`, `orgSz`, `curSz`, `flip`, `rotationInfo`,
+  `renderingInfo`, and `lineShape`) plus `id`/`instid`. A zero `curSz` is restored through its sentinel and
+  negative offsets retain the required u32 wraparound (#4669, #5450).
+- Serialize HWPX curves as `hp:seg` chains to prevent Hancom open crashes, and recover pictures when BinData
+  storage IDs contain gaps (#4676, #3893, #4049).
+- Fixed HWP3 section-control placement and character preservation, plus save paths that could lose body text
+  through OWPML enums, hidden descriptions, or placeholder ranges (#4680, #4776).
+- Open HWPML documents that include a DOCTYPE or declare Version 2.1 (#5848).
+- Nested-table search and replace now emits `cellPath` at depth two and beyond while preserving the existing
+  depth-one `cellContext` envelope (#2792).
+
+### Editing, Studio, and browser extensions
+
+- Added whole-document HTML and Word `.doc` export plus numeric chart-data editing UI.
+- Fixed Korean IME `Ctrl+A`, document/recent-file names after Save As, header/footer selection and editing APIs,
+  validated zoom application, and standard print-paper snapping.
+- Improved mouse resizing for merged and ordinary table borders, caret reveal after page breaks, and ruler
+  updates.
+- Prevented `.xlsx` downloads from being incorrectly opened by the HWP viewer in the Chrome extension (#6547).
+
+### CLI, agents, and MCP
+
+- Expanded editing and query commands and consolidated Control/document queries in `rhwp-q-pack`.
+- Added a public document-agent command bridge and an HWP 2024 remote MCP client.
+- Reworked the CLI help index and per-command help, and made `test-caption` reject unverified success.
+
+### Security, performance, and operations
+
+- Bounded HWPX-container and parser recursion, and hardened input boundaries and WMF initialization.
+- Oracle PDF auto-selection now fails closed when format, producer, or saving product is ambiguous.
+- Reused exact-font sources and variable-shaping caches within bounded owners, and reduced repeated CI work
+  through nextest archive partitioning, split CodeQL paths, and documentation/review-only evidence reuse.
+- Restored trusted-controller reuse for identical merge trees. The live post-release Render Diff canary remains
+  tracked in #6243.
+
+### Packages and distribution
+
+- Added a native `aarch64-unknown-linux-gnu` target to the GitHub Release CLI matrix (#5949, #6573).
+- Fixed Docker image builds when the requested GID is already in use (#5758).
+- Align Rust, `@rhwp/core`, `@rhwp/editor`, Studio, VS Code, and Chrome/Edge/Firefox/Safari at version 0.8.6.
+
+### Compatibility and known follow-ups
+
+- Exact-font instances and `--compat 2024` are explicit opt-ins. Existing defaults and the JSON envelope major
+  remain unchanged.
+- Re-saving may produce different bytes where preservation bugs were repaired; those changes restore document
+  meaning rather than introduce a format break.
+- Issue #5949 remains open until the real v0.8.6 Linux AArch64 asset passes ELF, executable-bit, and version
+  checks.
+- Issue #6243 remains open until the trusted controller passes a real post-release canary on `main`.
+
+### Contributors
+
+Twenty people contributed during this cycle (credit keys, case-preserving alphabetical order):
+
+<!-- release-contributors:start -->
+- @chrisryugj
+- @coolwithyou
+- @davindev
+- dkh0324 — Git author credit; no public GitHub account confirmed
+- @edwardkim
+- @humdrum00001010
+- @JamesPsh
+- @jangster77
+- @jeong-sik
+- @johndoekim
+- @keepYaoung
+- @kevin9327
+- @kjh0523
+- @lpaiu-cs
+- @planet6897
+- @postmelee
+- @RaghavShubham
+- @Shadungi
+- @t2c-lab
+- @thhan74
+<!-- release-contributors:end -->
+
 ## [0.8.4] — 2026-08-12
 
 ### Distribution surface rollback

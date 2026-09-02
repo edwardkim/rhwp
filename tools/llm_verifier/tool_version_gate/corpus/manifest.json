@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "v-fresh.1.0",
+  "claim": "V-fresh",
+  "kind": "toolVersionGate",
+  "generatedBy": "tools/llm_verifier/tool_version_gate/generate_corpus.py",
+  "recordCount": 113008,
+  "shardCount": 29,
+  "uniqueness": "attestVersion|verifyVersion|reproduced|accepted",
+  "tupleFields": [
+    "attestVersion",
+    "verifyVersion",
+    "reproduced",
+    "accepted"
+  ],
+  "acceptedCount": 261,
+  "rejectedCount": 112747,
+  "staleToolCount": 55932,
+  "minLineFloor": 112000,
+  "reasonCounts": {
+    "ATTEST_VERSION_MISSING": 76,
+    "FRESH_ABSENT": 237,
+    "FRESH_NOT_REPRODUCED": 261,
+    "FRESH_REPRODUCED": 261,
+    "STALE_AND_ABSENT": 237,
+    "STALE_AND_NOT_REPRODUCED": 55932,
+    "STALE_TOOL": 55932,
+    "VERIFY_VERSION_MISSING": 72
+  },
+  "familyCounts": {
+    "build_meta": 12083,
+    "channel": 4745,
+    "crate_prefix": 10177,
+    "exact_match": 711,
+    "git_describe": 6103,
+    "git_sha": 6553,
+    "major_drift": 9150,
+    "minor_drift": 46089,
+    "missing_attest": 48,
+    "missing_both": 2,
+    "missing_verify": 48,
+    "patch_drift": 5113,
+    "prerelease": 9373,
+    "trim_equal": 48,
+    "v_prefix": 24,
+    "verifier_crate": 2691,
+    "whitespace_attest": 25,
+    "whitespace_both": 1,
+    "whitespace_verify": 24
+  },
+  "shards": [
+    {
+      "path": "shards/shard_0000.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0001.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0002.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0003.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0004.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0005.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0006.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0007.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0008.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0009.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0010.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0011.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0012.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0013.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0014.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0015.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0016.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0017.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0018.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0019.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0020.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0021.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0022.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0023.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0024.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0025.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0026.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0027.tsv",
+      "count": 4000
+    },
+    {
+      "path": "shards/shard_0028.tsv",
+      "count": 1008
+    }
+  ]
+}

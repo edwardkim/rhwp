@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "rhwp",
+    "lineage",
+    "b.capsule.json",
+    "--json"
+  ],
+  "exit": 0,
+  "axes": [
+    "parentOk",
+    "lineageOk",
+    "reproduced"
+  ],
+  "envelope": "fixtures/envelopes/lineage_two_link.json"
+}

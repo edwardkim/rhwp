@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "externalSignals",
+  "measuredAt": "2026-08-13",
+  "note": "reality_check.py --live 로 갱신한다. 이 스냅샷은 네트워크 없이 재현 가능한 정직 기준선이다.",
+  "project": {
+    "repo": "edwardkim/rhwp",
+    "stars": 3691,
+    "forks": 672,
+    "watchers": 14,
+    "contributors": 50,
+    "openIssues": 207,
+    "npmMonthlyDownloads": { "@rhwp/editor": 13089 }
+  },
+  "metaSystem": {
+    "note": "이 세션이 세운 표준·gym·조직·프레임 축. 프로젝트 견인과 별개로, 이 메타-시스템 자체를 외부가 채택한 신호.",
+    "externalConformers": 0,
+    "externalReferrers": 0,
+    "thirdPartyReproductions": 0,
+    "honestVerdict": "메타-시스템은 아직 self-graded 다 — 프로젝트의 외부 견인에 얹혀 있을 뿐 스스로 번 채택은 0. 이 격차를 지우지 않고 측정한다."
+  },
+  "externalValidationCriteria": [
+    "외부 저장소/도구가 AWS 표준을 준수 선언하거나 검증 사다리 캡슐을 생성",
+    "제3자가 gym scorecard·리더보드를 저장소만으로 독립 재현",
+    "외부 에이전트가 리더보드에 자기 키로 등재(초대 메커니즘 실사용)",
+    "MCP 레지스트리(glama·smithery·pulsemcp 등)에 rhwp 등재",
+    "붙이기 킷을 쓴 외부 호스트 설정이 관측됨"
+  ]
+}

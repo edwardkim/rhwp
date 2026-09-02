@@ -1,0 +1,38 @@
+{
+  "id": "TB08",
+  "tier": 2,
+  "title": "실문서 표 수확",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서의 표 개수와 첫 표의 행 수를 answer.json 에 {\"tables\": N, \"rows\": M} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 개수",
+      "op": "answer_eq",
+      "answer": "tables",
+      "path": "tableCount",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ]
+    },
+    {
+      "name": "첫 표 행 수",
+      "op": "answer_eq",
+      "answer": "rows",
+      "path": "tables[0].rows",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

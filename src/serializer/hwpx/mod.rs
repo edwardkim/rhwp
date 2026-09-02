@@ -9,6 +9,8 @@
 //! - Stage 5: 도형·필드 + 대형 실문서 스모크
 
 pub mod canonical_defaults;
+pub mod char_shape_tables;
+pub mod char_shapes;
 pub mod content;
 pub mod context;
 pub mod field;
@@ -120,6 +122,15 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         doc.hwpx_aux_entry("settings.xml")
             .unwrap_or_else(|| SETTINGS_XML.as_bytes()),
     )?;
+
+    // 6-1. [#3557] Scripts/* — IR 밖 패키지 스크립트 원본 통과. 파서가 aux 로
+    //      보존한 것을 그대로 되쓴다(content.hpf 참조는 write_content_hpf 의
+    //      원본 splice 가 담당).
+    for (path, bytes) in &doc.hwpx_aux_entries {
+        if path.starts_with("Scripts/") {
+            z.write_deflated(path, bytes)?;
+        }
+    }
 
     // 7. META-INF/container.rdf — header + every section part.
     // Hancom uses this RDF graph alongside content.hpf; a stale one-section
@@ -249,6 +260,10 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     // lineSeg 부재/pagination 시멘틱을 HWP5 원본처럼 해석해야 자기정합한다.
     if let Some(marker) = doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH) {
         z.write_deflated(HWP5_ORIGIN_HWPX_MARKER_PATH, marker)?;
+    }
+    // HWP3-origin 마커 — 재열람 시 hwp3_lineage 복원(왕복 레이아웃 등식).
+    if let Some(marker) = doc.hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH) {
+        z.write_deflated(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH, marker)?;
     }
 
     // 참조 정합성 단언 (Stage 1+)
@@ -411,6 +426,23 @@ mod tests {
         let mut got = Vec::new();
         std::io::Read::read_to_end(&mut entry, &mut got).expect("read");
         assert_eq!(got, static_assets::VERSION_XML.as_bytes());
+    }
+
+    /// `version.xml` 의 `xmlVersion` 은 조판을 가른다 — 상수를 되돌리지 못하게 못 박는다.
+    ///
+    /// 한글은 선언된 OWPML 판본에 따라 옛 조판 규칙을 적용한다. `1.2` 를 선언하면 같은
+    /// 내용이 한 쪽 더 늘어난다(01513·01888·01892·01908 실측: 원본 1쪽 / `1.2` 2쪽 /
+    /// `1.5` 1쪽). 쪽수가 이미 맞던 문서 12건에는 영향이 없었다(회귀 0).
+    ///
+    /// 같은 파일의 `appVersion`·`micro`·`buildNumber` 는 바꿔도 쪽수가 그대로다 —
+    /// 조판을 가르는 것은 이 속성 하나뿐이다.
+    #[test]
+    fn version_xml_declares_the_owpml_revision_that_hangul_lays_out_with() {
+        assert!(
+            static_assets::VERSION_XML.contains(r#"xmlVersion="1.5""#),
+            "xmlVersion 은 1.5 여야 한다: {}",
+            static_assets::VERSION_XML
+        );
     }
 
     #[test]
@@ -759,6 +791,7 @@ mod tests {
             font_name: "HYhwpEQ".to_string(),
             version_info: "Equation Version 60".to_string(),
             raw_ctrl_data: Vec::new(),
+            raw_ctrl_seal: None,
         })));
         section.paragraphs.push(para);
         doc.sections.push(section);
@@ -1162,7 +1195,13 @@ mod tests {
         let mut section = crate::model::document::Section::default();
         let mut p = crate::model::paragraph::Paragraph::default();
         p.text = String::new();
-        p.char_count = 33; // [secd 0..8][cold 8..16][tbl 16..24][pageNum 24..32] + 1
+        // [secd 0..8][cold 8..16][tbl 16..24][pageNum 24..32][bokm 32..40] + 끝 1 = 41
+        //
+        // [#4677] 종전 값은 33 이었다 — 책갈피를 zero-width 로 보던 시절의 예산이다. 한컴
+        // 원본 HWP5 는 책갈피도 8 유닛 제어문자로 본문에 싣고(`16 00 6d 6b 6f 62 … 16 00`),
+        // rhwp 도 이제 두 축(HWP5 제어문자·HWPX 슬롯) 모두에서 자리를 잡는다. 이 테스트가
+        // 지키는 축(hidden 슬롯 정합 → char_shape 경계 24 보존)은 그대로다.
+        p.char_count = 41;
         p.char_shapes = vec![
             CharShapeRef {
                 start_pos: 0,
@@ -1230,17 +1269,23 @@ mod tests {
         doc.doc_info.char_shapes.push(CharShape::default()); // id 1
         let mut section = crate::model::document::Section::default();
         let mut p = crate::model::paragraph::Paragraph::default();
-        // [secd 0..8][cold 8..16][fieldBegin 16..24] A@24 [fieldEnd 25..33] B@33 → cc 35
+        // [secd 0..8][cold 8..16][fieldBegin 16..24][bokm 24..32] A@32 [fieldEnd 33..41] B@41
+        // → cc 43
+        //
+        // [#4677] 종전 예산은 책갈피에 자리를 주지 않아 `A@24 … B@33`, cc 35 였다. 한컴 원본은
+        // 책갈피도 확장 제어문자 8 유닛을 쓰므로(`16 00 6d 6b 6f 62 … 16 00`) 자리를 하나
+        // 넣고 뒤 위치를 8 씩 민다. 이 테스트가 지키는 축(same-para 균형 필드의 fieldEnd 가
+        // 자기 자리에 보존되고 **뒤 char_shape 경계가 밀리지 않는 것**)은 그대로다.
         p.text = "AB".to_string();
-        p.char_offsets = vec![24, 33];
-        p.char_count = 35;
+        p.char_offsets = vec![32, 41];
+        p.char_count = 43;
         p.char_shapes = vec![
             CharShapeRef {
                 start_pos: 0,
                 char_shape_id: 0,
             },
             CharShapeRef {
-                start_pos: 33,
+                start_pos: 41,
                 char_shape_id: 1,
             },
         ];
@@ -1268,11 +1313,14 @@ mod tests {
             1,
             "same-para 균형 필드(fieldBegin/End 1/1)가 보존돼야 한다 (종전: fieldEnd 드롭)"
         );
-        assert_eq!(p2.char_count, 35, "fieldEnd 8유닛 보존 → cc 불변");
+        assert_eq!(
+            p2.char_count, 43,
+            "fieldEnd 8유닛 + 책갈피 8유닛(#4677) 보존"
+        );
         let positions: Vec<u32> = p2.char_shapes.iter().map(|cs| cs.start_pos).collect();
         assert_eq!(
             positions,
-            vec![0, 33],
+            vec![0, 41],
             "후속 char_shape 경계 보존 (종전 −8)"
         );
     }

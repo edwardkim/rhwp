@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -54,7 +55,7 @@ test('문서 렌더링 이미지와 스크롤 영역은 보조 기술 및 키보
     html,
     /<div id="scroll-container" role="region" aria-label="문서 페이지" tabindex="0">/,
   );
-  assert.match(pageRenderer, /const element = new Image\(\);\s*element\.alt = '';/);
+  assert.match(codeOnly(pageRenderer), /const element = new Image\(\);\s*element\.alt = '';/);
 });
 
 test('서식 도구 모음 컨트롤은 테마 토큰으로 전경색과 배경색을 명시한다', () => {

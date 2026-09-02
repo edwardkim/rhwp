@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T31",
+  "journey": "J11",
+  "title": "재현 트레이스 31 — playbook 실행 계약",
+  "commands": [
+    "rhwp info --json <파일>",
+    "정답지 provenance 기록 또는 F04 한계",
+    "rhwp export-svg <파일> -o svg/",
+    "최종 산출물까지 기존 CLI"
+  ],
+  "stop": "F04",
+  "filed": false,
+  "note": "증상만 남기지 않음. 파일:라인은 devel 에서."
+}

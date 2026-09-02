@@ -1,0 +1,40 @@
+Product specification
+ 12. Certificate  
+   ◦ 
+Major engine: Certificate on environment / SOLAS certificate / Quality certificate by 
+certified institution(s). 
+        Supply certificate by national supply chains / Certificate by certified maintenance 
+corporation(s).
+   ◦ 
+Major impeller: Quality certification by certified institution(s) / Supply certificate by 
+national supply chains.
+   ◦ 
+Hull    : Quality certification by certified institution(s). 
+ 13. Explanation on how to use and spare part book
+   ◦ 
+Submitting 2 sets of original copy, 2 sets of copy in Korean(police department & police 
+station), 1 set of original copy on each equipment, & 1 set of copy in Korean on each equipment 
+(the National Maritime Policy Agency).
+ 
+〔
+Appendix 1
+〕
+GPS floater
+Product specification
+ 1. Condition : It should be helpful to locate targets and get information (regarding sunken rock, 
+infauna, the depth of water, etc.) when high-speed jet boat watches and 
+investigates coast.  Also, it should be helpful to find out jet boat's location, 
+movement, & the transfer of its present location. 
+ 
+2. Model : GPS floater(or better product than that) equipped with 
+TFT LCD monitor and electronic sea map.
+ 3. Product specification
+  ◦ 
+GPS/WAAS receiver.
+  - Receiving frequency
+ : L1 1575.42MHz(C/A CODE), chasing satellite : More than 18 channels - 18 
+satellites.
+  - Way of receiving : Digital 18 channels - multi chasing way, receiving sensibility : Minimum 
+more than 130dBm.
+  ◦ 
+GPS BEACON receiver. 

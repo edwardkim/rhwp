@@ -96,6 +96,7 @@ impl SvgLayerRenderer {
                             border_fill_id: 0,
                             text_direction: 0,
                             clip: true,
+                            page_fragment: false,
                             model_cell_index: None,
                         }),
                     },
@@ -298,6 +299,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 15.0,
                 field_marker: Default::default(),
+                layout_positions: None,
                 display_text: None,
             }),
             BoundingBox::new(20.0, 20.0, 60.0, 20.0),
@@ -388,8 +390,10 @@ mod tests {
         let mut print = SvgLayerRenderer::new();
         print.render_page(&print_tree).unwrap();
 
-        assert!(screen.output().contains("stroke-dasharray=\"6 3\""));
-        assert!(!print.output().contains("stroke-dasharray=\"6 3\""));
+        // 점선은 한글 편집 화면 실측(2px on / 2px off)에 맞춘 값이다 — 차트/OLE 의
+        // "6 3" 파선과 구별된다.
+        assert!(screen.output().contains("stroke-dasharray=\"2 2\""));
+        assert!(!print.output().contains("stroke-dasharray=\"2 2\""));
     }
 
     /// [Issue #4379] `editor_only` 표시 판정은 legacy(`SvgRenderer::profile`)와 layer
@@ -499,6 +503,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 16.0,
                 field_marker: Default::default(),
+                layout_positions: None,
                 display_text: None,
             }),
             BoundingBox::new(10.0, 15.0, 40.0, 20.0),

@@ -12,6 +12,8 @@ use std::process::{Command, Output};
 const SAMPLE: &str = "samples/hwp3-sample.hwp";
 /// HWP5(CFB) 샘플 — `dump-records` 는 HWP3 CFB 아닌 입력을 지원하지 않는다.
 const HWP5_SAMPLE: &str = "samples/2010-01-06.hwp";
+const HWP5_PASSWORD_SAMPLE: &str = "samples/hwp3-sample16-hwp5-2024-password-123456.hwp";
+const HWP5_PASSWORD: &str = "123456";
 
 fn sample_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)
@@ -19,6 +21,10 @@ fn sample_path() -> PathBuf {
 
 fn hwp5_sample_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(HWP5_SAMPLE)
+}
+
+fn hwp5_password_sample_path() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join(HWP5_PASSWORD_SAMPLE)
 }
 
 fn run(args: &[&str]) -> Output {
@@ -51,7 +57,13 @@ fn assert_code(args: &[&str], expected: i32) -> Output {
 /// 인자 없이 호출 → 사용법 오류(2).
 #[test]
 fn missing_arguments_report_usage_error() {
-    for cmd in ["info", "dump-note-shape", "dump-pages", "dump-records"] {
+    for cmd in [
+        "info",
+        "dump-note-shape",
+        "dump-pages",
+        "dump-extents",
+        "dump-records",
+    ] {
         assert_code(&[cmd], 2);
     }
     // dump-endnote-lines 는 인자 4개 미만이면 사용법 오류.
@@ -65,6 +77,7 @@ fn unreadable_input_reports_runtime_failure() {
     assert_code(&["info", "does-not-exist.hwp"], 1);
     assert_code(&["dump-note-shape", "does-not-exist.hwp"], 1);
     assert_code(&["dump-pages", "does-not-exist.hwp"], 1);
+    assert_code(&["dump-extents", "does-not-exist.hwp"], 1);
     assert_code(&["dump-records", "does-not-exist.hwp"], 1);
     assert_code(
         &["dump-endnote-lines", "does-not-exist.hwp", "0", "0", "0"],
@@ -76,12 +89,21 @@ fn unreadable_input_reports_runtime_failure() {
     );
 }
 
-/// dump-pages 페이지 범위 초과 → 사용법 오류(2) (형제 명령과 정합, #2551 후속 확인).
+/// 페이지 진단 명령의 범위 초과 → 사용법 오류(2) (형제 명령과 정합, #2551 후속 확인).
 #[test]
-fn dump_pages_out_of_range_reports_usage_error() {
+fn dump_page_diagnostics_out_of_range_report_usage_error() {
     let sample = sample_path();
     let sample = sample.to_str().expect("valid utf8 path");
     assert_code(&["dump-pages", sample, "-p", "999999"], 2);
+    assert_code(&["dump-extents", sample, "-p", "999999"], 2);
+}
+
+#[test]
+fn dump_extents_rejects_invalid_numeric_options() {
+    let sample = sample_path();
+    let sample = sample.to_str().expect("valid utf8 path");
+    assert_code(&["dump-extents", sample, "-p", "not-a-page"], 2);
+    assert_code(&["dump-extents", sample, "--min-h", "not-a-height"], 2);
 }
 
 /// build-from-ingest 출력 경로 누락 → 사용법 오류(2).
@@ -110,6 +132,7 @@ fn successful_diagnostic_commands_return_zero() {
             describe(&[cmd, sample], &output)
         );
     }
+    assert_code(&["dump-extents", sample, "-p", "0", "--min-h", "1000"], 0);
 
     let hwp5_sample = hwp5_sample_path();
     let hwp5_sample = hwp5_sample.to_str().expect("valid utf8 path");
@@ -120,6 +143,93 @@ fn successful_diagnostic_commands_return_zero() {
         "{}",
         describe(&["dump-records", hwp5_sample], &output)
     );
+}
+
+/// #5511 Stage 2 move-only 기준선: `dump-records`는 현재 첫 위치 인자 뒤의 값을 무시한다.
+///
+/// 이 동작을 바람직한 UX로 승인하는 테스트가 아니다. handler 이동 중 출력이 바뀌지 않았음을
+/// 증명하고, 엄격한 인자 검증은 별도 동작 변경으로 분리하기 위한 characterization이다.
+#[test]
+fn dump_records_move_baseline_keeps_ignored_trailing_arguments() {
+    let hwp5_sample = hwp5_sample_path();
+    let hwp5_sample = hwp5_sample.to_str().expect("valid utf8 path");
+
+    let baseline = run(&["dump-records", hwp5_sample]);
+    let extra = run(&["dump-records", hwp5_sample, "ignored"]);
+    let unknown_flag = run(&["dump-records", hwp5_sample, "--json"]);
+
+    assert_eq!(
+        baseline.status.code(),
+        Some(0),
+        "{}",
+        describe(&[], &baseline)
+    );
+    for (args, output) in [
+        (["dump-records", hwp5_sample, "ignored"], &extra),
+        (["dump-records", hwp5_sample, "--json"], &unknown_flag),
+    ] {
+        assert_eq!(output.status.code(), Some(0), "{}", describe(&args, output));
+        assert_eq!(
+            output.stdout,
+            baseline.stdout,
+            "{}",
+            describe(&args, output)
+        );
+        assert_eq!(
+            output.stderr,
+            baseline.stderr,
+            "{}",
+            describe(&args, output)
+        );
+    }
+}
+
+#[test]
+fn dump_records_rejects_non_cfb_hwp3_without_stdout() {
+    let hwp3_sample = sample_path();
+    let hwp3_sample = hwp3_sample.to_str().expect("valid utf8 path");
+    let output = assert_code(&["dump-records", hwp3_sample], 1);
+
+    assert!(output.stdout.is_empty(), "{}", describe(&[], &output));
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("Invalid CFB file"),
+        "{}",
+        describe(&[], &output)
+    );
+}
+
+#[test]
+fn dump_records_preserves_hwp5_password_exit_and_output_contract() {
+    let encrypted = hwp5_password_sample_path();
+    let encrypted = encrypted.to_str().expect("valid utf8 path");
+
+    let missing = assert_code(&["dump-records", encrypted], 2);
+    assert!(missing.stdout.is_empty(), "{}", describe(&[], &missing));
+    assert!(
+        String::from_utf8_lossy(&missing.stderr).contains("비밀번호가 필요한 암호 문서"),
+        "{}",
+        describe(&[], &missing)
+    );
+
+    let wrong = assert_code(
+        &[
+            "dump-records",
+            encrypted,
+            "--password",
+            "wrong-fixture-password",
+        ],
+        1,
+    );
+    assert!(wrong.stdout.is_empty(), "{}", describe(&[], &wrong));
+    assert!(
+        String::from_utf8_lossy(&wrong.stderr).contains("비밀번호 불일치 또는 복호화 실패"),
+        "{}",
+        describe(&[], &wrong)
+    );
+
+    let opened = assert_code(&["dump-records", encrypted, "--password", HWP5_PASSWORD], 0);
+    assert!(!opened.stdout.is_empty(), "{}", describe(&[], &opened));
+    assert!(opened.stderr.is_empty(), "{}", describe(&[], &opened));
 }
 
 /// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,

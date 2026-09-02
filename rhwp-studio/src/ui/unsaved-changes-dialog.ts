@@ -11,6 +11,8 @@ export type UnsavedChangesChoice = 'save' | 'discard' | 'cancel';
 interface UnsavedChangesDialogOptions {
   fileName: string;
   canSave: boolean;
+  /** canSave=false일 때 본문·툴팁에 쓸 사유. 기본값은 문서 형식 제약 문구. */
+  saveUnavailableReason?: string;
 }
 
 class UnsavedChangesDialog extends ModalDialog {
@@ -27,9 +29,10 @@ class UnsavedChangesDialog extends ModalDialog {
     body.style.whiteSpace = 'pre-line';
 
     const fileName = this.options.fileName || '현재 문서';
+    const reason = this.options.saveUnavailableReason ?? '이 문서는 현재 직접 저장할 수 없습니다.';
     body.textContent = this.options.canSave
       ? `"${fileName}" 문서에 저장하지 않은 변경사항이 있습니다.\n계속하기 전에 저장하시겠습니까?`
-      : `"${fileName}" 문서에 저장하지 않은 변경사항이 있습니다.\n이 문서는 현재 직접 저장할 수 없습니다. 변경사항을 버리고 계속할 수 있습니다.`;
+      : `"${fileName}" 문서에 저장하지 않은 변경사항이 있습니다.\n${reason} 변경사항을 버리고 계속할 수 있습니다.`;
 
     return body;
   }
@@ -62,7 +65,9 @@ class UnsavedChangesDialog extends ModalDialog {
       if (saveBtn) {
         saveBtn.textContent = '저장';
         saveBtn.disabled = !this.options.canSave;
-        saveBtn.title = this.options.canSave ? '' : 'HWPX 문서는 현재 직접 저장할 수 없습니다.';
+        saveBtn.title = this.options.canSave
+          ? ''
+          : this.options.saveUnavailableReason ?? 'HWPX 문서는 현재 직접 저장할 수 없습니다.';
       }
       if (cancelBtn) {
         cancelBtn.textContent = '취소';

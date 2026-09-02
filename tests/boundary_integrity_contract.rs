@@ -859,10 +859,18 @@ fn limit_flags_are_declared_and_documented() {
         "search 의 --max-matches 가 자기서술에 없습니다"
     );
 
-    let help = String::from_utf8_lossy(&run(&["--help"]).stdout).to_string();
-    for flag in ["--max-chars", "--max-matches"] {
-        assert!(help.contains(flag), "--help 에 {flag} 가 없습니다");
-    }
+    let export_output = run(&["export-text", "--help"]);
+    let export_help = String::from_utf8_lossy(&export_output.stdout);
+    assert!(
+        export_help.contains("--max-chars"),
+        "export-text --help 에 --max-chars 가 없습니다"
+    );
+    let search_output = run(&["search", "--help"]);
+    let search_help = String::from_utf8_lossy(&search_output.stdout);
+    assert!(
+        search_help.contains("--max-matches"),
+        "search --help 에 --max-matches 가 없습니다"
+    );
 
     // MCP 선언 속성은 전부 CLI 로 배선돼야 한다(선언만 있고 안 닿으면 거짓 성공).
     let mcp = parse_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));

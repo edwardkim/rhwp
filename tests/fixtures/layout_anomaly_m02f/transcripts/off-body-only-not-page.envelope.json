@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "off-body-only-not-page.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 1,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": true,
+  "pages": [
+    {
+      "page": 0,
+      "overflow": [
+        {
+          "path": "Page/Body/Table0",
+          "nodeType": "Table"
+        }
+      ],
+      "offCanvas": [],
+      "overlap": [],
+      "textOverlap": [],
+      "emptyPage": false
+    }
+  ],
+  "hypothesis": "표가 본문 오른쪽만 넘치고 페이지 상자 안에 남으면 overflow 만 있고 off-canvas 는 없다.",
+  "fixtureId": "off-body-only-not-page"
+}

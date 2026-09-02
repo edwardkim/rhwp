@@ -1,0 +1,17 @@
+{
+  "id": "T34",
+  "steps": [
+    {
+      "answer": {
+        "firstType": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields[0].fieldType"
+        }
+      }
+    }
+  ]
+}

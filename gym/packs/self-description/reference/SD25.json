@@ -1,0 +1,15 @@
+{
+  "id": "SD25",
+  "steps": [
+    {
+      "answer": {
+        "surface": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "schemaRegistry.axes[0].surface"
+        }
+      }
+    }
+  ]
+}

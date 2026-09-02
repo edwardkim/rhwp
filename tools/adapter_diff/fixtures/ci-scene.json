@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "adapterDiffScene",
+  "notes": [
+    "CI 용 싼 장면. samples/ 실문서가 아니다.",
+    "tests/cases/adapter_diff.rs 가 같은 치수·op 를 하드코딩한다."
+  ],
+  "page": { "width": 400, "height": 300 },
+  "marker": "M06-4",
+  "ops": [
+    { "type": "pageBackground" },
+    { "type": "rectangle", "x": 20, "y": 20, "w": 40, "h": 24 },
+    { "type": "textRun", "text": "M06-4", "x": 20, "y": 52, "w": 80, "h": 16 }
+  ],
+  "expectedFamilies": {
+    "svg": "vector",
+    "null": "none",
+    "trace": "none",
+    "png": "raster",
+    "skia": "raster"
+  }
+}

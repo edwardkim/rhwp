@@ -8,6 +8,7 @@ export class CanvasPool {
     if (!canvas) {
       canvas = document.createElement('canvas');
     }
+    canvas.classList.add('document-page-canvas');
     this.inUse.set(pageIdx, canvas);
     return canvas;
   }

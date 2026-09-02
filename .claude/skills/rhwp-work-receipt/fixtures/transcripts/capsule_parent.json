@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "rhwp",
+    "replay",
+    "--plan-json",
+    "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/chain_deadline.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"3월 31일\",\"replace\":\"4월 15일\"}]}",
+    "--capsule",
+    "b.capsule.json",
+    "--parent",
+    "a.capsule.json",
+    "--json"
+  ],
+  "exit": 0,
+  "parentStoredRelativeToCapsuleFile": true,
+  "parentField": {
+    "capsule": "a.capsule.json",
+    "sha256": "64hex"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "id": "uni-filter-tag",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "kind-filter",
+  "polarity": "filter",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "DeceptionKind::from_filter",
+    "note": "tag"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/mixed/all-kinds.hwp",
+      "--json",
+      "--kind",
+      "tag"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "kindFilter",
+    "kept": "tag_char"
+  },
+  "pair": "uni-filter-all-mixed",
+  "why": "--kind tag 는 다른 축을 보고하지 않는다.",
+  "note": "필터는 탐지 규칙을 바꾸지 않는다.",
+  "human": "축 tag — 탐지 1건\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/mixed/all-kinds.hwp",
+    "kindFilter": "tag",
+    "scannedChars": 40,
+    "findings": [
+      {
+        "kind": "tag_char",
+        "codepoint": "U+E0049",
+        "severity": "high",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 1,
+        "excerpt": "<U+E0049>",
+        "rendered": "",
+        "raw": "<U+E0049>",
+        "why": "렌더링되지 않는 태그 문자입니다 — 화면에 흔적 없이 지시를 실어 나르는 채널입니다",
+        "hidden": "I"
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 1,
+      "confusable": 0
+    }
+  }
+}

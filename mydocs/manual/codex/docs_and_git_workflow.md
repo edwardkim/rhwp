@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-08-07
+last_verified: 2026-08-15
 ---
 
 # Documentation And Git Workflow
@@ -139,6 +139,10 @@ note.rs"` 한 번이면 두 이슈가 나란히 나온다(2026-07-31 실측). �
 
 ## GitHub CLI Usage
 
+GitHub Actions, branch protection, repository permission, cache, runner, workflow 실행·복구를 다루는 작업은
+먼저 [GitHub 저장소 운영 매뉴얼](../github_operations.md)에서 변경 등급과 비례 검증 범위를 선택한다.
+이 절은 일반 GitHub CLI 변경 경로만 설명한다.
+
 GitHub connector가 읽기는 가능하지만 mutation 권한 부족으로 403을 반환할 수 있다.
 이슈 assignee 지정, 이슈/PR metadata 수정, 코멘트 작성 등 GitHub 변경 작업은
 로컬 인증된 `gh` CLI를 사용한다.
@@ -155,6 +159,9 @@ gh issue edit 1063 --add-assignee edwardkim -R edwardkim/rhwp
 - sandbox 네트워크 제한으로 `api.github.com` 연결 실패가 나면 동일 `gh` 명령을 escalation으로 재시도한다.
 - `gh`로 수행한 GitHub 변경은 오늘할일, 계획서, 보고서 중 관련 문서에 기록한다.
 - `gh` 사용도 하이퍼-워터폴 절차를 대체하지 않는다. 이슈 확인, 브랜치, 문서, 승인 게이트는 그대로 유지한다.
+- Windows PowerShell에서 한글 다단락 PR 본문을 게시·수정할 때는 pipe가 아닌 UTF-8 without BOM
+  `--body-file` 경로와 게시 후 API 검증을 사용한다. 중복 명령은 두지 않으며, 정본 절차는
+  [PR 리뷰·통합 워크플로의 Windows 본문 전송](../pr_review_workflow.md#341-windows-powershell-한글-본문)을 따른다.
 
 ## PR Workflow
 
@@ -180,7 +187,12 @@ PR 댓글 톤은 과장하지 않는다. "정말 감사합니다", "정성스러
 
 내부 타스크 브랜치에서 PR은 작업지시자 별도 승인 후에만 생성한다.
 
-- "PR 준비"는 커밋, 검증 기록, PR 본문 초안, 생성 명령 준비까지를 의미한다.
+- "PR 준비"는 해당 변경 범위의 [로컬 검증 4.3](../pr_review/local_validation.md#43-변경-범위별-기본-검증)에
+  지정된 **전체 로컬 회귀 게이트를 실제로 실행·판정**하고, 커밋·검증 기록·PR 본문 초안·생성 명령을
+  준비하는 지시다. 본문 초안이나 review 문서만 만들고 필수 Cargo/npm/WASM 검증을 미루면 PR 준비가
+  완료된 것이 아니다. 이 지시는 해당 검증 명령 실행 승인도 포함하지만 remote push와 PR 생성 승인은
+  포함하지 않는다.
+- 작업지시자가 검증을 명시적으로 축소·생략한 경우에만 그 범위와 사유를 PR 본문 초안에 남긴다.
 - `gh pr create` 실행(Open 또는 Draft PR 생성)과 Draft의 Ready 전환은 각각 별도 승인을 받은 뒤
   진행한다.
 - PR 번호는 원격 head branch를 push한 뒤 GitHub에서 PR 생성이 성공할 때 채번된다. Issue와

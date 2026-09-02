@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q6-tracker-draft-receipt",
+  "issue": 4969,
+  "parentTracker": 4960,
+  "stage": "W10-Q6-B",
+  "date": "2026-08-31",
+  "status": "drafts-prepared-approved",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "source": {
+    "q6AApprovedCheckpoint": "8258f0284",
+    "productMergeHead": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "currentBranchHeadAtDraftStart": "8258f0284"
+  },
+  "githubReadSnapshot": {
+    "repository": "edwardkim/rhwp",
+    "bodySha256Method": "UTF-8 body bytes emitted by gh JSON and jq -j without a trailing newline",
+    "issues": [
+      {
+        "number": 4969,
+        "state": "OPEN",
+        "updatedAt": "2026-08-31T01:18:42Z",
+        "bodyCharacters": 1995,
+        "bodySha256": "1cbe21c09ac1c63336603cf662db42f1de40adec93beffe837af7211e11711b1",
+        "commentCount": 3,
+        "latestCommentAt": "2026-08-31T01:18:42Z"
+      },
+      {
+        "number": 4960,
+        "state": "OPEN",
+        "updatedAt": "2026-08-28T12:20:22Z",
+        "bodyCharacters": 3374,
+        "bodySha256": "448847eb53209b071470027d70d7157958c0d413a05b4b48cb7913129fa7bc42",
+        "commentCount": 5,
+        "latestCommentAt": "2026-08-28T12:20:22Z"
+      }
+    ],
+    "existingProductIntegration": {
+      "pullRequest": 6493,
+      "state": "MERGED",
+      "mergeCommit": "3afbb066fe93724ab44309163a2e04efb954bf18",
+      "head": "2497f48f283aa3ad714b53497d8cc2a33f5019a4",
+      "mergedAt": "2026-08-31T01:17:35Z",
+      "latestObservedCheckRollup": {
+        "success": 11,
+        "skipped": 20,
+        "failure": 0,
+        "pending": 0
+      }
+    }
+  },
+  "drafts": {
+    "document": "mydocs/working/task_m100_4969_w10_q6_tracker_drafts.md",
+    "issue4969": {
+      "bodyMutation": false,
+      "finalCommentPrepared": true,
+      "closeAfterVerifiedPostMergeComment": true
+    },
+    "issue4960": {
+      "bodyMutation": "three-exact-anchor-replacements-only",
+      "finalCommentPrepared": true,
+      "closeAfter-all-w0-through-w10-audit": true
+    }
+  },
+  "requiredPlaceholders": [
+    "{{Q6_PR_NUMBER}}",
+    "{{Q6_PR_URL}}",
+    "{{Q6_CODE_HEAD}}",
+    "{{Q6_MERGE_SHA}}",
+    "{{Q6_MERGED_AT}}",
+    "{{Q6_CODE_CI_SUMMARY}}",
+    "{{Q6_REVIEW_CI_SUMMARY}}"
+  ],
+  "publicationGuards": {
+    "publishWithAnyPlaceholder": false,
+    "publishIfIssueBodySha256Changed": false,
+    "publishBeforePrMerged": false,
+    "publishBeforeMutationApproval": false,
+    "closeBeforeApiTextVerification": false,
+    "bodyPatchAnchorMatchRequired": 3,
+    "utf8WithoutBomBodyFileRequired": true,
+    "postApiKoreanBomQuestionMarkVerificationRequired": true
+  },
+  "boundaries": {
+    "githubMutated": false,
+    "issueEdited": false,
+    "commentPosted": false,
+    "issueClosed": false,
+    "pullRequestCreated": false
+  },
+  "next": {
+    "stage": "W10-Q6-C",
+    "action": "checkpoint-after-maintainer-approval-then-refresh-base-and-run-submission-validation"
+  }
+}

@@ -62,14 +62,14 @@ fn assert_wellformed_doclang_root(xml: &str) {
             Ok(quick_xml::events::Event::Start(e)) if !root_checked => {
                 assert_eq!(
                     e.name().as_ref(),
-                    b"doclang",
+                    "doclang",
                     "root element must be <doclang>"
                 );
                 let mut version: Option<String> = None;
                 for attr in e.attributes() {
                     let attr = attr.expect("parse root attribute");
-                    if attr.key.as_ref() == b"version" {
-                        version = Some(String::from_utf8_lossy(&attr.value).into_owned());
+                    if attr.key.as_ref() == "version" {
+                        version = Some(attr.value.as_ref().to_owned());
                     }
                 }
                 assert_eq!(

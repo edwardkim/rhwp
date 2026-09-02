@@ -1,0 +1,47 @@
+{
+  "id": "AU12",
+  "tier": 3,
+  "title": "계보 체인 검증",
+  "input": "samples/table-001.hwp",
+  "instructions": "2링크 캡슐 체인을 만들어 capsules/ 로 제출하라. 채점기는 머리 캡슐에서 계보를 걸어 유효성과 깊이를 확인한다. 힌트: replay --parent, rhwp lineage.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/a.capsule.json",
+      "capsules/b.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "계보 유효",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:capsules/b.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "체인 깊이 2",
+      "op": "value_eq",
+      "value": 2,
+      "path": "depth",
+      "cmd": [
+        "lineage",
+        "{file:capsules/b.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

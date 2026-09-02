@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "root": "fixtures/audit-layouts/all-ok",
+  "total": 3,
+  "reproduced": 3,
+  "failed": [],
+  "reproducedRate": 1.0,
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "audit-all-ok",
+    "command": "audit",
+    "note": "직속 *.capsule.json 3건 전부 재현",
+    "stdoutSilentOnFail": false
+  }
+}

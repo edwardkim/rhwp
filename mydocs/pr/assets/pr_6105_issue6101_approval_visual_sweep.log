@@ -1,0 +1,10 @@
+== pr_6105_issue6101_approval ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6101/36501883_approval_doc_body.hwpx
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue6101/36501883_approval_doc_body.hwpx --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_approval/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue6101/36501883_approval_doc_body.hwpx -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_approval/render_tree
+SVG export pages: 2
++ pdftoppm -f 1 -l 1 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_approval_doc_body-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_approval/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_approval_doc_body-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_approval/pdf_bbox.html
+Selected pages: [1]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/summary.json

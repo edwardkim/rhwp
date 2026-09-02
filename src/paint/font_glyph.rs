@@ -1,6 +1,6 @@
 //! Producer-side lowering for font-native bitmap and SVG glyph resources.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::Read;
 
 use flate2::read::GzDecoder;
@@ -18,7 +18,6 @@ use crate::paint::{
     TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind,
     TextVariantQuality, WritingMode, RESOURCE_KEY_ALGORITHM,
 };
-use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::style_resolver::detect_lang_category;
 use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
@@ -312,15 +311,14 @@ pub fn decode_font_svg_glyph_payload(
     loop {
         match reader.read_event() {
             Ok(Event::Start(element)) | Ok(Event::Empty(element)) => {
-                if view_box.is_none() && element.name().as_ref().eq_ignore_ascii_case(b"svg") {
+                if view_box.is_none() && element.name().as_ref().eq_ignore_ascii_case("svg") {
                     for attribute in element.attributes().with_checks(true) {
                         let attribute =
                             attribute.map_err(|_| FontSvgGlyphDecodeError::InvalidSvgXml)?;
-                        if !attribute.key.as_ref().eq_ignore_ascii_case(b"viewBox") {
+                        if !attribute.key.as_ref().eq_ignore_ascii_case("viewBox") {
                             continue;
                         }
-                        let value = std::str::from_utf8(attribute.value.as_ref())
-                            .map_err(|_| FontSvgGlyphDecodeError::InvalidViewBox)?;
+                        let value = attribute.value.as_ref();
                         let values = value
                             .split(|character: char| {
                                 character.is_ascii_whitespace() || character == ','
@@ -440,9 +438,22 @@ pub fn lower_font_native_glyph_sidecars(
     resources: &mut ResourceArena,
     fonts: &[EmbeddedFontFace<'_>],
 ) -> FontGlyphLoweringReport {
+    lower_font_native_glyph_sidecars_excluding(root, resources, fonts, &HashSet::new())
+}
+
+/// common shaping이 이미 정확한 GlyphRun alternative를 소유한 text source는
+/// nominal portable GlyphRun만 건너뛴다. TextRun과 bitmap/SVG sidecar 경로는
+/// 그대로 보존한다.
+pub(crate) fn lower_font_native_glyph_sidecars_excluding(
+    root: &mut LayerNode,
+    resources: &mut ResourceArena,
+    fonts: &[EmbeddedFontFace<'_>],
+    claimed_glyph_run_sources: &HashSet<u32>,
+) -> FontGlyphLoweringReport {
     let mut lowerer = FontGlyphLowerer {
         resources,
         fonts,
+        claimed_glyph_run_sources,
         report: FontGlyphLoweringReport::default(),
         next_text_source_id: 0,
         emitted_sidecars: 0,
@@ -459,6 +470,7 @@ pub fn lower_font_native_glyph_sidecars(
 struct FontGlyphLowerer<'a, 'font> {
     resources: &'a mut ResourceArena,
     fonts: &'a [EmbeddedFontFace<'font>],
+    claimed_glyph_run_sources: &'a HashSet<u32>,
     report: FontGlyphLoweringReport,
     next_text_source_id: u32,
     emitted_sidecars: usize,
@@ -497,7 +509,9 @@ impl FontGlyphLowerer<'_, '_> {
             if let PaintOp::TextRun { bbox, run } = op {
                 let text_source_id = self.next_text_source_id;
                 self.next_text_source_id = self.next_text_source_id.saturating_add(1);
-                let glyph_run = self.lower_portable_glyph_run(bbox, &run, text_source_id);
+                let glyph_run = (!self.claimed_glyph_run_sources.contains(&text_source_id))
+                    .then(|| self.lower_portable_glyph_run(bbox, &run, text_source_id))
+                    .flatten();
                 let sidecar = self.lower_text_run(bbox, &run, text_source_id);
                 lowered.push(PaintOp::TextRun { bbox, run });
                 if let Some(glyph_run) = glyph_run {
@@ -605,7 +619,7 @@ impl FontGlyphLowerer<'_, '_> {
             return None;
         };
         let face = &cached_font.face;
-        let producer_positions = compute_char_positions(&run.text, &run.style);
+        let producer_positions = run.replay_positions_for(&run.text);
         if producer_positions.len() != characters.len() + 1
             || producer_positions
                 .iter()
@@ -1263,6 +1277,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }
     }

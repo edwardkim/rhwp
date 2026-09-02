@@ -1,0 +1,55 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: VMATRIX{a & b # c & d}
+honesty: vmatrix-unimpl-text
+
+=== ast ===
+Row(
+    [
+        Text(
+            "VMATRIX",
+        ),
+        Row(
+            [
+                Text(
+                    "a",
+                ),
+                Space(
+                    Tab,
+                ),
+                Text(
+                    "b",
+                ),
+                Newline,
+                Text(
+                    "c",
+                ),
+                Space(
+                    Tab,
+                ),
+                Text(
+                    "d",
+                ),
+            ],
+        ),
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=181.7500 h=20.0000 bl=16.0000
+  Text("VMATRIX") x=0.0000 y=0.0000 w=95.5500 h=20.0000 bl=16.0000
+  Row x=95.5500 y=0.0000 w=86.2000 h=20.0000 bl=16.0000
+    Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+    Space(20.0000) x=11.5500 y=0.0000 w=20.0000 h=20.0000 bl=16.0000
+    Text("b") x=31.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+    Newline x=43.1000 y=16.0000 w=0.0000 h=0.0000 bl=0.0000
+    Text("c") x=43.1000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+    Space(20.0000) x=54.6500 y=0.0000 w=20.0000 h=20.0000 bl=16.0000
+    Text("d") x=74.6500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">VMATRIX</text>
+<text x="95.55" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="127.10" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<text x="138.65" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">c</text>
+<text x="170.20" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>

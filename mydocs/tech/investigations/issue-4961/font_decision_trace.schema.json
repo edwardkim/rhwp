@@ -1,0 +1,394 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-4961/font_decision_trace.schema.json",
+  "title": "rhwp Font Decision Trace v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "status",
+    "scope",
+    "counts",
+    "records",
+    "backendSummary",
+    "reasons",
+    "layoutHash",
+    "normalizedHash"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "status": { "$ref": "#/$defs/traceStatus" },
+    "scope": { "$ref": "#/$defs/scope" },
+    "counts": { "$ref": "#/$defs/counts" },
+    "records": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": { "$ref": "#/$defs/record" }
+    },
+    "backendSummary": { "$ref": "#/$defs/backendSummary" },
+    "reasons": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/reason" }
+    },
+    "layoutHash": { "$ref": "#/$defs/hash" },
+    "normalizedHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "nullableString": {
+      "oneOf": [
+        { "$ref": "#/$defs/nonEmptyString" },
+        { "type": "null" }
+      ]
+    },
+    "nullableIndex": {
+      "oneOf": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "null" }
+      ]
+    },
+    "traceStatus": {
+      "enum": ["complete", "truncated", "unsupported", "failed"]
+    },
+    "backendStatus": {
+      "enum": ["complete", "unsupported", "notObserved", "failed"]
+    },
+    "certainty": {
+      "enum": ["observed", "resolved", "planned", "notObserved", "unsupported"]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxCharacters"],
+      "properties": {
+        "maxCharacters": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096,
+          "default": 1024
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pageIndex", "requestedLimits", "appliedLimits"],
+      "properties": {
+        "pageIndex": { "type": "integer", "minimum": 0 },
+        "requestedLimits": { "$ref": "#/$defs/limits" },
+        "appliedLimits": { "$ref": "#/$defs/limits" }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runsSeen", "charactersSeen", "recordsEmitted", "recordsOmitted"],
+      "properties": {
+        "runsSeen": { "type": "integer", "minimum": 0 },
+        "charactersSeen": { "type": "integer", "minimum": 0 },
+        "recordsEmitted": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "recordsOmitted": { "$ref": "#/$defs/nullableIndex" }
+      }
+    },
+    "reasonCode": {
+      "enum": [
+        "characterLimitExceeded",
+        "backendUnsupported",
+        "backendNotObserved",
+        "backendJoinMissing",
+        "sourceCoordinateUnavailable",
+        "ledgerRuleMissing",
+        "ledgerSourceDrift",
+        "hashUnavailable",
+        "serializationFailed",
+        "sourceMappingMismatch",
+        "recordsOmittedUnknown"
+      ]
+    },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "detail"],
+      "properties": {
+        "code": { "$ref": "#/$defs/reasonCode" },
+        "detail": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "hash": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "value": {
+          "oneOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "sectionIndex",
+        "paragraphIndex",
+        "nestedPath",
+        "runIndex",
+        "charOffset",
+        "character",
+        "codePoint",
+        "charShapeId"
+      ],
+      "properties": {
+        "status": { "enum": ["complete", "unavailable"] },
+        "sectionIndex": { "$ref": "#/$defs/nullableIndex" },
+        "paragraphIndex": { "$ref": "#/$defs/nullableIndex" },
+        "nestedPath": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "runIndex": { "$ref": "#/$defs/nullableIndex" },
+        "charOffset": { "$ref": "#/$defs/nullableIndex" },
+        "character": { "$ref": "#/$defs/nonEmptyString" },
+        "codePoint": { "type": "integer", "minimum": 0, "maximum": 1114111 },
+        "charShapeId": { "$ref": "#/$defs/nullableIndex" }
+      }
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "languageSlot",
+        "inheritedLanguageSlot",
+        "face",
+        "altType",
+        "embedded",
+        "substFont"
+      ],
+      "properties": {
+        "languageSlot": { "$ref": "#/$defs/nullableIndex" },
+        "inheritedLanguageSlot": { "$ref": "#/$defs/nullableIndex" },
+        "face": { "$ref": "#/$defs/nullableString" },
+        "altType": { "$ref": "#/$defs/nullableIndex" },
+        "embedded": { "type": ["boolean", "null"] },
+        "substFont": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "decisionStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "input", "output", "reason"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/nonEmptyString" },
+        "input": { "$ref": "#/$defs/nullableString" },
+        "output": { "$ref": "#/$defs/nullableString" },
+        "reason": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "layoutName": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requestedFace", "normalizedFace", "cssFamilyChain", "steps"],
+      "properties": {
+        "requestedFace": { "$ref": "#/$defs/nullableString" },
+        "normalizedFace": { "$ref": "#/$defs/nullableString" },
+        "cssFamilyChain": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "steps": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/decisionStep" }
+        }
+      }
+    },
+    "layoutMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestedFace",
+        "aliasResolvedFace",
+        "matchKind",
+        "metricEntry",
+        "characterMatch",
+        "widthSource",
+        "baseAdvanceHwpunit",
+        "transforms",
+        "finalAdvanceHwpunit"
+      ],
+      "properties": {
+        "requestedFace": { "$ref": "#/$defs/nullableString" },
+        "aliasResolvedFace": { "$ref": "#/$defs/nullableString" },
+        "matchKind": { "enum": ["exact", "boldOnly", "nameFirst", "none"] },
+        "metricEntry": { "$ref": "#/$defs/nullableIndex" },
+        "characterMatch": { "enum": ["hit", "miss", "notApplicable"] },
+        "widthSource": { "$ref": "#/$defs/nonEmptyString" },
+        "baseAdvanceHwpunit": { "type": ["integer", "null"] },
+        "transforms": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/decisionStep" }
+        },
+        "finalAdvanceHwpunit": { "type": ["integer", "null"] }
+      }
+    },
+    "backendDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "certainty",
+        "requested",
+        "candidates",
+        "resolved",
+        "source",
+        "capabilities",
+        "failures"
+      ],
+      "properties": {
+        "status": { "$ref": "#/$defs/backendStatus" },
+        "certainty": { "$ref": "#/$defs/certainty" },
+        "requested": { "$ref": "#/$defs/nullableString" },
+        "candidates": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "resolved": { "$ref": "#/$defs/nullableString" },
+        "source": { "$ref": "#/$defs/nullableString" },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "failures": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "paint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["native", "canvas2d", "canvaskit"],
+      "properties": {
+        "native": { "$ref": "#/$defs/backendDecision" },
+        "canvas2d": { "$ref": "#/$defs/backendDecision" },
+        "canvaskit": { "$ref": "#/$defs/backendDecision" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidateId",
+        "ruleId",
+        "evidenceAnchor",
+        "sourceOwner",
+        "relationType",
+        "evidenceStatus",
+        "knownLimitations",
+        "reason"
+      ],
+      "properties": {
+        "candidateId": { "type": "string", "pattern": "^candidate\\.[0-9a-f]{20}$" },
+        "ruleId": {
+          "oneOf": [
+            { "type": "string", "pattern": "^rule\\.[a-z0-9-]+\\.[0-9a-f]{20}$" },
+            { "type": "null" }
+          ]
+        },
+        "evidenceAnchor": { "$ref": "#/$defs/nonEmptyString" },
+        "sourceOwner": { "$ref": "#/$defs/nonEmptyString" },
+        "relationType": { "$ref": "#/$defs/nullableString" },
+        "evidenceStatus": { "$ref": "#/$defs/nullableString" },
+        "knownLimitations": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
+        "reason": {
+          "oneOf": [
+            { "enum": ["ledgerRuleMissing", "ledgerSourceDrift"] },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "oracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "profileId", "knownLimitations"],
+      "properties": {
+        "status": { "enum": ["verified", "notProvided", "unsupported"] },
+        "profileId": { "$ref": "#/$defs/nullableString" },
+        "knownLimitations": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId",
+        "source",
+        "document",
+        "layoutName",
+        "layoutMetric",
+        "paint",
+        "provenance",
+        "oracle"
+      ],
+      "properties": {
+        "recordId": { "$ref": "#/$defs/nonEmptyString" },
+        "source": { "$ref": "#/$defs/source" },
+        "document": { "$ref": "#/$defs/document" },
+        "layoutName": { "$ref": "#/$defs/layoutName" },
+        "layoutMetric": { "$ref": "#/$defs/layoutMetric" },
+        "paint": { "$ref": "#/$defs/paint" },
+        "provenance": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/provenance" }
+        },
+        "oracle": { "$ref": "#/$defs/oracle" }
+      }
+    },
+    "backendSummaryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reasons"],
+      "properties": {
+        "status": { "$ref": "#/$defs/backendStatus" },
+        "reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "backendSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layout", "native", "canvas2d", "canvaskit"],
+      "properties": {
+        "layout": { "$ref": "#/$defs/backendSummaryEntry" },
+        "native": { "$ref": "#/$defs/backendSummaryEntry" },
+        "canvas2d": { "$ref": "#/$defs/backendSummaryEntry" },
+        "canvaskit": { "$ref": "#/$defs/backendSummaryEntry" }
+      }
+    }
+  }
+}

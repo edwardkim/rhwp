@@ -59,8 +59,11 @@ impl Player {
         // Bounds → render_rect 매핑. Bounds가 비어 있으면 identity.
         let (rx, ry, rw, rh) = self.render_rect;
         let m = if let Some(h) = &self.header {
-            let w = (h.bounds.right - h.bounds.left) as f32;
-            let hh = (h.bounds.bottom - h.bounds.top) as f32;
+            // Bounds are attacker-controlled i32 coordinates; a naive
+            // `right - left` overflows (DoS panic under debug overflow checks)
+            // on crafted EMR_HEADER bounds. Saturate the extent computation.
+            let w = h.bounds.right.saturating_sub(h.bounds.left) as f32;
+            let hh = h.bounds.bottom.saturating_sub(h.bounds.top) as f32;
             if w > 0.0 && hh > 0.0 {
                 let sx = rw / w;
                 let sy = rh / hh;

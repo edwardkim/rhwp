@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "editor",
+  "title": "편집자",
+  "description": "문서를 실제로 고치는 능력 — 본문·표·개체 편집과 그 재검증.",
+  "packs": [
+    "core-cli",
+    "text-editing",
+    "table-editing",
+    "objects-media"
+  ]
+}

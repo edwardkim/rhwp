@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "family-cert-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "family-cert",
+  "title": "가족관계증명 청구 --verify",
+  "family": "민원",
+  "genre": "증명",
+  "sample": "fixtures/forms/가족관계증명청구.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "증명종류",
+  "fieldCount": 10,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/가족관계증명청구.hwp",
+    "--data",
+    "{\"증명종류\": \"가족관계증명서\"}",
+    "-o",
+    "out/family-cert-verify.hwp",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "증명종류": "가족관계증명서"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/가족관계증명청구.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "증명종류",
+        "occurrence": 0,
+        "value": "가족관계증명서"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/family-cert-verify.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

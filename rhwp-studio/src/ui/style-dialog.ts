@@ -60,18 +60,12 @@ export class StyleDialog extends ModalDialog {
   onEditRequest?: (styleId: number) => void;
   onAddRequest?: () => void;
 
-  /** [Task #3387] undo/redo 후 목록 무효화 구독 해제 핸들 (열려 있는 동안만). */
-  private historyJumpOff?: () => void;
-
   constructor(
     private wasm: WasmBridge,
     private eventBus: EventBus,
     private services?: CommandServices,
   ) {
     super('스타일', 560);
-    // undo/redo 는 스타일 목록을 되돌리므로 열려 있는 목록이 stale 이 된다
-    // (#2341 이 연 history-jumped 를 find-dialog 와 같은 방식으로 구독).
-    this.historyJumpOff = this.eventBus.on('history-jumped', () => this.syncAfterHistoryJump());
   }
 
   protected createBody(): HTMLElement {
@@ -308,32 +302,11 @@ export class StyleDialog extends ModalDialog {
     this.updateInfo();
   }
 
-  /**
-   * undo/redo 뒤 표시 전체를 문서 현재 상태로 다시 맞춘다 (Task #3387).
-   *
-   * 목록만 다시 읽으면 `현재 커서 위치 스타일` 라벨이 되돌아가기 전 값으로 남는다 —
-   * 히스토리 점프는 캐럿이 놓인 문단의 `style_id` 자체가 바뀌는 자리다(스타일 삭제
-   * undo 는 그 문단을 원래 스타일로 되돌린다). 편집·추가 뒤 호출되는 `refresh` 와
-   * 달리 선택까지 캐럿 기준으로 다시 잡는다.
-   */
-  private syncAfterHistoryJump(): void {
-    this.loadStyles();
-    const currentId = this.services?.getInputHandler()?.getCurrentStyleId();
-    if (typeof currentId === 'number') {
-      this.setCurrentStyleId(currentId);
-    } else {
-      this.updateInfo();
-    }
-  }
-
   protected onConfirm(): void {
     this.onApply?.(this.selectedId);
   }
 
   override hide(): void {
-    // 닫힌 뒤에도 구독이 남으면 사라진 목록을 갱신하려 든다 (find-dialog 동형).
-    this.historyJumpOff?.();
-    this.historyJumpOff = undefined;
     super.hide();
     this.onClose?.();
   }

@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-09
+last_verified: 2026-08-30
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -29,7 +29,30 @@ rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator�
 기본으로 한다. GitHub review, comment, push, ready 전환, merge, close는 각각 작업지시자의 명시 승인을
 받은 뒤에만 수행한다.
 
-### 1.1 PR 번호 채번과 review 기록
+Rust source 또는 Rust test/baseline helper가 바뀐 PR은 `local_validation.md` 4.3의 Rust lint 묶음
+(format, native Clippy, WASM32 Clippy, workspace all-target Clippy)을 **PR 생성 전에** 통과해야 한다.
+focused test 또는 과거 녹색 CI는 이 선행 lint gate를 대체하지 않는다. GitHub Full CI 재사용은 정확한
+기존 code head를 재검토할 때의 광범위 회귀 생략 규칙일 뿐, maintainer 보정이나 새 code/test/baseline
+commit의 lint 생략 규칙이 아니다.
+
+### 1.1 최종 판정 용어와 원격 조치의 분리
+
+모든 정식 `pr_N_review.md`는 최종 판정을 아래 셋 중 **정확히 하나**로 적는다. `close`,
+`rebase 요청`, `comment 게시`, GitHub review의 `approve`, `merge`는 판정명이 아니라 그 판정 뒤에
+작업지시자 승인을 받아 수행할 수 있는 별도 조치다.
+
+| 최종 판정 | 의미 | review 문서에 반드시 남길 내용 |
+| --- | --- | --- |
+| `승인` | 현재 검토 대상 head 또는 명시한 통합 head가 주장 범위의 증적과 적용 검증을 충족한다. | 검증한 SHA·범위·잔여 risk, merge 전 최신 head CI와 작업지시자 승인 조건 |
+| `머지 보류` | 현재 head는 병합하면 안 된다. 증적 부족, 재현된 결함, CI 실패, 범위 밖 위험 중 적어도 하나가 blocker다. | blocker와 근거, 보류를 해제할 정확한 증적·수정·CI 조건, 원격 조치를 하지 않는다는 상태 |
+| `메인터너 보정 후 수용 가능` | contributor 원 head 자체는 그대로 수용할 수 없지만, 범위를 제한한 maintainer 보정 commit을 적용한 통합 head는 수용 후보가 될 수 있다. | 원 head와 보정 SHA의 구분, 보정 이유·소유자, 보정 뒤 필요한 검증과 통합 PR 경로 |
+
+`승인`은 GitHub의 review event 또는 admin merge 권한 행사를 뜻하지 않는다. 세 판정 어느 것도
+최신 head의 required check, mergeability 재확인, 작업지시자의 원격 승인 게이트를 생략하지 않는다.
+`메인터너 보정 후 수용 가능`은 원 contributor PR을 직접 merge해도 된다는 뜻이 아니며, 보정이 포함된
+명시적 integration head만 다음 단계의 검토 대상이 된다.
+
+### 1.2 PR 번호 채번과 review 기록
 
 PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의 번호 기반 review 기록은
 다음 순서로 같은 PR에 포함한다.
@@ -74,6 +97,7 @@ current head: <작성 시점 참고 SHA 또는 재확인 필요>
 | --- | --- | --- |
 | 접수·리뷰 기록 | 모든 정식 PR review | [PR 접수와 리뷰 기록](pr_review/intake_and_review.md) |
 | 로컬 검증 | fetch, merge simulation, Cargo, npm, fixture 검증을 수행 | [로컬 검증](pr_review/local_validation.md) |
+| 첫 기여자 외부 PR | rhwp에 처음 기여하는 외부 contributor PR | [첫 기여자 외부 PR 처리](pr_review/first_time_contributor.md) |
 | 시각·fixture 증적 | renderer/layout/paint, HWP/HWPX/PDF sample, 기준 PDF, 페이지·표·wrap·clipping 주장 | [시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
 | 다수 PR·update branch | 대량 유입, 누적 cherry-pick, stale SHA CI 취소, update branch 발생 | [다수 PR과 update branch](pr_review/multi_pr_update_branch.md) |
 | review-only fast-pass | code PR 뒤 review 기록만 추가하거나 PR 전체가 문서·허용된 신규 기준 자료뿐임 | [review-only fast-pass](pr_review/review_only_fast_pass.md) |
@@ -146,6 +170,11 @@ base 반영을 강제하지 않는 정책이면, 같은 PR·같은 source reposi
 재사용해 trailing review-only commit을 fast-pass할 수 있다. contributor가 source·test를 새로 push한 경우에는
 그 새 code head의 CI를 먼저 통과시킨 뒤 review 기록을 한 번만 이어 붙인다.
 
+PR 자체가 workflow·action·CI impact 정책을 바꾼 경우에는 PR head의 이 판단을 그대로 신뢰하지 않는다.
+기본 브랜치 trusted controller가 exact Full candidate와 review-only tail을 증명한 same-repository PR만
+[review-only fast-pass의 A.1](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)에
+따라 예외 처리한다. controller가 아직 `main`에 활성화되지 않았거나 status가 불완전하면 Full CI를 기다린다.
+
 단, GitHub의 `MERGEABLE` 표시는 텍스트 충돌이 없다는 참고값일 뿐 최신 `devel`과의 컴파일·테스트 호환을
 보장하지 않는다. source가 공용 struct·trait·API를 바꾼 뒤 최신 `devel`이 그 API의 초기화·호출부를
 추가했다면 current-base merge tree의 CI가 실패할 수 있다. 이 사실이 `git merge-tree` 또는 최신 PR head의
@@ -203,12 +232,17 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 - 하나의 checkout, `target/pr-review`, Cargo cache를 공유하는 cargo test, cargo clippy, cargo build,
   wasm-pack은 순차 실행한다. 로컬 검증을 CI처럼 여러 Cargo 실행으로 병렬화하지 않는다. 장시간 테스트는
   `.config/nextest.toml`의 우선순위로 같은 nextest 실행 안에서 먼저 시작한다.
+- 전체 integration 회귀를 `cargo test --profile release-test --tests`로 대체하지 않는다. 이 명령은
+  unsharded libtest 경로이며, 표준 PR review 경로는
+  [로컬 검증](pr_review/local_validation.md#고정-review-target과-실행-환경)의 `--locked` nextest
+  명령이다. `cargo test`는 해당 문서가 이름을 지정한 focused 또는 Native Skia lib 검증에만 사용한다.
 - branch fetch 이후의 merge simulation, cherry-pick, conflict resolution, commit, push, update branch,
   merge와 stale run force-cancel은 대상 SHA를 확인한 뒤 순차로 실행한다.
 - 실제 GitHub review/comment, issue close, PR close는 승인과 선행 조건이 갖춰진 뒤에만 게시한다.
 - merge 후에는 merge SHA 확인 → 문서·asset의 devel 반영 → 최종 devel sync → issue 상태 확인 및
-  comment → branch/worktree/검토 전용 target 정리 순서를 지킨다. raw image URL을 쓰는 comment는
-  asset이 devel에 존재한 뒤에만 게시한다.
+  comment → branch/worktree/검토 전용 target 정리 순서를 지킨다. 이때 worktree 정리에는 commit을
+  만들지 않았더라도 이번 PR의 diff·CI·재현·검증만을 위해 만든 local 검토 worktree를 포함한다. raw image
+  URL을 쓰는 comment는 asset이 devel에 존재한 뒤에만 게시한다.
 
 서로 다른 host, worktree, CARGO_TARGET_DIR, Cargo home이 실제로 분리된 경우에도 로컬 Cargo 병렬 실행은
 이 매뉴얼의 기본 경로가 아니다. 필요하면 별도 작업 계획과 작업지시자 승인을 받아 lock·disk·결과 귀속을
@@ -227,6 +261,39 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 - `gh api --input <json>`을 쓸 때는 JSON의 `\n` escape가 실제 LF로 해석되는 유효 JSON인지 확인한다.
 - 게시 직후 해당 review/comment API의 `body`를 읽어 literal `\\n`이 남지 않았는지 확인하고, 임시 본문
   파일은 정확한 경로만 정리한다.
+
+#### 3.4.1 Windows PowerShell 한글 본문
+
+Windows PowerShell 5.1의 here-string을 `gh ... --body-file -`에 직접 pipe하면 현재 console code page나
+UTF-8 BOM이 `gh` 표준입력에 섞일 수 있다. 그러면 GitHub에는 한글이 `??`로 치환되거나 본문 첫 글자
+앞에 보이지 않는 BOM이 남는다. 한글을 포함한 다단락 PR 본문·review·comment에는 **UTF-8 without BOM
+파일 경로**만 사용한다.
+
+```powershell
+$body = @'
+## 변경 요약
+
+- 한글 본문 예시
+'@
+$bodyPath = Join-Path $env:TEMP "rhwp-pr-body-$PID.md"
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($bodyPath, $body, $utf8NoBom)
+
+# 생성 또는 수정 중 하나를 사용한다.
+gh pr create --repo edwardkim/rhwp --base devel --head <branch> --body-file $bodyPath
+gh pr edit <N> --repo edwardkim/rhwp --body-file $bodyPath
+
+$posted = (gh pr view <N> --repo edwardkim/rhwp --json body | ConvertFrom-Json).body
+if ($posted.Length -eq 0 -or [int][char]$posted[0] -eq 0xFEFF -or $posted.Contains('??')) {
+    throw 'PR 본문 UTF-8 전송을 다시 확인하세요.'
+}
+Remove-Item -LiteralPath $bodyPath
+```
+
+`<N>`은 `gh pr create`가 성공한 뒤 실제 번호로 바꾼다. create 직후 본문을 검증할 때는 같은 방식으로
+`gh pr view`를 실행한다. `??`가 문서 내용으로 의도된 경우에는 그 검사 대신 예상한 한글 제목·문장을
+`Contains()`로 확인한다. 임시 파일은 정확한 `$bodyPath`만 정리하며, `.env`·token·server URL을 본문이나
+검증 출력에 넣지 않는다.
 
 ## 4. review 산출물의 공통 규칙
 
@@ -248,8 +315,34 @@ review 문서에는 계획형이나 미래형으로 쓰지 않는다. 실행한 
 
 review 문서 경로, review_impl 작성 조건, 사전 판단 report의 범위는 선택한 기본 경로와
 [PR 접수와 리뷰 기록](pr_review/intake_and_review.md)을 따른다. 시각 검증을 실제 판단 근거로 사용하면
-임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
-그 경로를 review 문서와 실제 GitHub comment에 사용한다.
+문서 비교 절차의 정본으로 [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md#github-merge-comment)를
+사용한다. 임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
+그 경로를 review 문서와 실제 GitHub comment에 사용한다. 이때 대표 review PNG 자체를 열어 도구 라벨,
+한글 glyph, 수치 표기, overlay legend가 판독 가능한지 확인하고, 깨진 라벨이나 판정 오해 소지가 있으면
+merge 전 보정하거나 별도 issue로 분리해 review 문서에 적는다. merge 후 comment에는 Visual Sweep 정본
+link와 review 문서의 실제 수치·결론을 함께 남기며, PNG는 merge commit SHA 고정 raw URL로 표시한다.
+
+renderer/layout/typeset/paint 등 사용자-visible 렌더링 변경에 HWP/HWPX/PDF fixture가 붙어 있으면
+"시각 검증을 판단 근거로 사용한 경우"가 아니라 **시각 검증 필요 후보**로 먼저 분류한다. 이때 원 PR의
+before/after 이미지나 한컴 수치만 확인하고 maintainer의 직접 visual sweep 또는 동등한 판정 없이
+최종 판정을 `승인`으로 내리지 않는다. 직접 수행하지 못했으면 review 문서와 PR comment에
+`visual sweep 미실행`, `원 PR 증적만 확인`, `보류/조건부 보류` 중 하나를 명시한다.
+
+### 4.2 시각 증적 PR comment 계획
+
+시각 검증을 `승인`의 근거로 사용한 개별 review 문서는 최종 판정 전에
+`Merge 후 contributor PR comment 계획` 절을 포함해야 한다. 이 절은 merge 뒤 새로 추정하거나 임시
+output에서 수치를 옮기는 일을 막기 위한 사전 기록이며, 최소한 다음을 적는다.
+
+1. [Visual Sweep의 GitHub merge comment 정본](verification/visual_sweep_guide.md#github-merge-comment) direct link
+2. 실제 확인한 대상 페이지, flagged 후보 수, `pixel_match`, `visual_accuracy_proxy_percent`, 사람의 판정과 수치의 한계
+3. `mydocs/pr/assets/` 아래 representative review PNG의 안정 경로와 `<merge-commit-sha>`를 넣은 raw URL 형식
+4. asset이 merge commit을 통해 `devel`에 존재하고 최신 head의 merge가 완료된 뒤에만 `--body-file`로 게시하며,
+   게시 뒤 API 재조회로 실제 Markdown과 이미지를 확인한다는 조건
+
+시각 검증을 실행하지 못한 경우에도 같은 절에 미실행 범위와 보류 사유를 적는다. 이 상태에서는 없는 수치나
+이미지 URL을 계획으로 만들지 않으며, 최종 판정을 `승인`으로 쓸 수 없다. 임시 `output/` 경로만 적거나
+merge 뒤 게시할 comment를 review 기록에 남기지 않는 것은 완료된 시각 증적으로 인정하지 않는다.
 
 ## 5. 기존 절 번호 대응
 

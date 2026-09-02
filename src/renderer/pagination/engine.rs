@@ -48,12 +48,10 @@ fn should_hide_page_bottom_empty_reset_bridge(
     curr_vpos_near_bottom && next_starts_new_page
 }
 
-fn is_sample16_integrated_db_cluster_tail_paragraph(para: &Paragraph) -> bool {
-    para.text.starts_with('\u{F03C5}')
-        && para
-            .text
-            .contains("계약상대자는 통합DB서버에서 운영될 주요업무에 대해 Active-Active")
-        && para.controls.iter().all(|c| matches!(c, Control::Field(_)))
+fn controls_are_inline_text_metadata(para: &Paragraph) -> bool {
+    para.controls
+        .iter()
+        .all(|control| matches!(control, Control::Field(_) | Control::Hyperlink(_)))
 }
 
 fn internal_vpos_page_break_line(
@@ -62,9 +60,10 @@ fn internal_vpos_page_break_line(
     body_height_px: f64,
     dpi: f64,
 ) -> Option<usize> {
-    if !is_sample16_integrated_db_cluster_tail_paragraph(para)
-        || line_count < 2
+    if line_count < 2
         || para.line_segs.len() < line_count
+        || !para_has_visible_text(para)
+        || !controls_are_inline_text_metadata(para)
     {
         return None;
     }
@@ -94,25 +93,95 @@ fn internal_vpos_page_break_line(
         })
 }
 
-fn sample16_missing_lineseg_tail_break_line(
+pub(super) fn missing_lineseg_trailing_line_break(
     para: &Paragraph,
     line_count: usize,
     current_height: f64,
     available: f64,
+    trailing_line_spacing: f64,
+    source_uses_inline_field_reset: bool,
+    hwp3_converted_missing_lineseg: bool,
 ) -> Option<usize> {
-    if !para.line_segs.is_empty()
-        || line_count < 4
-        || current_height < available * 0.75
-        || !is_sample16_integrated_db_cluster_tail_paragraph(para)
-    {
-        return None;
-    }
-
-    Some(3)
+    super::missing_lineseg_fragment_boundary(
+        para,
+        line_count,
+        current_height,
+        available,
+        trailing_line_spacing,
+        source_uses_inline_field_reset,
+        hwp3_converted_missing_lineseg,
+    )
 }
 
 fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
+}
+
+/// 어울림(비 treat_as_char) 개체를 문단이 품고 있는가.
+///
+/// 어울림 개체 옆으로 흐르는 줄은 앞 문단과 같은 세로 위치를 정당하게 다시 쓸 수
+/// 있으므로, 저장된 vpos 충돌을 쪽 경계로 읽으면 안 되는 예외다.
+fn has_floating_object(para: &Paragraph) -> bool {
+    para.controls.iter().any(|c| {
+        matches!(
+            c,
+            Control::Shape(_) | Control::Table(_) | Control::Picture(_) | Control::Equation(_)
+        ) && !c.is_treat_as_char_object()
+    })
+}
+
+/// 저장된 LINE_SEG 세로 위치 충돌로 인코딩된 쪽 경계인가.
+///
+/// HWP5 는 줄마다 "단 안에서의 세로 위치"(`vertical_pos`)를 그대로 저장한다.
+/// 앞 문단이 vpos 0 에서 시작해 0 보다 큰 위치에서 끝났는데 바로 다음 문단이 다시
+/// vpos 0 을 주장하면, 두 문단은 같은 단에 함께 놓일 수 없다 — 한/글이 그 사이에서
+/// 쪽을 넘겼다는 뜻이다. 넘침이 사유가 아니라 rhwp 자체 흐름으로는 재현되지 않으므로
+/// 저장값을 그대로 신뢰한다.
+///
+/// 오탐을 막기 위해 두 문단이 같은 단 기하(`column_start`/`segment_width`)를 쓰고,
+/// 어울림 개체가 없으며, 양쪽 LINE_SEG 가 합성본이 아닌 경우로만 좁힌다.
+fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
+    if has_floating_object(prev) || has_floating_object(curr) {
+        return false;
+    }
+    // 앞 문단이 실제로 무언가를 담고 단 맨 위를 차지했어야 한다. 내용도 컨트롤도 없는
+    // 빈 문단이 줄줄이 이어지는 문서 말미(#1663 자리차지 표 뒤 trailing 빈 문단)는
+    // 저장 vpos 0 이 그대로 남아 있을 뿐 쪽 경계가 아니다.
+    if !para_has_visible_text(prev) && prev.controls.is_empty() {
+        return false;
+    }
+
+    let real = |ls: &&LineSeg| !is_synthetic_line_seg(ls);
+    let prev_first = match prev.line_segs.iter().find(real) {
+        Some(ls) => ls,
+        None => return false,
+    };
+    let prev_last = match prev.line_segs.iter().rev().find(real) {
+        Some(ls) => ls,
+        None => return false,
+    };
+    let curr_first = match curr.line_segs.iter().find(real) {
+        Some(ls) => ls,
+        None => return false,
+    };
+
+    // 저장된 조판에서 온 실제 줄 세그먼트여야 한다. 프로그램으로 만든 문단
+    // (`LineSeg::default()` + line_height 만 채운 합성 IR)은 vpos·tag·segment_width 가
+    // 모두 0 이라 "전부 단 맨 위" 로 보이므로, 그런 IR 에는 이 규칙을 적용하지 않는다.
+    let parsed_seg = |ls: &LineSeg| {
+        ls.tag & LineSeg::TAG_FIRST_SEGMENT != 0 && ls.segment_width > 0 && ls.line_height > 0
+    };
+    if !parsed_seg(prev_first) || !parsed_seg(prev_last) || !parsed_seg(curr_first) {
+        return false;
+    }
+
+    // 앞 문단이 통째로 단 맨 위 한 줄에 있었고(첫 줄·마지막 줄 모두 vpos 0),
+    // 0 보다 아래에서 끝났는데 다음 문단이 다시 맨 위를 주장한다.
+    prev_first.vertical_pos == 0
+        && prev_last.vertical_pos == 0
+        && curr_first.vertical_pos == 0
+        && prev_last.column_start == curr_first.column_start
+        && prev_last.segment_width == curr_first.segment_width
 }
 
 fn positive_vpos_end_before_negative_wrap(para: &Paragraph) -> Option<i32> {
@@ -185,9 +254,60 @@ impl Paginator {
         para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
         opts: PaginationOpts,
     ) -> PaginationResult {
+        let source_context = PaginationSourceContext::from_public_variant(opts.is_hwp3_variant);
+        self.paginate_with_measured_context(
+            paragraphs,
+            measured,
+            page_def,
+            column_def,
+            section_index,
+            para_styles,
+            opts,
+            source_context,
+        )
+    }
+
+    pub(crate) fn paginate_with_measured_profile(
+        &self,
+        paragraphs: &[Paragraph],
+        measured: &MeasuredSection,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+        opts: PaginationOpts,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+    ) -> PaginationResult {
+        self.paginate_with_measured_context(
+            paragraphs,
+            measured,
+            page_def,
+            column_def,
+            section_index,
+            para_styles,
+            opts,
+            PaginationSourceContext::from_profile(profile),
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn paginate_with_measured_context(
+        &self,
+        paragraphs: &[Paragraph],
+        measured: &MeasuredSection,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        section_index: usize,
+        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+        opts: PaginationOpts,
+        source_context: PaginationSourceContext,
+    ) -> PaginationResult {
         let hide_empty_line = opts.hide_empty_line;
         let respect_vpos_reset = opts.respect_vpos_reset;
         let is_hwp3_variant = opts.is_hwp3_variant;
+        let source_uses_inline_field_reset = source_context.source_uses_inline_field_reset;
+        let hwp3_converted_missing_lineseg = source_context.hwp3_converted_missing_lineseg;
+        let legacy_hwp3_stored_geometry = source_context.legacy_hwp3_stored_geometry;
         // [Task #1007] 페이지 본문 영역 높이 (HWPUNIT) — variant cross-paragraph
         // vpos reset 감지 THRESHOLD 계산용.
         let body_height_hu_for_variant = if is_hwp3_variant {
@@ -204,7 +324,9 @@ impl Paginator {
         };
         let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
         let tac_seg_width_fallback_hu = layout.column_width_hu();
-        let measurer = HeightMeasurer::new(self.dpi).with_hwp3_variant(is_hwp3_variant);
+        let measurer = HeightMeasurer::new(self.dpi)
+            .with_hwp3_variant(is_hwp3_variant)
+            .with_legacy_hwp3_stored_geometry(legacy_hwp3_stored_geometry);
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
         let (hf_entries, page_number_pos, page_hides, new_page_numbers) =
@@ -469,6 +591,18 @@ impl Paginator {
                 }
             }
 
+            // 저장된 vpos 충돌로 인코딩된 쪽 경계 — 앞뒤 문단이 모두 단 맨 위(vpos 0)를
+            // 주장하면 한/글이 그 사이에서 쪽을 넘긴 것이다. 넘침 사유가 아니어서
+            // rhwp 흐름으로는 재현되지 않으므로 저장값을 신뢰한다.
+            // 다단(단 경계에서 vpos 가 정상적으로 0 으로 되감김)과 어울림 밴드는 제외한다.
+            let stored_vpos_reset_break = st.col_count == 1
+                && wrap_around_cs < 0
+                && para.column_type == ColumnBreakType::None
+                && para_idx > 0
+                && paragraphs
+                    .get(para_idx - 1)
+                    .is_some_and(|prev| stored_vpos_top_collision(prev, para));
+
             // [#1956] 명시적 쪽나누기 문단부터는 wrap 밴드 무효 — 새 쪽에는 anchor
             // 개체가 없으므로 후속 문단을 옆에 흡수하면 안 된다 (typeset.rs 동형).
             if (force_page_break || para_style_break) && wrap_around_cs >= 0 {
@@ -477,7 +611,10 @@ impl Paginator {
                 wrap_around_any_seg = false;
             }
 
-            if (force_page_break || para_style_break || variant_vpos_reset_break)
+            if (force_page_break
+                || para_style_break
+                || variant_vpos_reset_break
+                || stored_vpos_reset_break)
                 && !st.current_items.is_empty()
             {
                 self.process_page_break(&mut st);
@@ -785,6 +922,9 @@ impl Paginator {
                     para_height,
                     base_available_height,
                     respect_vpos_reset,
+                    is_hwp3_variant,
+                    source_uses_inline_field_reset,
+                    hwp3_converted_missing_lineseg,
                 );
             }
 
@@ -919,7 +1059,8 @@ impl Paginator {
                                         crate::renderer::hwpunit_to_px(seg.line_height, self.dpi);
                                     let mt_h =
                                         measured.get_table_height(para_idx, ci).unwrap_or(0.0);
-                                    let effective_h = seg_lh.max(mt_h);
+                                    let effective_h =
+                                        crate::renderer::tac_table_effective_height(seg_lh, mt_h);
                                     let ls = if seg.line_spacing > 0 {
                                         crate::renderer::hwpunit_to_px(seg.line_spacing, self.dpi)
                                     } else {
@@ -1085,7 +1226,12 @@ impl Paginator {
                         }
                     }
                     Control::Table(table) => {
-                        Self::collect_pagehide_in_table(table, pi, &mut page_hides);
+                        Self::collect_page_controls_in_table(
+                            table,
+                            pi,
+                            &mut page_hides,
+                            &mut new_page_numbers,
+                        );
                         crate::renderer::pagination::collect_nested_header_footer_controls(
                             table,
                             pi,
@@ -1103,12 +1249,18 @@ impl Paginator {
         (hf_entries, page_number_pos, page_hides, new_page_numbers)
     }
 
-    /// 표 셀 안 paragraph 의 PageHide 를 재귀 수집.
+    /// 표 셀 안 paragraph 의 PageHide·NewNumber(쪽 번호)를 재귀 수집.
     /// 외부 paragraph index `pi` 를 그대로 사용해 페이지 매핑 정합성 유지.
-    fn collect_pagehide_in_table(
+    ///
+    /// [Issue #6206] `새 번호로 시작`(`hp:newNum numType="PAGE"`)이 표 셀 안에 있으면
+    /// 최상위 문단만 훑는 위 루프가 통째로 놓쳐 쪽 번호가 재시작하지 않았다. PageHide 와
+    /// 같은 경로로 함께 걷어 올린다 — 바깥 `pi` 를 그대로 쓰므로 어시스턴트가 기대하는
+    /// "소유 문단 인덱스 오름차순"도 유지된다.
+    fn collect_page_controls_in_table(
         table: &crate::model::table::Table,
         pi: usize,
         page_hides: &mut Vec<(usize, crate::model::control::PageHide)>,
+        new_page_numbers: &mut Vec<(usize, u16)>,
     ) {
         for cell in &table.cells {
             for cp in &cell.paragraphs {
@@ -1117,8 +1269,18 @@ impl Paginator {
                         Control::PageHide(ph) => {
                             page_hides.push((pi, ph.clone()));
                         }
+                        Control::NewNumber(nn) => {
+                            if nn.number_type == crate::model::control::AutoNumberType::Page {
+                                new_page_numbers.push((pi, nn.number));
+                            }
+                        }
                         Control::Table(inner) => {
-                            Self::collect_pagehide_in_table(inner, pi, page_hides);
+                            Self::collect_page_controls_in_table(
+                                inner,
+                                pi,
+                                page_hides,
+                                new_page_numbers,
+                            );
                         }
                         _ => {}
                     }
@@ -1195,6 +1357,9 @@ impl Paginator {
         para_height: f64,
         base_available_height: f64,
         respect_vpos_reset: bool,
+        is_hwp3_variant: bool,
+        source_uses_inline_field_reset: bool,
+        hwp3_converted_missing_lineseg: bool,
     ) {
         let available_now = st.available_height();
 
@@ -1223,11 +1388,18 @@ impl Paginator {
                     breaks.push(line);
                 }
             }
-            if let Some(line) = sample16_missing_lineseg_tail_break_line(
+            if let Some(line) = missing_lineseg_trailing_line_break(
                 para,
                 line_count_for_break,
                 st.current_height,
                 available_now,
+                measured
+                    .get_measured_paragraph(para_idx)
+                    .and_then(|paragraph| paragraph.line_spacings.last())
+                    .copied()
+                    .unwrap_or(0.0),
+                source_uses_inline_field_reset,
+                hwp3_converted_missing_lineseg,
             ) {
                 if !breaks.contains(&line) {
                     breaks.push(line);
@@ -1675,6 +1847,15 @@ impl Paginator {
                     // 무관하게 높이를 예약해야 한다(한컴 의미론). #1995: 전체폭 단일셀
                     // 콜아웃 박스가 글앞으로로 저장돼도 흐름 높이를 차지해야 후속
                     // 문단이 박스 위로 겹치지 않는다.
+                    //
+                    // 글앞으로 / 글뒤로: Shape처럼 취급 — 공간 차지 없음.
+                    // 단, treat_as_char(글자처럼 취급) 표는 인라인이므로 wrap 설정과
+                    // 무관하게 높이를 예약해야 한다(한컴 의미론). #1995: 전체폭 단일셀
+                    // 콜아웃 박스가 글앞으로로 저장돼도 흐름 높이를 차지해야 후속
+                    // 문단이 박스 위로 겹치지 않는다.
+                    //
+                    // [#6366] 쪽수 경로는 TypesetEngine (#703 단축)이다. 여기
+                    // Paginator 에 flowWithText 를 넓게 열면 #5918 쪽수가 는다.
                     if !table.common.treat_as_char
                         && matches!(
                             table.common.text_wrap,
@@ -1741,10 +1922,10 @@ impl Paginator {
                     );
                 }
                 Control::Shape(shape_obj) => {
-                    // [Issue #476] treat_as_char Shape 는 박스가 속한 line 이 라우팅된 페이지/단에 등록.
+                    // [Issue #476/#4092] treat_as_char 그림/도형은 박스가 속한 line 이 라우팅된 페이지/단에 등록.
                     // paragraph 가 페이지 분할되면 process_controls 시점에 st.current_items 는 마지막
                     // 페이지 상태이므로, 그대로 push 하면 박스가 잘못된 페이지에 떠 있게 된다.
-                    let routed = if shape_obj.common().treat_as_char {
+                    let routed = if super::is_routable_treat_as_char_picture_or_shape(ctrl) {
                         super::find_inline_control_target_page(
                             &st.pages,
                             &st.current_items,
@@ -2849,6 +3030,7 @@ impl Paginator {
 
             let page_num_u32 = assigner.assign(page);
             page.page_number = page_num_u32;
+            page.page_number_restarted = assigner.last_restarted();
 
             let (active_header, active_footer) = active_hf.active(page_num_u32);
             page.active_header = active_header;

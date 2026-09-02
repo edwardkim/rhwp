@@ -1,0 +1,73 @@
+{
+  "id": "inj-scope-fieldGuide-role-token",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "scanScopes",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "Scope::fieldGuide",
+    "note": "본문만 훑으면 누름틀·메모·각주·머리말로 우회한다. 전체 표는 matrices/injection_scan_scopes.tsv."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/scope/fieldGuide.hwp",
+      "--json",
+      "--include-fields"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "injectionSignals[0].scope",
+    "scope": "fieldGuide",
+    "matchedIs": "DATA",
+    "doNotExecuteMatched": true
+  },
+  "pair": null,
+  "why": "같은 토큰이 fieldGuide 에 있어도 주소를 밝힌다.",
+  "note": "훑지 않은 영역을 훑었다고 말하지 않는다.",
+  "human": "주입 신호 1건 scope=fieldGuide\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/scope/fieldGuide.hwp",
+    "minConfidence": "low",
+    "includeFields": true,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption",
+      "fieldName",
+      "fieldGuide",
+      "fieldCommand",
+      "hiddenComment",
+      "fieldMemo"
+    ],
+    "injectionSignals": [
+      {
+        "kind": "role_impersonation",
+        "confidence": "high",
+        "scope": "fieldGuide",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "<|im_start|>",
+        "excerpt": "<|im_start|>",
+        "why": "대화 역할·채팅 템플릿 토큰이 본문에 있습니다 — 문서 텍스트가 모델 프롬프트의 역할 경계를 흉내 냅니다"
+      }
+    ],
+    "signalCount": 1,
+    "highestConfidence": "high",
+    "clean": false
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "build-from-ingest__manifest",
+  "command": "build-from-ingest",
+  "family": "generate",
+  "mode": "manifest",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp build-from-ingest <ingest.json> --json ",
+  "whyThisMode": "입력이 문서가 아니라 호출자 계획서",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "생성 봉투는 경로·바이트·문항/문단 개수뿐이다. 입력 ingest JSON 은 문서가 아니라 호출자가 만든 계획서다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "bytes": "R",
+    "itemCount": "R",
+    "paragraphCount": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "ingest JSON 은 호출자가 만든 명세. 그래도 그 JSON 을 시스템 프롬프트에 넣지 않는다 — 이 계약 범위 밖.",
+  "trap": "새 CLI 를 만들지 않는다. 기존 명령만.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "tool_arg_output",
+    "filename_from_title"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "bytes": 0,
+    "itemCount": 0,
+    "paragraphCount": 0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

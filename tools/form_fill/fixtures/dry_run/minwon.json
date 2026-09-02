@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "minwon-dry-run",
+  "axis": "dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minwon",
+  "title": "민원신청서 dry-run",
+  "family": "민원",
+  "genre": "신청",
+  "sample": "fixtures/forms/민원신청서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "--dry-run 은 파일을 만들지 않는다. output/outputFormat 없음.",
+  "firstFieldName": "민원제목",
+  "fieldCount": 14,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/민원신청서.hwp",
+    "--data",
+    "{\"민원제목\": \"도로 파손 보수 요청\"}",
+    "-o",
+    "out/minwon-dry.hwp",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "민원제목": "도로 파손 보수 요청"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/민원신청서.hwp",
+    "dryRun": true,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "민원제목",
+        "occurrence": 0,
+        "value": "도로 파손 보수 요청"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "writesFile": false,
+  "hasOutputKey": false,
+  "exit": 0
+}

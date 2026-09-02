@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-vertical-execution-plan",
+  "issue": 4969,
+  "stage": "W10-Q4",
+  "date": "2026-08-30",
+  "status": "q4-d5-a-qualified-measurement-contract-result-approved",
+  "productMutationBeforeApproval": false,
+  "slices": [
+    {
+      "id": "Q4-A",
+      "name": "exact-vertical-output-oracle-contract",
+      "status": "completed-qualified",
+      "productCaller": false,
+      "exit": "deterministic-glyph-cluster-xy-position-oracles-and-negative-control"
+    },
+    {
+      "id": "Q4-B",
+      "name": "typed-surface-vertical-intent",
+      "status": "completed-qualified-contract-only",
+      "productCaller": false,
+      "exit": "surface-specific-intent-map-and-round-trip-regression-zero"
+    },
+    {
+      "id": "Q4-C",
+      "name": "dormant-vertical-layout-transaction",
+      "status": "completed-qualified-dormant",
+      "productCaller": false,
+      "exit": "measurement-bbox-next-origin-mismatch-zero"
+    },
+    {
+      "id": "Q4-D",
+      "name": "one-surface-bounded-atomic-activation",
+      "status": "d4-qualified-canvaskit-bounded-vertical-runtime-checkpointed-d5-a-result-approved",
+      "plan": "mydocs/plans/task_m100_4969_w10_q4_d.md",
+      "candidate": "hwp5-table-cell-code2-one-paragraph-one-run-one-column-pure-cjk",
+      "exit": "exact-position-mismatch-zero-partial-publication-zero"
+    },
+    {
+      "id": "Q4-E",
+      "name": "extension-and-editor-coordinate-classification",
+      "exit": "qualified-bounded-subset-dormant-blocked-or-follow-up-per-surface"
+    },
+    {
+      "id": "Q4-F",
+      "name": "q5-handoff-checkpoint",
+      "exit": "machine-readable-support-matrix-and-q5-measurement-scope"
+    }
+  ],
+  "invariants": {
+    "horizontalOutputRegressionAllowed": false,
+    "horizontalRotationMayQualifyAsExactVertical": false,
+    "versionBasedPolicyAllowed": false,
+    "rawDirectionNumberMaySelectOpenTypeMode": false,
+    "backendReshapingAllowed": false,
+    "partialPublicationAllowed": false,
+    "privateCorpusAllowed": false
+  },
+  "hyperV": {
+    "requiredForQ4A": false,
+    "requiredForInitialQ4B": false,
+    "conditional": true,
+    "requiresSeparateApproval": true
+  },
+  "approvalGates": {
+    "eachSliceResult": true,
+    "checkpoint": true,
+    "commit": true,
+    "push": true,
+    "githubComment": true,
+    "pullRequest": true
+  },
+  "next": "automatic-D5-A-checkpoint-then-D5-B"
+}

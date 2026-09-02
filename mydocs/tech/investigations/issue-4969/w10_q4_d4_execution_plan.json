@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d4-canvaskit-vertical-execution-plan",
+  "issue": 4969,
+  "stage": "W10-Q4-D4",
+  "date": "2026-08-30",
+  "status": "Q4-D4-qualified-canvaskit-bounded-vertical-runtime-checkpointed",
+  "planApproved": true,
+  "checkpointApproved": true,
+  "checkpointApprovedDate": "2026-08-31",
+  "planCheckpoint": "c11e84935",
+  "d4BCheckpoint": "c9b551909",
+  "d4CCheckpoint": "b1a33b6fc",
+  "d4DCheckpoint": "f40987220",
+  "d3CCheckpoint": "43d50ad99",
+  "mergedUpstreamDevel": "19b89d967b15",
+  "mergeCommit": "eb7d020e4",
+  "productMutationBeforeApproval": false,
+  "featureDetection": {
+    "versionBranchingAllowed": false,
+    "candidateProvenance": "boundedVerticalHwp5TableCellV1",
+    "variantId": "verticalGlyphRun",
+    "writingMode": "vertical-rl",
+    "orientation": "vertical-upright",
+    "glyphTransformsAllowed": false,
+    "runtimeCanvasDrawGlyphsRequiredBeforeSelection": true,
+    "fontResourceVerificationRequired": true
+  },
+  "backendAuthority": {
+    "canvasKit": "bounded-target-only",
+    "canvasKitBrowser": "bounded-target-only",
+    "nativeSkia": "fallback",
+    "svg": "fallback",
+    "canvas2d": "fallback"
+  },
+  "stages": [
+    {
+      "id": "Q4-D4-A",
+      "name": "merge-requalification-and-red-baseline",
+      "status": "completed"
+    },
+    {
+      "id": "Q4-D4-B",
+      "name": "rust-selector-capability",
+      "status": "completed-checkpoint-c9b551909",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_b_rust_selector.json"
+    },
+    {
+      "id": "Q4-D4-C",
+      "name": "studio-runtime-capability-and-pixel-proof",
+      "status": "completed-checkpoint-b1a33b6fc",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_c_studio_runtime.json"
+    },
+    {
+      "id": "Q4-D4-D",
+      "name": "cross-runtime-validation-and-result",
+      "status": "completed-checkpoint-f40987220",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json"
+    }
+  ],
+  "mergeRequalification": {
+    "conflicts": 0,
+    "d3CAtomicActivationPassed": 9,
+    "issue6029Passed": 1,
+    "incomingOverlapPassed": 9,
+    "incomingCommits": 23,
+    "integrationManifestSources": 1064,
+    "integrationManifestStaticTestAttrs": 4689,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "integrationPolicyPassed": 22,
+    "canonicalMismatch": 0,
+    "d4InitialRedConfirmed": true,
+    "d4GreenConfirmed": true
+  },
+  "invariants": {
+    "backendReshapeAllowed": false,
+    "genericVerticalGuardRemovalAllowed": false,
+    "fallbackDisappearanceAllowed": false,
+    "horizontalContractChangeAllowed": false,
+    "newIntegrationSourceAllowed": false,
+    "publicSchemaChangeAllowed": false,
+    "privateCorpusAllowed": false,
+    "hyperVAllowed": false
+  },
+  "controls": [
+    "samples/table-004.hwp",
+    "samples/issue6029/3200477_icao_procedure.hwpx"
+  ],
+  "result": {
+    "classification": "qualified-canvaskit-bounded-vertical-runtime",
+    "approved": true,
+    "evidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
+    "q4DFinalClassificationDeferredToD5": true
+  },
+  "next": "Q4-D5-detailed-plan"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "SD70",
+  "steps": [
+    {
+      "answer": {
+        "tool": {
+          "cmd": [
+            "export-provenance-map",
+            "--json"
+          ],
+          "path": "tool"
+        }
+      }
+    }
+  ]
+}

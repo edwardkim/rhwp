@@ -1,0 +1,361 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: MATRIX{{81} OVER {82} & {83} OVER {84} & {85} OVER {86} & {87} OVER {88} & {89} OVER {90} & {91} OVER {92} & {93} OVER {94} # {95} OVER {96} & {97} OVER {98} & {99} OVER {100} & {101} OVER {102} & {103} OVER {104} & {105} OVER {106} & {107} OVER {108} # {109} OVER {110} & {111} OVER {112} & {113} OVER {114} & {115} OVER {116} & {117} OVER {118} & {119} OVER {120} & {121} OVER {122}}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Fraction {
+                numer: Number(
+                    "81",
+                ),
+                denom: Number(
+                    "82",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "83",
+                ),
+                denom: Number(
+                    "84",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "85",
+                ),
+                denom: Number(
+                    "86",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "87",
+                ),
+                denom: Number(
+                    "88",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "89",
+                ),
+                denom: Number(
+                    "90",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "91",
+                ),
+                denom: Number(
+                    "92",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "93",
+                ),
+                denom: Number(
+                    "94",
+                ),
+            },
+        ],
+        [
+            Fraction {
+                numer: Number(
+                    "95",
+                ),
+                denom: Number(
+                    "96",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "97",
+                ),
+                denom: Number(
+                    "98",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "99",
+                ),
+                denom: Number(
+                    "100",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "101",
+                ),
+                denom: Number(
+                    "102",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "103",
+                ),
+                denom: Number(
+                    "104",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "105",
+                ),
+                denom: Number(
+                    "106",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "107",
+                ),
+                denom: Number(
+                    "108",
+                ),
+            },
+        ],
+        [
+            Fraction {
+                numer: Number(
+                    "109",
+                ),
+                denom: Number(
+                    "110",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "111",
+                ),
+                denom: Number(
+                    "112",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "113",
+                ),
+                denom: Number(
+                    "114",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "115",
+                ),
+                denom: Number(
+                    "116",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "117",
+                ),
+                denom: Number(
+                    "118",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "119",
+                ),
+                denom: Number(
+                    "120",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "121",
+                ),
+                denom: Number(
+                    "122",
+                ),
+            },
+        ],
+    ],
+    style: Plain,
+}
+
+=== layout ===
+Matrix(Plain) x=0.0000 y=0.0000 w=391.0000 h=158.4000 bl=79.2000
+  row0:
+    Fraction x=9.5000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("81") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("82") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=66.5000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("83") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("84") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=123.5000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("85") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("86") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=180.5000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("87") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("88") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=237.5000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("89") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("90") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=294.5000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("91") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("92") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=351.5000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("93") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("94") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+  row1:
+    Fraction x=9.5000 y=54.8000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("95") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("96") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=66.5000 y=54.8000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("97") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("98") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=118.0000 y=54.8000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("99") x=9.5000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("100") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=175.0000 y=54.8000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("101") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("102") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=232.0000 y=54.8000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("103") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("104") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=289.0000 y=54.8000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("105") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("106") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=346.0000 y=54.8000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("107") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("108") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+  row2:
+    Fraction x=4.0000 y=109.6000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("109") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("110") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=61.0000 y=109.6000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("111") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("112") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=118.0000 y=109.6000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("113") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("114") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=175.0000 y=109.6000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("115") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("116") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=232.0000 y=109.6000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("117") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("118") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=289.0000 y=109.6000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("119") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("120") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+    Fraction x=346.0000 y=109.6000 w=41.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("121") x=4.0000 y=4.0000 w=33.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("122") x=4.0000 y=24.8000 w=33.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="13.50" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">81</text>
+<line x1="10.50" y1="24.40" x2="38.50" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="13.50" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">82</text>
+<text x="70.50" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">83</text>
+<line x1="67.50" y1="24.40" x2="95.50" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="70.50" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">84</text>
+<text x="127.50" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">85</text>
+<line x1="124.50" y1="24.40" x2="152.50" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="127.50" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">86</text>
+<text x="184.50" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">87</text>
+<line x1="181.50" y1="24.40" x2="209.50" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="184.50" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">88</text>
+<text x="241.50" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">89</text>
+<line x1="238.50" y1="24.40" x2="266.50" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="241.50" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">90</text>
+<text x="298.50" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">91</text>
+<line x1="295.50" y1="24.40" x2="323.50" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="298.50" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">92</text>
+<text x="355.50" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">93</text>
+<line x1="352.50" y1="24.40" x2="380.50" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="355.50" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">94</text>
+<text x="13.50" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">95</text>
+<line x1="10.50" y1="79.20" x2="38.50" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="13.50" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">96</text>
+<text x="70.50" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">97</text>
+<line x1="67.50" y1="79.20" x2="95.50" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="70.50" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">98</text>
+<text x="127.50" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">99</text>
+<line x1="119.00" y1="79.20" x2="158.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="122.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">100</text>
+<text x="179.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">101</text>
+<line x1="176.00" y1="79.20" x2="215.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="179.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">102</text>
+<text x="236.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">103</text>
+<line x1="233.00" y1="79.20" x2="272.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="236.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">104</text>
+<text x="293.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">105</text>
+<line x1="290.00" y1="79.20" x2="329.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="293.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">106</text>
+<text x="350.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">107</text>
+<line x1="347.00" y1="79.20" x2="386.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="350.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">108</text>
+<text x="8.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">109</text>
+<line x1="5.00" y1="134.00" x2="44.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="8.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">110</text>
+<text x="65.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">111</text>
+<line x1="62.00" y1="134.00" x2="101.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="65.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">112</text>
+<text x="122.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">113</text>
+<line x1="119.00" y1="134.00" x2="158.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="122.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">114</text>
+<text x="179.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">115</text>
+<line x1="176.00" y1="134.00" x2="215.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="179.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">116</text>
+<text x="236.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">117</text>
+<line x1="233.00" y1="134.00" x2="272.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="236.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">118</text>
+<text x="293.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">119</text>
+<line x1="290.00" y1="134.00" x2="329.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="293.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">120</text>
+<text x="350.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">121</text>
+<line x1="347.00" y1="134.00" x2="386.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="350.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">122</text>

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "honorific",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "경칭",
+  "title": "귀하 유지",
+  "why": "수신 경칭은 보통 그대로 둔다. find==replace 결정론.",
+  "notes": "idempotent",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/honorific.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/honorific.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "귀하",
+        "replace": "귀하"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/honorific.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"귀하\",\"replace\":\"귀하\"}]}",
+  "planSha256": "8d679663bc5c59cb20add8c266ec877b72f5c911c7eba74997b41b4ec6115b10",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "1f25af9d0acfbdf1156acf51e0520cd7b0f0d13fa2a720c7ebf871a249a4bc84",
+    "planSha256": "8d679663bc5c59cb20add8c266ec877b72f5c911c7eba74997b41b4ec6115b10",
+    "outputSha256": "dce6cfd1bde67193e4d5e8cb344b301971181b32a232381feef0214aca1c1204",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "dce6cfd1bde67193e4d5e8cb344b301971181b32a232381feef0214aca1c1204"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

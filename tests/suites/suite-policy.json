@@ -1,0 +1,181 @@
+{
+  "version": 2,
+  "minimumNextestCases": 6559,
+  "sharding": {
+    "suitePrefix": "regression_suite_",
+    "suiteCount": 28,
+    "testAttributeWeight": 4096,
+    "maximumIntegrationTargets": 48
+  },
+  "nextestPriorities": [
+    {
+      "case": "overflow_cell_baseline",
+      "priority": 100
+    }
+  ],
+  "sourceRoots": [
+    {
+      "path": "tests",
+      "recursive": false
+    },
+    {
+      "path": "tests/cases",
+      "recursive": true
+    },
+    {
+      "path": "tests/suites/issue_regression_pilot",
+      "recursive": false
+    }
+  ],
+  "moduleIntegrationOverrides": [
+    {
+      "path": "tests/cli_json_contract.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/cli_catalog_contract.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_4968_kerning_capability_provider.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/issue_2225_missing_picture_placeholder.rs",
+      "allowBlockers": [
+        "function_gated_native_skia"
+      ]
+    }
+  ],
+  "exceptions": [
+    {
+      "target": "cli_exit_codes",
+      "path": "tests/cli_exit_codes.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "cli_exit_codes_native",
+      "path": "tests/cli_exit_codes_native.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_1144",
+      "path": "tests/issue_1144.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_1144_native",
+      "path": "tests/issue_1144_native.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_2225_missing_picture_placeholder",
+      "path": "tests/issue_2225_missing_picture_placeholder.rs",
+      "manual": false,
+      "reasons": [
+        "function_gated_native_skia"
+      ]
+    },
+    {
+      "target": "issue_2833_hml_adapter_row_sizes",
+      "path": "tests/issue_2833_hml_adapter_row_sizes.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "issue_4055_b1_chart_edit_probe",
+      "path": "tests/issue_4055_b1_chart_edit_probe.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4098_legacy_chart_grid",
+      "path": "tests/issue_4098_legacy_chart_grid.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4099_hwpx_chart_to_hwp",
+      "path": "tests/issue_4099_hwpx_chart_to_hwp.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4100_chart_data_edit",
+      "path": "tests/issue_4100_chart_data_edit.rs",
+      "manual": false,
+      "reasons": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4126_cursor_rect_empty_para_pages",
+      "path": "tests/issue_4126_cursor_rect_empty_para_pages.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "issue_4128_cell_cursor_page_narrowing",
+      "path": "tests/issue_4128_cell_cursor_page_narrowing.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "issue_4179_cursor_rect_text_host_para_pages",
+      "path": "tests/issue_4179_cursor_rect_text_host_para_pages.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "overflow_cell_baseline",
+      "path": "tests/overflow_cell_baseline.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: BINOM{n}{k}
+honesty: choose-empty-top
+
+=== ast ===
+Paren {
+    left: "(",
+    right: ")",
+    body: Atop {
+        top: Text(
+            "n",
+        ),
+        bottom: Text(
+            "k",
+        ),
+    },
+}
+
+=== layout ===
+Paren("(",")") x=0.0000 y=0.0000 w=31.5500 h=48.0000 bl=29.0000
+  Atop x=6.0000 y=0.0000 w=19.5500 h=48.0000 bl=29.0000
+    top:
+      Text("n") x=4.0000 y=4.0000 w=11.5500 h=20.0000 bl=16.0000
+    bottom:
+      Text("k") x=4.0000 y=24.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M4.86,0.00 C0.27,8.64 0.27,39.36 4.86,48.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<text x="10.00" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">n</text>
+<text x="10.00" y="40.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">k</text>
+<path d="M26.69,0.00 C31.28,8.64 31.28,39.36 26.69,48.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>

@@ -1,0 +1,21 @@
+id	attest_version	verify_version	reproduced	accepted	reason	family
+gold-fresh-reproduced	0.8.4	0.8.4	true	true	FRESH_REPRODUCED	exact_match
+gold-fresh-not-reproduced	0.8.4	0.8.4	false	false	FRESH_NOT_REPRODUCED	exact_match
+gold-fresh-absent	0.8.4	0.8.4	null	false	FRESH_ABSENT	exact_match
+gold-stale-tool	0.8.3	0.8.4	true	false	STALE_TOOL	patch_drift
+gold-stale-not-reproduced	0.8.3	0.8.4	false	false	STALE_AND_NOT_REPRODUCED	patch_drift
+gold-stale-absent	0.8.3	0.8.4	null	false	STALE_AND_ABSENT	patch_drift
+gold-minor-drift	0.7.15	0.8.4	true	false	STALE_TOOL	minor_drift
+gold-major-drift	0.8.4	1.0.0	true	false	STALE_TOOL	major_drift
+gold-build-meta	0.8.4	0.8.4+git.abc	true	false	STALE_TOOL	build_meta
+gold-v-prefix	v0.8.4	0.8.4	true	false	STALE_TOOL	v_prefix
+gold-crate-prefix	rhwp 0.8.4	0.8.4	true	false	STALE_TOOL	crate_prefix
+gold-prerelease	1.0.0-rc.1	1.0.0	true	false	STALE_TOOL	prerelease
+gold-git-vs-semver	a1b2c3d4e5f60718293a4b5c6d7e8f9012345678	0.8.4	true	false	STALE_TOOL	git_vs_semver
+gold-trim-equal	0.8.4	 0.8.4	true	true	FRESH_REPRODUCED	trim_equal
+gold-attest-missing		0.8.4	true	false	ATTEST_VERSION_MISSING	missing_attest
+gold-verify-missing	0.8.4		true	false	VERIFY_VERSION_MISSING	missing_verify
+gold-both-missing			true	false	ATTEST_VERSION_MISSING	missing_both
+gold-ws-attest	   	0.8.4	true	false	ATTEST_VERSION_MISSING	whitespace_attest
+gold-this-crate	0.1.0	0.1.0	true	true	FRESH_REPRODUCED	verifier_crate
+gold-this-crate-stale	0.8.4	0.1.0	true	false	STALE_TOOL	verifier_crate

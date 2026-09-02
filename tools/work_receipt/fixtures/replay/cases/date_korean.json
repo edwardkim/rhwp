@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "date_korean",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "한글일자",
+  "title": "2026년 3월 31일→2026년 4월 1일",
+  "why": "시행일 하루 연기. 한글 일자 표기는 ISO 와 다른 바이트다.",
+  "notes": "한글 일자 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/date-korean.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/date-korean.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2026년 3월 31일",
+        "replace": "2026년 4월 1일"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/date-korean.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2026년 3월 31일\",\"replace\":\"2026년 4월 1일\"}]}",
+  "planSha256": "907304bee107dab1e1b079382fd02e424d537c19ad37436c94e10a0af39045b8",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "facdf5bd50561117434cf21c19b25c1081bb80c531e5c28487c6cc449e2054c2",
+    "planSha256": "907304bee107dab1e1b079382fd02e424d537c19ad37436c94e10a0af39045b8",
+    "outputSha256": "73e0a218b52aa1238ab2a6444bd39fd143b5f3d4d0a451d30d0dd0ec69adb8fc",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "73e0a218b52aa1238ab2a6444bd39fd143b5f3d4d0a451d30d0dd0ec69adb8fc"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

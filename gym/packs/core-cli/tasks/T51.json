@@ -1,0 +1,29 @@
+{
+  "id": "T51",
+  "tier": 2,
+  "title": "내부표 첫 셀 표기",
+  "input": "samples/inner-table-01.hwp",
+  "instructions": "T51 은 입문·코어 온램프를 두껍게 하는 과제다. 내부 표 표본의 (0,0) 을 '내부표온램프' 로 바꾼다. table-001 과 다른 파일이다. 표본은 `samples/inner-table-01.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: rhwp edit set-cell 또는 run 계획서 action set_cell table=0 row=0 col=0 text=내부표온램프. 제출은 answer.json 에 cell.hwp 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. cell_text_eq 가 그 좌표만 본다. 채점은 표 0 의 (0,0) 셀만 본다. 홍길동을 쓰지 마라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "cell.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 0 (0,0) 이 정확히 내부표온램프",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "내부표온램프",
+      "cmd": [
+        "export-tables",
+        "{file:cell.hwp}",
+        "--json"
+      ],
+      "path": "tables"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "FJ64",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "작성자": "여정쌍작성",
+          "이메일": "pair-ae@rhwp.example"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:author-email.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

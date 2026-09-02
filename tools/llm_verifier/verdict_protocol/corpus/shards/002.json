@@ -1,0 +1,2279 @@
+{
+  "schemaVersion": "v-proto.1.0",
+  "shardId": "002",
+  "records": [
+    {
+      "recordId": "vproto-000081",
+      "sourceTag": "국가인권위원회/예규/2018/0081#layout-anomaly/overflow-nonstrict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/국가인권위원회_예규_2018_0081.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국가인권위원회_예규_2018_0081.hwp",
+        "pageCount": 5,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 12.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000082",
+      "sourceTag": "통계청/예규/2018/0082#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/통계청_예규_2018_0082.hwpx",
+        "inputSha256": "0a14c9040075ff3a9b52097183556758554f439faae039a04ba2dbf62cce4316",
+        "planSha256": "69d993538a6357a88f6faf8495d805e188bc125f45c9a42bc8eb77d0c16c9e7b",
+        "outputSha256": "e32fffcf5be2a00f0bd2c32481383194b5dd950ca4e4ed2627d9c3e759f03f50",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 2,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000083",
+      "sourceTag": "기상청/예규/2018/0083#fill-fields/write-verify-ok",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/기상청_예규_2018_0083.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/기상청_예규_2018_0083.hwp",
+        "dryRun": false,
+        "filledCount": 6,
+        "filled": [
+          {
+            "name": "주소",
+            "occurrence": 0,
+            "value": "주소-값-0082-0"
+          },
+          {
+            "name": "연락처",
+            "occurrence": 1,
+            "value": "연락처-값-0082-1"
+          },
+          {
+            "name": "전자우편",
+            "occurrence": 2,
+            "value": "전자우편-값-0082-2"
+          },
+          {
+            "name": "사업자등록번호",
+            "occurrence": 3,
+            "value": "사업자등록번호-값-0082-3"
+          },
+          {
+            "name": "법인명",
+            "occurrence": 4,
+            "value": "법인명-값-0082-4"
+          },
+          {
+            "name": "대표자",
+            "occurrence": 5,
+            "value": "대표자-값-0082-5"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/기상청_예규_2018_0083_filled.hwp",
+        "outputFormat": "hwp5",
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000084",
+      "sourceTag": "관세청/예규/2018/0084#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/관세청_예규_2018_0084.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/관세청_예규_2018_0084.hwp",
+        "sourceB": "samples/gov/관세청_예규_2018_0084.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 5,
+        "pageCountB": 5,
+        "pageCountMismatch": false,
+        "maxDisp": 1.4,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 63,
+            "nodeCountB": 63
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 64,
+            "nodeCountB": 64
+          },
+          {
+            "page": 2,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 65,
+            "nodeCountB": 65
+          },
+          {
+            "page": 3,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 66,
+            "nodeCountB": 66
+          },
+          {
+            "page": 4,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 67,
+            "nodeCountB": 67
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-000085",
+      "sourceTag": "검찰청/예규/2018/0085#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/검찰청_예규_2018_0085.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/검찰청_예규_2018_0085.hwpx",
+        "format": "hwpx",
+        "sizeBytes": 35508,
+        "version": "owpml-1.0",
+        "sections": 1,
+        "pageCount": 37,
+        "paraCount": 87,
+        "fonts": [
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕",
+          "바탕체",
+          "나눔고딕",
+          "나눔명조",
+          "본고딕",
+          "본명조",
+          "HY신명조"
+        ],
+        "title": "정보공개 청구서 (검찰청 예규 2018)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000086",
+      "sourceTag": "경찰청/예규/2018/0086#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/경찰청_예규_2018_0086.hwp",
+        "--expect-pages",
+        "6",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/경찰청_예규_2018_0086.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 6,
+            "actual": 6,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 165,
+            "actual": 165,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 1,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "사업자등록번호",
+            "actual": "사업자등록번호",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000087",
+      "sourceTag": "소방청/예규/2018/0087#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/소방청_예규_2018_0087.hwp",
+        "samples/gov/소방청_예규_2018_0087.hwpx",
+        "samples/gov/소방청_예규_2018_0087.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/소방청_예규_2018_0087.hwp",
+        "b": "samples/gov/소방청_예규_2018_0087.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000088",
+      "sourceTag": "해양경찰청/예규/2018/0088#layout-anomaly/empty-strict-ok",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/해양경찰청_예규_2018_0088.hwpx",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/해양경찰청_예규_2018_0088.hwpx",
+        "pageCount": 6,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000089",
+      "sourceTag": "병무청/예규/2018/0089#replay/verify-reproduced",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "eabe597da5e71a5f63a1afe0db6e514ed3d75a3a285eb273cfe52c153dbfd96f",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/병무청_예규_2018_0089.hwp",
+        "inputSha256": "b6e73413848b72864533bc68b9e25c1c2184e9c3879e057d17d39459a5464184",
+        "planSha256": "62beabd9577b7cd43b6cc73f44cb6503b444982d6d53565f9d6a61464c7f17d9",
+        "outputSha256": "eabe597da5e71a5f63a1afe0db6e514ed3d75a3a285eb273cfe52c153dbfd96f",
+        "expectedOutputSha256": "eabe597da5e71a5f63a1afe0db6e514ed3d75a3a285eb273cfe52c153dbfd96f",
+        "reproduced": true,
+        "steps": 4,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": true,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000090",
+      "sourceTag": "산림청/예규/2018/0090#fill-fields/not-found-exit0",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/산림청_예규_2018_0090.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/산림청_예규_2018_0090.hwp",
+        "dryRun": false,
+        "filledCount": 7,
+        "filled": [
+          {
+            "name": "담당자",
+            "occurrence": 0,
+            "value": "담당자-값-0089-0"
+          },
+          {
+            "name": "문서번호",
+            "occurrence": 1,
+            "value": "문서번호-값-0089-1"
+          },
+          {
+            "name": "시행일자",
+            "occurrence": 2,
+            "value": "시행일자-값-0089-2"
+          },
+          {
+            "name": "수신",
+            "occurrence": 3,
+            "value": "수신-값-0089-3"
+          },
+          {
+            "name": "제목",
+            "occurrence": 4,
+            "value": "제목-값-0089-4"
+          },
+          {
+            "name": "금액",
+            "occurrence": 5,
+            "value": "금액-값-0089-5"
+          },
+          {
+            "name": "계좌번호",
+            "occurrence": 6,
+            "value": "계좌번호-값-0089-6"
+          }
+        ],
+        "notFound": [
+          "없는필드8"
+        ],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/산림청_예규_2018_0090_filled.hwp",
+        "outputFormat": "hwp5"
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000091",
+      "sourceTag": "농촌진흥청/예규/2018/0091#render-diff/under-threshold",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/농촌진흥청_예규_2018_0091.hwpx",
+        "--max-disp",
+        "2",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/농촌진흥청_예규_2018_0091.hwpx",
+        "sourceB": "samples/gov/농촌진흥청_예규_2018_0091.hwpx",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 2,
+        "pageCountB": 2,
+        "pageCountMismatch": false,
+        "maxDisp": 1.2,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 40,
+            "nodeCountB": 40
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 41,
+            "nodeCountB": 41
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-000092",
+      "sourceTag": "중소벤처기업부/예규/2018/0092#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/중소벤처기업부_예규_2018_0092.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/중소벤처기업부_예규_2018_0092.hwp",
+        "format": "hwp5",
+        "sizeBytes": 36467,
+        "version": "5.0.2.5",
+        "sections": 4,
+        "pageCount": 44,
+        "paraCount": 94,
+        "fonts": [
+          "본고딕",
+          "본명조",
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림"
+        ],
+        "title": "개인정보 처리방침 개정 고시 (중소벤처기업부 예규 2018)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000093",
+      "sourceTag": "과학기술정보통신부/예규/2018/0093#verify/expect-fail",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/과학기술정보통신부_예규_2018_0093.hwp",
+        "--expect-min-chars",
+        "99999",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/과학기술정보통신부_예규_2018_0093.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 13,
+            "actual": 15,
+            "pass": false
+          },
+          {
+            "kind": "min-chars",
+            "expected": 172,
+            "actual": 172,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 3,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "수신",
+            "actual": "수신",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 4,
+        "failCount": 1,
+        "verdict": "fail",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 1,
+        "passCount": 4,
+        "verdict": "fail",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000094",
+      "sourceTag": "문화체육관광부/예규/2018/0094#ir-diff/cross-format-diff",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/문화체육관광부_예규_2018_0094.hwpx",
+        "samples/gov/문화체육관광부_예규_2018_0094.hwpxx",
+        "samples/gov/문화체육관광부_예규_2018_0094.hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/문화체육관광부_예규_2018_0094.hwpx",
+        "b": "samples/gov/문화체육관광부_예규_2018_0094.hwp",
+        "identical": false,
+        "diffCount": 9,
+        "categories": {
+          "text": 4,
+          "charShape": 1,
+          "table": 3,
+          "ctrl": 1
+        },
+        "untrustedContent": true,
+        "untrustedFields": [
+          "categories"
+        ]
+      },
+      "judgment": {
+        "identical": false,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 9,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000095",
+      "sourceTag": "환경부/예규/2018/0095#layout-anomaly/overflow-strict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/환경부_예규_2018_0095.hwp",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/환경부_예규_2018_0095.hwp",
+        "pageCount": 7,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 8.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": true,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": [
+              {
+                "kind": "text-text",
+                "a": {
+                  "section": 0,
+                  "paragraph": 4
+                },
+                "b": {
+                  "section": 0,
+                  "paragraph": 5
+                },
+                "overlapPx": 7.0
+              }
+            ]
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 6,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000096",
+      "sourceTag": "해양수산부/예규/2018/0096#replay/verify-mismatch",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/해양수산부_예규_2018_0096.hwp",
+        "inputSha256": "cdfb72712b3d58e2de9addedcd72f6d99a1ee76fddec605ec75295b0ee2a4859",
+        "planSha256": "a1413cc5dd0243b0110a4a22f1fb8deb01d37702642aeb4bc1c54ffc1c6b75d5",
+        "outputSha256": "7e1f812f73dbabbc99e05e397f317416bcc12f45e99632fb56f45d899f5eb99a",
+        "expectedOutputSha256": "0fc723472182084fbd6c037305096f3a8644f0dd78a840a47e65167ede481710",
+        "reproduced": false,
+        "steps": 1,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": false,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000097",
+      "sourceTag": "법제처/공고/2018/0097#fill-fields/verify-ir-diff",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/법제처_공고_2018_0097.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/법제처_공고_2018_0097.hwpx",
+        "dryRun": false,
+        "filledCount": 2,
+        "filled": [
+          {
+            "name": "신청인",
+            "occurrence": 0,
+            "value": "신청인-값-0096-0"
+          },
+          {
+            "name": "생년월일",
+            "occurrence": 1,
+            "value": "생년월일-값-0096-1"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/법제처_공고_2018_0097_filled.hwpx",
+        "outputFormat": "hwpx",
+        "verify": {
+          "identical": false,
+          "diffCount": 1
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": false,
+          "diffCount": 1
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000098",
+      "sourceTag": "행정안전부/공고/2018/0098#render-diff/regression",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/행정안전부_공고_2018_0098.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/행정안전부_공고_2018_0098.hwp",
+        "sourceB": "samples/gov/행정안전부_공고_2018_0098.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 4,
+        "pageCountB": 4,
+        "pageCountMismatch": false,
+        "maxDisp": 5.5,
+        "worstPage": 0,
+        "overPages": 2,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OVER",
+        "regression": true,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 5.5,
+            "over": true,
+            "structMismatch": false,
+            "nodeCountA": 47,
+            "nodeCountB": 47
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 48,
+            "nodeCountB": 48
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 49,
+            "nodeCountB": 49
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 50,
+            "nodeCountB": 50
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": true,
+        "status": "OVER",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 2
+      }
+    },
+    {
+      "recordId": "vproto-000099",
+      "sourceTag": "국세청/공고/2018/0099#info/io-missing",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/국세청_공고_2018_0099.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000100",
+      "sourceTag": "대법원/공고/2018/0100#verify/io-missing",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/대법원_공고_2018_0100.hwpx",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000101",
+      "sourceTag": "특허청/공고/2018/0101#ir-diff/io-missing-a",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/특허청_공고_2018_0101.hwp",
+        "samples/gov/특허청_공고_2018_0101.hwpx",
+        "samples/gov/특허청_공고_2018_0101.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000102",
+      "sourceTag": "교육부/공고/2018/0102#layout-anomaly/io-missing",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/교육부_공고_2018_0102.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000103",
+      "sourceTag": "보건복지부/공고/2018/0103#replay/io-missing-plan",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000104",
+      "sourceTag": "국토교통부/공고/2018/0104#fill-fields/io-missing",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/국토교통부_공고_2018_0104.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000105",
+      "sourceTag": "고용노동부/공고/2018/0105#render-diff/io-missing",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/고용노동부_공고_2018_0105.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000106",
+      "sourceTag": "외교부/공고/2018/0106#info/io-missing",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/외교부_공고_2018_0106.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000107",
+      "sourceTag": "기획재정부/공고/2018/0107#verify/io-missing",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/기획재정부_공고_2018_0107.hwp",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000108",
+      "sourceTag": "공정거래위원회/공고/2018/0108#ir-diff/io-missing-a",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/공정거래위원회_공고_2018_0108.hwp",
+        "samples/gov/공정거래위원회_공고_2018_0108.hwpx",
+        "samples/gov/공정거래위원회_공고_2018_0108.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000109",
+      "sourceTag": "금융위원회/공고/2018/0109#layout-anomaly/io-missing",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/금융위원회_공고_2018_0109.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000110",
+      "sourceTag": "방송통신위원회/공고/2018/0110#replay/io-missing-plan",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000111",
+      "sourceTag": "개인정보보호위원회/공고/2018/0111#fill-fields/io-missing",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/개인정보보호위원회_공고_2018_0111.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000112",
+      "sourceTag": "국민권익위원회/공고/2018/0112#render-diff/io-missing",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/국민권익위원회_공고_2018_0112.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000113",
+      "sourceTag": "국가인권위원회/공고/2018/0113#info/io-truncated",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/국가인권위원회_공고_2018_0113.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000114",
+      "sourceTag": "통계청/공고/2018/0114#verify/usage-no-expect",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/통계청_공고_2018_0114.hwp",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000115",
+      "sourceTag": "기상청/공고/2018/0115#ir-diff/usage-one-file",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/기상청_공고_2018_0115.hwpx",
+        "samples/gov/기상청_공고_2018_0115.hwpxx",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000116",
+      "sourceTag": "관세청/공고/2018/0116#layout-anomaly/usage-bad-page",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/관세청_공고_2018_0116.hwp",
+        "-p",
+        "-4",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000117",
+      "sourceTag": "검찰청/공고/2018/0117#replay/usage-no-plan",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000118",
+      "sourceTag": "경찰청/공고/2018/0118#fill-fields/usage-no-output",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/경찰청_공고_2018_0118.hwpx",
+        "--data",
+        "@fields.json",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000119",
+      "sourceTag": "소방청/공고/2018/0119#render-diff/usage-bad-via",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/소방청_공고_2018_0119.hwp",
+        "--via",
+        "pdf",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000120",
+      "sourceTag": "해양경찰청/공고/2018/0120#info/usage-no-file",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/해양경찰청_공고_2018_0120.hwp",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    }
+  ]
+}

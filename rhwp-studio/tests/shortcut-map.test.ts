@@ -42,6 +42,40 @@ test('IME pending 상태처럼 key가 Process여도 code로 장평/자간 단축
   assert.equal(command({ key: 'Process', code: 'KeyW', altKey: true, shiftKey: true }), 'format:char-spacing-increase');
 });
 
+test('한글 IME의 Ctrl+A를 물리 KeyA로 모두 선택에 매핑한다', () => {
+  assert.equal(command({ key: 'ㅁ', code: 'KeyA', ctrlKey: true }), 'edit:select-all');
+  assert.equal(command({ key: 'Process', code: 'KeyA', ctrlKey: true }), 'edit:select-all');
+  assert.equal(command({ key: 'ㅂ', code: 'KeyQ', ctrlKey: true }), null);
+});
+
+test('한글 IME의 Ctrl+Shift+S를 물리 KeyS로 다른 이름으로 저장에 매핑한다', () => {
+  assert.equal(
+    command({ key: 'Process', code: 'KeyS', ctrlKey: true, shiftKey: true }),
+    'file:save-as',
+  );
+});
+
+test('완전히 같은 단축키 슬롯은 서로 다른 커맨드에 중복 배정하지 않는다', () => {
+  const owners = new Map<string, Set<string>>();
+  for (const [def, commandId] of defaultShortcuts) {
+    const signature = JSON.stringify({
+      key: def.key,
+      ctrl: def.ctrl ?? false,
+      shift: def.shift ?? false,
+      alt: def.alt ?? false,
+      platform: def.platform ?? 'all',
+    });
+    const commands = owners.get(signature) ?? new Set<string>();
+    commands.add(commandId);
+    owners.set(signature, commands);
+  }
+
+  const conflicts = [...owners.entries()]
+    .filter(([, commands]) => commands.size > 1)
+    .map(([signature, commands]) => ({ signature, commands: [...commands].sort() }));
+  assert.deepEqual(conflicts, []);
+});
+
 test('macOS 영문 입력 Option+G의 © 문자 값도 물리 KeyG로 찾아가기를 실행한다', () => {
   assert.equal(command({ key: 'g', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
   assert.equal(command({ key: '©', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
@@ -63,4 +97,22 @@ test('표 줄/칸 추가·지우기 단축키는 대화상자 명령으로 매�
   assert.equal(command({ key: 'Process', code: 'Help', altKey: true }, 'other'), null);
   assert.equal(command({ key: 'Delete', altKey: true }), 'table:delete-row-col');
   assert.equal(command({ key: 'delete', altKey: true }), 'table:delete-row-col');
+});
+
+test('확대·축소는 노트북에서도 가능한 Ctrl/Command +/-로 통일한다', () => {
+  assert.equal(command({ key: '+', ctrlKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '+', ctrlKey: true, shiftKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '=', ctrlKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '-', ctrlKey: true }), 'view:zoom-out');
+  assert.equal(command({ key: '+', metaKey: true }, 'mac'), 'view:zoom-in');
+  assert.equal(command({ key: '+', metaKey: true, shiftKey: true }, 'mac'), 'view:zoom-in');
+  assert.equal(command({ key: '-', metaKey: true }, 'mac'), 'view:zoom-out');
+  assert.equal(command({ key: '+', code: 'NumpadAdd', shiftKey: true }), null);
+  assert.equal(command({ key: '-', code: 'NumpadSubtract', shiftKey: true }), null);
+});
+
+test('기본 도구 상자 접기/펴기는 한컴 호환 Ctrl/Command+F1로 매핑한다', () => {
+  assert.equal(command({ key: 'F1', ctrlKey: true }), 'view:toolbox-basic');
+  assert.equal(command({ key: 'f1', metaKey: true }, 'mac'), 'view:toolbox-basic');
+  assert.equal(command({ key: 'F1' }), null);
 });

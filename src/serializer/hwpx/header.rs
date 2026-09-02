@@ -22,6 +22,7 @@ use crate::model::style::{
     SubstFont, TabDef,
 };
 use crate::model::ColorRef;
+use crate::parser::tags;
 
 use super::canonical_defaults::FONTFACE_LANG_NAMES;
 use super::context::SerializeContext;
@@ -107,7 +108,7 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
         None => {
             write_compatible_document(&mut w)?;
             write_doc_option(&mut w)?;
-            write_track_change_config(&mut w)?;
+            write_track_change_config(&mut w, track_change_flags(&doc.doc_info))?;
         }
     }
 
@@ -417,6 +418,16 @@ fn write_diag_line<W: Write>(
     )
 }
 
+// [#5309] '문단 머리 정보'(표 41) attr bits 0–1 → OWPML paraHead@align 토큰.
+// 0=왼쪽·1=가운데·2=오른쪽 (HWP5 스펙). 3은 미사용이라 LEFT 로 폴백.
+fn numbering_head_align_str(attr: u32) -> &'static str {
+    match attr & 0x03 {
+        1 => "CENTER",
+        2 => "RIGHT",
+        _ => "LEFT",
+    }
+}
+
 // [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
 fn numbering_format_str(code: u8) -> &'static str {
     match code {
@@ -596,7 +607,7 @@ fn write_char_properties<W: Write>(
         &[("itemCnt", &doc_info.char_shapes.len().to_string())],
     )?;
     for (idx, cs) in doc_info.char_shapes.iter().enumerate() {
-        write_char_pr(w, idx as u32, cs)?;
+        super::char_shapes::write_char_pr(w, idx as u32, cs)?;
     }
     end_tag(w, "hh:charProperties")?;
     Ok(())
@@ -607,126 +618,8 @@ fn write_char_pr<W: Write>(
     id: u32,
     cs: &CharShape,
 ) -> Result<(), SerializeError> {
-    // 속성 순서 (CharShapeType.cpp:79-86): id, height, textColor, shadeColor,
-    // useFontSpace, useKerning, symMark, borderFillIDRef
-    // `0xFFFF_FFFF`만 "음영 없음" sentinel 이다. `0x00000000`은 HWP3 팔레트
-    // 검정색을 100% 적용한 실제 음영이므로 #000000으로 보존해야 한다 (#4155).
-    let shade = color_hex(cs.shade_color);
-    start_tag_attrs(
-        w,
-        "hh:charPr",
-        &[
-            ("id", &id.to_string()),
-            ("height", &cs.base_size.to_string()),
-            ("textColor", &color_hex(cs.text_color)),
-            ("shadeColor", &shade),
-            ("useFontSpace", bool01(cs.use_font_space)),
-            ("useKerning", bool01(cs.kerning)),
-            ("symMark", sym_mark_str(cs.emphasis_dot)),
-            ("borderFillIDRef", &cs.border_fill_id.to_string()),
-        ],
-    )?;
-
-    // 자식 순서 (CharShapeType.cpp:59-73):
-    // fontRef, ratio, spacing, relSz, offset, italic, bold, underline, strikeout, outline,
-    // shadow, emboss, engrave, supscript, subscript
-    write_lang_attrs(w, "hh:fontRef", &cs.font_ids.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:ratio", &cs.ratios.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:spacing", &cs.spacings.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:relSz", &cs.relative_sizes.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:offset", &cs.char_offsets.map(|v| v as i32))?;
-    if cs.italic {
-        empty_tag(w, "hh:italic", &[])?;
-    }
-    if cs.bold {
-        empty_tag(w, "hh:bold", &[])?;
-    }
-    // underline/strikeout/outline/shadow: 한컴은 비활성(NONE)이어도 항상 출력한다.
-    // 모델은 파서가 NONE 일 때도 shape/color/offset 을 보존하므로(역매핑 가능),
-    // 무조건 출력해 원본과 동일한 구조를 만든다.
-    empty_tag(
-        w,
-        "hh:underline",
-        &[
-            ("type", underline_type_str(cs.underline_type)),
-            ("shape", line_shape_str(cs.underline_shape)),
-            ("color", &color_hex(cs.underline_color)),
-        ],
-    )?;
-    // strikeout: 파서가 shape 값으로 strikethrough 여부를 결정하므로(is_real_strike_shape),
-    // 비활성일 때는 반드시 shape="NONE" 으로 출력해야 재파싱 시 켜지지 않는다.
-    empty_tag(
-        w,
-        "hh:strikeout",
-        &[
-            (
-                "shape",
-                if cs.strikethrough {
-                    line_shape_str(cs.strike_shape)
-                } else {
-                    "NONE"
-                },
-            ),
-            ("color", &color_hex(cs.strike_color)),
-        ],
-    )?;
-    empty_tag(
-        w,
-        "hh:outline",
-        &[("type", outline_type_str(cs.outline_type))],
-    )?;
-    empty_tag(
-        w,
-        "hh:shadow",
-        &[
-            ("type", shadow_type_str(cs.shadow_type)),
-            ("color", &color_hex(cs.shadow_color)),
-            ("offsetX", &cs.shadow_offset_x.to_string()),
-            ("offsetY", &cs.shadow_offset_y.to_string()),
-        ],
-    )?;
-    if cs.emboss {
-        empty_tag(w, "hh:emboss", &[])?;
-    }
-    if cs.engrave {
-        empty_tag(w, "hh:engrave", &[])?;
-    }
-    if cs.superscript {
-        empty_tag(w, "hh:supscript", &[])?;
-    }
-    if cs.subscript {
-        empty_tag(w, "hh:subscript", &[])?;
-    }
-
-    end_tag(w, "hh:charPr")?;
-    Ok(())
-}
-
-fn write_lang_attrs<W: Write>(
-    w: &mut Writer<W>,
-    name: &str,
-    vals: &[i32; 7],
-) -> Result<(), SerializeError> {
-    let s0 = vals[0].to_string();
-    let s1 = vals[1].to_string();
-    let s2 = vals[2].to_string();
-    let s3 = vals[3].to_string();
-    let s4 = vals[4].to_string();
-    let s5 = vals[5].to_string();
-    let s6 = vals[6].to_string();
-    empty_tag(
-        w,
-        name,
-        &[
-            ("hangul", &s0),
-            ("latin", &s1),
-            ("hanja", &s2),
-            ("japanese", &s3),
-            ("other", &s4),
-            ("symbol", &s5),
-            ("user", &s6),
-        ],
-    )
+    // #3500: hh:charPr 방출은 char_shapes 모듈이 단일 출처다.
+    super::char_shapes::write_char_pr(w, id, cs)
 }
 
 fn bool01(b: bool) -> &'static str {
@@ -737,74 +630,9 @@ fn bool01(b: bool) -> &'static str {
     }
 }
 
-fn sym_mark_str(em: u8) -> &'static str {
-    match em {
-        0 => "NONE",
-        1 => "DOT_ABOVE",
-        2 => "RING_ABOVE",
-        3 => "TILDE",
-        4 => "CARON",
-        5 => "SIDE",
-        6 => "COLON",
-        _ => "NONE",
-    }
-}
-
-fn underline_type_str(t: crate::model::style::UnderlineType) -> &'static str {
-    use crate::model::style::UnderlineType::*;
-    match t {
-        None => "NONE",
-        Bottom => "BOTTOM",
-        Top => "TOP",
-    }
-}
-
-fn line_shape_str(s: u8) -> &'static str {
-    match s {
-        0 => "SOLID",
-        1 => "DASH",
-        2 => "DOT",
-        3 => "DASH_DOT",
-        4 => "DASH_DOT_DOT",
-        5 => "LONG_DASH",
-        6 => "CIRCLE",
-        7 => "DOUBLE_SLIM",
-        8 => "SLIM_THICK",
-        9 => "THICK_SLIM",
-        10 => "SLIM_THICK_SLIM",
-        11 => "WAVE",
-        12 => "DOUBLE_WAVE",
-        _ => "SOLID",
-    }
-}
-
-// [#2695] 외곽선 8종. IR outline_type 은 HWP5 attr bits 8-10(3비트)을 그대로 담으므로
-// 0~7 전부를 방출해야 한다. 4~7 을 NONE 으로 떨구면 외곽선이 소멸한다.
-fn outline_type_str(t: u8) -> &'static str {
-    match t {
-        0 => "NONE",
-        1 => "SOLID",
-        2 => "DASH",
-        3 => "DOT",
-        4 => "DASH_DOT",
-        5 => "DASH_DOT_DOT",
-        6 => "LONG_DASH",
-        7 => "CIRCLE",
-        _ => "NONE",
-    }
-}
-
-// [#2695] 그림자 3종. IR shadow_type 은 HWP5 attr bits 11-12(2비트).
-// 1=비연속(DROP), 2=연속(CONTINUOUS). 3은 예약값(미정의).
-// [#3038] 종전엔 예약값 3이 `_ => "CONTINUOUS"`로 떨어져 그림자 없음이 그림자
-// 있음으로 둔갑했다. 계약(0~2) 밖의 값은 안전한 기본값(NONE)으로 방출한다.
+// [#3038] 예약값 3 은 NONE. 표는 char_shape_tables 가 정본이다.
 fn shadow_type_str(t: u8) -> &'static str {
-    match t {
-        0 => "NONE",
-        1 => "DROP",
-        2 => "CONTINUOUS",
-        _ => "NONE",
-    }
+    super::char_shape_tables::shadow_type_str(t)
 }
 
 // =====================================================================
@@ -998,12 +826,21 @@ fn write_numbering<W: Write>(
         let num_format = numbering_format_str(h.number_format);
         let text_offset_s = h.text_distance.to_string();
         let char_pr_id_ref_s = h.char_shape_id.to_string();
+        // [#5309] '문단 머리 정보'(표 41) attr 저위 비트에서 정렬·번호너비·자동내어쓰기를
+        // 유도한다. 종전엔 align="LEFT"/useInstWidth="1"/autoIndent="1" 상수만 방출해,
+        // HWP5→HWPX 저장 때마다 문단 번호의 정렬·들여쓰기 설정이 기본값으로 리셋됐다.
+        // NumberingHead 모델엔 이 값의 lexical 필드가 없어 attr 비트가 유일한 원천이다.
+        // 비트↔토큰은 한컴 저작 HWPX 쌍(143E433F…)으로 직접 1:1 대응 확증. numFormat
+        // de-hardcode(#2947)와 동형.
+        let align = numbering_head_align_str(h.attr);
+        let use_inst_width = if (h.attr >> 2) & 0x01 != 0 { "1" } else { "0" };
+        let auto_indent = if (h.attr >> 3) & 0x01 != 0 { "1" } else { "0" };
         let attrs = [
             ("start", start_s.as_str()),
             ("level", level_s.as_str()),
-            ("align", "LEFT"),
-            ("useInstWidth", "1"),
-            ("autoIndent", "1"),
+            ("align", align),
+            ("useInstWidth", use_inst_width),
+            ("autoIndent", auto_indent),
             ("widthAdjust", wa.as_str()),
             ("textOffsetType", "PERCENT"),
             ("textOffset", text_offset_s.as_str()),
@@ -1155,7 +992,7 @@ fn write_para_pr<W: Write>(
     //
     // 종전엔 align@vertical, breakSetting@{breakNonLatinWord, widowOrphan,
     // keepWithNext, keepLines, pageBreakBefore} 를 상수로 하드코딩해, 파서가
-    // attr1/attr2 비트로 보존한 값을 직렬화에서 모두 잃었다(예: vertical=CENTER →
+    // attr1 비트로 보존한 값을 직렬화에서 모두 잃었다(예: vertical=CENTER →
     // BASELINE, breakNonLatinWord=BREAK_WORD → KEEP_WORD). 이제 보존 비트에서
     // 역매핑한다. (breakLatinWord/lineWrap 은 파서가 아직 미수집 → 상수 유지.)
     let vertical = vertical_alignment_str((ps.attr1 >> 20) & 0x03);
@@ -1165,12 +1002,22 @@ fn write_para_pr<W: Write>(
     } else {
         "BREAK_WORD"
     };
-    // [#1986] breakLatinWord 는 IR 원문 보존값(없으면 KEEP_WORD 기본).
-    let break_latin = ps.break_latin_word.as_deref().unwrap_or("KEEP_WORD");
-    let widow_orphan = ((ps.attr2 >> 5) & 1).to_string();
-    let keep_with_next = ((ps.attr2 >> 6) & 1).to_string();
-    let keep_lines = ((ps.attr2 >> 7) & 1).to_string();
-    let page_break_before = ((ps.attr2 >> 8) & 1).to_string();
+    // [#1986] breakLatinWord 는 HWPX 원문 보존값(HWPX 소스). HWP5 소스는 파서가 이 렉시컬
+    // 필드를 attr1 비트로만 두고 채우지 않아(doc_info.rs) 종전엔 무조건 "KEEP_WORD" 로
+    // 강등했다 — 라틴 줄나눔 설정(하이픈·글자 단위)이 h2x 저장에서 통째로 사라졌다
+    // (10k 코퍼스 실측: 500 문서 중 222 문서가 비-KEEP 설정, para_shape 2,810개).
+    // breakNonLatinWord(bit7)와 같은 축으로 HWP5 attr1 bits5-6 에서 역매핑한다. 렉시컬
+    // 값이 있으면(HWPX 소스) 그것을 우선하므로 x2x 는 종전과 동일하다.
+    let break_latin = ps
+        .break_latin_word
+        .as_deref()
+        .unwrap_or_else(|| latin_break_from_attr1((ps.attr1 >> 5) & 0x03));
+    let widow_orphan = ((ps.attr1 >> 16) & 1).to_string();
+    let keep_with_next = ((ps.attr1 >> 17) & 1).to_string();
+    let keep_lines = ((ps.attr1 >> 18) & 1).to_string();
+    let page_break_before = ((ps.attr1 >> 19) & 1).to_string();
+    let auto_space_kr_en = ((ps.attr2 >> 4) & 1).to_string();
+    let auto_space_kr_num = ((ps.attr2 >> 5) & 1).to_string();
     empty_tag(
         w,
         "hh:align",
@@ -1205,11 +1052,23 @@ fn write_para_pr<W: Write>(
     empty_tag(
         w,
         "hh:autoSpacing",
-        &[("eAsianEng", "0"), ("eAsianNum", "0")],
+        &[
+            ("eAsianEng", &auto_space_kr_en),
+            ("eAsianNum", &auto_space_kr_num),
+        ],
     )?;
 
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
-    write_para_margin_switch(w, ps)?;
+    //
+    // [#4898] 단, 원본 HWPX 가 switch 없이 평문으로 적었으면 그 표기를 지킨다. 한글은
+    // case(HwpUnitChar) 를 우선 읽는데, 평문 저장값을 case 에 넣으며 절반으로 줄이면
+    // 한글이 보는 여백·고정 줄간격이 절반이 돼 조판이 밀리고 쪽수가 늘어난다.
+    if ps.hwpx_plain_para_margin {
+        write_para_margin(w, ps, false)?;
+        write_para_line_spacing(w, ps, false)?;
+    } else {
+        write_para_margin_switch(w, ps)?;
+    }
 
     let border_connect = if (ps.attr1 >> 28) & 1 != 0 { "1" } else { "0" };
     let border_ignore_margin = if (ps.attr1 >> 29) & 1 != 0 { "1" } else { "0" };
@@ -1346,6 +1205,18 @@ fn vertical_alignment_str(bits: u32) -> &'static str {
     }
 }
 
+/// HWP5 para_shape attr1 bits5-6 → HWPX `breakLatinWord` 토큰(라틴 문자의 줄나눔 단위).
+/// `breakNonLatinWord`(bit7) 역매핑과 같은 축이다. HWPX 소스는 렉시컬 값을 우선하므로
+/// 이 함수는 HWP5 소스(렉시컬 None)에서만 쓰인다. 0(=KEEP_WORD)은 코퍼스 지배값이자
+/// 종전 기본과 같아, 값이 다른 문서만 실제로 바뀐다.
+fn latin_break_from_attr1(bits: u32) -> &'static str {
+    match bits {
+        1 => "HYPHENATION",
+        2 => "BREAK_WORD",
+        _ => "KEEP_WORD",
+    }
+}
+
 fn head_type_str(h: HeadType) -> &'static str {
     use HeadType::*;
     match h {
@@ -1438,8 +1309,35 @@ fn write_doc_option<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
     Ok(())
 }
 
-fn write_track_change_config<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    empty_tag(w, "hh:trackchageConfig", &[("flags", "0")])
+/// `<hh:trackchageConfig flags>` 값을 원본 DocInfo 에서 되찾는다.
+///
+/// 종전에는 `0` 을 하드코딩했다. 이 값은 이름과 달리 **조판에 영향을 준다** — 한글이
+/// `flags="0"` 문서를 열면 같은 내용이 한 쪽 더 늘어난다(00295 실측: 원본 1쪽,
+/// rhwp 저장본 2쪽, 이 값만 56 으로 바꾸면 다시 1쪽). 10k 스윕의 h2x 쪽수 불일치
+/// 978 경로 중 +1쪽이 526 건인데, 그 계열의 근인이다.
+///
+/// HWP5 는 `HWPTAG_TRACKCHANGE` 레코드 첫 `u32` 에 싣는다(파서가 모델링하지 않아
+/// `extra_records` 에 원시 보존된다). 레코드가 없으면 56 — 한컴 실측이다:
+/// 코퍼스 6,473 문서 중 4,588 이 레코드를 갖고 그중 4,555 가 56 이며, 레코드가
+/// **없는** 문서(00000·00001)를 한글로 저장해도 `flags="56"` 이 나온다.
+fn track_change_flags(doc_info: &DocInfo) -> u32 {
+    doc_info
+        .extra_records
+        .iter()
+        .find(|r| r.tag_id == tags::HWPTAG_TRACKCHANGE)
+        .and_then(|r| r.data.get(..4))
+        .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        .unwrap_or(TRACK_CHANGE_FLAGS_DEFAULT)
+}
+
+/// 한컴이 `HWPTAG_TRACKCHANGE` 없는 문서에 쓰는 값 (실측).
+const TRACK_CHANGE_FLAGS_DEFAULT: u32 = 56;
+
+fn write_track_change_config<W: Write>(
+    w: &mut Writer<W>,
+    flags: u32,
+) -> Result<(), SerializeError> {
+    empty_tag(w, "hh:trackchageConfig", &[("flags", &flags.to_string())])
 }
 
 // 내부에서 쓰는 start_tag 별명
@@ -1448,6 +1346,45 @@ use super::utils::start_tag;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// `trackchageConfig flags` 는 원본 값을 실어야 한다.
+    ///
+    /// 이름과 달리 조판에 영향을 준다 — 한글은 `flags="0"` 문서를 같은 내용인데도
+    /// 한 쪽 더 늘려 연다(00295 실측: 원본 1쪽 / 저장본 2쪽 / 이 값만 56 으로
+    /// 바꾸면 1쪽). 종전에는 `0` 을 하드코딩했다.
+    #[test]
+    fn track_change_flags_come_from_the_original_record() {
+        use crate::model::document::RawRecord;
+
+        let mut info = DocInfo::default();
+        assert_eq!(
+            track_change_flags(&info),
+            56,
+            "레코드가 없으면 한컴이 쓰는 값(56)으로 떨어진다 — 00000·00001 실측"
+        );
+
+        info.extra_records.push(RawRecord {
+            tag_id: tags::HWPTAG_TRACKCHANGE,
+            level: 0,
+            data: 60_u32.to_le_bytes().to_vec(),
+        });
+        assert_eq!(track_change_flags(&info), 60, "원본 값을 그대로 옮긴다");
+    }
+
+    /// 4바이트가 안 되는 손상 레코드는 기본값으로 떨어진다 — 쓰레기값을 쓰지 않는다.
+    #[test]
+    fn truncated_track_change_record_falls_back_to_the_default() {
+        use crate::model::document::RawRecord;
+
+        let mut info = DocInfo::default();
+        info.extra_records.push(RawRecord {
+            tag_id: tags::HWPTAG_TRACKCHANGE,
+            level: 0,
+            data: vec![0x38, 0x00],
+        });
+        assert_eq!(track_change_flags(&info), 56);
+    }
+
     use crate::parser::hwpx::parse_hwpx;
 
     #[test]
@@ -1625,7 +1562,13 @@ mod tests {
             xml.contains("<hh:layoutCompatibility><hh:char/><hh:paragraph/><hh:section/><hh:object/><hh:field/></hh:layoutCompatibility>"),
             "원본 부재 시 하드코딩 폴백: {xml}"
         );
-        assert!(xml.contains(r#"<hh:trackchageConfig flags="0"/>"#));
+        // 종전에는 `flags="0"` 을 못 박았다. 그 값은 실측으로 틀렸다 — 한글은 0 인 문서를
+        // 같은 내용인데도 한 쪽 더 늘려 연다(00295: 원본 1쪽 / 저장본 2쪽 / 이 값만 56 으로
+        // 바꾸면 1쪽). 이제 원본 레코드 값을 싣고, 없으면 한컴이 쓰는 56 으로 떨어진다.
+        assert!(
+            xml.contains(r#"<hh:trackchageConfig flags="56"/>"#),
+            "폴백은 한컴 기본값 56 이어야 한다: {xml}"
+        );
     }
 
     #[test]
@@ -2120,13 +2063,14 @@ mod tests {
     fn write_para_pr_emits_align_and_break_from_preserved_bits() {
         // [Finding 18] align@vertical, breakSetting@{breakNonLatinWord, widowOrphan,
         // keepWithNext, keepLines, pageBreakBefore} 가 상수 하드코딩이 아니라
-        // attr1/attr2 보존 비트에서 역매핑돼야 한다.
+        // attr1 보존 비트에서 역매핑돼야 한다.
         let mut ps = ParaShape::default();
         ps.break_latin_word = Some("HYPHENATION".to_string());
         ps.attr1 = (2 << 20) // vertical = CENTER
-            & !(1 << 7); // breakNonLatinWord = BREAK_WORD (bit7=0)
-        ps.attr2 = (1 << 5) // widowOrphan = 1
-            | (1 << 8); // pageBreakBefore = 1
+            | (1 << 16) // widowOrphan = 1
+            | (1 << 19); // pageBreakBefore = 1
+        ps.attr1 &= !(1 << 7); // breakNonLatinWord = BREAK_WORD (bit7=0)
+        ps.attr2 = 1 << 5; // eAsianNum = 1
 
         let mut writer = Writer::new(Vec::new());
         write_para_pr(&mut writer, 1, &ps).expect("write paraPr");
@@ -2147,6 +2091,29 @@ mod tests {
         assert!(
             xml.contains(r#"widowOrphan="1" keepWithNext="0" keepLines="0" pageBreakBefore="1""#),
             "widowOrphan/pageBreakBefore 보존 비트 역매핑: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:autoSpacing eAsianEng="0" eAsianNum="1""#),
+            "autoSpacing은 attr2 4/5에서 역매핑해야 함: {xml}"
+        );
+    }
+
+    #[test]
+    fn write_para_pr_does_not_treat_auto_spacing_num_as_widow_orphan() {
+        let mut ps = ParaShape::default();
+        ps.attr2 = 1 << 5; // autoSpaceKrNum = 1
+
+        let mut writer = Writer::new(Vec::new());
+        write_para_pr(&mut writer, 1, &ps).expect("write paraPr");
+        let xml = String::from_utf8(writer.into_inner()).unwrap();
+
+        assert!(
+            xml.contains(r#"widowOrphan="0""#),
+            "attr2 bit 5는 widowOrphan으로 해석되면 안 됨: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hh:autoSpacing eAsianEng="0" eAsianNum="1""#),
+            "attr2 bit 5는 eAsianNum으로만 방출해야 함: {xml}"
         );
     }
 

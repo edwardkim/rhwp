@@ -8,8 +8,8 @@ use quick_xml::Reader;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
-    FormObject, FormType, HiddenComment, NewNumber, PageHide, PageNumberPos, Parameter,
-    ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
+    FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumCtrl,
+    PageNumberPos, PageStartsOn, Parameter, ParameterList, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
@@ -22,7 +22,9 @@ use crate::model::page::{
     BindingMethod, ColumnDef, ColumnDirection, ColumnType, PageBorderBasis, PageBorderFill,
     PageBorderUiBasis, PageDef,
 };
-use crate::model::paragraph::{CharShapeRef, FieldRange, LineSeg, OrphanFieldEnd, Paragraph};
+use crate::model::paragraph::{
+    CharShapeRef, FieldRange, LineSeg, OrphanFieldEnd, Paragraph, TitleMark,
+};
 use crate::model::shape::{
     ArcShape, CommonObjAttr, ConnectorControlPoint, ConnectorData, CurveShape, DrawingObjAttr,
     EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, LinkLineType, PolygonShape,
@@ -46,6 +48,12 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
     let mut section = Section::default();
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
+
+    // [#4898] 0높이 lineseg 정규화(#2070)의 판단 범위를 구역으로 넓힌다 — 문단 단위로
+    // 보면 한컴이 접어 둔 숨은 블록까지 지우게 된다. RAII 로 되돌려 중첩 파싱(표 셀 안의
+    // 구역 없음)이나 다음 구역에 값이 새지 않게 한다.
+    let sized = section_xml_has_sized_lineseg(xml);
+    let _lineseg_scope = SectionLinesegScope::enter(sized);
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -71,7 +79,51 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
         buf.clear();
     }
 
+    link_orphan_field_ends(&mut section.paragraphs);
+
     Ok(section)
+}
+
+/// 같은 문단 목록 안에서 끝난 다문단 fieldEnd에 짝 fieldBegin의 HWP5 control id를 연결한다.
+///
+/// HWPX fieldEnd는 beginIDRef와 fieldid만 보관하므로, HWP5 PARA_TEXT로 다시 쓸 때 필요한
+/// field control fourcc는 앞 문단의 fieldBegin에서 찾아야 한다. 짝을 찾지 못한 종료 마커는
+/// 그대로 남긴다. 임의의 필드 종류를 만들어 내는 것보다 보존 실패를 명시하는 편이 안전하다.
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+
+    for para in paragraphs.iter_mut() {
+        for orphan in &mut para.orphan_field_ends {
+            let Some((field_id, ctrl_id)) = open_fields.last().copied() else {
+                continue;
+            };
+
+            // HWPX는 beginIDRef로 짝을 식별한다. 0은 손상·부분 입력 호환을 위한
+            // 미지정값이므로 HWP5 parser와 같이 현재 열린 필드에 연결한다.
+            if orphan.begin_id_ref != 0 && orphan.begin_id_ref != field_id {
+                continue;
+            }
+
+            open_fields.pop();
+            if orphan.begin_id_ref == 0 {
+                orphan.begin_id_ref = field_id;
+            }
+            orphan.begin_ctrl_id = ctrl_id;
+        }
+
+        for (control_idx, control) in para.controls.iter().enumerate() {
+            let Control::Field(field) = control else {
+                continue;
+            };
+            let closes_in_this_paragraph = para
+                .field_ranges
+                .iter()
+                .any(|range| range.control_idx == control_idx);
+            if !closes_in_this_paragraph && field.field_id != 0 {
+                open_fields.push((field.field_id, field.ctrl_id));
+            }
+        }
+    }
 }
 
 /// section XML의 `<hp:masterPage idRef="...">` 참조를 문서 순서대로 수집한다.
@@ -104,7 +156,7 @@ pub fn collect_hwpx_section_master_page_refs(xml: &str) -> Result<Vec<String>, H
 
 fn push_master_page_id_ref(e: &quick_xml::events::BytesStart, refs: &mut Vec<String>) {
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"idRef" {
+        if attr.key.as_ref().as_bytes() == b"idRef" {
             let id_ref = attr_str(&attr);
             if !id_ref.is_empty() {
                 refs.push(id_ref);
@@ -194,7 +246,7 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
     let mut is_optional_page = false;
     let mut page_duplicate: Option<bool> = None;
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"type" => {
                 let value = attr_str(&attr);
                 match parse_hwpx_master_page_type(&value) {
@@ -225,13 +277,17 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
             _ => {}
         }
     }
-    // 한컴 HWPX -> HWP5 저장본은 LAST_PAGE 바탕쪽을 확장 바탕쪽으로 저장하면서
-    // pageDuplicate="0"인 경우에도 overlap bit를 함께 세운다.
-    if is_last_page {
+    // 한컴 HWPX -> HWP5 저장본은 확장 바탕쪽(LAST_PAGE·OPTIONAL_PAGE)을 저장하면서
+    // pageDuplicate="0"인 경우에도 overlap bit를 함께 세운다. 그래서 overlap bit 만으로는
+    // "겹치게 하기" 의도를 알 수 없고, XML 원본의 `pageDuplicate` 를 봐야 한다.
+    //
+    // [#6323] 종전에는 `replace_base` 를 LAST_PAGE 에만 세웠다. OPTIONAL_PAGE 도 같은
+    // 저장 계약을 따르는데 빠져 있어, `pageDuplicate="0"`(겹치지 않음)로 선언된 임의 쪽
+    // 바탕쪽이 기본 홀/짝 바탕쪽을 대체하지 못하고 그 **위에 덧그려졌다**. 실측
+    // (`samples/hwpx/exam_kor.hwpx` 20쪽): EVEN 바탕쪽의 쪽번호 "2" 위에 OPTIONAL_PAGE
+    // 의 "4" 가 같은 좌표로 얹혀 두 글자 모두 읽을 수 없었다.
+    if is_last_page || is_optional_page {
         master_page.replace_base = page_duplicate == Some(false);
-        master_page.overlap = true;
-    }
-    if is_optional_page {
         master_page.overlap = true;
     }
     master_page.ext_flags = u16::from(master_page.overlap)
@@ -241,7 +297,7 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
 
 fn parse_master_page_sub_list(e: &quick_xml::events::BytesStart, master_page: &mut MasterPage) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"textWidth" => master_page.text_width = parse_u32(&attr),
             b"textHeight" => master_page.text_height = parse_u32(&attr),
             b"hasTextRef" => master_page.text_ref = parse_u8(&attr),
@@ -275,7 +331,7 @@ fn build_hwpx_master_page_list_header(master_page: &MasterPage) -> Vec<u8> {
 
 fn parse_section_def_start(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"textDirection" => {
                 let val = attr_str(&attr);
                 sec_def.text_direction = if val == "VERTICAL" { 1 } else { 0 };
@@ -309,7 +365,7 @@ fn parse_section_def_start(e: &quick_xml::events::BytesStart, sec_def: &mut Sect
 
 fn parse_page_pr(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"width" => page.width = parse_u32(&attr),
             b"height" => page.height = parse_u32(&attr),
             // [#1166] HWPX 용지 방향. OWPML landscape 값:
@@ -343,7 +399,7 @@ fn parse_page_pr(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
 
 fn parse_grid(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"lineGrid" => sec_def.line_grid = parse_i32(&attr) as i16,
             b"charGrid" => sec_def.char_grid = parse_i32(&attr) as i16,
             _ => {}
@@ -353,7 +409,7 @@ fn parse_grid(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) {
 
 fn parse_page_margin(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"left" => page.margin_left = parse_u32(&attr),
             b"right" => page.margin_right = parse_u32(&attr),
             b"top" => page.margin_top = parse_u32(&attr),
@@ -368,7 +424,113 @@ fn parse_page_margin(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
 
 // ─── Paragraph ───
 
+/// [#4759] HWPX 섹션 본문의 상호재귀 — 문단↔표↔셀(`parse_paragraph`↔`parse_table`
+/// ↔`parse_table_cell`), 글상자 `drawText`, 서브리스트 각주 — 는 파일이 정하는
+/// 중첩 깊이로 무한 재귀할 수 있다. 상한이 없으면 `<hp:tbl><hp:tr><hp:tc><hp:p>…` 를
+/// 수만 겹 중첩한 section XML 하나로 네이티브 스택을 고갈시켜 프로세스를 죽인다
+/// (패닉과 달리 catch_unwind 로 못 잡는 SIGSEGV). 이 재귀 계열은 **전부
+/// `parse_paragraph` 를 경유**하므로, 그 진입 깊이를 스레드-로컬 카운터로 세어 한
+/// 곳에서 전 경로를 막는다(파라미터를 여러 호출부에 관통시키지 않는다). 그룹
+/// (`<hp:container>`) 자기재귀는 별도로 `MAX_HWPX_CONTAINER_DEPTH` 가 막는다.
+/// 상한은 컨테이너(64)보다 작다. 한 겹마다 `parse_paragraph`·`parse_table`·
+/// `parse_table_cell` 큰 프레임이 겹쳐, 64 로 두면 기본/WASM 스택에서 가드보다
+/// SIGSEGV 가 앞선다. 실문서의 표 중첩은 이에 한참 못 미친다.
+const MAX_HWPX_SECTION_DEPTH: u32 = 16;
+
+thread_local! {
+    // 완전 경로 — 이 모듈의 `Cell` 은 이미 `crate::model::table::Cell`(표 셀)이다.
+    static HWPX_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+    /// [#4898] 이 구역의 lineseg 가 **배치 권위를 갖는가** — 0 아닌 높이가 하나라도 있으면 참.
+    ///
+    /// #2070 의 0높이 정규화를 문단이 아니라 **구역** 범위로 판단하기 위한 신호다.
+    /// `parse_paragraph` 는 표 셀·글상자·각주 등 여러 경로에서 재귀 호출되므로
+    /// 파라미터를 관통시키지 않고 형제 가드(`HWPX_SECTION_DEPTH`)와 같은 방식으로 나른다.
+    static HWPX_SECTION_HAS_SIZED_LINESEG: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// 구역 XML 에 **높이가 0 이 아닌 lineseg** 가 하나라도 있는지 훑는다.
+///
+/// [#4898] 한컴은 숨긴 블록(예: CLIPDATA)을 `vertsize="0"` lineseg 로 **접어서** 저장한다.
+/// 그 0높이를 "권위 없음"으로 보고 지우면 rhwp 가 그 문단을 새로 조판해 숨은 내용이
+/// 펼쳐지고, 뒤 내용이 밀려 쪽수가 늘어난다(08852 실측: 최대 vertpos 40,525 → 77,965,
+/// 1쪽 → 2쪽). 반대로 lineseg 를 **전부** 0 으로 채워 저장하는 생성계 문서도 실재하고,
+/// 그쪽은 #2070 대로 부재 취급해야 셀·문단 높이가 선언값으로 붕괴하지 않는다.
+///
+/// 두 경우를 가르는 신호가 "이 구역에 0 아닌 lineseg 가 있는가"다.
+fn section_xml_has_sized_lineseg(xml: &str) -> bool {
+    for tag in xml.split("<hp:lineseg").skip(1) {
+        let Some(end) = tag.find('>') else { continue };
+        let attrs = &tag[..end];
+        let sized = |name: &str| -> bool {
+            attrs
+                .split(name)
+                .nth(1)
+                .and_then(|rest| rest.strip_prefix("=\""))
+                .and_then(|rest| rest.split('"').next())
+                .is_some_and(|v| v.parse::<i64>().is_ok_and(|n| n != 0))
+        };
+        if sized("vertsize") || sized("textheight") {
+            return true;
+        }
+    }
+    false
+}
+
+/// `parse_paragraph` 진입 시 재귀 깊이를 +1 하고 이탈(Drop, 오류 전파·조기 반환
+/// 포함) 시 되돌리는 RAII 가드. 상한 초과면 스택을 고갈시키기 전에 오류로 거부한다.
+struct SectionDepthGuard;
+
+impl SectionDepthGuard {
+    fn enter() -> Result<SectionDepthGuard, HwpxError> {
+        HWPX_SECTION_DEPTH.with(|d| {
+            if d.get() >= MAX_HWPX_SECTION_DEPTH {
+                return Err(HwpxError::XmlError(format!(
+                    "section nesting exceeds {} levels",
+                    MAX_HWPX_SECTION_DEPTH
+                )));
+            }
+            d.set(d.get() + 1);
+            Ok(SectionDepthGuard)
+        })
+    }
+}
+
+impl Drop for SectionDepthGuard {
+    fn drop(&mut self) {
+        HWPX_SECTION_DEPTH.with(|d| d.set(d.get().saturating_sub(1)));
+    }
+}
+
+/// [#4898] 구역 파싱 동안 "이 구역의 lineseg 가 배치 권위를 갖는가"를 세워 두고
+/// 이탈 시 이전 값으로 되돌리는 RAII 가드.
+struct SectionLinesegScope(bool);
+
+impl SectionLinesegScope {
+    fn enter(has_sized: bool) -> SectionLinesegScope {
+        let prev = HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.replace(has_sized));
+        SectionLinesegScope(prev)
+    }
+}
+
+impl Drop for SectionLinesegScope {
+    fn drop(&mut self) {
+        HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.set(self.0));
+    }
+}
+
 fn parse_paragraph(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
+    // [#4759] 문단-경유 상호재귀(표·글상자·서브리스트) 깊이 상한 — 위 가드 참고.
+    // 가드는 큰 본문 프레임을 쌓기 전에 실행한다. 상한 초과 호출이
+    // `Paragraph`·`SectionDef` 지역 상태를 먼저 잡으면 기본 스택에서
+    // 가드보다 SIGSEGV 가 앞설 수 있다.
+    let _depth_guard = SectionDepthGuard::enter()?;
+    parse_paragraph_body(e, reader)
+}
+
+fn parse_paragraph_body(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
@@ -383,9 +545,9 @@ fn parse_paragraph(
     let mut has_column_break_attr = false;
     let mut has_page_break_attr = false;
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"id" => {
-                if let Ok(s) = std::str::from_utf8(&attr.value) {
+                if let Ok(s) = std::str::from_utf8(attr.value.as_ref().as_bytes()) {
                     hp_p_id = s.parse::<u32>().unwrap_or(0);
                 }
             }
@@ -412,8 +574,23 @@ fn parse_paragraph(
     let mut text_parts: Vec<String> = Vec::new();
     let mut current_char_shape_id: u32 = 0;
     let mut char_shape_changes: Vec<(u32, u32)> = Vec::new(); // (utf16_pos, char_shape_id)
-                                                              // [Task #1556] fieldEnd 의 (beginIDRef, fieldid) 를 출현 순서대로 보관 — text_parts 의
-                                                              // `\u{0004}` 와 1:1 대응. 고아 fieldEnd 복원에 사용.
+                                                              // 템플릿 첫 run 의 secPr/colPr 뒤에는 같은 charPrIDRef 의 텍스트 run 이 한 번 더
+                                                              // 올 수 있다. 이 경우만 HWP PARA_CHAR_SHAPE 의 단일 시작 entry 로 정규화한다.
+                                                              // 일반 동일-ID run 경계는 위치 자체가 IR이 보존할 정보이므로 제거하면 안 된다 (#3739).
+    let mut preceding_run_had_sec_pr = false;
+    let mut preceding_run_char_shape_id: Option<u32> = None;
+    // [#5961] HWP5 문단 축에서만 자리를 차지하는 앞머리 슬롯 수.
+    //
+    // 아래 `secPr` arm 이 `\u{0002}` 를 밀어 넣는 슬롯들 — 구역 정의와 그 안에 실려 온
+    // 첫 단 정의 — 은 HWPX 문단에는 대응 요소가 없다(`hp:secPr` 은 구역 머리 run 소속,
+    // secPr 안의 `hp:colPr` 은 템플릿이 흡수). 그 슬롯을 만들어 넣은 주체가 파서
+    // 자신이므로 개수는 추측이 아니라 사실이다.
+    //
+    // 이 값은 `text_start` 를 **고치는 데 쓰지 않는다**. `Paragraph::hwpx_axis_shift` 에
+    // 실어 두고 읽는 쪽에서만 올려 본다 — 파일 축을 옮기면 재수출이 흘러내린다.
+    let mut hwp5_only_leading_slots: u32 = 0;
+    // [Task #1556] fieldEnd 의 (beginIDRef, fieldid) 를 출현 순서대로 보관 — text_parts 의
+    // `\u{0004}` 와 1:1 대응. 고아 fieldEnd 복원에 사용.
     let mut field_end_attrs: Vec<(u32, u32)> = Vec::new();
 
     loop {
@@ -425,31 +602,42 @@ fn parse_paragraph(
                     b"run" => {
                         // 런 시작: charPrIDRef 읽기
                         for attr in ce.attributes().flatten() {
-                            if attr.key.as_ref() == b"charPrIDRef" {
+                            if attr.key.as_ref().as_bytes() == b"charPrIDRef" {
                                 current_char_shape_id = parse_u32(&attr);
                             }
                         }
                         // 현재 UTF-16 위치에서 글자모양 변경 기록
                         let utf16_pos = calc_utf16_len_from_parts(&text_parts);
-                        char_shape_changes.push((utf16_pos, current_char_shape_id));
+                        let template_sec_pr_handoff = preceding_run_had_sec_pr
+                            && preceding_run_char_shape_id == Some(current_char_shape_id);
+                        if !template_sec_pr_handoff {
+                            char_shape_changes.push((utf16_pos, current_char_shape_id));
+                        }
+                        preceding_run_had_sec_pr = false;
+                        preceding_run_char_shape_id = Some(current_char_shape_id);
                     }
                     b"t" => {
                         // 텍스트 읽기 (탭 확장 데이터 포함)
-                        let (text, tab_exts) = read_text_content_with_tabs(reader)?;
-                        text_parts.push(text);
+                        let (parts, tab_exts, nb_space_element) =
+                            read_text_content_with_tabs(reader)?;
+                        text_parts.extend(parts);
                         para.tab_extended.extend(tab_exts);
+                        // [#5174] 묶음 빈칸의 출처 표기를 문단에 남긴다 — 직렬화기가 이
+                        // 비트로 요소/리터럴을 갈라 원본 표기를 그대로 되돌린다.
+                        if nb_space_element {
+                            para.control_mask |= 1u32 << 0x1E;
+                        }
                     }
                     b"tbl" => {
                         // 표 파싱
                         let table = parse_table(ce, reader)?;
-                        // 표 위치에 제어 문자(0x0002) 삽입
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(Control::Table(Box::new(table)));
                     }
                     b"pic" => {
                         // 이미지 파싱
                         let pic = parse_picture(ce, reader)?;
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(pic);
                     }
                     b"switch" => {
@@ -480,6 +668,7 @@ fn parse_paragraph(
                         }
                     }
                     b"secPr" => {
+                        preceding_run_had_sec_pr = true;
                         // 문단 내 섹션 정의 파싱
                         let mut sd = SectionDef::default();
                         parse_section_def_start(ce, &mut sd);
@@ -491,10 +680,12 @@ fn parse_paragraph(
                         // 모든 chars 를 line 0 에 packing. \u{0002} 추가로 8 utf16 정합.
                         para.controls.push(Control::SectionDef(Box::new(sd)));
                         text_parts.push("\u{0002}".to_string());
+                        hwp5_only_leading_slots += 1;
                         // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의) + 8 utf16.
                         if let Some(cd) = col_def_opt {
                             para.controls.push(Control::ColumnDef(cd));
                             text_parts.push("\u{0002}".to_string());
+                            hwp5_only_leading_slots += 1;
                         }
                     }
                     b"linesegarray" => {
@@ -505,12 +696,12 @@ fn parse_paragraph(
                     | b"curve" => {
                         // 그리기 객체 파싱
                         let shape = parse_shape_object(local, ce, reader)?;
-                        text_parts.push("\u{0002}".to_string());
+                        push_object_slot_placeholder(&mut text_parts);
                         para.controls.push(shape);
                     }
                     b"container" => {
-                        // 묶음(그룹) 객체 파싱
-                        let group = parse_container(ce, reader)?;
+                        // 묶음(그룹) 객체 파싱 (최상위 그룹 — 깊이 0)
+                        let group = parse_container(ce, reader, 0)?;
                         text_parts.push("\u{0002}".to_string());
                         para.controls.push(group);
                     }
@@ -578,7 +769,7 @@ fn parse_paragraph(
                         // 빈 paragraph 의 char_shape 가 누락되어 default(id=0) 로
                         // 처리되면 line height 계산이 어긋나 pagination 차이 발생.
                         for attr in ce.attributes().flatten() {
-                            if attr.key.as_ref() == b"charPrIDRef" {
+                            if attr.key.as_ref().as_bytes() == b"charPrIDRef" {
                                 current_char_shape_id = parse_u32(&attr);
                             }
                         }
@@ -644,12 +835,17 @@ fn parse_paragraph(
                     .copied()
                     .unwrap_or((0, 0));
                 field_end_idx += 1;
-                if let Some((start_char_idx, control_idx)) = field_stack.pop() {
+                if let Some((start_char_idx, begin_control_idx)) = field_stack.pop() {
+                    // 필드 안쪽 컨트롤 슬롯 수 — 표·그림을 감싼 누름틀이 텍스트 축에서
+                    // 0길이가 되어도 직렬화기가 fieldEnd 위치를 잃지 않게 한다.
+                    // (begin 자신의 컨트롤 1개는 제외)
+                    let inner_slot_count = control_idx.saturating_sub(begin_control_idx + 1);
                     field_ranges.push(FieldRange {
                         start_char_idx,
                         end_char_idx: visible_char_idx,
-                        control_idx,
+                        control_idx: begin_control_idx,
                         end_field_id: field_id,
+                        inner_slot_count,
                     });
                 } else {
                     // [Task #1556] 짝 fieldBegin 이 다른 문단에 있는 다단락 필드의 종료 마커.
@@ -658,16 +854,23 @@ fn parse_paragraph(
                         char_idx: visible_char_idx,
                         begin_id_ref,
                         field_id,
+                        // HWPX `<hp:fieldEnd>` 는 필드 종류를 싣지 않는다 — 짝
+                        // `fieldBegin` 은 다른 문단에 있어 여기서는 알 수 없다.
+                        begin_ctrl_id: 0,
                     });
                 }
             }
-            "\u{0002}" => {
+            "\u{0002}" | PAGE_FOOTER_SLOT_PART => {
                 control_idx += 1;
             }
             "\u{0012}" => {
                 control_idx += 1;
                 visible_char_idx += 1;
             }
+            // 제목 차례 표시는 `text_parts` 안에서는 두 문자 센티널이지만 실제 본문
+            // 텍스트에는 들어가지 않는다. fieldRange는 visual_text 좌표를 쓰므로 여기서
+            // 센티널 길이를 더하면 그 뒤 fieldBegin/fieldEnd가 두 글자 밀린다.
+            TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => {}
             _ => {
                 visible_char_idx += part.chars().count();
             }
@@ -678,6 +881,16 @@ fn parse_paragraph(
 
     // 텍스트 조립: 제어 문자(\u{0002}, \u{0003}, \u{0004})는 HWP와 동일하게 텍스트에서 제외
     // HWP에서 컨트롤 위치는 char_offsets의 갭으로 표현되므로 원본 순서를 유지해 계산한다.
+    //
+    // [#5251] issue_265 문단 0: U+FFFC(쪽번호 자리)=8, pageNum/footer PARA_TEXT 슬롯=0.
+    // 전역 hwp3-origin 이나 FFFC만으로 열면 #3532·#5542·char_count 왕복이 깨진다.
+    let axis_5251 = hwpx_hwp3_issue_5251_axis(&text_parts, &para.controls);
+    if axis_5251 {
+        char_shape_changes = char_shape_changes
+            .into_iter()
+            .map(|(pos, id)| (hwpx_map_std_pos_to_5251_axis(&text_parts, pos), id))
+            .collect();
+    }
     let mut visual_text = String::new();
     let mut char_offsets: Vec<u32> = Vec::new();
     let mut utf16_pos: u32 = 0;
@@ -685,6 +898,18 @@ fn parse_paragraph(
     for part in &text_parts {
         match part.as_str() {
             "\u{0002}" | "\u{0003}" | "\u{0004}" => {
+                utf16_pos += 8;
+            }
+            PAGE_FOOTER_SLOT_PART => {
+                if !axis_5251 {
+                    utf16_pos += 8;
+                }
+            }
+            TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => {
+                para.title_marks.push(TitleMark {
+                    char_idx: visual_text.chars().count(),
+                    ignore: part.as_str() == TITLE_MARK_PART_IGNORE,
+                });
                 utf16_pos += 8;
             }
             "\u{0012}" => {
@@ -698,14 +923,7 @@ fn parse_paragraph(
                 for c in part.chars() {
                     char_offsets.push(utf16_pos);
                     visual_text.push(c);
-                    let width = if c == '\t' {
-                        8
-                    } else if (c as u32) > 0xFFFF {
-                        2
-                    } else {
-                        1
-                    };
-                    utf16_pos += width;
+                    utf16_pos += hwpx_char_utf16_width_on_axis(c, axis_5251);
                 }
             }
         }
@@ -714,24 +932,27 @@ fn parse_paragraph(
     para.text = visual_text;
     para.char_offsets = char_offsets;
     para.char_count = utf16_pos + 1; // +1 for 끝 마커
-    para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
+
+    // [#5961] 저장 lineseg 가 HWP5 축보다 얼마나 짧은지 기록한다.
+    //
+    // 위에서 만든 `char_offsets`·`char_count`·`char_shapes` 는 확장 제어마다 8유닛을 주는
+    // HWP5 축인데 `textpos` 는 파일이 준 값 그대로라 앞머리 비점유 슬롯만큼 짧다.
+    // `text_start` 자체는 건드리지 않는다 — 파일 축을 옮기면 x2x 재수출이 왕복마다
+    // 흘러내리고 h2x 의 #5943 재기준화와 충돌한다. 읽는 쪽이 이 값으로 올려 본다.
+    para.hwpx_axis_shift = 8 * hwp5_only_leading_slots;
+    para.has_para_text =
+        !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
 
     // char_shapes는 원본 문단 순서(text_parts)를 기준으로 계산한 위치를 그대로 사용한다.
-    // [Task #1058 후속] 같은 char_shape_id 연속 dedup — HWPX 의 여러 run 이 같은
-    // charPrIDRef 일 때 HWP PARA_CHAR_SHAPE 는 첫 entry 1개만 유지하므로 정합.
-    let mut deduped_cs: Vec<CharShapeRef> = Vec::new();
-    for (pos, id) in char_shape_changes {
-        if let Some(last) = deduped_cs.last() {
-            if last.char_shape_id == id {
-                continue;
-            }
-        }
-        deduped_cs.push(CharShapeRef {
+    // 같은 char_shape_id라도 run 시작 위치가 다르면 HWP PARA_CHAR_SHAPE 의 의미 있는
+    // 경계다. secPr 템플릿 handoff만 run 시작 시점에 별도로 정규화한다 (#3739).
+    para.char_shapes = char_shape_changes
+        .into_iter()
+        .map(|(pos, id)| CharShapeRef {
             start_pos: pos,
             char_shape_id: id,
-        });
-    }
-    para.char_shapes = deduped_cs;
+        })
+        .collect();
 
     // [Task #1058 후속] column_type/raw_break_type — HWP 정합 (스펙 표 59):
     //   bit 0 (0x01) = 구역 나누기, bit 1 (0x02) = 다단 나누기,
@@ -784,7 +1005,14 @@ fn parse_paragraph(
     // 0 높이 lineseg 는 배치 권위가 없고(한글은 열 때 재계산) 실저장 취급 시
     // NO_LS 성장 경로가 죽어 셀/문단 높이가 선언값으로 붕괴한다 (#1380 대칭,
     // body_text.rs parse_para_line_seg 와 동일 규칙).
+    //
+    // [#4898] 단, 판단 범위는 문단이 아니라 **구역**이다. 한컴은 숨긴 블록을 0높이
+    // lineseg 로 접어서 저장하는데(08852: 9개가 vertpos 38605 에 겹쳐 있다), 그것까지
+    // 지우면 rhwp 가 그 문단을 새로 조판해 숨은 내용이 펼쳐지고 뒤가 밀려 쪽수가 는다
+    // (실측 1쪽 → 2쪽, 최대 vertpos 40,525 → 77,965). 구역에 0 아닌 lineseg 가 하나라도
+    // 있으면 그 구역의 lineseg 는 배치 권위가 있는 것이므로 0높이도 원본대로 보존한다.
     if !para.line_segs.is_empty()
+        && !HWPX_SECTION_HAS_SIZED_LINESEG.with(|f| f.get())
         && para
             .line_segs
             .iter()
@@ -912,9 +1140,11 @@ fn parse_note_pr_children(
                 match local {
                     b"autoNumFormat" => {
                         for attr in e.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"type" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         shape.number_format =
                                             crate::model::footnote::FootnoteShape::number_format_from_name(
                                                 s,
@@ -923,21 +1153,27 @@ fn parse_note_pr_children(
                                     }
                                 }
                                 b"suffixChar" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Some(c) = s.chars().next() {
                                             shape.suffix_char = c;
                                         }
                                     }
                                 }
                                 b"prefixChar" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Some(c) = s.chars().next() {
                                             shape.prefix_char = c;
                                         }
                                     }
                                 }
                                 b"userChar" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Some(c) = s.chars().next() {
                                             shape.user_char = c;
                                         }
@@ -952,9 +1188,11 @@ fn parse_note_pr_children(
                     }
                     b"noteLine" => {
                         for attr in e.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"length" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Ok(v) = s.parse::<i32>() {
                                             // 한컴 미주 기본값 "14692344"(전폭 sentinel)는 i16을
                                             // 넘으므로 절단하지 않고 그대로 보존한다. 렌더러가 col
@@ -964,7 +1202,9 @@ fn parse_note_pr_children(
                                     }
                                 }
                                 b"type" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         shape.separator_line_type = match s {
                                             "SOLID" => 1,
                                             "DASH" => 2,
@@ -985,12 +1225,16 @@ fn parse_note_pr_children(
                                 b"width" => {
                                     // 미주/각주 구분선 굵기도 테두리 굵기 raw 코드와 같은 표를 쓴다.
                                     // 예: 0.12mm → 1, 0.7mm → 9.
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         shape.separator_line_width = parse_hwpx_line_width(s);
                                     }
                                 }
                                 b"color" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         // "#RRGGBB" → ColorRef (0xBBGGRR LE = HWP 표준)
                                         if let Some(hex) = s.strip_prefix('#') {
                                             if let Ok(rgb) = u32::from_str_radix(hex, 16) {
@@ -1008,27 +1252,33 @@ fn parse_note_pr_children(
                     }
                     b"noteSpacing" => {
                         for attr in e.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 // 공식 미주/각주 모양 의미:
                                 // betweenNotes → 앞 번호 주석 내용과 다음 번호 주석 내용 사이
                                 // belowLine → 구분선과 주석 내용 사이
                                 // aboveLine → 본문과 구분선 사이
                                 b"betweenNotes" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Ok(v) = s.parse::<u16>() {
                                             shape.raw_unknown = v;
                                         }
                                     }
                                 }
                                 b"belowLine" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Ok(v) = s.parse::<i16>() {
                                             shape.note_spacing = v;
                                         }
                                     }
                                 }
                                 b"aboveLine" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Ok(v) = s.parse::<i16>() {
                                             shape.separator_margin_top = v;
                                             saw_above_line = true;
@@ -1054,9 +1304,11 @@ fn parse_note_pr_children(
                     }
                     b"numbering" => {
                         for attr in e.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"type" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         let numbering = match s {
                                             "CONTINUOUS" | "continue" => {
                                                 crate::model::footnote::FootnoteNumbering::Continue
@@ -1073,7 +1325,9 @@ fn parse_note_pr_children(
                                     }
                                 }
                                 b"newNum" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         if let Ok(v) = s.parse::<u16>() {
                                             shape.start_number = v;
                                         }
@@ -1085,9 +1339,11 @@ fn parse_note_pr_children(
                     }
                     b"placement" => {
                         for attr in e.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"place" => {
-                                    if let Ok(s) = std::str::from_utf8(&attr.value) {
+                                    if let Ok(s) =
+                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
+                                    {
                                         // [#2779] OWPML 스키마(ParaList placement@place)의 정식
                                         // 토큰은 컨텍스트마다 다르지만 HWP5 attr bits 8-9 코드
                                         // 공간은 공유한다:
@@ -1226,7 +1482,7 @@ fn parse_page_border_fill_empty(e: &quick_xml::events::BytesStart) -> (PageBorde
     let mut footer_inside = false;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"borderFillIDRef" => page_border_fill.border_fill_id = parse_u16(&attr),
             b"textBorder" => text_border = attr_str(&attr),
             b"fillArea" => fill_area = attr_str(&attr),
@@ -1261,7 +1517,7 @@ fn parse_page_border_fill_offset(
     page_border_fill: &mut PageBorderFill,
 ) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"left" => page_border_fill.spacing_left = parse_i16(&attr),
             b"right" => page_border_fill.spacing_right = parse_i16(&attr),
             b"top" => page_border_fill.spacing_top = parse_i16(&attr),
@@ -1302,7 +1558,7 @@ fn page_border_fill_attr(
 /// <hp:startNum> 요소 파싱
 fn parse_start_num(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"page" => sec_def.page_num = parse_u16(&attr),
             b"pic" => sec_def.picture_num = parse_u16(&attr),
             b"tbl" => sec_def.table_num = parse_u16(&attr),
@@ -1324,7 +1580,7 @@ fn parse_start_num(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) 
 /// <hp:visibility> 요소 파싱
 fn parse_visibility(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"hideFirstHeader" => {
                 sec_def.hide_header = attr_str(&attr) == "1";
                 if sec_def.hide_header {
@@ -1350,19 +1606,37 @@ fn parse_visibility(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef)
                 }
             }
             b"border" => {
-                sec_def.hide_border = attr_str(&attr) == "HIDE_ALL";
+                let v = attr_str(&attr);
+                sec_def.hide_border = v == "HIDE_ALL";
                 if sec_def.hide_border {
                     sec_def.flags |= 0x0008;
                 } else {
                     sec_def.flags &= !0x0008;
                 }
+                // [#5717] SHOW_FIRST = 구역 첫 쪽에만 테두리 (HWP5 flags bit 8)
+                sec_def.first_page_border = v == "SHOW_FIRST";
+                if sec_def.first_page_border {
+                    sec_def.flags |= 0x0100;
+                } else {
+                    sec_def.flags &= !0x0100;
+                }
             }
             b"fill" => {
-                sec_def.hide_fill = attr_str(&attr) == "HIDE_ALL";
+                let v = attr_str(&attr);
+                sec_def.hide_fill = v == "HIDE_ALL";
                 if sec_def.hide_fill {
                     sec_def.flags |= 0x0010;
                 } else {
                     sec_def.flags &= !0x0010;
+                }
+                // [#5717] SHOW_FIRST = 구역 첫 쪽에만 배경 (HWP5 flags bit 9).
+                // 성북구 실측: 한글 2022 가 bit9 HWP5 를 HWPX 로 저장하면
+                // fill="SHOW_FIRST" 로 내보낸다.
+                sec_def.first_page_fill = v == "SHOW_FIRST";
+                if sec_def.first_page_fill {
+                    sec_def.flags |= 0x0200;
+                } else {
+                    sec_def.flags &= !0x0200;
                 }
             }
             b"hideFirstEmptyLine" => {
@@ -1382,7 +1656,7 @@ fn parse_visibility(e: &quick_xml::events::BytesStart, sec_def: &mut SectionDef)
 fn parse_col_pr(e: &quick_xml::events::BytesStart) -> ColumnDef {
     let mut cd = ColumnDef::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"type" => {
                 cd.column_type = match attr_str(&attr).as_str() {
                     "NEWSPAPER" => ColumnType::Normal,
@@ -1457,7 +1731,7 @@ fn parse_col_pr_with_children(
 
 fn parse_col_line(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"type" => cd.separator_type = parse_hwpx_line_type(&attr_str(&attr)),
             b"width" => cd.separator_width = parse_hwpx_line_width(&attr_str(&attr)),
             b"color" => cd.separator_color = parse_color(&attr),
@@ -1486,7 +1760,7 @@ fn parse_col_sz(e: &quick_xml::events::BytesStart, cd: &mut ColumnDef) {
     let mut width: HwpUnit16 = 0;
     let mut gap: HwpUnit16 = 0;
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"width" => width = parse_hwpunit16_saturating(&attr, "colSz@width"),
             // gap 은 스키마상 xs:nonNegativeInteger — 음수 폴백 없이 0 이상만 허용.
             b"gap" => gap = parse_hwpunit16_saturating(&attr, "colSz@gap").max(0),
@@ -1613,7 +1887,7 @@ fn parse_lineseg_array(reader: &mut Reader<&[u8]>, para: &mut Paragraph) -> Resu
 fn parse_lineseg_element(e: &quick_xml::events::BytesStart) -> LineSeg {
     let mut seg = LineSeg::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"textpos" => seg.text_start = parse_u32(&attr),
             b"vertpos" => seg.vertical_pos = parse_i32(&attr),
             b"vertsize" => seg.line_height = parse_i32(&attr),
@@ -1629,11 +1903,24 @@ fn parse_lineseg_element(e: &quick_xml::events::BytesStart) -> LineSeg {
     seg
 }
 
+/// `text_parts` 안에서 제목 차례 표시를 나타내는 센티널 — `ignore="1"` 쪽.
+///
+/// 표시는 텍스트가 아니라 8유닛 슬롯이라 `visual_text` 에 실리지 않는다. 표(`\u{0002}`)
+/// 처럼 조각 하나를 통째로 차지하는 마커로 두고, 문단 조립 루프가 위치만 걷어 간다.
+const TITLE_MARK_PART_IGNORE: &str = "\u{0008}1";
+/// `text_parts` 안의 제목 차례 표시 센티널 — `ignore="0"` 쪽.
+const TITLE_MARK_PART_KEEP: &str = "\u{0008}0";
+/// pageNum/footer 슬롯. 일반 개체 `\u{0002}` 와 구분해 [#5251] 축에서만 0 으로 접는다.
+const PAGE_FOOTER_SLOT_PART: &str = "\u{0002}pf";
+
 /// <hp:t> 텍스트 컨텐츠를 읽는다.
 /// 탭 확장 데이터도 함께 반환 (HWPX 인라인 탭의 leader/type/width)
 fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
-    let (text, _) = read_text_content_with_tabs(reader)?;
-    Ok(text)
+    let (parts, _, _) = read_text_content_with_tabs(reader)?;
+    Ok(parts
+        .into_iter()
+        .filter(|p| p != TITLE_MARK_PART_IGNORE && p != TITLE_MARK_PART_KEEP)
+        .collect())
 }
 
 fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
@@ -1641,8 +1928,8 @@ fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
         return ch.to_string();
     }
 
-    let name = r.decode().unwrap_or_default();
-    match name.as_ref() {
+    let name = r.as_ref();
+    match name {
         "lt" => "<".to_string(),
         "gt" => ">".to_string(),
         "amp" => "&".to_string(),
@@ -1654,21 +1941,23 @@ fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
 
 fn read_text_content_with_tabs(
     reader: &mut Reader<&[u8]>,
-) -> Result<(String, Vec<[u16; 7]>), HwpxError> {
+) -> Result<(Vec<String>, Vec<[u16; 7]>, bool), HwpxError> {
+    let mut parts: Vec<String> = Vec::new();
     let mut text = String::new();
     let mut tab_ext_buf: Vec<[u16; 7]> = Vec::new();
+    let mut saw_nb_space_element = false;
     let mut buf = Vec::new();
 
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Text(ref t)) => {
-                text.push_str(&t.decode().unwrap_or_default());
+                text.push_str(t.as_ref());
             }
             // 본문 런 텍스트가 CDATA 로 저장된 경우. 이 분기가 없으면 `_ => {}` 로
             // 버려져 문단 텍스트가 통째로 소실된다(#2916·#2951·#2974 와 같은 결함
             // 클래스이나, 여기는 수식·덧말이 아닌 일반 <hp:t> 경로다).
             Ok(Event::CData(ref cdata)) => {
-                text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                text.push_str(cdata.as_ref());
             }
             Ok(Event::GeneralRef(ref r)) => {
                 text.push_str(&decode_xml_general_ref(r));
@@ -1693,8 +1982,43 @@ fn read_text_content_with_tabs(
                             tab_ext_buf.push(ext);
                         }
                     }
-                    b"nbSpace" => text.push('\u{00A0}'),
+                    // [#5174] 묶음 빈칸은 요소·리터럴 두 표기가 다 쓰인다(한컴 HWPX 실측:
+                    // 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 한글은 요소를 텍스트 추출에
+                    // 싣지 않고 리터럴은 싣기 때문에, 표기를 바꿔 저장하면 추출 텍스트가
+                    // 원본과 달라진다. IR 이 두 표기를 구분해야 왕복이 닫히므로 요소 표기를
+                    // 만나면 `control_mask` 비트 30(HWP5 제어코드 0x1E 자리)을 신호로 세운다.
+                    b"nbSpace" => {
+                        text.push('\u{00A0}');
+                        saw_nb_space_element = true;
+                    }
                     b"fwSpace" => text.push('\u{2007}'),
+                    // 소프트 하이픈 — 줄바꿈 자리에서만 보인다. 리터럴 '-' 와 구별해야
+                    // 저장 왕복에서 단어가 갈라지지 않는다(ParaList XML schema.xml:291).
+                    b"hyphen" => text.push('\u{00AD}'),
+                    // 제목 차례 표시 — 8유닛 슬롯이라 텍스트가 아니라 조각 마커로 끊는다.
+                    // 이걸 흘리면 저장본 축이 8유닛 짧아져 한글이 본문을 통째로 버린다.
+                    b"titleMark" => {
+                        if !text.is_empty() {
+                            parts.push(std::mem::take(&mut text));
+                        }
+                        let ignore = ce
+                            .attributes()
+                            .flatten()
+                            .find(|a| a.key.as_ref().as_bytes() == b"ignore")
+                            .map(|a| {
+                                let v = a.value.as_ref().to_lowercase();
+                                v == "1" || v == "true"
+                            })
+                            .unwrap_or(false);
+                        parts.push(
+                            if ignore {
+                                TITLE_MARK_PART_IGNORE
+                            } else {
+                                TITLE_MARK_PART_KEEP
+                            }
+                            .to_string(),
+                        );
+                    }
                     _ => {}
                 }
             }
@@ -1705,7 +2029,10 @@ fn read_text_content_with_tabs(
         buf.clear();
     }
 
-    Ok((text, tab_ext_buf))
+    if !text.is_empty() || parts.is_empty() {
+        parts.push(text);
+    }
+    Ok((parts, tab_ext_buf, saw_nb_space_element))
 }
 
 fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {
@@ -1715,7 +2042,7 @@ fn parse_tab_extension(e: &quick_xml::events::BytesStart) -> [u16; 7] {
     let mut tab_type = 0u16;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"width" => ext[0] = parse_u16(&attr),
             b"leader" => leader = parse_u16(&attr) & 0x00ff,
             b"type" => tab_type = parse_u16(&attr) & 0x00ff,
@@ -1752,7 +2079,7 @@ fn parse_table(
 
     // 표 기본 속성
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"id" | b"instid" => table.common.instance_id = parse_u32(&attr),
             b"zOrder" => table.common.z_order = parse_i32(&attr),
             b"rowCnt" => table.row_count = parse_u16(&attr),
@@ -1848,7 +2175,7 @@ fn parse_table(
                 match local {
                     b"sz" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"width" => {
                                     table.common.width = parse_u32(&attr);
                                 }
@@ -1873,7 +2200,7 @@ fn parse_table(
                     }
                     b"pos" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"treatAsChar" => {
                                     table.common.treat_as_char =
                                         attr_str(&attr) == "1" || attr_str(&attr) == "true";
@@ -1936,7 +2263,7 @@ fn parse_table(
                     }
                     b"outMargin" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => table.outer_margin_left = parse_i16(&attr),
                                 b"right" => table.outer_margin_right = parse_i16(&attr),
                                 b"top" => table.outer_margin_top = parse_i16(&attr),
@@ -1948,7 +2275,7 @@ fn parse_table(
                     b"inMargin" => {
                         // 표 안쪽 여백 → table.padding
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => table.padding.left = parse_i16(&attr),
                                 b"right" => table.padding.right = parse_i16(&attr),
                                 b"top" => table.padding.top = parse_i16(&attr),
@@ -1960,7 +2287,7 @@ fn parse_table(
                     b"cellzone" => {
                         let mut zone = crate::model::table::TableZone::default();
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"startColAddr" => zone.start_col = parse_u16(&attr),
                                 b"startRowAddr" => zone.start_row = parse_u16(&attr),
                                 b"endColAddr" => zone.end_col = parse_u16(&attr),
@@ -2037,7 +2364,18 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     // table.attr bit0 for some inline-table decisions. Only mirror the minimum
     // renderer compatibility bit here; the HWP5 storage attr is packed later by
     // the HWP adapter.
-    table.attr = if table.common.treat_as_char && table.common.flow_with_text {
+    //
+    // 순수 HWPX 의 TAC 판정은 `treatAsChar && flowWithText` (#3930) 다. HWP5 원본은
+    // CTRL_HEADER bit0 = treatAsChar 만으로 TAC 이다. HWP5-origin HWPX 가 후자
+    // 계약을 잃으면 synam-001 문단 237 같은 flowWithText=0 TAC 표가 블록 RowBreak로
+    // 쪼개져 35→36 이 된다 (#3521). 원본 HWP3도 treatAsChar만으로 인라인 표이며,
+    // HWP3-origin HWPX가 이를 잃으면 sample11 문단 3701..3704가 151→152로 갈라진다
+    // (#3737).
+    table.attr = if table.common.treat_as_char
+        && (table.common.flow_with_text
+            || HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get())
+            || HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get()))
+    {
         0x01
     } else {
         0
@@ -2144,7 +2482,7 @@ fn parse_caption_sub_list_attrs(
     use crate::model::shape::CaptionVertAlign;
 
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"vertAlign" {
+        if attr.key.as_ref().as_bytes() == b"vertAlign" {
             caption.vert_align = match attr_str(&attr).as_str() {
                 "CENTER" => CaptionVertAlign::Center,
                 "BOTTOM" => CaptionVertAlign::Bottom,
@@ -2165,7 +2503,7 @@ fn parse_caption(
 
     let mut caption = Caption::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"side" => {
                 caption.direction = match attr_str(&attr).as_str() {
                     "LEFT" => CaptionDirection::Left,
@@ -2228,7 +2566,7 @@ fn parse_table_cell(
 
     // <hp:tc> 요소 자체의 속성 파싱
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"borderFillIDRef" => cell.border_fill_id = parse_u16(&attr),
             b"header" => cell.set_header(parse_bool(&attr)),
             b"hasMargin" => cell.set_apply_inner_margin(parse_bool(&attr)),
@@ -2257,7 +2595,7 @@ fn parse_table_cell(
                 match local {
                     b"cellAddr" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"colAddr" => {
                                     cell.col = parse_u16(&attr);
                                 }
@@ -2268,7 +2606,7 @@ fn parse_table_cell(
                     }
                     b"cellSpan" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"colSpan" => cell.col_span = parse_u16(&attr).max(1),
                                 b"rowSpan" => cell.row_span = parse_u16(&attr).max(1),
                                 _ => {}
@@ -2277,7 +2615,7 @@ fn parse_table_cell(
                     }
                     b"cellSz" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"width" => cell.width = parse_u32(&attr),
                                 b"height" => cell.height = parse_u32(&attr),
                                 _ => {}
@@ -2286,7 +2624,7 @@ fn parse_table_cell(
                     }
                     b"cellMargin" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => cell.padding.left = parse_i16(&attr),
                                 b"right" => cell.padding.right = parse_i16(&attr),
                                 b"top" => cell.padding.top = parse_i16(&attr),
@@ -2298,7 +2636,7 @@ fn parse_table_cell(
                     b"tcPr" => {
                         // 셀 속성 (legacy format)
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"borderFillIDRef" => cell.border_fill_id = parse_u16(&attr),
                                 b"textDirection" => {
                                     let val = attr_str(&attr);
@@ -2318,7 +2656,7 @@ fn parse_table_cell(
                     b"subList" => {
                         // subList: vertAlign + textDirection 속성 파싱
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"vertAlign" => {
                                     cell.vertical_align = match attr_str(&attr).as_str() {
                                         "CENTER" => VerticalAlign::Center,
@@ -2333,13 +2671,23 @@ fn parse_table_cell(
                                     cell.text_direction =
                                         if attr_str(&attr) == "VERTICAL" { 1 } else { 0 };
                                 }
+                                // [#4898] 줄바꿈 방식. 종전엔 읽지 않아 HWP5 저장에서 항상
+                                // BREAK(0)이 됐고, SQUEEZE 셀은 한글이 줄을 다시 나눠
+                                // 셀·표 높이가 달라졌다(코퍼스 표본에 SQUEEZE 3,019회).
+                                b"lineWrap" => {
+                                    cell.line_wrap = match attr_str(&attr).as_str() {
+                                        "SQUEEZE" => 1,
+                                        "KEEP" => 2,
+                                        _ => 0,
+                                    };
+                                }
                                 _ => {}
                             }
                         }
                     }
                     b"cellPr" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"borderFillIDRef" => cell.border_fill_id = parse_u16(&attr),
                                 b"textDirection" => {
                                     let val = attr_str(&attr);
@@ -2370,7 +2718,7 @@ fn parse_table_cell(
                 match local {
                     b"cellAddr" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"colAddr" => {
                                     cell.col = parse_u16(&attr);
                                 }
@@ -2381,7 +2729,7 @@ fn parse_table_cell(
                     }
                     b"cellSpan" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"colSpan" => cell.col_span = parse_u16(&attr).max(1),
                                 b"rowSpan" => cell.row_span = parse_u16(&attr).max(1),
                                 _ => {}
@@ -2390,7 +2738,7 @@ fn parse_table_cell(
                     }
                     b"cellSz" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"width" => cell.width = parse_u32(&attr),
                                 b"height" => cell.height = parse_u32(&attr),
                                 _ => {}
@@ -2399,7 +2747,7 @@ fn parse_table_cell(
                     }
                     b"cellMargin" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => cell.padding.left = parse_i16(&attr),
                                 b"right" => cell.padding.right = parse_i16(&attr),
                                 b"top" => cell.padding.top = parse_i16(&attr),
@@ -2455,7 +2803,7 @@ fn parse_picture(
 
     // <hp:pic> 요소 자체의 속성 파싱
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"id" => common.instance_id = parse_u32(&attr),
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
@@ -2523,7 +2871,10 @@ fn parse_picture(
     let mut caption: Option<crate::model::shape::Caption> = None;
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"imgRect" => {
                 parse_picture_img_rect(reader, &mut border_x, &mut border_y)?;
             }
@@ -2544,7 +2895,7 @@ fn parse_picture(
                     b"sz" => {
                         // 최종 표시 크기 (최우선)
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"width" => {
                                     let v = parse_u32(&attr);
                                     if v > 0 {
@@ -2577,7 +2928,7 @@ fn parse_picture(
                     b"curSz" => {
                         // 현재 크기 → common + shape_attr.current_width/height
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"width" => {
                                     let v = parse_u32(&attr);
                                     shape_attr.current_width = v;
@@ -2599,7 +2950,7 @@ fn parse_picture(
                     // [#1389] 원본 이미지 픽셀 크기 — verbatim 적재
                     b"imgDim" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"dimwidth" => img_dim.0 = parse_u32(&attr),
                                 b"dimheight" => img_dim.1 = parse_u32(&attr),
                                 _ => {}
@@ -2610,10 +2961,11 @@ fn parse_picture(
                         // 원본 크기 → shape_attr.original_width/height (렌더러 이미지 Fill 크기에 사용)
                         // curSz/sz가 없을 때 common.width/height 폴백으로도 사용
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"width" => {
                                     let v = parse_u32(&attr);
                                     shape_attr.original_width = v;
+                                    shape_attr.original_width_was_zero = v == 0;
                                     if common.width == 0 {
                                         common.width = v;
                                     }
@@ -2621,6 +2973,7 @@ fn parse_picture(
                                 b"height" => {
                                     let v = parse_u32(&attr);
                                     shape_attr.original_height = v;
+                                    shape_attr.original_height_was_zero = v == 0;
                                     if common.height == 0 {
                                         common.height = v;
                                     }
@@ -2632,7 +2985,7 @@ fn parse_picture(
                     b"pos" => {
                         has_pos = true;
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"treatAsChar" => {
                                     common.treat_as_char =
                                         attr_str(&attr) == "1" || attr_str(&attr) == "true";
@@ -2697,7 +3050,7 @@ fn parse_picture(
                     }
                     b"outMargin" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => common.margin.left = parse_i16(&attr),
                                 b"right" => common.margin.right = parse_i16(&attr),
                                 b"top" => common.margin.top = parse_i16(&attr),
@@ -2708,7 +3061,7 @@ fn parse_picture(
                     }
                     b"inMargin" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => padding.left = parse_i16(&attr),
                                 b"right" => padding.right = parse_i16(&attr),
                                 b"top" => padding.top = parse_i16(&attr),
@@ -2719,7 +3072,7 @@ fn parse_picture(
                     }
                     b"imgClip" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => crop.left = parse_i32(&attr),
                                 b"right" => crop.right = parse_i32(&attr),
                                 b"top" => crop.top = parse_i32(&attr),
@@ -2730,7 +3083,7 @@ fn parse_picture(
                     }
                     b"img" | b"image" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"binaryItemIDRef" => {
                                     // "image1" → BinData ID 1
                                     let val = attr_str(&attr);
@@ -2765,7 +3118,7 @@ fn parse_picture(
                         // <pos>가 이미 파싱된 경우 페이지 레벨 좌표(vertOffset/horzOffset)는
                         // 덮어쓰지 않는다. <pos>가 없는 경우에만 폴백으로 적용한다.
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => {
                                     let v = parse_i32_wrapping(&attr);
                                     shape_attr.offset_x = v;
@@ -2786,7 +3139,9 @@ fn parse_picture(
                     }
                     b"renderingInfo" => {
                         // 그룹 내 자식의 아핀 변환 행렬 파싱
-                        parse_rendering_info(reader, &mut shape_attr)?;
+                        if !self_closing {
+                            parse_rendering_info(reader, &mut shape_attr)?;
+                        }
                     }
                     b"flip" => {
                         parse_shape_flip(ce, &mut shape_attr);
@@ -2907,7 +3262,7 @@ fn parse_picture_transparency_attr(raw: &str) -> u8 {
 fn parse_picture_shadow_attrs(e: &quick_xml::events::BytesStart<'_>) -> PictureShadow {
     let mut shadow = PictureShadow::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"style" => shadow.style = Some(attr_str(&attr)),
             b"alpha" => shadow.alpha = Some(attr_str(&attr)),
             b"radius" => shadow.radius = Some(attr_str(&attr)),
@@ -2924,7 +3279,7 @@ fn parse_picture_shadow_attrs(e: &quick_xml::events::BytesStart<'_>) -> PictureS
 fn parse_effect_point(e: &quick_xml::events::BytesStart<'_>) -> EffectPoint {
     let mut point = EffectPoint::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"x" => point.x = Some(attr_str(&attr)),
             b"y" => point.y = Some(attr_str(&attr)),
             _ => {}
@@ -2959,7 +3314,7 @@ fn parse_effect_color(
 fn parse_effect_color_attrs(e: &quick_xml::events::BytesStart<'_>) -> EffectColor {
     let mut color = EffectColor::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"type" => color.color_type = Some(attr_str(&attr)),
             b"schemeIdx" => color.scheme_idx = Some(attr_str(&attr)),
             b"systemIdx" => color.system_idx = Some(attr_str(&attr)),
@@ -2973,7 +3328,7 @@ fn parse_effect_color_attrs(e: &quick_xml::events::BytesStart<'_>) -> EffectColo
 fn parse_effect_rgb(e: &quick_xml::events::BytesStart<'_>) -> EffectRgb {
     let mut rgb = EffectRgb::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"r" => rgb.r = Some(attr_str(&attr)),
             b"g" => rgb.g = Some(attr_str(&attr)),
             b"b" => rgb.b = Some(attr_str(&attr)),
@@ -3092,7 +3447,7 @@ fn parse_object_element_attrs(
     common.hwp5_gen_shape_attr_bit26 = true;
     let mut ids = ObjectElementIds::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"id" => common.instance_id = parse_u32(&attr),
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
@@ -3162,7 +3517,7 @@ fn parse_object_layout_child(
     match local {
         b"sz" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"width" => {
                         let v = parse_u32(&attr);
                         if v > 0 {
@@ -3188,10 +3543,11 @@ fn parse_object_layout_child(
         }
         b"curSz" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"width" => {
                         let v = parse_u32(&attr);
                         shape_attr.current_width = v;
+                        shape_attr.current_width_was_zero = v == 0;
                         if v > 0 {
                             common.width = v;
                         }
@@ -3199,6 +3555,7 @@ fn parse_object_layout_child(
                     b"height" => {
                         let v = parse_u32(&attr);
                         shape_attr.current_height = v;
+                        shape_attr.current_height_was_zero = v == 0;
                         if v > 0 {
                             common.height = v;
                         }
@@ -3209,10 +3566,11 @@ fn parse_object_layout_child(
         }
         b"orgSz" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"width" => {
                         let v = parse_u32(&attr);
                         shape_attr.original_width = v;
+                        shape_attr.original_width_was_zero = v == 0;
                         if common.width == 0 {
                             common.width = v;
                         }
@@ -3220,6 +3578,7 @@ fn parse_object_layout_child(
                     b"height" => {
                         let v = parse_u32(&attr);
                         shape_attr.original_height = v;
+                        shape_attr.original_height_was_zero = v == 0;
                         if common.height == 0 {
                             common.height = v;
                         }
@@ -3231,7 +3590,7 @@ fn parse_object_layout_child(
         b"pos" => {
             *has_pos = true;
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"treatAsChar" => {
                         common.treat_as_char = attr_str(&attr) == "1" || attr_str(&attr) == "true";
                     }
@@ -3289,7 +3648,7 @@ fn parse_object_layout_child(
         }
         b"offset" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"x" => {
                         let v = parse_i32_wrapping(&attr);
                         shape_attr.offset_x = v;
@@ -3310,7 +3669,7 @@ fn parse_object_layout_child(
         }
         b"outMargin" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"left" => common.margin.left = parse_i16(&attr),
                     b"right" => common.margin.right = parse_i16(&attr),
                     b"top" => common.margin.top = parse_i16(&attr),
@@ -3327,7 +3686,7 @@ fn parse_object_layout_child(
 
 fn parse_shape_flip(e: &quick_xml::events::BytesStart, shape_attr: &mut ShapeComponentAttr) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"horizontal" => shape_attr.horz_flip = parse_bool(&attr),
             b"vertical" => shape_attr.vert_flip = parse_bool(&attr),
             _ => {}
@@ -3353,7 +3712,7 @@ fn parse_shape_rotation_info(
     shape_attr: &mut ShapeComponentAttr,
 ) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"angle" => shape_attr.rotation_angle = parse_i16(&attr),
             b"centerX" => shape_attr.rotation_center.x = parse_i32(&attr),
             b"centerY" => shape_attr.rotation_center.y = parse_i32(&attr),
@@ -3383,7 +3742,7 @@ fn parse_picture_img_rect(
                 };
                 if let Some(index) = index {
                     for attr in ce.attributes().flatten() {
-                        match attr.key.as_ref() {
+                        match attr.key.as_ref().as_bytes() {
                             b"x" => pts[index].0 = parse_i32(&attr),
                             b"y" => pts[index].1 = parse_i32(&attr),
                             _ => {}
@@ -3449,7 +3808,7 @@ fn parse_rendering_info(
                 .parse()
                 .map(hwp5_matrix_value)
                 .unwrap_or(0.0);
-            match attr.key.as_ref() {
+            match attr.key.as_ref().as_bytes() {
                 b"e1" => m[0] = val,
                 b"e2" => m[1] = val,
                 b"e3" => m[2] = val,
@@ -3565,7 +3924,7 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
 
     let mut bl = ShapeBorderLine::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"color" => bl.color = parse_color(&attr),
             b"width" => bl.width = parse_i32(&attr),
             b"style" => {
@@ -3638,7 +3997,7 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
 
 fn parse_connect_line_type_attr(e: &quick_xml::events::BytesStart) -> LinkLineType {
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"type" {
+        if attr.key.as_ref().as_bytes() == b"type" {
             return match attr_str(&attr).to_ascii_uppercase().as_str() {
                 "STRAIGHT_ONEWAY" => LinkLineType::StraightOneWay,
                 "STRAIGHT_BOTH" => LinkLineType::StraightBoth,
@@ -3663,7 +4022,7 @@ fn parse_connect_line_type_attr(e: &quick_xml::events::BytesStart) -> LinkLineTy
 /// 반드시 `<hp:arc>` 요소 자체(shape_type == b"arc")에서만 호출한다.
 fn parse_arc_type_attr(e: &quick_xml::events::BytesStart) -> u8 {
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"type" {
+        if attr.key.as_ref().as_bytes() == b"type" {
             return match attr_str(&attr).to_ascii_uppercase().as_str() {
                 "PIE" => 1,
                 "CHORD" => 2,
@@ -3692,7 +4051,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                             ..SolidFill::default()
                         };
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"faceColor" => solid.background_color = parse_color(&attr),
                                 b"hatchColor" => solid.pattern_color = parse_color(&attr),
                                 b"hatchStyle" => {
@@ -3716,7 +4075,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                         fill.fill_type = FillType::Gradient;
                         let mut grad = GradientFill::default();
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"type" => {
                                     grad.gradient_type = parse_gradient_type(&attr_str(&attr))
                                 }
@@ -3742,7 +4101,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                         // fillBrush needs the same color stop materialization for rendering.
                         if let Some(ref mut grad) = fill.gradient {
                             for attr in ce.attributes().flatten() {
-                                if attr.key.as_ref() == b"value" {
+                                if attr.key.as_ref().as_bytes() == b"value" {
                                     grad.colors.push(parse_color(&attr));
                                 }
                             }
@@ -3752,7 +4111,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                         fill.fill_type = FillType::Image;
                         let mut img = ImageFill::default();
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 // [#2563] 헤더(borderFill) 파서와 동일한 12종 매핑.
                                 // 종전엔 4종만 받아 TOTAL 등 8종이 TILE 로 붕괴했다.
                                 b"mode" => {
@@ -3768,6 +4127,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                                         "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                             ImageFillMode::FitToSize
                                         }
+                                        "ZOOM" => ImageFillMode::Zoom,
                                         "TOTAL" => ImageFillMode::Total,
                                         "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                         _ => ImageFillMode::TileAll,
@@ -3786,7 +4146,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                     b"img" | b"image" => {
                         if let Some(ref mut img_fill) = fill.image {
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"binaryItemIDRef" => {
                                         let val = attr_str(&attr);
                                         let num: String =
@@ -3827,7 +4187,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
 /// [Task #1598] `<hc:center x="" y="">` 류 점 요소의 x/y 속성을 Point 로 읽는다.
 fn parse_xy(e: &quick_xml::events::BytesStart, p: &mut crate::model::Point) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"x" => p.x = parse_i32(&attr),
             b"y" => p.y = parse_i32(&attr),
             _ => {}
@@ -3843,7 +4203,7 @@ fn parse_shape_shadow_attr(e: &quick_xml::events::BytesStart) -> (u32, u32, i32,
     let mut shadow_alpha = 0_u8;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"type" => {
                 shadow_type = match attr_str(&attr).as_str() {
                     "NONE" => 0,
@@ -3888,14 +4248,17 @@ fn parse_shape_shadow_attr(e: &quick_xml::events::BytesStart) -> (u32, u32, i32,
 fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
                     b"subList" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"vertAlign" => {
                                     let align_code = match attr_str(&attr).as_str() {
                                         "CENTER" => 1_u32,
@@ -3932,14 +4295,16 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                             }
                         }
                     }
-                    b"p" => {
+                    // `<hp:p/>` 는 내용이 없는 문단이다 — 여는 태그로 보고 문단 파서를
+                    // 태우면 다음 `</hp:p>` 까지, 즉 뒤 문단·형제 도형을 삼킨다.
+                    b"p" if !self_closing => {
                         // subList 내 p를 독립 파싱
                         let (para, _) = parse_paragraph(ce, reader)?;
                         text_box.paragraphs.push(para);
                     }
                     b"textMargin" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => text_box.margin_left = parse_i16(&attr),
                                 b"right" => text_box.margin_right = parse_i16(&attr),
                                 b"top" => text_box.margin_top = parse_i16(&attr),
@@ -4015,7 +4380,12 @@ fn parse_shape_object(
     let mut caption: Option<crate::model::shape::Caption> = None;
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 표기(`<hp:x/>`)에는 자식도 종료 태그도 없다. 여는 태그로
+        // 보고 하위 파서를 태우면 그 파서가 없는 종료 태그를 찾아 이 도형의 남은
+        // 자식과 **뒤 형제 도형**까지 통째로 삼킨다.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"shapeComment" => {
                 common.description = read_dutmal_text(reader, b"shapeComment")?;
             }
@@ -4043,12 +4413,16 @@ fn parse_shape_object(
                     b"drawText" => {
                         let mut tb = TextBox::default();
                         tb.max_width = common.width;
-                        parse_draw_text(reader, &mut tb)?;
+                        // `<hp:drawText/>` 는 글이 없는 빈 글상자다 — 자식만 건너뛰고
+                        // 글상자 자체는 남긴다(도형의 HWP5 저장 종류가 바뀌지 않도록).
+                        if !self_closing {
+                            parse_draw_text(reader, &mut tb)?;
+                        }
                         text_box = Some(tb);
                     }
                     b"pt0" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => x_coords[0] = parse_i32(&attr),
                                 b"y" => y_coords[0] = parse_i32(&attr),
                                 _ => {}
@@ -4057,7 +4431,7 @@ fn parse_shape_object(
                     }
                     b"pt1" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => x_coords[1] = parse_i32(&attr),
                                 b"y" => y_coords[1] = parse_i32(&attr),
                                 _ => {}
@@ -4066,7 +4440,7 @@ fn parse_shape_object(
                     }
                     b"pt2" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => x_coords[2] = parse_i32(&attr),
                                 b"y" => y_coords[2] = parse_i32(&attr),
                                 _ => {}
@@ -4075,7 +4449,7 @@ fn parse_shape_object(
                     }
                     b"pt3" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => x_coords[3] = parse_i32(&attr),
                                 b"y" => y_coords[3] = parse_i32(&attr),
                                 _ => {}
@@ -4088,7 +4462,7 @@ fn parse_shape_object(
                         let mut px: i32 = 0;
                         let mut py: i32 = 0;
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => px = parse_i32(&attr),
                                 b"y" => py = parse_i32(&attr),
                                 _ => {}
@@ -4106,7 +4480,7 @@ fn parse_shape_object(
                         let mut x2: i32 = 0;
                         let mut y2: i32 = 0;
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x1" => x1 = parse_i32(&attr),
                                 b"y1" => y1 = parse_i32(&attr),
                                 b"x2" => x2 = parse_i32(&attr),
@@ -4121,7 +4495,7 @@ fn parse_shape_object(
                     }
                     b"startPt" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => x_coords[0] = parse_i32(&attr),
                                 b"y" => y_coords[0] = parse_i32(&attr),
                                 b"subjectIDRef" => connect_start_subject_id = parse_u32(&attr),
@@ -4132,7 +4506,7 @@ fn parse_shape_object(
                     }
                     b"endPt" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => x_coords[1] = parse_i32(&attr),
                                 b"y" => y_coords[1] = parse_i32(&attr),
                                 b"subjectIDRef" => connect_end_subject_id = parse_u32(&attr),
@@ -4144,7 +4518,7 @@ fn parse_shape_object(
                     b"point" => {
                         let mut point = ConnectorControlPoint::default();
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => point.x = parse_i32(&attr),
                                 b"y" => point.y = parse_i32(&attr),
                                 b"type" => point.point_type = parse_u16(&attr),
@@ -4162,10 +4536,14 @@ fn parse_shape_object(
                     b"start2" => parse_xy(ce, &mut e_start2),
                     b"end2" => parse_xy(ce, &mut e_end2),
                     b"renderingInfo" => {
-                        parse_rendering_info(reader, &mut shape_attr)?;
+                        if !self_closing {
+                            parse_rendering_info(reader, &mut shape_attr)?;
+                        }
                     }
                     b"fillBrush" => {
-                        fill = parse_shape_fill_brush(reader)?;
+                        if !self_closing {
+                            fill = parse_shape_fill_brush(reader)?;
+                        }
                     }
                     b"shadow" => {
                         shadow_acc = Some(parse_shape_shadow_attr(ce));
@@ -4289,9 +4667,12 @@ fn parse_shape_object(
         b"curve" => ShapeObject::Curve(CurveShape {
             common,
             drawing,
-            // CurveShape 도 동일 패턴 — 누락 시 곡선 미표시. segment_types 는 별개로 추후 task.
+            // CurveShape 도 동일 패턴 — 누락 시 곡선 미표시.
             points: polygon_points,
-            ..Default::default()
+            // HWPX `hp:seg type="CURVE"`는 점-대-점 체인의 표기일 뿐 HWP5 `1`이 요구하는
+            // 베지어 제어점 2개를 담지 않는다. 그대로 옮기면 renderer가 세 점씩 소비하므로
+            // 비워서 기존의 LineTo 체인 렌더 계약을 유지한다(#1200, #4676).
+            segment_types: Vec::new(),
         }),
         _ => ShapeObject::Rectangle(RectangleShape {
             common,
@@ -4307,10 +4688,43 @@ fn parse_shape_object(
 
 // ─── 묶음(그룹) 객체 파싱 ───
 
+/// [#4730] HWPX 그룹(`<hp:container>`)은 자기 자신을 자식으로 가질 수 있고, 그
+/// 중첩 깊이는 파일에서 그대로 온다. 상한이 없으면 `<hp:container>` 를 수만 겹
+/// 중첩한 section XML 하나로 네이티브 스택을 고갈시켜 프로세스를 죽일 수 있다
+/// (패닉과 달리 catch_unwind 로 못 잡는다). 여는 태그가 ~14바이트라 100,000 겹도
+/// ~1.4MB 로 어떤 입력 상한에도 걸리지 않는다. HWP3 `MAX_DRAWING_OBJECT_DEPTH`
+/// (#4285)·HML `HmlLimits::max_depth` 와 같은 취지로 상한을 둔다. 다만 이 함수는
+/// 큰 지역 상태를 가진 재귀 함수이므로, 기본 스레드 스택에서도 가드가 먼저
+/// 동작하도록 HWP3/HML의 256보다 작은 64개 그룹으로 제한한다.
+const MAX_HWPX_CONTAINER_DEPTH: u32 = 64;
+
 /// `<hp:container>` 요소를 파싱하여 `Control::Shape(GroupShape)`를 반환한다.
+///
+/// `depth` 는 중첩 그룹의 현재 깊이다(최상위 호출은 0). 최대 64개 그룹을
+/// 허용하며, 그 다음 그룹은 스택을 고갈시키기 전에 오류로 거부한다 — 위
+/// `MAX_HWPX_CONTAINER_DEPTH` 참고.
+///
+/// 가드는 큰 지역 상태를 가진 본문보다 먼저 실행돼야 한다. 상한 검사를
+/// 본문과 같은 프레임에서 하면 거절하는 65번째 호출도 큰 프레임을 먼저
+/// 쌓아, 기본/WASM 스택에서 가드보다 SIGSEGV 가 앞설 수 있다.
 fn parse_container(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
+    depth: u32,
+) -> Result<Control, HwpxError> {
+    if depth >= MAX_HWPX_CONTAINER_DEPTH {
+        return Err(HwpxError::XmlError(format!(
+            "container nesting exceeds {} levels",
+            MAX_HWPX_CONTAINER_DEPTH
+        )));
+    }
+    parse_container_body(e, reader, depth)
+}
+
+fn parse_container_body(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+    depth: u32,
 ) -> Result<Control, HwpxError> {
     let mut common = CommonObjAttr::default();
     let mut shape_attr = ShapeComponentAttr::default();
@@ -4322,7 +4736,10 @@ fn parse_container(
     let mut caption: Option<crate::model::shape::Caption> = None;
     let mut buf = Vec::new();
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             // 묶음 개체 캡션 (#1403) — 미적재 시 roundtrip 에서 캡션 subList 소실
             Ok(Event::Start(ref ce)) if local_name(ce.name().as_ref()) == b"caption" => {
                 caption = Some(parse_caption(ce, reader)?);
@@ -4345,7 +4762,7 @@ fn parse_container(
                             &mut has_pos,
                         );
                     }
-                    b"pic" => {
+                    b"pic" if !self_closing => {
                         // 자식 그림 객체
                         let child = parse_picture(ce, reader)?;
                         if let Control::Picture(pic) = child {
@@ -4353,22 +4770,33 @@ fn parse_container(
                         }
                     }
                     b"rect" | b"ellipse" | b"line" | b"connectLine" | b"arc" | b"polygon"
-                    | b"curve" => {
+                    | b"curve"
+                        if !self_closing =>
+                    {
                         // 자식 그리기 객체
                         let child = parse_shape_object(local, ce, reader)?;
                         if let Control::Shape(shape) = child {
                             children.push(*shape);
                         }
                     }
-                    b"container" => {
-                        // 중첩 그룹
-                        let child = parse_container(ce, reader)?;
+                    b"container" if !self_closing => {
+                        // 중첩 그룹 — 깊이 +1 (상한 초과 시 위에서 거부)
+                        let child = parse_container(ce, reader, depth + 1)?;
                         if let Control::Shape(shape) = child {
                             children.push(*shape);
                         }
                     }
+                    b"ole" => {
+                        // 그룹 멤버 OLE도 최상위 OLE와 같은 파서로 적재한다. 이 arm이 없으면
+                        // groupLevel을 읽기 전에 요소 전체가 무시되어 저장 왕복에서 소실된다.
+                        if let Some(Control::Shape(shape)) = parse_hp_ole_element(ce, reader)? {
+                            children.push(*shape);
+                        }
+                    }
                     b"renderingInfo" => {
-                        parse_rendering_info(reader, &mut shape_attr)?;
+                        if !self_closing {
+                            parse_rendering_info(reader, &mut shape_attr)?;
+                        }
                     }
                     _ => {}
                 }
@@ -4431,7 +4859,7 @@ fn parse_ctrl(
                     b"footer" => {
                         let ctrl = parse_ctrl_footer(ce, reader)?;
                         controls.push(ctrl);
-                        text_parts.push("\u{0002}".to_string());
+                        text_parts.push(PAGE_FOOTER_SLOT_PART.to_string());
                     }
                     b"footNote" => {
                         let ctrl = parse_ctrl_footnote(ce, reader)?;
@@ -4458,6 +4886,14 @@ fn parse_ctrl(
                         let ctrl = parse_ctrl_hidden_comment(reader)?;
                         controls.push(ctrl);
                     }
+                    // 찾아보기 표식 — 책갈피와 같이 8 유닛 자리를 차지한다. 한컴 산출물
+                    // 실측(06926 section3 문단 347): 텍스트 342자에 표식 3개인데 lineseg
+                    // 최대 `textpos` 가 348 이라, 표식이 자리를 잡지 않으면 범위 밖이 된다.
+                    b"indexmark" => {
+                        let im = parse_index_mark_element(reader)?;
+                        controls.push(Control::IndexMark(im));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     b"fieldBegin" => {
                         let ctrl = parse_ctrl_field_begin(ce, reader)?;
                         controls.push(ctrl);
@@ -4477,15 +4913,26 @@ fn parse_ctrl(
                         text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"pageHiding")?;
                     }
+                    b"pageNumCtrl" => {
+                        controls.push(Control::PageNumCtrl(parse_page_num_ctrl_attrs(ce)));
+                        text_parts.push("\u{0002}".to_string());
+                        skip_element(reader, b"pageNumCtrl")?;
+                    }
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
-                        text_parts.push("\u{0002}".to_string());
+                        text_parts.push(PAGE_FOOTER_SLOT_PART.to_string());
                         skip_element(reader, b"pageNum")?;
                     }
                     b"bookmark" => {
                         let bm = parse_bookmark_attrs(ce);
                         controls.push(Control::Bookmark(bm));
+                        // [#4677] 책갈피도 HWP5 PARA_TEXT 에서 8 유닛 확장 제어문자 자리를
+                        // 차지한다(한컴 원본 바이트: `16 00 6d 6b 6f 62 … 16 00`). 이 표시가
+                        // 없으면 char_offsets 에 갭이 없어 HWP5 저장기가 제어문자를 제자리에
+                        // 넣지 못하고 문단 **끝에 몰아서** 쓴다. 그러면 글자 모양 경계가
+                        // 어긋나고(한컴 pos 77 → rhwp 53) 한글 2022 는 본문을 통째로 버린다.
+                        text_parts.push("\u{0002}".to_string());
                         skip_element(reader, b"bookmark")?;
                     }
                     b"newNum" => {
@@ -4519,14 +4966,20 @@ fn parse_ctrl(
                         controls.push(Control::PageHide(ph));
                         text_parts.push("\u{0002}".to_string());
                     }
+                    b"pageNumCtrl" => {
+                        controls.push(Control::PageNumCtrl(parse_page_num_ctrl_attrs(ce)));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
-                        text_parts.push("\u{0002}".to_string());
+                        text_parts.push(PAGE_FOOTER_SLOT_PART.to_string());
                     }
                     b"bookmark" => {
                         let bm = parse_bookmark_attrs(ce);
                         controls.push(Control::Bookmark(bm));
+                        // 위 Start 분기와 같은 이유 — 8 유닛 자리를 반드시 잡아 둔다 (#4677).
+                        text_parts.push("\u{0002}".to_string());
                     }
                     b"newNum" => {
                         let nn = parse_new_num_attrs(ce);
@@ -4553,6 +5006,11 @@ fn parse_ctrl(
                         text_parts.push("\u{0004}".to_string());
                     }
                     b"hiddenComment" => {}
+                    // 키가 하나도 없는 표식은 빈 요소로 온다 — 자리는 똑같이 차지한다.
+                    b"indexmark" => {
+                        controls.push(Control::IndexMark(IndexMark::default()));
+                        text_parts.push("\u{0002}".to_string());
+                    }
                     _ => {}
                 }
             }
@@ -4583,7 +5041,7 @@ fn parse_field_end_attrs(e: &quick_xml::events::BytesStart) -> (u32, u32) {
     let mut begin_id_ref = 0u32;
     let mut field_id = 0u32;
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"beginIDRef" => begin_id_ref = parse_u32(&attr),
             b"fieldid" => field_id = parse_u32(&attr),
             _ => {}
@@ -4595,7 +5053,7 @@ fn parse_field_end_attrs(e: &quick_xml::events::BytesStart) -> (u32, u32) {
 fn parse_page_hiding_attrs(e: &quick_xml::events::BytesStart) -> PageHide {
     let mut ph = PageHide::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"hideHeader" => ph.hide_header = parse_bool_attr(&attr),
             b"hideFooter" => ph.hide_footer = parse_bool_attr(&attr),
             b"hideMasterPage" => ph.hide_master_page = parse_bool_attr(&attr),
@@ -4611,7 +5069,7 @@ fn parse_page_hiding_attrs(e: &quick_xml::events::BytesStart) -> PageHide {
 fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
     let mut pn = PageNumberPos::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"pos" => {
                 pn.position = match attr_str(&attr).as_str() {
                     "NONE" => 0,
@@ -4653,10 +5111,62 @@ fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
     pn
 }
 
+/// `<hp:indexmark><hp:firstKey>…</hp:firstKey><hp:secondKey>…</hp:secondKey></hp:indexmark>`
+///
+/// 한컴 실측(06926, 23건)은 `secondKey` 가 비면 요소 자체를 쓰지 않는다.
+fn parse_index_mark_element(reader: &mut Reader<&[u8]>) -> Result<IndexMark, HwpxError> {
+    let mut im = IndexMark::default();
+    let mut cur: Option<&'static str> = None;
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref e)) => {
+                cur = match local_name(e.name().as_ref()) {
+                    b"firstKey" => Some("first"),
+                    b"secondKey" => Some("second"),
+                    _ => None,
+                };
+            }
+            Ok(Event::Text(ref t)) => {
+                let v = t.as_ref().to_string();
+                match cur {
+                    Some("first") => im.first_key.push_str(&v),
+                    Some("second") => im.second_key.push_str(&v),
+                    _ => {}
+                }
+            }
+            Ok(Event::End(ref e)) => {
+                let name = local_name(e.name().as_ref()).to_vec();
+                if name == b"indexmark" {
+                    break;
+                }
+                cur = None;
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("indexmark: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+    Ok(im)
+}
+
+/// `<hp:pageNumCtrl pageStartsOn="BOTH|EVEN|ODD"/>` (ParaList XML schema.xml:134)
+fn parse_page_num_ctrl_attrs(e: &quick_xml::events::BytesStart) -> PageNumCtrl {
+    let mut pnc = PageNumCtrl::default();
+    for attr in e.attributes().flatten() {
+        if attr.key.as_ref().as_bytes() == b"pageStartsOn" {
+            pnc.page_starts_on =
+                PageStartsOn::from_hwpx(&attr.value.as_ref().to_owned().to_uppercase());
+        }
+    }
+    pnc
+}
+
 fn parse_bookmark_attrs(e: &quick_xml::events::BytesStart) -> Bookmark {
     let mut bm = Bookmark::default();
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"name" {
+        if attr.key.as_ref().as_bytes() == b"name" {
             bm.name = attr_str(&attr);
         }
     }
@@ -4666,7 +5176,7 @@ fn parse_bookmark_attrs(e: &quick_xml::events::BytesStart) -> Bookmark {
 fn parse_new_num_attrs(e: &quick_xml::events::BytesStart) -> NewNumber {
     let mut nn = NewNumber::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"num" => nn.number = parse_u16(&attr),
             b"numType" => nn.number_type = parse_num_type(&attr_str(&attr)),
             _ => {}
@@ -4678,7 +5188,7 @@ fn parse_new_num_attrs(e: &quick_xml::events::BytesStart) -> NewNumber {
 fn parse_autonum_attrs(e: &quick_xml::events::BytesStart) -> AutoNumber {
     let mut an = AutoNumber::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"num" => {
                 an.number = parse_u16(&attr);
                 an.assigned_number = an.number;
@@ -4696,8 +5206,16 @@ fn parse_field_begin_attrs(e: &quick_xml::events::BytesStart) -> Field {
     let mut id_attr: Option<u32> = None;
     let mut fieldid_attr: Option<u32> = None;
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
-            b"type" => f.field_type = parse_field_type(&attr_str(&attr)),
+        match attr.key.as_ref().as_bytes() {
+            b"type" => {
+                let raw = attr_str(&attr);
+                f.field_type = parse_field_type(&raw);
+                // [#4896] IR 이 못 알아본 종류는 원문을 들고 간다 — 그래야 저장에서
+                // `CROSSREF` 로 굳지 않는다(교정부호 필드가 상호참조가 되던 결함).
+                if f.field_type == FieldType::Unknown {
+                    f.raw_type = Some(raw);
+                }
+            }
             b"name" => field_name = Some(attr_str(&attr)),
             // [Task #852 Stage 2.5] HWP5 직렬화에 필요한 필드 메타
             b"id" => {
@@ -4756,7 +5274,13 @@ fn parse_field_begin_attrs(e: &quick_xml::events::BytesStart) -> Field {
         FieldType::Memo => tags::FIELD_MEMO,
         FieldType::PrivateInfoSecurity => tags::FIELD_PRIVATE_INFO,
         FieldType::TableOfContents => tags::FIELD_TOC,
-        FieldType::Unknown => 0,
+        // [#4896] 종류를 못 알아봐도 실측표에 있는 값이면 HWP5 ctrl_id 를 준다 —
+        // 0 을 쓰면 HWPX→HWP 저장에서 한글이 무효 컨트롤로 보고 필드를 잃는다.
+        FieldType::Unknown => f
+            .raw_type
+            .as_deref()
+            .and_then(tags::owpml_extra_field_ctrl_id)
+            .unwrap_or(0),
     };
     // ClickHere 의 extra_properties 정답지 관찰값: 0x09
     if matches!(f.field_type, FieldType::ClickHere) {
@@ -4828,7 +5352,7 @@ fn parse_ctrl_header(
 ) -> Result<Control, HwpxError> {
     let mut header = Header::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"applyPageType" => {
                 header.apply_to = parse_apply_page_type(&attr_str(&attr));
             }
@@ -4857,7 +5381,7 @@ fn parse_ctrl_footer(
 ) -> Result<Control, HwpxError> {
     let mut footer = Footer::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"applyPageType" => {
                 footer.apply_to = parse_apply_page_type(&attr_str(&attr));
             }
@@ -4890,12 +5414,12 @@ fn parse_ctrl_footnote(
     // instId → instance_id (UInt4)
     note.after_decoration_letter = 0x0029; // default ')'
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"number" => note.number = parse_u16(&attr),
             // [#1199] prefixChar(코드포인트 숫자) → before_decoration_letter
             // 누락 시 0 유지(접두 없음). 예: "47928" = 0xBB38 '문'
             b"prefixChar" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u16>()
                 {
@@ -4903,7 +5427,7 @@ fn parse_ctrl_footnote(
                 }
             }
             b"suffixChar" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u16>()
                 {
@@ -4914,7 +5438,7 @@ fn parse_ctrl_footnote(
             // (3-09월_교육_통합_2023) 각주/미주 46개 전수 대조에서 바이트 단위로 일치했다.
             // 값이 0 이면 한컴이 속성 자체를 생략하므로 default 0 유지.
             b"flag" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u32>()
                 {
@@ -4922,7 +5446,7 @@ fn parse_ctrl_footnote(
                 }
             }
             b"instId" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u32>()
                 {
@@ -4934,7 +5458,7 @@ fn parse_ctrl_footnote(
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"footNote")?;
     for paragraph in &mut note.paragraphs {
-        normalize_hwpx_note_line_vpos(paragraph);
+        normalize_hwpx_note_line_vpos(paragraph, true);
     }
     Ok(Control::Footnote(Box::new(note)))
 }
@@ -4948,12 +5472,12 @@ fn parse_ctrl_endnote(
     // [Task #1050] Footnote 와 동일 매핑
     note.after_decoration_letter = 0x0029;
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"number" => note.number = parse_u16(&attr),
             // [#1199] prefixChar(코드포인트 숫자) → before_decoration_letter
             // 누락 시 0 유지(접두 없음). 예: "47928" = 0xBB38 '문'
             b"prefixChar" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u16>()
                 {
@@ -4961,7 +5485,7 @@ fn parse_ctrl_endnote(
                 }
             }
             b"suffixChar" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u16>()
                 {
@@ -4970,7 +5494,7 @@ fn parse_ctrl_endnote(
             }
             // [#2716] flag = HWP5 CTRL_ENDNOTE numberShape(UInt4). footNote 와 동일 계약.
             b"flag" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u32>()
                 {
@@ -4978,7 +5502,7 @@ fn parse_ctrl_endnote(
                 }
             }
             b"instId" => {
-                if let Ok(v) = std::str::from_utf8(&attr.value)
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .unwrap_or("")
                     .parse::<u32>()
                 {
@@ -4990,12 +5514,160 @@ fn parse_ctrl_endnote(
     }
     note.paragraphs = parse_sublist_paragraphs(reader, b"endNote")?;
     for paragraph in &mut note.paragraphs {
-        normalize_hwpx_note_line_vpos(paragraph);
+        normalize_hwpx_note_line_vpos(paragraph, false);
     }
     Ok(Control::Endnote(Box::new(note)))
 }
 
-fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph) {
+thread_local! {
+    /// [#4916/#4660/#3531/#4882 계열] 지금 파싱 중인 HWPX 가 rhwp 자기 산출
+    /// (HWP5-origin 마커 보유)인가 — `parse_hwpx` 가 구역 파싱 동안 세운다.
+    static HWPX_HWP5_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    /// 원본 HWP3→HWPX (hwp3-origin 마커, hwp5-origin 없음).
+    static HWPX_HWP3_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+fn hwpx_hwp3_origin_source() -> bool {
+    HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get())
+}
+
+/// [#5251] issue_265 문단 0 만. 본문 U+FFFC + Footer + PageNumberPos 가 같이 있다.
+/// HWP3 는 쪽번호를 텍스트 FFFC 8유닛으로 세고 footer/pageNum 슬롯은 0 이다.
+fn hwpx_hwp3_issue_5251_axis(parts: &[String], controls: &[Control]) -> bool {
+    hwpx_hwp3_origin_source()
+        && parts.iter().any(|s| s.contains('\u{fffc}'))
+        && controls.iter().any(|c| matches!(c, Control::Footer(_)))
+        && controls
+            .iter()
+            .any(|c| matches!(c, Control::PageNumberPos(_)))
+}
+
+fn hwpx_char_utf16_width(c: char) -> u32 {
+    hwpx_char_utf16_width_on_axis(c, false)
+}
+
+fn hwpx_char_utf16_width_on_axis(c: char, axis_5251: bool) -> u32 {
+    if c == '\t' {
+        8
+    } else if c == '\u{fffc}' && axis_5251 {
+        8
+    } else if (c as u32) > 0xFFFF {
+        2
+    } else {
+        1
+    }
+}
+
+fn hwpx_part_utf16_width(s: &str, axis_5251: bool) -> u32 {
+    match s {
+        "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
+        TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
+        PAGE_FOOTER_SLOT_PART => {
+            if axis_5251 {
+                0
+            } else {
+                8
+            }
+        }
+        _ => s
+            .chars()
+            .map(|c| hwpx_char_utf16_width_on_axis(c, axis_5251))
+            .sum(),
+    }
+}
+
+/// 표준 HWPX 축 위치 → [#5251] issue_265 축 (FFFC=8, pageNum/footer=0).
+fn hwpx_map_std_pos_to_5251_axis(parts: &[String], std_pos: u32) -> u32 {
+    let mut std = 0u32;
+    let mut mapped = 0u32;
+    for s in parts {
+        let w_std = hwpx_part_utf16_width(s, false);
+        let w_5251 = hwpx_part_utf16_width(s, true);
+        let next_std = std.saturating_add(w_std);
+        if std_pos <= std {
+            return mapped;
+        }
+        if std_pos <= next_std {
+            if w_std == 0 {
+                return mapped;
+            }
+            return mapped + (std_pos - std) * w_5251 / w_std;
+        }
+        std = next_std;
+        mapped = mapped.saturating_add(w_5251);
+    }
+    mapped
+}
+
+/// [#3518] HWP3 는 개체를 U+FFFC 1유닛으로 남긴다. HWPX 슬롯 `\u{0002}`(8유닛)를
+/// 그 위에 또 쌓으면 char_count 가 부풀어(sample16 문단 394: 6→30) TAC 표가
+/// 블록 표로 빠지며 쪽이 +1 된다. 아직 짝이 없는 FFFC 가 있으면 8유닛을 넣지 않는다.
+fn push_object_slot_placeholder(text_parts: &mut Vec<String>) {
+    if HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get()) {
+        let fffc = text_parts
+            .iter()
+            .flat_map(|s| s.chars())
+            .filter(|&c| c == '\u{fffc}')
+            .count();
+        // pageNum/footer 태그는 개체 FFFC 짝이 아니다. 슬롯으로 세면 #3518
+        // 짝없음 판정이 뒤집혀 표·그림에 8유닛을 겹친다.
+        let slots = text_parts
+            .iter()
+            .filter(|s| s.as_str() == "\u{0002}")
+            .count();
+        if fffc > slots {
+            return;
+        }
+    }
+    text_parts.push("\u{0002}".to_string());
+}
+
+/// [#4916 계열] HWP5-origin 마커 문서 파싱 구간 표식 — RAII 로 해제된다.
+pub(crate) struct Hwp5OriginSourceGuard;
+
+impl Hwp5OriginSourceGuard {
+    pub(crate) fn set(active: bool) -> Self {
+        HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(active));
+        Hwp5OriginSourceGuard
+    }
+}
+
+impl Drop for Hwp5OriginSourceGuard {
+    fn drop(&mut self) {
+        HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(false));
+    }
+}
+
+/// [#3518, #3737] 원본 HWP3→HWPX 파싱 구간 표식.
+pub(crate) struct Hwp3OriginSourceGuard;
+
+impl Hwp3OriginSourceGuard {
+    pub(crate) fn set(active: bool) -> Self {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(active));
+        Hwp3OriginSourceGuard
+    }
+}
+
+impl Drop for Hwp3OriginSourceGuard {
+    fn drop(&mut self) {
+        HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.set(false));
+    }
+}
+
+fn is_hwp5_stored_note_zero_vpos(paragraph: &Paragraph) -> bool {
+    // [#4882] HWP5 note sublists preserve vertical_pos=0 on every stored line.
+    paragraph.line_segs.len() > 1 && paragraph.line_segs.iter().all(|seg| seg.vertical_pos == 0)
+}
+
+fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph, preserve_all_zero: bool) {
+    // [#4882] HWP5-origin HWPX는 note lineSeg 저장값 전체를 보존한다. marker가
+    // 없는 HWP5 footnote는 all-zero 저장 패턴만 보존하고, 일반 HWPX endnote의
+    // 후속 줄 0은 연속줄 아티팩트라 종전 정규화 계약을 적용한다 (#1692).
+    if HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get())
+        || (preserve_all_zero && is_hwp5_stored_note_zero_vpos(paragraph))
+    {
+        return;
+    }
     if paragraph.line_segs.len() <= 1 {
         return;
     }
@@ -5035,7 +5707,7 @@ fn parse_ctrl_autonum(
                 let local = local_name(cname.as_ref());
                 if local == b"autoNumFormat" {
                     for attr in ce.attributes().flatten() {
-                        match attr.key.as_ref() {
+                        match attr.key.as_ref().as_bytes() {
                             // autoNumFormat type 은 문자열 enum (DIGIT/CIRCLE_DIGIT/…).
                             // 과거 parse_u8 은 문자열을 0으로만 떨궈 DIGIT 외 형식을 잃었다.
                             // pageNum formatType 과 동일한 문자열→코드 매핑을 사용한다.
@@ -5111,7 +5783,7 @@ fn parse_ctrl_field_begin(
                     parse_field_parameters(ce, reader, &mut f)?;
                 } else if local == b"subList" && f.field_type == FieldType::Memo {
                     for attr in ce.attributes().flatten() {
-                        if attr.key.as_ref() == b"textDirection" {
+                        if attr.key.as_ref().as_bytes() == b"textDirection" {
                             let dir = attr_str(&attr);
                             if dir != "HORIZONTAL" {
                                 f.memo_text_direction = Some(dir);
@@ -5206,6 +5878,9 @@ impl ParamFrame {
             ParamFrame::Boolean { name, text } => Parameter::Boolean {
                 name,
                 value: matches!(text.trim(), "1" | "true"),
+                // [#4437] 원본 lexical 표기(`false`/`true`/`0`/`1`) 보존 — 렌더가
+                // 정규화로 되쓰면 왕복 바이트가 달라진다.
+                lexical: crate::model::control::boolean_lexical_of(&text),
             },
             ParamFrame::Integer { name, text } => Parameter::Integer {
                 name,
@@ -5237,7 +5912,7 @@ fn open_param_frame<'a>(
     let mut name: Option<String> = None;
     let mut preserve_space = false;
     for attr in attrs {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"name" => name = Some(attr_str(&attr)),
             b"xml:space" if attr_str(&attr) == "preserve" => preserve_space = true,
             _ => {}
@@ -5269,6 +5944,30 @@ fn open_param_frame<'a>(
     }
 }
 
+/// [#4436] `<hp:listParam>` 중첩 상한. 루트 `<hp:parameters>` 는 세지 않는다.
+///
+/// OWPML `hp:ParameterList` 는 재귀 `listParam` 을 막지 않아, 손상·적대 HWPX 가
+/// 극단적으로 깊게 중첩할 수 있다. 트리 빌더는 반복 스택이라 네이티브 스택은
+/// 당장 안 넘지만, 만든 `Parameter::List` 트리는 이후 render/Drop 이 재귀한다.
+/// 실문서는 두세 단계를 넘지 않는다. 8 도 넉넉하고, 여기서는 그 위에 여유를 둔다.
+const MAX_LIST_PARAM_DEPTH: usize = 32;
+
+/// 새 `listParam` 을 열기 직전 — 이미 열린 List 프레임(루트 + 조상 listParam)이
+/// 상한에 있으면 파싱 오류. 조용히 자르지 않는다(#4436).
+fn ensure_list_param_depth(stack: &[ParamFrame]) -> Result<(), HwpxError> {
+    let nested = stack
+        .iter()
+        .filter(|frame| matches!(frame, ParamFrame::List { .. }))
+        .count()
+        .saturating_sub(1);
+    if nested >= MAX_LIST_PARAM_DEPTH {
+        return Err(HwpxError::XmlError(format!(
+            "listParam nesting exceeds {MAX_LIST_PARAM_DEPTH} levels"
+        )));
+    }
+    Ok(())
+}
+
 fn parse_field_parameters(
     start: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
@@ -5285,7 +5984,7 @@ fn parse_field_parameters(
     let mut raw = String::from("<hp:parameters");
     for attr in start.attributes().flatten() {
         raw.push(' ');
-        raw.push_str(&String::from_utf8_lossy(attr.key.as_ref()));
+        raw.push_str(&String::from_utf8_lossy(attr.key.as_ref().as_bytes()));
         raw.push_str("=\"");
         raw.push_str(&escape_xml_text(&attr_str(&attr)));
         raw.push('"');
@@ -5298,7 +5997,7 @@ fn parse_field_parameters(
     let root_name = start
         .attributes()
         .flatten()
-        .find(|a| a.key.as_ref() == b"name")
+        .find(|a| a.key.as_ref().as_bytes() == b"name")
         .map(|a| attr_str(&a));
     let mut stack: Vec<ParamFrame> = vec![ParamFrame::List {
         name: root_name,
@@ -5311,12 +6010,12 @@ fn parse_field_parameters(
             Ok(Event::Start(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
-                let tag = String::from_utf8_lossy(cname.as_ref()).to_string();
+                let tag = cname.as_ref().to_string();
                 raw.push('<');
                 raw.push_str(&tag);
                 for attr in ce.attributes().flatten() {
                     raw.push(' ');
-                    raw.push_str(&String::from_utf8_lossy(attr.key.as_ref()));
+                    raw.push_str(&String::from_utf8_lossy(attr.key.as_ref().as_bytes()));
                     raw.push_str("=\"");
                     raw.push_str(&escape_xml_text(&attr_str(&attr)));
                     raw.push('"');
@@ -5324,19 +6023,22 @@ fn parse_field_parameters(
                 raw.push('>');
                 if local == b"stringParam" {
                     for attr in ce.attributes().flatten() {
-                        if attr.key.as_ref() == b"name" && attr_str(&attr) == "Command" {
+                        if attr.key.as_ref().as_bytes() == b"name" && attr_str(&attr) == "Command" {
                             in_command = true;
                             field.command.clear();
                         }
                     }
                 } else if local == b"integerParam" {
                     for attr in ce.attributes().flatten() {
-                        if attr.key.as_ref() == b"name" && attr_str(&attr) == "Number" {
+                        if attr.key.as_ref().as_bytes() == b"name" && attr_str(&attr) == "Number" {
                             in_memo_number = true;
                         }
                     }
                 }
                 if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    if matches!(frame, ParamFrame::List { .. }) {
+                        ensure_list_param_depth(&stack)?;
+                    }
                     stack.push(frame);
                 }
             }
@@ -5344,10 +6046,10 @@ fn parse_field_parameters(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 raw.push('<');
-                raw.push_str(&String::from_utf8_lossy(cname.as_ref()));
+                raw.push_str(cname.as_ref());
                 for attr in ce.attributes().flatten() {
                     raw.push(' ');
-                    raw.push_str(&String::from_utf8_lossy(attr.key.as_ref()));
+                    raw.push_str(&String::from_utf8_lossy(attr.key.as_ref().as_bytes()));
                     raw.push_str("=\"");
                     raw.push_str(&escape_xml_text(&attr_str(&attr)));
                     raw.push('"');
@@ -5355,20 +6057,23 @@ fn parse_field_parameters(
                 raw.push_str("/>");
                 if local == b"stringParam" {
                     for attr in ce.attributes().flatten() {
-                        if attr.key.as_ref() == b"name" && attr_str(&attr) == "Command" {
+                        if attr.key.as_ref().as_bytes() == b"name" && attr_str(&attr) == "Command" {
                             field.command.clear();
                         }
                     }
                 }
                 // 자기닫힘(빈 값) — 여닫 없이 즉시 부모에 붙인다.
                 if let Some(frame) = open_param_frame(local, ce.attributes().flatten()) {
+                    if matches!(frame, ParamFrame::List { .. }) {
+                        ensure_list_param_depth(&stack)?;
+                    }
                     if let Some(ParamFrame::List { items, .. }) = stack.last_mut() {
                         items.push(frame.finish());
                     }
                 }
             }
             Ok(Event::Text(ref t)) => {
-                let decoded = t.decode().unwrap_or_default();
+                let decoded = t.as_ref();
                 raw.push_str(&escape_xml_text(&decoded));
                 if in_command {
                     field.command.push_str(&decoded);
@@ -5395,7 +6100,7 @@ fn parse_field_parameters(
             // 쿼리스트링 `&`, 수식 필드의 비교연산자 `<`/`>`) 처리하지 않으면 필드 명령
             // 문자열이 소실된다. #2916/#2927의 hp:script CDATA 누락과 동일한 패턴.
             Ok(Event::CData(ref cdata)) => {
-                let decoded = String::from_utf8_lossy(cdata.as_ref()).into_owned();
+                let decoded = cdata.as_ref().to_owned();
                 raw.push_str(&escape_xml_text(&decoded));
                 if in_command {
                     field.command.push_str(&decoded);
@@ -5418,7 +6123,7 @@ fn parse_field_parameters(
                 // 임의 깊이 중첩(listParam 안의 stringParam 등)에서도 균형 잡힌 XML 을
                 // 재조립하도록, 단일 open_param 추적 대신 End 이벤트 자신의 정규화 이름으로 닫는다.
                 // 종전엔 open_param 이 마지막 Start 로 덮여, 바깥 태그의 닫는 태그가 누락됐다.
-                let qn = String::from_utf8_lossy(eename.as_ref());
+                let qn = eename.as_ref();
                 raw.push_str("</");
                 raw.push_str(&qn);
                 raw.push('>');
@@ -5565,7 +6270,7 @@ fn parse_hwpx_sublist_layout_attrs(
     layout: &mut HwpxSubListLayout,
 ) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"vertAlign" => {
                 layout.list_attr |= match attr_str(&attr).as_str() {
                     "CENTER" => 1 << 21,
@@ -5592,7 +6297,7 @@ fn parse_compose(
     let mut co = CharOverlap::default();
     // 요소 속성 파싱
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"circleType" => {
                 co.border_type = match attr_str(&attr).as_str() {
                     "CHAR" => 0,
@@ -5638,7 +6343,7 @@ fn parse_compose(
                 let local = local_name(cname.as_ref());
                 if local == b"charPr" {
                     for attr in ce.attributes().flatten() {
-                        if attr.key.as_ref() == b"prIDRef" {
+                        if attr.key.as_ref().as_bytes() == b"prIDRef" {
                             co.char_shape_ids.push(parse_u32(&attr));
                         }
                     }
@@ -5666,7 +6371,7 @@ fn read_compose_text(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Text(ref t)) => {
-                text.push_str(&t.decode().unwrap_or_default());
+                text.push_str(t.as_ref());
             }
             Ok(Event::GeneralRef(ref r)) => {
                 text.push_str(&decode_xml_general_ref(r));
@@ -5674,7 +6379,7 @@ fn read_compose_text(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
             // [CDATA] composeText(글자겹치기) 본문이 CDATA로 인코딩된 경우 처리하지
             // 않으면 겹침 텍스트가 소실된다. #2916/#2935/#2951의 CDATA 누락과 동일한 패턴.
             Ok(Event::CData(ref cdata)) => {
-                text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                text.push_str(cdata.as_ref());
             }
             Ok(Event::End(ref ee)) => {
                 let eename = ee.name();
@@ -5699,7 +6404,7 @@ fn parse_dutmal(
     let mut ruby = Ruby::default();
     // 요소 속성 (#1587 — posType/align 분리 보존 + szRatio/option/styleIDRef)
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"posType" => {
                 ruby.pos_type = match attr_str(&attr).as_str() {
                     "TOP" => 0,
@@ -5767,7 +6472,7 @@ fn read_dutmal_text(reader: &mut Reader<&[u8]>, end_tag: &[u8]) -> Result<String
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Text(ref t)) => {
-                text.push_str(&t.decode().unwrap_or_default());
+                text.push_str(t.as_ref());
             }
             Ok(Event::GeneralRef(ref r)) => {
                 text.push_str(&decode_xml_general_ref(r));
@@ -5776,7 +6481,7 @@ fn read_dutmal_text(reader: &mut Reader<&[u8]>, end_tag: &[u8]) -> Result<String
             // 않으면 덧말 텍스트가 소실된다. #2916/#2935의 hp:script/stringParam CDATA
             // 누락과 동일한 패턴.
             Ok(Event::CData(ref cdata)) => {
-                text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                text.push_str(cdata.as_ref());
             }
             Ok(Event::End(ref ee)) => {
                 let eename = ee.name();
@@ -5827,7 +6532,7 @@ fn parse_equation(
     // 공통 개체 속성 + 수식 속성 파싱
     parse_object_element_attrs(e, &mut common, &mut shape_attr);
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"version" => version_info = attr_str(&attr),
             b"baseLine" => baseline = attr_str(&attr).parse().unwrap_or(85),
             b"textColor" => color = parse_color(&attr),
@@ -5878,9 +6583,7 @@ fn parse_equation(
             }
             Ok(Event::Text(ref txt)) => {
                 if in_script {
-                    if let Ok(s) = txt.decode() {
-                        script.push_str(&s);
-                    }
+                    script.push_str(txt.as_ref());
                 }
             }
             Ok(Event::CData(ref cdata)) => {
@@ -5888,15 +6591,15 @@ fn parse_equation(
                 // 예약 문자를 다량 포함해 엔티티 이스케이프 대신 CDATA 로 감싸는
                 // 케이스), 이 분기가 없으면 script 가 통째로 빈 문자열이 된다.
                 if in_script {
-                    script.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                    script.push_str(cdata.as_ref());
                 }
             }
             Ok(Event::GeneralRef(ref r)) => {
                 if in_script {
                     if let Ok(Some(ch)) = r.resolve_char_ref() {
                         script.push(ch);
-                    } else if let Ok(name) = r.decode() {
-                        match name.as_ref() {
+                    } else {
+                        match r.as_ref() {
                             "lt" => script.push('<'),
                             "gt" => script.push('>'),
                             "amp" => script.push('&'),
@@ -5904,7 +6607,7 @@ fn parse_equation(
                             "apos" => script.push('\''),
                             _ => {
                                 script.push('&');
-                                script.push_str(&name);
+                                script.push_str(r.as_ref());
                                 script.push(';');
                             }
                         }
@@ -5940,6 +6643,7 @@ fn parse_equation(
         font_name,
         version_info,
         raw_ctrl_data: Vec::new(),
+        raw_ctrl_seal: None,
     };
     Ok(Control::Equation(Box::new(equation)))
 }
@@ -5956,18 +6660,9 @@ fn calc_utf16_len_from_parts(parts: &[String]) -> u32 {
             // (offsets 조립 루프와 동일 축). 종전 `_` 분기(1유닛)로 빠져 char_shapes
             // 경계가 offsets 축과 어긋났다 (143E 각주 run 경계 2 → 정답 9).
             "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
-            _ => s
-                .chars()
-                .map(|c| {
-                    if c == '\t' {
-                        8u32
-                    } else if (c as u32) > 0xFFFF {
-                        2
-                    } else {
-                        1
-                    }
-                })
-                .sum(),
+            TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
+            PAGE_FOOTER_SLOT_PART => 8,
+            _ => s.chars().map(hwpx_char_utf16_width).sum(),
         })
         .sum()
 }
@@ -5993,7 +6688,7 @@ fn parse_form_object(
     // 요소 속성 파싱 (AbstractFormObjectType + AbstractButtonObjectType)
     // [Task #852 Stage 2.4] HWP5 직렬화에 필요한 ComboBox/Edit/Button 속성 보존
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"name" => form.name = attr_str(&attr),
             b"caption" => form.caption = attr_str(&attr),
             b"foreColor" => form.fore_color = parse_color(&attr),
@@ -6124,14 +6819,12 @@ fn parse_form_object(
                         loop {
                             match reader.read_event_into(&mut tbuf) {
                                 Ok(Event::Text(ref t)) => {
-                                    if let Ok(s) = t.decode() {
-                                        form.text.push_str(&s);
-                                    }
+                                    form.text.push_str(t.as_ref());
                                 }
                                 // 양식 개체(edit 컨트롤) 텍스트의 CDATA 저장 형태.
                                 // #2916 과 같은 결함 클래스 — 없으면 form.text 가 빈다.
                                 Ok(Event::CData(ref cdata)) => {
-                                    form.text.push_str(&String::from_utf8_lossy(cdata.as_ref()));
+                                    form.text.push_str(cdata.as_ref());
                                 }
                                 Ok(Event::GeneralRef(ref r)) => {
                                     form.text.push_str(&decode_xml_general_ref(r));
@@ -6155,9 +6848,16 @@ fn parse_form_object(
                     b"sz" => {
                         // <hp:sz width="..." widthRelTo="..." height="..." heightRelTo="..." protect="..."/>
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
-                                b"width" => form.width = parse_u32(&attr),
-                                b"height" => form.height = parse_u32(&attr),
+                            match attr.key.as_ref().as_bytes() {
+                                b"width" => {
+                                    form.width = parse_u32(&attr);
+                                    // [#6266] 배치 산식은 `common` 을 본다.
+                                    form.common.width = form.width;
+                                }
+                                b"height" => {
+                                    form.height = parse_u32(&attr);
+                                    form.common.height = form.height;
+                                }
                                 b"widthRelTo" => {
                                     form.properties
                                         .insert("SzWidthRelTo".to_string(), attr_str(&attr));
@@ -6177,7 +6877,7 @@ fn parse_form_object(
                     b"pos" => {
                         // <hp:pos .../> 앵커링 (표준 ShapePositionType 11속성) — 라운드트립 보존
                         for attr in ce.attributes().flatten() {
-                            let key = match attr.key.as_ref() {
+                            let key = match attr.key.as_ref().as_bytes() {
                                 b"treatAsChar" => "PosTreatAsChar",
                                 b"affectLSpacing" => "PosAffectLSpacing",
                                 b"flowWithText" => "PosFlowWithText",
@@ -6191,19 +6891,76 @@ fn parse_form_object(
                                 b"horzOffset" => "PosHorzOffset",
                                 _ => continue,
                             };
+                            // [#6266] 배치를 `common` 에도 싣는다 — 문자열
+                            // properties 는 왕복 보존용이라 렌더러가 읽지 않는다.
+                            match attr.key.as_ref().as_bytes() {
+                                b"treatAsChar" => form.common.treat_as_char = parse_bool(&attr),
+                                b"vertRelTo" => {
+                                    form.common.vert_rel_to = match attr_str(&attr).as_str() {
+                                        "PAPER" => VertRelTo::Paper,
+                                        "PAGE" => VertRelTo::Page,
+                                        _ => VertRelTo::Para,
+                                    };
+                                }
+                                b"horzRelTo" => {
+                                    form.common.horz_rel_to = match attr_str(&attr).as_str() {
+                                        "PAPER" => HorzRelTo::Paper,
+                                        "PAGE" => HorzRelTo::Page,
+                                        "COLUMN" => HorzRelTo::Column,
+                                        _ => HorzRelTo::Para,
+                                    };
+                                }
+                                b"vertAlign" => {
+                                    form.common.vert_align = match attr_str(&attr).as_str() {
+                                        "CENTER" => VertAlign::Center,
+                                        "BOTTOM" => VertAlign::Bottom,
+                                        "INSIDE" => VertAlign::Inside,
+                                        "OUTSIDE" => VertAlign::Outside,
+                                        _ => VertAlign::Top,
+                                    };
+                                }
+                                b"horzAlign" => {
+                                    form.common.horz_align = match attr_str(&attr).as_str() {
+                                        "CENTER" => HorzAlign::Center,
+                                        "RIGHT" => HorzAlign::Right,
+                                        "INSIDE" => HorzAlign::Inside,
+                                        "OUTSIDE" => HorzAlign::Outside,
+                                        _ => HorzAlign::Left,
+                                    };
+                                }
+                                b"vertOffset" => {
+                                    form.common.vertical_offset = parse_i32_wrapping(&attr) as u32;
+                                }
+                                b"horzOffset" => {
+                                    form.common.horizontal_offset =
+                                        parse_i32_wrapping(&attr) as u32;
+                                }
+                                _ => {}
+                            }
                             form.properties.insert(key.to_string(), attr_str(&attr));
                         }
                     }
                     b"outMargin" => {
                         // <hp:outMargin left=".." right=".." top=".." bottom=".."/> — 라운드트립 보존
                         for attr in ce.attributes().flatten() {
-                            let key = match attr.key.as_ref() {
+                            let key = match attr.key.as_ref().as_bytes() {
                                 b"left" => "OutMarginLeft",
                                 b"right" => "OutMarginRight",
                                 b"top" => "OutMarginTop",
                                 b"bottom" => "OutMarginBottom",
                                 _ => continue,
                             };
+                            // [#6266] 가장자리 정렬은 바깥 여백만큼 안쪽으로 들어간다.
+                            let v = parse_i32_wrapping(&attr)
+                                .clamp(i32::from(i16::MIN), i32::from(i16::MAX))
+                                as i16;
+                            match attr.key.as_ref().as_bytes() {
+                                b"left" => form.common.margin.left = v,
+                                b"right" => form.common.margin.right = v,
+                                b"top" => form.common.margin.top = v,
+                                b"bottom" => form.common.margin.bottom = v,
+                                _ => {}
+                            }
                             form.properties.insert(key.to_string(), attr_str(&attr));
                         }
                     }
@@ -6212,7 +6969,7 @@ fn parse_form_object(
                         let mut value = String::new();
                         let mut display = String::new();
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"value" => value = attr_str(&attr),
                                 b"displayText" => display = attr_str(&attr),
                                 _ => {}
@@ -6224,7 +6981,7 @@ fn parse_form_object(
                         // <hp:formCharPr charPrIDRef="0" followContext="0" autoSz="1" wordWrap="0"/>
                         // [Task #852 Stage 2.4] HWP5 CharShapeSet 직렬화에 필요한 속성 보존
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"charPrIDRef" => {
                                     form.properties
                                         .insert("CharShapeID".to_string(), attr_str(&attr));
@@ -6356,7 +7113,7 @@ fn parse_hp_chart_element(
     let mut numbering_type_picture = false;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             // [#2882] common.numbering_type(ObjectNumberingType) 도 함께 채운다.
             // 직렬화기(numbering_type_str, serializer/hwpx/shape.rs)가 참조하는
             // 필드는 이것뿐이라, bool 지역 변수만으로는 저장 시 항상 NONE 으로
@@ -6416,6 +7173,7 @@ fn parse_hp_chart_element(
     let mut extent: Option<(i32, i32)> = None;
     let mut shape_attr = ShapeComponentAttr::default();
     let mut caption: Option<crate::model::shape::Caption> = None;
+    let mut line_shape: Option<crate::model::style::ShapeBorderLine> = None;
     parse_common_shape_children(
         reader,
         &mut common,
@@ -6423,6 +7181,7 @@ fn parse_hp_chart_element(
         &mut extent,
         &mut shape_attr,
         &mut caption,
+        &mut line_shape,
     )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
@@ -6436,6 +7195,10 @@ fn parse_hp_chart_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.drawing.shape_attr = shape_attr;
+    // [#4669] `<hp:lineShape>` 원본 보존 — 없으면 기본값 유지(종전과 동일).
+    if let Some(ls) = line_shape {
+        ole.drawing.border_line = ls;
+    }
     ole.bin_data_id = 60000u32 + chart_num as u32;
     ole.chart_id_ref = chart_id_ref;
     // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
@@ -6468,9 +7231,18 @@ fn parse_hp_ole_element(
     let mut bin_id: u32 = 0;
     let mut numbering_type_picture = false;
     let mut draw_aspect = OleDrawingAspect::default();
+    // [#4669] `id` 는 `instid` 와 별개 값이다(한컴 원산 실측). 종전에는 id arm 이
+    // 없어(차트는 #3546 에서 받음) 재방출 id 가 "0" 또는 instid 로 되쓰였다.
+    // `id`는 선택 속성이고 0도 유효하다. 따라서 값 0을 "속성 없음"과 합치면
+    // 원문 id=0을 instance_id로 다시 써서 라운드트립을 깨뜨린다.
+    let mut id_attr: Option<u32> = None;
+    let mut saw_instid = false;
+    // [#5716] hp:ole 자신의 groupLevel — shape_attr 는 자식 파싱 단계에서 만들어지므로
+    // 지역에 받아 두었다가 채운다.
+    let mut group_level: u16 = 0;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             // [#2882] common.numbering_type(ObjectNumberingType) 도 함께 채운다.
             // 직렬화기(numbering_type_str, serializer/hwpx/shape.rs)가 참조하는
             // 필드는 이것뿐이라, bool 지역 변수만으로는 저장 시 항상 NONE 으로
@@ -6519,17 +7291,34 @@ fn parse_hp_ole_element(
                 let digits: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
                 bin_id = digits.parse().unwrap_or(0);
             }
-            b"instid" => common.instance_id = parse_u32(&attr),
+            b"id" => id_attr = Some(parse_u32(&attr)),
+            b"instid" => {
+                saw_instid = true;
+                common.instance_id = parse_u32(&attr);
+            }
             // [#2931] 개체 잠금(lock) — 종전 미파싱으로 직렬화 시 항상 "0"으로
             // 되돌아가 OLE 개체의 잠금 상태가 유실됐다.
             b"lock" => common.locked = attr_str(&attr) == "1",
+            // [#5716] groupLevel — 종전 미파싱으로 그룹 멤버 OLE 의 중첩 레벨이
+            // 왕복 시 0 으로 유실됐다(직렬화기 하드코딩도 같은 이슈에서 제거).
+            b"groupLevel" => group_level = attr_str(&attr).parse().unwrap_or(0),
             _ => {}
         }
     }
+    // 차트(#3546)와 동형 — instid **부재** 시에만 id 가 instance_id 를 겸한다.
+    // 명시적 instid="0"(차트 fallback OLE 의 한컴 정답값, #4099 오라클)은 보존해야
+    // 하므로 "0 이면 폴백" 이 아니라 "속성이 없으면 폴백" 이다.
+    if !saw_instid {
+        common.instance_id = id_attr.unwrap_or_default();
+    }
 
     let mut extent: Option<(i32, i32)> = None;
-    let mut shape_attr = ShapeComponentAttr::default();
+    let mut shape_attr = ShapeComponentAttr {
+        group_level,
+        ..Default::default()
+    };
     let mut caption: Option<crate::model::shape::Caption> = None;
+    let mut line_shape: Option<crate::model::style::ShapeBorderLine> = None;
     parse_common_shape_children(
         reader,
         &mut common,
@@ -6537,6 +7326,7 @@ fn parse_hp_ole_element(
         &mut extent,
         &mut shape_attr,
         &mut caption,
+        &mut line_shape,
     )?;
     if numbering_type_picture {
         common.hwp5_gen_shape_attr_bit28 = true;
@@ -6546,6 +7336,12 @@ fn parse_hp_ole_element(
     let mut ole = OleShape::default();
     ole.common = common;
     ole.drawing.shape_attr = shape_attr;
+    // [#4669] `<hp:lineShape>` 원본 보존 — 없으면 기본값 유지(종전과 동일).
+    if let Some(ls) = line_shape {
+        ole.drawing.border_line = ls;
+    }
+    // [#4669] id 원문 보존 — instid 와 분리해 재방출 시 원본 id 를 되쓴다.
+    ole.hwpx_ole_id = id_attr;
     ole.bin_data_id = bin_id;
     ole.drawing_aspect = draw_aspect;
     // <hc:extent> 가 있으면 원본 개체 크기를 보존한다(없으면 종전 기본값 7200).
@@ -6573,6 +7369,11 @@ fn apply_hwpx_ole_shape_component_contract(ole: &mut crate::model::shape::OleSha
     } else {
         7200
     };
+    // [#4669] 파싱된 `<hp:curSz width="0">`(한컴 원산 관례)를 orgSz 로 materialize
+    // 할 때 was_zero 센티널(#2017)을 세운다 — pic·일반 도형과 동형. writer
+    // (write_cur_sz)가 센티널을 보고 원본 0 을 복원한다. orgSz 미파싱(HWP5 출신
+    // 등 original=0)이면 no-op 이라 아래 extent 폴백과 충돌하지 않는다.
+    materialize_shape_current_size_from_original(&mut ole.common, &mut ole.drawing.shape_attr);
     let shape_attr = &mut ole.drawing.shape_attr;
     shape_attr.ctrl_id = tags::SHAPE_OLE_ID;
     shape_attr.is_two_ctrl_id = true;
@@ -6610,10 +7411,18 @@ fn parse_common_shape_children(
     // 캡션을 읽지만 차트·OLE 만 빠져 있었다. HWP5 파서(parser/control/shape.rs:213,
     // 222)와 동형으로 drawing.caption 에 채운 뒤 호출자가 `.caption` 으로 정규화한다.
     caption_out: &mut Option<crate::model::shape::Caption>,
+    // [#4669] `<hp:lineShape>` 수집용. 종전 미파싱으로 OLE 테두리 선이 저장 시
+    // 기본값으로 되쓰였다(offset/orgSz/curSz/flip/renderingInfo 와 함께 이 공용
+    // 파서만 shape-component 자식 arm 이 없던 간극).
+    line_shape_out: &mut Option<crate::model::style::ShapeBorderLine>,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
+    let mut has_pos = false;
     loop {
-        match reader.read_event_into(&mut buf) {
+        let event = reader.read_event_into(&mut buf);
+        // [#5797] 자기닫힘 자식은 하위 파서를 태우지 않는다 — parse_shape_object 참고.
+        let self_closing = matches!(&event, Ok(Event::Empty(_)));
+        match event {
             Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce)) => {
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
@@ -6622,7 +7431,7 @@ fn parse_common_shape_children(
                         let mut x = 0i32;
                         let mut y = 0i32;
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"x" => x = parse_i32(&attr),
                                 b"y" => y = parse_i32(&attr),
                                 _ => {}
@@ -6633,9 +7442,25 @@ fn parse_common_shape_children(
                     b"rotationInfo" => {
                         parse_shape_rotation_info(ce, shape_attr_out);
                     }
+                    // [#4669] offset/orgSz/curSz — 공용 개체 파서(parse_object_layout_child)
+                    // 와 동형으로 위임한다. 종전 미파싱으로 원본 curSz=0(한컴 원산
+                    // 관례)·offset 이 IR 에 실리지 않아 저장 시 재유도값으로 되쓰였다.
+                    b"offset" | b"orgSz" | b"curSz" => {
+                        parse_object_layout_child(local, ce, common, shape_attr_out, &mut has_pos);
+                    }
+                    // [#4669] flip/renderingInfo/lineShape — 도형·그림 파서와 동형.
+                    b"flip" => parse_shape_flip(ce, shape_attr_out),
+                    b"renderingInfo" => {
+                        if !self_closing {
+                            parse_rendering_info(reader, shape_attr_out)?;
+                        }
+                    }
+                    b"lineShape" => {
+                        *line_shape_out = Some(parse_line_shape_attr(ce));
+                    }
                     b"sz" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"width" => common.width = parse_u32(&attr),
                                 b"height" => common.height = parse_u32(&attr),
                                 // [#2726] 공용 자식 파서(차트·OLE)만 크기 기준 arm 이 없어
@@ -6657,8 +7482,9 @@ fn parse_common_shape_children(
                         }
                     }
                     b"pos" => {
+                        has_pos = true;
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"vertRelTo" => {
                                     common.vert_rel_to = match attr_str(&attr).as_str() {
                                         "PAPER" => VertRelTo::Paper,
@@ -6720,7 +7546,7 @@ fn parse_common_shape_children(
                     }
                     b"outMargin" => {
                         for attr in ce.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"left" => common.margin.left = parse_i32(&attr) as i16,
                                 b"right" => common.margin.right = parse_i32(&attr) as i16,
                                 b"top" => common.margin.top = parse_i32(&attr) as i16,
@@ -6778,6 +7604,103 @@ mod tests {
         assert_eq!(section.paragraphs.len(), 1);
         assert_eq!(section.paragraphs[0].text, "Hello World");
         assert_eq!(section.paragraphs[0].para_shape_id, 0);
+    }
+
+    // ---------- [#4759] 문단↔표↔셀 상호재귀 무한 중첩 → 스택 오버플로 DoS 가드 ----------
+
+    fn nested_table_section_xml(depth: usize) -> String {
+        // 각 겹 <hp:tbl><hp:tr><hp:tc><hp:p> 가 문단→표→셀→문단 재귀를 한 단계 판다.
+        let mut xml = String::from(
+            r#"<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"><hp:p paraPrIDRef="0" styleIDRef="0">"#,
+        );
+        for _ in 0..depth {
+            xml.push_str("<hp:tbl><hp:tr><hp:tc><hp:p>");
+        }
+        for _ in 0..depth {
+            xml.push_str("</hp:p></hp:tc></hp:tr></hp:tbl>");
+        }
+        xml.push_str("</hp:p></hs:sec>");
+        xml
+    }
+
+    #[test]
+    fn table_nesting_beyond_limit_is_rejected() {
+        // 상한을 넘는 표 중첩(문단↔표↔셀 사이클)은 스택을 고갈시키기 전에 오류로
+        // 거부돼야 한다. 가드가 없으면 이 입력은 파싱돼(Ok) 이 단언이 실패하고, 실파일
+        // 규모(수만 겹)에서는 catch_unwind 로도 못 잡는 SIGSEGV 가 난다. 컨테이너 가드와
+        // 같은 이유로 넉넉한 스택 전용 스레드에서 경계를 결정적으로 시험한다.
+        let rejected = std::thread::Builder::new()
+            .stack_size(64 * 1024 * 1024)
+            .spawn(|| {
+                let xml = nested_table_section_xml(MAX_HWPX_SECTION_DEPTH as usize + 60);
+                parse_hwpx_section(&xml).is_err()
+            })
+            .expect("파서 스레드 생성 실패")
+            .join()
+            .expect("파서 스레드 패닉");
+        assert!(
+            rejected,
+            "상한 초과 표 중첩이 거부되지 않았다 — 상호재귀 깊이 가드 회귀"
+        );
+    }
+
+    #[test]
+    fn table_nesting_within_limit_still_parses() {
+        // 상한 안쪽의 정상적인 표 중첩은 계속 성공해야 한다(가드가 과잉 차단 안 함).
+        let xml = nested_table_section_xml(5);
+        assert!(
+            parse_hwpx_section(&xml).is_ok(),
+            "정상 깊이 표 중첩이 거부됐다 — 가드가 과잉 차단"
+        );
+    }
+
+    fn assert_section_nesting_xml_error(result: Result<Section, HwpxError>, needle: &str) {
+        match result {
+            Err(HwpxError::XmlError(msg)) => {
+                assert!(
+                    msg.contains(needle),
+                    "XmlError 메시지에 `{needle}` 가 없다: {msg}"
+                );
+            }
+            other => panic!("상한 초과가 XmlError 로 거부되지 않았다: {other:?}"),
+        }
+    }
+
+    // ---------- [#4730] <hp:container> 무한 중첩 → 스택 오버플로 DoS 가드 ----------
+
+    fn nested_container_section_xml(depth: usize) -> String {
+        let mut xml = String::from(
+            r#"<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"><hp:p paraPrIDRef="0" styleIDRef="0">"#,
+        );
+        for _ in 0..depth {
+            xml.push_str("<hp:container>");
+        }
+        for _ in 0..depth {
+            xml.push_str("</hp:container>");
+        }
+        xml.push_str("</hp:p></hs:sec>");
+        xml
+    }
+
+    #[test]
+    fn container_nesting_beyond_limit_is_rejected_on_default_stack() {
+        // 상한을 넘는 중첩 <hp:container> 는 스택을 고갈시키기 전에 오류로 거부돼야
+        // 한다. 가드가 없으면 이 입력은 그대로 파싱돼(Ok) 이 단언이 실패하고, 실파일
+        // 규모(수만 겹)에서는 catch_unwind 로도 못 잡는 SIGSEGV 가 난다.
+        // 기본 테스트 스레드에서 실행해, 실제 호출자가 흔히 쓰는 스택에서도 가드가
+        // 재귀 프레임 고갈보다 먼저 동작함을 검증한다.
+        let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize + 1);
+        assert_section_nesting_xml_error(parse_hwpx_section(&xml), "container nesting exceeds");
+    }
+
+    #[test]
+    fn container_nesting_at_limit_still_parses() {
+        // 상한 안쪽의 정상적인 중첩은 계속 성공해야 한다(가드가 과잉 차단하지 않음).
+        let xml = nested_container_section_xml(MAX_HWPX_CONTAINER_DEPTH as usize);
+        assert!(
+            parse_hwpx_section(&xml).is_ok(),
+            "정상 깊이 container 가 거부됐다 — 가드가 과잉 차단"
+        );
     }
 
     // ---------- #2957: autoNumFormat 원 문자(CIRCLED_DIGIT) 인식 ----------
@@ -7339,10 +8262,11 @@ mod tests {
         assert_eq!(endnote.after_decoration_letter, 41); // ')'
     }
 
-    /// [#1200] curve 도형의 geometry 가 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
-    /// 으로 인코딩된 경우 CurveShape.points 가 채워져야 한다. 누락 시 외곽선 미렌더.
+    /// [#1200, #4676] curve 도형의 geometry 가 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
+    /// 으로 인코딩된 경우 CurveShape.points 가 채워져야 한다. HWPX CURVE 타입은 HWP5
+    /// 베지어 제어점 규약과 다르므로 segment_types를 비워 LineTo 체인으로 렌더한다.
     #[test]
-    fn test_parse_curve_seg_populates_points() {
+    fn test_parse_curve_seg_populates_points_without_hwp5_bezier_types() {
         // seg chain: (10,10)->(90,10)->(90,90)->(10,10) (폐곡선)
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -7354,9 +8278,9 @@ mod tests {
         <hp:orgSz width="100" height="100"/>
         <hp:curSz width="100" height="100"/>
         <hp:lineShape color="#000000" width="113" style="SOLID"/>
-        <hp:seg type="LINE" x1="10" y1="10" x2="90" y2="10"/>
+        <hp:seg type="CURVE" x1="10" y1="10" x2="90" y2="10"/>
         <hp:seg type="LINE" x1="90" y1="10" x2="90" y2="90"/>
-        <hp:seg type="LINE" x1="90" y1="90" x2="10" y2="10"/>
+        <hp:seg type="CURVE" x1="90" y1="90" x2="10" y2="10"/>
       </hp:curve>
     </hp:run>
   </hp:p>
@@ -7379,6 +8303,11 @@ mod tests {
         // 첫 seg 시작점 + 각 seg 끝점 = 4점 chain
         let pts: Vec<(i32, i32)> = curve.points.iter().map(|p| (p.x, p.y)).collect();
         assert_eq!(pts, vec![(10, 10), (90, 10), (90, 90), (10, 10)]);
+        assert!(
+            curve.segment_types.is_empty(),
+            "HWPX CURVE 타입은 HWP5 베지어 제어점 규약으로 매핑하면 안 됨: {:?}",
+            curve.segment_types
+        );
     }
 
     #[test]
@@ -7537,6 +8466,72 @@ mod tests {
         );
     }
 
+    /// 한컴은 제목 문단 첫머리에 `<hp:t><hp:titleMark ignore="1"/>제1장 …</hp:t>` 를 쓴다.
+    /// 이 요소를 흘리면 문단 축이 8유닛 짧아져 다음 왕복에서 본문이 폐기된다.
+    #[test]
+    fn test_parse_title_mark_occupies_eight_units() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t><hp:titleMark ignore="1"/>가나</hp:t></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let para = &parse_hwpx_section(xml).unwrap().paragraphs[0];
+        assert_eq!(para.text, "가나", "표시는 텍스트가 아니다");
+        assert_eq!(para.char_offsets, vec![8, 9], "앞 8유닛을 점유한다");
+        assert_eq!(
+            para.title_marks,
+            vec![TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }]
+        );
+        // 표시 8 + 글자 2 + 끝 마커 1
+        assert_eq!(para.char_count, 11);
+    }
+
+    /// `ignore="0"` 은 `Mign` 과 짝이라 따로 구별해 읽어야 한다.
+    #[test]
+    fn test_parse_title_mark_ignore_off() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t>가<hp:titleMark ignore="0"/>나</hp:t></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let para = &parse_hwpx_section(xml).unwrap().paragraphs[0];
+        assert_eq!(para.text, "가나");
+        assert_eq!(para.char_offsets, vec![0, 9]);
+        assert_eq!(
+            para.title_marks,
+            vec![TitleMark {
+                char_idx: 1,
+                ignore: false,
+            }]
+        );
+    }
+
+    #[test]
+    fn title_mark_does_not_shift_following_field_range() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:t><hp:titleMark ignore="1"/>앞</hp:t><hp:ctrl><hp:fieldBegin id="100" type="HYPERLINK" name="" fieldid="100"/></hp:ctrl><hp:t>뒤</hp:t><hp:ctrl><hp:fieldEnd beginIDRef="100" fieldid="100"/></hp:ctrl></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let para = &parse_hwpx_section(xml).unwrap().paragraphs[0];
+        assert_eq!(para.text, "앞뒤");
+        assert_eq!(para.field_ranges.len(), 1);
+        assert_eq!(para.field_ranges[0].start_char_idx, 1);
+        assert_eq!(para.field_ranges[0].end_char_idx, 2);
+    }
+
     #[test]
     fn test_parse_linebreak_preserves_offsets() {
         let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -7629,11 +8624,40 @@ mod tests {
         let para = &section.paragraphs[0];
         assert_eq!(para.text, "AB");
         assert_eq!(para.char_offsets, vec![0, 9]);
-        // [Task #1058] 같은 char_shape_id 연속 dedup — HWP PARA_CHAR_SHAPE 는 첫 entry 1개만 유지.
-        // 두 run 모두 charPrIDRef="0" 이므로 dedup 후 char_shapes.len() = 1.
-        assert_eq!(para.char_shapes[0].start_pos, 0);
-        assert_eq!(para.char_shapes.len(), 1);
+        // 같은 ID여도 표 슬롯 뒤의 별도 run 경계(start_pos=9)는 보존해야 한다 (#3739).
+        assert_eq!(
+            para.char_shapes
+                .iter()
+                .map(|cs| (cs.start_pos, cs.char_shape_id))
+                .collect::<Vec<_>>(),
+            vec![(0, 0), (9, 0)]
+        );
         assert_eq!(para.controls.len(), 1);
+    }
+
+    #[test]
+    fn issue_3739_secpr_template_handoff_same_id_is_normalized() {
+        // 첫 secPr run과 템플릿이 별도로 넣는 첫 텍스트 run은 같은 ID여도
+        // HWP PARA_CHAR_SHAPE에서 하나의 시작 entry여야 한다.
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="5"><hp:secPr textDirection="HORIZONTAL"></hp:secPr></hp:run>
+    <hp:run charPrIDRef="5"><hp:t>A</hp:t></hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let para = &section.paragraphs[0];
+        assert_eq!(para.text, "A");
+        assert_eq!(
+            para.char_shapes
+                .iter()
+                .map(|cs| (cs.start_pos, cs.char_shape_id))
+                .collect::<Vec<_>>(),
+            vec![(0, 5)]
+        );
     }
 
     #[test]
@@ -8104,6 +9128,67 @@ mod tests {
             "바깥 </hp:listParam> 누락(중첩 불균형): {raw}"
         );
         assert!(raw.ends_with("</hp:parameters>"), "params close: {raw}");
+
+        // [#4436] 상한 안쪽은 성공, 초과는 조용히 자르지 않고 XmlError.
+        let at_limit = parse_parameters_xml(&nested_list_param_xml(MAX_LIST_PARAM_DEPTH))
+            .expect("정상 깊이 listParam 이 거부됐다 — 가드가 과잉 차단");
+        assert_eq!(
+            list_param_tree_depth(&at_limit.parameters),
+            MAX_LIST_PARAM_DEPTH
+        );
+        match parse_parameters_xml(&nested_list_param_xml(MAX_LIST_PARAM_DEPTH + 1)) {
+            Err(HwpxError::XmlError(msg)) => {
+                assert!(
+                    msg.contains("listParam nesting exceeds"),
+                    "XmlError 메시지에 `listParam nesting exceeds` 가 없다: {msg}"
+                );
+            }
+            other => panic!("상한 초과 listParam 이 XmlError 로 거부되지 않았다: {other:?}"),
+        }
+    }
+
+    fn nested_list_param_xml(depth: usize) -> String {
+        let mut xml = String::from(
+            r#"<hp:parameters xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" cnt="1" name="">"#,
+        );
+        for i in 0..depth {
+            xml.push_str(&format!(r#"<hp:listParam cnt="1" name="L{i}">"#));
+        }
+        xml.push_str(r#"<hp:stringParam name="A">x</hp:stringParam>"#);
+        for _ in 0..depth {
+            xml.push_str("</hp:listParam>");
+        }
+        xml.push_str("</hp:parameters>");
+        xml
+    }
+
+    fn parse_parameters_xml(xml: &str) -> Result<Field, HwpxError> {
+        let mut reader = Reader::from_str(xml);
+        let mut buf = Vec::new();
+        let mut field = Field::default();
+        loop {
+            match reader.read_event_into(&mut buf).unwrap() {
+                Event::Start(ref e) if local_name(e.name().as_ref()) == b"parameters" => {
+                    let start = e.to_owned();
+                    parse_field_parameters(&start, &mut reader, &mut field)?;
+                    return Ok(field);
+                }
+                Event::Eof => panic!("parameters not found"),
+                _ => {}
+            }
+            buf.clear();
+        }
+    }
+
+    fn list_param_tree_depth(list: &ParameterList) -> usize {
+        list.items
+            .iter()
+            .filter_map(|param| match param {
+                Parameter::List(inner) => Some(1 + list_param_tree_depth(inner)),
+                _ => None,
+            })
+            .max()
+            .unwrap_or(0)
     }
 
     #[test]
@@ -8189,6 +9274,23 @@ mod tests {
         assert_eq!(ofe.char_idx, 2, "텍스트 끝(인덱스 2) 위치");
         assert_eq!(ofe.begin_id_ref, 1_878_228_493);
         assert_eq!(ofe.field_id, 627_272_811);
+        let begin_ctrl_id = match p0.controls.first() {
+            Some(Control::Field(field)) => field.ctrl_id,
+            other => panic!("fieldBegin 컨트롤이 아니다: {other:?}"),
+        };
+        assert_eq!(
+            ofe.begin_ctrl_id, begin_ctrl_id,
+            "HWP5 저장에 필요한 field control id를 앞 문단 fieldBegin에서 연결한다"
+        );
+        let hwp_roundtrip = crate::parser::body_text::parse_body_text_section(
+            &crate::serializer::body_text::serialize_section(&section),
+        )
+        .expect("HWP5로 저장한 다문단 field가 다시 파싱돼야 한다");
+        let hwp_end = hwp_roundtrip.paragraphs[1]
+            .orphan_field_ends
+            .first()
+            .expect("HWP5 저장본에도 fieldEnd 슬롯이 남아야 한다");
+        assert_eq!(hwp_end.begin_ctrl_id, begin_ctrl_id);
         // char_count = 텍스트 2 + fieldEnd 8 + 끝마커 1 = 11.
         assert_eq!(
             p1.char_count, 11,
@@ -8372,7 +9474,11 @@ mod tests {
         assert_eq!(optional_page.apply_to, HeaderFooterApply::Both);
         assert!(optional_page.is_extension);
         assert!(optional_page.overlap);
-        assert!(!optional_page.replace_base);
+        // [#6323] 픽스처가 `pageDuplicate="0"`(겹치게 하기 끔)이므로 LAST_PAGE 와 같이
+        // 기본 바탕쪽을 대체해야 한다. 종전에는 이 단언이 `!replace_base` 였는데,
+        // 그 비대칭 때문에 임의 쪽 바탕쪽이 기본 바탕쪽 위에 덧그려져 쪽번호가
+        // 포개졌다(exam_kor.hwpx 20쪽에서 '2' 위에 '4').
+        assert!(optional_page.replace_base);
         assert_eq!(optional_page.ext_flags, 0x0007);
     }
 
@@ -8422,7 +9528,13 @@ mod tests {
         assert_eq!(master_page.apply_to, HeaderFooterApply::Both);
         assert!(master_page.is_extension);
         assert!(master_page.overlap);
-        assert!(!master_page.replace_base);
+        // [#6323] 이 픽스처는 실제 문서(`samples/hwpx/exam_kor.hwpx` 의 masterpage8)와 같은
+        // 형태다 — `pageDuplicate="0"` 은 "겹치게 하기 끔" 이므로 바로 위
+        // `test_parse_master_page_last_page_extension`(같은 `pageDuplicate="0"`)과 마찬가지로
+        // 기본 바탕쪽을 대체해야 한다. 종전에는 이 단언이 `!replace_base` 라 두 시험이
+        // 같은 선언에 정반대를 못박고 있었고, 그 비대칭 때문에 임의 쪽 바탕쪽이 기본
+        // 바탕쪽 위에 덧그려져 쪽번호가 포개졌다(20쪽에서 '2' 위에 '4').
+        assert!(master_page.replace_base);
         assert_eq!(master_page.ext_flags, 0x0007);
         assert_eq!(master_page.hwpx_page_number, Some(4));
         assert_eq!(master_page.raw_list_header.len(), 34);
@@ -8683,6 +9795,162 @@ mod tests {
                 "높이 {raw} 는 Absolute 로 접혀야 한다"
             );
         }
+    }
+
+    /// [#4669] `hp:ole` 의 shape-component 자식(offset/orgSz/curSz/flip/
+    /// renderingInfo/lineShape)과 `id` 속성이 IR 에 실려야 한다. 종전엔 공용
+    /// 자식 파서(`parse_common_shape_children`)에 arm 이 없고 `id` 는 instid 만
+    /// 파싱해, 저장 시 전부 재유도값·"0" 으로 되쓰였다. 값은 실물
+    /// samples/한셀OLE.hwpx 의 hp:ole 을 축약했고(id≠instid 실측), curSz=0 은
+    /// 한컴 원산 관례로 was_zero 센티널(#2017, pic 과 동형)까지 고정한다.
+    #[test]
+    fn issue4669_parse_ole_preserves_shape_component_children_and_id() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="2141242094" zOrder="1" numberingType="PICTURE" textWrap="SQUARE"
+              textFlow="BOTH_SIDES" lock="0" instid="1067500271" objectType="EMBEDDED"
+              binaryItemIDRef="ole1" drawAspect="CONTENT">
+        <hp:offset x="12" y="34"/>
+        <hp:orgSz width="42001" height="13501"/>
+        <hp:curSz width="0" height="0"/>
+        <hp:flip horizontal="1" vertical="0"/>
+        <hp:rotationInfo angle="0" centerX="14999" centerY="2025" rotateimage="1"/>
+        <hp:renderingInfo>
+          <hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+          <hc:scaMatrix e1="0.714245" e2="0" e3="0" e4="0" e5="0.300052" e6="0"/>
+          <hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+        </hp:renderingInfo>
+        <hc:extent x="29999" y="4051"/>
+        <hp:lineShape color="#000000" width="5" style="SOLID" endCap="ROUND"/>
+        <hp:sz width="29999" widthRelTo="ABSOLUTE" height="4051" heightRelTo="ABSOLUTE" protect="0"/>
+        <hp:pos treatAsChar="0" vertRelTo="PARA" horzRelTo="COLUMN" vertOffset="0" horzOffset="0"/>
+        <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+    <hp:container groupLevel="0">
+      <hp:ole binaryItemIDRef="ole2" groupLevel="3"></hp:ole>
+    </hp:container>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.hwpx_ole_id, Some(2141242094), "id 원문 보존");
+        assert_eq!(
+            ole.common.instance_id, 1067500271,
+            "instid 는 id 와 분리 보존"
+        );
+        let sa = &ole.drawing.shape_attr;
+        assert_eq!((sa.offset_x, sa.offset_y), (12, 34), "hp:offset");
+        assert_eq!(
+            (sa.original_width, sa.original_height),
+            (42001, 13501),
+            "hp:orgSz"
+        );
+        // curSz=0 → orgSz 로 materialize 하되 원본 0 복원용 센티널이 서야 한다.
+        assert_eq!((sa.current_width, sa.current_height), (42001, 13501));
+        assert!(
+            sa.current_width_was_zero && sa.current_height_was_zero,
+            "curSz=0 센티널(#2017)"
+        );
+        assert!(sa.horz_flip && !sa.vert_flip, "hp:flip");
+        assert!(sa.rotate_image, "rotationInfo rotateimage=1");
+        // 행렬 값은 f32 양자화(hwp5_matrix_value)를 거친다 — 1e-5 면 충분.
+        assert!(
+            (sa.render_sx - 0.714245).abs() < 1e-5,
+            "renderingInfo scaMatrix 보존: {}",
+            sa.render_sx
+        );
+        assert_eq!(ole.drawing.border_line.width, 5, "lineShape width");
+        assert_eq!(
+            ole.drawing.border_line.attr & 0xFF,
+            1,
+            "lineShape style=SOLID"
+        );
+
+        let Control::Shape(group_shape) = &section.paragraphs[0].controls[1] else {
+            panic!("expected group shape control");
+        };
+        let ShapeObject::Group(group) = group_shape.as_ref() else {
+            panic!("expected container group");
+        };
+        let Some(ShapeObject::Ole(group_member_ole)) = group.children.first() else {
+            panic!("group member hp:ole must be parsed");
+        };
+        assert_eq!(
+            group_member_ole.drawing.shape_attr.group_level, 3,
+            "group member hp:ole groupLevel"
+        );
+    }
+
+    /// [#4669] 명시적 `instid="0"` 은 id 로 덮지 않는다 — 차트 fallback OLE 의
+    /// 한컴 정답값이 instance_id=0 이다(#4099 오라클). id 폴백은 instid **부재**
+    /// 시에만 작동해야 한다.
+    #[test]
+    fn issue4669_explicit_zero_id_is_not_rewritten_to_instid() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="0" zOrder="7" textWrap="SQUARE" instid="1067500271" binaryItemIDRef="ole1">
+        <hp:sz width="7200" height="7200" protect="0"/>
+        <hp:pos treatAsChar="1" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.hwpx_ole_id, Some(0), "명시적 id=0 원문 보존");
+        assert_eq!(
+            ole.common.instance_id, 1067500271,
+            "instid 와 id는 별개로 보존"
+        );
+    }
+
+    #[test]
+    fn issue4669_explicit_zero_instid_is_not_overridden_by_id() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p id="0" paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ole id="1117817146" zOrder="7" textWrap="SQUARE" instid="0" binaryItemIDRef="ole1">
+        <hp:sz width="7200" height="7200" protect="0"/>
+        <hp:pos treatAsChar="1" vertRelTo="PARA" horzRelTo="PARA"/>
+      </hp:ole>
+      <hp:t/>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Shape(shape) = &section.paragraphs[0].controls[0] else {
+            panic!("expected shape control");
+        };
+        let ShapeObject::Ole(ole) = shape.as_ref() else {
+            panic!("expected OLE shape");
+        };
+        assert_eq!(ole.common.instance_id, 0, "명시적 instid=0 보존 (#4099)");
+        assert_eq!(ole.hwpx_ole_id, Some(1117817146), "id 원문은 별도 보존");
     }
 
     #[test]
@@ -9164,6 +10432,45 @@ mod tests {
         );
     }
 
+    /// [#4898] 0높이 lineseg 정규화(#2070)는 **구역 단위**로 판단한다.
+    ///
+    /// 한컴은 숨긴 블록(CLIPDATA 등)을 `vertsize="0"` lineseg 로 접어서 저장한다. 그것을
+    /// 문단 단위로 "부재"로 보면 rhwp 가 그 문단을 새로 조판해 숨은 내용이 펼쳐지고 뒤가
+    /// 밀린다 — 08852 실측 최대 vertpos 40,525 → 77,965, 한글 1쪽 → 2쪽. 구역에 0 아닌
+    /// lineseg 가 있으면 그 구역의 lineseg 는 권위가 있으므로 0높이도 보존한다.
+    #[test]
+    fn issue4898_zero_height_linesegs_survive_when_section_has_sized_ones() {
+        let with_sized = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>본문</hp:t></hp:run>
+    <hp:linesegarray><hp:lineseg textpos="0" vertpos="0" vertsize="1200" textheight="1200" baseline="1020" spacing="600" horzpos="0" horzsize="42520" flags="393216"/></hp:linesegarray>
+  </hp:p>
+  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>숨긴 블록</hp:t></hp:run>
+    <hp:linesegarray><hp:lineseg textpos="0" vertpos="1200" vertsize="0" textheight="0" baseline="0" spacing="0" horzpos="0" horzsize="42520" flags="393216"/></hp:linesegarray>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(with_sized).unwrap();
+        assert_eq!(
+            section.paragraphs[1].line_segs.len(),
+            1,
+            "0 아닌 lineseg 가 있는 구역에서는 0높이 lineseg 도 원본대로 보존해야 한다"
+        );
+
+        // 대조군(#2070): 구역 전체가 0높이면 종전대로 부재로 정규화한다 —
+        // 생성계 문서가 lineseg 를 0 으로 채워 저장하는 경우, 실저장 취급하면
+        // 셀·문단 높이가 선언값으로 붕괴한다.
+        let all_zero = with_sized.replace(
+            r#"vertsize="1200" textheight="1200""#,
+            r#"vertsize="0" textheight="0""#,
+        );
+        let section = parse_hwpx_section(&all_zero).unwrap();
+        assert!(
+            section.paragraphs.iter().all(|p| p.line_segs.is_empty()),
+            "구역 전체가 0높이면 종전대로 부재 취급한다"
+        );
+    }
+
     #[test]
     fn parse_field_type_accepts_toc() {
         // 직렬화기(hwpx/field.rs)가 방출하는 "TOC" 가 TableOfContents 로 파싱돼야
@@ -9173,6 +10480,33 @@ mod tests {
             parse_field_type("TABLE_OF_CONTENTS"),
             FieldType::TableOfContents
         );
+    }
+
+    /// [#4896] IR 이 모르는 종류는 원문(`raw_type`)과 실측 ctrl_id 를 함께 챙긴다.
+    ///
+    /// 종전에는 `Unknown` 으로만 떨어져 ctrl_id 가 0 이 됐고, 직렬화기가 종류를 되찾을
+    /// 근거가 없어 `CROSSREF` 로 굳혔다 — 10k 스윕에서 교정부호 필드 27경로가 상호참조로
+    /// 바뀐 사슬의 입구다.
+    #[test]
+    fn unknown_field_type_keeps_raw_string_and_ctrl_id() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ctrl><hp:fieldBegin id="1" type="PROOFREADING_MARKS_DELETE" name="" editable="0" dirty="0"/></hp:ctrl>
+      <hp:t>지운 글</hp:t>
+      <hp:ctrl><hp:fieldEnd beginIDRef="1"/></hp:ctrl>
+    </hp:run>
+  </hp:p>
+</hs:sec>"#;
+        let section = parse_hwpx_section(xml).unwrap();
+        let Control::Field(f) = &section.paragraphs[0].controls[0] else {
+            panic!("expected Field control");
+        };
+        assert_eq!(f.field_type, FieldType::Unknown);
+        assert_eq!(f.raw_type.as_deref(), Some("PROOFREADING_MARKS_DELETE"));
+        assert_eq!(f.ctrl_id, tags::FIELD_PROOFREADING_DELETE);
     }
 
     #[test]

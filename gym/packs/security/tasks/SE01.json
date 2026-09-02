@@ -1,0 +1,29 @@
+{
+  "id": "SE01",
+  "tier": 2,
+  "title": "PII 탐지",
+  "input": "samples/task2097/75544_pii_bunseok.hwpx",
+  "instructions": "입력 문서에서 개인정보 후보가 몇 건인지 **읽기 전용으로** 조사해 answer.json 에 {\"findings\": N} 으로 제출하라. 힌트: rhwp edit redact --dry-run.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "탐지 건수",
+      "op": "answer_eq",
+      "answer": "findings",
+      "path": "findingCount",
+      "cmd": [
+        "edit",
+        "redact",
+        "{input}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

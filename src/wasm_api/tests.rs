@@ -1518,6 +1518,27 @@ fn test_empty_document_info() {
 }
 
 #[test]
+fn test_document_info_exposes_non_embedded_font_substitutions() {
+    let mut doc = HwpDocument::create_empty();
+    doc.document.doc_info.font_faces = vec![vec![crate::model::style::Font {
+        name: "정부상징 부처명_16040911".to_string(),
+        alt_type: 1,
+        subst_font: Some(crate::model::style::SubstFont {
+            face: "한컴바탕".to_string(),
+            font_type: 1,
+            ..Default::default()
+        }),
+        ..Default::default()
+    }]];
+
+    let info: Value = serde_json::from_str(&doc.get_document_info()).expect("document info JSON");
+    assert_eq!(
+        info["fontSubstitutions"],
+        serde_json::json!([["정부상징 부처명_16040911", "한컴바탕"]])
+    );
+}
+
+#[test]
 fn test_render_empty_page_svg() {
     let doc = HwpDocument::create_empty();
     let svg = doc.render_page_svg_native(0);
@@ -1786,6 +1807,7 @@ fn test_document_with_paragraphs() {
             },
         ],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
 
@@ -1995,6 +2017,7 @@ fn create_doc_with_table() -> HwpDocument {
         },
         paragraphs: vec![parent_para],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
     doc
@@ -2081,6 +2104,7 @@ fn create_doc_with_page_count_boundary_table() -> HwpDocument {
         },
         paragraphs: vec![parent_para],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
     doc
@@ -3532,7 +3556,7 @@ fn test_merge_cells_roundtrip_real_hwp() {
     let orig_data = std::fs::read(orig_path).unwrap();
 
     // 1) 원본 → 수정 없이 라운드트립 (기준선)
-    let mut baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
+    let baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
     let baseline_exported = baseline_doc.export_hwp_native().unwrap();
 
     // 2) 원본 → 병합 후 내보내기
@@ -3863,7 +3887,7 @@ fn test_compare_user_saved_vs_programmatic() {
     }
 
     // 전체 CFB 파일 비교 (원본 라운드트립 vs 사용자 저장)
-    let mut baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
+    let baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
     let baseline_data = baseline_doc.export_hwp_native().unwrap();
     eprintln!(
         "\n원본 라운드트립: {}B, 사용자 저장: {}B",
@@ -4669,6 +4693,7 @@ fn create_doc_with_floating_picture(tac: bool, voff: u32, hoff: u32) -> HwpDocum
         },
         paragraphs: vec![pic_para, Paragraph::default()],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
     doc
@@ -5217,7 +5242,7 @@ fn test_export_selection_html_partial() {
 
 #[test]
 fn test_export_control_html_table() {
-    let mut doc = create_doc_with_table();
+    let doc = create_doc_with_table();
 
     let result = doc.export_control_html_native(0, 0, &[], 0);
     assert!(result.is_ok());
@@ -7281,6 +7306,8 @@ fn test_compare_orig_vs_saved() {
                 crate::model::control::Control::NewNumber(_) => "NewNumber",
                 crate::model::control::Control::PageNumberPos(_) => "PageNumberPos",
                 crate::model::control::Control::Bookmark(_) => "Bookmark",
+                crate::model::control::Control::IndexMark(_) => "IndexMark",
+                crate::model::control::Control::PageNumCtrl(_) => "PageNumCtrl",
                 crate::model::control::Control::Hyperlink(_) => "Hyperlink",
                 crate::model::control::Control::Ruby(_) => "Ruby",
                 crate::model::control::Control::CharOverlap(_) => "CharOverlap",
@@ -7325,6 +7352,8 @@ fn test_compare_orig_vs_saved() {
                 crate::model::control::Control::NewNumber(_) => "NewNumber",
                 crate::model::control::Control::PageNumberPos(_) => "PageNumberPos",
                 crate::model::control::Control::Bookmark(_) => "Bookmark",
+                crate::model::control::Control::IndexMark(_) => "IndexMark",
+                crate::model::control::Control::PageNumCtrl(_) => "PageNumCtrl",
                 crate::model::control::Control::Hyperlink(_) => "Hyperlink",
                 crate::model::control::Control::Ruby(_) => "Ruby",
                 crate::model::control::Control::CharOverlap(_) => "CharOverlap",
@@ -22002,7 +22031,7 @@ fn test_task228_highlight_data_analysis() {
 #[test]
 fn test_task228_highlight_render_tree() {
     let data = std::fs::read("samples/h-pen-01.hwp").expect("파일 읽기 실패");
-    let mut doc = crate::DocumentCore::from_bytes(&data).expect("파싱 실패");
+    let doc = crate::DocumentCore::from_bytes(&data).expect("파싱 실패");
     let svg = doc.render_page_svg_native(0).expect("SVG 렌더링 실패");
     // 형광펜 사각형 색상이 SVG에 포함되어야 함
     assert!(
@@ -22181,7 +22210,7 @@ fn test_task229_field_svg_guide_text() {
         shape_field_count
     );
 
-    let mut hwp_doc = HwpDocument::from_bytes(&data).expect("HwpDocument 생성 실패");
+    let hwp_doc = HwpDocument::from_bytes(&data).expect("HwpDocument 생성 실패");
     let svg = hwp_doc.render_page_svg_native(0).expect("SVG 렌더링 실패");
 
     // SVG에 안내문 텍스트가 빨간색 기울임체로 렌더링되는지 확인
@@ -24147,6 +24176,8 @@ fn diag_memo_controls() {
                         crate::model::control::Control::PageNumberPos(_) => "PageNumPos",
                         crate::model::control::Control::PageHide(_) => "PageHide",
                         crate::model::control::Control::Bookmark(_) => "Bookmark",
+                        crate::model::control::Control::IndexMark(_) => "IndexMark",
+                        crate::model::control::Control::PageNumCtrl(_) => "PageNumCtrl",
                         crate::model::control::Control::Hyperlink(_) => "Hyperlink",
                         crate::model::control::Control::Ruby(_) => "Ruby",
                         crate::model::control::Control::CharOverlap(_) => "CharOverlap",
@@ -25488,7 +25519,7 @@ fn task1413_remove_field_at_in_cell_ex_equivalent() {
 }
 
 #[test]
-fn task1413_evaluate_table_formula_ex_equivalent() {
+fn task1413_evaluate_table_formula_ex_equivalent_and_issue_4135_rendering() {
     let mut a = create_doc_with_table();
     let rp = a.evaluate_table_formula(0, 0, 0, 0, 0, "=1+1", false);
     let mut b = create_doc_with_table();
@@ -25496,6 +25527,42 @@ fn task1413_evaluate_table_formula_ex_equivalent() {
         r#"{"sectionIdx":0,"parentParaIdx":0,"controlIdx":0,"targetRow":0,"targetCol":0,"formula":"=1+1","writeResult":false}"#,
     );
     assert_eq!(format!("{rp:?}"), format!("{re:?}"));
+
+    let mut doc = HwpDocument::create_empty();
+    doc.create_table_native(0, 0, 0, 2, 4)
+        .expect("2행 4열 표 생성");
+
+    for (cell_idx, text) in [
+        (0, "10"),
+        (1, "20"),
+        (2, "30"),
+        (4, "1"),
+        (5, "2"),
+        (6, "3"),
+    ] {
+        doc.insert_text_in_cell_native(0, 0, 0, cell_idx, 0, 0, text)
+            .expect("계산 원본 셀 입력");
+    }
+
+    let first: Value = serde_json::from_str(
+        &doc.evaluate_table_formula(0, 0, 0, 0, 3, "=SUM(A1:C1)", true)
+            .expect("첫 행 합계"),
+    )
+    .expect("첫 행 합계 JSON");
+    let second: Value = serde_json::from_str(
+        &doc.evaluate_table_formula(0, 0, 0, 1, 3, "=SUM(A2:C2)", true)
+            .expect("둘째 행 합계"),
+    )
+    .expect("둘째 행 합계 JSON");
+
+    assert_eq!(first["result"].as_f64(), Some(60.0));
+    assert_eq!(second["result"].as_f64(), Some(6.0));
+
+    let svg = doc.render_page_svg_native(0).expect("합계 결과 SVG");
+    assert!(
+        svg.matches(">0</text>").count() >= 4,
+        "10, 20, 30과 결과 60의 0까지 모두 렌더링되어야 한다"
+    );
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -28227,7 +28294,7 @@ fn issue4149_adjacent_giant_cell_cursor_rect_latency_decomposition() {
     use std::time::Instant;
     let bytes =
         std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
-    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let doc = HwpDocument::from_bytes(&bytes).expect("파싱");
     let pages = doc.page_count();
     println!("[cursor-rect] 총 {pages}쪽");
 
@@ -28288,7 +28355,7 @@ fn issue4149_adjacent_giant_cell_cursor_rect_latency_decomposition() {
 fn issue4149_adjacent_cursor_rect_profile_loop() {
     let bytes =
         std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
-    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let doc = HwpDocument::from_bytes(&bytes).expect("파싱");
     let _ = doc.page_count();
     let _ = doc.find_pages_for_cell_position(0, 0, 2, 2, Some((6, 5)));
     eprintln!("[profile-loop] 시작 pid={}", std::process::id());
@@ -28429,13 +28496,13 @@ fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
         .expect("기준 페이지 트리")
         .root
         .to_json();
-    let baseline_height = doc.measured_sections[0].paragraphs[0].total_height;
+    let baseline_height = doc.measured_sections[0].fallback_paragraphs[0].total_height;
     let baseline_lines = doc.composed[0][0].lines.len();
 
     // --- 패치 이전 코드의 파생본을 흉내 낸다 (원본 IR 은 손대지 않는다) ---
     doc.composed[0][0].lines[0].runs[0].text = "옛 조합 규칙".to_string();
     doc.pagination[0].pages.pop().expect("마지막 쪽 제거");
-    doc.measured_sections[0].paragraphs[0].total_height = 1.0;
+    doc.measured_sections[0].fallback_paragraphs[0].total_height = 1.0;
 
     doc.invalidate_page_tree_cache();
     assert_ne!(
@@ -28464,7 +28531,7 @@ fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
         "paginate() 는 조합을 다시 만들지 않는다"
     );
     assert_eq!(
-        doc.measured_sections[0].paragraphs[0].total_height, 1.0,
+        doc.measured_sections[0].fallback_paragraphs[0].total_height, 1.0,
         "paginate() 는 깨끗한 구역의 측정 캐시를 다시 만들지 않는다"
     );
 
@@ -28486,7 +28553,7 @@ fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
         "조합 결과의 줄 수가 원본 기준으로 돌아와야 한다"
     );
     assert_eq!(
-        doc.measured_sections[0].paragraphs[0].total_height, baseline_height,
+        doc.measured_sections[0].fallback_paragraphs[0].total_height, baseline_height,
         "측정 캐시가 원본에서 다시 만들어져야 한다"
     );
     assert_eq!(

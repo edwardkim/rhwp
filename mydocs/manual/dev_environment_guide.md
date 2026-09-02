@@ -79,7 +79,7 @@ git switch -c <work-branch> upstream/devel
 cargo build
 cargo test
 cargo build --release
-cargo fmt --check
+cargo fmt --all -- --check
 ```
 
 PR 전 전체 회귀 범위는 변경 위험도와 [PR 리뷰·통합 워크플로우](pr_review_workflow.md)에 따라 결정한다.
@@ -90,20 +90,125 @@ cargo test --release --lib
 cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ```
+
+새 Rust integration test는 `tests/cases/`에 원본 `.rs` 파일만 추가하고 suite를 직접 선택하지 않는다.
+기여 PR에는 원본만 제출한다. 아래 명령은 일반 기여자의 PR checkout이 아니라 별도의 PR review
+worktree와 CI에서만 실행한다. 이 단계가 source 크기와 test 수를 기준으로 기존 generated suite에
+자동 배정한다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/run-rust-test.mjs <확장자를_뺀_test_source_이름>
+```
+
+`tests/suites/suite-policy.json`과 `tests/suites/unit-test-tier-policy.json`은 추적 정책이고, `tests/generated/`, `tests/suites/manifest.json`은 파생 산출물이며
+직접 수정하거나 PR에 포함하지 않는다. 일반 기여자는 `--prepare`를 실행해 파생 결과를 자신의 PR에
+등록하지 않으며, PR 전에는 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`로 배정 규칙만
+확인한다. review worktree의 기본 `--prepare`는 이름 변경·삭제와 신규 source를 harness에만 반영하며
+root `Cargo.toml`은 바꾸지 않는다. 통합 불가 예외 target registry가 달라진 경우에만 메인터너 전용 PR에서
+`--sync-cargo-targets`로 Cargo marker 블록을 동기화한다. 검증 뒤 worktree에 남은 파생 변경은 복원한다. 전체 배정 정책과 PR 검증 절차는
+[로컬 사전 검증](pr_review/local_validation.md)의 "integration test source 추가와 자동 sharding"을 따른다.
+
+제품 소스의 기존 `#[cfg(test)]`는 의존성에 따라 `integration_ready`, `test_support`, `white_box`로
+차등 관리한다. root `src/`와 내부 `crates/*/src/`를 모두 검사한다. 신규 소스 테스트 모듈과 test
+support 항목은 추가하지 않고 공개 API 회귀는 `tests/cases/`로 보낸다. source-side `#[cfg(test)]`를
+변경한 기여자는 다음 계약 검사를 실행할 수 있다. 이 검사는 manifest 준비와 별개로 source·정책만 읽는다.
+기존 기준선의 증가는 차단하지만 테스트를 외부로 이동하거나 production crate와 함께 분리하는 변경은 허용한다.
+
+```bash
+node --test scripts/tests/rust-unit-test-tiers.test.mjs
+node scripts/rust-unit-test-tiers.mjs --check
+```
+
+`--check`는 source와 정책을 메모리에서 비교할 뿐 파일을 생성·수정하지 않는다. 진단용 inventory가 필요할 때만 `--generate`를 실행하며 결과는 `tests/generated/unit-test-tiers.json`에 남고 PR에 포함하지 않는다.
+PR CI에서는 같은 검사에 `--base-ref`를 전달해 base 브랜치 source와 정책을 별도로 대조한다.
+따라서 새 최상위 `tests/*.rs`나 `--accept-baseline`을 이용한 source-side 테스트 증가는
+생성물을 함께 커밋해도 실패한다. Git rename으로 확인되고 테스트 수가 늘지 않는 내부 crate
+이동은 허용한다.
+
+workspace의 `default-members`에는 root와 `crates/*`가 포함된다. 따라서 위의 일반 `cargo test`와
+`cargo nextest` 명령은 내부 production crate 테스트도 자동 실행한다. 새 내부 crate는 `crates/` 아래에
+추가해 이 계약에서 빠지지 않게 한다.
 
 `release-test`는 통합 테스트 시간을 줄이기 위한 프로필이며 실제 release 산출물은 계속
 `cargo build --release`로 만든다.
-`--test-threads 12`는 CPU·메모리가 충분한 host의 기본값이며, 작은 host에서는 논리 CPU 이하로 낮춘다.
+nextest 기본 동시성은 현재 host를 따른다. CPU·메모리·동시 작업을 확인해 조정할 때만
+`--test-threads <현재 환경에 맞는 값>`을 추가하며, 문서의 과거 측정값을 고정값으로 복사하지 않는다.
+선택 절차와 OS별 CPU 확인 명령은 [로컬 사전 검증](pr_review/local_validation.md#고정-review-target과-실행-환경)을 따른다.
 
 ## WASM 빌드
 
 Rust 또는 WASM 경계가 바뀌면 저장소 루트에서 `pkg/`를 갱신한다.
 
-```bash
-wasm-pack build --target web --out-dir pkg
+Windows·macOS·Linux 공통 표준 경로는 Docker의 `wasm` 서비스다. 최초 한 번만 `.env.docker`가
+없을 때 예제를 복사하고, 이후에는 기존 파일을 덮어쓰지 않는다.
+
+```powershell
+if (-not (Test-Path .env.docker)) {
+    Copy-Item .env.docker.example .env.docker
+}
+docker compose --env-file .env.docker run --rm wasm
 ```
+
+Linux/macOS 셸에서는 같은 준비를 다음처럼 수행한다.
+
+```bash
+if [ ! -f .env.docker ]; then
+  cp .env.docker.example .env.docker
+fi
+docker compose --env-file .env.docker run --rm wasm
+```
+
+이 서비스는 Cargo target을 named volume에 유지한다. 특히 Windows Docker Desktop의 `/app/target`
+bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므로, host `target/`을 강제로
+재사용하지 않는다. 빌드 시작 시에는 이전에 중단된 wasm-pack이 남긴 `pkg/*-opt.wasm`만 제거한다.
+이 파일을 남기면 wasm-pack이 임시 최적화 결과를 다시 입력으로 열거해 무한 실행 또는
+`*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
+
+Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단용** 네이티브 경로는 아래와 같다.
+`--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다.
+
+```powershell
+Remove-Item -Force -ErrorAction SilentlyContinue pkg\*-opt.wasm
+$env:CARGO_TARGET_DIR = 'target\pr-review'
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg --no-opt
+Remove-Item Env:CARGO_TARGET_DIR
+```
+
+macOS/Linux의 native WASM 검증은 `wasm-pack`을 직접 실행하지 않는다. 아래 wrapper는
+`cargo metadata`와 `cargo build` 모두에 `--locked`를 적용해 루트 `Cargo.lock`을
+갱신하지 못하게 한다.
+
+```bash
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+반복 실행은 macOS/Linux 셸의 alias로 줄일 수 있습니다. alias는 현재 셸에만 적용하며, 영구 적용이 필요하면
+사용 중인 셸의 초기화 파일에 같은 줄을 넣습니다.
+
+```bash
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+rhwp-wasm-build
+# 예: 최적화를 생략한 진단 빌드
+rhwp-wasm-build --no-opt
+```
+
+Windows에서는 native PowerShell wrapper를 사용합니다. `cmd.exe`에서는 아래 `doskey` macro를 현재 세션에
+등록할 수 있습니다. 새 `cmd.exe`를 열면 다시 등록해야 합니다.
+
+```bat
+doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
+set "CARGO_TARGET_DIR=target\pr-review"
+rhwp-wasm-build
+rhwp-wasm-build --no-opt
+set "CARGO_TARGET_DIR="
+```
+
+네이티브 `wasm-pack build`를 최적화까지 포함해 반복 검증해야 하면 먼저 표준 Docker 경로를
+복구한다. Windows에서는 이전의 직접 최적화 명령을 반복 실행하지 않으며, 위 진단으로
+`pkg/` 잔재와 wasm-opt만 분리해 확인한다.
 
 TypeScript와 CSS는 Vite가 다시 읽지만 Rust 변경은 위 빌드가 끝나야 브라우저에 반영된다.
 
@@ -125,11 +230,38 @@ npx vite --host 0.0.0.0 --port 7700
 해당 포트가 이미 사용 중이면 기존 서버를 확인하거나 다른 포트를 지정한다. 브라우저 검증 절차는
 [시각 검증 문서 지도](verification/README.md)와 각 E2E 가이드를 따른다.
 
+### hwpctrl 없이 빌드하기 (studio 단독 배포)
+
+studio 는 `dist/` 하나로 배포된다(`.github/workflows/deploy-pages.yml` 이 그것만 올린다). 기본
+빌드에는 hwpctrl 플러그인이 **별도 청크**(약 54 kB)로 들어가고, 올리지 않으면 로드되지 않는다.
+
+산출물에서 아예 빼려면:
+
+```bash
+cd rhwp-studio
+npm run build:no-hwpctrl      # RHWP_WITHOUT_HWPCTRL=1
+npm run dev:no-hwpctrl        # 개발 서버도 같은 구성으로
+```
+
+이 플래그는 `main.ts` 의 동적 import 를 상수 분기(`__RHWP_HWPCTRL__`) 안에 두어 **빌드 시점에
+통째로 tree-shake** 한다. 그래서 `studio-plugin` 청크가 사라질 뿐 아니라 `npm/hwpctrl-ocx`
+디렉터리 자체가 없어도 빌드가 성공한다(실측 확인). 그 구성에서 `plugins.load('hwpctrl')` 은
+`PLUGIN_NOT_ALLOWED` 로 거절되고, 자동화·편집·다른 플러그인은 그대로 동작한다.
+
+`pkg/`(Rust → WASM) 는 두 구성 모두에서 필요하다 — studio 의 엔진이다.
+
 ## Subsecond 핫패치 (개발 전용, Linux·macOS·WSL 전용)
 
 Rust 를 고쳐도 WASM 재빌드 없이 실행 중인 브라우저에 반영하는 개발 전용 경로다. 기본 빌드에는
 들어가지 않는다 — 루트 `Cargo.toml` 의 `subsecond-dev` feature 뒤에 있고, 그 feature 로 빌드해야
 `applySubsecondDevtoolsMessage` 같은 export 가 생긴다.
+
+**feature 를 켜는 것과 디버그 프로파일로 빌드하는 것은 별개의 두 조건이고, 둘 다 필요하다.**
+`subsecond::HotFn::try_call`(`subsecond-0.7.10/src/lib.rs:411-414`)이 `if !cfg!(debug_assertions)`
+로 점프 테이블을 아예 보지 않고 원본 함수를 부른다. 그래서 릴리스 프로파일로 빌드하면 경계를
+아무리 잘 배치해도 모든 호출이 패치 이전 코드로 간다. `npm run subsecond:serve` 가 쓰는
+`dx serve --web` 은 디버그가 기본이라 지금은 맞게 동작하지만 **그 의존은 우연이다** — `--release`
+를 얹은 dx 나 직접 만든 릴리스 wasm 에서는 모든 층이 성공을 보고하는데 화면만 안 바뀐다. (#4596)
 
 ### 사전 조건과 최초 설치
 
@@ -149,14 +281,35 @@ npm ci
 npm run subsecond:install
 ```
 
-`subsecond:install`은 `dioxus-cli 0.7.10`을 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
+`subsecond:install`은 루트 `Cargo.toml` 의 `subsecond` 정확 핀에서 버전을 유도해(#4580,
+`scripts/dioxus-cli-version.mjs`) 그 버전의 `dioxus-cli`를 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
 `subsecond:serve`는 Dioxus가 맞는 `wasm-bindgen-cli`와 `esbuild`도 자동 설치하고 개발용 WASM을
 처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`, `target/dx/`,
 `target/rhwp-subsecond-vite/`는 로컬 생성물이며 커밋하지 않는다.
 
+`subsecond:serve`는 Dioxus 대화형 제어를 켠다. 기동 배너의 `r`(전체 rebuild), `p`(자동 rebuild
+토글), `v`(상세 로그), `/`(전체 단축키)은 실행 중인 터미널에서 사용할 수 있다. 대화형 제어를
+끄면 배너는 단축키를 계속 보여도 키 입력은 동작하지 않으므로 `--interactive false`를 쓰지 않는다.
+
 이 경로에서는 일반 배포용 `wasm-pack build --target web --out-dir pkg`를 먼저 실행할 필요가 없다.
 `subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`가 필요한 JS/WASM 두 파일을
 `target/rhwp-subsecond-vite/`로 동기화한다.
+
+### feature 를 켠 채로 도는 검증 명령
+
+평소 CI 는 `subsecond-dev` 를 켜지 않는다. 핫패치 경계나 어댑터를 고쳤으면 다음 둘을 직접 돌린다.
+
+```bash
+cargo clippy -p rhwp --all-targets --features subsecond-dev -- -D warnings
+cargo check --lib --features subsecond-dev --target wasm32-unknown-unknown
+```
+
+wasm32 검사에는 **`--lib` 이 필수다.** 빼면 CLI 바이너리(`src/main.rs`)까지 wasm32 로 컴파일하려
+들고 `populate_external_images_from_dir`·`render_page_svg_with_fonts` 처럼 네이티브에만 있는
+메서드에서 7개 오류로 죽는다. 이것은 `subsecond-dev` 와 무관하다 — feature 없이
+`cargo check --target wasm32-unknown-unknown` 만 돌려도 같은 7개가 난다. CLI 는 wasm32 대상이 아니고
+브라우저에 실리는 것은 `[lib]` 뿐이므로, 라이브러리만 검사하는 쪽이 맞다. CI 의 Lint 잡도 같은
+형태를 쓴다(`.github/workflows/ci.yml`). (#4588)
 
 ### 기동과 접속
 
@@ -166,13 +319,17 @@ npm run subsecond:install
 ```bash
 # 터미널 1: Dioxus hot-patch endpoint는 로컬 loopback으로만 연다.
 cd rhwp-studio
-npm run subsecond:install   # dioxus-cli 0.7.10 을 target/dioxus-cli 에 고정 설치
+npm run subsecond:install   # Cargo.toml 이 핀한 버전의 dioxus-cli 를 target/dioxus-cli 에 설치
 npm run subsecond:serve     # dx serve --hot-patch (127.0.0.1:7711)
 
 # 터미널 2: Studio 화면은 Vite가 제공하고, Dioxus endpoint를 프록시한다.
 cd rhwp-studio
 npm run dev:subsecond -- --host 0.0.0.0 --port 7700
 ```
+
+최초 기동 뒤에는 터미널 1에서 `/`를 눌러 단축키 메뉴가 나타나는지 먼저 확인한다. 이 확인은
+`subsecond:serve` 스크립트가 실제 대화형 모드로 실행됐는지 검증한다. 일반 Rust 저장은 자동 rebuild가
+기본으로 켜져 있어 바로 감지하며, 필요할 때만 `r`로 전체 rebuild를 요청한다.
 
 `0.0.0.0`은 Vite의 모든 NIC 수신 대기 주소다. 브라우저에는 이 서버의 실제 호스트 IP를 사용해
 `http://<host-ip>:7700/`으로 접속한다. `7711`은 Vite의 `/_dioxus`, `/wasm` 프록시 전용이므로 외부에
@@ -203,12 +360,13 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 
 1. 브라우저에서 `http://<host-ip>:7700/`을 열고 `WASM 로딩 중...` 화면이 끝난 뒤에 검증한다. 개발
    모드의 `window.__wasm` 객체는 초기화 전에 먼저 만들어질 수 있으므로, 객체 존재 여부나
-   `isSubsecondHotpatchEnabled()`만으로 준비 완료를 판별하지 않는다.
-2. `src/wasm_api/subsecond_boundary.rs`의 `hot_render_boundaries!` 목록에 배선된 렌더 경계 안의 Rust
+   `getWasmModuleExports()`만으로 준비 완료를 판별하지 않는다. 개발용 런타임은 `main.ts`가
+   `await wasm.initialize()`와 `CanvasView` 생성 뒤에만 동적으로 시작한다. (#4636, #4641)
+2. `src/wasm_api/render_patch_boundary.rs`의 `hot_render_boundaries!` 목록에 배선된 렌더 경계 안의 Rust
    변경을 저장하고 터미널 1의 rebuild/patch 메시지를 확인한다. 목록 밖의 export, 타입 레이아웃 또는
    초기화 경로 변경은 hot-patch 대상이 아니며 전체 rebuild/새로고침이 필요할 수 있다.
 3. 브라우저 콘솔에서 `[subsecond]` 진단과 Rust panic, 전역 오류를 확인한다. 화면 재도색은
-   `SubsecondRevisionWatcher`가 revision 변경을 감지한 뒤 일어난다.
+   `RenderCodeReloadWatcher`가 렌더 코드 리비전 변경을 감지한 뒤 일어난다.
 4. `patch-dispatched`는 패치 wasm을 runtime에 넘겼다는 뜻일 뿐, 비동기 fetch/instantiate까지 성공했다는
    뜻은 아니다. 실제 실패는 브라우저 콘솔의 panic 또는 `error`/`unhandledrejection`으로 판별한다.
 
@@ -235,6 +393,7 @@ curl -fsS -o /dev/null -w 'vite-wasm=%{http_code}\n' http://127.0.0.1:7700/wasm/
 
 | 층 | 실패 신호 | 보는 곳 |
 |---|---|---|
+| 빌드 프로파일 | **신호 없음** — 릴리스 프로파일이면 `HotFn::try_call` 이 조용히 원본을 부른다 (#4596) | 위 절의 두 조건 |
 | 별칭 심링크 (`build.rs`) | `cargo:warning=rhwp-subsecond: …` | `subsecond:serve` 터미널 |
 | `dx` 패치 링크 | dx 오류 출력 | `subsecond:serve` 터미널 |
 | 메시지 판정 (`src/subsecond_dev.rs`) | `[subsecond] …` 진단 | 브라우저 콘솔 |

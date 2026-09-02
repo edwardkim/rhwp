@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "claim": "M01-f",
+  "kind": "oraclePairFixture",
+  "hancomVersion": "2018",
+  "pairCount": 0,
+  "pairs": []
+}

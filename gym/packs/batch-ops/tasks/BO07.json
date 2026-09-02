@@ -1,0 +1,59 @@
+{
+  "id": "BO07",
+  "tier": 3,
+  "title": "메일머지 — form-02.hwpx + CSV 2부",
+  "input": "samples/hwpx/form-02.hwpx",
+  "instructions": "form-02 도 누름틀 myMsg01 하나다. gym/packs/batch-ops/assets/BO07-data.csv 는 데이터 2행이다. 서식 1개에 데이터 2행을 병합해 out/0001.hwpx·out/0002.hwpx 를 만들어라. 힌트: rhwp batch fill --form samples/hwpx/form-02.hwpx --data gym/packs/batch-ops/assets/BO07-data.csv --out-dir out --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/0001.hwpx",
+      "out/0002.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0001.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "마지막 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/0002.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/0001.hwpx"
+    },
+    {
+      "name": "1행 값이 1부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0001.hwpx}",
+        "--json",
+        "--",
+        "FormTwoAlpha"
+      ]
+    },
+    {
+      "name": "2행 값이 2부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0002.hwpx}",
+        "--json",
+        "--",
+        "FormTwoBeta"
+      ]
+    }
+  ]
+}

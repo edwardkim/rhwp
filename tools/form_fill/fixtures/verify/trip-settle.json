@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "trip-settle-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "trip-settle",
+  "title": "출장여비 정산서 --verify",
+  "family": "회계",
+  "genre": "정산",
+  "sample": "fixtures/forms/출장여비정산서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "출장자",
+  "fieldCount": 25,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/출장여비정산서.hwp",
+    "--data",
+    "{\"출장자\": \"홍길동\"}",
+    "-o",
+    "out/trip-settle-verify.hwp",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "출장자": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/출장여비정산서.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "출장자",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/trip-settle-verify.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

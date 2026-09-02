@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.fidelity_compare.text_layer_case.v1",
+  "title": "fidelity_compare text-layer case",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "classification",
+    "referenceText",
+    "svgText",
+    "referenceOnly",
+    "svgOnly",
+    "candidateNotVerdict"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "loss",
+        "excess",
+        "substitution",
+        "match"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "loss",
+        "excess",
+        "substitution",
+        "match"
+      ]
+    },
+    "referenceText": {
+      "type": "string"
+    },
+    "svgText": {
+      "type": "string"
+    },
+    "referenceOnly": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "svgOnly": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "candidateNotVerdict": {
+      "type": "boolean",
+      "const": true
+    },
+    "textOnly": {
+      "type": "boolean"
+    },
+    "chromeRequired": {
+      "type": "boolean"
+    }
+  }
+}

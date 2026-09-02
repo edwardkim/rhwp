@@ -1,0 +1,3 @@
+crates_present=false
+next=git sparse-checkout add crates
+hard_gate=cargo fmt --all -- --check

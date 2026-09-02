@@ -14,7 +14,6 @@ pub struct Hwp3DrawingObjectFrameHeader {
     pub object_count: u32,
     pub bounds: [i32; 4], // shunit32 (x, y, 너비, 높이)
 }
-
 impl Hwp3DrawingObjectFrameHeader {
     pub fn read<R: Read>(mut reader: R) -> Result<Self, io::Error> {
         let header_length = reader.read_u32::<LittleEndian>()?;
@@ -219,6 +218,10 @@ pub struct Hwp3DrawingObjectCommonHeader {
     pub rotation_attr: Option<Hwp3DrawingObjectRotationAttr>,
     pub gradient_attr: Option<Hwp3DrawingObjectGradientAttr>,
     pub bitmap_pattern_attr: Option<Hwp3DrawingObjectBitmapPatternAttr>,
+    /// [#5558] 공통 헤더 뒤 글상자 정보(스펙 11.3 optional 블록, 표 78 형식)로 실려 온
+    /// 내부 문단 리스트. 사각형 등 비-글상자 개체도 "글상자로 만들기"면 이 블록을 갖고,
+    /// 이 빈티지 코퍼스는 그 전체 길이를 header_length 로 선언한다.
+    pub textbox_paragraph_list: Option<Vec<u8>>,
 }
 
 impl Hwp3DrawingObjectCommonHeader {
@@ -277,6 +280,7 @@ impl Hwp3DrawingObjectCommonHeader {
             rotation_attr,
             gradient_attr,
             bitmap_pattern_attr,
+            textbox_paragraph_list: None,
         })
     }
 }
@@ -474,9 +478,53 @@ impl Hwp3DrawingExtendedPolygon {
     }
 }
 
+/// 공통 헤더의 선언 길이(header_length)와 플래그 유도 소비량이 어긋날 때 전진을
+/// 허용하는 상한. 정상 헤더는 커야 400여 바이트이므로 이를 훨씬 넘는 선언은
+/// 손상된 값으로 보고 종전대로 플래그 유도 위치를 유지한다.
+const MAX_HEADER_SKIP: u64 = 64 * 1024;
+
 impl Hwp3DrawingObject {
     pub fn read<R: Read + Seek>(mut reader: R) -> Result<Self, io::Error> {
-        let header = Hwp3DrawingObjectCommonHeader::read(&mut reader)?;
+        let header_start = reader.stream_position()?;
+        let mut header = Hwp3DrawingObjectCommonHeader::read(&mut reader)?;
+
+        // [#5141] 빈티지 파일의 공통 헤더에는 이 파서가 모르는 확장 필드가 붙을 수
+        // 있고, 전체 길이는 header_length(자기 4바이트 제외)로 선언된다. 플래그
+        // 유도로 읽은 소비량이 선언에 못 미치면 선언 끝까지 전진해야 뒤따르는
+        // 세부 정보·형제·자식 스트림이 어긋나지 않는다. 선언이 스트림 밖이거나
+        // 상한을 넘으면 손상 값으로 보고 종전 위치를 유지한다.
+        //
+        // [#5558] 그 잉여 구간의 실체는 스펙 11.3 의 optional 글상자 정보인 경우가
+        // 대부분이다(표 78 형식: [정보1 길이][정보2 길이][문단 리스트]). 잉여 길이가
+        // 표 78 과 정확히 맞아떨어지면 내부 문단 리스트를 회수하고, 아니면 종전대로
+        // 건너뛴다(07615 실측: 잉여 보유 137개 중 136개 정합·1개는 3바이트 슬랙).
+        // 글상자(type 6)는 세부 정보 경로가 같은 구조를 읽으므로 제외한다.
+        let consumed_end = reader.stream_position()?;
+        let declared_end = header_start + 4 + header.header_length as u64;
+        if declared_end > consumed_end && declared_end - consumed_end <= MAX_HEADER_SKIP {
+            let stream_len = reader.seek(SeekFrom::End(0))?;
+            reader.seek(SeekFrom::Start(consumed_end))?;
+            if declared_end <= stream_len {
+                let surplus = declared_end - consumed_end;
+                let mut recovered = false;
+                if header.object_type != 6 && surplus >= 8 {
+                    let info1_len = reader.read_u32::<LittleEndian>()?;
+                    let info2_len = reader.read_u32::<LittleEndian>()?;
+                    if u64::from(info1_len) + u64::from(info2_len) == surplus - 8 && info2_len > 0 {
+                        if info1_len > 0 {
+                            reader.seek(SeekFrom::Current(i64::from(info1_len)))?;
+                        }
+                        let mut list = super::alloc_record_buf(info2_len as usize)?;
+                        reader.read_exact(&mut list)?;
+                        header.textbox_paragraph_list = Some(list);
+                        recovered = true;
+                    }
+                }
+                if !recovered {
+                    reader.seek(SeekFrom::Start(declared_end))?;
+                }
+            }
+        }
 
         // 글상자(6)인 경우, 공통 헤더 바로 뒤에 글상자 정보가 위치함.
         // 테이블 78 "글상자 세부 정보"에 따라 info1_len, info2_len, 문단 리스트가 존재함.
@@ -484,7 +532,12 @@ impl Hwp3DrawingObject {
 
         match header.object_type {
             0 => {
-                // 컨테이너: 추가 세부 길이 정보 없음
+                // [#5141] 컨테이너도 사각형/타원처럼 세부 정보 길이 8바이트
+                // (info1_len=0, info2_len=0)를 가진다. 이를 읽지 않으면 자식 파싱이
+                // 8바이트 어긋나 첫 자식이 hdr_len=0·conn=0 인 가짜 컨테이너로 읽히고
+                // 묶음 자식 전체가 소실된다.
+                let _info1_len = reader.read_u32::<LittleEndian>()?;
+                let _info2_len = reader.read_u32::<LittleEndian>()?;
                 Ok(Hwp3DrawingObject::Container(header))
             }
             1 => {
@@ -567,8 +620,7 @@ use crate::model::shape::{
     ArcShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape, GroupShape, LineShape,
     PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject, TextBox,
 };
-use crate::model::style::{Fill, FillType, ShapeBorderLine};
-use crate::model::Padding;
+use crate::model::style::{Fill, ShapeBorderLine};
 use crate::parser::hwp3::Hwp3Error;
 use std::collections::HashMap;
 
@@ -720,6 +772,40 @@ fn hwp3_uses_no_line_marker(header: &Hwp3DrawingObjectCommonHeader) -> bool {
     header.basic_attr.line_color == 0x1000_0000
 }
 
+/// [다섯 번째 계약] HWP3 다각형 점 배열 → PolygonShape (HWP3 단위 ×HWP3_UNIT_SCALE).
+fn polygon_shape_from_points(points: &[[i32; 2]]) -> PolygonShape {
+    PolygonShape {
+        points: points
+            .iter()
+            .map(|p| crate::model::Point {
+                x: p[0].saturating_mul(HWP3_UNIT_SCALE),
+                y: p[1].saturating_mul(HWP3_UNIT_SCALE),
+            })
+            .collect(),
+        ..Default::default()
+    }
+}
+
+/// [열세 번째 계약] HWP3 곡선 점 배열 → CurveShape (HWP3 단위 ×HWP3_UNIT_SCALE).
+/// 종전에는 점을 버려 점 0개 곡선을 저장했고, 한글 2022 는 빈 곡선을 만나면
+/// **크래시**(RPC 붕괴)한다(빈 다각형=거부와 달리 곡선은 크래시 — 다섯 번째
+/// 계약의 곡선 판). segment_types 는 점 수-1(모두 곡선 세그먼트 1).
+fn curve_shape_from_points(points: &[[i32; 2]]) -> CurveShape {
+    let pts: Vec<crate::model::Point> = points
+        .iter()
+        .map(|p| crate::model::Point {
+            x: p[0].saturating_mul(HWP3_UNIT_SCALE),
+            y: p[1].saturating_mul(HWP3_UNIT_SCALE),
+        })
+        .collect();
+    let segs = pts.len().saturating_sub(1);
+    CurveShape {
+        segment_types: vec![1u8; segs],
+        points: pts,
+        ..Default::default()
+    }
+}
+
 fn map_to_shape_object(
     raw: Hwp3DrawingObject,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -738,8 +824,14 @@ fn map_to_shape_object(
         }
         Hwp3DrawingObject::Ellipse(hdr) => (hdr, ShapeObject::Ellipse(EllipseShape::default())),
         Hwp3DrawingObject::Arc(hdr, _details) => (hdr, ShapeObject::Arc(ArcShape::default())),
-        Hwp3DrawingObject::Polygon(hdr, _details) => {
-            (hdr, ShapeObject::Polygon(PolygonShape::default()))
+        Hwp3DrawingObject::Polygon(hdr, details) => {
+            // [다섯 번째 계약] 꼭짓점을 IR 에 싣는다 — 종전 default() 는 점 0개
+            // SC_POLYGON(8B)을 저장했고, 한글 2022 는 빈 다각형이 든 문서를
+            // 통째로 거부했다(hwp3-sample11 문단 이등분 COM 실측 — p1809 Polygon).
+            (
+                hdr,
+                ShapeObject::Polygon(polygon_shape_from_points(&details.points)),
+            )
         }
         Hwp3DrawingObject::TextBox(hdr, details) => {
             if details.info2_len > 0 {
@@ -760,7 +852,10 @@ fn map_to_shape_object(
             }
             (hdr, ShapeObject::Rectangle(RectangleShape::default()))
         }
-        Hwp3DrawingObject::Curve(hdr, _details) => (hdr, ShapeObject::Curve(CurveShape::default())),
+        Hwp3DrawingObject::Curve(hdr, details) => (
+            hdr,
+            ShapeObject::Curve(curve_shape_from_points(&details.points)),
+        ),
         Hwp3DrawingObject::ModifiedEllipse(hdr, _details) => {
             (hdr, ShapeObject::Ellipse(EllipseShape::default()))
         }
@@ -768,14 +863,42 @@ fn map_to_shape_object(
         Hwp3DrawingObject::ExtendedCurve(hdr, _details) => {
             (hdr, ShapeObject::Curve(CurveShape::default()))
         }
-        Hwp3DrawingObject::ClosedPolygon(hdr, _details) => {
-            (hdr, ShapeObject::Polygon(PolygonShape::default()))
+        Hwp3DrawingObject::ClosedPolygon(hdr, details) => {
+            // 닫힌 다각형(ExtendedPolygon)도 같은 계약 — 점 좌표는 동일 레이아웃.
+            (
+                hdr,
+                ShapeObject::Polygon(polygon_shape_from_points(&details.points)),
+            )
         }
         Hwp3DrawingObject::Unknown(hdr, _data) => (hdr, ShapeObject::Group(GroupShape::default())),
     };
 
     let connection_info = header.connection_info;
     let mut final_shape = shape;
+
+    // [#5558] 공통 헤더 뒤 글상자 정보로 실려 온 내부 문단 리스트(사각형 등
+    // 비-글상자 개체의 라벨 텍스트). 글상자(type 6)와 같은 계약으로 파싱해
+    // 아래 text_box 조립에 태운다. 손상된 리스트는 텍스트만 포기하고 도형은
+    // 유지한다(종전 동작과 동일).
+    if parsed_paragraphs.is_empty() {
+        if let Some(data) = header.textbox_paragraph_list.as_deref() {
+            let mut text_cursor = std::io::Cursor::new(data);
+            if let Ok(paras) = crate::parser::hwp3::parse_paragraph_list(
+                &mut text_cursor,
+                doc_char_shapes,
+                doc_para_shapes,
+                doc_border_fills,
+                doc_tab_defs,
+                pic_name_to_id,
+                0,            // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
+                i32::MAX / 2, // column_width_hu
+                0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
+                false,        // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
+            ) {
+                parsed_paragraphs = paras;
+            }
+        }
+    }
 
     let common = CommonObjAttr {
         width: header.object_size[0].saturating_mul(HWP3_UNIT_SCALE as u32),
@@ -905,8 +1028,14 @@ fn map_to_shape_object(
         }
     };
 
-    let text_box = if (header.basic_attr.options & (1 << 19)) != 0 || !parsed_paragraphs.is_empty()
-    {
+    // 글상자는 **실제 문단이 있을 때만** 합성한다. HWP3 옵션 비트 19("글상자 있음")가
+    // 켜져 있어도 파서가 문단을 복원하지 못한 개체(예: 회전 타원 type 8 — 텍스트가
+    // info2 밖에 저장돼 미복원)에 빈 글상자(nPara=0 LIST_HEADER)를 방출하면, 한글 2022
+    // 는 LIST_HEADER 뒤 문단이 없을 때 다음 레코드(SHAPE_COMPONENT 등)를 문단으로
+    // 오독해 **문서 개방을 거부**한다(크롤 빈티지 "검인" 도장 회전 타원 COM 이등분 실측:
+    // 빈 글상자 LIST 제거 → 개방). 빈 글상자는 보이는 내용이 없어 프레임 생략에도
+    // 시각 손실이 없다.
+    let text_box = if !parsed_paragraphs.is_empty() {
         Some(TextBox {
             margin_left: hwp3_margin_to_i16(header.basic_attr.textbox_margin[0]),
             margin_top: hwp3_margin_to_i16(header.basic_attr.textbox_margin[1]),
@@ -1139,10 +1268,11 @@ mod drawing_object_recursion_depth_tests {
     use std::io::Cursor;
 
     /// object_type=0(Container)에 connection_info=0x0002(has_child, no
-    /// sibling)만 실은 최소 92바이트 공통 헤더를 만든다.
+    /// sibling)만 실은 최소 공통 헤더(92바이트, header_length=88) + 세부 정보
+    /// 길이 8바이트(#5141 계약)를 만든다.
     fn container_block() -> Vec<u8> {
         let mut buf = Vec::new();
-        buf.extend_from_slice(&0u32.to_le_bytes()); // header_length
+        buf.extend_from_slice(&88u32.to_le_bytes()); // header_length (자기 4바이트 제외)
         buf.extend_from_slice(&0u16.to_le_bytes()); // object_type = 0 (Container)
         buf.extend_from_slice(&0x0002u16.to_le_bytes()); // connection_info: has_child, !has_sibling
         buf.extend_from_slice(&[0u8; 8]); // relative_pos
@@ -1152,6 +1282,7 @@ mod drawing_object_recursion_depth_tests {
         buf.extend_from_slice(&[0u8; 32]); // basic_attr: line_style..pattern_color
         buf.extend_from_slice(&[0u8; 8]); // basic_attr: textbox_margin
         buf.extend_from_slice(&0u32.to_le_bytes()); // basic_attr: options
+        buf.extend_from_slice(&[0u8; 8]); // 세부 정보 길이 (info1_len=0, info2_len=0)
         buf
     }
 

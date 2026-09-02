@@ -1,7 +1,12 @@
 import { WasmBridge, type DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import type { LayerRenderProfile } from '@/core/types';
+import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { layerPaintOpReplayPlane } from './canvaskit/replay-plane';
-import type { CanvasKitLayerRenderer, CanvasKitRenderDiagnostics } from './canvaskit-renderer';
+import type {
+  CanvasKitFontDecisionEvidence,
+  CanvasKitLayerRenderer,
+  CanvasKitRenderDiagnostics,
+} from './canvaskit-renderer';
 import {
   cacheableImageKeySignature,
   collectImagePrefetchDataUrls,
@@ -17,8 +22,13 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
-import { drawPageMarginGuides, type PageSpaceRect } from './page-margin-guides';
+import {
+  drawPageMarginGuides,
+  type PageMarginGuideEdges,
+  type PageSpaceRect,
+} from './page-margin-guides';
 import type { RenderBackend } from './render-backend';
+import { isSameRenderDocument, type RenderDocumentIdentity } from './render-document-identity.ts';
 
 interface LayerPlaneSummary {
   hasBehind: boolean;
@@ -28,6 +38,15 @@ interface LayerPlaneSummary {
   flowImageCount: number;
   flowRawSvgCount: number;
   flowStaticCount: number;
+  // [#5763] flow 그림 밑에 불투명 채우기(그림을 담은 표 칸의 흰 배경 등)가 깔린 페이지.
+  // flow-static 분리는 그림만 canvas 아래 평면으로 내리고 그 채우기는 canvas 에 남기므로,
+  // 분리하면 채우기가 그림을 덮어 그림이 통째로 사라진다. 그런 페이지는 분리하지 않는다.
+  flowStaticOccluded: boolean;
+  // [#5780] 쪽 배경. DOM flow 그림 갈래(DIV)는 Background plane 을 실을 자리가 없어
+  // 단색 배경은 DIV background 로 실어 주고, 그라데이션/이미지 배경은 DOM 갈래를
+  // 포기하고 flow-static canvas(Background 포함 필터)로 폴백한다.
+  pageBackgroundCss: string | null;
+  pageBackgroundComplex: boolean;
   signature: string;
 }
 
@@ -49,6 +68,7 @@ interface ReRenderPolicy {
   retrySignature: string;
   reuseStaticFlow: boolean;
   reuseStaticOverlay: boolean;
+  displayScale: number;
 }
 
 interface LayerSummaryCacheEntry {
@@ -77,9 +97,9 @@ export class PageRenderer {
    * prefetch 를 끝낸 페이지의 그림 서명 (Task #3315).
    *
    * 내용에서 유도된 키라 스스로 무효화된다 — 편집 때 비우지 않는다. 비우면 서명을 두는
-   * 의미가 사라진다. 문서 경계는 서명이 들고 다니는 `documentDigest` 로 갈린다 —
-   * `PageRenderer` 는 문서보다 오래 살고 문서 로드 경로가 이 맵을 비우지 않으므로,
-   * 비우기에 기대지 않고 항목 자체가 어느 문서의 것인지 말하게 한다.
+   * 의미가 사라진다. 서명은 자기가 어느 문서의 것인지(`documentDigest`) 함께 들고 다니므로
+   * 옛 문서의 항목이 새 문서에서 잘못 맞아떨어지지 않는다. 다만 **맞지 않을 뿐 사라지지도
+   * 않으므로**, 수명은 `beginDocument` 가 문서 경계에서 거둔다.
    */
   private prefetchedImageSignatures = new Map<number, PrefetchSignature>();
   /**
@@ -89,9 +109,18 @@ export class PageRenderer {
    * `beginDocument` 가 가른다.
    */
   private flowImageUrls = new FlowImageUrlCache();
+  /**
+   * 위 페이지 단위 파생 상태가 어느 문서의 것인지 (Task #3315).
+   *
+   * `beginDocument` 가 이 값과 현재 문서를 견줘 거둘지 말지 정한다. 항목마다 신원이 박혀 있는
+   * 것과 별개로 필요하다 — 항목의 신원은 "새 문서에서 잘못 맞지 않게" 하고, 이 값은 "옛 문서의
+   * 항목을 언제 버릴지"를 정한다.
+   */
+  private documentScope: RenderDocumentIdentity | null = null;
   private prefetchRequestTokens = new Map<number, number>();
   private nextPrefetchRequestToken = 0;
   private flowSplitSupported: boolean | null = null;
+  private pageMarginGuideEdges: PageMarginGuideEdges = 'both';
 
   constructor(
     private wasm: WasmBridge,
@@ -121,20 +150,47 @@ export class PageRenderer {
     return true;
   }
 
+  setPageMarginGuideEdges(edges: PageMarginGuideEdges): boolean {
+    if (this.pageMarginGuideEdges === edges) return false;
+    this.pageMarginGuideEdges = edges;
+    return true;
+  }
+
   /**
    * 문서 (재)로드 경계 — `CanvasView.prepareDocumentLoad` 가 부른다 (Task #3315).
    *
-   * 문서 범위 자원 가운데 브라우저가 명시적 회수까지 붙들고 있는 것(flow 그림 object URL)을
-   * 여기서 넘긴다. 조회 시점으로 미루면 새 문서가 flow 그림을 한 장도 조회하지 않을 때
-   * (그림 없는 문서·CanvasKit 경로) 옛 문서의 URL 이 그대로 남는다.
+   * **문서 범위 파생 상태의 수명을 정하는 유일한 자리다.** `PageRenderer` 는 문서보다 오래
+   * 살므로, 여기서 거두지 않으면 세션이 끝날 때까지 남는다 — `dispose()` 는 문서 닫기·뷰 교체
+   * 기능이 생길 때를 위한 자리라 지금은 호출부가 없다(`CanvasView.dispose`).
    *
-   * 같은 문서를 다시 로드한 경우에는 캐시가 신원을 보고 그대로 둔다.
+   * 거두는 것은 셋이다.
+   *
+   * - flow 그림 object URL — 브라우저가 명시적 회수까지 붙들고 있다. 조회 시점으로 미루면 새
+   *   문서가 flow 그림을 한 장도 조회하지 않을 때(그림 없는 문서·CanvasKit 경로) 옛 문서의
+   *   URL 이 그대로 남는다.
+   * - 재시도 키(`imageRetryCounts`)·prefetch 서명(`prefetchedImageSignatures`) — 둘 다 키에
+   *   문서 신원이 박혀 있어 새 문서에서 **잘못 맞아떨어지지는 않는다.** 그래서 이건 정확성이
+   *   아니라 수명 문제다. 다시 읽히지 않을 항목이 문서를 열 때마다 페이지 수만큼 쌓인다.
+   *
+   * 편집(문서 revision 변화)으로는 거두지 않는다 — 그 경계는 `resetImageRetryState` 이고,
+   * 거기서 재시도 키를 비우면 페이지마다 재렌더가 한 번 더 돈다(#3672). 페이지가 풀에서
+   * 빠질 때도 거두지 않는다 — 같은 이유로 페이지를 다시 볼 때마다 재렌더가 한 번 더 돈다.
+   *
+   * 같은 문서를 다시 로드한 경우에는 신원이 같으므로 그대로 둔다.
    */
   beginDocument(): void {
-    this.flowImageUrls.beginDocument({
+    const identity: RenderDocumentIdentity = {
       digest: this.wasm.documentDigest,
       generation: this.wasm.documentGeneration,
-    });
+    };
+    this.flowImageUrls.beginDocument(identity);
+    if (isSameRenderDocument(this.documentScope, identity)) return;
+
+    this.imageRetryCounts.clear();
+    this.prefetchedImageSignatures.clear();
+    // 신원을 모르면(`digest === null`) 항목이 어느 문서 것인지 표시할 수 없다. 그 상태에서는
+    // `buildImageRetryKey` 도 서명 기록도 멈추므로 지킬 것이 없다 — 범위를 비워 둔다.
+    this.documentScope = identity.digest === null ? null : identity;
   }
 
   invalidateDocumentRevision(): void {
@@ -151,7 +207,7 @@ export class PageRenderer {
     pageIdx: number,
     canvas: HTMLCanvasElement,
     renderScale: number,
-    _displayScale: number,
+    displayScale: number,
     dpr: number,
     context: PageRenderContext = {},
   ): PageRenderResult {
@@ -164,7 +220,7 @@ export class PageRenderer {
     if (
       context.reason === 'text-edit'
       && context.focusedPagePatch?.pageIndex === pageIdx
-      && this.renderFocusedPagePatch(pageIdx, canvas, renderScale, context)
+      && this.renderFocusedPagePatch(pageIdx, canvas, renderScale, displayScale, context)
     ) {
       return { needsTextEditStaticLayerVerification: false };
     }
@@ -179,12 +235,15 @@ export class PageRenderer {
       reuseStaticFlow &&
       layers.flowRawSvgCount === 0 &&
       flowImages.length === layers.flowImageCount &&
-      flowImages.length > 0;
+      flowImages.length > 0 &&
+      // [#5780] 그라데이션/이미지 쪽 배경은 DIV 로 못 싣는다 — Background plane 을
+      // 포함하는 flow-static canvas 갈래로 폴백한다.
+      !layers.pageBackgroundComplex;
 
     // 다층 layer 모드.
     // 1) 본문 Canvas 는 'flow' 필터로 BehindText/InFrontOfText plane 제외
     // 2) behind/front plane 은 같은 부모 컨테이너에 별도 canvas layer 로 합성
-    this.drawMarginGuides(pageIdx, canvas, renderScale);
+    this.drawMarginGuides(pageIdx, canvas, renderScale, undefined, displayScale);
     let overlays: LayerPlaneSummary;
     try {
       overlays = this.applyOverlays(
@@ -203,7 +262,7 @@ export class PageRenderer {
       canvas.parentElement && this.removeOverlayLayer(canvas.parentElement, pageIdx, 'flow-static');
       reuseStaticFlow = false;
       this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
-      this.drawMarginGuides(pageIdx, canvas, renderScale);
+      this.drawMarginGuides(pageIdx, canvas, renderScale, undefined, displayScale);
       overlays = this.applyOverlays(pageIdx, canvas, renderScale, dpr, context, layers, false, []);
     }
     this.rememberLayerPlaneSummary(pageIdx, canvas, renderScale, layers);
@@ -219,6 +278,7 @@ export class PageRenderer {
         retrySignature: overlays.signature,
         reuseStaticFlow,
         reuseStaticOverlay: context.reason === 'text-edit' && context.allowStaticOverlayReuse === true,
+        displayScale,
       },
     );
     return {
@@ -260,6 +320,18 @@ export class PageRenderer {
     };
   }
 
+  getCanvasKitFontDecisionEvidence(
+    pageIndex: number,
+    record: FontDecisionTraceRecordV1,
+  ): CanvasKitFontDecisionEvidence | null {
+    const diagnostics = this.canvaskitDiagnosticsByPage.get(pageIndex);
+    if (!diagnostics) return null;
+    return this.canvaskitRenderer?.fontDecisionEvidence(
+      record,
+      diagnostics.replayFeatureCounts.glyphRuns > 0,
+    ) ?? null;
+  }
+
   releasePageDiagnostics(pageIdx: number): void {
     this.canvaskitDiagnosticsByPage.delete(pageIdx);
   }
@@ -296,7 +368,14 @@ export class PageRenderer {
       canvas.height = Math.max(1, Math.ceil(pageInfo.height * renderScale));
       const tree = this.wasm.getPageLayerTreeObject(pageIdx, this.renderProfile);
       renderStarted = true;
-      const renderedCanvas = this.canvaskitRenderer.renderPage(tree, canvas, renderScale, pageInfo);
+      const renderedCanvas = this.canvaskitRenderer.renderPage(
+        tree,
+        canvas,
+        renderScale,
+        pageInfo,
+        key => this.wasm.getSourceFontBytes(key),
+        this.wasm.documentGeneration,
+      );
       this.canvaskitDiagnosticsByPage.set(pageIdx, this.canvaskitRenderer.diagnostics());
       this.cancelReRender(pageIdx);
       this.imageRetryCounts.delete(pageIdx);
@@ -477,7 +556,10 @@ export class PageRenderer {
     layer.dataset.rhwpFlowImagePage = String(pageIdx);
     layer.dataset.rhwpStaticOverlayKey = key;
     layer.style.pointerEvents = 'none';
-    layer.style.background = 'var(--doc-paper)';
+    // [#5780] 쪽 배경색이 선언된 쪽은 종이색이 아니라 그 색을 실어야 한다 — DIV 갈래는
+    // Background plane 을 canvas 로 싣지 못하므로 여기서 단색 배경을 대신 진다
+    // (그라데이션/이미지 배경은 usesDomFlowImages 게이트가 canvas 갈래로 폴백).
+    layer.style.background = summary.pageBackgroundCss ?? 'var(--doc-paper)';
 
     for (const image of images) {
       const visibleBbox = visibleFlowImageBbox(image);
@@ -503,12 +585,22 @@ export class PageRenderer {
         clipHost.style.pointerEvents = 'none';
       }
 
+      // [#6099] image.bbox 는 **회전 후 외접 상자**다. 프레임을 그 크기로 만들고
+      // rotate 를 다시 걸면 이중 회전이 되어 90° 그림이 세로로 선 채 clip 에
+      // 잘린다(2197981 스캔 서식: 한글 712×506 vs 503×452 정사각형). SVG/캔버스
+      // 페인터(`effective_image_bbox`)와 같은 규약 — 90/270° 는 프레임을 회전 **전**
+      // 치수(가로세로 swap)로 만들고 같은 중심에서 rotate 해 외접 상자를 복원한다.
+      const quarterTurned = ((image.rotation % 180) + 180) % 180 === 90;
+      const frameWidth = quarterTurned ? image.bbox.height : image.bbox.width;
+      const frameHeight = quarterTurned ? image.bbox.width : image.bbox.height;
+      const frameX = image.bbox.x + (image.bbox.width - frameWidth) / 2;
+      const frameY = image.bbox.y + (image.bbox.height - frameHeight) / 2;
       const frame = document.createElement('div');
       frame.style.position = 'absolute';
-      frame.style.left = `${(image.bbox.x - (needsClipWrapper ? visibleBbox.x : 0)) * displayScale}px`;
-      frame.style.top = `${(image.bbox.y - (needsClipWrapper ? visibleBbox.y : 0)) * displayScale}px`;
-      frame.style.width = `${image.bbox.width * displayScale}px`;
-      frame.style.height = `${image.bbox.height * displayScale}px`;
+      frame.style.left = `${(frameX - (needsClipWrapper ? visibleBbox.x : 0)) * displayScale}px`;
+      frame.style.top = `${(frameY - (needsClipWrapper ? visibleBbox.y : 0)) * displayScale}px`;
+      frame.style.width = `${frameWidth * displayScale}px`;
+      frame.style.height = `${frameHeight * displayScale}px`;
       frame.style.overflow = 'hidden';
       frame.style.pointerEvents = 'none';
       const scaleX = image.horzFlip ? -1 : 1;
@@ -525,7 +617,8 @@ export class PageRenderer {
       // 그림 효과(회색조/흑백/밝기/명암) — WASM canvas 경로(render_image)와 달리
       // DOM flow-image 경로는 필터가 누락돼 원본 컬러로 렌더되던 문제를 고친다.
       if (image.filter) element.style.filter = image.filter;
-      const applyCrop = () => applyFlowImageCrop(element, image, displayScale);
+      const applyCrop = () =>
+        applyFlowImageCrop(element, image, displayScale, frameWidth, frameHeight);
       element.addEventListener('load', applyCrop, { once: true });
       applyCrop();
       frame.appendChild(element);
@@ -672,19 +765,29 @@ export class PageRenderer {
    * 페이지를 본문 layer (flow) 만 Canvas 에 렌더링한다 (Task #516, Stage 5.2).
    * BehindText / InFrontOfText plane 은 제외 — overlay canvas 로 별도 표시.
    */
-  renderPageFlow(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  renderPageFlow(
+    pageIdx: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+    displayScale = scale,
+  ): void {
     this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow', this.renderProfile);
-    this.drawMarginGuides(pageIdx, canvas, scale);
+    this.drawMarginGuides(pageIdx, canvas, scale, undefined, displayScale);
     this.scheduleReRender(pageIdx, canvas, scale, 0, 0, {
       retrySignature: 'flow-only',
       reuseStaticFlow: false,
       reuseStaticOverlay: false,
+      displayScale,
     });
   }
 
   private shouldSplitStaticFlow(layers: LayerPlaneSummary): boolean {
     return (
       !layers.hasBehind &&
+      // [#5763] 그림 밑에 깔린 불투명 채우기는 canvas(flow-dynamic) 에 남아 아래 평면의
+      // 그림을 덮는다. 그런 페이지는 한 평면에 순서대로 그린다 — 분리 이득보다 그림
+      // 소실이 크다 (156550355 문서 3·4·11쪽이 빈 흰 상자로 보이던 원인).
+      !layers.flowStaticOccluded &&
       layers.flowStaticCount > 0 &&
       this.flowSplitSupported !== false
     );
@@ -767,6 +870,7 @@ export class PageRenderer {
     pageIdx: number,
     canvas: HTMLCanvasElement,
     renderScale: number,
+    displayScale: number,
     context: PageRenderContext,
   ): boolean {
     const patch = context.focusedPagePatch;
@@ -784,7 +888,7 @@ export class PageRenderer {
         patch,
         this.renderProfile,
       );
-      this.drawMarginGuides(pageIdx, canvas, renderScale, patch);
+      this.drawMarginGuides(pageIdx, canvas, renderScale, patch, displayScale);
       this.rememberLayerPlaneSummary(pageIdx, canvas, renderScale, layers);
       this.cancelReRender(pageIdx);
       this.imageRetryCounts.delete(pageIdx);
@@ -870,6 +974,12 @@ export class PageRenderer {
           ? rawSvgCount
           : finiteCount(wrapper.flowRawSvgCount);
       const flowStaticCount = flowImageCount + flowRawSvgCount;
+      // [#5763] 구형 WASM 은 이 필드를 안 낸다 — 그때는 종전대로 분리를 허용한다.
+      const flowStaticOccluded = wrapper.flowStaticOccluded === true;
+      // [#5780] 쪽 배경 요약 — 구형 WASM 은 필드가 없다(null/false 폴백).
+      const pageBackgroundCss =
+        typeof wrapper.pageBackgroundCss === 'string' ? wrapper.pageBackgroundCss : null;
+      const pageBackgroundComplex = wrapper.pageBackgroundComplex === true;
       return {
         hasBehind: wrapper.hasBehind,
         hasFront: wrapper.hasFront,
@@ -878,7 +988,10 @@ export class PageRenderer {
         flowImageCount,
         flowRawSvgCount,
         flowStaticCount,
-        signature: `overlay:${wrapper.hasBehind ? 1 : 0}:${wrapper.hasFront ? 1 : 0}:${imageCount}:${rawSvgCount}:${flowImageCount}:${flowRawSvgCount}:${json.length}`,
+        flowStaticOccluded,
+        pageBackgroundCss,
+        pageBackgroundComplex,
+        signature: `overlay:${wrapper.hasBehind ? 1 : 0}:${wrapper.hasFront ? 1 : 0}:${imageCount}:${rawSvgCount}:${flowImageCount}:${flowRawSvgCount}:${flowStaticOccluded ? 1 : 0}:${pageBackgroundCss ?? ''}:${pageBackgroundComplex ? 1 : 0}:${json.length}`,
       };
     } catch (e) {
       console.warn('[PageRenderer] OverlayImageSummary JSON parse 실패:', e);
@@ -899,9 +1012,9 @@ export class PageRenderer {
       const wrapper = JSON.parse(json);
       const root = wrapper?.root;
       if (root) {
-        collectLayerPlaneSummary(root, summary, null);
+        collectLayerPlaneSummary(root, summary, null, { opaqueFlowFills: [] });
         summary.flowStaticCount = summary.flowImageCount + summary.flowRawSvgCount;
-        summary.signature = `tree:${summary.hasBehind ? 1 : 0}:${summary.hasFront ? 1 : 0}:${summary.imageCount}:${summary.rawSvgCount}:${summary.flowImageCount}:${summary.flowRawSvgCount}`;
+        summary.signature = `tree:${summary.hasBehind ? 1 : 0}:${summary.hasFront ? 1 : 0}:${summary.imageCount}:${summary.rawSvgCount}:${summary.flowImageCount}:${summary.flowRawSvgCount}:${summary.flowStaticOccluded ? 1 : 0}:${summary.pageBackgroundCss ?? ''}:${summary.pageBackgroundComplex ? 1 : 0}`;
       }
     } catch (e) {
       console.warn('[PageRenderer] PageLayerTree JSON parse 실패:', e);
@@ -914,8 +1027,16 @@ export class PageRenderer {
     canvas: HTMLCanvasElement,
     scale: number,
     clip?: PageSpaceRect,
+    displayScale = 1,
   ): void {
-    drawPageMarginGuides(this.wasm.getPageInfo(pageIdx), canvas, scale, clip);
+    drawPageMarginGuides(
+      this.wasm.getPageInfo(pageIdx),
+      canvas,
+      scale,
+      clip,
+      this.pageMarginGuideEdges,
+      displayScale,
+    );
   }
 
   /**
@@ -1076,7 +1197,7 @@ export class PageRenderer {
         'flow',
         this.renderProfile,
       );
-      this.drawMarginGuides(pageIdx, flowCanvas, renderScale);
+      this.drawMarginGuides(pageIdx, flowCanvas, renderScale, undefined, policy.displayScale);
     }
 
     if (policy.reuseStaticOverlay) return;
@@ -1235,8 +1356,11 @@ export class PageRenderer {
    * (`refreshPages` → `releaseAllRenderedPages`) 불리므로, 비우면 페이지마다 재렌더가 한 번 더
    * 돈다 — prefetch 가 서명으로 건너뛰어 `finish()` 가 즉시 불리고 다시 그린다.
    *
-   * 문서 경계와 그림 내용 변화는 재시도 키가 직접 든다(`buildImageRetryKey`). 그래서 바깥에서
-   * 비워 줄 시점을 맞출 필요가 없다 — 맞춰야 하는 계약이 #3648·P1 에서 깨진 그 계약이다.
+   * 문서 경계와 그림 내용 변화는 재시도 키가 직접 든다(`buildImageRetryKey`). 그래서 **편집
+   * 시점에** 비워 줄 필요가 없다 — 맞춰야 하는 계약이 #3648·P1 에서 깨진 그 계약이다.
+   *
+   * 다만 "잘못 맞지 않는다"와 "사라진다"는 다르다. 다시 읽히지 않을 항목을 거두는 자리는
+   * 문서 경계인 `beginDocument` 다.
    */
   resetImageRetryState(): void {
     this.prefetchRequestTokens.clear();
@@ -1252,6 +1376,7 @@ export class PageRenderer {
     this.layerSummaryCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
     this.flowImageUrls.releaseAll();
+    this.documentScope = null;
     this.canvaskitRenderer = null;
   }
 }
@@ -1265,6 +1390,9 @@ function emptyLayerPlaneSummary(): LayerPlaneSummary {
     flowImageCount: 0,
     flowRawSvgCount: 0,
     flowStaticCount: 0,
+    flowStaticOccluded: false,
+    pageBackgroundCss: null,
+    pageBackgroundComplex: false,
     signature: 'empty',
   };
 }
@@ -1274,10 +1402,38 @@ function finiteCount(value: unknown): number {
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
 }
 
+/**
+ * [#5763] paint 순서대로 훑으며 "그림 밑에 깔린 불투명 flow 채우기" 를 모은다.
+ *
+ * Rust `FlowStaticOcclusion` 과 같은 규칙이다 — 이 경로는 좁은 질의(overlay summary)를 못 쓰는
+ * 구형 WASM·예외 상황의 폴백이라 판정이 갈리면 안 된다.
+ */
+interface FlowOcclusionScan {
+  opaqueFlowFills: Array<{ x: number; y: number; width: number; height: number }>;
+}
+
+function opaqueFlowFillBbox(op: any): FlowOcclusionScan['opaqueFlowFills'][number] | null {
+  if (op.type !== 'rectangle' && op.type !== 'ellipse' && op.type !== 'path') return null;
+  const style = op.style;
+  if (!style || typeof style !== 'object') return null;
+  if (typeof style.opacity === 'number' && style.opacity < 1) return null;
+  const filled = style.fillColor != null || style.pattern != null || op.gradient != null;
+  if (!filled) return null;
+  const b = op.bbox;
+  if (!b || typeof b.x !== 'number' || typeof b.width !== 'number') return null;
+  return { x: b.x, y: b.y, width: b.width, height: b.height };
+}
+
+function bboxIntersects(a: { x: number; y: number; width: number; height: number }, b: any): boolean {
+  if (!b || typeof b.x !== 'number' || typeof b.width !== 'number') return false;
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
 function collectLayerPlaneSummary(
   node: any,
   summary: LayerPlaneSummary,
   inheritedLayer: any,
+  scan: FlowOcclusionScan,
 ): void {
   if (!node || typeof node !== 'object') return;
   const activeLayer = node.layer ?? inheritedLayer;
@@ -1285,6 +1441,14 @@ function collectLayerPlaneSummary(
     for (const op of node.ops) {
       if (!op || typeof op !== 'object') continue;
       const plane = layerReplayPlane(op, activeLayer);
+      if (op.type === 'pageBackground') {
+        // [#5780] Rust overlay 요약과 같은 규칙 — 첫 pageBackground 만 취한다.
+        if (summary.pageBackgroundCss === null && !summary.pageBackgroundComplex) {
+          summary.pageBackgroundCss =
+            typeof op.backgroundColor === 'string' ? op.backgroundColor : null;
+          summary.pageBackgroundComplex = op.gradient != null || op.image != null;
+        }
+      }
       if (op.type === 'image') {
         summary.imageCount += 1;
         if (plane === 'flow') {
@@ -1298,6 +1462,16 @@ function collectLayerPlaneSummary(
           summary.flowRawSvgCount += 1;
         }
       }
+      if (plane === 'flow') {
+        if (op.type === 'image' || op.type === 'rawSvg') {
+          if (scan.opaqueFlowFills.some((fill) => bboxIntersects(fill, op.bbox))) {
+            summary.flowStaticOccluded = true;
+          }
+        } else {
+          const fill = opaqueFlowFillBbox(op);
+          if (fill) scan.opaqueFlowFills.push(fill);
+        }
+      }
       if (plane === 'behindText') {
         summary.hasBehind = true;
       } else if (plane === 'inFrontOfText') {
@@ -1307,11 +1481,11 @@ function collectLayerPlaneSummary(
   }
   if (Array.isArray(node.children)) {
     for (const child of node.children) {
-      collectLayerPlaneSummary(child, summary, activeLayer);
+      collectLayerPlaneSummary(child, summary, activeLayer, scan);
     }
   }
   if (node.child) {
-    collectLayerPlaneSummary(node.child, summary, activeLayer);
+    collectLayerPlaneSummary(node.child, summary, activeLayer, scan);
   }
 }
 
@@ -1325,6 +1499,10 @@ function applyFlowImageCrop(
   element: HTMLImageElement,
   image: FlowImagePaintOp,
   displayScale: number,
+  // [#6099] 90/270° 프레임은 회전 전 치수(swap)로 만들어지므로, crop 사영도
+  // bbox(회전 후 외접)가 아니라 실제 프레임 치수를 기준으로 해야 한다.
+  frameWidth: number = image.bbox.width,
+  frameHeight: number = image.bbox.height,
 ): void {
   const crop = image.crop;
   if (!crop || element.naturalWidth <= 0 || element.naturalHeight <= 0) {
@@ -1347,8 +1525,8 @@ function applyFlowImageCrop(
   const sourceHeight = (crop.bottom - crop.top) / scaleYHu;
   if (sourceWidth <= 0 || sourceHeight <= 0) return;
 
-  const scaleX = (image.bbox.width * displayScale) / sourceWidth;
-  const scaleY = (image.bbox.height * displayScale) / sourceHeight;
+  const scaleX = (frameWidth * displayScale) / sourceWidth;
+  const scaleY = (frameHeight * displayScale) / sourceHeight;
   element.style.left = `${-sourceLeft * scaleX}px`;
   element.style.top = `${-sourceTop * scaleY}px`;
   element.style.width = `${element.naturalWidth * scaleX}px`;

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/mydocs/tech/agent_org/intake_manifest.schema.json",
+  "title": "에이전트 접수 이력서 (Agent Intake Manifest)",
+  "description": "새 에이전트가 조직에 접수될 때 제출하는 구조화 이력서. agent_dispatch.py 가 이걸 읽어 부서·과제·승진 경로를 자동으로 배정한다.",
+  "type": "object",
+  "properties": {
+    "agent": {
+      "type": "string",
+      "minLength": 1,
+      "description": "에이전트 이름(리더보드·캡슐 서명에 쓰는 것과 같게)."
+    },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "부리는 도구/호스트(예: claude-code, cursor, mcp). 배치에 참고."
+    },
+    "targetDepartment": {
+      "type": "string",
+      "description": "유효한 지망 부서 id. 'any' 또는 생략하면 접수처(온보딩)로 배정되며, 목록 밖 id 는 오류로 거부된다.",
+      "enum": ["any", "reception", "editing", "reading", "verification", "security", "standards", "hr", "operations"]
+    },
+    "awsLevel": {
+      "type": "string",
+      "description": "현재 직급(에이전트 작업 표준 레벨). 생략하면 지원자로 접수되고 첫 승진(AW-L1 영수증)으로 신입이 된다.",
+      "enum": ["AW-L1", "AW-L2", "AW-L3", "AW-L4", "AW-L5"]
+    }
+  },
+  "required": ["agent"],
+  "additionalProperties": true
+}

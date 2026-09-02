@@ -1,0 +1,27 @@
+{
+  "id": "OP19",
+  "tier": 2,
+  "title": "hml 폴더 스윕 문서 수",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "samples/hml 폴더에서 발견되는 문서 수를 answer.json 에 {\"files\": N} 으로 제출하라. 채점기가 scan --json 의 files 길이를 다시 잰다. 입력 파일 자체는 자리만 채운다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "스윕 문서 수",
+      "op": "len_answer_eq",
+      "answer": "files",
+      "cmd": [
+        "scan",
+        "samples/hml",
+        "--json"
+      ],
+      "path": "files"
+    }
+  ]
+}

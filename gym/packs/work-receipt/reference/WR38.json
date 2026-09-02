@@ -1,0 +1,15 @@
+{
+  "id": "WR38",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"규제\", \"replace\": \"규제회계\"}]}",
+        "--capsule",
+        "{sub:receipts/day.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

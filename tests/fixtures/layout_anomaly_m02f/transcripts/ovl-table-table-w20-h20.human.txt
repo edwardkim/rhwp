@@ -1,0 +1,6 @@
+# transcript ovl-table-table-w20-h20
+# family=overlap
+# hypothesis=두 표의 교차가 20x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 1  text-overlap: 0  empty_page(가능성): 0
+  [OVERLAP]  page   0  20.00x20.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)
+status: ANOMALY

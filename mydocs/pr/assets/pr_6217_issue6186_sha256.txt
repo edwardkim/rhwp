@@ -1,0 +1,2 @@
+0e3aa492a796af9e1b97886de67803b6d9d944625d7c51737305cfc95b727e5d  /home/tsjang/rhwp/pdf/pr_6217_issue6186_footer_vertalign_bottom-2020.pdf
+ebf8ce6dbf0fd367f4224405cfc304324d01fd340ec4e6a617331f7f9fca287e  samples/issue6186/156755659_footer_vertalign_bottom.hwpx

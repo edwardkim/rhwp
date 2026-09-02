@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/phone-hyphen.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "0210002114",
+        "replace": "02-2100-2114"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/phone-hyphen.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"0210002114\",\"replace\":\"02-2100-2114\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "0f855307e54a9849dac490a02051fc267d342696955372fcaa4880cc2f199aa7",
+    "planSha256": "11323bcdca02dbbaee8a42d92ff5bb75607a83ba5ad1b281833ab9741a5c3808",
+    "outputSha256": "eaaac7a0721909670c07f7e08ab8febf2b0c5ea015fa6383a0fcf4c7d3418699",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

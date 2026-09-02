@@ -23,6 +23,7 @@ import type {
   LayerEquationLayoutBox,
   LayerEquationOp,
   LayerFormObjectOp,
+  LayerGradientFill,
   LayerAffineTransform,
   LayerGlyphOutlineOp,
   LayerGlyphRunOp,
@@ -31,6 +32,7 @@ import type {
   LayerInfo,
   LayerLeafNode,
   LayerLineOp,
+  LayerLineStyle,
   LayerNode,
   LayerPageBackgroundOp,
   LayerPaintOp,
@@ -70,8 +72,10 @@ import {
 } from './canvaskit/image-header';
 import { canvaskitClipRightPad } from './canvaskit/policy';
 import {
+  canvasKitCanvasSupportsGlyphRunReplay,
   CanvasKitGlyphRunFontCache,
   drawCanvasKitGlyphRun,
+  type FontBytesResolver,
 } from './canvaskit/glyph-run-fonts';
 import {
   selectLayerTextVariantsForLeaf,
@@ -90,7 +94,9 @@ import {
 } from './glyph-outline-payload-status';
 import { parseStaticSvgPathLayers, type StaticSvgPathLayer } from './static-svg-path-layers';
 import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, type LocalFontRecord } from '@/core/local-fonts';
+import { projectedSubstituteTargets } from '@/core/font-rule-runtime';
 import type { CanvasKitBundledFontSource } from '@/core/font-loader';
+import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { readBoundedResponseArrayBuffer } from './canvaskit/bounded-response';
 
 type CanvasKitApi = CanvasKit;
@@ -253,6 +259,17 @@ export interface CanvasKitFontSubstitutionDiagnostic {
   resolvedFamily: string;
   source: 'unregisteredDefault' | 'missingGlyphDefault' | 'missingGlyphSymbol' | 'oldHangul';
   kind: 'unregisteredFallback' | 'glyphCoverageFallback';
+}
+
+export interface CanvasKitFontDecisionEvidence {
+  status: 'complete' | 'notObserved' | 'unsupported' | 'failed';
+  certainty: 'observed' | 'resolved' | 'planned' | 'notObserved';
+  requested: string;
+  candidates: string[];
+  resolved: string | null;
+  source: 'local' | 'bundled' | 'default' | 'symbol' | 'glyphResource' | null;
+  capabilities: string[];
+  failures: string[];
 }
 
 export type CanvasKitImageFailureReason =
@@ -536,7 +553,12 @@ export class CanvasKitLayerRenderer {
     if (this.disposed || !fontNames?.length) return 0;
     const generation = this.documentGeneration;
     const pendingRecords = new Map<string, LocalFontRecord>();
-    for (const fontName of fontNames) {
+    // legacy 이름(`한양중고딕`)은 설치 face 이름이 아니므로 치환 대상(`HY중고딕`)까지 함께 본다.
+    const candidateNames = [
+      ...fontNames,
+      ...fontNames.flatMap(name => projectedSubstituteTargets(name).map(target => target.face)),
+    ];
+    for (const fontName of candidateNames) {
       const record = resolveLocalFont(fontName);
       const faceKey = record ? localFontFaceKey(record) : '';
       if (!record || !faceKey || this.localTypefaces.has(faceKey)
@@ -595,6 +617,8 @@ export class CanvasKitLayerRenderer {
     targetCanvas: HTMLCanvasElement,
     scale: number,
     pageInfo?: PageInfo,
+    resolveFontBytes?: FontBytesResolver,
+    documentGeneration = 0,
   ): HTMLCanvasElement {
     if (this.disposed) {
       throw new Error('CanvasKit renderer가 이미 dispose되었습니다');
@@ -615,14 +639,16 @@ export class CanvasKitLayerRenderer {
       const canvas = surface.getCanvas();
       this.currentResources = tree.resources;
       this.currentFontResources = tree.fontResources;
-      this.glyphRunFonts.registerResources(tree.fontResources, tree.resources);
+      this.glyphRunFonts.registerResources(
+        tree.fontResources,
+        tree.resources,
+        resolveFontBytes,
+        documentGeneration,
+      );
       this.currentShowParagraphMarks = tree.outputOptions?.showParagraphMarks === true;
       this.currentShowControlCodes = tree.outputOptions?.showControlCodes === true;
-      if (this.currentShowControlCodes) {
-        this.unsupportedOps.add('viewOption:showControlCodes');
-      }
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
-      this.selectTextVariants(tree.root);
+      this.selectTextVariants(tree.root, canvas);
       let hasPageBackground = false;
       const stack: LayerNode[] = [tree.root];
       while (stack.length > 0 && !hasPageBackground) {
@@ -785,6 +811,118 @@ export class CanvasKitLayerRenderer {
     };
   }
 
+  /** 준비된 CanvasKit 객체만 읽어 실제 text replay 후보의 glyph 보유 여부를 판정한다. */
+  fontDecisionEvidence(
+    record: FontDecisionTraceRecordV1,
+    pageUsesGlyphResources = false,
+  ): CanvasKitFontDecisionEvidence {
+    const requested = record.paint.canvaskit.requested
+      ?? record.layoutName.normalizedFace
+      ?? record.document.face
+      ?? '';
+    const character = record.source.character;
+    const requestedFamily = primaryFontFamily(requested);
+    const normalized = normalizedFontFamily(requestedFamily);
+    const localRecord = resolveLocalFont(requestedFamily);
+    const localKey = localRecord ? localFontFaceKey(localRecord) : '';
+    const local = localKey ? this.localTypefaces.get(localKey) ?? null : null;
+    const bundled = this.bundledTypefaceAliases.get(normalized) ?? null;
+    const primary = local ?? bundled ?? (
+      normalized === normalizedFontFamily(this.defaultFontFamily) || normalized === 'noto sans kr'
+        ? (this.defaultTypeface || this.defaultFontManager ? {
+            typeface: this.defaultTypeface,
+            fontManager: this.defaultFontManager,
+            fontFamily: this.defaultFontFamily,
+          } : null)
+        : null
+    );
+    const primarySource: CanvasKitFontDecisionEvidence['source'] = local
+      ? 'local'
+      : bundled
+        ? 'bundled'
+        : primary
+          ? 'default'
+          : null;
+    const candidates = [
+      requestedFamily,
+      primary?.fontFamily ?? '',
+      this.defaultFontFamily ?? 'CanvasKit default',
+      'CanvasKit symbol fallback',
+    ].filter((family, index, all) => family && all.indexOf(family) === index);
+    const failures: string[] = [];
+    const sourceRecordProvided = Number.isSafeInteger(record.source.sectionIndex)
+      && Number.isSafeInteger(record.source.paragraphIndex)
+      && Number.isSafeInteger(record.source.charOffset);
+    if (!sourceRecordProvided || pageUsesGlyphResources) {
+      const capabilities = sourceRecordProvided ? ['sourceRecordProvided'] : [];
+      const joinFailures = ['backendJoinMissing'];
+      if (pageUsesGlyphResources) {
+        capabilities.push('canvaskitGlyphResourceSnapshotAvailable');
+        joinFailures.push('canvaskitGlyphResourceSourceUnresolved');
+      }
+      return {
+        status: 'notObserved', certainty: 'notObserved', requested: requestedFamily,
+        candidates: requestedFamily ? [requestedFamily] : [], resolved: null, source: null,
+        capabilities,
+        failures: joinFailures,
+      };
+    }
+    const sourceCapabilities = ['sourceRecordProvided'];
+    if (localKey && this.localTypefacePending.has(localKey)) failures.push('canvaskitLocalSfntPending');
+    if (localKey && this.localTypefaceLoadFailures.has(localKey)) failures.push('canvaskitLocalSfntUnavailable');
+
+    const codePointCount = Array.from(character).length;
+    const observe = (typeface: Typeface | null, family: string, source: NonNullable<CanvasKitFontDecisionEvidence['source']>) => {
+      if (!typeface || codePointCount !== 1) return null;
+      const font = new this.canvasKit.Font(typeface, 16);
+      try {
+        return (font.getGlyphIDs(character, 1)[0] ?? 0) !== 0
+          ? { family, source }
+          : null;
+      } finally {
+        font.delete();
+      }
+    };
+    const selected = observe(primary?.typeface ?? null, primary?.fontFamily ?? requestedFamily, primarySource ?? 'default')
+      ?? (primary?.typeface !== this.defaultTypeface
+        ? observe(this.defaultTypeface, this.defaultFontFamily ?? 'CanvasKit default', 'default')
+        : null)
+      ?? (primary?.typeface !== this.symbolFallbackTypeface && this.defaultTypeface !== this.symbolFallbackTypeface
+        ? observe(this.symbolFallbackTypeface, 'CanvasKit symbol fallback', 'symbol')
+        : null);
+    if (selected) {
+      return {
+        status: 'complete', certainty: 'resolved', requested: requestedFamily, candidates,
+        resolved: selected.family, source: selected.source,
+        capabilities: [
+          ...sourceCapabilities,
+          'canvaskitSfntPrepared',
+          'canvaskitGlyphCoverageObserved',
+        ],
+        failures,
+      };
+    }
+    if (primary?.fontManager && !primary.typeface) {
+      failures.push('canvaskitGlyphCoverageUnobservable');
+      return {
+        status: 'notObserved', certainty: 'planned', requested: requestedFamily, candidates,
+        resolved: primary.fontFamily, source: primarySource,
+        capabilities: [
+          ...sourceCapabilities,
+          'canvaskitSfntPrepared',
+          'canvaskitShapingManagerPrepared',
+        ],
+        failures,
+      };
+    }
+    failures.push(primary ? 'canvaskitGlyphMissingAllCandidates' : 'canvaskitSfntAbsent');
+    return {
+      status: 'complete', certainty: 'observed', requested: requestedFamily, candidates,
+      resolved: null, source: null,
+      capabilities: [...sourceCapabilities, 'canvaskitSnapshotObserved'], failures,
+    };
+  }
+
   private resetReplayFeatureCounts(): void {
     this.currentReplayFeatureCounts = {
       dashedStrokes: 0,
@@ -888,28 +1026,29 @@ export class CanvasKitLayerRenderer {
     throw new Error('CanvasKit surface를 만들 수 없습니다');
   }
 
-  private selectTextVariants(node: LayerNode): void {
+  private selectTextVariants(node: LayerNode, canvas: SkCanvas): void {
     if (node.kind === 'group') {
-      for (const child of node.children) this.selectTextVariants(child);
+      for (const child of node.children) this.selectTextVariants(child, canvas);
       return;
     }
     if (node.kind === 'clipRect') {
-      this.selectTextVariants(node.child);
+      this.selectTextVariants(node.child, canvas);
       return;
     }
 
     const selected = selectLayerTextVariantsForLeaf(
       node.ops,
       op => this.glyphOutlineVariantReplayable(op),
-      op => this.glyphRunVariantReplayable(op),
+      op => this.glyphRunVariantReplayable(op, canvas),
     );
     for (const op of selected) {
       this.selectedTextVariantOps.add(op);
     }
   }
 
-  private glyphRunVariantReplayable(op: LayerGlyphRunOp): boolean {
-    return this.glyphRunFonts.replayStatus(op, this.currentFontResources).replayable;
+  private glyphRunVariantReplayable(op: LayerGlyphRunOp, canvas: SkCanvas): boolean {
+    return canvasKitCanvasSupportsGlyphRunReplay(canvas)
+      && this.glyphRunFonts.replayStatus(op, this.currentFontResources).replayable;
   }
 
   private glyphOutlineVariantReplayable(op: LayerGlyphOutlineOp): boolean {
@@ -1190,6 +1329,17 @@ export class CanvasKitLayerRenderer {
       canvas.drawRect(this.rect(op.bbox), paint);
       paint.delete?.();
     }
+    const gradientShader = this.makeShapeGradientShader(op.gradient, op.bbox);
+    if (gradientShader) {
+      const paint = this.makeFillPaint('#000000');
+      try {
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(gradientShader);
+        canvas.drawRect(this.rect(op.bbox), paint);
+      } finally {
+        (gradientShader as { delete?: () => void }).delete?.();
+        paint.delete?.();
+      }
+    }
     if (op.borderColor && (op.borderWidth ?? 0) > 0) {
       const paint = this.makeStrokePaint(op.borderColor, op.borderWidth ?? 1);
       canvas.drawRect(this.rect(op.bbox), paint);
@@ -1205,24 +1355,47 @@ export class CanvasKitLayerRenderer {
       } else {
         canvas.drawRect(this.rect(op.bbox), paint);
       }
-    });
+    }, op.gradient);
   }
 
   private renderEllipse(canvas: SkCanvas, op: LayerEllipseOp): void {
     this.drawStyledShape(canvas, op.bbox, op.style, (paint) => {
       canvas.drawOval(this.rect(op.bbox), paint);
-    });
+    }, op.gradient);
   }
 
   private renderLine(canvas: SkCanvas, op: LayerLineOp): void {
-    const paint = this.makeStrokePaint(op.style?.color ?? '#000000', op.style?.width ?? 1);
-    try {
-      this.drawStrokeWithDash(op.style?.dash, paint, () => {
-        canvas.drawLine(op.x1, op.y1, op.x2, op.y2, paint);
-      });
-    } finally {
-      paint.delete?.();
+    const style = op.style ?? {};
+    const color = style.color ?? '#000000';
+    const width = style.width ?? 1;
+    const x1 = op.x1;
+    const y1 = op.y1;
+    const x2 = op.x2;
+    const y2 = op.y2;
+    if (![x1, y1, x2, y2, width].every(Number.isFinite)) {
+      this.unsupportedOps.add('line:invalidGeometry');
+      return;
     }
+    const shadow = this.resolvedShadow(style.shadow);
+    if (shadow) {
+      canvas.save();
+      try {
+        canvas.translate(shadow.offsetX, shadow.offsetY);
+        this.drawCompoundLine(
+          canvas,
+          x1,
+          y1,
+          x2,
+          y2,
+          { ...style, color: shadow.color, width },
+          shadow.opacity,
+        );
+      } finally {
+        canvas.restore();
+      }
+    }
+    this.drawCompoundLine(canvas, x1, y1, x2, y2, style, 1);
+    this.drawLineArrows(canvas, x1, y1, x2, y2, style, color, width);
   }
 
   private renderPath(canvas: SkCanvas, op: LayerPathOp): void {
@@ -1242,6 +1415,7 @@ export class CanvasKitLayerRenderer {
       strokeColor: style.strokeColor ?? op.lineStyle?.color,
       strokeWidth: op.lineStyle?.width ?? style.strokeWidth,
       strokeDash: op.lineStyle?.dash ?? style.strokeDash,
+      shadow: style.shadow ?? op.lineStyle?.shadow,
     };
 
     // [Task #1067] HWPX/HWP 도형의 회전 + flip 변환 적용.
@@ -1266,7 +1440,33 @@ export class CanvasKitLayerRenderer {
         canvas.rotate(rotation, cx, cy);
       }
     }
-    this.drawStyledPath(canvas, path, replayStyle);
+    this.drawStyledPath(canvas, path, replayStyle, op.bbox, op.gradient);
+    if (op.lineStyle && (op.lineStyle.startArrow || op.lineStyle.endArrow)) {
+      const points: Array<[number, number]> = [];
+      for (const command of op.commands ?? []) {
+        if (command.type === 'moveTo' || command.type === 'lineTo') {
+          points.push([command.x, command.y]);
+        } else if (command.type === 'curveTo') {
+          points.push([command.x3, command.y3]);
+        } else if (command.type === 'arcTo') {
+          points.push([command.x, command.y]);
+        }
+      }
+      if (points.length >= 2) {
+        const [sx, sy] = points[0];
+        const [ex, ey] = points[points.length - 1];
+        this.drawLineArrows(
+          canvas,
+          sx,
+          sy,
+          ex,
+          ey,
+          op.lineStyle,
+          op.lineStyle.color ?? replayStyle.strokeColor ?? '#000000',
+          op.lineStyle.width ?? replayStyle.strokeWidth ?? 1,
+        );
+      }
+    }
     if (needsTransform) {
       canvas.restore();
     }
@@ -1831,12 +2031,8 @@ export class CanvasKitLayerRenderer {
         || (codePoint >= 0xa960 && codePoint <= 0xa97f)
         || (codePoint >= 0xd7b0 && codePoint <= 0xd7ff);
     });
-    const hasBoxedPua = codePoints.some((character) => {
-      const codePoint = character.codePointAt(0) ?? 0;
-      return codePoint >= 0xf02b1 && codePoint <= 0xf02c4;
-    });
     const requiresUnsupportedShaping = textRequiresComplexShaping(replayText)
-      || (textRunHasPaintEffects(style) && (hasOldHangul || hasBoxedPua));
+      || (textRunHasPaintEffects(style) && hasOldHangul);
     if (requiresUnsupportedShaping) {
       this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
     }
@@ -2578,10 +2774,6 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderTabLeader(canvas: SkCanvas, op: LayerTabLeaderOp): void {
-    if (op.isVertical) {
-      this.unsupportedOps.add('textRun:verticalText');
-      return;
-    }
     if (!Array.isArray(op.leaders)) {
       this.unsupportedOps.add('tabLeader:invalidGeometry');
       return;
@@ -2596,8 +2788,7 @@ export class CanvasKitLayerRenderer {
       || op.leaders.some(leader => ![leader.startX, leader.endX].every(Number.isFinite)
         || leader.endX < leader.startX
         || !Number.isInteger(leader.fillType)
-        || leader.fillType < 0
-        || leader.fillType > 11)) {
+        || leader.fillType < 0)) {
       this.unsupportedOps.add('tabLeader:invalidGeometry');
       return;
     }
@@ -2647,6 +2838,8 @@ export class CanvasKitLayerRenderer {
             this.drawTextVisualStroke(canvas, x1, y, x2, y, op.color, 0.8);
             this.drawTextVisualStroke(canvas, x1, y + 2, x2, y + 2, op.color, 0.3);
             break;
+          default:
+            break;
         }
       }
     };
@@ -2662,10 +2855,6 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('textDecoration:invalidGeometry');
       return;
     }
-    if (decoration.isVertical) {
-      this.unsupportedOps.add('textRun:verticalText');
-      return;
-    }
     if (decoration.positionsComplete !== true
       || decoration.positions.length > CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS + 1) {
       this.unsupportedOps.add('textDecoration:visualItemLimitExceeded');
@@ -2678,10 +2867,8 @@ export class CanvasKitLayerRenderer {
       || decoration.positions.some(position => !Number.isFinite(position))
       || !Number.isInteger(decoration.shape)
       || decoration.shape < 0
-      || decoration.shape > 12
       || !Number.isInteger(decoration.emphasisDot)
       || decoration.emphasisDot < 0
-      || decoration.emphasisDot > 6
       || !['none', 'bottom', 'top'].includes(decoration.underline)) {
       this.unsupportedOps.add('textDecoration:invalidGeometry');
       return;
@@ -2780,7 +2967,7 @@ export class CanvasKitLayerRenderer {
             canvas.drawLine(x + dotSize * 0.15, centerY + dotSize * 0.22, x + dotSize * 0.5, centerY, strokePaint);
           } else if (decoration.emphasisDot === 5) {
             canvas.drawCircle(x, centerY, Math.max(dotSize * 0.22, 0.75), fillPaint);
-          } else {
+          } else if (decoration.emphasisDot === 6) {
             const radius = Math.max(dotSize * 0.18, 0.7);
             canvas.drawCircle(x, centerY - radius * 1.5, radius, fillPaint);
             canvas.drawCircle(x, centerY + radius * 1.5, radius, fillPaint);
@@ -2815,7 +3002,17 @@ export class CanvasKitLayerRenderer {
       return;
     }
     if (rotation !== 0) {
-      this.unsupportedOps.add(`${opType}:rotatedText`);
+      if (opType !== 'charOverlap') {
+        this.unsupportedOps.add(`${opType}:rotatedText`);
+        return;
+      }
+      canvas.save();
+      try {
+        canvas.rotate(rotation, bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
+        draw(bbox.x, bbox.y);
+      } finally {
+        canvas.restore();
+      }
       return;
     }
     draw(bbox.x, bbox.y);
@@ -3481,8 +3678,38 @@ export class CanvasKitLayerRenderer {
     bounds: LayerBounds,
     style: LayerShapeStyle | undefined,
     draw: (paint: SkPaint) => void,
+    gradient?: LayerGradientFill,
   ): void {
-    if (style?.fillColor) {
+    const shadow = this.resolvedShadow(style?.shadow);
+    if (shadow) {
+      canvas.save();
+      canvas.translate(shadow.offsetX, shadow.offsetY);
+      const shadowPaint = this.makeFillPaint(shadow.color, shadow.opacity);
+      draw(shadowPaint);
+      shadowPaint.delete?.();
+      if (style?.strokeColor && (style.strokeWidth ?? 0) > 0) {
+        const shadowStroke = this.makeStrokePaint(shadow.color, style.strokeWidth ?? 1, shadow.opacity);
+        try {
+          this.drawStrokeWithDash(style.strokeDash, shadowStroke, () => draw(shadowStroke));
+        } finally {
+          shadowStroke.delete?.();
+        }
+      }
+      canvas.restore();
+    }
+    const fillShader = this.makeShapeGradientShader(gradient, bounds);
+    if (fillShader) {
+      const paint = this.makeFillPaint(style?.fillColor ?? '#000000', style?.opacity);
+      try {
+        (paint as unknown as { setShader: (shader: unknown) => void }).setShader(fillShader);
+        draw(paint);
+      } finally {
+        (fillShader as { delete?: () => void }).delete?.();
+        paint.delete?.();
+      }
+    } else if (style?.pattern) {
+      this.drawPatternFill(canvas, bounds, style.pattern, style.opacity ?? 1, draw);
+    } else if (style?.fillColor) {
       const paint = this.makeFillPaint(style.fillColor, style.opacity);
       draw(paint);
       paint.delete?.();
@@ -3495,34 +3722,303 @@ export class CanvasKitLayerRenderer {
         paint.delete?.();
       }
     }
-    if (!style?.fillColor && !style?.strokeColor) {
+    if (!fillShader && !style?.fillColor && !style?.strokeColor && !style?.pattern) {
       const paint = this.makeStrokePaint('#000000', 1);
       draw(paint);
       paint.delete?.();
     }
   }
 
-  private drawStyledPath(canvas: SkCanvas, path: Path, style: LayerShapeStyle): void {
-    let drawn = false;
-    if (style.fillColor) {
-      const paint = this.makeFillPaint(style.fillColor, style.opacity);
-      canvas.drawPath(path, paint);
-      paint.delete?.();
-      drawn = true;
+  private drawStyledPath(
+    canvas: SkCanvas,
+    path: Path,
+    style: LayerShapeStyle,
+    bounds?: LayerBounds,
+    gradient?: LayerGradientFill,
+  ): void {
+    let resolvedBounds = bounds ?? { x: 0, y: 0, width: 0, height: 0 };
+    if (!bounds) {
+      const raw = (path as Path & { getBounds?: () => Float32Array | number[] }).getBounds?.();
+      if (raw && raw.length >= 4) {
+        resolvedBounds = {
+          x: raw[0],
+          y: raw[1],
+          width: Math.max(0, raw[2] - raw[0]),
+          height: Math.max(0, raw[3] - raw[1]),
+        };
+      }
     }
-    if (style.strokeColor && (style.strokeWidth ?? 0) > 0) {
-      const paint = this.makeStrokePaint(style.strokeColor, style.strokeWidth ?? 1, style.opacity);
+    this.drawStyledShape(canvas, resolvedBounds, style, (paint) => {
+      canvas.drawPath(path, paint);
+    }, gradient);
+  }
+
+  private makeShapeGradientShader(
+    gradient: LayerGradientFill | undefined,
+    bounds: LayerBounds,
+  ): unknown | null {
+    const colors = gradient?.colors;
+    if (!gradient || !Array.isArray(colors) || colors.length < 2) {
+      return null;
+    }
+    const lastIndex = Math.max(1, colors.length - 1);
+    const shaderColors = colors.map((css) => {
+      const { r, g, b, a } = parseCssColor(css);
+      return [r / 255, g / 255, b / 255, a];
+    });
+    const positions = colors.map((_, index) => {
+      const raw = index < (gradient.positions?.length ?? 0)
+        ? gradient.positions?.[index]
+        : index / lastIndex;
+      return Math.max(0, Math.min(1, Number.isFinite(raw) ? (raw as number) : index / lastIndex));
+    });
+    const shaderApi = this.canvasKit.Shader as unknown as {
+      MakeLinearGradient?: (...args: unknown[]) => unknown;
+      MakeRadialGradient?: (...args: unknown[]) => unknown;
+    };
+    const gradientType = gradient.gradientType ?? 1;
+    if (gradientType >= 2 && gradientType <= 4) {
+      const cx = bounds.x + bounds.width * ((gradient.centerX ?? 50) / 100);
+      const cy = bounds.y + bounds.height * ((gradient.centerY ?? 50) / 100);
+      const radius = Math.max(bounds.width, bounds.height) / 2;
+      return shaderApi.MakeRadialGradient?.(
+        [cx, cy],
+        radius,
+        shaderColors,
+        positions,
+        this.canvasKit.TileMode.Clamp,
+      ) ?? null;
+    }
+    const [x0, y0, x1, y1] = shapeGradientLinearCoords(gradient.angle ?? 0, bounds);
+    return shaderApi.MakeLinearGradient?.(
+      [x0, y0],
+      [x1, y1],
+      shaderColors,
+      positions,
+      this.canvasKit.TileMode.Clamp,
+    ) ?? null;
+  }
+
+  private resolvedShadow(shadow: LayerShapeStyle['shadow']): { color: string; offsetX: number; offsetY: number; opacity: number } | null {
+    if (!shadow) return null;
+    const offsetX = shadow.offsetX ?? 0;
+    const offsetY = shadow.offsetY ?? 0;
+    if (![offsetX, offsetY].every(Number.isFinite)) return null;
+    const alpha = Number.isFinite(shadow.alpha) ? Number(shadow.alpha) : 0;
+    return {
+      color: shadow.color ?? '#000000',
+      offsetX,
+      offsetY,
+      opacity: Math.max(0, Math.min(1, 1 - alpha / 255)),
+    };
+  }
+
+  private drawPatternFill(
+    canvas: SkCanvas,
+    bounds: LayerBounds,
+    pattern: NonNullable<LayerShapeStyle['pattern']>,
+    opacity: number,
+    draw: (paint: SkPaint) => void,
+  ): void {
+    const background = this.makeFillPaint(pattern.backgroundColor ?? '#ffffff', opacity);
+    draw(background);
+    background.delete?.();
+    const patternType = Number.isInteger(pattern.patternType) ? Number(pattern.patternType) : 0;
+    const fg = this.makeStrokePaint(pattern.patternColor ?? '#000000', 1, opacity);
+    const tile = 6;
+    const x0 = bounds.x;
+    const y0 = bounds.y;
+    const x1 = bounds.x + (bounds.width ?? 0);
+    const y1 = bounds.y + (bounds.height ?? 0);
+    const kind = patternType === 0 ? 1 : patternType;
+    try {
+      if (kind === 1 || kind === 5) {
+        for (let y = y0 + tile / 2; y <= y1; y += tile) {
+          canvas.drawLine(x0, y, x1, y, fg);
+        }
+      }
+      if (kind === 2 || kind === 5) {
+        for (let x = x0 + tile / 2; x <= x1; x += tile) {
+          canvas.drawLine(x, y0, x, y1, fg);
+        }
+      }
+      if (kind === 3 || kind === 6) {
+        for (let offset = - (y1 - y0); offset <= (x1 - x0); offset += tile) {
+          canvas.drawLine(x0 + offset, y0, x0 + offset + (y1 - y0), y1, fg);
+        }
+      }
+      if (kind === 4 || kind === 6) {
+        for (let offset = 0; offset <= (x1 - x0) + (y1 - y0); offset += tile) {
+          canvas.drawLine(x0 + offset, y0, x0 + offset - (y1 - y0), y1, fg);
+        }
+      }
+    } finally {
+      fg.delete?.();
+    }
+    if (kind < 1 || kind > 6) {
+      return;
+    }
+  }
+
+  private compoundLineSegments(lineType: string | undefined): Array<[number, number]> {
+    switch (lineType) {
+      case 'double':
+        return [[0.30, -0.35], [0.30, 0.35]];
+      case 'thickThinDouble':
+        return [[0.4, -0.30], [0.2, 0.40]];
+      case 'thinThickDouble':
+        return [[0.2, -0.40], [0.4, 0.30]];
+      case 'thinThickThinTriple':
+        return [[0.15, -0.425], [0.30, 0.0], [0.15, 0.425]];
+      default:
+        return [[1, 0]];
+    }
+  }
+
+  private drawCompoundLine(
+    canvas: SkCanvas,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    style: LayerLineStyle,
+    opacity: number,
+  ): void {
+    const width = style.width ?? 1;
+    const color = style.color ?? '#000000';
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lineLen = Math.hypot(dx, dy);
+    const nx = lineLen > 0 ? -dy / lineLen : 0;
+    const ny = lineLen > 0 ? dx / lineLen : 1;
+    for (const [widthRatio, offsetRatio] of this.compoundLineSegments(style.lineType)) {
+      const paint = this.makeStrokePaint(color, Math.max(0.3, width * widthRatio), opacity);
+      const ox = nx * width * offsetRatio;
+      const oy = ny * width * offsetRatio;
       try {
-        this.drawStrokeWithDash(style.strokeDash, paint, () => canvas.drawPath(path, paint));
+        this.drawStrokeWithDash(style.dash, paint, () => {
+          canvas.drawLine(x1 + ox, y1 + oy, x2 + ox, y2 + oy, paint);
+        });
       } finally {
         paint.delete?.();
       }
-      drawn = true;
     }
-    if (!drawn) {
-      const paint = this.makeStrokePaint('#000000', 1);
-      canvas.drawPath(path, paint);
-      paint.delete?.();
+  }
+
+  private calcArrowDims(strokeWidth: number, lineLen: number, arrowSize: number): [number, number] {
+    const size = Number.isFinite(arrowSize) ? Math.max(0, Math.min(8, Math.trunc(arrowSize))) : 4;
+    const widthLevel = Math.floor(size / 3);
+    const lengthLevel = size % 3;
+    const widthMult = widthLevel === 0 ? 1.5 : widthLevel === 1 ? 2.5 : 3.5;
+    const lengthMult = lengthLevel === 0 ? 1.0 : lengthLevel === 1 ? 1.5 : 2.0;
+    const arrowH = Math.max(3, strokeWidth * widthMult);
+    const arrowW = Math.min(arrowH * lengthMult, Math.max(lineLen * 0.3, 1));
+    return [arrowW, arrowH];
+  }
+
+  private drawLineArrows(
+    canvas: SkCanvas,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    style: LayerLineStyle,
+    color: string,
+    width: number,
+  ): void {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lineLen = Math.hypot(dx, dy);
+    if (lineLen < 0.001) return;
+    if (style.startArrow && style.startArrow !== 'none') {
+      const [aw, ah] = this.calcArrowDims(width, lineLen, style.startArrowSize ?? 4);
+      this.drawArrowHead(canvas, x1, y1, -dx / lineLen, -dy / lineLen, aw, ah, style.startArrow, color, width);
+    }
+    if (style.endArrow && style.endArrow !== 'none') {
+      const [aw, ah] = this.calcArrowDims(width, lineLen, style.endArrowSize ?? 4);
+      this.drawArrowHead(canvas, x2, y2, dx / lineLen, dy / lineLen, aw, ah, style.endArrow, color, width);
+    }
+  }
+
+  private drawArrowHead(
+    canvas: SkCanvas,
+    tipX: number,
+    tipY: number,
+    dirX: number,
+    dirY: number,
+    arrowW: number,
+    arrowH: number,
+    arrowStyle: string,
+    color: string,
+    strokeWidth: number,
+  ): void {
+    const alongX = -dirX;
+    const alongY = -dirY;
+    const perpX = dirY;
+    const perpY = -dirX;
+    const halfH = arrowH / 2;
+    const toWorld = (along: number, perp: number): [number, number] => [
+      tipX + along * alongX + perp * perpX,
+      tipY + along * alongY + perp * perpY,
+    ];
+    const path = new this.canvasKit.Path() as MutablePath;
+    const fill = this.makeFillPaint(color);
+    const stroke = this.makeStrokePaint(color, Math.max(0.5, strokeWidth * 0.3));
+    const openFill = this.makeFillPaint('#ffffff');
+    try {
+      if (arrowStyle === 'arrow') {
+        const [bx1, by1] = toWorld(arrowW, -halfH);
+        const [bx2, by2] = toWorld(arrowW, halfH);
+        path.moveTo(tipX, tipY);
+        path.lineTo(bx1, by1);
+        path.lineTo(bx2, by2);
+        path.close();
+        canvas.drawPath(path, fill);
+      } else if (arrowStyle === 'concaveArrow') {
+        const [bx1, by1] = toWorld(arrowW, -halfH);
+        const [bx2, by2] = toWorld(arrowW, halfH);
+        const [cx, cy] = toWorld(arrowW - arrowW * 0.3, 0);
+        path.moveTo(tipX, tipY);
+        path.lineTo(bx1, by1);
+        path.lineTo(cx, cy);
+        path.lineTo(bx2, by2);
+        path.close();
+        canvas.drawPath(path, fill);
+      } else if (arrowStyle === 'diamond' || arrowStyle === 'openDiamond') {
+        const [px1, py1] = toWorld(0, 0);
+        const [px2, py2] = toWorld(arrowW / 2, -halfH);
+        const [px3, py3] = toWorld(arrowW, 0);
+        const [px4, py4] = toWorld(arrowW / 2, halfH);
+        path.moveTo(px1, py1);
+        path.lineTo(px2, py2);
+        path.lineTo(px3, py3);
+        path.lineTo(px4, py4);
+        path.close();
+        canvas.drawPath(path, arrowStyle === 'diamond' ? fill : openFill);
+        if (arrowStyle === 'openDiamond') canvas.drawPath(path, stroke);
+      } else if (arrowStyle === 'circle' || arrowStyle === 'openCircle') {
+        const [cx, cy] = toWorld(arrowW / 2, 0);
+        const oval = this.canvasKit.XYWHRect(cx - arrowW * 0.4, cy - halfH * 0.8, arrowW * 0.8, arrowH * 0.8);
+        canvas.drawOval(oval, arrowStyle === 'circle' ? fill : openFill);
+        if (arrowStyle === 'openCircle') canvas.drawOval(oval, stroke);
+      } else if (arrowStyle === 'square' || arrowStyle === 'openSquare') {
+        const [px1, py1] = toWorld(0, -halfH);
+        const [px2, py2] = toWorld(arrowW, -halfH);
+        const [px3, py3] = toWorld(arrowW, halfH);
+        const [px4, py4] = toWorld(0, halfH);
+        path.moveTo(px1, py1);
+        path.lineTo(px2, py2);
+        path.lineTo(px3, py3);
+        path.lineTo(px4, py4);
+        path.close();
+        canvas.drawPath(path, arrowStyle === 'square' ? fill : openFill);
+        if (arrowStyle === 'openSquare') canvas.drawPath(path, stroke);
+      }
+    } finally {
+      openFill.delete?.();
+      stroke.delete?.();
+      fill.delete?.();
+      path.delete?.();
     }
   }
 
@@ -3771,6 +4267,43 @@ function parseCssColor(value: string): { r: number; g: number; b: number; a: num
 
 function clampUnit(value: number | undefined): number {
   return Math.max(0, Math.min(1, Number.isFinite(value) ? value ?? 0 : 0));
+}
+
+function shapeGradientLinearCoords(
+  angle: number,
+  bounds: LayerBounds,
+): [number, number, number, number] {
+  const { x, y, width: w, height: h } = bounds;
+  const normalized = ((angle % 360) + 360) % 360;
+  switch (normalized) {
+    case 0:
+      return [x, y, x, y + h];
+    case 45:
+      return [x, y, x + w, y + h];
+    case 90:
+      return [x, y, x + w, y];
+    case 135:
+      return [x, y + h, x + w, y];
+    case 180:
+      return [x, y + h, x, y];
+    case 225:
+      return [x + w, y + h, x, y];
+    case 270:
+      return [x + w, y, x, y];
+    case 315:
+      return [x + w, y, x, y + h];
+    default: {
+      const rad = (normalized * Math.PI) / 180;
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      return [
+        cx - Math.sin(rad) * w / 2,
+        cy - Math.cos(rad) * h / 2,
+        cx + Math.sin(rad) * w / 2,
+        cy + Math.cos(rad) * h / 2,
+      ];
+    }
+  }
 }
 
 function gradientColors(stops: Array<{ color?: { rgba?: number[] } }> | undefined): number[][] {

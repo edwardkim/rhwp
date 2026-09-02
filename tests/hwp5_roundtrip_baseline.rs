@@ -17,6 +17,8 @@
 //! 외부 한글-only 페이지 붕괴(convert 경로 등)는 `output/poc/fidelity/` 한글 harness 보조.
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::{Duration, Instant};
 
 use rhwp::diagnostics::hwp5_roundtrip_batch::baseline_check;
 use rhwp::parser::{detect_format, parse_document, FileFormat, ParseError};
@@ -26,6 +28,19 @@ const SAMPLES_ROOT: &str = "samples";
 /// 대형 분리 기준(바이트). 이상은 `baseline_large_samples_roundtrip` 로 분리해
 /// 하네스 병렬 실행을 활용한다.
 const LARGE_THRESHOLD: u64 = 3 * 1024 * 1024;
+const SMALL_PARTITIONS: usize = 16;
+const LARGE_PARTITIONS: usize = 4;
+const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
+
+/// 전용 장기 sentinel 이 담당하는 fixture.
+///
+/// `issue2063_huge_cellbreak_table.hwp` 는 5만+ 셀 CellBreak 표로, roundtrip
+/// 무손실보다 페이지네이션 성능/페이지 pin 이 핵심이다. `tests/issue_2063.rs` 가
+/// 그 축을 직접 검증하므로 전수 roundtrip baseline 에서 중복 조판하지 않는다.
+const DEDICATED_SLOW_FIXTURES: &[(&str, &str)] = &[(
+    "issue2063_huge_cellbreak_table.hwp",
+    "issue_2063 sentinel 이 초대형 CellBreak 표 페이지네이션을 전담",
+)];
 
 /// B등급 (xfail) — (상대 경로, 사유). 사유 없는 등록 금지.
 ///
@@ -70,6 +85,31 @@ fn in_list(list: &[(&str, &str)], rel: &str) -> bool {
     list.iter().any(|(name, _)| *name == rel)
 }
 
+fn partition_samples(
+    mut samples: Vec<(PathBuf, String)>,
+    partitions: usize,
+) -> Vec<Vec<(PathBuf, String)>> {
+    samples.sort_by_key(|(path, rel)| {
+        let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+        (std::cmp::Reverse(size), rel.clone())
+    });
+
+    let mut buckets: Vec<(u64, Vec<(PathBuf, String)>)> =
+        (0..partitions).map(|_| (0, Vec::new())).collect();
+    for (path, rel) in samples {
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, rows))| (*total, rows.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push((path, rel));
+    }
+    buckets.into_iter().map(|(_, rows)| rows).collect()
+}
+
 /// 범위 밖(자동 제외) 여부: HWP5 가 아니거나(HWP3 등), 배포용 또는 비밀번호 암호 문서.
 ///
 /// 이 gate는 비밀번호 입력을 제공하지 않으므로 암호 문서는 여기서 직렬화 결함을
@@ -87,26 +127,64 @@ fn out_of_scope(bytes: &[u8]) -> Option<&'static str> {
 }
 
 /// baseline 대상(범위 밖/XFAIL 제외)을 검사하고 실패 목록을 단언한다.
-fn run_baseline(size_filter: impl Fn(u64) -> bool) {
-    let mut failures = Vec::new();
-    let mut eligible = 0usize;
+fn run_baseline(size_filter: impl Fn(u64) -> bool, partition: usize, partitions: usize) {
+    let candidates: Vec<(PathBuf, String)> = collect_samples()
+        .into_iter()
+        .filter(|(path, rel)| {
+            let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+            size_filter(size) && !in_list(XFAIL, rel) && !in_list(DEDICATED_SLOW_FIXTURES, rel)
+        })
+        .collect();
+    let buckets = partition_samples(candidates, partitions);
+    let selected = buckets
+        .into_iter()
+        .nth(partition)
+        .unwrap_or_else(|| panic!("없는 partition: {partition}"));
+    assert!(
+        !selected.is_empty(),
+        "baseline partition {partition}/{partitions} 이 비어 있음"
+    );
 
-    for (path, rel) in collect_samples() {
-        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
-        if !size_filter(size) || in_list(XFAIL, &rel) {
-            continue;
-        }
-        let bytes = std::fs::read(&path).expect("읽기 실패");
-        if out_of_scope(&bytes).is_some() {
-            continue;
-        }
-        eligible += 1;
-        if let Err(reason) = baseline_check(&bytes) {
-            failures.push(format!("  {rel}: {reason}"));
-        }
-    }
+    let workers = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .min(8);
+    let queue = std::sync::Mutex::new(selected.into_iter());
+    let failures = std::sync::Mutex::new(Vec::<String>::new());
+    let eligible = AtomicUsize::new(0);
 
-    assert!(eligible > 0, "baseline 검사 대상이 없음");
+    std::thread::scope(|scope| {
+        for _ in 0..workers {
+            scope.spawn(|| loop {
+                let item = queue.lock().unwrap().next();
+                let Some((path, rel)) = item else { break };
+                let bytes = std::fs::read(&path).expect("읽기 실패");
+                if out_of_scope(&bytes).is_some() {
+                    continue;
+                }
+                eligible.fetch_add(1, Ordering::Relaxed);
+                let started = Instant::now();
+                if let Err(reason) = baseline_check(&bytes) {
+                    failures.lock().unwrap().push(format!("  {rel}: {reason}"));
+                }
+                let elapsed = started.elapsed();
+                if elapsed >= SLOW_SAMPLE_LOG_THRESHOLD {
+                    eprintln!(
+                        "hwp5 baseline slow sample partition {partition}/{partitions}: {:.3}s {rel}",
+                        elapsed.as_secs_f64()
+                    );
+                }
+            });
+        }
+    });
+
+    let eligible = eligible.load(Ordering::Relaxed);
+    let mut failures = failures.into_inner().unwrap();
+    failures.sort();
+    assert!(
+        eligible > 0,
+        "baseline partition {partition}/{partitions} 검사 대상이 없음"
+    );
     assert!(
         failures.is_empty(),
         "baseline 샘플 {}건 중 {}건 실패 — 결함 수정 또는 사유와 함께 XFAIL 등록 필요:\n{}",
@@ -116,17 +194,53 @@ fn run_baseline(size_filter: impl Fn(u64) -> bool) {
     );
 }
 
-/// A등급 전수 게이트 (소형) — 신규 샘플은 자동 포함.
-#[test]
-fn baseline_all_samples_roundtrip() {
-    run_baseline(|sz| sz <= LARGE_THRESHOLD);
+macro_rules! small_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                run_baseline(|sz| sz <= LARGE_THRESHOLD, $part, SMALL_PARTITIONS);
+            }
+        )+
+    };
 }
 
-/// A등급 전수 게이트 (대형) — 하네스 병렬 실행으로 wall time 단축.
-#[test]
-fn baseline_large_samples_roundtrip() {
-    run_baseline(|sz| sz > LARGE_THRESHOLD);
+macro_rules! large_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                run_baseline(|sz| sz > LARGE_THRESHOLD, $part, LARGE_PARTITIONS);
+            }
+        )+
+    };
 }
+
+small_partition_tests!(
+    baseline_all_samples_roundtrip_partition_0 => 0,
+    baseline_all_samples_roundtrip_partition_1 => 1,
+    baseline_all_samples_roundtrip_partition_2 => 2,
+    baseline_all_samples_roundtrip_partition_3 => 3,
+    baseline_all_samples_roundtrip_partition_4 => 4,
+    baseline_all_samples_roundtrip_partition_5 => 5,
+    baseline_all_samples_roundtrip_partition_6 => 6,
+    baseline_all_samples_roundtrip_partition_7 => 7,
+    baseline_all_samples_roundtrip_partition_8 => 8,
+    baseline_all_samples_roundtrip_partition_9 => 9,
+    baseline_all_samples_roundtrip_partition_10 => 10,
+    baseline_all_samples_roundtrip_partition_11 => 11,
+    baseline_all_samples_roundtrip_partition_12 => 12,
+    baseline_all_samples_roundtrip_partition_13 => 13,
+    baseline_all_samples_roundtrip_partition_14 => 14,
+    baseline_all_samples_roundtrip_partition_15 => 15,
+);
+
+large_partition_tests!(
+    baseline_large_samples_roundtrip_partition_0 => 0,
+    baseline_large_samples_roundtrip_partition_1 => 1,
+    baseline_large_samples_roundtrip_partition_2 => 2,
+    baseline_large_samples_roundtrip_partition_3 => 3,
+);
 
 /// B등급(xfail) 샘플은 여전히 실패해야 한다 — 통과하게 되면 baseline 승격 필요.
 #[test]

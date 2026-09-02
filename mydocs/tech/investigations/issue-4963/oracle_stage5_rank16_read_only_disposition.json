@@ -1,0 +1,64 @@
+{
+  "candidate": {
+    "documentFace": "한컴 윤고딕 230",
+    "queueRank": 16
+  },
+  "environment": {
+    "baselineFontManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+    "hancomVersion": "11, 0, 0, 9136",
+    "managedFontResourceCount": 0,
+    "processReset": true,
+    "unrelatedFontProjectionSha256": "437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78"
+  },
+  "evidenceClass": "acceptance-blocking-observation",
+  "featureDetection": {
+    "documentFace": {
+      "exact": false,
+      "readbackFace": "함초롬바탕",
+      "readbackFontType": 5,
+      "requestedFace": "한컴 윤고딕 230"
+    },
+    "precedence": "restored-document-open-and-pdf-export-over-single-selection-probe",
+    "priorSelectionEvidenceSha256": "52d27ea8aac1b8b666213fecea6dc38bc4a1cc0378ba9827f1fe0e2201b06c7f",
+    "priorSingleSelectionExact": true,
+    "sfntEnglishAlias": {
+      "exact": true,
+      "readbackFace": "Haan YGodic 230",
+      "readbackFontType": 1,
+      "requestedFace": "Haan YGodic 230"
+    }
+  },
+  "inputSha256": "af49f4bced881f9f8aa23bc575fa30267b4ada83b5161c5a445d681dbf93e2be",
+  "issue": 4963,
+  "kind": "font-oracle-stage5-read-only-disposition",
+  "output": {
+    "exactSourceSubsetObserved": false,
+    "glyphObservationCount": 1556,
+    "pageCount": 1,
+    "pdfObservationCanonicalSha256": "8e68023c089fcddda06c05b9243ad8dcdba2f58bcae4491b01688751876d3a57",
+    "pdfSha256": "f9d8c38426cbf06d082039ccba5381eb4f95afc67a13ec4e84443b1373ea612b",
+    "subsetFontNames": [
+      "INPILL+HCRBatang-Bold"
+    ],
+    "textSpanCount": 304,
+    "visualLineCount": 30
+  },
+  "physicalState": "restored-baseline-no-managed-font-resource",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "hostNameIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "reason": "The restored baseline accepts the English SFNT alias, but the document Korean face falls back to HCRBatang and the PDF does not use the exact source bytes.",
+  "recoveryCondition": "Resume exact-profile publication only after a separately approved controlled state makes the document face exact and the exported subset proves use of the same SFNT bytes.",
+  "schemaVersion": 1,
+  "source": {
+    "fontBytesEmbedded": false,
+    "postScriptName": "HaanYGodic23",
+    "sfntSha256": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200",
+    "sourceReadiness": "ready-local-sfnt"
+  },
+  "status": "blocked-document-face-name-resolution"
+}

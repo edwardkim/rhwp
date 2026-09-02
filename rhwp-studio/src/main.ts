@@ -1,20 +1,34 @@
 import { WasmBridge } from '@/core/wasm-bridge';
-import type { DocumentInfo } from '@/core/types';
+import type { DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
 import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
+import { initIconToolbarScroller } from '@/ui/icon-toolbar-scroller';
+import { initStyleToolbarOverflow } from '@/ui/style-toolbar-overflow';
+import {
+  closeToolbarSplitMenus,
+  moveToolbarSplitFocus,
+  setToolbarSplitOpen,
+  toolbarSplitItems,
+} from '@/ui/toolbar-split-menu';
 import { MenuBar } from '@/ui/menu-bar';
 import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';
 import { withCanvasKitSurfaceBlockers } from '@/core/canvaskit-document-preflight';
 import { loadExtensionViewerSettings, type ExtensionViewerSettings } from '@/core/extension-settings';
 import { CommandRegistry } from '@/command/registry';
+import { AutomationHost } from '@/automation/host';
+import { getChromeVisibility, setChromeVisibility } from '@/automation/chrome';
+import type { ChromeVisibility } from '@/automation/types';
+import { PluginHostRegistry } from '@/plugin/host';
+import type { StudioPlugin } from '@/plugin/types';
 import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
+import { defaultShortcuts, matchShortcut } from '@/command/shortcut-map';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
-import { syncClipMenu, syncTextMarkMenu, viewCommands } from '@/command/commands/view';
+import { syncClipMenu, syncTextMarkMenu, syncToolboxMenu, viewCommands } from '@/command/commands/view';
 import { formatCommands } from '@/command/commands/format';
 import { insertCommands } from '@/command/commands/insert';
 import { tableCommands } from '@/command/commands/table';
@@ -28,26 +42,51 @@ import {
 import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
+import { MODAL_DIALOG_CLOSED_EVENT } from '@/ui/dialog';
 import { showHmlImportWarning } from '@/ui/hml-import-warning';
-import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { showToast } from '@/ui/toast';
 import { addRecentDoc, listRecentDocs } from '@/recent/recent-store';
 import { showDropConfirmDialog } from '@/ui/drop-confirm-dialog';
 import { showHwpPasswordDialog } from '@/ui/hwp-password-dialog';
+import {
+  EMBED_HIDDEN_EDIT_COMMAND_IDS,
+  EMBED_HIDDEN_FILE_COMMAND_IDS,
+  isEmbedSwallowedFileShortcut,
+  resolveChromeModeRequest,
+} from '@/ui/chrome-mode';
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
+import { maybeShowSkinOnboarding } from '@/ui/skin-onboarding-dialog';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
-import { detectLocalFonts, getLocalFontState, loadStoredLocalFonts } from '@/core/local-fonts';
+import { setDocumentFontSubstitutions } from '@/core/font-substitution';
+import {
+  clearStoredLocalFonts,
+  detectLocalFonts,
+  getLocalFontState,
+  loadStoredLocalFonts,
+  resolveLocalFont,
+} from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
 import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
 import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
 import { recoveryFileName } from '@/recovery/recovery-format';
 import { showAutosaveRecoveryDialog } from '@/recovery/recovery-ui';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
+import { cellSelectionPhaseLabel, type CellSelectionPhase } from '@/engine/cell-selection-phase';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
+import { detectPlatformKind } from '@/engine/navigation-keymap';
+import {
+  headerFooterApplyToLabel,
+  parseHeaderFooterModeChanged,
+} from '@/engine/header-footer-mode';
+import {
+  percentToZoomSliderPosition,
+  zoomPercentShortcutTitle,
+  zoomSliderPositionToPercent,
+} from '@/view/zoom-status-controls';
 import { RendererSession, type RendererSessionDiagnostics } from '@/view/renderer-session';
 import {
   resolveCanvasKitRenderModeRequest,
@@ -56,9 +95,14 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
-import { calculateFitPageZoom, calculateFitWidthZoom } from '@/view/zoom-fit';
+import { normalizeZoomFitMode, resolveZoomFitZoom, type ZoomFitMode } from '@/view/zoom-fit';
+import { CENTER_ZOOM_ANCHOR } from '@/view/zoom-anchor';
+import { withBusyCursor } from '@/view/busy-cursor';
+import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
+import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
+import { DocumentAgentController } from '@/document-agent/controller';
 
 const wasm = new WasmBridge();
 const eventBus = new EventBus();
@@ -66,6 +110,8 @@ const documentState = new DocumentDirtyState(eventBus);
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
+  // exportHwp()는 평문 HWP 바이트를 만든다. 보호 문서에서는 복구본을 남기지 않는다 (#5992).
+  isRecoveryBlocked: () => wasm.requiresPasswordForSave,
   schedule: autosaveScheduleFromUserSettings(),
   onStatus: handleAutosaveStatus,
 });
@@ -74,6 +120,11 @@ initThemeSync((effective, mode) => {
   eventBus.emit('theme-changed', { mode, effective });
   eventBus.emit('command-state-changed');
 });
+// 저장된 도구 상자(기본/서식) 보이기·숨기기 복원 — 문서 로드와 무관하고, WASM 초기화보다
+// 먼저 반영해야 숨긴 도구 모음이 잠깐 보였다 사라지지 않는다(모듈 스크립트라 DOM 은 이미 파싱됨).
+syncToolboxMenu();
+const iconToolbarScroller = initIconToolbarScroller(document.getElementById('icon-toolbar'));
+initStyleToolbarOverflow(document.getElementById('style-bar'));
 
 /**
  * 호스트 저장 완료 통지 (#2660).
@@ -103,10 +154,17 @@ if (import.meta.env.DEV) {
   (window as any).__documentState = documentState;
   (window as any).__autosaveManager = autosaveManager;
   (window as any).__theme = { getThemeMode, getEffectiveTheme, setThemeMode };
+  (window as any).__localFonts = {
+    clearStoredLocalFonts,
+    detectLocalFonts,
+    getLocalFontState,
+    resolveLocalFont,
+  };
   initRhwpDev(wasm);
 }
 let canvasView: CanvasView | null = null;
 let inputHandler: InputHandler | null = null;
+let documentAgent: DocumentAgentController | null = null;
 let toolbar: Toolbar | null = null;
 let ruler: Ruler | null = null;
 let rendererSession: RendererSession | null = null;
@@ -118,7 +176,43 @@ let rendererInitialized = false;
 let extensionViewerSettings: ExtensionViewerSettings = {
   disableExternalWebFonts: false,
 };
+/** DEV 동적 런타임의 realm 단위 해제선. 현재 Studio에는 뷰 교체 경로가 없어 호출하지 않는다. */
+let stopDevelopmentRenderRuntime: (() => void) | null = null;
 
+/**
+ * 개발 전용 렌더 교체를 앱 조립점에서만 시작한다 (#4636, #4641).
+ *
+ * `WasmBridge`는 wasm 초기화와 문서 소유만, `CanvasView`는 화면 수명만 맡는다. 개발 소켓과
+ * 리비전 감시는 여기서 DEV 동적 import로만 만들고 문서 리비전이 아닌 렌더 코드가 바뀌면 현재
+ * 뷰를 직접 다시 그린다. 이 함수 전체는 production build에서 제거돼 runtime chunk도 남지 않는다.
+ */
+async function startDevelopmentRenderRuntime(): Promise<void> {
+  if (!import.meta.env.DEV || stopDevelopmentRenderRuntime || !canvasView) return;
+  try {
+    const runtime = await import('@/core/subsecond-runtime');
+    stopDevelopmentRenderRuntime = runtime.startDevelopmentRenderRuntime(
+      wasm.getWasmModuleExports(),
+      () => wasm.borrowDocumentHandle(),
+      () => canvasView?.refreshPages(),
+      { measureHeapBytes: () => wasm.getWasmLinearMemoryBytes() },
+    );
+  } catch (error) {
+    // 개발 편의 기능 실패가 문서 편집기 초기화를 막으면 안 된다.
+    console.warn('[main] 개발용 렌더 코드 교체를 시작하지 못했습니다:', error);
+  }
+}
+
+
+// ─── UI chrome 프로파일 (#4564) ─────────────────────────────
+// 문서 수명주기(열기/저장)를 호스트가 소유하는 임베드 구성용 opt-in 스위치.
+// 파라미터가 없거나 미지원 값이면 full — 기존 표면 그대로다.
+const chromeModeRequest = resolveChromeModeRequest(window.location.search);
+const chromeMode = chromeModeRequest.mode;
+if (chromeModeRequest.unsupportedReason) {
+  console.warn(
+    `[main] 지원하지 않는 chrome 값입니다: ${chromeModeRequest.requested}; full 프로파일을 사용합니다.`,
+  );
+}
 
 // ─── 커맨드 시스템 ─────────────────────────────
 const registry = new CommandRegistry();
@@ -172,20 +266,117 @@ const commandServices: CommandServices = {
   getInputHandler: () => inputHandler,
   getViewportManager: () => canvasView?.getViewportManager() ?? null,
   gotoPage: (globalPage) => canvasView?.gotoPage(globalPage) ?? false,
+  refreshDocumentStatus: () => {
+    sbMessage().textContent = `${wasm.fileName} — ${wasm.pageCount}페이지`;
+  },
   setEditMode,
 };
 
 const dispatcher = new CommandDispatcher(registry, commandServices, eventBus);
 
-// 모든 내장 커맨드 등록
-registry.registerAll(fileCommands);
-registry.registerAll(editCommands);
+// 자동화 표면 — 외부 JavaScript 가 커맨드·메뉴를 다루는 자리. 실행은 메뉴·툴바·키보드와 같은
+// dispatcher 를 타므로 게이트가 갈리지 않는다. 메뉴 컨테이너는 이 시점에 아직 없을 수 있어
+// 함수로 넘긴다.
+const automation = new AutomationHost({
+  registry,
+  dispatcher,
+  getContext,
+  getMenuContainer: () => document.getElementById('menu-bar'),
+});
+(window as any).rhwpStudio.automation = automation;
+
+/**
+ * 플러그인 allowlist.
+ *
+ * **프로덕션에서는 비어 있다** — 임의 URL 로드 경로를 만들지 않는다는 계약이고, 여기서 거절하면
+ * 호스트가 `PLUGIN_NOT_ALLOWED` 로 답한다. 개발 빌드에만 계약 검증용 시험 플러그인이 있다.
+ */
+async function resolvePlugin(id: string): Promise<StudioPlugin> {
+  // `__RHWP_HWPCTRL__` 이 false 인 빌드에서는 이 분기가 통째로 사라진다 — 청크도, npm 패키지
+  // 의존도 남지 않는다. studio 만 떼어 배포하는 구성이다(`RHWP_WITHOUT_HWPCTRL=1`).
+  if (__RHWP_HWPCTRL__ && id === 'hwpctrl') {
+    // 번들에 있는 이름만 허용한다. 동적 import 라 올리지 않으면 코드도 로드되지 않는다.
+    return (await import('@rhwp/hwpctrl/studio-plugin')).hwpctrlStudioPlugin as StudioPlugin;
+  }
+  if (import.meta.env.DEV && id === 'dev-probe') {
+    return (await import('@/plugin/dev-probe-plugin')).devProbePlugin;
+  }
+  throw new Error(`허용되지 않은 플러그인: ${id}`);
+}
+
+const plugins = new PluginHostRegistry({
+  wasm,
+  automation,
+  eventBus,
+  getInputHandler: () => inputHandler,
+  loadDocument: (bytes, fileName) => loadBytes(bytes, fileName ?? 'document.hwp', null),
+  createBlankDocument: () => { void createNewDocument(); },
+  resolve: resolvePlugin,
+});
+(window as any).rhwpStudio.plugins = plugins;
+
+// 모든 내장 커맨드 등록. embed 프로파일에서는 문서 수명주기 커맨드를 등록하지 않는다 —
+// registerAll이 메뉴 클릭·단축키·전역 단축키·커맨드 팔레트가 모두 지나는 choke point라
+// 이 필터 하나로 충분하다. 파일 수명주기 커맨드에 더해 edit:compare-documents도 거른다:
+// 비교 실행이 오른쪽 문서를 현재 에디터에 로드하는, 호스트가 감지할 수 없는 문서 교체
+// 진입점이다. shortcut-map의 파일 매핑은 그대로 둔다: 매핑이 남아야 Ctrl+S/Ctrl+P가
+// preventDefault로 계속 삼켜져 브라우저 저장/인쇄 대화상자로 빠지지 않는다.
+// Ctrl+Shift+S의 셀 블록 문맥 라우터도 Save As가 미등록이면 이벤트만 소비하므로
+// table:block-sum으로 폴스루하지 않는다. 미등록 커맨드 dispatch는 무해하게 false를 반환한다.
+registry.registerAll(
+  chromeMode === 'embed'
+    ? fileCommands.filter((cmd) => !EMBED_HIDDEN_FILE_COMMAND_IDS.includes(cmd.id))
+    : fileCommands,
+);
+registry.registerAll(
+  chromeMode === 'embed'
+    ? editCommands.filter((cmd) => !EMBED_HIDDEN_EDIT_COMMAND_IDS.includes(cmd.id))
+    : editCommands,
+);
 registry.registerAll(viewCommands);
 registry.registerAll(formatCommands);
 registry.registerAll(insertCommands);
 registry.registerAll(tableCommands);
 registry.registerAll(pageCommands);
 registry.registerAll(toolCommands);
+
+/**
+ * embed 프로파일의 메뉴·도구막대 정리 — index.html은 그대로 두고 부트 시 런타임에
+ * 제거한다(기본 full 프로파일의 정적 마크업·테스트에 무회귀). 숨김 커맨드를 참조하는
+ * 모든 표면(파일 메뉴 항목, 편집 메뉴의 문서 비교, 도구막대 버튼·split 메뉴 항목)을
+ * data-cmd로 일괄 제거한다. 모듈 스크립트는 문서 파스 후 실행되므로 이 시점의 톱레벨
+ * DOM 접근은 안전하고, MenuBar는 이후 initialize()에서 정리된 DOM을 읽는다.
+ * `#file-input`은 커맨드 표면이 아니라 입력 채널이므로 건드리지 않는다 —
+ * setupFileInput이 존재를 전제한다.
+ */
+function pruneEmbedChrome(): void {
+  for (const id of [...EMBED_HIDDEN_FILE_COMMAND_IDS, ...EMBED_HIDDEN_EDIT_COMMAND_IDS]) {
+    document.querySelectorAll(`[data-cmd="${id}"]`).forEach((item) => item.remove());
+  }
+  const dropdown = document.querySelector('.menu-item[data-menu="file"] .menu-dropdown');
+  if (!dropdown) return;
+  dropdown.querySelectorAll('.md-sub[data-recent]').forEach((sub) => sub.remove());
+  // 고아가 된 구분선 정리: 선행 항목이 없거나 구분선끼리 연속이면 제거하고,
+  // 말단에 남은 구분선도 제거한다.
+  dropdown.querySelectorAll('.md-sep').forEach((sep) => {
+    const prev = sep.previousElementSibling;
+    if (!prev || prev.classList.contains('md-sep')) sep.remove();
+  });
+  const last = dropdown.lastElementChild;
+  if (last?.classList.contains('md-sep')) last.remove();
+}
+if (chromeMode === 'embed') pruneEmbedChrome();
+
+if (chromeMode === 'embed') {
+  // 문서 로드 전에는 InputHandler가 없어 shortcut-map 경로가 저장·인쇄 단축키를
+  // 삼키지 못하고 브라우저 저장/인쇄 대화상자로 빠진다. 초기화를 기다리지 않는
+  // 모듈 최상위 등록이라 WASM 로딩 중에도 새지 않고, capture 단계라 다이얼로그
+  // 등의 stopPropagation보다 먼저 돌며, preventDefault만 한다 — 대상 커맨드는
+  // embed에서 미등록이고, InputHandler 활성 시의 중복 preventDefault는 무해하다.
+  document.addEventListener('keydown', (e) => {
+    if (isEmbedSwallowedFileShortcut(e)) e.preventDefault();
+  }, true);
+}
 
 // 상태 바 요소
 const sbMessage = () => document.getElementById('sb-message')!;
@@ -221,13 +412,20 @@ function handleAutosaveStatus(status: AutosaveStatus): void {
     return;
   }
 
-  const restoreTarget = autosavePreviousMessage;
+  const restoreTarget = autosavePreviousMessage
+    ?? (status.state === 'blocked' ? message.textContent ?? '' : null);
   autosavePreviousMessage = null;
-  const nextMessage = status.state === 'saved'
-    ? `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`
-    : '복구용 자동 저장 실패';
+  let nextMessage: string;
+  if (status.state === 'saved') {
+    nextMessage = `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`;
+  } else if (status.state === 'blocked') {
+    // 실패가 아니라 의도된 차단이므로 구분해서 알린다 (#5992).
+    nextMessage = '보호 문서는 복구용 자동 저장을 하지 않습니다';
+  } else {
+    nextMessage = '복구용 자동 저장 실패';
+  }
   message.textContent = nextMessage;
-  if (restoreTarget !== null) {
+  if (restoreTarget !== null && restoreTarget !== nextMessage) {
     autosaveStatusRestoreTimer = setTimeout(() => {
       if (message.textContent === nextMessage) {
         message.textContent = restoreTarget;
@@ -350,7 +548,6 @@ async function initialize(): Promise<void> {
             extensionViewerSettings,
           );
           const blockers = plan.unavailableFonts.map(font => `fontUnavailable:${font}`);
-          if (wasm.getShowControlCodes()) blockers.push('viewOption:showControlCodes');
           return withCanvasKitSurfaceBlockers(
             report,
             blockers,
@@ -389,6 +586,7 @@ async function initialize(): Promise<void> {
       eventBus,
       rendererSession,
     );
+    await startDevelopmentRenderRuntime();
 
     // [#3313] 외부 연결 그림(HWP3 pic_type=0)의 비동기 주입이 첫 렌더 이후에 끝나면
     // 화면이 이전 프레임(그림 없는 상태)에 머무른다. 주입 완료 시 뷰 문서를 다시
@@ -414,6 +612,36 @@ async function initialize(): Promise<void> {
       canvasView.getViewportManager(),
     );
     inputHandler.setEditMode(editMode);
+    documentAgent?.dispose();
+    documentAgent = new DocumentAgentController({
+      wasm,
+      input: inputHandler,
+      eventBus,
+      isDirty: () => documentState.isDirty(),
+      render: () => canvasView!.refreshDocumentAgentMutation(),
+    });
+
+    // 눈금자 핀 드래그 커밋 — 종류(문단 서식/쪽 여백)에 따라 InputHandler 호출은 다르지만
+    // 진입점은 하나다. 콜백 두 개로 나뉘어 있었을 때 한쪽만 executeOperation 커밋 경로를
+    // 타고 다른 쪽은 wasm을 직접 호출하는 어긋남이 실제로 발생했었다 — 쪽 여백 핀 드래그가
+    // 모델은 바꿨지만 CanvasView를 재플로우시키지 못한 사례. 여기서 그 어긋남을 구조적으로
+    // 막는다: 두 갈래 모두 이 한 함수 안에서, 같은 InputHandler 커밋 원리(executeOperation)
+    // 를 거친다.
+    ruler.onCommitPin = (commit) => {
+      if (!inputHandler) return;
+      if (commit.kind === 'paraProps') {
+        inputHandler.applyParaPropsAtCursor(commit.props);
+        return;
+      }
+      inputHandler.executeOperation({
+        kind: 'snapshot',
+        operationType: 'pageMargin',
+        operation: (wasm) => {
+          wasm.setPageMargin(commit.pageIdx, commit.marginKind, commit.hwpunit);
+          return inputHandler!.getCursorPosition();
+        },
+      });
+    };
 
     // [#4180] 저장 시점 캐럿 스탬핑 — 셀/글상자 캐럿은 현행 캐럿 필드(list_id 를
     // 구역 인덱스로 쓰는 rhwp 관례)로 표현 불가 → 호스트 문단 시작으로 강등.
@@ -435,7 +663,11 @@ async function initialize(): Promise<void> {
     inputHandler.setContextMenu(new ContextMenu(dispatcher, registry));
     inputHandler.setCommandPalette(new CommandPalette(registry, dispatcher));
     inputHandler.setCellSelectionRenderer(
-      new CellSelectionRenderer(container, canvasView.getVirtualScroll()),
+      new CellSelectionRenderer(
+        container,
+        canvasView.getVirtualScroll(),
+        (phase) => eventBus.emit('cell-selection-phase-changed', phase),
+      ),
     );
     inputHandler.setTableObjectRenderer(
       new TableObjectRenderer(container, canvasView.getVirtualScroll()),
@@ -460,34 +692,65 @@ async function initialize(): Promise<void> {
         const cmd = (btn as HTMLElement).dataset.cmd;
         if (cmd) dispatcher.dispatch(cmd, { anchorEl: btn as HTMLElement });
       });
+      btn.addEventListener('click', (event) => {
+        if ((event as MouseEvent).detail !== 0) return;
+        const cmd = (btn as HTMLElement).dataset.cmd;
+        if (cmd) dispatcher.dispatch(cmd, { anchorEl: btn as HTMLElement });
+      });
     });
 
-    // 스플릿 버튼 드롭다운 메뉴
     document.querySelectorAll('.tb-split').forEach(split => {
-      const arrow = split.querySelector('.tb-split-arrow');
+      const arrow = split.querySelector<HTMLButtonElement>('.tb-split-arrow');
+      const menu = split.querySelector<HTMLElement>('.tb-split-menu');
       if (arrow) {
-        arrow.addEventListener('mousedown', (e) => {
+        arrow.setAttribute('aria-haspopup', 'menu');
+        arrow.setAttribute('aria-expanded', 'false');
+        arrow.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          // 다른 열린 메뉴 닫기
-          document.querySelectorAll('.tb-split.open').forEach(s => {
-            if (s !== split) s.classList.remove('open');
+          closeToolbarSplitMenus(document, split);
+          const open = !split.classList.contains('open');
+          setToolbarSplitOpen(split, open, {
+            focus: open && (e as MouseEvent).detail === 0 ? 'first' : undefined,
           });
-          split.classList.toggle('open');
+        });
+        arrow.addEventListener('keydown', (event) => {
+          if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+          event.preventDefault();
+          closeToolbarSplitMenus(document, split);
+          setToolbarSplitOpen(split, true, {
+            focus: event.key === 'ArrowDown' ? 'first' : 'last',
+          });
         });
       }
       split.querySelectorAll('.tb-split-item[data-cmd]').forEach(item => {
-        item.addEventListener('mousedown', (e) => {
+        item.addEventListener('click', (e) => {
           e.preventDefault();
-          split.classList.remove('open');
+          setToolbarSplitOpen(split, false, { returnFocus: (e as MouseEvent).detail === 0 });
           const cmd = (item as HTMLElement).dataset.cmd;
           if (cmd) dispatcher.dispatch(cmd, { anchorEl: item as HTMLElement });
         });
       });
+      menu?.addEventListener('keydown', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          setToolbarSplitOpen(split, false, { returnFocus: true });
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          moveToolbarSplitFocus(split, target, event.key === 'ArrowDown' ? 1 : -1);
+        } else if (event.key === 'Home' || event.key === 'End') {
+          event.preventDefault();
+          const items = toolbarSplitItems(split);
+          (event.key === 'Home' ? items[0] : items.at(-1))?.focus({ preventScroll: true });
+        }
+      });
     });
     // 외부 클릭 시 스플릿 메뉴 닫기
     document.addEventListener('mousedown', () => {
-      document.querySelectorAll('.tb-split.open').forEach(s => s.classList.remove('open'));
+      closeToolbarSplitMenus(document);
     });
 
     // #780: 도구 모음/서식 도구 모음 영역 mousedown 시 focus 이동 방지
@@ -504,23 +767,35 @@ async function initialize(): Promise<void> {
     setupFileInput();
     setupZoomControls();
     setupEventListeners();
+    setupModalFocusRestore();
     setupGlobalShortcuts();
-    void loadFromUrlParam();
-    void offerAutosaveRecoveryIfIdle();
-    installPwaFileHandling(window as FileHandlingWindowLike, {
-      openDocumentBytes(payload) {
-        eventBus.emit('open-document-bytes', payload);
-      },
-      notifyUnsupportedFile(fileName) {
-        showLoadError(new Error(`지원하지 않는 파일 형식입니다: ${fileName}. HWP/HWPX/HML 파일만 지원합니다.`));
-      },
-      notifyError(error) {
-        showLoadErrorUnlessCancelled(error);
-      },
-      notifyMultipleFiles(count) {
-        console.warn(`[pwa-file-handling] 여러 파일(${count}개)이 전달되어 첫 번째 파일만 엽니다.`);
-      },
-    });
+    // 시작 진입점은 순서를 지켜야 한다 — ?url= 로드와 자동저장 복구가 문서를 열 기회를
+    // 먼저 갖고, 아무도 열지 않았을 때만 빈 문서를 연다.
+    void (async () => {
+      await loadFromUrlParam();
+      // embed 프로파일: 자동저장 복구 다이얼로그의 드래프트 복원도 호스트가 감지할 수
+      // 없는 문서 교체 경로이므로 띄우지 않는다 (드래프트 기록 자체는 유지).
+      if (chromeMode !== 'embed') await offerAutosaveRecoveryIfIdle();
+      await openBlankDocumentIfIdle();
+    })();
+    // embed 프로파일: PWA launch queue로 문서를 넘겨받는 진입도 문서 교체 경로이므로
+    // 설치하지 않는다.
+    if (chromeMode !== 'embed') {
+      installPwaFileHandling(window as FileHandlingWindowLike, {
+        openDocumentBytes(payload) {
+          eventBus.emit('open-document-bytes', payload);
+        },
+        notifyUnsupportedFile(fileName) {
+          showLoadError(new Error(`지원하지 않는 파일 형식입니다: ${fileName}. HWP/HWPX/HML 파일만 지원합니다.`));
+        },
+        notifyError(error) {
+          showLoadErrorUnlessCancelled(error);
+        },
+        notifyMultipleFiles(count) {
+          console.warn(`[pwa-file-handling] 여러 파일(${count}개)이 전달되어 첫 번째 파일만 엽니다.`);
+        },
+      });
+    }
 
     // E2E 테스트용 전역 노출 (개발 모드 전용)
     if (import.meta.env.DEV) {
@@ -542,6 +817,22 @@ async function initialize(): Promise<void> {
   }
 }
 
+/** 마지막 모달 종료 뒤 활성 편집기의 키보드 진입점을 textarea로 되돌린다 (#3414). */
+function setupModalFocusRestore(): void {
+  document.addEventListener(MODAL_DIALOG_CLOSED_EVENT, () => {
+    if (inputHandler?.isActive()) inputHandler.focus();
+  });
+}
+
+/** 포커스 주인과 무관하게 문서를 움직여야 하는 키 — 편집기 경로로 넘긴다. */
+const DOCUMENT_NAVIGATION_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End']);
+const GLOBAL_VIEW_SHORTCUTS = new Set([
+  'view:zoom-in',
+  'view:zoom-out',
+  'view:zoom-100',
+  'view:toolbox-basic',
+]);
+
 /**
  * 전역 단축키 핸들러 — InputHandler.active 여부와 무관하게 동작해야 하는 단축키.
  * 예: 문서 미로드 상태에서도 Alt+N(새 문서), Ctrl+O(열기) 등.
@@ -551,8 +842,47 @@ function setupGlobalShortcuts(): void {
     // input/textarea 등 편집 가능 요소 내부에서는 무시
     const target = e.target as HTMLElement;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
-    // InputHandler가 활성 상태이면 자체 처리에 맡김
-    if (inputHandler?.isActive()) return;
+
+    // PgUp/PgDn·Home/End 는 문서를 보며 움직이는 키다. 툴바 버튼·서식 콤보를 한 번
+    // 누르면 포커스가 편집기 textarea 를 떠나 InputHandler 가 키를 받지 못하고, 스크롤
+    // 컨테이너도 포커스 대상이 아니라 브라우저 기본 동작조차 없어 통째로 무동작이 된다.
+    // 편집기가 활성이면 keydown 을 그대로 편집기 경로에 넘겨, 포커스가 어디에 있든 같은
+    // 분기·같은 결과(캐럿 이동 + 화면 이동)를 준다 — 여기에 로직을 복제하지 않는다.
+    // (textarea/input 이 target 이면 위에서 이미 return 하므로 이중 실행되지 않고,
+    //  모달이 떠 있으면 Dialog 의 capture 핸들러가 먼저 전파를 끊는다.)
+    // select 등 이 키를 자체 소비하는 위젯보다 문서 이동을 우선한다 — studio 에서
+    // chrome 위젯은 스쳐 가는 대상이고 사용자가 보고 있는 것은 문서다.
+    if (DOCUMENT_NAVIGATION_KEYS.has(e.key) && !e.altKey) {
+      if (inputHandler?.isActive()) {
+        inputHandler.handleDocumentNavigationKey(e);
+        return;
+      }
+      if (e.key === 'PageUp' || e.key === 'PageDown') {
+        // 문서는 떠 있지만 편집기가 활성이 아닌 보기 상태 — 화면만 옮긴다.
+        e.preventDefault();
+        canvasView?.scrollByPage(e.key === 'PageUp' ? -1 : 1);
+        return;
+      }
+    }
+    // 배율·도구 상자 키는 편집 textarea에서는 InputHandler가 소유하고, 그 밖의 포커스에서는
+    // 이 전역 경로가 같은 커맨드를 한 번만 실행한다. 브라우저 기본 페이지 줌은 막는다.
+    const globalShortcutId = matchShortcut(e, defaultShortcuts);
+    if (globalShortcutId && GLOBAL_VIEW_SHORTCUTS.has(globalShortcutId)) {
+      e.preventDefault();
+      dispatcher.dispatch(globalShortcutId);
+      return;
+    }
+    // textarea가 아닌 곳에 포커스가 빠진 활성 편집기는 자체 keydown을 받지 못한다.
+    // 이때 undo/redo만 dispatcher로 보완한다. textarea가 target이면 위에서 이미 return하므로
+    // InputHandler와 이중 실행되지 않으며, 다른 단축키의 기존 전역 소유 범위도 넓히지 않는다.
+    if (inputHandler?.isActive()) {
+      const commandId = matchShortcut(e, defaultShortcuts);
+      if (commandId === 'edit:undo' || commandId === 'edit:redo') {
+        const result = dispatcher.dispatchWithResult(commandId);
+        if (result.ok || result.reason === 'threw') e.preventDefault();
+      }
+      return;
+    }
 
     const ctrlOrMeta = e.ctrlKey || e.metaKey;
 
@@ -615,17 +945,18 @@ function setupFileInput(): void {
     const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
     const isImage = imageExts.some(ext => dropName.endsWith(ext));
     const isDoc = isSupportedDocumentFileName(dropName);
+    // embed 프로파일: 문서 드롭은 호스트가 감지할 수 없는 문서 교체 경로이므로 무시한다.
+    // 이미지 드롭은 수명주기가 아니라 편집 기능이라 그대로 둔다.
+    if (chromeMode === 'embed' && isDoc) return;
     if (!isImage && !isDoc) {
       alert('HWP/HWPX/HML 파일 또는 이미지 파일만 지원합니다.');
       return;
     }
 
-    // [#1439] 보안: 드롭으로 로컬 파일을 읽는 동작은 기본에서 제외하고, 사용자가
-    // 명시적으로 [열기]를 눌러 동의한 경우에만 진행한다 (확장/웹 공통).
-    const confirmed = await showDropConfirmDialog(file.name);
-    if (!confirmed) return;
-
     if (isImage) {
+      // [#1439] 이미지 드롭은 로컬 파일을 읽어 편집 중인 문서에 끼워 넣는 편집 동작이므로
+      // 명시 동의를 유지한다. 문서 드롭은 열기 동작이라 확인 없이 바로 연다.
+      if (!await showDropConfirmDialog(file.name)) return;
       if (!inputHandler || wasm.pageCount === 0) return;
       const data = new Uint8Array(await file.arrayBuffer());
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
@@ -661,7 +992,9 @@ function setupFileInput(): void {
       return;
     }
 
-    // HWP/HWPX/HML — Finder/Explorer drop에서는 File System Access handle을 capture하지
+    // HWP/HWPX/HML — 드롭 열기는 확인 대화상자 없이 바로 연다. 드롭 자체가 명시적인
+    // 사용자 제스처이고, 파일을 열 때마다 확인을 받으면 열기 흐름이 끊긴다.
+    // Finder/Explorer drop에서는 File System Access handle을 capture하지
     // 않는다. macOS Chromium에서 encrypted HWPX drag/drop 시 해당 IPC가 renderer를 종료시키는
     // 사례가 있어, 열기에 충분한 File bytes만 사용한다. 저장은 이후 save-as 경로로 진행한다.
     await loadFile(file);
@@ -671,69 +1004,73 @@ function setupFileInput(): void {
 function setupZoomControls(): void {
   if (!canvasView) return;
   const vm = canvasView.getViewportManager();
+  const zoomIn = document.getElementById('sb-zoom-in') as HTMLButtonElement;
+  const zoomOut = document.getElementById('sb-zoom-out') as HTMLButtonElement;
+  const zoomRange = document.getElementById('sb-zoom-range') as HTMLInputElement;
+  const platform = detectPlatformKind();
 
-  document.getElementById('sb-zoom-in')!.addEventListener('click', () => {
-    vm.smoothZoomBy(0.1);
+  zoomIn.title = zoomPercentShortcutTitle('확대', 'Ctrl++', platform);
+  zoomOut.title = zoomPercentShortcutTitle('축소', 'Ctrl+-', platform);
+  zoomIn.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-in');
   });
-  document.getElementById('sb-zoom-out')!.addEventListener('click', () => {
-    vm.smoothZoomBy(-0.1);
+  zoomOut.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-out');
+  });
+  zoomRange.addEventListener('input', () => {
+    const percent = zoomSliderPositionToPercent(Number(zoomRange.value));
+    zoomRange.value = String(percentToZoomSliderPosition(percent));
+    zoomRange.setAttribute('aria-valuetext', `${percent}%`);
+    vm.setZoom(percent / 100);
+  });
+  zoomRange.addEventListener('keydown', (event) => {
+    const current = Math.round(vm.getZoom() * 100);
+    let next: number | null = null;
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        next = current - 1;
+        break;
+      case 'ArrowRight':
+      case 'ArrowUp':
+        next = current + 1;
+        break;
+      case 'PageDown':
+        next = current - 10;
+        break;
+      case 'PageUp':
+        next = current + 10;
+        break;
+      case 'Home':
+        next = 10;
+        break;
+      case 'End':
+        next = 500;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    vm.setZoom(next / 100);
   });
 
-  // 폭 맞춤: 용지 폭에 맞게 줌 조절
+  // 폭 맞춤·쪽 맞춤은 메뉴/단축키와 같은 커맨드를 탄다 — 계산과 저장 자리가 하나여야 한다.
   document.getElementById('sb-zoom-fit-width')!.addEventListener('click', () => {
-    if (wasm.pageCount === 0) return;
-    const container = document.getElementById('scroll-container')!;
-    const pageInfo = wasm.getPageInfo(0);
-    // pageInfo.width는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateFitWidthZoom(container.clientWidth, pageInfo.width);
-    console.log(`[zoom-fit-width] container=${container.clientWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(zoom);
+    dispatcher.dispatch('view:zoom-fit-width');
   });
-
-  // 쪽 맞춤: 한 페이지 전체가 보이도록 줌 조절
   document.getElementById('sb-zoom-fit')!.addEventListener('click', () => {
-    if (wasm.pageCount === 0) return;
-    const container = document.getElementById('scroll-container')!;
-    const pageInfo = wasm.getPageInfo(0);
-    // pageInfo.width/height는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateFitPageZoom(
-      container.clientWidth,
-      container.clientHeight,
-      pageInfo.width,
-      pageInfo.height,
-    );
-    console.log(`[zoom-fit-page] containerW=${container.clientWidth} containerH=${container.clientHeight} pageW=${pageInfo.width} pageH=${pageInfo.height} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(zoom);
+    dispatcher.dispatch('view:zoom-fit-page');
   });
 
-  // 모바일: 줌 값 클릭 → 100% 토글
-  document.getElementById('sb-zoom-val')!.addEventListener('click', () => {
-    const currentZoom = vm.getZoom();
-    if (Math.abs(currentZoom - 1.0) < 0.05) {
-      // 현재 100% → 쪽 맞춤으로 전환
-      document.getElementById('sb-zoom-fit')!.click();
-    } else {
-      // 현재 쪽 맞춤/기타 → 100%로 전환
-      vm.setZoom(1.0);
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (!e.ctrlKey && !e.metaKey) return;
-    if (e.key === '=' || e.key === '+') {
-      e.preventDefault();
-      vm.smoothZoomBy(0.1);
-    } else if (e.key === '-') {
-      e.preventDefault();
-      vm.smoothZoomBy(-0.1);
-    } else if (e.key === '0') {
-      e.preventDefault();
-      vm.setZoom(1.0);
-    }
+  // 한컴 상황 선처럼 돋보기와 배율 표시 전체가 하나의 대화상자 진입점이다.
+  document.getElementById('sb-zoom-display')!.addEventListener('click', () => {
+    dispatcher.dispatch('view:zoom-dialog');
   });
 }
 
 let totalSections = 1;
+let currentDocumentFonts: string[] = [];
+let lastAppliedLocalFontGeneration: string | null = null;
 
 function setupEventListeners(): void {
   sbPage().addEventListener('click', () => {
@@ -742,24 +1079,52 @@ function setupEventListeners(): void {
 
   eventBus.on('current-page-changed', (page, _total) => {
     const pageIdx = page as number;
-    sbPage().textContent = `${pageIdx + 1} / ${_total} 쪽`;
-
-    // 구역 정보: 현재 페이지의 sectionIndex로 갱신
+    // 쪽 정보 한 번으로 쪽번호와 구역을 함께 갱신한다.
+    let pageInfo: PageInfo | null = null;
     if (wasm.pageCount > 0) {
       try {
-        const pageInfo = wasm.getPageInfo(pageIdx);
-        sbSection().textContent = `구역: ${pageInfo.sectionIndex + 1} / ${totalSections}`;
+        pageInfo = wasm.getPageInfo(pageIdx);
       } catch { /* 무시 */ }
+    }
+    // 현재 쪽은 문서가 매기는 쪽번호를 쓴다 — 한글과 같은 규칙이다 (#5749).
+    sbPage().textContent = formatPageIndicator({
+      pageIndex: pageIdx,
+      totalPages: _total as number,
+      documentPageNumber: pageInfo?.pageNumber,
+    });
+    if (pageInfo) {
+      sbSection().textContent = `구역: ${pageInfo.sectionIndex + 1} / ${totalSections}`;
     }
   });
 
+  // 맞춤 선택은 배율 수치가 아니라 규칙이므로 그 자체를 저장한다 — 휠·가로바·수치 배율은
+  // 뷰포트가 'none' 을 알려 저장된 맞춤을 푼다.
+  eventBus.on('zoom-fit-mode-changed', (mode) => {
+    userSettings.setZoomFitMode(normalizeZoomFitMode(mode));
+  });
+
   eventBus.on('zoom-level-display', (zoom) => {
-    sbZoomVal().textContent = `${Math.round((zoom as number) * 100)}%`;
+    const percent = Math.round((zoom as number) * 100);
+    sbZoomVal().textContent = `${percent}%`;
+    const range = document.getElementById('sb-zoom-range') as HTMLInputElement | null;
+    if (range) {
+      range.value = String(percentToZoomSliderPosition(percent));
+      range.setAttribute('aria-valuetext', `${percent}%`);
+    }
   });
 
   // 삽입/수정 모드 토글
   eventBus.on('insert-mode-changed', (insertMode) => {
     document.getElementById('sb-mode')!.textContent = (insertMode as boolean) ? '삽입' : '수정';
+  });
+
+  eventBus.on('cell-selection-phase-changed', (nextPhase) => {
+    const selectionStatus = document.getElementById('sb-cell-selection')!;
+    const phase = nextPhase as CellSelectionPhase | null;
+    selectionStatus.hidden = phase === null;
+    const nextLabel = phase === null ? '' : cellSelectionPhaseLabel(phase);
+    // zoom·방향키로 동일 단계를 다시 그릴 때 live region을 반복 발화하지 않는다.
+    if (selectionStatus.textContent !== nextLabel) selectionStatus.textContent = nextLabel;
   });
 
   eventBus.on('document-mutated', (reason) => {
@@ -778,6 +1143,22 @@ function setupEventListeners(): void {
       (window as any).__renderBackendFallbackReason = diagnostics.fallbackReason;
       (window as any).__rendererSelection = diagnostics;
     }
+  });
+
+  eventBus.on('local-fonts-changed', () => {
+    if (!canvasView || wasm.pageCount === 0) return;
+    const state = getLocalFontState();
+    const generation = `${state.detectedAt ?? 'none'}:${state.source ?? 'none'}:${state.count}`;
+    if (generation === lastAppliedLocalFontGeneration) return;
+    lastAppliedLocalFontGeneration = generation;
+
+    if (canvasView.getRenderBackend() === 'canvaskit') {
+      // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
+      prepareCanvasKitLocalFonts(currentDocumentFonts);
+      return;
+    }
+    // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.
+    eventBus.emit('document-view-changed');
   });
 
   eventBus.on('document-dirty-changed', () => {
@@ -806,9 +1187,17 @@ function setupEventListeners(): void {
   // 개체 선택 시 회전/대칭 버튼 그룹 표시/숨김
   const rotateGroup = document.querySelector('.tb-rotate-group') as HTMLElement | null;
   let noteToolbarActive = false;
+  let headerFooterToolbarActive = false;
+  let pictureObjectSelected = false;
+  const syncRotateGroup = (): void => {
+    if (rotateGroup) {
+      rotateGroup.hidden = !pictureObjectSelected || noteToolbarActive || headerFooterToolbarActive;
+    }
+  };
   if (rotateGroup) {
     eventBus.on('picture-object-selection-changed', (selected) => {
-      rotateGroup.style.display = (selected as boolean) && !noteToolbarActive ? '' : 'none';
+      pictureObjectSelected = selected as boolean;
+      syncRotateGroup();
     });
   }
 
@@ -816,22 +1205,36 @@ function setupEventListeners(): void {
   const hfGroup = document.querySelector('.tb-headerfooter-group') as HTMLElement | null;
   const hfLabel = hfGroup?.querySelector('.tb-hf-label') as HTMLElement | null;
   const noteGroup = document.querySelector('.tb-note-group') as HTMLElement | null;
-  const defaultTbGroups = document.querySelectorAll('#icon-toolbar > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar > .tb-sep');
+  const defaultTbGroups = document.querySelectorAll('#icon-toolbar .tb-scroll-track > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar .tb-scroll-track > .tb-sep');
   const scrollContainer = document.getElementById('scroll-container');
   const styleBar = document.getElementById('style-bar');
 
-  eventBus.on('headerFooterModeChanged', (mode) => {
-    const isActive = (mode as string) !== 'none';
+  const hfLiveStatus = document.getElementById('hf-edit-status-live');
+  eventBus.on('headerFooterModeChanged', (payload) => {
+    const state = parseHeaderFooterModeChanged(payload);
+    const isActive = state !== 'none';
+    headerFooterToolbarActive = isActive;
+    iconToolbarScroller?.resetToStart();
     // 도구상자 전환
     if (hfGroup) {
-      hfGroup.style.display = isActive ? '' : 'none';
+      hfGroup.hidden = !isActive;
     }
     if (hfLabel) {
-      hfLabel.textContent = (mode as string) === 'header' ? '머리말' : (mode as string) === 'footer' ? '꼬리말' : '';
+      const kind = state === 'none' ? '' : state.mode === 'header' ? '머리말' : '꼬리말';
+      const target = state === 'none' ? '' : headerFooterApplyToLabel(state.applyTo);
+      hfLabel.textContent = state === 'none' ? '' : `${kind} · ${target} 편집 중`;
+      hfLabel.dataset.mode = state === 'none' ? '' : state.mode;
+      hfLabel.dataset.applyTo = state === 'none' ? '' : String(state.applyTo);
+      if (hfLiveStatus) {
+        hfLiveStatus.textContent = state === 'none'
+          ? '머리말 꼬리말 편집 종료'
+          : `${kind} ${target} 편집 중, 구역 ${state.sectionIdx + 1} 첫 페이지`;
+      }
     }
     defaultTbGroups.forEach((el) => {
-      (el as HTMLElement).style.display = isActive ? 'none' : '';
+      (el as HTMLElement).hidden = isActive;
     });
+    syncRotateGroup();
     // 서식 도구 모음은 머리말/꼬리말 편집 시에도 유지 (문단/글자 모양 설정 필요)
     // 본문 dimming
     if (scrollContainer) {
@@ -846,16 +1249,45 @@ function setupEventListeners(): void {
   eventBus.on('footnoteModeChanged', (active) => {
     const isActive = active as boolean;
     noteToolbarActive = isActive;
+    iconToolbarScroller?.resetToStart();
     if (noteGroup) {
-      noteGroup.style.display = isActive ? '' : 'none';
-    }
-    if (rotateGroup && isActive) {
-      rotateGroup.style.display = 'none';
+      noteGroup.hidden = !isActive;
     }
     defaultTbGroups.forEach((el) => {
-      (el as HTMLElement).style.display = isActive ? 'none' : '';
+      (el as HTMLElement).hidden = isActive;
     });
+    syncRotateGroup();
   });
+}
+
+/**
+ * 저장된 쪽 맞춤/폭 맞춤을 새로 연 문서에 되돌린다.
+ *
+ * 저장값은 배율 수치가 아니라 맞춤 규칙이라, 쪽 크기가 다른 문서에서도 그 문서의 쪽으로
+ * 다시 계산한다. 수치 배율('none')이면 지금 배율을 건드리지 않는다.
+ *
+ * 되돌릴 맞춤은 문서를 열기 **전에** 읽어 인자로 받는다 — 좁은 창의 자동 폭 맞춤처럼
+ * 로드 중에 배율을 정하는 경로가 저장값을 먼저 'none' 으로 지워 버리기 때문이다.
+ */
+function applySavedZoomFitMode(mode: ZoomFitMode): void {
+  if (mode === 'none') return;
+  const vm = canvasView?.getViewportManager();
+  const container = document.getElementById('scroll-container');
+  if (!vm || !container || wasm.pageCount === 0) return;
+  try {
+    // getPageInfo 의 width/height 는 이미 px 단위 (96dpi 기준)
+    const pageInfo = wasm.getPageInfo(0);
+    const zoom = resolveZoomFitZoom(mode, {
+      containerWidth: container.clientWidth,
+      containerHeight: container.clientHeight,
+      pageWidth: pageInfo.width,
+      pageHeight: pageInfo.height,
+      arrangement: userSettings.getViewSettings().pageArrangement,
+    });
+    if (zoom !== null) vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, mode);
+  } catch (error) {
+    console.warn('[main] 저장된 맞춤 배율 복원 실패:', error);
+  }
 }
 
 /** 문서 초기화 공통 시퀀스 (loadFile, createNewDocument 양쪽에서 사용) */
@@ -877,6 +1309,9 @@ async function initializeDocument(
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    setDocumentFontSubstitutions(docInfo.fontSubstitutions);
+    currentDocumentFonts = [...(docInfo.fontsUsed ?? [])];
+    lastAppliedLocalFontGeneration = null;
     console.log('[initDoc] 1. 폰트 로딩 시작');
     await updateLoadProgress(55, '폰트 준비 중...');
     if (docInfo.fontsUsed?.length) {
@@ -886,6 +1321,9 @@ async function initializeDocument(
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
+    // 저장 snapshot은 권한 prompt 없이 읽을 수 있다. Canvas2D 첫 paint의 family 해소가
+    // 이미 승인된 exact local face를 놓치지 않도록 문서 view보다 먼저 준비한다 (#4739).
+    await loadStoredLocalFonts();
     await updateLoadProgress(75, '문서 상태 적용 중...');
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = `구역: 1 / ${totalSections}`;
@@ -894,7 +1332,10 @@ async function initializeDocument(
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
     await updateLoadProgress(82, '페이지 렌더 준비 중...');
+    const savedZoomFitMode = userSettings.getViewSettings().zoomFitMode;
     await canvasView?.loadDocument();
+    // 쪽 크기를 알 수 있는 첫 시점이다 — 저장된 맞춤은 이 문서의 쪽으로 다시 계산한다.
+    applySavedZoomFitMode(savedZoomFitMode);
     prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     console.log('[initDoc] 5. toolbar setEnabled');
     await updateLoadProgress(90, '도구 모음 준비 중...');
@@ -946,40 +1387,18 @@ async function initializeDocument(
 async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: string): Promise<void> {
   if (!docInfo.fontsUsed?.length) return;
 
-  const msg = sbMessage();
+  // 문서를 열 때마다 로컬 글꼴 감지 안내 모달을 띄우면 열람 흐름이 끊긴다. 저장된 감지 결과가
+  // 있으면 그대로 재사용하고, 없으면 대체 글꼴로 조용히 표시한다. 수동 감지는 옵션 대화상자의
+  // '로컬 글꼴 감지하기'로 계속 실행할 수 있다.
   try {
-    await loadStoredLocalFonts();
+    if (!getLocalFontState().loaded) await loadStoredLocalFonts();
     const report = analyzeDocumentFonts(docInfo.fontsUsed);
     if (!report.shouldPromptLocalAccess) return;
-
-    const choice = await showLocalFontsModalIfNeeded(report, {
-      disableExternalWebFonts: extensionViewerSettings.disableExternalWebFonts,
-    });
-    if (choice !== 'detect') return;
-
-    msg.textContent = '로컬 글꼴 감지 중...';
-    const fonts = await detectLocalFonts({
-      force: true,
-      includeRegistered: true,
-      candidateFamilies: docInfo.fontsUsed,
-    });
-    const nextReport = analyzeDocumentFonts(docInfo.fontsUsed);
-    eventBus.emit('local-fonts-changed', { fonts, report: nextReport });
-    prepareCanvasKitLocalFonts(docInfo.fontsUsed);
-    const state = getLocalFontState();
-    const resultLabel = state.source === 'font-presence-probe' ? '확인됨' : '감지됨';
-    msg.textContent = `${displayName} (로컬 글꼴 ${fonts.length}개 ${resultLabel})`;
-    showToast({
-      message: `로컬 글꼴 ${fonts.length}개를 ${resultLabel.replace('됨', '')}하고 저장했습니다.\n다음 문서 로드부터 감지 결과를 재사용합니다.`,
-      durationMs: 5000,
-    });
+    console.log(
+      `[local-fonts] 감지 안내 모달 생략 — 대체 글꼴로 표시 (확인 필요 ${report.summary.needsLocalCheck}개, 문서 ${displayName})`,
+    );
   } catch (error) {
-    console.warn('[local-fonts] 감지 안내/실행 실패 (치명적이지 않음):', error);
-    msg.textContent = displayName;
-    showToast({
-      message: '로컬 글꼴 감지에 실패했습니다.\n웹 대체 글꼴로 계속 표시합니다.',
-      durationMs: 8000,
-    });
+    console.warn('[local-fonts] 저장된 감지 결과 로드 실패 (치명적이지 않음):', error);
   }
 }
 
@@ -1062,9 +1481,21 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string): Promise<
   }
 }
 
+/**
+ * 문서 열기가 실패하면 빈 쪽 상태로 남는다. WASM이 아직 이전 문서를 쥐고 있으면 그 뷰를
+ * 되살려, 열기 실패가 이미 열어 둔 문서를 잃는 일로 번지지 않게 한다.
+ */
+function restoreViewAfterFailedOpen(): void {
+  if (!canvasView || wasm.pageCount === 0) return;
+  void canvasView.loadDocument().catch((error) => {
+    console.warn('[main] 열기 실패 후 이전 문서 뷰 복구 실패:', error);
+  });
+}
+
 function showLoadErrorUnlessCancelled(error: unknown): void {
   if (isDocumentOpenCancelled(error)) {
     sbMessage().textContent = '문서 열기를 취소했습니다.';
+    restoreViewAfterFailedOpen();
     return;
   }
   showLoadError(error);
@@ -1075,16 +1506,16 @@ async function loadFile(
   options: { skipUnsavedGuard?: boolean; fileHandle?: FileSystemFileHandleLike | null } = {},
 ): Promise<boolean> {
   try {
-    if (!options.skipUnsavedGuard) {
-      const canReplace = await confirmSaveBeforeReplacingDocument(commandServices);
-      if (!canReplace) return false;
-    }
-    const startTime = performance.now();
-    await updateLoadProgress(0, '파일 읽는 중...');
-    const data = new Uint8Array(await file.arrayBuffer());
-    await updateLoadProgress(15, '파일 읽기 완료');
-    await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true });
-    return true;
+    if (!await canReplaceCurrentDocument(options.skipUnsavedGuard)) return false;
+    // 대기 커서는 저장 여부 확인(모달) 다음부터 — 사용자가 답해야 하는 동안은 평소 커서다.
+    return await withBusyCursor(document.documentElement, async () => {
+      const startTime = performance.now();
+      await updateLoadProgress(0, '파일 읽는 중...');
+      const data = new Uint8Array(await file.arrayBuffer());
+      await updateLoadProgress(15, '파일 읽기 완료');
+      await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true });
+      return true;
+    });
   } catch (error) {
     showLoadErrorUnlessCancelled(error);
     return false;
@@ -1102,38 +1533,52 @@ async function loadBytes(
   startTime = performance.now(),
   options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
 ): Promise<void> {
-  if (!options.dataReadProgressShown) {
-    await updateLoadProgress(0, '문서 데이터 준비 중...');
-  }
-  await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
-  const docInfo = await loadDocumentForOpen(data, fileName);
-  prepareCanvasRendererDocument();
-  await updateLoadProgress(45, '자동 저장 준비 중...');
-  forgetConvertedHmlSaveHandle(fileHandle);
-  wasm.currentFileHandle = fileHandle;
+  // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
+  // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
+  await withBusyCursor(document.documentElement, async () => {
+    // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
+    // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
+    canvasView?.showBlankPage();
+    if (!options.dataReadProgressShown) {
+      await updateLoadProgress(0, '문서 데이터 준비 중...');
+    }
+    await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
+    const docInfo = await loadDocumentForOpen(data, fileName);
+    prepareCanvasRendererDocument();
+    // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
+    // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
+    plugins.notifyDocumentSwap();
+    await updateLoadProgress(45, '자동 저장 준비 중...');
+    forgetConvertedHmlSaveHandle(fileHandle);
+    wasm.currentFileHandle = fileHandle;
 
-  // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
-  // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
-  // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
-  // 자동저장 복구본은 options.skipRecent 로 제외.
-  if (!options.skipRecent) {
-    void addRecentDoc({
-      fileName: wasm.fileName,
-      sourceFormat: wasm.getSourceFormat(),
-      handle: fileHandle,
-    }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
-  }
+    // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
+    // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
+    // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
+    // 자동저장 복구본은 options.skipRecent 로 제외.
+    if (!options.skipRecent) {
+      recentSubmenuExpanded = false;
+      void addRecentDoc({
+        fileName: wasm.fileName,
+        sourceFormat: wasm.getSourceFormat(),
+        handle: fileHandle,
+      }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
+    }
 
-  await autosaveManager.beginDocument(
-    { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
-    { discardPreviousDraft: true },
-  );
-  await updateLoadProgress(50, '문서 초기화 중...');
-  const elapsed = performance.now() - startTime;
-  await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
-    suppressDialogs: options.suppressDialogs,
+    await autosaveManager.beginDocument(
+      { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+      { discardPreviousDraft: true },
+    );
+    await updateLoadProgress(50, '문서 초기화 중...');
+    const elapsed = performance.now() - startTime;
+    await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
+      suppressDialogs: options.suppressDialogs,
+    });
   });
 }
+
+const RECENT_SUBMENU_COLLAPSED_LIMIT = 8;
+let recentSubmenuExpanded = false;
 
 /** 파일 메뉴 "최근 문서" 서브패널을 최신 목록으로 다시 렌더한다(메뉴 open 시 호출). */
 async function renderRecentSubmenu(): Promise<void> {
@@ -1155,6 +1600,7 @@ async function renderRecentSubmenu(): Promise<void> {
     right?: string;
     disabled?: boolean;
     title?: string;
+    onClick?: () => void;
   }): HTMLElement => {
     const item = document.createElement('div');
     item.className = opts.disabled ? 'md-item disabled' : 'md-item';
@@ -1173,6 +1619,13 @@ async function renderRecentSubmenu(): Promise<void> {
       right.textContent = opts.right;
       item.append(right);
     }
+    if (opts.onClick) {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        opts.onClick?.();
+      });
+    }
     return item;
   };
 
@@ -1180,7 +1633,10 @@ async function renderRecentSubmenu(): Promise<void> {
   if (recents.length === 0) {
     frag.append(makeItem({ label: '(최근 문서 없음)', disabled: true }));
   } else {
-    for (const doc of recents) {
+    const visibleRecents = recentSubmenuExpanded
+      ? recents
+      : recents.slice(0, RECENT_SUBMENU_COLLAPSED_LIMIT);
+    for (const doc of visibleRecents) {
       frag.append(
         makeItem({
           label: doc.fileName,
@@ -1190,6 +1646,15 @@ async function renderRecentSubmenu(): Promise<void> {
           title: doc.fileName,
         }),
       );
+    }
+    if (!recentSubmenuExpanded && recents.length > RECENT_SUBMENU_COLLAPSED_LIMIT) {
+      frag.append(makeItem({
+        label: `최근 문서 더보기 (${recents.length - RECENT_SUBMENU_COLLAPSED_LIMIT}개)`,
+        onClick: () => {
+          recentSubmenuExpanded = true;
+          void renderRecentSubmenu();
+        },
+      }));
     }
     const sep = document.createElement('div');
     sep.className = 'md-sep';
@@ -1251,22 +1716,42 @@ async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
 async function createNewDocument(): Promise<void> {
   const msg = sbMessage();
   try {
-    msg.textContent = '새 문서 생성 중...';
-    const docInfo = wasm.createNewDocument();
-    prepareCanvasRendererDocument();
-    await autosaveManager.beginDocument(
-      { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
-      { discardPreviousDraft: true },
-    );
-    await initializeDocument(docInfo, `새 문서.hwp — ${docInfo.pageCount}페이지`);
+    await withBusyCursor(document.documentElement, async () => {
+      msg.textContent = '새 문서 생성 중...';
+      const docInfo = wasm.createNewDocument();
+      prepareCanvasRendererDocument();
+      plugins.notifyDocumentSwap();
+      await autosaveManager.beginDocument(
+        { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+        { discardPreviousDraft: true },
+      );
+      await initializeDocument(docInfo, `새 문서.hwp — ${docInfo.pageCount}페이지`);
+    });
   } catch (error) {
     msg.textContent = `새 문서 생성 실패: ${error}`;
     console.error('[main] 새 문서 생성 실패:', error);
   }
 }
 
+/**
+ * WASM 초기화 뒤 아무 문서도 열리지 않았으면 빈 문서를 열어 바로 편집할 수 있게 한다.
+ * 회색 작업 영역만 남은 시작 화면은 편집기가 준비되지 않은 것처럼 보인다.
+ * 문서를 넘겨받는 진입점(?url=, 자동저장 복구, PWA launch queue)이 이미 문서를 열었으면
+ * 건드리지 않는다. embed 프로파일은 호스트가 문서 교체를 통제하므로 제외한다.
+ */
+async function openBlankDocumentIfIdle(): Promise<void> {
+  if (chromeMode === 'embed') return;
+  if (wasm.pageCount > 0 || documentState.isDirty()) return;
+  await createNewDocument();
+}
+
 async function canReplaceCurrentDocument(skipUnsavedGuard?: boolean): Promise<boolean> {
-  return skipUnsavedGuard === true || await confirmSaveBeforeReplacingDocument(commandServices);
+  return skipUnsavedGuard === true || await confirmSaveBeforeReplacingDocument(commandServices, {
+    // embed: unsaved guard의 '저장'은 registry를 우회한 직접 호출이라 커맨드 필터로는
+    // 닫히지 않고, 로컬 저장은 호스트 저장소에 반영되지 않은 채 dirty만 해제한다 —
+    // 다이얼로그에서 로컬 저장 선택지를 막고, 버릴지/취소할지는 사용자가 고른다.
+    allowLocalSave: chromeMode !== 'embed',
+  });
 }
 
 // 커맨드에서 새 문서 생성 호출
@@ -1310,6 +1795,11 @@ eventBus.on('open-document-bytes', async (payload) => {
 // 수식 더블클릭 → 수식 편집 대화상자
 eventBus.on('equation-edit-request', () => {
   dispatcher.dispatch('insert:equation-edit');
+});
+
+// [#4694] 차트 더블클릭 → 차트 데이터 편집 대화상자
+eventBus.on('chart-data-edit-request', () => {
+  dispatcher.dispatch('insert:chart-data-edit');
 });
 
 /**
@@ -1430,6 +1920,7 @@ function showLoadError(error: unknown): void {
   const sb = sbMessage();
   if (sb) sb.textContent = errMsg;
   console.error('[main] 파일 로드 실패:', error);
+  restoreViewAfterFailedOpen();
   showToast({
     message: errMsg,
     durationMs: 0, // 에러는 자동 페이드 없음 — 사용자가 읽고 닫기
@@ -1438,10 +1929,19 @@ function showLoadError(error: unknown): void {
 }
 
 const initPromise = initialize();
+// 첫 실행이면 스킨 선택을 안내한다 (초기화 성공 후, 임베드 모드 제외).
+// initialize() 는 실패해도 내부에서 삼키고 resolve 하므로, 렌더러가 실제로
+// 준비된 경우에만 띄운다 — 실패 화면 위에 안내가 겹치고 1회성 플래그가
+// 소모되는 것을 막는다.
+void initPromise.then(() => {
+  if (!rendererInitialized) return;
+  maybeShowSkinOnboarding();
+});
 
 installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
+  subscribeDocumentChanged: (listener) => eventBus.on('document-agent-changed', listener),
   handlers: {
     async ready() {
       await initPromise;
@@ -1476,6 +1976,16 @@ installEmbedRuntime({
         },
       };
     },
+    async getFontDecisionTrace(pageIndex, maxCharacters) {
+      await initPromise;
+      return enrichFontDecisionTrace(
+        wasm.getFontDecisionTrace(pageIndex, maxCharacters),
+        {
+          canvasKitEvidence: record =>
+            canvasView?.getCanvasKitFontDecisionEvidence(pageIndex, record) ?? null,
+        },
+      );
+    },
     async getPageSvg(page) {
       await initPromise;
       return wasm.renderPageSvg(page);
@@ -1504,5 +2014,48 @@ installEmbedRuntime({
       await initPromise;
       return completeHostSave(fileName);
     },
+    async getDocumentState() {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.getDocumentState();
+    },
+    async getSelectionContext() {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.getSelectionContext();
+    },
+    async applyTextCommand(command) {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.applyTextCommand(command);
+    },
+    async revertTextCommand(command) {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.revertTextCommand(command);
+    },
+    async focusTarget(target) {
+      await initPromise;
+      if (!documentAgent) throw new Error('Document agent is not initialized');
+      return documentAgent.focusTarget(target);
+    },
+
+    // ── 브리지 확장 (P4) — 자동화·플러그인·창 제어 ─────────
+    // 부모가 보내는 것은 데이터뿐이다. 함수를 받는 표면(확장 커맨드 등록)은 iframe 안의
+    // 플러그인만 쓸 수 있고, 그래서 RPC 에 없다.
+    async automationList() { await initPromise; return automation.listCommands(); },
+    async automationMenuModel() { await initPromise; return automation.getMenuModel(); },
+    async automationIsEnabled(id) { await initPromise; return automation.isEnabled(id); },
+    async automationExecute(id, params, options) {
+      await initPromise;
+      return automation.execute(id, params, options);
+    },
+    async automationContext() { await initPromise; return automation.getContext(); },
+    async pluginList() { await initPromise; return plugins.list(); },
+    async pluginLoad(id) { await initPromise; return plugins.load(id); },
+    async pluginUnload(id) { await initPromise; await plugins.unload(id); return { ok: true }; },
+    async pluginInvoke(id, method, args) { await initPromise; return plugins.invoke(id, method, args); },
+    async chromeGet() { return getChromeVisibility(); },
+    async chromeSet(next) { return setChromeVisibility(next as Partial<ChromeVisibility>); },
   },
 });

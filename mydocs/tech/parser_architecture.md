@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/parser_architecture.md
-last_verified: 2026-07-17
+last_verified: 2026-08-12
 ---
 
 # 포맷 파서와 공통 Document IR 경계
@@ -22,6 +22,37 @@ rhwp의 HWPX, HWP5, HWP3 파서는 포맷별 입력을 하나의 공통 `Documen
 - 포맷별 레코드, XML, 인코딩 차이는 해당 파서 경계를 넘기지 않는다.
 - 공통 모듈은 포맷 이름이 아니라 IR 속성과 의미를 기준으로 동작한다.
 - 저장 포맷별 직렬화 차이는 해당 serializer 또는 명시적인 변환 계층에서 처리한다.
+
+## 문서 열기 자원 예산
+
+문서 열기 과정에서 공격자 제어 압축 스트림이 무제한 출력을 만들지 않도록 다음 결정적 byte 예산을
+적용한다. 이 수치는 HWP 또는 OWPML 규격의 유효성 상한이 아니라 rhwp 구현의 자원 정책이다.
+
+| 경로 | 단일 출력 상한 | 문서 누적 상한 | 초과 동작 |
+| --- | ---: | ---: | --- |
+| HWP5 `DocInfo`, 각 `BodyText/SectionN` | 256 MiB | `DocInfo`와 모든 본문 섹션 합계 512 MiB | 문서 열기 오류 |
+| HWP3 압축 본문 | 256 MiB | 별도 누적 없음 | 문서 열기 오류 |
+
+- HWP5의 strict·lenient, 일반·배포용·비밀번호 암호 경로는 같은 예산을 사용한다.
+- 예산의 **선택**은 완전 문서 열기 진입점(`parse_hwp*`, `parse_document*`,
+  `hwp3::parse_hwp3*`)에만 있다. CFB/crypto의 일반 decode API는 제품 기본 상한을 import하지
+  않으며, 호출자가 준 `max_bytes`를 기계적으로 적용하는 `_limited` API만 제공한다.
+- HWP5 비압축 `DocInfo`와 본문도 같은 길이 검사를 받는다. 따라서 이 계약은 압축 폭탄 방지인 동시에
+  해당 핵심 스트림의 일반 크기 정책이다.
+- 초과 출력을 잘라서 부분 문서로 열거나 빈 섹션으로 대체하지 않는다. 예산 초과를 명시적 파싱 오류로
+  반환해 조용한 내용 손실을 막는다.
+- `BinData`, preview와 기타 보조 스트림은 이 누적 예산의 대상이 아니다. 각 소비 경로의 별도 자원
+  정책을 적용한다. 특히 암호 BinData materialize의 상한은 그 consumer인 parser가 명시적으로
+  전달하며, 핵심 문서 열기 예산과 섞지 않는다.
+- `dump-records`와 등록 HWP5 raw-record diagnostics처럼 문서를 독립적으로 여는 consumer는
+  문서 열기 예산을 import하지 않고, 각 consumer 소유의 이름 붙은 상한을 limited CFB/crypto API에
+  명시적으로 전달한다.
+
+2026-08-12 이전 검토 code head에서의 비공개 10k 코퍼스 전수 검증에서는 제한 초과가 0건이었다.
+이는 현재 correction commit을 다시 전수 실행한 결과가 아니라, 같은 256/512 MiB 수치의 호환성
+근거다. HWP5 단일 스트림 최대는
+21,606,061 bytes(20.61 MiB), `DocInfo`와 본문 누적 최대는 21,678,881 bytes(20.67 MiB)였다.
+이는 현재 코퍼스의 호환성 근거이며 모든 실문서가 상한 안이라는 규격 증명은 아니다.
 
 ## HWP3 불변식
 

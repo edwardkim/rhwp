@@ -1,17 +1,22 @@
 [package]
 name = "rhwp"
-version = "0.8.4"
+version = "0.8.6"
 edition = "2021"
 description = "HWP file viewer and editor written in Rust, targeting WebAssembly"
 license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
+autotests = false
 
 [workspace]
-members = [".", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert"]
+members = [".", "crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
+default-members = [".", "crates/*"]
 resolver = "2"
 
 [lib]
-# Dioxus CLI 0.7.10 classifies the first crate type when capturing hot-patch args.
+# rhwp 는 Rust 라이브러리가 먼저다 — CLI 두 개, `bindings/Native`, `tools/*` 가 전부 rlib 으로
+# 링크한다. 브라우저용 cdylib 이 그 다음이다. 이 순서는 Dioxus CLI 가 핫패치 인자를 잡을 때 첫
+# crate type 으로 분류하는 규칙과도 맞아떨어진다 — 뒤집으면 `--hot-patch` 가 조용히 안 먹는다.
+# (버전은 여기 적지 않는다. 유일한 사본은 아래 `subsecond` 의 정확 핀이다 — #4580.)
 crate-type = ["rlib", "cdylib"]
 
 [[bin]]
@@ -22,7 +27,207 @@ path = "src/main.rs"
 name = "font-metric-gen"
 path = "src/tools/font_metric_gen.rs"
 
+# BEGIN RHWP GENERATED TEST TARGETS
+# tests/suites/manifest.json에서 생성한다. 직접 수정하지 않는다.
+
+[[test]]
+name = "regression_suite_001"
+path = "tests/generated/regression_suite_001.rs"
+
+[[test]]
+name = "regression_suite_002"
+path = "tests/generated/regression_suite_002.rs"
+
+[[test]]
+name = "regression_suite_003"
+path = "tests/generated/regression_suite_003.rs"
+
+[[test]]
+name = "regression_suite_004"
+path = "tests/generated/regression_suite_004.rs"
+
+[[test]]
+name = "regression_suite_005"
+path = "tests/generated/regression_suite_005.rs"
+
+[[test]]
+name = "regression_suite_006"
+path = "tests/generated/regression_suite_006.rs"
+
+[[test]]
+name = "regression_suite_007"
+path = "tests/generated/regression_suite_007.rs"
+
+[[test]]
+name = "regression_suite_008"
+path = "tests/generated/regression_suite_008.rs"
+
+[[test]]
+name = "regression_suite_009"
+path = "tests/generated/regression_suite_009.rs"
+
+[[test]]
+name = "regression_suite_010"
+path = "tests/generated/regression_suite_010.rs"
+
+[[test]]
+name = "regression_suite_011"
+path = "tests/generated/regression_suite_011.rs"
+
+[[test]]
+name = "regression_suite_012"
+path = "tests/generated/regression_suite_012.rs"
+
+[[test]]
+name = "regression_suite_013"
+path = "tests/generated/regression_suite_013.rs"
+
+[[test]]
+name = "regression_suite_014"
+path = "tests/generated/regression_suite_014.rs"
+
+[[test]]
+name = "regression_suite_015"
+path = "tests/generated/regression_suite_015.rs"
+
+[[test]]
+name = "regression_suite_016"
+path = "tests/generated/regression_suite_016.rs"
+
+[[test]]
+name = "regression_suite_017"
+path = "tests/generated/regression_suite_017.rs"
+
+[[test]]
+name = "regression_suite_018"
+path = "tests/generated/regression_suite_018.rs"
+
+[[test]]
+name = "regression_suite_019"
+path = "tests/generated/regression_suite_019.rs"
+
+[[test]]
+name = "regression_suite_020"
+path = "tests/generated/regression_suite_020.rs"
+
+[[test]]
+name = "regression_suite_021"
+path = "tests/generated/regression_suite_021.rs"
+
+[[test]]
+name = "regression_suite_022"
+path = "tests/generated/regression_suite_022.rs"
+
+[[test]]
+name = "regression_suite_023"
+path = "tests/generated/regression_suite_023.rs"
+
+[[test]]
+name = "regression_suite_024"
+path = "tests/generated/regression_suite_024.rs"
+
+[[test]]
+name = "regression_suite_025"
+path = "tests/generated/regression_suite_025.rs"
+
+[[test]]
+name = "regression_suite_026"
+path = "tests/generated/regression_suite_026.rs"
+
+[[test]]
+name = "regression_suite_027"
+path = "tests/generated/regression_suite_027.rs"
+
+[[test]]
+name = "regression_suite_028"
+path = "tests/generated/regression_suite_028.rs"
+
+[[test]]
+name = "cli_exit_codes"
+path = "tests/cli_exit_codes.rs"
+
+[[test]]
+name = "cli_exit_codes_native"
+path = "tests/cli_exit_codes_native.rs"
+
+[[test]]
+name = "issue_1144"
+path = "tests/issue_1144.rs"
+
+[[test]]
+name = "issue_1144_native"
+path = "tests/issue_1144_native.rs"
+
+[[test]]
+name = "issue_2833_hml_adapter_row_sizes"
+path = "tests/issue_2833_hml_adapter_row_sizes.rs"
+
+[[test]]
+name = "issue_4055_b1_chart_edit_probe"
+path = "tests/issue_4055_b1_chart_edit_probe.rs"
+
+[[test]]
+name = "issue_4098_legacy_chart_grid"
+path = "tests/issue_4098_legacy_chart_grid.rs"
+
+[[test]]
+name = "issue_4099_hwpx_chart_to_hwp"
+path = "tests/issue_4099_hwpx_chart_to_hwp.rs"
+
+[[test]]
+name = "issue_4100_chart_data_edit"
+path = "tests/issue_4100_chart_data_edit.rs"
+
+[[test]]
+name = "issue_4126_cursor_rect_empty_para_pages"
+path = "tests/issue_4126_cursor_rect_empty_para_pages.rs"
+
+[[test]]
+name = "issue_4128_cell_cursor_page_narrowing"
+path = "tests/issue_4128_cell_cursor_page_narrowing.rs"
+
+[[test]]
+name = "issue_4179_cursor_rect_text_host_para_pages"
+path = "tests/issue_4179_cursor_rect_text_host_para_pages.rs"
+
+[[test]]
+name = "issue_4969_shaping_composition_handoff"
+path = "tests/cases/issue_4969_shaping_composition_handoff.rs"
+
+[[test]]
+name = "issue_4969_shaping_emitted_run_mapping"
+path = "tests/cases/issue_4969_shaping_emitted_run_mapping.rs"
+
+[[test]]
+name = "issue_4969_shaping_glyph_lowering"
+path = "tests/cases/issue_4969_shaping_glyph_lowering.rs"
+
+[[test]]
+name = "issue_4969_shaping_page_sidecar"
+path = "tests/cases/issue_4969_shaping_page_sidecar.rs"
+
+[[test]]
+name = "issue_4969_shaping_paragraph_transaction"
+path = "tests/cases/issue_4969_shaping_paragraph_transaction.rs"
+
+[[test]]
+name = "issue_4969_shaping_request_contract"
+path = "tests/cases/issue_4969_shaping_request_contract.rs"
+
+[[test]]
+name = "issue_4969_shaping_shadow_context"
+path = "tests/cases/issue_4969_shaping_shadow_context.rs"
+
+[[test]]
+name = "overflow_cell_baseline"
+path = "tests/overflow_cell_baseline.rs"
+
+# END RHWP GENERATED TEST TARGETS
+
 [dependencies]
+rhwp-contracts = { path = "crates/rhwp-contracts" }
+rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart" }
+rhwp-password-crypto = { path = "crates/rhwp-password-crypto" }
 wasm-bindgen = "0.2"
 cfb = "0.14"
 crc32fast = "1"
@@ -32,18 +237,43 @@ byteorder = "1.5"
 base64 = "0.23"
 # [#4509] 캡슐 서명(4년 축) — 결정론 서명이라 replay/lineage 의 결정론 문화와
 # 정합. 순수 Rust 라 wasm 타깃도 그대로 컴파일된다.
-ed25519-dalek = "2"
+ed25519-dalek = "3"
+# 양자내성 서명(ML-DSA / Dilithium, NIST FIPS 204) — Ed25519 는 Shor 로 깨지므로
+# 작업캡슐·출처 서명을 양자 이후에도 살리는 확장. 순수 Rust 라 wasm 도 그대로 컴파일된다.
+# 시드(32B) 결정론 키생성·결정론 서명만 쓰므로 crate 의 getrandom/rand_core/pkcs8 기능은
+# 끄고(엔트로피는 프로젝트의 getrandom::fill 로 공급) alloc 만 켠다 — 의존 표면 최소화.
+ml-dsa = { version = "0.1", default-features = false, features = ["alloc"] }
 aes = "0.9"
 cbc = "0.2"
 cipher = "0.5"
 hmac = "0.13"
 pbkdf2 = "0.13"
 getrandom = { version = "0.4", features = ["wasm_js"] }
+# [agent_seal] 에이전트 전용 완전 엔트로피 봉인(1번 모드)도 아래 보안 트레일러와
+# 같은 XChaCha20-Poly1305를 쓴다. OTP(2번 모드)는 XOR+getrandom뿐이라 별도
+# 의존성이 없다.
 sha1 = "0.11"
 sha2 = "0.11"
 blake3 = "1"
+# [보안 트레일러] HWP3 강암호 append 트레일러 — memory-hard KDF(Argon2id) +
+# misuse-resistant AEAD(XChaCha20-Poly1305). 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
+#
+# 기본 피처는 끈다 — argon2 의 `rand`/`password-hash` 와 chacha20poly1305 의
+# `getrandom` 은 rand_core 0.6 을 거쳐 **getrandom 0.2** 를 끌어오는데, 0.2 는
+# wasm32-unknown-unknown 에서 `js` 피처 없이는 compile_error! 로 죽는다(이
+# 저장소는 getrandom 0.4 + wasm_js 를 쓴다). 여기 코드는 소금·논스를
+# `getrandom::fill` 로 직접 만들고 저수준 Argon2 API 만 쓰므로 그 피처가
+# 필요 없다 — 끊어 두면 wasm 빌드가 구버전 getrandom 을 아예 만나지 않는다.
+argon2 = { version = "0.6", default-features = false, features = ["alloc"] }
+chacha20poly1305 = { version = "0.11", default-features = false, features = ["alloc"] }
+zeroize = "1"
+# [보안 트레일러 · 포스트양자] ML-KEM-768(NIST FIPS 203) 격자 KEM — 공개키 봉인의
+# 양자안전 키교환. 대칭부(XChaCha20-Poly1305)는 이미 양자내성이고, Shor 에 깨지는
+# 비대칭 키교환만 격자 KEM 으로 교체한다. 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
+ml-kem = "0.3"
+rand_core = "0.10"
 zip = { version = "8.5", default-features = false, features = ["deflate"] }
-quick-xml = "0.41"
+quick-xml = "0.42"
 roxmltree = "0.21"
 svgtypes = "0.16"
 codepage = "0.1.2"
@@ -60,14 +290,23 @@ pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ttf-parser = "0.25"
+rustybuzz = "0.20"
 
 console_error_panic_hook = { version = "0.1", optional = true }
+# [#4580] 핫패치 버전의 **유일한** 사본. `dx` 가 만든 점프 테이블을 이 크레이트가 역직렬화하므로
+# 설치할 dioxus-cli 도 같은 버전이어야 한다 — `scripts/dioxus-cli-version.mjs` 가 여기서 유도한다.
+# 정확 핀(`=`)이 아니면 그 유도가 성립하지 않는다.
 subsecond = { version = "=0.7.10", optional = true }
 
 [features]
 default = ["console_error_panic_hook"]
 native-skia = ["dep:resvg", "dep:skia-safe"]
 subsecond-dev = ["dep:subsecond"]
+# [gym_gpu_raster] GPU 가속 SVG 래스터화 경로 (네이티브 전용). native-skia 와 같은 방식으로
+# 선택 게이팅한다 — CI 는 GPU 없이도 컴파일되고, 실제 GPU 실행은 로컬에서만 일어난다.
+# vello(+vello_svg)로 SVG 를 GPU 래스터화하고, resvg(CPU)를 같은 usvg 트리로 돌려 정직한
+# 벤치마크 기준선으로 삼는다.
+gpu = ["dep:vello", "dep:vello_svg", "dep:pollster", "dep:resvg-gpu"]
 
 # PDF 내보내기 (네이티브 전용, Task #21)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -77,6 +316,17 @@ resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
 subsetter = "0.2"
 skia-safe = { version = "0.99.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
+
+# [gym_gpu_raster] GPU 래스터화 스택 (feature = "gpu", 네이티브 전용).
+# vello: Linebender 의 GPU 2D 렌더러(컴퓨트 파이프라인). vello_svg: usvg 트리 → vello Scene.
+# pollster: 헤드리스라 이벤트 루프가 없으므로 wgpu 의 async(adapter/device/버퍼매핑)를 블로킹.
+# resvg-gpu: CPU 기준선. vello_svg 0.10 과 usvg 0.46 를 공유하도록 0.46 로 핀했다(같은 트리를
+# 두 래스터라이저에 동일 입력으로 넣어 벤치마크·픽셀비교를 성립). native-skia 의 resvg 0.47 과
+# 별개 버전으로 공존한다.
+vello = { version = "0.10", optional = true }
+vello_svg = { version = "0.10", optional = true }
+pollster = { version = "1.0", optional = true }
+resvg-gpu = { package = "resvg", version = "0.46", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = [
@@ -102,6 +352,11 @@ zip = { version = "8.5", default-features = false, features = ["deflate"] }
 # [#4378] CAS 계약 테스트가 기대 해시를 스스로 계산한다 — 위 [dependencies] 와
 # 같은 버전이라 의존성 그래프도 산출물도 그대로다(zip 선례와 동일).
 sha2 = "0.11"
+# [#5363] M04-1 편집 계획 시퀀스 생성기. 왕복 property 본체는 M04-2/3.
+# [#5376] M04-2 HWPX 왕복 property. 기존 run step 만 조합한다. 왕복 본체는 통합 시험.
+# [#5382] M04-3 HWP5 왕복 property. 기존 run step 만 조합한다. 왕복 본체는 통합 시험.
+# [#5388] M04-4 왕복 property CI 배선. 문서 IrDiff-0 본체는 M04-2/3.
+proptest = "1.6"
 
 # ── Clippy 린트 정책 ──
 # 리팩토링(타스크 142) 각 단계 완료 시 allow → warn → deny 전환

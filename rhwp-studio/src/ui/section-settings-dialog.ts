@@ -3,7 +3,8 @@ import type { WasmBridge } from '@/core/wasm-bridge';
 import type { SectionDef } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
-import { applyThroughRouter } from './dialog-apply';
+import { applyCommandThroughRouter } from './dialog-apply';
+import { SetSectionPropsAllCommand, SetSectionPropsCommand } from '@/engine/command';
 
 const HWPUNIT_PER_PT = 100; // 1pt = 100 HWPUNIT (HWP 내부 단위)
 
@@ -161,12 +162,34 @@ export class SectionSettingsDialog extends ModalDialog {
     const apply = () => scope === 'all'
       ? this.wasm.setSectionDefAll(newDef)
       : this.wasm.setSectionDef(this.sectionIdx, newDef);
-    // [구역 설정 이관] snapshot 으로 라우팅(#2077 동형). services 미주입 시 직접 적용 fallback.
-    return applyThroughRouter({
+    // [구역 설정 이관 → #5769 Stage 4 역연산화] 현재 구역 적용은 속성쌍 커맨드로
+    // 스냅샷 없이 되돌린다(raw 저널 포함 — SetSectionPropsCommand 참조).
+    if (scope !== 'all') {
+      // before 는 변경 전에 읽는다 — undo 가 이 값으로 되돌리고 raw 도 함께 복원한다.
+      const before = this.wasm.getSectionDef(this.sectionIdx);
+      return applyCommandThroughRouter({
+        services: this.services,
+        label: 'SectionSettingsDialog',
+        command: (ih) => ({
+          kind: 'command',
+          command: new SetSectionPropsCommand(this.sectionIdx, before, newDef, ih.getCursorPosition()),
+        }),
+        fallback: () => { if (apply().ok) this.eventBus.emit('document-changed'); },
+      });
+    }
+    // [#5769 후속2] 문서 전체(all)도 역연산화 — 구역별 before 를 변경 전에 읽어
+    // 다구역 raw 저널 커맨드로 되돌린다(SetSectionPropsAllCommand 참조).
+    const sections = Array.from({ length: this.wasm.getSectionCount() }, (_, idx) => ({
+      idx,
+      before: this.wasm.getSectionDef(idx),
+    }));
+    return applyCommandThroughRouter({
       services: this.services,
       label: 'SectionSettingsDialog',
-      operationType: 'sectionSettings',
-      operation: (ih) => { apply(); return ih.getCursorPosition(); },
+      command: (ih) => ({
+        kind: 'command',
+        command: new SetSectionPropsAllCommand(sections, newDef, ih.getCursorPosition()),
+      }),
       fallback: () => { if (apply().ok) this.eventBus.emit('document-changed'); },
     });
   }

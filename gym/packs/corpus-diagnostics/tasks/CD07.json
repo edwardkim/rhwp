@@ -1,0 +1,33 @@
+{
+  "id": "CD07",
+  "tier": 2,
+  "title": "형식 변환 계약",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력을 HWP5 로 변환한 conv.hwp 를 제출하라. 변환 봉투의 형식 표기를 함께 answer.json 에 {\"format\": \"...\"} 로 적어라. 힌트: rhwp convert.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "변환물 실재",
+      "op": "file_exists",
+      "file": "conv.hwp",
+      "minBytes": 1024
+    },
+    {
+      "name": "형식 표기",
+      "op": "answer_eq",
+      "answer": "format",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

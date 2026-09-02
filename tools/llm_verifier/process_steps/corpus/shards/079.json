@@ -1,0 +1,5678 @@
+{
+  "schemaVersion": "v-step.1.0",
+  "shardId": "079",
+  "records": [
+    {
+      "recordId": "vstep-000949-s0",
+      "episodeId": "ep-000949",
+      "sourceTag": "금융위원회/예규/2020/0949#delete-row/s0/8/pagecount-and-fill-fail",
+      "stepIndex": 0,
+      "stepKind": "delete-row",
+      "source": "samples/gov/금융위원회_예규_2020_0949.hwpx",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/금융위원회_예규_2020_0949.hwpx",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 228,
+                "actual": 228,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "전자우편",
+                "actual": "전자우편",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 153876,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true,
+            "paraCount": 71,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 14,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/금융위원회_예규_2020_0949.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "전자우편",
+                "occurrence": 0,
+                "value": "전자우편-값-0948-0"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 1,
+                "value": "사업자등록번호-값-0948-1"
+              }
+            ],
+            "notFound": [
+              "없는필드3"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000949-s1",
+      "episodeId": "ep-000949",
+      "sourceTag": "금융위원회/예규/2020/0949#apply-char-format/s1/1/verify-fail",
+      "stepIndex": 1,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/금융위원회_예규_2020_0949.hwpx",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/금융위원회_예규_2020_0949.hwpx",
+        "--bold",
+        "-o",
+        "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 245,
+                "actual": 230,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "사업자등록번호",
+                "actual": "사업자등록번호",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 156205,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false,
+            "paraCount": 88,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/금융위원회_예규_2020_0949.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/금융위원회_예규_2020_0949_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "사업자등록번호",
+                "occurrence": 0,
+                "value": "사업자등록번호-값-0965-0"
+              },
+              {
+                "name": "법인명",
+                "occurrence": 1,
+                "value": "법인명-값-0965-1"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 2,
+                "value": "대표자-값-0965-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000950-s0",
+      "episodeId": "ep-000950",
+      "sourceTag": "방송통신위원회/예규/2020/0950#apply-char-format/s0/9/all-pass-empty-page",
+      "stepIndex": 0,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/방송통신위원회_예규_2020_0950.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/방송통신위원회_예규_2020_0950.hwp",
+        "--bold",
+        "-o",
+        "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "pageCount": 15,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 15,
+                "actual": 15,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 229,
+                "actual": 229,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "사업자등록번호",
+                "actual": "사업자등록번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 15
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 154013,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false,
+            "paraCount": 72,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 15,
+            "expectedPageCount": 15,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/방송통신위원회_예규_2020_0950.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "사업자등록번호",
+                "occurrence": 0,
+                "value": "사업자등록번호-값-0949-0"
+              },
+              {
+                "name": "법인명",
+                "occurrence": 1,
+                "value": "법인명-값-0949-1"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 2,
+                "value": "대표자-값-0949-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000950-s1",
+      "episodeId": "ep-000950",
+      "sourceTag": "방송통신위원회/예규/2020/0950#fill-fields/s1/2/layout-strict-overflow",
+      "stepIndex": 1,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/방송통신위원회_예규_2020_0950.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/방송통신위원회_예규_2020_0950.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "--expect-pages",
+            "14",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "pageCount": 14,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 14,
+                "actual": 14,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 246,
+                "actual": 246,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "법인명",
+                "actual": "법인명",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 14
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 7.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 156342,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false,
+            "paraCount": 89,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 14,
+            "expectedPageCount": 14,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/방송통신위원회_예규_2020_0950.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/방송통신위원회_예규_2020_0950_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "법인명",
+                "occurrence": 0,
+                "value": "법인명-값-0966-0"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 1,
+                "value": "대표자-값-0966-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000951-s0",
+      "episodeId": "ep-000951",
+      "sourceTag": "개인정보보호위원회/예규/2020/0951#fill-fields/s0/0/all-pass",
+      "stepIndex": 0,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/개인정보보호위원회_예규_2020_0951.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/개인정보보호위원회_예규_2020_0951.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 230,
+                "actual": 230,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "법인명",
+                "actual": "법인명",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 154150,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 73,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/개인정보보호위원회_예규_2020_0951.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "법인명",
+                "occurrence": 0,
+                "value": "법인명-값-0950-0"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 1,
+                "value": "대표자-값-0950-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000951-s1",
+      "episodeId": "ep-000951",
+      "sourceTag": "개인정보보호위원회/예규/2020/0951#replace-text/s1/3/pagecount-mismatch",
+      "stepIndex": 1,
+      "stepKind": "replace-text",
+      "source": "samples/gov/개인정보보호위원회_예규_2020_0951.hwp",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/개인정보보호위원회_예규_2020_0951.hwp",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "--expect-pages",
+            "15",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "pageCount": 15,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 15,
+                "actual": 15,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 247,
+                "actual": 247,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "대표자",
+                "actual": "대표자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 15
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 156479,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 17,
+            "expectedPageCount": 15,
+            "pageCountMismatch": true,
+            "paraCount": 90,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 15,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/개인정보보호위원회_예규_2020_0951.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/개인정보보호위원회_예규_2020_0951_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "대표자",
+                "occurrence": 0,
+                "value": "대표자-값-0967-0"
+              },
+              {
+                "name": "담당부서",
+                "occurrence": 1,
+                "value": "담당부서-값-0967-1"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 2,
+                "value": "담당자-값-0967-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000952-s0",
+      "episodeId": "ep-000952",
+      "sourceTag": "국민권익위원회/예규/2020/0952#replace-text/s0/1/verify-fail",
+      "stepIndex": 0,
+      "stepKind": "replace-text",
+      "source": "samples/gov/국민권익위원회_예규_2020_0952.hwpx",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/국민권익위원회_예규_2020_0952.hwpx",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "pageCount": 17,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 17,
+                "actual": 17,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 231,
+                "actual": 216,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "대표자",
+                "actual": "대표자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 17
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 154287,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 74,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국민권익위원회_예규_2020_0952.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "대표자",
+                "occurrence": 0,
+                "value": "대표자-값-0951-0"
+              },
+              {
+                "name": "담당부서",
+                "occurrence": 1,
+                "value": "담당부서-값-0951-1"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 2,
+                "value": "담당자-값-0951-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000952-s1",
+      "episodeId": "ep-000952",
+      "sourceTag": "국민권익위원회/예규/2020/0952#delete-text/s1/4/fill-verify-ir-diff",
+      "stepIndex": 1,
+      "stepKind": "delete-text",
+      "source": "samples/gov/국민권익위원회_예규_2020_0952.hwpx",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/국민권익위원회_예규_2020_0952.hwpx",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "--expect-pages",
+            "16",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "pageCount": 16,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 16,
+                "actual": 16,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 248,
+                "actual": 248,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 16
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 156616,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false,
+            "paraCount": 91,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 16,
+            "expectedPageCount": 16,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국민권익위원회_예규_2020_0952.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국민권익위원회_예규_2020_0952_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-0968-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-0968-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000953-s0",
+      "episodeId": "ep-000953",
+      "sourceTag": "국가인권위원회/예규/2020/0953#delete-text/s0/2/layout-strict-overflow",
+      "stepIndex": 0,
+      "stepKind": "delete-text",
+      "source": "samples/gov/국가인권위원회_예규_2020_0953.hwp",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/국가인권위원회_예규_2020_0953.hwp",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 232,
+                "actual": 232,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 11.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 154424,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false,
+            "paraCount": 75,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가인권위원회_예규_2020_0953.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가인권위원회_예규_2020_0953_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-0952-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-0952-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000953-s1",
+      "episodeId": "ep-000953",
+      "sourceTag": "국가인권위원회/예규/2020/0953#insert-text/s1/5/verify-io",
+      "stepIndex": 1,
+      "stepKind": "insert-text",
+      "source": "samples/gov/국가인권위원회_예규_2020_0953.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/국가인권위원회_예규_2020_0953.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+            "--expect-pages",
+            "17",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 156753,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false,
+            "paraCount": 92,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 17,
+            "expectedPageCount": 17,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국가인권위원회_예규_2020_0953.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국가인권위원회_예규_2020_0953_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-0969-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-0969-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-0969-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000954-s0",
+      "episodeId": "ep-000954",
+      "sourceTag": "통계청/예규/2020/0954#insert-text/s0/3/pagecount-mismatch",
+      "stepIndex": 0,
+      "stepKind": "insert-text",
+      "source": "samples/gov/통계청_예규_2020_0954.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/통계청_예규_2020_0954.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/통계청_예규_2020_0954_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "--expect-pages",
+            "19",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "pageCount": 19,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 19,
+                "actual": 19,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 233,
+                "actual": 233,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당자",
+                "actual": "담당자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 19
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 154561,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 22,
+            "expectedPageCount": 19,
+            "pageCountMismatch": true,
+            "paraCount": 76,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 22,
+            "expectedPageCount": 19,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통계청_예규_2020_0954.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통계청_예규_2020_0954_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-0953-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-0953-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-0953-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000954-s1",
+      "episodeId": "ep-000954",
+      "sourceTag": "통계청/예규/2020/0954#redact/s1/6/layout-usage",
+      "stepIndex": 1,
+      "stepKind": "redact",
+      "source": "samples/gov/통계청_예규_2020_0954.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/통계청_예규_2020_0954.hwp",
+        "-o",
+        "output/gov/통계청_예규_2020_0954_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/통계청_예규_2020_0954_s1.hwp",
+            "--expect-pages",
+            "18",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통계청_예규_2020_0954_s1.hwp",
+            "pageCount": 18,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 18,
+                "actual": 18,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 250,
+                "actual": 250,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 18
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/통계청_예규_2020_0954_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/통계청_예규_2020_0954_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통계청_예규_2020_0954_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 156890,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false,
+            "paraCount": 93,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 18,
+            "expectedPageCount": 18,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/통계청_예규_2020_0954.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/통계청_예규_2020_0954_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/통계청_예규_2020_0954_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-0970-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-0970-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000955-s0",
+      "episodeId": "ep-000955",
+      "sourceTag": "기상청/예규/2020/0955#redact/s0/4/fill-verify-ir-diff",
+      "stepIndex": 0,
+      "stepKind": "redact",
+      "source": "samples/gov/기상청_예규_2020_0955.hwpx",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/기상청_예규_2020_0955.hwpx",
+        "-o",
+        "output/gov/기상청_예규_2020_0955_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "--expect-pages",
+            "2",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "pageCount": 2,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 2,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 234,
+                "actual": 234,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 154698,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 2,
+            "expectedPageCount": 2,
+            "pageCountMismatch": false,
+            "paraCount": 77,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 2,
+            "expectedPageCount": 2,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/기상청_예규_2020_0955.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-0954-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-0954-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000955-s1",
+      "episodeId": "ep-000955",
+      "sourceTag": "기상청/예규/2020/0955#sanitize/s1/7/verify-and-layout-fail",
+      "stepIndex": 1,
+      "stepKind": "sanitize",
+      "source": "samples/gov/기상청_예규_2020_0955.hwpx",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/기상청_예규_2020_0955.hwpx",
+        "-o",
+        "output/gov/기상청_예규_2020_0955_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "--expect-pages",
+            "19",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "pageCount": 19,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 19,
+                "actual": 19,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 251,
+                "actual": 236,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "시행일자",
+                "actual": "시행일자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 19
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 4.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 157027,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 19,
+            "expectedPageCount": 19,
+            "pageCountMismatch": false,
+            "paraCount": 94,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 19,
+            "expectedPageCount": 19,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/기상청_예규_2020_0955.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기상청_예규_2020_0955_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-0971-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-0971-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-0971-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000956-s0",
+      "episodeId": "ep-000956",
+      "sourceTag": "관세청/예규/2020/0956#sanitize/s0/5/verify-io",
+      "stepIndex": 0,
+      "stepKind": "sanitize",
+      "source": "samples/gov/관세청_예규_2020_0956.hwp",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/관세청_예규_2020_0956.hwp",
+        "-o",
+        "output/gov/관세청_예규_2020_0956_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/관세청_예규_2020_0956_s0.hwp",
+            "--expect-pages",
+            "3",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/관세청_예규_2020_0956_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/관세청_예규_2020_0956_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/관세청_예규_2020_0956_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/관세청_예규_2020_0956_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 154835,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false,
+            "paraCount": 78,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/관세청_예규_2020_0956.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/관세청_예규_2020_0956_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/관세청_예규_2020_0956_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-0955-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-0955-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-0955-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000956-s1",
+      "episodeId": "ep-000956",
+      "sourceTag": "관세청/예규/2020/0956#csv-to-table/s1/8/pagecount-and-fill-fail",
+      "stepIndex": 1,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/관세청_예규_2020_0956.hwp",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/관세청_예규_2020_0956.hwp",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/관세청_예규_2020_0956_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "--expect-pages",
+            "2",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "pageCount": 2,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 2,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 252,
+                "actual": 252,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 157164,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 4,
+            "expectedPageCount": 2,
+            "pageCountMismatch": true,
+            "paraCount": 95,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 4,
+            "expectedPageCount": 2,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/관세청_예규_2020_0956.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/관세청_예규_2020_0956_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-0972-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-0972-1"
+              }
+            ],
+            "notFound": [
+              "없는필드0"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 1,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000957-s0",
+      "episodeId": "ep-000957",
+      "sourceTag": "검찰청/예규/2020/0957#csv-to-table/s0/6/layout-usage",
+      "stepIndex": 0,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/검찰청_예규_2020_0957.hwp",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/검찰청_예규_2020_0957.hwp",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/검찰청_예규_2020_0957_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/검찰청_예규_2020_0957_s0.hwp",
+            "--expect-pages",
+            "4",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/검찰청_예규_2020_0957_s0.hwp",
+            "pageCount": 4,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 4,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 236,
+                "actual": 236,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 4
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/검찰청_예규_2020_0957_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/검찰청_예규_2020_0957_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/검찰청_예규_2020_0957_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 154972,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 4,
+            "expectedPageCount": 4,
+            "pageCountMismatch": false,
+            "paraCount": 79,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 4,
+            "expectedPageCount": 4,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/검찰청_예규_2020_0957.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/검찰청_예규_2020_0957_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/검찰청_예규_2020_0957_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-0956-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-0956-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000957-s1",
+      "episodeId": "ep-000957",
+      "sourceTag": "검찰청/예규/2020/0957#insert-table/s1/9/all-pass-empty-page",
+      "stepIndex": 1,
+      "stepKind": "insert-table",
+      "source": "samples/gov/검찰청_예규_2020_0957.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/검찰청_예규_2020_0957.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/검찰청_예규_2020_0957_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "--expect-pages",
+            "3",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "pageCount": 3,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 3,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 253,
+                "actual": 253,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "제목",
+                "actual": "제목",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 3
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 157301,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false,
+            "paraCount": 96,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/검찰청_예규_2020_0957.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/검찰청_예규_2020_0957_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "제목",
+                "occurrence": 0,
+                "value": "제목-값-0973-0"
+              },
+              {
+                "name": "금액",
+                "occurrence": 1,
+                "value": "금액-값-0973-1"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 2,
+                "value": "계좌번호-값-0973-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000958-s0",
+      "episodeId": "ep-000958",
+      "sourceTag": "경찰청/예규/2020/0958#insert-table/s0/7/verify-and-layout-fail",
+      "stepIndex": 0,
+      "stepKind": "insert-table",
+      "source": "samples/gov/경찰청_예규_2020_0958.hwpx",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/경찰청_예규_2020_0958.hwpx",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "--expect-pages",
+            "5",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "pageCount": 5,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 5,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 237,
+                "actual": 222,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "제목",
+                "actual": "제목",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 5
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 3,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 5.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 3,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 155109,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 5,
+            "expectedPageCount": 5,
+            "pageCountMismatch": false,
+            "paraCount": 80,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 5,
+            "expectedPageCount": 5,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/경찰청_예규_2020_0958.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "제목",
+                "occurrence": 0,
+                "value": "제목-값-0957-0"
+              },
+              {
+                "name": "금액",
+                "occurrence": 1,
+                "value": "금액-값-0957-1"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 2,
+                "value": "계좌번호-값-0957-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000958-s1",
+      "episodeId": "ep-000958",
+      "sourceTag": "경찰청/예규/2020/0958#delete-row/s1/0/all-pass",
+      "stepIndex": 1,
+      "stepKind": "delete-row",
+      "source": "samples/gov/경찰청_예규_2020_0958.hwpx",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/경찰청_예규_2020_0958.hwpx",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "--expect-pages",
+            "4",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "pageCount": 4,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 4,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 254,
+                "actual": 254,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "금액",
+                "actual": "금액",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 4
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 157438,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 4,
+            "expectedPageCount": 4,
+            "pageCountMismatch": false,
+            "paraCount": 97,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 4,
+            "expectedPageCount": 4,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/경찰청_예규_2020_0958.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/경찰청_예규_2020_0958_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "금액",
+                "occurrence": 0,
+                "value": "금액-값-0974-0"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 1,
+                "value": "계좌번호-값-0974-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000959-s0",
+      "episodeId": "ep-000959",
+      "sourceTag": "소방청/예규/2020/0959#delete-row/s0/8/pagecount-and-fill-fail",
+      "stepIndex": 0,
+      "stepKind": "delete-row",
+      "source": "samples/gov/소방청_예규_2020_0959.hwp",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/소방청_예규_2020_0959.hwp",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/소방청_예규_2020_0959_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "--expect-pages",
+            "6",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "pageCount": 6,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 6,
+                "actual": 6,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 238,
+                "actual": 238,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "금액",
+                "actual": "금액",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 6
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 155246,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 8,
+            "expectedPageCount": 6,
+            "pageCountMismatch": true,
+            "paraCount": 81,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 6,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/소방청_예규_2020_0959.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "금액",
+                "occurrence": 0,
+                "value": "금액-값-0958-0"
+              },
+              {
+                "name": "계좌번호",
+                "occurrence": 1,
+                "value": "계좌번호-값-0958-1"
+              }
+            ],
+            "notFound": [
+              "없는필드4"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 5
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 5,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000959-s1",
+      "episodeId": "ep-000959",
+      "sourceTag": "소방청/예규/2020/0959#apply-char-format/s1/1/verify-fail",
+      "stepIndex": 1,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/소방청_예규_2020_0959.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/소방청_예규_2020_0959.hwp",
+        "--bold",
+        "-o",
+        "output/gov/소방청_예규_2020_0959_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "--expect-pages",
+            "5",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "pageCount": 5,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 5,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 255,
+                "actual": 240,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "계좌번호",
+                "actual": "계좌번호",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": false
+              }
+            ],
+            "passCount": 2,
+            "failCount": 3,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 3,
+            "passCount": 2,
+            "pageCount": 5
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 157575,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 5,
+            "expectedPageCount": 5,
+            "pageCountMismatch": false,
+            "paraCount": 98,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 5,
+            "expectedPageCount": 5,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/소방청_예규_2020_0959.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/소방청_예규_2020_0959_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "계좌번호",
+                "occurrence": 0,
+                "value": "계좌번호-값-0975-0"
+              },
+              {
+                "name": "신청인",
+                "occurrence": 1,
+                "value": "신청인-값-0975-1"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 2,
+                "value": "생년월일-값-0975-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000960-s0",
+      "episodeId": "ep-000960",
+      "sourceTag": "해양경찰청/예규/2020/0960#apply-char-format/s0/9/all-pass-empty-page",
+      "stepIndex": 0,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/해양경찰청_예규_2020_0960.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/해양경찰청_예규_2020_0960.hwp",
+        "--bold",
+        "-o",
+        "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "--expect-pages",
+            "7",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "pageCount": 7,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 7,
+                "actual": 7,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 239,
+                "actual": 239,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "계좌번호",
+                "actual": "계좌번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 7
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 155383,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false,
+            "paraCount": 82,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양경찰청_예규_2020_0960.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "계좌번호",
+                "occurrence": 0,
+                "value": "계좌번호-값-0959-0"
+              },
+              {
+                "name": "신청인",
+                "occurrence": 1,
+                "value": "신청인-값-0959-1"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 2,
+                "value": "생년월일-값-0959-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-000960-s1",
+      "episodeId": "ep-000960",
+      "sourceTag": "해양경찰청/예규/2020/0960#fill-fields/s1/2/layout-strict-overflow",
+      "stepIndex": 1,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/해양경찰청_예규_2020_0960.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/해양경찰청_예규_2020_0960.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "--expect-pages",
+            "6",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "pageCount": 6,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 6,
+                "actual": 6,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 256,
+                "actual": 256,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "신청인",
+                "actual": "신청인",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 6
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 8.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 157712,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 6,
+            "expectedPageCount": 6,
+            "pageCountMismatch": false,
+            "paraCount": 99,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 6,
+            "expectedPageCount": 6,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/해양경찰청_예규_2020_0960.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/해양경찰청_예규_2020_0960_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "신청인",
+                "occurrence": 0,
+                "value": "신청인-값-0976-0"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 1,
+                "value": "생년월일-값-0976-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    }
+  ]
+}

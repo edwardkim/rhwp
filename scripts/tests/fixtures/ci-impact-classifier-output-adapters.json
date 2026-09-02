@@ -1,0 +1,21 @@
+[
+  {
+    "title": "post-#5511 CLI output adapter-only change",
+    "files": [
+      { "filename": "src/cli/outputs/mod.rs", "status": "modified" },
+      { "filename": "src/cli/outputs/pdf.rs", "status": "modified" },
+      { "filename": "src/cli/outputs/raster.rs", "status": "modified" },
+      { "filename": "src/cli/outputs/vector.rs", "status": "modified" }
+    ],
+    "expected": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "true",
+      "native_skia_required": "true",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "6",
+      "reason": "classified:native-skia-rust+rust+rust-render"
+    }
+  }
+]

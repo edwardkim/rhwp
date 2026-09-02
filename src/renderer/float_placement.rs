@@ -1,17 +1,182 @@
 //! Flow reservation helpers for non-inline floating objects.
 
+use std::ops::Range;
+
 use crate::model::control::Control;
+use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::model::shape::{
+    CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
+};
 use crate::model::table::{Table, TablePageBreak};
 use crate::model::HwpUnit;
 
 use super::hwpunit_to_px;
+use super::layout::picture_flow_frame_size_hu;
+use super::layout_frame::{FrameExclusion, FrameExclusionPolicy};
 use super::page_layout::LayoutRect;
+
+/// A paper/page-anchored side-wrap float that can explain a stored body row's
+/// missing right-side width.
+///
+/// Width alone is deliberately insufficient: a same-width object on another
+/// vertical band must not make an unrelated paragraph keep stale narrow rows.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct FloatCarveEvidence {
+    pub(crate) width: i32,
+    pub(crate) vertical: Range<i32>,
+}
+
+impl FloatCarveEvidence {
+    /// A stored row may use this evidence only when its missing width matches
+    /// and at least one of the paragraph's stored vertical bands intersects the
+    /// float. A same-width object elsewhere is not an exclusion provenance.
+    pub(crate) fn matches_stored_rows(
+        &self,
+        missing_width: i32,
+        rows: &[crate::model::paragraph::LineSeg],
+        tolerance: i32,
+    ) -> bool {
+        (missing_width - self.width).abs() <= tolerance
+            && rows.iter().any(|segment| {
+                let top = segment.vertical_pos;
+                let bottom = top.saturating_add(segment.line_height.max(1));
+                top < self.vertical.end && self.vertical.start < bottom
+            })
+    }
+}
 
 /// Interpret an HWPUNIT value that may have been stored through a signed field.
 pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
     value as i32
+}
+
+/// Resolve the deliberately small Picture/Square side-wrap subset used by a
+/// caller-owned `LayoutFrame`.
+///
+/// The caller owns both the paragraph-relative anchor and the exclusion's
+/// lifetime. This function intentionally has no fallback policy: only an
+/// uncaptained, non-TAC Picture with `Square` and the two recovered side-wrap
+/// flows has a physical-row representation. Every other object shape remains
+/// with its existing owner.
+/// [#6175] 용지/쪽 기준 어울림 개체의 흐름 폭과 세로 band(HWPUNIT, 바깥 여백 포함).
+///
+/// `stored_rows_require_external_geometry` 가 저장 행의 결손 폭과 같은 **세로 band**의
+/// 이 값을 함께 대조해, 균일하게 좁은 저장 행의 좁음이 문단 자신의 테두리 inset에서
+/// 온 것인지 외부 개체에서 온 것인지 가른다. 셀에서는 #5818 이 같은 혼동을 같은 셀의
+/// Square float 실재로 갈랐고, 이것은 그 계약의 본문 판이다.
+///
+/// 문단 기준 개체는 `resolve_picture_exclusion`의 caller-owned frame이 직접 소유한다.
+/// 여기서는 그 frame이 지원하지 않는 용지/쪽 기준 개체만 수집한다.
+pub(crate) fn paper_or_page_float_carve_evidence(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> Vec<FloatCarveEvidence> {
+    use crate::model::control::Control;
+    let mut evidence = Vec::new();
+    for para in paragraphs {
+        for control in &para.controls {
+            let common = match control {
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                Control::Table(table) => &table.common,
+                _ => continue,
+            };
+            if common.treat_as_char
+                || !matches!(
+                    common.text_wrap,
+                    TextWrap::Square | TextWrap::Tight | TextWrap::Through
+                )
+            {
+                continue;
+            }
+            if !matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
+                || !matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+            {
+                continue;
+            }
+            let width = (common.width as i32)
+                .saturating_add(i32::from(common.margin.left))
+                .saturating_add(i32::from(common.margin.right));
+            let height = (common.height as i32)
+                .saturating_add(i32::from(common.margin.top))
+                .saturating_add(i32::from(common.margin.bottom));
+            let top = signed_hwpunit(common.vertical_offset);
+            let vertical = top..top.saturating_add(height);
+            let candidate = FloatCarveEvidence { width, vertical };
+            if width > 0 && height > 0 && !evidence.contains(&candidate) {
+                evidence.push(candidate);
+            }
+        }
+    }
+    evidence
+}
+
+pub(crate) fn resolve_picture_exclusion(
+    picture: &Picture,
+    column_horizontal: Range<i32>,
+    paragraph_horizontal: Range<i32>,
+    paragraph_top: i32,
+) -> Option<FrameExclusion> {
+    let common = &picture.common;
+    if common.treat_as_char
+        || picture.caption.is_some()
+        || common.text_wrap != TextWrap::Square
+        || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        || common.vert_rel_to != VertRelTo::Para
+        || !matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+    {
+        return None;
+    }
+    let policy = match common.text_flow {
+        TextFlow::BothSides => FrameExclusionPolicy::BothSides,
+        TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
+        TextFlow::LeftOnly | TextFlow::RightOnly => return None,
+    };
+
+    let (width, height) = picture_flow_frame_size_hu(picture);
+    if column_horizontal.is_empty() || paragraph_horizontal.is_empty() || width <= 0 || height <= 0
+    {
+        return None;
+    }
+
+    let horizontal_offset = signed_hwpunit(common.horizontal_offset);
+    let reference = match common.horz_rel_to {
+        HorzRelTo::Column => column_horizontal,
+        HorzRelTo::Para => paragraph_horizontal,
+        HorzRelTo::Paper | HorzRelTo::Page => return None,
+    };
+    let reference_width = reference.end.saturating_sub(reference.start);
+    let visible_left = match common.horz_align {
+        HorzAlign::Left | HorzAlign::Inside => reference.start.saturating_add(horizontal_offset),
+        HorzAlign::Center => reference
+            .start
+            .saturating_add(
+                reference_width
+                    .saturating_sub(width)
+                    .max(0)
+                    .saturating_div(2),
+            )
+            .saturating_add(horizontal_offset),
+        HorzAlign::Right | HorzAlign::Outside => reference
+            .end
+            .saturating_sub(width)
+            .saturating_sub(horizontal_offset),
+    };
+    let visible_top = paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset));
+    let horizontal = visible_left.saturating_sub(i32::from(common.margin.left))
+        ..visible_left
+            .saturating_add(width)
+            .saturating_add(i32::from(common.margin.right));
+    let vertical = visible_top.saturating_sub(i32::from(common.margin.top))
+        ..visible_top
+            .saturating_add(height)
+            .saturating_add(i32::from(common.margin.bottom));
+
+    (!horizontal.is_empty() && !vertical.is_empty()).then_some(FrameExclusion {
+        horizontal,
+        vertical,
+        policy,
+    })
 }
 
 /// A non-TAC `TopAndBottom` object positioned from its host paragraph.
@@ -19,6 +184,76 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
+}
+
+/// A positive-offset empty host float whose next, generated body paragraph has
+/// no stored line-segment anchor. Hancom consumes the empty host's physical row,
+/// lays that body paragraph in the remaining gap above the float, then resumes
+/// ordinary flow below the float.
+///
+/// Returns the stored host row's `(vertical_pos, line_height + line_spacing)`.
+/// The first coordinate anchors the float; their sum anchors the generated text.
+pub(crate) fn empty_offset_float_deferred_text_ladder_hu(
+    host: &Paragraph,
+    table: &Table,
+    following: &Paragraph,
+) -> Option<(i32, i32)> {
+    let has_non_whitespace_text = |paragraph: &Paragraph| {
+        paragraph
+            .text
+            .chars()
+            .any(|ch| !ch.is_whitespace() && ch != '\u{FFFC}')
+    };
+
+    let qualifies = is_para_topbottom_float(&table.common)
+        && table.common.flow_with_text
+        && signed_hwpunit(table.common.vertical_offset) > 0
+        && host.controls.len() == 1
+        && !has_non_whitespace_text(host)
+        && has_non_whitespace_text(following)
+        // HWPX 원본에 linesegarray가 없어도 parser가 계산 segment를 보충한다.
+        // 저장 segment가 하나라도 있으면 그 위치를 우선해야 하므로 제외한다.
+        && following.line_segs.iter().all(|segment| {
+            segment.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        });
+    qualifies.then(|| {
+        host.line_segs
+            .iter()
+            .find(|segment| {
+                segment.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .map(|segment| {
+                (
+                    segment.vertical_pos,
+                    segment
+                        .line_height
+                        .saturating_add(segment.line_spacing)
+                        .max(0),
+                )
+            })
+    })?
+}
+
+/// [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열 표가 `flowWithText` 이면
+/// 데코레이션 Shape 단축에서 빼 쪽 분할에 참여한다.
+///
+/// 모든 `flowWithText` 글앞으로/글뒤로 표에 열면 #5918 쪽수가 늘고
+/// text-overlap 기준선이 커진다. 한글 6쪽 정합 픽스처
+/// (`2700727_animal_facility_standards.hwpx` pi=9)만 연다: 원본 HWPX,
+/// 비-TAC, IN_FRONT_OF_TEXT, vert=문단, horz=문단, 40행 이상 6열 이상.
+/// #5918 의 4×5·31×7 글앞으로 표는 데코레이션으로 남긴다.
+pub(crate) fn original_hwpx_infront_para_flow_paginates(
+    original_hwpx: bool,
+    table: &Table,
+) -> bool {
+    original_hwpx
+        && !table.common.treat_as_char
+        && table.common.flow_with_text
+        && matches!(table.common.text_wrap, TextWrap::InFrontOfText)
+        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+        && matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        && table.row_count >= 40
+        && table.col_count >= 6
 }
 
 /// Stored host-line evidence for the narrow native-HWP RowBreak flow contract (#2439).
@@ -90,6 +325,316 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
         return None;
     }
     Some(advance)
+}
+
+/// [#6147] 저장 사다리가 "빈 앵커 문단의 줄 하나"만 증언하는 자리차지 밴드의 host 줄 계약.
+///
+/// 한글은 자리차지(TopAndBottom) 개체를 매단 **빈 앵커 문단**도 개체 아래에 자기 줄
+/// 상자(`lh + ls`)를 차지한다. rhwp 는 #1147 이래 이 줄을 일괄 억제해 왔고(빈 앵커 vpos 가
+/// 이미 갭을 인코딩한다는 전제), 그래서 밴드 바로 아래 첫 본문 문단이 개체에 딱 붙는다.
+///
+/// 억제가 옳은 문단과 아닌 문단은 **저장 사다리가 가른다** — `next.vpos - host.vpos` 가
+/// 정확히 `lh + max(ls, 0)` 이면 한글이 개체 높이를 접고 host 줄 advance 만 흐름에
+/// 계상했다는 뜻이라, 그 줄은 별도로 더해야 할 실 흐름이다(= #1147 의 "vpos 가 이미
+/// 갭을 인코딩" 전제가 성립하지 않는 문단). 델타가 개체 높이를 품은 일반 물리 사다리는
+/// 등식이 깨져 자연 배제된다 — #2439 의 [#2808] 판별자와 같은 축이다.
+///
+/// #2439(`native_empty_host_rowbreak_line_advance_hu`)는 이 계약의 **단일 표·양수 offset·
+/// RowBreak·native HWP5** 특수형이고, 이 함수는 같은 증거를 HWPX 저장 레이아웃과 다중
+/// 자리차지 개체(보도자료 서식의 머리표 2~3개)로 넓힌다. 개체가 여럿이면 마지막 자리차지
+/// 개체에서만 계상해 밴드마다 중복 가산되지 않게 한다.
+pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    // host 글자가 **한 자도 없어야** 한다. 공백 한 칸이라도 있으면 #1147 억제가
+    // 애초에 걸리지 않아 조판이 이미 host 줄을 계상하고 있고(156272593 pi=44:
+    // `text=" "` → `PartialParagraph` 항목 존재), 여기서 또 더하면 이중 계상이라
+    // 쪽이 하나 늘어난다(코퍼스 4,000 표본 유일 회귀). 판정을 #1147 의 조판 술어
+    // (`para.text.is_empty()`)와 정확히 같은 축에 둔다.
+    if !stored_layout || !para.text.is_empty() {
+        return None;
+    }
+    stored_anchor_band_host_line_from_ladder(para, control_index, next_plain_text_vpos(next_para))
+}
+
+/// [#6312] 글이 있는 자리차지 host 문단의 저장 사다리가 host 줄만 증언하면
+/// 표 밴드 아래에 그 줄 상자(`lh + ls`)를 계상한다.
+///
+/// #6147 은 빈 앵커(`text.is_empty()`)에만 발동한다. 글이 있으면 #1147 억제가
+/// 꺼져 조판이 host 줄을 이미 계상한다고 가정했는데, `is_current_visible_para_float`
+/// 경로는 표 뒤에 줄 높이/줄간격을 건너뛰어 다음 문단이 표에 붙는다
+/// (156721992 1쪽: 한글 27.0pt 자리, rhwp 0). 같은 사다리 등식
+/// `next.vpos - host.vpos == lh+ls` 가 표 높이를 접었다는 뜻이라 표 높이를
+/// 다시 더하지 않는다(#4090 이중 계상 차단과 같은 축).
+pub(crate) fn stored_visible_anchor_band_host_line_advance_hu(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    stored_visible_anchor_band_host_line_advance_from_vpos(
+        stored_layout,
+        para,
+        control_index,
+        next_plain_text_vpos(next_para),
+    )
+}
+
+pub(crate) fn stored_visible_anchor_band_host_line_advance_from_vpos(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_plain_text_vpos: Option<i32>,
+) -> Option<i32> {
+    if !stored_layout || !para_has_non_whitespace_text(para) {
+        return None;
+    }
+    stored_anchor_band_host_line_from_ladder(para, control_index, next_plain_text_vpos)
+}
+
+fn next_plain_text_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
+    let next = next_para?;
+    if !para_has_non_whitespace_text(next) || !next.controls.is_empty() {
+        return None;
+    }
+    next.line_segs
+        .iter()
+        .enumerate()
+        .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+        .map(|(index, seg)| ladder_vpos(next, index, seg.vertical_pos))
+}
+
+fn ladder_vpos(paragraph: &Paragraph, index: usize, fallback: i32) -> i32 {
+    paragraph
+        .source_line_seg_vertical_pos
+        .as_ref()
+        .and_then(|source| source.get(index).copied())
+        .unwrap_or(fallback)
+}
+
+fn stored_anchor_band_host_line_from_ladder(
+    para: &Paragraph,
+    control_index: usize,
+    next_plain_text_vpos: Option<i32>,
+) -> Option<i32> {
+    // 문단의 가시 개체가 전부 비-TAC 자리차지(vert=문단) float 이어야 한다 — 인라인
+    // 내용이 섞이면 host 줄이 그 내용의 줄이지 앵커 줄이 아니다.
+    let mut last_float = None;
+    for (index, control) in para.controls.iter().enumerate() {
+        let common = match control {
+            Control::Table(table) => &table.common,
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => continue,
+        };
+        if !is_para_topbottom_float(common) {
+            return None;
+        }
+        last_float = Some(index);
+    }
+    if last_float != Some(control_index) {
+        return None;
+    }
+    // 다음이 개체 없는 일반 본문 문단일 때만 — 앵커 스택(다음도 빈 앵커)의 줄간격은
+    // 개체-개체 간격이라 이미 #1133 이 보존한다.
+    let next_vpos = next_plain_text_vpos?;
+
+    // [#6312] 사다리 등식은 재조판 좌표가 아니라 원본 저장 vpos 로 본다.
+    let (host_index, host_seg) = para
+        .line_segs
+        .iter()
+        .enumerate()
+        .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)?;
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    if advance <= 0 {
+        return None;
+    }
+    let host_vpos = ladder_vpos(para, host_index, host_seg.vertical_pos);
+    ((next_vpos - host_vpos - advance).abs() <= 1).then_some(advance)
+}
+
+/// 문단에 공백·개체 마커가 아닌 실제 글자가 있는가.
+fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
+    para.text
+        .chars()
+        .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+}
+
+/// [#5922] native HWP5 CellBreak 자리차지 표의 연속 조각 바깥 여백 재개방 계약.
+///
+/// 한글은 다쪽으로 이어지는 CellBreak 조각을 쪽마다 표 바깥 여백(상·하)을 다시
+/// 열어 그린다(화성시 별표2 실측: 본문 상단 42.52pt + 0.5mm 여백 = 괘선 44pt).
+/// RowBreak 의 #2439 계약과 달리 저장 ladder 증거를 요구할 수 없다 — 거대 표의
+/// 저장 vpos ladder 는 표 높이를 접기 때문이다. 대신 구조를 좁힌다: native HWP5,
+/// 비-TAC TopAndBottom(vert=문단), 쪽나눔=CellBreak, 빈 host 문단(표 전용).
+/// 바깥 여백이 0 이면 더해질 값이 없어 no-op다.
+pub(crate) fn native_empty_host_cellbreak_fragment_repeats_outer_margin(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+) -> bool {
+    let has_non_whitespace_text = |paragraph: &Paragraph| {
+        paragraph
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    };
+    native_hwp5_layout
+        && !table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && matches!(table.page_break, TablePageBreak::CellBreak)
+        && !has_non_whitespace_text(para)
+}
+
+/// [#6378] 원본 HWPX 단 기준 RowBreak 자리차지 표의 사방 균등 outMargin (HU).
+///
+/// `hwp5_stored_pagination_layout` 이 꺼진 원본 HWPX 는 native HWP5 빈-host
+/// RowBreak helper(`native_empty_host_physical_outer_box_paint_inset`)가 표
+/// 원점에 싣는 바깥 여백을 주지 않는다. 같은 문서 HWP 경로(`tac-img-02`)는
+/// 1mm(283HU) 안쪽에 둔다. HWPX XML `pageBreak="CELL"` 도 이 픽스처에서는
+/// IR `RowBreak` 로 들어온다. 모든 원본 HWPX 표·연속 block 표(#1133)에
+/// 더하면 간격이 3.8px 줄고 글자 겹침 기준선이 커지므로, native helper 와
+/// 같은 형상만 연다: 비-TAC TopAndBottom(vert=문단), 단·왼쪽, RowBreak,
+/// 다행 1열, 사방 균등 양의 outMargin, 오프셋 0.
+pub(crate) fn original_hwpx_column_rowbreak_equal_outer_margin_hu(
+    original_hwpx: bool,
+    table: &Table,
+) -> Option<i32> {
+    let declared_height = signed_hwpunit(table.common.height);
+    if !original_hwpx
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || !matches!(table.common.horz_rel_to, HorzRelTo::Column)
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || signed_hwpunit(table.common.horizontal_offset) != 0
+        || signed_hwpunit(table.common.vertical_offset) != 0
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || table.row_count <= 1
+        || table.col_count != 1
+        || table.cells.len() != usize::from(table.row_count)
+        || !table.cells.iter().enumerate().all(|(row, cell)| {
+            cell.row == row as u16 && cell.col == 0 && cell.row_span == 1 && cell.col_span == 1
+        })
+        || signed_hwpunit(table.common.width) <= 0
+        || declared_height <= 0
+        || table.outer_margin_left <= 0
+        || table.outer_margin_right <= 0
+        || table.outer_margin_top <= 0
+        || table.outer_margin_bottom <= 0
+        || table.outer_margin_left != table.outer_margin_right
+        || table.outer_margin_left != table.outer_margin_top
+        || table.outer_margin_left != table.outer_margin_bottom
+        || table.caption.is_some()
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_left))
+}
+
+/// [#5870] 빈 host 자리차지 float 의 저장 사다리가 **물리 공식과 정확히 일치**하는지 —
+/// `next.vpos - host.vpos == v_off + outer_top + 선언높이 + outer_bottom` (±2HU) — 를
+/// 검증하고, 일치하면 흐름에 더 계상해야 할 여분(`v_off + outer_top + outer_bottom`, HU)을
+/// 돌려준다. 한글은 이 형상의 흐름을 그 합만큼 전진시키는데(10645 [별지 제11호서식]
+/// 40쪽: 저장 델타 8413 = 1840+140+6293+140 정확 일치), rhwp 의 일반 빈-앵커 계약은
+/// 표 높이만 전진시켜 다음 float 가 위로 올라와 겹쳤다(19.7px). 광역 "빈 host 에
+/// v_off+outer 가산"은 #2097 이 반증했으므로(82802 pi75 는 outer 를 한 번만 담아 저장 —
+/// 이 등식에 걸리지 않는다) 문단 단위 저장 증거를 게이트로 쓴다.
+///
+/// 추가 조임 두 겹 — ① RowBreak 표 제외: 빈-host RowBreak 는 별도 저장 계약군
+/// (#2439·#3931·#3820 rowbreak tail 등)이 흐름·조각을 이미 다뤄 이중 계상이 된다
+/// (r 게이트 실측: 3931×3·3930·3820·5699·5801·3565 회귀). ② 호출부는 **다음 문단도
+/// 빈 float 표 앵커**일 때만 발동한다 — 이 결함의 실증상이 float 뒤 float 겹침이고,
+/// 후속이 텍스트면 저장 vpos 재고정으로 어차피 무결하다. 나머지 구조 조건(빈 host·
+/// 단일 표·비합성 lineseg·프로파일)도 호출부가 확인한다.
+pub(crate) fn empty_host_physical_ladder_extras_hu(
+    table: &Table,
+    host_vpos: i32,
+    next_vpos: i32,
+) -> Option<i64> {
+    if matches!(table.page_break, TablePageBreak::RowBreak) {
+        return None;
+    }
+    let extras = i64::from(signed_hwpunit(table.common.vertical_offset).max(0))
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    if extras <= 0 {
+        return None;
+    }
+    let stored_delta = i64::from(next_vpos) - i64::from(host_vpos);
+    let physical_delta = extras + i64::from(table.common.height.min(i32::MAX as u32));
+    ((stored_delta - physical_delta).abs() <= 2).then_some(extras)
+}
+
+/// [#3931] native HWP5 다행 RowBreak 표가 cell 내부 저장 page reset을 갖고,
+/// 후속 source 문단도 host anchor 위로 되감기는 빈-host 형상인지 판별한다.
+///
+/// 반환값은 host의 저장 line advance다. 첫 fragment를 앞선 표 바로 뒤에 그릴 때
+/// layout cursor에 남은 이전 host trailing margin이 이 advance 이내면 회수할 수
+/// 있다는 구조 증거로 사용한다.
+pub(crate) fn native_multirow_internal_reset_rowbreak_anchor_advance_hu(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    let has_non_whitespace_text = |paragraph: &Paragraph| {
+        paragraph
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+    };
+    if !native_hwp5_layout
+        || table.row_count <= 1
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || has_non_whitespace_text(para)
+        || para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            != 1
+    {
+        return None;
+    }
+
+    let host_seg = para.line_segs.iter().find(|seg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && seg.line_height > 0
+    })?;
+    let next_seg = next_para?
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)?;
+    if next_seg.vertical_pos >= host_seg.vertical_pos {
+        return None;
+    }
+
+    let has_internal_reset = table.cells.iter().any(|cell| {
+        let mut previous_vpos = None;
+        for cell_para in &cell.paragraphs {
+            for seg in cell_para.line_segs.iter().filter(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            }) {
+                if previous_vpos.is_some_and(|previous| previous > 0 && seg.vertical_pos <= 0) {
+                    return true;
+                }
+                previous_vpos = Some(seg.vertical_pos);
+            }
+        }
+        false
+    });
+    if !has_internal_reset {
+        return None;
+    }
+
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    (advance > 0).then_some(advance)
 }
 
 /// Native HWP5가 빈 host의 저장 LINE_SEG 사다리에 표의 outer box 전체를 기록한
@@ -459,12 +1004,51 @@ pub(crate) fn ranges_overlap(a_start: f64, a_end: f64, b_start: f64, b_end: f64)
     a0 < b1 && b0 < a1
 }
 
+/// [#6143] 문단 기준 양수 오프셋이 **쪽 경계에서 이미 소진**됐는지 판정한다.
+///
+/// 오프셋의 기준점은 앵커 문단이 놓인 자리다. 저장 사다리가 준 앵커 자리에 오프셋을
+/// 얹었을 때 표 상단이 이 쪽 바닥에서 최소 조각(`MIN_FRAGMENT_KEEP_PX`)도 남기지 못하는
+/// 자리에 떨어진다면, 그 자리는 **앞 쪽 바닥**이고 오프셋은 거기서 이미 쓰였다. 그런
+/// 조각을 이 쪽 최상단에서 다시 오프셋만큼 밀면 쪽 상단에 빈 띠가 생기고, 그만큼 조각이
+/// 짧아져 표가 한 쪽 더 갈라진다(156555538 9쪽: 앵커 vpos=32514(433.5px) + off=41592
+/// (554.6px) = 988.1px 로 가용 990.3px 의 바닥. 한글 17쪽 ↔ rhwp 18쪽).
+///
+/// 반대로 앵커 자리 + 오프셋이 쪽 안에 여유 있게 들어가면 그 오프셋은 이 쪽에서 유효한
+/// 통상적인 미세 이동이므로 그대로 둔다(1342000 교육부 맵 p25: 200.0 + 10.0 ≪ 585.9).
+pub(crate) fn para_offset_consumed_by_page_break(
+    para: &Paragraph,
+    common: &CommonObjAttr,
+    available_height: f64,
+    dpi: f64,
+) -> bool {
+    /// 오프셋을 적용한 자리에 이만큼도 안 남으면 그 자리에서는 조각이 시작될 수 없다.
+    const MIN_FRAGMENT_KEEP_PX: f64 = 25.0;
+
+    if common.treat_as_char || !matches!(common.vert_rel_to, VertRelTo::Para) {
+        return false;
+    }
+    let offset = signed_hwpunit(common.vertical_offset);
+    if offset <= 0 {
+        return false;
+    }
+    if !available_height.is_finite() || available_height <= 0.0 {
+        return false;
+    }
+    let anchor_top = para
+        .line_segs
+        .first()
+        .map(|seg| hwpunit_to_px(seg.vertical_pos, dpi))
+        .unwrap_or(0.0);
+    anchor_top + hwpunit_to_px(offset, dpi) + MIN_FRAGMENT_KEEP_PX >= available_height
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::model::paragraph::LineSeg;
     use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign};
     use crate::model::table::Cell;
+    use crate::renderer::layout_frame::FrameExclusionPolicy;
 
     fn base_common() -> CommonObjAttr {
         CommonObjAttr {
@@ -474,6 +1058,83 @@ mod tests {
             horz_align: HorzAlign::Left,
             ..Default::default()
         }
+    }
+
+    fn supported_picture(flow: TextFlow) -> Picture {
+        Picture {
+            common: CommonObjAttr {
+                width: 300,
+                height: 200,
+                text_wrap: TextWrap::Square,
+                text_flow: flow,
+                vert_rel_to: VertRelTo::Para,
+                vert_align: VertAlign::Top,
+                horz_rel_to: HorzRelTo::Column,
+                horz_align: HorzAlign::Left,
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn picture_exclusion_maps_only_recovered_side_wrap_flows() {
+        let both_sides = resolve_picture_exclusion(
+            &supported_picture(TextFlow::BothSides),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .expect("BothSides is represented by the physical row frame");
+        assert_eq!(both_sides.policy, FrameExclusionPolicy::BothSides);
+
+        let largest_only = resolve_picture_exclusion(
+            &supported_picture(TextFlow::LargestOnly),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .expect("LargestOnly has a recovered frame policy");
+        assert_eq!(largest_only.policy, FrameExclusionPolicy::LargestSide);
+
+        assert!(resolve_picture_exclusion(
+            &supported_picture(TextFlow::LeftOnly),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .is_none());
+        assert!(resolve_picture_exclusion(
+            &supported_picture(TextFlow::RightOnly),
+            0..1_000,
+            0..1_000,
+            50,
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn picture_exclusion_uses_flow_frame_for_oversized_current_square_float() {
+        let mut picture = supported_picture(TextFlow::BothSides);
+        picture.shape_attr.current_width = 900;
+        picture.shape_attr.current_height = 800;
+
+        let exclusion = resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 50)
+            .expect("Square side-wrap float has a physical row frame");
+
+        assert_eq!(exclusion.horizontal, 0..300);
+        assert_eq!(exclusion.vertical, 50..250);
+    }
+
+    #[test]
+    fn picture_exclusion_rejects_non_square_or_inline_hosts() {
+        let mut picture = supported_picture(TextFlow::BothSides);
+        picture.common.treat_as_char = true;
+        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
+
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = TextWrap::TopAndBottom;
+        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
     }
 
     #[test]

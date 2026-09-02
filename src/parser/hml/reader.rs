@@ -215,6 +215,9 @@ struct ReadState<'a> {
     saw_body: bool,
     /// [#2743] `HmlLimits::max_resource_id` 사본 — 리소스 `Id` 상한.
     max_resource_id: usize,
+    /// [#5848] 내부 DTD 가 선언한 엔티티. **리터럴 값만** 담는다 —
+    /// 값에 `&` 가 있으면(중첩 참조) 아예 싣지 않으므로 재귀 확장이 성립하지 않는다.
+    doctype_entities: std::collections::HashMap<String, String>,
 }
 
 impl<'a> ReadState<'a> {
@@ -223,6 +226,7 @@ impl<'a> ReadState<'a> {
             xml,
             stack: Vec::new(),
             source: HmlSource::default(),
+            doctype_entities: std::collections::HashMap::new(),
             pending_capture: None,
             paragraphs: Vec::new(),
             equations: Vec::new(),
@@ -488,7 +492,13 @@ impl<'a> ReadState<'a> {
             return Err(HmlError::InvalidXml("multiple HWPML roots".to_string()));
         }
         let version = attribute(element, b"Version")?.unwrap_or_default();
-        if !matches!(version.as_str(), "2.9" | "2.91") {
+        // [#5848] 법제처 국가법령정보센터 배포본은 `Version="2.1"` 로 나온다.
+        //
+        // 이 게이트를 넓혀도 해석은 달라지지 않는다 — **파서는 버전 값으로 분기하지
+        // 않는다.** 여기서 검사한 뒤 `source.version` 에 담아 `doc_info.hwpml_version`
+        // 메타데이터로 흘려보낼 뿐이고(`adapter.rs:29`), 요소 처리는 전부 태그 이름으로
+        // 간다. 그래서 2.1 을 통과시키는 것은 같은 태그 기반 경로로 보내는 것뿐이다.
+        if !matches!(version.as_str(), "2.1" | "2.9" | "2.91") {
             return Err(HmlError::UnsupportedVersion(version));
         }
         self.source.version = version;
@@ -801,13 +811,13 @@ impl<'a> ReadState<'a> {
         let path = format!("/{}", self.stack.join("/"));
         for item in element.attributes() {
             let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-            let name = std::str::from_utf8(attr.key.as_ref())
+            let name = std::str::from_utf8(attr.key.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute name".to_string()))?;
             if !matches!(
                 name,
                 "BaseLine" | "BaseUnit" | "TextColor" | "Version" | "Font"
             ) {
-                let raw = std::str::from_utf8(attr.value.as_ref())
+                let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
                 let value = quick_xml::escape::unescape(raw)
                     .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
@@ -856,9 +866,9 @@ impl<'a> ReadState<'a> {
         };
         for item in element.attributes() {
             let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-            let name = std::str::from_utf8(attr.key.as_ref())
+            let name = std::str::from_utf8(attr.key.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute name".to_string()))?;
-            let raw = std::str::from_utf8(attr.value.as_ref())
+            let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
             let value = quick_xml::escape::unescape(raw)
                 .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
@@ -1331,10 +1341,11 @@ impl<'a> ReadState<'a> {
             if unsupported_equation_child {
                 for item in element.attributes() {
                     let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-                    let attr_name = std::str::from_utf8(attr.key.as_ref()).map_err(|_| {
-                        HmlError::InvalidXml("non-UTF-8 attribute name".to_string())
-                    })?;
-                    let raw = std::str::from_utf8(attr.value.as_ref())
+                    let attr_name =
+                        std::str::from_utf8(attr.key.as_ref().as_bytes()).map_err(|_| {
+                            HmlError::InvalidXml("non-UTF-8 attribute name".to_string())
+                        })?;
+                    let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                         .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
                     let value = quick_xml::escape::unescape(raw)
                         .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
@@ -1419,14 +1430,19 @@ pub(crate) fn has_hwpml_root(xml: &str) -> bool {
     loop {
         match reader.read_event() {
             Ok(Event::Start(element)) | Ok(Event::Empty(element)) => {
-                return element.name().as_ref() == b"HWPML"
+                return element.name().as_ref().as_bytes() == b"HWPML"
                     && attribute(&element, b"Version")
                         .ok()
                         .flatten()
                         .is_some_and(|version| !version.is_empty());
             }
+            // [#5848] `<!DOCTYPE HWPML [ … ]>` 도 루트 앞에 올 수 있는 프롤로그다.
+            // 법제처 국가법령정보센터 배포본이 엔티티 선언(`&nbsp;`)을 담아 내보내는데,
+            // 종전에는 이 이벤트가 아래 `_ => return false` 로 떨어져 포맷 감지가
+            // 실패했다 — 실제로는 HWPML 인데 "알 수 없는 파일 형식"으로 거부됐다.
+            Ok(Event::DocType(_)) => {}
             Ok(Event::Decl(_) | Event::Comment(_) | Event::PI(_)) => {}
-            Ok(Event::Text(text)) if text.iter().all(|byte| byte.is_ascii_whitespace()) => {}
+            Ok(Event::Text(text)) if text.as_ref().chars().all(char::is_whitespace) => {}
             Ok(Event::Eof) | Err(_) => return false,
             _ => return false,
         }
@@ -1454,13 +1470,18 @@ pub(crate) fn read_hml(xml: &str, limits: &HmlLimits) -> Result<HmlSource, HmlEr
                 enforce_depth(state.stack.len(), limits.max_depth)?;
                 state.empty(&element, limits, start_pos, end_pos)?;
             }
-            Event::End(element) => state.end(element.name().as_ref(), end_pos)?,
+            Event::End(element) => state.end(element.name().as_ref().as_bytes(), end_pos)?,
             Event::Text(text) => append_decoded_text(&mut state, &text, limits)?,
             Event::CData(text) => append_cdata(&mut state, &text, limits)?,
             Event::GeneralRef(reference) => append_reference(&mut state, &reference)?,
-            Event::DocType(_) => {
-                return Err(HmlError::InvalidXml("DTD is not allowed".to_string()))
-            }
+            // [#5848] 내부 DTD 는 **엔티티 선언만** 거둬 쓰고 나머지는 버린다.
+            // 법제처 국가법령정보센터 배포본이 `<!ENTITY nbsp "&#160;">` 를 앞에 달고
+            // 나오는데, 종전에는 여기서 거부해 문서가 통째로 안 열렸다.
+            //
+            // 확장 폭탄·XXE 는 `collect_doctype_entities` 가 구조적으로 막는다 —
+            // 값에 `&` 가 있거나(중첩 참조) `SYSTEM`/`PUBLIC` 이 붙은 선언은 싣지 않고,
+            // 개수·길이에 상한을 둔다. 담긴 값은 그대로 한 번 치환될 뿐 재귀하지 않는다.
+            Event::DocType(doctype) => collect_doctype_entities(&mut state, &doctype)?,
             Event::Eof => break,
             _ => {}
         }
@@ -1477,10 +1498,7 @@ fn append_cdata(
     if text.len() > limits.max_text_node_bytes {
         return Err(HmlError::LimitExceeded("text node size".to_string()));
     }
-    let decoded = text
-        .decode()
-        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-    state.append_text(&decoded)
+    state.append_text(text.as_ref())
 }
 
 fn enforce_depth(current_depth: usize, max_depth: usize) -> Result<(), HmlError> {
@@ -1498,10 +1516,110 @@ fn append_decoded_text(
     if text.len() > limits.max_text_node_bytes {
         return Err(HmlError::LimitExceeded("text node size".to_string()));
     }
-    let decoded = text
-        .decode()
-        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-    state.append_text(&decoded)
+    state.append_text(text.as_ref())
+}
+
+/// [#5848] 숫자 문자참조(`&#160;` · `&#xA0;`)만 실제 문자로 푼다.
+/// 엔티티 참조는 호출부가 이미 걸러 두므로 여기 들어오지 않는다.
+fn is_xml_10_char(code: u32) -> bool {
+    matches!(
+        code,
+        0x9 | 0xA | 0xD | 0x20..=0xD7FF | 0xE000..=0xFFFD | 0x10000..=0x10FFFF
+    )
+}
+
+fn resolve_char_refs(value: &str) -> Option<String> {
+    let mut out = String::with_capacity(value.len());
+    let mut rest = value;
+    while let Some(at) = rest.find("&#") {
+        out.push_str(&rest[..at]);
+        let body = &rest[at + 2..];
+        let end = body.find(';')?;
+        let digits = &body[..end];
+        let code = if let Some(hex) = digits.strip_prefix(['x', 'X']) {
+            u32::from_str_radix(hex, 16).ok()?
+        } else {
+            digits.parse::<u32>().ok()?
+        };
+        if !is_xml_10_char(code) {
+            return None;
+        }
+        out.push(char::from_u32(code)?);
+        rest = &body[end + 1..];
+    }
+    out.push_str(rest);
+    Some(out)
+}
+
+/// [#5848] 내부 DTD 에서 **안전한 엔티티 선언만** 거둔다.
+///
+/// 받아들이는 것: `<!ENTITY 이름 "값">` 에서 값에 `&` 가 없는 리터럴.
+/// 버리는 것:
+/// - 값에 `&` 가 있는 선언 — 중첩 참조는 재귀 확장(billion laughs)의 씨앗이다.
+/// - `SYSTEM`/`PUBLIC` 외부 엔티티 — XXE 경로다. 애초에 값을 읽지 않는다.
+/// - 파라미터 엔티티(`<!ENTITY % …>`) — DTD 자체를 조립하는 문법이라 쓰지 않는다.
+///
+/// 상한을 둬 선언이 많거나 긴 문서가 메모리를 밀어내지 못하게 한다.
+fn collect_doctype_entities(
+    state: &mut ReadState<'_>,
+    doctype: &quick_xml::events::BytesText<'_>,
+) -> Result<(), HmlError> {
+    const MAX_ENTITIES: usize = 64;
+    const MAX_VALUE_BYTES: usize = 256;
+
+    let mut rest = doctype.as_ref();
+    while let Some(at) = rest.find("<!ENTITY") {
+        rest = &rest[at + "<!ENTITY".len()..];
+        let Some(decl_end) = rest.find('>') else {
+            break;
+        };
+        let decl = &rest[..decl_end];
+        rest = &rest[decl_end + 1..];
+
+        let decl = decl.trim();
+        if decl.starts_with('%') || decl.contains("SYSTEM") || decl.contains("PUBLIC") {
+            continue;
+        }
+        let mut parts = decl.splitn(2, char::is_whitespace);
+        let Some(name) = parts.next().map(str::trim) else {
+            continue;
+        };
+        if name.is_empty() {
+            continue;
+        }
+        let Some(tail) = parts.next() else { continue };
+        let tail = tail.trim();
+        let quote = match tail.chars().next() {
+            Some(c @ ('"' | '\'')) => c,
+            _ => continue,
+        };
+        let body = &tail[quote.len_utf8()..];
+        let Some(close) = body.find(quote) else {
+            continue;
+        };
+        let value = &body[..close];
+        if value.len() > MAX_VALUE_BYTES {
+            continue;
+        }
+        // 값 안의 `&` 는 **숫자 문자참조(`&#160;`)만** 허용한다. 그것은 코드포인트
+        // 하나로 즉시 확정되어 재귀가 성립하지 않는다. 반면 `&other;` 는 다른 엔티티를
+        // 부르는 문법이라 확장 폭탄의 씨앗이므로 그런 선언은 통째로 버린다.
+        // (법제처 배포본이 쓰는 형태가 정확히 `<!ENTITY nbsp "&#160;">` 다.)
+        if value
+            .match_indices('&')
+            .any(|(at, _)| !value[at + 1..].starts_with('#'))
+        {
+            continue;
+        }
+        let Some(resolved) = resolve_char_refs(value) else {
+            continue;
+        };
+        if state.doctype_entities.len() >= MAX_ENTITIES {
+            break;
+        }
+        state.doctype_entities.insert(name.to_string(), resolved);
+    }
+    Ok(())
 }
 
 fn append_reference(
@@ -1514,15 +1632,19 @@ fn append_reference(
     {
         return state.append_text(&character.to_string());
     }
-    let name = reference
-        .decode()
-        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-    let value = match name.as_ref() {
+    let name = reference.as_ref();
+    let value = match name {
         "lt" => "<",
         "gt" => ">",
         "amp" => "&",
         "quot" => "\"",
         "apos" => "'",
+        // [#5848] 내부 DTD 가 리터럴로 선언한 엔티티. 값에 `&` 가 없는 것만 실렸으므로
+        // 여기서 한 번 붙이고 끝난다 — 재귀 확장이 일어날 수 없다.
+        other if state.doctype_entities.contains_key(other) => {
+            let text = state.doctype_entities[other].clone();
+            return state.append_text(&text);
+        }
         _ => {
             return Err(HmlError::InvalidXml(format!(
                 "entity &{name}; is not allowed"
@@ -1533,9 +1655,7 @@ fn append_reference(
 }
 
 fn element_name(element: &BytesStart<'_>) -> Result<String, HmlError> {
-    std::str::from_utf8(element.name().as_ref())
-        .map(str::to_owned)
-        .map_err(|_| HmlError::InvalidXml("non-UTF-8 element name".to_string()))
+    Ok(element.name().as_ref().to_owned())
 }
 
 fn validate_attributes(element: &BytesStart<'_>, max: usize) -> Result<(), HmlError> {
@@ -1553,8 +1673,8 @@ fn validate_attributes(element: &BytesStart<'_>, max: usize) -> Result<(), HmlEr
 fn attribute(element: &BytesStart<'_>, key: &[u8]) -> Result<Option<String>, HmlError> {
     for item in element.attributes() {
         let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-        if attr.key.as_ref() == key {
-            let raw = std::str::from_utf8(attr.value.as_ref())
+        if attr.key.as_ref().as_bytes() == key {
+            let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
             let value = quick_xml::escape::unescape(raw)
                 .map_err(|error| HmlError::InvalidXml(error.to_string()))?;

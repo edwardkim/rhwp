@@ -99,10 +99,13 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -118,6 +121,8 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
@@ -126,6 +131,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     engine.build_render_tree(

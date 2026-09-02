@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/v-proto/observation.schema.json",
+  "title": "Corpus observation",
+  "description": "코퍼스 한 줄. (command, exitClass, judgment, sourceTag) 가 유일하다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["recordId", "sourceTag", "command", "exitClass"],
+  "properties": {
+    "recordId": {
+      "type": "string",
+      "pattern": "^vproto-[0-9]{6}$"
+    },
+    "sourceTag": {
+      "type": "string",
+      "minLength": 3,
+      "description": "문서 출처 표지. 같은 명령·종료·판정이라도 출처가 다르면 다른 관측."
+    },
+    "command": {
+      "type": "string",
+      "enum": [
+        "info",
+        "verify",
+        "ir-diff",
+        "layout-anomaly",
+        "replay",
+        "fill-fields",
+        "render-diff"
+      ]
+    },
+    "argv": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "exitClass": { "type": "integer", "enum": [0, 1, 2, 3, 4] },
+    "stdoutPresent": { "type": "boolean" },
+    "stderrKind": { "type": ["string", "null"] },
+    "envelope": { "type": ["object", "null"] },
+    "judgment": { "$ref": "judgment_fields.schema.json" }
+  }
+}

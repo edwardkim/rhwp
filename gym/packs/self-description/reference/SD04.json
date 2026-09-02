@@ -1,0 +1,17 @@
+{
+  "id": "SD04",
+  "steps": [
+    {
+      "answer": {
+        "commands": {
+          "cmd": [
+            "export-provenance-map",
+            "--json"
+          ],
+          "path": "commands",
+          "len": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T20",
+  "title": "rewrite hunter refuse",
+  "stop": "F08",
+  "steps": [
+    "handoff only"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

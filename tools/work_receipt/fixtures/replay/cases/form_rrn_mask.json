@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "form_rrn_mask",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "신청서",
+  "genre": "주민번호",
+  "title": "주민등록번호 누름틀에 마스킹 값",
+  "why": "실번호를 넣지 않고 마스킹 문자열을 넣는다. 영수증은 그 문자열의 산출 해시만 남긴다 — 원번호는 계획에도 없다.",
+  "notes": "문서 원문이 아닌 호출자 마스킹 값",
+  "input": "samples/basic/blank2010.hwp",
+  "output": "out/form-rrn.hwp",
+  "ext": "hwp",
+  "actions": [
+    "fill_fields"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/blank2010.hwp",
+    "output": "out/form-rrn.hwp",
+    "steps": [
+      {
+        "action": "fill_fields",
+        "data": {
+          "주민등록번호": "******-*******"
+        }
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank2010.hwp\",\"output\":\"out/form-rrn.hwp\",\"steps\":[{\"action\":\"fill_fields\",\"data\":{\"주민등록번호\":\"******-*******\"}}]}",
+  "planSha256": "c0db07256759acf8091f1f08041181252cecccca98279733f597d76c67cef99a",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/blank2010.hwp",
+    "inputSha256": "633311f66275b162762069ee3a04648c9766a24511dfb3c3eff88687ba8d0768",
+    "planSha256": "c0db07256759acf8091f1f08041181252cecccca98279733f597d76c67cef99a",
+    "outputSha256": "6558e3c1424afb9bc0216a04bf8690dc2c603ab643c7199dd692fe7120eacf90",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "6558e3c1424afb9bc0216a04bf8690dc2c603ab643c7199dd692fe7120eacf90"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -36,6 +36,8 @@
           <div class="md-item disabled" data-cmd="file:print-to-pdf" title="브라우저 인쇄 창에서 ‘대상 → PDF로 저장’을 선택합니다."><span class="md-icon icon-pdf"></span><span class="md-label">PDF로 저장…</span></div>
           <div class="md-item disabled" data-cmd="file:save-as-hwp"><span class="md-icon"></span><span class="md-label">HWP 형식으로 저장...</span></div>
           <div class="md-item disabled" data-cmd="file:save-as-hwpx"><span class="md-icon"></span><span class="md-label">HWPX 형식으로 저장...</span></div>
+          <div class="md-item disabled" data-cmd="file:export-html"><span class="md-icon"></span><span class="md-label">HTML로 내보내기</span></div>
+          <div class="md-item disabled" data-cmd="file:export-doc" title="Word가 열 수 있는 HTML 기반 .doc 문서로 내보냅니다."><span class="md-icon"></span><span class="md-label">Word 문서(.doc)로 내보내기</span></div>
           <div class="md-sep"></div>
           <div class="md-item disabled" data-cmd="file:page-setup"><span class="md-icon icon-page-setup"></span><span class="md-label">편집 용지</span><span class="md-shortcut">F7</span></div>
           <div class="md-item disabled" data-cmd="file:print"><span class="md-icon icon-print"></span><span class="md-label">인쇄</span><span class="md-shortcut">Ctrl+P</span></div>
@@ -71,8 +73,9 @@
       <div class="menu-item" data-menu="view">
         <span class="menu-title">보기</span>
         <div class="menu-dropdown">
-          <div class="md-item" data-cmd="view:zoom-in"><span class="md-icon icon-zoom-menu-in"></span><span class="md-label">확대</span><span class="md-shortcut">Shift+Num +</span></div>
-          <div class="md-item" data-cmd="view:zoom-out"><span class="md-icon icon-zoom-menu-out"></span><span class="md-label">축소</span><span class="md-shortcut">Shift+Num -</span></div>
+          <div class="md-item" data-cmd="view:zoom-in"><span class="md-icon icon-zoom-menu-in"></span><span class="md-label">확대</span><span class="md-shortcut">Ctrl++</span></div>
+          <div class="md-item" data-cmd="view:zoom-out"><span class="md-icon icon-zoom-menu-out"></span><span class="md-label">축소</span><span class="md-shortcut">Ctrl+-</span></div>
+          <div class="md-item" data-cmd="view:zoom-dialog"><span class="md-icon"></span><span class="md-label">화면 확대/축소...</span></div>
           <div class="md-sep"></div>
           <div class="md-sub">
             <span class="md-label">배율</span><span class="md-arrow">▶</span>
@@ -87,6 +90,7 @@
               <div class="md-item" data-cmd="view:zoom-150"><span class="md-icon"></span><span class="md-label">150%</span></div>
               <div class="md-item" data-cmd="view:zoom-200"><span class="md-icon"></span><span class="md-label">200%</span></div>
               <div class="md-item" data-cmd="view:zoom-300"><span class="md-icon"></span><span class="md-label">300%</span></div>
+              <div class="md-item" data-cmd="view:zoom-500"><span class="md-icon"></span><span class="md-label">500%</span></div>
             </div>
           </div>
           <div class="md-sep"></div>
@@ -96,6 +100,10 @@
               <div class="md-item" role="menuitemradio" data-cmd="view:theme-system" data-theme-mode-choice="system"><span class="md-icon"></span><span class="md-label">시스템 설정</span></div>
               <div class="md-item" role="menuitemradio" data-cmd="view:theme-light" data-theme-mode-choice="light"><span class="md-icon"></span><span class="md-label">밝게</span></div>
               <div class="md-item" role="menuitemradio" data-cmd="view:theme-dark" data-theme-mode-choice="dark"><span class="md-icon"></span><span class="md-label">어둡게</span></div>
+              <div class="md-sep"></div>
+              <div class="md-item" role="menuitemradio" data-cmd="view:skin-oldschool" data-theme-skin-choice="oldschool"><span class="md-icon"></span><span class="md-label">올드스쿨</span></div>
+              <div class="md-item" role="menuitemradio" data-cmd="view:skin-default" data-theme-skin-choice="default"><span class="md-icon"></span><span class="md-label">클래식</span></div>
+              <div class="md-item" role="menuitemradio" data-cmd="view:skin-flat" data-theme-skin-choice="flat"><span class="md-icon"></span><span class="md-label">모던</span></div>
             </div>
           </div>
           <div class="md-sep"></div>
@@ -109,8 +117,8 @@
           <div class="md-sub">
             <span class="md-label">도구 상자</span><span class="md-arrow">▶</span>
             <div class="md-sub-panel">
-              <div class="md-item disabled" data-cmd="view:toolbox-basic"><span class="md-label">기본</span></div>
-              <div class="md-item disabled" data-cmd="view:toolbox-format"><span class="md-label">서식</span></div>
+              <div class="md-item" role="menuitemcheckbox" aria-checked="true" data-cmd="view:toolbox-basic"><span class="md-label">기본</span></div>
+              <div class="md-item" role="menuitemcheckbox" aria-checked="true" data-cmd="view:toolbox-format"><span class="md-label">서식</span></div>
             </div>
           </div>
         </div>
@@ -402,10 +410,16 @@
           <div class="md-item" data-cmd="tool:options"><span class="md-icon"></span><span class="md-label">환경 설정</span></div>
         </div>
       </div>
+      <button type="button" id="toolbox-basic-toggle" class="menu-command menu-toolbox-toggle active" data-cmd="view:toolbox-basic" aria-controls="icon-toolbar" aria-expanded="true" aria-label="기본 도구 상자 접기" title="기본 도구 상자 접기 (Ctrl+F1)"></button>
     </nav>
 
     <!-- 아이콘 툴바 -->
-    <div id="icon-toolbar">
+    <div id="icon-toolbar" role="region" aria-label="기본 도구 상자">
+      <button type="button" id="icon-toolbar-prev" class="tb-scroll-nav" aria-controls="icon-toolbar-viewport" aria-label="이전 도구 그룹" title="이전 도구 그룹" hidden aria-disabled="true" aria-hidden="true" tabindex="-1">
+        <span class="tb-scroll-nav-icon" aria-hidden="true">«</span>
+      </button>
+      <div id="icon-toolbar-viewport" class="tb-scroll-viewport" role="group" aria-label="기본 도구 상자 명령" tabindex="0">
+        <div class="tb-scroll-track">
       <div class="tb-group">
         <button class="tb-btn" title="오려두기 (Ctrl+X)"><span class="tb-sprite icon-cut"></span><span class="tb-label">오려<br/>두기</span></button>
         <button class="tb-btn" title="복사하기 (Ctrl+C)"><span class="tb-sprite icon-copy"></span><span class="tb-label">복사<br/>하기</span></button>
@@ -445,13 +459,13 @@
         <button class="tb-btn" title="하이퍼링크"><span class="tb-sprite icon-hyperlink"></span><span class="tb-label">하이퍼<br/>링크</span></button>
       </div>
       <span class="tb-sep"></span>
-      <div class="tb-group tb-rotate-group" style="display:none">
+      <div class="tb-group tb-rotate-group" hidden>
         <button class="tb-btn" data-cmd="insert:rotate-ccw" title="왼쪽 90° 회전"><span class="tb-icon-text">&#x21B6;</span><span class="tb-label">왼쪽<br/>회전</span></button>
         <button class="tb-btn" data-cmd="insert:rotate-cw" title="오른쪽 90° 회전"><span class="tb-icon-text">&#x21B7;</span><span class="tb-label">오른쪽<br/>회전</span></button>
         <button class="tb-btn" data-cmd="insert:flip-horz" title="좌우 대칭"><span class="tb-icon-text">&#x21C4;</span><span class="tb-label">좌우<br/>대칭</span></button>
         <button class="tb-btn" data-cmd="insert:flip-vert" title="상하 대칭"><span class="tb-icon-text">&#x21C5;</span><span class="tb-label">상하<br/>대칭</span></button>
+        <span class="tb-sep"></span>
       </div>
-      <span class="tb-sep"></span>
       <div class="tb-group">
         <button class="tb-btn" data-cmd="page:header-create" title="머리말"><span class="tb-sprite icon-header"></span><span class="tb-label">머리말</span></button>
         <button class="tb-btn" data-cmd="page:footer-create" title="꼬리말"><span class="tb-sprite icon-footer"></span><span class="tb-label">꼬리말</span></button>
@@ -459,23 +473,24 @@
         <button class="tb-btn" data-cmd="insert:endnote" title="미주"><span class="tb-sprite icon-endnote"></span><span class="tb-label">미주</span></button>
         <div class="tb-split">
           <button class="tb-btn tb-split-main" title="찾기 (Ctrl+F)" data-cmd="edit:find"><span class="tb-sprite icon-find"></span><span class="tb-label">찾기</span></button>
-          <button class="tb-btn tb-split-arrow" title="찾기 메뉴"><span class="tb-arrow-icon">▾</span></button>
-          <div class="tb-split-menu">
-            <div class="tb-split-item" data-cmd="edit:find">찾기(F) <span class="tb-split-shortcut">Ctrl+F</span></div>
-            <div class="tb-split-item" data-cmd="edit:compare-documents">문서 비교 <span class="tb-split-shortcut">Alt+Shift+V</span></div>
-            <div class="tb-split-item" data-cmd="edit:document-history">문서 이력 관리 <span class="tb-split-shortcut">Ctrl+Shift+H</span></div>
-            <div class="tb-split-item" data-cmd="edit:find-replace">찾아 바꾸기(E) <span class="tb-split-shortcut">Ctrl+F2</span></div>
-            <div class="tb-split-item" data-cmd="edit:find-again">다시 찾기(X) <span class="tb-split-shortcut">Ctrl+L</span></div>
-            <div class="tb-split-sep"></div>
-            <div class="tb-split-item" data-cmd="edit:goto">찾아가기(G) <span class="tb-split-shortcut">Alt+G</span></div>
+          <button class="tb-btn tb-split-arrow" title="찾기 메뉴" aria-haspopup="menu" aria-expanded="false"><span class="tb-arrow-icon">▾</span></button>
+          <div class="tb-split-menu" role="menu" aria-label="찾기 메뉴">
+            <button type="button" class="tb-split-item" role="menuitem" data-cmd="edit:find">찾기(F) <span class="tb-split-shortcut">Ctrl+F</span></button>
+            <button type="button" class="tb-split-item" role="menuitem" data-cmd="edit:compare-documents">문서 비교 <span class="tb-split-shortcut">Alt+Shift+V</span></button>
+            <button type="button" class="tb-split-item" role="menuitem" data-cmd="edit:document-history">문서 이력 관리 <span class="tb-split-shortcut">Ctrl+Shift+H</span></button>
+            <button type="button" class="tb-split-item" role="menuitem" data-cmd="edit:find-replace">찾아 바꾸기(E) <span class="tb-split-shortcut">Ctrl+F2</span></button>
+            <button type="button" class="tb-split-item" role="menuitem" data-cmd="edit:find-again">다시 찾기(X) <span class="tb-split-shortcut">Ctrl+L</span></button>
+            <div class="tb-split-sep" role="separator"></div>
+            <button type="button" class="tb-split-item" role="menuitem" data-cmd="edit:goto">찾아가기(G) <span class="tb-split-shortcut">Alt+G</span></button>
           </div>
         </div>
         <button class="tb-btn" data-cmd="edit:document-history" title="문서 이력 관리 (Ctrl+Shift+H)"><span class="tb-icon-text">⧉</span><span class="tb-label">이력<br/>관리</span></button>
         <button class="tb-btn" data-cmd="edit:compare-documents" title="문서 비교 (Alt+Shift+V)"><span class="tb-icon-text">≍</span><span class="tb-label">문서<br/>비교</span></button>
       </div>
       <!-- 머리말/꼬리말 편집 모드 전용 도구상자 (숨김) -->
-      <div class="tb-group tb-headerfooter-group" style="display:none">
+      <div class="tb-group tb-headerfooter-group" hidden>
         <span class="tb-hf-label">머리말</span>
+        <span id="hf-edit-status-live" class="visually-hidden" aria-live="polite"></span>
         <span class="tb-sep"></span>
         <button class="tb-btn" data-cmd="page:headerfooter-prev" title="이전"><span class="tb-icon-text">◀</span><span class="tb-label">이전</span></button>
         <button class="tb-btn" data-cmd="page:headerfooter-next" title="다음"><span class="tb-icon-text">▶</span><span class="tb-label">다음</span></button>
@@ -488,7 +503,7 @@
         <button class="tb-btn" data-cmd="page:insert-field-filename" title="파일 이름 삽입"><span class="tb-icon-text">F</span><span class="tb-label">파일명</span></button>
       </div>
       <!-- 주석 편집 모드 전용 도구상자 (숨김) -->
-      <div class="tb-group tb-mode-group tb-note-group" style="display:none">
+      <div class="tb-group tb-mode-group tb-note-group" hidden>
         <span class="tb-note-label">주석</span>
         <span class="tb-sep"></span>
         <button class="tb-btn" data-cmd="insert:footnote" title="각주"><span class="tb-sprite icon-footnote"></span><span class="tb-label">각주</span></button>
@@ -497,6 +512,11 @@
         <span class="tb-sep"></span>
         <button class="tb-btn tb-note-close" data-cmd="insert:note-close" title="닫기 (Shift+Esc)"><span class="tb-icon-text">×</span><span class="tb-label">닫기</span></button>
       </div>
+        </div>
+      </div>
+      <button type="button" id="icon-toolbar-next" class="tb-scroll-nav" aria-controls="icon-toolbar-viewport" aria-label="다음 도구 그룹" title="다음 도구 그룹" hidden aria-disabled="true" aria-hidden="true" tabindex="-1">
+        <span class="tb-scroll-nav-icon" aria-hidden="true">»</span>
+      </button>
       <!-- 파일 열기 (숨김) -->
       <input type="file" id="file-input" accept=".hwp,.hwpx,.hml,application/xml,text/xml" style="display:none" />
     </div>
@@ -573,64 +593,73 @@
         <span class="sb-ribbon-label">글꼴 및 간격</span>
       </div>
 
-      <div class="sb-command-band sb-character-band">
-        <div class="sb-ribbon-group sb-character-ribbon-group">
-          <div class="sb-command-group sb-character-group">
-            <!-- 글자 서식 -->
-            <button id="btn-bold" class="sb-btn" title="굵게 (Ctrl+B)"><span class="sb-ga sb-bold">가</span></button>
-            <button id="btn-italic" class="sb-btn" title="기울임 (Ctrl+I)"><span class="sb-ga sb-italic">가</span></button>
-            <button id="btn-underline" class="sb-btn" title="밑줄 (Ctrl+U)"><span class="sb-ga sb-underline">간</span></button>
-            <button id="btn-strike" class="sb-btn" title="취소선"><span class="sb-ga sb-strike">가</span></button>
-            <div class="sb-dropdown" id="charfx-dropdown">
-              <button class="sb-btn sb-has-arrow" id="btn-charfx" title="글자 효과">
-                <span class="sb-ga sb-effect-icon" id="charfx-icon">가</span><span class="sb-dd">▾</span>
-              </button>
-              <div class="sb-dropdown-menu" id="charfx-menu">
-                <button class="sb-dropdown-item" data-format="emboss"><span class="sb-ga sb-emboss">가</span>양각</button>
-                <button class="sb-dropdown-item" data-format="engrave"><span class="sb-ga sb-engrave">가</span>음각</button>
-                <button class="sb-dropdown-item" data-format="outline"><span class="sb-ga sb-outline">가</span>외곽선</button>
-                <button class="sb-dropdown-item" data-format="superscript"><span class="sb-ga sb-sup">가</span>위 첨자</button>
-                <button class="sb-dropdown-item" data-format="subscript"><span class="sb-ga sb-sub">가</span>아래 첨자</button>
+      <div class="sb-command-track">
+        <div class="sb-command-band sb-character-band">
+          <div class="sb-ribbon-group sb-character-ribbon-group">
+            <div class="sb-command-group sb-character-group">
+              <!-- 글자 서식 -->
+              <button id="btn-bold" class="sb-btn" title="굵게 (Ctrl+B)"><span class="sb-ga sb-bold">가</span></button>
+              <button id="btn-italic" class="sb-btn" title="기울임 (Ctrl+I)"><span class="sb-ga sb-italic">가</span></button>
+              <button id="btn-underline" class="sb-btn" title="밑줄 (Ctrl+U)"><span class="sb-ga sb-underline">간</span></button>
+              <button id="btn-strike" class="sb-btn" title="취소선"><span class="sb-ga sb-strike">가</span></button>
+              <div class="sb-dropdown" id="charfx-dropdown">
+                <button class="sb-btn sb-has-arrow" id="btn-charfx" title="글자 효과">
+                  <span class="sb-ga sb-effect-icon" id="charfx-icon">가</span><span class="sb-dd">▾</span>
+                </button>
+                <div class="sb-dropdown-menu" id="charfx-menu">
+                  <button class="sb-dropdown-item" data-format="emboss"><span class="sb-ga sb-emboss">가</span>양각</button>
+                  <button class="sb-dropdown-item" data-format="engrave"><span class="sb-ga sb-engrave">가</span>음각</button>
+                  <button class="sb-dropdown-item" data-format="outline"><span class="sb-ga sb-outline">가</span>외곽선</button>
+                  <button class="sb-dropdown-item" data-format="superscript"><span class="sb-ga sb-sup">가</span>위 첨자</button>
+                  <button class="sb-dropdown-item" data-format="subscript"><span class="sb-ga sb-sub">가</span>아래 첨자</button>
+                  </div>
+                </div>
+            </div>
+            <span class="sb-ribbon-label">글자 모양</span>
+          </div>
+          <div class="sb-ribbon-group sb-color-ribbon-group">
+            <div class="sb-command-group sb-color-group">
+              <!-- 글자색 -->
+              <span class="sb-color-wrap">
+                <button id="btn-text-color" class="sb-btn sb-has-arrow" title="글자 색">
+                  <span class="sb-color-visual"><span class="sb-ga">가</span><span id="color-bar"></span></span>
+                  <span class="sb-dd">▾</span>
+                </button>
+                <input id="text-color-picker" type="color" value="#000000" aria-label="글자 색 선택" />
+              </span>
+              <!-- 형광펜 -->
+              <span id="highlight-dropdown" class="sb-dropdown">
+                <button id="btn-highlight" class="sb-btn sb-has-arrow" title="형광펜">
+                  <span class="sb-highlight-visual"><span class="sb-highlight-icon">✏</span><span id="highlight-bar"></span></span>
+                  <span class="sb-dd">▾</span>
+                </button>
+                <div id="highlight-palette" class="sb-hl-palette"></div>
+              </span>
+            </div>
+            <span class="sb-ribbon-label">색</span>
+          </div>
+        </div>
+
+        <div class="sb-overflow-host">
+          <button type="button" id="btn-style-overflow" class="sb-btn sb-has-arrow" aria-controls="style-overflow-panel" aria-expanded="false" aria-label="문단 정렬 더보기" title="문단 정렬 더보기">
+            <span id="style-overflow-current-icon" class="sb-align sb-al-left sb-overflow-current-icon" aria-hidden="true"></span><span class="sb-dd" aria-hidden="true">▾</span>
+          </button>
+          <div id="style-overflow-panel" class="sb-overflow-panel" role="group" aria-label="문단 정렬">
+            <div class="sb-command-band sb-paragraph-band">
+              <div class="sb-ribbon-group sb-paragraph-ribbon-group">
+                <div class="sb-command-group sb-align-group">
+                  <!-- 문단 정렬 -->
+                  <button id="btn-align-left" class="sb-btn" title="왼쪽 정렬"><span class="sb-align sb-al-left"></span></button>
+                  <button id="btn-align-center" class="sb-btn" title="가운데 정렬"><span class="sb-align sb-al-center"></span></button>
+                  <button id="btn-align-right" class="sb-btn" title="오른쪽 정렬"><span class="sb-align sb-al-right"></span></button>
+                  <button id="btn-align-justify" class="sb-btn" title="양쪽 정렬"><span class="sb-align sb-al-justify"></span></button>
+                  <button id="btn-align-distribute" class="sb-btn" title="배분 정렬"><span class="sb-align sb-al-distribute"></span></button>
+                  <button id="btn-align-split" class="sb-btn" title="나눔 정렬"><span class="sb-align sb-al-split"></span></button>
+                </div>
+                <span class="sb-ribbon-label">문단</span>
               </div>
             </div>
           </div>
-          <span class="sb-ribbon-label">글자 모양</span>
-        </div>
-        <div class="sb-ribbon-group sb-color-ribbon-group">
-          <div class="sb-command-group sb-color-group">
-            <!-- 글자색 -->
-            <span class="sb-color-wrap">
-              <button id="btn-text-color" class="sb-btn sb-has-arrow" title="글자 색">
-                <span class="sb-color-visual"><span class="sb-ga">가</span><span id="color-bar"></span></span>
-                <span class="sb-dd">▾</span>
-              </button>
-              <input id="text-color-picker" type="color" value="#000000" aria-label="글자 색 선택" />
-            </span>
-            <!-- 형광펜 -->
-            <span id="highlight-dropdown" class="sb-dropdown">
-              <button id="btn-highlight" class="sb-btn sb-has-arrow" title="형광펜">
-                <span class="sb-highlight-visual"><span class="sb-highlight-icon">✏</span><span id="highlight-bar"></span></span>
-                <span class="sb-dd">▾</span>
-              </button>
-              <div id="highlight-palette" class="sb-hl-palette"></div>
-            </span>
-          </div>
-          <span class="sb-ribbon-label">색</span>
-        </div>
-      </div>
-
-      <div class="sb-command-band sb-paragraph-band">
-        <div class="sb-ribbon-group sb-paragraph-ribbon-group">
-          <div class="sb-command-group sb-align-group">
-            <!-- 문단 정렬 -->
-            <button id="btn-align-left" class="sb-btn" title="왼쪽 정렬"><span class="sb-align sb-al-left"></span></button>
-            <button id="btn-align-center" class="sb-btn" title="가운데 정렬"><span class="sb-align sb-al-center"></span></button>
-            <button id="btn-align-right" class="sb-btn" title="오른쪽 정렬"><span class="sb-align sb-al-right"></span></button>
-            <button id="btn-align-justify" class="sb-btn" title="양쪽 정렬"><span class="sb-align sb-al-justify"></span></button>
-            <button id="btn-align-distribute" class="sb-btn" title="배분 정렬"><span class="sb-align sb-al-distribute"></span></button>
-            <button id="btn-align-split" class="sb-btn" title="나눔 정렬"><span class="sb-align sb-al-split"></span></button>
-          </div>
-          <span class="sb-ribbon-label">문단</span>
         </div>
       </div>
     </div>
@@ -653,15 +682,25 @@
       <span id="sb-section" class="stb-item">구역: 1 / 1</span>
       <span class="stb-divider"></span>
       <span id="sb-mode" class="stb-item">삽입</span>
+      <span id="sb-cell-selection" class="stb-item stb-cell-selection" role="status" aria-live="polite" hidden></span>
       <span id="sb-field" class="stb-item" style="display:none"></span>
       <span id="sb-message" class="stb-message"></span>
       <span class="stb-right">
         <button id="sb-zoom-fit-width" class="stb-icon-btn" title="폭 맞춤"><span class="tb-sprite icon-zoom-fit-width"></span></button>
         <button id="sb-zoom-fit" class="stb-icon-btn" title="쪽 맞춤"><span class="tb-sprite icon-zoom-fit"></span></button>
-        <span class="stb-divider"></span>
-        <span id="sb-zoom-val" class="stb-zoom-val">100%</span>
         <button id="sb-zoom-out" class="stb-icon-btn" title="축소"><span class="tb-sprite icon-zoom-out"></span></button>
+        <span class="stb-zoom-range-wrap">
+          <input id="sb-zoom-range" class="stb-zoom-range" type="range" min="0" max="1000" step="1" value="500" aria-label="화면 확대/축소 배율" aria-valuetext="100%">
+          <span class="stb-zoom-neutral-mark" aria-hidden="true"></span>
+        </span>
         <button id="sb-zoom-in" class="stb-icon-btn" title="확대"><span class="tb-sprite icon-zoom-in"></span></button>
+        <button id="sb-zoom-display" class="stb-zoom-display" type="button" title="화면 확대/축소 설정">
+          <svg class="stb-zoom-menu-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+            <circle cx="6.5" cy="6.5" r="4.5"></circle>
+            <path d="M9.75 9.75 15.25 15.25"></path>
+          </svg>
+          <span id="sb-zoom-val">100%</span>
+        </button>
       </span>
     </footer>
   </div>

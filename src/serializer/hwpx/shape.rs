@@ -285,6 +285,10 @@ pub fn write_container_open<W: Write>(
     let z_order = common.z_order.to_string();
     let tw = text_wrap_str(common.text_wrap);
     let tf = text_flow_str(common.text_flow);
+    // [#5716] groupLevel 은 IR(shape_attr.group_level)을 보존한다. 종전 "0" 하드코딩은
+    // 다른 그룹의 멤버인 컨테이너의 중첩 레벨이 저장 시 전부 0 으로 유실됐다
+    // (리프 도형 경로는 #2746 에서 이미 보존 — 컨테이너 자신만 누락).
+    let group_level = sa.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -299,7 +303,7 @@ pub fn write_container_open<W: Write>(
             ("lock", bool01(common.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
-            ("groupLevel", "0"),
+            ("groupLevel", &group_level),
             ("instid", &id_str),
         ],
     )?;
@@ -347,7 +351,10 @@ pub(crate) fn write_ole<W: Write>(
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
     let c = &ole.common;
-    let id_str = c.instance_id.to_string();
+    // [#4669] 원본 `id` 는 `instid` 와 별개 값이다 — 파서가 보존한 원문을 되쓰고,
+    // HWP5 출신(None)은 종전대로 instance_id 를 겸용한다.
+    let id_str = ole.hwpx_ole_id.unwrap_or(c.instance_id).to_string();
+    let instid_str = c.instance_id.to_string();
     let z_order = c.z_order.to_string();
     let tw = text_wrap_str(c.text_wrap);
     let tf = text_flow_str(c.text_flow);
@@ -370,6 +377,9 @@ pub(crate) fn write_ole<W: Write>(
     };
     // [#2931] 개체 잠금(lock) — IR(common.locked)을 보존(종전 "0" 하드코딩 제거).
     let lock = if c.locked { "1" } else { "0" };
+    // [#5716] groupLevel — 컨테이너와 동형. IR(drawing.shape_attr.group_level)을
+    // 보존한다(종전 "0" 하드코딩은 그룹 내 OLE 의 중첩 레벨을 저장 시 유실).
+    let group_level = ole.drawing.shape_attr.group_level.to_string();
 
     start_tag_attrs(
         w,
@@ -384,8 +394,8 @@ pub(crate) fn write_ole<W: Write>(
             ("lock", bool01(c.locked)),
             ("dropcapstyle", "None"),
             ("href", ""),
-            ("groupLevel", "0"),
-            ("instid", &id_str),
+            ("groupLevel", &group_level),
+            ("instid", &instid_str),
             ("objectType", "UNKNOWN"),
             ("binaryItemIDRef", &bidref),
             ("hasMoniker", "0"),
@@ -612,7 +622,7 @@ pub(crate) fn write_shape_component_block<W: Write>(
     Ok(())
 }
 
-fn write_offset<W: Write>(
+pub(super) fn write_offset<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
@@ -630,8 +640,20 @@ fn write_org_sz<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    let width = sa.original_width.to_string();
-    let height = sa.original_height.to_string();
+    // [#4669] HWP5 저장을 위해 유효 extent로 materialize했더라도 HWPX 원문의
+    // `orgSz=0` sentinel은 그대로 되돌린다.
+    let width = if sa.original_width_was_zero {
+        0
+    } else {
+        sa.original_width
+    }
+    .to_string();
+    let height = if sa.original_height_was_zero {
+        0
+    } else {
+        sa.original_height
+    }
+    .to_string();
     empty_tag(w, "hp:orgSz", &[("width", &width), ("height", &height)])
 }
 
@@ -973,6 +995,7 @@ pub(crate) fn write_fill_brush<W: Write>(
                 ImageFillMode::TileVertLeft => "TILE_VERT_LEFT",
                 ImageFillMode::TileVertRight => "TILE_VERT_RIGHT",
                 ImageFillMode::FitToSize => "FIT",
+                ImageFillMode::Zoom => "ZOOM",
                 ImageFillMode::Total => "TOTAL",
                 ImageFillMode::Center => "CENTER",
                 ImageFillMode::CenterTop => "CENTER_TOP",
@@ -1974,6 +1997,64 @@ mod tests {
         assert_eq!(hatch_style_str(5), "CROSS");
         assert_eq!(hatch_style_str(6), "CROSS_DIAGONAL");
         assert_eq!(hatch_style_str(99), "HORIZONTAL");
+    }
+
+    /// [#4669] 재방출 `id` 는 파서가 보존한 원문(hwpx_ole_id)을 되쓰고 `instid`
+    /// 는 instance_id 를 쓴다 — 원산 파일은 두 값이 다르다(실측 2141242094 /
+    /// 1067500271). 종전엔 둘 다 instance_id 로 방출돼 id 원문이 유실됐다.
+    /// curSz=0 센티널(#2017)의 OLE 경로 복원도 함께 고정한다.
+    #[test]
+    fn issue4669_write_ole_preserves_original_id_and_cur_sz_zero() {
+        use crate::model::document::Document;
+
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+
+        let mut ole = OleShape::default();
+        ole.hwpx_ole_id = Some(2141242094);
+        ole.common.instance_id = 1067500271;
+        ole.drawing.shape_attr.original_width = 42001;
+        ole.drawing.shape_attr.original_height = 13501;
+        ole.drawing.shape_attr.current_width = 42001;
+        ole.drawing.shape_attr.current_height = 13501;
+        ole.drawing.shape_attr.current_width_was_zero = true;
+        ole.drawing.shape_attr.current_height_was_zero = true;
+
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_ole(&mut w, &ole, &mut ctx).expect("write_ole");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+
+        assert!(xml.contains(r#"id="2141242094""#), "id 원문 보존: {xml}");
+        assert!(
+            xml.contains(r#"instid="1067500271""#),
+            "instid 는 instance_id: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:curSz width="0" height="0"/>"#),
+            "curSz=0 원문 복원(#2017 센티널): {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:orgSz width="42001" height="13501"/>"#),
+            "orgSz 보존: {xml}"
+        );
+    }
+
+    /// [#4669] HWP5 출신(hwpx_ole_id=None)은 종전대로 id=instid=instance_id.
+    #[test]
+    fn issue4669_write_ole_without_original_id_falls_back_to_instance_id() {
+        use crate::model::document::Document;
+
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+
+        let mut ole = OleShape::default();
+        ole.common.instance_id = 77;
+
+        let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
+        write_ole(&mut w, &ole, &mut ctx).expect("write_ole");
+        let xml = String::from_utf8(w.into_inner()).unwrap();
+        assert!(xml.contains(r#"id="77""#), "{xml}");
+        assert!(xml.contains(r#"instid="77""#), "{xml}");
     }
 
     /// [버그] OLE 의 `bin_data_id` 는 HWP5 바이너리상 u32 필드다. 종전 코드는

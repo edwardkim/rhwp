@@ -1,0 +1,27 @@
+{
+  "id": "TE06",
+  "tier": 1,
+  "title": "문서 한 줄 설명",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 문단 수를 answer.json 에 {\"paras\": N} 으로 제출하라. 힌트: rhwp explain.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "문단 수",
+      "op": "answer_eq",
+      "answer": "paras",
+      "path": "paragraphCount",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

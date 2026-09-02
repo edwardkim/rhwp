@@ -244,6 +244,7 @@ export const formatCommands: CommandDef[] = [
   // 글자 모양 대화상자
   {
     id: 'format:char-shape',
+    opensDialog: true,
     label: '글자 모양',
     icon: 'icon-char-shape',
     shortcutLabel: 'Alt+L',
@@ -271,6 +272,7 @@ export const formatCommands: CommandDef[] = [
   },
   {
     id: 'format:para-shape',
+    opensDialog: true,
     label: '문단 모양',
     icon: 'icon-para-shape',
     shortcutLabel: 'Alt+T',
@@ -329,6 +331,7 @@ export const formatCommands: CommandDef[] = [
   },
   {
     id: 'format:para-num-shape',
+    opensDialog: true,
     label: '문단 번호 모양',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -406,6 +409,7 @@ export const formatCommands: CommandDef[] = [
   // 스타일 대화상자
   {
     id: 'format:style-dialog',
+    opensDialog: true,
     label: '스타일',
     shortcutLabel: 'F6',
     canExecute: (ctx) => ctx.hasDocument,
@@ -456,6 +460,7 @@ export const formatCommands: CommandDef[] = [
   },
   {
     id: 'format:object-properties',
+    opensDialog: true,
     label: '개체 속성',
     icon: 'icon-obj-props',
     shortcutLabel: 'P',

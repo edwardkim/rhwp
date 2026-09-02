@@ -1,0 +1,34 @@
+{
+  "id": "SD02",
+  "tier": 1,
+  "title": "읽기·쓰기 형식 계약",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 가 선언하는 **읽을 수 있는 형식** 수와 **쓸 수 있는 형식** 수를 answer.json 에 {\"read\": N, \"write\": M} 으로 제출하라. 힌트: capabilities 의 formats.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "읽기 형식 수",
+      "op": "len_answer_eq",
+      "answer": "read",
+      "path": "formats.read",
+      "cmd": [
+        "capabilities"
+      ]
+    },
+    {
+      "name": "쓰기 형식 수",
+      "op": "len_answer_eq",
+      "answer": "write",
+      "path": "formats.write",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -11,6 +11,8 @@
 SDK는 지원되는 Studio와 `MessageChannel` v1을 협상해 binary를 transferable로 전송합니다.
 구버전 Studio에는 기존 `postMessage` protocol로 자동 전환되며 기존 공개 API는 유지됩니다.
 `getRendererDiagnostics()`는 `renderer-diagnostics-v1` capability를 협상한 Studio에서만 사용할 수 있습니다.
+`getFontDecisionTrace()`는 `font-decision-trace-v1` capability를 협상한 Studio에서만 사용할 수 있으며,
+현재 snapshot을 읽을 뿐 font load, 권한 요청, repaint 또는 backend 변경을 시작하지 않습니다.
 호스트와 `studioUrl`은 HTTP(S) origin만 지원합니다. `file:`, `data:`, 브라우저 확장처럼
 origin이 `null`이거나 불투명한 환경의 연결은 SDK와 Studio 양쪽에서 거부합니다.
 
@@ -45,6 +47,58 @@ npm install @rhwp/editor
 ```
 
 이것만으로 메뉴바, 툴바, 편집 영역, 상태 표시줄이 포함된 완전한 HWP 에디터가 표시됩니다.
+
+## 웹페이지에서 JavaScript 로 제어하기 — `createStudio`
+
+`createEditor` 의 상위 집합입니다. 같은 것을 만들고, **studio 의 메뉴·커맨드를 조종하고
+문서를 HwpCtrl API 로 편집**할 수 있습니다.
+
+```javascript
+import { createStudio } from '@rhwp/editor';
+
+const studio = await createStudio('#app', {
+  plugins: ['hwpctrl'],            // HwpCtrl API 사용
+  chrome: { statusbar: false },    // 메뉴·툴바·상태표시줄 표시
+});
+
+await studio.loadFile(buffer, 'doc.hwp');
+
+// studio 커맨드 — 메뉴·툴바·키보드와 같은 경로를 탑니다
+await studio.commands.execute('edit:copy');
+const commands = await studio.commands.list();   // {id, label, enabled, opensDialog}
+
+// 문서 편집 — 여러 호출을 한 메시지·한 트랜잭션으로
+await studio.hwpctrl.batch(h => {
+  h.PutFieldText('기안자', '홍길동');
+  h.PutFieldText('기안일', '2026-08-12');
+});
+const bytes = await studio.hwpctrl.exportBytes();
+
+await studio.hwpctrl.undo();       // 위 배치 전체가 undo 1스텝
+studio.destroy();
+```
+
+**알아 둘 것 셋.**
+
+- **배치를 쓰세요.** 실측상 100회 호출이 배치면 postMessage 1회·11ms, 개별이면 100회·583ms 입니다
+  (약 45배). 배치 하나가 트랜잭션 하나이고 undo 도 1스텝입니다.
+- **대화상자를 여는 커맨드는 기본 거절됩니다**(`{ok:false, reason:'needs-dialog'}`). 자동화가 그것을
+  열면 사람이 누를 때까지 응답이 멈춥니다. 사용자가 앞에 있는 통합에서는
+  `studio.commands.execute(id, params, { allowDialog: true })` 로 풉니다.
+- **컨테이너 이동은 지원하지 않습니다.** iframe 을 다른 요소로 옮기면 브라우저가 문서를 재로드해
+  편집 상태가 사라집니다. 화면상의 이동·숨김은 컨테이너 CSS 로 하고(`display:none` 은 상태를
+  보존합니다), 정말 옮겨야 하면 `destroy()` 후 다시 만듭니다.
+
+`chrome:{ menu:false }` 로 메뉴를 숨겨도 커맨드 레지스트리는 살아 있어 `commands.execute` 가 계속
+동작합니다 — "UI 없는 편집기" 구성이 이것으로 섭니다.
+
+### 검증
+
+브리지 전 계약(자동화·플러그인·hwpctrl·성능)을 한 번에 확인하려면 저장소에서:
+
+```bash
+cd rhwp-studio && npm run gate:bridge
+```
 
 ## HWP 파일 로드
 
@@ -117,6 +171,49 @@ await editor.loadFile(buffer, 'sample.hwpx', { suppressDialogs: false });
 const count = await editor.pageCount();
 ```
 
+### 문서 에이전트 exact command
+
+서버가 만든 HWP/HWPX 문단 교체 후보는 현재 문서의 epoch, change sequence, 전체 문서 SHA,
+target 원문·서식·인접 문맥 SHA를 모두 결속한 뒤 한 snapshot transaction으로 적용할 수 있습니다.
+
+```javascript
+const state = await editor.getDocumentState();
+const selection = await editor.getSelectionContext();
+if (!selection.editable || !selection.target) throw new Error('편집할 수 없는 target');
+
+const receipt = await editor.applyTextCommand({
+  schemaVersion: 1,
+  commandId: crypto.randomUUID(),
+  expectedDocumentEpoch: state.documentEpoch,
+  expectedChangeSeq: state.changeSeq,
+  expectedDocumentSha256: state.documentSha256,
+  target: selection.target,
+  expectedBeforeSha256: candidate.beforeSha256,
+  expectedFormatSha256: candidate.formatSha256,
+  expectedAdjacentContextSha256: candidate.adjacentContextSha256,
+  replacement: candidate.replacement,
+});
+
+await editor.focusTarget(receipt.target);
+const off = editor.onDocumentChanged(event => console.log(event.reason, event.changeSeq));
+
+await editor.revertTextCommand({
+  schemaVersion: 1,
+  commandId: receipt.commandId,
+  expectedDocumentEpoch: receipt.documentEpoch,
+  expectedChangeSeq: receipt.afterChangeSeq,
+  expectedAfterDocumentSha256: receipt.afterDocumentSha256,
+  expectedAfterSha256: receipt.afterTextSha256,
+});
+off();
+```
+
+v1 target은 control·field·혼합 글자 서식이 없는 본문 문단 전체(최대 4,000 Unicode code point)로
+제한됩니다. apply 뒤 다른 편집이 있으면 agent revert는 실패합니다. `TRANSACTION_FAILED`와
+`RENDER_FAILED`에는 snapshot 복구 여부인 `error.recovered`가 포함됩니다. SHA 정규형과 오류 계약은
+[`document_agent_command.md`](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/wasm_agent_surface/document_agent_command.md)를
+참조하세요.
+
 ### editor.getPageSvg(page?)
 
 특정 페이지를 SVG 문자열로 렌더링합니다.
@@ -142,6 +239,32 @@ resource generation을 `selection`에서 확인할 수 있습니다. 현재 Stud
 const diagnostics = await editor.getRendererDiagnostics(0);
 console.log(diagnostics.schemaVersion, diagnostics.effectiveBackend);
 ```
+
+### editor.getFontDecisionTrace(page?, options?)
+
+문자가 document face에서 layout metric과 backend paint 후보까지 도달한 계보를 반환합니다.
+`page`는 0부터 시작하고 `maxCharacters`는 1..4096만 허용합니다. 기본값은 1024이며, 상한에 도달하면
+조용히 자르지 않고 `status: 'truncated'`, `recordsOmitted`와 reason을 반환합니다. Studio가
+`font-decision-trace-v1` capability를 제공하지 않거나 입력이 범위를 벗어나면 명시적으로 실패합니다.
+
+```javascript
+const trace = await editor.getFontDecisionTrace(0, { maxCharacters: 256 });
+console.log(trace.schemaVersion, trace.status, trace.layoutHash.value);
+for (const record of trace.records) {
+  console.log(
+    record.source.character,
+    record.document.face,
+    record.layoutMetric.widthSource,
+    record.paint.canvas2d.certainty,
+    record.paint.canvaskit.certainty,
+  );
+}
+```
+
+`layoutHash`는 backend 환경과 무관한 portable layout 계보를, `normalizedHash`는 현재 backend capability
+snapshot까지 포함한 결과를 고정합니다. Canvas2D가 실제 glyph face를 공개하지 않으면 CSS chain만
+기록하고 `certainty: 'notObserved'`로 남깁니다. trace는 font 선택 authority나 fallback 교정 API가
+아닙니다.
 
 ### editor.exportHwp()
 

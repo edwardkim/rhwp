@@ -1,0 +1,12 @@
+{
+  "id": "T01-J04",
+  "recipe": "01",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"ambiguous\":[],\"changedPages\":null,\"confusable\":[],\"dryRun\":true,\"filled\":[],\"filledCount\":0,\"notFound\":[\"noSuchField\"],\"schemaVersion\":\"1.0\",\"source\":\"…/form-01.hwp\"}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

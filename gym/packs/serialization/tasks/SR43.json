@@ -1,0 +1,29 @@
+{
+  "id": "SR43",
+  "tier": 2,
+  "title": "문단 문서 DocLang 형식 표기",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력을 DocLang 으로 내보내고, 변환 봉투의 형식 표기를 answer.json 에 {\"format\": \"...\"} 로 적어라. 힌트: rhwp export-doclang --json 의 format.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "DocLang 형식",
+      "op": "answer_eq",
+      "answer": "format",
+      "path": "format",
+      "cmd": [
+        "export-doclang",
+        "{input}",
+        "-o",
+        "{file:out.doclang}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "변환"
+}

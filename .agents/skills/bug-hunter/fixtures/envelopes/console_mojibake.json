@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "console": "????",
+  "utf8File": "한글",
+  "defect": false,
+  "class_": "not-a-defect"
+}

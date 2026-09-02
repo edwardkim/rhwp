@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/fullwidth-year.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "２０２５",
+        "replace": "2026"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/fullwidth-year.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"２０２５\",\"replace\":\"2026\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "b34e450d8eae1cae6cb697372b94b1a123658318fd991aea7c2c51f2591dd907",
+    "planSha256": "395ecb3e3bfec902df859666c8ff75598c2f4cc52197e31249122a938e18ee37",
+    "outputSha256": "404119283a3364f04efff1748c2437ade4edec6f3e42f211d84795a6553f6121",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

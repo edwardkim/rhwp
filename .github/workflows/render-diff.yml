@@ -11,8 +11,12 @@ on:
       - 'src/model/**'
       - 'src/renderer/**'
       - 'src/document_core/queries/rendering.rs'
+      # [#3789] export-pdf와 native raster가 공유하는 CLI 문서 입력 경계.
+      - 'src/cli/document_io.rs'
+      # [#5776] PDF report가 native CLI export-pdf와 shared output helper를 직접 소비한다.
+      - 'src/cli/outputs/mod.rs'
+      - 'src/cli/outputs/pdf.rs'
       - 'src/wasm_api.rs'
-      - 'src/main.rs'
       - 'assets/fonts/**'
       - 'ttfs/**'
       - 'scripts/renderer_baseline.py'
@@ -20,6 +24,7 @@ on:
       - 'scripts/ci-impact-classifier.cjs'
       - 'scripts/generate_font_glyph_payload_fixture.py'
       - 'scripts/generate_exact_face_collection_fixture.py'
+      - 'scripts/generate_exact_kerning_fixture.py'
       - 'scripts/generate_font_native_hwpx_fixture.py'
       - 'scripts/requirements-font-fixtures.txt'
       - 'samples/render-p35-font-native-bitmap.hwpx'
@@ -70,6 +75,7 @@ jobs:
       actions: read
       contents: read
       pull-requests: read
+      statuses: read
     outputs:
       fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
       reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
@@ -113,30 +119,47 @@ jobs:
               if (filename.startsWith('mydocs/')) {
                 return true;
               }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
-                  filename.endsWith('.hwp')
-                  || filename.endsWith('.hwpx')
-                  || filename.endsWith('.hml')
-                  || filename.endsWith('.pdf')
+                  filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
+            }
+
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
             }
 
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
@@ -150,6 +173,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
 
@@ -161,6 +185,59 @@ jobs:
                   const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
                   return bTime - aTime;
                 })[0];
+            }
+
+            async function hasTrustedReviewReuse(pr) {
+              for (let attempt = 0; attempt < 7; attempt += 1) {
+                const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                  owner,
+                  repo,
+                  ref: pr.head.sha,
+                  per_page: 100,
+                });
+                const latest = statuses
+                  .filter((status) => status.context === 'CI Impact Policy')
+                  .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
+                if (latest) {
+                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                    const separator = part.indexOf('=');
+                    return separator > 0
+                      ? [part.slice(0, separator), part.slice(separator + 1)]
+                      : ['', ''];
+                  }));
+                  const expectedFields = [
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                  ];
+                  const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
+                  if (
+                    latest.state === 'success'
+                    && latest.creator?.login === 'github-actions[bot]'
+                    && fields.size === expectedFields.length
+                    && expectedFields.every((field) => fields.has(field))
+                    && fields.get('v') === '5'
+                    && fields.get('rfp') === '1'
+                    && fields.get('b') === pr.base.sha
+                    && target
+                  ) {
+                    const response = await github.rest.actions.getWorkflowRun({
+                      owner,
+                      repo,
+                      run_id: Number(target[1]),
+                    });
+                    const run = response.data;
+                    if (
+                      run.name === 'CI Impact Policy Controller'
+                      && String(run.path || '').split('@')[0] === '.github/workflows/ci-impact-policy.yml'
+                      && run.event === 'pull_request_target'
+                      && run.repository?.full_name === `${owner}/${repo}`
+                      && !(run.status === 'completed' && run.conclusion !== 'success')
+                    ) return true;
+                  }
+                  return false;
+                }
+                if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, 5000));
+              }
+              return false;
             }
 
             async function renderDiffResult(candidateSha, pr, allowPriorPrBase = false) {
@@ -266,6 +343,17 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              const hasCiExecutionSurfaceChange = prFiles.some((file) => (
+                isCiExecutionPath(file.filename)
+                || isCiExecutionPath(file.previous_filename || '')
+              ));
+              if (hasCiExecutionSurfaceChange && !await hasTrustedReviewReuse(pr)) {
+                setResult(false, 'ci-execution-surface-change');
+                return;
+              }
+              if (hasCiExecutionSurfaceChange) {
+                core.info('trusted controller authorized enforcement-change review reuse');
+              }
               if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
                 core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);
                 setResult(true, 'all-review-only-no-render-impact', pr.base.sha);
@@ -369,7 +457,7 @@ jobs:
             }
 
             for (const candidateSha of reviewOnlyCandidates) {
-              const result = await renderDiffResult(candidateSha, pr);
+              const result = await renderDiffResult(candidateSha, pr, Boolean(baseMergeBridge));
               if (result.state === 'green') {
                 if (baseMergeBridge) {
                   setPendingBaseMergeResult(
@@ -592,21 +680,50 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install PDF raster tools
+        id: pdf-raster-runtime
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          timed_out=false
+          install_apt() {
+            set +e
+            sudo env DEBIAN_FRONTEND=noninteractive \
+              timeout 180 apt-get "$@"
+            local status=$?
+            set -e
+            if [[ "${status}" -eq 124 ]]; then
+              timed_out=true
+              return 0
+            fi
+            return "${status}"
+          }
+
+          install_apt update
+          if [[ "${timed_out}" == "true" ]]; then
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            echo "::warning::PDF raster runtime installation timed out; skipping Canvas visual diff."
+            exit 0
+          fi
+
+          install_apt install -y --no-install-recommends \
             fonts-dejavu-core \
             libfontconfig1-dev \
             libfreetype6-dev \
             poppler-utils
+          if [[ "${timed_out}" == "true" ]]; then
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            echo "::warning::PDF raster runtime installation timed out; skipping Canvas visual diff."
+            exit 0
+          fi
+          echo "available=true" >> "${GITHUB_OUTPUT}"
 
       - name: Install wasm-pack
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         uses: ./.github/actions/install-wasm-pack
 
       # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
       # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
       # and allow only trusted manual devel/main seed runs to save a cache.
       - name: Restore cargo registry & build cache
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         id: render_diff_cargo_cache_restore
         uses: actions/cache/restore@v6
         with:
@@ -619,13 +736,15 @@ jobs:
             ${{ runner.os }}-render-diff-cargo-
 
       - name: Build WASM package
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         run: wasm-pack build --target web --dev
 
       - name: Build native CLI for PDF report
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         run: cargo build --features native-skia --bin rhwp
 
       - name: Save cargo registry & build cache
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' && github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.render_diff_cargo_cache_restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v6
         with:
           path: |
@@ -635,15 +754,18 @@ jobs:
           key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup Node.js
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
 
       - name: Install Studio dependencies
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: npm ci
 
       - name: Install Chromium
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: |
           browser_path=$(npx @puppeteer/browsers install chromium@"${RHWP_CHROMIUM_BUILD_ID}" --path .cache/puppeteer --format '{{path}}' | tail -n 1)
@@ -651,6 +773,7 @@ jobs:
           echo "CHROME_PATH=$browser_path" >> "$GITHUB_ENV"
 
       - name: Check render diff script syntax
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: |
           node --check e2e/renderer-contract.test.mjs
@@ -667,6 +790,7 @@ jobs:
           npm run e2e:canvaskit-font-coverage
 
       - name: Run canvas visual diff and PDF report
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         env:
           VITE_PORT: 7700
@@ -684,6 +808,7 @@ jobs:
         run: npm run e2e:render-diff:ci
 
       - name: Run selected CanvasKit readiness gate
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         run: >-
           python3 scripts/renderer_baseline.py
           --profiles screen
@@ -692,7 +817,7 @@ jobs:
           --output output/renderer-baseline/canvaskit-readiness
 
       - name: Add render diff summary
-        if: always()
+        if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: |
           for summary in \
@@ -707,7 +832,7 @@ jobs:
           done
 
       - name: Upload render diff artifacts
-        if: always()
+        if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: render-diff-artifacts

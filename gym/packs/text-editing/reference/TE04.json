@@ -1,0 +1,20 @@
+{
+  "id": "TE04",
+  "steps": [
+    {
+      "answer": {
+        "matches": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--ignore-case",
+            "--json",
+            "--",
+            "ⅰ"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

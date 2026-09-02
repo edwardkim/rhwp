@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "samples": {
+    "kstartup": {
+      "path": "(외부) K-Startup 방산 특화 창업중심대학 사업계획서.hwp",
+      "pages": 12,
+      "tables": 39,
+      "fields": 0,
+      "note": "playbook 예시 1. 누름틀 0 · 표 양식. 가상 데이터만.",
+      "groundTruth": "제출 요건 문구 + 재독 값"
+    },
+    "plan": {
+      "path": "samples/업무계획.hwp",
+      "pages": 35,
+      "note": "playbook 예시 2. fidelity_compare 키 plan.",
+      "groundTruth": "한컴 출력 PDF (도구·버전·폰트 기록)"
+    },
+    "math": {
+      "path": "samples/수학.hwp",
+      "pages": 20,
+      "note": "playbook 예시 2 고난도 수식.",
+      "groundTruth": "한컴 출력 PDF"
+    },
+    "leet": {
+      "path": "samples/21_언어_기출_편집가능본.hwp",
+      "pages": 15,
+      "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
+      "note": "playbook 예시 6. A3 법학적성시험 언어이해.",
+      "groundTruth": "pdf/21_언어_기출_편집가능본-2022.pdf",
+      "referenceSha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72",
+      "creator": "Hwp 2022 12.0.0.4426",
+      "producer": "Hancom PDF 1.3.0.550"
+    },
+    "gianmun": {
+      "path": "(외부) 행정 업무 편람 별지 제1호 일반기안문",
+      "pages": null,
+      "note": "playbook 예시 3. 법정 서식.",
+      "groundTruth": "편람 별지 제1·2호"
+    },
+    "seoul": {
+      "path": "(외부) 서울시 정보소통광장 보고서 작성 서식 안내 첨부 HWPX",
+      "pages": null,
+      "note": "playbook 예시 7. 인터넷 배포 실물.",
+      "groundTruth": "원본 ZIP 엔트리 이름 집합·태그 개수",
+      "url": "https://opengov.seoul.go.kr/sanction/11678326"
+    },
+    "form01": {
+      "path": "samples/form-01.hwp",
+      "pages": 1,
+      "note": "정답지 없을 때 자기 일관성 표본.",
+      "groundTruth": null
+    },
+    "field01": {
+      "path": "samples/field-01.hwp",
+      "pages": 3,
+      "note": "누름틀 재독 표본.",
+      "groundTruth": "fields --json 기록값"
+    }
+  }
+}

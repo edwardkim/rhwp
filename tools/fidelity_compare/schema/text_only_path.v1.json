@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.fidelity_compare.text_only_path.v1",
+  "title": "fidelity_compare --text-only path",
+  "type": "object",
+  "required": [
+    "id",
+    "argv",
+    "artifacts",
+    "chromeRequired",
+    "pypdfium2Required"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "argv": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "chromeRequired": {
+      "type": "boolean",
+      "const": false
+    },
+    "pypdfium2Required": {
+      "type": "boolean",
+      "const": false
+    }
+  }
+}

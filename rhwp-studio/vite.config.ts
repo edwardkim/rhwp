@@ -3,14 +3,23 @@ import { resolve, extname, join } from 'path';
 import { readFileSync, readFile } from 'fs';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
+const configDir = import.meta.dirname;
+const pkg = JSON.parse(readFileSync(resolve(configDir, 'package.json'), 'utf-8'));
 const subsecondWasmDir = resolve(
-  __dirname,
+  configDir,
   '..',
   'target',
   'rhwp-subsecond-vite',
 );
 const useSubsecondWasm = process.env.RHWP_SUBSECOND === '1';
+/**
+ * hwpctrl 플러그인 포함 여부.
+ *
+ * `RHWP_WITHOUT_HWPCTRL=1` 로 빌드하면 studio 는 `npm/hwpctrl-ocx` 에 **빌드 시점에도** 묶이지
+ * 않는다 — `main.ts` 의 동적 import 가 상수 분기 안에 있어 통째로 tree-shake 되고, 산출물에
+ * `studio-plugin` 청크 자체가 남지 않는다. studio 만 떼어 배포할 때 쓴다.
+ */
+const withHwpctrl = process.env.RHWP_WITHOUT_HWPCTRL !== '1';
 
 export default defineConfig({
   define: {
@@ -20,14 +29,18 @@ export default defineConfig({
     __RHWP_DISABLE_EXTERNAL_WEBFONTS__: JSON.stringify(
       process.env.RHWP_DISABLE_EXTERNAL_WEBFONTS === '1',
     ),
+    __RHWP_HWPCTRL__: JSON.stringify(withHwpctrl),
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
+      '@': resolve(configDir, 'src'),
       '@wasm/rhwp.js': useSubsecondWasm
         ? resolve(subsecondWasmDir, 'rhwp-subsecond.js')
-        : resolve(__dirname, '..', 'pkg', 'rhwp.js'),
-      '@wasm': resolve(__dirname, '..', 'pkg'),
+        : resolve(configDir, '..', 'pkg', 'rhwp.js'),
+      '@wasm': resolve(configDir, '..', 'pkg'),
+      // 플러그인 패키지 — 동적 import 로만 들어오므로 별도 청크가 된다.
+      // 올리지 않으면 코드도 로드되지 않는다(플러그인 없는 studio 의 초기 비용 0).
+      '@rhwp/hwpctrl/studio-plugin': resolve(configDir, '..', 'npm', 'hwpctrl-ocx', 'src', 'studio-plugin.mjs'),
     },
   },
   server: {
@@ -45,11 +58,11 @@ export default defineConfig({
     fs: {
       // [Task #741 후속] 외부 file path 그림 영역 영역 samples/ dir 영역 영역 fetch 가능 영역.
       allow: [
-        __dirname,
-        resolve(__dirname, '..', 'pkg'),
+        configDir,
+        resolve(configDir, '..', 'pkg'),
         subsecondWasmDir,
-        resolve(__dirname, '..', 'samples'),
-        resolve(__dirname, '..', 'npm', 'editor'),
+        resolve(configDir, '..', 'samples'),
+        resolve(configDir, '..', 'npm', 'editor'),
       ],
     },
     watch: {
@@ -70,7 +83,7 @@ export default defineConfig({
     {
       name: 'serve-samples-dir',
       configureServer(server) {
-        const samplesDir = resolve(__dirname, '..', 'samples');
+        const samplesDir = resolve(configDir, '..', 'samples');
         server.middlewares.use('/samples', (req, res, next) => {
           if (!req.url) return next();
           // URL decode + sanitize (path traversal 차단)

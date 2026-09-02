@@ -4,9 +4,13 @@
 // 전체 HWP 파싱 없이 썸네일만 빠르게 얻을 수 있다.
 
 import { fetchDocumentWithPolicy, validateDocumentFetchUrl } from './fetch-security.js';
+import './thumbnail-decompression.js';
+
+const { readExactStreamLimited } = globalThis.rhwpBoundedStream;
 
 const THUMBNAIL_CACHE = new Map();
 const CACHE_MAX_SIZE = 100;
+const THUMBNAIL_OUTPUT_LIMIT_BYTES = 10 * 1024 * 1024;
 
 /**
  * URL에서 HWP 파일을 fetch하여 PrvImage 썸네일을 추출한다.
@@ -32,8 +36,8 @@ export async function extractThumbnailFromUrl(url, options = {}) {
     // HWP(CFB) 또는 HWPX(ZIP) 감지
     const isZip = data.length >= 4 && data[0] === 0x50 && data[1] === 0x4B;
     const result = isZip
-      ? await extractPrvImageFromZipAsync(data)
-      : extractPrvImage(data);
+      ? await extractPrvImageFromZipAsync(data, THUMBNAIL_OUTPUT_LIMIT_BYTES)
+      : extractPrvImage(data, THUMBNAIL_OUTPUT_LIMIT_BYTES);
     if (result) {
       // 캐시 저장 (LRU)
       if (THUMBNAIL_CACHE.size >= CACHE_MAX_SIZE) {
@@ -58,7 +62,7 @@ export async function extractThumbnailFromUrl(url, options = {}) {
  *
  * 디렉토리 섹터도 FAT 체인으로 연결될 수 있으므로 체인 전체를 순회한다.
  */
-function extractPrvImage(data) {
+function extractPrvImage(data, maxBytes) {
   // CFB 매직 넘버 확인
   if (data.length < 512) return null;
   if (data[0] !== 0xD0 || data[1] !== 0xCF || data[2] !== 0x11 || data[3] !== 0xE0) return null;
@@ -109,7 +113,7 @@ function extractPrvImage(data) {
       const startSector = readU32LE(data, entryOffset + 116);
       const streamSize  = readU32LE(data, entryOffset + 120);
 
-      if (streamSize === 0 || streamSize > 10 * 1024 * 1024) continue;
+      if (streamSize === 0 || streamSize > maxBytes) continue;
 
       let streamData;
       if (streamSize < miniStreamCutoff && miniStreamData) {
@@ -287,7 +291,7 @@ function parseImageData(data) {
  *
  * ZIP End of Central Directory → Central Directory → 로컬 파일 헤더 → 데이터
  */
-async function extractPrvImageFromZipAsync(data) {
+async function extractPrvImageFromZipAsync(data, maxBytes) {
   // End of Central Directory 찾기 (ZIP 파일 끝에서 역방향 탐색)
   let eocdOffset = -1;
   for (let i = data.length - 22; i >= 0 && i >= data.length - 65558; i--) {
@@ -321,14 +325,18 @@ async function extractPrvImageFromZipAsync(data) {
 
     // Preview/PrvImage 확인
     if (name.startsWith('Preview/PrvImage')) {
+      if (uncompSize === 0 || uncompSize > maxBytes) return null;
+
       // 로컬 파일 헤더에서 실제 데이터 위치 계산
       if (localHeaderOffset + 30 >= data.length) break;
       const localNameLen = readU16LE(data, localHeaderOffset + 26);
       const localExtraLen = readU16LE(data, localHeaderOffset + 28);
       const dataStart = localHeaderOffset + 30 + localNameLen + localExtraLen;
+      if (dataStart > data.length || compSize > data.length - dataStart) return null;
 
       if (compMethod === 0) {
         // 비압축 (stored)
+        if (compSize !== uncompSize || uncompSize > data.length - dataStart) return null;
         const imageData = data.subarray(dataStart, dataStart + uncompSize);
         return parseImageData(imageData);
       } else if (compMethod === 8) {
@@ -337,22 +345,14 @@ async function extractPrvImageFromZipAsync(data) {
           const compressed = data.slice(dataStart, dataStart + compSize);
           const ds = new DecompressionStream('raw');
           const writer = ds.writable.getWriter();
-          writer.write(compressed);
-          writer.close();
-          const reader = ds.readable.getReader();
-          const chunks = [];
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-          }
-          const totalLen = chunks.reduce((s, c) => s + c.length, 0);
-          const decompressed = new Uint8Array(totalLen);
-          let offset = 0;
-          for (const chunk of chunks) {
-            decompressed.set(chunk, offset);
-            offset += chunk.length;
-          }
+          const write = writer.write(compressed).then(() => writer.close());
+          const decompressed = await readExactStreamLimited(
+            ds.readable,
+            uncompSize,
+            maxBytes,
+          );
+          const writeSucceeded = await write.then(() => true, () => false);
+          if (!decompressed || !writeSucceeded) return null;
           return parseImageData(decompressed);
         } catch {
           return null;

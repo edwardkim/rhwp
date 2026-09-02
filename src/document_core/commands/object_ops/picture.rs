@@ -9,6 +9,48 @@ use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{common_obj_offsets, ShapeObject};
 
+/// [Issue #6204] 어울림 배제 밴드를 결정하는 개체 기하의 지문.
+///
+/// 이 값이 그대로면 밴드도 그대로이므로 저장 `LINE_SEG` 를 다시 새길 필요가 없다.
+/// 밴드는 **위치·크기·기준·정렬·어울림 종류·바깥 여백**이 함께 정하므로 전부 넣는다.
+/// 글자처럼 취급(`treat_as_char`)은 밴드를 만들지 않지만, 그 토글 자체가 밴드의
+/// 유무를 바꾸므로 포함한다.
+#[derive(PartialEq, Eq)]
+struct PictureBandGeometry {
+    horizontal_offset: i32,
+    vertical_offset: i32,
+    width: u32,
+    height: u32,
+    horz_rel_to: u8,
+    vert_rel_to: u8,
+    horz_align: u8,
+    vert_align: u8,
+    treat_as_char: bool,
+    text_wrap: u8,
+    margin: (i16, i16, i16, i16),
+}
+
+fn picture_band_geometry(common: &crate::model::shape::CommonObjAttr) -> PictureBandGeometry {
+    PictureBandGeometry {
+        horizontal_offset: common.horizontal_offset as i32,
+        vertical_offset: common.vertical_offset as i32,
+        width: common.width,
+        height: common.height,
+        horz_rel_to: common.horz_rel_to as u8,
+        vert_rel_to: common.vert_rel_to as u8,
+        horz_align: common.horz_align as u8,
+        vert_align: common.vert_align as u8,
+        treat_as_char: common.treat_as_char,
+        text_wrap: common.text_wrap as u8,
+        margin: (
+            common.margin.left,
+            common.margin.right,
+            common.margin.top,
+            common.margin.bottom,
+        ),
+    }
+}
+
 impl DocumentCore {
     fn resolve_picture_control_ref(
         &self,
@@ -172,17 +214,27 @@ impl DocumentCore {
             pic.crop.bottom = bottom.max(0);
         }
     }
-    fn picture_props_touch_shape_transform(props_json: &str) -> bool {
-        const TRANSFORM_KEYS: [&str; 7] = [
-            "\"width\"",
-            "\"height\"",
-            "\"vertOffset\"",
-            "\"horzOffset\"",
-            "\"rotationAngle\"",
-            "\"horzFlip\"",
-            "\"vertFlip\"",
-        ];
-        TRANSFORM_KEYS.iter().any(|key| props_json.contains(key))
+    /// [#5890] 변환 파생 상태(`raw_rendering`·render_*)의 무효화 판정 근거.
+    ///
+    /// 종전에는 props JSON 에 변환 키가 **등장하는지**만 텍스트로 훑어
+    /// (`"width"`·`"height"`·`"vertOffset"`·`"horzOffset"`·`"rotationAngle"`·
+    /// `"horzFlip"`·`"vertFlip"`) 같은 값을 다시 지정하기만 해도 한컴 원본
+    /// 렌더링 행렬을 파괴했다 — getter 가 낸 봉지를 그대로 재적용해도 마찬가지였다.
+    /// 그 키들이 실제로 쓰는 IR 필드를 지문으로 떠서 값 변화로 판정한다.
+    fn picture_transform_fingerprint(
+        pic: &crate::model::image::Picture,
+    ) -> (u32, u32, u32, u32, u32, u32, i16, bool, bool) {
+        (
+            pic.common.width,
+            pic.common.height,
+            pic.common.horizontal_offset,
+            pic.common.vertical_offset,
+            pic.shape_attr.current_width,
+            pic.shape_attr.current_height,
+            pic.shape_attr.rotation_angle,
+            pic.shape_attr.horz_flip,
+            pic.shape_attr.vert_flip,
+        )
     }
     pub(crate) fn picture_rotated_bounds(width: u32, height: u32, angle: i16) -> (u32, u32) {
         if width == 0 || height == 0 || angle.rem_euclid(360) == 0 {
@@ -239,8 +291,16 @@ impl DocumentCore {
 
         pic.shape_attr.rotation_center.x = (pic.common.width / 2) as i32;
         pic.shape_attr.rotation_center.y = (pic.common.height / 2) as i32;
-        pic.shape_attr.rotate_image = true;
-        pic.shape_attr.flip |= 0x0008_0000;
+        // `rotate_image` 와 `flip` bit19(0x0008_0000)는 **여기서 건드리지 않는다.**
+        // 종전에는 각도와 무관하게 둘을 세웠고, 회전을 0 으로 되돌려도 남아 되돌릴 경로가
+        // 없었다. 한컴 오라클(`tools/hangul_rotation_oracle/EVIDENCE.md`)이 잰 결과 둘은
+        // 회전 상태의 함수가 아니다:
+        //   - 한컴 저장본 5660개 개체에서 bit19 는 회전 개체 569건 중 559건이 **꺼져** 있고
+        //     비회전 개체 5091건 중 4416건이 **켜져** 있다(회전과 반대 방향).
+        //   - 한글 2024 는 회전 0 그림의 bit19 를 그대로 켜 두고, 34° 회전 그림의
+        //     `rotateimage` 를 0 으로 둔다.
+        // 세우는 것도 지우는 것도 근거가 없으므로 파싱된 값을 보존한다. HWP5 저장에는
+        // `flip` 만 나가고 `rotate_image` 는 HWPX `rotateimage` 의 원천이다.
     }
     fn apply_picture_display_width(pic: &mut crate::model::image::Picture, width: u32) {
         let old_common_width = pic.common.width;
@@ -460,6 +520,14 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         // JSON 파싱 (serde_json 사용 대신 수동 파싱 — 기존 패턴)
         // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
+        // [Issue #6204] 개체의 **배제 밴드 기하**를 변경 전에 찍어 둔다. 위치·크기가
+        // 바뀌면 그 개체가 만드는 어울림 배제 밴드도 바뀌므로, 그 밴드에 되감긴 본문
+        // 문단의 저장 `LINE_SEG` 는 더는 유효하지 않다.
+        let band_geometry_before = self
+            .resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)
+            .ok()
+            .map(|pic| picture_band_geometry(&pic.common));
+
         let (
             caption_created,
             caption_removed,
@@ -574,6 +642,28 @@ impl DocumentCore {
             para.char_offsets = vec![0, 1, 2, 11];
             para.char_count = 13;
         }
+        // [Issue #6204] 배제 밴드 기하가 바뀌었으면 그 밴드에 되감긴 문단들의 저장
+        // `LINE_SEG` 를 새 위치 기준으로 다시 새긴다.
+        //
+        // 종전에는 `horzOffset` 만 바뀌고 사다리는 그대로 남아, 본문이 **옛 그림
+        // 위치**에 되감긴 채 굳었다(156483689 1쪽: 그림을 297.7px 로 옮겨도 줄 우단이
+        // 564.5 그대로 → 그림이 글자를 덮음). 게다가 그 사다리가 파일에 실려
+        // **저장 → 새로 열기로도 재현**됐다.
+        //
+        // 텍스트 편집이 쓰는 picture-band 재투영 경로를 그대로 태운다 — 속성 변경은
+        // 이미 문서에 적용됐으므로 편집 클로저는 no-op 이고, `layout_picture_band` 가
+        // **새 기하**로 밴드를 다시 계산한다. 밴드를 못 만드는 형상(그림 없음/미지원)
+        // 이면 `Ok(false)` 로 조용히 지나가 종전 경로가 그대로 남는다.
+        let band_geometry_after = self
+            .resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)
+            .ok()
+            .map(|pic| picture_band_geometry(&pic.common));
+        if band_geometry_before != band_geometry_after {
+            // 재투영 실패는 이 편집의 실패가 아니다 — 밴드를 만들 수 없는 형상이면
+            // 종전대로 recompose 에 맡긴다.
+            let _ = self.apply_body_edit_through_picture_band(section_idx, parent_para_idx, |_| {});
+        }
+
         // 리플로우
         let section = &mut self.document.sections[section_idx];
         section.raw_stream = None;
@@ -816,11 +906,7 @@ impl DocumentCore {
     fn tac_control_height_for_empty_picture_para(ctrl: &Control) -> Option<i32> {
         match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
-            Control::Shape(shape) if shape.common().treat_as_char => {
-                let common_h = shape.common().height as i32;
-                let current_h = shape.shape_attr().current_height as i32;
-                Some(common_h.max(current_h))
-            }
+            Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
             Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
             _ => None,
@@ -907,7 +993,7 @@ impl DocumentCore {
     ) -> bool {
         use crate::document_core::helpers::{json_bool, json_i16, json_i32, json_str, json_u32};
 
-        let transform_changed = Self::picture_props_touch_shape_transform(props_json);
+        let transform_before = Self::picture_transform_fingerprint(pic);
         let mut rotation_changed = false;
 
         // 크기 변경
@@ -1009,15 +1095,6 @@ impl DocumentCore {
             pic.common.horizontal_offset = v as u32;
         }
         Self::sync_common_obj_attr_known_bits(&mut pic.common);
-        if transform_changed {
-            pic.shape_attr.raw_rendering.clear();
-            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64;
-            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64;
-            pic.shape_attr.render_sx = 1.0;
-            pic.shape_attr.render_sy = 1.0;
-            pic.shape_attr.render_b = 0.0;
-            pic.shape_attr.render_c = 0.0;
-        }
 
         // 이미지 속성
         if let Some(v) = json_i32(props_json, "brightness") {
@@ -1061,6 +1138,21 @@ impl DocumentCore {
         }
         if rotation_changed {
             Self::refresh_picture_rotation_layout_for_save(pic);
+        }
+
+        // [#5890] 변환 파생 상태 무효화 — 실제로 변환이 바뀐 뒤에만 한다.
+        // `refresh_picture_rotation_layout_for_save` 가 크기·위치를 다시 세우므로
+        // 그 뒤에 지문을 비교한다. 변화가 없으면 한컴 원본 렌더링 행렬을 그대로 둔다
+        // (직렬화기는 `raw_rendering` 이 비어 있을 때만 행렬을 새로 만든다 —
+        // src/serializer/control.rs 의 rendering 블록).
+        if Self::picture_transform_fingerprint(pic) != transform_before {
+            pic.shape_attr.raw_rendering.clear();
+            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64;
+            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64;
+            pic.shape_attr.render_sx = 1.0;
+            pic.shape_attr.render_sy = 1.0;
+            pic.shape_attr.render_b = 0.0;
+            pic.shape_attr.render_c = 0.0;
         }
 
         // 자르기: HWP 내부 crop은 원본 이미지의 source rect 좌표이고,
@@ -1852,6 +1944,7 @@ mod issue_1151_cell_picture_insert_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         core.set_document(doc);
@@ -2551,6 +2644,7 @@ mod issue_1151_v2_tac_toggle_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         core.set_document(doc);
@@ -3630,6 +3724,7 @@ mod issue_1280_textbox_creation_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         core.set_document(doc);

@@ -1,0 +1,25 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+tol-ovf-over0.5-tol0.5	tolerance	0.5	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 0.5px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over1-tol0.5	tolerance	0.5	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		1.0000	오른쪽 넘침 1px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over2-tol0.5	tolerance	0.5	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		2.0000	오른쪽 넘침 2px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over8-tol0.5	tolerance	0.5	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	오른쪽 넘침 8px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over0.5-tol1	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 0.5px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over1-tol1	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 1px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over2-tol1	tolerance	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		2.0000	오른쪽 넘침 2px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over8-tol1	tolerance	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	오른쪽 넘침 8px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over0.5-tol2	tolerance	2.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 0.5px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over1-tol2	tolerance	2.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 1px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over2-tol2	tolerance	2.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 2px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over8-tol2	tolerance	2.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	오른쪽 넘침 8px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovl-w1-tol1	tolerance	1.0	1.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 1x20px, overlap 허용치 1px.
+tol-ovl-w2-tol1	tolerance	1.0	1.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 2x20px, overlap 허용치 1px.
+tol-ovl-w3-tol1	tolerance	1.0	1.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 3x20px, overlap 허용치 1px.
+tol-ovl-w8-tol1	tolerance	1.0	1.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 8x20px, overlap 허용치 1px.
+tol-ovl-w1-tol2	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 1x20px, overlap 허용치 2px.
+tol-ovl-w2-tol2	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 2x20px, overlap 허용치 2px.
+tol-ovl-w3-tol2	tolerance	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 3x20px, overlap 허용치 2px.
+tol-ovl-w8-tol2	tolerance	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 8x20px, overlap 허용치 2px.
+tol-ovl-w1-tol4	tolerance	1.0	4.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 1x20px, overlap 허용치 4px.
+tol-ovl-w2-tol4	tolerance	1.0	4.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 2x20px, overlap 허용치 4px.
+tol-ovl-w3-tol4	tolerance	1.0	4.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 3x20px, overlap 허용치 4px.
+tol-ovl-w8-tol4	tolerance	1.0	4.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 8x20px, overlap 허용치 4px.

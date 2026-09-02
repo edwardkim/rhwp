@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "wrong-kind",
+  "title": "kind 오류",
+  "why": "workCapsule 이 아님.",
+  "notes": "kind 가드",
+  "depth": 1,
+  "valid": false,
+  "brokenAxis": "kind",
+  "deep": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": "note.json",
+    "depth": 1,
+    "valid": false,
+    "brokenAt": "note.json",
+    "links": [
+      {
+        "capsule": "note.json",
+        "parentOk": null,
+        "lineageOk": null,
+        "reproduced": null,
+        "error": "kind 가 workCapsule 이 아님"
+      }
+    ]
+  },
+  "command": [
+    "lineage",
+    "note.json",
+    "--json"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

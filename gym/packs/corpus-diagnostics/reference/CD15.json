@@ -1,0 +1,20 @@
+{
+  "id": "CD15",
+  "steps": [
+    {
+      "answer": {
+        "files": {
+          "cmd": [
+            "scan",
+            "samples/hwpx",
+            "--max-depth",
+            "2",
+            "--json"
+          ],
+          "path": "files",
+          "len": true
+        }
+      }
+    }
+  ]
+}

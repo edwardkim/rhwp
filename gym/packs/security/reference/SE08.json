@@ -1,0 +1,22 @@
+{
+  "id": "SE08",
+  "steps": [
+    {
+      "answer": {
+        "clean": {
+          "cmd": [
+            "inspect",
+            "hidden-text",
+            "{input}",
+            "--json"
+          ],
+          "path": "clean",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "LR40",
+  "steps": [
+    {
+      "answer": {
+        "verdict": {
+          "cmd": [
+            "verify",
+            "{input}",
+            "--expect-min-pages",
+            "3",
+            "--json"
+          ],
+          "path": "verdict",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

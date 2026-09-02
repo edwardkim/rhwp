@@ -1,0 +1,25 @@
+{
+  "id": "EX25",
+  "tier": 2,
+  "title": "첫 쪽 본문 — 3쪽 시험지 글자 수",
+  "input": "samples/exam-kor-3p.hwp",
+  "instructions": "export-text -p 0 으로 이 문서의 첫 쪽만 뽑아, pages[0].text 의 글자 수를 보고하라. 답 형식: {\"chars\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "chars 일치",
+      "op": "len_answer_eq",
+      "answer": "chars",
+      "cmd": [
+        "export-text",
+        "{input}",
+        "-p",
+        "0",
+        "--json"
+      ],
+      "path": "pages[0].text"
+    }
+  ]
+}

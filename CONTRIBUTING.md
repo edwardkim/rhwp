@@ -1,5 +1,27 @@
 # Contributing to rhwp
 
+> **PR·push 차단 게이트 — 하나라도 실패하면 `gh pr create` / `git push` 하지 마세요.**
+> 테스트·baseline만 고친 뒤에도 포맷과 Clippy를 다시 확인하세요. 일반 기여자의 source PR
+> checkout에서는 generated suite를 준비하지 않으며, maintainer review worktree의 전체 lint gate는
+> [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)을 따릅니다.
+>
+> ```bash
+> cargo fmt --all
+> cargo fmt --all -- --check
+> cargo clippy --locked -- -D warnings
+> cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
+> cargo build --locked --workspace --target-dir target/pr-review
+> cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+> ```
+>
+> CI Lint job은 Format check 외에도 native·WASM32·workspace Clippy를 실행합니다. `cargo fmt --check`
+> 또는 native Clippy 하나만으로는 충분하지 않습니다. 실패하면 수정 후 같은 명령을 다시 통과시킨 뒤
+> PR을 만드세요.
+> `src/**`의 `#[cfg(test)]`를 바꾼 경우에는 추가로
+> `node scripts/rust-unit-test-tiers.mjs --check`를 실행하세요. 이 검사는 source와 추적 정책만
+> 읽으며 파생 inventory를 만들거나 stage하지 않습니다. 반면
+> `rust-test-suite-manifest.mjs --prepare`와 manifest `--check`는 review worktree와 CI만 수행합니다.
+
 rhwp에 관심을 가져주셔서 감사합니다!
 
 "모두의 한글"은 이름 그대로 모두의 참여로 완성됩니다. 코드 기여, 버그 리포트, 문서 개선, HWP 샘플 파일 제공 — 어떤 형태든 환영합니다.
@@ -106,6 +128,21 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 - **`mydocs/orders/YYYYMMDD.md`는 PR에 포함하지 마세요.** 이 파일은 병합 결과와 후속 작업을 관리하는
   메인터너 전용 일일 운영 기록입니다. 필요한 기록은 PR 병합 뒤 메인터너가 작성합니다.
 
+### 메인터너 검토 기록과의 구분
+
+외부 기여자의 제출 절차는 이 문서의 **코드 기여**, **PR 전 체크리스트**, **회귀 테스트 가이드**가
+전부입니다. 저장소에 함께 있는 다음 문서는 메인터너가 접수·보정·병합 후속 처리를 할 때 쓰는 내부
+운영 기록이므로, 외부 기여 PR에 해석하거나 첨부하지 마세요.
+
+- `AGENTS.md` 및 AI 도구별 부트스트랩 파일
+- `mydocs/manual/pr_review_workflow.md`와 `mydocs/manual/pr_review/` 하위 문서
+- `mydocs/pr/`, `mydocs/pr/archives/`, `mydocs/pr/assets/`, `mydocs/orders/` 하위 파일
+
+특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
+기록은 **메인터너만** 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
+스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
+요청한 경우에만 그 요청 범위에서 예외로 합니다.
+
 ### Claude·Codex capability 기여
 
 재사용할 Claude 에이전트·Claude Skill·Codex Skill을 추가하거나 변경하기 전에는
@@ -122,18 +159,41 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ```bash
 cargo install cargo-nextest --locked             # 최초 1회
-cargo fmt --all -- --check                       # 포맷 정책 준수
-cargo nextest run \
+cargo fmt --all                                  # 로컬 포맷 적용
+cargo fmt --all -- --check                       # CI와 같은 포맷 검증 — PR 전 필수
+cargo clippy --locked -- -D warnings              # native root lint
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings # WASM cfg lint
+cargo build --locked --workspace --target-dir target/pr-review
+cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+node --test scripts/tests/rust-test-suite-manifest.test.mjs
+# `src/**`의 `#[cfg(test)]`를 변경한 경우에만 실행한다. 파생 파일은 생성하지 않는다.
+node scripts/rust-unit-test-tiers.mjs --check
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast       # 통합 테스트 포함 전체
-cargo clippy -- -D warnings                      # 린트 경고 0건
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast                          # 통합 테스트 포함 전체
+cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트 경고 0건
 ```
 
-세 명령이 모두 통과하는지 확인한 후 PR을 생성해주세요.
+`cargo fmt --all -- --check` 가 실패하면 PR을 만들지 마세요. `cargo fmt --check`
+만으로는 CI `Lint (fmt, clippy, WASM check)` 와 같지 않습니다. 포맷이 깨졌거나 native/WASM
+Clippy가 경고를 내면 수정 뒤 해당 lint를 다시 통과한 다음에만 PR을 생성해주세요.
+
+새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/suites/suite-policy.json`,
+`tests/suites/unit-test-tier-policy.json`은 추적하는 정책이고, `tests/generated/`, `tests/suites/manifest.json`,
+`tests/generated/**`는 **PR에 넣지 않는 파생 산출물**입니다. 일반 기여자는 자신의 PR checkout에서 `--prepare`, `--generate`,
+`--sync`, `--rebalance`, 또는 `rust-test-suite-manifest.mjs --check`를 실행해 이를 등록하지 않습니다.
+`--prepare`는 root `Cargo.toml`을 수정하지 않습니다. Cargo의 generated test target 블록은 통합 불가 예외 target의
+추적 registry이므로, 예외 구조가 바뀌는 메인터너 전용 유지보수 PR에서만 `--sync-cargo-targets`로 동기화합니다.
+`rust-unit-test-tiers.mjs --check`는 source-side `#[cfg(test)]` 변경의 정책 검사로만 실행할 수 있으며
+파일을 생성하지 않습니다. 새 원본의 배정과 harness 검증은 PR review 전용 worktree 및 CI가
+`--prepare` 뒤 manifest `--check`로 수행합니다.
+로컬에서는 위 계약 단위 테스트와 필요한 Rust 회귀 테스트만 실행하세요.
 
 - `release-test` 프로필은 PR CI와 같은 기준이며 debug 대비 수 배 빠릅니다.
-- 논리 CPU가 12개 미만이거나 메모리가 부족하면 `--test-threads`를 논리 CPU 이하로 낮춰주세요.
+- nextest는 현재 host에 맞는 기본 동시성을 사용합니다. 기본값을 먼저 쓰고, CPU·메모리·동시 작업을
+  확인해 조정할 때만 `--test-threads <현재 환경에 맞는 값>`을 추가하세요. 문서의 고정 수치를 복사하지
+  마세요.
 - `cargo test --lib` 만으로는 통합 테스트 회귀를 잡지 못합니다 — `--tests` 를 포함해주세요.
 
 렌더링 변경을 한컴 기준 PDF와 대조할 때는 비교 도구가 최신 실행 파일을 보도록 먼저 다음 빌드를 할 수
@@ -144,8 +204,85 @@ cargo build --profile release-test --target-dir target/pr-review
 ```
 
 이 명령은 `rhwp` 바이너리를 만들어 시각 대조를 준비할 뿐, 테스트를 실행하지 않습니다. **PR 전 검증을
-대체하지 않으므로**, 코드 변경 뒤에는 위의 전체 `cargo nextest run ... --tests --no-fail-fast`를 반드시
+대체하지 않으므로**, 코드 변경 뒤에는 위의 전체 `cargo nextest run ... --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast`를 반드시
 완료하세요. 상세 절차는 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따릅니다.
+
+### 프런트엔드 변경 검증
+
+`rhwp-studio/`, `npm/editor/`, WASM과 Studio의 연결 코드 또는 브라우저 UI를 바꾸는 PR은 Rust 검증과 별도로
+아래 범위에서 검증합니다. 메인터너용 PR review 문서를 읽거나 저장소에 검토 기록을 추가할 필요는 없습니다.
+PR 본문에 실제로 실행한 명령, 통과 결과, 수동 확인한 동작과 사용한 공개 sample만 적어주세요.
+
+WASM package를 다시 만들 때는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전
+metadata 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
+
+```bash
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+반복 실행할 때는 macOS/Linux 셸에서 아래 alias를 둘 수 있습니다.
+
+```bash
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+rhwp-wasm-build
+```
+
+Windows에서는 native wrapper를 사용합니다.
+
+```powershell
+$env:CARGO_TARGET_DIR = 'target\pr-review'
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
+Remove-Item Env:CARGO_TARGET_DIR
+```
+
+`cmd.exe`에서는 아래처럼 `doskey` macro를 현재 세션에 등록할 수 있습니다. macro는 세션 종료 시 사라집니다.
+
+```bat
+doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
+set "CARGO_TARGET_DIR=target\pr-review"
+rhwp-wasm-build
+set "CARGO_TARGET_DIR="
+```
+
+먼저 의존성을 설치한 뒤 Studio의 타입·단위·번들을 확인합니다.
+
+```bash
+npm --prefix rhwp-studio ci
+(cd rhwp-studio && npx tsc --noEmit)
+npm --prefix rhwp-studio test
+npm --prefix rhwp-studio run build
+```
+
+사용자 상호작용, Canvas, 선택·입력·저장, bridge, plugin 등 브라우저 동작을 바꿨다면
+[`rhwp-studio/e2e/MANIFEST.md`](rhwp-studio/e2e/MANIFEST.md)에서 변경 기능에 대응하는 E2E를 골라 함께
+실행합니다. 예를 들어 `e2e/`에 새 회귀를 추가했다면 manifest와 package script도 함께 갱신하고,
+해당 script를 PR 본문에 기록합니다.
+
+```bash
+# 예: 수정한 기능에 맞는 한 가지 이상의 E2E를 선택한다.
+npm --prefix rhwp-studio run e2e:undo
+
+# 실제 브라우저 수동 확인이 필요한 UI 변경은 개발 서버를 외부 인터페이스에도 열어 실행한다.
+npm --prefix rhwp-studio run dev -- --host 0.0.0.0 --port 7700
+# 브라우저에서 http://localhost:7700 을 열어 수정한 흐름을 확인한 뒤 서버를 종료한다.
+```
+
+`npm/editor`의 public API, transport, 선언 파일 또는 package manifest를 바꿨다면 Studio test만으로 끝내지
+말고 package 계약도 확인합니다. iframe RPC·기본 옵션·WASM 초기화가 바뀌면 fresh WASM build 뒤 관련 embed
+E2E까지 실행합니다.
+
+```bash
+npm --prefix npm/editor test
+node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+(cd rhwp-studio && npx tsc --ignoreConfig --noEmit --skipLibCheck ../npm/editor/index.d.ts)
+(cd npm/editor && npm pack --dry-run --json)
+# 최초 한 번의 .env.docker 준비와 Docker 미설치 host의 진단 경로는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
+VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
+```
+
+브라우저 화면·영상·개인정보가 포함된 sample은 저장소에 커밋하지 않고 PR 본문에 공개 가능한 범위로 첨부합니다.
+렌더링 또는 페이지네이션을 바꿨다면 이 절차에 더해 아래의 시각 검증 안내를 따릅니다.
 
 ### 성능 검증 책임
 
@@ -173,6 +310,39 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
 1. **red→green 회귀 테스트 동봉** — 수정 전 결함을 재현·고정하는 테스트를 함께 제출합니다.
    파일명 관례: `tests/issue_{이슈번호}_{짧은_설명}.rs`. 수정을 되돌리면 실패하고, 수정을
    적용하면 통과해야 합니다.
+
+   새 파일은 `tests/cases/`에만 만듭니다. PR에는 원본 `.rs`만 포함하고 suite를 직접 선택하지
+   않습니다. 검토자가 PR review 전용 worktree와 CI에서 `--prepare`를 실행하면, 생성기가 source
+   weight를 계산해 기존 integration suite 중 가장 가벼운 곳에 자동 배정합니다.
+
+   `tests/generated/*.rs`, `tests/suites/manifest.json`은 **PR에 포함하지 않습니다.** 이 파일들은 검토·CI
+   checkout에서만 만드는 파생 산출물입니다. 이를
+   커밋하면 독립 PR끼리 같은 harness·manifest를 수정해 불필요한 충돌을 만들므로 CI가 거부합니다.
+   `Cargo.toml`의 generated test target 블록도 일반 PR에는 포함하지 않습니다. 단, 통합 불가 예외 target이
+   바뀐 메인터너 전용 registry 동기화 PR은 `--sync-cargo-targets`로 해당 marker 블록만 갱신할 수 있습니다.
+   `#[path]`·root `mod`·feature-gated test처럼 module harness와의 호환성을 판단해야 하는 원본은 일반 기여자가 registry를
+   늘리지 않습니다. 기존 source의 module 호환성이 확인된 경우에만 메인터너가 `suite-policy.json`의 좁은
+   `moduleIntegrationOverrides`에 blocker 이름을 명시해 suite 배정을 허용합니다.
+   원본을 이름 변경·삭제해도 PR에는 `tests/cases/` 변경만 제출합니다. `--rebalance`는 일반 기여
+   절차에 포함하지 않으며, 배정 정책 자체를 바꾸는 메인터너 전용 별도 작업에서만 검토합니다.
+
+   원본을 커밋한 뒤 전체 integration 실행이 필요하면, PR branch와 분리된 review worktree에서만
+   `--prepare`와 `--check`를 차례로 실행합니다. 생성된 manifest·harness는 검증 증적일 뿐이므로 테스트가
+   끝나면 그 review worktree에서 복원하고 stage하지 않습니다. 이 기본 경로는 `Cargo.toml`을 변경하지 않습니다.
+
+   제품 소스의 `#[cfg(test)]`에는 새 테스트 모듈이나 test support 항목을 추가하지 않습니다. 공개 API로
+   재현할 수 있는 테스트는 `tests/cases/`에 작성하고, 기존 소스 테스트의 차등 이동 상태는 다음 명령으로
+   확인합니다. root `src/`와 내부 `crates/*/src/`가 모두 검사 대상입니다. private 구현 불변식을 검증해야
+   하는 예외나 새 내부 crate 경계는 별도 단계에서 근거와 기준선 변경을 함께 검토합니다.
+
+   ```bash
+   node scripts/rust-unit-test-tiers.mjs --check
+   ```
+
+   CI는 PR base와 현재 source를 다시 비교하고, unit-tier inventory도 source에서 메모리로 재계산한다.
+   커밋된 generated harness·manifest는 거부한다. Cargo generated block은 명시적 registry 동기화에서 marker
+   블록만 바꾼 경우에만 허용한다. 새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git
+   rename으로 확인되는 순수 crate 이동처럼 개수가 늘지 않는 경로 변경만 허용한다.
 2. **수정 전 실패 증명 (권장)** — "수정 커밋만 원복한 상태에서 신규 테스트가 실제로 FAIL"
    함을 PR 본문에 기록해주세요. 테스트가 결함을 판별한다는 증명이 되어 리뷰 신뢰도가
    높아집니다.
@@ -212,7 +382,7 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 1. **결정적 자동 검증** (필수):
    - 위 PR 전 체크리스트의 `cargo nextest run` (통합 테스트 포함, 회귀 0)
    - `cargo test --test svg_snapshot` (rhwp 자체 일관성)
-   - `cargo clippy -- -D warnings`
+   - `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings`
 
 2. **시각 검증** (참고):
    - 한컴 PDF / 한컴 화면 캡처 + rhwp SVG 비교 — **본인 환경 명시 필수** (한컴 버전, OS, 폰트 등)
@@ -324,7 +494,7 @@ rhwp-studio/        ← 웹 에디터 (TypeScript + Vite)
 
 ## 코드 스타일
 
-- `cargo clippy -- -D warnings` 경고 0건 (CI에서 강제)
+- `cargo clippy --all-targets --target-dir target/pr-review -- -D warnings` 경고 0건 (CI에서 강제)
 - `unwrap()` 최소화
 - 모든 문서는 한국어로 작성
 - **소스 포맷 분기**: HWP3/HWPX 등 원본 포맷에 따른 레이아웃 분기가 필요하면
@@ -341,9 +511,10 @@ rhwp는 코드뿐 아니라 **작업 과정의 기록**도 프로젝트의 일�
 > [`mydocs/README.md`](mydocs/README.md)(문서 지도·manifest)이고, 이 문서의 표는 요약입니다.
 > 충돌 시 canonical 문서가 우선합니다.
 >
-> **AI 도구를 쓰신다면**: 저장소 루트의 [`AGENTS.md`](AGENTS.md)가 에이전트 부트스트랩
-> 파일입니다 (CLAUDE.md는 이를 가리키는 부트로더). 에이전트가 AGENTS.md 의 로딩 순서를
-> 따르면 이 저장소의 절차와 검증 규칙을 그대로 파악합니다.
+> **AI 도구를 쓰신다면**: 일부 도구는 저장소 루트의 [`AGENTS.md`](AGENTS.md)를 자동으로
+> 읽을 수 있습니다. 그러나 외부 기여 PR의 제출 범위와 절차는 이 `CONTRIBUTING.md`가 우선합니다.
+> `AGENTS.md`에 있는 메인터너 운영 절차를 따라 review 문서·오늘할일·병합 기록을 PR에 추가하지
+> 마세요. 위 **메인터너 검토 기록과의 구분**을 따릅니다.
 
 ### 폴더 구조 (`mydocs/` 하위)
 
@@ -436,9 +607,10 @@ python3 scripts/check_markdown_links.py      # 상대 링크 검사
 
 ## LLM/에이전트 보조 기여
 
-이 저장소는 AI 에이전트가 1급 소비자이자 1급 기여자다. Claude Code·Copilot·
-Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파일**이 전부
-준비돼 있다 — 어떤 도구를 쓰든 같은 규약([AGENTS.md](AGENTS.md))에 도착한다.
+이 저장소는 AI 에이전트도 기여 도구로 사용할 수 있다. Claude Code·Copilot·Cursor·Codex·
+Gemini CLI·Windsurf·Cline은 도구별 지침 파일을 자동으로 읽을 수 있다. 다만 외부 기여자가
+PR에 포함할 파일과 검증 범위는 이 문서가 정하며, 자동 로딩된 내부 지침은 메인터너의 접수·검토·
+병합 운영을 외부 PR에 복제하라는 의미가 아니다.
 
 | 도구 | 자동 로딩 파일 |
 |---|---|
@@ -465,7 +637,5 @@ Cursor·Codex·Gemini CLI·Windsurf·Cline 이 **자동으로 읽는 지침 파�
 쓰든, 그 모델을 부리는 위 CLI/IDE 가 이 파일들을 자동으로 읽으므로 결국 같은 규약에 도착한다.
 저장소 파일을 읽지 않는 도구(영상·미디어 생성형 등)는 이 표의 범위 밖이다.
 
-에이전트 보조로 문서를 실제 편집·생성했다면 **작업 증빙**을 권장한다:
-`rhwp replay --plan-json <계획> --capsule work.capsule.json` 이 만든 캡슐(3해시
-영수증)이나 관련 `--json` 봉투 원문을 PR 에 붙이면, 리뷰어가 주장 대신
-재계산으로 검증할 수 있다. 상세는 AGENTS.md 의 "작업 증빙" 절.
+에이전트 보조로 작업했다면 사용한 도구, 재현 명령, 테스트 결과를 PR 본문에 간단히 적어주세요.
+메인터너 운영용 capsule·review archive·오늘할일 파일은 첨부 대상이 아닙니다.

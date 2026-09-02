@@ -1,0 +1,260 @@
+{
+  "schemaVersion": "1.0",
+  "claim": "V-shadow",
+  "kind": "shadowAgreementCorpus",
+  "rowCount": 122880,
+  "axisCount": 1024,
+  "checkCount": 16,
+  "identitiesPerAxis": 120,
+  "shardRows": 7680,
+  "columns": [
+    "case_id",
+    "check_a",
+    "check_b",
+    "a_pass",
+    "b_pass",
+    "expected_joint",
+    "expected_verdict_class",
+    "sample",
+    "source_format",
+    "family",
+    "agency",
+    "year",
+    "page_a",
+    "page_b",
+    "command_a",
+    "command_b",
+    "field_a",
+    "field_b",
+    "observed_a",
+    "observed_b",
+    "honest_claim",
+    "contract_source",
+    "not_abstain",
+    "not_repeat"
+  ],
+  "byVerdict": {
+    "JOINT_BOTH_FAIL": 28800,
+    "JOINT_PASS": 28800,
+    "SAME_CHECK_NOT_SHADOW": 7680,
+    "SHADOW_A_ONLY": 28800,
+    "SHADOW_B_ONLY": 28800
+  },
+  "shards": [
+    {
+      "path": "corpus/shard_0000.tsv",
+      "rows": 7680,
+      "first": "v-shadow-000001",
+      "last": "v-shadow-007680",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0001.tsv",
+      "rows": 7680,
+      "first": "v-shadow-007681",
+      "last": "v-shadow-015360",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    },
+    {
+      "path": "corpus/shard_0002.tsv",
+      "rows": 7680,
+      "first": "v-shadow-015361",
+      "last": "v-shadow-023040",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0003.tsv",
+      "rows": 7680,
+      "first": "v-shadow-023041",
+      "last": "v-shadow-030720",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    },
+    {
+      "path": "corpus/shard_0004.tsv",
+      "rows": 7680,
+      "first": "v-shadow-030721",
+      "last": "v-shadow-038400",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0005.tsv",
+      "rows": 7680,
+      "first": "v-shadow-038401",
+      "last": "v-shadow-046080",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    },
+    {
+      "path": "corpus/shard_0006.tsv",
+      "rows": 7680,
+      "first": "v-shadow-046081",
+      "last": "v-shadow-053760",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0007.tsv",
+      "rows": 7680,
+      "first": "v-shadow-053761",
+      "last": "v-shadow-061440",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    },
+    {
+      "path": "corpus/shard_0008.tsv",
+      "rows": 7680,
+      "first": "v-shadow-061441",
+      "last": "v-shadow-069120",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0009.tsv",
+      "rows": 7680,
+      "first": "v-shadow-069121",
+      "last": "v-shadow-076800",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    },
+    {
+      "path": "corpus/shard_0010.tsv",
+      "rows": 7680,
+      "first": "v-shadow-076801",
+      "last": "v-shadow-084480",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0011.tsv",
+      "rows": 7680,
+      "first": "v-shadow-084481",
+      "last": "v-shadow-092160",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    },
+    {
+      "path": "corpus/shard_0012.tsv",
+      "rows": 7680,
+      "first": "v-shadow-092161",
+      "last": "v-shadow-099840",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0013.tsv",
+      "rows": 7680,
+      "first": "v-shadow-099841",
+      "last": "v-shadow-107520",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    },
+    {
+      "path": "corpus/shard_0014.tsv",
+      "rows": 7680,
+      "first": "v-shadow-107521",
+      "last": "v-shadow-115200",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1808,
+        "JOINT_PASS": 1808,
+        "SAME_CHECK_NOT_SHADOW": 448,
+        "SHADOW_A_ONLY": 1808,
+        "SHADOW_B_ONLY": 1808
+      }
+    },
+    {
+      "path": "corpus/shard_0015.tsv",
+      "rows": 7680,
+      "first": "v-shadow-115201",
+      "last": "v-shadow-122880",
+      "byVerdict": {
+        "JOINT_BOTH_FAIL": 1792,
+        "JOINT_PASS": 1792,
+        "SAME_CHECK_NOT_SHADOW": 512,
+        "SHADOW_A_ONLY": 1792,
+        "SHADOW_B_ONLY": 1792
+      }
+    }
+  ],
+  "notes": [
+    "Each row is a distinct (check_a, check_b, a_pass, b_pass, expected_joint) case.",
+    "Comment padding is not used.",
+    "expected_joint is 1 only when two different commands both pass.",
+    "Same-command pairs are SAME_CHECK_NOT_SHADOW, not V-abstain and not V-repeat.",
+    "Producer commands are consumed as contracts, never invented."
+  ]
+}

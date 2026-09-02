@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/agent_roadmap/hyperdimensional_roadmap.md
-last_verified: 2026-08-11
+last_verified: 2026-08-28
 ---
 
 # 초차원 로드맵 v2 — 검증 사다리 완주와 채택 축 개통의 조망
@@ -11,6 +11,12 @@ last_verified: 2026-08-11
 - v1(이슈 본문, 2026-08-10) 대비 v2 의 변화: **사다리 1~10년 전 축 코드화 완료**
   (#4559 착지) + **채택 축 개통**(#4562, LLM 도구 표면 22종) + 운동장 3부·대전
   82명령·사전 264필드 반영. 이 문서가 이제 조망의 정본이고 이슈는 좌표 로그다.
+- **2026-08-28 갱신(v2.1)**: 당시 "PR 대기"였던 4~10년 전 축과 하네스·운동장
+  2/3부·온보딩 중력이 **전부 devel 에 착지**했다 — 좌표 PR 들은 통합 커밋으로
+  수용되며 닫혔고, §2 표의 상태 열이 착지 커밋 링크를 가리킨다(#3608 규칙).
+  이후 사다리 **위에** 새 층이 하나 더 섰다: 위조 불가능한 리더보드
+  ([`35776b2f9`](https://github.com/edwardkim/rhwp/commit/35776b2f9), #4659 —
+  `gym/leaderboard/`가 anchor 체인·keyring·claims 로 운영된다).
 
 ## 0. 한 문장 요약
 
@@ -40,15 +46,21 @@ last_verified: 2026-08-11
 | 1년 | 영수증 | replay 3해시(입력·계획·산출) attest/verify | 재현 가능한 작업 단위의 발명 — 모든 축의 원자 | devel 병합 | — | replay |
 | 2년 | 감사 | audit 폴더 전수 재실행 → reproducedRate 회계 | 재현율이 조직의 수치가 된다 | devel 병합 | — | audit |
 | 3년 | 계보 | parent 해시 체인 + 불변식(부모 산출=자식 입력) | 납품 이력이 그래프가 된다 | devel 병합 | — | lineage |
-| 4년 | 서명 | Ed25519 파일 바이트 사이드카·keyring·폐기 | 귀속 — 누가 했는가가 암호학이 된다 | PR 대기 | #4511 | keygen·verify-signature |
-| 5년 | 앵커 | append-only 줄해시 체인 로그 + 머클 체크포인트 | 시점 — 역사 재작성은 공표와 충돌한다 | PR 대기 | #4544 | anchor add/checkpoint/verify |
-| 6년 | 게이트 | admissionPolicy 4연산 고정 사전·deny 기본 | 반입 판정이 산문에서 기계로 | PR 대기 | #4546 | gate |
-| 7년 | 연합 | .lineage-bundle zip 5단 오프라인 검증·F2 방어 | 조직 경계를 넘는 교환 형식 | PR 대기 | #4550 | bundle export/verify |
-| 8년 | 선택적 공개 | salt 커밋 가림·부분 개봉·바이트 완전 복원 | 계보 공개와 내용 비밀의 양립 — 원본 서명 유지 | PR 대기 | #4552 | disclose redact/verify/restore |
-| 9년 | 정산 | workorder·claim 3해시·원장 이중청구 전역 검사 | 검수 통과가 지불 근거가 된다(돈은 안 움직임) | PR 대기 | #4557 | settle propose/verify/record |
-| 10년 | 감사 표준 | audit-report 기계합산·recall 폐쇄집합·conformance L1~L5 | 감사인이 읽는 언어 — 보고서를 감사할 수 있다 | PR 대기 | #4559 | audit-report·recall-scope·conformance |
+| 4년 | 서명 | Ed25519 파일 바이트 사이드카·keyring·폐기 | 귀속 — 누가 했는가가 암호학이 된다 | devel 병합 [`f039fa04a`](https://github.com/edwardkim/rhwp/commit/f039fa04a) | #4511 | keygen·verify-signature |
+| 5년 | 앵커 | append-only 줄해시 체인 로그 + 머클 체크포인트 | 시점 — 역사 재작성은 공표와 충돌한다 | devel 병합 [`03803e2c6`](https://github.com/edwardkim/rhwp/commit/03803e2c6) | #4544 | anchor add/checkpoint/verify |
+| 6년 | 게이트 | admissionPolicy 4연산 고정 사전·deny 기본 | 반입 판정이 산문에서 기계로 | devel 병합 [`a029453e4`](https://github.com/edwardkim/rhwp/commit/a029453e4) | #4546 | gate |
+| 7년 | 연합 | .lineage-bundle zip 5단 오프라인 검증·F2 방어 | 조직 경계를 넘는 교환 형식 | devel 병합 [`8af9acd0d`](https://github.com/edwardkim/rhwp/commit/8af9acd0d) | #4550 | bundle export/verify |
+| 8년 | 선택적 공개 | salt 커밋 가림·부분 개봉·바이트 완전 복원 | 계보 공개와 내용 비밀의 양립 — 원본 서명 유지 | devel 병합 [`6c6845731`](https://github.com/edwardkim/rhwp/commit/6c6845731) | #4552 | disclose redact/verify/restore |
+| 9년 | 정산 | workorder·claim 3해시·원장 이중청구 전역 검사 | 검수 통과가 지불 근거가 된다(돈은 안 움직임) | devel 병합 [`1b9adb795`](https://github.com/edwardkim/rhwp/commit/1b9adb795) | #4557 | settle propose/verify/record |
+| 10년 | 감사 표준 | audit-report 기계합산·recall 폐쇄집합·conformance L1~L5 | 감사인이 읽는 언어 — 보고서를 감사할 수 있다 | devel 병합 [`ac3e6fc3e`](https://github.com/edwardkim/rhwp/commit/ac3e6fc3e) | #4559 | audit-report·recall-scope·conformance |
 
-스택 머지 순서(각 PR 순수분 = 머리 커밋 1개, 무충돌 누적 설계):
+스택 머지 순서(각 PR 순수분 = 머리 커밋 1개, 무충돌 누적 설계)는 아래였고, **전
+계단이 devel 에 착지 완료**됐다 — 좌표 PR 들은 저자의 통합 커밋으로 수용되며
+닫혔다(하네스 [`56fa616f3`](https://github.com/edwardkim/rhwp/commit/56fa616f3) ·
+운동장2 [`3bb126459`](https://github.com/edwardkim/rhwp/commit/3bb126459) ·
+운동장3 [`b3bdeb3bc`](https://github.com/edwardkim/rhwp/commit/b3bdeb3bc) 포함).
+2026-08-28 실측: 표의 명령 10종(replay~conformance)이 전부 현행 devel 바이너리에
+실재한다.
 
 #4538 하네스 → #4540 운동장2 → #4542 대전 → #4544 앵커 → #4546 게이트 → #4548 운동장3 → #4550 연합 → #4552 공개 → #4557 정산 → #4559 감사표준
 
@@ -114,50 +126,54 @@ plan 문자열 잎 전부 sha256(값‖salt) 커밋 치환 + 비밀 개봉 파�
 | 사람 기여자 | `CONTRIBUTING.md LLM 절 + PR 템플릿 증빙 체크리스트` |
 | llms.txt 소비 도구 | `llms.txt` |
 
-증빙 기본 경로(devel 병합분만 규약): `replay --capsule`(영수증) · `--parent`+`lineage`(계보) · `audit`(재현율). 미병합 축은 로드맵 링크로만 — **병합 전 기능은 규약이 아니라 로드맵**.
+증빙 기본 경로(devel 병합분만 규약): `replay --capsule`(영수증) · `--parent`+`lineage`(계보) · `audit`(재현율). **2026-08-28 현재 사다리 전 축이 병합**되어 서명(`keygen`·`verify-signature`)·앵커(`anchor`)·게이트(`gate`)·연합(`bundle`)·공개(`disclose`)·정산(`settle`)·감사 표준(`audit-report`)까지 규약 후보 표면이 넓어졌다 — 다만 온보딩 문서가 **기본 경로로 요구**하는 것은 여전히 영수증·계보·감사 셋이고, 나머지는 권장 표면이다(AGENTS.md 의 "권장이지 제출 조건이 아니다" 원칙).
+
+**트랙 L — 다표면 채택 중력**([track_l_adoption_gravity.md](track_l_adoption_gravity.md), 집계 밖): 위 표는 규약 파일(.md) 한 표면이다. 트랙 L은 이를 일반화해 **에이전트가 만나는 모든 문**(CLI·MCP·하네스·planner·로드맵·gym)이 같은 축(검증 사다리·gym)으로 이어지는지를 표면별로 정본화한다. 정직한 공백 실측: MCP는 tools 66개·resources 13개는 있으나 **prompts가 0개**(L3 미개척 지렛대)이고, resources 13개도 **채택 축(roadmap·gym·ladder)을 노출 안 함**(L4 확장 여지). 헌법 4원칙(은닉 금지·유용성 우선·강요 없음·되돌릴 수 있음)을 위반하는 깔때기는 거부한다 — 채택 중력은 조작이 아니라 배치다.
 
 ## 5. 운동장·대전·사전 — 폐루프 인프라
 
 | 인프라 | 현황 | 다음 |
 |---|---|---|
-| gym (운동장) | T01~T14 · 살아있는 오라클(채점 시 재계산) · 베이스라인 32/32 | 4부 T15~T18 정산·감사 과제 (#4560 착공) |
-| 대전 (living codex) | **82 명령** 자기서술+실측 표본 18, 재생성 δ=2장·`--check` 0 멱등 | 축 추가 시 자동 확장 |
-| 지식 지도 사전 | §2-2 **264 필드** 전수(가드가 유일 계수 검증) | 표준 문서 용어 사전의 원형 |
-| 주도 지표 | origin/devel 병합 이력 기준 에이전트 축 **77% 줄 / 58% 커밋** (기계 계산) | 스택 병합 시 재계측 |
+| gym (운동장) | T01~T14 · 살아있는 오라클(채점 시 재계산) · 이후 core-cli T15+ 입문 온램프 확장([`2b88e8c4f`](https://github.com/edwardkim/rhwp/commit/2b88e8c4f)) · **사다리-검증 리더보드 가동**(`gym/leaderboard/` — anchor 체인·keyring·claims, [`35776b2f9`](https://github.com/edwardkim/rhwp/commit/35776b2f9)) | #4560 이 계획한 정산·감사 전용 4부 과제는 별도 미착지 — 온램프·리더보드가 먼저 섰다 |
+| 대전 (living codex) | **82 명령** 자기서술+실측 표본 18, 재생성 δ=2장·`--check` 0 멱등 (2026-08-11 계측 — 이후 명령 수 증가, 재계측은 대전 재생성 명령으로) | 축 추가 시 자동 확장 |
+| 지식 지도 사전 | §2-2 **264 필드** 전수(가드가 유일 계수 검증) (2026-08-11 계측) | 표준 문서 용어 사전의 원형 |
+| 주도 지표 | origin/devel 병합 이력 기준 에이전트 축 **77% 줄 / 58% 커밋** (기계 계산, 2026-08-11 계측) | 사다리 착지 완료분 반영 재계측 |
 
 ## 6. 증거 갤러리 — 전부 실문서·실명령 실측
 
-각 이미지는 해당 PR 브랜치에 커밋된 자기 검증 완료 증거다.
+각 이미지는 축 착지와 함께 devel 에 병합된 자기 검증 완료 증거다(경로:
+`mydocs/report/edit_demo_4551·4553·4558/`). 2026-08-28 갱신에서 링크를 작업
+브랜치가 아니라 devel 정본으로 바꿨다 — 브랜치 정리와 무관하게 살아 있다.
 
 **가림 캡슐 왕복 — 같은 캡슐의 네 시점 (8년)**
 
-![가림 캡슐 왕복 — 같은 캡슐의 네 시점 (8년)](https://raw.githubusercontent.com/kevin9327/rhwp/task_m100_4551/mydocs/report/edit_demo_4551/02_redact_roundtrip.png)
+![가림 캡슐 왕복 — 같은 캡슐의 네 시점 (8년)](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/report/edit_demo_4551/02_redact_roundtrip.png)
 
 **실문서 편집 전/후 — 서명 캡슐 발급 (8년)**
 
-![실문서 편집 전/후 — 서명 캡슐 발급 (8년)](https://raw.githubusercontent.com/kevin9327/rhwp/task_m100_4551/mydocs/report/edit_demo_4551/01_document_edit.png)
+![실문서 편집 전/후 — 서명 캡슐 발급 (8년)](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/report/edit_demo_4551/01_document_edit.png)
 
 **정산 왕복 — 발주·검수(실제 gate --deep)·청구·원장 (9년)**
 
-![정산 왕복 — 발주·검수(실제 gate --deep)·청구·원장 (9년)](https://raw.githubusercontent.com/kevin9327/rhwp/task_m100_4553/mydocs/report/edit_demo_4553/02_settle_roundtrip.png)
+![정산 왕복 — 발주·검수(실제 gate --deep)·청구·원장 (9년)](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/report/edit_demo_4553/02_settle_roundtrip.png)
 
 **납품 전/후 — 검수 대상 실문서 (9년)**
 
-![납품 전/후 — 검수 대상 실문서 (9년)](https://raw.githubusercontent.com/kevin9327/rhwp/task_m100_4553/mydocs/report/edit_demo_4553/01_delivery.png)
+![납품 전/후 — 검수 대상 실문서 (9년)](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/report/edit_demo_4553/01_delivery.png)
 
 **가시 3링크 계보 체인 — 원본→1차→2차→3차 (10년)**
 
-![가시 3링크 계보 체인 — 원본→1차→2차→3차 (10년)](https://raw.githubusercontent.com/kevin9327/rhwp/task_m100_4558/mydocs/report/edit_demo_4558/01_lineage_chain.png)
+![가시 3링크 계보 체인 — 원본→1차→2차→3차 (10년)](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/report/edit_demo_4558/01_lineage_chain.png)
 
 **감사 표준 왕복 — 보고·리콜·적합성 (10년)**
 
-![감사 표준 왕복 — 보고·리콜·적합성 (10년)](https://raw.githubusercontent.com/kevin9327/rhwp/task_m100_4558/mydocs/report/edit_demo_4558/02_audit_standard.png)
+![감사 표준 왕복 — 보고·리콜·적합성 (10년)](https://raw.githubusercontent.com/edwardkim/rhwp/devel/mydocs/report/edit_demo_4558/02_audit_standard.png)
 
 ## 7. 다음 지평 (조합의 시대)
 
 | 후보 | 내용 | 성격 |
 |---|---|---|
-| gym 4부 (#4560) | 정산·감사 과제 T15~T18 — 사다리 완주분의 폐루프 과제화 | 착공 완료·구현 대기 |
+| gym 4부 (#4560) | 정산·감사 과제 T15~T18 — 사다리 완주분의 폐루프 과제화 | 이슈는 닫힘·전용 과제는 미착지 (T15 번호대는 입문 온램프가 선점 — 재설계 필요) |
 | 캡슐 자동 재검증 CI | PR 첨부 캡슐을 액션이 재계산 검증 — 증빙 문화의 기계화 | 채택 축 2호 |
 | bundle --redact | 7년×8년 조합 — 내용 비밀 연합 교환 한 방 | 조합 |
 | 합류 DAG × recall | 다부모 계보의 role 별 material 경로 리콜 반영 | 조합 |
@@ -166,7 +182,10 @@ plan 문자열 잎 전부 sha256(값‖salt) 커밋 치환 + 비밀 개봉 파�
 
 ## 8. 정직 조항 (조망 전체에 적용)
 
-1. 이 문서의 "상태" 열은 PR 좌표이지 머지 약속이 아니다 — 판정은 저자의 몫.
-2. 수치(82 명령·264 필드·77%/58%)는 전부 기계 계산이며 재계산 명령이 저장소에 있다.
-3. 증거 이미지는 PR 브랜치 커밋물이다 — 브랜치 정리 시 링크가 죽을 수 있고, 그때의 정본은 각 PR 의 첨부다.
+1. 이 문서의 "상태" 열은 2026-08-28 기준 **devel 착지 커밋 링크**다(#3608 규칙).
+   좌표 PR 들은 저자의 통합 커밋으로 수용되며 닫혔다 — PR state(CLOSED)만 보고
+   미병합으로 읽지 말 것. 판정은 언제나 저자의 몫이다.
+2. 수치(82 명령·264 필드·77%/58%)는 전부 기계 계산이며 재계산 명령이 저장소에 있다
+   — 단 계측 시점은 2026-08-11 이고, 이후 증가분은 §5 에 시점 주석으로만 남겼다.
+3. 증거 이미지는 devel 병합 경로(`mydocs/report/edit_demo_*`)의 정본을 가리킨다.
 4. 9·10년 축의 전제(에이전트 노동 시장·감사 규제)는 전망이지 실측이 아니다 — 설계서 정직 조항 승계.

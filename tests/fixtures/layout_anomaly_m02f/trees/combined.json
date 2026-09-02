@@ -1,0 +1,293 @@
+[
+  {
+    "id": "combo-table-overflow-and-text-overlap",
+    "family": "combined",
+    "hypothesis": "표가 본문·페이지를 넘치고 내부 런이 겹치면 overflow+off-canvas+text-overlap 이 같이 열린다. 표 하나라 일반 overlap 은 없다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 30.0,
+        "w": 200.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "Cell",
+            "x": 10.0,
+            "y": 30.0,
+            "w": 200.0,
+            "h": 40.0,
+            "children": [
+              {
+                "t": "TextLine",
+                "x": 10.0,
+                "y": 30.0,
+                "w": 200.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 10.0,
+                    "y": 30.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "왼"
+                  }
+                ]
+              },
+              {
+                "t": "TextLine",
+                "x": 20.0,
+                "y": 32.0,
+                "w": 40.0,
+                "h": 12.0,
+                "children": [
+                  {
+                    "t": "TextRun",
+                    "x": 20.0,
+                    "y": 32.0,
+                    "w": 40.0,
+                    "h": 12.0,
+                    "text": "오"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [
+        [
+          "Page/Body/Table0/Cell0/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/Table0/Cell0/TextLine1/TextRun0",
+          "TextRun",
+          30.0,
+          10.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 20.0,
+      "overBottom": 0.0,
+      "maxOver": 20.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    20.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    10.00px  Page/Body/Table0 (Table)",
+        "  [TEXT-OVERLAP] page   0  30.00x10.00px  Page/Body/Table0/Cell0/TextLine0/TextRun0 (TextRun) x Page/Body/Table0/Cell0/TextLine1/TextRun0 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "combo-two-tables-negative-y",
+    "family": "combined",
+    "hypothesis": "음수 y 로 겹친 두 표는 off-canvas 2 + overlap 1.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": -40.0,
+        "w": 80.0,
+        "h": 80.0
+      },
+      {
+        "t": "Table",
+        "x": 30.0,
+        "y": -20.0,
+        "w": 80.0,
+        "h": 80.0
+      }
+    ],
+    "expect": {
+      "overflow": 2,
+      "offCanvas": 2,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table",
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table",
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0",
+        "Page/Body/Table1"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0",
+        "Page/Body/Table1"
+      ],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          60.0,
+          60.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 60.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 60.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    60.00px  Page/Body/Table0 (Table)",
+        "  [OVERFLOW] page   0    40.00px  Page/Body/Table1 (Table)",
+        "  [OFF-CANVAS] page   0    40.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    20.00px  Page/Body/Table1 (Table)",
+        "  [OVERLAP]  page   0  60.00x60.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "combo-square-over-textline",
+    "family": "combined",
+    "hypothesis": "Square wrap 도형이 보이는 문단 줄과 겹치면 일반 overlap. 런-도형은 text-overlap 이 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      },
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/TextLine0",
+          "TextLine",
+          "Page/Body/Rect1",
+          "Rect",
+          40.0,
+          12.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  40.00x12.00px  Page/Body/TextLine0 (TextLine) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  }
+]

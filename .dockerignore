@@ -7,4 +7,9 @@ mydocs/
 .git/
 *.wasm
 samples/
+# samples/ 와 같은 이유. Dockerfile 에는 COPY·ADD 가 없고 소스는 compose 의
+# 볼륨 마운트(`.:/app`)로 들어오므로, 빌드 컨텍스트로 보낸 것은 쓰이지 않는다.
+# 이 둘만 683MB 다 (pdf 711MB · tools/llm_verifier 559MB, 실측 739MB → 56MB).
+pdf/
+tools/
 rhwp-studio/node_modules/

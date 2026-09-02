@@ -15,6 +15,11 @@ use super::*;
 /// 마커가 사라져 native HWPX로 취급된다.
 pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
 
+/// HWP3 원본에서 HWPX 로 export 한 산출물 마커 — 재열람 시 hwp3_lineage 를
+/// 복원해 직파싱 HWP3 와 같은 레이아웃 계약(저장-스텝 등)을 밟게 한다.
+/// 없으면 render-diff 왕복이 프로파일 차이만큼 갈라진다(hwp3-sample p7 14.9px).
+pub const HWP3_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp3-origin";
+
 /// [Issue #1770] HWPX-origin 마커 스트림 경로.
 ///
 /// rhwp 의 HWPX→HWP 변환은 LINE_SEG 를 verbatim 직렬화하므로 산출 HWP5 의 IR 은
@@ -42,7 +47,7 @@ pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
 pub const HWP3_ORIGIN_STREAM_PATH: &str = "/RhwpHwp3Origin";
 
 /// 파서가 모델링하지 않는 원시 레코드 (라운드트립 보존용)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct RawRecord {
     /// 태그 ID
     pub tag_id: u16,
@@ -149,7 +154,7 @@ pub struct HwpVersion {
 }
 
 /// 문서 속성 (HWPTAG_DOCUMENT_PROPERTIES)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct DocProperties {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -198,6 +203,19 @@ pub struct DocInfo {
     pub styles: Vec<Style>,
     /// 파서가 모델링하지 않는 추가 레코드 (DOC_DATA, FORBIDDEN_CHAR 등)
     pub extra_records: Vec<RawRecord>,
+    /// [Issue #6208] 문서에 실린 **인쇄 방식**(모아 찍기 등).
+    ///
+    /// HWP5 는 `DocInfo`/`HWPTAG_DOC_DATA`(tag 27)의 `(u32 key, u32 value)` 목록 중
+    /// 키 `0x0006_4006`, HWPX 는 `settings.xml` 의
+    /// `<config:config-item name="PrintMethod">` 에 같은 값을 싣는다.
+    /// 원본에 항목이 없으면 `None`.
+    ///
+    /// **rhwp 는 이 값을 출력에 반영하지 않는다** — 파싱·노출 전용이다.
+    /// 한글 오라클 PDF 와 대조할 때 이 값이 [`print_method_implies_nup`] 이면
+    /// 한글 쪽 장 수·용지 방향이 rhwp 와 다르므로, 좌표를 그대로 견주면 오판한다.
+    /// 저장은 `extra_records` / `raw_stream` 의 원본 바이트가 담당하므로 이 필드는
+    /// 직렬화에 쓰이지 않는다(파생 값).
+    pub print_method: Option<u32>,
     /// 원본 DocInfo 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     pub raw_stream: Option<Vec<u8>>,
     /// Bullet 개수 (ID_MAPPINGS에 포함, bullets.len()과 동기화)
@@ -224,6 +242,32 @@ pub struct DocInfo {
     /// (1.2~1.5 등) 원본 값을 보존해 직렬화 때 그대로 재방출한다.
     /// 원본 HWPX가 없으면 None → serializer가 "1.2" 폴백.
     pub hwpml_version: Option<String>,
+    /// [#4493] raw_stream 출처 봉인 — 파싱(+로드 픽스업) 완료 시점의 모델 상태와
+    /// 원본 바이트의 다이제스트 쌍. 저장 시 둘 다 일치할 때만 raw 를 재사용한다.
+    /// 계약 전문은 `model::raw_provenance` 모듈 주석.
+    pub raw_provenance: Option<crate::model::raw_provenance::DocInfoSeal>,
+}
+
+/// HWP5 `HWPTAG_DOC_DATA` 안에서 인쇄 방식을 담는 키.
+///
+/// 레코드는 `(u32 key, u32 value)` 의 평평한 목록이고 **키 순서가 문서마다 다르다** —
+/// 인덱스가 아니라 키로 찾아야 한다(156458354 는 3번째, 156543798 은 3번째지만
+/// 뒤쪽 항목들의 순서가 서로 다르다).
+pub const HWP5_DOC_DATA_KEY_PRINT_METHOD: u32 = 0x0006_4006;
+
+/// 이 인쇄 방식이 **모아 찍기**(한 장에 여러 쪽)인지.
+///
+/// 한글 2020 실측(코퍼스 표본 1건씩, COM `FileSaveAs` PDF):
+///
+/// | 값 | 한글 출력 | rhwp 출력 |
+/// |---|---|---|
+/// | 0 · 1 · 3 | 세로, 쪽수 일치 | 일치 |
+/// | **4** | **2쪽 841×595 가로** | 4쪽 세로 |
+/// | **5** | **1쪽 841×595 가로** | 3쪽 세로 |
+///
+/// 즉 0·1·3 은 용지 기하에 영향이 없고 4·5 만 장 수·방향을 바꾼다.
+pub fn print_method_implies_nup(print_method: Option<u32>) -> bool {
+    matches!(print_method, Some(4) | Some(5))
 }
 
 /// 본문의 구역 (Section)
@@ -236,10 +280,14 @@ pub struct Section {
     /// 원본 BodyText 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     /// 편집 시 None으로 초기화하여 재직렬화 유도
     pub raw_stream: Option<Vec<u8>>,
+    /// [#4488] raw_stream 출처 봉인 — 파싱(+로드 픽스업) 완료 시점의 모델 상태와
+    /// 원본 바이트의 다이제스트 쌍. 저장 시 둘 다 일치할 때만 raw 를 재사용한다.
+    /// 계약 전문은 `model::raw_provenance` 모듈 주석.
+    pub raw_provenance: Option<crate::model::raw_provenance::SectionSeal>,
 }
 
 /// 구역 정의 (HWPTAG_CTRL_HEADER - 'secd')
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct SectionDef {
     /// 속성 비트 플래그
     pub flags: u32,
@@ -280,6 +328,14 @@ pub struct SectionDef {
     pub hide_border: bool,
     /// 배경 감추기
     pub hide_fill: bool,
+    /// [#5717] 구역 첫 쪽에만 테두리 표시 (HWP5 flags bit 8, HWPX visibility
+    /// `border="SHOW_FIRST"`). 한글 2022 실측 — 켜지면 쪽 테두리를 구역 첫 쪽에만
+    /// 그린다(꺼진 [X,1,1] 테두리 문서는 전 쪽에 그린다: 156494214 3/3쪽).
+    pub first_page_border: bool,
+    /// [#5717] 구역 첫 쪽에만 배경 표시 (HWP5 flags bit 9, HWPX visibility
+    /// `fill="SHOW_FIRST"`). 성북구 자원순환집행계획 실측: bit9 문서의 남색 배경을
+    /// 한글은 1쪽에만, rhwp 는 172쪽 전부에 칠했다.
+    pub first_page_fill: bool,
     /// 빈 줄 감추기 (bit 19): 페이지 시작 부분의 빈 줄 2개까지 높이 0 처리
     pub hide_empty_line: bool,
     /// 텍스트 방향 (0: 가로, 1: 세로)
@@ -319,16 +375,28 @@ impl Document {
     /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
     /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
     /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다. `native_hwp5_layout`은
-    /// HWP5 컨테이너이면서 HWP3/HWPX 변환 계보가 없는 경우에만 true다.
+    /// 변환 계보가 없는 원본 HWP5 컨테이너에만 true다. HWP5-origin HWPX는
+    /// `hwp5_stored_pagination_layout`으로 별도 호환 계약을 적용한다.
     pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
         use crate::model::provenance::SourceFormat;
         let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
+        // 원본 HWP3→HWPX 는 hwp3-origin 마커만 있다. lineage 만으로 hwp3_layout
+        // 을 켜면 HWP3→HWP5 변환본 전용 계약(spacing_before *2 등)이 직파싱
+        // HWP3(hwp3_layout=false, native=true)와 어긋나 sample16은 64→65,
+        // sample11은 151→152로 갈라진다 (#3518, #3737). 그 산출물은 native HWP3와
+        // 같은 레이아웃 계약을 쓰며, HWP3→HWP5 변환본의 HWPX는 hwp5-origin
+        // 마커가 함께 있어 제외한다.
+        let native_hwp3_hwpx = self.provenance.format == SourceFormat::Hwpx
+            && self.hwpx_aux_entry(HWP3_ORIGIN_HWPX_MARKER_PATH).is_some()
+            && !hwp5_origin_hwpx;
         crate::model::provenance::LayoutCompatibilityProfile::new(
-            self.provenance.hwp3_lineage,
-            self.provenance.format == SourceFormat::Hwp3,
-            (self.provenance.format == SourceFormat::Hwpx && !hwp5_origin_hwpx)
+            self.provenance.hwp3_lineage && !native_hwp3_hwpx,
+            self.provenance.format == SourceFormat::Hwp3 || native_hwp3_hwpx,
+            (self.provenance.format == SourceFormat::Hwpx
+                && !hwp5_origin_hwpx
+                && !native_hwp3_hwpx)
                 || self.provenance.hwpx_lineage,
-            self.provenance.format == SourceFormat::Hwpx,
+            self.provenance.format == SourceFormat::Hwpx && !native_hwp3_hwpx,
             hwp5_origin_hwpx,
             self.provenance.format == SourceFormat::Hwp5
                 && !self.provenance.hwp3_lineage

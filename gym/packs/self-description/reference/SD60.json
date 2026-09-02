@@ -1,0 +1,16 @@
+{
+  "id": "SD60",
+  "steps": [
+    {
+      "answer": {
+        "schemaVersion": {
+          "cmd": [
+            "export-ontology",
+            "--json"
+          ],
+          "path": "schemaVersion"
+        }
+      }
+    }
+  ]
+}

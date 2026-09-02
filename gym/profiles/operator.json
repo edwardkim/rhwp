@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "operator",
+  "title": "운영자",
+  "description": "무더기를 다루고 이상을 좁히는 능력 — 코퍼스 스윕·진단·자동화.",
+  "packs": [
+    "corpus-diagnostics",
+    "automation"
+  ]
+}

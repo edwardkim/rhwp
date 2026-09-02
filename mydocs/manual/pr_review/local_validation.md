@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-10
+last_verified: 2026-08-30
 ---
 
 # 로컬 사전 검증
@@ -33,12 +33,125 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 전체 Rust 회귀의 기본 명령은 다음과 같다. 같은 `target/pr-review`를 사용하는 Cargo 계열 명령은 반드시
 앞 명령의 종료를 확인한 뒤 실행한다.
 
+검토 명령에는 `--locked`를 넣어 Cargo가 검토 checkout의 `Cargo.lock`을 갱신하지 못하게 한다.
+`run-rust-test.mjs`도 이를 기본 적용한다. lockfile 자체를 의도적으로 바꾸는 의존성 갱신 작업만 별도
+검증에서 이 규칙을 벗어날 수 있다.
+
+`wasm-pack`은 Cargo build 전에 별도 metadata를 실행하므로, WASM 검증은 raw `wasm-pack build` 대신
+아래 wrapper를 사용한다. wrapper는 두 Cargo 호출 모두에 `--locked`를 적용한다.
+
+```bash
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+```
+
+반복 검증에는 macOS/Linux 셸에서 다음 alias를 사용할 수 있습니다.
+
+```bash
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+rhwp-wasm-build
+```
+
+Windows PowerShell에서는 native wrapper를 사용합니다.
+
+```powershell
+$env:CARGO_TARGET_DIR = 'target\pr-review'
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
+Remove-Item Env:CARGO_TARGET_DIR
+```
+
+`cmd.exe`에서는 아래 `doskey` macro로 같은 native wrapper를 현재 세션에 등록할 수 있습니다. 새 `cmd.exe`를
+열면 다시 등록해야 합니다.
+
+```bat
+doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
+set "CARGO_TARGET_DIR=target\pr-review"
+rhwp-wasm-build
+set "CARGO_TARGET_DIR="
+```
+
+문서의 명령은 고정 `--test-threads` 값을 쓰지 않는다. nextest 기본 동시성을 먼저 사용하고, 현재
+host의 논리 CPU·메모리·동시 작업을 확인한 뒤에만 `--test-threads <현재 환경에 맞는 값>`으로 조정한다.
+논리 CPU 확인은 macOS `sysctl -n hw.logicalcpu`, Linux `getconf _NPROCESSORS_ONLN`, PowerShell
+`[Environment]::ProcessorCount`를 사용한다. CPU 수를 그대로 쓰는 것도 의무가 아니며, 메모리가
+부족하거나 다른 작업이 있으면 더 낮은 값을 선택하고 실제 실행 시간을 기록한다.
+
 ~~~bash
-cargo nextest run \
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
+
+`cargo test --profile release-test --tests`는 이 전체 integration 회귀의 대체 명령이 아니다.
+unsharded libtest 경로는 nextest 우선순위, `--no-fail-fast`, 고정 review target 계약을 따르지
+않으므로 전체 integration 검증에는 반드시 위 `cargo nextest run --locked` 명령을 사용한다.
+`cargo test`는 이 문서가 정확한 test target 또는 Native Skia lib 범위를 지정한 focused 명령에만
+쓴다. 실수로 전체 `cargo test`를 시작했다면 중지하고, 그 실행을 검증 결과로 기록하지 않는다.
+
+### integration test source 추가와 자동 sharding
+
+새 회귀·계약 테스트는 `tests/cases/issue_<번호>_<설명>.rs` 또는
+`tests/cases/<계약명>.rs`로 작성한다. 기여 PR은 이 원본만 포함한다. 기여자의 일반 branch checkout에서는
+`--prepare`와 `--check`를 실행하지 않는다. `--check`는 준비된 파생 상태를 검사하므로 새 원본만 있는
+정상 PR checkout에서는 manifest 누락을 보고한다. Cargo는 이 원본 파일을 개별 binary로 자동 발견하지
+않으므로, **PR review 전용 worktree에서만** 다음 준비 단계를 실행한다. 이 단계는 삭제·이름변경을
+동기화하고 신규 source를 현재 weight가 가장 낮은 suite에 배정한 뒤 harness를 작업 checkout에만 만든다.
+기본 `--prepare`는 `Cargo.toml` registry를 바꾸지 않는다.
+
+~~~bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check
+node scripts/run-rust-test.mjs issue_1234_short_description \
+  -- --cargo-profile release-test --target-dir target/pr-review
+~~~
+
+`tests/generated/*.rs`, unit-tier inventory, manifest는 직접 편집하거나 PR에 stage하지 않는다. Cargo generated
+block은 통합 불가 예외 target이 바뀐 메인터너 전용 PR에서만 `--sync-cargo-targets`로 marker 블록만 동기화한다.
+검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
+함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 기여자가
+PR 전 검증으로 실행할 명령은 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`와 변경 범위의
+Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check`도
+실행한다. 이 unit-tier 검사는 파생 파일을 만들지 않는다. 반면 manifest 파생 파일 일치 검사는 review
+worktree와 CI의 책임이다. 경로·crate-root·feature-gated 의존성이 탐지된 source는 기본적으로 singleton
+exception으로 보존한다. module harness 호환성을 실제 실행으로 확인한 경우에만 메인터너가
+`suite-policy.json`의 좁은 `moduleIntegrationOverrides`로 필요한 blocker만 허용해 suite에 배정한다.
+
+제품 소스의 `#[cfg(test)]`는 root `src/`와 내부 `crates/*/src/`의 기존 모듈별 테스트 수와 test
+support 항목을 기준선으로 관리한다.
+`integration_ready`는 공개 integration test 이동 후보, `test_support`는 제한된 지원 API가 필요한 후보,
+`white_box`는 private 구현 불변식으로 남길 후보이다. 다음 검사는 새 모듈·지원 항목 또는 기존 모듈의
+테스트 증가를 실패시키며, 단계적으로 `tests/cases/`로 옮겨 감소하는 변경은 허용한다.
+
+~~~bash
+node --test scripts/tests/rust-unit-test-tiers.test.mjs
+node scripts/rust-unit-test-tiers.mjs --check
+~~~
+
+PR CI는 `github.event.pull_request.base.sha`의 integration manifest를 읽어 현재 source와
+비교한다. unit-tier inventory는 PR base와 현재 source에서 메모리로 재계산한다. 새 최상위 `tests/*.rs`는 generated manifest에 등록해도 실패하며 새 source는
+`tests/cases/` 아래만 허용한다. `--accept-baseline`은 crate 이동에 따른 로컬 경로 기준선 갱신
+도구이지 테스트 수 증가 승인 수단이 아니다. CI는 Git rename으로 확인되는 순수 이동만 대응시키고
+base 대비 module·support item·총 테스트 수 또는 최대값 증가를 실패시킨다.
+
+로컬 전체 nextest와 CI nextest archive는 manifest에서 생성된 root Cargo `[[test]]` target을 사용한다.
+내부 `crates/*`의 lib test는 로컬 workspace `default-members`와 CI의 `Test internal Rust crates` gate가
+실행한다. 따라서 새 일반 test source는 integration binary 수를 늘리지 않고, private white-box test는
+production crate 경계와 함께 독립 binary로 점진 분리할 수 있다.
+
+정상 입력의 parse→serialize→reparse (IrDiff-0, #2740) 는 cargo-fuzz 범위가 아니다.
+그 공백은 M04 property 계층이다. CI 전용 싼 job 은
+`.github/workflows/proptest-roundtrip.yml` 이고, 로컬은 다음으로 같은 필터를 돌린다.
+
+~~~bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/run-prop-roundtrip.mjs --cargo-test
+~~~
+
+`prop_roundtrip_ci` 는 항상 돈다. `prop_edit_plan` / `prop_hwpx_roundtrip` /
+`prop_hwp5_roundtrip` / `prop_m04f_*` 원본이 `tests/cases/` 에 없으면 skip 하고,
+있으면 집는다. 기본 8 cases. 전체 화력은 `PROPTEST_CASES`. 정규 nextest archive
+도 같은 원본을 자동 실행한다. M04-f 변형·스킵 정직 표는
+`tests/fixtures/proptest_m04f/` (`python tools/proptest_roundtrip/gen_m04f_catalogs.py`).
 
 ### 시각 대조용 최신 바이너리 준비는 별도다
 
@@ -54,7 +167,7 @@ RHWP_BIN=target/pr-review/release-test/rhwp \
 
 `cargo build`는 **컴파일 전용 준비 단계**이며 테스트를 실행하지 않는다. 시각 보정 중에는 이 명령으로
 빠르게 최신 SVG를 확인하되, code head가 바뀐 뒤 PR 검증을 완료하려면 위의 전체 `cargo nextest run
-... --tests --no-fail-fast`를 다시 성공시켜야 한다. 하네스 옵션과 기준 PDF provenance는
+... --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast`를 다시 성공시켜야 한다. 하네스 옵션과 기준 PDF provenance는
 [`tools/fidelity_compare/README.md`](../../../tools/fidelity_compare/README.md)를 따른다.
 
 2026-08-09 Linux 검증 호스트(`ubuntu-ted`, Intel Xeon E5640 16 vCPU, RAM 15 GiB)에서 이 명령의 fixed
@@ -63,9 +176,9 @@ target cold run은 build 포함 17분 42초였다. 같은 target을 그대로 �
 test 자체의 실행 시간은 host 부하에 따라 달라지므로, 이 수치는 재컴파일 제거 효과와 해당 시점의 측정값을
 분리해 읽는다.
 
-macOS도 POSIX 명령은 동일하다. 다만 `--test-threads 12`는 12 이상 논리 CPU와 충분한 RAM이 있는 host의
-측정값이다. CPU·RAM이 더 작은 host에서는 `sysctl -n hw.ncpu`와 `sysctl -n hw.memsize`를 확인하고 thread
-수를 논리 CPU 이하로 낮춘다.
+macOS도 POSIX 명령은 동일하다. 과거의 `--test-threads 12` 측정값은 해당 host의 증적일 뿐 기본값이
+아니다. `sysctl -n hw.logicalcpu`와 `sysctl -n hw.memsize`로 현재 환경을 확인하고, 기본 동시성 또는
+사용자가 선택한 값을 쓴다.
 
 Windows는 cargo-nextest가 설치되어 있고 PowerShell 또는 cmd에서 Windows 경로만 일관되게 사용하면 같은
 방식으로 가능하다. 2026-08-09 `win10-ted`의 cmd 환경(4 logical CPU, RAM 8 GiB)에서
@@ -73,15 +186,14 @@ Windows는 cargo-nextest가 설치되어 있고 PowerShell 또는 cmd에서 Wind
 `overflow_cell_baseline` 선택 실행은 cold build 포함 18분 55초(build 12분 27초, test 363.036초), 같은
 target을 재사용한 warm 실행은 6분 11초(build 2.74초, test 359.563초)로 통과했다. Windows 전체 `--tests`
 실행 명령도 아래와 같지만, 이 확인에서는 target 재사용을 직접 검증할 수 있는 장시간 baseline만 실행했다.
-이 host에서는 4 thread를 상한으로 쓴다.
+이 host의 4 thread 측정값은 역사적 증적이며, 다른 Windows host의 기본값이나 상한이 아니다.
 
 ~~~powershell
 Set-Location 'C:\\Users\\admin\\Desktop\\rhwp\\rhwp'
-$env:CARGO_INCREMENTAL = '0'
 cargo nextest run `
   --cargo-profile release-test `
   --target-dir target/pr-review `
-  --tests --test-threads 4 --no-fail-fast
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
 PowerShell의 `target/pr-review`는 Windows에서 정상 경로로 해석된다. WSL 경로와 Windows 경로, 또는 서로
@@ -90,7 +202,7 @@ PowerShell의 `target/pr-review`는 Windows에서 정상 경로로 해석된다.
 ### 장시간 baseline의 조기 실행
 
 `overflow_cell_baseline::overflow_cell_lines_do_not_grow`는 samples 전수를 자체 worker로 검사해 60초를
-넘길 수 있다. `.config/nextest.toml`은 이 binary에 `priority = 100`을 적용한다. nextest는 개별 테스트를
+넘길 수 있다. `.config/nextest.toml`은 generated suite 안의 이 module에 `priority = 100`을 적용한다. nextest는 개별 테스트를
 별도 프로세스로 스케줄하므로, 동일한 nextest run의 시작 시점에 이 long-running baseline을 먼저 배치하면서도
 별도 Cargo 프로세스·별도 target을 병렬로 열지 않는다. `SLOW` 행은 시작 로그가 아니라 60초 경과 알림이므로
 출력 순서만으로 시작 순서를 판단하지 않는다. 2026-08-09 전체 run에서 이 baseline은 시작 뒤 다른 3,923개
@@ -144,15 +256,71 @@ devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict
 
 ## 4.3 변경 범위별 기본 검증
 
+**Rust source 또는 Rust test/baseline helper를 한 줄이라도 바꾼 PR은 아래 lint 묶음이 실패하면 생성하지
+않는다.** 테스트 전용 변경이나 기존 baseline 분할도 예외가 아니다. #6390처럼 test/baseline만
+바꾼 경우에 `fmt`와 focused nextest만 실행하고 Clippy를 GitHub CI에 넘기는 해석이 가능했던 것이
+기존 절차의 결함이었다.
+
+```bash
+# PR review worktree에서만 실행: 파생 suite는 검증 뒤 stage하지 않는다.
+node scripts/rust-test-suite-manifest.mjs --prepare
+cargo fmt --all
+cargo fmt --all -- --check
+cargo clippy --locked --target-dir target/pr-review -- -D warnings
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
+  --target-dir target/pr-review -- -D warnings
+cargo build --locked --workspace --target-dir target/pr-review
+cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+node scripts/rust-test-suite-manifest.mjs --check
+```
+
+이 묶음은 CI `Lint (fmt, clippy, WASM check)`의 Format check, native root Clippy, WASM32
+Clippy, workspace all-target Clippy와 대응한다. CI에만 있는 Node/Python 계약 검사는 변경 범위가
+해당할 때 아래 표와 workflow 전용 절차에 따라 추가한다. `cargo fmt --check` 또는 native
+`cargo clippy` 하나만 실행하면 각각 Format check 또는 WASM·workspace lint 오류를 놓친다.
+
+`src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]`를 변경했을 때만 다음 policy 검사를 위 묶음 뒤에
+추가한다. 이 검사는 파생 파일을 만들지 않는다.
+
+```bash
+node scripts/rust-unit-test-tiers.mjs --check
+```
+
+`--prepare`가 만든 `tests/generated/`와 `tests/suites/manifest.json`은 검증 증적일 뿐 source PR에
+stage하지 않는다. 검증 뒤 review worktree에서만 복원한다.
+
+`PR 준비` 지시는 이 절에서 해당 변경 범위에 지정한 검증을 실제로 실행하는 승인이다. PR 본문 초안,
+review 문서, 오늘할일만 작성하고 이 표의 필수 회귀 게이트를 남겨 두면 준비 완료로 보고하지 않는다.
+사용자가 검증을 명시적으로 축소·생략했을 때만 실행하지 않은 명령과 사유를 PR 기록에 남긴다. 이 승인은
+remote push, PR 생성, ready 전환, merge 승인과는 별개다.
+
 | 변경 범위 | 기본 검증 |
 | --- | --- |
 | mydocs만 변경 | git diff --check, 문서 경로·링크·변경 범위 확인. Cargo 생략 |
-| Rust parser/model/CLI | focused test, release-test 전체, fmt, clippy. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
+| Rust parser/model/CLI | 모든 Rust lint 묶음, focused test, release-test 전체. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
 | renderer/layout/typeset/WASM | focused test, release-test 전체, Native Skia 3종, wasm-pack build, 시각 증적. 단, 4.3.0의 검토 재사용 조건이면 focused test, WASM·시각 증적과 GitHub 전체 CI 근거 |
 | rhwp-studio만 변경 | TypeScript 검사, npm test, 실제 browser 동작 |
 | npm/editor public API·transport·type | 아래 package 검증 |
-| CI workflow | workflow 구문·변경 조건·최신 GitHub Actions 결과 |
-| 기존 golden/baseline/fixture | 관련 focused test, snapshot 결정성, 최신 PR head CI |
+| CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
+| Rust test/baseline helper | 모든 Rust lint 묶음, 관련 focused test, snapshot 결정성, 최신 PR head CI |
+| 기존 golden/baseline/fixture data만 변경 | 관련 focused test, snapshot 결정성, 최신 PR head CI. Rust helper도 함께 바꾸면 바로 위 행의 lint 묶음을 추가 |
+
+archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
+아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
+무관한 Node 테스트까지 glob으로 섞지 않는다.
+
+~~~bash
+node --test \
+  scripts/tests/ci-impact-classifier.test.cjs \
+  scripts/tests/ci-impact-policy.test.cjs \
+  scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs \
+  scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
+python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'
+~~~
+
+이 묶음은 archive consumer, CI impact, CodeQL, adapter, proptest, reusable workflow의
+상호 계약을 함께 검사한다. 따라서 새 archive label이나 reusable input을 추가한 PR은
+GitHub CI에서가 아니라 PR을 열기 전에 누락된 consumer를 발견해야 한다.
 
 ### 4.3.0 PR 검토의 GitHub Full CI 재사용
 
@@ -164,6 +332,9 @@ GitHub Full CI가 완료된 code head를 maintainer가 재검토할 때는
 
 - 이 예외는 source·test·fixture·workflow·baseline·asset 보정이 전혀 없고, current-base merge가
   clean 또는 `mydocs/` 한정 bridge인 경우에만 사용한다.
+- maintainer가 Rust source·test·baseline helper 보정을 새 code head에 추가한 경우에는 이전 녹색 CI를
+  lint 생략 근거로 재사용하지 않는다. 위 Rust lint 묶음과 변경 범위 검증을 새 head에서 먼저
+  끝내고 PR을 만든다.
 - focused test, `git diff --check`, 변경 문서 링크 검사, renderer의 실제 WASM/브라우저 시각 검증은
   생략하지 않는다.
 - Docker 등 표준 실행 환경이 없어서 host fallback을 썼다면, 표준 경로를 통과했다고 쓰지 않고
@@ -199,22 +370,35 @@ merge 판단에서는 다음 경계를 적용한다.
 일반 Rust 검증 예시는 다음과 같다. 명령은 같은 checkout에서 동시에 실행하지 않는다.
 
 ~~~bash
-cargo nextest run \
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
-cargo fmt --check
-cargo clippy --all-targets -- -D warnings
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
 ~~~
 
 renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
-cargo test --profile release-test --features native-skia skia --lib
-cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
-cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
-wasm-pack build --target web --out-dir pkg
+cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 ~~~
+
+`native-skia`가 Cargo feature이고 `skia`는 feature가 아니다. 따라서
+`cargo test --features native-skia skia --lib`의 `skia`는 test filter가 되어 전체 회귀를 실행하지 않는다.
+libtest 동시성을 현재 host에 맞춰 조정해야 하면 Cargo 옵션 뒤의 test harness 인자로
+`cargo test ... --features native-skia --lib -- --test-threads <현재 환경에 맞는 값>`을 쓴다.
+
+개별 Rust 통합 fixture는 `tests/generated/regression_suite_*.rs`에 묶이므로, 이전처럼 파일명을
+`cargo test --test`에 직접 넘기지 않는다. `run-rust-test.mjs`가 manifest에서 실제 suite와 테스트
+필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
+사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
 
 ## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — IR sweep + overflow-cell 원장
 
@@ -223,10 +407,15 @@ draft 해제 전에 **두 baseline 절차**를 수행한다: ① IR field sweep(
 
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
-  cargo test --profile release-test \
-  --test ir_field_sweep_baseline -- --nocapture
+  node scripts/run-rust-test.mjs ir_field_sweep_baseline -- \
+  --cargo-profile release-test --target-dir target/pr-review
 diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.tsv
 ~~~
+
+`ir_field_sweep_baseline.rs`는 standalone Cargo test target이 아니라 generated regression suite에
+포함된다. suite 번호는 manifest 재생성마다 달라질 수 있으므로 고정 번호를 쓰지 않고
+`run-rust-test.mjs`가 현재 manifest에서 module filter를 해석하게 한다. generated suite 파일 자체는
+review 산출물이므로 수정하거나 stage하지 않는다.
 
 - baseline은 fixture 목록이 아니라 관측된 비영 왕복 발산의 래칫이다. 발산이 없으면 행을 억지로 추가하지 않는다.
 - 새 발산은 먼저 RHWP_IR_SWEEP_DETAIL로 원본값·재생성값을 확인한다. 의도된 정규화임을 증명한 경우에만
@@ -243,10 +432,15 @@ diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.t
 
 ~~~bash
 RHWP_OVERFLOW_CELL_DUMP=/tmp/overflow_cell_current.tsv \
-  cargo test --profile release-test \
+  cargo test --locked --profile release-test --target-dir target/pr-review \
   --test overflow_cell_baseline -- --nocapture
+LC_ALL=C cat /tmp/overflow_cell_current.tsv.part??-of16 | \
+  LC_ALL=C sort > /tmp/overflow_cell_current.tsv
 diff -u tests/fixtures/overflow_cell_baseline.tsv /tmp/overflow_cell_current.tsv
 ~~~
+
+`overflow_cell_baseline`은 16개 partition test가 병렬로 dump를 쓰므로, 지정한 경로 자체가 아니라
+`<경로>.part00-of16`부터 `.part15-of16`까지를 사전순 병합한 파일을 비교한다.
 
 - 원장은 0 이 아닌 문서만 `상대경로\t줄수` 사전순으로 기록한다. 0 인 문서는 행을 만들지 않는다.
 - **원인 정정이 원칙이다** — 소실 줄은 사용자에게 보이지 않는 콘텐츠(#3236 계열)이므로,
@@ -271,30 +465,33 @@ iframe RPC 완료 시점이나 기본 옵션이 바뀌면 fresh WASM build와 �
 embed E2E를 추가한다. 기본값 변경은 옵션을 생략한 smoke에서도 loadFile 완료와 페이지 수를 기록한다.
 
 ~~~bash
-wasm-pack build --target web --out-dir pkg
+# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
+docker compose --env-file .env.docker run --rm wasm
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ~~~
 
 대형 복합 변경 또는 승인된 전체 검증은 build, release lib, release-test, Native Skia 3종, fmt,
-diff check, clippy, doc test, TypeScript, npm test, wasm-pack을 이 순서로 실행한다.
+diff check, clippy, doc test, TypeScript, npm test, 표준 Docker WASM build를 이 순서로 실행한다.
 
 ~~~bash
-cargo build --release
-cargo test --release --lib
-cargo nextest run \
+cargo build --locked --release --target-dir target/pr-review
+cargo test --locked --release --target-dir target/pr-review --lib
+cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads 12 --no-fail-fast
-cargo test --profile release-test --features native-skia skia --lib
-cargo test --profile release-test --features native-skia --test issue_2225_missing_picture_placeholder
-cargo test --profile release-test --features native-skia --test render_p37_direct_pdf_export
-cargo fmt --check
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
+cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
+  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+cargo fmt --all -- --check
 git diff --check
-cargo clippy --all-targets -- -D warnings
-cargo test --doc
+cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings
+cargo test --locked --doc --target-dir target/pr-review
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
-wasm-pack build --target web --out-dir pkg
+docker compose --env-file .env.docker run --rm wasm
 ~~~
 
 각 명령은 앞 명령이 끝난 뒤 실행한다. 실패하면 뒤 명령으로 건너뛰어 전체 통과처럼 기록하지 않는다.
@@ -328,3 +525,20 @@ git branch -D prN-merge-test
 merge가 시작되지 않았거나 Already up to date면 abort는 생략한다. 이 절은 simulation branch만 정리한다.
 fetch branch, review branch, docs-only branch, worktree, 검토 전용 target은 review 종료 뒤
 [merge 후속 처리](post_merge.md)의 최종 종료 게이트에서 정리한다.
+
+## 4.5 전체 Rust 회귀 sharding 실측
+
+2026-08-16 macOS에서 `target/pr-review`, release-test profile, test thread 8개로 weighted
+sharding 전체 회귀를 실행했다. `CARGO_INCREMENTAL=0`은 지정하지 않았다.
+
+- integration target: 40개(32개 generated suite와 singleton exception 8개)
+- 전체 Rust suite: 44개(lib/bin 4개 포함)
+- 컴파일: 3분 39초
+- 전체 wall time: 407.56초
+- `nextest list`: 6,541개, ignored 38개, runnable 6,503개
+- 전체 실행: 종료 코드 0, 실패 0건
+- warm `nextest list`: 0.19초
+
+신규 회귀 test source는 `tests/cases/`에만 추가한다. PR review는
+`node scripts/rust-test-suite-manifest.mjs --prepare`로 기존 suite에 자동 배정한 뒤 검증하며,
+generated 파일은 커밋하지 않는다.

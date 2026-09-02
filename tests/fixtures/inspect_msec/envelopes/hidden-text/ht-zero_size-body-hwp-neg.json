@@ -1,0 +1,42 @@
+{
+  "id": "ht-zero_size-body-hwp-neg",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "zero_size",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "HiddenKind::ZeroSize",
+    "note": "모르면 잡지 않는다. 음성 짝이 없는 양성은 자명한 오답을 통과시킨다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/zero_size/body.hwp",
+      "synth:hidden-text/zero_size/body-near-miss.hwp"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "field": "hiddenText",
+    "emptyArrayNotMissing": true
+  },
+  "pair": "ht-zero_size-body-hwp-pos",
+  "why": "0pt 글자 음성 짝. 실효 0.1pt 는 zero_size 가 아니라 near_invisible 후보.",
+  "note": "양성만 있으면 '전부 은닉' 구현도 통과한다.",
+  "human": "은닉 텍스트 없음: synth:hidden-text/zero_size/body-near-miss.hwp (탐지 0건)\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/zero_size/body-near-miss.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [],
+    "hiddenCharCount": 0,
+    "clean": true
+  }
+}

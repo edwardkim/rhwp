@@ -1,0 +1,17 @@
+{
+  "id": "SD62",
+  "steps": [
+    {
+      "answer": {
+        "defs": {
+          "cmd": [
+            "export-agent-manifest",
+            "--json"
+          ],
+          "path": "irSchema.$defs",
+          "len": true
+        }
+      }
+    }
+  ]
+}

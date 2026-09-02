@@ -1,0 +1,37 @@
+{
+  "id": "T13",
+  "steps": [
+    {
+      "run": [
+        "harness",
+        "init",
+        "{sub:ws}",
+        "--key-id",
+        "gym/core",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "harness",
+        "wrap",
+        "--plan",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"{sub:_o.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"하네스1\"}]}",
+        "--dir",
+        "{sub:ws}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "harness",
+        "wrap",
+        "--plan",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/basic/issue2007_nested_cell_pagination_42065.hwp\", \"output\": \"{sub:_o.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 1, \"col\": 0, \"text\": \"하네스2\"}]}",
+        "--dir",
+        "{sub:ws}",
+        "--json"
+      ]
+    }
+  ]
+}

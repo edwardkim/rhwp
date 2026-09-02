@@ -72,14 +72,24 @@ impl BitmapInfoHeader {
     }
 
     pub fn size(&self) -> usize {
-        let size = match self {
+        // Width/Height/BitCount come straight from the metafile and are
+        // attacker-controlled. `dib_image_size` evaluates the byte-count
+        // formula in `u64` with saturating arithmetic so crafted dimensions
+        // cannot overflow the narrow header integer types (a DoS panic under
+        // debug overflow checks); the read is separately bounded downstream.
+        match self {
             Self::Core(BitmapInfoHeaderCore {
                 width,
                 height,
                 planes,
                 bit_count,
                 ..
-            }) => u32::from((((width * planes * (*bit_count as u16) + 31) & !31) / 8) * height),
+            }) => info::dib_image_size(
+                u64::from(*width),
+                u64::from(*height),
+                u64::from(*planes),
+                *bit_count as u64,
+            ),
             Self::Info(BitmapInfoHeaderInfo {
                 width,
                 height,
@@ -109,15 +119,15 @@ impl BitmapInfoHeader {
             }) => match compression {
                 crate::wmf::parser::Compression::BI_RGB
                 | crate::wmf::parser::Compression::BI_BITFIELDS
-                | crate::wmf::parser::Compression::BI_CMYK => {
-                    ((((*width as u32) * u32::from(*planes) * (*bit_count as u32) + 31) & !31) / 8)
-                        * height.unsigned_abs()
-                }
-                _ => *image_size,
+                | crate::wmf::parser::Compression::BI_CMYK => info::dib_image_size(
+                    u64::from(*width as u32),
+                    u64::from(height.unsigned_abs()),
+                    u64::from(*planes),
+                    *bit_count as u64,
+                ),
+                _ => *image_size as usize,
             },
-        };
-
-        size as usize
+        }
     }
 
     pub fn color_used(&self) -> u32 {

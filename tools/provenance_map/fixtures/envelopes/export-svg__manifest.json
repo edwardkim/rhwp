@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "export-svg__manifest",
+  "command": "export-svg",
+  "family": "export",
+  "mode": "manifest",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp export-svg <파일> --json ",
+  "whyThisMode": "본문은 SVG 파일 쪽",
+  "sampleKind": "typical",
+  "risk": "low",
+  "note": "매니페스트는 산출 경로·바이트·쪽수뿐이다. 문서 텍스트는 SVG 파일 안에 있고 봉투에는 없다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "output": "C",
+    "bytes": "R",
+    "pageCount": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "경로만 소비. SVG 텍스트를 프롬프트에 넣지 않는다.",
+  "trap": "이 자리를 고치지 않는다. SVG 렌더는 다른 석.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "tool_arg_path",
+    "tool_arg_output",
+    "filename_from_title"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-export-svg.hwp",
+    "output": "caller:export-svg:output",
+    "bytes": 0,
+    "pageCount": 0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

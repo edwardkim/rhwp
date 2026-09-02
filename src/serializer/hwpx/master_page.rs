@@ -33,10 +33,20 @@ fn master_page_type_str(mp: &MasterPage) -> &'static str {
     }
 }
 
-/// pageDuplicate 문자열 (parser 의 역). LAST_PAGE 는 replace_base 면 "0", 그 외 overlap 기준.
+/// pageDuplicate 문자열 (parser 의 역). 확장 바탕쪽은 replace_base 면 "0", 그 외 overlap 기준.
+///
+/// [#6323] 종전에는 첫 가지가 `ext_flags & 0x04 == 0`(LAST_PAGE 전용)이라 OPTIONAL_PAGE 가
+/// `overlap` 가지로 떨어졌다. 파서는 확장 바탕쪽의 `overlap` 을 `pageDuplicate` 와 무관하게
+/// 항상 `true` 로 세우므로, `pageDuplicate="0"` 으로 읽은 OPTIONAL_PAGE 를 저장하면
+/// `"1"` 이 되어 **원본과 다른 문서**가 나왔다. 재파싱하면 `replace_base` 가 false 로
+/// 뒤집혀 바탕쪽이 대체되지 않고 덧그려진다(`visual_roundtrip_baseline` 구조 불일치).
+///
+/// 파서가 `is_last_page || is_optional_page` 로 `replace_base` 를 세우므로 이쪽도 같은
+/// 경계를 쓴다 — `is_extension` 이면 `replace_base` 가 권위이고, 기본 바탕쪽만 `overlap`
+/// 을 본다.
 fn page_duplicate_str(mp: &MasterPage) -> &'static str {
-    if mp.is_extension && mp.ext_flags & 0x04 == 0 {
-        // LAST_PAGE
+    if mp.is_extension {
+        // LAST_PAGE · OPTIONAL_PAGE
         if mp.replace_base {
             "0"
         } else {

@@ -1,0 +1,26 @@
+{
+  "id": "SD03",
+  "tier": 2,
+  "title": "에이전트 매니페스트",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 의 에이전트 매니페스트에서 **미충족 축(missingAxes)** 개수를 answer.json 에 {\"missing\": N} 으로 제출하라. 힌트: rhwp export-agent-manifest.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "미충족 축 수",
+      "op": "len_answer_eq",
+      "answer": "missing",
+      "path": "missingAxes",
+      "cmd": [
+        "export-agent-manifest",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

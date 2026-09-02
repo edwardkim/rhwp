@@ -1,0 +1,107 @@
+[
+  {
+    "key": "pr6281-issue6266",
+    "hwp": "samples/issue6266/seizure_list_form_button.hwp",
+    "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6281_issue6266_seizure_list_form_button-2020.pdf",
+    "requested_pages": [
+      1
+    ],
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "run_state": "complete",
+    "run_manifest": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/run_manifest.json",
+    "exported_svg_pages": 1,
+    "exported_render_tree_pages": 1,
+    "exported_pdf_pages": 1,
+    "rasterized_svg_pages": 1,
+    "rasterized_pdf_pages": 1,
+    "svg_pages": 1,
+    "render_tree_pages": 1,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "contact_sheet": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/contact_sheet.png",
+    "overlay_contact_sheet": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/review_contact_sheet.png",
+    "analysis_dir": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/analysis",
+    "overlay_dir": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/overlay",
+    "review_dir": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 0.0,
+          "separatorBelowMm": 0.0,
+          "betweenNotesMm": 1.002,
+          "separatorEnabled": true,
+          "separatorLengthMm": 49.953,
+          "rawSeparatorMarginTopMm": 0.0,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 0.0,
+          "rawUnknownMm": 1.002
+        },
+        "endnote": {
+          "separatorAboveMm": 0.0,
+          "separatorBelowMm": 0.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": false,
+          "separatorLengthMm": 0.0,
+          "rawSeparatorMarginTopMm": 0.0,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 0.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 97.00503,
+      "worst_pixel_match_percent": 97.00503,
+      "average_ink_match_percent": 10.33174,
+      "worst_ink_match_percent": 10.33174,
+      "average_visual_accuracy_proxy_percent": 10.33174,
+      "worst_visual_accuracy_proxy_percent": 10.33174,
+      "worst_pages": [
+        1
+      ]
+    },
+    "overlay_metrics_json": "output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "column_text_flow_collapse_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [
+        1
+      ],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [],
+      "deferred_square_picture_top_drift_pages": [],
+      "right_table_left_strip_text_deficit_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/home/tsjang/rhwp/output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/analysis/metrics.json",
+      "question_flow_json": "/home/tsjang/rhwp/output/visual_sweep_planet6897_open_ci_20260828/pr6281_issue6266/pr6281-issue6266/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

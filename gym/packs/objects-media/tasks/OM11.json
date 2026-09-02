@@ -1,0 +1,27 @@
+{
+  "id": "OM11",
+  "tier": 2,
+  "title": "두 번째 필드 유형",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 서식의 **두 번째** 필드 유형(fieldType)을 answer.json 에 {\"type\": \"...\"} 으로 제출하라. 첫 필드(OM08)가 아니라 fields[1] 이다. 힌트: rhwp fields 의 fields[1].fieldType.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "두 번째 필드 유형",
+      "op": "answer_eq",
+      "answer": "type",
+      "path": "fields[1].fieldType",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

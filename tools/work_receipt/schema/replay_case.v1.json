@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.work_receipt.replay_case.v1",
+  "title": "replay 영수증 케이스",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "ident",
+    "plan",
+    "planText",
+    "planSha256",
+    "expected"
+  ],
+  "properties": {
+    "kind": {
+      "const": "workReceiptReplayCase"
+    },
+    "expected": {
+      "type": "object",
+      "required": [
+        "attest",
+        "verify_ok",
+        "verify_mismatch"
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s208-size-1024x768",
+  "width": 1024.0,
+  "height": 768.0,
+  "contract": "페이지 치수 1024x768 가 begin_page 에 그대로 찍힌다",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 10.0,
+      "h": 10.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle"
+  ],
+  "expectedTrace": [
+    "begin_page 1024.00x768.00",
+    "  rectangle bbox=0.00,0.00,10.00,10.00",
+    "end_page ops=1"
+  ]
+}

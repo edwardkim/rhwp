@@ -2,6 +2,8 @@
 //! `O(row_count × cells.len())` 이던 문제(#2751 의 import 경로 잔여).
 //! `RowCount` 만 크게 부풀리고 `CELL` 은 정상 개수인 입력(뷰어가 여는 "멀쩡한"
 //! 문서)이 파싱 자체를 느리게 만들지 않아야 한다.
+//! 500ms 벽시계 예산은 생성 suite 의 형제 테스트와 한 프로세스에서 재면 부하에
+//! 흔들린다. 전용 cargo target 으로 격리한다 (#6308). 상한 자체는 올리지 않는다.
 
 use rhwp::parser::hml::parse_hml;
 use std::time::Instant;

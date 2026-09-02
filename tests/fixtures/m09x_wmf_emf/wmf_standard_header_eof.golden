@@ -1,0 +1,9 @@
+# M09x wmf golden — current-engine lock
+kind: wmf
+bytes: 24
+
+=== header ===
+standard type=MEMORYMETAFILE version=METAVERSION300 objects=0
+
+=== svg ===
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"></svg>

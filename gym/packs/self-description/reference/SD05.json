@@ -1,0 +1,23 @@
+{
+  "id": "SD05",
+  "steps": [
+    {
+      "answer": {
+        "classes": {
+          "cmd": [
+            "export-ontology",
+            "--json"
+          ],
+          "path": "classCount"
+        },
+        "properties": {
+          "cmd": [
+            "export-ontology",
+            "--json"
+          ],
+          "path": "propertyCount"
+        }
+      }
+    }
+  ]
+}

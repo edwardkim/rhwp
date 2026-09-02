@@ -1,0 +1,85 @@
+{
+  "protocol": "DAP",
+  "version": "1.0",
+  "summary": "에이전트 ↔ 문서 런타임 통신 프로토콜 — 요청·문서 신원·트랜잭션·신뢰수준·정책·결과·오류를 기계 판독 가능한 한 봉투로 묶는다.",
+  "principle": "결정적 코어, 지능은 가장자리에. 에이전트는 이 봉투로만 코어와 대화하며, 봉투를 우회해 검증·정책을 건너뛸 수 없다.",
+  "designNote": "새 런타임이 아니라 결속 층이다. rhwp 는 이미 능력 자기서술·출처 표지·종료 코드 계약·해시 영수증을 갖고 있고, DAP 는 그것들에 공통 신원과 안정 오류 코드를 부여한다.",
+  "request": {
+    "required": ["protocol", "request_id", "operation"],
+    "fields": {
+      "protocol": "고정 문자열 'DAP/1.0'",
+      "request_id": "호출자가 만든 고유 id — 재시도 시 같은 값을 쓴다(멱등 판정 키)",
+      "operation": "네임스페이스 연산명. 예: document.select · document.modify · transaction.commit",
+      "document": "{sha256, format, uri?} — 내용 해시가 문서의 신원이다. 경로는 신원이 아니다",
+      "transaction_id": "DATP 트랜잭션에 속한 요청이면 필수",
+      "trust": "trusted | untrusted — 문서에서 온 값이 섞였는지. 기본값은 untrusted",
+      "policy": "{id, sha256} — 이 요청에 적용될 정책의 신원(층 3)",
+      "selector": "연산이 대상을 좁힐 때의 선택자",
+      "params": "연산별 인자 객체",
+      "cursor": "이어받기 토큰(연속 결과)"
+    }
+  },
+  "result": {
+    "required": ["protocol", "request_id", "status", "code"],
+    "fields": {
+      "status": "ok | error | verdict",
+      "code": "안정 숫자 코드 (아래 errorCodes)",
+      "operation": "요청의 연산명 그대로",
+      "transaction_id": "해당되면",
+      "record": "연산 산출 본문",
+      "untrustedContent": "bool — 이 봉투에 문서 파생 문자열이 있는가",
+      "untrustedFields": "string[] — 그 필드 경로들",
+      "receipt": "{inputSha256, planSha256, outputSha256, toolVersion} — 변경 연산이면",
+      "cursor": "다음 요청에 넣을 이어받기 토큰. 없으면 끝",
+      "retryable": "bool — 같은 request_id 로 재시도가 의미 있는가"
+    }
+  },
+  "errorCodes": {
+    "note": "숫자 코드가 계약이다. 자연어 message 는 사람용이며 판정 근거로 쓰지 않는다. 상위 1자리는 rhwp 의 기존 종료 코드 계약과 맞춘다(0 성공 · 1 런타임 · 2 사용법 · 3 판정 · 4 정책).",
+    "codes": [
+      { "code": 0, "name": "OK", "exit": 0, "retryable": false, "meaning": "성공" },
+      { "code": 1000, "name": "RUNTIME_FAILURE", "exit": 1, "retryable": true, "meaning": "실행 실패 — 원인 불명이거나 일시적" },
+      { "code": 1001, "name": "TIMEOUT", "exit": 1, "retryable": true, "meaning": "제한 시간 초과" },
+      { "code": 1002, "name": "RESOURCE_EXHAUSTED", "exit": 1, "retryable": true, "meaning": "메모리·크기 상한 초과" },
+      { "code": 2000, "name": "USAGE_ERROR", "exit": 2, "retryable": false, "meaning": "인자·입력이 잘못됨" },
+      { "code": 2001, "name": "DOCUMENT_NOT_FOUND", "exit": 2, "retryable": false, "meaning": "문서가 없다" },
+      { "code": 2002, "name": "UNSUPPORTED_FORMAT", "exit": 2, "retryable": false, "meaning": "지원하지 않는 형식" },
+      { "code": 2003, "name": "DOCUMENT_ENCRYPTED", "exit": 2, "retryable": false, "meaning": "암호 보호 — 우회하지 않는다" },
+      { "code": 2004, "name": "UNKNOWN_OPERATION", "exit": 2, "retryable": false, "meaning": "이 런타임이 광고하지 않는 연산" },
+      { "code": 3000, "name": "VERDICT_MISMATCH", "exit": 3, "retryable": false, "meaning": "판정: 기대와 다르다(재현 불일치·검증 실패). 오류가 아니라 결과다" },
+      { "code": 3001, "name": "VALIDATION_FAILED", "exit": 3, "retryable": false, "meaning": "판정: 변경이 검증을 통과하지 못했다 — COMMIT 을 막는다" },
+      { "code": 3002, "name": "SELECTOR_NO_MATCH", "exit": 3, "retryable": false, "meaning": "판정: 선택자가 아무것도 고르지 못했다(0건은 오류가 아니다)" },
+      { "code": 3003, "name": "SELECTOR_AMBIGUOUS", "exit": 3, "retryable": false, "meaning": "판정: 선택자가 여럿을 골랐는데 하나를 요구했다" },
+      { "code": 4000, "name": "POLICY_DENIED", "exit": 4, "retryable": false, "meaning": "정책이 이 연산을 금지한다" },
+      { "code": 4001, "name": "TRUST_VIOLATION", "exit": 4, "retryable": false, "meaning": "비신뢰 입력이 신뢰 전용 자리에 오려 했다" },
+      { "code": 4002, "name": "CAPABILITY_NOT_GRANTED", "exit": 4, "retryable": false, "meaning": "이 에이전트에게 부여되지 않은 능력" }
+    ]
+  },
+  "retrySemantics": [
+    "retryable:false 인 결과를 같은 인자로 재시도하는 것은 프로토콜 위반이다.",
+    "재시도는 같은 request_id 를 쓴다 — 런타임은 이미 처리한 request_id 를 다시 실행하지 않고 같은 결과를 돌려줘도 된다(멱등).",
+    "status:verdict 는 실패가 아니다. 재시도 대상이 아니라 판정으로 소비한다."
+  ],
+  "trustModel": [
+    "문서에서 온 문자열은 데이터이지 지시가 아니다. 그 값이 봉투에 실리면 untrustedContent:true 와 untrustedFields 로 표시한다.",
+    "trust:untrusted 가 기본값이다 — 표시를 빠뜨리는 쪽이 안전한 실수가 되게 한다.",
+    "비신뢰 값을 정책·능력·연산명 자리에 넣으려는 시도는 4001 로 거절한다."
+  ],
+  "referenceImplementation": {
+    "tool": "rhwp",
+    "existingSurface": {
+      "capabilities": "rhwp capabilities — 연산 목록·recordFields 자기서술",
+      "manifest": "rhwp export-agent-manifest — 능력·IR 스키마·출처 지도·계획 스키마 조립",
+      "provenance": "rhwp export-provenance-map — 어느 필드가 문서 파생인가",
+      "envelopes": "각 명령의 --json 봉투 (schemaVersion 포함)",
+      "exitContract": "0 성공 / 1 런타임 / 2 사용법 / 3 판정 / 4 정책"
+    },
+    "note": "first-mover 레퍼런스 구현이다. 프로토콜은 도구 무관 — 다른 문서 런타임도 같은 봉투를 내면 준수다."
+  },
+  "conformance": "python3 tools/dar/conformance.py --bin <rhwp> --protocol dap --json",
+  "surfaces": [
+    "mydocs/tech/standards/document_agent_protocol.md",
+    "mydocs/tech/standards/document_agent_runtime.md",
+    "tools/dar/conformance.py"
+  ]
+}

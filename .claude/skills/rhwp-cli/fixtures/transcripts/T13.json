@@ -1,0 +1,9 @@
+{
+  "id": "T13",
+  "utterance": "몇 쪽이야",
+  "command": "info",
+  "note": "--json pageCount",
+  "pageZeroBased": true,
+  "newCli": false,
+  "gym": false
+}

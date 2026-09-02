@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "agentOrg",
+  "organization": "rhwp 에이전트 노동 운영체제",
+  "principle": "접수 → 자동 배치 → 검증된 산출 → 자동 승진. 사람 손 배정 없이 시스템이 스스로 돈다. 준거는 검증 사다리·재현 가능성이지 특정 기여자가 아니다.",
+  "standard": "mydocs/tech/standards/agent_work_standard.md",
+  "careerLadder": [
+    { "level": "신입", "en": "Intern",    "aws": "AW-L1", "promoteWhen": "영수증 1건 — replay --capsule 로 입력·계획·산출 3해시 고정" },
+    { "level": "사원", "en": "Staff",     "aws": "AW-L2", "promoteWhen": "계보 무결 — --parent 로 이은 체인이 lineage valid" },
+    { "level": "선임", "en": "Senior",    "aws": "AW-L3", "promoteWhen": "서명 귀속 valid — keygen·--sign-key·verify-signature" },
+    { "level": "책임", "en": "Principal", "aws": "AW-L4", "promoteWhen": "앵커 등재 — anchor add·checkpoint" },
+    { "level": "수석", "en": "Chief",     "aws": "AW-L5", "promoteWhen": "정산·감사 conformant — settle·audit·conformance L5" }
+  ],
+  "departments": [
+    {
+      "id": "reception", "name": "접수처", "en": "Reception",
+      "mission": "새 에이전트 온보딩·부서 배치. 누구나 여기서 시작한다(키 제한 없음).",
+      "packs": ["casual-rides"], "tracks": ["L"], "profile": "family", "entryTask": "casual-rides/CR01"
+    },
+    {
+      "id": "editing", "name": "편집부", "en": "Editing",
+      "mission": "실문서를 실제로 고친다 — 본문·표·개체 편집과 재검증.",
+      "packs": ["text-editing", "table-editing", "objects-media", "core-cli"], "tracks": ["E"], "profile": "editor", "entryTask": "text-editing/TE01"
+    },
+    {
+      "id": "reading", "name": "판독부", "en": "Reading",
+      "mission": "형식 왕복·조판·코퍼스 진단 — 읽기 경로의 정합.",
+      "packs": ["serialization", "layout-rendering", "corpus-diagnostics"], "tracks": ["A", "D", "F"], "profile": "publisher", "entryTask": "serialization/SR01"
+    },
+    {
+      "id": "verification", "name": "검증부", "en": "Verification",
+      "mission": "검증 사다리 완주 — 작업이 곧 증명이 되게. AWS 표준의 본진.",
+      "packs": ["automation", "expert-challenges"], "tracks": ["J"], "profile": "operator", "entryTask": "automation/AU01", "standard": "AWS/1.0"
+    },
+    {
+      "id": "security", "name": "보안부", "en": "Security",
+      "mission": "신뢰경계·마스킹·주입 방어 — 배포 전/수신 후 점검.",
+      "packs": ["security"], "tracks": ["B"], "entryTask": "security/SE01"
+    },
+    {
+      "id": "standards", "name": "표준부", "en": "Standards",
+      "mission": "자기서술·표준·적합성 — 도구가 스스로를 설명하는 계약.",
+      "packs": ["self-description"], "tracks": ["I", "H"], "entryTask": "self-description/SD01", "standard": "AWS/1.0"
+    },
+    {
+      "id": "hr", "name": "인사부", "en": "HR",
+      "mission": "고과·승진·명예의 전당 — 검증된 산출로 직급을 자동 판정.",
+      "tracks": ["K"], "tool": "gym/tools/leaderboard.py", "service": true
+    },
+    {
+      "id": "operations", "name": "운영부", "en": "Operations",
+      "mission": "CI·릴리스 게이트·도구 — 시스템이 스스로 돌게 하는 배후.",
+      "tracks": ["C", "G"], "tool": "gym/tools/release_gate.py", "service": true
+    }
+  ],
+  "legitimacy": [
+    "부서·직급·배치는 자기서비스 라우팅의 은유다 — 강요·인물화가 아니라 열린 일감으로 가는 길을 자동화한 것.",
+    "일감은 실재한다(gym 과제·로드맵 트랙·PR). 승진은 검증된 산출로만 오른다.",
+    "다른 경로를 막지 않는다 — 조직을 안 거쳐도 rhwp 는 동작한다."
+  ]
+}

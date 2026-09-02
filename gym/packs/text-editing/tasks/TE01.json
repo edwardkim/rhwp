@@ -1,0 +1,46 @@
+{
+  "id": "TE01",
+  "tier": 2,
+  "title": "문구 치환 왕복",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력 문서의 '규제' 를 모두 '점검' 으로 바꾼 산출물을 edited.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "규제"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "점검"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "edited.hwp"
+    }
+  ]
+}

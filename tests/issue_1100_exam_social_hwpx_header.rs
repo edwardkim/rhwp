@@ -75,7 +75,11 @@ fn issue_1100_hwpx_header_negative_para_offset_clamped_to_header_origin() {
             let x = attr_f64(tag, "x")?;
             let width = attr_f64(tag, "width")?;
             let height = attr_f64(tag, "height")?;
-            if (x - 77.46666666666667).abs() < 0.01
+            // [축 분리] x 77.47 → 70.67: 전축0 표의 수평 pad 는 진짜 0. 종전 77.47 은
+            // 한글 실측이 아니라 HWP↔HWPX 패리티 자기-핀이었다. 한글 2020/2022 인쇄
+            // PDF p2 실측: 괘선 좌단 70.72/어파인 Δ0.05px, 글리프 잉크 좌단
+            // 73.92/74.27 = 70.67 + 측면여백. mydocs/plans/cell_width_authority.md
+            if (x - 70.66666666666667).abs() < 0.01
                 && (width - 212.54666666666665).abs() < 0.01
                 && (height - 49.13333333333333).abs() < 0.01
             {
@@ -99,8 +103,11 @@ fn issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only() 
 
     let svg = doc.render_page_svg_native(1).expect("render page 2");
 
+    // [축 분리] x 77.47 → 70.67: 한글 2020/2022 인쇄 PDF p2 실측 — 글리프 잉크
+    // 좌단 73.92/74.27px 는 구 원점 77.47 보다 왼쪽이라 구 값은 물리적으로 불가능
+    // (측면여백은 음수가 될 수 없다). 새 원점 + 3.25/3.60px 측면여백으로 정합.
     assert!(
-        has_text_node_at(&svg, 77.46666666666667, 122.42666666666668, "2"),
+        has_text_node_at(&svg, 70.66666666666667, 122.42666666666668, "2"),
         "page auto number must render once at the first placeholder"
     );
     // [#1382] fwSpace 의 x 앵커 100.47 → 103.83: autoNum 폭 축 일관화로 char_shapes
@@ -108,11 +115,11 @@ fn issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only() 
     // 같은 run(charPrIDRef 63)의 스타일로 귀속된다 (종전엔 1유닛 축 경계 탓에 후속
     // run 74 스타일로 잘못 귀속). 본 테스트의 의도(번호 1회 치환 + fwSpace 보존)는 불변.
     assert!(
-        has_text_node_at(&svg, 103.83066666666667, 122.42666666666668, "\u{2007}"),
+        has_text_node_at(&svg, 97.03066666666668, 122.42666666666668, "\u{2007}"),
         "the full-width space after the page auto number must remain a space"
     );
     assert!(
-        !has_text_node_at(&svg, 103.83066666666667, 122.42666666666668, "2"),
+        !has_text_node_at(&svg, 97.03066666666668, 122.42666666666668, "2"),
         "the full-width space after the page auto number must not be replaced by a second page number"
     );
 }

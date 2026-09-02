@@ -1,0 +1,35 @@
+{
+  "id": "AU10",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"1차\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"1차\"}]}",
+        "--capsule",
+        "{sub:capsules/a.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o1.hwp}\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 1, \"col\": 0, \"text\": \"2차\"}]}",
+        "--capsule",
+        "{sub:capsules/b.capsule.json}",
+        "--parent",
+        "{sub:capsules/a.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

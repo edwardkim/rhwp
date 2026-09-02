@@ -1,0 +1,46 @@
+{
+  "id": "XC01",
+  "tier": 5,
+  "title": "사다리 완주 — 적합성 L5",
+  "input": "samples/table-001.hwp",
+  "axis": "자동화",
+  "instructions": "검증 사다리 10년치를 한 제출로 완주하라. 서명한 작업 캡슐을 앵커에 기록하고, 정산 원장까지 남긴 뒤, 적합성 최고 등급 **L5** 판정을 받아라. 제출 폴더에 caps/(서명 캡슐)·keyring.json·anchor.ndjson·policy.json·ledger.ndjson 을 두어라. 한 단계라도 빠지면 L5 는 막힌다.\n힌트: keygen → replay --sign-key → anchor add → settle propose/record → conformance --level L5 --deep.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "caps/work.capsule.json",
+      "keyring.json",
+      "anchor.ndjson",
+      "policy.json",
+      "ledger.ndjson"
+    ]
+  },
+  "checks": [
+    {
+      "name": "L5 완주 (conformant)",
+      "op": "value_eq",
+      "value": "conformant",
+      "path": "verdict",
+      "cmd": [
+        "conformance",
+        "{file:caps}",
+        "--level",
+        "L5",
+        "--deep",
+        "--keyring",
+        "{file:keyring.json}",
+        "--anchor-log",
+        "{file:anchor.ndjson}",
+        "--policy",
+        "{file:policy.json}",
+        "--ledger",
+        "{file:ledger.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

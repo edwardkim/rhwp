@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::fs;
 use std::io::{Cursor, Read};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::diagnostics::hwp5_inventory::{build_inventory, Hwp5InventoryItem};
 use crate::model::control::Control;
@@ -908,6 +908,8 @@ fn control_kind(control: &Control) -> &'static str {
         Control::NewNumber(_) => "NewNumber",
         Control::PageNumberPos(_) => "PageNumberPos",
         Control::Bookmark(_) => "Bookmark",
+        Control::IndexMark(_) => "IndexMark",
+        Control::PageNumCtrl(_) => "PageNumCtrl",
         Control::Hyperlink(_) => "Hyperlink",
         Control::Ruby(_) => "Ruby",
         Control::CharOverlap(_) => "CharOverlap",

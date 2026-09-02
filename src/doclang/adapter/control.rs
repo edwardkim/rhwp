@@ -230,6 +230,19 @@ pub(crate) fn convert_control(
             ControlOutcome::empty()
         }
 
+        Control::IndexMark(im) => {
+            loss.push(LossEntry {
+                kind: LossKind::Other("indexmark".to_string()),
+                location: ctx.location.to_string(),
+                detail: if im.second_key.is_empty() {
+                    format!("indexmark: {}", im.first_key)
+                } else {
+                    format!("indexmark: {} / {}", im.first_key, im.second_key)
+                },
+            });
+            ControlOutcome::empty()
+        }
+
         Control::Ruby(r) => {
             // 덧말: an annotation rendered above its base text (the base text is in
             // the body run; this carries only the annotation). Rescue the
@@ -295,6 +308,7 @@ pub(crate) fn convert_control(
         Control::AutoNumber(_)
         | Control::NewNumber(_)
         | Control::PageNumberPos(_)
+        | Control::PageNumCtrl(_)
         | Control::PageHide(_) => ControlOutcome::empty(),
     }
 }

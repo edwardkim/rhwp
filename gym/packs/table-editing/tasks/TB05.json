@@ -1,0 +1,27 @@
+{
+  "id": "TB05",
+  "tier": 1,
+  "title": "전체 표 계수",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 표 개수를 answer.json 에 {\"tables\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 개수",
+      "op": "answer_eq",
+      "answer": "tables",
+      "path": "tableCount",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

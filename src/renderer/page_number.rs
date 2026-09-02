@@ -22,6 +22,9 @@ pub(crate) struct PageNumberAssigner<'a> {
     /// NewNumber 컨트롤이 1건 이상 소비되었는지 여부.
     /// 한컴 호환: NewNumber가 존재하면 첫 발화 전 페이지에는 쪽번호 미표시.
     numbering_started: bool,
+    /// 직전 [`assign`](Self::assign) 호출에서 NewNumber 가 발화했는지 여부.
+    /// 구역 간 carry 를 재시작 지점 앞에서 멈추는 데 쓴다 (Issue #6206).
+    last_restarted: bool,
 }
 
 impl<'a> PageNumberAssigner<'a> {
@@ -32,6 +35,7 @@ impl<'a> PageNumberAssigner<'a> {
             consumed: HashSet::new(),
             counter: initial,
             numbering_started: false,
+            last_restarted: false,
         }
     }
 
@@ -40,6 +44,7 @@ impl<'a> PageNumberAssigner<'a> {
     /// 한 페이지에 적용 가능한 NewNumber 가 여러 개 있어도 **마지막 1개만** 적용한다
     /// (소유 문단 인덱스 오름차순 — Vec 순서대로 평가하면 자연히 마지막이 우선).
     pub fn assign(&mut self, page: &PageContent) -> u32 {
+        self.last_restarted = false;
         for (idx, &(nn_pi, nn_num)) in self.new_page_numbers.iter().enumerate() {
             if self.consumed.contains(&idx) {
                 continue;
@@ -48,11 +53,19 @@ impl<'a> PageNumberAssigner<'a> {
                 self.counter = nn_num as u32;
                 self.consumed.insert(idx);
                 self.numbering_started = true;
+                self.last_restarted = true;
             }
         }
         let assigned = self.counter;
         self.counter += 1;
         assigned
+    }
+
+    /// 직전 [`assign`](Self::assign) 이 NewNumber 로 카운터를 재설정했는지.
+    ///
+    /// 재시작 값은 절대값이므로 그 페이지부터는 구역 carry 를 더하면 안 된다 (Issue #6206).
+    pub fn last_restarted(&self) -> bool {
+        self.last_restarted
     }
 
     /// 다음 페이지에 적용될 카운터 값 (구역 carry 용).
@@ -115,6 +128,7 @@ mod tests {
         PageContent {
             page_index: 0,
             page_number: 0,
+            page_number_restarted: false,
             section_index: 0,
             layout: mk_layout(),
             column_contents: vec![ColumnContent {
@@ -127,6 +141,8 @@ mod tests {
                 wrap_around_paras: Vec::new(),
                 used_height: 0.0,
                 wrap_anchors: std::collections::HashMap::new(),
+                overlay_continuations: Vec::new(),
+                overlay_cuts: Vec::new(),
             }],
             active_header: None,
             active_footer: None,
@@ -135,6 +151,7 @@ mod tests {
             footnotes: Vec::new(),
             active_master_page: None,
             extra_master_pages: Vec::new(),
+            ladder_band_tables: Vec::new(),
         }
     }
 
@@ -159,14 +176,20 @@ mod tests {
             PageItem::FullParagraph { para_index: 1 },
         ]);
         assert_eq!(a.assign(&p1), 1);
+        // [#6206] 발화하지 않은 쪽은 재시작으로 표시되지 않는다 — 구역 carry 대상이다.
+        assert!(!a.last_restarted());
 
         // page 2: para 5 (트리거) — 10
         let p2 = mk_page(vec![PageItem::FullParagraph { para_index: 5 }]);
         assert_eq!(a.assign(&p2), 10);
+        // [#6206] 발화한 쪽만 재시작으로 표시된다 — 이 쪽부터 carry 를 멈춘다.
+        assert!(a.last_restarted());
 
         // page 3: para 6 — 11 (NewNumber 재적용 금지)
         let p3 = mk_page(vec![PageItem::FullParagraph { para_index: 6 }]);
         assert_eq!(a.assign(&p3), 11);
+        // [#6206] 재시작 표시는 다음 쪽으로 이월되지 않는다.
+        assert!(!a.last_restarted());
 
         // page 4: para 7 — 12
         let p4 = mk_page(vec![PageItem::FullParagraph { para_index: 7 }]);

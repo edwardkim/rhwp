@@ -1,0 +1,19 @@
+{
+  "matches": [
+    {
+      "text": "필수기능",
+      "section": 0,
+      "paragraph": 0,
+      "page": 0,
+      "charOffset": 0,
+      "length": 4,
+      "textbox": "tb-cover-1"
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1,
+  "_skillMeta": {
+    "command": "search",
+    "exit": 0
+  }
+}

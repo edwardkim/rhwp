@@ -210,6 +210,61 @@ fn provenance_marks_are_honest_per_invocation() {
 }
 
 #[test]
+fn human_output_preserves_summary_and_classification_notes() {
+    let dir = corpus();
+    let liar = dir.join("b-거짓말.hwp");
+    let broken = dir.join("d-깨짐.hwp");
+    let out = run(&["scan", liar.to_str().unwrap(), broken.to_str().unwrap()]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert!(out.stderr.is_empty());
+
+    let expected = format!(
+        "rhwp scan — 2개 파일\n  hwpx  {}  {}바이트  [확장자 불일치]\n  unknown  {}  {}바이트  [확장자 불일치]\n합계: 2 · 확장자 불일치 2\n",
+        liar.display(),
+        std::fs::metadata(&liar).unwrap().len(),
+        broken.display(),
+        std::fs::metadata(&broken).unwrap().len(),
+    );
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), expected);
+}
+
+#[cfg(unix)]
+#[test]
+fn directory_walk_skips_symlinks_and_duplicate_roots_are_deduplicated() {
+    use std::os::unix::fs::symlink;
+
+    let source = corpus();
+    let dir =
+        std::env::temp_dir().join(format!("rhwp-scan-symlink-contract-{}", std::process::id()));
+    if dir.exists() {
+        std::fs::remove_dir_all(&dir).expect("이전 symlink 코퍼스 정리 실패");
+    }
+    std::fs::create_dir_all(&dir).expect("symlink 코퍼스 폴더 생성 실패");
+    let real = dir.join("real.hwpx");
+    std::fs::copy(sample(HWPX_SAMPLE), &real).expect("실파일 표본 복사 실패");
+    symlink(source.join("a-정상.hwp"), dir.join("linked.hwp")).expect("파일 symlink 생성 실패");
+    symlink(source, dir.join("linked-dir")).expect("폴더 symlink 생성 실패");
+
+    let root = dir.to_str().unwrap();
+    let out = run(&["scan", root, root, "--json"]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let v = stdout_json(&out);
+    assert_eq!(v["summary"]["total"], 1, "symlink를 따라가면 안 된다");
+    assert_eq!(v["files"][0]["path"], real.to_string_lossy().as_ref());
+    assert_eq!(v["roots"].as_array().map(Vec::len), Some(2));
+}
+
+#[test]
 fn runtime_failure_keeps_stdout_empty() {
     let out = run(&["scan", "없는-폴더-scan-계약", "--json"]);
     assert_eq!(out.status.code(), Some(1));

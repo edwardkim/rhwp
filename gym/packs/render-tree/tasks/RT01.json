@@ -1,0 +1,32 @@
+{
+  "id": "RT01",
+  "tier": 2,
+  "title": "1쪽 렌더 트리 추출과 쪽수 조회",
+  "input": "samples/2010-01-06.hwp",
+  "instructions": "입력 문서의 1쪽(0-기준 페이지 0) 렌더 트리를 export-render-tree 로 추출해 제출 폴더의 _rt/render_tree_001.json 로 제출하라. 또한 문서의 총 쪽수를 {\"pages\": <수>} 로 제출하라. 힌트: rhwp export-render-tree <문서> -p 0 -o _rt (→ _rt/render_tree_001.json 생성), rhwp info <문서> --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "_rt/render_tree_001.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "렌더 트리 산출 존재",
+      "op": "file_exists",
+      "file": "_rt/render_tree_001.json",
+      "minBytes": 10000
+    },
+    {
+      "name": "쪽수 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

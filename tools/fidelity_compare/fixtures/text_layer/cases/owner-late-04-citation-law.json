@@ -1,0 +1,63 @@
+{
+  "id": "owner-late-04-citation-law",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "loss",
+  "classification": "loss",
+  "family": "owner_shift",
+  "genre": "법령 인용",
+  "registeredKey": "manual",
+  "title": "법령명 지연",
+  "why": "긴 법령명은 sequence 후보. 방향=rhwp_later_than_reference.",
+  "page": 34,
+  "page1based": 35,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통공공기록물 관리에 관한 법률 제18조 제1항 및 같은 법 시행령 제22조",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통공공기록물 관리에 관한 법률 제18조 제1항 및 같은 법 시행령 제22조",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통공공기록물관리에관한법률제18조제1항및같은법시행령제22조",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceOnly": 30,
+  "svgOnly": 0,
+  "referenceOnlyChars": "U+0031:1×2,U+0032:2×2,U+0038:8×1,U+AC19:\\uac19×1,U+ACF5:\\uacf5×2,U+AD00:\\uad00×2,U+AE30:\\uae30×1,U+B839:\\ub839×1,U+B85D:\\ub85d×1,U+B960:\\ub960×1,U+B9AC:\\ub9ac×1,U+BB3C:\\ubb3c×1,U+BC0F:\\ubc0f×1,U+BC95:\\ubc95×2,U+C2DC:\\uc2dc×1,U+C5D0:\\uc5d0×1,U+C740:\\uc740×1,U+C81C:\\uc81c×3,U+C870:\\uc870×2,U+D55C:\\ud55c×1,U+D56D:\\ud56d×1,U+D589:\\ud589×1",
+  "svgOnlyChars": "",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 34,
+      "next_page": 35,
+      "direction": "rhwp_later_than_reference",
+      "shared_count": 30,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+0031:1×2,U+0032:2×2,U+0038:8×1,U+AC19:\\uac19×1,U+ACF5:\\uacf5×2,U+AD00:\\uad00×2,U+AE30:\\uae30×1,U+B839:\\ub839×1,U+B85D:\\ub85d×1,U+B960:\\ub960×1,U+B9AC:\\ub9ac×1,U+BB3C:\\ubb3c×1,U+BC0F:\\ubc0f×1,U+BC95:\\ubc95×2,U+C2DC:\\uc2dc×1,U+C5D0:\\uc5d0×1,U+C740:\\uc740×1,U+C81C:\\uc81c×3,U+C870:\\uc870×2,U+D55C:\\ud55c×1,U+D56D:\\ud56d×1,U+D589:\\ud589×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 34,
+      "next_page": 35,
+      "direction": "rhwp_later_than_reference",
+      "chars": 30,
+      "sequence": "공공기록물관리에관한법률제18조제1항및같은법시행령제22조"
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통공공기록물 관리에 관한 법률 제18조 제1항 및 같은 법 시행령 제22조",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "PDF 쪽이 한 쪽 앞선 후보. 시트 없이 확정 금지.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_later_than_reference",
+  "digest": "f87b194b3bb7"
+}

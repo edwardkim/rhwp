@@ -631,6 +631,14 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         style_id,
         column_type,
         raw_break_type,
+        // 합성 쪽나눔 표식 — 파일에 실리지 않는 파서 조판 힌트라 IR 비교 대상 아님.
+        page_break_synthesized: _,
+        // [#5847] reflow 이전 원본 vertpos 스냅샷 — IR 전용 부수 채널, 비교 대상 아님.
+        source_line_seg_vertical_pos: _,
+        // [#5961] 저장 lineseg 의 축 보정폭 — 출처 컨테이너가 결정하는 IR 전용 부수
+        // 채널이라 비교 대상 아님. 같은 문서를 HWPX/HWP5 로 읽으면 이 값은 정당하게
+        // 다르므로(8 vs 0), 비교에 넣으면 x2h ir-diff 가 없는 차이를 만든다.
+        hwpx_axis_shift: _,
         text,
         char_offsets,
         char_shapes,
@@ -644,9 +652,12 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         raw_header_extra,
         has_para_text,
         tab_extended,
+        title_marks,
         numbering_restart,
         // [#4149] 파생 캐시 — IR 비교 대상 아님 (직렬화·저장 경로에도 미포함).
         single_line_overflow_memo: _,
+        // [#4677] 조판 전용 보강 줄 표식 — 파일에 실리지 않으므로 IR 비교 대상 아님.
+        layout_only_fill_lines: _,
     } = a;
 
     macro_rules! f {
@@ -672,6 +683,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
     f!(raw_header_extra);
     f!(has_para_text);
     f!(tab_extended);
+    f!(title_marks);
     f!(numbering_restart);
 
     sweep_controls(&format!("{base}.controls"), controls, &b.controls, out);
@@ -786,6 +798,8 @@ fn sweep_control(base: &str, a: &Control, b: &Control, out: &mut DivergenceColle
         (CharOverlap(x), CharOverlap(y)) => cmp_debug(base, x, y, out),
         (PageHide(x), PageHide(y)) => cmp_debug(base, x, y, out),
         (Equation(x), Equation(y)) => cmp_debug(base, x, y, out),
+        (IndexMark(x), IndexMark(y)) => cmp_debug(base, x, y, out),
+        (PageNumCtrl(x), PageNumCtrl(y)) => cmp_debug(base, x, y, out),
         (Unknown(x), Unknown(y)) => cmp_debug(base, x, y, out),
         // 컨트롤 종류 자체가 달라진 경우 — 왕복 소실 중 가장 큰 종류.
         _ => push_leaf(base, control_kind(a), control_kind(b), out),
@@ -809,6 +823,8 @@ fn control_kind(c: &Control) -> &'static str {
         NewNumber(_) => "NewNumber",
         PageNumberPos(_) => "PageNumberPos",
         Bookmark(_) => "Bookmark",
+        IndexMark(_) => "IndexMark",
+        PageNumCtrl(_) => "PageNumCtrl",
         Hyperlink(_) => "Hyperlink",
         Ruby(_) => "Ruby",
         CharOverlap(_) => "CharOverlap",
@@ -831,6 +847,7 @@ fn sweep_form(
     out: &mut DivergenceCollector,
 ) {
     let crate::model::control::FormObject {
+        common,
         form_type,
         name,
         caption,
@@ -849,6 +866,7 @@ fn sweep_form(
             cmp_debug(&format!("{base}.{}", stringify!($n)), $n, &b.$n, out)
         };
     }
+    f!(common);
     f!(form_type);
     f!(name);
     f!(caption);
@@ -911,9 +929,11 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         outer_margin_top,
         outer_margin_bottom,
         raw_ctrl_data,
+        raw_ctrl_seal: _,
         raw_table_record_attr,
         raw_table_record_extra,
         dirty,
+        text_reflowed_after_edit: _,
         local_resize_rows,
         local_resize_cols,
         local_resize_cell_widths,
@@ -991,6 +1011,7 @@ fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut DivergenceCollector) {
         paragraphs,
         list_header_width_ref,
         text_direction,
+        line_wrap,
         vertical_align,
         apply_inner_margin,
         is_header,
@@ -1014,6 +1035,7 @@ fn sweep_cell(base: &str, a: &Cell, b: &Cell, out: &mut DivergenceCollector) {
     f!(border_fill_id);
     f!(list_header_width_ref);
     f!(text_direction);
+    f!(line_wrap);
     f!(vertical_align);
     f!(apply_inner_margin);
     f!(is_header);

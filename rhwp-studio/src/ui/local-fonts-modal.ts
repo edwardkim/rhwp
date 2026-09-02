@@ -73,7 +73,7 @@ export class LocalFontsModal {
     desc.style.margin = '0 0 12px 0';
     desc.textContent = this.report.detectionMethod === 'font-presence-probe'
       ? '현재 문서에 rhwp 기본 지원 글꼴이 아닌 글꼴이 있습니다. 원본에 가깝게 표시하기 위해, 이 문서에 필요한 글꼴이 이 기기에 설치되어 있는지 확인합니다.'
-      : '현재 문서에 rhwp 기본 지원 글꼴이 아닌 글꼴이 있습니다. 원본에 가깝게 표시하려면 로컬 글꼴 감지를 허용해 주세요.';
+      : '현재 문서에 rhwp 기본 지원 글꼴이 아닌 글꼴이 있습니다. 로컬 글꼴 목록을 확인하고, 목록에서 빠진 현재 문서 후보만 추가 확인하려면 감지를 허용해 주세요.';
     body.appendChild(desc);
 
     const privacy = document.createElement('p');
@@ -82,7 +82,7 @@ export class LocalFontsModal {
     privacy.style.color = 'var(--color-text-secondary)';
     privacy.textContent = this.report.detectionMethod === 'font-presence-probe'
       ? '이 브라우저에서는 설치된 모든 글꼴 목록을 가져오지 않고, 현재 문서에 필요한 글꼴만 확인합니다. 확인 결과는 이 브라우저/확장 로컬 저장소에만 보관되며 서버로 전송하지 않습니다. 감지를 건너뛰면 대체 글꼴로 계속 표시합니다.'
-      : '감지 결과는 이 브라우저/확장 로컬 저장소에만 보관되며 서버로 전송하지 않습니다. 감지를 건너뛰면 대체 글꼴로 계속 표시합니다.';
+      : 'Chrome/Edge의 로컬 글꼴 목록은 일부 설치 face를 누락할 수 있어 현재 문서의 미해소 후보만 추가 확인합니다. 결과는 이 브라우저/확장 로컬 저장소에만 보관되며 서버로 전송하지 않습니다. 감지를 건너뛰면 대체 글꼴로 계속 표시합니다.';
     body.appendChild(privacy);
 
     if (this.options.disableExternalWebFonts) {

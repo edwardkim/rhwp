@@ -2,9 +2,15 @@
 
 const fs = require('node:fs');
 
-const CLASSIFIER_VERSION = '2';
+const CLASSIFIER_VERSION = '6';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
+
+const REVIEW_REFERENCE_PDF_PREFIXES = [
+  'pdf/',
+  'pdf-2020/',
+  'pdf-large/',
+];
 
 const RENDER_RUST_PREFIXES = [
   'src/paint/',
@@ -13,14 +19,25 @@ const RENDER_RUST_PREFIXES = [
 ];
 
 const RENDER_RUST_FILES = new Set([
+  // [#3789] export-pdf와 native raster가 공유하는 문서 로더·인증 입력 경계다.
+  'src/cli/document_io.rs',
+  // [#5776] Render Diff의 PDF report가 native CLI export-pdf를 직접 실행한다.
+  // outputs/mod.rs의 sibling-resource 판정도 같은 PDF 입력 경계다.
+  'src/cli/outputs/mod.rs',
+  'src/cli/outputs/pdf.rs',
   'src/document_core/queries/rendering.rs',
 ]);
 
-// [#4040/#4132] Native Skia job 이 명시적으로 실행하는 integration target 과
-// 그 target 이 #[path] 로 공유하는 support 의 소유 목록. 여기 없으면 해당 파일을
-// 고치는 PR 에서 native_skia_required=false 로 판정되어 정작 그 테스트를 돌릴
-// job 이 skip 된다. test_ci_impact_workflow.py 가 workflow·support 양쪽을 강제한다.
+// Native Skia 제품 경계와 [#4040/#4132] job 이 명시적으로 실행하는 integration
+// target·공유 support 의 소유 목록. 여기 없으면 해당 파일을 고치는 PR 에서
+// native_skia_required=false 로 판정되어 정작 그 경계를 검증할 job 이 skip 된다.
+// test_ci_impact_workflow.py 가 workflow·support 양쪽을 강제한다.
 const NATIVE_SKIA_RUST_FILES = new Set([
+  // [#3789] export-png도 공유 문서 로더·인증 입력 경계를 소비한다.
+  'src/cli/document_io.rs',
+  // [#5776] Native Skia job의 cli_exit_codes_native가 export-png를 직접 실행한다.
+  // Render Diff는 현재 raster adapter를 소비하지 않으므로 Canvas 축은 켜지 않는다.
+  'src/cli/outputs/raster.rs',
   'tests/cli_exit_codes_native.rs',
   'tests/issue_1144_native.rs',
   'tests/issue_2083_hide_fill_page_background.rs',
@@ -54,6 +71,7 @@ const RENDER_TOOL_PATHS = new Set([
   'scripts/renderer_baseline_manifest.json',
   'scripts/generate_font_glyph_payload_fixture.py',
   'scripts/generate_exact_face_collection_fixture.py',
+  'scripts/generate_exact_kerning_fixture.py',
   'scripts/generate_font_native_hwpx_fixture.py',
   'scripts/requirements-font-fixtures.txt',
   'samples/render-p35-font-native-bitmap.hwpx',
@@ -114,6 +132,46 @@ function isReviewOnlyPath(filename) {
   );
 }
 
+function isSampleReviewReferencePath(filename) {
+  return (
+    filename.startsWith('samples/')
+    && (
+      filename.endsWith('.pdf')
+      || filename.endsWith('.png')
+    )
+  );
+}
+
+function isSampleSecuritySweepPath(filename) {
+  const lower = filename.toLowerCase();
+  return (
+    filename.startsWith('samples/')
+    && (
+      lower.endsWith('.hwp')
+      || lower.endsWith('.hwpx')
+      || lower.endsWith('.hml')
+    )
+  );
+}
+
+function isPdfReviewReferencePath(filename) {
+  return (
+    REVIEW_REFERENCE_PDF_PREFIXES.some((prefix) => filename.startsWith(prefix))
+    && filename.endsWith('.pdf')
+  );
+}
+
+function isReviewReferencePath(filename) {
+  return isSampleReviewReferencePath(filename) || isPdfReviewReferencePath(filename);
+}
+
+function isAllowedReviewReferenceFile(file) {
+  if (isPdfReviewReferencePath(file.filename)) {
+    return file.status === 'added' || file.status === 'modified';
+  }
+  return file.status === 'added' && isSampleReviewReferencePath(file.filename);
+}
+
 function failClosedPathReason(filename) {
   if (filename.startsWith('.github/')) {
     return 'workflow-contract';
@@ -123,9 +181,6 @@ function failClosedPathReason(filename) {
   }
   if (filename === 'rust-toolchain.toml' || filename.startsWith('.cargo/')) {
     return 'rust-toolchain-contract';
-  }
-  if (filename === 'src/main.rs') {
-    return 'main-render-boundary';
   }
   if (filename === 'src/wasm_api.rs' || filename.startsWith('src/wasm_api/')) {
     return 'wasm-contract';
@@ -269,6 +324,17 @@ function classifyChanges(input = {}) {
       continue;
     }
 
+    if (file.status === 'added' && isSampleSecuritySweepPath(filename)) {
+      rustRequired = true;
+      reasons.add('sample-security-sweep');
+      continue;
+    }
+
+    if (isAllowedReviewReferenceFile(file)) {
+      reviewOnlyCount += 1;
+      continue;
+    }
+
     if (filename.startsWith('rhwp-studio/src/hwpctl/')) {
       requireFrontend('package', 'studio-package');
       continue;
@@ -281,7 +347,14 @@ function classifyChanges(input = {}) {
     }
 
     if (isStudioKnownNonRenderSource(filename)) {
-      requireFrontend('unit', 'studio-unit');
+      // [#6330] command 층과 히스토리 코어(engine/command.ts)는 스냅샷 진입점이
+      // 밀집한 undo 경로다 — undo depth 게이트(#5769)는 frontend-package-gates
+      // (실 wasm)에서만 돌므로 unit 레인이면 게이트가 통째로 skip 된다.
+      // 렌더 축은 계속 끈 채(Render Diff 불필요) package 레인만 강제한다.
+      // 디렉터리 단위 과근사는 의도다: 스냅샷 없는 command 파일(shortcut-map 등)도
+      // 함께 승격되지만, 목록을 파일 단위로 좁히면 신규 command 파일이 아래
+      // rhwp-studio/ catch-all(render_required 동반)로 떨어져 더 비싸진다.
+      requireFrontend('package', 'studio-undo-package');
       continue;
     }
 

@@ -86,6 +86,12 @@ pub struct LayerJsonOptions {
     /// minor 를 21 로 올렸다. 계약은 "기존 그림 payload 유지 + schema minor 상승과 새 메타데이터"
     /// 이지 바이트 동일이나 모든 기존 필드 불변이 아니다.
     pub omit_image_bytes: bool,
+    /// Portable font blob bytes를 `resources.fontBlobs`에 inline하지 않는다.
+    ///
+    /// `fontResources.blobs[].dataRef.id`와 `resources.fontBlobKeys`는 그대로 남아 소비자가
+    /// exact key로 bytes를 다시 받을 수 있다. 기본값은 `false`이며 이때 기존 JSON bytes를
+    /// 바꾸지 않는다.
+    pub omit_font_bytes: bool,
 }
 
 /// 직렬화 도중 트리 아래로 흘려야 하는 값. 그림 op 하나를 쓰려면 문서 세대(키 발급)와
@@ -101,7 +107,8 @@ impl PageLayerTree {
         self.to_json_with_options(LayerJsonOptions::default())
     }
 
-    /// [Task #3315] 그림 base64 생략을 켤 수 있는 직렬화. `to_json()` 은 기본 옵션 위임이다.
+    /// [Task #3315/#4969] 그림·font base64 생략을 각각 켤 수 있는 직렬화.
+    /// `to_json()`은 두 payload를 모두 inline하는 기본 옵션 위임이다.
     pub fn to_json_with_options(&self, options: LayerJsonOptions) -> String {
         let mut buf = String::with_capacity(32_768);
         buf.push('{');
@@ -156,7 +163,7 @@ impl PageLayerTree {
         buf.push_str(",\"fontResources\":");
         write_font_resources(&mut buf, self.resources.font_resources());
         buf.push_str(",\"resources\":");
-        write_visual_resources(&mut buf, &self.resources);
+        write_visual_resources(&mut buf, &self.resources, options);
         write_text_export_metadata(&mut buf, &self.root, &self.resources);
         buf.push_str(",\"textV2\":");
         TextV2Diagnostics::from_layer_tree(self).write_json(&mut buf);
@@ -587,7 +594,7 @@ impl PaintOp {
                     if display_text.is_empty() {
                         buf.push_str("[]");
                     } else {
-                        write_text_positions_for_text(buf, display_text, &run.style);
+                        write_text_positions_for_text(buf, run, display_text);
                     }
                 }
                 if !run.style.tab_leaders.is_empty() {
@@ -1211,7 +1218,7 @@ fn write_font_resources(buf: &mut String, table: &FontResourceTable) {
     buf.push_str("]}");
 }
 
-fn write_visual_resources(buf: &mut String, resources: &ResourceArena) {
+fn write_visual_resources(buf: &mut String, resources: &ResourceArena, options: LayerJsonOptions) {
     let _ = write!(
         buf,
         "{{\"tableId\":{},\"images\":[",
@@ -1251,11 +1258,13 @@ fn write_visual_resources(buf: &mut String, resources: &ResourceArena) {
         buf.push_str(&json_escape(key));
     }
     buf.push_str("],\"fontBlobs\":[");
-    for (index, (_, bytes)) in resources.font_blob_resources().enumerate() {
-        if index > 0 {
-            buf.push(',');
+    if !options.omit_font_bytes {
+        for (index, (_, bytes)) in resources.font_blob_resources().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            write_json_base64(buf, bytes);
         }
-        write_json_base64(buf, bytes);
     }
     buf.push_str("],\"fontBlobKeys\":[");
     for index in 0..resources.font_blob_count() {
@@ -1515,6 +1524,9 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
         json_escape(&color_ref_to_css(style.shade_color)),
         style.emphasis_dot,
     );
+    if style.kerning {
+        buf.push_str(",\"kerning\":true");
+    }
     buf.push('}');
 }
 
@@ -1551,11 +1563,11 @@ fn write_paint_text_style(buf: &mut String, style: &PaintTextStyle) {
 }
 
 fn write_text_positions(buf: &mut String, run: &TextRunNode) {
-    write_text_positions_for_text(buf, &run.text, &run.style);
+    write_text_positions_for_text(buf, run, &run.text);
 }
 
-fn write_text_positions_for_text(buf: &mut String, text: &str, style: &TextStyle) {
-    let positions = compute_char_positions(text, style);
+fn write_text_positions_for_text(buf: &mut String, run: &TextRunNode, text: &str) {
+    let positions = run.replay_positions_for(text);
     write_position_values(buf, &positions);
 }
 
@@ -1624,7 +1636,7 @@ fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {
 
 fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
     let (display_text, text_complete) = bounded_display_text_for_run(run);
-    let positions = compute_char_positions(&display_text, &run.style);
+    let positions = run.replay_positions_prefix_for(run.display_or_text(), &display_text);
     let (font_size, _) = effective_text_font_size_and_baseline(run);
     let leaders_complete =
         run.style.tab_leaders.len() <= crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN;
@@ -1652,7 +1664,7 @@ fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
 
 fn write_text_control_marks(buf: &mut String, bbox: BoundingBox, run: &TextRunNode) -> bool {
     let (bounded_text, mut complete) = bounded_text_prefix(&run.text);
-    let positions = compute_char_positions(&bounded_text, &run.style);
+    let positions = run.replay_positions_prefix_for(&run.text, &bounded_text);
     let font_size = if run.style.font_size > 0.0 {
         run.style.font_size
     } else {
@@ -1893,7 +1905,7 @@ fn write_affine_transform(buf: &mut String, transform: LayerAffineTransform) {
 }
 
 fn write_text_clusters(buf: &mut String, run: &TextRunNode) {
-    let positions = compute_char_positions(&run.text, &run.style);
+    let positions = run.replay_positions_for(&run.text);
     let mut utf16_start = 0_u32;
     let chars = run
         .text
@@ -2550,11 +2562,8 @@ fn write_glyph_run_diagnostics(buf: &mut String, diagnostics: &GlyphRunDiagnosti
 fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextRunNode) {
     let (color, shape, underline, emphasis_dot) = match kind {
         TextDecorationKind::Underline => (
-            if run.style.underline_color != 0 {
-                run.style.underline_color
-            } else {
-                run.style.color
-            },
+            // COLORREF 0 은 미지정이 아니라 검정 — svg.rs 와 같은 계약.
+            run.style.underline_color,
             run.style.underline_shape,
             run.style.underline,
             0,
@@ -2578,7 +2587,7 @@ fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextR
     };
     let (font_size, baseline) = effective_text_font_size_and_baseline(run);
     let (bounded_text, complete) = bounded_display_text_for_run(run);
-    let positions = compute_char_positions(&bounded_text, &run.style);
+    let positions = run.replay_positions_prefix_for(run.display_or_text(), &bounded_text);
     let _ = write!(
         buf,
         "{{\"kind\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{},\"fontSize\":{:.3},\"ratio\":{:.6},\"color\":{},\"shape\":{},\"underline\":{},\"emphasisDot\":{},\"positions\":[",
@@ -2689,7 +2698,7 @@ fn write_gradient(buf: &mut String, gradient: &GradientFillInfo) {
 fn write_line_style(buf: &mut String, style: &LineStyle) {
     let _ = write!(
         buf,
-        "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}}}",
+        "{{\"color\":{},\"width\":{:.3},\"dash\":{},\"lineType\":{},\"startArrow\":{},\"endArrow\":{},\"startArrowSize\":{},\"endArrowSize\":{}",
         json_escape(&color_ref_to_css(style.color)),
         style.width,
         json_escape(stroke_dash_str(style.dash)),
@@ -2699,6 +2708,11 @@ fn write_line_style(buf: &mut String, style: &LineStyle) {
         style.start_arrow_size,
         style.end_arrow_size,
     );
+    if let Some(shadow) = &style.shadow {
+        buf.push_str(",\"shadow\":");
+        write_shadow_style(buf, shadow);
+    }
+    buf.push('}');
 }
 
 fn write_transform(buf: &mut String, transform: ShapeTransform) {
@@ -3036,6 +3050,7 @@ fn image_fill_mode_str(value: ImageFillMode) -> &'static str {
         ImageFillMode::TileVertLeft => "tileVertLeft",
         ImageFillMode::TileVertRight => "tileVertRight",
         ImageFillMode::FitToSize => "fitToSize",
+        ImageFillMode::Zoom => "zoom",
         ImageFillMode::Total => "total",
         ImageFillMode::Center => "center",
         ImageFillMode::CenterTop => "centerTop",
@@ -3180,6 +3195,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::FieldBegin,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3321,6 +3337,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3384,6 +3401,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3438,6 +3456,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 11.0,
             field_marker: FieldMarkerType::FieldEnd,
+            layout_positions: None,
             display_text: None,
         };
         let bbox = BoundingBox::new(10.0, 20.0, 40.0, 16.0);
@@ -3531,6 +3550,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 20.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         };
         let bbox = BoundingBox::new(0.0, 0.0, 80.0, 24.0);
@@ -3584,6 +3604,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 13.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3646,6 +3667,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 10.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         };
         let bbox = BoundingBox::new(0.0, 0.0, 100.0, 14.0);
@@ -3759,6 +3781,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3941,6 +3964,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -4686,6 +4710,7 @@ mod image_bytes_mode_tests {
     fn issue_3315_top_level_image_bytes_is_the_requested_mode_not_a_per_op_guarantee() {
         let json = mixed_tree().to_json_with_options(LayerJsonOptions {
             omit_image_bytes: true,
+            ..LayerJsonOptions::default()
         });
         let ops = image_ops(&json);
         assert_eq!(ops.len(), 2);

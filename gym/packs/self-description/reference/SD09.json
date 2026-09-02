@@ -1,0 +1,16 @@
+{
+  "id": "SD09",
+  "steps": [
+    {
+      "answer": {
+        "axes": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "schemaRegistry.axes",
+          "len": true
+        }
+      }
+    }
+  ]
+}

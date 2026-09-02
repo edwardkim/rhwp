@@ -35,6 +35,10 @@ interface ReportedWasmDocument {
   exportHwpxWithPasswordAndReport(password: string): WasmDocumentExport;
 }
 
+interface FontDecisionTraceWasmDocument {
+  getFontDecisionTrace(page: number, optionsJson: string): string;
+}
+
 /**
  * 문단 병합으로 사라진 문단의 스코프 메타데이터 (Task #2342).
  *
@@ -201,18 +205,8 @@ export interface DeferredPaginationResult {
 }
 
 import { fontFamilyChainForDisplay } from './font-substitution';
+import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
-import {
-  connectSubsecondDevtools,
-  SubsecondPatchAccumulation,
-  type SubsecondWasmExports,
-} from './subsecond-runtime';
-
-/**
- * devtools 소켓의 해제 함수 — realm 하나에 소켓 하나이므로 중복 연결 guard 로도 쓴다.
- * 스튜디오에는 realm 종료 이전의 해제 시점이 없어 실제로 호출되지는 않는다.
- */
-let disconnectSubsecondDevtools: (() => void) | null = null;
 
 /**
  * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
@@ -243,6 +237,7 @@ function installCanvasFontSubstitution(): void {
   const proto = CanvasRenderingContext2D.prototype;
   const descriptor = Object.getOwnPropertyDescriptor(proto, 'font');
   if (!descriptor?.get || !descriptor.set || descriptor.configurable === false) return;
+  rememberRawCanvasFontDescriptor(descriptor);
 
   Object.defineProperty(proto, 'font', {
     configurable: true,
@@ -262,11 +257,13 @@ export class WasmBridge {
   private initialized = false;
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
-  /** 마지막 저장본이 출력 암호로 보호됐는지 여부만 보관한다. 암호 문자열은 보관하지 않는다. */
+  /** 현재 backing copy의 보호 의도만 보관한다. 암호 문자열은 보관하지 않는다. */
   private _requiresPasswordForSave = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
+  /** 개발 진단에서만 읽는 wasm 선형 메모리. 일반 wasm-glue에는 없을 수 있다. */
+  private wasmLinearMemory: WebAssembly.Memory | null = null;
   /** [#3313] 외부 연결 그림 비동기 주입 완료 훅 — 주입 성공(>0)시에만 호출된다.
    * 첫 렌더 이후에 fetch 가 끝나면 뷰가 재갱신 없이는 이미지를 표시하지 못하므로,
    * main 쪽에서 뷰 갱신을 배선한다 (dirty 마킹 없는 뷰 전용 경로여야 함). */
@@ -276,53 +273,30 @@ export class WasmBridge {
     if (this.initialized) return;
     installCanvasFontSubstitution();
     this.installMeasureTextWidth();
-    const wasmModule = await init();
-    if (!disconnectSubsecondDevtools) {
-      disconnectSubsecondDevtools = connectSubsecondDevtools(
-        wasmExports as unknown as SubsecondWasmExports,
-        {
-          patchAccumulation: new SubsecondPatchAccumulation({
-            // subsecond 세션에서는 이 모듈이 dx 가 만든 glue(`target/rhwp-subsecond-vite/`)로
-            // 바뀐다. 타입은 언제나 `pkg/rhwp.d.ts` 를 보므로 memory 부재는 타입으로 못 걸러진다.
-            measureHeapBytes: () => wasmModule.memory?.buffer.byteLength ?? null,
-          }),
-        },
-      );
-    }
+    // @wasm path alias는 개발 glue를 가리킬 수 있어 init 반환값을 unknown으로 추론한다.
+    // wasm-bindgen의 InitOutput memory만 선택적으로 읽고, 개발 glue의 memory 부재는 허용한다.
+    const wasmModule = await init() as { memory?: WebAssembly.Memory };
+    this.wasmLinearMemory = wasmModule.memory ?? null;
     this.initialized = true;
     console.log(`[WasmBridge] WASM 초기화 완료 (rhwp ${version()})`);
   }
 
-  isSubsecondHotpatchEnabled(): boolean {
-    return typeof Reflect.get(wasmExports, 'subsecondProbe') === 'function';
+  /**
+   * WASM 모듈 export namespace를 내부 런타임에 빌려준다.
+   *
+   * 문서 핸들처럼 소유권을 넘기지 않는다. 개발 전용 렌더 런타임만 이 값을 받아 feature export
+   * 존재 여부를 확인하며, 소켓·감시자·재도색 수명은 `main.ts`가 소유한다 (#4636, #4641).
+   */
+  getWasmModuleExports(): object {
+    return wasmExports;
   }
 
-  getSubsecondProbeValue(): number | null {
-    const probe = Reflect.get(wasmExports, 'subsecondProbe');
-    return typeof probe === 'function' ? probe() : null;
-  }
-
-  getSubsecondPatchRevision(): string | null {
-    if (!this.doc) return null;
-
-    const doc = this.doc as unknown as {
-      getSubsecondPatchRevision?: () => string;
-    };
-    return typeof doc.getSubsecondPatchRevision === 'function'
-      ? doc.getSubsecondPatchRevision()
-      : null;
-  }
-
-  invalidateSubsecondRenderCaches(): boolean {
-    if (!this.doc) return false;
-
-    const doc = this.doc as unknown as {
-      invalidateSubsecondRenderCaches?: () => void;
-    };
-    if (typeof doc.invalidateSubsecondRenderCaches !== 'function') return false;
-
-    doc.invalidateSubsecondRenderCaches();
-    return true;
+  /**
+   * 현재 wasm 선형 메모리 크기(byte). glue가 이를 노출하지 않으면 `null` 이다.
+   * 개발 전용 패치 세션 경고에만 쓰며, 수명/용량 판정의 기준으로 사용하지 않는다.
+   */
+  getWasmLinearMemoryBytes(): number | null {
+    return this.wasmLinearMemory?.buffer.byteLength ?? null;
   }
 
   /** WASM 렌더러가 호출하는 텍스트 폭 측정 함수를 등록한다 */
@@ -364,6 +338,7 @@ export class WasmBridge {
   private loadDocumentAtomically(
     data: Uint8Array,
     fileName: string | undefined,
+    requiresPasswordForSave: boolean,
     createDocument: () => HwpDocument,
   ): DocumentInfo {
     const nextFileName = fileName ?? 'document.hwp';
@@ -383,7 +358,9 @@ export class WasmBridge {
       this.doc = nextDoc;
       this._fileName = nextFileName;
       this._currentFileHandle = null;
-      this._requiresPasswordForSave = false;
+      // 암호 문자열은 보관하지 않는다. 다음 저장에서 암호 재입력이 필요한지 여부만
+      // 문서 교체 성공과 같은 commit 구간에서 갱신한다 (#5986).
+      this._requiresPasswordForSave = requiresPasswordForSave;
       this._documentDigest = nextDocumentDigest;
       this._documentGeneration += 1;
       if (previousDoc) {
@@ -414,11 +391,16 @@ export class WasmBridge {
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, () => new HwpDocument(data));
+    return this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
   }
 
   loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, () => HwpDocument.openWithPassword(data, password));
+    return this.loadDocumentAtomically(
+      data,
+      fileName,
+      true,
+      () => HwpDocument.openWithPassword(data, password),
+    );
   }
 
   /** [Task #741 후속] 외부 file path 그림 영역 영역 dev 서버 영역 영역 fetch + inject. */
@@ -500,6 +482,21 @@ export class WasmBridge {
 
   get documentGeneration(): number {
     return this._documentGeneration;
+  }
+
+  /**
+   * 플러그인 차용용 문서 핸들.
+   *
+   * **소유권을 넘기는 것이 아니다** — `free()` 는 이 클래스만 부른다. 빌린 쪽은 매 사용마다
+   * `documentGeneration` 과 함께 유효성을 확인해야 한다. 문서가 교체·해제되면 세대가 올라가고
+   * 이전에 빌린 핸들은 그 순간 무효다(해제된 핸들 호출은 방어적 코드를 거치면 예외가 아니라
+   * 조용한 오답이 된다).
+   *
+   * 이 접근자 외의 경로로 문서를 넘기지 않는다. 문서를 바꾸는 일은 `PluginHost.transaction`
+   * 경유여야 하고, 그래야 undo 계약이 선다.
+   */
+  borrowDocumentHandle(): HwpDocument | null {
+    return this.doc;
   }
 
   set fileName(name: string) {
@@ -688,6 +685,16 @@ export class WasmBridge {
     return this.doc?.pageCount() ?? 0;
   }
 
+  getFontDecisionTrace(page: number, maxCharacters: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const query = (this.doc as unknown as Partial<FontDecisionTraceWasmDocument>)
+      .getFontDecisionTrace;
+    if (typeof query !== 'function') {
+      throw new Error('현재 WASM 빌드는 font decision trace를 지원하지 않습니다');
+    }
+    return query.call(this.doc, page, JSON.stringify({ maxCharacters }));
+  }
+
   beginDeferredPagination(fragmentBudget = 1): DeferredPaginationResult {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as { beginDeferredPagination?: (budget: number) => string };
@@ -741,6 +748,30 @@ export class WasmBridge {
     return JSON.parse(d.flushDeferredPagination());
   }
 
+  /**
+   * 여러 뮤테이션을 한 번의 재페이지네이션으로 묶는다 (#4118).
+   *
+   * begin_batch~end_batch 사이의 뮤테이터는 파생 재계산을 end_batch 의 paginate()
+   * 1회로 미루므로, 셀 블록 전체 적용처럼 셀 수만큼 뮤테이터를 호출하는 경로의
+   * O(n²) 재조판을 O(n) 으로 만든다. fn 도중 예외가 나도 batch 가 새지 않게
+   * finally 에서 닫는다. pkg 가 낡아 beginBatch 가 없으면 묶음 없이 실행한다 —
+   * 결과는 동일하고 느릴 뿐이다.
+   */
+  runInBatch<T>(fn: () => T): T {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { beginBatch?: () => string; endBatch?: () => string };
+    const batchable = typeof d.beginBatch === 'function' && typeof d.endBatch === 'function';
+    if (!batchable) {
+      return fn();
+    }
+    this.doc.beginBatch();
+    try {
+      return fn();
+    } finally {
+      this.doc.endBatch();
+    }
+  }
+
   getSectionCount(): number {
     return this.doc?.getSectionCount() ?? 0;
   }
@@ -772,6 +803,18 @@ export class WasmBridge {
   setPageDef(sectionIdx: number, pageDef: PageDef): { ok: boolean; pageCount: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.setPageDef(sectionIdx, JSON.stringify(pageDef)));
+  }
+
+  /** 쪽 여백 하나만 바꾼다 (HWPUNIT). 눈금자 핀 드래그 등 단일 필드 커밋용 —
+   * 호출부가 PageDef 전체 셰이프를 알 필요 없이 read-modify-write를 여기서 닫는다. */
+  setPageMargin(pageIdx: number, kind: 'top' | 'bottom' | 'left' | 'right', hwpunit: number): { ok: boolean; pageCount: number } {
+    const sectionIdx = this.getPageInfo(pageIdx).sectionIndex;
+    const def = this.getPageDef(sectionIdx);
+    if (kind === 'top') def.marginTop = hwpunit;
+    else if (kind === 'bottom') def.marginBottom = hwpunit;
+    else if (kind === 'left') def.marginLeft = hwpunit;
+    else def.marginRight = hwpunit;
+    return this.setPageDef(sectionIdx, def);
   }
 
   getSectionDef(sectionIdx: number): SectionDef {
@@ -954,18 +997,41 @@ export class WasmBridge {
     }
   }
 
+  /** Portable font key로 현재 document generation의 exact source bytes를 받는다. */
+  getSourceFontBytes(key: string): Uint8Array | null {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getSourceFontBytes?: (k: string) => Uint8Array };
+    if (typeof d.getSourceFontBytes !== 'function') return null;
+    try {
+      return d.getSourceFontBytes(key);
+    } catch {
+      return null;
+    }
+  }
+
   getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
-      getPageLayerTreeWithProfile?: (p: number, profile: string) => string;
+      getPageLayerTreeWithProfile?: (
+        p: number,
+        profile: string,
+        omitImageBytes?: boolean,
+        omitFontBytes?: boolean,
+      ) => string;
       getPageLayerTree?: (p: number) => string;
+      getSourceFontBytes?: (key: string) => Uint8Array;
     };
     const hasProfileApi = typeof d.getPageLayerTreeWithProfile === 'function';
     if (!hasProfileApi && profile !== 'screen') {
       throw new Error('[WasmBridge] 현재 WASM은 profile별 PageLayerTree를 지원하지 않습니다');
     }
     const json = hasProfileApi
-      ? d.getPageLayerTreeWithProfile!(pageNum, profile)
+      ? d.getPageLayerTreeWithProfile!(
+        pageNum,
+        profile,
+        false,
+        typeof d.getSourceFontBytes === 'function',
+      )
       : this.getPageLayerTree(pageNum);
     let parsed: unknown;
     try {
@@ -1693,9 +1759,79 @@ export class WasmBridge {
     return JSON.parse(doc.getCellOwnProperties(sec, parentPara, controlIdx, cellIdx));
   }
 
-  setCellProperties(sec: number, parentPara: number, controlIdx: number, cellIdx: number, props: Partial<CellProperties>): { ok: boolean } {
+  setCellProperties(
+    sec: number,
+    parentPara: number,
+    controlIdx: number,
+    cellIdx: number,
+    props: Partial<CellProperties>,
+  ): {
+    ok: boolean;
+    /** [#5959] borderFillId 전환 기록(target+이웃) — 구버전 wasm 에선 없다. */
+    changes?: Array<{ cellIdx: number; beforeId: number; afterId: number }>;
+    /**
+     * [#5959] cellzone origin override(1×1) 전이 기록 — sync 가 zones 를
+     * 만들거나 지울 때 셀 id 기록만으로 undo 가 부족하다. 구버전 wasm 에선 없다.
+     */
+    zones?: Array<{
+      startRow: number;
+      startCol: number;
+      endRow: number;
+      endCol: number;
+      beforeId: number | null;
+      afterId: number | null;
+    }>;
+    borderFillLenBefore?: number;
+    docInfoDirtyBefore?: boolean;
+  } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.setCellProperties(sec, parentPara, controlIdx, cellIdx, JSON.stringify(props)));
+  }
+
+  /**
+   * [#5959] 셀 테두리/배경 역연산 경로가 이 wasm 조합에 실려 있는가.
+   *
+   * 구버전 wasm 은 applyCellBorderFillIds 가 없다 — probe 통과 전에 캡처·뮤테이션을
+   * 하면 undo 불능 상태로 문서만 오염된다(#5951 스크우 probe 선례).
+   */
+  hasCellBorderFillInverse(): boolean {
+    const doc = this.doc as unknown as { applyCellBorderFillIds?: unknown };
+    return !!doc && typeof doc.applyCellBorderFillIds === 'function';
+  }
+
+  /** [#5959] execute 의 변경 기록을 되돌린다 — 스타일 테이블은 건드리지 않는다. */
+  applyCellBorderFillIds(
+    sec: number,
+    parentPara: number,
+    controlIdx: number,
+    payload: {
+      cells: Array<{ cellIdx: number; id: number }>;
+      zones: Array<{
+        startRow: number;
+        startCol: number;
+        endRow: number;
+        endCol: number;
+        id: number | null;
+      }>;
+    },
+  ): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      applyCellBorderFillIds(sec: number, parentPara: number, controlIdx: number, json: string): string;
+    };
+    return JSON.parse(doc.applyCellBorderFillIds(sec, parentPara, controlIdx, JSON.stringify(payload)));
+  }
+
+  /**
+   * [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목 절단. 완전 절단에 성공하면
+   * dirty 플래그를 `dirtyWas` 로 원복한다.
+   */
+  removeBorderFillTails(fromLen: number, dirtyWas: boolean): { ok: boolean; discarded: number; fullyDiscarded: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      removeBorderFillTails(json: string): string;
+    };
+    return JSON.parse(doc.removeBorderFillTails(JSON.stringify({ fromLen, dirtyWas })));
   }
 
   setCellZoneProperties(
@@ -1704,7 +1840,14 @@ export class WasmBridge {
     controlIdx: number,
     range: { startRow: number; startCol: number; endRow: number; endCol: number },
     props: Partial<CellProperties>,
-  ): { ok: boolean; borderFillId: number } {
+  ): {
+    ok: boolean;
+    borderFillId: number;
+    /** [#5959] 적용 전 zone 의 id — null 이면 신설이다. 구버전 wasm 에선 없다. */
+    zoneBeforeId?: number | null;
+    borderFillLenBefore?: number;
+    docInfoDirtyBefore?: boolean;
+  } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const doc = this.doc as unknown as {
       setCellZoneProperties(
@@ -2063,6 +2206,45 @@ export class WasmBridge {
     );
   }
 
+  // ── 차트 데이터 API (#4694) ───────────────────────────
+  /** [#4694] 문서의 모든 차트를 문서 순서로 열거한다 — matchChartRef 의 입력. */
+  listCharts(): import('./chart-data-target').ChartRefJson[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).listCharts());
+  }
+
+  /** [#4694] 본문 직속 차트 데이터 조회 (3인자). 컨테이너 안 차트는 ByIndex 를 쓴다. */
+  getChartData(sec: number, para: number, ci: number): import('./chart-data-target').ChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getChartData(sec, para, ci));
+  }
+
+  /** [#4694] 문서 순번(0-based)으로 차트 데이터 조회 — 정본 주소. */
+  getChartDataByIndex(index: number): import('./chart-data-target').ChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getChartDataByIndex(index));
+  }
+
+  /** [#4694] 본문 직속 차트 데이터 변경 (3인자). */
+  setChartData(
+    sec: number,
+    para: number,
+    ci: number,
+    edits: import('./chart-data-target').ChartEditsInput,
+  ): import('./chart-data-target').SetChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).setChartData(sec, para, ci, JSON.stringify(edits)));
+  }
+
+  /** [#4694] 문서 순번(0-based)으로 차트 데이터 변경 — 정본 주소. */
+  setChartDataByIndex(
+    index: number,
+    edits: import('./chart-data-target').ChartEditsInput,
+  ): import('./chart-data-target').SetChartDataResult {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).setChartDataByIndex(index, JSON.stringify(edits)));
+  }
+
   // ── 수식 속성 API ─────────────────────────────────────
   getEquationProperties(sec: number, para: number, ci: number, cellIdx?: number, cellParaIdx?: number): import('./types').EquationProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
@@ -2154,9 +2336,30 @@ export class WasmBridge {
     return JSON.parse(this.doc.deleteEquationControl(sec, para, ci));
   }
 
-  changeShapeZOrder(sec: number, para: number, ci: number, operation: string): { ok: boolean; zOrder?: number } {
+  changeShapeZOrder(
+    sec: number,
+    para: number,
+    ci: number,
+    operation: string,
+  ): { ok: boolean; zOrder?: number; moves?: { ppi: number; ci: number; before: number; after: number }[] } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.changeShapeZOrder(sec, para, ci, operation));
+  }
+
+  /** [#5769 후속] z 순서 절대 대입 — SetZOrderCommand 의 undo/redo 가 쓴다. */
+  applyShapeZOrderPairs(sec: number, pairsJson: string): { ok: boolean; applied?: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).applyShapeZOrderPairs(sec, pairsJson));
+  }
+
+  /**
+   * [#5769 후속1] changeShapeZOrder 가 moves 응답과 절대 대입 쌍을 지원하는가.
+   * 구버전 wasm 과 짝이 어긋난 조합을 뮤테이션 **전에** 가린다 — 적용 뒤에
+   * 알아채면 실제 변이의 undo 기록을 잃는다(gpt 3차 리뷰).
+   */
+  hasShapeZOrderInverse(): boolean {
+    const doc = this.doc as unknown as Record<string, unknown> | null;
+    return typeof doc?.applyShapeZOrderPairs === 'function';
   }
 
   groupShapes(sec: number, targets: { paraIdx: number; controlIdx: number }[]): { ok: boolean; paraIdx: number; controlIdx: number } {
@@ -2792,6 +2995,40 @@ export class WasmBridge {
     this.doc.discardSnapshot(id);
   }
 
+  // ─── [#5769] 삭제 조각(fragment) API ──────────────────
+
+  captureDeleteRange(sectionIdx: number, startPara: number, endPara: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.captureDeleteRange(sectionIdx, startPara, endPara);
+  }
+
+  restoreDeleteFragment(id: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.restoreDeleteFragment(id);
+  }
+
+  discardDeleteFragment(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.doc.discardDeleteFragment(id);
+  }
+
+  // ─── [#5769 Stage 4] 구역 raw 저널 API ─────────────────
+
+  captureSectionRaw(sectionIdx: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.captureSectionRaw(sectionIdx);
+  }
+
+  restoreSectionRaw(id: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.restoreSectionRaw(id);
+  }
+
+  discardSectionRaw(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    this.doc.discardSectionRaw(id);
+  }
+
   // ─── 머리말/꼬리말 API ──────────────────────────────────
 
   getHeaderFooter(sectionIdx: number, isHeader: boolean, applyTo: number): string {
@@ -2829,9 +3066,117 @@ export class WasmBridge {
     return this.doc.getHeaderFooterParaInfo(sec, isHeader, applyTo, hfParaIdx);
   }
 
-  getCursorRectInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number, preferredPage = -1): CursorRect {
+  replaceRangeInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+    replacementText: string,
+  ): { ok: boolean; hfParaIndex: number; charOffset: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse(this.doc.getCursorRectInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset, preferredPage));
+    return JSON.parse(this.doc.replaceRangeInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+      replacementText,
+    ));
+  }
+
+  copySelectionInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+  ): { ok: boolean; text: string } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.copySelectionInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+    ));
+  }
+
+  getCharPropertiesInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    hfParaIdx: number,
+    charOffset: number,
+  ): CharProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getCharPropertiesInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      hfParaIdx,
+      charOffset,
+    ));
+  }
+
+  applyCharFormatInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+    propsJson: string,
+  ): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.applyCharFormatInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+      propsJson,
+    );
+  }
+
+  /** 구역 첫 페이지에 투영된 대표 HF 편집 표면의 캐럿 좌표를 반환한다. */
+  getCursorRectInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number, previewPage: number): CursorRect {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getCursorRectInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset, previewPage));
+  }
+
+  getSelectionRectsInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    pageNum: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+  ): SelectionRect[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getSelectionRectsInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      pageNum,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+    ));
   }
 
   hitTestHeaderFooter(pageNum: number, x: number, y: number): { hit: boolean; isHeader?: boolean; sectionIndex?: number; applyTo?: number } {
@@ -2850,9 +3195,91 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).getHeaderFooterEditTarget(pageNum, isHeader));
   }
 
-  hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
+  /** HF 정의의 대표 편집 페이지. 구버전 WASM은 PageInfo를 훑어 같은 답으로 폴백한다. */
+  getHeaderFooterPreviewPage(sectionIdx: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      getHeaderFooterPreviewPage?: (sectionIdx: number) => string;
+    };
+    if (typeof doc.getHeaderFooterPreviewPage === 'function') {
+      const result = JSON.parse(doc.getHeaderFooterPreviewPage(sectionIdx));
+      if (Number.isSafeInteger(result.pageIndex) && result.pageIndex >= 0) {
+        return result.pageIndex;
+      }
+    }
+    for (let pageIndex = 0; pageIndex < this.pageCount; pageIndex++) {
+      if (this.getPageInfo(pageIndex).sectionIndex === sectionIdx) return pageIndex;
+    }
+    throw new Error(`구역 ${sectionIdx}의 대표 HF 편집 페이지를 찾을 수 없습니다`);
+  }
+
+  hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; sectionIndex?: number; applyTo?: number; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.hitTestInHeaderFooter(pageNum, isHeader, x, y));
+  }
+
+  hitTestInHeaderFooterTarget(
+    pageNum: number,
+    sectionIdx: number,
+    isHeader: boolean,
+    applyTo: number,
+    x: number,
+    y: number,
+  ): { hit: boolean; sectionIndex?: number; applyTo?: number; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      hitTestInHeaderFooterTarget?: (
+        pageNum: number,
+        sectionIdx: number,
+        isHeader: boolean,
+        applyTo: number,
+        x: number,
+        y: number,
+      ) => string;
+    };
+    if (typeof doc.hitTestInHeaderFooterTarget !== 'function') {
+      return this.hitTestInHeaderFooter(pageNum, isHeader, x, y);
+    }
+    return JSON.parse(doc.hitTestInHeaderFooterTarget(
+      pageNum,
+      sectionIdx,
+      isHeader,
+      applyTo,
+      x,
+      y,
+    ));
+  }
+
+  renderHeaderFooterEditPreviewToCanvas(
+    pageNum: number,
+    sectionIdx: number,
+    isHeader: boolean,
+    applyTo: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+  ): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      renderHeaderFooterEditPreviewToCanvas?: (
+        pageNum: number,
+        sectionIdx: number,
+        isHeader: boolean,
+        applyTo: number,
+        canvas: HTMLCanvasElement,
+        scale: number,
+      ) => void;
+    };
+    if (typeof doc.renderHeaderFooterEditPreviewToCanvas !== 'function') {
+      throw new Error('현재 WASM은 HF 대표 편집 preview 렌더링을 지원하지 않습니다');
+    }
+    doc.renderHeaderFooterEditPreviewToCanvas(
+      pageNum,
+      sectionIdx,
+      isHeader,
+      applyTo,
+      canvas,
+      scale,
+    );
   }
 
   deleteHeaderFooter(sectionIdx: number, isHeader: boolean, applyTo: number): void {
@@ -3154,10 +3581,4 @@ export class WasmBridge {
     } catch (e) { return { ok: false, error: String(e) }; }
   }
 
-  dispose(): void {
-    if (this.doc) {
-      this.doc.free();
-      this.doc = null;
-    }
-  }
 }

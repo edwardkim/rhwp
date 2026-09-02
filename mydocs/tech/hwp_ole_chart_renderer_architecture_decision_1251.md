@@ -2,7 +2,7 @@
 kind: decision
 status: active
 canonical: mydocs/tech/hwp_ole_chart_renderer_architecture_decision_1251.md
-last_verified: 2026-07-17
+last_verified: 2026-08-18
 ---
 
 # Task M100-1251 렌더러 선택 결정 기록
@@ -110,6 +110,10 @@ cannot be used with -shared
 - `charming` native SSR은 renderer 후보로는 유효하지만 현재 crate-type과의 링크 호환성 검증이 더 필요하다.
 - rhwp upstream은 `PageLayerTree`, Skia, CanvasKit 등 multi-backend renderer로 확장 중이므로 chart도 renderer-neutral path에 올리는 것이 장기적으로 낫다.
 - 따라서 `charming`을 기본 renderer로 강제하지 않고 후속 adapter 이슈로 분리한다.
+
+v1 에서 어떤 OLE 스트림이 차트 IR 이고 어떤 것이 WMF/EMF 미리보기인지, 그리고
+`Contents` 파싱 실패가 미리보기로 떨어지지 않는다는 계약은
+[차트 OLE v1 경계](chart_ole_v1_boundary.md)가 정본이다.
 
 ## 5. 후속 판단 지점
 

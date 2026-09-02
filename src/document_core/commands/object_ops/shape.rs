@@ -1,15 +1,13 @@
 //! 도형 생성/속성/그룹 native 명령 (object_ops 분할, #1904).
 
 use super::MIN_SHAPE_SIZE;
-use crate::document_core::helpers::{get_textbox_from_shape, get_textbox_from_shape_mut};
+use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{
-    common_obj_offsets, Caption, CaptionDirection, CaptionVertAlign, ShapeObject,
-};
+use crate::model::shape::{Caption, CaptionDirection, CaptionVertAlign, ShapeObject};
 
 impl DocumentCore {
     fn shape_caption_ref(shape: &ShapeObject) -> Option<&Caption> {
@@ -1677,6 +1675,20 @@ impl DocumentCore {
             }
         };
 
+        // [#5769 후속] 자기기술 변경 레코드 — SetZOrderCommand 가 이대로 소비해 undo/redo
+        // 의 절대 대입 쌍으로 쓴다. 교환인 경우 이웃의 이전 값은 new_z 와 같다(둘의 z 를
+        // 맞바꾼 것). 기존 소비자는 zOrder 키만 읽으므로 추가 필드는 안전하다.
+        let mut moves_json = format!(
+            "{{\"ppi\":{},\"ci\":{},\"before\":{},\"after\":{}}}",
+            para_idx, control_idx, current_z, new_z
+        );
+        if let Some((n_pi, n_ci, n_z)) = neighbor_change {
+            moves_json.push_str(&format!(
+                ",{{\"ppi\":{},\"ci\":{},\"before\":{},\"after\":{}}}",
+                n_pi, n_ci, new_z, n_z
+            ));
+        }
+
         // z_order 변경: 대상 + 이웃
         {
             let section = &mut self.document.sections[section_idx];
@@ -1695,8 +1707,79 @@ impl DocumentCore {
         self.paginate_if_needed();
 
         Ok(crate::document_core::helpers::json_ok_with(&format!(
-            "\"zOrder\":{}",
-            new_z
+            "\"zOrder\":{},\"moves\":[{}]",
+            new_z, moves_json
+        )))
+    }
+
+    /// [#5769 후속] z 순서 절대 대입 — `SetZOrderCommand` 의 undo/redo 가 쓴다.
+    ///
+    /// pairs_json: `[{"ppi":N,"ci":N,"z":N},...]`. 상대 연산(front/forward/…)과 달리 값
+    /// 자체를 복원하므로 [`Self::change_shape_z_order_native`] 이 남긴 `moves` 를 뒤집어
+    /// 넣으면 정확한 역연산이다 — Shape z 대입에는 대입 외 부작용이 없다(#5769 선결 규약).
+    /// 적용 후 passthrough 무효화·파생 상태 재구성 후처리는 상대 연산과 동일하다. 하나라도
+    /// 검증에 어긋나면 아무것도 적용하지 않고 거절한다 — 부분 적용은 undo 도중의 문서 오염이다.
+    pub fn apply_shape_z_order_pairs_native(
+        &mut self,
+        section_idx: usize,
+        pairs_json: &str,
+    ) -> Result<String, HwpError> {
+        let pairs: Vec<serde_json::Value> = serde_json::from_str(pairs_json)
+            .map_err(|e| HwpError::RenderError(format!("pairs JSON 파싱 실패: {}", e)))?;
+        if pairs.is_empty() {
+            return Ok(crate::document_core::helpers::json_ok_with("\"applied\":0"));
+        }
+
+        // 1차 — 전수 검증. 지목이 Shape 가 아니면 기록 이후 문서가 바뀐 것이므로 실패다.
+        {
+            let section = self.document.sections.get(section_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+            })?;
+            for pair in &pairs {
+                let err = |what: &str| HwpError::RenderError(format!("pairs 항목 {} 누락", what));
+                let pi = pair["ppi"].as_u64().ok_or_else(|| err("ppi"))? as usize;
+                let ci = pair["ci"].as_u64().ok_or_else(|| err("ci"))? as usize;
+                if pair["z"].as_i64().is_none() {
+                    return Err(err("z"));
+                }
+                let para = section.paragraphs.get(pi).ok_or_else(|| {
+                    HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", pi))
+                })?;
+                match para.controls.get(ci) {
+                    Some(Control::Shape(_)) => {}
+                    _ => {
+                        return Err(HwpError::RenderError(format!(
+                            "지목 (ppi={}, ci={}) 은 Shape 가 아니다 — 기록 이후 문서가 바뀌었다",
+                            pi, ci
+                        )))
+                    }
+                }
+            }
+        }
+
+        // 2차 — 적용.
+        let applied = {
+            let section = &mut self.document.sections[section_idx];
+            let mut applied = 0usize;
+            for pair in &pairs {
+                let pi = pair["ppi"].as_u64().expect("1차에서 검증됨") as usize;
+                let ci = pair["ci"].as_u64().expect("1차에서 검증됨") as usize;
+                let z = pair["z"].as_i64().expect("1차에서 검증됨") as i32;
+                if let Some(Control::Shape(shape)) = section.paragraphs[pi].controls.get_mut(ci) {
+                    shape.common_mut().z_order = z;
+                    applied += 1;
+                }
+            }
+            applied
+        };
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok(crate::document_core::helpers::json_ok_with(&format!(
+            "\"applied\":{}",
+            applied
         )))
     }
     /// 도형 내부 좌표만 스케일 (common/shape_attr은 변경하지 않음)
@@ -2497,6 +2580,21 @@ impl DocumentCore {
             }
         }
     }
+    /// HWP 직렬화가 읽는 문단 control stream의 구역 정의를 section 메타와 맞춘다.
+    fn sync_section_def_controls_from_section(&mut self, section_idx: usize) {
+        let Some(section) = self.document.sections.get_mut(section_idx) else {
+            return;
+        };
+        let section_def = section.section_def.clone();
+        for paragraph in &mut section.paragraphs {
+            for control in &mut paragraph.controls {
+                if let Control::SectionDef(control_section_def) = control {
+                    **control_section_def = section_def.clone();
+                }
+            }
+        }
+    }
+
     /// 현재 구역의 미주 모양을 조회한다.
     pub fn get_endnote_shape_native(&self, section_idx: usize) -> Result<String, HwpError> {
         let section = self.document.sections.get(section_idx).ok_or_else(|| {
@@ -2564,88 +2662,95 @@ impl DocumentCore {
         section_idx: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
-        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
-            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
-        })?;
-        let shape = &mut section.section_def.endnote_shape;
+        {
+            let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+                HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+            })?;
+            let shape = &mut section.section_def.endnote_shape;
 
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numberFormat") {
-            shape.number_format =
-                Self::footnote_shape_number_format_from_str(&v, shape.number_format);
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "numberFormat") {
+                shape.number_format =
+                    Self::footnote_shape_number_format_from_str(&v, shape.number_format);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "userChar") {
+                shape.user_char = Self::first_char_or_nul(&v);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "prefixChar") {
+                shape.prefix_char = Self::first_char_or_nul(&v);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "suffixChar") {
+                shape.suffix_char = Self::first_char_or_nul(&v);
+            }
+            if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
+                shape.start_number = v.max(1);
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
+                shape.separator_length = i32::from(v.max(0));
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginTop") {
+                let above = v.max(0);
+                // HWP5 저장본은 구분선 위 값을 fallback 슬롯에 보관하는 경우가 있어 함께 갱신한다.
+                shape.separator_margin_top = above;
+                shape.separator_margin_bottom = above;
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginBottom") {
+                shape.note_spacing = v.max(0);
+            }
+            if let Some(v) = Self::hwpunit16_from_json(props_json, "noteSpacing") {
+                shape.raw_unknown = v.max(0) as u16;
+            }
+            if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineType")
+            {
+                shape.separator_line_type = v;
+            }
+            if let Some(v) =
+                crate::document_core::helpers::json_u8(props_json, "separatorLineWidth")
+            {
+                shape.separator_line_width = v;
+            }
+            if let Some(v) = crate::document_core::helpers::json_color(props_json, "separatorColor")
+            {
+                shape.separator_color = v;
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "numbering") {
+                shape.numbering = Self::footnote_numbering_from_str(&v, shape.numbering);
+            }
+            if let Some(v) = crate::document_core::helpers::json_str(props_json, "placement") {
+                shape.placement = Self::footnote_placement_from_str(&v, shape.placement);
+            }
+            if let Some(v) =
+                crate::document_core::helpers::json_bool(props_json, "numberCodeSuperscript")
+            {
+                shape.number_code_superscript = v;
+            }
+            if let Some(v) =
+                crate::document_core::helpers::json_bool(props_json, "printInlineAfterText")
+            {
+                shape.print_inline_after_text = v;
+            }
+            if let Some(false) =
+                crate::document_core::helpers::json_bool(props_json, "separatorEnabled")
+            {
+                shape.separator_length = 0;
+                shape.separator_line_type = 0;
+                shape.separator_line_width = 0;
+            }
+            shape.attr = Self::encode_footnote_shape_attr(shape);
+            let start_number = shape.start_number.max(1);
+            let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
+            let prefix_char = shape.prefix_char;
+            let suffix_char = shape.suffix_char;
+            let mut next_number = start_number;
+            Self::renumber_paragraph_endnotes_with_shape(
+                &mut section.paragraphs,
+                &mut next_number,
+                number_format_code,
+                prefix_char,
+                suffix_char,
+            );
+            section.raw_stream = None;
         }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "userChar") {
-            shape.user_char = Self::first_char_or_nul(&v);
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "prefixChar") {
-            shape.prefix_char = Self::first_char_or_nul(&v);
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "suffixChar") {
-            shape.suffix_char = Self::first_char_or_nul(&v);
-        }
-        if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
-            shape.start_number = v.max(1);
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
-            shape.separator_length = i32::from(v.max(0));
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginTop") {
-            let above = v.max(0);
-            // HWP5 저장본은 구분선 위 값을 fallback 슬롯에 보관하는 경우가 있어 함께 갱신한다.
-            shape.separator_margin_top = above;
-            shape.separator_margin_bottom = above;
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorMarginBottom") {
-            shape.note_spacing = v.max(0);
-        }
-        if let Some(v) = Self::hwpunit16_from_json(props_json, "noteSpacing") {
-            shape.raw_unknown = v.max(0) as u16;
-        }
-        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineType") {
-            shape.separator_line_type = v;
-        }
-        if let Some(v) = crate::document_core::helpers::json_u8(props_json, "separatorLineWidth") {
-            shape.separator_line_width = v;
-        }
-        if let Some(v) = crate::document_core::helpers::json_color(props_json, "separatorColor") {
-            shape.separator_color = v;
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "numbering") {
-            shape.numbering = Self::footnote_numbering_from_str(&v, shape.numbering);
-        }
-        if let Some(v) = crate::document_core::helpers::json_str(props_json, "placement") {
-            shape.placement = Self::footnote_placement_from_str(&v, shape.placement);
-        }
-        if let Some(v) =
-            crate::document_core::helpers::json_bool(props_json, "numberCodeSuperscript")
-        {
-            shape.number_code_superscript = v;
-        }
-        if let Some(v) =
-            crate::document_core::helpers::json_bool(props_json, "printInlineAfterText")
-        {
-            shape.print_inline_after_text = v;
-        }
-        if let Some(false) =
-            crate::document_core::helpers::json_bool(props_json, "separatorEnabled")
-        {
-            shape.separator_length = 0;
-            shape.separator_line_type = 0;
-            shape.separator_line_width = 0;
-        }
-        shape.attr = Self::encode_footnote_shape_attr(shape);
-        let start_number = shape.start_number.max(1);
-        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
-        let prefix_char = shape.prefix_char;
-        let suffix_char = shape.suffix_char;
-        let mut next_number = start_number;
-        Self::renumber_paragraph_endnotes_with_shape(
-            &mut section.paragraphs,
-            &mut next_number,
-            number_format_code,
-            prefix_char,
-            suffix_char,
-        );
-        section.raw_stream = None;
+        self.sync_section_def_controls_from_section(section_idx);
 
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -2680,6 +2785,7 @@ mod resize_clamp_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         // set_document이 composed/styles/pagination 벡터를 일관되게 초기화한다.

@@ -1,6 +1,11 @@
 # Rust
 /target/
 /target-local/
+
+# 회귀 suite 파생 산출물: PR review·CI의 --prepare와 unit-tier --generate에서만 임시 생성한다.
+/tests/generated/
+/tests/generated/unit-test-tiers.json
+/tests/suites/manifest.json
 # 루트 Cargo.lock 은 추적한다 — rhwp 는 bin 산출 패키지라 재현 가능 빌드를 위해
 # 커밋 권장(#1423, Cargo 공식 가이드). 의존성 갱신은 별도 PR 로 관리.
 # bindings/Native(iOS FFI, ios/devel 분기) 는 별개 패키지이며 Linux 메인 환경에서
@@ -84,6 +89,9 @@ mydocs/privacy/*
 rhwp-vscode/media/rhwp.js
 rhwp-vscode/media/rhwp_bg.wasm
 
+# 폐기된 Node 바인딩 로컬 설치·빌드 잔여물
+/bindings/node/
+
 # rhwp-chrome 빌드 산출물
 rhwp-chrome/dist/
 rhwp-chrome/*.zip
@@ -103,3 +111,6 @@ samples/issue836/
 __pycache__/
 *.pyc
 tmp/
+
+# node 바인딩 의존성 — 커밋 대상 아님(#4656 실수 커밋 정리)
+bindings/node/node_modules/

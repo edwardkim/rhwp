@@ -1,0 +1,19 @@
+{
+  "id": "T11_disk_full",
+  "kind": "disk_full",
+  "judgmentNotCrash": false,
+  "exit": 1,
+  "steps": [
+    {
+      "argv": [
+        "python",
+        "tools/handoff/orchestrator.py",
+        "--task",
+        "task.json",
+        "--agent",
+        "python worker.py",
+        "--json"
+      ]
+    }
+  ]
+}

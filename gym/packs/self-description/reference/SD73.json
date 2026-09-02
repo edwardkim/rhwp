@@ -1,0 +1,12 @@
+{
+  "id": "SD73",
+  "steps": [
+    {
+      "run": [
+        "export-ontology",
+        "-o",
+        "{sub:ontology.json}"
+      ]
+    }
+  ]
+}

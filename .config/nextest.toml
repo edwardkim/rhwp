@@ -4,5 +4,25 @@
 nextest-version = { required = "0.9.91", recommended = "0.9.140" }
 
 [[profile.default.overrides]]
-filter = "binary(overflow_cell_baseline)"
+filter = "test(/(^|::)overflow_cell_baseline::/)"
 priority = 100
+
+# [#4207] 저장 프레임 경계 테스트는 같은 조판 바이너리의 이웃과 병렬이면
+# 간헐 red 가 난다. 전 스레드를 점유해 단독 실행한다. 단언은 매 CI 그대로 돈다.
+[[profile.default.overrides]]
+filter = "test(issue_2007_intra_paragraph_saved_frame_break_is_preserved)"
+threads-required = "num-test-threads"
+
+# B/C/D archive workers use this profile only to emit a compact JUnit report.
+# Successful devel runs retain it for the baseline; same-repository PRs retain a
+# short-lived candidate that a later trusted post-merge verifier may consume.
+[profile.ci-duration-observation.junit]
+path = "junit.xml"
+report-name = "rhwp-nextest-duration-observation"
+store-success-output = false
+store-failure-output = true
+report-skipped = "none"
+
+[[profile.ci-duration-observation.overrides]]
+filter = "test(issue_2007_intra_paragraph_saved_frame_break_is_preserved)"
+threads-required = "num-test-threads"

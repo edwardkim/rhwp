@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "source": "fixtures/synthetic-injection.hwp",
+  "minConfidence": "low",
+  "includeFields": true,
+  "scanScopes": [
+    "body",
+    "tableCell",
+    "textBox",
+    "equation",
+    "footnote",
+    "endnote",
+    "header",
+    "footer",
+    "caption",
+    "fieldName",
+    "fieldGuide",
+    "fieldCommand",
+    "hiddenComment",
+    "fieldMemo"
+  ],
+  "injectionSignals": [
+    {
+      "kind": "instruction_override",
+      "confidence": "high",
+      "section": 0,
+      "paragraph": 1,
+      "page": 0,
+      "scope": "fieldGuide",
+      "excerpt": "필드 안내문 안의 지시 무효화",
+      "matched": "필드 안내문 안의 지시 무효화",
+      "why": "include-fields 로 fieldGuide 가 scanScopes 에 포함"
+    }
+  ],
+  "signalCount": 1,
+  "highestConfidence": "high",
+  "clean": false,
+  "exitCode": 0,
+  "consume": {
+    "matchedIs": "DATA",
+    "doNotFollow": true,
+    "untrustedContent": true
+  }
+}

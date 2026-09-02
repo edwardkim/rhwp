@@ -1,0 +1,15 @@
+{
+  "id": "T14",
+  "tier": 3,
+  "title": "관문 통과",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "반입 관문(gym/packs/core-cli/assets/T14_policy.json — 재현·계보·서명·앵커 전부 요구)을 통과하는 캡슐을 만들어 제출하라. 절차는 스스로 조합할 것: keygen 으로 키를 만들고, 입력 문서에 대한 실편집 계획을 replay --capsule --sign-key 로 서명 캡슐로 발급하고, anchor add 로 로그에 등재하라. 제출물 4개: work.capsule.json, work.capsule.json.sig.json, keyring.json(공개키 등록), anchor.ndjson. 채점은 rhwp gate 의 verdict:allow 한 호출이다 — 어떤 축이 모자라면 violations 가 어느 규칙인지 말해준다.",
+  "submit": { "kind": "artifact", "files": ["work.capsule.json", "keyring.json", "anchor.ndjson"] },
+  "checks": [
+    { "name": "관문 verdict:allow (재현·계보·서명·앵커 전축)", "op": "value_eq", "value": "allow",
+      "cmd": ["gate", "{file:work.capsule.json}", "--policy", "gym/packs/core-cli/assets/T14_policy.json",
+              "--keyring", "{file:keyring.json}", "--anchor-log", "{file:anchor.ndjson}",
+              "--deep", "--json"],
+      "path": "verdict" }
+  ]
+}

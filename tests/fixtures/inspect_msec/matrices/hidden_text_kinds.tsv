@@ -1,0 +1,5 @@
+id	cliLabel	symbol	defaultOn	meaning
+same_as_background	배경색과 같은 글자색	HiddenKind::SameAsBackground	True	글자색이 글자 음영·문단/셀 채우기·쪽 바탕과 같다
+near_invisible	극소 글자	HiddenKind::NearInvisible	True	실효 글자 크기가 --threshold-pt 미만
+zero_size	0pt 글자	HiddenKind::ZeroSize	True	실효 글자 크기가 0
+off_page	쪽 밖 배치	HiddenKind::OffPage	False	조판 결과 쪽 경계 완전히 밖. --include-offpage 일 때만

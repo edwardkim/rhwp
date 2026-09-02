@@ -104,6 +104,39 @@ fn row_col_cell_text(table: &RenderNode, row: u16, col: u16) -> String {
 }
 
 #[test]
+fn issue_3820_p4_keeps_saved_rowbreak_body_with_its_first_fragment() {
+    let p4 = core().build_page_render_tree(3).expect("render HWP PDF p4");
+    let table = owned_table(&p4.root, 15, 0).expect("p4 outer RowBreak table");
+
+    // Hancom's saved first-fragment frame includes the header and the beginning
+    // of row 1.  Keeping only the header advances this large table by one page
+    // and makes every later visual comparison use the wrong physical owner.
+    let text = all_text(table);
+    assert!(
+        text.contains("제32조(보호구의 지급 등)") && text.contains("이륜자동차"),
+        "p4 must retain the first saved RowBreak body fragment: {}",
+        text,
+    );
+    let p4_bottom = owned_table_bottom(&p4.root, 15, 0).expect("p4 table bottom");
+    assert!(
+        (1_040.0..=1_052.0).contains(&p4_bottom),
+        "p4 RowBreak fragment bottom={p4_bottom:.1}px; the saved body fragment must fill the PDF footer band"
+    );
+
+    // The source-owned p5 tail prevents this allowance from expanding p4 until
+    // the entire row or table fits. It must begin with the omitted body tail,
+    // not repeat the p4-owned opening of Article 32.
+    let p5 = core().build_page_render_tree(4).expect("render HWP PDF p5");
+    let p5_table = owned_table(&p5.root, 15, 0).expect("p5 outer RowBreak table");
+    let p5_text = all_text(p5_table);
+    assert!(
+        p5_text.contains("안전모를 착용하도록 지시")
+            && !p5_text.contains("제32조(보호구의 지급 등)"),
+        "p5 must retain only the saved RowBreak tail: {p5_text}",
+    );
+}
+
+#[test]
 fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
     let core = core();
 

@@ -15,7 +15,8 @@
     "types": ["chrome"],
     "paths": {
       "@/*": ["./src/*"],
-      "@wasm/*": ["../pkg/*"]
+      "@wasm/*": ["../pkg/*"],
+      "@rhwp/hwpctrl/studio-plugin": ["./types/rhwp-hwpctrl-plugin.d.ts"]
     }
   },
   "include": ["src"]

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0",
+  "claim": "V-bon",
+  "kind": "bestOfNSet",
+  "setId": "fixture-ir-diff",
+  "command": "ir-diff",
+  "mode": "ir-diff",
+  "argv": ["rhwp", "ir-diff", "--json"],
+  "n": 3,
+  "intendedChangedCount": 0,
+  "sample": "samples/gov/국세청/고시/2020/0044.hwpx",
+  "rankFields": ["changedCount", "invalid", "verify.identical", "exitClass"],
+  "candidates": [
+    {
+      "candidateId": "c_big",
+      "expectedRank": 3,
+      "changedCount": 8,
+      "invalid": [],
+      "verify": {"identical": false, "diffCount": 8},
+      "exitClass": 3,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "left": "samples/gov/국세청/고시/2020/0044.hwpx",
+        "right": "out/v-bon/ir-big.hwp",
+        "identical": false,
+        "diffCount": 8,
+        "changedCount": 8,
+        "categories": {"cc": 3, "table_cell": 3, "char_offsets": 2},
+        "invalid": [],
+        "verify": {"identical": false, "diffCount": 8},
+        "exitClass": 3
+      }
+    },
+    {
+      "candidateId": "c_identical",
+      "expectedRank": 1,
+      "changedCount": 0,
+      "invalid": [],
+      "verify": {"identical": true, "diffCount": 0},
+      "exitClass": 0,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "left": "samples/gov/국세청/고시/2020/0044.hwpx",
+        "right": "out/v-bon/ir-same.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "changedCount": 0,
+        "categories": {},
+        "invalid": [],
+        "verify": {"identical": true, "diffCount": 0},
+        "exitClass": 0
+      }
+    },
+    {
+      "candidateId": "c_small",
+      "expectedRank": 2,
+      "changedCount": 2,
+      "invalid": [],
+      "verify": {"identical": false, "diffCount": 2},
+      "exitClass": 3,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "left": "samples/gov/국세청/고시/2020/0044.hwpx",
+        "right": "out/v-bon/ir-small.hwp",
+        "identical": false,
+        "diffCount": 2,
+        "changedCount": 2,
+        "categories": {"cc": 1, "char_offsets": 1},
+        "invalid": [],
+        "verify": {"identical": false, "diffCount": 2},
+        "exitClass": 3
+      }
+    }
+  ]
+}

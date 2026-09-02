@@ -1,0 +1,44 @@
+{
+  "id": "XC38",
+  "tier": 5,
+  "title": "다중표2 5세대 리콜",
+  "input": "samples/multi-table-002.hwp",
+  "axis": "자동화",
+  "instructions": "XC38 — 다중표2 5세대 리콜.\n\n입력 표본은 `samples/multi-table-002.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\nmulti-table-002 5세대 뿌리 리콜 영향 5건+. multi-table-001 사슬을 복사하지 마라.\n\n제출 폴더에 mt2r/g0.capsule.json · mt2r/g1.capsule.json · mt2r/g2.capsule.json · mt2r/g3.capsule.json · mt2r/g4.capsule.json 를 두어라.\n\n수행 힌트: recall-scope affected>=5.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\n표본 002 가 입력이다. 001 계획을 가져오면 해시가 틀린다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "mt2r/g0.capsule.json",
+      "mt2r/g1.capsule.json",
+      "mt2r/g2.capsule.json",
+      "mt2r/g3.capsule.json",
+      "mt2r/g4.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "영향권 5건 이상",
+      "op": "len_ge",
+      "value": 5,
+      "path": "affected",
+      "cmd": [
+        "recall-scope",
+        "--contaminated",
+        "{file:mt2r/g0.capsule.json}",
+        "--among",
+        "{file:mt2r}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "mt2r/g4.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}

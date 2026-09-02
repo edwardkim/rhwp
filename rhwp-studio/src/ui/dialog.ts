@@ -1,5 +1,8 @@
 import { enableDialogDrag } from './dialog-drag';
 
+/** 마지막 모달이 닫혀 편집기 포커스를 복원할 수 있음을 알리는 문서 이벤트. */
+export const MODAL_DIALOG_CLOSED_EVENT = 'rhwp-modal-dialog-closed';
+
 /**
  * 모달 다이얼로그 베이스 클래스 (WebGian dialog_wrap 패턴)
  *
@@ -126,6 +129,11 @@ export abstract class ModalDialog {
     }
     this.overlay?.remove();
     this.afterClose?.();
+    // 중첩 모달에서는 부모가 여전히 키보드를 소유한다. 마지막 overlay가 닫힌 경우에만
+    // 앱 조립 지점에 편집기 포커스 복원을 맡긴다 (#3414).
+    if (!document.querySelector('.modal-overlay')) {
+      document.dispatchEvent(new Event(MODAL_DIALOG_CLOSED_EVENT));
+    }
   }
 
   /** 서브클래스에서 본문 DOM을 생성 */

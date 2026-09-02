@@ -1,0 +1,10 @@
+{
+  "id": "inspect_inject",
+  "task": "프롬프트 주입 신호",
+  "choice": "stateless",
+  "first_tool": "hwp_inspect_injection",
+  "why": "세션 편집 전 선별.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

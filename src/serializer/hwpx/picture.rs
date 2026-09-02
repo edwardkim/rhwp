@@ -99,7 +99,9 @@ pub fn write_picture<W: Write>(
     // --- 자식 순서 (한컴 관찰 샘플 기준) ---
     // offset, orgSz, curSz, flip, rotationInfo, renderingInfo, imgRect, imgClip,
     // inMargin, imgDim, img, effects, sz, pos, outMargin
-    write_offset(w, &pic.common)?;
+    // [#4668] hp:offset 은 shape_attr 원문 — pic 전용 writer 가 pos 유래로
+    // 재작성하면 쪽 밖(wraparound) 그림이 무편집 저장 후 쪽 안에 노출된다.
+    super::shape::write_offset(w, &pic.shape_attr)?;
     write_org_sz(w, &pic.shape_attr)?;
     write_cur_sz(w, pic)?;
     write_flip(w, &pic.shape_attr)?;
@@ -128,12 +130,6 @@ pub fn write_picture<W: Write>(
 }
 
 // ---------- 자식 요소 ----------
-
-fn write_offset<W: Write>(w: &mut Writer<W>, c: &CommonObjAttr) -> Result<(), SerializeError> {
-    let x = c.horizontal_offset.to_string();
-    let y = c.vertical_offset.to_string();
-    empty_tag(w, "hp:offset", &[("x", &x), ("y", &y)])
-}
 
 fn write_org_sz<W: Write>(
     w: &mut Writer<W>,

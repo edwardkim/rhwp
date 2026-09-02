@@ -13,6 +13,7 @@
 //!   - `section.paragraphs` 여러 개 = 하드 문단 경계 (`<hp:p>` 여러 개)
 //!   - `paragraph.text` 내 `\n` = 소프트 라인브레이크 (`<hp:lineBreak/>`, 같은 문단 내)
 //!   - `paragraph.text` 내 `\t` = 탭 (`<hp:tab width=... leader="0" type="1"/>`)
+//!   - `paragraph.text` 내 `U+2007` = 고정폭 빈칸 (`<hp:fwSpace/>`, #4675)
 //!   - `paragraph.para_shape_id` → `<hp:p paraPrIDRef>`
 //!   - `paragraph.style_id` → `<hp:p styleIDRef>`
 //!   - `paragraph.column_type` → `<hp:p pageBreak/columnBreak>`
@@ -23,19 +24,26 @@ use quick_xml::Writer;
 
 use crate::model::control::{
     AutoNumber, AutoNumberType, CharOverlap, Control, Equation, Field, NewNumber, PageHide,
-    PageNumberPos, Ruby, EQUATION_LINE_MODE_BIT,
+    PageNumCtrl, PageNumberPos, PageStartsOn, Ruby, EQUATION_LINE_MODE_BIT,
 };
 use crate::model::document::{Document, Section, SectionDef};
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType};
-use crate::model::paragraph::{ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph};
+use crate::model::paragraph::{
+    ColumnBreakType, FieldRange, LineSeg, OrphanFieldEnd, Paragraph, TitleMark,
+};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, SizeCriterion, TextWrap, VertAlign, VertRelTo,
 };
 
+use crate::parser::tags;
+use crate::serializer::body_text::line_segs_within_text_axis;
+
 use super::context::SerializeContext;
-use super::field::{write_bookmark, write_field_begin, write_field_end, write_field_end_full};
+use super::field::{
+    write_bookmark, write_field_begin, write_field_end, write_field_end_full, write_hyperlink_begin,
+};
 use super::utils::xml_escape;
 use super::SerializeError;
 use super::{picture, table};
@@ -78,14 +86,24 @@ const TEMPLATE_VISIBILITY: &str = r#"<hp:visibility hideFirstHeader="0" hideFirs
 /// 템플릿 기본값("0")을 유지한다.
 fn render_visibility(sd: &SectionDef) -> String {
     let b = |v: bool| if v { "1" } else { "0" };
-    let bf = |v: bool| if v { "HIDE_ALL" } else { "SHOW_ALL" };
+    // [#5717] SHOW_FIRST(구역 첫 쪽에만 표시, flags bit 8/9)를 왕복 보존한다 —
+    // 한글 2022 가 같은 문서를 HWPX 로 저장할 때 쓰는 어휘 그대로다(성북구 실측).
+    let bf = |hide: bool, first: bool| {
+        if hide {
+            "HIDE_ALL"
+        } else if first {
+            "SHOW_FIRST"
+        } else {
+            "SHOW_ALL"
+        }
+    };
     format!(
         r#"<hp:visibility hideFirstHeader="{}" hideFirstFooter="{}" hideFirstMasterPage="{}" border="{}" fill="{}" hideFirstPageNum="0" hideFirstEmptyLine="{}" showLineNumber="0"/>"#,
         b(sd.hide_header),
         b(sd.hide_footer),
         b(sd.hide_master_page),
-        bf(sd.hide_border),
-        bf(sd.hide_fill),
+        bf(sd.hide_border, sd.first_page_border),
+        bf(sd.hide_fill, sd.first_page_fill),
         b(sd.hide_empty_line),
     )
 }
@@ -575,6 +593,46 @@ pub fn write_section(
 
         // 템플릿의 텍스트 run 전체를 문단의 run 시퀀스(다중 run 분할 포함)로 1회 치환.
         out = out.replacen(TEMPLATE_TEXT_RUN, &first_runs, 1);
+
+        // [#3367/#4433] 컨트롤 방출 순서를 IR 순서에 맞춘다 — HWP5 원본이
+        // `[cold, secd]` 인 문단(field-01 실측: 전 구역 cold→secd)을 템플릿 고정
+        // 순서(secPr → ctrl/colPr)로 내보내면 재파싱 IR 이 `[secd, cold]` 로
+        // 뒤집혀 왕복 무손실 계약(ir-diff)이 깨진다. OWPML 스키마(run 의
+        // choice, ParaList XML schema)는 순서를 규정하지 않고, 한컴 원산 실물도
+        // colPr-before-secPr 20건 / colPr-after-secPr 315건으로 양쪽을 다 쓴다 —
+        // 문서 순서가 곧 보존 대상이다. 파서(parse_ctrl/secPr arm)는 이미 문서
+        // 순서를 보존하므로 방출만 IR 순서를 따르면 왕복이 닫힌다.
+        let cold_before_secd = {
+            let i_secd = p
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::SectionDef(_)));
+            let i_cold = p
+                .controls
+                .iter()
+                .position(|c| matches!(c, Control::ColumnDef(_)));
+            matches!((i_cold, i_secd), (Some(c), Some(s)) if c < s)
+        };
+        if cold_before_secd {
+            if let Some(Control::ColumnDef(cd)) = p
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::ColumnDef(_)))
+            {
+                // 위 #1407 치환이 이미 심어 둔 IR colPr 블록을 정확히 되찾아
+                // (render_col_pr_ctrl 은 결정적) secPr 앞으로 옮긴다.
+                let rendered = render_col_pr_ctrl(cd);
+                if let Some(colpr_at) = out.find(&rendered) {
+                    out.replace_range(colpr_at..colpr_at + rendered.len(), "");
+                    if let Some(secpr_at) = out.find("<hp:secPr ") {
+                        out.insert_str(secpr_at, &rendered);
+                    } else {
+                        // secPr 미발견(비정상 템플릿) — 원위치 복원으로 무손실 유지.
+                        out.insert_str(colpr_at, &rendered);
+                    }
+                }
+            }
+        }
     }
 
     // 추가 문단: `</hp:p></hs:sec>` 직전에 `<hp:p>` 요소를 삽입.
@@ -586,6 +644,16 @@ pub fn write_section(
             let pid = ctx.next_para_id();
             let sid = ctx.effective_style_id(p.style_id);
             extra.push_str(&render_hp_p_open(p, pid, sid));
+            // [#4056] 후속 문단이 구역나누기(SectionDef)면 그 구역을 secPr 로 방출한다.
+            // `render_runs` 는 SectionDef 슬롯을 hidden 처리해 XML 을 내지 않으므로
+            // 여기서 내지 않으면 뒤 구역이 통째로 사라져 쪽나눔이 소실된다.
+            if let Some(Control::SectionDef(sd)) = p
+                .controls
+                .iter()
+                .find(|c| matches!(c, Control::SectionDef(_)))
+            {
+                extra.push_str(&build_secpr_run(sd, first_run_char_shape_id(p)));
+            }
             extra.push_str(&runs);
             extra.push_str(&linesegs);
             extra.push_str("</hp:p>");
@@ -605,7 +673,11 @@ pub fn write_section(
 /// (미등록 스타일 → 0, #1933). 전 문단 경로가 이 함수를 거치므로 여기가 단일
 /// 방출 지점이다.
 pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> String {
-    let page_break = if matches!(p.column_type, ColumnBreakType::Page) {
+    // 합성 쪽나눔(파서가 자연 쪽 경계에서 승격, HWP3)은 문서 내용이 아니라 조판
+    // 힌트라 저장하지 않는다. 저장하면 한글 재조판의 자연 경계와 이중 작용해
+    // 빈 쪽을 만든다(07615: 합성 138건이 264→329쪽 부풀림, 중화 시 264쪽 복원).
+    let page_break = if matches!(p.column_type, ColumnBreakType::Page) && !p.page_break_synthesized
+    {
         1
     } else {
         0
@@ -623,8 +695,40 @@ pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> Stri
 
 /// 문단 첫 run 의 charPrIDRef. IR의 `char_shapes[0].char_shape_id` 사용.
 /// 비어있으면 0 (기본 글자모양) 반환.
-fn first_run_char_shape_id(p: &Paragraph) -> u32 {
+pub(super) fn first_run_char_shape_id(p: &Paragraph) -> u32 {
     p.char_shapes.first().map(|r| r.char_shape_id).unwrap_or(0)
+}
+
+/// [#4056] 후속 구역(SectionDef)을 HWPX `<hp:secPr>` run 으로 방출한다.
+///
+/// HWP5 는 한 BodyText 섹션에 구역(secd)을 여럿 담을 수 있다(issue-505: 수식 4개가
+/// 각 구역 = 4쪽). 종전 HWPX 직렬화기는 `render_runs` 에서 **모든 SectionDef 를 드롭**해
+/// (첫 구역만 write_section 의 secPr 템플릿으로 살아남음) 뒤 구역들의 쪽나눔이 사라졌다
+/// (issue-505: 4→1쪽). HWPX 는 한 section0.xml 안에 secPr 를 여럿 둘 수 있으므로(한글
+/// 원본 실증: issue2019 10개·06544 63개), 뒤 구역마다 secPr 를 방출한다.
+///
+/// secPr 템플릿(`EMPTY_SECTION_XML`)에서 secPr 블록만 잘라 IR 값으로 치환한다 —
+/// 커스터마이즈 앵커(pagePr·visibility·scalars·footNotePr·pageBorderFill)가 모두 secPr
+/// 내부라 첫 구역과 같은 함수를 재사용한다. 바탕쪽(masterPage)은 이 경로에서 미지원
+/// (`masterPageCnt="0"` 유지) — 후속 구역의 바탕쪽은 드물다.
+///
+/// [#5873] 표 셀(subList) 안 문단도 같은 보완이 필요하다 —
+/// `table.rs::write_sub_list_paragraphs` 가 이 함수를 재사용한다.
+pub(super) fn build_secpr_run(sd: &SectionDef, first_cs: u32) -> String {
+    let start = EMPTY_SECTION_XML
+        .find("<hp:secPr ")
+        .expect("템플릿에 secPr 열기 태그가 있어야 함");
+    let end = EMPTY_SECTION_XML[start..]
+        .find("</hp:secPr>")
+        .map(|e| start + e + "</hp:secPr>".len())
+        .expect("템플릿에 secPr 닫기 태그가 있어야 함");
+    let mut secpr = EMPTY_SECTION_XML[start..end].to_string();
+    secpr = replace_page_pr(&secpr, &sd.page_def);
+    secpr = replace_page_border_fill(&secpr, sd);
+    secpr = replace_visibility(&secpr, sd);
+    secpr = replace_secpr_scalars(&secpr, sd);
+    secpr = replace_footnote_shape(&secpr, sd);
+    format!(r#"<hp:run charPrIDRef="{}">{}</hp:run>"#, first_cs, secpr)
 }
 
 /// Paragraph 하나를 (완전한 `<hp:run>` 시퀀스 XML, `<hp:linesegarray>` 요소 XML,
@@ -634,22 +738,118 @@ fn first_run_char_shape_id(p: &Paragraph) -> u32 {
 /// - `para.line_segs` 가 비어있지 않으면 **IR 값 그대로** `<hp:linesegarray>` 요소로 출력
 /// - 비어있으면 **요소 자체를 방출 생략** (빈 문자열 반환) — 원본에 linesegarray 가
 ///   없는 문단의 보존 + rhwp 는 lineseg 를 새로 생산하지 않음. 한컴은 열 때 재계산
+///
 pub(crate) fn render_paragraph_parts(
     para: &Paragraph,
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
-    let runs_xml = render_runs(para, ctx);
+    let (runs_xml, position_axis_intact, serialized_axis_end, mut hwp5_only_slot_positions) =
+        render_runs(para, ctx);
 
-    if !para.line_segs.is_empty() {
+    // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
+    // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
+    // lineseg 를 방출하지 않는다. 방출 텍스트와 textpos 사다리가 어긋난 lineseg 를
+    // 한글 2022 가 만나면 **그 문단부터 문서 끝까지 본문을 통째로 폐기**한다
+    // (성년후견 h2x: -112,075자 실측 — lineseg 억제만으로 전량 회복). 방출을
+    // 생략하면 한글이 열 때 재계산한다(#1380 과 같은 계약).
+    // [#5563] 문단 축을 넘어서는 `textpos` 를 실은 줄은 내보내지 않는다. 원본이
+    // 들고 있던 낡은 줄나눔 캐시가 그대로 옮겨 실리면(07990: 5개 문단이 길이 15 에
+    // textpos 119 등) 한글 2022 가 "다음 줄은 119번째 글자에서 시작"을 14글자 문단에서
+    // 해소하려다 **파일 개방이 끝나지 않는다**(COM Open 3,663초 미반환 실측). rhwp 는
+    // 자기가 쓴 파일을 그대로 다시 읽으므로 `--verify` 로는 잡히지 않는다.
+    //
+    // 판정은 HWP5 저장기의 #4677 계약(`line_segs_within_text_axis`)을 그대로 쓴다 —
+    // 경계 `text_start == char_count` 는 정상(한컴 자신이 쓰는 값)이라 `>` 이고, 범위
+    // 밖이 나오면 그 앞까지만 남긴다. 첫 줄부터 범위 밖이면 요소를 통째로 생략해
+    // 한글이 스스로 조판하게 한다(#1380 과 같은 계약).
+    //
+    // `char_count` 가 0 인 합성 IR(파서를 거치지 않은 문단)은 축 증거가 없으므로
+    // 종전대로 원본 줄을 그대로 낸다.
+    // `DocumentCore`는 빈 누름틀의 안내문 텍스트를 IR에서 비울 수 있지만,
+    // 직렬화기는 그 Field 슬롯과 안내문을 다시 방출한다. 이때 IR `char_count`만
+    // 상한으로 쓰면 필드 뒤의 정상 lineseg까지 잘려 셀 세로 정렬이 달라진다
+    // (issue1893의 `textpos=25`). 실제 방출한 축 끝도 함께 써야 한다.
+    //
+    // [#5943] 그 상한을 쓰기 전에 **축을 HWPX 쪽으로 내린다**. HWP5 문단 축은 구역 정의와
+    // 템플릿 흡수 단 정의에도 8유닛씩을 주지만 HWPX 문단에는 그 자리가 없다(`hp:secPr` 은
+    // 구역 머리 run 소속). 그래서 구역 첫 문단에서 두 축이 16유닛 어긋나고, 원본 그대로 실은
+    // `textpos` 가 한글이 세는 자리보다 뒤를 가리킨다. 한글 2024 는 그 문단부터 본문을
+    // 폐기한다(02502.h2x: 9쪽 6,040자 → 1쪽 423자. `textpos` 를 48→40 으로 내리면 여전히
+    // 실패, **32 로 내리면 완전 복원** — 축이 16 짧다는 직접 증거다). 2022 는 관대했다.
+    // `char_count` 도 HWP5 축이므로 상한에서 같은 폭을 뺀다.
+    //
+    // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
+    // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
+    // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
+    let hwp5_only_units = if ctx.line_segs_on_hwpx_axis {
+        hwp5_only_slot_positions.clear();
+        0
+    } else {
+        8 * hwp5_only_slot_positions.len() as u32
+    };
+    let rebased_line_segs: Option<Vec<LineSeg>> =
+        (!hwp5_only_slot_positions.is_empty() && !para.line_segs.is_empty()).then(|| {
+            para.line_segs
+                .iter()
+                .map(|seg| {
+                    let shift = 8 * hwp5_only_slot_positions
+                        .iter()
+                        .filter(|&&pos| pos < seg.text_start)
+                        .count() as u32;
+                    LineSeg {
+                        text_start: seg.text_start.saturating_sub(shift),
+                        ..seg.clone()
+                    }
+                })
+                .collect()
+        });
+    let source_line_segs = rebased_line_segs.as_deref().unwrap_or(&para.line_segs);
+
+    let line_seg_axis_end = para
+        .char_count
+        .max(serialized_axis_end)
+        .saturating_sub(hwp5_only_units);
+    let axis_line_segs = if para.stored_text_partition_is_dirty() {
+        // The retained rows are an edit-reflow template, not a partition of
+        // the current text. Omit the cache and let the consumer recompute it.
+        &source_line_segs[..0]
+    } else if line_seg_axis_end > 0 {
+        line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
+    } else {
+        source_line_segs
+    };
+
+    // [#5847] 줄 전체가 reflow 합성(bit31)인 문단 — 원본에 linesegarray 가 없어
+    // rhwp 가 조판용으로 만든 줄이다. 파일로 내면 구역 누적 vertpos 와 bit31
+    // 플래그가 그대로 실려 한글 2022 가 캐시를 신뢰하다 조판을 폐기한다
+    // (08818: 81쪽 → 5쪽). 원본과 같게 방출을 생략해 한글이 재계산하게 한다
+    // (#1380 계약). HWP5→HWPX materialize 는 별도 placeholder 를 쓰므로 무관.
+    let all_synthetic = !axis_line_segs.is_empty()
+        && axis_line_segs
+            .iter()
+            .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+
+    if !axis_line_segs.is_empty() && position_axis_intact && !all_synthetic {
         // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
+        //
+        // [#5847] reflow 의 구역 단위 vpos 재계산이 원본 캐시 보유 문단의
+        // vertpos 를 문서 누적 좌표로 덮어쓴 경우, 파싱 때 스냅샷해 둔 원본
+        // 쪽-상대 좌표로 되돌려 낸다 — 누적 좌표가 파일로 나가면 한글 2022 가
+        // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
+        // 접두 슬라이스라 인덱스가 그대로 대응한다.
+        let source_vpos = para
+            .source_line_seg_vertical_pos
+            .as_deref()
+            .filter(|v| v.len() == para.line_segs.len())
+            .map(|v| &v[..axis_line_segs.len()]);
         let linesegs = format!(
             "{}{}{}",
             LINESEG_SLOT_OPEN,
-            render_lineseg_array_from_ir(&para.line_segs),
+            render_lineseg_array_from_ir(axis_line_segs, source_vpos),
             LINESEG_SLOT_CLOSE
         );
-        let vert_end = next_vert_cursor_from_ir(&para.line_segs, vert_start);
+        let vert_end = next_vert_cursor_from_ir(axis_line_segs, source_vpos, vert_start);
         (runs_xml, linesegs, vert_end)
     } else {
         // IR 에 line_segs 없음 — linesegarray 방출 생략 (#1380)
@@ -657,25 +857,145 @@ pub(crate) fn render_paragraph_parts(
     }
 }
 
+/// [#5140] 한컴 사용자 정의 기호를 HWPX 표기(평면 15 보충 PUA)로 올린다.
+///
+/// 같은 글자를 HWP5 는 `0xA000 | X`, HWPX 는 `U+F0000 | X` 로 싣는다. IR 정본은 HWP5 쪽
+/// 사영이므로 HWPX 로 낼 때만 올려 준다 — 리터럴로 내면 한글이 그 자리를 Yi 음절(U+A8xx)
+/// 로 읽어 글자가 깨진다. 표에 없는 글자는 그대로 통과한다(`0xA813` 반례 참고).
+///
+/// 본문 텍스트(`hp:t`)와 글자겹침(`hp:compose/@composeText`) 두 경로 모두 이 규칙을 쓴다 —
+/// 한글 SaveAs 실측에서 둘 다 예외 없이 평면 15 로 갔다.
+fn hancom_symbol_for_hwpx(c: char) -> char {
+    let Ok(unit) = u16::try_from(u32::from(c)) else {
+        return c;
+    };
+    tags::hancom_symbol_to_plane15(unit)
+        .and_then(char::from_u32)
+        .unwrap_or(c)
+}
+
+/// 원본에서 글자들이 0 부터 연속으로 놓여 있었는가 — 곧 컨트롤이 전부 텍스트 뒤에 있어
+/// mismatch 경로로 다시 써도 글자 위치가 밀리지 않는가.
+///
+/// mismatch 경로는 텍스트를 0 부터 연속으로 방출한다. 원본 `char_offsets` 가 그 누적 폭과
+/// 같으면 방출 전후 좌표가 일치하므로 lineseg 의 `text_start` 가 그대로 유효하다.
+fn text_positions_unshifted(para: &Paragraph) -> bool {
+    let mut expected = 0u32;
+    for (i, c) in para.text.chars().enumerate() {
+        match para.char_offsets.get(i) {
+            Some(&off) if off == expected => {}
+            // char_offsets 가 없는 합성 IR 은 갭이 없다고 본다(종전 동작 유지).
+            None => {}
+            _ => return false,
+        }
+        expected = expected.saturating_add(char_utf16_width(c));
+    }
+    true
+}
+
+/// 문단 하나를 여러 `<hp:t>` 조각으로 나눠 방출해도 위치가 이어지는 커서.
+///
+/// 탭 확장·제목 차례 표시는 둘 다 "문단 축 위 n번째" 로만 식별되므로, run 분할·필드
+/// 방출로 조각이 갈려도 같은 커서를 물려줘야 제자리에 실린다.
+#[derive(Default)]
+pub(crate) struct InlineCursor<'a> {
+    /// 다음에 소비할 `tab_extended` 인덱스
+    pub tab_idx: usize,
+    /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
+    pub title_marks: &'a [TitleMark],
+    /// [#5537] `title_marks[i]` 가 **앞(닫히는) run 소유**인가 — char_shapes 경계
+    /// 유닛이 표시 끝 유닛과 일치하면 원본은 표시까지를 앞 run 에 뒀다는 증거다.
+    /// 비어 있으면 전부 false(종전 동작: 다음 run 머리 방출).
+    pub mark_owned_by_prev: &'a [bool],
+    /// 다음에 방출할 `title_marks` 인덱스
+    pub mark_idx: usize,
+    /// 지금까지 방출한 문단 텍스트의 문자 수
+    pub char_idx: usize,
+    /// [#4895] 이 문단의 소프트 하이픈을 `<hp:hyphen/>` 요소로 내릴지 여부.
+    ///
+    /// 한컴 원본은 소프트 하이픈을 리터럴 U+00AD 로도, 제어 표기로도 쓴다. 출처가
+    /// 제어 표기(HWP5 `control_mask` 비트 24)일 때만 요소로 내려 원본 표기를 지킨다.
+    pub soft_hyphen_as_element: bool,
+    /// [#5174] 이 문단의 묶음 빈칸을 `<hp:nbSpace/>` 요소로 내릴지 여부.
+    ///
+    /// 하이픈과 같은 계약이다 — 한컴 원본은 U+00A0 을 요소로도, 리터럴로도 쓴다
+    /// (HWPX 실측: 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 출처가 제어·요소 표기
+    /// (`control_mask` 비트 30)일 때만 요소로 내린다.
+    pub nb_space_as_element: bool,
+}
+
+impl InlineCursor<'_> {
+    /// 현재 문자 위치에 걸린 제목 차례 표시를 전부 방출한다.
+    fn flush_marks_at_cursor(&mut self, t_xml: &mut String, buf: &mut String) {
+        while let Some(m) = self.title_marks.get(self.mark_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            t_xml.push_str(&format!(
+                r#"<hp:titleMark ignore="{}"/>"#,
+                if m.ignore { 1 } else { 0 }
+            ));
+            self.mark_idx += 1;
+        }
+    }
+
+    /// [#5537] 다음 미방출 표시가 현재 위치에 걸려 있고 **닫히는 run 소유**
+    /// (char_shapes 경계 유닛 == 표시 끝 유닛 — 원본이 표시를 앞 run 에 뒀다는
+    /// 증거)인가. 조각 말미 flush 의 발동 조건이다.
+    fn has_pending_prev_owned_mark(&self) -> bool {
+        self.title_marks
+            .get(self.mark_idx)
+            .is_some_and(|m| m.char_idx == self.char_idx)
+            && self
+                .mark_owned_by_prev
+                .get(self.mark_idx)
+                .copied()
+                .unwrap_or(false)
+    }
+
+    /// [#5537] 조각 말미에서 닫히는 run 소유의 표시만 방출한다 — 나머지는
+    /// 종전대로 다음 run 머리에서 flush 된다(한컴 실측 두 형태 공존).
+    fn flush_prev_owned_marks_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        while self.has_pending_prev_owned_mark() {
+            let m = &self.title_marks[self.mark_idx];
+            flush_buf(t_xml, buf);
+            t_xml.push_str(&format!(
+                r#"<hp:titleMark ignore="{}"/>"#,
+                if m.ignore { 1 } else { 0 }
+            ));
+            self.mark_idx += 1;
+        }
+    }
+}
+
 /// `<hp:t>...</hp:t>` 본문 생성 — 탭/소프트브레이크/XML escape 포함.
 ///
-/// `tab_extended`: IR의 탭 확장 정보 목록. `tab_idx`를 통해 탭 문자마다 순서대로 참조.
-/// 항목이 없으면 "데이터 없음" 마커(width=`TAB_NO_DATA_WIDTH_MARKER`=0, leader=0, type=1)를
-/// 방출한다(#4403) — 파서가 이를 인식해 `tab_extended` 를 만들지 않아야 렌더러가 실제 `TabDef`
-/// 기준으로 탭 정지를 다시 계산한다.
+/// `tab_extended`: IR의 탭 확장 정보 목록. `cursor.tab_idx` 를 통해 탭 문자마다 순서대로
+/// 참조한다. 항목이 없으면 "데이터 없음" 마커(width=`TAB_NO_DATA_WIDTH_MARKER`=0, leader=0,
+/// type=1)를 방출한다(#4403) — 파서가 이를 인식해 `tab_extended` 를 만들지 않아야 렌더러가
+/// 실제 `TabDef` 기준으로 탭 정지를 다시 계산한다.
 pub(crate) fn render_hp_t_content(
     text: &str,
     tab_extended: &[[u16; 7]],
-    tab_idx: &mut usize,
+    cursor: &mut InlineCursor<'_>,
 ) -> String {
     let mut t_xml = String::from("<hp:t>");
     let mut buf = String::new();
+    // 조각 첫머리에서도 훑는다 — char_shape 경계가 표시 자리에 걸리면 그 표시만 담은
+    // 빈 run 이 나오는데(한컴 실측: `<hp:t><hp:titleMark ignore="1"/></hp:t>`),
+    // 문자 루프만으로는 문자가 없어 그 run 을 그냥 지나친다.
+    cursor.flush_marks_at_cursor(&mut t_xml, &mut buf);
     for c in text.chars() {
+        // 제목 차례 표시는 이 문자 **앞**에 놓인다.
+        cursor.flush_marks_at_cursor(&mut t_xml, &mut buf);
+        cursor.char_idx += 1;
         match c {
             '\t' => {
                 flush_buf(&mut t_xml, &mut buf);
-                let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(*tab_idx) {
-                    *tab_idx += 1;
+                let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(cursor.tab_idx)
+                {
+                    cursor.tab_idx += 1;
                     (ext[0] as u32, ext[2] & 0x00ff, (ext[2] >> 8) & 0x00ff)
                 } else {
                     (TAB_NO_DATA_WIDTH_MARKER, 0u16, 1u16)
@@ -689,10 +1009,54 @@ pub(crate) fn render_hp_t_content(
                 flush_buf(&mut t_xml, &mut buf);
                 t_xml.push_str("<hp:lineBreak/>");
             }
+            // 고정폭 빈칸은 `<hp:fwSpace/>` 요소로 복원한다(#4675). 파서가
+            // `<hp:fwSpace/>`→U+2007 로 읽으므로 리터럴 방출은 표현 강등이다 — 한글은
+            // 요소를 텍스트 추출에 싣지 않지만 리터럴은 문자로 실어, 저장본의 추출
+            // 텍스트·재조판이 원본과 달라진다(10k 스윕 figure-space-only 1,970건).
+            //
+            // 한컴 원본 실측(hwpx 전수): U+2007 은 fwSpace 요소 530회 · 리터럴 0회로
+            // **항상 요소**다. 반면 U+00A0 은 요소 26문서 · 리터럴 20문서로 섞여 있어
+            // 요소로 강제하면 리터럴이던 원본에서 한글 추출 텍스트가 사라진다.
+            // 그래서 U+00A0 만 아래에서 출처 표기를 따라간다(#5174).
+            '\u{2007}' => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:fwSpace/>");
+            }
+            // [#5174] 묶음 빈칸은 U+2007 과 달리 **원본 표기를 따라간다.** 종전에는 늘
+            // 리터럴로 냈는데(표현 강등), 원본이 제어·요소 표기였으면 한글 추출 텍스트에
+            // 없던 공백이 생겨 원본과 어긋난다. 반대로 리터럴 원본을 요소로 바꾸면 글자가
+            // 사라진다 — 그래서 어느 한쪽으로 강제하지 않고 출처를 보존한다.
+            //
+            // 출처 신호는 `control_mask` 비트 30 이다(`cursor` 가 나른다). HWP5 원본은
+            // PARA_HEADER 가 직접 주고(제어코드 존재와 5,553/5,553 일치), HWPX 원본은
+            // 파서가 `<hp:nbSpace/>` 를 만났을 때 세운다.
+            '\u{00A0}' if cursor.nb_space_as_element => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:nbSpace/>");
+            }
+            // [#4895] 소프트 하이픈(U+00AD)은 U+2007 과 달리 **원본 표기를 따라간다.**
+            // 종전에는 늘 `<hp:hyphen/>` 요소로 내렸는데(#4776), 한컴이 만든 문서는
+            // 두 표기를 다 쓴다(10k 코퍼스 실측: 리터럴 원본 58문서 · 제어 표기 원본 10문서).
+            //
+            // 한글 2022 대조 실측(01628, 하이픈 표기만 교체):
+            //   `<hp:hyphen/>`     → 본문 2,477자 (한글이 글자를 버린다)
+            //   raw U+00AD 리터럴  → 본문 2,478자, 원본과 textSha 일치
+            //
+            // 즉 한글은 요소·제어문자를 텍스트로 복원하지 않는다. 리터럴 원본을 요소로
+            // 바꾸면 글자가 사라지고(10k 스윕 36경로 회귀), 반대로 제어 표기 원본을
+            // 리터럴로 바꾸면 원본에 없던 글자가 생긴다. 그래서 출처 표기를 보존한다 —
+            // HWP5 PARA_HEADER `control_mask` 비트 24 가 그 신호다(`cursor` 가 나른다).
+            '\u{00AD}' if cursor.soft_hyphen_as_element => {
+                flush_buf(&mut t_xml, &mut buf);
+                t_xml.push_str("<hp:hyphen/>");
+            }
             c if (c as u32) < 0x20 => { /* 기타 제어문자 무시 */ }
-            c => buf.push(c),
+            c => buf.push(hancom_symbol_for_hwpx(c)),
         }
     }
+    // [#5537] 조각 말미 — 닫히는 run 소유의 표시(경계 유닛 = 표시 끝 유닛)는 여기서
+    // 방출한다. 다음 run 머리로 넘기면 재파싱 char_shapes 경계가 8유닛 무너진다.
+    cursor.flush_prev_owned_marks_at_fragment_end(&mut t_xml, &mut buf);
     flush_buf(&mut t_xml, &mut buf);
     t_xml.push_str("</hp:t>");
     t_xml
@@ -701,12 +1065,12 @@ pub(crate) fn render_hp_t_content(
 /// 문단 콘텐츠를 `char_shapes` 경계 기준 다중 `<hp:run>` 으로 분할 출력하는 빌더 (#1378).
 ///
 /// 파서(`src/parser/hwpx/section.rs`)는 각 `<hp:run charPrIDRef>` 시작 위치에서
-/// `(utf16_pos, char_shape_id)` 를 기록하고 연속 동일 id 를 dedup 한다.
+/// `(utf16_pos, char_shape_id)` 를 기록한다. 동일 id라도 위치가 다른 경계는 보존한다.
 /// 이 빌더는 그 역방향: `segs[i].0` (i ≥ 1) 위치에서 run 을 닫고 새 run 을 연다.
 ///
 /// 경계 규칙 (구현계획서 1.2):
 /// 1. 경계와 슬롯/문자가 같은 위치면 경계 먼저 — 해당 콘텐츠는 새 run 소속 (`cut_before`)
-/// 2. 연속 동일 id 경계는 출력 시 skip (IR 은 이미 dedup 상태이나 방어적으로 유지)
+/// 2. 연속 동일 id 경계도 run으로 방출 — start_pos 보존 (#3739)
 /// 3. `char_shapes` 가 비어있으면 단일 run `charPrIDRef="0"`
 /// 4. `segs[0].start_pos > 0` 인 비정상 IR 도 첫 run 은 위치 0 부터 시작 (관용 처리)
 /// 5. 빈 세그먼트는 `<hp:t></hp:t>` 로 방출 — 재파싱 시 run 시작 entry 위치 보존
@@ -723,15 +1087,8 @@ struct RunSplitter {
 
 impl RunSplitter {
     fn new(para: &Paragraph) -> Self {
-        let mut segs: Vec<(u32, u32)> = Vec::new();
-        for cs in &para.char_shapes {
-            if let Some(&(_, last_id)) = segs.last() {
-                if last_id == cs.char_shape_id {
-                    continue; // 규칙 2
-                }
-            }
-            segs.push((cs.start_pos, cs.char_shape_id));
-        }
+        // #3500/#3739: 연속 동일 id 도 start_pos 가 다르면 별도 run.
+        let mut segs = super::char_shapes::plan_run_boundaries_of(para);
         if segs.is_empty() {
             segs.push((0, 0)); // 규칙 3
         }
@@ -827,47 +1184,85 @@ fn emit_field_end(out: &mut String, para: &Paragraph, fr: &FieldRange) {
 /// `clear_initial_field_texts` 로 이를 빈 필드로 정규화하므로, 저장에서 되살리지 않으면
 /// 파일 차원에서 텍스트가 영구 소실된다(XSD 는 통과하는 조용한 내용 소실).
 ///
-/// IR 위치 축(`expected_utf16_pos`)은 건드리지 않고 **방출 XML 에만** 텍스트를 되돌린다.
+/// IR 위치는 바꾸지 않고 **방출 XML 에만** 텍스트를 되돌린다. 다만 호출자는 반환된
+/// UTF-16 길이를 직렬화 축에 반영해 뒤따르는 슬롯·lineseg를 실제 출력 위치에 맞춘다.
 /// 재적재하면 같은 정규화가 다시 지우므로 IR 은 저장→적재 고정점을 유지한다.
-fn emit_guide_residue(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRange, pos: u32) {
+fn emit_guide_residue(
+    splitter: &mut RunSplitter,
+    para: &Paragraph,
+    fr: &FieldRange,
+    pos: u32,
+) -> u32 {
     // 값이 채워진 필드는 본문 run 이 이미 있다 — 중복 주입 금지.
     if fr.start_char_idx != fr.end_char_idx {
-        return;
+        return 0;
     }
     let Some(Control::Field(f)) = para.controls.get(fr.control_idx) else {
-        return;
+        return 0;
     };
     // 수정됨(bit 15) 표식이 선 필드는 초기 상태가 아니다 — 사용자가 비운 값을 되살리면 안 된다.
     if f.is_dirty() {
-        return;
+        return 0;
     }
     let Some(residue) = f.guide_residue.as_ref() else {
-        return;
+        return 0;
     };
     if residue.text.is_empty() {
-        return;
+        return 0;
     }
     // 잔재를 담던 run 의 경계까지만 먼저 끊는다 — 삭제 수술이 같은 위치에 접어 둔
     // zero-width run 들이 원본 서식(charPrIDRef)의 유일한 근거다.
     while splitter.needs_cut(pos) && splitter.current_shape_id() != residue.char_shape_id {
         splitter.cut_one();
     }
-    let mut tab_idx = 0usize;
+    // 안내문 잔재는 합성 텍스트라 탭 확장·제목 차례 표시가 없다 — 빈 커서로 낸다.
+    let mut cursor = InlineCursor::default();
     splitter
         .content
-        .push_str(&render_hp_t_content(&residue.text, &[], &mut tab_idx));
+        .push_str(&render_hp_t_content(&residue.text, &[], &mut cursor));
+    residue.text.encode_utf16().count() as u32
 }
 
 /// `pos` 위치에서 경계를 적용하고 `fieldEnd` 를 방출한다.
 /// 0-length 필드면 그 직전에 안내문 잔재를 복원한다 (#3545).
-fn emit_field_end_at(splitter: &mut RunSplitter, para: &Paragraph, fr: &FieldRange, pos: u32) {
-    emit_guide_residue(splitter, para, fr, pos);
+///
+/// 반환값은 방출한 안내문 잔재의 UTF-16 축 길이다. 호출자는 fieldEnd의 8유닛에 이 값을
+/// 더해 뒤따르는 슬롯과 lineseg의 실제 직렬화 축을 맞춘다.
+fn emit_field_end_at(
+    splitter: &mut RunSplitter,
+    para: &Paragraph,
+    fr: &FieldRange,
+    pos: u32,
+) -> u32 {
+    let guide_units = emit_guide_residue(splitter, para, fr, pos);
     splitter.cut_before(pos);
     emit_field_end(&mut splitter.content, para, fr);
+    guide_units
 }
 
 /// 고아(다단락) fieldEnd 를 `<hp:ctrl><hp:fieldEnd .../></hp:ctrl>` 로 방출 (Task #1556).
+///
+/// [#5252] **여는 짝을 찾지 못한 종료 마커는 내지 않는다.** `link_orphan_field_ends` 가
+/// 섹션을 훑고도 `begin_id_ref` 를 채우지 못했다면 그 문서 어디에도 짝 `fieldBegin` 이
+/// 없다는 뜻이다(원본 HWP5 자체가 그렇게 만들어진 문서가 있다). 한글은 **열려 있지 않은
+/// 필드를 닫는 `fieldEnd` 를 참조 값과 무관하게 버리므로**, 그대로 내면 한글이 세는 문단
+/// 축만 8유닛 짧아진다. 그런데 `linesegarray` 는 원본 축을 담고 있어 줄이 축을 넘고,
+/// 한글이 **그 문단부터 본문을 통째로 폐기한다**.
+///
+/// 한글 2022 주입 검정(07276 h2x): 이 마커만 빼면 137쪽 → 224쪽, 본문 +100,393자.
+/// `beginIDRef` 를 실제 id 로 바꾸는 것으로는 해결되지 않는다 — 그 필드는 이미 자기
+/// 종료로 닫혀 있어 여전히 이중 닫기다(같은 검정에서 변화 0).
+/// `02899` 는 이 마커 2개를 빼면 한글 추출 텍스트가 원본과 **해시까지 일치**한다.
+///
+/// 위치 부기(`expected_utf16_pos += 8`)는 호출부에서 그대로 둔다 — IR 축은 슬롯을 세고
+/// 있고 `char_shapes`·`linesegarray` 도 그 축 위에 있으므로, 방출만 막는 것이 검정에서
+/// 통과한 모양이다.
+///
+/// 앞 문단에 진짜 `fieldBegin` 이 있는 정상 다단락 고아는 종전대로 방출한다.
 fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
+    if ofe.begin_id_ref == 0 {
+        return;
+    }
     if let Ok(xml) = writer_to_string(|w| write_field_end_full(w, ofe.begin_id_ref, ofe.field_id)) {
         out.push_str("<hp:ctrl>");
         out.push_str(&xml);
@@ -879,7 +1274,7 @@ fn emit_orphan_field_end(out: &mut String, ofe: &OrphanFieldEnd) {
 ///
 /// `char_offsets` 로 문자 idx → UTF-16 위치를 매핑하므로 IR 내 컨트롤(8 유닛 갭)이
 /// 있어도 경계 위치가 어긋나지 않는다.
-fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut usize) {
+fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, cursor: &mut InlineCursor<'_>) {
     let mut text_buf = String::new();
     let mut running_pos = 0u32;
     for (idx, c) in para.text.chars().enumerate() {
@@ -889,7 +1284,7 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut u
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                tab_idx,
+                cursor,
             );
             splitter.cut_before(char_pos);
         }
@@ -902,12 +1297,44 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, tab_idx: &mut u
         &mut splitter.content,
         &mut text_buf,
         &para.tab_extended,
-        tab_idx,
+        cursor,
     );
+    // 마지막 문자 뒤에 남은 제목 차례 표시 — 빈 조각으로 한 번 더 낸다.
+    flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, cursor);
+}
+
+/// [#5943] 슬롯을 방출하되 **XML 을 한 글자도 내지 않았으면** 그 위치를 기록한다.
+///
+/// HWP5 문단 축에서 확장 제어는 예외 없이 8유닛을 차지하지만, HWPX 에는 대응 요소가
+/// 문단 안에 없는 컨트롤이 있다 — 구역 정의(`hp:secPr` 은 문단이 아니라 구역 머리 run 이
+/// 싣는다)와 첫 문단이 템플릿에 흡수시킨 첫 단 정의가 그것이다. 이 슬롯들은 위치 계산을
+/// 위해 축을 8씩 전진시키지만 방출 XML 은 비어 있으므로, **한글이 세는 HWPX 축은 그만큼
+/// 짧다**. 어느 컨트롤이 비는지는 arm 유무와 consume-once 상태에 함께 걸려 있어 종류로
+/// 판정하면 틀리므로, 실제 방출 길이 변화로 본다.
+fn render_control_slot_tracked(
+    out: &mut String,
+    control: &Control,
+    ctx: &mut SerializeContext,
+    hwp5_pos: u32,
+    hwp5_only_slot_positions: &mut Vec<u32>,
+) {
+    let before = out.len();
+    render_control_slot(out, control, ctx);
+    if out.len() == before {
+        hwp5_only_slot_positions.push(hwp5_pos);
+    }
 }
 
 /// Paragraph 본문을 완전한 `<hp:run>` 시퀀스로 직렬화한다 (#1378 다중 run 분할).
-fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
+///
+/// 반환: (run 시퀀스 XML, **위치 축 보존 여부**, 실제 방출한 UTF-16 축 끝,
+/// [#5943] HWP5 축에서만 자리를 차지한 슬롯들의 위치).
+///
+/// [#4778] 두 번째 값이 `false` 면 방출된 텍스트 스트림이 원본 8유닛 슬롯 축과
+/// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
+/// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
+/// 그 문단부터 본문을 통째 폐기하는 트리거다.
+fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32, Vec<u32>) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -924,13 +1351,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         && para.controls.is_empty()
         && para.field_ranges.is_empty()
         && para.orphan_field_ends.is_empty()
+        // 표시만 있고 텍스트가 없는 문단도 8유닛을 점유한다 — 여기서 빠지면 축이 밀린다.
+        && para.title_marks.is_empty()
     {
-        return String::new();
+        // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
+        return (String::new(), true, 0, Vec::new());
     }
 
     let mut splitter = RunSplitter::new(para);
 
     let slot_count = inferred_control_slot_count(para);
+    // [#4778] U+FFFC 마커는 컨트롤이 없어도 위치 축의 정규 시민이다(HWP3 암호 변환본:
+    // 마커 리터럴이 그대로 방출돼 재파싱 고정점 유지 — #3739 --verify 계약). 억제는
+    // **마커로 설명되지 않는 8유닛 구멍**(차례표지 0x0008 등 파서 미수용 슬롯)에만 건다.
+    let marker_count = para.text.chars().filter(|c| *c == '\u{fffc}').count();
     // slots 와 각 slot 의 para.controls 인덱스(slot_ctrl_indices)를 병행 수집 —
     // [Task #1627] empty-text 문단의 bookmark in-order 방출에서 slot 사이 위치 계산에 사용.
     let (slots, slot_ctrl_indices): (Vec<&Control>, Vec<usize>) =
@@ -967,12 +1401,12 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     hidden.push(i);
                     false
                 } else {
-                    let slot = is_hwpx_inline_slot(c);
-                    // [#4388] Hyperlink/Unknown 은 슬롯이 아니라 여기서 조용히
-                    // 제외된다(Bookmark 와 같은 취급) — is_hwpx_inline_slot 에
-                    // 등록하지 않기로 한 대가로, 이 실제 배제 지점에서 직접
-                    // 경고한다. Bookmark/HiddenComment 등 다른 non-slot 컨트롤은
-                    // 이 헬퍼가 내부적으로 무시한다.
+                    // [#4677] 위치 축은 책갈피까지 포함한다(`occupies_hwpx_slot_axis`).
+                    let slot = occupies_hwpx_slot_axis(c);
+                    // [#4388] Unknown 은 슬롯이 아니므로 이 실제 배제 지점에서 직접
+                    // 경고한다. HWP3 Hyperlink은 occupies_hwpx_slot_axis가 HWPX field로
+                    // 승격해 보존한다. HiddenComment 등 다른 non-slot 컨트롤은 이 헬퍼가
+                    // 내부적으로 무시한다.
                     if !slot {
                         warn_if_unrepresentable_in_hwpx(c);
                     }
@@ -1018,27 +1452,33 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             }
         };
 
-    // Bookmark는 zero-width 라 slot char-position 축에 안 잡힌다.
-    // - [Task #1627] empty-text(객체-only) 문단: 문단 시작 강제는 원본 컨트롤 순서(예:
-    //   Table·PageNumberPos 뒤의 Bookmark)를 깨고 roundtrip char_shape 오프셋을 shift시킨다
-    //   → para.controls 순서대로 slot 사이에 in-order 방출.
-    // - [Task #1591 v2] 슬롯이 있는 비-empty 문단도 in-order 로 통일(1라운드 hoist 제거
-    //   편입 — 표/pageNum 뒤 북마크의 원본 순서 보존).
-    // - 비-empty·무슬롯 문단: 종전대로 문단 시작(첫 run)에 배치(순서 증거 없음, 종전 유지).
-    let bm_inorder = para.text.is_empty() || !slots.is_empty();
-    if !bm_inorder {
-        for ctrl in &para.controls {
-            if let Control::Bookmark(bm) = ctrl {
-                if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
-                    splitter.content.push_str("<hp:ctrl>");
-                    splitter.content.push_str(&xml);
-                    splitter.content.push_str("</hp:ctrl>");
-                }
-            }
-        }
-    }
-
-    let mut tab_idx = 0usize;
+    // [#4677] 책갈피는 이제 위치 슬롯이라(`occupies_hwpx_slot_axis`) 슬롯 루프가 제자리에
+    // 방출한다. 종전의 별도 방출(문단 시작 hoist / slot 사이 in-order, Task #1591·#1627)은
+    // 슬롯 축이 책갈피를 잡지 못하던 시절의 우회였고, 그대로 두면 이중 방출이 된다.
+    // [#5537] 표시별 소유 run 판별 — 표시 끝 유닛(= 다음 문자의 char_offsets 값)에
+    // char_shapes 경계가 정확히 걸리면, 원본은 표시까지를 **앞 run** 에 뒀다
+    // (hwp3-sample10-hwp5 pi=14164: 유닛 7..15 표시 + 경계 15 = run(39) 소유.
+    // 다음 run 머리로 넘기면 재파싱 경계가 15→7 로 무너진다). 표시가 문자 갭
+    // 없이 놓인 합성 IR(char_offsets 에 8유닛 갭 없음)은 어느 경계에도 안 걸려
+    // 종전 동작(다음 run 머리) 그대로다.
+    let mark_owned_by_prev: Vec<bool> = para
+        .title_marks
+        .iter()
+        .map(|m| {
+            para.char_offsets.get(m.char_idx).is_some_and(|&end_unit| {
+                end_unit >= 8 && para.char_shapes.iter().any(|cs| cs.start_pos == end_unit)
+            })
+        })
+        .collect();
+    let mut cursor = InlineCursor {
+        title_marks: &para.title_marks,
+        mark_owned_by_prev: &mark_owned_by_prev,
+        // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
+        soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
+        // [#5174] 같은 계약 — 출처가 제어·요소 표기였던 문단만 `<hp:nbSpace/>` 로 되돌린다.
+        nb_space_as_element: para.control_mask & (1u32 << 0x001E) != 0,
+        ..Default::default()
+    };
 
     // fast path: 슬롯·필드·고아 fieldEnd·경계 없음 — 텍스트 전체를 단일 run 으로
     if slots.is_empty()
@@ -1046,30 +1486,33 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         && para.orphan_field_ends.is_empty()
         && splitter.single_run()
     {
-        let t = render_hp_t_content(&para.text, &para.tab_extended, &mut tab_idx);
+        let t = render_hp_t_content(&para.text, &para.tab_extended, &mut cursor);
         splitter.content.push_str(&t);
-        return splitter.finish();
+        flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, &mut cursor);
+        // 슬롯이 하나도 없는데 char_count 는 슬롯을 주장하면(파서가 못 읽은 컨트롤 —
+        // 예: 차례표지 0x0008) 방출 축이 원본보다 짧다 — 이때 lineseg 를 그대로 쓰면
+        // 한글이 그 문단부터 본문을 폐기한다(#4778). 축 붕괴를 호출부에 알린다.
+        // U+FFFC 마커가 슬롯 주장을 전부 설명하면 종전 계약 유지(#3739).
+        return (
+            splitter.finish(),
+            slot_count == 0 || marker_count >= slot_count,
+            0,
+            Vec::new(),
+        );
     }
 
     // mismatch 경로: 슬롯 위치 추정 불가 — 텍스트(경계 분할 포함) 후 슬롯 일괄 방출
     if slot_count != slots.len() {
-        split_text_into(&mut splitter, para, &mut tab_idx);
-        let mut bm_done = vec![false; para.controls.len()];
-        for (si, slot) in slots.iter().enumerate() {
-            // [Task #1627] empty-text 문단: 이 slot 앞(controls 순서)의 bookmark 를 먼저 방출.
-            if bm_inorder {
-                emit_inorder_bookmarks(
-                    &mut splitter.content,
-                    para,
-                    &mut bm_done,
-                    slot_ctrl_indices[si],
-                );
-            }
+        split_text_into(&mut splitter, para, &mut cursor);
+        // [#3532] 본문 끝 zero-width 글자모양 경계(문단 마크 전용 모양)는 말미
+        // 컨트롤보다 앞에 적용한다 — 종전에는 컨트롤을 먼저 몰아써서 재파싱
+        // 경계가 컨트롤 슬롯 폭(8유닛×n)만큼 밀렸다(hwp3-sample10 실측:
+        // (50,80)→(66,80)). 경계를 먼저 끊으면 컨트롤이 마지막 run 안쪽(경계
+        // 뒤)에 실려 왕복이 고정점이 된다.
+        let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
+        splitter.cut_before(text_units);
+        for slot in slots.iter() {
             render_control_slot(&mut splitter.content, slot, ctx);
-        }
-        if bm_inorder {
-            // 마지막 slot 뒤에 오는 trailing bookmark.
-            emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
         }
         // [Task #1591 v2] 균형 field_ranges 의 닫는 fieldEnd 도 말미 복원 — 이 경로는
         // fieldBegin(슬롯)만 방출하고 fieldEnd 방출 코드가 없어 same-para 균형 필드가
@@ -1082,45 +1525,73 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         for ofe in &para.orphan_field_ends {
             emit_orphan_field_end(&mut splitter.content, ofe);
         }
-        return splitter.finish();
+        // 컨트롤을 말미로 몰았으므로 원본 lineseg 좌표계는 더 이상 유효하지 않다 —
+        // 호출부가 저장 lineseg 방출을 억제하게 한다(#4778). 단, 슬롯 부족분이
+        // U+FFFC 마커로 전부 설명되면 종전 계약(방출 유지, #3739 고정점)을 지킨다.
+        //
+        // [#3518] HWP3 는 컨트롤 페이로드 hchar 를 char_count/char_offsets 에
+        // 1유닛씩 쌓아 슬롯 추론이 부풀어 mismatch 로 떨어지지만, 본문 글자
+        // 자체는 0부터 연속이다(hwp3-sample16 문단 70: "1.추진목적" offs=0..5,
+        // cc=53). 그때는 말미 일괄 방출이 글자 좌표를 밀지 않으므로 저장
+        // lineseg 를 버려 reflow 하면 쪽이 +1 된다. 글자가 연속이고 textpos 가
+        // 본문 폭 안이면 축이 살아 있다.
+        let shortfall = slot_count.saturating_sub(slots.len());
+        let text_unshifted_and_in_range = text_positions_unshifted(para)
+            && para.line_segs.iter().all(|ls| ls.text_start <= text_units);
+        return (
+            splitter.finish(),
+            marker_count >= shortfall || text_unshifted_and_in_range,
+            0,
+            Vec::new(),
+        );
     }
+
+    // 슬롯으로 세어 놓고 XML 은 내지 않는 컨트롤이 섞여 있으면, 방출 축은 그만큼 짧다.
+    // 위치는 여전히 최선을 다해 맞추되 **축 정합을 주장하지는 않는다** — lineseg 를 그대로
+    // 쓰면 한글이 범위 밖 textpos 를 만나 파일을 아예 열지 못한다.
+    let axis_faithful = slots.iter().all(|c| emits_hwpx_slot_xml(c));
 
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
+    // [#5943] XML 을 한 글자도 내지 않은 슬롯의 **HWP5 축** 위치. 저장 lineseg 의
+    // `textpos` 를 HWPX 축으로 내릴 때 쓴다 — 아래 `render_control_slot_tracked` 주석.
+    let mut hwp5_only_slot_positions: Vec<u32> = Vec::new();
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
     // [Task #1556] 고아 fieldEnd 방출 추적.
     let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
     let text_char_count = para.text.chars().count();
 
-    // [Task #1591 v2] 메인 경로 bookmark in-order 방출 추적 (mismatch 경로와 동일 기제).
-    // 메인 경로는 종전엔 hoist 전담이라 방출 지점이 없었다 — 첫 문단(hidden 슬롯 정합)이
-    // 메인 경로로 진입하면서 슬롯 사이 in-order 방출이 필요해졌다.
-    let mut bm_done = vec![false; para.controls.len()];
-
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
-    // pre-char 검사를 통과하지 못하므로 루프 전에 slots → fieldEnd 순으로 방출한다.
+    // pre-char 검사를 통과하지 못한다. 따라서 슬롯마다 `inner_slot_count`를
+    // 확인해 fieldEnd를 제자리에 방출한다. 모든 슬롯 뒤에 fieldEnd를 몰면
+    // 연속 또는 중첩 필드의 닫는 순서가 뒤바뀐다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
-            if bm_inorder {
-                emit_inorder_bookmarks(
-                    &mut splitter.content,
-                    para,
-                    &mut bm_done,
-                    slot_ctrl_indices[slot_idx],
-                );
-            }
-            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
+            let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
-        }
-        for (i, fr) in para.field_ranges.iter().enumerate() {
-            if fr.start_char_idx == fr.end_char_idx && !field_end_emitted[i] {
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
-                field_end_emitted[i] = true;
+            for (i, fr) in para.field_ranges.iter().enumerate() {
+                if !field_end_emitted[i]
+                    && fr.start_char_idx == fr.end_char_idx
+                    && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
+                {
+                    let guide_units =
+                        emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    expected_utf16_pos = expected_utf16_pos
+                        .saturating_add(guide_units)
+                        .saturating_add(8);
+                    field_end_emitted[i] = true;
+                }
             }
         }
         // [Task #1556] 빈 문단의 고아 fieldEnd (char_idx == 0).
@@ -1143,24 +1614,52 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         // [#1407] 이 idx 위치에서 닫혀야 할(미방출) fieldEnd 가 있으면, 그 8유닛 갭은
         // 슬롯이 아니라 fieldEnd 소유다. 슬롯 방출을 양보해 텍스트-끝 슬롯(newNum 등)이
         // fieldEnd 자리를 가로채지 못하게 한다 (0-length 필드는 아래 pre-char 경로가 처리).
-        while slot_idx < slots.len() && char_pos >= expected_utf16_pos.saturating_add(8) {
+        // [#5173] 이 문자 앞 갭 중 제목 차례 표시(titleMark)가 차지하는 유닛은 슬롯 몫이
+        // 아니다. titleMark 는 `render_hp_t_content` 안 char_idx 위치에 방출되는데(슬롯이
+        // 아님), 슬롯 루프가 그 유닛까지 갭으로 보고 각주 등 슬롯을 먼저 가로채면 각주가
+        // 제목보다 앞서 나간다(08435: 각주가 문단 맨 앞으로). titleMark 유닛(각 8)을 갭에서
+        // 빼면 각주는 자기 실제 갭(제목·본문 뒤)으로 내려가 원본·h2h 순서(제목 → 본문 →
+        // 각주)가 산다.
+        let title_gap_units = cursor.title_marks[cursor.mark_idx..]
+            .iter()
+            .take_while(|m| m.char_idx == idx)
+            .count() as u32
+            * 8;
+        while slot_idx < slots.len()
+            && char_pos
+                >= expected_utf16_pos
+                    .saturating_add(title_gap_units)
+                    .saturating_add(8)
+        {
             // [Issue #1948] 이 갭(expected_utf16_pos)이 미방출 **고아(교차 문단)
             // fieldEnd** 소유면 슬롯 방출을 양보한다. 종전엔 field_ranges 의 fieldEnd
             // 만 갭을 지켰고(위 주석 #1407) 고아 fieldEnd 는 while 뒤(char_idx==idx)에서
             // 방출돼, 말미 슬롯(표 등)이 고아 fieldEnd 의 8유닛 갭을 먼저 가로채
             // char_offsets 가 +8 밀렸다(36380743 문단 0.10: 표가 fieldEnd 자리로 당겨짐).
             // 갭 소유자인 고아 fieldEnd 를 먼저 방출하고 while 을 재평가한다.
+            //
+            // [#4902] 단, 그 갭을 다투는 슬롯이 **이 문단의 fieldBegin** 이면 양보하지
+            // 않는다. 한 자리에서 begin 과 (앞 문단 필드를 닫는) 고아 end 가 겹치면
+            // 원본 순서는 언제나 `begin → end → end` 다 — HWP5 PARA_TEXT 실측
+            // (08368 문단: `<0x0003 %clk><0x0004><0x0004>해 도 별 목 차`).
+            // 고아를 앞세우면 `<hp:fieldEnd>` 가 짝 `<hp:fieldBegin>` 보다 먼저 나가고,
+            // 한글은 그 지점에서 구역 파싱을 포기해 **이후 본문을 통째로 버린다**
+            // (실측: 19쪽 35,205자 → 2쪽 7,838자, 개체 45→1. 고아를 짝 뒤로 옮기거나
+            // 지우면 100% 복원되고, beginIDRef 값만 고치는 것으로는 복원되지 않는다).
+            // #1948 이 막으려던 것은 **표 등 다른 슬롯**이 갭을 가로채는 경우다.
+            let field_begin_owns_gap = matches!(slots[slot_idx], Control::Field(_));
             if let Some(oi) = para
                 .orphan_field_ends
                 .iter()
                 .enumerate()
                 .position(|(i, ofe)| ofe.char_idx == idx && !orphan_emitted[i])
+                .filter(|_| !field_begin_owns_gap)
             {
                 flush_text_fragment(
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
                 splitter.cut_before(expected_utf16_pos);
                 emit_orphan_field_end(&mut splitter.content, &para.orphan_field_ends[oi]);
@@ -1172,19 +1671,17 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                &mut tab_idx,
+                &mut cursor,
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
-            if bm_inorder {
-                emit_inorder_bookmarks(
-                    &mut splitter.content,
-                    para,
-                    &mut bm_done,
-                    slot_ctrl_indices[slot_idx],
-                );
-            }
-            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1192,14 +1689,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             // 그 fieldEnd 를 즉시 이어서 방출 — 같은 갭의 end 몫 8유닛을 다음 슬롯이
             // 가로채 begin 들이 연속 배치되면 재파스 LIFO 페어링이 교차된다
             // (fr(0,0)+(50,50) → fr(0,50)+(0,0), 빈 누름틀 placeholder 소실/줄바꿈 분기).
+            // 필드가 표·그림을 감쌌으면 안쪽 슬롯을 지나서 닫는다 — 자기 슬롯 직후에
+            // 닫으면 개체가 필드 밖으로 밀려 빈 누름틀이 되고, 한글이 안내문을 본문에
+            // 찍는다(G-순수증식). `inner_slot_count` 가 0 이면 종전과 동일하다.
             for (i, fr) in para.field_ranges.iter().enumerate() {
                 if !field_end_emitted[i]
                     && fr.start_char_idx == fr.end_char_idx
                     && fr.end_char_idx == idx
-                    && fr.control_idx == emitted_ctrl_idx
+                    && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
                 {
-                    emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                    expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                    let guide_units =
+                        emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                    expected_utf16_pos = expected_utf16_pos
+                        .saturating_add(guide_units)
+                        .saturating_add(8);
                     field_end_emitted[i] = true;
                 }
             }
@@ -1212,13 +1715,40 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
                 splitter.cut_before(expected_utf16_pos);
                 emit_orphan_field_end(&mut splitter.content, ofe);
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 orphan_emitted[i] = true;
             }
+        }
+
+        // HWP3 원본은 개체가 있는 위치를 U+FFFC 하나로 `text`에도 남기면서,
+        // char_offsets에서는 그 한 글자를 HWP5와 같은 8 UTF-16 단위 슬롯으로 센다.
+        // HWPX에서는 개체 태그 자체가 그 슬롯이므로 U+FFFC를 <hp:t>로 다시 쓰면
+        // 문자 1단위가 중복되고, 다음 문자까지는 슬롯이 감지되지 않아 제어가 문단
+        // 끝으로 밀린다. 현재 위치가 슬롯의 시작이고 소비할 control이 있을 때만
+        // 표시 문자를 그 control의 HWPX 표현으로 직접 바꾼다. 실제 리터럴 U+FFFC나
+        // 위치가 불명확한 합성 IR은 기존 텍스트 경로를 유지한다.
+        if c == '\u{fffc}' && slot_idx < slots.len() && char_pos == expected_utf16_pos {
+            flush_text_fragment(
+                &mut splitter.content,
+                &mut text_buf,
+                &para.tab_extended,
+                &mut cursor,
+            );
+            splitter.cut_before(expected_utf16_pos);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
+            slot_idx += 1;
+            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            continue;
         }
 
         // 0-length 필드(start == end == idx): fieldBegin 방출 직후, 문자 push 전에 fieldEnd 방출.
@@ -1233,9 +1763,12 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                expected_utf16_pos = expected_utf16_pos
+                    .saturating_add(guide_units)
+                    .saturating_add(8);
                 field_end_emitted[i] = true;
             }
         }
@@ -1263,10 +1796,16 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                &mut tab_idx,
+                &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
-            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             continue;
@@ -1278,7 +1817,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                 &mut splitter.content,
                 &mut text_buf,
                 &para.tab_extended,
-                &mut tab_idx,
+                &mut cursor,
             );
             splitter.cut_before(char_pos);
         }
@@ -1303,13 +1842,15 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
                     &mut splitter.content,
                     &mut text_buf,
                     &para.tab_extended,
-                    &mut tab_idx,
+                    &mut cursor,
                 );
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
                 // [#1407] fieldEnd 는 8유닛 슬롯을 소비한다. expected 를 +8 진행하지
                 // 않으면 다음 idx 에서 텍스트-끝 슬롯(newNum 등)이 이 8유닛 갭을
                 // 가로채 텍스트가 +8 밀린다 (143E 문단 0.14: char_offsets[3] 27→35).
-                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                expected_utf16_pos = expected_utf16_pos
+                    .saturating_add(guide_units)
+                    .saturating_add(8);
                 field_end_emitted[i] = true;
             }
         }
@@ -1319,8 +1860,9 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
         &mut splitter.content,
         &mut text_buf,
         &para.tab_extended,
-        &mut tab_idx,
+        &mut cursor,
     );
+    flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, &mut cursor);
 
     // end_char_idx >= text.len() 인 경우 루프에서 감지되지 않으므로 루프 후에 처리.
     // [Task #1893] 단, 문단 끝의 0-length 필드(start == end == text.len())는 자기
@@ -1336,8 +1878,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
             if begin_slot_pending {
                 continue;
             }
-            emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+            expected_utf16_pos = expected_utf16_pos
+                .saturating_add(guide_units)
+                .saturating_add(8);
             field_end_emitted[i] = true;
         }
     }
@@ -1358,27 +1902,32 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
-        if bm_inorder {
-            emit_inorder_bookmarks(
-                &mut splitter.content,
-                para,
-                &mut bm_done,
-                slot_ctrl_indices[slot_idx],
-            );
-        }
-        render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+        render_control_slot_tracked(
+            &mut splitter.content,
+            slots[slot_idx],
+            ctx,
+            expected_utf16_pos,
+            &mut hwp5_only_slot_positions,
+        );
         let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
         expected_utf16_pos = expected_utf16_pos.saturating_add(8);
         // [Task #1893] 위에서 지연한 문단 끝 0-length 필드의 fieldEnd 를 자기
-        // fieldBegin 슬롯 직후에 방출 — begin→end 순서 보존.
+        // fieldBegin 슬롯 **뒤**에 방출 — begin→end 순서 보존.
+        //
+        // 필드가 표·그림을 감싸면 텍스트 축은 0길이지만 안쪽에 컨트롤 슬롯이 있다.
+        // `inner_slot_count` 만큼 지나서 닫아야 개체가 필드 안에 남는다. 자기 슬롯
+        // 직후에 닫으면 개체가 밖으로 밀려 빈 누름틀이 되고, 한글이 안내문을 본문에
+        // 찍는다(G-순수증식 16경로).
         for (i, fr) in para.field_ranges.iter().enumerate() {
             if !field_end_emitted[i]
                 && fr.start_char_idx == fr.end_char_idx
-                && fr.control_idx == emitted_ctrl_idx
+                && fr.control_idx + fr.inner_slot_count == emitted_ctrl_idx
             {
-                emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-                expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+                let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+                expected_utf16_pos = expected_utf16_pos
+                    .saturating_add(guide_units)
+                    .saturating_add(8);
                 field_end_emitted[i] = true;
             }
         }
@@ -1386,17 +1935,19 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> String {
     // [Task #1893] 방어: 지연분이 슬롯 루프에서 매칭되지 못했으면 말미에 방출(종전 동작).
     for (i, fr) in para.field_ranges.iter().enumerate() {
         if !field_end_emitted[i] {
-            emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
-            expected_utf16_pos = expected_utf16_pos.saturating_add(8);
+            let guide_units = emit_field_end_at(&mut splitter, para, fr, expected_utf16_pos);
+            expected_utf16_pos = expected_utf16_pos
+                .saturating_add(guide_units)
+                .saturating_add(8);
             field_end_emitted[i] = true;
         }
     }
-    if bm_inorder {
-        // 마지막 슬롯 뒤(컨트롤 순서 후미)의 trailing bookmark.
-        emit_inorder_bookmarks(&mut splitter.content, para, &mut bm_done, usize::MAX);
-    }
-
-    splitter.finish()
+    (
+        splitter.finish(),
+        axis_faithful,
+        expected_utf16_pos,
+        hwp5_only_slot_positions,
+    )
 }
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
@@ -1412,10 +1963,22 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
         .count() as u32;
 
     let text_units: u32 = para.text.chars().map(char_utf16_width).sum();
+    // 암호 HWP3 parser는 개체 자리에 U+FFFC 하나를 남기되, 실제 offset은 HWP5와
+    // 같은 8단위로 전진시킨다. 이 표식은 HWPX에서 개체 슬롯으로 치환되므로, 1단위
+    // 텍스트로만 세면 `(char_count - text_units) / 8`가 0으로 내림되어 mismatch
+    // fallback(텍스트 뒤에 control 몰아쓰기)으로 빠진다. control이 없는 리터럴 U+FFFC는
+    // 제외하기 위해 가능한 control 수까지만 슬롯 증거로 반영한다.
+    let hwp3_object_marker_slots = para
+        .text
+        .chars()
+        .filter(|c| *c == '\u{fffc}')
+        .count()
+        .min(para.controls.len()) as u32;
     let from_char_count = para
         .char_count
         .saturating_sub(1)
-        .saturating_sub(text_units)
+        // U+FFFC 자체 1단위를 빼면 실제 8단위 control 슬롯만 남는다.
+        .saturating_sub(text_units.saturating_sub(hwp3_object_marker_slots))
         .saturating_add(autonum_count)
         / 8;
 
@@ -1428,15 +1991,24 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
         }
         expected = pos.max(expected).saturating_add(char_utf16_width(c));
     }
-    let from_offsets = offsets_gap.saturating_add(autonum_count) / 8;
+    // marker 다음 offset gap은 8이 아니라 7(표식 텍스트 1단위를 이미 센 뒤)이므로,
+    // 나누기 전에 marker 수를 더해 실제 8단위 슬롯 수로 복원한다.
+    let from_offsets = offsets_gap
+        .saturating_add(autonum_count)
+        .saturating_add(hwp3_object_marker_slots)
+        / 8;
 
     // fieldEnd는 8 code unit 슬롯이지만 para.controls[]에 대응 컨트롤이 없다.
     // field_ranges.len()이 fieldEnd 수와 정확히 일치하므로 빼서 보정한다.
     // [Task #1556] 고아(다단락) fieldEnd 도 컨트롤 없는 8유닛 슬롯이므로 동일하게 차감.
+    // 제목 차례 표시(`Mtit`/`Mign`)도 CTRL_HEADER 가 없는 8유닛 슬롯이라 같은 계열이다 —
+    // 차감하지 않으면 슬롯 수가 `controls.len()` 보다 커져 문단이 mismatch 경로로 떨어지고,
+    // 그 문단의 linesegarray 가 통째로 빠진다.
     from_char_count
         .max(from_offsets)
         .saturating_sub(para.field_ranges.len() as u32)
-        .saturating_sub(para.orphan_field_ends.len() as u32) as usize
+        .saturating_sub(para.orphan_field_ends.len() as u32)
+        .saturating_sub(para.title_marks.len() as u32) as usize
 }
 
 /// HWPX 인라인 슬롯(U+FFFC 오브젝트 위치)을 점유하는 컨트롤인지 판정한다.
@@ -1458,6 +2030,52 @@ fn inferred_control_slot_count(para: &Paragraph) -> usize {
 /// 두 곳에서 낸다. 회귀 가드: `roundtrip.rs` 의
 /// `issue4388_diff_documents_hyperlink_not_compared_as_control`/
 /// `issue4388_diff_documents_unknown_not_compared_as_control`.
+/// [#4677] `render_runs` 의 **위치 축** 전용 슬롯 판정 — 책갈피를 포함한다.
+///
+/// 책갈피는 HWP5 PARA_TEXT 에서 8 유닛 확장 제어문자 자리를 차지한다(한컴 원본 바이트
+/// `16 00 6d 6b 6f 62 … 16 00`). 종전엔 zero-width 로 보고 슬롯 축에서 빼는 대신
+/// `emit_inorder_bookmarks` 로 따로 끼워 넣었는데, 그러면 HWPX 파서가 자리를 잡는 순간
+/// 슬롯 수가 어긋나 위치 추정이 통째로 무너진다(x2x 산출물 6,995자 → 416자).
+///
+/// [`is_hwpx_inline_slot`] 자체를 넓히지 않는 이유는 그 헬퍼가 `roundtrip::diff_documents`
+/// 의 **비교 축**과 공유되기 때문이다 — 비교 축 변경은 #4388 처럼 무관한 회귀를 만든다.
+/// 여기서 필요한 것은 위치 축 하나뿐이다.
+fn occupies_hwpx_slot_axis(control: &Control) -> bool {
+    is_hwpx_inline_slot(control)
+        || matches!(
+            control,
+            // Hyperlink은 HWP3의 8-unit object slot이고 HWPX에서는 fieldBegin으로 승격한다.
+            // `is_hwpx_inline_slot`에는 넣지 않는다. 해당 헬퍼는 포맷 비종속 diff에도 공유되어
+            // HWP5의 기존 Hyperlink 표현 범위까지 바꾸기 때문이다.
+            // 숨은 설명은 HWPX 네이티브 표현(`<hp:hiddenComment>`)이 있고 방출 arm 도
+            // 있으나, 이 필터에서 빠지면 mismatch 경로에서 **조용히 버려진다**.
+            // HWP3 는 char_count 에 8유닛 슬롯을 배정하지 않아(06397 문단 0.0:
+            // `cc=2, text_len=1, controls=3`) 늘 mismatch 경로로 오므로, 여기 없으면
+            // HWP3 문서의 숨은 설명이 통째로 사라진다(06397 유지율 2.2%).
+            Control::Bookmark(_)
+                | Control::Hyperlink(_)
+                | Control::HiddenComment(_)
+                | Control::IndexMark(_)
+        )
+}
+
+/// 이 컨트롤이 슬롯 자리에 **실제 XML 을 남기는가**.
+///
+/// `render_control_slot` 은 표현할 방법이 없는 컨트롤(`Unknown`)을 경고만
+/// 내고 버린다. 그런데 위치 슬롯 수가 `controls.len()` 과 같으면 축 정합 경로로 들어가
+/// **버려진 컨트롤도 슬롯으로 세어 놓고** `axis_faithful=true` 를 주장한다. 그러면 방출본은
+/// 컨트롤 하나당 8유닛씩 짧은데 lineseg 는 원본 좌표 그대로 나가고, 한글 2022 는 범위를
+/// 넘는 `textpos` 를 만나면 **파일 자체를 열지 못한다**(본문 폐기보다 강한 실패).
+///
+/// 실측(06926 section3 문단 347): 찾아보기 표식(`idxm`) 3개가 여기서 사라져 축이 366→342 로
+/// 줄었고, 원본에서 유효하던 `textpos=348` 이 범위 밖이 되어 산출물이 열리지 않았다.
+fn emits_hwpx_slot_xml(control: &Control) -> bool {
+    // `Hyperlink` 는 devel 이 방출 arm 을 갖췄으므로(`render_control_slot`) 여기서
+    // 빼면 안 된다 — 빼면 HWP3 변환본의 축이 근거 없이 무너진 것으로 판정돼
+    // 저장 lineseg 가 통째로 억제된다(#3739 암호 변환본 계약 파손).
+    !matches!(control, Control::Unknown(_))
+}
+
 pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
     matches!(
         control,
@@ -1477,6 +2095,7 @@ pub(crate) fn is_hwpx_inline_slot(control: &Control) -> bool {
             | Control::Header(_)
             | Control::Footer(_)
             | Control::AutoNumber(_)
+            | Control::PageNumCtrl(_)
     )
 }
 
@@ -1484,43 +2103,66 @@ fn flush_text_fragment(
     out: &mut String,
     text_buf: &mut String,
     tab_extended: &[[u16; 7]],
-    tab_idx: &mut usize,
+    cursor: &mut InlineCursor<'_>,
 ) {
-    if !text_buf.is_empty() {
-        out.push_str(&render_hp_t_content(text_buf, tab_extended, tab_idx));
+    // [#5537] 닫히는 run 소유의 제목 차례 표시(경계 유닛 = 표시 끝 유닛)가 걸려
+    // 있으면 버퍼가 비어도 조각을 방출한다 — 건너뛰면 표시가 다음 run 머리로
+    // 넘어가 재파싱 char_shapes 경계가 표시 폭(8유닛)만큼 무너진다.
+    if !text_buf.is_empty() || cursor.has_pending_prev_owned_mark() {
+        out.push_str(&render_hp_t_content(text_buf, tab_extended, cursor));
         text_buf.clear();
     }
 }
 
-/// [Task #1627] empty-text 문단에서 bookmark 를 para.controls 순서대로 in-order 방출한다.
-/// `upto_ctrl_idx` 미만 인덱스의 미방출 bookmark 만 방출(usize::MAX = 나머지 전부).
-/// bookmark 는 zero-width 라 char-position 을 점유하지 않으므로 slot 사이에 끼워도 위치 불변.
-fn emit_inorder_bookmarks(
-    content: &mut String,
-    para: &Paragraph,
-    bm_done: &mut [bool],
-    upto_ctrl_idx: usize,
+/// 문단 끝에 남은 제목 차례 표시를 빈 `<hp:t>` 조각으로 방출한다.
+///
+/// 조각 경계에서 flush 를 건너뛰는 이유는 표시가 **다음** run 소속이기 때문인데,
+/// 다음 run 이 없는 문단 말미에서는 그 규칙이 그대로 유실이 된다.
+fn flush_trailing_title_marks(
+    out: &mut String,
+    tab_extended: &[[u16; 7]],
+    cursor: &mut InlineCursor<'_>,
 ) {
-    for (i, ctrl) in para.controls.iter().enumerate() {
-        if i >= upto_ctrl_idx {
-            break;
-        }
-        if bm_done[i] {
-            continue;
-        }
-        if let Control::Bookmark(bm) = ctrl {
-            if let Ok(xml) = writer_to_string(|w| write_bookmark(w, bm)) {
-                content.push_str("<hp:ctrl>");
-                content.push_str(&xml);
-                content.push_str("</hp:ctrl>");
-            }
-            bm_done[i] = true;
-        }
+    if cursor.mark_idx < cursor.title_marks.len() {
+        out.push_str(&render_hp_t_content("", tab_extended, cursor));
     }
 }
 
 fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeContext) {
     match control {
+        // [#4677] 책갈피는 위치 슬롯이다 — 슬롯 축에 들어온 이상 여기서 제자리에 방출한다
+        // (종전 `emit_inorder_bookmarks` 의 역할을 대체).
+        Control::Bookmark(bm) => match writer_to_string(|w| write_bookmark(w, bm)) {
+            Ok(xml) => {
+                out.push_str("<hp:ctrl>");
+                out.push_str(&xml);
+                out.push_str("</hp:ctrl>");
+            }
+            Err(e) => eprintln!("[hwpx] Bookmark 직렬화 실패: {e}"),
+        },
+        Control::Hyperlink(link) => {
+            let field_id = ctx.next_generated_hyperlink_id();
+            match writer_to_string(|w| write_hyperlink_begin(w, link, field_id)) {
+                Ok(xml) => {
+                    out.push_str("<hp:ctrl>");
+                    out.push_str(&xml);
+                    out.push_str("</hp:ctrl>");
+                }
+                Err(e) => eprintln!("[hwpx] Hyperlink 직렬화 실패: {e}"),
+            }
+        }
+        // 찾아보기 표식 — 한컴 실측(06926, 23건)은 `secondKey` 가 비면 아예 쓰지 않는다.
+        Control::IndexMark(im) => {
+            out.push_str("<hp:ctrl><hp:indexmark><hp:firstKey>");
+            out.push_str(&xml_escape(&im.first_key));
+            out.push_str("</hp:firstKey>");
+            if !im.second_key.is_empty() {
+                out.push_str("<hp:secondKey>");
+                out.push_str(&xml_escape(&im.second_key));
+                out.push_str("</hp:secondKey>");
+            }
+            out.push_str("</hp:indexmark></hp:ctrl>");
+        }
         Control::Equation(eq) => {
             out.push_str(&render_equation(eq));
         }
@@ -1544,6 +2186,17 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         Control::Field(f) => {
             // fieldBegin은 <hp:ctrl>...</hp:ctrl>로 감싸야 함 (Table/Picture와 달리)
             out.push_str("<hp:ctrl>");
+            // [#5866] HWP5 출처 메모(command `MEMO/…`)는 한글 실측 형상(파라미터
+            // 6종 + 빈 subList)으로 방출한다 — CROSSREF 로 굳히면 필드 범위
+            // 숨김이 풀려 메모 대상 텍스트가 본문에 붙는다.
+            if let Some(memo_children) = super::field::memo_field_children_xml(f) {
+                out.push_str(&super::field::field_begin_open_tag(f));
+                out.push('>');
+                out.push_str(&memo_children);
+                out.push_str("</hp:fieldBegin>");
+                out.push_str("</hp:ctrl>");
+                return;
+            }
             let generated_params = generated_field_parameters(f);
             let has_params = f.raw_parameters_xml.is_some() || generated_params.is_some();
             let has_memo = f.field_type == crate::model::control::FieldType::Memo
@@ -1588,6 +2241,10 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         }
         Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
         Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::PageNumCtrl(pnc) => out.push_str(&format!(
+            r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
+            pnc.page_starts_on.as_hwpx()
+        )),
         Control::NewNumber(nn) => out.push_str(&render_new_num(nn)),
         Control::Header(h) => out.push_str(&render_header(h, ctx)),
         Control::Footer(f) => out.push_str(&render_footer(f, ctx)),
@@ -1601,6 +2258,9 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         // [Task #1587] 덧말(Ruby) 인라인 방출. is_hwpx_inline_slot 에 등록돼 슬롯 위치는
         // 자동이나 종전 방출 arm 부재로 드롭됐다. parse_dutmal 의 역매핑.
         Control::Ruby(r) => out.push_str(&render_dutmal(r)),
+        // 숨은 설명 — 화면에 안 보여도 파일에는 문단 리스트로 존재한다. 방출 arm 이
+        // 없던 탓에 저장할 때마다 통째로 사라졌다(자세한 근거는 아래 catch-all 주석).
+        Control::HiddenComment(hc) => out.push_str(&render_hidden_comment(hc, ctx)),
         // [Task #1379/#1584] 인라인 colPr 방출.
         // - subList(depth>0): 전부 인라인 방출(원본 XML 인라인 존재).
         // - 본문(depth 0): 첫 문단의 첫 ColumnDef 1개는 섹션 템플릿 colPr 앵커가 이미
@@ -1613,28 +2273,27 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
                 out.push_str(&render_col_pr_ctrl(cd));
             }
         }
-        // [#4388] Hyperlink/Unknown 은 HWPX 로 옮길 대응 표현이 없어 여기서도
-        // 드롭된다("exact" 슬롯 분기 — 모든 컨트롤이 위치 슬롯인 문단). 경고는
-        // `warn_if_unrepresentable_in_hwpx` 하나로 통일한다(mismatch-분기 제외
-        // 지점, 위쪽 934행 부근과 동일 호출). 이 함수 아래 catch-all 이 처리한다.
+        // [#4388] Unknown은 HWPX 로 옮길 대응 표현이 없어 여기서도 드롭된다.
+        // Hyperlink은 위 arm에서 HWPX fieldBegin으로 승격한다. Unknown 경고는
+        // `warn_if_unrepresentable_in_hwpx` 하나로 통일한다(mismatch-분기 제외 지점,
+        // 위쪽 934행 부근과 동일 호출). 이 함수 아래 catch-all 이 처리한다.
         //
         // [#4388 census] catch-all `_`(warn 호출 포함)에 실제로 도달하는 나머지
         // `Control` 변형은 세 가지 — 새 변형을 추가할 때 이 목록을 갱신할 것:
-        //   - `Hyperlink`/`Unknown`: 위 참조. 조용히 버리지 않도록 경고.
+        //   - `Unknown`: 위 참조. 조용히 버리지 않도록 경고.
         //   - `SectionDef`: 의도적 무해 no-op. 위치 슬롯 축(hidden 슬롯 정합, 이 함수
         //     966행 근처 주석)만 소비하고 XML 은 별도 경로(`<hp:secPr>` 섹션 템플릿)가
         //     방출한다 — 여기서 다시 방출하면 중복이 된다. warn 헬퍼도 이 변형은
         //     무시한다.
-        //   - `HiddenComment`: **구현 누락으로 확인됨(경고 미부착)**. HWPX 는
-        //     `<hp:hiddenComment>` 네이티브 표현이 있고 파서(`parse_ctrl_hidden_comment`)
-        //     는 이미 sub-paragraph 까지 온전히 읽지만 직렬화기엔 대응 방출 arm 이
-        //     없다. 다만 이 컨트롤은 PARA_TEXT 상 폭이 0(파서가 위치 마커를 push 하지
-        //     않음 — Bookmark 와 동형)이라 실제 문서에서는 `render_runs` 의
-        //     mismatch-분기 필터(위쪽, "제외된 hidden 슬롯 후보" 블록 부근)에서 먼저
-        //     걸러져 이 함수 자체에 거의 도달하지 않는다 — 진짜 수정은 Bookmark 의
-        //     `emit_inorder_bookmarks` 류 zero-width in-order 방출 인프라가 필요한
-        //     별도 작업(그 로직은 #1591/#1627/#1584 이력이 보여주듯 섬세하다) —
-        //     후속 이슈로 분리 권장.
+        //   - `HiddenComment`: 이제 위 `render_hidden_comment` arm 이 방출한다.
+        //     종전 주석은 "폭이 0이라 이 함수에 거의 도달하지 않는다"고 봤지만 그건
+        //     **HWPX 파서 기준**이었다. HWP5 에서 `tcmt` 는 8유닛 확장 컨트롤이라
+        //     h2x 경로에서는 정상적으로 슬롯에 들어와 여기 도달한다 — 실측(08361
+        //     문단 0.0: `cc=33, text_len=0, controls=4` = 4×8+1)이 이를 보인다.
+        //     방출 arm 이 없던 탓에 10k 스윕에서 숨은 설명이 통째로 사라졌고
+        //     (`tcmt` CTRL_DIFF 13경로), 내용이 본문의 대부분인 문서는 96.9% 를
+        //     잃었다(06397). x2x 축(HWPX 파서가 위치 마커를 push 하지 않아 폭 0)은
+        //     여전히 별도 작업이 필요하다.
         c => warn_if_unrepresentable_in_hwpx(c),
     }
 }
@@ -1821,7 +2480,13 @@ fn render_compose(co: &CharOverlap) -> String {
     } else {
         "SPREAD"
     };
-    let text: String = co.chars.iter().collect();
+    // [#5140] 겹침 글자도 사용자 정의 기호일 수 있다. 속성이라 위치 축과 무관하므로
+    // 본문과 같은 표를 그대로 적용한다.
+    let text: String = co
+        .chars
+        .iter()
+        .map(|&c| hancom_symbol_for_hwpx(c))
+        .collect();
     let mut out = format!(
         r#"<hp:compose circleType="{}" charSz="{}" composeType="{}" charPrCnt="{}" composeText="{}">"#,
         circle_type,
@@ -1891,13 +2556,19 @@ fn render_header_footer(
     let mut out = format!(
         concat!(
             r#"<hp:ctrl><hp:{tag} id="{id}" applyPageType="{apply}">"#,
-            r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" "#,
+            r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="{va}" "#,
             r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" "#,
             r#"hasTextRef="{tr}" hasNumRef="{nr}">"#
         ),
         tag = tag,
         id = h.id,
         apply = apply_page_type_to_str(h.apply_to),
+        // [#6186] 종전에는 늘 "TOP" 으로 굳혀 저장해 세로 정렬이 왕복에서 유실됐다.
+        va = match (h.list_attr >> 21) & 0b11 {
+            1 => "CENTER",
+            2 => "BOTTOM",
+            _ => "TOP",
+        },
         tw = h.text_width,
         th = h.text_height,
         tr = h.text_ref,
@@ -1922,6 +2593,8 @@ fn render_header_footer(
 struct HeaderFooterFields<'a> {
     id: u32,
     apply_to: HeaderFooterApply,
+    /// HWPX subList list_attr — 세로 정렬(비트 21~22) 보존용.
+    list_attr: u32,
     text_width: u32,
     text_height: u32,
     text_ref: u8,
@@ -1942,6 +2615,7 @@ fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
         HeaderFooterFields {
             id: hwpx_header_footer_id(&h.raw_ctrl_extra),
             apply_to: h.apply_to,
+            list_attr: h.list_attr,
             text_width: h.text_width,
             text_height: h.text_height,
             text_ref: h.text_ref,
@@ -1958,6 +2632,7 @@ fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
         HeaderFooterFields {
             id: hwpx_header_footer_id(&f.raw_ctrl_extra),
             apply_to: f.apply_to,
+            list_attr: f.list_attr,
             text_width: f.text_width,
             text_height: f.text_height,
             text_ref: f.text_ref,
@@ -2147,12 +2822,13 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
             Some(&p.drawing),
             &p.points,
         ),
+        // [#4676] curve 의 점은 `<hc:pt>` 가 아니라 `<hp:seg>` 체인으로 나간다(geom_tail).
         ShapeObject::Curve(cv) => (
             "curve",
             &cv.common,
             &cv.drawing.caption,
             Some(&cv.drawing),
-            &cv.points,
+            NO_PTS,
         ),
         ShapeObject::Group(_) => unreachable!(),
         ShapeObject::Picture(pic) => {
@@ -2198,6 +2874,10 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
             hc("ax1", &a.axis1),
             hc("ax2", &a.axis2),
         ),
+        // [#4676] curve 는 점을 `<hp:seg>` 체인으로 방출한다 — `<hc:pt>` 나열은 한글이
+        // 열다 죽는다(RPC 0x800706BE). 한컴 원본 실측: hp:curve 는 seg 만 쓰고 hc:pt 는
+        // 한 번도 쓰지 않는다. seg 는 이웃한 두 점을 잇는 구간이므로 점 N 개 → seg N-1 개.
+        ShapeObject::Curve(cv) => curve_segs_xml(&cv.points, &cv.segment_types),
         _ => String::new(),
     };
     // [#4388] `<hp:arc>` 전용 `type` 속성(NORMAL/PIE/CHORD) — OWPML `CArcType` 계약.
@@ -2216,6 +2896,36 @@ fn render_shape(shape: &ShapeObject, ctx: &mut SerializeContext) -> String {
         &extra_attrs,
         ctx,
     )
+}
+
+/// [#4676] `CurveShape` 의 점 목록을 OWPML `<hp:seg>` 체인으로 방출한다.
+///
+/// 한글은 `<hp:curve>` 안의 `<hc:pt>` 나열을 만나면 여는 도중 죽는다(COM RPC 0x800706BE,
+/// 10k 오라클 스윕에서 크래시 산출물 다수의 공통 원인). 한컴 원본은 언제나 seg 를 쓴다:
+///
+/// ```xml
+/// <hp:seg type="CURVE" x1="0" y1="1680" x2="10440" y2="0"/>
+/// <hp:seg type="LINE"  x1="10440" y1="0" x2="20940" y2="1800"/>
+/// ```
+///
+/// `segment_types[i]` 는 HWP5의 구간 종류(0: 직선, 1: 곡선)다. HWPX의 `hp:seg type`은
+/// HWP5 `1`이 기대하는 베지어 제어점 두 개를 담지 않으므로 파서는 이 필드에 옮기지 않는다.
+/// 비어 있으면 한글 호환을 위해 CURVE로 방출한다.
+fn curve_segs_xml(points: &[crate::model::Point], segment_types: &[u8]) -> String {
+    points
+        .windows(2)
+        .enumerate()
+        .map(|(i, w)| {
+            let kind = match segment_types.get(i) {
+                Some(0) => "LINE",
+                _ => "CURVE",
+            };
+            format!(
+                r#"<hp:seg type="{}" x1="{}" y1="{}" x2="{}" y2="{}"/>"#,
+                kind, w[0].x, w[0].y, w[1].x, w[1].y
+            )
+        })
+        .collect()
 }
 
 /// [#4388] `ArcShape.arc_type` (0: Arc, 1: CircularSector, 2: Bow) →
@@ -2448,6 +3158,31 @@ fn render_note_sublist(
     out
 }
 
+/// 숨은 설명(`<hp:hiddenComment>`) — 스키마상 `subList` 하나만 갖는다
+/// (ParaList XML schema.xml:217-224). 각주와 달리 속성이 없다.
+fn render_hidden_comment(
+    hc: &crate::model::control::HiddenComment,
+    ctx: &mut SerializeContext,
+) -> String {
+    let mut out = String::from("<hp:ctrl><hp:hiddenComment>");
+    out.push_str(&render_sub_list_open(None));
+    let mut vert_cursor: u32 = 0;
+    for p in hc.paragraphs.iter() {
+        ctx.para_shape_ids.reference(p.para_shape_id);
+        let sid = ctx.effective_style_id(p.style_id);
+        ctx.style_ids.reference(sid as u16);
+        let (runs, linesegs, advance) = render_paragraph_parts(p, vert_cursor, ctx);
+        vert_cursor = advance;
+        let pid = ctx.next_para_id();
+        out.push_str(&render_hp_p_open(p, pid, sid));
+        out.push_str(&runs);
+        out.push_str(&linesegs);
+        out.push_str("</hp:p>");
+    }
+    out.push_str("</hp:subList></hp:hiddenComment></hp:ctrl>");
+    out
+}
+
 fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
     // [#2716] IR 이 보존한 장식 문자/번호 모양/고유 ID 를 모두 방출한다. 종전엔 number 만
     // 써서 저장 왕복마다 앞 장식('문')이 사라지고 뒤 장식이 ')' 로 변조됐다.
@@ -2638,35 +3373,53 @@ fn horz_align_to_hwpx(align: HorzAlign) -> &'static str {
 /// rhwp 는 자신의 문서에서 비표준 lineseg 를 **새로 생산하지 않는다**.
 /// 원본 한컴 파일의 lineseg 값이 파서에 의해 `Paragraph.line_segs` 에 담겼다면,
 /// 저장 시 그 값을 훼손 없이 보존한다.
-fn render_lineseg_array_from_ir(segs: &[LineSeg]) -> String {
+/// [#5847] `vpos_override` 가 있으면 각 줄의 `vertpos` 를 그 값(원본 쪽-상대
+/// 좌표 스냅샷)으로 낸다 — reflow 재계산이 덮어쓴 IR 값 대신.
+fn render_lineseg_array_from_ir(segs: &[LineSeg], vpos_override: Option<&[i32]>) -> String {
     let mut out = String::new();
-    for seg in segs {
-        out.push_str(&format!(
-            r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="{}" textheight="{}" baseline="{}" spacing="{}" horzpos="{}" horzsize="{}" flags="{}"/>"#,
-            seg.text_start,
-            seg.vertical_pos,
-            seg.line_height,
-            seg.text_height,
-            seg.baseline_distance,
-            seg.line_spacing,
-            seg.column_start,
-            seg.segment_width,
-            seg.tag,
-        ));
+    for (i, seg) in segs.iter().enumerate() {
+        let vpos = vpos_override
+            .and_then(|v| v.get(i).copied())
+            .unwrap_or(seg.vertical_pos);
+        out.push_str(&render_one_lineseg(seg, seg.text_start, vpos));
     }
     out
 }
 
+/// `<hp:lineseg>` 한 줄 — `textpos` 만 호출부가 정하고 나머지 8필드는 IR 값 그대로.
+fn render_one_lineseg(seg: &LineSeg, text_start: u32, vertical_pos: i32) -> String {
+    format!(
+        r#"<hp:lineseg textpos="{}" vertpos="{}" vertsize="{}" textheight="{}" baseline="{}" spacing="{}" horzpos="{}" horzsize="{}" flags="{}"/>"#,
+        text_start,
+        vertical_pos,
+        seg.line_height,
+        seg.text_height,
+        seg.baseline_distance,
+        seg.line_spacing,
+        seg.column_start,
+        seg.segment_width,
+        seg.tag,
+    )
+}
+
 /// IR 기반 다음 문단의 vert_start 계산 — 마지막 lineseg 의 vpos + lh 사용.
-fn next_vert_cursor_from_ir(segs: &[LineSeg], vert_start: u32) -> u32 {
+/// [#5847] `vpos_override` 는 방출 vertpos 와 커서를 일치시키기 위한 원본 스냅샷.
+fn next_vert_cursor_from_ir(
+    segs: &[LineSeg],
+    vpos_override: Option<&[i32]>,
+    vert_start: u32,
+) -> u32 {
     if segs.len() == 1 && segs[0].is_missing_lineseg_placeholder() {
         return vert_start;
     }
 
     if let Some(last) = segs.last() {
+        let last_vpos = vpos_override
+            .and_then(|v| v.last().copied())
+            .unwrap_or(last.vertical_pos);
         // vertical_pos 는 섹션 시작 기준 절대값일 수도, 문단 기준 상대값일 수도 있음.
         // 현재 rhwp 는 섹션 절대값이므로 그대로 + lh 로 다음 커서 산출.
-        let next = (last.vertical_pos as i64) + (last.line_height.max(0) as i64);
+        let next = (last_vpos as i64) + (last.line_height.max(0) as i64);
         if next > vert_start as i64 {
             next as u32
         } else {
@@ -2855,6 +3608,134 @@ mod tests {
         assert!(
             !xml.contains(r#"formatType="CIRCLE_DIGIT""#),
             "CIRCLE_DIGIT 오탈자 잔존 금지: {xml}"
+        );
+    }
+
+    /// [#4895] 소프트 하이픈(U+00AD)은 `<hp:hyphen/>` 요소가 아니라 **리터럴 문자**로 나간다.
+    ///
+    /// #4776 이 요소로 바꿨다가 10k 전수에서 36경로가 깨졌다. 한글 2022 대조 실측(01628,
+    /// 하이픈 표기만 교체): 요소 → 본문 2,477자(글자 소실) / 리터럴 → 2,478자로 원본과
+    /// textSha 일치. 한컴 원본 hwpx 도 `<hp:t>` 안에 raw U+00AD 를 담는다.
+    #[test]
+    fn soft_hyphen_stays_literal_in_hp_t() {
+        let mut cursor = InlineCursor::default();
+        let xml = render_hp_t_content("축사로\u{00AD}한우", &[], &mut cursor);
+        assert!(
+            !xml.contains("<hp:hyphen/>"),
+            "소프트 하이픈을 요소로 내리면 한글이 글자를 버린다: {xml}"
+        );
+        assert!(
+            xml.contains('\u{00AD}'),
+            "소프트 하이픈이 리터럴로 실려야 한다: {xml:?}"
+        );
+    }
+
+    /// [#4895] 출처가 제어 표기(HWP5 control_mask 비트 24)인 문단만 `<hp:hyphen/>` 로
+    /// 되돌린다 — 원본에 없던 글자를 만들지 않기 위해서다.
+    #[test]
+    fn soft_hyphen_from_control_origin_is_written_as_element() {
+        let mut cursor = InlineCursor {
+            soft_hyphen_as_element: true,
+            ..Default::default()
+        };
+        let xml = render_hp_t_content("축사로\u{00AD}한우", &[], &mut cursor);
+        assert!(
+            xml.contains("<hp:hyphen/>"),
+            "제어 표기 출처는 요소로 보존되어야 한다: {xml}"
+        );
+        assert!(
+            !xml.contains('\u{00AD}'),
+            "요소로 내렸으면 리터럴은 남지 않는다: {xml:?}"
+        );
+    }
+
+    // [#5174] 묶음 빈칸 표기 보존 계약(`nb_space_as_element`)은 실제 문서 왕복으로
+    // `tests/cases/issue_5174_nbspace_representation.rs` 가 지킨다. 제품 소스의
+    // 단위시험을 늘리지 않으려고 여기 두지 않았다 — `render_hp_t_content` 가
+    // `pub(crate)` 라 통합 테스트는 저장·재로드 축으로 같은 계약을 검사한다.
+
+    /// 쪽 번호 시작 쪽 컨트롤(`pgct`)은 `<hp:ctrl><hp:pageNumCtrl>` 로 나가야 한다.
+    ///
+    /// 구역 속성의 `pageStartsOn`(`<hp:secPr>`)과는 다른 자리다 — 이쪽은 문단 위
+    /// 8유닛 슬롯을 차지하는 컨트롤이라, 방출하지 않으면 축이 그만큼 짧아진다.
+    #[test]
+    fn page_num_ctrl_is_emitted_as_a_ctrl_element() {
+        let mut ctx = SerializeContext::default();
+        for (want, text) in [
+            (PageStartsOn::Both, "BOTH"),
+            (PageStartsOn::Even, "EVEN"),
+            (PageStartsOn::Odd, "ODD"),
+        ] {
+            let mut out = String::new();
+            render_control_slot(
+                &mut out,
+                &Control::PageNumCtrl(PageNumCtrl {
+                    page_starts_on: want,
+                }),
+                &mut ctx,
+            );
+            assert_eq!(
+                out,
+                format!(r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{text}"/></hp:ctrl>"#)
+            );
+        }
+    }
+
+    /// 제목 차례 표시는 `<hp:t>` 안 인라인 요소로 되살아나야 한다 — 스키마상
+    /// `<hp:ctrl>` 이 아니라 `<hp:t>` 의 자식이다(ParaList XML schema.xml:238).
+    #[test]
+    fn title_mark_is_emitted_inside_hp_t() {
+        let mut cursor = InlineCursor {
+            title_marks: &[TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }],
+            ..Default::default()
+        };
+        let xml = render_hp_t_content("가나", &[], &mut cursor);
+        assert_eq!(xml, "<hp:t><hp:titleMark ignore=\"1\"/>가나</hp:t>");
+    }
+
+    /// `ignore="0"`(`Mign`)도 구별해 낸다 — 한글 2022 양방향 실측(06699).
+    #[test]
+    fn title_mark_ignore_off_round_trips() {
+        let mut cursor = InlineCursor {
+            title_marks: &[TitleMark {
+                char_idx: 1,
+                ignore: false,
+            }],
+            ..Default::default()
+        };
+        let xml = render_hp_t_content("가나", &[], &mut cursor);
+        assert_eq!(xml, "<hp:t>가<hp:titleMark ignore=\"0\"/>나</hp:t>");
+    }
+
+    /// 표시가 주장하는 8유닛 슬롯을 슬롯 수에서 빼지 않으면 문단이 mismatch 경로로
+    /// 떨어져 `<hp:linesegarray>` 가 통째로 빠진다 — F-절단군의 근인이다.
+    #[test]
+    fn title_mark_slot_is_not_counted_as_a_control_slot() {
+        let mut para = Paragraph {
+            text: "가나".to_string(),
+            char_offsets: vec![8, 9],
+            // 표시 8 + 글자 2 + 끝 마커 1
+            char_count: 11,
+            title_marks: vec![TitleMark {
+                char_idx: 0,
+                ignore: true,
+            }],
+            ..Default::default()
+        };
+        assert_eq!(
+            inferred_control_slot_count(&para),
+            0,
+            "표시 슬롯은 controls[] 에 대응이 없으므로 차감돼야 한다"
+        );
+
+        para.title_marks.clear();
+        assert_eq!(
+            inferred_control_slot_count(&para),
+            1,
+            "표시를 모르면 같은 문단이 컨트롤 슬롯 1개를 주장한다(종전 동작)"
         );
     }
 
@@ -3346,6 +4227,149 @@ mod tests {
             reparsed_para.tab_extended.is_empty(),
             "width=0 마커 재파싱 후 tab_extended 는 비어 있어야 함(원본과 동일): {:?}",
             reparsed_para.tab_extended
+        );
+    }
+
+    /// #4675: 고정폭 빈칸(U+2007)은 리터럴 문자가 아니라 `<hp:fwSpace/>` 요소로
+    /// 직렬화돼야 한다. 리터럴 방출은 한글의 텍스트 추출·재조판 결과를 원본과 다르게
+    /// 만든다(10k 스윕 TEXT_MISMATCH 의 76%). 왕복(직렬화→재파싱) 후 IR 텍스트는
+    /// 동일해야 한다 — 파서가 요소를 같은 코드포인트로 되돌린다.
+    ///
+    /// 묶음 빈칸(U+00A0)은 **리터럴로 남긴다**. 한컴 원본은 U+2007 을 항상 요소로
+    /// 쓰지만(실측 hwpx 300건: 요소 530 · 리터럴 0), U+00A0 은 요소 15 · 리터럴 9 로
+    /// 섞여 쓴다 — IR 이 두 표기를 구분하지 못하는데 요소로 강제하면 리터럴이던 원본의
+    /// 추출 텍스트에서 NBSP 가 사라진다(한글 2022 오라클 실측 23건).
+    #[test]
+    fn issue4675_fixed_width_space_serializes_as_element() {
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let mut para = Paragraph::default();
+        para.text = "보\u{2007}도\u{2007}자\u{2007}료\u{00A0}끝".to_string();
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+
+        assert_eq!(
+            xml.matches("<hp:fwSpace/>").count(),
+            3,
+            "U+2007 은 전부 fwSpace 요소로 방출돼야 함: {}",
+            &xml[..800.min(xml.len())]
+        );
+        assert!(
+            !xml.contains('\u{2007}'),
+            "리터럴 U+2007 이 XML 에 남으면 안 됨"
+        );
+        assert!(
+            xml.contains('\u{00A0}') && !xml.contains("<hp:nbSpace/>"),
+            "U+00A0 은 리터럴 유지 — 요소로 바꾸면 한글 추출에서 사라진다"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).unwrap();
+        assert_eq!(
+            reparsed.paragraphs[0].text, "보\u{2007}도\u{2007}자\u{2007}료\u{00A0}끝",
+            "요소 왕복 후 IR 텍스트 불변"
+        );
+    }
+
+    /// #4676: `<hp:curve>` 의 점은 `<hc:pt>` 나열이 아니라 `<hp:seg>` 체인으로 나가야 한다.
+    /// `<hc:pt>` 로 저장하면 한글이 파일을 여는 도중 프로세스째 죽는다(COM RPC 0x800706BE).
+    /// 한컴 원본 실측: `hp:curve` 는 seg 만 쓰고 `hc:pt` 는 한 번도 쓰지 않는다.
+    /// HWP5 유래 구간 종류(LINE/CURVE)는 IR의 `segment_types`에서 나온다.
+    #[test]
+    fn issue4676_curve_emits_seg_chain_not_pts() {
+        use crate::model::shape::{CommonObjAttr, CurveShape, DrawingObjAttr};
+        use crate::model::Point;
+
+        let curve = CurveShape {
+            common: CommonObjAttr::default(),
+            drawing: DrawingObjAttr::default(),
+            points: vec![
+                Point { x: 0, y: 100 },
+                Point { x: 500, y: 0 },
+                Point { x: 900, y: 250 },
+            ],
+            segment_types: vec![1, 0],
+        };
+        let mut ctx = SerializeContext::default();
+        let xml = render_shape(&ShapeObject::Curve(curve), &mut ctx);
+
+        assert!(
+            !xml.contains("<hc:pt "),
+            "curve 는 hc:pt 를 방출하면 안 된다(한글 크래시): {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:seg type="CURVE" x1="0" y1="100" x2="500" y2="0"/>"#),
+            "첫 구간은 곡선: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:seg type="LINE" x1="500" y1="0" x2="900" y2="250"/>"#),
+            "둘째 구간은 직선(segment_types 보존): {xml}"
+        );
+        // 점 N 개 → 구간 N-1 개
+        assert_eq!(xml.matches("<hp:seg ").count(), 2, "{xml}");
+    }
+
+    /// [#4676] HWPX `hp:seg type="CURVE"`는 HWP5의 cubic Bezier 구간 타입이 아니다.
+    /// XML → IR → XML 경계에서 `segment_types=1`로 오매핑하면 renderer가 제어점 둘과
+    /// 끝점을 한 구간으로 소비한다. HWPX 점 체인은 빈 HWP5 구간 타입으로 유지하면서
+    /// 한글 호환 `hp:seg` 출력만 보존해야 한다.
+    #[test]
+    fn issue4676_hwpx_curve_chain_never_becomes_hwp5_bezier_segments() {
+        use crate::parser::hwpx::section::parse_hwpx_section;
+
+        let source = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:curve id="0" zOrder="0" numberingType="NONE" textWrap="TOP_AND_BOTTOM"
+                textFlow="BOTH_SIDES" lock="0" href="" groupLevel="0" instid="1">
+        <hp:offset x="0" y="0"/>
+        <hp:orgSz width="100" height="100"/>
+        <hp:curSz width="100" height="100"/>
+        <hp:lineShape color="#000000" width="113" style="SOLID"/>
+        <hp:seg type="CURVE" x1="0" y1="0" x2="10" y2="20"/>
+        <hp:seg type="CURVE" x1="10" y1="20" x2="40" y2="30"/>
+        <hp:seg type="CURVE" x1="40" y1="30" x2="90" y2="80"/>
+      </hp:curve>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+
+        let section = parse_hwpx_section(source).expect("HWPX curve 파싱");
+        let mut doc = Document::default();
+        doc.sections.push(section.clone());
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap())
+            .expect("section XML");
+
+        assert_eq!(
+            xml.matches("<hp:seg ").count(),
+            3,
+            "점 체인 길이 보존: {xml}"
+        );
+        assert!(
+            !xml.contains("<hc:pt "),
+            "curve에는 hc:pt를 다시 쓰면 안 됨: {xml}"
+        );
+
+        let reparsed = parse_hwpx_section(&xml).expect("재파싱");
+        let curve = reparsed.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                Control::Shape(shape) => match shape.as_ref() {
+                    ShapeObject::Curve(curve) => Some(curve),
+                    _ => None,
+                },
+                _ => None,
+            })
+            .expect("curve shape");
+        assert_eq!(curve.points.len(), 4, "첫 점과 세 segment 끝점이 남아야 함");
+        assert!(
+            curve.segment_types.is_empty(),
+            "HWPX CURVE를 HWP5 Bezier 타입으로 재도입하면 안 됨: {:?}",
+            curve.segment_types
         );
     }
 
@@ -4130,7 +5154,32 @@ mod tests {
     }
 
     #[test]
+    fn text_positions_unshifted_detects_leading_and_mid_controls() {
+        // mismatch 경로는 텍스트를 0 부터 연속으로 다시 쓴다. 원본에서도 연속이었으면
+        // 좌표가 그대로라 lineseg 를 버릴 이유가 없다.
+        let mut para = Paragraph::default();
+        para.text = "abcde".to_string();
+
+        // 컨트롤이 전부 텍스트 뒤 — 위치 안 밀림
+        para.char_offsets = vec![0, 1, 2, 3, 4];
+        assert!(text_positions_unshifted(&para));
+
+        // 앞에 8유닛 슬롯 — 전부 밀림
+        para.char_offsets = vec![8, 9, 10, 11, 12];
+        assert!(!text_positions_unshifted(&para));
+
+        // 중간에 슬롯 — 뒤쪽만 밀림
+        para.char_offsets = vec![0, 1, 2, 11, 12];
+        assert!(!text_positions_unshifted(&para));
+
+        // char_offsets 없는 합성 IR 은 종전 동작 유지
+        para.char_offsets = vec![];
+        assert!(text_positions_unshifted(&para));
+    }
+
+    #[test]
     fn task1380_linesegarray_omitted_when_ir_empty() {
+        dirty_text_partition_omits_hwpx_linesegarray();
         // IR 의 line_segs 가 비어있으면 linesegarray 요소 자체를 방출 생략 (#1380).
         // 종전 fallback(vertsize=1000 합성)은 원본 무 → RT 유 비대칭을 만들었다.
         let mut para = Paragraph::default();
@@ -4144,6 +5193,34 @@ mod tests {
             xml
         );
         assert!(!xml.contains("<hp:lineseg "));
+    }
+
+    fn dirty_text_partition_omits_hwpx_linesegarray() {
+        let mut para = Paragraph {
+            text: "AB".to_string(),
+            char_count: 3,
+            char_offsets: vec![0, 1],
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 500,
+                segment_width: 42_000,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        para.insert_text_at(2, " moderately wider");
+        para.invalidate_layout_inputs();
+        assert!(para.stored_text_partition_is_dirty());
+
+        let (doc, section) = make_doc_with_paragraph(para);
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
+        assert!(!xml.contains("<hp:linesegarray"));
     }
 
     #[test]
@@ -4208,6 +5285,7 @@ mod tests {
             char_idx: 2,
             begin_id_ref: 1_878_228_493,
             field_id: 627_272_811,
+            begin_ctrl_id: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -4281,6 +5359,7 @@ mod tests {
             char_idx: 1,
             begin_id_ref: 42,
             field_id: 0,
+            begin_ctrl_id: 0,
         }];
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -4310,6 +5389,7 @@ mod tests {
             end_char_idx: 2,
             control_idx: 0,
             end_field_id: 100,
+            inner_slot_count: 0,
         });
         let (doc, section) = make_doc_with_paragraph(para);
         let mut ctx = SerializeContext::collect_from_document(&doc);
@@ -4410,6 +5490,7 @@ mod tests {
             end_char_idx: 1,
             control_idx: 0,
             end_field_id: 0,
+            inner_slot_count: 0,
         });
 
         let (doc, section) = make_doc_with_paragraph(para);
@@ -4733,7 +5814,180 @@ mod tests {
     fn runs_of(para: &Paragraph) -> String {
         let doc = Document::default();
         let mut ctx = SerializeContext::collect_from_document(&doc);
-        render_runs(para, &mut ctx)
+        render_runs(para, &mut ctx).0
+    }
+
+    /// [#4902] 한 자리에서 이 문단의 `fieldBegin` 과 (앞 문단 필드를 닫는) 고아 `fieldEnd`
+    /// 가 겹치면 **begin 이 먼저** 나가야 한다.
+    ///
+    /// 한컴 원본 PARA_TEXT 는 언제나 `begin(0x03) → end(0x04) → end(0x04)`(LIFO) 순이다
+    /// (08368 실측). 고아를 앞세우면 한글은 짝 없는 `fieldEnd` 를 만나 그 지점에서 구역
+    /// 파싱을 포기하고 이후 본문·개체를 통째로 버린다 — 실측 19쪽 35,205자 → 2쪽 7,838자,
+    /// 개체 45→1. `beginIDRef` 값을 유효한 id 로 고쳐도 복원되지 않고, 순서를 바로잡으면
+    /// 100% 복원된다.
+    ///
+    /// [#5252] 그 순서 계약은 **여는 짝이 있는** 고아에만 해당한다. `link_orphan_field_ends`
+    /// 가 섹션을 훑고도 `begin_id_ref` 를 못 채웠다면 문서 어디에도 짝이 없다는 뜻이라
+    /// 아예 방출하지 않는다 — 순서로는 막을 수 없는 경우다(07276 h2x 223→137쪽).
+    /// 한 시험에서 두 계약을 함께 지킨다.
+    #[test]
+    fn issue4902_field_begin_precedes_orphan_field_end_at_same_slot() {
+        use crate::model::control::{Field, FieldType};
+        use crate::model::paragraph::OrphanFieldEnd;
+
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        let _ = &mut ctx;
+
+        // 08368 문단 32 동형: 8유닛 슬롯 3개(begin·짝 end·고아 end) 뒤에 텍스트.
+        let mut para = Paragraph::default();
+        para.text = "해도".to_string();
+        para.char_offsets = vec![24, 25];
+        para.char_count = 24 + 2 + 1;
+        para.controls = vec![Control::Field(Field {
+            field_type: FieldType::ClickHere,
+            field_id: 1_867_945_538,
+            ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+            ..Default::default()
+        })];
+        para.field_ranges = vec![FieldRange {
+            start_char_idx: 0,
+            end_char_idx: 0,
+            control_idx: 0,
+            end_field_id: 1_867_945_538,
+            inner_slot_count: 0,
+        }];
+        // ① 여는 짝이 **있는** 고아 — 종전 계약대로 방출하되 begin 이 먼저다.
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 1_867_945_539,
+            field_id: 0,
+            begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+        }];
+
+        let runs = runs_of(&para);
+        let begin = runs.find("<hp:fieldBegin").expect("fieldBegin 방출");
+        let orphan = runs
+            .find(r#"<hp:fieldEnd beginIDRef="1867945539""#)
+            .expect("여는 짝이 있는 고아 fieldEnd 는 방출되어야 한다");
+        assert!(
+            begin < orphan,
+            "고아 fieldEnd 가 짝 fieldBegin 보다 앞서면 한글이 본문을 버린다:\n{runs}"
+        );
+
+        // ② [#5252] 여는 짝을 **못 찾은** 고아는 방출하지 않는다. 한글은 열려 있지 않은
+        //    필드를 닫는 fieldEnd 를 버리고, 그러면 문단 축만 8유닛 짧아져 원본
+        //    linesegarray 가 축을 넘겨 그 문단부터 본문이 통째로 폐기된다.
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 0,
+            field_id: 0,
+            begin_ctrl_id: 0,
+        }];
+        let runs = runs_of(&para);
+        assert!(
+            !runs.contains(r#"<hp:fieldEnd beginIDRef="0""#),
+            "짝을 못 찾은 고아 fieldEnd 는 내보내면 안 된다:\n{runs}"
+        );
+        assert!(
+            runs.contains("<hp:fieldBegin"),
+            "짝 있는 필드는 그대로 방출되어야 한다:\n{runs}"
+        );
+    }
+
+    /// [#1948] 반면 갭을 다투는 슬롯이 **표 등 다른 컨트롤**이면 종전대로 고아 fieldEnd 가
+    /// 먼저다 — 그러지 않으면 말미 슬롯이 고아의 8유닛 갭을 가로채 `char_offsets` 가 밀린다.
+    #[test]
+    fn issue1948_orphan_field_end_still_precedes_non_field_slot() {
+        use crate::model::paragraph::OrphanFieldEnd;
+
+        let mut para = Paragraph::default();
+        para.text = "가".to_string();
+        para.char_offsets = vec![16];
+        para.char_count = 16 + 1 + 1;
+        para.controls = vec![Control::Table(Box::default())];
+        para.orphan_field_ends = vec![OrphanFieldEnd {
+            char_idx: 0,
+            begin_id_ref: 2_031_845_287,
+            field_id: 0,
+            begin_ctrl_id: crate::parser::tags::FIELD_CLICKHERE,
+        }];
+
+        let runs = runs_of(&para);
+        let orphan = runs.find("<hp:fieldEnd").expect("고아 fieldEnd 방출");
+        let table = runs.find("<hp:tbl").expect("표 방출");
+        assert!(
+            orphan < table,
+            "표 슬롯이 고아 fieldEnd 의 갭을 가로채면 char_offsets 가 밀린다:\n{runs}"
+        );
+    }
+
+    /// [#4778] 위치 축이 무너진 문단(파서 미수용 8유닛 슬롯 — 차례표지 0x0008 등)의
+    /// 저장 lineseg 는 방출하지 않는다. textpos 사다리와 어긋난 lineseg 를 한글 2022 가
+    /// 만나면 그 문단부터 문서 끝까지 본문을 폐기한다(성년후견 h2x -112,075자 실측,
+    /// lineseg 억제만으로 전량 회복).
+    #[test]
+    fn issue4778_broken_position_axis_suppresses_stored_linesegs() {
+        use crate::model::control::{Bookmark, PageNumberPos};
+        use crate::model::paragraph::LineSeg;
+        let doc = Document::default();
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+
+        // 성년후견 #156 동형: 텍스트 앞에 8유닛 슬롯 갭(차례표지 자리)이 있는데
+        // controls 는 비어 있다 — char_count/char_offsets 만 슬롯을 주장한다.
+        let mut broken = Paragraph::default();
+        broken.text = "다. 표제".to_string();
+        broken.char_offsets = (0..broken.text.chars().count() as u32)
+            .map(|i| 8 + i)
+            .collect();
+        broken.char_count = 8 + broken.text.chars().count() as u32 + 1;
+        broken.line_segs = vec![LineSeg {
+            line_height: 1100,
+            ..Default::default()
+        }];
+        let (_, linesegs, _) = render_paragraph_parts(&broken, 0, &mut ctx);
+        assert!(
+            linesegs.is_empty(),
+            "축 붕괴 문단은 저장 lineseg 를 방출하면 안 된다(한글 본문 폐기 트리거): {linesegs}"
+        );
+
+        // [#3518] HWP3 가 char_count 만 부풀린 문단: 본문은 0부터 연속이고
+        // 컨트롤은 말미. mismatch 여도 글자 좌표가 안 밀리므로 저장 lineseg 유지.
+        let mut hwp3_inflated = Paragraph::default();
+        hwp3_inflated.text = "1.추진목적".to_string();
+        hwp3_inflated.char_offsets = (0..52).collect();
+        hwp3_inflated.char_count = 53;
+        hwp3_inflated.controls.push(Control::Bookmark(Bookmark {
+            name: "bm".to_string(),
+        }));
+        hwp3_inflated
+            .controls
+            .push(Control::PageNumberPos(PageNumberPos::default()));
+        hwp3_inflated.line_segs = vec![LineSeg {
+            line_height: 1600,
+            line_spacing: 960,
+            ..Default::default()
+        }];
+        let (_, linesegs, _) = render_paragraph_parts(&hwp3_inflated, 0, &mut ctx);
+        assert!(
+            linesegs.contains("<hp:lineseg"),
+            "본문 좌표가 연속인 HWP3 문단은 mismatch 여도 저장 lineseg 를 유지해야 한다: {linesegs}"
+        );
+
+        // 대조군: 축이 온전한 문단은 종전대로 저장 lineseg 를 방출한다.
+        let mut intact = Paragraph::default();
+        intact.text = "본문".to_string();
+        intact.char_offsets = (0..intact.text.chars().count() as u32).collect();
+        intact.char_count = intact.text.chars().count() as u32 + 1;
+        intact.line_segs = vec![LineSeg {
+            line_height: 1100,
+            ..Default::default()
+        }];
+        let (_, linesegs, _) = render_paragraph_parts(&intact, 0, &mut ctx);
+        assert!(
+            linesegs.contains("<hp:lineseg"),
+            "온전한 문단의 저장 lineseg 보존이 깨졌다"
+        );
     }
 
     #[test]
@@ -4795,16 +6049,16 @@ mod tests {
     }
 
     #[test]
-    fn task1378_consecutive_same_id_boundary_skipped() {
-        // 연속 동일 id 경계 skip — 파서 dedup 왕복 정합 (경계 케이스 3)
+    fn issue_3739_consecutive_same_id_boundary_preserved() {
+        // 같은 ID여도 start_pos는 HWP PARA_CHAR_SHAPE 의 보존 대상이다.
         let mut para = Paragraph::default();
         para.text = "abcdef".to_string();
         para.char_shapes = vec![cs(0, 5), cs(2, 5), cs(4, 6)];
         let xml = runs_of(&para);
         assert_eq!(
             xml,
-            r#"<hp:run charPrIDRef="5"><hp:t>abcd</hp:t></hp:run><hp:run charPrIDRef="6"><hp:t>ef</hp:t></hp:run>"#,
-            "동일 id 경계 (2,5) 는 skip 되고 (4,6) 만 분할해야 한다"
+            r#"<hp:run charPrIDRef="5"><hp:t>ab</hp:t></hp:run><hp:run charPrIDRef="5"><hp:t>cd</hp:t></hp:run><hp:run charPrIDRef="6"><hp:t>ef</hp:t></hp:run>"#,
+            "동일 id 경계 (2,5)도 별도 run으로 출력해야 한다"
         );
     }
 

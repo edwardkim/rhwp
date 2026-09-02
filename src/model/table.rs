@@ -13,13 +13,23 @@ use super::*;
 /// 4,000,000 × 16B = 64 MiB (wasm32 는 8B → 32 MiB) 로 abort 없이 처리된다.
 pub const MAX_TABLE_GRID_CELLS: usize = 4_000_000;
 
+/// [#6145] 칸 줄바꿈 방식 "한 줄로 입력" — 자간을 조절해 한 줄을 유지한다.
+pub const CELL_LINE_WRAP_SQUEEZE: u8 = 1;
+
 pub const CELL_FLAG_HAS_MARGIN: u16 = 0x0001;
 pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
 pub const CELL_FLAG_EDITABLE_IN_FORM: u16 = 0x0008;
 
+#[cfg(test)]
+std::thread_local! {
+    static PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS: std::cell::Cell<usize> = const {
+        std::cell::Cell::new(0)
+    };
+}
+
 /// 표 개체 (HWPTAG_TABLE)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Table {
     /// 속성 비트 플래그
     pub attr: u32,
@@ -57,6 +67,12 @@ pub struct Table {
     pub outer_margin_bottom: i16,
     /// CTRL_HEADER ctrl_data의 4바이트(attr) 이후 추가 바이트 (라운드트립 보존용)
     pub raw_ctrl_data: Vec<u8>,
+    /// [#4495] raw_ctrl_data 출처 봉인 — 봉인 시점 `common`(CommonObjAttr) 의
+    /// 다이제스트. 저장 시 `common` 이 봉인과 같을 때만 raw 를 재사용한다.
+    /// None(합성 IR·봉인 이전)은 종전 계약(raw 우선) 유지. 다이제스트 밖 —
+    /// `model::raw_provenance` 참조.
+    #[serde(skip)]
+    pub raw_ctrl_seal: Option<[u8; 32]>,
     /// HWPTAG_TABLE 레코드의 원본 속성 값 (라운드트립 보존용, 0이면 재구성)
     pub raw_table_record_attr: u32,
     /// HWPTAG_TABLE 레코드의 border_fill_id 이후 추가 바이트 (라운드트립 보존용)
@@ -64,6 +80,10 @@ pub struct Table {
     /// 구조/내용 변경 시 true → 재측정 필요 (Default: false)
     #[doc(hidden)]
     pub dirty: bool,
+    /// 셀 텍스트 편집으로 line segment를 다시 계산했는지 나타내는 런타임 provenance.
+    /// 저장된 source frame과 reflow suffix를 구분하는 pagination 전용 상태다.
+    #[doc(hidden)]
+    pub text_reflowed_after_edit: bool,
     /// Studio 보상 resize로 행별 독립 가로 경계를 보존해야 하는 행.
     #[doc(hidden)]
     pub local_resize_rows: Vec<u16>,
@@ -80,7 +100,7 @@ pub struct Table {
 
 /// 표 쪽 나눔 종류
 /// bit 0-1: 0=나누지 않음, 1=셀 단위로 나눔, 2=나눔(행 단위)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum TablePageBreak {
     /// 나누지 않음 (0)
     #[default]
@@ -92,7 +112,7 @@ pub enum TablePageBreak {
 }
 
 /// 표 영역 속성
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct TableZone {
     /// 시작 열 주소
     pub start_col: u16,
@@ -107,7 +127,7 @@ pub struct TableZone {
 }
 
 /// 표 셀 (HWPTAG_LIST_HEADER + 셀 속성)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Cell {
     /// 셀 열 주소 (0부터 시작)
     pub col: u16,
@@ -131,6 +151,14 @@ pub struct Cell {
     pub list_header_width_ref: u16,
     /// 텍스트 방향 (0: 가로, 1: 세로)
     pub text_direction: u8,
+    /// [#4898] 줄바꿈 방식 — LIST_HEADER `list_attr` bit 19~20, OWPML `lineWrap`.
+    ///
+    /// `0` = BREAK(어절 단위 줄바꿈, 기본) · `1` = SQUEEZE(자간을 조절해 한 줄 유지) ·
+    /// `2` = KEEP. 종전에는 이 두 비트를 읽지도 쓰지도 않아 HWPX→HWP 저장에서 항상 0 이
+    /// 됐다 — 셀 줄바꿈 방식이 바뀌면 줄 수·셀 높이·표 높이가 따라 바뀐다.
+    /// 매핑은 한글 2022 실측이다(SQUEEZE 만 쓰는 문서를 SaveAs → LIST_HEADER 19개가 전부
+    /// bit19=1, BREAK 위주 문서는 SQUEEZE 인 셀 하나만 1). KEEP=2 는 스키마 열거 순서다.
+    pub line_wrap: u8,
     /// 세로 정렬 (0: top, 1: center, 2: bottom)
     pub vertical_align: VerticalAlign,
     /// 안 여백 지정 여부 (list_attr bit 16)
@@ -184,7 +212,7 @@ fn checked_table_span_end(start: u16, span: u16, axis: &str) -> Result<u16, Stri
 }
 
 /// 세로 정렬
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum VerticalAlign {
     #[default]
     Top,
@@ -201,16 +229,10 @@ impl Cell {
     /// [Task #1785] 렌더에 실제 적용되는 축별 안 여백 선택 규칙 (단일 출처).
     ///
     /// HWP 스펙: aim=true → cell.padding(단, 0 은 표 기본으로 폴백), aim=false →
-    /// table.padding. 예외로 aim=false 여도 레거시 보존값(cell > table, 2500HU 미만)은
-    /// 한컴이 렌더에 사용한다 (KTX 목차, exam_kor 보기 박스).
+    /// table.padding.
     /// 레이아웃(resolve_cell_padding)과 높이 측정(height_measurer)이 반드시 같은 값을
     /// 봐야 한다 — 규칙이 갈리면 예약 높이와 실제 렌더가 어긋나 표 높이가 틀어진다.
-    pub fn use_cell_padding_axis(
-        &self,
-        cell_padding: i16,
-        table_padding: i16,
-        allow_saved_small_cell_margin: bool,
-    ) -> bool {
+    pub fn use_cell_padding_axis(&self, cell_padding: i16, table_padding: i16) -> bool {
         if self.apply_inner_margin {
             // [#2070] aim=true 의 0 은 사용자가 지정한 셀 고유 안 여백 — 존중한다
             // (한글 PDF 실측: 시장구조조사 c0 pad=(0,0) 코드 폭 37.0px > 표 폴백
@@ -218,25 +240,93 @@ impl Cell {
             // 센티널로 보고 표 패딩 폴백 유지.
             return cell_padding >= 0;
         }
-        // [#2195] aim=false 는 원칙적으로 **전 축 표 기본** — pad 통제 사다리
-        // 2종 실측:
+        // [#2195] aim=false 는 **전 축 표 기본** — pad 통제 사다리 2종 실측:
         // (1) 표(0,0,141,141)+셀(510,510,141,141): 실효 좌우 0·상하 141,
         // (2) 표(510,510,223,223)+셀 동일: inner = 표폭-1020(좌우 510x2)·상하 223.
-        // 단, 셀 안의 비글자표가 표 자체에는 좌우 0·상하 141HU만 저장하고 셀에는
-        // 510HU 좌우 margin을 보존한 HWP5 형상은 한컴이 그 작은 저장 여백을 쓴다.
-        // 이는 일반 표의 `inMargin=(0,0,141,141)` 사다리를 뒤집지 않도록 호출자가
-        // 중첩 비글자표 문맥에서만 허용한다 (#2308 p34).
-        if allow_saved_small_cell_margin && cell_padding > table_padding && cell_padding < 2500 {
-            return true;
-        }
+        //
+        // [#5301] 종전에는 "중첩 비글자표는 셀의 작은 저장 여백을 한컴이 쓴다"는 예외를
+        // 뒀는데(`#2308 p34`), 그 근거 문서를 한글 2024 오라클로 다시 재니 **반대**였다.
+        // `samples/issue1891/76076_regulatory_analysis.hwp` 는 34쪽·66쪽 모두 중첩 칸
+        // (표 pad 0/0 · 셀 pad 510/510 · aim=false)인데 한컴이 그린 글자 상자가
+        // `156.96..522.60pt = 365.6pt` 로 **칸 폭 36572HU(365.72pt) 전부**다 —
+        // 여백 0 이다. 510 을 적용하면 폭이 10.2pt 좁아져 줄이 하나 더 생기고,
+        // 그 초과 줄이 조각 용량을 넘어 66쪽에서 `로 예상` 세 글자가 소실됐다.
+        let _ = (cell_padding, table_padding);
         false
     }
 
+    /// [#6442] 셀 안 여백으로는 설명되지 않는 절대 크기 (HWPUNIT). 2cm —
+    /// 한글이 실제로 내는 안 여백(대개 141~1417HU, #2195 의 레거시 상한도
+    /// 2500HU)을 두 배 이상 웃돈다. 실제로 걸린 쓰레기값은 23812~29693HU 다.
+    const ABSURD_INNER_MARGIN_HU: i32 = 5669;
+
+    /// [#6442] **측정용** 저장 상하 안 여백 (HWPUNIT) — 쓰이지 않는 필드에 담긴
+    /// 쓰레기값만 걸러 낸다.
+    ///
+    /// `apply_inner_margin=false` 셀의 `padding` 필드는 한글이 렌더에 **쓰지 않는**
+    /// 값이라 파일에 무엇이 들어 있어도 무방하고, 실제로 좌표성 쓰레기가 들어 있는
+    /// 문서가 있다.
+    ///
+    /// | 문서 | `pad.top` | `pad.bottom` | 셀 선언 높이 |
+    /// |---|---|---|---|
+    /// | 대산항 출입증(#6442) | 29693 | 10433 | **683** |
+    /// | 59043 규제분석(#1921 표본) | 23812 | 10930 | **282** |
+    ///
+    /// 이 원시값을 그대로 더하면 행 하나가 500px 씩 부푼다.
+    ///
+    /// **aim=false 저장값을 전부 버리면 안 된다** — rhwp 조판은 그 값에 의존하는
+    /// 경로가 여럿이라(중첩 비글자표 #2195 등) 전부 버리면 10건이 회귀한다.
+    /// 두 조건을 **모두** 요구해 걸러지는 범위를 좁혔다.
+    ///
+    /// 1. `total > height` — **엄격 초과**. `>=` 로 두면 `total = height = 282`
+    ///    (141+141 안 여백에 내용 높이 0) 인 정상 셀까지 잡는다(#3637 2587개 셀).
+    /// 2. `total >= ABSURD_INNER_MARGIN_HU` — 안 여백으로는 설명이 안 되는 절대 크기.
+    pub fn stored_vertical_padding_hu(&self) -> i32 {
+        let total = (self.padding.top as i32).saturating_add(self.padding.bottom as i32);
+        if self.apply_inner_margin || total <= 0 {
+            return total;
+        }
+        // 선언 높이가 없으면(0 / 미지 센티널) 판정 근거가 없으니 종전대로 둔다.
+        if self.height == 0 || self.height >= 0x8000_0000 {
+            return total;
+        }
+        if total > self.height as i32 && total >= Self::ABSURD_INNER_MARGIN_HU {
+            if std::env::var("RHWP_6442_SCAN").is_ok() {
+                eprintln!(
+                    "[6442S] total={total} h={} pads=({},{})",
+                    self.height, self.padding.top, self.padding.bottom
+                );
+            }
+            return 0;
+        }
+        total
+    }
+
+    /// [Task #501 / #5751] 한컴 방어 가드의 발동 기준 — 셀 상하 안 여백 합이 셀
+    /// 선언 높이 **자체**를 넘으면 그 저장값을 비정상으로 본다
+    /// (mel-001 p2 셀[21]: pad 3400 HU vs h 1280 HU).
+    ///
+    /// 렌더(`table_layout`: padding 비례 축소)와 측정(`height_measurer`: 선언 높이
+    /// 권위 clamp)이 **같은 기준**을 쓰도록 단일 출처로 둔다 (#1785 의
+    /// `use_cell_padding_axis` 와 같은 결). 기준이 갈리면 측정만 행을 안 늘리고
+    /// 렌더는 저장 여백을 그대로 써서 글자가 아래 괘선을 넘는다 — 여백이 셀
+    /// 높이의 절반~1배인 정상 조밀 표에서 오발동한 #5751 이 그 사례다
+    /// (156505020 데이터 셀: pad 15.09px, h 21.09px).
+    pub fn vertical_padding_is_abnormal(cell_height_px: f64, total_v_pad_px: f64) -> bool {
+        cell_height_px > 0.0 && total_v_pad_px >= cell_height_px
+    }
+
     /// 축별 규칙(`use_cell_padding_axis`)을 네 축에 적용한 유효 안 여백 (HWPUNIT).
-    /// [#2195 stage50] 표 기본 여백이 **네 축 모두 0**(미지정)이면 셀 저장 pad —
-    /// 86712 구분선(한글 PDF 괘선 21.1px = 셀 141 상하 포함) + exam_social 머리말
-    /// 글상자(#1100 rect 오라클) 실측. pad 사다리의 '표 기본' 실측은 표 기본이
-    /// 일부 축만 0(0,0,141,141)인 케이스 — 전축 0 과 구분된다.
+    /// [#2195 stage50] 표 기본 여백이 **네 축 모두 0**(미지정)이면 셀 저장 pad.
+    /// **수직 축 전용** — 근거가 수직뿐이다: 86712 구분선(한글 PDF 괘선 21.1px =
+    /// 셀 141 상하 포함) 실측. 수평 축은 한글이 전축 0 을 진짜 0 으로 쓴다:
+    /// exam_social p2 머리말을 한글 2020/2022 인쇄 PDF 로 각각 실측한 글리프
+    /// 좌단(73.9/74.3px)이 셀 pad 적용 원점(77.47)보다 왼쪽이라 적용이 불가능하고,
+    /// 같은 문서 전축0 표의 저장 sw 52/52 가 pad 미적용(±3HU)이다. 종전 수평
+    /// 근거였던 issue_1100 x=77.47 핀은 한글 실측이 아니라 rhwp HWP↔HWPX 패리티
+    /// 자기-핀이었다. 상세: `mydocs/plans/cell_width_authority.md`.
+    /// pad 사다리의 '표 기본' 실측은 표 기본이 일부 축만 0(0,0,141,141)인
+    /// 케이스 — 전축 0 과 구분된다.
     pub fn table_padding_unspecified(table_padding: &crate::model::Padding) -> bool {
         table_padding.left == 0
             && table_padding.right == 0
@@ -249,20 +339,44 @@ impl Cell {
         table_padding: &crate::model::Padding,
     ) -> crate::model::Padding {
         let unspec = !self.apply_inner_margin && Self::table_padding_unspecified(table_padding);
-        let pick = |c: i16, t: i16| -> i16 {
+        let pick = |c: i16, t: i16, unspec_axis: bool| -> i16 {
             // [#1785 위생 한도 유지] 10mm급(>=2500HU) 보존 pad 는 한컴이 렌더에
             // 쓰지 않는다(36381023 render-diff) — 전축0 미지정 규칙에서도 제외.
-            if (unspec && c < 2500) || self.use_cell_padding_axis(c, t, false) {
+            // [#6358] 음수는 깨진 저장값(37787 셀 pad=-19215). `c < 2500` 만 보면
+            // 통과해 안쪽 높이가 부풀어 Center 정렬이 셀 밖 +130px 로 나간다.
+            // aim=true 경로(`use_cell_padding_axis`: `cell_padding >= 0`)와 같이
+            // 결측 센티널로 보고 표 기본으로 폴백한다.
+            if (unspec_axis && c >= 0 && c < 2500) || self.use_cell_padding_axis(c, t) {
                 c
             } else {
                 t
             }
         };
         crate::model::Padding {
-            left: pick(self.padding.left, table_padding.left),
-            right: pick(self.padding.right, table_padding.right),
-            top: pick(self.padding.top, table_padding.top),
-            bottom: pick(self.padding.bottom, table_padding.bottom),
+            // 수평은 전축0 도 진짜 0 (`table_padding_unspecified` 주석의 실측).
+            left: pick(self.padding.left, table_padding.left, false),
+            right: pick(self.padding.right, table_padding.right, false),
+            top: pick(self.padding.top, table_padding.top, unspec),
+            bottom: pick(self.padding.bottom, table_padding.bottom, unspec),
+        }
+    }
+
+    /// Padding that bounds a newly generated paragraph layout frame.
+    ///
+    /// An all-zero table padding is a real zero-width frame boundary for
+    /// stored HWP LineSeg geometry. `effective_padding()` deliberately keeps
+    /// a separate paint/measurement compatibility fallback to the cell's
+    /// saved padding, so frame construction must not reuse that exception.
+    pub(crate) fn paragraph_frame_padding(
+        &self,
+        table_padding: &crate::model::Padding,
+    ) -> crate::model::Padding {
+        if self.apply_inner_margin {
+            self.padding
+        } else if Self::table_padding_unspecified(table_padding) {
+            crate::model::Padding::default()
+        } else {
+            self.effective_padding(table_padding)
         }
     }
 
@@ -390,6 +504,7 @@ impl Cell {
             padding: template.padding,
             list_header_width_ref: template.list_header_width_ref,
             text_direction: template.text_direction,
+            line_wrap: template.line_wrap,
             vertical_align: template.vertical_align,
             apply_inner_margin: template.apply_inner_margin,
             is_header: template.is_header,
@@ -402,6 +517,237 @@ impl Cell {
 }
 
 impl Table {
+    #[cfg(test)]
+    pub(crate) fn reset_paragraph_frame_owner_widths_calls_for_test() {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(0));
+    }
+
+    #[cfg(test)]
+    pub(crate) fn paragraph_frame_owner_widths_calls_for_test() -> usize {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.get())
+    }
+
+    /// Widths owned by cell paragraph frames before padding and paragraph margins.
+    ///
+    /// Native tables may repeat a row with raw cell widths whose sum is a few
+    /// HWPUNIT short of the table's resolved column grid. Those raw values are
+    /// serialization auxiliaries, not independent row boundaries. Preserve
+    /// explicit/inferred local-resize rows; otherwise use genuine base-track
+    /// evidence and place any positive table-width residual on the last column.
+    ///
+    /// This is deliberately batch-shaped. Row-role inference examines the table
+    /// as a whole, so repeating it once per cell makes large native tables
+    /// quadratic and can prevent on-demand reflow from completing.
+    pub(crate) fn paragraph_frame_owner_widths(&self) -> Vec<i32> {
+        #[cfg(test)]
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(calls.get() + 1));
+
+        let to_i32 = |width: u64| width.min(i32::MAX as u64) as i32;
+        let mut owners = self
+            .cells
+            .iter()
+            .map(|cell| to_i32(u64::from(cell.width)))
+            .collect::<Vec<_>>();
+        let col_count = usize::from(self.col_count);
+        if owners.is_empty()
+            || col_count == 0
+            || self.common.treat_as_char
+            || self.common.width == 0
+        {
+            return owners;
+        }
+
+        let explicit_rows = self
+            .local_resize_rows
+            .iter()
+            .copied()
+            .collect::<std::collections::BTreeSet<_>>();
+        let (outlier_rows, inferred_rows) = self.inferred_width_row_roles();
+
+        // Runtime edit metadata is keyed by cell index, not by row/column.
+        // Preserve exact overrides without treating a missing override as zero.
+        for &(cell_index, width) in &self.local_resize_cell_widths {
+            if width > 0
+                && self
+                    .cells
+                    .get(cell_index)
+                    .is_some_and(|cell| explicit_rows.contains(&cell.row))
+            {
+                owners[cell_index] = to_i32(u64::from(width));
+            }
+        }
+
+        // Extract only real single-column evidence. `base_grid_column_widths`
+        // intentionally fills holes from the display grid; that fallback would
+        // make excluded local/outlier data look like a paragraph-frame base.
+        let mut base_tracks = vec![0u32; col_count];
+        for cell in &self.cells {
+            let col = usize::from(cell.col);
+            if cell.row >= self.row_count
+                || cell.col_span != 1
+                || cell.width == 0
+                || col >= col_count
+                || explicit_rows.contains(&cell.row)
+                || outlier_rows.contains(&cell.row)
+            {
+                continue;
+            }
+            base_tracks[col] = base_tracks[col].max(cell.width);
+        }
+        if base_tracks.contains(&0) {
+            return owners;
+        }
+        let base_total = base_tracks.iter().copied().map(u64::from).sum::<u64>();
+        let table_width = u64::from(self.common.width);
+        if table_width > base_total {
+            let residual = (table_width - base_total).min(u64::from(u32::MAX)) as u32;
+            if let Some(last) = base_tracks.last_mut() {
+                *last = last.saturating_add(residual);
+            }
+        }
+
+        let mut rows = vec![Vec::<usize>::new(); usize::from(self.row_count)];
+        for (cell_index, cell) in self.cells.iter().enumerate() {
+            if let Some(row) = rows.get_mut(usize::from(cell.row)) {
+                row.push(cell_index);
+            }
+        }
+        for (row_index, cell_indices) in rows.iter_mut().enumerate() {
+            let row = row_index as u16;
+            if explicit_rows.contains(&row) || inferred_rows.contains(&row) {
+                continue;
+            }
+            cell_indices.sort_by_key(|index| self.cells[*index].col);
+            let mut next_col = 0usize;
+            let mut row_total = 0u64;
+            let mut complete = !cell_indices.is_empty();
+            for &cell_index in cell_indices.iter() {
+                let cell = &self.cells[cell_index];
+                let start = usize::from(cell.col);
+                let Some(end) = start.checked_add(usize::from(cell.col_span)) else {
+                    complete = false;
+                    break;
+                };
+                if cell.row_span != 1
+                    || cell.col_span == 0
+                    || cell.width == 0
+                    || start != next_col
+                    || end > col_count
+                {
+                    complete = false;
+                    break;
+                }
+                row_total = row_total.saturating_add(u64::from(cell.width));
+                next_col = end;
+            }
+            if !complete || next_col != col_count || row_total == table_width {
+                continue;
+            }
+            for &cell_index in cell_indices.iter() {
+                let cell = &self.cells[cell_index];
+                let start = usize::from(cell.col);
+                let end = start + usize::from(cell.col_span);
+                let resolved = base_tracks[start..end]
+                    .iter()
+                    .copied()
+                    .map(u64::from)
+                    .sum::<u64>();
+                owners[cell_index] = to_i32(resolved);
+            }
+        }
+        owners
+    }
+
+    /// [#5910] 병합 셀 선언 높이가 걸친 행들의 단일행 선언 합보다 **작을** 때, 한글이
+    /// 마지막 걸침 행에서 흡수하는 축소량(HWPUNIT)을 행별로 계산한다.
+    ///
+    /// HWP 표의 행 높이는 셀마다 따로 저장되므로, `row_span>1` 셀의 선언 높이와 그 셀이
+    /// 걸친 행들의 `row_span==1` 선언 합이 어긋난 문서가 존재한다. 선언 합이 **모자랄**
+    /// 때(병합 선언이 더 큼) 잔여를 마지막 걸침 행에 더하는 규칙은 이미 있으나
+    /// (#2291/#2237), 반대 방향에는 규칙이 없어 걸침 묶음이 실제보다 부풀었다.
+    ///
+    /// 다만 두 선언이 어긋난다는 사실만으로는 어느 쪽이 옳은지 알 수 없다 — 걸침 선언이
+    /// 0 이거나 한 행 값과 같은 손상 문서도 실재한다(1342000_edu_curriculum_map: 걸침
+    /// 선언 0 vs 행합 1500). 그래서 **저장된 표 높이(`common.height`)가 축소 결과를
+    /// 확인해 줄 때만** 적용한다: 마지막 걸침 행까지의 행합이 축소 후 `common.height` 와
+    /// 정확히 같아야 한다. 이 확인이 없으면 종전 동작(축소 없음)을 유지한다.
+    ///
+    /// 실측 근거 — `samples/kps-ai.hwp` 43쪽 표(13행×5열)의 `r8 rs=3` 선언은 17,354HU
+    /// 인데 걸친 세 행의 단일행 선언은 6,082HU×3 = 18,246HU 다. 한글 2022 정본
+    /// (`pdf/kps-ai-2022.pdf` 46쪽)의 행 괘선 실측은 60.8/60.8/**51.9**pt 이고, 마지막
+    /// 행 5,190HU = 17,354 − 6,082×2 로 정확히 닫힌다. 같은 표의 `common.height`
+    /// 62,725HU 도 머리행 2,797 + 6,082×9 + 5,190 으로 같은 값에 닫혀 두 경로가 서로를
+    /// 확인해 준다.
+    ///
+    /// 걸친 행 중 하나라도 `row_span==1` 선언이 없으면(미지 행) 기존 분배 규칙이
+    /// 담당하므로 0 을 돌려준다. 반환 벡터의 길이는 `row_count` 다.
+    pub fn rowspan_declared_overflow_shrink(&self) -> Vec<HwpUnit> {
+        let row_count = self.row_count as usize;
+        let mut shrink = vec![0 as HwpUnit; row_count];
+        if row_count == 0 || self.common.height == 0 {
+            return shrink;
+        }
+
+        // 행별 단일행 선언 높이 (없으면 None = 미지 행)
+        let mut declared: Vec<Option<HwpUnit>> = vec![None; row_count];
+        for cell in &self.cells {
+            if cell.row_span != 1 || cell.height >= 0x8000_0000 {
+                continue;
+            }
+            let r = cell.row as usize;
+            if r >= row_count {
+                continue;
+            }
+            let slot = &mut declared[r];
+            if slot.is_none_or(|h| cell.height > h) {
+                *slot = Some(cell.height);
+            }
+        }
+
+        for cell in &self.cells {
+            let span = cell.row_span as usize;
+            let r = cell.row as usize;
+            if span <= 1 || cell.height >= 0x8000_0000 || r + span > row_count {
+                continue;
+            }
+            let last = r + span - 1;
+            // 걸친 행 합 — 미지 행이 있으면 기존 분배 규칙 담당.
+            let mut span_sum: u64 = 0;
+            let mut prefix_sum: u64 = 0;
+            let mut all_known = true;
+            for (i, h) in declared.iter().enumerate().take(last + 1) {
+                match h {
+                    Some(v) => {
+                        prefix_sum += *v as u64;
+                        if i >= r {
+                            span_sum += *v as u64;
+                        }
+                    }
+                    None => {
+                        all_known = false;
+                        break;
+                    }
+                }
+            }
+            if !all_known || span_sum <= cell.height as u64 {
+                continue;
+            }
+            let deficit = span_sum - cell.height as u64;
+            // 저장 표 높이 확인 — 축소 후 마지막 걸침 행까지의 행합이 `common.height`
+            // 와 정확히 같을 때만 적용한다. 손상 선언(걸침 선언 0 등)은 여기서 걸러진다.
+            if prefix_sum.checked_sub(deficit) != Some(self.common.height as u64) {
+                continue;
+            }
+            let capped = deficit.min(declared[last].unwrap_or(0) as u64) as HwpUnit;
+            // 같은 마지막 행에 상한이 여러 개면 **덜 줄이는** 쪽을 택한다 —
+            // 이 규칙은 부푼 묶음을 되돌리는 보정이지 새 압축이 아니다.
+            if shrink[last] == 0 || capped < shrink[last] {
+                shrink[last] = capped;
+            }
+        }
+        shrink
+    }
+
     /// [Task #1716] 반복 제목행으로 재사용할 **표 상단의 연속 제목행 블록** `0..H` 를 반환한다.
     ///
     /// 행 r 이 제목행 ⟺ header 셀(`is_header`, rowspan 덮개 포함)이 r 을 덮음. 상단(행 0)부터
@@ -450,16 +796,20 @@ impl Table {
         let mut grouped_rows =
             std::collections::BTreeMap::<Vec<(u16, u16)>, Vec<(u16, Vec<u32>)>>::new();
 
-        for row in 0..self.row_count {
+        let mut cells_by_row = vec![Vec::new(); usize::from(self.row_count)];
+        for cell in &self.cells {
+            if cell.row_span == 1 {
+                if let Some(row) = cells_by_row.get_mut(usize::from(cell.row)) {
+                    row.push(cell);
+                }
+            }
+        }
+
+        for (row_index, row_cells) in cells_by_row.iter_mut().enumerate() {
+            let row = row_index as u16;
             if explicit_rows.contains(&row) {
                 continue;
             }
-
-            let mut row_cells = self
-                .cells
-                .iter()
-                .filter(|cell| cell.row == row && cell.row_span == 1)
-                .collect::<Vec<_>>();
             row_cells.sort_by_key(|cell| cell.col);
 
             let mut next_col = 0u16;
@@ -467,7 +817,7 @@ impl Table {
             let mut widths = Vec::new();
             let mut valid = !row_cells.is_empty();
 
-            for cell in row_cells {
+            for cell in row_cells.iter().copied() {
                 let span = cell.col_span.max(1);
                 let end_col = cell.col.saturating_add(span);
                 if cell.col != next_col || end_col <= cell.col || end_col as usize > col_count {
@@ -915,6 +1265,27 @@ impl Table {
     }
 
     /// 열별 폭을 추출한다 (col_span==1인 셀 기준).
+    /// 흐름에서 이 표가 차지하는 가로 폭(HWPUNIT).
+    ///
+    /// [#5785] `get_column_widths()` 의 합을 쓰면 안 된다. 그 합은 전역 그리드에서
+    /// `col_span == 1` 인 셀의 **열별 최대값** 합이라, 행마다 열 구획이 다른 표에서
+    /// 실제 폭보다 커진다(3049001 약장 실측 12,872 vs 17,299 HU). 선언 폭
+    /// `common.width` 가 있으면 그것이 이 표의 폭이다.
+    ///
+    /// 선언 폭이 0 인 합성 표에서만 열 합으로 폴백한다.
+    ///
+    /// 이 규칙은 종전에 `is_tac_table_inline` 한 자리에만 있었고, 나머지 흐름 폭
+    /// 호출부 셋은 원시 합을 그대로 써서 같은 결함이 남아 있었다 — 표가 선언보다
+    /// 넓게 배치돼 본문 오른쪽 여백을 넘었다(samples 전수에서 12문서).
+    /// 규칙을 모델로 올려 호출부가 고를 수 없게 한다.
+    pub fn flow_width_hu(&self) -> HwpUnit {
+        if self.common.width > 0 {
+            self.common.width
+        } else {
+            self.get_column_widths().iter().sum()
+        }
+    }
+
     pub fn get_column_widths(&self) -> Vec<HwpUnit> {
         let mut widths = vec![0u32; self.col_count as usize];
         for cell in &self.cells {

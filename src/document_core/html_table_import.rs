@@ -2,11 +2,9 @@
 
 use super::helpers::*;
 use crate::document_core::DocumentCore;
-use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::common_obj_offsets;
-use crate::renderer::style_resolver::resolve_styles;
 
 impl DocumentCore {
     pub(crate) fn parse_table_html(&mut self, paragraphs: &mut Vec<Paragraph>, table_html: &str) {
@@ -357,11 +355,7 @@ impl DocumentCore {
                 }
             };
 
-            // 셀 문단의 para_shape_id (DIFF-3 수정)
-            // 기본 "본문" ParaShape (id=0) 사용 — 유효한 참조를 보장
-            let cell_para_shape_id: u16 = 0;
-
-            // 셀 문단 보정: char_count_msb, char_count, para_shape_id, raw_header_extra, line_segs
+            // 셀 문단 보정: char_count_msb, char_count, raw_header_extra, line_segs
             let mut cell_paragraphs = cell_paragraphs;
             for cp_para in &mut cell_paragraphs {
                 cp_para.char_count_msb = true; // 셀 문단은 항상 MSB 설정
@@ -369,8 +363,8 @@ impl DocumentCore {
                 let text_chars = cp_para.text.chars().count() as u32;
                 cp_para.char_count = text_chars + 1;
 
-                // para_shape_id: 기본 "본문" ParaShape 사용 (DIFF-3)
-                cp_para.para_shape_id = cell_para_shape_id;
+                // [#4275] CSS 에서 만든 para_shape_id 를 보존한다. 종전에는 무조건 0 으로
+                // 덮어 정렬·줄간격이 교차 문서 HTML 붙여넣기에서 사라졌다.
 
                 // DIFF-2: char_shapes가 비어있으면 기본 CharShapeRef 추가
                 // 모든 셀 문단은 최소 1개의 명시적 CharShapeRef를 가져야 함
@@ -612,9 +606,11 @@ impl DocumentCore {
             outer_margin_top: outer_margin,
             outer_margin_bottom: outer_margin,
             raw_ctrl_data,
+            raw_ctrl_seal: None,
             raw_table_record_attr: tbl_rec_attr,
             raw_table_record_extra: vec![0u8; 2], // 표준 추가 2바이트
             dirty: true,
+            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),
@@ -775,7 +771,7 @@ impl DocumentCore {
         // 새로 추가
         self.document.doc_info.border_fills.push(bf);
         self.document.doc_info.raw_stream_dirty = true;
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
         self.document.doc_info.border_fills.len() as u16
     }
 
@@ -911,7 +907,7 @@ impl DocumentCore {
         // 새로 추가
         self.document.doc_info.border_fills.push(bf);
         self.document.doc_info.raw_stream_dirty = true;
-        self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+        self.rebuild_resolved_styles();
         self.document.doc_info.border_fills.len() as u16
     }
 

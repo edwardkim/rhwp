@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d3-atomic-vertical-glyph-publication-revised-plan",
+  "issue": 4969,
+  "stage": "W10-Q4-D3",
+  "date": "2026-08-30",
+  "status": "Q4-D3-C-qualified-publication-parity-checkpointed",
+  "planCheckpoint": "e64d6fd67",
+  "d2Checkpoint": "992fe4acaf92",
+  "mergedUpstreamDevel": "bd78a53122e4",
+  "mergeCommit": "049b73d0cd80",
+  "d2RequalificationRecord": "7bfefff07a99",
+  "productMutationBeforeApproval": false,
+  "problem": {
+    "fallbackLeafCount": 2,
+    "fallbackTextSourceCount": 2,
+    "oldPlanEquivalenceGroupCount": 1,
+    "crossLeafGroupAllowed": false,
+    "d2TreeRewriteAllowed": false
+  },
+  "adoptedAuthority": {
+    "publicationAtomicity": "one-line-all-leaves-and-one-portable-source",
+    "variantScope": "one-equivalence-group-per-fallback-leaf",
+    "sharedLinePublicationId": true,
+    "sharedExactSourceCertificate": true,
+    "fallbackAlwaysPresent": true,
+    "backendSelectionEnabled": false
+  },
+  "glyphRun": {
+    "writingMode": "vertical-rl",
+    "orientation": "vertical-upright",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "glyphTransforms": false,
+    "variations": false,
+    "syntheticStyle": false,
+    "diagnosticReason": "boundedVerticalHwp5TableCellV1"
+  },
+  "stages": [
+    {
+      "id": "Q4-D3-A",
+      "name": "leaf-source-mapping-shadow",
+      "status": "qualified-shadow-mapping-checkpointed",
+      "checkpoint": "bb334756b",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d3_a_leaf_source_mapping_shadow.json",
+      "productOutputChange": false,
+      "callerEnabled": false
+    },
+    {
+      "id": "Q4-D3-B",
+      "name": "atomic-resource-and-leaf-publication",
+      "status": "qualified-atomic-leaf-publication-checkpointed",
+      "checkpoint": "d49400aad",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d3_b_atomic_leaf_publication.json",
+      "productOutputChange": true,
+      "backendSelectionChange": false
+    },
+    {
+      "id": "Q4-D3-C",
+      "name": "publication-validation-and-result-classification",
+      "status": "qualified-publication-parity-checkpointed",
+      "checkpoint": "43d50ad99",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d3_c_publication_validation.json",
+      "productOutputChange": false,
+      "backendSelectionChange": false
+    }
+  ],
+  "target": {
+    "mode": "boundedVerticalHwp5TableCellV1",
+    "fallbackTextRuns": "N",
+    "verticalGlyphRuns": "N",
+    "equivalenceGroups": "N",
+    "portableFontBlobs": 1,
+    "portableFontFaces": 1,
+    "nominalDuplicateGlyphRuns": 0
+  },
+  "invariants": {
+    "d2RenderTreeMutationAllowed": false,
+    "partialLinePublicationAllowed": false,
+    "crossLeafEquivalenceGroupAllowed": false,
+    "horizontalAuthorityGuardRemoved": false,
+    "backendFeatureDetectionAllowed": false,
+    "newIntegrationSourceAllowed": false,
+    "privateCorpusAllowed": false,
+    "hyperVAllowed": false
+  },
+  "controls": [
+    "samples/table-004.hwp",
+    "samples/issue6029/3200477_icao_procedure.hwpx"
+  ],
+  "implementationFiles": [
+    "src/paint/shaping_glyph_vertical.rs",
+    "src/paint/mod.rs",
+    "src/paint/builder.rs",
+    "tests/cases/issue_4969_shaping_request_contract.rs",
+    "tests/cases/issue_4969_shaping_atomic_activation.rs"
+  ],
+  "forbiddenImplementationFiles": [
+    "src/renderer/layer_renderer.rs",
+    "src/paint/text_v2.rs",
+    "rhwp-studio/src/view/canvaskit/glyph-run-fonts.ts"
+  ],
+  "approvalGates": {
+    "revisedPlan": true,
+    "d3AResult": true,
+    "d3BResult": true,
+    "d3CResult": true,
+    "checkpoint": true,
+    "commit": true,
+    "push": true,
+    "githubComment": true,
+    "pullRequest": true
+  },
+  "next": "Q4-D4"
+}

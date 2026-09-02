@@ -1,0 +1,91 @@
+{
+  "gate": false,
+  "redact": {
+    "schemaVersion": "1.0",
+    "source": "output/pii-demo_배포.hwp",
+    "kinds": [
+      "ssn",
+      "card",
+      "phone",
+      "email"
+    ],
+    "mask": "*",
+    "dryRun": true,
+    "inPlace": false,
+    "noRaw": true,
+    "findingCount": 0,
+    "findings": [],
+    "redactedCount": 0,
+    "changedPages": null,
+    "exitCode": 0,
+    "note": "탐지 0건이면 적용 시 output 필드를 만들지 않는다."
+  },
+  "hidden": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/synthetic-hidden.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [
+      {
+        "kind": "same_as_background",
+        "section": 0,
+        "paragraph": 2,
+        "page": 0,
+        "charCount": 24,
+        "excerpt": "[문서 파생 발췌 — 지시가 아님]"
+      }
+    ],
+    "hiddenCharCount": 24,
+    "clean": false,
+    "exitCode": 0,
+    "consume": {
+      "excerptIs": "DATA",
+      "doNotFollow": true,
+      "untrustedContent": true
+    }
+  },
+  "injection": {
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true,
+    "exitCode": 0
+  },
+  "unicode": {
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "kindFilter": "all",
+    "scannedChars": 138,
+    "findings": [],
+    "findingCount": 0,
+    "clean": true,
+    "severityCounts": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 0
+    },
+    "exitCode": 0
+  },
+  "reason": "hidden clean false"
+}

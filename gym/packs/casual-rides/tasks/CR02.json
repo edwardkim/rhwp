@@ -1,0 +1,24 @@
+{
+  "id": "CR02",
+  "tier": 1,
+  "title": "문단이 몇 개인가요?",
+  "input": "samples/table-001.hwp",
+  "axis": "입문",
+  "instructions": "🎡 관람차 — 문서를 펼쳐서 그 수를 answer.json 에 {\"paragraphs\": 숫자} 로 적어 내면 된다. 딱 한 번 실행하면 답이 보인다.\n힌트: rhwp explain {입력} --json 의 paragraphCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "문단이 몇 개인가요?",
+      "op": "answer_eq",
+      "answer": "paragraphs",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "paragraphCount"
+    }
+  ]
+}

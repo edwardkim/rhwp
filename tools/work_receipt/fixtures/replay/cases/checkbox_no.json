@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "checkbox_no",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "신청서",
+  "genre": "미동의",
+  "title": "선택 동의 해제",
+  "why": "checked=false. agree 케이스의 반대 축.",
+  "notes": "false 체크",
+  "input": "samples/basic/blank2010.hwp",
+  "output": "out/checkbox-no.hwp",
+  "ext": "hwp",
+  "actions": [
+    "set_checkbox"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/blank2010.hwp",
+    "output": "out/checkbox-no.hwp",
+    "steps": [
+      {
+        "action": "set_checkbox",
+        "name": "선택동의",
+        "checked": false
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank2010.hwp\",\"output\":\"out/checkbox-no.hwp\",\"steps\":[{\"action\":\"set_checkbox\",\"name\":\"선택동의\",\"checked\":false}]}",
+  "planSha256": "92ed9859234b91781804d8cd705d2168285d3db27e0e05b4c6c4b6440fcaa601",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/blank2010.hwp",
+    "inputSha256": "0a00518d7ed87482b265a3965c75deba7e6770577024ec9d6ed67770bfc31891",
+    "planSha256": "92ed9859234b91781804d8cd705d2168285d3db27e0e05b4c6c4b6440fcaa601",
+    "outputSha256": "5ae8ccb37615181a86f26e17cdb57b471e92752b24fe1b2e65390e6731612ee0",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "5ae8ccb37615181a86f26e17cdb57b471e92752b24fe1b2e65390e6731612ee0"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

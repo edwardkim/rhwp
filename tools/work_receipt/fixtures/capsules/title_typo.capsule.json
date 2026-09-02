@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/title-typo.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "시정님",
+        "replace": "시장님"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/title-typo.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"시정님\",\"replace\":\"시장님\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "6af7a3b19800eeebe31fbcf05124bc597f3b3b5b0693f4d9a2194418b9b8bf81",
+    "planSha256": "c00704fd03149faa3dd2b250200e4884a0ff1aec294e86ae686e54bd3cc35124",
+    "outputSha256": "9983f74cbd52bba5d67693356ed5e2d809bfa7d52fce34f725a5b4f96da8ee7a",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

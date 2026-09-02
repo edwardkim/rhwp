@@ -102,12 +102,21 @@ pub struct SerializeContext {
     pub style_ids: IdPool<u16>,
     /// `bin_data_id` (IR) → manifest 엔트리 매핑
     pub bin_data_map: HashMap<u16, BinDataEntry>,
+    /// HWP5 BIN_DATA 레코드 순번(1-based) → storage_id 사상.
+    ///
+    /// `ImageAttr.bin_data_id`는 storage stream 이름이 아니라 DocInfo 레코드
+    /// 순번이다. storage_id와 같은 숫자가 있어도 순번 사상이 우선해야 한다.
+    bin_seq_to_storage: HashMap<u16, u16>,
     /// [#3546] OOXML 차트 파트 — Chart/chartN.xml 원형 방출 목록.
     /// 원본 content.hpf 는 Chart 파트를 나열하지 않으므로 manifest·3-way
     /// 단언 대상 밖이다.
     pub chart_entries: Vec<ChartPartEntry>,
     /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
     para_id_counter: u32,
+    /// HWP3 전용 Hyperlink control을 HWPX `fieldBegin`으로 승격할 때 쓰는 ID.
+    /// HWP3 원본에는 HWPX field ID가 없으므로, 기존 Field ID와 충돌 가능성이 낮은
+    /// 상위 범위를 문서 내에서 단조 감소시켜 링크마다 다른 값을 발급한다.
+    generated_hyperlink_id: u32,
     /// subList(셀·글상자) 직렬화 중첩 깊이 (#1379 3단계).
     ///
     /// 본문 경로는 colPr 를 섹션 템플릿 첫 run 에서 처리하므로 인라인 미방출이
@@ -122,6 +131,18 @@ pub struct SerializeContext {
     /// 방출했으므로 중복 방지를 위해 건너뛴다. `write_section` 이 첫 문단 렌더 직전
     /// true 로 설정하고, 첫 본문 ColumnDef 방출 시 `render_control_slot` 이 소거한다.
     pub body_coldef_template_pending: bool,
+    /// [#5943] 저장 lineseg 의 `textpos` 가 이미 HWPX 슬롯 축인지 여부.
+    ///
+    /// `LineSeg::text_start` 는 파서가 파일 값을 그대로 담으므로 **출처마다 축이 다르다**
+    /// — HWP5·HWP3·HML 출처는 확장 제어 하나당 8유닛을 주는 HWP5 축이고, HWPX 출처는
+    /// `hp:secPr`·`hp:colPr` 을 세지 않는 HWPX 축이다. 이 값이 참이면 재기준화하지
+    /// 않는다(이중으로 빼면 aift.hwpx 왕복이 `textpos 24 → 8` 로 깨진다).
+    /// 판정은 "이 lineseg 가 HWPX 컨테이너에서 나왔는가" — 출처 포맷이 HWPX 이거나
+    /// rhwp HWPX→HWP5 변환본(`hwpx_lineage`)이다. `hwpx_stored_layout()` 은 쓸 수 없다.
+    /// 그쪽은 rhwp 가 HWP5 에서 낸 HWPX(`META-INF/rhwp-hwp5-origin`)를 제외하는데, 그
+    /// 파일의 `textpos` 는 이 수정 이후 **HWPX 축**이라 다시 내리면 재수출 고정점이
+    /// 깨진다(02502 재수출: 32 → 16 실측).
+    pub line_segs_on_hwpx_axis: bool,
     /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
     ///
     /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
@@ -133,14 +154,17 @@ impl Default for SerializeContext {
     fn default() -> Self {
         Self {
             char_shape_ids: IdPool::default(),
+            line_segs_on_hwpx_axis: false,
             para_shape_ids: IdPool::default(),
             border_fill_ids: IdPool::default(),
             tab_pr_ids: IdPool::default(),
             numbering_ids: IdPool::default(),
             style_ids: IdPool::default(),
             bin_data_map: HashMap::new(),
+            bin_seq_to_storage: HashMap::new(),
             chart_entries: Vec::new(),
             para_id_counter: 0,
+            generated_hyperlink_id: u32::MAX,
             sub_list_depth: 0,
             body_coldef_template_pending: false,
             content_loss: ContentLossReport::new(SerializedFormat::Hwpx),
@@ -149,12 +173,22 @@ impl Default for SerializeContext {
 }
 
 impl SerializeContext {
+    /// HWP3 `Control::Hyperlink`용 HWPX field ID를 하나 발급한다.
+    pub fn next_generated_hyperlink_id(&mut self) -> u32 {
+        let id = self.generated_hyperlink_id;
+        self.generated_hyperlink_id = self.generated_hyperlink_id.saturating_sub(1);
+        id
+    }
+
     /// Document IR 전체를 1-pass 스캔하여 ID 풀을 채운다.
     ///
     /// Stage 0에서는 최소 등록(header.xml 리소스만)만 수행한다. Stage 1~4에서
     /// 각 writer가 추가되면서 `reference()` 호출과 스캔 범위가 확장된다.
     pub fn collect_from_document(doc: &Document) -> Self {
         let mut ctx = Self::default();
+        ctx.line_segs_on_hwpx_axis = doc.provenance.format
+            == crate::model::provenance::SourceFormat::Hwpx
+            || doc.provenance.hwpx_lineage;
 
         // CharShape, ParaShape, BorderFill, TabDef, Numbering, Style, Font
         // 목록은 배열 인덱스가 곧 HWPX `id` 속성이 된다.
@@ -274,6 +308,53 @@ impl SerializeContext {
             );
         }
 
+        // [#3893/#4049] HWP5 본문 개체의 BIN_DATA 순번 축. `storage_id`와
+        // 우연히 같은 숫자가 있어도 별개 의미이므로, 실제 데이터를 가진 모든
+        // 레코드의 사상을 등록한다.
+        for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
+            let seq = (i + 1) as u16;
+            if bd.storage_id != 0 && ctx.bin_data_map.contains_key(&bd.storage_id) {
+                ctx.bin_seq_to_storage.insert(seq, bd.storage_id);
+            }
+        }
+
+        // [#5168] 외부 연결(Link) BinData 는 `storage_id` 가 없어(0) 위 등록 루프들에서
+        // 모두 빠진다. 그러면 Link 를 참조하는 그림(`bin_data_id` = BIN_DATA 레코드 순번)이
+        // `resolve_bin_id` 의 직접 조회 폴백으로 떨어져, 순번이 내장 이미지의 `storage_id`
+        // 범위 안이면 **엉뚱한 내장 이미지로 바뀌고**(image{순번}=image{storage_id} 충돌),
+        // 범위를 넘으면 미등록으로 **드롭**됐다(07605: LINK 7·EMBED 5 → gso 12 → pic 10,
+        // image1~5 가 각 2회 참조). Link 마다 기존 키와 겹치지 않는 새 id 를 배정해 외부
+        // 참조 엔트리(`is_embedded=false`, href=연결 경로)로 등록하고 그 순번을 사상한다.
+        // 외부 참조라 ZIP 엔트리·3-way 단언에서는 제외된다(#1891 경로와 동일).
+        let mut next_link_id = ctx.bin_data_map.keys().copied().max().unwrap_or(0) + 1;
+        for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
+            let seq = (i + 1) as u16;
+            if bd.data_type != crate::model::bin_data::BinDataType::Link
+                || ctx.bin_seq_to_storage.contains_key(&seq)
+            {
+                continue;
+            }
+            let link_id = next_link_id;
+            next_link_id += 1;
+            let href = bd
+                .abs_path
+                .clone()
+                .or_else(|| bd.rel_path.clone())
+                .unwrap_or_default();
+            let ext = bd.extension.as_deref().unwrap_or("");
+            ctx.bin_data_map.insert(
+                link_id,
+                BinDataEntry {
+                    manifest_id: format!("image{}", link_id),
+                    href,
+                    media_type: mime_from_ext(ext).to_string(),
+                    bin_data_id: link_id,
+                    is_embedded: false,
+                },
+            );
+            ctx.bin_seq_to_storage.insert(seq, link_id);
+        }
+
         ctx
     }
 
@@ -285,10 +366,20 @@ impl SerializeContext {
     }
 
     /// `bin_data_id` → manifest id 조회 (Stage 4의 `<hc:img binaryItemIDRef="...">` 용).
+    ///
+    /// HWP5 본문 개체의 `bin_data_id`는 BIN_DATA 레코드 순번이므로, 등록된
+    /// 순번 사상을 storage ID 직접 조회보다 먼저 적용한다. 사상이 없는 sparse
+    /// ID(차트)와 수동 구성 문서는 기존 직접 조회를 사용한다.
     pub fn resolve_bin_id(&self, bin_data_id: u16) -> Option<&str> {
-        self.bin_data_map
+        self.bin_seq_to_storage
             .get(&bin_data_id)
+            .and_then(|storage| self.bin_data_map.get(storage))
             .map(|e| e.manifest_id.as_str())
+            .or_else(|| {
+                self.bin_data_map
+                    .get(&bin_data_id)
+                    .map(|e| e.manifest_id.as_str())
+            })
     }
 
     /// 모든 참조가 해소되었는지 단언. 해소되지 않은 ID가 있으면 `SerializeError::XmlError` 반환.
@@ -978,6 +1069,34 @@ mod tests {
         let e1 = &ctx.bin_data_map[&1];
         assert!(e1.is_embedded, "콘텐츠 보유 항목은 isEmbeded=1 유지");
         assert_eq!(e1.href, "BinData/image1.png");
+    }
+
+    #[test]
+    fn hwp5_bin_sequence_precedes_colliding_storage_id() {
+        // HWP5 Picture의 bin_data_id는 storage stream 번호가 아니라 BIN_DATA
+        // 레코드 순번이다. Worldcup 계열처럼 storage id가 재배열된 경우에도
+        // 순번 1은 첫 레코드(storage 3)를 가리켜야 한다.
+        use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+
+        let mut doc = Document::default();
+        for storage_id in [3u16, 1, 2] {
+            doc.doc_info.bin_data_list.push(BinData {
+                data_type: BinDataType::Embedding,
+                storage_id,
+                extension: Some("png".to_string()),
+                ..Default::default()
+            });
+            doc.bin_data_content.push(BinDataContent {
+                id: storage_id,
+                data: vec![storage_id as u8].into(),
+                extension: "png".to_string(),
+            });
+        }
+
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert_eq!(ctx.resolve_bin_id(1), Some("image3"));
+        assert_eq!(ctx.resolve_bin_id(2), Some("image1"));
+        assert_eq!(ctx.resolve_bin_id(3), Some("image2"));
     }
 
     #[test]

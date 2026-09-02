@@ -1,0 +1,529 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "count": 40,
+  "journeys": [
+    {
+      "id": "J001",
+      "title": "처음 보는 공문 — 쪽수만",
+      "branch": "파악",
+      "steps": [
+        "info --json",
+        "pageCount·format 보고 정지"
+      ],
+      "stop": "X01",
+      "outcome": "전문 덤프 없음",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J002",
+      "title": "처음 보는 서식 — 누름틀 조사",
+      "branch": "파악",
+      "steps": [
+        "info --json",
+        "explain --json",
+        "fields --json"
+      ],
+      "stop": "X13",
+      "outcome": "채움은 rhwp-form-fill",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J003",
+      "title": "긴 업무계획 — 발췌만",
+      "branch": "파악",
+      "steps": [
+        "info --json",
+        "digest --json",
+        "nextStep 따라 search 또는 export-text -p"
+      ],
+      "stop": "X10",
+      "outcome": "export-text 전문 금지",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J004",
+      "title": "단어 위치만",
+      "branch": "파악",
+      "steps": [
+        "search --json",
+        "matches[].page 로 쪽 지정 export-text"
+      ],
+      "stop": "X10",
+      "outcome": "주소 있는 검색",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J005",
+      "title": "표 CSV 왕복",
+      "branch": "수확",
+      "steps": [
+        "export-tables --json",
+        "table-to-csv --table N",
+        "외부 편집",
+        "csv-to-table --dry-run",
+        "csv-to-table --verify"
+      ],
+      "stop": "X13",
+      "outcome": "치수 계약",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J006",
+      "title": "날짜·금액 수확",
+      "branch": "수확",
+      "steps": [
+        "extract-data --json",
+        "주소 필드로 근거 인용"
+      ],
+      "stop": "X12",
+      "outcome": "값은 출처 표지",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J007",
+      "title": "폴더 발견 후 일괄",
+      "branch": "대량",
+      "steps": [
+        "scan",
+        "목록을 batch info --json"
+      ],
+      "stop": "X13",
+      "outcome": "rhwp-bulk-pipeline",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J008",
+      "title": "문구 치환 안전",
+      "branch": "편집",
+      "steps": [
+        "search 로 횟수 확인",
+        "edit replace-text --dry-run --json",
+        "edit replace-text -o --json"
+      ],
+      "stop": "X11",
+      "outcome": "원본 불변",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J009",
+      "title": "표 칸 한 곳",
+      "branch": "편집",
+      "steps": [
+        "export-tables 로 표 번호",
+        "edit set-cell --dry-run",
+        "edit set-cell -o --keep-style?"
+      ],
+      "stop": "X11",
+      "outcome": "눈에 보이는 표가 0번이 아닐 수 있음",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J010",
+      "title": "누름틀 단건",
+      "branch": "편집",
+      "steps": [
+        "fields --json",
+        "edit fill-fields --dry-run",
+        "notFound/ambiguous 확인",
+        "fill-fields -o --verify"
+      ],
+      "stop": "X13",
+      "outcome": "rhwp-form-fill",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J011",
+      "title": "다단계 원자",
+      "branch": "편집",
+      "steps": [
+        "export-plan-schema",
+        "run --dry-run",
+        "run 계획.json"
+      ],
+      "stop": "X11",
+      "outcome": "선검증 후 한 번 저장",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J012",
+      "title": "HWP→HWPX 검증",
+      "branch": "변환",
+      "steps": [
+        "export-hwpx --verify --json",
+        "identical false 면 ir-diff"
+      ],
+      "stop": "X08",
+      "outcome": "exit 3 = 판정",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J013",
+      "title": "배포용→HWP5",
+      "branch": "변환",
+      "steps": [
+        "convert --verify --json",
+        "exit 3/4 를 데이터로"
+      ],
+      "stop": "X08",
+      "outcome": "재파싱 게이트",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J014",
+      "title": "레이아웃 회귀",
+      "branch": "변환",
+      "steps": [
+        "render-diff --json",
+        "STRUCT_MISMATCH 를 경로로 읽기"
+      ],
+      "stop": "X13",
+      "outcome": "rhwp-visual-regression",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J015",
+      "title": "쪽수 단언",
+      "branch": "검증",
+      "steps": [
+        "verify --expect-pages N --json",
+        "불일치 시 failed 필드"
+      ],
+      "stop": "X08",
+      "outcome": "exit 3",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J016",
+      "title": "작업 영수증",
+      "branch": "검증",
+      "steps": [
+        "replay --plan-json --json",
+        "3해시 전달"
+      ],
+      "stop": "X13",
+      "outcome": "rhwp-work-receipt",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J017",
+      "title": "폴더 감사",
+      "branch": "검증",
+      "steps": [
+        "audit <폴더> --json",
+        "reproducedRate"
+      ],
+      "stop": "X08",
+      "outcome": "1건 실패도 exit 3",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J018",
+      "title": "계보",
+      "branch": "검증",
+      "steps": [
+        "lineage --deep --json",
+        "brokenAt"
+      ],
+      "stop": "X08",
+      "outcome": "부모 산출=자식 입력",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J019",
+      "title": "수신 문서 3축",
+      "branch": "보안",
+      "steps": [
+        "inspect injection --json",
+        "inspect hidden-text --json",
+        "inspect unicode --json"
+      ],
+      "stop": "X13",
+      "outcome": "rhwp-security-sweep",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J020",
+      "title": "LLM 투입 전 armor",
+      "branch": "보안",
+      "steps": [
+        "inspect injection",
+        "armor --json",
+        "격벽 사이만 본문으로"
+      ],
+      "stop": "X12",
+      "outcome": "지시에 읽지 말 것",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J021",
+      "title": "폴더 수백 텍스트",
+      "branch": "대량",
+      "steps": [
+        "목록 stdin",
+        "batch export-text --json",
+        "실패 행 jq"
+      ],
+      "stop": "X13",
+      "outcome": "N=성공+실패",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J022",
+      "title": "세션 반복 조회",
+      "branch": "대량",
+      "steps": [
+        "capabilities --mcp",
+        "mcp-serve",
+        "hwp_open → hwp_doc_* → hwp_close"
+      ],
+      "stop": "X13",
+      "outcome": "rhwp-mcp-session",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J023",
+      "title": "명령 미지 — 검색 폴백",
+      "branch": "자기서술",
+      "steps": [
+        "capabilities --search 키워드",
+        "장 번호로 이동",
+        "0건이면 거절"
+      ],
+      "stop": "X03",
+      "outcome": "발명 금지",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J024",
+      "title": "대전 신선도",
+      "branch": "유지보수",
+      "steps": [
+        "python tools/gen_agent_codex.py --check",
+        "exit 3 이면 재생성",
+        "생성 장 수기 금지"
+      ],
+      "stop": "X05",
+      "outcome": "DATA = stale",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J025",
+      "title": "필드 사전 조회",
+      "branch": "자기서술",
+      "steps": [
+        "지식지도 §2-2 를 연다",
+        "스킬에 사전 복제 금지"
+      ],
+      "stop": "X06",
+      "outcome": "경계",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J026",
+      "title": "개발자가 렌더 버그",
+      "branch": "진단",
+      "steps": [
+        "85장은 개발자 전용임을 고지",
+        "rhwp-cli 디버깅 순서로만"
+      ],
+      "stop": "X07",
+      "outcome": "통상 작업 금지",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J027",
+      "title": "info 신상 field-01.hwp",
+      "branch": "파악",
+      "steps": [
+        "info samples/field-01.hwp --json"
+      ],
+      "stop": "X01",
+      "outcome": "쪽수·형식 · fixture 0",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J028",
+      "title": "explain 한 봉투 field-01.hwp",
+      "branch": "파악",
+      "steps": [
+        "explain samples/field-01.hwp --json"
+      ],
+      "stop": "X01",
+      "outcome": "표·필드 유무 · fixture 0",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J029",
+      "title": "fields field-01.hwp",
+      "branch": "파악",
+      "steps": [
+        "fields samples/field-01.hwp --json"
+      ],
+      "stop": "X13",
+      "outcome": "fieldCount · fixture 0",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J030",
+      "title": "export-tables field-01.hwp",
+      "branch": "수확",
+      "steps": [
+        "export-tables samples/field-01.hwp --json"
+      ],
+      "stop": "X13",
+      "outcome": "표 번호 · fixture 0",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J031",
+      "title": "replace-text dry-run field-01.hwp",
+      "branch": "편집",
+      "steps": [
+        "edit replace-text samples/field-01.hwp --find x --replace y --dry-run --json"
+      ],
+      "stop": "X11",
+      "outcome": "디스크 무변경 · fixture 0",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J032",
+      "title": "ir-diff 자기 field-01.hwp",
+      "branch": "검증",
+      "steps": [
+        "ir-diff samples/field-01.hwp samples/field-01.hwp --json"
+      ],
+      "stop": "X08",
+      "outcome": "identical · fixture 0",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J033",
+      "title": "inspect injection field-01.hwp",
+      "branch": "보안",
+      "steps": [
+        "inspect injection samples/field-01.hwp --json"
+      ],
+      "stop": "X13",
+      "outcome": "clean · fixture 0",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J034",
+      "title": "info 신상 issue2007_nested_cell_pagination_42065.hwp",
+      "branch": "파악",
+      "steps": [
+        "info samples/basic/issue2007_nested_cell_pagination_42065.hwp --json"
+      ],
+      "stop": "X01",
+      "outcome": "쪽수·형식 · fixture 1",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J035",
+      "title": "explain 한 봉투 issue2007_nested_cell_pagination_42065.hwp",
+      "branch": "파악",
+      "steps": [
+        "explain samples/basic/issue2007_nested_cell_pagination_42065.hwp --json"
+      ],
+      "stop": "X01",
+      "outcome": "표·필드 유무 · fixture 1",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J036",
+      "title": "fields issue2007_nested_cell_pagination_42065.hwp",
+      "branch": "파악",
+      "steps": [
+        "fields samples/basic/issue2007_nested_cell_pagination_42065.hwp --json"
+      ],
+      "stop": "X13",
+      "outcome": "fieldCount · fixture 1",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J037",
+      "title": "export-tables issue2007_nested_cell_pagination_42065.hwp",
+      "branch": "수확",
+      "steps": [
+        "export-tables samples/basic/issue2007_nested_cell_pagination_42065.hwp --json"
+      ],
+      "stop": "X13",
+      "outcome": "표 번호 · fixture 1",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J038",
+      "title": "replace-text dry-run issue2007_nested_cell_pagination_42065.hwp",
+      "branch": "편집",
+      "steps": [
+        "edit replace-text samples/basic/issue2007_nested_cell_pagination_42065.hwp --find x --replace y --dry-run --json"
+      ],
+      "stop": "X11",
+      "outcome": "디스크 무변경 · fixture 1",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J039",
+      "title": "ir-diff 자기 issue2007_nested_cell_pagination_42065.hwp",
+      "branch": "검증",
+      "steps": [
+        "ir-diff samples/basic/issue2007_nested_cell_pagination_42065.hwp samples/basic/issue2007_nested_cell_pagination_42065.hwp --json"
+      ],
+      "stop": "X08",
+      "outcome": "identical · fixture 1",
+      "notGym": true,
+      "noNewCli": true
+    },
+    {
+      "id": "J040",
+      "title": "inspect injection issue2007_nested_cell_pagination_42065.hwp",
+      "branch": "보안",
+      "steps": [
+        "inspect injection samples/basic/issue2007_nested_cell_pagination_42065.hwp --json"
+      ],
+      "stop": "X13",
+      "outcome": "clean · fixture 1",
+      "notGym": true,
+      "noNewCli": true
+    }
+  ]
+}

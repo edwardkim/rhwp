@@ -1,0 +1,64 @@
+{
+  "id": "FJ15",
+  "tier": 3,
+  "title": "반복 순번 지목 (목차1[4] 다섯째 칸)",
+  "input": "samples/field-01.hwp",
+  "instructions": "같은 이름 '목차1' 다섯 칸 가운데 0 기준 [4] (다섯째 칸) 에만 '다섯째목차여정' 를 넣은 toc4.hwp 를 제출하라. FJ03 은 [2] 만 다룬다. 이번은 [4] 이다. 순번 없이 넣으면 첫 칸만 바뀌고 ambiguous 가 남는다. 회사명은 비운다. 힌트: rhwp edit fill-fields <문서> --data '{\"목차1[4]\": \"다섯째목차여정\"}' -o toc4.hwp --json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "toc4.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "목차1[4] 칸 이름",
+      "op": "value_eq",
+      "value": "목차1",
+      "path": "fields[9].name",
+      "cmd": [
+        "fields",
+        "{file:toc4.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "목차1[4] 값",
+      "op": "value_eq",
+      "value": "다섯째목차여정",
+      "path": "fields[9].value",
+      "cmd": [
+        "fields",
+        "{file:toc4.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:toc4.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "다른 목차 칸 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[5].value",
+      "cmd": [
+        "fields",
+        "{file:toc4.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "toc4.hwp"
+    }
+  ]
+}

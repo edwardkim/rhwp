@@ -20,7 +20,7 @@
 /** 문서 IR(직렬화 결과)을 바꾸는 WasmBridge 공개 메서드 전수. */
 export const MUTATING_METHODS: readonly string[] = [
   // 쪽/구역/다단
-  'setPageDef', 'setSectionDef', 'setSectionDefAll', 'setPageBorderFill', 'setColumnDef',
+  'setPageDef', 'setPageMargin', 'setSectionDef', 'setSectionDefAll', 'setPageBorderFill', 'setColumnDef',
   // 본문 텍스트/문단
   'insertText', 'replaceBodyTextLocal', 'deleteText', 'deleteRange', 'splitParagraph', 'mergeParagraph',
   'insertPageBreak', 'insertColumnBreak', 'insertNewNumber', 'setNumberingRestart',
@@ -35,6 +35,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'insertTableColumn', 'deleteTableRow', 'deleteTableColumn', 'mergeTableCells',
   'splitTableCell', 'splitTableCellInto', 'splitTableCellsInRange', 'resizeTableCells',
   'moveTableOffset', 'setTableProperties', 'setCellProperties', 'setCellZoneProperties',
+  'applyCellBorderFillIds', 'removeBorderFillTails',
   'pasteTableCellsTransposed', 'transposeTableCellsInPlace', 'pasteTableCellsTransposedAsTable',
   'evaluateTableFormula',
   // 그림/도형/수식 개체
@@ -42,8 +43,11 @@ export const MUTATING_METHODS: readonly string[] = [
   'setHeaderFooterPictureProperties', 'setCellPicturePropertiesByPath',
   'setCellShapePropertiesByPath', 'deletePictureControl', 'deleteCellPictureControlByPath',
   'createShapeControl', 'setShapeProperties', 'deleteShapeControl', 'changeShapeZOrder',
+  'applyShapeZOrderPairs', // [#5769 후속] z 절대 대입 — SetZOrderCommand 의 undo/redo 경로
   'groupShapes', 'ungroupShape', 'moveLineEndpoint', 'updateConnectorsInSection',
   'insertEquation', 'setEquationProperties', 'setNoteEquationProperties', 'deleteEquationControl',
+  // 차트 데이터 (#4694) — bin_data_content 슬롯 바이트 변이 (IR 무변경이지만 직렬화 결과가 바뀐다)
+  'setChartData', 'setChartDataByIndex',
   // 각주/미주
   'insertFootnote', 'insertEndnote', 'deleteFootnote', 'applyEndnoteShape',
   'insertTextInFootnote', 'deleteTextInFootnote', 'splitParagraphInFootnote',
@@ -61,8 +65,9 @@ export const MUTATING_METHODS: readonly string[] = [
   'findOrCreateFontId', 'findOrCreateFontIdForLang',
   // 머리말/꼬리말
   'createHeaderFooter', 'deleteHeaderFooter', 'toggleHideHeaderFooter',
-  'insertTextInHeaderFooter', 'deleteTextInHeaderFooter', 'splitParagraphInHeaderFooter',
-  'mergeParagraphInHeaderFooter', 'applyParaFormatInHf', 'insertFieldInHf', 'applyHfTemplate',
+  'insertTextInHeaderFooter', 'deleteTextInHeaderFooter', 'replaceRangeInHeaderFooter',
+  'splitParagraphInHeaderFooter', 'mergeParagraphInHeaderFooter',
+  'applyCharFormatInHeaderFooter', 'applyParaFormatInHf', 'insertFieldInHf', 'applyHfTemplate',
   // 필드/양식/찾아바꾸기/책갈피
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
   'updateClickHereProps', 'setFormValue', 'setFormValueInCell',
@@ -84,4 +89,13 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   'setActiveField', 'clearActiveField', // 편집 세션 상태 (직렬화 비대상)
   'moveVertical', 'moveVerticalByPath', // 캐럿 세로 탐색 (조회)
   'ensureParagraphStableIds', // 런타임 추적 id 부여
+  // [#5769] 삭제 조각(fragment) API — capture·discard 는 IR 비변경(캡처·저장소 정리).
+  // restoreDeleteFragment 는 IR 을 되살리는 변이지만 배선이 CommandHistory.undo 단일
+  // 경로로 고정돼 있어(SnapshotCommand.undo 의 restoreSnapshot 과 같은 취급)
+  // executeOperation 라우팅 강제 대상에서 제외한다. 히스토리 밖 직접 호출 금지.
+  'captureDeleteRange', 'restoreDeleteFragment', 'discardDeleteFragment',
+  // [#5769 Stage 4] 구역 raw 저널 API — capture·discard 는 IR 비변경.
+  // restoreSectionRaw 는 passthrough 를 되살리지만 SetSectionPropsCommand.undo 단일
+  // 경로로 고정돼 있어(restoreDeleteFragment 와 같은 취급) 제외한다. 히스토리 밖 직접 호출 금지.
+  'captureSectionRaw', 'restoreSectionRaw', 'discardSectionRaw',
 ];

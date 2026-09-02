@@ -11,8 +11,21 @@ use super::paragraph::Paragraph;
 use super::shape::{CommonObjAttr, ShapeObject};
 use super::table::Table;
 
+/// [#4488] HashMap 을 키 정렬 순서로 직렬화한다 — 다이제스트 결정성 보장용.
+fn serialize_sorted_string_map<S>(
+    map: &HashMap<String, String>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut entries: Vec<(&String, &String)> = map.iter().collect();
+    entries.sort();
+    serializer.collect_map(entries)
+}
+
 /// 문단 내 컨트롤 (확장 컨트롤)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub enum Control {
     /// 구역 정의 ('secd')
     SectionDef(Box<SectionDef>),
@@ -40,6 +53,10 @@ pub enum Control {
     PageNumberPos(PageNumberPos),
     /// 책갈피 ('bokm')
     Bookmark(Bookmark),
+    /// 찾아보기 표식 ('idxm')
+    IndexMark(IndexMark),
+    /// 쪽 번호 시작 쪽 ('pgct')
+    PageNumCtrl(PageNumCtrl),
     /// 하이퍼링크 ('%hlk')
     Hyperlink(Hyperlink),
     /// 덧말 ('tdut')
@@ -81,7 +98,26 @@ impl Control {
     pub fn is_logical_inline(&self) -> bool {
         self.is_treat_as_char_object() || matches!(self, Control::Footnote(_) | Control::Endnote(_))
     }
+
+    /// HWP5 `PARA_TEXT` 에서 확장 제어문자 자리(`CTRL_CHAR_CODE_UNITS`)를 차지하는가.
+    ///
+    /// 직렬화기가 제어문자와 `CTRL_HEADER` 를 방출할지 가리는 규칙과 같은 원본이다
+    /// (`serializer/body_text.rs::emits_ctrl_header`). 문단의 UTF-16 오프셋을 **계산하는**
+    /// 쪽과 실제로 **쓰는** 쪽이 어긋나면 lineseg `text_start` 가 제어문자 블록 한가운데를
+    /// 가리키고, 한글은 그런 문서의 본문을 통째로 버린다 (#4677).
+    pub fn occupies_ctrl_char_slot(&self) -> bool {
+        match self {
+            Control::Hyperlink(_) => false,
+            Control::Unknown(u) => u.ctrl_id != 0,
+            _ => true,
+        }
+    }
 }
+
+/// HWP5 `PARA_TEXT` 에서 확장 제어문자 하나가 차지하는 UTF-16 코드유닛 수.
+///
+/// `[코드, ctrl_id 2유닛, 예약 4유닛, 코드]` = 8 유닛 (HWP5 스펙 표 58).
+pub const CTRL_CHAR_CODE_UNITS: u32 = 8;
 
 /// [#2727] `Equation::attr` 의 bit 0 — 수식이 차지하는 범위.
 ///
@@ -89,7 +125,7 @@ impl Control {
 pub const EQUATION_LINE_MODE_BIT: u32 = 0x0000_0001;
 
 /// 수식 ('eqed' 컨트롤, HWP 스펙 표 105)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Equation {
     /// 개체 공통 속성 (위치, 크기, 배치)
     pub common: CommonObjAttr,
@@ -122,10 +158,14 @@ pub struct Equation {
     pub font_name: String,
     /// 라운드트립용 원본 ctrl_data
     pub raw_ctrl_data: Vec<u8>,
+    /// [#4495] raw_ctrl_data 출처 봉인 — 봉인 시점 `common` 의 다이제스트.
+    /// 계약은 Table::raw_ctrl_seal 과 동일 (`model::raw_provenance` 참조).
+    #[serde(skip)]
+    pub raw_ctrl_seal: Option<[u8; 32]>,
 }
 
 /// 자동 번호 ('atno' 컨트롤, HWP 스펙 표 144)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct AutoNumber {
     /// 번호 종류 (각주, 미주, 그림, 표, 수식)
     pub number_type: AutoNumberType,
@@ -146,7 +186,7 @@ pub struct AutoNumber {
 }
 
 /// 자동 번호 종류
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum AutoNumberType {
     #[default]
     Page,
@@ -160,7 +200,7 @@ pub enum AutoNumberType {
 }
 
 /// 새 번호 지정 ('nwno' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct NewNumber {
     /// 번호 종류
     pub number_type: AutoNumberType,
@@ -169,7 +209,7 @@ pub struct NewNumber {
 }
 
 /// 쪽 번호 위치 ('pgnp' 컨트롤, HWP 스펙 표 149)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PageNumberPos {
     /// 번호 형식 (표 150 bit 0~7, 표 134 참조)
     pub format: u8,
@@ -186,14 +226,97 @@ pub struct PageNumberPos {
 }
 
 /// 책갈피 ('bokm' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Bookmark {
     /// 책갈피 이름
     pub name: String,
 }
 
+/// 쪽 번호가 시작되는 쪽 ('pgct') — `<hp:pageNumCtrl pageStartsOn>` 에 대응한다.
+///
+/// HWP5 CTRL_HEADER payload 는 ctrl_id 뒤 `u32` 하나뿐이다. 한글 2022 양방향 실측
+/// (06731 을 HWPX 로 저장 → 속성만 바꿔 다시 HWP5 로 저장, 각 17/17):
+///
+/// | u32 | `pageStartsOn` |
+/// |---|---|
+/// | 0 | `BOTH` |
+/// | 1 | `EVEN` |
+/// | 2 | `ODD` |
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize)]
+pub enum PageStartsOn {
+    /// 양쪽 (기본값)
+    #[default]
+    Both,
+    /// 짝수 쪽
+    Even,
+    /// 홀수 쪽
+    Odd,
+}
+
+impl PageStartsOn {
+    /// HWP5 payload u32 → 열거. 규정 밖 값은 기본값으로 떨어뜨린다.
+    pub fn from_hwp5(v: u32) -> Self {
+        match v {
+            1 => Self::Even,
+            2 => Self::Odd,
+            _ => Self::Both,
+        }
+    }
+
+    /// 열거 → HWP5 payload u32.
+    pub fn to_hwp5(self) -> u32 {
+        match self {
+            Self::Both => 0,
+            Self::Even => 1,
+            Self::Odd => 2,
+        }
+    }
+
+    /// OWPML `pageStartsOn` 속성값.
+    pub fn as_hwpx(self) -> &'static str {
+        match self {
+            Self::Both => "BOTH",
+            Self::Even => "EVEN",
+            Self::Odd => "ODD",
+        }
+    }
+
+    /// OWPML `pageStartsOn` 속성값 → 열거.
+    pub fn from_hwpx(v: &str) -> Self {
+        match v {
+            "EVEN" => Self::Even,
+            "ODD" => Self::Odd,
+            _ => Self::Both,
+        }
+    }
+}
+
+/// 쪽 번호 시작 쪽 컨트롤 ('pgct')
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize)]
+pub struct PageNumCtrl {
+    /// 쪽 번호가 시작되는 쪽
+    pub page_starts_on: PageStartsOn,
+}
+
+/// 찾아보기 표식 ('idxm') — 색인에 실릴 키워드를 본문 위치에 붙여 둔 표식.
+///
+/// HWP5 CTRL_DATA 레이아웃(ctrl_id 4바이트 제거 후, 실측 06926):
+///   WORD(2) + WCHAR[n]  첫째 키
+///   WORD(2) + WCHAR[m]  둘째 키
+///   4바이트 예약(실측 전부 0)
+///
+/// HWPX 는 `<hp:ctrl><hp:indexmark><hp:firstKey/><hp:secondKey/></hp:indexmark></hp:ctrl>`
+/// 로 적는다(ParaList XML schema.xml:209).
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
+pub struct IndexMark {
+    /// 첫째 키
+    pub first_key: String,
+    /// 둘째 키 (없으면 빈 문자열)
+    pub second_key: String,
+}
+
 /// 하이퍼링크 ('%hlk' 필드)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Hyperlink {
     /// URL
     pub url: String,
@@ -202,7 +325,7 @@ pub struct Hyperlink {
 }
 
 /// 덧말 ('tdut' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Ruby {
     /// 기준 텍스트 (`<hp:mainText>`) — 덧말이 달리는 본문 글자. (#1587)
     /// 파서가 para.text 에 넣지 않고 여기 보존한다(시각 충실도 핵심).
@@ -222,7 +345,7 @@ pub struct Ruby {
 }
 
 /// 글자 겹침 ('tcps' 컨트롤, HWP 스펙 표 152)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct CharOverlap {
     /// 겹칠 글자 목록 (최대 9글자)
     pub chars: Vec<char>,
@@ -237,7 +360,7 @@ pub struct CharOverlap {
 }
 
 /// 감추기 ('pghd' 컨트롤)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PageHide {
     /// 머리말 감추기
     pub hide_header: bool,
@@ -254,7 +377,7 @@ pub struct PageHide {
 }
 
 /// 숨은 설명 ('tcmt' 컨트롤)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct HiddenComment {
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
@@ -264,7 +387,7 @@ pub struct HiddenComment {
 ///
 /// 편집 IR 은 빈 필드로 정규화된 상태가 authoritative 이고, 이 구조체는 **저장 시
 /// 원본 파일 형상을 되돌리기 위한 파생 상태**다 (값 API·렌더는 이 값을 보지 않는다).
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
 pub struct GuideResidue {
     /// 제거된 본문 텍스트 원문 (한컴이 안내문 뒤에 붙이는 trailing 공백까지 그대로).
     pub text: String,
@@ -279,11 +402,18 @@ pub struct GuideResidue {
 /// 스칼라와 재귀하는 listParam 1종, 도합 5종. 각 파라미터의 **의미는 해석하지 않고**
 /// 이름과 타입 그대로 보존한다(HWP5 왕복 시 `Prop`/`Direction`/`Path`/`Category` 등이
 /// `Command` 하나로 축소되던 손실의 근본 수정).
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub enum Parameter {
     Boolean {
         name: Option<String>,
         value: bool,
+        /// [#4437] 원본 lexical 표기 보존. `xs:boolean` 은 `0`/`1`/`false`/`true`
+        /// 네 표기가 모두 유효하고 실물 코퍼스에 섞여 있다(`Fiexde=1`,
+        /// `RefHyperLink=false`). 종전 렌더는 항상 `0`/`1` 로 정규화해 원본이
+        /// `false` 로 적은 것이 왕복에서 바이트가 달라졌다. 파서가 유효 lexical
+        /// 을 그대로 담고, 렌더는 이 값을 우선 되쓴다. 프로그램 생성 값은 None
+        /// → 종전대로 `0`/`1`.
+        lexical: Option<String>,
     },
     Integer {
         name: Option<String>,
@@ -305,7 +435,7 @@ pub enum Parameter {
 
 /// `hp:ParameterList` 자체 — `<hp:parameters>`(필드 루트) 또는 `<hp:listParam>`(중첩) 둘 다
 /// 이 표현을 쓴다. `cnt` 속성은 `items.len()` 에서 유도하므로 별도 저장하지 않는다.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct ParameterList {
     pub name: Option<String>,
     pub items: Vec<Parameter>,
@@ -344,8 +474,15 @@ impl ParameterList {
 impl Parameter {
     fn render_xml_into(&self, out: &mut String) {
         match self {
-            Parameter::Boolean { name, value } => {
-                render_scalar_param(out, "booleanParam", name, if *value { "1" } else { "0" });
+            Parameter::Boolean {
+                name,
+                value,
+                lexical,
+            } => {
+                // [#4437] 원본 표기 우선 — 파서가 검증한 유효 lexical 만 담기므로
+                // 그대로 되써도 스키마 안전하다.
+                let text = lexical.as_deref().unwrap_or(if *value { "1" } else { "0" });
+                render_scalar_param(out, "booleanParam", name, text);
             }
             Parameter::Integer { name, value } => {
                 render_scalar_param(out, "integerParam", name, &value.to_string());
@@ -383,6 +520,15 @@ fn render_scalar_param(out: &mut String, tag: &str, name: &Option<String>, text:
     out.push_str("</hp:");
     out.push_str(tag);
     out.push('>');
+}
+
+/// [#4437] `xs:boolean` 의 유효 lexical 이면 그 표기를 돌려준다 — 아니면 None.
+///
+/// 렌더가 이 값을 검증 없이 되쓰므로 유효 표기만 담는 것이 계약이다. 규정 밖
+/// 텍스트(빈 문자열 등)는 None 으로 떨어져 종전 정규화(`0`/`1`)를 탄다.
+pub(crate) fn boolean_lexical_of(text: &str) -> Option<String> {
+    let t = text.trim();
+    matches!(t, "0" | "1" | "true" | "false").then(|| t.to_string())
 }
 
 /// `ParameterList::render_xml` 전용 최소 XML 텍스트/속성값 이스케이프.
@@ -470,6 +616,7 @@ fn parse_one_param(s: &str, pos: &mut usize) -> Option<Parameter> {
             "booleanParam" => Parameter::Boolean {
                 name: Some(name),
                 value: matches!(text.trim(), "1" | "true"),
+                lexical: boolean_lexical_of(&text),
             },
             "integerParam" => Parameter::Integer {
                 name: Some(name),
@@ -596,13 +743,16 @@ mod parameter_list_codec_tests {
                     value: "이곳을 마우스로 누르고 내용을 입력하세요.".to_string(),
                     preserve_space: false,
                 },
+                // [#4437] 실물 코퍼스 표기 그대로 — `1` 과 `false` 가 섞여 있다.
                 Parameter::Boolean {
                     name: Some("Fiexde".to_string()),
                     value: true,
+                    lexical: Some("1".to_string()),
                 },
                 Parameter::Boolean {
                     name: Some("RefHyperLink".to_string()),
                     value: false,
+                    lexical: Some("false".to_string()),
                 },
                 Parameter::Float {
                     name: Some("Ratio".to_string()),
@@ -629,6 +779,37 @@ mod parameter_list_codec_tests {
         assert_eq!(parsed, original);
     }
 
+    /// [#4437] 원본 lexical(`false`/`true`) 이 정규화(`0`/`1`)되지 않고 바이트
+    /// 그대로 왕복해야 한다.
+    #[test]
+    fn issue4437_boolean_lexical_round_trips_verbatim() {
+        let xml = sample_tree().render_xml("parameters");
+        assert!(
+            xml.contains(r#"<hp:booleanParam name="RefHyperLink">false</hp:booleanParam>"#),
+            "원본 `false` 표기가 `0` 으로 정규화되면 안 된다: {xml}"
+        );
+        assert!(
+            xml.contains(r#"<hp:booleanParam name="Fiexde">1</hp:booleanParam>"#),
+            "원본 `1` 표기는 그대로: {xml}"
+        );
+        // parse → render 재왕복도 바이트 동일.
+        let reparsed = ParameterList::parse_xml(&xml).expect("parse_xml");
+        assert_eq!(reparsed.render_xml("parameters"), xml);
+
+        // lexical 이 없는(프로그램 생성) Boolean 은 종전대로 0/1 정규화.
+        let synth = ParameterList {
+            name: Some(String::new()),
+            items: vec![Parameter::Boolean {
+                name: Some("New".to_string()),
+                value: false,
+                lexical: None,
+            }],
+        };
+        assert!(synth
+            .render_xml("parameters")
+            .contains(r#"<hp:booleanParam name="New">0</hp:booleanParam>"#));
+    }
+
     #[test]
     fn empty_list_round_trips() {
         let original = ParameterList {
@@ -648,7 +829,7 @@ mod parameter_list_codec_tests {
 }
 
 /// 필드 컨트롤
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct Field {
     /// 필드 타입
     pub field_type: FieldType,
@@ -662,6 +843,13 @@ pub struct Field {
     pub field_id: u32,
     /// 원본 ctrl_id (직렬화용)
     pub ctrl_id: u32,
+    /// [#4896] HWPX `<hp:fieldBegin type="..">` 원문 — IR `FieldType` 이 모델링하지 않는
+    /// 종류일 때만 채운다(그 외는 `None`).
+    ///
+    /// 종류를 못 알아본다고 `CROSSREF` 로 굳히면 원본 필드 정체성이 사라진다(10k 스윕에서
+    /// 교정부호 필드 27경로가 상호참조로 바뀌었다). 원본이 준 값은 한글이 이미 받아들인
+    /// 값이므로 그대로 되돌려주는 편이 안전하고 무손실이다.
+    pub raw_type: Option<String>,
     /// HWPX `<hp:fieldBegin fieldid="..">` 원본 값 (동종 필드 간 공유되는 instance id).
     /// `id`(=field_id, 문서 내 고유)와 별개 값이며 실물 파일에서 서로 다를 수 있다(#1512).
     /// `None` 이면 fieldid 속성 자체가 없었거나 파서가 값을 못 읽은 경우 — 방출 생략.
@@ -847,7 +1035,7 @@ impl Field {
 }
 
 /// 필드 타입
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum FieldType {
     #[default]
     Unknown,
@@ -884,8 +1072,14 @@ pub enum FormType {
 }
 
 /// 양식 개체 ('form' 컨트롤, ctrl_id=0x666f726d)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct FormObject {
+    /// 개체 공통 배치 속성 (위치·크기·기준·정렬·어울림)
+    ///
+    /// [#6266] 양식 개체도 다른 개체와 같은 배치 계약을 갖는다. 이 필드가 없던
+    /// 동안 렌더러는 양식 개체를 인라인 말고는 놓을 수 없었고, 쪽 하단 가운데에
+    /// 놓인 서식 일련번호가 제목 줄 안에 그려졌다(2955289 1쪽).
+    pub common: CommonObjAttr,
     /// 양식 개체 타입
     pub form_type: FormType,
     /// 개체 이름
@@ -907,11 +1101,15 @@ pub struct FormObject {
     /// 활성화 여부
     pub enabled: bool,
     /// 기타 속성 (원본 키-값 보존)
+    ///
+    /// [#4488] serde 직렬화는 정렬 순회를 강제한다 — HashMap 순회 순서가
+    /// 다이제스트(model::raw_provenance)에 실리면 봉인이 비결정적이 된다.
+    #[serde(serialize_with = "serialize_sorted_string_map")]
     pub properties: HashMap<String, String>,
 }
 
 /// 알 수 없는 컨트롤
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct UnknownControl {
     /// 컨트롤 ID
     pub ctrl_id: u32,

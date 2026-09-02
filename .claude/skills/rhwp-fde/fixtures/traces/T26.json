@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/fde/triage.py",
+  "id": "T26",
+  "doc": "fixtures/transcripts/T26.input",
+  "docBytes": 128,
+  "symptom": "병원: 안 열려요",
+  "container": null,
+  "steps": [],
+  "route": "invalid-input",
+  "routeReason": "매직 바이트가 hwpx/hwp5/hwp3 어느 것도 아니다",
+  "nextActions": [
+    "원본 문서 재확보 요청 (현재 파일은 HWP 계열이 아님)"
+  ],
+  "elapsedSeconds": 0.4,
+  "issue": 5333,
+  "notProse": true
+}

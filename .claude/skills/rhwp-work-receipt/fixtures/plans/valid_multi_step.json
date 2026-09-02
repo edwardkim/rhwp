@@ -1,0 +1,17 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/multi.hwp",
+  "steps": [
+    {
+      "action": "replace_text",
+      "find": "2025",
+      "replace": "2026"
+    },
+    {
+      "action": "replace_text",
+      "find": "구기관",
+      "replace": "신기관"
+    }
+  ]
+}

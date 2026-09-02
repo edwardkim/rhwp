@@ -1,0 +1,44 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "peers": [
+  {
+   "when": "증상 하나·패닉",
+   "to": "rhwp-fde",
+   "rewrite": false
+  },
+  {
+   "when": "근거 대장",
+   "to": "rhwp-strategist",
+   "rewrite": false
+  },
+  {
+   "when": "표 왕복 편집",
+   "to": "rhwp-table-exchange",
+   "rewrite": false
+  },
+  {
+   "when": "누름틀 세부",
+   "to": "rhwp-form-fill",
+   "rewrite": false
+  },
+  {
+   "when": "폴더 수백",
+   "to": "rhwp-bulk-pipeline",
+   "rewrite": false
+  },
+  {
+   "when": "결함 여정",
+   "to": "bug-hunter",
+   "rewrite": false
+  }
+ ]
+}

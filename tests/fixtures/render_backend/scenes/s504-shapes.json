@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "id": "s504-shapes",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "도형 가족",
+  "ops": [
+    {
+      "kind": "ellipse",
+      "x": 20.0,
+      "y": 20.0,
+      "w": 60.0,
+      "h": 40.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "path",
+      "x": 100.0,
+      "y": 20.0,
+      "w": 60.0,
+      "h": 40.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "image",
+      "x": 180.0,
+      "y": 20.0,
+      "w": 32.0,
+      "h": 32.0,
+      "text": null,
+      "gradient": false,
+      "image": true
+    },
+    {
+      "kind": "rectangle",
+      "x": 230.0,
+      "y": 20.0,
+      "w": 60.0,
+      "h": 40.0,
+      "text": null,
+      "gradient": true,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "ellipse",
+    "path",
+    "image",
+    "rectangle"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  ellipse bbox=20.00,20.00,60.00,40.00",
+    "  path bbox=100.00,20.00,60.00,40.00",
+    "  image bbox=180.00,20.00,32.00,32.00",
+    "  rectangle bbox=230.00,20.00,60.00,40.00",
+    "end_page ops=4"
+  ]
+}

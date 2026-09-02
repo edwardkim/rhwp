@@ -1,0 +1,23 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: MATRIX{#}
+honesty: missing-operand
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Empty,
+        ],
+        [],
+    ],
+    style: Plain,
+}
+
+=== layout ===
+Matrix(Plain) x=0.0000 y=0.0000 w=8.0000 h=46.0000 bl=23.0000
+  row0:
+    Empty x=4.0000 y=10.0000 w=0.0000 h=0.0000 bl=0.0000
+  row1:
+
+=== svg ===

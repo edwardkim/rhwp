@@ -1,6 +1,6 @@
 """[#4080] workflow 계약 테스트가 CI 에 실제로 배선되어 있는지 강제한다.
 
-`scripts/tests/` 아래 workflow 계약 테스트는 workflow YAML 을 파싱해 CI 계약을
+`scripts/tests/` 아래 Python workflow 계약 테스트와 Node CI 영향 정책 테스트는 CI 계약을
 단언한다. 그런데 파일만 추가하고 `ci.yml` 에 실행 줄을 넣지 않으면 **한 번도 돌지
 않는 회귀 방지 장치**가 된다. 실제로 그런 일이 두 번 있었다.
 
@@ -34,6 +34,10 @@ def contract_test_files() -> list[str]:
     )
 
 
+def node_contract_test_files() -> list[str]:
+    return sorted(path.name for path in TESTS_DIR.glob("*.test.cjs"))
+
+
 class WorkflowContractWiringTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -52,11 +56,15 @@ class WorkflowContractWiringTests(unittest.TestCase):
             "test_workflow_contract_wiring.py",
         ]:
             self.assertIn(expected, found)
+        self.assertEqual(
+            node_contract_test_files(),
+            ["ci-impact-classifier.test.cjs", "ci-impact-policy.test.cjs"],
+        )
 
     def test_every_contract_test_is_invoked_by_ci(self):
         missing = [
             name
-            for name in contract_test_files()
+            for name in [*contract_test_files(), *node_contract_test_files()]
             if f"scripts/tests/{name}" not in self.ci
         ]
         self.assertEqual(
@@ -82,7 +90,7 @@ class WorkflowContractWiringTests(unittest.TestCase):
         )
         self.assertIsNotNone(lint_job, "ci.yml 에 lint job 이 없다")
         body = lint_job.group(0) if lint_job else ""
-        for name in contract_test_files():
+        for name in [*contract_test_files(), *node_contract_test_files()]:
             self.assertIn(
                 f"scripts/tests/{name}",
                 body,

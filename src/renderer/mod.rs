@@ -14,18 +14,29 @@ pub mod composer;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
 pub mod float_placement;
+pub(crate) mod font_decision;
 pub mod font_metrics_data;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod font_paths;
+#[path = "font_rule_projections/layout_metric.rs"]
+pub(crate) mod font_rule_layout_metric_projection;
+#[path = "font_rule_projections/layout_name.rs"]
+pub(crate) mod font_rule_layout_name_projection;
 pub(crate) mod form_caption;
+// [gym_gpu_raster] GPU 가속 SVG 래스터화(vello/wgpu). 네이티브 + gpu feature 전용 —
+// native-skia 와 같은 방식으로 선택적 게이팅해 CI는 GPU 없이도 컴파일된다.
+#[cfg(all(not(target_arch = "wasm32"), feature = "gpu"))]
+pub mod gpu;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
 pub mod html;
 pub(crate) mod image_header;
 pub mod image_resolver;
+pub(crate) mod kerning;
 pub mod layer_renderer;
 pub mod layout;
+pub(crate) mod layout_frame;
 pub mod page_layout;
 pub mod page_number;
 pub mod pagination;
@@ -33,10 +44,21 @@ pub mod pagination;
 pub(crate) mod partial_replay;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod pdf_raster_fidelity;
 pub mod pua_oldhangul;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
+pub(crate) mod shaping;
+pub(crate) mod shaping_composition;
+pub(crate) mod shaping_context;
+pub(crate) mod shaping_paragraph;
+pub(crate) mod shaping_publication;
+// Q4-D1 registers the exact-source-bound vertical owner while all product
+// layout/publication callers remain closed until their own approved slices.
+#[allow(dead_code)]
+pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;
@@ -44,6 +66,7 @@ pub mod style_resolver;
 pub mod svg;
 pub mod svg_fragment;
 pub mod svg_layer;
+pub(crate) mod text_decoration;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;
@@ -117,6 +140,47 @@ pub(crate) fn clamp_tab_leader_end_x(
         .unwrap_or(leader.end_x)
 }
 
+/// Backend replay 직전의 optional scalar positions를 한 번 더 검증한다.
+///
+/// `TextRunNode` accessor와 positioned `Renderer` 직접 호출이 같은 bounded
+/// 계약을 소비하도록 하는 단일 판정이다. 문자열 projection으로 scalar 수가
+/// 달라지거나 payload가 손상되면 해당 run 전체를 K0로 되돌린다.
+pub(crate) fn validated_replay_positions<'a>(
+    replay_text: &str,
+    positions: Option<&'a [f64]>,
+) -> Option<&'a [f64]> {
+    let positions = positions?;
+    let max_scalars = kerning::MAX_KERNING_RUN_CODE_POINTS;
+    if positions.len() > max_scalars.saturating_add(1) {
+        return None;
+    }
+    let scalar_count = replay_text.chars().take(max_scalars + 1).count();
+    if scalar_count > max_scalars || positions.len() != scalar_count.saturating_add(1) {
+        return None;
+    }
+    if positions.first().copied() != Some(0.0)
+        || positions
+            .iter()
+            .any(|position| !position.is_finite() || *position < 0.0)
+        || positions.windows(2).any(|pair| pair[0] > pair[1])
+    {
+        return None;
+    }
+    Some(positions)
+}
+
+pub(crate) fn replay_positions_or_compute<'a>(
+    replay_text: &str,
+    style: &TextStyle,
+    positions: Option<&'a [f64]>,
+) -> std::borrow::Cow<'a, [f64]> {
+    validated_replay_positions(replay_text, positions)
+        .map(std::borrow::Cow::Borrowed)
+        .unwrap_or_else(|| {
+            std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, style))
+        })
+}
+
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, Serialize)]
 pub struct TextStyle {
@@ -134,6 +198,13 @@ pub struct TextStyle {
     pub underline: UnderlineType,
     /// 취소선
     pub strikethrough: bool,
+    /// 문서가 kerning pair positioning을 요청했는지 여부.
+    ///
+    /// `false`는 기존 layer-tree 직렬화에서 생략해 kerning-off schema와
+    /// byte baseline을 보존한다. 실제 pair adjustment는 공통 measurement
+    /// decision이 exact font capability를 확인한 뒤 별도로 결정한다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub kerning: bool,
     /// 자간 (px)
     pub letter_spacing: f64,
     /// 장평 비율 (1.0 = 100%, 0.8 = 80%)
@@ -236,21 +307,15 @@ impl TextStyle {
         }
     }
 
-    /// 글자폭 맞춤(fit) 대상 advance 에 적용할 배율 (#2771).
+    /// 글자폭 맞춤(fit) 대상 advance 에 적용할 배율 (#2771, #5756).
     ///
     /// SVG `textLength` 와 Canvas `fit_scale` 은 "레이아웃 advance 에 글리프 폭을
-    /// 맞춘다". 그런데 첨자 글리프는 `script_draw_metrics` 로 0.7 배 축소되어
-    /// 그려지므로, 대상 advance 를 같은 배율로 줄이지 않으면 브라우저가 축소된
-    /// 글리프를 본문 폭까지 되늘려 1/0.7 ≈ 1.43 배 가로 확대가 발생한다.
-    ///
-    /// 비첨자는 **정확히 1.0** 을 돌려준다. `advance * 1.0` 은 IEEE-754 상
-    /// 반올림이 없는 항등 연산이라 기존 `textLength` 값이 비트 단위로 불변이다.
+    /// 맞춘다". [#5756] 이후 첨자 run 의 **레이아웃 advance 자체**가 그리기
+    /// 배율(0.7)로 측정되므로(`text_measurement::style_params`), 대상 advance 는
+    /// 이미 축소 글리프의 자연 폭과 일치한다 — 여기서 또 줄이면 이중 축소로
+    /// 글리프가 0.49 배까지 눌린다. 항상 1.0(항등)을 돌려준다.
     pub fn script_advance_scale(&self) -> f64 {
-        if self.superscript || self.subscript {
-            SCRIPT_FONT_SCALE
-        } else {
-            1.0
-        }
+        1.0
     }
 
     /// 브라우저 렌더러가 실제 glyph 폭을 맞출 때 사용할 advance 를 반환한다.
@@ -340,6 +405,7 @@ impl Default for TextStyle {
             italic: false,
             underline: UnderlineType::None,
             strikethrough: false,
+            kerning: false,
             letter_spacing: 0.0,
             ratio: 1.0,
             default_tab_width: 0.0,
@@ -664,6 +730,21 @@ pub trait Renderer {
 
     /// 텍스트 그리기
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle);
+    /// Layout owner가 확정한 run-relative 문자 경계값으로 텍스트를 그린다.
+    ///
+    /// K0와 positioned replay를 지원하지 않는 보조 renderer는 기존 `draw_text`를
+    /// 그대로 쓴다. K1 visual backend만 이 메서드를 override하며 font lookup이나
+    /// shaping을 다시 수행하지 않는다.
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        _positions: Option<&[f64]>,
+    ) {
+        self.draw_text(text, x, y, style);
+    }
     /// 사각형 그리기 (corner_radius > 0이면 둥근 모서리)
     fn draw_rect(&mut self, x: f64, y: f64, w: f64, h: f64, corner_radius: f64, style: &ShapeStyle);
     /// 선 그리기
@@ -819,6 +900,24 @@ pub(crate) fn source_line_metrics_need_reflow(
         && raw_text_height > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
 }
 
+/// [#5821] 압축 장평(ratio r < 1) 글자의 그리기 파라미터.
+///
+/// 한글 2022 는 장평을 가로만 줄이는 게 아니라 **세로도 √r 로** 줄인다 —
+/// 156601658 제목 실측: 선언 25pt·ratio 90% → PDF `Tf 23.706` = 25×√0.90
+/// (오차 0.05%), 총 폭은 선언×0.90 유지(한글 630.1px ↔ rhwp 634.0px).
+/// 따라서 glyph 크기 = fs×√r, 가로 스케일 = √r (곱하면 폭 ×r 로 종전과 동일 —
+/// advance/char_positions 는 불변). 확대(r > 1)는 실측이 없어 종전(크기 불변·
+/// 가로 ×r) 유지.
+#[inline]
+pub(crate) fn condensed_ratio_draw_params(font_size: f64, ratio: f64) -> (f64, f64) {
+    if ratio > 0.0 && ratio < 0.999 {
+        let s = ratio.sqrt();
+        (font_size * s, s)
+    } else {
+        (font_size, if ratio > 0.0 { ratio } else { 1.0 })
+    }
+}
+
 /// 저장 줄 metrics를 재조판하는 경우의 baseline을 글꼴 기준으로 복원한다.
 ///
 /// 원본 `baseline_distance`도 손상된 `line_height` 좌표계에 기록되므로, 줄 높이만
@@ -878,6 +977,93 @@ pub(crate) fn paragraph_source_line_metrics_need_reflow(
         ls_val,
         true,
     )
+}
+
+/// 구역의 저장 LINE_SEG 사다리가 "통짜 합성값"인지 판정한다 (#5854).
+///
+/// 한컴이 실제로 조판한 문서의 LINE_SEG 는 줄마다 그 줄의 글자 크기·줄간격을
+/// 담고, 여러 줄로 접힌 문단은 줄 수만큼 세그먼트를 갖는다. 반면 일부 생성기는
+/// 그 자리에 **문단 하나당 세그먼트 하나 · 전 문단 동일 튜플 · `vertical_pos` 는
+/// 그 튜플의 advance 만큼 일정하게 증가**하는 사다리를 채워 넣는다. 그런 사다리는
+/// 문서의 실제 글자 크기와 무관한 상수라서 조판 근거가 될 수 없다.
+///
+/// 실측 (`samples/hwpx/hwpx-02.hwpx`): 122 문단 전부
+/// `vertsize=1000 textheight=1000 baseline=850 spacing=600`,
+/// `vertpos` 는 처음부터 끝까지 정확히 1600 씩 증가한다. 그런데 문단들의 실제
+/// 글자 크기는 2pt~15pt 로 갈려 82 문단이 저장 `vertsize`(10pt) 와 어긋난다.
+///
+/// 판정이 참이면 호출자는 (1) 줄 metrics 를 저장값이 아니라 글꼴·문단 스타일에서
+/// 다시 뽑고, (2) `vertical_pos` 앵커 스냅을 끈다. 원본 IR 은 건드리지 않는다.
+pub(crate) fn stored_line_ladder_is_uniform_filler(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    styles: &style_resolver::ResolvedStyleSet,
+) -> bool {
+    /// 사다리 하나로 단정하기 위한 최소 문단 수.
+    const MIN_PARAGRAPHS: usize = 8;
+    /// 저장 advance 와 글꼴 advance 가 어긋나야 하는 최소 비율의 역수 (1/4).
+    const CONTRADICTION_RATIO_DIVISOR: usize = 4;
+
+    if paragraphs.len() < MIN_PARAGRAPHS {
+        return false;
+    }
+
+    let mut tuple: Option<(i32, i32, i32, i32)> = None;
+    let mut prev_vpos: Option<i32> = None;
+    let mut contradicting = 0usize;
+
+    for para in paragraphs {
+        let [seg] = para.line_segs.as_slice() else {
+            return false;
+        };
+        if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || seg.line_height <= 0
+            || seg.text_height <= 0
+        {
+            return false;
+        }
+        let current = (
+            seg.line_height,
+            seg.text_height,
+            seg.baseline_distance,
+            seg.line_spacing,
+        );
+        match tuple {
+            None => tuple = Some(current),
+            Some(first) if first != current => return false,
+            _ => {}
+        }
+        // 사다리 걸음은 그 튜플의 advance 와 같아야 한다 — 실측 조판이면 문단마다
+        // 다른 값이 나온다.
+        let step = seg.line_height.saturating_add(seg.line_spacing);
+        if let Some(previous) = prev_vpos {
+            if seg.vertical_pos.saturating_sub(previous) != step {
+                return false;
+            }
+        }
+        prev_vpos = Some(seg.vertical_pos);
+
+        let max_fs = para
+            .char_shapes
+            .iter()
+            .filter_map(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+            .map(|style| style.font_size)
+            .fold(0.0f64, f64::max);
+        if max_fs <= 0.0 {
+            continue;
+        }
+        let (ls_type, ls_val) = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|style| (style.line_spacing_type, style.line_spacing))
+            .unwrap_or((LineSpacingType::Percent, 160.0));
+        let (font_lh, font_ls) = corrected_line_metrics(0.0, 0.0, max_fs, ls_type, ls_val);
+        let stored_advance = hwpunit_to_px(step, DEFAULT_DPI);
+        if (font_lh + font_ls - stored_advance).abs() > 0.5 {
+            contradicting += 1;
+        }
+    }
+
+    contradicting * CONTRADICTION_RATIO_DIVISOR >= paragraphs.len()
 }
 
 /// 저장된 순수 텍스트 줄은 `vertsize`에 내부 여백이 포함되어도 한컴의 줄 진행이
@@ -973,6 +1159,111 @@ pub(crate) fn first_seg_vpos_is_anchor(
         .is_some_and(|seg| cell_para_index == 0 || seg.vertical_pos > 0)
 }
 
+/// 글자처럼 취급되는(`treat_as_char`) 그림·도형이 줄 흐름에서 차지하는 높이(px).
+///
+/// 조판(`typeset`)과 렌더(`layout`)가 각자 이 식을 들고 있었고, 도형 쪽 정의가
+/// 서로 달랐다 — 렌더는 [`ShapeObject::flow_height_hu`], 조판은 저장 프레임만.
+/// 같은 속성의 정의는 하나여야 하므로(#4333) 두 경로가 이 함수를 공유한다.
+#[inline]
+pub(crate) fn tac_object_flow_height_px(
+    ctrl: &crate::model::control::Control,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::control::Control;
+    let height_hu = match ctrl {
+        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
+        Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
+        _ => return None,
+    };
+    Some(hwpunit_to_px(height_hu, dpi))
+}
+
+/// 저장 줄 높이가 문단의 인라인 개체 하나로 설명될 때, 그 개체의 흐름 높이(px).
+///
+/// "이 줄은 인라인 개체가 소유한 줄인가" 를 묻는 술어다. 조판과 렌더가 같은 줄에
+/// 같은 답을 내지 않으면 그 줄의 예약 높이가 갈리므로(#4333) 정의는 하나다.
+pub(crate) fn line_owning_tac_object_height_px(
+    para: &crate::model::paragraph::Paragraph,
+    raw_line_height: f64,
+    dpi: f64,
+) -> Option<f64> {
+    para.controls
+        .iter()
+        .filter_map(|ctrl| tac_object_flow_height_px(ctrl, dpi))
+        .find(|height| {
+            *height > 8.0 && raw_line_height + 4.0 >= *height && raw_line_height <= *height + 8.0
+        })
+}
+
+fn para_text_is_picture_only_host(para: &crate::model::paragraph::Paragraph) -> bool {
+    para.text.chars().all(|ch| {
+        ch.is_whitespace()
+            || ch == '\u{FFFC}'
+            || ch <= '\u{001F}'
+            || ('\u{E000}'..='\u{F8FF}').contains(&ch)
+    })
+}
+
+/// 쪽 분할 칸의 그림-only 문단에서, 합성 줄이 담은 TAC 그림의 흐름 높이.
+///
+/// 저장 LINE_SEG 가 글줄만 담아도 그 줄의 TAC 그림은 자기 높이만큼 칸 조각
+/// 회계에 들어가야 한다 (#6114: 312px 차트가 26px 만 전진해 아래 표가 겹침).
+/// 본문과 섞인 줄에는 쓰지 않는다 — 일반 칸 글줄까지 그림 높이로 키우면
+/// 칸 상자 밖으로 글이 밀려 text-overlap 이 는다.
+pub(crate) fn composed_line_tac_object_height_px(
+    para: &crate::model::paragraph::Paragraph,
+    composed: &composer::ComposedParagraph,
+    line_idx: usize,
+    dpi: f64,
+) -> Option<f64> {
+    if !para_text_is_picture_only_host(para) {
+        return None;
+    }
+    let line = composed.lines.get(line_idx)?;
+    let start = line.char_start;
+    let end = composed
+        .lines
+        .get(line_idx + 1)
+        .map(|next| next.char_start)
+        .unwrap_or_else(|| para.text.chars().count().saturating_add(1))
+        .max(start.saturating_add(1));
+
+    let mut max_h = 0.0f64;
+    for &(pos, _, ci) in &composed.tac_controls {
+        if pos < start || pos >= end {
+            continue;
+        }
+        if let Some(height) = para
+            .controls
+            .get(ci)
+            .and_then(|ctrl| tac_object_flow_height_px(ctrl, dpi))
+        {
+            max_h = max_h.max(height);
+        }
+    }
+
+    if max_h <= 0.5 && para_text_is_picture_only_host(para) {
+        let heights: Vec<f64> = para
+            .controls
+            .iter()
+            .filter_map(|ctrl| tac_object_flow_height_px(ctrl, dpi))
+            .filter(|height| *height > 0.5)
+            .collect();
+        if heights.len() == 1 && line_idx == 0 {
+            max_h = heights[0];
+        } else if heights.len() > 1
+            && line_idx < heights.len()
+            && composed.lines.len() == heights.len()
+        {
+            max_h = heights[line_idx];
+        } else if line_idx == 0 && composed.lines.len() <= 1 {
+            max_h = heights.into_iter().fold(0.0, f64::max);
+        }
+    }
+
+    (max_h > 0.5).then_some(max_h)
+}
+
 /// 셀의 저장 vpos 흐름이 문단 위치를 구분해 담고 있는지 ("사다리" 온전성).
 ///
 /// 셀 안 문단이 전부 `vpos == 0` 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)에서는
@@ -1056,6 +1347,18 @@ pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
 #[inline]
 pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
     (px * HWPUNIT_PER_INCH / dpi) as i32
+}
+
+/// TAC(글자처럼 취급) 표 한 칸의 유효 높이 — 저장된 line_seg 높이와 실측 표 높이 중
+/// 큰 쪽을 쓴다.
+///
+/// [#4627] 같은 식(`seg_lh.max(mt_h)`)이 `typeset.rs`(레이아웃 확정)와
+/// `pagination/engine.rs`(`RHWP_USE_PAGINATOR=1` 대안 경로)에 각각 따로 있었다 —
+/// 표 높이가 페이지 경계를 정하므로 두 사본이 갈리면 쪽수가 움직인다. 두 소비자
+/// 모두 이 함수를 불러 사본을 없앤다(행동 변경 없음, 순수 NFC).
+#[inline]
+pub fn tac_table_effective_height(seg_lh: f64, mt_h: f64) -> f64 {
+    seg_lh.max(mt_h)
 }
 
 /// [Task #1745] 텍스트 혼합 anchor 문단의 Square wrap 표 우측 wrap 띠 (cs, sw) HU 도출.
@@ -1193,11 +1496,111 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 /// `HY중고딕`(fontconfig full name: `HYGothic-Medium`)이다. 두 이름을 모두
 /// 체인에 넣어 원 font가 설치된 호스트에서는 해당 glyph를 먼저 선택한다.
 /// 원 font가 없는 호스트에서는 `Malgun Gothic`이 종전과 같은 마지막 대체다.
-fn installed_render_font_alias(font_family: &str) -> Option<&'static str> {
+///
+/// 다만 이름을 그대로 넣는 것만으로는 Windows(DirectWrite/Chrome)에서 안 잡히는
+/// face 가 있다. 아래 중고딕 arm 의 주석을 볼 것.
+fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
-        "한양중고딕" => Some("HY중고딕"),
-        "HY중고딕" => Some("Malgun Gothic"),
-        _ => None,
+        // [#6171] 이름 셋 중 `HYGothic` 만 Windows 에서 해석된다. headless Chrome
+        // 통제 실측(`'X',serif` 를 없는 글꼴 기준선과 픽셀 차분):
+        // `HY중고딕` 0px · `HYGothic-Medium` 0px · **`HYGothic` 3,287px**.
+        // DirectWrite 가 영문 family 끝의 스타일 접미사를 떼어 family 를 구성하기
+        // 때문이다 — `-Medium` 은 떼어지므로 원문 이름이 남지 않고, 한국어 이름도 그
+        // family 로 이관되지 않아 같이 실패한다. 아래 견고딕/견명조의 `-Extra` 는
+        // 스타일 토큰이 아니라 안 떼어져 원문 그대로 잡히는 것이라 이 arm 과 다르다
+        // (`H2GTRM`/`H2GTRE` 의 name 테이블 구조는 동일한데 결과만 갈린다).
+        // `HYGothic` 이 실제로 `H2GTRM.TTF` 임은 Chrome 렌더 ↔ TTF 직접 렌더의 잉크
+        // IoU 0.724 로 확인했다(대조군 `H2GTRE.TTF` 는 0.405).
+        // 이 arm 이 없으면 3146683 1쪽 `『별표 7』`의 `『`(중고딕 run)만 Malgun 으로
+        // 떨어져 뒤 글자와의 틈이 8.88pt 가 된다 — 한글 오라클 2.50pt, rhwp PDF 2.38pt.
+        // (체인에서 이 이름만 뺀 통제 렌더로 잰 값. 이 arm 을 넣으면 2.25pt.)
+        "한양중고딕" => &[
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+        ],
+        "HY중고딕" => &[
+            "HYGothic",
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+            "Malgun Gothic",
+        ],
+        // [#6171] 견고딕/견명조도 같은 legacy ↔ 설치 face 짝이다. 이 arm 이 없으면
+        // 체인이 `'한양견고딕'` 하나 뒤에 바로 generic(=Malgun Gothic)으로 떨어져,
+        // `HY견고딕`이 설치된 호스트에서도 Malgun Regular 로 그려진다 — 3146683 1쪽
+        // `『별표 7』`의 `별표` 획이 견고딕(Extra)보다 가늘어지는 원인.
+        // Windows 글꼴 레지스트리 실측: `HY견고딕`=H2GTRE.TTF(family `HYGothic-Extra`),
+        // `HY견명조`=H2MJRE.TTF(family `HYMyeongJo-Extra`).
+        "한양견고딕" => &["HY견고딕", "HYGothic-Extra", "HCR Dotum", "함초롬돋움"],
+        "한양견명조" => &["HY견명조", "HYMyeongJo-Extra", "HCR Batang", "함초롬바탕"],
+        // 신명조도 같은 짝인데 이 arm 만 빠져 있었다. `svg.rs` 의 local()·embed 두 표는
+        // 이미 `한양신명조 → HY신명조 / HYSinMyeongJo-Medium / H2MJSM.TTF` 를 알고 있는데,
+        // 정작 체인을 만드는 여기가 몰라서 `'한양신명조','Batang',…` 로 바로 떨어졌다.
+        // 156573118 8쪽 실측: 그 쪽 텍스트 런 600개가 이 체인을 쓰고, `HY신명조`가 설치된
+        // 호스트에서도 Batang 으로 그려졌다(형제 `한양중고딕` 은 `'한양중고딕','HY중고딕',…`).
+        // 이름 순서가 중요하다. `H2MJSM.TTF` 의 name 테이블은 family(ko) `HY신명조`,
+        // family(en) `HYSinMyeongJo-Medium` 인데, headless Chrome 실측으로는 **둘 다
+        // 매칭되지 않고** 스타일 접미사를 뗀 `HYSinMyeongJo` 만 잡힌다(각각 serif 로
+        // 떨어지는 것을 통제 SVG 로 확인). 그래서 실제로 해석되는 이름을 앞에 둔다.
+        // 형제 항목과 다른 점이라 주의 — `HY견고딕`·`HYGothic-Extra` 는 둘 다 잡힌다.
+        "한양신명조" => &["HYSinMyeongJo", "HY신명조", "HYSinMyeongJo-Medium"],
+        // [#6263] 같은 접미사 절단 규칙의 나머지 한컴 face 다. 문서가 한국어 이름을
+        // 그대로 들고 있는데 Windows 는 그 이름으로 face 를 못 찾는다. 위 `한양신명조`
+        // arm 은 legacy 이름으로 들어오는 경우고, 이 셋은 문서가 `HY…` 이름을 직접
+        // 쓰는 경우라 별도 arm 이 필요하다(#6263 신고 7문서 실측).
+        //
+        // headless Chrome 통제 실측(`'X',serif` 를 없는 글꼴 기준선과 픽셀 차분):
+        //   `HY신명조` 0px · `HYSinMyeongJo-Medium` 0px · `HYSinMyeongJo` 3,295px
+        //   `HY헤드라인M` 0px · `HYHeadLine-Medium` 0px · `HYHeadLine` 4,785px
+        //   `HY그래픽M` 0px · `HYGraphic-Medium` 0px · `HYGraphic` 3,687px
+        // 셋 다 한국어 이름과 `-Medium` 원문이 모두 안 잡히고 접미사를 뗀 이름만
+        // 잡힌다 — `한양신명조` arm 이 이미 적어 둔 규칙이 그대로 성립한다.
+        //
+        // name 테이블 실측 — family(ko)/family(en):
+        //   H2MJSM.TTF `HY신명조`/`HYSinMyeongJo-Medium`
+        //   H2HDRM.TTF `HY헤드라인M`/`HYHeadLine-Medium`
+        //   H2GPRM.TTF `HY그래픽M`/`HYGraphic-Medium`
+        // 해석되는 이름을 앞에 두고, 원문 en 이름은 다른 매칭 규칙을 쓰는 호스트를
+        // 위해 뒤에 남긴다(형제 arm 과 같은 순서 규약).
+        "HY신명조" => &[
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium",
+            "HCR Batang",
+            "함초롬바탕",
+        ],
+        "HY헤드라인M" => &["HYHeadLine", "HYHeadLine-Medium", "HCR Dotum", "함초롬돋움"],
+        "HY그래픽M" => &["HYGraphic", "HYGraphic-Medium", "HCR Dotum", "함초롬돋움"],
+        // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
+        // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
+        "정부상징 부처명_16040911" | "Government_16040911" => &[
+            "ROKG",
+            "ROKG R",
+            "대한민국정부상징체",
+            "대한민국정부상징체 R",
+            "ROKGR",
+        ],
+        _ => &[],
+    }
+}
+
+fn internal_font_family_members(font_family: &str) -> Vec<&str> {
+    font_family
+        .split(',')
+        .map(str::trim)
+        .filter(|family| !family.is_empty())
+        .collect()
+}
+
+fn push_unique_family<'a>(
+    families: &mut Vec<std::borrow::Cow<'a, str>>,
+    family: impl Into<std::borrow::Cow<'a, str>>,
+) {
+    let family = family.into();
+    if !families.iter().any(|existing| existing == &family) {
+        families.push(family);
     }
 }
 
@@ -1210,17 +1613,63 @@ fn css_single_quoted_font_family(font_family: &str) -> String {
     format!("'{escaped}'")
 }
 
-/// [#3314] 렌더용 폴백 체인 문자열: `요청 face → (한컴 대체 face) → (base family) → generic 체인`.
+/// Task #1224 ExtraLight family. regular 본문 획 두께용이며 bold 체인에서는 뺀다 (#3772).
+pub(crate) const NOTO_SANS_KR_EXTRALIGHT: &str = "Noto Sans KR ExtraLight";
+
+/// 폴백 체인에서 `Noto Sans KR ExtraLight` 항목만 제거한다.
+///
+/// ExtraLight 는 별도 family 이름이라 `font-weight="bold"` 가 Bold/Regular 로
+/// 넘어가지 않는다. svg2pdf 는 faux-bold 를 합성하지 않으므로 bold run 이
+/// ExtraLight(200) 에 떨어지면 PDF 굵기가 사라진다 (#3772).
+pub(crate) fn drop_noto_sans_kr_extralight(chain: &str) -> String {
+    let quoted = [
+        format!("'{NOTO_SANS_KR_EXTRALIGHT}',"),
+        format!("&apos;{NOTO_SANS_KR_EXTRALIGHT}&apos;,"),
+        format!("\"{NOTO_SANS_KR_EXTRALIGHT}\","),
+        format!("'{NOTO_SANS_KR_EXTRALIGHT}'"),
+        format!("&apos;{NOTO_SANS_KR_EXTRALIGHT}&apos;"),
+        format!("\"{NOTO_SANS_KR_EXTRALIGHT}\""),
+    ];
+    let mut out = chain.to_string();
+    for token in &quoted {
+        out = out.replace(token, "");
+    }
+    if out.trim().is_empty() {
+        "'Noto Sans KR'".to_string()
+    } else {
+        out
+    }
+}
+
+/// 렌더용 폴백 체인 문자열:
+/// `요청 face → 설치 successor/alias → base family → 문서 substFont → generic 체인`.
 pub fn render_font_family_chain(font_family: &str) -> String {
-    let fb = generic_fallback(font_family);
-    let mut families = vec![css_single_quoted_font_family(font_family)];
-    if let Some(alias) = installed_render_font_alias(font_family) {
-        families.push(css_single_quoted_font_family(alias));
+    render_font_family_chain_for_weight(font_family, false)
+}
+
+/// `bold` 이면 ExtraLight 를 빼서 Noto Sans KR Regular/Bold 가 매칭되게 한다 (#3772).
+pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> String {
+    let requested = internal_font_family_members(font_family);
+    let Some(primary) = requested.first().copied() else {
+        return generic_fallback_for_weight("", bold);
+    };
+    let fb = generic_fallback_for_weight(primary, bold);
+    let mut family_names = Vec::new();
+    push_unique_family(&mut family_names, primary);
+    for alias in installed_render_font_aliases(primary) {
+        push_unique_family(&mut family_names, *alias);
     }
-    if let Some(base) = base_family_without_weight_suffix(font_family) {
-        families.push(css_single_quoted_font_family(&base));
+    if let Some(base) = base_family_without_weight_suffix(primary) {
+        push_unique_family(&mut family_names, base);
     }
-    families.push(fb.to_string());
+    for declared_fallback in requested.into_iter().skip(1) {
+        push_unique_family(&mut family_names, declared_fallback);
+    }
+    let mut families: Vec<String> = family_names
+        .iter()
+        .map(|family| css_single_quoted_font_family(family))
+        .collect();
+    families.push(fb);
     families.join(",")
 }
 
@@ -1230,18 +1679,27 @@ pub fn render_font_family_chain(font_family: &str) -> String {
 /// 바로 뒤에 base family를 넣어 generic 폴백보다 먼저 선택되게 한다.
 /// 측정 경로에는 사용하지 않는다.
 pub fn canvas_font_family_chain(font_family: &str) -> String {
-    if font_family.is_empty() {
+    let requested = internal_font_family_members(font_family);
+    let Some(primary) = requested.first().copied() else {
         return "sans-serif".to_string();
-    }
+    };
 
-    let fallback = generic_fallback(font_family);
-    let mut families = vec![format!("\"{}\"", font_family)];
-    if let Some(alias) = installed_render_font_alias(font_family) {
-        families.push(format!("\"{}\"", alias));
+    let fallback = generic_fallback(primary);
+    let mut family_names = Vec::new();
+    push_unique_family(&mut family_names, primary);
+    for alias in installed_render_font_aliases(primary) {
+        push_unique_family(&mut family_names, *alias);
     }
-    if let Some(base) = base_family_without_weight_suffix(font_family) {
-        families.push(format!("\"{}\"", base));
+    if let Some(base) = base_family_without_weight_suffix(primary) {
+        push_unique_family(&mut family_names, base);
     }
+    for declared_fallback in requested.into_iter().skip(1) {
+        push_unique_family(&mut family_names, declared_fallback);
+    }
+    let mut families: Vec<String> = family_names
+        .iter()
+        .map(|family| format!("\"{}\"", family.replace('"', "\\\"")))
+        .collect();
     families.push(fallback.to_string());
     families.join(", ")
 }
@@ -1251,13 +1709,27 @@ pub fn canvas_font_family_chain(font_family: &str) -> String {
 /// 폰트 이름에 명조/바탕/궁서 등 세리프 계열 키워드가 포함되면 "serif",
 /// 그 외에는 "sans-serif"를 반환한다.
 pub fn generic_fallback(font_family: &str) -> &'static str {
-    // Task #727 (F-1): sans/serif chain 마지막 단계에 함초롬바탕 family
-    // (확장B → 확장 → 일반) 를 끼움. 한컴 자체 PUA 영역 (사각 안 숫자
-    // U+F02B1~F02C5 등) 글리프는 표준 한글 폰트 (Malgun Gothic, Noto Sans
-    // KR 등) 에 없어 .notdef tofu 가 나옴. 함초롬바탕 확장B 가 한컴 PUA
-    // 글리프를 보유하므로 chain 의 generic 직전에 우선순위로 매칭시킨다.
-    // 한글 본문 영역은 1순위 폰트가 글리프 가지면 chain 우선순위에 의해
-    // 1순위 사용 → 영향 0. PUA 글리프 부재 시에만 함초롬바탕 매칭.
+    // Task #727 (F-1): sans/serif chain 마지막 단계에 함초롬 family 를 끼움.
+    // 한컴 자체 PUA (사각 안 숫자 U+F02B1~F02C4 등) 글리프는 표준 한글 폰트
+    // (Malgun Gothic, Noto Sans KR 등) 에 없어 .notdef tofu 가 나온다.
+    //
+    // [#4086] 어느 family 가 그 글리프를 갖는지 cmap 실측 (한글 2022 동봉 8종):
+    //
+    //   HCR Batang / HCR Dotum (일반)  59,330 자 — 한글·CJK 통합/확장A·BMP PUA
+    //                                   **U+F02B1~F02C4 20 자 전부 보유**
+    //   HCR Batang ExtB (확장B)        42,799 자 — CJK 확장B(U+20000~) 전담
+    //                                   원문자 대역 **미보유**
+    //   HCR Batang Ext / Dotum Ext     3,535 자 — 평면 1 희귀 스크립트 전담
+    //                                   (U+10000~), PUA 무관
+    //
+    // 즉 PUA 원문자의 소재는 **일반**이고, 확장·확장B 는 그 목적과 무관하다
+    // (원 주석이 확장B 를 PUA 보유자로 적었던 것은 사실과 반대다). 세 family 의
+    // 담당 대역은 서로 겹치지 않으므로(일반∩확장 0 자, 일반∩확장B 2 자 —
+    // U+0020·U+00A0 뿐) 나열 순서는 무엇이 매칭되는지를 바꾸지 않는다. 목적을
+    // 드러내도록 일반 → 확장 → 확장B 순으로 적는다.
+    //
+    // 한글 본문 영역은 1순위 폰트가 글리프를 가지면 chain 우선순위에 의해 1순위를
+    // 쓰므로 영향 0. 글리프 부재 시에만 함초롬이 매칭된다.
     if font_family.is_empty() {
         // Sans-serif: Windows → macOS/iOS → Android → 오픈소스 → 한컴 → generic
         // Task #1224: 시스템 고딕(맑은고딕/Apple) 부재 환경(Linux/CI)에서 폴백되는
@@ -1265,19 +1737,19 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // 굵게 렌더됨. 한컴 돋움 획 두께(페이지 밀도 0.265)에 근접한
         // 'Noto Sans KR ExtraLight'(rsvg 페이지 밀도 0.277)를 무거운 Noto 직전에 삽입 —
         // 시스템 고딕 렌더는 무영향, Noto 폴백만 가볍게 교체.
-        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif";
+        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
     }
     // 고정폭 키워드
     let lower = font_family.to_ascii_lowercase();
     if (font_family.contains("KoPub돋움체") || lower.contains("kopub dotum"))
         && (font_family.contains("Light") || lower.contains("light"))
     {
-        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif";
+        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
     }
     // KoPub Batang uses "바탕체" in the family name, but it is a proportional
     // serif publication face, not the Windows fixed-width BatangChe face.
     if font_family.contains("KoPub바탕체") || lower.contains("kopub batang") {
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
     }
     if font_family.contains("굴림체")
         || font_family.contains("바탕체")
@@ -1298,7 +1770,7 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // AppleMyungjo 보다 앞에 두어야 macOS Chrome 에서 CJK 글리프 bold 매칭 성공.
         // 'Source Han Serif K Old Hangul' (Task #528): @font-face unicode-range 가 옛한글
         // 영역 (U+1100-11FF, U+A960-A97F, U+D7B0-D7FF) 만 매칭하므로 일반 한글에 영향 없음.
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
     }
     // 세리프 키워드 (영문) — "serif" 포함하되 "sans" 부분 문자열을 가진 폰트명 전체 제외
     if lower.contains("times")
@@ -1309,13 +1781,23 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         || lower.contains("gungsuh")
         || (lower.contains("serif") && !lower.contains("sans"))
     {
-        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',serif";
+        return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
     }
     // Sans-serif: Windows → macOS/iOS → Android → 오픈소스 → 한컴 → generic
     // 'Source Han Serif K Old Hangul' (Task #528): unicode-range 옛한글 자모 영역 한정
     // 'Noto Sans KR ExtraLight' (Task #1224): 무거운 Noto CJK Regular 폴백 직전에 삽입해
     // 한컴 돋움 획 두께에 근접시킴. 시스템 고딕 우선 → 부재 시에만 ExtraLight 매칭.
-    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif"
+    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif"
+}
+
+/// `generic_fallback` 에 굵기 힌트를 얹는다. bold 는 ExtraLight 를 제거한다 (#3772).
+pub fn generic_fallback_for_weight(font_family: &str, bold: bool) -> String {
+    let chain = generic_fallback(font_family);
+    if bold {
+        drop_noto_sans_kr_extralight(chain)
+    } else {
+        chain.to_string()
+    }
 }
 
 pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
@@ -1334,7 +1816,8 @@ pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
 /// 합성한다.
 pub(crate) fn boxed_pua_number(ch: char) -> Option<u32> {
     let code_point = ch as u32;
-    (0xF02B1..=0xF02C4)
+    // [#6127] U+F02B0 = 네모 안 0 — 한글 2020 실측(2599643 "②⓪⓪" 신청 번호란).
+    (0xF02B0..=0xF02C4)
         .contains(&code_point)
         .then(|| code_point - 0xF02B0)
 }
@@ -1506,11 +1989,10 @@ fn format_circled_digit(n: u16) -> String {
         '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱',
         '⑲', '⑳',
     ];
-    if n >= 1 && n <= 20 {
-        CIRCLED[(n - 1) as usize].to_string()
-    } else {
-        n.to_string()
-    }
+    n.checked_sub(1)
+        .and_then(|idx| CIRCLED.get(idx as usize))
+        .map(|c| c.to_string())
+        .unwrap_or_else(|| n.to_string())
 }
 
 /// 로마 숫자 변환
@@ -1571,11 +2053,10 @@ fn format_hangul_ganada(n: u16) -> String {
     const GANADA: [char; 14] = [
         '가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하',
     ];
-    if n >= 1 && n <= 14 {
-        GANADA[(n - 1) as usize].to_string()
-    } else {
-        n.to_string()
-    }
+    n.checked_sub(1)
+        .and_then(|idx| GANADA.get(idx as usize))
+        .map(|c| c.to_string())
+        .unwrap_or_else(|| n.to_string())
 }
 
 /// 한글 숫자 변환 (일, 이, 삼, ...)
@@ -1811,8 +2292,8 @@ mod tests {
             );
         }
 
-        // 첨자 배율은 그리기 글꼴 축소율과 반드시 같은 값이어야 한다.
-        // (다르면 글리프가 textLength 로 되늘어나는 #2771 결함이 재발한다.)
+        // [#5756] 첨자 run 의 레이아웃 advance 가 그리기 배율(0.7)로 측정되므로
+        // fit 배율은 첨자에서도 항등(1.0)이다 — 0.7 을 또 곱하면 이중 축소.
         let sup = TextStyle {
             superscript: true,
             ..base.clone()
@@ -1822,10 +2303,9 @@ mod tests {
             ..base.clone()
         };
         for style in [&sup, &sub] {
-            assert_eq!(
-                style.script_draw_metrics(20.0, 0.0).0,
-                20.0 * style.script_advance_scale()
-            );
+            assert_eq!(style.script_advance_scale(), 1.0);
+            // 그리기 글꼴은 여전히 0.7 배 축소다.
+            assert_eq!(style.script_draw_metrics(20.0, 0.0).0, 20.0 * 0.7);
         }
     }
 
@@ -2128,9 +2608,55 @@ mod tests {
             render_font_family_chain(r"Legacy\Face").starts_with(r"'Legacy\\Face','Malgun Gothic'")
         );
 
+        // [#6171] `HYGothic` 이 빠지면 `『별표 7』`의 `『`(중고딕 run)이 Windows 에서
+        // Malgun 으로 떨어진다. `HY중고딕`·`HYGothic-Medium` 은 DirectWrite 가 안 잡고
+        // 접미사를 뗀 `HYGothic` 만 잡히므로, 두 이름 뒤에 반드시 와야 한다.
         assert_eq!(
             render_font_family_chain("한양중고딕"),
-            format!("'한양중고딕','HY중고딕',{}", generic_fallback("한양중고딕"))
+            format!(
+                "'한양중고딕','HY중고딕','HYGothic','HYGothic-Medium','HCR Dotum','함초롬돋움',{}",
+                generic_fallback("한양중고딕")
+            )
+        );
+        assert_eq!(
+            render_font_family_chain("HY중고딕"),
+            format!(
+                "'HY중고딕','HYGothic','HYGothic-Medium','HCR Dotum','함초롬돋움','Malgun Gothic',{}",
+                generic_fallback("HY중고딕")
+            )
+        );
+
+        // [#6171] 견고딕/견명조도 legacy name 뒤에 설치 face 이름이 와야 한다. 이 arm 이
+        // 없으면 체인이 곧바로 generic 으로 떨어져 `HY견고딕` 설치본이 있어도 Malgun
+        // Gothic 이 잡힌다 — 3146683 1쪽 `『별표 7』`의 `별표` 획 굵기 회귀.
+        assert_eq!(
+            render_font_family_chain("한양견고딕"),
+            format!(
+                "'한양견고딕','HY견고딕','HYGothic-Extra','HCR Dotum','함초롬돋움',{}",
+                generic_fallback("한양견고딕")
+            )
+        );
+        assert_eq!(
+            render_font_family_chain("한양견명조"),
+            format!(
+                "'한양견명조','HY견명조','HYMyeongJo-Extra','HCR Batang','함초롬바탕',{}",
+                generic_fallback("한양견명조")
+            )
+        );
+        // 신명조도 같은 짝이다. 이 arm 이 없으면 체인이 `'한양신명조','Batang',…` 로
+        // 떨어져 `HY신명조`(H2MJSM.TTF) 설치본을 건너뛴다 — 156573118 8쪽 텍스트 런 600개.
+        // [#6263] 문서가 `HY…` 이름을 직접 쓰는 경우도 접미사를 뗀 이름이 앞에 와야
+        // 한다. 한국어 이름·`-Medium` 원문은 Windows 에서 둘 다 안 잡힌다(실측 0px).
+        assert!(render_font_family_chain("HY신명조").starts_with("'HY신명조','HYSinMyeongJo',"));
+        assert!(render_font_family_chain("HY헤드라인M").starts_with("'HY헤드라인M','HYHeadLine',"));
+        assert!(render_font_family_chain("HY그래픽M").starts_with("'HY그래픽M','HYGraphic',"));
+
+        assert_eq!(
+            render_font_family_chain("한양신명조"),
+            format!(
+                "'한양신명조','HYSinMyeongJo','HY신명조','HYSinMyeongJo-Medium',{}",
+                generic_fallback("한양신명조")
+            )
         );
 
         assert_eq!(
@@ -2140,10 +2666,11 @@ mod tests {
                 generic_fallback("Noto Serif KR Black")
             )
         );
+        // [#6171] studio(canvas) 축도 SVG 와 같은 별칭 표를 쓰므로 `HYGothic` 이 들어간다.
         assert_eq!(
             canvas_font_family_chain("HY중고딕"),
             format!(
-                "\"HY중고딕\", \"Malgun Gothic\", {}",
+                "\"HY중고딕\", \"HYGothic\", \"HYGothic-Medium\", \"HCR Dotum\", \"함초롬돋움\", \"Malgun Gothic\", {}",
                 generic_fallback("HY중고딕")
             )
         );
@@ -2151,14 +2678,42 @@ mod tests {
             canvas_font_family_chain("맑은 고딕"),
             format!("\"맑은 고딕\", {}", generic_fallback("맑은 고딕"))
         );
+
+        let government = "정부상징 부처명_16040911,한컴바탕";
+        assert!(render_font_family_chain(government).starts_with(
+            "'정부상징 부처명_16040911','ROKG','ROKG R','대한민국정부상징체',\
+             '대한민국정부상징체 R','ROKGR','한컴바탕',"
+        ));
+        assert!(canvas_font_family_chain(government).starts_with(
+            "\"정부상징 부처명_16040911\", \"ROKG\", \"ROKG R\", \
+             \"대한민국정부상징체\", \"대한민국정부상징체 R\", \"ROKGR\", \"한컴바탕\", "
+        ));
     }
 
     #[test]
     fn test_generic_fallback() {
-        let serif = "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',serif";
-        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang Ext-B','함초롬바탕 확장B','HCR Batang Ext','함초롬바탕 확장','HCR Batang','함초롬바탕','Source Han Serif K Old Hangul',sans-serif";
+        let serif = "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
+        let sans = "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
         // Task #1224: ExtraLight 가 무거운 Noto 직전에 위치하는지 명시 검증
         assert!(sans.contains("'Noto Sans KR ExtraLight','Noto Sans KR'"));
+        // [#4086] 하이픈 표기는 어떤 폰트와도 매칭되지 않는다 — 실제 패밀리명은
+        // `HCR Batang ExtB` (HANBatangExtB.ttf name table nid1/lid0x409 실측).
+        for chain in [serif, sans] {
+            assert!(
+                !chain.contains("Ext-B"),
+                "죽은 하이픈 표기가 되살아났다: {chain}"
+            );
+            assert!(chain.contains("'HCR Batang ExtB'"));
+            // PUA 원문자(U+F02B1~F02C4)의 소재는 **일반**이다. 목적이 드러나도록
+            // 일반을 확장/확장B 앞에 둔다(담당 대역이 겹치지 않아 매칭 결과는 불변).
+            let plain = chain.find("'HCR Batang','함초롬바탕'").expect("일반 항목");
+            let ext = chain.find("'HCR Batang Ext'").expect("확장 항목");
+            let extb = chain.find("'HCR Batang ExtB'").expect("확장B 항목");
+            assert!(
+                plain < ext && ext < extb,
+                "체인 순서가 일반→확장→확장B 가 아니다"
+            );
+        }
         let mono = "'GulimChe','굴림체','D2Coding','Noto Sans Mono',monospace";
         // 세리프 계열
         assert_eq!(generic_fallback("함초롬바탕"), serif);
@@ -2204,7 +2759,9 @@ mod tests {
         assert_eq!(boxed_pua_number('\u{F02B1}'), Some(1));
         assert_eq!(boxed_pua_number('\u{F02BA}'), Some(10));
         assert_eq!(boxed_pua_number('\u{F02C4}'), Some(20));
-        assert_eq!(boxed_pua_number('\u{F02B0}'), None);
+        // [#6127] U+F02B0 = 네모 안 0 (2599643 실측 "②⓪⓪").
+        assert_eq!(boxed_pua_number('\u{F02B0}'), Some(0));
+        assert_eq!(boxed_pua_number('\u{F02AF}'), None);
         assert_eq!(boxed_pua_number('\u{F02C5}'), None);
         assert_eq!(boxed_pua_number('1'), None);
     }

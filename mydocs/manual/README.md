@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-08-07
+last_verified: 2026-08-24
 ---
 
 # manual 문서 지도
@@ -14,10 +14,12 @@ last_verified: 2026-08-07
 
 | 상황 | 권위 문서 | 보조 문서 |
 | --- | --- | --- |
+| GitHub Actions·저장소 설정·branch protection·cache·runner 운영 | [GitHub 저장소 운영 매뉴얼](github_operations.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md), [PR 리뷰·통합 워크플로우](pr_review_workflow.md), [배포 가이드](publish_guide.md) |
 | 이슈 작업의 문서·브랜치·커밋 흐름 | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) | [하이퍼 워터폴 문서 가이드](hyper_waterfall_docs_guide.md) |
 | Codex 저장소 부트스트랩 | [Codex 문서 지도](codex/README.md) | [프로젝트 메모리 덤프](codex/MEMORY.md), [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | Claude·Codex 재사용 capability 등록·중복 판단 | [에이전트 capability 카탈로그](agent_capability_registry.md) | 각 capability의 권위 playbook |
 | 외부 PR 검토, collaborator 처리, merge 후속 | [PR 리뷰·통합 워크플로우](pr_review_workflow.md) | [조건별 PR review 가이드](pr_review/README.md), [개발 환경 가이드](dev_environment_guide.md) |
+| rhwp 첫 외부 contributor PR | [PR 리뷰·통합 워크플로우](pr_review_workflow.md) | [첫 기여자 외부 PR 처리](pr_review/first_time_contributor.md), [조건별 PR review 가이드](pr_review/README.md) |
 | 로컬 빌드, 테스트, WASM 검증 | [개발 환경 가이드](dev_environment_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md) |
 | 문서 이동·정보구조의 링크 검사 | [문서 링크와 메타데이터 로컬 검사](markdown_link_check_guide.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | 신규 기여자 시작 | [온보딩 가이드](onboarding_guide.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
@@ -28,22 +30,49 @@ last_verified: 2026-08-07
 | 실사례 여정 기반 버그 헌팅 | [버그 헌팅 playbook](bug_hunting_playbook.md) | [Claude bug-hunter 에이전트](../../.claude/agents/bug-hunter.md), [Codex bug-hunter Skill](../../.agents/skills/bug-hunter/SKILL.md), [정답지 비교 하네스](../../tools/fidelity_compare/README.md) |
 | 로컬 OWPML XML 스키마 자산 | [OWPML XML 스키마 reference](owpml_schema_reference.md) | [한컴 공식 OWPML 모델 참조 가이드](../tech/hwpx_hancom_reference.md) |
 | PDF/SVG 기준 비교의 정책 | [시각 검증 문서 지도](verification/README.md) | [시각 검증 거버넌스](verification/visual_verification_governance.md), [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md) |
-| 한컴 기준 PDF 산출을 위한 MCP 사용 | [HWP 2020 MCP 사용법](mcp_hwp2020Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
+| RenderBackend 계약·픽스처 | [RenderBackend 계약 카탈로그](render_backend_contract_catalog.md) | [픽스처 목록](../tech/render_backend_fixture_catalog.md), [설계 배경](../tech/render_backend.md) |
+| HWP 2022 이하 저장본의 한컴 기준 PDF·원격 변환 | [HWP 2024 MCP client의 engine 2020 사용법](mcp_hwp2024Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
+| HWP 2024 저장본의 한컴 기준 PDF·원격 변환 | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | [PR review 시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
 | AI 에이전트 호스트에 rhwp 를 MCP 도구로 연결 | [MCP 통합 가이드](mcp_integration_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) |
 | 브라우저 확장 개발·배포 | [브라우저 확장 개발 가이드](browser_extension_dev_guide.md) | [Chrome/Edge 확장 빌드·배포](chrome_edge_extension_build_deploy.md) |
 | Studio E2E·CDP 검증 | [E2E 조판 자동 검증](e2e_verification_guide.md) | [CDP E2E 가이드](e2e-cdp.md) |
+| 로컬 폰트 감지·이름·backend·정답지 불일치 대응 | [폰트 감지·대체 사고 대응 절차](font_incident_response.md) | [폰트 fallback 전략](../tech/font_fallback_strategy.md), [시각 검증 거버넌스](verification/visual_verification_governance.md) |
+| RenderBackend 네 번째 어댑터를 붙일 때 | [RenderBackend 어댑터 작성 가이드](render_backend_adapter_guide.md) | [출력 백엔드 공통 계약](../tech/render_backend.md) |
 | HWP/HWPX 저장 회귀 기준 | [HWP5 roundtrip baseline](hwp5_roundtrip_baseline.md), [HWPX roundtrip baseline](hwpx_roundtrip_baseline.md) | [문서 진단 도구](document_diagnostics_tool_manual.md), [HWPX2HWP probe 온보딩](hwpx2hwp_probe_onboarding.md) |
 | `@rhwp/core` 편집 API | [소비자용 편집 API](consumer_edit_api_guide.md) | [WASM options object 규약](wasm_api_options_convention.md) |
 | 웹한글컨트롤 호환 층 개발·Oracle 대조 | [웹한글컨트롤 호환 개발 가이드](webhwpctrl_compat_development.md) | [`@rhwp/hwpctrl` 패키지 안내](../../npm/hwpctrl-ocx/README.md), [호환 하니스](../../tools/hwpctrl_compat/README.md) |
 | CLI 로 실물 서식 채우기(누름틀·표 좌표·치환) | [서식 자동화 심화 가이드](form_filling_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [에이전트 실무 대체 예제집](agent_task_playbook.md) |
 | 편집 command와 단축키 | [Command/Undo 검토 체크리스트](edit_command_review_checklist.md) | [키보드 단축키 추가](keyboard_shortcut_guide.md) |
+| 수식 스크립트 파서·명령 디스패치 | [수식 모듈 매뉴얼](equation_module.md) | 모듈 지도 [`src/renderer/equation/README.md`](../../src/renderer/equation/README.md), 분류 정본 [`dispatch.rs`](../../src/renderer/equation/dispatch.rs) |
 | 품질 지표와 리팩터링 검토 | [코드 품질 대시보드](dashboard.md) | [SOLID 채점 기준](solid_scoring_guide.md) |
 | release 준비와 배포 | [배포 가이드](publish_guide.md) | [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp-studio UI 명칭·CSS 접두어 | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) | [개발 환경 가이드](dev_environment_guide.md) |
+| rhwp-studio 테마 토큰·스킨 제작 | [rhwp-studio 테마 토큰과 스킨 제작](rhwp_studio_theming.md) | [rhwp-studio UI 명칭과 CSS 접두어](rhwp_studio_ui_conventions.md) |
+
+## HWP 원격 MCP 선택과 접근 범위
+
+원격 HWP 변환 MCP는 공개 서비스가 아니다. rhwp maintainer, collaborator 또는 MCP 관리자가 별도로
+인증한 사용자만 사용할 수 있으며, server URL과 token은 각 서비스 관리자로부터 비공개로 전달받는다.
+
+`.hwp`/`.hwpx` 확장자만으로 저장 버전을 자동 판별한다고 가정하지 않고, 문서를 저장한 한컴오피스 버전을
+기준으로 다음과 같이 서비스를 선택한다. HWP5의 `HwpSummaryInformation.revisionNumber` 또는 HWPX의
+`version.xml/appVersion`이 남아 있으면 `rhwp info --json <파일>`의 `lastSavedWith.product`로 확인할 수
+있다. 이 필드가 `null`이면 파일 형식 버전으로 제품 연도를 추정하지 말고 저장 환경을 별도로 확인한다.
+
+별도 “HWP 2020 MCP” service나 client archive는 제공하지 않는다. 2022 이하와 2024 저장본 모두 같은
+Windows `hwp-convert-2024` 원격 MCP와 `hwp-convert-mcp-2024-client`를 사용하며, 저장 버전에 따라
+`engine`만 `2020` 또는 `2024`로 선택한다.
+
+| 저장한 한컴오피스 버전 | 변환 서비스 | 권위 문서 | client artifact |
+| --- | --- | --- | --- |
+| 2022 이하 | Windows `hwp-convert-2024`, `engine: 2020` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` |
+| 2024 | Windows `hwp-convert-2024`, `engine: 2024` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` |
 
 ## 문서 경계
 
 - `manual/`: 사람이 반복 수행하는 절차, 명령, 검증, 배포, 운영 규칙
+- GitHub 저장소 운영은 `github_operations.md`가 분류·비례 검증·적용 후 관찰·복구를 담당한다. 일반
+  Git·이슈 흐름, PR 통합, 제품 배포의 세부 절차는 각 canonical 문서로 라우팅하고 중복하지 않는다.
 - `manual/codex/`: Codex 부트스트랩, 활성 프로젝트 메모리, 현행 문서·Git 절차. 종료 세션과 task
   memory는 `archive/`의 historical snapshot이며 현재 절차의 근거로 사용하지 않는다.
 - `manual/pr_review/`: `pr_review_workflow.md`가 역할과 변경 조건에 따라 선택하도록 지정하는

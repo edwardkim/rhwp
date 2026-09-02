@@ -1,0 +1,32 @@
+{
+  "id": "CD40",
+  "tier": 3,
+  "title": "실문서 HWP·HWPX IR 재대조",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "143E 실문서의 HWP 판과 HWPX 판을 IR 로 비교해 **차이 건수**를 answer.json 에 {\"diffs\": N} 으로 제출하라. CD04 는 identical, 이 과제는 diffCount 다. 대상 HWPX: samples/hwpx/143E433F503322BD33.hwpx. 힌트: rhwp ir-diff.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "차이 건수",
+      "op": "answer_eq",
+      "answer": "diffs",
+      "path": "diffCount",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

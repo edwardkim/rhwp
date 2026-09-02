@@ -1,10 +1,13 @@
 use crate::model::style::UnderlineType;
+use crate::paint::font_glyph::lower_font_native_glyph_sidecars_excluding;
 use crate::paint::layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
 };
 use crate::paint::paint_op::{PaintOp, TextDecorationKind};
 use crate::paint::profile::RenderProfile;
-use crate::paint::{lower_font_native_glyph_sidecars, EmbeddedFontFace};
+use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
+use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
+use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
 /// semantic render tree를 visual layer tree로 내린다.
@@ -60,7 +63,25 @@ impl LayerBuilder {
             PageLayerTree::with_profile(page_width, page_height, root, self.profile)
                 .with_output_options(self.output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
-        lower_font_native_glyph_sidecars(&mut layer_tree.root, &mut layer_tree.resources, fonts);
+        // Vertical exact-source publication owns its leaf slots first. The
+        // horizontal and nominal lowerers remain independent and only share
+        // the final claim set used to suppress duplicate nominal GlyphRuns.
+        let mut claimed_glyph_run_sources = lower_vertical_shaping_page_sidecars(
+            &mut layer_tree.root,
+            &tree.frame,
+            &mut layer_tree.resources,
+        );
+        claimed_glyph_run_sources.extend(lower_horizontal_shaping_page_sidecars(
+            &mut layer_tree.root,
+            tree.frame.horizontal_shaping_sidecars(),
+            &mut layer_tree.resources,
+        ));
+        lower_font_native_glyph_sidecars_excluding(
+            &mut layer_tree.root,
+            &mut layer_tree.resources,
+            fonts,
+            &claimed_glyph_run_sources,
+        );
         layer_tree
     }
 
@@ -534,6 +555,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: true,
+                page_fragment: false,
                 model_cell_index: None,
             }),
             BoundingBox::new(100.0, 200.0, 150.0, 80.0),
@@ -979,6 +1001,7 @@ mod tests {
                 border_fill_id: 3,
                 text_direction: 0,
                 clip: true,
+                page_fragment: false,
                 model_cell_index: Some(4),
             }),
             BoundingBox::new(60.0, 110.0, 180.0, 80.0),
@@ -1006,6 +1029,7 @@ mod tests {
                 border_fill_id: 6,
                 text_direction: 0,
                 clip: false,
+                page_fragment: false,
                 model_cell_index: None,
             }),
             BoundingBox::new(70.0, 120.0, 80.0, 40.0),
@@ -1166,6 +1190,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }
     }

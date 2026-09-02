@@ -1,0 +1,50 @@
+{
+  "id": "CD05",
+  "tier": 2,
+  "title": "자기 자신과의 렌더 비교",
+  "input": "samples/table-001.hwp",
+  "instructions": "같은 파일을 서로 비교해 렌더 회귀 판정(status)을 answer.json 에 제출하라 — 회귀가 없어야 정상이다. {\"status\": \"...\"} 힌트: rhwp render-diff A B.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "회귀 판정",
+      "op": "answer_eq",
+      "answer": "status",
+      "path": "status",
+      "cmd": [
+        "render-diff",
+        "{input}",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3,
+        4
+      ]
+    },
+    {
+      "name": "최대 변위 0",
+      "op": "value_eq",
+      "value": 0,
+      "path": "maxDisp",
+      "cmd": [
+        "render-diff",
+        "{input}",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3,
+        4
+      ]
+    }
+  ],
+  "axis": "검증"
+}

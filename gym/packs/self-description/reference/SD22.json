@@ -1,0 +1,15 @@
+{
+  "id": "SD22",
+  "steps": [
+    {
+      "answer": {
+        "version": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "schemaRegistry.axes[1].version"
+        }
+      }
+    }
+  ]
+}

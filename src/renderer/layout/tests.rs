@@ -37,6 +37,7 @@ fn test_build_empty_page() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -47,6 +48,7 @@ fn test_build_empty_page() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
     let styles = ResolvedStyleSet::default();
     let tree = engine.build_render_tree(
@@ -575,6 +577,7 @@ fn test_build_page_with_paragraph() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -587,6 +590,8 @@ fn test_build_page_with_paragraph() {
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
@@ -595,6 +600,7 @@ fn test_build_page_with_paragraph() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -650,6 +656,7 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -667,6 +674,8 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
@@ -675,6 +684,7 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     // 패닉 없이 반환하면 성공 (범위 밖 조각은 빈 렌더).
@@ -747,11 +757,14 @@ fn test_layout_with_composed_styles() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -764,6 +777,8 @@ fn test_layout_with_composed_styles() {
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
@@ -772,6 +787,7 @@ fn test_layout_with_composed_styles() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -874,11 +890,14 @@ fn test_layout_multi_run_x_position() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -891,6 +910,8 @@ fn test_layout_multi_run_x_position() {
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
@@ -899,6 +920,7 @@ fn test_layout_multi_run_x_position() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -956,6 +978,8 @@ fn test_resolved_to_text_style() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -985,6 +1009,8 @@ fn test_resolved_to_text_style_with_ratio() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -1252,6 +1278,7 @@ fn test_layout_table_basic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -1270,6 +1297,8 @@ fn test_layout_table_basic() {
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
@@ -1278,6 +1307,7 @@ fn test_layout_table_basic() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -1403,6 +1433,7 @@ fn test_layout_table_cell_positions() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -1421,6 +1452,8 @@ fn test_layout_table_cell_positions() {
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
             wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
         }],
         active_header: None,
         active_footer: None,
@@ -1429,6 +1462,7 @@ fn test_layout_table_cell_positions() {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let tree = engine.build_render_tree(
@@ -1593,6 +1627,40 @@ fn test_expand_numbering_format_hangul() {
         1,
     );
     assert_eq!(result, "다.");
+}
+
+#[test]
+fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
+    let numbering = Numbering {
+        raw_data: None,
+        heads: [NumberingHead {
+            number_format: 0,
+            ..Default::default()
+        }; 7],
+        level_formats: [
+            "^1.".to_string(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ],
+        start_number: 0,
+        level_start_numbers: [0, 1, 1, 1, 1, 1, 1],
+        raw_para_heads: None,
+    };
+    let counters = [1, 0, 0, 0, 0, 0, 0];
+
+    let result = expand_numbering_format(
+        "^1.",
+        &counters,
+        &numbering,
+        &numbering.level_start_numbers,
+        0,
+    );
+
+    assert_eq!(result, "1.");
 }
 
 #[test]
@@ -1929,6 +1997,7 @@ fn test_tac_leading_width_block_table_full_line() {
         tac_controls: Vec::new(), // block 취급이라 비어있음
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
@@ -1939,7 +2008,7 @@ fn test_tac_leading_width_block_table_full_line() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
     // [#2279] 자간 글자폭 비례: 4 spaces × (10 base + 10×-8% = 9.2) = 36.8
     // (min_clamp 5.0 미작동)
     assert!((width - 36.8).abs() < 0.5, "expected ~36.8, got {}", width);
@@ -2024,6 +2093,7 @@ fn test_tac_leading_width_inline_table_partial() {
         tac_controls: vec![(2, 1000, 0)], // pos=2 (ab 뒤), control_index=0
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
@@ -2033,7 +2103,7 @@ fn test_tac_leading_width_inline_table_partial() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
     // "ab" 2 chars, 반각 × font_size/2 = 20*0.5*2 = 20
     assert!((width - 20.0).abs() < 0.5, "expected ~20.0, got {}", width);
 }
@@ -2597,6 +2667,7 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
     let page_content = PageContent {
         page_index: 0,
         page_number: 1,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -2612,6 +2683,7 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
     engine.build_render_tree(
         &page_content,
@@ -2701,6 +2773,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -2711,6 +2784,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
         footnotes: Vec::new(),
         active_master_page: None,
         extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
     };
 
     let styles = ResolvedStyleSet {
@@ -2886,6 +2960,7 @@ fn collect_top_level_table_spans_domain() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            page_fragment: false,
             model_cell_index: None,
         }),
         BoundingBox::new(75.6, 202.5, 100.0, 100.0),
@@ -2919,5 +2994,157 @@ fn collect_top_level_table_spans_domain() {
         vec![102, 118],
         "Page 직계 overlay 표와 Column 직계 흐름 표만 수집한다 \
          (중첩 표 999·비가시 표 555 는 제외)"
+    );
+}
+
+// ── [#4610 · #4599 ④] 공백-전용 TAC 캐리어 문단 페인트 변위 게이트 ──
+
+/// 야간방호일지 36374873 p1 pi4 형상: 공백 텍스트 + TAC 표 1개 + 저장 세그 2개가
+/// 문단 안에서 개체 밴드만큼(>100px) 벌어진 캐리어.
+fn whitespace_tac_carrier_para() -> Paragraph {
+    Paragraph {
+        text: " \u{FFFC} ".repeat(4),
+        controls: vec![Control::Table(Box::new(Table {
+            common: CommonObjAttr {
+                treat_as_char: true,
+                width: 19_000,
+                height: 1_800,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))],
+        line_segs: vec![
+            LineSeg {
+                vertical_pos: 13_575,
+                line_height: 2_414,
+                text_start: 0,
+                ..Default::default()
+            },
+            LineSeg {
+                vertical_pos: 67_877,
+                line_height: 1_000,
+                text_start: 6,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    }
+}
+
+/// 실제 배치 경로에서는 compose 결과가 존재하고, 대상 표가 inline TAC 로 등록돼야 한다.
+fn whitespace_tac_carrier_composed(para: &Paragraph) -> ComposedParagraph {
+    let mut composed = compose_paragraph(para);
+    composed.tac_controls = vec![(0, 19_000, 0)];
+    composed
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rewinds_to_stored_vpos() {
+    let para = whitespace_tac_carrier_para();
+    let composed = whitespace_tac_carrier_composed(&para);
+    // 흐름 커서가 선행 자리차지 표 하단(1064px)까지 밀린 상태 — 저장 위치로 되돌린다.
+    let got =
+        whitespace_tac_carrier_stored_paint_y(true, &para, Some(&composed), 75.6, 1064.0, 96.0);
+    let expected = 75.6 + 13_575.0 / 75.0;
+    assert!((got.unwrap() - expected).abs() < 0.1, "got {got:?}");
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_requires_hwpx_stored_profile() {
+    let para = whitespace_tac_carrier_para();
+    let composed = whitespace_tac_carrier_composed(&para);
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(false, &para, Some(&composed), 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_substantive_text_host() {
+    let mut para = whitespace_tac_carrier_para();
+    para.text = "본문 텍스트".into();
+    let composed = whitespace_tac_carrier_composed(&para);
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, Some(&composed), 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_float_host_para() {
+    // 자리차지(비-TAC) 표를 함께 앵커한 host 문단은 기존 float 계약 소관 — 제외.
+    let mut para = whitespace_tac_carrier_para();
+    para.controls.push(Control::Table(Box::new(Table {
+        common: CommonObjAttr {
+            treat_as_char: false,
+            text_wrap: TextWrap::TopAndBottom,
+            ..Default::default()
+        },
+        ..Default::default()
+    })));
+    let composed = whitespace_tac_carrier_composed(&para);
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, Some(&composed), 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_small_intra_gap() {
+    // 낡은 세대 사다리(문단 간격 누락류)는 문단-내 거대 간격을 만들지 않는다 —
+    // 세그 간 간격이 100px(7500HU) 미만이면 무동작.
+    let mut para = whitespace_tac_carrier_para();
+    para.line_segs[1].vertical_pos = 13_575 + 2_414 + 7_000;
+    let composed = whitespace_tac_carrier_composed(&para);
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, Some(&composed), 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_forward_displacement() {
+    // 방향-한정: 흐름이 저장 위치보다 아래로 충분히 밀렸을 때만 되돌린다.
+    let para = whitespace_tac_carrier_para();
+    let composed = whitespace_tac_carrier_composed(&para);
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, Some(&composed), 75.6, 200.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_synthetic_segs() {
+    let mut para = whitespace_tac_carrier_para();
+    para.line_segs[0].tag |= crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    let composed = whitespace_tac_carrier_composed(&para);
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, Some(&composed), 75.6, 1064.0, 96.0),
+        None
+    );
+}
+
+#[test]
+fn whitespace_tac_carrier_paint_y_rejects_missing_or_block_tac() {
+    let para = whitespace_tac_carrier_para();
+    let block_composed = compose_paragraph(&para);
+    assert!(
+        block_composed.tac_controls.is_empty(),
+        "이 fixture의 표는 강제 inline 등록 없이 block 후보여야 한다"
+    );
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(true, &para, None, 75.6, 1064.0, 96.0),
+        None
+    );
+    assert_eq!(
+        whitespace_tac_carrier_stored_paint_y(
+            true,
+            &para,
+            Some(&block_composed),
+            75.6,
+            1064.0,
+            96.0,
+        ),
+        None
     );
 }

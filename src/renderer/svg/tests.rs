@@ -115,6 +115,23 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
         Some(&"H2MJSM.TTF"),
         "Windows 설치본의 실제 한양신명조 파일을 먼저 찾아야 함"
     );
+    // [#6171] 견고딕/견명조도 형제 항목과 같은 `H2*` 파일명이다(Windows 글꼴 실측).
+    // 종전의 `HYGTRE.TTF`·`HYMJRE.TTF` 는 설치본에 없어 full embed 가 매번 실패했다.
+    assert_eq!(
+        known_font_filenames("한양견고딕").first(),
+        Some(&"H2GTRE.TTF"),
+        "Windows 설치본의 실제 한양견고딕 파일(H2GTRE.TTF)을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        known_font_filenames("한양견명조").first(),
+        Some(&"H2MJRE.TTF"),
+        "Windows 설치본의 실제 한양견명조 파일(H2MJRE.TTF)을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        font_local_aliases("한양견고딕"),
+        vec!["한양견고딕", "HY견고딕", "HYGothic-Extra"],
+        "정상 outline인 HY견고딕은 원 face를 먼저 유지해야 함"
+    );
     assert_eq!(
         font_local_bold_aliases("휴먼명조").first(),
         Some(&"HCR Batang Bold"),
@@ -125,6 +142,47 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
         Some(&"HANDotumB.ttf"),
         "한양중고딕의 Bold full embed는 한컴 HCR Dotum Bold 파일을 먼저 찾아야 함"
     );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn font_file_candidates_are_single_path_components() {
+    assert!(FontFileName::from_document_candidate("NotoSansKR-Regular.ttf".to_string()).is_some());
+    assert!(FontFileName::from_document_candidate("Noto Sans KR.otf".to_string()).is_some());
+
+    let nested = std::path::Path::new("fonts").join("NotoSansKR-Regular.ttf");
+    assert!(FontFileName::from_document_candidate(
+        nested.to_str().expect("UTF-8 test path").to_string()
+    )
+    .is_none());
+
+    let parent = std::path::Path::new("..").join("NotoSansKR-Regular.ttf");
+    assert!(FontFileName::from_document_candidate(
+        parent.to_str().expect("UTF-8 test path").to_string()
+    )
+    .is_none());
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn planned_font_lookup_does_not_descend_below_search_roots() {
+    let root = std::env::temp_dir().join(format!("rhwp-svg-font-candidate-{}", std::process::id()));
+    let nested = root.join("nested");
+    std::fs::create_dir_all(&nested).expect("temporary nested font directory");
+    std::fs::write(nested.join("DocumentFont.ttf"), b"font").expect("nested test font");
+
+    let font_name = std::path::Path::new("nested").join("DocumentFont");
+    let lookup = plan_svg_font_file_lookup(
+        font_name.to_str().expect("UTF-8 test path"),
+        std::slice::from_ref(&root),
+        false,
+    );
+    assert!(
+        find_font_file(&lookup).is_none(),
+        "font lookup must consider direct file names only"
+    );
+
+    std::fs::remove_dir_all(root).expect("remove temporary font directory");
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -330,8 +388,11 @@ fn test_svg_draw_text_script_scales_text_length_by_glyph_size() {
         renderer.begin_page(800.0, 600.0);
         renderer.draw_text("1", 10.0, 100.0, &style);
         let script_length = text_length_of(renderer.output(), "1");
+        // [#5756] 이후 첨자 advance 는 측정 단계에서 0.7 배 글꼴로 계산된다 —
+        // 글자 폭이 픽셀 반올림을 거치므로 정확 0.7 배 대신 반올림 오차(≤0.05px)를
+        // 허용한다.
         assert!(
-            (script_length - base_length * 0.7).abs() < 0.001,
+            (script_length - base_length * 0.7).abs() < 0.05,
             "첨자 textLength 는 본문의 0.7 배여야 함: base={base_length}, script={script_length}"
         );
     }
@@ -564,7 +625,9 @@ fn test_svg_text_decoration() {
     );
     let output = renderer.output();
     // 밑줄: <line> 요소로 출력
-    let underline_count = output.matches("y1=\"22\"").count(); // y + 2.0
+    // [#5730] 밑줄은 기준선 + 0.17em (한글 2022 실측) — 16px 글꼴이면 20 + 2.72 = 22.72.
+    // (부동소수 표기 꼬리가 붙을 수 있어 닫는 따옴표 없이 접두 일치로 확인한다.)
+    let underline_count = output.matches("y1=\"22.72").count();
     assert!(underline_count > 0, "밑줄 <line> 요소가 있어야 함");
     // 취소선: <line> 요소로 출력
     let strike_count = output
@@ -589,8 +652,13 @@ fn test_svg_text_ratio() {
         },
     );
     let output = renderer.output();
-    // 첫 문자 '장': translate(50,100) scale(0.8000,1)
-    assert!(output.contains("transform=\"translate(50,100) scale(0.8000,1)\""));
+    // [#5821] 압축 장평은 세로 fs×√r + 가로 √r (총 폭 ×r 불변) — 한글 2022
+    // PDF 실측 계약. 첫 문자 '장': translate(50,100) scale(√0.8=0.8944,1).
+    assert!(output.contains("transform=\"translate(50,100) scale(0.8944,1)\""));
+    assert!(
+        output.contains("font-size=\"14.31"),
+        "글리프 크기가 16×√0.8=14.31 로 축소되어야 함"
+    );
     // 문자별 렌더링이므로 각 문자가 개별 <text> 요소
     let text_count = output.matches("<text ").count();
     assert_eq!(text_count, 2, "2개 문자 = 2개 <text> 요소");

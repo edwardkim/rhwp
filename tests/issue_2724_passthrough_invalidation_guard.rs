@@ -84,7 +84,7 @@ enum Exempt {
 
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
-/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 42건(2026-07-23 동결).
+/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
@@ -92,6 +92,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "set_dpi",
         Exempt::SessionState,
         "렌더 DPI·해소 스타일·페이지네이션만 갱신. 문서 IR 무변경.",
+    ),
+    (
+        "mod.rs",
+        "set_hangul2024_compat",
+        Exempt::SessionState,
+        "[#5524] 세션 호환 모드 플래그·재페이지네이션만 갱신. 문서 IR 무변경.",
     ),
     (
         "queries/rendering.rs",
@@ -156,6 +162,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
     ),
     (
+        "commands/header_footer_ops.rs",
+        "copy_selection_in_header_footer_native",
+        Exempt::SessionState,
+        "머리말/꼬리말 복사 — 읽기 후 `self.clipboard` 에만 기록. 문서 IR 비변경.",
+    ),
+    (
         "commands/clipboard.rs",
         "copy_control_native",
         Exempt::SessionState,
@@ -175,6 +187,24 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/document.rs",
+        "register_exact_font_source_native",
+        Exempt::SessionState,
+        "[#4968] exact font source registry·kerning measurement context·layout caches만 갱신. 문서 IR·직렬화 대상 무변경.",
+    ),
+    (
+        "commands/document.rs",
+        "set_exact_font_instance_native",
+        Exempt::SessionState,
+        "[#4969] exact slot의 variable-font instance request와 조판 caches만 갱신. 문서 IR·직렬화 대상 무변경.",
+    ),
+    (
+        "commands/document.rs",
+        "clear_exact_font_instance_native",
+        Exempt::SessionState,
+        "[#4969] exact slot의 instance request를 제거하고 조판 caches만 무효화. 문서 IR·직렬화 대상 무변경.",
+    ),
+    (
+        "commands/document.rs",
         "save_snapshot_native",
         Exempt::SessionState,
         "문서를 clone 해 `snapshot_store` 에 적재. 원본 IR 무변경.",
@@ -184,6 +214,30 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "discard_snapshot_native",
         Exempt::SessionState,
         "`snapshot_store` 에서 항목 제거.",
+    ),
+    (
+        "commands/delete_fragment.rs",
+        "capture_delete_range_native",
+        Exempt::SessionState,
+        "[#5769] 삭제 직전 문단 범위를 `fragment_store` 에 적재. 원본 IR 을 읽기만 하고 바꾸지 않는다.",
+    ),
+    (
+        "commands/delete_fragment.rs",
+        "discard_delete_fragment_native",
+        Exempt::SessionState,
+        "[#5769] `fragment_store` 에서 조각 제거. 문서 IR 비변경.",
+    ),
+    (
+        "commands/section_raw_journal.rs",
+        "capture_section_raw_native",
+        Exempt::SessionState,
+        "[#5769] 속성 변경 직전 구역 raw+봉인을 저널에 적재. IR 비변경(읽기 전용).",
+    ),
+    (
+        "commands/section_raw_journal.rs",
+        "discard_section_raw_native",
+        Exempt::SessionState,
+        "[#5769] 구역 raw 저널에서 항목 제거. 문서 IR 비변경.",
     ),
     (
         "commands/formatting.rs",
@@ -246,6 +300,20 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         Exempt::WholeDocument,
         "스냅샷 문서로 통째 복원. 스냅샷은 저장 시점의 패스스루 상태를 그대로 담고 있다.",
     ),
+    (
+        "commands/delete_fragment.rs",
+        "restore_delete_fragment_native",
+        Exempt::WholeDocument,
+        "[#5769] 조각 복원 — 캡처 시점의 section raw_stream·raw_provenance·캐럿(DocProperties)을 \
+         통째로 되돌린다. 스냅샷 복원과 같은 원리로, 복원 뒤 패스스루는 되돌려진 IR 과 다시 일치한다.",
+    ),
+    (
+        "commands/section_raw_journal.rs",
+        "restore_section_raw_native",
+        Exempt::WholeDocument,
+        "[#5769] 구역 raw 복원 — 캡처 시점의 raw_stream·봉인을 되돌려 passthrough 와 IR 을 \
+         다시 일치시킨다. 문단 등 IR 은 건드리지 않는다(속성 복원은 setter 호출부 몫).",
+    ),
     // ── 무효화 대신 원본 스트림 직접 수술 ──────────────────────────────────
     (
         "commands/document.rs",
@@ -276,6 +344,25 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "HWP3 외부 경로 그림 전용(비-wasm CLI 경로). HWP3 파서는 \
          `raw_stream: None`(`parser/hwp3/mod.rs:3241`)이라 무효화할 패스스루가 없고, \
          적재 대상 `bin_data_content` 는 DocInfo 레코드가 아니라 BinData 저장소다.",
+    ),
+    (
+        "commands/object_ops/chart.rs",
+        "set_chart_data_native",
+        Exempt::NoPassthrough,
+        "[#4100] 차트 값 편집. 바꾸는 것은 `bin_data_content` 슬롯 바이트뿐이고 그것은 \
+         BodyText·DocInfo 스트림이 아니라 **BinData 저장소**라 패스스루 대상이 아니다 \
+         (`serializer/cfb_writer.rs`가 IR 에서 매번 재방출, HWPX 는 \
+         `serializer/hwpx/mod.rs`가 `Chart/chartN.xml` 로 무가공 방출). 문단·컨트롤·\
+         DocInfo 레코드는 건드리지 않는다. 근거는 말이 아니라 판정으로 둔다 — \
+         `tests/issue_4100_chart_data_edit.rs::the_edit_survives_hwp5_save_despite_stream_passthrough` \
+         가 HWP5 저장→재파스에서 편집 생존을 확인한다.",
+    ),
+    (
+        "commands/object_ops/chart.rs",
+        "set_chart_data_by_index_native",
+        Exempt::NoPassthrough,
+        "[#4100] 위와 같다 — 문서 순번으로 지목하는 정본 주소 경로이고 기록 대상은 동일한 \
+         `bin_data_content` 슬롯이다.",
     ),
     // ── 호출자 책임 ────────────────────────────────────────────────────────
     (
@@ -317,6 +404,21 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "fit_table_to_page_native",
         Exempt::DelegatesTo("set_table_column_widths_native"),
         "열 폭 계산만 하고 실제 반영은 열 폭 설정 뮤테이터가 한다.",
+    ),
+    (
+        "commands/table_ops.rs",
+        "evaluate_table_formula",
+        Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
+        "[#4135] 계산만 할 때는 IR 비변경. 결과 기록은 일반 셀 텍스트 치환 경로에 위임하며 \
+         그 경로가 section raw passthrough를 무효화한다.",
+    ),
+    (
+        "commands/table_ops.rs",
+        "remove_border_fill_tails_native",
+        Exempt::CallerResponsibility,
+        "[#5959] doc_info.border_fills 의 고아 꼬리 절단 + dirty 플래그 원복만 한다 — \
+         섹션 본문 IR 무변경이며 passthrough 무효화·복원은 호출자(TS undo 의 \
+         applyIds → restoreSectionRaw 3단)가 담당한다.",
     ),
     (
         "commands/text_editing.rs",

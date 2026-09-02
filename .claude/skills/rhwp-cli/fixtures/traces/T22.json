@@ -1,0 +1,11 @@
+{
+  "id": "T22",
+  "utterance": "자기 라운드트립",
+  "steps": [
+    {
+      "command": "hwp5-roundtrip",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "한컴 호환이 아님"
+}

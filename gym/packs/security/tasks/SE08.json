@@ -1,0 +1,32 @@
+{
+  "id": "SE08",
+  "tier": 2,
+  "title": "실문서 배포 전 점검",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서를 배포하기 전 은닉 텍스트 축을 점검해 clean 여부를 answer.json 에 {\"clean\": true|false} 로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "은닉 판정",
+      "op": "answer_eq",
+      "answer": "clean",
+      "path": "clean",
+      "cmd": [
+        "inspect",
+        "hidden-text",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "조사"
+}

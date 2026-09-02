@@ -1,0 +1,17 @@
+{
+  "id": "CR02",
+  "steps": [
+    {
+      "answer": {
+        "paragraphs": {
+          "cmd": [
+            "explain",
+            "{input}",
+            "--json"
+          ],
+          "path": "paragraphCount"
+        }
+      }
+    }
+  ]
+}

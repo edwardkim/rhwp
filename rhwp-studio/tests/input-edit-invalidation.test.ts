@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -223,7 +224,7 @@ test('document pagination은 작은 문서의 120ms idle과 명시 boundary에�
   // #2214 의 재개형 러너를 취소해 페이지-로컬 리페인트 계약(flush 0)을 깬다.
   // 그래서 idle 병합은 유지하되 대상은 작은 문서로 되돌린다. 큰 문서는 재개형 러너와
   // 명시 boundary flush(undo/redo/navigation/blur/저장·인쇄)로 마감한다.
-  assert.match(inputHandlerSource, /const DOCUMENT_PAGINATION_IDLE_FLUSH_PAGE_LIMIT = 30;/);
+  assert.match(codeOnly(inputHandlerSource), /const DOCUMENT_PAGINATION_IDLE_FLUSH_PAGE_LIMIT = 30;/);
   assert.match(
     inputHandlerSource,
     /if \(!this\.shouldAutoFlushDeferredPagination\(\)\) return;/,

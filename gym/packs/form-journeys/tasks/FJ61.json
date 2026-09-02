@@ -1,0 +1,61 @@
+{
+  "id": "FJ61",
+  "tier": 3,
+  "title": "form-01 채움 --verify 재파싱",
+  "input": "samples/form-01.hwp",
+  "instructions": "form-01 의 myMsg01 에 '폼01검증값' 을 넣고 --verify 로 저장한 form01-verified.hwp 를 제출하라. FJ40 은 field-01 부서명의 verify 다. 이번은 최소 서식이다. 힌트: --data '{\"myMsg01\": \"폼01검증값\"}' -o form01-verified.hwp --verify --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "form01-verified.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "채운 값 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:form01-verified.hwp}",
+        "--json",
+        "--",
+        "폼01검증값"
+      ]
+    },
+    {
+      "name": "myMsg01 값",
+      "op": "value_eq",
+      "value": "폼01검증값",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:form01-verified.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "verify.identical",
+      "op": "value_eq",
+      "value": true,
+      "path": "verify.identical",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"myMsg01\": \"폼01검증값\"}",
+        "-o",
+        "{file:recheck.hwp}",
+        "--verify",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "form01-verified.hwp"
+    }
+  ]
+}

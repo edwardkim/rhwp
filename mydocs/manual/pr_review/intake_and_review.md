@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-07
+last_verified: 2026-08-30
 ---
 
 # PR 접수와 리뷰 기록
@@ -12,8 +12,12 @@ merge, merge 후속 처리는 기본 경로 문서와 [merge 후속 처리](post
 
 ## 2.1 reviewer assign 선행
 
-개별 PR review를 시작하면 metadata 조사, local fetch, review 문서 작성보다 먼저 reviewer를 assign한다.
-대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤, 각 원 PR마다 assign한다.
+외부 contributor PR과 maintainer가 처리하는 PR review는 metadata 조사, local fetch, review 문서 작성보다
+먼저 reviewer를 assign한다. 대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤,
+각 원 PR마다 assign한다.
+
+collaborator 자신의 self PR은 reviewer를 지정하지 않는다. 이 경우 review 문서에 작성자 self-review임을
+기록하고, 최신 CI와 merge 조건을 독립적으로 확인한다.
 
 ~~~bash
 gh pr edit N --repo edwardkim/rhwp --add-reviewer <reviewer>
@@ -61,6 +65,26 @@ Cargo 성공은 시각 검증 판정을 대체하지 않는다. 다음 중 하�
 - PR이 기준 PDF, 한컴 출력, 페이지 수, render-diff, visual regression 해결을 주장한다.
 - HWP/HWPX sample, 기준 PDF, golden, visual fixture를 추가·갱신한다.
 
+다음 조합은 "필요 여부 검토"가 아니라 **merge/수용 판정 전 직접 증적 필수**다.
+
+- renderer/layout/typeset/paint/page-visible 경로가 바뀌고, PR 또는 관련 issue에 HWP/HWPX/PDF fixture가
+  첨부·추가되어 있다.
+- PR 설명이 특정 문서의 페이지, 표, 줄바꿈, clipping, 겹침, 여백, z-order, 그림·도형 배치 개선을
+  주장한다.
+
+이 경우 review 문서의 최종 판정을 `승인`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
+
+- `rhwp info --json`으로 원본 HWP/HWPX의 저장 버전을 확인하고, 버전에 맞는 MCP 기준 PDF를 만든 뒤,
+  visual sweep 대표 PNG와 요약 지표를 실제로 열어 확인한다.
+- 이미 PR branch에 포함된 기준 PDF/PNG를 쓰는 경우에도, 그 파일을 직접 열어 PR 주장의 페이지·영역이
+  해결됐는지 확인하고, 원본·기준·검토 asset의 경로와 SHA-256을 review 문서에 적는다.
+- 직접 시각 검증을 수행하지 못하면 최종 판정은 `머지 보류`로 적고, "원 PR 제공
+  before/after만 확인했고 maintainer visual sweep은 미실행"처럼 누락 범위를 명시한다.
+
+원 PR이 before/after 이미지나 수치를 제공했더라도 maintainer가 직접 확인한 visual sweep 또는 동등한
+시각 판정 없이 이를 "시각 검증 통과"로 승격하지 않는다. 특히 통합 cherry-pick PR에서는 source PR의
+증적을 참고 자료로만 기록하고, 통합 head의 실제 산출물로 다시 확인했는지 별도 항목으로 적는다.
+
 개체 geometry 무회귀의 재실증은 다음 명령을 사용할 수 있다. 추적 개체가 없는 0→0 행은 근거로 삼지 않는다.
 
 ~~~bash
@@ -74,7 +98,7 @@ python tools/object_visual_regression.py --preset ovr5 -o output/poc/ovr --diff-
 maintainer 일반 경로는 처리 중 active 경로에 작성하고, 완료 후 archive로 이동한다.
 collaborator self-merge와 collaborator 매개 외부 PR은 해당 기본 경로 문서가 정한 archive 경로를 처음부터 쓴다.
 PR 번호는 PR 생성 시점에 확정하며 생성 전에 예측하지 않는다. collaborator self-merge는 PR을 생성해
-번호를 받은 뒤 reviewer assign을 거쳐 번호 기반 review 문서를 같은 PR의 후속 commit으로 추가한다.
+번호를 받은 뒤 self-review 기록을 번호 기반 review 문서로 작성하고 같은 PR의 후속 commit으로 추가한다.
 
 ~~~text
 mydocs/pr/pr_N_review.md
@@ -88,7 +112,16 @@ review 문서에는 최소한 다음을 포함한다.
 - 렌더 영향과 visual sweep 필요 여부
 - 선택한 로컬·CI·시각 검증 및 생략 이유
 - 발견한 문제·risk·후속 이슈
-- 최종 권고: merge, 보정, rebase 요청, 재작업, close, 보류 중 하나
+- `최종 판정`: [공통 판정 용어](../pr_review_workflow.md#11-최종-판정-용어와-원격-조치의-분리)의
+  `승인`, `머지 보류`, `메인터너 보정 후 수용 가능` 중 정확히 하나
+- 판정 근거와 다음 조건: `승인`이면 merge 전 게이트, `머지 보류`면 해제 조건,
+  `메인터너 보정 후 수용 가능`이면 원 head·보정 SHA·통합 검증 경로
+
+시각 검증을 최종 판정의 근거로 썼다면 `Merge 후 contributor PR comment 계획`도 review 문서에 포함한다.
+계획에는 Visual Sweep 정본 direct link, 실제 페이지·후보 수·지표와 사람의 판정, representative PNG의
+`mydocs/pr/assets/` 안정 경로, `<merge-commit-sha>` 고정 raw image URL 형식, merge 뒤 `--body-file` 게시 및
+API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge
+SHA가 확정된 뒤에만 [merge 후속 처리](post_merge.md)의 실제 게시 단계로 진행한다.
 
 ### 3.2 implementation 계획서
 
@@ -122,11 +155,28 @@ GitHub Actions와 mergeability는 작성 뒤에도 변하는 외부 상태이므
 merge 전 조건으로 구분해 기록한다. 이 규칙은 로컬 검증 결과를 미래 약속처럼 약화하거나,
 반대로 대기 중 CI를 완료 사실처럼 쓰는 일을 함께 막는다.
 
-### 3.5 가설 기각·재분류 PR
+### 3.5 판정 기록 예시
+
+`승인`에는 검증을 통과한 변경만 포함하고, 현재 CI 대기나 작업지시자 승인 같은 외부 게이트는
+"merge 전 조건"으로 별도 적는다. `머지 보류`는 "추가 검토 필요"처럼 모호하게 쓰지 말고 blocker와
+해제 조건을 함께 적는다. `메인터너 보정 후 수용 가능`은 contributor 원 변경의 수용과 collaborator가
+추가한 보정의 수용을 구분하는 판정이다. 원 head와 보정 뒤 integration head를 같은 대상으로 쓰지 않는다.
+
+~~~markdown
+## 최종 판정
+
+- 판정: 메인터너 보정 후 수용 가능
+- 원 PR head: <contributor SHA>; 이 head만으로는 <blocker> 때문에 수용하지 않는다.
+- 보정 후보: <maintainer SHA>; <보정 범위>만 추가했다.
+- 수용 전 조건: <보정 대상 focused/full CI와 시각 증적>, 최신 integration head CI, 작업지시자 승인.
+- 원격 조치: 이 기록 자체는 GitHub approve, comment, close, push 또는 merge를 수행하지 않는다.
+~~~
+
+### 3.6 가설 기각·재분류 PR
 
 조사 PR이 초기 가설을 기각하거나 다른 원인 계통으로 재분류하는 목적이면, 기각 자체는 merge 보류 사유가 아니다.
 다만 최종 보고서·stage 문서·README·sample 설명이 같은 결론을 가리키고, 기각 근거와 후속 issue가 명확해야 한다.
-초기 가설을 최종 사실처럼 남긴 문서가 있으면 수정 요청 또는 보정 뒤에 판단한다.
+초기 가설을 최종 사실처럼 남긴 문서가 있으면 `머지 보류` 또는 `메인터너 보정 후 수용 가능`으로 기록한다.
 
 시각 검증을 실제 판단 근거로 쓸 때의 asset·기준 PDF·MCP·comment 규칙은
 [시각·fixture 증적](visual_fixture_evidence.md)을 따른다.

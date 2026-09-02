@@ -32,20 +32,27 @@ PR이 일괄 실패할 수 있다.
   comment로 남긴다.
 - 보정 뒤 최신 head의 required check를 PR별로 재검증한다.
 
+원 contributor head가 규약을 충족하지 않으면 review 문서의 최종 판정은 `메인터너 보정 후 수용 가능`으로
+기록한다. 보정 commit의 SHA·범위·검증을 원 head와 분리하고, 보정 없는 원 PR을 `승인`으로 바꾸지 않는다.
+보정 검증이 아직 끝나지 않았거나 보정 범위가 원 주장 밖으로 넓어지면 `머지 보류`로 전환한다.
+
 ## 5. 작업지시자 승인 요청
 
 접수·검증·필요한 시각 증적을 review 문서에 남긴 뒤 승인 요청을 한다. 다음 값은 요청 시점 참고값이고
 merge 직전에 다시 확인한다.
 
 ~~~text
-PR #N 검토 결과 · admin merge 준비 완료.
+PR #N 검토 결과 · <승인 | 머지 보류 | 메인터너 보정 후 수용 가능>.
 
 - mergeable: <참고값, merge 전 재확인>
 - 충돌 simulation: <결과>
 - 선택한 local 검증: <결과>
 - review 문서: mydocs/pr/pr_N_review.md
-- merge 전 조건: 최신 PR head의 GitHub Actions 통과 + 작업지시자 승인
+- 다음 조건: <승인이면 최신 대상 head CI + 작업지시자 승인; 보류면 해제 조건; 보정이면 integration head 검증>
 ~~~
+
+`승인`일 때만 admin merge 준비 완료라고 쓴다. `머지 보류`와 `메인터너 보정 후 수용 가능`은
+GitHub approve, comment, close, push, merge를 자동으로 지시하지 않으며 각각 작업지시자의 별도 승인 범위를 따른다.
 
 ## 6. 승인 뒤 admin merge
 

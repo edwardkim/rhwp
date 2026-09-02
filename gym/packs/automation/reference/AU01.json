@@ -1,0 +1,13 @@
+{
+  "id": "AU01",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:out.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"계획실행\"}]}",
+        "--json"
+      ]
+    }
+  ]
+}

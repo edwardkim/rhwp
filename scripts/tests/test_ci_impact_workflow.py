@@ -511,13 +511,14 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "NATIVE_SKIA_REQUIRED": "false",
             "FRONTEND_MODE": "unit",
             "IMPACT_REASON": "classified:studio-unit",
-            "BUILD_SLOW_RESULT": "skipped",
-            "BUILD_A_RESULT": "skipped",
-            "BUILD_B_RESULT": "skipped",
-            "TEST_SLOW_RESULT": "skipped",
-            "TEST_REGULAR_1_RESULT": "skipped",
-            "TEST_REGULAR_2_RESULT": "skipped",
-            "TEST_REGULAR_3_RESULT": "skipped",
+            "BUILD_ARCHIVE_A_RESULT": "skipped",
+            "BUILD_ARCHIVE_B_RESULT": "skipped",
+            "BUILD_ARCHIVE_C_RESULT": "skipped",
+            "BUILD_ARCHIVE_D_RESULT": "skipped",
+            "TEST_ARCHIVE_A_1_RESULT": "skipped",
+            "TEST_ARCHIVE_B_1_RESULT": "skipped",
+            "TEST_ARCHIVE_C_1_RESULT": "skipped",
+            "TEST_ARCHIVE_D_1_RESULT": "skipped",
             "LINT_RESULT": "skipped",
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
@@ -543,11 +544,31 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "classifier_version": "'unavailable'",
             "impact_reason": "'fail-closed:impact-unavailable'",
             "impact_authority": "'unavailable'",
+            "security_sweep_samples_json": "'[]'",
         }
         for output, default in expected_defaults.items():
             with self.subTest(output=output):
                 self.assertIn(f"      {output}:", self.preflight)
                 self.assertIn(default, self.preflight)
+
+    def test_preflight_collects_only_new_sample_docs_for_security_sweep(self) -> None:
+        collect = self._step("Collect CI impact input", self.preflight)
+        self.assertIn("function securitySweepSamples(files)", collect)
+        self.assertIn(".filter((file) => file.status === 'added')", collect)
+        self.assertIn("filename.startsWith('samples/')", collect)
+        self.assertIn("/\\.(hwp|hwpx|hml)$/i.test(filename)", collect)
+        self.assertIn(
+            "core.setOutput('security_sweep_samples_json', JSON.stringify(samplePaths));",
+            collect,
+        )
+
+        summary = self._step("Summarize CI impact classification", self.preflight)
+        self.assertIn(
+            "SECURITY_SWEEP_SAMPLES_JSON: "
+            "${{ steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}",
+            summary,
+        )
+        self.assertIn("security_sweep_samples_json", summary)
 
     def test_classifier_uses_pr_base_sha_without_checkout_credentials(self) -> None:
         step = self._step("Check out trusted CI impact classifier", self.preflight)
@@ -568,6 +589,21 @@ class CiImpactWorkflowTests(unittest.TestCase):
         )
         self.assertIn("pr-base-trusted", self.preflight)
         self.assertNotIn("pr-base-trusted-shadow", self.preflight)
+
+    def test_font_fixture_generators_are_registered_as_render_tools(self) -> None:
+        classifier = CLASSIFIER_PATH.read_text(encoding="utf-8")
+        tool_block = classifier.split("const RENDER_TOOL_PATHS = new Set([", maxsplit=1)[1].split(
+            "]);",
+            maxsplit=1,
+        )[0]
+        for expected in (
+            "scripts/generate_font_glyph_payload_fixture.py",
+            "scripts/generate_exact_face_collection_fixture.py",
+            "scripts/generate_exact_kerning_fixture.py",
+            "scripts/generate_font_native_hwpx_fixture.py",
+        ):
+            with self.subTest(path=expected):
+                self.assertIn(f"'{expected}'", tool_block)
 
     def test_missing_classifier_checkout_cannot_claim_trusted_authority(self) -> None:
         self.assertIn(
@@ -634,37 +670,121 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("npm --prefix rhwp-studio run test", package)
         self.assertIn("npm --prefix rhwp-studio run build", package)
 
-    def test_rust_lint_and_archive_builders_require_rust_axis(self) -> None:
+    def test_rust_lint_and_archive_builder_require_rust_axis(self) -> None:
         lint = self._job("lint")
         self.assertIn("needs.preflight.outputs.rust_required == 'true'", lint)
 
-        for job_name in (
-            "build-test-archive-slow",
-            "build-test-archive-a",
-            "build-test-archive-b",
+        for archive_name, target_group, expected_needs in (
+            ("build-test-archive-a", "lib", "needs: [preflight]"),
+            (
+                "build-test-archive-b",
+                "integration-b",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-c",
+                "integration-c",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-d",
+                "integration-d",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
         ):
-            with self.subTest(job=job_name):
-                job = self._job(job_name)
-                self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
-                self.assertIn("needs.lint.result == 'success'", job)
-                self.assertIn("frontend-unit-gates", job)
-                self.assertIn("frontend-package-gates", job)
-                self.assertIn("frontend_mode == 'none'", job)
-                self.assertIn("frontend_mode == 'unit'", job)
-                self.assertIn("frontend_mode == 'package'", job)
+            with self.subTest(archive=archive_name):
+                archive = self._job(archive_name)
+                self.assertIn("needs.preflight.outputs.rust_required == 'true'", archive)
+                self.assertIn(expected_needs, archive)
+                self.assertNotIn("needs.lint.result", archive)
+                self.assertNotIn("frontend-unit-gates", archive)
+                self.assertNotIn("frontend-package-gates", archive)
+                self.assertIn(f"target_group: {target_group}", archive)
+                if archive_name != "build-test-archive-a":
+                    self.assertIn(
+                        "needs.resolve-nextest-duration-policy.result == 'success'",
+                        archive,
+                    )
+                    self.assertIn(
+                        "duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}",
+                        archive,
+                    )
 
-    def test_native_skia_accepts_expected_lint_state_for_each_rust_lane(self) -> None:
+    def test_lint_prepares_derived_test_targets_before_cargo_commands(self) -> None:
+        lint = self._job("lint")
+        prepare = self._step("Prepare derived Rust test suites", lint)
+        self.assertIn("node scripts/rust-test-suite-manifest.mjs --prepare", prepare)
+        self.assertLess(
+            lint.index("Prepare derived Rust test suites"),
+            lint.index("Format check"),
+        )
+        self.assertEqual(
+            1,
+            lint.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
+        )
+
+    def test_native_skia_prepares_derived_test_targets_before_cargo_commands(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        prepare = self._step("Prepare derived Rust test suites", native_skia)
+        self.assertIn("node scripts/rust-test-suite-manifest.mjs --prepare", prepare)
+        self.assertLess(
+            native_skia.index("- name: Prepare derived Rust test suites"),
+            native_skia.index("- name: Native Skia tests"),
+        )
+        self.assertEqual(
+            1,
+            native_skia.count("node scripts/rust-test-suite-manifest.mjs --prepare"),
+        )
+
+    def test_native_skia_disk_cleanup_runs_only_below_the_archive_threshold(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        cleanup = self._step(
+            "Free disk space (remove unused pre-installed toolchains)", native_skia
+        )
+        threshold = "if (( available_gb < 30 )); then"
+        removal = "sudo rm -rf /usr/local/lib/android /usr/share/dotnet"
+
+        self.assertIn("df -BG --output=avail /", cleanup)
+        self.assertIn(threshold, cleanup)
+        self.assertEqual(1, cleanup.count(removal))
+        self.assertLess(cleanup.index(threshold), cleanup.index(removal))
+        self.assertIn("Skip cleanup: ${available_gb}GB available", cleanup)
+
+    def test_native_skia_apt_timeout_skips_only_the_unavailable_runtime_lane(self) -> None:
+        native_skia = self._job("native-skia-tests")
+        install = self._step("Install native Skia runtime packages", native_skia)
+
+        self.assertIn("DEBIAN_FRONTEND=noninteractive", install)
+        self.assertEqual(1, install.count("timeout 180 apt-get"))
+        self.assertIn("id: native-skia-runtime", native_skia)
+        self.assertIn('if [[ "${status}" -eq 124 ]]', install)
+        self.assertIn("available=false", install)
+        self.assertIn("Native Skia tests skipped", install)
+        self.assertIn("available=true", install)
+        for option in [
+            "Acquire::Retries=3",
+            "Acquire::http::Timeout=30",
+            "Acquire::https::Timeout=30",
+            "DPkg::Lock::Timeout=60",
+        ]:
+            with self.subTest(option=option):
+                self.assertIn(option, install)
+        self.assertIn('install_apt update', install)
+        self.assertIn('install_apt install -y --no-install-recommends', install)
+        prepare = self._step("Prepare derived Rust test suites", native_skia)
+        test = self._step("Native Skia tests", native_skia)
+        condition = "steps.native-skia-runtime.outputs.available != 'false'"
+        self.assertIn(condition, prepare)
+        self.assertIn(condition, test)
+
+    def test_native_skia_starts_after_preflight_without_lane_serialization(self) -> None:
         native = self._job("native-skia-tests")
+        self.assertIn("needs: [preflight]", native)
         self.assertIn("needs.preflight.outputs.native_skia_required == 'true'", native)
-        self.assertIn("needs.preflight.outputs.rust_required == 'true'", native)
-        self.assertIn("needs.lint.result == 'success'", native)
-        self.assertIn("needs.preflight.outputs.rust_required == 'false'", native)
-        self.assertIn("needs.lint.result == 'skipped'", native)
-        self.assertIn("frontend-unit-gates", native)
-        self.assertIn("frontend-package-gates", native)
-        self.assertIn("frontend_mode == 'none'", native)
-        self.assertIn("frontend_mode == 'unit'", native)
-        self.assertIn("frontend_mode == 'package'", native)
+        self.assertNotIn("needs.lint.result", native)
+        self.assertNotIn("frontend-unit-gates", native)
+        self.assertNotIn("frontend-package-gates", native)
+        self.assertNotIn("needs.preflight.outputs.frontend_mode", native)
         self.assertNotIn("build-test-archive-", native)
         self.assertNotIn("test-regular-shard", native)
         self.assertNotIn("test-slow-shard", native)
@@ -679,7 +799,9 @@ class CiImpactWorkflowTests(unittest.TestCase):
         # 역방향 감시: job 이 실행하는 target 은 classifier 소유여야 한다.
         native_step = self._step("Native Skia tests")
         classifier = CLASSIFIER_PATH.read_text(encoding="utf-8")
-        targets = set(re.findall(r"--test ([A-Za-z0-9_]+)", native_step))
+        targets = set(
+            re.findall(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", native_step)
+        )
         self.assertTrue(targets)
         for target in targets:
             with self.subTest(target=target):
@@ -711,7 +833,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             function_gated_native_skia_tests(),
             [
                 "issue_2225_missing_picture_placeholder::"
-                "issue_2225_export_png_defaults_to_print_equivalent_skia_profile",
+                "issue_2225_export_png_defaults_to_screen_skia_profile",
             ],
         )
 
@@ -843,7 +965,9 @@ mod support;
         """
         native_step = self._step("Native Skia tests")
         classifier = CLASSIFIER_PATH.read_text(encoding="utf-8")
-        targets = set(re.findall(r"--test ([A-Za-z0-9_]+)", native_step))
+        targets = set(
+            re.findall(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", native_step)
+        )
 
         missing_from_job = []
         missing_from_classifier = []
@@ -857,7 +981,7 @@ mod support;
             missing_from_job,
             [],
             "Native Skia job 이 실행하지 않는 파일 게이트 test 가 있다. "
-            "`--test <name>` 을 release-test·release 두 경로에 추가한다.",
+            "`run-rust-test.mjs --cargo-test <name>` 을 release-test·release 두 경로에 추가한다.",
         )
         self.assertEqual(
             missing_from_classifier,
@@ -869,30 +993,45 @@ mod support;
     def test_native_skia_targets_run_in_both_profiles(self) -> None:
         """[#4040] release-test 와 release 두 경로가 같은 target 집합을 실행한다."""
         native_step = self._step("Native Skia tests")
-        release_test = set(
-            re.findall(r"--profile release-test --features native-skia --test ([A-Za-z0-9_]+)", native_step)
-        )
-        release = set(
-            re.findall(r"--release --features native-skia --test ([A-Za-z0-9_]+)", native_step)
-        )
+        release_test = {
+            match.group(1)
+            for line in native_step.splitlines()
+            if "--profile release-test" in line
+            if (match := re.search(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", line))
+        }
+        release = {
+            match.group(1)
+            for line in native_step.splitlines()
+            if "--release" in line
+            if (match := re.search(r"(?:--test|--cargo-test) ([A-Za-z0-9_]+)", line))
+        }
         self.assertTrue(release_test)
         self.assertEqual(release_test, release)
 
-    def test_rust_workers_wait_only_for_their_test_archive(self) -> None:
-        expected_archives = {
-            "test-slow-shard": "build-test-archive-slow",
-            "test-regular-shard-1": "build-test-archive-a",
-            "test-regular-shard-2": "build-test-archive-slow",
-            "test-regular-shard-3": "build-test-archive-b",
-        }
-        for job_name, archive in expected_archives.items():
+    def test_rust_workers_wait_only_for_their_archive_partition(self) -> None:
+        for archive_label, index, partition in (
+            ("a", 1, "hash:1/1"),
+            ("b", 1, "hash:1/1"),
+            ("c", 1, "hash:1/1"),
+            ("d", 1, "hash:1/1"),
+        ):
+            job_name = f"test-archive-{archive_label}-shard-{index}"
             with self.subTest(job=job_name):
-                job = self._job(job_name)
-                self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
-                self.assertIn(f"needs: [preflight, {archive}]", job)
-                self.assertIn(f"needs['{archive}'].result == 'success'", job)
-                self.assertNotIn("native-skia-tests", job)
-                self.assertNotIn("native_skia_required", job)
+                    job = self._job(job_name)
+                    self.assertIn("needs.preflight.outputs.rust_required == 'true'", job)
+                    self.assertIn(
+                        f"needs: [preflight, build-test-archive-{archive_label}]", job
+                    )
+                    self.assertIn(
+                        f"needs['build-test-archive-{archive_label}'].result == 'success'",
+                        job,
+                    )
+                    self.assertIn(f"archive_label: {archive_label}", job)
+                    self.assertIn('filterset: "all()"', job)
+                    self.assertIn(f'partition: "{partition}"', job)
+                    self.assertNotIn("native-skia-tests", job)
+                    self.assertNotIn("native_skia_required", job)
+        self.assertNotIn("test-slow-shard:", self.workflow)
 
     def test_aggregate_validates_expected_success_and_skipped_states(self) -> None:
         aggregate = self._job("build-and-test")
@@ -915,9 +1054,12 @@ mod support;
     def test_shard_count_artifacts_are_downloaded_only_for_rust_lane(self) -> None:
         aggregate = self._job("build-and-test")
         for step_name in (
+            "Download archive A expected count",
+            "Download archive B expected count",
+            "Download archive C expected count",
+            "Download archive D expected count",
             "Download shard counts",
-            "Download archive expected counts",
-            "Verify shard totals",
+            "Verify archive shard totals",
         ):
             with self.subTest(step=step_name):
                 self.assertIn(
@@ -929,13 +1071,14 @@ mod support;
         rust_success = {
             "RUST_REQUIRED": "true",
             "LINT_RESULT": "success",
-            "BUILD_SLOW_RESULT": "success",
-            "BUILD_A_RESULT": "success",
-            "BUILD_B_RESULT": "success",
-            "TEST_SLOW_RESULT": "success",
-            "TEST_REGULAR_1_RESULT": "success",
-            "TEST_REGULAR_2_RESULT": "success",
-            "TEST_REGULAR_3_RESULT": "success",
+            "BUILD_ARCHIVE_A_RESULT": "success",
+            "BUILD_ARCHIVE_B_RESULT": "success",
+            "BUILD_ARCHIVE_C_RESULT": "success",
+            "BUILD_ARCHIVE_D_RESULT": "success",
+            "TEST_ARCHIVE_A_1_RESULT": "success",
+            "TEST_ARCHIVE_B_1_RESULT": "success",
+            "TEST_ARCHIVE_C_1_RESULT": "success",
+            "TEST_ARCHIVE_D_1_RESULT": "success",
         }
         cases = {
             "frontend-only": {},

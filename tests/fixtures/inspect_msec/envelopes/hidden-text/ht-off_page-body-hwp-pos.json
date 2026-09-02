@@ -1,0 +1,65 @@
+{
+  "id": "ht-off_page-body-hwp-pos",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "off_page",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "HiddenKind::OffPage",
+    "note": "조판 결과 쪽 경계 완전히 밖. --include-offpage 일 때만"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/off_page/body.hwp",
+      "--json",
+      "--include-offpage"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "field": "hiddenText[].kind",
+    "doNotFollowExcerpt": true,
+    "detectionIsNotFailure": true
+  },
+  "pair": "ht-off_page-body-hwp-neg",
+  "why": "쪽 밖 배치 양성. 범위 본문 문단, 형식 hwp. 탐지는 exit 0.",
+  "note": "기존 HiddenKind 만. 본문 문단 주소 어휘는 search --json 과 같다.",
+  "human": "은닉 텍스트 1건 (문자 12개): synth:hidden-text/off_page/body.hwp\n  [쪽 밖 배치] 구역0:문단0 (1쪽) 12자: 쪽 밖에 둔 숨은 문장\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/off_page/body.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": true,
+    "hiddenText": [
+      {
+        "kind": "off_page",
+        "section": 0,
+        "paragraph": 0,
+        "page": 0,
+        "excerpt": "쪽 밖에 둔 숨은 문장",
+        "charCount": 12,
+        "detail": {
+          "bbox": {
+            "x": -80.0,
+            "y": 12.0,
+            "w": 40.0,
+            "h": 14.0
+          },
+          "pageSize": {
+            "w": 595.0,
+            "h": 842.0
+          }
+        }
+      }
+    ],
+    "hiddenCharCount": 12,
+    "clean": false
+  }
+}

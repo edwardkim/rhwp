@@ -8,8 +8,8 @@ pub const WILDCARD_ROW: u32 = u32::MAX;
 pub enum Token {
     /// 숫자 리터럴
     Number(f64),
-    /// 셀 참조 (col_char, row_num) — 예: ('A', 1), ('?', 3)
-    CellRef(char, u32),
+    /// 셀 참조 (column_name, row_num) — 예: ("A", 1), ("AA", 3), ("?", 3)
+    CellRef(String, u32),
     /// 함수 이름 (대문자)
     Function(String),
     /// 방향 지정자
@@ -103,32 +103,37 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                 _ => {}
             }
 
-            // 셀 참조: 1~2글자 열(A-Z/a-z 또는 ?) + 숫자(행) 또는 ?
-            // 예: A1, b3, ?1, A?, ??
-            if upper.len() >= 2 {
-                let first = upper.chars().next().unwrap();
-                let rest: String = upper[first.len_utf8()..].to_string();
-                if (first.is_ascii_alphabetic() || first == '?')
-                    && (rest.chars().all(|c| c.is_ascii_digit()) || rest == "?")
-                {
-                    // 행은 1부터 시작한다 (mydocs/plans/archives/task_370.md).
-                    // 와일드카드는 `?`만 인정하며, 내부적으로 WILDCARD_ROW로 구분한다.
-                    // 명시적으로 0행("A0")을 쓰는 것은 잘못된 입력이므로 셀 참조로
-                    // 인식하지 않고 아래 함수 이름 처리 경로로 넘긴다 (0이 와일드카드와
-                    // 충돌하여 현재 행으로 조용히 대체되는 것을 방지).
-                    let row = if rest == "?" {
-                        Some(WILDCARD_ROW)
-                    } else {
-                        match rest.parse::<u32>() {
-                            Ok(0) => None,
-                            Ok(n) => Some(n),
-                            Err(_) => None,
+            // 셀 참조: 한 글자 이상 열(A-Z, AA...) 또는 와일드카드 `?` + 행 숫자/`?`.
+            // 뒤에 `(`가 오면 LOG10(...) 같은 함수 이름이므로 셀 참조로 오인하지 않는다.
+            if i >= len || chars[i] != '(' {
+                let col_len = if upper.starts_with('?') {
+                    1
+                } else {
+                    upper
+                        .chars()
+                        .take_while(|c| c.is_ascii_alphabetic())
+                        .count()
+                };
+                if col_len > 0 && col_len < upper.len() {
+                    let col: String = upper.chars().take(col_len).collect();
+                    let rest: String = upper.chars().skip(col_len).collect();
+                    let valid_col = col == "?" || col.chars().all(|c| c.is_ascii_alphabetic());
+                    if valid_col && (rest.chars().all(|c| c.is_ascii_digit()) || rest == "?") {
+                        // 행은 1부터 시작한다 (mydocs/plans/archives/task_370.md).
+                        // 명시적 0행은 와일드카드와 혼동하지 않고 함수 이름 경로로 넘긴다.
+                        let row = if rest == "?" {
+                            Some(WILDCARD_ROW)
+                        } else {
+                            match rest.parse::<u32>() {
+                                Ok(0) => None,
+                                Ok(n) => Some(n),
+                                Err(_) => None,
+                            }
+                        };
+                        if let Some(row) = row {
+                            tokens.push(Token::CellRef(col, row));
+                            continue;
                         }
-                    };
-                    if let Some(row) = row {
-                        let col_char = if first == '?' { '?' } else { first };
-                        tokens.push(Token::CellRef(col_char, row));
-                        continue;
                     }
                 }
             }
@@ -174,7 +179,11 @@ mod tests {
         let tokens = tokenize("=A1+B3");
         assert_eq!(
             tokens,
-            vec![Token::CellRef('A', 1), Token::Plus, Token::CellRef('B', 3),]
+            vec![
+                Token::CellRef("A".into(), 1),
+                Token::Plus,
+                Token::CellRef("B".into(), 3),
+            ]
         );
     }
 
@@ -186,9 +195,9 @@ mod tests {
             vec![
                 Token::Function("SUM".into()),
                 Token::LParen,
-                Token::CellRef('A', 1),
+                Token::CellRef("A".into(), 1),
                 Token::Colon,
-                Token::CellRef('B', 5),
+                Token::CellRef("B".into(), 5),
                 Token::RParen,
             ]
         );
@@ -212,7 +221,7 @@ mod tests {
     fn test_complex_formula() {
         let tokens = tokenize("=a1+(b3-3)*2+sum(a1:b5,avg(c3,e5-3))");
         assert!(tokens.len() > 10);
-        assert_eq!(tokens[0], Token::CellRef('A', 1));
+        assert_eq!(tokens[0], Token::CellRef("A".into(), 1));
         assert_eq!(tokens[1], Token::Plus);
     }
 
@@ -224,9 +233,9 @@ mod tests {
             vec![
                 Token::Function("SUM".into()),
                 Token::LParen,
-                Token::CellRef('?', 1),
+                Token::CellRef("?".into(), 1),
                 Token::Colon,
-                Token::CellRef('?', 3),
+                Token::CellRef("?".into(), 3),
                 Token::RParen,
             ]
         );

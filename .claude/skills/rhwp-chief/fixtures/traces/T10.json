@@ -1,0 +1,23 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "id": "T10",
+ "kind": "T_diag",
+ "region": "서울",
+ "goal": "diagnose",
+ "goalFieldPresent": false,
+ "triage": "resolve-now",
+ "status": "done",
+ "stop": null,
+ "steps": [
+  "default-diagnose"
+ ]
+}

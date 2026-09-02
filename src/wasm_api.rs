@@ -42,8 +42,8 @@ use crate::renderer::style_resolver::{
 use crate::renderer::svg::SvgRenderer;
 use crate::renderer::DEFAULT_DPI;
 
-/// 어떤 렌더 export 가 Subsecond 핫패치 경계 뒤에 있는지 선언하는 곳 (#4577).
-mod subsecond_boundary;
+/// 어떤 렌더 export가 교체 가능한 경계 뒤에 있는지 선언하는 곳 (#4577, #4642).
+mod render_patch_boundary;
 
 impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
@@ -214,13 +214,12 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
     use crate::renderer::render_tree::BoundingBox;
     use crate::renderer::web_canvas::WebCanvasRenderer;
 
-    let BoundingBox {
-        x,
-        y,
-        width,
-        height,
-    } = patch;
-    if ![x, y, width, height].into_iter().all(f64::is_finite) || width <= 0.0 || height <= 0.0 {
+    if ![patch.x, patch.y, patch.width, patch.height]
+        .into_iter()
+        .all(f64::is_finite)
+        || patch.width <= 0.0
+        || patch.height <= 0.0
+    {
         return Err(JsValue::from_str("invalid page patch rectangle"));
     }
 
@@ -241,10 +240,10 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
         ));
     }
 
-    let left = x.max(0.0).min(tree.page_width);
-    let top = y.max(0.0).min(tree.page_height);
-    let right = (x + width).max(left).min(tree.page_width);
-    let bottom = (y + height).max(top).min(tree.page_height);
+    let left = patch.x.max(0.0).min(tree.page_width);
+    let top = patch.y.max(0.0).min(tree.page_height);
+    let right = (patch.x + patch.width).max(left).min(tree.page_width);
+    let bottom = (patch.y + patch.height).max(top).min(tree.page_height);
     if right <= left || bottom <= top {
         return Err(JsValue::from_str(
             "page patch rectangle does not intersect the page",
@@ -266,6 +265,7 @@ fn get_page_layer_tree_with_profile_impl(
     page_num: u32,
     profile: &str,
     omit_image_bytes: bool,
+    omit_font_bytes: bool,
 ) -> Result<String, JsValue> {
     let profile = crate::paint::RenderProfile::parse(profile)
         .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
@@ -273,7 +273,10 @@ fn get_page_layer_tree_with_profile_impl(
         .get_page_layer_tree_with_options_native(
             page_num,
             profile,
-            crate::paint::LayerJsonOptions { omit_image_bytes },
+            crate::paint::LayerJsonOptions {
+                omit_image_bytes,
+                omit_font_bytes,
+            },
         )
         .map_err(|error| error.into())
 }
@@ -630,6 +633,41 @@ impl HwpDocument {
         self.create_blank_document_native().map_err(|e| e.into())
     }
 
+    /// Browser/host font selection이 확정한 face bytes를 exact layout slot에 등록한다.
+    /// family 이름 재탐색 없이 `(charShapeId, languageIndex)`에 직접 결합한다.
+    #[wasm_bindgen(js_name = registerExactFontSource)]
+    pub fn register_exact_font_source(
+        &mut self,
+        char_shape_id: u32,
+        language_index: u32,
+        font_bytes: &[u8],
+        face_index: u32,
+    ) -> Result<String, JsValue> {
+        self.register_exact_font_source_native(
+            char_shape_id,
+            language_index as usize,
+            font_bytes,
+            face_index,
+        )
+        .map_err(JsValue::from)
+    }
+
+    /// 이미 등록된 exact font source slot에 명시 variable-font instance 요청을 설정한다.
+    /// JSON DTO의 검증·canonicalization·mutation 권위는 native command 한 곳에만 둔다.
+    #[wasm_bindgen(js_name = setExactFontInstance)]
+    pub fn set_exact_font_instance(&mut self, options_json: &str) -> Result<String, JsValue> {
+        self.set_exact_font_instance_native(options_json)
+            .map_err(JsValue::from)
+    }
+
+    /// exact slot 하나의 명시 variable-font instance 요청을 제거한다.
+    /// 없는 요청의 clear는 멱등이며 다른 slot의 요청을 건드리지 않는다.
+    #[wasm_bindgen(js_name = clearExactFontInstance)]
+    pub fn clear_exact_font_instance(&mut self, options_json: &str) -> Result<String, JsValue> {
+        self.clear_exact_font_instance_native(options_json)
+            .map_err(JsValue::from)
+    }
+
     /// 문단부호(¶) 표시 여부를 설정한다.
     #[wasm_bindgen(js_name = setShowParagraphMarks)]
     pub fn set_show_paragraph_marks(&mut self, enabled: bool) {
@@ -641,6 +679,23 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getShowParagraphMarks)]
     pub fn get_show_paragraph_marks(&self) -> bool {
         self.show_paragraph_marks
+    }
+
+    /// [#4709] SVG 출력에 배치 메트릭 face 주석을 붙일지 설정한다 (기본 꺼짐).
+    ///
+    /// 켜면 `renderPageSvg` 계열 출력의 각 `<text>`에 `data-metric-font`,
+    /// 루트 `<svg>`에 `data-rhwp-metric-fonts`(쉼표 구분 목록)가 붙는다.
+    /// 임베드 호스트가 해당 폰트 설치 여부 확인·대체 폰트 자간 보정에 쓴다.
+    /// 배치(레이아웃)에는 영향이 없는 뷰 전용 주석이다.
+    #[wasm_bindgen(js_name = setAnnotateMetricFont)]
+    pub fn set_annotate_metric_font(&mut self, enabled: bool) {
+        self.annotate_metric_font = enabled;
+    }
+
+    /// [#4709] SVG 메트릭 face 주석 부착 여부를 반환한다.
+    #[wasm_bindgen(js_name = getAnnotateMetricFont)]
+    pub fn get_annotate_metric_font(&self) -> bool {
+        self.annotate_metric_font
     }
 
     /// 조판부호 표시 여부를 반환한다.
@@ -772,6 +827,45 @@ impl HwpDocument {
         Ok(())
     }
 
+    /// 구역 첫 페이지에 요청한 머리말/꼬리말 정의를 가상 투영해 Canvas 2D로 렌더링한다.
+    ///
+    /// 일반 page tree cache와 pagination active target은 바꾸지 않는다. Studio는 결과 canvas를
+    /// 머리말/꼬리말 밴드에만 clip해 편집 중 비인쇄 overlay로 사용한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = renderHeaderFooterEditPreviewToCanvas)]
+    pub fn render_header_footer_edit_preview_to_canvas(
+        &self,
+        page_num: u32,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        canvas: &HtmlCanvasElement,
+        scale: f64,
+    ) -> Result<(), JsValue> {
+        use crate::renderer::web_canvas::WebCanvasRenderer;
+
+        let tree = self
+            .build_header_footer_edit_preview_tree(
+                page_num,
+                section_idx as usize,
+                is_header,
+                apply_to,
+            )
+            .map_err(JsValue::from)?;
+        let scale = normalize_canvas_scale(tree.root.bbox.width, tree.root.bbox.height, scale)
+            .map_err(JsValue::from_str)?;
+
+        canvas.set_width(scaled_canvas_extent(tree.root.bbox.width, scale));
+        canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
+
+        let mut renderer = WebCanvasRenderer::new(canvas)?;
+        renderer.show_paragraph_marks = self.show_paragraph_marks;
+        renderer.show_control_codes = self.show_control_codes;
+        renderer.set_scale(scale);
+        renderer.render_tree(&tree);
+        Ok(())
+    }
+
     /// 다층 레이어 필터를 적용한 Canvas 렌더링 (Task #516, Stage 5.2).
     ///
     /// `layer_kind`:
@@ -808,7 +902,7 @@ impl HwpDocument {
         layer_kind: &str,
         profile: &str,
     ) -> Result<(), JsValue> {
-        subsecond_boundary::render_page_to_canvas_filtered_with_profile(
+        render_patch_boundary::render_page_to_canvas_filtered_with_profile(
             self, page_num, canvas, scale, layer_kind, profile,
         )
     }
@@ -834,7 +928,7 @@ impl HwpDocument {
     ) -> Result<(), JsValue> {
         use crate::renderer::render_tree::BoundingBox;
 
-        subsecond_boundary::render_page_patch_to_canvas_filtered_with_profile(
+        render_patch_boundary::render_page_patch_to_canvas_filtered_with_profile(
             self,
             page_num,
             canvas,
@@ -890,7 +984,7 @@ impl HwpDocument {
     /// 경계를 지나야 한다. PageRenderer 가 좁은 질의를 못 쓸 때 되돌아오는 경로다.
     #[wasm_bindgen(js_name = getPageLayerTree)]
     pub fn get_page_layer_tree(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_layer_tree_with_profile(page_num, "screen", Some(false))
+        self.get_page_layer_tree_with_profile(page_num, "screen", Some(false), Some(false))
     }
 
     /// 페이지 레이어 트리를 profile 별로 반환한다.
@@ -898,6 +992,9 @@ impl HwpDocument {
     /// [Task #3315] `omit_image_bytes` 를 `true` 로 주면 `sourceImageKey`를 낼 수 있는 그림만
     /// base64를 생략하고, 바이트는 `getSourceImageBytes(key)`로 따로 받는다. 키 없는 합성 그림은
     /// 소비자가 되찾을 방법이 없으므로 같은 `byKey` 요청에서도 인라인 base64를 유지한다.
+    /// [Task #4969] 네 번째 `omit_font_bytes`를 `true`로 주면 exact font metadata/key는
+    /// 유지하고 `resources.fontBlobs` payload만 생략한다. 바이트는
+    /// `getSourceFontBytes(key)`로 현재 document generation에서 따로 받는다.
     /// 인자를 생략하면(`undefined`) 그림 payload는 inline으로 유지하지만, schema minor 21과
     /// 최상위 `imageBytes:"inline"` 메타데이터가 있으므로 JSON 전체의 byte identity는 보장하지 않는다.
     #[wasm_bindgen(js_name = getPageLayerTreeWithProfile)]
@@ -906,41 +1003,56 @@ impl HwpDocument {
         page_num: u32,
         profile: &str,
         omit_image_bytes: Option<bool>,
+        omit_font_bytes: Option<bool>,
     ) -> Result<String, JsValue> {
         let omit_image_bytes = omit_image_bytes.unwrap_or(false);
-        subsecond_boundary::get_page_layer_tree_with_profile(
+        let omit_font_bytes = omit_font_bytes.unwrap_or(false);
+        render_patch_boundary::get_page_layer_tree_with_profile(
             self,
             page_num,
             profile,
             omit_image_bytes,
+            omit_font_bytes,
         )
     }
 
-    /// 선언된 모든 렌더 경계의 현재 함수 주소.
+    /// 지금 컴파일되어 있는 렌더 코드의 식별자. 값이 바뀌면 코드가 교체된 것이다.
     ///
-    /// 경계 목록(`subsecond_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
+    /// 소비자는 이 문자열을 해석하지 않고 이전 값과 비교만 한다. 오늘 그 값을 바꾸는 것은
+    /// Subsecond 핫패치뿐이지만, 이름은 그 사실이 아니라 소비자가 알아야 하는 것을 말한다 —
+    /// 벤더가 바뀌어도 "렌더 코드의 리비전"이라는 질문은 그대로다 (#4580). 벤더를 아는 곳은
+    /// 몸통이 부르는 `render_patch_boundary` 하나다.
+    ///
+    /// 값은 경계 목록(`render_patch_boundary`)에서 바로 나오므로 경계를 더할 때 여기를 같이 고칠
     /// 일이 없다 — 리비전이 경계 하나를 놓쳐 재도색이 안 도는 구멍이 생기지 않는다.
+    ///
+    /// 아래 재구성과 **한 쌍이다.** 리비전이 바뀐 것을 보고 재구성을 부르는 것이 TS 계약
+    /// (`rhwp-studio/src/core/subsecond-runtime.ts`)이므로 한쪽만 있는 빌드는 그 계약을 반만
+    /// 만족한다. 그래서 게이트도 둘이 같아야 한다 — 이 함수의 몸통이 wasm32 전용 경계를
+    /// 가리키므로 `wasm32` 가 조건에 들어가고, 짝인 재구성도 같은 조건을 쓴다.
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
-    #[cfg_attr(
-        feature = "subsecond-dev",
-        wasm_bindgen(js_name = getSubsecondPatchRevision)
-    )]
-    pub fn get_subsecond_patch_revision(&self) -> String {
-        subsecond_boundary::patch_revision()
+    #[wasm_bindgen(js_name = getRenderCodeRevision)]
+    pub fn get_render_code_revision(&self) -> String {
+        render_patch_boundary::patch_revision()
     }
 
-    /// 핫패치로 렌더러 코드가 교체됐을 때 문서의 파생 상태를 새 코드로 다시 만든다.
+    /// 바이트는 그대로인데 화면용으로 파생해 둔 것이 더는 원본과 대응하지 않을 때 다시 만든다.
+    ///
+    /// 몸통에 벤더는 없다 — `DocumentCore::rebuild_derived_state` 를 그대로 위임하고, 그 연산
+    /// 자체는 렌더 코드 교체 말고도 쓰일 수 있는 것이다. studio 가 같은 사건을 부르는 말도
+    /// `document-view-changed`("바이트는 안 바뀌었고 화면용으로 파생한 것이 바뀌었다")다.
+    /// 그래서 이름을 벤더가 아니라 그 어휘에 맞춘다 (#4580).
     ///
     /// `&mut self` 여야 한다. 페이지 트리 캐시만 비우면 다시 그리는 값은 새 코드가 내지만
     /// 그 값을 앉히는 페이지 박스와 문단 조합은 `pagination`·`composed`·측정 캐시에 남은
     /// 패치 이전 코드의 결과라, 소스의 어느 버전에도 대응하지 않는 화면이 나온다 (#4576).
     /// 그 셋은 모두 `&mut self` 를 요구하므로 `&self` 로는 계약 자체를 표현할 수 없다.
-    #[cfg(feature = "subsecond-dev")]
-    #[cfg_attr(
-        feature = "subsecond-dev",
-        wasm_bindgen(js_name = invalidateSubsecondRenderCaches)
-    )]
-    pub fn invalidate_subsecond_render_caches(&mut self) {
+    ///
+    /// 위 리비전 조회와 짝이라 게이트도 같다. 네이티브에는 호출부가 하나도 없다 — 몸통은
+    /// 타깃과 무관하지만, 이 export 를 부르는 계약 자체가 브라우저의 것이다 (#4580).
+    #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
+    #[wasm_bindgen(js_name = rebuildDerivedState)]
+    pub fn rebuild_derived_state(&mut self) {
         self.core.rebuild_derived_state();
     }
 
@@ -953,6 +1065,17 @@ impl HwpDocument {
     pub fn get_canvaskit_replay_plan(&self, page_num: u32, mode: &str) -> Result<String, JsValue> {
         self.get_canvaskit_replay_plan_native(page_num, mode)
             .map_err(|e| e.into())
+    }
+
+    /// 페이지의 bounded layout font decision trace를 JSON으로 반환한다 (#4961).
+    #[wasm_bindgen(js_name = getFontDecisionTrace)]
+    pub fn get_font_decision_trace(
+        &self,
+        page_num: u32,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        self.get_font_decision_trace_native(page_num, options_json)
+            .map_err(Into::into)
     }
 
     #[wasm_bindgen(js_name = getCanvasKitReplayPlanWithProfile)]
@@ -984,7 +1107,7 @@ impl HwpDocument {
     /// 페이지 overlay 이미지 정보만 JSON 문자열로 반환한다.
     #[wasm_bindgen(js_name = getPageOverlayImages)]
     pub fn get_page_overlay_images(&self, page_num: u32) -> Result<String, JsValue> {
-        subsecond_boundary::get_page_overlay_images(self, page_num)
+        render_patch_boundary::get_page_overlay_images(self, page_num)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -1000,7 +1123,7 @@ impl HwpDocument {
     /// 있고 `sourceImageKey` 로 `getSourceImageBytes` 를 부르면 된다.
     #[wasm_bindgen(js_name = getPageFlowImageOps)]
     pub fn get_page_flow_image_ops(&self, page_num: u32) -> Result<String, JsValue> {
-        subsecond_boundary::get_page_flow_image_ops(self, page_num)
+        render_patch_boundary::get_page_flow_image_ops(self, page_num)
     }
 
     /// 그림 신원 키로 바이트를 Uint8Array 로 반환한다 (Task #3315).
@@ -1019,6 +1142,16 @@ impl HwpDocument {
                 "unresolvable source image key: {key}"
             ))),
         }
+    }
+
+    /// Portable font resource key로 exact source bytes를 Uint8Array로 반환한다 (Task #4969).
+    ///
+    /// `getPageLayerTreeWithProfile(page, profile, imageMode, true)`의 opt-in 경로다.
+    /// key가 현재 document generation의 registry source와 정확히 일치하지 않으면 던진다.
+    #[wasm_bindgen(js_name = getSourceFontBytes)]
+    pub fn get_source_font_bytes(&self, key: &str) -> Result<Vec<u8>, JsValue> {
+        self.get_source_font_bytes_native(key)
+            .ok_or_else(|| JsValue::from_str(&format!("unresolvable source font key: {key}")))
     }
 
     /// 페이지 정보를 JSON 문자열로 반환한다.
@@ -1800,7 +1933,7 @@ impl HwpDocument {
 
     /// 머리말/꼬리말 문단 정보 조회
     ///
-    /// 반환: JSON `{"ok":true,"paraCount":N,"charCount":N}`
+    /// 반환: JSON `{"ok":true,"paraCount":N,"charCount":N,"text":"..."}`
     #[wasm_bindgen(js_name = getHeaderFooterParaInfo)]
     pub fn get_header_footer_para_info(
         &self,
@@ -1814,6 +1947,105 @@ impl HwpDocument {
             is_header,
             apply_to,
             hf_para_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 머리말/꼬리말 선택 범위를 평문으로 원자 치환한다.
+    #[wasm_bindgen(js_name = replaceRangeInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn replace_range_in_header_footer(
+        &mut self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+        replacement_text: &str,
+    ) -> Result<String, JsValue> {
+        self.replace_range_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
+            replacement_text,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 머리말/꼬리말 선택 범위를 내부 클립보드에 복사한다.
+    #[wasm_bindgen(js_name = copySelectionInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn copy_selection_in_header_footer(
+        &mut self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.copy_selection_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 머리말/꼬리말 캐럿 위치의 글자 속성을 조회한다.
+    #[wasm_bindgen(js_name = getCharPropertiesInHeaderFooter)]
+    pub fn get_char_properties_in_header_footer(
+        &self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        hf_para_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.get_char_properties_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            hf_para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 머리말/꼬리말 선택 범위에 글자 서식을 적용한다.
+    #[wasm_bindgen(js_name = applyCharFormatInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_char_format_in_header_footer(
+        &mut self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_char_format_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
+            props_json,
         )
         .map_err(|e| e.into())
     }
@@ -2700,7 +2932,8 @@ impl HwpDocument {
 
     /// 머리말/꼬리말 내 커서 위치의 픽셀 좌표를 반환한다.
     ///
-    /// preferred_page: 선호 페이지 (더블클릭한 페이지). -1이면 첫 번째 발견 페이지 사용.
+    /// `preview_page_hint`: 편집 정의를 투영할 대표 페이지 힌트. Studio는 구역의 첫 페이지를
+    /// 전달한다. 음수이면 호환 경로로 실제 적용 페이지를 앞에서부터 찾는다.
     /// 반환: JSON `{"pageIndex":N,"x":F,"y":F,"height":F}`
     #[wasm_bindgen(js_name = getCursorRectInHeaderFooter)]
     pub fn get_cursor_rect_in_header_footer(
@@ -2710,7 +2943,7 @@ impl HwpDocument {
         apply_to: u8,
         hf_para_idx: u32,
         char_offset: u32,
-        preferred_page: i32,
+        preview_page_hint: i32,
     ) -> Result<String, JsValue> {
         self.get_cursor_rect_in_header_footer_native(
             section_idx as usize,
@@ -2718,7 +2951,34 @@ impl HwpDocument {
             apply_to,
             hf_para_idx as usize,
             char_offset as usize,
-            preferred_page,
+            preview_page_hint,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 요청한 한 페이지의 머리말/꼬리말 선택 사각형을 반환한다.
+    #[wasm_bindgen(js_name = getSelectionRectsInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn get_selection_rects_in_header_footer(
+        &self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        page_num: u32,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.get_selection_rects_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            page_num,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
         )
         .map_err(|e| e.into())
     }
@@ -2746,6 +3006,13 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 머리말/꼬리말 정의가 속한 구역의 대표 편집 페이지(구역 첫 페이지)를 반환한다.
+    #[wasm_bindgen(js_name = getHeaderFooterPreviewPage)]
+    pub fn get_header_footer_preview_page(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.get_header_footer_preview_page_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
     /// 머리말/꼬리말 내부 텍스트 히트테스트.
     ///
     /// 편집 모드에서 클릭한 좌표의 문단·문자 위치를 반환.
@@ -2760,6 +3027,28 @@ impl HwpDocument {
     ) -> Result<String, JsValue> {
         self.hit_test_in_header_footer_native(page_num, is_header, x, y)
             .map_err(|e| e.into())
+    }
+
+    /// 대표 편집 페이지에서 명시한 HF target으로 내부 텍스트를 히트테스트한다.
+    #[wasm_bindgen(js_name = hitTestInHeaderFooterTarget)]
+    pub fn hit_test_in_header_footer_target(
+        &self,
+        page_num: u32,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        x: f64,
+        y: f64,
+    ) -> Result<String, JsValue> {
+        self.hit_test_in_header_footer_target_native(
+            page_num,
+            section_idx as usize,
+            is_header,
+            apply_to,
+            x,
+            y,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 머리말/꼬리말 문단의 문단 속성을 조회한다.
@@ -3053,7 +3342,9 @@ impl HwpDocument {
 
     /// 셀 속성을 수정한다.
     ///
-    /// 반환: JSON `{"ok":true}`
+    /// 반환: JSON `{"ok":true,"changes":[{cellIdx,beforeId,afterId}...],
+    /// "borderFillLenBefore":N,"docInfoDirtyBefore":bool}` — changes 는 [#5959]
+    /// borderFillId 전환 기록(target+이웃)이다.
     #[wasm_bindgen(js_name = setCellProperties)]
     pub fn set_cell_properties(
         &mut self,
@@ -3075,7 +3366,8 @@ impl HwpDocument {
 
     /// 선택 영역을 하나의 셀처럼 취급하는 cellzone 테두리/배경 속성을 적용한다.
     ///
-    /// 반환: JSON `{"ok":true,"startRow":...,"borderFillId":...}`
+    /// 반환: JSON `{"ok":true,"startRow":...,"borderFillId":...,"zoneBeforeId":...,
+    /// "borderFillLenBefore":...,"docInfoDirtyBefore":...}`
     #[wasm_bindgen(js_name = setCellZoneProperties)]
     pub fn set_cell_zone_properties(
         &mut self,
@@ -3099,6 +3391,40 @@ impl HwpDocument {
             json,
         )
         .map_err(|e| e.into())
+    }
+
+    /// [#5959] 셀/zone border_fill_id 직접 대입 (undo·redo 전용).
+    ///
+    /// 스타일 테이블을 건드리지 않고 execute 의 변경 기록을 되돌린다.
+    /// json: `{"cells":[{"cellIdx":0,"id":3}],"zones":[{"startRow":..,"startCol":..,
+    /// "endRow":..,"endCol":..,"id":5}]}` — zone `id` 가 null 이면 그 범위의 zone 을
+    /// 제거한다. 반환: JSON `{"ok":true}`
+    #[wasm_bindgen(js_name = applyCellBorderFillIds)]
+    pub fn apply_cell_border_fill_ids(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_cell_border_fill_ids_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [#5959] 이번 apply 가 push 한 BorderFill 꼬리 항목을 절단한다.
+    ///
+    /// json: `{"fromLen":12,"dirtyWas":false}` — `from_len` 위 항목을 모두 잘라내고,
+    /// 원래 길이로 돌아왔으면 dirty 플래그를 `dirtyWas` 로 원복한다.
+    /// 반환: JSON `{"ok":true,"discarded":N,"fullyDiscarded":bool}`
+    #[wasm_bindgen(js_name = removeBorderFillTails)]
+    pub fn remove_border_fill_tails(&mut self, json: &str) -> Result<String, JsValue> {
+        self.remove_border_fill_tails_native(json)
+            .map_err(|e| e.into())
     }
 
     /// 여러 셀의 width/height를 한 번에 조절한다 (배치).
@@ -3747,6 +4073,72 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// [#4694] 문서의 모든 차트를 문서 순서로 열거한다.
+    ///
+    /// 반환: JSON `[{ index, section, paragraph, control, container?, zipPart?, nestedCopy? }]`
+    /// studio 는 이 목록을 선택 컨트롤과 대조해 정본 주소(문서 순번)를 얻는다.
+    #[wasm_bindgen(js_name = listCharts)]
+    pub fn list_charts(&self) -> Result<String, JsValue> {
+        self.list_charts_native().map_err(|e| e.into())
+    }
+
+    /// [#4694] 본문 직속 차트의 숫자 데이터를 조회한다 (3인자 주소).
+    ///
+    /// 컨테이너(글상자·표 셀·머리말) 안 차트는 이 주소로 표현할 수 없다 —
+    /// `getChartDataByIndex` 를 쓴다.
+    #[wasm_bindgen(js_name = getChartData)]
+    pub fn get_chart_data(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.get_chart_data_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [#4694] 문서 순번(0-based)으로 차트 데이터를 조회한다 — 정본 주소.
+    #[wasm_bindgen(js_name = getChartDataByIndex)]
+    pub fn get_chart_data_by_index(&self, index: u32) -> Result<String, JsValue> {
+        self.get_chart_data_by_index_native(index as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// [#4694] 본문 직속 차트의 숫자 데이터를 바꾼다 (3인자 주소).
+    ///
+    /// 반환: `{ok, chart, changedCount, changed[], wrote[]}` 또는 `{ok:false, invalid[]}`.
+    #[wasm_bindgen(js_name = setChartData)]
+    pub fn set_chart_data(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        edits_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_chart_data_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            edits_json,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// [#4694] 문서 순번(0-based)으로 차트 데이터를 바꾼다 — 정본 주소.
+    #[wasm_bindgen(js_name = setChartDataByIndex)]
+    pub fn set_chart_data_by_index(
+        &mut self,
+        index: u32,
+        edits_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_chart_data_by_index_native(index as usize, edits_json)
+            .map_err(|e| e.into())
+    }
+
     /// [Task #1138] 표 셀 내 Shape(글상자/사각형/도형) 속성 조회 (by_path).
     #[wasm_bindgen(js_name = getCellShapePropertiesByPath)]
     pub fn get_cell_shape_properties_by_path(
@@ -4144,6 +4536,9 @@ impl HwpDocument {
 
     /// Shape z-order 변경
     /// operation: "front" | "back" | "forward" | "backward"
+    /// 반환: `{"ok":true,"zOrder":N,"moves":[{"ppi","ci","before","after"}...]}`
+    /// [#5769 후속] moves 는 실제로 대입된 (대상+교환 이웃) before/after 쌍이다 —
+    /// SetZOrderCommand 가 undo/redo 절대 복원 쌍으로 소비한다.
     #[wasm_bindgen(js_name = changeShapeZOrder)]
     pub fn change_shape_z_order(
         &mut self,
@@ -4159,6 +4554,19 @@ impl HwpDocument {
             operation,
         )
         .map_err(|e| e.into())
+    }
+
+    /// Shape z 순서 절대 대입(#5769 후속) — 속성쌍 커맨드의 undo/redo 경로.
+    /// pairs_json: `[{"ppi":N,"ci":N,"z":N},...]`
+    /// 반환: JSON `{"ok":true,"applied":N}`
+    #[wasm_bindgen(js_name = applyShapeZOrderPairs)]
+    pub fn apply_shape_z_order_pairs(
+        &mut self,
+        section_idx: u32,
+        pairs_json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_shape_z_order_pairs_native(section_idx as usize, pairs_json)
+            .map_err(|e| e.into())
     }
 
     /// 선택된 개체들을 하나의 GroupShape로 묶는다.
@@ -6583,6 +6991,60 @@ impl HwpDocument {
         self.discard_snapshot_native(id)
     }
 
+    /// 삭제 직전 문단 범위 원본을 조각으로 보관한다 (#5769).
+    ///
+    /// 반드시 `deleteRangeNative` 호출 **전**에 불린다. 반환 조각 ID 는
+    /// `restoreDeleteFragment`/`discardDeleteFragment` 에 쓴다.
+    #[wasm_bindgen(js_name = captureDeleteRange)]
+    pub fn capture_delete_range(
+        &mut self,
+        section_idx: usize,
+        start_para: usize,
+        end_para: usize,
+    ) -> Result<u32, JsValue> {
+        self.capture_delete_range_native(section_idx, start_para, end_para)
+            .map_err(|e| e.into())
+    }
+
+    /// 삭제 조각을 원래 자리에 되돌려 끼운다 — 삭제의 참 역연산 (#5769).
+    ///
+    /// 스냅샷 복원과 달리 문서 전체가 아니라 삭제 범위+꼬리 줄 좌표만 되돌린다.
+    /// 성공 시 조각은 소비(제거)된다.
+    #[wasm_bindgen(js_name = restoreDeleteFragment)]
+    pub fn restore_delete_fragment(&mut self, id: u32) -> Result<String, JsValue> {
+        self.restore_delete_fragment_native(id)
+            .map_err(|e| e.into())
+    }
+
+    /// 삭제 조각을 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 시 스냅샷
+    /// `discardSnapshot` 과 짝으로 호출한다(#5769).
+    #[wasm_bindgen(js_name = discardDeleteFragment)]
+    pub fn discard_delete_fragment(&mut self, id: u32) {
+        self.discard_delete_fragment_native(id)
+    }
+
+    /// 속성 변경 직전 구역 raw 스트림+봉인을 보관한다 (#5769 Stage 4).
+    ///
+    /// 반드시 `setSectionDef` 호출 **전**에 불린다. 반환 ID 는
+    /// `restoreSectionRaw`/`discardSectionRaw` 에 쓴다.
+    #[wasm_bindgen(js_name = captureSectionRaw)]
+    pub fn capture_section_raw(&mut self, section_idx: usize) -> Result<u32, JsValue> {
+        self.capture_section_raw_native(section_idx)
+            .map_err(|e| e.into())
+    }
+
+    /// 캡처한 구역 raw 를 되돌린다 — old 속성 재적용(재무효화) **뒤** 에 불린다 (#5769 Stage 4).
+    #[wasm_bindgen(js_name = restoreSectionRaw)]
+    pub fn restore_section_raw(&mut self, id: u32) -> Result<String, JsValue> {
+        self.restore_section_raw_native(id).map_err(|e| e.into())
+    }
+
+    /// 구역 raw 캡처를 제거하여 메모리를 해제한다 — 히스토리 축출·클리어 계약 (#5769 Stage 4).
+    #[wasm_bindgen(js_name = discardSectionRaw)]
+    pub fn discard_section_raw(&mut self, id: u32) {
+        self.discard_section_raw_native(id)
+    }
+
     /// 캐럿 위치의 글자 속성을 조회한다.
     ///
     /// 반환값: JSON 객체 (fontFamily, fontSize, bold, italic, underline, strikethrough, textColor 등)
@@ -6959,10 +7421,7 @@ impl HwpDocument {
         self.core.document.doc_info.raw_stream_dirty = true;
         let new_id = (self.core.document.doc_info.styles.len() - 1) as i32;
         // 스타일 캐시 갱신
-        self.core.styles = crate::renderer::style_resolver::resolve_styles(
-            &self.core.document.doc_info,
-            self.core.dpi,
-        );
+        self.core.rebuild_resolved_styles();
         new_id
     }
 
@@ -7007,10 +7466,7 @@ impl HwpDocument {
             }
         }
         // 스타일 캐시 갱신
-        self.core.styles = crate::renderer::style_resolver::resolve_styles(
-            &self.core.document.doc_info,
-            self.core.dpi,
-        );
+        self.core.rebuild_resolved_styles();
         // DocInfo(styles 목록)와 문단 style_id 가 함께 바뀌었으므로 저장 스트림을 무효화한다.
         // raw_stream_dirty 미설정 시 DocInfo 가, 섹션 raw_stream 잔존 시 본문이 각각 원본
         // 바이트로 재방출돼 스타일 삭제·문단 재배정이 .hwp 저장에서 유실된다.
@@ -8218,6 +8674,12 @@ impl HwpViewer {
     #[wasm_bindgen(js_name = renderPageSvg)]
     pub fn render_page_svg(&self, page_num: u32) -> Result<String, JsValue> {
         self.document.render_page_svg(page_num)
+    }
+
+    /// [#4709] SVG 출력에 배치 메트릭 face 주석을 붙일지 설정한다 (기본 꺼짐).
+    #[wasm_bindgen(js_name = setAnnotateMetricFont)]
+    pub fn set_annotate_metric_font(&mut self, enabled: bool) {
+        self.document.set_annotate_metric_font(enabled);
     }
 
     /// 명시적인 출력 profile로 특정 페이지 SVG 렌더링

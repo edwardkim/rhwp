@@ -8,8 +8,8 @@
 use crate::document_core::queries::field_query::{
     caret_stops, cell_path_to_list, char_idx_at_stream_pos, cursor_paragraph, json_escape,
     leading_anchor_pos, root_para_count, root_para_location, root_para_of, select_start_pos,
-    shape_lists, stream_len, stream_pos, word_end_from, word_starts, ListEntry,
-    EXTENDED_CTRL_UNITS, ROOT_LIST_ID,
+    shape_lists, stream_len, word_end_from, word_starts, ListEntry, EXTENDED_CTRL_UNITS,
+    ROOT_LIST_ID,
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
@@ -1950,36 +1950,55 @@ impl DocumentCore {
         };
         let (sec, para_idx) = root_para_location(self, para_in_list)
             .ok_or_else(|| HwpError::InvalidField(format!("본문 문단 {} 없음", para_in_list)))?;
-        let section = self
-            .document
-            .sections
-            .get_mut(sec)
-            .ok_or_else(|| HwpError::InvalidField(format!("구역 {} 없음", sec)))?;
-        let para = section
-            .paragraphs
-            .get_mut(para_idx)
-            .ok_or_else(|| HwpError::InvalidField(format!("문단 {} 없음", para_idx)))?;
-
-        // 컨트롤은 문단 안에서 **글자 차례대로** 놓인다 — 앞선 컨트롤 수가 끼울 자리다.
-        let control_index = para
-            .control_text_positions()
-            .iter()
-            .filter(|p| **p < char_idx)
-            .count();
-        // 자리표 글자는 문단이 스스로 넣게 둔다 — `char_offsets`·`char_shapes`·`line_segs` 를
-        // 함께 갱신해 준다. 여기서 지우거나 직접 만지면 `control_text_positions` 가 이 컨트롤을
-        // 문단 맨 앞으로 오해해 캐럿 클램프까지 어긋난다(실제로 한 번 그랬다).
-        para.insert_text_at(char_idx, " ");
-        para.controls.insert(
-            control_index,
-            Control::AutoNumber(AutoNumber {
-                number_type,
-                ..Default::default()
-            }),
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[sec].paragraphs[para_idx],
         );
-        // 글자 한 칸은 `insert_text_at` 이 이미 셌다 — 컨트롤 몫 일곱만 더한다(합 8칸).
-        para.char_count += (EXTENDED_CTRL_UNITS - 1) as u32;
-        section.raw_stream = None;
+        {
+            let section = self
+                .document
+                .sections
+                .get_mut(sec)
+                .ok_or_else(|| HwpError::InvalidField(format!("구역 {} 없음", sec)))?;
+            let para = section
+                .paragraphs
+                .get_mut(para_idx)
+                .ok_or_else(|| HwpError::InvalidField(format!("문단 {} 없음", para_idx)))?;
+
+            // 컨트롤은 문단 안에서 **글자 차례대로** 놓인다 — 앞선 컨트롤 수가 끼울 자리다.
+            let control_index = para
+                .control_text_positions()
+                .iter()
+                .filter(|p| **p < char_idx)
+                .count();
+            // 자리표 글자는 문단이 스스로 넣게 둔다 — `char_offsets`·`char_shapes`·`line_segs` 를
+            // 함께 갱신해 준다. 여기서 지우거나 직접 만지면 `control_text_positions` 가 이 컨트롤을
+            // 문단 맨 앞으로 오해해 캐럿 클램프까지 어긋난다(실제로 한 번 그랬다).
+            para.insert_text_at(char_idx, " ");
+            para.controls.insert(
+                control_index,
+                Control::AutoNumber(AutoNumber {
+                    number_type,
+                    ..Default::default()
+                }),
+            );
+            // 글자 한 칸은 `insert_text_at` 이 이미 셌다 — 컨트롤 몫 일곱만 더한다(합 8칸).
+            para.char_count += (EXTENDED_CTRL_UNITS - 1) as u32;
+            section.raw_stream = None;
+        }
+
+        self.reflow_paragraph(sec, para_idx);
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[sec].paragraphs,
+            para_idx,
+            None,
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
+        self.recompose_section(sec);
+        self.paginate();
         Ok(r#"{"ok":true}"#.to_string())
     }
 
@@ -2464,9 +2483,77 @@ mod tests {
     /// 없는 자리를 물으면 빈 셋이다 — 0 으로 채우면 "모른다"와 "0이다"가 뭉개진다.
     #[test]
     fn missing_cursor_gives_empty_set() {
+        auto_number_insertion_publishes_the_new_wrap_before_render_and_save();
         let core = DocumentCore::new_empty();
         assert_eq!(core.para_shape_set_json(ROOT_LIST_ID, 99), "{}");
         assert_eq!(core.char_shape_set_json(ROOT_LIST_ID, 99, 0), "{}");
+    }
+
+    fn auto_number_insertion_publishes_the_new_wrap_before_render_and_save() {
+        let text = "A".repeat(20);
+        let mut paragraph = Paragraph {
+            text: text.clone(),
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            char_count: text.chars().count() as u32 + 1,
+            char_shapes: vec![crate::model::paragraph::CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            ..Default::default()
+        };
+        let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+        let composed = crate::renderer::composer::compose_paragraph(&paragraph);
+        let measured =
+            crate::renderer::composer::estimate_composed_line_width(&composed.lines[0], &styles);
+        let width_hwp = crate::renderer::px_to_hwpunit(measured + 1.0, 96.0).max(1);
+        paragraph.line_segs = vec![crate::model::paragraph::LineSeg {
+            text_start: 0,
+            line_height: 1_000,
+            segment_width: width_hwp,
+            tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            ..Default::default()
+        }];
+
+        let mut core = DocumentCore::new_empty();
+        core.document.sections = vec![Section {
+            section_def: crate::model::document::SectionDef {
+                page_def: crate::model::page::PageDef {
+                    width: width_hwp as u32,
+                    height: 84_188,
+                    margin_left: 0,
+                    margin_right: 0,
+                    margin_top: 0,
+                    margin_bottom: 0,
+                    margin_header: 0,
+                    margin_footer: 0,
+                    margin_gutter: 0,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![paragraph],
+            ..Default::default()
+        }];
+        core.styles = styles;
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+        core.recompose_section(0);
+        core.paginate();
+
+        core.insert_auto_number_at_cursor(ROOT_LIST_ID, 0, 10, "page")
+            .expect("auto number insertion succeeds");
+        let paragraph = &core.document.sections[0].paragraphs[0];
+        assert!(paragraph.line_segs.len() > 1);
+        assert!(!paragraph.stored_text_partition_is_dirty());
+        assert!(!core.pagination.is_empty());
+
+        let bytes = crate::serializer::body_text::serialize_section(&core.document.sections[0]);
+        let parsed = crate::parser::body_text::parse_body_text_section(&bytes).unwrap();
+        assert_eq!(
+            parsed.paragraphs[0].line_segs.len(),
+            paragraph.line_segs.len()
+        );
     }
 
     /// TEXT는 CP949 밖 글자를 수치 참조로 바꾸고 UNICODE는 원문을 보존한다.

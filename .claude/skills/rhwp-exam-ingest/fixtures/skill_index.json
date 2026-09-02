@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5319,
+  "skill": "rhwp-exam-ingest",
+  "notGym": true,
+  "noNewCli": true,
+  "noNewExamPaperLogic": true,
+  "forbiddenSkillsTouch": [
+    "rhwp-form-fill",
+    "rhwp-table-exchange",
+    "rhwp-onboarding",
+    "rhwp-safe-edit",
+    "rhwp-doc-triage"
+  ],
+  "references": [
+    "00_tree.md",
+    "01_input_normalize.md",
+    "02_pdf_to_pngs.md",
+    "03_extract_docx.md",
+    "04_image_passthrough.md",
+    "05_md_image_refs.md",
+    "06_ingest_schema_v1.md",
+    "07_passages_questions.md",
+    "08_stem_blocks_boxed.md",
+    "09_media_placement.md",
+    "10_auto_number.md",
+    "11_crop_bbox.md",
+    "12_build_from_ingest.md",
+    "13_check_deps.md",
+    "14_failure_envelopes.md",
+    "15_known_limits.md",
+    "16_pitfalls.md",
+    "17_sample_transcripts.md",
+    "18_verify_gate.md",
+    "19_intent_matrix.md",
+    "20_exit_codes.md",
+    "README.md"
+  ]
+}

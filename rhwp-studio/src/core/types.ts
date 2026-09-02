@@ -7,12 +7,17 @@ export interface DocumentInfo {
   hwp3Variant?: boolean;
   fallbackFont: string;
   fontsUsed: string[];  // 문서에서 사용하는 폰트 이름 목록
+  /** HWPX non-embedded substFont: [원본 face, 문서 선언 대체 face]. */
+  fontSubstitutions?: Array<[string, string]>;
 }
 
 /** WASM getPageInfo() 반환 타입 */
 export interface PageInfo {
   pageIndex: number;
-  /** 조판 기준으로 계산된 표시용 쪽 번호(구역 설정 반영) */
+  /** 문서가 매기는 쪽번호 (1-based, `쪽 > 새 번호로 시작` 반영).
+   *
+   * 물리 순번(pageIndex + 1)과 다를 수 있다 — 상태 표시줄이 보여야 할 숫자는 이쪽이다.
+   * 구 WASM 은 이 필드를 내보내지 않으므로 optional 이다 (#5749). */
   pageNumber?: number;
   width: number;
   height: number;
@@ -29,6 +34,20 @@ export interface PageInfo {
   marginHeader: number;
   /** 꼬리말 여백 (px) */
   marginFooter: number;
+  /** 렌더러가 사용하는 정확한 머리말/꼬리말 영역 (px, 페이지 좌표). */
+  headerArea?: { x: number; y: number; width: number; height: number };
+  footerArea?: { x: number; y: number; width: number; height: number };
+  /** 본문 상자의 왼쪽/오른쪽 (px, 페이지 좌표).
+   *
+   * marginLeft/marginRight 는 PageDef 원본이라 제본 여백이 빠져 있고 맞쪽 제본 짝수 쪽의
+   * 좌우 뒤바꿈도 반영되지 않는다. 그리기·히트테스트처럼 "본문이 실제로 어디부터인가"가
+   * 필요한 곳은 이 둘을 쓴다 (#4971). */
+  bodyLeft: number;
+  bodyRight: number;
+  /** 제본 여백 (px) — 본문 왼쪽 경계에 더해져 있다 */
+  marginGutter?: number;
+  /** 맞쪽 제본의 짝수 쪽인가 — 그 쪽은 좌우 여백이 뒤바뀌어 적용된다 */
+  bindingMirrored?: boolean;
   /** 쪽 테두리/쪽 영역 왼쪽 위치 (px) */
   pageBorderLeft?: number;
   /** 쪽 테두리/쪽 영역 오른쪽 여백 (px) */
@@ -793,6 +812,10 @@ export interface SearchResult {
     cellIdx: number;
     cellPara: number;
   };
+  /** 중첩 표/글상자 매치의 전체 경로 */
+  cellPath?: CellPathEntry[];
+  /** 수식 스크립트 매치 시 문단 controls 안의 Equation 인덱스 */
+  equationControl?: number;
 }
 
 /** 전체 검색 결과 항목 */
@@ -809,6 +832,10 @@ export interface SearchHit {
     cellIdx: number;
     cellPara: number;
   };
+  /** 중첩 표/글상자 매치의 전체 경로 */
+  cellPath?: CellPathEntry[];
+  /** 수식 스크립트 매치 시 문단 controls 안의 Equation 인덱스 */
+  equationControl?: number;
 }
 
 /** 치환 결과 */
@@ -1080,6 +1107,7 @@ export interface LayerPageBackgroundOp {
   backgroundColor?: string;
   borderColor?: string;
   borderWidth?: number;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerTextStyle {
@@ -1174,6 +1202,20 @@ export interface LayerFootnoteMarkerOp {
 
 export type LayerStrokeDash = 'solid' | 'dash' | 'dot' | 'dashDot' | 'dashDotDot';
 
+export interface LayerShadowStyle {
+  shadowType?: number;
+  color?: string;
+  offsetX?: number;
+  offsetY?: number;
+  alpha?: number;
+}
+
+export interface LayerPatternFill {
+  patternType?: number;
+  patternColor?: string;
+  backgroundColor?: string;
+}
+
 export interface LayerLineStyle {
   color?: string;
   width?: number;
@@ -1181,6 +1223,9 @@ export interface LayerLineStyle {
   lineType?: string;
   startArrow?: string;
   endArrow?: string;
+  startArrowSize?: number;
+  endArrowSize?: number;
+  shadow?: LayerShadowStyle;
 }
 
 export interface LayerShapeStyle {
@@ -1189,7 +1234,20 @@ export interface LayerShapeStyle {
   strokeWidth?: number;
   strokeDash?: LayerStrokeDash;
   opacity?: number;
+  pattern?: LayerPatternFill;
+  shadow?: LayerShadowStyle;
 }
+
+/** HWP 도형/페이지 배경 그라데이션. paint JSON `gradient` 필드와 동일. */
+export interface LayerGradientFill {
+  gradientType?: number;
+  angle?: number;
+  centerX?: number;
+  centerY?: number;
+  colors?: string[];
+  positions?: number[];
+}
+
 
 export interface LayerLineOp {
   type: 'line';
@@ -1206,12 +1264,14 @@ export interface LayerRectangleOp {
   bbox: LayerBounds;
   cornerRadius?: number;
   style?: LayerShapeStyle;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerEllipseOp {
   type: 'ellipse';
   bbox: LayerBounds;
   style?: LayerShapeStyle;
+  gradient?: LayerGradientFill;
 }
 
 export type LayerPathCommand =
@@ -1243,6 +1303,7 @@ export interface LayerPathOp {
   style?: LayerShapeStyle;
   lineStyle?: LayerLineStyle;
   transform?: LayerPathTransform;
+  gradient?: LayerGradientFill;
 }
 
 export interface LayerImageOp {

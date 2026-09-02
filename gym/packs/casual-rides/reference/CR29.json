@@ -1,0 +1,19 @@
+{
+  "id": "CR29",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "KTX"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

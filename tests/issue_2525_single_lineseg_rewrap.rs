@@ -5,7 +5,7 @@
 //! 정본(한컴 COM PDF, 2026-07-21): `samples/hwpx/hwpx-02.hwpx` p0 숫자
 //! "2024" advance = 0.590em, 첫 본문 줄 ≈ 30자로 재래핑. 수정 전 rhwp 는
 //! 110자를 한 줄에 넣고 숫자 advance 0.297em(char_px*ratio*0.5 최소 클램프)
-//! 으로 압축 → 겹침. 근인: `stored_lines_overflow`(composer.rs)의 오버플로우
+//! 으로 압축 → 겹침. 근인: 저장 lineseg 과밀 판정(composer.rs)의 오버플로우
 //! 재래핑이 마스킹(`*`) 문서에만 발동 → 비마스킹 과밀 제외. 수정: 장평 반영
 //! 실폭이 내폭 ≥1.8× 인 저장 lineseg 도 fresh 재래핑.
 
@@ -14,7 +14,7 @@ use std::path::Path;
 fn render_page_svg(rel: &str, page: u32) -> String {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
     let bytes = std::fs::read(&path).expect("read sample");
-    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
     doc.render_page_svg(page).expect("render svg")
 }
 

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-batch-empty-data",
+  "axis": "usage",
+  "title": "헤더만 있는 빈 데이터",
+  "why": "exit 2. 상류 명단 0건.",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "samples/field-01.hwp",
+    "--data",
+    "empty.csv",
+    "--out-dir",
+    "out/filled",
+    "--json"
+  ],
+  "exit": 2,
+  "writesFile": false
+}

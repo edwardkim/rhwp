@@ -1,0 +1,26 @@
+{
+  "id": "FJ10",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "작성자": "한소윤기록",
+          "부서명": "여정기획실"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:pair-ad.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

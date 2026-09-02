@@ -1,0 +1,258 @@
+{
+  "schemaVersion": "v-bind.1.0",
+  "generatedBy": "tools/llm_verifier/claim_bind/scripts/gen_claim_corpus.py",
+  "axis": "claim-coords",
+  "recordCount": 120000,
+  "shardCount": 40,
+  "passCount": 90000,
+  "failCount": 30000,
+  "uniqueness": "rowId+claimText",
+  "requiredFields": [
+    "section",
+    "paragraph",
+    "page",
+    "charOffset"
+  ],
+  "shards": [
+    {
+      "path": "shard_00.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_01.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_02.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_03.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_04.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_05.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_06.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_07.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_08.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_09.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_10.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_11.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_12.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_13.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_14.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_15.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_16.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_17.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_18.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_19.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_20.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_21.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_22.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_23.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_24.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_25.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_26.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_27.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_28.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_29.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_30.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_31.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_32.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_33.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_34.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_35.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_36.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_37.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_38.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    },
+    {
+      "path": "shard_39.ndjson",
+      "count": 3000,
+      "passCount": 2250,
+      "failCount": 750
+    }
+  ]
+}

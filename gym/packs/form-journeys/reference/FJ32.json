@@ -1,0 +1,17 @@
+{
+  "id": "FJ32",
+  "steps": [
+    {
+      "answer": {
+        "guide": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields[1].guide"
+        }
+      }
+    }
+  ]
+}

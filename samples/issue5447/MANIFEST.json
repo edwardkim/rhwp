@@ -1,0 +1,1048 @@
+{
+  "schema": "rhwp/hancom-judgment-manifest@1",
+  "title": "#5447 B2 구조 편집 — 한컴 2022 판정 원장",
+  "issue": 5447,
+  "pr": 5647,
+  "question": "c:f 무갱신 / c:ptCount 재계산 / c:pt idx 전수 재번호 3종 정책과 fail-closed 경계 2종을 한컴 2022 가 어떻게 다루는가",
+  "hancom": {
+    "version": "한글 2022",
+    "converted_on": "2026-08-19",
+    "converted_by": "작업지시자"
+  },
+  "generator": {
+    "test": "tests/issue_4100_chart_data_edit.rs::generate_b2_structure_judgment_bundle",
+    "command": "cargo test --profile release-test --test issue_4100_chart_data_edit generate_b2_structure_judgment_bundle -- --ignored --nocapture",
+    "devel_base": "b96a1f5e57f5b28762da19b4e3d5962291f0485a",
+    "note": "생성기는 gitignored output/issue_5447_b2_judgment/ 에 쓴다. 이 원장이 가리키는 samples/issue5447/ 사본이 한컴이 실제로 판정한 권위 자산이다.",
+    "byte_reproducible": false,
+    "byte_reproducibility_lost_at": "b9eb551070f7e6b8ecf4272efebe1d2094fbeb9e",
+    "stream_reproducible": true,
+    "reproducibility_note": "#5967 — devel 의 CFB 라이터가 디렉터리 red/black 을 실제로 칠하고 FAT·MiniFAT 미사용 슬롯을 FREESECT 로 선채우도록 MS-CFB 쪽으로 바뀌었다(b9eb55107, 외부 PR cherry-pick 97dbf4cef·6a0c04159). 그래서 이 자산은 현재 바이너리로 바이트 동일하게 재생성되지 않는다 — 되돌리지 않는다. 재생성 대조 축은 중첩 CFB 의 스트림 동일성이고, 계약은 tests/cases/issue_5967_cfb_repack_reproducibility.rs 가 CI 에서 상시로 지킨다."
+  },
+  "raster": {
+    "tool": "PyMuPDF",
+    "version": "PyMuPDF 1.28.0 (MuPDF 1.29.0)",
+    "dpi": 144,
+    "page": 1,
+    "colorspace": "RGB",
+    "alpha": false,
+    "hash": "SHA-256 of pixmap.samples (raw RGB bytes)"
+  },
+  "raster_secondary": {
+    "tool": "poppler pdftoppm",
+    "args": "-r 144 -f 1 -l 1 (PPM)",
+    "status": "기록됨",
+    "note": "보고서 §2 의 해시 접두사가 이 축이다 — 2026-08-20 에 poppler 25.12.0 으로 38건을 다시 재서 15개 판정 단위 전건이 보고서 값과 일치함을 확인했다. 절대 해시는 렌더러마다 다르므로 도구를 섞어 비교하지 않는다. 도구를 넘어 성립해야 하는 계약은 invariants 다.",
+    "version": "poppler 25.12.0 (minidocks/poppler, 2026-08-20 재계산)"
+  },
+  "counts": {
+    "files": 38,
+    "controls": 9,
+    "variants": 28,
+    "conversions": 1,
+    "judgment_units": 15,
+    "tally": {
+      "반영": 13,
+      "반영_의미깨짐": 1,
+      "미반영": 1
+    }
+  },
+  "entries": [
+    {
+      "name": "3차원묶은세로막대형-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/3차원묶은세로막대형.hwpx",
+      "base_document": "3차원묶은세로막대형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/3차원묶은세로막대형-대조군.hwpx",
+      "original_sha256": "da853932f2828edca0166758a6cf4f3cb475bf4b770392a238a8ff94cfb34576",
+      "hancom_pdf_path": "pdf/issue5447/3차원묶은세로막대형-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "475b2e068b0d279f90e7c00f50b8610cb5e68ef139bfef04ca6ebfd11ee03a19",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "4fc2959ddad53f143b185320fcd5e3276faab9f3984244f949f1a6dcc93b5cfb",
+        "pdftoppm_144dpi_ppm_sha256": "af4190dae8139eb5a9dc9a8baa8f459866bbca1a171fe4f72cd2194e5fc5536a",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "3차원묶은세로막대형-행추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/3차원묶은세로막대형.hwpx",
+      "base_document": "3차원묶은세로막대형",
+      "variant": "행추가",
+      "control": "3차원묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/3차원묶은세로막대형-행추가.hwp",
+      "original_sha256": "dac653df9cdd99a6cbbaf59508142cf703939b45fed0b56b0a90016261524ef4",
+      "hancom_pdf_path": "pdf/issue5447/3차원묶은세로막대형-행추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "9c0c9b07dc877c39a86af59d94a2cd95f46fef54193bd40ce69bb3c46d5ce562",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "5dbf8955b5e28140fbc0439214d4a94fd6390fc1fadbf562989dd165d3c56b08",
+        "pdftoppm_144dpi_ppm_sha256": "f55b62b1ee006add11da302e5abde7b05ea9b8a93176800cd23ed4638bcf1092",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "3차원묶은세로막대형-행추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/3차원묶은세로막대형.hwpx",
+      "base_document": "3차원묶은세로막대형",
+      "variant": "행추가",
+      "control": "3차원묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/3차원묶은세로막대형-행추가.hwpx",
+      "original_sha256": "780f98753e6c73d744455e9f7bdfa509b909bafbedca00ba94ff7ccbfa813b80",
+      "hancom_pdf_path": "pdf/issue5447/3차원묶은세로막대형-행추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "363bc86a9ccc77919fc4b2aa3c2ced61d2eae8f5ad3cf89ee7d5b6db791e003a",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "5dbf8955b5e28140fbc0439214d4a94fd6390fc1fadbf562989dd165d3c56b08",
+        "pdftoppm_144dpi_ppm_sha256": "f55b62b1ee006add11da302e5abde7b05ea9b8a93176800cd23ed4638bcf1092",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "특이케이스",
+      "source_sample": "samples/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목.hwpx",
+      "base_document": "가로막대형_하나만있을떄_단일시리즈제목",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx",
+      "original_sha256": "42b1cd0ed7bd069bb224ef2634e248d849fa80005f4f1ae53f09ae042a38ca1f",
+      "hancom_pdf_path": "pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "0e3d41842db792444f048329cb3206daaf2d32fbb779e49bd1123af69542cd04",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "93be73e51dcd75467745d7d61136ce7bdb015c62492cf4bb5f50c6d83f085278",
+        "pdftoppm_144dpi_ppm_sha256": "8b639f36ffc150f21ebce12c32392a3e9aaf7736e84cf9de2882e5153d08b20d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "가로막대형_하나만있을떄_단일시리즈제목-점추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "특이케이스",
+      "source_sample": "samples/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목.hwpx",
+      "base_document": "가로막대형_하나만있을떄_단일시리즈제목",
+      "variant": "점추가",
+      "control": "가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx",
+      "original_path": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwp",
+      "original_sha256": "74f7438b83b1e6f81e395c322bb0939c7a61f0ef7c24cc6c364de644101c14a3",
+      "hancom_pdf_path": "pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "b9697acf00933f3550d2b72646991464032e3157c3f372e2df0da301b0affd5b",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "6b1f5c83190d8572dc25de4fb0157ebc524343160801aae226a0dfc15b729918",
+        "pdftoppm_144dpi_ppm_sha256": "f2faea678da9275865f3045895695316d1faaca07e9f5728911806960802442d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "가로막대형_하나만있을떄_단일시리즈제목-점추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "특이케이스",
+      "source_sample": "samples/chart/특이케이스/가로막대형_하나만있을떄_단일시리즈제목.hwpx",
+      "base_document": "가로막대형_하나만있을떄_단일시리즈제목",
+      "variant": "점추가",
+      "control": "가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx",
+      "original_path": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwpx",
+      "original_sha256": "569c06b341ea901fcbe6fd4f34b94690c04d90fc66bc5c341a35681122806355",
+      "hancom_pdf_path": "pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "cdcd3adf81c0b188d07645e3295008120dc9f40ac2354655bcd4f72210220b6d",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "6b1f5c83190d8572dc25de4fb0157ebc524343160801aae226a0dfc15b729918",
+        "pdftoppm_144dpi_ppm_sha256": "f2faea678da9275865f3045895695316d1faaca07e9f5728911806960802442d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "누적세로막대형-계열삭제.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/누적세로막대형.hwpx",
+      "base_document": "누적세로막대형",
+      "variant": "계열삭제",
+      "control": "누적세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/누적세로막대형-계열삭제.hwp",
+      "original_sha256": "3285f6a41e8519f40b2b81eccd53c425b69f87bb5fd324ecbb0a7eb6e95082b9",
+      "hancom_pdf_path": "pdf/issue5447/누적세로막대형-계열삭제-hwp-2020.pdf",
+      "hancom_pdf_sha256": "94ca31f59aae6390d95bebe0d23a63e77d5367e03254461623f52d6745f1bcbd",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "35b9ecddf10c6c3c2c62f23543427eda772e24996d2712dee3ffc2bd9e707740",
+        "pdftoppm_144dpi_ppm_sha256": "a13f5e51f9d646e9b30b64f0c02a19975de61273866d33eb4976fc156443cd9d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "누적세로막대형-계열삭제.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/누적세로막대형.hwpx",
+      "base_document": "누적세로막대형",
+      "variant": "계열삭제",
+      "control": "누적세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/누적세로막대형-계열삭제.hwpx",
+      "original_sha256": "82e52e3e5d4b7507288110ede20197d273ff0636dd6d76db309b8df6799675ae",
+      "hancom_pdf_path": "pdf/issue5447/누적세로막대형-계열삭제-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "3f0314b4229489d08b3c1c0375c0ce78d102a18029f2792491d9c004a99c1bbb",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "35b9ecddf10c6c3c2c62f23543427eda772e24996d2712dee3ffc2bd9e707740",
+        "pdftoppm_144dpi_ppm_sha256": "a13f5e51f9d646e9b30b64f0c02a19975de61273866d33eb4976fc156443cd9d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "누적세로막대형-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/누적세로막대형.hwpx",
+      "base_document": "누적세로막대형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/누적세로막대형-대조군.hwpx",
+      "original_sha256": "854653694de15c5c3a553918d511a7725872f3f2d1e7e0f1053e9e9060249343",
+      "hancom_pdf_path": "pdf/issue5447/누적세로막대형-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "0051fdbcfb80da837658ed2584cb145840fe12f666cc438761741369526ffb1f",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "3d86d69bab2084a56f6847135f7fc9e80bdaa6ae16d8dc4693f56489e0e70a3e",
+        "pdftoppm_144dpi_ppm_sha256": "d415c78d6593601c27bfc7afd6688a33e51ec77c05c36315ce6c9a938f039109",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은가로막대형-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "가로막대형",
+      "source_sample": "samples/chart/가로막대형/묶은가로막대형.hwpx",
+      "base_document": "묶은가로막대형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/묶은가로막대형-대조군.hwpx",
+      "original_sha256": "65d3dd40d116d0c4c95c4d842fc56a640ac83325e6b0c6b329a6d70eda309302",
+      "hancom_pdf_path": "pdf/issue5447/묶은가로막대형-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "3def8979debd02cb0b85b1c4cb63e8e1b72d1ea63fd9c72cd9a6ae899a8e4c25",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "61459c8875215b9116281bdba3822da105b81f9c80c339a1a1368132b37db917",
+        "pdftoppm_144dpi_ppm_sha256": "456b1362087430d973fcf6392efcbbf49cf80f7fdc8ed8c546606932a1381f82",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은가로막대형-행추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "가로막대형",
+      "source_sample": "samples/chart/가로막대형/묶은가로막대형.hwpx",
+      "base_document": "묶은가로막대형",
+      "variant": "행추가",
+      "control": "묶은가로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은가로막대형-행추가.hwp",
+      "original_sha256": "c86d5f96818fbcc9ae71f7bbd958955c9ec1c89e27b26c678ffee2530731d7b7",
+      "hancom_pdf_path": "pdf/issue5447/묶은가로막대형-행추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "1953240f6c82df57dc1dcd6dcb0747acc306316352b62a1d6e504906bbf00d1b",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "32742978836f97522eb49f8480825792fdb343524df3d6b820403986c97c3968",
+        "pdftoppm_144dpi_ppm_sha256": "9358a1b1f7e3696cc7645748f896bd669afa30a498101b41fbdbc4df6a14d02d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은가로막대형-행추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "가로막대형",
+      "source_sample": "samples/chart/가로막대형/묶은가로막대형.hwpx",
+      "base_document": "묶은가로막대형",
+      "variant": "행추가",
+      "control": "묶은가로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은가로막대형-행추가.hwpx",
+      "original_sha256": "9b08455e7bcd77bf5c3b677fb74eda9194d0717b7f312fffd3880c01a557a454",
+      "hancom_pdf_path": "pdf/issue5447/묶은가로막대형-행추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "5bf41ebe50fc4fdb61b97f8fd1aa1104579c32013de9d4ba5681b1b873b6a0ce",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "32742978836f97522eb49f8480825792fdb343524df3d6b820403986c97c3968",
+        "pdftoppm_144dpi_ppm_sha256": "9358a1b1f7e3696cc7645748f896bd669afa30a498101b41fbdbc4df6a14d02d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-계열명변경.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "계열명변경",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-계열명변경.hwp",
+      "original_sha256": "184fce30e4d2e9c8962491bd09116c02e8b39888642fff46fc61dea390e57b1c",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-계열명변경-hwp-2020.pdf",
+      "hancom_pdf_sha256": "730f7f1f5439caaedf879082c91e91d7bb2d23e655bb3c99bc9741f2e2e57c4a",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "6d1e0409bf9462e1c1a5bc3d549f9a52d7b63f7b6e206288cb6964f04ec0f4cd",
+        "pdftoppm_144dpi_ppm_sha256": "638ba5f794bfb4936166c1bc1c8b8ee039e9968bc89a4711bee070ef50585388",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-계열명변경.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "계열명변경",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-계열명변경.hwpx",
+      "original_sha256": "d57fb4413523fa7f7da7474b5efd75b6f208e250445421016b8b325ff23cd998",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-계열명변경-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "e127d562d27c373824217169b2a6d03179e7d8c6dc3126fe102dd259dba1f377",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "6d1e0409bf9462e1c1a5bc3d549f9a52d7b63f7b6e206288cb6964f04ec0f4cd",
+        "pdftoppm_144dpi_ppm_sha256": "638ba5f794bfb4936166c1bc1c8b8ee039e9968bc89a4711bee070ef50585388",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-계열삭제.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "계열삭제",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-계열삭제.hwp",
+      "original_sha256": "3a47cdb88e693af56202fffe7666e2031bd219056dc1585f898a0d34b80ea4bb",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-계열삭제-hwp-2020.pdf",
+      "hancom_pdf_sha256": "603cd178868aa356dd23335b2085dc4493e49f30e8e0e39becfbdf16abbf39f5",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "fe289457ee30d874c4a8ef327b2a188a09c0b94f5f7571c44f2555d00b1021f2",
+        "pdftoppm_144dpi_ppm_sha256": "bcd3507a4f052dbadf8ed09a0a349e7887cca6fd09bde66834c8f925c7a309c1",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-계열삭제.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "계열삭제",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-계열삭제.hwpx",
+      "original_sha256": "5bed45ba08fe66e8529054902d132d20fb09c0d45d0164fa94c250f3f740a13c",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-계열삭제-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "75235c37de22f0fcb1779ea6ab870dfcbc1426f7f68d39b9965b18226cb200fa",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "fe289457ee30d874c4a8ef327b2a188a09c0b94f5f7571c44f2555d00b1021f2",
+        "pdftoppm_144dpi_ppm_sha256": "bcd3507a4f052dbadf8ed09a0a349e7887cca6fd09bde66834c8f925c7a309c1",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-계열추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "계열추가",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-계열추가.hwp",
+      "original_sha256": "adbfd8ac043e12d9294e123720445aff378306ef241e70c6b972d192bf38aedb",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-계열추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "6c4ca88df4b9fe3f07771fc16b2c050573544babc0a2b9441d8fcfc871f0f3bc",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "c6e0b229d186e279fce5757f0ba3c479477bc6e9c33f42b0c56818f0c7c4f79b",
+        "pdftoppm_144dpi_ppm_sha256": "eb201e18a4f1a534cf01c2518205a35a6cca5a9584690586aec66a737ff5fb94",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-계열추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "계열추가",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-계열추가.hwpx",
+      "original_sha256": "6e864879a2849318cf2c11d84b3f8ee552a739e24635ae24b3df25fcadb4ecf2",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-계열추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "09f513c4b85f89e02b3e0ca56123059a26151a6a82e497a682e0bf753eb1a0c0",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "c6e0b229d186e279fce5757f0ba3c479477bc6e9c33f42b0c56818f0c7c4f79b",
+        "pdftoppm_144dpi_ppm_sha256": "eb201e18a4f1a534cf01c2518205a35a6cca5a9584690586aec66a737ff5fb94",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/묶은세로막대형-대조군.hwpx",
+      "original_sha256": "e8ffa2ef81e630b5ac7e0a230c101924b96bd4d61be958cf608161bfe9a7365a",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "ac2508a3bc2362e0c0d2e3a24be02f5fbc0c19f5f764b578e3f01d7a0616045c",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "78834a582ce0a39f758ec7e763b2b07af72d0be798210f3e340be0e2e6ac5e9a",
+        "pdftoppm_144dpi_ppm_sha256": "846e7bb1374926a1f3835553f4ee997f4117e110e58ad4d482c4c5241c8c181a",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-라벨변경.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "라벨변경",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-라벨변경.hwp",
+      "original_sha256": "8ac3ee78c6dbd079ad7ea3e09eacd0ee24b6e1d3eb3ad12ea857fe0bebc5d431",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-라벨변경-hwp-2020.pdf",
+      "hancom_pdf_sha256": "42a854b4d5a58c13a6c5441f55610220a263d01f419489ea2d4c59c031bcc6c1",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "0c13d905898e528d0859d9d475478f326845f92d4ab1074b55125e8d01a2bf7a",
+        "pdftoppm_144dpi_ppm_sha256": "2838421c5c530763c817627bae05238112faf3e103ed73b90aa5ee36ffc2aad6",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-라벨변경.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "라벨변경",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-라벨변경.hwpx",
+      "original_sha256": "80d0305045da4362e6dba34ba4b7f17933c4ea00160d5cbf079ae060a64389a4",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-라벨변경-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "bfb7499df2d6e2aaaa980b698ba70c0886221a634d99027d7f8af49766b63f84",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "0c13d905898e528d0859d9d475478f326845f92d4ab1074b55125e8d01a2bf7a",
+        "pdftoppm_144dpi_ppm_sha256": "2838421c5c530763c817627bae05238112faf3e103ed73b90aa5ee36ffc2aad6",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-행삭제.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "행삭제",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-행삭제.hwp",
+      "original_sha256": "88d2c0404042e146e65330b88324803f35f643ab4b331bdefc134c39bbdc8cc0",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-행삭제-hwp-2020.pdf",
+      "hancom_pdf_sha256": "396edad7d746911ec2d37315d21327fca7538e613378d2a5764943a04fb8a887",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "9e567b7d8ea01a49715ee0dc5e49d73ea361d08c47e7f7448dbebc9468fd360e",
+        "pdftoppm_144dpi_ppm_sha256": "0a6c40a14d1edf1e4e54b82462cbe5196e17847f92c8595aa1787146170d34d1",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-행삭제.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "행삭제",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-행삭제.hwpx",
+      "original_sha256": "c2e89f47a0a3282351e4937af52877f8321b92f9921feadc5a0e7364c5ca3ba8",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-행삭제-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "512021127d2bb541e71fc4dee94ba1df919237596ba91bc6628851acdf414ae0",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "9e567b7d8ea01a49715ee0dc5e49d73ea361d08c47e7f7448dbebc9468fd360e",
+        "pdftoppm_144dpi_ppm_sha256": "0a6c40a14d1edf1e4e54b82462cbe5196e17847f92c8595aa1787146170d34d1",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-행추가-HWPX에서변환.hwp",
+      "role": "conversion",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "행추가(HWPX→HWP 변환)",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-행추가-HWPX에서변환.hwp",
+      "original_sha256": "fb5bb75325e35b97bb1b6845390c5539da7fe652944168446b1624f1ea4e0578",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-행추가-HWPX에서변환-hwp-2020.pdf",
+      "hancom_pdf_sha256": "1912cc4071fb0c8b871d30193f7a779b1cfa8482e935f87d8d09fb37a73a60e3",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "80e80e35a13dd25e202a080e86c5748c4f0e417c60933b8d588030b679131801",
+        "pdftoppm_144dpi_ppm_sha256": "af8236e85a654a49e508c8b65120d8e5aef8179979ff310801c469b70ec62e8f",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "묶은세로막대형-행추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "행추가",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-행추가.hwp",
+      "original_sha256": "762c8fcf9f216b5535207b475e8b5b55b22acfb5bd847b08a694234c93d45554",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-행추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "ec14af8019d862f97d539903f8a937d056eb7d43eddfe2704e18d1e5602cd2b4",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "80e80e35a13dd25e202a080e86c5748c4f0e417c60933b8d588030b679131801",
+        "pdftoppm_144dpi_ppm_sha256": "af8236e85a654a49e508c8b65120d8e5aef8179979ff310801c469b70ec62e8f",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "차트 데이터 편집기 5행 (작업지시자 실측 2026-08-18)"
+    },
+    {
+      "name": "묶은세로막대형-행추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "세로막대형",
+      "source_sample": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+      "base_document": "묶은세로막대형",
+      "variant": "행추가",
+      "control": "묶은세로막대형-대조군.hwpx",
+      "original_path": "samples/issue5447/묶은세로막대형-행추가.hwpx",
+      "original_sha256": "2bbd0c682c67391fd00c896003a2d0b8a80d2e61c2af1f07ac4b4bd16256547d",
+      "hancom_pdf_path": "pdf/issue5447/묶은세로막대형-행추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "253bf7ba5505d722379ad40da50331a36f3ca036001324450c211e3cf2124749",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "80e80e35a13dd25e202a080e86c5748c4f0e417c60933b8d588030b679131801",
+        "pdftoppm_144dpi_ppm_sha256": "af8236e85a654a49e508c8b65120d8e5aef8179979ff310801c469b70ec62e8f",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "차트 데이터 편집기 5행 (작업지시자 실측 2026-08-18)"
+    },
+    {
+      "name": "시가고가저가종가-계열삭제.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "기타",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "계열삭제",
+      "control": "시가고가저가종가-대조군.hwpx",
+      "original_path": "samples/issue5447/시가고가저가종가-계열삭제.hwp",
+      "original_sha256": "a75ba0d061c3b31f9290876a3d3c0f7e092e1948b89b92b15f7ea31b1e375b1d",
+      "hancom_pdf_path": "pdf/issue5447/시가고가저가종가-계열삭제-hwp-2020.pdf",
+      "hancom_pdf_sha256": "7f7393a87d6021438b663cb95385eb3862884a5fbe3d38a70dee8d5a46d7d6a4",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "9ccd7bcbac8b15f4d56fd3c0ed1153abba1b8894c4045d0e7e22aab90e7d37b4",
+        "pdftoppm_144dpi_ppm_sha256": "829d22ea996d30a41309ff67f63cd38e20d7402880b459d1bfde7197cfb544e5",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": null
+    },
+    {
+      "name": "시가고가저가종가-계열삭제.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "기타",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "계열삭제",
+      "control": "시가고가저가종가-대조군.hwpx",
+      "original_path": "samples/issue5447/시가고가저가종가-계열삭제.hwpx",
+      "original_sha256": "2b7572b0fdf743caca287ea30b8522d050c6e5a886712bdd6384c4c9c664e621",
+      "hancom_pdf_path": "pdf/issue5447/시가고가저가종가-계열삭제-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "854c1625761945248705278ac4bfa80568b1406bba3172e04cce7b128eca3c60",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "9ccd7bcbac8b15f4d56fd3c0ed1153abba1b8894c4045d0e7e22aab90e7d37b4",
+        "pdftoppm_144dpi_ppm_sha256": "829d22ea996d30a41309ff67f63cd38e20d7402880b459d1bfde7197cfb544e5",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": null
+    },
+    {
+      "name": "시가고가저가종가-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "기타",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/시가고가저가종가-대조군.hwpx",
+      "original_sha256": "2d4eb6c11e6f32787c10515ad3e91b09ea3f4f5cda01ef2c9473bf8e9e1bac6e",
+      "hancom_pdf_path": "pdf/issue5447/시가고가저가종가-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "6dab65f9c64fb2e55eaf5628d7cc024e9502d1371719f30af77867038cd19c85",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "4a8b1b43f1220390d328c845243fce2f1081eab5938c0571993abd069e7b0dbc",
+        "pdftoppm_144dpi_ppm_sha256": "8be66db566ca07f498000e64a17d748efd483e8e233eb49cf523fc8f91cbc1c0",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "원형대원형-계열추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "원형",
+      "source_sample": "samples/chart/원형/원형대원형.hwpx",
+      "base_document": "원형대원형",
+      "variant": "계열추가",
+      "control": "원형대원형-대조군.hwpx",
+      "original_path": "samples/issue5447/원형대원형-계열추가.hwp",
+      "original_sha256": "02132fd5e38742a4d18ed7de00951e4471573e345980ed458b3d5fb873025789",
+      "hancom_pdf_path": "pdf/issue5447/원형대원형-계열추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "47772fb979e233966593ab92e6aa43ca82736c5239b40c53a74370b5c983110c",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "b54d8869da81051057cf04db663ce5f8eaf1f2ddf390ec90e9a19dbbef80f1b8",
+        "pdftoppm_144dpi_ppm_sha256": "e16a2a67802890305d75ee6d08e439e9652404d40a33e4d86e6d2aff53aa66c6",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "미반영",
+      "editor_observation": null
+    },
+    {
+      "name": "원형대원형-계열추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "원형",
+      "source_sample": "samples/chart/원형/원형대원형.hwpx",
+      "base_document": "원형대원형",
+      "variant": "계열추가",
+      "control": "원형대원형-대조군.hwpx",
+      "original_path": "samples/issue5447/원형대원형-계열추가.hwpx",
+      "original_sha256": "2f424b1f87905cc2cdefc557ad573750efc5194304ad9b662a16ec416d5ff3e1",
+      "hancom_pdf_path": "pdf/issue5447/원형대원형-계열추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "3f2b059b31d4dc2674dd6708363902cbf8f85f9c643a24ee619c9e756c89a06e",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "b54d8869da81051057cf04db663ce5f8eaf1f2ddf390ec90e9a19dbbef80f1b8",
+        "pdftoppm_144dpi_ppm_sha256": "e16a2a67802890305d75ee6d08e439e9652404d40a33e4d86e6d2aff53aa66c6",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "미반영",
+      "editor_observation": null
+    },
+    {
+      "name": "원형대원형-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "원형",
+      "source_sample": "samples/chart/원형/원형대원형.hwpx",
+      "base_document": "원형대원형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/원형대원형-대조군.hwpx",
+      "original_sha256": "157cd5abf270194ecc36da948a2b983df0ea5c44b342135a71e2d6e0558d36b9",
+      "hancom_pdf_path": "pdf/issue5447/원형대원형-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "88278ec73875b6d8e10aaa7e2a8836206b18a66ae40800c0accb60bf1925b4cb",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "b54d8869da81051057cf04db663ce5f8eaf1f2ddf390ec90e9a19dbbef80f1b8",
+        "pdftoppm_144dpi_ppm_sha256": "e16a2a67802890305d75ee6d08e439e9652404d40a33e4d86e6d2aff53aa66c6",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "직선및표식이있는분산형-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "분산형",
+      "source_sample": "samples/chart/분산형/직선및표식이있는분산형.hwpx",
+      "base_document": "직선및표식이있는분산형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/직선및표식이있는분산형-대조군.hwpx",
+      "original_sha256": "af9bb9baae5438aec5091dab4dc99731d270ae7079289e24a425e5d9be9315d7",
+      "hancom_pdf_path": "pdf/issue5447/직선및표식이있는분산형-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "ccf1f74a0f95975fa3b96654b5f6f05ea4a28130df01c0bfd0169f02f4b527eb",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "4a0cffb3f023a4d6bc5e008148cd6d466e9da0ce34f1826ba608e6498a824d02",
+        "pdftoppm_144dpi_ppm_sha256": "fcaf5a41f507ed1ef0233a0129455917aa79df95981f94aced75cd15ace982ae",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "직선및표식이있는분산형-점추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "분산형",
+      "source_sample": "samples/chart/분산형/직선및표식이있는분산형.hwpx",
+      "base_document": "직선및표식이있는분산형",
+      "variant": "점추가",
+      "control": "직선및표식이있는분산형-대조군.hwpx",
+      "original_path": "samples/issue5447/직선및표식이있는분산형-점추가.hwp",
+      "original_sha256": "74b4380d49f9525a03c863252be3435014c39e82540d7364f737d3e2975f519b",
+      "hancom_pdf_path": "pdf/issue5447/직선및표식이있는분산형-점추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "cd842b3bdaada1acf1f839104bbf6d5b29694816cd0c4f16df00510bf5c8f3b9",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "05c9660175ffb34c91c8e87cc8b1752b81504d0fc31c7eb91725b8ccae06395f",
+        "pdftoppm_144dpi_ppm_sha256": "d1fe4dbcd404e97b3d29d2d0658d8c4244cf23fb498fa0dc2aec9ff1bc88561c",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "직선및표식이있는분산형-점추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "분산형",
+      "source_sample": "samples/chart/분산형/직선및표식이있는분산형.hwpx",
+      "base_document": "직선및표식이있는분산형",
+      "variant": "점추가",
+      "control": "직선및표식이있는분산형-대조군.hwpx",
+      "original_path": "samples/issue5447/직선및표식이있는분산형-점추가.hwpx",
+      "original_sha256": "b75038295043d6d44ae0f19bdc23afebacde9c248683b7c2c250c6ba69236d5f",
+      "hancom_pdf_path": "pdf/issue5447/직선및표식이있는분산형-점추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "7f50ee6e08db51be070b6a7216a622f4461c8e2df83eea2ec44bd2c7c55c3dce",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "05c9660175ffb34c91c8e87cc8b1752b81504d0fc31c7eb91725b8ccae06395f",
+        "pdftoppm_144dpi_ppm_sha256": "d1fe4dbcd404e97b3d29d2d0658d8c4244cf23fb498fa0dc2aec9ff1bc88561c",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "표식이있는꺽은선형-대조군.hwpx",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "라인",
+      "source_sample": "samples/chart/라인/표식이있는꺽은선형.hwpx",
+      "base_document": "표식이있는꺽은선형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/issue5447/표식이있는꺽은선형-대조군.hwpx",
+      "original_sha256": "5dd9374ca338953fd73f89de1cfc3e4e2864be2419e12beddfc232727df68662",
+      "hancom_pdf_path": "pdf/issue5447/표식이있는꺽은선형-대조군-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "2ea35db31163e69c50e6372a55f41d0518ef1cb44c229f5bf911615bf62f91cc",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "48863989c20f42c2189bbb8066629b9360d0c302e51fb722b1ae6247f41830d8",
+        "pdftoppm_144dpi_ppm_sha256": "f28189c0a32a771ccd6047427c0c708a163cfee60dd6748f598a26ebbc8c8928",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": null
+    },
+    {
+      "name": "표식이있는꺽은선형-행추가.hwp",
+      "role": "variant",
+      "format": "hwp",
+      "chart_kind": "라인",
+      "source_sample": "samples/chart/라인/표식이있는꺽은선형.hwpx",
+      "base_document": "표식이있는꺽은선형",
+      "variant": "행추가",
+      "control": "표식이있는꺽은선형-대조군.hwpx",
+      "original_path": "samples/issue5447/표식이있는꺽은선형-행추가.hwp",
+      "original_sha256": "fe6af0d2213f3f17df6de1aee67142ba1ea250e91aceb0b5736875fc8d1312ab",
+      "hancom_pdf_path": "pdf/issue5447/표식이있는꺽은선형-행추가-hwp-2020.pdf",
+      "hancom_pdf_sha256": "2a46b831a6694c88fb12f35b6357aed249d078344cfe0f2e8ee0c34ab5749b9a",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "051e4911575e082fb167cfc7a98c0ac1defe09a859d2a6af6a853c00413c37bd",
+        "pdftoppm_144dpi_ppm_sha256": "8fbdfd74c389aef8d1e16f7c3ada1e2c815aee41e393c5799a31617a45cd3800",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    },
+    {
+      "name": "표식이있는꺽은선형-행추가.hwpx",
+      "role": "variant",
+      "format": "hwpx",
+      "chart_kind": "라인",
+      "source_sample": "samples/chart/라인/표식이있는꺽은선형.hwpx",
+      "base_document": "표식이있는꺽은선형",
+      "variant": "행추가",
+      "control": "표식이있는꺽은선형-대조군.hwpx",
+      "original_path": "samples/issue5447/표식이있는꺽은선형-행추가.hwpx",
+      "original_sha256": "c9d8e7cc66d8da6a83e2479ed15c0cb1f758c3d27117e010a3e2580706883383",
+      "hancom_pdf_path": "pdf/issue5447/표식이있는꺽은선형-행추가-hwpx-2020.pdf",
+      "hancom_pdf_sha256": "64a3a00c793634cffe9b6b247aa342fc8bc254f296e34fdbd381be812344dc8b",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "051e4911575e082fb167cfc7a98c0ac1defe09a859d2a6af6a853c00413c37bd",
+        "pdftoppm_144dpi_ppm_sha256": "8fbdfd74c389aef8d1e16f7c3ada1e2c815aee41e393c5799a31617a45cd3800",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": null
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "raster_equal",
+      "a": "3차원묶은세로막대형-행추가.hwp",
+      "b": "3차원묶은세로막대형-행추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "가로막대형_하나만있을떄_단일시리즈제목-점추가.hwp",
+      "b": "가로막대형_하나만있을떄_단일시리즈제목-점추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "누적세로막대형-계열삭제.hwp",
+      "b": "누적세로막대형-계열삭제.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은가로막대형-행추가.hwp",
+      "b": "묶은가로막대형-행추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은세로막대형-계열명변경.hwp",
+      "b": "묶은세로막대형-계열명변경.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은세로막대형-계열삭제.hwp",
+      "b": "묶은세로막대형-계열삭제.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은세로막대형-계열추가.hwp",
+      "b": "묶은세로막대형-계열추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은세로막대형-라벨변경.hwp",
+      "b": "묶은세로막대형-라벨변경.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은세로막대형-행삭제.hwp",
+      "b": "묶은세로막대형-행삭제.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은세로막대형-행추가.hwp",
+      "b": "묶은세로막대형-행추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "시가고가저가종가-계열삭제.hwp",
+      "b": "시가고가저가종가-계열삭제.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "원형대원형-계열추가.hwp",
+      "b": "원형대원형-계열추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "직선및표식이있는분산형-점추가.hwp",
+      "b": "직선및표식이있는분산형-점추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "표식이있는꺽은선형-행추가.hwp",
+      "b": "표식이있는꺽은선형-행추가.hwpx",
+      "why": "같은 변종의 HWP 와 HWPX 가 한컴에서 같은 그림으로 그려진다"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "묶은세로막대형-행추가-HWPX에서변환.hwp",
+      "b": "묶은세로막대형-행추가.hwp",
+      "why": "HWPX 에서 만든 편집이 HWP5 변환에서 살아남는다 (B1 ①② 계약 유지)"
+    },
+    {
+      "kind": "raster_equal",
+      "a": "원형대원형-계열추가.hwp",
+      "b": "원형대원형-대조군.hwpx",
+      "why": "ofPie 는 2번째 계열을 조용히 무시한다 — 오류 없이 대조군과 같은 그림 (S4)"
+    },
+    {
+      "kind": "raster_differs",
+      "a": "시가고가저가종가-계열삭제.hwp",
+      "b": "시가고가저가종가-대조군.hwpx",
+      "why": "계열삭제가 렌더에 반영되기는 한다. 의미가 깨진 것은 사람이 그림을 봐야 안다 (S4)"
+    },
+    {
+      "kind": "page_geometry",
+      "scope": "all",
+      "width": 1190,
+      "height": 1682,
+      "pages": 1,
+      "why": "전건이 1쪽짜리 같은 판형 — 다른 판형이 섞이면 해시 비교가 무의미해진다"
+    },
+    {
+      "kind": "counts",
+      "judgment_units": 15,
+      "tally": {
+        "반영": 13,
+        "반영_의미깨짐": 1,
+        "미반영": 1
+      },
+      "why": "보고서 §2 의 판정 단위 수와 판정 분포는 이 원장이 정본이다"
+    }
+  ]
+}

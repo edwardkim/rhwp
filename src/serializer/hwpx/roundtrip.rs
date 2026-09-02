@@ -442,6 +442,19 @@ fn diff_picture_size(
             a.img_dim, b.img_dim
         ));
     }
+    // [#4668] hp:offset — 종전 pic writer 가 pos 유래로 재작성해도 이 게이트가
+    // offset 을 비교하지 않아 잡히지 않았다(음수 wraparound offset 그림 노출).
+    if a.shape_attr.offset_x != b.shape_attr.offset_x
+        || a.shape_attr.offset_y != b.shape_attr.offset_y
+    {
+        parts.push(format!(
+            "offset: expected=({}, {}) actual=({}, {})",
+            a.shape_attr.offset_x,
+            a.shape_attr.offset_y,
+            b.shape_attr.offset_x,
+            b.shape_attr.offset_y
+        ));
+    }
     if parts.is_empty() {
         None
     } else {
@@ -528,6 +541,42 @@ pub fn strip_cross_format_noise(diff: IrDiff) -> IrDiff {
     }
 }
 
+/// HWP/HWP3를 HWPX로 저장할 때만 생기는 비교 불능 항목을 걷어낸다.
+///
+/// HWP 계열 필드에는 HWPX `<hp:parameters>` 원문을 실을 슬롯이 없다. 따라서
+/// `Field.command`만 있던 HWP 필드를 HWPX로 내보내면 스키마가 요구하는 최소
+/// `Command` 단일 parameters가 합성된다. 이는 command를 보존한 표현 변환이지 새 필드
+/// 메타데이터가 아니므로, `export-hwpx --verify`에서는 해당 한 방향 차이만 제외한다
+/// (#3739). 원문 parameters나 Command 외 항목의 차이는 계속 검출한다.
+pub fn strip_hwp_to_hwpx_noise(diff: IrDiff) -> IrDiff {
+    IrDiff {
+        differences: diff
+            .differences
+            .into_iter()
+            .filter(|d| !is_hwp_to_hwpx_incomparable(d))
+            .collect(),
+    }
+}
+
+/// HWP3를 HWPX로 저장할 때만 생기는 추가 표현 차이를 걷어낸다.
+///
+/// HWP3의 하이퍼텍스트 개체와 그림 crop 사각형은 HWPX와 같은 IR 자리가 없다.
+/// 전자는 HWPX `HYPERLINK` field로, 후자는 HWPX가 요구하는 실제 이미지 사각형으로
+/// 물질화한다. 두 경우 모두 원래 내용이나 배치 크기를 바꾸지는 않지만, HWP3 전용
+/// `Control::Hyperlink`/영(0) 센티널과는 동일 비교할 수 없다. 이 함수는 그 두 방향의
+/// 정확한 형태만 제외하며 HWP5에는 적용하지 않는다.
+pub fn strip_hwp3_to_hwpx_noise(
+    expected_document: &Document,
+    actual_document: &Document,
+    diff: IrDiff,
+) -> IrDiff {
+    let mut diff = strip_hwp_to_hwpx_noise(diff);
+    diff.differences.retain(|difference| {
+        !is_hwp3_to_hwpx_incomparable(expected_document, actual_document, difference)
+    });
+    diff
+}
+
 /// HWPX를 HWP5로 저장한 뒤에만 적용하는 추가 비교 불능 항목을 걷어낸다.
 ///
 /// 한컴 2020은 HWPX 그림을 HWP5 `SC_PICTURE`로 저장할 때 extra의 original width/height
@@ -554,6 +603,141 @@ fn is_cross_format_incomparable(d: &IrDifference) -> bool {
         }
         _ => false,
     }
+}
+
+fn is_hwp_to_hwpx_incomparable(d: &IrDifference) -> bool {
+    match d {
+        // generated_field_parameters()가 raw_parameters_xml 없는 HWP 필드에만 만드는
+        // 정확한 최소 표현. cnt·이름·요소 종류·닫는 태그까지 모두 고정해 다른 parameters
+        // 손실이나 추가를 숨기지 않는다.
+        IrDifference::FieldContent { detail, .. } => {
+            const PREFIX: &str = r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"1\" name=\"\"><hp:stringParam name=\"Command\">"#;
+            const SUFFIX: &str = r#"</hp:stringParam></hp:parameters>")"#;
+            if detail.starts_with(PREFIX) && detail.ends_with(SUFFIX) {
+                return true;
+            }
+            // [#5866] 메모 승격의 의도된 정규화 두 건 — HWP5 원본은 command 만 갖고,
+            // 산출 HWPX 재파싱은 memo_field_children_xml 이 만든 파라미터 6종
+            // (Command 원문 포함)과 빈 subList 문단 1개를 갖는다. cnt·Command
+            // prefix 까지 고정해 다른 parameters 변화를 숨기지 않는다.
+            const MEMO_PREFIX: &str = r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"6\" name=\"\"><hp:integerParam name=\"Prop\">0</hp:integerParam><hp:stringParam name=\"Command\">MEMO/"#;
+            if detail.starts_with(MEMO_PREFIX) {
+                return true;
+            }
+            detail == "memo paragraphs: expected=0 actual=1"
+        }
+        _ => false,
+    }
+}
+
+fn is_hwp3_to_hwpx_incomparable(
+    expected_document: &Document,
+    actual_document: &Document,
+    d: &IrDifference,
+) -> bool {
+    match d {
+        // HWP3 하이퍼텍스트는 별도 Control::Hyperlink 개체지만 HWPX에는 대응 컨트롤이
+        // 없어서 `fieldBegin type="HYPERLINK"`로 승격한다. 비교 축은 Hyperlink를
+        // 비슬롯으로 두므로, HWP3 원본의 빈 슬롯과 재파싱된 HWPX field 하나만 정확히
+        // 이 형태가 된다. 일반 HWP5 Field의 추가·소실에는 적용하지 않는다.
+        IrDifference::ParagraphControls {
+            section,
+            paragraph,
+            path,
+            expected,
+            actual,
+        } => {
+            expected == "[]"
+                && actual == "[field]"
+                && is_hwp3_top_level_hyperlink_field_materialization(
+                    expected_document,
+                    actual_document,
+                    *section,
+                    *paragraph,
+                    path,
+                )
+        }
+        // HWP3 SC_PICTURE의 영 imgRect는 crop 정보가 없다는 센티널이다. HWPX는
+        // `(0,0,width,0)/(width,height,0,height)` 실제 사각형을 반드시 기록한다.
+        // curSz·imgDim·다른 기하가 함께 달라지면 detail에 ';'가 붙으므로 남긴다.
+        IrDifference::PictureSize { detail, .. } => is_hwp3_zero_img_rect_materialization(detail),
+        _ => false,
+    }
+}
+
+fn is_hwp3_top_level_hyperlink_field_materialization(
+    expected_document: &Document,
+    actual_document: &Document,
+    section: usize,
+    paragraph: usize,
+    path: &str,
+) -> bool {
+    // 중첩 문단은 path를 해석해 원본 control까지 확인하는 경로가 아직 없으므로,
+    // 추정으로 정규화하지 않고 보수적으로 diff를 남긴다.
+    if !path.is_empty() {
+        return false;
+    }
+    let Some(expected) = expected_document
+        .sections
+        .get(section)
+        .and_then(|section| section.paragraphs.get(paragraph))
+    else {
+        return false;
+    };
+    let Some(actual) = actual_document
+        .sections
+        .get(section)
+        .and_then(|section| section.paragraphs.get(paragraph))
+    else {
+        return false;
+    };
+
+    expected
+        .controls
+        .iter()
+        .any(|control| matches!(control, crate::model::control::Control::Hyperlink(_)))
+        && actual.controls.iter().any(|control| {
+            matches!(
+                control,
+                crate::model::control::Control::Field(field)
+                    if field.field_type == crate::model::control::FieldType::Hyperlink
+            )
+        })
+}
+
+fn is_hwp3_zero_img_rect_materialization(detail: &str) -> bool {
+    const PREFIX: &str = "imgRect: expected=[0, 0, 0, 0]/[0, 0, 0, 0] actual=";
+    if !detail.starts_with(PREFIX) || detail.contains(';') {
+        return false;
+    }
+
+    let Some((x_part, y_part)) = detail[PREFIX.len()..].split_once('/') else {
+        return false;
+    };
+    let x: Vec<i32> = x_part
+        .strip_prefix('[')
+        .unwrap_or_default()
+        .strip_suffix(']')
+        .unwrap_or_default()
+        .split(", ")
+        .filter_map(|value| value.parse().ok())
+        .collect();
+    let y: Vec<i32> = y_part
+        .strip_prefix('[')
+        .unwrap_or_default()
+        .strip_suffix(']')
+        .unwrap_or_default()
+        .split(", ")
+        .filter_map(|value| value.parse().ok())
+        .collect();
+    matches!(
+        (x.as_slice(), y.as_slice()),
+        ([0, 0, width, 0], [same_width, height, 0, same_height])
+            if *width > 0
+                && *height > 0
+                && width == same_width
+                && height == same_height
+    )
 }
 
 fn is_hwpx_to_hwp_incomparable(d: &IrDifference) -> bool {
@@ -799,7 +983,7 @@ fn diff_page_def(
 
 /// 섹션 `<hp:visibility>` 플래그 비교 (#1637) — secPr visibility 보존 게이트.
 ///
-/// IR(SectionDef)에 보존되는 6필드만 비교한다(hideFirstPageNum·showLineNumber 는
+/// IR(SectionDef)에 보존되는 8필드만 비교한다(hideFirstPageNum·showLineNumber 는
 /// 파서가 IR 에 적재하지 않으므로 제외). 직렬화기가 visibility 를 IR 로 방출하지 않으면
 /// (특히 hide_empty_line) 페이지네이션이 달라지는 IR-invisible 결함을 게이트화한다.
 fn diff_visibility(
@@ -824,6 +1008,9 @@ fn diff_visibility(
     cmp_field!(hide_master_page);
     cmp_field!(hide_border);
     cmp_field!(hide_fill);
+    // [#5717] 구역 첫 쪽에만 테두리/배경 (visibility SHOW_FIRST) 보존 게이트
+    cmp_field!(first_page_border);
+    cmp_field!(first_page_fill);
     cmp_field!(hide_empty_line);
     if parts.is_empty() {
         None
@@ -910,6 +1097,31 @@ pub fn diff_linesegs(a: &Document, b: &Document) -> Vec<LinesegDiff> {
     out
 }
 
+/// [#5563] 비교 대상이 되는 줄 — 저장기가 실제로 파일에 실을 수 있는 접두부.
+fn axis_comparable_line_segs(
+    para: &crate::model::paragraph::Paragraph,
+    axis_end: u32,
+) -> &[crate::model::paragraph::LineSeg] {
+    if axis_end == 0 {
+        return &para.line_segs;
+    }
+    crate::serializer::body_text::line_segs_within_text_axis(&para.line_segs, axis_end)
+}
+
+/// [#5943] 이 문단에서 HWPX 슬롯 축 재기준화로 설명 가능한 `textpos` 이동 상한.
+///
+/// `hp:secPr`·`hp:colPr` 은 HWPX 문단 슬롯 축을 차지하지 않으므로 슬롯당 8유닛씩만
+/// 내려갈 수 있다. 그 문단이 실제로 들고 있는 개수로 상한을 잡으므로, secd·cold 가
+/// 없는 평범한 문단은 0 — 허용치가 전혀 생기지 않는다.
+fn axis_rebase_cap(pa: &crate::model::paragraph::Paragraph) -> u32 {
+    use crate::model::control::Control;
+    8 * pa
+        .controls
+        .iter()
+        .filter(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count() as u32
+}
+
 /// 문단 1쌍의 lineseg 비교 + 컨트롤 내부 문단 재귀 (`diff_paragraph_char_shapes` 와
 /// 동일 경로 순회).
 fn diff_paragraph_linesegs(
@@ -920,10 +1132,41 @@ fn diff_paragraph_linesegs(
     pa: &crate::model::paragraph::Paragraph,
     pb: &crate::model::paragraph::Paragraph,
 ) {
+    diff_paragraph_linesegs_with_axis(
+        out,
+        section,
+        paragraph,
+        path,
+        pa,
+        pb,
+        pa.char_count,
+        pb.char_count,
+    );
+}
+
+fn diff_paragraph_linesegs_with_axis(
+    out: &mut Vec<LinesegDiff>,
+    section: usize,
+    paragraph: usize,
+    path: &str,
+    pa: &crate::model::paragraph::Paragraph,
+    pb: &crate::model::paragraph::Paragraph,
+    a_axis_end: u32,
+    b_axis_end: u32,
+) {
     use crate::model::control::Control;
 
-    let la = &pa.line_segs;
-    let lb = &pb.line_segs;
+    // [#5563] 문단 축을 넘어서는 줄은 저장기가 파일에 싣지 않는다(HWPX·HWP5 공통
+    // 계약 — `line_segs_within_text_axis`). 비교에서도 같은 규칙을 먼저 걸어야
+    // "저장할 수 없는 줄"이 IR 차이로 잡히지 않는다. 축 증거가 없는 합성 IR
+    // (`char_count == 0`)은 종전대로 전부 비교한다.
+    // HWP3/HWPX adapter는 SectionDef·필드 안내문 슬롯을 저장 직전에 보강한다. live
+    // 원본 IR의 char_count는 그대로인 반면 재적재본은 늘어난 축을 보고한다. 한쪽만
+    // 작은 축으로 자르면 정상 lineseg가 새 손실로 보이므로, 두 문단이 공유하는 더 긴
+    // 저장 축을 양쪽에 적용한다 (#5563, hwp3-table-caption).
+    let comparable_axis_end = a_axis_end.max(b_axis_end);
+    let la = axis_comparable_line_segs(pa, comparable_axis_end);
+    let lb = axis_comparable_line_segs(pb, comparable_axis_end);
     if la.len() != lb.len() {
         out.push(LinesegDiff {
             section,
@@ -935,9 +1178,37 @@ fn diff_paragraph_linesegs(
             },
         });
     }
+    // [#5943] HWP5 축 ↔ HWPX 축 교차 비교의 `textpos` 허용치.
+    //
+    // `hp:secPr`·`hp:colPr` 은 HWPX 문단 슬롯 축을 차지하지 않으므로, HWP5 출처를 HWPX 로
+    // 내면 저장 lineseg 의 `textpos` 가 그만큼 내려간다(그렇게 내지 않으면 한글 2024 가
+    // 본문을 폐기한다 — #5943). 그 산출을 다시 읽어 원본 IR 과 대면 비교하는 `--verify`
+    // 에서는 두 축이 정당하게 다르므로, **그 문단에 실제로 있는 secd·cold 슬롯으로
+    // 설명되는 만큼만** 봐준다. 위양성을 없애되 임의의 어긋남은 그대로 잡는다.
+    let axis_rebase_cap = axis_rebase_cap(pa);
     for (idx, (sa, sb)) in la.iter().zip(lb.iter()).enumerate() {
+        // [#5961] 비교 전에 **양쪽을 각자의 문단 축 보정폭으로 HWP5 축에 올린다**.
+        //
+        // 위 #5943 허용치는 HWP5 출처 → HWPX 산출 한 방향만 본다. 반대 방향
+        // (HWPX 출처 → HWP5 산출)에서는 산출 쪽이 **더 큰** 축을 갖는다 — HWP5 파일은
+        // 구역 정의와 첫 단 정의에 8유닛씩을 싣기 때문이다. 그대로 빼면 음수라
+        // `checked_sub` 가 `u32::MAX` 로 흘러 허용치가 닿지 않고, 정당한 축 차이가
+        // 저장 손실로 잡힌다(x2h 코퍼스 5건).
+        //
+        // 보정폭은 추측이 아니라 파서가 자기가 만들어 넣은 슬롯 수로 채운 사실이다
+        // (`Paragraph::hwpx_axis_shift`). HWPX 출처 문단만 0 이 아니므로 같은 축끼리의
+        // 비교에는 아무 영향이 없다.
+        let ta = pa.line_seg_text_start_of(sa.text_start);
+        let tb = pb.line_seg_text_start_of(sb.text_start);
+        // 줄 하나가 내려간 폭이 8의 배수이고 상한 안이면 재기준화로 설명된다.
+        let shift = ta.checked_sub(tb).unwrap_or(u32::MAX);
+        let text_start_a = if shift > 0 && shift.is_multiple_of(8) && shift <= axis_rebase_cap {
+            tb
+        } else {
+            ta
+        };
         let fields: [(&'static str, i64, i64); 9] = [
-            ("textpos", sa.text_start as i64, sb.text_start as i64),
+            ("textpos", text_start_a as i64, tb as i64),
             ("vertpos", sa.vertical_pos as i64, sb.vertical_pos as i64),
             ("vertsize", sa.line_height as i64, sb.line_height as i64),
             ("textheight", sa.text_height as i64, sb.text_height as i64),
@@ -2792,6 +3063,31 @@ mod tests {
         }
     }
 
+    /// [#4668] offset 재작성이 게이트에 잡혀야 한다 — 종전 PictureSize 비교가
+    /// curSz/imgRect/imgDim 만 보고 offset 을 비교하지 않아, pic writer 의 pos
+    /// 유래 offset 재작성이 왕복 검증을 통과했다.
+    #[test]
+    fn issue4668_picture_offset_diff_in_gate() {
+        let mut pa = crate::model::image::Picture::default();
+        pa.shape_attr.offset_x = 5250;
+        pa.shape_attr.offset_y = -4332;
+        let pb = crate::model::image::Picture::default(); // offset (0, 0)
+        let a = doc_with_control(crate::model::control::Control::Picture(Box::new(pa)));
+        let b = doc_with_control(crate::model::control::Control::Picture(Box::new(pb)));
+        let diff = diff_documents(&a, &b);
+        assert_eq!(diff.differences.len(), 1, "{:?}", diff.differences);
+        match &diff.differences[0] {
+            IrDifference::PictureSize { path, detail, .. } => {
+                assert_eq!(path, "/ctrl[0]pic");
+                assert!(
+                    detail.contains("offset: expected=(5250, -4332) actual=(0, 0)"),
+                    "{detail}"
+                );
+            }
+            other => panic!("PictureSize 여야 함: {other:?}"),
+        }
+    }
+
     #[test]
     fn hwpx_to_hwp_zero_img_dim_sentinel_is_not_a_layout_loss() {
         let diff = IrDiff {
@@ -2819,6 +3115,121 @@ mod tests {
         );
         assert!(matches!(
             &filtered.differences[0],
+            IrDifference::PictureSize { detail, .. } if detail.starts_with("curSz:")
+        ));
+    }
+
+    #[test]
+    fn issue_3739_hwp_to_hwpx_generated_command_parameters_are_incomparable() {
+        let diff = IrDiff {
+            differences: vec![
+                IrDifference::FieldContent {
+                    section: 0,
+                    paragraph: 0,
+                    path: "/ctrl[0]field".to_string(),
+                    detail: r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"1\" name=\"\"><hp:stringParam name=\"Command\">https://example.test</hp:stringParam></hp:parameters>")"#.to_string(),
+                },
+                IrDifference::FieldContent {
+                    section: 0,
+                    paragraph: 1,
+                    path: "/ctrl[1]field".to_string(),
+                    detail: r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"2\" name=\"\"><hp:stringParam name=\"Command\">keep</hp:stringParam><hp:stringParam name=\"Direction\">keep</hp:stringParam></hp:parameters>")"#.to_string(),
+                },
+                IrDifference::CharShapeCount {
+                    expected: 1,
+                    actual: 2,
+                },
+            ],
+        };
+
+        let filtered = strip_hwp_to_hwpx_noise(diff);
+        assert_eq!(
+            filtered.differences.len(),
+            2,
+            "합성 Command 단일 parameters 외 차이는 남겨야 한다"
+        );
+        assert!(matches!(
+            &filtered.differences[0],
+            IrDifference::FieldContent { detail, .. } if detail.contains("cnt=\\\"2\\\"")
+        ));
+        assert!(matches!(
+            &filtered.differences[1],
+            IrDifference::CharShapeCount { .. }
+        ));
+    }
+
+    #[test]
+    fn issue_3739_hwp3_to_hwpx_materializes_hyperlink_and_empty_img_rect_only() {
+        use crate::model::control::{Control, Field, FieldType, Hyperlink};
+
+        let mut expected_document = Document::default();
+        let mut actual_document = Document::default();
+        let mut expected_section: crate::model::document::Section = Default::default();
+        let mut actual_section: crate::model::document::Section = Default::default();
+        for index in 0..4 {
+            let mut expected = Paragraph::default();
+            let mut actual = Paragraph::default();
+            if index == 0 {
+                expected.controls.push(Control::Hyperlink(Hyperlink {
+                    url: "https://example.test".to_string(),
+                    text: "example".to_string(),
+                }));
+                actual.controls.push(Control::Field(Field {
+                    field_type: FieldType::Hyperlink,
+                    command: "https://example.test".to_string(),
+                    ..Default::default()
+                }));
+            }
+            expected_section.paragraphs.push(expected);
+            actual_section.paragraphs.push(actual);
+        }
+        expected_document.sections.push(expected_section);
+        actual_document.sections.push(actual_section);
+
+        let diff = IrDiff {
+            differences: vec![
+                IrDifference::ParagraphControls {
+                    section: 0,
+                    paragraph: 0,
+                    path: String::new(),
+                    expected: "[]".to_string(),
+                    actual: "[field]".to_string(),
+                },
+                IrDifference::PictureSize {
+                    section: 0,
+                    paragraph: 1,
+                    path: "/ctrl[0]pic".to_string(),
+                    detail: "imgRect: expected=[0, 0, 0, 0]/[0, 0, 0, 0] actual=[0, 0, 2228, 0]/[2228, 2372, 0, 2372]".to_string(),
+                },
+                IrDifference::ParagraphControls {
+                    section: 0,
+                    paragraph: 2,
+                    path: String::new(),
+                    expected: "[pic]".to_string(),
+                    actual: "[field]".to_string(),
+                },
+                IrDifference::PictureSize {
+                    section: 0,
+                    paragraph: 3,
+                    path: "/ctrl[0]pic".to_string(),
+                    detail: "curSz: expected=1x1 actual=2x2; imgRect: expected=[0, 0, 0, 0]/[0, 0, 0, 0] actual=[0, 0, 2, 0]/[2, 2, 0, 2]".to_string(),
+                },
+            ],
+        };
+
+        let filtered = strip_hwp3_to_hwpx_noise(&expected_document, &actual_document, diff);
+        assert_eq!(
+            filtered.differences.len(),
+            2,
+            "실제 control/기하 차이는 남겨야 한다"
+        );
+        assert!(matches!(
+            &filtered.differences[0],
+            IrDifference::ParagraphControls { expected, actual, .. }
+                if expected == "[pic]" && actual == "[field]"
+        ));
+        assert!(matches!(
+            &filtered.differences[1],
             IrDifference::PictureSize { detail, .. } if detail.starts_with("curSz:")
         ));
     }

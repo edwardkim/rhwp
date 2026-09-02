@@ -1,0 +1,32 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: SQRT
+script: SQRT {1 OVER 2}
+honesty: implemented-variant
+
+=== ast ===
+Sqrt {
+    index: None,
+    body: Fraction {
+        numer: Number(
+            "1",
+        ),
+        denom: Number(
+            "2",
+        ),
+    },
+}
+
+=== layout ===
+Sqrt x=0.0000 y=0.0000 w=33.0000 h=52.8000 bl=31.4000
+  body:
+    Fraction x=13.0000 y=2.0000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("2") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M0.00,30.68 L2.00,31.68 L8.00,52.80 L11.00,0.00 L33.00,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="17.00" y="22.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<line x1="14.00" y1="26.40" x2="31.00" y2="26.40" stroke="#000000" stroke-width="0.80"/>
+<text x="17.00" y="42.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>

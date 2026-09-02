@@ -1,0 +1,34 @@
+{
+  "id": "FJ41",
+  "tier": 3,
+  "title": "form-01 sanitize 만 (채움 없음)",
+  "input": "samples/form-01.hwp",
+  "instructions": "값을 채우지 말고 form-01 을 sanitize 한 clean1.hwp 만 제출하라. FJ05 는 채움+sanitize 다. 이번은 메타데이터만 지운다. 재 sanitize 는 0건이어야 한다. 힌트: rhwp edit sanitize samples/form-01.hwp -o clean1.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "clean1.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "재 sanitize 0건",
+      "op": "value_eq",
+      "value": 0,
+      "path": "removedCount",
+      "cmd": [
+        "edit",
+        "sanitize",
+        "{file:clean1.hwp}",
+        "-o",
+        "{file:clean1-re.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "clean1.hwp"
+    }
+  ]
+}

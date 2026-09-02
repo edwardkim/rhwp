@@ -1,0 +1,19 @@
+{
+  "id": "OM38",
+  "steps": [
+    {
+      "answer": {
+        "height": {
+          "cmd": [
+            "thumbnail",
+            "{input}",
+            "-o",
+            "{sub:t.png}",
+            "--json"
+          ],
+          "path": "height"
+        }
+      }
+    }
+  ]
+}

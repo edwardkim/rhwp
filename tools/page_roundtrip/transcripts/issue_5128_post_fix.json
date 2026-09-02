@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "kind": "pageRoundtripTranscript",
+  "issue": 5128,
+  "doc": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "route": "hwpx",
+  "created": "2026-08-18T11:40:05Z",
+  "events": [
+    {
+      "seq": 0,
+      "kind": "meta",
+      "tool": "tools/page_roundtrip/transcript.py",
+      "issue": 5128
+    },
+    {
+      "seq": 1,
+      "kind": "command",
+      "argv": [
+        "rhwp",
+        "export-hwpx",
+        "samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "/tmp/rt.hwpx",
+        "--verify-pages"
+      ]
+    },
+    {
+      "seq": 2,
+      "kind": "stdout",
+      "text": "검증 통과(--verify-pages): 69쪽\n",
+      "bytes": 37
+    },
+    {
+      "seq": 3,
+      "kind": "exit",
+      "rc": 0
+    },
+    {
+      "seq": 4,
+      "kind": "pages",
+      "before": 69,
+      "after": 69,
+      "identical": true
+    },
+    {
+      "seq": 5,
+      "kind": "verdict",
+      "verdict": "MATCH",
+      "cataloged": false,
+      "issue": 5128
+    },
+    {
+      "seq": 6,
+      "kind": "note",
+      "text": "pages(원본)==pages(export-hwpx→reimport)==69"
+    }
+  ]
+}

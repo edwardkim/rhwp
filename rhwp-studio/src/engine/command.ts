@@ -4,9 +4,11 @@ import type {
   RemovedParaMeta,
   WasmBridge,
 } from '@/core/wasm-bridge';
-import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry } from '@/core/types';
+import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef, CellProperties } from '@/core/types';
+import type { HeaderFooterTextPosition } from './cursor';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
+import { setObjectProps, type ObjectPropsRef } from './object-props';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -43,6 +45,22 @@ export interface EditCommand {
    * 시 이 값을 읽어 HF/FN 모드 재진입 + 커서 위치를 복원하고 본문 moveTo 를 건너뛴다.
    */
   editContext?(): EditContext | null;
+  /**
+   * [Task #3416] 이 명령이 실행되기 **직전의 선택 범위**. undo 후 그 선택을 되살리는 데 쓴다.
+   *
+   * 한컴 2024 실측: 선택을 지운 뒤 undo 하면 지우기 전 범위가 그대로 복원되고(캐럿은 선택 끝),
+   * redo 하면 해제된다. 반면 선택 위에 타이핑해서 대체한 경우의 undo 는 복원하지 않는다.
+   * F3 블록 선택은 **확장 단계까지** 되돌아온다 — undo 뒤 F3 를 누르면 단어에서 문단으로
+   * 이어서 확장한다(단계가 초기화됐다면 다시 단어 범위에 머물렀을 것이다).
+   * 본문은 선택 삭제 계열이 이 metadata를 사용한다. HF는 연산별 계약에 따라 삭제·cut의
+   * undo와 부분 서식의 undo/redo에서 사용하며, 입력·IME·paste 치환은 선택을 복원하지 않는다.
+   *
+   * 반환값은 "그때 그랬다" 는 기록일 뿐 지금 유효하다는 보장이 아니다. 복원하는 쪽이 현재
+   * 문서에서 유효한지 반드시 확인해야 한다(#2339).
+   */
+  selectionBefore?(): EditSelectionSnapshot | null;
+  /** redo 뒤 되살릴 선택. 서식처럼 실행 전후 선택을 유지하는 명령만 구현한다. */
+  selectionAfter?(): EditSelectionSnapshot | null;
 }
 
 /**
@@ -58,6 +76,7 @@ export type EditContext =
       readonly applyTo: number;
       readonly paraIdx: number;
       readonly charOffset: number;
+      readonly previewPage: number;
     }
   | {
       readonly mode: 'footnote';
@@ -69,6 +88,22 @@ export type EditContext =
       readonly innerParaIdx: number;
       readonly charOffset: number;
     };
+
+export type BodySelectionSnapshot = {
+  readonly start: DocumentPosition;
+  readonly end: DocumentPosition;
+  /** F3 블록 선택이었으면 그 확장 단계, 아니면 `null`. */
+  readonly blockPhase: number | null;
+};
+
+export type HeaderFooterSelectionSnapshot = {
+  readonly mode: 'headerFooter';
+  readonly start: HeaderFooterTextPosition;
+  readonly end: HeaderFooterTextPosition;
+  readonly previewPage: number;
+};
+
+export type EditSelectionSnapshot = BodySelectionSnapshot | HeaderFooterSelectionSnapshot;
 
 /** text mutation의 document pagination/flow 경계와 immediate 완료를 함께 전달한다. */
 export interface FocusedCellCursorGeometry {
@@ -224,6 +259,12 @@ export type OperationDescriptor =
       operation: (wasm: WasmBridge) => DocumentPosition | null;
       /** 본문 좌표와 분리된 HF/FN 편집 문맥. undo/redo 뒤 같은 문맥으로 돌아간다. */
       editContext?: EditContext;
+      /** 최초 실행/redo 뒤 복원할 문맥. 함수형이면 최초 mutation 결과를 반영해 지연 계산한다. */
+      editContextAfter?: EditContext | (() => EditContext);
+      /** undo 뒤 복원할 선택. */
+      selectionBefore?: EditSelectionSnapshot | null;
+      /** 최초 실행/redo 뒤 복원할 선택. */
+      selectionAfter?: EditSelectionSnapshot | null;
       meta?: OperationMetadata;
     }
   | { kind: 'record'; command: EditCommand; meta?: OperationMetadata };
@@ -443,10 +484,12 @@ export function replaceBodyTextWithMutationEffects(
     deleteCount,
     text,
   );
+  const focusedPagePatch = !result.flowChanged ? result.focusedPagePatch : undefined;
   return {
     documentPaginationPending: result.documentPaginationPending,
     flowChanged: result.flowChanged,
     paginationCompleted: !result.documentPaginationPending,
+    ...(focusedPagePatch ? { focusedPagePatch } : {}),
   };
 }
 
@@ -822,69 +865,180 @@ export class MergeParagraphCommand implements EditCommand {
   mergeWith(): null { return null; }
 }
 
-// ─── 선택 영역 삭제 명령 ─────────────────────────────
+// ─── [#5769] 선택 영역 삭제 — 조각(fragment) 경로 ───────
 
-export class DeleteSelectionCommand implements EditCommand {
+/**
+ * 스냅샷 대신 조각 저장소를 쓰는 선택 삭제 명령.
+ *
+ * captureDeleteRange → deleteRange → (undo: restoreDeleteFragment) 순서로,
+ * 스냅샷 2슬롯 대신 조각 1개(문단 클론 + 꼬리 line_segs + raw + 캐럿)로
+ * 역연산한다. snapshotResourceCount 는 항상 0 — 스냅샷 예산에 기여하지 않는다.
+ *
+ * redo: undo 가 조각을 소비하므로 문서를 다시 캡처해 삭제한다.
+ * 셀 내 삭제는 조각 API 미지원이라 DeleteSelectionCommand 생성자에서
+ * SnapshotCommand 경로로 폴백한다.
+ */
+export class FragmentDeleteCommand implements EditCommand {
   readonly type = 'deleteSelection';
   readonly timestamp = Date.now();
 
-  /**
-   * 삭제 범위의 복원은 문서 스냅샷에 맡긴다 (Task #2418).
-   *
-   * 평문만 저장해 되돌리던 이전 방식은 글자 모양·문단 메타·인라인 컨트롤을 되살리지
-   * 못했다 — 재삽입은 삽입 지점의 현재 글자 모양을 쓰고, 다문단 복원은 문단 메타를 앞
-   * 문단에서 상속하는 `splitParagraph` 를 타며(#2342), 셀 다문단은 문단 구조 대신
-   * `'\n'` 이어붙이기로 대체됐다. 선택 범위의 서식·컨트롤을 평문 밖에서 따로 캡처하려면
-   * 글자모양 run·문단 메타·컨트롤을 읽고 되돌리는 API 가 새로 필요한데, 그것은 스냅샷이
-   * 이미 하는 일이다. 같은 이유로 붙여넣기(`pasteInternal` 등)가 스냅샷을 쓰므로 그
-   * 역연산인 선택 삭제도 같은 방식으로 맞춘다.
-   *
-   * `kind:'command'` 로 남는다 — 양식 모드 게이트(`isOperationAllowedInEditMode` 의
-   * `'deleteSelection'` 분기)가 커맨드 타입에 걸려 있어, `kind:'snapshot'` 으로 바꾸면
-   * 양식 모드 선택 삭제가 게이트에서 드롭돼 무언 폐기가 된다.
-   */
-  private readonly snapshot: SnapshotCommand;
+  private fragmentId: number | null = null;
+  private noOp = false;
 
-  constructor(start: DocumentPosition, end: DocumentPosition) {
-    // 삭제 후 커서는 선택 시작으로 모이고, undo 후에는 선택 끝으로 되돌아간다.
-    this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
-      if (isCell(start)) {
-        // 중첩 셀 좌표 축 정합: flat controlIndex/cellIndex 는 cellPath[0](최외곽)이라
-        // 중첩 셀에서 바깥 셀을 지운다. 최내곽 셀을 대상으로 ...ByPath 로 라우팅하고,
-        // 셀 문단 인덱스는 cellPath[last] 에서 읽는다(cellParaIndexOf).
-        wasm.deleteRangeInCellByPath(
-          start.sectionIndex, start.parentParaIndex!, cellPathJson(start),
-          cellParaIndexOf(start), start.charOffset, cellParaIndexOf(end), end.charOffset,
-        );
-      } else {
-        wasm.deleteRange(
-          start.sectionIndex, start.paragraphIndex, start.charOffset,
-          end.paragraphIndex, end.charOffset,
-        );
-      }
-      return { ...start };
-    });
-  }
+  constructor(
+    private cursorBefore: DocumentPosition,
+    private cursorAfter: DocumentPosition,
+    private selection: { start: DocumentPosition; end: DocumentPosition; blockPhase: number | null },
+    private sectionIdx: number,
+    private startPara: number,
+    private endPara: number,
+    private operation: (wasm: WasmBridge) => DocumentPosition | null,
+  ) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
-    return this.snapshot.execute(wasm);
+    // 지역 변수로 받는다 — catch 에서 프로퍼티 좁히기가 풀려 TS2345 가 난다(CI 실측).
+    const fragmentId = wasm.captureDeleteRange(this.sectionIdx, this.startPara, this.endPara);
+    this.fragmentId = fragmentId;
+    try {
+      const result = this.operation(wasm);
+      if (result === null) {
+        this.noOp = true;
+        wasm.discardDeleteFragment(fragmentId);
+        this.fragmentId = null;
+        return { ...this.cursorBefore };
+      }
+      return result;
+    } catch (e) {
+      wasm.discardDeleteFragment(fragmentId);
+      this.fragmentId = null;
+      throw e;
+    }
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    return this.snapshot.undo(wasm);
+    if (this.fragmentId === null) {
+      // 실행 전·이미 복원된 뒤의 undo 는 배선 버그다 — 무음 통과 대신 드러낸다.
+      throw new Error(`${this.type} undo 불가 — 살아있는 삭제 조각이 없다`);
+    }
+    wasm.restoreDeleteFragment(this.fragmentId);
+    this.fragmentId = null;
+    return { ...this.cursorBefore };
   }
 
   mergeWith(): null { return null; }
 
+  selectionBefore(): { start: DocumentPosition; end: DocumentPosition; blockPhase: number | null } {
+    return this.selection;
+  }
+
   snapshotResourceCount(): number {
-    return this.snapshot.snapshotResourceCount();
+    return 0;
+  }
+
+  isNoOp(): boolean {
+    return this.noOp;
   }
 
   discard(wasm: WasmBridge): void {
-    this.snapshot.discard(wasm);
+    if (this.fragmentId !== null) {
+      wasm.discardDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+    }
   }
 }
+/**
+ * 선택 영역 삭제 명령.
+ *
+ * 비셀(basic text) 선택은 [#5769] 조각 저장소를 사용한다 — 스냅샷 2슬롯 대신
+ * 조각 1개로 역연산해 스냅샷 예산을 절약한다. 셀 내 삭제는 조각 API 미지원이라
+ * 기존 SnapshotCommand 경로를 유지한다(Stage 3에서 확장).
+ *
+ * `kind:'command'` 로 남는다 — 양식 모드 게이트(`isOperationAllowedInEditMode` 의
+ * `'deleteSelection'` 분기)가 커맨드 타입에 걸려 있어, `kind:'snapshot'` 으로 바꾸면
+ * 양식 모드 선택 삭제가 게이트에서 드롭돼 무언 폐기가 된다.
+ */
+export class DeleteSelectionCommand implements EditCommand {
+  readonly type = 'deleteSelection';
+  readonly timestamp = Date.now();
 
+  /** 조각 경로(비셀) 또는 스냅샷 경로(셀). 둘 중 하나만 실체화된다. */
+  private readonly fragment: FragmentDeleteCommand | null;
+  private readonly snapshot: SnapshotCommand | null;
+  private readonly selection: {
+    start: DocumentPosition;
+    end: DocumentPosition;
+    blockPhase: number | null;
+  };
+
+  constructor(start: DocumentPosition, end: DocumentPosition, blockPhase: number | null = null) {
+    this.selection = { start: { ...start }, end: { ...end }, blockPhase };
+
+    if (isCell(start)) {
+      // 셀 내 삭제 — 조각 API 미지원, 스냅샷 경로 유지 (Stage 3에서 확장)
+      this.fragment = null;
+      this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
+        wasm.deleteRangeInCellByPath(
+          start.sectionIndex, start.parentParaIndex!, cellPathJson(start),
+          cellParaIndexOf(start), start.charOffset, cellParaIndexOf(end), end.charOffset,
+        );
+        return { ...start };
+      });
+    } else {
+      // 비셀 선택 — 조각 경로 (#5769)
+      this.snapshot = null;
+      this.fragment = new FragmentDeleteCommand(
+        end,   // cursorBefore — undo 시 돌아갈 위치(선택 끝)
+        start, // cursorAfter — execute 후 커서 위치(선택 시작)
+        this.selection,
+        start.sectionIndex,
+        start.paragraphIndex,
+        end.paragraphIndex,
+        (wasm) => {
+          wasm.deleteRange(
+            start.sectionIndex, start.paragraphIndex, start.charOffset,
+            end.paragraphIndex, end.charOffset,
+          );
+          return { ...start };
+        },
+      );
+    }
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    return this.fragment
+      ? this.fragment.execute(wasm)
+      : this.snapshot!.execute(wasm);
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    return this.fragment
+      ? this.fragment.undo(wasm)
+      : this.snapshot!.undo(wasm);
+  }
+
+  mergeWith(): null { return null; }
+
+  selectionBefore(): { start: DocumentPosition; end: DocumentPosition; blockPhase: number | null } {
+    return this.selection;
+  }
+
+  snapshotResourceCount(): number {
+    return this.fragment
+      ? this.fragment.snapshotResourceCount()
+      : this.snapshot!.snapshotResourceCount();
+  }
+
+  isNoOp(): boolean {
+    return this.fragment
+      ? this.fragment.isNoOp()
+      : this.snapshot?.isNoOp() ?? false;
+  }
+
+  discard(wasm: WasmBridge): void {
+    this.fragment?.discard(wasm);
+    this.snapshot?.discard(wasm);
+  }
+}
 // ─── 글자 서식 적용 명령 ─────────────────────────────
 
 /** 문단 하나에 대한 서식 적용 정보 */
@@ -929,19 +1083,22 @@ export class ApplyCharFormatCommand implements EditCommand {
       const endPara = cellParaIndexOf(end);
 
       this.entries = [];
-      for (let p = startPara; p <= endPara; p++) {
-        const pathP = cellPathJsonForPara(start, p);
-        const from = p === startPara ? start.charOffset : 0;
-        const to = p === endPara ? end.charOffset : wasm.getCellParagraphLengthByPath(sec, ppi, pathP);
-        if (to <= from) continue;
+      // 대상 문단 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
+      wasm.runInBatch(() => {
+        for (let p = startPara; p <= endPara; p++) {
+          const pathP = cellPathJsonForPara(start, p);
+          const from = p === startPara ? start.charOffset : 0;
+          const to = p === endPara ? end.charOffset : wasm.getCellParagraphLengthByPath(sec, ppi, pathP);
+          if (to <= from) continue;
 
-        const prevProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
-        this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
+          const prevProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
+          this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
 
-        wasm.applyCharFormatInCellByPath(sec, ppi, pathP, from, to, propsJson);
-        const afterProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
-        this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
-      }
+          wasm.applyCharFormatInCellByPath(sec, ppi, pathP, from, to, propsJson);
+          const afterProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
+          this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
+        }
+      });
     } else {
       const sec = start.sectionIndex;
       const startPara = start.paragraphIndex;
@@ -1076,9 +1233,12 @@ export class ApplyParaFormatCommand implements EditCommand {
       beforeParaShapeId: getParaShapeId(wasm, target),
     }));
 
-    for (const entry of entries) {
-      applyParaFormatToTarget(wasm, entry.target, propsJson);
-    }
+    // 대상 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
+    wasm.runInBatch(() => {
+      for (const entry of entries) {
+        applyParaFormatToTarget(wasm, entry.target, propsJson);
+      }
+    });
     for (const entry of entries) {
       entry.afterParaShapeId = getParaShapeId(wasm, entry.target);
     }
@@ -1136,6 +1296,8 @@ export interface HeaderFooterEditTarget {
   readonly sectionIdx: number;
   readonly isHeader: boolean;
   readonly applyTo: number;
+  /** 구역 첫 페이지에 마련된 대표 HF 편집 표면 */
+  readonly previewPage: number;
 }
 
 export interface FootnoteEditTarget {
@@ -1149,7 +1311,10 @@ export interface FootnoteEditTarget {
 }
 
 function hfEditContext(t: HeaderFooterEditTarget, paraIdx: number, charOffset: number): EditContext {
-  return { mode: 'headerFooter', sectionIdx: t.sectionIdx, isHeader: t.isHeader, applyTo: t.applyTo, paraIdx, charOffset };
+  return {
+    mode: 'headerFooter', sectionIdx: t.sectionIdx, isHeader: t.isHeader,
+    applyTo: t.applyTo, paraIdx, charOffset, previewPage: t.previewPage,
+  };
 }
 
 function fnEditContext(t: FootnoteEditTarget, innerParaIdx: number, charOffset: number): EditContext {
@@ -1939,6 +2104,584 @@ export class MoveLineEndpointCommand implements EditCommand {
 }
 
 /**
+ * [Task #3230] 개체 속성 변경의 역연산 명령 (kind:'record' 용, #2337 계열).
+ *
+ * 스냅샷 대신 쓰는 이유는 비용이다. 스냅샷 1개는 `Document` 통째 클론이라 문서에 비례하고
+ * (실측: 30KB 공문 0.43 MB · 10MB 행정편람 10.59 MB), `SnapshotCommand` 는 before/after 로
+ * 2개를 쓴다. 회전 한 번에 최대 21 MB 를 스택에 얹는 셈인데, 실제로 되돌려야 하는 것은
+ * **스칼라 속성 하나**다.
+ *
+ * 역연산이 자명한 조건은 셋이고 회전·대칭은 셋을 다 만족한다.
+ *  - setter 가 **절대값**이다(누적·토글이 아니라 `rotationAngle = 30`, `horzFlip = true`).
+ *  - 호출부가 적용 **전에 현재 값을 이미 읽는다**(다음 각도·토글 반대값을 그것으로 만든다).
+ *  - 그 속성만 바뀐다 — 파생 상태(레이아웃·앵커)는 setter 가 다시 계산한다.
+ *
+ * 뮤테이션은 호출부가 적용하고 이 명령은 기록만 담당한다(`execute` 는 redo 경로에서만 재적용).
+ */
+export class SetObjectPropsCommand implements EditCommand {
+  readonly type = 'setObjectProps';
+  readonly timestamp: number;
+
+  constructor(
+    private ref: ObjectPropsRef,
+    private before: Record<string, unknown>,
+    private after: Record<string, unknown>,
+    timestamp?: number,
+  ) {
+    this.timestamp = timestamp ?? Date.now();
+  }
+
+  private apply(wasm: WasmBridge, props: Record<string, unknown>): DocumentPosition {
+    setObjectProps(wasm, this.ref, props);
+    return { sectionIndex: this.ref.sec, paragraphIndex: this.ref.ppi, charOffset: 0 };
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    return this.apply(wasm, this.after);
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    return this.apply(wasm, this.before);
+  }
+
+  /**
+   * 적용해도 달라질 것이 없으면 무변경이다 (#2370 규약).
+   *
+   * 히스토리는 커맨드에게 이 질문을 하고(`history.ts` 의 `command.isNoOp?.()`), 답하지 않으면
+   * "항상 바꾼다" 로 읽는다. before 와 after 가 같은데 침묵하면 그 자체가 거짓 응답이고,
+   * 팬텀 엔트리가 Ctrl+Z 한 번을 무효과로 소모하며 redo 스택까지 파기한다.
+   *
+   * 지금 호출부(±90° 회전·`!cur` 토글)는 항상 before ≠ after 라 이 분기를 타지 않는다. 그래도
+   * 답은 커맨드가 해야 한다 — before/after 를 아는 것은 이 객체뿐이고, 호출부마다 같은 비교를
+   * 되풀이하는 것은 판정을 소비자로 흘리는 일이다.
+   *
+   * `after` 의 키만 본다. `execute` 가 적용하는 것이 그것뿐이므로 `before` 에만 있는 키는
+   * 이 연산의 결과를 바꾸지 않는다.
+   */
+  isNoOp(): boolean {
+    const keys = Object.keys(this.after);
+    if (keys.length === 0) return true;
+    return keys.every((key) => Object.is(this.before[key], this.after[key]));
+  }
+
+  /**
+   * 병합하지 않는다. 회전 15° 를 네 번 누른 것과 60° 를 한 번 누른 것은 한컴에서도 undo
+   * 횟수가 다르다 — 묶으면 되돌리기 단위가 사용자가 누른 단위와 어긋난다.
+   */
+  mergeWith(): null { return null; }
+}
+
+/**
+ * 구역 설정(SectionDef)의 old/new 속성쌍 역연산 명령 (#5769 Stage 4).
+ *
+ * set_section_def 는 적용 시 구역 raw_stream 을 무효화한다 — 속성만 되돌리면 저장이
+ * IR 재구성 경로로 바뀌어 원본 바이트와 어긋난다(속성을 하나도 바꾸지 않고 같은 값을
+ * 한 번 적용만 해도 재현됨). 그래서 변경 직전 passthrough 를 captureSectionRaw 저널에
+ * 보관했다가 undo 에서 old 재적용(raw 재무효화) 뒤 되돌린다. Rust 수렴 실증:
+ * tests/cases/issue_5769_stage4_setter_convergence.rs — 바이트 왕복 동일.
+ *
+ * snapshotResourceCount 는 항상 0 — 스냅샷 예산을 쓰지 않는다.
+ */
+export class SetSectionPropsCommand implements EditCommand {
+  readonly type = 'setSectionProps';
+  readonly timestamp = Date.now();
+
+  /** execute 가 잡아 둔 passthrough 캡처. undo 가 소비하고 discard 가 해제한다. */
+  private captureId: number | null = null;
+  private noOp = false;
+
+  constructor(
+    private sectionIdx: number,
+    private before: SectionDef,
+    private after: SectionDef,
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (this.propsEqual()) {
+      this.noOp = true;
+      return { ...this.cursorPos };
+    }
+    // redo 재실행도 같은 순서다 — undo 가 저널 항목을 소비하므로 항상 새로 캡처한다.
+    // 지역 변수로 받는다 — catch 에서 프로퍼티 좁히기가 풀린다(FragmentDeleteCommand 선례).
+    const captureId = wasm.captureSectionRaw(this.sectionIdx);
+    this.captureId = captureId;
+    try {
+      wasm.setSectionDef(this.sectionIdx, this.after);
+      return { ...this.cursorPos };
+    } catch (e) {
+      wasm.discardSectionRaw(captureId);
+      this.captureId = null;
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.captureId === null) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 raw 캡처가 없다`);
+    }
+    const captureId = this.captureId;
+    wasm.setSectionDef(this.sectionIdx, this.before); // old 재적용 — raw 재무효화를 동반한다
+    wasm.restoreSectionRaw(captureId); // passthrough 복원 — 저널 항목 소비
+    this.captureId = null;
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.captureId !== null) {
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+    }
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 다이얼로그 확인 1회가 되돌리기 단위 1회다(한컴 정합). */
+  mergeWith(): null { return null; }
+
+  /** SectionDef 전 필드 비교 — after 만 보면 된다(execute 가 적용하는 것이 그것뿐). */
+  private propsEqual(): boolean {
+    const keys: (keyof SectionDef)[] = [
+      'pageNum', 'pageNumType', 'pictureNum', 'tableNum', 'equationNum',
+      'columnSpacing', 'defaultTabSpacing',
+      'hideHeader', 'hideFooter', 'hideMasterPage', 'hideBorder', 'hideFill', 'hideEmptyLine',
+    ];
+    return keys.every((key) => Object.is(this.before[key], this.after[key]));
+  }
+}
+
+/** [#5959] 셀 테두리/배경 적용 대상 — 다이얼로그가 범위를 데이터로 고정해 넘긴다. */
+export type CellBorderFillTarget =
+  | { kind: 'cells'; cellIdxes: number[] }
+  | { kind: 'zone'; range: { startRow: number; startCol: number; endRow: number; endCol: number } };
+
+interface CellBorderFillUndoState {
+  /** cellIdx → 적용 직전 borderFillId(배치 안 첫 기록이 원본이다). */
+  cellBefores: Array<{ cellIdx: number; id: number }>;
+  /** asOne 적용의 범위 — undo 시 id 원복 또는 신설 제거에 쓴다. */
+  zoneRange: { startRow: number; startCol: number; endRow: number; endCol: number } | null;
+  /** null 이면 apply 때 zone 이 신설됐다 → undo 는 zone 을 제거한다. */
+  zoneBeforeId: number | null;
+  /**
+   * [#5959] 셀 적용이 cellzone origin override(1×1)를 만들거나 지운 전이 — sync 가
+   * zones 를 건드리면 셀 id 복원만으론 부족하다. before 상태로 되돌린다.
+   */
+  zoneRestores: Array<{
+    startRow: number;
+    startCol: number;
+    endRow: number;
+    endCol: number;
+    id: number | null;
+  }>;
+  borderFillLenBefore: number;
+  docInfoDirtyBefore: boolean;
+}
+
+/**
+ * [#5959] 셀 테두리/배경(테두리·채우기·대각선)의 속성쌍 역연산 커맨드.
+ *
+ * 변경 실체는 대상+이웃 집단의 `border_fill_id` 재배정과 스타일 테이블 append 다
+ * (mydocs/working/task_m100_5959_cell_border_bg.md 판정). Rust 가 self-describing
+ * 기록(changes / zoneBeforeId / borderFillLenBefore / docInfoDirtyBefore)을 응답으로
+ * 돌려주므로 undo 는 세 단계로 원상 복구한다:
+ *
+ *   ① `applyCellBorderFillIds` 로 cell/zone id 를 직접 대입(스타일 테이블 무손상)
+ *   ② `removeBorderFillTails` 로 이번 apply 가 push 한 꼬리 항목 절단(dirty 원복 포함)
+ *   ③ `restoreSectionRaw` 로 passthrough 복원(section_raw_journal 계약)
+ *
+ * 구버전 wasm 조합은 `hasCellBorderFillInverse()` probe 를 캡처 **전에** 통과시킨다
+ * (#5951 스크우 선례) — probe 없이 진행하면 undo 불능 오염만 남는다.
+ *
+ * 생명주기는 SetSectionPropsAllCommand 와 동일하다 — execute 가 raw 를 캡처해 두고,
+ * undo 는 재적용(raw 재무효화) 뒤 복원한다. redo 는 execute 재실행이며, 절단된
+ * 스타일 항목은 dedupe 가 같은 내용을 꼬리에 다시 만들어 id 가 안정적이다.
+ */
+export class SetCellBorderFillCommand implements EditCommand {
+  readonly type = 'setCellBorderFill';
+  readonly timestamp = Date.now();
+
+  private captureId: number | null = null;
+  private noOp = false;
+  private state: CellBorderFillUndoState | null = null;
+
+  constructor(
+    private sec: number,
+    private ppi: number,
+    private ci: number,
+    private target: CellBorderFillTarget,
+    private props: Record<string, unknown>,
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (!wasm.hasCellBorderFillInverse()) {
+      throw new Error(`${this.type} 불가 — 구버전 wasm 에 역연산 경로가 없다`);
+    }
+
+    const cellBefores = new Map<number, number>();
+    // 같은 rect 여러 전이 중 undo 에 필요한 것은 최초(before 원본) 하나다.
+    const zoneBefores = new Map<string, { startRow: number; startCol: number; endRow: number; endCol: number; id: number | null }>();
+    let lenBefore = -1;
+    let dirtyBefore = false;
+    let zoneBeforeId: number | null = null;
+    let changed = false;
+    // 뮤테이션 네이티브가 하나라도 성공했는가 — 전부 실패였다면 롤백 호출 없이
+    // 캡처 해제만으로 충분하다(빈 payload 대입은 table.dirty 만 세운다).
+    let mutated = false;
+
+    // redo 도 같은 순서다 — undo 가 저널 항목을 소비하므로 항상 새로 캡처한다.
+    this.captureId = wasm.captureSectionRaw(this.sec);
+    try {
+      if (this.target.kind === 'zone') {
+        const r = wasm.setCellZoneProperties(
+          this.sec, this.ppi, this.ci, this.target.range,
+          this.props as Partial<CellProperties>,
+        );
+        mutated = true;
+        lenBefore = r.borderFillLenBefore ?? -1;
+        dirtyBefore = r.docInfoDirtyBefore ?? false;
+        const beforeId = r.zoneBeforeId ?? null;
+        changed = beforeId !== (r.borderFillId ?? null);
+        if (changed) zoneBeforeId = beforeId;
+      } else {
+        const target = this.target;
+        if (target.kind !== 'cells') throw new Error(`${this.type} 잘못된 대상`);
+        // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of target.cellIdxes) {
+            const r = wasm.setCellProperties(
+              this.sec, this.ppi, this.ci, cellIdx,
+              this.props as Partial<CellProperties>,
+            );
+            mutated = true;
+            if (lenBefore === -1) {
+              lenBefore = r.borderFillLenBefore ?? -1;
+              dirtyBefore = r.docInfoDirtyBefore ?? false;
+            }
+            for (const ch of r.changes ?? []) {
+              changed = true;
+              // 배치 안에서 같은 셀이 이웃 갱신으로 여러 번 기록될 수 있다 —
+              // undo 는 원본(첫 기록) 하나면 충분하다.
+              if (!cellBefores.has(ch.cellIdx)) cellBefores.set(ch.cellIdx, ch.beforeId);
+            }
+            for (const z of r.zones ?? []) {
+              if (z.beforeId === z.afterId) continue;
+              changed = true;
+              const key = `${z.startRow},${z.startCol},${z.endRow},${z.endCol}`;
+              if (!zoneBefores.has(key)) {
+                zoneBefores.set(key, {
+                  startRow: z.startRow,
+                  startCol: z.startCol,
+                  endRow: z.endRow,
+                  endCol: z.endCol,
+                  id: z.beforeId,
+                });
+              }
+            }
+          }
+        });
+      }
+    } catch (applyError) {
+      // 최초 execute 실패 시 지금까지의 기록으로라도 원상 복구를 시도한다(#3350 계열).
+      try {
+        this.rollback(wasm, cellBefores, zoneBefores, zoneBeforeId, lenBefore, dirtyBefore, mutated);
+      } catch (rollbackError) {
+        console.error(`${this.type} 실패 롤백도 실패:`, rollbackError);
+      }
+      throw applyError;
+    }
+
+    if (!changed) {
+      // 문서 무변경(dedupe 수렴 등) — 저널 항목 없이 깨끗한 no-op(#2370).
+      this.noOp = true;
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+      return { ...this.cursorPos };
+    }
+
+    this.state = {
+      cellBefores: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
+      zoneRange: this.target.kind === 'zone' ? { ...this.target.range } : null,
+      zoneBeforeId,
+      zoneRestores: [...zoneBefores.values()],
+      borderFillLenBefore: lenBefore,
+      docInfoDirtyBefore: dirtyBefore,
+    };
+    return { ...this.cursorPos };
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.captureId === null || !this.state) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 변경 기록이 없다`);
+    }
+    wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
+      cells: this.state.cellBefores,
+      zones: [
+        ...(this.state.zoneRange
+          ? [{ ...this.state.zoneRange, id: this.state.zoneBeforeId }]
+          : []),
+        ...this.state.zoneRestores,
+      ],
+    });
+    wasm.removeBorderFillTails(this.state.borderFillLenBefore, this.state.docInfoDirtyBefore);
+    wasm.restoreSectionRaw(this.captureId);
+    this.captureId = null;
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.captureId !== null) {
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+    }
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 다이얼로그 확인 1회가 되돌리기 단위 1회다(한컴 정합). */
+  mergeWith(): null { return null; }
+
+  private rollback(
+    wasm: WasmBridge,
+    cellBefores: Map<number, number>,
+    zoneBefores: Map<string, { startRow: number; startCol: number; endRow: number; endCol: number; id: number | null }>,
+    zoneBeforeId: number | null,
+    lenBefore: number,
+    dirtyBefore: boolean,
+    mutated: boolean,
+  ): void {
+    if (this.captureId === null) return;
+    if (!mutated) {
+      // 뮤테이션이 하나도 성공하지 못했다 — 문서는 원본 그대로다. 빈 payload
+      // 대입은 table.dirty 만 세우므로 캡처 해제로 끝낸다.
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+      return;
+    }
+    wasm.applyCellBorderFillIds(this.sec, this.ppi, this.ci, {
+      cells: [...cellBefores.entries()].map(([cellIdx, id]) => ({ cellIdx, id })),
+      zones: [
+        ...(this.target.kind === 'zone'
+          ? [{ ...this.target.range, id: zoneBeforeId }]
+          : []),
+        ...[...zoneBefores.values()],
+      ],
+    });
+    if (lenBefore >= 0) wasm.removeBorderFillTails(lenBefore, dirtyBefore);
+    wasm.restoreSectionRaw(this.captureId);
+    this.captureId = null;
+  }
+}
+
+/**
+ * [#5769 후속] SetZOrderCommand 가 소비하는 자기기술 변경 레코드 항목(Rust moves 응답).
+ */
+export interface ZOrderMove {
+  ppi: number;
+  ci: number;
+  before: number;
+  after: number;
+}
+
+/**
+ * [#5769 후속] Shape z 순서 변경의 역연산 커맨드 — 스냅샷 대체.
+ *
+ * 최초 execute 는 기존 상대 연산(changeShapeZOrder)을 그대로 실행하고 Rust 가 돌려준
+ * 자기기술 레코드(moves — 대상+교환 이웃의 before/after)를 저장한다. undo/redo 는 상대
+ * 연산을 다시 머리로 계산하지 않고 저장된 쌍을 절대 대입(applyShapeZOrderPairs)해 되돌린다
+ * — front(max+1) 같은 연산엔 모드 역연산이 없으므로 값 복원이 유일한 참인 역연산이다
+ * (#5769 선결 규약). Shape z 대입에는 부작용이 없어 속성쌍 왕복이 수렴한다.
+ *
+ * passthrough 생명주기는 SetSectionPropsCommand 와 같다 — 첫 뮤테이션 전에 구역 raw 를
+ * capture 하고, undo 의 재무효화 뒤 restore 한다. redo 는 저널 항목이 소비됐으므로 재캡처한다.
+ * 슬롯 효과: changeZOrder 스냅샷 1슬롯 → 0.
+ */
+export class SetZOrderCommand implements EditCommand {
+  readonly type = 'changeZOrder';
+  readonly timestamp = Date.now();
+
+  /** 최초 실행에서 확정된 변경 레코드. null = 아직 실행 전. */
+  private moves: ZOrderMove[] | null = null;
+  private captureId: number | null = null;
+  private noOp = false;
+
+  constructor(
+    private sectionIdx: number,
+    private ppi: number,
+    private ci: number,
+    private operation: 'front' | 'forward' | 'backward' | 'back',
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  private pairsJson(dir: 'before' | 'after'): string {
+    return JSON.stringify(
+      (this.moves ?? []).map((m) => ({ ppi: m.ppi, ci: m.ci, z: m[dir] })),
+    );
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    // 스큐 선제 차단(gpt 3차 리뷰) — 구버전 wasm 은 moves 를 주지 않아 실제 변경의
+    // 역연산 기록을 만들 수 없다. 적용 **전에** 거절해 무음 변이를 원천 차단한다.
+    if (!wasm.hasShapeZOrderInverse()) {
+      throw new Error('changeZOrder 역연산 불가 — wasm 이 moves 응답 이전 버전이다');
+    }
+    const captureId = wasm.captureSectionRaw(this.sectionIdx);
+    this.captureId = captureId;
+    try {
+      if (this.moves) {
+        // redo — 상대 연산은 멱등하지 않으므로(front=항상 max+1) 저장된 after 를 대입한다.
+        const r = wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('after'));
+        // 거절 = 기록 이후 문서가 out-of-band 로 바졌다 — 성공으로 스택을 옮기지 않는다.
+        if (!r.ok) {
+          throw new Error(`${this.type} redo 거부 — 기록 이후 문서가 바뀌었다`);
+        }
+      } else {
+        // 최초 실행 — 기존 상대 연산으로 적용하고 자기기술 레코드를 받는다.
+        const r = wasm.changeShapeZOrder(this.sectionIdx, this.ppi, this.ci, this.operation);
+        if (r.ok && r.moves === undefined) {
+          // 위 probe 를 통과했다면 도달하지 않는다(같은 릴리스가 moves 와 쌍 메서드를
+          // 함께 제공한다). 도달했다면 빈 moves 흡수가 실제 변이의 기록 상실이 되므로
+          // 소리 없이 넘기지 않고 실패시킨다 — 아래 catch 가 캡처를 폐기하고,
+          // history 의 catch 가 엔트리 없이 전파한다.
+          throw new Error(`${this.type}: wasm ok 응답에 moves 가 없다 — 빌드 짝이 어긋났다`);
+        }
+        const moves = r.ok ? r.moves ?? [] : [];
+        if (!r.ok || moves.length === 0) {
+          // 이미 맨 앞/뒤 등 무변경 — phantom 엔트리와 캡처 잔류를 막는다(#2370 계약).
+          this.noOp = true;
+          wasm.discardSectionRaw(captureId);
+          this.captureId = null;
+          return { ...this.cursorPos };
+        }
+        this.moves = moves;
+      }
+      return { ...this.cursorPos };
+    } catch (e) {
+      wasm.discardSectionRaw(captureId);
+      this.captureId = null;
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (!this.moves || this.captureId === null) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 기록/캡처가 없다`);
+    }
+    const captureId = this.captureId;
+    wasm.applyShapeZOrderPairs(this.sectionIdx, this.pairsJson('before')); // old 재적용 — raw 재무효화 동반
+    wasm.restoreSectionRaw(captureId); // passthrough 복원 — 저널 항목 소비
+    this.captureId = null;
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    if (this.captureId !== null) {
+      wasm.discardSectionRaw(this.captureId);
+      this.captureId = null;
+    }
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 정렬 메뉴 1회·클릭 1회가 되돌리기 단위다(한컴 정합). */
+  mergeWith(): null { return null; }
+}
+
+/**
+ * [#5769 후속] 문서 전체(all) 구역 설정의 역연산 커맨드 — 다구역 raw 저널.
+ *
+ * `setSectionDefAll` 은 네이티브에서 구역 루프+단일 재조판일 뿐이라(#5769 후속2 실측)
+ * Rust 확장 없이 조합으로 역연산화한다. 구역별 before 를 변경 전에 읽어 두고,
+ * execute 는 전 구역 캡처 후 `setSectionDefAll(after)` 한 번(네이티브 효율 유지),
+ * undo 는 구역별 old 재적용 뒤 캡처를 되돌린다. 저널 계약은 구역 단위라("그 구역의
+ * 캡처와 복원 사이 그 구역 편집 금지") 다구역 교차 적용과 정합이다.
+ *
+ * 슬롯 효과: all 범위 스냅샷 1슬롯 → 0. 양식 모드 게이트는 type 이 default 차단
+ * (종전 snapshot 차단과 동일)이므로 동작 변화 없다.
+ */
+export class SetSectionPropsAllCommand implements EditCommand {
+  readonly type = 'setSectionProps';
+  readonly timestamp = Date.now();
+
+  /** execute 가 잡아 둔 구역별 passthrough 캡처. undo 가 소비하고 discard 가 해제한다. */
+  private captureIds: Array<{ idx: number; id: number }> = [];
+  private noOp = false;
+
+  constructor(
+    private sections: Array<{ idx: number; before: SectionDef }>,
+    private after: SectionDef,
+    private cursorPos: DocumentPosition,
+  ) {}
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    if (this.sections.every((s) => this.propsEqual(s.before))) {
+      this.noOp = true;
+      return { ...this.cursorPos };
+    }
+    // redo 도 같은 순서다 — undo 가 저널 항목들을 소비하므로 항상 새로 캡처한다.
+    // 캡처를 전부 마친 뒤 한 번 적용한다 — 적용 도중 실패가 있으면 캡처만 낭비된다.
+    const captureIds: Array<{ idx: number; id: number }> = [];
+    try {
+      for (const s of this.sections) {
+        captureIds.push({ idx: s.idx, id: wasm.captureSectionRaw(s.idx) });
+      }
+      wasm.setSectionDefAll(this.after);
+      this.captureIds = captureIds;
+      return { ...this.cursorPos };
+    } catch (e) {
+      for (const c of captureIds) wasm.discardSectionRaw(c.id);
+      throw e;
+    }
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    if (this.captureIds.length === 0) {
+      throw new Error(`${this.type} undo 불가 — 살아있는 raw 캡처가 없다`);
+    }
+    const captureIds = this.captureIds;
+    // old 재적용(raw 재무효화) → 캡처 복원. 순서는 캡처와 동일하게 유지한다.
+    // [측결 2026-08-23] bulk 네이티브 없이 구역별 setter 루프 — 실문서 구역 수
+    // (통상 ≤5)에서 전체 재조판 반복 비용은 서브밀리초라 별도 API 가 필요 없다.
+    for (const s of this.sections) {
+      wasm.setSectionDef(s.idx, s.before);
+    }
+    for (const c of captureIds) {
+      wasm.restoreSectionRaw(c.id);
+    }
+    this.captureIds = [];
+    return { ...this.cursorPos };
+  }
+
+  discard(wasm: WasmBridge): void {
+    for (const c of this.captureIds) wasm.discardSectionRaw(c.id);
+    this.captureIds = [];
+  }
+
+  snapshotResourceCount(): number { return 0; }
+
+  isNoOp(): boolean { return this.noOp; }
+
+  /** 병합하지 않는다 — 다이얼로그 확인 1회가 되돌리기 단위 1회다(한컴 정합). */
+  mergeWith(): null { return null; }
+
+  /** SectionDef 전 필드 비교 — after 만 보면 된다(execute 가 적용하는 것이 그것뿐). */
+  private propsEqual(before: SectionDef): boolean {
+    const keys: (keyof SectionDef)[] = [
+      'pageNum', 'pageNumType', 'pictureNum', 'tableNum', 'equationNum',
+      'columnSpacing', 'defaultTabSpacing',
+      'hideHeader', 'hideFooter', 'hideMasterPage', 'hideBorder', 'hideFill', 'hideEmptyLine',
+    ];
+    return keys.every((key) => Object.is(before[key], this.after[key]));
+  }
+}
+
+/**
  * [Task #2374] 양식 값 변경 대상 — 본문 또는 표 셀 내 컨트롤 locator + 전/후 값 JSON.
  * before/after 는 setFormValue(InCell) 에 그대로 전달되는 JSON 문자열이다.
  */
@@ -1998,10 +2741,16 @@ export class SetFormValueCommand implements EditCommand {
  * Document 스냅샷을 이용한 Undo/Redo 명령.
  *
  * 역연산 구현이 복잡한 작업(붙여넣기, 객체 삭제 등)에 사용한다.
- * - 최초 실행: before 스냅샷 저장 → 작업 수행 → after 스냅샷 저장
- * - Undo: before 스냅샷으로 복원
- * - Redo: after 스냅샷으로 복원
- * - Discard: 양쪽 스냅샷 메모리 해제
+ * - 최초 실행: before 스냅샷 저장 → 작업 수행 (**after 는 저장하지 않는다**)
+ * - Undo: after 스냅샷 저장 → before 스냅샷으로 복원
+ * - Redo: after 스냅샷으로 복원 → 그 스냅샷 즉시 반환
+ * - Discard: 살아있는 스냅샷 메모리 해제
+ *
+ * **[Task #5769] after 는 undo 시점에 잡는다.** 이 명령이 undo 스택 top 이라는 것은
+ * 히스토리 불변식상 "현재 문서 == 이 명령 실행 직후 상태" 를 뜻하므로, 그때 찍어도 값이
+ * 같다. 그래서 undo 스택 엔트리는 스냅샷 id 를 **1개**만 점유한다(redo 스택 엔트리는 2개).
+ * 예산 98 기준 최악 undo 깊이가 49 → 98 로 배가된다. 복원 의미는 종전과 같은 문서 전체
+ * 치환이라 문서 충실도는 달라지지 않는다.
  */
 export class SnapshotCommand implements EditCommand {
   readonly type: string;
@@ -2010,6 +2759,16 @@ export class SnapshotCommand implements EditCommand {
   private beforeId: number | null = null;
   private afterId: number | null = null;
   private noOp = false;
+  /**
+   * 최초 실행이 끝났는가. redo 판별에 쓴다.
+   *
+   * 종전에는 `afterId !== null` 이 곧 "이미 실행됨" 이었지만, after 를 undo 시점에 잡게
+   * 되면서 그 등가가 깨졌다 — 실행 직후에도 `afterId` 는 `null` 이다. 플래그 없이 두면
+   * redo 가 최초 실행으로 오인돼 `beforeId` 를 덮어쓰고 앞의 스냅샷을 누수한다.
+   */
+  private executed = false;
+  /** undo 시점 after 저장에 실패해 redo 를 제공할 수 없는 상태인가. */
+  private redoUnavailable = false;
 
   /**
    * @param operationType 작업 종류 (예: 'pasteInternal', 'deleteControl')
@@ -2027,18 +2786,29 @@ export class SnapshotCommand implements EditCommand {
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    if (this.afterId !== null) {
-      // Redo: after 스냅샷으로 복원
+    if (this.executed) {
+      // Redo: undo 시점에 잡아 둔 after 로 복원하고 **그 스냅샷을 즉시 반환한다** —
+      // 복원 뒤 이 명령은 undo 스택으로 돌아가고, 그러면 after 는 다시 "현재 문서" 와
+      // 같아져 들고 있을 이유가 없다. 이 반환이 없으면 undo↔redo 왕복마다 엔트리가
+      // 2슬롯으로 남아 지연 저장의 이득이 사라진다.
+      if (this.redoUnavailable || this.afterId === null) {
+        // undo 시점 after 저장이 실패한 명령이다. 조용히 성공한 척하면 문서가 그대로인
+        // 채 redo 스택만 움직여 이후 undo 가 어긋난다 — 히스토리의 실패시-드롭
+        // 하이브리드(#2328)가 이 엔트리를 걷어내도록 던진다.
+        throw new Error(`${this.type} redo 불가 — undo 시점 after 스냅샷 저장 실패`);
+      }
       wasm.restoreSnapshot(this.afterId);
+      wasm.discardSnapshot(this.afterId);
+      this.afterId = null;
       return { ...this.cursorAfter };
     }
 
-    // 최초 실행: before 저장 → 작업 수행 → after 저장
+    // 최초 실행: before 저장 → 작업 수행 (after 는 undo 시점에 잡는다)
+    this.executed = true;
     this.beforeId = wasm.saveSnapshot();
-    // [Task #2328] operation 또는 after-save 중 어느 것이 throw 하든 커맨드가
-    // 히스토리에 등록되지 못해 discard 주체가 사라진다 → 스냅샷 영구 누수(orphan
-    // → WASM 무통보 축출 재발). after-save(대용량 문서 클론 시 메모리 압박 등)까지
-    // try 범위에 포함해 before/after 를 대칭적으로 해제한다.
+    // [Task #2328] operation 이 throw 하면 커맨드가 히스토리에 등록되지 못해 discard
+    // 주체가 사라진다 → 스냅샷 영구 누수(orphan → WASM 무통보 축출 재발). 아래 catch 가
+    // before 를 대칭적으로 해제한다.
     try {
       if (this.operation) {
         const result = this.operation(wasm);
@@ -2052,11 +2822,10 @@ export class SnapshotCommand implements EditCommand {
         }
         this.cursorAfter = result;
       }
-      this.afterId = wasm.saveSnapshot();
     } catch (operationError) {
       // [#3350] 최초 execute 가 실패하면 명령 전체를 원자적으로 되돌린다. 이 커맨드는
       // history 에 push 되기 전이므로 before 스냅샷을 가진 SnapshotCommand만 rollback을
-      // 수행할 수 있다. after-save 실패도 execute 실패이므로 같은 계약을 따른다.
+      // 수행할 수 있다.
       try {
         if (this.beforeId !== null) {
           wasm.restoreSnapshot(this.beforeId);
@@ -2084,6 +2853,17 @@ export class SnapshotCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
+    // [Task #5769] after 를 여기서 잡는다. 이 명령이 undo 스택 top 이라는 것은
+    // "현재 문서 == 이 명령 실행 직후 상태" 라는 뜻이므로 실행 시점에 찍은 것과 값이 같다.
+    if (this.afterId === null && !this.redoUnavailable) {
+      try {
+        this.afterId = wasm.saveSnapshot();
+      } catch {
+        // 저장 실패로 **되돌리기 자체를 막지 않는다.** undo 는 수행하고 redo 만 포기한다 —
+        // 여기서 던지면 사용자의 Ctrl+Z 가 아무 일도 못 하고 히스토리 엔트리까지 잃는다.
+        this.redoUnavailable = true;
+      }
+    }
     if (this.beforeId !== null) {
       wasm.restoreSnapshot(this.beforeId);
     }
@@ -2128,4 +2908,55 @@ export class SubmodeSnapshotCommand extends SnapshotCommand {
   }
 
   editContext(): EditContext { return this.context; }
+}
+
+/**
+ * HF 범위 mutation처럼 undo/redo의 커서 문맥과 선택 정책이 서로 다른 스냅샷 명령.
+ *
+ * `contextAfter` 함수는 최초 operation이 코어가 계산한 새 문단/오프셋을 돌려준 뒤 한 번만
+ * 평가한다. redo는 저장된 after snapshot과 같은 확정 문맥을 재사용한다.
+ */
+export class SubmodeSelectionSnapshotCommand extends SnapshotCommand {
+  private lastContext: EditContext;
+  private resolvedContextAfter: EditContext | null = null;
+
+  constructor(
+    operationType: string,
+    cursorBefore: DocumentPosition,
+    cursorAfter: DocumentPosition,
+    operation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
+    private readonly contextBefore: EditContext,
+    private readonly contextAfter: EditContext | (() => EditContext),
+    private readonly beforeSelection: EditSelectionSnapshot | null = null,
+    private readonly afterSelection: EditSelectionSnapshot | null = null,
+  ) {
+    super(operationType, cursorBefore, cursorAfter, operation);
+    this.lastContext = contextBefore;
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    const result = super.execute(wasm);
+    if (!this.resolvedContextAfter) {
+      this.resolvedContextAfter = typeof this.contextAfter === 'function'
+        ? this.contextAfter()
+        : this.contextAfter;
+    }
+    this.lastContext = this.resolvedContextAfter;
+    return result;
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    const result = super.undo(wasm);
+    this.lastContext = this.contextBefore;
+    return result;
+  }
+
+  editContext(): EditContext { return this.lastContext; }
+  /** raw IME가 snapshot 최초 실행 뒤 최종 캐럿을 확정할 때 after 문맥을 갱신한다. */
+  updateContextAfter(context: EditContext): void {
+    this.resolvedContextAfter = context;
+    this.lastContext = context;
+  }
+  selectionBefore(): EditSelectionSnapshot | null { return this.beforeSelection; }
+  selectionAfter(): EditSelectionSnapshot | null { return this.afterSelection; }
 }

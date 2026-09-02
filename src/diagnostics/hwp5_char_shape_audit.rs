@@ -13,6 +13,10 @@ use std::path::PathBuf;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 
+use crate::diagnostics::{
+    read_hwp5_body_text_section_limited, read_hwp5_doc_info_limited,
+    MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+};
 use crate::parser::cfb_reader::CfbReader;
 use crate::parser::header;
 use crate::parser::record::Record;
@@ -310,8 +314,8 @@ fn parse_hwpx_signatures(xml: &str) -> Result<BTreeMap<usize, HwpxDecorationSign
 
 fn xml_required_id(event: &quick_xml::events::BytesStart<'_>) -> Result<usize, String> {
     for attribute in event.attributes().flatten() {
-        if attribute.key.as_ref() == b"id" {
-            let value = String::from_utf8_lossy(attribute.value.as_ref());
+        if attribute.key.as_ref().as_bytes() == b"id" {
+            let value = attribute.value.as_ref();
             return value
                 .parse::<usize>()
                 .map_err(|_| format!("HWPX charPr id가 올바르지 않습니다: {value}"));
@@ -338,20 +342,14 @@ fn xml_attribute_signature(event: &quick_xml::events::BytesStart<'_>) -> String 
     let mut attributes = event
         .attributes()
         .flatten()
-        .map(|attribute| {
-            format!(
-                "{}={}",
-                String::from_utf8_lossy(attribute.key.as_ref()),
-                String::from_utf8_lossy(attribute.value.as_ref())
-            )
-        })
+        .map(|attribute| format!("{}={}", attribute.key.as_ref(), attribute.value.as_ref()))
         .collect::<Vec<_>>();
     attributes.sort();
     attributes.join(",")
 }
 
-fn xml_local_name(name: &[u8]) -> &[u8] {
-    name.rsplit(|byte| *byte == b':').next().unwrap_or(name)
+fn xml_local_name(name: &str) -> &[u8] {
+    name.rsplit(':').next().unwrap_or(name).as_bytes()
 }
 
 fn read_char_shapes(path: &PathBuf) -> Result<Vec<CharShapeRecord>, String> {
@@ -369,9 +367,12 @@ fn read_char_shapes(path: &PathBuf) -> Result<Vec<CharShapeRecord>, String> {
             path.display()
         ));
     }
-    let doc_info = cfb
-        .read_doc_info(file_header.flags.compressed)
-        .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
+    let doc_info = read_hwp5_doc_info_limited(
+        &mut cfb,
+        file_header.flags.compressed,
+        MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+    )
+    .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
     extract_char_shapes(&doc_info)
 }
 
@@ -393,21 +394,25 @@ fn read_generated_audit(
         ));
     }
 
-    let doc_info = cfb
-        .read_doc_info(file_header.flags.compressed)
-        .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
+    let doc_info = read_hwp5_doc_info_limited(
+        &mut cfb,
+        file_header.flags.compressed,
+        MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+    )
+    .map_err(|error| format!("DocInfo 읽기 실패: {error}"))?;
     let shapes = extract_char_shapes(&doc_info)?;
     let mut usages = BTreeMap::new();
     let mut stored_page_count = 0;
 
     for section in 0..cfb.section_count() {
-        let data = cfb
-            .read_body_text_section(
-                section,
-                file_header.flags.compressed,
-                file_header.flags.distribution,
-            )
-            .map_err(|error| format!("BodyText Section{section} 읽기 실패: {error}"))?;
+        let data = read_hwp5_body_text_section_limited(
+            &mut cfb,
+            section,
+            file_header.flags.compressed,
+            file_header.flags.distribution,
+            MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+        )
+        .map_err(|error| format!("BodyText Section{section} 읽기 실패: {error}"))?;
         let records = Record::read_all(&data)
             .map_err(|error| format!("BodyText Section{section} record 파싱 실패: {error}"))?;
         let paragraphs = collect_section_paragraphs(section, &records, &mut stored_page_count);

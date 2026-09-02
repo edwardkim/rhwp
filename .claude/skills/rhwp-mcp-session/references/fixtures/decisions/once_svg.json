@@ -1,0 +1,10 @@
+{
+  "id": "once_svg",
+  "task": "문서 전체 SVG",
+  "choice": "stateless",
+  "first_tool": "hwp_export_svg",
+  "why": "전 쪽 렌더는 무상태.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

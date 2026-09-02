@@ -1,0 +1,10 @@
+{
+  "protocol": "DAP/1.0",
+  "operation": "agent.handoff.verifyJournal",
+  "status": "ok",
+  "code": 0,
+  "entries": 2,
+  "chainValid": true,
+  "brokenAt": null,
+  "note": "last result 가 아니다"
+}

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/첨부.hwp",
+  "clean": false,
+  "signalCount": 3,
+  "highestConfidence": "high",
+  "untrustedContent": true,
+  "untrustedFields": ["injectionSignals[].text"]
+}

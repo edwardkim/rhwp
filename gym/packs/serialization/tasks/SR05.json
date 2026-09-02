@@ -1,0 +1,33 @@
+{
+  "id": "SR05",
+  "tier": 2,
+  "title": "IR 스키마 내보내기",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 의 IR 스키마를 schema.json 으로 내보내 제출하라. 힌트: rhwp export-ir-schema.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "schema.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "스키마 산출",
+      "op": "file_exists",
+      "file": "schema.json",
+      "minBytes": 128
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "schema.json"
+    },
+    {
+      "name": "IR 스키마 dialect",
+      "op": "json_value_eq",
+      "file": "schema.json",
+      "path": "dialect",
+      "value": "https://json-schema.org/draft/2020-12/schema"
+    }
+  ]
+}

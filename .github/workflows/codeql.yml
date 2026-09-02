@@ -7,6 +7,9 @@ on:
       - 'mydocs/**'
       - 'docs/**'
       - 'samples/**'
+      - 'pdf/**'
+      - 'pdf-2020/**'
+      - 'pdf-large/**'
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -21,7 +24,8 @@ on:
     branches: [main, devel]
     paths-ignore:
       - 'docs/**'
-      - 'samples/**'
+      # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
+      # 구분해 CodeQL no-op/full 판정을 발행한다.
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -43,18 +47,32 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  trusted_postmerge_reuse:
+    uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    with:
+      workflow_file: codeql.yml
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
+
   preflight:
     name: CodeQL preflight
     runs-on: ubuntu-latest
+    needs: [trusted_postmerge_reuse]
     timeout-minutes: 10
     permissions:
       actions: read
       contents: read
       checks: read
       pull-requests: read
+      statuses: read
     outputs:
-      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
-      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      fast_pass: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'true' || steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
       codeql_languages: ${{ steps.languages.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
       classification_status: ${{ steps.languages.outputs.classification_status || 'full' }}
@@ -108,30 +126,47 @@ jobs:
               if (filename.startsWith('mydocs/')) {
                 return true;
               }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
-                  filename.endsWith('.hwp')
-                  || filename.endsWith('.hwpx')
-                  || filename.endsWith('.hml')
-                  || filename.endsWith('.pdf')
+                  filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
+            }
+
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
             }
 
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
@@ -145,6 +180,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
 
@@ -156,6 +192,59 @@ jobs:
                   const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
                   return bTime - aTime;
                 })[0];
+            }
+
+            async function hasTrustedReviewReuse(pr) {
+              for (let attempt = 0; attempt < 7; attempt += 1) {
+                const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                  owner,
+                  repo,
+                  ref: pr.head.sha,
+                  per_page: 100,
+                });
+                const latest = statuses
+                  .filter((status) => status.context === 'CI Impact Policy')
+                  .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
+                if (latest) {
+                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                    const separator = part.indexOf('=');
+                    return separator > 0
+                      ? [part.slice(0, separator), part.slice(separator + 1)]
+                      : ['', ''];
+                  }));
+                  const expectedFields = [
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                  ];
+                  const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
+                  if (
+                    latest.state === 'success'
+                    && latest.creator?.login === 'github-actions[bot]'
+                    && fields.size === expectedFields.length
+                    && expectedFields.every((field) => fields.has(field))
+                    && fields.get('v') === '5'
+                    && fields.get('rfp') === '1'
+                    && fields.get('b') === pr.base.sha
+                    && target
+                  ) {
+                    const response = await github.rest.actions.getWorkflowRun({
+                      owner,
+                      repo,
+                      run_id: Number(target[1]),
+                    });
+                    const run = response.data;
+                    if (
+                      run.name === 'CI Impact Policy Controller'
+                      && String(run.path || '').split('@')[0] === '.github/workflows/ci-impact-policy.yml'
+                      && run.event === 'pull_request_target'
+                      && run.repository?.full_name === `${owner}/${repo}`
+                      && !(run.status === 'completed' && run.conclusion !== 'success')
+                    ) return true;
+                  }
+                  return false;
+                }
+                if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, 5000));
+              }
+              return false;
             }
 
             async function codeqlResult(candidateSha, pr) {
@@ -279,6 +368,17 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              const hasCiExecutionSurfaceChange = prFiles.some((file) => (
+                isCiExecutionPath(file.filename)
+                || isCiExecutionPath(file.previous_filename || '')
+              ));
+              if (hasCiExecutionSurfaceChange && !await hasTrustedReviewReuse(pr)) {
+                setResult(false, 'ci-execution-surface-change');
+                return;
+              }
+              if (hasCiExecutionSurfaceChange) {
+                core.info('trusted controller authorized enforcement-change review reuse');
+              }
               if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
                 core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);
                 setResult(true, 'all-review-only-no-code-impact', pr.base.sha);
@@ -700,18 +800,35 @@ jobs:
       # [#3290] 호스티드 16GB VM 은 CodeQL 자동 감지 값이 적정하다. self-hosted 로
       # 되돌릴 경우 ram/threads 캡 필수 — #3289 사고(무캡 JVM 40~55GB×2 로 호스트
       # 포화·스톨) 및 task_m100_3289_report.md 거버넌스 절 참조.
-      - name: Initialize CodeQL
-        if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+      - name: Initialize CodeQL (non-Rust)
+        if: ${{ matrix.language != 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+
+      - name: Initialize CodeQL (Rust)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
+          config-file: .github/codeql/rust-pr.yml
+
+      # PR은 제품 Rust만 빠르게 검사하고, devel push·schedule은 아래 기존 전체
+      # 경로 분석을 유지한다. PR 축소가 기준선 보안 탐지를 대신하지 않게 한다.
+      - name: Initialize CodeQL (Rust full scan)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' }}
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
 
       - name: Install Rust toolchain
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
 
-      # [#3790 Stage 5A] 기본 build mode의 내부 autobuild가 같은 source alert와
-      # fingerprint를 생성함을 canary로 확인했다. 중복 cache·수동 prebuild는 실행하지 않는다.
+      # [#5187] Rust는 명시적 none 모드로 분석한다. 동일 SHA 비교에서 현재 기본 경로와
+      # 추출 파일·SARIF 지표가 같았고, none 모드가 더 짧아 Rust 자동 빌드 의존을 제거한다.
       - name: Perform CodeQL Analysis
         if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: github/codeql-action/analyze@v4

@@ -1,0 +1,902 @@
+{
+  "candidateCount": 17,
+  "candidates": [
+    {
+      "documentFace": "문체부 바탕체",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "ready-for-read-only-canary",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 1,
+      "sfnt": {
+        "bytes": 1536060,
+        "cmapCodepointCount": 2356,
+        "documentFace": "문체부 바탕체",
+        "embeddingFlags": [
+          "restricted-license-embedding"
+        ],
+        "faceIndex": 0,
+        "glyphCount": 2357,
+        "nameTable": {
+          "family": [
+            "MBatang",
+            "문체부 바탕체"
+          ],
+          "fullName": [
+            "MBatang",
+            "문체부 바탕체"
+          ],
+          "postScriptName": [
+            "MBatang",
+            "문체부 바탕체"
+          ],
+          "preferredFamily": [],
+          "preferredSubfamily": [],
+          "subfamily": [
+            "Regular"
+          ]
+        },
+        "os2FsType": 2,
+        "sampleGlyphEvidence": [
+          {
+            "character": " ",
+            "codepoint": 32,
+            "glyphName": "space",
+            "hmtxAdvance": 500,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "(",
+            "codepoint": 40,
+            "reason": "codepoint-not-in-best-cmap",
+            "status": "unavailable"
+          },
+          {
+            "character": ".",
+            "codepoint": 46,
+            "reason": "codepoint-not-in-best-cmap",
+            "status": "unavailable"
+          },
+          {
+            "character": "0",
+            "codepoint": 48,
+            "reason": "codepoint-not-in-best-cmap",
+            "status": "unavailable"
+          },
+          {
+            "character": "A",
+            "codepoint": 65,
+            "reason": "codepoint-not-in-best-cmap",
+            "status": "unavailable"
+          },
+          {
+            "character": "　",
+            "codepoint": 12288,
+            "reason": "codepoint-not-in-best-cmap",
+            "status": "unavailable"
+          },
+          {
+            "character": "가",
+            "codepoint": 44032,
+            "glyphName": "uniAC00",
+            "hmtxAdvance": 1000,
+            "leftSideBearing": 90,
+            "outlineSha256": "f58553d9c1b1107c0f633e79188a20dba4eae63e938755a75936fd9fbb423e20",
+            "status": "observed"
+          },
+          {
+            "character": "나",
+            "codepoint": 45208,
+            "glyphName": "uniB098",
+            "hmtxAdvance": 1000,
+            "leftSideBearing": 60,
+            "outlineSha256": "2958e494a04e30f6e24525bbb963e1391d8e5e22063cbc6be3533d9ea2285918",
+            "status": "observed"
+          }
+        ],
+        "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+        "unitsPerEm": 1000
+      },
+      "sourceKind": "local-only-nonredistributable",
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "documentFace": "-윤명조120",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 2,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "-윤고딕110",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 3,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "산돌명조 L",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 4,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "-윤고딕310",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 5,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "-윤고딕120",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 6,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "KoPubWorld돋움체 Light",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "ready-for-read-only-canary",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "officialSupply": {
+        "documentFace": "KoPubWorld돋움체 Light",
+        "downloadRecordName": "20. KoPub World 돋움체 L (KOGL 1유형).zip",
+        "downloadSha256": "a2bd6195594ae91a8bf75b94e23bcccc8268ab140857b5b0a17b9549e947a604",
+        "fontSha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+        "licenseDecision": "local-analysis-only-no-font-redistribution",
+        "officialRecord": "https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200023&wrtSn=13287211",
+        "os2FsType": 8,
+        "uci": "G905-13287211"
+      },
+      "queueRank": 7,
+      "sfnt": {
+        "bytes": 5187836,
+        "cmapCodepointCount": 25974,
+        "documentFace": "KoPubWorld돋움체 Light",
+        "embeddingFlags": [
+          "editable-embedding"
+        ],
+        "faceIndex": 0,
+        "glyphCount": 31556,
+        "nameTable": {
+          "family": [
+            "KoPubWorldDotum",
+            "KoPubWorldDotum Light",
+            "KoPubWorld돋움체",
+            "KoPubWorld돋움체 Light"
+          ],
+          "fullName": [
+            "KoPubWorldDotum Light",
+            "KoPubWorld돋움체 Light"
+          ],
+          "postScriptName": [
+            "KoPubWorldDotumLight"
+          ],
+          "preferredFamily": [
+            "KoPubWorldDotum",
+            "KoPubWorld돋움체"
+          ],
+          "preferredSubfamily": [
+            "Light"
+          ],
+          "subfamily": [
+            "Light"
+          ]
+        },
+        "os2FsType": 8,
+        "sampleGlyphEvidence": [
+          {
+            "character": " ",
+            "codepoint": 32,
+            "glyphName": "space",
+            "hmtxAdvance": 290,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "(",
+            "codepoint": 40,
+            "glyphName": "parenleft",
+            "hmtxAdvance": 310,
+            "leftSideBearing": 51,
+            "outlineSha256": "cc4a91d8e82d168b26b242231f748b6d57cbd690eb955bbd61835359aeb4c824",
+            "status": "observed"
+          },
+          {
+            "character": ".",
+            "codepoint": 46,
+            "glyphName": "period",
+            "hmtxAdvance": 300,
+            "leftSideBearing": 97,
+            "outlineSha256": "9fad762be599d1c11c9c1d559b99b344c510af73a26760905dc0584127b915e1",
+            "status": "observed"
+          },
+          {
+            "character": "0",
+            "codepoint": 48,
+            "glyphName": "zero",
+            "hmtxAdvance": 563,
+            "leftSideBearing": 49,
+            "outlineSha256": "f0710ef5d069545beaa93f89efaf2b10b9c24f4cdf6ed5d424beb3a8d75ef6be",
+            "status": "observed"
+          },
+          {
+            "character": "A",
+            "codepoint": 65,
+            "glyphName": "A",
+            "hmtxAdvance": 662,
+            "leftSideBearing": 14,
+            "outlineSha256": "289e44a6fd50533ee9e445dfc2060b57e4364151dd0506aa567ec34cac856769",
+            "status": "observed"
+          },
+          {
+            "character": "　",
+            "codepoint": 12288,
+            "glyphName": "uni3000",
+            "hmtxAdvance": 900,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "가",
+            "codepoint": 44032,
+            "glyphName": "uniAC00",
+            "hmtxAdvance": 872,
+            "leftSideBearing": 37,
+            "outlineSha256": "22d496463c52d40d3f44cb1c95e9cc6863c267da6edd6721e0e0673b6e4f9413",
+            "status": "observed"
+          },
+          {
+            "character": "나",
+            "codepoint": 45208,
+            "glyphName": "uniB098",
+            "hmtxAdvance": 872,
+            "leftSideBearing": 91,
+            "outlineSha256": "f88757d5819f72d49689598e64ea960a3420af60e39613144b87f12b35ceb83c",
+            "status": "observed"
+          }
+        ],
+        "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+        "unitsPerEm": 1000
+      },
+      "sourceKind": "official-public-font-local-only",
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "documentFace": "KoPubWorld바탕체 Light",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "ready-for-read-only-canary",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "officialSupply": {
+        "documentFace": "KoPubWorld바탕체 Light",
+        "downloadRecordName": "23. KoPub World 바탕체 L (KOGL 1유형).zip",
+        "downloadSha256": "a8fb7ae0513c5f8b83b851a822cf4c49c7f16fdfbe277141b5d52a8bb2323d60",
+        "fontSha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+        "licenseDecision": "local-analysis-only-no-font-redistribution",
+        "officialRecord": "https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200023&wrtSn=13287214",
+        "os2FsType": 8,
+        "uci": "G905-13287214"
+      },
+      "queueRank": 8,
+      "sfnt": {
+        "bytes": 12301272,
+        "cmapCodepointCount": 25971,
+        "documentFace": "KoPubWorld바탕체 Light",
+        "embeddingFlags": [
+          "editable-embedding"
+        ],
+        "faceIndex": 0,
+        "glyphCount": 32884,
+        "nameTable": {
+          "family": [
+            "KoPubWorldBatang",
+            "KoPubWorldBatang Light",
+            "KoPubWorld바탕체",
+            "KoPubWorld바탕체 Light"
+          ],
+          "fullName": [
+            "KoPubWorldBatang Light",
+            "KoPubWorld바탕체 Light"
+          ],
+          "postScriptName": [
+            "KoPubWorldBatangLight"
+          ],
+          "preferredFamily": [
+            "KoPubWorldBatang",
+            "KoPubWorld바탕체"
+          ],
+          "preferredSubfamily": [
+            "Light"
+          ],
+          "subfamily": [
+            "Light"
+          ]
+        },
+        "os2FsType": 8,
+        "sampleGlyphEvidence": [
+          {
+            "character": " ",
+            "codepoint": 32,
+            "glyphName": "space",
+            "hmtxAdvance": 312,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "(",
+            "codepoint": 40,
+            "glyphName": "parenleft",
+            "hmtxAdvance": 312,
+            "leftSideBearing": 47,
+            "outlineSha256": "4900a03bdd1a16c41ea10609db7e02f55442031bf0951b867232d51ea9bad994",
+            "status": "observed"
+          },
+          {
+            "character": ".",
+            "codepoint": 46,
+            "glyphName": "period",
+            "hmtxAdvance": 312,
+            "leftSideBearing": 80,
+            "outlineSha256": "287456563216eaf5b9f8798fc466670d97668f53c4e53472e0c3077f5be9f0ca",
+            "status": "observed"
+          },
+          {
+            "character": "0",
+            "codepoint": 48,
+            "glyphName": "zero",
+            "hmtxAdvance": 573,
+            "leftSideBearing": 44,
+            "outlineSha256": "e08037721f952e81c8b04bcd89871ccc0e9ee7007c4558624b8d9831427f3602",
+            "status": "observed"
+          },
+          {
+            "character": "A",
+            "codepoint": 65,
+            "glyphName": "A",
+            "hmtxAdvance": 668,
+            "leftSideBearing": -2,
+            "outlineSha256": "f88660fa033725ee4beb1b57b00c4bcb5c231aa2da6f52dc41ab269fccd34012",
+            "status": "observed"
+          },
+          {
+            "character": "　",
+            "codepoint": 12288,
+            "glyphName": "uni3000",
+            "hmtxAdvance": 900,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "가",
+            "codepoint": 44032,
+            "glyphName": "uniAC00",
+            "hmtxAdvance": 936,
+            "leftSideBearing": 43,
+            "outlineSha256": "e4d19cc890efffb8fe487bbdcca07e05c9d8c091d50b63d7ab0c54369ab7f862",
+            "status": "observed"
+          },
+          {
+            "character": "나",
+            "codepoint": 45208,
+            "glyphName": "uniB098",
+            "hmtxAdvance": 936,
+            "leftSideBearing": 29,
+            "outlineSha256": "3997c7fd323e2adb145b8df0cdaa0568fa24a4e344da3f013a354d18fc1ede16",
+            "status": "observed"
+          }
+        ],
+        "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+        "unitsPerEm": 1000
+      },
+      "sourceKind": "official-public-font-local-only",
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "documentFace": "맑은 고딕",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "ready-for-read-only-canary",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 9,
+      "sfnt": {
+        "bytes": 13459196,
+        "cmapCodepointCount": 27133,
+        "documentFace": "맑은 고딕",
+        "embeddingFlags": [
+          "editable-embedding"
+        ],
+        "faceIndex": 0,
+        "glyphCount": 28215,
+        "nameTable": {
+          "family": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ],
+          "fullName": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ],
+          "postScriptName": [
+            "MalgunGothic"
+          ],
+          "preferredFamily": [],
+          "preferredSubfamily": [],
+          "subfamily": [
+            "Regular"
+          ]
+        },
+        "os2FsType": 8,
+        "sampleGlyphEvidence": [
+          {
+            "character": " ",
+            "codepoint": 32,
+            "glyphName": "space",
+            "hmtxAdvance": 720,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "(",
+            "codepoint": 40,
+            "glyphName": "parenleft",
+            "hmtxAdvance": 624,
+            "leftSideBearing": 143,
+            "outlineSha256": "f982ae2969d5ac481a197cf96d200452f22fdfb23a46a81c1353a3a53db5cb68",
+            "status": "observed"
+          },
+          {
+            "character": ".",
+            "codepoint": 46,
+            "glyphName": "period",
+            "hmtxAdvance": 448,
+            "leftSideBearing": 114,
+            "outlineSha256": "ef7963862dc0d15076880aec96b330d8a456702cca7cd918e253c054ccb23062",
+            "status": "observed"
+          },
+          {
+            "character": "0",
+            "codepoint": 48,
+            "glyphName": "zero",
+            "hmtxAdvance": 1128,
+            "leftSideBearing": 89,
+            "outlineSha256": "40f92e9ea0db72a40541d7aec8c69f48595ea0769663dcb8830bb0b17ac773a2",
+            "status": "observed"
+          },
+          {
+            "character": "A",
+            "codepoint": 65,
+            "glyphName": "A",
+            "hmtxAdvance": 1348,
+            "leftSideBearing": 24,
+            "outlineSha256": "92e7e31d79d90bda31602271449b189e63977ea5aa365722575402273e54078c",
+            "status": "observed"
+          },
+          {
+            "character": "　",
+            "codepoint": 12288,
+            "glyphName": "uni3000",
+            "hmtxAdvance": 2048,
+            "leftSideBearing": 0,
+            "outlineSha256": "7258c3af7659bcbadae4d428e0de184bed3d6e18d14a2dd1ab8fc68a25347056",
+            "status": "observed"
+          },
+          {
+            "character": "가",
+            "codepoint": 44032,
+            "glyphName": "uniAC00",
+            "hmtxAdvance": 2048,
+            "leftSideBearing": 172,
+            "outlineSha256": "9cb6efffc659e833b4b7ccd05f55fe4a996f1ba2d92ac47900a512ac21193a5a",
+            "status": "observed"
+          },
+          {
+            "character": "나",
+            "codepoint": 45208,
+            "glyphName": "uniB098",
+            "hmtxAdvance": 2048,
+            "leftSideBearing": 270,
+            "outlineSha256": "f9a1d8467097a93ac5d259ed0264f168631e9e736cc8645dff3b9361db224e05",
+            "status": "observed"
+          }
+        ],
+        "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "unitsPerEm": 2048
+      },
+      "sourceKind": "local-only-nonredistributable",
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "documentFace": "한양신명조",
+      "hftEvidence": {
+        "evidenceClass": "historical-import",
+        "evidenceSha256": "d82042076d15cfcfd4520f1582d4a5c2586b46d7321b8158d6c12d8126f4abed",
+        "readbackFace": "한양신명조",
+        "readbackFontType": 2,
+        "requestedFace": "한양신명조",
+        "verdict": "OK"
+      },
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "historical-import-ready",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 10,
+      "sourceReadiness": "ready-existing-hft-evidence"
+    },
+    {
+      "documentFace": "-윤명조320",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 11,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "-윤명조130",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 12,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "휴먼명조",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "ready-for-read-only-canary",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 13,
+      "sfnt": {
+        "bytes": 1820732,
+        "cmapCodepointCount": 12443,
+        "documentFace": "휴먼명조",
+        "embeddingFlags": [
+          "installable-embedding"
+        ],
+        "faceIndex": 0,
+        "glyphCount": 13353,
+        "nameTable": {
+          "family": [
+            "휴먼명조"
+          ],
+          "fullName": [
+            "휴먼명조"
+          ],
+          "postScriptName": [
+            "휴먼명조"
+          ],
+          "preferredFamily": [],
+          "preferredSubfamily": [],
+          "subfamily": [
+            "Regular"
+          ]
+        },
+        "os2FsType": 0,
+        "sampleGlyphEvidence": [
+          {
+            "character": " ",
+            "codepoint": 32,
+            "glyphName": "space",
+            "hmtxAdvance": 256,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "(",
+            "codepoint": 40,
+            "glyphName": "parenleft",
+            "hmtxAdvance": 160,
+            "leftSideBearing": 18,
+            "outlineSha256": "86e9d0512c041dcedfa3d0a9fb8115f7dc37711b0eff4a24e41879883b16ea47",
+            "status": "observed"
+          },
+          {
+            "character": ".",
+            "codepoint": 46,
+            "glyphName": "period",
+            "hmtxAdvance": 138,
+            "leftSideBearing": 32,
+            "outlineSha256": "ffe1cbb8e36a663a738cb16608a88f08d478ddbd7444e5308f51512217637bfb",
+            "status": "observed"
+          },
+          {
+            "character": "0",
+            "codepoint": 48,
+            "glyphName": "zero",
+            "hmtxAdvance": 256,
+            "leftSideBearing": 17,
+            "outlineSha256": "bae8c7f7df029bf8572274835eb2c9f38c34746a7519e374374ac083aba23dcb",
+            "status": "observed"
+          },
+          {
+            "character": "A",
+            "codepoint": 65,
+            "glyphName": "A",
+            "hmtxAdvance": 338,
+            "leftSideBearing": 6,
+            "outlineSha256": "961ef29d2cdffdb9ee23bc96ecfbef316000b8640e296e93ee1084880e37b0c9",
+            "status": "observed"
+          },
+          {
+            "character": "　",
+            "codepoint": 12288,
+            "glyphName": "uni3000",
+            "hmtxAdvance": 512,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "가",
+            "codepoint": 44032,
+            "glyphName": "uniAC00",
+            "hmtxAdvance": 512,
+            "leftSideBearing": 29,
+            "outlineSha256": "1d853dbf27646a926185191793fbef8d841d7569fb7291107298215dbb727bdc",
+            "status": "observed"
+          },
+          {
+            "character": "나",
+            "codepoint": 45208,
+            "glyphName": "uniB098",
+            "hmtxAdvance": 512,
+            "leftSideBearing": 38,
+            "outlineSha256": "de07fae176a8c0de0f15f9308a9a9a0c48ee7256b192fc08a657808412640b21",
+            "status": "observed"
+          }
+        ],
+        "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "unitsPerEm": 512
+      },
+      "sourceKind": "local-only-nonredistributable",
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "documentFace": "-윤고딕320",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 14,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "-윤고딕130",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 15,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    },
+    {
+      "documentFace": "한컴 윤고딕 230",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "ready-for-read-only-canary",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 16,
+      "sfnt": {
+        "bytes": 2978088,
+        "cmapCodepointCount": 17623,
+        "documentFace": "한컴 윤고딕 230",
+        "embeddingFlags": [
+          "preview-and-print-embedding"
+        ],
+        "faceIndex": 0,
+        "glyphCount": 20374,
+        "nameTable": {
+          "family": [
+            "Haan YGodic 230",
+            "한컴 윤고딕 230"
+          ],
+          "fullName": [
+            "Haan YGodic 230",
+            "한컴 윤고딕 230"
+          ],
+          "postScriptName": [
+            "HaanYGodic23"
+          ],
+          "preferredFamily": [],
+          "preferredSubfamily": [],
+          "subfamily": [
+            "Regular"
+          ]
+        },
+        "os2FsType": 4,
+        "sampleGlyphEvidence": [
+          {
+            "character": " ",
+            "codepoint": 32,
+            "glyphName": "space",
+            "hmtxAdvance": 350,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "(",
+            "codepoint": 40,
+            "glyphName": "parenleft",
+            "hmtxAdvance": 380,
+            "leftSideBearing": 72,
+            "outlineSha256": "a57edc3ecc301b8168ca5fe22d6ac2cd3020d6d99504d94d5151dc972d86aad4",
+            "status": "observed"
+          },
+          {
+            "character": ".",
+            "codepoint": 46,
+            "glyphName": "period",
+            "hmtxAdvance": 350,
+            "leftSideBearing": 107,
+            "outlineSha256": "44eb2905a6a4759169e9ebf719e7ec0c4fcae43df52ed6a713f134caa7537caf",
+            "status": "observed"
+          },
+          {
+            "character": "0",
+            "codepoint": 48,
+            "glyphName": "zero",
+            "hmtxAdvance": 750,
+            "leftSideBearing": 74,
+            "outlineSha256": "7d5385f5c8afd94dfe4bf8fff77473fe627f960df70ebc66c7bd076a86dc8f23",
+            "status": "observed"
+          },
+          {
+            "character": "A",
+            "codepoint": 65,
+            "glyphName": "A",
+            "hmtxAdvance": 733,
+            "leftSideBearing": 43,
+            "outlineSha256": "c6dfdaa50725c54b7986dd7fce862e8dc1bbb7bf7715a72dd308afa1a11ba481",
+            "status": "observed"
+          },
+          {
+            "character": "　",
+            "codepoint": 12288,
+            "glyphName": "uni3000",
+            "hmtxAdvance": 900,
+            "leftSideBearing": 0,
+            "outlineSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "status": "observed"
+          },
+          {
+            "character": "가",
+            "codepoint": 44032,
+            "glyphName": "uniAC00",
+            "hmtxAdvance": 900,
+            "leftSideBearing": 73,
+            "outlineSha256": "7f24751a7424f3715d882de2d3407930d45336d892b41f9bf523c200b941f371",
+            "status": "observed"
+          },
+          {
+            "character": "나",
+            "codepoint": 45208,
+            "glyphName": "uniB098",
+            "hmtxAdvance": 900,
+            "leftSideBearing": 130,
+            "outlineSha256": "f61a5461cf0470317c700f4fc0a5ab16577e089ae21db0b4be1bae10760ad1b5",
+            "status": "observed"
+          }
+        ],
+        "sha256": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200",
+        "unitsPerEm": 1000
+      },
+      "sourceKind": "local-only-nonredistributable",
+      "sourceReadiness": "ready-local-sfnt"
+    },
+    {
+      "documentFace": "산돌고딕 M",
+      "ladderReadiness": {
+        "all-related-fonts-missing": "mutable-environment-and-approval-required",
+        "curated-official-successor-only": "direct-authority-anchor-required",
+        "document-subst-font-only": "document-substitution-discovery-required",
+        "exact-installed": "blocked-source-unavailable",
+        "exact-removed": "mutable-environment-and-approval-required"
+      },
+      "queueRank": 17,
+      "reason": "No hash-verified bytes or direct identity anchor are available; identity and fallback relations remain unknown.",
+      "sourceReadiness": "source-unavailable"
+    }
+  ],
+  "canonicalSha256": "66cdcead9939081645aea845de2dd85c1a5d406731d25a255725292bb309b15c",
+  "counts": {
+    "readyExistingHftEvidence": 1,
+    "readyLocalSfnt": 6,
+    "sourceUnavailable": 10
+  },
+  "issue": 4963,
+  "kind": "font-oracle-readiness-ledger",
+  "privacy": {
+    "absolutePathsPublished": false,
+    "fontBytesTracked": false,
+    "privateDocumentIdentityPublished": false
+  },
+  "schemaVersion": 1,
+  "scope": {
+    "githubWrite": false,
+    "productFallbackChange": false,
+    "productMetricDatabaseChange": false,
+    "productPaintChange": false,
+    "systemFontMutation": false
+  }
+}

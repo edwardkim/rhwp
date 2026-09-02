@@ -1,4 +1,4 @@
-import { userSettings, type ThemeMode } from './user-settings';
+import { userSettings, type ThemeMode, type ThemeSkin } from './user-settings';
 
 export type EffectiveTheme = 'light' | 'dark';
 
@@ -34,14 +34,25 @@ export function getEffectiveTheme(mode: ThemeMode = getThemeMode()): EffectiveTh
   return prefersDark() ? 'dark' : 'light';
 }
 
+export function getThemeSkin(): ThemeSkin {
+  return userSettings.getThemeSettings().skin;
+}
+
 export function applyTheme(mode: ThemeMode = getThemeMode()): EffectiveTheme {
   const effective = getEffectiveTheme(mode);
   const root = document.documentElement;
   root.dataset.themeMode = mode;
   root.dataset.themeEffective = effective;
+  applyThemeSkin(root);
   syncBrowserColorScheme(root, effective);
   syncThemeColorMeta(root);
   return effective;
+}
+
+/** 스킨을 root data 속성으로 반영한다. 기본 스킨은 속성을 제거해 CSS 미적용 상태로 둔다. */
+function applyThemeSkin(root: HTMLElement, skin: ThemeSkin = getThemeSkin()): void {
+  if (skin === 'default') delete root.dataset.themeSkin;
+  else root.dataset.themeSkin = skin;
 }
 
 export function setThemeMode(mode: ThemeMode): EffectiveTheme {
@@ -49,9 +60,20 @@ export function setThemeMode(mode: ThemeMode): EffectiveTheme {
   return applyTheme(mode);
 }
 
-export function syncThemeMenu(mode: ThemeMode = getThemeMode()): void {
+export function setThemeSkin(skin: ThemeSkin): EffectiveTheme {
+  userSettings.setThemeSkin(skin);
+  // 스킨 변경 후 theme-color meta 등 파생 값도 함께 갱신한다.
+  return applyTheme();
+}
+
+export function syncThemeMenu(mode: ThemeMode = getThemeMode(), skin: ThemeSkin = getThemeSkin()): void {
   for (const item of document.querySelectorAll<HTMLElement>('[data-theme-mode-choice]')) {
     const active = item.dataset.themeModeChoice === mode;
+    item.classList.toggle('active', active);
+    item.setAttribute('aria-checked', String(active));
+  }
+  for (const item of document.querySelectorAll<HTMLElement>('[data-theme-skin-choice]')) {
+    const active = item.dataset.themeSkinChoice === skin;
     item.classList.toggle('active', active);
     item.setAttribute('aria-checked', String(active));
   }

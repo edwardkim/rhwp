@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "issue": 5433,
+  "plan": "docs/canvaskit-parity-implementation.md",
+  "manifest": "scripts/renderer_baseline_manifest.json",
+  "manifestUpdated": false,
+  "manifestUpdatePolicy": "Do not edit renderer_baseline_manifest.json from this driver. Threshold/sample changes stay on the existing renderer-contract and renderer_baseline review process.",
+  "platform": "win32",
+  "host": "windows",
+  "recordedAt": "2026-08-18",
+  "batches": [
+    {"number": 2, "name": "Paint Family Parity"},
+    {"number": 3, "name": "Strict Text Variant Replay"}
+  ],
+  "heavy": false,
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "blocked": 2,
+    "skipped": 2
+  },
+  "results": [
+    {
+      "id": "rust-canvaskit-policy",
+      "batch": 2,
+      "batchName": "Paint Family Parity",
+      "status": "blocked",
+      "command": "cargo test --lib -- canvaskit_policy",
+      "reason": "rustc-LLVM ERROR: IO failure on output stream: no space on device while compiling rhwp lib test. Host C: had 0 GB free; worktree target later deleted to recover 2.48 GB. Re-run after freeing several GB."
+    },
+    {
+      "id": "studio-image-header",
+      "batch": 2,
+      "batchName": "Paint Family Parity",
+      "status": "passed",
+      "command": "node --test tests/canvaskit-image-header.test.ts",
+      "cwd": "rhwp-studio"
+    },
+    {
+      "id": "studio-resource-key",
+      "batch": 2,
+      "batchName": "Paint Family Parity",
+      "status": "passed",
+      "command": "node --test tests/canvaskit-resource-key.test.ts",
+      "cwd": "rhwp-studio"
+    },
+    {
+      "id": "studio-document-preflight",
+      "batch": 2,
+      "batchName": "Paint Family Parity",
+      "status": "passed",
+      "command": "node --test tests/canvaskit-document-preflight.test.ts",
+      "cwd": "rhwp-studio"
+    },
+    {
+      "id": "studio-renderer-contract",
+      "batch": 2,
+      "batchName": "Paint Family Parity",
+      "status": "passed",
+      "command": "node e2e/renderer-contract.test.mjs",
+      "cwd": "rhwp-studio",
+      "note": "stdout: renderer backend contract guard passed"
+    },
+    {
+      "id": "renderer-baseline-readiness",
+      "batch": 2,
+      "batchName": "Paint Family Parity",
+      "status": "skipped",
+      "heavy": true,
+      "command": "python scripts/renderer_baseline.py --readiness-only --scope representative --browser-mode headless --profiles screen --output output/renderer-baseline/m11p-batch2",
+      "reason": "heavy job not run: needs native rhwp binary, Chrome/puppeteer, WASM, and several GB disk. Manifest not updated."
+    },
+    {
+      "id": "rust-text-variants",
+      "batch": 3,
+      "batchName": "Strict Text Variant Replay",
+      "status": "blocked",
+      "command": "cargo test --lib -- text_variants",
+      "reason": "same rhwp lib-test compile blocked by disk exhaustion"
+    },
+    {
+      "id": "studio-text-variant-selection",
+      "batch": 3,
+      "batchName": "Strict Text Variant Replay",
+      "status": "passed",
+      "command": "node --test tests/canvaskit-text-variant-selection.test.ts",
+      "cwd": "rhwp-studio"
+    },
+    {
+      "id": "studio-sfnt-face",
+      "batch": 3,
+      "batchName": "Strict Text Variant Replay",
+      "status": "passed",
+      "command": "node --test tests/canvaskit-sfnt-face.test.ts",
+      "cwd": "rhwp-studio"
+    },
+    {
+      "id": "studio-font-plan",
+      "batch": 3,
+      "batchName": "Strict Text Variant Replay",
+      "status": "passed",
+      "command": "node --test tests/canvaskit-font-plan.test.ts",
+      "cwd": "rhwp-studio"
+    },
+    {
+      "id": "studio-canvaskit-font-coverage",
+      "batch": 3,
+      "batchName": "Strict Text Variant Replay",
+      "status": "skipped",
+      "heavy": true,
+      "command": "npm run e2e:canvaskit-font-coverage",
+      "cwd": "rhwp-studio",
+      "reason": "heavy job not run: browser + WASM + disk. Use the command above when those are available."
+    }
+  ],
+  "studioNodeTestSummary": {
+    "pass": 30,
+    "fail": 0,
+    "durationMs": 3508.8484
+  }
+}

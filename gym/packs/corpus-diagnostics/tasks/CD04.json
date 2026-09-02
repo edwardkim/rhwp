@@ -1,0 +1,32 @@
+{
+  "id": "CD04",
+  "tier": 3,
+  "title": "같은 문서 두 형식 대조",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "같은 문서의 HWP 판과 HWPX 판을 IR 로 비교해 동일 여부를 answer.json 에 {\"identical\": true|false} 로 제출하라. 대상 HWPX: samples/hwpx/143E433F503322BD33.hwpx. 힌트: rhwp ir-diff.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

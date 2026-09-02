@@ -44,6 +44,9 @@ fn target_table(doc: &rhwp::wasm_api::HwpDocument) -> &Table {
 /// 쪽수 oracle에는 저장본을 재파싱한 값만 사용한다.
 fn saved_hwp(doc: &rhwp::wasm_api::HwpDocument) -> rhwp::wasm_api::HwpDocument {
     let bytes = doc.export_hwp_native().expect("분할 HWP 저장");
+    if let Ok(dump) = std::env::var("RHWP_DUMP_4138") {
+        std::fs::write(dump, &bytes).expect("분할 HWP 덤프");
+    }
     rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("분할 HWP 재파싱")
 }
 
@@ -176,12 +179,14 @@ fn split_cell_into_reflows_stale_segs_and_rebuilds_ladder() {
         "#4138 회귀: text + inline control source line이 다시 합쳐짐"
     );
 
-    // 한컴 2020은 같은 1×2 분할 저장본을 197쪽 PDF로 출력한다. 제품 경로인 native
-    // HWP 저장→재파싱에서도 정확히 같은 쪽수를 유지해야 한다.
+    // 한글 2024 COM 재실측(2026-08-25): 같은 1×2 분할 저장본 197쪽. #6023 수정 뒤
+    // 드러난 세로 축 잔존(196, 한글 197)은 #6046 이후의 row grow/near-top 보정과 함께
+    // 다시 오라클 쪽수로 정합됐다. 이 핀은 분할-reflow 계약과 저장 뒤 재파싱 쪽수의
+    // 동시 회귀 검출이 목적이므로 한글 2024 오라클(197)을 고정한다.
     let pages = saved_hwp_page_count_and_split_provenance(&doc);
     assert_eq!(
         pages, 197,
-        "#4138 회귀: 저장 뒤 재파싱 쪽수 {pages} (한컴 2020 PDF=197)"
+        "#4138 회귀: 저장 뒤 재파싱 쪽수 {pages} (한글 2024 실측 197)"
     );
 }
 
@@ -214,6 +219,6 @@ fn split_cells_in_range_reflows_stale_segs() {
     assert_eq!(
         saved_hwp_page_count_and_split_provenance(&doc),
         197,
-        "#4138 회귀(범위 분할): 저장 뒤 재파싱 쪽수 불일치"
+        "#4138 회귀(범위 분할): 저장 뒤 재파싱 쪽수 불일치 (한글 2024 실측 197)"
     );
 }

@@ -27,13 +27,15 @@ fn issue_826_pua_f080f_substitution() {
 
 #[test]
 fn issue_826_pua_f0827_substitution() {
-    // U+F0827 (한컴 PUA, 미상 — johab.rs:67) → U+25A0 ■ BLACK SQUARE (잠정).
+    // [#5793] 시각 판정 완료 — 한글 2022 는 U+F0827 을 반각 이중 가로선으로 그린다
+    // (1776332 제목 밑 이중 밑줄, 280.0→506.5px 실측). 종전 잠정값 ■(전각)은 띠를
+    // 2배로 늘여 제목을 겹쳤다. 이웃 0xF0832 와 같은 이중선 계열.
     let input = '\u{F0827}';
-    let expected = '\u{25A0}';
+    let expected = '\u{2550}';
     let result = map_pua_bullet_char(input);
     assert_eq!(
         result, expected,
-        "U+F0827 는 U+25A0 (■) 로 substitution 되어야 함 (잠정). got: U+{:04X}",
+        "U+F0827 는 U+2550 (═) 로 substitution 되어야 함 (#5793 시각 판정). got: U+{:04X}",
         result as u32,
     );
 }

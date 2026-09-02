@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-a-exact-vertical-output-oracle",
+  "issue": 4969,
+  "stage": "W10-Q4-A",
+  "date": "2026-08-30",
+  "planCheckpoint": "73fe7768e18b17a9ebd7ea7ee11259cd0c31119d",
+  "engine": {
+    "name": "rustybuzz",
+    "version": "0.20.1",
+    "ttfParserVersion": "0.25.1",
+    "coordinateUnit": "font-design-unit",
+    "yAdvanceDirection": "negative-is-top-to-bottom"
+  },
+  "productMutation": false,
+  "productCallerCount": 0,
+  "fixtures": [
+    {
+      "id": "noto-hangul-vertical-rl",
+      "fontSourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "codePoints": ["U+D55C", "U+AE00"],
+      "direction": "ttb",
+      "writingMode": "vertical-rl",
+      "script": "Hang",
+      "language": "ko",
+      "features": [],
+      "settingsSha256": "8777a129be5e352b4727cf247b63de2b9457b46be09074fcc1eb6b6bfa9d4808",
+      "glyphs": [
+        {"glyphId": 11232, "clusterUtf8": 0, "xAdvance": 0, "yAdvance": -1000, "xOffset": -460, "yOffset": -880},
+        {"glyphId": 1156, "clusterUtf8": 3, "xAdvance": 0, "yAdvance": -1000, "xOffset": -460, "yOffset": -880}
+      ]
+    },
+    {
+      "id": "noto-hangul-vertical-lr",
+      "fontSourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "codePoints": ["U+D55C", "U+AE00"],
+      "direction": "ttb",
+      "writingMode": "vertical-lr",
+      "script": "Hang",
+      "language": "ko",
+      "features": [],
+      "settingsSha256": "0f9548dfa3d703f2aa253bb36545791438d785d8c164552de9fbfd83deb461c9",
+      "glyphsEqualVerticalRl": true
+    },
+    {
+      "id": "noto-latin-vertical-rl",
+      "fontSourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "codePoints": ["U+0041", "U+0042"],
+      "direction": "ttb",
+      "writingMode": "vertical-rl",
+      "script": "Latn",
+      "language": "en",
+      "features": [],
+      "glyphs": [
+        {"glyphId": 34, "clusterUtf8": 0, "xAdvance": 0, "yAdvance": -1000, "xOffset": -304, "yOffset": -880},
+        {"glyphId": 35, "clusterUtf8": 1, "xAdvance": 0, "yAdvance": -1000, "xOffset": -328, "yOffset": -880}
+      ]
+    },
+    {
+      "id": "noto-punctuation-default",
+      "fontSourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "codePoints": ["U+2014", "U+2026"],
+      "direction": "ttb",
+      "writingMode": "vertical-rl",
+      "script": "Hani",
+      "language": "ja",
+      "features": [],
+      "settingsSha256": "ff220fc653825ac2e1219cbedff9c9949a4bcc55aefcacc6ce0e42e0335b6c15",
+      "glyphs": [
+        {"glyphId": 197, "clusterUtf8": 0, "xAdvance": 0, "yAdvance": -1000, "xOffset": -447, "yOffset": -880},
+        {"glyphId": 11826, "clusterUtf8": 3, "xAdvance": 0, "yAdvance": -1000, "xOffset": -500, "yOffset": -880}
+      ]
+    },
+    {
+      "id": "noto-punctuation-vert-vrt2-off",
+      "fontSourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "codePoints": ["U+2014", "U+2026"],
+      "direction": "ttb",
+      "writingMode": "vertical-rl",
+      "script": "Hani",
+      "language": "ja",
+      "features": [{"tag": "vert", "value": 0}, {"tag": "vrt2", "value": 0}],
+      "settingsSha256": "63a70ea1144669216d62c33be5cf2f3d53bd7eeff4dfa45f8b46c7b32b1e5169",
+      "glyphs": [
+        {"glyphId": 197, "clusterUtf8": 0, "xAdvance": 0, "yAdvance": -1000, "xOffset": -447, "yOffset": -880},
+        {"glyphId": 206, "clusterUtf8": 3, "xAdvance": 0, "yAdvance": -1000, "xOffset": -500, "yOffset": -880}
+      ]
+    },
+    {
+      "id": "noto-punctuation-vert-vrt2-on",
+      "fontSourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "codePoints": ["U+2014", "U+2026"],
+      "direction": "ttb",
+      "writingMode": "vertical-rl",
+      "script": "Hani",
+      "language": "ja",
+      "features": [{"tag": "vert", "value": 1}, {"tag": "vrt2", "value": 1}],
+      "settingsSha256": "c37b7bef80d887899ee27592f2a0872644988f086b6b67225b15ee45fd321a6e",
+      "glyphsEqualDefault": true
+    },
+    {
+      "id": "source-han-old-hangul-vorg",
+      "fontSourceSha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+      "codePoints": ["U+1112", "U+119E", "U+11AB", "U+AE00"],
+      "direction": "ttb",
+      "writingMode": "vertical-rl",
+      "script": "Hang",
+      "language": "ko",
+      "features": [],
+      "settingsSha256": "e41dd5fc7b332e7367802c508cc7b07cb193bd92903731b3fe4637071ac3de6f",
+      "glyphs": [
+        {"glyphId": 614, "clusterUtf8": 0, "xAdvance": 0, "yAdvance": -1000, "xOffset": -483, "yOffset": -880},
+        {"glyphId": 1230, "clusterUtf8": 9, "xAdvance": 0, "yAdvance": -1000, "xOffset": -483, "yOffset": -880},
+        {"glyphId": 1497, "clusterUtf8": 9, "xAdvance": 0, "yAdvance": 0, "xOffset": 483, "yOffset": 120},
+        {"glyphId": 2085, "clusterUtf8": 9, "xAdvance": 0, "yAdvance": 0, "xOffset": 483, "yOffset": 120}
+      ]
+    }
+  ],
+  "featureObservation": {
+    "fixtureScope": "Noto Sans KR U+2014 U+2026 with Hani ja TTB",
+    "defaultEqualsExplicitOn": true,
+    "explicitOffChangesGlyphIds": [206],
+    "defaultOrOnGlyphIds": [11826],
+    "globalPolicyInferenceAllowed": false
+  },
+  "negativeControls": {
+    "missingVerticalTables": "VerticalMetricsUnavailable",
+    "directionWritingModeMismatch": "DirectionWritingModeMismatch",
+    "fontByteLimit": 33554432,
+    "textCodePointLimit": 4096,
+    "glyphLimit": 4096,
+    "featureLimit": 64,
+    "existingControlTestsReused": true
+  },
+  "validation": {
+    "nativeTarget": "issue_4969_shaping_request_contract",
+    "nativePassed": 19,
+    "nativeFailed": 0,
+    "q4AOraclePassed": 3,
+    "nodeWasmPassed": 3,
+    "nodeWasmFailed": 0,
+    "nodeWasmSeconds": 0.13,
+    "isolatedHarnessBytesApprox": 170917888,
+    "isolatedHarnessDisposition": "moved-to-trash-after-run",
+    "focusedClippyWarningsDenied": "passed",
+    "integrationPolicyTestsPassed": 19,
+    "cargoFmtCheck": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "disposition": "qualified-standalone-vertical-oracle",
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "next": "Q4-B-typed-surface-vertical-intent"
+}

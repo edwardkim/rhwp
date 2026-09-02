@@ -1,0 +1,53 @@
+{
+  "id": "AU04",
+  "tier": 3,
+  "title": "투명성 로그 등재",
+  "input": "samples/table-001.hwp",
+  "instructions": "서명 캡슐을 append-only 앵커 로그에 등재해 캡슐과 로그(anchor.ndjson)를 제출하라. 채점기는 등재 여부와 로그 체인 무결을 함께 본다. 힌트: rhwp anchor add → anchor verify.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/work.capsule.json",
+      "anchor.ndjson"
+    ]
+  },
+  "checks": [
+    {
+      "name": "로그에 등재됨",
+      "op": "value_eq",
+      "value": true,
+      "path": "logged",
+      "cmd": [
+        "anchor",
+        "verify",
+        "{file:capsules/work.capsule.json}",
+        "--log",
+        "{file:anchor.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "로그 체인 무결",
+      "op": "value_eq",
+      "value": true,
+      "path": "logChainOk",
+      "cmd": [
+        "anchor",
+        "verify",
+        "{file:capsules/work.capsule.json}",
+        "--log",
+        "{file:anchor.ndjson}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

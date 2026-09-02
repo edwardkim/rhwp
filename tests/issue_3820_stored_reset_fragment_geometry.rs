@@ -162,9 +162,12 @@ fn assert_fragment_geometry(
         cell.bbox,
     );
     // The final Table bbox contains the bottom border's half-stroke; the cell viewport is the
-    // exact stored/measured fragment height.
+    // exact stored/measured fragment height.  [#6269] A line's bbox is its ink range
+    // (`[path - stroke/2, path + stroke/2]`), so a 0.5px bottom border adds exactly 0.25 —
+    // the half-stroke this comment always described.  It used to read a full stroke because
+    // the box started at the centreline instead of straddling it.
     assert!(
-        (table.bbox.height - expected_cell_height - 0.5).abs() <= 0.2,
+        (table.bbox.height - expected_cell_height - 0.25).abs() <= 0.2,
         "p{human_page} pi={} table frame height mismatch: table={:?}, cell={:?}",
         expected.para_index,
         table.bbox,

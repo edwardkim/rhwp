@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "bad-input-sha",
+  "title": "입력 해시 기형",
+  "why": "inputSha256 가드. 64hex 아니면 즉시 실패.",
+  "notes": "입력 가드",
+  "depth": 1,
+  "valid": false,
+  "brokenAxis": "inputSha256",
+  "deep": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": "b.capsule.json",
+    "depth": 1,
+    "valid": false,
+    "brokenAt": "b.capsule.json",
+    "links": [
+      {
+        "capsule": "b.capsule.json",
+        "parentOk": null,
+        "lineageOk": null,
+        "reproduced": null,
+        "error": "receipt.inputSha256 가 없거나 64자리 16진이 아님"
+      }
+    ]
+  },
+  "command": [
+    "lineage",
+    "b.capsule.json",
+    "--json"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

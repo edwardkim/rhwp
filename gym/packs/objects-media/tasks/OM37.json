@@ -1,0 +1,27 @@
+{
+  "id": "OM37",
+  "tier": 2,
+  "title": "세 번째 필드 유형",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 서식의 **세 번째** 필드 유형을 answer.json 에 {\"type\": \"...\"} 으로 제출하라. 이름(OM05)이 아니라 fieldType 이다. 힌트: rhwp fields 의 fields[2].fieldType.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "세 번째 필드 유형",
+      "op": "answer_eq",
+      "answer": "type",
+      "path": "fields[2].fieldType",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

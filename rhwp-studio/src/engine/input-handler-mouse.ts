@@ -2,9 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { ContextMenuItem } from '@/ui/context-menu';
+import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
-import { MoveLineEndpointCommand } from './command';
+import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
+import { emitHeaderFooterModeChanged } from './header-footer-mode';
+import { cacheTableCellBboxes, ensureTableCellBboxCache } from './table-bbox-cache';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -166,6 +169,7 @@ function resolveTableResizeHit(
 ): { tableRef: { sec: number; ppi: number; ci: number; pageHint?: number }; bboxes: any[]; pageBboxes: any[] } | null {
   // 일반 클릭에서 새 bbox를 만들면 대형/중첩 표 문서가 수 초 동안 멈춘다.
   // 리사이즈 시작은 이미 확보된 bbox 캐시가 있을 때만 판정하고, 없으면 텍스트 클릭으로 처리한다.
+  // 캐시는 hover 경로(ensureTableCellBboxCache)가 표 진입 시 채워 둔다 (#4117).
   if (self.cachedTableRef && self.cachedCellBboxes?.length) {
     const pageBboxes = self.cachedCellBboxes.filter((b: any) => b.pageIndex === pageIdx);
     if (pageBboxes.length > 0) {
@@ -697,9 +701,6 @@ export function onClick(this: any, e: MouseEvent): void {
       const ctx = this.cursor.getCellTableContext();
       if (ctx) {
         try {
-          const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
-          this.cachedTableRef = { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
-          this.cachedCellBboxes = bboxes;
           const zoom = this.viewportManager.getZoom();
           const scrollContent = this.container.querySelector('#scroll-content');
           if (scrollContent) {
@@ -707,10 +708,10 @@ export function onClick(this: any, e: MouseEvent): void {
             const contentX = e.clientX - contentRect.left;
             const contentY = e.clientY - contentRect.top;
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
-            // hover 경로(handleMouseMove)의 캐시 일치 판정이 pageHint 를 비교하므로 여기서
-            // 채워준다. 비워두면 `undefined !== pageIdx` 가 항상 참이라 hover 가 매번
-            // early return 해 표 리사이즈 marker 가 한 번도 표시되지 않는다.
-            this.cachedTableRef.pageHint = pageIdx;
+            // [#4117] 현재 페이지를 hint 로 넘긴다 — 없으면 엔진이 페이지 0부터
+            // 렌더 트리를 훑어 뒤쪽 페이지의 표일수록 느려진다.
+            const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
+            cacheTableCellBboxes(this, ctx, pageIdx, bboxes);
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -807,12 +808,36 @@ export function onClick(this: any, e: MouseEvent): void {
       if (!hfHit.hit) {
         // 본문 영역 클릭 → 편집 모드 탈출 (스크롤 없이 — 이후 hitTest에서 커서 재배치)
         this.cursor.exitHeaderFooterMode();
-        this.eventBus.emit('headerFooterModeChanged', 'none');
+        emitHeaderFooterModeChanged(this.eventBus, this.cursor);
         // 본문 hitTest로 계속 진행
       } else {
+        const clickedIsHeader = hfHit.isHeader ?? (this.cursor.headerFooterMode === 'header');
+        const isPreviewSurface = pageIdx === this.cursor.hfPreviewPage
+          && clickedIsHeader === (this.cursor.headerFooterMode === 'header');
+        const clickedSection = isPreviewSurface
+          ? this.cursor.hfSectionIdx
+          : (hfHit.sectionIndex ?? this.cursor.hfSectionIdx);
+        const clickedApplyTo = isPreviewSurface
+          ? this.cursor.hfApplyTo
+          : (hfHit.applyTo ?? this.cursor.hfApplyTo);
+        const sameTarget = this.cursor.headerFooterMode === (clickedIsHeader ? 'header' : 'footer')
+          && this.cursor.hfSectionIdx === clickedSection
+          && this.cursor.hfApplyTo === clickedApplyTo;
+        if (!sameTarget) {
+          this.cursor.switchHeaderFooterTarget(
+            clickedIsHeader,
+            clickedSection,
+            clickedApplyTo,
+            pageIdx,
+          );
+          emitHeaderFooterModeChanged(this.eventBus, this.cursor);
+        }
+
         // [Task #825] 머리말/꼬리말 편집 모드 — 그림 hit-test 우선, miss 시 텍스트 hit.
         // 머리말 그림은 ImageNode 에 header_footer_ref 동반되어 picHit 정상 반환.
-        const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+        const picHit = isPreviewSurface
+          ? null
+          : this.findPictureAtClick(pageIdx, pageX, pageY);
         if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'ole')) {
           // 머리말 안 그림 객체 선택 → context menu 에 "개체 속성" 표시 가능
           this.cursor.clearSelection();
@@ -836,11 +861,29 @@ export function onClick(this: any, e: MouseEvent): void {
         }
         // 머리말/꼬리말 영역 클릭 → 내부 텍스트 히트테스트로 커서 이동
         try {
-          const isHeader = this.cursor.headerFooterMode === 'header';
-          const inHfHit = this.wasm.hitTestInHeaderFooter(pageIdx, isHeader, pageX, pageY);
-          if (inHfHit.hit && inHfHit.paraIndex !== undefined && inHfHit.charOffset !== undefined) {
+          const inHfHit = this.wasm.hitTestInHeaderFooterTarget(
+            pageIdx,
+            clickedSection,
+            clickedIsHeader,
+            clickedApplyTo,
+            pageX,
+            pageY,
+          );
+          if (
+            inHfHit.hit
+            && inHfHit.sectionIndex === clickedSection
+            && inHfHit.applyTo === clickedApplyTo
+            && inHfHit.paraIndex !== undefined
+            && inHfHit.charOffset !== undefined
+          ) {
+            if (e.shiftKey && sameTarget) this.cursor.setHfAnchor();
+            else this.cursor.clearSelection();
             this.cursor.setHfCursorPosition(inHfHit.paraIndex, inHfHit.charOffset);
+            if (!e.shiftKey || !sameTarget) this.cursor.setHfAnchor();
+            this.active = true;
+            this.startTextSelectionDrag(e);
             this.updateCaret();
+            document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
           }
         } catch { /* 무시 */ }
         this.textarea.focus();
@@ -1321,7 +1364,7 @@ export function onDblClick(this: any, e: MouseEvent): void {
               this.wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
             }
             this.cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, pageIdx);
-            this.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
+            emitHeaderFooterModeChanged(this.eventBus, this.cursor);
             this.updateCaret();
             this.textarea.focus();
             return;
@@ -1345,6 +1388,20 @@ export function onDblClick(this: any, e: MouseEvent): void {
       e.preventDefault();
       this.eventBus.emit('equation-edit-request', { sec: ref.sec, ppi: ref.ppi, ci: ref.ci });
       return;
+    }
+    // [#4694] 차트(ole) 객체 → 차트 데이터 편집 대화상자 (한컴 더블클릭 UX 동형).
+    // 대조 실패(차트 아님·미지원 컨테이너)면 기존처럼 아무 동작 없음.
+    if (ref && ref.type === 'ole') {
+      let editable = false;
+      try {
+        const target = chartTargetFromSelection(ref);
+        editable = target !== null && matchChartRef(this.wasm.listCharts(), target) !== null;
+      } catch { editable = false; }
+      if (editable) {
+        e.preventDefault();
+        this.eventBus.emit('chart-data-edit-request');
+        return;
+      }
     }
     // 글상자 객체 → 텍스트 편집 진입
     if (ref && ref.type === 'shape') {
@@ -1811,23 +1868,14 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
     return;
   }
 
-  // 셀 bbox 캐싱 (같은 표면 재사용)
-  // passive hover 중 새 bbox를 만들면 대형/중첩 표에서 커서 이동만으로도 수 초간 멈춘다.
-  // 이미 캐시된 표만 리사이즈 marker를 갱신하고, 실제 리사이즈 시작 판정은 mousedown 경로에서 처리한다.
-  if (!this.cachedTableRef ||
-      this.cachedTableRef.sec !== tableRef.sec ||
-      this.cachedTableRef.ppi !== tableRef.ppi ||
-      this.cachedTableRef.ci !== tableRef.ci ||
-      this.cachedTableRef.pageHint !== pageIdx) {
-    this.tableResizeRenderer.clear();
-    hideProtectedCellHover(this);
-    if (this.container.style.cursor) {
-      this.container.style.cursor = '';
-    }
-    return;
-  }
-
-  if (!this.cachedCellBboxes || this.cachedCellBboxes.length === 0) {
+  // 셀 bbox 캐시 확보 (#4117)
+  // 예전에는 셀 선택 모드 클릭이 채워 둔 캐시가 있을 때만 marker 를 갱신해,
+  // 셀 선택 전에는 리사이즈가 시작되지 않았다. 이제 hover 가 표 진입당 1회
+  // (그리고 document-changed 후 첫 hover 에 1회) 캐시를 채운다. 같은 표 위
+  // 이동은 캐시만 읽으므로 task 2010 이 막은 "이동마다 표 전체 재계산"은
+  // 여전히 일어나지 않는다.
+  const bboxes = ensureTableCellBboxCache(this, tableRef, pageIdx);
+  if (!bboxes || bboxes.length === 0) {
     this.tableResizeRenderer.clear();
     hideProtectedCellHover(this);
     if (this.container.style.cursor) {
@@ -1837,7 +1885,7 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   }
 
   // 해당 페이지의 셀만 필터
-  const pageBboxes = this.cachedCellBboxes.filter((b: any) => b.pageIndex === pageIdx);
+  const pageBboxes = bboxes.filter((b: any) => b.pageIndex === pageIdx);
   if (pageBboxes.length === 0) {
     this.tableResizeRenderer.clear();
     hideProtectedCellHover(this);
@@ -1940,6 +1988,12 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
       this.cursor.clearSelection();
     }
   }
+  const hfSel = this.cursor.getHeaderFooterSelectionOrdered();
+  if (hfSel) {
+    const samePos = hfSel.start.paraIdx === hfSel.end.paraIdx
+      && hfSel.start.charOffset === hfSel.end.charOffset;
+    if (samePos) this.cursor.clearSelection();
+  }
 
   // [Task #779] mouseup 영역 의 updateCaret 은 scrollCaretIntoView skip.
   // 본질: cursor 변경 trigger 영역 (mousedown / drag selection move 등) 에서 이미 cursor 위치
@@ -1959,17 +2013,16 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
 function bringShapeToFront(this: any, picHit: any): void {
   if (picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'group' || picHit.type === 'ole') {
     try {
-      // [Task #2759] 선택 시 z순서 변경도 문서 뮤테이션 — 메뉴 정렬(insert.ts:427 등)의
-      // recordObjectMutation 과 동형으로 snapshot 기록해 undo 가능·redo 무효화·스냅샷 undo
-      // 동반 파괴를 막는다. UI 후처리(선택 진입·재렌더)는 호출부가 기존대로 수행한다.
-      const pos = this.getCursorPosition();
+      // [Task #2759 → #5769 후속] 선택 시 z순서 변경도 문서 뮤테이션 — 메뉴 정렬과 같은
+      // SetZOrderCommand 역연산 경로로 기록해 undo 가능·스냅샷 슬롯 무소비를 만든다.
+      // UI 후처리(선택 진입·재렌더)는 호출부가 기존대로 수행한다. [Task #3351] 캐럿은
+      // 클릭된 개체 인접을 기록한다 — 이 지점은 선택 진입 전이라 ref 로 위치를 구한다.
+      const pos = this.cursor.positionOutsideObject(picHit.sec, picHit.ppi)
+        ?? this.getCursorPosition();
       this.executeOperation({
-        kind: 'snapshot',
-        operationType: 'changeZOrder',
-        operation: (wasm: any) => {
-          wasm.changeShapeZOrder(picHit.sec, picHit.ppi, picHit.ci, 'front');
-          return pos;
-        },
+        kind: 'command',
+        command: new SetZOrderCommand(picHit.sec, picHit.ppi, picHit.ci, 'front', pos),
+        meta: { refresh: 'full' },
       });
       this.eventBus.emit('document-changed');
     } catch { /* ignore */ }

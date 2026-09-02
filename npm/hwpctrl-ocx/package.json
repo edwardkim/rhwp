@@ -6,7 +6,9 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./src/index.mjs"
+    ".": "./src/index.mjs",
+    "./studio-plugin": "./src/studio-plugin.mjs",
+    "./cursor-map": "./src/cursor-map.mjs"
   },
   "repository": {
     "type": "git",

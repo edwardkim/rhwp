@@ -1,0 +1,12 @@
+{
+  "capsuleSha256": "3f3495b92c5dcfee17e24438cb3c3559c7b5775dd91565c16447036ef46f0bb3",
+  "claimant": {
+    "keyId": "gym/novice-starter"
+  },
+  "claimedAt": "2026-08-12T00:46:12Z",
+  "gateEnvelopeSha256": "475ab5c549f209b68c91f46b29688e8f83cab15d1ed04eb2cfdc0c9f2e3d09c6",
+  "kind": "settlementClaim",
+  "schemaVersion": "1.0",
+  "workorderId": "gym-leaderboard-standing",
+  "workorderSha256": "050734f9bbb1e995bf7088d56a8280b46ccdc6c009aa6ce9f3add2a85c4c9849"
+}

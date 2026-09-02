@@ -1,0 +1,31 @@
+{
+  "id": "FJ24",
+  "tier": 3,
+  "title": "순번 없는 목차1 ambiguous 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "순번 없이 키 '목차1' 만 넣어 dry-run 하라. ambiguous[0].total 을 answer.json 의 total 로 제출하라. 첫 칸만 채워지고 나머지가 남는 것이 함정이다. FJ03 은 [2] 를 지목해 이 함정을 피한다. 이번은 함정 자체를 오라클로 읽는다. 힌트: --data '{\"목차1\": \"모호값\"}' --dry-run --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "ambiguous total",
+      "op": "answer_eq",
+      "answer": "total",
+      "path": "ambiguous[0].total",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"목차1\": \"모호값\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

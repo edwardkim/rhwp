@@ -1,0 +1,17 @@
+{
+  "id": "FJ44",
+  "steps": [
+    {
+      "answer": {
+        "name": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fields[3].name"
+        }
+      }
+    }
+  ]
+}

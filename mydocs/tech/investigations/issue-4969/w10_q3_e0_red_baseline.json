@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e0-latest-base-red-baseline-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E0",
+  "status": "qualified-red-baseline-checkpoint-complete",
+  "resultApproved": true,
+  "baseCheckpoint": "558e27f6d",
+  "remote": {
+    "upstreamDevel": "955abb5268c3a6a93a41328633729fd095b7390a",
+    "mergeBase": "955abb5268c3a6a93a41328633729fd095b7390a",
+    "ahead": 19,
+    "behind": 0,
+    "mergeRequired": false
+  },
+  "checkpointPreflight": {
+    "upstreamDevel": "3dc1fd382e0b",
+    "ahead": 19,
+    "behind": 17,
+    "tipDiffTouchedQ3Paths": true,
+    "bilateralOverlapPaths": [
+      "mydocs/orders/20260829.md"
+    ],
+    "productSourceOverlapDetected": false,
+    "requalificationRequiredBeforeQ3E1": true
+  },
+  "planAmendment": {
+    "approved": true,
+    "q2OldHangulPredicateChanged": false,
+    "q2OldHangulSegmentSelectorChanged": false,
+    "explicitPolicy": "request-gated-boundedHorizontalLtrV1-single-run-full-range",
+    "modernHangulCandidateWithoutRequest": false,
+    "latinCandidateWithoutRequest": false
+  },
+  "defaultProductBaseline": {
+    "profile": "cargo-test-debug-warm-structural-reference",
+    "measuredRuns": 9,
+    "layerBuildsPerRun": 64,
+    "aggregateElapsedNs": [
+      199422918,
+      199403891,
+      200487884,
+      207370667,
+      199123448,
+      204676076,
+      202651079,
+      201314277,
+      204218872
+    ],
+    "aggregateP50Ns": 201314277,
+    "aggregateP95NearestRankNs": 207370667,
+    "perBuildP50Ns": 3145535.58,
+    "perBuildP95Ns": 3240166.67,
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "glyphOutlinePublished": false
+  },
+  "studioBaseline": {
+    "build": "passed",
+    "wallSeconds": 4.34,
+    "viteModules": 239,
+    "viteBuildMilliseconds": 845,
+    "mainJsBytes": 1699677,
+    "mainJsSha256": "0eb165343f3d14d4d97e8e6aec67f8666ef3daf639370fc3a4de62fed99943a4",
+    "cssBytes": 106910,
+    "cssSha256": "17e81926a0b122e311840b76b70f7315ea5d8b4a420184aabdbac8ca6b482f57"
+  },
+  "wasmBaseline": {
+    "source": "Q3-D Docker release+wasm-opt artifact reused because product source is unchanged",
+    "bytes": 9759368,
+    "sha256": "be2e7cdb827a935812c5176d901a8ce43b1e15c3dc47265ea7ee26e428db3d58",
+    "studioCopyMatches": true
+  },
+  "greenControl": {
+    "shadowContextPassed": 13,
+    "atomicProductPassed": 4,
+    "compositionHandoffPassed": 4,
+    "totalPassed": 21,
+    "failed": 0
+  },
+  "red": {
+    "passed": 0,
+    "failed": 4,
+    "causes": [
+      "reversible-per-slot-native-owner-absent",
+      "strict-set-clear-wasm-adapters-absent",
+      "request-gated-explicit-single-run-session-absent",
+      "atomic-qualified-variable-outline-publication-absent"
+    ],
+    "unexpectedFailureCount": 0
+  },
+  "protectedRegression": {
+    "productSourceChanged": false,
+    "publicApiChanged": false,
+    "defaultOutputChanged": false,
+    "newIntegrationSource": false,
+    "generatedArtifactsChanged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_requalification.json",
+  "next": "approve-q3-e1-start",
+  "nextSlice": "Q3-E1-reversible-owner-and-strict-native-contract",
+  "nextSliceApproved": false,
+  "commitCreated": true,
+  "pushReady": false
+}

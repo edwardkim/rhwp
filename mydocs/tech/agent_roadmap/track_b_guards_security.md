@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/agent_roadmap/track_b_guards_security.md
-last_verified: 2026-08-04
+last_verified: 2026-08-13
 ---
 
 # 트랙 B — 가드·보안 (R11~R20)
@@ -55,6 +55,22 @@ last_verified: 2026-08-04
   미끼)"을 짝으로 담는다 — redact 계약 테스트의 미끼 설계와 동형.
 - **DoD** — 달성. 확장은 R18.
 - **의존** — R14 의 탐지기들.
+
+### 파서 재귀 깊이 하드닝 후속 (`#4730`) `[실측]`
+
+- **범위** — 파일이 정하는 중첩 깊이로 무한 재귀하는 파서 경로에 기존 형제 선례와
+  같은 상한을 적용해, 악성 문서의 네이티브 스택 오버플로 하드 크래시를 막는다.
+- **현재** — HWPX `<hp:container>` 자기재귀(발견 1/4, HIGH)는
+  [PR #4731](https://github.com/edwardkim/rhwp/pull/4731)에서 구현 검토 중이며 아직
+  `devel`에 착지하지 않았다. [이슈 #4730](https://github.com/edwardkim/rhwp/issues/4730)의
+  나머지 세 경로는 후속 작업으로 유지한다: 표 중첩 사이클
+  `parse_paragraph`↔`parse_table`↔`parse_table_cell`(HIGH), HWP5
+  `parse_container_children`(MED), HWP5 표 재귀(MED).
+- **보장과 완료 기준** — HWP3 `MAX_DRAWING_OBJECT_DEPTH=256`과 HML
+  `HmlLimits::max_depth=256`의 선례를 복제하고, 상한 초과 거부와 정상 깊이 통과를
+  짝으로 회귀 고정한다. 네 경로가 각각 상한·회귀 테스트와 함께 merge되면, 발견
+  입력은 이 R13 코퍼스와 R17 퍼징 CI의 회귀 유입 경로로 편입한다.
+- **의존** — R13은 회귀 착지점, R17은 같은 크래시 계열의 상시 유입원이다.
 
 ## R14 에이전트 보안 계약 S1~S10 `[완료]`
 
@@ -118,7 +134,9 @@ last_verified: 2026-08-04
   돌지 않는다 — 누군가 로컬에서 수동으로 돌려야만 신규 크래시가 드러난다.
 - **설계** — CI 에 퍼징 잡을 더하되, 상시 퍼징은 시간·사람 자원을 지속 소모하므로
   예산과 트리아지 절차가 배선보다 먼저 정해져야 한다. 발견 크래시는 R13 악성
-  코퍼스에 회귀 케이스로 흘려보낸다.
+  코퍼스에 회귀 케이스로 흘려보낸다. [#4730](https://github.com/edwardkim/rhwp/issues/4730)의
+  파서 재귀 깊이 하드닝처럼 정적 분석으로 확인한 스택 오버플로 경로도 같은 유입
+  경로를 사용한다.
 - **착수 게이트** — 두 합의. ① CI 시간 예산(퍼징에 얼마를 줄지 — 무한정 돌릴 수
   없다). ② 크래시 트리아지 담당(사람) — 크래시가 나면 누가 분류·처리하는지 없이
   켜면 무시되는 red 만 쌓인다.

@@ -1,0 +1,14 @@
+{
+  "id": "SR02",
+  "steps": [
+    {
+      "run": [
+        "export-hml",
+        "{input}",
+        "-o",
+        "{sub:out.hml}",
+        "--json"
+      ]
+    }
+  ]
+}

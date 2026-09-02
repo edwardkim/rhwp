@@ -21,6 +21,16 @@ fn load_doc(rel_path: &str) -> rhwp::wasm_api::HwpDocument {
         .unwrap_or_else(|e| panic!("parse {rel_path}: {e:?}"))
 }
 
+/// 점선 리더를 **모양으로** 가려낸다 — 값으로 가리면 안 된다.
+///
+/// 종전에는 `stroke-dasharray="0.1 3"` 리터럴을 찾았는데, 그 값은 글꼴 크기와 무관한
+/// 고정값이었고 #5843 에서 폰트 비례(`0.100 <간격>`)로 바뀌었다. 값에 묶인 탐지기는
+/// 리더를 0개로 세어 아래 `>= 20` 단정을 엉뚱하게 깨뜨린다 — 이 시험이 지키려는 계약은
+/// 리더의 **끝 x** 이지 점 간격이 아니다.
+///
+/// 그래서 (a) 둥근 끝(`stroke-linecap="round"`) 과 (b) 첫 dash 가 점만큼 짧은
+/// 2단 dasharray 로 판별한다. 파선·쇄선(첫 dash 가 길다)과 표 괘선(둥근 끝이 없다)은
+/// 걸리지 않는다.
 fn extract_dotted_horizontal_lines(svg: &str) -> Vec<(f64, f64, f64)> {
     let mut lines = Vec::new();
     let mut search_from = 0;
@@ -31,7 +41,20 @@ fn extract_dotted_horizontal_lines(svg: &str) -> Vec<(f64, f64, f64)> {
             break;
         };
         let attrs = &svg[start..start + close_rel];
-        if !attrs.contains("stroke-dasharray=\"0.1 3\"") {
+        if !attrs.contains("stroke-linecap=\"round\"") {
+            continue;
+        }
+        let dashes: Vec<f64> = attrs
+            .find("stroke-dasharray=\"")
+            .map(|at| &attrs[at + 18..])
+            .and_then(|tail| tail.find('"').map(|end| &tail[..end]))
+            .map(|v| {
+                v.split_whitespace()
+                    .filter_map(|p| p.parse().ok())
+                    .collect()
+            })
+            .unwrap_or_default();
+        if dashes.len() != 2 || dashes[0] > 0.5 || dashes[1] <= 0.0 {
             continue;
         }
         let Some(x1) = attr_f64(attrs, "x1") else {
@@ -321,8 +344,11 @@ fn sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height() {
         .find(|line| line.contains("FullParagraph  pi=74"))
         .unwrap_or_else(|| panic!("p3 pi=74 dump line not found:\n{dump}"));
 
-    assert!(p74.contains("h=88.2") && p74.contains("lines=80.6"),
-        "p3 3줄 문단 높이는 lh=52.0px, ls=28.6px, HWP3-origin spacing_before=7.6px를 포함해 표시되어야 함: {p74}"
+    // #4628 dump-pages 는 HeightMeasurer 합(h=88.2)이 아니라 프로덕션
+    // format_paragraph total 을 말한다. lh/ls 분해와 줄 간격 포함은 유지한다.
+    assert!(
+        p74.contains("lines=80.6"),
+        "p3 3줄 문단은 줄 간격이 포함된 lines=80.6 을 유지해야 함: {p74}"
     );
     assert!(
         p74.contains("lh=52.0") && p74.contains("ls=28.6"),
@@ -359,8 +385,10 @@ fn sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracl
         .find(|line| line.contains("FullParagraph  pi=83"))
         .unwrap_or_else(|| panic!("p3 pi=83 dump line not found:\n{dump}"));
 
+    // #4628: 프로덕션 format_paragraph total(sb + lines + sa). 2022 표본과
+    // 같이 HeightMeasurer 합 31.5 가 아니라 29.6 이다. 한 줄 접힘은 유지.
     assert!(
-        p83.contains("h=31.5")
+        p83.contains("h=29.6")
             && p83.contains("lines=27.7")
             && p83.contains("lh=17.3")
             && p83.contains("ls=10.4"),
@@ -381,8 +409,11 @@ fn sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg() {
         .find(|line| line.contains("단 0 (items=19"))
         .unwrap_or_else(|| panic!("2022 p3 단 요약을 찾을 수 없음:\n{dump}"));
 
+    // dump-pages 는 #4628 이후 HeightMeasurer 합(31.5)이 아니라 프로덕션
+    // format_paragraph total(sb=1.9 + lines=27.7 + sa=0 → 29.6)을 말한다.
+    // 접힘 계약은 그대로: lh/ls 한 줄, 꼬리 LINE_SEG 를 별도 시각 줄로 세지 않는다.
     assert!(
-        p83.contains("h=31.5")
+        p83.contains("h=29.6")
             && p83.contains("lines=27.7")
             && p83.contains("lh=17.3")
             && p83.contains("ls=10.4"),

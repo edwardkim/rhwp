@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "expert-challenges",
+  "title": "보스 어트랙션 (고난도 완주)",
+  "axis": "자동화 (사다리 완주)",
+  "description": "검증 사다리를 한 체인으로 길게 엮는 보스 어트랙션. 어느 한 단계만 틀려도 최종 판정이 막힌다 — 부분 점수가 없다. 놀이공원의 급류·자이로드롭에 해당하는 tier 4~5 존이다.",
+  "requires": {
+    "commands": [
+      "keygen",
+      "replay",
+      "run",
+      "anchor",
+      "settle",
+      "conformance",
+      "recall-scope",
+      "lineage",
+      "audit-report",
+      "export-tables"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "34ba36fa3c48f37867fbedd16614fdb7e8f44709",
+    "capabilitiesSha256": "6e2b231fad617b618fda19663752fc1a57d56086ade31abade84d8e8e000de4c"
+  }
+}

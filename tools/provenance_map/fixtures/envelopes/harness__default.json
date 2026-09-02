@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "harness__default",
+  "command": "harness",
+  "family": "receipt",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp harness wrap --json ",
+  "whyThisMode": "경로·해시·연번",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "하네스 봉투는 경로 에코(dir·capsule·output)·해시·연번뿐이다 — 캡슐·키링은 호출자 산출물이고, 문서 문자열은 wrap 실행 내부에 머문다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "dir": "C",
+    "capsule": "C",
+    "output": "C",
+    "seq": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "매니페스트만 소비.",
+  "trap": "산출 파일을 다시 읽어 프롬프트에 넣으면 그 순간 D.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "dir": "caller:harness:dir",
+    "capsule": "caller:harness:capsule",
+    "output": "caller:harness:output",
+    "seq": 0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

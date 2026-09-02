@@ -182,10 +182,23 @@ pub const CTRL_AUTO_NUMBER: u32 = ctrl_id(b"atno");
 pub const CTRL_NEW_NUMBER: u32 = ctrl_id(b"nwno");
 /// 쪽 번호 위치
 pub const CTRL_PAGE_NUM_POS: u32 = ctrl_id(b"pgnp");
+/// 쪽 번호 시작 쪽 제어 — `<hp:pageNumCtrl pageStartsOn>` 에 대응한다.
+pub const CTRL_PAGE_NUM_CTRL: u32 = ctrl_id(b"pgct");
 /// 감추기
 pub const CTRL_PAGE_HIDE: u32 = ctrl_id(b"pghd");
 /// 찾아보기 표식
 pub const CTRL_INDEX_MARK: u32 = ctrl_id(b"idxm");
+/// 제목 차례 표시 — `<hp:titleMark ignore="1"/>` 쪽.
+///
+/// 인라인 컨트롤(문자 `0x08`)이라 CTRL_HEADER 레코드를 만들지 않는다. 그래서
+/// `controls[]` 에 대응 항목이 없고 `Paragraph::title_marks` 로만 보존된다.
+///
+/// **fourcc 와 속성의 짝이 직관과 어긋난다** — `Mtit` 가 `ignore="1"`, `Mign` 이
+/// `ignore="0"` 이다. 한글 2022 양방향 실측이며(06699 한 문서에 둘 다 있어 같은
+/// 파일에서 확인된다) 이름에서 유추한 값이 아니다.
+pub const CTRL_TITLE_MARK_IGNORE_ON: u32 = ctrl_id(b"Mtit");
+/// 제목 차례 표시 — `<hp:titleMark ignore="0"/>` 쪽. 짝 상수의 주석 참고.
+pub const CTRL_TITLE_MARK_IGNORE_OFF: u32 = ctrl_id(b"Mign");
 /// 책갈피
 pub const CTRL_BOOKMARK: u32 = ctrl_id(b"bokm");
 /// 글자 겹침
@@ -231,6 +244,137 @@ pub const FIELD_PRIVATE_INFO: u32 = ctrl_id(b"%cpr");
 pub const FIELD_TOC: u32 = ctrl_id(b"%toc");
 /// 필드: 알 수 없음
 pub const FIELD_UNKNOWN: u32 = ctrl_id(b"%unk");
+/// 필드: 교정부호(삭제)
+pub const FIELD_PROOFREADING_DELETE: u32 = ctrl_id(b"%%*d");
+/// 필드: 교정부호(단순 변경)
+pub const FIELD_PROOFREADING_SIMPLECHANGE: u32 = ctrl_id(b"%%*c");
+
+/// [#4896] IR `FieldType` 이 모델링하지 않는 필드 종류의 **정체성 보존표**.
+///
+/// OWPML `<hp:fieldBegin type>` 값 ↔ HWP5 필드 ctrl_id. 이 표가 없으면 두 포맷을 오갈 때
+/// 종류가 `Unknown` 으로 붕괴하고, 직렬화기가 본문 보존을 위해 `CROSSREF` 로 굳혀
+/// 원본 필드 정체성이 영구히 사라진다.
+///
+/// **실측으로만 채운다.** 10k 코퍼스 실측(hwpx 원본 1,853문서):
+/// 열거 밖 값은 `PROOFREADING_MARKS_DELETE` 하나뿐이었고(12회/7문서), 같은 문서에서
+/// 한글이 세는 컨트롤 `%%*d` 와 개수까지 일치했다.
+///
+/// [#5171] `PROOFREADING_MARKS_SIMPLECHANGE` 는 코퍼스의 hwpx **원본에는 없지만** 한글 2022 가
+/// 같은 문서를 SaveAs 하면 쓴다(03787: `$RevisionSimpleChange?…` 3개 → 그 값). 원본 컨트롤
+/// 인구조사도 `%%*c:3` 이고, rhwp 산출의 type 만 이 값으로 바꿔 재측정하면 인구조사가
+/// **원본과 완전히 일치**한다(`%%*c:3,%%*d:1,%clk:34,…`). 종전에는 `CROSSREF` 로 굳었다.
+pub const OWPML_EXTRA_FIELD_TYPES: &[(&str, u32)] = &[
+    ("PROOFREADING_MARKS_DELETE", FIELD_PROOFREADING_DELETE),
+    (
+        "PROOFREADING_MARKS_SIMPLECHANGE",
+        FIELD_PROOFREADING_SIMPLECHANGE,
+    ),
+];
+
+/// [#4896] HWP5 는 이 종류의 정체성을 **ctrl_id 가 아니라 command 문자열**로 들고 있다.
+///
+/// 실측(10k 코퍼스): 교정부호(삭제) 필드는 hwp 원본에서 ctrl_id 가 `%unk` 이고 command 가
+/// `$RevisionDelete;` 다. 같은 command 를 hwpx 원본도 그대로 싣고(type 은
+/// `PROOFREADING_MARKS_DELETE`), 두 포맷 모두에서 한글은 컨트롤을 `%%*d` 로 센다
+/// — 03430(6개)·01838(4개) 등에서 개수까지 일치한다.
+pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] = &[
+    ("$RevisionDelete", "PROOFREADING_MARKS_DELETE"),
+    // [#5171] 같은 계열의 단순 변경. hwp 원본에서 ctrl_id 는 `%unk`, command 는
+    // `$RevisionSimpleChange?<본문>;` 이고 한글은 컨트롤을 `%%*c` 로 센다(03787: 3개).
+    ("$RevisionSimpleChange", "PROOFREADING_MARKS_SIMPLECHANGE"),
+    // [#5866] 메모(숨은 주석). hwp 는 종류를 command 로 들고 있다 —
+    // `MEMO/<memoShapeIDRef>/<번호>/<id?>/<id?>/<작성자>/\;;`. CROSSREF 로 굳히면
+    // 한글이 필드 범위를 숨기지 않아 메모 대상 텍스트가 본문 문장에 붙는다
+    // (07868·08040·02302). 한글 2024 SaveAs 실측: type="MEMO" + 파라미터
+    // 7종(전부 command 에서 유도 가능) + 빈 subList.
+    ("MEMO/", "MEMO"),
+];
+
+/// [#5140] 한컴 사용자 정의 기호의 **두 포맷 간 사상**.
+///
+/// 같은 글자를 HWP5 는 BMP 단일 유닛 `0xA000 | X` 로, HWPX 는 평면 15 보충 PUA
+/// `U+F0000 | X` 로 싣는다. 한글은 두 표기를 서로 사상하지만 rhwp 는 값을 그대로 옮겨
+/// h2x 산출에서 글자가 Yi 음절(U+A8xx 등)로 깨졌다.
+///
+/// **IR 정본은 HWP5 쪽 사영(`0xA000 | X`)이다.** 그래야 HWP5 파서·직렬화기가 무변경이고
+/// (코퍼스 다수) HWPX 파서·직렬화기만 대칭으로 사상하면 h2x·x2h 가 함께 닫힌다.
+///
+/// **범위가 아니라 실측 값 집합인 이유**: `0xA000..=0xABFF` 는 유니코드에서 Yi·Lisu·
+/// Syloti Nagri 가 쓰는 실제 블록이고, 한글도 이 구간을 무조건 사상하지 않는다.
+/// 반례 실측 — `08103` 의 `0xA813` 은 영어 단어 중간(`spectro?scopy`)에 있고 글자모양의
+/// 글꼴이 `맑은 고딕`(한컴 사설 영역이 없는 글꼴)인데, 한글은 이 글자를 평면 15 로 옮기지
+/// 않고 `U+A813` 그대로 낸다. 범위로 밀면 그 글자가 깨진다.
+///
+/// 10k 코퍼스 실측(HWP5 원본 6,432개): `0xA000..=0xABFF` 단일 유닛을 쓰는 문서 73건 중
+/// 아래 값들이 한글 출력에서 평면 15 로 확인됐다. 두 경로에서 모았다 —
+///
+/// - **본문 텍스트**(`PARA_TEXT` → `hp:t`): 23개 값이 2,857 / 2,863 = 99.8% 를 덮는다.
+///   나머지는 컨트롤 인라인 payload 오독(한글 출력 없음)이거나 위 `0xA813` 반례다.
+/// - **글자겹침**(`tcps` → `hp:compose/@composeText`): 06190·06638·08403·08396 을 한글
+///   SaveAs HWPX 로 떠서 대조했더니 29개 값이 **107/107 전량** 평면 15 로 갔다(BMP 유지 0).
+///
+/// **새 값은 한글 실측으로만 추가한다.**
+pub const HANCOM_SYMBOL_BMP_TO_PLANE15: &[u16] = &[
+    0xA0E1, 0xA12B, //
+    // 글자겹침 실측 — 06190 · 08403
+    0xA289, 0xA28A, 0xA292, 0xA293, 0xA294, 0xA295, 0xA296, 0xA297, 0xA298, 0xA299, 0xA29A,
+    0xA29B, //
+    // 본문 실측
+    0xA2B1, 0xA2B2, 0xA2B3, 0xA2B4, 0xA2B5, 0xA2B6, 0xA2B7, 0xA2B8, 0xA2B9, //
+    // 글자겹침 실측 — 06638 (0xA2C1·0xA2C2 는 코퍼스에 없어 넣지 않았다)
+    0xA2BA, 0xA2BB, 0xA2BC, 0xA2BD, 0xA2BE, 0xA2BF, 0xA2C0, 0xA2C3, 0xA2C4, 0xA2C5, 0xA2C6, 0xA2C7,
+    0xA2C8, 0xA2C9, 0xA2CA, 0xA2CB, 0xA2CC, //
+    // 본문 실측
+    // [#5861] `0xA807` — s36 오라클 20,000경로를 전수로 훑어 "원본에 없던 U+A000~U+ABFF
+    // 글자가 저장본에 생긴" 경로를 셌더니 코퍼스 전체에서 1경로·1값만 남았다
+    // (`03373.h2x` ×4). 같은 문단의 0xA80A·0xA80E·0xA80F·0xA810 은 아래 목록에 있어
+    // 정상으로 나가는데 이 값만 빠져 한글이 Syloti Nagri `ꠇ`(U+A807)로 읽었다.
+    0xA2FC, 0xA3C5, 0xA807, 0xA80A, 0xA80E, 0xA80F, 0xA810, 0xA81A, 0xA832, 0xA852, 0xA853, 0xA854,
+    0xA855,
+];
+
+/// 평면 15 보충 PUA 의 시작 — `0xA000 | X` 의 대응 코드포인트는 `PLANE15_BASE | X` 다.
+const PLANE15_BASE: u32 = 0x0F_0000;
+
+/// HWP5 사용자 정의 기호(`0xA000 | X`) → HWPX 평면 15 코드포인트. 표에 없으면 `None`.
+pub fn hancom_symbol_to_plane15(unit: u16) -> Option<u32> {
+    HANCOM_SYMBOL_BMP_TO_PLANE15
+        .contains(&unit)
+        .then(|| PLANE15_BASE | u32::from(unit & 0x0FFF))
+}
+
+/// HWPX 평면 15 코드포인트 → HWP5 사용자 정의 기호(`0xA000 | X`). 표에 없으면 `None`.
+pub fn plane15_to_hancom_symbol(cp: u32) -> Option<u16> {
+    if cp & 0xFF_F000 != PLANE15_BASE {
+        return None;
+    }
+    let unit = 0xA000u16 | u16::try_from(cp & 0x0FFF).ok()?;
+    HANCOM_SYMBOL_BMP_TO_PLANE15.contains(&unit).then_some(unit)
+}
+
+/// 필드 command → OWPML `type` 문자열 (표에 없으면 `None`).
+pub fn owpml_field_type_by_command(command: &str) -> Option<&'static str> {
+    OWPML_FIELD_TYPE_BY_COMMAND
+        .iter()
+        .find(|(prefix, _)| command.starts_with(prefix))
+        .map(|(_, name)| *name)
+}
+
+/// OWPML `type` 문자열 → HWP5 필드 ctrl_id (표에 없으면 `None`).
+pub fn owpml_extra_field_ctrl_id(type_str: &str) -> Option<u32> {
+    OWPML_EXTRA_FIELD_TYPES
+        .iter()
+        .find(|(name, _)| *name == type_str)
+        .map(|(_, id)| *id)
+}
+
+/// HWP5 필드 ctrl_id → OWPML `type` 문자열 (표에 없으면 `None`).
+pub fn owpml_extra_field_type_str(ctrl_id: u32) -> Option<&'static str> {
+    OWPML_EXTRA_FIELD_TYPES
+        .iter()
+        .find(|(_, id)| *id == ctrl_id)
+        .map(|(name, _)| *name)
+}
 
 /// ctrl_id가 필드 컨트롤인지 확인 (첫 바이트가 '%')
 pub const fn is_field_ctrl_id(id: u32) -> bool {
@@ -313,8 +457,11 @@ pub fn ctrl_name(ctrl_id: u32) -> &'static str {
         CTRL_AUTO_NUMBER => "AutoNumber",
         CTRL_NEW_NUMBER => "NewNumber",
         CTRL_PAGE_NUM_POS => "PageNumPos",
+        CTRL_PAGE_NUM_CTRL => "PageNumCtrl",
         CTRL_PAGE_HIDE => "PageHide",
         CTRL_INDEX_MARK => "IndexMark",
+        CTRL_TITLE_MARK_IGNORE_ON => "TitleMark(ignore)",
+        CTRL_TITLE_MARK_IGNORE_OFF => "TitleMark",
         CTRL_BOOKMARK => "Bookmark",
         CTRL_TCPS => "Tcps",
         CTRL_FORM => "Form",
@@ -358,4 +505,8 @@ mod tests {
         assert_eq!(ctrl_name(CTRL_GEN_SHAPE), "GenShape");
         assert_eq!(ctrl_name(0), "Unknown");
     }
+
+    // [#5140] 사용자 정의 기호 ↔ 평면 15 사상 계약은
+    // `tests/cases/issue_5140_hancom_symbol_plane15.rs` 에 있다. 검사 대상이 모두 공개
+    // 항목이라 제품 소스의 단위시험을 늘리지 않고 통합 테스트로 뒀다.
 }

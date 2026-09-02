@@ -58,13 +58,25 @@
   background: var(--doc-paper);
 }
 
+/* 문서 교체 중 회색 작업 영역이 드러나 깜빡여 보이지 않도록 놓는 빈 쪽 자리표시자 */
+#scroll-content .page-placeholder {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+  background: var(--doc-paper);
+}
+
 #scroll-content .page-grid-overlay {
   position: absolute;
   mix-blend-mode: multiply;
 }
 
-#scroll-content.grid-mode canvas {
-  box-shadow: 0 1px 4px var(--overlay-bg);
+#scroll-content canvas.document-page-canvas,
+#scroll-content .page-placeholder {
+  box-shadow:
+    0 0 0 1px var(--ui-border-strong),
+    0 1px 4px var(--overlay-bg);
 }
 
 /* Drag & Drop */
@@ -77,4 +89,58 @@
 /* 머리말/꼬리말 편집 모드: 본문 영역 dimming */
 #scroll-container.hf-editing {
   background: var(--ui-active);
+}
+
+/* HF 대표 편집: 구역 첫 쪽은 강조하고, 실제 적용 쪽은 연관 영역으로 표시한다. */
+#scroll-content .hf-edit-surface-layer {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+}
+
+#scroll-content canvas.hf-edit-preview-canvas {
+  inset: 0 auto auto 0;
+  z-index: 0;
+  transform: none;
+  transform-origin: top left;
+  background: var(--doc-paper);
+  box-shadow: none;
+}
+
+#scroll-content canvas.hf-edit-guide-canvas {
+  inset: 0 auto auto 0;
+  z-index: 1;
+  transform: none;
+  transform-origin: top left;
+  background: transparent;
+  box-shadow: none;
+}
+
+#scroll-content .hf-edit-region {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+#scroll-content .hf-edit-region.is-representative {
+  z-index: 1;
+}
+
+#scroll-content .hf-edit-badge {
+  position: absolute;
+  z-index: 2;
+  transform: translate(
+    var(--hf-edit-badge-gap, 4px),
+    calc(-100% - var(--hf-edit-badge-gap, 4px))
+  );
+  padding: 1px 4px 2px;
+  background: color-mix(in srgb, var(--doc-paper) 92%, transparent);
+  color: #333333;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  text-shadow:
+    0 1px 0 var(--doc-paper),
+    1px 0 0 var(--doc-paper),
+    -1px 0 0 var(--doc-paper);
+  white-space: nowrap;
 }

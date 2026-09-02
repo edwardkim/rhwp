@@ -1,0 +1,23 @@
+{
+  "id": "SD02",
+  "steps": [
+    {
+      "answer": {
+        "read": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "formats.read",
+          "len": true
+        },
+        "write": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "formats.write",
+          "len": true
+        }
+      }
+    }
+  ]
+}

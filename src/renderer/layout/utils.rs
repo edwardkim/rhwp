@@ -3,11 +3,9 @@
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::{
-    format_number, ArrowStyle, LineStyle, NumberFormat as NumFmt, PathCommand, ShapeStyle,
-    StrokeDash,
+    format_number, ArrowStyle, LineStyle, NumberFormat as NumFmt, ShapeStyle, StrokeDash,
 };
 use crate::model::bin_data::BinDataContent;
-use crate::model::footnote::NumberFormat;
 use crate::model::image::Picture;
 use crate::model::style::{HeadType, Numbering};
 
@@ -23,15 +21,28 @@ pub(crate) fn find_bin_data<'a>(
     bin_data_content: &'a [BinDataContent],
     bin_data_id: u16,
 ) -> Option<&'a BinDataContent> {
+    find_bin_data_index(bin_data_content, bin_data_id).map(|i| &bin_data_content[i])
+}
+
+/// [#4100] `find_bin_data` 와 **같은 규칙**으로 `bin_data_content` 안 인덱스를 돌려준다.
+///
+/// 차트 편집은 슬롯 바이트를 제자리에서 바꾸므로 참조가 아니라 인덱스가 필요하다.
+/// 인덱스↔id 이중성 지식을 복제하지 않도록 `find_bin_data` 가 이 함수에 위임한다 —
+/// 규칙이 갈리면 읽을 때와 쓸 때가 서로 다른 슬롯을 가리키게 된다.
+pub(crate) fn find_bin_data_index(
+    bin_data_content: &[BinDataContent],
+    bin_data_id: u16,
+) -> Option<usize> {
     if bin_data_id == 0 {
         return None;
     }
     // 1-indexed 순번으로 BinDataContent 배열 접근
-    if let Some(c) = bin_data_content.get((bin_data_id - 1) as usize) {
-        return Some(c);
+    let idx = (bin_data_id - 1) as usize;
+    if idx < bin_data_content.len() {
+        return Some(idx);
     }
     // 인덱스 범위 밖 (HWPX 차트 sparse id 60000+N 등) — id 직접 검색
-    bin_data_content.iter().find(|c| c.id == bin_data_id)
+    bin_data_content.iter().position(|c| c.id == bin_data_id)
 }
 
 /// [#2550] `find_bin_data` + 압축 해제 상한 로드.
@@ -48,12 +59,45 @@ pub(crate) fn find_bin_data_bytes(
     })
 }
 
+/// 그림 자리에 **아무것도 그릴 수 없는** 상태인가 — "그림 미지정" 판정.
+///
+/// bin 참조 실패·빈 데이터뿐 아니라 **어느 백엔드도 디코드하지 못하는 바이트**도 같은
+/// 상태로 본다(프리뷰 없는 텍스트 EPS/AI 등). 지금까지 후자는 소리 없이 빈 공간이 됐지만,
+/// 한글은 둘을 구별하지 않고 편집 화면에 점선 테두리 + 그림-없음 아이콘을 그린다
+/// (인쇄 등가 출력에서는 둘 다 미출력). 형식 판정의 단일 권위는 `image_resolver` 다.
+pub(crate) fn picture_data_is_unusable(data: Option<&[u8]>) -> bool {
+    match data {
+        None => true,
+        Some(bytes) => {
+            bytes.is_empty() || !crate::renderer::image_resolver::is_displayable_image_data(bytes)
+        }
+    }
+}
+
 /// Picture의 렌더 표시 크기(HWPUNIT)를 반환한다.
 ///
 /// 일부 HWP5 그림은 `CommonObjAttr.width/height`보다
 /// `SHAPE_COMPONENT.current_width/current_height`가 실제 한컴 표시 크기에 가깝다.
 /// 기존 도형 경로와 동일하게 current 값이 더 큰 축만 채택해 축소 회귀 위험을 줄인다.
+///
+/// [Issue #5595] 단, 회전 그림에서는 축별 max 를 쓰지 않는다. 회전 그림의
+/// `common.width/height` 는 한컴이 저장한 **회전 후 외접 프레임**이고
+/// `current_width/current_height` 는 **회전 전 원본 표시 크기**다 — 저장 경로의
+/// `DocumentCore::refresh_picture_rotation_layout_for_save` 가 세우는 계약과 같다.
+/// 90°/270° 처럼 두 축이 뒤바뀐 그림에 축별 max 를 적용하면 긴 변이 두 축 모두에
+/// 들어가 **정사각형**이
+/// 되어(00493: 188.5×134.0mm 가 712×712px) 지면 밖으로 나간다. 프레임 값이 온전하면
+/// 회전 후 프레임(common)을 그대로 쓴다.
 pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
+    if picture.shape_attr.rotation_angle.rem_euclid(360) != 0
+        && picture.common.width > 0
+        && picture.common.height > 0
+        && picture.shape_attr.current_width > 0
+        && picture.shape_attr.current_height > 0
+    {
+        return (picture.common.width as i32, picture.common.height as i32);
+    }
+
     let mut width = picture.common.width as i32;
     let mut height = picture.common.height as i32;
 
@@ -143,7 +187,7 @@ pub(crate) fn expand_numbering_format(
         let counter_val = counters[idx];
         let start = start_numbers[idx];
         let num = if counter_val > 0 {
-            (start - 1) + counter_val
+            start.saturating_sub(1) + counter_val
         } else {
             start
         };

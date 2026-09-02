@@ -1,0 +1,9 @@
+{
+  "planVersion": "1.0",
+  "input": "<원본.hwp>",
+  "output": "<산출.hwp>",
+  "steps": [
+    { "action": "replace_text", "find": "<찾을 문자열>", "replace": "<바꿀 값>", "caseSensitive": true }
+  ],
+  "assertions": { "notFoundEmpty": true }
+}

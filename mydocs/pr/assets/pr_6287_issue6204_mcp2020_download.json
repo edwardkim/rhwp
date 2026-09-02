@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "c788c8df-c5d6-4097-8ddf-2402b2987011",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6287_issue6204_square_picture_band_host-2020.pdf",
+  "output_filename": "pr6287_issue6204_square_picture_band_host-2020.pdf",
+  "size": 40927,
+  "sha256": "899eac14a94034f6064eafb1c2c49772a275c3a881297fc48f5771302d284aa4",
+  "server": {
+    "job_id": "c788c8df-c5d6-4097-8ddf-2402b2987011",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "square_picture_band_host.hwp",
+    "output_filename": "pr6287_issue6204_square_picture_band_host-2020.pdf",
+    "size": 40927,
+    "sha256": "899eac14a94034f6064eafb1c2c49772a275c3a881297fc48f5771302d284aa4",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 12312,
+    "worker_elapsed_ms": 11734,
+    "worker_bits": 32
+  }
+}

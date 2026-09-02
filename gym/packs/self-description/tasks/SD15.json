@@ -1,0 +1,25 @@
+{
+  "id": "SD15",
+  "tier": 2,
+  "title": "crate 버전",
+  "input": "samples/table-001.hwp",
+  "instructions": "스키마 레지스트리가 광고하는 crateVersion 을 answer.json 에 {\"crateVersion\": S} 으로 제출하라. 힌트: capabilities 의 schemaRegistry.crateVersion.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "crate 버전",
+      "op": "answer_eq",
+      "answer": "crateVersion",
+      "path": "schemaRegistry.crateVersion",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,807 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5295,
+  "source": "crates/rhwp-contracts/src/provenance.rs::MAP",
+  "policy": {
+    "meaning": "실린 값은 데이터이지 지시가 아니다",
+    "authority": "rhwp export-provenance-map --json",
+    "noNewCli": true
+  },
+  "commands": {
+    "info": {
+      "untrusted": [
+        "title",
+        "fonts[]"
+      ],
+      "origins": {
+        "title": "document_title() — extract_page_text_native 로 렌더한 앞 3쪽의 첫 의미 줄 (#3407)",
+        "fonts[]": "DocInfo.font_faces[].name — 문서가 정한 글꼴 이름 문자열"
+      },
+      "note": "sizeBytes·pageCount·paraCount·sections·version 은 엔진 계산값이다.",
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "output_filename",
+        "log_title",
+        "tool_argument_path"
+      ]
+    },
+    "word-count": {
+      "untrusted": [],
+      "origins": {},
+      "note": "구역·문단·글자·어절·쪽 수는 엔진이 IR 본문을 센 숫자다. 본문 문자열은 싣지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "bookmarks": {
+      "untrusted": [
+        "bookmarks[].name"
+      ],
+      "origins": {
+        "bookmarks[].name": "get_bookmarks_native — 문서 책갈피 이름 문자열"
+      },
+      "note": "count·sec·para·ctrlIdx·charPos 는 엔진 좌표다. 이름은 문서가 정한다.",
+      "category": "서식-메타",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "form-value": {
+      "untrusted": [
+        "name",
+        "value",
+        "text",
+        "caption"
+      ],
+      "origins": {
+        "name": "get_form_value_native — 문서 양식 개체 이름 문자열",
+        "value": "get_form_value_native — 문서 양식 개체 저장 값",
+        "text": "get_form_value_native — 문서 양식 개체 표시 문자열",
+        "caption": "get_form_value_native — 문서 양식 개체 단추 캡션"
+      },
+      "note": "ok·formType·enabled 와 좌표는 엔진이 판정한다. 양식의 이름·값·표기는 문서가 정한다.",
+      "category": "서식-메타",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan",
+        "shell_command"
+      ]
+    },
+    "charts": {
+      "untrusted": [],
+      "origins": {},
+      "note": "목록은 엔진이 차트 컨트롤 좌표를 센 것이다. 본문·차트 숫자는 싣지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "headers-footers": {
+      "untrusted": [],
+      "origins": {},
+      "note": "목록은 엔진이 컨트롤 종류·적용 대상에서 만든 좌표다. 본문 문자열은 싣지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "header-footer": {
+      "untrusted": [
+        "text"
+      ],
+      "origins": {
+        "text": "get_header_footer_native — 머리말/꼬리말 문단에서 읽은 문서 텍스트"
+      },
+      "note": "exists·section·isHeader·applyTo 는 호출 조건·컨트롤 좌표 또는 엔진 판정값이고, text만 문서 파생이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "shell_command"
+      ]
+    },
+    "export-text": {
+      "untrusted": [
+        "pages[].text",
+        "text"
+      ],
+      "origins": {
+        "pages[].text": "HwpDocument::extract_page_text_native — 쪽 텍스트 원문",
+        "text": "batch 레코드의 전 쪽 결합 텍스트 (batch_export_text_record_inner)"
+      },
+      "note": "본문 전달이 목적인 명령이라 봉투의 무게중심 자체가 문서 파생이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "shell_command",
+        "url_or_request_body"
+      ]
+    },
+    "export-structure": {
+      "untrusted": [
+        "structure.preamble[]",
+        "structure.roots[].heading",
+        "structure.roots[].marker",
+        "structure.roots[].body[]",
+        "structure.roots[].children[]"
+      ],
+      "origins": {
+        "structure.preamble[]": "첫 제목 이전 본문 문단 텍스트 (queries::structure)",
+        "structure.roots[].heading": "제목 문단 텍스트",
+        "structure.roots[].marker": "문단에서 검출한 번호 마커 문자열",
+        "structure.roots[].body[]": "제목에 귀속된 본문 문단 텍스트",
+        "structure.roots[].children[]": "하위 노드 — heading/marker/body/children 이 같은 규칙으로 재귀한다"
+      },
+      "note": "mode·nodeCount 는 엔진 판정값이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "digest": {
+      "untrusted": [
+        "outline[]",
+        "excerpt",
+        "sections[].heading",
+        "sections[].excerpt"
+      ],
+      "origins": {
+        "outline[]": "StructureNode.heading — 최상위 제목 문단 텍스트",
+        "excerpt": "extract_page_text_native 앞쪽 발췌(기본 3쪽) 또는 --pages 범위 발췌",
+        "sections[].heading": "절 제목 문단 텍스트 (--sections)",
+        "sections[].excerpt": "절 본문 발췌 (--sections)"
+      },
+      "note": "nextStep 은 고정 문자열 계약이고 format/pageCount/paraCount 는 엔진값이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "search": {
+      "untrusted": [
+        "matches[].text",
+        "matches[].context"
+      ],
+      "origins": {
+        "matches[].text": "GrepMatch.text — 매치가 속한 문단의 전문",
+        "matches[].context": "GrepMatch.context — 매치 앞뒤 문맥 발췌"
+      },
+      "note": "query 는 호출자가 준 값이고 주소(section/paragraph/page/charOffset)는 엔진값이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "next_query"
+      ]
+    },
+    "extract-data": {
+      "untrusted": [
+        "items[].raw",
+        "items[].unit"
+      ],
+      "origins": {
+        "items[].raw": "queries::extract_data::collect_into — 문서 문단·표 셀·글상자에서 인식한 원문 표기",
+        "items[].unit": "queries::extract_data::collect_into — 문서 원문 표기에서 인식한 수량 단위"
+      },
+      "note": "normalized·currency·주소·집계는 인식 엔진이 만든 값이고, raw·unit만 문서 파생이다.",
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "fields": {
+      "untrusted": [
+        "fields[].name",
+        "fields[].guide",
+        "fields[].memo",
+        "fields[].command",
+        "fields[].value",
+        "textSecurity.findings[].names[]"
+      ],
+      "origins": {
+        "fields[].name": "누름틀 필드 이름 — 문서가 정한다",
+        "fields[].guide": "누름틀 안내문",
+        "fields[].memo": "누름틀 메모",
+        "fields[].command": "누름틀 command 문자열",
+        "fields[].value": "누름틀 현재값 — 문서에 저장된 텍스트",
+        "textSecurity.findings[].names[]": "판정 대상이 된 필드 이름 원문 (#3707)"
+      },
+      "note": "fieldCount·location 좌표·editableInForm 은 엔진값이다.",
+      "category": "서식-메타",
+      "forbiddenSlots": [
+        "tool_argument_path",
+        "run_plan",
+        "privilege_decision",
+        "system_prompt",
+        "tool_name",
+        "shell_command",
+        "url_or_request_body"
+      ]
+    },
+    "explain": {
+      "untrusted": [
+        "fields[]",
+        "summary"
+      ],
+      "origins": {
+        "fields[]": "collect_field_records — 누름틀 이름 목록",
+        "summary": "explain_summary — 표 개수·누름틀 이름 등을 엮은 사람용 문장. 위 fields[] 와 같은 이름 문자열이 그대로 섞여 들어간다"
+      },
+      "note": "format·pageCount·paragraphCount·footnoteCount·endnoteCount·encrypted 는 엔진값이고, tables[] 는 rows/cols/hasMergedCells 만 담아 셀 텍스트를 싣지 않는다.",
+      "category": "서식-메타",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "explore": {
+      "untrusted": [],
+      "origins": {},
+      "note": "어포던스 메뉴 봉투는 형식 레이블·개수(pageCount·affordanceCount)·확신도·고정 명령 템플릿(<file> 자리표시자)·고정 고지문(note)뿐이다. 증거 menu[].why 는 문서 원문이 아니라 엔진이 센 개수를 엮은 사람 문장이라 문서 파생 문자열이 나갈 자리가 없다 — source 는 호출자 경로 에코다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-tables": {
+      "untrusted": [
+        "tables[].caption",
+        "tables[].cells[].text",
+        "tables[].cells[].nested[]"
+      ],
+      "origins": {
+        "tables[].caption": "표 캡션 텍스트",
+        "tables[].cells[].text": "셀 문단 텍스트 결합값",
+        "tables[].cells[].nested[]": "중첩 표 — caption/cells 가 같은 규칙으로 재귀한다"
+      },
+      "note": "격자 주소(row/col/rowSpan/colSpan)와 개수는 엔진값이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "table-to-csv": {
+      "untrusted": [
+        "tables[].csv"
+      ],
+      "origins": {
+        "tables[].csv": "queries::table_csv::grid_to_csv — 문서 표 셀의 텍스트를 RFC 4180 CSV로 직렬화"
+      },
+      "note": "표 주소·격자 크기·BOM·산출 경로는 엔진 또는 호출자 값이고, CSV 본문만 문서 파생이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "csv-to-table": {
+      "untrusted": [
+        "changed[].oldText"
+      ],
+      "origins": {
+        "changed[].oldText": "resolve_table_cell — CSV를 적용하기 전 표 앵커 셀에 있던 문서 텍스트"
+      },
+      "note": "csv·newText는 호출자가 준 입력이고, 변경 전 셀 값(oldText)만 문서에서 왔다.",
+      "category": "편집-저널",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "chart-to-csv": {
+      "untrusted": [
+        "charts[].csv"
+      ],
+      "origins": {
+        "charts[].csv": "queries::chart_csv::to_csv — 차트의 계열명·카테고리 라벨·값을 RFC 4180 CSV로 직렬화"
+      },
+      "note": "차트 번호·행열 개수·BOM·산출 경로는 엔진 또는 호출자 값이고, CSV 본문만 문서 파생이다.",
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "csv-to-chart": {
+      "untrusted": [
+        "changed[].from"
+      ],
+      "origins": {
+        "changed[].from": "ooxml_chart::data — CSV를 적용하기 전 차트 c:v 에 있던 문서 값(값·계열명·카테고리 라벨, #5652 구조 편집 항목 포함)"
+      },
+      "note": "csv·to·wrote·op 는 호출자 입력 또는 엔진값이고, 변경 전 값(from)만 문서에서 왔다.",
+      "category": "편집-저널",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "dump-pages": {
+      "untrusted": [
+        "pages[].columns[].items[].textPreview"
+      ],
+      "origins": {
+        "pages[].columns[].items[].textPreview": "para_text_preview — 문단 텍스트 앞부분 미리보기 (queries::rendering)"
+      },
+      "note": "조판 진단 봉투라 나머지는 전부 기하·인덱스 값이다.",
+      "category": "본문-반출",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "inspect": {
+      "untrusted": [
+        "hiddenText[].excerpt",
+        "injectionSignals[].excerpt",
+        "injectionSignals[].matched",
+        "findings[].excerpt",
+        "findings[].rendered",
+        "findings[].raw",
+        "findings[].hidden"
+      ],
+      "origins": {
+        "hiddenText[].excerpt": "queries::hidden_text::detect_hidden_text — 조판상 은닉으로 판정한 문서 문자열의 제한 발췌",
+        "injectionSignals[].excerpt": "queries::injection_scan::make_excerpt — 주입 신호가 발견된 문서 문맥의 제한 발췌",
+        "injectionSignals[].matched": "queries::injection_scan::scan_text_in — 문서에서 실제 매치된 신호 조각",
+        "findings[].excerpt": "text_security::scan_deception — 유니코드 기만이 발견된 문서 문맥의 제한 발췌",
+        "findings[].rendered": "text_security::scan_deception — 문서 문자열을 사람이 보는 표시 순서로 재현한 값",
+        "findings[].raw": "text_security::scan_deception — 제어문자를 표기한 실제 문서 코드포인트 순서",
+        "findings[].hidden": "text_security::scan_deception — 태그 문자로 숨겨진 문서 문자열의 복원값"
+      },
+      "note": "hiddenText·injectionSignals·findings의 문장·표시 문자열만 문서 파생이며, 종류·주소·근거·집계는 엔진 판정값이다.",
+      "category": "보안-발췌",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan",
+        "log_or_issue"
+      ]
+    },
+    "armor": {
+      "untrusted": [
+        "armoredText",
+        "injectionSignals[].excerpt",
+        "injectionSignals[].matched"
+      ],
+      "origins": {
+        "armoredText": "queries::armor::fence — HwpDocument::extract_page_text_native 로 뽑은 문서 본문을 nonce 격벽으로 감싼 값. 격벽 표지만 엔진 생성이고 격벽 사이 본문은 전부 문서 파생이다",
+        "injectionSignals[].excerpt": "queries::injection_scan::make_excerpt — 주입 신호가 발견된 문서 문맥의 제한 발췌",
+        "injectionSignals[].matched": "queries::injection_scan::scan_text_in — 문서에서 실제 매치된 신호 조각"
+      },
+      "note": "safety.nonce·fenceOpen·fenceClose 는 이 호출만의 무작위 격벽 표지(엔진 생성)이고, pageCount·signalCount·clean·scanScopes·safety.note·신호의 종류·주소·근거는 엔진 판정값이다. armoredText 안 격벽 사이 본문과 신호 발췌(excerpt·matched)만 문서 파생이다.",
+      "category": "보안-발췌",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "edit": {
+      "untrusted": [
+        "confusable[].lookalikes",
+        "oldText",
+        "changed[].from",
+        "findings[].raw",
+        "findings[].masked",
+        "removed[].before"
+      ],
+      "origins": {
+        "confusable[].lookalikes": "화면상 같아 보이는 **문서의 다른 누름틀 이름들** (#3707)",
+        "oldText": "set-cell 이 덮어쓰기 전 셀에 있던 문서 텍스트",
+        "changed[].from": "set-chart-data 가 덮어쓰기 전 차트 c:v 에 있던 문서 값(값·계열명·카테고리 라벨)",
+        "findings[].raw": "redact 가 탐지한 개인정보 **원문** — 문서 본문에서 그대로 뽑은 값",
+        "findings[].masked": "redact 마스킹 결과 — 구조 문자·자릿수가 문서 원문에서 유래",
+        "removed[].before": "sanitize 가 지운 문서 속성 원문 — 제목·작성자·키워드, 그리고 preview.text 는 본문 첫 화면 발췌"
+      },
+      "note": "find·replace·filled[].name 은 호출자가 준 문자열이고, replacedCount·changedPages·verify 는 엔진 판정값이다.",
+      "category": "편집-저널",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan",
+        "log_or_issue"
+      ]
+    },
+    "run": {
+      "untrusted": [
+        "steps[].oldText",
+        "steps[].confusable[].lookalikes"
+      ],
+      "origins": {
+        "steps[].oldText": "set_cell step 이 덮기 전의 셀 텍스트",
+        "steps[].confusable[].lookalikes": "fill_fields step 이 경고한 문서의 유사 필드 이름들"
+      },
+      "note": "input·output·steps[].find 는 계획서(호출자)가 준 값이다.",
+      "category": "편집-저널",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "replay": {
+      "untrusted": [],
+      "origins": {},
+      "note": "영수증 봉투는 해시(inputSha256·planSha256·outputSha256)·모드·step 수· 도구 버전·재현 판정뿐이다 — run 과 달리 저널을 싣지 않아 문서 문자열이 나갈 자리가 없다. input 경로와 expectedOutputSha256 은 계획서(호출자)가 준 값의 에코다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "audit": {
+      "untrusted": [],
+      "origins": {},
+      "note": "감사 봉투는 root(호출자 에코)·개수 회계(total/reproduced/reproducedRate)와 failed[](캡슐 파일 이름·실패 사유·기대/실측 해시)뿐이다 — 캡슐은 문서가 아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "lineage": {
+      "untrusted": [],
+      "origins": {},
+      "note": "계보 봉투는 head(호출자 에코)·depth·판정 불리언(valid·parentOk·lineageOk· reproduced)·캡슐 파일 경로(brokenAt·links[].capsule)·해시뿐이다 — 캡슐은 호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "keygen": {
+      "untrusted": [],
+      "origins": {},
+      "note": "키 발급 봉투는 keyId(호출자 에코)·publicKey(엔진 생성)·keyFile(호출자 에코)뿐이다 — 문서를 열지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "verify-signature": {
+      "untrusted": [],
+      "origins": {},
+      "note": "서명 검증 봉투는 경로 에코·해시·판정(signatureOk·keyKnown·revoked· verdict)뿐이다 — 캡슐·서명·키링은 호출자 산출물이고 문서를 열지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "harness": {
+      "untrusted": [],
+      "origins": {},
+      "note": "하네스 봉투는 경로 에코(dir·capsule·output)·해시·연번뿐이다 — 캡슐·키링은 호출자 산출물이고, 문서 문자열은 wrap 실행 내부에 머문다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "harness-status": {
+      "untrusted": [],
+      "origins": {},
+      "note": "판정 봉투는 경로 에코(dir)·개수 회계(capsules)·판정 불리언 (chainValid·verdict)·서명/재현 집계·깨진 캡슐 파일 이름(brokenAt)뿐이다 — 캡슐은 호출자 산출물이고, 문서 문자열은 --deep 재실행 내부에 머문다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "anchor": {
+      "untrusted": [],
+      "origins": {},
+      "note": "앵커 봉투는 경로 에코·해시·연번·머클 루트/경로·판정뿐이다 — 로그와 캡슐은 호출자 산출물이고 문서를 열지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "gate": {
+      "untrusted": [],
+      "origins": {},
+      "note": "게이트 봉투는 정책 이름·경로 에코·해시·판정(verdict·violations)뿐이다 — 캡슐·정책·키링은 호출자 산출물이고 문서를 열지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "bundle": {
+      "untrusted": [],
+      "origins": {},
+      "note": "번들 봉투는 경로 에코·개수 집계·판정(containerOk 등)·brokenAt 사유뿐이다 — 번들·도메인 파일은 호출자 산출물이고 문서를 열지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "disclose": {
+      "untrusted": [],
+      "origins": {},
+      "note": "공개 봉투는 경로 에코·커밋 수·포인터 목록·해시·판정뿐이다 — 값 원문은 비밀 개봉 파일에만 있고 봉투에 싣지 않는다(그것이 이 축의 존재 이유).",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "settle": {
+      "untrusted": [],
+      "origins": {},
+      "note": "봉투는 경로 에코·해시·판정·seq 뿐이다 — 명세서 제목·금액 같은 문서 유래 문자열은 봉투에 싣지 않는다(금액은 운반만 하는 문자열이고 도구는 계산하지 않는다, 범위 경계).",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "audit-report": {
+      "untrusted": [],
+      "origins": {},
+      "note": "봉투는 수치 합산·경로 에코·판정뿐 — 문서 유래 문자열은 실리지 않는다. 보고서 파일의 각 절도 같은 원칙(수치와 해시만)이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "recall-scope": {
+      "untrusted": [],
+      "origins": {},
+      "note": "봉투는 캡슐 파일명·해시·경로 배열·계수뿐 — 문서 본문 유래 문자열이 지나는 길이 없다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "conformance": {
+      "untrusted": [],
+      "origins": {},
+      "note": "봉투는 등급·판정·검사 항목(고정 문자열+계수)뿐 — 문서 유래 문자열이 지나는 길이 없다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "ir-diff": {
+      "untrusted": [
+        "categories"
+      ],
+      "origins": {
+        "categories": "차이 라인에서 뽑은 카테고리 키 — 보통은 엔진 라벨이지만, ':' 가 없는 차이 라인은 본문 전체가 키가 되어 문서 문자열이 섞일 수 있다(ir_diff 의 diff())"
+      },
+      "note": "보수적으로 선언한다 — 과소 선언은 위험한 방향이고 과대 선언은 안전한 방향이다.",
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "verify": {
+      "untrusted": [
+        "expectations[].actual"
+      ],
+      "origins": {
+        "expectations[].actual": "문서에서 읽은 실측값 — field 축은 누름틀 값 그대로이고, contains/notContains 의 매치 수·pages·format 도 문서 내용이 정한다 (cmd_verify)"
+      },
+      "note": "expected·subject 는 호출자가 준 값이고, pass·verdict 는 엔진 판정이다.",
+      "category": "편집-저널",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "render-diff": {
+      "untrusted": [],
+      "origins": {},
+      "note": "기하 차이 봉투는 경로·노드 유형·좌표·집계값만 싣는다. 본문 텍스트와 이미지 바이트는 싣지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "layout-anomaly": {
+      "untrusted": [],
+      "origins": {},
+      "note": "단일 렌더 트리의 overflow·overlap·빈 쪽 신호는 경로·노드 유형·좌표·집계만 싣는다. 본문 텍스트와 이미지 바이트는 봉투에 넣지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "thumbnail": {
+      "untrusted": [
+        "base64",
+        "dataUri"
+      ],
+      "origins": {
+        "base64": "문서에 내장된 PrvImage 미리보기 이미지 바이트",
+        "dataUri": "같은 이미지의 data: URI 형태"
+      },
+      "note": "이미지도 문서 작성자가 정한 내용이다 — 멀티모달 에이전트는 그림 속 글자를 읽는다. 파일로만 쓰는 모드(-o)의 봉투는 경로·크기뿐이다.",
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "multimodal_instruction"
+      ]
+    },
+    "batch": {
+      "untrusted": [
+        "text",
+        "title",
+        "fonts[]",
+        "structure.preamble[]",
+        "structure.roots[].heading",
+        "structure.roots[].marker",
+        "structure.roots[].body[]",
+        "structure.roots[].children[]",
+        "tables[].caption",
+        "tables[].cells[].text",
+        "tables[].cells[].nested[]",
+        "fields[].name",
+        "fields[].guide",
+        "fields[].memo",
+        "fields[].command",
+        "fields[].value",
+        "textSecurity.findings[].names[]",
+        "matches[].text",
+        "matches[].context"
+      ],
+      "origins": {
+        "text": "export-text 축 레코드의 쪽 텍스트",
+        "title": "info 축 레코드의 문서 제목",
+        "fonts[]": "info 축 레코드의 글꼴 이름",
+        "structure.preamble[]": "export-structure 축 레코드",
+        "structure.roots[].heading": "export-structure 축 레코드",
+        "structure.roots[].marker": "export-structure 축 레코드",
+        "structure.roots[].body[]": "export-structure 축 레코드",
+        "structure.roots[].children[]": "export-structure 축 레코드",
+        "tables[].caption": "export-tables 축 레코드",
+        "tables[].cells[].text": "export-tables 축 레코드",
+        "tables[].cells[].nested[]": "export-tables 축 레코드",
+        "fields[].name": "fields 축 레코드",
+        "fields[].guide": "fields 축 레코드",
+        "fields[].memo": "fields 축 레코드",
+        "fields[].command": "fields 축 레코드",
+        "fields[].value": "fields 축 레코드",
+        "textSecurity.findings[].names[]": "fields 축 레코드",
+        "matches[].text": "search 축 레코드",
+        "matches[].context": "search 축 레코드"
+      },
+      "note": "batch 는 자체 스키마가 없다 — NDJSON 레코드가 서브커맨드 봉투 모양 그대로다. 그래서 여기 목록은 batch 서브커맨드들의 합집합이고, 각 레코드의 표지는 그 레코드에 실제로 있는 필드만 담는다.",
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "shell_command",
+        "output_filename",
+        "log_title",
+        "tool_argument_path",
+        "run_plan",
+        "privilege_decision",
+        "url_or_request_body",
+        "next_query"
+      ]
+    },
+    "scan": {
+      "untrusted": [
+        "files[].probe.error"
+      ],
+      "origins": {
+        "files[].probe.error": "--probe 파싱 실패 메시지 — 파서가 문서 바이트를 읽다 만든 문자열이라 문서 내용 조각이 섞일 수 있다 (cmd_scan)"
+      },
+      "note": "path·bytes·extFormat 은 파일시스템 실측이고 magicFormat·extMismatch· pageCount 는 엔진 판정이다. 문서 파생 가능성은 probe.error 하나뿐이며, 표지는 그 필드가 실제로 실린 호출에만 붙는다.",
+      "category": "보안-발췌",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_name",
+        "run_plan"
+      ]
+    },
+    "threat-scan": {
+      "untrusted": [
+        "findings[].detail"
+      ],
+      "origins": {
+        "findings[].detail": "queries::threat_scan — 외부 참조 URL·링크 대상 경로 등 문서가 정한 문자열 조각. 종류(kind)·심각도·주소(location)·근거(rationale)는 엔진 판정이고, detail 만 문서 파생이라 원격 참조를 신고할 때만 실린다 (looks_remote 통과 대상)"
+      },
+      "note": "kind·severity·location·rationale·findingCount·clean·scanScopes·format 은 전부 엔진의 구조 판정값이다. 문서 파생 문자열은 detail 하나뿐이며(외부참조 대상), 표지는 그 필드가 실제로 실린 봉투에만 붙는다 — 실행체·손상 레코드·매크로 신고에는 detail 이 없어 untrustedContent 가 false 다.",
+      "category": "보안-발췌",
+      "forbiddenSlots": [
+        "url_or_request_body",
+        "shell_command"
+      ]
+    },
+    "export-svg": {
+      "untrusted": [],
+      "origins": {},
+      "note": "매니페스트는 산출 경로·바이트·쪽수뿐이다. 문서 텍스트는 SVG 파일 안에 있고 봉투에는 없다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-pdf": {
+      "untrusted": [],
+      "origins": {},
+      "note": "매니페스트는 backend·경로·바이트·쪽수뿐이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-markdown": {
+      "untrusted": [],
+      "origins": {},
+      "note": "매니페스트는 쪽별 산출 경로·바이트뿐이다 — 본문은 MD 파일 쪽에 있다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-hwpx": {
+      "untrusted": [],
+      "origins": {},
+      "note": "저장 봉투는 경로·바이트·verify 판정값뿐이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-hml": {
+      "untrusted": [],
+      "origins": {},
+      "note": "저장 봉투는 경로·바이트뿐이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-doclang": {
+      "untrusted": [],
+      "origins": {},
+      "note": "저장 봉투는 경로·바이트·자산 개수·손실 개수뿐이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "extract-pages": {
+      "untrusted": [],
+      "origins": {},
+      "note": "발췌 봉투는 쪽 범위와 문단 개수뿐이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "convert": {
+      "untrusted": [],
+      "origins": {},
+      "note": "변환 봉투는 경로·바이트·verify 판정값뿐이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "build-from-ingest": {
+      "untrusted": [],
+      "origins": {},
+      "note": "생성 봉투는 경로·바이트·문항/문단 개수뿐이다. 입력 ingest JSON 은 문서가 아니라 호출자가 만든 계획서다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "scaffold": {
+      "untrusted": [],
+      "origins": {},
+      "note": "생성 봉투는 경로·바이트·블록/문단/표 개수뿐이다. 입력 spec JSON 은 문서가 아니라 사용자/에이전트가 만든 명세다 — 문서 파생 값이 아니다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "capabilities": {
+      "untrusted": [],
+      "origins": {},
+      "note": "문서를 열지 않는다 — 전부 바이너리 자신의 선언이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-ir-schema": {
+      "untrusted": [],
+      "origins": {},
+      "note": "문서를 열지 않는다 — 공개 IR 타입의 자기서술(JSON Schema)이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-capabilities-schema": {
+      "untrusted": [],
+      "origins": {},
+      "note": "문서를 열지 않는다 — capabilities 타입의 자기서술(JSON Schema)이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-provenance-map": {
+      "untrusted": [],
+      "origins": {},
+      "note": "본 지도 자신 — 문서를 열지 않는다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-ontology": {
+      "untrusted": [],
+      "origins": {},
+      "note": "문서를 열지 않는다 — 자기서술(IR 스키마·capabilities·MCP 도구·본 지도)에서 기계 유도한 JSON-LD 온톨로지다. 본 지도의 untrusted 경로는 온톨로지 안에서 신뢰 술어(rhwp:untrustedFields)로 다시 실린다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-agent-manifest": {
+      "untrusted": [],
+      "origins": {},
+      "note": "문서를 열지 않는다 — capabilities·export-ir-schema·export-provenance-map· export-plan-schema 의 자기서술을 조립한 것뿐이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    },
+    "export-plan-schema": {
+      "untrusted": [],
+      "origins": {},
+      "note": "문서를 열지 않는다 — run 계획서 문법의 자기서술(JSON Schema)이다.",
+      "category": "엔진-전용",
+      "forbiddenSlots": []
+    }
+  }
+}

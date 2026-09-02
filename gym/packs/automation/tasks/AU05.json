@@ -1,0 +1,33 @@
+{
+  "id": "AU05",
+  "tier": 2,
+  "title": "적합성 자가진단 L1",
+  "input": "samples/table-001.hwp",
+  "instructions": "작업 캡슐 폴더를 만들어 적합성 등급 **L1**(산출물마다 영수증) 자가진단을 통과시켜라. capsules/ 를 제출한다. 힌트: rhwp conformance --level L1.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/work.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "L1 적합",
+      "op": "value_eq",
+      "value": "conformant",
+      "path": "verdict",
+      "cmd": [
+        "conformance",
+        "{file:capsules}",
+        "--level",
+        "L1",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

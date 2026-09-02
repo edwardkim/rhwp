@@ -1,6 +1,6 @@
 {
   "name": "rhwp-chrome",
-  "version": "0.8.4",
+  "version": "0.8.6",
   "description": "rhwp HWP 뷰어 & 에디터 — Chrome/Edge 확장 프로그램",
   "license": "MIT",
   "private": true,
@@ -8,10 +8,13 @@
   "scripts": {
     "dev": "vite",
     "build": "node build.mjs",
+    "test:e2e:smoke": "npm run build && node --test e2e/page-budget.test.mjs && node e2e/extension-smoke.test.mjs",
+    "test:e2e:download": "npm run build && node e2e/download-interceptor.test.mjs",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
+    "puppeteer": "^25.9.0",
     "typescript": "^7.0.2",
-    "vite": "^8.2.1"
+    "vite": "^8.2.2"
   }
 }

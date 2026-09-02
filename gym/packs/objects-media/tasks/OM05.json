@@ -1,0 +1,27 @@
+{
+  "id": "OM05",
+  "tier": 2,
+  "title": "필드 이름 지목 조사",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 서식의 **세 번째** 필드 이름을 answer.json 에 {\"name\": \"...\"} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "세 번째 필드 이름",
+      "op": "answer_eq",
+      "answer": "name",
+      "path": "fields[2].name",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

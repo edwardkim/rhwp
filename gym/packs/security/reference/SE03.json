@@ -1,0 +1,22 @@
+{
+  "id": "SE03",
+  "steps": [
+    {
+      "answer": {
+        "hidden": {
+          "cmd": [
+            "inspect",
+            "hidden-text",
+            "{input}",
+            "--json"
+          ],
+          "path": "hiddenCharCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

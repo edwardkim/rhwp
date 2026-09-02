@@ -1,0 +1,28 @@
+{
+  "id": "T010",
+  "command": "search",
+  "chapter": "10_조회.md",
+  "cmd": "rhwp search samples/2022년 국립국어원 업무계획.hwp 국어 --json",
+  "exit": 0,
+  "keys": [
+    "caseSensitive",
+    "matchCount",
+    "matches",
+    "omittedCount",
+    "query",
+    "schemaVersion",
+    "source",
+    "totalMatchCount",
+    "truncated",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "matches[].text",
+    "matches[].context"
+  ],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/10_조회.md",
+  "notInvented": true
+}

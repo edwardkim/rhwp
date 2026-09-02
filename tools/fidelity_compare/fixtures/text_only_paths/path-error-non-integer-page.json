@@ -1,0 +1,38 @@
+{
+  "id": "path-error-non-integer-page",
+  "schema": "rhwp.fidelity_compare.text_only_path.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "title": "쪽 번호 비정수",
+  "why": "끝쪽은 정수 파싱을 거친다.",
+  "argv": [
+    "plan",
+    "0",
+    "abc",
+    "--text-only"
+  ],
+  "mode": "error",
+  "exportAllSvg": false,
+  "layoutLedger": false,
+  "expectsError": true,
+  "errorNeedle": "끝쪽은 정수여야",
+  "error": "끝쪽은 정수여야",
+  "parsed": null,
+  "artifacts": [
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv"
+  ],
+  "chromeRequired": false,
+  "pypdfRequired": false,
+  "pypdfium2Required": false,
+  "pixelSheets": false,
+  "candidateNotVerdict": true
+}

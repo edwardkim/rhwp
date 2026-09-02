@@ -44,7 +44,7 @@ last_verified: 2026-08-03
 
 | 진입로 | 전제 | 근거 |
 | --- | --- | --- |
-| CLI | `rhwp` 실행 파일이 `PATH` 에 있다 | `Cargo.toml:17-19` `[[bin]] name = "rhwp"` |
+| CLI | `rhwp` 실행 파일이 `PATH` 에 있다 | `Cargo.toml:20-22` `[[bin]] name = "rhwp"` |
 | MCP | 호스트가 `rhwp mcp-serve` 를 자식으로 띄운다 | `src/mcp_serve.rs` 전체가 stdio JSON-RPC 서버 |
 
 둘 다 **바이너리를 구한 뒤에야** 시작된다. 샌드박스 안 에이전트 — 임의 실행 파일
@@ -52,7 +52,7 @@ last_verified: 2026-08-03
 
 ### 1.2 WASM 표면은 이미 있다. 그런데 에이전트용이 아니다
 
-rhwp 는 이미 WASM 으로 컴파일된다(`Cargo.toml:13-15` `crate-type = ["rlib","cdylib"]`,
+rhwp 는 이미 WASM 으로 컴파일된다(`Cargo.toml:13-18` `crate-type = ["rlib","cdylib"]`,
 `wasm-pack build --target web`). 규모 실측: `src/wasm_api.rs` **7,621줄**,
 `wasm_bindgen` **372회**, 명시 `js_name` export **364개**(`get*` 121, `set*` 42,
 `render*` 14). 이름 분포가 성격을 말한다 — `renderPageToCanvasFilteredWithProfile`
@@ -75,7 +75,7 @@ $ grep -c schemaVersion src/main.rs       →  112
 - 봉투 생성기(`structure_json_value` `src/main.rs:6793`, `tables_json_value` `:6810`,
   `fields_json_value` `:6826`, `search_json_value` `:6893`, `info_json_value` `:6993`,
   `extract_data_json_value` `:9956`)가 **전부 `src/main.rs` 안에 있다.**
-- `src/main.rs` 는 `[[bin]]` 이고(`Cargo.toml:17-19`) WASM 빌드는 `--lib` 만 간다
+- `src/main.rs` 는 `[[bin]]` 이고(`Cargo.toml:20-22`) WASM 빌드는 `--lib` 만 간다
   (`.github/workflows/ci.yml:816` `cargo check --target wasm32-unknown-unknown --lib`).
 - 즉 **`src/wasm_api.rs` 는 봉투 생성기를 볼 수 없다.**
 

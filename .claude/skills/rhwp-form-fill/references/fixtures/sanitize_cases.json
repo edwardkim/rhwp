@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "bodyUntouched": true,
+  "cases": [
+    {
+      "id": "san-title",
+      "removedField": "title",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-subject",
+      "removedField": "subject",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-author",
+      "removedField": "author",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-keywords",
+      "removedField": "keywords",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-comments",
+      "removedField": "comments",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-lastSavedBy",
+      "removedField": "lastSavedBy",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-revisionNumber",
+      "removedField": "revisionNumber",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-dateString",
+      "removedField": "dateString",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-createdAt",
+      "removedField": "createdAt",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-lastSavedAt",
+      "removedField": "lastSavedAt",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-lastPrintedAt",
+      "removedField": "lastPrintedAt",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-previewText",
+      "removedField": "previewText",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-previewImage",
+      "removedField": "previewImage",
+      "bodyUntouched": true,
+      "exportTextIdentical": true
+    },
+    {
+      "id": "san-second-run",
+      "removedCount": 0,
+      "idempotent": true,
+      "proves": "첫 실행이 실제로 지웠다"
+    },
+    {
+      "id": "san-keep-preview",
+      "flag": "--keep-preview",
+      "keeps": "preview image",
+      "stillRemoves": "preview text always"
+    },
+    {
+      "id": "san-hwpx-meta",
+      "target": "Contents/content.hpf opf:metadata",
+      "note": "직렬화기가 splice 하는 저작자 경로를 중립 블록으로"
+    }
+  ],
+  "removedFields": [
+    "title",
+    "subject",
+    "author",
+    "keywords",
+    "comments",
+    "lastSavedBy",
+    "revisionNumber",
+    "dateString",
+    "createdAt",
+    "lastSavedAt",
+    "lastPrintedAt",
+    "previewText",
+    "previewImage"
+  ]
+}

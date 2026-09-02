@@ -4,13 +4,16 @@
 //! 해소된 스타일 목록(ResolvedStyleSet)으로 변환한다.
 
 use super::{hwpunit_to_px, GradientFillInfo, PatternFillInfo, TabStop};
-use crate::model::document::DocInfo;
+use crate::model::document::{DocInfo, Document};
 use crate::model::image::ImageEffect;
 use crate::model::style::{
     Alignment, BorderFill, BorderLine, Bullet, CenterLine, CharShape, DiagonalLine, FillType,
     HeadType, ImageFillMode, LineSpacingType, Numbering, ParaShape, TabDef, UnderlineType,
 };
 use crate::model::ColorRef;
+use crate::renderer::font_rule_layout_name_projection::{
+    find_font_rule_layout_name, GeneratedFontRuleProjection,
+};
 
 /// HWP 언어 카테고리 수 (한국어, 영어, 한자, 일본어, 기타, 기호, 사용자)
 pub const LANG_COUNT: usize = 7;
@@ -295,11 +298,29 @@ pub struct ResolvedStyleSet {
     /// [#2070] HWP3 → HWP5 변환본 여부 (Document::is_hwp3_variant 전파).
     /// 변환본 한정 레거시 폭 규칙(전체 폭) 게이트에 사용.
     pub hwp3_variant: bool,
+    /// 한 pagination/edit transaction의 모든 fresh-layout 소비자가 함께 읽는
+    /// exact-font source snapshot. Font payload는 registry의 Arc에 한 번만 있고,
+    /// 스타일 복제는 snapshot owner만 공유한다.
+    pub(crate) kerning_measurement_context:
+        Option<std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>>,
+    /// Q2-B cluster-aware shadow measurement context.  It is created from the
+    /// same immutable registry snapshot as `kerning_measurement_context` and
+    /// remains dormant until the composition-owner handoff qualifies.
+    pub(crate) horizontal_shaping_context:
+        Option<std::sync::Arc<crate::renderer::shaping_context::HorizontalShapingContext>>,
 }
 
 /// DocInfo 참조 테이블을 해소된 스타일 목록으로 변환한다.
 pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
     resolve_styles_with_variant(doc_info, dpi, false)
+}
+
+/// Resolve styles with the document's format-specific style normalization.
+/// Layout provenance itself remains owned by `LayoutCompatibilityProfile` and
+/// is passed separately to consumers that need it.
+pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
+    let profile = document.layout_profile();
+    resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout())
 }
 
 /// [Task #1001] HWP3 → HWP5 변환본 인지하여 ParaShape spacing/margin 추가 보정.
@@ -323,6 +344,8 @@ pub fn resolve_styles_with_variant(
         numberings,
         bullets,
         hwp3_variant: is_hwp3_variant,
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     }
 }
 
@@ -450,20 +473,106 @@ pub fn detect_lang_category(ch: char) -> usize {
 ///
 /// HWP 문서의 폰트 이름을 웹/SVG에서 렌더링 가능한 폰트로 치환한다.
 /// webhwp의 g_SubstFonts 치환 체인을 평탄화(flatten)한 테이블을 사용한다.
-fn lookup_font_name(doc_info: &DocInfo, lang_index: usize, font_id: u16) -> String {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum FontSubstitutionBoundary {
+    LegacyLatin,
+    Hft,
+    Ttf,
+}
+
+impl FontSubstitutionBoundary {
+    pub(crate) const fn source_boundary_id(self) -> &'static str {
+        match self {
+            Self::LegacyLatin => "rust-style-resolution.legacy-latin",
+            Self::Hft => "rust-style-resolution.hft",
+            Self::Ttf => "rust-style-resolution.ttf",
+        }
+    }
+
+    pub(crate) fn language_condition(self, source_face: &str) -> &'static str {
+        match self {
+            Self::LegacyLatin => "1",
+            Self::Ttf => "all",
+            Self::Hft
+                if find_font_rule_layout_name(self.source_boundary_id(), source_face, 0)
+                    .is_some() =>
+            {
+                "all"
+            }
+            Self::Hft => "1",
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct FontNameDecision {
+    pub(crate) language_slot: usize,
+    pub(crate) font_id: u16,
+    pub(crate) requested_face: Option<String>,
+    pub(crate) alt_type: Option<u8>,
+    pub(crate) embedded: Option<bool>,
+    pub(crate) normalized_face: Option<String>,
+    pub(crate) subst_font: Option<String>,
+    pub(crate) css_family_chain: Vec<String>,
+    pub(crate) substitution_boundary: Option<FontSubstitutionBoundary>,
+    pub(crate) substitution_rule_id: Option<&'static str>,
+}
+
+pub(crate) fn lookup_font_name_decision(
+    doc_info: &DocInfo,
+    lang_index: usize,
+    font_id: u16,
+) -> FontNameDecision {
+    let mut decision = FontNameDecision {
+        language_slot: lang_index,
+        font_id,
+        requested_face: None,
+        alt_type: None,
+        embedded: None,
+        normalized_face: None,
+        subst_font: None,
+        css_family_chain: Vec::new(),
+        substitution_boundary: None,
+        substitution_rule_id: None,
+    };
     if lang_index < doc_info.font_faces.len() {
         let lang_fonts = &doc_info.font_faces[lang_index];
         if (font_id as usize) < lang_fonts.len() {
             let font = &lang_fonts[font_id as usize];
             let name = &font.name;
+            decision.requested_face = Some(name.clone());
+            decision.alt_type = Some(font.alt_type);
+            decision.embedded = Some(font.is_embedded);
             // 폰트 치환: HFT 등 웹 미지원 폰트를 렌더링 가능한 폰트로 완전 대체
-            if let Some(resolved) = resolve_font_substitution(name, font.alt_type, lang_index) {
-                return resolved.to_string();
+            let substitution = resolve_font_substitution_decision(name, font.alt_type, lang_index);
+            let resolved = substitution
+                .map(|(face, _, _)| face)
+                .unwrap_or(name)
+                .to_string();
+            decision.normalized_face = Some(resolved.clone());
+            decision.substitution_boundary = substitution.map(|(_, boundary, _)| boundary);
+            decision.substitution_rule_id = substitution.map(|(_, _, rule_id)| rule_id);
+            decision.css_family_chain.push(resolved.clone());
+            if let Some(substitute) = font
+                .subst_font
+                .as_ref()
+                .filter(|substitute| !substitute.is_embedded)
+                .filter(|substitute| !substitute.face.trim().is_empty())
+                .filter(|substitute| substitute.face.trim() != resolved)
+            {
+                let face = substitute.face.trim().to_string();
+                decision.subst_font = Some(face.clone());
+                decision.css_family_chain.push(face);
             }
-            return name.clone();
         }
     }
-    String::new()
+    decision
+}
+
+fn lookup_font_name(doc_info: &DocInfo, lang_index: usize, font_id: u16) -> String {
+    lookup_font_name_decision(doc_info, lang_index, font_id)
+        .css_family_chain
+        .join(",")
 }
 
 /// 폰트명에서 원본(첫 번째) 폰트명만 추출 (폴백 제거)
@@ -481,238 +590,56 @@ pub(crate) fn resolve_font_substitution(
     alt_type: u8,
     lang_index: usize,
 ) -> Option<&'static str> {
+    resolve_font_substitution_decision(name, alt_type, lang_index).map(|(face, _, _)| face)
+}
+
+pub(crate) fn resolve_font_substitution_decision(
+    name: &str,
+    alt_type: u8,
+    lang_index: usize,
+) -> Option<(&'static str, FontSubstitutionBoundary, &'static str)> {
     // HWP3 원본/일부 한컴 재저장본은 HCI 영문 폰트를 TTF(type=1) 또는
     // unknown(type=0)으로 싣기도 한다. 한컴은 같은 face를 보여주므로
     // alt_type 차이와 무관하게 legacy 영문 HFT 치환을 우선 적용한다.
-    if let Some(result) = resolve_legacy_latin_font(name, lang_index) {
-        return Some(result);
+    if let Some(rule) =
+        resolve_projected_font_rule(FontSubstitutionBoundary::LegacyLatin, name, lang_index)
+    {
+        return Some((
+            rule.target_face_or_policy,
+            FontSubstitutionBoundary::LegacyLatin,
+            rule.rule_id,
+        ));
     }
 
     // HFT(type=2) 폰트 치환
     if alt_type == 2 {
-        if let Some(result) = resolve_hft_font(name, lang_index) {
-            return Some(result);
+        if let Some(rule) =
+            resolve_projected_font_rule(FontSubstitutionBoundary::Hft, name, lang_index)
+        {
+            return Some((
+                rule.target_face_or_policy,
+                FontSubstitutionBoundary::Hft,
+                rule.rule_id,
+            ));
         }
     }
 
     // TTF(type=1) 또는 알수없음(type=0) 치환
-    resolve_ttf_font(name)
+    resolve_projected_font_rule(FontSubstitutionBoundary::Ttf, name, lang_index).map(|rule| {
+        (
+            rule.target_face_or_policy,
+            FontSubstitutionBoundary::Ttf,
+            rule.rule_id,
+        )
+    })
 }
 
-fn resolve_legacy_latin_font(name: &str, lang_index: usize) -> Option<&'static str> {
-    if lang_index != 1 {
-        return None;
-    }
-
-    match name {
-        "HCI Poppy" => Some("Palatino Linotype"),
-        "HCI Tulip"
-        | "HCI Morning Glory"
-        | "HCI Centaurea"
-        | "HCI Bellflower"
-        | "AmeriGarmnd BT"
-        | "Bodoni Bd BT"
-        | "Bodoni Bk BT"
-        | "Baskerville BT"
-        | "GoudyOlSt BT"
-        | "Cooper Blk BT"
-        | "Stencil BT"
-        | "BrushScript BT"
-        | "CommercialScript BT"
-        | "Liberty BT"
-        | "MurrayHill Bd BT"
-        | "ParkAvenue BT"
-        | "CentSchbook BT"
-        | "펜흘림" => Some("HY견명조"),
-        "HCI Hollyhock"
-        | "HCI Hollyhock Narrow"
-        | "HCI Acacia"
-        | "Swis721 BT"
-        | "Hobo BT"
-        | "Orbit-B BT"
-        | "Blippo Blk BT"
-        | "BroadwayEngraved BT"
-        | "FuturaBlack BT"
-        | "Newtext Bk BT"
-        | "DomCasual BT"
-        | "가는안상수체영문"
-        | "중간안상수체영문"
-        | "굵은안상수체영문" => Some("HY중고딕"),
-        "HCI Columbine" | "Courier10 BT" | "OCR-A BT" | "OCR-B-10 BT" | "Orator10 BT" => {
-            Some("Calibri")
-        }
-        "BernhardFashion BT" | "Freehand591 BT" => Some("HY중고딕"),
-        _ => None,
-    }
-}
-
-/// HFT 폰트 → @font-face 등록 폰트 치환 (언어별)
-///
-/// 한국어(0)와 영어(1)가 다른 결과를 가지는 폰트는 언어별 분기 처리.
-/// 대부분의 HFT 폰트는 언어에 무관하게 동일한 결과를 갖는다.
-fn resolve_hft_font(name: &str, lang_index: usize) -> Option<&'static str> {
-    // === 직접 TTF 매핑 (모든 언어 공통) ===
-    let common = match name {
-        // [#2430] 한양 4종·휴먼명조는 치환하지 않고 원명 유지 — 한글 실측
-        // (COM 무신축 래더 2026-07-20)상 HY 대응 폰트와 ASCII 폭이 다른
-        // 별개 페이스(숫자 0.497/0.565em vs HY 0.583~0.668em). 자체 메트릭은
-        // font_metrics_data 의 Hanyang*/HumanMyeongJo, CSS 폴백은
-        // generic_fallback 의 명조/고딕 substring 분류가 동일 체인을 준다.
-        "한양그래픽" => Some("굴림"),
-        "한양궁서" => Some("궁서"),
-        "신명 태고딕" => Some("HY중고딕"),
-        "신명 태명조" => Some("HY신명조"),
-        "신명 견고딕" => Some("HY견고딕"),
-        "신명 견명조" => Some("HY견명조"),
-        "신명 태그래픽" => Some("HY그래픽"),
-        "신명 중고딕" => Some("HY중고딕"),
-        "태 가는 헤드라인T" => Some("HY헤드라인M"),
-        "태 가는 헤드라인D" => Some("HY헤드라인M"),
-        "양재 튼튼B" => Some("양재튼튼체B"),
-        // 명조 계열 → HY견명조
-        "명조" => Some("HY견명조"),
-        // 체인 평탄화: 다단계 HFT→HFT→...→TTF 체인의 최종 결과
-        // ("휴먼명조" 는 [#2430] 원명 유지 — 위 한양 계열 주석 참조)
-        "문화바탕" | "문화바탕제목" | "문화쓰기" | "문화쓰기흘림" => {
-            Some("HY신명조")
-        }
-        "신명 세명조"
-        | "신명 신명조"
-        | "신명 신신명조"
-        | "신명 중명조"
-        | "신명 순명조"
-        | "신명 신문명조" => Some("HY신명조"),
-        "옛한글" | "양재 다운명조M" => Some("HY신명조"),
-        "#세명조" | "#신명조" | "#중명조" | "#신중명조" | "#화명조A" | "#화명조B" | "#태명조"
-        | "#신태명조" | "#태신명조" | "#견명조" | "#신문명조" | "#신문태명" => {
-            Some("HY신명조")
-        }
-        // 고딕 계열
-        "휴먼고딕" | "문화돋움" | "문화돋움제목" | "태 나무" => Some("돋움"),
-        "휴먼옛체" | "딸기" => Some("돋움"),
-        "샘물" | "가는한" | "중간한" | "굵은한" => Some("돋움"),
-        "휴먼가는샘체" | "휴먼중간샘체" | "휴먼굵은샘체" => Some("돋움"),
-        "휴먼가는팸체" | "휴먼중간팸체" | "휴먼굵은팸체" => Some("돋움"),
-        "가는안상수체" | "중간안상수체" | "굵은안상수체" => Some("돋움"),
-        "양재 매화" | "양재 소슬" | "양재 샤넬" | "옥수수" => Some("돋움"),
-        "양재 본목각M" | "복숭아" => Some("돋움"),
-        "신명 세고딕" | "신명 디나루" | "신명 세나루" => Some("돋움"),
-        "#세고딕" | "#신세고딕" | "#중고딕" | "#태고딕" | "#신문고딕" | "#신문태고" | "#세나루"
-        | "#신세나루" | "#디나루" | "#신디나루" => Some("돋움"),
-        // 그래픽/궁서/기타
-        "신명 신그래픽" | "강낭콩" => Some("굴림"),
-        "#그래픽" | "#신그래픽" | "#공작" => Some("굴림"),
-        "양재 참숯B" | "양재 와당" | "양재 이니셜" => Some("HY견고딕"),
-        "#빅" => Some("HY견고딕"),
-        "태 헤드라인T" => Some("HY견고딕"),
-        "태 헤드라인D" => Some("HY견명조"),
-        "가는공한" | "중간공한" | "굵은공한" | "필기" | "타이프" => {
-            Some("HY견명조")
-        }
-        "가지" | "오이" | "양재 둘기" => Some("HY견명조"),
-        "신명 궁서" | "#궁서" => Some("궁서"),
-        "#수암A" | "#수암B" => Some("돋움"),
-        // 시스템
-        "시스템" | "HY둥근고딕" => Some("돋움"),
-        "고딕" => Some("돋움"),
-        // 영문 HFT
-        "산세리프" => Some("Calibri"),
-        "HCI Poppy" => Some("Palatino Linotype"),
-        "수식" => Some("HY신명조"),
-        "한글 풀어쓰기" => Some("HY견명조"),
-        _ => None,
-    };
-
-    if common.is_some() {
-        return common;
-    }
-
-    // 영어(1) 전용 HFT 치환
-    if lang_index == 1 {
-        match name {
-            "HCI Tulip"
-            | "HCI Morning Glory"
-            | "HCI Centaurea"
-            | "HCI Bellflower"
-            | "AmeriGarmnd BT"
-            | "Bodoni Bd BT"
-            | "Bodoni Bk BT"
-            | "Baskerville BT"
-            | "GoudyOlSt BT"
-            | "Cooper Blk BT"
-            | "Stencil BT"
-            | "BrushScript BT"
-            | "CommercialScript BT"
-            | "Liberty BT"
-            | "MurrayHill Bd BT"
-            | "ParkAvenue BT"
-            | "CentSchbook BT"
-            | "펜흘림" => Some("HY견명조"),
-            "HCI Hollyhock"
-            | "HCI Hollyhock Narrow"
-            | "HCI Acacia"
-            | "Swis721 BT"
-            | "Hobo BT"
-            | "Orbit-B BT"
-            | "Blippo Blk BT"
-            | "BroadwayEngraved BT"
-            | "FuturaBlack BT"
-            | "Newtext Bk BT"
-            | "DomCasual BT"
-            | "가는안상수체영문"
-            | "중간안상수체영문"
-            | "굵은안상수체영문" => Some("HY중고딕"),
-            "HCI Columbine" | "Courier10 BT" | "OCR-A BT" | "OCR-B-10 BT" | "Orator10 BT" => {
-                Some("Calibri")
-            }
-            "BernhardFashion BT" | "Freehand591 BT" => Some("HY중고딕"),
-            _ => None,
-        }
-    } else {
-        None
-    }
-}
-
-/// TTF 폰트 → @font-face 등록 폰트 치환 (모든 언어 공통)
-fn resolve_ttf_font(name: &str) -> Option<&'static str> {
-    match name {
-        // 영문 별칭
-        "Gulim" => Some("굴림"),
-        "HYHeadLine Medium" => Some("HY헤드라인M"),
-        "Malgun Gothic" => Some("맑은 고딕"),
-        "HY그래픽M" => Some("HY그래픽"),
-        "SPOQAHANSANS" => Some("SpoqaHanSans"),
-        // [#2279] 한컴바탕/한컴돋움은 함초롬 계열로 치환하지 않는다.
-        // TTF name table 실측: 한컴바탕 = Haansoft Batang(HBATANG.TTF),
-        // 한컴돋움 = Haansoft Dotum(HDOTUM.TTF) — 함초롬(HCR)과 별개 폰트로
-        // 메트릭이 다르다 ('*' 0.583 vs 0.498em, 한글 음절 1.0 vs 0.97em).
-        // 종전 치환은 한컴돋움 문서의 폭 측정을 HCR Dotum 메트릭으로 보내
-        // 줄수 ±1 오차를 만들었다 (한글 PDF 실측: '*' 0.583em, 음절 1.0em).
-        // 메트릭은 font_metrics_data::resolve_metric_alias 가 Haansoft 엔트리로
-        // 연결하고, SVG 렌더 폴백 체인(svg.rs)은 한컴* 이름을 직접 처리한다.
-        // 영어(1) 전용 TTF 치환 (webhwp lang=1)
-        "MS Sans Serif" => Some("함초롬돋움"),
-        "Tahoma" => Some("함초롬돋움"),
-        // "Times New Roman" — 메트릭 DB에 있으므로 치환하지 않음
-        // 백묵 계열
-        "백묵 굴림" => Some("굴림"),
-        "백묵 돋움" => Some("돋움"),
-        "백묵 바탕" => Some("바탕"),
-        "백묵 헤드라인" => Some("돋움"),
-        // Gulimche (lang=6)
-        "Gulimche" => Some("돋움"),
-        // 새~ 계열 → 함초롬 (TS 체인 최종 결과 평탄화)
-        "새바탕" => Some("함초롬바탕"),
-        "새돋움" => Some("함초롬돋움"),
-        "새굴림" => Some("함초롬돋움"),
-        "새궁서" => Some("함초롬바탕"),
-        // 맑은 고딕: 웹폰트(@font-face)로 등록되어 있으므로 치환하지 않음
-        // 안상수체 TTF 타입
-        "가는안상수체" => Some("돋움"),
-        "중간안상수체" => Some("돋움"),
-        "굵은안상수체" => Some("돋움"),
-        _ => None,
-    }
+fn resolve_projected_font_rule(
+    boundary: FontSubstitutionBoundary,
+    name: &str,
+    lang_index: usize,
+) -> Option<&'static GeneratedFontRuleProjection> {
+    find_font_rule_layout_name(boundary.source_boundary_id(), name, lang_index)
 }
 
 /// Heavy display 계열 face 여부 판정.
@@ -881,10 +808,10 @@ fn resolve_single_para_style(
         condense_min_space: ((ps.attr1 >> 9) & 0x7f).min(75) as u8,
         english_break_unit: ((ps.attr1 >> 5) & 0x03) as u8,
         korean_break_unit: ((ps.attr1 >> 7) & 0x01) as u8,
-        widow_orphan: (ps.attr1 >> 16) & 1 != 0 || (ps.attr2 >> 5) & 1 != 0,
-        keep_with_next: (ps.attr1 >> 17) & 1 != 0 || (ps.attr2 >> 6) & 1 != 0,
-        keep_lines: (ps.attr1 >> 18) & 1 != 0 || (ps.attr2 >> 7) & 1 != 0,
-        page_break_before: (ps.attr1 >> 19) & 1 != 0 || (ps.attr2 >> 8) & 1 != 0,
+        widow_orphan: (ps.attr1 >> 16) & 1 != 0,
+        keep_with_next: (ps.attr1 >> 17) & 1 != 0,
+        keep_lines: (ps.attr1 >> 18) & 1 != 0,
+        page_break_before: (ps.attr1 >> 19) & 1 != 0,
     }
 }
 
@@ -1254,6 +1181,45 @@ mod tests {
     }
 
     #[test]
+    fn test_lookup_font_preserves_non_embedded_document_substitute() {
+        let doc_info = DocInfo {
+            font_faces: vec![vec![Font {
+                name: "정부상징 부처명_16040911".to_string(),
+                alt_type: 1,
+                subst_font: Some(SubstFont {
+                    face: "한컴바탕".to_string(),
+                    font_type: 1,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }]],
+            ..Default::default()
+        };
+
+        assert_eq!(
+            lookup_font_name(&doc_info, 0, 0),
+            "정부상징 부처명_16040911,한컴바탕"
+        );
+
+        let decision = lookup_font_name_decision(&doc_info, 0, 0);
+        assert_eq!(decision.language_slot, 0);
+        assert_eq!(decision.font_id, 0);
+        assert_eq!(
+            decision.requested_face.as_deref(),
+            Some("정부상징 부처명_16040911")
+        );
+        assert_eq!(
+            decision.normalized_face.as_deref(),
+            decision.requested_face.as_deref()
+        );
+        assert_eq!(decision.subst_font.as_deref(), Some("한컴바탕"));
+        assert_eq!(
+            decision.css_family_chain,
+            ["정부상징 부처명_16040911", "한컴바탕"]
+        );
+    }
+
+    #[test]
     fn test_resolve_border_no_fill() {
         let doc_info = DocInfo {
             border_fills: vec![BorderFill::default()],
@@ -1409,29 +1375,6 @@ mod tests {
         assert!((cs.letter_spacings[0] - 0.0).abs() < 0.01); // 한국어 spacing=0
         let expected_en = cs.font_size * -5.0 / 100.0;
         assert!((cs.letter_spacings[1] - expected_en).abs() < 0.01); // 영어 spacing=-5
-    }
-
-    // === TTF 폰트 치환 보완 테스트 ===
-
-    #[test]
-    fn test_resolve_ttf_new_fonts() {
-        assert_eq!(resolve_ttf_font("새바탕"), Some("함초롬바탕"));
-        assert_eq!(resolve_ttf_font("새돋움"), Some("함초롬돋움"));
-        assert_eq!(resolve_ttf_font("새굴림"), Some("함초롬돋움"));
-        assert_eq!(resolve_ttf_font("새궁서"), Some("함초롬바탕"));
-    }
-
-    #[test]
-    fn test_resolve_ttf_malgun_gothic() {
-        // 맑은 고딕은 웹폰트로 등록되어 있으므로 치환하지 않음
-        assert_eq!(resolve_ttf_font("맑은 고딕"), None);
-    }
-
-    #[test]
-    fn test_resolve_ttf_ansangsu() {
-        assert_eq!(resolve_ttf_font("가는안상수체"), Some("돋움"));
-        assert_eq!(resolve_ttf_font("중간안상수체"), Some("돋움"));
-        assert_eq!(resolve_ttf_font("굵은안상수체"), Some("돋움"));
     }
 
     #[test]

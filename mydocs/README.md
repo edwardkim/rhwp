@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/README.md
-last_verified: 2026-08-10
+last_verified: 2026-08-25
 ---
 
 # rhwp 문서 지도와 canonical manifest
@@ -52,28 +52,31 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | --- | --- | --- | --- | --- |
 | [프로젝트 로드맵](../ROADMAP.md) | canonical | active | `ROADMAP.md` | 2026-08-10 |
 | [문서·Git 워크플로](manual/codex/docs_and_git_workflow.md) | canonical | active | `manual/codex/docs_and_git_workflow.md` | 2026-08-07 |
+| [GitHub 저장소 운영 매뉴얼](manual/github_operations.md) | canonical | active | `manual/github_operations.md` | 2026-08-15 |
 | [Codex 문서 지도](manual/codex/README.md) | guide | active | `manual/codex/README.md` | 2026-07-17 |
 | [Codex 프로젝트 메모리 덤프](manual/codex/MEMORY.md) | memory | active | `manual/codex/MEMORY.md` | 2026-08-07 |
 | [Claude memory dump 색인](manual/memory/MEMORY.md) | memory | historical | `manual/codex/docs_and_git_workflow.md` | 2026-07-17 |
 | [PR 리뷰·통합 워크플로](manual/pr_review_workflow.md) | canonical | active | `manual/pr_review_workflow.md` | 2026-08-07 |
 | [PR review 조건별 가이드](manual/pr_review/README.md) | guide | active | `manual/pr_review_workflow.md` | 2026-07-25 |
+| [첫 기여자 외부 PR 처리](manual/pr_review/first_time_contributor.md) | guide | active | `manual/pr_review_workflow.md` | 2026-08-28 |
 | [에이전트 capability 카탈로그](manual/agent_capability_registry.md) | canonical | active | `manual/agent_capability_registry.md` | 2026-07-26 |
 | [개발 환경 가이드](manual/dev_environment_guide.md) | guide | active | `manual/dev_environment_guide.md` | 2026-08-11 |
 | [온보딩 가이드](manual/onboarding_guide.md) | guide | active | `manual/README.md` | 2026-07-17 |
 | [배포 가이드](manual/publish_guide.md) | guide | active | `manual/publish_guide.md` | 2026-07-17 |
 | [Hyper-Waterfall 문서 체계](manual/hyper_waterfall_docs_guide.md) | guide | active | `manual/codex/docs_and_git_workflow.md` | 2026-07-17 |
 | [AI 페어프로그래밍 기록](manual/ai_pair_programming_guide.md) | reference | historical | `manual/codex/docs_and_git_workflow.md` | 2026-07-17 |
-| [CLI 명령어 매뉴얼](manual/cli_commands.md) | canonical | active | `manual/cli_commands.md` | 2026-07-16 |
+| [CLI 명령어 매뉴얼](manual/cli_commands.md) | canonical | active | `manual/cli_commands.md` | 2026-08-23 |
 | [문서 링크와 메타데이터 로컬 검사](manual/markdown_link_check_guide.md) | guide | active | `manual/markdown_link_check_guide.md` | 2026-07-17 |
 | [시각 검증 문서 지도](manual/verification/README.md) | guide | active | `manual/verification/README.md` | 2026-07-16 |
 | [시각 검증 거버넌스](manual/verification/visual_verification_governance.md) | canonical | active | `manual/verification/visual_verification_governance.md` | 2026-07-16 |
-| [HWP 2020 MCP 사용법](manual/mcp_hwp2020Convert_usage.md) | guide | active | `manual/mcp_hwp2020Convert_usage.md` | 2026-07-16 |
+| [HWP 2024 MCP 사용법](manual/mcp_hwp2024Convert_usage.md) | guide | active | `manual/mcp_hwp2024Convert_usage.md` | 2026-08-24 |
 | [HWP 5.0 스펙 문서 정오표](tech/hwp_spec_errata.md) | canonical | active | `tech/hwp_spec_errata.md` | 2026-07-16 |
 | [한글 문서 파일 형식 5.0 개정 1.3](tech/한글문서파일형식_5.0_revision1.3.md) | reference | active | `tech/hwp_spec_errata.md` | 2026-07-16 |
 | [Document IR LineSeg 표준](tech/document_ir_lineseg_standard.md) | canonical | active | `tech/document_ir_lineseg_standard.md` | 2026-07-16 |
 | [렌더링 엔진 설계](tech/rendering_engine_design.md) | canonical | active | `tech/rendering_engine_design.md` | 2026-07-23 |
+| [수식 모듈 매뉴얼](manual/equation_module.md) | guide | active | `manual/equation_module.md` | 2026-08-18 |
 | [표 레이아웃 규칙](tech/table_layout_rules.md) | canonical | active | `tech/table_layout_rules.md` | 2026-07-16 |
-| [폰트 fallback 전략](tech/font_fallback_strategy.md) | canonical | active | `tech/font_fallback_strategy.md` | 2026-07-16 |
+| [폰트 fallback 전략](tech/font_fallback_strategy.md) | canonical | active | `tech/font_fallback_strategy.md` | 2026-08-25 |
 | [편집 action undo/redo 아키텍처](tech/edit_action_undo_redo_architecture.md) | canonical | active | `tech/edit_action_undo_redo_architecture.md` | 2026-07-16 |
 | [포맷 파서와 공통 Document IR 경계](tech/parser_architecture.md) | canonical | active | `tech/parser_architecture.md` | 2026-07-17 |
 | [ThorVG 결정 기록](tech/thorvg_decision.md) | decision | active | `tech/thorvg_decision.md` | 2026-07-16 |

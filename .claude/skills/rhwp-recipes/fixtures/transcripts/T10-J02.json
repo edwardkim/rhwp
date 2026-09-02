@@ -1,0 +1,12 @@
+{
+  "id": "T10-J02",
+  "recipe": "10",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/10_security_sweep_before_share.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"dryRun\":true,\"findingCount\":3,\"findings\":[\n  {\"kind\":\"ssn\",  \"masked\":\"******-*******\",  \"section\":0,\"paragraph\":8, \"charOffset\":11,\"page\":0},\n  {\"kind\":\"phone\",\"masked\":\"***-****-****\",   \"section\":0,\"paragraph\":10,\"charOffset\":7, \"page\":0},\n  {\"kind\":\"email\",\"masked\":\"****@*******.***\",\"section\":0,\"paragraph\":11,\"charOffset\":9, \"page\":0}\n], \"noRaw\":true, …}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

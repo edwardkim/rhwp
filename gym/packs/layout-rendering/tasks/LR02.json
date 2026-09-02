@@ -1,0 +1,33 @@
+{
+  "id": "LR02",
+  "tier": 2,
+  "title": "기대 조건 자기검증",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력이 **17쪽 이상**임을 rhwp 로 자기검증하고 그 판정(verdict)을 answer.json 에 {\"verdict\": \"...\"} 으로 제출하라. 힌트: rhwp verify --expect-min-pages.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "판정",
+      "op": "answer_eq",
+      "answer": "verdict",
+      "path": "verdict",
+      "cmd": [
+        "verify",
+        "{input}",
+        "--expect-min-pages",
+        "17",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "검증"
+}

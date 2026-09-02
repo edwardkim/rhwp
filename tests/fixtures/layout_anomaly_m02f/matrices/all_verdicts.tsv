@@ -1,0 +1,266 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+ovf-table-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		6.0000	표가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-table-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-table-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		6.0000	그림가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-image-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-image-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	그림가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		6.0000	글상자가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textbox-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textbox-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	글상자가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		6.0000	사각형가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-rect-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-rect-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	사각형가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-left-over16-tol1	overflow	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextLine		6.0000	문단 줄가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-top-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-right-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-right-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-right-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-right-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+ovf-textline-bottom-over0.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-bottom-over1-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-bottom-over2.5-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.
+ovf-textline-bottom-over16-tol1	overflow	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	문단 줄가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.
+suppress-table-right-2.5	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		2.5000	표가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-textbox-right-2.5	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		2.5000	글상자가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-group-right-2.5	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Group		2.5000	묶음가 본문 오른쪽을 2.5px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-table-right-8	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	표가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-textbox-right-8	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		8.0000	글상자가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-group-right-8	suppress	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Group		8.0000	묶음가 본문 오른쪽을 8px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-table-right-40	suppress	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	40.0000	표가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-textbox-right-40	suppress	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	40.0000	글상자가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+suppress-group-right-40	suppress	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Group	Group	40.0000	묶음가 본문 오른쪽을 40px 넘칠 때 자손 TextLine 은 suppress 되어 중복 overflow 를 내지 않는다.
+types-textline-inside-table-2.5	types	1.0	2.0	TextLine	0	3	1	0	0	0	0	1	ANOMALY	TextLine		2.5000	--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 2.5px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.
+types-image-hides-table-2.5	types	1.0	2.0	Image	0	3	0	0	0	0	0	0	CLEAN			0.0000	--types Image 는 표 overflow 2.5px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.
+types-textline-inside-table-8	types	1.0	2.0	TextLine	0	3	1	0	0	0	0	1	ANOMALY	TextLine		8.0000	--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 8px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.
+types-image-hides-table-8	types	1.0	2.0	Image	0	3	0	0	0	0	0	0	CLEAN			0.0000	--types Image 는 표 overflow 8px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.
+ovl-table-table-w0-h20	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 0x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w1-h20	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 1x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w2-h20	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 2x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w2.25-h20	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 2.25x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w5-h20	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 5x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h20	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 20x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h1	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 20x1px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h2	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 20x2px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h2.25	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 20x2.25px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h0.5	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 20x0.5px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-wrap-square-square	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Square 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-tight	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Square 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-topandbottom	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Square 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Square 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Square 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-square	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Tight 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-tight	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Tight 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-topandbottom	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Tight 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Tight 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Tight 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-square	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=TopAndBottom 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-tight	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=TopAndBottom 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-topandbottom	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=TopAndBottom 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=TopAndBottom 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=TopAndBottom 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-square	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-tight	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-topandbottom	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-square	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-tight	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-topandbottom	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-master-square-ignored	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	바탕쪽 유래 Square 도형은 본문 Square 와 겹쳐도 overlap 후보가 아니다.
+ovl-column-same-true	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	같은 단(column=0) 두 표가 겹치면 overlap 1건.
+ovl-column-same-false	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	같은 단 안의 표만 짝짓는다. 다른 단은 x 가 나뉘어 있어도 후보에서 뺀다.
+ovl-carrier-empty-empty	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=''.
+ovl-carrier-empty- 	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=' '.
+ovl-carrier-empty-\t	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text='\t'.
+ovl-carrier-visible-\ubcf8\ubb38	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text='본문'.
+ovl-carrier-visible- \uac00	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=' 가'.
+ovl-textline-dy0	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 0px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy2	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 2px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy4	overlap	1.0	2.0		0	3	0	0	1	1	0	1	ANOMALY			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 4px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy10	overlap	1.0	2.0		0	3	0	0	1	1	0	1	ANOMALY			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 10px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy12	overlap	1.0	2.0		0	3	0	0	1	1	0	1	ANOMALY			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 12px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+txov-same-line-dx0	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	한 줄 안 두 런이 0px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx2	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	한 줄 안 두 런이 2px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx4	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 4px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx10	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 10px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx20	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 20px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx30	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 30px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-in-table-dy0	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	표 하나 안의 두 런이 세로 어긋남 0px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-in-table-dy2	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	표 하나 안의 두 런이 세로 어긋남 2px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-in-table-dy4	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	표 하나 안의 두 런이 세로 어긋남 4px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-in-table-dy8	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표 하나 안의 두 런이 세로 어긋남 8px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-char-overlap-true	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	한컴 글자겹침 컨트롤 런은 의도된 겹침이라 후보에서 뺀다.
+txov-char-overlap-false	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	글자겹침 플래그가 없으면 같은 자리 두 런은 text-overlap 이다.
+txov-zero-w	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	면적이 없는 런 bbox 는 text-overlap 후보가 아니다.
+txov-zero-h	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	면적이 없는 런 bbox 는 text-overlap 후보가 아니다.
+txov-area	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	면적이 없는 런 bbox 는 text-overlap 후보가 아니다.
+txov-text-ws-empty	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 '' 의 가시 글자 여부가 후보를 가른다.
+txov-text-ws- 	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 ' ' 의 가시 글자 여부가 후보를 가른다.
+txov-text-ws-\n	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 '\n' 의 가시 글자 여부가 후보를 가른다.
+txov-text-ws-\t\t	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 '\t\t' 의 가시 글자 여부가 후보를 가른다.
+txov-text-glyph-\uac00	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	런 텍스트 '가' 의 가시 글자 여부가 후보를 가른다.
+offy-table-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		20.5000	표 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-table-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		21.0000	표 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-table-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	28.0000	표 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-table-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	100.0000	표 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-table-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		10.5000	표 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-table-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		20.5000	표 가 페이지 높이를 0.5px 넘긴다.
+offw-table-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	11.2500	표 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-table-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	21.2500	표 가 페이지 높이를 1.25px 넘긴다.
+offw-table-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	60.0000	표 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-table-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	70.0000	표 가 페이지 높이를 50px 넘긴다.
+offy-image-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		20.5000	그림 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-image-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		21.0000	그림 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-image-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	28.0000	그림 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-image-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	100.0000	그림 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-image-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		10.5000	그림 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-image-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Image		20.5000	그림 가 페이지 높이를 0.5px 넘긴다.
+offw-image-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	11.2500	그림 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-image-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	21.2500	그림 가 페이지 높이를 1.25px 넘긴다.
+offw-image-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	60.0000	그림 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-image-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Image	Image	70.0000	그림 가 페이지 높이를 50px 넘긴다.
+offy-textbox-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		20.5000	글상자 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-textbox-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		21.0000	글상자 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-textbox-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	28.0000	글상자 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-textbox-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	100.0000	글상자 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-textbox-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		10.5000	글상자 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-textbox-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	TextBox		20.5000	글상자 가 페이지 높이를 0.5px 넘긴다.
+offw-textbox-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	11.2500	글상자 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-textbox-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	21.2500	글상자 가 페이지 높이를 1.25px 넘긴다.
+offw-textbox-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	60.0000	글상자 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-textbox-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	TextBox	TextBox	70.0000	글상자 가 페이지 높이를 50px 넘긴다.
+offy-rect-y-0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		20.5000	사각형 y=-0.5. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-rect-y-1	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		21.0000	사각형 y=-1. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-rect-y-8	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	28.0000	사각형 y=-8. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offy-rect-y-80	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	100.0000	사각형 y=-80. y<0 는 페이지 상자 y 와 무관하게 쪽 위 소실로 본다. 허용치 1px 이하면 침묵.
+offw-rect-right0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		10.5000	사각형 가 페이지 폭을 0.5px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-rect-bottom0.5	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Rect		20.5000	사각형 가 페이지 높이를 0.5px 넘긴다.
+offw-rect-right1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	11.2500	사각형 가 페이지 폭을 1.25px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-rect-bottom1.25	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	21.2500	사각형 가 페이지 높이를 1.25px 넘긴다.
+offw-rect-right50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	60.0000	사각형 가 페이지 폭을 50px 넘긴다. 본문도 같이 넘치면 overflow 와 off-canvas 가 동시에 열린다.
+offh-rect-bottom50	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Rect	Rect	70.0000	사각형 가 페이지 높이를 50px 넘긴다.
+off-body-only-not-page	off-canvas	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		5.0000	표가 본문 오른쪽만 넘치고 페이지 상자 안에 남으면 overflow 만 있고 off-canvas 는 없다.
+off-nested-table-once	off-canvas	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	100.0000	음수 y 표 안의 줄은 off-canvas suppress 로 표 한 번만 보고한다.
+empty-p0-of1-blank	empty-page	1.0	2.0		0	1	0	0	0	0	0	0	CLEAN			0.0000	page=0/1, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of1-text	empty-page	1.0	2.0		0	1	0	0	0	0	0	0	CLEAN			0.0000	page=0/1 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of2-blank	empty-page	1.0	2.0		0	2	0	0	0	0	0	0	CLEAN			0.0000	page=0/2, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of2-text	empty-page	1.0	2.0		0	2	0	0	0	0	0	0	CLEAN			0.0000	page=0/2 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of2-blank	empty-page	1.0	2.0		1	2	0	0	0	0	0	0	CLEAN			0.0000	page=1/2, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p1-of2-text	empty-page	1.0	2.0		1	2	0	0	0	0	0	0	CLEAN			0.0000	page=1/2 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of3-blank	empty-page	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	page=0/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of3-text	empty-page	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	page=0/3 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of3-blank	empty-page	1.0	2.0		1	3	0	0	0	0	1	0	CLEAN			0.0000	page=1/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p1-of3-text	empty-page	1.0	2.0		1	3	0	0	0	0	0	0	CLEAN			0.0000	page=1/3 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p2-of3-blank	empty-page	1.0	2.0		2	3	0	0	0	0	0	0	CLEAN			0.0000	page=2/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p2-of3-text	empty-page	1.0	2.0		2	3	0	0	0	0	0	0	CLEAN			0.0000	page=2/3 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of4-blank	empty-page	1.0	2.0		0	4	0	0	0	0	0	0	CLEAN			0.0000	page=0/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of4-text	empty-page	1.0	2.0		0	4	0	0	0	0	0	0	CLEAN			0.0000	page=0/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of4-blank	empty-page	1.0	2.0		1	4	0	0	0	0	1	0	CLEAN			0.0000	page=1/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p1-of4-text	empty-page	1.0	2.0		1	4	0	0	0	0	0	0	CLEAN			0.0000	page=1/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p2-of4-blank	empty-page	1.0	2.0		2	4	0	0	0	0	1	0	CLEAN			0.0000	page=2/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p2-of4-text	empty-page	1.0	2.0		2	4	0	0	0	0	0	0	CLEAN			0.0000	page=2/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p3-of4-blank	empty-page	1.0	2.0		3	4	0	0	0	0	0	0	CLEAN			0.0000	page=3/4, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p3-of4-text	empty-page	1.0	2.0		3	4	0	0	0	0	0	0	CLEAN			0.0000	page=3/4 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p0-of5-blank	empty-page	1.0	2.0		0	5	0	0	0	0	0	0	CLEAN			0.0000	page=0/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p0-of5-text	empty-page	1.0	2.0		0	5	0	0	0	0	0	0	CLEAN			0.0000	page=0/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p1-of5-blank	empty-page	1.0	2.0		1	5	0	0	0	0	1	0	CLEAN			0.0000	page=1/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p1-of5-text	empty-page	1.0	2.0		1	5	0	0	0	0	0	0	CLEAN			0.0000	page=1/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p2-of5-blank	empty-page	1.0	2.0		2	5	0	0	0	0	1	0	CLEAN			0.0000	page=2/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p2-of5-text	empty-page	1.0	2.0		2	5	0	0	0	0	0	0	CLEAN			0.0000	page=2/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p3-of5-blank	empty-page	1.0	2.0		3	5	0	0	0	0	1	0	CLEAN			0.0000	page=3/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다.
+empty-p3-of5-text	empty-page	1.0	2.0		3	5	0	0	0	0	0	0	CLEAN			0.0000	page=3/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-p4-of5-blank	empty-page	1.0	2.0		4	5	0	0	0	0	0	0	CLEAN			0.0000	page=4/5, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+empty-p4-of5-text	empty-page	1.0	2.0		4	5	0	0	0	0	0	0	CLEAN			0.0000	page=4/5 에 보이는 글자가 있으면 empty_page 가 아니다.
+empty-middle-image-is-content	empty-page	1.0	2.0		1	4	0	0	0	0	0	0	CLEAN			0.0000	중간 쪽에 그림만 있어도 has_content 이라 empty_page 가 아니다.
+vis-table-vistrue-edfalse	visibility	1.0	2.0		0	3	1	1	0	0	0	1	ANOMALY	Table	Table	60.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+vis-table-vistrue-edtrue	visibility	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+vis-table-visfalse-edfalse	visibility	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+vis-table-visfalse-edtrue	visibility	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.
+combo-table-overflow-and-text-overlap	combined	1.0	2.0		0	3	1	1	0	1	0	1	ANOMALY	Table	Table	20.0000	표가 본문·페이지를 넘치고 내부 런이 겹치면 overflow+off-canvas+text-overlap 이 같이 열린다. 표 하나라 일반 overlap 은 없다.
+combo-two-tables-negative-y	combined	1.0	2.0		0	3	2	2	1	0	0	1	ANOMALY	Table|Table	Table|Table	60.0000	음수 y 로 겹친 두 표는 off-canvas 2 + overlap 1.
+combo-square-over-textline	combined	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	Square wrap 도형이 보이는 문단 줄과 겹치면 일반 overlap. 런-도형은 text-overlap 이 아니다.
+tol-ovf-over0.5-tol0.5	tolerance	0.5	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 0.5px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over1-tol0.5	tolerance	0.5	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		1.0000	오른쪽 넘침 1px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over2-tol0.5	tolerance	0.5	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		2.0000	오른쪽 넘침 2px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over8-tol0.5	tolerance	0.5	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	오른쪽 넘침 8px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over0.5-tol1	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 0.5px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over1-tol1	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 1px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over2-tol1	tolerance	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		2.0000	오른쪽 넘침 2px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over8-tol1	tolerance	1.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	오른쪽 넘침 8px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over0.5-tol2	tolerance	2.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 0.5px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over1-tol2	tolerance	2.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 1px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over2-tol2	tolerance	2.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	오른쪽 넘침 2px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovf-over8-tol2	tolerance	2.0	2.0		0	3	1	0	0	0	0	1	ANOMALY	Table		8.0000	오른쪽 넘침 8px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.
+tol-ovl-w1-tol1	tolerance	1.0	1.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 1x20px, overlap 허용치 1px.
+tol-ovl-w2-tol1	tolerance	1.0	1.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 2x20px, overlap 허용치 1px.
+tol-ovl-w3-tol1	tolerance	1.0	1.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 3x20px, overlap 허용치 1px.
+tol-ovl-w8-tol1	tolerance	1.0	1.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 8x20px, overlap 허용치 1px.
+tol-ovl-w1-tol2	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 1x20px, overlap 허용치 2px.
+tol-ovl-w2-tol2	tolerance	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 2x20px, overlap 허용치 2px.
+tol-ovl-w3-tol2	tolerance	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 3x20px, overlap 허용치 2px.
+tol-ovl-w8-tol2	tolerance	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 8x20px, overlap 허용치 2px.
+tol-ovl-w1-tol4	tolerance	1.0	4.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 1x20px, overlap 허용치 4px.
+tol-ovl-w2-tol4	tolerance	1.0	4.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 2x20px, overlap 허용치 4px.
+tol-ovl-w3-tol4	tolerance	1.0	4.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표 교차 3x20px, overlap 허용치 4px.
+tol-ovl-w8-tol4	tolerance	1.0	4.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표 교차 8x20px, overlap 허용치 4px.

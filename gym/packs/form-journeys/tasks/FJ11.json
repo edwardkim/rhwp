@@ -1,0 +1,64 @@
+{
+  "id": "FJ11",
+  "tier": 3,
+  "title": "두 칸 동시 지목 (이메일+전화)",
+  "input": "samples/field-01.hwp",
+  "instructions": "이메일에 'desk@journey.or.kr', 전화번호에 '031-900-4411' 을 함께 넣은 pair-et.hwp 를 제출하라. FJ01 의 02-720-8899 와 다른 번호다. 회사명·작성자는 비운다. 힌트: --data '{\"이메일\": \"desk@journey.or.kr\", \"전화번호\": \"031-900-4411\"}' 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "pair-et.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이메일 값",
+      "op": "value_eq",
+      "value": "desk@journey.or.kr",
+      "path": "fields[4].value",
+      "cmd": [
+        "fields",
+        "{file:pair-et.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "전화번호 값",
+      "op": "value_eq",
+      "value": "031-900-4411",
+      "path": "fields[3].value",
+      "cmd": [
+        "fields",
+        "{file:pair-et.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:pair-et.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "작성자 공란 값",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:pair-et.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "pair-et.hwp"
+    }
+  ]
+}

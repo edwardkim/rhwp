@@ -516,6 +516,115 @@ def compare_text_layers(
     return reference - rendered, rendered - reference
 
 
+TEXT_LAYER_MATCH = "match"
+TEXT_LAYER_LOSS = "loss"
+TEXT_LAYER_EXCESS = "excess"
+TEXT_LAYER_SUBSTITUTION = "substitution"
+
+TEXT_REPORT_HEADER = (
+    "page\treference_only\tsvg_only\treference_only_chars\tsvg_only_chars\tnote\n"
+)
+
+TEXT_ONLY_CORE_ARTIFACTS = (
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv",
+)
+
+TEXT_ONLY_LAYOUT_ARTIFACTS = (
+    "layout-candidates.tsv",
+    "table-fragment-candidates.tsv",
+    "table-cell-text-overlap-candidates.tsv",
+    "table-cell-text-boundary-candidates.tsv",
+    "svg-text-band-clip-candidates.tsv",
+    "svg-table-border-clip-candidates.tsv",
+    "svg-table-horizontal-border-clip-candidates.tsv",
+    "float-owner-shift-candidates.tsv",
+)
+
+
+def classify_text_layer_delta(
+    reference_only: Counter[str],
+    svg_only: Counter[str],
+) -> str:
+    """Classify a ``text-report.tsv`` row as loss/excess/substitution/match.
+
+    Labels are candidate kinds, not a visual verdict.  Path glyphs, hidden
+    text, and extractor mapping still need a human sheet review.
+    """
+    loss = sum(reference_only.values())
+    excess = sum(svg_only.values())
+    if loss and excess:
+        return TEXT_LAYER_SUBSTITUTION
+    if loss:
+        return TEXT_LAYER_LOSS
+    if excess:
+        return TEXT_LAYER_EXCESS
+    return TEXT_LAYER_MATCH
+
+
+def text_layer_row(
+    page_index: int,
+    reference_text: str,
+    rendered_text: str,
+    note: str = "",
+) -> dict[str, object]:
+    """Build one page row for ``text-report.tsv`` from raw PDF/SVG strings."""
+    missing, extra = compare_text_layers(reference_text, rendered_text)
+    return {
+        "page": page_index,
+        "kind": classify_text_layer_delta(missing, extra),
+        "reference_only": sum(missing.values()),
+        "svg_only": sum(extra.values()),
+        "reference_only_chars": counter_summary(missing),
+        "svg_only_chars": counter_summary(extra),
+        "note": note,
+        "missing": missing,
+        "extra": extra,
+    }
+
+
+def write_text_report(
+    work_dir: Path,
+    rows: Sequence[tuple[int, int, int, str, str, str]],
+) -> Path:
+    """Write the six-column text-layer candidate table."""
+    report_path = work_dir / "text-report.tsv"
+    with report_path.open("w", encoding="utf-8") as report:
+        report.write(TEXT_REPORT_HEADER)
+        for page_index, missing_count, extra_count, missing, extra, note in rows:
+            report.write(
+                f"{page_index + 1}\t{missing_count}\t{extra_count}\t"
+                f"{missing}\t{extra}\t{note or '-'}\n"
+            )
+    return report_path
+
+
+def text_only_artifact_names(
+    *,
+    export_all_svg: bool = False,
+    layout_ledger: bool = False,
+) -> tuple[str, ...]:
+    """Return ``--text-only`` artifact paths relative to ``--out-dir``.
+
+    Chrome/PNG sheets are never in this set.  ``export-all-svg`` adds the SVG
+    cache manifest; ``--layout-ledger`` adds render-tree candidate ledgers.
+    """
+    names = list(TEXT_ONLY_CORE_ARTIFACTS)
+    if export_all_svg:
+        names.append("svg/export-svg-manifest.json")
+    if layout_ledger:
+        names.extend(TEXT_ONLY_LAYOUT_ARTIFACTS)
+    return tuple(names)
+
+
 def adjacent_text_owner_shift_candidates(
     page_differences: Mapping[int, tuple[Counter[str], Counter[str]]],
 ) -> list[dict[str, object]]:
@@ -3424,15 +3533,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             for page_index, score, note in rows:
                 report.write(f"{page_index + 1}\t{score}\t{note}\n")
 
-    text_report_path = work_dir / "text-report.tsv"
-    with text_report_path.open("w", encoding="utf-8") as report:
-        report.write(
-            "page\treference_only\tsvg_only\treference_only_chars\tsvg_only_chars\tnote\n"
-        )
-        for page_index, missing_count, extra_count, missing, extra, note in text_rows:
-            report.write(
-                f"{page_index + 1}\t{missing_count}\t{extra_count}\t{missing}\t{extra}\t{note or '-'}\n"
-            )
+    text_report_path = write_text_report(work_dir, text_rows)
 
     write_text_owner_shift_ledger(work_dir, text_differences)
     write_text_owner_sequence_ledger(work_dir, text_layers)

@@ -1,0 +1,17 @@
+{
+  "id": "run_invalid",
+  "command": "run",
+  "mcp": "hwp_run_plan",
+  "cli_exit": 2,
+  "isError": false,
+  "fields": {
+    "invalid": [
+      {
+        "step": 1,
+        "reason": "일치 0건"
+      }
+    ]
+  },
+  "read_as": "data",
+  "note": "MCP 는 isError:false. CLI 는 exit 2 이지만 봉투를 낸다"
+}

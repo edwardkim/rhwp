@@ -228,5 +228,48 @@ class SvgExportFontFallbackTests(unittest.TestCase):
         self.assertIn(f"<dir>{fonts_b.resolve()}</dir>", config)
 
 
+class TextLayerClassificationTests(unittest.TestCase):
+    def test_loss_excess_substitution_match(self) -> None:
+        missing, extra = fidelity_compare.compare_text_layers("가나다", "가나")
+        self.assertEqual(
+            fidelity_compare.classify_text_layer_delta(missing, extra),
+            fidelity_compare.TEXT_LAYER_LOSS,
+        )
+        missing, extra = fidelity_compare.compare_text_layers("가나", "가나다")
+        self.assertEqual(
+            fidelity_compare.classify_text_layer_delta(missing, extra),
+            fidelity_compare.TEXT_LAYER_EXCESS,
+        )
+        missing, extra = fidelity_compare.compare_text_layers("가나다", "가나라")
+        self.assertEqual(
+            fidelity_compare.classify_text_layer_delta(missing, extra),
+            fidelity_compare.TEXT_LAYER_SUBSTITUTION,
+        )
+        missing, extra = fidelity_compare.compare_text_layers("가 나", "나\n가")
+        self.assertEqual(
+            fidelity_compare.classify_text_layer_delta(missing, extra),
+            fidelity_compare.TEXT_LAYER_MATCH,
+        )
+
+    def test_text_only_artifact_contract(self) -> None:
+        core = fidelity_compare.text_only_artifact_names()
+        self.assertIn("text-report.tsv", core)
+        self.assertIn("run-state.tsv", core)
+        self.assertNotIn("svg/export-svg-manifest.json", core)
+        full = fidelity_compare.text_only_artifact_names(
+            export_all_svg=True, layout_ledger=True
+        )
+        self.assertIn("svg/export-svg-manifest.json", full)
+        self.assertIn("layout-candidates.tsv", full)
+        self.assertFalse(any(name.endswith(".png") for name in full))
+
+    def test_text_only_parse_skips_chrome(self) -> None:
+        args = fidelity_compare.parse_args(["plan", "0", "2", "--text-only"])
+        self.assertTrue(args.text_only)
+        self.assertEqual(args.key, "plan")
+        self.assertFalse(args.export_all_svg)
+        self.assertFalse(args.layout_ledger)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

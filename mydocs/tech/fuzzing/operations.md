@@ -137,7 +137,7 @@ cargo +nightly fuzz run parse_hwp fuzz/artifacts/parse_hwp/crash-<해시>
 | `parse_hwp3` | `hwp3-pagedef-1915.hwp` · `hwp3-sample.hwp` | 2.4K·87K | `samples/` |
 | `parse_hwpx` | `neartop_reset_sb2500.hwpx` · `saved_single_line_spacing_after.hwpx` · `tac-host-spacing.hwpx` | 3.7K·3.7K·4.1K | `samples/task2136` · `samples/task2093` · `samples/` |
 | `parse_hml` | `exambank_math_equations_min.hml` · `formatting_table.hml` | 4.0K·29K | `tests/fixtures/hml/` · `samples/hml/` |
-| `parse_wmf` | `minimal_placeable.wmf` | 46B | **합성** — META_PLACEABLE(0x9AC6CDD7) + 최소 헤더 + META_EOF |
+| `parse_wmf` | `minimal_placeable.wmf` + M09x `m09x_placeable_{rect,ellipse,line}.wmf` · `m09x_standard_header.wmf` | 46B~ | **합성** — 최소 placeable/표준 헤더 + 소형 도형. 골든과 동일 바이트(`tests/cases/wmf_emf_goldens.rs`) |
 | `parse_ooxml_chart` | `bar_chart.xml` | 782B | **합성** — 최소 `c:chartSpace` 막대 차트 |
 
 합계 12개 / 269KB (`du -sh fuzz/corpus`).

@@ -9,6 +9,7 @@ import html as html_lib
 import importlib.util
 import json
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -21,10 +22,42 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 
+LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
+LABEL_FONTCONFIG_FAMILIES = (
+    "Noto Sans CJK KR:lang=ko",
+    "NanumGothic:lang=ko",
+    "UnDotum:lang=ko",
+    "Malgun Gothic:lang=ko",
+    "Apple SD Gothic Neo:lang=ko",
+)
+LABEL_FONT_PATHS_BY_PLATFORM = {
+    "Linux": (
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+        "/usr/share/fonts/truetype/nanum/NanumGothicCoding.ttf",
+        "/usr/share/fonts/truetype/unfonts-core/UnDotum.ttf",
+    ),
+    "Darwin": (
+        "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+        "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/Library/Fonts/Arial Unicode.ttf",
+    ),
+    "Windows": (
+        "C:/Windows/Fonts/malgun.ttf",
+        "C:/Windows/Fonts/malgunbd.ttf",
+        "C:/Windows/Fonts/gulim.ttc",
+        "C:/Windows/Fonts/batang.ttc",
+    ),
+}
+
 FRAME_OVERFLOW_PIXEL_LIMIT = 20
 FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT = 12
 FRAME_OVERFLOW_TOLERATED_BLEED_PX = 12
 FRAME_BOTTOM_GLYPH_BLEED_TOLERANCE_PX = 6
+FRAME_INTERIOR_DECORATION_MIN_BOTTOM_MARGIN_PX = 16
+DEFAULT_RHWP_BIN = "target/pr-review/debug/rhwp"
 # A centered endnote separator can span almost half of a Chrome-size page
 # raster.  It is not a page boundary, so use a stronger coverage requirement
 # only when selecting the *bottom* frame line.
@@ -356,10 +389,45 @@ def page_num(path: Path) -> int:
     return int(matches[-1])
 
 
-def ensure_tools() -> None:
-    missing = [tool for tool in ("rsvg-convert", "pdftoppm", "pdftotext") if shutil.which(tool) is None]
+def ensure_tools(svg_rasterizer: str = "webfont") -> None:
+    required = ["pdftoppm", "pdftotext"]
+    if svg_rasterizer == "rsvg":
+        required.append("rsvg-convert")
+    else:
+        required.append("node")
+    missing = [tool for tool in required if shutil.which(tool) is None]
     if missing:
         raise SystemExit("필수 도구가 없습니다: " + ", ".join(missing))
+
+
+def svg_raster_command(
+    root: Path,
+    svg_path: Path,
+    png_path: Path,
+    zoom: float,
+    svg_rasterizer: str,
+) -> list[str]:
+    if svg_rasterizer == "rsvg":
+        return [
+            "rsvg-convert",
+            "-f",
+            "png",
+            "--zoom",
+            f"{zoom:.8f}",
+            "-o",
+            str(png_path),
+            str(svg_path),
+        ]
+    return [
+        "node",
+        str(root / "scripts" / "rasterize-svg-webfonts.mjs"),
+        "--input",
+        str(svg_path),
+        "--output",
+        str(png_path),
+        "--zoom",
+        f"{zoom:.8f}",
+    ]
 
 
 def load_note_shape(root: Path, hwp: Path, rhwp_bin: str, out_path: Path) -> dict[str, object]:
@@ -499,11 +567,48 @@ def rhwp_binary_identifier(root: Path, rhwp_bin: str) -> dict[str, str]:
     }
 
 
+def git_head_commit_timestamp(root: Path) -> float:
+    proc = subprocess.run(
+        ["git", "show", "-s", "--format=%ct", "HEAD"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(f"Git HEAD 시각을 확인할 수 없습니다: {proc.stderr.strip()}")
+    try:
+        return float(proc.stdout.strip())
+    except ValueError as error:
+        raise SystemExit("Git HEAD 시각이 비어 있거나 올바르지 않습니다.") from error
+
+
+def ensure_default_rhwp_binary_is_current(root: Path, rhwp_bin: str) -> None:
+    """Reject an implicit debug binary built before the checked-out HEAD.
+
+    An explicit --rhwp-bin is caller-owned: it may intentionally point at a
+    separately built artifact.  The default is different because silently
+    reusing target/debug/rhwp makes visual evidence describe an older tree.
+    """
+    if Path(rhwp_bin) != Path(DEFAULT_RHWP_BIN):
+        return
+    binary = root / rhwp_bin
+    if not binary.is_file():
+        return
+    if binary.stat().st_mtime < git_head_commit_timestamp(root):
+        raise SystemExit(
+            f"기본 {DEFAULT_RHWP_BIN}가 현재 HEAD보다 오래되었습니다. "
+            "`cargo build --locked`로 다시 빌드하거나, 검증할 최신 실행 파일을 "
+            "--rhwp-bin으로 명시하세요."
+        )
+
+
 def sweep_provenance(
     root: Path,
     hwp: Path,
     pdf: Path,
     rhwp_bin: str,
+    svg_rasterizer: str,
 ) -> dict[str, object]:
     return {
         "hwp": {"path": safe_rel_str(root, hwp), "sha256": sha256_file(hwp)},
@@ -513,6 +618,7 @@ def sweep_provenance(
             "path": safe_rel_str(root, Path(__file__).resolve()),
             "sha256": sha256_file(Path(__file__).resolve()),
         },
+        "svg_rasterizer": svg_rasterizer,
         "rhwp_binary": rhwp_binary_identifier(root, rhwp_bin),
     }
 
@@ -981,6 +1087,7 @@ def render_target(
     selected_pages: list[int] | None,
     *,
     resume: bool,
+    svg_rasterizer: str,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1021,7 +1128,7 @@ def render_target(
     ):
         directory.mkdir(parents=True, exist_ok=True)
 
-    provenance = sweep_provenance(root, hwp, pdf, rhwp_bin)
+    provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
     run_manifest = run_manifest_for_target(
         base,
         target,
@@ -1130,20 +1237,10 @@ def render_target(
             print(f"resume: p{page:03d} checkpoint를 재사용합니다.", flush=True)
             continue
         png = rhwp_png_dir / f"rhwp_{page:03d}.png"
-        # export-svg의 unitless width/height는 CSS px(96dpi)다. rsvg-convert의
-        # --dpi-*만 바꾸면 unitless 크기는 그대로이므로, PDF와 같은 목표 DPI로
-        # 래스터하려면 zoom도 함께 적용해야 한다.
+        # export-svg의 unitless width/height는 CSS px(96dpi)다. webfont browser와
+        # rsvg-convert 모두 PDF 목표 DPI에 맞춰 같은 zoom을 적용한다.
         run(
-            [
-                "rsvg-convert",
-                "-f",
-                "png",
-                "--zoom",
-                f"{svg_zoom:.8f}",
-                "-o",
-                str(png),
-                str(svg_path),
-            ],
+            svg_raster_command(root, svg_path, png, svg_zoom, svg_rasterizer),
             cwd=root,
             verbose=False,
         )
@@ -1323,6 +1420,27 @@ def detect_frame(image: Image.Image) -> tuple[int, int, int, int]:
     left = max(left_candidates)[1] if left_candidates else round(w * 0.033)
     right = max(right_candidates)[1] if right_candidates else round(w * 0.967)
     return left, top, right, bottom
+
+
+def frames_are_interior_decorations(
+    rhwp: Image.Image,
+    rhwp_frame: tuple[int, int, int, int],
+    pdf: Image.Image,
+    pdf_frame: tuple[int, int, int, int],
+) -> bool:
+    """Whether both detected bottom lines sit inside their physical pages.
+
+    detect_frame finds prominent drawn rules.  Such a rule can be a content or
+    decorative frame rather than the paper edge, so text below it is not page
+    overflow by itself.  Keep the raw measurements, but do not turn them into
+    a frame-overflow failure when both sides have a material paper margin.
+    """
+    rhwp_bottom_margin = rhwp.height - 1 - rhwp_frame[3]
+    pdf_bottom_margin = pdf.height - 1 - pdf_frame[3]
+    return (
+        rhwp_bottom_margin >= FRAME_INTERIOR_DECORATION_MIN_BOTTOM_MARGIN_PX
+        and pdf_bottom_margin >= FRAME_INTERIOR_DECORATION_MIN_BOTTOM_MARGIN_PX
+    )
 
 
 def horizontal_rule_candidates(
@@ -3530,6 +3648,12 @@ def analyze_page(
     pdf = Image.open(pdf_path).convert("RGB")
     rhwp_frame = detect_frame(rhwp)
     pdf_frame = detect_frame(pdf)
+    frame_is_interior_decoration = frames_are_interior_decorations(
+        rhwp,
+        rhwp_frame,
+        pdf,
+        pdf_frame,
+    )
     rl, rt, rr, rb = rhwp_frame
     pl, pt, pr, pb = pdf_frame
 
@@ -3734,6 +3858,8 @@ def analyze_page(
         )
     )
     if (
+        not frame_is_interior_decoration
+        and
         rhwp_out_pixels > max(FRAME_OVERFLOW_PIXEL_LIMIT, pdf_out_pixels + FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT)
         and not tolerated_rhwp_frame_bleed
         and not minor_rhwp_glyph_bleed
@@ -3807,7 +3933,11 @@ def analyze_page(
         flags.append("line_order_overlap")
     if column_text_flow_collapse:
         flags.append("column_text_flow_collapse")
-    frame_tail_flow_overflow = bool(frame_tail_overflows and (column_line_drift_candidates or rhwp_out_pixels > 0))
+    frame_tail_flow_overflow = bool(
+        not frame_is_interior_decoration
+        and frame_tail_overflows
+        and (column_line_drift_candidates or rhwp_out_pixels > 0)
+    )
     if frame_tail_flow_overflow:
         flags.append("render_tree_frame_tail_overflow")
     if question_marker_drifts:
@@ -3875,6 +4005,7 @@ def analyze_page(
         "pdf_outside_frame_max_y": pdf_out_max_y,
         "rhwp_outside_frame_extent_px": rhwp_out_extent,
         "pdf_outside_frame_extent_px": pdf_out_extent,
+        "frame_is_interior_decoration": frame_is_interior_decoration,
         "frame_overflow_tolerated_bleed": tolerated_rhwp_frame_bleed,
         "paper_size_footer_frame_bleed": paper_size_footer_frame_bleed,
         "rhwp_outside_frame_bleed_px": rhwp_outside_frame_bleed_px,
@@ -4270,13 +4401,75 @@ def analyze_pages(
     return {"summary": summary, "flagged_pages": flagged_pages}
 
 
+def fontconfig_label_font_path() -> Path | None:
+    fc_match = shutil.which("fc-match")
+    if not fc_match:
+        return None
+    for family in LABEL_FONTCONFIG_FAMILIES:
+        proc = subprocess.run(
+            [fc_match, "-f", "%{file}\n", family],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if proc.returncode != 0:
+            continue
+        font_path = Path(proc.stdout.splitlines()[0].strip()) if proc.stdout.strip() else None
+        if font_path and font_path.exists():
+            return font_path
+    return None
+
+
+def env_label_font_paths() -> list[Path]:
+    env_value = os.environ.get(LABEL_FONT_ENV)
+    if not env_value:
+        return []
+    return [
+        Path(os.path.expandvars(os.path.expanduser(item)))
+        for item in env_value.split(os.pathsep)
+        if item.strip()
+    ]
+
+
+def known_label_font_paths() -> list[Path]:
+    current = platform.system()
+    platform_order = [current, *(name for name in LABEL_FONT_PATHS_BY_PLATFORM if name != current)]
+    return [
+        Path(font_path)
+        for platform_name in platform_order
+        for font_path in LABEL_FONT_PATHS_BY_PLATFORM.get(platform_name, ())
+    ]
+
+
+def dedupe_paths(paths: list[Path]) -> list[Path]:
+    deduped: list[Path] = []
+    seen: set[str] = set()
+    for path in paths:
+        key = str(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(path)
+    return deduped
+
+
+def configured_label_font_paths() -> list[Path]:
+    paths = env_label_font_paths()
+    fc_path = fontconfig_label_font_path()
+    if fc_path:
+        paths.append(fc_path)
+    paths.extend(known_label_font_paths())
+    return dedupe_paths(paths)
+
+
+@lru_cache(maxsize=1)
 def label_font() -> ImageFont.ImageFont:
-    for font_path in (
-        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-    ):
-        if Path(font_path).exists():
-            return ImageFont.truetype(font_path, 18)
+    for font_path in configured_label_font_paths():
+        if font_path.exists():
+            try:
+                return ImageFont.truetype(str(font_path), 18)
+            except OSError:
+                continue
     return ImageFont.load_default()
 
 
@@ -4654,8 +4847,24 @@ def main() -> None:
         ),
     )
     parser.add_argument("--out", default="output/task1274")
-    parser.add_argument("--rhwp-bin", default="target/debug/rhwp")
+    parser.add_argument(
+        "--rhwp-bin",
+        default=DEFAULT_RHWP_BIN,
+        help=(
+            "SVG와 render tree를 내보낼 rhwp 실행 파일입니다. 기본값은 현재 검토 전용 "
+            f"빌드 산출물인 {DEFAULT_RHWP_BIN}입니다."
+        ),
+    )
     parser.add_argument("--dpi", type=int, default=96)
+    parser.add_argument(
+        "--svg-rasterizer",
+        choices=("webfont", "rsvg"),
+        default="webfont",
+        help=(
+            "SVG rasterizer입니다. 기본 webfont는 Chrome과 Studio 공통 웹폰트 규칙을 사용하고, "
+            "rsvg는 외부 웹폰트 없이 기존 librsvg 경로를 사용합니다."
+        ),
+    )
     parser.add_argument(
         "--resume",
         action="store_true",
@@ -4700,7 +4909,8 @@ def main() -> None:
     selected_pages = parse_page_selection(args.page, args.pages)
 
     root = Path.cwd()
-    ensure_tools()
+    ensure_tools(args.svg_rasterizer)
+    ensure_default_rhwp_binary_is_current(root, args.rhwp_bin)
     custom_targets = custom_targets_from_args(args)
     requested_targets = args.target
     if requested_targets and "all" in requested_targets:
@@ -4724,6 +4934,7 @@ def main() -> None:
             args.pixel_diff_threshold,
             selected_pages,
             resume=args.resume,
+            svg_rasterizer=args.svg_rasterizer,
         )
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")

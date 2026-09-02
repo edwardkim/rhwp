@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "targetRegion": "canary",
+  "expectedEntryCount": 2,
+  "inputs": [
+    {
+      "order": 0,
+      "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+      "faceIndex": 0,
+      "expectedIdentity": {
+        "familyName": "Noto Sans KR",
+        "bold": false,
+        "italic": false
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "OFL-1.1",
+        "source": "SIL Open Font License 1.1 text tracked with the font",
+        "evidencePath": "ttfs/opensource/NotoSansKR-OFL.txt"
+      },
+      "provenance": {
+        "status": "verified",
+        "source": "Google Fonts ofl/notosanskr variable source, instantiated and subset by the repository tool",
+        "evidencePath": "ttfs/opensource/README.md"
+      }
+    },
+    {
+      "order": 1,
+      "path": "tests/fixtures/fonts/RHWPExactFaceSmoke.ttc",
+      "faceIndex": 1,
+      "expectedIdentity": {
+        "familyName": "RHWP Exact Face One",
+        "bold": false,
+        "italic": false
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "source": "Original synthetic test data released under the repository MIT license",
+        "evidencePath": "tests/fixtures/fonts/RHWPExactFaceSmoke.LICENSE.md"
+      },
+      "provenance": {
+        "status": "verified",
+        "source": "scripts/generate_exact_face_collection_fixture.py face index 1",
+        "evidencePath": "tests/fixtures/fonts/RHWPExactFaceSmoke.LICENSE.md"
+      }
+    }
+  ]
+}

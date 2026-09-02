@@ -1,0 +1,24 @@
+{
+  "id": "CR03",
+  "tier": 1,
+  "title": "표가 몇 개인가요?",
+  "input": "samples/table-001.hwp",
+  "axis": "입문",
+  "instructions": "🎪 서커스 텐트 — 문서를 훑어서 그 수를 answer.json 에 {\"tables\": 숫자} 로 적어 내면 된다. 딱 한 번 실행하면 답이 보인다.\n힌트: rhwp export-tables {입력} --json 의 tableCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표가 몇 개인가요?",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ]
+}

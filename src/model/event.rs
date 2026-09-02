@@ -19,6 +19,22 @@ pub enum DocumentEvent {
         offset: usize,
         count: usize,
     },
+    /// 머리말/꼬리말의 반열린 범위 `[start, end)`를 원자적으로 치환했다.
+    ///
+    /// `start`/`end`는 변경 전 HF 로컬 좌표이고 `inserted_end`는 변경 후 삽입 범위의
+    /// 끝 좌표다. 따라서 collapsed range는 삽입, 같은 inserted end는 삭제, 나머지는
+    /// 치환으로 손실 없이 구분할 수 있다 (#6453).
+    HeaderFooterTextReplaced {
+        section: usize,
+        is_header: bool,
+        apply_to: u8,
+        start_para: usize,
+        start_offset: usize,
+        end_para: usize,
+        end_offset: usize,
+        inserted_end_para: usize,
+        inserted_end_offset: usize,
+    },
     ParagraphSplit {
         section: usize,
         para: usize,
@@ -161,6 +177,28 @@ impl DocumentEvent {
             } => format!(
                 r#"{{"type":"TextDeleted","section":{},"para":{},"offset":{},"count":{}}}"#,
                 section, para, offset, count
+            ),
+            DocumentEvent::HeaderFooterTextReplaced {
+                section,
+                is_header,
+                apply_to,
+                start_para,
+                start_offset,
+                end_para,
+                end_offset,
+                inserted_end_para,
+                inserted_end_offset,
+            } => format!(
+                r#"{{"type":"HeaderFooterTextReplaced","section":{},"isHeader":{},"applyTo":{},"start":{{"para":{},"offset":{}}},"end":{{"para":{},"offset":{}}},"insertedEnd":{{"para":{},"offset":{}}}}}"#,
+                section,
+                is_header,
+                apply_to,
+                start_para,
+                start_offset,
+                end_para,
+                end_offset,
+                inserted_end_para,
+                inserted_end_offset
             ),
             DocumentEvent::ParagraphSplit {
                 section,

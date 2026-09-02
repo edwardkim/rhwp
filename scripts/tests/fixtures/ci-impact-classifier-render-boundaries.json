@@ -1,0 +1,66 @@
+[
+  {
+    "title": "post-#5511 non-render root-only change",
+    "files": [
+      { "filename": "src/main.rs", "status": "modified" }
+    ],
+    "expected": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "false",
+      "native_skia_required": "false",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "6",
+      "reason": "classified:rust"
+    }
+  },
+  {
+    "title": "post-#3789 shared CLI document input-only change",
+    "files": [
+      { "filename": "src/cli/document_io.rs", "status": "modified" }
+    ],
+    "expected": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "true",
+      "native_skia_required": "true",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "6",
+      "reason": "classified:rust-render"
+    }
+  },
+  {
+    "title": "post-#3789 non-consumer caption command-only change",
+    "files": [
+      { "filename": "src/cli/commands/caption_validation.rs", "status": "modified" }
+    ],
+    "expected": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "false",
+      "native_skia_required": "false",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "6",
+      "reason": "classified:rust"
+    }
+  },
+  {
+    "title": "post-#3789 structure query boundary-only change",
+    "files": [
+      { "filename": "src/cli/queries/structure.rs", "status": "modified" }
+    ],
+    "expected": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "false",
+      "native_skia_required": "false",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "6",
+      "reason": "classified:rust"
+    }
+  }
+]

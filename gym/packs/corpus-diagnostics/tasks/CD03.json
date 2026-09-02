@@ -1,0 +1,27 @@
+{
+  "id": "CD03",
+  "tier": 2,
+  "title": "쪽 덤프 계수",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 쪽 덤프에서 잡히는 쪽 수를 answer.json 에 {\"pages\": N} 으로 제출하라. 힌트: rhwp dump-pages.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "덤프 쪽 수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "dump-pages",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

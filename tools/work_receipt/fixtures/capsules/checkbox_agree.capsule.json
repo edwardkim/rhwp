@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/blank2010.hwp",
+    "output": "out/checkbox-agree.hwp",
+    "steps": [
+      {
+        "action": "set_checkbox",
+        "name": "개인정보수집동의",
+        "checked": true
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank2010.hwp\",\"output\":\"out/checkbox-agree.hwp\",\"steps\":[{\"action\":\"set_checkbox\",\"name\":\"개인정보수집동의\",\"checked\":true}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/blank2010.hwp",
+    "inputSha256": "411e57c3409ba984973f4a177e2a162eed54a3b28b7d11d401b87508c2f7e313",
+    "planSha256": "83926cfd5aa02094142785d37b43d82758074d3a3bb5378fd65731f4ccc6b9ed",
+    "outputSha256": "ee02a755c162753f97e544cb8241686dc2b805f69bca1d50dcfea404094a2c67",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

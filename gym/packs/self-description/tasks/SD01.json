@@ -1,0 +1,25 @@
+{
+  "id": "SD01",
+  "tier": 1,
+  "title": "명령 표면 계수",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 가 스스로 선언하는 명령 개수를 answer.json 에 {\"commands\": N} 으로 제출하라. 힌트: rhwp capabilities (인자 없이).",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "명령 수",
+      "op": "len_answer_eq",
+      "answer": "commands",
+      "path": "commands",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

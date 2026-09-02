@@ -22,7 +22,13 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
       'transferable-array-buffer',
       'hml-export',
       'renderer-diagnostics-v1',
+      'font-decision-trace-v1',
       'notify-saved-v1',
+      'document-state-v1',
+      'selection-context-v1',
+      'document-agent-command-v1',
+      'target-navigation-v1',
+      'document-change-events-v1',
     ]);
     assert.equal(transfer.length, 1);
     sessionId = message.sessionId;
@@ -43,7 +49,13 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
         'transferable-array-buffer',
         'hml-export',
         'renderer-diagnostics-v1',
+        'font-decision-trace-v1',
         'notify-saved-v1',
+        'document-state-v1',
+        'selection-context-v1',
+        'document-agent-command-v1',
+        'target-navigation-v1',
+        'document-change-events-v1',
       ],
     });
   });
@@ -57,6 +69,13 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
   assert.equal(await editor.pageCount(), 3);
   assert.equal(await editor.getPageSvg(2), '<svg data-page="2"/>');
   assert.deepEqual(await editor.getRendererDiagnostics(2), rendererDiagnostics(2));
+  assert.deepEqual(await editor.getFontDecisionTrace(2, { maxCharacters: 17 }), fontTrace(2, 17));
+  const traceRequest = requests.find((request) => request.method === 'getFontDecisionTrace');
+  assert.deepEqual(traceRequest.params, { page: 2, limits: { maxCharacters: 17 } });
+  await assert.rejects(
+    () => editor.getFontDecisionTrace(0, { maxCharacters: 0 }),
+    /safe integer in 1\.\.=4096/,
+  );
   await assert.rejects(
     () => editor.getRendererDiagnostics('2'),
     /non-negative safe integer/,
@@ -114,6 +133,10 @@ test('@rhwp/editor keeps the bounded legacy request/response fallback', async (t
   assert.equal(await editor.pageCount(), 3);
   await assert.rejects(
     () => editor.getRendererDiagnostics(0),
+    /not supported by this Studio/,
+  );
+  await assert.rejects(
+    () => editor.getFontDecisionTrace(0),
     /not supported by this Studio/,
   );
   await assert.rejects(
@@ -213,6 +236,10 @@ function responseFor(message, legacy = false) {
     case 'pageCount': return 3;
     case 'getPageSvg': return `<svg data-page="${message.params.page}"/>`;
     case 'getRendererDiagnostics': return rendererDiagnostics(message.params.page);
+    case 'getFontDecisionTrace': return fontTrace(
+      message.params.page,
+      message.params.limits.maxCharacters,
+    );
     case 'loadFile': return { pageCount: 3 };
     case 'exportHwp': return legacy ? [4, 5, 6] : new Uint8Array([4, 5, 6]);
     case 'exportHwpx': return legacy ? [7, 8, 9] : new Uint8Array([7, 8, 9]);
@@ -240,6 +267,24 @@ function rendererDiagnostics(page) {
     effectiveBackend: 'canvaskit',
     backendFallbackReason: null,
     page: { index: page, canvaskit: null },
+  };
+}
+
+function fontTrace(page, maxCharacters) {
+  return {
+    schemaVersion: 1,
+    status: 'complete',
+    scope: {
+      pageIndex: page,
+      requestedLimits: { maxCharacters },
+      appliedLimits: { maxCharacters },
+    },
+    counts: { runsSeen: 0, charactersSeen: 0, recordsEmitted: 0, recordsOmitted: 0 },
+    records: [],
+    backendSummary: {},
+    reasons: [],
+    layoutHash: { algorithm: 'sha256', value: null },
+    normalizedHash: { algorithm: 'sha256', value: 'a'.repeat(64) },
   };
 }
 

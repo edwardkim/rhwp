@@ -4,7 +4,31 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedBorderStyle;
 use super::super::{LineStyle, StrokeDash};
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
-use crate::model::table::Table;
+use crate::model::table::{Cell, Table, MAX_TABLE_GRID_CELLS};
+
+/// [#4287] `build_row_col_x` 가 `row_count × col_count` 2D 그리드를 예약하지 않는 이유.
+///
+/// 파일에서 온 `u16` 행/열 수를 그대로 곱하면 65535×65535 `Option<f64>` (~68GB) 를
+/// 예약해 `handle_alloc_error` / wasm 트랩으로 죽는다. `Table::rebuild_grid()` 와
+/// 같은 `MAX_TABLE_GRID_CELLS` 를 넘기면 할당 없이 오류를 돌린다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct TableGridTooLarge {
+    pub row_count: usize,
+    pub col_count: usize,
+}
+
+impl TableGridTooLarge {
+    fn check(row_count: usize, col_count: usize) -> Result<(), Self> {
+        if row_count.saturating_mul(col_count) > MAX_TABLE_GRID_CELLS {
+            Err(Self {
+                row_count,
+                col_count,
+            })
+        } else {
+            Ok(())
+        }
+    }
+}
 
 fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
     if a.line_type == BorderLineType::None {
@@ -38,6 +62,52 @@ fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
     }
 }
 
+/// 병합/숨김 등으로 편집된 셀의 span 내부 위치를 "이미 처리됨"으로 표시한다.
+/// h_edges/v_edges 그리드는 각 셀의 자기 span 경계에만 채워지므로, 병합된 셀 내부의
+/// 미기록 슬롯(`None`)은 "실제로 선이 없음"과 "병합으로 사라진 경계"를 구분하지 못한다.
+/// 투명선 가이드가 후자에도 그려지는 것을 막기 위해 별도 커버리지 그리드에 기록한다.
+pub(crate) fn mark_cell_span_interior_covered(
+    h_covered: &mut [Vec<bool>],
+    v_covered: &mut [Vec<bool>],
+    col: usize,
+    row: usize,
+    col_span: usize,
+    row_span: usize,
+) {
+    let h_rows = h_covered.len();
+    let v_cols = v_covered.len();
+    let col_count = if h_rows > 0 {
+        h_covered[0].len()
+    } else {
+        return;
+    };
+    let row_count = if v_cols > 0 {
+        v_covered[0].len()
+    } else {
+        return;
+    };
+    let end_col = (col + col_span).min(col_count);
+    let end_row = (row + row_span).min(row_count);
+    if row_span > 1 {
+        for r in (row + 1)..end_row {
+            if r < h_rows {
+                for c in col..end_col {
+                    h_covered[r][c] = true;
+                }
+            }
+        }
+    }
+    if col_span > 1 {
+        for c in (col + 1)..end_col {
+            if c < v_cols {
+                for r in row..end_row {
+                    v_covered[c][r] = true;
+                }
+            }
+        }
+    }
+}
+
 /// 엣지 그리드 슬롯에 테두리를 병합 저장
 fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine) {
     if border.line_type == BorderLineType::None {
@@ -60,18 +130,24 @@ pub(crate) fn build_row_col_x(
     cell_spacing: f64,
     dpi: f64,
     width_scale: f64,
-) -> Vec<Vec<f64>> {
+) -> Result<Vec<Vec<f64>>, TableGridTooLarge> {
     use super::super::hwpunit_to_px;
+    TableGridTooLarge::check(row_count, col_count)?;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
     let mut cell_width_grid = vec![vec![None::<f64>; col_count]; row_count];
     for cell in &table.cells {
-        if cell.col_span == 1
-            && cell.width > 0
-            && (cell.col as usize) < col_count
-            && (cell.row as usize) < row_count
-        {
-            cell_width_grid[cell.row as usize][cell.col as usize] =
-                Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
+        if cell.col_span != 1 || cell.width == 0 {
+            continue;
+        }
+        let r = cell.row as usize;
+        let c = cell.col as usize;
+        if r >= row_count || c >= col_count {
+            continue;
+        }
+        if let Some(row) = cell_width_grid.get_mut(r) {
+            if let Some(slot) = row.get_mut(c) {
+                *slot = Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
+            }
         }
     }
     let mut base_rx = vec![0.0f64; col_count + 1];
@@ -80,16 +156,89 @@ pub(crate) fn build_row_col_x(
             base_rx[c] + col_widths[c] + if c + 1 < col_count { cell_spacing } else { 0.0 };
     }
 
-    if table.common.treat_as_char {
-        return vec![base_rx; row_count];
-    }
-
     let target_total = if table.common.width > 0 {
         hwpunit_to_px(table.common.width as i32, dpi) * width_scale
             + cell_spacing * col_count.saturating_sub(1) as f64
     } else {
         base_rx.last().copied().unwrap_or(0.0)
     };
+
+    // [Issue #5590] 행마다 다른 열 구획을 선언한 표.
+    //
+    // 전역 열 grid 하나로 모든 행을 그리면, 행별 선언 구획이 서로 어긋나는 표에서
+    // 어느 행인가는 반드시 진다. 실제로 00288(약장 배치표)은 **모든 행의 셀 폭 합이
+    // 표 폭과 정확히 같은데도** 마지막 열이 1,006HU(13.4px) 깎여 격자가 어긋났다 —
+    // 전역 grid 가 앞 열들을 다른 행 기준으로 풀고 남은 폭을 마지막 열에 떠넘긴 결과다.
+    //
+    // 그 행의 셀이 (1) 0열부터 빈틈없이 (2) 마지막 열까지 덮고 (3) 선언 폭 합이 표 폭과
+    // 일치하면, 그 행은 자기 구획을 스스로 완결한 것이다. 이때는 전역 grid 대신 선언
+    // 구획을 그대로 쓴다. 셋 중 하나라도 어긋나는 행은 종전대로 전역 grid 를 따른다.
+    //
+    // 아래 Studio 명시 힌트(`local_resize_rows`) 경로는 `local_resize_cell_widths` 라는
+    // 별도 폭 원본을 쓰므로 건드리지 않는다.
+    // 전역 grid 가 표 선언 폭과 이미 맞는 표는 건드리지 않는다. 그런 표에서는 행별
+    // 구획을 다시 세울 근거가 없고(한컴 정합 픽스처 form-002 의 부분 가로선이 짧아진다),
+    // 이 결함은 전역 grid 가 선언 폭과 어긋난 표에서만 나타난다.
+    let global_grid_matches_declared =
+        (base_rx.last().copied().unwrap_or(0.0) - target_total).abs() <= 0.5;
+    if table.local_resize_rows.is_empty() && !global_grid_matches_declared {
+        let mut declared = vec![base_rx.clone(); row_count];
+        let mut any_declared_row = false;
+        for (r, row_x) in declared.iter_mut().enumerate().take(row_count) {
+            let Some(candidate) = declared_row_col_x(
+                table,
+                r,
+                col_count,
+                cell_spacing,
+                dpi,
+                width_scale,
+                target_total,
+            ) else {
+                continue;
+            };
+            // 전역 grid 와 사실상 같은 행은 그대로 둔다. 누적 순서만 다른 값으로
+            // 갈아끼우면 부동소수 끝자리가 흔들려 SVG 골든이 의미 없이 깨진다.
+            if candidate
+                .iter()
+                .zip(base_rx.iter())
+                .all(|(a, b)| (a - b).abs() <= 0.01)
+            {
+                continue;
+            }
+            any_declared_row = true;
+            *row_x = candidate;
+        }
+        if any_declared_row {
+            // [#5720] 선언 완결 행이 있는 표에서, 전역 grid 폴백으로 남은 행
+            // (세로 병합에 덮인 불완전 행 등)의 경계가 표 선언 폭을 넘으면 선언
+            // 폭으로 비례 축소한다. 행별 선언이 서로 어긋나는 표는 병합 셀 제약이
+            // 모순이라 전역 grid 의 결핍 보정("뒤쪽 열 확장")이 누적돼 선언 폭을
+            // 넘는데(2734559: 638.7px 선언 → 726.9px, 용지 밖 10.7px), 한글 2022
+            // 는 표를 선언 폭 그대로 그린다(COM PDF 실측 76.4~716.7px). 선언 완결
+            // 행은 그대로 두고 폴백 행만 줄여, 표 상자 폭 판정(#5590)이 선언 폭에
+            // 수렴하게 한다.
+            let base_total = base_rx.last().copied().unwrap_or(0.0);
+            if target_total > 0.0 && base_total > target_total + 0.5 {
+                let scale = target_total / base_total;
+                for row_x in declared.iter_mut() {
+                    let is_base_fallback = row_x
+                        .iter()
+                        .zip(base_rx.iter())
+                        .all(|(a, b)| (a - b).abs() <= 0.01);
+                    if is_base_fallback {
+                        for x in row_x.iter_mut() {
+                            *x *= scale;
+                        }
+                    }
+                }
+            }
+            return Ok(declared);
+        }
+    }
+
+    if table.common.treat_as_char {
+        return Ok(vec![base_rx; row_count]);
+    }
 
     let inferred_local_resize_rows = table.inferred_local_resize_rows();
     if !table.local_resize_rows.is_empty() || !inferred_local_resize_rows.is_empty() {
@@ -182,7 +331,7 @@ pub(crate) fn build_row_col_x(
                     .any(|(a, b)| (a - b).abs() > 0.01)
             })
         {
-            return row_col_x_from_cells;
+            return Ok(row_col_x_from_cells);
         }
     }
 
@@ -193,7 +342,7 @@ pub(crate) fn build_row_col_x(
         })
     });
     if !has_independent_widths {
-        return vec![base_rx; row_count];
+        return Ok(vec![base_rx; row_count]);
     }
 
     let fallback_w = hwpunit_to_px(1800, dpi);
@@ -213,7 +362,81 @@ pub(crate) fn build_row_col_x(
             row_col_x[r].clone_from_slice(&base_rx);
         }
     }
-    row_col_x
+    Ok(row_col_x)
+}
+
+/// [Issue #5590] 한 행이 자기 열 구획을 스스로 완결했는지 보고, 그렇다면 그 행의 x 경계를 만든다.
+///
+/// 조건 셋을 모두 만족해야 한다.
+/// 1. 그 행에서 시작하는(`row_span == 1`) 셀만으로 0열부터 빈틈없이 이어진다.
+/// 2. 마지막 열까지 덮는다.
+/// 3. 선언 폭 합이 표 폭(`target_total`)과 일치한다.
+///
+/// 병합 셀 안쪽 열 경계는 span 비율로 나눈다 — 그 경계를 쓰는 셀이 이 행에는 없고,
+/// 세로선 그리드가 열 개수를 맞춰야 하기 때문이다(기존 local-resize 경로와 같은 규약).
+#[allow(clippy::too_many_arguments)]
+fn declared_row_col_x(
+    table: &Table,
+    row: usize,
+    col_count: usize,
+    cell_spacing: f64,
+    dpi: f64,
+    width_scale: f64,
+    target_total: f64,
+) -> Option<Vec<f64>> {
+    use super::super::hwpunit_to_px;
+    let mut row_cells: Vec<_> = table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row && cell.row_span == 1 && cell.width > 0)
+        .collect();
+    if row_cells.is_empty() {
+        return None;
+    }
+    row_cells.sort_by_key(|cell| cell.col);
+
+    let mut candidate = vec![0.0f64; col_count + 1];
+    let mut cursor = 0.0f64;
+    let mut next_col = 0usize;
+    for cell in row_cells {
+        let c = cell.col as usize;
+        let span = cell.col_span.max(1) as usize;
+        let end = c + span;
+        if c != next_col || end > col_count {
+            return None;
+        }
+        candidate[c] = cursor;
+        let cell_w = hwpunit_to_px(cell.width as i32, dpi) * width_scale;
+        for inner_col in c + 1..end {
+            let ratio = (inner_col - c) as f64 / span as f64;
+            candidate[inner_col] = cursor + cell_w * ratio;
+        }
+        cursor += cell_w;
+        candidate[end] = cursor;
+        if end < col_count {
+            cursor += cell_spacing;
+        }
+        next_col = end;
+    }
+    if next_col != col_count {
+        return None;
+    }
+    let mismatch = cursor - target_total;
+    if mismatch.abs() > 0.5 {
+        // [#5720] 행 선언 폭 합이 표 폭과 근소하게(1% 이내) 어긋나는 행도 자기
+        // 구획으로 인정하고 표 폭에 맞춰 비례 정규화한다. 2734559 실측 — 0~18행
+        // 합 634.96px vs 표 638.72px(0.6%): 한글은 이 행들의 구획을 표 전폭으로
+        // 늘려 그린다(COM PDF 세로선 76.4~716.7px). 엄격 일치만 받으면 이 행들이
+        // 모순된 전역 grid 로 떨어져 표가 선언 밖으로 벌어진다.
+        if target_total <= 0.0 || cursor <= 0.0 || mismatch.abs() > target_total * 0.01 {
+            return None;
+        }
+        let scale = target_total / cursor;
+        for x in candidate.iter_mut() {
+            *x *= scale;
+        }
+    }
+    Some(candidate)
 }
 
 /// 셀 테두리를 엣지 그리드에 수집
@@ -263,12 +486,140 @@ pub(crate) fn collect_cell_borders(
     }
 }
 
+/// 표 자신의 `borderFillIDRef` 를 바깥 네 변의 **빈 슬롯**에만 보충한다.
+///
+/// 칸 occupancy 만으로 막으면 일러두기 틀처럼 바깥 칸이 NONE 인 변
+/// (왼쪽·아래·제목왼쪽)이 사라진다 (#6311). 반대로 바깥 SOLID 가 하나라도
+/// 있는 일반 표까지 빈 칸을 메우면 #469 단 침범·KTX TOC·#6030 행 괘선이
+/// 깨진다. 제목 칸만 바깥 SOLID 를 일부 그린 **일러두기 부분 프레임**만
+/// occupancy+NONE 슬롯을 메우고, 칸이 안 덮는 구멍은 종전 fallback 을 둔다.
+pub(crate) fn apply_table_outer_border_fill(
+    h_edges: &mut [Vec<Option<BorderLine>>],
+    v_edges: &mut [Vec<Option<BorderLine>>],
+    table_borders: &[BorderLine; 4],
+    cells: &[Cell],
+) {
+    if h_edges.is_empty() || v_edges.is_empty() {
+        return;
+    }
+    let col_count = h_edges[0].len();
+    let row_count = v_edges[0].len();
+    if h_edges.len() != row_count + 1 || v_edges.len() != col_count + 1 {
+        return;
+    }
+
+    let mut h_occupied = vec![vec![false; col_count]; row_count + 1];
+    let mut v_occupied = vec![vec![false; row_count]; col_count + 1];
+    for cell in cells {
+        let c = cell.col as usize;
+        let r = cell.row as usize;
+        if c >= col_count || r >= row_count {
+            continue;
+        }
+        let ec = (c + cell.col_span as usize).min(col_count);
+        let er = (r + cell.row_span as usize).min(row_count);
+        if r == 0 {
+            for cc in c..ec {
+                h_occupied[0][cc] = true;
+            }
+        }
+        if er == row_count {
+            for cc in c..ec {
+                h_occupied[row_count][cc] = true;
+            }
+        }
+        if c == 0 {
+            for rr in r..er {
+                v_occupied[0][rr] = true;
+            }
+        }
+        if ec == col_count {
+            for rr in r..er {
+                v_occupied[col_count][rr] = true;
+            }
+        }
+    }
+
+    let fill_occupied = is_callout_partial_frame(h_edges, v_edges, &h_occupied);
+
+    let fill = |slot: &mut Option<BorderLine>, border: &BorderLine, occupied: bool| {
+        if slot.is_none()
+            && border.line_type != BorderLineType::None
+            && (!occupied || fill_occupied)
+        {
+            *slot = Some(*border);
+        }
+    };
+
+    for c in 0..col_count {
+        fill(&mut h_edges[0][c], &table_borders[2], h_occupied[0][c]);
+        fill(
+            &mut h_edges[row_count][c],
+            &table_borders[3],
+            h_occupied[row_count][c],
+        );
+    }
+    for r in 0..row_count {
+        fill(&mut v_edges[0][r], &table_borders[0], v_occupied[0][r]);
+        fill(
+            &mut v_edges[col_count][r],
+            &table_borders[1],
+            v_occupied[col_count][r],
+        );
+    }
+}
+
+fn outer_slot_drawn(slot: &Option<BorderLine>) -> bool {
+    slot.as_ref()
+        .is_some_and(|border| border.line_type != BorderLineType::None)
+}
+
+/// 일러두기 틀: 첫 행 제목 칸만 바깥 SOLID 를 일부 그리고, 아래·본문 좌우는
+/// 칸이 NONE 이다. 일반 박스(좌우·아래가 이미 있는 부분 시작 표)는 제외한다.
+fn is_callout_partial_frame(
+    h_edges: &[Vec<Option<BorderLine>>],
+    v_edges: &[Vec<Option<BorderLine>>],
+    h_occupied: &[Vec<bool>],
+) -> bool {
+    let col_count = h_edges[0].len();
+    let row_count = v_edges[0].len();
+    if row_count < 2 || col_count < 2 {
+        return false;
+    }
+
+    let mut top_drawn = false;
+    let mut top_empty_occupied = false;
+    for c in 0..col_count {
+        if outer_slot_drawn(&h_edges[0][c]) {
+            top_drawn = true;
+        } else if h_occupied[0][c] {
+            top_empty_occupied = true;
+        }
+    }
+    if !top_drawn || !top_empty_occupied {
+        return false;
+    }
+
+    if (0..col_count).any(|c| outer_slot_drawn(&h_edges[row_count][c])) {
+        return false;
+    }
+
+    // 본문 행의 좌·우 바깥 SOLID 가 있으면 일반 박스다. 제목 행(row 0) 토막만 허용.
+    for r in 1..row_count {
+        if outer_slot_drawn(&v_edges[0][r]) || outer_slot_drawn(&v_edges[col_count][r]) {
+            return false;
+        }
+    }
+
+    true
+}
+
 /// 엣지 그리드에서 테두리 Line 노드를 생성
 /// 연속된 같은 스타일의 엣지 세그먼트는 하나의 Line으로 병합하여
 /// 이중선/삼중선의 교차점 렌더링을 깔끔하게 처리한다.
 /// row_col_x: 행별 열 누적 위치 (셀별 독립 너비 지원)
 pub(crate) fn render_edge_borders(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     h_edges: &[Vec<Option<BorderLine>>],
     v_edges: &[Vec<Option<BorderLine>>],
     row_col_x: &[Vec<f64>],
@@ -430,9 +781,11 @@ fn inset_horizontal_border_group_at_top_clip(nodes: &mut [RenderNode], clip_y: f
 /// 투명 테두리를 빨간색 점선 Line 노드로 생성한다.
 /// 엣지 그리드에서 None 슬롯(투명 테두리)을 찾아 연속 구간을 병합한다.
 pub(crate) fn render_transparent_borders(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     h_edges: &[Vec<Option<BorderLine>>],
     v_edges: &[Vec<Option<BorderLine>>],
+    h_covered: &[Vec<bool>],
+    v_covered: &[Vec<bool>],
     row_col_x: &[Vec<f64>],
     row_y: &[f64],
     table_x: f64,
@@ -443,6 +796,18 @@ pub(crate) fn render_transparent_borders(
     let width = 0.4_f64;
     let dash = StrokeDash::Dot;
     let row_count = if row_y.len() > 1 { row_y.len() - 1 } else { 0 };
+    let is_h_covered = |ri: usize, ci: usize| -> bool {
+        h_covered
+            .get(ri)
+            .and_then(|row| row.get(ci).copied())
+            .unwrap_or(false)
+    };
+    let is_v_covered = |ci: usize, ri: usize| -> bool {
+        v_covered
+            .get(ci)
+            .and_then(|col| col.get(ri).copied())
+            .unwrap_or(false)
+    };
 
     // 수평 투명 엣지
     for (ri, h_row) in h_edges.iter().enumerate() {
@@ -452,7 +817,7 @@ pub(crate) fn render_transparent_borders(
         let mut seg_start: Option<usize> = None;
 
         for (ci, edge_opt) in h_row.iter().enumerate() {
-            if edge_opt.is_none() {
+            if edge_opt.is_none() && !is_h_covered(ri, ci) {
                 if seg_start.is_none() {
                     seg_start = Some(ci);
                 }
@@ -485,7 +850,7 @@ pub(crate) fn render_transparent_borders(
                     .get(ri)
                     .and_then(|rx| rx.get(ci).copied())
                     .unwrap_or(0.0);
-            if edge_opt.is_none() {
+            if edge_opt.is_none() && !is_v_covered(ci, ri) {
                 if seg_start.is_none() {
                     seg_start = Some(ri);
                     seg_x = x;
@@ -523,7 +888,7 @@ pub(crate) fn render_transparent_borders(
 /// 테두리선 Line 노드 생성 (이중선/삼중선 지원)
 /// None 타입이면 빈 벡터 반환
 pub(crate) fn create_border_line_nodes(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     border: &BorderLine,
     x1: f64,
     y1: f64,
@@ -634,7 +999,7 @@ pub(crate) fn create_border_line_nodes(
 /// 평행선 노드 생성 (이중선/삼중선용)
 /// lines: &[(offset, width)] — offset은 선 중심의 수직 이동량
 fn create_parallel_lines(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     x1: f64,
     y1: f64,
@@ -654,27 +1019,20 @@ fn create_parallel_lines(
         };
 
         let id = tree.next_id();
-        nodes.push(RenderNode::new(
-            id,
-            RenderNodeType::Line(LineNode::new(
-                lx1,
-                ly1,
-                lx2,
-                ly2,
-                LineStyle {
-                    color,
-                    width,
-                    dash,
-                    ..Default::default()
-                },
-            )),
-            BoundingBox::new(
-                lx1.min(lx2),
-                ly1.min(ly2),
-                (lx2 - lx1).abs().max(width),
-                (ly2 - ly1).abs().max(width),
-            ),
-        ));
+        let line = LineNode::new(
+            lx1,
+            ly1,
+            lx2,
+            ly2,
+            LineStyle {
+                color,
+                width,
+                dash,
+                ..Default::default()
+            },
+        );
+        let bbox = line.ink_bbox();
+        nodes.push(RenderNode::new(id, RenderNodeType::Line(line), bbox));
     }
 
     nodes
@@ -682,7 +1040,7 @@ fn create_parallel_lines(
 
 /// 임의 방향 평행선 노드 생성 (대각선 이중선/삼중선용)
 fn create_parallel_lines_perpendicular(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     x1: f64,
     y1: f64,
@@ -708,27 +1066,20 @@ fn create_parallel_lines_perpendicular(
         let ly2 = y2 + ny * offset;
 
         let id = tree.next_id();
-        nodes.push(RenderNode::new(
-            id,
-            RenderNodeType::Line(LineNode::new(
-                lx1,
-                ly1,
-                lx2,
-                ly2,
-                LineStyle {
-                    color,
-                    width,
-                    dash,
-                    ..Default::default()
-                },
-            )),
-            BoundingBox::new(
-                lx1.min(lx2),
-                ly1.min(ly2),
-                (lx2 - lx1).abs().max(width),
-                (ly2 - ly1).abs().max(width),
-            ),
-        ));
+        let line = LineNode::new(
+            lx1,
+            ly1,
+            lx2,
+            ly2,
+            LineStyle {
+                color,
+                width,
+                dash,
+                ..Default::default()
+            },
+        );
+        let bbox = line.ink_bbox();
+        nodes.push(RenderNode::new(id, RenderNodeType::Line(line), bbox));
     }
 
     nodes
@@ -736,7 +1087,7 @@ fn create_parallel_lines_perpendicular(
 
 /// 단일선 노드 생성
 fn create_single_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     width: f64,
     dash: StrokeDash,
@@ -746,31 +1097,24 @@ fn create_single_line(
     y2: f64,
 ) -> Vec<RenderNode> {
     let id = tree.next_id();
-    vec![RenderNode::new(
-        id,
-        RenderNodeType::Line(LineNode::new(
-            x1,
-            y1,
-            x2,
-            y2,
-            LineStyle {
-                color,
-                width,
-                dash,
-                ..Default::default()
-            },
-        )),
-        BoundingBox::new(
-            x1.min(x2),
-            y1.min(y2),
-            (x2 - x1).abs().max(width),
-            (y2 - y1).abs().max(width),
-        ),
-    )]
+    let line = LineNode::new(
+        x1,
+        y1,
+        x2,
+        y2,
+        LineStyle {
+            color,
+            width,
+            dash,
+            ..Default::default()
+        },
+    );
+    let bbox = line.ink_bbox();
+    vec![RenderNode::new(id, RenderNodeType::Line(line), bbox)]
 }
 
 fn create_editor_only_line(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     color: u32,
     width: f64,
     dash: StrokeDash,
@@ -810,7 +1154,7 @@ fn border_line_type_from_code(code: u8) -> BorderLineType {
 }
 
 fn create_diagonal_line_nodes(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     line_type: BorderLineType,
     color: u32,
     width_index: u8,
@@ -910,7 +1254,7 @@ fn create_diagonal_line_nodes(
 }
 
 fn create_crooked_diagonal_line_nodes(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     line_type: BorderLineType,
     color: u32,
     width_index: u8,
@@ -993,8 +1337,8 @@ pub(crate) fn border_width_to_px(width: u8) -> f64 {
         15.1, // 14: 4.0mm
         18.9, // 15: 5.0mm
     ];
-    if (width as usize) < WIDTHS_PX.len() {
-        WIDTHS_PX[width as usize]
+    if let Some(&px) = WIDTHS_PX.get(width as usize) {
+        px
     } else {
         (width as f64 * 1.2).max(0.4).min(20.0)
     }
@@ -1023,7 +1367,7 @@ fn border_line_type_to_dash(lt: BorderLineType) -> Option<StrokeDash> {
 ///   bit 10: BackSlash 대각선 꺾은선
 ///   bit 13: 중심선
 pub(crate) fn render_cell_diagonal(
-    tree: &mut LayoutFrame,
+    tree: &mut PageLayoutContext,
     border_style: &ResolvedBorderStyle,
     cell_x: f64,
     cell_y: f64,
@@ -1162,7 +1506,8 @@ mod tests {
         let col_widths =
             base_widths_hu.map(|width| crate::renderer::hwpunit_to_px(width as i32, DPI));
 
-        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0);
+        let row_col_x =
+            build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0).expect("3×3 표는 상한 안");
         let expected_first_boundary = col_widths[0];
         let expected_last_width = col_widths[2];
 
@@ -1177,6 +1522,36 @@ mod tests {
             row_col_x[0]
         );
         assert_eq!(row_col_x[0], row_col_x[1]);
+        assert_oversized_declared_grid_is_rejected();
+    }
+
+    fn assert_oversized_declared_grid_is_rejected() {
+        // [#4287] 가드가 사라지면 2100×2100 × Option<f64> ≈ 70MB 를 예약한다.
+        // 65535×65535 는 회귀 시 CI 러너가 OOM 으로 죽으므로 쓰지 않는다 (#2722 보정과 동일).
+        const ROWS: usize = 2100;
+        const COLS: usize = 2100;
+        assert!(
+            ROWS.saturating_mul(COLS) > MAX_TABLE_GRID_CELLS,
+            "재현 입력이 상한을 넘어야 의미가 있다"
+        );
+
+        let table = Table {
+            row_count: ROWS as u16,
+            col_count: COLS as u16,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                row_span: 1,
+                col_span: 1,
+                width: 1000,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let err = build_row_col_x(&table, &[1.0], COLS, ROWS, 0.0, 96.0, 1.0)
+            .expect_err("상한 초과 그리드는 할당하지 않고 오류여야 함");
+        assert_eq!(err.row_count, ROWS);
+        assert_eq!(err.col_count, COLS);
     }
 
     fn center_line_style(center_line: CenterLine) -> ResolvedBorderStyle {
@@ -1217,7 +1592,7 @@ mod tests {
 
     #[test]
     fn render_hwpx_vertical_center_line_as_horizontal_bar() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Vertical),
@@ -1238,7 +1613,7 @@ mod tests {
 
     #[test]
     fn render_hwpx_horizontal_center_line_as_vertical_bar() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Horizontal),
@@ -1258,7 +1633,7 @@ mod tests {
 
     #[test]
     fn render_cross_center_line_creates_vertical_and_horizontal_lines() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Cross),
@@ -1283,7 +1658,7 @@ mod tests {
 
     #[test]
     fn render_nonzero_diagonal_shape_codes_as_basic_x() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &diagonal_style((0b111 << 2) | (0b111 << 5)),
@@ -1308,7 +1683,7 @@ mod tests {
 
     #[test]
     fn render_slash_crooked_with_backslash_as_bent_backslash() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &diagonal_style((2 << 8) | (0b010 << 5)),
@@ -1338,7 +1713,7 @@ mod tests {
 
     #[test]
     fn render_thick_slim_diagonal_as_parallel_lines() {
-        let mut tree = LayoutFrame::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let mut style = diagonal_style(0b010 << 2);
         style.diagonal.diagonal_type = 10;
         style.diagonal.width = 13;

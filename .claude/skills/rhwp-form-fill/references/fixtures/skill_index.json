@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "skill": "rhwp-form-fill",
+  "notGym": true,
+  "noNewEditLogic": true,
+  "forbiddenSkillsTouch": [
+    "rhwp-onboarding",
+    "rhwp-mcp-session",
+    "rhwp-safe-edit",
+    "rhwp-provenance",
+    "rhwp-doc-triage"
+  ],
+  "forbiddenTrees": [
+    "gym/"
+  ],
+  "references": [
+    "00_tree.md",
+    "01_fields_survey.md",
+    "02_fill_fields.md",
+    "03_repeat_occurrence.md",
+    "04_batch_fill.md",
+    "05_dry_run_verify.md",
+    "06_sanitize.md",
+    "07_envelopes.md",
+    "08_pitfalls.md",
+    "09_journeys.md",
+    "10_handoff.md",
+    "11_failure_signals.md",
+    "12_data_formats.md",
+    "13_name_field.md",
+    "14_insert_image.md",
+    "15_axis_choice.md",
+    "16_worked_traces.md",
+    "17_intent_matrix.md",
+    "18_field_catalog.md",
+    "19_gate_recipes.md",
+    "20_exit_codes.md",
+    "README.md"
+  ],
+  "coreTopics": [
+    "fields survey",
+    "fill-fields",
+    "이름[순번]",
+    "batch fill",
+    "--dry-run",
+    "--verify",
+    "sanitize"
+  ],
+  "authority": [
+    "mydocs/manual/cli_commands.md",
+    "mydocs/manual/recipes/01_fill_form_and_submit.md",
+    "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+    "mydocs/manual/form_filling_guide.md"
+  ]
+}

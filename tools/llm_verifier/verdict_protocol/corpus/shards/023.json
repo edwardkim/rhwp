@@ -1,0 +1,2284 @@
+{
+  "schemaVersion": "v-proto.1.0",
+  "shardId": "023",
+  "records": [
+    {
+      "recordId": "vproto-000921",
+      "sourceTag": "병무청/예산서/2020/0921#layout-anomaly/overflow-nonstrict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/병무청_예산서_2020_0921.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/병무청_예산서_2020_0921.hwp",
+        "pageCount": 5,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 6.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000922",
+      "sourceTag": "산림청/예산서/2020/0922#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/산림청_예산서_2020_0922.hwpx",
+        "inputSha256": "57e6dd27ee76366f66bc491759a54117ec55068218edd1407fd6eb9afe410885",
+        "planSha256": "e2f93bf21a9301e966677b1115acb3b2b4bba5f27d00df7dbfcc6868e3856078",
+        "outputSha256": "42a615f65351850d39d416fc26f838bbbab779d3d9250da43fedd2b36324348c",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 2,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000923",
+      "sourceTag": "농촌진흥청/예산서/2020/0923#fill-fields/write-verify-ok",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/농촌진흥청_예산서_2020_0923.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/농촌진흥청_예산서_2020_0923.hwp",
+        "dryRun": false,
+        "filledCount": 6,
+        "filled": [
+          {
+            "name": "문서번호",
+            "occurrence": 0,
+            "value": "문서번호-값-0922-0"
+          },
+          {
+            "name": "시행일자",
+            "occurrence": 1,
+            "value": "시행일자-값-0922-1"
+          },
+          {
+            "name": "수신",
+            "occurrence": 2,
+            "value": "수신-값-0922-2"
+          },
+          {
+            "name": "제목",
+            "occurrence": 3,
+            "value": "제목-값-0922-3"
+          },
+          {
+            "name": "금액",
+            "occurrence": 4,
+            "value": "금액-값-0922-4"
+          },
+          {
+            "name": "계좌번호",
+            "occurrence": 5,
+            "value": "계좌번호-값-0922-5"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/농촌진흥청_예산서_2020_0923_filled.hwp",
+        "outputFormat": "hwp5",
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000924",
+      "sourceTag": "중소벤처기업부/예산서/2020/0924#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/중소벤처기업부_예산서_2020_0924.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/중소벤처기업부_예산서_2020_0924.hwp",
+        "sourceB": "samples/gov/중소벤처기업부_예산서_2020_0924.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 5,
+        "pageCountB": 5,
+        "pageCountMismatch": false,
+        "maxDisp": 1.4,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 63,
+            "nodeCountB": 63
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 64,
+            "nodeCountB": 64
+          },
+          {
+            "page": 2,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 65,
+            "nodeCountB": 65
+          },
+          {
+            "page": 3,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 66,
+            "nodeCountB": 66
+          },
+          {
+            "page": 4,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 67,
+            "nodeCountB": 67
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-000925",
+      "sourceTag": "과학기술정보통신부/예산서/2020/0925#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/과학기술정보통신부_예산서_2020_0925.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/과학기술정보통신부_예산서_2020_0925.hwpx",
+        "format": "hwpx",
+        "sizeBytes": 150588,
+        "version": "owpml-1.0",
+        "sections": 1,
+        "pageCount": 13,
+        "paraCount": 47,
+        "fonts": [
+          "본명조",
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림",
+          "굴림체",
+          "돋움"
+        ],
+        "title": "정보공개 청구서 (과학기술정보통신부 예산서 2020)",
+        "warnings": [
+          {
+            "code": "legacyFont",
+            "message": "문서가 본명조 메트릭을 가정한다"
+          }
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000926",
+      "sourceTag": "문화체육관광부/예산서/2020/0926#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/문화체육관광부_예산서_2020_0926.hwp",
+        "--expect-pages",
+        "6",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/문화체육관광부_예산서_2020_0926.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 6,
+            "actual": 6,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 205,
+            "actual": 205,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 1,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "제목",
+            "actual": "제목",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000927",
+      "sourceTag": "환경부/예산서/2020/0927#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/환경부_예산서_2020_0927.hwp",
+        "samples/gov/환경부_예산서_2020_0927.hwpx",
+        "samples/gov/환경부_예산서_2020_0927.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/환경부_예산서_2020_0927.hwp",
+        "b": "samples/gov/환경부_예산서_2020_0927.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000928",
+      "sourceTag": "해양수산부/예산서/2020/0928#layout-anomaly/empty-strict-ok",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/해양수산부_예산서_2020_0928.hwpx",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/해양수산부_예산서_2020_0928.hwpx",
+        "pageCount": 6,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000929",
+      "sourceTag": "법제처/회의록/2020/0929#replay/verify-reproduced",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "b4c10fd7f196be74a19b1cf55ed7560dae02c952371c5d922722e94e7719602c",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/법제처_회의록_2020_0929.hwp",
+        "inputSha256": "b29bd57311e4baee54031e8764f9dd9906c4794fa73d65a78a84593b3f66e832",
+        "planSha256": "6d52ecbb9b2122179a3cc9ef3c7112a9f91303be65492f93abf6bc11a9e0905c",
+        "outputSha256": "b4c10fd7f196be74a19b1cf55ed7560dae02c952371c5d922722e94e7719602c",
+        "expectedOutputSha256": "b4c10fd7f196be74a19b1cf55ed7560dae02c952371c5d922722e94e7719602c",
+        "reproduced": true,
+        "steps": 4,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": true,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000930",
+      "sourceTag": "행정안전부/회의록/2020/0930#fill-fields/not-found-exit0",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/행정안전부_회의록_2020_0930.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/행정안전부_회의록_2020_0930.hwp",
+        "dryRun": false,
+        "filledCount": 7,
+        "filled": [
+          {
+            "name": "생년월일",
+            "occurrence": 0,
+            "value": "생년월일-값-0929-0"
+          },
+          {
+            "name": "주소",
+            "occurrence": 1,
+            "value": "주소-값-0929-1"
+          },
+          {
+            "name": "연락처",
+            "occurrence": 2,
+            "value": "연락처-값-0929-2"
+          },
+          {
+            "name": "전자우편",
+            "occurrence": 3,
+            "value": "전자우편-값-0929-3"
+          },
+          {
+            "name": "사업자등록번호",
+            "occurrence": 4,
+            "value": "사업자등록번호-값-0929-4"
+          },
+          {
+            "name": "법인명",
+            "occurrence": 5,
+            "value": "법인명-값-0929-5"
+          },
+          {
+            "name": "대표자",
+            "occurrence": 6,
+            "value": "대표자-값-0929-6"
+          }
+        ],
+        "notFound": [
+          "없는필드2"
+        ],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/행정안전부_회의록_2020_0930_filled.hwp",
+        "outputFormat": "hwp5"
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000931",
+      "sourceTag": "국세청/회의록/2020/0931#render-diff/under-threshold",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/국세청_회의록_2020_0931.hwpx",
+        "--max-disp",
+        "2",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/국세청_회의록_2020_0931.hwpx",
+        "sourceB": "samples/gov/국세청_회의록_2020_0931.hwpx",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 2,
+        "pageCountB": 2,
+        "pageCountMismatch": false,
+        "maxDisp": 1.2,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 40,
+            "nodeCountB": 40
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 41,
+            "nodeCountB": 41
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-000932",
+      "sourceTag": "대법원/회의록/2020/0932#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/대법원_회의록_2020_0932.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/대법원_회의록_2020_0932.hwp",
+        "format": "hwp5",
+        "sizeBytes": 151547,
+        "version": "5.0.2.5",
+        "sections": 4,
+        "pageCount": 20,
+        "paraCount": 54,
+        "fonts": [
+          "굴림",
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕",
+          "바탕체",
+          "나눔고딕",
+          "나눔명조",
+          "본고딕"
+        ],
+        "title": "개인정보 처리방침 개정 고시 (대법원 회의록 2020)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000933",
+      "sourceTag": "특허청/회의록/2020/0933#verify/expect-fail",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/특허청_회의록_2020_0933.hwp",
+        "--expect-min-chars",
+        "99999",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/특허청_회의록_2020_0933.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 13,
+            "actual": 15,
+            "pass": false
+          },
+          {
+            "kind": "min-chars",
+            "expected": 212,
+            "actual": 212,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 3,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "전자우편",
+            "actual": "전자우편",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 4,
+        "failCount": 1,
+        "verdict": "fail",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 1,
+        "passCount": 4,
+        "verdict": "fail",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000934",
+      "sourceTag": "교육부/회의록/2020/0934#ir-diff/cross-format-diff",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/교육부_회의록_2020_0934.hwpx",
+        "samples/gov/교육부_회의록_2020_0934.hwpxx",
+        "samples/gov/교육부_회의록_2020_0934.hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/교육부_회의록_2020_0934.hwpx",
+        "b": "samples/gov/교육부_회의록_2020_0934.hwp",
+        "identical": false,
+        "diffCount": 9,
+        "categories": {
+          "text": 4,
+          "charShape": 1,
+          "table": 3,
+          "ctrl": 1
+        },
+        "untrustedContent": true,
+        "untrustedFields": [
+          "categories"
+        ]
+      },
+      "judgment": {
+        "identical": false,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 9,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000935",
+      "sourceTag": "보건복지부/회의록/2020/0935#layout-anomaly/overflow-strict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/보건복지부_회의록_2020_0935.hwp",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/보건복지부_회의록_2020_0935.hwp",
+        "pageCount": 7,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 11.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": true,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": [
+              {
+                "kind": "text-text",
+                "a": {
+                  "section": 0,
+                  "paragraph": 4
+                },
+                "b": {
+                  "section": 0,
+                  "paragraph": 5
+                },
+                "overlapPx": 7.0
+              }
+            ]
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 6,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000936",
+      "sourceTag": "국토교통부/회의록/2020/0936#replay/verify-mismatch",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/국토교통부_회의록_2020_0936.hwp",
+        "inputSha256": "8eb2d8fa25a1841d2d5c6b09586966d12c22251714ce668315bb25cb05c87d27",
+        "planSha256": "aa3ffcb4aecb2164ff11a1c3d73ebe3d13631d1027dfab87823f146c7f7534c1",
+        "outputSha256": "4e9ebe009b1f286c5557f4206c95be1e0dc6e509c671829968620e8a5ed942d9",
+        "expectedOutputSha256": "09594a6ca0dee9c5440407c19f983201726affc66ccbe9833a7c9cedd93eda7e",
+        "reproduced": false,
+        "steps": 1,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": false,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000937",
+      "sourceTag": "고용노동부/회의록/2020/0937#fill-fields/verify-ir-diff",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/고용노동부_회의록_2020_0937.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/고용노동부_회의록_2020_0937.hwpx",
+        "dryRun": false,
+        "filledCount": 2,
+        "filled": [
+          {
+            "name": "담당부서",
+            "occurrence": 0,
+            "value": "담당부서-값-0936-0"
+          },
+          {
+            "name": "담당자",
+            "occurrence": 1,
+            "value": "담당자-값-0936-1"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/고용노동부_회의록_2020_0937_filled.hwpx",
+        "outputFormat": "hwpx",
+        "verify": {
+          "identical": false,
+          "diffCount": 1
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": false,
+          "diffCount": 1
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000938",
+      "sourceTag": "외교부/회의록/2020/0938#render-diff/regression",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/외교부_회의록_2020_0938.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/외교부_회의록_2020_0938.hwp",
+        "sourceB": "samples/gov/외교부_회의록_2020_0938.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 4,
+        "pageCountB": 4,
+        "pageCountMismatch": false,
+        "maxDisp": 5.5,
+        "worstPage": 0,
+        "overPages": 2,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OVER",
+        "regression": true,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 5.5,
+            "over": true,
+            "structMismatch": false,
+            "nodeCountA": 47,
+            "nodeCountB": 47
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 48,
+            "nodeCountB": 48
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 49,
+            "nodeCountB": 49
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 50,
+            "nodeCountB": 50
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": true,
+        "status": "OVER",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 2
+      }
+    },
+    {
+      "recordId": "vproto-000939",
+      "sourceTag": "기획재정부/회의록/2020/0939#info/io-missing",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/기획재정부_회의록_2020_0939.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000940",
+      "sourceTag": "공정거래위원회/회의록/2020/0940#verify/io-missing",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/공정거래위원회_회의록_2020_0940.hwpx",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000941",
+      "sourceTag": "금융위원회/회의록/2020/0941#ir-diff/io-missing-a",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/금융위원회_회의록_2020_0941.hwp",
+        "samples/gov/금융위원회_회의록_2020_0941.hwpx",
+        "samples/gov/금융위원회_회의록_2020_0941.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000942",
+      "sourceTag": "방송통신위원회/회의록/2020/0942#layout-anomaly/io-missing",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/방송통신위원회_회의록_2020_0942.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000943",
+      "sourceTag": "개인정보보호위원회/회의록/2020/0943#replay/io-missing-plan",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000944",
+      "sourceTag": "국민권익위원회/회의록/2020/0944#fill-fields/io-missing",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/국민권익위원회_회의록_2020_0944.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000945",
+      "sourceTag": "국가인권위원회/회의록/2020/0945#render-diff/io-missing",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/국가인권위원회_회의록_2020_0945.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000946",
+      "sourceTag": "통계청/회의록/2020/0946#info/io-missing",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/통계청_회의록_2020_0946.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000947",
+      "sourceTag": "기상청/회의록/2020/0947#verify/io-missing",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/기상청_회의록_2020_0947.hwp",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000948",
+      "sourceTag": "관세청/회의록/2020/0948#ir-diff/io-missing-a",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/관세청_회의록_2020_0948.hwp",
+        "samples/gov/관세청_회의록_2020_0948.hwpx",
+        "samples/gov/관세청_회의록_2020_0948.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000949",
+      "sourceTag": "검찰청/회의록/2020/0949#layout-anomaly/io-missing",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/검찰청_회의록_2020_0949.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000950",
+      "sourceTag": "경찰청/회의록/2020/0950#replay/io-missing-plan",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000951",
+      "sourceTag": "소방청/회의록/2020/0951#fill-fields/io-missing",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/소방청_회의록_2020_0951.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000952",
+      "sourceTag": "해양경찰청/회의록/2020/0952#render-diff/io-missing",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/해양경찰청_회의록_2020_0952.hwpx",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000953",
+      "sourceTag": "병무청/회의록/2020/0953#info/io-truncated",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/병무청_회의록_2020_0953.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000954",
+      "sourceTag": "산림청/회의록/2020/0954#verify/usage-no-expect",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/산림청_회의록_2020_0954.hwp",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000955",
+      "sourceTag": "농촌진흥청/회의록/2020/0955#ir-diff/usage-one-file",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/농촌진흥청_회의록_2020_0955.hwpx",
+        "samples/gov/농촌진흥청_회의록_2020_0955.hwpxx",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000956",
+      "sourceTag": "중소벤처기업부/회의록/2020/0956#layout-anomaly/usage-bad-page",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/중소벤처기업부_회의록_2020_0956.hwp",
+        "-p",
+        "-4",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000957",
+      "sourceTag": "과학기술정보통신부/회의록/2020/0957#replay/usage-no-plan",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000958",
+      "sourceTag": "문화체육관광부/회의록/2020/0958#fill-fields/usage-no-output",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/문화체육관광부_회의록_2020_0958.hwpx",
+        "--data",
+        "@fields.json",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000959",
+      "sourceTag": "환경부/회의록/2020/0959#render-diff/usage-bad-via",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/환경부_회의록_2020_0959.hwp",
+        "--via",
+        "pdf",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-000960",
+      "sourceTag": "해양수산부/회의록/2020/0960#info/usage-no-file",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/해양수산부_회의록_2020_0960.hwp",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    }
+  ]
+}

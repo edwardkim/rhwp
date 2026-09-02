@@ -1,0 +1,5633 @@
+{
+  "schemaVersion": "v-step.1.0",
+  "shardId": "228",
+  "records": [
+    {
+      "recordId": "vstep-002737-s0",
+      "episodeId": "ep-002737",
+      "sourceTag": "법제처/지침/2024/2737#csv-to-table/s0/6/layout-usage",
+      "stepIndex": 0,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/법제처_지침_2024_2737.hwpx",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/법제처_지침_2024_2737.hwpx",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/법제처_지침_2024_2737_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/법제처_지침_2024_2737_s0.hwpx",
+            "--expect-pages",
+            "2",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/법제처_지침_2024_2737_s0.hwpx",
+            "pageCount": 2,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 2,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 416,
+                "actual": 416,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "신청인",
+                "actual": "신청인",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/법제처_지침_2024_2737_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/법제처_지침_2024_2737_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/법제처_지침_2024_2737_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 398832,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 2,
+            "expectedPageCount": 2,
+            "pageCountMismatch": false,
+            "paraCount": 99,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 2,
+            "expectedPageCount": 2,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/법제처_지침_2024_2737.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/법제처_지침_2024_2737_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/법제처_지침_2024_2737_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "신청인",
+                "occurrence": 0,
+                "value": "신청인-값-2736-0"
+              },
+              {
+                "name": "생년월일",
+                "occurrence": 1,
+                "value": "생년월일-값-2736-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002737-s1",
+      "episodeId": "ep-002737",
+      "sourceTag": "법제처/지침/2024/2737#insert-table/s1/9/all-pass-empty-page",
+      "stepIndex": 1,
+      "stepKind": "insert-table",
+      "source": "samples/gov/법제처_지침_2024_2737.hwpx",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/법제처_지침_2024_2737.hwpx",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/법제처_지침_2024_2737_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "--expect-pages",
+            "19",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "pageCount": 19,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 19,
+                "actual": 19,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 433,
+                "actual": 433,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "생년월일",
+                "actual": "생년월일",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 19
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 401161,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 19,
+            "expectedPageCount": 19,
+            "pageCountMismatch": false,
+            "paraCount": 116,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 19,
+            "expectedPageCount": 19,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/법제처_지침_2024_2737.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/법제처_지침_2024_2737_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-2753-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-2753-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-2753-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002738-s0",
+      "episodeId": "ep-002738",
+      "sourceTag": "행정안전부/지침/2024/2738#insert-table/s0/7/verify-and-layout-fail",
+      "stepIndex": 0,
+      "stepKind": "insert-table",
+      "source": "samples/gov/행정안전부_지침_2024_2738.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/행정안전부_지침_2024_2738.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "--expect-pages",
+            "3",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "pageCount": 3,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 3,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 417,
+                "actual": 402,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "생년월일",
+                "actual": "생년월일",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 3
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 5.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 398969,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false,
+            "paraCount": 100,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/행정안전부_지침_2024_2738.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "생년월일",
+                "occurrence": 0,
+                "value": "생년월일-값-2737-0"
+              },
+              {
+                "name": "주소",
+                "occurrence": 1,
+                "value": "주소-값-2737-1"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 2,
+                "value": "연락처-값-2737-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002738-s1",
+      "episodeId": "ep-002738",
+      "sourceTag": "행정안전부/지침/2024/2738#delete-row/s1/0/all-pass",
+      "stepIndex": 1,
+      "stepKind": "delete-row",
+      "source": "samples/gov/행정안전부_지침_2024_2738.hwp",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/행정안전부_지침_2024_2738.hwp",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "--expect-pages",
+            "2",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "pageCount": 2,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 2,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 434,
+                "actual": 434,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 401298,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 2,
+            "expectedPageCount": 2,
+            "pageCountMismatch": false,
+            "paraCount": 117,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 2,
+            "expectedPageCount": 2,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/행정안전부_지침_2024_2738.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/행정안전부_지침_2024_2738_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-2754-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-2754-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002739-s0",
+      "episodeId": "ep-002739",
+      "sourceTag": "국세청/지침/2024/2739#delete-row/s0/8/pagecount-and-fill-fail",
+      "stepIndex": 0,
+      "stepKind": "delete-row",
+      "source": "samples/gov/국세청_지침_2024_2739.hwp",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/국세청_지침_2024_2739.hwp",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/국세청_지침_2024_2739_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "--expect-pages",
+            "4",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "pageCount": 4,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 4,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 418,
+                "actual": 418,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "주소",
+                "actual": "주소",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 4
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 399106,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 6,
+            "expectedPageCount": 4,
+            "pageCountMismatch": true,
+            "paraCount": 101,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 6,
+            "expectedPageCount": 4,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국세청_지침_2024_2739.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "주소",
+                "occurrence": 0,
+                "value": "주소-값-2738-0"
+              },
+              {
+                "name": "연락처",
+                "occurrence": 1,
+                "value": "연락처-값-2738-1"
+              }
+            ],
+            "notFound": [
+              "없는필드2"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002739-s1",
+      "episodeId": "ep-002739",
+      "sourceTag": "국세청/지침/2024/2739#apply-char-format/s1/1/verify-fail",
+      "stepIndex": 1,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/국세청_지침_2024_2739.hwp",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/국세청_지침_2024_2739.hwp",
+        "--bold",
+        "-o",
+        "output/gov/국세청_지침_2024_2739_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "--expect-pages",
+            "3",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "pageCount": 3,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 3,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 435,
+                "actual": 420,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "연락처",
+                "actual": "연락처",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 3
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 401435,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false,
+            "paraCount": 118,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 3,
+            "expectedPageCount": 3,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국세청_지침_2024_2739.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국세청_지침_2024_2739_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-2755-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-2755-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-2755-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002740-s0",
+      "episodeId": "ep-002740",
+      "sourceTag": "대법원/지침/2024/2740#apply-char-format/s0/9/all-pass-empty-page",
+      "stepIndex": 0,
+      "stepKind": "apply-char-format",
+      "source": "samples/gov/대법원_지침_2024_2740.hwpx",
+      "argv": [
+        "edit",
+        "apply-char-format",
+        "samples/gov/대법원_지침_2024_2740.hwpx",
+        "--bold",
+        "-o",
+        "output/gov/대법원_지침_2024_2740_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "--expect-pages",
+            "5",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "pageCount": 5,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 5,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 419,
+                "actual": 419,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "연락처",
+                "actual": "연락처",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 5
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 399243,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 5,
+            "expectedPageCount": 5,
+            "pageCountMismatch": false,
+            "paraCount": 102,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 5,
+            "expectedPageCount": 5,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/대법원_지침_2024_2740.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "연락처",
+                "occurrence": 0,
+                "value": "연락처-값-2739-0"
+              },
+              {
+                "name": "전자우편",
+                "occurrence": 1,
+                "value": "전자우편-값-2739-1"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 2,
+                "value": "사업자등록번호-값-2739-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002740-s1",
+      "episodeId": "ep-002740",
+      "sourceTag": "대법원/지침/2024/2740#fill-fields/s1/2/layout-strict-overflow",
+      "stepIndex": 1,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/대법원_지침_2024_2740.hwpx",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/대법원_지침_2024_2740.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/대법원_지침_2024_2740_s1.hwpx",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "--expect-pages",
+            "4",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "pageCount": 4,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 4,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 436,
+                "actual": 436,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "전자우편",
+                "actual": "전자우편",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 4
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 6.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 2,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 401572,
+            "version": "owpml-1.0",
+            "sections": 1,
+            "pageCount": 4,
+            "expectedPageCount": 4,
+            "pageCountMismatch": false,
+            "paraCount": 119,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 4,
+            "expectedPageCount": 4,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/대법원_지침_2024_2740.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/대법원_지침_2024_2740_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "전자우편",
+                "occurrence": 0,
+                "value": "전자우편-값-2756-0"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 1,
+                "value": "사업자등록번호-값-2756-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002741-s0",
+      "episodeId": "ep-002741",
+      "sourceTag": "특허청/지침/2024/2741#fill-fields/s0/0/all-pass",
+      "stepIndex": 0,
+      "stepKind": "fill-fields",
+      "source": "samples/gov/특허청_지침_2024_2741.hwp",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/특허청_지침_2024_2741.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "output/gov/특허청_지침_2024_2741_s0.hwp",
+        "--verify",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "--expect-pages",
+            "6",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "pageCount": 6,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 6,
+                "actual": 6,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 420,
+                "actual": 420,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "전자우편",
+                "actual": "전자우편",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 6
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 399380,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 6,
+            "expectedPageCount": 6,
+            "pageCountMismatch": false,
+            "paraCount": 103,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 6,
+            "expectedPageCount": 6,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/특허청_지침_2024_2741.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "전자우편",
+                "occurrence": 0,
+                "value": "전자우편-값-2740-0"
+              },
+              {
+                "name": "사업자등록번호",
+                "occurrence": 1,
+                "value": "사업자등록번호-값-2740-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002741-s1",
+      "episodeId": "ep-002741",
+      "sourceTag": "특허청/지침/2024/2741#replace-text/s1/3/pagecount-mismatch",
+      "stepIndex": 1,
+      "stepKind": "replace-text",
+      "source": "samples/gov/특허청_지침_2024_2741.hwp",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/특허청_지침_2024_2741.hwp",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/특허청_지침_2024_2741_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "--expect-pages",
+            "5",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "pageCount": 5,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 5,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 437,
+                "actual": 437,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "사업자등록번호",
+                "actual": "사업자등록번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 5
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 401709,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 6,
+            "expectedPageCount": 5,
+            "pageCountMismatch": true,
+            "paraCount": 120,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 6,
+            "expectedPageCount": 5,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/특허청_지침_2024_2741.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/특허청_지침_2024_2741_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "사업자등록번호",
+                "occurrence": 0,
+                "value": "사업자등록번호-값-2757-0"
+              },
+              {
+                "name": "법인명",
+                "occurrence": 1,
+                "value": "법인명-값-2757-1"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 2,
+                "value": "대표자-값-2757-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002742-s0",
+      "episodeId": "ep-002742",
+      "sourceTag": "교육부/지침/2024/2742#replace-text/s0/1/verify-fail",
+      "stepIndex": 0,
+      "stepKind": "replace-text",
+      "source": "samples/gov/교육부_지침_2024_2742.hwp",
+      "argv": [
+        "edit",
+        "replace-text",
+        "samples/gov/교육부_지침_2024_2742.hwp",
+        "--find",
+        "임시",
+        "--replace",
+        "확정",
+        "-o",
+        "output/gov/교육부_지침_2024_2742_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "--expect-pages",
+            "7",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "pageCount": 7,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 7,
+                "actual": 7,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 421,
+                "actual": 406,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "사업자등록번호",
+                "actual": "사업자등록번호",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 7
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 399517,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false,
+            "paraCount": 104,
+            "title": "출장여비 정산서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/교육부_지침_2024_2742.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "사업자등록번호",
+                "occurrence": 0,
+                "value": "사업자등록번호-값-2741-0"
+              },
+              {
+                "name": "법인명",
+                "occurrence": 1,
+                "value": "법인명-값-2741-1"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 2,
+                "value": "대표자-값-2741-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002742-s1",
+      "episodeId": "ep-002742",
+      "sourceTag": "교육부/지침/2024/2742#delete-text/s1/4/fill-verify-ir-diff",
+      "stepIndex": 1,
+      "stepKind": "delete-text",
+      "source": "samples/gov/교육부_지침_2024_2742.hwp",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/교육부_지침_2024_2742.hwp",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/교육부_지침_2024_2742_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "--expect-pages",
+            "6",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "pageCount": 6,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 6,
+                "actual": 6,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 438,
+                "actual": 438,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "법인명",
+                "actual": "법인명",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 6
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 401846,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 6,
+            "expectedPageCount": 6,
+            "pageCountMismatch": false,
+            "paraCount": 121,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 6,
+            "expectedPageCount": 6,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/교육부_지침_2024_2742.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/교육부_지침_2024_2742_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "법인명",
+                "occurrence": 0,
+                "value": "법인명-값-2758-0"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 1,
+                "value": "대표자-값-2758-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 5
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 5,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002743-s0",
+      "episodeId": "ep-002743",
+      "sourceTag": "보건복지부/지침/2024/2743#delete-text/s0/2/layout-strict-overflow",
+      "stepIndex": 0,
+      "stepKind": "delete-text",
+      "source": "samples/gov/보건복지부_지침_2024_2743.hwpx",
+      "argv": [
+        "edit",
+        "delete-text",
+        "samples/gov/보건복지부_지침_2024_2743.hwpx",
+        "--find",
+        "삭제대상",
+        "-o",
+        "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 422,
+                "actual": 422,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "법인명",
+                "actual": "법인명",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": true,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [
+                  {
+                    "kind": "para",
+                    "section": 0,
+                    "paragraph": 2,
+                    "dx": 10.5,
+                    "dy": 0.0,
+                    "edge": "right"
+                  }
+                ],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 4,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 399654,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false,
+            "paraCount": 105,
+            "title": "예산 전용 요구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/보건복지부_지침_2024_2743.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/보건복지부_지침_2024_2743_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "법인명",
+                "occurrence": 0,
+                "value": "법인명-값-2742-0"
+              },
+              {
+                "name": "대표자",
+                "occurrence": 1,
+                "value": "대표자-값-2742-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002743-s1",
+      "episodeId": "ep-002743",
+      "sourceTag": "보건복지부/지침/2024/2743#insert-text/s1/5/verify-io",
+      "stepIndex": 1,
+      "stepKind": "insert-text",
+      "source": "samples/gov/보건복지부_지침_2024_2743.hwpx",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/보건복지부_지침_2024_2743.hwpx",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+            "--expect-pages",
+            "7",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 401983,
+            "version": "owpml-1.0",
+            "sections": 4,
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false,
+            "paraCount": 122,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 7,
+            "expectedPageCount": 7,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/보건복지부_지침_2024_2743.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/보건복지부_지침_2024_2743_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "대표자",
+                "occurrence": 0,
+                "value": "대표자-값-2759-0"
+              },
+              {
+                "name": "담당부서",
+                "occurrence": 1,
+                "value": "담당부서-값-2759-1"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 2,
+                "value": "담당자-값-2759-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002744-s0",
+      "episodeId": "ep-002744",
+      "sourceTag": "국토교통부/지침/2024/2744#insert-text/s0/3/pagecount-mismatch",
+      "stepIndex": 0,
+      "stepKind": "insert-text",
+      "source": "samples/gov/국토교통부_지침_2024_2744.hwp",
+      "argv": [
+        "edit",
+        "insert-text",
+        "samples/gov/국토교통부_지침_2024_2744.hwp",
+        "--text",
+        "삽입문",
+        "-o",
+        "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 423,
+                "actual": 423,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "대표자",
+                "actual": "대표자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 399791,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true,
+            "paraCount": 106,
+            "title": "민원 처리 결과 통지",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 9,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국토교통부_지침_2024_2744.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국토교통부_지침_2024_2744_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "대표자",
+                "occurrence": 0,
+                "value": "대표자-값-2743-0"
+              },
+              {
+                "name": "담당부서",
+                "occurrence": 1,
+                "value": "담당부서-값-2743-1"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 2,
+                "value": "담당자-값-2743-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "pageCount"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002744-s1",
+      "episodeId": "ep-002744",
+      "sourceTag": "국토교통부/지침/2024/2744#redact/s1/6/layout-usage",
+      "stepIndex": 1,
+      "stepKind": "redact",
+      "source": "samples/gov/국토교통부_지침_2024_2744.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/국토교통부_지침_2024_2744.hwp",
+        "-o",
+        "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+            "--expect-pages",
+            "8",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+            "pageCount": 8,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 8,
+                "actual": 8,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 440,
+                "actual": 440,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 1,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 8
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 402120,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false,
+            "paraCount": 123,
+            "title": "규제 심사(안) 개요",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 8,
+            "expectedPageCount": 8,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/국토교통부_지침_2024_2744.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/국토교통부_지침_2024_2744_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-2760-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-2760-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002745-s0",
+      "episodeId": "ep-002745",
+      "sourceTag": "고용노동부/지침/2024/2745#redact/s0/4/fill-verify-ir-diff",
+      "stepIndex": 0,
+      "stepKind": "redact",
+      "source": "samples/gov/고용노동부_지침_2024_2745.hwp",
+      "argv": [
+        "edit",
+        "redact",
+        "samples/gov/고용노동부_지침_2024_2745.hwp",
+        "-o",
+        "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 424,
+                "actual": 424,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당부서",
+                "actual": "담당부서",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 399928,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false,
+            "paraCount": 107,
+            "title": "감사 지적사항 조치 결과",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 10,
+            "expectedPageCount": 10,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/고용노동부_지침_2024_2745.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "담당부서",
+                "occurrence": 0,
+                "value": "담당부서-값-2744-0"
+              },
+              {
+                "name": "담당자",
+                "occurrence": 1,
+                "value": "담당자-값-2744-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "fill-verify"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002745-s1",
+      "episodeId": "ep-002745",
+      "sourceTag": "고용노동부/지침/2024/2745#sanitize/s1/7/verify-and-layout-fail",
+      "stepIndex": 1,
+      "stepKind": "sanitize",
+      "source": "samples/gov/고용노동부_지침_2024_2745.hwp",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/고용노동부_지침_2024_2745.hwp",
+        "-o",
+        "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "--expect-pages",
+            "9",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "pageCount": 9,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 9,
+                "actual": 9,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 441,
+                "actual": 426,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "담당자",
+                "actual": "담당자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 9
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 4.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 4,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 402257,
+            "version": "5.0.2.5",
+            "sections": 2,
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false,
+            "paraCount": 124,
+            "title": "개인정보 처리방침 개정 고시",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 9,
+            "expectedPageCount": 9,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/고용노동부_지침_2024_2745.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/고용노동부_지침_2024_2745_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-2761-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-2761-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-2761-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002746-s0",
+      "episodeId": "ep-002746",
+      "sourceTag": "외교부/지침/2024/2746#sanitize/s0/5/verify-io",
+      "stepIndex": 0,
+      "stepKind": "sanitize",
+      "source": "samples/gov/외교부_지침_2024_2746.hwpx",
+      "argv": [
+        "edit",
+        "sanitize",
+        "samples/gov/외교부_지침_2024_2746.hwpx",
+        "-o",
+        "output/gov/외교부_지침_2024_2746_s0.hwpx",
+        "--json"
+      ],
+      "editExitClass": 1,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/외교부_지침_2024_2746_s0.hwpx",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 1,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/외교부_지침_2024_2746_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/외교부_지침_2024_2746_s0.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/외교부_지침_2024_2746_s0.hwpx",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/외교부_지침_2024_2746_s0.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 400065,
+            "version": "owpml-1.0",
+            "sections": 2,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 108,
+            "title": "회의 결과 보고",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/외교부_지침_2024_2746.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/외교부_지침_2024_2746_s0.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/외교부_지침_2024_2746_s0.hwpx",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "담당자",
+                "occurrence": 0,
+                "value": "담당자-값-2745-0"
+              },
+              {
+                "name": "문서번호",
+                "occurrence": 1,
+                "value": "문서번호-값-2745-1"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 2,
+                "value": "시행일자-값-2745-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "verify"
+        ],
+        "worstExitClass": 1,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002746-s1",
+      "episodeId": "ep-002746",
+      "sourceTag": "외교부/지침/2024/2746#csv-to-table/s1/8/pagecount-and-fill-fail",
+      "stepIndex": 1,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/외교부_지침_2024_2746.hwpx",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/외교부_지침_2024_2746.hwpx",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/외교부_지침_2024_2746_s1.hwpx",
+        "--json"
+      ],
+      "editExitClass": 4,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "--expect-pages",
+            "10",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "pageCount": 10,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 10,
+                "actual": 10,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 442,
+                "actual": 442,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 10
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 1,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "--json"
+          ],
+          "exitClass": 4,
+          "pass": false,
+          "failSignals": [
+            "pageCountMismatch=true",
+            "pageCount!=expected"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "format": "hwpx",
+            "sizeBytes": 402394,
+            "version": "owpml-1.0",
+            "sections": 3,
+            "pageCount": 12,
+            "expectedPageCount": 10,
+            "pageCountMismatch": true,
+            "paraCount": 125,
+            "title": "지방세 감면 신청서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 10,
+            "pageCountMismatch": true
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/외교부_지침_2024_2746.hwpx",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "verify.identical=false",
+            "verify.diffCount>0"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/외교부_지침_2024_2746_s1.hwpx",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-2762-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-2762-1"
+              }
+            ],
+            "notFound": [
+              "없는필드8"
+            ],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": false,
+              "diffCount": 3
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": false,
+            "verifyDiffCount": 3,
+            "filledCount": 2,
+            "notFoundCount": 1
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "pageCount",
+          "fill-verify"
+        ],
+        "worstExitClass": 4,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002747-s0",
+      "episodeId": "ep-002747",
+      "sourceTag": "기획재정부/지침/2024/2747#csv-to-table/s0/6/layout-usage",
+      "stepIndex": 0,
+      "stepKind": "csv-to-table",
+      "source": "samples/gov/기획재정부_지침_2024_2747.hwp",
+      "argv": [
+        "edit",
+        "csv-to-table",
+        "samples/gov/기획재정부_지침_2024_2747.hwp",
+        "--csv",
+        "@table.csv",
+        "-o",
+        "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 2,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 426,
+                "actual": 426,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 2,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "문서번호",
+                "actual": "문서번호",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 2,
+          "pass": false,
+          "failSignals": [],
+          "fields": {}
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 400202,
+            "version": "5.0.2.5",
+            "sections": 3,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 109,
+            "title": "보안 점검 체크리스트",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/기획재정부_지침_2024_2747.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기획재정부_지침_2024_2747_s0.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "문서번호",
+                "occurrence": 0,
+                "value": "문서번호-값-2746-0"
+              },
+              {
+                "name": "시행일자",
+                "occurrence": 1,
+                "value": "시행일자-값-2746-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 3,
+        "failCount": 1,
+        "failedChecks": [
+          "layout-anomaly"
+        ],
+        "worstExitClass": 2,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002747-s1",
+      "episodeId": "ep-002747",
+      "sourceTag": "기획재정부/지침/2024/2747#insert-table/s1/9/all-pass-empty-page",
+      "stepIndex": 1,
+      "stepKind": "insert-table",
+      "source": "samples/gov/기획재정부_지침_2024_2747.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/기획재정부_지침_2024_2747.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "--expect-pages",
+            "11",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "pageCount": 11,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 11,
+                "actual": 11,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 443,
+                "actual": 443,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 4,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "시행일자",
+                "actual": "시행일자",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwpx",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 11
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 2,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 402531,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false,
+            "paraCount": 126,
+            "title": "공사계약 일반조건",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 11,
+            "expectedPageCount": 11,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/기획재정부_지침_2024_2747.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/기획재정부_지침_2024_2747_s1.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-2763-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-2763-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-2763-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002748-s0",
+      "episodeId": "ep-002748",
+      "sourceTag": "공정거래위원회/지침/2024/2748#insert-table/s0/7/verify-and-layout-fail",
+      "stepIndex": 0,
+      "stepKind": "insert-table",
+      "source": "samples/gov/공정거래위원회_지침_2024_2748.hwp",
+      "argv": [
+        "edit",
+        "insert-table",
+        "samples/gov/공정거래위원회_지침_2024_2748.hwp",
+        "--rows",
+        "3",
+        "--cols",
+        "4",
+        "-o",
+        "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+        "--json"
+      ],
+      "editExitClass": 3,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "--expect-pages",
+            "13",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "failCount>0",
+            "verdict=fail"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "pageCount": 13,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 13,
+                "actual": 13,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 427,
+                "actual": 412,
+                "pass": false
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 3,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "시행일자",
+                "actual": "시행일자",
+                "pass": false
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 3,
+            "failCount": 2,
+            "verdict": "fail",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "fail",
+            "failCount": 2,
+            "passCount": 3,
+            "pageCount": 13
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "--strict",
+            "--json"
+          ],
+          "exitClass": 3,
+          "pass": false,
+          "failSignals": [
+            "layout-strict-signal",
+            "hasSignal=true"
+          ],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": true,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": [
+                  {
+                    "kind": "text-text",
+                    "a": {
+                      "section": 0,
+                      "paragraph": 4
+                    },
+                    "b": {
+                      "section": 0,
+                      "paragraph": 5
+                    },
+                    "overlapPx": 5.0
+                  }
+                ]
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": true,
+            "strict": true,
+            "overflowCount": 0,
+            "overlapCount": 5,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "format": "hwp5",
+            "sizeBytes": 400339,
+            "version": "5.0.2.5",
+            "sections": 4,
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false,
+            "paraCount": 110,
+            "title": "누름틀 일괄 채움 점검",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 13,
+            "expectedPageCount": 13,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/공정거래위원회_지침_2024_2748.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s0.hwp",
+            "dryRun": false,
+            "filledCount": 3,
+            "filled": [
+              {
+                "name": "시행일자",
+                "occurrence": 0,
+                "value": "시행일자-값-2747-0"
+              },
+              {
+                "name": "수신",
+                "occurrence": 1,
+                "value": "수신-값-2747-1"
+              },
+              {
+                "name": "제목",
+                "occurrence": 2,
+                "value": "제목-값-2747-2"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 3,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": false,
+        "checkCount": 4,
+        "passCount": 2,
+        "failCount": 2,
+        "failedChecks": [
+          "verify",
+          "layout-anomaly"
+        ],
+        "worstExitClass": 3,
+        "consistent": true
+      }
+    },
+    {
+      "recordId": "vstep-002748-s1",
+      "episodeId": "ep-002748",
+      "sourceTag": "공정거래위원회/지침/2024/2748#delete-row/s1/0/all-pass",
+      "stepIndex": 1,
+      "stepKind": "delete-row",
+      "source": "samples/gov/공정거래위원회_지침_2024_2748.hwp",
+      "argv": [
+        "edit",
+        "delete-row",
+        "samples/gov/공정거래위원회_지침_2024_2748.hwp",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "-o",
+        "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+        "--json"
+      ],
+      "editExitClass": 0,
+      "checks": [
+        {
+          "check": "verify",
+          "argv": [
+            "verify",
+            "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "--expect-pages",
+            "12",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "pageCount": 12,
+            "expectations": [
+              {
+                "kind": "pages",
+                "expected": 12,
+                "actual": 12,
+                "pass": true
+              },
+              {
+                "kind": "min-chars",
+                "expected": 444,
+                "actual": 444,
+                "pass": true
+              },
+              {
+                "kind": "min-tables",
+                "expected": 1,
+                "actual": 5,
+                "pass": true
+              },
+              {
+                "kind": "contains",
+                "expected": "수신",
+                "actual": "수신",
+                "pass": true
+              },
+              {
+                "kind": "format",
+                "expected": "hwp5",
+                "actual": "hwp5",
+                "pass": true
+              }
+            ],
+            "passCount": 5,
+            "failCount": 0,
+            "verdict": "pass",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "expectations[].actual"
+            ]
+          },
+          "fields": {
+            "verdict": "pass",
+            "failCount": 0,
+            "passCount": 5,
+            "pageCount": 12
+          }
+        },
+        {
+          "check": "layout-anomaly",
+          "argv": [
+            "layout-anomaly",
+            "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "pageCount": 2,
+            "overflowTolerancePx": 1.0,
+            "overlapTolerancePx": 1.0,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "hasSignal": false,
+            "pages": [
+              {
+                "page": 0,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              },
+              {
+                "page": 1,
+                "widthPx": 794,
+                "heightPx": 1123,
+                "overflow": false,
+                "overlap": false,
+                "emptyPage": false,
+                "overflowItems": [],
+                "overlapItems": []
+              }
+            ],
+            "untrustedContent": false,
+            "untrustedFields": []
+          },
+          "fields": {
+            "hasSignal": false,
+            "strict": false,
+            "overflowCount": 0,
+            "overlapCount": 0,
+            "emptyPageCount": 0,
+            "pageCount": 2
+          }
+        },
+        {
+          "check": "pageCount",
+          "argv": [
+            "info",
+            "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "format": "hwp5",
+            "sizeBytes": 402668,
+            "version": "5.0.2.5",
+            "sections": 1,
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false,
+            "paraCount": 127,
+            "title": "정보공개 청구서",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title"
+            ]
+          },
+          "fields": {
+            "pageCount": 12,
+            "expectedPageCount": 12,
+            "pageCountMismatch": false
+          }
+        },
+        {
+          "check": "fill-verify",
+          "argv": [
+            "edit",
+            "fill-fields",
+            "samples/gov/공정거래위원회_지침_2024_2748.hwp",
+            "--data",
+            "@fields.json",
+            "-o",
+            "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "--verify",
+            "--json"
+          ],
+          "exitClass": 0,
+          "pass": true,
+          "failSignals": [],
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "output/gov/공정거래위원회_지침_2024_2748_s1.hwp",
+            "dryRun": false,
+            "filledCount": 2,
+            "filled": [
+              {
+                "name": "수신",
+                "occurrence": 0,
+                "value": "수신-값-2764-0"
+              },
+              {
+                "name": "제목",
+                "occurrence": 1,
+                "value": "제목-값-2764-1"
+              }
+            ],
+            "notFound": [],
+            "ambiguous": [],
+            "confusable": [],
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "untrustedContent": true,
+            "untrustedFields": [
+              "filled[].value",
+              "filled[].name"
+            ]
+          },
+          "fields": {
+            "verifyIdentical": true,
+            "verifyDiffCount": 0,
+            "filledCount": 2,
+            "notFoundCount": 0
+          }
+        }
+      ],
+      "processReward": {
+        "pass": true,
+        "checkCount": 4,
+        "passCount": 4,
+        "failCount": 0,
+        "failedChecks": [],
+        "worstExitClass": 0,
+        "consistent": true
+      }
+    }
+  ]
+}

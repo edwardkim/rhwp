@@ -96,11 +96,14 @@ mod tests {
             }],
             numberings: Vec::new(),
             bullets: Vec::new(),
+            kerning_measurement_context: None,
+            horizontal_shaping_context: None,
         };
 
         let page_content = PageContent {
             page_index: 0,
             page_number: 0,
+            page_number_restarted: false,
             section_index: 0,
             layout,
             column_contents: vec![ColumnContent {
@@ -113,6 +116,8 @@ mod tests {
                 wrap_around_paras: Vec::new(),
                 used_height: 0.0,
                 wrap_anchors: std::collections::HashMap::new(),
+                overlay_continuations: Vec::new(),
+                overlay_cuts: Vec::new(),
             }],
             active_header: None,
             active_footer: None,
@@ -121,6 +126,7 @@ mod tests {
             footnotes: Vec::new(),
             active_master_page: None,
             extra_master_pages: Vec::new(),
+            ladder_band_tables: Vec::new(),
         };
 
         let tree = engine.build_render_tree(
@@ -838,7 +844,12 @@ mod tests {
         let mut search_start = 0;
         while let Some(pos) = svg[search_start..].find(needle) {
             let abs_pos = search_start + pos;
-            let context_start = abs_pos.saturating_sub(2000);
+            // 글꼴 체인 길이에 따라 앞뒤 바이트 오프셋이 밀린다. 고정 바이트 뺄셈은
+            // 한글 문자 중간에 떨어질 수 있으므로 char 경계까지 앞으로 민다.
+            let mut context_start = abs_pos.saturating_sub(4000);
+            while context_start < abs_pos && !svg.is_char_boundary(context_start) {
+                context_start += 1;
+            }
             let context = &svg[context_start..abs_pos];
             // 가장 가까운 직전 `<g transform="translate(X` 패턴 찾기
             if let Some(g_rel) = context.rfind("<g transform=\"translate(") {
@@ -2189,7 +2200,8 @@ mod tests {
             if body.trim() != "1" {
                 continue;
             }
-            if !header.contains("font-size=\"44\"") {
+            // [#5821] 압축 장평(ratio=90%)은 세로도 √r 축소 — 44 → 44×√0.90 ≈ 41.74.
+            if !header.contains("font-size=\"41.74") {
                 continue;
             }
             if !header.contains("HY견명조") {
@@ -2964,6 +2976,7 @@ mod tests {
     // 는 Table/Image 는 전체 `cell_context`(다단계 경로)를, Rectangle/Line/Ellipse/
     // Path/Equation 은 단일 레벨(`cell_index`/`cell_para_index`/
     // `outer_table_control_index`, Task #1138/#1151 패턴)을 반영한다.
+
     #[test]
     fn issue_4334_stage3_document_position_coverage_precheck() {
         let candidates = [

@@ -20,6 +20,9 @@
 //! - 등재된 문서가 통과하면 → 고쳐졌다. **목록에서 지워라** (래칫을 조인다).
 #![cfg(not(target_arch = "wasm32"))]
 
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::{Duration, Instant};
+
 use rhwp::parser::FileFormat;
 use rhwp::serializer::hwpx::roundtrip::{
     diff_documents, strip_cross_format_noise, strip_hwpx_to_hwp_noise,
@@ -33,12 +36,22 @@ const EXPECTED_FAILURES: &[(&str, &str)] = &[
     // 네 칸 조였다. 뒤집힘의 근인은 HWPX→HWP5 어댑터가 공통 속성 bit 13 을 무조건 OR 한
     // 것이었고, 한글 2022 는 같은 변환에서 원본 `0` 을 그대로 둔다(실측 13문서 표 84개).
     // issue1891_external_bindata_link.hwpx 는 #3528 수정으로 통과한다 — 래칫을 한 칸 조였다.
+    // hwp3-sample10-hwpx.hwpx 는 제목 차례 표시(`<hp:titleMark/>`) 보존으로 통과한다 —
+    // 래칫을 한 칸 더 조였다. 등재 당시 "lineseg 를 어긋나게 만든 상류를 고쳐야 한다"고
+    // 적어 둔 그 상류가 이것이었다: 파서가 표시를 흘려 문단 축이 표시 하나당 8유닛씩
+    // 짧아졌고, 그래서 둘째 lineseg 의 `text_start` 가 PARA_TEXT 끝을 넘어섰다
+    // (문단 15487: char_count=37 인데 text_start=40 — 표시 하나를 되찾으면 45 가 된다).
+    // 이 픽스처에는 표시가 290 개 들어 있다.
 ];
 
 /// 게이트에서 제외하는 문서 — 크기에 비해 변환이 지나치게 오래 걸린다(각 2분+).
 ///
-/// 제외는 **결함이 없다는 뜻이 아니다.** 별도 스윕으로 확인한다.
+/// 제외는 **결함이 없다는 뜻이 아니다.** 별도 스윕 또는 전용 sentinel 로 확인한다.
 const TOO_SLOW: &[&str] = &[
+    // #6360: 초대형 CellBreak 표는 `tests/issue_2063.rs` 가 성능/페이지 pin 을
+    // 전담한다. convert verify 전수 래칫에서 다시 조판하면 단일 testcase가
+    // 500초 이상 걸려 B/C/D shard 균형을 깨뜨린다.
+    "issue2063_huge_cellbreak_table.hwp",
     "[2027] 온새미로 1 본교재.hwp",
     "[2027] 온새미로 1 본교재.hwpx",
 ];
@@ -51,7 +64,11 @@ const TOO_SLOW: &[&str] = &[
 const SIZE_CAP_BYTES: u64 = 1024 * 1024;
 
 /// 코퍼스를 나눌 조각 수 — nextest 가 조각마다 프로세스를 병렬로 띄운다.
-const PARTITIONS: usize = 4;
+///
+/// #6360: 16분할 상태에서도 가장 느린 조각이 390초까지 커졌다. 단일 testcase
+/// 시간이 archive wall time 하한이 되므로 더 잘게 나눈다.
+const PARTITIONS: usize = 24;
+const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
 
 fn samples_dir() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples")
@@ -97,6 +114,38 @@ fn verify_roundtrip(data: &[u8]) -> Option<usize> {
     Some(diff.differences.len())
 }
 
+fn partition_entries(
+    mut entries: Vec<std::path::PathBuf>,
+    partitions: usize,
+) -> Vec<Vec<std::path::PathBuf>> {
+    entries.sort_by_key(|p| {
+        let size = std::fs::metadata(p).map(|m| m.len()).unwrap_or(0);
+        (std::cmp::Reverse(size), p.clone())
+    });
+
+    let mut buckets: Vec<(u64, Vec<std::path::PathBuf>)> =
+        (0..partitions).map(|_| (0, Vec::new())).collect();
+    for path in entries {
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, paths))| (*total, paths.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push(path);
+    }
+    buckets.into_iter().map(|(_, paths)| paths).collect()
+}
+
+fn file_name(path: &std::path::Path) -> String {
+    path.file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or_default()
+        .to_string()
+}
+
 /// 코퍼스를 `PARTITIONS` 조각으로 나눠 검사한다.
 ///
 /// 전수를 한 테스트로 돌리면 415초가 걸려 CI 샤드 하나가 그만큼 길어진다. nextest 는
@@ -106,12 +155,6 @@ fn run_partition(part: usize) {
     let expected: std::collections::BTreeMap<&str, &str> =
         EXPECTED_FAILURES.iter().copied().collect();
     let skip: std::collections::BTreeSet<&str> = TOO_SLOW.iter().copied().collect();
-
-    let mut failed: std::collections::BTreeMap<String, usize> = Default::default();
-    let mut checked = 0usize;
-    let mut unreadable = 0usize;
-    let mut oversized = 0usize;
-    let mut seen: std::collections::BTreeSet<String> = Default::default();
 
     let mut entries: Vec<std::path::PathBuf> = std::fs::read_dir(samples_dir())
         .expect("samples 디렉터리")
@@ -134,56 +177,83 @@ fn run_partition(part: usize) {
     // 나머지 하위 디렉터리 68개는 이 이슈가 다루는 축이 아니고, 한꺼번에 넣으면
     // 무관한 신규 실패를 이 PR 에서 등재해야 한다. 필요하면 별도 이슈로 넓힌다.
     collect_recursive(&samples_dir().join("chart"), &mut entries);
-    // 크기 내림차순으로 정렬한 뒤 인덱스로 나눈다 — 큰 문서가 한 조각에 몰리면 그 조각이
-    // 전체 벽시계를 지배한다(실측: 이름순 분배 시 42/50/134/191초로 4.5배 편차).
-    // 이름을 2차 키로 둬서 크기가 같아도 순서가 결정적이다.
-    entries.sort_by_key(|p| {
-        let size = std::fs::metadata(p).map(|m| m.len()).unwrap_or(0);
-        (std::cmp::Reverse(size), p.clone())
-    });
-
-    for (index, path) in entries.into_iter().enumerate() {
-        if index % PARTITIONS != part {
-            continue;
-        }
-        let name = path
-            .file_name()
-            .and_then(|s| s.to_str())
-            .unwrap_or_default()
-            .to_string();
-        if skip.contains(name.as_str()) {
-            continue;
-        }
-        // 등재된 문서는 크기와 무관하게 항상 검사한다 — 그래야 고쳐졌을 때 래칫을 조일 수
-        // 있고, 다시 나빠졌을 때도 잡힌다.
-        let pinned_doc = expected.contains_key(name.as_str());
-        if !pinned_doc {
-            let too_big = std::fs::metadata(&path)
+    let mut skipped = 0usize;
+    let mut oversized = 0usize;
+    let entries: Vec<_> = entries
+        .into_iter()
+        .filter(|path| {
+            let name = file_name(path);
+            if skip.contains(name.as_str()) {
+                skipped += 1;
+                return false;
+            }
+            if expected.contains_key(name.as_str()) {
+                return true;
+            }
+            let too_big = std::fs::metadata(path)
                 .map(|m| m.len() > SIZE_CAP_BYTES)
                 .unwrap_or(false);
             if too_big {
                 oversized += 1;
-                continue;
+                return false;
             }
-        }
-        let Ok(data) = std::fs::read(&path) else {
-            continue;
-        };
-        // 암호 문서 등 열 수 없는 표본은 이 게이트의 대상이 아니다.
-        let Some(count) = verify_roundtrip(&data) else {
-            unreadable += 1;
-            continue;
-        };
-        checked += 1;
-        seen.insert(name.clone());
-        if count > 0 {
-            failed.insert(name, count);
-        }
-    }
+            true
+        })
+        .collect();
+    let partitions = partition_entries(entries, PARTITIONS);
+    let selected = partitions
+        .into_iter()
+        .nth(part)
+        .unwrap_or_else(|| panic!("없는 partition: {part}"));
 
+    let workers = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .min(8);
+    let queue = std::sync::Mutex::new(selected.into_iter());
+    let failed = std::sync::Mutex::new(std::collections::BTreeMap::<String, usize>::new());
+    let seen = std::sync::Mutex::new(std::collections::BTreeSet::<String>::new());
+    let checked = AtomicUsize::new(0);
+    let unreadable = AtomicUsize::new(0);
+
+    std::thread::scope(|scope| {
+        for _ in 0..workers {
+            scope.spawn(|| loop {
+                let item = queue.lock().unwrap().next();
+                let Some(path) = item else { break };
+                let name = file_name(&path);
+                let Ok(data) = std::fs::read(&path) else {
+                    continue;
+                };
+                let started = Instant::now();
+                // 암호 문서 등 열 수 없는 표본은 이 게이트의 대상이 아니다.
+                let Some(count) = verify_roundtrip(&data) else {
+                    unreadable.fetch_add(1, Ordering::Relaxed);
+                    continue;
+                };
+                checked.fetch_add(1, Ordering::Relaxed);
+                seen.lock().unwrap().insert(name.clone());
+                if count > 0 {
+                    failed.lock().unwrap().insert(name.clone(), count);
+                }
+                let elapsed = started.elapsed();
+                if elapsed >= SLOW_SAMPLE_LOG_THRESHOLD {
+                    eprintln!(
+                        "convert verify slow sample partition {part}/{PARTITIONS}: {:.3}s {name}",
+                        elapsed.as_secs_f64()
+                    );
+                }
+            });
+        }
+    });
+
+    let checked = checked.load(Ordering::Relaxed);
+    let unreadable = unreadable.load(Ordering::Relaxed);
+    let failed = failed.into_inner().unwrap();
+    let seen = seen.into_inner().unwrap();
     assert!(
-        checked > 40,
-        "조각 {part} 이 검사한 문서가 너무 적다({checked}건) — 표본 수집이 깨졌는지 확인하라"
+        checked > 0,
+        "조각 {part} 이 검사한 문서가 없다 — 표본 수집이 깨졌는지 확인하라"
     );
 
     let now: std::collections::BTreeSet<&str> = failed.keys().map(|s| s.as_str()).collect();
@@ -209,7 +279,7 @@ fn run_partition(part: usize) {
         "저장 손실이 새로 들어왔다 ({}건):\n{}\n\
          고치거나, 근거를 적어 EXPECTED_FAILURES 에 등재하라.\n\
          상세: rhwp convert <파일> /tmp/out.hwp --verify\n\
-         (검사 {checked}건 / 열 수 없음 {unreadable}건 / 크기 상한 초과 {oversized}건)",
+         (검사 {checked}건 / 열 수 없음 {unreadable}건 / 명시 skip {skipped}건 / 크기 상한 초과 {oversized}건)",
         regressions.len(),
         regressions.join("\n")
     );
@@ -223,22 +293,40 @@ fn run_partition(part: usize) {
     );
 }
 
-#[test]
-fn ratchet_partition_0() {
-    run_partition(0);
+macro_rules! ratchet_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                run_partition($part);
+            }
+        )+
+    };
 }
 
-#[test]
-fn ratchet_partition_1() {
-    run_partition(1);
-}
-
-#[test]
-fn ratchet_partition_2() {
-    run_partition(2);
-}
-
-#[test]
-fn ratchet_partition_3() {
-    run_partition(3);
-}
+ratchet_partition_tests!(
+    ratchet_partition_0 => 0,
+    ratchet_partition_1 => 1,
+    ratchet_partition_2 => 2,
+    ratchet_partition_3 => 3,
+    ratchet_partition_4 => 4,
+    ratchet_partition_5 => 5,
+    ratchet_partition_6 => 6,
+    ratchet_partition_7 => 7,
+    ratchet_partition_8 => 8,
+    ratchet_partition_9 => 9,
+    ratchet_partition_10 => 10,
+    ratchet_partition_11 => 11,
+    ratchet_partition_12 => 12,
+    ratchet_partition_13 => 13,
+    ratchet_partition_14 => 14,
+    ratchet_partition_15 => 15,
+    ratchet_partition_16 => 16,
+    ratchet_partition_17 => 17,
+    ratchet_partition_18 => 18,
+    ratchet_partition_19 => 19,
+    ratchet_partition_20 => 20,
+    ratchet_partition_21 => 21,
+    ratchet_partition_22 => 22,
+    ratchet_partition_23 => 23,
+);

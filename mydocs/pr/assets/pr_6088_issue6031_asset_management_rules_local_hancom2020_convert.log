@@ -1,0 +1,50 @@
+status=134
+input=/home/tsjang/rhwp/samples/issue6031/3249937_asset_management_rules.hwpx
+source_input=/home/tsjang/rhwp/samples/issue6031/3249937_asset_management_rules.hwpx
+preprocess=none
+target=pdf
+run_cwd=/home/tsjang/hwp-convert
+timeout=300s
+open_method=action
+save_method=action
+save_action=PrintToPDFEx
+page_setup=none
+patch_table_last_row_count=0
+transient_retry_count=1
+transient_retry_1_status=139->134
+transient_retry_1_log=/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1
+output=/home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6088_issue6031_asset_management_rules-local2020.pdf
+log=/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:4:stage119_deleting_dtor_290f50 patch applied at 0x7abe95690f50 size=1
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:5:stage119_null_out_store_2865c9 patch applied at 0x7abe956865c9 size=3
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:6:stage119_lifetime_guards enabled
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:7:stage119_open_attach_3f4740 hook applied target=0x7abe949f4740 hook=0x5fdaf5da012f trampoline=0x7abe9a839000 patch_size=16
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:8:stage119_view_create_379510 hook applied target=0x7abe94979510 hook=0x5fdaf5da06cb trampoline=0x7abe9a838000 patch_size=13
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:9:stage119_runtime_hooks enabled core_base=0x7abe94600000 open_thunk=0x7abe949f4740 open_inner=0x7abe949f02d0 view_create=0x7abe94979510
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:312:stage119_view_create_hook self=0x5fdb13ece2d0 hwnd=0x5fdb13e9d140 rect=0x7ffc8972c610 marker=0 ctrl=0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:313:  stage119_view_candidate=0x5fdb13ece2d0 vtable=0x7abe951f2810 entry0=0x7abe94997fd0 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x397fd0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:314:  stage119_view_candidate_slots=0x5fdb13ece2d0 [+0]=0x7abe951f2810 [+8]=0x7abe00000001 [+10]=0x7abe951f2d70 [+18]=0 [+20]=0 [+28]=0 [+30]=0x7abe90567b80 [+38]=0x1 [+40]=0 [+48]=0 [+50]=0x7abe951f2da8 [+58]=0x7abe951f2e28 [+60]=0x7abe951f2e50 [+68]=0 [+70]=0 [+78]=0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:315:stage119_view_create_hook_after result=0x1 view_candidate=0x5fdb13ece2d0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:959:stage119_view_create_hook self=0x5fdb14591200 hwnd=0x5fdb172ab1d0 rect=0x7ffc8972b300 marker=0 ctrl=0x5fdb13eaecd0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:960:  stage119_view_candidate=0x5fdb14591200 vtable=0x7abe951f2810 entry0=0x7abe94997fd0 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x397fd0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:961:  stage119_view_candidate_slots=0x5fdb14591200 [+0]=0x7abe951f2810 [+8]=0x5fdb00000001 [+10]=0x7abe951f2d70 [+18]=0 [+20]=0x5fdb1458cb00 [+28]=0 [+30]=0x7abe90567b80 [+38]=0x1 [+40]=0 [+48]=0x7abe00000000 [+50]=0x7abe951f2da8 [+58]=0x7abe951f2e28 [+60]=0x7abe951f2e50 [+68]=0x5fdb00000000 [+70]=0x65007300700061 [+78]=0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log.retry-1:968:stage119_view_create_hook_after result=0x1 view_candidate=0x5fdb14591200
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:4:stage119_deleting_dtor_290f50 patch applied at 0x7a1abae90f50 size=1
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:5:stage119_null_out_store_2865c9 patch applied at 0x7a1abae865c9 size=3
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:6:stage119_lifetime_guards enabled
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:7:stage119_open_attach_3f4740 hook applied target=0x7a1aba1f4740 hook=0x61b61421212f trampoline=0x7a1abff01000 patch_size=16
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:8:stage119_view_create_379510 hook applied target=0x7a1aba179510 hook=0x61b6142126cb trampoline=0x7a1abff00000 patch_size=13
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:9:stage119_runtime_hooks enabled core_base=0x7a1ab9e00000 open_thunk=0x7a1aba1f4740 open_inner=0x7a1aba1f02d0 view_create=0x7a1aba179510
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:312:stage119_view_create_hook self=0x61b64c1652d0 hwnd=0x61b64c134140 rect=0x7fffaeec2910 marker=0 ctrl=0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:313:  stage119_view_candidate=0x61b64c1652d0 vtable=0x7a1aba9f2810 entry0=0x7a1aba197fd0 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x397fd0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:314:  stage119_view_candidate_slots=0x61b64c1652d0 [+0]=0x7a1aba9f2810 [+8]=0x7a1a00000001 [+10]=0x7a1aba9f2d70 [+18]=0 [+20]=0 [+28]=0 [+30]=0x7a1ab5d67b80 [+38]=0x1 [+40]=0 [+48]=0 [+50]=0x7a1aba9f2da8 [+58]=0x7a1aba9f2e28 [+60]=0x7a1aba9f2e50 [+68]=0 [+70]=0 [+78]=0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:315:stage119_view_create_hook_after result=0x1 view_candidate=0x61b64c1652d0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:959:stage119_view_create_hook self=0x61b64c8e7c40 hwnd=0x61b64f541040 rect=0x7fffaeec1600 marker=0 ctrl=0x61b64c145cd0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:960:  stage119_view_candidate=0x61b64c8e7c40 vtable=0x7a1aba9f2810 entry0=0x7a1aba197fd0 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x397fd0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:961:  stage119_view_candidate_slots=0x61b64c8e7c40 [+0]=0x7a1aba9f2810 [+8]=0x61b600000001 [+10]=0x7a1aba9f2d70 [+18]=0 [+20]=0x61b64c934500 [+28]=0 [+30]=0x7a1ab5d67b80 [+38]=0x1 [+40]=0 [+48]=0x7a1a00000000 [+50]=0x7a1aba9f2da8 [+58]=0x7a1aba9f2e28 [+60]=0x7a1aba9f2e50 [+68]=0x61b600000000 [+70]=0x18 [+78]=0
+/home/tsjang/hwp-convert/out/3249937_asset_management_rules-to-pdf-2020.log:968:stage119_view_create_hook_after result=0x1 view_candidate=0x61b64c8e7c40
+/home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6088_issue6031_asset_management_rules-local2020.pdf: cannot open `/home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6088_issue6031_asset_management_rules-local2020.pdf' (No such file or directory)
+
+--- STDERR ---
+/home/tsjang/hwp-convert/tools/hwp2020_convert.sh: line 335: 1928537 Segmentation fault      env LD_LIBRARY_PATH="${repo_dir}:/opt/hnc/hoffice11/Bin:/opt/hnc/hoffice11/Bin/qt/lib" QT_PLUGIN_PATH=/opt/hnc/hoffice11/Bin/qt/plugins QT_QPA_PLATFORM_PLUGIN_PATH=/opt/hnc/hoffice11/Bin/qt/plugins/platforms QT_QPA_PLATFORM=offscreen DISPLAY="${DISPLAY:-:10.0}" XAUTHORITY="${XAUTHORITY:-${runtime_home}/.Xauthority}" DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/1000/bus}" LD_PRELOAD="${run_preload}" HWP_CURSOR_SHIM_LOG_LIMIT=20 HWP_DATETIME_SHIM_UNIT_BYTES=2 HWP_DATETIME_SHIM_RETURN_WITH_NUL=0 HWP_VFS_URI_TRACE_LIMIT=90 HWP_PROBE_PATCH_OFFICE_REGISTER_CALL=1 HWP_PROBE_PATCH_IMAGE_INIT_CALL=1 HWP_PROBE_PATCH_OPEN_DLG_SOURCE_VALUE_CONTEXT_FLAG=0 HWP_PROBE_GUARD_TRANSLATE_BAD_TARGET=1 HWP_PROBE_TRANSLATE_GUARD_LOG_LIMIT=4 HWP_PROBE_GUARD_CURSOR_QSTRING20_COPY=1 HWP_PROBE_CURSOR_QSTRING20_GUARD_LOG_LIMIT=4 HWP_PROBE_PATCH_STAGE119_LIFETIME_GUARDS=1 HWP_PROBE_INSTALL_STAGE119_RUNTIME_HOOKS=1 HWP_PROBE_PATCH_HSP_SET_FOCUS_NOOP=1 HWP_PROBE_INIT_OFFICE_CONTEXT=1 HWP_PROBE_INIT_ACTION_REGISTRY=1 HWP_PROBE_MANUAL_REGISTRY_NODE=OpenDlg HWP_PROBE_FORCE_FRAME_UI=1 HWP_PROBE_SET_OFFICE_SITE=office_context_site HWP_PROBE_DUMP_STATE=1 HWP_PROBE_DUMP_TEXT=1 HWP_PROBE_DUMP_MARKER=1 HWP_PROBE_DUMP_ACTIVE_BINDING_SLOTS=1 HWP_PROBE_DUMP_OFFICE_FRAMEWORK=1 HWP_PROBE_DUMP_EXECUTE_DELEGATE_STEPS=1 "${open_env[@]}" "${save_env[@]}" "${page_setup_env[@]}" "${patch_env[@]}" timeout "${convert_timeout}" "${repo_dir}/hwpctrl_probe" "${input_path}" "${output_path}" "${save_format}" > "${run_log_path}" 2>&1
+/home/tsjang/hwp-convert/tools/hwp2020_convert.sh: line 335: 1928563 Aborted                 env LD_LIBRARY_PATH="${repo_dir}:/opt/hnc/hoffice11/Bin:/opt/hnc/hoffice11/Bin/qt/lib" QT_PLUGIN_PATH=/opt/hnc/hoffice11/Bin/qt/plugins QT_QPA_PLATFORM_PLUGIN_PATH=/opt/hnc/hoffice11/Bin/qt/plugins/platforms QT_QPA_PLATFORM=offscreen DISPLAY="${DISPLAY:-:10.0}" XAUTHORITY="${XAUTHORITY:-${runtime_home}/.Xauthority}" DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/1000/bus}" LD_PRELOAD="${run_preload}" HWP_CURSOR_SHIM_LOG_LIMIT=20 HWP_DATETIME_SHIM_UNIT_BYTES=2 HWP_DATETIME_SHIM_RETURN_WITH_NUL=0 HWP_VFS_URI_TRACE_LIMIT=90 HWP_PROBE_PATCH_OFFICE_REGISTER_CALL=1 HWP_PROBE_PATCH_IMAGE_INIT_CALL=1 HWP_PROBE_PATCH_OPEN_DLG_SOURCE_VALUE_CONTEXT_FLAG=0 HWP_PROBE_GUARD_TRANSLATE_BAD_TARGET=1 HWP_PROBE_TRANSLATE_GUARD_LOG_LIMIT=4 HWP_PROBE_GUARD_CURSOR_QSTRING20_COPY=1 HWP_PROBE_CURSOR_QSTRING20_GUARD_LOG_LIMIT=4 HWP_PROBE_PATCH_STAGE119_LIFETIME_GUARDS=1 HWP_PROBE_INSTALL_STAGE119_RUNTIME_HOOKS=1 HWP_PROBE_PATCH_HSP_SET_FOCUS_NOOP=1 HWP_PROBE_INIT_OFFICE_CONTEXT=1 HWP_PROBE_INIT_ACTION_REGISTRY=1 HWP_PROBE_MANUAL_REGISTRY_NODE=OpenDlg HWP_PROBE_FORCE_FRAME_UI=1 HWP_PROBE_SET_OFFICE_SITE=office_context_site HWP_PROBE_DUMP_STATE=1 HWP_PROBE_DUMP_TEXT=1 HWP_PROBE_DUMP_MARKER=1 HWP_PROBE_DUMP_ACTIVE_BINDING_SLOTS=1 HWP_PROBE_DUMP_OFFICE_FRAMEWORK=1 HWP_PROBE_DUMP_EXECUTE_DELEGATE_STEPS=1 "${open_env[@]}" "${save_env[@]}" "${page_setup_env[@]}" "${patch_env[@]}" timeout "${convert_timeout}" "${repo_dir}/hwpctrl_probe" "${input_path}" "${output_path}" "${save_format}" > "${run_log_path}" 2>&1

@@ -2,7 +2,7 @@
   "name": "rhwp-vscode",
   "displayName": "HWP Viewer",
   "description": "HWP/HWPX/HML 문서 뷰어 — rhwp 기반",
-  "version": "0.8.4",
+  "version": "0.8.6",
   "publisher": "edwardkim",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -109,8 +109,8 @@
     "package": "vsce package"
   },
   "dependencies": {
-    "@noble/hashes": "^2.3.0",
-    "canvaskit-wasm": "^0.41.1"
+    "@noble/hashes": "^2.4.0",
+    "canvaskit-wasm": "^0.42.0"
   },
   "devDependencies": {
     "@types/node": "~18.15.0",
@@ -120,7 +120,7 @@
     "null-loader": "^4.0.1",
     "ts-loader": "^9.6.2",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "webpack": "^5.109.2",
+    "webpack": "^5.110.1",
     "webpack-cli": "^7.2.2"
   }
 }

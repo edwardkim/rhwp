@@ -1,0 +1,15 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "table-to-csv",
+    "exit": 2,
+    "branch": "usage-silent-stdout",
+    "stdoutBytes": 0,
+    "source": "tests/table_csv_contract.rs missing_arguments_are_usage_errors"
+  },
+  "args": [
+    "table-to-csv"
+  ]
+}

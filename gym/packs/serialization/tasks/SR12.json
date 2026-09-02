@@ -1,0 +1,32 @@
+{
+  "id": "SR12",
+  "tier": 3,
+  "title": "기존 HWP·HWPX 쌍 IR 대조",
+  "input": "samples/pic2.hwp",
+  "instructions": "입력과 짝 HWPX(samples/pic2.hwpx) 의 IR 동일 여부를 answer.json 에 {\"identical\": true|false} 로 적어라. 힌트: rhwp ir-diff.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/pic2.hwpx",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "변환"
+}
