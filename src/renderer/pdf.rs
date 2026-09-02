@@ -387,6 +387,7 @@ fn validate_direct_pdf_tree(
                         | PaintOp::TextControlMark { .. }
                         | PaintOp::TabLeader { .. }
                         | PaintOp::TextDecoration { .. }
+                        | PaintOp::ControlLabel { .. }
                         | PaintOp::FormObject { .. }
                         | PaintOp::Placeholder { .. }
                         | PaintOp::RawSvg { .. } => {}

@@ -15,8 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 22: portable GlyphRun이 참조하는 font blob payload와 stable key를 resources에 추가.
-    schema_minor_version: 22,
+    // 23: canonical text-visual source binding, control labels, and producer-owned decoration extents.
+    schema_minor_version: 23,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -37,6 +37,8 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 23);
+        assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,
             LayerTreeSchema {

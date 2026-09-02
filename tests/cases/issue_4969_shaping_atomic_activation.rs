@@ -769,9 +769,9 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         .map(|(_, bytes)| bytes.len())
         .sum::<usize>();
     assert_eq!(font_payload_bytes, 2_519_996);
-    assert_eq!(accepted_json.len(), 3_375_512);
-    assert_eq!(rejected_json.len(), 9_078);
-    assert_eq!(accepted_json.len() - rejected_json.len(), 3_366_434);
+    assert_eq!(accepted_json.len(), 3_375_713);
+    assert_eq!(rejected_json.len(), 9_161);
+    assert_eq!(accepted_json.len() - rejected_json.len(), 3_366_552);
     println!(
         "{}",
         serde_json::json!({
@@ -801,7 +801,7 @@ fn issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative() {
     let text_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::TextRun { bbox, run } if run.text == TEXT => Some((*bbox, run.as_ref())),
+            PaintOp::TextRun { bbox, run, .. } if run.text == TEXT => Some((*bbox, run.as_ref())),
             _ => None,
         })
         .collect::<Vec<_>>();
@@ -923,7 +923,7 @@ fn issue_4969_q2_d5_n1_no_lineseg_publishes_one_atomic_common_alternative() {
     let text_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::TextRun { bbox, run } if run.text == TEXT => Some(*bbox),
+            PaintOp::TextRun { bbox, run, .. } if run.text == TEXT => Some(*bbox),
             _ => None,
         })
         .collect::<Vec<_>>();
@@ -1130,7 +1130,7 @@ fn issue_4969_q3_e4_native_instance_publishes_atomic_portable_outline() {
     let baseline_bbox = baseline_ops
         .iter()
         .find_map(|op| match op {
-            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(*bbox),
+            PaintOp::TextRun { bbox, run, .. } if run.text == "가변" => Some(*bbox),
             _ => None,
         })
         .expect("baseline TextRun bbox");
@@ -1168,7 +1168,7 @@ fn issue_4969_q3_e4_native_instance_publishes_atomic_portable_outline() {
     let selected_width = selected_ops
         .iter()
         .find_map(|op| match op {
-            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(bbox.width),
+            PaintOp::TextRun { bbox, run, .. } if run.text == "가변" => Some(bbox.width),
             _ => None,
         })
         .expect("selected TextRun width");
@@ -1334,7 +1334,7 @@ fn issue_4969_q3_e4_native_instance_publishes_atomic_portable_outline() {
     let explicit_default_bbox = explicit_default_ops
         .iter()
         .find_map(|op| match op {
-            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(*bbox),
+            PaintOp::TextRun { bbox, run, .. } if run.text == "가변" => Some(*bbox),
             _ => None,
         })
         .expect("explicit-default TextRun bbox");

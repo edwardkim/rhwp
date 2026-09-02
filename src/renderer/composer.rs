@@ -18,7 +18,7 @@ use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
 
 /// 글자겹침(CharOverlap) 렌더링 정보
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct CharOverlapInfo {
     /// 테두리 타입 (0=없음, 1=원, 2=반전원, 3=사각형, 4=반전사각형)
     pub border_type: u8,
