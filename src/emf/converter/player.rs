@@ -222,7 +222,61 @@ impl Player {
         self.svg.push(&node);
     }
 
+    /// [#6577] 스톡 오브젝트(`0x8000_0000 | index`)를 DC 에 반영한다.
+    ///
+    /// `SelectObject` 의 상당수가 스톡 핸들이다 — 156627451 내장 EMF 는 338건 중
+    /// **197건(58%)** 이 스톡인데, 종전에는 `objects` 에 없다고 **그냥 무시**해서
+    /// 직전 펜/브러시가 그대로 남았다. `NULL_PEN`/`NULL_BRUSH` 가 안 먹히니 모든
+    /// 도형이 같은 색·같은 굵기로 뭉친다.
+    ///
+    /// 인덱스는 MS-EMF 2.1.31 StockObject: 0 WHITE_BRUSH · 1 LTGRAY · 2 GRAY ·
+    /// 3 DKGRAY · 4 BLACK_BRUSH · 5 NULL_BRUSH · 6 WHITE_PEN · 7 BLACK_PEN ·
+    /// 8 NULL_PEN. 폰트류(10~13)는 이 단계에서 다루지 않는다.
+    fn stock_object(index: u32) -> Option<GraphicsObject> {
+        const BS_SOLID: u32 = 0;
+        const BS_NULL: u32 = 1;
+        const PS_SOLID: u32 = 0;
+        const PS_NULL: u32 = 5;
+        let brush = |color: u32, style: u32| {
+            Some(GraphicsObject::Brush(LogBrush {
+                style,
+                color,
+                hatch: 0,
+            }))
+        };
+        let pen = |color: u32, style: u32| {
+            Some(GraphicsObject::Pen(LogPen {
+                style,
+                width: 1,
+                _reserved: 0,
+                color,
+            }))
+        };
+        match index {
+            0 => brush(0x00FF_FFFF, BS_SOLID),
+            1 => brush(0x00C0_C0C0, BS_SOLID),
+            2 => brush(0x0080_8080, BS_SOLID),
+            3 => brush(0x0040_4040, BS_SOLID),
+            4 => brush(0x0000_0000, BS_SOLID),
+            5 => brush(0x0000_0000, BS_NULL),
+            6 => pen(0x00FF_FFFF, PS_SOLID),
+            7 => pen(0x0000_0000, PS_SOLID),
+            8 => pen(0x0000_0000, PS_NULL),
+            _ => None,
+        }
+    }
+
     fn select_object(&mut self, handle: u32) {
+        if handle & 0x8000_0000 != 0 {
+            if let Some(obj) = Self::stock_object(handle & 0x7FFF_FFFF) {
+                match obj {
+                    GraphicsObject::Pen(p) => self.dc_stack.current_mut().pen = Some(p),
+                    GraphicsObject::Brush(b) => self.dc_stack.current_mut().brush = Some(b),
+                    GraphicsObject::Font(f) => self.dc_stack.current_mut().font = Some(f),
+                }
+            }
+            return;
+        }
         let Some(obj) = self.objects.get(handle) else {
             return;
         };
