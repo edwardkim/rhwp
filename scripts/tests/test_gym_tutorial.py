@@ -18,6 +18,7 @@ import json
 import re
 import sys
 import unittest
+from datetime import date
 from pathlib import Path
 
 
@@ -183,6 +184,24 @@ def _read(path: Path) -> str:
 
 def _load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _front_matter(text: str) -> dict[str, str]:
+    """첫 YAML front matter의 단순 scalar 계약을 읽는다."""
+    lines = text.splitlines()
+    if not lines or lines[0] != "---":
+        return {}
+    try:
+        end = lines.index("---", 1)
+    except ValueError:
+        return {}
+    fields = {}
+    for line in lines[1:end]:
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        fields[key.strip()] = value.strip()
+    return fields
 
 
 def _tutorial_text() -> str:
@@ -685,12 +704,23 @@ class FrontMatterTests(unittest.TestCase):
             self.assertIn("canonical: gym/tutorial/README.md", text)
 
     def test_docs_and_working_have_front_matter(self):
-        docs = _read(GYM / "docs" / "tutorial.md")
-        working = _read(REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md")
-        self.assertIn("kind: guide", docs)
-        self.assertIn("kind: working", working)
-        self.assertIn("last_verified: 2026-08-18", docs)
-        self.assertIn("last_verified: 2026-08-18", working)
+        cases = (
+            (GYM / "docs" / "tutorial.md", "guide", "gym/docs/tutorial.md"),
+            (
+                REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md",
+                "working",
+                "mydocs/working/gym_tutorial.md",
+            ),
+        )
+        for path, kind, canonical in cases:
+            fields = _front_matter(_read(path))
+            with self.subTest(path=path):
+                self.assertEqual(fields.get("kind"), kind)
+                self.assertEqual(fields.get("status"), "active")
+                self.assertEqual(fields.get("canonical"), canonical)
+                verified = fields.get("last_verified")
+                self.assertIsNotNone(verified)
+                self.assertEqual(date.fromisoformat(verified).isoformat(), verified)
 
 
 class ScopeGuardTests(unittest.TestCase):
