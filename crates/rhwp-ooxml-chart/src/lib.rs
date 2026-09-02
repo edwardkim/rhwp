@@ -46,10 +46,28 @@ pub struct OoxmlChart {
     pub has_title_elem: bool,
     /// `c:autoTitleDeleted val="1"` — 자동 제목 억제 플래그. (C1c #1882 갭①)
     pub auto_title_deleted: bool,
+    /// [#6624] `c:chartSpace > c:txPr > a:p > a:pPr > a:defRPr sz` — 차트 전체 기본 글꼴
+    /// 크기(pt). 축 라벨·범례·격자 여백 산정이 쓴다. 한컴 코퍼스 28종은 전건 `sz="1000"`.
+    /// 없으면 렌더러가 10pt 를 쓴다.
+    pub text_size_pt: Option<f64>,
+    /// [#6624] `c:title` 안의 `a:defRPr sz`/`a:rPr sz` — 제목 글꼴 크기(pt). 축 제목
+    /// (`c:plotArea` 안 `c:title`)은 제외. 코퍼스는 전건 미지정이라 한컴이 14pt 로 그린다.
+    /// 없으면 렌더러가 14pt 를 쓴다.
+    pub title_size_pt: Option<f64>,
     pub series: Vec<OoxmlSeries>,
     pub categories: Vec<String>,
     /// 시리즈 중 하나라도 보조축을 쓰면 true
     pub has_secondary_axis: bool,
+    /// [#6624] `c:plotArea` 의 축 선언(`c:catAx`/`c:valAx`/`c:dateAx`/`c:serAx`) — 문서 순서.
+    /// 격자선(`c:majorGridlines`)·눈금(`c:majorTickMark`)·숨김(`c:delete`)을 렌더러가 읽는다.
+    /// 코퍼스: 값축(l)만 격자, 눈금은 전부 `out`, 주식형은 격자 없음. 선언이 없으면(축 없는
+    /// 원형, 축 요소를 안 쓴 문서) 렌더러가 코퍼스 기본(값축 격자·눈금 out)을 쓴다.
+    pub axes: Vec<OoxmlAxis>,
+    /// [#6624] `c:plotArea > c:spPr > a:ln` — 플롯 영역 테두리. 코퍼스는 전건 `a:noFill`.
+    pub plot_area_line: LineSpec,
+    /// [#6624] `c:chartSpace > c:spPr > a:ln` — 차트 바깥 테두리. 코퍼스는 전건 미지정이라
+    /// 한/글 기본(#8c8c8c 0.75px)으로 그린다.
+    pub chart_line: LineSpec,
     /// 막대(bar/bar3D) plot의 `c:grouping` (clustered/stacked/percentStacked).
     /// 막대 렌더러만 사용. line/pie 무관. (C1a #1453 막대 누적 보정)
     pub grouping: BarGrouping,
@@ -199,6 +217,61 @@ pub enum SeriesMarker {
     Named(String),
 }
 
+/// 선 선언 (`c:spPr > a:ln`) — 플롯 영역·차트 테두리용. [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LineSpec {
+    /// `a:ln` 이 없다 — 렌더러가 기본 서식을 정한다.
+    #[default]
+    Unspecified,
+    /// `a:ln > a:noFill` — 선 없음.
+    None,
+    /// `a:ln > a:solidFill` — 색과 굵기(EMU, 없으면 None).
+    Solid { rgb: u32, width_emu: Option<u32> },
+}
+
+/// 축 종류 (`c:catAx`/`c:valAx`/`c:dateAx`/`c:serAx`). [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum AxisKind {
+    #[default]
+    Category,
+    Value,
+    Date,
+    Series,
+}
+
+/// 축 위치 (`c:axPos`). [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum AxisPos {
+    Left,
+    Right,
+    Top,
+    #[default]
+    Bottom,
+}
+
+/// 주 눈금 표시 (`c:majorTickMark`). 없으면 OOXML 기본 `cross` 가 아니라 코퍼스 기본 `out`
+/// 을 쓴다 — 한/글 문서는 전건 명시한다. [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum TickMark {
+    #[default]
+    Out,
+    In,
+    Cross,
+    None,
+}
+
+/// 축 선언 하나. [#6624]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct OoxmlAxis {
+    pub kind: AxisKind,
+    pub pos: AxisPos,
+    /// `c:majorGridlines` 요소 존재 — 이 축의 눈금 위치에 격자선.
+    pub major_gridlines: bool,
+    pub major_tick_mark: TickMark,
+    /// `c:delete val="1"` — 축선·눈금·라벨을 그리지 않는다 (격자선은 유지).
+    pub deleted: bool,
+}
+
 /// 범례 위치 (`c:legendPos`). C1c #1882 갭③.
 ///
 /// 기본값 Bottom — `c:legend`/`legendPos` 미존재 시 현행 하단 배치를 유지한다
@@ -320,6 +393,10 @@ pub struct OoxmlSeries {
     /// 막대·꺾은선·분산형은 자기 규칙(`line_markers`·`scatter_style`)으로 선을 정하므로
     /// 이 값을 보지 않는다.
     pub line_none: bool,
+    /// [#6624] 계열 `c:spPr > a:ln w` — 선 굵기(EMU, 12700 = 1pt). 점별(`c:dPt`)·표식
+    /// (`c:marker`) 의 spPr 은 제외. 없으면 렌더러가 Office 기본 2.25pt 를 쓴다
+    /// (한컴 꺽은선형 실측 3px = 2.25pt).
+    pub line_width_emu: Option<u32>,
 }
 
 impl OoxmlChart {

@@ -2496,15 +2496,28 @@ impl LayoutEngine {
                             None
                         };
 
+                        // [#6621] 상자를 unwrap 해도 상자 셀의 안 여백은 남는다. 한/글은 안쪽 표를
+                        // 여백만큼 안쪽(+pad_l, +pad_t)에 놓고, 상자 테두리는 바깥 표 선언 폭과
+                        // "안쪽 표 높이 + 상하 여백"으로 그리며, 뒤 흐름도 아래 여백만큼 더 내려간다.
+                        // exam_social 1쪽 pi=15 실측: 여백 850HU=11.3px, 안쪽 표·그림 5장이
+                        // (+11.3, +11.3), 상자 높이 +22.7px. 여백 0 이면 종전과 같다.
+                        let (pad_l, pad_r, pad_t, pad_b) =
+                            self.resolve_cell_padding_for_context(cell, table);
                         // nested 표 위치/size 미리 결정 (nested layout 의 위치 결정 logic 동일)
                         let pw_now = self.current_paper_width.get();
                         let paper_w = if pw_now > 0.0 { Some(pw_now) } else { None };
                         let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi)
                             * self.render_table_width_scale(nested);
-                        let outer_w_for_box = nested_w;
+                        let outer_w_declared = hwpunit_to_px(table.common.width as i32, self.dpi)
+                            * self.render_table_width_scale(table);
+                        let outer_w_for_box = if outer_w_declared > 0.5 {
+                            outer_w_declared
+                        } else {
+                            nested_w + pad_l + pad_r
+                        };
                         let outer_x_for_box = self.compute_table_x_position(
-                            nested,
-                            nested_w,
+                            table,
+                            outer_w_for_box,
                             col_area,
                             depth,
                             host_alignment,
@@ -2513,6 +2526,17 @@ impl LayoutEngine {
                             inline_x_override,
                             paper_w,
                         );
+                        // 안쪽 표가 여백을 뺀 내용 상자보다 조금 넓게 저장된 문서(exam_social:
+                        // 1.4px)는 한/글처럼 오른쪽 여백으로 흘러넘기고 축소하지 않는다.
+                        let inner_area = LayoutRect {
+                            x: col_area.x + pad_l,
+                            y: col_area.y,
+                            width: (col_area.width - pad_l - pad_r).max(nested_w),
+                            height: col_area.height,
+                        };
+                        let inner_y_start = y_start + pad_t;
+                        // 글자처럼 상자는 x 를 줄 배치가 준 inline_x_override 로 받으므로 그 값도 옮긴다.
+                        let inner_inline_x = inline_x_override.map(|x| x + pad_l);
 
                         let y_end = self.layout_table(
                             tree,
@@ -2521,8 +2545,8 @@ impl LayoutEngine {
                             section_index,
                             styles,
                             outline_numbering_id,
-                            col_area,
-                            y_start,
+                            &inner_area,
+                            inner_y_start,
                             bin_data_content,
                             None,
                             depth,
@@ -2531,7 +2555,7 @@ impl LayoutEngine {
                             enclosing_cell_ctx,
                             host_margin_left,
                             host_margin_right,
-                            inline_x_override,
+                            inner_inline_x,
                             nested_split,
                             para_y,
                             None,
@@ -2540,6 +2564,23 @@ impl LayoutEngine {
                             false,
                         );
 
+                        // The unwrapped child determines the minimum visual content height, but it
+                        // must not erase a larger declared wrapper height.  The host 1x1 table is
+                        // still the observable box: downstream flow and its bottom border use the
+                        // larger of the padded child and the stored outer rectangle (#6621).
+                        let padded_child_y_end = y_end + pad_b;
+                        let y_end = if self.profile.get().hwp5_stored_pagination_layout() {
+                            let declared_outer_height = hwpunit_to_px(
+                                crate::renderer::float_placement::signed_hwpunit(
+                                    table.common.height,
+                                )
+                                .max(0),
+                                self.dpi,
+                            );
+                            padded_child_y_end.max(y_start + declared_outer_height)
+                        } else {
+                            padded_child_y_end
+                        };
                         if let Some(bs_borders) = outer_border_meta {
                             let outer_h_actual = (y_end - outer_y).max(0.0);
                             if outer_h_actual > 0.0 {
@@ -5024,6 +5065,30 @@ impl LayoutEngine {
                 }
             }
 
+            // [#6630] 세로 가운데/아래 셀의 첫 문단이 저장 앵커를 쓰지 않았으면 저장 vpos 를
+            // 상한으로 한 위 여백을 더한다 — 내용 높이(`calc_para_lines_height`)에 같은 값이
+            // 들어 있어 정렬이 맞는다. Top 셀은 `text_y_start` 가 저장 vpos 를 이미 품고, 앵커를
+            // 쓴 문단은 앵커가 그 값을 품는다 (exam_eng 바탕쪽 머리 표: 위 여백 1136HU, vpos 568).
+            // y 를 여기서 직접 옮기면 layout 쪽이 "단 맨 위가 아니다"로 보고 위 여백을 한 번 더
+            // 더하므로, 대신 column-top 규칙(`spacing_before.min(저장 vpos)`, #853)을 이 문단에만
+            // 허용한다(`suppress_column_top_vpos_fallback=false`).
+            let first_para_lead_px = if cp_idx == 0
+                && !use_top_vpos_anchor
+                && !trust_stored_cell_flow
+                && !has_nested_table
+                && !snap_anchored_with_spacing_before
+                && (para_y - text_y_start).abs() < 1e-9
+            {
+                let sb = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|s| s.spacing_before)
+                    .unwrap_or(0.0);
+                crate::renderer::cell_first_para_stored_lead(para, sb, self.dpi)
+            } else {
+                0.0
+            };
+            let allow_first_para_lead = first_para_lead_px > 0.0;
             let para_y_before_compose = para_y;
 
             // 줄별 TAC 컨트롤 너비 합산: 각 TAC가 속한 줄을 판별하여 줄별 최대 너비 계산
@@ -5114,7 +5179,7 @@ impl LayoutEngine {
                     section_index,
                     cp_idx,
                     cell_context.clone(),
-                    !use_top_vpos_anchor,
+                    !use_top_vpos_anchor && !allow_first_para_lead,
                     is_last_para,
                     0.0,
                     None,
@@ -5186,7 +5251,9 @@ impl LayoutEngine {
                     _ => inner_area.x + line_margin,
                 }
             };
-            let mut tac_img_y = para_y_before_compose;
+            // [#6630] 글자처럼 그림은 문단 배치의 y 가 아니라 여기서 따로 놓이므로 첫 문단
+            // 위 여백(저장 vpos 상한)을 같이 준다.
+            let mut tac_img_y = para_y_before_compose + first_para_lead_px;
             // [#6114] 쪽 분할 칸에서만 폴백 TAC 그림 페인트 하단으로 흐름을 민다.
             // 일반 칸까지 밀면 칸 상자 밖 글이 아래 본문과 겹친다.
             let split_cell_tac_flow = fragment_cut_units.is_some();
@@ -7413,6 +7480,25 @@ impl LayoutEngine {
                 total_content_height
             };
             let use_top_vpos_anchor = matches!(effective_valign, VerticalAlign::Top);
+            // [#6630] 세로 가운데/아래 셀: 첫 문단의 위 여백(저장 vpos 상한)이 내용 높이에 없어
+            // 정렬이 그만큼 위로 쏠린다 — 정렬 계산에만 넣는다. Top 셀은 text_y_start 가 저장
+            // vpos 를 품고, 저장 흐름을 믿는 셀은 stored_flow_extent 가 그 값을 품는다.
+            let first_para_lead =
+                if use_top_vpos_anchor || trust_stored_cell_flow || has_nested_table {
+                    0.0
+                } else {
+                    cell.paragraphs
+                        .first()
+                        .map(|p| {
+                            let sb = styles
+                                .para_styles
+                                .get(p.para_shape_id as usize)
+                                .map(|s| s.spacing_before)
+                                .unwrap_or(0.0);
+                            crate::renderer::cell_first_para_stored_lead(p, sb, self.dpi)
+                        })
+                        .unwrap_or(0.0)
+                };
             let text_y_start = if use_top_vpos_anchor
                 && !has_nested_table
                 && first_line_vpos.filter(|&v| v > 0.0).is_some()
@@ -7424,11 +7510,13 @@ impl LayoutEngine {
                     VerticalAlign::Top => content_cell_y + pad_top,
                     VerticalAlign::Center => {
                         let mechanical_offset =
-                            (inner_height - total_content_height).max(0.0) / 2.0;
+                            (inner_height - total_content_height - first_para_lead).max(0.0) / 2.0;
                         content_cell_y + pad_top + mechanical_offset
                     }
                     VerticalAlign::Bottom => {
-                        content_cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                        content_cell_y
+                            + pad_top
+                            + (inner_height - total_content_height - first_para_lead).max(0.0)
                     }
                 }
             };
