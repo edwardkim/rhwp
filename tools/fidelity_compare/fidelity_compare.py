@@ -923,8 +923,27 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return args
 
 
+def svg_paths_for_page(svg_dir: Path, page_index: int) -> list[Path]:
+    """Return the SVGs exported for one physical page.
+
+    Multi-page exports use the ``*_NNN.svg`` convention.  A one-page document,
+    however, is exported as ``<document>.svg`` without a page suffix.  The
+    comparison directory is dedicated to one source document, so accepting an
+    unsuffixed SVG only for page zero preserves the multi-page contract while
+    allowing the normal single-page CLI output.
+    """
+    indexed = sorted(svg_dir.glob(f"*_{page_index + 1:03}.svg"))
+    if indexed or page_index != 0:
+        return indexed
+    return sorted(
+        path
+        for path in svg_dir.glob("*.svg")
+        if re.search(r"_\d{3}$", path.stem) is None
+    )
+
+
 def render_svg(rhwp: str, source: Path, svg_dir: Path, page_index: int) -> bool:
-    if list(svg_dir.glob(f"*_{page_index + 1:03}.svg")):
+    if svg_paths_for_page(svg_dir, page_index):
         return True
     command = [
         rhwp,
@@ -953,7 +972,7 @@ def render_svg(rhwp: str, source: Path, svg_dir: Path, page_index: int) -> bool:
             file=sys.stderr,
         )
         return False
-    return bool(list(svg_dir.glob(f"*_{page_index + 1:03}.svg")))
+    return bool(svg_paths_for_page(svg_dir, page_index))
 
 
 def render_all_svg(rhwp: str, source: Path, svg_dir: Path) -> bool:
@@ -2988,7 +3007,7 @@ def write_svg_text_band_clip_ledger(
             "clip_rect\ttext\tnote\n"
         )
         for page_index in requested_pages:
-            svg_paths = list(svg_dir.glob(f"*_{page_index + 1:03}.svg"))
+            svg_paths = svg_paths_for_page(svg_dir, page_index)
             if not svg_paths:
                 continue
             try:
@@ -3030,7 +3049,7 @@ def write_svg_table_border_clip_ledger(
             "stroke_width\tvisible_width_ratio\tclip_ids\tclip_rect\tnote\n"
         )
         for page_index in requested_pages:
-            svg_paths = list(svg_dir.glob(f"*_{page_index + 1:03}.svg"))
+            svg_paths = svg_paths_for_page(svg_dir, page_index)
             tree_path = tree_path_for_page(tree_dir, page_index)
             if not svg_paths or tree_path is None:
                 report.write(
@@ -3089,7 +3108,7 @@ def write_svg_table_horizontal_border_clip_ledger(
             "line_y\tstroke_width\tvisible_height_ratio\tclip_ids\tclip_rect\tnote\n"
         )
         for page_index in requested_pages:
-            svg_paths = list(svg_dir.glob(f"*_{page_index + 1:03}.svg"))
+            svg_paths = svg_paths_for_page(svg_dir, page_index)
             tree_path = tree_path_for_page(tree_dir, page_index)
             if not svg_paths or tree_path is None:
                 report.write(
@@ -3451,7 +3470,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     completed_pages: list[int] = []
     missing_pages: list[int] = []
     for page_index in requested_pages:
-        svg_files = list(svg_dir.glob(f"*_{page_index + 1:03}.svg"))
+        svg_files = svg_paths_for_page(svg_dir, page_index)
         if not svg_files:
             if not args.text_only:
                 rows.append((page_index, -1.0, "rhwp SVG 없음"))

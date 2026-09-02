@@ -1067,13 +1067,35 @@ impl LayoutEngine {
             } else {
                 self.calc_composed_paras_content_height(&composed_paras, &cell.paragraphs, styles)
             };
+            // [#6630] 세로 가운데/아래 셀: 첫 문단의 위 여백(저장 vpos 상한)을 정렬 계산에 넣는다.
+            // 중첩 표가 있으면 저장 줄 끝(last_seg_end)이 그 값을 이미 품는다.
+            let first_para_lead = if has_nested || matches!(cell.vertical_align, VerticalAlign::Top)
+            {
+                0.0
+            } else {
+                cell.paragraphs
+                    .first()
+                    .map(|p| {
+                        let sb = styles
+                            .para_styles
+                            .get(p.para_shape_id as usize)
+                            .map(|s| s.spacing_before)
+                            .unwrap_or(0.0);
+                        crate::renderer::cell_first_para_stored_lead(p, sb, self.dpi)
+                    })
+                    .unwrap_or(0.0)
+            };
             let text_y_start = match cell.vertical_align {
                 VerticalAlign::Top => cell_y + pad_top,
                 VerticalAlign::Center => {
-                    cell_y + pad_top + (inner_height - total_content_height).max(0.0) / 2.0
+                    cell_y
+                        + pad_top
+                        + (inner_height - total_content_height - first_para_lead).max(0.0) / 2.0
                 }
                 VerticalAlign::Bottom => {
-                    cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                    cell_y
+                        + pad_top
+                        + (inner_height - total_content_height - first_para_lead).max(0.0)
                 }
             };
             let inner_area = LayoutRect {
@@ -1128,7 +1150,10 @@ impl LayoutEngine {
                     sec_for_layout,
                     para_for_layout,
                     ctx,
-                    !matches!(cell.vertical_align, VerticalAlign::Top),
+                    // [#6630] 첫 문단에 위 여백(저장 vpos 상한)이 있으면 column-top 규칙을 허용해
+                    // 정렬 계산(`first_para_lead`)과 같은 값을 두게 한다.
+                    !matches!(cell.vertical_align, VerticalAlign::Top)
+                        && !(pidx == 0 && first_para_lead > 0.0),
                     pidx + 1 == para_count,
                     0.0,
                     None,

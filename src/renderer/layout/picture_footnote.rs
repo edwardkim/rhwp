@@ -589,11 +589,33 @@ impl LayoutEngine {
             (pic_width, pic_height)
         };
 
-        // 통합 좌표 계산 (캡션 포함 전체 크기 기준)
-        let (pic_x, base_y) = self.compute_object_position(
+        // [#6596] 바깥 여백은 개체 상자의 일부다. 한/글은 여백을 포함한 상자를 오프셋·정렬
+        // 자리에 놓고 잉크(그림+캡션)를 그 안쪽 (왼쪽 여백, 위 여백) 에 그린다.
+        // 코퍼스 실측(samples↔pdf 한컴 PDF 215문서): 여백 3.01mm 그림 45건 중 44건이
+        // dx + 왼쪽 여백 ≈ 0, dy + 위 여백 ≈ 0 이고 Paper/Column/Para 기준과
+        // Square/TopAndBottom/BehindText 를 가리지 않는다. 가운데 정렬은 좌우 여백이
+        // 같아 가로가 상쇄되고 오른쪽 정렬은 오른쪽 여백만 잉크에 나타나므로, 정렬은
+        // 상자 크기로 계산해야 둘 다 맞는다. 글자처럼 그림은 줄 안 상자라 이 규칙 밖이다.
+        let (margin_left, margin_right, margin_top, margin_bottom) = if picture.common.treat_as_char
+        {
+            (0.0, 0.0, 0.0, 0.0)
+        } else {
+            let m = &picture.common.margin;
+            (
+                hwpunit_to_px(i32::from(m.left), self.dpi),
+                hwpunit_to_px(i32::from(m.right), self.dpi),
+                hwpunit_to_px(i32::from(m.top), self.dpi),
+                hwpunit_to_px(i32::from(m.bottom), self.dpi),
+            )
+        };
+        let box_width = total_width + margin_left + margin_right;
+        let box_height = total_height + margin_top + margin_bottom;
+
+        // 통합 좌표 계산 (여백을 포함한 상자 기준)
+        let (box_x, base_y) = self.compute_object_position(
             &picture.common,
-            total_width,
-            total_height,
+            box_width,
+            box_height,
             container,
             col_area,
             body_area,
@@ -616,7 +638,7 @@ impl LayoutEngine {
             && !vpos_accounts_for_height
             && matches!(picture.common.vert_rel_to, VertRelTo::Para)
         {
-            let body_bottom = col_area.y + col_area.height - total_height;
+            let body_bottom = col_area.y + col_area.height - box_height;
             base_y.min(body_bottom.max(col_area.y))
         } else {
             base_y
@@ -636,32 +658,19 @@ impl LayoutEngine {
             (0.0, 0.0)
         };
 
-        // HWP5 Square 그림의 horizontal offset은 outer frame의 시작점이다. 따라서
-        // left outer margin은 그림 ink/caption의 paint origin에 더해야 한다. 지금까지
-        // frame origin에 곧바로 paint하여 LINE_SEG가 끝나는 x와 그림 테두리가 겹쳤다
-        // (#3821 p156 그림 64). Right/Center/Paper/Para anchor에 전면 적용하면 저장된
-        // offset의 기준이 다른 기존 문서를 이동시키므로, native Column-left Square로
-        // 좁힌다. wrap exclusion은 이미 source LINE_SEG가 frame 기준으로 보유한다.
-        let square_left_paint_margin = if !picture.common.treat_as_char
-            && matches!(picture.common.text_wrap, TextWrap::Square)
-            && matches!(picture.common.horz_rel_to, HorzRelTo::Column)
-            && matches!(
-                picture.common.horz_align,
-                HorzAlign::Left | HorzAlign::Inside
-            ) {
-            hwpunit_to_px(picture.common.margin.left as i32, self.dpi)
-        } else {
-            0.0
-        };
-        let adjusted_pic_x = pic_x + caption_left_offset + square_left_paint_margin;
-        // [Task #1079] already_accounted: 그림을 gap 안에 그림(바닥이 base_y=그림 para 줄에
-        // 정렬되도록 total_height 만큼 위로). flow 진행은 아래 return 에서 생략.
+        // 잉크 원점 = 상자 원점 + (왼쪽 여백, 위 여백). #3821 이 Column-왼쪽 Square 의
+        // 왼쪽 여백에만 좁혀 적용하던 것을 위 실측대로 사방·전 기준으로 편다. wrap
+        // exclusion 은 이미 source LINE_SEG 가 상자 기준으로 보유한다.
+        let adjusted_pic_x = box_x + margin_left + caption_left_offset;
+        // [Task #1079] already_accounted: 상자를 gap 안에 그림(상자 바닥이 base_y=그림 para
+        // 줄에 정렬되도록 box_height 만큼 위로). flow 진행은 아래 return 에서 생략.
         let vpos_shift = if vpos_accounts_for_height {
-            total_height
+            box_height
         } else {
             0.0
         };
-        let pic_y = base_y + caption_top_offset - vpos_shift;
+        let content_top = base_y + margin_top - vpos_shift;
+        let pic_y = content_top + caption_top_offset;
 
         // BinData에서 이미지 데이터 찾기 (bin_data_id는 1-indexed 순번)
         let bin_data_id = picture.image_attr.bin_data_id;
@@ -738,7 +747,7 @@ impl LayoutEngine {
         if let Some(ref caption) = picture.caption {
             use crate::model::shape::CaptionVertAlign;
             let (cap_x, cap_w, cap_y) = match caption.direction {
-                CaptionDirection::Top => (adjusted_pic_x, pic_width, base_y),
+                CaptionDirection::Top => (adjusted_pic_x, pic_width, base_y + margin_top),
                 CaptionDirection::Bottom => (
                     adjusted_pic_x,
                     pic_width,
@@ -747,7 +756,7 @@ impl LayoutEngine {
                 CaptionDirection::Left | CaptionDirection::Right => {
                     let cw = hwpunit_to_px(caption.width as i32, self.dpi);
                     let cx = if caption.direction == CaptionDirection::Left {
-                        pic_x
+                        box_x + margin_left
                     } else {
                         adjusted_pic_x + pic_width + caption_spacing
                     };
@@ -790,22 +799,16 @@ impl LayoutEngine {
         // y_offset 업데이트: Para 기준 그림만 높이만큼 진행
         // Page/Paper 기준 그림은 플로팅이므로 y_offset 변경 없음
         // Task #347: 글뒤로/글앞으로 그림은 본문 흐름을 점유하지 않으므로 y 미진행.
-        // base_y는 vert_offset이 적용된 실제 그림 상단 y이므로, base_y + total_height가
-        // 그림 하단 y가 된다. y_offset(앵커 단락 y) 대신 base_y를 기준으로 반환해야
-        // vert_offset이 있는 혼합 단락(텍스트+그림)에서 후속 단락이 그림 위로 겹치지 않는다.
-        let total_height = pic_height
-            + caption_height
-            + if caption_height > 0.0 {
-                caption_spacing
-            } else {
-                0.0
-            };
+        // base_y는 vert_offset이 적용된 상자 상단 y이므로, base_y + box_height 가
+        // 상자 하단(잉크 + 위·아래 여백) y가 된다. y_offset(앵커 단락 y) 대신 base_y를
+        // 기준으로 반환해야 vert_offset이 있는 혼합 단락(텍스트+그림)에서 후속 단락이
+        // 그림 위로 겹치지 않는다.
         match (picture.common.vert_rel_to, picture.common.text_wrap) {
             (VertRelTo::Para, TextWrap::BehindText | TextWrap::InFrontOfText) => y_offset,
             // [Task #1079] 파일 vpos 가 그림 공간을 이미 반영하면 그림은 gap 안에 그려졌고
             // 후속 문단은 파일 vpos(그림 para 줄)로 흐르므로 추가 진행 없이 base_y 반환.
             (VertRelTo::Para, _) if vpos_accounts_for_height => base_y,
-            (VertRelTo::Para, _) => base_y + total_height,
+            (VertRelTo::Para, _) => base_y + box_height,
             (VertRelTo::Page | VertRelTo::Paper, _) => y_offset,
         }
     }

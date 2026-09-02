@@ -1136,6 +1136,32 @@ pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, is_hwp3_variant: bool)
     }
 }
 
+/// [#6630] 셀 첫 문단의 위 여백(px) — 저장 첫 줄 `LINE_SEG.vertical_pos` 를 상한으로 둔 값.
+///
+/// 한/글은 셀 맨 위 문단의 "문단 위 여백"을 저장 vpos 만큼 둔다 (exam_eng 바탕쪽 머리 표:
+/// 위 여백 1136HU 인데 vpos=568HU=7.57px, 그림이 그만큼 아래·셀 내용 높이도 그만큼 큼).
+/// 본문 column-top 문단의 증거 기반 클램프(#853·#1811)와 같은 규칙을 셀 첫 문단에 쓴다.
+/// 내용 높이 측정(`calc_para_lines_height`·`height_measurer`)과 셀 배치가 같은 값을 써야
+/// 세로 정렬이 어긋나지 않는다. 저장 줄이 없거나 vpos ≤ 0 이면 0 (종전과 같다).
+pub(crate) fn cell_first_para_stored_lead(
+    para: &crate::model::paragraph::Paragraph,
+    spacing_before_px: f64,
+    dpi: f64,
+) -> f64 {
+    if spacing_before_px <= 0.0 {
+        return 0.0;
+    }
+    let vpos = para
+        .line_segs
+        .first()
+        .map(|ls| hwpunit_to_px(ls.vertical_pos, dpi))
+        .unwrap_or(0.0);
+    if vpos <= 0.0 {
+        return 0.0;
+    }
+    spacing_before_px.min(vpos)
+}
+
 /// [#2169] 저장 LINE_SEG 부재 판별 — 원본 NO_LS 와 자기-export HWPX 재파싱본
 /// (전부 synthetic, tag 0x8000_0000)을 동일 취급해 왕복 시멘틱을 정합한다
 /// (#1770 계열: 국소 문맥 판별).
