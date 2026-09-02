@@ -42,6 +42,9 @@ const RT_LINE_TO: u32 = 0x00000036;
 const RT_POLYBEZIER16: u32 = 0x00000055;
 const RT_POLYLINE16: u32 = 0x00000056;
 const RT_POLYGON16: u32 = 0x00000057;
+/// [#6577] 패스 기반 EMF 의 주 구성 레코드 — 종전에는 `Unknown` 으로 버려졌다.
+const RT_POLYBEZIER_TO16: u32 = 0x00000058;
+const RT_POLYLINE_TO16: u32 = 0x00000059;
 // 패스 (단계 12)
 const RT_BEGIN_PATH: u32 = 0x0000003B;
 const RT_END_PATH: u32 = 0x0000003C;
@@ -135,6 +138,8 @@ fn is_paintable(record: &Record) -> bool {
             | Record::Polyline16 { .. }
             | Record::Polygon16 { .. }
             | Record::PolyBezier16 { .. }
+            | Record::PolylineTo16 { .. }
+            | Record::PolyBezierTo16 { .. }
             | Record::FillPath(_)
             | Record::StrokePath(_)
             | Record::StrokeAndFillPath(_)
@@ -345,6 +350,14 @@ fn dispatch(record_type: u32, c: &mut Cursor<'_>, payload_len: usize) -> Result<
         RT_POLYBEZIER16 => {
             let (bounds, points) = drawing::parse_points16(c)?;
             Record::PolyBezier16 { bounds, points }
+        }
+        RT_POLYBEZIER_TO16 => {
+            let (bounds, points) = drawing::parse_points16(c)?;
+            Record::PolyBezierTo16 { bounds, points }
+        }
+        RT_POLYLINE_TO16 => {
+            let (bounds, points) = drawing::parse_points16(c)?;
+            Record::PolylineTo16 { bounds, points }
         }
 
         // 패스
