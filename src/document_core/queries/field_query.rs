@@ -498,7 +498,9 @@ impl DocumentCore {
         let old_value = fi.value.clone();
 
         let section_index = location.section_index;
+        let stored_end_for_reset = self.field_body_flow_end(&location);
         self.set_field_text_at(&location, fri, value)?;
+        self.reflow_field_location_after_edit(&location, stored_end_for_reset);
         self.recompose_section(section_index);
 
         Ok(format!(
@@ -542,6 +544,7 @@ impl DocumentCore {
         let is_cell_field = fi.field.ctrl_id == 0; // 가상 셀 필드
 
         let section_index = location.section_index;
+        let stored_end_for_reset = self.field_body_flow_end(&location);
 
         if is_cell_field {
             // 셀 필드: 셀의 첫 문단 텍스트를 직접 교체
@@ -550,6 +553,8 @@ impl DocumentCore {
             // ClickHere 필드: field_ranges 기반 교체
             self.set_field_text_at(&location, fri, value)?;
         }
+
+        self.reflow_field_location_after_edit(&location, stored_end_for_reset);
 
         // raw_stream 무효화
         if let Some(sec) = self.document.sections.get_mut(section_index) {
@@ -563,6 +568,84 @@ impl DocumentCore {
             json_escape(&old_value),
             json_escape(value),
         ))
+    }
+
+    /// 필드 텍스트 편집 전의 본문 흐름 끝을 보존한다.
+    ///
+    /// 본문 문단의 vpos 사다리를 다시 계산할 때만 쓰며, 셀·글상자는 각 컨테이너의
+    /// 재계산 경로가 별도로 처리한다.
+    fn field_body_flow_end(&self, location: &FieldLocation) -> Option<i32> {
+        if !location.nested_path.is_empty() {
+            return None;
+        }
+        self.document
+            .sections
+            .get(location.section_index)
+            .and_then(|section| section.paragraphs.get(location.para_index))
+            .and_then(crate::renderer::composer::paragraph_flow_end)
+    }
+
+    /// 필드 편집으로 무효가 된 LineSeg를 해당 문단 상자에서 즉시 다시 계산한다.
+    ///
+    /// 종전 `set_field_text_at`은 저장 LineSeg를 비운 뒤 section compose만 갱신했다.
+    /// HWP5 저장기는 빈 배열을 기록하고 재적재기는 0높이 줄을 합성하므로, 같은 문서가
+    /// 메모리에서는 0줄·재적재 뒤에는 1줄이 되어 `edit/batch fill --verify`가 항상
+    /// 실패했다. 다른 텍스트 편집 관문과 같이 실제 소유자(본문 또는 셀/글상자)의 폭으로
+    /// reflow하고 vpos를 잇는다. 저장 데이터의 차이는 그대로 비교되며, 검증기에서
+    /// 차이를 숨기는 예외 규칙은 추가하지 않는다.
+    fn reflow_field_location_after_edit(
+        &mut self,
+        location: &FieldLocation,
+        stored_end_for_reset: Option<i32>,
+    ) {
+        if location.nested_path.is_empty() {
+            self.reflow_paragraph(location.section_index, location.para_index);
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[location.section_index].paragraphs,
+                location.para_index,
+                None,
+                stored_end_for_reset,
+                &self.styles,
+                self.dpi,
+                hwp3_layout,
+            );
+            return;
+        }
+
+        let path: Vec<(usize, usize, usize)> = location
+            .nested_path
+            .iter()
+            .map(|entry| match entry {
+                NestedEntry::TableCell {
+                    control_index,
+                    cell_index,
+                    para_index,
+                } => (*control_index, *cell_index, *para_index),
+                NestedEntry::TextBox {
+                    control_index,
+                    para_index,
+                } => (*control_index, 0, *para_index),
+            })
+            .collect();
+        let Some(inner_para) = path.last().map(|entry| entry.2) else {
+            return;
+        };
+
+        self.reflow_cell_paragraph_by_path(
+            location.section_index,
+            location.para_index,
+            &path,
+            inner_para,
+        );
+        self.recalculate_cell_paragraph_vpos_by_path(
+            location.section_index,
+            location.para_index,
+            &path,
+            inner_para,
+            None,
+        );
+        self.mark_cell_control_dirty(location.section_index, location.para_index, path[0].0);
     }
 
     /// 한글 커서 좌표(list/para/pos)에 누름틀을 넣는다 — 웹한글컨트롤 `CreateField` 용.
