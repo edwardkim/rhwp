@@ -17,4 +17,3 @@
 - planner focused test 13건 통과
 - 단일 Canvas, 4-layer, offscreen, focus 이동, DPR 3, export와 hysteresis 계약 포함
 - `pagesPerRow`·자동 열 수 상수에 의존하지 않음을 정적 회귀로 확인
-

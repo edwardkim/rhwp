@@ -19,4 +19,3 @@
 - `npm test`: 1,290 pass, 1 skip, 0 fail
 - `npm run build`: 244 modules pass, 기존 대형 chunk 경고만 확인
 - `git diff --check`: pass
-

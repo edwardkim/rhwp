@@ -2,7 +2,7 @@
 
 - **이슈**: [#6041](https://github.com/edwardkim/rhwp/issues/6041)
 - **브랜치**: `codex/issue-6041-budget-first-render-scale`
-- **stack base**: `codex/issue-6040-zoom-topology@dfe27e188`
+- **stack base**: `codex/issue-6040-zoom-topology@c2932ff30`
 - **설계 승인 출처**: 2026-08-30 작업지시자 대화·이슈 본문
 - **문서 보정**: 최초 구현 뒤 저장소 계획 파일 누락을 발견해 실제 구현·검증 순서를 소급 없이 기록
 
@@ -61,4 +61,3 @@ surfacePixels(page) = width × height × zoom² × effectiveDpr² × layerCount(
 - CanvasKit에서 layerCount 1과 기존 raw DPR 보존
 - 회귀가 확인되면 budget planner 호출을 제거하면 기존 `zoom×rawDpr→clampRenderScale` 경로로 즉시
   돌아갈 수 있다. #6040 배치 코드는 이 layer에서 수정하지 않는다.
-

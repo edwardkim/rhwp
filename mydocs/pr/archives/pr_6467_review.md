@@ -2,7 +2,7 @@
 kind: pr-review
 status: pending-user-validation
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-31
+last_verified: 2026-09-02
 pr: 6467
 issue: 6041
 author: postmelee
@@ -29,15 +29,19 @@ author: postmelee
 | PR | [#6467](https://github.com/edwardkim/rhwp/pull/6467) |
 | 관련 issue | [#6041](https://github.com/edwardkim/rhwp/issues/6041) |
 | base / head | `codex/issue-6040-zoom-topology` / `codex/issue-6041-budget-first-render-scale` |
-| stack base | `dfe27e18884cd067b0f4ccd0ed9141e20640fac5` |
+| 최초 stack base | `dfe27e18884cd067b0f4ccd0ed9141e20640fac5` |
+| 2026-09-02 restack base | `c2932ff30fbc45e3d89eefad7c75a71518acde33` |
 | 최초 candidate | `1aa5a20419909baed4d1c37bcf28bbfdade98aa5` |
 | 보정 code candidate | `e37d483fd` |
 | 2026-08-31 정리 전 head | `5fc2542005ca271c9ac3452ce11416e7a0855ba7` |
-| 원격 상태 | Draft / MERGEABLE / CLEAN, statusCheckRollup 비어 있음; CI 통과 의미 아님 |
+| restack code candidate | `001dd47cd` → `41adb5336` |
+| restack 문서 전 head | `816519c86` |
+| 원격 상태 | push 전 원격은 옛 head `ba68cd655`; 최신 local restack push 뒤 다시 확인 필요 |
 
-이 PR은 계획된 GitHub native stack의 2/4 PR이다. #6040 source branch만을 base로 하며 후속 순서는
-#6521 overview LOD PR → #6042 가상화/LRU/scheduler PR이다. 본 PR은 surface 예산 기반 정책만 포함한다.
-예산 이내 저배율 overview의 ceiling을 섞지 않으며 `Closes #6041`을 `Refs #6041`로 바꿨다.
+이 PR은 계획된 GitHub native stack의 2/3 PR이다. #6040 source branch만을 base로 하며 후속 순서는
+#6042 가상화/LRU/scheduler PR이다. 본 PR은 surface 예산 기반 정책만 포함한다. #6521에서 실험한
+예산 이내 저배율 overview ceiling은 화질 저하 대비 이득 부족으로 비채택했으며 이 PR에 섞지 않는다.
+`Closes #6041`은 사용하지 않고 `Refs #6041`을 유지한다.
 
 ## self-review
 
@@ -86,18 +90,30 @@ PNG를 리사이즈·손실 압축 없이 붙였다. 사람이 9개를 모두 �
   pixel과 raw RGBA backing-store 등가값이 37.49% 감소했다.
 - 100→200% 완료 시간 중앙값은 기준 1352ms, 변경본 1360ms로 사실상 동일하다. wall-clock 속도 향상은
   주장하지 않으며, 실측 샘플이 예산 이내면 최적화하지 않는 것이 이번 정책의 올바른 결과다.
-- 위 시간에는 UI 자동화와 약 500ms 안정화 관측이 포함된다. 직접 UX latency로 재사용하지 않으며,
-  #6521에서 generation별 preview/focused-sharp/visible-stable/retained-complete를 계측한다.
-- 사용자 시각 검증, 보정 candidate의 PR CI와 latest head required aggregate를 확인하기 전에는 Ready/merge
-  또는 #6042 시작을 권고하지 않는다.
+- 위 시간에는 UI 자동화와 약 500ms 안정화 관측이 포함된다. 직접 UX latency로 재사용하지 않는다.
+  #6521에서 네 완료 경계를 실험했지만 화질 정책은 비채택했고, 필요한 관찰 계약만 #6042에서 재검토한다.
+- restack head의 PR CI와 latest head required aggregate를 확인하기 전에는 Ready/merge를 권고하지 않는다.
+
+## 2026-09-02 restack 재자격화
+
+- #6454의 geometry 1·2·3·6·50·500쪽과 실문서 3개의 smooth/direct/resize 27조합에서 공유
+  zoom-frame snapshot이 진입 gate를 통과하지 못해 제품 변경 없이 `NOT_PLANNED`로 종료됐다.
+- #6467 고유 6개 커밋을 #6458 최신 head `c2932ff30` 위로 재배치했다. 첫 source 충돌은 #6458의
+  HF overlay·auto-column reset과 #6467의 surface budget 상태·reset을 모두 유지했다.
+- 새 #6458 zoom-path 테스트의 prototype fixture에 #6467의 `renderSurfacePlan`과
+  `renderSurfaceDecisions` 초기 상태를 추가했다. 제품 class의 optional guard로 테스트를 우회하지 않았다.
+- focused 21/21, TypeScript, Studio 1,373 pass·1 skip, production build 247 modules,
+  E2E manifest 125/125와 `git diff --check`를 통과했다.
+- 실제 1280×720 Canvas2D·20쪽 실문서의 자동 34%에서 3열, 편집 영역 중심 오차 0.17px,
+  visible 6쪽·retained 3쪽의 raw DPR 2 유지, 연결된 Canvas와 콘솔 warning/error 0을 확인했다.
 
 ## 최종 권고
 
-**구현·기존 증적 범위 동결, Draft 유지.** 2026-08-31 지시는 PR 정리와 후속 이슈·계획 기록까지다.
-source/test는 code candidate `e37d483fd`와 같고, focused planner 13건 및 TypeScript 검사를 재실행해
-통과했다. 이번 tail은 mydocs만 바꾸므로 전체 npm/Cargo와 browser 캡처는 재실행하지 않았으며,
-기존 1,290 pass/1 skip 및 시각 증적을 새 실행 결과로 표시하지 않는다.
+**restack·재검증 완료, Draft 유지.** 제품 정책은 기존 보정 candidate와 같고, 새 base와의 테스트
+fixture 호환만 추가했다. 전체 Studio·production build·실제 브라우저 smoke를 새 restack head에서
+재실행했으며 기존 9개 비교 PNG의 화질 판단과 새 34% integration smoke를 구분해 기록한다.
 
-전체 stack 구현·검증 후 별도 승인으로 아래에서 위 순서로 Ready 전환한다. 최신 head CI와 사용자
-시각 판정·merge는 남은 게이트이며, 현재 `CLEAN`이나 빈 check 목록으로 대체하지 않는다.
-실행 기록은 [정리 계획](pr_6467_review_impl.md)과 [Stage 4](../../working/task_m100_6041_stage4.md)를 따른다.
+전체 3단 stack 구현·검증 후 별도 승인으로 아래에서 위 순서로 Ready 전환한다. 최신 head CI와 merge는
+남은 게이트이며, 현재 local 통과를 GitHub required check로 대체하지 않는다. 실행 기록은
+[정리 계획](pr_6467_review_impl.md), [Stage 4](../../working/task_m100_6041_stage4.md),
+[Stage 5](../../working/task_m100_6041_stage5.md)를 따른다.
