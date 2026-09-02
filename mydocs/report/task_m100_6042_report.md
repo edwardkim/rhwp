@@ -2,7 +2,7 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **Draft PR #6637 제출 — review-only head·stack 재검증 대기**
+- 상태: **Draft PR #6637 제출 — stack 재정렬·Full CI 대기**
 - branch: `codex/issue-6042-page-virtualization`
 - 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 수행 계획: [task_m100_6042.md](../plans/task_m100_6042.md)
@@ -128,7 +128,9 @@ OffscreenCanvas는 검토했지만 사용자 지시에 따라 포함하지 않�
 
 원격 stack은 #6458 → #6467 → #6042 순서다. 현재 #6458은 최신 `devel`과 conflict이므로 전체 stack을
 Ready로 바꾸기 전에 bottom부터 restack하고 위 PR을 다시 쌓아야 한다. Draft PR #6637과 self-review
-기록까지 제출했으며, review-only head CI, stack restack, Ready, merge는 후속 경계다.
+기록까지 제출했다. 현재 feature branch base는 저장소의 `main`/`devel` pull-request workflow 범위 밖이라
+checks가 생성되지 않으며, 이를 CI 통과로 간주하지 않는다. stack restack 뒤 `devel` 대상 exact head의
+Full CI, Ready, merge는 후속 경계다.
 
 ## 7. 근거 문서
 

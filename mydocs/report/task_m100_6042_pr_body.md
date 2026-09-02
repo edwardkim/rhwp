@@ -7,6 +7,13 @@ Closes #6042
 리뷰는 #6467 대비 diff를 기준으로 부탁드립니다. 현재 bottom #6458은 최신 `devel`과 conflict가 있어,
 전체 stack의 Ready 전환 전 bottom부터 restack하고 위 PR을 다시 쌓아 재검증할 예정입니다.
 
+## Stack CI 상태
+
+저장소의 pull-request workflow는 base가 `main` 또는 `devel`인 PR만 실행합니다. 이 PR은 native stack을
+유지하기 위해 현재 #6467 feature branch를 base로 두므로 GitHub Actions run/check가 생성되지 않습니다.
+이는 CI 통과를 뜻하지 않습니다. 제품 후보는 아래 로컬 전체 게이트를 통과했지만, bottom-first restack
+후 이 PR이 `devel` 대상이 된 exact head에서 Full CI를 다시 통과하기 전에는 Ready로 전환하지 않습니다.
+
 ## 해결하려는 사용자 문제
 
 #6467까지는 한 번에 유지할 Canvas의 physical-pixel 예산과 쪽별 DPR을 정하지만, **언제 어느 쪽을
