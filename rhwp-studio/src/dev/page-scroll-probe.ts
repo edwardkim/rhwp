@@ -5,7 +5,7 @@ import type { EventBus } from '../core/event-bus';
 import type { PageInfo } from '../core/types';
 import type { RenderSurfaceDecision } from '../view/render-surface-budget';
 import { clampRenderScale } from '../view/render-backend';
-import { currentImageRequest, flowImageState, imageCompletion, observeBoundary, ScrollObservation, surfacePixels, viewportApplied,
+import { admittedRetainedPages, currentImageRequest, flowImageState, imageCompletion, observeBoundary, ScrollObservation, surfacePixels, viewportApplied,
   type BoundaryObservation, type ObservedViewport } from './scroll-observation';
 
 /** #6042 Stage 1 관찰 adapter. 제품 DPR/geometry/queue/renderer 결과를 수정하지 않는다. */
@@ -132,8 +132,13 @@ export function installPageScrollProbe(
     return entry?.layer.isConnected ? flowImageState(entry.images) : 'ready';
   };
   const imageState = (page: number) => imageCompletion(images.get(page)?.scope === scope() ? images.get(page)?.kind : undefined);
+  const admittedRetained = () => admittedRetainedPages(
+    cv.currentRetainedPages,
+    page => cv.canvasPool.getCanvas(page) !== undefined,
+  );
   const stable = () => viewportApplied(viewport(), applied) && !vm.isZoomAnimating() && cv.currentVisiblePages.length > 0
-    && cv.currentRetainedPages.every(p => rendered(p) && !pending(p))
+    && cv.currentVisiblePages.every(p => rendered(p) && !pending(p))
+    && admittedRetained().every(p => rendered(p) && !pending(p))
     && cv.pageRenderScheduler.snapshot().visibleQueued === 0
     && cv.pageRenderScheduler.snapshot().prefetchQueued === 0;
 
@@ -147,7 +152,8 @@ export function installPageScrollProbe(
     const ready = (page: number) => rendered(page) && !pending(page) && flowState(page) === 'ready'
       && imageState(page) !== 'pending';
     const image = (page: number) => images.get(page);
-    const failed = cv.currentRetainedPages.some(p => flowState(p) === 'failed'
+    const retained = admittedRetained();
+    const failed = retained.some(p => flowState(p) === 'failed'
       || (image(p)?.scope === activeScope && image(p)?.kind === 'failed'));
     if (failed && stable()) {
       trace.finish('interrupted', 'image-prefetch-failed/fallback: sharp completion unproven');
@@ -161,7 +167,7 @@ export function installPageScrollProbe(
     }
     // These two are known-render-work boundaries, not compositor presentation timestamps.
     if (visible.length && visible.every(ready)) trace.mark(id, 'visibleStable', at);
-    if (stable() && cv.currentRetainedPages.every(ready)) trace.mark(id, 'retainedComplete', at);
+    if (stable() && retained.every(ready)) trace.mark(id, 'retainedComplete', at);
   };
 
   const tick = () => {
@@ -171,7 +177,7 @@ export function installPageScrollProbe(
     trace.frame(trace.id, now());
     inspectMilestones();
     if (trace.id === null) return;
-    settledFrames = stable() && geometry && cv.currentRetainedPages.every(p => flowState(p) === 'ready'
+    settledFrames = stable() && geometry && admittedRetained().every(p => flowState(p) === 'ready'
       && imageState(p) !== 'pending') ? settledFrames + 1 : 0;
     if (settledFrames >= 2) {
       trace.finish('complete', 'known render work only; presentation and decoder completeness are separate evidence');

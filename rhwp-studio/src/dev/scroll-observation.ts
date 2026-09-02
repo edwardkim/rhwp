@@ -147,6 +147,17 @@ export function surfacePixels(surfaces: readonly { width: number; height: number
   return surfaces.reduce((sum, surface) => sum + surface.width * surface.height, 0);
 }
 
+/**
+ * retained는 예산상 시도할 수 있는 후보 집합이다. 선택 prefetch가 admission에서 거절된 쪽은
+ * surface가 없으므로, 완료 대기는 실제로 materialize된 retained working set에만 적용한다.
+ */
+export function admittedRetainedPages(
+  retainedPages: readonly number[],
+  hasSurface: (page: number) => boolean,
+): number[] {
+  return retainedPages.filter(hasSurface);
+}
+
 export interface ObservedViewport { scope: string; zoom: number; x: number; y: number }
 /** scrollTop setter는 동기지만 visibility 갱신은 다음 scroll rAF다. 이전 화면 완료를 재사용하지 않는다. */
 export function viewportApplied(target: ObservedViewport, applied: ObservedViewport | null): boolean {

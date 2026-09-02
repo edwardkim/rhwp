@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { currentImageRequest, flowImageState, imageCompletion, observeBoundary, ScrollObservation, surfacePixels, viewportApplied } from '../src/dev/scroll-observation.ts';
+import { admittedRetainedPages, currentImageRequest, flowImageState, imageCompletion, observeBoundary, ScrollObservation, surfacePixels, viewportApplied } from '../src/dev/scroll-observation.ts';
 
 test('관찰은 this·인수·반환 값과 원래 prototype descriptor를 보존한다', () => {
   class Host { n = 3; run(a: number) { return this.n + a; } }
@@ -88,6 +88,10 @@ test('기록·span·frame buffer는 bounded이며 snapshot은 독립 복사다',
 
 test('surface 비용은 실제 다층·익명 pool dimension 합이며 명목 DPR을 곱하지 않는다', () => {
   assert.equal(surfacePixels([{ width: 540, height: 764 }, { width: 540, height: 764 }, { width: 0, height: 0 }]), 825120);
+});
+
+test('예산 gate로 materialize하지 않은 선택 retained 후보는 완료 대기 대상에서 제외한다', () => {
+  assert.deepEqual(admittedRetainedPages([4, 5, 6], page => page !== 5), [4, 6]);
 });
 
 test('scroll setter 뒤 이전 visibility는 완료가 아니며 scope·zoom·양축 ack가 모두 필요하다', () => {
