@@ -241,6 +241,28 @@ test('예산 때문에 거절한 선택 prefetch를 scheduler 진단에 누적�
   assert.equal(scheduler.snapshot().prefetchAdmissionRejected, 3);
 });
 
+test('scroll settle은 마지막 입력 하나만 debounce하고 cancelAll에서 회수한다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host, { scrollSettleDelayMs: 150 });
+  const settled: number[] = [];
+
+  scheduler.scheduleScrollSettle(() => settled.push(1));
+  const firstTimer = [...host.timers.keys()][0]!;
+  scheduler.scheduleScrollSettle(() => settled.push(2));
+  assert.equal(host.timers.size, 1);
+  assert.ok(host.canceledTimers.includes(firstTimer));
+  assert.equal(scheduler.snapshot().scrollSettleScheduled, true);
+
+  host.runTimer();
+  assert.deepEqual(settled, [2]);
+  assert.equal(scheduler.snapshot().scrollSettleScheduled, false);
+
+  scheduler.scheduleScrollSettle(() => settled.push(3));
+  scheduler.cancelAll();
+  assert.equal(host.timers.size, 0);
+  assert.deepEqual(settled, [2]);
+});
+
 test('active target-DPR 전환은 speculative idle 뒤에도 task 경계별로 즉시 이어간다', () => {
   const host = new FakeHost();
   const scheduler = new PageRenderScheduler(host);

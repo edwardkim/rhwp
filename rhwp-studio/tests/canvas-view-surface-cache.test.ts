@@ -167,8 +167,22 @@ test('CanvasView는 완성 다층 bundle을 exact key로 재부착하고 raster�
     assert.deepEqual(parent.children, [main, overlay], '원래 bundle DOM 순서를 복원한다');
     assert.equal(view.pageSurfaceLru.snapshot().hits, 1);
 
+    const actualLookupKey = main.dataset.rhwpSurfaceCacheLookupKey;
+    view.renderSurfaceDecisions.set(0, {
+      ...view.renderSurfaceDecisions.get(0),
+      effectiveDpr: 2,
+    });
     const secondBundle = view.detachCompletedPageSurface(0);
     assert.ok(secondBundle);
+    assert.equal(
+      secondBundle.lookupKey,
+      actualLookupKey,
+      '대기 target DPR과 달라도 완성된 실제 surface exact key로 보존한다',
+    );
+    view.renderSurfaceDecisions.set(0, {
+      ...view.renderSurfaceDecisions.get(0),
+      effectiveDpr: 1,
+    });
     view.pageSurfaceLru.put(secondBundle);
     view.activeRendererDecisionKey = 'blake3:test|revision:4|profile:screen|resources:2';
     view.renderPage(0);

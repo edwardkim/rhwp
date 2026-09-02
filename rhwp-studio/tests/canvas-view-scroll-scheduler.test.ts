@@ -40,6 +40,13 @@ class FrameHost implements PageRenderSchedulerHost {
     this.frames.delete(next[0]);
     next[1]();
   }
+
+  runTimer(): void {
+    const next = this.timers.entries().next().value as ([number, () => void] | undefined);
+    assert.ok(next);
+    this.timers.delete(next[0]);
+    next[1]();
+  }
 }
 
 test('실제 CanvasView update 경계는 많은 scroll visible만 분할하고 initial은 동기 보존한다', async () => {
@@ -173,6 +180,68 @@ test('실제 CanvasView scroll 경계도 1·2 visible은 동기 fast path를 유
     view.updateVisiblePages('scroll');
     assert.deepEqual(calls, [0, 1]);
     assert.equal(host.frames.size, 0);
+  } finally {
+    await vite.close();
+  }
+});
+
+test('CanvasView는 scroll 중 surface를 유지하고 정착 승격은 center-first frame work로 실행한다', async () => {
+  const studioRoot = fileURLToPath(new URL('..', import.meta.url));
+  const vite = await createServer({
+    root: studioRoot,
+    appType: 'custom',
+    logLevel: 'silent',
+    server: { middlewareMode: true },
+  });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const host = new FrameHost();
+    const phases: Array<[boolean, string]> = [];
+    const calls: number[] = [];
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    Object.assign(view, {
+      pages: Array.from({ length: 3 }, () => ({ width: 100, height: 200 })),
+      pageMovement: { direction: 'vertical', wheelHorizontal: false },
+      viewportManager: {
+        getScrollX: () => 0,
+        getScrollY: () => 100,
+        getViewportSize: () => ({ width: 800, height: 600 }),
+      },
+      virtualScroll: {
+        getVisibilitySnapshot: () => ({ visiblePages: [0, 1, 2], prefetchPages: [0, 1, 2] }),
+        getPageAtPoint: () => 1,
+      },
+      canvasPool: { activePages: [], has: () => false, getCanvas: () => undefined },
+      pageSurfaceLru: { put: () => true, hasLookup: () => false },
+      pageRenderScheduler: new PageRenderScheduler(host, { scrollSettleDelayMs: 150 }),
+      renderWorkGeneration: 0,
+      lastScrollSample: null,
+      currentVisiblePages: [],
+      currentRetainedPages: [],
+      editingPageIndex: 0,
+      headerFooterEditState: null,
+      disposed: false,
+      updateActivePageSnapshot: () => undefined,
+      refreshRenderSurfacePlan: (sync: boolean, phase: string) => phases.push([sync, phase]),
+      reconcilePageSurfaceBudget: () => undefined,
+      renderHeaderFooterEditOverlays: () => undefined,
+      pageSurfaceDescriptor: (page: number) => ({ lookupKey: `page:${page}`, estimatedPixelCount: 20_000 }),
+      renderPage: (page: number) => calls.push(page),
+    });
+
+    view.updateVisiblePages('scroll');
+    assert.deepEqual(phases, [[false, 'scrolling']]);
+    assert.equal(host.timers.size, 1, '마지막 scroll 뒤 정착 callback 하나를 예약한다');
+    assert.deepEqual(calls, []);
+
+    host.runTimer();
+    assert.deepEqual(phases, [[false, 'scrolling'], [false, 'scroll-settled']]);
+    assert.deepEqual(calls, [], '정착 승격도 timer callback 안에서 raster하지 않는다');
+    assert.equal(view.editingPageIndex, 0, 'viewport 정착은 편집 focus를 바꾸지 않는다');
+    assert.equal(host.frames.size, 1);
+
+    host.runFrame();
+    assert.equal(calls[0], 1, '정착 승격은 기존 편집 focus보다 viewport 중심 쪽을 먼저 그린다');
   } finally {
     await vite.close();
   }
@@ -455,6 +524,13 @@ test('visible focused 쪽은 기존 surface의 key가 낡았어도 새 비포커
     const ordered = [...work].sort((a, b) => a.priority - b.priority);
     assert.equal(ordered[0].pageIndex, 3);
     assert.equal(ordered[1].pageIndex, 1);
+
+    const settled = view.buildVisibleRenderWork([0, 1, 2, 3], 1, 1, true) as Array<{
+      pageIndex: number;
+      priority: number;
+    }>;
+    const settledOrder = [...settled].sort((a, b) => a.priority - b.priority);
+    assert.equal(settledOrder[0].pageIndex, 1, 'scroll 정착은 viewport 중심을 우선한다');
   } finally {
     await vite.close();
   }

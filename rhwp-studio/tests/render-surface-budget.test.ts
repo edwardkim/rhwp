@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import {
   planRenderSurfaceBudget,
   renderDprSteps,
+  resolveSettledVisibleEffectiveDpr,
   type RenderSurfacePageInput,
 } from '../src/view/render-surface-budget.ts';
 
@@ -172,6 +173,47 @@ test('편집 페이지는 예산을 충족할 수 없는 경우에도 raw DPR을
   assert.equal(plan.withinBudget, false);
   assert.equal(plan.decisions[0]?.effectiveDpr, 2);
   assert.equal(plan.decisions[0]?.tier, 'screen');
+});
+
+test('scroll interaction lock은 실제 surface DPR을 예산·히스테리시스보다 우선해 유지한다', () => {
+  const input = pages(2, { width: 1000, height: 1000 });
+  input[0]!.lockedEffectiveDpr = 1;
+  input[1]!.lockedEffectiveDpr = 2;
+  const plan = planRenderSurfaceBudget({
+    pages: input,
+    zoom: 1,
+    rawDpr: 2,
+    layerCount: 4,
+    visiblePixelBudget: 1,
+    retainedPixelBudget: 1,
+  });
+
+  assert.equal(plan.withinBudget, false);
+  assert.deepEqual(plan.decisions.map(decision => decision.effectiveDpr), [1, 2]);
+  assert.equal(plan.heldByHysteresis, false, 'interaction lock을 hysteresis 보존으로 보고하지 않는다');
+});
+
+test('scroll 정착 visible DPR은 64M absolute gate에서 raw, 1.5, planner fallback을 구분한다', () => {
+  assert.equal(resolveSettledVisibleEffectiveDpr({
+    pages: pages(2, { width: 1000, height: 1000 }),
+    zoom: 1,
+    rawDpr: 2,
+    layerCount: 4,
+  }), 2, '두 쪽 raw 합계 32M은 화면 DPR을 회복한다');
+
+  assert.equal(resolveSettledVisibleEffectiveDpr({
+    pages: pages(5, { width: 1000, height: 1000 }),
+    zoom: 1,
+    rawDpr: 2,
+    layerCount: 4,
+  }), 1.5, 'raw 80M은 넘지만 DPR 1.5의 45M은 gate 안이다');
+
+  assert.equal(resolveSettledVisibleEffectiveDpr({
+    pages: pages(8, { width: 1000, height: 1000 }),
+    zoom: 1,
+    rawDpr: 2,
+    layerCount: 4,
+  }), null, 'DPR 1.5도 64M을 넘으면 기존 planner 결정을 유지한다');
 });
 
 test('포커스가 이동하면 새 편집 쪽은 즉시 raw DPR로 승격된다', () => {
