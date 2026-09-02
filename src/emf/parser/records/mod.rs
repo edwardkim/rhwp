@@ -112,6 +112,15 @@ pub enum Record {
         points: Vec<(i16, i16)>,
     },
 
+    /// [#6577] `EMR_INTERSECTCLIPRECT` — 현재 클립을 이 사각형과 교차시킨다.
+    IntersectClipRect(RectL),
+    /// `EMR_EXTSELECTCLIPRGN` — `has_region` 이 false 이고 `mode` 가 `RGN_COPY`(5) 면
+    /// 클립을 기본(무제한)으로 되돌리라는 뜻이다.
+    ExtSelectClipRgn {
+        mode: u32,
+        has_region: bool,
+    },
+
     // 패스 (단계 12)
     BeginPath,
     EndPath,
