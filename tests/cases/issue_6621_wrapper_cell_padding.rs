@@ -4,9 +4,10 @@
 //! `samples/exam_social.hwp` 1쪽 pi=15: 바깥 1×1 표(셀 pad 850HU=11.33px, bf=6 테두리) 안에
 //! 6×3 대화체 표가 들어 있고 첫 열 셀마다 41.5px 정사각형 그림이 글자처럼 놓인다. 한/글 2022
 //! PDF(4절→A3 균일 배율 0.9385, 왼쪽 위 기준) 실측: 상자 왼쪽 선 x=549.9, 위 선 y=325.0,
-//! 첫 그림 (561.2, 343.3) = 상자 원점 + 여백 11.33 + 첫 행 5.1 + 셀 여백 1.9. 종전 rhwp 는
-//! 안쪽 표를 상자 원점(549.9, 324.9)에 그려 그림 5장이 (−11.3, −11.5), 상자 높이가 22.7px
-//! 짧았다(저장 줄 원장은 그림 줄 lh = 그림 높이라 줄 높이 문제가 아니다).
+//! 첫 그림 (561.2, 343.3) = 상자 원점 + 여백 11.33 + 첫 행 5.1 + 셀 여백 1.9, 상자 아래 선
+//! y=695.5 (높이 370.4 = 안쪽 표 343.9 + 여백 22.7 + 안쪽 표 바깥 여백 아래 283HU=3.8).
+//! 종전 rhwp 는 안쪽 표를 상자 원점(549.9, 324.9)에 그려 그림 5장이 (−11.3, −11.5), 상자
+//! 높이가 26.5px 짧았다(저장 줄 원장은 그림 줄 lh = 그림 높이라 줄 높이 문제가 아니다).
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -71,7 +72,8 @@ fn nested_table_pictures_sit_inside_the_wrapper_cell_padding() {
 #[test]
 fn wrapper_border_box_includes_top_and_bottom_padding() {
     let svg = page0_svg();
-    // 상자 왼쪽 세로 테두리: x≈549.9 인 <line> 중 가장 긴 것. 높이 = 안쪽 표 343.9 + 여백 22.7.
+    // 상자 왼쪽 세로 테두리: x≈549.9 인 <line> 중 가장 긴 것.
+    // 높이 = 안쪽 표 343.9 + 셀 여백 22.7 + 안쪽 표 바깥 여백 아래 3.8 (한/글 370.4).
     let mut best: Option<(f64, f64)> = None;
     for t in svg.split("<line ").skip(1) {
         let t = &t[..t.find("/>").expect("line 닫힘")];
@@ -90,8 +92,8 @@ fn wrapper_border_box_includes_top_and_bottom_padding() {
     let (top, bottom) = best.expect("상자 왼쪽 테두리");
     assert!((top - 325.0).abs() < 0.7, "상자 위 325.0: {top:.1}");
     assert!(
-        (bottom - top - (343.9 + 22.7)).abs() < 1.0,
-        "상자 높이 = 안쪽 표 343.9 + 여백 22.7: {:.1}",
+        (bottom - top - (343.9 + 22.7 + 3.8)).abs() < 1.0,
+        "상자 높이 = 안쪽 표 343.9 + 셀 여백 22.7 + 안쪽 표 om_bottom 3.8: {:.1}",
         bottom - top
     );
 }

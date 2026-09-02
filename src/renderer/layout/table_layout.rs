@@ -2526,17 +2526,27 @@ impl LayoutEngine {
                             inline_x_override,
                             paper_w,
                         );
+                        // 안쪽 표의 바깥 여백도 셀 안 여백 안쪽에 그대로 남는다. 아래
+                        // `layout_table` 호출은 상자와 같은 depth(본문이면 0)·inline 위치로 안쪽
+                        // 표를 놓아 `compute_table_y_position` 의 중첩 표 분기(om_top)와 반환값의
+                        // om 포함 높이를 타지 않으므로 여기서 더한다. k-water 17쪽 실측: 셀 pad
+                        // (510,510,141,141) + 안쪽 표 om 141 → 한/글 점선은 실선에서 (8.7, 3.8) 안쪽,
+                        // exam_social 4번 상자: 안쪽 표 om_bottom 283 → 상자 바닥 +3.8px.
+                        let om_l = hwpunit_to_px(nested.outer_margin_left as i32, self.dpi);
+                        let om_r = hwpunit_to_px(nested.outer_margin_right as i32, self.dpi);
+                        let om_t = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi);
+                        let om_b = hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
                         // 안쪽 표가 여백을 뺀 내용 상자보다 조금 넓게 저장된 문서(exam_social:
                         // 1.4px)는 한/글처럼 오른쪽 여백으로 흘러넘기고 축소하지 않는다.
                         let inner_area = LayoutRect {
-                            x: col_area.x + pad_l,
+                            x: col_area.x + pad_l + om_l,
                             y: col_area.y,
-                            width: (col_area.width - pad_l - pad_r).max(nested_w),
+                            width: (col_area.width - pad_l - pad_r - om_l - om_r).max(nested_w),
                             height: col_area.height,
                         };
-                        let inner_y_start = y_start + pad_t;
+                        let inner_y_start = y_start + pad_t + om_t;
                         // 글자처럼 상자는 x 를 줄 배치가 준 inline_x_override 로 받으므로 그 값도 옮긴다.
-                        let inner_inline_x = inline_x_override.map(|x| x + pad_l);
+                        let inner_inline_x = inline_x_override.map(|x| x + pad_l + om_l);
 
                         let y_end = self.layout_table(
                             tree,
@@ -2564,7 +2574,7 @@ impl LayoutEngine {
                             false,
                         );
 
-                        let y_end = y_end + pad_b;
+                        let y_end = y_end + om_b + pad_b;
                         if let Some(bs_borders) = outer_border_meta {
                             let outer_h_actual = (y_end - outer_y).max(0.0);
                             if outer_h_actual > 0.0 {

@@ -10,6 +10,11 @@
 //!
 //! 권위 자료: pi=15 4번 자료 박스 (외부 1x1 padding=850 + 내부 6x3 대화체).
 //! 한컴2022 PDF (`pdf/exam_social-2022.pdf`) p1 우측 4번 영역 외곽 박스 시각 정합.
+//!
+//! [#6621] 상자 기하는 한/글 PDF 실측(4절→A3 높이 기준 균일 배율 0.9385, 왼쪽 위 기준)
+//! 으로 못 박는다: 상자 실선 x 549.9~961.8 (= 상자 표 선언 폭 30894HU=411.9px),
+//! y 325.1~695.5 (높이 370.4 = 안쪽 표 + 셀 안 여백 850HU×2 + 안쪽 표 om_bottom 283).
+//! 종전 rhwp 는 안쪽 표 폭(390.65)으로 상자를 그려 오른쪽 선이 940.5 였다.
 
 use std::fs;
 use std::path::Path;
@@ -28,12 +33,11 @@ fn nested_table_border_exam_social_p1_q4_outline_present() {
     let svg = doc.render_page_svg(0).expect("render_page_svg");
 
     // 4번 자료 박스 외곽 4개 라인이 SVG 에 존재해야 한다.
-    // 박스 width: nested 6x3 표 측정 결과 — 390.65 (nested.common.width).
-    // x 좌표: 549.88 (좌) ~ 940.53 (우) — body left margin + nested 표 위치.
-    // y 좌표: 다른 PR 영역의 페이지네이션 변경에 따라 시프트 가능 영역으로 영역
-    // 좌표 hardcoded 영역 회피 영역 영역 — x 좌표 영역과 stroke 영역 본질 영역만 영역 검증 영역.
+    // x 좌표: 549.88 (좌) ~ 961.8 (우) — body left margin + 상자 표 선언 폭 411.9px.
+    // 한/글 PDF 실측 549.9 / 961.8. y 는 앞 내용의 페이지네이션에 따라 움직일 수 있어
+    // 절대값 대신 상자 높이(아래)로 검증한다.
     let lx = "549.8800000000001";
-    let rx = "940.5333333333334";
+    let rx = "961.8000000000002";
 
     // 좌측선: x1==x2==lx (수직선)
     let has_left_line = svg.contains(&format!("<line x1=\"{lx}\" y1="))
@@ -57,12 +61,23 @@ fn nested_table_border_exam_social_p1_q4_outline_present() {
         "4번 박스 수평 외곽선 누락 (x={lx}~{rx})"
     );
 
-    // 외곽선 stroke=#000000 width=0.75 (3 조건 AND 가드 영역 발동 영역의 본 PR 영역의 본질 영역)
+    // 좌측 세로선 + 상·하 수평선이 모두 lx 에서 시작하므로 lx 좌표는 3건 이상이다.
     let outline_pattern = format!("x1=\"{lx}\"");
     let outline_count = svg.matches(&outline_pattern).count();
     assert!(
-        outline_count >= 2,
-        "4번 박스 좌측+상단 라인 영역의 lx 좌표 ≥ 2건 영역 필요 영역 (실제: {outline_count})"
+        outline_count >= 3,
+        "4번 박스 좌측·상단·하단 라인의 lx 좌표 ≥ 3건 필요 (실제: {outline_count})"
+    );
+
+    // 상자 높이: 좌측 세로선(x=lx) 중 가장 긴 것. 한/글 370.4 (325.1~695.5).
+    let box_height = parse_lines(&svg)
+        .into_iter()
+        .filter(|(x1, _, x2, _, _)| (x1 - x2).abs() < 0.01 && (x1 - 549.88).abs() < 0.01)
+        .map(|(_, y1, _, y2, _)| (y2 - y1).abs())
+        .fold(0.0, f64::max);
+    assert!(
+        (box_height - 370.4).abs() < 1.0,
+        "4번 박스 높이 370.4 (안쪽 표 + 셀 여백 850HU×2 + 안쪽 표 om_bottom 283): {box_height:.1}"
     );
 }
 
@@ -95,10 +110,14 @@ fn parse_lines(svg: &str) -> Vec<(f64, f64, f64, f64, bool)> {
 /// 외곽 borderFill 을 한 칸 어긋나게 읽어(NONE) 실선 외곽선이 통째로 누락되고 내부 표
 /// 점선만 남았다. 정정 후에는 점선 외곽과 같은 y 에 실선 외곽선이 존재해야 한다.
 ///
-/// 가드: 전폭(>500px) 수평선 중 **점선과 y 가 일치하는 실선**이 ≥1 존재하는지 확인한다.
-/// 좌표를 hardcode 하지 않고 "외곽 박스 = 내부 표 외곽" 관계로 판정하므로, 무관한
-/// 다른 표의 실선(겹치는 점선 없음)이나 페이지네이션 시프트에 영향받지 않는다.
-/// (버그: 일치 0건 → 실패 / 정정: 상·하 2건 일치 → 통과)
+/// 가드: 전폭(>500px) 수평선 중 **점선 바깥쪽에 여백만큼 떨어진 실선**이 위·아래로 존재하는지
+/// 확인한다. 좌표를 hardcode 하지 않고 "외곽 박스 = 내부 표 외곽 + 여백" 관계로 판정하므로,
+/// 무관한 다른 표의 실선이나 페이지네이션 시프트에 영향받지 않는다.
+///
+/// [#6621] 여백은 저장값 그대로다: wrapper 셀 안 여백 위/아래 141HU + 안쪽 표 바깥 여백
+/// 위/아래 141HU = 3.8px. 한/글 2022 PDF 17쪽 실측: 실선 583.2/1001.4, 점선 587.0/997.5.
+/// 종전 rhwp 는 두 여백을 모두 버려 실선과 점선이 같은 y 였고(583.3/993.9), 상자가 7.5px
+/// 짧았다. (버그: 실선 누락 또는 점선과 같은 y → 실패 / 정정: 위·아래 3.8px 바깥 → 통과)
 #[test]
 fn nested_table_border_kwater_rfp_outer_outline_present() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -106,6 +125,8 @@ fn nested_table_border_kwater_rfp_outer_outline_present() {
     let bytes = fs::read(&path).expect("read k-water-rfp.hwp");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse k-water-rfp.hwp");
 
+    // 셀 안 여백 141HU + 안쪽 표 바깥 여백 141HU (96DPI px).
+    let inset = 2.0 * 141.0 * 96.0 / 7200.0;
     let mut matched_pages = Vec::new();
     for page_idx in 0..doc.page_count() {
         let svg = doc
@@ -120,19 +141,31 @@ fn nested_table_border_kwater_rfp_outer_outline_present() {
             .filter(|(x1, y1, x2, y2, dashed)| *dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
             .map(|(_, y1, ..)| *y1)
             .collect();
-        // 점선(내부 표 외곽 격자)과 y 가 일치(±1px)하는 실선(wrapper 외곽 테두리) 개수.
-        let outer_solid_on_inner = lines
+        let (Some(dashed_top), Some(dashed_bottom)) = (
+            dashed_ys.iter().cloned().reduce(f64::min),
+            dashed_ys.iter().cloned().reduce(f64::max),
+        ) else {
+            continue;
+        };
+        let solid_ys: Vec<f64> = lines
             .iter()
             .filter(|(x1, y1, x2, y2, dashed)| !*dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
-            .filter(|(_, y1, ..)| dashed_ys.iter().any(|dy| (dy - *y1).abs() < 1.0))
-            .count();
-        if outer_solid_on_inner >= 1 {
-            matched_pages.push((page_idx + 1, outer_solid_on_inner));
+            .map(|(_, y1, ..)| *y1)
+            .collect();
+        // 점선 맨 위에서 여백만큼 위, 맨 아래에서 여백만큼 아래에 실선(wrapper 외곽)이 있다.
+        let has_top = solid_ys
+            .iter()
+            .any(|sy| (dashed_top - sy - inset).abs() < 0.5);
+        let has_bottom = solid_ys
+            .iter()
+            .any(|sy| (sy - dashed_bottom - inset).abs() < 0.5);
+        if has_top && has_bottom {
+            matched_pages.push(page_idx + 1);
         }
     }
 
     assert!(
         !matched_pages.is_empty(),
-        "wrapper 외곽 실선 테두리 누락 (내부 표 점선 외곽과 겹치는 전폭 실선 0건)"
+        "wrapper 외곽 실선 테두리 누락 (내부 표 점선 위·아래 {inset:.1}px 바깥의 전폭 실선 0쪽)"
     );
 }
