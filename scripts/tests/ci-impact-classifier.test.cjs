@@ -80,7 +80,7 @@ test('review-only changes require no code worker', () => {
       native_skia_required: 'false',
       codeql_languages: 'none',
       classification_status: 'classified',
-      classifier_version: '6',
+      classifier_version: '7',
       reason: 'classified:review-only',
     },
   );
@@ -102,7 +102,7 @@ test('mixed Studio package and Rust changes union modes and CodeQL languages', (
       native_skia_required: 'false',
       codeql_languages: 'javascript-typescript,rust',
       classification_status: 'classified',
-      classifier_version: '6',
+      classifier_version: '7',
       reason: 'classified:rust+studio-package',
     },
   );
@@ -172,7 +172,7 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
     assert.equal(result.native_skia_required, nativeSkiaRequired, filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, reason, filename);
   }
 });
@@ -238,7 +238,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:native-skia-rust', filename);
   }
 });
@@ -259,7 +259,7 @@ test('Rust test input changes keep default Rust tests alongside render gates', (
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:rust-test-input', filename);
   }
 });
@@ -352,7 +352,7 @@ test('new sample documents run only the targeted security sweep lane', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:sample-security-sweep', filename);
   }
 });
@@ -375,8 +375,29 @@ test('new review reference assets require no product or CodeQL worker', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
+  }
+});
+
+test('Gym-only changes require no product or CodeQL worker', () => {
+  for (const filename of [
+    'gym/packs/text-editing/tasks/TE01.json',
+    'gym/tools/discriminate.py',
+    'scripts/tests/test_gym_discriminate.py',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.rust_required, 'false', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '7', filename);
+    assert.equal(result.reason, 'classified:gym-benchmark', filename);
   }
 });
 
@@ -396,7 +417,7 @@ test('existing PDF reference updates require no product or CodeQL worker', () =>
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });

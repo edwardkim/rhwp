@@ -1,39 +1,66 @@
-name: Gym Release Gate
+name: Gym Benchmark Validation
 
-# [#4662] 운동장 회귀 도구를 릴리스 판정으로 묶는다.
+# Gym은 AI 에이전트가 rhwp CLI/API를 조합해 과제를 수행하는 능력을 측정하는
+# 벤치마크다. 제품 정합성·main 승격·릴리즈 게시의 게이트가 아니다.
 #
-# 릴리스 워크플로 본체(release-binary.yml)는 건드리지 않는다 — 이 워크플로는
-# 독립 실행이며 workflow_dispatch(수동)와 태그 push 관찰만 한다. 하는 일:
-#   1) 현재 커밋에서 rhwp 를 빌드
-#   2) (직전 태그 입력 시) 그 태그 바이너리와 릴리스 차등(#4661) 실행
-#   3) 커밋된 리더보드 해시 체인(#4659) 검증
-#   4) 판정 — regression 만 차단(exit 3), surface-changed 는 리뷰 신호(exit 2)
-#
-# 정직 조항(#4661): 이 게이트는 "무엇이 바뀌었나"를 가리키지 "어느 쪽이 옳은가"를
-# 판정하지 않는다. 그래서 자동 차단은 regression 과 리더보드 체인 파손뿐이다.
+# - Gym 관련 PR: 빠른 정적·단위 계약만 확인한다.
+# - 수동 실행: 기준풀이, 음성 대조, 트라젝토리를 전건 실행해 벤치마크 자체의
+#   판별력 증적을 남긴다.
+# - devel/main push와 v* tag는 이 workflow를 자동 실행하지 않는다.
 
 on:
+  pull_request:
+    paths:
+      - 'gym/**'
+      - 'scripts/tests/test_gym_*.py'
+      - '.github/workflows/gym-release-gate.yml'
   workflow_dispatch:
-    inputs:
-      old_ref:
-        description: '차등 대상 직전 릴리스 ref(태그/커밋). 비우면 차등 생략.'
-        required: false
-        default: ''
-  push:
-    tags:
-      - 'v*'
 
 permissions:
   contents: read
 
 concurrency:
-  group: gym-release-gate-${{ github.ref }}
+  group: gym-benchmark-validation-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  gate:
-    name: Gym Release Gate
+  contracts:
+    name: Gym benchmark contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Gym contracts
+        run: >-
+          python3 -m unittest
+          scripts.tests.test_gym_benchmark_validation
+          scripts.tests.test_gym_score
+          scripts.tests.test_gym_packs
+          scripts.tests.test_gym_audit
+          scripts.tests.test_gym_certify
+          scripts.tests.test_gym_build_baseline
+          scripts.tests.test_gym_discriminate
+          scripts.tests.test_gym_oracle_probe
+          scripts.tests.test_gym_trajectory
+          scripts.tests.test_gym_leaderboard
+          scripts.tests.test_gym_robustness
+          scripts.tests.test_gym_fuzz_corpus
+          scripts.tests.test_gym_release_diff
+          scripts.tests.test_gym_differential
+          scripts.tests.test_gym_tutorial
+          scripts.tests.test_gym_competitive_bench
+          scripts.tests.test_gym_work_receipt_pack
+
+  full-benchmark:
+    name: Full Gym benchmark validation
+    needs: contracts
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    # 로컬 실측: 기준풀이 약 24분, discrimination 약 6분, trajectory 약 2분.
+    # cold cache와 runner 편차를 포함하되 무한 실행은 막는다.
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,44 +68,54 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build current rhwp
-        run: cargo build --bin rhwp
+      - name: Build benchmark subject
+        run: cargo build --locked --bin rhwp
 
-      # 판별력 감사 — old/new 비교 이전의 무결성 전제. 벤치마크 자체에 약한
-      # 오라클(일 안 한 제출이 통과하는 false-pass)이 하나라도 있으면 exit 1 로
-      # 릴리스를 차단한다. 표면 변화 판정과 달리 이건 '리뷰 신호'가 아니라 결함이다.
-      - name: Discrimination audit (weak-oracle gate)
-        run: python3 gym/tools/discriminate.py --bin target/debug/rhwp
-
-      - name: Build old rhwp (if ref given)
-        if: ${{ github.event.inputs.old_ref != '' }}
+      - name: Run full benchmark integrity audits
+        shell: bash
         run: |
-          git worktree add --detach ../rhwp-old "${{ github.event.inputs.old_ref }}"
-          (cd ../rhwp-old && cargo build --bin rhwp)
-          cp ../rhwp-old/target/debug/rhwp ./rhwp-old-bin
+          mkdir -p gym-benchmark-evidence
+          set +e
 
-      # 트라젝토리 필요성 감사 — 다단계 과제의 마지막 스텝이 채점에 무의미하면
-      # (부분 트라젝토리가 통과) exit 1 로 릴리스 차단. 종점만 채점하는 게이트가
-      # 놓치는 '트라젝토리 연극'을 골든 경로·judge 없이 잡는 무결성 전제.
-      - name: Trajectory necessity audit (theater gate)
-        run: python3 gym/tools/trajectory.py --bin target/debug/rhwp
+          python3 gym/tools/oracle_probe.py --json \
+            > gym-benchmark-evidence/oracle-probe.json \
+            2> gym-benchmark-evidence/oracle-probe.stderr.txt
+          oracle_exit=$?
 
-      - name: Run release gate
-        id: gate
-        run: |
-          if [ -f ./rhwp-old-bin ]; then
-            python3 gym/tools/release_gate.py \
-              --old ./rhwp-old-bin --new target/debug/rhwp \
-              --github-summary -o gate-verdict.json
-          else
-            python3 gym/tools/release_gate.py \
-              --new target/debug/rhwp \
-              --github-summary -o gate-verdict.json
+          python3 gym/tools/build_baseline.py --bin target/debug/rhwp --json \
+            > gym-benchmark-evidence/build-baseline.json \
+            2> gym-benchmark-evidence/build-baseline.stderr.txt
+          baseline_exit=$?
+
+          python3 gym/tools/discriminate.py --bin target/debug/rhwp --json \
+            > gym-benchmark-evidence/discriminate.json \
+            2> gym-benchmark-evidence/discriminate.stderr.txt
+          discrimination_exit=$?
+
+          python3 gym/tools/trajectory.py --bin target/debug/rhwp --json \
+            > gym-benchmark-evidence/trajectory.json \
+            2> gym-benchmark-evidence/trajectory.stderr.txt
+          trajectory_exit=$?
+
+          {
+            echo "oracle_probe=${oracle_exit}"
+            echo "build_baseline=${baseline_exit}"
+            echo "discriminate=${discrimination_exit}"
+            echo "trajectory=${trajectory_exit}"
+          } > gym-benchmark-evidence/exits.txt
+
+          if [ "${oracle_exit}" -ne 0 ] || \
+             [ "${baseline_exit}" -ne 0 ] || \
+             [ "${discrimination_exit}" -ne 0 ] || \
+             [ "${trajectory_exit}" -ne 0 ]; then
+            exit 1
           fi
 
-      - name: Upload verdict
+      - name: Upload Gym benchmark evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gym-release-gate-verdict
-          path: gate-verdict.json
+          name: gym-benchmark-validation-${{ github.sha }}
+          path: gym-benchmark-evidence
+          if-no-files-found: error
+          retention-days: 30

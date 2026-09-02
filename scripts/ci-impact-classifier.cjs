@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const CLASSIFIER_VERSION = '6';
+const CLASSIFIER_VERSION = '7';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
 
@@ -223,6 +223,13 @@ function isRustTestInputPath(filename) {
   );
 }
 
+function isGymBenchmarkPath(filename) {
+  return (
+    filename.startsWith('gym/')
+    || /^scripts\/tests\/test_gym_.*\.py$/.test(filename)
+  );
+}
+
 function isStudioKnownNonRenderSource(filename) {
   return (
     filename.startsWith('rhwp-studio/src/command/')
@@ -332,6 +339,11 @@ function classifyChanges(input = {}) {
 
     if (isAllowedReviewReferenceFile(file)) {
       reviewOnlyCount += 1;
+      continue;
+    }
+
+    if (isGymBenchmarkPath(filename)) {
+      reasons.add('gym-benchmark');
       continue;
     }
 

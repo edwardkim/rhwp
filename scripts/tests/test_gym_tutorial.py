@@ -6,7 +6,7 @@
   · `gym/PARK.md` · `gym/INVITE.md` 가 실재하고 서로를 가리킨다.
 - 프로파일 일곱 이름과 packs 묶음이 `gym/profiles/*.json` 과 같다.
 - 입문존 CR01~CR04 의 명령·답 키·입력이 안내에 그대로 있다.
-- `gym/core/checks.py` 의 `REGISTRY` 가 검토된 서른세 이름 그대로다.
+- `gym/core/checks.py` 의 `REGISTRY` 가 검토된 서른네 이름 그대로다.
   휴게실 작업이 채점 논리를 바꾸면 이 시험이 실패한다.
 
 바이너리 없이 순수 파일 검사다. 새 pack · 새 과제 JSON 을 만들지 않는다.
@@ -27,7 +27,7 @@ TUTORIAL = GYM / "tutorial"
 PROFILES = GYM / "profiles"
 PACKS = GYM / "packs"
 CHECKS_PY = GYM / "core" / "checks.py"
-CI_YML = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+GYM_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "gym-release-gate.yml"
 
 INLINE_LINK_RE = re.compile(
     r"!?\[[^\]]*\]\(\s*(?:<([^>]+)>|([^)\s]+))(?:\s+[^)]*)?\s*\)"
@@ -151,6 +151,7 @@ CLI_OPERATOR_SNAPSHOT = {
     "deep_contains",
     "not_contains",
     "cell_text_eq",
+    "text_file_envelope_eq",
 }
 
 REGISTRY_SNAPSHOT = FILE_OPERATOR_SNAPSHOT | CLI_OPERATOR_SNAPSHOT
@@ -460,10 +461,10 @@ class ScoringUntouchedTests(unittest.TestCase):
         checks = load_checks()
         self.assertEqual(set(checks.REGISTRY), REGISTRY_SNAPSHOT)
 
-    def test_registry_has_thirty_three_operators(self):
+    def test_registry_has_thirty_four_operators(self):
         checks = load_checks()
-        self.assertEqual(len(checks.REGISTRY), 33)
-        self.assertEqual(len(set(checks.REGISTRY)), 33)
+        self.assertEqual(len(checks.REGISTRY), 34)
+        self.assertEqual(len(set(checks.REGISTRY)), 34)
 
     def test_global_scan_ops_unchanged(self):
         checks = load_checks()
@@ -641,14 +642,14 @@ class WindowsAndInviteTests(unittest.TestCase):
 
 
 class CiWiringTests(unittest.TestCase):
-    def test_ci_invokes_tutorial_contract(self):
-        text = _read(CI_YML)
-        self.assertIn("scripts/tests/test_gym_tutorial.py", text)
+    def test_gym_workflow_invokes_tutorial_contract(self):
+        text = _read(GYM_WORKFLOW)
+        self.assertIn("scripts.tests.test_gym_tutorial", text)
 
-    def test_ci_still_invokes_audit_and_packs(self):
-        text = _read(CI_YML)
-        self.assertIn("scripts/tests/test_gym_audit.py", text)
-        self.assertIn("scripts/tests/test_gym_packs.py", text)
+    def test_gym_workflow_invokes_audit_and_packs(self):
+        text = _read(GYM_WORKFLOW)
+        self.assertIn("scripts.tests.test_gym_audit", text)
+        self.assertIn("scripts.tests.test_gym_packs", text)
 
 
 class NegativeGuardTests(unittest.TestCase):
