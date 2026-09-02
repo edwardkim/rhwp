@@ -4,17 +4,29 @@ Closes #6042
 
 `#6458 (#6040) → #6467 (#6041) → #6637 (#6042)`
 
-리뷰는 #6467 대비 이 layer의 diff를 기준으로 부탁드립니다. 현재 bottom #6458은 최신 `devel`과
-conflict가 있어, 전체 stack의 Ready 전환 전 GitHub의 cascading rebase로 선형성을 회복하고 세 layer를
-재검증할 예정입니다.
+리뷰는 #6467 대비 이 layer의 diff를 기준으로 부탁드립니다. bottom #6458부터 최신 `devel` 위로
+cascading rebase해 세 layer의 선형성과 기존 conflict를 회복했습니다.
 
 ## Stack CI 상태
 
 세 PR은 native stack #6640으로 연결됐으며 trunk는 `devel`입니다. 따라서 이 layer가 직접 #6467을
 base로 두더라도 branch protection과 GitHub Actions는 stack trunk인 `devel`을 기준으로 평가됩니다.
-등록 뒤 이 layer의 새 push에서 실제 Actions 실행도 확인했습니다. 다만 bottom conflict를 cascading
-rebase로 해소하면 세 layer의 SHA가 바뀌므로, 갱신된 각 exact head의 Full CI와 시각·성능 게이트를 다시
-통과하기 전에는 Ready로 전환하지 않습니다.
+등록 뒤 이 layer의 새 push에서 실제 Actions 실행도 확인했습니다. 갱신된 각 exact head의 Full CI와
+시각·성능 게이트를 다시 통과하기 전에는 Ready로 전환하지 않습니다.
+
+## 최신 `devel` conflict 해소
+
+2026-09-02에 stack trunk를 `upstream/devel@51043f5f8`로 갱신하고 bottom부터 cascading rebase했습니다.
+
+- #6458: `86ea68d3a` — 최신 `devel`의 직접 descendant
+- #6467: `30851d473` — 새 #6458의 직접 descendant
+- #6637 rebase 검증 source: `2787286c0` — 새 #6467의 직접 descendant
+
+충돌은 `mydocs/orders/20260830.md`, `20260901.md`, `20260902.md`의 독립 작업 기록뿐이었습니다. 최신
+`devel` 기록과 이 stack의 기록을 모두 보존했고 제품·test commit은 range-diff에서 동일하게 재생됐습니다.
+push 전 각 layer의 Studio unit을 다시 실행해 #6458 1,372 pass/1 skip, #6467 1,385 pass/1 skip,
+#6637 1,433 pass/1 skip과 실패 0을 확인했습니다. 결합 top의 TypeScript, production build, E2E manifest
+127/127도 통과했습니다.
 
 ## 해결하려는 사용자 문제
 

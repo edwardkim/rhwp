@@ -10,7 +10,7 @@ author: postmelee
 
 # PR #6637 review - 다중 페이지 스크롤 렌더링 가상화
 
-## 결론 - 승인, stack 재정렬 후 Full CI 대기
+## 결론 - 승인, rebased stack Full CI 대기
 
 [PR #6637](https://github.com/edwardkim/rhwp/pull/6637)은 긴 다중 페이지 문서의 일반 scroll에서
 visibility 판정과 여러 쪽 raster가 입력 callback을 연속 점유하던 경로를 row/X index, exact page
@@ -18,15 +18,15 @@ surface LRU, page-boundary scheduler로 분리한다. 사용자가 새 구간의
 동일 배율 warm 왕복은 완성 surface를 재사용한다. scroll 중에는 현재 surface를 유지하고 마지막 입력
 150ms 뒤 visible 읽기 화질을 별도 safety gate 안에서 회복한다.
 
-self-review 대상 code candidate는 `68beaa5dce0ac0fbc794761324abea959d0245ef`, 직접 base는 #6467
-`23b5bcf73f6e8659a90b25ebfde1311e1965364f`다. 단계별 테스트·실문서 A/B에서 발견한 역방향 cache
-thrash와 fractional DPR geometry 문제를 최종 후보에서 해소했고, 차단 finding은 남아 있지 않다.
+self-review 대상 최초 code candidate는 `68beaa5dce0ac0fbc794761324abea959d0245ef`, 당시 직접 base는 #6467
+`23b5bcf73f6e8659a90b25ebfde1311e1965364f`다. 최신 `devel@51043f5f8` cascading rebase 뒤의 검증
+source는 `2787286c0`, 직접 base #6467은 `30851d473`이다. 단계별 테스트·실문서 A/B에서 발견한 역방향
+cache thrash와 fractional DPR geometry 문제를 최종 후보에서 해소했고, 차단 finding은 남아 있지 않다.
 
-이 PR은 native stack #6640의 top(3/3)이다. bottom #6458이 최신 `devel`과 충돌하므로 지금 Ready 또는
-merge 후보로 올리지 않는다. native stack에서는 이 PR이 직접 #6467을 base로 두더라도 branch protection과
-Actions가 trunk `devel` 기준으로 평가된다. 등록 뒤 top의 새 push가 Actions를 시작하는 것을 확인했다.
-cascading rebase로 선형성을 회복하면 SHA가 바뀌므로 갱신된 각 exact head에서 Full CI와 descendant 전체
-검증을 다시 수행해야 한다.
+이 PR은 native stack #6640의 top(3/3)이다. bottom부터 최신 `devel` 위로 cascading rebase해 기존
+conflict와 세 layer의 선형성을 회복했다. native stack에서는 이 PR이 직접 #6467을 base로 두더라도 branch
+protection과 Actions가 trunk `devel` 기준으로 평가된다. 갱신된 각 exact head에서 Full CI와 descendant
+전체 검증을 다시 수행하기 전에는 Ready 또는 merge 후보로 올리지 않는다.
 
 ## 검토 경로와 metadata
 
@@ -35,7 +35,7 @@ cascading rebase로 선형성을 회복하면 SHA가 바뀌므로 갱신된 각 
   `rework_and_exceptions.md`
 - self PR이므로 reviewer와 GitHub approval review를 지정하지 않는다.
 - 현재: native stack #6640 3/3, OPEN / Draft, base `codex/issue-6041-budget-first-render-scale`,
-  head `codex/issue-6042-page-virtualization`, `MERGEABLE/BLOCKED`(하단 conflict·미충족 stack gate).
+  head `codex/issue-6042-page-virtualization`, post-rebase Full CI 대기.
 - code candidate 규모: 202 files, +489,954/-219, 21 commits. 이 중 제품·test·E2E는
   24 files, +4,063/-218이고, 162 files·약 16MB는 A/B raw evidence다.
 - Rust source/test/fixture, Cargo, workflow 변경은 없다.
@@ -195,7 +195,8 @@ compositor dropped-frame 수가 아니다. LRU는 메모리를 더 보존해 CPU
   않았다.
 - raw evidence 162개가 GitHub diff 노이즈를 만든다. reviewer는 최종 report와 summary, 24개
   source/test/E2E부터 확인할 수 있고 raw는 재집계 근거로 보존한다.
-- bottom #6458 conflict를 해소한 뒤 #6467과 이 PR을 restack하면 최신 head에서 전체 자격을 다시 확인한다.
+- bottom-first cascading rebase는 완료했다. 갱신된 각 exact head의 원격 CI와 시각·성능 자격을 다시
+  확인한다.
 
 ## 현재 판정
 
@@ -203,6 +204,6 @@ compositor dropped-frame 수가 아니다. LRU는 메모리를 더 보존해 CPU
 - 코드·로컬 검증: 통과
 - 차단 finding: 없음
 - 원격 상태: Draft 유지
-- 남은 조건: cascading rebase, 각 stack exact head의 Full CI, descendant 재검증, 별도 Ready 승인
+- 남은 조건: 각 rebased stack exact head의 Full CI, descendant 재검증, 별도 Ready 승인
 - 원격 조치: self PR이므로 GitHub approval review는 만들지 않는다. issue close·Ready·merge도 수행하지
   않는다.

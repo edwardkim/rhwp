@@ -1,8 +1,9 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **native stack #6640 등록 — cascading rebase·Full CI 대기**
-- 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
+- 상태: **native stack #6640 rebase 완료 — Full CI 대기**
+- 현재 기준: #6467 `30851d4732afa94fe9a53332eadc5edb4af62d1d`
+- 최초 제출 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
 - 수행 범위·단계·fixture·수용 기준: [수행 계획서](task_m100_6042.md)

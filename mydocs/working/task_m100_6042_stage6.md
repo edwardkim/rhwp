@@ -2,9 +2,10 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **native stack #6640 등록 — cascading rebase·Full CI 대기**
-- 검증 source: `4ea694ff3`
-- 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
+- 상태: **native stack #6640 rebase 완료 — Full CI 대기**
+- 최초 제출 검증 source: `4ea694ff3`
+- 최초 제출 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
+- post-rebase 검증 source/base: `2787286c0` / #6467 `30851d473`
 - branch: `codex/issue-6042-page-virtualization`
 - PR 제목: `perf(studio): 다중 페이지 스크롤 렌더링을 가상화한다`
 - 최종 보고: [처리 결과](../report/task_m100_6042_report.md)
@@ -23,7 +24,8 @@ commit으로 이어진다. Ready 전환, merge, 다른 contributor PR의 close�
 
 ## 2. 최종 stack·ancestry 감사
 
-2026-09-02 원격 상태를 다시 조회했다.
+최초 제출 전 2026-09-02 원격 상태를 다시 조회했다. 아래 표는 당시 snapshot이며, 최신 rebase 결과는
+7절에 기록한다.
 
 | 위치 | PR / branch | 상태 | 판정 |
 | --- | --- | --- | --- |
@@ -110,6 +112,6 @@ safety gate다.
 승인에 따라 이 branch를 push하고, base를 `codex/issue-6041-budget-first-render-scale`로 지정한 Draft
 PR #6637을 생성했다. 게시 직후 base/head·Draft·`MERGEABLE/CLEAN`, 한글 본문과 이미지 링크를 재조회해
 확인했다. 채번된 self-review·오늘할일의 trailing commit push와 원격 본문 재검증까지 완료했다. 이후
-#6458·#6467·#6637을 native stack #6640의 1/3·2/3·3/3으로 등록했다. Ready 전환은 하지 않는다. 전체
-stack Ready 전에는 GitHub cascading rebase로 #6458의 최신 `devel` conflict와 세 layer의 선형성을
-회복한 뒤, 각 exact head에서 Full CI와 각 게이트를 재실행한다.
+#6458·#6467·#6637을 native stack #6640의 1/3·2/3·3/3으로 등록했다. 이후 최신
+`devel@51043f5f8` 위로 bottom-first cascading rebase해 #6458 conflict와 세 layer의 선형성을 회복했다.
+Ready 전환은 하지 않는다. 갱신된 각 exact head에서 Full CI와 각 게이트를 재실행한다.

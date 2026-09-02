@@ -2,9 +2,10 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **native stack #6640 등록 — cascading rebase·Full CI 대기**
+- 상태: **native stack #6640 rebase 완료 — Full CI 대기**
 - branch: `codex/issue-6042-page-virtualization`
-- 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
+- 현재 직접 base: #6467 `30851d4732afa94fe9a53332eadc5edb4af62d1d`
+- 최초 제출 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 수행 계획: [task_m100_6042.md](../plans/task_m100_6042.md)
 - 구현 계획: [task_m100_6042_impl.md](../plans/task_m100_6042_impl.md)
 - 제출 감사: [Stage 6](../working/task_m100_6042_stage6.md)
@@ -126,10 +127,11 @@ Rust source/test/fixture와 CI 설정은 바꾸지 않아 Rust lint bundle 대�
 OffscreenCanvas는 검토했지만 사용자 지시에 따라 포함하지 않았다. #6521의 저배율 화질 저하안도 폐기
 상태를 유지한다.
 
-원격 #6458 → #6467 → #6637은 trunk `devel`의 native stack #6640으로 등록됐다. 현재 #6458은 최신
-`devel`과 conflict이므로 전체 stack을 Ready로 바꾸기 전에 cascading rebase로 선형성을 회복해야 한다.
-native stack에서는 중간·상단 PR도 trunk 기준 protection과 Actions를 적용받으며, top 후속 push에서
-실제 CI가 시작됐다. cascading rebase 뒤 갱신된 각 exact head의 Full CI, Ready, merge는 후속 경계다.
+원격 #6458 → #6467 → #6637은 trunk `devel`의 native stack #6640으로 등록됐다. 최신
+`devel@51043f5f8` 위로 bottom-first cascading rebase해 기존 conflict와 세 layer의 선형성을 회복했다.
+제품·test commit은 range-diff에서 동일했고, 충돌한 일일 작업 기록은 양쪽을 모두 보존했다. 각 layer의
+Studio unit과 top TypeScript·build·E2E manifest도 통과했다. 갱신된 exact head의 Full CI, Ready,
+merge는 후속 경계다.
 
 ## 7. 근거 문서
 
