@@ -871,8 +871,19 @@ def audit_one(bin_path: str, pack_id: str, task: dict, reference: dict, work_roo
     load_bearing = True
     try:
         baseline.build_task(bin_path, pack_id, task, truncated, work_root)
-        result = runner.score_task(task, os.path.join(work_root, pack_id), bin_path)
-        load_bearing = verdict_from_score(result)
+        # 종점 check만 바로 실행하면 check 명령이 누락된 최종 산출물을 다시
+        # 만들어 버리거나, exit 3 오류 봉투의 일부 값만 보고 통과할 수 있다.
+        # 기준 풀이 검증과 같은 순서로 submit.files의 부재를 먼저 검사한 뒤
+        # 실제 채점을 해야 "마지막 스텝이 선언 산출을 만들었다"는 경로 의미가
+        # 보존된다.
+        inspected = baseline.inspect_built_task(
+            bin_path,
+            pack_id,
+            task,
+            work_root,
+            truncated,
+        )
+        load_bearing = not bool(inspected.get("ok"))
     except FATAL_EXCEPTIONS as exc:
         out["fatal"] = exc
         return out

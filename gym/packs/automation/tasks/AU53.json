@@ -22,6 +22,7 @@
         "{file:work.capsule.json}",
         "--policy",
         "{file:policy.json}",
+        "--deep",
         "--json"
       ],
       "expect_exits": [

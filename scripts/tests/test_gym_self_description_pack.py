@@ -356,7 +356,7 @@ class ArtifactShapeTests(unittest.TestCase):
             for c in task["checks"]
             if c["op"] == "json_value_eq"
         }
-        self.assertEqual(pinned.get("planSchemaVersion"), "1.1")
+        self.assertEqual(pinned.get("planSchemaVersion"), "1.2")
         self.assertEqual(pinned.get("schema.$ref"), "#/$defs/Plan")
 
     def test_sd74_pins_ir_schema_root(self):
