@@ -1455,26 +1455,14 @@ impl DocumentCore {
         self.layout_engine.take_table_overlaps()
     }
 
-    /// [Issue #4379] `RHWP_RENDER_PATH=layer-svg` 는 legacy/layer 두 SVG 경로를 A/B 대조하는
-    /// **네이티브 전용** 디버그 스위치다. `#[cfg(not(target_arch = "wasm32"))]` 로 감싼 이유는
-    /// 장식이 아니라 사실 표시다 — wasm32-unknown-unknown(rhwp-studio 브라우저 빌드)에는
-    /// 프로세스 환경변수가 없어 `std::env::var` 가 항상 `Err` 를 반환하므로, 이 함수를 거쳐서는
-    /// wasm 에서 layer 경로에 절대 도달할 수 없다(`renderPageSvg` → 항상 legacy). studio 가
-    /// 실제로 인쇄 등가 SVG 를 원하면 이 함수를 우회해 `render_page_svg_layer_with_profile_native`
-    /// (`renderPageSvgWithProfile`) 를 직접 불러야 한다 — PDF 내보내기(`file.ts:461`)가 이미
-    /// 그렇게 한다. 이 cfg 분기는 "네이티브 디버그 스위치이지 프로덕션 경로 선택 API 가 아니다"를
-    /// 코드로 드러낸다.
+    /// Production SVG entry point. Screen-profile paint decisions are built once in
+    /// `PageLayerTree` and replayed by the SVG backend, matching the Studio renderer boundary.
     pub fn render_page_svg_native(&self, page_num: u32) -> Result<String, HwpError> {
-        #[cfg(not(target_arch = "wasm32"))]
-        if matches!(
-            std::env::var("RHWP_RENDER_PATH").ok().as_deref(),
-            Some("layer-svg")
-        ) {
-            return self.render_page_svg_layer_native(page_num);
-        }
-        self.render_page_svg_legacy_native(page_num)
+        self.render_page_svg_layer_native(page_num)
     }
 
+    /// Compatibility/diagnostic backend for comparing pre-paint SVG behavior during migration.
+    /// Production routing must not call this function implicitly or through an environment flag.
     pub fn render_page_svg_legacy_native(&self, page_num: u32) -> Result<String, HwpError> {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
@@ -1717,15 +1705,12 @@ impl DocumentCore {
         font_embed_mode: crate::renderer::svg::FontEmbedMode,
         font_paths: &[std::path::PathBuf],
     ) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
-        let mut renderer = SvgRenderer::new();
-        renderer.show_paragraph_marks = self.show_paragraph_marks;
-        renderer.show_control_codes = self.show_control_codes;
-        renderer.debug_overlay = self.debug_overlay;
-        renderer.font_embed_mode = font_embed_mode;
-        renderer.font_paths = font_paths.to_vec();
-        renderer.render_tree(&tree);
+        let tree = self.build_page_layer_tree_with_profile(page_num, RenderProfile::Screen)?;
+        let mut renderer = SvgLayerRenderer::new();
+        renderer.inner_mut().font_embed_mode = font_embed_mode;
+        renderer.inner_mut().font_paths = font_paths.to_vec();
+        renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
+        renderer.render_page(&tree)?;
 
         // 폰트 임베딩 후처리
         let mut svg = renderer.output().to_string();
@@ -1733,8 +1718,11 @@ impl DocumentCore {
             // [#2524] 문서 임베디드(BinData) 폰트를 face명 → bytes 로 수집해
             // @font-face 직접 임베딩에 쓴다(미설치 임베디드 폰트 chrome 두부 해소).
             let embedded_fonts = self.collect_embedded_font_bytes_by_name();
-            let style_css =
-                crate::renderer::svg::generate_font_style(&renderer, font_paths, &embedded_fonts);
+            let style_css = crate::renderer::svg::generate_font_style(
+                renderer.inner(),
+                font_paths,
+                &embedded_fonts,
+            );
             if !style_css.is_empty() {
                 // <svg ...> 직후에 <style> 삽입
                 if let Some(pos) = svg.find('>') {
