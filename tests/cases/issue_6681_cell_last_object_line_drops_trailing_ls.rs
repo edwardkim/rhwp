@@ -60,10 +60,7 @@ fn glyph_lines(svg: &str) -> Vec<(f64, f64, String)> {
                 parts.next().and_then(|v| v.trim().parse::<f64>().ok()),
             )
         });
-        let (Some(x), Some(y)) = translated
-            .map(|(a, b)| (a, b))
-            .unwrap_or((attr("x"), attr("y")))
-        else {
+        let (Some(x), Some(y)) = translated.unwrap_or((attr("x"), attr("y"))) else {
             continue;
         };
         let body = &chunk[head_end + 1..];
