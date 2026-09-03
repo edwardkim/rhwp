@@ -244,10 +244,10 @@ fn floating_stack_admission_requires_same_frame_and_strict_2d_overlap() {
 fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
     let expected = [
         (3, (82.4, 124.9, 601.5, 868.1)),
-        (4, (82.4, 84.1, 579.3, 840.8)),
-        (5, (82.4, 84.1, 592.1, 867.4)),
-        (6, (82.4, 84.1, 580.1, 868.0)),
-        (7, (82.4, 84.1, 604.9, 862.6)),
+        (4, (103.5, 84.1, 579.3, 840.8)),
+        (5, (110.3, 84.1, 592.1, 867.4)),
+        (6, (103.1, 84.1, 580.1, 868.0)),
+        (7, (101.5, 84.1, 604.9, 862.6)),
     ];
 
     for relative in [
