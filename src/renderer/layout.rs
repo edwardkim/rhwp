@@ -8686,9 +8686,25 @@ impl LayoutEngine {
                                 } else {
                                     0.0
                                 };
+                                // [#6665] 이 바닥값은 줄의 **꼬리 줄간격**을 담지 않았다.
+                                // 일반 문단은 마지막 줄을 `줄 상단 + lh + ls` 로 닫는데
+                                // 여기서 `ls` 가 빠져, 글자 없는 도형 전용 줄(머리 상자)
+                                // 뒤 문단이 그만큼 위로 올라왔다 —
+                                // `3-09월_교육_통합_2024-*` 4·5·7쪽에서 한컴 대비 6.7px.
+                                //
+                                // 줄간격은 **이 바닥값이 이겼을 때 다음 문단이 놓일
+                                // 자리**에만 붙는다. 판정(`> y_offset`)까지 넣으면 종전에
+                                // 지던 자리에서도 이겨 다른 문단의 흐름을 바꾸므로,
+                                // 어느 쪽이 바닥을 정하는지는 그대로 두고 값에만 얹는다.
+                                let trailing_ls: f64 = para
+                                    .line_segs
+                                    .last()
+                                    .map(|seg| hwpunit_to_px(seg.line_spacing, self.dpi))
+                                    .unwrap_or(0.0)
+                                    .max(0.0);
                                 let shape_bottom = para_start + sb_applied + effective_h;
                                 if shape_bottom > y_offset {
-                                    y_offset = shape_bottom + sa;
+                                    y_offset = shape_bottom + trailing_ls + sa;
                                 }
                             }
                         }
