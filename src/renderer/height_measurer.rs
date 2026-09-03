@@ -2001,7 +2001,37 @@ impl HeightMeasurer {
                     } else {
                         0.0
                     };
-                    let additive = text_height + non_inline_h;
+                    // [#6660] 글자가 하나도 없는 문단의 줄은 그 개체를 담는 자리이지
+                    // 개체 아래에 따로 놓이는 글줄이 아니다. `text_height` 에 그 줄을
+                    // 넣고 `non_inline_h` 에 개체를 또 넣으면 같은 자리를 두 번 센다 —
+                    // exam_science 4쪽 r=4: `13.3 + 57.6 = 70.9` 로 재어 행이 65.9px,
+                    // 한/글은 61.0px(그림 57.6 + 여백 1.88×2).
+                    //
+                    // 바로 아래 `ladder_line_covers_object` 증인이 같은 것을 잡으려
+                    // 하지만 `줄 높이 >= 개체 높이` 를 요구해(13.3 < 56.3) 여기서는
+                    // 불발한다. 가르는 것은 줄 크기가 아니라 그 문단에 **글자가 있는가** 다.
+                    //
+                    // 문단이 하나뿐인 셀에만 적용한다. 뒤에 문단이 더 있으면 그 앵커
+                    // 줄은 뒤 내용을 개체 아래로 밀어 내리는 몫을 하므로 높이에서
+                    // 빼면 안 된다(#6312: 앵커 줄 전진량 27pt 계약).
+                    let empty_para_line_height: f64 = cell
+                        .paragraphs
+                        .iter()
+                        .filter(|_| cell.paragraphs.len() == 1)
+                        .filter(|pp| {
+                            pp.text.trim().is_empty() && pp.controls.iter().any(|c| {
+                                matches!(c, Control::Picture(pic) if !pic.common.treat_as_char)
+                                    || matches!(c, Control::Shape(sh) if !sh.common().treat_as_char)
+                            })
+                        })
+                        .map(|pp| {
+                            pp.line_segs
+                                .iter()
+                                .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
+                                .sum::<f64>()
+                        })
+                        .sum();
+                    let additive = (text_height - empty_para_line_height).max(0.0) + non_inline_h;
                     // trust 는 "저장 ladder 가 개체 밀림을 이미 반영한" 셀에만 —
                     // 증거: 텍스트-빈 문단의 첫 seg vpos > 0 (줄이 개체 아래로 밀림).
                     // 반례 캘리브: KTX TOC(개체 없음 — additive 가 한컴 쪽),
