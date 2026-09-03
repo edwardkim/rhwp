@@ -1724,7 +1724,7 @@ fn test_geumchik_functions() {
 
 /// 토크나이저: 한국어 어절 토큰화
 #[test]
-fn test_tokenize_korean_eojeol() {
+fn test_only_tokenizer_preserves_korean_word_boundaries() {
     let styles = make_styles_with_font_size(16.0);
     let text: Vec<char> = "가나 다라".chars().collect();
     let offsets: Vec<u32> = (0..text.len() as u32).collect();

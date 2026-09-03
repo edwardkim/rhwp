@@ -254,7 +254,8 @@ fn is_cjk_ideograph(ch: char) -> bool {
     lang == 2 || lang == 3 // Chinese or Japanese
 }
 
-/// 문단 텍스트를 줄 나눔 토큰으로 분할한다.
+/// 테스트가 저장 공백 metric의 tokenizer를 직접 검증할 때 쓰는 축약 경계.
+#[cfg(test)]
 pub(crate) fn tokenize_paragraph(
     text_chars: &[char],
     char_offsets: &[u32],
