@@ -432,15 +432,6 @@ fn integral_path(x: f64, y: f64, fs: f64, color: &str) -> String {
     )
 }
 
-fn font_size_from_box(lb: &LayoutBox, base_fs: f64) -> f64 {
-    // 박스 높이에서 폰트 크기 추정 (baseline 비율로)
-    if lb.height > 0.0 {
-        lb.height
-    } else {
-        base_fs
-    }
-}
-
 /// 늘림 괄호 렌더링
 fn draw_stretch_bracket(
     svg: &mut String,

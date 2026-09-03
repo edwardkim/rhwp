@@ -78,14 +78,6 @@ impl Tokenizer {
         self.peek(0)
     }
 
-    fn advance(&mut self) -> Option<char> {
-        let ch = self.current();
-        if ch.is_some() {
-            self.pos += 1;
-        }
-        ch
-    }
-
     fn skip_spaces(&mut self) {
         // 일반 공백/탭 + 개행. HWP 수식 스크립트는 `#`/`&` 으로 명시적 행/탭 구분을 하므로
         // 실제 개행 문자는 의미 없는 포맷팅으로 간주하여 건너뛴다 (#505).
