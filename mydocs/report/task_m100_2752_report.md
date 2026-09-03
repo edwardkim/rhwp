@@ -58,8 +58,9 @@ TypeScript 소비자는 `index.d.ts` 덕분에 컴파일 오류로 걸러진다.
 `HwpVerifyResult` 와 정확히 일치)의 서술 방식을 따랐다.
 
 - 실제 반환 객체를 주석으로 제시 (`sourceFormat`, `hmlSavable`, `blockers[].{code,xmlPath,message,preserved}`)
-- `hmlSavable` 로 분기하고 `blockers` 를 표시하는 사용 예제 추가 — 오류 문자열 파싱을 금지한 SPEC 계약
-  (`docs/changelog/2026-07/13-pr-2219-hml-equation-export-spec/SPEC.md:247`, `:321`)과 일치
+- `hmlSavable` 로 분기하고 `blockers` 를 표시하는 사용 예제 추가 — 오류 문자열 파싱을 금지한 현재
+  소비자 계약([`npm/editor/README.md`](../../npm/editor/README.md),
+  [`npm/editor/index.d.ts`](../../npm/editor/index.d.ts))과 일치
 - 반환값 / `HmlSaveBlocker` 필드 표 추가. `sourceFormat` 값 범위는 근거 #2, `preserved` 가 항상 `false`
   인 점은 `src/wasm_api.rs:305` 및 `index.d.ts:39` 근거
 
