@@ -1,3 +1,10 @@
+---
+kind: guide
+status: active
+canonical: mydocs/tech/rendering_engine_design.md
+last_verified: 2026-09-03
+---
+
 # CanvasKit Parity Implementation Plan
 
 This document records the implementation plan for closing CanvasKit parity gaps
@@ -95,7 +102,7 @@ changes:
 - `rhwp-studio/src/view/glyph-outline-payload-status.ts`
 - `rhwp-studio/e2e/renderer-contract.test.mjs`
 - `.github/workflows/render-diff.yml`
-- `docs/canvaskit-m07-pack-fallback-matrix.md`
+- `mydocs/tech/canvaskit-m07-pack-fallback-matrix.md`
 - `tests/fixtures/m07_pack/reason-matrix.jsonl`
 
 The contract test keeps this list alive so a future rename or split has to

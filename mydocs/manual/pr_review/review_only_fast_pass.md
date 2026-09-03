@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-15
+last_verified: 2026-09-03
 ---
 
 # Review-only fast-pass
@@ -12,8 +12,10 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 
 [CI workflow](../../../.github/workflows/ci.yml)의 preflight는 다음 허용 범위를 사용한다.
 
-- mydocs 아래 모든 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
-  올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다.
+- mydocs 아래 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
+  올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다. 단,
+  `mydocs/tech/text-ir-v2.md`와 `mydocs/tech/canvaskit-parity-implementation.md`는 렌더 검증이
+  직접 소비하는 계약이므로 review-only에서 제외한다.
 - added 상태의 samples 아래 pdf, png
 - added 상태의 samples 아래 hwp, hwpx, hml은 review-only가 아니다. 새 문서 샘플은 Build & Test가
   실행되며, CI preflight가 PR에서 새로 추가된 문서 경로만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로
@@ -44,9 +46,10 @@ Update branch, merge, rebase를 수행하지 않는다. 따라서 직전 green P
    한 번만 예외로 허용한다.
 2. current base 병합 bridge는 정확히 2-parent이고 parent 하나만 현재 PR base SHA와 같아야 한다. preflight가
    `git merge-tree`로 계산한 자동 3-way merge tree가 실제 merge commit tree와 같으면 그대로 재사용한다.
-   자동 병합이 충돌한 경우에는 `git show --remerge-diff`가 보고하는 **수동 충돌 해소 경로 전체가 `mydocs/`
-   아래일 때만** 재사용한다. source, test, workflow, sample, PDF 등 하나라도 포함되거나 경로를 확인할 수 없으면
-   full CI로 fallback한다. 이 확인은 current base에 있는 검사기를 사용하며 PR source를 실행하지 않는다.
+   자동 병합이 충돌한 경우에는 `git show --remerge-diff`가 보고하는 **수동 충돌 해소 경로 전체가 허용된
+   `mydocs/` 아래일 때만** 재사용한다. 위 두 렌더 계약 문서, source, test, workflow, sample, PDF 등이
+   하나라도 포함되거나 경로를 확인할 수 없으면 full CI로 fallback한다. 이 확인은 current base에 있는
+   검사기를 사용하며 PR source를 실행하지 않는다.
 3. candidate SHA는 현재 PR commit history의 code 후보여야 하며, CI·CodeQL·Render Diff 결과는 같은 PR의
    head branch, source repository, event, candidate SHA와 정확히 일치해야 한다. 현재 base 전진은 단독으로
    재사용 거부 사유가 아니다.

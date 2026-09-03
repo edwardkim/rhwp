@@ -269,7 +269,7 @@ test('frontend font assets and render tooling do not over-enable the Rust lane',
     'assets/fonts/NotoSansKR-Regular.woff2',
     'scripts/generate_exact_face_collection_fixture.py',
     'scripts/generate_exact_kerning_fixture.py',
-    'docs/text-ir-v2.md',
+    'mydocs/tech/text-ir-v2.md',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -279,6 +279,15 @@ test('frontend font assets and render tooling do not over-enable the Rust lane',
     assert.equal(result.render_required, 'true', filename);
     assert.equal(result.native_skia_required, 'true', filename);
   }
+});
+
+test('a new repository-root docs path fails closed', () => {
+  const result = classifyChanges({
+    eventName: 'pull_request',
+    files: [{ filename: 'docs/README.md', status: 'added' }],
+  });
+  assert.equal(result.classification_status, 'full');
+  assert.equal(result.reason, 'fail-closed:unclassified-path');
 });
 
 test('Studio package configuration and broad runtime sources remain render-impacting', () => {

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run canvaskit-parity work batches 2 and 3 on existing harnesses.
 
-Batch names come from docs/canvaskit-parity-implementation.md:
+Batch names come from mydocs/tech/canvaskit-parity-implementation.md:
 
   2. Paint Family Parity Closures
   3. Strict Text Variant Replay
@@ -26,7 +26,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 STUDIO_ROOT = ROOT / "rhwp-studio"
 DEFAULT_MANIFEST = ROOT / "scripts" / "renderer_baseline_manifest.json"
-PLAN_DOC = ROOT / "docs" / "canvaskit-parity-implementation.md"
+PLAN_DOC = ROOT / "mydocs" / "tech" / "canvaskit-parity-implementation.md"
 NPM_CMD = "npm.cmd" if sys.platform == "win32" else "npm"
 CARGO_CMD = "cargo.exe" if sys.platform == "win32" else "cargo"
 

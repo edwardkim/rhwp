@@ -18,7 +18,6 @@ const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 
 const CI_PUSH_PATHS_IGNORE = [
   'mydocs/**',
-  'docs/**',
   'samples/**',
   'pdf/**',
   'pdf-2020/**',
@@ -39,7 +38,6 @@ const CI_PUSH_PATHS_IGNORE = [
 ];
 
 const CI_PULL_REQUEST_PATHS_IGNORE = [
-  'docs/**',
   'assets/chrome/**',
   'assets/edge/**',
   'assets/logo/**',
@@ -57,7 +55,6 @@ const CI_PULL_REQUEST_PATHS_IGNORE = [
 
 const CODEQL_PUSH_PATHS_IGNORE = [
   'mydocs/**',
-  'docs/**',
   'samples/**',
   'pdf/**',
   'pdf-2020/**',
@@ -75,7 +72,6 @@ const CODEQL_PUSH_PATHS_IGNORE = [
 ];
 
 const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
-  'docs/**',
   'assets/**',
   '*.md',
   'LICENSE',
@@ -90,7 +86,6 @@ const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
 
 const DEPLOY_PAGES_PUSH_PATHS_IGNORE = [
   'mydocs/**',
-  'docs/**',
   'samples/**',
   'pdf/**',
   'pdf-2020/**',
@@ -130,11 +125,16 @@ const RENDER_DIFF_PULL_REQUEST_PATHS = [
   'scripts/requirements-font-fixtures.txt',
   'samples/render-p35-font-native-bitmap.hwpx',
   'tests/fixtures/fonts/**',
-  'docs/canvaskit-parity-implementation.md',
-  'docs/text-ir-v2.md',
+  'mydocs/tech/canvaskit-parity-implementation.md',
+  'mydocs/tech/text-ir-v2.md',
   'rhwp-studio/**',
   '.github/workflows/render-diff.yml',
 ];
+
+const RENDER_CONTRACT_DOC_PATHS = new Set([
+  'mydocs/tech/canvaskit-parity-implementation.md',
+  'mydocs/tech/text-ir-v2.md',
+]);
 
 const CI_RUST_JOBS = [
   'Lint (fmt, clippy, WASM check)',
@@ -327,7 +327,10 @@ function isReviewReferencePath(filename) {
 
 function isAllowedReviewFile(file) {
   const normalized = normalizeFile(file);
-  if (normalized.filename.startsWith('mydocs/')) return true;
+  if (
+    normalized.filename.startsWith('mydocs/')
+    && !RENDER_CONTRACT_DOC_PATHS.has(normalized.filename)
+  ) return true;
   if (isPdfReviewReferencePath(normalized.filename)) {
     return normalized.status === 'added' || normalized.status === 'modified';
   }

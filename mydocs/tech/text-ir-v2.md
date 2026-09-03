@@ -1,3 +1,10 @@
+---
+kind: canonical
+status: active
+canonical: mydocs/tech/text-ir-v2.md
+last_verified: 2026-09-03
+---
+
 # Text IR v2 Migration Contract
 
 This document records the P11/P12 text paint contract for the layered renderer.
@@ -401,7 +408,7 @@ layered SVG continue to use `TextRun`, and the browser default does not change.
 ## CanvasKit Parity Plan Link
 
 CanvasKit replay widening is tracked in
-`docs/canvaskit-parity-implementation.md`. That plan keeps Text IR v2 sidecars
+`mydocs/tech/canvaskit-parity-implementation.md`. That plan keeps Text IR v2 sidecars
 as guarded alternatives to the `TextRun` compatibility path, and it keeps
 CanvasKit direct replay separate from hidden Canvas2D overlay behavior. Text IR
 v2 changes that affect `GlyphRun`, `GlyphOutline`, `text.variantGroups`,

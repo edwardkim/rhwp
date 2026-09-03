@@ -17,8 +17,11 @@ const canvaskitDirectory = path.join(studioRoot, 'src/view/canvaskit');
 const canvaskitDiagnosticsPath = path.join(canvaskitDirectory, 'diagnostics.ts');
 const canvaskitGlyphRunFontsPath = path.join(canvaskitDirectory, 'glyph-run-fonts.ts');
 const layerTypesPath = path.join(studioRoot, 'src/core/types.ts');
-const textIrV2DocPath = path.join(repoRoot, 'docs/text-ir-v2.md');
-const canvaskitParityPlanDocPath = path.join(repoRoot, 'docs/canvaskit-parity-implementation.md');
+const textIrV2DocPath = path.join(repoRoot, 'mydocs/tech/text-ir-v2.md');
+const canvaskitParityPlanDocPath = path.join(
+  repoRoot,
+  'mydocs/tech/canvaskit-parity-implementation.md',
+);
 const rendererBaselinePath = path.join(studioRoot, 'e2e/renderer-baseline.mjs');
 const rendererBaselineNativeDiffPath = path.join(
   studioRoot,
@@ -247,8 +250,8 @@ const canvaskitParityPlanTouchpoints = [
     kind: 'file',
   },
   {
-    token: 'docs/canvaskit-m07-pack-fallback-matrix.md',
-    path: path.join(repoRoot, 'docs/canvaskit-m07-pack-fallback-matrix.md'),
+    token: 'mydocs/tech/canvaskit-m07-pack-fallback-matrix.md',
+    path: path.join(repoRoot, 'mydocs/tech/canvaskit-m07-pack-fallback-matrix.md'),
     kind: 'file',
   },
   {
@@ -2977,7 +2980,7 @@ for (const token of canvaskitParityPlanRequiredTokens) {
 }
 
 assert.ok(
-  textIrV2DocSource.includes('docs/canvaskit-parity-implementation.md'),
+  textIrV2DocSource.includes('mydocs/tech/canvaskit-parity-implementation.md'),
   'Text IR v2 contract should link to the CanvasKit parity implementation plan',
 );
 

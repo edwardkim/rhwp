@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-08-15
+last_verified: 2026-09-03
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -236,6 +236,11 @@ ignore되지 않은 파일 하나가 섞이면 workflow 전체가 시작된다. 
 - 루트 파일과 중첩 경로
 - add, modify, delete, rename
 - `push`, 내부 PR, fork PR, `workflow_dispatch`
+
+저장소 루트 `docs/`는 문서 저장 경로로 사용하지 않는다. 새 루트 `docs/**`가 생기면 일반 문서
+fast-pass로 숨기지 않고 CI 영향 분류가 fail-closed 해야 한다. 기술 문서는 `mydocs/tech/`에 둔다.
+다만 `mydocs/tech/text-ir-v2.md`와 `mydocs/tech/canvaskit-parity-implementation.md`는 Render Diff가
+직접 소비하는 계약이므로 일반 `mydocs/**` review-only fast-pass에서 제외한다.
 
 ### 7.3 reference-only 자산
 

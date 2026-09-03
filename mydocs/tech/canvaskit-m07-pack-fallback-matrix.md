@@ -1,3 +1,10 @@
+---
+kind: reference
+status: active
+canonical: mydocs/tech/canvaskit-parity-implementation.md
+last_verified: 2026-09-03
+---
+
 # CanvasKit M07-pack fallback matrix
 
 This is the public contract for issue #5448. Policy lives in

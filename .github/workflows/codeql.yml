@@ -5,7 +5,6 @@ on:
     branches: [main, devel]
     paths-ignore:
       - 'mydocs/**'
-      - 'docs/**'
       - 'samples/**'
       - 'pdf/**'
       - 'pdf-2020/**'
@@ -23,7 +22,6 @@ on:
   pull_request:
     branches: [main, devel]
     paths-ignore:
-      - 'docs/**'
       # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
       # 구분해 CodeQL no-op/full 판정을 발행한다.
       - 'assets/**'
@@ -101,6 +99,10 @@ jobs:
             // language-level verdict; skipped remains fail-closed here.
             const allowedSecurityConclusions = new Set(['success', 'neutral']);
             const { owner, repo } = context.repo;
+            const renderContractPaths = new Set([
+              'mydocs/tech/canvaskit-parity-implementation.md',
+              'mydocs/tech/text-ir-v2.md',
+            ]);
 
             function setResult(fastPass, reason, candidateSha = '') {
               core.setOutput('fast_pass', fastPass ? 'true' : 'false');
@@ -123,7 +125,7 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
-              if (filename.startsWith('mydocs/')) {
+              if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
               }
               if (isPdfReferencePath(filename)) {
