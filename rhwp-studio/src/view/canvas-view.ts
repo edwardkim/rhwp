@@ -52,6 +52,12 @@ import {
   drawPageMarginGuideCorners,
   type PageMarginGuideEdges,
 } from './page-margin-guides.ts';
+import {
+  DEFAULT_CANVAS2D_LAYER_COUNT,
+  planRenderSurfaceBudget,
+  type RenderSurfaceBudgetPlan,
+  type RenderSurfaceDecision,
+} from './render-surface-budget.ts';
 
 /** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
 const BLANK_PAGE_FALLBACK_SIZE = { width: 794, height: 1123 };
@@ -81,9 +87,14 @@ export class CanvasView {
   private pageMovement: PageMovementSettings;
   private pages: PageInfo[] = [];
   private currentVisiblePages: number[] = [];
+  private currentRetainedPages: number[] = [];
   private editingPageIndex: number | null = null;
   private headerFooterEditState: HeaderFooterModeState | null = null;
   private activePageSnapshot: ActivePageSnapshot | null = null;
+  private renderSurfacePlan: RenderSurfaceBudgetPlan | null = null;
+  private renderSurfaceDecisions = new Map<number, RenderSurfaceDecision>();
+  private previousEffectiveDpr = new Map<number, number>();
+  private renderSurfaceEnvironmentKey: string | null = null;
   private unsubscribers: (() => void)[] = [];
   private pendingTextEditRefreshes = new Map<number, PageRenderContext>();
   private textEditRefreshRafId: number | null = null;
@@ -524,6 +535,12 @@ export class CanvasView {
       }
     }
 
+    // 새 가시·보존 집합을 먼저 확정해야 새로 그리는 쪽도 현재 예산으로 판정된다.
+    this.currentVisiblePages = visiblePages;
+    this.currentRetainedPages = prefetchPages;
+    this.updateActivePageSnapshot();
+    this.refreshRenderSurfacePlan(true);
+
     // 현재 보이는 페이지는 즉시 렌더한다. 인접 페이지는 스크롤 입력 뒤에 처리한다.
     for (const pageIdx of visiblePages) {
       this.pendingPrefetchPages.delete(pageIdx);
@@ -532,10 +549,7 @@ export class CanvasView {
       }
     }
     this.schedulePrefetchPages(prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx)));
-
-    this.currentVisiblePages = visiblePages;
     this.renderHeaderFooterEditOverlays();
-    this.updateActivePageSnapshot();
   }
 
   /** HF 타겟을 구역 첫 페이지에 가상 투영하고 실제 적용 쪽을 함께 표시한다. */
@@ -705,6 +719,7 @@ export class CanvasView {
     // 눈금자는 순수 스크롤의 viewport fallback이 아니라 마지막 편집 focus를 따른다.
     // current-page-changed와 렌더 가시성은 위 active snapshot 계약을 계속 사용한다.
     this.eventBus.emit('focused-page-changed', pageIndex);
+    this.refreshRenderSurfacePlan(true);
   }
 
   /** 캐럿·개체 선택과 스크롤이 공유하는 활성 페이지 판정·발행 관문. */
@@ -785,6 +800,83 @@ export class CanvasView {
     }
   }
 
+  private refreshRenderSurfacePlan(rerenderChangedPages: boolean): void {
+    if (this.pages.length === 0 || this.currentRetainedPages.length === 0) {
+      this.renderSurfacePlan = null;
+      this.renderSurfaceDecisions.clear();
+      return;
+    }
+
+    const previousDecisions = this.renderSurfaceDecisions;
+    const visibleSet = new Set(this.currentVisiblePages);
+    const focusPage = this.editingPageIndex
+      ?? this.activePageSnapshot?.pageIndex
+      ?? this.currentVisiblePages[0]
+      ?? 0;
+    const layerCount = this.pageRenderer.getBackend() === 'canvaskit'
+      ? 1
+      : DEFAULT_CANVAS2D_LAYER_COUNT;
+    const rawDpr = window.devicePixelRatio || 1;
+    const renderProfile = this.pageRenderer.getRenderProfile();
+    const environmentKey = `${rawDpr}:${layerCount}:${renderProfile}`;
+    if (environmentKey !== this.renderSurfaceEnvironmentKey) {
+      // 모니터 DPR/backend/profile이 바뀌면 이전 bucket은 새 환경의 hysteresis 근거가 아니다.
+      this.previousEffectiveDpr.clear();
+      this.renderSurfaceEnvironmentKey = environmentKey;
+    }
+    const plan = planRenderSurfaceBudget({
+      pages: this.currentRetainedPages.flatMap((pageIndex) => {
+        const page = this.pages[pageIndex];
+        if (!page) return [];
+        return [{
+          pageIndex,
+          width: page.width,
+          height: page.height,
+          layerCount: this.pageRenderer.getCanvasSurfaceLayerCount(pageIndex),
+          visible: visibleSet.has(pageIndex),
+          focused: this.editingPageIndex === pageIndex,
+          distanceFromFocus: Math.abs(pageIndex - focusPage),
+        }];
+      }),
+      zoom: this.viewportManager.getZoom(),
+      rawDpr,
+      layerCount,
+      renderProfile,
+      previousEffectiveDpr: this.previousEffectiveDpr,
+    });
+    const nextDecisions = new Map(
+      plan.decisions.map(decision => [decision.pageIndex, decision]),
+    );
+    this.renderSurfacePlan = plan;
+    this.renderSurfaceDecisions = nextDecisions;
+    for (const decision of plan.decisions) {
+      this.previousEffectiveDpr.set(decision.pageIndex, decision.effectiveDpr);
+    }
+
+    if (!rerenderChangedPages) return;
+    for (const pageIndex of this.canvasPool.activePages) {
+      const before = previousDecisions.get(pageIndex);
+      const after = nextDecisions.get(pageIndex);
+      if (!after) continue;
+      const changed = !before
+        || Math.abs(before.effectiveDpr - after.effectiveDpr) > 0.001
+        || before.tier !== after.tier;
+      const canvas = this.canvasPool.getCanvas(pageIndex);
+      if (!canvas) continue;
+      if (changed) {
+        this.renderCanvas(pageIndex, canvas);
+      } else {
+        // 가시성만 바뀐 페이지는 다시 raster하지 않고 진단값만 현재 plan에 맞춘다.
+        canvas.dataset.rhwpSurfaceVisible = after.visible ? 'true' : 'false';
+        canvas.dataset.rhwpSurfaceLayerCount = String(after.layerCount);
+        canvas.dataset.rhwpEstimatedSurfaceBytes = String(after.surfaceBytes);
+        canvas.dataset.rhwpEstimatedVisibleSurfaceBytes = String(plan.visibleSurfacePixels * 4);
+        canvas.dataset.rhwpEstimatedRetainedSurfaceBytes = String(plan.retainedSurfacePixels * 4);
+        canvas.dataset.rhwpSurfaceBudgetState = plan.withinBudget ? 'within' : 'exceeded';
+      }
+    }
+  }
+
   /** 단일 페이지를 렌더링한다 */
   private renderPage(pageIdx: number): void {
     const canvas = this.canvasPool.acquire(pageIdx);
@@ -810,8 +902,13 @@ export class CanvasView {
       console.error(`[CanvasView] 페이지 ${pageIdx} 정보가 없습니다`);
       return false;
     }
+    if (!this.renderSurfaceDecisions.has(pageIdx)) {
+      this.refreshRenderSurfacePlan(false);
+    }
+    const surfaceDecision = this.renderSurfaceDecisions.get(pageIdx);
+    const requestedDpr = surfaceDecision?.effectiveDpr ?? rawDpr;
     // iOS/WebKit과 GPU surface가 감당하기 어려운 물리 픽셀 수를 중앙 정책으로 제한한다.
-    const renderScale = clampRenderScale(pageInfo, zoom * rawDpr);
+    const renderScale = clampRenderScale(pageInfo, zoom * requestedDpr);
     const dpr = renderScale / (zoom > 0 ? zoom : 1);
 
     // Canvas를 DOM에 추가하고 위치를 설정한다
@@ -870,6 +967,23 @@ export class CanvasView {
     renderedCanvas.style.height = `${renderedCanvas.height / dpr}px`;
     renderedCanvas.style.transformOrigin = '';
     renderedCanvas.dataset.rhwpRenderedZoom = String(zoom);
+    renderedCanvas.dataset.rhwpRenderTier = surfaceDecision?.tier ?? 'screen';
+    renderedCanvas.dataset.rhwpRenderBucket = String(dpr);
+    renderedCanvas.dataset.rhwpRenderScale = String(renderScale);
+    renderedCanvas.dataset.rhwpRawDpr = String(rawDpr);
+    renderedCanvas.dataset.rhwpEffectiveDpr = String(dpr);
+    renderedCanvas.dataset.rhwpSurfaceVisible = surfaceDecision?.visible ? 'true' : 'false';
+    renderedCanvas.dataset.rhwpSurfaceLayerCount = String(surfaceDecision?.layerCount ?? 1);
+    renderedCanvas.dataset.rhwpEstimatedSurfaceBytes = String(surfaceDecision?.surfaceBytes ?? 0);
+    renderedCanvas.dataset.rhwpEstimatedVisibleSurfaceBytes = String(
+      (this.renderSurfacePlan?.visibleSurfacePixels ?? 0) * 4,
+    );
+    renderedCanvas.dataset.rhwpEstimatedRetainedSurfaceBytes = String(
+      (this.renderSurfacePlan?.retainedSurfacePixels ?? 0) * 4,
+    );
+    renderedCanvas.dataset.rhwpSurfaceBudgetState = this.renderSurfacePlan?.withinBudget === false
+      ? 'exceeded'
+      : 'within';
     this.renderGridOverlay(pageIdx, renderedCanvas);
     if (renderResult.needsTextEditStaticLayerVerification) {
       this.scheduleTextEditStaticLayerVerification(pageIdx);
@@ -1249,11 +1363,14 @@ export class CanvasView {
     this.pageRenderer.cancelAll();
     this.releaseAllRenderedPages();
     this.currentVisiblePages = [];
+    this.currentRetainedPages = [];
     this.editingPageIndex = null;
     this.headerFooterEditState = null;
     this.pageRenderer.setPageMarginGuideEdges('both');
     this.activePageSnapshot = null;
     this.virtualScroll.resetAutoColumnCommit();
+    this.previousEffectiveDpr.clear();
+    this.renderSurfaceEnvironmentKey = null;
     if (hadActivePage) this.eventBus.emit('active-page-changed', null);
     if (hadFocusedPage) this.eventBus.emit('focused-page-changed', null);
     this.pages = [];
@@ -1267,6 +1384,8 @@ export class CanvasView {
     this.removeHeaderFooterEditOverlays();
     this.removeAllGridOverlays();
     this.canvasPool.releaseAll();
+    this.renderSurfacePlan = null;
+    this.renderSurfaceDecisions.clear();
   }
 
   private refreshGridOverlays(): void {

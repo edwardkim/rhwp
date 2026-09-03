@@ -202,6 +202,8 @@ test('실제 CanvasView zoom 경로는 자동 열 commit과 Canvas pool 단일 �
       resetImageRetryState: () => undefined,
       removeAllPageLayers: () => undefined,
     };
+    view.renderSurfacePlan = null;
+    view.renderSurfaceDecisions = new Map();
     view.cancelPendingTextEditRefresh = () => undefined;
     view.cancelTextEditStaticLayerVerification = () => undefined;
     view.removeHeaderFooterEditOverlays = () => undefined;
