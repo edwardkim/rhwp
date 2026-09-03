@@ -389,6 +389,7 @@ pub(crate) enum HorizontalShapingReplaySourceCertificateRejectReason {
 }
 
 impl HorizontalShapingReplaySourceCertificateRejectReason {
+    #[cfg(test)]
     pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::StaleRegistryGeneration => "staleRegistryGeneration",
@@ -444,6 +445,7 @@ pub(crate) struct HorizontalShapingShadowOutcome {
 }
 
 impl HorizontalShapingShadowOutcome {
+    #[cfg(test)]
     pub(crate) fn is_applied(&self) -> bool {
         self.trace.disposition == TerminalShapingDisposition::Applied && self.measurement.is_some()
     }
@@ -484,6 +486,7 @@ impl std::fmt::Debug for HorizontalShapingContext {
 }
 
 impl HorizontalShapingContext {
+    #[cfg(test)]
     pub(crate) fn new(registry: ExactFontSourceRegistry) -> Self {
         Self::with_instance_requests_and_cache_limit(
             registry,
@@ -492,6 +495,7 @@ impl HorizontalShapingContext {
         )
     }
 
+    #[cfg(test)]
     pub(crate) fn with_cache_limit(registry: ExactFontSourceRegistry, cache_limit: usize) -> Self {
         Self::with_instance_requests_and_cache_limit(
             registry,
@@ -665,6 +669,7 @@ impl HorizontalShapingMeasurementSession for HorizontalShapingExplicitInstanceTr
 }
 
 impl HorizontalShapingExplicitInstanceTransaction<'_> {
+    #[cfg(test)]
     pub(crate) fn registry_generation(&self) -> u64 {
         self.transaction.registry_generation()
     }
@@ -673,6 +678,7 @@ impl HorizontalShapingExplicitInstanceTransaction<'_> {
         self.variations.is_empty()
     }
 
+    #[cfg(test)]
     pub(crate) fn request_generation(&self) -> u64 {
         self.provenance.request_generation
     }
@@ -725,22 +731,27 @@ impl<'a> HorizontalShapingTransaction<'a> {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn registry_generation(&self) -> u64 {
         self.registry_generation
     }
 
+    #[cfg(test)]
     pub(crate) fn parsed_face_count(&self) -> usize {
         self.parsed_face_count
     }
 
+    #[cfg(test)]
     pub(crate) fn prepared_source_count(&self) -> usize {
         self.prepared_source_count
     }
 
+    #[cfg(test)]
     pub(crate) fn result_cache_hit_count(&self) -> usize {
         self.result_cache_hit_count
     }
 
+    #[cfg(test)]
     pub(crate) fn result_cache_miss_count(&self) -> usize {
         self.result_cache_miss_count
     }

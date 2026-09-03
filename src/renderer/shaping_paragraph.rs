@@ -728,6 +728,7 @@ fn explicit_instance_segment(
     )
 }
 
+#[cfg(test)]
 pub(crate) fn decide_horizontal_shaping_activation(
     request: &HorizontalShapingParagraphRequest<'_>,
 ) -> HorizontalShapingActivationDecision {
@@ -926,6 +927,7 @@ fn prepare_paragraph_with_budget<S: HorizontalShapingMeasurementSession>(
     }))
 }
 
+#[cfg(test)]
 pub(crate) fn prepare_horizontal_shaping_paragraph(
     transaction: &mut HorizontalShapingTransaction<'_>,
     request: &HorizontalShapingParagraphRequest<'_>,

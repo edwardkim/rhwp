@@ -136,16 +136,14 @@ pub(crate) struct HorizontalShapingNoLineSegOwnerRejection {
 }
 
 impl HorizontalShapingNoLineSegOwnerRejection {
+    #[cfg(test)]
     pub(crate) fn reason(&self) -> HorizontalShapingNoLineSegOwnerRejectReason {
         self.reason
     }
 
+    #[cfg(test)]
     pub(crate) fn fallback_geometry(&self) -> HorizontalShapingLegacyGeometry {
         self.fallback_geometry
-    }
-
-    pub(crate) fn product_published(&self) -> bool {
-        false
     }
 }
 
@@ -181,50 +179,56 @@ pub(crate) struct HorizontalShapingNoLineSegPublication {
 }
 
 impl HorizontalShapingNoLineSegOwnerTransaction {
+    #[cfg(test)]
     pub(crate) fn outcome(&self) -> &Arc<HorizontalShapingLineOutcome> {
         &self.outcome
     }
 
+    #[cfg(test)]
     pub(crate) fn line_selection_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
         &self.line_selection_measurement
     }
 
+    #[cfg(test)]
     pub(crate) fn bbox_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
         &self.bbox_measurement
     }
 
+    #[cfg(test)]
     pub(crate) fn next_origin_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
         &self.next_origin_measurement
     }
 
+    #[cfg(test)]
     pub(crate) fn sidecar_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
         self.sidecar_decision
             .measurement()
             .expect("N0 sidecar decision is applied")
     }
 
+    #[cfg(test)]
     pub(crate) fn line_width_px(&self) -> f64 {
         self.line_width_px
     }
 
+    #[cfg(test)]
     pub(crate) fn bbox_width_px(&self) -> f64 {
         self.bbox_width_px
     }
 
+    #[cfg(test)]
     pub(crate) fn next_origin_x_px(&self) -> f64 {
         self.next_origin_x_px
     }
 
+    #[cfg(test)]
     pub(crate) fn fallback_geometry(&self) -> HorizontalShapingLegacyGeometry {
         self.fallback_geometry
-    }
-
-    pub(crate) fn product_published(&self) -> bool {
-        false
     }
 }
 
 impl HorizontalShapingNoLineSegPublication {
+    #[cfg(test)]
     pub(crate) fn outcome(&self) -> &Arc<HorizontalShapingLineOutcome> {
         &self.outcome
     }
@@ -603,6 +607,7 @@ pub(crate) fn map_horizontal_shaping_emitted_run(
 
 /// Exercise the D0 ownership boundary with the exact NodeId and reconciled
 /// range. Product layout does not call this helper until D4.
+#[cfg(test)]
 pub(crate) fn attach_horizontal_shaping_mapped_run(
     sidecars: &mut HorizontalShapingPageSidecars,
     mapped: &HorizontalShapingMappedRun,

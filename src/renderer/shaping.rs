@@ -761,6 +761,7 @@ pub(crate) struct TerminalShapingAttempt {
 }
 
 impl TerminalShapingAttempt {
+    #[cfg(test)]
     pub(crate) fn is_applied(&self) -> bool {
         self.trace.disposition == TerminalShapingDisposition::Applied && self.applied.is_some()
     }
@@ -876,6 +877,7 @@ impl Default for BoundedShapingAttemptLedger {
 }
 
 impl BoundedShapingAttemptLedger {
+    #[cfg(test)]
     pub(crate) fn record(&mut self, trace: &ShapingAttemptTrace) {
         if self.records.len() < self.record_limit {
             self.records.push(trace.clone());
@@ -885,18 +887,22 @@ impl BoundedShapingAttemptLedger {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn record_count(&self) -> usize {
         self.records.len()
     }
 
+    #[cfg(test)]
     pub(crate) fn status(&self) -> ShapingAttemptLedgerStatus {
         self.status
     }
 
+    #[cfg(test)]
     pub(crate) fn record_limit(&self) -> usize {
         self.record_limit
     }
 
+    #[cfg(test)]
     pub(crate) fn omitted_record_count(&self) -> usize {
         self.omitted_records
     }

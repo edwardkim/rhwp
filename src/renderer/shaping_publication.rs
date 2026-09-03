@@ -95,6 +95,7 @@ impl HorizontalShapingRunDecision {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn rejected(
         registry_generation: u64,
         range: HorizontalShapingRunRange,
@@ -305,22 +306,27 @@ impl HorizontalShapingPageSidecars {
         self.entries.get(&node_id)
     }
 
+    #[cfg(test)]
     pub(crate) fn len(&self) -> usize {
         self.entries.len()
     }
 
+    #[cfg(test)]
     pub(crate) fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
 
+    #[cfg(test)]
     pub(crate) fn registry_generation(&self) -> Option<u64> {
         self.registry_generation
     }
 
+    #[cfg(test)]
     pub(crate) fn reserved_source_count(&self) -> usize {
         self.reserved_source_identities.len()
     }
 
+    #[cfg(test)]
     pub(crate) fn reserved_source_bytes(&self) -> usize {
         self.reserved_source_bytes
     }

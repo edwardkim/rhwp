@@ -295,7 +295,6 @@ fn issue_4969_q2_d5_n0_no_lineseg_owner_keeps_four_consumers_on_one_arc() {
             <= 1.0e-12
     );
     assert_eq!(transaction.fallback_geometry(), legacy_geometry());
-    assert!(!transaction.product_published());
 }
 
 #[test]
@@ -365,7 +364,6 @@ fn issue_4969_q2_d5_n0_feature_detection_rejects_unsupported_surfaces_by_type() 
         .unwrap_err();
         assert_eq!(rejection.reason(), expected);
         assert_eq!(rejection.fallback_geometry(), legacy_geometry());
-        assert!(!rejection.product_published());
     }
 }
 
@@ -390,7 +388,6 @@ fn issue_4969_q2_d5_n0_late_source_failure_rolls_back_all_consumers() {
         )
     );
     assert_eq!(rejection.fallback_geometry(), legacy_geometry());
-    assert!(!rejection.product_published());
 }
 
 #[test]
@@ -414,7 +411,6 @@ fn issue_4969_q2_d5_n0_multiple_targets_are_rejected_before_publication() {
         HorizontalShapingNoLineSegOwnerRejectReason::TargetCountUnsupported
     );
     assert_eq!(rejection.fallback_geometry(), legacy_geometry());
-    assert!(!rejection.product_published());
 }
 
 #[test]
@@ -516,7 +512,6 @@ fn issue_4969_q2_d5_n1_sidecar_conflict_keeps_existing_owner_and_legacy_geometry
         )
     );
     assert_eq!(rejection.fallback_geometry(), legacy_geometry());
-    assert!(!rejection.product_published());
     assert_eq!(sidecars.len(), 1);
     assert_eq!(sidecars.reserved_source_count(), 0);
     assert_eq!(sidecars.reserved_source_bytes(), 0);
