@@ -6,11 +6,7 @@ const CLASSIFIER_VERSION = '7';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
 
-const REVIEW_REFERENCE_PDF_PREFIXES = [
-  'pdf/',
-  'pdf-2020/',
-  'pdf-large/',
-];
+const REVIEW_REFERENCE_PDF_PREFIXES = ['pdf/'];
 
 const RENDER_RUST_PREFIXES = [
   'src/paint/',

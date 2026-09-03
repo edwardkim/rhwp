@@ -88,7 +88,8 @@ PR review 기준 PDF 파일명은 engine bucket 기준으로 끝낸다. `hancom-
 
 - 최종 기준 PDF는 output에만 두지 않고 2020 bucket은 `pdf/{원본 stem}-2020.pdf`, 2024 bucket은
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
-- 50MB 미만 MCP 산출 PDF는 commit 가능한 장기 증적이다. 큰 PDF는 pdf-large와 Git LFS 정책을 따른다.
+- 파일 하나가 50 MiB 미만인 MCP 산출 PDF는 `pdf/**`에 일반 Git blob으로 commit 가능한 장기 증적이다.
+  상한을 넘는 PDF는 그대로 커밋하지 않고 축소 fixture·페이지 발췌·외부 증적 방식을 먼저 합의한다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
 - 원격 service는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 - 원본 크기와 예상 페이지 수를 먼저 확인한다. 페이지가 많거나 거대·중첩 표, 성능 sample은

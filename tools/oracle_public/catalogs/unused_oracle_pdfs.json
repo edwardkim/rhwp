@@ -2,8 +2,62 @@
   "schemaVersion": "1.0",
   "claim": "M01-f",
   "kind": "unusedOraclePdfCatalog",
-  "count": 84,
+  "count": 216,
   "pdfs": [
+    {
+      "pdf": "pdf/05434_vehicle_log_form-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "05434_vehicle_log_form-2020.pdf",
+      "stem": "05434_vehicle_log_form-2020",
+      "bytes": 108977,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5916/05434_vehicle_log_form.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/113424_evaluation_guideline-2024.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "113424_evaluation_guideline-2024.pdf",
+      "stem": "113424_evaluation_guideline-2024",
+      "bytes": 713698,
+      "pdfPages": 46,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6551/113424_evaluation_guideline.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/1341000_research_report_footnotes-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "1341000_research_report_footnotes-2020.pdf",
+      "stem": "1341000_research_report_footnotes-2020",
+      "bytes": 1257838,
+      "pdfPages": 92,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue2559/1341000_research_report_footnotes.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
     {
       "pdf": "pdf/156457624_210622-2020.pdf",
       "oracleRoot": "pdf",
@@ -15,6 +69,54 @@
       "signature": "PDF",
       "reason": "no_stem_candidate",
       "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/156489219_satellite_pm_release-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "156489219_satellite_pm_release-2020.pdf",
+      "stem": "156489219_satellite_pm_release-2020",
+      "bytes": 1927461,
+      "pdfPages": 8,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6575/156489219_satellite_pm_release.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/156518878-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "156518878-2020.pdf",
+      "stem": "156518878-2020",
+      "bytes": 276283,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/16418295_square_rowbreak_table-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "16418295_square_rowbreak_table-2020.pdf",
+      "stem": "16418295_square_rowbreak_table-2020",
+      "bytes": 88050,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6549/16418295_square_rowbreak_table.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
     },
     {
       "pdf": "pdf/2025 행정업무운영 편람(최종)-2010-kopub.pdf",
@@ -81,6 +183,60 @@
         {
           "sample": "samples/3-09월_교육_통합_2023.hwpx",
           "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/3249937_asset_management_rules-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "3249937_asset_management_rules-2020.pdf",
+      "stem": "3249937_asset_management_rules-2020",
+      "bytes": 686269,
+      "pdfPages": 60,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6031/3249937_asset_management_rules.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/36339092_low_slack_absorb_block-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "36339092_low_slack_absorb_block-2020.pdf",
+      "stem": "36339092_low_slack_absorb_block-2020",
+      "bytes": 38403,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/36374873_night_guard_log-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "36374873_night_guard_log-2020.pdf",
+      "stem": "36374873_night_guard_log-2020",
+      "bytes": 47534,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue4599/36374873_night_guard_log.hwpx",
+          "why": "stem_prefix",
           "sourceFormat": "hwpx"
         }
       ]
@@ -176,6 +332,65 @@
       ]
     },
     {
+      "pdf": "pdf/BlogForm_BookReview-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "BlogForm_BookReview-2020.pdf",
+      "stem": "BlogForm_BookReview-2020",
+      "bytes": 20850,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/basic/BlogForm_BookReview.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/basic/BookReview.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/cell_char_spacing_fit-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "cell_char_spacing_fit-2020.pdf",
+      "stem": "cell_char_spacing_fit-2020",
+      "bytes": 59764,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6196/cell_char_spacing_fit.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/cell_float_stack_stored_vpos-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "cell_float_stack_stored_vpos-2020.pdf",
+      "stem": "cell_float_stack_stored_vpos-2020",
+      "bytes": 19326,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5734/cell_float_stack_stored_vpos.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
       "pdf": "pdf/distribution_doc-2024.pdf",
       "oracleRoot": "pdf",
       "relParent": "",
@@ -265,7 +480,7 @@
       "filename": "HWP3-password-123456.pdf",
       "stem": "HWP3-password-123456",
       "bytes": 6255937,
-      "pdfPages": 5,
+      "pdfPages": 24,
       "signature": "PDF",
       "reason": "suffix_not_oracle",
       "candidateSamples": [
@@ -283,8 +498,8 @@
       "filename": "hwp3-sample11-2020.pdf",
       "stem": "hwp3-sample11-2020",
       "bytes": 13358432,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 151,
+      "signature": "PDF",
       "reason": "unmatched_relative_path",
       "candidateSamples": [
         {
@@ -318,6 +533,386 @@
         {
           "sample": "samples/hwp3-sample14.hwp",
           "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/143E433F503322BD33.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "143E433F503322BD33.pdf",
+      "stem": "143E433F503322BD33",
+      "bytes": 147003,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/143E433F503322BD33.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/143E433F503322BD33.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/2026_oss_rst.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "2026_oss_rst.pdf",
+      "stem": "2026_oss_rst",
+      "bytes": 171288,
+      "pdfPages": 6,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/2026_oss_rst.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/2026_oss_rst.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/[2027] 온새미로 1 본교재.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "[2027] 온새미로 1 본교재.pdf",
+      "stem": "[2027] 온새미로 1 본교재",
+      "bytes": 1255445,
+      "pdfPages": 46,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/[2027] 온새미로 1 본교재.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/[2027] 온새미로 1 본교재.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/[2027] 온새미로 1 본교재.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/el-school-001.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "el-school-001.pdf",
+      "stem": "el-school-001",
+      "bytes": 74746,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/el-school-001.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/el-school-001.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/eq-002.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "eq-002.pdf",
+      "stem": "eq-002",
+      "bytes": 23807,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/eq-002.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/eq-002.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/footnote-tbox-01.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "footnote-tbox-01.pdf",
+      "stem": "footnote-tbox-01",
+      "bytes": 14537,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/footnote-tbox-01.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/footnote-tbox-01.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/hcar-001.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "hcar-001.pdf",
+      "stem": "hcar-001",
+      "bytes": 258069,
+      "pdfPages": 6,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/hcar-001.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/hcar-001.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/hy-001.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "hy-001.pdf",
+      "stem": "hy-001",
+      "bytes": 126209,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/hy-001.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/hwpx/hancom-hwp/hy-001.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/hy-002.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "hy-002.pdf",
+      "stem": "hy-002",
+      "bytes": 112893,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/hy-002.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/hwpx/hancom-hwp/hy-002.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/issue_1133.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "issue_1133.pdf",
+      "stem": "issue_1133",
+      "bytes": 110523,
+      "pdfPages": 3,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/issue_1133.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue_1133.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/k-water-rfp.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "k-water-rfp.pdf",
+      "stem": "k-water-rfp",
+      "bytes": 1451239,
+      "pdfPages": 27,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/k-water-rfp.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/k-water-rfp-2024.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/k-water-rfp.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/math-001.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "math-001.pdf",
+      "stem": "math-001",
+      "bytes": 101699,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/math-001.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/math-001.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/shape-001.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "shape-001.pdf",
+      "stem": "shape-001",
+      "bytes": 9681,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/shape-001.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/shape-001.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/ta-pic-001-r.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "ta-pic-001-r.pdf",
+      "stem": "ta-pic-001-r",
+      "bytes": 229401,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/ta-pic-001-r.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/ta-pic-001-r-쪽영역안제한.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/ta-pic-001-r-쪽영역안제한.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/ta-pic-001-r-쪽영역안제한no.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/ta-pic-001-r-쪽영역안제한no.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/ta-pic-001-r.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/hwpx/tb-org-02.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "hwpx",
+      "filename": "tb-org-02.pdf",
+      "stem": "tb-org-02",
+      "bytes": 38942,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/hwpx/tb-org-02.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/hwpx/hancom-hwp/tb-org-02.hwp",
+          "why": "suffix_not_oracle",
           "sourceFormat": "hwp"
         }
       ]
@@ -480,8 +1075,8 @@
       "filename": "issue1949_split_1x2_current_reflow_20260810_2020.pdf",
       "stem": "issue1949_split_1x2_current_reflow_20260810_2020",
       "bytes": 34948324,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 197,
+      "signature": "PDF",
       "reason": "no_stem_candidate",
       "candidateSamples": []
     },
@@ -647,8 +1242,8 @@
       "filename": "2025-administration-final-hwp-hwp2020-20260814.pdf",
       "stem": "2025-administration-final-hwp-hwp2020-20260814",
       "bytes": 19996841,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 383,
+      "signature": "PDF",
       "reason": "no_stem_candidate",
       "candidateSamples": []
     },
@@ -659,8 +1254,8 @@
       "filename": "2025-administration-final-hwpx-hwp2020-20260814.pdf",
       "stem": "2025-administration-final-hwpx-hwp2020-20260814",
       "bytes": 19997048,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 383,
+      "signature": "PDF",
       "reason": "no_stem_candidate",
       "candidateSamples": []
     },
@@ -714,6 +1309,1229 @@
       "stem": "30213_1-혼합단지등-제도개선-방안-hancom2020",
       "bytes": 7347063,
       "pdfPages": 38,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/issue6037/2차원원형-계열추가-데이터추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "2차원원형-계열추가-데이터추가.pdf",
+      "stem": "2차원원형-계열추가-데이터추가",
+      "bytes": 71818,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/2차원원형-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "2차원원형-계열추가.pdf",
+      "stem": "2차원원형-계열추가",
+      "bytes": 73407,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/2차원원형-계열추가-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "2차원원형-계열추가-hwpx.pdf",
+      "stem": "2차원원형-계열추가-hwpx",
+      "bytes": 72231,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/2차원원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/2차원원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/2차원원형-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "2차원원형-계열추가.pdf",
+      "stem": "2차원원형-계열추가",
+      "bytes": 72231,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/2차원원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/2차원원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/2차원원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/2차원원형-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/3차원원형-계열추가-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "3차원원형-계열추가-hwpx.pdf",
+      "stem": "3차원원형-계열추가-hwpx",
+      "bytes": 78744,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/3차원원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/3차원원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/3차원원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/3차원원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/3차원원형-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "3차원원형-계열추가.pdf",
+      "stem": "3차원원형-계열추가",
+      "bytes": 78744,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/3차원원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/3차원원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/3차원원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/3차원원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/고가저가종가-꼬리계열추가-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "고가저가종가-꼬리계열추가-hwpx.pdf",
+      "stem": "고가저가종가-꼬리계열추가-hwpx",
+      "bytes": 86334,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/고가저가종가-꼬리계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "고가저가종가-꼬리계열추가.pdf",
+      "stem": "고가저가종가-꼬리계열추가",
+      "bytes": 86335,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/시가고가저가종가-중간계열삭제-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "시가고가저가종가-중간계열삭제-hwpx.pdf",
+      "stem": "시가고가저가종가-중간계열삭제-hwpx",
+      "bytes": 83211,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/시가고가저가종가-중간계열삭제.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "시가고가저가종가-중간계열삭제.pdf",
+      "stem": "시가고가저가종가-중간계열삭제",
+      "bytes": 83211,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "시가고가저가종가-중간계열추가-hwpx.pdf",
+      "stem": "시가고가저가종가-중간계열추가-hwpx",
+      "bytes": 94252,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/시가고가저가종가-중간계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "시가고가저가종가-중간계열추가.pdf",
+      "stem": "시가고가저가종가-중간계열추가",
+      "bytes": 94252,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/원형대가로막대형-계열추가-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "원형대가로막대형-계열추가-hwpx.pdf",
+      "stem": "원형대가로막대형-계열추가-hwpx",
+      "bytes": 75821,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/원형대가로막대형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/원형대가로막대형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/원형대가로막대형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/원형대가로막대형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/원형대가로막대형-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "원형대가로막대형-계열추가.pdf",
+      "stem": "원형대가로막대형-계열추가",
+      "bytes": 75822,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/원형대가로막대형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/원형대가로막대형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/원형대가로막대형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/원형대가로막대형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/원형대원형-계열추가-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "원형대원형-계열추가-hwpx.pdf",
+      "stem": "원형대원형-계열추가-hwpx",
+      "bytes": 77894,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/원형대원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/원형대원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue5447/원형대원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue5447/원형대원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/원형대원형-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "원형대원형-계열추가.pdf",
+      "stem": "원형대원형-계열추가",
+      "bytes": 77895,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/원형대원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/원형대원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue5447/원형대원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue5447/원형대원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/쪼개진원형-계열추가-hwpx.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "쪼개진원형-계열추가-hwpx.pdf",
+      "stem": "쪼개진원형-계열추가-hwpx",
+      "bytes": 74053,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/쪼개진원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/쪼개진원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/쪼개진원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/쪼개진원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/engine/쪼개진원형-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037/engine",
+      "filename": "쪼개진원형-계열추가.pdf",
+      "stem": "쪼개진원형-계열추가",
+      "bytes": 74053,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/engine/쪼개진원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/쪼개진원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/쪼개진원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/쪼개진원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/고가저가종가-계열추가-데이터추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "고가저가종가-계열추가-데이터추가.pdf",
+      "stem": "고가저가종가-계열추가-데이터추가",
+      "bytes": 88340,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/고가저가종가-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "고가저가종가-계열추가.pdf",
+      "stem": "고가저가종가-계열추가",
+      "bytes": 86312,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/고가저가종가-꼬리계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "고가저가종가-꼬리계열추가.pdf",
+      "stem": "고가저가종가-꼬리계열추가",
+      "bytes": 88832,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/engine/고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/engine/고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/시가고가저가종가-계열삭제.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "시가고가저가종가-계열삭제.pdf",
+      "stem": "시가고가저가종가-계열삭제",
+      "bytes": 83211,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열삭제.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열삭제.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue5447/시가고가저가종가-계열삭제.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue5447/시가고가저가종가-계열삭제.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/시가고가저가종가-계열추가-데이터추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "시가고가저가종가-계열추가-데이터추가.pdf",
+      "stem": "시가고가저가종가-계열추가-데이터추가",
+      "bytes": 94071,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/시가고가저가종가-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "시가고가저가종가-계열추가.pdf",
+      "stem": "시가고가저가종가-계열추가",
+      "bytes": 89968,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/시가고가저가종가-꼬리계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "시가고가저가종가-꼬리계열추가.pdf",
+      "stem": "시가고가저가종가-꼬리계열추가",
+      "bytes": 92593,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/시가고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/고가저가종가-꼬리계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/시가고가저가종가-종가삭제.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "시가고가저가종가-종가삭제.pdf",
+      "stem": "시가고가저가종가-종가삭제",
+      "bytes": 83278,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/시가고가저가종가-종가삭제.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-종가삭제.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/시가고가저가종가-첫계열삭제.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "시가고가저가종가-첫계열삭제.pdf",
+      "stem": "시가고가저가종가-첫계열삭제",
+      "bytes": 85323,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/시가고가저가종가-첫계열삭제.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/시가고가저가종가-첫계열삭제.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/시가고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/기타/고가저가종가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/원형대원형-계열추가-데이터추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "원형대원형-계열추가-데이터추가.pdf",
+      "stem": "원형대원형-계열추가-데이터추가",
+      "bytes": 79671,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6037/원형대원형-계열추가.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "issue6037",
+      "filename": "원형대원형-계열추가.pdf",
+      "stem": "원형대원형-계열추가",
+      "bytes": 62781,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가-데이터추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가-데이터추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6037/원형대원형-계열추가.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/chart/원형/원형대원형.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/issue6122-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "issue6122-2020.pdf",
+      "stem": "issue6122-2020",
+      "bytes": 490461,
+      "pdfPages": 12,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/issue6123-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "issue6123-2020.pdf",
+      "stem": "issue6123-2020",
+      "bytes": 745886,
+      "pdfPages": 14,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/issue6124-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "issue6124-2020.pdf",
+      "stem": "issue6124-2020",
+      "bytes": 312477,
+      "pdfPages": 8,
       "signature": "PDF",
       "reason": "no_stem_candidate",
       "candidateSamples": []
@@ -839,6 +2657,42 @@
       "candidateSamples": []
     },
     {
+      "pdf": "pdf/memo_field_hwp5-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "memo_field_hwp5-2020.pdf",
+      "stem": "memo_field_hwp5-2020",
+      "bytes": 1174254,
+      "pdfPages": 20,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5866/memo_field_hwp5.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/microbe_bank_cell_picture-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "microbe_bank_cell_picture-2020.pdf",
+      "stem": "microbe_bank_cell_picture-2020",
+      "bytes": 486754,
+      "pdfPages": 5,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6313/microbe_bank_cell_picture.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
       "pdf": "pdf/nested_group_vectors-2024.pdf",
       "oracleRoot": "pdf",
       "relParent": "",
@@ -857,14 +2711,32 @@
       ]
     },
     {
+      "pdf": "pdf/nested_row_first_line_height-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "nested_row_first_line_height-2020.pdf",
+      "stem": "nested_row_first_line_height-2020",
+      "bytes": 104687,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5884/nested_row_first_line_height.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
       "pdf": "pdf/pr-review-planet6897-20260813/hwp3-sample10-hwp5-lineseg-normalized-2020.pdf",
       "oracleRoot": "pdf",
       "relParent": "pr-review-planet6897-20260813",
       "filename": "hwp3-sample10-hwp5-lineseg-normalized-2020.pdf",
       "stem": "hwp3-sample10-hwp5-lineseg-normalized-2020",
       "bytes": 14973661,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 763,
+      "signature": "PDF",
       "reason": "suffix_not_oracle",
       "candidateSamples": [
         {
@@ -931,14 +2803,1211 @@
       ]
     },
     {
+      "pdf": "pdf/pr6009_issue5885_3171199_design_capability_criteria-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr6009_issue5885_3171199_design_capability_criteria-2020.pdf",
+      "stem": "pr6009_issue5885_3171199_design_capability_criteria-2020",
+      "bytes": 173506,
+      "pdfPages": 7,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5885/3171199_design_capability_criteria.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/issue6126/3171199_design_capability_criteria.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr6014_issue5712_3184241_medical_exam_equipment-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr6014_issue5712_3184241_medical_exam_equipment-2020.pdf",
+      "stem": "pr6014_issue5712_3184241_medical_exam_equipment-2020",
+      "bytes": 33792,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5712/3184241_medical_exam_equipment.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr6017/156518601_p1_square_host-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6017",
+      "filename": "156518601_p1_square_host-2020.pdf",
+      "stem": "156518601_p1_square_host-2020",
+      "bytes": 83759,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5809/156518601_p1_square_host.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6298-copay-cap-tac-table-leading-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6298-copay-cap-tac-table-leading-2020.pdf",
+      "stem": "pr6481-issue6298-copay-cap-tac-table-leading-2020",
+      "bytes": 557535,
+      "pdfPages": 12,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6299-forest-press-wrap-seg-pairs-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6299-forest-press-wrap-seg-pairs-2020.pdf",
+      "stem": "pr6481-issue6299-forest-press-wrap-seg-pairs-2020",
+      "bytes": 83315,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6300-trade-report-forced-break-object-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6300-trade-report-forced-break-object-2020.pdf",
+      "stem": "pr6481-issue6300-trade-report-forced-break-object-2020",
+      "bytes": 1088360,
+      "pdfPages": 20,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6310-press-release-cell-logo-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6310-press-release-cell-logo-2020.pdf",
+      "stem": "pr6481-issue6310-press-release-cell-logo-2020",
+      "bytes": 1335100,
+      "pdfPages": 51,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6312-fiscal-trend-float-table-anchor-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6312-fiscal-trend-float-table-anchor-2020.pdf",
+      "stem": "pr6481-issue6312-fiscal-trend-float-table-anchor-2020",
+      "bytes": 177642,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6312-hidden-original-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6312-hidden-original-2020.pdf",
+      "stem": "pr6481-issue6312-hidden-original-2020",
+      "bytes": 248066,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6442-access-pass-form-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6442-access-pass-form-2020.pdf",
+      "stem": "pr6481-issue6442-access-pass-form-2020",
+      "bytes": 91096,
+      "pdfPages": 3,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6443-research-project-design-form-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6443-research-project-design-form-2020.pdf",
+      "stem": "pr6481-issue6443-research-project-design-form-2020",
+      "bytes": 109348,
+      "pdfPages": 8,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6481-visual/pr6481-issue6465-press-release-footer-logos-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6481-visual",
+      "filename": "pr6481-issue6465-press-release-footer-logos-2020.pdf",
+      "stem": "pr6481-issue6465-press-release-footer-logos-2020",
+      "bytes": 453413,
+      "pdfPages": 13,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6485-visual/pr6485-issue6298-copay-cap-tac-table-leading-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6485-visual",
+      "filename": "pr6485-issue6298-copay-cap-tac-table-leading-2020.pdf",
+      "stem": "pr6485-issue6298-copay-cap-tac-table-leading-2020",
+      "bytes": 557535,
+      "pdfPages": 12,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6485-visual/pr6485-issue6299-forest-press-wrap-seg-pairs-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6485-visual",
+      "filename": "pr6485-issue6299-forest-press-wrap-seg-pairs-2020.pdf",
+      "stem": "pr6485-issue6299-forest-press-wrap-seg-pairs-2020",
+      "bytes": 83315,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6485-visual/pr6485-issue6300-trade-report-forced-break-object-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6485-visual",
+      "filename": "pr6485-issue6300-trade-report-forced-break-object-2020.pdf",
+      "stem": "pr6485-issue6300-trade-report-forced-break-object-2020",
+      "bytes": 1088360,
+      "pdfPages": 20,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6485-visual/pr6485-issue6312-hidden-original-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6485-visual",
+      "filename": "pr6485-issue6312-hidden-original-2020.pdf",
+      "stem": "pr6485-issue6312-hidden-original-2020",
+      "bytes": 248066,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6485-visual/pr6485-issue6442-access-pass-form-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6485-visual",
+      "filename": "pr6485-issue6442-access-pass-form-2020.pdf",
+      "stem": "pr6485-issue6442-access-pass-form-2020",
+      "bytes": 91096,
+      "pdfPages": 3,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6485-visual/pr6485-issue6443-research-project-design-form-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6485-visual",
+      "filename": "pr6485-issue6443-research-project-design-form-2020.pdf",
+      "stem": "pr6485-issue6443-research-project-design-form-2020",
+      "bytes": 109348,
+      "pdfPages": 8,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr6485-visual/pr6485-issue6465-press-release-footer-logos-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr6485-visual",
+      "filename": "pr6485-issue6465-press-release-footer-logos-2020.pdf",
+      "stem": "pr6485-issue6465-press-release-footer-logos-2020",
+      "bytes": 453413,
+      "pdfPages": 13,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_5770/issue5720_2734559_hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5770",
+      "filename": "issue5720_2734559_hancom2020.pdf",
+      "stem": "issue5720_2734559_hancom2020",
+      "bytes": 34588,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_5770/issue5721_2568129_hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5770",
+      "filename": "issue5721_2568129_hancom2020.pdf",
+      "stem": "issue5721_2568129_hancom2020",
+      "bytes": 69691,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_5770/issue5727_156732636_hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5770",
+      "filename": "issue5727_156732636_hancom2020.pdf",
+      "stem": "issue5727_156732636_hancom2020",
+      "bytes": 826045,
+      "pdfPages": 4,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_5772_issue5747_156532835_hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_5772_issue5747_156532835_hancom2020.pdf",
+      "stem": "pr_5772_issue5747_156532835_hancom2020",
+      "bytes": 7004815,
+      "pdfPages": 20,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_5772_issue5748_156682735_hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_5772_issue5748_156682735_hancom2020.pdf",
+      "stem": "pr_5772_issue5748_156682735_hancom2020",
+      "bytes": 930122,
+      "pdfPages": 3,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_5786/hancom2020/issue5780_flow_image_page_background_hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5786/hancom2020",
+      "filename": "issue5780_flow_image_page_background_hancom2020.pdf",
+      "stem": "issue5780_flow_image_page_background_hancom2020",
+      "bytes": 8196,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5780/flow_image_page_background.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_5813/hancom2020/2025 행정업무운영 편람(최종)-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5813/hancom2020",
+      "filename": "2025 행정업무운영 편람(최종)-2020.pdf",
+      "stem": "2025 행정업무운영 편람(최종)-2020",
+      "bytes": 19997053,
+      "pdfPages": 383,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/2025 행정업무운영 편람(최종).hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        },
+        {
+          "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_5814/hancom2020/issue1880_takeplace_oracle_p13-hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5814/hancom2020",
+      "filename": "issue1880_takeplace_oracle_p13-hancom2020.pdf",
+      "stem": "issue1880_takeplace_oracle_p13-hancom2020",
+      "bytes": 175498,
+      "pdfPages": 13,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue1880_takeplace_oracle_p13.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_5815/hancom2020/issue5800-hancom-symbol-hancom2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5815/hancom2020",
+      "filename": "issue5800-hancom-symbol-hancom2020.pdf",
+      "stem": "issue5800-hancom-symbol-hancom2020",
+      "bytes": 12239,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5800-hancom-symbol.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_5849/hancom2020/condensed_ratio_title_box-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5849/hancom2020",
+      "filename": "condensed_ratio_title_box-2020.pdf",
+      "stem": "condensed_ratio_title_box-2020",
+      "bytes": 45198,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5821/condensed_ratio_title_box.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_5849/hancom2020/offcolumn_float_table_no_band-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_5849/hancom2020",
+      "filename": "offcolumn_float_table_no_band-2020.pdf",
+      "stem": "offcolumn_float_table_no_band-2020",
+      "bytes": 51894,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5798/offcolumn_float_table_no_band.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5820_ecard_meeting_press_156560092_ecard_meeting_press-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/hancom2020",
+      "filename": "pr_6088_6144_issue5820_ecard_meeting_press_156560092_ecard_meeting_press-2020.pdf",
+      "stem": "pr_6088_6144_issue5820_ecard_meeting_press_156560092_ecard_meeting_press-2020",
+      "bytes": 111587,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5820/156560092_ecard_meeting_press.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/hancom2020",
+      "filename": "pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf",
+      "stem": "pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020",
+      "bytes": 1261043,
+      "pdfPages": 142,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5966/1130000-202100008_franchise_review_report.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/hancom2020",
+      "filename": "pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf",
+      "stem": "pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020",
+      "bytes": 97925,
+      "pdfPages": 4,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5584/3232693_employment_support_criteria.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        },
+        {
+          "sample": "samples/issue6025/3232693_employment_support_criteria.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/hancom2020",
+      "filename": "pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf",
+      "stem": "pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020",
+      "bytes": 686269,
+      "pdfPages": 60,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6031/3249937_asset_management_rules.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6088_issue6031_asset_management_rules_action-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6088_issue6031_asset_management_rules_action-local2020.pdf",
+      "stem": "pr_6088_issue6031_asset_management_rules_action-local2020",
+      "bytes": 1317631,
+      "pdfPages": 60,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6089_issue6035_cosmetics_gmp_checklist-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6089_issue6035_cosmetics_gmp_checklist-local2020.pdf",
+      "stem": "pr_6089_issue6035_cosmetics_gmp_checklist-local2020",
+      "bytes": 203635,
+      "pdfPages": 11,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6093_6094_issue6060_local_service_reform-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6093_6094_issue6060_local_service_reform-local2020.pdf",
+      "stem": "pr_6093_6094_issue6060_local_service_reform-local2020",
+      "bytes": 1461553,
+      "pdfPages": 13,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6096_issue6086_resident_registration_reform-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6096_issue6086_resident_registration_reform-local2020.pdf",
+      "stem": "pr_6096_issue6086_resident_registration_reform-local2020",
+      "bytes": 1562255,
+      "pdfPages": 15,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6097_issue6025_employment_support_criteria-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6097_issue6025_employment_support_criteria-local2020.pdf",
+      "stem": "pr_6097_issue6025_employment_support_criteria-local2020",
+      "bytes": 74993,
+      "pdfPages": 4,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6098_issue5966_franchise_review_report-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6098_issue5966_franchise_review_report-local2020.pdf",
+      "stem": "pr_6098_issue5966_franchise_review_report-local2020",
+      "bytes": 883743,
+      "pdfPages": 142,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6100_issue6095_icepack_levy_criteria-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6100_issue6095_icepack_levy_criteria-local2020.pdf",
+      "stem": "pr_6100_issue6095_icepack_levy_criteria-local2020",
+      "bytes": 127284,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6103_issue6099_scanned_form-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6103_issue6099_scanned_form-local2020.pdf",
+      "stem": "pr_6103_issue6099_scanned_form-local2020",
+      "bytes": 49617,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_approval_doc_body-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6105_issue6101_approval_doc_body-local2020.pdf",
+      "stem": "pr_6105_issue6101_approval_doc_body-local2020",
+      "bytes": 62647,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_firefighter_training_plan-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6105_issue6101_firefighter_training_plan-local2020.pdf",
+      "stem": "pr_6105_issue6101_firefighter_training_plan-local2020",
+      "bytes": 316476,
+      "pdfPages": 11,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_overtime_report-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6113_issue6102_overtime_report-local2020.pdf",
+      "stem": "pr_6113_issue6102_overtime_report-local2020",
+      "bytes": 52455,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_traffic_fine_exemption-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6113_issue6102_traffic_fine_exemption-local2020.pdf",
+      "stem": "pr_6113_issue6102_traffic_fine_exemption-local2020",
+      "bytes": 70909,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_vehicle_inspection_expense-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6113_issue6102_vehicle_inspection_expense-local2020.pdf",
+      "stem": "pr_6113_issue6102_vehicle_inspection_expense-local2020",
+      "bytes": 51548,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6119_6120_6131_issue5820_ecard_meeting_press-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6119_6120_6131_issue5820_ecard_meeting_press-local2020.pdf",
+      "stem": "pr_6119_6120_6131_issue5820_ecard_meeting_press-local2020",
+      "bytes": 109372,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6137_issue6127_vessel_pass_application-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6137_issue6127_vessel_pass_application-local2020.pdf",
+      "stem": "pr_6137_issue6127_vessel_pass_application-local2020",
+      "bytes": 37080,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6144_issue6121_police_press_header-local2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6088_6144/local_hancom2020",
+      "filename": "pr_6144_issue6121_police_press_header-local2020.pdf",
+      "stem": "pr_6144_issue6121_police_press_header-local2020",
+      "bytes": 628480,
+      "pdfPages": 3,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6217_issue6186_footer_vertalign_bottom-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_6217_issue6186_footer_vertalign_bottom-2020.pdf",
+      "stem": "pr_6217_issue6186_footer_vertalign_bottom-2020",
+      "bytes": 97721,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6274/by_saved_version/pr6274_issue6271_rowbreak_float_tail_line-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6274/by_saved_version",
+      "filename": "pr6274_issue6271_rowbreak_float_tail_line-2020.pdf",
+      "stem": "pr6274_issue6271_rowbreak_float_tail_line-2020",
+      "bytes": 182459,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6167_leading_space_tac_table-2024.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6167_leading_space_tac_table-2024.pdf",
+      "stem": "pr6275_issue6167_leading_space_tac_table-2024",
+      "bytes": 32388,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6167/leading_space_tac_table.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6173_textbox_right_align_logos-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6173_textbox_right_align_logos-2020.pdf",
+      "stem": "pr6275_issue6173_textbox_right_align_logos-2020",
+      "bytes": 12514,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6173/textbox_right_align_logos.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6174_police_press_release-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6174_police_press_release-2020.pdf",
+      "stem": "pr6275_issue6174_police_press_release-2020",
+      "bytes": 248767,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6179_right_tab_footer_logo-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6179_right_tab_footer_logo-2020.pdf",
+      "stem": "pr6275_issue6179_right_tab_footer_logo-2020",
+      "bytes": 16597,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6179/right_tab_footer_logo.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6186_defense_press_release-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6186_defense_press_release-2020.pdf",
+      "stem": "pr6275_issue6186_defense_press_release-2020",
+      "bytes": 97720,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6190_center_align_first_line_indent-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6190_center_align_first_line_indent-2020.pdf",
+      "stem": "pr6275_issue6190_center_align_first_line_indent-2020",
+      "bytes": 31269,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6190/center_align_first_line_indent.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6192_cell_behind_text_para_anchor-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6192_cell_behind_text_para_anchor-2020.pdf",
+      "stem": "pr6275_issue6192_cell_behind_text_para_anchor-2020",
+      "bytes": 46598,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6192/cell_behind_text_para_anchor.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6194_agri_press_release-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6194_agri_press_release-2020.pdf",
+      "stem": "pr6275_issue6194_agri_press_release-2020",
+      "bytes": 160884,
+      "pdfPages": 2,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6196_cell_char_spacing_fit-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6196_cell_char_spacing_fit-2020.pdf",
+      "stem": "pr6275_issue6196_cell_char_spacing_fit-2020",
+      "bytes": 59765,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6196/cell_char_spacing_fit.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6206_acrc_113424_review-2024.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6206_acrc_113424_review-2024.pdf",
+      "stem": "pr6275_issue6206_acrc_113424_review-2024",
+      "bytes": 713682,
+      "pdfPages": 46,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6206_securities_settlement_review-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6206_securities_settlement_review-2020.pdf",
+      "stem": "pr6275_issue6206_securities_settlement_review-2020",
+      "bytes": 416946,
+      "pdfPages": 17,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6208_print_method_nup-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_6275/by_saved_version",
+      "filename": "pr6275_issue6208_print_method_nup-2020.pdf",
+      "stem": "pr6275_issue6208_print_method_nup-2020",
+      "bytes": 24114,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6208/print_method_nup.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6309_156518601_mobile_driver_license-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_6309_156518601_mobile_driver_license-2020.pdf",
+      "stem": "pr_6309_156518601_mobile_driver_license-2020",
+      "bytes": 1262144,
+      "pdfPages": 10,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6314_issue6175_seed_expo_square_float_body-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_6314_issue6175_seed_expo_square_float_body-2020.pdf",
+      "stem": "pr_6314_issue6175_seed_expo_square_float_body-2020",
+      "bytes": 252248,
+      "pdfPages": 4,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6175/seed_expo_square_float_body.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_6526_issue6524_p3_2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_6526_issue6524_p3_2020.pdf",
+      "stem": "pr_6526_issue6524_p3_2020",
+      "bytes": 394007,
+      "pdfPages": 15,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6528_issue6181_p5_2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_6528_issue6181_p5_2020.pdf",
+      "stem": "pr_6528_issue6181_p5_2020",
+      "bytes": 1131346,
+      "pdfPages": 12,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_6529_issue6180_p7_2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "pr_6529_issue6180_p7_2020.pdf",
+      "stem": "pr_6529_issue6180_p7_2020",
+      "bytes": 523290,
+      "pdfPages": 13,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_open_20260821/2700727_animal_facility_standards-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_open_20260821",
+      "filename": "2700727_animal_facility_standards-2020.pdf",
+      "stem": "2700727_animal_facility_standards-2020",
+      "bytes": 211501,
+      "pdfPages": 6,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5792/2700727_animal_facility_standards.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_open_20260821/cell_square_logo_text_wrap-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_open_20260821",
+      "filename": "cell_square_logo_text_wrap-2020.pdf",
+      "stem": "cell_square_logo_text_wrap-2020",
+      "bytes": 17510,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5818/cell_square_logo_text_wrap.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_open_20260821/coanchored_float_tac_order-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_open_20260821",
+      "filename": "coanchored_float_tac_order-2020.pdf",
+      "stem": "coanchored_float_tac_order-2020",
+      "bytes": 92827,
+      "pdfPages": 3,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5807/coanchored_float_tac_order.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_open_20260821/nested_square_table_horz_offset-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_open_20260821",
+      "filename": "nested_square_table_horz_offset-2020.pdf",
+      "stem": "nested_square_table_horz_offset-2020",
+      "bytes": 34925,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5787/nested_square_table_horz_offset.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_open_20260821/tac_table_missing_anchor_line_spacing-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_open_20260821",
+      "filename": "tac_table_missing_anchor_line_spacing-2020.pdf",
+      "stem": "tac_table_missing_anchor_line_spacing-2020",
+      "bytes": 1353916,
+      "pdfPages": 8,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5788/tac_table_missing_anchor_line_spacing.hwp",
+          "why": "stem_prefix",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6277_issue6267_kdt_result_para_float_table-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6277_issue6267_kdt_result_para_float_table-2020.pdf",
+      "stem": "pr6277_issue6267_kdt_result_para_float_table-2020",
+      "bytes": 116531,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6267/kdt_result_para_float_table.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6281_issue6266_seizure_list_form_button-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6281_issue6266_seizure_list_form_button-2020.pdf",
+      "stem": "pr6281_issue6266_seizure_list_form_button-2020",
+      "bytes": 28988,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6266/seizure_list_form_button.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6286_issue6264_env_satellite_report_form-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6286_issue6264_env_satellite_report_form-2020.pdf",
+      "stem": "pr6286_issue6264_env_satellite_report_form-2020",
+      "bytes": 124318,
+      "pdfPages": 4,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6287_issue6204_square_picture_band_host-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6287_issue6204_square_picture_band_host-2020.pdf",
+      "stem": "pr6287_issue6204_square_picture_band_host-2020",
+      "bytes": 40927,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6204/square_picture_band_host.hwp",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwp"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6287_issue6204_square_picture_moved-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6287_issue6204_square_picture_moved-2020.pdf",
+      "stem": "pr6287_issue6204_square_picture_moved-2020",
+      "bytes": 40985,
+      "pdfPages": 1,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6292_issue6269_public_sector_jobs_stats-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6292_issue6269_public_sector_jobs_stats-2020.pdf",
+      "stem": "pr6292_issue6269_public_sector_jobs_stats-2020",
+      "bytes": 1315595,
+      "pdfPages": 57,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6294_issue6280_prosecutor_transfer_list-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6294_issue6280_prosecutor_transfer_list-2020.pdf",
+      "stem": "pr6294_issue6280_prosecutor_transfer_list-2020",
+      "bytes": 386460,
+      "pdfPages": 21,
+      "signature": "PDF",
+      "reason": "no_stem_candidate",
+      "candidateSamples": []
+    },
+    {
+      "pdf": "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "pr_planet6897_open_ci_20260828/by_saved_version",
+      "filename": "pr6295_issue6284_child_policy_top_caption_charts-2020.pdf",
+      "stem": "pr6295_issue6284_child_policy_top_caption_charts-2020",
+      "bytes": 644662,
+      "pdfPages": 34,
+      "signature": "PDF",
+      "reason": "suffix_not_oracle",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6284/child_policy_top_caption_charts.hwpx",
+          "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/rowbreak_fragment_overfill-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "rowbreak_fragment_overfill-2020.pdf",
+      "stem": "rowbreak_fragment_overfill-2020",
+      "bytes": 312476,
+      "pdfPages": 8,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue5880/rowbreak_fragment_overfill.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
       "pdf": "pdf/stage242-hwp2020-page-count/2025 행정업무운영 편람(최종)-2020.pdf",
       "oracleRoot": "pdf",
       "relParent": "stage242-hwp2020-page-count",
       "filename": "2025 행정업무운영 편람(최종)-2020.pdf",
       "stem": "2025 행정업무운영 편람(최종)-2020",
       "bytes": 19996841,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 383,
+      "signature": "PDF",
       "reason": "unmatched_relative_path",
       "candidateSamples": [
         {
@@ -960,8 +4029,8 @@
       "filename": "2025 행정업무운영 편람(최종)-2020.pdf",
       "stem": "2025 행정업무운영 편람(최종)-2020",
       "bytes": 19997050,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 383,
+      "signature": "PDF",
       "reason": "unmatched_relative_path",
       "candidateSamples": [
         {
@@ -1008,6 +4077,24 @@
         {
           "sample": "samples/tac-host-spacing.hwpx",
           "why": "suffix_not_oracle",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
+      "pdf": "pdf/tac_cell_leftover_fits-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "tac_cell_leftover_fits-2020.pdf",
+      "stem": "tac_cell_leftover_fits-2020",
+      "bytes": 11113,
+      "pdfPages": 3,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6448/tac_cell_leftover_fits.hwpx",
+          "why": "stem_prefix",
           "sourceFormat": "hwpx"
         }
       ]
@@ -1100,8 +4187,8 @@
       "filename": "issue1949_cell_p5_append_56-2020.pdf",
       "stem": "issue1949_cell_p5_append_56-2020",
       "bytes": 34601076,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 115,
+      "signature": "PDF",
       "reason": "no_stem_candidate",
       "candidateSamples": []
     },
@@ -1112,8 +4199,8 @@
       "filename": "issue1949_cell_p5_append_61-2020.pdf",
       "stem": "issue1949_cell_p5_append_61-2020",
       "bytes": 34601465,
-      "pdfPages": null,
-      "signature": "PDF_PAGE_ERROR",
+      "pdfPages": 115,
+      "signature": "PDF",
       "reason": "no_stem_candidate",
       "candidateSamples": []
     },
@@ -1165,6 +4252,24 @@
       ]
     },
     {
+      "pdf": "pdf/underline_run_fragments-2020.pdf",
+      "oracleRoot": "pdf",
+      "relParent": "",
+      "filename": "underline_run_fragments-2020.pdf",
+      "stem": "underline_run_fragments-2020",
+      "bytes": 307644,
+      "pdfPages": 6,
+      "signature": "PDF",
+      "reason": "unmatched_relative_path",
+      "candidateSamples": [
+        {
+          "sample": "samples/issue6451/underline_run_fragments.hwpx",
+          "why": "stem_prefix",
+          "sourceFormat": "hwpx"
+        }
+      ]
+    },
+    {
       "pdf": "pdf/수식-문자처럼취급-아님.pdf",
       "oracleRoot": "pdf",
       "relParent": "",
@@ -1184,386 +4289,6 @@
           "sample": "samples/수식-문자처럼취급-아님.hwpx",
           "why": "suffix_not_oracle",
           "sourceFormat": "hwpx"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/143E433F503322BD33.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "143E433F503322BD33.pdf",
-      "stem": "143E433F503322BD33",
-      "bytes": 147003,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/143E433F503322BD33.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/143E433F503322BD33.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/2026_oss_rst.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "2026_oss_rst.pdf",
-      "stem": "2026_oss_rst",
-      "bytes": 171288,
-      "pdfPages": 6,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/2026_oss_rst.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/2026_oss_rst.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/[2027] 온새미로 1 본교재.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "[2027] 온새미로 1 본교재.pdf",
-      "stem": "[2027] 온새미로 1 본교재",
-      "bytes": 1255445,
-      "pdfPages": 46,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/[2027] 온새미로 1 본교재.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/[2027] 온새미로 1 본교재.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        },
-        {
-          "sample": "samples/[2027] 온새미로 1 본교재.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/el-school-001.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "el-school-001.pdf",
-      "stem": "el-school-001",
-      "bytes": 74746,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/el-school-001.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/el-school-001.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/eq-002.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "eq-002.pdf",
-      "stem": "eq-002",
-      "bytes": 23807,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/eq-002.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/eq-002.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/footnote-tbox-01.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "footnote-tbox-01.pdf",
-      "stem": "footnote-tbox-01",
-      "bytes": 14537,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/footnote-tbox-01.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/footnote-tbox-01.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/hcar-001.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "hcar-001.pdf",
-      "stem": "hcar-001",
-      "bytes": 258069,
-      "pdfPages": 6,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/hcar-001.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/hcar-001.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/hy-001.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "hy-001.pdf",
-      "stem": "hy-001",
-      "bytes": 126209,
-      "pdfPages": 2,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/hy-001.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/hwpx/hancom-hwp/hy-001.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/hy-002.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "hy-002.pdf",
-      "stem": "hy-002",
-      "bytes": 112893,
-      "pdfPages": 2,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/hy-002.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/hwpx/hancom-hwp/hy-002.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/issue_1133.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "issue_1133.pdf",
-      "stem": "issue_1133",
-      "bytes": 110523,
-      "pdfPages": 3,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/issue_1133.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/issue_1133.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/k-water-rfp.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "k-water-rfp.pdf",
-      "stem": "k-water-rfp",
-      "bytes": 1451239,
-      "pdfPages": 27,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/k-water-rfp.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/k-water-rfp-2024.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        },
-        {
-          "sample": "samples/k-water-rfp.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/math-001.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "math-001.pdf",
-      "stem": "math-001",
-      "bytes": 101699,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/math-001.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/math-001.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/shape-001.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "shape-001.pdf",
-      "stem": "shape-001",
-      "bytes": 9681,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/shape-001.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/shape-001.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/ta-pic-001-r.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "ta-pic-001-r.pdf",
-      "stem": "ta-pic-001-r",
-      "bytes": 229401,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/ta-pic-001-r.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/ta-pic-001-r-쪽영역안제한.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        },
-        {
-          "sample": "samples/ta-pic-001-r-쪽영역안제한.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/ta-pic-001-r-쪽영역안제한no.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        },
-        {
-          "sample": "samples/ta-pic-001-r-쪽영역안제한no.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/ta-pic-001-r.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf-large/hwpx/tb-org-02.pdf",
-      "oracleRoot": "pdf-large",
-      "relParent": "hwpx",
-      "filename": "tb-org-02.pdf",
-      "stem": "tb-org-02",
-      "bytes": 38942,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/tb-org-02.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/hwpx/hancom-hwp/tb-org-02.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
         }
       ]
     }

@@ -88,10 +88,10 @@ PRESETS: dict[str, dict] = {
     "visual-regression": {
         "paths": [
             "src", "tests", "samples", "saved", "assets", "ttfs",
-            "pdf", "pdf-2020", "pdf-large", "tools",
+            "pdf", "tools",
         ],
         "note": (
-            "한컴 PDF 오라클 대조까지 포함하는 무거운 프리셋(pdf/pdf-2020/pdf-large 는 "
+            "한컴 PDF 오라클 대조까지 포함하는 무거운 프리셋(pdf 는 "
             "바이너리 코퍼스) — 필요할 때만 명시적으로 고른다. 일반 렌더 작업은 renderer 로 충분."
         ),
     },

@@ -3,7 +3,6 @@
 
 `samples/` 의 `.hwp`/`.hwpx` 를 재귀 수집한 뒤, 같은 상대 경로의
 `pdf/{stem}-{year}.pdf` (및 `-hwp-2020` 같은 허용 변형) 를 맞춘다.
-`pdf-2020/`, `pdf-large/` 가 있으면 같은 규칙으로 추가 탐색한다.
 한글 버전은 2018 / 2020 / 2022 / 2024 만 센다.
 
 `oracle_resolver.py` 가 devel 에 없어도 동작하도록 매칭을 이 파일 안에 둔다.
@@ -30,7 +29,7 @@ CLAIM_ID = "M01-3"
 GENERATOR = "tools/oracle_public/coverage_report.py"
 MATCHING_RULE = "stem-{year}.pdf"
 SAMPLE_EXTS = {".hwp", ".hwpx"}
-DEFAULT_ORACLE_ROOTS = ("pdf", "pdf-2020", "pdf-large")
+DEFAULT_ORACLE_ROOTS = ("pdf",)
 HANCOM_YEARS = ("2018", "2020", "2022", "2024")
 
 # `{stem}` 뒤에 붙는 오라클 접미사. 연도가 반드시 들어가고, 포맷 태그·kopub·
@@ -458,7 +457,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "# M01-3 오라클 커버리지",
         "",
         "`samples/` 의 `.hwp`/`.hwpx` 와 `{stem}-{year}.pdf` (2018/2020/2022/2024) 짝.",
-        "같은 상대 하위 경로를 `pdf/` · `pdf-2020/` · `pdf-large/` 에서 찾는다.",
+        "같은 상대 하위 경로를 단일 오라클 루트 `pdf/` 에서 찾는다.",
         "`oracle_resolver.py` 가 없어도 이 도구가 같은 규칙으로 직접 맞춘다.",
         "짝 없는 개수는 아래 표의 실측값이다.",
         "",
@@ -571,7 +570,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--roots",
         default=",".join(DEFAULT_ORACLE_ROOTS),
-        help="오라클 PDF 루트(쉼표 구분). 기본 pdf,pdf-2020,pdf-large",
+        help="오라클 PDF 루트(쉼표 구분). 기본 pdf",
     )
     parser.add_argument(
         "--json-out",

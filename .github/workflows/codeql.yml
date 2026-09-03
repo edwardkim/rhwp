@@ -7,8 +7,6 @@ on:
       - 'mydocs/**'
       - 'samples/**'
       - 'pdf/**'
-      - 'pdf-2020/**'
-      - 'pdf-large/**'
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -148,7 +146,7 @@ jobs:
             }
 
             function isPdfReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              const pdfPrefixes = ['pdf/'];
               return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')

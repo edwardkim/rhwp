@@ -30,11 +30,6 @@ on:
         required: false
         default: '0'
         type: string
-      include_large:
-        description: 'pdf-large/ LFS 실파일을 받아 비교에 포함한다'
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -61,7 +56,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          lfs: ${{ inputs.include_large }}
           sparse-checkout-cone-mode: true
           sparse-checkout: |
             src
@@ -69,8 +63,6 @@ jobs:
             tests
             samples
             pdf
-            pdf-2020
-            pdf-large
             tools
             bindings
             scripts
@@ -81,12 +73,9 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import os
           from pathlib import Path
 
-          roots = [Path("pdf"), Path("pdf-2020")]
-          if os.environ.get("INCLUDE_LARGE") == "true":
-              roots.append(Path("pdf-large"))
+          roots = [Path("pdf")]
 
           real = 0
           pointers = 0
@@ -120,9 +109,6 @@ jobs:
               fh.write(f"reason={reason}\n")
               fh.write(f"should_run={'true' if reason == 'ok' else 'false'}\n")
           PY
-        env:
-          INCLUDE_LARGE: ${{ inputs.include_large }}
-
       - name: Skip note
         if: ${{ steps.pdf.outputs.should_run != 'true' }}
         shell: bash
@@ -184,7 +170,6 @@ jobs:
         env:
           TOP_N: ${{ inputs.top_n }}
           LIMIT: ${{ inputs.limit }}
-          INCLUDE_LARGE: ${{ inputs.include_large }}
         run: |
           set -uo pipefail
           mkdir -p oracle-advisory/top
@@ -195,10 +180,8 @@ jobs:
             --rhwp target/release/rhwp
             --json
             --timeout 30
+            --pdf-dirs pdf
           )
-          if [[ "${INCLUDE_LARGE}" != "true" ]]; then
-            args+=(--pdf-dirs pdf --pdf-dirs pdf-2020)
-          fi
           if [[ -f tools/oracle_public/oracle_pairs.json ]]; then
             args+=(--manifest tools/oracle_public/oracle_pairs.json)
           fi

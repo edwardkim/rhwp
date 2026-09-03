@@ -21,9 +21,9 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
   실행되며, CI preflight가 PR에서 새로 추가된 문서 경로만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로
   전달한다. `security_corpus_regression`과 `injection_scan_contract`의 정상 샘플 오탐 검사는 이 env가
   가리키는 신규 샘플만 대상으로 하며, 대표 샘플이나 기존 samples 전체를 fallback으로 돌리지 않는다.
-- added 또는 modified 상태의 pdf, pdf-2020, pdf-large 아래 PDF
+- added 또는 modified 상태의 `pdf/**` PDF
 
-기존 samples 파일의 수정·삭제·rename, 신규 문서 샘플(hwp/hwpx/hml), 세 PDF 디렉터리 파일의
+기존 samples 파일의 수정·삭제·rename, 신규 문서 샘플(hwp/hwpx/hml), `pdf/**` 파일의
 삭제·rename, source, test, workflow, Cargo.lock, golden, baseline은 허용 범위가 아니다. 기준 PDF를
 재산출해 같은 경로에 갱신하는 경우만 세 PDF 디렉터리에서 modified 상태를 허용한다.
 
@@ -131,9 +131,9 @@ commit 또는 worker-skip 증거 누락은 재사용하지 않고 Full 실행한
 
 - code, test, CI workflow, Cargo.lock 변경. 단, CI workflow 변경 뒤 review-only 기록만 추가된 경우에는
   A.1의 trusted controller 증명이 전부 성립할 때만 예외로 한다.
-- 기존 sample, golden, baseline, fixture의 수정·삭제·rename. 단, pdf, pdf-2020, pdf-large 아래
+- 기존 sample, golden, baseline, fixture의 수정·삭제·rename. 단, `pdf/**` 아래
   기존 PDF의 modified 상태는 기준 PDF 재산출 증적 갱신으로 보아 허용한다.
-- pdf, pdf-2020, pdf-large 아래 기존 PDF의 삭제·rename
+- `pdf/**` 아래 기존 PDF의 삭제·rename
 - 허용 목록 밖의 신규 파일
 - A 경로의 candidate workflow 누락·실패·미완료·PR identity 불일치, current-base merge tree 불일치,
   `mydocs/` 밖 충돌 해소·해소 경로 조회 실패·복수 base merge 또는 허용되지 않은 merge 형태

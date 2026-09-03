@@ -279,8 +279,6 @@ test('new sample document PR runs targeted security sweep without render workers
 test('new review reference PR keeps required aggregates without product workers', () => {
   for (const filename of [
     'pdf/new-reference.pdf',
-    'pdf-2020/new-reference.pdf',
-    'pdf-large/nested/new-reference.pdf',
   ]) {
     const files = [{ filename, status: 'added' }];
     const policy = determinePolicy(policyInput({ files }));
@@ -325,8 +323,6 @@ test('Gym-only PR keeps aggregates but delegates product lanes to Gym workflow',
 test('existing PDF reference PR keeps required aggregates without product workers', () => {
   for (const filename of [
     'pdf/existing-reference.pdf',
-    'pdf-2020/existing-reference.pdf',
-    'pdf-large/nested/existing-reference.pdf',
   ]) {
     const files = [{ filename, status: 'modified' }];
     const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
@@ -342,6 +338,22 @@ test('existing PDF reference PR keeps required aggregates without product worker
     assert.equal(policy.classification.native_skia_required, 'false', filename);
     assert.equal(policy.classification.codeql_languages, 'none', filename);
     assert.equal(policy.classification.reason, 'classified:review-only', filename);
+  }
+});
+
+test('retired PDF roots stay on the fail-closed full policy', () => {
+  for (const filename of [
+    'pdf-2020/new-reference.pdf',
+    'pdf-large/nested/new-reference.pdf',
+  ]) {
+    const files = [{ filename, status: 'added' }];
+    const policy = determinePolicy(policyInput({
+      files,
+      classification: classificationFor(files),
+    }));
+    assert.equal(policy.decision, 'full', filename);
+    assert.equal(policy.classification.classification_status, 'full', filename);
+    assert.equal(policy.classification.reason, 'fail-closed:unclassified-path', filename);
   }
 });
 

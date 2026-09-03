@@ -13,7 +13,7 @@ last_verified: 2026-07-16
 | 이슈 | [#1061](https://github.com/edwardkim/rhwp/issues/1061) |
 | 정답지 | `samples/math-001.hwp` (한컴 직접 저장) |
 | HWPX 원본 | `samples/hwpx/math-001.hwpx` |
-| 시각 정답지 | `pdf-large/hwpx/math-001.pdf` |
+| 시각 정답지 | `pdf/hwpx/math-001.pdf` |
 | 산출물 | `output/poc/issue_1061/repro_stage1.hwp` |
 | 분석 도구 | `mydocs/tech/investigations/issue-1061/probes/dump_equation_records.rs`, `mydocs/tech/investigations/issue-1061/probes/dump_eqedit_raw.rs`, `mydocs/tech/investigations/issue-1061/probes/repro_1061_equation_save.rs` |
 | 관련 | [`hwpx2hwp-rule.md`](hwpx2hwp-rule.md), [`hwp_spec_errata.md`](../tech/hwp_spec_errata.md), [`hwpx_footnote_save_5round_oracle_method.md`](hwpx_footnote_save_5round_oracle_method.md) |
