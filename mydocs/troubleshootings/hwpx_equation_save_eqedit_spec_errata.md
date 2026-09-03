@@ -15,7 +15,7 @@ last_verified: 2026-07-16
 | HWPX 원본 | `samples/hwpx/math-001.hwpx` |
 | 시각 정답지 | `pdf-large/hwpx/math-001.pdf` |
 | 산출물 | `output/poc/issue_1061/repro_stage1.hwp` |
-| 분석 도구 | `examples/dump_equation_records.rs`, `examples/dump_eqedit_raw.rs`, `examples/repro_1061_equation_save.rs` |
+| 분석 도구 | `mydocs/tech/investigations/issue-1061/probes/dump_equation_records.rs`, `mydocs/tech/investigations/issue-1061/probes/dump_eqedit_raw.rs`, `mydocs/tech/investigations/issue-1061/probes/repro_1061_equation_save.rs` |
 | 관련 | [`hwpx2hwp-rule.md`](hwpx2hwp-rule.md), [`hwp_spec_errata.md`](../tech/hwp_spec_errata.md), [`hwpx_footnote_save_5round_oracle_method.md`](hwpx_footnote_save_5round_oracle_method.md) |
 
 ## 증상
@@ -41,7 +41,7 @@ last_verified: 2026-07-16
 
 ### Stage 1 발견 — GenShape attr bit 27
 
-`examples/dump_equation_records.rs` 의 IR diff 결과:
+`mydocs/tech/investigations/issue-1061/probes/dump_equation_records.rs` 의 IR diff 결과:
 
 | 항목 | 정답지 | 저장본 (Stage 1 전) |
 |------|--------|--------------------|
@@ -56,7 +56,7 @@ last_verified: 2026-07-16
 
 ### Stage 2 발견 — EQEDIT spec errata (진짜 본질)
 
-Stage 1 단독으로 부족. **EQEDIT raw payload 직접 분석** (`examples/dump_eqedit_raw.rs`):
+Stage 1 단독으로 부족. **EQEDIT raw payload 직접 분석** (`mydocs/tech/investigations/issue-1061/probes/dump_eqedit_raw.rs`):
 
 ```
 정답지 EQEDIT #1 (size=158):

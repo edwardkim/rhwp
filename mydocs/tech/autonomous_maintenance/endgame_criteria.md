@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/autonomous_maintenance/endgame_criteria.md
-last_verified: 2026-08-04
+last_verified: 2026-09-03
 ---
 
 # 엔드게임 판정 기준 — R99·R100
@@ -131,7 +131,7 @@ R100 은 로드맵 100단계 중 하나가 아니다. **나머지 99개가 사�
 단계가 있고, `isAllowedReviewPath()` 는 `mydocs/` 로 시작하는 모든 파일을 허용한다.
 `mydocs-only` 로 판정되면 본 검사가 빠른 통과로 처리된다.
 
-**[실측]** 그리고 `ci.yml` 의 `paths-ignore` 에는 `mydocs/**`·`docs/**`·`*.md` 가 있다.
+**[실측]** 그리고 `ci.yml` 의 push `paths-ignore` 에는 `mydocs/**`·`*.md` 가 있다.
 
 **결과**: 문서 PR 은 **CI 를 통과한 게 아니라 CI 가 안 돈 것**이다.
 신규 에이전트가 30분 안에 낼 확률이 가장 높은 것이 문서 PR 이므로, 이 구멍은

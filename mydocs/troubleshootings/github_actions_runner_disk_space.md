@@ -7,6 +7,11 @@ last_verified: 2026-07-16
 
 # GitHub Actions runner 디스크 부족 — `No space left on device` (Task #1109)
 
+> 아래 `examples/` 개수와 빌드 표면은 2026-05-24 장애 당시 기록이다. 2026-09-03부터 루트
+> `examples/`는 폐지했고, 반복 도구는 `tools/diagnostics/`·`tools/fixture_generators/`에서
+> `Cargo.toml`의 명시적 `[[example]]` target으로만 관리한다. 이슈 전용 진단 source는
+> `mydocs/tech/investigations/issue-####/probes/`에 보존한다.
+
 | 항목 | 내용 |
 |------|------|
 | 발견일 | 2026-05-24 |
@@ -114,7 +119,9 @@ GitHub 레포지터리 Settings → Actions 영역:
 
 본 프로젝트의 `cargo test` 가 28 examples 컴파일 — 진단/reproduce 도구 누적이 빌드 시간 + 디스크 영향.
 
-**선제 검토**: 새 example 추가 시 일회성/지속성 판단 + 분리 고려. 일회성은 별도 폴더 (`examples/oneshot/`) 또는 task 완료 후 제거.
+**현행 선제 검토**: 새 Rust 도구는 일회성/지속성을 먼저 판단한다. 반복 도구만 `tools/` 아래에서
+명시적 target으로 등록하고, 일회성 이슈 probe는 해당 `issue-####/probes/`에 Cargo 비대상 source로
+보존한다.
 
 ### 3. WASM job 의 영역 분리 확인
 

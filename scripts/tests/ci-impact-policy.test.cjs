@@ -950,6 +950,15 @@ test('review candidate lineage accepts only single-parent review tails and verif
     baseMergeBridge: null,
   });
 
+  const renderContract = {
+    ...review,
+    files: [{ filename: 'mydocs/tech/text-ir-v2.md', status: 'modified' }],
+  };
+  assert.equal(
+    selectReviewOnlyCandidate([candidate, renderContract], baseSha).eligible,
+    false,
+  );
+
   const disconnectedReview = {
     ...review,
     parents: [{ sha: '9'.repeat(40) }],

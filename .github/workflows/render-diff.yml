@@ -29,11 +29,12 @@ on:
       - 'scripts/requirements-font-fixtures.txt'
       - 'samples/render-p35-font-native-bitmap.hwpx'
       - 'tests/fixtures/fonts/**'
-      - 'docs/canvaskit-parity-implementation.md'
-      - 'docs/text-ir-v2.md'
+      - 'mydocs/tech/canvaskit-parity-implementation.md'
+      - 'mydocs/tech/text-ir-v2.md'
       - 'rhwp-studio/**'
       # Review 기록·asset은 렌더 입력이 아니다. trailing review-only commit이
-      # Canvas visual diff를 다시 시작하지 않게 mydocs/**는 trigger에서 제외한다 (#3559).
+      # Canvas visual diff를 다시 시작하지 않게 일반 mydocs/**는 trigger에서 제외한다 (#3559).
+      # 위 두 렌더 계약 문서는 예외로 직접 검증한다.
       - '.github/workflows/render-diff.yml'
   workflow_dispatch:
     inputs:
@@ -94,6 +95,10 @@ jobs:
           retries: 3
           script: |
             const { owner, repo } = context.repo;
+            const renderContractPaths = new Set([
+              'mydocs/tech/canvaskit-parity-implementation.md',
+              'mydocs/tech/text-ir-v2.md',
+            ]);
 
             function setResult(fastPass, reason, candidateSha = '') {
               core.setOutput('fast_pass', fastPass ? 'true' : 'false');
@@ -116,7 +121,7 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
-              if (filename.startsWith('mydocs/')) {
+              if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
               }
               if (isPdfReferencePath(filename)) {

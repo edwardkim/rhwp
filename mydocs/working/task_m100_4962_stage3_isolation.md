@@ -21,7 +21,7 @@ private 소규모 pilot, 반복 hash와 처리량·전수 예상 시간 측정�
 
 ### 2.1 developer-only Rust worker
 
-`examples/font_metric_coverage_worker.rs`는 제품 `rhwp` CLI·WASM·npm API에 새 surface를 추가하지 않는
+`tools/diagnostics/font_metric_coverage_worker.rs`는 제품 `rhwp` CLI·WASM·npm API에 새 surface를 추가하지 않는
 개발자용 example이다. worker는 다음 순서만 수행한다.
 
 1. 입력을 최대 257 MiB + 1 byte까지 bounded read한다.

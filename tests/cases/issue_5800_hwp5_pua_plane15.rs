@@ -12,7 +12,7 @@ use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
 
-/// `examples/build_issue_5800_fixture.rs` 가 만든 최소 재현 문서.
+/// `tools/fixture_generators/build_issue_5800_fixture.rs` 가 만든 최소 재현 문서.
 const FIXTURE: &str = "samples/issue5800-hancom-symbol.hwp";
 
 fn fixture_bytes() -> Vec<u8> {

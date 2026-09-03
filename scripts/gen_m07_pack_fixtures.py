@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "m07_pack"
 WORKING = ROOT / "mydocs" / "working" / "m07_pack_canvaskit_fallbacks.md"
-PUBLIC = ROOT / "docs" / "canvaskit-m07-pack-fallback-matrix.md"
+PUBLIC = ROOT / "mydocs" / "tech" / "canvaskit-m07-pack-fallback-matrix.md"
 
 ARROW_STYLES = [
     "none",
@@ -607,6 +607,13 @@ def write_working_doc(rows: list[dict[str, object]]) -> None:
 def write_public_doc(rows: list[dict[str, object]]) -> None:
     counts = family_counts(rows)
     lines = [
+        "---",
+        "kind: reference",
+        "status: active",
+        "canonical: mydocs/tech/canvaskit-parity-implementation.md",
+        "last_verified: 2026-09-03",
+        "---",
+        "",
         "# CanvasKit M07-pack fallback matrix",
         "",
         "This is the public contract for issue #5448. Policy lives in",

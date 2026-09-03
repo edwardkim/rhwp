@@ -22,7 +22,7 @@ PDF 변환 메모리의 지배항은 **폰트 등록도, 이미지 디코딩도 
 
 ## 단계별 프로파일링
 
-`examples/task2264_profile.rs` — SVG 를 입력받아 단계마다 별도 프로세스로 실행하고 `/usr/bin/time -l` 로 최대 RSS 를 측정한다. 텍스트/이미지/시스템폰트를 개별 제거(ablation) 할 수 있다.
+`mydocs/tech/investigations/issue-2264/probes/task2264_profile.rs` — SVG 를 입력받아 단계마다 별도 프로세스로 실행하고 `/usr/bin/time -l` 로 최대 RSS 를 측정한다. 텍스트/이미지/시스템폰트를 개별 제거(ablation) 할 수 있다.
 
 대상: 텍스트 요소 1639개, 이미지 2개, 4.3 MB SVG (1페이지)
 

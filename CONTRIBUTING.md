@@ -403,6 +403,10 @@ cargo fmt --all -- --check       # CI와 같은 포맷 검증
 
 렌더링·레이아웃을 수정하는 PR 은 제출 전 아래 도구로 자가 검증하면 리뷰 왕복이 크게
 줄어듭니다. 모두 **한컴 설치 없이** (macOS/Linux 포함) 실행할 수 있습니다.
+재사용 가능한 Rust 도구 source는 `tools/diagnostics/`, fixture 생성기는
+`tools/fixture_generators/`에 둡니다. 루트 `Cargo.toml`에 명시적으로 등록된 도구만
+`cargo run --example <이름>`으로 실행하며, 이슈 전용 probe는
+`mydocs/tech/investigations/issue-####/probes/`에서 해당 이슈의 근거로 관리합니다.
 
 ```bash
 # 개체(표·그림) geometry 무회귀 — 원커맨드: devel 을 worktree 빌드해 baseline 자동 생성 후

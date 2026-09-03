@@ -75,8 +75,8 @@ const RENDER_TOOL_PATHS = new Set([
   'scripts/generate_font_native_hwpx_fixture.py',
   'scripts/requirements-font-fixtures.txt',
   'samples/render-p35-font-native-bitmap.hwpx',
-  'docs/canvaskit-parity-implementation.md',
-  'docs/text-ir-v2.md',
+  'mydocs/tech/canvaskit-parity-implementation.md',
+  'mydocs/tech/text-ir-v2.md',
 ]);
 
 const FRONTEND_PACKAGE_PREFIXES = [
@@ -118,7 +118,6 @@ function normalizeFile(file) {
 function isReviewOnlyPath(filename) {
   return (
     filename.startsWith('mydocs/')
-    || filename.startsWith('docs/')
     || filename === 'LICENSE'
     || filename === 'SECURITY.md'
     || filename === 'CONTRIBUTING.md'

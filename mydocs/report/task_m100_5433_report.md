@@ -3,7 +3,7 @@
 - Issue: #5433
 - Tracking: #536
 - 브랜치: `feat/m11-parity-batches`
-- 계획: `docs/canvaskit-parity-implementation.md`
+- 계획: `mydocs/tech/canvaskit-parity-implementation.md`
 - 기계 결과: `mydocs/report/task_m100_5433_canvaskit_parity_batches.json`
 
 ## 1. 범위

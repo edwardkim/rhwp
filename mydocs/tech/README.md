@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/README.md
-last_verified: 2026-08-18
+last_verified: 2026-09-03
 ---
 
 # tech 문서 지도
@@ -22,7 +22,7 @@ last_verified: 2026-08-18
 | IR 저장·직렬화와 무효화 계약 | [HWP 저장 기술 가이드](hwp_save_guide.md) | [직렬화 passthrough·무효화 계약](serialization_passthrough_contract.md) |
 | HWPX와 HWP IR 차이 | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) | [HWPX 한컴 참조](hwpx_hancom_reference.md), [HWPX DVC 참조](hwpx_dvc_reference.md), [로컬 OWPML XML 스키마](../manual/owpml_schema_reference.md) |
 | Document IR와 LineSeg 계약 | [Document IR LineSeg 표준](document_ir_lineseg_standard.md) | [Issue #310 LineSeg vpos 조사](investigations/issue-310/README.md), [HWPX LineSeg 검증](hwpx_lineseg_validation.md) |
-| 렌더링 엔진 | [렌더링 엔진 설계](rendering_engine_design.md) | [Issue #516 다층 렌더링 후보 조사](investigations/issue-516/README.md), [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md) |
+| 렌더링 엔진 | [렌더링 엔진 설계](rendering_engine_design.md) | [Text IR v2 계약](text-ir-v2.md), [CanvasKit parity 계획](canvaskit-parity-implementation.md), [M07-pack fallback matrix](canvaskit-m07-pack-fallback-matrix.md), [Issue #516 다층 렌더링 후보 조사](investigations/issue-516/README.md), [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md) |
 | 출력 백엔드 공통 계약 | [RenderBackend 계약](render_backend.md) | [어댑터 작성 가이드](../manual/render_backend_adapter_guide.md), [계약 카탈로그](../manual/render_backend_contract_catalog.md), [픽스처 목록](render_backend_fixture_catalog.md) |
 | 수식 명령 디스패치 | [수식 모듈 매뉴얼](../manual/equation_module.md) | 분류 정본 [`src/renderer/equation/dispatch.rs`](../../src/renderer/equation/dispatch.rs), [Issue #139 수식 지원 조사](investigations/issue-139/README.md) |
 | 표 레이아웃 | [표 레이아웃 규칙](table_layout_rules.md) | [HWP 표 렌더링](hwp_table_rendering.md), [Issue #101 부분 표 흐름 조사](investigations/issue-101/README.md) |
@@ -53,8 +53,9 @@ last_verified: 2026-08-18
   파일명만으로 권위 문서라고 가정하지 않는다. 위 표 또는 각 문서의 명시적 링크를 우선한다.
 - `task_m100_*`, `*_root_cause`, `*_diagnosis`, `*_investigation`은 이슈별 조사일 가능성이 높다. 다만
   장기 계약·기준선·설계 결론을 담은 문서는 `investigations/`로 자동 이동하지 않고 현행성 감사를 거쳐 분류한다.
-- 현재 분리된 이슈별 조사는 `investigations/issue-####/`에서 관리한다. 각 디렉터리의 README가 해당
-  스냅샷과 진단의 당시 범위, 최신성 제한, 관련 문서를 설명한다.
+- 현재 분리된 이슈별 조사는 `investigations/issue-####/`에서 관리한다. 독립 조사 묶음은 각 디렉터리의
+  README가 당시 범위·최신성 제한·관련 문서를 설명한다. 진단 source만 보존한 `probes/` 묶음은
+  [이슈별 기술 조사 지도](investigations/README.md)의 보존 규칙과 source 머리말을 따른다.
 - [webhwp/](webhwp/README.md) 하위 문서는 2026-02 번들을 역분석한 historical investigation 묶음이다.
 - [agent_security/](agent_security/README.md) 하위 문서는 rhwp가 에이전트 도구로서 노출하는 보안
   표면의 계약이다. 파서 견고성이 아니라 **문서 내용이 에이전트 행동에 영향을 미치는 경로**를 다룬다.

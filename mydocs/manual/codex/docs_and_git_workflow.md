@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-08-15
+last_verified: 2026-09-03
 ---
 
 # Documentation And Git Workflow
@@ -72,6 +72,8 @@ mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
 - `mydocs/manual/`: 매뉴얼과 장기 지침
 - `mydocs/manual/memory/`: 과거 사용자 피드백과 프로젝트 memory의 historical 출처
 - `mydocs/manual/codex/`: Codex 부트스트랩과 현행 문서·Git 절차. 종료 세션 자료는 `archive/`에 보존
+- 저장소 루트 `docs/`는 사용하지 않는다. 장기 기술 문서는 `mydocs/tech/`, 운영 절차는
+  `mydocs/manual/`, 타스크 증적은 위 생명주기별 경로에 둔다.
 
 ## Issue Workflow
 
