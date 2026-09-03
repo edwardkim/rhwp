@@ -69,6 +69,51 @@ pub(crate) fn issue2424_profile_enabled() -> bool {
 /// - positive indent: line 0 에만 +indent 적용 (첫줄 들여쓰기)
 /// - negative indent (hanging): line N≥1 에 +|indent| 적용
 /// - indent=0: 모든 line 에 margin_left 만 적용
+/// [#4068] `#2004` 정규화(`reclassify_cell_floating_stacks`)가 셀 안 **부동 그림
+/// 스택**을 "그림 1장짜리 인라인 문단 N개" 로 쪼개면서 `treat_as_char` 를 켜는데,
+/// 그 순간 배치 계약(`horzOffset`)이 통째로 버려진다. 한/글은 그 값을 그대로 쓴다.
+///
+/// `samples/issue2004_cell_image_stack.hwp` 4~8쪽 실측(한/글 2024, 표 왼쪽 괘선 기준):
+///
+/// ```text
+///        horzOffset      한/글 x−괘선   rhwp 종전   기준 5.10 + offset
+///  p4       0HU            5.04pt        5.10        5.10
+///  p5    1580HU (15.80)   20.87          5.10       20.90
+///  p6    2092HU (20.92)   25.90          5.10       26.02
+///  p7    1550HU (15.50)   20.51          5.10       20.60
+///  p8    1432HU (14.32)   19.31          5.10       19.42
+/// ```
+///
+/// 재분류본만 골라야 한다 — 저작 단계에서 인라인으로 놓인 그림은 `horzOffset` 이 0 이라
+/// 이 값이 붙지 않지만, 만에 하나 값이 남아 있어도 건드리지 않도록 정규화가 만든
+/// **합성 줄의 지문**(문단에 컨트롤 1개 · 줄 1개 · 줄높이 == 그림 높이 · 줄간격 0)을
+/// 함께 본다.
+pub(super) fn reclassified_float_inline_dx(
+    para: &crate::model::paragraph::Paragraph,
+    common: &crate::model::shape::CommonObjAttr,
+    dpi: f64,
+) -> f64 {
+    use crate::model::shape::{HorzRelTo, TextWrap};
+    if !common.treat_as_char
+        || common.horz_rel_to != HorzRelTo::Para
+        || matches!(common.text_wrap, TextWrap::TopAndBottom)
+    {
+        return 0.0;
+    }
+    let offset = common.horizontal_offset as i32;
+    if offset <= 0 {
+        return 0.0;
+    }
+    let synthesized = para.controls.len() == 1
+        && para.line_segs.len() == 1
+        && para.line_segs[0].line_spacing == 0
+        && para.line_segs[0].line_height == common.height as i32;
+    if !synthesized {
+        return 0.0;
+    }
+    crate::renderer::hwpunit_to_px(offset, dpi)
+}
+
 pub(super) fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: usize) -> f64 {
     let line_indent = if indent > 0.0 {
         if line_n == 0 {

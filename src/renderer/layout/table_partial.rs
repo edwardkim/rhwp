@@ -2098,8 +2098,15 @@ impl LayoutEngine {
                                                     .max(inline_tac_y + clamped_h),
                                             );
                                         }
+                                        // [#4068] `#2004` 정규화가 부동 그림 스택을 인라인으로
+                                        // 재분류하며 버린 `horzOffset` 을 되살린다.
                                         let pic_area = LayoutRect {
-                                            x: inline_x,
+                                            x: inline_x
+                                                + crate::renderer::layout::table_layout::reclassified_float_inline_dx(
+                                                    para,
+                                                    &pic.common,
+                                                    self.dpi,
+                                                ),
                                             y: inline_tac_y,
                                             width: clamped_w,
                                             height: clamped_h,
