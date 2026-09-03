@@ -2144,6 +2144,8 @@ impl LayoutEngine {
                                                     .max(inline_tac_y + clamped_h),
                                             );
                                         }
+                                        // [#4068] `#2004` 정규화가 부동 그림 스택을 인라인으로
+                                        // 재분류하며 버린 `horzOffset` 을 되살린다.
                                         let pic_area = LayoutRect {
                                             x: inline_x
                                                 + inline_para_horizontal_offset_px(
