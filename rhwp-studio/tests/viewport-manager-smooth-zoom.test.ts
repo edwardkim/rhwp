@@ -472,3 +472,20 @@ test('CanvasView scales existing pages during zoom and rerenders only after sett
   );
   assert.match(source, /dataset\.rhwpRenderedZoom = String\(zoom\)/);
 });
+
+test('InputHandler는 zoom과 resize에서 같은 확정 페이지 좌표로 캐럿·선택을 다시 투영한다', () => {
+  const source = readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8');
+
+  assert.match(
+    source,
+    /eventBus\.on\('zoom-changed', \(\) => this\.updateViewportOverlayPositions\(\)\)/,
+  );
+  assert.match(
+    source,
+    /eventBus\.on\('viewport-resize', \(\) => \{[\s\S]*?window\.setTimeout\(\(\) => this\.updateViewportOverlayPositions\(\), 0\);[\s\S]*?\}\)/,
+  );
+  assert.match(
+    source,
+    /private updateViewportOverlayPositions\(\): void \{[\s\S]*?this\.caret\.updatePosition\(this\.viewportManager\.getZoom\(\)\)[\s\S]*?this\.updateSelection\(\)[\s\S]*?this\.updateCellSelection\(\)[\s\S]*?this\.renderPictureObjectSelection\(\)[\s\S]*?this\.renderTableObjectSelection\(\)/,
+  );
+});
