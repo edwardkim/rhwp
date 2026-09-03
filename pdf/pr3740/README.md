@@ -21,5 +21,4 @@ HWPX `8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c`다.
 [`mydocs/working/task_m100_3738_stage6_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage6_visual_sweep.md),
 [`mydocs/working/task_m100_3738_stage7_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage7_visual_sweep.md),
 [`mydocs/working/task_m100_3738_stage8_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage8_visual_sweep.md)를
-따른다. 이 파일들은 일반 Git 추적 대상이며, 현재 `.gitattributes`의 LFS 범위(`pdf-large/**/*.pdf`)에는
-들지 않는다.
+따른다. 한컴 PDF 오라클은 `pdf/**`에서 일반 Git blob으로 보존하며 Git LFS를 사용하지 않는다.

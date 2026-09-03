@@ -77,14 +77,14 @@ docker run --rm -v "$PWD/pdf/issue5447:/w:ro" minidocks/poppler sh -c \
 python -c "import json;print('\n'.join(f\"{e['hancom_pdf_sha256']}  {e['hancom_pdf_path']}\" for e in json.load(open('samples/issue5447/MANIFEST.json',encoding='utf-8'))['entries']))"
 ```
 
-## 용량과 LFS
+## 용량과 저장 정책
 
-38 PDF 합계 **3.54 MB**, 최대 단일 파일 113,064 B(110 KB). `.gitattributes` 의 LFS 추적 대상은
-`pdf-large/**/*.pdf` 뿐이고 임계는 50 MB 이므로 **이 폴더는 LFS 대상이 아니다** — 일반 git
-으로 보존한다([`pdf-large/README.md`](../../pdf-large/README.md) 사용 규칙).
+38 PDF 합계 **3.54 MB**, 최대 단일 파일 113,064 B(110 KB). 한컴 PDF 오라클은 크기와 관계없이
+`pdf/**`에서 일반 Git blob으로 보존하고 Git LFS를 사용하지 않는다. 파일별 50 MiB 미만 상한과
+세부 규칙은 상위 [`pdf/README.md`](../README.md)를 따른다.
 
 ## 재생성
 
 한컴 변환은 사람 손이 필요하다. 원본을 다시 만드는 절차는
 [`samples/issue5447/README.md`](../../samples/issue5447/README.md) 에, 변환 자동화 스크립트는
-상위 [`pdf/README.md`](../README.md) §4 에 있다.
+상위 [`pdf/README.md`](../README.md) §5 에 있다.

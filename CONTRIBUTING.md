@@ -447,7 +447,19 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
   메인테이너가 판정 자료를 `mydocs/pr/assets/` 에 반영합니다).
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
   (예: `pdf/issue1835_tac_stale_height-2022.pdf`), PR 본문에 생성 환경(한컴 버전)을
-  명시해주세요. 재현 fixture 는 가능하면 1~2페이지로 축소해 `samples/` 에 포함합니다.
+  명시해주세요. 한컴 정본 오라클은 버전·크기와 무관하게 `pdf/**`에 일반 Git blob으로만
+  커밋하며 `pdf-2020/`, `pdf-large/` 같은 최상위 분리 폴더와 Git LFS pointer를 사용하지 않습니다.
+  파일 하나는 50 MiB(52,428,800 bytes) 미만이어야 합니다. 상한을 넘으면 그대로 제출하지 말고
+  축소 fixture·페이지 발췌·외부 증적 방식을 이슈에서 먼저 합의해주세요. 재현 fixture는 가능하면
+  1~2페이지로 축소해 `samples/`에 포함합니다.
+
+  ```bash
+  python3 scripts/check_pdf_repository_policy.py
+  ```
+
+  `samples/**` 입력 fixture, `mydocs/**/assets` 검토 증적, 도구의 tiny test fixture처럼 역할이 다른
+  PDF는 각 소유 경로를 유지합니다. 이 파일을 한컴 정본 오라클로 사용할 때만 `pdf/**` 규칙을
+  적용합니다.
 
 ## 브랜치 규칙
 
