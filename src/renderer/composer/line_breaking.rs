@@ -201,7 +201,8 @@ pub(crate) fn is_line_start_forbidden(ch: char) -> bool {
     )
 }
 
-/// 줄 꼬리 금칙: 줄 끝에 올 수 없는 문자
+/// 테스트가 legacy 줄 꼬리 문자 집합을 직접 고정할 때 쓰는 판정.
+#[cfg(test)]
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
     matches!(
         ch,

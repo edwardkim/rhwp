@@ -1703,7 +1703,7 @@ fn test_reflow_forced_line_break() {
 
 /// 금칙 처리: 줄 머리/꼬리 금칙 검증
 #[test]
-fn test_geumchik_functions() {
+fn test_only_geumchik_helpers_keep_legacy_character_sets() {
     // 줄 머리 금칙: 줄 시작에 올 수 없는 문자
     assert!(is_line_start_forbidden(')'));
     assert!(is_line_start_forbidden('.'));

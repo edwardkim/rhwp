@@ -3540,11 +3540,11 @@ mod line_breaking;
 pub mod lineseg_compare;
 
 #[cfg(test)]
-pub(crate) use line_breaking::tokenize_paragraph;
+pub(crate) use line_breaking::{is_line_end_forbidden, tokenize_paragraph};
 pub(crate) use line_breaking::{
-    is_line_end_forbidden, is_line_start_forbidden, layout_picture_band, paragraph_flow_end,
-    recalculate_section_vpos, reflow_line_segs, reflow_line_segs_after_cell_split,
-    reflow_line_segs_after_cell_text_edit, BreakToken, StoredRowMissPolicy,
+    is_line_start_forbidden, layout_picture_band, paragraph_flow_end, recalculate_section_vpos,
+    reflow_line_segs, reflow_line_segs_after_cell_split, reflow_line_segs_after_cell_text_edit,
+    BreakToken, StoredRowMissPolicy,
 };
 
 #[cfg(test)]
