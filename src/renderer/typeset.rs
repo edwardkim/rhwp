@@ -3409,6 +3409,17 @@ fn hwpx_stored_tac_table_starts_at_page_top(
     stored_h >= body_available * 0.5 && current_height + stored_h > body_available
 }
 
+/// [#5941 축 B] `#5921` 완화를 걸어도 되는 쪽인가 — **지금 쪽이 사실상 비어 있는가**.
+///
+/// 리셋을 지켰을 때 거의 빈 쪽이 남는 형상에서는 한/글도 쪼개지 않는다. 반대로 쪽이 이미
+/// 차 있으면 저장 리셋이 이긴다(아래 `native_near_top_reset` 결합부 주석 참조).
+const NEAR_TOP_RESET_EMPTY_PAGE_FILL_RATIO: f64 = 0.10;
+
+fn near_top_reset_page_is_barely_started(current_height: f64, available_height: f64) -> bool {
+    available_height > 0.0
+        && current_height <= available_height * NEAR_TOP_RESET_EMPTY_PAGE_FILL_RATIO
+}
+
 /// [#5921] stored near-top 리셋이 이번 쪽 잔여를 넘는가.
 ///
 /// `native_near_top_reset` 은 저장 vpos≈sb 만 보고 쪽을 가른다. 잔여에
@@ -7670,13 +7681,37 @@ impl TypesetEngine {
                         && !has_table_control
                         && para_has_visible_text(para)
                         && prev_vpos_end > 60_000
-                        && native_near_top_reset_exceeds_remaining(
-                            para,
-                            para_sb_hu_for_reset,
-                            st.current_height,
-                            st.available_height(),
-                            self.dpi,
-                        );
+                        // [#5941 축 B] `#5921` 의 완화("이번 쪽 잔여에 들어가면 저장
+                        // near-top 리셋을 버린다")를 **네이티브 HWP5 저장 조판 프로파일의
+                        // 이미 찬 쪽**에는 걸지 않는다. 그 프로파일에서 저장 사다리는 작성
+                        // 엔진의 쪽 배분 자체이고, "이번 잔여에 들어간다" 는 사실이 그
+                        // 기록을 이기지 못한다.
+                        //
+                        // 실측 — 완화가 필요한 문서는 전부 HWPX 컨테이너이거나, HWP5 라도
+                        // **쪽이 사실상 비어 있다**:
+                        //
+                        // ```text
+                        //   neartop_reset_sb2500.hwpx        hwpx   채움  2%   #5921 원 픽스처
+                        //   issue1880_anchor_stack_sb…hwpx   hwpx   채움 96%   #6063 핀
+                        //   hwp3-sample16-hwp5.hwpx          hwpx   채움 70~100%  off_canvas 래칫
+                        //   issue5701 …tac_reset_tail.hwp    hwp5   채움  6%   ← 빈 쪽 갈래
+                        //   1480000-201900698.hwp            hwp5   채움 74~100% ← 여기만 완화 금지
+                        // ```
+                        //
+                        // 그 마지막 문서는 완화 때문에 리셋 3개가 지워져 202 → 200 이 됐고
+                        // 한/글 2024(205)에서 더 멀어졌다(`#5941` 축 B bisect: `12074fbea`).
+                        && ((profile.hwp5_stored_pagination_layout()
+                            && !near_top_reset_page_is_barely_started(
+                                st.current_height,
+                                st.available_height(),
+                            ))
+                            || native_near_top_reset_exceeds_remaining(
+                                para,
+                                para_sb_hu_for_reset,
+                                st.current_height,
+                                st.available_height(),
+                                self.dpi,
+                            ));
                     let next_heading_after_top_content_reset =
                         paragraphs.get(para_idx + 1).is_some_and(|next_para| {
                             let next_sb_hu = styles
