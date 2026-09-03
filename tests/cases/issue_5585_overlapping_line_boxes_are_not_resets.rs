@@ -39,7 +39,10 @@ fn sample() -> Option<Vec<u8>> {
         return std::fs::read(path).ok();
     }
     let roots = [
-        concat!(r"C:\Users\planet\hwpdocs_10k_share", r"\korea_policy_downloads"),
+        concat!(
+            r"C:\Users\planet\hwpdocs_10k_share",
+            r"\korea_policy_downloads"
+        ),
         concat!(r"D:\hwpdocs_10k_share", r"\korea_policy_downloads"),
     ];
     for base in roots {
