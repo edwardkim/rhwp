@@ -3059,8 +3059,8 @@ impl HeightMeasurer {
                         let comp = compose_paragraph(p);
                         let para_style = styles.para_styles.get(p.para_shape_id as usize);
                         let is_last_para = pi + 1 == para_count;
-                        // compute_cell_line_ranges와 동일 규칙:
-                        // 첫 문단은 spacing_before 없음, 마지막 문단은 spacing_after 없음
+                        // MeasuredCell의 줄 높이 원장 규칙: 첫 문단은 spacing_before를,
+                        // 마지막 문단은 spacing_after를 포함하지 않는다.
                         let spacing_before = if pi > 0 {
                             para_style.map(|s| s.spacing_before).unwrap_or(0.0)
                         } else {
@@ -3468,8 +3468,8 @@ impl MeasuredTable {
                     };
                     return (effective_total - content_offset).max(0.0);
                 }
-                // 줄 단위 스냅: content_offset을 줄별로 소비하고 나머지 줄의 높이 합산
-                // (layout의 compute_cell_line_ranges와 동일한 이산 계산)
+                // 줄 단위 스냅: 저장된 줄 높이 원장에서 content_offset을 줄별로
+                // 소비하고 남은 줄의 높이를 합산한다.
                 let mut offset_rem = content_offset;
                 let mut visible_start = 0usize;
                 for (i, &lh) in c.line_heights.iter().enumerate() {
