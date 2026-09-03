@@ -12215,8 +12215,28 @@ impl LayoutEngine {
                                         control_index,
                                     )
                                 });
-                            let para_base_y =
-                                para_start_y.get(&para_index).copied().unwrap_or(y_offset);
+                            // [#6704] 앵커 문단이 앞 쪽/단에서 이어진 조각이면
+                            // `para_start_y` 는 그 문단의 시작이 아니라 이 쪽에서 흐름이
+                            // 도달한 자리다. Para 기준 개체는 흐름에서 빠져 있으므로 그
+                            // 자리를 쓰면 앞 항목이 흘린 만큼 그대로 내려간다 —
+                            // hwp3-sample 7쪽 그림이 +85.6px. 한/글은 넘어온 쪽의 본문
+                            // 맨 위를 기준으로 삼는다.
+                            //
+                            // 본문 흐름은 같은 규칙을 이미 지킨다(layout.rs 의
+                            // `PartialParagraph { start_line > 0 }` 분기: "이어지는 partial
+                            // paragraph 는 이전 쪽/단에서 시작한 문단의 나머지다"). 여기서는
+                            // 그 규칙을 개체 앵커에 연결한다.
+                            let anchor_starts_on_earlier_page =
+                                ctx.page_content.column_contents.iter()
+                                    .flat_map(|cc| cc.items.iter())
+                                    .any(|it| matches!(it,
+                                        PageItem::PartialParagraph { para_index: q, start_line, .. }
+                                            if *q == para_index && *start_line > 0));
+                            let para_base_y = if anchor_starts_on_earlier_page {
+                                ctx.col_area.y
+                            } else {
+                                para_start_y.get(&para_index).copied().unwrap_or(y_offset)
+                            };
                             if std::env::var("RHWP_5715_DBG").is_ok() {
                                 eprintln!(
                                     "[5715] pi={para_index} ci={control_index} base={para_base_y:.1} from_map={} y_off={y_offset:.1}",
