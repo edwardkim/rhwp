@@ -42,6 +42,20 @@ production의 더 구체적인 tokenization 함수로 이미 수렴한 무인자
 기존 line-breaking 회귀 검사를 유지한다. 테스트 전용 helper가 production build에
 들어오지 않는지는 세 target의 liveness 진단으로 검증한다.
 
+### renderer 전체 callable sweep
+
+세 제품 구성에서 공통으로 죽은 함수·메서드를 module owner별로 묶는다.
+
+- equation parser/tokenizer/SVG helper
+- float, height, page number, pagination, endnote flow helper
+- layout, table layout, text measurement, style helper
+- exact-font kerning probe
+- render-tree와 dormant shaping transaction accessor
+
+기존 unit/integration test가 호출하는 계약은 `#[cfg(test)]`에서 그대로 보존한다.
+한 target에서라도 제품 호출되는 SVG/font/native-skia callable은 이동하지 않는다.
+함수가 아닌 field/type/constant 정리는 별도 작업으로 남긴다.
+
 ### 작업 기록
 
 `mydocs/working/task_m100_6672_stage1.md`에 debugger와 liveness 증거를,
@@ -50,7 +64,7 @@ production의 더 구체적인 tokenization 함수로 이미 수렴한 무인자
 ## 검증
 
 - fresh LLDB import와 `rhwp-render-flow` replay
-- 세 제품 구성의 `-W dead-code` 이름 재검사
+- 세 제품 구성의 renderer callable `-W dead-code` 교집합 0건 재검사
 - composer·line-breaking focused unit tests
 - AGENTS/CONTRIBUTING의 Rust lint 묶음
 - release-test 전체 nextest

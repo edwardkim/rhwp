@@ -2,8 +2,8 @@
 
 ## 결과
 
-full renderer의 live paragraph line-flow 경계와 분리된 composer callable 여섯 개를
-제품 graph에서 제거했다.
+full renderer의 live paragraph line-flow 경계와 분리된 renderer callable을 제품
+graph에서 제거했다.
 
 - 호출자 0개인 `inject_footnote_markers`와
   `missing_lineseg_legacy_bullet_requires_regenerated_space_metric`은 삭제했다.
@@ -11,9 +11,13 @@ full renderer의 live paragraph line-flow 경계와 분리된 composer callable 
   `split_composed_line_by_width`, `estimate_regenerated_line_text_width`는
   `#[cfg(test)]` 경계로 제한했다.
 - target 전용 renderer 함수와 public legacy API는 건드리지 않았다.
+- 이슈 피드백 뒤 renderer 전체로 확대해 56개 test-owned callable을
+  `#[cfg(test)]`로 제한하고 저장소 전체에서 호출자도 없는 43개 callable은 삭제했다. 최종 세
+  target 공통 dead-code 진단에는 함수·메서드가 0건이고, 비-callable
+  field/type/constant 34건만 남는다.
 
 코드 동작은 바꾸지 않았다. `exam_science.hwp` 1쪽 SVG의 변경 전후 SHA-256은 모두
-`7a4dec1ecdba13426cfdbeb75ca0220018e5cbcd770f384c845192b33657b3ef`였고
+`0b4275739388c41cd663c749b9841181e18a89fe68998b2003e07886a028c252`였고
 byte comparison도 일치했다.
 
 ## Debugger 증거
@@ -36,19 +40,17 @@ rhwp export-svg samples/76076_regulatory_analysis.hwp -p 34
 
 ## 검증
 
-- Gestell: source/debug/docs 7개 commit candidate PASS
-- native, wasm32, native-skia `-W dead-code`: 대상 이름 진단 0건
-- composer focused unit: 61/61 PASS
-- composer LineSeg comparison: 10/10 PASS
-- Rust unit-tier policy: 4,221 tests, cfg support items 33, PASS
+- Gestell: initial candidate 및 aggressive 99-callable 최종 candidate PASS
+- native, wasm32, native-skia `-W dead-code`: renderer callable 교집합 0건
+- Rust unit-tier policy: 4,205 tests, cfg support items 85, PASS
 - Rust lint 묶음: fmt, native Clippy, wasm32 Clippy, workspace build,
   workspace all-target Clippy, generated manifest check 모두 PASS
-- release-test Nextest: 8,972 passed, 46 skipped
-- Native Skia lib: 3,946 passed, 13 ignored
+- release-test Nextest: 8,986 passed, 46 skipped
+- Native Skia lib: 3,930 passed, 13 ignored
 - Native Skia missing-picture gate: 2/2 PASS
 - Native Skia direct-PDF gate: 4/4 PASS
 - locked wasm-pack web release build PASS
-- Studio renderer contract: 59/59 PASS
+- Studio renderer contract: 61/61 PASS
 - Studio production TypeScript/Vite build PASS
 - debugger script Python compile 및 72-column 검사 PASS
 - `git diff --check` PASS
@@ -64,5 +66,5 @@ rhwp export-svg samples/76076_regulatory_analysis.hwp -p 34
 ## 산출물
 
 - Branch: `renderer/full-render-dead-code`
-- Base: `origin/devel` `d770ef80e`
+- Base: `origin/devel` `b6b9384ed`
 - Merge는 수행하지 않는다.
