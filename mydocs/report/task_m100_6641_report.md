@@ -2,9 +2,9 @@
 
 - **이슈**: [#6641](https://github.com/edwardkim/rhwp/issues/6641)
 - **브랜치**: `task_m100_6641`
-- **최신 devel 기준**: `upstream/devel@8d4c25d014dc42992aad6fa92c8eb761254c6bfc`
-- **exact product head**: `beaa64c5ef04a712edcce4b0bd0881ec9d1d4113`
-- **product tree**: `f5adeb9e62d925835ff05dc2ebd4008a61b69fbf`
+- **최신 devel 기준**: `upstream/devel@900b56edcaff3c1f84567c3f7c9e398a0dd9e8bb`
+- **exact product head**: `7f1174f1d59bc020aaa38ceb7e148a8ae77b2784`
+- **product tree**: `1a32c5cd3f5bab1e720b974434d469504d9a8272`
 - **완료일**: 2026-09-03 KST
 - **최종 판정**: `qualified-owner-aware-field-reflow`
 
@@ -58,19 +58,21 @@ renderer 일반 정책, serializer, verify diff·exit 의미와 Gym task/referen
 
 ## 4. 제품 검증
 
-focused 계약은 최신 devel 보존 merge 전후에 각각 56/56 통과했다. exact product head에서
+focused 계약은 최초 최신 devel 보존 merge 전후에 각각 56/56 통과했다. 재동기화 merge 뒤에는
+그 56건과 새 devel layout 계약 4건을 합쳐 60/60 통과했다. exact product head에서
 AGENTS.md의 순서대로 native Clippy, WASM lib Clippy, workspace build와 workspace all-targets
 Clippy를 `-D warnings`로 통과했다.
 
 ```text
-integration manifest  1,129 sources / 4,821 static attrs / 48/48 targets
-nextest                8,969/8,969 PASS / 46 policy skip / 3 slow
+integration manifest  1,132 sources / 4,825 static attrs / 48/48 targets
+nextest                8,973/8,973 PASS / 46 policy ignored
+unit tier              4,221 tests / 299 modules PASS
 manifest --check       PASS
 git diff --check       PASS
 ```
 
-전체 nextest 실행은 321.131초, release-test 컴파일은 3분 45초였다. generated integration
-suite·manifest는 제출 diff에 포함하지 않았다. 상세 명령과 slow 3건은
+release-test 컴파일은 3분 33초였다. generated integration suite·manifest는 제출 diff에
+포함하지 않았다. 상세 명령과 재동기화 영향 대사는
 [Stage 4 제품 검증](../working/task_m100_6641_stage4.md)에 기록했다.
 
 ## 5. #6628 Gym 인계 전수
@@ -79,18 +81,18 @@ Gym 정상화 branch를 제품 branch에 병합하지 않았다. runner를 임�
 exact #6641 제품 바이너리를 주입해 두 계보를 분리했다.
 
 ```text
-Gym runner head   57b2e51a8a923481f639f620ea91c0174c11483b
-Gym runner tree   ef7da9b3b605434fcc27188a9fe7d11c84d374f5
+Gym runner head   374c7416a6c2d9abe7c2701969de5f377b71183f
+Gym runner tree   9888fff9aac2218d988b6defac91af7ae9d3fb93
 binary            rhwp v0.8.6, Linux x86_64 debug
-binary SHA-256    6ea6d8ef99f86d93c5e0a2a9ba41509eb01d8c5929f4906dbc58008d2ce135f3
+binary SHA-256    4334e35e3bfb7e892416e663c7a52dd055a7d82040d2a89447f32d25ccd02f34
 ```
 
 | 축 | 결과 | 시간 |
 | --- | --- | ---: |
-| BO05·BO15 canary | 2/2 built, 실패·누락·score/build 오류 0 | 0.06초 |
-| positive baseline | 21 pack, 1,035/1,035 built, 실패·skip 0 | 1,711.59초 |
-| discrimination | 1,035 task, 1,511 control, false-pass 0 | 444.65초 |
-| trajectory | 239/239 load-bearing, theater·예외·도구 오류 0 | 156.47초 |
+| BO05·BO15 canary | 2/2 built, 실패·누락·score/build 오류 0 | 1초 미만 |
+| positive baseline | 21 pack, 1,035/1,035 built, 실패·skip 0 | 1,697초 |
+| discrimination | 1,035 task, 1,511 control, false-pass 0 | 433초 |
+| trajectory | 239/239 load-bearing, theater·예외·도구 오류 0 | 150초 |
 
 discrimination의 `scoreErrors=116`은 artifact 과제 58건에 `input-copy`와 `garbage`를 각각 넣어
 의도대로 조기 거부한 음성 증적이다. trajectory의 796개 단일-step 과제는 정책상 경로 필요성
@@ -103,15 +105,16 @@ clean 상태를 확인한 뒤 제거했으며 source diff에 Gym 파일은 없�
 
 동일 호스트의 #6628 직전 전수와 이번 단일 실행을 비교하면 다음과 같다.
 
-| 축 | 직전 | #6641 후보 | 변화 |
+| 축 | #6628 직전 | 최신 devel 병합 #6641 후보 | 변화 |
 | --- | ---: | ---: | ---: |
-| positive | 1,722.16초 | 1,711.59초 | -10.57초 (-0.61%) |
-| discrimination | 446.53초 | 444.65초 | -1.88초 (-0.42%) |
-| trajectory | 151.90초 | 156.47초 | +4.57초 (+3.01%) |
-| 합계 | 2,320.59초 | 2,312.71초 | -7.88초 (-0.34%) |
+| positive | 1,722.16초 | 1,697초 | -25.16초 (-1.46%) |
+| discrimination | 446.53초 | 433초 | -13.53초 (-3.03%) |
+| trajectory | 151.90초 | 150초 | -1.90초 (-1.25%) |
+| 합계 | 2,320.59초 | 2,280초 | -40.59초 (-1.75%) |
 
-이 비교는 각각 한 번 실행한 wall-clock 기초값이며, 두 source tree 사이에는 최신 devel 변경과
-host cache·부하 차이가 있어 microbenchmark나 성능 보장을 뜻하지 않는다. 다만 전체 1,035개
+이 비교는 각각 한 번 실행한 wall-clock 기초값이고 최신 후보 값은 초 단위로 계측했다. 두 source
+tree 사이에는 최신 devel 변경과 host cache·부하 차이가 있어 microbenchmark나 성능 보장을 뜻하지
+않는다. 다만 전체 1,035개
 positive와 두 감사 축에서 광범위한 처리량 저하는 관측되지 않았다.
 
 제품상 추가 비용은 필드 mutation 때 편집 문단을 소유 상자에서 다시 조판하고 vpos를 잇는 비용이다.
@@ -136,6 +139,6 @@ positive와 두 감사 축에서 광범위한 처리량 저하는 관측되지 �
 Gym task/reference/oracle, generated suite·manifest와 임시 산출물은 포함하지 않았다.
 
 최종 판정은 **`qualified-owner-aware-field-reflow`**다. #6641의 원래 실패였던 BO05·BO15는 canary와
-21 pack 전수에서 모두 통과했고, 제품 전체 8,969건과 Gym의 양·음·경로 세 축이 같은 candidate
+21 pack 전수에서 모두 통과했고, 제품 전체 8,973건과 Gym의 양·음·경로 세 축이 같은 candidate
 binary 계보로 연결됐다. 로컬 Stage 0~5는 완료됐으며 원격 push, PR 생성·게시, self-review, merge와
 issue close는 각각 후속 승인 절차로 남는다.
