@@ -496,9 +496,20 @@ impl DocumentCore {
         let location = fi.location.clone();
         let fri = fi.field_range_index;
         let old_value = fi.value.clone();
+        let is_cell_field = fi.field.ctrl_id == 0; // 가상 셀 필드
 
         let section_index = location.section_index;
-        self.set_field_text_at(&location, fri, value)?;
+        let stored_end_for_reset = self.field_body_flow_end(&location);
+        self.validate_field_reflow_location(&location)?;
+        if is_cell_field {
+            self.set_cell_field_text(&location, value)?;
+        } else {
+            self.set_field_text_at(&location, fri, value)?;
+        }
+        self.reflow_field_location_after_edit(&location, stored_end_for_reset)?;
+        if let Some(sec) = self.document.sections.get_mut(section_index) {
+            sec.raw_stream = None;
+        }
         self.recompose_section(section_index);
 
         Ok(format!(
@@ -542,6 +553,8 @@ impl DocumentCore {
         let is_cell_field = fi.field.ctrl_id == 0; // 가상 셀 필드
 
         let section_index = location.section_index;
+        let stored_end_for_reset = self.field_body_flow_end(&location);
+        self.validate_field_reflow_location(&location)?;
 
         if is_cell_field {
             // 셀 필드: 셀의 첫 문단 텍스트를 직접 교체
@@ -550,6 +563,8 @@ impl DocumentCore {
             // ClickHere 필드: field_ranges 기반 교체
             self.set_field_text_at(&location, fri, value)?;
         }
+
+        self.reflow_field_location_after_edit(&location, stored_end_for_reset)?;
 
         // raw_stream 무효화
         if let Some(sec) = self.document.sections.get_mut(section_index) {
@@ -563,6 +578,133 @@ impl DocumentCore {
             json_escape(&old_value),
             json_escape(value),
         ))
+    }
+
+    /// 필드 텍스트 편집 전의 본문 흐름 끝을 보존한다.
+    ///
+    /// 본문 문단의 vpos 사다리를 다시 계산할 때만 쓰며, 셀·글상자는 각 컨테이너의
+    /// 재계산 경로가 별도로 처리한다.
+    fn field_body_flow_end(&self, location: &FieldLocation) -> Option<i32> {
+        if !location.nested_path.is_empty() {
+            return None;
+        }
+        self.document
+            .sections
+            .get(location.section_index)
+            .and_then(|section| section.paragraphs.get(location.para_index))
+            .and_then(crate::renderer::composer::paragraph_flow_end)
+    }
+
+    fn field_nested_reflow_path(
+        location: &FieldLocation,
+    ) -> Result<Vec<(usize, usize, usize)>, HwpError> {
+        if location.nested_path.is_empty() {
+            return Err(HwpError::InvalidField(
+                "중첩 필드 위치에 소유자 경로 없음".into(),
+            ));
+        }
+        Ok(location
+            .nested_path
+            .iter()
+            .map(|entry| match entry {
+                NestedEntry::TableCell {
+                    control_index,
+                    cell_index,
+                    para_index,
+                } => (*control_index, *cell_index, *para_index),
+                NestedEntry::TextBox {
+                    control_index,
+                    para_index,
+                } => (*control_index, 0, *para_index),
+            })
+            .collect())
+    }
+
+    /// mutation 전에 필드 소유 문단 경로를 검증한다.
+    ///
+    /// `reflow_cell_paragraph_by_path`는 일반 렌더 보조 경로라 실패 시 반환값이 없다.
+    /// 공개 field setter에서는 그 동작을 그대로 노출하지 않고, 같은 path resolver로
+    /// 대상 문단의 실재를 먼저 확인해 stale LineSeg를 정상 성공으로 보고하지 않는다.
+    fn validate_field_reflow_location(&mut self, location: &FieldLocation) -> Result<(), HwpError> {
+        if location.nested_path.is_empty() {
+            self.document
+                .sections
+                .get(location.section_index)
+                .and_then(|section| section.paragraphs.get(location.para_index))
+                .ok_or_else(|| HwpError::InvalidField("필드 소유 본문 문단 범위 초과".into()))?;
+            return Ok(());
+        }
+
+        let path = Self::field_nested_reflow_path(location)?;
+        self.get_cell_paragraph_mut_by_path(location.section_index, location.para_index, &path)?;
+        Ok(())
+    }
+
+    /// 필드 편집으로 무효가 된 LineSeg를 해당 문단 상자에서 즉시 다시 계산한다.
+    ///
+    /// 종전 `set_field_text_at`은 저장 LineSeg를 비운 뒤 section compose만 갱신했다.
+    /// HWP5 저장기는 빈 배열을 기록하고 재적재기는 0높이 줄을 합성하므로, 같은 문서가
+    /// 메모리에서는 0줄·재적재 뒤에는 1줄이 되어 `edit/batch fill --verify`가 항상
+    /// 실패했다. 다른 텍스트 편집 관문과 같이 실제 소유자(본문 또는 셀/글상자)의 폭으로
+    /// reflow하고 vpos를 잇는다. 저장 데이터의 차이는 그대로 비교되며, 검증기에서
+    /// 차이를 숨기는 예외 규칙은 추가하지 않는다.
+    fn reflow_field_location_after_edit(
+        &mut self,
+        location: &FieldLocation,
+        stored_end_for_reset: Option<i32>,
+    ) -> Result<(), HwpError> {
+        if location.nested_path.is_empty() {
+            self.reflow_paragraph(location.section_index, location.para_index);
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[location.section_index].paragraphs,
+                location.para_index,
+                None,
+                stored_end_for_reset,
+                &self.styles,
+                self.dpi,
+                hwp3_layout,
+            );
+            let owner =
+                &self.document.sections[location.section_index].paragraphs[location.para_index];
+            if owner.line_segs.is_empty() {
+                return Err(HwpError::InvalidField(
+                    "필드 소유 본문 문단 재조판 결과가 비어 있음".into(),
+                ));
+            }
+            return Ok(());
+        }
+
+        let path = Self::field_nested_reflow_path(location)?;
+        let inner_para = path
+            .last()
+            .map(|entry| entry.2)
+            .ok_or_else(|| HwpError::InvalidField("필드 소유 문단 경로 없음".into()))?;
+
+        self.reflow_cell_paragraph_by_path(
+            location.section_index,
+            location.para_index,
+            &path,
+            inner_para,
+        );
+        self.recalculate_cell_paragraph_vpos_by_path(
+            location.section_index,
+            location.para_index,
+            &path,
+            inner_para,
+            None,
+        );
+        if self
+            .get_cell_paragraph_mut_by_path(location.section_index, location.para_index, &path)?
+            .line_segs
+            .is_empty()
+        {
+            return Err(HwpError::InvalidField(
+                "필드 소유 중첩 문단 재조판 결과가 비어 있음".into(),
+            ));
+        }
+        self.mark_cell_control_dirty(location.section_index, location.para_index, path[0].0);
+        Ok(())
     }
 
     /// 한글 커서 좌표(list/para/pos)에 누름틀을 넣는다 — 웹한글컨트롤 `CreateField` 용.
@@ -885,17 +1027,21 @@ impl DocumentCore {
                             last_idx, cell_index
                         ))
                     })?;
-                    if let Some(cell_para) = cell.paragraphs.first_mut() {
-                        let old_len = cell_para.text.chars().count();
-                        if old_len > 0 {
-                            cell_para.delete_text_at(0, old_len);
-                        }
-                        if !value.is_empty() {
-                            cell_para.insert_text_at(0, value);
-                        }
-                        rebuild_char_offsets(cell_para);
-                        cell_para.replace_line_segs(Vec::new());
+                    let cell_para = cell.paragraphs.first_mut().ok_or_else(|| {
+                        HwpError::InvalidField(format!(
+                            "경로[{}]: 셀 필드에 편집할 문단 없음",
+                            last_idx
+                        ))
+                    })?;
+                    let old_len = cell_para.text.chars().count();
+                    if old_len > 0 {
+                        cell_para.delete_text_at(0, old_len);
                     }
+                    if !value.is_empty() {
+                        cell_para.insert_text_at(0, value);
+                    }
+                    rebuild_char_offsets(cell_para);
+                    cell_para.replace_line_segs(Vec::new());
                     Ok(())
                 } else {
                     Err(HwpError::InvalidField(format!(
