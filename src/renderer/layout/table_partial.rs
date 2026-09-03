@@ -35,12 +35,14 @@ use crate::renderer::float_placement::native_multirow_internal_reset_rowbreak_an
 /// 인라인 배치는 그 값을 보지 않아 쪼갠 그림이 전부 셀 왼끝에 겹친다
 /// (issue2004 5~8쪽: 한글 대비 −19~−28px).
 ///
-/// 저장 글자처럼 그림은 위치값을 쓰지 않는다 — samples/ 의 `treat_as_char` 그림
-/// 360장 중 354장이 `horzOffset = 0` 이고, 0 이 아닌 6장은 전부 `horz_rel_to`
-/// 가 `Column` 이다. 문단 기준 오프셋을 가진 인라인 그림은 이 재분류가 만든
-/// 것뿐이므로, 이 보정은 그 그림에만 실제로 작동한다.
-fn inline_para_horizontal_offset_px(common: &CommonObjAttr, dpi: f64) -> f64 {
-    if !matches!(common.horz_rel_to, HorzRelTo::Para) {
+/// 저장 글자처럼 원문 inline 그림에는 위치값을 일반 적용하지 않는다. 문단 기준
+/// offset은 `reclassify_cell_floating_stacks`가 만든 합성 줄에서만 복원한다.
+fn inline_para_horizontal_offset_px(
+    common: &CommonObjAttr,
+    synthetic_reclassified_stack: bool,
+    dpi: f64,
+) -> f64 {
+    if !synthetic_reclassified_stack || !matches!(common.horz_rel_to, HorzRelTo::Para) {
         return 0.0;
     }
     hwpunit_to_px(common.horizontal_offset as i32, dpi)
@@ -2138,6 +2140,13 @@ impl LayoutEngine {
                                             x: inline_x
                                                 + inline_para_horizontal_offset_px(
                                                     &pic.common,
+                                                    para.line_segs
+                                                        .get(inline_tac_line)
+                                                        .is_some_and(|segment| {
+                                                            segment.tag
+                                                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                                                != 0
+                                                        }),
                                                     self.dpi,
                                                 ),
                                             y: inline_tac_y,
