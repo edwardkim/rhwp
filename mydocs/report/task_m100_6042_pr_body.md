@@ -127,10 +127,10 @@ cursor가 없는 쪽으로 스크롤했을 때는 이동 중 surface를 유지�
 
 ## 검증
 
-- [x] `npm test`: 1,422 total / 1,421 pass / 1 skip / 0 fail
+- [x] `npm test`: 1,434 total / 1,433 pass / 1 skip / 0 fail
 - [x] `npx tsc --noEmit --pretty false`
 - [x] `npm run build`
-- [x] `npm run e2e:manifest-check`: 126/126
+- [x] `npm run e2e:manifest-check`: 127/127
 - [x] scheduler/LRU/CanvasView/budget/visibility/zoom 집중 suite: 71/71
 - [x] 실제 DPR 1 Chrome ruler/viewport resize: 28/28 snapshots
 - [x] browser image decode 실패 3회 → fallback render 3회, 잔여 queue/error 0
