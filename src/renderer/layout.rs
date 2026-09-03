@@ -2045,6 +2045,7 @@ const ENDNOTE_COLUMN_BOTTOM_OVERFLOW_LOG_TOLERANCE_PX: f64 = 48.0;
 const ENDNOTE_EQUATION_TAIL_LINE_BOX_OVERFLOW_LOG_TOLERANCE_PX: f64 = 68.0;
 const ZERO_ENDNOTE_COLUMN_BOTTOM_OVERFLOW_LOG_TOLERANCE_PX: f64 = 33.0;
 
+#[cfg(test)]
 pub(crate) fn is_tolerated_endnote_column_bottom_bleed(
     is_endnote_flow: bool,
     content_bottom: f64,
@@ -2901,12 +2902,6 @@ impl LayoutEngine {
         self.exact_font_sources.handle_for_slot(slot)
     }
 
-    pub(crate) fn exact_font_source_session(
-        &self,
-    ) -> crate::renderer::kerning::KerningSourceSession<'_> {
-        crate::renderer::kerning::KerningSourceSession::new(&self.exact_font_sources)
-    }
-
     pub(crate) fn exact_font_layout_session(
         &self,
     ) -> crate::renderer::kerning::KerningLayoutSession<'_> {
@@ -3052,36 +3047,6 @@ impl LayoutEngine {
             common.z_order,
             Self::object_stable_index(para_index, control_index),
         )
-    }
-
-    fn render_layer_from_control(
-        control: &Control,
-        para_index: usize,
-        control_index: usize,
-    ) -> Option<RenderLayerInfo> {
-        match control {
-            Control::Shape(shape) => Some(Self::render_layer_from_common(
-                shape.common(),
-                para_index,
-                control_index,
-            )),
-            Control::Picture(picture) => Some(Self::render_layer_from_common(
-                &picture.common,
-                para_index,
-                control_index,
-            )),
-            Control::Table(table) => Some(Self::render_layer_from_common(
-                &table.common,
-                para_index,
-                control_index,
-            )),
-            Control::Equation(equation) => Some(Self::render_layer_from_common(
-                &equation.common,
-                para_index,
-                control_index,
-            )),
-            _ => None,
-        }
     }
 
     fn control_common_attr(control: &Control) -> Option<&CommonObjAttr> {

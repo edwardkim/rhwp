@@ -1,7 +1,6 @@
 //! 텍스트 폭 측정, 문자 클러스터 분할, CJK 판별 관련 함수
 
 use super::super::font_metrics_data;
-use super::super::kerning::{ExactFontSourceHandle, KerningRunMeasurement, KerningSourceSession};
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{TabLeaderInfo, TabStop, TextStyle};
 
@@ -97,6 +96,7 @@ fn style_params(style: &TextStyle) -> (f64, f64, f64) {
 /// 기존 코드는 `ext[2]` 전체 u16 을 탭 종류로 해석하여 실제 HWP 값(최소 256)과
 /// 매칭 실패. 이 헬퍼로 고바이트만 추출해 0~4 값으로 정규화.
 #[inline]
+#[cfg(test)]
 pub(super) fn inline_tab_type(ext: &[u16; 7]) -> u8 {
     ((ext[2] >> 8) & 0xFF) as u8
 }
@@ -207,11 +207,6 @@ fn right_leader_body_target_rel(style: &TextStyle) -> Option<f64> {
     } else {
         None
     }
-}
-
-/// 탭 문자의 위치로부터 탭 리더 정보를 추출한다.
-pub fn extract_tab_leaders(text: &str, positions: &[f64], style: &TextStyle) -> Vec<TabLeaderInfo> {
-    extract_tab_leaders_with_extended(text, positions, style, &[])
 }
 
 /// 탭 리더 추출 (tab_extended 지원)
@@ -874,6 +869,7 @@ fn is_monospace_metric(metric: &font_metrics_data::FontMetric) -> bool {
 /// x-scale)을 적용하면 안 된다 — 치환 폰트의 실제 advance 와 어긋나
 /// l/i/t 같은 좁은 글리프가 과도하게 늘어나기 때문이다 (한컴 바겐세일 M
 /// → Pretendard 치환 시 Vocabulary 열 왜곡).
+#[cfg(test)]
 pub(crate) fn font_family_has_metrics(font_family: &str, bold: bool, italic: bool) -> bool {
     let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
     font_metrics_data::find_metric(primary_name, bold, italic).is_some()
@@ -1253,6 +1249,7 @@ pub(crate) fn char_width_decision<'a>(
     }
 }
 
+#[cfg(test)]
 fn measure_char_width_embedded(
     font_family: &str,
     bold: bool,
@@ -1332,30 +1329,6 @@ pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
 /// run 내부 상대 좌표이며, 절대 좌표는 run.bbox.x + charX[i]로 계산한다.
 pub(crate) fn compute_char_positions(text: &str, style: &TextStyle) -> Vec<f64> {
     default_measurer().compute_char_positions(text, style)
-}
-
-/// 기존 문자 경계값과 exact-font pair positioning을 한 번만 계산하는 공통 진입점.
-///
-/// R4C의 line/token 소비자와 R4D의 backend replay가 같은 owned measurement를
-/// 공유하기 위한 경계다. K0와 exact source 부재에서는 기존
-/// [`compute_char_positions`] 결과를 그대로 보존한다.
-pub(crate) fn compute_kerning_run_measurement(
-    text: &str,
-    style: &TextStyle,
-    source_handle: Option<&ExactFontSourceHandle>,
-    session: &mut KerningSourceSession<'_>,
-) -> KerningRunMeasurement {
-    let (effective_font_size_px, width_ratio, _) = style_params(style);
-    let base_positions = compute_char_positions(text, style);
-    super::super::kerning::compute_kerning_run_measurement(
-        text,
-        style.kerning,
-        base_positions,
-        effective_font_size_px,
-        width_ratio,
-        source_handle,
-        session,
-    )
 }
 
 /// 실제 글자 위치 계산과 같은 경로를 사용해 관측 가능한 폭 결정을 반환한다.

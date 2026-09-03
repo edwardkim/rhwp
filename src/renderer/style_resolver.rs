@@ -716,11 +716,6 @@ pub(crate) fn is_medium_weight_face(font_family: &str) -> bool {
         || lower.contains("hymedium")
 }
 
-/// ParaShape → ResolvedParaStyle 목록
-fn resolve_para_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedParaStyle> {
-    resolve_para_styles_with_variant(doc_info, dpi, false)
-}
-
 /// [Task #1001] 변환본 인지 ParaShape 해소
 fn resolve_para_styles_with_variant(
     doc_info: &DocInfo,

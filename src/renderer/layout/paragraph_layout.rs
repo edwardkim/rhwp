@@ -404,18 +404,6 @@ fn preserves_stored_first_visible_break_after_bottom_caption_table(para: &Paragr
         && crate::renderer::height_measurer::is_tac_table_inline_in_para(table, segment_width, para)
 }
 
-/// inline TAC 문단의 저장 `LINE_SEG` 시작점을 visible character index로 변환한다.
-///
-/// 보통 index 0은 실질적인 개행이 아니므로 제외한다. 단,
-/// [`preserves_stored_first_visible_break_after_bottom_caption_table`]가 소유권을 증명하면
-/// 두 번째 저장 줄의 index 0만 보존한다.
-pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> Vec<usize> {
-    inline_table_stored_line_breaks(para)
-        .into_iter()
-        .map(|(char_idx, _)| char_idx)
-        .collect()
-}
-
 /// [#6181] 위와 같은 줄 나눔 목록에 **그 줄을 소유한 `line_segs` 인덱스**를 함께 준다.
 ///
 /// `char_idx == 0` 인 저장 줄은 실질 개행이 아니라 걸러지므로, 목록의 n 번째 나눔이
@@ -8562,6 +8550,7 @@ fn make_picture_image_node(
 /// 한컴 native 정합: 동일 paragraph 안 sibling tac=true picture 들이 가로로 inline
 /// 분배 (inline glyph 처럼). 첫 picture 시점에 전체 시퀀스 폭을 알아야 alignment
 /// (center / right) 의 시작 x 가 정확히 계산되므로 pre-scan helper 가 필요.
+#[cfg(test)]
 pub(crate) fn collect_sibling_tac_picture_widths_px(
     controls: &[crate::model::control::Control],
     dpi: f64,
