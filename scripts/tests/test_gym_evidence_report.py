@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from contextlib import redirect_stderr
+import hashlib
 import importlib.util
+import io
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -427,6 +432,183 @@ class ProducerProvenanceTests(unittest.TestCase):
                 )
         self.assertEqual(report["binPath"], "/tmp/product/rhwp")
         self.assertIn("binPath", discriminate.OPTIONAL_REPORT_KEYS)
+
+
+class HtmlReportContractTests(unittest.TestCase):
+    def setUp(self):
+        self.m = load()
+
+    def test_pass_report_is_deterministic_self_contained_and_path_safe(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_evidence(root)
+            self.m.seal_evidence(root)
+            _, _, first_path, first_hash = self.m.render_evidence(root, root / "first.html")
+            _, _, second_path, second_hash = self.m.render_evidence(root, root / "second.html")
+            first = first_path.read_bytes()
+            second = second_path.read_bytes()
+            text = first.decode("utf-8")
+
+            self.assertEqual(first, second)
+            self.assertEqual(first_hash, second_hash)
+            self.assertIn("Gym evidence report", text)
+            self.assertIn("trajectory.ok</dt><dd>true", text)
+            self.assertIn("trajectory.trusted</dt><dd>true", text)
+            self.assertIn("pack-a", text)
+            self.assertIn("PASS", text)
+            self.assertNotIn("<script", text.lower())
+            self.assertNotIn("http://", text.lower())
+            self.assertNotIn("https://", text.lower())
+            self.assertNotIn("/tmp/rhwp-gym-run", text)
+            self.assertNotIn("test-host", text)
+
+    def test_valid_fail_writes_non_green_report_and_cli_returns_one(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_evidence(root)
+
+            def mutate(report):
+                report["ok"] = False
+                report["discriminating"] = 0
+                report["falsePass"] = ["pack-a/T01"]
+                report["falsePassControls"] = ["pack-a/T01 (wrong-answer)"]
+                report["results"][0]["discriminates"] = False
+
+            rewrite_json(root, "discrimination", mutate)
+            (root / "discrimination.exit").write_text("1\n", encoding="ascii")
+            self.m.seal_evidence(root)
+            output = root / "fail.html"
+            run = subprocess.run(
+                [
+                    sys.executable,
+                    str(TOOL),
+                    "--evidence-dir",
+                    str(root),
+                    "--out",
+                    str(output),
+                ],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+            )
+            summary = json.loads(run.stdout)
+            text = output.read_text(encoding="utf-8")
+
+            self.assertEqual(run.returncode, self.m.EXIT_RESULT_NOT_PASS)
+            self.assertEqual(summary["resultStatus"], self.m.STATUS_FAIL)
+            self.assertTrue(summary["generated"])
+            self.assertIn("status-fail", text)
+            self.assertIn("FAIL", text)
+            self.assertIn("pack-a/T01 (wrong-answer)", text)
+
+    def test_invalid_seal_returns_two_without_overwriting_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_evidence(root)
+            self.m.seal_evidence(root)
+            output = root / "existing.html"
+            output.write_bytes(b"preserve-existing-output\n")
+            (root / "platform.txt").write_text(
+                "Linux changed-host 6.8.0 x86_64\n", encoding="utf-8", newline="\n"
+            )
+            run = subprocess.run(
+                [
+                    sys.executable,
+                    str(TOOL),
+                    "--evidence-dir",
+                    str(root),
+                    "--out",
+                    str(output),
+                ],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+            )
+            error = json.loads(run.stderr)
+
+            self.assertEqual(run.returncode, self.m.EXIT_INPUT_INVALID)
+            self.assertEqual(error["kind"], self.m.ERROR_KIND)
+            self.assertEqual(output.read_bytes(), b"preserve-existing-output\n")
+
+    def test_free_text_is_escaped_redacted_and_bounded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_evidence(root)
+            secret = '<img src=x onerror=alert(1)> /home/edward/private/secret.hwp ' + "x" * 500
+
+            def mutate(report):
+                row = report["results"][0]
+                row.update(ok=False, kind="failed-score", message=secret)
+                report.update(
+                    ok=False,
+                    exit=1,
+                    built=0,
+                    failed=1,
+                    failedScore=1,
+                )
+
+            rewrite_json(root, "positive", mutate)
+            (root / "positive.exit").write_text("1\n", encoding="ascii")
+            self.m.seal_evidence(root)
+            _, _, path, _ = self.m.render_evidence(root, root / "redacted.html")
+            text = path.read_text(encoding="utf-8")
+
+            self.assertNotIn("<img src=x", text)
+            self.assertNotIn("/home/edward", text)
+            self.assertNotIn("secret.hwp", text)
+            self.assertIn("&lt;img src=x onerror=alert(1)&gt;", text)
+            self.assertIn("[absolute-path]", text)
+            self.assertIn("source chars", text)
+            self.assertIn(hashlib.sha256(secret.encode("utf-8")).hexdigest(), text)
+
+    def test_untrusted_trajectory_is_visibly_incomplete_not_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_evidence(root)
+
+            def mutate(report):
+                report["trusted"] = False
+                report["exceptions"] = [
+                    {
+                        "kind": "missing-reference",
+                        "pack": "pack-a",
+                        "task": "T02",
+                        "path": "/private/corpus/hidden.hwpx",
+                        "message": "missing /private/corpus/hidden.hwpx",
+                    }
+                ]
+                report["exceptionCount"] = 1
+
+            rewrite_json(root, "trajectory", mutate)
+            self.m.seal_evidence(root)
+            _, _, path, _ = self.m.render_evidence(root, root / "incomplete.html")
+            text = path.read_text(encoding="utf-8")
+
+            self.assertIn("status-incomplete", text)
+            self.assertIn("trajectory.ok</dt><dd>true", text)
+            self.assertIn("trajectory.trusted</dt><dd>false", text)
+            self.assertNotIn("/private/corpus", text)
+            self.assertNotIn("hidden.hwpx", text)
+            self.assertIn("[absolute-path]", text)
+
+    def test_cli_requires_exactly_one_operation_and_protects_seal(self):
+        with redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as missing:
+                self.m.parse_args(["--evidence-dir", "x"])
+            with self.assertRaises(SystemExit) as both:
+                self.m.parse_args(["--evidence-dir", "x", "--seal", "--out", "x.html"])
+        self.assertEqual(missing.exception.code, 2)
+        self.assertEqual(both.exception.code, 2)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_evidence(root)
+            self.m.seal_evidence(root)
+            original = (root / "evidence-manifest.json").read_bytes()
+            with self.assertRaises(self.m.EvidenceError) as ctx:
+                self.m.render_evidence(root, root / "evidence-manifest.json")
+            self.assertIn("protected-output", {row["code"] for row in ctx.exception.errors})
+            self.assertEqual((root / "evidence-manifest.json").read_bytes(), original)
 
 
 if __name__ == "__main__":

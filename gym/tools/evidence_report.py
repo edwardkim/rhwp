@@ -1,12 +1,13 @@
-"""Gym 실행 증적을 검증·seal하고 사람용 파생 보고서 모델을 준비한다 (#6669).
+"""Gym 실행 증적을 검증·seal하고 사람용 파생 보고서를 생성한다 (#6669).
 
-Stage 1 범위는 입력 계약, 역할별 정직 판정, 실행 신원 교차검사와 deterministic
-``evidence-manifest.json``이다. HTML renderer는 다음 Stage에서 이 모듈의 검증된
+입력 계약, 역할별 정직 판정, 실행 신원 교차검사와 deterministic
+``evidence-manifest.json``을 제공한다. 별도 HTML renderer는 이 모듈의 검증된
 bundle만 소비한다. JSON 봉투가 판정 정본이며 manifest는 입력 파일 집합의 영수증이다.
 
 사용::
 
     python3 gym/tools/evidence_report.py --evidence-dir <dir> --seal
+    python3 gym/tools/evidence_report.py --evidence-dir <dir> --out <report.html>
 """
 
 from __future__ import annotations
@@ -131,6 +132,22 @@ def _tool_module(name: str):
     spec = importlib.util.spec_from_file_location(cache_name, path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Gym validator를 불러올 수 없다: {name}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[cache_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _renderer_module():
+    """표현 책임을 분리한 renderer를 저장소의 exact 경로에서 불러온다."""
+    cache_name = "_gym_evidence_html"
+    cached = sys.modules.get(cache_name)
+    if cached is not None:
+        return cached
+    path = GYM_ROOT / "core" / "evidence_html.py"
+    spec = importlib.util.spec_from_file_location(cache_name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Gym evidence HTML renderer를 불러올 수 없다")
     module = importlib.util.module_from_spec(spec)
     sys.modules[cache_name] = module
     spec.loader.exec_module(module)
@@ -1064,7 +1081,13 @@ def build_manifest(bundle: dict) -> dict:
     }
 
 
-def _atomic_write(path: Path, data: bytes):
+def _atomic_write(
+    path: Path,
+    data: bytes,
+    *,
+    error_code: str = "manifest-write",
+    artifact_label: str = "manifest",
+):
     tmp_name = None
     try:
         with tempfile.NamedTemporaryFile(
@@ -1086,8 +1109,8 @@ def _atomic_write(path: Path, data: bytes):
                 pass
         raise EvidenceError([
             error_record(
-                "manifest-write", file=path.name,
-                message=f"manifest를 원자적으로 쓸 수 없다: {type(exc).__name__}",
+                error_code, file=path.name,
+                message=f"{artifact_label}를 원자적으로 쓸 수 없다: {type(exc).__name__}",
             )
         ]) from exc
 
@@ -1174,16 +1197,81 @@ def verify_seal(evidence_dir: str | os.PathLike[str]) -> tuple[dict, dict]:
     return bundle, actual
 
 
+def _validate_output_path(bundle: dict, output_path: str | os.PathLike[str]) -> Path:
+    raw = os.fspath(output_path)
+    if not raw or "\x00" in raw:
+        raise EvidenceError([
+            error_record("invalid-output", message="출력 경로가 비었거나 NUL을 포함한다")
+        ])
+    path = Path(raw)
+    root = Path(os.path.abspath(bundle["root"]))
+    absolute = Path(os.path.abspath(path))
+    protected = {root / name for name in REQUIRED_INPUT_FILES}
+    protected.add(root / "evidence-manifest.json")
+    if absolute in protected:
+        raise EvidenceError([
+            error_record("protected-output", message="seal 또는 필수 입력을 출력으로 덮어쓸 수 없다")
+        ])
+    if path.suffix.lower() != ".html":
+        raise EvidenceError([
+            error_record("invalid-output", message="출력 파일 확장자는 .html이어야 한다")
+        ])
+    try:
+        if path.is_symlink() or path.is_dir():
+            raise EvidenceError([
+                error_record("invalid-output", message="출력은 symlink나 디렉터리일 수 없다")
+            ])
+    except OSError as exc:
+        raise EvidenceError([
+            error_record(
+                "invalid-output",
+                message=f"출력 경로를 확인할 수 없다: {type(exc).__name__}",
+            )
+        ]) from exc
+    return path
+
+
+def render_evidence(
+    evidence_dir: str | os.PathLike[str],
+    output_path: str | os.PathLike[str],
+) -> tuple[dict, dict, Path, str]:
+    """검증된 seal을 정적 HTML로 쓰고 결과 상태와 hash를 돌려준다."""
+    bundle, manifest = verify_seal(evidence_dir)
+    path = _validate_output_path(bundle, output_path)
+    renderer = _renderer_module()
+    data = renderer.render_html(bundle, manifest)
+
+    # 검증 뒤 renderer가 도는 동안 입력 또는 manifest가 바뀐 경우도 출력하지 않는다.
+    _verify_input_snapshot(bundle)
+    if _load_manifest(bundle["root"] / "evidence-manifest.json") != manifest:
+        raise EvidenceError([
+            error_record(
+                "manifest-snapshot-drift",
+                file="evidence-manifest.json",
+                message="HTML 생성 중 seal manifest가 바뀌었다",
+            )
+        ])
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise EvidenceError([
+            error_record(
+                "report-directory", message=f"출력 디렉터리를 준비할 수 없다: {type(exc).__name__}"
+            )
+        ]) from exc
+    _atomic_write(path, data, error_code="report-write", artifact_label="HTML report")
+    return bundle, manifest, path, sha256_bytes(data)
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        description="Gym JSON 증적 입력을 검증하고 deterministic manifest로 seal한다 (#6669)",
+        description="Gym JSON 증적을 seal하거나 검증된 정적 HTML로 변환한다 (#6669)",
     )
     parser.add_argument("--evidence-dir", required=True)
-    parser.add_argument("--seal", action="store_true")
-    args = parser.parse_args(argv)
-    if not args.seal:
-        parser.error("Stage 1에서는 --seal이 필요하다")
-    return args
+    operation = parser.add_mutually_exclusive_group(required=True)
+    operation.add_argument("--seal", action="store_true")
+    operation.add_argument("--out", metavar="REPORT.html")
+    return parser.parse_args(argv)
 
 
 def _error_envelope(exc: EvidenceError) -> dict:
@@ -1199,20 +1287,37 @@ def _error_envelope(exc: EvidenceError) -> dict:
 def main(argv=None) -> int:
     args = parse_args(argv)
     try:
-        bundle, manifest = seal_evidence(args.evidence_dir)
+        if args.seal:
+            bundle, manifest = seal_evidence(args.evidence_dir)
+            summary = {
+                "kind": "gymEvidenceSeal",
+                "schemaVersion": MANIFEST_SCHEMA_VERSION,
+                "ok": True,
+                "manifest": "evidence-manifest.json",
+                "identityFingerprint": manifest["identityFingerprint"],
+                "resultStatus": bundle["status"]["overall"],
+            }
+            exit_code = EXIT_OK
+        else:
+            bundle, manifest, path, report_sha256 = render_evidence(args.evidence_dir, args.out)
+            summary = {
+                "kind": "gymEvidenceReport",
+                "schemaVersion": MANIFEST_SCHEMA_VERSION,
+                "generated": True,
+                "report": path.name,
+                "reportSha256": report_sha256,
+                "identityFingerprint": manifest["identityFingerprint"],
+                "resultStatus": bundle["status"]["overall"],
+            }
+            exit_code = (
+                EXIT_OK if bundle["status"]["overall"] == STATUS_PASS
+                else EXIT_RESULT_NOT_PASS
+            )
     except EvidenceError as exc:
         sys.stderr.buffer.write(canonical_json_bytes(_error_envelope(exc)))
         return EXIT_INPUT_INVALID
-    summary = {
-        "kind": "gymEvidenceSeal",
-        "schemaVersion": MANIFEST_SCHEMA_VERSION,
-        "ok": True,
-        "manifest": "evidence-manifest.json",
-        "identityFingerprint": manifest["identityFingerprint"],
-        "resultStatus": bundle["status"]["overall"],
-    }
     sys.stdout.buffer.write(canonical_json_bytes(summary))
-    return EXIT_OK
+    return exit_code
 
 
 if __name__ == "__main__":
