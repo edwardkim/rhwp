@@ -299,6 +299,29 @@ test('new review reference PR keeps required aggregates without product workers'
   }
 });
 
+test('Gym-only PR keeps aggregates but delegates product lanes to Gym workflow', () => {
+  const files = [
+    { filename: 'gym/packs/work-receipt/tasks/WR13.json', status: 'modified' },
+    { filename: 'scripts/tests/test_gym_work_receipt_pack.py', status: 'modified' },
+  ];
+  const policy = determinePolicy(policyInput({
+    files,
+    classification: classificationFor(files),
+  }));
+  assert.equal(policy.decision, 'selective');
+  assert.deepEqual(policy.expected_workflows, {
+    CI: 'true',
+    CodeQL: 'true',
+    'Render Diff': 'false',
+  });
+  assert.equal(policy.classification.rust_required, 'false');
+  assert.equal(policy.classification.frontend_mode, 'none');
+  assert.equal(policy.classification.render_required, 'false');
+  assert.equal(policy.classification.native_skia_required, 'false');
+  assert.equal(policy.classification.codeql_languages, 'none');
+  assert.equal(policy.classification.reason, 'classified:gym-benchmark');
+});
+
 test('existing PDF reference PR keeps required aggregates without product workers', () => {
   for (const filename of [
     'pdf/existing-reference.pdf',
@@ -430,7 +453,7 @@ test('compact status description round-trips workflow and impact axes', () => {
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
     v: '6',
-    cv: '6',
+    cv: '7',
     mode: 'selective',
     rfp: '0',
     wf: '111',

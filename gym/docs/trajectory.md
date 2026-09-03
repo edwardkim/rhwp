@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/trajectory.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 트라젝토리 필요성 감사 규약
@@ -41,8 +41,8 @@ CLI 플래그는 `--bin` 과 `--json` 뿐이다. 새 플래그·새 pack 을 이
 이것이 판별력 감사(#4808, 종점: "산출이 입력과 다른가")를 **경로**로 민
 것이다. 모든 선언된 스텝이 결과를 바꿔야 한다.
 
-릴리스 게이트는 이 감사를 차등 이전에 돌린다. 연극이 하나라도 있으면
-릴리스를 차단한다.
+수동 Gym 전건 벤치마크는 이 감사를 실행한다. 연극이 하나라도 있으면 그
+벤치마크 결과를 무효화한다. 제품 릴리스의 허용·차단 조건은 아니다.
 
 ## 2. 사용
 
@@ -282,6 +282,7 @@ malformed-json
 malformed-task
 malformed-reference
 permission
+timeout
 os-error
 decode-error
 value-error
@@ -296,6 +297,7 @@ unexpected
 | `FileNotFoundError` | `missing-bin` | `missing-bin` |
 | `json.JSONDecodeError` | `value-error` | `malformed-json` |
 | `PermissionError` | `permission` | `permission` |
+| `TimeoutError` | `timeout` | `timeout` |
 | `UnicodeError` | `decode-error` | `decode-error` |
 | `TypeError` / `AttributeError` | `type-error` | `type-error` |
 | `ValueError` / `KeyError` / `IndexError` | `value-error` | `value-error` |
@@ -406,18 +408,17 @@ unexpected
 - 기준풀이 부재를 연극으로 부르지 않는다.
 - 없는 바이너리를 load-bearing 으로 부르지 않는다.
 
-## 18. 기존 게이트와의 관계
+## 18. Gym Benchmark Validation과의 관계
 
-`gym-release-gate.yml` 은 이 스크립트를 차등 이전에 독립 스텝으로
-부른다. 종료 코드가 0 이 아니면 게이트가 막는다.
+`gym-release-gate.yml`의 역사적 파일 경로는 유지하지만 표시 이름과 역할은
+`Gym Benchmark Validation`이다. 수동 전건 실행에서 이 스크립트의 원문 JSON과
+종료 코드를 증적으로 남긴다.
 
-- 연극 → `exit=1`. 게이트가 막는다. 의도된 차단.
-- missing-bin → `exit=1`. 게이트가 막는다. "연극 0" 위장 방지.
-- 기준풀이 부재만 → `exit=0`. pack 정합은 `audit.py` 가 이미 막는다.
-  이 도구는 예외 목록만 남긴다.
+- 연극 → `exit=1`. 해당 Gym 결과 무효.
+- missing-bin → `exit=1`. "연극 0" 위장 방지.
+- 기준풀이 부재만 → `exit=0`. pack 정합은 `audit.py`가 별도로 판단한다.
 
-워크플로 YAML 과 `release_gate.py` 는 이 가지에서 고치지 않는다.
-문구·종료 코드 계약이 그 배선을 그대로 받친다.
+이 종료 코드는 제품 PR/devel/main CI, 태그, 릴리스·게시를 차단하지 않는다.
 
 ## 19. 작업 디렉터리와 결정성
 

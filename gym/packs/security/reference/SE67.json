@@ -9,7 +9,7 @@
             "sanitize",
             "{input}",
             "-o",
-            "{file:s.hwp}",
+            "{sub:s.hwp}",
             "--json"
           ],
           "path": "removedCount"

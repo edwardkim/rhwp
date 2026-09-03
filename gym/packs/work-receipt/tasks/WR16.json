@@ -28,6 +28,23 @@
       "expect_exits": [
         3
       ]
+    },
+    {
+      "name": "제출 기대 해시 라이브 일치",
+      "op": "answer_eq",
+      "answer": "expectedOutputSha256",
+      "path": "expectedOutputSha256",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"reject-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"거짓기각\"}]}",
+        "--expect-output-sha256",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "--json"
+      ],
+      "expect_exits": [
+        3
+      ]
     }
   ]
 }

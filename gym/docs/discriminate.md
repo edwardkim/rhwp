@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/discriminate.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 판별력 감사 규약
@@ -268,7 +268,7 @@ gym 판별력 감사: 약한 오라클(false-pass) K건 — 일 안 한 제출�
 ```
 
 기존 한 줄 형식(`N 과제 전부…` / `약한 오라클(false-pass) K건`)은
-유지한다. 시험과 릴리스 게이트가 그 문장을 본다.
+유지한다. 시험과 수동 Gym 전건 벤치마크가 그 문장을 본다.
 
 ## 11. 하지 않는 일
 
@@ -289,9 +289,9 @@ gym 판별력 감사: 약한 오라클(false-pass) K건 — 일 안 한 제출�
 | `differential.py` | 형식 | 본문 해시가 다를 때 결함으로 부르지 않음 |
 | `release_diff.py` | 시간 | 표면 변경을 regression 으로 부르지 않음 |
 
-릴리스 게이트(`gym-release-gate.yml`)는 차등 **이전**에 이 감사를 돈다.
-벤치마크 자체가 성립하는지 먼저 본다. 표면 변경과 달리 약한 오라클은
-리뷰 신호가 아니라 결함이다.
+수동 `Gym Benchmark Validation`은 이 감사를 실행해 벤치마크 자체가 성립하는지
+먼저 본다. 표면 변경과 달리 약한 오라클은 벤치마크 결함이다. 제품 릴리스 결함이나
+릴리스 차단 근거로 자동 승격하지 않는다.
 
 ## 13. 시험이 고정하는 표
 
@@ -466,19 +466,15 @@ garbage artifact 다. pair 는 `wrong-answer` 만 돈다. 산출 쌍에
 6. **채점 예외를 `pass=True` 로 접기.** 감사기 자신이 약한 오라클이
    된다.
 
-## 21. 게이트와의 연결
+## 21. 수동 벤치마크와의 연결
 
-`.github/workflows/gym-release-gate.yml` 는 구/신 바이너리 차등 앞에
-`python gym/tools/discriminate.py --bin <new>` 를 돈다. 이 가지가
-워크플로 파일을 고치지 않는 이유: 열린 PR 과 겹치고, CLI 표면이
-그대로라 고칠 것이 없다.
+`.github/workflows/gym-release-gate.yml`은 경로 이름만 유지한
+`Gym Benchmark Validation`이다. `workflow_dispatch` 전건 실행은
+`python gym/tools/discriminate.py --bin <current>`의 JSON 원문과 종료 코드를
+증적으로 남긴다. Gym 관련 PR에서는 빠른 Python 계약 시험만 실행한다.
 
-게이트가 보는 것:
-
-- 종료 코드 0/1
-- 사람 출력의 `약한 오라클` 문장 (json 이 아님)
-
-`--json` 은 로컬·시험용이다. 게이트는 기본(사람) 출력을 쓴다.
+이 결과는 약한 오라클을 찾아 벤치마크를 무효화할 수 있지만 제품의 일반 CI,
+devel/main, 태그 또는 게시를 허용·차단하지 않는다.
 
 ## 22. 상수 표
 

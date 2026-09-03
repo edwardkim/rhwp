@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/README.md
-last_verified: 2026-08-10
+last_verified: 2026-09-03
 ---
 
 # rhwp 에이전트 짐(gym) — 운동장
@@ -11,6 +11,10 @@ last_verified: 2026-08-10
 무엇이든)가 실제 한국 문서로 실제 작업을 수행하고, 기계 채점으로 실력을 기록으로
 남기는 운동장이다. 문서를 읽는 곳이 아니라 뛰는 곳이다 — 이 README 하나만 읽고
 스스로 수행→제출→자가 채점이 되도록 만들어져 있다.
+
+> 인간 개발자·메인테이너가 구조 계약과 전수 벤치마크를 실행할 때는
+> [수동 운영 매뉴얼](../mydocs/manual/gym_benchmark_operations.md)을 따른다. AI 에이전트는
+> 참가자·감사자 역할을 구분하는 [Gym 범위 지침](AGENTS.md)을 먼저 적용한다.
 
 > 🎡 **놀이공원처럼 둘러보려면** → [PARK.md](PARK.md) (테마파크 지도) ·
 > [tutorial/](tutorial/README.md) (☕ 휴게실, 첫 방문 5분) ·
@@ -21,23 +25,24 @@ last_verified: 2026-08-10
 
 ```bash
 cargo build --bin rhwp                 # 1) 운동화 (바이너리)
-cat gym/tasks/T01.json                 # 2) 과제 읽기 (instructions 필드가 일감)
-mkdir -p gym/submissions/<너의이름>/T01  # 3) 과제별 폴더에 제출물 넣기
+cat gym/packs/casual-rides/tasks/CR01.json  # 2) 과제 읽기 (instructions 필드가 일감)
+mkdir -p gym/submissions/<너의이름>/casual-rides/CR01  # 3) 과제별 폴더에 제출물 넣기
 python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카드 발급
 ```
 
 ## 규칙 — 세 줄
 
-1. **과제 파일이 유일한 지시서다.** `tasks/T*.json` 의 `instructions` 를 읽고
+1. **과제 파일이 유일한 지시서다.** `packs/<id>/tasks/*.json` 의 `instructions` 를 읽고
    `input` 문서에 대해 수행하라. 힌트는 있지만 경로 탐색(어느 명령을 어떻게
    조합할지)은 네 몫이다 — 그것이 측정 대상이다.
 2. **제출은 파일이다.** 과제의 `submit` 이 요구하는 것(answer.json, 산출물,
-   또는 산출물 쌍)을 `submissions/<이름>/<과제ID>/` 에 놓아라.
-3. **채점은 라이브다.** 정답은 골든 파일로 박제돼 있지 않다 — `score.py` 가
-   채점 시점에 rhwp 로 기대값을 재계산하고, 산출물은 rhwp 로 재검증한다
-   (검색·재조회·해시). 픽스처가 진화하면 정답도 따라 진화한다.
+   또는 산출물 쌍)을 `submissions/<이름>/<pack-id>/<과제ID>/` 에 놓아라.
+3. **채점 권위를 숨기지 않는다.** 대부분의 과제는 `score.py`가 현재 rhwp로
+   기대값을 다시 계산하는 `self-live`다. 일부는 작성자 상수나 공개 입력 fixture
+   관계를 검사한다. 어느 경우도 한컴 또는 독립 구현의 제품 정답으로 자동 승격하지
+   않는다. 전수 분류와 한계는 [정답 권위 원장](docs/authority_ledger.md)을 따른다.
 
-## 과제판 — pack 12개 · 과제 100건 · 만점 221
+## 과제판 — pack 21개 · 과제 1,035건 · 만점 2,379
 
 능력 영역을 **pack** 으로 나눈다. 점수는 pack 별로 보존되며 총점은 편의값이다 —
 어느 능력이 모자란지는 pack 별 점수가 말한다. 🎡 [테마파크 지도](PARK.md)는
@@ -45,18 +50,27 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
 
 | pack | 이름 | 능력 축 | 과제 | 만점 |
 |---|---|---|---|---|
-| `casual-rides` | 🎠 입문 놀이기구 | 입문 (읽고 세기 — 누구나·부모님도) | 4 | 4 |
-| `core-cli` | 코어 CLI | 조사·추출·편집·검증 (운동장 최소 코어) | 14 | 32 |
-| `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 13 | 35 |
-| `corpus-diagnostics` | 코퍼스·진단 | 진단 (폴더 스윕·쪽 덤프·비교 판정) | 7 | 14 |
-| `expert-challenges` | 🐉 보스 어트랙션 | 자동화 (사다리 완주 — tier 4~5 고난도) | 5 | 23 |
-| `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 8 | 15 |
-| `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 7 | 15 |
-| `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 9 | 18 |
-| `self-description` | 자기서술 표면 | 자기서술 (도구가 스스로를 설명하는 계약) | 7 | 12 |
-| `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 8 | 19 |
-| `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 8 | 16 |
-| `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 10 | 18 |
+| `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 70 | 189 |
+| `batch-ops` | 다문서 대량 처리 | 자동화 (다문서 대량 처리) | 20 | 57 |
+| `casual-rides` | 🎠 입문 놀이기구 | 입문 (읽고 세기 — 누구나·부모님도) | 44 | 44 |
+| `core-cli` | 코어 CLI | 조사·추출·편집·검증 (운동장 최소 코어) | 54 | 107 |
+| `corpus-diagnostics` | 코퍼스·진단 | 진단 (폴더 스윕·쪽 덤프·비교 판정) | 48 | 109 |
+| `expert-challenges` | 🐉 보스 어트랙션 | 자동화 (사다리 완주 — tier 4~5 고난도) | 55 | 257 |
+| `extraction` | 데이터 추출 | 조회 (문서에서 데이터를 뽑아내는 능력) | 28 | 56 |
+| `form-journeys` | 서식 여정 | 편집 (이름 지목·순번·dry-run·재독) | 72 | 178 |
+| `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 48 | 89 |
+| `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 45 | 91 |
+| `oracle-probe` | 라이브 오라클 이중 계산 | 검증 (라이브 오라클·이중 계산·부재 보고) | 44 | 81 |
+| `render-tree` | 렌더 트리 구조 추출 | 조회 (렌더 트리 구조 추출) | 40 | 99 |
+| `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 80 | 161 |
+| `self-description` | 자기서술 표면 | 자기서술 (도구가 스스로를 설명하는 계약) | 74 | 159 |
+| `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 56 | 133 |
+| `showcase` | 🎆 쇼케이스 | 쇼케이스 (rhwp 고유 기능 시연) | 6 | 17 |
+| `studio-e2e` | 스튜디오 e2e 문서 계약 | 편집 (studio e2e 파생 CLI 검증) | 40 | 85 |
+| `table-csv` | 표 CSV 왕복 | 편집 (CSV 추출·수정·되쓰기) | 25 | 56 |
+| `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 40 | 116 |
+| `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 90 | 174 |
+| `work-receipt` | 작업 영수증 여정 | 자동화 (발급·계보·감사) | 56 | 121 |
 
 난도 티어는 1~5다: **1=입문(부모님도), 2=초급, 3=중급, 4=고급, 5=보스**.
 한쪽 끝(`casual-rides`)엔 키 제한 없는 회전목마를, 다른 끝(`expert-challenges`)엔
@@ -97,7 +111,8 @@ packs/<id>/
 | `editor` (편집자) | `core-cli`, `text-editing`, `table-editing`, `objects-media` |
 | `publisher` (배포자) | `serialization`, `layout-rendering`, `security` |
 | `boss` (🐉 보스 코스) | `expert-challenges` — 사다리 완주급 고난도만 |
-| `maintainer` (메인테이너) | 전 12 pack 완주 코스 |
+| `maintainer` (메인테이너) | 전 21 pack 완주 코스 |
+| `operator` (운영자) | `corpus-diagnostics`, `automation` |
 
 ```bash
 python gym/score.py --agent <이름>                 # 전 pack
@@ -183,11 +198,11 @@ python gym/tools/leaderboard.py render                # 검증본에서 순위�
 신원으로 등재되어 이후 변조되지 않았다" 까지다. 채점 자체의 재현은 스코어카드에
 박힌 runner 신원과 커밋된 제출물로 제3자가 수행한다.
 
-## CI 릴리스 게이트 — 도구를 파이프라인에 물린다 (#4662)
+## 수동 버전 차등 판정 — 제품 릴리스 게이트가 아니다 (#4662)
 
-아래 회귀 도구들이 도구로만 있으면 사람이 기억해서 돌려야 한다. 릴리스
-파이프라인에 물리면 잊어도 돈다. `gym/tools/release_gate.py` 가 셋을 하나의
-판정으로 묶는다:
+`gym/tools/release_gate.py`는 구·신 rhwp가 같은 Gym 관측을 내는지와 리더보드
+체인 무결성을 하나의 판정으로 묶는 수동 조사 도구다. 파일명과 종료 코드의
+`gate`·`block`은 역사적 인터페이스이며 제품 릴리스 승인 권한을 뜻하지 않는다.
 
 ```bash
 python gym/tools/release_gate.py --old <직전 태그 바이너리> --new target/debug/rhwp
@@ -195,15 +210,16 @@ python gym/tools/release_gate.py --old <직전 태그 바이너리> --new target
 
 | 판정 | exit | 조건 |
 |---|---|---|
-| pass | 0 | 릴리스 차등 stable + 리더보드 체인 무결 |
+| pass | 0 | Gym 버전 차등 stable + 리더보드 체인 무결 |
 | review | 2 | surface-changed — 표면 변경, 사람 판정(차단 아님) |
 | block | 3 | regression 또는 리더보드 체인 파손 |
 
-**regression 만 차단한다** — 도구는 "무엇이 바뀌었나"를 가리키지 "어느 쪽이
-옳은가"를 판정하지 않으므로(#4661), 표면 변경은 리뷰 신호이지 자동 차단이 아니다.
-독립 워크플로 `.github/workflows/gym-release-gate.yml`(수동 실행 + 태그 관찰)로
-돌며, 릴리스 본체(`release-binary.yml`)는 건드리지 않는다. old 바이너리가 없으면
-차등을 생략한다(부재≠실패).
+**regression만 도구 결과 `block`으로 분류한다.** 도구는 "무엇이 바뀌었나"를
+가리키지 "어느 쪽이 옳은가"를 판정하지 않으므로(#4661), 이 결과만으로 제품
+릴리스를 막거나 허용할 수 없다. 독립 워크플로
+`.github/workflows/gym-release-gate.yml`은 Gym 관련 PR의 계약 검사와 메인테이너가
+명시적으로 시작한 전건 벤치마크만 수행한다. 일반 제품 PR, devel/main push,
+`v*` 태그, `release-binary.yml`과 게시 워크플로에서는 실행하거나 소비하지 않는다.
 
 ## 판별력 감사 — 약한 오라클(false-pass)을 못 들어오게 막는다 (#4808)
 
@@ -223,9 +239,9 @@ python gym/tools/discriminate.py --bin target/debug/rhwp   # 전 과제 판별 �
   모두 실행한다. `differs_from_input`만이 아니라 형식·핵심값 검사도 garbage를 거부해야 한다.
 
 음성 대조에 통과하는 과제 = 판별력 없는 약한 오라클. 거부하면 진짜 일을 요구하는
-것이다. 이 감사는 릴리스 게이트(`gym-release-gate.yml`)에서 old/new 차등 **이전**에
-돌며, 약한 오라클이 하나라도 있으면 릴리스를 차단한다 — 벤치마크 자체가 성립하는지
-먼저 보는 무결성 전제조건이다(표면 변경과 달리 리뷰 신호가 아니라 결함이다).
+것이다. 이 감사는 수동 전건 벤치마크(`gym-release-gate.yml`)에서 실행되며, 약한
+오라클이 하나라도 있으면 **벤치마크 결과를 무효화한다**. 이는 제품 릴리스 결함이
+아니라 벤치마크 자체가 성립하지 않는 결함이다.
 
 ## 릴리스 간 차등 회귀 — 시간축 차등 오라클 (#4661)
 
@@ -266,8 +282,8 @@ python gym/tools/trajectory.py --bin target/debug/rhwp
 부분 트라젝토리가 **통과** = 마지막 외부 의미 스텝이 채점에 무의미 =
 **트라젝토리 연극**. 실패(빌드 실패 포함) = 그 스텝이 load-bearing(정상). 이는
 판별력 감사(종점: "산출이 입력과 다른가")를 **경로**로 민 것이다 — 모든 선언된
-스텝이 결과를 바꿔야 한다. 릴리스 게이트(`gym-release-gate.yml`)에서 차등 이전에
-돌며, 연극이 하나라도 있으면 릴리스를 차단한다.
+스텝이 결과를 바꿔야 한다. 수동 전건 벤치마크(`gym-release-gate.yml`)에서 돌며,
+연극이 하나라도 있으면 **벤치마크 결과를 무효화한다**.
 
 ## 차등 오라클 — 골든 파일 없는 회귀 사냥
 
@@ -319,7 +335,7 @@ python gym/tools/robustness.py --bin target/debug/rhwp --limit 40
 
 ## 코퍼스 퍼징 발견 엔진 — DoS 를 근본원인별로 색출한다
 
-`robustness.py` 가 릴리스 **게이트**(바운드된 부분집합으로 "패닉·행 0" 강제)라면,
+`robustness.py`가 결정적 **회귀 표본**(바운드된 부분집합으로 "패닉·행 0" 확인)이라면,
 `fuzz_corpus.py` 는 그 앞단의 **발견 엔진**이다. 전 코퍼스를 여러 명령·여러 손상으로
 **exhaustive** 하게 병렬로 두들겨, 아직 안 고쳐진 DoS 를 **소스 위치(file:line)별로
 클러스터링**해 "고쳐야 할 고유 버그 목록"을 낸다.

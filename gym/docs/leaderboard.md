@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/leaderboard.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 리더보드 규약 — invite · attest · verify · render
@@ -548,4 +548,4 @@ verify/render 는 원장을 바꾸지 않는다. 깨진 사슬을 verify 가 고
 - 가지: `feat/gym-leaderboard-rank-invite`
 - 친구 안내: `gym/INVITE.md`
 - gym 개요의 해당 절: `gym/README.md` 「위조 불가능한 리더보드」
-- 분업: 채점은 `gym/score.py`, 릴리스 게이트는 `gym/tools/release_gate.py`
+- 분업: 채점은 `gym/score.py`, 수동 구·신 차등 판정은 `gym/tools/release_gate.py`

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/tools/README_robustness.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # robustness.py — 운영 메모
@@ -25,7 +25,7 @@ python -m unittest scripts.tests.test_gym_robustness scripts.tests.test_gym_audi
 ## 언제 돌리나
 
 - rhwp 파서/정보 경로를 고친 뒤 회귀 확인.
-- 릴리스 게이트에서 "도구가 적대적 입력에 죽지 않는가"를 인증할 때.
+- 파서 변경 뒤 "도구가 적대적 입력에 죽지 않는가"를 로컬로 회귀 확인할 때.
 - 새 결정적 변형을 넣은 뒤, 시험만으로 부족한 실측이 필요할 때.
 
 돌리지 않는 때:
@@ -33,6 +33,9 @@ python -m unittest scripts.tests.test_gym_robustness scripts.tests.test_gym_audi
 - pack 채점·리더보드·트라젝토리. 다른 도구다.
 - 전 코퍼스 exhaustive 퍼징. `fuzz_corpus.py` 다.
 - 포맷 변경. 이번 도구는 Python 만 고친다.
+
+이 도구는 실제 제품 결함을 발견할 수 있지만 Gym 하위 조사 도구다. 일반 제품
+PR/devel/main CI, 태그 또는 게시의 자동 릴리스 게이트로 실행하지 않는다.
 
 ## 인자
 

@@ -27,6 +27,7 @@ EXISTING_OPS = {
     "files_differ",
     "xml_root_eq",
     "json_value_eq",
+    "json_keys_contain",
     "csv_cell_eq",
     "utf8_bom",
     "answer_eq",

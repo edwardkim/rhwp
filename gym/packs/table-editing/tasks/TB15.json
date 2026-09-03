@@ -2,7 +2,7 @@
   "id": "TB15",
   "tier": 3,
   "title": "첫 표 (0,1) 우상 교정",
-  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "input": "samples/table-001.hwp",
   "instructions": "첫 번째 표의 (0행,1열) 을 '우상'으로 바꾼 right_top.hwp 를 제출하라. 채점은 그 좌표만 대조한다. 힌트: rhwp edit set-cell.",
   "submit": {
     "kind": "artifact",

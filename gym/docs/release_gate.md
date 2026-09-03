@@ -2,16 +2,29 @@
 kind: guide
 status: active
 canonical: gym/docs/release_gate.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
-# gym 릴리스 게이트 규약
+# gym 구·신 버전 차등 판정 도구 규약
 
-이 문서는 `gym/tools/release_gate.py` 의 **판정 사원**, **예외 경로 계약**,
-**워크플로 전제**를 고정한다. 작업 기록은
+이 문서는 역사적 파일명을 유지한 `gym/tools/release_gate.py` 의 **판정 사원**과
+**예외 경로 계약**을 고정한다. 작업 기록은
 [`mydocs/working/gym_release_gate.md`](../../mydocs/working/gym_release_gate.md)
-를 본다. 시험 계약은 `scripts/tests/test_gym_release_gate_workflow.py` 와
-`scripts/tests/test_gym_release_gate_exceptions.py` 가 기계로 고정한다.
+를 본다. 도구 시험은 `scripts/tests/test_gym_release_gate_exceptions.py`, 현행
+워크플로 경계는 `scripts/tests/test_gym_benchmark_validation.py`가 고정한다.
+
+## 0. 운영 경계
+
+이 도구와 `.github/workflows/gym-release-gate.yml`은 **AI 에이전트가 rhwp CLI/API를
+다루는 능력을 학습·평가하는 Gym 전용 벤치마크**다. 라이브 오라클과 기준 풀이의
+대부분은 채점 대상과 같은 현재 rhwp를 다시 실행해 만들어지므로 한컴 출력이나 별도
+구현과 대조하는 독립 제품 정답지가 아니다.
+
+따라서 아래의 `pass`·`review`·`block`은 Gym 조사 결과의 분류일 뿐이다. 제품의
+릴리스 허용·차단, main 승격, 일반 devel/PR CI, tag, npm·extension 게시의 조건으로
+사용하지 않는다. 현행 워크플로는 Gym 관련 PR에서 빠른 계약 시험만 자동 실행하고,
+전건 감사는 `workflow_dispatch`로 메인테이너가 명시적으로 시작할 때만 실행한다.
+이 0절이 이 문서의 과거 파이프라인 표현보다 우선한다.
 
 릴리스 차등(`release_diff.py`)은 오라클이다. 게이트는 그 오라클을 읽어
 파이프라인 종료 코드로 묶는다. 오라클이 표면을 모르는데 안정이라고 쓰면
@@ -19,8 +32,8 @@ last_verified: 2026-08-18
 
 ## 1. 왜 이 기둥이 필요한가
 
-회귀 도구가 도구로만 있으면 사람이 기억해서 돌려야 한다. 릴리스 파이프라인에
-물리면 잊어도 돈다. 게이트가 묶는 것은 세 층이다.
+수동 조사에서 여러 Gym 무결성 신호를 하나씩 대조하는 부담을 줄이기 위해 세 층을
+하나의 판정 봉투로 묶는다.
 
 1. **종점 무결성** — `discriminate.py`. 일 안 한 제출이 만점을 받으면 벤치가
    거짓이다. 워크플로가 게이트보다 먼저 돌리고, exit 1 이면 잡을 닫는다.
@@ -31,7 +44,7 @@ last_verified: 2026-08-18
 
 이 도구는 새 CLI 를 열지 않는다. 새 pack 을 만들지 않는다. 차등 오라클의
 분류 삼원(stable / regression / surface-changed)을 네 값으로 늘리지 않는다.
-게이트가 더하는 것은 **파이프라인 판정**과 **예외를 위장하지 않는 접기**다.
+도구가 더하는 것은 **수동 조사 판정 봉투**와 **예외를 위장하지 않는 접기**다.
 
 ## 2. 사용
 
@@ -295,32 +308,21 @@ surface-changed + 원장 파손 = block.
 
 ## 10. 워크플로 계약
 
-독립 워크플로 `.github/workflows/gym-release-gate.yml`. 릴리스 본체
-(`release-binary.yml`)는 건드리지 않는다.
+독립 워크플로 `.github/workflows/gym-release-gate.yml`의 표시 이름은
+`Gym Benchmark Validation`이다. 기존 파일 경로는 GitHub workflow ID와 이력을
+보존하기 위해 유지한다.
 
-순서:
+- `pull_request`: `gym/**`, `scripts/tests/test_gym_*.py`, 워크플로 자체 변경에만
+  빠른 Python 계약 시험을 실행한다.
+- `workflow_dispatch`: 현재 rhwp를 빌드한 뒤 oracle probe, baseline, discrimination,
+  trajectory 전건 감사를 실행하고 원문 JSON을 아티팩트로 남긴다.
+- `push`, devel/main, `v*` tag 트리거는 없다.
+- Release Binary, npm publish, extension publish는 이 워크플로의 job·artifact·결론을
+  참조하지 않는다.
+- `permissions.contents: read`만 사용한다.
 
-1. 현재 커밋에서 `cargo build --bin rhwp`
-2. **Discrimination audit** — `python3 gym/tools/discriminate.py --bin target/debug/rhwp`
-3. (old_ref 가 있을 때만) 구 태그 worktree 빌드 → `./rhwp-old-bin`
-4. **Trajectory necessity audit** — `python3 gym/tools/trajectory.py --bin target/debug/rhwp`
-5. **Run release gate** — old 파일이 있으면 `--old`, 항상 `--new`
-6. 판정 JSON 을 아티팩트로 업로드 (`if: always()`)
-
-고정하는 것:
-
-- `workflow_dispatch` + `push.tags: v*`
-- `permissions.contents: read` 만. write 권한 없음
-- 판별·트라젝토리가 게이트보다 먼저
-- 판별 스텝에 `--old` 없음 (현재 벤치만 본다)
-- 판별 스텝에 `continue-on-error` / `|| true` 없음
-- 게이트 스텝도 종료 코드를 삼키지 않음
-- old 파일이 없으면 `--old` 없이 게이트를 부름 (부재≠실패)
-- 업로드는 실패해도 돈다
-
-판별이 exit 1 을 내면 5번에 도달하지 않는다. 그게 `discriminate-fail` 의
-운영 경로다. 러너의 `preflight=` 는 같은 이유를 시험이 바이너리 없이
-재현하려고 둔 입구이지, 새 CLI 가 아니다.
+`release_gate.py`와 `release_diff.py`는 필요한 조사에서 로컬로 직접 실행할 수 있지만
+현행 워크플로의 자동 제품 판정 단계에는 연결하지 않는다.
 
 ## 11. GitHub step summary
 
@@ -356,7 +358,7 @@ surface-changed + 원장 파손 = block.
 ## 13. 시험이 고정하는 것
 
 ```bash
-python -m unittest scripts.tests.test_gym_release_gate_workflow
+python -m unittest scripts.tests.test_gym_benchmark_validation
 python -m unittest scripts.tests.test_gym_release_gate_exceptions
 ```
 
@@ -365,9 +367,9 @@ python -m unittest scripts.tests.test_gym_release_gate_exceptions
 
 고정하는 축:
 
-- 워크플로 존재, 본체 비침습, 수동+태그, 읽기 권한, 요약 플래그
-- 판별·트라젝토리가 게이트보다 앞섬
-- 판별 실패가 잡을 닫음 (`continue-on-error` 없음)
+- 워크플로 존재, Gym 경로 PR + 수동 전건 실행, 읽기 권한
+- push/tag와 제품 release/publish 소비 관계 부재
+- 수동 전건에서 판별·트라젝토리 결과와 원문 아티팩트 보존
 - 러너 사원: stable→0, surface-changed→2, regression→3
 - 구 부재 → skipped / pass. 신 부재 → fail / 1
 - 판별 실패 → fail / 1. block/review 로 위장 금지
@@ -389,11 +391,12 @@ python -m unittest scripts.tests.test_gym_release_gate_exceptions
 - 자동화 pack · core-cli · casual-rides 과제 JSON 을 고치지 않는다.
 - 한컴 문서가 맞는지 틀리는지 말하지 않는다.
 - 어느 바이너리가 "더 옳은지" 고르지 않는다.
+- 제품 릴리스의 준비 여부를 증명하지 않는다.
 - 표면이 바뀐 릴리스를 자동으로 막지 않는다.
 - 판별 실패를 회귀로 부르지 않는다.
 - 신 바이너리 부재를 차등 생략으로 부르지 않는다.
 - 치명 예외를 삼켜 성공인 척하지 않는다.
-- 릴리스 본체 워크플로에 침습하지 않는다.
+- 릴리스·게시·일반 제품 CI 워크플로에 침습하지 않는다.
 
 ## 15. 관련 기둥
 
@@ -403,7 +406,7 @@ python -m unittest scripts.tests.test_gym_release_gate_exceptions
 | 경로 무결성 | `trajectory.py` | 마지막 스텝을 빼도 통과하나? |
 | 도구 강건성 | `robustness.py` | 손상 입력에 rhwp 가 패닉·행 하나? |
 | 릴리스 차등 | `release_diff.py` | 두 바이너리가 같은 관측을 내나? |
-| 릴리스 게이트 | `release_gate.py` | 차등 + 원장을 파이프라인 판정으로 묶나? |
+| 수동 차등 판정 | `release_gate.py` | 차등 + 원장을 Gym 조사 판정으로 묶나? |
 
 차등은 오라클이다. 게이트는 오라클을 읽는다. 오라클이 표면을 모르는데
 안정이라고 쓰면 게이트도 속는다. 그래서 `probe-failed` 를 삼원 밖에 둔다.
@@ -580,10 +583,10 @@ skipped 가 아니다. 현재 릴리스가 없다.
 
 | exit | 하는 일 |
 |---|---|
-| 0 | 릴리스를 진행해도 된다. 구 바이너리가 없었으면 다음 태그부터 차등이 돈다. |
+| 0 | 이 Gym 조사 범위에서 안정이다. 제품 릴리스 준비 여부는 별도 근거로 판정한다. |
 | 1 | 도구/전제를 고친다. 약한 오라클이면 과제를 고친다. 바이너리 경로를 확인한다. 차등 보고가 깨졌으면 차등 도구를 본다. **동작을 되돌리는 자리가 아니다.** |
 | 2 | 변경 로그를 읽고 의도된 표면 변경인지 사람이 판정한다. 의도면 진행, 아니면 명령을 되돌린다. |
-| 3 | 관측이 갈렸거나 원장이 깨졌다. 릴리스를 막는다. 차등 JSON 의 `diffs` 또는 원장 verify 출력을 본다. |
+| 3 | Gym 관측이 갈렸거나 원장이 깨졌다. 해당 벤치마크 결과를 사용하지 말고 차등 JSON의 `diffs` 또는 원장 verify 출력을 본다. |
 
 exit 1 과 exit 3 을 같은 "실패" 로 접으면, 약한 오라클과 쪽수 회귀를 같은
 티켓으로 보낸다. 그래서 사원이 넷이다.
@@ -593,7 +596,7 @@ exit 1 과 exit 3 을 같은 "실패" 로 접으면, 약한 오라클과 쪽수 
 바이너리 없이 계약을 확인한다.
 
 ```bash
-python -m unittest scripts.tests.test_gym_release_gate_workflow -q
+python -m unittest scripts.tests.test_gym_benchmark_validation -q
 python -m unittest scripts.tests.test_gym_release_gate_exceptions -q
 python gym/tools/audit.py
 ```

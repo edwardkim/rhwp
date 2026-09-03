@@ -3,7 +3,7 @@
   "tier": 3,
   "title": "4쪽 시험지 마지막 쪽 추출",
   "input": "samples/exam-kor-4p.hwp",
-  "instructions": "입력의 **4–4쪽**만 뽑아낸 page4.hwp 를 제출하라. 추출물은 다시 조판되므로 요청한 범위의 쪽 수와 결과 쪽 수가 항상 같지는 않다 — 단일 쪽 추출이면 결과 쪽수는 1이어야 한다. 힌트: rhwp extract-pages <입력> <출력> --from N --to M. **1 기준**이다.",
+  "instructions": "입력의 **4–4쪽**만 뽑아낸 page4.hwp 를 제출하라. 추출물은 문단 단위로 남긴 뒤 다시 조판되므로 요청한 범위의 쪽 수와 결과 쪽 수가 항상 같지는 않다. 현재 표본의 정답 산출은 2쪽이다. 힌트: rhwp extract-pages <입력> <출력> --from N --to M. **1 기준**이다.",
   "submit": {
     "kind": "artifact",
     "files": [
@@ -18,9 +18,9 @@
       "minBytes": 1024
     },
     {
-      "name": "한 쪽 문서",
+      "name": "재조판 결과 두 쪽",
       "op": "value_eq",
-      "value": 1,
+      "value": 2,
       "path": "pageCount",
       "cmd": [
         "info",

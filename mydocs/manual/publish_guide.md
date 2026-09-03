@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-07-17
+last_verified: 2026-09-02
 ---
 
 # 배포 가이드
@@ -37,6 +37,7 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 | 파일 | 트리거 | 역할 |
 |------|--------|------|
 | `.github/workflows/ci.yml` | push/PR (main, devel) | cargo build + test + clippy 검증 |
+| `.github/workflows/gym-release-gate.yml` | Gym 관련 PR, 수동 실행 | AI 에이전트 벤치마크 계약·전건 판별력 검증 |
 | `.github/workflows/deploy-pages.yml` | main push, 태그 | WASM 빌드 → rhwp-studio 빌드 → GitHub Pages 배포 |
 | `.github/workflows/release-binary.yml` | `v*` 태그, 수동 실행 | 5플랫폼 CLI 빌드 → archive·SHA-256을 GitHub Release에 첨부 |
 | `.github/workflows/npm-publish.yml` | **GitHub Release 생성** 또는 수동 실행 | WASM 빌드 → @rhwp/core + @rhwp/editor + VSCode/Open VSX 익스텐션 배포 |
@@ -70,6 +71,19 @@ GitHub Release 생성 (태그)
 > 단, release workflow를 재실행하면서 이미 VS Code/Open VSX 배포가 끝난 경우에는
 > `workflow_dispatch`의 `publish_extensions=false` 입력으로 npm publish만 다시 시도한다.
 > Chrome/Edge/Firefox 브라우저 확장은 스토어 심사 흐름이 달라 현재 수동 업로드한다.
+
+### Gym 운영 경계
+
+Gym은 AI 에이전트가 rhwp CLI/API를 조합해 과제를 수행하는 기술을 학습·평가하는
+벤치마크다. 기준풀이와 채점이 현재 rhwp를 라이브 오라클로 함께 사용하므로 제품 구현의
+외부 정답이나 릴리즈 품질을 독립적으로 증명하지 않는다.
+
+- 일반 devel/main push, 제품 PR, `v*` tag와 게시 workflow에는 Gym을 연결하지 않는다.
+- Gym 관련 PR은 별도 workflow에서 정적·단위 계약만 확인한다.
+- 전건 baseline·discrimination·trajectory는 벤치마크 자체를 검증할 때 수동 실행하고,
+  artifact는 Gym 판별력 증적으로만 해석한다.
+- 제품 릴리즈 판정에는 Rust/WASM 테스트, 포맷 회귀, 독립 한컴 오라클, Studio/CDP,
+  플랫폼·패키징 검증을 사용한다.
 
 ### GitHub Release CLI target
 

@@ -27,6 +27,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -576,19 +577,37 @@ class LoadProfileTests(unittest.TestCase):
 
     def test_load_profile_missing_raises(self):
         runner = load_runner()
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(runner.ScoreRunnerError) as caught:
             runner.load_profile("does-not-exist-5281")
+        self.assertEqual(caught.exception.kind, "missing-profile")
 
     def test_score_all_uses_profile_pack_list(self):
-        """profile_id 가 있으면 pack_ids 를 프로파일 목록으로 바꾼다.
+        """profile_id가 있으면 실제 채점 대상이 프로파일 목록이 된다."""
+        runner = load_runner()
 
-        실제 채점은 바이너리가 필요하므로 load_profile 만 고정하고,
-        score_all 의 그 한 줄을 소스에서 확인한다.
-        """
-        text = (GYM / "core" / "runner.py").read_text(encoding="utf-8")
-        self.assertIn("def load_profile(profile_id):", text)
-        self.assertIn('pack_ids = load_profile(profile_id)["packs"]', text)
-        self.assertIn("점수를 뭉치는", text)
+        def fake_pack(pack_id, *_args):
+            return {"id": pack_id, "status": "unavailable", "score": None, "max": 0}
+
+        with (
+            mock.patch.object(
+                runner,
+                "load_profile",
+                return_value={"id": "selected", "packs": ["pack-b", "pack-a"]},
+            ) as load_profile,
+            mock.patch.object(runner, "score_pack", side_effect=fake_pack),
+            mock.patch.object(runner, "safe_runner_identity", return_value={}),
+            mock.patch.object(runner, "safe_known_commands", return_value=None),
+            mock.patch.object(runner, "bin_is_missing", return_value=False),
+        ):
+            card = runner.score_all(
+                "unused-submissions",
+                "unused-rhwp",
+                pack_ids=["ignored-pack"],
+                profile_id="selected",
+            )
+
+        load_profile.assert_called_once_with("selected")
+        self.assertEqual([pack["id"] for pack in card["packs"]], ["pack-b", "pack-a"])
 
     def test_score_py_exposes_profile_flag(self):
         text = SCORE_PY.read_text(encoding="utf-8")
@@ -1121,17 +1140,36 @@ class DocsSectionTests(unittest.TestCase):
 
 
 class ScoreAllProfileSelectionTests(unittest.TestCase):
-    """score_all 이 프로파일 packs 로 목록을 덮어쓰는 한 줄을 원문으로 고정."""
+    """score_all의 profile 선택 순서를 실행 동작으로 고정한다."""
 
     def test_runner_source_order(self):
-        text = (GYM / "core" / "runner.py").read_text(encoding="utf-8")
-        load_at = text.find("def load_profile")
-        score_at = text.find("def score_all")
-        self.assertGreater(load_at, 0)
-        self.assertGreater(score_at, load_at)
-        snippet = text[score_at:score_at + 800]
-        self.assertIn("if profile_id:", snippet)
-        self.assertIn('pack_ids = load_profile(profile_id)["packs"]', snippet)
+        runner = load_runner()
+        events = []
+
+        def fake_profile(profile_id):
+            events.append(("load-profile", profile_id))
+            return {"id": profile_id, "packs": ["profile-pack"]}
+
+        def fake_pack(pack_id, *_args):
+            events.append(("score-pack", pack_id))
+            return {"id": pack_id, "status": "unavailable", "score": None, "max": 0}
+
+        with (
+            mock.patch.object(runner, "load_profile", side_effect=fake_profile),
+            mock.patch.object(runner, "score_pack", side_effect=fake_pack),
+            mock.patch.object(runner, "safe_runner_identity", return_value={}),
+            mock.patch.object(runner, "safe_known_commands", return_value=None),
+            mock.patch.object(runner, "bin_is_missing", return_value=False),
+        ):
+            card = runner.score_all(
+                "unused-submissions",
+                "unused-rhwp",
+                pack_ids=["caller-pack"],
+                profile_id="role",
+            )
+
+        self.assertEqual(events, [("load-profile", "role"), ("score-pack", "profile-pack")])
+        self.assertEqual([pack["id"] for pack in card["packs"]], ["profile-pack"])
 
     def test_score_card_keeps_profile_field(self):
         text = (GYM / "core" / "runner.py").read_text(encoding="utf-8")

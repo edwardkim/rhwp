@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/tutorial.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 휴게실 · 테마파크 입문 규약
@@ -155,6 +155,7 @@ value_in
 deep_contains
 not_contains
 cell_text_eq
+text_file_envelope_eq
 ```
 
 `GLOBAL_SCAN_OPS = {deep_contains, not_contains}`.
@@ -241,7 +242,7 @@ editor / publisher / operator / boss 는 각 pack 의 **이미 있는
 - 안내 문서가 `gym/core/checks.py` 를 "고친다/추가한다"고 말하지
   않는다
 - PARK · INVITE · 휴게실이 서로를 가리킨다
-- CI 가 이 시험을 호출한다
+- Gym Benchmark Validation이 이 시험을 호출한다
 
 음성 회귀: 임시로 링크를 지운 텍스트는 검사 함수가 문제를 내야
 한다. 통과만 보면 가드가 썩는다.

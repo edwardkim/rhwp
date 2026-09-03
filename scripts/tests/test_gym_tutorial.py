@@ -6,7 +6,7 @@
   · `gym/PARK.md` · `gym/INVITE.md` 가 실재하고 서로를 가리킨다.
 - 프로파일 일곱 이름과 packs 묶음이 `gym/profiles/*.json` 과 같다.
 - 입문존 CR01~CR04 의 명령·답 키·입력이 안내에 그대로 있다.
-- `gym/core/checks.py` 의 `REGISTRY` 가 검토된 서른세 이름 그대로다.
+- `gym/core/checks.py` 의 `REGISTRY` 가 검토된 서른네 이름 그대로다.
   휴게실 작업이 채점 논리를 바꾸면 이 시험이 실패한다.
 
 바이너리 없이 순수 파일 검사다. 새 pack · 새 과제 JSON 을 만들지 않는다.
@@ -18,6 +18,7 @@ import json
 import re
 import sys
 import unittest
+from datetime import date
 from pathlib import Path
 
 
@@ -27,7 +28,7 @@ TUTORIAL = GYM / "tutorial"
 PROFILES = GYM / "profiles"
 PACKS = GYM / "packs"
 CHECKS_PY = GYM / "core" / "checks.py"
-CI_YML = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+GYM_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "gym-release-gate.yml"
 
 INLINE_LINK_RE = re.compile(
     r"!?\[[^\]]*\]\(\s*(?:<([^>]+)>|([^)\s]+))(?:\s+[^)]*)?\s*\)"
@@ -151,6 +152,7 @@ CLI_OPERATOR_SNAPSHOT = {
     "deep_contains",
     "not_contains",
     "cell_text_eq",
+    "text_file_envelope_eq",
 }
 
 REGISTRY_SNAPSHOT = FILE_OPERATOR_SNAPSHOT | CLI_OPERATOR_SNAPSHOT
@@ -182,6 +184,24 @@ def _read(path: Path) -> str:
 
 def _load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _front_matter(text: str) -> dict[str, str]:
+    """첫 YAML front matter의 단순 scalar 계약을 읽는다."""
+    lines = text.splitlines()
+    if not lines or lines[0] != "---":
+        return {}
+    try:
+        end = lines.index("---", 1)
+    except ValueError:
+        return {}
+    fields = {}
+    for line in lines[1:end]:
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        fields[key.strip()] = value.strip()
+    return fields
 
 
 def _tutorial_text() -> str:
@@ -460,10 +480,10 @@ class ScoringUntouchedTests(unittest.TestCase):
         checks = load_checks()
         self.assertEqual(set(checks.REGISTRY), REGISTRY_SNAPSHOT)
 
-    def test_registry_has_thirty_three_operators(self):
+    def test_registry_has_thirty_four_operators(self):
         checks = load_checks()
-        self.assertEqual(len(checks.REGISTRY), 33)
-        self.assertEqual(len(set(checks.REGISTRY)), 33)
+        self.assertEqual(len(checks.REGISTRY), 34)
+        self.assertEqual(len(set(checks.REGISTRY)), 34)
 
     def test_global_scan_ops_unchanged(self):
         checks = load_checks()
@@ -641,14 +661,14 @@ class WindowsAndInviteTests(unittest.TestCase):
 
 
 class CiWiringTests(unittest.TestCase):
-    def test_ci_invokes_tutorial_contract(self):
-        text = _read(CI_YML)
-        self.assertIn("scripts/tests/test_gym_tutorial.py", text)
+    def test_gym_workflow_invokes_tutorial_contract(self):
+        text = _read(GYM_WORKFLOW)
+        self.assertIn("scripts.tests.test_gym_tutorial", text)
 
-    def test_ci_still_invokes_audit_and_packs(self):
-        text = _read(CI_YML)
-        self.assertIn("scripts/tests/test_gym_audit.py", text)
-        self.assertIn("scripts/tests/test_gym_packs.py", text)
+    def test_gym_workflow_invokes_audit_and_packs(self):
+        text = _read(GYM_WORKFLOW)
+        self.assertIn("scripts.tests.test_gym_audit", text)
+        self.assertIn("scripts.tests.test_gym_packs", text)
 
 
 class NegativeGuardTests(unittest.TestCase):
@@ -684,12 +704,23 @@ class FrontMatterTests(unittest.TestCase):
             self.assertIn("canonical: gym/tutorial/README.md", text)
 
     def test_docs_and_working_have_front_matter(self):
-        docs = _read(GYM / "docs" / "tutorial.md")
-        working = _read(REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md")
-        self.assertIn("kind: guide", docs)
-        self.assertIn("kind: working", working)
-        self.assertIn("last_verified: 2026-08-18", docs)
-        self.assertIn("last_verified: 2026-08-18", working)
+        cases = (
+            (GYM / "docs" / "tutorial.md", "guide", "gym/docs/tutorial.md"),
+            (
+                REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md",
+                "working",
+                "mydocs/working/gym_tutorial.md",
+            ),
+        )
+        for path, kind, canonical in cases:
+            fields = _front_matter(_read(path))
+            with self.subTest(path=path):
+                self.assertEqual(fields.get("kind"), kind)
+                self.assertEqual(fields.get("status"), "active")
+                self.assertEqual(fields.get("canonical"), canonical)
+                verified = fields.get("last_verified")
+                self.assertIsNotNone(verified)
+                self.assertEqual(date.fromisoformat(verified).isoformat(), verified)
 
 
 class ScopeGuardTests(unittest.TestCase):

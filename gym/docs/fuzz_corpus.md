@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/fuzz_corpus.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 코퍼스 퍼징 발견 엔진 규약
@@ -538,7 +538,7 @@ HWP3 파서는 HWP5 와 다른 입구다. 첫 주행의 line-spacing i32 오버�
 
 | | `robustness.py` | `fuzz_corpus.py` |
 |---|---|---|
-| 역할 | 릴리스 게이트 | 발견 엔진 |
+| 역할 | 결정적 회귀 표본 | 발견 엔진 |
 | 표본 | `.hwp` 부분집합 | `.hwp`/`.hwpx`/`.hml` 전수 가능 |
 | 명령 | `info --json` 하나 | 기본 4명령, 지정 가능 |
 | 산출 | 패닉/행 목록 | 위치별·명령별 클러스터 |
@@ -546,12 +546,12 @@ HWP3 파서는 HWP5 와 다른 입구다. 첫 주행의 line-spacing i32 오버�
 | 변형 라벨 | `truncate@25%` | `trunc25` (원 재현체 호환) |
 | 예외 | unreadables / probeErrors | 같은 접기 + missingBin / emptyCorpus |
 
-게이트가 실패한 변형을 발견 엔진이 다시 두드리는 것은 낭비처럼 보이지만,
-게이트는 `info` 만 본다. `export-render-tree` 에서만 죽는 버그는 게이트를
+회귀 표본이 실패한 변형을 발견 엔진이 다시 두드리는 것은 낭비처럼 보이지만,
+표본은 `info` 만 본다. `export-render-tree` 에서만 죽는 버그는 표본을
 통과한다. 발견 엔진이 그 축을 담당한다.
 
-반대로 발견 엔진이 잡은 버그는 고친 뒤 게이트의 부분집합에 넣어 회귀를
-막는다. 발견 → 수정 → 게이트. 이 고리가 이 도구의 존재 이유다.
+반대로 발견 엔진이 잡은 버그는 고친 뒤 결정적 부분집합에 넣어 회귀를
+막는다. 발견 → 수정 → 회귀 표본. 이 고리가 이 도구의 존재 이유다.
 
 ## 12. 시험이 고정하는 것
 

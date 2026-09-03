@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/release_diff.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 릴리스 간 차등 규약
@@ -12,9 +12,10 @@ last_verified: 2026-08-18
 [`mydocs/working/gym_release_diff.md`](../../mydocs/working/gym_release_diff.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_release_diff.py` 가 기계로 고정한다.
 
-릴리스 게이트(`release_gate.py`)는 이 도구의 분류를 파이프라인 판정으로 묶는다.
-게이트는 **regression 만 차단**한다. surface-changed 는 리뷰 신호이지 자동
-차단이 아니다. 이 문서가 다루는 것은 게이트가 아니라 차등 오라클 자체다.
+`release_gate.py`는 이 도구의 분류를 수동 조사 판정으로 묶을 수 있다. 두 도구의
+역사적 이름에 `release`와 `gate`가 남아 있지만 제품 release/main/devel CI의 승인
+조건은 아니다. 현행 `Gym Benchmark Validation` 워크플로도 이 차등을 자동 제품
+게이트로 사용하지 않는다.
 
 ## 1. 왜 이 기둥이 필요한가
 
@@ -27,8 +28,10 @@ last_verified: 2026-08-18
 문자열처럼 봉투에서 길어낸 **관측 raw** 를 대조한다. 골든 없이, 관측이 갈리는
 지점이 곧 회귀 후보다.
 
-이 도구는 "무엇이 바뀌었나" 를 가리키지 "어느 쪽이 옳은가" 를 판정하지 않는다.
-한컴 정답지가 없다. 판정은 사람이 한다.
+이 도구는 "무엇이 바뀌었나"를 가리키지 "어느 쪽이 옳은가"를 판정하지 않는다.
+같은 제출물과 Gym 검사를 두 rhwp 바이너리에 다시 묻는 자기 차등이므로 한컴 출력이나
+독립 구현의 제품 정답지가 아니다. 분기는 Gym 회귀 후보이며 제품 회귀 판정에는 별도
+정답지와 사람이 필요하다.
 
 ## 2. 사용
 
@@ -317,7 +320,7 @@ ValueError · AttributeError)는 모두 `digfail` 로 접는다. 한 칸을 못 
 | 경로 무결성 | `trajectory.py` | 마지막 스텝을 빼도 통과하나? |
 | 도구 강건성 | `robustness.py` | 손상 입력에 rhwp 가 패닉·행 하나? |
 | 릴리스 차등 | `release_diff.py` | 두 바이너리가 같은 관측을 내나? |
-| 릴리스 게이트 | `release_gate.py` | 차등 + 리더보드를 파이프라인 판정으로 묶나? |
+| 수동 차등 판정 | `release_gate.py` | 차등 + 리더보드를 Gym 조사 판정으로 묶나? |
 
 차등은 오라클이다. 게이트는 그 오라클을 읽는다. 오라클이 표면을 모르는데
 안정이라고 쓰면 게이트도 속는다. 그래서 `probe-failed` 를 삼원 밖에 둔다.

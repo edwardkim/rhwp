@@ -2,10 +2,17 @@
 kind: working
 status: active
 canonical: mydocs/working/gym_release_gate.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 릴리스 게이트 — 예외 경로와 판정 정직성 보강
+
+> **2026-09-02 운영 경계 정정:** 이 문서는 #5259 당시 구현 계보를 보존하는 작업
+> 기록이다. 여기서 `release gate`·`block`이라 부른 결과는 이제 Gym 수동 차등 조사에만
+> 적용한다. 같은 현재 rhwp가 만든 라이브 기대값은 독립 제품 정답지가 아니므로 일반
+> PR/devel/main CI, 태그, Release Binary, npm·extension 게시를 허용하거나 차단하지 않는다.
+> 현행 운영 정본은 [`gym/docs/release_gate.md`](../../gym/docs/release_gate.md)의 0절과
+> [`mydocs/manual/publish_guide.md`](../manual/publish_guide.md)의 Gym 운영 경계다.
 
 Issue: #5259
 Branch: `feat/gym-release-gate-hardening`
