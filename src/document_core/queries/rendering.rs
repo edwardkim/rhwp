@@ -662,7 +662,11 @@ fn reclassify_cell_floating_stacks(para: &mut Paragraph, min_height_hu: i32) -> 
                                 line_spacing: 0,
                                 column_start: 0,
                                 segment_width: template.segment_width,
-                                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                                // 이 줄은 원문 inline 문단이 아니라 부동 그림 스택을
+                                // 분리하면서 만든 합성 산출물이다. 후속 layout이 원문
+                                // inline 그림과 구분할 수 있도록 provenance를 남긴다.
+                                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE
+                                    | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
                             }];
                             cum_vpos = cum_vpos.saturating_add(img_h);
                             reclassify_floating_pictures_inline(&mut sp);

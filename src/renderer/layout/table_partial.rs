@@ -22,9 +22,31 @@ use super::{
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::CaptionDirection;
+use crate::model::shape::{CaptionDirection, CommonObjAttr, HorzRelTo};
 use crate::model::style::{Alignment, BorderLine};
 use crate::renderer::float_placement::native_multirow_internal_reset_rowbreak_anchor_advance_hu;
+
+/// 인라인으로 재분류된 부동 그림이 유지해야 할 문단 기준 가로 오프셋(px).
+///
+/// `[#2004]` 정규화(`reclassify_cell_floating_stacks`)는 같은 자리에 겹친 전면급
+/// 부동 그림 더미를 **그림 1장짜리 인라인 문단 N개**로 쪼갠다. 한글이 이런 더미를
+/// 쪽당 1장씩 놓는 것을 재현하려면 필요한 변환이다(끄면 그림이 아예 안 그려진다).
+/// 다만 그 변환은 `treat_as_char` 만 바꾸고 개체의 `horzOffset` 은 그대로 두는데,
+/// 인라인 배치는 그 값을 보지 않아 쪼갠 그림이 전부 셀 왼끝에 겹친다
+/// (issue2004 5~8쪽: 한글 대비 −19~−28px).
+///
+/// 저장 글자처럼 원문 inline 그림에는 위치값을 일반 적용하지 않는다. 문단 기준
+/// offset은 `reclassify_cell_floating_stacks`가 만든 합성 줄에서만 복원한다.
+fn inline_para_horizontal_offset_px(
+    common: &CommonObjAttr,
+    synthetic_reclassified_stack: bool,
+    dpi: f64,
+) -> f64 {
+    if !synthetic_reclassified_stack || !matches!(common.horz_rel_to, HorzRelTo::Para) {
+        return 0.0;
+    }
+    hwpunit_to_px(common.horizontal_offset as i32, dpi)
+}
 
 /// `layout_partial_table_resolved`가 표 자체와 분리해 사용하는 host 문맥.
 ///
@@ -1749,6 +1771,22 @@ impl LayoutEngine {
                     line_widths
                 };
 
+                // [#6653] 중첩 표를 품은 줄은 저장 사다리에 그 표 높이로 적혀 있다
+                // (hwpx_sample2 p[21] `ls[1] vpos=0 lh=12080` = 161.07px, 표 157.3px).
+                // 글자와 표를 함께 가진 문단은 아래 텍스트 갈래를 타는데, 그 갈래가 표
+                // 전용 줄까지 지나 `para_y` 를 밀고 나서 표를 그린다 — 같은 높이를 두 번
+                // 쓴다. 8쪽에는 글자 줄이 있어 드러나지 않지만, 표 줄만 넘어온 9쪽 조각은
+                // 표가 161px 아래로 내려가 위에 빈 띠가 남는다(한/글 52.1 vs rhwp 210.6).
+                // 이 조각이 그리는 줄에 보이는 글자가 없으면 표 전용 줄이므로, 표는 그
+                // 줄이 시작한 자리에 놓는다.
+                let table_host_line_only_fragment = has_table_ctrl
+                    && composed
+                        .lines
+                        .iter()
+                        .skip(start_line)
+                        .take(end_line.saturating_sub(start_line))
+                        .all(|line| line.runs.iter().all(|run| run.text.trim().is_empty()));
+                let para_y_before_lines = para_y;
                 // 표 컨트롤이 없는 문단: 텍스트 먼저, 컨트롤 나중 (기존 동작)
                 // 표 컨트롤이 있는 문단: 문단 앞 간격 적용 → 표 먼저 배치 → 텍스트(엔터 등) 나중
                 if !has_table_ctrl
@@ -2099,7 +2137,18 @@ impl LayoutEngine {
                                             );
                                         }
                                         let pic_area = LayoutRect {
-                                            x: inline_x,
+                                            x: inline_x
+                                                + inline_para_horizontal_offset_px(
+                                                    &pic.common,
+                                                    para.line_segs
+                                                        .get(inline_tac_line)
+                                                        .is_some_and(|segment| {
+                                                            segment.tag
+                                                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                                                != 0
+                                                        }),
+                                                    self.dpi,
+                                                ),
                                             y: inline_tac_y,
                                             width: clamped_w,
                                             height: clamped_h,
@@ -2543,7 +2592,11 @@ impl LayoutEngine {
                                 {
                                     // 중첩 표가 셀 가용 공간을 초과하면 행 범위 필터 적용
                                     let nested_y = if has_preceding_text {
-                                        para_y
+                                        if table_host_line_only_fragment {
+                                            para_y_before_lines
+                                        } else {
+                                            para_y
+                                        }
                                     } else {
                                         inner_area.y
                                     };

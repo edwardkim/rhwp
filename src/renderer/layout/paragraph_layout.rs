@@ -4812,8 +4812,35 @@ impl LayoutEngine {
                 .as_ref()
                 .map(|flow| flow.extra_rows)
                 .unwrap_or(0);
+            // [#6656] 문단 안 다음 줄까지의 전진은 저장 줄의 **글자 높이(th)** 다. 줄 상자
+            // 높이(lh)는 그 줄이 품은 개체까지 덮지만, 한/글은 다음 줄을 th + ls 자리에
+            // 놓고 개체가 아래 줄 공간을 침범하게 둔다. 코퍼스 전수(samples↔pdf 215문서,
+            // lh≠th 인 문단 안 연속 줄): th+ls 45건 / lh+ls 1건.
+            // 예) hwpctl_ParameterSetID_Item_v1.2 문단 0.7: ls[2] vpos=0 lh=1560 th=1000
+            // ls=600 → ls[3] vpos=1600 (= th+ls). 한/글 3쪽 둘째 줄 89.3, rhwp 는 96.8.
+            // 상자 높이(`line_height`)는 그대로 두고 전진만 줄인다.
+            // 전진값은 추정하지 않고 **저장 사다리의 다음 줄 vpos 차**를 그대로 쓴다.
+            // 세 가지를 함께 요구한다. ① 사다리를 다시 짜지 않은 문단일 것. ② 이 줄의 상자
+            // 높이가 저장 `lh` 그대로일 것 — 재조판된 상자에 저장 전진을 섞으면 사다리도
+            // 상자도 아닌 값이 된다. ③ 전진이 실제 글자(`max_fs`)를 담을 것 — HWP3 변환본
+            // 처럼 낡은 값이면 다음 줄이 글자 위로 올라온다(hwp3-empty-cell 겹침 1건).
+            let stored_line_advance = para.filter(|_| !source_metrics_reflowed).and_then(|p| {
+                let seg = p.line_segs.get(line_idx)?;
+                let next = p.line_segs.get(line_idx + 1)?;
+                if (hwpunit_to_px(seg.line_height, self.dpi) - line_height).abs() >= 0.5 {
+                    return None;
+                }
+                if seg.vertical_pos < 0 || next.vertical_pos <= seg.vertical_pos {
+                    return None;
+                }
+                let step =
+                    hwpunit_to_px(next.vertical_pos - seg.vertical_pos, self.dpi) - line_spacing_px;
+                (step > 0.0 && step < line_height && (max_fs <= 0.0 || step + 0.5 >= max_fs))
+                    .then_some(step)
+            });
+            let flow_step = stored_line_advance.unwrap_or(line_height);
             let line_flow_height =
-                line_height + equation_tac_extra_rows as f64 * (line_height + line_spacing_px);
+                flow_step + equation_tac_extra_rows as f64 * (line_height + line_spacing_px);
             let render_line_flow_height =
                 if cell_ctx.is_none() && para_index >= self.endnote_para_base.get() {
                     // 미주 lineSeg의 행 진행값이 실제 TextLine bbox보다 작으면 단일 줄 미주가
