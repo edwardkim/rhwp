@@ -23,7 +23,7 @@
 
 - [에이전트 실무 대체 예제집](mydocs/manual/agent_task_playbook.md): 사람 업무 → 명령 시퀀스 → 기계 검증 8개 시나리오 + 공무원 업무 커버리지 21행.
 - [서식 자동화 심화 가이드](mydocs/manual/form_filling_guide.md): fill-fields·set-cell·replace-text 3축의 실물 서식 함정과 판정 규칙(ambiguous·overflow·재독 대조).
-- [Gym 벤치마크 수동 운영 매뉴얼](mydocs/manual/gym_benchmark_operations.md): 인간 개발자·메인테이너의 격리 실행, 양성·음성·경로 세 축 판정, 증적과 정리 절차.
+- [Gym 벤치마크 수동 운영 매뉴얼](mydocs/manual/gym_benchmark_operations.md): 인간 개발자·메인테이너의 격리 실행, 양성·음성·경로 세 축 판정, 증적 seal·HTML 보고와 정리 절차.
 - [Gym 범위 AI 에이전트 지침](gym/AGENTS.md): 참가자와 감사자 역할 분리, 정답 누출 방지, fail-closed 판정 경계.
 
 ## 레시피 — 처음부터 끝까지 실측 출력으로 따라가는 예제

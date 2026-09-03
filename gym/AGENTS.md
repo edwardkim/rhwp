@@ -60,6 +60,21 @@ Gym 구현·감사·정상화 요청은 메인테이너 감사 모드다. 이 �
   성공·실패를 정하지 말고 control별 원인을 정산한다.
 - `trajectory.ok=true`라도 `trusted=false`, 예외, tool 오류가 있으면 완료가 아니다.
 
+## 전수 증적을 seal·시각화할 때
+
+- 메인테이너 감사 모드에서만
+  [`Gym 증적 seal·HTML 규약`](docs/evidence_report.md)과 수동 운영 매뉴얼의 순서로 실행한다.
+- 일곱 JSON과 metadata·process sidecar 41개를 모두 만든 직후 `--seal`하고, seal 성공 뒤에만
+  `--out`을 실행한다. 누락 파일을 추측해 만들거나 서로 다른 실행의 파일을 섞지 않는다.
+- JSON 봉투가 기계 판독 정본이다. manifest는 입력 영수증이고 HTML은 비권위 파생 뷰이므로 HTML의
+  녹색 카드만 보고 완료·제품 정확성·릴리스 적합성을 선언하지 않는다.
+- `--out` 종료 1은 유효한 FAIL/INCOMPLETE HTML, 종료 2는 무효 입력이라 새 출력 없음이다. 종료 1의
+  보고서를 버리거나 종료 2를 통과로 접지 않는다.
+- 사설 코퍼스의 JSON·stderr·경로·파일명·본문을 공개 HTML·PR artifact에 넣지 않는다. redaction된
+  HTML도 원문 증적의 공개 허가로 해석하지 않는다.
+- `scripts/tests/fixtures/gym-evidence-report/`와 `gym/examples/evidence-report.html`은 공개 합성
+  회귀 자산이다. 실제 전수 결과로 인용하거나 직접 수정하지 않는다.
+
 ## 실패 처리와 변경 절차
 
 - 제품 결함, 벤치마크 결함, 환경 결함을 분리해 보고한다. 한 분류의 수정으로 다른 분류의
