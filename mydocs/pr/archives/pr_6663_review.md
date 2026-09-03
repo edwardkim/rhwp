@@ -51,3 +51,11 @@ mergeability를 확인한 뒤에만 수용한다. #6662의 상태 변경은 통�
 
 - 이 PR은 working 문서만 변경하므로 별도 시각 fixture 검증 대상이 아니다.
 - 함께 검토한 renderer 변경의 시각 결과는 [PR #6659, #6661, #6664 시각 스윕](pr_6659_6664_jeong_sik_visual_sweep.md)에 분리해 기록했다.
+
+## Merge 후 contributor PR comment 계획
+
+- 이 기록 보완 PR이 merge되고 그 merge SHA의 devel CI가 성공한 뒤에만 원 PR #6663에 한 번 게시한다.
+- 수용 사실: PR #6691 merge commit 573059ee7bd4b74626143723d31d0b74ab0320b8로 cherry-pick bc466368c를 통합하고, 메인터너 보정 c89a7bf56으로 #6655의 미래 종료 표현을 현재 OPEN 상태에 맞게 고쳤다.
+- 실제 CI: PR CI 33747890105와 CodeQL 33747890268, devel CI 33749587952와 CodeQL 33749587899, Adapter 33749587901, Proptest 33749587881이 success다.
+- 이 PR은 working 문서 전용이므로 자체 visual fixture나 PNG를 주장하지 않는다. 관련 renderer 시각 증적의 정본은 pr_6659_6664_jeong_sik_visual_sweep.md다.
+- #6662는 남은 원인 현황 원장이므로 OPEN을 유지한다.

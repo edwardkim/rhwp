@@ -72,3 +72,13 @@ mergeability를 다시 확인한 뒤에만 수용하며, #6655 후속 처리는 
 - p6: [후속 본문 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6661_issue2004_p6.png)
 - p4-p8: [contact sheet](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6661_issue2004_p4_p8_contact_sheet.png)
 - 사람 검토에서 p4 그림 적층·본문 회피와 p5-p8 페이지 흐름이 유지됨을 확인했다. 현재 보정은 synthetic 재분류 stack에만 가로 오프셋을 적용한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 이 기록 보완 PR이 merge되고 그 merge SHA의 devel CI가 성공한 뒤에만 원 PR #6661에 한 번 게시한다.
+- 수용 사실: PR #6691 merge commit 573059ee7bd4b74626143723d31d0b74ab0320b8로 cherry-pick e33b0e324를 통합했고, 메인터너 보정 c89a7bf56이 synthetic 재분류 stack에만 가로 오프셋을 제한했다.
+- 실제 CI: PR CI 33747890105와 CodeQL 33747890268, devel CI 33749587952와 CodeQL 33749587899, Adapter 33749587901, Proptest 33749587881이 success다.
+- 시각 판정: issue2004 p4-p8은 5쪽 모두 flagged 0/5이며 pixel match 78.82516-83.19475%, ink/proxy 19.16494-30.48460%다. p4 배너·인물 적층과 본문 회피, p5-p8 페이지 흐름을 사람이 확인했다.
+- 자동 ink/proxy 수치는 글꼴 폭·줄바꿈·raster 차이를 포함하는 보조값임을 명시한다. 시각 비교 방법 정본은 https://github.com/edwardkim/rhwp/blob/573059ee7bd4b74626143723d31d0b74ab0320b8/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment 이다.
+- devel 안정 asset: ![PR 6661 issue2004 p4 visual review](https://raw.githubusercontent.com/edwardkim/rhwp/573059ee7bd4b74626143723d31d0b74ab0320b8/mydocs/pr/assets/pr_6659_6664_jeong_sik_integration_20260903/review_6661_issue2004_p4.png)
+- #6655는 devel 반영과 push CI 성공 뒤 자동 CLOSED 상태를 확인한다.
