@@ -8,6 +8,7 @@ import importlib.util
 import io
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -17,6 +18,10 @@ from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOL = REPO_ROOT / "gym" / "tools" / "evidence_report.py"
+FIXTURE = (
+    REPO_ROOT / "scripts" / "tests" / "fixtures" / "gym-evidence-report" / "complete"
+)
+SAMPLE_REPORT = REPO_ROOT / "gym" / "examples" / "evidence-report.html"
 
 
 def load():
@@ -27,219 +32,10 @@ def load():
     return module
 
 
-def _audit():
-    return {
-        "kind": "gymAudit",
-        "schemaVersion": "1.0",
-        "ok": True,
-        "packCount": 1,
-        "taskCount": 1,
-        "referenceCount": 1,
-        "packs": [
-            {
-                "id": "pack-a",
-                "issues": [],
-                "structured": [],
-                "taskCount": 1,
-                "referenceCount": 1,
-                "empty": False,
-            }
-        ],
-        "okPacks": ["pack-a"],
-        "emptyPacks": [],
-        "taskIdCollisions": {},
-        "issueCount": 0,
-        "issues": [],
-        "issueCountsByCode": {},
-        "issueCountsByFamily": {},
-        "toolErrors": [],
-        "missingPacksRoot": False,
-        "toolFailed": False,
-        "exit": 0,
-    }
-
-
-def _oracle(mode):
-    if mode == "structural":
-        return {
-            "kind": "gymOracleProbe",
-            "schemaVersion": "1.0",
-            "ok": True,
-            "mode": "structural",
-            "exports": ["probe"],
-            "required": ["probe"],
-            "issues": [],
-            "issueCount": 0,
-            "probes": {},
-        }
-    return {
-        "kind": "gymOracleProbe",
-        "schemaVersion": "1.0",
-        "ok": True,
-        "mode": "selftest",
-        "checks": [{"name": "synthetic", "ok": True}],
-        "failed": [],
-        "issueCount": 0,
-        "checkCount": 1,
-    }
-
-
-def _authority():
-    entries = [
-        {
-            "key": "pack-a/T01",
-            "authority": "self-live",
-            "baselineSource": "self-live",
-            "explicitAuthority": False,
-        }
-    ]
-    return {
-        "kind": "gymAuthorityLedger",
-        "schemaVersion": "1.0",
-        "ok": True,
-        "root": "gym/packs",
-        "authorityClasses": {},
-        "classificationRule": "synthetic",
-        "taskCount": 1,
-        "referenceCount": 1,
-        "entryCount": 1,
-        "summary": {
-            "byAuthority": {
-                "self-live": 1,
-                "contract-constant": 0,
-                "independent-fixture": 0,
-                "external-oracle": 0,
-            },
-            "byBaselineSource": {"self-live": 1, "contract-constant": 0},
-            "explicitAuthorityCount": 0,
-        },
-        "entries": entries,
-        "issueCount": 0,
-        "issues": [],
-        "exit": 0,
-    }
-
-
-def _positive(run_id, bin_path):
-    return {
-        "kind": "gymBaselineVerification",
-        "schemaVersion": "1.0",
-        "ok": True,
-        "exit": 0,
-        "binPath": bin_path,
-        "agent": f"maintainer-{run_id}",
-        "packs": ["pack-a"],
-        "taskCount": 1,
-        "built": 1,
-        "failed": 0,
-        "skipped": 0,
-        "missingArtifact": 0,
-        "failedScore": 0,
-        "buildError": 0,
-        "results": [
-            {"ok": True, "kind": "ok", "pack": "pack-a", "task": "T01", "message": None}
-        ],
-    }
-
-
-def _discrimination(bin_path):
-    return {
-        "kind": "gymDiscrimination",
-        "schemaVersion": "1.0",
-        "ok": True,
-        "taskCount": 1,
-        "controlCount": 1,
-        "discriminating": 1,
-        "falsePass": [],
-        "falsePassControls": [],
-        "results": [
-            {
-                "pack": "pack-a",
-                "task": "T01",
-                "control": "wrong-answer",
-                "discriminates": True,
-            }
-        ],
-        "loadErrors": [],
-        "scoreErrors": [],
-        "buildErrors": [],
-        "skipped": [],
-        "toolFailed": False,
-        "toolErrors": [],
-        "controlKinds": ["wrong-answer", "input-copy", "garbage"],
-        "binPath": bin_path,
-    }
-
-
-def _trajectory(bin_path):
-    return {
-        "kind": "gymTrajectoryNecessity",
-        "schemaVersion": "1.0",
-        "ok": True,
-        "taskCount": 1,
-        "loadBearing": 1,
-        "theater": [],
-        "exceptions": [],
-        "exceptionCount": 0,
-        "skipped": [],
-        "skipCount": 0,
-        "results": [
-            {
-                "pack": "pack-a",
-                "task": "T01",
-                "loadBearing": True,
-                "steps": 2,
-                "removedStep": "run",
-            }
-        ],
-        "trusted": True,
-        "toolFailed": False,
-        "toolErrors": [],
-        "exit": 0,
-        "missingBin": False,
-        "binPath": bin_path,
-    }
-
-
 def write_valid_evidence(root: Path):
-    run_id = "20260903-100000"
-    bin_path = "/tmp/rhwp-gym-run/target/debug/rhwp"
-    metadata = {
-        "run-id.txt": run_id,
-        "gym-runner-head.txt": "a" * 40,
-        "gym-runner-tree.txt": "b" * 40,
-        "product-source-head.txt": "c" * 40,
-        "rhwp-version.txt": "rhwp 0.8.6",
-        "rhwp-bin.sha256": f"{'d' * 64}  {bin_path}",
-        "run-started.txt": "2026-09-03T10:00:00+09:00",
-        "platform.txt": "Linux test-host 6.8.0 x86_64",
-        "python-version.txt": "Python 3.12.3",
-        "rust-version.txt": "rustc 1.89.0",
-    }
-    for name, value in metadata.items():
-        (root / name).write_text(value + "\n", encoding="utf-8", newline="\n")
-
-    reports = {
-        "audit": _audit(),
-        "oracle-structural": _oracle("structural"),
-        "oracle-selftest": _oracle("selftest"),
-        "authority-ledger": _authority(),
-        "positive": _positive(run_id, bin_path),
-        "discrimination": _discrimination(bin_path),
-        "trajectory": _trajectory(bin_path),
-    }
-    for base, report in reports.items():
-        (root / f"{base}.json").write_text(
-            json.dumps(report, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
-        (root / f"{base}.stderr").write_bytes(b"")
-        (root / f"{base}.exit").write_text("0\n", encoding="ascii")
-        (root / f"{base}.seconds").write_text("1\n", encoding="ascii")
-    (root / "unit.txt").write_text("Ran 1 test\n\nOK\n", encoding="utf-8", newline="\n")
-    (root / "unit.exit").write_text("0\n", encoding="ascii")
-    (root / "unit.seconds").write_text("1\n", encoding="ascii")
+    for source in FIXTURE.iterdir():
+        if source.name != "evidence-manifest.json":
+            shutil.copy2(source, root / source.name)
 
 
 def rewrite_json(root: Path, base: str, mutate):
@@ -271,9 +67,34 @@ class SealContractTests(unittest.TestCase):
             self.assertEqual(bundle["status"]["overall"], self.m.STATUS_PASS)
             self.assertEqual(bundle2["identityFingerprint"], bundle["identityFingerprint"])
             self.assertEqual(len(manifest["inputs"]), len(self.m.REQUIRED_INPUT_FILES))
-            self.assertNotIn(b"/tmp/rhwp-gym-run", first)
+            self.assertNotIn(b"/opt/rhwp-fixture", first)
             self.assertEqual(manifest["identity"]["binaryName"], "rhwp")
             self.m.verify_seal(root)
+
+    def test_tracked_public_fixture_reproduces_manifest_and_sample_html(self):
+        fixture_names = {path.name for path in FIXTURE.iterdir() if path.is_file()}
+        self.assertEqual(
+            fixture_names,
+            set(self.m.REQUIRED_INPUT_FILES) | {"evidence-manifest.json"},
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shutil.copytree(FIXTURE, root, dirs_exist_ok=True)
+            self.m.seal_evidence(root)
+            self.assertEqual(
+                (root / "evidence-manifest.json").read_bytes(),
+                (FIXTURE / "evidence-manifest.json").read_bytes(),
+            )
+            _, manifest, output, report_hash = self.m.render_evidence(root, root / "report.html")
+            self.assertEqual(output.read_bytes(), SAMPLE_REPORT.read_bytes())
+            self.assertEqual(
+                report_hash,
+                hashlib.sha256(SAMPLE_REPORT.read_bytes()).hexdigest(),
+            )
+            self.assertEqual(manifest["resultStatus"], self.m.STATUS_PASS)
+            self.assertEqual(manifest["scoreErrorAccounting"]["reportedCount"], 1)
+            self.assertEqual(manifest["scoreErrorAccounting"]["intendedCount"], 1)
+            self.assertEqual(manifest["scoreErrorAccounting"]["unexplainedCount"], 0)
 
     def test_missing_input_rejects_without_overwriting_existing_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -311,7 +132,7 @@ class SealContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_valid_evidence(root)
-            rewrite_json(root, "discrimination", lambda report: report.update(taskCount=2, discriminating=2))
+            rewrite_json(root, "discrimination", lambda report: report.update(taskCount=3, discriminating=3))
             with self.assertRaises(self.m.EvidenceError) as ctx:
                 self.m.load_evidence(root)
             self.assertIn("run-cardinality-mismatch", {row["code"] for row in ctx.exception.errors})
@@ -376,7 +197,11 @@ class StatusContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_valid_evidence(root)
-            rewrite_json(root, "discrimination", lambda report: report.update(scoreErrors=["orphan error"]))
+            def mutate(report):
+                report["results"][0].pop("error")
+                report["scoreErrors"] = ["orphan error"]
+
+            rewrite_json(root, "discrimination", mutate)
             bundle, manifest = self.m.seal_evidence(root)
             self.assertEqual(bundle["status"]["roles"]["discrimination"]["status"], self.m.STATUS_INCOMPLETE)
             self.assertEqual(bundle["status"]["overall"], self.m.STATUS_INCOMPLETE)
@@ -389,10 +214,12 @@ class StatusContractTests(unittest.TestCase):
 
             def mutate(report):
                 report["ok"] = False
-                report["discriminating"] = 0
+                report["discriminating"] = 1
                 report["falsePass"] = ["pack-a/T01"]
                 report["falsePassControls"] = ["pack-a/T01 (wrong-answer)"]
                 report["results"][0]["discriminates"] = False
+                report["results"][0].pop("error")
+                report["scoreErrors"] = []
 
             rewrite_json(root, "discrimination", mutate)
             (root / "discrimination.exit").write_text("1\n", encoding="ascii")
@@ -459,8 +286,8 @@ class HtmlReportContractTests(unittest.TestCase):
             self.assertNotIn("<script", text.lower())
             self.assertNotIn("http://", text.lower())
             self.assertNotIn("https://", text.lower())
-            self.assertNotIn("/tmp/rhwp-gym-run", text)
-            self.assertNotIn("test-host", text)
+            self.assertNotIn("/opt/rhwp-fixture", text)
+            self.assertNotIn("fixture-host", text)
 
     def test_valid_fail_writes_non_green_report_and_cli_returns_one(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -469,10 +296,12 @@ class HtmlReportContractTests(unittest.TestCase):
 
             def mutate(report):
                 report["ok"] = False
-                report["discriminating"] = 0
+                report["discriminating"] = 1
                 report["falsePass"] = ["pack-a/T01"]
                 report["falsePassControls"] = ["pack-a/T01 (wrong-answer)"]
                 report["results"][0]["discriminates"] = False
+                report["results"][0].pop("error")
+                report["scoreErrors"] = []
 
             rewrite_json(root, "discrimination", mutate)
             (root / "discrimination.exit").write_text("1\n", encoding="ascii")
@@ -542,7 +371,7 @@ class HtmlReportContractTests(unittest.TestCase):
                 report.update(
                     ok=False,
                     exit=1,
-                    built=0,
+                    built=1,
                     failed=1,
                     failedScore=1,
                 )

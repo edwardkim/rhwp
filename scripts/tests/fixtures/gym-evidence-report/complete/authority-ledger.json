@@ -1,0 +1,41 @@
+{
+  "authorityClasses": {},
+  "classificationRule": "synthetic public fixture",
+  "entries": [
+    {
+      "authority": "self-live",
+      "baselineSource": "self-live",
+      "explicitAuthority": false,
+      "key": "pack-a/T01"
+    },
+    {
+      "authority": "contract-constant",
+      "baselineSource": "contract-constant",
+      "explicitAuthority": true,
+      "key": "pack-a/T02"
+    }
+  ],
+  "entryCount": 2,
+  "exit": 0,
+  "issueCount": 0,
+  "issues": [],
+  "kind": "gymAuthorityLedger",
+  "ok": true,
+  "referenceCount": 2,
+  "root": "gym/packs",
+  "schemaVersion": "1.0",
+  "summary": {
+    "byAuthority": {
+      "contract-constant": 1,
+      "external-oracle": 0,
+      "independent-fixture": 0,
+      "self-live": 1
+    },
+    "byBaselineSource": {
+      "contract-constant": 1,
+      "self-live": 1
+    },
+    "explicitAuthorityCount": 1
+  },
+  "taskCount": 2
+}
