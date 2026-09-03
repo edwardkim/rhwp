@@ -17751,8 +17751,43 @@ impl TypesetEngine {
         if hangul2024_split_refit && !para_has_visible_text(para) && para.controls.is_empty() {
             st.hangul2024_spill_para = Some(para_idx);
         }
+        // [#6568] 줄 분할 루프의 넘침 판정에는 `li > cursor_line` 면제가 걸려 있어
+        // **조각의 첫 줄은 검사조차 되지 않는다.** 그래서 예산을 넘는 줄이 무조건 그
+        // 쪽에 놓인다. 156678235 pi=59 실측:
+        //
+        //   진입 검사  remaining 22.12 >= first_line_h 18.67   → 통과(쪽 안 넘김)
+        //   루프 예산  avail_for_lines 18.12 <  line_heights[0] 18.67  → 안 들어감
+        //   저장 사다리 ls[0] vpos 68896(=918.6px) + lh 1400 = 937.3px > 본문 933.6px
+        //
+        // 면제 자체는 무를 수 없다 — 바로 아래 `end_line <= cursor_line` 절이 "조각은
+        // 최소 한 줄" 을 강제해 결과가 같아지고, 빈 조각은 쪽 진행을 멈출 위험이 있다.
+        // 예산(`avail_for_lines`)을 진입 검사로 가져오는 것도 안 된다 — drift 마진을
+        // 이중 차감하는 값이라 전수 게이트에서 40건이 깨진다(실측).
+        //
+        // 대신 **저장 사다리에 직접 묻는다**: 첫 줄의 *바닥*이 본문 하한 밖이면 한/글은
+        // 그 줄을 이 쪽에 두지 않은 것이다. 이미 있는
+        // `hwp_first_line_before_reset_fits`(바닥이 안에 들면 남긴다)의 정확한 거울이며,
+        // 추정이 아니라 파일이 적어 놓은 값이다.
+        let stored_first_line_bottom_outside_body = para
+            .line_segs
+            .first()
+            .filter(|ls| !is_synthetic_line_seg(ls))
+            .map(|ls| {
+                let top_px = crate::renderer::hwpunit_to_px(ls.vertical_pos, self.dpi);
+                let bottom_px = crate::renderer::hwpunit_to_px(
+                    ls.vertical_pos.saturating_add(ls.line_height),
+                    self.dpi,
+                );
+                let body_bottom = st.base_available_height();
+                // 저장 좌표가 **지금 조판 위치와 같은 쪽**을 가리킬 때만 증거로 쓴다.
+                top_px + 0.5 >= st.current_height
+                    && top_px <= body_bottom
+                    && bottom_px > body_bottom
+            })
+            .unwrap_or(false);
         if (st.current_height >= available
             || remaining < first_line_h
+            || stored_first_line_bottom_outside_body
             || (stored_whole_para_reset && !hangul2024_split_refit)
             // [#5755] 저장 되감김 + 전체 fit 실패 = 한글이 이 문단을 통째로 다음 쪽에
             // 둔 배치 — split 로 현재 쪽에 걸치지 말고 먼저 쪽을 넘긴다.
