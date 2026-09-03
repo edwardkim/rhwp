@@ -10,8 +10,10 @@ last_verified: 2026-09-03
 
 ## 1. 최종 판정
 
-**계획한 Stage 1~4 구현과 로컬 검증을 완료했다.** 메인테이너 최종 결과 승인 전이며 원격 push와
-PR 생성은 수행하지 않았다.
+**계획한 Stage 1~4 구현과 로컬 검증을 완료했다.** PR #6696 생성 뒤 self-review에서 수동
+Oracle Public Advisory의 embedded Python gate가 `os.environ`을 사용하면서 `import os`를 빠뜨린
+오류를 발견했다. import를 복원하고 이 본문을 tiny 저장소에서 직접 실행하는 CI 계약 테스트를
+추가해 로컬 재검증을 마쳤다. 정정 candidate의 원격 push와 최신 head CI는 별도 게이트다.
 
 - 한컴 PDF 오라클은 `pdf/**` 1,178개, 1,079,000,023 bytes로 단일화됐다.
 - `pdf-2010/`, `pdf-2020/`, `pdf-large/` 최상위 경로와 현재 tree의 LFS pointer는 0개다.
@@ -112,12 +114,14 @@ corpus에 폐기 경로 문자열이 남지 않았다. historical CHANGELOG·완
 ```text
 PDF repository policy: 7 tests + live tree, OK
 CI impact classifier/policy: 44 + 37 tests, OK
-trusted post-merge reuse: 14 tests, OK
-workflow Python contract bundle: 124 tests, OK
+trusted post-merge reuse: 18 tests, OK
+workflow Python contract bundle: 179 tests, OK
+Oracle Public Advisory embedded gate: 실제 실행 포함 3 tests, OK
+workflow YAML parse: 21 files, OK
 Oracle Public unittest: 139 tests, OK
 LLM verifier unittest: 42 tests, OK
 LLM verifier corpus: 122,400 rows, errorCount=0
-Markdown link check: 654 docs, internal relative links OK
+Markdown link check: 655 docs, internal relative links OK
 git diff --check: OK
 
 node scripts/rust-test-suite-manifest.mjs --prepare
@@ -137,12 +141,12 @@ PDF bytes 자체를 재생성하지 않고 검산된 bytes를 경로 이동했�
 
 ## 7. 완료 조건과 후속 경계
 
-Issue #6695의 로컬 구현·검증 완료 조건은 충족됐다. 최종 결과 승인 뒤 남은 절차는 다음과 같다.
+Issue #6695의 로컬 구현·검증 완료 조건은 충족됐다. PR #6696에서 남은 외부 절차는 다음과 같다.
 
-1. 이 보고서와 Stage 4 정산을 commit한다.
-2. push 직전 `upstream/devel`을 다시 fetch해 exact head와 충돌 여부를 확인한다.
-3. 메인테이너 별도 승인 뒤 원격 push와 PR 생성을 수행한다.
-4. CI 성공 뒤 self-review, 정상 merge commit 병합, merge SHA의 devel CI를 확인한다.
-5. 그 뒤에만 Issue #6695 close와 작업 브랜치·임시 자산 정리를 수행한다.
+1. push 직전 `upstream/devel`과 exact head·충돌 여부를 다시 확인한다.
+2. 메인테이너 별도 승인 뒤 정정 candidate를 원격 branch에 push한다.
+3. 새 Full CI 성공 뒤 self-review·오늘할일 trailing commit을 같은 PR에 포함한다.
+4. 최신 trailing head CI 성공과 merge 승인을 받아 정상 merge commit으로 병합한다.
+5. merge SHA의 `devel` CI를 확인한 뒤에만 Issue #6695 close와 작업 브랜치·임시 자산 정리를 수행한다.
 
 원격 LFS storage purge는 Issue #6695 완료 조건이 아니며, 필요하면 비용·복구 위험을 별도로 검토한다.

@@ -73,6 +73,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import os
           from pathlib import Path
 
           roots = [Path("pdf")]
