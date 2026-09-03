@@ -111,18 +111,52 @@ pub(crate) fn paper_or_page_float_carve_evidence(
     evidence
 }
 
+/// [#6202] 용지 기준(`Paper`/`Page`) 어울림 개체를 재는 데 필요한 쪽 원점.
+///
+/// `Column`/`Para` 기준은 문단 밴드 안에서 끝나지만, 용지 기준은 본문 상자가 용지 안
+/// 어디에 있는지를 알아야 한다. 그 값 **두 개**면 공식은 같다 — 기준점만 바뀐다.
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct PaperOrigin {
+    /// 본문 상자의 용지 기준 왼쪽 (HWPUNIT).
+    pub(crate) body_left: i32,
+    /// 본문 상자의 용지 기준 위쪽 (HWPUNIT).
+    pub(crate) body_top: i32,
+}
+
 pub(crate) fn resolve_picture_exclusion(
     picture: &Picture,
     column_horizontal: Range<i32>,
     paragraph_horizontal: Range<i32>,
     paragraph_top: i32,
+    paper: PaperOrigin,
 ) -> Option<FrameExclusion> {
     let common = &picture.common;
+    // [#6202] 용지 기준 개체도 잰다. 코퍼스 1,997건 표본에서 Square float 개체를
+    // 막는 관문은 사실상 `horz_rel`/`vert_rel` 의 `Paper|Page` 뿐이었다(각 57건).
+    //
+    // 156483689 실측 — 계산이 저장 사다리를 **1 HU 오차로 재현**한다:
+    //
+    // ```text
+    //   그림  w=12482 h=9366  vert=Paper(36844) horz=Paper(42333)
+    //   본문  왼쪽 5670 HU · 폭 48188 HU
+    //   가로  깎인 줄 오른끝 5670+36664 = 42334   vs  그림 왼쪽 42333   (1 HU)
+    //   세로  밴드 36844−5670 .. +9366 = 31174..40540
+    //         pi=5 29631..32031 깎임 · pi=6 34431 깎임 · pi=7 에서 40540 지나 전폭 복귀
+    // ```
+    let paper_relative_horz = matches!(common.horz_rel_to, HorzRelTo::Paper | HorzRelTo::Page);
+    let paper_relative_vert = matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page);
     if common.treat_as_char
-        || picture.caption.is_some()
+        // [#6202] 캡션이 붙은 개체도 잰다 — 156483689 실측에서 밴드 높이는 캡션을 뺀
+        // 그림 높이(9366 HU) 그대로이고, 저장 사다리의 깎임 끝(40540 HU)과 일치한다.
         || common.text_wrap != TextWrap::Square
-        || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
-        || common.vert_rel_to != VertRelTo::Para
+        || !matches!(
+            common.horz_rel_to,
+            HorzRelTo::Column | HorzRelTo::Para | HorzRelTo::Paper | HorzRelTo::Page
+        )
+        || !matches!(
+            common.vert_rel_to,
+            VertRelTo::Para | VertRelTo::Paper | VertRelTo::Page
+        )
         || !matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
     {
         return None;
@@ -140,10 +174,14 @@ pub(crate) fn resolve_picture_exclusion(
     }
 
     let horizontal_offset = signed_hwpunit(common.horizontal_offset);
+    let column_end = column_horizontal.end;
     let reference = match common.horz_rel_to {
         HorzRelTo::Column => column_horizontal,
         HorzRelTo::Para => paragraph_horizontal,
-        HorzRelTo::Paper | HorzRelTo::Page => return None,
+        // 용지 기준은 본문 왼쪽을 빼 컬럼 좌표로 옮긴다 — 이후 공식은 동일하다.
+        HorzRelTo::Paper | HorzRelTo::Page => {
+            (-paper.body_left)..(column_end.saturating_sub(paper.body_left))
+        }
     };
     let reference_width = reference.end.saturating_sub(reference.start);
     let visible_left = match common.horz_align {
@@ -162,7 +200,13 @@ pub(crate) fn resolve_picture_exclusion(
             .saturating_sub(width)
             .saturating_sub(horizontal_offset),
     };
-    let visible_top = paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset));
+    let visible_top = if paper_relative_vert {
+        // 용지 기준 세로는 문단 앵커가 아니라 본문 위쪽에서 잰다.
+        signed_hwpunit(common.vertical_offset).saturating_sub(paper.body_top)
+    } else {
+        paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset))
+    };
+    let _ = paper_relative_horz;
     let horizontal = visible_left.saturating_sub(i32::from(common.margin.left))
         ..visible_left
             .saturating_add(width)
@@ -1084,6 +1128,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .expect("BothSides is represented by the physical row frame");
         assert_eq!(both_sides.policy, FrameExclusionPolicy::BothSides);
@@ -1093,6 +1138,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .expect("LargestOnly has a recovered frame policy");
         assert_eq!(largest_only.policy, FrameExclusionPolicy::LargestSide);
@@ -1102,6 +1148,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .is_none());
         assert!(resolve_picture_exclusion(
@@ -1109,6 +1156,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .is_none());
     }
@@ -1119,8 +1167,9 @@ mod tests {
         picture.shape_attr.current_width = 900;
         picture.shape_attr.current_height = 800;
 
-        let exclusion = resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 50)
-            .expect("Square side-wrap float has a physical row frame");
+        let exclusion =
+            resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 50, PaperOrigin::default())
+                .expect("Square side-wrap float has a physical row frame");
 
         assert_eq!(exclusion.horizontal, 0..300);
         assert_eq!(exclusion.vertical, 50..250);
@@ -1130,11 +1179,17 @@ mod tests {
     fn picture_exclusion_rejects_non_square_or_inline_hosts() {
         let mut picture = supported_picture(TextFlow::BothSides);
         picture.common.treat_as_char = true;
-        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
+        assert!(
+            resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0, PaperOrigin::default())
+                .is_none()
+        );
 
         picture.common.treat_as_char = false;
         picture.common.text_wrap = TextWrap::TopAndBottom;
-        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
+        assert!(
+            resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0, PaperOrigin::default())
+                .is_none()
+        );
     }
 
     #[test]
