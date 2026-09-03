@@ -598,6 +598,7 @@ pub(crate) struct KerningRunMeasurement {
 }
 
 impl KerningRunMeasurement {
+    #[cfg(test)]
     pub(crate) fn positions(&self) -> &[f64] {
         self.pair_adjusted_positions
             .as_deref()
@@ -713,6 +714,7 @@ impl KerningParagraphMeasurement {
 /// 구조 검증이나 상한이 하나라도 실패하면 일부 pair delta를 남기지 않고 문단
 /// 전체를 base positions로 rollback한다. 개별 segment의 fail-closed는 이미 그
 /// measurement가 zero delta를 소유하므로 다른 검증된 segment의 적용을 막지 않는다.
+#[cfg(test)]
 pub(crate) fn compose_kerning_paragraph_measurement(
     code_point_count: usize,
     base_positions: Vec<f64>,
@@ -1065,6 +1067,7 @@ pub(crate) fn resolve_exact_font_source<'a>(
 ///
 /// `None`은 시스템 font 이름만 있거나 fallback 결과의 bytes를 증명할 수 없는 경우다. source가
 /// 없거나 손상됐거나 상한을 넘으면 추측하지 않고 `Unsupported`로 닫는다.
+#[cfg(test)]
 pub(crate) fn inspect_exact_font_kerning(
     source: Option<ExactFontSource<'_>>,
 ) -> KerningCapabilityDecision {
@@ -1211,6 +1214,7 @@ impl KerningPairCandidateDecision {
 }
 
 /// Q3-2 capability와 source bytes를 한 번 대사해 재사용 가능한 pair engine을 준비한다.
+#[cfg(test)]
 pub(crate) fn prepare_kerning_pair_engine<'a>(
     source: ExactFontSource<'a>,
     expected: &KerningCapabilityDecision,
@@ -1344,6 +1348,7 @@ impl<'a> KerningLayoutSession<'a> {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn registry_generation(&self) -> u64 {
         self.registry_generation
     }
@@ -1732,10 +1737,12 @@ impl<'input, 'registry, 'transaction>
     }
 
     /// Token total과 최초 긴 단어 후보가 읽는 공통 문단 position range다.
+    #[cfg(test)]
     pub(crate) fn range_width(&self, start_index: usize, end_index: usize) -> Option<f64> {
         self.paragraph.range_width(start_index, end_index)
     }
 
+    #[cfg(test)]
     pub(crate) fn attempted_segment_count(&self) -> usize {
         self.attempted_segment_count
     }
@@ -1867,6 +1874,7 @@ impl<'input, 'registry, 'transaction>
     }
 
     /// 같은 positions에서 최초 후보를 고른 뒤 boundary-safe width로 bounded 재탐색한다.
+    #[cfg(test)]
     pub(crate) fn find_fitting_end(
         &mut self,
         start_index: usize,
