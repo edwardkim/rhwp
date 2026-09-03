@@ -1639,6 +1639,7 @@ pub fn estimate_composed_line_width(line: &ComposedLine, styles: &ResolvedStyleS
 ///
 /// 저장본의 글꼴 고유 공백과 한컴이 새로 조판한 반각 공백은 다를 수 있다. 호출자는
 /// 저장 LINE_SEG가 없는 문단이나 폭 변경 뒤 재조판한 문단만 `true`를 전달한다.
+#[cfg(test)]
 fn estimate_regenerated_line_text_width(
     text: &str,
     style: &TextStyle,
@@ -2808,6 +2809,7 @@ fn missing_lineseg_legacy_bullet_requires_regenerated_space_metric(
 ///
 /// 분할 단위: 공백 단어 경계 우선, 단일 단어가 너비 초과 시 글자 단위 break.
 /// 각 분할 줄의 메타데이터 (line_height/baseline/segment_width 등) 는 원본 보존.
+#[cfg(test)]
 fn split_composed_line_by_width(
     src: &ComposedLine,
     first_width_px: f64,

@@ -2031,7 +2031,7 @@ fn legacy_hancom_product_projection_survives_line_boundary() {
 /// 한컴 2024 저장 오라클: "…하여 적용한 | 다.111…" (LINE_SEG [...,128] —
 /// '다'(128) 앞에서 분리, '.'(129) 고립 금지).
 #[test]
-fn test_kbu1_line_start_forbidden_retraction() {
+fn test_only_legacy_split_retracts_forbidden_line_start() {
     let styles = make_styles_with_font_size(16.0);
     let line = ComposedLine {
         runs: vec![ComposedTextRun {
