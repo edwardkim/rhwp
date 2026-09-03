@@ -70,7 +70,10 @@ import {
   decodedImageMatchesEncodedHeader,
   replayableEncodedImageHeader,
 } from './canvaskit/image-header';
-import { canvaskitClipRightPad } from './canvaskit/policy';
+import {
+  canvasKitCanonicalClipEnabled,
+  canvasKitCanonicalClipRect,
+} from './canvaskit/clip-replay';
 import {
   canvasKitCanvasSupportsGlyphRunReplay,
   CanvasKitGlyphRunFontCache,
@@ -346,6 +349,7 @@ export class CanvasKitLayerRenderer {
   private currentFontResources: LayerFontResources | undefined;
   private currentShowParagraphMarks = false;
   private currentShowControlCodes = false;
+  private currentClipEnabled = true;
   private currentReplayFeatureCounts: CanvasKitReplayFeatureCounts = {
     dashedStrokes: 0,
     glyphRuns: 0,
@@ -647,6 +651,10 @@ export class CanvasKitLayerRenderer {
       );
       this.currentShowParagraphMarks = tree.outputOptions?.showParagraphMarks === true;
       this.currentShowControlCodes = tree.outputOptions?.showControlCodes === true;
+      this.currentClipEnabled = canvasKitCanonicalClipEnabled(
+        tree.buildOptions?.clipEnabled,
+        tree.outputOptions?.clipEnabled,
+      );
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
       this.selectTextVariants(tree.root, canvas);
       let hasPageBackground = false;
@@ -664,10 +672,8 @@ export class CanvasKitLayerRenderer {
       canvas.save();
       canvas.clear(this.color(hasPageBackground ? 'rgba(0,0,0,0)' : '#ffffff'));
       canvas.scale(scale, scale);
-      const rightOverflowSlop =
-        tree.outputOptions?.showParagraphMarks || tree.outputOptions?.showControlCodes ? 48 : undefined;
       for (const replayPlane of CANVASKIT_REPLAY_PLANES) {
-        this.renderNode(canvas, tree.root, tree.profile ?? 'screen', replayPlane, null, rightOverflowSlop);
+        this.renderNode(canvas, tree.root, tree.profile ?? 'screen', replayPlane, null);
       }
       if (pageInfo) {
         const paint = this.makeStrokePaint('#c0c0c0', 0.3);
@@ -698,6 +704,7 @@ export class CanvasKitLayerRenderer {
       this.currentFontResources = undefined;
       this.currentShowParagraphMarks = false;
       this.currentShowControlCodes = false;
+      this.currentClipEnabled = true;
       this.lastRenderDurationMs = performance.now() - renderStartedAt;
       this.renderCount += 1;
     }
@@ -1190,17 +1197,20 @@ export class CanvasKitLayerRenderer {
     profile: LayerRenderProfile,
     replayPlane: CanvasKitReplayPlane,
     inheritedLayer: LayerInfo | null = null,
-    rightOverflowSlop?: number,
   ): void {
     const activeLayer = node.layer ?? inheritedLayer;
     if (node.kind === 'group') {
       for (const child of node.children) {
-        this.renderNode(canvas, child, profile, replayPlane, activeLayer, rightOverflowSlop);
+        this.renderNode(canvas, child, profile, replayPlane, activeLayer);
       }
       return;
     }
     if (node.kind === 'clipRect') {
-      this.renderClipNode(canvas, node, profile, replayPlane, activeLayer, rightOverflowSlop);
+      if (!this.currentClipEnabled) {
+        this.renderNode(canvas, node.child, profile, replayPlane, activeLayer);
+        return;
+      }
+      this.renderClipNode(canvas, node, profile, replayPlane, activeLayer);
       return;
     }
     this.renderLeaf(canvas, node, profile, replayPlane, activeLayer);
@@ -1212,16 +1222,16 @@ export class CanvasKitLayerRenderer {
     profile: LayerRenderProfile,
     replayPlane: CanvasKitReplayPlane,
     inheritedLayer: LayerInfo | null,
-    rightOverflowSlop?: number,
   ): void {
-    const pad = canvaskitClipRightPad(this.renderMode, profile, node.clipKind, rightOverflowSlop);
-    const clip = {
-      ...node.clip,
-      width: node.clip.width + pad,
-    };
     canvas.save();
-    canvas.clipRect(this.rect(clip), this.canvasKit.ClipOp?.Intersect ?? 0, true);
-    this.renderNode(canvas, node.child, profile, replayPlane, inheritedLayer, rightOverflowSlop);
+    canvas.clipRect(
+      canvasKitCanonicalClipRect(node.clip, (x, y, width, height) =>
+        this.canvasKit.XYWHRect(x, y, width, height),
+      ),
+      this.canvasKit.ClipOp?.Intersect ?? 0,
+      true,
+    );
+    this.renderNode(canvas, node.child, profile, replayPlane, inheritedLayer);
     canvas.restore();
   }
 
@@ -1281,10 +1291,23 @@ export class CanvasKitLayerRenderer {
         this.renderFormObject(canvas, op);
         return;
       case 'placeholder':
-        this.renderPlaceholder(canvas, op, profile);
+        this.renderPlaceholder(canvas, op);
         return;
       case 'equation':
         this.renderEquation(canvas, op);
+        return;
+      case 'controlLabel':
+        this.renderTextRun(canvas, {
+          type: 'textRun',
+          bbox: op.bbox,
+          text: op.label,
+          baseline: op.fontSize ?? 10,
+          style: {
+            fontFamily: 'sans-serif',
+            fontSize: op.fontSize ?? 10,
+            color: op.color ?? '#cc3333',
+          },
+        });
         return;
       case 'rawSvg':
         this.unsupportedOps.add('rawSvg:unsupportedDirectReplay');
@@ -3601,9 +3624,8 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private renderPlaceholder(canvas: SkCanvas, op: LayerPlaceholderOp, profile: LayerRenderProfile): void {
+  private renderPlaceholder(canvas: SkCanvas, op: LayerPlaceholderOp): void {
     if (op.kind === 'missingPicture') {
-      if (profile === 'print' || profile === 'highQuality') return;
       if (![op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height].every(Number.isFinite)
         || op.bbox.width <= 0 || op.bbox.height <= 0) return;
       const paint = this.makeStrokePaint(op.strokeColor ?? '#999999', 1);

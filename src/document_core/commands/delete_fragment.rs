@@ -35,6 +35,7 @@ use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::raw_provenance::SectionSeal;
+use crate::renderer::render_normalization::RenderPath;
 
 /// 선택 삭제 1회분의 복원 조각.
 #[derive(Debug, Clone)]
@@ -63,6 +64,9 @@ pub struct DeleteFragment {
     /// 다이제스트가 DocProperties 전체를 포함하므로(`raw_provenance.rs`
     /// `doc_info_model_digest`) 이것도 되돌려야 DocInfo raw 재사용이 살아난다.
     pub caret: (u32, u32),
+    /// Renderer provenance projected to logical paths before paragraph clones
+    /// replace their live Box identities.
+    pub text_reflowed_table_paths: std::collections::HashSet<RenderPath>,
 }
 
 impl DocumentCore {
@@ -83,6 +87,7 @@ impl DocumentCore {
                 self.document.sections.len()
             )));
         }
+        let text_reflowed_table_paths = self.text_reflowed_table_paths_for_snapshot();
         let section = &self.document.sections[section_idx];
         if start_para > end_para {
             return Err(HwpError::RenderError(format!(
@@ -116,6 +121,7 @@ impl DocumentCore {
                 self.document.doc_properties.caret_list_id,
                 self.document.doc_properties.caret_para_id,
             ),
+            text_reflowed_table_paths,
         };
 
         let id = self.next_fragment_id;
@@ -183,6 +189,7 @@ impl DocumentCore {
         // 구역 raw 필드 복원 — 저장 바이트 왕복 동일성의 핵심
         section.raw_stream = frag.raw_stream.clone();
         section.raw_provenance = frag.raw_provenance.clone();
+        self.restore_text_reflowed_tables_from_snapshot(&frag.text_reflowed_table_paths);
 
         let cursor_para = frag.start_para;
         let caret = frag.caret;

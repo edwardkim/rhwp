@@ -1808,15 +1808,9 @@ impl DocumentCore {
                 .unwrap_or_else(|| parent.text.chars().count())
                 + 1;
 
-            // outer table dirty 마킹 (재측정 유도)
+            // 최외곽 표 host 문단의 측정 revision을 무효화한다.
             let outer_ctrl = cell_path[0].0;
-            if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
-                [para_idx]
-                .controls
-                .get_mut(outer_ctrl)
-            {
-                t.dirty = true;
-            }
+            self.mark_cell_control_dirty(section_idx, para_idx, outer_ctrl);
             self.mark_section_dirty(section_idx);
             self.paginate_if_needed();
             // [Task #1151 v9 결함 F] page tree cache invalidate — v5 와 동일 결함 (다른

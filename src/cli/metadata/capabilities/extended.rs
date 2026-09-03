@@ -6,11 +6,12 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "export-svg",
             "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
-            &["-o", "-p", "--json", "--compat"],
+            &["-o", "-p", "--json", "--compat", "--backend"],
             &[
                 "schemaVersion",
                 "source",
                 "format",
+                "backend",
                 "outputDir",
                 "pageCount",
                 "renderedCount",

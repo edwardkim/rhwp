@@ -152,7 +152,7 @@ fn clean_cell_cache_is_admitted_only_for_its_exact_content_box() {
         "a clean imported cell-box miss is unmodelled without mutation provenance"
     );
 
-    let dirty_para = para.clone();
+    let mut dirty_para = para.clone();
     dirty_para.invalidate_layout_inputs();
     let mut dirty_changed = compose_paragraph(&dirty_para);
     recompose_cell_lines_in_frame(
@@ -2101,179 +2101,118 @@ fn issue4149_guard_para(text: &str) -> Paragraph {
     }
 }
 
-/// 첫 판정이 memo 되고, memo hit 에도 over=true 의 fresh 재래핑은 매 빌드 수행된다 —
-/// 재래핑 결과는 composed 에만 반영되고 저장 line_segs 는 안 바뀌므로 생략하면
-/// 절단 렌더 회귀(#2291).
+/// 두 개의 실제 fresh composition이 renderer-session cache를 공유한다. hit에서도
+/// over=true의 fresh 재래핑은 수행하되 비싼 실폭 측정은 한 번만 한다.
 #[test]
-fn issue4149_overflow_judgment_memoized_and_rewrap_still_runs_on_hit() {
+fn issue4149_renderer_cache_survives_fresh_compositions() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
     let para = issue4149_guard_para(&"가".repeat(60));
     let width = 50.0; // 60자 실폭 ≫ 50×1.8
-    let key = crate::model::paragraph::SingleLineOverflowMemo::width_key(width);
-    assert!(para.single_line_overflow_memo.is_unjudged());
+    let cache = SingleLineOverflowCache::default();
 
     let mut composed = compose_paragraph(&para);
-    assert_eq!(composed.lines.len(), 1);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, width, &styles, 96.0);
-    assert!(
-        composed.lines.len() > 1,
-        "과밀 저장 단일줄은 fresh 재래핑돼야 함"
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed,
+        &para,
+        width,
+        &styles,
+        96.0,
+        Some(&cache),
     );
-    assert_eq!(
-        para.single_line_overflow_memo.get(key),
-        Some(true),
-        "판정이 (폭 키, over) 로 memo 돼야 함"
-    );
+    assert!(composed.lines.len() > 1);
 
-    // 두 번째 페이지 빌드 (memo hit): 측정 생략, 재래핑은 수행.
     let mut composed2 = compose_paragraph(&para);
-    assert_eq!(composed2.lines.len(), 1);
-    recompose_stored_single_line_if_overflowing(&mut composed2, &para, width, &styles, 96.0);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed2,
+        &para,
+        width,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
     assert!(
         composed2.lines.len() > 1,
-        "memo hit 에도 재래핑은 수행돼야 함 (절단 렌더 회귀 방지)"
+        "cache hit에도 derived rewrap은 새 composition에 적용돼야 함"
     );
 }
 
-/// memo hit 시 실폭 측정(estimate_composed_line_width)이 생략됨을 모순 memo 로
-/// 증명한다 — 실측이면 over=true 로 재래핑될 문단에 over=false memo 를 주입했을 때
-/// 재래핑이 일어나지 않으면 측정이 생략된 것이다 (= 같은 문단 2회 판정에 측정 1회).
+/// 실제 소비 frame이 바뀌면 같은 source paragraph도 별도 판정이다.
 #[test]
-fn issue4149_memo_hit_skips_width_measurement() {
+fn issue4149_renderer_cache_keys_actual_cell_width() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
     let para = issue4149_guard_para(&"가".repeat(60));
-    let width = 50.0;
-    let key = crate::model::paragraph::SingleLineOverflowMemo::width_key(width);
-    para.single_line_overflow_memo.set(key, false); // 실측(true)과 모순인 memo
-
-    let mut composed = compose_paragraph(&para);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, width, &styles, 96.0);
-    assert_eq!(
-        composed.lines.len(),
-        1,
-        "memo hit 시 재측정 없이 판정을 재사용해야 함"
-    );
-    assert_eq!(
-        para.single_line_overflow_memo.get(key),
-        Some(false),
-        "hit 경로는 memo 를 덮어쓰지 않아야 함"
-    );
+    let cache = SingleLineOverflowCache::default();
+    for (width, expected_lines) in [(50.0, 2..usize::MAX), (5000.0, 1..2)] {
+        let mut composed = compose_paragraph(&para);
+        recompose_stored_single_line_if_overflowing_cached(
+            &mut composed,
+            &para,
+            width,
+            &styles,
+            96.0,
+            Some(&cache),
+        );
+        assert!(
+            expected_lines.contains(&composed.lines.len()),
+            "frame width {width} must select its own cached judgment"
+        );
+    }
 }
 
-/// 폭이 바뀌면(셀 크기 조정) 키 불일치로 자연 재판정된다.
+/// Source/style revision 경계는 renderer owner 전체를 비운다. Source mutation
+/// site는 memo 필드를 알거나 직접 무효화하지 않는다.
 #[test]
-fn issue4149_width_change_re_judges_via_key_mismatch() {
+fn issue4149_renderer_cache_clear_owns_source_invalidation() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
-    let para = issue4149_guard_para(&"가".repeat(60));
-    let narrow = 50.0;
-    // 넓은 폭에서의 기존 판정(over=false)이 남아 있는 상태.
-    para.single_line_overflow_memo.set(
-        crate::model::paragraph::SingleLineOverflowMemo::width_key(5000.0),
-        false,
-    );
-
+    let mut para = issue4149_guard_para("가나다");
+    let cache = SingleLineOverflowCache::default();
     let mut composed = compose_paragraph(&para);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, narrow, &styles, 96.0);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed,
+        &para,
+        50.0,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
+    assert_eq!(composed.lines.len(), 1);
+    para.insert_text_at(0, &"가".repeat(60));
+    cache.clear();
+    let mut recomposed = compose_paragraph(&para);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut recomposed,
+        &para,
+        50.0,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
     assert!(
-        composed.lines.len() > 1,
-        "폭 키 불일치 시 재측정으로 과밀을 다시 잡아야 함"
-    );
-    assert_eq!(
-        para.single_line_overflow_memo.get(
-            crate::model::paragraph::SingleLineOverflowMemo::width_key(narrow)
-        ),
-        Some(true)
+        recomposed.lines.len() > 1,
+        "renderer owner clear must retire the fit judgment after source mutation"
     );
 }
 
-/// 정합(비과밀) 판정도 memo 되고 재래핑은 일어나지 않는다.
+/// 정합(비과밀) 판정도 cache되고 재래핑은 일어나지 않는다.
 #[test]
-fn issue4149_fit_judgment_memoized_false_without_rewrap() {
+fn issue4149_fit_judgment_is_cached_without_rewrap() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
     let para = issue4149_guard_para("가나다");
     let width = 5000.0;
+    let cache = SingleLineOverflowCache::default();
     let mut composed = compose_paragraph(&para);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, width, &styles, 96.0);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed,
+        &para,
+        width,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
     assert_eq!(
         composed.lines.len(),
         1,
         "정합 단일줄은 재래핑하지 않아야 함"
-    );
-    assert_eq!(
-        para.single_line_overflow_memo.get(
-            crate::model::paragraph::SingleLineOverflowMemo::width_key(width)
-        ),
-        Some(false)
-    );
-}
-
-/// text/char_shapes 를 바꾸는 모든 경로에서 memo 가 미판정으로 돌아간다.
-/// (셀 편집의 단일 관문 reflow_cell_paragraph[_by_path]는 reflow_line_segs 로
-/// 수렴한다 — document_core 관문 자체는 text_editing.rs 테스트에서 검증.)
-#[test]
-fn issue4149_memo_invalidated_by_mutation_paths() {
-    let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
-    let key = crate::model::paragraph::SingleLineOverflowMemo::width_key(500.0);
-    let prime = |p: &Paragraph| p.single_line_overflow_memo.set(key, true);
-    let mut para = issue4149_guard_para("가나다라마");
-
-    prime(&para);
-    para.insert_text_at(1, "X");
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "insert_text_at 후 미판정"
-    );
-
-    prime(&para);
-    para.delete_text_at(0, 1);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "delete_text_at 후 미판정"
-    );
-
-    prime(&para);
-    para.apply_char_shape_range(0, 2, 7);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "apply_char_shape_range 후 미판정"
-    );
-
-    prime(&para);
-    para.set_single_char_shape(0);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "set_single_char_shape 후 미판정"
-    );
-
-    prime(&para);
-    reflow_line_segs(
-        &mut para,
-        ParagraphBox::content_width_px(300.0, 96.0),
-        &styles,
-        96.0,
-    );
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "reflow_line_segs(셀 편집 관문의 수렴점) 후 미판정"
-    );
-
-    prime(&para);
-    let new_half = para.split_at(2);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "split_at 앞 절반 미판정"
-    );
-    assert!(
-        new_half.single_line_overflow_memo.is_unjudged(),
-        "split_at 산출 문단은 미판정으로 시작"
-    );
-
-    prime(&para);
-    let other = issue4149_guard_para("바사");
-    para.merge_from(&other);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "merge_from 후 미판정"
     );
 }
 

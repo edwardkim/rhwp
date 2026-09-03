@@ -751,6 +751,8 @@ pub struct TypesetEngine {
     /// 문단 자신의 테두리 inset과 구분한다.
     float_carve_evidence:
         std::cell::RefCell<Vec<crate::renderer::float_placement::FloatCarveEvidence>>,
+    render_normalization:
+        std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -5917,7 +5919,18 @@ impl TypesetEngine {
             profile: std::cell::Cell::new(Default::default()),
             uniform_filler_ladder: std::cell::Cell::new(false),
             float_carve_evidence: std::cell::RefCell::new(Vec::new()),
+            render_normalization: std::sync::Arc::new(
+                crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
+            ),
         }
+    }
+
+    pub(crate) fn with_render_normalization(
+        mut self,
+        overlay: std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    ) -> Self {
+        self.render_normalization = overlay;
+        self
     }
 
     pub fn with_default_dpi() -> Self {
@@ -21702,7 +21715,7 @@ impl TypesetEngine {
             let opening_source_frame = !is_continuation
                 && r == cursor_row
                 && row_start_cut.is_empty()
-                && !table.text_reflowed_after_edit
+                && !self.render_normalization.table_text_reflowed(table)
                 && stored_source_frame.is_some();
             // [#5584 ②] 조각 **중간 행**(r > cursor_row)에서도 capacity cut 이 저장
             // 프레임 끝 직전에 멈추면 다음 fragment 가 짧은 tail(한 유닛)만 소유해
@@ -21714,7 +21727,7 @@ impl TypesetEngine {
             let mid_source_frame = !is_continuation
                 && r > cursor_row
                 && row_start_cut.is_empty()
-                && !table.text_reflowed_after_edit
+                && !self.render_normalization.table_text_reflowed(table)
                 && stored_source_frame.is_some();
             let single_visible_source_frame = st.profile.hwpx_stored_layout()
                 && stored_source_frame.is_some()
@@ -24085,6 +24098,10 @@ impl TypesetEngine {
         // 셀 패딩/중첩 표 높이 계산에만 의존하므로 ad hoc 인스턴스로 충분하다.
         let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
         layout_engine.set_layout_profile(st.profile);
+        // Row-cut measurement is a renderer consumer, not an independent
+        // session. It must see the same table provenance as this typesetter.
+        layout_engine
+            .set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
         // [Task #993] rowspan(row_span>1) 셀이 걸친 행 — 컷 모델(advance_row_cut)은
         // row_span==1 셀만 다루므로 rowspan 셀 높이를 측정하지 못한다. 구현계획서
         // §4대로 rowspan 행은 MeasuredTable 행 높이를 권위로 쓴다(렌더러도 동일).

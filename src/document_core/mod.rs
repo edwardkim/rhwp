@@ -65,6 +65,9 @@ pub(crate) struct ClipboardData {
     pub(crate) paragraphs: Vec<Paragraph>,
     /// 플레인 텍스트
     pub(crate) plain_text: String,
+    /// The copied control owns renderer text-reflow provenance that must be
+    /// inherited by a pasted table clone.
+    pub(crate) copied_table_text_reflowed: bool,
 }
 
 /// 표 셀 행/열 바꿈 전용 내부 버퍼
@@ -129,12 +132,25 @@ pub(crate) struct RenderNormalizedSection {
     pub(crate) composed: Arc<Vec<ComposedParagraph>>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub(crate) struct TableTextReflowKey(usize);
+
+impl TableTextReflowKey {
+    pub(crate) fn from_table(table: &crate::model::table::Table) -> Self {
+        Self(table as *const crate::model::table::Table as usize)
+    }
+}
+
 #[derive(Default)]
 pub(crate) struct RenderNormalizationState {
     pub(crate) document_epoch: u64,
     pub(crate) section_revisions: Vec<u64>,
     pub(crate) sections: Vec<Option<RenderNormalizedSection>>,
     pub(crate) path_revisions: HashMap<RenderPath, u64>,
+    /// Stable live Box identities whose stored frame was superseded by text
+    /// reflow. Box pointees survive paragraph/control-vector moves; clones are
+    /// admitted only by explicit split/clipboard inheritance.
+    pub(crate) text_reflowed_tables: std::collections::HashSet<TableTextReflowKey>,
     pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 
@@ -236,7 +252,7 @@ pub struct DocumentCore {
     pub(crate) overflow_links_cache:
         RefCell<HashMap<usize, Vec<queries::doc_tree_nav::OverflowLink>>>,
     /// Undo/Redo용 Document 스냅샷 저장소 (ID → Document 클론)
-    pub(crate) snapshot_store: Vec<(u32, Document)>,
+    pub(crate) snapshot_store: Vec<(u32, Document, std::collections::HashSet<RenderPath>)>,
     /// 다음 스냅샷 ID
     pub(crate) next_snapshot_id: u32,
     /// [#5769] Undo/Redo용 삭제 조각 저장소 (ID → DeleteFragment).

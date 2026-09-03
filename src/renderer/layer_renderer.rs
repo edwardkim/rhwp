@@ -980,64 +980,6 @@ fn collect_text_variant_diagnostics_reject_reasons(
     }
 }
 
-/// [#6117] 줄 그룹 안에서 장식선(밑줄/취소선) 트림 대상 run 과 트림 길이를 고른다.
-///
-/// #6028 이 정한 규칙 — soft-wrap 이 소비한 줄-말미 공백은 장식선 길이에서 뺀다 — 은
-/// RenderNode 경로(`svg.rs` / 캔버스의 RenderNode 분기)에만 배선돼 있었다. layer tree 를
-/// **그대로 재생**하는 경로(studio 캔버스)는 그 배선이 없어 밑줄이 배분 정렬로 늘어난
-/// 말미 공백까지 그어져 표 칸 괘선을 넘었다(#6117: 교육부 법령안 등 4~20px).
-/// layer→SVG 경로는 RenderNode 로 되돌려 그리기 때문에 이 결손이 드러나지 않는다.
-///
-/// 판별은 원 계약과 같다: 뒤에서부터 첫 **가시 텍스트** run 을 찾고, 그 run 이 문단 끝
-/// (`is_para_end`)이거나 강제 줄바꿈 끝(`is_line_break_end`)이면 대상에서 뺀다 — 그때의
-/// 말미 공백은 저자 콘텐츠(밑줄 서명란 등)다.
-///
-/// 반환하는 키는 그 run 의 주소다. 한 번의 트리 순회 안에서만 쓰이며 그 범위에서 안정적이다.
-pub fn line_decoration_trim_target(children: &[LayerNode]) -> Option<(usize, usize)> {
-    fn scan(node: &LayerNode, found: &mut Option<Option<(usize, usize)>>) {
-        if found.is_some() {
-            return;
-        }
-        match &node.kind {
-            LayerNodeKind::Leaf { ops } => {
-                for op in ops.iter().rev() {
-                    if let PaintOp::TextRun { run, .. } = op {
-                        if run.text.chars().any(|ch| ch != ' ') {
-                            if run.is_para_end || run.is_line_break_end {
-                                *found = Some(None);
-                                return;
-                            }
-                            let trailing =
-                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
-                            let key = (&**run) as *const crate::renderer::render_tree::TextRunNode
-                                as usize;
-                            *found = Some((trailing > 0).then_some((key, trailing)));
-                            return;
-                        }
-                    }
-                }
-            }
-            LayerNodeKind::Group { children, .. } => {
-                for child in children.iter().rev() {
-                    scan(child, found);
-                    if found.is_some() {
-                        return;
-                    }
-                }
-            }
-            LayerNodeKind::ClipRect { child, .. } => scan(child, found),
-        }
-    }
-    let mut found = None;
-    for child in children.iter().rev() {
-        scan(child, &mut found);
-        if found.is_some() {
-            break;
-        }
-    }
-    found.flatten()
-}
-
 #[cfg(test)]
 mod tests {
 

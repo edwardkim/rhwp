@@ -15,8 +15,8 @@ use crate::paint::{
     ImageResourceId, LayerAffineTransform, LayerGlyphOutlinePaint, LayerGlyphRunPaint, LayerNode,
     LayerNodeKind, LayerPoint, LayerVector, LocalizedName, PaintOp, PaintTextStyle,
     PaintVariantMeta, ResourceArena, ShapeKey, ShapingEngineId, SvgGlyphPayload, SvgResourceId,
-    TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind,
-    TextVariantQuality, WritingMode, RESOURCE_KEY_ALGORITHM,
+    TextDirection, TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality,
+    WritingMode, RESOURCE_KEY_ALGORITHM,
 };
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::style_resolver::detect_lang_category;
@@ -506,14 +506,23 @@ impl FontGlyphLowerer<'_, '_> {
     fn lower_leaf(&mut self, ops: &mut Vec<PaintOp>) {
         let mut lowered = Vec::with_capacity(ops.len());
         for op in ops.drain(..) {
-            if let PaintOp::TextRun { bbox, run } = op {
-                let text_source_id = self.next_text_source_id;
-                self.next_text_source_id = self.next_text_source_id.saturating_add(1);
+            if let PaintOp::TextRun { bbox, run, source } = op {
+                let source = source.unwrap_or_else(|| {
+                    crate::paint::TextSourceSpan::for_text_run(self.next_text_source_id, &run)
+                });
+                let text_source_id = source.id.0;
+                self.next_text_source_id = self
+                    .next_text_source_id
+                    .max(text_source_id.saturating_add(1));
                 let glyph_run = (!self.claimed_glyph_run_sources.contains(&text_source_id))
-                    .then(|| self.lower_portable_glyph_run(bbox, &run, text_source_id))
+                    .then(|| self.lower_portable_glyph_run(bbox, &run, &source))
                     .flatten();
-                let sidecar = self.lower_text_run(bbox, &run, text_source_id);
-                lowered.push(PaintOp::TextRun { bbox, run });
+                let sidecar = self.lower_text_run(bbox, &run, &source);
+                lowered.push(PaintOp::TextRun {
+                    bbox,
+                    run,
+                    source: Some(source),
+                });
                 if let Some(glyph_run) = glyph_run {
                     lowered.push(PaintOp::GlyphRun {
                         bbox,
@@ -537,8 +546,9 @@ impl FontGlyphLowerer<'_, '_> {
         &mut self,
         bbox: BoundingBox,
         run: &crate::renderer::render_tree::TextRunNode,
-        text_source_id: u32,
+        source: &TextSourceSpan,
     ) -> Option<LayerGlyphRunPaint> {
+        let text_source_id = source.id.0;
         let paint_style = PaintTextStyle::from(&run.style);
         if run.text.is_empty()
             || run.text.chars().count() > MAX_PORTABLE_GLYPHS_PER_RUN
@@ -782,12 +792,7 @@ impl FontGlyphLowerer<'_, '_> {
         self.report.emitted_glyph_runs += 1;
 
         Some(LayerGlyphRunPaint {
-            source: TextSourceSpan {
-                id: TextSourceId(text_source_id),
-                utf8_range: TextSourceRange::new(0, run.text.len() as u32),
-                utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
-                stable_source_key: None,
-            },
+            source: source.clone(),
             variant,
             paint_style,
             shape_key: ShapeKey {
@@ -835,8 +840,9 @@ impl FontGlyphLowerer<'_, '_> {
         &mut self,
         bbox: BoundingBox,
         run: &crate::renderer::render_tree::TextRunNode,
-        text_source_id: u32,
+        source: &TextSourceSpan,
     ) -> Option<LayerGlyphOutlinePaint> {
+        let text_source_id = source.id.0;
         let mut characters = run.text.chars();
         let character = characters.next()?;
         if characters.next().is_some() {
@@ -932,12 +938,7 @@ impl FontGlyphLowerer<'_, '_> {
         let placement = crate::paint::text_shape::text_run_placement(bbox, run);
 
         Some(LayerGlyphOutlinePaint {
-            source: TextSourceSpan {
-                id: TextSourceId(text_source_id),
-                utf8_range: source_range,
-                utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
-                stable_source_key: None,
-            },
+            source: source.clone(),
             variant,
             payload_kind,
             color_layers: None,
@@ -1265,9 +1266,9 @@ mod tests {
             },
             char_shape_id: Some(7),
             para_shape_id: None,
-            section_index: None,
-            para_index: None,
-            char_start: None,
+            section_index: Some(4),
+            para_index: Some(5),
+            char_start: Some(6),
             cell_context: None,
             is_para_end: false,
             is_line_break_end: false,
@@ -1306,14 +1307,17 @@ mod tests {
         let LayerNodeKind::Leaf { ops } = root.kind else {
             panic!("expected leaf");
         };
-        assert!(matches!(
-            ops.as_slice(),
-            [
-                PaintOp::TextRun { .. },
-                PaintOp::GlyphRun { .. },
-                PaintOp::GlyphOutline { .. }
-            ]
-        ));
+        let [PaintOp::TextRun {
+            source: Some(fallback),
+            ..
+        }, PaintOp::GlyphRun { run: glyph, .. }, PaintOp::GlyphOutline { outline, .. }] =
+            ops.as_slice()
+        else {
+            panic!("expected fallback plus native glyph alternatives");
+        };
+        assert_eq!(&glyph.source, fallback);
+        assert_eq!(&outline.source, fallback);
+        assert!(fallback.stable_source_key.is_some());
         assert_eq!(resources.font_resources().blobs.len(), 1);
         assert_eq!(resources.font_resources().faces.len(), 1);
         assert_eq!(resources.font_blob_count(), 1);

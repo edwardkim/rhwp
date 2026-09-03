@@ -459,6 +459,7 @@ impl DocumentCore {
         self.clipboard = Some(ClipboardData {
             paragraphs: clip_paragraphs,
             plain_text: plain_text.clone(),
+            copied_table_text_reflowed: false,
         });
 
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -549,6 +550,7 @@ impl DocumentCore {
         self.clipboard = Some(ClipboardData {
             paragraphs: clip_paragraphs,
             plain_text: plain_text.clone(),
+            copied_table_text_reflowed: false,
         });
 
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -607,6 +609,7 @@ impl DocumentCore {
         self.clipboard = Some(ClipboardData {
             paragraphs: clip_paragraphs,
             plain_text,
+            copied_table_text_reflowed: false,
         });
 
         Ok(super::super::helpers::json_ok_with(&format!(
@@ -623,6 +626,8 @@ impl DocumentCore {
         cell_path: &[(usize, usize, usize)],
         control_idx: usize,
     ) -> Result<String, HwpError> {
+        let copied_table_text_reflowed = cell_path.is_empty()
+            && self.table_text_reflowed_path_exists(section_idx, para_idx, control_idx);
         // [Task #1161] cell_path 가 비면 본문, 아니면 셀/글상자 안 문단.
         let para = self.resolve_control_para(section_idx, para_idx, cell_path)?;
         let control = para
@@ -706,6 +711,7 @@ impl DocumentCore {
         self.clipboard = Some(ClipboardData {
             paragraphs: vec![clip_para],
             plain_text: plain_text.clone(),
+            copied_table_text_reflowed,
         });
         // [Task #1161] 새 컨트롤 복사 → cascade 리셋(다음 첫 붙여넣기부터 누적 시작).
         self.paste_cascade_count = 0;
@@ -982,15 +988,7 @@ impl DocumentCore {
         for i in cell_para_idx..=last_para_idx {
             self.reflow_cell_paragraph(section_idx, parent_para_idx, control_idx, cell_idx, i);
         }
-        match self.document.sections[section_idx].paragraphs[parent_para_idx]
-            .controls
-            .get_mut(control_idx)
-        {
-            Some(Control::Table(t)) => {
-                t.dirty = true;
-            }
-            _ => {}
-        }
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
@@ -1149,6 +1147,10 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
+        let inherit_table_text_reflow = self
+            .clipboard
+            .as_ref()
+            .is_some_and(|clipboard| clipboard.copied_table_text_reflowed);
         // 클립보드에서 컨트롤 문단 확인
         let mut clip_para = match &self.clipboard {
             Some(c) => match c.paragraphs.first() {
@@ -1235,6 +1237,10 @@ impl DocumentCore {
                     .insert(para_idx + 1, clip_para);
                 insert_para_idx = para_idx + 1;
             }
+        }
+
+        if inherit_table_text_reflow {
+            self.mark_table_text_reflowed_after_edit(section_idx, insert_para_idx, 0)?;
         }
 
         // 삽입된 문단의 line_segs 보정: 컨트롤 치수 반영
@@ -2222,6 +2228,7 @@ mod nested_cell_paste_reflow_tests {
                 ..Default::default()
             }],
             plain_text: text,
+            copied_table_text_reflowed: false,
         });
 
         core.paste_internal_in_cell_by_path_native(0, 0, &path, 0)

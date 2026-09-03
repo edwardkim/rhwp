@@ -207,13 +207,25 @@ impl CanvasRenderer {
                                 ));
                             }
                         }
-                        PaintOp::TextRun { bbox, run } => {
+                        PaintOp::TextRun { bbox, run, .. } => {
                             self.draw_text_positioned(
                                 run.display_or_text(),
                                 bbox.x,
                                 bbox.y + bbox.height,
                                 &run.style,
                                 run.validated_layout_positions_for(run.display_or_text()),
+                            );
+                        }
+                        PaintOp::ControlLabel { bbox, label } => {
+                            self.draw_text(
+                                label,
+                                bbox.x,
+                                bbox.y + 10.0,
+                                &TextStyle {
+                                    font_size: 10.0,
+                                    color: 0x003333CC,
+                                    ..Default::default()
+                                },
                             );
                         }
                         PaintOp::Rectangle { bbox, rect } => {

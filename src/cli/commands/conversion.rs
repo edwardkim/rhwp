@@ -290,15 +290,29 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                 )
             );
         };
+    let export_snapshot = doc.prepare_hwp_export_snapshot();
+    let verify_expected = verify_options
+        .verify
+        .then(|| export_snapshot.document().clone());
     let serialized = match output_password.as_deref() {
-        Some(password) => doc.export_hwp_with_adapter_with_password(password.as_bytes()),
-        None => doc.export_hwp_with_adapter(),
+        Some(password) => export_snapshot.serialize_with_password(password.as_bytes()),
+        None => export_snapshot.serialize(),
     };
     match serialized {
         Ok(bytes) => match fs::write(output_path, &bytes) {
             Ok(_) => {
+                // Report the persisted artifact, never a value derived from the
+                // password-bearing serialization buffer. A successful write
+                // makes this metadata the authoritative public byte count.
+                let persisted_bytes_len = fs::metadata(output_path)
+                    .map(|metadata| metadata.len() as usize)
+                    .unwrap_or_default();
                 if !json_mode {
-                    println!("저장 완료: {} ({}KB)", output_path, bytes.len() / 1024);
+                    println!(
+                        "저장 완료: {} ({}KB)",
+                        output_path,
+                        persisted_bytes_len / 1024
+                    );
                 }
                 let mut verify_report = serde_json::Value::Null;
                 let mut verify_pages_report = serde_json::Value::Null;
@@ -346,8 +360,11 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                     }
 
                     if verify_options.verify {
+                        let expected = verify_expected
+                            .as_ref()
+                            .expect("verify expected snapshot must exist");
                         let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(
-                            doc.document(),
+                            expected,
                             reloaded.document(),
                         );
                         // [#3505, #3930] 출처별로 대상 포맷에 표현 자리가 없는 항목만
@@ -378,7 +395,7 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                     }
                 }
                 if json_mode {
-                    emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                    emit_envelope(persisted_bytes_len, verify_report, verify_pages_report);
                 }
                 if exit_code != EXIT_OK {
                     process::exit(exit_code);

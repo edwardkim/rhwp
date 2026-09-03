@@ -249,6 +249,7 @@ impl CellComposedStore {
         dpi: f64,
         legacy_hwp3_stored_geometry: bool,
         repair_stored_overflow: bool,
+        overflow_cache: &crate::renderer::composer::SingleLineOverflowCache,
     ) -> &ComposedParagraph {
         match self {
             CellComposedStore::Eager(v) => &v[cpi],
@@ -265,6 +266,7 @@ impl CellComposedStore {
                             dpi,
                             legacy_hwp3_stored_geometry,
                             repair_stored_overflow,
+                            overflow_cache,
                         );
                     } else {
                         crate::renderer::composer::recompose_cell_lines_in_frame(
@@ -295,6 +297,7 @@ impl CellComposedStore {
         dpi: f64,
         legacy_hwp3_stored_geometry: bool,
         repair_stored_overflow: bool,
+        overflow_cache: &crate::renderer::composer::SingleLineOverflowCache,
     ) {
         if matches!(self, CellComposedStore::Lazy(_)) {
             let mut v = Vec::with_capacity(cell.paragraphs.len());
@@ -308,6 +311,7 @@ impl CellComposedStore {
                         dpi,
                         legacy_hwp3_stored_geometry,
                         repair_stored_overflow,
+                        overflow_cache,
                     )
                     .clone(),
                 );
@@ -1023,6 +1027,7 @@ impl LayoutEngine {
                                 self.dpi,
                                 self.profile.get().legacy_hwp3_stored_geometry(),
                                 self.profile.get().native_hwp5_layout(),
+                                &self.single_line_overflow_cache,
                             );
                         } else {
                             crate::renderer::composer::recompose_cell_lines_in_frame(
@@ -1339,6 +1344,7 @@ impl LayoutEngine {
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
                     self.profile.get().native_hwp5_layout(),
+                    &self.single_line_overflow_cache,
                 );
                 let vert_inner_area = LayoutRect {
                     x: inner_x,
@@ -1541,6 +1547,7 @@ impl LayoutEngine {
                                 self.dpi,
                                 self.profile.get().legacy_hwp3_stored_geometry(),
                                 self.profile.get().native_hwp5_layout(),
+                                &self.single_line_overflow_cache,
                             )
                             .lines
                             .len(),
@@ -1609,6 +1616,7 @@ impl LayoutEngine {
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
                     self.profile.get().native_hwp5_layout(),
+                    &self.single_line_overflow_cache,
                 );
 
                 if preserve_linear_single_cell_vpos {

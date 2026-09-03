@@ -8,11 +8,65 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use crate::paint::{
-    LayerNode, LayerNodeKind, PageLayerTree, PaintOp, PaintVariantMeta, TextVariantKind,
+    LayerNode, LayerNodeKind, PageLayerTree, PaintOp, PaintVariantMeta, TextDecorationKind,
+    TextVariantKind,
 };
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TextVisualReplayRole {
+    BaseText,
+    SuppressedFallback,
+    CharOverlap,
+    ControlMark,
+    TabLeader,
+    Decoration(TextDecorationKind),
+    Other,
+}
+
+/// Classifies canonical text ops without translating them into backend primitives.
+pub fn text_visual_replay_role(op: &PaintOp) -> TextVisualReplayRole {
+    match op {
+        PaintOp::TextRun { run, .. } if run.char_overlap.is_some() => {
+            TextVisualReplayRole::SuppressedFallback
+        }
+        PaintOp::TextRun { .. } => TextVisualReplayRole::BaseText,
+        PaintOp::CharOverlap { .. } => TextVisualReplayRole::CharOverlap,
+        PaintOp::TextControlMark { .. } => TextVisualReplayRole::ControlMark,
+        PaintOp::TabLeader { .. } => TextVisualReplayRole::TabLeader,
+        PaintOp::TextDecoration { kind, .. } => TextVisualReplayRole::Decoration(*kind),
+        _ => TextVisualReplayRole::Other,
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TextVariantScopeError {
+    InvalidExplicitTextVisual {
+        visual: String,
+        matches: usize,
+        leaf: String,
+    },
+    OrphanExplicitTextVisual {
+        visual: String,
+        matching_runs: usize,
+        leaf: String,
+    },
+    MissingTextSourceBinding {
+        leaf: String,
+    },
+    DuplicateTextSourceId {
+        source_id: u32,
+        first_leaf: String,
+        second_leaf: String,
+    },
+    TextSourceTableCardinality {
+        bound_sources: usize,
+        table_entries: usize,
+    },
+    InvalidTextSourceEntry {
+        source_id: u32,
+        matches: usize,
+        leaf: String,
+    },
     CrossLeafGroup {
         equivalence_group: String,
         first_leaf: String,
@@ -20,6 +74,17 @@ pub enum TextVariantScopeError {
     },
     MissingDefaultFallback {
         equivalence_group: String,
+        leaf: String,
+    },
+    SourceTableMismatch {
+        equivalence_group: String,
+        source_id: u32,
+        leaf: String,
+    },
+    InvalidSourceFallback {
+        equivalence_group: String,
+        source_id: u32,
+        matches: usize,
         leaf: String,
     },
     MissingSidecarAnchorOpId {
@@ -61,6 +126,48 @@ pub enum TextVariantScopeError {
 impl fmt::Display for TextVariantScopeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::InvalidExplicitTextVisual {
+                visual,
+                matches,
+                leaf,
+            } => write!(
+                f,
+                "TextRun in leaf `{leaf}` requires exactly one explicit canonical {visual} paint, found {matches}"
+            ),
+            Self::OrphanExplicitTextVisual {
+                visual,
+                matching_runs,
+                leaf,
+            } => write!(
+                f,
+                "explicit canonical {visual} paint in leaf `{leaf}` belongs to {matching_runs} TextRuns"
+            ),
+            Self::MissingTextSourceBinding { leaf } => {
+                write!(f, "TextRun in leaf `{leaf}` has no canonical source binding")
+            }
+            Self::DuplicateTextSourceId {
+                source_id,
+                first_leaf,
+                second_leaf,
+            } => write!(
+                f,
+                "canonical text source {source_id} is bound in both `{first_leaf}` and `{second_leaf}`"
+            ),
+            Self::TextSourceTableCardinality {
+                bound_sources,
+                table_entries,
+            } => write!(
+                f,
+                "PageLayerTree has {bound_sources} bound TextRuns but {table_entries} canonical text source entries"
+            ),
+            Self::InvalidTextSourceEntry {
+                source_id,
+                matches,
+                leaf,
+            } => write!(
+                f,
+                "TextRun source {source_id} in leaf `{leaf}` requires one exact canonical table entry, found {matches}"
+            ),
             Self::CrossLeafGroup {
                 equivalence_group,
                 first_leaf,
@@ -75,6 +182,23 @@ impl fmt::Display for TextVariantScopeError {
             } => write!(
                 f,
                 "text variant group `{equivalence_group}` in leaf `{leaf}` has no default fallback"
+            ),
+            Self::SourceTableMismatch {
+                equivalence_group,
+                source_id,
+                leaf,
+            } => write!(
+                f,
+                "text variant group `{equivalence_group}` in leaf `{leaf}` does not match canonical text source {source_id}"
+            ),
+            Self::InvalidSourceFallback {
+                equivalence_group,
+                source_id,
+                matches,
+                leaf,
+            } => write!(
+                f,
+                "text variant group `{equivalence_group}` in leaf `{leaf}` requires one TextRun fallback for source {source_id}, found {matches}"
             ),
             Self::MissingSidecarAnchorOpId {
                 equivalence_group,
@@ -147,8 +271,273 @@ struct VariantPartState {
 }
 
 pub fn validate_text_variant_scope(tree: &PageLayerTree) -> Result<(), TextVariantScopeError> {
+    validate_text_source_identity(tree)?;
     let mut group_leaf_paths = HashMap::new();
-    validate_node(&tree.root, "root".to_string(), &mut group_leaf_paths)
+    validate_node(&tree.root, "root".to_string(), &mut group_leaf_paths)?;
+    validate_source_node(&tree.root, "root".to_string(), &tree.text_sources)?;
+    validate_text_visual_node(
+        &tree.root,
+        "root".to_string(),
+        tree.output_options.show_paragraph_marks || tree.output_options.show_control_codes,
+    )
+}
+
+fn validate_text_visual_node(
+    node: &LayerNode,
+    path: String,
+    show_text_marks: bool,
+) -> Result<(), TextVariantScopeError> {
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for (index, child) in children.iter().enumerate() {
+                validate_text_visual_node(
+                    child,
+                    format!("{path}/group[{index}]"),
+                    show_text_marks,
+                )?;
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } => {
+            validate_text_visual_node(child, format!("{path}/clip"), show_text_marks)?;
+        }
+        LayerNodeKind::Leaf { ops } => {
+            let text_runs = ops
+                .iter()
+                .filter_map(|op| match op {
+                    PaintOp::TextRun {
+                        bbox, run, source, ..
+                    } => Some((bbox, run.as_ref(), source.as_ref())),
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            for op in ops {
+                let PaintOp::TextRun {
+                    bbox, run, source, ..
+                } = op
+                else {
+                    continue;
+                };
+                let source = source
+                    .as_ref()
+                    .expect("text source identity was validated above");
+                for role in required_text_visual_roles(run, show_text_marks) {
+                    let matches = ops
+                        .iter()
+                        .filter(|candidate| visual_matches_run(candidate, bbox, run, source, role))
+                        .count();
+                    if matches != 1 {
+                        return Err(TextVariantScopeError::InvalidExplicitTextVisual {
+                            visual: text_visual_name(role).to_string(),
+                            matches,
+                            leaf: path.clone(),
+                        });
+                    }
+                }
+            }
+            for op in ops {
+                let role = text_visual_replay_role(op);
+                if !matches!(
+                    role,
+                    TextVisualReplayRole::CharOverlap
+                        | TextVisualReplayRole::ControlMark
+                        | TextVisualReplayRole::TabLeader
+                        | TextVisualReplayRole::Decoration(_)
+                ) {
+                    continue;
+                }
+                let matching_runs = text_runs
+                    .iter()
+                    .filter(|(bbox, run, source)| {
+                        source.is_some_and(|source| visual_matches_run(op, bbox, run, source, role))
+                    })
+                    .count();
+                let required = text_runs.iter().any(|(bbox, run, source)| {
+                    source.is_some_and(|source| {
+                        visual_matches_run(op, bbox, run, source, role)
+                            && required_text_visual_roles(run, show_text_marks).contains(&role)
+                    })
+                });
+                if matching_runs != 1 || !required {
+                    return Err(TextVariantScopeError::OrphanExplicitTextVisual {
+                        visual: text_visual_name(role).to_string(),
+                        matching_runs,
+                        leaf: path.clone(),
+                    });
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn required_text_visual_roles(
+    run: &crate::renderer::render_tree::TextRunNode,
+    show_text_marks: bool,
+) -> Vec<TextVisualReplayRole> {
+    let mut required = if run.char_overlap.is_some() {
+        vec![TextVisualReplayRole::CharOverlap]
+    } else {
+        let mut required = Vec::new();
+        if !run.style.tab_leaders.is_empty() {
+            required.push(TextVisualReplayRole::TabLeader);
+        }
+        if !matches!(
+            run.style.underline,
+            crate::model::style::UnderlineType::None
+        ) {
+            required.push(TextVisualReplayRole::Decoration(
+                TextDecorationKind::Underline,
+            ));
+        }
+        if run.style.strikethrough {
+            required.push(TextVisualReplayRole::Decoration(
+                TextDecorationKind::Strikethrough,
+            ));
+        }
+        if run.style.emphasis_dot > 0 {
+            required.push(TextVisualReplayRole::Decoration(
+                TextDecorationKind::EmphasisDot,
+            ));
+        }
+        required
+    };
+    if show_text_marks
+        && (run.is_para_end
+            || run.is_line_break_end
+            || run
+                .text
+                .chars()
+                .any(|character| matches!(character, ' ' | '\t')))
+    {
+        required.push(TextVisualReplayRole::ControlMark);
+    }
+    required
+}
+
+fn visual_matches_run(
+    visual: &PaintOp,
+    bbox: &crate::renderer::render_tree::BoundingBox,
+    run: &crate::renderer::render_tree::TextRunNode,
+    source: &crate::paint::TextSourceSpan,
+    role: TextVisualReplayRole,
+) -> bool {
+    let candidate = visual.bounds();
+    if candidate.x != bbox.x
+        || candidate.y != bbox.y
+        || candidate.width != bbox.width
+        || candidate.height != bbox.height
+        || text_visual_replay_role(visual) != role
+    {
+        return false;
+    }
+    match visual {
+        PaintOp::CharOverlap {
+            run: candidate_run,
+            source: candidate_source,
+            ..
+        }
+        | PaintOp::TextControlMark {
+            run: candidate_run,
+            source: candidate_source,
+            ..
+        }
+        | PaintOp::TabLeader {
+            run: candidate_run,
+            source: candidate_source,
+            ..
+        }
+        | PaintOp::TextDecoration {
+            run: candidate_run,
+            source: candidate_source,
+            ..
+        } => candidate_run.as_ref() == run && candidate_source.as_ref() == Some(source),
+        _ => false,
+    }
+}
+
+fn text_visual_name(role: TextVisualReplayRole) -> &'static str {
+    match role {
+        TextVisualReplayRole::CharOverlap => "CharOverlap",
+        TextVisualReplayRole::ControlMark => "control-mark",
+        TextVisualReplayRole::TabLeader => "TabLeader",
+        TextVisualReplayRole::Decoration(TextDecorationKind::Underline) => "underline",
+        TextVisualReplayRole::Decoration(TextDecorationKind::Strikethrough) => "strikethrough",
+        TextVisualReplayRole::Decoration(TextDecorationKind::EmphasisDot) => "emphasis-dot",
+        TextVisualReplayRole::BaseText
+        | TextVisualReplayRole::SuppressedFallback
+        | TextVisualReplayRole::Other => "non-visual",
+    }
+}
+
+fn validate_text_source_identity(tree: &PageLayerTree) -> Result<(), TextVariantScopeError> {
+    let mut runs = Vec::new();
+    collect_text_runs(&tree.root, "root".to_string(), &mut runs);
+    let mut source_paths = HashMap::new();
+    for (leaf, _, source) in &runs {
+        let Some(source) = source else {
+            return Err(TextVariantScopeError::MissingTextSourceBinding { leaf: leaf.clone() });
+        };
+        if let Some(first_leaf) = source_paths.insert(source.id.0, leaf.clone()) {
+            return Err(TextVariantScopeError::DuplicateTextSourceId {
+                source_id: source.id.0,
+                first_leaf,
+                second_leaf: leaf.clone(),
+            });
+        }
+    }
+    if runs.len() != tree.text_sources.entries.len() {
+        return Err(TextVariantScopeError::TextSourceTableCardinality {
+            bound_sources: runs.len(),
+            table_entries: tree.text_sources.entries.len(),
+        });
+    }
+    for (leaf, run, source) in runs {
+        let source = source
+            .as_ref()
+            .expect("missing bindings were rejected above");
+        let matches = tree
+            .text_sources
+            .entries
+            .iter()
+            .filter(|entry| entry.matches_text_run(source, run))
+            .count();
+        if matches != 1 {
+            return Err(TextVariantScopeError::InvalidTextSourceEntry {
+                source_id: source.id.0,
+                matches,
+                leaf,
+            });
+        }
+    }
+    Ok(())
+}
+
+fn collect_text_runs<'a>(
+    node: &'a LayerNode,
+    path: String,
+    runs: &mut Vec<(
+        String,
+        &'a crate::renderer::render_tree::TextRunNode,
+        &'a Option<crate::paint::TextSourceSpan>,
+    )>,
+) {
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for (index, child) in children.iter().enumerate() {
+                collect_text_runs(child, format!("{path}/group[{index}]"), runs);
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } => {
+            collect_text_runs(child, format!("{path}/clip"), runs);
+        }
+        LayerNodeKind::Leaf { ops } => {
+            for op in ops {
+                if let PaintOp::TextRun { run, source, .. } = op {
+                    runs.push((path.clone(), run, source));
+                }
+            }
+        }
+    }
 }
 
 fn validate_node(
@@ -275,6 +664,99 @@ fn op_variant(op: &PaintOp) -> Option<PaintVariantMeta> {
     }
 }
 
+fn op_source(op: &PaintOp) -> Option<&crate::paint::TextSourceSpan> {
+    match op {
+        PaintOp::GlyphRun { run, .. } => Some(&run.source),
+        PaintOp::GlyphOutline { outline, .. } => Some(&outline.source),
+        _ => None,
+    }
+}
+
+fn validate_source_node(
+    node: &LayerNode,
+    path: String,
+    text_sources: &crate::paint::TextSourceTable,
+) -> Result<(), TextVariantScopeError> {
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for (index, child) in children.iter().enumerate() {
+                validate_source_node(child, format!("{path}/group[{index}]"), text_sources)?;
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } => {
+            validate_source_node(child, format!("{path}/clip"), text_sources)?;
+        }
+        LayerNodeKind::Leaf { ops } => {
+            for op in ops {
+                let Some(variant) = op_variant(op) else {
+                    continue;
+                };
+                let source = op_source(op).expect("variant ops always carry source identity");
+                validate_source_fallback(ops, source, &variant, &path, text_sources)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_source_fallback(
+    ops: &[PaintOp],
+    source: &crate::paint::TextSourceSpan,
+    variant: &PaintVariantMeta,
+    leaf_path: &str,
+    text_sources: &crate::paint::TextSourceTable,
+) -> Result<(), TextVariantScopeError> {
+    let Some(entry) = text_sources
+        .entries
+        .iter()
+        .find(|entry| entry.id == source.id)
+    else {
+        return Err(TextVariantScopeError::SourceTableMismatch {
+            equivalence_group: variant.equivalence_group.clone(),
+            source_id: source.id.0,
+            leaf: leaf_path.to_string(),
+        });
+    };
+    if source.utf8_range != entry.utf8_range
+        || source.utf16_range != entry.utf16_range
+        || !source
+            .stable_source_key
+            .as_ref()
+            .is_none_or(|key| entry.stable_source_key.as_ref() == Some(key))
+    {
+        return Err(TextVariantScopeError::SourceTableMismatch {
+            equivalence_group: variant.equivalence_group.clone(),
+            source_id: source.id.0,
+            leaf: leaf_path.to_string(),
+        });
+    }
+    let matches = ops
+        .iter()
+        .filter(|candidate| {
+            let PaintOp::TextRun {
+                run,
+                source: fallback_source,
+                ..
+            } = candidate
+            else {
+                return false;
+            };
+            fallback_source.as_ref() == Some(source)
+                && run.text == entry.text
+                && crate::paint::layer_tree::stable_text_source_key(run) == entry.stable_source_key
+        })
+        .count();
+    if matches != 1 {
+        return Err(TextVariantScopeError::InvalidSourceFallback {
+            equivalence_group: variant.equivalence_group.clone(),
+            source_id: source.id.0,
+            matches,
+            leaf: leaf_path.to_string(),
+        });
+    }
+    Ok(())
+}
+
 fn validate_sidecar_anchor(
     variant: &PaintVariantMeta,
     leaf_path: &str,
@@ -306,16 +788,14 @@ fn validate_sidecar_anchor(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::paint::resources::ResourceArena;
     use crate::paint::{
         FontFaceKey, FontFallbackPolicyId, FontInstanceKey, GlyphCluster, GlyphOutlineFillRule,
         GlyphOutlinePaintOrder, GlyphOutlinePayloadKind, GlyphOutlineStrokeCap,
         GlyphOutlineStrokeJoin, GlyphOutlineStrokeStyle, GlyphRange, GlyphRunDiagnostics,
         GlyphRunOrientation, GlyphRunReplayEligibility, LayerAffineTransform,
-        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode,
-        LayerOutputOptions, LayerPoint, PaintTextStyle, RenderProfile, ScriptTag, ShapeKey,
-        ShapingEngineId, TextDirection, TextSourceId, TextSourceRange, TextSourceSpan,
-        TextSourceTable, TextVariantKind, TextVariantQuality, WritingMode,
+        LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
+        PaintTextStyle, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextSourceId,
+        TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality, WritingMode,
     };
     use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
     use crate::renderer::{PathCommand, TextStyle};
@@ -476,15 +956,7 @@ mod tests {
     }
 
     fn tree(root: LayerNode) -> PageLayerTree {
-        PageLayerTree {
-            page_width: 100.0,
-            page_height: 100.0,
-            profile: RenderProfile::default(),
-            output_options: LayerOutputOptions::default(),
-            root,
-            resources: ResourceArena::default(),
-            text_sources: TextSourceTable::default(),
-        }
+        PageLayerTree::new(100.0, 100.0, root)
     }
 
     #[test]

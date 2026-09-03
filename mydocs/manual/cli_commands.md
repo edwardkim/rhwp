@@ -140,7 +140,9 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 ### `export-svg <파일> [옵션]`
 HWP/HWPX → SVG.
 - `--json` (#3287): 산출물 **매니페스트**를 stdout 에 JSON 으로 출력한다(렌더 동작 무변경).
-  `{"schemaVersion":"1.0","source","format":"svg","outputDir","pageCount","renderedCount","overflowCellLines","pages":[{"page","path","bytes","overflowCellLines"}]}`
+  `{"schemaVersion":"1.0","source","format":"svg","backend":"layer|legacy","outputDir","pageCount","renderedCount","overflowCellLines","pages":[{"page","path","bytes","overflowCellLines"}]}`
+  `backend`은 기본 production 경로의 `layer` 또는 명시적 compatibility 진단 경로의
+  `legacy`이므로 자동화가 두 artifact를 혼동하지 않는다.
   기본 출력(사람용 진행 메시지)은 무변경이며, `--json` 모드에서는 stdout 에 JSON 만 나간다.
   `search --json`(#3283)과 조합하면 **찾은 페이지만 렌더해 VLM 에 넘기는** 루프가 닫힌다.
   - `overflowCellLines` (#3668): 셀 안 줄의 윗변이 쪽 하단 밖에 그려져 **보이지 않는 줄 수**
@@ -164,13 +166,14 @@ HWP/HWPX → SVG.
 - `--embed-fonts` — 폰트 서브셋 임베딩(사용 글자만 base64)
 - `--embed-fonts=full` — 폰트 전체 임베딩
 - `--font-path <경로>` — 폰트 탐색 경로(여러 번 지정 가능)
-- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존(legacy) 경로
-  (`render_page_svg_native` → `SvgRenderer` 직행, paint 계층 미경유)다.
-  **legacy 경로는 인쇄 등가 출력이 아니다** — 기본값이 `RenderProfile::Screen` 과 같아
-  `editor_only` 노드(빈 누름틀 안내문 등)를 편집 화면처럼 표시한다. 그림 미지정
-  placeholder만 예외로 항상 억제된다(#2225). 인쇄 등가 산출물이 필요하면 이 옵션으로
-  `--profile print`(또는 `high-quality`)를 명시한다 — 두 경로의 배경과 `editor_only`
-  판정 통합은 #4379.
+- `--backend layer|legacy` — 기본값은 canonical `layer`. `legacy`는 migration 중
+  `PageRenderTree → SvgRenderer` 출력을 명시적으로 비교하는 compatibility/diagnostic 전용이며
+  `--profile`·`--font-style`·`--embed-fonts`와 함께 사용할 수 없다.
+- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시에도
+  `render_page_svg_native`가 `RenderProfile::Screen`의 `PageLayerTree`를 직접 재생한다.
+  인쇄 등가 산출물이 필요하면 `--profile print`(또는 `high-quality`)를 명시한다.
+  font style/embedding도 같은 screen layer tree를 소비하며, production routing은
+  `RHWP_RENDER_PATH` 같은 환경변수로 legacy backend를 고르지 않는다.
   **제약**: `--font-style`/`--embed-fonts` 와 함께 사용할 수 없다(오류 종료).
 
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*

@@ -530,7 +530,27 @@ fn floating_stack_picture_common(ctrl: &Control) -> Option<&crate::model::shape:
 /// 그림 높이 하나 안에서 겹칠 때만 반환한다. 본문 정규화와 #1995 낱장 배치 억제가 같은
 /// 저장 형상을 판정하도록 이 조건을 한 곳에 둔다.
 fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<(i32, i32)> {
-    use crate::model::shape::TextWrap;
+    use crate::model::shape::{HorzAlign, TextWrap, VertAlign};
+
+    fn horizontal_start_twice(offset: i64, size: i64, align: HorzAlign) -> i64 {
+        match align {
+            HorzAlign::Left | HorzAlign::Inside => offset.saturating_mul(2),
+            HorzAlign::Center => offset.saturating_mul(2).saturating_sub(size),
+            HorzAlign::Right | HorzAlign::Outside => offset
+                .saturating_mul(-2)
+                .saturating_sub(size.saturating_mul(2)),
+        }
+    }
+
+    fn vertical_start_twice(offset: i64, size: i64, align: VertAlign) -> i64 {
+        match align {
+            VertAlign::Top | VertAlign::Inside => offset.saturating_mul(2),
+            VertAlign::Center => offset.saturating_mul(2).saturating_sub(size),
+            VertAlign::Bottom | VertAlign::Outside => offset
+                .saturating_mul(-2)
+                .saturating_sub(size.saturating_mul(2)),
+        }
+    }
     if para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}') {
         return None;
     }
@@ -538,8 +558,11 @@ fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<
         return None;
     }
     let mut count = 0usize;
-    let mut min_voff = i32::MAX;
-    let mut max_voff = i32::MIN;
+    let mut common_frame = None;
+    let mut overlap_left = i64::MIN;
+    let mut overlap_right = i64::MAX;
+    let mut overlap_top = i64::MIN;
+    let mut overlap_bottom = i64::MAX;
     let mut min_pic_h = i32::MAX;
     let mut min_pic_w = i32::MAX;
     let mut max_pic_h = i32::MIN;
@@ -552,25 +575,59 @@ fn floating_image_stack_extents(para: &Paragraph, min_height_hu: i32) -> Option<
         {
             return None;
         }
-        let voff = common.vertical_offset as i32;
-        min_voff = min_voff.min(voff);
-        max_voff = max_voff.max(voff);
+        let frame = (
+            common.horz_rel_to,
+            common.horz_align,
+            common.width_criterion,
+            common.vert_rel_to,
+            common.vert_align,
+            common.height_criterion,
+        );
+        if let Some(expected) = common_frame {
+            if frame != expected {
+                return None;
+            }
+        } else {
+            common_frame = Some(frame);
+        }
+
+        // Compare alignment-relative physical origins in doubled HWPUNIT so
+        // center alignment retains half-size terms without rounding. The
+        // shared frame origin cancels only after alignment is applied.
+        let width = i64::from(common.width);
+        let height = i64::from(common.height);
+        let left = horizontal_start_twice(
+            i64::from(common.horizontal_offset as i32),
+            width,
+            common.horz_align,
+        );
+        let top = vertical_start_twice(
+            i64::from(common.vertical_offset as i32),
+            height,
+            common.vert_align,
+        );
+        let right = left.saturating_add(width.saturating_mul(2));
+        let bottom = top.saturating_add(height.saturating_mul(2));
+        overlap_left = overlap_left.max(left);
+        overlap_right = overlap_right.min(right);
+        overlap_top = overlap_top.max(top);
+        overlap_bottom = overlap_bottom.min(bottom);
         min_pic_h = min_pic_h.min(common.height as i32);
         min_pic_w = min_pic_w.min(common.width as i32);
         max_pic_h = max_pic_h.max(common.height as i32);
         count += 1;
     }
-    // [#2004] 세로오프셋이 동일하거나(#1995: 전부 0) 이미지 높이보다 작은 band 안에서
-    // varying(156714340: 0/-3360/-2940 …)이어 서로 크게 겹치면 "겹침 스택"으로 판정한다.
-    // 오프셋 spread ≥ 이미지 높이면 이미 세로로 벌어진 정상 배치이므로 제외.
-    (count >= 2 && (max_voff as i64 - min_voff as i64) <= min_pic_h as i64)
+    // A touching edge has zero overlap and is an ordinary adjacent layout.
+    // Keep the inequalities strict on both axes so the compatibility rewrite
+    // cannot invent flow at either horizontal or vertical boundaries.
+    (count >= 2 && overlap_left < overlap_right && overlap_top < overlap_bottom)
         .then_some((min_pic_w, max_pic_h))
 }
 
 /// 한 문단이 "동일 위치·겹침불허·전면급 부동 그림 다수" 스택인지.
 /// 한글은 이런 그림을 쪽당 1장씩 배치하지만 rhwp 는 앵커 쪽에 겹쳐 그린다(#2004 부동 변종).
-/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 동일 세로오프셋 +
-/// 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
+/// 게이트를 좁혀(모든 컨트롤이 tac=false·Square·overlap=false·전면급 그림 + 같은 기준틀의
+/// 2D 교집합 + 개수≥2 + 가시 텍스트 없음) 일반 부동개체 문단 오검출을 차단한다.
 fn para_is_floating_image_stack(para: &Paragraph, min_height_hu: i32) -> bool {
     floating_image_stack_extents(para, min_height_hu).is_some()
 }
@@ -1398,26 +1455,14 @@ impl DocumentCore {
         self.layout_engine.take_table_overlaps()
     }
 
-    /// [Issue #4379] `RHWP_RENDER_PATH=layer-svg` 는 legacy/layer 두 SVG 경로를 A/B 대조하는
-    /// **네이티브 전용** 디버그 스위치다. `#[cfg(not(target_arch = "wasm32"))]` 로 감싼 이유는
-    /// 장식이 아니라 사실 표시다 — wasm32-unknown-unknown(rhwp-studio 브라우저 빌드)에는
-    /// 프로세스 환경변수가 없어 `std::env::var` 가 항상 `Err` 를 반환하므로, 이 함수를 거쳐서는
-    /// wasm 에서 layer 경로에 절대 도달할 수 없다(`renderPageSvg` → 항상 legacy). studio 가
-    /// 실제로 인쇄 등가 SVG 를 원하면 이 함수를 우회해 `render_page_svg_layer_with_profile_native`
-    /// (`renderPageSvgWithProfile`) 를 직접 불러야 한다 — PDF 내보내기(`file.ts:461`)가 이미
-    /// 그렇게 한다. 이 cfg 분기는 "네이티브 디버그 스위치이지 프로덕션 경로 선택 API 가 아니다"를
-    /// 코드로 드러낸다.
+    /// Production SVG entry point. Screen-profile paint decisions are built once in
+    /// `PageLayerTree` and replayed by the SVG backend, matching the Studio renderer boundary.
     pub fn render_page_svg_native(&self, page_num: u32) -> Result<String, HwpError> {
-        #[cfg(not(target_arch = "wasm32"))]
-        if matches!(
-            std::env::var("RHWP_RENDER_PATH").ok().as_deref(),
-            Some("layer-svg")
-        ) {
-            return self.render_page_svg_layer_native(page_num);
-        }
-        self.render_page_svg_legacy_native(page_num)
+        self.render_page_svg_layer_native(page_num)
     }
 
+    /// Compatibility/diagnostic backend for comparing pre-paint SVG behavior during migration.
+    /// Production routing must not call this function implicitly or through an environment flag.
     pub fn render_page_svg_legacy_native(&self, page_num: u32) -> Result<String, HwpError> {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
@@ -1660,15 +1705,12 @@ impl DocumentCore {
         font_embed_mode: crate::renderer::svg::FontEmbedMode,
         font_paths: &[std::path::PathBuf],
     ) -> Result<String, HwpError> {
-        let tree = self.build_page_tree(page_num)?;
-        let _overflows = self.layout_engine.take_overflows();
-        let mut renderer = SvgRenderer::new();
-        renderer.show_paragraph_marks = self.show_paragraph_marks;
-        renderer.show_control_codes = self.show_control_codes;
-        renderer.debug_overlay = self.debug_overlay;
-        renderer.font_embed_mode = font_embed_mode;
-        renderer.font_paths = font_paths.to_vec();
-        renderer.render_tree(&tree);
+        let tree = self.build_page_layer_tree_with_profile(page_num, RenderProfile::Screen)?;
+        let mut renderer = SvgLayerRenderer::new();
+        renderer.inner_mut().font_embed_mode = font_embed_mode;
+        renderer.inner_mut().font_paths = font_paths.to_vec();
+        renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
+        renderer.render_page(&tree)?;
 
         // 폰트 임베딩 후처리
         let mut svg = renderer.output().to_string();
@@ -1676,8 +1718,11 @@ impl DocumentCore {
             // [#2524] 문서 임베디드(BinData) 폰트를 face명 → bytes 로 수집해
             // @font-face 직접 임베딩에 쓴다(미설치 임베디드 폰트 chrome 두부 해소).
             let embedded_fonts = self.collect_embedded_font_bytes_by_name();
-            let style_css =
-                crate::renderer::svg::generate_font_style(&renderer, font_paths, &embedded_fonts);
+            let style_css = crate::renderer::svg::generate_font_style(
+                renderer.inner(),
+                font_paths,
+                &embedded_fonts,
+            );
             if !style_css.is_empty() {
                 // <svg ...> 직후에 <style> 삽입
                 if let Some(pos) = svg.find('>') {
@@ -4154,6 +4199,152 @@ impl DocumentCore {
         self.para_offset[section_idx] -= 1;
     }
 
+    pub(crate) fn table_text_reflowed_path_exists(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> bool {
+        let Some(Control::Table(table)) = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(|paragraph| paragraph.controls.get(control_idx))
+        else {
+            return false;
+        };
+        self.render_normalization
+            .text_reflowed_tables
+            .contains(&super::super::TableTextReflowKey::from_table(table))
+    }
+
+    pub(crate) fn forget_text_reflowed_tables_in_paragraph_at(
+        &mut self,
+        section_idx: usize,
+        paragraph_idx: usize,
+    ) {
+        let keys = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(paragraph_idx))
+            .map(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .filter_map(|control| match control {
+                        Control::Table(table) => {
+                            Some(super::super::TableTextReflowKey::from_table(table))
+                        }
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        for key in keys {
+            self.render_normalization.text_reflowed_tables.remove(&key);
+        }
+    }
+
+    pub(crate) fn text_reflowed_table_control_indices_at(
+        &self,
+        section_idx: usize,
+        paragraph_idx: usize,
+    ) -> Vec<usize> {
+        self.document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(paragraph_idx))
+            .map(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(control_index, control)| match control {
+                        Control::Table(table)
+                            if self
+                                .render_normalization
+                                .text_reflowed_tables
+                                .contains(&super::super::TableTextReflowKey::from_table(table)) =>
+                        {
+                            Some(control_index)
+                        }
+                        _ => None,
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    pub(crate) fn inherit_text_reflowed_table_controls(
+        &mut self,
+        section_idx: usize,
+        paragraph_idx: usize,
+        control_offset: usize,
+        source_control_indices: &[usize],
+    ) -> Result<(), HwpError> {
+        for &source_control_index in source_control_indices {
+            self.mark_table_text_reflowed_after_edit(
+                section_idx,
+                paragraph_idx,
+                control_offset.saturating_add(source_control_index),
+            )?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn text_reflowed_table_paths_for_snapshot(
+        &self,
+    ) -> std::collections::HashSet<crate::renderer::render_normalization::RenderPath> {
+        let mut paths = std::collections::HashSet::new();
+        for (section_index, section) in self.document.sections.iter().enumerate() {
+            for (paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
+                for (control_index, control) in paragraph.controls.iter().enumerate() {
+                    let Control::Table(table) = control else {
+                        continue;
+                    };
+                    if self
+                        .render_normalization
+                        .text_reflowed_tables
+                        .contains(&super::super::TableTextReflowKey::from_table(table))
+                    {
+                        paths.insert(crate::renderer::render_normalization::RenderPath {
+                            section_index,
+                            parent_paragraph_index: paragraph_index,
+                            entries: Vec::new(),
+                            target_control_index: Some(control_index),
+                        });
+                    }
+                }
+            }
+        }
+        paths
+    }
+
+    pub(crate) fn restore_text_reflowed_tables_from_snapshot(
+        &mut self,
+        paths: &std::collections::HashSet<crate::renderer::render_normalization::RenderPath>,
+    ) {
+        self.render_normalization.text_reflowed_tables.clear();
+        for path in paths {
+            let Some(control_index) = path.target_control_index else {
+                continue;
+            };
+            if let Some(Control::Table(table)) = self
+                .document
+                .sections
+                .get(path.section_index)
+                .and_then(|section| section.paragraphs.get(path.parent_paragraph_index))
+                .and_then(|paragraph| paragraph.controls.get(control_index))
+            {
+                self.render_normalization
+                    .text_reflowed_tables
+                    .insert(super::super::TableTextReflowKey::from_table(table));
+            }
+        }
+    }
+
     /// 모든 구역을 dirty로 표시한다.
     pub(crate) fn mark_all_sections_dirty(&mut self) {
         for d in &mut self.dirty_sections {
@@ -4176,7 +4367,7 @@ impl DocumentCore {
     /// 않게 된 순간**에 부르는 연산이다. 문서를 통째로 갈아끼운 직후(`set_document`,
     /// 스냅샷 복원), 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
     ///
-    /// 증분 게이트(`dirty_sections`·`section_revisions`·`measured_sections`·`table.dirty`)는
+    /// 증분 게이트(`dirty_sections`·`section_revisions`·`dirty_paragraphs`·`measured_sections`)는
     /// 모두 "원본이 그대로면 파생본을 재사용한다"는 한 가지 규칙이라, 원본이 그대로인 채
     /// 파생본만 못 믿게 된 상황을 스스로 판별할 수 없다. 그래서 이 메서드가 게이트가 읽는
     /// 상태를 전부 비우고 재조판까지 한 번에 끝낸다 — 돌아온 뒤 "나중에 다시 계산해야
@@ -4297,7 +4488,8 @@ impl DocumentCore {
         } else {
             measurer.measure_section(paragraphs, composed, &self.styles, Some(column_width))
         };
-        let typesetter = TypesetEngine::new(self.dpi);
+        let typesetter = TypesetEngine::new(self.dpi)
+            .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         let Some(renderer_job) = typesetter.begin_resumable_table_pagination(
             paragraphs,
             composed,
@@ -4397,14 +4589,18 @@ impl DocumentCore {
                     page_count: self.page_count(),
                 };
             };
-            TypesetEngine::new(self.dpi).step_resumable_table_pagination(
-                &mut pending.renderer_job,
-                paragraph,
-                table,
-                measured_table,
-                &self.styles,
-                fragment_budget,
-            )
+            TypesetEngine::new(self.dpi)
+                .with_render_normalization(std::sync::Arc::clone(
+                    &self.render_normalization.overlay,
+                ))
+                .step_resumable_table_pagination(
+                    &mut pending.renderer_job,
+                    paragraph,
+                    table,
+                    measured_table,
+                    &self.styles,
+                    fragment_budget,
+                )
         };
         if !step.complete {
             self.pending_pagination_job = Some(pending);
@@ -4419,11 +4615,16 @@ impl DocumentCore {
         let section_index = pending.descriptor.section_index;
         let result = {
             let section = &self.document.sections[section_index];
-            let Some(mut result) = TypesetEngine::new(self.dpi).finish_resumable_table_pagination(
-                pending.renderer_job,
-                &section.paragraphs,
-                section_index,
-            ) else {
+            let Some(mut result) = TypesetEngine::new(self.dpi)
+                .with_render_normalization(std::sync::Arc::clone(
+                    &self.render_normalization.overlay,
+                ))
+                .finish_resumable_table_pagination(
+                    pending.renderer_job,
+                    &section.paragraphs,
+                    section_index,
+                )
+            else {
                 return DeferredPaginationStepResult {
                     state: DeferredPaginationJobState::Fallback,
                     revision,
@@ -4478,13 +4679,6 @@ impl DocumentCore {
         self.para_column_map[section_index] = vec![0; paragraph_count];
         for offset in &mut self.para_offset {
             *offset = 0;
-        }
-        for paragraph in &mut self.document.sections[section_index].paragraphs {
-            for control in &mut paragraph.controls {
-                if let Control::Table(table) = control {
-                    table.dirty = false;
-                }
-            }
         }
         self.deferred_pagination_descriptor = None;
         self.invalidate_page_tree_cache();
@@ -4673,11 +4867,6 @@ impl DocumentCore {
             self.dirty_paragraphs.push(None);
         }
         self.dirty_paragraphs.truncate(sec_count);
-        // [#4325] 이번 패스에서 실제로 재측정한 구역만 표시한다. dirty가 아니어서 건너뛴
-        // 구역은 표 dirty 플래그를 지우면 안 된다 — 지우는 범위와 소비하는 범위(측정 스킵)가
-        // 어긋나면 그 구역의 표가 이후 dirty로 마킹돼도 이번 패스의 clear로 소실된다.
-        let mut remeasured_sections = vec![false; sec_count];
-
         // 구역 간 쪽번호 위치/번호 상속
         let mut carry_page_number_pos: Option<crate::model::control::PageNumberPos> = None;
         let mut carry_last_page_number: u32 = 0; // 이전 구역의 마지막 쪽번호
@@ -4892,7 +5081,9 @@ impl DocumentCore {
                 } else {
                     EndnoteDeferral::None
                 };
-                let typesetter = TypesetEngine::new(self.dpi);
+                let typesetter = TypesetEngine::new(self.dpi).with_render_normalization(
+                    std::sync::Arc::clone(&self.render_normalization.overlay),
+                );
                 typesetter.typeset_section_with_variant(
                     para_src,
                     composed,
@@ -5286,7 +5477,6 @@ impl DocumentCore {
             }
             self.pagination[idx] = result;
             self.dirty_sections[idx] = false;
-            remeasured_sections[idx] = true;
             // 문단 dirty 비트맵 초기화 (모든 문단 clean)
             let para_count = section.paragraphs.len();
             self.dirty_paragraphs[idx] = Some(vec![false; para_count]);
@@ -5326,22 +5516,6 @@ impl DocumentCore {
             *off = 0;
         }
 
-        // 표 dirty 플래그 초기화. [#4325] 이번 패스에서 재측정하지 않고 건너뛴 구역은
-        // 제외한다 — 그 구역의 표는 measure_section_incremental이 아직 소비하지 않았으므로
-        // dirty를 여기서 지우면 이후 실제로 재측정될 때 변경 전 MeasuredTable을 그대로
-        // clone하게 된다(issue #4325).
-        for (idx, section) in self.document.sections.iter_mut().enumerate() {
-            if !remeasured_sections[idx] {
-                continue;
-            }
-            for para in &mut section.paragraphs {
-                for ctrl in &mut para.controls {
-                    if let Control::Table(table) = ctrl {
-                        table.dirty = false;
-                    }
-                }
-            }
-        }
         let issue2424_cleanup_elapsed = issue2424_cleanup_started
             .map(|started| started.elapsed())
             .unwrap_or_default();
@@ -5535,12 +5709,40 @@ impl DocumentCore {
             }));
         }
         self.render_normalization.sections = out;
-        let overlay = std::sync::Arc::new(
+        let mut overlay =
             crate::renderer::render_normalization::RenderNormalizationOverlay::from_document_reusing(
                 &self.document,
                 &self.render_normalization.overlay,
-            ),
-        );
+            );
+        for (section_index, section) in self.document.sections.iter().enumerate() {
+            for (paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
+                for (control_index, control) in paragraph.controls.iter().enumerate() {
+                    let Control::Table(table) = control else {
+                        continue;
+                    };
+                    let key = super::super::TableTextReflowKey::from_table(table);
+                    if !self
+                        .render_normalization
+                        .text_reflowed_tables
+                        .contains(&key)
+                    {
+                        continue;
+                    }
+                    overlay.register_text_reflowed_table(table);
+                    if let Some(Control::Table(normalized)) = self
+                        .render_normalization
+                        .sections
+                        .get(section_index)
+                        .and_then(|section| section.as_ref())
+                        .and_then(|section| section.paragraphs.get(paragraph_index))
+                        .and_then(|paragraph| paragraph.controls.get(control_index))
+                    {
+                        overlay.register_text_reflowed_table(normalized);
+                    }
+                }
+            }
+        }
+        let overlay = std::sync::Arc::new(overlay);
         self.render_normalization.overlay = std::sync::Arc::clone(&overlay);
         self.layout_engine.set_render_normalization_overlay(overlay);
     }
@@ -5670,6 +5872,36 @@ impl DocumentCore {
             .entry(path)
             .or_insert(0);
         *revision = revision.wrapping_add(1);
+        Ok(())
+    }
+
+    /// Record that live text reflow superseded a top-level table's stored
+    /// pagination frame. The logical path survives renderer reconstruction;
+    /// concrete source/normalized pointers are rebuilt in the overlay.
+    pub(crate) fn mark_table_text_reflowed_after_edit(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<(), HwpError> {
+        let table = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(|paragraph| paragraph.controls.get(control_idx))
+            .and_then(|control| match control {
+                Control::Table(table) => Some(table.as_ref()),
+                _ => None,
+            });
+        let Some(table) = table else {
+            return Err(HwpError::RenderError(format!(
+                "text-reflowed table path mismatch: section={section_idx} para={parent_para_idx} control={control_idx}"
+            )));
+        };
+        self.render_normalization
+            .text_reflowed_tables
+            .insert(super::super::TableTextReflowKey::from_table(table));
         Ok(())
     }
 
@@ -5869,7 +6101,8 @@ impl DocumentCore {
     }
 
     fn dump_section_typesetter(&self, sec_idx: usize) -> TypesetEngine {
-        let typesetter = TypesetEngine::new(self.dpi);
+        let typesetter = TypesetEngine::new(self.dpi)
+            .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         typesetter.apply_section_format_context(
             self.section_render_paragraphs(sec_idx),
             &self.styles,
@@ -8388,8 +8621,39 @@ mod tests {
         )));
     }
 
+    fn text_reflowed_table_provenance_lives_in_render_normalization() {
+        use crate::model::control::Control;
+        use crate::model::document::{Document, Section};
+        use crate::model::paragraph::Paragraph;
+        use crate::model::table::Table;
+
+        let document = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::default())],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core.mark_table_text_reflowed_after_edit(0, 0, 0)
+            .expect("table path");
+        core.compute_render_normalized();
+
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            unreachable!()
+        };
+        assert!(core.render_normalization.overlay.table_text_reflowed(table));
+        assert_eq!(core.render_normalization.text_reflowed_tables.len(), 1);
+    }
+
     #[test]
     fn print_profile_suppresses_interactive_output_options_without_mutating_state() {
+        text_reflowed_table_provenance_lives_in_render_normalization();
+
         let bytes = include_bytes!("../../../samples/render-p35-font-native-bitmap.hwpx");
         let mut core = DocumentCore::from_bytes(bytes).expect("fixture parses");
         core.show_paragraph_marks = true;

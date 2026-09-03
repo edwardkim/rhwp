@@ -654,8 +654,8 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         tab_extended,
         title_marks,
         numbering_restart,
-        // [#4149] 파생 캐시 — IR 비교 대상 아님 (직렬화·저장 경로에도 미포함).
-        single_line_overflow_memo: _,
+        // 저장 LineSeg의 편집 후 provenance — 내용 비교는 line_segs가 담당한다.
+        stored_text_partition_dirty: _,
         // [#4677] 조판 전용 보강 줄 표식 — 파일에 실리지 않으므로 IR 비교 대상 아님.
         layout_only_fill_lines: _,
     } = a;
@@ -932,12 +932,6 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         raw_ctrl_seal: _,
         raw_table_record_attr,
         raw_table_record_extra,
-        dirty,
-        text_reflowed_after_edit: _,
-        local_resize_rows,
-        local_resize_cols,
-        local_resize_cell_widths,
-        local_resize_cell_heights,
     } = a;
 
     macro_rules! f {
@@ -964,11 +958,6 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
     f!(raw_ctrl_data);
     f!(raw_table_record_attr);
     f!(raw_table_record_extra);
-    f!(dirty);
-    f!(local_resize_rows);
-    f!(local_resize_cols);
-    f!(local_resize_cell_widths);
-    f!(local_resize_cell_heights);
 
     // 캡션: 속성은 문단을 뺀 사본으로, 문단은 재귀로.
     {
