@@ -801,7 +801,7 @@ impl TextLineNode {
 }
 
 /// 텍스트 런 노드 (동일 글자 모양의 연속 텍스트)
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextRunNode {
     /// 텍스트 내용
     pub text: String,

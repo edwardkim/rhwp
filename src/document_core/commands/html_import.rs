@@ -364,13 +364,7 @@ impl DocumentCore {
         for i in cell_para_idx..=last_para_idx {
             self.reflow_cell_paragraph(section_idx, parent_para_idx, control_idx, cell_idx, i);
         }
-        if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
-            [parent_para_idx]
-            .controls
-            .get_mut(control_idx)
-        {
-            t.dirty = true;
-        }
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 

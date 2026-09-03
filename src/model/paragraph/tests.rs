@@ -434,6 +434,27 @@ fn test_split_at_middle() {
     assert_eq!(new_para.char_offsets, vec![0, 1, 2]);
     assert_eq!(new_para.char_shapes[0].start_pos, 0);
     assert_eq!(new_para.char_shapes[0].char_shape_id, 1);
+
+    split_publishes_fresh_rows_without_old_suffix_or_source_positions();
+}
+
+fn split_publishes_fresh_rows_without_old_suffix_or_source_positions() {
+    let mut para = Paragraph {
+        text: "abcd".to_string(),
+        char_count: 5,
+        char_offsets: vec![0, 1, 2, 3],
+        line_segs: vec![LineSeg::default(), LineSeg::default()],
+        layout_only_fill_lines: 1,
+        source_line_seg_vertical_pos: Some(vec![10, 20]),
+        ..Default::default()
+    };
+
+    let new_para = para.split_at(2);
+    assert_eq!(para.line_segs.len(), 1);
+    assert_eq!(para.serializable_line_segs().len(), 1);
+    assert_eq!(para.layout_only_fill_lines, 0);
+    assert!(para.source_line_seg_vertical_pos.is_none());
+    assert_eq!(new_para.serializable_line_segs().len(), 1);
 }
 
 #[test]
@@ -584,6 +605,32 @@ fn test_merge_from_basic() {
     assert_eq!(merge_pos, 2); // 원래 "안녕"의 길이
     assert_eq!(para1.text, "안녕하세요");
     assert_eq!(para1.char_offsets, vec![0, 1, 2, 3, 4]);
+
+    merge_publishes_fresh_rows_without_old_suffix_or_source_positions();
+}
+
+fn merge_publishes_fresh_rows_without_old_suffix_or_source_positions() {
+    let mut first = Paragraph {
+        text: "ab".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        line_segs: vec![LineSeg::default(), LineSeg::default()],
+        layout_only_fill_lines: 1,
+        source_line_seg_vertical_pos: Some(vec![10, 20]),
+        ..Default::default()
+    };
+    let second = Paragraph {
+        text: "cd".to_string(),
+        char_count: 3,
+        char_offsets: vec![0, 1],
+        ..Default::default()
+    };
+
+    first.merge_from(&second);
+    assert_eq!(first.line_segs.len(), 1);
+    assert_eq!(first.serializable_line_segs().len(), 1);
+    assert_eq!(first.layout_only_fill_lines, 0);
+    assert!(first.source_line_seg_vertical_pos.is_none());
 }
 
 #[test]

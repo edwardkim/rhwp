@@ -77,25 +77,6 @@ pub struct Table {
     pub raw_table_record_attr: u32,
     /// HWPTAG_TABLE 레코드의 border_fill_id 이후 추가 바이트 (라운드트립 보존용)
     pub raw_table_record_extra: Vec<u8>,
-    /// 구조/내용 변경 시 true → 재측정 필요 (Default: false)
-    #[doc(hidden)]
-    pub dirty: bool,
-    /// 셀 텍스트 편집으로 line segment를 다시 계산했는지 나타내는 런타임 provenance.
-    /// 저장된 source frame과 reflow suffix를 구분하는 pagination 전용 상태다.
-    #[doc(hidden)]
-    pub text_reflowed_after_edit: bool,
-    /// Studio 보상 resize로 행별 독립 가로 경계를 보존해야 하는 행.
-    #[doc(hidden)]
-    pub local_resize_rows: Vec<u16>,
-    /// Studio 보상 resize로 열별 독립 세로 경계를 보존해야 하는 열.
-    #[doc(hidden)]
-    pub local_resize_cols: Vec<u16>,
-    /// Studio 로컬 가로 resize 후 셀별 목표 표시 폭(HWPUNIT).
-    #[doc(hidden)]
-    pub local_resize_cell_widths: Vec<(usize, u32)>,
-    /// Studio 로컬 세로 resize 후 셀별 목표 표시 높이(HWPUNIT).
-    #[doc(hidden)]
-    pub local_resize_cell_heights: Vec<(usize, u32)>,
 }
 
 /// 표 쪽 나눔 종류
@@ -482,7 +463,14 @@ impl Cell {
                 char_count_msb: true, // 셀 문단은 항상 MSB 설정
                 text: String::new(),
                 char_shapes: tpl_para.char_shapes.iter().take(1).cloned().collect(),
-                line_segs: tpl_para.line_segs.iter().take(1).cloned().collect(),
+                // A new source paragraph may inherit source metrics, never a
+                // renderer-only fill line whose suffix ownership would be lost.
+                line_segs: tpl_para
+                    .serializable_line_segs()
+                    .iter()
+                    .take(1)
+                    .cloned()
+                    .collect(),
                 para_shape_id: tpl_para.para_shape_id,
                 style_id: tpl_para.style_id,
                 raw_header_extra,
@@ -531,9 +519,9 @@ impl Table {
     ///
     /// Native tables may repeat a row with raw cell widths whose sum is a few
     /// HWPUNIT short of the table's resolved column grid. Those raw values are
-    /// serialization auxiliaries, not independent row boundaries. Preserve
-    /// explicit/inferred local-resize rows; otherwise use genuine base-track
-    /// evidence and place any positive table-width residual on the last column.
+    /// serialization auxiliaries, not independent row boundaries. Use genuine
+    /// base-track evidence and place any positive table-width residual on the
+    /// last column without inferring a prior editing gesture.
     ///
     /// This is deliberately batch-shaped. Row-role inference examines the table
     /// as a whole, so repeating it once per cell makes large native tables
@@ -557,25 +545,7 @@ impl Table {
             return owners;
         }
 
-        let explicit_rows = self
-            .local_resize_rows
-            .iter()
-            .copied()
-            .collect::<std::collections::BTreeSet<_>>();
-        let (outlier_rows, inferred_rows) = self.inferred_width_row_roles();
-
-        // Runtime edit metadata is keyed by cell index, not by row/column.
-        // Preserve exact overrides without treating a missing override as zero.
-        for &(cell_index, width) in &self.local_resize_cell_widths {
-            if width > 0
-                && self
-                    .cells
-                    .get(cell_index)
-                    .is_some_and(|cell| explicit_rows.contains(&cell.row))
-            {
-                owners[cell_index] = to_i32(u64::from(width));
-            }
-        }
+        let nonclosing_rows = self.declared_width_rows_exceeding(0);
 
         // Extract only real single-column evidence. `base_grid_column_widths`
         // intentionally fills holes from the display grid; that fallback would
@@ -587,8 +557,7 @@ impl Table {
                 || cell.col_span != 1
                 || cell.width == 0
                 || col >= col_count
-                || explicit_rows.contains(&cell.row)
-                || outlier_rows.contains(&cell.row)
+                || nonclosing_rows.contains(&cell.row)
             {
                 continue;
             }
@@ -613,8 +582,7 @@ impl Table {
             }
         }
         for (row_index, cell_indices) in rows.iter_mut().enumerate() {
-            let row = row_index as u16;
-            if explicit_rows.contains(&row) || inferred_rows.contains(&row) {
+            if nonclosing_rows.contains(&(row_index as u16)) {
                 continue;
             }
             cell_indices.sort_by_key(|index| self.cells[*index].col);
@@ -658,6 +626,54 @@ impl Table {
         owners
     }
 
+    /// Complete row declarations wider than the persisted table width.
+    ///
+    /// This is a format-validity check, not edit-history inference: each row is
+    /// judged solely against its own cells and `common.width`. Such auxiliary
+    /// widths cannot define the shared fallback grid.
+    pub fn invalid_declared_width_rows(&self) -> std::collections::BTreeSet<u16> {
+        let tolerance =
+            (u64::from(self.common.width) / 100).max(usize::from(self.col_count).max(1) as u64);
+        self.declared_width_rows_exceeding(tolerance)
+    }
+
+    fn declared_width_rows_exceeding(&self, tolerance: u64) -> std::collections::BTreeSet<u16> {
+        let mut invalid = std::collections::BTreeSet::new();
+        let col_count = usize::from(self.col_count);
+        if col_count == 0 || self.common.width == 0 {
+            return invalid;
+        }
+        for row in 0..self.row_count {
+            let mut cells = self
+                .cells
+                .iter()
+                .filter(|cell| cell.row == row && cell.row_span == 1)
+                .collect::<Vec<_>>();
+            cells.sort_by_key(|cell| cell.col);
+            let mut next_col = 0usize;
+            let mut total = 0u64;
+            let mut complete = !cells.is_empty();
+            for cell in cells {
+                let start = usize::from(cell.col);
+                let end = start.saturating_add(usize::from(cell.col_span));
+                if cell.col_span == 0 || start != next_col || end > col_count {
+                    complete = false;
+                    break;
+                }
+                total = total.saturating_add(u64::from(cell.width));
+                next_col = end;
+            }
+            // A short row can be closed by the table-width residual. A row
+            // wider than its persisted table cannot be a valid shared grid.
+            if complete
+                && next_col == col_count
+                && total.saturating_sub(u64::from(self.common.width)) > tolerance
+            {
+                invalid.insert(row);
+            }
+        }
+        invalid
+    }
     /// [#5910] 병합 셀 선언 높이가 걸친 행들의 단일행 선언 합보다 **작을** 때, 한글이
     /// 마지막 걸침 행에서 흡수하는 축소량(HWPUNIT)을 행별로 계산한다.
     ///
@@ -775,146 +791,6 @@ impl Table {
             h += 1;
         }
         (0..h).collect()
-    }
-
-    fn inferred_width_row_roles(
-        &self,
-    ) -> (
-        std::collections::BTreeSet<u16>,
-        std::collections::BTreeSet<u16>,
-    ) {
-        let col_count = self.col_count as usize;
-        if col_count == 0 || self.row_count == 0 {
-            return Default::default();
-        }
-
-        let explicit_rows = self
-            .local_resize_rows
-            .iter()
-            .copied()
-            .collect::<std::collections::BTreeSet<_>>();
-        let mut grouped_rows =
-            std::collections::BTreeMap::<Vec<(u16, u16)>, Vec<(u16, Vec<u32>)>>::new();
-
-        let mut cells_by_row = vec![Vec::new(); usize::from(self.row_count)];
-        for cell in &self.cells {
-            if cell.row_span == 1 {
-                if let Some(row) = cells_by_row.get_mut(usize::from(cell.row)) {
-                    row.push(cell);
-                }
-            }
-        }
-
-        for (row_index, row_cells) in cells_by_row.iter_mut().enumerate() {
-            let row = row_index as u16;
-            if explicit_rows.contains(&row) {
-                continue;
-            }
-            row_cells.sort_by_key(|cell| cell.col);
-
-            let mut next_col = 0u16;
-            let mut pattern = Vec::new();
-            let mut widths = Vec::new();
-            let mut valid = !row_cells.is_empty();
-
-            for cell in row_cells.iter().copied() {
-                let span = cell.col_span.max(1);
-                let end_col = cell.col.saturating_add(span);
-                if cell.col != next_col || end_col <= cell.col || end_col as usize > col_count {
-                    valid = false;
-                    break;
-                }
-
-                pattern.push((cell.col, span));
-                widths.push(cell.width);
-                next_col = end_col;
-            }
-
-            if !valid || next_col as usize != col_count {
-                continue;
-            }
-
-            grouped_rows.entry(pattern).or_default().push((row, widths));
-        }
-
-        let mut base_grid_outliers = std::collections::BTreeSet::new();
-        let mut inferred_local_resize = std::collections::BTreeSet::new();
-        for rows in grouped_rows.values() {
-            if rows.len() < 2 {
-                continue;
-            }
-
-            let mut width_counts = std::collections::BTreeMap::<Vec<u32>, usize>::new();
-            for (_, widths) in rows {
-                *width_counts.entry(widths.clone()).or_default() += 1;
-            }
-
-            let Some((dominant_widths, dominant_count)) =
-                width_counts.iter().max_by_key(|(_, count)| **count)
-            else {
-                continue;
-            };
-            if *dominant_count < 2 {
-                continue;
-            }
-
-            let dominant_is_tied = width_counts
-                .values()
-                .filter(|count| **count == *dominant_count)
-                .count()
-                > 1;
-            if dominant_is_tied {
-                continue;
-            }
-
-            // Studio의 행 단위 가로 resize는 행 전체 표시 폭을 유지한다. 저장된
-            // 독립 행은 기준 폭 합과 같거나, 셀 간격을 흡수한 common.width와 같은
-            // 폭 합을 가질 수 있다. 반대로 일부 HWP5 셀의 퇴화 폭(예: 1 HU)은
-            // 어느 쪽에도 맞지 않으므로 로컬 resize로 오인하면 안 된다.
-            let dominant_total = dominant_widths
-                .iter()
-                .map(|width| u64::from(*width))
-                .sum::<u64>();
-            // 셀별 HWPUNIT 정수 반올림이 누적될 수 있어 셀당 1 HU를 허용한다.
-            let total_tolerance = dominant_widths.len().max(1) as u64;
-
-            for (row, widths) in rows {
-                let row_total = widths.iter().map(|width| u64::from(*width)).sum::<u64>();
-                let matches_base_total = row_total.abs_diff(dominant_total) <= total_tolerance;
-                let matches_common_width = self.common.width > 0
-                    && row_total.abs_diff(u64::from(self.common.width)) <= total_tolerance;
-                if widths != dominant_widths {
-                    // Every unique minority vector is excluded from base-column extraction.
-                    // Otherwise a single oversized/corrupt cell can widen the entire table even
-                    // when it is not safe to reproduce as an independent row grid.
-                    base_grid_outliers.insert(*row);
-                    if matches_base_total || matches_common_width {
-                        inferred_local_resize.insert(*row);
-                    }
-                }
-            }
-        }
-
-        (base_grid_outliers, inferred_local_resize)
-    }
-
-    /// Minority row-width vectors that must not participate in the table's base column grid.
-    ///
-    /// This set is intentionally wider than [`Self::inferred_local_resize_rows`]: a malformed
-    /// row with a non-preserved total is rendered on the dominant base grid, but still must not
-    /// enlarge that base grid.
-    pub fn base_grid_outlier_rows(&self) -> Vec<u16> {
-        self.inferred_width_row_roles().0.into_iter().collect()
-    }
-
-    /// 저장/복구 후 Studio 런타임 힌트가 사라진 행 단위 가로 resize를 보수적으로 추론한다.
-    ///
-    /// 한컴 HWP5에는 `local_resize_rows` 같은 rhwp 내부 힌트를 저장할 곳이 없다. 따라서
-    /// 같은 셀 배치 패턴을 공유하는 행들 중 다수의 폭 벡터와 다른 소수 행만 행 단위
-    /// resize 결과로 간주한다. 병합 패턴이 유일한 행은 원본 문서 구조일 가능성이 높아
-    /// 추론 대상에서 제외한다. 표시 폭 합이 보존된 행만 독립 grid로 재현한다.
-    pub fn inferred_local_resize_rows(&self) -> Vec<u16> {
-        self.inferred_width_row_roles().1.into_iter().collect()
     }
 
     /// 2D 그리드 인덱스를 재구축한다.
@@ -1116,7 +992,6 @@ impl Table {
             }
         }
 
-        self.dirty = true;
         Ok(changed)
     }
 
@@ -1175,13 +1050,8 @@ impl Table {
         self.row_sizes = vec![target_cols as i16; target_rows as usize];
         self.cells = cells;
         self.zones.clear();
-        self.local_resize_rows.clear();
-        self.local_resize_cols.clear();
-        self.local_resize_cell_widths.clear();
-        self.local_resize_cell_heights.clear();
         self.update_ctrl_dimensions();
         self.rebuild_grid();
-        self.dirty = true;
 
         Ok(self
             .cells
@@ -1304,32 +1174,13 @@ impl Table {
         widths
     }
 
-    /// base grid 기준 열별 폭 — 행별 폭 조절(local resize) 행과 base grid
-    /// 이탈 행을 제외한 열 max. 렌더러의 `resolve_column_widths` 와 같은
-    /// 기준이라, 표 폭(common.width) 재계산이 override 행의 커진 셀에 끌려
-    /// 부풀지 않는다 (Alt 는 표 폭 유지 의미론). 제외하고 남는 행이 없으면
-    /// `get_column_widths` 로 폴백한다.
+    /// Base grid column widths.
+    ///
+    /// Independent persisted row boundaries are consumed by layout directly;
+    /// this aggregate remains a fallback for incomplete rows and merged-cell
+    /// constraints.
     pub fn base_grid_column_widths(&self) -> Vec<HwpUnit> {
-        let outliers = self.base_grid_outlier_rows();
-        let excluded = |row: u16| self.local_resize_rows.contains(&row) || outliers.contains(&row);
-        let mut widths = vec![0u32; self.col_count as usize];
-        for cell in &self.cells {
-            if cell.col_span == 1 && (cell.col as usize) < widths.len() && !excluded(cell.row) {
-                if cell.width > widths[cell.col as usize] {
-                    widths[cell.col as usize] = cell.width;
-                }
-            }
-        }
-        if widths.iter().all(|w| *w == 0) {
-            return self.get_column_widths();
-        }
-        let fallback = self.get_column_widths();
-        for (w, fb) in widths.iter_mut().zip(fallback) {
-            if *w == 0 {
-                *w = fb;
-            }
-        }
-        widths
+        self.get_column_widths()
     }
 
     /// 열별 폭(HWPUNIT)을 절대값으로 설정한다.
@@ -1894,11 +1745,15 @@ impl Table {
                             char_offsets: para.char_offsets.clone(),
                             char_shapes: para.char_shapes.clone(),
                             line_segs: para.line_segs.clone(),
+                            hwpx_axis_shift: para.hwpx_axis_shift,
+                            layout_only_fill_lines: para.layout_only_fill_lines,
+                            source_line_seg_vertical_pos: para.source_line_seg_vertical_pos.clone(),
                             range_tags: para.range_tags.clone(),
                             para_shape_id: para.para_shape_id,
                             style_id: para.style_id,
                             raw_header_extra: para.raw_header_extra.clone(),
                             has_para_text: para.has_para_text,
+                            stored_text_partition_dirty: para.stored_text_partition_dirty,
                             ..Default::default()
                         });
                     }

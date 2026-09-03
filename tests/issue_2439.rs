@@ -117,7 +117,6 @@ fn split_positive_empty_host_doc() -> HwpDocument {
     table.cell_grid = (0..usize::from(ROW_COUNT)).map(Some).collect();
     table.repeat_header = true;
     table.common.height = template_cell.height.saturating_mul(u32::from(ROW_COUNT));
-    table.dirty = true;
     doc.set_document(model);
     doc
 }

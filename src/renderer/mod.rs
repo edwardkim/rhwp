@@ -97,7 +97,7 @@ impl RenderBackend {
 }
 
 /// 탭 정지 (렌더링용)
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TabStop {
     /// 절대 위치 (px, 단 시작 기준)
     pub position: f64,
@@ -108,7 +108,7 @@ pub struct TabStop {
 }
 
 /// 탭 리더(채움 기호) 렌더링 정보
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TabLeaderInfo {
     /// 리더 시작 x (run 내 상대 좌표)
     pub start_x: f64,
@@ -182,7 +182,7 @@ pub(crate) fn replay_positions_or_compute<'a>(
 }
 
 /// 텍스트 렌더링 스타일
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
     /// 글꼴 이름
     pub font_family: String,

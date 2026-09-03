@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildCellSelectionColumnDragUpdates, cellOverlapsSelectionRange, findResizeCompensationNeighbors } from '../src/engine/table-resize-updates.ts';
+import {
+  buildCellSelectionColumnDragUpdates,
+  cellOverlapsSelectionRange,
+  findResizeCompensationNeighbors,
+  shouldStartPersistentTableResize,
+} from '../src/engine/table-resize-updates.ts';
 import type { CellBbox } from '../src/core/types.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -79,18 +84,17 @@ function finishResizeDragBlock(): string {
   return table.slice(start, end);
 }
 
-// #1491 후속: Shift+경계선 드래그는 셀 선택 확장보다 resize 판정이 우선해야 한다.
-test('셀 선택 모드 Shift+경계선 클릭은 확장 선택보다 리사이즈를 먼저 시도한다', () => {
+test('셀 선택 모드 Shift+경계선 클릭은 drag를 열지 않고 범위 선택에 남는다', () => {
   const block = cellSelectionMouseDownBlock();
-  const resizeIdx = block.indexOf('this.startResizeDrag(edge, pageX, pageY, pageBboxes, e.shiftKey)');
+  const resizeIdx = block.indexOf('shouldStartPersistentTableResize(e.button, e.shiftKey)');
   const shiftSelectIdx = block.indexOf('if (e.shiftKey || e.ctrlKey || e.metaKey)');
 
-  assert.notEqual(resizeIdx, -1, '경계선 resize 시작 경로 필요');
+  assert.equal(shouldStartPersistentTableResize(0, true), false);
+  assert.equal(shouldStartPersistentTableResize(0, false), true);
+  assert.notEqual(resizeIdx, -1, 'persistent resize admission 필요');
   assert.notEqual(shiftSelectIdx, -1, 'Shift/Ctrl 셀 선택 경로 필요');
-  assert.ok(
-    resizeIdx < shiftSelectIdx,
-    '경계선 위 Shift+마우스는 셀 선택 확장이 아니라 단일 셀 resize로 들어가야 함',
-  );
+  assert.match(block, /shouldStartPersistentTableResize\(e\.button, e\.shiftKey\)[\s\S]*this\.startResizeDrag\(edge, pageX, pageY, pageBboxes\)/);
+  assert.doesNotMatch(block, /startResizeDrag\([^\n]*e\.shiftKey/);
 });
 
 test('표 경계 hover는 hitTest 실패 시 직전 bbox 캐시로 경계선을 다시 판정한다', () => {
@@ -172,17 +176,12 @@ test('표 경계 hitTest는 교차점에서 행 경계 선반환으로 컬럼 re
   assert.match(block, /candidates\.sort\(\(a,\s*b\) => a\.distance - b\.distance \|\| a\.priority - b\.priority\)/, '가장 가까운 경계를 고르고 동률은 컬럼 우선이어야 함');
 });
 
-test('Shift가 drag 중 확인되어도 시작 시 계산한 단일 셀 후보를 resize 대상으로 승격한다', () => {
+test('drag 중 Shift 입력은 persistent resize를 local projection으로 승격하지 않는다', () => {
   const table = inputHandlerTableSource();
 
-  assert.match(table, /resizeTarget,/, 'drag state에 시작 시 계산한 단일 셀 후보를 보존해야 함');
-  assert.match(table, /function promoteResizeDragToSingleCell/, '동적 Shift 승격 헬퍼가 필요');
-  assert.doesNotMatch(table, /if \(state\.edge\?\.type !== 'col'\) return null;/, '세로 경계도 가로와 같은 Shift 단일 셀 resize 승격 대상이어야 함');
-  assert.match(table, /if \(!shiftKey \|\| !state\.resizeTarget\) return null;/, 'Shift가 없으면 일반 resize 흐름을 유지해야 함');
-  assert.match(table, /state\.singleCellTarget = state\.resizeTarget;/, 'Shift 확인 시 후보를 단일 셀 대상으로 승격해야 함');
-  assert.match(table, /state\.shiftResize = true;/, '승격된 resize는 Shift 단일 셀 resize로 기록해야 함');
-  assert.match(table, /state\.minResizePos = resizeBounds\.min;/, '승격 후 단일 셀 bounds를 다시 적용해야 함');
-  assert.match(table, /state\.maxResizePos = resizeBounds\.max;/, '승격 후 단일 셀 bounds를 다시 적용해야 함');
+  assert.doesNotMatch(table, /promoteResizeDragToSingleCell/);
+  assert.doesNotMatch(table, /state\.singleCellTarget = state\.resizeTarget/);
+  assert.doesNotMatch(table, /resizeDragState\s*=\s*\{[\s\S]*singleCellTarget/);
 });
 
 test('Shift 단일 셀 resize target 판정은 hover와 같은 경계 허용폭을 사용한다', () => {
@@ -195,34 +194,30 @@ test('Shift 단일 셀 resize target 판정은 hover와 같은 경계 허용폭�
   );
 });
 
-test('Shift drag marker와 finish 적용은 같은 단일 셀 승격 대상을 사용한다', () => {
+test('persistent drag marker와 finish는 Shift modifier로 projection owner를 바꾸지 않는다', () => {
   const update = updateResizeDragBlock();
   const finish = finishResizeDragBlock();
 
-  assert.match(update, /const singleCellTarget = promoteResizeDragToSingleCell\(this,\s*this\.resizeDragState,\s*e\.shiftKey\);/, 'marker 표시 전에 Shift 단일 셀 후보를 승격해야 함');
-  assert.match(update, /const markerBboxes = singleCellTarget/, 'marker는 승격된 단일 셀 후보로 제한해야 함');
-  assert.match(finish, /const singleCellTarget = promoteResizeDragToSingleCell\(this,\s*state,\s*e\.shiftKey\);/, 'finish 적용 전에 Shift 단일 셀 후보를 승격해야 함');
-  assert.match(finish, /if \(shouldSelectTable && !singleCellTarget\)/, '승격된 단일 셀 resize는 작은 드래그에서 표 선택으로 바뀌면 안 됨');
+  assert.doesNotMatch(update, /singleCellTarget|markerBboxes|e\.shiftKey/);
+  assert.doesNotMatch(finish, /promoteResizeDragToSingleCell|const singleCellTarget/);
+  assert.match(finish, /if \(shouldSelectTable\)/, '작은 일반 외곽 drag는 종전 표 선택 흐름을 유지해야 함');
 });
 
-test('Shift 세로 resize는 가로처럼 단일 셀 local height 경로를 사용한다', () => {
-  const table = inputHandlerTableSource();
+test('저장 불가능한 drag guard는 blocking UI 없이 WASM mutation 전에 종료한다', () => {
   const finish = finishResizeDragBlock();
+  const legacyLocalGuardIdx = finish.indexOf('if (updates.some(update => update.localResize === true)) {');
+  const wasmMutationIdx = finish.indexOf('wasm.resizeTableCells(');
 
-  assert.match(table, /const shouldResizeSingleCell = shiftResize \|\|/, 'Shift 단일 셀 resize는 가로와 세로 경계 모두에 적용해야 함');
-  assert.match(table, /shiftResize: shouldResizeSingleCell,/, '세로 Shift drag state도 local single-cell resize로 기록해야 함');
-  assert.match(
-    finish,
-    /else if \(state\.edge\.type === 'col' && inCellSel && range\)/,
-    'Shift 없는 세로 경계는 셀 선택 모드여도 선택 셀 전용 보상이 아니라 행 전체 resize로 가야 함',
+  assert.notEqual(legacyLocalGuardIdx, -1, 'legacy localResize payload guard 필요');
+  assert.notEqual(wasmMutationIdx, -1, '일반 persistent drag의 WASM mutation 경로는 유지해야 함');
+  assert.ok(
+    legacyLocalGuardIdx < wasmMutationIdx,
+    'stale derived-geometry guard가 source mutation보다 먼저 실행돼야 함',
   );
-  assert.match(
-    finish,
-    /if \(box\.col !== targetBox\.col\) continue;[\s\S]*pushLocalResizeHeightHint\(updates, box\.cellIdx, getCellDisplaySize\(box, state\.edge\)\);/,
-    '세로 Shift 단일 셀 resize는 같은 열의 나머지 셀 현재 높이를 보존 힌트로 유지해야 함',
-  );
-  assert.match(finish, /heightDelta:\s*0,[\s\S]*renderHeight: targetDesiredSize,/, '세로 Shift는 모델 행 높이가 아니라 target renderHeight만 바꿔야 함');
-  assert.match(finish, /heightDelta:\s*0,[\s\S]*renderHeight: neighborDesiredSize,/, '세로 Shift 보상 셀도 모델 행 높이가 아니라 renderHeight만 바꿔야 함');
+
+  const legacyLocalGuard = finish.slice(legacyLocalGuardIdx, finish.indexOf('\n  // WASM 배치 API', legacyLocalGuardIdx));
+  assert.match(legacyLocalGuard, /this\.cleanupResizeDrag\(\);\s*return;/, 'stale guard는 drag lifecycle을 닫아야 함');
+  assert.doesNotMatch(legacyLocalGuard, /showToast/, 'stale guard는 편집 화면을 가리는 UI를 만들면 안 됨');
 });
 
 // 병합 셀이 섞인 표에서 마우스 드래그 리사이즈가 셀 선택 범위 내 병합 셀을

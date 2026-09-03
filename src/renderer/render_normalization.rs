@@ -8,7 +8,7 @@ use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::shape::{TextWrap, VertRelTo};
 use crate::model::table::{Cell, Table, TablePageBreak};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -75,6 +75,7 @@ pub struct NestedTableWidthProjection {
 pub struct RenderNormalizationOverlay {
     nested_table_widths_by_path: HashMap<RenderPath, Arc<NestedTableWidthProjection>>,
     nested_table_widths_by_pointer: HashMap<usize, Arc<NestedTableWidthProjection>>,
+    text_reflowed_tables_by_pointer: HashSet<usize>,
 }
 
 impl RenderNormalizationOverlay {
@@ -311,6 +312,20 @@ impl RenderNormalizationOverlay {
 
     pub fn nested_table_projection_count(&self) -> usize {
         self.nested_table_widths_by_path.len()
+    }
+
+    /// Register one table from the current source or normalized snapshot.
+    /// Logical-path validation happens in DocumentCore before this hot-path
+    /// pointer is published.
+    pub(crate) fn register_text_reflowed_table(&mut self, table: &Table) {
+        self.text_reflowed_tables_by_pointer
+            .insert(table as *const Table as usize);
+    }
+
+    #[inline]
+    pub(crate) fn table_text_reflowed(&self, table: &Table) -> bool {
+        self.text_reflowed_tables_by_pointer
+            .contains(&(table as *const Table as usize))
     }
 }
 

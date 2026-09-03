@@ -47,6 +47,12 @@ content identity and constructs the exact face, and every unsupported or
 malformed case still selects the anchored `TextRun` fallback. Canvas2D remains
 the public default renderer.
 
+Schema 1.23 makes `PageLayerTree` the production paint contract. Explicit text
+visuals carry the source span of their fallback slot, decoration endpoints are
+trimmed by the producer, and editor object/structure labels are emitted as
+`controlLabel` paint operations. Backends translate these decisions without
+reconstructing visibility, clip, annotation, or text-visual policy.
+
 ## Export Contract
 
 Layer JSON now provides additive text metadata:
@@ -65,7 +71,11 @@ Layer JSON now provides additive text metadata:
 - `TextRun.legacyVisuals`, marking legacy inline visual payloads as mirrors
   when a separate visual op exists.
 - Explicit special visual ops: `charOverlap`, `textControlMark`, `tabLeader`,
-  and `textDecoration`.
+  and `textDecoration`. Each carries the exact fallback `source` span.
+- Producer-trimmed `textDecoration.positions`; consumers use the final exported
+  position as the decoration endpoint.
+- `controlLabel`, the explicit editor annotation for image, equation, table,
+  text-box, header, footer, and footnote-area paint slots.
 - `fontResources`, an additive table for font blob/face identity.
 - Optional `GlyphRun` sidecar ops with `variant`, `shapeKey`, glyph ids,
   glyph positions, shaped clusters, and replay diagnostics.
@@ -81,10 +91,9 @@ Layer JSON now provides additive text metadata:
   - `validationIssues`, using stable issue codes and severity.
   - `lineBreakRisks`, report-only telemetry for complex text runs.
 
-The explicit visual ops are additive. Existing renderers skip them and keep
-drawing the paired `TextRun` mirror, so visual output does not double-paint.
-Future backends can choose the explicit op and suppress the corresponding
-legacy mirror.
+The explicit visual ops are canonical paint decisions. Production backends
+suppress the corresponding `TextRun` mirror and replay each source-bound visual
+exactly once. Duplicate, orphaned, or ambiguously bound visual ops are invalid.
 
 `GlyphRun` is also additive. Backends must choose a single variant set per
 `equivalenceGroup`. If a glyph variant is unsupported, incomplete, or fails its
@@ -107,8 +116,8 @@ sidecar and use `TextRun`.
 - `TextRun.text` is a replay projection, not the long-term source identity.
 - `TextRun.placement` and clusters are metadata while
   `text.placementAuthority` is `compatibilityProjection`.
-- `TextRun` source ids are dense and export-local. They must not be used as
-  cross-document or cross-export stable ids.
+- `TextRun` source ids are unique and export-local; sparse pre-bound ids are
+  preserved. They must not be used as cross-document or cross-export stable ids.
 - Field marker, paragraph-end, and line-break metadata also appear as source
   annotations.
 - P12 enables the `GlyphRun` schema contract and native Skia contract guard.
