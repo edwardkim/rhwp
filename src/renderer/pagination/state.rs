@@ -143,47 +143,6 @@ impl PaginationState {
         }
     }
 
-    /// 페이지 전환 시 마지막 문단 항목이 overflow인지 점검.
-    /// overflow이면 해당 항목을 overflow_carry로 이월하여 다음 페이지/단에 재삽입.
-    /// FullParagraph / PartialParagraph만 대상 (표·글상자 제외).
-    fn check_last_item_overflow(&mut self) {
-        // carry가 이미 있으면 중복 방지
-        if self.overflow_carry.is_some() {
-            return;
-        }
-        let is_para_item = self.current_items.last().map_or(false, |item| {
-            matches!(
-                item,
-                PageItem::FullParagraph { .. } | PageItem::PartialParagraph { .. }
-            )
-        });
-        if !is_para_item {
-            return;
-        }
-        let available = self.available_height();
-        if self.current_height <= available + 0.5 {
-            return;
-        }
-        // overflow 감지: 방어 횟수 기록
-        let page_idx = self.pages.len();
-        let count = self.defense_counts.entry(page_idx).or_insert(0);
-        *count += 1;
-        if *count > DEFENSE_MAX_PER_PAGE {
-            // 상한 초과: 무한 루프 최종 차단, carry 발동 안 함
-            return;
-        }
-        self.overflow_carry = self.current_items.pop();
-    }
-
-    /// overflow_carry 항목을 현재 페이지/단에 재삽입하고 current_height를 보정.
-    /// page_vpos_base 설정은 호출자(engine.rs)가 para.line_segs 접근 후 수행.
-    pub fn reinsert_carry_with_height(&mut self, carry_height: f64) {
-        if let Some(carry) = self.overflow_carry.take() {
-            self.current_items.push(carry);
-            self.current_height += carry_height;
-        }
-    }
-
     /// 강제 새 페이지 (쪽 나누기)
     pub fn force_new_page(&mut self) {
         self.flush_column();

@@ -3075,26 +3075,6 @@ impl Paginator {
         false
     }
 
-    /// 문단 인덱스가 해당 페이지에 속하는지 확인
-    fn para_in_page(page: &PageContent, para_idx: usize) -> bool {
-        for col in &page.column_contents {
-            for item in &col.items {
-                let pi = match item {
-                    PageItem::FullParagraph { para_index } => *para_index,
-                    PageItem::PartialParagraph { para_index, .. } => *para_index,
-                    PageItem::Table { para_index, .. } => *para_index,
-                    PageItem::PartialTable { para_index, .. } => *para_index,
-                    PageItem::Shape { para_index, .. } => *para_index,
-                    PageItem::EndnoteSeparator { .. } => continue,
-                };
-                if pi == para_idx {
-                    return true;
-                }
-            }
-        }
-        false
-    }
-
     /// 표의 세로 오프셋 추출
     fn get_table_vertical_offset(table: &crate::model::table::Table) -> u32 {
         table.common.vertical_offset as u32

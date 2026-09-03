@@ -26816,11 +26816,6 @@ fn endnote_between_notes_pagination_margin(shape: &FootnoteShape) -> i32 {
     (endnote_between_notes_margin(shape) as i32 - ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU).max(0)
 }
 
-fn compact_endnote_between_notes_flow(shape: &FootnoteShape) -> bool {
-    let between = endnote_between_notes_margin(shape) as i32;
-    between <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU || endnote_has_absorbed_between_notes_gap(shape)
-}
-
 fn endnote_has_absorbed_between_notes_gap(shape: &FootnoteShape) -> bool {
     let between = endnote_between_notes_margin(shape) as i32;
     if between <= ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU {
@@ -26840,17 +26835,6 @@ fn endnote_has_compact_separator_below(shape: &FootnoteShape) -> bool {
 
 fn endnote_has_visible_separator(shape: &FootnoteShape) -> bool {
     shape.separator_line_type != 0 && shape.separator_line_width != 0
-}
-
-fn endnote_separator_height_px(shape: &FootnoteShape, dpi: f64) -> f64 {
-    let line_height = if endnote_has_visible_separator(shape) {
-        border_width_to_px(shape.separator_line_width).max(0.5)
-    } else {
-        0.0
-    };
-    hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
-        + line_height
-        + hwpunit_to_px(endnote_separator_below_margin(shape) as i32, dpi)
 }
 
 #[cfg(test)]

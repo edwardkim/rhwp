@@ -48,6 +48,7 @@ fn snap_base_right(edge: i32, pitch: i32) -> i32 {
 /// Saturating, unlike the plain `+` this replaced: it was the only arithmetic
 /// in this module that could overflow, two functions from a `checked_add`. See
 /// [`snap_base_right`] for the zero-pitch and rounding notes.
+#[cfg(test)]
 fn snap_base_left(edge: i32, pitch: i32) -> i32 {
     match edge.checked_rem_euclid(pitch) {
         Some(0) | None => edge,

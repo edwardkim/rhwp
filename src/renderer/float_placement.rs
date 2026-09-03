@@ -956,14 +956,6 @@ impl FloatLaneSet {
         Self { lanes: Vec::new() }
     }
 
-    pub(crate) fn clear(&mut self) {
-        self.lanes.clear();
-    }
-
-    pub(crate) fn lanes(&self) -> &[FloatLane] {
-        &self.lanes
-    }
-
     pub(crate) fn pushed_top(&self, x_start: f64, x_end: f64, raw_top: f64) -> f64 {
         self.lanes
             .iter()

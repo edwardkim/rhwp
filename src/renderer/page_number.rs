@@ -68,11 +68,6 @@ impl<'a> PageNumberAssigner<'a> {
         self.last_restarted
     }
 
-    /// 다음 페이지에 적용될 카운터 값 (구역 carry 용).
-    pub fn next_counter(&self) -> u32 {
-        self.counter
-    }
-
     /// NewNumber가 존재하지만 아직 발화되지 않은 상태인지 판별한다.
     /// true이면 이 페이지에 쪽번호를 표시하지 않아야 한다 (한컴 호환).
     pub fn should_hide_page_number(&self) -> bool {

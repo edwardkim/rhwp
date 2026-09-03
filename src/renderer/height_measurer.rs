@@ -670,15 +670,6 @@ impl HeightMeasurer {
         }
     }
 
-    /// [#6175] 구역 문단에서 모은 용지/쪽 기준 어울림 개체 흐름 증거를 싣는다.
-    pub(crate) fn with_float_carve_evidence(
-        mut self,
-        evidence: Vec<crate::renderer::float_placement::FloatCarveEvidence>,
-    ) -> Self {
-        self.float_carve_evidence = evidence;
-        self
-    }
-
     pub fn with_hwp3_variant(mut self, enabled: bool) -> Self {
         self.is_hwp3_variant = enabled;
         self.use_hwp3_origin_flow_spacing_before = enabled;
