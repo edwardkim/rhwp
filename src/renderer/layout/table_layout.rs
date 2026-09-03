@@ -3488,7 +3488,37 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         relaxed_pad: bool,
     ) -> Vec<f64> {
-        self.resolve_row_heights_with_common_fit(
+        self.resolve_row_heights_trusting_declared(
+            table,
+            col_count,
+            row_count,
+            measured_table,
+            styles,
+            relaxed_pad,
+            true,
+        )
+    }
+
+    /// [#3386] `allow_declared_trust=false` 면 선언 높이 신뢰(합 가드 완화)를 끈다.
+    ///
+    /// **조각(fragment) 렌더 경로 전용**이다. 조각은 자식 내용을 감싸려고 노드를
+    /// `content_bottom` 까지 키우는데(`table_partial.rs`), 행을 선언으로 줄이면 칸
+    /// 내용이 그 행에 안 들어가 정확히 `pad_top`(1.88px) 만큼 삐져나온다
+    /// (`issue_2439` 실측). 분할되지 않은 표에는 그 성장 경로가 없고 실제로도 넘치지
+    /// 않는다(`issue1663` 글자 baseline 이 행 바닥보다 9px 위).
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn resolve_row_heights_trusting_declared(
+        &self,
+        table: &crate::model::table::Table,
+        col_count: usize,
+        row_count: usize,
+        measured_table: Option<&MeasuredTable>,
+        styles: &ResolvedStyleSet,
+        relaxed_pad: bool,
+        allow_declared_trust: bool,
+    ) -> Vec<f64> {
+        self.declared_trust_allowed.set(allow_declared_trust);
+        let out = self.resolve_row_heights_with_common_fit(
             table,
             col_count,
             row_count,
@@ -3497,7 +3527,9 @@ impl LayoutEngine {
             true,
             relaxed_pad,
             false,
-        )
+        );
+        self.declared_trust_allowed.set(true);
+        out
     }
 
     fn resolve_row_heights_for_content(
@@ -3547,6 +3579,39 @@ impl LayoutEngine {
         }
     }
 
+    /// [#3386] 모든 행의 측정 높이가 정확히 `선언 + 그 셀의 상하 안 여백` 인가.
+    ///
+    /// 이 서명이면 측정기가 선언 높이를 **내용 높이**로 오해해 여백을 덧붙인 것이다
+    /// (한/글은 `cellSz height` 를 여백 포함으로 쓴다). 행마다 같은 상수가 붙는 것이
+    /// 판별자다 — 한 행이라도 어긋나면 실콘텐츠 성장이 섞인 표이므로 손대지 않는다.
+    fn every_row_is_declared_plus_cell_padding(
+        &self,
+        table: &crate::model::table::Table,
+        row_count: usize,
+        decl: &[f64],
+        rh: &[f64],
+    ) -> bool {
+        let mut pad_v = vec![f64::NAN; row_count];
+        for cell in &table.cells {
+            let r = cell.row as usize;
+            if r >= row_count {
+                return false;
+            }
+            let p = hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+            if pad_v[r].is_nan() {
+                pad_v[r] = p;
+            } else if (pad_v[r] - p).abs() > 0.01 {
+                // 같은 행 안에서 여백이 갈리면 서명이 아니다.
+                return false;
+            }
+        }
+        if pad_v.iter().any(|p| p.is_nan() || *p <= 0.01) {
+            return false;
+        }
+        (0..row_count).all(|r| (rh[r] - (decl[r] + pad_v[r])).abs() <= 0.5)
+    }
+
     /// [#3386] MeasuredTable 행높이를 행별 저장 선언(cellSz)으로 교정한다.
     /// 발동 조건(전부 충족 시에만):
     /// - 모든 셀이 row_span==1 이고 저장 LINE_SEG 를 보유(#2211 술어)
@@ -3559,7 +3624,7 @@ impl LayoutEngine {
         row_count: usize,
         rh: &mut [f64],
     ) {
-        if row_count == 0 || rh.len() < row_count {
+        if row_count == 0 || rh.len() < row_count || !self.declared_trust_allowed.get() {
             return;
         }
         let mut decl = vec![f64::NAN; row_count];
@@ -3585,7 +3650,27 @@ impl LayoutEngine {
         let decl_sum: f64 = decl.iter().sum();
         let measured_sum: f64 = rh[..row_count].iter().sum();
         if (decl_sum - measured_sum).abs() > 1.5 {
-            return;
+            // [#3386] 합이 다른데도 신뢰해야 하는 한 갈래 — **모든 행이 정확히
+            // `선언 + 셀 상하 안 여백`** 인 경우다.
+            //
+            // `samples/issue1663_coanchored_float_orphan.hwpx` 2쪽(21행 2열) 실측:
+            //
+            // ```text
+            // 선언 cellSz height=2800HU=37.33px · cellMargin top/bottom 141+141=282HU=3.76px
+            // 한/글 행 간격 37.3 (2020·2024·재생성 세 판 동일)
+            // rhwp  행 간격 41.09 = 37.33 + 3.76        ← 전 행 균일
+            // ```
+            //
+            // 한/글은 `cellSz height` 를 **여백 포함 행 높이**로 쓰는데 측정기가
+            // 내용 높이로 보고 여백을 덧붙인 것이다. 행마다 같은 상수가 붙으므로
+            // 합 보존 가드에 걸려 종전에는 교정되지 않았다.
+            //
+            // ⚠ 총높이가 줄어드는 방향이라 쪽수에 영향을 줄 수 있다. 그래서
+            // **전 행이 같은 서명**일 때로만 좁힌다 — 한 행이라도 실콘텐츠로 자란
+            // 표는 여기 걸리지 않는다.
+            if !self.every_row_is_declared_plus_cell_padding(table, row_count, &decl, rh) {
+                return;
+            }
         }
         for r in 0..row_count {
             if (decl[r] - rh[r]).abs() > (decl[r] * 0.15).max(12.0) {
