@@ -2011,13 +2011,25 @@ impl HeightMeasurer {
                     // 하지만 `줄 높이 >= 개체 높이` 를 요구해(13.3 < 56.3) 여기서는
                     // 불발한다. 가르는 것은 줄 크기가 아니라 그 문단에 **글자가 있는가** 다.
                     //
-                    // 문단이 하나뿐인 셀에만 적용한다. 뒤에 문단이 더 있으면 그 앵커
-                    // 줄은 뒤 내용을 개체 아래로 밀어 내리는 몫을 하므로 높이에서
-                    // 빼면 안 된다(#6312: 앵커 줄 전진량 27pt 계약).
+                    // 개체가 **선언된 칸보다 클 때만** 적용한다. 칸 안에 들어가는
+                    // 개체는 그 줄과 나란히 쌓이므로 둘 다 세는 것이 맞다 —
+                    // `issue6312` 의 기관명 칸(선언 39.9px, 그림 36.1px)이 그렇고,
+                    // 거기서 빼면 뒤 문단이 한/글(360.1px)에서 6.8px 더 멀어진다.
+                    // 개체가 칸을 넘으면 행이 개체에 맞춰 커지고 그 줄은 개체가
+                    // 차지한 자리 안에 든다 — exam_science 4쪽(선언 37.9px,
+                    // 그림 56.3px)이 그 경우다.
+                    //
+                    // 문단이 하나뿐인 셀에만 적용한다. 뒤에 문단이 더 있으면 그 줄은
+                    // 뒤 내용을 개체 아래로 밀어 내리는 몫을 한다.
+                    let declared_cell_h = if cell.height < 0x8000_0000 {
+                        hwpunit_to_px(cell.height as i32, self.dpi)
+                    } else {
+                        f64::INFINITY
+                    };
                     let empty_para_line_height: f64 = cell
                         .paragraphs
                         .iter()
-                        .filter(|_| cell.paragraphs.len() == 1)
+                        .filter(|_| cell.paragraphs.len() == 1 && non_inline_h > declared_cell_h)
                         .filter(|pp| {
                             pp.text.trim().is_empty() && pp.controls.iter().any(|c| {
                                 matches!(c, Control::Picture(pic) if !pic.common.treat_as_char)
