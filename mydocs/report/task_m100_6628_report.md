@@ -4,8 +4,9 @@
 - **브랜치**: `task_m100_6628`
 - **최신 devel 기준**: `upstream/devel@edeaeb28910f1b84f005aabb4ec0d0f183adc2a1`
 - **동기화 merge**: `3950ca15738311ef23e87233d981dd2d6197b953`
+- **핵심 구현 병합**: PR #6677 / `d770ef80ed5ccc82a834558355b6786213ca2e05`
 - **보고일**: 2026-09-03 KST
-- **판정**: `ready-for-core-pr; parent-remains-open-for-6669`
+- **판정**: `core-merged; ready-to-close-after-6669-merge`
 
 ## 1. 결론
 
@@ -18,6 +19,11 @@ Gym의 기준풀이가 통과하는지만 보던 상태를 정답 권위, 오답
 제품 후보로 positive 1,035/1,035, discrimination false-pass 0, trajectory 239/239를 통과했다.
 Gym은 일반 제품 CI·main 승격·릴리스·게시를 막지 않으며, Gym 관련 PR의 빠른 계약과 사람이
 명시적으로 시작하는 전수 벤치마크로 운영한다.
+
+핵심 구현 PR #6677은 `devel`에 병합됐다. 마지막 sub-issue #6669의 JSON 증적 시각화도 PR #6686의
+code candidate `c5efd5240e79a8c862df859dd6a505c55031e8ab`에서 구현·검증·self-review 승인을 마쳤다.
+따라서 부모 #6628의 기술적 완료 조건은 충족됐으며, 남은 운영 조건은 PR #6686 정상 병합과
+#6669 종료 확인 뒤 부모를 최종 close하는 것이다.
 
 ## 2. 주요 결과
 
@@ -76,9 +82,22 @@ external oracle은 아직 0개다. 따라서 이 결과는 공개 Gym 자체의 
 
 ## 5. 잔여 경계와 부모 이슈 상태
 
-JSON은 판정 정본이지만 사람이 네 축과 오류·예외·계보를 한눈에 대조할 파생 보고서는 아직 없다.
-이 산출물은 sub-issue #6669에서 구현한다. #6669는 이 핵심 구현이 devel에 들어간 뒤 최신 devel의
-독립 작업 브랜치에서 수행한다.
+JSON 판정 정본을 사람이 대조할 파생 보고서는 sub-issue #6669와 PR #6686에서 구현했다. 정확히
+41개 입력을 fail-closed로 검증·seal하고, 원문 SHA-256과 실행 신원을 고정한 뒤 JavaScript·외부
+resource가 없는 결정론적 HTML을 생성한다. HTML은 정답이나 판정을 새로 만들지 않는 비권위 뷰이며,
+PASS/FAIL/INCOMPLETE와 trajectory `ok`/`trusted`, single-step N/A를 축약하지 않는다.
 
-따라서 이 보고서의 PR이 병합돼도 #6628을 닫지 않는다. #6669의 결정론적·offline 시각화,
-fail-closed 판정, 원문 SHA-256 계보와 재현 문서를 병합한 뒤 부모 완료 조건을 최종 감사한다.
+PR #6686의 검증 결과는 focused 20/20, 전체 Gym 빠른 계약 3,171건과 조건부 skip 1건, 구조 audit
+21 pack·1,035 task/reference·issue 0, oracle selftest 14건·실패 0, authority ledger
+1,035/1,035/1,035·issue 0이다. 공개 fixture manifest와 HTML은 byte-identical 재생성이 가능하고,
+host Chrome desktop·mobile·offline·접근성 판정을 통과했다. 상세 근거는
+[#6669 최종 보고서](task_m100_6669_report.md)와
+[#6686 self-review](../pr/archives/pr_6686_review.md)에 있다.
+
+2026-09-03 종료 감사 시점의 최신 `upstream/devel`은
+`bd72886c02d301ff796b6b5c55a452a870cf317a`다. PR #6686과 새 renderer PR #6591의 변경 경로는
+겹치지 않고 exact current-base merge-tree도 성공했다. 현재 sub-issue는 #6641 closed, #6669 open이며,
+부모 #6628은 PR #6686 병합과 #6669 자동 close를 확인할 때까지 open으로 유지한다.
+
+AI 에이전트 온보딩 문서 품질 후속 #6684는 독립 backlog다. 이 후속은 #6628의 완료 범위를 자동으로
+확장하지 않으며 부모 종료를 막지 않는다.
