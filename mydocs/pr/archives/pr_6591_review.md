@@ -9,7 +9,8 @@
 | base / head | `devel` / `2050166436301f7dfed5a796d5742601f78b85d7` |
 | 변경 규모 | 4 files, +184/-72, 3 commits |
 | 관련 이슈 | Closes #6590 |
-| 작성 시점 GitHub 상태 | `MERGEABLE`, `CLEAN`, required CI/CodeQL/Render Diff/Native Skia success |
+| merge 결과 | `bd72886c02d301ff796b6b5c55a452a870cf317a`, 2026-09-03T08:04:32Z |
+| 최종 GitHub 상태 | `MERGED`; 병합 직전 `MERGEABLE`, `CLEAN` 및 required check 충족 |
 | reviewer | `jangster77` review request assigned |
 
 ## 변경과 검토 범위
@@ -22,7 +23,8 @@
 
 - 검토 시작 전 local `devel`을 `upstream/devel` `d770ef80ed5ccc82a834558355b6786213ca2e05`까지 fast-forward했다.
 - PR head는 해당 최신 `devel`의 조상이 아니었지만, detached merge simulation tree에서 충돌 없이 결합됐다.
-- `git diff --check`를 통과했다. 이 기록의 GitHub 상태값은 merge 직전에 최신 head로 다시 확인해야 한다.
+- `git diff --check`를 통과했고, 원 PR head를 merge 직전에 다시 조회해 `MERGEABLE`, `CLEAN`과 동일 SHA를 확인했다.
+- 원 PR은 일반 merge commit `bd72886c02d301ff796b6b5c55a452a870cf317a`으로 병합됐고, local `devel`도 해당 `upstream/devel`까지 fast-forward했다.
 
 ## 검증 결과
 
@@ -34,7 +36,10 @@
 | #6590 focused regression | pass, 전체 nextest에도 포함 |
 | `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast` | pass, 8,974 passed, 46 skipped, 305.148s |
 | `scripts/wasm-pack-locked.sh --target web --out-dir pkg` | pass |
-| original PR CI | CI/CodeQL/Render Diff/Native Skia success; WASM Build policy skip |
+| original PR CI | [CI](https://github.com/edwardkim/rhwp/actions/runs/33713684944), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/33713684906), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/33713684621), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/33713684876), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/33713684936) success; WASM Build policy skip |
+| merge SHA devel CI | [CI](https://github.com/edwardkim/rhwp/actions/runs/33731398995), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/33731398842), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/33731399092), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/33731398982), [Close Issues](https://github.com/edwardkim/rhwp/actions/runs/33731398851) success |
+
+CodeQL devel run의 JavaScript/TypeScript, Python, Rust 분석 worker와 preflight는 모두 success였다.
 
 ## 시각 증적
 
@@ -69,13 +74,15 @@
 
 KTX golden은 `samples/KTX.hwp`의 `printMethod=4` N-up 출력이라 physical PDF page와 SVG의 1:1 visual sweep 대상이 아니다. 갱신된 golden은 latest-develop merge simulation의 전체 nextest에서 검증했다.
 
-## Merge 후 contributor PR comment 계획
+## 옵션 B 문서 PR과 merge 후 contributor PR comment 계획
 
 - [PDF/SVG Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 링크한다.
 - #6590 p1의 실제 `flagged=0/1`, pixel match `95.41523%`, visual accuracy proxy `37.53051%`와 사람의 표 우단 일치 판정을 기록한다.
 - proxy는 사람의 최종 판정을 대체하지 않는 자동 일치율 보조값임을 명시한다.
 - merge commit SHA에 고정한 raw URL로 위 `blogform/review_001.png`를 표시한다.
-- merge와 devel CI 성공 뒤에만 `--body-file`로 게시하고 API로 comment body를 재조회한다.
+- 이 archive review·오늘할일·기준 PDF·stable PNG만 담은 옵션 B 문서 PR을 `devel` 대상으로 별도 생성한다.
+- 문서 PR 병합 및 그 merge SHA의 devel CI 성공 뒤에만 `--body-file`로 게시하고 API로 comment body를 재조회한다.
+- #6590의 실제 자동 close 여부도 API로 확인하며, 자동 종료됐더라도 같은 merge SHA와 검증 증적의 후속 기록이 없을 때만 한 번 게시한다.
 
 ## 최종 판정
 
@@ -84,5 +91,5 @@ KTX golden은 `samples/KTX.hwp`의 `printMethod=4` N-up 출력이라 physical PD
 - #6590의 직접 HWP/Hancom PDF 증적에서 표 우단이 Body 우단과 일치한다.
 - 최신 `upstream/devel` 결합 tree의 lint, focused/전체 Rust regression, WASM build가 통과했고 conflict가 없다.
 - 새 text-overlap baseline 1건은 실제 p21 시각 대조에서 cell text의 가시 충돌로 확인되지 않았다. 후보와 한계를 위에 분리 기록했다.
-- merge 전 조건: 최신 PR head의 required CI 상태와 `MERGEABLE`/`CLEAN` 재확인, 작업지시자 승인.
-- 이 판정은 GitHub approve, comment, push, merge를 수행하지 않는다.
+- 병합 전 조건인 최신 PR head의 required CI 상태와 `MERGEABLE`/`CLEAN` 재확인, 작업지시자 승인을 충족해 일반 merge commit으로 병합했다.
+- merge SHA devel CI·CodeQL·Adapter·Proptest·Close Issues도 모두 success다. contributor PR comment와 #6590 후속 상태는 옵션 B 문서 PR의 병합·devel CI 성공 뒤에 한 번 처리한다.
