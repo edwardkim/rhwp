@@ -62,7 +62,10 @@ fn declared_cell_height_already_includes_cell_padding() {
 
     let gaps: Vec<f64> = ys.windows(2).map(|w| w[1] - w[0]).collect();
     // 표 앞뒤 여백 등 큰 간격은 빼고 행 간격만 본다.
-    let row_gaps: Vec<f64> = gaps.into_iter().filter(|g| *g > 20.0 && *g < 60.0).collect();
+    let row_gaps: Vec<f64> = gaps
+        .into_iter()
+        .filter(|g| *g > 20.0 && *g < 60.0)
+        .collect();
     assert!(
         row_gaps.len() >= 6,
         "행 간격 표본이 모자라다 — 시험 설정 오류. row_gaps={row_gaps:?}"
