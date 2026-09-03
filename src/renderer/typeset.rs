@@ -17764,8 +17764,43 @@ impl TypesetEngine {
         if hangul2024_split_refit && !para_has_visible_text(para) && para.controls.is_empty() {
             st.hangul2024_spill_para = Some(para_idx);
         }
+        // [#6568] 줄 분할 루프의 넘침 판정에는 `li > cursor_line` 면제가 걸려 있어
+        // **조각의 첫 줄은 검사조차 되지 않는다.** 그래서 예산을 넘는 줄이 무조건 그
+        // 쪽에 놓인다. 156678235 pi=59 실측:
+        //
+        //   진입 검사  remaining 22.12 >= first_line_h 18.67   → 통과(쪽 안 넘김)
+        //   루프 예산  avail_for_lines 18.12 <  line_heights[0] 18.67  → 안 들어감
+        //   저장 사다리 ls[0] vpos 68896(=918.6px) + lh 1400 = 937.3px > 본문 933.6px
+        //
+        // 면제 자체는 무를 수 없다 — 바로 아래 `end_line <= cursor_line` 절이 "조각은
+        // 최소 한 줄" 을 강제해 결과가 같아지고, 빈 조각은 쪽 진행을 멈출 위험이 있다.
+        // 예산(`avail_for_lines`)을 진입 검사로 가져오는 것도 안 된다 — drift 마진을
+        // 이중 차감하는 값이라 전수 게이트에서 40건이 깨진다(실측).
+        //
+        // 대신 **저장 사다리에 직접 묻는다**: 첫 줄의 *바닥*이 본문 하한 밖이면 한/글은
+        // 그 줄을 이 쪽에 두지 않은 것이다. 이미 있는
+        // `hwp_first_line_before_reset_fits`(바닥이 안에 들면 남긴다)의 정확한 거울이며,
+        // 추정이 아니라 파일이 적어 놓은 값이다.
+        let stored_first_line_bottom_outside_body = para
+            .line_segs
+            .first()
+            .filter(|ls| !is_synthetic_line_seg(ls))
+            .map(|ls| {
+                let top_px = crate::renderer::hwpunit_to_px(ls.vertical_pos, self.dpi);
+                let bottom_px = crate::renderer::hwpunit_to_px(
+                    ls.vertical_pos.saturating_add(ls.line_height),
+                    self.dpi,
+                );
+                let body_bottom = st.base_available_height();
+                // 저장 좌표가 **지금 조판 위치와 같은 쪽**을 가리킬 때만 증거로 쓴다.
+                top_px + 0.5 >= st.current_height
+                    && top_px <= body_bottom
+                    && bottom_px > body_bottom
+            })
+            .unwrap_or(false);
         if (st.current_height >= available
             || remaining < first_line_h
+            || stored_first_line_bottom_outside_body
             || (stored_whole_para_reset && !hangul2024_split_refit)
             // [#5755] 저장 되감김 + 전체 fit 실패 = 한글이 이 문단을 통째로 다음 쪽에
             // 둔 배치 — split 로 현재 쪽에 걸치지 말고 먼저 쪽을 넘긴다.
@@ -25127,7 +25162,39 @@ impl TypesetEngine {
                     base_available,
                     self.dpi,
                 );
-            let vert_offset_overhead = if is_continuation || para_offset_consumed_by_page_break {
+            // [#5585 국소형 ②] `vert_rel_to=Para` 양수 오프셋은 **문단 앵커로부터의**
+            // 거리다. 한 문단이 표 여러 개를 품고 그것들이 쪽을 하나씩 차지하면, 두 번째
+            // 이후 표에게 그 오프셋은 이미 앞 형제가 소진한 값이다. 그런데 조판기는
+            // 쪽마다 다시 물어 예산을 그만큼 깎는다.
+            //
+            // `02. 지표정의서- 주요정책부문` 실측 — 문단 `pi=72` 가 `11x21` 표 16개를 품는다.
+            //
+            // ```text
+            //   vert_off  avail_for_rows   표 높이   결과
+            //     0.0        742.7          734.8    통째 (ci=8)
+            //    11.3        731.4          729.7    통째 (ci=1)
+            //    11.3        731.4         ~733.7    분할! (ci=6·7·9·10·13)
+            // ```
+            //
+            // 한/글 2024 실측(2-up 오라클을 논리 쪽으로 환산): 이 표들의 상단이 **15.60 /
+            // 15.31pt** — 본문 상단 그대로다. rhwp 는 **22.64pt**(=+11.3px)에서 시작한다.
+            // 한/글은 이 오프셋을 안 문다.
+            //
+            // 좁힘: **앞선 형제 표가 있는 경우만**. 표 하나짜리 문단(`issue_2287` 핀)은
+            // 종전 계약을 그대로 둔다 — 넓히면 그 문서에 조각 공백화(sliver)가 생긴다.
+            let has_earlier_sibling_table = para
+                .controls
+                .iter()
+                .take(ctrl_idx)
+                .any(|c| matches!(c, Control::Table(_)));
+            let anchor_offset_already_spent = !is_continuation
+                && st.current_items.is_empty()
+                && st.current_height < 1.0
+                && has_earlier_sibling_table;
+            let vert_offset_overhead = if is_continuation
+                || para_offset_consumed_by_page_break
+                || anchor_offset_already_spent
+            {
                 0.0
             } else {
                 use crate::model::shape::VertRelTo as VR3;

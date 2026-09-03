@@ -3392,7 +3392,37 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         relaxed_pad: bool,
     ) -> Vec<f64> {
-        self.resolve_row_heights_with_common_fit(
+        self.resolve_row_heights_trusting_declared(
+            table,
+            col_count,
+            row_count,
+            measured_table,
+            styles,
+            relaxed_pad,
+            true,
+        )
+    }
+
+    /// [#3386] `allow_declared_trust=false` 면 선언 높이 신뢰(합 가드 완화)를 끈다.
+    ///
+    /// **조각(fragment) 렌더 경로 전용**이다. 조각은 자식 내용을 감싸려고 노드를
+    /// `content_bottom` 까지 키우는데(`table_partial.rs`), 행을 선언으로 줄이면 칸
+    /// 내용이 그 행에 안 들어가 정확히 `pad_top`(1.88px) 만큼 삐져나온다
+    /// (`issue_2439` 실측). 분할되지 않은 표에는 그 성장 경로가 없고 실제로도 넘치지
+    /// 않는다(`issue1663` 글자 baseline 이 행 바닥보다 9px 위).
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn resolve_row_heights_trusting_declared(
+        &self,
+        table: &crate::model::table::Table,
+        col_count: usize,
+        row_count: usize,
+        measured_table: Option<&MeasuredTable>,
+        styles: &ResolvedStyleSet,
+        relaxed_pad: bool,
+        allow_declared_trust: bool,
+    ) -> Vec<f64> {
+        self.declared_trust_allowed.set(allow_declared_trust);
+        let out = self.resolve_row_heights_with_common_fit(
             table,
             col_count,
             row_count,
@@ -3401,7 +3431,9 @@ impl LayoutEngine {
             true,
             relaxed_pad,
             false,
-        )
+        );
+        self.declared_trust_allowed.set(true);
+        out
     }
 
     fn resolve_row_heights_for_content(
@@ -3451,6 +3483,39 @@ impl LayoutEngine {
         }
     }
 
+    /// [#3386] 모든 행의 측정 높이가 정확히 `선언 + 그 셀의 상하 안 여백` 인가.
+    ///
+    /// 이 서명이면 측정기가 선언 높이를 **내용 높이**로 오해해 여백을 덧붙인 것이다
+    /// (한/글은 `cellSz height` 를 여백 포함으로 쓴다). 행마다 같은 상수가 붙는 것이
+    /// 판별자다 — 한 행이라도 어긋나면 실콘텐츠 성장이 섞인 표이므로 손대지 않는다.
+    fn every_row_is_declared_plus_cell_padding(
+        &self,
+        table: &crate::model::table::Table,
+        row_count: usize,
+        decl: &[f64],
+        rh: &[f64],
+    ) -> bool {
+        let mut pad_v = vec![f64::NAN; row_count];
+        for cell in &table.cells {
+            let r = cell.row as usize;
+            if r >= row_count {
+                return false;
+            }
+            let p = hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+            if pad_v[r].is_nan() {
+                pad_v[r] = p;
+            } else if (pad_v[r] - p).abs() > 0.01 {
+                // 같은 행 안에서 여백이 갈리면 서명이 아니다.
+                return false;
+            }
+        }
+        if pad_v.iter().any(|p| p.is_nan() || *p <= 0.01) {
+            return false;
+        }
+        (0..row_count).all(|r| (rh[r] - (decl[r] + pad_v[r])).abs() <= 0.5)
+    }
+
     /// [#3386] MeasuredTable 행높이를 행별 저장 선언(cellSz)으로 교정한다.
     /// 발동 조건(전부 충족 시에만):
     /// - 모든 셀이 row_span==1 이고 저장 LINE_SEG 를 보유(#2211 술어)
@@ -3463,7 +3528,7 @@ impl LayoutEngine {
         row_count: usize,
         rh: &mut [f64],
     ) {
-        if row_count == 0 || rh.len() < row_count {
+        if row_count == 0 || rh.len() < row_count || !self.declared_trust_allowed.get() {
             return;
         }
         let mut decl = vec![f64::NAN; row_count];
@@ -3489,7 +3554,27 @@ impl LayoutEngine {
         let decl_sum: f64 = decl.iter().sum();
         let measured_sum: f64 = rh[..row_count].iter().sum();
         if (decl_sum - measured_sum).abs() > 1.5 {
-            return;
+            // [#3386] 합이 다른데도 신뢰해야 하는 한 갈래 — **모든 행이 정확히
+            // `선언 + 셀 상하 안 여백`** 인 경우다.
+            //
+            // `samples/issue1663_coanchored_float_orphan.hwpx` 2쪽(21행 2열) 실측:
+            //
+            // ```text
+            // 선언 cellSz height=2800HU=37.33px · cellMargin top/bottom 141+141=282HU=3.76px
+            // 한/글 행 간격 37.3 (2020·2024·재생성 세 판 동일)
+            // rhwp  행 간격 41.09 = 37.33 + 3.76        ← 전 행 균일
+            // ```
+            //
+            // 한/글은 `cellSz height` 를 **여백 포함 행 높이**로 쓰는데 측정기가
+            // 내용 높이로 보고 여백을 덧붙인 것이다. 행마다 같은 상수가 붙으므로
+            // 합 보존 가드에 걸려 종전에는 교정되지 않았다.
+            //
+            // ⚠ 총높이가 줄어드는 방향이라 쪽수에 영향을 줄 수 있다. 그래서
+            // **전 행이 같은 서명**일 때로만 좁힌다 — 한 행이라도 실콘텐츠로 자란
+            // 표는 여기 걸리지 않는다.
+            if !self.every_row_is_declared_plus_cell_padding(table, row_count, &decl, rh) {
+                return;
+            }
         }
         for r in 0..row_count {
             if (decl[r] - rh[r]).abs() > (decl[r] * 0.15).max(12.0) {
@@ -7486,6 +7571,26 @@ impl LayoutEngine {
                         })
                         .unwrap_or(0.0)
                 };
+            // [#6569] `first_para_lead`(#6630)를 정렬 공간에서 빼는 것은 **재조판 스택이
+            // 그 여백을 아직 안 품었을 때만** 옳다. 정렬은 결국 *그려지는* 범위를 가운데에
+            // 두는 일이고, 그려지는 범위는 `total_content_height` 가 lead 를 이미 담았는지에
+            // 따라 달라진다. 그 답은 저장 사다리가 준다 — extent 는 셀 내용 상단부터 마지막
+            // 줄 바닥까지라 **첫 줄의 vpos 를 이미 포함**한다.
+            //
+            //   156678235 1쪽 제목 칸  ext 78.13 == content 78.13        → 스택이 품었다
+            //   #6630 exam_eng 머리 칸 ext 45.37 vs content 37.80 (차 = lead) → 스택이 뺐다
+            //
+            // 앞의 칸에서 lead 를 빼면 글이 `lead/2`(3.33px) 만큼 위로 쏠린다. 한/글 2024
+            // 실측: 제목 글자 상단 = 셀 상단 + 23.57px = pad 1.88 + (inner−content)/2 14.56
+            // + vpos 6.67 + 0.48. 뒤의 칸은 종전대로 빼야 맞는다(#6630 계약).
+            let stack_already_holds_lead = first_para_lead > 0.0
+                && stored_flow_extent > 0.0
+                && (stored_flow_extent - total_content_height).abs() <= 0.5;
+            let align_lead = if stack_already_holds_lead {
+                0.0
+            } else {
+                first_para_lead
+            };
             let text_y_start = if use_top_vpos_anchor
                 && !has_nested_table
                 && first_line_vpos.filter(|&v| v > 0.0).is_some()
@@ -7497,13 +7602,13 @@ impl LayoutEngine {
                     VerticalAlign::Top => content_cell_y + pad_top,
                     VerticalAlign::Center => {
                         let mechanical_offset =
-                            (inner_height - total_content_height - first_para_lead).max(0.0) / 2.0;
+                            (inner_height - total_content_height - align_lead).max(0.0) / 2.0;
                         content_cell_y + pad_top + mechanical_offset
                     }
                     VerticalAlign::Bottom => {
                         content_cell_y
                             + pad_top
-                            + (inner_height - total_content_height - first_para_lead).max(0.0)
+                            + (inner_height - total_content_height - align_lead).max(0.0)
                     }
                 }
             };
@@ -9118,6 +9223,34 @@ impl LayoutEngine {
         // 아니라 잔여값으로 보고 유지한다. render 쪽 게이트(table_partial.rs)와
         // 같은 완화다. 이 분기는 한컴 계산의 권위 입력 주장이 아니라 기존
         // 저장-배치 호환 경로(c7dbe8a2c)의 형상 완화다.
+        // [#5585] `reset_before` 는 "앞 줄 **바닥**보다 앞선 vpos" 를 되감김으로 본다.
+        // 줄 전진량이 줄 높이보다 작은 사다리(줄 상자가 서로 겹치는 문서)에서는 **평범한
+        // 한 걸음**도 그 조건을 만족한다 — 148738070 실측: p2 vpos 9800 lh 1400(끝 11200)
+        // → p3 vpos 10640. 840 전진인데 되감김으로 잡혀 조각이 거기서 끊긴다. 그 셀은
+        // 933.5px 본문에 47~340px 만 담은 쪽을 12장 만들었다(한/글 7쪽, rhwp 16쪽).
+        //
+        // 진짜 되감김은 앞 줄의 **시작**보다 뒤로 간다(p5 45290 → p6 0). 다만 그 규칙을
+        // 전역으로 세우면 게이트 8건이 깨진다(`overflow_cell` 2 · `off_canvas` 3 ·
+        // `issue_2097` · row-cut 단위시험) — 되감김이 우연히 `[앞 줄 시작, 앞 줄 바닥)`
+        // 구간에 떨어지는 문서가 있다. 그래서 **겹침 걸음이 계통적인 셀**에서만 좁힌다.
+        let cell_overlapping_line_steps = {
+            let mut segs: Vec<&crate::model::paragraph::LineSeg> = Vec::new();
+            for para in &cell.paragraphs {
+                for seg in &para.line_segs {
+                    if !line_seg_is_synthetic(seg) {
+                        segs.push(seg);
+                    }
+                }
+            }
+            segs.windows(2)
+                .filter(|w| {
+                    let prev_end = w[0].vertical_pos.saturating_add(w[0].line_height);
+                    w[1].vertical_pos >= w[0].vertical_pos && w[1].vertical_pos < prev_end
+                })
+                .count()
+        };
+        // 셋 이상이면 "겹치는 줄 상자" 가 이 사다리의 서명이다. 한두 건은 우연이다.
+        let cell_uses_overlapping_line_boxes = cell_overlapping_line_steps >= 3;
         let preserve_linear_single_cell_vpos = is_block_rowbreak_table
             && table.row_count == 1
             && table.col_count == 1
@@ -9547,7 +9680,16 @@ impl LayoutEngine {
                         if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
                     {
                         let prev_end = prev_seg.vertical_pos.saturating_add(prev_seg.line_height);
-                        cur_seg.vertical_pos >= 0 && prev_end > 0 && cur_seg.vertical_pos < prev_end
+                        cur_seg.vertical_pos >= 0
+                            && prev_end > 0
+                            && cur_seg.vertical_pos < prev_end
+                            // [#5585] 앞 줄 **바닥**보다 앞서는 것만으로는 리셋이 아니다.
+                            // 줄 전진량이 줄 높이보다 작은 문단(겹치는 줄 상자)에서는 평범한
+                            // 한 걸음도 이 조건을 만족한다 — 148738070 실측: p2 vpos 9800
+                            // lh 1400(끝 11200) → p3 vpos 10640. 840 전진인데 리셋으로 잡힌다.
+                            // 진짜 되감김은 앞 줄의 **시작**보다 뒤로 간다(p5 45290 → p6 0).
+                            && (!cell_uses_overlapping_line_boxes
+                                || cur_seg.vertical_pos < prev_seg.vertical_pos)
                     }
                     _ => false,
                 }
@@ -9635,7 +9777,12 @@ impl LayoutEngine {
                     return false;
                 }
                 let prev_end = prev.vertical_pos.saturating_add(prev.line_height);
-                cur.vertical_pos >= 0 && prev_end > 0 && cur.vertical_pos < prev_end
+                cur.vertical_pos >= 0
+                    && prev_end > 0
+                    && cur.vertical_pos < prev_end
+                    // [#5585] 문단 안 줄에도 같은 계약 — 앞 줄 시작보다 뒤로 가야 되감김이다.
+                    && (!cell_uses_overlapping_line_boxes
+                        || cur.vertical_pos < prev.vertical_pos)
             };
             let stored_frame_break_before = |li: usize| -> bool {
                 if li == 0 {
@@ -9847,6 +9994,34 @@ impl LayoutEngine {
                     let ncs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
                     let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
                     let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
+                    // [#6599] 행 유닛 합에 **중첩 표의 캡션**이 빠져 있었다. 같은
+                    // 호스트를 통째로 한 유닛(atom)으로 올리는 갈래는 저장 줄높이가
+                    // 캡션을 이미 품지만, 행 단위로 쪼개는 이 갈래는 행 높이만 센다.
+                    //
+                    // 2181727 7쪽 조각(한 칸, 문단 7개) 실측 — 페인트 전진량 vs 유닛 합:
+                    //
+                    // ```text
+                    //   p3 atom      187.08 / 187.08   ✔
+                    //   p5 행유닛     146.33 / 122.77   ← +23.56 = <표2> 캡션 25.43
+                    //   p6 atom      197.53 / 207.01   (유닛이 큼 — 안전)
+                    //   p9 행유닛     162.48 / 169.39   (캡션 없음, 유닛이 큼 — 안전)
+                    // ```
+                    //
+                    // 모자란 몫이 조각 셀 상자(= 유닛 합 + 안 여백)를 그만큼 짧게 만들어,
+                    // 마지막 중첩 표 밑줄이 바깥 표 밑줄을 4.16px 넘어 겹쳤다.
+                    let (nt_cap_top, nt_cap_bot) = {
+                        let ch = self.calculate_caption_height(&nt.caption, styles);
+                        let cs = nt
+                            .caption
+                            .as_ref()
+                            .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
+                            .unwrap_or(0.0);
+                        match nt.caption.as_ref().map(|c| c.direction) {
+                            Some(CaptionDirection::Top) => (ch + cs, 0.0),
+                            Some(CaptionDirection::Bottom) => (0.0, ch + cs),
+                            _ => (0.0, 0.0),
+                        }
+                    };
                     for (ri, rh) in rhs.iter().enumerate() {
                         // [#4069] CELL 분할 중첩 표는 큰 행을 단일 atom으로 바깥
                         // 원장에 올리지 않는다. 행에서 콘텐츠가 가장 높은 셀의 unit
@@ -10080,10 +10255,10 @@ impl LayoutEngine {
                             uh += ncs;
                         }
                         if ri == 0 {
-                            uh += om_top + spacing_before;
+                            uh += om_top + spacing_before + nt_cap_top;
                         }
                         if ri + 1 == nrow {
-                            uh += om_bot + spacing_after;
+                            uh += om_bot + spacing_after + nt_cap_bot;
                             // [#5880] 직접 HWPX 의 저장 사다리는 중첩 표 host 문단
                             // 뒤 흐름을 `lh + ls` 만큼 전진시킨다(2737927 p71:
                             // 델타 10414 = lh 9994 + ls 420 정확). 유닛 합이 행합
