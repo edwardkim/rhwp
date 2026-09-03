@@ -7592,6 +7592,26 @@ impl LayoutEngine {
                         })
                         .unwrap_or(0.0)
                 };
+            // [#6569] `first_para_lead`(#6630)를 정렬 공간에서 빼는 것은 **재조판 스택이
+            // 그 여백을 아직 안 품었을 때만** 옳다. 정렬은 결국 *그려지는* 범위를 가운데에
+            // 두는 일이고, 그려지는 범위는 `total_content_height` 가 lead 를 이미 담았는지에
+            // 따라 달라진다. 그 답은 저장 사다리가 준다 — extent 는 셀 내용 상단부터 마지막
+            // 줄 바닥까지라 **첫 줄의 vpos 를 이미 포함**한다.
+            //
+            //   156678235 1쪽 제목 칸  ext 78.13 == content 78.13        → 스택이 품었다
+            //   #6630 exam_eng 머리 칸 ext 45.37 vs content 37.80 (차 = lead) → 스택이 뺐다
+            //
+            // 앞의 칸에서 lead 를 빼면 글이 `lead/2`(3.33px) 만큼 위로 쏠린다. 한/글 2024
+            // 실측: 제목 글자 상단 = 셀 상단 + 23.57px = pad 1.88 + (inner−content)/2 14.56
+            // + vpos 6.67 + 0.48. 뒤의 칸은 종전대로 빼야 맞는다(#6630 계약).
+            let stack_already_holds_lead = first_para_lead > 0.0
+                && stored_flow_extent > 0.0
+                && (stored_flow_extent - total_content_height).abs() <= 0.5;
+            let align_lead = if stack_already_holds_lead {
+                0.0
+            } else {
+                first_para_lead
+            };
             let text_y_start = if use_top_vpos_anchor
                 && !has_nested_table
                 && first_line_vpos.filter(|&v| v > 0.0).is_some()
@@ -7603,13 +7623,13 @@ impl LayoutEngine {
                     VerticalAlign::Top => content_cell_y + pad_top,
                     VerticalAlign::Center => {
                         let mechanical_offset =
-                            (inner_height - total_content_height - first_para_lead).max(0.0) / 2.0;
+                            (inner_height - total_content_height - align_lead).max(0.0) / 2.0;
                         content_cell_y + pad_top + mechanical_offset
                     }
                     VerticalAlign::Bottom => {
                         content_cell_y
                             + pad_top
-                            + (inner_height - total_content_height - first_para_lead).max(0.0)
+                            + (inner_height - total_content_height - align_lead).max(0.0)
                     }
                 }
             };
