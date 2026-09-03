@@ -2690,34 +2690,6 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     (new_left, new_right)
 }
 
-fn missing_lineseg_legacy_bullet_requires_regenerated_space_metric(
-    para: &Paragraph,
-    composed: &ComposedParagraph,
-    styles: &ResolvedStyleSet,
-) -> bool {
-    let has_tight_leading_body_style = para.char_shapes.get(1).is_some_and(|cs_ref| {
-        cs_ref.start_pos <= 3
-            && styles
-                .char_styles
-                .get(cs_ref.char_shape_id as usize)
-                .map(|cs| cs.letter_spacing <= -3.0)
-                .unwrap_or(false)
-    });
-
-    para.line_segs.is_empty()
-        && para.controls.is_empty()
-        && para.text.starts_with('\u{F03C5}')
-        && has_tight_leading_body_style
-        && composed
-            .lines
-            .iter()
-            .flat_map(|line| &line.runs)
-            .any(|run| {
-                let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-                hancom_regenerated_space_width(&style).is_some()
-            })
-}
-
 /// 단일 ComposedLine 을 셀 가용 너비에 맞춰 다중 ComposedLine 으로 분할.
 ///
 /// 분할 단위: 공백 단어 경계 우선, 단일 단어가 너비 초과 시 글자 단위 break.
