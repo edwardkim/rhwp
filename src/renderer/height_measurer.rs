@@ -1850,8 +1850,21 @@ impl HeightMeasurer {
                                         // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
                                         // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
                                         // 기존 포함 회계를 유지한다.
+                                        //
+                                        // [#6681] 그 예외에서 **글자 없이 개체만 담은
+                                        // 줄**은 뺀다. 그런 줄의 높이는 개체가 차지한
+                                        // 자리이고 뒤에 붙일 줄이 없다 — exam_science
+                                        // 4쪽 `자료` 칸의 마지막 문단이 그렇다
+                                        // (`text_len=0`, `lh=3037` = 안쪽 표 두 행
+                                        // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
+                                        // 들어가 아래 흐름이 통째로 6px 밀렸다.
+                                        // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
+                                        let last_line_is_object_only =
+                                            p.text.trim().is_empty() && !p.controls.is_empty();
                                         let include_trailing_ls = !is_cell_last_line
-                                            || (cell_para_count > 1 && table.common.treat_as_char);
+                                            || (cell_para_count > 1
+                                                && table.common.treat_as_char
+                                                && !last_line_is_object_only);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
@@ -2716,8 +2729,21 @@ impl HeightMeasurer {
                                         // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
                                         // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
                                         // 기존 포함 회계를 유지한다.
+                                        //
+                                        // [#6681] 그 예외에서 **글자 없이 개체만 담은
+                                        // 줄**은 뺀다. 그런 줄의 높이는 개체가 차지한
+                                        // 자리이고 뒤에 붙일 줄이 없다 — exam_science
+                                        // 4쪽 `자료` 칸의 마지막 문단이 그렇다
+                                        // (`text_len=0`, `lh=3037` = 안쪽 표 두 행
+                                        // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
+                                        // 들어가 아래 흐름이 통째로 6px 밀렸다.
+                                        // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
+                                        let last_line_is_object_only =
+                                            p.text.trim().is_empty() && !p.controls.is_empty();
                                         let include_trailing_ls = !is_cell_last_line
-                                            || (cell_para_count > 1 && table.common.treat_as_char);
+                                            || (cell_para_count > 1
+                                                && table.common.treat_as_char
+                                                && !last_line_is_object_only);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
