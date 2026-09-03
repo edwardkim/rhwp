@@ -10,6 +10,7 @@ import {
 import * as _connector from './input-handler-connector';
 import {
   detectPlatformKind,
+  getCellSelectionArrowAction,
   getNavigationAction,
   shouldSuppressUnmappedNavigation,
   type NavigationAction,
@@ -1228,13 +1229,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.updateCaret();
       return;
     }
-    // 셀 크기 조절 — 한컴 3모드 (help.hancom.com hwp/table/table(size).htm):
-    //   Ctrl/Cmd+방향키  = 칸/줄 전체 크기 조절, 표 전체 크기 변화
-    //   Alt+방향키       = 선택 칸/줄 전체와 바로 오른쪽/아래 이웃을 반대로 조절 (표 크기 유지)
-    //   Shift+방향키     = 경계 이동 — 셀이 커진 만큼 이웃 셀이 작아짐
-    const isArrow = e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight';
-    if ((e.ctrlKey || e.metaKey) && isArrow) {
+    const cellArrowAction = getCellSelectionArrowAction(e);
+    if (cellArrowAction === 'resize') {
       e.preventDefault();
       const phase = this.cursor.getCellSelectionPhase();
       if (phase === 3) {
@@ -1246,18 +1242,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       }
       return;
     }
-    if (e.altKey && isArrow) {
-      e.preventDefault();
-      this.resizeCellLocalByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
-      return;
-    }
-    if (e.shiftKey && isArrow) {
-      e.preventDefault();
-      this.resizeCellBoundaryByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
-      return;
-    }
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    if (cellArrowAction === 'navigate') {
       e.preventDefault();
       const dr = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0;
       const dc = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;

@@ -1,20 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
+import { createServer } from 'vite';
 import {
   buildColumnResizeUpdates,
-  LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE,
 } from '../src/engine/table-resize-updates.ts';
 import type { CellBbox } from '../src/core/types.ts';
 
-// F5 셀 선택 후 키보드 셀 크기 조절 3모드(한컴 table(size).htm)의 update 구성 계약.
-//
-// - Ctrl/Cmd = 선택 칸(열)/줄(행) 전체에 같은 delta (표 전체 크기 변화)
-// - Alt      = 선택 칸/줄 전체와 바로 오른쪽/아래 이웃을 반대로 조절 (표 크기 유지)
-// - Shift    = 선택 끝 경계 이동, 이웃이 반대로 조절 (표 크기 유지)
+const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
+
+// F5 셀 선택 후 지속 가능한 Ctrl/Cmd 셀 크기 조절의 update 구성 계약.
 //
 // 렌더 괘선은 열별 max base grid 를 쓰므로 Ctrl 이 단일 셀에만 delta 를 보내면
 // 다행 표에서 화면에 반영되지 않는다 — 칸/줄 전체 적용이 계약의 핵심이다.
@@ -88,15 +84,60 @@ test('Ctrl: 선택 범위가 병합 셀을 두 칸 걸치면 2×delta', () => {
   assert.equal(single.widthDelta, 300);
 });
 
-test('Alt/Shift local resize는 WASM payload를 만들지 않고 사용자에게 이유를 보인다', () => {
-  const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-  const source = readFileSync(join(rootDir, 'src/engine/input-handler-table.ts'), 'utf8');
-  for (const functionName of ['resizeCellLocalByKeyboard', 'resizeCellBoundaryByKeyboard']) {
-    const start = source.indexOf(`export function ${functionName}`);
-    assert.notEqual(start, -1, `${functionName} 존재`);
-    const body = source.slice(start, source.indexOf('\n}', start) + 2);
-    assert.match(body, /showToast\(\{ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE \}\)/);
-    assert.doesNotMatch(body, /resizeTableCells|applyKeyboardResize/);
+test('Alt/Shift+Arrow는 빈 resize handler에 삼켜지지 않고 셀 탐색을 수행한다', async () => {
+  const vite = await createServer({
+    root: rootDir,
+    appType: 'custom',
+    logLevel: 'silent',
+    server: { middlewareMode: true },
+  });
+  try {
+    const { onKeyDown } = await vite.ssrLoadModule('/src/engine/input-handler-keyboard.ts');
+    let phase = 1;
+    const calls: Array<[string, number, number]> = [];
+    let selectionUpdates = 0;
+    let caretHides = 0;
+    let prevented = 0;
+    const cursor = {
+      isInHeaderFooter: () => false,
+      isInFootnote: () => false,
+      isInPictureObjectSelection: () => false,
+      isInTableObjectSelection: () => false,
+      isInBlockSelectionMode: () => false,
+      isInCellSelectionMode: () => true,
+      getCellSelectionPhase: () => phase,
+      moveCellSelection: (dr: number, dc: number) => calls.push(['move', dr, dc]),
+      expandCellSelection: (dr: number, dc: number) => calls.push(['expand', dr, dc]),
+    };
+    const handler = {
+      active: true,
+      cursor,
+      flushDeferredPaginationIfNeeded: () => {},
+      updateCellSelection: () => { selectionUpdates += 1; },
+      caret: { hide: () => { caretHides += 1; } },
+    };
+    const arrow = (key: string, modifiers: Record<string, boolean>) => ({
+      key,
+      code: key,
+      shiftKey: false,
+      ctrlKey: false,
+      metaKey: false,
+      altKey: false,
+      isComposing: false,
+      keyCode: 0,
+      preventDefault: () => { prevented += 1; },
+      ...modifiers,
+    });
+
+    onKeyDown.call(handler, arrow('ArrowRight', { altKey: true }));
+    phase = 2;
+    onKeyDown.call(handler, arrow('ArrowDown', { shiftKey: true }));
+
+    assert.deepEqual(calls, [['move', 0, 1], ['expand', 1, 0]]);
+    assert.equal(prevented, 2, '두 이벤트 모두 실제 셀 탐색 owner가 소비해야 함');
+    assert.equal(selectionUpdates, 2);
+    assert.equal(caretHides, 1, 'phase 1 이동만 숨은 caret 상태를 갱신한다');
+  } finally {
+    await vite.close();
   }
-  assert.match(LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE, /HWP\/HWPX/);
 });

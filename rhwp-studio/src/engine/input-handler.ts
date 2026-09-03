@@ -401,11 +401,7 @@ export class InputHandler {
     borderOriginalPos: number;
     minResizePos: number;
     maxResizePos: number;
-    resizeTarget?: { cellIdx: number; side: 'start' | 'end' } | null;
-    singleCellTarget?: { cellIdx: number; side: 'start' | 'end' } | null;
-    shiftResize?: boolean;
   } | null = null;
-  private tableLocalResizeSegments = new Set<string>();
 
   // 표 이동 드래그 상태
   private isMoveDragging = false;
@@ -771,9 +767,8 @@ export class InputHandler {
     edge: BorderEdge,
     pageX: number, pageY: number,
     pageBboxes: CellBbox[],
-    shiftResize = false,
   ): void {
-    _table.startResizeDrag.call(this, edge, pageX, pageY, pageBboxes, shiftResize);
+    _table.startResizeDrag.call(this, edge, pageX, pageY, pageBboxes);
   }
 
   /** 리사이즈 드래그 중 마커 위치를 갱신한다 */
@@ -802,7 +797,6 @@ export class InputHandler {
 
   /** 문서 스냅샷 전환 뒤 표 resize 런타임 캐시를 비운다. */
   private clearTableResizeRuntimeCache(): void {
-    this.tableLocalResizeSegments.clear();
     this.cachedTableRef = null;
     this.cachedCellBboxes = null;
     // [#4117] hover 채움 실패 메모도 함께 비운다 — 문서가 바뀌면 실패했던
@@ -1416,14 +1410,6 @@ export class InputHandler {
   /** 셀 선택 모드에서 Ctrl+방향키로 셀 크기 조절 */
   private resizeCellByKeyboard(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
     _table.resizeCellByKeyboard.call(this, key);
-  }
-
-  private resizeCellLocalByKeyboard(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
-    _table.resizeCellLocalByKeyboard.call(this, key);
-  }
-
-  private resizeCellBoundaryByKeyboard(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
-    _table.resizeCellBoundaryByKeyboard.call(this, key);
   }
 
   private resizeTableProportional(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
