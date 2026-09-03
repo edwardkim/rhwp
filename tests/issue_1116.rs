@@ -427,6 +427,16 @@ fn sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg() {
     );
 }
 
+/// p83 본문 줄. #6665 로 도형 전용 줄의 꼬리 줄간격이 실리면서 이 쪽 전체가
+/// 10.4px 내려가 881.35 → 891.75 가 됐다.
+///
+/// 이 값은 한/글 값이 아니다. 한/글 PDF 는 여기서 다시 12px 아래에 있다(#6671).
+/// 이 테스트가 지키는 것은 절대 위치가 아니라 **꼬리 글자가 본문 줄에 남는지**다.
+const P83_BODY_LINE_Y: f64 = 891.75;
+/// 꼬리 글자가 떨어졌을 때 놓이는 다음 줄 머리. 본문 줄에서 한 줄 아래다.
+const P83_ORPHAN_LINE_Y: f64 = 919.5;
+const P83_ORPHAN_LINE_X: f64 = 126.7;
+
 #[test]
 fn sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line() {
     let svg = render_svg("samples/hwp3-sample16-hwp5-2022.hwp", 2);
@@ -434,16 +444,16 @@ fn sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line() {
 
     let folded_tail = tail_glyphs
         .iter()
-        .find(|(x, y)| *x > 620.0 && (*y - 881.35).abs() < 1.0)
+        .find(|(x, y)| *x > 620.0 && (*y - P83_BODY_LINE_Y).abs() < 1.0)
         .copied();
     assert!(
         folded_tail.is_some(),
-        "2022 p83 BCP `수립`의 `립`은 한컴오피스처럼 p83 본문 줄 y≈881.35에 있어야 함: {tail_glyphs:?}"
+        "2022 p83 BCP `수립`의 `립`은 p83 본문 줄 y≈{P83_BODY_LINE_Y}에 있어야 함: {tail_glyphs:?}"
     );
 
     let orphan_tail = tail_glyphs
         .iter()
-        .find(|(x, y)| (*x - 126.7).abs() < 2.0 && (*y - 909.1).abs() < 2.0)
+        .find(|(x, y)| (*x - P83_ORPHAN_LINE_X).abs() < 2.0 && (*y - P83_ORPHAN_LINE_Y).abs() < 2.0)
         .copied();
     assert!(
         orphan_tail.is_none(),
