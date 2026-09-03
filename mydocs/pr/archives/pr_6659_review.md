@@ -65,3 +65,10 @@
 
 최종 통합 PR 본문에서 #6656을 닫지 않고, 이 review 기록을 포함한 최신 head의 required CI와
 mergeability를 다시 확인한 뒤에만 병합한다.
+
+## 최신 보정 head 시각 증적
+
+- 통합 기록: [PR #6659, #6661, #6664 시각 스윕](pr_6659_6664_jeong_sik_visual_sweep.md)
+- `hwpctl_ParameterSetID_Item_v1.2.hwp` p3: [rhwp/PDF/overlay 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6659_hwpctl_p3.png)
+- `exam_math.hwp` p3: [rhwp/PDF/overlay 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6659_exam_math_p3.png)
+- 사람 검토에서 코드 블록·푸터 및 양단 문제 구획이 페이지 안에 유지됨을 확인했다. 픽셀 수치는 글꼴 차이를 포함한 참고값이며 구조 판정을 대체하지 않는다.

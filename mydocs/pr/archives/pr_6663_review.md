@@ -46,3 +46,8 @@ candidate 시점 모두 #6655는 `OPEN`이므로 미래의 merge 결과를 완�
 원 head를 직접 merge하지 않는다. 보정 SHA와 이 기록을 포함한 integration head의 최신 required CI와
 mergeability를 확인한 뒤에만 수용한다. #6662의 상태 변경은 통합 PR의 실제 closing reference와
 `post_merge.md` 절차를 별도로 따른다.
+
+## 시각 증적 적용 여부
+
+- 이 PR은 working 문서만 변경하므로 별도 시각 fixture 검증 대상이 아니다.
+- 함께 검토한 renderer 변경의 시각 결과는 [PR #6659, #6661, #6664 시각 스윕](pr_6659_6664_jeong_sik_visual_sweep.md)에 분리해 기록했다.

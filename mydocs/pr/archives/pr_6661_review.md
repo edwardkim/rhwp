@@ -64,3 +64,11 @@ provenance가 없어 향후 일반 inline 그림까지 같은 규칙으로 이�
 원 head를 직접 merge하지 않는다. 보정 SHA를 포함한 integration head의 최신 GitHub CI와
 mergeability를 다시 확인한 뒤에만 수용하며, #6655 후속 처리는 실제 통합 merge와 devel CI 성공 뒤에
 `post_merge.md`를 따른다.
+
+## 최신 보정 head 시각 증적
+
+- 통합 기록: [PR #6659, #6661, #6664 시각 스윕](pr_6659_6664_jeong_sik_visual_sweep.md)
+- `issue2004_cell_image_stack.hwpx` p4: [배너·인물·본문 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6661_issue2004_p4.png)
+- p6: [후속 본문 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6661_issue2004_p6.png)
+- p4-p8: [contact sheet](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6661_issue2004_p4_p8_contact_sheet.png)
+- 사람 검토에서 p4 그림 적층·본문 회피와 p5-p8 페이지 흐름이 유지됨을 확인했다. 현재 보정은 synthetic 재분류 stack에만 가로 오프셋을 적용한다.

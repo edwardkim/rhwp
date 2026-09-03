@@ -58,3 +58,9 @@
 
 최종 통합 PR 본문에서 #6653을 닫지 않고, 이 review 기록을 포함한 최신 head의 required CI와
 mergeability를 다시 확인한 뒤에만 병합한다.
+
+## 최신 보정 head 시각 증적
+
+- 통합 기록: [PR #6659, #6661, #6664 시각 스윕](pr_6659_6664_jeong_sik_visual_sweep.md)
+- `hwpx_sample2.hwp` p9: [rhwp/PDF/overlay 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6664_hwpx_sample2_p9.png)
+- 사람 검토에서 상단 표, 안내 문단, 신청방법 상자와 하단 단계 도식이 페이지 경계 안에서 기준 순서를 유지함을 확인했다.
