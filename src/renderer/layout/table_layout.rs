@@ -9222,6 +9222,34 @@ impl LayoutEngine {
         // 아니라 잔여값으로 보고 유지한다. render 쪽 게이트(table_partial.rs)와
         // 같은 완화다. 이 분기는 한컴 계산의 권위 입력 주장이 아니라 기존
         // 저장-배치 호환 경로(c7dbe8a2c)의 형상 완화다.
+        // [#5585] `reset_before` 는 "앞 줄 **바닥**보다 앞선 vpos" 를 되감김으로 본다.
+        // 줄 전진량이 줄 높이보다 작은 사다리(줄 상자가 서로 겹치는 문서)에서는 **평범한
+        // 한 걸음**도 그 조건을 만족한다 — 148738070 실측: p2 vpos 9800 lh 1400(끝 11200)
+        // → p3 vpos 10640. 840 전진인데 되감김으로 잡혀 조각이 거기서 끊긴다. 그 셀은
+        // 933.5px 본문에 47~340px 만 담은 쪽을 12장 만들었다(한/글 7쪽, rhwp 16쪽).
+        //
+        // 진짜 되감김은 앞 줄의 **시작**보다 뒤로 간다(p5 45290 → p6 0). 다만 그 규칙을
+        // 전역으로 세우면 게이트 8건이 깨진다(`overflow_cell` 2 · `off_canvas` 3 ·
+        // `issue_2097` · row-cut 단위시험) — 되감김이 우연히 `[앞 줄 시작, 앞 줄 바닥)`
+        // 구간에 떨어지는 문서가 있다. 그래서 **겹침 걸음이 계통적인 셀**에서만 좁힌다.
+        let cell_overlapping_line_steps = {
+            let mut segs: Vec<&crate::model::paragraph::LineSeg> = Vec::new();
+            for para in &cell.paragraphs {
+                for seg in &para.line_segs {
+                    if !line_seg_is_synthetic(seg) {
+                        segs.push(seg);
+                    }
+                }
+            }
+            segs.windows(2)
+                .filter(|w| {
+                    let prev_end = w[0].vertical_pos.saturating_add(w[0].line_height);
+                    w[1].vertical_pos >= w[0].vertical_pos && w[1].vertical_pos < prev_end
+                })
+                .count()
+        };
+        // 셋 이상이면 "겹치는 줄 상자" 가 이 사다리의 서명이다. 한두 건은 우연이다.
+        let cell_uses_overlapping_line_boxes = cell_overlapping_line_steps >= 3;
         let preserve_linear_single_cell_vpos = is_block_rowbreak_table
             && table.row_count == 1
             && table.col_count == 1
@@ -9650,7 +9678,16 @@ impl LayoutEngine {
                         if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
                     {
                         let prev_end = prev_seg.vertical_pos.saturating_add(prev_seg.line_height);
-                        cur_seg.vertical_pos >= 0 && prev_end > 0 && cur_seg.vertical_pos < prev_end
+                        cur_seg.vertical_pos >= 0
+                            && prev_end > 0
+                            && cur_seg.vertical_pos < prev_end
+                            // [#5585] 앞 줄 **바닥**보다 앞서는 것만으로는 리셋이 아니다.
+                            // 줄 전진량이 줄 높이보다 작은 문단(겹치는 줄 상자)에서는 평범한
+                            // 한 걸음도 이 조건을 만족한다 — 148738070 실측: p2 vpos 9800
+                            // lh 1400(끝 11200) → p3 vpos 10640. 840 전진인데 리셋으로 잡힌다.
+                            // 진짜 되감김은 앞 줄의 **시작**보다 뒤로 간다(p5 45290 → p6 0).
+                            && (!cell_uses_overlapping_line_boxes
+                                || cur_seg.vertical_pos < prev_seg.vertical_pos)
                     }
                     _ => false,
                 }
@@ -9738,7 +9775,12 @@ impl LayoutEngine {
                     return false;
                 }
                 let prev_end = prev.vertical_pos.saturating_add(prev.line_height);
-                cur.vertical_pos >= 0 && prev_end > 0 && cur.vertical_pos < prev_end
+                cur.vertical_pos >= 0
+                    && prev_end > 0
+                    && cur.vertical_pos < prev_end
+                    // [#5585] 문단 안 줄에도 같은 계약 — 앞 줄 시작보다 뒤로 가야 되감김이다.
+                    && (!cell_uses_overlapping_line_boxes
+                        || cur.vertical_pos < prev.vertical_pos)
             };
             let stored_frame_break_before = |li: usize| -> bool {
                 if li == 0 {
