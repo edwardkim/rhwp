@@ -96,14 +96,18 @@ seal 이후 입력 하나라도 바뀌었거나 추가 필수 파일이 누락�
 3. `rhwp-bin.sha256`에 기록된 실행 당시 path가 세 `binPath`와 같다.
 4. runner head/tree와 product source head는 각각 유효한 OID다. product와 runner는 합법적으로
    다를 수 있으므로 서로 같다고 강제하지 않는다.
-5. audit, authority ledger, positive, discrimination의 `taskCount`가 같다.
-6. audit의 `referenceCount`, authority ledger의 `referenceCount`·`entryCount`, positive와
-   discrimination의 task 수가 같은 전수 집합을 가리킨다.
-7. positive의 pack 집합과 audit pack id 집합이 같다. 배열 순서는 의미가 없고 중복은 거부한다.
+5. audit, authority ledger, positive, discrimination이 모두 PASS를 주장할 때 `taskCount`가 같다.
+6. 같은 PASS 조건에서 audit의 `referenceCount`, authority ledger의 `referenceCount`·`entryCount`,
+   positive와 discrimination의 task 수가 같은 전수 집합을 가리킨다.
+7. 같은 PASS 조건에서 positive의 pack 집합과 audit pack id 집합이 같다. 배열 순서는 의미가 없고
+   중복은 거부한다.
 8. manifest에 기록된 identity fingerprint와 재계산 값이 같다.
 
 trajectory는 단일-step을 제외한 다단계 과제만 세므로 전수 task 수와 같다고 강제하지 않는다.
 서로 다른 source와 runner 조합 자체도 지원 대상이므로 각각의 SHA를 표시하되 하나로 합치지 않는다.
+audit나 positive가 이미 정직한 FAIL/INCOMPLETE를 보고한 실행은 실제 누락 때문에 수가 다를 수 있다.
+이때 cardinality 차이만으로 입력을 폐기하지 않고 비녹색 보고서에 그대로 보인다. PASS 봉투들끼리의
+차이만 성공 위장 또는 실행 혼합으로 보아 seal을 거부한다.
 
 ## 5. 역할별 정직 판정
 
