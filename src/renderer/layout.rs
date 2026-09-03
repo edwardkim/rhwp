@@ -12223,12 +12223,16 @@ impl LayoutEngine {
                             // `PartialParagraph { start_line > 0 }` 분기: "이어지는 partial
                             // paragraph 는 이전 쪽/단에서 시작한 문단의 나머지다"). 여기서는
                             // 그 규칙을 개체 앵커에 연결한다.
-                            let anchor_starts_on_earlier_page =
-                                ctx.page_content.column_contents.iter()
-                                    .flat_map(|cc| cc.items.iter())
-                                    .any(|it| matches!(it,
+                            let anchor_starts_on_earlier_page = ctx
+                                .page_content
+                                .column_contents
+                                .iter()
+                                .flat_map(|cc| cc.items.iter())
+                                .any(|it| {
+                                    matches!(it,
                                         PageItem::PartialParagraph { para_index: q, start_line, .. }
-                                            if *q == para_index && *start_line > 0));
+                                            if *q == para_index && *start_line > 0)
+                                });
                             let para_base_y = if anchor_starts_on_earlier_page {
                                 ctx.col_area.y
                             } else {
