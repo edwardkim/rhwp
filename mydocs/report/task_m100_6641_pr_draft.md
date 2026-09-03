@@ -42,6 +42,12 @@ sub-issue #6669와 부모 최종 감사를 마친 뒤 별도로 종료합니다.
 - [x] #6628 Gym 재검증: BO05·BO15 2/2, positive 1,035/1,035,
   discrimination false-pass 0, trajectory 239/239 load-bearing
 
+여기서 discrimination(판별력 감사)은 입력 복사·쓰레기 파일 같은 명백한 오답을 채점기가
+잘못 합격시키지 않는지 확인하며, `false-pass 0`은 준비한 오답 대조군을 모두 탈락시켰다는
+뜻입니다. trajectory(수행 경로 필요성 감사)는 여러 단계의 기준 풀이에서 마지막 핵심 단계를
+제거해도 합격하는지 확인하며, `239/239 load-bearing`은 검사 대상 모두가 그 핵심 단계 없이는
+통과하지 못했다는 뜻입니다.
+
 Native Skia·Docker WASM·시각 검증은 renderer 일반 정책, serialization, WASM 또는 프런트엔드를
 변경하지 않는 필드 mutation 경로 정정이므로 승인된 수행계획의 비확대 원칙에 따라 추가하지 않았습니다.
 WASM 전용 cfg는 WASM32 lib Clippy로 확인했습니다.

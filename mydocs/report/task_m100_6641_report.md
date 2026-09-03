@@ -87,6 +87,20 @@ binary            rhwp v0.8.6, Linux x86_64 debug
 binary SHA-256    4334e35e3bfb7e892416e663c7a52dd055a7d82040d2a89447f32d25ccd02f34
 ```
 
+두 감사 축의 뜻은 다음과 같다.
+
+- **판별력 감사(discrimination audit)**: 정답을 통과시키는 것만으로는 부족하므로, 아무 작업도 하지
+  않은 제출·입력 복사·쓰레기 파일처럼 **명백히 틀린 제출을 채점기가 제대로 탈락시키는지** 확인한다.
+  시험 채점표가 정답뿐 아니라 백지 답안에도 합격점을 주는지 검사하는 것과 같다. `false-pass`는
+  이런 오답이 잘못 통과한 경우이며, `false-pass 0`은 준비한 모든 오답 대조군을 정상적으로
+  탈락시켰다는 뜻이다.
+- **수행 경로 필요성 감사(trajectory necessity audit)**: 여러 단계로 된 기준 풀이에서 마지막으로
+  결과를 완성하는 핵심 단계를 일부러 제거한 뒤, 그 불완전한 결과가 여전히 합격하는지 확인한다.
+  마지막 볼트를 빼도 완성품 검사가 통과한다면 그 검사가 해당 조립 단계를 확인하지 못하는 것과 같다.
+  제거했을 때 탈락하면 그 단계가 실제로 필요한 `load-bearing`이고, 제거해도 통과하면 겉보기 단계에
+  불과한 `theater`다. 즉 discrimination이 **결과의 오답 배제력**을 검사한다면 trajectory는
+  **풀이 경로의 핵심 단계 필요성**을 검사한다.
+
 | 축 | 결과 | 시간 |
 | --- | --- | ---: |
 | BO05·BO15 canary | 2/2 built, 실패·누락·score/build 오류 0 | 1초 미만 |
@@ -95,8 +109,9 @@ binary SHA-256    4334e35e3bfb7e892416e663c7a52dd055a7d82040d2a89447f32d25ccd02f
 | trajectory | 239/239 load-bearing, theater·예외·도구 오류 0 | 150초 |
 
 discrimination의 `scoreErrors=116`은 artifact 과제 58건에 `input-copy`와 `garbage`를 각각 넣어
-의도대로 조기 거부한 음성 증적이다. trajectory의 796개 단일-step 과제는 정책상 경로 필요성
-검사 비대상이며 skip 예외가 아니다. 세 보고 봉투의 자체 validation issue도 0건이었다.
+의도대로 조기 거부한 음성 증적이며, 도구 오류나 회귀가 아니다. trajectory의 796개 단일-step
+과제에는 제거 전·후를 비교할 이전 경로가 없으므로 정책상 경로 필요성 검사 비대상이며, 실패나
+예외성 skip이 아니다. 세 보고 봉투의 자체 validation issue도 0건이었다.
 
 모든 제출물은 저장소 밖 임시 루트에서 만들었고 실행 종료와 함께 제거했다. 임시 runner worktree도
 clean 상태를 확인한 뒤 제거했으며 source diff에 Gym 파일은 없다.
