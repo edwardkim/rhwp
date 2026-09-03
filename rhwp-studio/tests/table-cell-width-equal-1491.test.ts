@@ -20,16 +20,14 @@ function commandBlock(commandId: string): string {
 }
 
 for (const commandId of ['table:cell-width-equal', 'table:cell-height-equal']) {
-  test(`${commandId}은 저장 불가능한 projection을 만들지 않고 사용자에게 이유를 보인다`, () => {
+  test(`${commandId}은 저장 불가능한 projection과 blocking UI를 만들지 않는다`, () => {
     const block = commandBlock(commandId);
-    assert.match(block, /showToast\(\{ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE \}\)/);
-    assert.doesNotMatch(block, /localResize|renderWidth|renderHeight|resizeTableCells/);
+    assert.match(block, /canExecute:\s*localTableGeometryCanPersist/);
+    assert.doesNotMatch(block, /showToast|localResize|renderWidth|renderHeight|resizeTableCells/);
   });
 }
 
-test('균등화 안내는 포맷 제약을 구체적으로 설명한다', () => {
+test('균등화 command routing은 포맷이 저장할 수 없는 geometry를 비활성화한다', () => {
   const tableCmd = source('src/command/commands/table.ts');
-  assert.match(tableCmd, /LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE/);
-  const policy = source('src/engine/table-resize-updates.ts');
-  assert.match(policy, /HWP\/HWPX.*저장할 수 없어 지원하지 않습니다/);
+  assert.match(tableCmd, /const localTableGeometryCanPersist = \(\) => false/);
 });

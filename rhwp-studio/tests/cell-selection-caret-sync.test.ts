@@ -127,7 +127,7 @@ test('F5 셀 선택에서 Escape는 마지막 셀의 편집 캐럿으로 복귀�
   const keyboard = readFileSync(keyboardPath, 'utf8');
   const modeStart = keyboard.indexOf('// ─── 셀 선택 모드 중 키 처리');
   const escapeStart = keyboard.indexOf("if (e.key === 'Escape')", modeStart);
-  const escapeEnd = keyboard.indexOf('// 셀 크기 조절', escapeStart);
+  const escapeEnd = keyboard.indexOf('const cellArrowAction =', escapeStart);
 
   assert.notEqual(modeStart, -1, 'F5 셀 선택 키 처리 블록을 찾을 수 없습니다');
   assert.notEqual(escapeStart, -1, 'F5 셀 선택 Escape 처리 블록을 찾을 수 없습니다');

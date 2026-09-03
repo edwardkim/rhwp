@@ -17,6 +17,26 @@ export interface NavigationKeyInput {
   altKey: boolean;
 }
 
+export type CellSelectionArrowAction = 'resize' | 'navigate';
+
+/**
+ * Resolve arrow ownership while F5 cell selection is active.
+ *
+ * Only Ctrl/Command resize maps to persisted table geometry. Alt/Shift arrows
+ * remain ordinary cell navigation so unsupported local geometry never swallows
+ * the user's input before the navigation owner can handle it.
+ */
+export function getCellSelectionArrowAction(
+  input: NavigationKeyInput,
+): CellSelectionArrowAction | null {
+  const isArrow = input.key === 'ArrowUp'
+    || input.key === 'ArrowDown'
+    || input.key === 'ArrowLeft'
+    || input.key === 'ArrowRight';
+  if (!isArrow) return null;
+  return input.ctrlKey || input.metaKey ? 'resize' : 'navigate';
+}
+
 interface PlatformInfo {
   platform?: string;
   userAgent?: string;

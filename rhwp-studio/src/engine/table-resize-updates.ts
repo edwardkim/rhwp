@@ -19,9 +19,10 @@ export type LocalResizeUpdate = {
   heightDelta?: number;
 };
 
-/** HWP/HWPX has no durable representation for an independent row/column boundary. */
-export const LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE =
-  '행·열별 독립 셀 경계 편집은 HWP/HWPX에 저장할 수 없어 지원하지 않습니다.';
+/** Only pointer gestures that map to durable table geometry may own a drag. */
+export function shouldStartPersistentTableResize(button: number, shiftKey: boolean): boolean {
+  return button === 0 && !shiftKey;
+}
 
 /** 키보드 셀 크기 조절: 1 키스트로크 당 이동량 (HWPUNIT, 약 1mm). */
 const KEYBOARD_RESIZE_DELTA_HWP = 300;

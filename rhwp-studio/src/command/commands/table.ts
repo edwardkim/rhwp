@@ -18,12 +18,12 @@ import {
   type TableDeleteRowColumnMode,
   type TableInsertRowColumnMode,
 } from '@/ui/table-row-column-dialog';
-import { LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE } from '@/engine/table-resize-updates';
-import { showToast } from '@/ui/toast';
-
 const inTable = (ctx: EditorContext) => ctx.inTable;
 const inTableOrCellSelection = (ctx: EditorContext) => ctx.inTable || ctx.inCellSelectionMode;
 const hasMultiCellSelection = (ctx: EditorContext) => ctx.hasMultiCellSelection;
+// HWP/HWPX cannot persist independent per-row or per-column geometry. Keep
+// commands that require that representation unavailable at command routing.
+const localTableGeometryCanPersist = () => false;
 
 type CellRange = { startRow: number; startCol: number; endRow: number; endCol: number };
 type TableDimensions = { rowCount: number; colCount: number; cellCount: number };
@@ -968,19 +968,15 @@ export const tableCommands: CommandDef[] = [
     id: 'table:cell-height-equal',
     label: '셀 높이를 같게',
     shortcutLabel: 'H',
-    canExecute: inTableOrCellSelection,
-    execute() {
-      showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
-    },
+    canExecute: localTableGeometryCanPersist,
+    execute() {},
   },
   {
     id: 'table:cell-width-equal',
     label: '셀 너비를 같게',
     shortcutLabel: 'W',
-    canExecute: inTableOrCellSelection,
-    execute() {
-      showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
-    },
+    canExecute: localTableGeometryCanPersist,
+    execute() {},
   },
   {
     id: 'table:formula',
