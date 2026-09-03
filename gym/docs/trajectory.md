@@ -282,6 +282,7 @@ malformed-json
 malformed-task
 malformed-reference
 permission
+timeout
 os-error
 decode-error
 value-error
@@ -296,6 +297,7 @@ unexpected
 | `FileNotFoundError` | `missing-bin` | `missing-bin` |
 | `json.JSONDecodeError` | `value-error` | `malformed-json` |
 | `PermissionError` | `permission` | `permission` |
+| `TimeoutError` | `timeout` | `timeout` |
 | `UnicodeError` | `decode-error` | `decode-error` |
 | `TypeError` / `AttributeError` | `type-error` | `type-error` |
 | `ValueError` / `KeyError` / `IndexError` | `value-error` | `value-error` |

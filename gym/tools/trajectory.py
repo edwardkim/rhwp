@@ -85,6 +85,7 @@ EXCEPTION_KINDS = (
     "malformed-task",
     "malformed-reference",
     "permission",
+    "timeout",
     "os-error",
     "decode-error",
     "value-error",

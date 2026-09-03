@@ -32,6 +32,7 @@ Refs #6628
 
 - `authority_ledger.py`와 1,035개 task 전수 분류 계약
 - full-text/digest/상한 기반 answer·artifact 검사와 오류 봉투 불통과
+- timeout 예외의 기계 판독 분류 보존과 예외 타입-카탈로그 동기화 계약
 - current CLI와 어긋난 reference 및 pack-health 계약 정상화
 - positive/discrimination/trajectory 봉투 자체 검산과 회귀 시험
 
@@ -54,9 +55,9 @@ Refs #6628
 현재 최신 devel 동기화 tree에서:
 
 - `python3 -m unittest discover -s scripts/tests -p 'test_gym_*.py'`
-  - 3,149 passed, 1 policy skip
+  - 3,151 passed, 1 policy skip
 - workflow의 exact Gym contract command
-  - 2,123 passed, 1 policy skip
+  - 2,125 passed, 1 policy skip
 - `python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'`
   - 148 passed
 - CI impact classifier/policy Node contracts

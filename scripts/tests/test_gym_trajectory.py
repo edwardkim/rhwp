@@ -382,6 +382,13 @@ class ExceptionKindTests(unittest.TestCase):
         self.assertEqual(mod.exception_kind(ValueError("x")), "value-error")
         self.assertEqual(mod.exception_kind(KeyError("x")), "value-error")
 
+    def test_timeout_row_preserves_machine_readable_kind(self):
+        mod = load()
+        row = mod.exception_from_exc(TimeoutError("slow"), context="audit", pack="p", task="T")
+        self.assertEqual(row["kind"], "timeout")
+        self.assertEqual(row["error"], "TimeoutError")
+        self.assertFalse(row["kind"] == "unexpected")
+
     def test_json_decode_depends_on_context(self):
         mod = load()
         exc = json.JSONDecodeError("msg", "doc", 0)
@@ -395,6 +402,12 @@ class ExceptionKindTests(unittest.TestCase):
     def test_catalog_contains_required_paths(self):
         mod = load()
         for kind in ("missing-reference", "empty-steps", "collection-only-tail", "missing-bin"):
+            self.assertIn(kind, mod.EXCEPTION_KINDS)
+            self.assertTrue(mod.is_known_exception_kind(kind))
+
+    def test_exception_type_map_only_emits_catalogued_kinds(self):
+        mod = load()
+        for kind in set(mod.EXCEPTION_KIND_BY_TYPE.values()):
             self.assertIn(kind, mod.EXCEPTION_KINDS)
             self.assertTrue(mod.is_known_exception_kind(kind))
 

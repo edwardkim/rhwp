@@ -54,7 +54,8 @@ last_verified: 2026-09-03
 
 | 검사 | 결과 |
 | --- | --- |
-| `python3 -m unittest discover -s scripts/tests -p 'test_gym_*.py'` | 3,149건 통과 · skip 1 |
+| `python3 -m unittest discover -s scripts/tests -p 'test_gym_*.py'` | 3,151건 통과 · skip 1 |
+| Gym workflow exact contract command | 2,125건 통과 · skip 1 |
 | `python3 gym/tools/audit.py --json` | 21 pack · 1,035 task · issue 0 · exit 0 |
 | `python3 gym/tools/oracle_probe.py --json` | structural issue 0 · exit 0 |
 | `python3 gym/tools/oracle_probe.py --selftest --json` | 14/14 · issue 0 · exit 0 |
@@ -70,6 +71,13 @@ authority 분포는 `self-live` 987, `contract-constant` 28, `independent-fixtur
 문서 전수 metadata 검사는 이 변경과 무관하고 upstream/devel에도 존재하는 기존 문서 네 개의
 front matter 누락 16건을 보고했다. #6628 변경 문서의 metadata 오류는 아니다. 범위를 넓혀
 그 기존 문서를 함께 고치지 않는다.
+
+PR #6677의 self-review에서 `TimeoutError`가 `exception_kind()`에서는 `timeout`으로 분류되지만
+`EXCEPTION_KINDS` 카탈로그에 없어 최종 예외 행에서 `unexpected`로 접히는 계약 불일치를 발견했다.
+카탈로그와 규약을 일치시키고, 예외 타입 매핑의 모든 출력이 카탈로그에 존재하는지와 timeout이
+최종 행까지 보존되는지를 강제하는 회귀시험 두 건을 추가했다. focused trajectory 142건과 workflow
+exact Gym 계약 2,125건을 다시 통과했다. 실패 판정 자체는 바뀌지 않지만 #6669 시각화가 원인별
+집계를 잃지 않도록 기계 판독 분류를 보존한다.
 
 ## 5. 보호 불변식 대사
 

@@ -27,7 +27,8 @@ Gym은 일반 제품 CI·main 승격·릴리스·게시를 막지 않으며, Gym
 - positive: 21 pack, 1,035/1,035, 실패·skip·누락·score/build 오류 0
 - discrimination: 1,035 task, 1,511 control, false-pass 0
 - trajectory: 239/239 load-bearing, theater·예외·tool 오류 0
-- 현재 tree 빠른 계약: Python 3,149건, workflow Python 8건, CI classifier/policy Node 78건 통과
+- 현재 tree 빠른 계약: Python 3,151건, exact Gym workflow 2,125건,
+  workflow Python 148건, CI classifier/policy Node 78건 통과
 
 external oracle은 아직 0개다. 따라서 이 결과는 공개 Gym 자체의 정합성과 판별력 증거이지,
 한컴 조판 동등성이나 제품 릴리스 적합성의 독립 증명이 아니다.
@@ -40,6 +41,8 @@ external oracle은 아직 0개다. 따라서 이 결과는 공개 Gym 자체의 
 - 파일 존재·크기·동일 해시처럼 일을 하지 않은 제출을 허용한 검사를 전체 의미 검사로 바꿨다.
 - untrusted 텍스트에는 크기 상한과 digest 보고를 적용했다.
 - 오류 봉투, 빈 artifact, missing artifact, 잘못된 인코딩을 성공으로 접지 않는다.
+- `TimeoutError`의 `timeout` 분류가 최종 예외 행까지 보존되며, 예외 타입 매핑이 카탈로그 밖
+  값을 만들지 못하도록 계약화했다.
 
 ### 기준풀이와 trajectory
 
