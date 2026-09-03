@@ -69,6 +69,7 @@ pub(crate) fn issue2424_profile_enabled() -> bool {
 /// - positive indent: line 0 에만 +indent 적용 (첫줄 들여쓰기)
 /// - negative indent (hanging): line N≥1 에 +|indent| 적용
 /// - indent=0: 모든 line 에 margin_left 만 적용
+///
 /// [#4068] `#2004` 정규화(`reclassify_cell_floating_stacks`)가 셀 안 **부동 그림
 /// 스택**을 "그림 1장짜리 인라인 문단 N개" 로 쪼개면서 `treat_as_char` 를 켜는데,
 /// 그 순간 배치 계약(`horzOffset`)이 통째로 버려진다. 한/글은 그 값을 그대로 쓴다.
