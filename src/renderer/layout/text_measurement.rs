@@ -1048,6 +1048,18 @@ fn measure_char_width_embedded_decision<'a>(
         };
     };
     // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호.
+    //
+    // [#6646] 묶음 빈칸(U+00A0)은 **줄바꿈만 막는 공백**이라 전진폭이 일반 공백과
+    // 같아야 하는데, 글꼴 글리프 폭을 그대로 쓰면 같은 문서 안에서도 글꼴마다
+    // 제각각이 된다 — `exam_eng.hwp` 1쪽 실측: 일반 공백은 어느 글꼴이든 7.667px
+    // 인데 묶음 빈칸은 `Times New Roman` 3.827 · `HY신명조` 5.093 ·
+    // `한양신명조` 7.747 이다. 글꼴 표 자체도 567개 중 149개에서 두 값이 다르고
+    // **50개는 0** 이라(글자가 자리를 안 차지한다는 뜻) 그대로 쓸 수 없다.
+    //
+    // 공백과 같은 갈래로 넣어 글꼴과 무관하게 같은 폭을 쓴다. 아래 갈래는 이미
+    // `hancom_pdf_space_width` 오버레이와 `em/2` 폴백을 갖고 있어, 공백에 대해
+    // 검증된 회계를 그대로 물려받는다.
+    let c = if c == '\u{00A0}' { ' ' } else { c };
     let (w, width_source) = if c == ' ' {
         if let Some(width) = hancom_pdf_space_width(primary_name, font_size) {
             (width, "metricSpaceOverlay")
