@@ -76,6 +76,8 @@ WASM 전용 cfg는 WASM32 lib Clippy로 확인했습니다.
 
 - base: `edwardkim/rhwp:devel`
 - head: `edwardkim/rhwp:task_m100_6641`
+- 실제 PR: [#6673](https://github.com/edwardkim/rhwp/pull/6673), Open·비 Draft
 - 검증 source/test candidate: `7f1174f1d59bc020aaa38ceb7e148a8ae77b2784`
-- 직전 validation-evidence commit: `a233f1f6e`
-- 원격 push, Open PR 생성·게시, self-review, merge, issue close는 각각 별도 승인 게이트다.
+- 최초 PR head: `362e912a6f0da06dd3cbd902d069adba87f0ddfc`, Full Rust CI 통과
+- self-review: `mydocs/pr/archives/pr_6673_review.md`, 판정 `승인`
+- review-only 후행 head 확인, merge와 issue close는 각각 별도 승인 게이트다.

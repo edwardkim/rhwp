@@ -159,5 +159,6 @@ Gym task/reference/oracle, generated suite·manifest와 임시 산출물은 포�
 
 최종 판정은 **`qualified-owner-aware-field-reflow`**다. #6641의 원래 실패였던 BO05·BO15는 canary와
 21 pack 전수에서 모두 통과했고, 제품 전체 8,973건과 Gym의 양·음·경로 세 축이 같은 candidate
-binary 계보로 연결됐다. 로컬 Stage 0~5는 완료됐으며 원격 push, PR 생성·게시, self-review, merge와
-issue close는 각각 후속 승인 절차로 남는다.
+binary 계보로 연결됐다. 로컬 Stage 0~5와 PR #6673 최초 head의 GitHub Actions를 완료했고,
+[self-review](../pr/archives/pr_6673_review.md)는 `승인`으로 판정했다. 이 review 기록을 포함한 최신
+head의 checks·mergeability 확인, 사용자 merge 승인과 issue close 후속 절차가 남는다.
