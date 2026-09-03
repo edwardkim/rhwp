@@ -1,7 +1,8 @@
-//! PR #599 PNG 게이트웨이 검증 도구
+//! Issue #536 / PR #599 PNG 게이트웨이 진단 source.
 //!
 //! samples/exam_kor.hwp 의 모든 페이지를 PNG 로 내보내서
 //! native Skia raster backend 의 동작을 검증한다.
+//! 당시 Cargo example target으로 실행했으며, 현재는 조사 계보 보존용이다.
 
 use std::fs;
 use std::path::Path;

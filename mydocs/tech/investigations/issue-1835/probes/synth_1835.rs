@@ -1,5 +1,5 @@
 //! [Issue #1835 진단] TAC 표 common.height 를 1/1.8 로 훼손한 합성 문서 생성.
-//! 사용: cargo run --release --example synth_1835 -- <입력.hwp> <출력.hwp>
+//! 당시 사용: cargo run --release --example synth_1835 -- <입력.hwp> <출력.hwp>
 use rhwp::model::control::Control;
 
 fn main() {

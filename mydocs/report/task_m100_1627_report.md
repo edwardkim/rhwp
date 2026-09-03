@@ -7,8 +7,8 @@
 HWPX parse→serialize→reparse char_shapes 오프셋 불일치 4건(18,387 중, 증가에도 불변):
 36384689·36385445(+8) · 36388711(−16/−8) · 36399822(표 셀). 전부 **빈-text(객체-only) 문단**.
 
-## 2. 근원 (진단 `examples/diag_1627.rs`)
-대표 36384689 p[0](text 비어있음)에서 두 증상 확인:
+## 2. 근원 (진단 `mydocs/tech/investigations/issue-1627/probes/diag_1627.rs`)
+대표 36384689 p[0] (text 비어있음)에서 두 증상 확인:
 1. **컨트롤 재정렬**: parse `[SectionDef,ColumnDef,Table,PageNumberPos,Bookmark]` →
    reparse `[…,Bookmark,Table,PageNumberPos]`. 직렬화기가 bookmark 를 문단 시작으로 강제
    (`section.rs`: "IR 에 위치 정보 없음")해 원본 순서 깨짐.
@@ -62,5 +62,5 @@ char_count 보존(내용 손실 0)인 cosmetic char_shape 경계 차 4건을 위
 ## 6. 산출물
 - 소스: `src/serializer/hwpx/section.rs` (bookmark in-order, empty-text 한정)
 - 테스트: `task1627_empty_para_bookmark_serialized_after_preceding_table`
-- 진단: `examples/diag_1627.rs`
+- 진단: `mydocs/tech/investigations/issue-1627/probes/diag_1627.rs`
 - 보류: char_shape IR_DIFF (slot 회계 고위험)

@@ -20,6 +20,7 @@ last_verified: 2026-08-22
 | `font_metric_coverage_checkpoint_policy.json` | crash-consistent journal·state·identity·storage 정책 |
 | `font_metric_coverage_finalizer_policy.json` | format 보존 usage key와 corpus 병합·hash 정책 |
 | `font_metric_coverage_full_manifest_policy.json` | local-only 10k 발견·BLAKE3·저장공간 preflight 정책 |
+| [`tools/diagnostics/font_metric_coverage_worker.rs`](../../../../tools/diagnostics/font_metric_coverage_worker.rs) | W3 격리 계측 worker source; 반복 실행 중이므로 명시적 Cargo target으로 유지 |
 | `scripts/font_metric_coverage_contract.mjs` | 분류·대사·hash·privacy·POC/W1 drift 검사 |
 | `scripts/tests/font_metric_coverage_contract.test.mjs` | 정상·변이·누락을 다루는 Stage 1 계약 test |
 | `font_typesetting_risk_contract.schema.json` | W4 입력·identity·proxy·lane·risk mass·privacy schema |

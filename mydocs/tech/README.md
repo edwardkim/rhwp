@@ -53,8 +53,9 @@ last_verified: 2026-09-03
   파일명만으로 권위 문서라고 가정하지 않는다. 위 표 또는 각 문서의 명시적 링크를 우선한다.
 - `task_m100_*`, `*_root_cause`, `*_diagnosis`, `*_investigation`은 이슈별 조사일 가능성이 높다. 다만
   장기 계약·기준선·설계 결론을 담은 문서는 `investigations/`로 자동 이동하지 않고 현행성 감사를 거쳐 분류한다.
-- 현재 분리된 이슈별 조사는 `investigations/issue-####/`에서 관리한다. 각 디렉터리의 README가 해당
-  스냅샷과 진단의 당시 범위, 최신성 제한, 관련 문서를 설명한다.
+- 현재 분리된 이슈별 조사는 `investigations/issue-####/`에서 관리한다. 독립 조사 묶음은 각 디렉터리의
+  README가 당시 범위·최신성 제한·관련 문서를 설명한다. 진단 source만 보존한 `probes/` 묶음은
+  [이슈별 기술 조사 지도](investigations/README.md)의 보존 규칙과 source 머리말을 따른다.
 - [webhwp/](webhwp/README.md) 하위 문서는 2026-02 번들을 역분석한 historical investigation 묶음이다.
 - [agent_security/](agent_security/README.md) 하위 문서는 rhwp가 에이전트 도구로서 노출하는 보안
   표면의 계약이다. 파서 견고성이 아니라 **문서 내용이 에이전트 행동에 영향을 미치는 경로**를 다룬다.

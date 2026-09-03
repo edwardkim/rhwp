@@ -13,6 +13,6 @@ HWPX 파서가 채운 IR ↔ HWP 직렬화기 가정 사이에 단순 어댑터�
 
 **How to apply**: HWPX→HWP 변환은 단순 어댑터가 아니라 "HWP 출처 IR 과 동등한 IR 을 만드는 본격 변환기" 가 필요. 다음 작업 (별도 이슈) 의 정체성은 "HWPX→HWP 완전 변환기 (한컴 정상 파일 패턴 모방)" — hwp2hwpx 라이브러리 (`/home/edward/vsworks/hwp2hwpx`, hwplib/hwpxlib 저자, Apache 2.0) 가 권위 있는 매핑 명세 자료. 단순 어댑터 접근으로 다시 시도하지 말 것.
 
-본 시도 자산 (보존됨): `src/document_core/converters/` (어댑터 + 진단 + CommonObjAttr 작성기), `tests/hwpx_to_hwp_adapter.rs` (25개), `examples/hwpx_hwp_ir_diff.rs`. typeset.rs:1582 버그픽스도 보존.
+본 시도 자산 (보존됨): `src/document_core/converters/` (어댑터 + 진단 + CommonObjAttr 작성기), `tests/hwpx_to_hwp_adapter.rs` (25개), `tools/diagnostics/hwpx_hwp_ir_diff.rs`. typeset.rs:1582 버그픽스도 보존.
 
 상세: `mydocs/troubleshootings/task178_second_attempt_hancom_rejection.md`, `mydocs/report/task_m100_178_report.md`

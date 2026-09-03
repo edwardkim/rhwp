@@ -1,6 +1,6 @@
 //! Task #4962 W3 developer-only isolated font metric coverage worker.
 //!
-//! This example deliberately exposes no product CLI surface.  The Node supervisor
+//! This tool deliberately exposes no product CLI surface.  The Node supervisor
 //! starts one copy per document under OS resource limits and accepts stdout only as
 //! a machine-readable, de-identified envelope.
 

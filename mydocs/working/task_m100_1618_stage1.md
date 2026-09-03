@@ -1,7 +1,7 @@
 # Stage 1 완료보고서 — Task #1618 (vpos-reset 신뢰도 전수 분석)
 
 **단계**: vpos-reset 신뢰도 분석 (조사) · **브랜치**: `local/task1618`
-**도구**: `examples/vpos_reset_analyze.rs` (flow 순서 line_seg vpos 역행 점프 카운트 → vpos-예측 페이지수)
+**도구**: `mydocs/tech/investigations/issue-1600/probes/vpos_reset_analyze.rs` (flow 순서 line_seg vpos 역행 점프 카운트 → vpos-예측 페이지수)
 
 ## 1. 결과 — vpos-예측 vs 한글 (통제셋 92, 한글 정답)
 
@@ -55,5 +55,5 @@ vpos-예측이 현행보다 **훨씬 나쁘고**, delta 가 **전부 음수(과�
 - 잔여 추구 시 **다페이지 4건의 표 row-split 측정 분석**으로 재조준(별도 태스크) 권고.
 - vpos-추종 하이브리드는 광역 페이지 충실도(양방향 razor-thin 일부) 개선용 장기 과제로 분리.
 
-산출물: `examples/vpos_reset_analyze.rs`, `output/poc/task1618_controlset_vpos.tsv`,
+산출물: `mydocs/tech/investigations/issue-1600/probes/vpos_reset_analyze.rs`, `output/poc/task1618_controlset_vpos.tsv`,
 `output/poc/task1618_corpus_vpos.tsv`.

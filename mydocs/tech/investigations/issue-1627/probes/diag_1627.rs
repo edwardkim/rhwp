@@ -1,5 +1,5 @@
 //! Issue #1627 진단 — HWPX roundtrip 첫 문단 char_shapes 오프셋 shift 원인 분석.
-//! 사용: cargo run --release --example diag_1627 -- <file.hwpx> [para_idx]
+//! 당시 사용: cargo run --release --example diag_1627 -- <file.hwpx> [para_idx]
 
 use rhwp::model::control::Control;
 use rhwp::parser::hwpx::parse_hwpx;

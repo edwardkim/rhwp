@@ -1,6 +1,6 @@
 //! Issue #836 진단 — column 의 used_height vs hwp_used_height 항목별 차이 분석.
 //!
-//! 사용: `cargo run --release --example diag_836 -- <file.hwp> [-p PAGE]`
+//! 당시 사용: `cargo run --release --example diag_836 -- <file.hwp> [-p PAGE]`
 //!
 //! 출력: 각 page column 의 item 누적 측정 vs IR vpos 진행 비교.
 

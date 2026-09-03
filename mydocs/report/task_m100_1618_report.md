@@ -31,7 +31,7 @@ vpos-추종은 잔여-12 타깃이 아닌 **광역 body 충실도** 장기 과�
 - vpos-추종 하이브리드는 광역 충실도 개선용으로 분리(대규모·장기).
 
 ## 4. 산출물
-- 분석기: `examples/vpos_reset_analyze.rs` (재사용 가능 진단 도구)
+- 분석기: `mydocs/tech/investigations/issue-1600/probes/vpos_reset_analyze.rs` (이슈 계보 진단 source)
 - 데이터: `output/poc/task1618_controlset_vpos.tsv`, `task1618_corpus_vpos.tsv`
 - 문서: `_stage1`, 본 보고서, `mydocs/tech/investigations/issue-1600/render_minus1_page_gap.md` 갱신
 - 코드 변경: example 추가만(본 파이프라인 무영향)

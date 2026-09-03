@@ -2,7 +2,7 @@
 //!
 //! 원본 HWP5 와 export-hwpx 재파싱의 쪽수·프로필·쪽별 첫 항목을 대조한다.
 //!
-//!   cargo run --release --example diag_5128_page_map
+//!   당시: cargo run --release --example diag_5128_page_map
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH;

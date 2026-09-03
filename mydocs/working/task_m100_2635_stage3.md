@@ -16,7 +16,7 @@ stage: 3
 
 ## 최신 기준과 검증
 
-- 최신 `upstream/devel` `bc0c09f80` 위로 rebase했다. upstream의 `examples/edit_sweep.rs` 변경과
+- 최신 `upstream/devel` `bc0c09f80` 위로 rebase했다. upstream의 현 `tools/diagnostics/edit_sweep.rs` 변경과
   충돌은 없었다.
 - Studio `npm test` 456건, production build, E2E 매니페스트 검사, `쪼개진원형.hwp` 400ms first-paint
   headless E2E를 통과했다. 유채색 픽셀 비율은 `1.664%`였다.

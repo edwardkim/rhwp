@@ -2543,7 +2543,7 @@ mod tests {
     //   aift.hwp s0/p[1]/Table[0]/셀[167]/p[3]/ctrl[0]
     //   PageHide(header=true footer=true master=true border=true fill=true page_num=true)
     //
-    // Stage 0 본 환경 측정 (examples/inspect_705.rs):
+    // Stage 0 본 환경 측정 (mydocs/tech/investigations/issue-705/probes/inspect_705.rs):
     //   - aift.hwp 셀 안 PageHide 2건 (s0/셀[167] full6, s1/셀[31] page_num)
     //   - 본문 PageHide 2건 (s2/p[34], s2/p[54])
     //

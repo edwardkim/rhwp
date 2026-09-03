@@ -9,7 +9,9 @@ last_verified: 2026-08-05
 
 문서 안 그림이 **소비자가 디코드할 수 없는 mime** 으로 방출되는 문서를 코퍼스에서 찾는
 스윕이다. #4057(WMF)·#4060(EMF)에서 "변환기는 있는데 방출 경로에 안 걸려 있는" 부류의
-결함을 전수 검출하는 데 썼다. 하네스는 `examples/` 의 4종이며 회차 결과는
+결함을 전수 검출하는 데 썼다. 하네스 source는 `tools/diagnostics/`의
+`audit_studio_image_parity.rs`·`audit_image_magic.rs`·`dump_source_images.rs`·
+`dump_layer_json_page.rs` 4종이며 회차 결과는
 `mydocs/report/survey_image_divergence_r{N}_{YYYYMMDD}.md` 로 남긴다.
 
 ## 1. 판정 모델

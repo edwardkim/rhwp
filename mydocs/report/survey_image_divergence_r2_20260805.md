@@ -4,8 +4,8 @@
 - **바이너리**: `fix/emf-image-conversion e6da48fdf` (devel `aebfcaa33` + WMF `bef011d22` +
   EMF `e6da48fdf`), release, native-skia 불필요
 - **실행 환경**: `RHWP_FONT_PATH=ttfs/hwp:ttfs/windows`, 12갈래 xargs (n=25)
-- **하네스**: `examples/audit_studio_image_parity` (3경로 mime 대조) +
-  `examples/audit_image_magic` (매직 스니핑 2차) —
+- **하네스**: `tools/diagnostics/audit_studio_image_parity.rs` (3경로 mime 대조) +
+  `tools/diagnostics/audit_image_magic.rs` (매직 스니핑 2차) —
   사용법은 [이미지 발산 스윕 가이드](../manual/verification/image_divergence_sweep.md)
 - **회차**: r1 = EMF 수정 전(같은 표본, flagged 131 · octet-stream 129op, PR #4060 커밋
   메시지에 요약), r2 = EMF 수정 후 재실행(이 문서)
