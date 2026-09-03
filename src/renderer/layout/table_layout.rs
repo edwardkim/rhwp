@@ -9950,6 +9950,34 @@ impl LayoutEngine {
                     let ncs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
                     let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
                     let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
+                    // [#6599] 행 유닛 합에 **중첩 표의 캡션**이 빠져 있었다. 같은
+                    // 호스트를 통째로 한 유닛(atom)으로 올리는 갈래는 저장 줄높이가
+                    // 캡션을 이미 품지만, 행 단위로 쪼개는 이 갈래는 행 높이만 센다.
+                    //
+                    // 2181727 7쪽 조각(한 칸, 문단 7개) 실측 — 페인트 전진량 vs 유닛 합:
+                    //
+                    // ```text
+                    //   p3 atom      187.08 / 187.08   ✔
+                    //   p5 행유닛     146.33 / 122.77   ← +23.56 = <표2> 캡션 25.43
+                    //   p6 atom      197.53 / 207.01   (유닛이 큼 — 안전)
+                    //   p9 행유닛     162.48 / 169.39   (캡션 없음, 유닛이 큼 — 안전)
+                    // ```
+                    //
+                    // 모자란 몫이 조각 셀 상자(= 유닛 합 + 안 여백)를 그만큼 짧게 만들어,
+                    // 마지막 중첩 표 밑줄이 바깥 표 밑줄을 4.16px 넘어 겹쳤다.
+                    let (nt_cap_top, nt_cap_bot) = {
+                        let ch = self.calculate_caption_height(&nt.caption, styles);
+                        let cs = nt
+                            .caption
+                            .as_ref()
+                            .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
+                            .unwrap_or(0.0);
+                        match nt.caption.as_ref().map(|c| c.direction) {
+                            Some(CaptionDirection::Top) => (ch + cs, 0.0),
+                            Some(CaptionDirection::Bottom) => (0.0, ch + cs),
+                            _ => (0.0, 0.0),
+                        }
+                    };
                     for (ri, rh) in rhs.iter().enumerate() {
                         // [#4069] CELL 분할 중첩 표는 큰 행을 단일 atom으로 바깥
                         // 원장에 올리지 않는다. 행에서 콘텐츠가 가장 높은 셀의 unit
@@ -10183,10 +10211,10 @@ impl LayoutEngine {
                             uh += ncs;
                         }
                         if ri == 0 {
-                            uh += om_top + spacing_before;
+                            uh += om_top + spacing_before + nt_cap_top;
                         }
                         if ri + 1 == nrow {
-                            uh += om_bot + spacing_after;
+                            uh += om_bot + spacing_after + nt_cap_bot;
                             // [#5880] 직접 HWPX 의 저장 사다리는 중첩 표 host 문단
                             // 뒤 흐름을 `lh + ls` 만큼 전진시킨다(2737927 p71:
                             // 델타 10414 = lh 9994 + ls 420 정확). 유닛 합이 행합
