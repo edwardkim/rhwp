@@ -72,3 +72,13 @@ mergeability를 다시 확인한 뒤에만 병합한다.
 - `hwpctl_ParameterSetID_Item_v1.2.hwp` p3: [rhwp/PDF/overlay 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6659_hwpctl_p3.png)
 - `exam_math.hwp` p3: [rhwp/PDF/overlay 합성](../assets/pr_6659_6664_jeong_sik_integration_20260903/review_6659_exam_math_p3.png)
 - 사람 검토에서 코드 블록·푸터 및 양단 문제 구획이 페이지 안에 유지됨을 확인했다. 픽셀 수치는 글꼴 차이를 포함한 참고값이며 구조 판정을 대체하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+- 이 기록 보완 PR이 merge되고 그 merge SHA의 devel CI가 성공한 뒤에만 원 PR #6659에 한 번 게시한다.
+- 수용 사실: PR #6691 merge commit 573059ee7bd4b74626143723d31d0b74ab0320b8로 provenance-preserving cherry-pick aafc00e7a를 통합했다.
+- 실제 CI: PR CI 33747890105와 CodeQL 33747890268, devel CI 33749587952와 CodeQL 33749587899, Adapter 33749587901, Proptest 33749587881이 success다.
+- 시각 판정: hwpctl p3와 exam_math p3은 각각 flagged 0/1이다. pixel match는 95.22274%, 97.99917%이고, 사람 검토에서 코드 블록·푸터 및 양단 문제 구획의 페이지 내 수용을 확인했다.
+- 자동 ink/proxy 수치는 글꼴 폭·줄바꿈·raster 차이를 포함하는 보조값임을 명시한다. 시각 비교 방법 정본은 https://github.com/edwardkim/rhwp/blob/573059ee7bd4b74626143723d31d0b74ab0320b8/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment 이다.
+- devel 안정 asset: ![PR 6659 hwpctl p3 visual review](https://raw.githubusercontent.com/edwardkim/rhwp/573059ee7bd4b74626143723d31d0b74ab0320b8/mydocs/pr/assets/pr_6659_6664_jeong_sik_integration_20260903/review_6659_hwpctl_p3.png)
+- #6656은 height_measurer 측정 경로와의 정합 DoD가 남아 있으므로 원 PR close와 별개로 OPEN을 유지한다.
