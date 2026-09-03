@@ -14,7 +14,8 @@ last_verified: 2026-09-03
 
 > 인간 개발자·메인테이너가 구조 계약과 전수 벤치마크를 실행할 때는
 > [수동 운영 매뉴얼](../mydocs/manual/gym_benchmark_operations.md)을 따른다. AI 에이전트는
-> 참가자·감사자 역할을 구분하는 [Gym 범위 지침](AGENTS.md)을 먼저 적용한다.
+> 참가자·감사자 역할을 구분하는 [Gym 범위 지침](AGENTS.md)을 먼저 적용한다. 전수 실행 JSON을
+> seal하고 사람용 정적 HTML로 읽을 때는 [Gym 증적 보고 규약](docs/evidence_report.md)을 따른다.
 
 > 🎡 **놀이공원처럼 둘러보려면** → [PARK.md](PARK.md) (테마파크 지도) ·
 > [tutorial/](tutorial/README.md) (☕ 휴게실, 첫 방문 5분) ·

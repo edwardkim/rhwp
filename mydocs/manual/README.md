@@ -21,7 +21,7 @@ last_verified: 2026-09-03
 | 외부 PR 검토, collaborator 처리, merge 후속 | [PR 리뷰·통합 워크플로우](pr_review_workflow.md) | [조건별 PR review 가이드](pr_review/README.md), [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp 첫 외부 contributor PR | [PR 리뷰·통합 워크플로우](pr_review_workflow.md) | [첫 기여자 외부 PR 처리](pr_review/first_time_contributor.md), [조건별 PR review 가이드](pr_review/README.md) |
 | 로컬 빌드, 테스트, WASM 검증 | [개발 환경 가이드](dev_environment_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md) |
-| Gym 구조 계약·전수 벤치마크를 사람이 수동 실행 | [Gym 벤치마크 수동 운영 매뉴얼](gym_benchmark_operations.md) | [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md), [Gym 참가자 안내](../../gym/README.md) |
+| Gym 구조 계약·전수 벤치마크·증적 보고를 사람이 수동 실행 | [Gym 벤치마크 수동 운영 매뉴얼](gym_benchmark_operations.md) | [Gym 증적 seal·HTML 규약](../../gym/docs/evidence_report.md), [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md), [Gym 참가자 안내](../../gym/README.md) |
 | 문서 이동·정보구조의 링크 검사 | [문서 링크와 메타데이터 로컬 검사](markdown_link_check_guide.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | 신규 기여자 시작 | [온보딩 가이드](onboarding_guide.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | 에이전트가 rhwp 참조 문서를 처음 탐색 | [에이전트 지식 지도](agent_knowledge_map.md) | 루트 [`llms.txt`](../../llms.txt), [CLI 명령어 매뉴얼](cli_commands.md) |

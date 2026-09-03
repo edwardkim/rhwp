@@ -110,6 +110,7 @@ GYM_WORKTREE="$GYM_TMP/worktree"
 GYM_TARGET="$GYM_TMP/target"
 GYM_EVIDENCE="$RHWP_REPO/output/gym/$GYM_RUN_ID"
 GYM_RUNNER_SHA=$(git rev-parse HEAD)
+GYM_PRODUCT_SHA="$GYM_RUNNER_SHA"
 
 mkdir -p "$GYM_EVIDENCE"
 git worktree add --detach "$GYM_WORKTREE" "$GYM_RUNNER_SHA"
@@ -121,19 +122,33 @@ cd "$GYM_WORKTREE"
 ```bash
 CARGO_TARGET_DIR="$GYM_TARGET" cargo build --locked --bin rhwp
 RHWP_BIN="$GYM_TARGET/debug/rhwp"
+```
+
+제품 후보 commit과 Gym runner commit이 다르면 후보 checkout에서 바이너리를 먼저 만들고,
+그 **절대경로**를 `RHWP_BIN`에 넣는다. `GYM_PRODUCT_SHA`도 후보 checkout의 commit으로 바꾼다.
+
+```bash
+RHWP_BIN="<candidate-checkout의 binary 절대경로>"
+GYM_PRODUCT_SHA=$(git -C "<candidate-checkout>" rev-parse HEAD)
+```
+
+두 경우 모두 Gym runner worktree에서 다음 공통 metadata를 기록한다.
+
+```bash
 "$RHWP_BIN" --version | tee "$GYM_EVIDENCE/rhwp-version.txt"
 sha256sum "$RHWP_BIN" | tee "$GYM_EVIDENCE/rhwp-bin.sha256"
+printf '%s\n' "$GYM_RUN_ID" >"$GYM_EVIDENCE/run-id.txt"
 git rev-parse HEAD | tee "$GYM_EVIDENCE/gym-runner-head.txt"
 git rev-parse HEAD^{tree} | tee "$GYM_EVIDENCE/gym-runner-tree.txt"
+printf '%s\n' "$GYM_PRODUCT_SHA" >"$GYM_EVIDENCE/product-source-head.txt"
 date -Is | tee "$GYM_EVIDENCE/run-started.txt"
 uname -a >"$GYM_EVIDENCE/platform.txt"
 python3 --version >"$GYM_EVIDENCE/python-version.txt" 2>&1
 rustc --version >"$GYM_EVIDENCE/rust-version.txt" 2>&1
 ```
 
-제품 후보 commit과 Gym runner commit이 다르면 후보 checkout에서 바이너리를 먼저 만들고,
-그 **절대경로**를 `RHWP_BIN`에 넣은 뒤 Gym runner worktree에서 감사한다. 이때 두 commit을
-별도로 기록한다. 서로 다른 task/reference tree를 섞어 복사하지 않는다.
+서로 다른 task/reference tree를 섞어 복사하지 않는다. commit이 아닌 제품 binary는
+`product-source-head.txt`를 위조해 채우지 말고 실행 신원을 확보한 뒤 시작한다.
 
 ## 4. 실행 순서
 
@@ -170,11 +185,19 @@ python3 gym/tools/oracle_probe.py --selftest --json \
 GYM_EXIT=$?
 printf '%s\n' "$GYM_EXIT" >"$GYM_EVIDENCE/oracle-selftest.exit"
 printf '%s\n' "$SECONDS" >"$GYM_EVIDENCE/oracle-selftest.seconds"
+
+SECONDS=0
+python3 gym/tools/authority_ledger.py --json \
+  >"$GYM_EVIDENCE/authority-ledger.json" \
+  2>"$GYM_EVIDENCE/authority-ledger.stderr"
+GYM_EXIT=$?
+printf '%s\n' "$GYM_EXIT" >"$GYM_EVIDENCE/authority-ledger.exit"
+printf '%s\n' "$SECONDS" >"$GYM_EVIDENCE/authority-ledger.seconds"
 ```
 
 단위 계약 실패, `audit.ok=false`, `audit.issueCount>0`, `audit.toolFailed=true`, 또는 oracle
-probe의 `ok=false`가 있으면 전수 **수용 판정**으로 넘어가지 않는다. 원인 진단을 위해
-나머지를 실행할 수는 있지만 그 실행은 진단이라고 명시한다.
+probe·authority ledger의 `ok=false`가 있으면 전수 **수용 판정**으로 넘어가지 않는다. 원인
+진단을 위해 나머지를 실행할 수는 있지만 그 실행은 진단이라고 명시한다.
 
 ### 4.2 양성 기준풀이 전수
 
@@ -224,6 +247,40 @@ printf '%s\n' "$SECONDS" >"$GYM_EVIDENCE/trajectory.seconds"
 
 task·pack 수는 계속 늘 수 있다. 과거 보고서의 숫자를 기대값으로 하드코딩하지 말고 같은
 실행에서 나온 봉투의 `taskCount`, `packs`, `results`로 집계를 재계산한다.
+
+### 4.5 증적 seal과 사람용 HTML
+
+일곱 JSON과 metadata·exit·seconds·stderr를 모두 기록한 직후 입력 집합을 seal한다. 먼저
+`--seal`이 41개 필수 입력의 구조·집계·실행 신원과 SHA-256을 검증해
+`evidence-manifest.json`을 쓴다. 성공한 seal 없이 `--out`부터 실행하지 않는다.
+
+```bash
+python3 gym/tools/evidence_report.py \
+  --evidence-dir "$GYM_EVIDENCE" \
+  --seal \
+  >"$GYM_EVIDENCE/evidence-seal-summary.json" \
+  2>"$GYM_EVIDENCE/evidence-seal.stderr"
+GYM_SEAL_EXIT=$?
+printf '%s\n' "$GYM_SEAL_EXIT" >"$GYM_EVIDENCE/evidence-seal.exit"
+```
+
+`GYM_SEAL_EXIT`가 0일 때만 HTML을 만든다.
+
+```bash
+python3 gym/tools/evidence_report.py \
+  --evidence-dir "$GYM_EVIDENCE" \
+  --out "$GYM_EVIDENCE/evidence-report.html" \
+  >"$GYM_EVIDENCE/evidence-report-summary.json" \
+  2>"$GYM_EVIDENCE/evidence-report.stderr"
+GYM_REPORT_EXIT=$?
+printf '%s\n' "$GYM_REPORT_EXIT" >"$GYM_EVIDENCE/evidence-report.exit"
+```
+
+종료 0은 유효한 seal의 전체 PASS, 종료 1은 유효한 seal의 FAIL 또는 INCOMPLETE다. 둘 다 HTML이
+생성된다. 종료 2는 입력·신원·manifest가 무효하거나 혼합됐다는 뜻이며 새 HTML을 남기지 않는다.
+종료 1을 생성 실패로 오해해 보고서를 버리거나, 종료 2를 성공 상태로 접지 않는다. HTML은 사람이
+읽는 비권위 파생 뷰이며 JSON 봉투가 계속 기계 판독 정본이다. 전체 입력·상태·redaction 계약은
+[`Gym 증적 seal·HTML 규약`](../../gym/docs/evidence_report.md)을 따른다.
 
 ## 5. 통과 판정
 
@@ -294,10 +351,9 @@ task·pack 수는 계속 늘 수 있다. 과거 보고서의 숫자를 기대값
 실패 재현 자산만 남긴다. 사설 코퍼스의 경로·파일명·본문·식별 가능한 증거를 공개 보고서나
 PR에 넣지 않는다.
 
-현재 정본은 JSON 원문과 사람이 작성한 요약 보고까지 규정하며, JSON에서 차트·대시보드 같은
-시각 자료를 자동 생성하는 기능은 제공하지 않는다. 그 파생 보고서의 형식, 결정성, 오류 표시와
-원문 계보는 후속 [#6669](https://github.com/edwardkim/rhwp/issues/6669)에서 다룬다. 구현 전에는
-수작업 시각 자료를 JSON보다 높은 판정 권위로 사용하지 않는다.
+전수 실행 직후에는 4.5의 seal을 남기고 HTML을 생성한다. manifest는 입력 집합의 영수증이고 HTML은
+그 seal을 사람이 읽기 쉽게 펼친 비권위 파생 뷰다. 둘 중 어느 것도 JSON 봉투의 판정 권위를
+대체하지 않는다. HTML을 공개할 때도 사설 코퍼스의 원문 JSON이나 stderr를 함께 게시하지 않는다.
 
 ## 8. 정리
 
@@ -331,4 +387,5 @@ git status --short --branch
 - [판별력 감사](../../gym/docs/discriminate.md)
 - [트라젝토리 필요성 감사](../../gym/docs/trajectory.md)
 - [정답 권위 원장](../../gym/docs/authority_ledger.md)
+- [Gym 증적 seal·HTML 규약](../../gym/docs/evidence_report.md)
 - [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md)
