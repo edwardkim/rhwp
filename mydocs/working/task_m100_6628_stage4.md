@@ -3,10 +3,10 @@ kind: working
 status: active
 canonical: mydocs/working/task_m100_6628_stage4.md
 issue: 6628
-last_verified: 2026-09-02
+last_verified: 2026-09-03
 ---
 
-# #6628 Stage 4 — 전수 감사 중간 판정
+# #6628 Stage 4 — 전수 감사 판정
 
 ## 1. 결론
 
@@ -188,3 +188,35 @@ baseline source       self-live 1,031 · contract-constant 4
 
 이 순서는 이미 확인한 실패를 task/reference 완화로 우회하지 않으면서, #6641 병합 뒤
 같은 전수 실행을 불필요하게 반복하지 않기 위한 것이다.
+
+## 10. #6641 병합 후 최종 판정
+
+위 1~9절은 `05a834692`에서 확인한 중간 판정을 역사적 원인 증적으로 보존한다. 이후 #6641은
+PR #6673의 정상 merge commit `edeaeb28910f1b84f005aabb4ec0d0f183adc2a1`로 devel에
+반영됐고, #6628 브랜치는 merge commit `3950ca15738311ef23e87233d981dd2d6197b953`에서 그
+devel을 충돌 없이 받아들였다.
+
+#6641 검증에서는 다음 두 계보를 섞지 않고 분리했다.
+
+- Gym runner: `374c7416a6c2d9abe7c2701969de5f377b71183f`
+- product candidate: `7f1174f1d59bc020aaa38ceb7e148a8ae77b2784`
+- candidate binary SHA-256:
+  `4334e35e3bfb7e892416e663c7a52dd055a7d82040d2a89447f32d25ccd02f34`
+
+이 조합의 전수 결과는 positive 1,035/1,035, discrimination 1,035 task·1,511 control·
+false-pass 0, trajectory 239/239 load-bearing·theater/예외/tool 오류 0이다. BO05·BO15도
+별도 canary 2/2를 통과했다. 원문 계측과 실행 시간은
+[`#6641 최종 보고서`](../report/task_m100_6641_report.md#5-6628-gym-인계-전수)에 보존했다.
+
+증적 재사용 전에 다음 동일성을 기계적으로 확인했다.
+
+1. `374c7416a..3950ca157` 사이의 `gym/core`, `gym/packs`, `gym/tools`, Gym 계약 시험과
+   Gym workflow 실행 의미 diff는 0이다.
+2. `7f1174f1d..upstream/devel@edeaeb289` 사이의 `src`, `tests`, `gym`, `scripts`, workflow
+   diff는 0이다.
+3. 현재 병합 tree에서 Gym Python 계약 3,149건, 구조 audit, oracle structural/selftest와
+   authority ledger를 다시 실행해 모두 통과했다.
+
+따라서 제품 결함을 task/reference/allowExits 완화로 우회하지 않고 Stage 4 종료 게이트를
+충족했다. 이 판정은 공개 Gym 내부의 정합 근거이며 external oracle 0개라는 한계나 제품 릴리스
+비의존 경계를 바꾸지 않는다.
