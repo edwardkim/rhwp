@@ -10,7 +10,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { resolveGlyphStartRect } from '../src/engine/line-start-affinity.ts';
+import { resolveGlyphStartRect, isCompositionBoxRepresentable } from '../src/engine/line-start-affinity.ts';
 import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
 import type { CursorRect, LineInfo } from '../src/core/types.ts';
 
@@ -122,4 +122,40 @@ test('updateCaret 의 조합 분기가 폭 계산 전에 줄 affinity 를 적용
     '2단 이상 중첩 셀은 getCursorRectOnLine 이 문단을 지목할 수 없어 exact 를 유지한다',
   );
   assert.match(resolver, /this\.wasm\.getCursorRectOnLine\(/);
+});
+
+// [Issue #6738] 줄 affinity 를 물을 수 없는 문맥(머리말/꼬리말·각주·2단계 이상 중첩 셀)에서는
+// 조합 글자가 줄을 넘어가도 시작 좌표를 바로잡을 수 없다. 그 상태로 단일 사각형을 그리면
+// 폭이 음수가 되어 clampCompositionBox 의 height*0.6 폴백에 삼켜지고 이전 줄에 박스가 남는다.
+
+test('한 줄 안의 조합은 단일 사각형으로 그릴 수 있다고 판정한다', () => {
+  const start: CursorRect = { pageIndex: 0, x: 121.6, y: 146.5, height: 13.3 };
+  assert.equal(isCompositionBoxRepresentable(start, CARET_ON_NEXT_LINE), true);
+  // 폭 0(막 시작한 조합)도 그릴 수 있다.
+  assert.equal(isCompositionBoxRepresentable(CARET_ON_NEXT_LINE, CARET_ON_NEXT_LINE), true);
+});
+
+test('줄을 넘어간 조합은 그릴 수 없다고 판정한다', () => {
+  // 실측: 이전 줄 끝 x=394.0 > 캐럿 x=134.9 → 폭이 음수가 되는 바로 그 상태
+  assert.equal(isCompositionBoxRepresentable(EXACT_PREV_LINE_END, CARET_ON_NEXT_LINE), false);
+});
+
+test('쪽을 넘어간 조합은 그릴 수 없다고 판정한다', () => {
+  const prevPage: CursorRect = { ...CARET_ON_NEXT_LINE, pageIndex: 0, x: 100 };
+  const nextPage: CursorRect = { ...CARET_ON_NEXT_LINE, pageIndex: 1, x: 121.6 };
+  assert.equal(isCompositionBoxRepresentable(prevPage, nextPage), false);
+});
+
+test('그릴 수 없는 조합은 오버레이 대신 일반 캐럿으로 물러난다', () => {
+  const source = codeOnly(readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8'));
+  const updateCaret = functionBodyFrom(source, 'private updateCaret(');
+
+  assert.match(
+    updateCaret,
+    /if \(!isCompositionBoxRepresentable\(startRect, rect\)\) \{\s*this\.caret\.hideComposition\(\);\s*this\.caret\.update\(rect, zoom\);\s*\} else \{/,
+    '그릴 수 없으면 조회 실패와 같은 경로(hideComposition + 일반 캐럿)로 물러나야 한다',
+  );
+  const guard = updateCaret.indexOf('isCompositionBoxRepresentable(startRect, rect)');
+  const show = updateCaret.indexOf('this.caret.showComposition(');
+  assert.ok(guard >= 0 && show > guard, '오버레이 표시 전에 판정해야 한다');
 });

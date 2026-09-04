@@ -42,3 +42,19 @@ export function resolveGlyphStartRect(
     height: onLine.height,
   };
 }
+
+/**
+ * 조합 오버레이의 시작 rect 와 캐럿이 **한 줄 안에** 있는지 — 즉 단일 사각형으로 그릴 수
+ * 있는지 판정한다.
+ *
+ * y 비교는 쓸 수 없다. 같은 줄이라도 글꼴 크기가 섞이면 캐럿 y 가 run 마다 다르다(캐럿 y 는
+ * baseline 기준으로 잡힌다). 대신 한 줄 안에서 반드시 성립해야 하는 관계를 본다 — 같은 쪽이고,
+ * 시작이 캐럿보다 오른쪽에 있지 않아야 한다.
+ *
+ * [Issue #6738] 줄 affinity 를 물을 수 없는 문맥(머리말/꼬리말·각주·2단계 이상 중첩 셀)에서는
+ * 조합 글자가 줄을 넘어가도 시작 좌표를 바로잡을 수 없다. 그 상태로 그리면 폭이 음수가 되고
+ * `clampCompositionBox` 의 `height * 0.6` 폴백에 삼켜져 이전 줄에 그럴듯한 박스가 남는다.
+ */
+export function isCompositionBoxRepresentable(start: CursorRect, caret: CursorRect): boolean {
+  return start.pageIndex === caret.pageIndex && start.x <= caret.x;
+}
