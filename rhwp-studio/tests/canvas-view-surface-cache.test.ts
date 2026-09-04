@@ -226,3 +226,72 @@ test('CanvasView는 완성 다층 bundle을 exact key로 재부착하고 raster�
     await vite.close();
   }
 });
+
+test('surface plan 재래스터가 실패한 쪽은 active surface를 놓아 다음 갱신이 다시 그린다', async () => {
+  const studioRoot = fileURLToPath(new URL('..', import.meta.url));
+  const vite = await createServer({
+    root: studioRoot,
+    appType: 'custom',
+    logLevel: 'silent',
+    server: { middlewareMode: true },
+  });
+  const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  try {
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: { devicePixelRatio: 2 },
+    });
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const surfaces = [new FakeCanvas(), new FakeCanvas()];
+    const rendered: number[] = [];
+    const discarded: number[] = [];
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    Object.assign(view, {
+      pages: Array.from({ length: 2 }, () => ({ width: 1000, height: 1000 })),
+      currentVisiblePages: [0, 1],
+      currentRetainedPages: [0, 1],
+      editingPageIndex: null,
+      activePageSnapshot: { pageIndex: 0, source: 'viewport' },
+      renderSurfacePlan: null,
+      // 이전 결정이 없으면 두 쪽 모두 실제 bitmap scale이 바뀐 재래스터 대상이 된다.
+      renderSurfaceDecisions: new Map(),
+      previousEffectiveDpr: new Map(),
+      renderSurfaceEnvironmentKey: null,
+      pendingPrefetchSurfaceReservations: new Map(),
+      canvasPool: {
+        activePages: [0, 1],
+        getCanvas: (page: number) => surfaces[page],
+      },
+      pageRenderer: {
+        getBackend: () => 'canvas2d',
+        getRenderProfile: () => 'screen',
+        getCanvasSurfaceLayerCount: () => 4,
+      },
+      viewportManager: { getZoom: () => 1 },
+      materiallyVisiblePages: () => [0, 1],
+      pageSurfaceDescriptor: () => null,
+      reconcilePageSurfaceBudget: () => undefined,
+      applySurfaceDecisionDiagnostics: () => undefined,
+      renderCanvas: (page: number) => {
+        rendered.push(page);
+        return page !== 1;
+      },
+      discardActivePageSurface: (page: number) => {
+        discarded.push(page);
+      },
+    });
+
+    view.refreshRenderSurfacePlan(true);
+
+    assert.deepEqual(rendered, [0, 1], '결정이 바뀐 active 쪽은 모두 재래스터를 시도한다');
+    assert.deepEqual(
+      discarded,
+      [1],
+      'raster에 실패한 쪽만 active surface를 놓아 has() 건너뛰기로 빈 canvas가 남지 않게 한다',
+    );
+  } finally {
+    if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
+    else Reflect.deleteProperty(globalThis, 'window');
+    await vite.close();
+  }
+});

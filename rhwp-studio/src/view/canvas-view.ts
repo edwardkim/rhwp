@@ -1226,7 +1226,9 @@ export class CanvasView {
       const canvas = this.canvasPool.getCanvas(pageIndex);
       if (!canvas) continue;
       if (changed) {
-        this.renderCanvas(pageIndex, canvas);
+        // raster에 실패한 쪽을 active로 남기면 다음 visibility 갱신이 has()로 건너뛰어
+        // 빈 canvas가 그대로 보인다. 이미 붙어 있던 surface의 실패 계약에 맞춘다.
+        if (!this.renderCanvas(pageIndex, canvas)) this.discardActivePageSurface(pageIndex);
       } else {
         // 가시성만 바뀐 페이지는 다시 raster하지 않고 진단값만 현재 plan에 맞춘다.
         this.applySurfaceDecisionDiagnostics(pageIndex, canvas);
