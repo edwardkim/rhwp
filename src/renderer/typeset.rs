@@ -3877,6 +3877,11 @@ fn paragraph_saved_vpos_reset_starts_new_page_after(
 /// 쪽 중간에서 인정하면 한 문서 안에서 가드가 연쇄 발동해 쪽수가 늘어난다
 /// (`156633519 산업활동동향`: pi 501개 이동 +3쪽). 이 조건 하나로 PI 코호트 회귀가
 /// 2건에서 0건이 됐고, 50·75·90% 가 모두 같은 결과라 가장 조인 값을 쓴다.
+/// [#6718] 저장 사다리가 지시한 쪽 경계를 "이 문단은 어차피 넘치지 않는다"로 걸러낼 때
+/// 쓰는 반올림 여유. 27469 `pi=62` 는 7줄 합 246.4 vs 예산 247.2 로 **0.8px** 차이로
+/// 들어가 사다리(@6)를 못 따랐다 — 그 0.8px 은 조판 차이가 아니라 계산 오차 규모다.
+const LADDER_FIT_EPSILON_PX: f64 = 1.0;
+
 const STORED_VPOS_REWIND_MIN_FILL: f64 = 0.90;
 
 /// 저장 `vpos` 가 되돌아가는 자리 — 한글이 거기서 쪽을 끊었다는 신호다 [#3837].
@@ -18203,11 +18208,11 @@ impl TypesetEngine {
             let ladder_page_is_full = |k: usize| -> bool {
                 let upto = fmt.line_advances_sum(cursor_line..k);
                 let next = fmt.line_advances_sum(k..k + 1);
-                upto + next > avail_for_lines + 0.5
+                upto + next > avail_for_lines - LADDER_FIT_EPSILON_PX
             };
             if st.profile.hwp5_stored_pagination_layout()
                 && end_line > cursor_line + 1
-                && cumulative > avail_for_lines
+                && cumulative > avail_for_lines - LADDER_FIT_EPSILON_PX
             {
                 let rewind_line = (cursor_line + 1..end_line).find(|&k| {
                     match (para.line_segs.get(k - 1), para.line_segs.get(k)) {

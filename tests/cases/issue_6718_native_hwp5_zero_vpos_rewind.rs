@@ -13,8 +13,12 @@
 //!
 //! ```text
 //!   수정 전   넘침 16 · 용지밖 1 · 글자겹침 7      (12쪽, 한/글 2020 도 12쪽)
-//!   수정 후   넘침 10 · 용지밖 0 · 글자겹침 2
+//!   수정 후   넘침  9 · 용지밖 1 · 글자겹침 2
 //! ```
+//!
+//! ⚠ `pi=62`(9쪽)는 예산을 **0.8px** 차이로 통과해(7줄 합 246.4 vs 예산 247.2) 사다리
+//! (@6)를 못 따르고 있었다. 그 0.8px 은 조판 차이가 아니라 계산 오차 규모라
+//! `LADDER_FIT_EPSILON_PX = 1.0` 을 둔다.
 //!
 //! ⚠ 승격은 두 겹으로 좁혔다 — 조각이 쪽 하단 30% 안에서 시작하고, 사다리대로 끊은
 //! 뒤 한 줄을 더 얹으면 예산을 넘어야 한다. 둘째 겹이 없으면 `#2070` 시장구조조사가
@@ -95,5 +99,20 @@ fn page4_zero_vpos_rewind_is_honored() {
     assert!(
         worst < 10.0,
         "4쪽 본문이 쪽 규모로 하한을 넘으면 안 된다 — #6718 회귀          (초과 {worst:.1}px, 본문 하한 {bottom:.1}; 수정 전 +108.8px)"
+    );
+}
+
+/// 10쪽 — `pi=62` 는 예산을 0.8px 차이로 통과해 사다리(@6)를 못 따랐다.
+///
+/// 수정 전 `+20.5px`.
+#[test]
+fn page10_rewind_survives_a_sub_pixel_fit() {
+    let bytes = sample();
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+
+    let (bottom, worst) = body_overflow(&core, 9).expect("10쪽 render tree");
+    assert!(
+        worst < 5.0,
+        "10쪽 본문이 하한을 넘으면 안 된다 — #6718 회귀          (초과 {worst:.1}px, 본문 하한 {bottom:.1}; 수정 전 +20.5px)"
     );
 }
