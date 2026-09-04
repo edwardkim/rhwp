@@ -27,37 +27,18 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+use std::path::Path;
+
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/acrc_downloads/2019/
-///  27469_27469-양육수당 및 아동수당 소급지원 요청(의견표명).hwp`
-///
-/// ⚠ `.hwp` 를 `samples/` 에 넣으면 `ir_field_sweep_baseline` 이 `samples/` 전체를
-/// 스윕해 무관한 직렬화 발산을 끌고 온다. `RHWP_ISSUE6718_SAMPLE` 로 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6718_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        r"C:\Users\planet\hwpdocs_10k_share\acrc_downloads\2019",
-        r"D:\hwpdocs_10k_share\acrc_downloads\2019",
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.starts_with("27469_") && name.ends_with(".hwp") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+const SAMPLE: &str = "samples/issue6718/27469-child-allowance-retroactive-support.hwp";
+
+/// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
+/// 성공 조건이 아니므로 읽기 실패를 즉시 드러낸다.
+fn sample() -> Vec<u8> {
+    std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE))
+        .expect("#6718 정식 HWP fixture 읽기")
 }
 
 /// 한 쪽의 본문 하한과, 그 아래로 삐져나간 `TextLine` 들의 최대 초과폭.
@@ -66,9 +47,7 @@ fn body_overflow(core: &DocumentCore, page: u32) -> Option<(f64, f64)> {
     let body = find_body(&tree.root)?;
     let bottom = body.bbox.y + body.bbox.height;
     let mut worst = 0.0f64;
-    let mut lowest = f64::MIN;
     collect_line_bottoms(body, &mut |b| {
-        lowest = lowest.max(b);
         worst = worst.max(b - bottom);
     });
     Some((bottom, worst))
@@ -95,9 +74,7 @@ fn collect_line_bottoms(node: &RenderNode, out: &mut impl FnMut(f64)) {
 /// 수정 전에는 2줄이 `+27.9 / +63.1px` 로 쪽번호 위에 그려졌다.
 #[test]
 fn page2_zero_vpos_rewind_is_honored() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     assert_eq!(core.page_count(), 12, "한/글 2020 과 같은 12쪽이어야 한다");
 
@@ -111,9 +88,7 @@ fn page2_zero_vpos_rewind_is_honored() {
 /// 4쪽 — 사다리 `pi=25 @4` 가 지켜져야 한다. 수정 전 최대 초과 `+108.8px`.
 #[test]
 fn page4_zero_vpos_rewind_is_honored() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
 
     let (bottom, worst) = body_overflow(&core, 3).expect("4쪽 render tree");
