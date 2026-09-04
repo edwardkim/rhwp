@@ -10,7 +10,7 @@ last_verified: 2026-09-02
 정본 구현은 `gym/tools/pack_health.py` 다. 이 문서는 그 도구가 **무엇을 보고**,
 **무엇을 보지 않으며**, **어떤 코드로 보고하는가**를 사람이 고를 수 있게
 풀어 쓴 목록이다. 작업 기록·오탐 결정·시험 지도는
-[`mydocs/working/gym_pack_health.md`](../../mydocs/working/gym_pack_health.md)
+[`mydocs/working/gym_pack_health.md`](../../mydocs/working/archives/gym_pack_health.md)
 에 남긴다.
 
 `audit.py` 가 스키마·기준풀이 짝·전역 과제 ID 를 보면, 이 도구는 그 **다음 층**
@@ -373,4 +373,4 @@ python gym/tools/pack_health.py --codes    # 이슈 코드 목록
 - [`gym/core/checks.py`](../core/checks.py) — 채점 연산자 `REGISTRY`
 - [`gym/core/schema.py`](../core/schema.py) — pack/task 스키마
 - [`gym/tools/audit.py`](../tools/audit.py) — 정합 감사
-- [`mydocs/working/gym_pack_health.md`](../../mydocs/working/gym_pack_health.md) — 작업 기록
+- [`mydocs/working/gym_pack_health.md`](../../mydocs/working/archives/gym_pack_health.md) — 작업 기록

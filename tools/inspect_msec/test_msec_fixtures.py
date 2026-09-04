@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "tests" / "fixtures" / "inspect_msec"
 WORKING = ROOT / "mydocs" / "working"
+WORKING_ARCHIVES = WORKING / "archives"
 
 ALLOWED_HT = {
     "same_as_background",
@@ -250,7 +251,7 @@ class TestMatrices(unittest.TestCase):
 
 class TestWorkingDocs(unittest.TestCase):
     def test_overview_exists(self) -> None:
-        text = (WORKING / "m_sec_inspect_fatten.md").read_text(encoding="utf-8")
+        text = (WORKING_ARCHIVES / "m_sec_inspect_fatten.md").read_text(encoding="utf-8")
         self.assertIn("closes #5476", text)
         self.assertIn("feat/m-sec-inspect-fatten", text)
         self.assertIn("cargo fmt --all -- --check", text)

@@ -10,7 +10,7 @@ last_verified: 2026-09-02
 이 문서는 `gym/score.py` 진입점과 `gym/core/runner.py` 엔진의 **예외
 경로 계약**, **pack 상태 삼원**, **입장 봉투**, **자리표시자 안전**,
 **보고 카드**를 고정한다. 작업 기록은
-[`mydocs/working/gym_score_runner.md`](../../mydocs/working/gym_score_runner.md)
+[`mydocs/working/gym_score_runner.md`](../../mydocs/working/archives/gym_score_runner.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_score.py`(성공 칸)와
 `scripts/tests/test_gym_score_runner.py`(예외 칸)가 기계로 고정한다.
 

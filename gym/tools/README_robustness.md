@@ -9,7 +9,7 @@ last_verified: 2026-09-02
 
 손상-강건성 감사기의 **한 페이지 운영 메모**다. 카탈로그·분류·예외 경로의 정본은
 [`gym/docs/robustness.md`](../docs/robustness.md) 다. 작업 기록은
-[`mydocs/working/gym_robustness.md`](../../mydocs/working/gym_robustness.md).
+[`mydocs/working/gym_robustness.md`](../../mydocs/working/archives/gym_robustness.md).
 
 ## 30초
 

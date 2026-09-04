@@ -13,7 +13,7 @@ description: rhwp CLI 바이너리로 HWP/HWPX 파일을 분석·내보내기·�
 발명하지 않는다. 권위는 `src/main.rs` 디스패치 = `rhwp --help` =
 [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md).
 
-처리 기록: [`mydocs/working/agent_cli.md`](../../../mydocs/working/agent_cli.md).
+처리 기록: [`mydocs/working/agent_cli.md`](../../../mydocs/working/archives/agent_cli.md).
 
 ## 바이너리 실행
 

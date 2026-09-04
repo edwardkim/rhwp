@@ -95,9 +95,9 @@ PDF, golden과 baseline fixture를 바꾸지 않았으므로 별도 시각 게�
 
 ## 사후 보완과 남은 처리
 
-- [#2004 Stage 1](../../working/task_m100_2004_stage1.md)과 계획 문서의 `output/poc/task2004`를 역사적
+- [#2004 Stage 1](../../working/archives/task_m100_2004_stage1.md)과 계획 문서의 `output/poc/task2004`를 역사적
   산출물로 명시하고 tracked test·fixture로 연결한다.
-- [#2019 Stage 1](../../working/task_m100_2019_stage1.md)과 구현계획의 `output/poc/task2019`를 역사적
+- [#2019 Stage 1](../../working/archives/task_m100_2019_stage1.md)과 구현계획의 `output/poc/task2019`를 역사적
   산출물로 명시하고 tracked report·test·fixture로 연결한다.
 - [#2220 보고서](../../report/archives/task_m100_2220_report.md)의 “복원”은 당시 사건으로 보존하되, #4154에서
   이후 의도적으로 제거했음을 덧붙인다.

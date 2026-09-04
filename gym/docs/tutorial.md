@@ -9,7 +9,7 @@ last_verified: 2026-09-02
 
 이 문서는 `gym/tutorial/` · `gym/PARK.md` · `gym/INVITE.md` 가
 지켜야 하는 **입문 안내 계약**을 고정한다. 작업 기록은
-[`mydocs/working/gym_tutorial.md`](../../mydocs/working/gym_tutorial.md).
+[`mydocs/working/gym_tutorial.md`](../../mydocs/working/archives/gym_tutorial.md).
 기계 시험은 `scripts/tests/test_gym_tutorial.py` 다.
 
 채점 논리의 정본은 여기가 아니다. 연산자 등록부는

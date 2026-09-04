@@ -9,7 +9,7 @@ last_verified: 2026-09-02
 
 이 문서는 `gym/tools/release_diff.py` 의 **분류 삼원**, **관측 kind**, **예외
 경로 계약**을 고정한다. 작업 기록은
-[`mydocs/working/gym_release_diff.md`](../../mydocs/working/gym_release_diff.md)
+[`mydocs/working/gym_release_diff.md`](../../mydocs/working/archives/gym_release_diff.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_release_diff.py` 가 기계로 고정한다.
 
 `release_gate.py`는 이 도구의 분류를 수동 조사 판정으로 묶을 수 있다. 두 도구의

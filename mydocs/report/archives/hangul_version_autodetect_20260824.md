@@ -167,7 +167,7 @@ rhwp dump-pages <파일> --json --compat 2024
 ## 8. 관련
 
 - r1 전수 대조: [hangul_version_oracle_r1_20260807](hangul_version_oracle_r1_20260807.md)
-- `--compat` 도입: [issue5524_hangul2024_compat_stage1](../../working/issue5524_hangul2024_compat_stage1.md)
+- `--compat` 도입: [issue5524_hangul2024_compat_stage1](../../working/archives/issue5524_hangul2024_compat_stage1.md)
 - 명령 계약: [cli_commands.md 의 조판 세대 `--compat`](../../manual/cli_commands.md#조판-세대-compat)
 - 선행: #5940(철회 — `0/89`, 89건 중 2024 저장 0건), #5524·#5543(Δ1), #5944·#5945(`lastSavedWith`)
 - 오라클 선택 규약: [visual_fixture_evidence.md §3.5.1](../../manual/pr_review/visual_fixture_evidence.md#351-기준-pdf-미첨부-시-버전별-hwp-mcp)

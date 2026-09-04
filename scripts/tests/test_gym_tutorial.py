@@ -2,7 +2,7 @@
 
 이 시험이 지키는 것:
 
-- `gym/tutorial/` · `gym/docs/tutorial.md` · `mydocs/working/gym_tutorial.md`
+- `gym/tutorial/` · `gym/docs/tutorial.md` · `mydocs/working/archives/gym_tutorial.md`
   · `gym/PARK.md` · `gym/INVITE.md` 가 실재하고 서로를 가리킨다.
 - 프로파일 일곱 이름과 packs 묶음이 `gym/profiles/*.json` 과 같다.
 - 입문존 CR01~CR04 의 명령·답 키·입력이 안내에 그대로 있다.
@@ -112,7 +112,7 @@ REQUIRED_DOCS = (
     GYM / "PARK.md",
     GYM / "INVITE.md",
     GYM / "docs" / "tutorial.md",
-    REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md",
+    REPO_ROOT / "mydocs" / "working" / "archives" / "gym_tutorial.md",
 )
 
 FILE_OPERATOR_SNAPSHOT = {
@@ -290,7 +290,7 @@ class RequiredFilesTests(unittest.TestCase):
         self.assertIn("scripts/tests/test_gym_tutorial.py", text)
 
     def test_working_note_points_at_issue(self):
-        text = _read(REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md")
+        text = _read(REPO_ROOT / "mydocs" / "working" / "archives" / "gym_tutorial.md")
         self.assertIn("#5263", text)
         self.assertIn("feat/gym-tutorial-park-docs", text)
         self.assertIn("audit.py", text)
@@ -374,7 +374,7 @@ class TutorialLinkTests(unittest.TestCase):
             GYM / "PARK.md",
             GYM / "INVITE.md",
             GYM / "docs" / "tutorial.md",
-            REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md",
+            REPO_ROOT / "mydocs" / "working" / "archives" / "gym_tutorial.md",
         ):
             problems.extend(broken_relative_links(path))
         self.assertEqual(problems, [], "\n".join(problems))
@@ -707,7 +707,7 @@ class FrontMatterTests(unittest.TestCase):
         cases = (
             (GYM / "docs" / "tutorial.md", "guide", "gym/docs/tutorial.md"),
             (
-                REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md",
+                REPO_ROOT / "mydocs" / "working" / "archives" / "gym_tutorial.md",
                 "working",
                 "mydocs/working/gym_tutorial.md",
             ),
@@ -739,7 +739,7 @@ class ScopeGuardTests(unittest.TestCase):
         self.assertTrue({"CR01", "CR02", "CR03", "CR04"}.issubset(ids))
 
     def test_working_note_forbids_pack_json_edits(self):
-        text = _read(REPO_ROOT / "mydocs" / "working" / "gym_tutorial.md")
+        text = _read(REPO_ROOT / "mydocs" / "working" / "archives" / "gym_tutorial.md")
         self.assertIn("pack 과제 JSON", text)
         self.assertIn("고치지 않는다", text)
         self.assertIn("git add -A", text)

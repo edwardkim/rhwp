@@ -10,7 +10,7 @@ last_verified: 2026-09-03
 이 문서는 `gym/tools/build_baseline.py` 의 **자리표 치환**, **경로 안전**,
 **부재 산출**, **실패 보고**, **기준 풀이 스텝**, **왕복 요약**을 고정한다.
 작업 기록은
-[`mydocs/working/gym_build_baseline.md`](../../mydocs/working/gym_build_baseline.md)
+[`mydocs/working/gym_build_baseline.md`](../../mydocs/working/archives/gym_build_baseline.md)
 를 본다. 시험 계약은
 `scripts/tests/test_gym_build_baseline.py` 와
 `scripts/tests/test_gym_packs.py` 의 `BaselineResolveTests` 가 기계로

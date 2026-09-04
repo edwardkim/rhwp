@@ -114,6 +114,12 @@ mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
 - 저장소 내부 Markdown 링크는 이전 source 위치에서 해석한 실제 target을 기준으로 새 상대 경로를
   계산하여 이동과 같은 commit에서 갱신한다. 단순 문자열 치환으로 같은 basename의 다른 문서를
   연결하지 않는다.
+- 이동 전 경로를 파일 계약으로 여는 test·tool·generator·fixture도 저장소 전체에서 찾는다. 완성된
+  `mydocs/working/<파일>.md` 문자열뿐 아니라 `.join("mydocs").join("working")`이나
+  `Path / "mydocs" / "working"`처럼 경로 조각을 나눠 조립하는 코드도 별도로 검색한다. 실제 파일을
+  읽거나 생성하는 경로는 새 archive 위치로 같은 batch에서 갱신하고 해당 focused test를 실행한다.
+  과거 실행 증적의 인용 문자열과 이동 문서 자체의 historical `canonical` 값은 실행 경로와
+  구분하며 일괄 치환하지 않는다.
 - 대량 월별 이동에는 root를 다시 채우는 redirect stub을 만들지 않는다. 현재 branch 경로를 쓰는
   중요한 외부 링크가 확인되면 해당 링크나 별도 canonical index를 정정한다.
 
@@ -149,7 +155,9 @@ python3 scripts/check_document_metadata.py
 
 기존 historical 문서 오류가 있으면 단순 exit code만으로 판정하지 않고 이동 전 기준선과 결과 집합을
 비교해 **신규 오류 0건**을 증명한다. Rust source·test, Cargo, WASM 또는 workflow를 바꾸지 않은
-문서 이동에는 해당 빌드 게이트를 추가하지 않는다.
+문서 이동에는 해당 빌드 게이트를 추가하지 않는다. 반대로 경로 소비자인 source·test·generator를
+고쳤다면 더 이상 문서 전용 batch로 간주하지 않고, 변경 종류에 해당하는 focused test와
+[`local_validation.md`](../pr_review/local_validation.md#43-변경-범위별-기본-검증)의 게이트를 추가한다.
 
 ## Issue Workflow
 

@@ -24,7 +24,7 @@ last_verified: 2026-09-02
 - 모듈 자체: [`oracle_probe.py`](oracle_probe.py)
 - 단위 시험: [`../../scripts/tests/test_gym_oracle_probe.py`](../../scripts/tests/test_gym_oracle_probe.py)
 - 실문서 과제: [`../packs/oracle-probe/README.md`](../packs/oracle-probe/README.md)
-- 작업 노트: [`../../mydocs/working/gym_oracle_probe.md`](../../mydocs/working/gym_oracle_probe.md)
+- 작업 노트: [`../../mydocs/working/gym_oracle_probe.md`](../../mydocs/working/archives/gym_oracle_probe.md)
 - 채점 규약: [`../README.md`](../README.md)
 - 검사 연산자: [`../core/checks.py`](../core/checks.py)
 - 기준 풀이: [`build_baseline.py`](build_baseline.py)

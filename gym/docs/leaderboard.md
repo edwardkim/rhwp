@@ -11,7 +11,7 @@ last_verified: 2026-09-02
 **예외 경로**를 고정한다. 운영 한 줄 요약은
 [`gym/tools/README_leaderboard.md`](../tools/README_leaderboard.md) 를, 작업
 기록은
-[`mydocs/working/gym_leaderboard.md`](../../mydocs/working/gym_leaderboard.md)
+[`mydocs/working/gym_leaderboard.md`](../../mydocs/working/archives/gym_leaderboard.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_leaderboard.py` 가 기계로 고정한다.
 
 새 암호 원시함수는 없다. 파일 해시는 `hashlib.sha256`, 서명·원장·앵커는 기존

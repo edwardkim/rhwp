@@ -2,7 +2,7 @@
 
 정본 위치는 `mydocs/working/` 이다. 세션 스킬이 새 문서 종류를 만들지 않는다.
 이 파일이 요구하는 것은 **칸**이다. 예시는
-[`mydocs/working/agent_handoff.md`](../../../../mydocs/working/agent_handoff.md).
+[`mydocs/working/agent_handoff.md`](../../../../mydocs/working/archives/agent_handoff.md).
 
 ## 최소 칸
 

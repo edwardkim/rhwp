@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACK = REPO_ROOT / "gym" / "packs" / "self-description"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_self_description.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_self_description.md"
 
 ALLOWED_COMMANDS = frozenset(
     {
@@ -131,7 +131,7 @@ class PackLayoutTests(unittest.TestCase):
         self.assertTrue((PACK / "tasks").is_dir())
         self.assertTrue((PACK / "reference").is_dir())
         self.assertTrue(README.is_file(), "pack README 가 없다")
-        self.assertTrue(WORKING.is_file(), "작업 문서 mydocs/working/gym_self_description.md 가 없다")
+        self.assertTrue(WORKING.is_file(), "작업 문서 mydocs/working/archives/gym_self_description.md 가 없다")
 
     def test_manifest_identity_and_requires(self):
         manifest = read_json(PACK / "pack.json")

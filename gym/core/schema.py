@@ -49,7 +49,7 @@
    문자열만 쌓인다. `IssueList` 를 넘기면 `kind` 도 남는다.
 
 새 CLI 는 없다. 새 연산자도 없다. pack JSON 도 바꾸지 않는다.
-정본 규약은 `gym/docs/schema.md`, 작업 기록은 `mydocs/working/gym_schema.md`.
+정본 규약은 `gym/docs/schema.md`, 작업 기록은 `mydocs/working/archives/gym_schema.md`.
 """
 
 from __future__ import annotations

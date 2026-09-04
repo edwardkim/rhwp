@@ -40,8 +40,8 @@ fresh page-local placement, co-anchored visible-host flow, 실제 painted bottom
 저장 LineSeg 들여쓰기 교정을 유지한다. 광범위한 HWP5 보정 대신 공용 구조 helper로
 대상을 좁혀 #2097 등 관련 회귀를 방지했다.
 
-세부 원인과 좌표 근거는 [Stage 7](../../working/task_m100_2439_stage7.md)에 기록했다.
-[Stage 6](../../working/task_m100_2439_stage6.md)의 최초 최종 판정은 Stage 7로 대체한다.
+세부 원인과 좌표 근거는 [Stage 7](../../working/archives/task_m100_2439_stage7.md)에 기록했다.
+[Stage 6](../../working/archives/task_m100_2439_stage6.md)의 최초 최종 판정은 Stage 7로 대체한다.
 
 ## 검증
 
@@ -65,7 +65,7 @@ fresh page-local placement, co-anchored visible-host flow, 실제 painted bottom
 
 2쪽은 마지막 `드롭센서 기능 체크` 행까지 같은 쪽에 남고, 3쪽 상단 연속 fragment와
 서명문 사이에는 약 3.2px 간격이 있다. 페이지별 산출물과 보조값은
-[Stage 7](../../working/task_m100_2439_stage7.md)에 기록했다.
+[Stage 7](../../working/archives/task_m100_2439_stage7.md)에 기록했다.
 
 코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 평균 약 6.80%.
 높을수록 좋음: 기준 PDF와 rhwp PNG의 잉크 위치가 더 비슷함

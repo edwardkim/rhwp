@@ -10,7 +10,7 @@ last_verified: 2026-09-02
 이 문서는 `gym/tools/trajectory.py` 의 **마지막 스텝 load-bearing 판정**,
 **수집 전용 tail**, **예외 경로 계약**, **보고 봉투**를 고정한다. 작업
 기록은
-[`mydocs/working/gym_trajectory.md`](../../mydocs/working/gym_trajectory.md)
+[`mydocs/working/gym_trajectory.md`](../../mydocs/working/archives/gym_trajectory.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_trajectory.py` 가 기계로
 고정한다.
 

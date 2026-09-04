@@ -20,7 +20,7 @@ EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
 GEN = REF / "_gen_pack.py"
 POINTER = REPO / ".claude" / "skills" / "rhwp-bug-hunter" / "SKILL.md"
-WORKING = REPO / "mydocs" / "working" / "agent_bug_hunter.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_bug_hunter.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
 PLAYBOOK = REPO / "mydocs" / "manual" / "bug_hunting_playbook.md"
 

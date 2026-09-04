@@ -212,4 +212,4 @@ rhwp csv-to-table samples/hwp_table_test.hwp --csv table0_edited.csv --table 0 \
 - 실측 트랜스크립트: [references/sample_transcripts.md](references/sample_transcripts.md)
 - 워크스루: [examples/README.md](examples/README.md)
 - 픽스처: [fixtures/catalog.json](fixtures/catalog.json)
-- 작업 기록: [`mydocs/working/agent_table_exchange.md`](../../../mydocs/working/agent_table_exchange.md)
+- 작업 기록: [`mydocs/working/agent_table_exchange.md`](../../../mydocs/working/archives/agent_table_exchange.md)

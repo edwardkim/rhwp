@@ -1066,7 +1066,7 @@ python -m unittest scripts.tests.test_gym_table_editing_pack -v
 
 - 이슈: [#5230](https://github.com/edwardkim/rhwp/issues/5230)
 - PR: [#5240](https://github.com/edwardkim/rhwp/pull/5240)
-- 작업 기록: [`mydocs/working/gym_table_editing.md`](../../../mydocs/working/gym_table_editing.md)
+- 작업 기록: [`mydocs/working/gym_table_editing.md`](../../../mydocs/working/archives/gym_table_editing.md)
 - 전용 테스트: [`scripts/tests/test_gym_table_editing_pack.py`](../../../scripts/tests/test_gym_table_editing_pack.py)
 - 스키마: `gym/core/schema.py` — 편집 축의 `GLOBAL_SCAN_OPS` 금지
 - 연산자: `gym/core/checks.py` — `cell_text_eq` 정의

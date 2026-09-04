@@ -15,7 +15,7 @@ family / starter / editor / publisher / operator / boss / maintainer
 선언이 문서와 같은지만 본다.
 
 정본 문서: gym/docs/profiles.md
-작업 기록: mydocs/working/gym_profiles.md
+작업 기록: mydocs/working/archives/gym_profiles.md
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ GYM = REPO_ROOT / "gym"
 PACKS = GYM / "packs"
 PROFILES = GYM / "profiles"
 DOCS_PROFILES = GYM / "docs" / "profiles.md"
-WORKING_PROFILES = REPO_ROOT / "mydocs" / "working" / "gym_profiles.md"
+WORKING_PROFILES = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_profiles.md"
 SCORE_PY = GYM / "score.py"
 AUDIT_PY = GYM / "tools" / "audit.py"
 
