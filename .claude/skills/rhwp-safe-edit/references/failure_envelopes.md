@@ -489,4 +489,4 @@ MCP 는 구조화 오류 필드로 옮긴다.
 
 - 워크스루: [../examples/README.md](../examples/README.md)
 - 픽스처 카탈로그: [../fixtures/catalog.json](../fixtures/catalog.json)
-- 작업 기록: [`mydocs/working/agent_safe_edit.md`](../../../../mydocs/working/agent_safe_edit.md)
+- 작업 기록: [`mydocs/working/agent_safe_edit.md`](../../../../mydocs/working/archives/agent_safe_edit.md)

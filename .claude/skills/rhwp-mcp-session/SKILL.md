@@ -191,4 +191,4 @@ printf '%s\n' \
 - 가드: `python -m unittest scripts.tests.test_agent_mcp_session`
 
 레퍼런스 목차: [`references/README.md`](references/README.md).
-작업 기록: [`mydocs/working/agent_mcp_session.md`](../../../mydocs/working/agent_mcp_session.md).
+작업 기록: [`mydocs/working/agent_mcp_session.md`](../../../mydocs/working/archives/agent_mcp_session.md).

@@ -132,4 +132,4 @@ python tools/gen_agent_codex.py --check  # 차이면 exit 3 = DATA
 - [`tools/gen_agent_codex.py`](../../../tools/gen_agent_codex.py)
 - [`tests/agent_codex_contract.rs`](../../../tests/agent_codex_contract.rs)
 - 지식지도 §2-2: [`agent_knowledge_map.md`](../../../mydocs/manual/agent_knowledge_map.md)
-- 처리 결과: [`mydocs/working/agent_codex_skill.md`](../../../mydocs/working/agent_codex_skill.md)
+- 처리 결과: [`mydocs/working/agent_codex_skill.md`](../../../mydocs/working/archives/agent_codex_skill.md)

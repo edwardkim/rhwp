@@ -9,7 +9,7 @@ last_verified: 2026-08-18
 
 이 문서는 `gym/profiles/*.json` 일곱 자리의 **선택 계약**이다. 작업
 기록·오탐 결정·시험 지도는
-[`mydocs/working/gym_profiles.md`](../../mydocs/working/gym_profiles.md)
+[`mydocs/working/gym_profiles.md`](../../mydocs/working/archives/gym_profiles.md)
 에 남긴다. 기계 계약은
 `scripts/tests/test_gym_profiles.py` 가 고정한다.
 

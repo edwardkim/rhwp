@@ -174,7 +174,7 @@ setter에서 실제 표시 chain을 해소한다.
 ### 4.9 2026-07-11 — family 문자열만으로 local face를 식별할 수 없음
 
 [Task #2217 계획](../../plans/archives/task_m100_2217.md)과
-[Stage 1 기록](../../working/task_m100_2217_stage1.md)은 HWP의 localized face와 브라우저가 반환하는
+[Stage 1 기록](../../working/archives/task_m100_2217_stage1.md)은 HWP의 localized face와 브라우저가 반환하는
 영문 family가 달라 exact match를 놓치는 문제를 다뤘다. snapshot v2는 family, full name,
 PostScript name, style을 보존하고 `FontData.blob()`으로 CanvasKit용 bytes를 세션 안에서 확보한다.
 

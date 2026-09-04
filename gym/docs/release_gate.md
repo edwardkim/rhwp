@@ -9,7 +9,7 @@ last_verified: 2026-09-02
 
 이 문서는 역사적 파일명을 유지한 `gym/tools/release_gate.py` 의 **판정 사원**과
 **예외 경로 계약**을 고정한다. 작업 기록은
-[`mydocs/working/gym_release_gate.md`](../../mydocs/working/gym_release_gate.md)
+[`mydocs/working/gym_release_gate.md`](../../mydocs/working/archives/gym_release_gate.md)
 를 본다. 도구 시험은 `scripts/tests/test_gym_release_gate_exceptions.py`, 현행
 워크플로 경계는 `scripts/tests/test_gym_benchmark_validation.py`가 고정한다.
 

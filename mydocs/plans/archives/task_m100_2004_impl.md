@@ -21,7 +21,7 @@
 - 오라클 pi-page 기준선 고정: 1613000(268), 1430000(404), 회귀 표본(부동/이미지 다수 문서 20건)을
   역사적 `output/poc/task2004/baseline.tsv`에 기록했다. 이 비추적 POC는
   [PR #4154](https://github.com/edwardkim/rhwp/pull/4154)에서 제거했으며 핵심 수치는
-  [Stage 1](../../working/task_m100_2004_stage1.md), 현행 회귀는
+  [Stage 1](../../working/archives/task_m100_2004_stage1.md), 현행 회귀는
   [tracked 래칫](../../../tests/issue_2004_cell_image_stack_pagination.rs)에 보존한다.
 - 발동조건 판별 계측(env `RHWP_IMGSTACK_DBG`): 문단별 tac/overlap/크기/개수/동일위치 카운트.
 - 산출: `task_m100_2004_stage1.md`.

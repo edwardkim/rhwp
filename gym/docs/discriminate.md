@@ -10,7 +10,7 @@ last_verified: 2026-09-02
 이 문서는 `gym/tools/discriminate.py` 의 **음성 대조 종류**, **오답
 sentinel**, **artifact 무편집 복사**, **garbage 산출**, **보고 봉투**,
 **경로 안전**, **예외 접기**를 고정한다. 작업 기록은
-[`mydocs/working/gym_discriminate.md`](../../mydocs/working/gym_discriminate.md)
+[`mydocs/working/gym_discriminate.md`](../../mydocs/working/archives/gym_discriminate.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_discriminate.py` 가 기계로
 고정한다.
 

@@ -10,7 +10,7 @@ last_verified: 2026-09-02
 이 문서는 `gym/tools/fuzz_corpus.py` 의 **결정적 손상 카탈로그**와 **예외
 경로 계약**을 고정한다. 구현은 [`gym/tools/fuzz_corpus.py`](../tools/fuzz_corpus.py),
 계약 시험은 [`scripts/tests/test_gym_fuzz_corpus.py`](../../scripts/tests/test_gym_fuzz_corpus.py)
-다. 작업 기록은 [`mydocs/working/gym_fuzz_corpus.md`](../../mydocs/working/gym_fuzz_corpus.md)
+다. 작업 기록은 [`mydocs/working/gym_fuzz_corpus.md`](../../mydocs/working/archives/gym_fuzz_corpus.md)
 를 본다.
 
 `robustness.py` 는 릴리스 **게이트**다. 이 도구는 그 앞단의 **발견 엔진**이다.
