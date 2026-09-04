@@ -149,11 +149,12 @@ export class PageRenderScheduler {
     if (this.visible.size > 0) {
       this.cancelDeferredTask();
       if (allowVisibleFastPath && this.visible.size <= this.maxVisiblePagesPerSlice) {
-        this.runVisibleSlice();
-        // 이전 generation이 예약해 둔 frame이 있더라도 fast path가 최신 visible을 모두
-        // 완료했다면 빈 callback을 남기지 않는다. 실제 작업이 남은 경우에는 아래 slice가
-        // 같은 frame을 그대로 재사용한다.
-        this.cancelFrameIfEmpty();
+        try {
+          this.runVisibleSlice();
+        } finally {
+          // 마지막 page가 실패한 경우에도 이전 generation의 빈 frame을 남기지 않는다.
+          this.cancelFrameIfEmpty();
+        }
       } else {
         this.ensureFrame();
       }
@@ -247,20 +248,25 @@ export class PageRenderScheduler {
     this.visibleSlices += 1;
     const startedAt = this.host.now();
     let executed = 0;
-    while (this.visible.size > 0 && executed < this.maxVisiblePagesPerSlice) {
-      const queued = this.takeNext(this.visible);
-      if (!queued) break;
-      if (queued.generation !== this.generation || !queued.work.isValid()) {
-        this.staleDropped += 1;
-        continue;
+    try {
+      while (this.visible.size > 0 && executed < this.maxVisiblePagesPerSlice) {
+        const queued = this.takeNext(this.visible);
+        if (!queued) break;
+        if (queued.generation !== this.generation || !queued.work.isValid()) {
+          this.staleDropped += 1;
+          continue;
+        }
+        queued.work.run();
+        executed += 1;
+        this.visibleExecuted += 1;
+        if (this.host.now() - startedAt >= this.visibleSliceBudgetMs) break;
       }
-      queued.work.run();
-      executed += 1;
-      this.visibleExecuted += 1;
-      if (this.host.now() - startedAt >= this.visibleSliceBudgetMs) break;
+    } finally {
+      // 예외는 호출자에게 전달하되, 실패 page 하나가 나머지 queue의 진행을 막지 않는다.
+      // takeNext에서 제거한 실패 page를 즉시 재시도하지 않아 오류 루프도 만들지 않는다.
+      if (this.visible.size > 0) this.ensureFrame();
+      else this.ensureDeferredTask();
     }
-    if (this.visible.size > 0) this.ensureFrame();
-    else this.ensureDeferredTask();
   }
 
   private ensureDeferredTask(): void {
@@ -311,16 +317,19 @@ export class PageRenderScheduler {
       this.ensureDeferredTask();
       return;
     }
-    const queued = this.takeNext(this.prefetch);
-    if (queued) {
-      if (queued.generation !== this.generation || !queued.work.isValid()) {
-        this.staleDropped += 1;
-      } else {
-        queued.work.run();
-        this.prefetchExecuted += 1;
+    try {
+      const queued = this.takeNext(this.prefetch);
+      if (queued) {
+        if (queued.generation !== this.generation || !queued.work.isValid()) {
+          this.staleDropped += 1;
+        } else {
+          queued.work.run();
+          this.prefetchExecuted += 1;
+        }
       }
+    } finally {
+      this.ensureDeferredTask();
     }
-    this.ensureDeferredTask();
   }
 
   private takeNext(queue: Map<number, QueuedWork>): QueuedWork | null {

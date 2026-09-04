@@ -1,8 +1,8 @@
 ---
 kind: pr-review
-status: approved-pending-base-merge
+status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-03
+last_verified: 2026-09-04
 pr: 6637
 issue: 6042
 author: postmelee
@@ -10,7 +10,7 @@ author: postmelee
 
 # PR #6637 review - 다중 페이지 스크롤 렌더링 가상화
 
-## 결론 - 승인, 하위 레이어 순차 merge 대기
+## 결론 - 인라인 보정 로컬 통과, 새 head CI·merge 승인 대기
 
 [PR #6637](https://github.com/edwardkim/rhwp/pull/6637)은 긴 다중 페이지 문서의 일반 scroll에서
 visibility 판정과 여러 쪽 raster가 입력 callback을 연속 점유하던 경로를 row/X index, exact page
@@ -22,12 +22,12 @@ self-review 대상 최초 code candidate는 `68beaa5dce0ac0fbc794761324abea959d0
 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`다. 최신 `devel@eb2ea3add` cascading rebase 뒤 검증
 source는 `3edc84c4bc06a69315b818017d952872cdee19d1`, 직접 base #6467은
 `d77f5aac1aec07b2f14cfdc6e765efc396077994`다. 단계별 테스트·실문서 A/B에서 발견한 역방향 cache
-thrash와 fractional DPR geometry 문제를 최종 후보에서 해소했고, 차단 finding은 남아 있지 않다.
+thrash와 fractional DPR geometry 문제를 당시 후보에서 해소했다. 이후 인라인 리뷰에서 발견한 두
+correctness finding은 아래 2026-09-04 보정 기록으로 별도 추적한다.
 
-이 PR은 native stack #6640의 top(3/3)이다. bottom부터 최신 `devel` 위로 cascading rebase해 기존
-conflict와 세 layer의 선형성을 회복했다. 저장소의 custom CI impact policy는 직접 base가 `devel`인
-레이어를 기준으로 최종 판정하므로 #6458 → #6467 → #6637 순서로 merge하고, 각 PR이 직접 `devel`을
-base로 삼게 된 exact head에서 required checks를 확인한 뒤 Ready로 전환한다.
+이 PR은 native stack #6640의 top(3/3)으로 제출했다. 하위 #6458·#6467은 병합됐고 현재 직접 base는
+`devel`, 상태는 Ready / OPEN이다. 이번 보정은 Ready 상태를 바꾸지 않으며 새 exact head의 required
+checks와 사용자 merge 승인을 별도로 확인해야 한다.
 
 ## 검토 경로와 metadata
 
@@ -35,9 +35,9 @@ base로 삼게 된 exact head에서 required checks를 확인한 뒤 Ready로 �
 - 보조 경로: `local_validation.md`, `visual_fixture_evidence.md`, `review_only_fast_pass.md`,
   `rework_and_exceptions.md`
 - self PR이므로 reviewer와 GitHub approval review를 지정하지 않는다.
-- 현재: native stack #6640 3/3, OPEN / Draft, base `codex/issue-6041-budget-first-render-scale`,
-  head `codex/issue-6042-page-virtualization`, #6458·#6467 순차 merge 대기.
-- 현재 layer 규모: 205 files, +490,238/-219, 30 commits. 이 중 제품·test·E2E는
+- 현재: OPEN / Ready, base `devel`, head `codex/issue-6042-page-virtualization`.
+  인라인 보정 전 head는 `777fba96ef437c3f865653e6f96d13a3d0312317`이다.
+- 최초 검토 layer 규모: 205 files, +490,238/-219, 30 commits. 이 중 제품·test·E2E는
   24 files, +4,063/-218이고, 162 files·약 16MB는 A/B raw evidence다.
 - Rust source/test/fixture, Cargo, workflow 변경은 없다.
 
@@ -117,7 +117,8 @@ raster, 인접 prefetch가 한 입력 구간에 모일 수 있다. 같은 구간
 4. Puppeteer의 `Control+Home` 단일 key 문자열이 실제 DPR 1 E2E 시작 전에 실패했다. modifier down/press/up
    순서로 고치고 DPR 1 assertion을 추가했다. 제품 동작 변경은 아니다.
 
-차단 finding은 모두 code candidate 전에 해결했고 해당 회귀를 결정론적/브라우저 테스트로 고정했다.
+위 Stage 5 차단 finding은 당시 code candidate 전에 해결했고 해당 회귀를 결정론적/브라우저 테스트로
+고정했다. 이후 인라인 finding은 다음 보정 기록을 따른다.
 
 ## 렌더 영향과 직접 시각 판정
 
@@ -176,7 +177,7 @@ compositor dropped-frame 수가 아니다. LRU는 메모리를 더 보존해 CPU
 사용자는 Stage 3/현재 로컬 서버를 직접 비교하고 scroll-settled 화질 보정 뒤 앞서 제보한 버벅임이
 사라진 것 같다고 확인했다. 주관 관찰은 자동화 근거의 보조로만 사용했다.
 
-## 로컬 검증
+## 최초 후보의 로컬 검증
 
 - Studio: 1,434 total / 1,433 pass / 1 policy skip / 0 fail
 - TypeScript `--noEmit`, Vite production build: passed
@@ -196,15 +197,61 @@ compositor dropped-frame 수가 아니다. LRU는 메모리를 더 보존해 CPU
   않았다.
 - raw evidence 162개가 GitHub diff 노이즈를 만든다. reviewer는 최종 report와 summary, 24개
   source/test/E2E부터 확인할 수 있고 raw는 재집계 근거로 보존한다.
-- bottom-first cascading rebase와 descendant 로컬 재검증은 완료했다. 각 PR이 직접 `devel` base가 된
-  exact head의 원격 required checks만 순서대로 확인한다.
+- 하위 두 PR의 병합은 완료했다. 이번 보정 head의 원격 required checks는 이전 head의 통과 결과로
+  대체하지 않는다.
+
+## 2026-09-04 인라인 리뷰 보정
+
+대상은 [review 5109298479](https://github.com/edwardkim/rhwp/pull/6637#pullrequestreview-5109298479)의
+두 correctness finding이다. 사용자가 수정·검증·push·답글을 승인했다. merge, thread resolve,
+DPR/예산/줌 정책 변경은 이번 승인 범위에 포함하지 않았다.
+
+### 1. focus 변경 후 미생성 visible 작업 유실
+
+- [원 코멘트](https://github.com/edwardkim/rhwp/pull/6637#discussion_r3930976474):
+  `setEditingPageIndex`가 plan만 교체해 queued exact key가 stale로 폐기되고, active Canvas가 없는
+  visible 쪽은 다음 입력까지 빈 상태로 남을 수 있었다.
+- 보정: focus plan 갱신 뒤 pending queue가 있으면 visible/prefetch desired work와 선택 surface
+  reservation을 최신 descriptor/비용으로 재구성한다. 같은 viewport/document이므로 generation을
+  유지해 이미 예약된 frame과 150ms settle callback을 보존한다. 작은 missing 집합도 여기서는
+  fast path를 사용하지 않아 클릭 callback에 새 동기 raster를 몰아넣지 않는다.
+- 회귀 테스트: 실제 CanvasView planner/descriptor와 scheduler를 연결하고 DOM/raster만 대체했다.
+  scroll/scroll-settled 각각에서 focus 지정·해제, binding budget에 따른 key 교체, 미생성 쪽 완료,
+  최신 key 일치, 단일 frame·기존 timer 보존을 검증한다.
+
+### 2. 예외 후 scheduler 진행 중단
+
+- [원 코멘트](https://github.com/edwardkim/rhwp/pull/6637#discussion_r3930976480):
+  work 실행/검증에서 throw하면 후속 frame/idle 예약까지 도달하지 못했다. 동기 fast path에서는
+  scroll-settle 예약도 잃을 수 있었다.
+- 보정: visible slice와 prefetch 실행의 `finally`에서 남은 작업을 예약하고, fast path의 빈 frame
+  정리도 `finally`로 보장한다. CanvasView는 fast path dispatch 전에 settle을 예약한다.
+- 오류를 catch해서 성공으로 바꾸지 않는다. 실패 항목은 꺼낸 상태로 남겨 즉시 반복 재시도하지 않고,
+  남은 쪽을 계속 처리한다. 후속 정상 settle/viewport 갱신은 실패했던 visible도 다시 판정할 수 있다.
+- 회귀 테스트: frame/fast-path/idle/timeout × run/isValid 예외 8경로, 마지막 visible 실패 후
+  prefetch 진행, 오류 중 cancelAll 뒤 callback 부활 방지, CanvasView fast-path 예외 후 settle 복구.
+
+### 검증 결과와 한계
+
+- 수정 전 새 테스트에서 12 fail을 확인했다. 보정 후 두 focused 파일은 **34/34 pass**다.
+- Studio 전체: **1,449 total / 1,448 pass / 1 policy skip / 0 fail**.
+- TypeScript noEmit, Vite production build, E2E manifest **127/127**, `git diff --check`: pass.
+  build에는 기존 chunk-size 경고만 있다. Rust/WASM source 변경이 없어 Rust gate는 N/A다.
+- 실제 Browser: Chromium 152, 1280×720, DPR 2, Canvas2D, `exam_kor.hwp` 20쪽, 자동 배치.
+  34%→50%→100%에서 다음 행 이동과 본문 클릭을 수행했다. 각각 3/2/1열이며 관찰 snapshot에서
+  missing visible 0, visible/prefetch queue 0, frame/idle/settle 예약 0, pending image 0, error 0이었다.
+  50%·100% screenshot의 본문·표·페이지·ruler를 직접 확인했고 브라우저 error log도 비어 있었다.
+- 브라우저 smoke는 정상 사용 회귀 확인이다. settle와 rAF 사이 경합 및 invariant throw는 위
+  결정론적 fault injection으로 검증했으며 일반 UI에서 같은 오류 발생률을 입증한 것은 아니다.
+  이번 보정에서 기존 전체 성능 A/B·DPR 1 resize·decode-failure E2E를 다시 실행했다고 주장하지 않는다.
+- 32M/40M/64M 상한, DPR 후보, zoom anchor, cache key, worker 구조는 바꾸지 않았다. 새로운 성능
+  개선률도 주장하지 않는다. 추가 재계산은 focus 변경 시 남은 queue가 있을 때 현재 working set에 한정된다.
+- 원격 CI는 push 후 새 exact head에서 별도로 확인한다. 이전 head CI와 위 로컬 검증을 혼동하지 않는다.
 
 ## 현재 판정
 
-- 판정: **승인**
-- 코드·로컬 검증: 통과
-- 차단 finding: 없음
-- 원격 상태: Draft, 하위 두 레이어 merge 대기
-- 남은 조건: #6458·#6467 순차 merge 뒤 직접 `devel` base exact-head required checks
-- 원격 조치: self PR이므로 GitHub approval review는 만들지 않는다. Ready 전환 뒤에도 merge는 사용자
-  승인 전까지 수행하지 않는다.
+- 판정: **두 인라인 finding 보정·로컬 검증 통과, 새 head CI 확인 대기**
+- 원격 상태: Ready / OPEN, 직접 base `devel`; 하위 #6458·#6467 병합 완료
+- 남은 조건: 새 exact head required checks와 사용자 merge 승인
+- 원격 조치: 수정 push와 인라인 답글만 수행한다. self PR의 GitHub approval review와 thread resolve는
+  만들지 않으며 merge는 사용자 승인 전까지 수행하지 않는다.

@@ -49,6 +49,130 @@ class FrameHost implements PageRenderSchedulerHost {
   }
 }
 
+for (const reason of ['scroll', 'scroll-settled'] as const) {
+  for (const focus of [0, null]) {
+    test(`${reason} 큐가 대기 중 focus=${focus}로 plan이 바뀌어도 미생성 visible을 완료한다`, async () => {
+      const vite = await createServer({
+        root: fileURLToPath(new URL('..', import.meta.url)),
+        appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+      });
+      const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+      try {
+        Object.defineProperty(globalThis, 'window', { configurable: true, value: { devicePixelRatio: 2 } });
+        const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+        const host = new FrameHost();
+        const visible = [0, 1, 2, 3];
+        const surfaces = new Map<number, { dataset: Record<string, string> }>([
+          [0, { dataset: { rhwpRequestedDpr: '2' } }],
+        ]);
+        const rasterCalls: number[] = [];
+        const view = Object.create(CanvasView.prototype) as Record<string, any>;
+        const render = (page: number) => {
+          rasterCalls.push(page);
+          surfaces.set(page, { dataset: {
+            rhwpSurfaceCacheLookupKey: view.pageSurfaceDescriptor(page).lookupKey,
+            rhwpRequestedDpr: String(view.renderSurfaceDecisions.get(page).effectiveDpr),
+          } });
+          return true;
+        };
+        Object.assign(view, {
+          pages: Array.from({ length: 5 }, () => ({ width: 1000, height: 1400 })),
+          pageMovement: { direction: 'vertical', wheelHorizontal: false },
+          viewportManager: {
+            getScrollX: () => 0, getScrollY: () => 0, getZoom: () => 0.75,
+            getViewportSize: () => ({ width: 1600, height: 1800 }),
+          },
+          virtualScroll: {
+            getVisibilitySnapshot: () => ({ visiblePages: visible, prefetchPages: visible }),
+            getPageAtPoint: () => 0, pageCount: 5,
+          },
+          canvasPool: {
+            get activePages() { return [...surfaces.keys()]; },
+            has: (page: number) => surfaces.has(page), getCanvas: (page: number) => surfaces.get(page),
+          },
+          pageRenderer: {
+            getBackend: () => 'canvas2d', getRenderProfile: () => 'screen',
+            getCanvasSurfaceLayerCount: () => 4,
+          },
+          pageSurfaceLru: { put: () => true, hasLookup: () => false },
+          pageRenderScheduler: new PageRenderScheduler(host), renderWorkGeneration: 0, lastScrollSample: null,
+          currentVisiblePages: visible, currentRetainedPages: visible, editingPageIndex: 4,
+          activePageSnapshot: { pageIndex: 0, source: 'viewport' }, activeRendererDecisionKey: 'doc:fixture',
+          headerFooterEditState: null, disposed: false, renderSurfacePlan: null,
+          renderSurfaceDecisions: new Map(), previousEffectiveDpr: new Map(), renderSurfaceEnvironmentKey: null,
+          pendingPrefetchSurfaceReservations: new Map(), eventBus: { emit: () => undefined },
+          reconcilePageSurfaceBudget: () => undefined, renderHeaderFooterEditOverlays: () => undefined,
+          materiallyVisiblePages: () => visible, renderCanvas: render, renderPage: render,
+        });
+        view.refreshRenderSurfacePlan(false, 'scroll-settled');
+        surfaces.get(0)!.dataset.rhwpSurfaceCacheLookupKey = view.pageSurfaceDescriptor(0).lookupKey;
+        view.updateVisiblePages(reason);
+        const generation = view.renderWorkGeneration;
+        const timers = [...host.timers.keys()];
+        view.setEditingPageIndex(focus);
+        assert.equal(view.renderWorkGeneration, generation, 'focus만 바뀌면 viewport 세대와 정착 예약을 보존한다');
+        assert.deepEqual([...host.timers.keys()], timers);
+        assert.ok(!rasterCalls.some(page => page !== 0), 'missing visible을 클릭 callback에서 동기로 몰아 그리지 않는다');
+        assert.equal(host.frames.size, 1, '기존 예약 frame은 하나만 유지한다');
+        for (let i = 0; host.frames.size > 0 && i < 10; i++) host.runFrame();
+        assert.deepEqual(visible.filter(page => !surfaces.has(page)), []);
+        for (const page of visible) {
+          assert.equal(surfaces.get(page)!.dataset.rhwpSurfaceCacheLookupKey, view.pageSurfaceDescriptor(page).lookupKey);
+        }
+        assert.equal(view.pageRenderScheduler.snapshot().visibleQueued, 0);
+        if (reason === 'scroll') {
+          host.runTimer();
+          assert.equal(view.pageRenderScheduler.snapshot().scrollSettleScheduled, false);
+          assert.deepEqual([...view.renderSurfaceDecisions.values()].map((d: any) => d.effectiveDpr), [2, 2, 2, 2]);
+        }
+      } finally {
+        if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow);
+        else Reflect.deleteProperty(globalThis, 'window');
+        await vite.close();
+      }
+    });
+  }
+}
+
+test('scroll fast path가 throw해도 정착 복구와 남은 visible frame은 예약돼 있다', async () => {
+  const vite = await createServer({
+    root: fileURLToPath(new URL('..', import.meta.url)),
+    appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const host = new FrameHost();
+    const rendered: number[] = [];
+    let failed = false;
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    Object.assign(view, {
+      pages: [{ width: 100, height: 200 }, { width: 100, height: 200 }],
+      pageMovement: { direction: 'vertical', wheelHorizontal: false },
+      viewportManager: { getScrollX: () => 0, getScrollY: () => 0, getViewportSize: () => ({ width: 800, height: 600 }) },
+      virtualScroll: { getVisibilitySnapshot: () => ({ visiblePages: [0, 1], prefetchPages: [0, 1] }), getPageAtPoint: () => 0 },
+      canvasPool: { activePages: [], has: () => false, getCanvas: () => undefined },
+      pageSurfaceLru: { put: () => true, hasLookup: () => false },
+      pageRenderScheduler: new PageRenderScheduler(host), renderWorkGeneration: 0, lastScrollSample: null,
+      currentVisiblePages: [], currentRetainedPages: [], editingPageIndex: null, headerFooterEditState: null, disposed: false,
+      updateActivePageSnapshot: () => undefined, refreshRenderSurfacePlan: () => undefined,
+      reconcilePageSurfaceBudget: () => undefined, renderHeaderFooterEditOverlays: () => undefined,
+      pageSurfaceDescriptor: (page: number) => ({ lookupKey: `page:${page}`, estimatedPixelCount: 20_000 }),
+      renderPage: (page: number) => {
+        if (!failed) { failed = true; throw new Error('surface allocation failed'); }
+        rendered.push(page);
+      },
+    });
+    assert.throws(() => view.updateVisiblePages('scroll'), /surface allocation failed/);
+    assert.equal(host.frames.size, 1);
+    assert.equal(host.timers.size, 1);
+    host.runFrame();
+    assert.deepEqual(rendered, [1]);
+    host.runTimer();
+    while (host.frames.size > 0) host.runFrame();
+    assert.ok(rendered.includes(0), '후속 정착 갱신은 실패했던 visible도 다시 판정한다');
+  } finally { await vite.close(); }
+});
+
 test('실제 CanvasView update 경계는 많은 scroll visible만 분할하고 initial은 동기 보존한다', async () => {
   const studioRoot = fileURLToPath(new URL('..', import.meta.url));
   const vite = await createServer({

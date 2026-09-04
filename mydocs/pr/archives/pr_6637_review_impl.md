@@ -2,7 +2,7 @@
 kind: pr-review-implementation
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-02
+last_verified: 2026-09-04
 pr: 6637
 issue: 6042
 ---
@@ -101,3 +101,13 @@ Stage 5에서 나온 불리한 `exam_kor` 역방향 결과를 숨기지 않고 �
 4. 결과와 한계를 review 기록에 추가하고 현재 PR head에 fast-forward push한다. 각 인라인 리뷰에
    수정 commit·재현/검증 결과를 답글로 게시하고 API로 원문을 재확인한다. 새 head의 원격 CI는
    로컬 검증과 구분해 확인하며, 사용자 승인 전 merge하지 않는다.
+
+### 보정 실행 결과
+
+- 1~2 완료: RED 12 fail을 재현한 뒤 queue 재구성·예외 후속 예약·dispatch 전 settle 예약을 구현했다.
+- 3 완료: focused 34/34, 전체 Studio 1,449 total / 1,448 pass / 1 skip, TypeScript·build·manifest
+  127/127 통과. 실제 `exam_kor.hwp`의 34/50/100% scroll·click smoke도 누락/queue/error 0이었다.
+  계획의 오류 복구는 결정론적 fault injection으로 확인했으며 브라우저 invariant throw 재현은 하지
+  않았다. 전체 성능 A/B의 재측정도 이번 제한된 보정에는 포함하지 않았다.
+- 4의 push·답글과 새 head CI는 원격 실행 결과로 확인한다. 세부 재현·수용 근거 및 한계는
+  [review 기록](pr_6637_review.md)의 2026-09-04 보정 절을 따른다.

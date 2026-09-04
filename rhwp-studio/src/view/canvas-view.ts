@@ -633,18 +633,19 @@ export class CanvasView {
       motion,
       generation,
     );
-    this.pageRenderScheduler.setDesiredWork(
-      generation,
-      visibleWork,
-      prefetchWork,
-      isScroll,
-    );
+    // fast path가 예외를 전달하더라도 정착 재판정은 잃지 않도록 dispatch 전에 예약한다.
     if (isScroll) {
       this.pageRenderScheduler.scheduleScrollSettle(() => {
         if (this.disposed || generation !== this.renderWorkGeneration) return;
         this.updateVisiblePages('scroll-settled');
       });
     }
+    this.pageRenderScheduler.setDesiredWork(
+      generation,
+      visibleWork,
+      prefetchWork,
+      isScroll,
+    );
     this.renderHeaderFooterEditOverlays();
   }
 
@@ -1033,6 +1034,40 @@ export class CanvasView {
     // current-page-changed와 렌더 가시성은 위 active snapshot 계약을 계속 사용한다.
     this.eventBus.emit('focused-page-changed', pageIndex);
     this.refreshRenderSurfacePlan(true);
+    this.refreshPendingPageRenderWork();
+  }
+
+  /** focus의 동기 plan 교체가 아직 Canvas가 없는 queued page를 stale로 유실시키지 않게 한다. */
+  private refreshPendingPageRenderWork(): void {
+    const scheduler = this.pageRenderScheduler;
+    if (!scheduler) return;
+    const pending = scheduler.snapshot();
+    if (pending.visibleQueued === 0 && pending.prefetchQueued === 0) return;
+
+    // viewport/document가 그대로이므로 generation과 이미 예약된 frame/settle은 보존한다.
+    // 기존 선택 예약만 반환한 뒤 최신 target 비용으로 다시 승인한다.
+    this.pendingPrefetchSurfaceReservations?.clear();
+    this.reconcilePageSurfaceBudget();
+    const viewport = this.viewportManager.getViewportSize();
+    const visible = this.currentVisiblePages;
+    const visibleSet = new Set(visible);
+    const centerPage = visible.length > 0
+      ? this.virtualScroll.getPageAtPoint(
+          this.viewportManager.getScrollX() + viewport.width / 2,
+          this.viewportManager.getScrollY() + viewport.height / 2,
+        )
+      : null;
+    scheduler.setDesiredWork(
+      this.renderWorkGeneration,
+      this.buildVisibleRenderWork(visible, centerPage, this.renderWorkGeneration),
+      this.buildPrefetchRenderWork(
+        this.currentRetainedPages.filter(page => !visibleSet.has(page)),
+        visible,
+        { direction: 0, speed: 0 },
+        this.renderWorkGeneration,
+      ),
+      false,
+    );
   }
 
   /** 캐럿·개체 선택과 스크롤이 공유하는 활성 페이지 판정·발행 관문. */

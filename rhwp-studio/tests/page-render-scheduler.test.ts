@@ -96,6 +96,63 @@ function work(
   };
 }
 
+for (const mode of ['frame', 'fast-path', 'idle', 'timeout'] as const) {
+  for (const failurePoint of ['run', 'isValid'] as const) {
+    test(`${mode} ${failurePoint} 예외를 전달해도 다음 page dispatch는 살아 있다`, () => {
+      const host = new FakeHost();
+      if (mode === 'timeout') host.requestIdle = undefined;
+      const scheduler = new PageRenderScheduler(host);
+      const output: number[] = [];
+      const error = new Error('page work failed');
+      const failed = work(0, 0, output);
+      failed[failurePoint] = () => { throw error; };
+      const desired = [failed, work(1, 1, output)];
+      const deferred = mode === 'idle' || mode === 'timeout';
+      const dispatch = () => mode === 'idle' ? host.runIdle()
+        : mode === 'timeout' ? host.runTimer() : host.runFrame();
+
+      if (mode === 'fast-path') {
+        assert.throws(() => scheduler.setDesiredWork(1, desired, [], true), error);
+      } else {
+        scheduler.setDesiredWork(1, deferred ? [] : desired, deferred ? desired : [], false);
+        assert.throws(dispatch, error);
+      }
+      assert.deepEqual(output, []);
+      assert.equal(deferred ? scheduler.snapshot().prefetchQueued : scheduler.snapshot().visibleQueued, 1);
+      dispatch();
+      assert.deepEqual(output, [1], '실패 page를 무한 재시도하지 않고 다음 page를 완료한다');
+      assert.equal(scheduler.snapshot().visibleQueued + scheduler.snapshot().prefetchQueued, 0);
+      assert.equal(host.frames.size + host.idles.size + host.timers.size, 0);
+    });
+  }
+}
+
+test('마지막 visible이 실패해도 prefetch로 넘어가며 이전 빈 frame을 회수한다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host);
+  const output: number[] = [];
+  scheduler.setDesiredWork(1, [work(0, 0, output)], [], false);
+  const failed = work(1, 0, output);
+  failed.run = () => { throw new Error('last visible failed'); };
+  assert.throws(() => scheduler.setDesiredWork(2, [failed], [work(2, 0, output)], true));
+  assert.equal(host.frames.size, 0);
+  assert.equal(host.idles.size, 1);
+  host.runIdle();
+  assert.deepEqual(output, [2]);
+});
+
+test('실패 중 cancelAll한 작업은 finally가 되살리지 않는다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host);
+  const output: number[] = [];
+  const failed = work(0, 0, output);
+  failed.run = () => { scheduler.cancelAll(); throw new Error('disposed'); };
+  scheduler.setDesiredWork(1, [failed, work(1, 1, output)], [work(2, 2, output)], false);
+  assert.throws(() => host.runFrame());
+  assert.equal(host.frames.size + host.idles.size + host.timers.size, 0);
+  assert.equal(scheduler.snapshot().visibleQueued + scheduler.snapshot().prefetchQueued, 0);
+});
+
 test('많은 visible은 우선순위대로 page 경계에서 분할하고 soft budget 뒤 다음 frame에 양보한다', () => {
   const host = new FakeHost();
   const scheduler = new PageRenderScheduler(host, {
