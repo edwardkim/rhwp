@@ -32,9 +32,9 @@ Chrome/Edge 확장에서 사용자가 끈 `한글파일 자동보기(autoOpen=fa
   sync를 clean install과 구분해 근거 없는 자동 열기와 default snapshot 생성을 막았다.
 
 세부 원인, 저장소 우선순위, 수동 체크리스트는
-[Stage 1](../../working/task_m100_2656_stage1.md)에 기록했다. 과거 탭 다발 맥락과 사후 보강은
-[Stage 2](../../working/task_m100_2656_stage2.md), PR review partial-sync 보강은
-[Stage 7](../../working/task_m100_2656_stage7.md)에 기록했다.
+[Stage 1](../../working/archives/task_m100_2656_stage1.md)에 기록했다. 과거 탭 다발 맥락과 사후 보강은
+[Stage 2](../../working/archives/task_m100_2656_stage2.md), PR review partial-sync 보강은
+[Stage 7](../../working/archives/task_m100_2656_stage7.md)에 기록했다.
 
 ## 검증
 

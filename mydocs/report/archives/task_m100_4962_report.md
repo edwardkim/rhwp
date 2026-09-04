@@ -33,9 +33,9 @@ Issue: #4962
 | --- | --- |
 | [W3 수행계획](../../plans/archives/task_m100_4962.md) | 실제 renderer coverage 범위·보안·실행 게이트 |
 | [W4 수행계획](../../plans/archives/task_m100_4962_w4.md) | 위험 mass·민감도·evidence·W5 인계 계약 |
-| [W3 결정성 보고](../../working/task_m100_4962_stage4d_determinism.md) | 10k r2/r3 byte exact 근거 |
-| [W4 evidence 보고](../../working/task_m100_4962_w4_stage3.md) | exact join·민감도 band·promotion gate |
-| [W4 공개 단계 보고](../../working/task_m100_4962_w4_stage4.md) | public projection·GitHub 인계 경계 |
+| [W3 결정성 보고](../../working/archives/task_m100_4962_stage4d_determinism.md) | 10k r2/r3 byte exact 근거 |
+| [W4 evidence 보고](../../working/archives/task_m100_4962_w4_stage3.md) | exact join·민감도 band·promotion gate |
+| [W4 공개 단계 보고](../../working/archives/task_m100_4962_w4_stage4.md) | public projection·GitHub 인계 경계 |
 | [공개 ranking JSON](../assets/task_m100_4962/font_typesetting_risk_rank.json) | 351개 ranking과 17개 W5 queue의 기계 정본 |
 
 원인 계보와 보호 불변식 FI-01~FI-14의 정본은

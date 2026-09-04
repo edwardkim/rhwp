@@ -116,7 +116,7 @@ renderer·layout·WASM API 변경이 없으므로 별도 WASM build와 신규 �
 |---|---|
 | 수행계획서 | [`task_m100_3507.md`](../../plans/archives/task_m100_3507.md) |
 | 구현계획서 | [`task_m100_3507_impl.md`](../../plans/archives/task_m100_3507_impl.md) |
-| Stage 1 보고서 | [`task_m100_3507_stage1.md`](../../working/task_m100_3507_stage1.md) |
-| Stage 2 보고서 | [`task_m100_3507_stage2.md`](../../working/task_m100_3507_stage2.md) |
+| Stage 1 보고서 | [`task_m100_3507_stage1.md`](../../working/archives/task_m100_3507_stage1.md) |
+| Stage 2 보고서 | [`task_m100_3507_stage2.md`](../../working/archives/task_m100_3507_stage2.md) |
 | CTRL_DATA 기술 문서 | [`hwp_ctrl_data.md`](../../tech/hwp_ctrl_data.md) |
 | HWP 저장 가이드 | [`hwp_save_guide.md`](../../tech/hwp_save_guide.md) |

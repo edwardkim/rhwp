@@ -4,9 +4,9 @@
 - 작성일: 2026-08-31 KST
 - 상태: PR #6570 생성·code candidate CI 성공·maintainer self-review 승인 / trailing 기록 검증·정상 merge 대기.
 - 수행 계획: [task_m100_6187.md](task_m100_6187.md)
-- Stage 1 결과: [상시 표시·입력 정책 구현 보고](../../working/task_m100_6187_stage1.md)
-- Stage 2 결과: [resize 갱신 원자화 보고](../../working/task_m100_6187_stage2.md)
-- Stage 3 결과: [전체 테스트·브라우저 검증 및 사용자 승인 기록](../../working/task_m100_6187_stage3.md)
+- Stage 1 결과: [상시 표시·입력 정책 구현 보고](../../working/archives/task_m100_6187_stage1.md)
+- Stage 2 결과: [resize 갱신 원자화 보고](../../working/archives/task_m100_6187_stage2.md)
+- Stage 3 결과: [전체 테스트·브라우저 검증 및 사용자 승인 기록](../../working/archives/task_m100_6187_stage3.md)
 - 최종 결과: [눈금자 상시 표시와 resize 무깜빡임 보고](../../report/task_m100_6187_report.md)
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`

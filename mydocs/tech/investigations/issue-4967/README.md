@@ -277,7 +277,7 @@ provenance가 불완전한 문단은 `unmodelled`로 남기며, query 결과로 
 `admitted` 15,788, `rejected` 10,187, `unmodelled` 18,142였다. modelled 회귀 5줄 중 admitted가 4줄이며,
 표 셀 +1.92px 신규 overflow도 admitted였다. 따라서 rank 8 일괄 exact metric 후보는 `no-change`이고 Q4와
 제품 변경으로 진행하지 않는다. 정본 수치는 갱신된 `rank8_private_qualification.json`, 과정과 판정 논리는
-[`task_m100_4967_w8_q3r.md`](../../../working/task_m100_4967_w8_q3r.md)에 있다.
+[`task_m100_4967_w8_q3r.md`](../../../working/archives/task_m100_4967_w8_q3r.md)에 있다.
 
 Q5 승인 뒤 push-preflight에서 process-global page-tree counter가 generated suite의 병렬 build를 함께 세는
 검증 격리 결함을 발견했다. 전용 성능 가드의 전역 counter를 보존하면서 #4967 계약만 current-thread

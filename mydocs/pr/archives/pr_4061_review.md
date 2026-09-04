@@ -40,7 +40,7 @@ PR은 #4055 B1 본구현이 아니라 차트 표현(OOXML, 레거시 `Contents`,
 
 생성기에서 만든 HWPX 4개, HWP 4개, 대조군 2개를 HWP 2020 MCP로 PDF 변환했다. 10건 모두
 `status=success`, `run_status=0`, `validation=ok`, 1페이지 A4를 반환했다. PDF는
-[`pdf/issue_4055_b1_spike/`](../../../pdf/issue_4055_b1_spike/)에 보존했다.
+[`pdf/issue_4055_b1_spike/`](../../../pdf/issue_4055_b1_spike)에 보존했다.
 
 144 DPI 첫 페이지 렌더 SHA-256은 다음 두 그룹으로 정확히 분리됐다.
 
@@ -82,6 +82,6 @@ EMF 제거본도 정상 렌더된다는 결론을 뒷받침한다.
 4. 작업지시자 승인 뒤 merge와 후속 정리를 수행한다.
 
 상세 근거: [계획](../../plans/archives/task_m100_4055.md),
-[Stage 2](../../working/task_m100_4055_stage2.md),
-[Stage 4](../../working/task_m100_4055_stage4.md),
+[Stage 2](../../working/archives/task_m100_4055_stage2.md),
+[Stage 4](../../working/archives/task_m100_4055_stage4.md),
 [최종 보고](../../report/archives/task_m100_4055_report.md).

@@ -10,9 +10,9 @@ last_verified: 2026-08-23
 - **Issue**: [#5652](https://github.com/edwardkim/rhwp/issues/5652) (#3683 Track B — B2-엔진)
 - **브랜치**: `task5652` · **기준 커밋**: `upstream/devel = 87a8d3dca` (리베이스 후)
 - **계획서**: [`task_m100_5652.md`](../../plans/archives/task_m100_5652.md) · **단계 보고서**:
-  [stage1](../../working/task_m100_5652_stage1.md) · [stage2](../../working/task_m100_5652_stage2.md) ·
-  [stage3](../../working/task_m100_5652_stage3.md) · [stage4](../../working/task_m100_5652_stage4.md) ·
-  [stage5](../../working/task_m100_5652_stage5.md)
+  [stage1](../../working/archives/task_m100_5652_stage1.md) · [stage2](../../working/archives/task_m100_5652_stage2.md) ·
+  [stage3](../../working/archives/task_m100_5652_stage3.md) · [stage4](../../working/archives/task_m100_5652_stage4.md) ·
+  [stage5](../../working/archives/task_m100_5652_stage5.md)
 
 ## 결론 한 줄
 
@@ -104,7 +104,7 @@ dry-run" 안전 규약이 거짓이 되므로 `dryRun:true` 주입으로 고쳤�
 번들: `output/issue_5652_b2_engine_judgment/`(생성기 `generate_b2_engine_judgment_bundle`) — 대조군 7 +
 변종 12 × 2포맷 + 변환본 1 = 32 파일. 작업지시자가 2026-08-23 한글 2022 로 전건 열어 PDF 로 저장했다
 (개봉 실패 0). 판정 원장 [`samples/issue5652/MANIFEST.json`](../../../samples/issue5652/MANIFEST.json),
-PDF [`pdf/issue5652/`](../../../pdf/issue5652/), 재계산 `python tools/hancom_chart_judgment_verify.py
+PDF [`pdf/issue5652/`](../../../pdf/issue5652), 재계산 `python tools/hancom_chart_judgment_verify.py
 --manifest samples/issue5652/MANIFEST.json`(PyMuPDF 1.28.2 220건 · poppler 26.06 220건 · 해시만 156건
 전건 일치).
 

@@ -10,8 +10,8 @@ last_verified: 2026-08-20
 - **이슈**: [#5447](https://github.com/edwardkim/rhwp/issues/5447) — 부모
   [#3683](https://github.com/edwardkim/rhwp/issues/3683) Track B
 - **계획서**: [`task_m100_5447.md`](../../plans/archives/task_m100_5447.md) · **Stage 1**:
-  [`task_m100_5447_stage1.md`](../../working/task_m100_5447_stage1.md) · **Stage 2**(증적 보존):
-  [`task_m100_5447_stage2.md`](../../working/task_m100_5447_stage2.md)
+  [`task_m100_5447_stage1.md`](../../working/archives/task_m100_5447_stage1.md) · **Stage 2**(증적 보존):
+  [`task_m100_5447_stage2.md`](../../working/archives/task_m100_5447_stage2.md)
 - **브랜치**: `task5447` (`upstream/devel` `e79f11308` 기준)
 - **판정 원장**: [`samples/issue5447/MANIFEST.json`](../../../samples/issue5447/MANIFEST.json)
   — 아래 모든 숫자와 해시의 정본. 재계산은 `python tools/hancom_chart_judgment_verify.py`
@@ -45,9 +45,9 @@ PDF 안 스트림을 통째로 해시하지 않은 것은 #4100 보고서 §4-1 
 
 | 역할 | 무엇 | 경로 | 수 · 용량 |
 |---|---|---|---|
-| **원본** — 판정 입력 | 우리가 만들어 한컴에 넣은 산출과, 함께 보낸 판정 지시표 | [`samples/issue5447/`](../../../samples/issue5447/) | 38 + `PANJEONG.md`, 디렉터리 1.47 MB |
-| **변환본** — 한컴의 답 | 그 38건을 한글 2022 가 PDF 로 저장한 것 | [`pdf/issue5447/`](../../../pdf/issue5447/) | 38 PDF, 디렉터리 3.54 MB |
-| **대표 asset** — 사람이 볼 그림 | 결론을 증명하는 대조군\|변종 좌우 대조 3장 | [`mydocs/pr/assets/pr_5647_issue5447_*.png`](../../pr/assets/) | 3 PNG, 0.17 MB |
+| **원본** — 판정 입력 | 우리가 만들어 한컴에 넣은 산출과, 함께 보낸 판정 지시표 | [`samples/issue5447/`](../../../samples/issue5447) | 38 + `PANJEONG.md`, 디렉터리 1.47 MB |
+| **변환본** — 한컴의 답 | 그 38건을 한글 2022 가 PDF 로 저장한 것 | [`pdf/issue5447/`](../../../pdf/issue5447) | 38 PDF, 디렉터리 3.54 MB |
+| **대표 asset** — 사람이 볼 그림 | 결론을 증명하는 대조군\|변종 좌우 대조 3장 | [`mydocs/pr/assets/pr_5647_issue5447_*.png`](../../pr/assets) | 3 PNG, 0.17 MB |
 
 원장 [`samples/issue5447/MANIFEST.json`](../../../samples/issue5447/MANIFEST.json) 이 38행 각각에
 대해 **원본 경로·SHA-256, 변환본 경로·SHA-256, 래스터 해시 2축, 판정, 편집기 관측**을 적는다.
@@ -221,12 +221,12 @@ cargo test --profile release-test --test issue_4100_chart_data_edit \
 
 ## 5. 검증
 
-Stage 1 게이트 실측은 [`task_m100_5447_stage1.md`](../../working/task_m100_5447_stage1.md) §3.
+Stage 1 게이트 실측은 [`task_m100_5447_stage1.md`](../../working/archives/task_m100_5447_stage1.md) §3.
 요약하면 `cargo test --test issue_4100_chart_data_edit` 37 passed / 0 failed,
 `clippy --all-targets -D warnings` exit 0, fmt·suite manifest·unit tiers 전건 통과,
 `samples/chart/` 무변경, `src/`·렌더러·studio 무변경.
 
-Stage 2(증적 보존) 실측은 [`task_m100_5447_stage2.md`](../../working/task_m100_5447_stage2.md).
+Stage 2(증적 보존) 실측은 [`task_m100_5447_stage2.md`](../../working/archives/task_m100_5447_stage2.md).
 같은 타깃이 **38 passed / 0 failed / 2 ignored** 로 늘었고(트립와이어 1건 추가),
 원장 재계산은 두 축 모두 통과했다. 커밋한 판정 자산은 `samples/chart/` 바깥
 (`samples/issue5447/`)에 있어 기존 코퍼스 게이트에 잡히지 않는다 — 그 게이트들이 비재귀라는

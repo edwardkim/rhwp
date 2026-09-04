@@ -9,7 +9,7 @@ last_verified: 2026-08-24
 
 - **이슈**: [#5967](https://github.com/edwardkim/rhwp/issues/5967)
 - **계획서**: [`task_m100_5967.md`](../../plans/archives/task_m100_5967.md) · **Stage 1**:
-  [`task_m100_5967_stage1.md`](../../working/task_m100_5967_stage1.md)
+  [`task_m100_5967_stage1.md`](../../working/archives/task_m100_5967_stage1.md)
 - **브랜치**: `task5967` (`upstream/devel` `ad2867708` 기준)
 - **판정 원장**: [`samples/issue5447/MANIFEST.json`](../../../samples/issue5447/MANIFEST.json)
 
@@ -94,7 +94,7 @@ NFC/NFD 사고 선례).
 Rust 분류기가 자기 산출을 자기가 채점하지 않도록, 커밋 자산만 읽어 "현재 라이터라면 어느
 바이트가 달라지는가" 를 파이썬으로 따로 예측했다(hwpx 변종 14건 — `.hwp` 는 중첩 CFB 가 zlib
 스트림 안이라 오라클 범위 밖). 상세 표는
-[Stage 1 §2](../../working/task_m100_5967_stage1.md).
+[Stage 1 §2](../../working/archives/task_m100_5967_stage1.md).
 
 | 축 | 파이썬 오라클 (hwpx 14) | Rust 분류기 (29건 중 해당분) |
 |---|---:|---:|

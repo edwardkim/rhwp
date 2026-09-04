@@ -69,7 +69,7 @@ node scripts/font_rule_projection_baseline.mjs generate
 - `font_rule_registry_migration.json`
 - [`assets/font-rules/font_rule_registry.schema.json`](../../../../assets/font-rules/font_rule_registry.schema.json)
 - [`assets/font-rules/font_rule_registry.json`](../../../../assets/font-rules/font_rule_registry.json)
-- [Stage W7-2 보고서](../../../working/task_m100_4966_w7_stage2.md)
+- [Stage W7-2 보고서](../../../working/archives/task_m100_4966_w7_stage2.md)
 
 ```bash
 node scripts/font_rule_registry.mjs check
@@ -86,7 +86,7 @@ legacy-preservation으로 유지되며, Rust metric은 W6 안정 ID 97개만 참
 - `assets/font-rules/font_rule_projection_manifest.json`
 - `scripts/font_rule_projection_gen.mjs`
 - Rust generated source 2개와 Studio TypeScript generated source 3개
-- [Stage W7-3 보고서](../../../working/task_m100_4966_w7_stage3.md)
+- [Stage W7-3 보고서](../../../working/archives/task_m100_4966_w7_stage3.md)
 
 ```bash
 node scripts/font_rule_projection_gen.mjs check
@@ -112,8 +112,8 @@ payload를 제거했다. Canvas2D paint 281행, webfont supply 153행과 CanvasK
 projection에서 읽는다. document `substFont`, local enumeration/probe, offline filter, glyph coverage와
 실제 SFNT byte 판정은 동적 상태이므로 registry로 옮기지 않았다.
 
-관련 보고서는 [W7-4](../../../working/task_m100_4966_w7_stage4.md)와
-[W7-5](../../../working/task_m100_4966_w7_stage5.md)에 있다.
+관련 보고서는 [W7-4](../../../working/archives/task_m100_4966_w7_stage4.md)와
+[W7-5](../../../working/archives/task_m100_4966_w7_stage5.md)에 있다.
 
 ## Registry schema 1.0 운영 절차
 
@@ -182,5 +182,5 @@ schema 1.0 파일을 임시로 느슨하게 만들지 않는다.
 - fresh WASM trace 3/3, Studio backend 집중 검사 38/38
 
 최종 명령·초기 스키마 계약 실패와 정정 근거는
-[W7-6 보고서](../../../working/task_m100_4966_w7_stage6.md), 전체 완료 판정과 W8 인계는
+[W7-6 보고서](../../../working/archives/task_m100_4966_w7_stage6.md), 전체 완료 판정과 W8 인계는
 [최종 보고서](../../../report/archives/task_m100_4966_report.md)에 기록한다.

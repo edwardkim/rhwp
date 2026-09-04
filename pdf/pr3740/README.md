@@ -13,12 +13,12 @@ sweep의 page-local 기준으로 사용한다.
 HWPX `8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c`다.
 
 상세 판정과 review PNG는
-[`mydocs/working/task_m100_3738_stage1_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage1_visual_sweep.md)와
-[`mydocs/working/task_m100_3738_stage2_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage2_visual_sweep.md),
-[`mydocs/working/task_m100_3738_stage3_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage3_visual_sweep.md),
-[`mydocs/working/task_m100_3738_stage4_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage4_visual_sweep.md),
-[`mydocs/working/task_m100_3738_stage5_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage5_visual_sweep.md),
-[`mydocs/working/task_m100_3738_stage6_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage6_visual_sweep.md),
-[`mydocs/working/task_m100_3738_stage7_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage7_visual_sweep.md),
-[`mydocs/working/task_m100_3738_stage8_visual_sweep.md`](../../mydocs/working/task_m100_3738_stage8_visual_sweep.md)를
+[`mydocs/working/task_m100_3738_stage1_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage1_visual_sweep.md)와
+[`mydocs/working/task_m100_3738_stage2_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage2_visual_sweep.md),
+[`mydocs/working/task_m100_3738_stage3_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage3_visual_sweep.md),
+[`mydocs/working/task_m100_3738_stage4_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage4_visual_sweep.md),
+[`mydocs/working/task_m100_3738_stage5_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage5_visual_sweep.md),
+[`mydocs/working/task_m100_3738_stage6_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage6_visual_sweep.md),
+[`mydocs/working/task_m100_3738_stage7_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage7_visual_sweep.md),
+[`mydocs/working/task_m100_3738_stage8_visual_sweep.md`](../../mydocs/working/archives/task_m100_3738_stage8_visual_sweep.md)를
 따른다. 한컴 PDF 오라클은 `pdf/**`에서 일반 Git blob으로 보존하며 Git LFS를 사용하지 않는다.

@@ -3,7 +3,7 @@
 - **선행 결과**: Q2-D4 `qualified-bounded`, merge `1a43a507c`
 - **resource 감사 checkpoint**: `ae36a8786`
 - **resource 감사**:
-  [`task_m100_4969_w10_q2_d5_resource_audit.md`](../../working/task_m100_4969_w10_q2_d5_resource_audit.md)
+  [`task_m100_4969_w10_q2_d5_resource_audit.md`](../../working/archives/task_m100_4969_w10_q2_d5_resource_audit.md)
 - **기계 판독 계획**:
   [`w10_q2_d5_revised_execution_plan.json`](../../tech/investigations/issue-4969/w10_q2_d5_revised_execution_plan.json)
 - **상태**: R0 `qualified-red`, R1·R2·R3·N0·N1 `qualified`, N2 `qualified-bounded`; checkpoint

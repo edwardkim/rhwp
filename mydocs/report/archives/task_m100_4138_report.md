@@ -8,7 +8,7 @@ last_verified: 2026-08-07
 
 Issue: #4138 (외부 리포트 "glyph truncation")
 브랜치: `fix/issue-4138-split-cell-stale-linesegs`
-단계 문서: [task_m100_4138_stage1.md](../../working/task_m100_4138_stage1.md)
+단계 문서: [task_m100_4138_stage1.md](../../working/archives/task_m100_4138_stage1.md)
 
 ## 결론
 

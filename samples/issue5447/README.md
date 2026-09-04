@@ -2,7 +2,7 @@
 
 **이 폴더는 일반 fixture 가 아니다.** [#5447](https://github.com/edwardkim/rhwp/issues/5447)
 B2 스파이크에서 **한컴으로 판정한 38개 산출**이다. 현행 기준 PDF 는 원본의 저장 제품 메타데이터로
-engine을 결정한 [`pdf/issue5447/`](../../pdf/issue5447/)의 `-2020.pdf` 또는 `-2024.pdf`이며,
+engine을 결정한 [`pdf/issue5447/`](../../pdf/issue5447)의 `-2020.pdf` 또는 `-2024.pdf`이며,
 판정 원장은 이 폴더의
 [`MANIFEST.json`](MANIFEST.json), 결론은
 [`mydocs/report/task_m100_5447_report.md`](../../mydocs/report/archives/task_m100_5447_report.md) 다.
@@ -64,7 +64,7 @@ cargo test --profile release-test --test issue_4100_chart_data_edit \
 생성기는 gitignored `output/issue_5447_b2_judgment/` 에 쓴다. **어긋나더라도 이 폴더가
 정본이다** — 한컴이 실제로 연 파일은 여기 있는 바이트이고, 판정은 그 바이트에 대한 관측이기
 때문이다. 재생성 결정성 실측은
-[`mydocs/working/task_m100_5447_stage2.md`](../../mydocs/working/task_m100_5447_stage2.md) 에 있다.
+[`mydocs/working/task_m100_5447_stage2.md`](../../mydocs/working/archives/task_m100_5447_stage2.md) 에 있다.
 
 ### 바이트로 대조하지 말 것 — 스트림으로 대조한다 (#5967)
 

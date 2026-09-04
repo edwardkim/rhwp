@@ -153,17 +153,17 @@ undo, HWP/HWPX 직렬화에는 들어가지 않는다.
 | `git diff --check` | 통과 |
 
 Stage 5의 실패 계약과 브라우저 확인 세부 값은
-[`task_m100_6039_stage5.md`](../../working/task_m100_6039_stage5.md)에 남겼다.
+[`task_m100_6039_stage5.md`](../../working/archives/task_m100_6039_stage5.md)에 남겼다.
 가로 이동 축 잠금과 아이콘 실측은
-[`task_m100_6039_stage6.md`](../../working/task_m100_6039_stage6.md)에 남겼다.
+[`task_m100_6039_stage6.md`](../../working/archives/task_m100_6039_stage6.md)에 남겼다.
 CSS 돋보기 회귀와 SVG 교체 검증은
-[`task_m100_6039_stage7.md`](../../working/task_m100_6039_stage7.md)에 남겼다.
+[`task_m100_6039_stage7.md`](../../working/archives/task_m100_6039_stage7.md)에 남겼다.
 슬라이더 손잡이·중앙 눈금 보정은
-[`task_m100_6039_stage8.md`](../../working/task_m100_6039_stage8.md)에 남겼다.
+[`task_m100_6039_stage8.md`](../../working/archives/task_m100_6039_stage8.md)에 남겼다.
 돋보기 실그림·슬라이더 트랙 보정은
-[`task_m100_6039_stage9.md`](../../working/task_m100_6039_stage9.md)에 남겼다.
+[`task_m100_6039_stage9.md`](../../working/archives/task_m100_6039_stage9.md)에 남겼다.
 통합 배율 버튼 내부 간격 보정은
-[`task_m100_6039_stage10.md`](../../working/task_m100_6039_stage10.md)에 남겼다.
+[`task_m100_6039_stage10.md`](../../working/archives/task_m100_6039_stage10.md)에 남겼다.
 
 ## 후속 범위
 

@@ -107,9 +107,9 @@ Stage 6 보정 뒤 focused trace는 default 4건과 native Skia 6건, fresh WASM
 **58 + 2 + 4 passed**였다. Studio는 **957 passed, 1 skipped**, editor는 **24 passed**였고 production
 build도 통과했다.
 상세 self-review 원인, 수정 경계와 명령 drift 처리는
-[Stage 6 보고서](../../working/task_m100_4961_stage6.md)에 있다.
+[Stage 6 보고서](../../working/archives/task_m100_4961_stage6.md)에 있다.
 
-상세 명령과 환경 사실은 [Stage 5 보고서](../../working/task_m100_4961_stage5.md)에 있다.
+상세 명령과 환경 사실은 [Stage 5 보고서](../../working/archives/task_m100_4961_stage5.md)에 있다.
 
 ## 5. 보호 불변식 결론
 

@@ -153,4 +153,4 @@ build 산출물 digest는 실행 재현 근거이지 Git 추적 대상이 아니
 - private corpus 사용 없음
 
 정확한 명령과 RED→GREEN 흐름은
-[Stage 2 working 보고서](../../../working/task_m100_4939_stage2.md)에 기록한다.
+[Stage 2 working 보고서](../../../working/archives/task_m100_4939_stage2.md)에 기록한다.

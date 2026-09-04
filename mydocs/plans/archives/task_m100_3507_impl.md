@@ -48,7 +48,7 @@ PR 준비 단계에서 그중 구체적인 변경 방법을 구현계획서 역�
 - macOS 한컴 Viewer에서 파일 손상 경고와 편집 값 표시를 확인한다.
 
 완료 기록:
-[`task_m100_3507_stage1.md`](../../working/task_m100_3507_stage1.md)
+[`task_m100_3507_stage1.md`](../../working/archives/task_m100_3507_stage1.md)
 
 ### Stage 2 — 경계 보강과 전체 회귀
 
@@ -58,7 +58,7 @@ PR 준비 단계에서 그중 구체적인 변경 방법을 구현계획서 역�
 - macOS Viewer 결과와 작업지시자의 Windows 한글 2024 판정을 최종 인수 근거로 묶는다.
 
 완료 기록:
-[`task_m100_3507_stage2.md`](../../working/task_m100_3507_stage2.md)
+[`task_m100_3507_stage2.md`](../../working/archives/task_m100_3507_stage2.md)
 
 ## 중단 조건
 

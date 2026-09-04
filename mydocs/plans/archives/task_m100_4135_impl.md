@@ -129,7 +129,7 @@ R4 실브라우저 첫 실행에서 `10+20+30`의 계산 결과 JSON은 `60`인�
 후속 composition/input 스트림을 좁게 소비하는 corrective RED 3건을 추가하고 guard를 구현했다.
 focused 22건, Studio 전체 1,247건, production build, embed E2E 17건과 영문 실브라우저를 다시
 통과했으며, 최신 `127.0.0.1:7716`에서 같은 한글 IME 수동 여정을 다시 통과해야 한다. 상세 증적과 절차는
-[`task_m100_4135_recovery_r4.md`](../../working/task_m100_4135_recovery_r4.md)에 기록한다.
+[`task_m100_4135_recovery_r4.md`](../../working/archives/task_m100_4135_recovery_r4.md)에 기록한다.
 
 작업지시자가 corrective 빌드의 실제 macOS 한글 IME에서 셀 나누기 대화상자만 열리고 `ㄴ`이 남지
 않는 것을 확인해 `수정이 반영되었어.`로 R4를 승인했다.
@@ -143,7 +143,7 @@ focused 22건, Studio 전체 1,247건, production build, embed E2E 17건과 영�
 - Escape, 일반 입력, 마우스 전환, undo를 포함해 기존 renderer clear 경로에서 마커와 하단 상태를
   함께 해제한다.
 - 작업지시자가 한컴 마커와 하단 문구를 병용하는 안을 승인했다. RED·구현·focused/전체/build·실브라우저
-  검증은 [`task_m100_4135_recovery_r5.md`](../../working/task_m100_4135_recovery_r5.md)에 기록한다.
+  검증은 [`task_m100_4135_recovery_r5.md`](../../working/archives/task_m100_4135_recovery_r5.md)에 기록한다.
 
 R5는 RED 4건을 제품 코드 전에 고정한 뒤 focus 기반 마커와 전용 live status를 구현했다. focused 29건,
 Studio 전체 1,251건, production build 241 modules를 통과했고, 실제 2×2 표에서 F5 1·2·3회와 Escape,
@@ -153,7 +153,7 @@ Studio 전체 1,251건, production build 241 modules를 통과했고, 실제 2×
 PR 준비는 최신 `upstream/devel@96da78a9c3e5` 통합과 focused 재검증까지 마쳤다. 별도 review
 worktree의 suite prepare/check, Rust 5+33건, Studio 56건이 통과했고, release LTO 빌드 중 작업지시자의
 이동 요청으로 안전하게 중단했다. 이는 실패 판정이 아니며 재개 지점과 남은 게이트는
-[`task_m100_4135_recovery_r5.md`](../../working/task_m100_4135_recovery_r5.md)의 8절을 따른다.
+[`task_m100_4135_recovery_r5.md`](../../working/archives/task_m100_4135_recovery_r5.md)의 8절을 따른다.
 
 재개 뒤 최신 `upstream/devel@f6a6bee8f`를 통합하고 release build/lib를 통과했다. 첫 nextest 전체에서
 기존 #2724 가드가 `evaluate_table_formula()`의 passthrough 위임 분류 누락을 발견했다. 실제 결과 기록은

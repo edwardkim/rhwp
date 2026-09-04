@@ -91,7 +91,7 @@ native/WASM parity가 보호한 공개 문서는 `exam_kor`, `exam_eng`, `exam_m
 identity가 바뀌지 않았으므로 재실행하지 않았다.
 
 상세 명령, 산출물 hash와 공유 target·generated suite 검증 경계는
-[Stage W6-5 보고](../../working/task_m100_4964_w6_stage5.md)에 기록했다.
+[Stage W6-5 보고](../../working/archives/task_m100_4964_w6_stage5.md)에 기록했다.
 
 ## 6. W6가 해결한 것과 해결하지 않은 것
 

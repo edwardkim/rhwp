@@ -25,4 +25,4 @@ HWP3/HWPX의 IR 타입 통일과 OLE 내부 편집 범위 확장은 이번 변�
 `SO-SUEOP.hwpx` 1쪽의 실제 클릭은 `sec=0, para=0, control=2, type=ole` 선택으로 이어졌으며,
 해당 OLE의 선택 테두리와 회전 핸들이 PNG 증적에 보인다. Rust OLE 선택 10개와 SO-SUEOP 렌더
 11개 회귀도 모두 통과했다. 세부 명령과 결과는
-[Stage 2 기록](../../working/task_m100_3319_stage2.md)에 남겼다.
+[Stage 2 기록](../../working/archives/task_m100_3319_stage2.md)에 남겼다.
