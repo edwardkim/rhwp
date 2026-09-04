@@ -3,6 +3,7 @@ import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
 import { CursorState } from './cursor';
 import { CaretRenderer } from './caret-renderer';
+import { resolveGlyphStartRect } from './line-start-affinity';
 import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
@@ -3497,6 +3498,41 @@ export class InputHandler {
   }
 
   /**
+   * IME 조합 오버레이의 원점 rect 를 돌려준다.
+   *
+   * [Issue #6553] 조합 중인 글자가 soft-wrap 으로 다음 줄로 넘어가면 `anchor.charOffset` 이
+   * 줄 경계 offset 이 되고, 줄 affinity 인자가 없는 exact 조회는 이전 줄 끝을 돌려준다.
+   * 오버레이는 글자가 실제로 그려지는 줄에 놓여야 하므로 시각 줄을 명시해 다시 조회한다.
+   * 머리말/꼬리말·각주와 2단 이상 중첩 셀은 `getCursorRectOnLine` 이 대상 문단을 지목할 수
+   * 없어 제외한다(exact 유지).
+   */
+  private compositionOverlayStartRect(anchor: DocumentPosition, exact: CursorRect): CursorRect {
+    if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return exact;
+    if ((anchor.cellPath?.length ?? 0) > 1) return exact;
+    const inCell = anchor.parentParaIndex !== undefined;
+    return resolveGlyphStartRect(anchor.charOffset, exact, {
+      lineInfoAt: (charOffset) => (inCell
+        ? this.wasm.getLineInfoInCell(
+            anchor.sectionIndex, anchor.parentParaIndex!, anchor.controlIndex!,
+            anchor.cellIndex!, anchor.cellParaIndex!, charOffset,
+          )
+        : this.wasm.getLineInfo(anchor.sectionIndex, anchor.paragraphIndex, charOffset)),
+      rectAtLineStart: (lineIndex) => {
+        try {
+          return this.wasm.getCursorRectOnLine(
+            anchor.sectionIndex, anchor.paragraphIndex, lineIndex, false,
+            anchor.parentParaIndex ?? 0xFFFFFFFF, anchor.controlIndex ?? 0xFFFFFFFF,
+            anchor.cellIndex ?? 0xFFFFFFFF, anchor.cellParaIndex ?? 0xFFFFFFFF,
+          );
+        } catch {
+          // getCursorRectOnLine 을 내보내지 않는 wasm 빌드 — 기존 exact 동작을 유지한다.
+          return null;
+        }
+      },
+    });
+  }
+
+  /**
    * 캐럿 위치를 갱신한다.
    *
    * @param skipScroll true 시 `scrollCaretIntoView` 호출 skip — cursor 변경 trigger 가 동반되지 않은
@@ -3541,6 +3577,7 @@ export class InputHandler {
               anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
             );
           }
+          startRect = this.compositionOverlayStartRect(anchor, startRect);
           const charWidth = rect.x - startRect.x;
           const text = this.textarea.value || '';
           // 현재 커서 위치의 글꼴 정보
