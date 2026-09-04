@@ -47,3 +47,14 @@ Studio 출력을 직접 비교했다. `#6683`과 같은 page evidence를 공유�
 
 추가 메인터너 코드 보정은 필요하지 않다. 최종 병합은 통합 PR 최신 head의 required
 CI와 mergeability를 다시 확인하는 일반 절차를 따른다.
+
+## Merge 후 contributor PR comment 계획
+
+원 PR은 직접 merge하지 않고 [통합 PR #6722](https://github.com/edwardkim/rhwp/pull/6722)의
+체리픽 통합으로 수용한다. comment에는 merge commit
+[`4041acf`](https://github.com/edwardkim/rhwp/commit/4041acf298ffde2f02866587cf8ed4dcacd45f31),
+실제 PR head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/33854487320)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/33854487302)·[Adapter](https://github.com/edwardkim/rhwp/actions/runs/33854487296)·[Proptest](https://github.com/edwardkim/rhwp/actions/runs/33854487297)·[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/33854487178), devel push의 [CI](https://github.com/edwardkim/rhwp/actions/runs/33856097121)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/33856096995)·[Adapter](https://github.com/edwardkim/rhwp/actions/runs/33856097070)·[Proptest](https://github.com/edwardkim/rhwp/actions/runs/33856097150) 성공을 적는다.
+
+- 로컬 검증은 `cargo nextest run --profile ci-duration-observation --cargo-profile release-test`의 실제 결과 `9010 passed, 46 skipped`만 기록한다.
+- 시각 증적은 [Visual Sweep 가이드](https://github.com/edwardkim/rhwp/blob/4041acf298ffde2f02866587cf8ed4dcacd45f31/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)와 `mydocs/pr/assets/pr_6683_6705_20260904/reference-6683-6690-exam-science-p4.png`, `mydocs/pr/assets/pr_6683_6705_20260904/studio-6683-6690-exam-science-p4.png`를 직접 링크한다. page 4의 개체-only 마지막 줄 계약 범위만 기록하며 전체 pixel-perfect 동치를 주장하지 않는다.
+- comment와 close는 이 계획이 devel에 merge되고 devel CI가 성공한 뒤 각각 한 번만 수행한다.

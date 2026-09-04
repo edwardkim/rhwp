@@ -66,14 +66,15 @@ Hancom 2018 저장 원본은 `printMethod=4` N-up PDF로 출력돼 물리 페이
 | 논리 페이지 매핑 | `../assets/pr_6683_6705_20260904/visual-6709-6710/nup-logical-a4-normalized-page-map.json` | 8 논리 페이지 |
 | 대표 contact sheet | `../assets/pr_6683_6705_20260904/visual-6709-6710/issue6202-a4-normalized-contact-sheet.png` | 8/8 완료, 규칙 후보 0 |
 
-## 병합 전 남은 조건
+## 병합 후 상태 및 contributor PR comment 계획
 
-1. `samples/issue6202` 원본을 `hwp2024-mcp-convert` client의 `engine 2020`으로
-   변환한 기준 PDF를 확정한다.
-2. 기준 PDF와 현재 `rhwp-studio`의 같은 페이지를 직접 대조해, paper-relative
-   float의 exclusion band와 본문 되감기 결과를 시각 증적으로 남긴다.
-3. 보정 commit을 포함한 최종 통합 PR head에서 required CI, mergeability,
-   `mergeStateStatus=CLEAN`을 다시 확인한다.
+정식 fixture와 HWP5 `LIST_HEADER` 보정까지 포함한 [통합 PR #6722](https://github.com/edwardkim/rhwp/pull/6722)는
+`MERGEABLE`·`CLEAN`과 required CI를 확인한 뒤 merge commit
+[`4041acf`](https://github.com/edwardkim/rhwp/commit/4041acf298ffde2f02866587cf8ed4dcacd45f31)로
+병합됐다. 원 PR은 직접 merge하지 않고 이 체리픽 통합으로 수용한다.
 
-위 시각 증적 조건은 추가 renderer 보정 요구가 아니다. 충족 전에는 원 PR을 직접
-병합하거나 수용 완료 댓글을 남기지 않는다.
+- comment에는 실제 PR head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/33854487320)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/33854487302)·[Adapter](https://github.com/edwardkim/rhwp/actions/runs/33854487296)·[Proptest](https://github.com/edwardkim/rhwp/actions/runs/33854487297)·[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/33854487178), devel push의 [CI](https://github.com/edwardkim/rhwp/actions/runs/33856097121)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/33856096995)·[Adapter](https://github.com/edwardkim/rhwp/actions/runs/33856097070)·[Proptest](https://github.com/edwardkim/rhwp/actions/runs/33856097150) 성공을 적는다.
+- 로컬 검증은 `cargo nextest run --profile ci-duration-observation --cargo-profile release-test`의 실제 결과 `9010 passed, 46 skipped`만 기록한다.
+- [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)은 issue6202의 실제 PNG 8쪽·SVG 8쪽과 N-up contact sheet를 보관한다. comment에는 `mydocs/pr/assets/pr_6683_6710_green_ci_batch_20260904/formal-fixture-render/issue6202/png/156483689-turmeric-industry-standardization_001.png`와 `mydocs/pr/assets/pr_6683_6705_20260904/visual-6709-6710/issue6202-a4-normalized-contact-sheet.png`를 직접 표시하고, N-up 물리 시트의 제한 때문에 Hancom PDF와의 pixel/물리 페이지 동치는 주장하지 않는다.
+- 수용 근거는 공개 fixture, fail-closed 테스트 계약, HWP5 직렬화 보정과 공식 CI다. 시각 asset은 현재 rhwp 출력의 검토 범위만 보여 준다.
+- comment와 close는 이 계획이 devel에 merge되고 devel CI가 성공한 뒤 각각 한 번만 수행한다.
