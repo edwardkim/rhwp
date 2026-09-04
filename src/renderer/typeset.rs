@@ -25281,8 +25281,23 @@ impl TypesetEngine {
             // 기존 각주가 이미 이 page의 body tail을 예약했으면 object frame만으로
             // whole row를 수용할 수 없다. 그 마지막 행의 cell-unit partial cut은
             // footnote-aware row scanner가 소유한다.
+            // [#5057] 이 허용치는 **저장된 첫 조각 source frame** 이 주는 것이고, 그
+            // 기록은 컨테이너(HWP5 / 직접 HWPX)와 무관하게 파일에 그대로 있다. 종전에는
+            // 네이티브 HWP5 프로파일에만 열려 있어, **같은 바이트**를 direct-HWPX 로 읽으면
+            // 마지막 행을 못 받아 표가 쪼개졌다.
+            //
+            // 21484591 실측 — `META-INF/rhwp-hwp5-origin` 만 뺀 사본과의 A/B:
+            //
+            // ```text
+            //   두 프로파일 모두  avail_for_rows = 523.4  (host_before·vert_off 동일)
+            //   hwp5    r=7 에서 sfwr=true  → consumed 528.8 (5.4px 초과 수용) → 8행 전부
+            //   direct  r=7 에서 sfwr=false → 7행에서 끊고 8행은 다음 단 → +1쪽
+            //   한/글 2024 = 13쪽 = hwp5    (direct 는 14쪽)
+            // ```
             let mut source_first_fragment_overflow_allowance = saved_first_fragment_source_frame
-                .filter(|_| st.profile.hwp5_stored_pagination_layout())
+                .filter(|_| {
+                    st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout()
+                })
                 .filter(|_| st.current_footnote_height <= 0.0)
                 .map(|(_, flow_bottom_px)| {
                     saved_rowbreak_first_fragment_flow_overflow_allowance(
