@@ -18148,8 +18148,49 @@ impl TypesetEngine {
             //      핀을 315 → 316쪽으로 깨뜨렸다(한글 기준 PDF 정답 315). 되감김 폭이 남은
             //      본문 높이의 절반 이상일 때만 "다음 쪽 상단으로 돌아갔다"로 읽는다.
             // 저장 사다리가 권위인 native HWP5 조판에 한정한다.
+            //   ③ [#6718] **되감김 목표가 정확히 `0`** 인 문서는 위 ②만으로는 못 받는다.
+            //      `vpos == 0` 은 "되감김"이 아니라 **새 물리 쪽 상단** 표식이라 종전에는
+            //      "별도 기계가 다룬다"며 통째로 배제했는데, 그 별도 기계 둘이
+            //      **네이티브 HWP5 + 각주 없음** 조합에서는 모두 꺼진다
+            //      (`internal_vpos_page_break_line` 은 호출부가 네이티브 HWP5 를 목록에
+            //      넣지 않고, `native_hwp5_existing_footnote_reset_overlap_break_line` 은
+            //      각주가 없으면 즉시 반환). 27469 는 6개 쪽에서 본문 16줄이 하한을 넘고
+            //      8쪽 마지막 줄은 용지 밖(+121.2px)으로 나간다.
+            //
+            //      그래서 `0` 도 받되 두 겹으로 좁힌다.
+            //        · **조각이 쪽 하단 30% 안에서 시작했을 때만** —
+            //          `internal_vpos_page_break_line` 이 쓰는 것과 같은 술어다.
+            //        · **사다리가 "이 쪽은 꽉 찼다"고 말할 때만** — 사다리대로 끊은 뒤
+            //          한 줄을 더 얹으면 예산을 넘어야 한다.
+            //      #2070 시장구조조사(pi=343·1088: 54444→0, 53265→0)는 첫 겹은 통과하고
+            //      **둘째 겹에서 걸린다**(예산이 각각 1.48·1.10줄 남는 자리에서 끊으라고
+            //      한다). 그대로 따르면 315 → 316쪽이 된다.
+            //
+            //      ⚠ #3817 이 반대 방향의 함정을 남겼다 — 승격 기준을 "정확히 0" 으로만
+            //      잡으면 `300~1500HU` 로 되감기는 문서를 놓친다. 그래서 `0` 을 별도
+            //      갈래로 두지 않고 ②의 쪽-규모 낙폭 검사에 그대로 태운다(`cur == 0` 이면
+            //      낙폭 = `prev.vertical_pos` 라 자연히 통과한다).
             let page_scale_rewind_hu =
                 (crate::renderer::px_to_hwpunit(st.base_available_height(), self.dpi) / 2).max(1);
+            let fragment_starts_in_page_tail = para
+                .line_segs
+                .get(cursor_line)
+                .filter(|ls| !is_synthetic_line_seg(ls))
+                .map(|ls| {
+                    ls.vertical_pos > 0
+                        && hwpunit_to_px(ls.vertical_pos, self.dpi)
+                            >= st.base_available_height() * 0.7
+                })
+                .unwrap_or(false);
+            // 사다리가 "이 쪽은 꽉 찼다"고 말할 때만 `0` 표식을 쪽 경계로 믿는다 —
+            // 사다리대로 끊은 뒤 한 줄을 더 얹으면 예산을 넘어야 한다. 이 게이트가
+            // #2070 시장구조조사(pi=343·1088)를 걷어낸다: 거기 사다리는 예산이 한 줄
+            // 넘게 남는 자리에서 끊으라고 해서, 그대로 따르면 315 → 316쪽이 된다.
+            let ladder_page_is_full = |k: usize| -> bool {
+                let upto = fmt.line_advances_sum(cursor_line..k);
+                let next = fmt.line_advances_sum(k..k + 1);
+                upto + next > avail_for_lines + 0.5
+            };
             if st.profile.hwp5_stored_pagination_layout()
                 && end_line > cursor_line + 1
                 && cumulative > avail_for_lines
@@ -18159,12 +18200,12 @@ impl TypesetEngine {
                         (Some(prev), Some(cur)) => {
                             !is_synthetic_line_seg(prev)
                                 && !is_synthetic_line_seg(cur)
-                                // `vpos == 0` 은 되감김이 아니라 **새 물리 쪽 상단** 표식이고
-                                // 바로 위 `next_para_is_rowbreak_anchor_table` 갈래를 비롯해
-                                // 별도 기계가 이미 다룬다. 여기서 같이 자르면 #2070
-                                // 시장구조조사가 315 → 316쪽이 된다(pi=343·1088 실측:
-                                // 54444→0, 53265→0).
-                                && cur.vertical_pos > 0
+                                && prev.vertical_pos > 0
+                                && if cur.vertical_pos == 0 {
+                                    fragment_starts_in_page_tail && ladder_page_is_full(k)
+                                } else {
+                                    cur.vertical_pos > 0
+                                }
                                 && cur.vertical_pos < prev.vertical_pos
                                 && i64::from(prev.vertical_pos) - i64::from(cur.vertical_pos)
                                     >= i64::from(page_scale_rewind_hu)
