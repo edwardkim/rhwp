@@ -41,7 +41,10 @@ fn sample() -> Option<Vec<u8>> {
             r"C:\Users\planet\hwpdocs_10k_share",
             r"\prism_downloads\기후에너지환경부"
         ),
-        concat!(r"D:\hwpdocs_10k_share", r"\prism_downloads\기후에너지환경부"),
+        concat!(
+            r"D:\hwpdocs_10k_share",
+            r"\prism_downloads\기후에너지환경부"
+        ),
     ];
     for base in roots {
         let Ok(entries) = std::fs::read_dir(base) else {
