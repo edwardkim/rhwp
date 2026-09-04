@@ -2,7 +2,7 @@
 
 - **이슈**: [#4141](https://github.com/edwardkim/rhwp/issues/4141)
 - **선행 단계**: [stage1](task_m100_4141_stage1.md) · [stage2](task_m100_4141_stage2.md)
-- **최종 보고서**: [`mydocs/report/task_m100_4141_report.md`](../report/task_m100_4141_report.md)
+- **최종 보고서**: [`mydocs/report/task_m100_4141_report.md`](../report/archives/task_m100_4141_report.md)
 - **작업 시각**: 2026-08-07 KST
 - **프로덕션 코드 변경**: 0
 

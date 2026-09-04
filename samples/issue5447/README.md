@@ -5,7 +5,7 @@ B2 스파이크에서 **한컴으로 판정한 38개 산출**이다. 현행 기�
 engine을 결정한 [`pdf/issue5447/`](../../pdf/issue5447/)의 `-2020.pdf` 또는 `-2024.pdf`이며,
 판정 원장은 이 폴더의
 [`MANIFEST.json`](MANIFEST.json), 결론은
-[`mydocs/report/task_m100_5447_report.md`](../../mydocs/report/task_m100_5447_report.md) 다.
+[`mydocs/report/task_m100_5447_report.md`](../../mydocs/report/archives/task_m100_5447_report.md) 다.
 
 ## 회귀 코퍼스로 승격하지 말 것
 

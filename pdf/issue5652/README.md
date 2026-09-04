@@ -3,7 +3,7 @@
 [#5652](https://github.com/edwardkim/rhwp/issues/5652) B2-엔진 본구현의 한컴 판정 PDF 32건이다.
 원본(판정 입력)은 [`samples/issue5652/`](../../samples/issue5652/), 판정 원장은
 [`samples/issue5652/MANIFEST.json`](../../samples/issue5652/MANIFEST.json), 결론은
-[`mydocs/report/task_m100_5652_report.md`](../../mydocs/report/task_m100_5652_report.md) 다.
+[`mydocs/report/task_m100_5652_report.md`](../../mydocs/report/archives/task_m100_5652_report.md) 다.
 
 ## 이 자료가 증명하는 것
 

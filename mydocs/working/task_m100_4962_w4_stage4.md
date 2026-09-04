@@ -11,7 +11,7 @@ last_verified: 2026-08-22
 - **이슈**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
 - **계획**: [`task_m100_4962_w4.md`](../plans/archives/task_m100_4962_w4.md)
 - **선행 단계**: [`task_m100_4962_w4_stage3.md`](task_m100_4962_w4_stage3.md)
-- **최종 보고**: [`task_m100_4962_report.md`](../report/task_m100_4962_report.md)
+- **최종 보고**: [`task_m100_4962_report.md`](../report/archives/task_m100_4962_report.md)
 - **단계 상태**: W4-4 산출물 완료, 2026-08-22 W4 최종 승인
 
 ## 1. 결론

@@ -12,7 +12,7 @@ last_verified: 2026-08-26
 `no-change`로 종결됐으며 제품 font mapping은 변경하지 않는다. rank 7 `KoPubWorld돋움체 Light`도
 Stage W8-R7-Q5에서 `no-change`로 종결됐다. qualification 가능한 rank 1·7·8이 모두 완료되고 나머지 14개는
 명시적 evidence 변화 전까지 terminal이므로 현재 W8 queue는 비어 있다. 완료된 face의 최종 판정은
-[`task_m100_4967_report.md`](../../../report/task_m100_4967_report.md)에 있다.
+[`task_m100_4967_report.md`](../../../report/archives/task_m100_4967_report.md)에 있다.
 
 ## Stage W8-R7-Q0 증거 호환성과 bounded cohort
 

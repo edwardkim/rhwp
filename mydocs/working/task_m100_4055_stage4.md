@@ -97,4 +97,4 @@ rhwp 는 `parse_ole_container` 가 스트림 **이름**으로 판별하므로 CL
 
 ## 4. 다음
 
-[최종 보고서](../report/task_m100_4055_report.md)에 S1~S4 답과 B1 본구현 권고를 정리했다.
+[최종 보고서](../report/archives/task_m100_4055_report.md)에 S1~S4 답과 B1 본구현 권고를 정리했다.

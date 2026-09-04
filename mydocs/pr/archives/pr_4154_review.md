@@ -73,7 +73,7 @@ Git 이력에서 확인할 수 있지만 active tree로 복원하지 않는다.
   `samples/issue2004_cell_image_stack.{hwp,hwpx}`
 - [#2019 과분할 래칫](../../../tests/issue_2019_floating_form_overpagination.rs),
   `samples/hwpx/issue2019_floating_form_74312.hwpx`,
-  [최종·정정 보고서](../../report/task_m100_2019_report.md)
+  [최종·정정 보고서](../../report/archives/task_m100_2019_report.md)
 
 ## 사후 검증
 
@@ -99,7 +99,7 @@ PDF, golden과 baseline fixture를 바꾸지 않았으므로 별도 시각 게�
   산출물로 명시하고 tracked test·fixture로 연결한다.
 - [#2019 Stage 1](../../working/task_m100_2019_stage1.md)과 구현계획의 `output/poc/task2019`를 역사적
   산출물로 명시하고 tracked report·test·fixture로 연결한다.
-- [#2220 보고서](../../report/task_m100_2220_report.md)의 “복원”은 당시 사건으로 보존하되, #4154에서
+- [#2220 보고서](../../report/archives/task_m100_2220_report.md)의 “복원”은 당시 사건으로 보존하되, #4154에서
   이후 의도적으로 제거했음을 덧붙인다.
 - `mydocs/metrics/frontend/2026-07-11/metrics.json`의 경로 목록은 당시 inventory snapshot이므로
   수정하지 않는다.

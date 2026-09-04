@@ -84,4 +84,4 @@ EMF 제거본도 정상 렌더된다는 결론을 뒷받침한다.
 상세 근거: [계획](../../plans/archives/task_m100_4055.md),
 [Stage 2](../../working/task_m100_4055_stage2.md),
 [Stage 4](../../working/task_m100_4055_stage4.md),
-[최종 보고](../../report/task_m100_4055_report.md).
+[최종 보고](../../report/archives/task_m100_4055_report.md).

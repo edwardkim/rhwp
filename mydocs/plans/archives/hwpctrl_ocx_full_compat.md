@@ -3762,7 +3762,7 @@ UI 면은 COM 오라클로 판정할 수 없다. 판정 없이 구현부터 하�
   몇인지, (2) U1 뷰가 풀어야 할 API 가 정확히 무엇인지, (3) 채널 ② 의 CSP 실패율이 얼마인지가
   전부 실측으로 정해진다. 이 표본이 U1 이후 우선순위 지도다.
 
-  **r1 을 돌렸다**([보고서](../../report/webhwpctrl_site_sample_r1_20260810.md), 2026-08-10) —
+  **r1 을 돌렸다**([보고서](../../report/archives/webhwpctrl_site_sample_r1_20260810.md), 2026-08-10) —
   GitHub 지문 스윕으로 실표본 3 + SDK 원본 1 을 확보했다. 첫 프로파일: 공공기관 전자문서
   프론트엔드 하나의 호출 표면이 API 15종 + 액션 9종 = 24종이고 그중 `verified` 20 ·
   `substituted` 1 · `unimplemented` **4**(`Show*` 3종 + `TableResizeCellLeft`)다. UI 면의

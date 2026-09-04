@@ -37,7 +37,7 @@ W5의 `actionableRanks=[]`는 추가 Oracle 실행 queue가 끝났다는 뜻으�
 
 ### 원인 계보 보고서
 
-[`font_metrics_fallback_causal_lineage_20260816.md`](../report/font_metrics_fallback_causal_lineage_20260816.md)는
+[`font_metrics_fallback_causal_lineage_20260816.md`](../report/archives/font_metrics_fallback_causal_lineage_20260816.md)는
 W0~W7의 역사와 FI-01~FI-14를 그대로 유지하고 다음만 현행화했다.
 
 - 단일 임계 경로를 W7.5·W8 qualification·kerning cohort 분기 graph로 교체
@@ -49,7 +49,7 @@ W0~W7의 역사와 FI-01~FI-14를 그대로 유지하고 다음만 현행화했�
 
 ### W7 최종 보고서
 
-[`task_m100_4966_report.md`](../report/task_m100_4966_report.md)는 다음 현재 사실을 반영했다.
+[`task_m100_4966_report.md`](../report/archives/task_m100_4966_report.md)는 다음 현재 사실을 반영했다.
 
 - `status: completed`, canonical self-reference, `last_verified: 2026-08-24`
 - PR #5950 일반 merge와 merge commit `5057a7fcaf055b928e76115cdee4bc20bf0936f9`

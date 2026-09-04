@@ -19,7 +19,7 @@ W2 Font Decision Trace의 계약과 공개 fixture 경계를 보존한다.
 
 - 수행 범위와 승인 게이트: [`task_m100_4961.md`](../../../plans/archives/task_m100_4961.md)
 - W1 원장과 candidate identity: [`issue-4939`](../issue-4939/README.md)
-- 보호 불변식: [`font_metrics_fallback_causal_lineage_20260816.md`](../../../report/font_metrics_fallback_causal_lineage_20260816.md)
+- 보호 불변식: [`font_metrics_fallback_causal_lineage_20260816.md`](../../../report/archives/font_metrics_fallback_causal_lineage_20260816.md)
 - machine-readable trace 계약: [`font_decision_trace.schema.json`](font_decision_trace.schema.json)
 
 W1의 `font_rule_ledger.json`은 historical investigation snapshot이다. W2는 실제 결정이 끝난 뒤
@@ -113,7 +113,7 @@ console.log(trace.layoutHash.value, trace.normalizedHash.value);
 
 전체 검증 명령과 FI-01~FI-14 판정은
 [`task_m100_4961_stage5.md`](../../../working/task_m100_4961_stage5.md), 완료 조건과 후속 인계는
-[`task_m100_4961_report.md`](../../../report/task_m100_4961_report.md)가 정본이다.
+[`task_m100_4961_report.md`](../../../report/archives/task_m100_4961_report.md)가 정본이다.
 
 PR self-review의 native snapshot 보정과 standalone fail-closed 회귀 근거는
 [`task_m100_4961_stage6.md`](../../../working/task_m100_4961_stage6.md)에 기록했다.

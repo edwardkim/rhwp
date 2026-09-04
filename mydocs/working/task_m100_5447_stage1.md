@@ -90,6 +90,6 @@ last_verified: 2026-08-18
 ## 5. 다음
 
 **완료** — 한컴 2022 판정 회신(PDF 38건 + 편집기 행 수)을 144DPI 래스터 해시로 갈랐다.
-결과와 B2 본구현 권고는 [`../report/task_m100_5447_report.md`](../report/task_m100_5447_report.md).
+결과와 B2 본구현 권고는 [`../report/task_m100_5447_report.md`](../report/archives/task_m100_5447_report.md).
 정책 3종 전건 통과(S2 도 양성 — 편집기가 5행을 보여 `c:f` 갱신 재협의는 불요), 경계 2종은
 한컴이 막지 않아 B2 엔진이 fail-closed 로 막는다.

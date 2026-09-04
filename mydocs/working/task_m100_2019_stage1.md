@@ -7,7 +7,7 @@
 아래 기준선·표본 목록·캡처 하네스·오라클 메모는 Stage 1 당시 `output/poc/task2019/`에 만든 POC다.
 [PR #4154](https://github.com/edwardkim/rhwp/pull/4154)에서 이 네 파일의 저장소 추적본을 제거했으며,
 [삭제 전 Git 이력](https://github.com/edwardkim/rhwp/tree/5a4f26d0d0a4e2fc96f4b73510d2aecdad916722/output/poc/task2019)으로만
-보존한다. 현행 장기 근거는 [최종·정정 보고서](../report/task_m100_2019_report.md),
+보존한다. 현행 장기 근거는 [최종·정정 보고서](../report/archives/task_m100_2019_report.md),
 [tracked 회귀 래칫](../../tests/issue_2019_floating_form_overpagination.rs)과
 `samples/hwpx/issue2019_floating_form_74312.hwpx`다.
 

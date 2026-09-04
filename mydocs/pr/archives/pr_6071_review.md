@@ -72,7 +72,7 @@ PDF visual sweep은 이번 주장과 맞지 않는다. 대신 실제 로컬 브�
 - 10~500% 가로바, 100% 중앙 스냅, 통합 배율 버튼의 68px 고정 폭과 2px 내부 간격
 
 검증 상세 수치와 단계별 근거는
-[`task_m100_6039_report.md`](../../report/task_m100_6039_report.md)의 브라우저 검증에 있다. visual sweep
+[`task_m100_6039_report.md`](../../report/archives/task_m100_6039_report.md)의 브라우저 검증에 있다. visual sweep
 asset을 merge 판단에 사용하지 않았으므로 별도 PDF·review PNG는 추가하지 않았다.
 
 ## 로컬 검증

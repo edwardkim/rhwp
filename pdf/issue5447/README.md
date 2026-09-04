@@ -7,7 +7,7 @@ B2 스파이크는 "한컴이 우리 편집을 받아 주는가" 뿐 아니라 *
 
 원본(판정 입력)은 [`samples/issue5447/`](../../samples/issue5447/), 판정 원장은
 [`samples/issue5447/MANIFEST.json`](../../samples/issue5447/MANIFEST.json),
-결론은 [`mydocs/report/task_m100_5447_report.md`](../../mydocs/report/task_m100_5447_report.md) 다.
+결론은 [`mydocs/report/task_m100_5447_report.md`](../../mydocs/report/archives/task_m100_5447_report.md) 다.
 
 ## 이 자료가 증명하는 것
 
@@ -47,7 +47,7 @@ B2 스파이크는 "한컴이 우리 편집을 받아 주는가" 뿐 아니라 *
 ## 래스터 판정 — 스트림 해시를 쓰지 않는 이유
 
 PDF 안 스트림을 통째로 해시하면 폰트·구조처럼 **문서 출처가 다른 데서 오는 차이**가 섞여
-판정이 틀린다. [#4100 보고서 §4-1](../../mydocs/report/task_m100_4100_report.md) 에서 실제로
+판정이 틀린다. [#4100 보고서 §4-1](../../mydocs/report/archives/task_m100_4100_report.md) 에서 실제로
 한 번 틀렸고 래스터로 다시 재서 바로잡았다. **그리기 결과를 판정하려면 그리기 결과를 잰다.**
 
 원장은 래스터를 두 축으로 적는다. **절대 해시는 렌더러와 그 버전에 딸린 값이므로 도구를
