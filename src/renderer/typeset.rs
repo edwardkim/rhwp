@@ -18225,6 +18225,25 @@ impl TypesetEngine {
                 let next = fmt.line_advances_sum(k..k + 1);
                 upto + next > avail_for_lines - LADDER_FIT_EPSILON_PX
             };
+            // [#6718 잔여] `ladder_page_is_full` 이 걷어내는 자리 중 **옳은 것**을 되살린다.
+            //
+            // 위 시험 주석이 남긴 미해결 축이다 — `27469` 의 `pi=47`(7쪽, 예산 1.39줄
+            // 남음)은 따라야 하는 자리인데, `#2070` 의 `pi=343`(1.48줄)·`pi=1088`(1.10줄)
+            // 과 슬랙 값이 줄 단위로 뒤섞여 **슬랙·시작위치·낙폭·직전 항목·문단 수·태그**
+            // 어느 축으로도 갈리지 않았다.
+            //
+            // 갈리는 축은 **이 승격이 쪽 경계를 새로 만드는가**다. 문단이 이 조각으로
+            // 끝나지 않는다면(= 남은 줄이 어차피 다음 쪽으로 넘어간다면) 경계는 이미
+            // 서 있고, 사다리는 그 경계를 **어디에 둘지**만 말한다. 그때는 예산에
+            // 여유가 남아도 파일이 적어 둔 자리를 따르는 것이 옳다.
+            //
+            //   27469 pi=47   end_line 5 < line_count 8   → 이미 쪼개진다  → 따른다
+            //   #2070 pi=343  end_line 5 = line_count 5   → 여기서 새로 끊는 셈 → 안 따른다
+            //   #2070 pi=1088 end_line 5 = line_count 5   → 같음
+            //
+            // 실측: `27469` 7·8쪽 넘침 2줄과 8쪽 마지막 줄의 용지 밖 이탈(+121.2px)이
+            // 닫히고, `#2070` 은 315쪽으로 불변이다.
+            let paragraph_is_already_splitting = end_line < line_count;
             if st.profile.hwp5_stored_pagination_layout()
                 && end_line > cursor_line + 1
                 && cumulative > avail_for_lines - LADDER_FIT_EPSILON_PX
@@ -18236,7 +18255,9 @@ impl TypesetEngine {
                                 && !is_synthetic_line_seg(cur)
                                 && prev.vertical_pos > 0
                                 && if cur.vertical_pos == 0 {
-                                    fragment_starts_in_page_tail && ladder_page_is_full(k)
+                                    fragment_starts_in_page_tail
+                                        && (ladder_page_is_full(k)
+                                            || paragraph_is_already_splitting)
                                 } else {
                                     cur.vertical_pos > 0
                                 }
