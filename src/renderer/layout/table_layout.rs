@@ -5297,6 +5297,55 @@ impl LayoutEngine {
                 // LINE_SEG vpos가 문단 위치를 정확히 지정하므로,
                 // 추가 spacing 없이 para_y를 그대로 사용.
                 // (leading spacing은 LINE_SEG vpos에 이미 반영되어 있음)
+                //
+                // [#6697] 다만 그 문단이 **자기 글자**를 갖고 있으면 그 줄은 그려야 한다.
+                // 블록 표(treat_as_char=false)는 아래 `layout_table` 이 따로 배치하므로
+                // 흐름(para_y)은 그대로 두되, 호스트 문단의 글자까지 버리면 캡션 한 줄이
+                // 어느 쪽에도 남지 않는다(80550 `<향후 10년간 … 해체 수익 계산>` 21자).
+                // Task #573 이 인라인 TAC 표에서 같은 결함을 고쳤고, 블록 표 쪽은 당시
+                // "텍스트 흐름 외부"라는 이유로 남아 있었다. 글자가 없는 호스트 문단은
+                // 종전대로 아무것도 하지 않는다(대다수가 이 경우라 결함이 늦게 드러났다).
+                let host_has_visible_text = composed
+                    .lines
+                    .iter()
+                    .any(|line| line.runs.iter().any(|run| !run.text.trim().is_empty()));
+                if host_has_visible_text {
+                    let is_last_para = cp_idx + 1 == composed_paras.len();
+                    let numbered_comp = if start_line == 0 && end_line > start_line {
+                        self.apply_paragraph_numbering(
+                            Some(composed),
+                            para,
+                            styles,
+                            outline_numbering_id,
+                        )
+                    } else {
+                        None
+                    };
+                    let composed_for_layout = numbered_comp.as_ref().unwrap_or(composed);
+                    // 반환값(다음 문단 y)은 버린다 — 흐름 전진은 저장 vpos 계약 그대로.
+                    // 이 문단의 블록 표는 아래 `layout_table` 이 저장 좌표로 배치한다.
+                    let _ = self.layout_composed_paragraph(
+                        tree,
+                        cell_node,
+                        composed_for_layout,
+                        styles,
+                        &inner_area,
+                        para_y,
+                        start_line,
+                        end_line,
+                        section_index,
+                        cp_idx,
+                        cell_context.clone(),
+                        !use_top_vpos_anchor,
+                        is_last_para,
+                        0.0,
+                        None,
+                        Some(para),
+                        Some(bin_data_content),
+                        None, // 셀 컨텍스트 — wrap zone 무관
+                    );
+                    has_preceding_text = true;
+                }
             }
 
             let para_alignment = styles
