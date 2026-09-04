@@ -2921,11 +2921,19 @@ impl HeightMeasurer {
             // 나가 "확보" 가 괘선에 잘렸다). 저장분이 **하나라도** 있는 표는 종전 그대로 둔다.
             // (`any(!no_ls)` 로 판정한다. `all(no_ls)` 는 문단이 없는 셀에서 공허참이 되어
             //  정상 저장 문서까지 이 경로로 새어 든다.)
-            let table_has_stored_segs = table
-                .cells
-                .iter()
-                .flat_map(|c| c.paragraphs.iter())
-                .any(|p| !crate::renderer::para_has_no_stored_line_segs(p));
+            // 🔴 한글이 직접 쓴 문서(HWP5 네이티브 조판)는 저장 lineseg 가 없는 표라도
+            // 종전 배분을 유지한다 — 하한을 새로 세우면 그 표가 덜 눌려 아래 흐름이
+            // 밀리고, 실측(20544835 진안 서식)에서 글자끼리 겹치는 결함이 새로 생겼다.
+            // 이 손질의 대상은 저장 조판이 아예 없는 재구성·생성계 문서다.
+            // 🔴 이 갈래는 출처 대리지표다 — lineseg 유무로는 두 부류를 못 가른다.
+            // 20544835 는 저장 seg 가 0 인데도 HWP5 네이티브로 열린다(생성기가 쓴
+            // .hwp). 대가로 .hwp 문서에 붙여넣는 경우에는 이 하한이 꺼진다.
+            let table_has_stored_segs = self.is_native_hwp5
+                || table
+                    .cells
+                    .iter()
+                    .flat_map(|c| c.paragraphs.iter())
+                    .any(|p| !crate::renderer::para_has_no_stored_line_segs(p));
             for cell in &table.cells {
                 let r = cell.row as usize;
                 if cell.row_span != 1 || r >= row_count || cell.paragraphs.is_empty() {

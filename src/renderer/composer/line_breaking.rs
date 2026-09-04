@@ -1281,14 +1281,7 @@ fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: us
     }
     letter_spacing_px
         .get(token_end_idx - 1)
-        // 이 보정은 "줄 끝 글자 뒤의 빈 자간을 빼는" **좁히는** 보정이다.
-        // 자간이 음수면 뺄 것이 없다 — 마지막 글자의 전진폭에 이미 축소분이 접혀 있고,
-        // 한컴 저장 lineseg 도 그 접힌 폭으로 담는다(실측: 41자 전진폭 38613 HU ≤ horzsize 38640).
-        // 음수를 그대로 빼면 `w - (-x) = w + x` 라 후보가 |자간| 만큼 **넓어져** 판정만 엄격해진다
-        // (13pt·−8% 에서 +103 HWPUNIT). 실제 부족분은 21~30 HU 였고, 이 한 항 때문에 줄마다
-        // 마지막 한 글자가 다음 줄로 밀렸다(문서 전체 줄 284 → 290).
-        // 자간 ≥ 0 이면 `max(0)` 은 항등이라 종전 동작이 그대로다.
-        .map(|spacing| to_hwp(*spacing).max(0))
+        .map(|spacing| to_hwp(*spacing))
         .unwrap_or(0)
 }
 
@@ -3441,7 +3434,7 @@ pub(crate) fn reflow_line_segs(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false);
+    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false, true);
 }
 
 /// 셀 분할로 저장 폭이 stale해진 문단을 다시 조판한다.
@@ -3456,7 +3449,7 @@ pub(crate) fn reflow_line_segs_after_cell_split(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, true);
+    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, true, true);
 }
 
 /// 저장 LINE_SEG가 유효한 셀 텍스트 편집은 수정된 줄 이전의 경계를 그대로 둔다.
@@ -3479,7 +3472,23 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
         dpi,
         Some(edit_char_offset),
         false,
+        true,
     )
+}
+
+/// 저장 `LINE_SEG` 사다리가 배치 권위를 갖는 구역의 합성 문단을 재조판한다.
+///
+/// [#2243] 익명화·부분 편집으로 저장 seg 가 빠진 문단이 저장 문단들 사이에 끼어 있는
+/// 문서다. 개체만 있는 줄의 줄간격 기준을 글자모양 크기로 올리면(한컴 규칙) 그 구역의
+/// 절대 vpos 스냅과 맞물려 쪽 경계 여유를 넘긴다 — 한컴 쪽수 핀이 어긋난다. 이런 구역은
+/// 종전 기준(12px)을 유지한다. 전면 합성 문서는 `reflow_line_segs` 를 쓴다.
+pub(crate) fn reflow_line_segs_in_stored_section(
+    para: &mut Paragraph,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false, false);
 }
 
 fn reflow_line_segs_impl(
@@ -3489,6 +3498,7 @@ fn reflow_line_segs_impl(
     dpi: f64,
     preserve_prefix_for_edit: Option<usize>,
     split_stale_cell_reflow: bool,
+    object_line_font_basis: bool,
 ) -> bool {
     // An impossible box publishes nothing, and this must be the first thing
     // that happens — before the memo invalidation below, which is already a
@@ -3606,7 +3616,17 @@ fn reflow_line_segs_impl(
             // line_height 에만 반영하고 spacing 은 글자 높이로 계산한다(정답지 개체 줄 18/18:
             // 165%·14pt 문단의 표 줄 spacing 912 = 1400×0.65, 160%·10pt 문단의 그림 줄 600 = 1000×0.6).
             // 0.0 을 넘기면 내부 기본 12px(900 HU)로 떨어져 585 가 되고, 쪽마다 327 HU 씩 덜 쌓인다.
-            let paragraph_font_px = paragraph_font_size_px(para, styles).unwrap_or(12.0);
+            //
+            // 🔴 저장 LINE_SEG 사다리가 배치 권위를 갖는 구역(`object_line_font_basis == false`)에서는
+            // 종전 기준(0.0 → 12px)을 그대로 둔다. 그 구역의 합성 문단은 저장 문단들 사이에 끼어
+            // 절대 vpos 스냅과 맞물리므로, 한컴 값으로 올리면 쪽 경계 여유(실측 1~114 HU)를 넘겨
+            // 한컴 쪽수 핀이 어긋난다(`issue_2243`·`oracle_page_count_baseline`). 전면 합성 문서
+            // (붙여넣기·hwpjson·생성계)에는 스냅 상대가 없어 이 값이 곧 한컴 조판이 된다.
+            let paragraph_font_px = if object_line_font_basis {
+                paragraph_font_size_px(para, styles).unwrap_or(12.0)
+            } else {
+                0.0
+            };
             for (line_idx, (start_pos, _line_width, height_hwp)) in
                 line_specs.into_iter().enumerate()
             {
