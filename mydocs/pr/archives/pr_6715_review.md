@@ -124,6 +124,31 @@ candidate SHA에 대해 다음 workflow가 성공했다.
 - 이 PR은 `pr/report`만 처리한다. #6711은 Stage 3 `working` batch와 Stage 4 전수 감사·최종 보고가
   끝날 때까지 close하지 않는다.
 
+## Merge 후 contributor PR comment 계획
+
+이 절이 `devel`에 반영된 뒤 [PR #6715](https://github.com/edwardkim/rhwp/pull/6715)와
+[이슈 #6711](https://github.com/edwardkim/rhwp/issues/6711)에 다음 사실을 후속 comment로 남긴다.
+
+- 정상 merge commit
+  [`c9cc1f7fc77b43acc533b066897c01861b713059`](https://github.com/edwardkim/rhwp/commit/c9cc1f7fc77b43acc533b066897c01861b713059)으로
+  병합됐고, 검증 head `e71758c7e19923b35f79881fd28d970332113304`가 `devel`에 포함됐다.
+- exact-head [Full CI](https://github.com/edwardkim/rhwp/actions/runs/33860743628),
+  [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/33860743626),
+  [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/33860743581),
+  [Proptest](https://github.com/edwardkim/rhwp/actions/runs/33860743585),
+  [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/33860743021)가 모두 성공했다.
+- controller는 830건 rename을 `fail-closed:rename`으로 분류해 Full lane을 선택했고, Full CI의
+  `Frontend package gates`도 6분 57초에 성공했다.
+- 로컬 재검증은 canonical 링크 오류 0, cutoff 이전 `pr/report` root 문서 0, 동일본 삭제 2건의
+  SHA-256 일치, source·workflow 범위 누출 0을 확인했다. changed-file 링크 5건과 metadata 16건은
+  기존 보고서에 기록된 동일 기준선 오류다.
+- 코드·renderer·UI·sample·PDF bytes 변경이 없어 시각 검증은 비대상이다.
+- #6711은 Stage 3 `working` batch와 Stage 4 전수 감사·최종 보고가 남아 있으므로 OPEN으로 유지하고,
+  다음 작업은 최신 `devel`에서 Stage 3 전용 브랜치를 만드는 것이다.
+
+같은 merge commit과 증적을 이미 담은 maintainer comment가 있으면 중복 게시하지 않는다. 이 문서 보완
+PR 자체에는 원 PR comment와 이슈 진행 comment를 반복하지 않는다.
+
 ## 최종 판정과 다음 조건
 
 - 판정: **승인**
