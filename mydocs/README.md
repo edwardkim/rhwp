@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/README.md
-last_verified: 2026-09-03
+last_verified: 2026-09-04
 ---
 
 # rhwp 문서 지도와 canonical manifest
@@ -45,6 +45,11 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 `tech/domains`, `tech/decisions` 같은 빈 분류 계층은 만들지 않았다. 루트 문서 지도와 front matter만으로
 권위 관계가 분명한 문서는 기존 안정 경로를 유지한다. 이후 이동도 파일명 패턴이 아니라 내용과 참조
 비용을 확인한 독립 커밋으로 수행한다.
+
+이 원칙은 역할·권위 관계를 바꾸는 **정보구조 재분류**에 적용한다. 반면 `orders`, `plans`, `pr`,
+`report`, `working`의 root가 무한히 커지는 것을 막는 **월별 작업 증적 아카이빙**은 문서 역할을
+바꾸지 않는 별도 생명주기 절차다. 그 대상·경계·충돌·링크·검증 규칙은
+[문서·Git 워크플로](manual/codex/docs_and_git_workflow.md#monthly-archive-governance)를 따른다.
 
 ## Canonical manifest
 
@@ -99,6 +104,11 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 갱신하고, 외부 이력 호환이 필요한 옛 경로만 같은 commit의 redirect stub으로 남긴다. 기존 문서를 매번
 자동 재검사하거나 migration 목록을 별도 파일에 하드코딩하지 않는다. 필요한 작업에서만
 [문서 링크와 메타데이터 로컬 검사 가이드](manual/markdown_link_check_guide.md)에 따라 검사한다.
+
+다섯 작업 증적 폴더의 월별 archive 이동은 역할·현행성을 바꾸는 재분류가 아니므로 redirect stub을
+남기지 않는다. 당월 root와 이전 기록의 `archives/`를 구분하되, 경로를 이슈·PR 완료 상태로 해석하지
+않는다. 반복 실행과 차등 검증의 정본은
+[월별 아카이브 거버넌스](manual/codex/docs_and_git_workflow.md#monthly-archive-governance)다.
 
 이슈별 조사 문서는 `tech/investigations/issue-####/`에 두며, 이슈별 기준선이나 진단이 장기 기술
 계약으로 확정되면 해당 canonical 문서에 결론을 반영한다.

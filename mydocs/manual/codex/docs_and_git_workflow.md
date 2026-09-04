@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-09-03
+last_verified: 2026-09-04
 ---
 
 # Documentation And Git Workflow
@@ -60,12 +60,16 @@ mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
 
 ## Folder Roles
 
-- `mydocs/orders/`: 오늘할일
-- `mydocs/orders/archives/`: 전월 이전 오늘할일 보관 — 매월 초 전월분을 이동하고 당월분만 루트에 유지
-- `mydocs/plans/`: 수행 계획서, 구현 계획서
-- `mydocs/plans/archives/`: 완료된 계획서 보관 (merge 후 정리 시 이동)
-- `mydocs/working/`: 단계별 완료 보고서
-- `mydocs/report/`: 최종 보고서
+- `mydocs/orders/`: 당월 오늘할일
+- `mydocs/orders/archives/`: 이전 달 오늘할일 보관
+- `mydocs/plans/`: 당월 수행 계획서, 구현 계획서
+- `mydocs/plans/archives/`: 이전 달 또는 역할별 절차에서 먼저 정리한 완료 계획서 보관
+- `mydocs/pr/`: 당월 PR 검토 증적
+- `mydocs/pr/archives/`: 이전 달 또는 역할별 PR 후속 절차에서 먼저 정리한 검토 증적 보관
+- `mydocs/working/`: 당월 단계별 완료 보고서
+- `mydocs/working/archives/`: 이전 달 또는 역할별 후속 절차에서 먼저 정리한 단계별 보고서 보관
+- `mydocs/report/`: 당월 최종 결과보고서
+- `mydocs/report/archives/`: 이전 달 또는 역할별 후속 절차에서 먼저 정리한 최종 보고서 보관
 - `mydocs/feedback/`: 작업지시자 피드백, 코드 리뷰 의견
 - `mydocs/troubleshootings/`: 재발 방지용 문제 해결 기록
 - `mydocs/tech/`: 기술 조사와 스펙 정리
@@ -74,6 +78,78 @@ mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
 - `mydocs/manual/codex/`: Codex 부트스트랩과 현행 문서·Git 절차. 종료 세션 자료는 `archive/`에 보존
 - 저장소 루트 `docs/`는 사용하지 않는다. 장기 기술 문서는 `mydocs/tech/`, 운영 절차는
   `mydocs/manual/`, 타스크 증적은 위 생명주기별 경로에 둔다.
+
+## Monthly Archive Governance
+
+### 목적과 의미
+
+`orders`, `plans`, `pr`, `report`, `working`의 직접 하위는 최근 문서를 빠르게 찾기 위한 **당월
+작업 집합**이다. 각 `archives/`는 완료·폐기 상태가 아니라 작업 집합에서 빠진 기록의 **보관
+위치**다. 따라서 archive 이동만으로 GitHub 이슈·PR을 닫거나 문서의 의미를 `historical`로
+바꾸지 않는다.
+
+역할별 절차가 merge·review 후 같은 달 문서를 먼저 archive로 옮기는 기존 규칙은 유지한다.
+월별 정리는 그 절차에서 옮기지 않은 문서도 다음 달까지 root에 무한 누적되지 않게 하는 상한이다.
+
+### 시점과 대상 판정
+
+1. 매월 첫 유지보수 구간에 전월까지 생성된 문서를 정리한다. 경계는 `Asia/Seoul` 기준 당월
+   1일 00:00 미만이다.
+2. 다섯 대상 디렉터리의 **직접 하위 `*.md`만** 검사한다. assets·evidence·주제별 중첩
+   디렉터리는 월별 일괄 이동 대상이 아니다.
+3. 생성일은 filesystem mtime이 아니라 Git에서 그 경로가 최초 도입된 commit의 author
+   timestamp로 판정한다. clone·checkout 시각은 근거로 쓰지 않는다.
+4. `git log --diff-filter=A`로 추가 commit이 나오지 않는 merge 유입 경로는 전체 이력에서 그
+   경로가 처음 존재한 commit을 근거로 삼는다. Git 근거가 없는 파일은 자동 추정하지 않고 예외로
+   보고한다.
+5. 이전 달에 생성된 열린 이슈·PR의 문서도 이동한다. 후속 작업은 archive 경로에서 계속하며,
+   이 이동을 근거로 이슈·PR 상태를 바꾸지 않는다.
+
+### 충돌과 링크 보존
+
+- 목적지 파일이 없으면 basename을 유지해 같은 역할의 `archives/`로 이동한다.
+- 목적지가 있고 SHA-256이 같으면 기존 archive를 보존하고 root의 byte-identical 중복만 제거한다.
+- 목적지가 있지만 내용이 다르면 **절대 덮어쓰지 않는다**. root 문서는
+  `<stem>_archived_<YYYYMMDD>_<blob7>.md`로 옮기고 두 경로·hash를 충돌 원장에 기록한다.
+- 저장소 내부 Markdown 링크는 이전 source 위치에서 해석한 실제 target을 기준으로 새 상대 경로를
+  계산하여 이동과 같은 commit에서 갱신한다. 단순 문자열 치환으로 같은 basename의 다른 문서를
+  연결하지 않는다.
+- 대량 월별 이동에는 root를 다시 채우는 redirect stub을 만들지 않는다. 현재 branch 경로를 쓰는
+  중요한 외부 링크가 확인되면 해당 링크나 별도 canonical index를 정정한다.
+
+### 탐색 규칙
+
+- 당월 작업을 훑을 때는 각 root의 직접 하위 문서를 우선한다.
+- 특정 이슈·PR, 과거 결정, 원인 계보를 조사할 때는 root와 `archives/`를 함께 검색한다.
+- 파일이 root에 없다는 사실을 작업 미수행·완료·삭제의 근거로 사용하지 않는다. GitHub 상태와
+  root/archive 양쪽의 증적을 확인한다.
+
+### 월별 감사와 변경 제출
+
+월별 정리는 독립 task와 commit으로 수행하고 다음 증적을 계획·단계 보고서에 남긴다.
+
+1. 기준 branch SHA, 시간 경계, 폴더별 root·후보·유지 수
+2. old/new path, 최초 도입 commit/time, 이동 전 SHA-256을 재현할 수 있는 판정 방법
+3. 동일 중복과 divergent 충돌 원장
+4. 이동 전후 유효·무효 내부 링크 집합과 신규 오류 수
+5. cutoff 이전 direct Markdown 잔여 수
+6. rename-aware 변경 파일 수와 add/delete로 보수적으로 센 변경 경로 수
+
+GitHub REST의 pull request file 목록은 최대 3,000개이므로, CI가 이 목록으로 변경 범위를 분류하는
+동안에는 대량 이동 PR을 안전한 크기의 순차 batch로 나눈다. 후속 batch는 앞 batch가 반영된 최신
+`upstream/devel`에서 시작한다. batch 때문에 자식 이슈를 만들 필요는 없다.
+
+문서 전용 batch의 기본 검증은 다음과 같다.
+
+```bash
+git diff --check
+python3 scripts/check_markdown_links.py
+python3 scripts/check_document_metadata.py
+```
+
+기존 historical 문서 오류가 있으면 단순 exit code만으로 판정하지 않고 이동 전 기준선과 결과 집합을
+비교해 **신규 오류 0건**을 증명한다. Rust source·test, Cargo, WASM 또는 workflow를 바꾸지 않은
+문서 이동에는 해당 빌드 게이트를 추가하지 않는다.
 
 ## Issue Workflow
 
