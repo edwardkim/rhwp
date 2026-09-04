@@ -3,7 +3,7 @@
 - 원 PR: [#6721](https://github.com/edwardkim/rhwp/pull/6721)
 - 기여자: `planet6897`
 - 원본 head: `75ef75522844bb52b7831ac6d9fa5b1a129148b2`
-- 통합 적용 commit: `8a6a52775`
+- 통합 적용 commit: `0832523dd3ab19093fb44f39f2ffcb29dd8a5d72`
 
 ## 판정: 메인터너 보정 됨 수용 가능
 
@@ -23,7 +23,9 @@
 
 ## 실제 검증
 
-최종 통합 head에서 다음 targeted control과 전체 회귀를 완료했다.
+`upstream/devel` rebase 전 통합 후보에서 다음 targeted control과 전체 회귀를 완료했다. 이 PR
+head는 그 뒤 최신 `upstream/devel` 위로 rebase됐으므로, 병합 판정에는 PR CI 결과를 별도로
+사용한다.
 
 ```text
 # native HWP5 source/adjacent controls

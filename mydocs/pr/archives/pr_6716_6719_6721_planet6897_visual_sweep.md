@@ -6,9 +6,9 @@
 전체 문서의 pixel-perfect 일치 또는 전체 페이지 충실도를 선언하는 visual sweep은 아니다.
 
 - 통합 브랜치: `review/planet6897-green-ci-batch-20260904`
-- source 적용: #6716 `77cb4ed2`, #6719 `70f71aced`, #6721 `8a6a52775`
-- 메인터너 보정: 공식 fixture 등록 `5315343e2`, native HWP5 zero-vpos 범위 축소 `5bc1c4e8b`
-- 최종 코드 검증: `9016 tests run: 9016 passed (3 slow, 1 leaky), 46 skipped`
+- source 적용: #6716 `8b183f656e3e14d54d2aa7d83a969718253a4645`, #6719 `b8411986b2afca9546c063088a2e696fd42742c1`, #6721 `0832523dd3ab19093fb44f39f2ffcb29dd8a5d72`
+- 메인터너 보정: 공식 fixture 등록 `bcb2f4724017aa19061a84bba7aa58a579e72048`, native HWP5 zero-vpos 범위 축소 `1d907326003c7d1e8330b1dc4e7dc65ce8f08b60`
+- rebase 전 코드 검증: `9016 tests run: 9016 passed (3 slow, 1 leaky), 46 skipped`; 현재 PR head는 최신 `upstream/devel` rebase 뒤 CI로 검증한다.
 
 ## #6716: 80550 셀 내부 중첩 표의 `vertOffset`
 
@@ -40,8 +40,8 @@
 - [rhwp 후보 PNG](../assets/pr_6719_planet6897_20260904/rhwp-p18.png): `620ddf6de6911e7bf93ee1c31a95b7835c2f0ebe1eaf0703090ad657583ab1a2`
 - [rhwp 후보 PDF](../assets/pr_6719_planet6897_20260904/rhwp-3-09월_교육_통합_2023.pdf): `438d1a3cf28fbe4023c2eaf50fe7c396d526852f84d327ff6d1c60defc624593`
 
-최종 통합 head에 대해서는 해당 source regression을 포함한 전체 9,016건 회귀가 통과했다. 이
-문서는 이전 후보 PNG/PDF를 최종 head 산출물로 오기하지 않는다.
+rebase 전 통합 후보에서는 해당 source regression을 포함한 전체 9,016건 회귀가 통과했다. 이
+문서는 이전 후보 PNG/PDF를 현재 PR head 산출물로 오기하지 않는다.
 
 ## #6721: native HWP5 `vpos == 0` 되감김
 
@@ -64,4 +64,5 @@
 이 기록은 `export-png` 또는 `export-svg`를 최종 시각 oracle로 사용하지 않는다. 현재 두 export
 결과가 `rhwp-studio` 화면 렌더와 다르게 동작하는 known discrepancy가 있어, 그 결과로 최종 통합
 head의 시각 정합을 주장하면 안 된다. 여기의 asset은 source/후보 증적의 provenance를 보존하고,
-최종 통합의 실행 보증은 targeted control과 전체 회귀 결과로 한정한다.
+rebase 전 통합 후보의 실행 보증은 targeted control과 전체 회귀 결과로 한정하며, 현재 PR head는
+CI 결과로 판정한다.

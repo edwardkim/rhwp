@@ -3,18 +3,20 @@
 - 원 PR: [#6719](https://github.com/edwardkim/rhwp/pull/6719)
 - 기여자: `planet6897`
 - 원본 head: `78f8a5938eef60afbbb8022729cf6620fa92c615`
-- 통합 적용 commit: `70f71aced`
+- 통합 적용 commit: `b8411986b2afca9546c063088a2e696fd42742c1`
 - 원 PR의 closing reference: `Fixes #6550`
 
 ## 판정: 승인
 
 원 변경은 endnote 제목의 저장 `vpos`가 직전 note tail보다 위에 있을 때 제목을 위로 snap시키지
 않도록 하며, 정상 간격(`<= 1984HU`)과 정상 tail 범위만 보정한다. 대상 범위와 제외 범위가
-명시되어 있고, 최종 통합 회귀에서도 통과했다.
+명시되어 있고, rebase 전 통합 후보 회귀에서도 통과했다. 현재 PR head의 병합 판정에는 PR CI
+결과를 별도로 사용한다.
 
 ## 실제 검증
 
-최종 통합 head에서 다음 전체 회귀를 완료했다.
+`upstream/devel` rebase 전 통합 후보에서 다음 전체 회귀를 완료했다. 이 PR head는 그 뒤 최신
+`upstream/devel` 위로 rebase됐으므로, 병합 판정에는 PR CI 결과를 별도로 사용한다.
 
 ```text
 cargo nextest run --locked --cargo-profile release-test \

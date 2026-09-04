@@ -3,7 +3,7 @@
 - 원 PR: [#6716](https://github.com/edwardkim/rhwp/pull/6716)
 - 기여자: `planet6897`
 - 원본 head: `4162fe46dbaf4f809a9fd747cdc23364f5d61672`
-- 통합 적용 commit: `77cb4ed2`
+- 통합 적용 commit: `8b183f656e3e14d54d2aa7d83a969718253a4645`
 
 ## 판정: 메인터너 보정 됨 수용 가능
 
@@ -22,7 +22,8 @@
 
 ## 실제 검증
 
-최종 통합 head에서 다음 전체 회귀를 완료했다.
+`upstream/devel` rebase 전 통합 후보에서 다음 전체 회귀를 완료했다. 이 PR head는 그 뒤 최신
+`upstream/devel` 위로 rebase됐으므로, 병합 판정에는 PR CI 결과를 별도로 사용한다.
 
 ```text
 cargo nextest run --locked --cargo-profile release-test \
