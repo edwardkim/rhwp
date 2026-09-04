@@ -3,11 +3,14 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use rhwp::model::control::Control;
 use rhwp::model::header_footer::HeaderFooterApply;
 use rhwp::model::style::Alignment;
 use rhwp::wasm_api::HwpDocument;
+
+static TEMP_SERIAL: AtomicU64 = AtomicU64::new(0);
 
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
@@ -22,12 +25,13 @@ fn sample() -> String {
 
 fn temp(tag: &str) -> PathBuf {
     std::env::temp_dir().join(format!(
-        "rhwp-hfpfmt-{tag}-{}-{}.hwp",
+        "rhwp-hfpfmt-{tag}-{}-{}-{}.hwp",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
-            .as_nanos()
+            .as_nanos(),
+        TEMP_SERIAL.fetch_add(1, Ordering::Relaxed),
     ))
 }
 

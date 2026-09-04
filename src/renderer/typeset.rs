@@ -3411,6 +3411,17 @@ fn hwpx_stored_tac_table_starts_at_page_top(
     stored_h >= body_available * 0.5 && current_height + stored_h > body_available
 }
 
+/// [#5941 축 B] `#5921` 완화를 걸어도 되는 쪽인가 — **지금 쪽이 사실상 비어 있는가**.
+///
+/// 리셋을 지켰을 때 거의 빈 쪽이 남는 형상에서는 한/글도 쪼개지 않는다. 반대로 쪽이 이미
+/// 차 있으면 저장 리셋이 이긴다(아래 `native_near_top_reset` 결합부 주석 참조).
+const NEAR_TOP_RESET_EMPTY_PAGE_FILL_RATIO: f64 = 0.10;
+
+fn near_top_reset_page_is_barely_started(current_height: f64, available_height: f64) -> bool {
+    available_height > 0.0
+        && current_height <= available_height * NEAR_TOP_RESET_EMPTY_PAGE_FILL_RATIO
+}
+
 /// [#5921] stored near-top 리셋이 이번 쪽 잔여를 넘는가.
 ///
 /// `native_near_top_reset` 은 저장 vpos≈sb 만 보고 쪽을 가른다. 잔여에
@@ -7683,13 +7694,37 @@ impl TypesetEngine {
                         && !has_table_control
                         && para_has_visible_text(para)
                         && prev_vpos_end > 60_000
-                        && native_near_top_reset_exceeds_remaining(
-                            para,
-                            para_sb_hu_for_reset,
-                            st.current_height,
-                            st.available_height(),
-                            self.dpi,
-                        );
+                        // [#5941 축 B] `#5921` 의 완화("이번 쪽 잔여에 들어가면 저장
+                        // near-top 리셋을 버린다")를 **네이티브 HWP5 저장 조판 프로파일의
+                        // 이미 찬 쪽**에는 걸지 않는다. 그 프로파일에서 저장 사다리는 작성
+                        // 엔진의 쪽 배분 자체이고, "이번 잔여에 들어간다" 는 사실이 그
+                        // 기록을 이기지 못한다.
+                        //
+                        // 실측 — 완화가 필요한 문서는 전부 HWPX 컨테이너이거나, HWP5 라도
+                        // **쪽이 사실상 비어 있다**:
+                        //
+                        // ```text
+                        //   neartop_reset_sb2500.hwpx        hwpx   채움  2%   #5921 원 픽스처
+                        //   issue1880_anchor_stack_sb…hwpx   hwpx   채움 96%   #6063 핀
+                        //   hwp3-sample16-hwp5.hwpx          hwpx   채움 70~100%  off_canvas 래칫
+                        //   issue5701 …tac_reset_tail.hwp    hwp5   채움  6%   ← 빈 쪽 갈래
+                        //   1480000-201900698.hwp            hwp5   채움 74~100% ← 여기만 완화 금지
+                        // ```
+                        //
+                        // 그 마지막 문서는 완화 때문에 리셋 3개가 지워져 202 → 200 이 됐고
+                        // 한/글 2024(205)에서 더 멀어졌다(`#5941` 축 B bisect: `12074fbea`).
+                        && ((profile.hwp5_stored_pagination_layout()
+                            && !near_top_reset_page_is_barely_started(
+                                st.current_height,
+                                st.available_height(),
+                            ))
+                            || native_near_top_reset_exceeds_remaining(
+                                para,
+                                para_sb_hu_for_reset,
+                                st.current_height,
+                                st.available_height(),
+                                self.dpi,
+                            ));
                     let next_heading_after_top_content_reset =
                         paragraphs.get(para_idx + 1).is_some_and(|next_para| {
                             let next_sb_hu = styles
@@ -25365,8 +25400,23 @@ impl TypesetEngine {
             // 기존 각주가 이미 이 page의 body tail을 예약했으면 object frame만으로
             // whole row를 수용할 수 없다. 그 마지막 행의 cell-unit partial cut은
             // footnote-aware row scanner가 소유한다.
+            // [#5057] 이 허용치는 **저장된 첫 조각 source frame** 이 주는 것이고, 그
+            // 기록은 컨테이너(HWP5 / 직접 HWPX)와 무관하게 파일에 그대로 있다. 종전에는
+            // 네이티브 HWP5 프로파일에만 열려 있어, **같은 바이트**를 direct-HWPX 로 읽으면
+            // 마지막 행을 못 받아 표가 쪼개졌다.
+            //
+            // 21484591 실측 — `META-INF/rhwp-hwp5-origin` 만 뺀 사본과의 A/B:
+            //
+            // ```text
+            //   두 프로파일 모두  avail_for_rows = 523.4  (host_before·vert_off 동일)
+            //   hwp5    r=7 에서 sfwr=true  → consumed 528.8 (5.4px 초과 수용) → 8행 전부
+            //   direct  r=7 에서 sfwr=false → 7행에서 끊고 8행은 다음 단 → +1쪽
+            //   한/글 2024 = 13쪽 = hwp5    (direct 는 14쪽)
+            // ```
             let mut source_first_fragment_overflow_allowance = saved_first_fragment_source_frame
-                .filter(|_| st.profile.hwp5_stored_pagination_layout())
+                .filter(|_| {
+                    st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout()
+                })
                 .filter(|_| st.current_footnote_height <= 0.0)
                 .map(|(_, flow_bottom_px)| {
                     saved_rowbreak_first_fragment_flow_overflow_allowance(

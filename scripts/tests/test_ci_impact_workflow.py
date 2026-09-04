@@ -670,6 +670,29 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("npm --prefix rhwp-studio run test", package)
         self.assertIn("npm --prefix rhwp-studio run build", package)
 
+    def test_frontend_package_install_uses_cache_first_without_implicit_audit(self) -> None:
+        package = self._job("frontend-package-gates")
+        install = self._step("Install frontend package dependencies", package)
+
+        self.assertIn("timeout-minutes: 30", package)
+        expected_commands = [
+            f"npm --prefix {package_path} ci --no-audit --prefer-offline"
+            for package_path in (
+                "rhwp-studio",
+                "rhwp-chrome",
+                "rhwp-firefox",
+                "rhwp-vscode",
+            )
+        ]
+        actual_commands = [
+            line.strip()
+            for line in install.splitlines()
+            if line.strip().startswith("npm --prefix")
+        ]
+        self.assertEqual(expected_commands, actual_commands)
+        self.assertNotIn("--offline", install)
+        self.assertNotIn("--ignore-scripts", install)
+
     def test_rust_lint_and_archive_builder_require_rust_axis(self) -> None:
         lint = self._job("lint")
         self.assertIn("needs.preflight.outputs.rust_required == 'true'", lint)

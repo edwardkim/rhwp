@@ -1855,8 +1855,21 @@ impl HeightMeasurer {
                                         // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
                                         // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
                                         // 기존 포함 회계를 유지한다.
+                                        //
+                                        // [#6681] 그 예외에서 **글자 없이 개체만 담은
+                                        // 줄**은 뺀다. 그런 줄의 높이는 개체가 차지한
+                                        // 자리이고 뒤에 붙일 줄이 없다 — exam_science
+                                        // 4쪽 `자료` 칸의 마지막 문단이 그렇다
+                                        // (`text_len=0`, `lh=3037` = 안쪽 표 두 행
+                                        // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
+                                        // 들어가 아래 흐름이 통째로 6px 밀렸다.
+                                        // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
+                                        let last_line_is_object_only =
+                                            p.text.trim().is_empty() && !p.controls.is_empty();
                                         let include_trailing_ls = !is_cell_last_line
-                                            || (cell_para_count > 1 && table.common.treat_as_char);
+                                            || (cell_para_count > 1
+                                                && table.common.treat_as_char
+                                                && !last_line_is_object_only);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
@@ -2001,7 +2014,49 @@ impl HeightMeasurer {
                     } else {
                         0.0
                     };
-                    let additive = text_height + non_inline_h;
+                    // [#6660] 글자가 하나도 없는 문단의 줄은 그 개체를 담는 자리이지
+                    // 개체 아래에 따로 놓이는 글줄이 아니다. `text_height` 에 그 줄을
+                    // 넣고 `non_inline_h` 에 개체를 또 넣으면 같은 자리를 두 번 센다 —
+                    // exam_science 4쪽 r=4: `13.3 + 57.6 = 70.9` 로 재어 행이 65.9px,
+                    // 한/글은 61.0px(그림 57.6 + 여백 1.88×2).
+                    //
+                    // 바로 아래 `ladder_line_covers_object` 증인이 같은 것을 잡으려
+                    // 하지만 `줄 높이 >= 개체 높이` 를 요구해(13.3 < 56.3) 여기서는
+                    // 불발한다. 가르는 것은 줄 크기가 아니라 그 문단에 **글자가 있는가** 다.
+                    //
+                    // 개체가 **선언된 칸보다 클 때만** 적용한다. 칸 안에 들어가는
+                    // 개체는 그 줄과 나란히 쌓이므로 둘 다 세는 것이 맞다 —
+                    // `issue6312` 의 기관명 칸(선언 39.9px, 그림 36.1px)이 그렇고,
+                    // 거기서 빼면 뒤 문단이 한/글(360.1px)에서 6.8px 더 멀어진다.
+                    // 개체가 칸을 넘으면 행이 개체에 맞춰 커지고 그 줄은 개체가
+                    // 차지한 자리 안에 든다 — exam_science 4쪽(선언 37.9px,
+                    // 그림 56.3px)이 그 경우다.
+                    //
+                    // 문단이 하나뿐인 셀에만 적용한다. 뒤에 문단이 더 있으면 그 줄은
+                    // 뒤 내용을 개체 아래로 밀어 내리는 몫을 한다.
+                    let declared_cell_h = if cell.height < 0x8000_0000 {
+                        hwpunit_to_px(cell.height as i32, self.dpi)
+                    } else {
+                        f64::INFINITY
+                    };
+                    let empty_para_line_height: f64 = cell
+                        .paragraphs
+                        .iter()
+                        .filter(|_| cell.paragraphs.len() == 1 && non_inline_h > declared_cell_h)
+                        .filter(|pp| {
+                            pp.text.trim().is_empty() && pp.controls.iter().any(|c| {
+                                matches!(c, Control::Picture(pic) if !pic.common.treat_as_char)
+                                    || matches!(c, Control::Shape(sh) if !sh.common().treat_as_char)
+                            })
+                        })
+                        .map(|pp| {
+                            pp.line_segs
+                                .iter()
+                                .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
+                                .sum::<f64>()
+                        })
+                        .sum();
+                    let additive = (text_height - empty_para_line_height).max(0.0) + non_inline_h;
                     // trust 는 "저장 ladder 가 개체 밀림을 이미 반영한" 셀에만 —
                     // 증거: 텍스트-빈 문단의 첫 seg vpos > 0 (줄이 개체 아래로 밀림).
                     // 반례 캘리브: KTX TOC(개체 없음 — additive 가 한컴 쪽),
@@ -2724,8 +2779,21 @@ impl HeightMeasurer {
                                         // 측정)을 낳았다. TAC(글자처럼) 표의 다문단 셀은
                                         // [Task #874/#1086] 보존 핀(KTX TOC 등)을 위해
                                         // 기존 포함 회계를 유지한다.
+                                        //
+                                        // [#6681] 그 예외에서 **글자 없이 개체만 담은
+                                        // 줄**은 뺀다. 그런 줄의 높이는 개체가 차지한
+                                        // 자리이고 뒤에 붙일 줄이 없다 — exam_science
+                                        // 4쪽 `자료` 칸의 마지막 문단이 그렇다
+                                        // (`text_len=0`, `lh=3037` = 안쪽 표 두 행
+                                        // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
+                                        // 들어가 아래 흐름이 통째로 6px 밀렸다.
+                                        // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
+                                        let last_line_is_object_only =
+                                            p.text.trim().is_empty() && !p.controls.is_empty();
                                         let include_trailing_ls = !is_cell_last_line
-                                            || (cell_para_count > 1 && table.common.treat_as_char);
+                                            || (cell_para_count > 1
+                                                && table.common.treat_as_char
+                                                && !last_line_is_object_only);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
