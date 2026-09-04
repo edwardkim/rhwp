@@ -1,0 +1,16 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6718,
+  "title": "네이티브 HWP5 vpos 0 되감김 쪽 경계",
+  "entries": [
+    {
+      "path": "samples/issue6718/27469-child-allowance-retroactive-support.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "#6718에서 식별한 27469 양육수당 및 아동수당 소급지원 요청(의견표명) 원본",
+      "bytes": 54784,
+      "sha256": "f619b8745d179562755e767307a3728dc7f8952fe70d376fbfe28aaf77ff66d7",
+      "contract": "네이티브 HWP5 문단 안 vpos 0 되감김이 쪽 하단에서 발생하면 저장 사다리에 따라 쪽 경계로 적용됨"
+    }
+  ]
+}

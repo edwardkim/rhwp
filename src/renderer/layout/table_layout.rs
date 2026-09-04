@@ -139,6 +139,32 @@ fn cell_is_page_split_candidate(
         && hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, dpi) >= PAGE_SCALE_CELL_HEIGHT_PX
 }
 
+/// [#6697] 칸 안 **문단 기준 자리차지** 중첩 표가 호스트 문단 상단에서 내려앉는 몫.
+///
+/// 본문 경로는 이 오프셋을 앵커 y 에 더하는데(`#6104`) 셀 경로는 한 번도 읽지 않아
+/// 표가 호스트 줄과 같은 y 에 놓였다(80550 30쪽: 지시 +40.8px, rhwp 0 — 한/글이
+/// 31쪽으로 넘기는 표를 30쪽 바닥에 밀어 넣는다).
+///
+/// ⚠ `vertical_offset` 은 `u32` 에 담긴 **부호 있는** 값이다(`4294944683` = −22613HU).
+/// `signed_hwpunit` 없이 `> 0` 을 보면 음수가 통과해 표가 위로 튄다(3184241 −301.5px).
+///
+/// ⚠ 범위는 **자리차지(TopAndBottom)** 로만 좁힌다. 글 앞/뒤 overlay 표는 세로 배치
+/// 계약이 따로 있고, 그쪽까지 먹이면 편람 1×1 안내 상자가 본문 글자 위로 내려앉는다
+/// (`text_overlap` 18 → 22).
+pub(crate) fn para_relative_float_table_lead(table: &crate::model::table::Table, dpi: f64) -> f64 {
+    if table.common.treat_as_char
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+    {
+        return 0.0;
+    }
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    if offset <= 0 {
+        return 0.0;
+    }
+    hwpunit_to_px(offset, dpi)
+}
+
 fn has_initial_tac_shape_host(paragraphs: &[Paragraph]) -> bool {
     paragraphs.first().is_some_and(|para| {
         para.text.trim().is_empty()
@@ -6414,6 +6440,11 @@ impl LayoutEngine {
                                 && row_filter.is_some()
                                 && table.row_count == 1
                                 && table.col_count == 1;
+                        // [#6697] 문단 기준 자리차지 중첩 표는 문서가 지시한 `vertOffset`
+                        // 만큼 호스트 문단 아래로 내려가야 한다. 셀 경로는 그 값을 한 번도
+                        // 읽지 않아 표가 호스트 줄과 같은 y 에 놓였다.
+                        let nested_y =
+                            nested_y + para_relative_float_table_lead(nested_table, self.dpi);
                         let nested_y = if single_row_continuation || hwp5_rowbreak_fragment {
                             nested_y
                         } else {
@@ -9501,6 +9532,13 @@ impl LayoutEngine {
                 }
             };
         for (pi, p) in cell.paragraphs.iter().enumerate() {
+            // [#6697] 문단 기준 자리차지 중첩 표의 `vertOffset` 몫은 **호스트가 칸의
+            // 마지막 문단일 때만** 흐름 계상에 싣는다. 뒤에 형제 문단이 있으면 한/글은
+            // 그 몫으로 뒷내용을 밀지 않는다 — 밀면 59043 p36 의 `□ 편익` 이 p37 로
+            // 넘어간다(한/글 2024 오라클은 `②피규제 이외 일반국민` 과 같은 쪽).
+            // 마지막 문단이면 그 몫은 칸 내용 하단을 늘릴 뿐이라 80550 의 잘린
+            // 표 꼬리(`총편익`·`연간균등순비용` 59자)가 살아난다.
+            let host_is_cell_last_para = pi + 1 == cell.paragraphs.len();
             let is_block_rowbreak = matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
@@ -10521,6 +10559,11 @@ impl LayoutEngine {
                     .map(|ctrl| {
                         if let Control::Table(t) = ctrl {
                             self.calc_nested_table_height(t, styles)
+                                + if host_is_cell_last_para {
+                                    para_relative_float_table_lead(t, self.dpi)
+                                } else {
+                                    0.0
+                                }
                         } else {
                             0.0
                         }
@@ -10733,6 +10776,11 @@ impl LayoutEngine {
                     .map(|ctrl| {
                         if let Control::Table(t) = ctrl {
                             self.calc_nested_table_height(t, styles)
+                                + if host_is_cell_last_para {
+                                    para_relative_float_table_lead(t, self.dpi)
+                                } else {
+                                    0.0
+                                }
                         } else {
                             0.0
                         }
