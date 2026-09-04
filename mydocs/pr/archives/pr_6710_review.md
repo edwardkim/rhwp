@@ -1,64 +1,88 @@
-# PR #6710 검토 - 출처 표식과 무관한 첫 조각 초과 허용치
+---
+kind: pr-review
+pr: 6710
+reviewed_at: 2026-09-04
+source_head: 4a1eb7c27552dd9dd619a9aef1b9aaaf997a6fdb
+maintainer_correction: bc7baa359
+---
 
-## 메타데이터
+# PR #6710 검토 - 저장 첫 조각의 source-frame allowance
 
-| 항목 | 값 |
+## 판정: 메인터너 보정 후 수용 가능
+
+**보정 상태: 메인터너 보정 완료.** 원 PR `#6710`은 저장된 첫 조각의 초과 허용치를
+origin marker 유무가 아니라 source-frame 계약으로 적용하도록 `typeset` 처리를
+보정한다. 원 PR head `4a1eb7c27552dd9dd619a9aef1b9aaaf997a6fdb`는 현재 통합 후보에
+다음 commit으로 체리픽되어 있다.
+
+| 구분 | 통합 후보 commit |
 | --- | --- |
-| 원 PR | [#6710](https://github.com/edwardkim/rhwp/pull/6710) |
-| 작성자 | `planet6897` |
-| base / 원 head | `devel` / `4a1eb7c27552dd9dd619a9aef1b9aaaf997a6fdb` |
-| 통합 브랜치 | `review/green-ci-batch-20260904-full` |
-| 적용 commit | `c340bd7a8`, `61cd71fb9` (`-x`) |
-| 메인터너 보정 | `872f3d4c5` 및 정식 fixture 등록 후속 commit |
-| 관련 이슈 | [#5057](https://github.com/edwardkim/rhwp/issues/5057) |
+| source-frame allowance 보정 및 회귀 테스트 | `c340bd7a8` |
+| 전·후 PNG 보고 자료 | `61cd71fb9` |
+| 정식 fixture 등록 메인터너 보정 | `bc7baa359` |
 
-## 검토 결과
+## 검토 범위
 
-- reviewer `jangster77`을 지정했고 원 head required CI는 선정 시 성공 또는 정책상 skip이었다.
-- 저장된 첫 조각 source frame 허용치를 native HWP5와 direct-HWPX 저장 조판 경로 모두에
-  적용하고, 기존 페이지 수 차이를 매개로 하던 `#4658` 계약도 별도 차이 입력으로 유지한다.
-- source PNG는 참고 자료일 뿐 통합 head 시각 증적이 아니다.
-- 기존 private-path 탐색과 export/ZIP 오류 성공 처리를 제거한다. 원본 HWP는
-  `samples/issue5057/`에 SHA-256 manifest와 함께 등록하고 모든 fixture 발견 뒤 오류는 실패한다.
-- 통합 head의 lint, test, 시각 검증은 아직 실행하지 않았다.
+- `src/renderer/typeset.rs`에서 저장 첫 조각 allowance의 적용 조건을 origin marker와
+  분리한다.
+- `issue_4658_ir_diff_pagecount`와
+  `issue_5057_profile_agnostic_source_frame_allowance` 회귀 계약이 함께 수정됐다.
+- 원 PR의 required `Build & Test`는 2026-09-04 조회 시 성공이었다.
+  [Checks](https://github.com/edwardkim/rhwp/pull/6710/checks)
 
-## 최종 판정
+## 메인터너 보정
 
-- 판정: **메인터너 보정 후 수용 가능**
-- 원 head: private fixture와 export/ZIP 오류를 엄격히 검증하지 못한다.
-- 보정 뒤 통합 head: 정식 fixture와 fail-closed 테스트를 포함한다.
-- 수용 전 조건: 통합 Rust 검증 및 HWP5/direct-HWPX의 페이지·표 영역 직접 시각 증적.
-- 원격 조치: 수행하지 않았다.
+원 회귀 테스트는 비공개 Windows 경로와 환경 변수로 sample을 찾고, 자료가 없으면
+성공처럼 반환했다. 메인터너 보정 `bc7baa359`로 다음을 완료했다.
 
-## 2026-09-04 통합 검증 갱신
+- 원본을 `samples/issue5057/21484591-gimcheon-sewage-ordinance.hwp`로 정식 sample로
+  등록했다.
+- `MANIFEST.json`, `README.md`, `.gitattributes`로 공개 fixture 계약을 명시했다.
+- 테스트가 저장소 sample을 반드시 읽도록 바꾸고 private-path 탐색과 silent skip을
+  제거했다.
 
-### 정식 fixture 전환
+## 전·후 PNG의 실제 범위
 
-- 비공개 Windows 경로와 환경 변수 탐색을 제거했다.
-- 검증 입력은 `samples/issue5057/21484591-gimcheon-sewage-ordinance.hwp`로 고정했다.
-- 원본 SHA-256은 `87ac4934e661fd0e177d35f355030bff26d2b764bc25b0ccf69aa7cc66f6dfc7`이며, `rhwp info --json` 기준 한컴오피스 2010 저장본, 논리 13쪽, `printMethod=4` N-up 문서다.
+`mydocs/report/5057-origin-marker-profile/before_p7.png`와 `after_p7.png`는
+renderer 변경 전후를 보여 주는 보조 보고 자료다. 이 두 PNG만으로 Hancom 정본과
+일치한다고 주장하지 않으며, 외부 기준 PDF를 대체하지 않는다.
 
-### 실제 결과
+| 자료 | 경로 | 의미 |
+| --- | --- | --- |
+| 변경 전 | `mydocs/report/5057-origin-marker-profile/before_p7.png` | 기존 renderer 출력 |
+| 변경 후 | `mydocs/report/5057-origin-marker-profile/after_p7.png` | 보정 renderer 출력 |
 
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`는 전체 실행 중 IR field-sweep baseline 실패로 종료 코드 `101`을 반환했다.
-- 이 fixture에서는 HWP5 재저장 뒤 `sections[].paragraphs[].controls[].cells[].list_header_width_ref`가 `0 -> 367`로 바뀌었다.
-- `native-skia` release 빌드에서 `--compat 2022 --profile high-quality`로 13쪽 PNG와 SVG를 생성했다.
-- 렌더 로그에는 표 겹침 진단 4건과 표 하단 `2.6px` 초과 진단 1건이 남았다. 7쪽 PNG에서는 일부 글자가 대체 글리프 상자로 관찰됐다.
+## 실행한 검증
 
-### 현재 판정
+다음은 보정 뒤 현재 통합 후보에서 성공한 로컬 호환/통합 검증이다. GitHub required
+CI 또는 nextest 공식 full lane을 실행한 것으로 표기하지 않는다.
 
-**머지 보류**. 정식 fixture 등록과 오류 전파 보정은 완료됐으나, HWP5 `list_header_width_ref` 재저장 차이와 표 레이아웃 진단, 글꼴 대체 관찰을 해소하거나 한컴 기준과의 허용 근거를 확보해야 한다. 상세 산출물은 [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한다.
+```sh
+node scripts/rust-test-suite-manifest.mjs --prepare
+CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full \
+  cargo test --profile release-test --tests
+```
 
-## 2026-09-04 메인터너 보정 재검증
+## 보조 N-up sweep 기록
 
-`src/serializer/control.rs`를 보정했다. 파싱한 HWP5 셀처럼 `raw_list_extra`가 있는 경우에는 `list_header_width_ref=0`을 원본값으로 그대로 기록한다. 반대로 확장 바이트가 없는 새 셀은 한컴 호환 47바이트 `LIST_HEADER` 계약을 위해 기본값 `0x0400`을 유지한다.
+Hancom 2010 저장 원본의 `printMethod=4` 출력은 물리 PDF 시트와 논리 페이지가 일대일이
+아니다. 아래 자료는 물리 시트의 좌우 영역을 논리 A4 크기로만 균일 변환해 구조·프레임·흐름
+후보를 검사한 보조 기록이다. 이는 Hancom 정본과의 완전한 시각 동치나 Studio 직접 비교의
+대체 근거가 아니다.
 
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_006 ir_field_sweep_baseline::ir_field_sweep_does_not_regress`: 통과 (`1 passed`, `171 filtered`)
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_024 issue_1623_cellzone_diagonal::`: 통과 (`19 passed`, `144 filtered`)
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`: 통과 (`exit 0`)
+| 자료 | 경로 | SHA-256 / 결과 |
+| --- | --- | --- |
+| Hancom 2020 기준 PDF | `pdf/issue5057-21484591-2020.pdf` | `78ef349ce8936a7cfaa4e671c1ca1318e31cda3b91c303ebc86b91c1660bae54` |
+| 논리 페이지 매핑 | `../assets/pr_6683_6705_20260904/visual-6709-6710/nup-logical-a4-normalized-page-map.json` | 13 논리 페이지 |
+| 대표 contact sheet | `../assets/pr_6683_6705_20260904/visual-6709-6710/issue5057-a4-normalized-contact-sheet.png` | 13/13 완료, 규칙 후보 0 |
 
-#5057 정식 fixture에서 관측됐던 `list_header_width_ref` 기준선 발산(`0 -> 367`)은 해소됐다. `LAYOUT_TABLE_OVERLAP` 및 2.6px overflow 진단과 N-up/설치 글꼴 차이는 PNG/SVG 산출물의 관찰 사실로 [visual sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 남겨 둔다. 이번 직렬화 보정이 해당 렌더러 진단을 해결했다고 주장하지 않는다.
+## 병합 전 남은 조건
 
-### 최종 판정
+1. `samples/issue5057` 원본을 `hwp2024-mcp-convert` client의 `engine 2020`으로
+   변환한 기준 PDF를 확정한다.
+2. 그 기준 PDF와 현재 `rhwp-studio`의 동일 페이지를 직접 대조해, source-frame
+   allowance가 기대한 쪽 경계를 보존하는지 시각 증적으로 남긴다.
+3. 보정 commit을 포함한 최종 통합 PR head에서 required CI, mergeability,
+   `mergeStateStatus=CLEAN`을 재확인한다.
 
-**메인터너 보정 됨 수용 가능.**
+위 조건을 충족하기 전에는 원 PR을 직접 병합하거나 수용 완료 댓글을 남기지 않는다.

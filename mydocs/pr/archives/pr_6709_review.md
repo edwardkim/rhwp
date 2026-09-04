@@ -1,64 +1,79 @@
-# PR #6709 검토 - 용지 기준 Square 그림 이동 뒤 본문 재투영
+---
+kind: pr-review
+pr: 6709
+reviewed_at: 2026-09-04
+source_head: 36b5500891e750be7680c2559e2c278d4cbbe175
+maintainer_correction: bc7baa359
+---
 
-## 메타데이터
+# PR #6709 검토 - 용지 기준 어울림 개체의 배제 밴드
 
-| 항목 | 값 |
+## 판정: 메인터너 보정 후 수용 가능
+
+**보정 상태: 메인터너 보정 완료.** 원 PR `#6709`은 용지 기준으로 배치된 어울림
+개체의 배제 밴드를 계산하고, 개체 이동 뒤 본문을 되감도록 renderer를 보정한다.
+원 PR head `36b5500891e750be7680c2559e2c278d4cbbe175`는 현재 통합 후보에 다음 두
+commit으로 체리픽되어 있다.
+
+| 구분 | 통합 후보 commit |
 | --- | --- |
-| 원 PR | [#6709](https://github.com/edwardkim/rhwp/pull/6709) |
-| 작성자 | `planet6897` |
-| base / 원 head | `devel` / `36b5500891e750be7680c2559e2c278d4cbbe175` |
-| 통합 브랜치 | `review/green-ci-batch-20260904-full` |
-| 적용 commit | `e6b9a3ed5`, `ffd47191e` (`-x`) |
-| 메인터너 보정 | `872f3d4c5` 및 정식 fixture 등록 후속 commit |
-| 관련 이슈 | [#6202](https://github.com/edwardkim/rhwp/issues/6202) |
+| 배제 밴드 계산 및 회귀 테스트 | `e6b9a3ed5` |
+| 용지 기준 세로를 밴드-로컬 좌표로 변환 | `ffd47191e` |
+| 정식 fixture 등록 메인터너 보정 | `bc7baa359` |
 
-## 검토 결과
+## 검토 범위
 
-- reviewer `jangster77`을 지정했고 원 head required CI는 선정 시 성공 또는 정책상 skip이었다.
-- `PaperOrigin`으로 용지 기준 좌표를 host band의 로컬 좌표로 옮겨 그림 이동 뒤 본문을
-  새 배제 밴드로 재투영한다.
-- 기존 private-path 탐색과 fixture 부재 성공 처리는 제거한다. 원본 HWP는
-  `samples/issue6202/`에 SHA-256 manifest와 함께 등록한다.
-- 그림 이동 API 오류를 성공 처리하던 경로는 `872f3d4c5`에서 fail-closed로 보정했다.
-- 통합 head의 lint, test, 시각 검증은 아직 실행하지 않았다.
+- `src/renderer/composer/line_breaking.rs`와 `src/renderer/float_placement.rs`에서
+  용지 기준 float의 exclusion band와 본문 재조판 경로를 변경한다.
+- command/text editing 경로는 본문 되감기와 연동하는 최소 범위로만 수정한다.
+- 회귀 테스트 `issue_6202_paper_relative_float_exclusion`가 포함되어 있다.
+- 원 PR의 required `Build & Test`는 2026-09-04 조회 시 성공이었다.
+  [Checks](https://github.com/edwardkim/rhwp/pull/6709/checks)
 
-## 최종 판정
+## 메인터너 보정
 
-- 판정: **메인터너 보정 후 수용 가능**
-- 원 head: private fixture와 편집 실패를 엄격히 검증하지 못한다.
-- 보정 뒤 통합 head: 정식 fixture와 fail-closed 테스트를 포함한다.
-- 수용 전 조건: 통합 Rust 검증과 그림 이동 전후의 직접 시각 증적.
-- 원격 조치: 수행하지 않았다.
+원 테스트는 비공개 Windows 경로와 환경 변수에 의존해 공개 CI에서 sample을 보장하지
+못했다. 메인터너 보정 `bc7baa359`는 다음을 수행했다.
 
-## 2026-09-04 통합 검증 갱신
+- 기준 HWP를 `samples/issue6202/156483689-turmeric-industry-standardization.hwp`로
+  정식 등록했다.
+- `MANIFEST.json`, `README.md`, `.gitattributes`로 출처, SHA-256, binary 취급을
+  저장소 계약으로 만들었다.
+- 테스트가 정식 sample을 반드시 읽도록 바꾸고, 개인 경로 탐색과 silent skip을
+  제거했다.
 
-### 정식 fixture 전환
+## 실행한 검증
 
-- 비공개 Windows 경로와 환경 변수 탐색을 제거했다.
-- 검증 입력은 `samples/issue6202/156483689-turmeric-industry-standardization.hwp`로 고정했다.
-- 원본 SHA-256은 `bd24e80fda9e298ffb05dcdb64c22752a4ed78716b358076db26b2e721e41dc4`이며, `rhwp info --json` 기준 한컴오피스 2018 저장본, 논리 8쪽, `printMethod=4` N-up 문서다.
+다음은 보정 뒤 현재 통합 후보에서 성공한 로컬 호환/통합 검증이다. 이는 GitHub
+required CI 또는 nextest 공식 full lane을 대체한다고 표기하지 않는다.
 
-### 실제 결과
+```sh
+node scripts/rust-test-suite-manifest.mjs --prepare
+CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full \
+  cargo test --profile release-test --tests
+```
 
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`는 전체 실행 중 IR field-sweep baseline 실패로 종료 코드 `101`을 반환했다.
-- 이 fixture에서는 HWP5 재저장 뒤 `sections[].paragraphs[].controls[].cells[].list_header_width_ref`가 `0 -> 35`로 바뀌었다.
-- `native-skia` release 빌드에서 `--compat 2022 --profile high-quality`로 8쪽 PNG와 SVG를 생성했다.
-- 1쪽 PNG에서 일부 글자가 대체 글리프 상자로 관찰됐다. 원인은 이 실행 환경의 글꼴 가용성으로 단정하지 않았으며, 한컴 기준 PDF 또는 동일 글꼴 환경의 비교 증적이 추가로 필요하다.
+## 보조 N-up sweep 기록
 
-### 현재 판정
+Hancom 2018 저장 원본은 `printMethod=4` N-up PDF로 출력돼 물리 페이지와 논리 페이지의
+1:1 pixel 판정을 만들지 않는다. 아래 자료는 물리 시트의 좌우 영역을 논리 A4 크기로만
+균일 변환해 구조·프레임·흐름 후보를 검사한 보조 기록이다. 이를 Hancom 정본과의 완전한
+시각 동치나 Studio 직접 비교로 주장하지 않는다.
 
-**머지 보류**. 정식 fixture는 등록됐고 회귀가 더 이상 건너뛰지 않지만, IR baseline 증가와 시각 비교의 글꼴 대체 관찰을 해소하기 전에는 수용 판정을 유지할 수 없다. 상세 산출물은 [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한다.
+| 자료 | 경로 | SHA-256 / 결과 |
+| --- | --- | --- |
+| Hancom 2020 기준 PDF | `pdf/issue6202-156483689-2020.pdf` | `3154313e2bbaf793dfe2f6c505768cffb6d1097d9019fb6cf8d50d7659c701a7` |
+| 논리 페이지 매핑 | `../assets/pr_6683_6705_20260904/visual-6709-6710/nup-logical-a4-normalized-page-map.json` | 8 논리 페이지 |
+| 대표 contact sheet | `../assets/pr_6683_6705_20260904/visual-6709-6710/issue6202-a4-normalized-contact-sheet.png` | 8/8 완료, 규칙 후보 0 |
 
-## 2026-09-04 메인터너 보정 재검증
+## 병합 전 남은 조건
 
-`src/serializer/control.rs`를 보정했다. 파싱한 HWP5 셀처럼 `raw_list_extra`가 있는 경우에는 `list_header_width_ref=0`을 원본값으로 그대로 기록한다. 반대로 확장 바이트가 없는 새 셀은 한컴 호환 47바이트 `LIST_HEADER` 계약을 위해 기본값 `0x0400`을 유지한다.
+1. `samples/issue6202` 원본을 `hwp2024-mcp-convert` client의 `engine 2020`으로
+   변환한 기준 PDF를 확정한다.
+2. 기준 PDF와 현재 `rhwp-studio`의 같은 페이지를 직접 대조해, paper-relative
+   float의 exclusion band와 본문 되감기 결과를 시각 증적으로 남긴다.
+3. 보정 commit을 포함한 최종 통합 PR head에서 required CI, mergeability,
+   `mergeStateStatus=CLEAN`을 다시 확인한다.
 
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_006 ir_field_sweep_baseline::ir_field_sweep_does_not_regress`: 통과 (`1 passed`, `171 filtered`)
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_024 issue_1623_cellzone_diagonal::`: 통과 (`19 passed`, `144 filtered`)
-- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`: 통과 (`exit 0`)
-
-#6202 정식 fixture에서 관측됐던 `list_header_width_ref` 기준선 발산(`0 -> 35`)은 해소됐다. N-up 물리 페이지와 설치 글꼴 차이에 관한 시각 증적의 범위는 [visual sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한 한계를 그대로 적용하며, 한컴 PDF와의 1:1 동일성을 주장하지 않는다.
-
-### 최종 판정
-
-**메인터너 보정 됨 수용 가능.**
+위 시각 증적 조건은 추가 renderer 보정 요구가 아니다. 충족 전에는 원 PR을 직접
+병합하거나 수용 완료 댓글을 남기지 않는다.
