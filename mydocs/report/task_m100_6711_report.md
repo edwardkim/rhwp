@@ -101,8 +101,9 @@ Stage 3-B merge tree의 root에는 79개가 있었다. 이는 기준선의 9월 
 
 Stage 4 기준 최신 `devel`에는 #6697의 9월 `working` 문서가 하나 더 들어와 root가 80개다.
 Git 추가 이력을 단일 scan으로 다시 판정한 결과 80/80개 모두 cutoff 이후 문서이고 판정 불가
-경로는 0개다. 이 최종 보고서도 9월 문서이므로 제출 tree에서는 root가 81개가 되는 것이 정상이며,
-다음 달 유지보수 전까지 archive 대상으로 보지 않는다.
+경로는 0개다. 이 최종 보고서를 포함한 code candidate에서는 root가 81개이며, self-review 절차가
+2026-09-05 오늘할일을 추가한 trailing tree에서는 82개다. 두 문서 모두 9월 문서이므로 다음 달
+유지보수 전까지 archive 대상으로 보지 않는다.
 
 ## 6. 링크·metadata·범위 감사
 
