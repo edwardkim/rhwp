@@ -66,3 +66,19 @@ CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full \
 - `issue6202/156483689-turmeric-industry-standardization.hwp`: `list_header_width_ref 0 -> 35`
 
 baseline은 의도된 정규화인지 확인하지 않은 상태에서 갱신하지 않았다. native-skia release 빌드로 생성한 PNG·SVG, N-up 조건, 렌더 진단 및 직접 관찰 결과는 [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 분리 기록했다.
+
+## 2026-09-04 메인터너 보정 결과
+
+보류 원인이던 `ir_field_sweep_baseline` 발산은 `src/serializer/control.rs`의 HWP5 `LIST_HEADER` width reference 기록 규칙에서 발생했다. 파싱 원본의 확장 바이트(`raw_list_extra`)가 있는 셀은 `list_header_width_ref=0`을 보존하고, 새 셀만 기존 호환 기본값 `0x0400`을 기록하도록 보정했다.
+
+이 구분으로 원본 HWP fixture의 값 보존과 새 테이블 셀의 #1623 호환 계약을 함께 유지한다.
+
+- IR field sweep: 통과 (`1 passed`, `171 filtered`)
+- #1623 cell-zone diagonal 회귀군: 통과 (`19 passed`, `144 filtered`)
+- 전체 integration test: `cargo test --profile release-test --tests` 통과 (`exit 0`)
+
+따라서 정식 fixture 등록과 #6709/#6710 통합의 테스트 보류 사유는 해소됐다. 시각 증적은 별도 sweep 문서에 남긴 실제 PNG/SVG 관찰 범위까지만 사용한다.
+
+### 최종 판정
+
+**메인터너 보정 됨 수용 가능.**

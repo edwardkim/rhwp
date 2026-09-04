@@ -48,3 +48,17 @@
 ### 현재 판정
 
 **머지 보류**. 정식 fixture는 등록됐고 회귀가 더 이상 건너뛰지 않지만, IR baseline 증가와 시각 비교의 글꼴 대체 관찰을 해소하기 전에는 수용 판정을 유지할 수 없다. 상세 산출물은 [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한다.
+
+## 2026-09-04 메인터너 보정 재검증
+
+`src/serializer/control.rs`를 보정했다. 파싱한 HWP5 셀처럼 `raw_list_extra`가 있는 경우에는 `list_header_width_ref=0`을 원본값으로 그대로 기록한다. 반대로 확장 바이트가 없는 새 셀은 한컴 호환 47바이트 `LIST_HEADER` 계약을 위해 기본값 `0x0400`을 유지한다.
+
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_006 ir_field_sweep_baseline::ir_field_sweep_does_not_regress`: 통과 (`1 passed`, `171 filtered`)
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_024 issue_1623_cellzone_diagonal::`: 통과 (`19 passed`, `144 filtered`)
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`: 통과 (`exit 0`)
+
+#6202 정식 fixture에서 관측됐던 `list_header_width_ref` 기준선 발산(`0 -> 35`)은 해소됐다. N-up 물리 페이지와 설치 글꼴 차이에 관한 시각 증적의 범위는 [visual sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한 한계를 그대로 적용하며, 한컴 PDF와의 1:1 동일성을 주장하지 않는다.
+
+### 최종 판정
+
+**메인터너 보정 됨 수용 가능.**

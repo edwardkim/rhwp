@@ -56,3 +56,13 @@ target/pr-review/green-ci-batch-20260904-full/release/rhwp \
 - 전체 integration test는 `ir_field_sweep_baseline`에서 #5057 `0 -> 367`, #6202 `0 -> 35`의 `list_header_width_ref` 차이를 검출해 종료 코드 `101`로 실패했다.
 
 **판정: 머지 보류.** 이 문서는 정식 fixture가 실제 테스트·렌더 입력으로 사용됐음을 보이는 재현 증적이다. 한컴 PDF와의 시각 동등성 증명이나 회귀 무결성 통과를 대신하지 않는다.
+
+## 2026-09-04 메인터너 보정과 시각 증적 범위
+
+보류 원인이던 fixture 직렬화 기준선은 `src/serializer/control.rs`의 HWP5 `LIST_HEADER` width reference 보정으로 해소됐다. 파싱 원본 셀의 `0`은 보존하고, 확장 바이트가 없는 새 셀만 `0x0400` 기본값을 사용한다. IR field sweep, #1623 focused regression, 전체 integration test가 모두 통과했다.
+
+이 보정은 HWP export 직렬화 경로만 변경한다. 본 sweep에서 관측한 N-up 물리 페이지, 설치 글꼴에 따른 글리프 상자, #5057의 `LAYOUT_TABLE_OVERLAP` 및 2.6px overflow 진단을 PNG/SVG 렌더러 보정으로 해결했다고 주장하지 않는다. 해당 항목은 현재 산출물의 실제 관찰과 1:1 한계로 보존한다.
+
+### 결론
+
+정식 fixture의 구조적 회귀 게이트는 **메인터너 보정 됨 수용 가능** 상태다. 이 시각 증적은 한컴 PDF와의 픽셀 또는 물리 페이지 동일성 증명이 아니라, 현 rhwp PNG/SVG 산출물의 검토 범위를 기록한다.

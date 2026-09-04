@@ -48,3 +48,17 @@
 ### 현재 판정
 
 **머지 보류**. 정식 fixture 등록과 오류 전파 보정은 완료됐으나, HWP5 `list_header_width_ref` 재저장 차이와 표 레이아웃 진단, 글꼴 대체 관찰을 해소하거나 한컴 기준과의 허용 근거를 확보해야 한다. 상세 산출물은 [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한다.
+
+## 2026-09-04 메인터너 보정 재검증
+
+`src/serializer/control.rs`를 보정했다. 파싱한 HWP5 셀처럼 `raw_list_extra`가 있는 경우에는 `list_header_width_ref=0`을 원본값으로 그대로 기록한다. 반대로 확장 바이트가 없는 새 셀은 한컴 호환 47바이트 `LIST_HEADER` 계약을 위해 기본값 `0x0400`을 유지한다.
+
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_006 ir_field_sweep_baseline::ir_field_sweep_does_not_regress`: 통과 (`1 passed`, `171 filtered`)
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --test regression_suite_024 issue_1623_cellzone_diagonal::`: 통과 (`19 passed`, `144 filtered`)
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`: 통과 (`exit 0`)
+
+#5057 정식 fixture에서 관측됐던 `list_header_width_ref` 기준선 발산(`0 -> 367`)은 해소됐다. `LAYOUT_TABLE_OVERLAP` 및 2.6px overflow 진단과 N-up/설치 글꼴 차이는 PNG/SVG 산출물의 관찰 사실로 [visual sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 남겨 둔다. 이번 직렬화 보정이 해당 렌더러 진단을 해결했다고 주장하지 않는다.
+
+### 최종 판정
+
+**메인터너 보정 됨 수용 가능.**
