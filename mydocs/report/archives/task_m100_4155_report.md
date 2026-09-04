@@ -2,7 +2,7 @@
 
 - **Issue**: [#4155](https://github.com/edwardkim/rhwp/issues/4155)
 - **계획서**: [`mydocs/plans/task_m100_4155.md`](../../plans/archives/task_m100_4155.md)
-- **단계 기록**: [stage1](../../working/task_m100_4155_stage1.md) · [stage2](../../working/task_m100_4155_stage2.md) · [stage3](../../working/task_m100_4155_stage3.md)
+- **단계 기록**: [stage1](../../working/archives/task_m100_4155_stage1.md) · [stage2](../../working/archives/task_m100_4155_stage2.md) · [stage3](../../working/archives/task_m100_4155_stage3.md)
 - **브랜치**: `task_m100_4155_hwp3_char_shade` (분기 기준 `upstream/devel` `e48fe8694`)
 - **커밋**: `71f607188`(수정) · `604eaf2f8`(계약) · `5c95b4619`(술어 통일) · `463f44992`(한컴 오라클)
 - **작성 시각**: 2026-08-09 KST
@@ -155,11 +155,11 @@ WASM 빌드의 프로젝트 표준은 Docker 경유다(`mydocs/manual/memory/pro
 이미지는 2026-05-03 생성인데 Dockerfile 의 `wasm-pack@0.15.0` 고정은 2026-05-16(`d4a32ab29`)에
 들어왔고, `docker compose run` 은 이미지를 다시 굽지 않아 0.14.0 으로 돌고 있었다. `--build` 로
 다시 구워 0.15.0 에서 게이트를 닫았다. 상세와 후속 제안은
-[stage3](../../working/task_m100_4155_stage3.md) §5.1.
+[stage3](../../working/archives/task_m100_4155_stage3.md) §5.1.
 
 ### 6.3 시각 증적
 
-수정 전후 `export-svg` 전 페이지 대조([stage3](../../working/task_m100_4155_stage3.md) §2).
+수정 전후 `export-svg` 전 페이지 대조([stage3](../../working/archives/task_m100_4155_stage3.md) §2).
 
 | 표본 | 달라진 페이지 | 신규 음영 `<rect>` | HWP3 원본 |
 | --- | ---: | --- | --- |
@@ -216,15 +216,15 @@ CI 에서 이를 고정한다). 시각 확인용 산출물은 `output/issue_4155
 - `hwp3_table_cell_shade_color` 의 절상 반올림(15%/6% 에서 ±1). 셀 음영이 있는 HWP3 표본을
   한컴으로 저장해 실측한 뒤 별도 이슈로 글자용과 통일한다.
 - `hwp3-sample11` 의 음영 CHAR_SHAPE 가 저장 바이트에는 있으나 렌더 본문 런에서 참조되지
-  않는 양상([stage3](../../working/task_m100_4155_stage3.md) §2.1). 저장 계약에는 영향이 없어
+  않는 양상([stage3](../../working/archives/task_m100_4155_stage3.md) §2.1). 저장 계약에는 영향이 없어
   이번에 원인을 확인하지 않았다.
 - `shade_color: Option<ColorRef>` IR 리팩터링. sentinel 을 아예 없애는 것이 정답이지만
   소비처가 많아 독립 이슈다.
 - **검증 환경 두 건** (이 PR 과 무관, 별도 이슈 후보):
   ① `docker compose run` 이 낡은 이미지를 재사용해 Dockerfile 의 wasm-pack 버전 고정(#2233)이
-  로컬에서 무력화된다 — 게이트 문서에 `--build` 명시 필요([stage3](../../working/task_m100_4155_stage3.md) §5.1).
+  로컬에서 무력화된다 — 게이트 문서에 `--build` 명시 필요([stage3](../../working/archives/task_m100_4155_stage3.md) §5.1).
   ② `dev_environment_guide.md`(WASM canonical)에 Docker 경로 누락 — 2026-07-19 에 이미
-  기록된 미해소 문서 불일치([stage3](../../working/task_m100_4155_stage3.md) §5.2).
+  기록된 미해소 문서 불일치([stage3](../../working/archives/task_m100_4155_stage3.md) §5.2).
 
 ## 8. 부수 정정
 

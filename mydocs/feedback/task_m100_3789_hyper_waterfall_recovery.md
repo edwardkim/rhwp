@@ -62,21 +62,21 @@ commit을 단계별로 나누는 데에는 충분했지만, 각 단계 보고를
 작업지시자는 절차 보정 결과를 확인하고 다음 Stage 진행을 승인했다. 최신 `upstream/devel@2166f4065`의
 자동 merge tree가 충돌 없음을 확인한 뒤 `39d6aa1dd`로 current-base merge했다. #3789 focused Rust
 113개, CI policy Node 67개, workflow Python 70개와 format·manifest·문서 게이트가 통과했다. 이 결과를
-[Stage 5 보고](../working/task_m100_3789_stage5.md)로 먼저 공유하고, 전체 release-test·clippy는 다음
+[Stage 5 보고](../working/archives/task_m100_3789_stage5.md)로 먼저 공유하고, 전체 release-test·clippy는 다음
 승인 게이트로 분리한다.
 
 ## 2차 재최신화
 
 Stage 5 보고 뒤 upstream이 다시 52커밋 진전했다. 작업지시자가 재최신화를 승인해
 `upstream/devel@5645e1f5b`를 `3db893274`로 current-base merge하고, focused Rust 113개, Node 67개,
-Python 71개와 정적 게이트를 재검증했다. 이 결과는 [Stage 6 보고](../working/task_m100_3789_stage6.md)에
+Python 71개와 정적 게이트를 재검증했다. 이 결과는 [Stage 6 보고](../working/archives/task_m100_3789_stage6.md)에
 동시점 기록한다. 전체 release-test·clippy를 자동으로 이어 실행하지 않고 Stage 7 승인 게이트로 남겨,
 보정 이후에는 단계 종료 보고와 다음 단계 승인을 실제 순서대로 분리한다.
 
 ## Stage 7 승인과 실행
 
 작업지시자가 Stage 6 보고를 확인한 뒤 Stage 7 진행을 별도로 승인했다. 전체 nextest 8,473개와 현재
-권위 문서의 필수 clippy가 통과한 뒤 [Stage 7 보고](../working/task_m100_3789_stage7.md)를 작성했다. 제거된
+권위 문서의 필수 clippy가 통과한 뒤 [Stage 7 보고](../working/archives/task_m100_3789_stage7.md)를 작성했다. 제거된
 과거 wrapper와 필수 범위 밖 `--all-features` 진단 실패도 생략하지 않고 별도 관찰로 기록했다. remote
 push와 PR 생성은 자동으로 이어가지 않고 다음 승인 게이트로 남긴다.
 
@@ -84,7 +84,7 @@ push와 PR 생성은 자동으로 이어가지 않고 다음 승인 게이트로
 
 작업지시자가 remote push와 PR 생성을 승인한 뒤 fetch에서 최신 `devel`의 15커밋 진전을 확인했다. 제출
 승인을 오래된 base push의 근거로 쓰지 않고 `upstream/devel@1a43a507c`를 current-base merge한 뒤 focused와
-전체 회귀를 다시 실행했다. [Stage 8 보고](../working/task_m100_3789_stage8.md)를 최초 원격 candidate에
+전체 회귀를 다시 실행했다. [Stage 8 보고](../working/archives/task_m100_3789_stage8.md)를 최초 원격 candidate에
 포함하고, PR 번호가 생긴 뒤에만 self-review와 오늘할일을 trailing commit으로 작성한다.
 
 ## Stage 9 리뷰 보정과 안전 중지 복구
@@ -95,5 +95,5 @@ source 보정을 `eeffb3e8f`에 먼저 고정했고, 이동 전에 작업지시�
 수행했다.
 
 이 단계는 과거 Stage 1~4 기록을 고쳐 완전 준수로 만들지 않는다. 리뷰 판단, 보정 commit, 안전 중지,
-재개, 최신화와 검증의 실제 순서를 [Stage 9 보고](../working/task_m100_3789_stage9.md)에 동시점 기록한다.
+재개, 최신화와 검증의 실제 순서를 [Stage 9 보고](../working/archives/task_m100_3789_stage9.md)에 동시점 기록한다.
 원격 push와 보정 완료 comment는 다시 별도 승인 게이트로 남긴다.

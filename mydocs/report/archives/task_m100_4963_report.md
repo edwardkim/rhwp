@@ -42,10 +42,10 @@ controller, guest helper, 독립 비교기와 실제 rank 8 three-state 재현 �
 | [17-face queue projection](../../tech/investigations/issue-4963/oracle_stage5_queue_projection.json) | 최종 disposition 기계 정본 |
 | [rank 8 acceptance ladder](../../tech/investigations/issue-4963/oracle_stage5_rank8_acceptance_ladder.json) | distinct substitution three-state 계보 |
 | [rank 16 disposition](../../tech/investigations/issue-4963/oracle_stage5_rank16_read_only_disposition.json) | 문서 face 기능 불일치 정지 근거 |
-| [W5-4B 실행 보고](../../working/task_m100_4963_w5_stage4b.md) | disposable VM canary·복원·rank 1·7 관측 |
-| [W5-5C 실행 보고](../../working/task_m100_4963_w5_stage5c.md) | rank 8 기계·시각 판정 |
+| [W5-4B 실행 보고](../../working/archives/task_m100_4963_w5_stage4b.md) | disposable VM canary·복원·rank 1·7 관측 |
+| [W5-5C 실행 보고](../../working/archives/task_m100_4963_w5_stage5c.md) | rank 8 기계·시각 판정 |
 | [Hyper-V 재현 가이드](../../tech/investigations/issue-4963/hyperv_reproduction_guide.md) | 제3자 환경 구축·상태 실행·복원·독립 비교 정본 |
-| [Hyper-V 재현 canary](../../working/task_m100_4963_w5_hyperv_reproduction_canary.md) | 공개 controller의 실제 three-state 실행·실패 복구·정리 기록 |
+| [Hyper-V 재현 canary](../../working/archives/task_m100_4963_w5_hyperv_reproduction_canary.md) | 공개 controller의 실제 three-state 실행·실패 복구·정리 기록 |
 | [재현 canary 기계 요약](../../tech/investigations/issue-4963/oracle_stage4_hyperv_reproduction_canary.json) | path-free environment·상태별 hash·projection 비교 |
 
 기계 정본의 현재 file SHA-256은 다음과 같다.

@@ -227,17 +227,17 @@
         "role": "historical-supply-only"
       },
       {
-        "artifact": "mydocs/working/task_m100_4739_stage5_validation.md",
+        "artifact": "mydocs/working/archives/task_m100_4739_stage5_validation.md",
         "sha256": "09f09079d8fb444b23218f6529c49a706f90894766ba061254cad9d65e0dcc57",
         "role": "kopub-and-government-validation"
       },
       {
-        "artifact": "mydocs/working/task_m100_4741_stage5_validation.md",
-        "sha256": "55779150ac67386b990ec456dfff182d4988b780a865cfe6f5d3d94d42566d06",
+        "artifact": "mydocs/working/archives/task_m100_4741_stage5_validation.md",
+        "sha256": "f003229f29f084a224d82fe79c6d2846e15831e417cedc42383015229db0282d",
         "role": "backend-capability-validation"
       },
       {
-        "artifact": "mydocs/working/task_m100_4764_stage1_kopub_canvaskit_sfnt.md",
+        "artifact": "mydocs/working/archives/task_m100_4764_stage1_kopub_canvaskit_sfnt.md",
         "sha256": "044d078ed49d4e768574ec4747b0d4485e5660cf453fdcc5580e2624984825ad",
         "role": "kopub-backend-format-validation"
       }

@@ -93,7 +93,7 @@ upstream/devel HEAD` 결과와 `HEAD^{tree}`가 모두
 ## 완료한 로컬 검증
 
 상세 명령·환경·산출 해시는
-[Stage 4](../../working/task_m100_4601_stage4.md)에 기록했다.
+[Stage 4](../../working/archives/task_m100_4601_stage4.md)에 기록했다.
 
 | 게이트 | 결과 |
 | --- | --- |

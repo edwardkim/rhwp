@@ -4,9 +4,9 @@
   루트 CLSID 를 0 으로 떨군다 — 한컴이 개체를 알아보지 못해 내용을 비워 그린다`
 - **브랜치**: `task_m100_4097` (`upstream/devel` `d634e608b` 기준)
 - **계획서**: [`mydocs/plans/task_m100_4097.md`](../../plans/archives/task_m100_4097.md)
-- **단계 기록**: [stage1](../../working/task_m100_4097_stage1.md) ·
-  [stage2](../../working/task_m100_4097_stage2.md) · [stage3](../../working/task_m100_4097_stage3.md) ·
-  [stage4](../../working/task_m100_4097_stage4.md) · [stage5](../../working/task_m100_4097_stage5.md)
+- **단계 기록**: [stage1](../../working/archives/task_m100_4097_stage1.md) ·
+  [stage2](../../working/archives/task_m100_4097_stage2.md) · [stage3](../../working/archives/task_m100_4097_stage3.md) ·
+  [stage4](../../working/archives/task_m100_4097_stage4.md) · [stage5](../../working/archives/task_m100_4097_stage5.md)
 - **작성 시각**: 2026-08-07 KST
 
 ## 1. 요약

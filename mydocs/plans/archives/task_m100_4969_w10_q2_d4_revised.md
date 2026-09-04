@@ -2,7 +2,7 @@
 
 - **선행 결과**: Q2-D0~D3 qualified, checkpoint `be88ec57e`
 - **원인 보고서**:
-  [`task_m100_4969_w10_q2_d3.md`](../../working/task_m100_4969_w10_q2_d3.md)
+  [`task_m100_4969_w10_q2_d3.md`](../../working/archives/task_m100_4969_w10_q2_d3.md)
 - **기계 판독 계획**:
   [`w10_q2_d4_revised_execution_plan.json`](../../tech/investigations/issue-4969/w10_q2_d4_revised_execution_plan.json)
 - **상태**: D4-A·D4-B·D4-C qualified, D4 완료; D5는 별도 승인 대기

@@ -35,7 +35,7 @@ PR, issue comment·close와 후속 W2 착수는 각각 별도 승인 대상이�
 | `font_rule_candidates.json` | W1 자동 수집 candidate 1,352개 |
 | `font_rule_ledger.json` | 판정된 조사 원장 1,507개 |
 | [Font Rule Ledger 요약](../../tech/investigations/issue-4939/font_rule_ledger_summary.md) | relation·evidence·unknown·감사 결과 |
-| [Stage 5 기록](../../working/task_m100_4939_stage5.md) | 정확한 재생성·테스트·build 결과 |
+| [Stage 5 기록](../../working/archives/task_m100_4939_stage5.md) | 정확한 재생성·테스트·build 결과 |
 
 JSON은 historical investigation snapshot이다. W7 승인 전에는 `src/`, `rhwp-studio/src/`, `web/`이
 이를 import하거나 runtime registry로 소비하지 않는다.

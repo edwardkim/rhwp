@@ -153,3 +153,78 @@ PR files API 3,000개 한도 안이며, canonical Markdown 링크 오류는 계�
 workspace build, workspace all-targets Clippy와 integration manifest 48/48을 다시 통과했다. 첫 head와
 첫 정정 head는 모두 최종 후보가 아니며, 이 두 CI 실패를 보존한 채 다음 exact-head CI가 전부
 성공해야 self-review로 넘어간다.
+
+## 6. Batch B 최신 기준선과 dry-run
+
+Batch A가 [PR #6726](https://github.com/edwardkim/rhwp/pull/6726)의 merge commit
+`9e8e8bc567cb27b406a945a39637869c3b7fd3b7`으로 반영된 최신 `upstream/devel`에서 다시
+계측했다. Git 최초 도입 시각을 직접 하위 Markdown 1,171개에 다시 적용한 결과는 Stage 3 최초
+분할안과 일치했다.
+
+| 항목 | 수 |
+| --- | ---: |
+| 이동 전 `working` root Markdown | 1,171 |
+| cutoff 이전 후보 | 1,120 |
+| 9월 생성 유지 | 51 |
+| Git history 판정 불가 | 0 |
+| 전체 이력 fallback | 3 |
+| 기존 archive 동명 충돌 | 0 |
+
+후보 범위는 basename 정렬 기준 `task_m100_258_stage19.md`부터
+`typeset_stored_ladder_spacing_5801.md`까지다. fallback 3건은 1절에 기록한 기존 세 문서와
+동일하다. 후보 path, NUL, 이동 전 파일 SHA-256 digest를 순서대로 누적한 inventory SHA-256은
+`a060090a259dd53c89f94a9b6cf6a2159e626c018e0b7d823f03eb7e07e4746d`다.
+
+이동 전 저장소 전수 Markdown 기준선은 13,186개 문서, 내부 링크 9,224개, 유효 8,671개,
+historical broken 553개다. 후보 밖 incoming link source는 103개였다. 새 source 위치와 새 target
+위치를 메모리상에서 먼저 계산해 전체 9,224개 링크의 논리 target multiset이 동일함을 확인한
+뒤 실제 이동을 적용했다.
+
+## 7. Batch B 실행 결과와 경로 소비자
+
+목적지 충돌 없이 1,120개를 `mydocs/working/archives/`로 이동했다. 동일본 중복 제거와 divergent
+충돌 보존은 모두 0건이다. 이동 문서의 상대 링크와 후보 밖 incoming link source 103개는 이동
+전 논리 target을 유지하도록 새 상대 경로로 계산했다.
+
+완성 경로 문자열과 분할 조립 경로를 별도로 감사한 결과, 다음 활성 font evidence 소비자는
+이동 후 경로를 실제 입력 또는 생성 결과로 사용하므로 함께 정정했다.
+
+- `scripts/font_rule_ledger.mjs`: 이후 생성되는 gate evidence 경로
+- `scripts/font_typesetting_risk_evidence.mjs`: 이후 생성되는 evidence anchor 경로
+- `mydocs/tech/investigations/issue-4962/font_typesetting_risk_contract.json`: 해시로 고정된 evidence
+  입력 3개 경로
+
+`task_m100_4741_stage5_validation.md`는 archive 이동에 따라 문서 내부 상대 링크 3개가
+`../`에서 `../../`로 바뀌었다. 따라서 활성 contract의 해당 artifact SHA-256을 이동 전
+`55779150ac67386b990ec456dfff182d4988b780a865cfe6f5d3d94d42566d06`에서 이동 후
+`f003229f29f084a224d82fe79c6d2846e15831e417cedc42383015229db0282d`로 갱신했다. 나머지
+evidence 입력은 내용 hash가 동일하다. 과거 실행 결과 JSON, CI classifier fixture, source 주석,
+이동 문서의 historical `canonical`은 현재 파일을 여는 실행 경로가 아니므로 원문을 보존했다.
+
+보고서를 포함한 제출 후보는 rename-aware 1,227개다. rename 판정에 기대지 않는 보수적 경로
+수는 이동 old/new 2,240개와 수정 107개를 합한 2,347개로 GitHub PR files API 3,000개 제한
+아래다. 변경 범위는 `mydocs` 1,223개, 이동 문서로 들어오는 Markdown link source인 `pdf` 1개와
+`samples` 1개, 활성 소비자 `scripts` 2개다. Rust source·test, Cargo, WASM, workflow 변경은 없다.
+
+## 8. Batch B 검증
+
+| 검사 | 결과 |
+| --- | --- |
+| `git diff --check` | 통과 |
+| canonical `check_markdown_links.py` | 609개 문서, 오류 0건 |
+| 전수 Markdown link multiset | 9,224개 유지 |
+| 전수 유효 / historical broken | 8,671 / 553, 기준선과 동일 |
+| cutoff 이전 direct Markdown 잔여 | 0개 |
+| `check_document_metadata.py` | 변경하지 않은 기존 4개 문서의 16건만 재현 |
+| font ledger·risk Node 계약 | 24 passed |
+| risk contract evidence input | 6개 path·SHA-256 일치 |
+| 범위 감사 | Rust·Cargo·WASM·workflow 변경 0건 |
+
+## 9. 남은 절차
+
+1. 보고서를 포함한 staged tree의 변경 수·범위와 링크·metadata 결과를 최종 재검사한다.
+2. 메인테이너가 Batch B 결과를 승인하면 한 commit으로 고정한다.
+3. 별도 승인 뒤 원격 push와 PR을 생성하고 exact-head CI·self-review·정상 merge commit 절차를
+   수행한다.
+4. Batch B merge 뒤 최신 `upstream/devel`에서 Stage 4 전수 감사와 최종 보고로 #6711 종료
+   요건을 판단한다.

@@ -167,16 +167,16 @@ git diff --check
   기록하며, 원 구현 commit을 재작성하지 않는다.
 - 기존 구현 SHA를 보존하기 위해 rebase 대신 current-base merge를 사용했다. merge commit은
   `39d6aa1dd`이며, 겹친 CI policy 파일은 #3789 render 경계와 #6205 duration-policy job 계약을 모두
-  보존한다. 세부 focused 결과는 [Stage 5 보고](../../working/task_m100_3789_stage5.md)에 기록한다.
+  보존한다. 세부 focused 결과는 [Stage 5 보고](../../working/archives/task_m100_3789_stage5.md)에 기록한다.
 - Stage 5 뒤 다시 진전한 `upstream/devel@5645e1f5b`도 같은 이유로 `3db893274` current-base merge로
   반영했다. 자동 병합된 CI policy에서 #3789 경계와 upstream Archive D·duration-policy 계약을 모두
-  보존했고, 세부 focused 결과는 [Stage 6 보고](../../working/task_m100_3789_stage6.md)에 기록한다.
+  보존했고, 세부 focused 결과는 [Stage 6 보고](../../working/archives/task_m100_3789_stage6.md)에 기록한다.
 - 작업지시자의 별도 승인 뒤 전체 nextest 8,473개와 필수 clippy를 통과했다. 제거된 wrapper와 추가
   `--all-features` 진단의 upstream GPU dependency 불일치는 필수 결과와 분리해
-  [Stage 7 보고](../../working/task_m100_3789_stage7.md)에 기록한다.
+  [Stage 7 보고](../../working/archives/task_m100_3789_stage7.md)에 기록한다.
 - remote 제출 승인 뒤 다시 진전한 `upstream/devel@1a43a507c`를 `7c6ee5461` current-base merge로
   반영했다. 새 shaping 통합을 포함한 focused Rust 113개, 전체 nextest 8,519개와 필수 clippy를 통과했고
-  [Stage 8 보고](../../working/task_m100_3789_stage8.md)에 기록한다.
+  [Stage 8 보고](../../working/archives/task_m100_3789_stage8.md)에 기록한다.
 
 ## 10. PR 리뷰 뒤 계획 조정
 
@@ -195,6 +195,6 @@ git diff --check
   디렉터리에도 같은 결정을 강제한다.
 - 보정 source는 `eeffb3e8f`, 최신 `devel@f6a6bee8f` 병합은 `16ea38cd2`에 고정했다. focused Rust
   113개, Node 69개, Python 37개, 전체 runnable nextest 8,553개와 필수 clippy가 통과했다. 상세 결과는
-  [Stage 9 보고](../../working/task_m100_3789_stage9.md)에 기록한다.
+  [Stage 9 보고](../../working/archives/task_m100_3789_stage9.md)에 기록한다.
 - `test-caption`의 모든 mutation이 실패해도 exit 0인 기존 동작은 이번 move-only 불변식과 충돌하므로 제품
   보정에 섞지 않는다. 별도 false-pass 이슈 후보로 유지하고 외부 이슈 생성은 별도 승인을 받는다.

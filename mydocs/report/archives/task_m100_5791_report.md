@@ -1,7 +1,7 @@
 # task_m100_5791 처리결과 — 명령별 `rhwp <명령> [<하위명령>] --help`
 
 - 이슈: [#5791](https://github.com/edwardkim/rhwp/issues/5791)
-- 분석: [`mydocs/working/task_m100_5791_stage1.md`](../../working/task_m100_5791_stage1.md)
+- 분석: [`mydocs/working/task_m100_5791_stage1.md`](../../working/archives/task_m100_5791_stage1.md)
 - 기준: `fb434269e` (devel) · `rhwp v0.8.4`
 
 ## 1. 변경 요약

@@ -41,9 +41,9 @@ lifecycle audit에서 유지·신규·retired·replaced·historical·dangling �
 | W7.5-7 | self-review blocker 2건 정정, 최신 `upstream/devel` merge tree 검증 |
 | W7.5-8 | PR self-review에서 v1 semantic guard 이관 누락을 재현하고 validator·negative contract 정정 |
 
-세부 명령과 단계별 수치는 [Stage W7.5-1~6 기록](../../working/task_m100_5955_w7_5_stage1.md),
-[Stage W7.5-7 기록](../../working/task_m100_5955_w7_5_stage7.md)과
-[Stage W7.5-8 정정 기록](../../working/task_m100_5955_w7_5_stage8.md)에 보존했다.
+세부 명령과 단계별 수치는 [Stage W7.5-1~6 기록](../../working/archives/task_m100_5955_w7_5_stage1.md),
+[Stage W7.5-7 기록](../../working/archives/task_m100_5955_w7_5_stage7.md)과
+[Stage W7.5-8 정정 기록](../../working/archives/task_m100_5955_w7_5_stage8.md)에 보존했다.
 
 ## 3. canonical artifact와 population
 

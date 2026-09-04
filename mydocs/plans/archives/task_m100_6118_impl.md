@@ -85,7 +85,7 @@ panel로 접어 같은 36px 한 행을 유지한다.
 
 `FULL_ROW_MIN`은 1280/1024 같은 device 이름으로 선택하지 않았다. 136px 고정 글꼴 field와 command의
 실측 콘텐츠, 첫 option 텍스트의 시작축과 안전 여백으로 962px을 정했다. 962/961px과 808/807px E2E로
-전체 1행→접힌 1행→2행 전환을 고정한다. 상세 초기 계측은 [Stage 1 보고서](../../working/task_m100_6118_stage1.md)를
+전체 1행→접힌 1행→2행 전환을 고정한다. 상세 초기 계측은 [Stage 1 보고서](../../working/archives/task_m100_6118_stage1.md)를
 따른다.
 
 ### 4.3 좁은 field 행

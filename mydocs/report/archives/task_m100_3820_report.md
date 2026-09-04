@@ -40,8 +40,8 @@ reset 경계의 source owner를 순차적으로 보정했다. Stage 11 마감 �
 
 근거:
 
-- [Stage 11 정책 문서 215/215 및 p166-p215 마감](../../working/task_m100_3820_stage11.md)
-- [Stage 56 issue2007 p11→p12 owner](../../working/task_m100_3820_stage56_issue2007_p11_heading_owner.md)
+- [Stage 11 정책 문서 215/215 및 p166-p215 마감](../../working/archives/task_m100_3820_stage11.md)
+- [Stage 56 issue2007 p11→p12 owner](../../working/archives/task_m100_3820_stage56_issue2007_p11_heading_owner.md)
 
 ## 2. 전수 검증 기준선 및 최신 상태
 
@@ -109,7 +109,7 @@ Body `TopAndBottom` 그림(`pi=1276`, `bbox=94.5,83.2,448.5,359.0`)이 있어, �
 - `output/task-3820-3821-fidelity/stage6-full-ledger/float-owner-shift-candidates.tsv`의 p118→p119 행
 
 **해소 상태:** `309c5f123`가 p118의 `pi=1275`를 lines `0..8`, p119를 lines `9..10`과 그림 55로
-분할해 PDF owner를 복원했다. 직접 증적은 [Stage 8 visual sweep](../../working/task_m100_3820_stage8_visual_sweep.md)에 있다.
+분할해 PDF owner를 복원했다. 직접 증적은 [Stage 8 visual sweep](../../working/archives/task_m100_3820_stage8_visual_sweep.md)에 있다.
 
 ### D-02 — p127 본문과 그림 56의 폭/배치 관계가 PDF와 다름 — 해소
 
@@ -127,7 +127,7 @@ fidelity 저하를 아직 충분히 검출하지 못한다.
 **해소 상태:** Stage 9는 deferred page-start Square 그림의 source `vertical_offset` 이중 적용을
 제거해 frame top을 `130.7px`에서 body top `83.2px`로 복원했다. 이전 형상은 새
 `deferred_square_picture_top_drift` detector가 후보화하고, 수정 후 p127/p156 직접 PDF review와
-focused Rust·Python 회귀는 [Stage 9 visual sweep](../../working/task_m100_3820_stage9_visual_sweep.md)에 있다.
+focused Rust·Python 회귀는 [Stage 9 visual sweep](../../working/archives/task_m100_3820_stage9_visual_sweep.md)에 있다.
 
 ### D-03 — p168 이후의 연쇄 pagination divergence — 해소
 
@@ -145,7 +145,7 @@ Stage 11은 뒤쪽 범위의 실제 잔존 원인을 두 계약으로 분리해 
 수정 후 PDF와 rhwp 전체 export는 **215/215쪽**이고, p166-p215 text-owner 원장은
 50/50쪽을 완료했다. 남은 p176→p177·p178→p179 후보는 직접 PDF 대조에서 실제 pagination
 차이가 아닌 추출 순서 false positive로 판정했다. 상세 원인과 focused 회귀는
-[Stage 11](../../working/task_m100_3820_stage11.md)에 기록했다.
+[Stage 11](../../working/archives/task_m100_3820_stage11.md)에 기록했다.
 
 증적:
 
@@ -171,8 +171,8 @@ recursive prelude만 제한적으로 되감아 다음 결과를 고정했다.
 
 증적:
 
-- [Stage 56 분석·검증](../../working/task_m100_3820_stage56_issue2007_p11_heading_owner.md)
-- [Stage 57 exact-head 검증](../../working/task_m100_3820_stage57_exact_head_pr_gate.md)
+- [Stage 56 분석·검증](../../working/archives/task_m100_3820_stage56_issue2007_p11_heading_owner.md)
+- [Stage 57 exact-head 검증](../../working/archives/task_m100_3820_stage57_exact_head_pr_gate.md)
 - [p11-p13 contact sheet](../../pr/assets/task_m100_3820_stage57_exact_head_pr_gate/review_p011_p013_exact_head.png)
 - [visual sweep 원장](../../pr/assets/task_m100_3820_stage57_exact_head_pr_gate/visual_sweep_summary_exact_head.json)
 

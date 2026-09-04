@@ -1,7 +1,7 @@
 # 수정 수행계획 — Task M100 #4969 W10-Q4-D5-D clean-room causal WASM 복구
 
 - **상위 계획**: [`task_m100_4969_w10_q4_d5.md`](task_m100_4969_w10_q4_d5.md)
-- **선행 결과**: [`task_m100_4969_w10_q4_d5_c.md`](../../working/task_m100_4969_w10_q4_d5_c.md)
+- **선행 결과**: [`task_m100_4969_w10_q4_d5_c.md`](../../working/archives/task_m100_4969_w10_q4_d5_c.md)
 - **선행 분류**: `blocked` — correctness·성능 qualified, causal WASM size unavailable
 - **기계 판독 계획**:
   [`w10_q4_d5_d_execution_plan.json`](../../tech/investigations/issue-4969/w10_q4_d5_d_execution_plan.json)
@@ -106,7 +106,7 @@ build wall time은 cache·열 상태가 달라 성능 결론으로 사용하지 
 
 ## 결과
 
-[D5-D 결과 보고서](../../working/task_m100_4969_w10_q4_d5_d.md)에 따라 source-only A 구성과 동일 Docker image의
+[D5-D 결과 보고서](../../working/archives/task_m100_4969_w10_q4_d5_d.md)에 따라 source-only A 구성과 동일 Docker image의
 A/B 빌드가 모든 hard gate를 통과했다. causal WASM delta는 +36,611 bytes, A 대비 +0.371371668%이며
 Q4-D 최종 분류를 `qualified-bounded-subset`으로 갱신하고 결과 checkpoint `95d450dd5`로 고정했다. 이후
 최신 `upstream/devel@3b301f725`를 merge `3d239b5a7`로 병합하고 #4969 112건·wasm32 check·tier·format을

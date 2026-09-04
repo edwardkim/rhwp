@@ -90,56 +90,56 @@ characterization이 필요 없으면 테스트 커밋은 생략한다. 기능군
 Q1은 완료했다. 기존 `thumbnail` 테스트의 빈틈이었던 내장 이미지 바이트 동등성, 기본 출력
 경로와 저장 실패를 보강하고, 파일 부작용을 명시하는 `cli/outputs/preview.rs`로 handler를
 이동했다. 세부 증거는
-[`task_m100_5511_stage2_batch_q1.md`](../../working/task_m100_5511_stage2_batch_q1.md)에 기록했다.
+[`task_m100_5511_stage2_batch_q1.md`](../../working/archives/task_m100_5511_stage2_batch_q1.md)에 기록했다.
 
 Q2도 완료했다. 미보호 상태였던 GPU feature stub 계약을 먼저 고정하고, CC 25를 넘던
 SVG·PNG·GPU·PDF handler를 parser와 준비 helper로 분해한 뒤 vector·raster·PDF output
 모듈로 이동했다. 세 모듈은 모두 1,200줄 이하이고 renderer 알고리즘과 관찰 가능한 출력은
 바뀌지 않았다. 세부 증거는
-[`task_m100_5511_stage2_batch_q2.md`](../../working/task_m100_5511_stage2_batch_q2.md)에 기록했다.
+[`task_m100_5511_stage2_batch_q2.md`](../../working/archives/task_m100_5511_stage2_batch_q2.md)에 기록했다.
 
 Q3도 완료했다. Markdown 이미지 상대 링크와 자산 바이트를 먼저 고정하고, CC 25를 넘던
 `csv_to_table`과 `export_markdown`을 parser·검증·fallback helper로 분해했다. 읽기 전용
 text·tabular output과 상태 변경 CSV import를 서로 다른 CQRS 모듈로 이동했으며, 세 구현
 모듈은 모두 1,200줄 이하이다. 세부 증거는
-[`task_m100_5511_stage2_batch_q3.md`](../../working/task_m100_5511_stage2_batch_q3.md)에 기록했다.
+[`task_m100_5511_stage2_batch_q3.md`](../../working/archives/task_m100_5511_stage2_batch_q3.md)에 기록했다.
 
 Q4 inventory에서 `cmd_scan`의 CC 28을 확인해 중단 조건이 발동했다. batch의 ordered stream과
 query/write 책임 경계, 기존 92개 인접 계약, scan characterization 공백과 세 선택지는
-[`task_m100_5511_stage2_batch_q4_inventory.md`](../../working/task_m100_5511_stage2_batch_q4_inventory.md)에
+[`task_m100_5511_stage2_batch_q4_inventory.md`](../../working/archives/task_m100_5511_stage2_batch_q4_inventory.md)에
 기록했다. 승인된 A안에 따라 scan의 사람 출력·symlink 비추적 계약을 먼저 고정하고, `cmd_scan`을
 CC 25 이하로 분해한 뒤 scan query, ordered runtime, batch query, fill·convert command를 분리했다.
-세부 증거는 [`task_m100_5511_stage2_batch_q4.md`](../../working/task_m100_5511_stage2_batch_q4.md)에
+세부 증거는 [`task_m100_5511_stage2_batch_q4.md`](../../working/archives/task_m100_5511_stage2_batch_q4.md)에
 기록했다.
 
 Q5는 최신 `devel` `52d8bf8eb3`에서 시작했다. `show_info` CC 34와 `dump_controls` CC 68을
 재현했고, 기존 1,096줄 `diagnostics.rs`에 합치지 않는 책임별 모듈 경계를 확정했다. 사람용
 성공 stdout의 byte-level characterization과 분해 기준은
-[`task_m100_5511_stage2_batch_q5_inventory.md`](../../working/task_m100_5511_stage2_batch_q5_inventory.md)에
+[`task_m100_5511_stage2_batch_q5_inventory.md`](../../working/archives/task_m100_5511_stage2_batch_q5_inventory.md)에
 기록했다.
 
 Q5도 완료했다. info·page·control 진단을 일곱 책임 모듈로 이동하고, `dump_controls`를 순회,
 shape, table, story 출력으로 분해했다. 완료 직전 전진한 `devel`을 정상 merge한 뒤 #5542의
 의도된 HWP3 첫 문단 `SectionDef` 출력에 characterization 기준을 정합화했으며, 최신 결합 HEAD의
 전체·정적·정책 관문을 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_q5.md`](../../working/task_m100_5511_stage2_batch_q5.md)에 기록했다.
+[`task_m100_5511_stage2_batch_q5.md`](../../working/archives/task_m100_5511_stage2_batch_q5.md)에 기록했다.
 
 Q6는 최신 `devel` `980bf59e4`를 정상 merge한 뒤 시작했다. 변환·생성 handler 전부 CC 25 이하이고,
 기존 17개 계약 모듈 123/123이 JSON·exit·검증·원본 보호·생성물 재파싱을 이미 보호하므로 신규
 characterization 없이 책임별 물리 이동으로 진행한다. 대상과 공유 seam 판정은
-[`task_m100_5511_stage2_batch_q6_inventory.md`](../../working/task_m100_5511_stage2_batch_q6_inventory.md)에
+[`task_m100_5511_stage2_batch_q6_inventory.md`](../../working/archives/task_m100_5511_stage2_batch_q6_inventory.md)에
 기록했다.
 
 Q6도 완료했다. 변환 command, 문서 generation, DocLang output을 세 모듈로 이동했고 모두
 1,200줄 이하이며 CC 25 초과 경고가 없다. 완료 직전 전진한 `devel`의 별도 q-pack 변경을 정상
 merge하고, 결합 HEAD에서 Q6·q-pack focused 127/127과 전체 release-test 7,999/7,999를 포함한
 정적·정책 관문을 다시 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_q6.md`](../../working/task_m100_5511_stage2_batch_q6.md)에 기록했다.
+[`task_m100_5511_stage2_batch_q6.md`](../../working/archives/task_m100_5511_stage2_batch_q6.md)에 기록했다.
 
 Q7 inventory에서 `ir_diff_paragraph_fields` CC 28, `cmd_verify` CC 29, `ir_diff` CC 38과
 `test-field` 성공·position diagnostics·`ir-sweep` 계약 공백을 확인해 중단 조건이 발동했다.
 기존 직접 계약 104/104 기준선과 세 선택지는
-[`task_m100_5511_stage2_batch_q7_inventory.md`](../../working/task_m100_5511_stage2_batch_q7_inventory.md)에
+[`task_m100_5511_stage2_batch_q7_inventory.md`](../../working/archives/task_m100_5511_stage2_batch_q7_inventory.md)에
 기록했다. 권장안 A는 최소 characterization 뒤 세 함수를 책임 분해하고 Q7 전체를 이동한다.
 
 Q7도 완료했다. 미보호였던 내부 저장·position diagnostics·IR sweep 계약 6개를 먼저 고정하고,
@@ -147,7 +147,7 @@ internal validation command와 position·verification·IR comparison query를 �
 세 고복잡도 함수는 scalar/control, parsing/evaluation, load/compare/output 책임으로 분해해 Q7
 모듈의 CC 25 초과 경고를 0건으로 만들었다. 최종 focused 110/110과 전체 release-test
 8,005/8,005를 포함한 정적·정책 관문을 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_q7.md`](../../working/task_m100_5511_stage2_batch_q7.md)에 기록했다.
+[`task_m100_5511_stage2_batch_q7.md`](../../working/archives/task_m100_5511_stage2_batch_q7.md)에 기록했다.
 
 ### Wave M/P — metadata와 에이전트 protocol 분리
 
@@ -159,13 +159,13 @@ internal validation command와 position·verification·IR comparison query를 �
 M1도 완료했다. MCP 도구 정의 7개, capabilities projection 2개, help projection 3개 기능군과
 각 조립 모듈로 나눴으며 전 파일이 1,200줄 이하이다. catalog 정본은 이동·복제하지 않았고 여섯
 공개 출력의 byte hash와 8,005개 전체 계약이 유지됐다. 세부 증거는
-[`task_m100_5511_stage2_batch_m1.md`](../../working/task_m100_5511_stage2_batch_m1.md)에 기록했다.
+[`task_m100_5511_stage2_batch_m1.md`](../../working/archives/task_m100_5511_stage2_batch_m1.md)에 기록했다.
 
 P1도 완료했다. agent protocol 구현을 명령 이름이 아니라 capsule, trust, exchange, harness,
 plan 책임으로 나눴고, 이동 전 CC 25를 넘던 6개 함수는 관찰 가능한 계약을 유지한 채 책임별
 helper로 분해했다. 범용 CAS seam은 이후 C0도 사용하는 불변식이므로 root에 유지했다. 새 파일은
 모두 1,200줄 이하이고 직접 계약 97/97과 전체 release-test 8,005/8,005가 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_p1.md`](../../working/task_m100_5511_stage2_batch_p1.md)에 기록했다.
+[`task_m100_5511_stage2_batch_p1.md`](../../working/archives/task_m100_5511_stage2_batch_p1.md)에 기록했다.
 
 ### Wave C — 상태 변경 command 분리
 
@@ -188,45 +188,45 @@ C0도 완료했다. 88개 edit 하위 명령 dispatch와 공통 output format·s
 `cli/integrity.rs`의 범용 seam으로 분리했다. 기능군별 의존이 확인되기 전에 god object가 되는
 광범위한 `EditContext`는 만들지 않았다. 직접 계약 101/101과 전체 release-test 8,005/8,005가
 통과했으며 최신 `devel`의 별도 Studio 변경을 정상 merge했다. 세부 증거는
-[`task_m100_5511_stage2_batch_c0.md`](../../working/task_m100_5511_stage2_batch_c0.md)에 기록했다.
+[`task_m100_5511_stage2_batch_c0.md`](../../working/archives/task_m100_5511_stage2_batch_c0.md)에 기록했다.
 
 C1도 완료했다. 기존 1,380줄·11함수 계측에 field occurrence 정본 parser 20줄·1함수를 더해
 실범위를 1,400줄·12함수로 보정하고, field·문서 전역 replace·privacy command를 세 모듈로
 이동했다. `edit_replace_text`와 `edit_redact`는 option parsing과 실행을 나눠 CC 29·33을 모두
 상한 이하로 낮췄다. 직접 계약 113/113과 전체 release-test 8,005/8,005가 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_c1.md`](../../working/task_m100_5511_stage2_batch_c1.md)에 기록했다.
+[`task_m100_5511_stage2_batch_c1.md`](../../working/archives/task_m100_5511_stage2_batch_c1.md)에 기록했다.
 
 C2도 완료했다. 분리되어 있던 insert-image 전용 helper까지 실범위에 포함해 chart·number·form·
 page border, shape lifecycle, image·picture command를 세 모듈로 이동했다. `edit_insert_image`는
 argument parsing과 실행을 나눠 CC 27을 상한 이하로 낮췄다. 최신 #5647 chart B2 계약을 포함한
 직접 계약 146/146과 전체 release-test 8,008/8,008이 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_c2.md`](../../working/task_m100_5511_stage2_batch_c2.md)에 기록했다.
+[`task_m100_5511_stage2_batch_c2.md`](../../working/archives/task_m100_5511_stage2_batch_c2.md)에 기록했다.
 
 C3도 완료했다. cell content·properties, table coordinate·lifecycle·grid·layout, equation lifecycle
 command를 일곱 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과 경고가 없다. 완료 직전 전진한
 `devel`의 renderer 변경을 정상 merge하고 새 integration source까지 파생 harness에 다시 모집해
 직접 계약 137/137과 전체 release-test 8,197/8,197을 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_c3.md`](../../working/task_m100_5511_stage2_batch_c3.md)에 기록했다.
+[`task_m100_5511_stage2_batch_c3.md`](../../working/archives/task_m100_5511_stage2_batch_c3.md)에 기록했다.
 
 C4도 완료했다. 본문 text·paragraph·break, page·section·column, note, bookmark, generic control
 구조 command 20개·2,306줄을 다섯 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과 경고가
 없다. 최신 `devel`의 q-more·skill-router·Studio 누적 통합을 정상 merge한 뒤 직접 계약
 117/117과 전체 release-test 8,205/8,205를 통과했다. `set-column-def`의 기존 raw attribute 저장
 결함은 move-only 범위에 섞지 않고 후속 이슈 후보로 기록했다. 세부 증거는
-[`task_m100_5511_stage2_batch_c4.md`](../../working/task_m100_5511_stage2_batch_c4.md)에 기록했다.
+[`task_m100_5511_stage2_batch_c4.md`](../../working/archives/task_m100_5511_stage2_batch_c4.md)에 기록했다.
 
 C5도 완료했다. cell paragraph split·merge와 body·cell char/paragraph/style formatting
 command 8개·전용 helper 1개·1,289줄을 두 파일로 이동했고 모두 1,200줄 이하이며 CC 25 초과
 경고가 없다. 미보호였던 `apply-cell-style` 저장값·dry-run·오류·MCP 계약 4건을 이동 전에
 고정하고, 직접 계약 73/73과 전체 release-test 8,209/8,209를 통과했다. 세부 증거는
-[`task_m100_5511_stage2_batch_c5.md`](../../working/task_m100_5511_stage2_batch_c5.md)에 기록했다.
+[`task_m100_5511_stage2_batch_c5.md`](../../working/archives/task_m100_5511_stage2_batch_c5.md)에 기록했다.
 
 C6도 완료했다. 계획의 1,152줄·9함수 추정을 실제 story command 2,430줄·18 handler로 보정하고,
 header/footer content·properties와 note story를 세 파일로 이동했다. 모두 1,200줄 이하이고 CC 25
 초과 경고가 없다. 미보호였던 `set-hf-picture`의 실제 저장·재파싱 계약을 먼저 고정하고, 직접
 계약 113/113과 전체 release-test 8,212/8,212를 통과했다. `src/main.rs`의 `edit_*` handler는
 전수 이동됐으며 세부 증거는
-[`task_m100_5511_stage2_batch_c6.md`](../../working/task_m100_5511_stage2_batch_c6.md)에 기록했다.
+[`task_m100_5511_stage2_batch_c6.md`](../../working/archives/task_m100_5511_stage2_batch_c6.md)에 기록했다.
 
 ## 5. 중단 조건
 

@@ -30,9 +30,9 @@
 | 단계 | 산출물 | 핵심 결정 |
 | --- | --- | --- |
 | 계획 | [수행계획](../../plans/archives/task_m100_6118.md), [구현계획](../../plans/archives/task_m100_6118_impl.md) | 최대 2행, paragraph만 동적 더보기 |
-| Stage 1 | [경계 계측](../../working/task_m100_6118_stage1.md) | 초기 계측 뒤 최종 962/961, 808/807, 460/459px 경계 확정 |
-| Stage 2 | [구현 결과](../../working/task_m100_6118_stage2.md) | 단일 DOM authority와 1·2행 CSS/controller |
-| Stage 3 | [검증 결과](../../working/task_m100_6118_stage3.md) | 14 viewport, 24 theme cases, 실제 상호작용 |
+| Stage 1 | [경계 계측](../../working/archives/task_m100_6118_stage1.md) | 초기 계측 뒤 최종 962/961, 808/807, 460/459px 경계 확정 |
+| Stage 2 | [구현 결과](../../working/archives/task_m100_6118_stage2.md) | 단일 DOM authority와 1·2행 CSS/controller |
+| Stage 3 | [검증 결과](../../working/archives/task_m100_6118_stage3.md) | 14 viewport, 24 theme cases, 실제 상호작용 |
 
 ## 3. 시각 결과
 
@@ -70,5 +70,5 @@ suite 부재는 #6118 변경 밖의 저장소 상태로 분리한다. #6138 통�
 
 혼동을 줄이기 위해 이슈·계획·커밋·테스트는 분리하되 PR은 하나로 제출한다. #6138 구현 뒤 두 영역을
 동시에 포함하는 14개 viewport·24개 theme 매트릭스를 다시 실행했고 최종 821개 판정이 통과했다. 상세 근거는
-[#6138 통합 Stage 3](../../working/task_m100_6138_stage3.md)에 있다. 현재 단계에서는 remote push와 PR 생성
+[#6138 통합 Stage 3](../../working/archives/task_m100_6138_stage3.md)에 있다. 현재 단계에서는 remote push와 PR 생성
 모두 수행하지 않았다.

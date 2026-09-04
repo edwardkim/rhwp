@@ -34,7 +34,7 @@ metric·fallback·paint 결과는 변경하지 않았다.
 | `oracle_stage4_hyperv_reproduction_canary.json` | 공개 host controller로 다시 실행한 rank 8 three-state path-free 결과 |
 | [`hyperv_reproduction_guide.md`](hyperv_reproduction_guide.md) | 제3자 Hyper-V 환경 구축·three-state 실행·복구·비교 절차 |
 | [`task_m100_4963_report.md`](../../../report/archives/task_m100_4963_report.md) | W5 전건 disposition·시각 판정·제품 후속 원칙 최종 보고서 |
-| [`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/task_m100_4963_w5_hyperv_reproduction_canary.md) | 공개 재현 경로 실제 canary·실패 복구·정리 기록 |
+| [`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/archives/task_m100_4963_w5_hyperv_reproduction_canary.md) | 공개 재현 경로 실제 canary·실패 복구·정리 기록 |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |
 | `font_oracle_readiness.json` | 17개 face의 path-free source·ladder 준비도 원장 |
@@ -143,7 +143,7 @@ Stage W5-4A는 다음 실행계약을 완료했다.
   `blocked-immutable-or-unmanaged-font`로 기록하고 missing 성공을 주장하지 않음
 
 W5-4B 관찰 해설은
-[`task_m100_4963_w5_stage4b.md`](../../../working/task_m100_4963_w5_stage4b.md)에 기록한다. rank 1과
+[`task_m100_4963_w5_stage4b.md`](../../../working/archives/task_m100_4963_w5_stage4b.md)에 기록한다. rank 1과
 rank 7은 updated-base에서 세 물리 상태를 완료했고 8개 semantic profile로 정규화했다. rank 13은 관리
 TTF가 없는 기준선에서도 exact face가 남아 `blocked-immutable-or-unmanaged-font`로 판정했다.
 `문체부 바탕체` exact bytes(`MBatang`)와 fixture-declared `KoPubWorld바탕체 Light`는 서로 다른 역할이며,
@@ -154,24 +154,24 @@ Stage W5-5A는 이 판정을 17개 전건 action matrix로 확장했다. rank 1�
 source가 없는 10개와 보호된 ambient/HFT provider를 가진 rank 9·10·13은 증거 있는 terminal
 disposition으로 닫는다. 추가 Oracle 실행 후보는 rank 8과 rank 16뿐이며, 안전한 순서는 rank 16
 read-only exact profile 뒤 rank 8 controlled ladder다. 세부 근거와 rank 8의 distinct substitution 계약은
-[`task_m100_4963_w5_stage5a.md`](../../../working/task_m100_4963_w5_stage5a.md)에 기록한다.
+[`task_m100_4963_w5_stage5a.md`](../../../working/archives/task_m100_4963_w5_stage5a.md)에 기록한다.
 
 Stage W5-5B는 rank 16을 복원된 기준선에서 font resource 추가 없이 실행했다. 영문 SFNT alias는 exact로
 선택됐지만 문서의 한글 face는 `함초롬바탕`으로 readback됐고 PDF도 `HCRBatang-Bold`만 사용했다.
 따라서 Stage W5-3의 단발 selection 성공만으로 exact-installed profile을 발행하지 않고
 `blocked-document-face-name-resolution` disposition으로 닫았다. 현재 actionable rank는 rank 8 하나이며,
-세부 판정은 [`task_m100_4963_w5_stage5b.md`](../../../working/task_m100_4963_w5_stage5b.md)에 기록한다.
+세부 판정은 [`task_m100_4963_w5_stage5b.md`](../../../working/archives/task_m100_4963_w5_stage5b.md)에 기록한다.
 
 Stage W5-5C는 rank 8에서 exact Batang과 distinct Dotum substitution을 세 상태로 분리했다. exact-only는
 `KoPubWorldBatangLight` subset을 사용했지만, Dotum만 제공한 substitution-only는 Dotum alias가 선택
 가능해도 PDF 조판에 사용하지 않았고 none-related와 동일한 `HCRBatang-Bold` typesetting projection을
 보였다. 4개 profile과 ladder를 추가해 queue의 actionable rank는 0개가 되었다. 메인테이너의
 side-by-side 시각 판정도 기계 projection과 일치해 W5 기술 검증을 완료했으며, 상세 기록은
-[`task_m100_4963_w5_stage5c.md`](../../../working/task_m100_4963_w5_stage5c.md)에 둔다.
+[`task_m100_4963_w5_stage5c.md`](../../../working/archives/task_m100_4963_w5_stage5c.md)에 둔다.
 
 2026-08-23에는 공개 [Hyper-V 재현 가이드](hyperv_reproduction_guide.md)와 tracked host controller로
 rank 8 세 상태를 새로 실행했다. 각 상태 전후 baseline 복구를 확인했고 exact/subst/none의 typesetting
 projection이 기존 acceptance ladder와 모두 일치했다. path-free 결과는
 `oracle_stage4_hyperv_reproduction_canary.json`, 실행·복구 기록은
-[`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/task_m100_4963_w5_hyperv_reproduction_canary.md)에
+[`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/archives/task_m100_4963_w5_hyperv_reproduction_canary.md)에
 고정한다.

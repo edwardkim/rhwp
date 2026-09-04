@@ -134,7 +134,7 @@ review 계약이 함께 남아 있다.
 - source unit tier: 4,221 tests, 299 modules 확인
 - Markdown 604개 링크와 branch diff 검사: 통과
 
-이 결과는 [Stage 6 보고](../../working/task_m100_3789_stage6.md)에 동시점 기록했다. 최신 기준의 전체
+이 결과는 [Stage 6 보고](../../working/archives/task_m100_3789_stage6.md)에 동시점 기록했다. 최신 기준의 전체
 release-test와 clippy는 아직 실행하지 않았으며, Stage 7 별도 승인 뒤 수행한다. 초기 기준과 Stage 5의
 전체·focused 결과를 최신 기준 결과로 간주하지 않는다.
 
@@ -151,7 +151,7 @@ release-test와 clippy는 아직 실행하지 않았으며, Stage 7 별도 승�
 `--workspace --all-targets --all-features` 추가 clippy 진단은 `vello 0.9/0.10`의 `Scene` 타입 불일치로
 컴파일되지 않았다. #3789 branch는 관련 `Cargo.toml`, `Cargo.lock`, `src/renderer/gpu.rs`를 변경하지 않으며,
 현재 권위 문서의 필수 clippy 범위는 통과했다. 상세 명령과 판정은
-[Stage 7 보고](../../working/task_m100_3789_stage7.md)에 기록한다.
+[Stage 7 보고](../../working/archives/task_m100_3789_stage7.md)에 기록한다.
 
 ### Stage 8 pre-push refresh
 
@@ -166,7 +166,7 @@ remote push와 PR 생성 승인을 받은 직후 fetch에서 `upstream/devel`이
 - 필수 clippy, actionlint, format, manifest, unit-tier, Markdown 링크와 diff: 통과
 - manifest: 995 sources, 4,469 static test attrs, 48/48 integration targets
 
-세부 내용은 [Stage 8 보고](../../working/task_m100_3789_stage8.md)에 기록한다. 이 보고 commit까지를 최초
+세부 내용은 [Stage 8 보고](../../working/archives/task_m100_3789_stage8.md)에 기록한다. 이 보고 commit까지를 최초
 원격 code candidate로 제출하고, PR 번호 기반 self-review·오늘할일은 후속 review-only commit으로 추가한다.
 
 ### Stage 9 PR review correction
@@ -193,7 +193,7 @@ remote push와 PR 생성 승인을 받은 직후 fetch에서 `upstream/devel`이
 
 `test-caption`의 모든 mutation이 실패해도 exit 0인 기존 동작은 이번 책임 이동과 별개인 false-pass 문제로
 남긴다. 별도 이슈 후보이며 외부 이슈 생성은 별도 승인을 받는다. 세부 판단과 재현 명령은
-[Stage 9 보고](../../working/task_m100_3789_stage9.md)에 기록한다.
+[Stage 9 보고](../../working/archives/task_m100_3789_stage9.md)에 기록한다.
 
 ## 하이퍼 워터폴 절차 감사
 

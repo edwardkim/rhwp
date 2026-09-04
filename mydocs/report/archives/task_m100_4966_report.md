@@ -81,22 +81,22 @@ W3 계약은 W6의 metric table selector가 고정 배열에서 composed view로
 증거는 font 선택 회귀보다 **역사 계측과 현재 authority의 수명주기 혼합 및 교차 단계 검증 누락**을
 원인으로 가리킨다.
 
-기존 전체 검증의 명령·환경·hash는 [Stage W7-6 보고서](../../working/task_m100_4966_w7_stage6.md), 재감사와
-근본 정정 절차는 [Stage W7-R1 기록](../../working/task_m100_4966_w7_rework_stage1.md)에 있다.
+기존 전체 검증의 명령·환경·hash는 [Stage W7-6 보고서](../../working/archives/task_m100_4966_w7_stage6.md), 재감사와
+근본 정정 절차는 [Stage W7-R1 기록](../../working/archives/task_m100_4966_w7_rework_stage1.md)에 있다.
 
 W7-R2·R3 정정에서는 W1의 30개 boundary·1,352개 candidate를 현재 checkout이 아니라 기록된 Git blob에서
 검증하도록 바꿨고, 600개 metric source 이동을 의미 회귀와 분리했다. 제품 source의 전환 전 수기 mapping과
 oracle helper는 제거하고 `tests/cases/issue_4966_font_rule_projection.rs`에서 public trace 171개
 (직접 관측 137·우선순위 shadow 34)와 metric alias 67개를 검증한다. focused 결과는 W1·W2·W3·W6·W7
 87/87, source Rust 35/35, integration 2/2, PR-base unit-tier와 Clippy 통과다. 세부 내용은
-[Stage W7-R2·R3 기록](../../working/task_m100_4966_w7_rework_stage2.md)에 있다.
+[Stage W7-R2·R3 기록](../../working/archives/task_m100_4966_w7_rework_stage2.md)에 있다.
 
 W7-R4에서는 collaborator의 원격 `745660467`을 부모로 포함한 `fc2194b2c`에서 전체 gate를 다시
 실행했다. release-test 8,200건, Native Skia 공식 3종, Docker optimized WASM과 공개 173페이지
 native/WASM byte parity가 모두 통과했다. W7-6보다 source unit 3건과 전체 nextest 1건이 줄어든 것은
 금지된 source-side 회귀를 제거하고 integration 2건으로 재구성한 제출 경계 변화다. 최신 명령·환경·hash와
 Decision Trace E2E의 worktree 의존성 준비 기록은
-[Stage W7-R4 기록](../../working/task_m100_4966_w7_rework_stage3.md)에 있다.
+[Stage W7-R4 기록](../../working/archives/task_m100_4966_w7_rework_stage3.md)에 있다.
 
 ## 5. 운영 경계
 

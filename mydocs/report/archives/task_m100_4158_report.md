@@ -5,7 +5,7 @@
 - **최초 기준**: `upstream/devel` `5119ea498`
 - **현재 기준**: `upstream/devel` `5a4f26d0d`, merge commit `5356207db`
 - **계획서**: [`mydocs/plans/task_m100_4158.md`](../../plans/archives/task_m100_4158.md)
-- **단계 기록**: [`mydocs/working/task_m100_4158_stage1.md`](../../working/task_m100_4158_stage1.md)
+- **단계 기록**: [`mydocs/working/task_m100_4158_stage1.md`](../../working/archives/task_m100_4158_stage1.md)
 - **작성 시각**: 2026-08-07 KST
 
 ## 1. 결과

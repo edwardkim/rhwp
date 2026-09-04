@@ -57,8 +57,8 @@ frame carve와 row commit 조건을 바꾸지 않았다.
 
 최종 전체 회귀에서 LayoutFrame 단위 테스트 9건, frame reflow, 실제 p325 picture band,
 table owner-width 테스트가 모두 통과해 PR #4755의 계약이 유지됨을 확인했다. 세부 결합 과정은
-[Stage 243](../../working/task_m100_3820_stage243_post_4755_rustfmt_convergence.md)과
-[Stage 244](../../working/task_m100_3820_stage244_pr4755_tokenizer_contract_rebase.md)에 기록했다.
+[Stage 243](../../working/archives/task_m100_3820_stage243_post_4755_rustfmt_convergence.md)과
+[Stage 244](../../working/archives/task_m100_3820_stage244_pr4755_tokenizer_contract_rebase.md)에 기록했다.
 
 ## 완료한 로컬 검증
 

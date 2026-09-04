@@ -43,7 +43,7 @@ selector의 disposition을 같은 파일에 추가했다. Stage 4는 이 candida
 - [Font Rule Ledger 요약](font_rule_ledger_summary.md)
 - `font_rule_ledger.json`: candidate evidence reference와 판정 결과를 가진 조사 원장
 - [최종 결과 보고서](../../../report/archives/task_m100_4939_report.md)
-- [Stage 5 최종 감사 기록](../../../working/task_m100_4939_stage5.md)
+- [Stage 5 최종 감사 기록](../../../working/archives/task_m100_4939_stage5.md)
 
 ## Stage 1 검증
 

@@ -2,7 +2,7 @@
 
 - **Issue**: [#4586](https://github.com/edwardkim/rhwp/issues/4586)
 - **계획서**: [수행계획](../../plans/archives/task_m100_4586.md) · [구현계획](../../plans/archives/task_m100_4586_impl.md)
-- **단계 기록**: [stage1](../../working/task_m100_4586_stage1.md) · [stage2](../../working/task_m100_4586_stage2.md) · [stage3](../../working/task_m100_4586_stage3.md)
+- **단계 기록**: [stage1](../../working/archives/task_m100_4586_stage1.md) · [stage2](../../working/archives/task_m100_4586_stage2.md) · [stage3](../../working/archives/task_m100_4586_stage3.md)
 - **브랜치**: `task/4586-gym-t12-hwpx`
 - **기준**: `upstream/devel` `d30e5d4af`
 - **작성일**: 2026-08-11 KST

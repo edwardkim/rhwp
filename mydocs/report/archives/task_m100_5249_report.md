@@ -1,7 +1,7 @@
 # task_m100_5249 처리결과 — `secd` CTRL_HEADER tail 을 저장 버전으로 확정
 
 - 이슈: [#5249](https://github.com/edwardkim/rhwp/issues/5249) · 원인 조사 원천 [#2768](https://github.com/edwardkim/rhwp/issues/2768)
-- 분석: [`mydocs/working/task_m100_5249_stage1.md`](../../working/task_m100_5249_stage1.md)
+- 분석: [`mydocs/working/task_m100_5249_stage1.md`](../../working/archives/task_m100_5249_stage1.md)
 - 기준: `0697bc559` (devel)
 
 ## 1. 확정한 계약

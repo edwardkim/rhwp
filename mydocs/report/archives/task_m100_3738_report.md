@@ -92,21 +92,21 @@ semantic page owner를 먼저 맞춘 뒤 각 결함을 독립 원인으로 분�
 원본 HWP·HWPX와 각각의 기준 PDF, review PNG는 모두
 [`pdf/pr3740/README.md`](../../../pdf/pr3740/README.md) 및 연결된 증적에 보관한다. 상세 페이지 비교와
 자동 후보는
-[Stage 1 visual sweep](../../working/task_m100_3738_stage1_visual_sweep.md),
-[Stage 2 visual sweep](../../working/task_m100_3738_stage2_visual_sweep.md),
-[Stage 3 visual sweep](../../working/task_m100_3738_stage3_visual_sweep.md),
-[Stage 4 visual sweep](../../working/task_m100_3738_stage4_visual_sweep.md),
-[Stage 5 visual sweep](../../working/task_m100_3738_stage5_visual_sweep.md),
-[Stage 6 visual sweep](../../working/task_m100_3738_stage6_visual_sweep.md),
-[Stage 7 visual sweep](../../working/task_m100_3738_stage7_visual_sweep.md),
-[Stage 8 visual sweep](../../working/task_m100_3738_stage8_visual_sweep.md),
-[Stage 9 visual sweep](../../working/task_m100_3738_stage9_visual_sweep.md),
-[Stage 11 visual sweep](../../working/task_m100_3738_stage11_visual_sweep.md),
-[Stage 12 visual sweep](../../working/task_m100_3738_stage12_visual_sweep.md),
-[Stage 13 visual sweep](../../working/task_m100_3738_stage13_visual_sweep.md),
-[Stage 14 visual sweep](../../working/task_m100_3738_stage14_visual_sweep.md),
-[Stage 15 visual sweep](../../working/task_m100_3738_stage15_visual_sweep.md),
-[Stage 16 visual sweep](../../working/task_m100_3738_stage16_visual_sweep.md)에 기록했다.
+[Stage 1 visual sweep](../../working/archives/task_m100_3738_stage1_visual_sweep.md),
+[Stage 2 visual sweep](../../working/archives/task_m100_3738_stage2_visual_sweep.md),
+[Stage 3 visual sweep](../../working/archives/task_m100_3738_stage3_visual_sweep.md),
+[Stage 4 visual sweep](../../working/archives/task_m100_3738_stage4_visual_sweep.md),
+[Stage 5 visual sweep](../../working/archives/task_m100_3738_stage5_visual_sweep.md),
+[Stage 6 visual sweep](../../working/archives/task_m100_3738_stage6_visual_sweep.md),
+[Stage 7 visual sweep](../../working/archives/task_m100_3738_stage7_visual_sweep.md),
+[Stage 8 visual sweep](../../working/archives/task_m100_3738_stage8_visual_sweep.md),
+[Stage 9 visual sweep](../../working/archives/task_m100_3738_stage9_visual_sweep.md),
+[Stage 11 visual sweep](../../working/archives/task_m100_3738_stage11_visual_sweep.md),
+[Stage 12 visual sweep](../../working/archives/task_m100_3738_stage12_visual_sweep.md),
+[Stage 13 visual sweep](../../working/archives/task_m100_3738_stage13_visual_sweep.md),
+[Stage 14 visual sweep](../../working/archives/task_m100_3738_stage14_visual_sweep.md),
+[Stage 15 visual sweep](../../working/archives/task_m100_3738_stage15_visual_sweep.md),
+[Stage 16 visual sweep](../../working/archives/task_m100_3738_stage16_visual_sweep.md)에 기록했다.
 
 현재 그림별 선택 페이지의 완료 판정과 전체 215쪽 pagination 완료 판정을 혼동하지 않는다. 전체 215쪽
 raster sweep이나 전체 integration test는 Stage 8의 좁은 caption 보정 완료 근거로 사용하지 않았다.

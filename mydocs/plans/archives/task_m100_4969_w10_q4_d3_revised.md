@@ -93,7 +93,7 @@ leaf op, source claim을 하나도 추가하지 않는다.
 
 **종료 게이트**: target mapping mismatch 0, no-source/non-Noto control rejection, 제품 layer hash 변화 0.
 
-**결과 후보**: [Q4-D3-A 결과 보고서](../../working/task_m100_4969_w10_q4_d3_a.md)는 D2 line과 두
+**결과 후보**: [Q4-D3-A 결과 보고서](../../working/archives/task_m100_4969_w10_q4_d3_a.md)는 D2 line과 두
 fallback leaf/source/glyph를 일대일로 매핑하고, 같은 길이의 다른 문자도 비직렬화 source-text SHA-256으로
 거부한다. Q4 green 36/36, atomic activation 9 pass/1 ignore, integration 정책 19/19와 canonical controls를
 통과했으며 product publication과 backend 선택은 0이다. 메인테이너 결과 승인·checkpoint 전 D3-B는 닫힌다.
@@ -113,7 +113,7 @@ fallback leaf/source/glyph를 일대일로 매핑하고, 같은 길이의 다른
 **종료 게이트**: target은 `N TextRun + N vertical GlyphRun`, leaf별 group 1, portable blob/face 1,
 nominal duplicate 0; rejected batch publication residue 0.
 
-**결과 후보**: [Q4-D3-B 결과 보고서](../../working/task_m100_4969_w10_q4_d3_b.md)는 target의 두 fallback
+**결과 후보**: [Q4-D3-B 결과 보고서](../../working/archives/task_m100_4969_w10_q4_d3_b.md)는 target의 두 fallback
 leaf에 vertical `GlyphRun`을 하나씩 게시하고 portable blob/face를 한 번만 등록했다. 같은 길이 문자 변조는
 line 전체를 거부해 glyph/resource residue 0을 유지했고, D4 전 selector 다섯 종류는 모두 `TextRun`을
 선택했다. 판정은 `qualified-atomic-leaf-publication`으로 승인됐으며 checkpoint 승인 대기 상태다.
@@ -129,7 +129,7 @@ line 전체를 거부해 glyph/resource residue 0을 유지했고, D4 전 select
 **종료 게이트**: publication 값 mismatch 0, fallback disappearance 0, backend false selection 0,
 canonical mismatch 0, 회귀 0. 결과 승인·checkpoint 전 Q4-D4는 시작하지 않는다.
 
-**최종 결과 후보**: [Q4-D3-C 결과 보고서](../../working/task_m100_4969_w10_q4_d3_c.md)는 native와 격리
+**최종 결과 후보**: [Q4-D3-C 결과 보고서](../../working/archives/task_m100_4969_w10_q4_d3_c.md)는 native와 격리
 Node WASM의 source/variant/glyph/resource 수치가 일치하고, selector·`text_v2`가 두 leaf 모두 fallback을
 유지하며 canonical SVG 두 건과 관련 회귀가 불변임을 확인했다. font payload와 layer JSON 증가량은 기준선으로만
 기록했다. 메인테이너가 `qualified-publication-parity-pre-docker` 사전 판정을 승인한 뒤 표준 Docker WASM과

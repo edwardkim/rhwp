@@ -112,11 +112,11 @@ console.log(trace.layoutHash.value, trace.normalizedHash.value);
 ```
 
 전체 검증 명령과 FI-01~FI-14 판정은
-[`task_m100_4961_stage5.md`](../../../working/task_m100_4961_stage5.md), 완료 조건과 후속 인계는
+[`task_m100_4961_stage5.md`](../../../working/archives/task_m100_4961_stage5.md), 완료 조건과 후속 인계는
 [`task_m100_4961_report.md`](../../../report/archives/task_m100_4961_report.md)가 정본이다.
 
 PR self-review의 native snapshot 보정과 standalone fail-closed 회귀 근거는
-[`task_m100_4961_stage6.md`](../../../working/task_m100_4961_stage6.md)에 기록했다.
+[`task_m100_4961_stage6.md`](../../../working/archives/task_m100_4961_stage6.md)에 기록했다.
 
 ## 3.5 W7 canonical registry 연결
 

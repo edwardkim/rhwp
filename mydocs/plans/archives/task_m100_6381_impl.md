@@ -101,7 +101,7 @@ integration suite 준비가 필요한 review worktree 검증에서는 먼저
 - 최신 `upstream/devel@97c4d7155`를 merge commit `49d0a61ea`로 반영했으며 직접 충돌이나 추가 제품
   보정은 없었다.
 - generated suite 재준비 뒤 focused 3/3, clippy `-D warnings`, 전체 integration 8,636/8,636이
-  통과했다. 상세 실행 근거는 [Stage 3 보고](../../working/task_m100_6381_stage3.md)에 기록했다.
+  통과했다. 상세 실행 근거는 [Stage 3 보고](../../working/archives/task_m100_6381_stage3.md)에 기록했다.
 - source-side test 정책, format, manifest, Markdown link와 diff 검사를 모두 통과했고 generated
   suite·manifest와 로컬 출력물은 제출 diff에 포함하지 않았다.
 - PR 게시 직전 이동한 `upstream/devel@f54408110`도 merge commit `143e3032d`로 반영했다. 새 generated

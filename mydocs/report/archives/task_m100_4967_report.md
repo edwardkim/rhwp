@@ -152,7 +152,7 @@ manifest·Markdown 링크·fmt·diff 검사와 Docker WASM 5분 56초도 통과�
 공개 정본 결과는
 [`rank8_private_qualification.json`](../../tech/investigations/issue-4967/rank8_private_qualification.json),
 구현·재판정 과정은
-[`task_m100_4967_w8_q3r.md`](../../working/task_m100_4967_w8_q3r.md)에 있다.
+[`task_m100_4967_w8_q3r.md`](../../working/archives/task_m100_4967_w8_q3r.md)에 있다.
 
 ## 8. 완료와 후속 절차
 
