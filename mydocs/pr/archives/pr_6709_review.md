@@ -29,3 +29,22 @@
 - 보정 뒤 통합 head: 정식 fixture와 fail-closed 테스트를 포함한다.
 - 수용 전 조건: 통합 Rust 검증과 그림 이동 전후의 직접 시각 증적.
 - 원격 조치: 수행하지 않았다.
+
+## 2026-09-04 통합 검증 갱신
+
+### 정식 fixture 전환
+
+- 비공개 Windows 경로와 환경 변수 탐색을 제거했다.
+- 검증 입력은 `samples/issue6202/156483689-turmeric-industry-standardization.hwp`로 고정했다.
+- 원본 SHA-256은 `bd24e80fda9e298ffb05dcdb64c22752a4ed78716b358076db26b2e721e41dc4`이며, `rhwp info --json` 기준 한컴오피스 2018 저장본, 논리 8쪽, `printMethod=4` N-up 문서다.
+
+### 실제 결과
+
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`는 전체 실행 중 IR field-sweep baseline 실패로 종료 코드 `101`을 반환했다.
+- 이 fixture에서는 HWP5 재저장 뒤 `sections[].paragraphs[].controls[].cells[].list_header_width_ref`가 `0 -> 35`로 바뀌었다.
+- `native-skia` release 빌드에서 `--compat 2022 --profile high-quality`로 8쪽 PNG와 SVG를 생성했다.
+- 1쪽 PNG에서 일부 글자가 대체 글리프 상자로 관찰됐다. 원인은 이 실행 환경의 글꼴 가용성으로 단정하지 않았으며, 한컴 기준 PDF 또는 동일 글꼴 환경의 비교 증적이 추가로 필요하다.
+
+### 현재 판정
+
+**머지 보류**. 정식 fixture는 등록됐고 회귀가 더 이상 건너뛰지 않지만, IR baseline 증가와 시각 비교의 글꼴 대체 관찰을 해소하기 전에는 수용 판정을 유지할 수 없다. 상세 산출물은 [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한다.

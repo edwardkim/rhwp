@@ -29,3 +29,22 @@
 - 보정 뒤 통합 head: 정식 fixture와 fail-closed 테스트를 포함한다.
 - 수용 전 조건: 통합 Rust 검증 및 HWP5/direct-HWPX의 페이지·표 영역 직접 시각 증적.
 - 원격 조치: 수행하지 않았다.
+
+## 2026-09-04 통합 검증 갱신
+
+### 정식 fixture 전환
+
+- 비공개 Windows 경로와 환경 변수 탐색을 제거했다.
+- 검증 입력은 `samples/issue5057/21484591-gimcheon-sewage-ordinance.hwp`로 고정했다.
+- 원본 SHA-256은 `87ac4934e661fd0e177d35f355030bff26d2b764bc25b0ccf69aa7cc66f6dfc7`이며, `rhwp info --json` 기준 한컴오피스 2010 저장본, 논리 13쪽, `printMethod=4` N-up 문서다.
+
+### 실제 결과
+
+- `CARGO_TARGET_DIR=target/pr-review/green-ci-batch-20260904-full cargo test --profile release-test --tests`는 전체 실행 중 IR field-sweep baseline 실패로 종료 코드 `101`을 반환했다.
+- 이 fixture에서는 HWP5 재저장 뒤 `sections[].paragraphs[].controls[].cells[].list_header_width_ref`가 `0 -> 367`로 바뀌었다.
+- `native-skia` release 빌드에서 `--compat 2022 --profile high-quality`로 13쪽 PNG와 SVG를 생성했다.
+- 렌더 로그에는 표 겹침 진단 4건과 표 하단 `2.6px` 초과 진단 1건이 남았다. 7쪽 PNG에서는 일부 글자가 대체 글리프 상자로 관찰됐다.
+
+### 현재 판정
+
+**머지 보류**. 정식 fixture 등록과 오류 전파 보정은 완료됐으나, HWP5 `list_header_width_ref` 재저장 차이와 표 레이아웃 진단, 글꼴 대체 관찰을 해소하거나 한컴 기준과의 허용 근거를 확보해야 한다. 상세 산출물은 [통합 시각 sweep](pr_6683_6710_green_ci_batch_visual_sweep.md)에 기록한다.
