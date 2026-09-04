@@ -33,7 +33,7 @@ metric·fallback·paint 결과는 변경하지 않았다.
 | `oracle_stage5_rank8_acceptance_ladder.json` | distinct substitution을 사용한 rank 8 exact/subst/none 실행 계보 |
 | `oracle_stage4_hyperv_reproduction_canary.json` | 공개 host controller로 다시 실행한 rank 8 three-state path-free 결과 |
 | [`hyperv_reproduction_guide.md`](hyperv_reproduction_guide.md) | 제3자 Hyper-V 환경 구축·three-state 실행·복구·비교 절차 |
-| [`task_m100_4963_report.md`](../../../report/task_m100_4963_report.md) | W5 전건 disposition·시각 판정·제품 후속 원칙 최종 보고서 |
+| [`task_m100_4963_report.md`](../../../report/archives/task_m100_4963_report.md) | W5 전건 disposition·시각 판정·제품 후속 원칙 최종 보고서 |
 | [`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/task_m100_4963_w5_hyperv_reproduction_canary.md) | 공개 재현 경로 실제 canary·실패 복구·정리 기록 |
 | `fixtures/oracle_typesetting_fixture.hwpx` | rank 1 `문체부 바탕체`용 공개 synthetic HWPX canary |
 | `fixtures/oracle_typesetting_fixture.manifest.json` | fixture semantic matrix·LineSeg lane·ZIP entry hash |

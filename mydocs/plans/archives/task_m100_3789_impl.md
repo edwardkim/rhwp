@@ -161,7 +161,7 @@ git diff --check
 - `src/main.rs`는 2,101줄에서 1,930줄로 줄었고 직접 `render_page_svg` 호출과 구조 JSON 생성 구현이 없다.
 - renderer 알고리즘·출력 schema·golden baseline은 변경하지 않았다.
 - 전체 로컬 결과와 계획 대비 차이는
-  [최종 보고서](../../report/task_m100_3789_report.md)에 기록한다.
+  [최종 보고서](../../report/archives/task_m100_3789_report.md)에 기록한다.
 - Stage 1~4 보고는 각 단계 전환 시점이 아니라 최종 검증 뒤 `3c509c7d1`에서 함께 작성됐다. 이 실제
   계보와 중간 승인 생략은 [절차 복구 피드백](../../feedback/task_m100_3789_hyper_waterfall_recovery.md)에
   기록하며, 원 구현 commit을 재작성하지 않는다.

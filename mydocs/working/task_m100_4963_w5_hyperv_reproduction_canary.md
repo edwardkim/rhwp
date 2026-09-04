@@ -90,7 +90,7 @@ SHA-256은 `b31d0e07437fceb80efb6e10fcda5a4834eb5b7cf7c9496ba3d95600a9466c17`이
 - 공개 파일에는 raw identity, credential, absolute path, font bytes, private corpus identity가 없다.
 
 이 canary로 제3자 Hyper-V 재현 경로의 마지막 기술 게이트를 닫았다. 다음 절차 게이트는
-[`task_m100_4963_report.md`](../report/task_m100_4963_report.md)에 대한 메인테이너 승인이다.
+[`task_m100_4963_report.md`](../report/archives/task_m100_4963_report.md)에 대한 메인테이너 승인이다.
 
 ## 6. 로컬 검증
 

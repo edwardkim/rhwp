@@ -82,5 +82,5 @@ Loaded documents: `pr_review_workflow.md`, `pr_review/README.md`,
 **메인터너 보정 후 기술적으로 수용 가능**하다.
 
 #3445의 범위 고정은 당시 열린 PR을 v0.8.2 핫픽스 기준선에서 제외한 것이며,
-[해당 릴리즈는 완료](../../report/task_m100_3445_report.md)됐다. 현재 보류로 확장하지 않는다. 최신 통합
+[해당 릴리즈는 완료](../../report/archives/task_m100_3445_report.md)됐다. 현재 보류로 확장하지 않는다. 최신 통합
 head CI·mergeable 상태가 성공하면 반영하고, 원 PR에는 통합·검증 결과를 연결한다.

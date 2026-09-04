@@ -191,7 +191,7 @@ $hwp.SaveAs($out, "PDF", "")
 | 항목 | 상태 |
 | --- | --- |
 | wasm-pack 결과 확인 | ✅ 완료 — 컴파일·wasm-bindgen 통과, packaging 단계 환경 실패 (보고서 6절) |
-| 최종 보고서 | ✅ [`mydocs/report/task_m100_4085_report.md`](../report/task_m100_4085_report.md) |
+| 최종 보고서 | ✅ [`mydocs/report/task_m100_4085_report.md`](../report/archives/task_m100_4085_report.md) |
 | 커밋 | ✅ 소스 6 + 문서 3 = 9 파일 |
 
 `pdf-large/hwpx/2026_oss_rst.pdf` 는 커밋에서 제외했다. 내용 변경이 아니라 작업트리에 git-lfs

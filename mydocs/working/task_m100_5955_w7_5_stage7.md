@@ -75,7 +75,7 @@ PR 생성 뒤 반드시 새로 통과해야 한다.
 
 ## 5. 문서 현행화
 
-- [최종 보고서](../report/task_m100_5955_report.md)를 추가했다.
+- [최종 보고서](../report/archives/task_m100_5955_report.md)를 추가했다.
 - [canonical font fallback 전략](../tech/font_fallback_strategy.md)을 schema 2.0 active-only authority와
   append-only change-set 운영으로 현행화했다.
 - `mydocs/README.md` canonical manifest의 확인일을 맞췄다.

@@ -10,7 +10,7 @@ last_verified: 2026-08-20
 - **계기**: PR [#5647](https://github.com/edwardkim/rhwp/pull/5647) 검토 보류
   (`mydocs/pr/archives/pr_5647_review.md`) — 코드 결함은 없고, **한컴 38건 판정을 재계산할
   자산이 저장소에 없다**는 것이 유일한 차단 사유였다.
-- **보고서**: [`../report/task_m100_5447_report.md`](../report/task_m100_5447_report.md) §1
+- **보고서**: [`../report/task_m100_5447_report.md`](../report/archives/task_m100_5447_report.md) §1
 - **원장**: [`samples/issue5447/MANIFEST.json`](../../samples/issue5447/MANIFEST.json)
 - **브랜치**: `task5447` (`622d4ac1b` 위에 쌓음 — rebase 하지 않았다, §5)
 

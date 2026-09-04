@@ -133,7 +133,7 @@ cp949 정렬을 가정하지 않는다. `ascii_labels_with_odd_length_cp949_half
 1. [`invariants.md` INV-05](../tech/agent_architecture/invariants.md) ·
    [`detection_policy.md` ④](../tech/agent_security/detection_policy.md) — 금지되는 것은
    *추정을 추정이라 밝히지 않는 것*이지 추정 자체가 아니다.
-2. [`task_m100_4100_report.md` §3-3](../report/task_m100_4100_report.md) — 메인테이너 자기정정:
+2. [`task_m100_4100_report.md` §3-3](../report/archives/task_m100_4100_report.md) — 메인테이너 자기정정:
    > 보수적 선택 자체는 맞지만 **범위가 틀렸다** — 거부는 그 점의 *쓰기*에 걸려야지 문서
    > 전체의 *읽기*에 걸리면 안 된다.
 3. 당시 `src/ooxml_chart/data.rs` — "스캐너는 표지만 세우고

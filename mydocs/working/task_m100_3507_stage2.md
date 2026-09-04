@@ -91,4 +91,4 @@ Draft PR 생성 직후 `devel`에 #3517의 CI·문서 변경 2커밋이 추가�
 로컬 검증이 통과했으므로 #3507 구현의 인수 조건을 충족했고 오늘할일 상태를 `완료`로 변경했다.
 
 계획 대비 차이와 전체 인수 판정은
-[`task_m100_3507_report.md`](../report/task_m100_3507_report.md)에 종합한다.
+[`task_m100_3507_report.md`](../report/archives/task_m100_3507_report.md)에 종합한다.

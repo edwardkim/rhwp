@@ -1,7 +1,7 @@
 ---
 kind: working
 status: completed
-canonical: mydocs/report/task_m100_4939_report.md
+canonical: mydocs/report/archives/task_m100_4939_report.md
 last_verified: 2026-08-16
 ---
 
@@ -120,5 +120,5 @@ validator의 `validate_file()`로 분리 검사해 error 0을 확인했다.
 ## 7. 후속
 
 FI-01~FI-14 전항 disposition과 Issue #4939 완료 조건은
-[최종 결과 보고서](../report/task_m100_4939_report.md)에 기록한다. Stage 5 commit 뒤에도 remote push,
+[최종 결과 보고서](../report/archives/task_m100_4939_report.md)에 기록한다. Stage 5 commit 뒤에도 remote push,
 PR 생성, issue comment·close는 별도 승인 전 수행하지 않는다.

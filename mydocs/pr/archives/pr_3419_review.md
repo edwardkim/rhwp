@@ -89,5 +89,5 @@ source head에는 CI가 없고 conflict 상태였으므로 과거 source 상태�
 불필요한 줄끝 churn을 제거하고 표 셀·test 실행·Skia 생성자 누락을 보정한 후보는 **보정 후 기술적 수용
 가능**하다. owner의 [#3445 범위 지시](https://github.com/edwardkim/rhwp/issues/3445#issuecomment-5083833363)는
 당시 열린 PR을 v0.8.2 핫픽스 기준선에서 제외한 것이고,
-[해당 릴리즈는 완료](../../report/task_m100_3445_report.md)됐다. 따라서 현재 보류로 확장하지 않으며,
+[해당 릴리즈는 완료](../../report/archives/task_m100_3445_report.md)됐다. 따라서 현재 보류로 확장하지 않으며,
 **최신 통합 head CI와 mergeable 상태가 성공하면 merge 권고**한다.

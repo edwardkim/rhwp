@@ -23,7 +23,7 @@ source commit 1/1이 통합 후보에 적용됐다.
 
 - source head의 범위 분류 결과는 5 success, 15 skipped, failure 0이다. skipped는 문서/측정 변경에 대한
   fast-pass 정책 결과이며 실패가 아니다.
-- 보고서 [`survey_10k_r39_20260823.md`](../../report/survey_10k_r39_20260823.md)의 기준 전환 근거와
+- 보고서 [`survey_10k_r39_20260823.md`](../../report/archives/survey_10k_r39_20260823.md)의 기준 전환 근거와
   현재 `upstream/devel`의 HWP 2024 MCP 선택 규칙을 대조했다.
 - 통합 branch에는 HWP 2024 MCP 다중 환경 사용 문서도 추가했고, `test-2024.hwp`의 비동기 PDF smoke에서
   queued→succeeded→download, server/client SHA-256 일치와 PDF signature/EOF를 확인했다. 인증값은 기록하지 않는다.

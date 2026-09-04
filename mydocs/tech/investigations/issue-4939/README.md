@@ -13,7 +13,7 @@ last_verified: 2026-08-16
 ## 권위와 소비 경계
 
 - [수행계획](../../../plans/archives/task_m100_4939.md)이 범위와 단계별 승인 게이트의 정본이다.
-- [원인 계보 보고서](../../../report/font_metrics_fallback_causal_lineage_20260816.md)는 역사와 보호
+- [원인 계보 보고서](../../../report/archives/font_metrics_fallback_causal_lineage_20260816.md)는 역사와 보호
   불변식의 선행 근거다.
 - 이 디렉터리의 JSON은 조사 snapshot이다. 제품 runtime의 canonical registry가 아니다.
 - `src/`, `rhwp-studio/src/`, `web/`은 이 디렉터리의 JSON을 import하거나 생성 입력으로 사용하지 않는다.
@@ -42,7 +42,7 @@ selector의 disposition을 같은 파일에 추가했다. Stage 4는 이 candida
 - `font_rule_baseline.json`: metric table·lookup projection·fixture·gate 기준선
 - [Font Rule Ledger 요약](font_rule_ledger_summary.md)
 - `font_rule_ledger.json`: candidate evidence reference와 판정 결과를 가진 조사 원장
-- [최종 결과 보고서](../../../report/task_m100_4939_report.md)
+- [최종 결과 보고서](../../../report/archives/task_m100_4939_report.md)
 - [Stage 5 최종 감사 기록](../../../working/task_m100_4939_stage5.md)
 
 ## Stage 1 검증
