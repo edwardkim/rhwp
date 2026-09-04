@@ -1004,7 +1004,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
         self.assertNotIn("gym certify", text)
 
     def test_working_doc_declares_issue_and_non_scope(self):
-        text = (doc.default_repo_root() / "mydocs/working/agent_onboarding.md").read_text(encoding="utf-8")
+        text = (doc.default_repo_root() / "mydocs/working/archives/agent_onboarding.md").read_text(encoding="utf-8")
         self.assertIn("#5292", text)
         self.assertIn("gym/", text)
         self.assertIn("새 rhwp CLI", text)

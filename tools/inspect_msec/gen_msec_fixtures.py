@@ -3239,7 +3239,7 @@ class Builder:
             "## 만진 경로 / 만지지 않은 경로",
             "",
             "- 만짐: `tools/inspect_msec/`, `tests/fixtures/inspect_msec/`, `mydocs/working/inspect_msec/`,",
-            "  `mydocs/working/m_sec_inspect_fatten.md`, `tests/cases/inspect_msec_fatten.rs`",
+            "  `mydocs/working/archives/m_sec_inspect_fatten.md`, `tests/cases/inspect_msec_fatten.rs`",
             "- 안 만짐: `src/`, `gym/`, `scripts/visual_sweep.py`, 다른 MEGA 좌석",
             "",
             "## 건수",
@@ -3263,7 +3263,7 @@ class Builder:
             "closes #5476. `--body-file`. base `devel`. 한국어.",
             "",
         ]
-        write_text(ROOT / "mydocs" / "working" / "m_sec_inspect_fatten.md", "\n".join(overview))
+        write_text(ROOT / "mydocs" / "working" / "archives" / "m_sec_inspect_fatten.md", "\n".join(overview))
 
         # family walkthroughs — 픽스처마다 소비 분기
         by_axis = {"hidden-text": [], "injection": [], "unicode": [], "inspect": []}

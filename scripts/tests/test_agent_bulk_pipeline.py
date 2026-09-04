@@ -20,7 +20,7 @@ REF = SKILL / "references"
 FIXT = SKILL / "fixtures"
 EX = SKILL / "examples"
 GEN = REF / "_gen_pack.py"
-WORKING = REPO / "mydocs" / "working" / "agent_bulk_pipeline.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_bulk_pipeline.md"
 
 INVENTED_COMMANDS = [
     "batch merge",

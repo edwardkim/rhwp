@@ -10,7 +10,7 @@
 바이너리·네트워크를 부르지 않는다.
 
 정본: .claude/skills/rhwp-handoff/
-작업 기록: mydocs/working/agent_handoff.md
+작업 기록: mydocs/working/archives/agent_handoff.md
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ FIXTURES = SKILL / "fixtures"
 ENVS = FIXTURES / "envelopes"
 CAPS = FIXTURES / "capsules"
 CATALOG = FIXTURES / "catalog.json"
-WORKING = REPO / "mydocs" / "working" / "agent_handoff.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_handoff.md"
 ORCH = REPO / "tools" / "handoff" / "orchestrator.py"
 EXISTING_ORCH_TEST = REPO / "scripts" / "tests" / "test_agent_handoff.py"
 

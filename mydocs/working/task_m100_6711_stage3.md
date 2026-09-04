@@ -104,3 +104,40 @@ target이 없던 historical 오류이며 전수 multiset에서 신규·소실 0�
 4. 별도 승인 뒤 push와 PR을 수행하고 exact-head CI를 확인한다.
 5. merge 뒤 최신 `upstream/devel`에서 Batch B 1,120개와 incoming link를 다시 dry-run한다.
 6. Batch B merge 뒤 Stage 4 전수 감사와 최종 보고로 #6711 종료 요건을 판단한다.
+
+## 5. PR #6726 첫 head 회귀와 정정
+
+첫 head `f73a68590d`의
+[`Gym benchmark contracts`](https://github.com/edwardkim/rhwp/actions/runs/33865831824)는
+2,125건 중 failures 5건, errors 16건으로 실패했다. 원인은 archive로 이동된 작업 기록을 Python
+계약 테스트가 여전히 `mydocs/working/gym_*.md`에서 열던 하드코딩 경로였다. Markdown 링크 그래프는
+통과했지만 비-Markdown 실행 소비자를 검사하지 않아 누락된 것이다.
+
+수정은 root redirect stub을 되살리지 않고 다음 원칙으로 수행했다.
+
+- 실제 파일을 읽는 Python·Rust 계약 테스트는 `mydocs/working/archives/`를 사용한다.
+- 과거 이슈의 생성기와 현재 경로를 싣는 fixture·source 설명도 archive 위치에 맞췄다.
+- 이동 문서 본문의 historical `canonical`과 과거 실행 증적은 내용 보존을 위해 바꾸지 않았다.
+- 월별 archive 정본에 비-Markdown 경로 소비자 검색과 변경 종류별 추가 검증을 명시했다.
+
+### 정정 검증
+
+| 검증 | 결과 |
+| --- | --- |
+| CI와 같은 Gym 계약 명령 | 2,125 passed, 1 skipped |
+| 변경된 Python·generator 관련 모듈 | 40개 모듈 통과 |
+| `tools.agent_onboarding.test_rhwp_doctor` | 136 passed |
+| 변경된 Rust `working` 계약 | 13개 generated suite에서 15 passed |
+| native Clippy `-D warnings` | 통과 |
+| WASM library Clippy `-D warnings` | 통과 |
+| workspace build | 통과 |
+| workspace all-targets Clippy `-D warnings` | 통과 |
+| integration suite manifest | 1,152 sources, 48/48 targets 정합 |
+
+변경된 agent 계약군에서 별도로 발견한 `test_agent_knowledge_map`, `test_agent_mcp_session`,
+`test_agent_surface` 실패는 분리한 `devel@2394c9044c` worktree에서도 동일하게 재현되어 이번 변경의
+신규 회귀에서 제외했다.
+
+정정 뒤 누적 변경은 rename-aware 1,257개, rename을 전혀 인정하지 않는 보수적 경로 2,368개다.
+PR files API 3,000개 한도 안이며, canonical Markdown 링크 오류는 계속 0건이고 metadata 오류는
+기존 4개 문서의 16건 그대로다.

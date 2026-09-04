@@ -375,7 +375,7 @@ fn envelope_examples_teach_true_false_and_missing() {
 
 #[test]
 fn working_doc_records_the_issue_and_scope() {
-    let path = repo().join("mydocs/working/agent_provenance.md");
+    let path = repo().join("mydocs/working/archives/agent_provenance.md");
     let text = fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
     assert!(text.contains("#5295") || text.contains("5295"), "이슈 번호");
     assert!(text.contains("export-provenance-map"), "지도 명령");

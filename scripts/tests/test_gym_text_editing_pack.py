@@ -20,8 +20,8 @@ PACK = GYM / "packs" / "text-editing"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_text_editing.md"
-EXCEPTIONS = REPO_ROOT / "mydocs" / "working" / "gym_text_editing_exceptions.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_text_editing.md"
+EXCEPTIONS = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_text_editing_exceptions.md"
 
 EXPECTED_IDS = [f"TE{i:02d}" for i in range(1, 91)]
 

@@ -945,7 +945,7 @@
     {
       "id": "I118",
       "utterance": "작업 기록",
-      "command": "mydocs/working/agent_bug_hunter.md",
+      "command": "mydocs/working/archives/agent_bug_hunter.md",
       "reference": "01_playbook_authority.md",
       "stop": "F01",
       "notGym": true

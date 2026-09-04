@@ -20,7 +20,7 @@ GYM = REPO_ROOT / "gym"
 OM = GYM / "packs" / "objects-media"
 LR = GYM / "packs" / "layout-rendering"
 CD = GYM / "packs" / "corpus-diagnostics"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_om_lr_cd.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_om_lr_cd.md"
 
 OM_IDS = [f"OM{i:02d}" for i in range(1, 46)]
 LR_IDS = [f"LR{i:02d}" for i in range(1, 49)]
