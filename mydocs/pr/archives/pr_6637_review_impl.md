@@ -80,3 +80,24 @@ Stage 5에서 나온 불리한 `exam_kor` 역방향 결과를 숨기지 않고 �
 6. 갱신된 각 exact head의 Studio unit과 top TypeScript·build·E2E manifest를 재확인한다. **완료**
 7. 갱신된 각 exact head의 Full CI와 #6040/#6041/#6042 시각·성능 게이트를 재확인한다.
 8. 세 PR을 일괄 Ready로 바꾸는 것은 작업지시자의 별도 승인 뒤 수행한다.
+
+## 2026-09-04 인라인 리뷰 보정 계획
+
+- 대상: review `5109298479`, 원 head `777fba96ef437c3f865653e6f96d13a3d0312317`.
+- 승인: 사용자의 "보정하고 보정 코멘트까지 게시해줘"에 따라 두 finding의 수정·검증·PR branch push와
+  인라인 답글 게시를 수행한다. merge와 추가 정책 변경은 포함하지 않는다.
+- 기존 Stage 6 이후의 제한된 보정 루프다. 이미 완료한 이슈 단계를 새로 채번하지 않는다.
+
+1. RED: 실제 CanvasView planner/descriptor와 scheduler를 연결해 정착 큐 생성 뒤 focus 변경으로
+   미생성 visible 쪽이 유실되는 조건을 고정한다. visible frame/fast path/prefetch의 run 및 validity
+   예외가 남은 작업 예약을 잃는 조건도 회귀 테스트로 남긴다.
+2. 구현: focus 변경으로 plan을 교체하면 남은 desired work와 선택 prefetch 예약을 최신 plan으로
+   다시 계산한다. 같은 viewport generation의 frame·scroll-settle 예약은 보존하고 추가 동기 visible
+   raster를 강제하지 않는다. scheduler는 예외를 숨기지 않으면서 finally에서 후속 dispatch를 보장하고,
+   동기 fast path 전에 scroll-settle을 예약한다.
+3. GREEN: focused tests, TypeScript, Studio 전체 테스트, production build, E2E manifest 및 실제
+   브라우저의 focus/scroll/zoom·오류 복구를 검증한다. Rust/WASM source와 32M/40M/64M 예산,
+   DPR 후보, 줌 앵커, 캐시 키 정책은 변경하지 않는다.
+4. 결과와 한계를 review 기록에 추가하고 현재 PR head에 fast-forward push한다. 각 인라인 리뷰에
+   수정 commit·재현/검증 결과를 답글로 게시하고 API로 원문을 재확인한다. 새 head의 원격 CI는
+   로컬 검증과 구분해 확인하며, 사용자 승인 전 merge하지 않는다.
