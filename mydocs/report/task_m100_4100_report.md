@@ -9,7 +9,7 @@ last_verified: 2026-08-11
 
 - **Issue**: [#4100](https://github.com/edwardkim/rhwp/issues/4100) (#3683 Track B 착수 순서 4번)
 - **브랜치**: `task4100` · **기준 커밋**: `devel = a70797db4` (PR 직전 리베이스)
-- **계획서**: [`task_m100_4100.md`](../plans/task_m100_4100.md) ·
+- **계획서**: [`task_m100_4100.md`](../plans/archives/task_m100_4100.md) ·
   **단계 보고서**: [stage1](../working/task_m100_4100_stage1.md) ·
   [stage2](../working/task_m100_4100_stage2.md) · [stage3](../working/task_m100_4100_stage3.md) ·
   [stage4](../working/task_m100_4100_stage4.md) · [stage5](../working/task_m100_4100_stage5.md) ·

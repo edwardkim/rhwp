@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4962_w4.md
+canonical: mydocs/plans/archives/task_m100_4962_w4.md
 last_verified: 2026-08-22
 ---
 
@@ -30,7 +30,7 @@ last_verified: 2026-08-22
 
 ## 권위와 경계
 
-- [수행계획](../../../plans/task_m100_4962.md)이 범위와 승인 게이트의 정본이다.
+- [수행계획](../../../plans/archives/task_m100_4962.md)이 범위와 승인 게이트의 정본이다.
 - W1 원장과 candidate는 `../issue-4939/`, W2 trace 계약은 `../issue-4961/`에서 읽는다.
 - 기존 `output/poc/font-layout-habits/`는 gitignored 로컬 입력이다. 이 디렉터리로 복사하지 않는다.
 - 기존 POC의 장평·자간·커닝·문맥·font usage는 재측정하지 않는다.

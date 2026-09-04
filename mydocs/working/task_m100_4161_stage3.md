@@ -1,7 +1,7 @@
 # Stage 3 — task_m100_4161 회귀 판정·증적
 
 - **이슈**: [#4161](https://github.com/edwardkim/rhwp/issues/4161)
-- **계획서**: [`mydocs/plans/task_m100_4161.md`](../plans/task_m100_4161.md)
+- **계획서**: [`mydocs/plans/task_m100_4161.md`](../plans/archives/task_m100_4161.md)
 - **선행**: [`stage1`](task_m100_4161_stage1.md) red·계측, [`stage2`](task_m100_4161_stage2.md) green
 - **브랜치**: `task_m100_4161` (분기 기준 `upstream/devel` `0bc05ef81`)
 - **작업 시각**: 2026-08-18 KST

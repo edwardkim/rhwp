@@ -1,6 +1,6 @@
 # Task M100 #4964 — Stage W6-4 generator 소유권·metadata
 
-- **수행계획**: [`../plans/task_m100_4964.md`](../plans/task_m100_4964.md)
+- **수행계획**: [`../plans/task_m100_4964.md`](../plans/archives/task_m100_4964.md)
 - **선행 분리**: [`task_m100_4964_w6_stage3.md`](task_m100_4964_w6_stage3.md)
 - **기준 source**: `upstream/devel@d1ad0eb8784dbc55f0796e2ba8775f7363247b91`
 - **단계 목적**: 생성기가 generated data와 provenance metadata만 소유하게 하고 확인 가능한 공개

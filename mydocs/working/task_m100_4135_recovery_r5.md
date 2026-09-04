@@ -3,7 +3,7 @@
 - **작업 기준**: `13f9de80b4c2`
 - **관찰한 upstream**: `upstream/devel@b1485e0a143d`
 - **브랜치**: `codex/issue-4135-contextual-shortcut`
-- **계획**: [`task_m100_4135_impl.md`](../plans/task_m100_4135_impl.md)
+- **계획**: [`task_m100_4135_impl.md`](../plans/archives/task_m100_4135_impl.md)
 - **선행 결과**: [`task_m100_4135_recovery_r4.md`](task_m100_4135_recovery_r4.md)
 - **승인**: 작업지시자가 R4 한글 IME 재검증을 `수정이 반영되었어.`로 승인한 뒤,
   한컴의 셀 안 단계 마커와 하단 문구를 함께 쓰는 하이브리드 UX를 `그렇게 진행해줘.`로 승인

@@ -1,10 +1,10 @@
 # Task M100 #4969 W10-Q4 — vertical metrics·writing mode 인수 감사
 
 - **이슈**: [#4969](https://github.com/edwardkim/rhwp/issues/4969)
-- **상위 계획**: [`task_m100_4969.md`](../plans/task_m100_4969.md)
+- **상위 계획**: [`task_m100_4969.md`](../plans/archives/task_m100_4969.md)
 - **기계 판독 결과**:
   [`w10_q4_handoff_audit.json`](../tech/investigations/issue-4969/w10_q4_handoff_audit.json)
-- **수정 수행계획**: [`task_m100_4969_w10_q4.md`](../plans/task_m100_4969_w10_q4.md)
+- **수정 수행계획**: [`task_m100_4969_w10_q4.md`](../plans/archives/task_m100_4969_w10_q4.md)
 - **기준 HEAD**: `4e0a3822c3e05c2df8b7c52740b3a0c79487053a`
 - **최신 upstream/devel**: `a71ebf2141ae3bd1ca3b5d3ea438bbe3454edaf9` (`34 ahead / 0 behind`)
 - **감사일**: 2026-08-30 KST

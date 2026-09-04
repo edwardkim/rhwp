@@ -1,7 +1,7 @@
 ---
 kind: report
 status: active
-canonical: mydocs/plans/task_m100_3311.md
+canonical: mydocs/plans/archives/task_m100_3311.md
 last_verified: 2026-08-01
 ---
 

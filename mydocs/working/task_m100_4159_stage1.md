@@ -1,7 +1,7 @@
 # Stage 1 — task_m100_4159 진단·래칫 준비
 
 - **이슈**: [#4159](https://github.com/edwardkim/rhwp/issues/4159)
-- **계획서**: [`mydocs/plans/task_m100_4159.md`](../plans/task_m100_4159.md)
+- **계획서**: [`mydocs/plans/task_m100_4159.md`](../plans/archives/task_m100_4159.md)
 - **브랜치**: `task_m100_4159_nested_table_bottom_clip`
 - **분기 기준**: `upstream/devel` `06f8ebcca`
 - **PR 직전 통합 기준**: `upstream/devel` `23ff5b6f1` (merge commit `e6f09003b`)

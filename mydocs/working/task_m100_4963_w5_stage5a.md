@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4963 W5 Stage 5A — 17-face reuse action matrix
 
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
-- **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
+- **계획**: [`task_m100_4963.md`](../plans/archives/task_m100_4963.md)
 - **선행 단계**: [`task_m100_4963_w5_stage4b.md`](task_m100_4963_w5_stage4b.md)
 - **단계 상태**: 전건 reuse·terminal·actionable 분류 완료, W5-5B로 이관
 

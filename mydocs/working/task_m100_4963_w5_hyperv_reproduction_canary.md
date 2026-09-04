@@ -9,7 +9,7 @@ last_verified: 2026-08-23
 # Task M100 #4963 W5 — 공개 Hyper-V 재현 canary
 
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
-- **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
+- **계획**: [`task_m100_4963.md`](../plans/archives/task_m100_4963.md)
 - **재현 정본**:
   [`hyperv_reproduction_guide.md`](../tech/investigations/issue-4963/hyperv_reproduction_guide.md)
 - **단계 상태**: tracked host controller three-state 실행·복원·독립 비교 완료

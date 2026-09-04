@@ -90,7 +90,7 @@ last_verified: 2026-07-17
 | 3차 리뷰 | 90 | Task 149 도약 |
 | 4차 리뷰(03-23) | 89 | 재축적 시작 |
 | **현재(07-04, 미채점)** | 6차 리뷰에서 채점 | 대시보드 영점: CC>25 **80개** — S 축 하락 예상 |
-| v1.0 목표 | **≥ 90** | + CC>25 = 0 ([refactoring_plan_2026](../plans/refactoring_plan_2026.md) §6) |
+| v1.0 목표 | **≥ 90** | + CC>25 = 0 ([refactoring_plan_2026](../plans/archives/refactoring_plan_2026.md) §6) |
 
 ## 4. 언제 어떻게 채점하나
 
@@ -104,5 +104,5 @@ last_verified: 2026-07-17
 
 - 선행 리뷰: `mydocs/feedback/r-code-review-1st~5th.md` (점수 궤적 54→90→89)
 - 아키텍처 감사: #1582 (9개 도메인 축 혼재)
-- 리팩토링 마스터 플랜: [refactoring_plan_2026.md](../plans/refactoring_plan_2026.md)
+- 리팩토링 마스터 플랜: [refactoring_plan_2026.md](../plans/archives/refactoring_plan_2026.md)
 - 복잡도 정량: [dashboard.md](dashboard.md) + `mydocs/metrics/` 스냅샷

@@ -1,7 +1,7 @@
 ---
 kind: working
 status: active
-canonical: mydocs/plans/task_m100_3377.md
+canonical: mydocs/plans/archives/task_m100_3377.md
 last_verified: 2026-07-30
 ---
 

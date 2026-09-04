@@ -1,8 +1,8 @@
 # 최종 결과보고 — #1921/#2004 트랙 A: 부동 표 셀 이미지 스택 콘텐츠 페이지네이션
 
 브랜치 `local/task1921-float-table-pagination` (base: local/devel 통합 = origin/devel R11 + 열린 PR 6건).
-수행계획: [task_m100_1921_float_table.md](../plans/task_m100_1921_float_table.md) 트랙 A ·
-구현계획: [task_m100_1921_float_table_impl.md](../plans/task_m100_1921_float_table_impl.md).
+수행계획: [task_m100_1921_float_table.md](../plans/archives/task_m100_1921_float_table.md) 트랙 A ·
+구현계획: [task_m100_1921_float_table_impl.md](../plans/archives/task_m100_1921_float_table_impl.md).
 선행 RCA: [floating_object_family_rca.md](../tech/investigations/issue-2004/floating_object_family_rca.md) (PR #2090).
 
 ## 1. 문제

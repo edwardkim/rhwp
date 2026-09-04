@@ -1,7 +1,7 @@
 # Stage 1 — task_m100_4155 재현·계측
 
 - **이슈**: [#4155](https://github.com/edwardkim/rhwp/issues/4155)
-- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/task_m100_4155.md)
+- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/archives/task_m100_4155.md)
 - **브랜치**: `task_m100_4155_hwp3_char_shade` (분기 기준 `upstream/devel` `e48fe8694`)
 - **작업 시각**: 2026-08-09 KST
 - **프로덕션 코드 변경**: 0

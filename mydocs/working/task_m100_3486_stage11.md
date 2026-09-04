@@ -65,7 +65,7 @@ cluster로 shape됨을 확인했다.
 
 따라서 이 Stage의 결론도 그대로 유지한다. 제품명으로 보이는 PDF 표시 차이는 실제 사용자-visible
 후보이지만, HWP3 parser의 전역 decode 보정이나 `ᄒᆞᆫ → 한` 치환을 정당화하지 않는다. 다음 작업의
-권위 경로는 [수행계획서 v2](../plans/task_m100_3486_v2.md)의 Stage 12-A다. 먼저 visual sweep이
+권위 경로는 [수행계획서 v2](../plans/archives/task_m100_3486_v2.md)의 Stage 12-A다. 먼저 visual sweep이
 페이지별 SVG raster·PDF raster·compare·overlay·review·page metrics를 모두 성공한 경우에만 원자적
 checkpoint를 남기고, 동일 HWP/PDF hash·Git HEAD·rhwp binary·DPI·diff threshold provenance에서만
 `--resume`/shard 결과를 합치도록 한다.

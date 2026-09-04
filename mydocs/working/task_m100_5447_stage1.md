@@ -7,7 +7,7 @@ last_verified: 2026-08-18
 
 # #5447 Stage 1 — B2 구조 변종 하네스 + 판정 번들
 
-- **계획서**: [`mydocs/plans/task_m100_5447.md`](../plans/task_m100_5447.md)
+- **계획서**: [`mydocs/plans/task_m100_5447.md`](../plans/archives/task_m100_5447.md)
 - **번들**: `output/issue_5447_b2_judgment/` (gitignored) — 38 파일 + `PANJEONG.md`
 - **생성기**: `tests/issue_4100_chart_data_edit.rs::generate_b2_structure_judgment_bundle` (`#[ignore]`)
 - **브랜치**: `task5447` (`upstream/devel` `e79f11308` 기준)

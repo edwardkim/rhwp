@@ -9,7 +9,7 @@ last_verified: 2026-08-20
 
 - **이슈**: [#5447](https://github.com/edwardkim/rhwp/issues/5447) — 부모
   [#3683](https://github.com/edwardkim/rhwp/issues/3683) Track B
-- **계획서**: [`task_m100_5447.md`](../plans/task_m100_5447.md) · **Stage 1**:
+- **계획서**: [`task_m100_5447.md`](../plans/archives/task_m100_5447.md) · **Stage 1**:
   [`task_m100_5447_stage1.md`](../working/task_m100_5447_stage1.md) · **Stage 2**(증적 보존):
   [`task_m100_5447_stage2.md`](../working/task_m100_5447_stage2.md)
 - **브랜치**: `task5447` (`upstream/devel` `e79f11308` 기준)

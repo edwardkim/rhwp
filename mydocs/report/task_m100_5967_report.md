@@ -8,7 +8,7 @@ last_verified: 2026-08-24
 # #5967 보고서 — 판정 자산의 재생성 계약을 바이트에서 스트림으로 옮긴다
 
 - **이슈**: [#5967](https://github.com/edwardkim/rhwp/issues/5967)
-- **계획서**: [`task_m100_5967.md`](../plans/task_m100_5967.md) · **Stage 1**:
+- **계획서**: [`task_m100_5967.md`](../plans/archives/task_m100_5967.md) · **Stage 1**:
   [`task_m100_5967_stage1.md`](../working/task_m100_5967_stage1.md)
 - **브랜치**: `task5967` (`upstream/devel` `ad2867708` 기준)
 - **판정 원장**: [`samples/issue5447/MANIFEST.json`](../../samples/issue5447/MANIFEST.json)

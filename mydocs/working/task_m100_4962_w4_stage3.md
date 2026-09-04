@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4962 W4 Stage 3 — evidence 상승 조건·민감도 band
 
 - **이슈**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
-- **계획**: [`task_m100_4962_w4.md`](../plans/task_m100_4962_w4.md)
+- **계획**: [`task_m100_4962_w4.md`](../plans/archives/task_m100_4962_w4.md)
 - **선행 단계**: [`task_m100_4962_w4_stage2.md`](task_m100_4962_w4_stage2.md)
 - **브랜치**: `task_m100_4962`
 - **단계 상태**: W4-3 완료, W4-4 승인 대기

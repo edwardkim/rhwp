@@ -1,7 +1,7 @@
 # Stage 2 — task_m100_4161 TDD 수정 (green)
 
 - **이슈**: [#4161](https://github.com/edwardkim/rhwp/issues/4161)
-- **계획서**: [`mydocs/plans/task_m100_4161.md`](../plans/task_m100_4161.md)
+- **계획서**: [`mydocs/plans/task_m100_4161.md`](../plans/archives/task_m100_4161.md)
 - **선행**: [`task_m100_4161_stage1.md`](task_m100_4161_stage1.md) — red 원문·계측·base_size 제외 확정
 - **브랜치**: `task_m100_4161` (분기 기준 `upstream/devel` `0bc05ef81`)
 - **작업 시각**: 2026-08-18 KST

@@ -8,7 +8,7 @@ last_verified: 2026-08-26
 # #6053 처리 결과 — B2-UI: 차트 행·열·라벨 구조 편집
 
 - **Issue**: [#6053](https://github.com/edwardkim/rhwp/issues/6053) · 부모 [#3683](https://github.com/edwardkim/rhwp/issues/3683) Track B
-- **계획서**: [task_m100_6053.md](../plans/task_m100_6053.md)
+- **계획서**: [task_m100_6053.md](../plans/archives/task_m100_6053.md)
 - **브랜치**: `task6053`, 기반 `upstream/devel = 70ebacc4c`
 - **커밋**: S1(모델·페이로드) · S2(로컬 메뉴) · S3(다이얼로그) · S4(e2e) · S5(문서) ·
   S6(주식형 렌더러 결함 — 수동 테스트 후속) 6건

@@ -1,7 +1,7 @@
 # Stage 2 — task_m100_4141 수정과 계약 고정
 
 - **이슈**: [#4141](https://github.com/edwardkim/rhwp/issues/4141)
-- **계획서**: [`mydocs/plans/task_m100_4141.md`](../plans/task_m100_4141.md)
+- **계획서**: [`mydocs/plans/task_m100_4141.md`](../plans/archives/task_m100_4141.md)
 - **선행 단계**: [stage1](task_m100_4141_stage1.md)
 - **브랜치**: `task_m100_4141` (분기 기준 `upstream/devel` `0fdac31ba`)
 - **작업 시각**: 2026-08-07 KST

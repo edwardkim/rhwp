@@ -10,7 +10,7 @@ last_verified: 2026-07-30
 - 이슈: [#3486](https://github.com/edwardkim/rhwp/issues/3486)
 - 기준 `devel`: `42e1f125dae664bf50f2053784b5e0a213bea2e2`
 - 선행 결론: [Stage 11](task_m100_3486_stage11.md)의 HWP3 전역 decode 보정·`ᄒᆞᆫ → 한` 치환 배제
-- 권위 계획: [수행계획서 v2](../plans/task_m100_3486_v2.md) Stage 12-A
+- 권위 계획: [수행계획서 v2](../plans/archives/task_m100_3486_v2.md) Stage 12-A
 
 ## 목적과 경계
 

@@ -2,7 +2,7 @@
 
 - **Issue**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
 - **상위 추적**: [#4960](https://github.com/edwardkim/rhwp/issues/4960)
-- **계획**: [`task_m100_4962.md`](../plans/task_m100_4962.md)
+- **계획**: [`task_m100_4962.md`](../plans/archives/task_m100_4962.md)
 - **선행 결과**: [`task_m100_4962_stage4a_finalizer_manifest.md`](task_m100_4962_stage4a_finalizer_manifest.md)
 - **최종 실행 source HEAD**: `4a6c9e24234375e5bba5477c5d96bbed3261bc6c`
 - **날짜**: 2026-08-21 KST

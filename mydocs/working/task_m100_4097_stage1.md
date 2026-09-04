@@ -1,7 +1,7 @@
 # Stage 1 — task_m100_4097 측정과 red 기준선
 
 - **이슈**: [#4097](https://github.com/edwardkim/rhwp/issues/4097)
-- **계획서**: [`mydocs/plans/task_m100_4097.md`](../plans/task_m100_4097.md)
+- **계획서**: [`mydocs/plans/task_m100_4097.md`](../plans/archives/task_m100_4097.md)
 - **브랜치**: `task_m100_4097` (`upstream/devel` `d634e608b` 기준)
 - **작업 시각**: 2026-08-07 KST
 - **프로덕션 코드 변경**: **0** — `src/` 최종 diff 없음

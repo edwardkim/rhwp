@@ -3,7 +3,7 @@
 - **이슈**: [#4161](https://github.com/edwardkim/rhwp/issues/4161) `[model] CharShape.ratios 기본값 0 이
   OWPML 유효범위 [50,200] 밖 — 렌더러가 장평 0 으로 소비한다`
 - **브랜치**: `task_m100_4161` (분기 기준 `upstream/devel` `0bc05ef81`)
-- **문서**: 계획 [`plans/task_m100_4161.md`](../plans/task_m100_4161.md) ·
+- **문서**: 계획 [`plans/task_m100_4161.md`](../plans/archives/task_m100_4161.md) ·
   [stage1](../working/task_m100_4161_stage1.md) · [stage2](../working/task_m100_4161_stage2.md) ·
   [stage3](../working/task_m100_4161_stage3.md)
 - **작성**: 2026-08-18 KST

@@ -4,7 +4,7 @@
 - **PR**: [#4310](https://github.com/edwardkim/rhwp/pull/4310)
 - **브랜치**: `issue-4132-native-cli-exit`
 - **분기 기준**: `upstream/devel` `f94fe5e4f`
-- **계획서**: [수행](../plans/task_m100_4132.md) / [구현](../plans/task_m100_4132_impl.md)
+- **계획서**: [수행](../plans/archives/task_m100_4132.md) / [구현](../plans/archives/task_m100_4132_impl.md)
 - **상태**: Draft PR 게시, 원격 CI 대기
 - **기록일**: 2026-08-09 KST
 

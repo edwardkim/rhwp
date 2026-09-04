@@ -1,7 +1,7 @@
 # task_m100_4141 최종 보고서 — CharShape 상대크기 0 직렬화
 
 - **Issue**: [#4141](https://github.com/edwardkim/rhwp/issues/4141)
-- **계획서**: [`mydocs/plans/task_m100_4141.md`](../plans/task_m100_4141.md)
+- **계획서**: [`mydocs/plans/task_m100_4141.md`](../plans/archives/task_m100_4141.md)
 - **단계 기록**: [stage1](../working/task_m100_4141_stage1.md) · [stage2](../working/task_m100_4141_stage2.md)
 - **브랜치**: `task_m100_4141` (분기 기준 `upstream/devel` `0fdac31ba`)
 - **작성 시각**: 2026-08-07 KST

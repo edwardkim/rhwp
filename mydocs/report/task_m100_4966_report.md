@@ -127,4 +127,4 @@ rule 추가·의미 수정·retirement, evidence parent/digest와 backend별 sem
 
 W8 tracker 전체 완료는 W9의 조건이 아니다. kerning cohort가 사용하는 metric·face와 진행 중 W8
 변경의 겹침을 대사하고, 겹치는 face가 교정 완료 또는 no-change disposition으로 동결되면 W9를 독립
-진행할 수 있다. 상세 방향은 [#4960 수정 수행계획](../plans/task_m100_4960.md)을 따른다.
+진행할 수 있다. 상세 방향은 [#4960 수정 수행계획](../plans/archives/task_m100_4960.md)을 따른다.

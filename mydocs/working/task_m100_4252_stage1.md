@@ -1,7 +1,7 @@
 # Stage 1 — task_m100_4252 구현·집중 검증
 
 - **이슈**: [#4252](https://github.com/edwardkim/rhwp/issues/4252)
-- **계획서**: [`mydocs/plans/task_m100_4252.md`](../plans/task_m100_4252.md)
+- **계획서**: [`mydocs/plans/task_m100_4252.md`](../plans/archives/task_m100_4252.md)
 - **브랜치**: `fix/issue-4252-nested-table-selection-path`
 - **분기 기준**: `upstream/devel` `fcc3b2135`
 - **작업 시각**: 2026-08-08 KST

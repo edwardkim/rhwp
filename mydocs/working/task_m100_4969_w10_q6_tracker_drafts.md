@@ -1,6 +1,6 @@
 # Task M100 #4969 W10-Q6-B — #4969·#4960 tracker 현행화 초안
 
-- **상위 계획**: [`task_m100_4969_w10_q6.md`](../plans/task_m100_4969_w10_q6.md)
+- **상위 계획**: [`task_m100_4969_w10_q6.md`](../plans/archives/task_m100_4969_w10_q6.md)
 - **Q6-A checkpoint**: `8258f0284`
 - **기계 판독 receipt**:
   [`w10_q6_tracker_draft_receipt.json`](../tech/investigations/issue-4969/w10_q6_tracker_draft_receipt.json)

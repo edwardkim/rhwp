@@ -1,7 +1,7 @@
 # Stage 2 — task_m100_4097 프로덕션 API
 
 - **이슈**: [#4097](https://github.com/edwardkim/rhwp/issues/4097)
-- **계획서**: [`mydocs/plans/task_m100_4097.md`](../plans/task_m100_4097.md)
+- **계획서**: [`mydocs/plans/task_m100_4097.md`](../plans/archives/task_m100_4097.md)
 - **선행 단계**: [`task_m100_4097_stage1.md`](task_m100_4097_stage1.md)
 - **브랜치**: `task_m100_4097` (`upstream/devel` `d634e608b` 기준)
 - **작업 시각**: 2026-08-07 KST

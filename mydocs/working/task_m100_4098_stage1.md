@@ -1,7 +1,7 @@
 # task_m100_4098 Stage 1 — 레거시 그리드를 구조로 읽는다
 
 - 이슈: [#4098](https://github.com/edwardkim/rhwp/issues/4098)
-- 계획: [`mydocs/plans/task_m100_4098.md`](../plans/task_m100_4098.md)
+- 계획: [`mydocs/plans/task_m100_4098.md`](../plans/archives/task_m100_4098.md)
 - 선행 실증: [#4055](https://github.com/edwardkim/rhwp/issues/4055) Stage 1
 
 ## 1. 실측 — `VtDataGrid` 문법 해독
@@ -136,7 +136,7 @@ cp949 정렬을 가정하지 않는다. `ascii_labels_with_odd_length_cp949_half
 2. [`task_m100_4100_report.md` §3-3](../report/task_m100_4100_report.md) — 메인테이너 자기정정:
    > 보수적 선택 자체는 맞지만 **범위가 틀렸다** — 거부는 그 점의 *쓰기*에 걸려야지 문서
    > 전체의 *읽기*에 걸리면 안 된다.
-3. [`src/ooxml_chart/data.rs`](../../src/ooxml_chart/data.rs) — "스캐너는 표지만 세우고
+3. 당시 `src/ooxml_chart/data.rs` — "스캐너는 표지만 세우고
    판단하지 않는다" 가 집 관례다.
 
 방향 모호는 **값이 아니라 이름·묶음**의 문제다. 값은 어느 쪽이든 같다. 또한

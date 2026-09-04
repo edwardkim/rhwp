@@ -3,7 +3,7 @@
 - **이슈**: [#4040](https://github.com/edwardkim/rhwp/issues/4040)
 - **브랜치**: `issue-4040-native-targets`
 - **분기 기준**: `upstream/devel` `d634e608be45d2fd072364a21952a8409d01d9ea`
-- **계획서**: [수행](../plans/task_m100_4040.md) / [구현](../plans/task_m100_4040_impl.md)
+- **계획서**: [수행](../plans/archives/task_m100_4040.md) / [구현](../plans/archives/task_m100_4040_impl.md)
 - **기록일**: 2026-08-07 KST
 
 ## 1. 조사에서 계획서를 두 번 고쳤다

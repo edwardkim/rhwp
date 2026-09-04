@@ -2,7 +2,7 @@
 
 - **Issue**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
 - **상위 추적**: [#4960](https://github.com/edwardkim/rhwp/issues/4960)
-- **계획**: [`task_m100_4962.md`](../plans/task_m100_4962.md)
+- **계획**: [`task_m100_4962.md`](../plans/archives/task_m100_4962.md)
 - **선행 결과**: [`task_m100_4962_stage3_checkpoint_resume.md`](task_m100_4962_stage3_checkpoint_resume.md)
 - **구현·검증 source HEAD**: `29c6a20a1407888d7b71fb3c832bbfc8e8c08145`
 - **날짜**: 2026-08-21 KST

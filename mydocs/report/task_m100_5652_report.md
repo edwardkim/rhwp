@@ -9,7 +9,7 @@ last_verified: 2026-08-23
 
 - **Issue**: [#5652](https://github.com/edwardkim/rhwp/issues/5652) (#3683 Track B — B2-엔진)
 - **브랜치**: `task5652` · **기준 커밋**: `upstream/devel = 87a8d3dca` (리베이스 후)
-- **계획서**: [`task_m100_5652.md`](../plans/task_m100_5652.md) · **단계 보고서**:
+- **계획서**: [`task_m100_5652.md`](../plans/archives/task_m100_5652.md) · **단계 보고서**:
   [stage1](../working/task_m100_5652_stage1.md) · [stage2](../working/task_m100_5652_stage2.md) ·
   [stage3](../working/task_m100_5652_stage3.md) · [stage4](../working/task_m100_5652_stage4.md) ·
   [stage5](../working/task_m100_5652_stage5.md)

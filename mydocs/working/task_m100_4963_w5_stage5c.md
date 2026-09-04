@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4963 W5 Stage 5C — rank 8 distinct-substitution ladder
 
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
-- **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
+- **계획**: [`task_m100_4963.md`](../plans/archives/task_m100_4963.md)
 - **선행 단계**: [`task_m100_4963_w5_stage5b.md`](task_m100_4963_w5_stage5b.md)
 - **단계 상태**: three-state 실행·복원·profile·queue 정규화·메인테이너 시각 판정 완료
 

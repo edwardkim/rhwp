@@ -2,7 +2,7 @@
 
 - **Issue**: [#4961](https://github.com/edwardkim/rhwp/issues/4961)
 - **상위 추적**: [#4960](https://github.com/edwardkim/rhwp/issues/4960)
-- **계획**: [`task_m100_4961.md`](../plans/task_m100_4961.md)
+- **계획**: [`task_m100_4961.md`](../plans/archives/task_m100_4961.md)
 - **브랜치**: `local/task4961-font-decision-trace`
 - **기준**: `upstream/devel` `418e5b191d23cf0618ce99f0cfec332c19ac1bc2`
 - **날짜**: 2026-08-17 KST

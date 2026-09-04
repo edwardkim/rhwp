@@ -7,7 +7,7 @@ last_verified: 2026-08-11
 
 # #4100 Stage 4 — `set_chart_data_native`, ①② 동시 기록
 
-- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/task_m100_4100.md)
+- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/archives/task_m100_4100.md)
 - **기준 커밋**: `devel = dd9ecdc4b`
 - **산출**: `src/document_core/commands/object_ops/chart.rs`(쓰기 경로) ·
   `src/document_core/commands/document.rs`(`bin_data_epoch` 주석 갱신) ·

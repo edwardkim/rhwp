@@ -124,7 +124,7 @@ sweep은 815개 샘플(3 skipped), 597 paths, 112,314건에서 기존 baseline�
   변경 Markdown 523개 링크 검사를 재통과했다.
 
 세부 명령과 환경은 [Stage 1](../../working/task_m100_4224_stage1.md), 범위·rollback은
-[수행계획](../../plans/task_m100_4224.md), 최종 결과는
+[수행계획](../../plans/archives/task_m100_4224.md), 최종 결과는
 [완료 보고서](../../report/task_m100_4224_report.md)에 고정돼 있다.
 
 ## GitHub Actions와 남은 게이트

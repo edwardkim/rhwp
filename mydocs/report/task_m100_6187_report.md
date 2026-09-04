@@ -28,8 +28,8 @@ resize 이벤트는 canvas backing bitmap을 즉시 초기화하지 않고 갱�
 | Stage 3 | `84ead42c9` | 전체 회귀·177개 browser snapshot·실제 mouse drag/undo 증적 |
 | 최신 devel 통합 | `7d4f4a18f` | `upstream/devel@0d1540931` 충돌 없는 통합 |
 
-단계별 근거는 [수행 계획](../plans/task_m100_6187.md),
-[구현 계획](../plans/task_m100_6187_impl.md), [Stage 1](../working/task_m100_6187_stage1.md),
+단계별 근거는 [수행 계획](../plans/archives/task_m100_6187.md),
+[구현 계획](../plans/archives/task_m100_6187_impl.md), [Stage 1](../working/task_m100_6187_stage1.md),
 [Stage 2](../working/task_m100_6187_stage2.md), [Stage 3](../working/task_m100_6187_stage3.md)에 있다.
 
 ## 3. 검증

@@ -1,7 +1,7 @@
 # Stage 1 — task_m100_4161 재현·계측
 
 - **이슈**: [#4161](https://github.com/edwardkim/rhwp/issues/4161)
-- **계획서**: [`mydocs/plans/task_m100_4161.md`](../plans/task_m100_4161.md)
+- **계획서**: [`mydocs/plans/task_m100_4161.md`](../plans/archives/task_m100_4161.md)
 - **브랜치**: `task_m100_4161` (분기 기준 `upstream/devel` `0bc05ef81`)
 - **작업 시각**: 2026-08-18 KST
 - **프로덕션 코드 변경**: 0 (신규 계약 테스트 1파일만 추가 — red 상태)

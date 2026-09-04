@@ -37,7 +37,7 @@ controller, guest helper, 독립 비교기와 실제 rank 8 three-state 재현 �
 
 | 산출물 | 역할 |
 | --- | --- |
-| [W5 수행계획](../plans/task_m100_4963.md) | 범위·재계측 금지선·controlled ladder·보호 불변식 |
+| [W5 수행계획](../plans/archives/task_m100_4963.md) | 범위·재계측 금지선·controlled ladder·보호 불변식 |
 | [Oracle investigation index](../tech/investigations/issue-4963/README.md) | schema·fixture·profile·validator·재생성 명령 |
 | [17-face queue projection](../tech/investigations/issue-4963/oracle_stage5_queue_projection.json) | 최종 disposition 기계 정본 |
 | [rank 8 acceptance ladder](../tech/investigations/issue-4963/oracle_stage5_rank8_acceptance_ladder.json) | distinct substitution three-state 계보 |

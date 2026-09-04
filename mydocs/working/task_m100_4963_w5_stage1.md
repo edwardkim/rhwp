@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4963 W5 Stage 1 — Oracle Profile 계약·schema
 
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
-- **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
+- **계획**: [`task_m100_4963.md`](../plans/archives/task_m100_4963.md)
 - **선행 작업**: [#4962](https://github.com/edwardkim/rhwp/issues/4962) W4 완료
 - **브랜치**: `task_m100_4963`
 - **착수 기준**: `upstream/devel@4bd9c5d60efe85d80e935ff76ed5441c17d56699`

@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4963 W5 Stage 4B — disposable Hancom canary
 
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
-- **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
+- **계획**: [`task_m100_4963.md`](../plans/archives/task_m100_4963.md)
 - **선행 계약**: [`task_m100_4963_w5_stage4a.md`](task_m100_4963_w5_stage4a.md)
 - **단계 상태**: controlled run·acceptance profile·공개 projection·메인테이너 판정 완료
 
