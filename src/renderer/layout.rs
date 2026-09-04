@@ -66,7 +66,7 @@ struct ColumnItemCtx<'a> {
     wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
 }
 
-const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
+pub(crate) const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 const SINGLE_ROW_DECLARED_TRUST_MAX_RATIO: f64 = 1.5;
 
 /// 저장 outer-box paint origin 보정의 layout 단계 안전문이다.

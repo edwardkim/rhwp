@@ -1202,6 +1202,29 @@ impl HeightCursor {
             result = (result + title_after_equation_tail_extra_gap).min(col_bottom);
             self.shift_vpos_base_for_rendered_delta(title_after_equation_tail_extra_gap);
         }
+        // [#6550] 새 문항 제목을 **직전 미주의 콘텐츠 하단 위**로 스냅하면 앞 풀이의
+        // 마지막 줄과 겹친다(2023-09 18쪽 문26: 흐름 1044.3 → 저장 1035.9, 앞 줄 하단
+        // 1043.9 — `overlap 142.51×11.63px` + `text-overlap` 7건).
+        //
+        // 저장 vpos 를 따르는 보정들은 프레임 맞춤이 목적이지 겹침 허가가 아니다. 흐름이
+        // 이미 앞 콘텐츠 아래에 있을 때만(= 되감김이 아니라 스냅이 만든 침범일 때만)
+        // 바닥을 둔다. 흐름 자체가 위에 있으면 종전대로 둔다 — 그건 다른 축이다.
+        //
+        // ⚠ 범위는 **기본 「미주 사이」(≤1984HU) + 보통 높이 tail** 로만 좁힌다.
+        //   · 큰 미주 사이(5669HU)는 spacer 가 만든 trailing y 를 일부러 접는다
+        //     (`..._large_empty_spacer_collapses_trailing_gap_at_bottom`)
+        //   · 큰 수식/inline tail(lh>1500) 뒤 제목은 제한 폭 backtrack 이 계약이다
+        //     (`..._question_title_after_tall_tail_limited_backtrack`, #1284 PDF 핀)
+        if self.suppress_large_forward_jump
+            && current_is_endnote_title
+            && !follows_tall_inline_item
+            && self.endnote_between_notes_hu > 0
+            && self.endnote_between_notes_hu <= super::layout::ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+            && result < prev_content_floor_y
+            && y_offset >= prev_content_floor_y
+        {
+            result = prev_content_floor_y.min(y_offset);
+        }
         if compact_endnote_zero_gap_text_floor && result > end_y + 0.5 {
             self.shift_vpos_base_for_rendered_delta(result - end_y);
         }
