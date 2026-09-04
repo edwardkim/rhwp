@@ -121,6 +121,12 @@ pub(crate) struct PaperOrigin {
     pub(crate) body_left: i32,
     /// 본문 상자의 용지 기준 위쪽 (HWPUNIT).
     pub(crate) body_top: i32,
+    /// 이 밴드가 시작하는 문단의 **본문 절대** 세로 위치 (HWPUNIT).
+    ///
+    /// `Para` 기준은 `paragraph_top`(밴드-로컬)에 오프셋을 더하면 되지만, 용지 기준은
+    /// 절대 좌표로 나오므로 밴드-로컬로 옮겨야 한다. 두 좌표계를 섞으면 밴드 끝이
+    /// 어긋나 배제 루프가 밴드 밖 문단까지 훑는다(#6202 실측: pi=8 까지 가서 bail).
+    pub(crate) band_abs_top: i32,
 }
 
 pub(crate) fn resolve_picture_exclusion(
@@ -201,8 +207,10 @@ pub(crate) fn resolve_picture_exclusion(
             .saturating_sub(horizontal_offset),
     };
     let visible_top = if paper_relative_vert {
-        // 용지 기준 세로는 문단 앵커가 아니라 본문 위쪽에서 잰다.
-        signed_hwpunit(common.vertical_offset).saturating_sub(paper.body_top)
+        // 용지 기준 세로 = (용지 오프셋 − 본문 위쪽) − 밴드 시작 문단의 절대 위치.
+        signed_hwpunit(common.vertical_offset)
+            .saturating_sub(paper.body_top)
+            .saturating_sub(paper.band_abs_top)
     } else {
         paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset))
     };

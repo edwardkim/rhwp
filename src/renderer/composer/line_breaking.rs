@@ -3277,6 +3277,13 @@ pub(crate) fn layout_picture_band(
         crate::renderer::float_placement::PaperOrigin {
             body_left: px_to_hwpunit(paper_origin_px.0, dpi),
             body_top: px_to_hwpunit(paper_origin_px.1, dpi),
+            // 밴드는 host 문단에서 시작한다 — 그 문단의 저장 절대 위치가 로컬 원점이다.
+            band_abs_top: host
+                .line_segs
+                .iter()
+                .find(|seg| seg.tag & 0x8000_0000 == 0)
+                .map(|seg| seg.vertical_pos)
+                .unwrap_or(0),
         },
     )?;
     let exclusion_end = exclusion.vertical.end;
