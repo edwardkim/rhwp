@@ -2,7 +2,7 @@
 
 - **이슈**: [edwardkim/rhwp#2660](https://github.com/edwardkim/rhwp/issues/2660)
 - **브랜치**: `local/task2660`
-- **구현계획서**: [`../plans/task_m100_2660_impl.md`](../plans/task_m100_2660_impl.md)
+- **구현계획서**: [`../plans/task_m100_2660_impl.md`](../plans/archives/task_m100_2660_impl.md)
 - **작성일**: 2026-07-21
 
 ## 1. 문서화 — `npm/editor/README.md` (호스트 정본 문서)

@@ -6,7 +6,7 @@
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 검증 제품 소스: Stage 2 commit `35a1e4a63`. 이번 체크포인트에 제품 소스 변경 없음.
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
-- 계획: [수행 계획](../plans/task_m100_6187.md), [구현 계획](../plans/task_m100_6187_impl.md)
+- 계획: [수행 계획](../plans/archives/task_m100_6187.md), [구현 계획](../plans/archives/task_m100_6187_impl.md)
 - 앞 단계: [Stage 2 보고](task_m100_6187_stage2.md)
 
 ## 1. 승인과 작업 범위

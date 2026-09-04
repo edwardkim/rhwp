@@ -7,7 +7,7 @@ last_verified: 2026-08-11
 
 # #4100 Stage 2 — 중첩 CFB 스트림 교체 (프로브 승격 + 신설)
 
-- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/task_m100_4100.md)
+- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/archives/task_m100_4100.md)
 - **기준 커밋**: `devel = dd9ecdc4b`
 - **산출**: `src/parser/ole_container.rs`(`all_ole_streams` 승격) ·
   `src/serializer/ole_container.rs`(신규) · `src/serializer/mod.rs`(선언) ·

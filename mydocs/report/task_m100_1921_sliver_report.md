@@ -1,6 +1,6 @@
 # 최종 결과보고 — #1921 RowBreak 블록컷 sliver 흡수 (59043 48→42)
 
-브랜치 `fix/1921-rowbreak-sliver-absorb` (base: devel). 수행계획: [task_m100_1921_float_table.md](../plans/task_m100_1921_float_table.md) 트랙 B.
+브랜치 `fix/1921-rowbreak-sliver-absorb` (base: devel). 수행계획: [task_m100_1921_float_table.md](../plans/archives/task_m100_1921_float_table.md) 트랙 B.
 
 ## 1. 근본원인 (RHWP_TABLE_DRIFT 계측 확정)
 `59043_규제영향분석서.hwp`(rhwp 48 vs 한글 37, +11)의 pi=160(3×3 rowspan 블록, 법령 원문 셀 104·77문단)에서 **컷 진동**: fragment 소비가 `946px → 22px → 946px → 22px` 교대. 컷 좌표로 확증 — 셀 유닛 전진 `+46, +1, +46, +1`.

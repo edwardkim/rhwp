@@ -1,6 +1,6 @@
 # Task M100 #4964 — Stage W6-1 분리 전 행동 기준선
 
-- **수행계획**: [`../plans/task_m100_4964.md`](../plans/task_m100_4964.md)
+- **수행계획**: [`../plans/task_m100_4964.md`](../plans/archives/task_m100_4964.md)
 - **기준 source**: `upstream/devel@d1ad0eb8784dbc55f0796e2ba8775f7363247b91`
 - **단계 목적**: 데이터 이동 전에 600개 composition·문자 폭·lookup 행동을 동결한다.
 - **판정**: 통과

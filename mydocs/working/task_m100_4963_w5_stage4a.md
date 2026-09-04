@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4963 W5 Stage 4A — disposable 계약·preflight
 
 - **이슈**: [#4963](https://github.com/edwardkim/rhwp/issues/4963)
-- **계획**: [`task_m100_4963.md`](../plans/task_m100_4963.md)
+- **계획**: [`task_m100_4963.md`](../plans/archives/task_m100_4963.md)
 - **브랜치**: `task_m100_4963`
 - **단계 상태**: W5-4A 완료, W5-4B 실제 VM/checkpoint 준비 대기
 

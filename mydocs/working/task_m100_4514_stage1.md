@@ -1,6 +1,6 @@
 # Task #4514 Stage 1 — overlay 표 필러 흐름 복원·클램프 해제
 
-Issue: #4514. 계획: [`task_m100_4514_plan.md`](../plans/task_m100_4514_plan.md).
+Issue: #4514. 계획: [`task_m100_4514_plan.md`](../plans/archives/task_m100_4514_plan.md).
 브랜치: `fix/4514-overlay-filler-flow` (fix/4515-table-overlap-diag 적층 — #4515 진단·
 픽스처·테스트를 검증에 사용).
 

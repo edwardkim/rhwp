@@ -4,7 +4,7 @@
 - **마일스톤**: M100 (v1.0.0)
 - **브랜치**: `local/task2285` (from `local/devel`)
 - **완료일**: 2026-07-15
-- **계획서**: [`plans/task_m100_2285.md`](../plans/task_m100_2285.md) · [`plans/task_m100_2285_impl.md`](../plans/task_m100_2285_impl.md)
+- **계획서**: [`plans/task_m100_2285.md`](../plans/archives/task_m100_2285.md) · [`plans/task_m100_2285_impl.md`](../plans/archives/task_m100_2285_impl.md)
 
 ## 1. 요약
 

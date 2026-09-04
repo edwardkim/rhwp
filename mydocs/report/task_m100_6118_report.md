@@ -29,7 +29,7 @@
 
 | 단계 | 산출물 | 핵심 결정 |
 | --- | --- | --- |
-| 계획 | [수행계획](../plans/task_m100_6118.md), [구현계획](../plans/task_m100_6118_impl.md) | 최대 2행, paragraph만 동적 더보기 |
+| 계획 | [수행계획](../plans/archives/task_m100_6118.md), [구현계획](../plans/archives/task_m100_6118_impl.md) | 최대 2행, paragraph만 동적 더보기 |
 | Stage 1 | [경계 계측](../working/task_m100_6118_stage1.md) | 초기 계측 뒤 최종 962/961, 808/807, 460/459px 경계 확정 |
 | Stage 2 | [구현 결과](../working/task_m100_6118_stage2.md) | 단일 DOM authority와 1·2행 CSS/controller |
 | Stage 3 | [검증 결과](../working/task_m100_6118_stage3.md) | 14 viewport, 24 theme cases, 실제 상호작용 |

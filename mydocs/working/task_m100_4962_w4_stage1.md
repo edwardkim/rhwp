@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4962 W4 Stage 1 — 조판 위험 계약·호환 projection·RED
 
 - **이슈**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
-- **계획**: [`task_m100_4962_w4.md`](../plans/task_m100_4962_w4.md)
+- **계획**: [`task_m100_4962_w4.md`](../plans/archives/task_m100_4962_w4.md)
 - **선행 계획 commit**: `91149b634`
 - **브랜치**: `task_m100_4962`
 - **단계 상태**: W4-1 완료, W4-2 승인 대기

@@ -1,7 +1,7 @@
 # task_m100_4098 처리 결과 — 레거시 OLE 차트 `Contents` 파서
 
 - 이슈: [#4098](https://github.com/edwardkim/rhwp/issues/4098)
-- 계획: [`mydocs/plans/task_m100_4098.md`](../plans/task_m100_4098.md)
+- 계획: [`mydocs/plans/task_m100_4098.md`](../plans/archives/task_m100_4098.md)
 - 작업 기록: [`mydocs/working/task_m100_4098_stage1.md`](../working/task_m100_4098_stage1.md)
 
 ## 1. 한 줄

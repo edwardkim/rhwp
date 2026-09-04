@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4966.md
+canonical: mydocs/plans/archives/task_m100_4966.md
 last_verified: 2026-08-24
 ---
 
@@ -12,7 +12,7 @@ last_verified: 2026-08-24
 
 ## 권위와 소비 경계
 
-- [수행계획](../../../plans/task_m100_4966.md)이 범위, 보호 불변식과 단계별 승인 게이트의 정본이다.
+- [수행계획](../../../plans/archives/task_m100_4966.md)이 범위, 보호 불변식과 단계별 승인 게이트의 정본이다.
 - [W1 조사 원장](../issue-4939/README.md)은 rule relation·evidence의 선행 근거다.
 - [W6 metric lineage](../issue-4964/README.md)는 600개 metric 값·순서·계보의 정본이다.
 - `font_rule_projection_baseline.json`은 W7 migration 전 행동 snapshot이며 canonical runtime registry가

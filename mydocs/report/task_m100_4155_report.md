@@ -1,7 +1,7 @@
 # task_m100_4155 최종 보고서 — HWP3 글자 음영 검정 오염
 
 - **Issue**: [#4155](https://github.com/edwardkim/rhwp/issues/4155)
-- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/task_m100_4155.md)
+- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/archives/task_m100_4155.md)
 - **단계 기록**: [stage1](../working/task_m100_4155_stage1.md) · [stage2](../working/task_m100_4155_stage2.md) · [stage3](../working/task_m100_4155_stage3.md)
 - **브랜치**: `task_m100_4155_hwp3_char_shade` (분기 기준 `upstream/devel` `e48fe8694`)
 - **커밋**: `71f607188`(수정) · `604eaf2f8`(계약) · `5c95b4619`(술어 통일) · `463f44992`(한컴 오라클)

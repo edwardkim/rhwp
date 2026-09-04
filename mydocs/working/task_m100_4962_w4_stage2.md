@@ -9,7 +9,7 @@ last_verified: 2026-08-22
 # Task M100 #4962 W4 Stage 2 — 결정론적 streaming ranker·local 전건
 
 - **이슈**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
-- **계획**: [`task_m100_4962_w4.md`](../plans/task_m100_4962_w4.md)
+- **계획**: [`task_m100_4962_w4.md`](../plans/archives/task_m100_4962_w4.md)
 - **선행 단계**: [`task_m100_4962_w4_stage1.md`](task_m100_4962_w4_stage1.md)
 - **브랜치**: `task_m100_4962`
 - **단계 상태**: W4-2 완료, W4-3 승인 대기

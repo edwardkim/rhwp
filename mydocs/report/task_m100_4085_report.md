@@ -3,7 +3,7 @@
 - **Issue**: [#4085](https://github.com/edwardkim/rhwp/issues/4085)
 - **브랜치**: `fix/charoverlap-noborder-charsz` (`origin/devel` `d76d4e98b` 기준 — 작업은 `570fa6e4f`
   에서 시작해 rebase)
-- **계획서**: [`mydocs/plans/task_m100_4085.md`](../plans/task_m100_4085.md)
+- **계획서**: [`mydocs/plans/task_m100_4085.md`](../plans/archives/task_m100_4085.md)
 - **단계 기록**: [`mydocs/working/task_m100_4085_stage1.md`](../working/task_m100_4085_stage1.md)
 - **작성 시각**: 2026-08-06 KST
 

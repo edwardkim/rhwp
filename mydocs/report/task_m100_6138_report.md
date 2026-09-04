@@ -27,7 +27,7 @@
 
 | 단계 | 산출물 | 핵심 결정 |
 | --- | --- | --- |
-| 계획 | [수행계획](../plans/task_m100_6138.md), [구현계획](../plans/task_m100_6138_impl.md) | 모든 너비 56px 한 줄·group scroll |
+| 계획 | [수행계획](../plans/archives/task_m100_6138.md), [구현계획](../plans/archives/task_m100_6138_impl.md) | 모든 너비 56px 한 줄·group scroll |
 | Stage 1 | [기준선 계측](../working/task_m100_6138_stage1.md) | desktop track 1219px, 기존 1~3행 회귀 고정 |
 | Stage 2 | [구현 결과](../working/task_m100_6138_stage2.md) | 단일 DOM track·동적 overflow controller |
 | Stage 3 | [통합 검증](../working/task_m100_6138_stage3.md) | 14 viewport, 24 theme cases, #6118 동시 검증 |

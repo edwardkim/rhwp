@@ -1,6 +1,6 @@
 # Task M100 #4964 — Stage W6-2 lineage manifest·계보 inventory
 
-- **수행계획**: [`../plans/task_m100_4964.md`](../plans/task_m100_4964.md)
+- **수행계획**: [`../plans/task_m100_4964.md`](../plans/archives/task_m100_4964.md)
 - **선행 기준선**: [`task_m100_4964_w6_stage1.md`](task_m100_4964_w6_stage1.md)
 - **기준 source**: `upstream/devel@d1ad0eb8784dbc55f0796e2ba8775f7363247b91`
 - **단계 목적**: 600개 전부에 안정 ID·provenance 상태·W1/W5 evidence를 부여한다.

@@ -81,7 +81,7 @@ EMF 제거본도 정상 렌더된다는 결론을 뒷받침한다.
 3. 코드·테스트 변경이 있으므로 최신 보정 head의 전체 GitHub Actions와 mergeable 상태를 확인한다.
 4. 작업지시자 승인 뒤 merge와 후속 정리를 수행한다.
 
-상세 근거: [계획](../../plans/task_m100_4055.md),
+상세 근거: [계획](../../plans/archives/task_m100_4055.md),
 [Stage 2](../../working/task_m100_4055_stage2.md),
 [Stage 4](../../working/task_m100_4055_stage4.md),
 [최종 보고](../../report/task_m100_4055_report.md).

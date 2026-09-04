@@ -7,7 +7,7 @@ last_verified: 2026-08-11
 
 # #4100 Stage 3 — 주소 → ①② 슬롯 해석 + `get_chart_data_native`
 
-- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/task_m100_4100.md)
+- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/archives/task_m100_4100.md)
 - **기준 커밋**: `devel = dd9ecdc4b`
 - **산출**: `src/document_core/queries/chart_extract.rs`(신규) ·
   `src/document_core/commands/object_ops/chart.rs`(신규) ·

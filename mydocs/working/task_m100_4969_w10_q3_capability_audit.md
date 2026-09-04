@@ -137,6 +137,6 @@ Q3는 exact source와 standalone oracle이 준비됐으므로 blocked가 아니�
 추가하는 구현은 default identity 중복, mutable face 누출, backend cache collision을 만들 수 있어 위험하다.
 
 다음은
-[`task_m100_4969_w10_q3.md`](../plans/task_m100_4969_w10_q3.md)의 Q3-A canonical instance red 계약이다.
+[`task_m100_4969_w10_q3.md`](../plans/archives/task_m100_4969_w10_q3.md)의 Q3-A canonical instance red 계약이다.
 감사·수정 수행계획 승인 전에는 제품 source를 변경하지 않는다. commit·push·PR·GitHub comment도 각각 기존 승인
 경계를 유지한다.

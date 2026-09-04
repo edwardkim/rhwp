@@ -1,7 +1,7 @@
 # Stage 4 — task_m100_4097 HWP3 축과 전수 회귀
 
 - **이슈**: [#4097](https://github.com/edwardkim/rhwp/issues/4097)
-- **계획서**: [`mydocs/plans/task_m100_4097.md`](../plans/task_m100_4097.md)
+- **계획서**: [`mydocs/plans/task_m100_4097.md`](../plans/archives/task_m100_4097.md)
 - **선행 단계**: [`stage1`](task_m100_4097_stage1.md) · [`stage2`](task_m100_4097_stage2.md) ·
   [`stage3`](task_m100_4097_stage3.md)
 - **브랜치**: `task_m100_4097`

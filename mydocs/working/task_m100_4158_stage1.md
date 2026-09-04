@@ -1,7 +1,7 @@
 # Stage 1 — task_m100_4158 구현·집중 검증
 
 - **이슈**: [#4158](https://github.com/edwardkim/rhwp/issues/4158)
-- **계획서**: [`mydocs/plans/task_m100_4158.md`](../plans/task_m100_4158.md)
+- **계획서**: [`mydocs/plans/task_m100_4158.md`](../plans/archives/task_m100_4158.md)
 - **브랜치**: `task_m100_4158_char_overlap_boxed_pua`
 - **분기 기준**: `upstream/devel` `5119ea498`
 - **작업 시각**: 2026-08-07 KST

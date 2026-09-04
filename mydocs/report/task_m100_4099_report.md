@@ -10,7 +10,7 @@ last_verified: 2026-08-10
 - **Issue**: [#4099](https://github.com/edwardkim/rhwp/issues/4099)
 - **브랜치**: `task4099` — 계획·조사는 `upstream/devel = 629cd33db` 기준,
   PR 직전 `9f5911e86`(+65 커밋) 으로 리베이스
-- **계획서**: [`task_m100_4099.md`](../plans/task_m100_4099.md)
+- **계획서**: [`task_m100_4099.md`](../plans/archives/task_m100_4099.md)
 - **검증 환경**: 로컬 Rust 테스트 + 한컴 2022 판정(작업지시자, 2026-08-10)
 
 ## 결론 한 줄

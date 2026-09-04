@@ -2,7 +2,7 @@
 
 - **Issue**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
 - **상위 추적**: [#4960](https://github.com/edwardkim/rhwp/issues/4960)
-- **계획**: [`task_m100_4962.md`](../plans/task_m100_4962.md)
+- **계획**: [`task_m100_4962.md`](../plans/archives/task_m100_4962.md)
 - **선행 hard gate**: [`task_m100_4962_stage3_public_fixtures.md`](task_m100_4962_stage3_public_fixtures.md)
 - **구현 commit**: `2e148f584`
 - **날짜**: 2026-08-21 KST

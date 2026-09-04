@@ -6,8 +6,8 @@
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
 - 계획 승인 기록 commit: `ddd9fe37d`
-- 수행 계획: [task_m100_6187.md](../plans/task_m100_6187.md)
-- 구현 계획: [task_m100_6187_impl.md](../plans/task_m100_6187_impl.md)
+- 수행 계획: [task_m100_6187.md](../plans/archives/task_m100_6187.md)
+- 구현 계획: [task_m100_6187_impl.md](../plans/archives/task_m100_6187_impl.md)
 
 ## 1. 승인 범위와 결과
 

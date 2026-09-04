@@ -1,6 +1,6 @@
 # 최종 결과보고 — Task M100 #4956
 
-- **계획서**: [`task_m100_4956.md`](../plans/task_m100_4956.md)
+- **계획서**: [`task_m100_4956.md`](../plans/archives/task_m100_4956.md)
 - **브랜치**: `rhwp-studio/ruler-margin-pin-drag` (7 commits)
 - **PR**: [#4977](https://github.com/edwardkim/rhwp/pull/4977)
 - **기준 commit**: `upstream/devel` `88b44de37`

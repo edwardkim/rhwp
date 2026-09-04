@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_5955.md
+canonical: mydocs/plans/archives/task_m100_5955.md
 last_verified: 2026-08-25
 ---
 
@@ -13,7 +13,7 @@ lifecycle join 계약을 보존한다. 실제 font mapping 변경은 후속 #496
 
 ## 권위와 산출물
 
-- [수행계획](../../../plans/task_m100_5955.md)은 범위·보호 불변식과 승인 게이트의 정본이다.
+- [수행계획](../../../plans/archives/task_m100_5955.md)은 범위·보호 불변식과 승인 게이트의 정본이다.
 - `font_rule_registry_v1_to_v2_migration.json`은 초기 830개 rule의 carry-forward와 semantic 0-delta를
   전건으로 증명한다.
 - `font_rule_lifecycle_audit.schema.json`은 trace 원문과 분리된 audit query model의 machine-readable

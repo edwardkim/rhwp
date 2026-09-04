@@ -35,7 +35,7 @@
 전환은 품질 관문이나 메인테이너 통제권을 낮추지 않는다.
 
 상세 순서와 종료 조건은
-[`task_m100_5511_stage2_batch_plan.md`](../plans/task_m100_5511_stage2_batch_plan.md)에
+[`task_m100_5511_stage2_batch_plan.md`](../plans/archives/task_m100_5511_stage2_batch_plan.md)에
 기록했다.
 
 ## 4. 다음 실행 배치

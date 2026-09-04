@@ -1,7 +1,7 @@
 ---
 kind: report
 status: completed
-canonical: mydocs/plans/task_m100_3514.md
+canonical: mydocs/plans/archives/task_m100_3514.md
 last_verified: 2026-08-22
 ---
 

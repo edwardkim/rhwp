@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4939.md
+canonical: mydocs/plans/archives/task_m100_4939.md
 last_verified: 2026-08-16
 ---
 
@@ -12,7 +12,7 @@ last_verified: 2026-08-16
 
 ## 권위와 소비 경계
 
-- [수행계획](../../../plans/task_m100_4939.md)이 범위와 단계별 승인 게이트의 정본이다.
+- [수행계획](../../../plans/archives/task_m100_4939.md)이 범위와 단계별 승인 게이트의 정본이다.
 - [원인 계보 보고서](../../../report/font_metrics_fallback_causal_lineage_20260816.md)는 역사와 보호
   불변식의 선행 근거다.
 - 이 디렉터리의 JSON은 조사 snapshot이다. 제품 runtime의 canonical registry가 아니다.

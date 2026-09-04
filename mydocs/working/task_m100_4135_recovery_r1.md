@@ -2,7 +2,7 @@
 
 - **기준**: `upstream/devel@94ff48d2b81dee5241110db9d2417dffbfb7f9ec`
 - **브랜치**: `codex/issue-4135-contextual-shortcut`
-- **계획**: [`task_m100_4135_impl.md`](../plans/task_m100_4135_impl.md)
+- **계획**: [`task_m100_4135_impl.md`](../plans/archives/task_m100_4135_impl.md)
 - **승인**: 작업지시자가 Recovery 명칭 정정 뒤 `진행해줘.`로 Recovery 계획과 R1 착수를 승인
 - **판정**: 의도한 RED 확정, Recovery R2 결과 승인 전 미착수
 

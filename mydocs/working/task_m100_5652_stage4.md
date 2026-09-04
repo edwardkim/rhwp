@@ -7,7 +7,7 @@ last_verified: 2026-08-23
 
 # #5652 Stage 4 — CLI `--structure` 옵트인 · `set-chart-data --dry-run` 코어 경유 · MCP/프로필/문서
 
-- **계획서**: [`mydocs/plans/task_m100_5652.md`](../plans/task_m100_5652.md) §3-5
+- **계획서**: [`mydocs/plans/task_m100_5652.md`](../plans/archives/task_m100_5652.md) §3-5
 - **브랜치**: `task5652` (`upstream/devel` `bf30bd792` 기준)
 
 ## 1. 무엇을 만들었나

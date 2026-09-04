@@ -9,7 +9,7 @@ last_verified: 2026-08-25
 
 - **Issue**: [#6037](https://github.com/edwardkim/rhwp/issues/6037) (#3683 Track B 곁가지)
 - **브랜치**: `task6037` · **기준 커밋**: `upstream/devel = 385e93b2c`
-- **계획서**: [`task_m100_6037.md`](../plans/task_m100_6037.md)
+- **계획서**: [`task_m100_6037.md`](../plans/archives/task_m100_6037.md)
 
 ## 결론 한 줄
 

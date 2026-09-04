@@ -1,7 +1,7 @@
 # Stage 3 — task_m100_4155 술어 통일과 시각 증적 (L2)
 
 - **이슈**: [#4155](https://github.com/edwardkim/rhwp/issues/4155)
-- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/task_m100_4155.md)
+- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/archives/task_m100_4155.md)
 - **선행**: [stage1](task_m100_4155_stage1.md) · [stage2](task_m100_4155_stage2.md)
 - **브랜치**: `task_m100_4155_hwp3_char_shade`
 - **커밋**: `5c95b4619`

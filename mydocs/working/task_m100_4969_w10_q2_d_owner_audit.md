@@ -7,7 +7,7 @@ Q2-D 구현 전 owner 재감사 결과, Q2-C 결과를 `TextRunNode`의 새 publ
 직렬화 제외 `NodeId → sidecar` 표에 연결하는 구조**가 현행 계보와 가장 작게 맞는다.
 
 이 감사는 제품 코드를 바꾸지 않는다. Q2-D 수정 수행계획은
-[`task_m100_4969_w10_q2_d.md`](../plans/task_m100_4969_w10_q2_d.md)에 제시한다.
+[`task_m100_4969_w10_q2_d.md`](../plans/archives/task_m100_4969_w10_q2_d.md)에 제시한다.
 
 ## 현행 계보
 

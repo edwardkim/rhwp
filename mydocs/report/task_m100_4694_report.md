@@ -9,7 +9,7 @@ last_verified: 2026-08-13
 
 - **Issue**: [#4694](https://github.com/edwardkim/rhwp/issues/4694) ·
   부모 [#3683](https://github.com/edwardkim/rhwp/issues/3683) Track B
-- **계획서**: [task_m100_4694.md](../plans/task_m100_4694.md) — 승인 후 단계대로 진행, 이탈 1건(§6)
+- **계획서**: [task_m100_4694.md](../plans/archives/task_m100_4694.md) — 승인 후 단계대로 진행, 이탈 1건(§6)
 - **브랜치**: `task4694`, 기반 `upstream/devel = f7a98ce04` (S5 시점 rebase, 충돌 0)
 - **커밋**: 계획서 + S1(코어/WASM) + S2(브리지/매처) + S3(다이얼로그) + S4(배선) + S4(e2e·보정) 6건
 

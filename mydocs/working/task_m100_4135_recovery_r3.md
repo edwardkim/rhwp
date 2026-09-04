@@ -2,7 +2,7 @@
 
 - **기준**: `upstream/devel@94ff48d2b81dee5241110db9d2417dffbfb7f9ec`
 - **브랜치**: `codex/issue-4135-contextual-shortcut`
-- **계획**: [`task_m100_4135_impl.md`](../plans/task_m100_4135_impl.md)
+- **계획**: [`task_m100_4135_impl.md`](../plans/archives/task_m100_4135_impl.md)
 - **선행 결과**: [`task_m100_4135_recovery_r2.md`](task_m100_4135_recovery_r2.md)
 - **승인**: 작업지시자가 R2 결과 보고 뒤 `진행해줘.`로 R2 결과와 R3 착수를 승인
 - **판정**: R3 GREEN, Recovery R4 결과 승인 전 미착수

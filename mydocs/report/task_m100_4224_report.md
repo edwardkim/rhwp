@@ -7,7 +7,7 @@
 - **devel 기준**: `upstream/devel` `5a4f26d0d`
 - **구현 커밋**: `3f0974dc8`
 - **전체 게이트 후보**: `5f6569062`
-- **계획서**: [`mydocs/plans/task_m100_4224.md`](../plans/task_m100_4224.md)
+- **계획서**: [`mydocs/plans/task_m100_4224.md`](../plans/archives/task_m100_4224.md)
 - **작업 기록**: [`mydocs/working/task_m100_4224_stage1.md`](../working/task_m100_4224_stage1.md)
 
 ## 결과

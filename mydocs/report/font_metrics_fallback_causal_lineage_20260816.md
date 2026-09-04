@@ -163,7 +163,7 @@ Noto Sans KR ExtraLight로 바꾸되 layout metric을 byte-identical하게 유�
 
 ### 4.8 2026-06-21 — 브라우저 동의·탐지·display-time resolver의 분화
 
-[Task #1328 계획](../plans/task_m100_1328_impl.md)과
+[Task #1328 계획](../plans/archives/task_m100_1328_impl.md)과
 [`ef828502e`](https://github.com/edwardkim/rhwp/commit/ef828502e)는 Local Font Access 동의 UX,
 OS 폰트 감지, display-time font chain을 도입했다. 원본 문서의 font name은 보존하고, Canvas font
 setter에서 실제 표시 chain을 해소한다.
@@ -173,7 +173,7 @@ setter에서 실제 표시 chain을 해소한다.
 
 ### 4.9 2026-07-11 — family 문자열만으로 local face를 식별할 수 없음
 
-[Task #2217 계획](../plans/task_m100_2217.md)과
+[Task #2217 계획](../plans/archives/task_m100_2217.md)과
 [Stage 1 기록](../working/task_m100_2217_stage1.md)은 HWP의 localized face와 브라우저가 반환하는
 영문 family가 달라 exact match를 놓치는 문제를 다뤘다. snapshot v2는 family, full name,
 PostScript name, style을 보존하고 `FontData.blob()`으로 CanvasKit용 bytes를 세션 안에서 확보한다.
@@ -217,7 +217,7 @@ SVG byte divergence가 0건이었다.
 
 ### 4.13 2026-08-08 — 우연처럼 보이던 조회 순서가 호환성 계약이 됨
 
-[Task #4168 계획](../plans/task_m100_4168.md)과
+[Task #4168 계획](../plans/archives/task_m100_4168.md)과
 [`751796949`](https://github.com/edwardkim/rhwp/commit/751796949)은 600-entry 선형 탐색을
 `OnceLock` O(1) index로 바꾸면서도 legacy의 첫 matching entry, bold fallback, italic 무시 순서를
 전수 등가 테스트로 보존했다.
@@ -249,7 +249,7 @@ provenance 오류를 찾아 override를 철회했다. 같은 폭이어야 할 �
 
 ### 4.16 2026-08-15 — KoPub·정부상징 PDF가 oracle profile의 중요성을 확정
 
-[Task #4739 계획](../plans/task_m100_4739.md)과
+[Task #4739 계획](../plans/archives/task_m100_4739.md)과
 [정부상징 후계 matrix](../tech/investigations/issue-4739/task_m100_4739_government_font_successor_matrix.md)는
 다음 PDF를 분리해 비교했다.
 
@@ -276,7 +276,7 @@ metric이 호환되는가”나 “identity alias인가”를 답하지 않는�
 
 ### 4.18 2026-08-15~16 — 열거 성공, CSS paint, SFNT 조달은 서로 다른 상태
 
-[Task #4741 계획](../plans/task_m100_4741.md)과
+[Task #4741 계획](../plans/archives/task_m100_4741.md)과
 [조사 기록](../tech/investigations/issue-4741/README.md)은 Local Font Access API 성공이 설치 face의
 완전 열거를 보장하지 않는다는 문제를 다뤘다. [`4cf8a5898`](https://github.com/edwardkim/rhwp/commit/4cf8a5898)은
 열거와 raw Canvas probe를 결합하고 `exact-enumerated`, `exact-probed`, `alias-only`,
@@ -708,7 +708,7 @@ kerning은 fallback 정리와 함께 구현하지 않는다. pair adjustment가 
 ## 13. 다음 승인 지점
 
 W0~W7은 #4939와 #4961~#4966에서 완료됐다. 다음 승인 지점은
-[#4960 수정 수행계획](../plans/task_m100_4960.md)의 Stage R1 결과다. 승인 뒤 별도 원격 mutation 게이트로
+[#4960 수정 수행계획](../plans/archives/task_m100_4960.md)의 Stage R1 결과다. 승인 뒤 별도 원격 mutation 게이트로
 W7.5 이슈와 #4960·#4967~#4969 topology를 현행화한다. W7.5 구현, W8 face qualification과 W9·W10은
 각각 별도 이슈·계획·승인 전에는 시작하지 않는다.
 

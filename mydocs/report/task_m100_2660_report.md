@@ -2,8 +2,8 @@
 
 - **이슈**: [edwardkim/rhwp#2660](https://github.com/edwardkim/rhwp/issues/2660)
 - **브랜치**: `local/task2660` (`upstream/devel` a803f079 기준)
-- **수행계획서**: [`../plans/task_m100_2660.md`](../plans/task_m100_2660.md)
-- **구현계획서**: [`../plans/task_m100_2660_impl.md`](../plans/task_m100_2660_impl.md)
+- **수행계획서**: [`../plans/task_m100_2660.md`](../plans/archives/task_m100_2660.md)
+- **구현계획서**: [`../plans/task_m100_2660_impl.md`](../plans/archives/task_m100_2660_impl.md)
 - **작성일**: 2026-07-21
 - **관련**: #1448 (PR #1450, 자동 백업/복구), 후속 이슈 #2661 (hwpctl SaveAs)
 

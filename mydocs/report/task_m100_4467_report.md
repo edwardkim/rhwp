@@ -9,7 +9,7 @@ last_verified: 2026-08-10
 - **Issue**: [#4467](https://github.com/edwardkim/rhwp/issues/4467)
 - **브랜치**: `task/4467-project-roadmap`
 - **devel 기준**: `upstream/devel` `c20377b9e`
-- **계획서**: [task_m100_4467.md](../plans/task_m100_4467.md)
+- **계획서**: [task_m100_4467.md](../plans/archives/task_m100_4467.md)
 
 ## 결론
 

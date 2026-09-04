@@ -7,7 +7,7 @@ last_verified: 2026-08-11
 
 # #4100 Stage 6 — 한컴 판정
 
-- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/task_m100_4100.md)
+- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/archives/task_m100_4100.md)
 - **최종 보고서**: [`mydocs/report/task_m100_4100_report.md`](../report/task_m100_4100_report.md)
 - **번들**: `output/issue_4100_b1_judgment/` (gitignored) — 22 파일 + `PANJEONG.md`
 - **생성기**: `tests/issue_4100_chart_data_edit.rs::generate_hancom_judgment_bundle` (`#[ignore]`)

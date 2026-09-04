@@ -8,7 +8,7 @@
 ## 문서
 
 - [CLI 표면·계보·보호 불변식 조사](task_m100_5511_cli_surface_inventory.md)
-- [수행계획서](../../../plans/task_m100_5511.md)
+- [수행계획서](../../../plans/archives/task_m100_5511.md)
 - [Stage 0 작업 보고](../../../working/task_m100_5511_stage0.md)
 
 이 디렉터리는 #5511에서 Rust 코드를 이동하기 전의 정답지를 보존한다. 이후 단계는

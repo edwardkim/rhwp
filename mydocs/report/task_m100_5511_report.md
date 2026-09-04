@@ -67,7 +67,7 @@ Q1~Q7·M1·P1·C0~C6를 모두 완료했고, `main.rs`의 편집 handler는 전�
   등 미보호 계약을 characterization test로 고정했다.
 
 세부 단위와 각 배치의 focused 결과는
-[`task_m100_5511_stage2_batch_plan.md`](../plans/task_m100_5511_stage2_batch_plan.md)와
+[`task_m100_5511_stage2_batch_plan.md`](../plans/archives/task_m100_5511_stage2_batch_plan.md)와
 [`issue-5511` 조사 정본](../tech/investigations/issue-5511/README.md),
 `mydocs/working/task_m100_5511_*` 보고서에 남겼다.
 

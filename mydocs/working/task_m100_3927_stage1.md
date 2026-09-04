@@ -1,7 +1,7 @@
 ---
 kind: working
 status: active
-canonical: mydocs/plans/task_m100_3674.md
+canonical: mydocs/plans/archives/task_m100_3674.md
 last_verified: 2026-08-04
 ---
 
@@ -83,7 +83,7 @@ DECL_DEFER? pi=23 cur_h=352.2 declared=402.5 avail=740.8
 편집기 저장 시점 스냅샷이고 한컴은 조판 때 내용에 맞춰 재계산한다(메모리:
 한컴 LINE_SEG 자동 재계산). 실제로:
 
-- 셀[11](r=4) 선언 h=2949HU(**39.3px**)인데 저장 LINE_SEG 는 **16줄**(p0 12 + p1 4,
+- 셀[11], r=4, 선언 h=2949HU(**39.3px**)인데 저장 LINE_SEG 는 **16줄**(p0 12 + p1 4,
   줄 간격 24.5px = 392px)을 담고 있다 — 선언 높이로는 내용이 들어갈 수 없다.
 - 한컴 PDF 실물(p287) 육안: Q11 답변 12줄이 **전부 보인다** → 한컴도 행을 키운다.
 

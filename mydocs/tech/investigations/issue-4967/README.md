@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4967_v3.md
+canonical: mydocs/plans/archives/task_m100_4967_v3.md
 last_verified: 2026-08-26
 ---
 

@@ -1,7 +1,7 @@
 ---
 kind: working
 status: active
-canonical: mydocs/plans/task_m100_6534_impl.md
+canonical: mydocs/plans/archives/task_m100_6534_impl.md
 issue: 6534
 stage: 1
 date: 2026-08-31

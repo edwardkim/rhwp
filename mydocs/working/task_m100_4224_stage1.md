@@ -2,7 +2,7 @@
 
 - **Issue**: #4224
 - **대상 샘플**: `samples/basic/pau-004.hwp`
-- **계획서**: [`mydocs/plans/task_m100_4224.md`](../plans/task_m100_4224.md)
+- **계획서**: [`mydocs/plans/task_m100_4224.md`](../plans/archives/task_m100_4224.md)
 - **브랜치**: `task_m100_4224_pua_f02fb_small_triangle`
 - **stack 기준**: `task_m100_4158_char_overlap_boxed_pua` `27932685b`
 - **devel 기준**: `upstream/devel` `5a4f26d0d`

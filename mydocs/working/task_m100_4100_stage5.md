@@ -7,7 +7,7 @@ last_verified: 2026-08-11
 
 # #4100 Stage 5 — CSV 왕복 + CLI 2명령 + 배선 4곳
 
-- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/task_m100_4100.md)
+- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/archives/task_m100_4100.md)
 - **기준 커밋**: `devel = dd9ecdc4b`
 - **산출**: `src/document_core/queries/chart_csv.rs`(신규) · `src/main.rs`(디스패치 2 + 핸들러 2
   + 배선 3) · `src/provenance.rs`(항목 2) · `tests/chart_csv_contract.rs`(신규 14건) ·

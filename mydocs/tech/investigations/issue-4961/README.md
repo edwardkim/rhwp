@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4961.md
+canonical: mydocs/plans/archives/task_m100_4961.md
 last_verified: 2026-08-23
 ---
 
@@ -17,7 +17,7 @@ W2 Font Decision Trace의 계약과 공개 fixture 경계를 보존한다.
 
 ## 2. 권위와 선행 자료
 
-- 수행 범위와 승인 게이트: [`task_m100_4961.md`](../../../plans/task_m100_4961.md)
+- 수행 범위와 승인 게이트: [`task_m100_4961.md`](../../../plans/archives/task_m100_4961.md)
 - W1 원장과 candidate identity: [`issue-4939`](../issue-4939/README.md)
 - 보호 불변식: [`font_metrics_fallback_causal_lineage_20260816.md`](../../../report/font_metrics_fallback_causal_lineage_20260816.md)
 - machine-readable trace 계약: [`font_decision_trace.schema.json`](font_decision_trace.schema.json)

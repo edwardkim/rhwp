@@ -1,7 +1,7 @@
 # Stage 2 — task_m100_4155 결함 수정과 계약 고정 (L1)
 
 - **이슈**: [#4155](https://github.com/edwardkim/rhwp/issues/4155)
-- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/task_m100_4155.md)
+- **계획서**: [`mydocs/plans/task_m100_4155.md`](../plans/archives/task_m100_4155.md)
 - **선행**: [stage1](task_m100_4155_stage1.md)
 - **브랜치**: `task_m100_4155_hwp3_char_shade`
 - **커밋**: `71f607188`(수정) · `604eaf2f8`(계약 테스트)

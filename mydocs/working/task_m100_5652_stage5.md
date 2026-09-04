@@ -7,7 +7,7 @@ last_verified: 2026-08-23
 
 # #5652 Stage 5 — 엔진 산출 회귀 · 한컴 판정 번들 · (판정 후) 자산·원장·보고서
 
-- **계획서**: [`mydocs/plans/task_m100_5652.md`](../plans/task_m100_5652.md) §5·§8
+- **계획서**: [`mydocs/plans/task_m100_5652.md`](../plans/archives/task_m100_5652.md) §5·§8
 - **브랜치**: `task5652` (`upstream/devel` `bf30bd792` 기준)
 - **번들**: `output/issue_5652_b2_engine_judgment/` (gitignored) — 32 파일 + `PANJEONG.md`
 - **생성기**: `tests/issue_4100_chart_data_edit.rs::generate_b2_engine_judgment_bundle` (`#[ignore]`)

@@ -7,7 +7,7 @@ last_verified: 2026-08-23
 
 # #5652 Stage 3 — 코어: `structure` 의도 분기 · 위치 기반 plan · 종류별 가드 · self-check
 
-- **계획서**: [`mydocs/plans/task_m100_5652.md`](../plans/task_m100_5652.md) §3-4
+- **계획서**: [`mydocs/plans/task_m100_5652.md`](../plans/archives/task_m100_5652.md) §3-4
 - **브랜치**: `task5652` (`upstream/devel` `bf30bd792` 기준)
 
 ## 1. 무엇을 만들었나 (`src/document_core/commands/object_ops/chart.rs`)

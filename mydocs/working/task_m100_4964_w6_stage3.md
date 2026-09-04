@@ -1,6 +1,6 @@
 # Task M100 #4964 — Stage W6-3 data-only 물리 분리
 
-- **수행계획**: [`../plans/task_m100_4964.md`](../plans/task_m100_4964.md)
+- **수행계획**: [`../plans/task_m100_4964.md`](../plans/archives/task_m100_4964.md)
 - **선행 manifest**: [`task_m100_4964_w6_stage2.md`](task_m100_4964_w6_stage2.md)
 - **기준 source**: `upstream/devel@d1ad0eb8784dbc55f0796e2ba8775f7363247b91`
 - **단계 목적**: lookup 행동과 600-entry 순서를 바꾸지 않고 core·generated·overlay를 물리 분리한다.

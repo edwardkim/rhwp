@@ -1,7 +1,7 @@
 ---
 kind: report
 status: completed
-canonical: mydocs/plans/task_m100_4966.md
+canonical: mydocs/plans/archives/task_m100_4966.md
 last_verified: 2026-08-23
 ---
 
@@ -60,7 +60,7 @@ base check를 통과했지만, canonical registry 이관 뒤에도 중복 수기
 current-source 의미 유지 계약 10건 중 1건이 실패했다. 600개 metric candidate의 ID·metric tuple은
 유지됐지만 `sourceLocation.selector`가 W6의 고정 배열에서 composed view로 이동한 것을 의미 회귀로 센
 계측 오판이다. W7 검증 목록이 W3 계약을 포함하지 않았기 때문에 Stage W7-6의 77/77만으로 이 누락을
-발견하지 못했다. 근본 정정은 [Stage W7-R 계획](../plans/task_m100_4966.md#stage-w7-r--pr-ci-실패-원인-귀속과-소유권-이전-완결)으로
+발견하지 못했다. 근본 정정은 [Stage W7-R 계획](../plans/archives/task_m100_4966.md#stage-w7-r--pr-ci-실패-원인-귀속과-소유권-이전-완결)으로
 분리한다. 후속 구현과 focused 검증 결과는 [Stage W7-R2·R3 기록](task_m100_4966_w7_rework_stage2.md)에
 있다.
 

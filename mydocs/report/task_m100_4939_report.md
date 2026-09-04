@@ -28,7 +28,7 @@ PR, issue comment·close와 후속 W2 착수는 각각 별도 승인 대상이�
 
 | 산출물 | 역할 |
 | --- | --- |
-| [수행계획](../plans/task_m100_4939.md) | 범위·승인 게이트 정본 |
+| [수행계획](../plans/archives/task_m100_4939.md) | 범위·승인 게이트 정본 |
 | [원인 계보 보고서](font_metrics_fallback_causal_lineage_20260816.md) | 역사·위험·FI-01~FI-14 정본 |
 | [조사 README](../tech/investigations/issue-4939/README.md) | W0/W1 산출물 진입점 |
 | `font_rule_baseline.json` | W0 source·metric·lookup·fixture snapshot |

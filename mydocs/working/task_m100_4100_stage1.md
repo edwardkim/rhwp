@@ -7,7 +7,7 @@ last_verified: 2026-08-10
 
 # #4100 Stage 1 — 구조 스캐너 + 최소 diff 패처
 
-- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/task_m100_4100.md)
+- **계획서**: [`mydocs/plans/task_m100_4100.md`](../plans/archives/task_m100_4100.md)
 - **기준 커밋**: `devel = dd9ecdc4b`
 - **산출**: `src/ooxml_chart/data.rs`(신규) · `src/ooxml_chart/patch.rs`(신규) ·
   `src/ooxml_chart/mod.rs`(선언 2줄) · `tests/issue_4100_chart_data_edit.rs`(신규)

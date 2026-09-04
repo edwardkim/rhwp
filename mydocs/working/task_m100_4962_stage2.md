@@ -2,7 +2,7 @@
 
 - **Issue**: [#4962](https://github.com/edwardkim/rhwp/issues/4962)
 - **상위 추적**: [#4960](https://github.com/edwardkim/rhwp/issues/4960)
-- **계획**: [`task_m100_4962.md`](../plans/task_m100_4962.md)
+- **계획**: [`task_m100_4962.md`](../plans/archives/task_m100_4962.md)
 - **브랜치**: `task_m100_4962`
 - **착수 기준**: `upstream/devel` `fb434269eea237cc12053914560a2dbaf16270bf`
 - **Stage 1 기준**: `63b7f4ec2`
