@@ -105,12 +105,8 @@ fn static_render_keeps_the_stored_band() {
 
 /// 개체를 왼쪽으로 옮기면 본문이 **새 자리**를 피해 되감겨야 한다.
 ///
-/// ⚠ **아직 통과하지 않는다.** 배제 밴드 계산은 열렸지만(위 시험이 그것을 잠근다),
-/// 편집 뒤 그 밴드가 문단 `line_segs` 로 **채택되는** 마지막 한 겹이 남아 있다.
-/// `#[ignore]` 로 두고, 그 겹이 닫히면 해제한다 — 이 이슈의 남은 축이 무엇인지
-/// 코드가 직접 말하게 한다.
+/// 종전에는 옛 밴드(우단 564.5)가 그대로 남아 그림이 글자를 덮었다.
 #[test]
-#[ignore = "#6202 남은 축: 계산된 밴드를 편집 뒤 line_segs 로 채택하는 경로"]
 fn moving_the_float_reflows_the_body() {
     let Some(bytes) = sample() else {
         return;
