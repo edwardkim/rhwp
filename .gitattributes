@@ -42,3 +42,6 @@ pdf/issue5447/*.pdf       -text -diff
 # manifest의 SHA-256과 parser 재현성을 바꾸면 안 된다.
 samples/issue5057/*.hwp -text -diff
 samples/issue6202/*.hwp -text -diff
+
+# Issue #5941 canonical HWP fixture
+samples/issue5941/1480000-201900698-native-neartop-reset.hwp -text -diff

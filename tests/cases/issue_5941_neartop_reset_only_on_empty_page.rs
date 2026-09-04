@@ -21,52 +21,19 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::path::Path;
-
 use rhwp::wasm_api::HwpDocument;
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/prism_downloads/기후에너지환경부/
-///  1480000-201900698_D0150004-1-001_자생생물유래독성물질의유용성탐색4차년도_최종보고_프리즘 제출.hwp`
-///
-/// ⚠ `.hwp` 를 `samples/` 에 넣으면 `ir_field_sweep_baseline` 이 `samples/` 전체를 스윕해
-/// 무관한 직렬화 발산을 끌고 온다. `RHWP_ISSUE5941_SAMPLE` 로 경로를 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE5941_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        concat!(
-            r"C:\Users\planet\hwpdocs_10k_share",
-            r"\prism_downloads\기후에너지환경부"
-        ),
-        concat!(
-            r"D:\hwpdocs_10k_share",
-            r"\prism_downloads\기후에너지환경부"
-        ),
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.starts_with("1480000-201900698") && name.ends_with(".hwp") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+const SAMPLE: &str = "samples/issue5941/1480000-201900698-native-neartop-reset.hwp";
+
+fn sample() -> Vec<u8> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    std::fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"))
 }
 
 /// 이미 찬 쪽의 저장 near-top 리셋은 살아 있어야 한다 — 지우면 202 → 200 이 된다.
 #[test]
 fn stored_neartop_reset_survives_on_a_filled_page() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let pages = doc.page_count();
     assert_eq!(
@@ -79,11 +46,10 @@ fn stored_neartop_reset_survives_on_a_filled_page() {
 /// `#5921` 의 원 계약은 그대로 — 거의 빈 쪽에서는 완화가 걸려 1쪽이어야 한다.
 #[test]
 fn issue_5921_empty_page_relaxation_still_applies() {
-    let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/task2136/neartop_reset_sb2500.hwpx");
-    let Ok(bytes) = std::fs::read(&path) else {
-        return;
-    };
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/task2136/neartop_reset_sb2500.hwpx");
+    let bytes =
+        std::fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
     let doc = HwpDocument::from_bytes(&bytes).expect("parse fixture");
     assert_eq!(
         doc.page_count(),
