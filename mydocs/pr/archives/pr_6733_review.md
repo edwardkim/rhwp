@@ -1,6 +1,6 @@
 # PR #6733 검토 기록
 
-## 최종 판정: 승인
+## 최종 판정: 수용
 
 ## 대상과 기준
 
@@ -43,6 +43,13 @@
   이 자료는 page 10의 body-overflow regression 범위만 뒷받침하며, Hancom/Studio full fidelity 또는
   pixel match의 증거는 아니다.
 - 상세 해시와 한계는 [#6733 시각 증적](pr_6733_planet6897_visual_sweep.md)에 고정했다.
+
+## 통합 PR CI 기록
+
+- 통합 PR #6734의 code candidate `a239517aa32519ad8dce938768e63d3e45593ea7`에서
+  CI, CodeQL Rust worker, Render Diff, Adapter inter-diff, Proptest, CI Impact Policy가 모두
+  성공했다. Rust CodeQL worker 실행 시간은 12분 29초였다.
+- 이 기록을 포함한 documentation-only trailing head는 별도 CI 성공 뒤에만 merge한다.
 
 ## 통합 전 조건
 

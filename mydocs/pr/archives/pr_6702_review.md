@@ -1,6 +1,6 @@
 # PR #6702 검토 기록
 
-## 최종 판정: 메인터너 보정 됨 수용 가능
+## 최종 판정: 메인터너 보정 됨 수용
 
 ## 대상과 기준
 
@@ -41,6 +41,13 @@
   [통합 시각 증적](pr_6702_6732_planet6897_visual_sweep.md)에 고정했다.
 - 이 확인은 표제의 존재에 한정한다. native export의 폰트 대체와 기존 `rhwp-studio` 차이가 있으므로
   전체 페이지 pixel equivalence나 Studio 동작의 대체 증거로 사용하지 않는다.
+
+## 통합 PR CI 기록
+
+- 통합 PR #6734의 code candidate `a239517aa32519ad8dce938768e63d3e45593ea7`에서
+  CI, CodeQL, Render Diff, Adapter inter-diff, Proptest, CI Impact Policy가 모두 성공했다.
+  이 test 보정은 실제 CI archive shard에서 공개 canonical fixture를 읽는 경로로 검증됐다.
+- 이 기록을 포함한 documentation-only trailing head는 별도 CI 성공 뒤에만 merge한다.
 
 ## 통합 전 조건
 

@@ -1,6 +1,6 @@
 # PR #6732 검토 기록
 
-## 최종 판정: 승인
+## 최종 판정: 수용
 
 ## 대상과 기준
 
@@ -37,6 +37,12 @@
   페이지의 비공백·육안상 잘림 부재와 page-count 변화에 한정한다. source PR 본문의 Hancom count를
   독립 재현한 결과로 기록하지 않는다.
 - 상세 범위와 한계는 [통합 시각 증적](pr_6702_6732_planet6897_visual_sweep.md)에 남겼다.
+
+## 통합 PR CI 기록
+
+- 통합 PR #6734의 code candidate `a239517aa32519ad8dce938768e63d3e45593ea7`에서
+  CI, CodeQL, Render Diff, Adapter inter-diff, Proptest, CI Impact Policy가 모두 성공했다.
+- 이 기록을 포함한 documentation-only trailing head는 별도 CI 성공 뒤에만 merge한다.
 
 ## 통합 전 조건
 
