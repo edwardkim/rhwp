@@ -2301,6 +2301,7 @@ fn internal_vpos_page_break_line(
     body_height_px: f64,
     dpi: f64,
     source_uses_inline_field_reset: bool,
+    native_hwp5_fixed_row_zero_reset: bool,
     hwp3_converted_requires_negative_reset: bool,
 ) -> Option<usize> {
     if line_count < 2 || para.line_segs.len() < line_count {
@@ -2361,17 +2362,33 @@ fn internal_vpos_page_break_line(
                 return None;
             }
 
+            // Native HWP5 normally leaves zero resets to its dedicated
+            // row/footnote paths. The 27469 contract is narrower: an
+            // ordinary text row with this exact saved 1200HU grid represents
+            // `vpos=0` as the next physical page top. Keep the 1048HU
+            // RowBreak prose and other native grids on their existing paths.
+            let native_hwp5_stored_zero_reset = native_hwp5_fixed_row_zero_reset
+                && cur.line_height == 1200
+                && cur.baseline_distance == 1020
+                && cur.line_spacing == 1440
+                && cur.tag == 0x0016_0000
+                && cur.vertical_pos == 0;
+
             let stored_page_reset = if hwp3_converted_requires_negative_reset {
                 // HWP3 변환 HWP5의 `vpos=0`은 문단 내부의 실제 쪽 reset이 아니라
                 // 변환기의 local cursor 초기화로도 쓰인다. 음수로 되감긴 조각만
                 // 저장된 다음 페이지 조각으로 해석한다.
                 cur.vertical_pos < 0
             } else {
-                cur.vertical_pos <= 0
-                    || (cur.vertical_pos < prev.vertical_pos
-                        && hwpunit_to_px(prev.vertical_pos.saturating_add(prev.line_height), dpi)
-                            >= body_height_px * 0.72
-                        && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06)
+                native_hwp5_stored_zero_reset
+                    || (text_vpos_rewind
+                        && (cur.vertical_pos <= 0
+                            || (cur.vertical_pos < prev.vertical_pos
+                                && hwpunit_to_px(
+                                    prev.vertical_pos.saturating_add(prev.line_height),
+                                    dpi,
+                                ) >= body_height_px * 0.72
+                                && hwpunit_to_px(cur.vertical_pos, dpi) <= body_height_px * 0.06)))
             };
 
             if stored_page_reset {
@@ -17234,6 +17251,7 @@ impl TypesetEngine {
             st.profile.hwpx_stored_layout()
                 || st.profile.hwp3_native_layout()
                 || hwp3_converted_hwp5,
+            st.profile.hwp5_stored_pagination_layout(),
             hwp3_converted_hwp5,
         )
         .filter(|break_line| {
@@ -18182,10 +18200,6 @@ impl TypesetEngine {
                             >= st.base_available_height() * 0.7
                 })
                 .unwrap_or(false);
-            // 사다리가 "이 쪽은 꽉 찼다"고 말할 때만 `0` 표식을 쪽 경계로 믿는다 —
-            // 사다리대로 끊은 뒤 한 줄을 더 얹으면 예산을 넘어야 한다. 이 게이트가
-            // #2070 시장구조조사(pi=343·1088)를 걷어낸다: 거기 사다리는 예산이 한 줄
-            // 넘게 남는 자리에서 끊으라고 해서, 그대로 따르면 315 → 316쪽이 된다.
             let ladder_page_is_full = |k: usize| -> bool {
                 let upto = fmt.line_advances_sum(cursor_line..k);
                 let next = fmt.line_advances_sum(k..k + 1);
