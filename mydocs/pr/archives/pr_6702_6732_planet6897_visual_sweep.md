@@ -5,7 +5,7 @@
 - 기준 devel: `d1831146587b1ac2346f9ed1216a64c2943a02f9`
 - 통합 후보: #6702 원 code/report와 test/evidence, #6732 source head를 provenance-preserving
   `-x` cherry-pick으로 누적하고 #6702 test fixture를 공개 canonical sample로 보정한 상태
-- 출력기: macOS native-skia `rhwp export-png --profile print-equivalent-skia`
+- 출력기: macOS native-skia `rhwp export-png --profile print`
 - 두 후보 export는 모두 794 x 1123 PNG다.
 
 ## #6702 셀 host 문단 text

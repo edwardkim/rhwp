@@ -25,6 +25,8 @@
   (`a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9`)에서
   현재 devel native binary는 305 logical pages, 통합 후보 native binary는 304 logical pages를
   보고했다. 이는 PR의 regression expectation과 일치한다.
+- 통합 candidate에서 formatter와 all-target clippy가 성공했고, focused
+  `issue_5941_tail_overflow_drift_gate` regression도 통과했다.
 
 ## 증적 범위
 

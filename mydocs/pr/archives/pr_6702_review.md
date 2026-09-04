@@ -29,6 +29,8 @@
   `samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx`를 `include_bytes!`로
   필수화했다. private path와 환경 변수 fallback을 제거해 fixture 부재를 성공으로 숨기지 않는다.
   fixture SHA-256은 `e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62`다.
+- 통합 candidate에서 formatter와 all-target clippy가 성공했고, 공개 fixture를 읽는 focused
+  `issue_6697_cell_host_paragraph_text_is_drawn` regression도 통과했다.
 
 ## 증적 범위
 
