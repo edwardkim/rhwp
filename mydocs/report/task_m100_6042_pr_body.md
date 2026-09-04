@@ -1,10 +1,6 @@
-> **Stack 3/3** — base는 의도적으로 `codex/issue-6041-budget-first-render-scale`입니다.
+> **Stack 3/3** — #6458 → #6467 → **이 PR (#6637)**
 >
-> 1. #6458 (`devel` ← `codex/issue-6040-zoom-topology`)
-> 2. #6467 (`codex/issue-6040-zoom-topology` ← `codex/issue-6041-budget-first-render-scale`)
-> 3. **이 PR** (`codex/issue-6041-budget-first-render-scale` ← `codex/issue-6042-page-virtualization`)
->
-> 세 PR은 GitHub native stack #6640으로 연결되어 있습니다. 리뷰는 #6467 대비 이 layer의 diff를 기준으로 부탁드립니다.
+> 앞선 #6458·#6467은 병합됐으며 현재 직접 base는 `devel`입니다. 해당 base 대비 이 PR의 diff를 검토해 주세요.
 
 ## 변경 요약
 
@@ -72,6 +68,11 @@ fully-warm 전체 상주나 장치 성능별 자동 확장은 별도 문제로 �
 Chromium 151, 1280×720 CSS px, 실제 DPR 2, Canvas2D에서 Stage 3과 A/B했습니다. p50/p95 회귀 경보선은
 결과 확인 전에 `max(10ms, 5%)` / `max(25ms, 10%)`로 고정했습니다.
 
+아래는 2026-09-02의 **단계별 측정**입니다. Stage 3에는 LRU가 이미 있으며, 배포판 대비 전체 PR의
+개선률이나 rebase·후속 보정 후 최신 head의 신규 측정값은 아닙니다. cold는 `5f5d60071` →
+`6f2d82d24`, warm/역방향·확장 성능은 `5f5d60071` → `63d29e68b`, 정착 화질은 `5f5d60071` →
+`a762e58ea`를 비교했습니다.
+
 ### 178쪽 `hwpspec.hwp`, 4열·34% cold jump, 20쌍
 
 | 지표 p50 / p95 | before | after | 변화 |
@@ -91,9 +92,12 @@ compositor frame 개선으로 일반화하지 않습니다.
 
 scroll-settled 화질 회복은 별도의 의도한 비용이 있습니다. 두 쪽·100%에서 scroll callback은 양쪽 모두
 0/0.1ms지만, 입력 종료 뒤 DPR 1→2 raster 때문에 최종 known work는 p50/p95 33.3/54.1ms 늦어집니다.
-64M gate로 이 비용과 메모리 상한을 제한합니다.
+여기서 known work는 trace의 `retainedComplete`입니다. runner의 추가 안정 프레임까지 포함한
+`knownWorkNextFrameMs`와 구분합니다. 64M gate는 승격할 visible surface 비용을 제한하는 기준이지
+프로세스 전체 메모리 상한은 아닙니다.
 
-Canvas2D·CanvasKit 확장 matrix의 성능 표본은 revision당 260개였고 모두 complete/error 0입니다.
+당시 Canvas2D·CanvasKit 확장 matrix는 revision당 260개가 complete/error 0이었습니다. 전체 matrix는
+역사적 요약으로 남기고 아래 지연 증가 사례의 원시는 모든 반복을 보존했습니다.
 `exam_kor` 두 쪽·50% retained 완료는 331.6/342.8ms → 346.2/362.2ms로 p50/p95 +14.6/+19.4ms였지만,
 결과 확인 전에 정한 경보선 +16.6/+34.3ms 안이었습니다. 첫 visible은 123.2/132.1ms → 63.3/71.2ms였습니다.
 이 수치를 모든 두 쪽 문서의 일반 성능 배수로 주장하지 않습니다.
@@ -106,8 +110,14 @@ Canvas2D·CanvasKit 확장 matrix의 성능 표본은 revision당 260개였고 �
 - scroll-settled DPR 승격은 최적화가 아니라 읽기 화질 복원을 위한 의도된 후처리 비용입니다.
 - LRU는 메모리를 더 보존해 CPU 재작업을 줄이는 교환입니다. 전체 메모리 감소를 주장하지 않습니다.
 
-자세한 판정과 원시는 [최종 보고](https://github.com/edwardkim/rhwp/blob/codex/issue-6042-page-virtualization/mydocs/report/task_m100_6042_report.md)와
-`mydocs/working/assets/issue6042*`에 있습니다.
+자세한 판정은 [최종 보고](https://github.com/edwardkim/rhwp/blob/codex/issue-6042-page-virtualization/mydocs/report/task_m100_6042_report.md),
+선택 원시·환경·해시·명령은 [최소 증거 색인](https://github.com/edwardkim/rhwp/blob/codex/issue-6042-page-virtualization/mydocs/working/assets/issue6042/README.md)에 있습니다.
+중간 smoke와 중복 화면을 제거하되 핵심 A/B의 모든 반복, 불리한 결과, 대표 화질 비교를 남겼습니다.
+보존하지 않은 원시를 필요로 하는 과거 summary 전체가 현재 tree에서 재계산 가능하다는 뜻은 아닙니다.
+
+다른 기여자도 기존 DEV opt-in 패널로 문서·줌·스크롤을 반복하고 JSON을 저장할 수 있도록
+[사용 안내](https://github.com/edwardkim/rhwp/blob/codex/issue-6042-page-virtualization/mydocs/manual/studio_scroll_probe_guide.md)를 추가했습니다.
+`관찰 비용 A/B`는 제품 전후가 아닌 계측 on/off 비교입니다. 패널 동작이나 제품 정책의 추가 변경은 없습니다.
 
 ## 시각 비교
 
@@ -127,6 +137,9 @@ cursor가 없는 쪽으로 스크롤했을 때는 이동 중 surface를 유지�
 
 ## 검증
 
+다음은 개발·제출 당시의 제품 검증 기록입니다. 후속 보정의 exact-head 검증은 review 기록과 해당 head의
+CI를 따르며, 문서 정리를 새 제품 테스트/성능 측정으로 보고하지 않습니다.
+
 - [x] `npm test`: 1,434 total / 1,433 pass / 1 skip / 0 fail
 - [x] `npx tsc --noEmit --pretty false`
 - [x] `npm run build`
@@ -136,7 +149,8 @@ cursor가 없는 쪽으로 스크롤했을 때는 이동 중 surface를 유지�
 - [x] browser image decode 실패 3회 → fallback render 3회, 잔여 queue/error 0
 - [x] Canvas2D·CanvasKit·auto fallback, 34/50/100/200%, 가로·대면·마지막 행, 문서 교체,
   edit/undo/redo
-- [x] Stage 집계기 4종, raw JSON parse, ancestry, `git diff --check`
+- [x] 당시 Stage 집계기 4종, raw JSON parse, ancestry, `git diff --check`
+- [x] 자료 정리 후 보존 34파일 SHA-256/JSON, 핵심 104개 p50/p95 계열 재검산
 - [x] Rust source/test/fixture/Cargo/CI 변경 없음 — Rust gate N/A
 
 사용자가 Stage 3/현재 로컬 서버를 직접 비교했고, scroll-settled 화질 보정 뒤 앞서 제보한 버벅임이
@@ -151,8 +165,8 @@ cursor가 없는 쪽으로 스크롤했을 때는 이동 중 surface를 유지�
 - browser 수명 회귀: `e2e/page-virtualization-image-failure.test.mjs`, `e2e/ruler-resize.test.mjs`
 - 최종 판정: `mydocs/report/task_m100_6042_report.md`
 
-diff의 큰 부분은 반복 A/B raw evidence입니다. 리뷰 UI가 raw JSON을 접어도 `summary.json`과 위 제품
-파일부터 보면 구조와 판정을 확인할 수 있습니다.
+리뷰는 위 제품 파일과 최소 증거 색인부터 시작하면 됩니다. 원시는 요약을 검산하거나 특정 반복을
+추적할 때 읽는 자료이며, 단순한 수치 요약으로 원시 전체를 대체하지 않았습니다.
 
 ## 범위 밖
 

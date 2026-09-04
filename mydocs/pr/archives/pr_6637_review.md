@@ -271,8 +271,25 @@ DPR/예산/줌 정책 변경은 이번 승인 범위에 포함하지 않았다.
 
 ## 현재 판정
 
+### 2026-09-04 증적 정리 검토
+
+- 사용자 승인에 따라 원격 rebase head `9b679f07a8b714d680ed822406e41cc62a6174ea` 위 로컬 branch
+  `codex/pr-6637-evidence-trim`에서 문서·검증 자산만 정리했다. 상세 범위/결과는
+  [구현 검토](pr_6637_review_impl.md)의 증적 정리 절을 따른다.
+- 중간 자산은 별도 영구 archive 없이 tree에서 제거하고 핵심 A/B의 모든 반복·불리한 결과·대표
+  화면·환경·재집계 경로를 남겼다. 기존 34파일의 값/해시는 그대로이며 정리 전 commit으로 복구 가능하다.
+- [최소 증거 색인](../../working/assets/issue6042/README.md)에서 과거 단계 요약과 현재 재계산 가능한
+  항목을 구분했다. 새 [패널 안내](../../manual/studio_scroll_probe_guide.md)와 저장 원시 검산은
+  제품 성능 재측정이나 전체 시각 게이트 재수행을 뜻하지 않는다.
+- 해시/JSON, 104개 p50/p95 계열, correction 전체 summary 재생성, 내부 링크, 기존 대비 메타데이터
+  신규 오류 0건을 확인했다. Studio/Rust/패널/테스트 코드 변경이 없어 제품 빌드는 재실행하지 않았다.
+- 사용자가 앞선 로컬 서버에서 회귀 없음을 보고했다. 이번 정리는 source를 변경하지 않는다.
+- **로컬 정리 완료, push 승인 대기**. 원격 PR 본문/댓글·상태·merge는 변경하지 않았다.
+
+### 병합 경계
+
 - 판정: **머지 보류**
 - 원격 상태: Ready / OPEN, 직접 base `devel`; 하위 #6458·#6467 병합 완료
-- 남은 조건: 새 exact head required checks, 로컬 사용자 확인과 별도 merge 승인
-- 이번 원격 조치는 기존 PR branch push에 한정한다. self PR의 GitHub approval review와 thread
-  resolve는 만들지 않으며 merge는 사용자 승인 전까지 수행하지 않는다.
+- 남은 조건: 증적 정리 push 승인, 이후 exact head required checks와 별도 merge 승인
+- 이번 작업은 원격 조치를 아직 하지 않았다. self PR의 GitHub approval review와 thread resolve를
+  만들지 않으며 push·merge는 각각 사용자 승인 전까지 수행하지 않는다.

@@ -127,3 +127,36 @@ Stage 5에서 나온 불리한 `exam_kor` 역방향 결과를 숨기지 않고 �
 통과했다. 새 WASM을 사용하는 `4198` 서버에서 `exam_kor.hwp` 20쪽의 100% 문서 열기 smoke와
 브라우저 오류 0건을 확인했다. native `--no-opt` 빌드이므로 정량 성능 비교용은 아니며, 사용자
 스크롤·줌 확인과 새 head의 원격 CI 및 merge 승인은 별도 조건으로 남긴다.
+
+## 2026-09-04 검증 자료 최소화 계획
+
+- 사용자 승인 범위: 개발 패널 사용 안내와 PR 핵심 증거만 남기는 로컬 정리. **실제 push는 별도 승인 후**
+  수행하며 PR 본문 게시·merge·ready 상태 변경은 하지 않는다.
+- 기준은 원격 rebase 후 `9b679f07a8b714d680ed822406e41cc62a6174ea`다. 로컬
+  `codex/pr-6637-evidence-trim`에서 작업하고 이전 `codex/pr-6637-inline-review-fixes`는 보존한다.
+- 제품·패널·테스트 코드는 그대로 둔다. 매뉴얼은 기존 DEV opt-in UI, 실제 조작, JSON 저장과 지표의
+  한계를 설명한다. 패널 일반화나 별도 PR 분리는 포함하지 않는다.
+- 162개 자산 중 34개를 원문 그대로 남긴다. cold 우선 표시, warm/reverse 재사용, 두 쪽에서 지연이
+  증가한 사례, 정착 화질/추가 비용에 필요한 모든 A/B 반복과 대표 이미지를 선택한다. 선택한 시나리오
+  안에서 유리한 반복만 추리지 않는다. 중복·폐기 표본·초기 smoke·불필요한 집계기는 제거한다.
+- 역사적 summary와 실패 원인 보고는 유지하되 재계산 가능한 범위를 색인과 검사기로 명시한다. 과거
+  측정 결과를 위 최신 head의 신규 측정으로 표기하지 않는다. 별도 영구 원시 archive는 만들지 않는다.
+- 검증: 보존 파일 SHA-256/JSON parse, 주요 수치 재집계, 남은 집계기 입력, 삭제 경로 참조, Markdown
+  링크/메타데이터의 신규 오류 0건, 제품 diff 없음, `git diff --check`. 정리 전 메타데이터 오류는 이
+  작업과 무관한 기존 4문서·16건이다. 새 성능 측정이나 제품 CI를 대신하는 검증이 아니다.
+
+### 증적 정리 실행 결과
+
+- 계획대로 중간 자산 128개(이미지 10개 포함)를 제거했다. 기존 34개를 byte-identical로 보존하고
+  색인·manifest·read-only 검사기 3개를 추가해 자산은 162→37개, 17.35→약 5.18MB로 줄었다.
+- 새 [개발 패널 안내](../../manual/studio_scroll_probe_guide.md)는 DEV opt-in, 조작, JSON 수동 저장,
+  계측 on/off와 제품 A/B의 차이, cold/warm 조건과 비교 한계를 설명한다. manual 지도에서 연결했다.
+- 보존 파일 34개의 SHA-256/bytes/JSON, 핵심 104개 p50/p95 계열, cold long-task 합계와 quality
+  delta를 검산했다. correction 원 집계기의 전체 summary/ledger/verdict도 byte-identical 재생성됐다.
+  무결성 위반·요약값 변조·반복 누락은 메모리 내 fault injection으로 기대한 guard에서 거부됨을 확인했다.
+- quality의 `settledKnownWorkMs`가 trace `retainedComplete`를 가리킨다는 것을 명확히 했다. 추가 안정
+  프레임을 기다린 runner의 `knownWorkNextFrameMs`와는 다른 값이며 기존 보고 수치를 바꾸지 않았다.
+- 삭제 자료 참조 49개는 정리 전 commit에 실제 target이 존재하는지 확인했다. 변경 문서의 내부 상대
+  링크 오류는 0건, 장기 문서 메타데이터 신규 오류는 0건(기존 16건 유지)이다. 제품 코드 diff는 없다.
+- 기존 PR 본문 초안에 최소 증거/사용 안내와 측정 revision·범위 설명을 반영했다. 원격 PR 본문은
+  게시하지 않았으며 **push 전 사용자 승인 대기**다. 제거 파일은 정리 전 commit에서 복구할 수 있다.

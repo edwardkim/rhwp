@@ -1,5 +1,8 @@
 # Task M100 #6042 Stage 4 보정 — retained 전환과 선택 prefetch 분리
 
+> 2026-09-04 증적 정리: 이 문서는 당시 단계의 결과다. 제거한 중간 자료는 정리 전 commit 링크로
+> 전환했다. 현재 보존 원시와 재집계 범위는 [최소 증거 색인](assets/issue6042/README.md)을 따른다.
+
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 검증일: 2026-09-02 KST
 - 상태: **보정 구현·재수용 조건 통과, Stage 5 확장 matrix 미완료**
@@ -92,13 +95,13 @@ Stage 4가 만든 `exam_kor.hwp` 역방향 cache thrash를 제거했다. Stage 3
 
 같은 scroll 좌표에서 Stage 3과 보정의 페이지 배치가 같다.
 
-![Stage 3](assets/issue6042-stage5-correction/exam-4col-34-stage3.jpg)
+[Stage 3 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-correction/exam-4col-34-stage3.jpg)
 
-![Stage 4 correction](assets/issue6042-stage5-correction/exam-4col-34-corrected.jpg)
+[Stage 4 correction (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-correction/exam-4col-34-corrected.jpg)
 
-[기계 비교](assets/issue6042-stage5-correction/exam-4col-34-visual-comparison.json)는 1280×720 중
+[기계 비교 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-correction/exam-4col-34-visual-comparison.json)는 1280×720 중
 744px(0.0807%) 차이를 보고한다. footer의 load time과 probe 상태 문구가 포함된 browser JPEG 비교이므로
-glyph 화질의 정량 근거로 사용하지 않는다. 대신 [DOM·surface snapshot](assets/issue6042-stage5-correction/exam-4col-34-visual-snapshots.json)의
+glyph 화질의 정량 근거로 사용하지 않는다. 대신 [DOM·surface snapshot (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-correction/exam-4col-34-visual-snapshots.json)의
 viewport, zoom, columns, scroll, visible/retained 집합, page box, DPR, scale, layer surface 정수 크기와
 active physical pixel을 정규화해 비교했고 모두 동일하다(`coordinatesAndSurfacesEqual=true`).
 
@@ -120,9 +123,9 @@ Vite의 CanvasKit `fs`/`path` externalization과 500kB chunk 경고는 기존 �
   [summary.json](assets/issue6042-stage5-correction/summary.json)
 - `exam_kor` raw: `exam-4col-34-{stage3-a1,stage3-a2,corrected-b1,corrected-b2}.json`
 - `hwpspec` raw: `hwpspec-4col-34-{stage3-a1,stage3-a2,corrected-b1,corrected-b2}.json`
-- 화면 비교: [비교기](assets/issue6042-stage5-correction/compare-visuals.mjs),
-  [판정](assets/issue6042-stage5-correction/exam-4col-34-visual-comparison.json),
-  [차분](assets/issue6042-stage5-correction/exam-4col-34-diff.png)
+- 화면 비교: [비교기 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-correction/compare-visuals.mjs),
+  [판정 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-correction/exam-4col-34-visual-comparison.json),
+  [차분 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-correction/exam-4col-34-diff.png)
 
 원시 JSON은 localhost URL·fixture 경로·browser 정보·bounded trace만 담고 계정·토큰·개인 문서는
 포함하지 않는다. 다음 단계는 별도 승인 뒤 남은 Stage 5 matrix를 재개하는 것이다. 이 보정 보고만으로

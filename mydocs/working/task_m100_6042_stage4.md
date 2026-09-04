@@ -1,5 +1,8 @@
 # Task M100 #6042 Stage 4 — scroll visible scheduler와 bounded prefetch
 
+> 2026-09-04 증적 정리: 이 문서는 당시 단계의 결과다. 제거한 중간 자료는 정리 전 commit 링크로
+> 전환했다. 현재 보존 원시와 재집계 범위는 [최소 증거 색인](assets/issue6042/README.md)을 따른다.
+
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료: 2026-09-02 14:10 KST
 - 상태: **Stage 4 구현·검증 완료, Stage 5 승인 대기**
@@ -60,7 +63,7 @@ focused/current-page/ruler, zoom anchor, surface budget, renderer 회귀군을 �
 
 Chromium 151, Canvas2D, 1280×720 CSS px, DPR 2, 고정 4열·34%에서 `samples/hwpspec.hwp`를
 0px에서 2420px로 한 번 이동했다. 원문은
-[JSON](assets/issue6042-stage4/hwpspec-178p-cold-jump.json)에 보존했다.
+[JSON (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage4/hwpspec-178p-cold-jump.json)에 보존했다.
 
 | 경계 | 결과 |
 | --- | ---: |
@@ -76,12 +79,12 @@ Stage 3의 같은 fixture 첫 cold interaction은 `visibility.update` 안에서 
 240.2ms가 걸렸다. Stage 4 표본은 이동 궤적과 raster 수가 달라 시간 개선률로 비교하지 않는다. 다만 이번
 trace는 16회의 raster가 update 반환 뒤 visible rAF와 bounded idle로 분리됐다는 구조를 입증한다.
 
-![178쪽 cold jump 완료 화면](assets/issue6042-stage4/hwpspec-178p-cold-jump.png)
+[178쪽 cold jump 완료 화면 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage4/hwpspec-178p-cold-jump.png)
 
 ### 3.2 빠른 방향 반전
 
 같은 178쪽 조건에서 `-1800 → +900 → -450px` 입력을 대기 없이 연속 수행했다.
-[원문](assets/issue6042-stage4/hwpspec-178p-direction-reversal.json)에서 앞의 두 trace는
+[원문 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage4/hwpspec-178p-direction-reversal.json)에서 앞의 두 trace는
 `superseded/new-interaction`, 마지막 trace는 `complete`다. 마지막 visible/retained 완료는 모두
 147.2ms였고 최종 visible/prefetch queue, frame/idle 예약, pending image가 모두 0이었다. 오류와 long task도
 없었다. 이 검증에서 발견한 retained LRU timeout은 수정 전 자료를 덮어쓰지 않고, 수정 후 complete 자료만
@@ -89,14 +92,14 @@ trace는 16회의 raster가 update 반환 뒤 visible rAF와 bounded idle로 분
 
 ### 3.3 다층·작은 문서·CanvasKit
 
-- [21쪽 다층 cold jump](assets/issue6042-stage4/multi-layer-21p-cold-jump.json): Canvas2D,
+- [21쪽 다층 cold jump (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage4/multi-layer-21p-cold-jump.json): Canvas2D,
   672×863, DPR 2, 4열·34%. visible 9쪽을 9 slices로 처리했고 `visibility.update`는 8.8ms,
   visible/retained 완료는 280.9ms였다. 완료된 retained 13쪽 모두 main+front 두 layer를 보존했고 image
   재렌더 9회 뒤 pending/error/long task가 0이었다.
-- [4쪽 zoom/scroll](assets/issue6042-stage4/four-page-zoom-scroll.json): Canvas2D, 한 쪽 보기에서
+- [4쪽 zoom/scroll (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage4/four-page-zoom-scroll.json): Canvas2D, 한 쪽 보기에서
   50→100% 줌은 각각 preview 뒤 focused/visible/retained 완료를 기록했다. 이어진 한 행 scroll은 exact
   visible을 37.3ms에 유지했고 새 인접 한 쪽만 idle prefetch했다. scheduler visible 분할 누계는 늘지 않았다.
-- [CanvasKit 4쪽 scroll](assets/issue6042-stage4/canvaskit-four-page-scroll.json): 한 쪽·100%에서
+- [CanvasKit 4쪽 scroll (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage4/canvaskit-four-page-scroll.json): 한 쪽·100%에서
   update 0.3ms, visible/retained 27.9ms, queue/pending/error/long task 0이었다. 이 smoke는 backend 수명
   보존 근거이며 backend 성능 우위를 주장하지 않는다.
 

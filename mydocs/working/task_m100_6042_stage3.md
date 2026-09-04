@@ -1,5 +1,8 @@
 # Task M100 #6042 Stage 3 — 페이지 표면 LRU와 retained pixel 원장
 
+> 2026-09-04 증적 정리: 이 문서는 당시 단계의 결과다. 제거한 중간 자료는 정리 전 commit 링크로
+> 전환했다. 현재 보존 원시와 재집계 범위는 [최소 증거 색인](assets/issue6042/README.md)을 따른다.
+
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료: 2026-09-02 13:44 KST
 - 상태: **Stage 3 구현·검증 완료, Stage 4 미착수**
@@ -47,8 +50,8 @@ ruler/caret/selection 좌표, Rust/WASM을 변경하지 않았다.
 
 Canvas2D, Chromium 151, 1280×720 CSS px, DPR 2, 고정 4열·34%에서 같은 두 working set을 20회
 왕복했다. 첫 interaction은 cold/부분 cold로 분리하고, 이후 19회만 warm-hit 결과로 해석한다.
-원문은 [178쪽 JSON](assets/issue6042-stage3/hwpspec-178p-warm-scroll.json)과
-[21쪽 다층 JSON](assets/issue6042-stage3/multi-layer-21p-warm-scroll.json)에 보존했다.
+원문은 [178쪽 JSON (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage3/hwpspec-178p-warm-scroll.json)과
+[21쪽 다층 JSON (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage3/multi-layer-21p-warm-scroll.json)에 보존했다.
 
 | 실제 문서 | warm 19회 main raster | warm 19회 WASM layer raster | visible-stable 중앙값 | update 중앙값 |
 | --- | ---: | ---: | ---: | ---: |
@@ -66,22 +69,22 @@ eviction 0, pending 0이었다. 둘 다 retained 40M 이하이고 `overBudgetMan
 않았으므로 end-to-end 시간 개선률이나 compositor frame 개선률은 주장하지 않는다.
 
 CanvasKit에서도 4쪽 실문서를 한 쪽·100%로 준비한 뒤 같은 왕복을 20회 실행했다.
-[원문 JSON](assets/issue6042-stage3/canvaskit-4p-warm-scroll.json)의 20 interaction 모두 main/layer raster 0,
+[원문 JSON (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage3/canvaskit-4p-warm-scroll.json)의 20 interaction 모두 main/layer raster 0,
 누적 cache hit 20, warning/error·long task 0이었다. 최종 active Canvas의 exact key가
 `backend:canvaskit`, 실제 surface가 `1588×2245`임도 별도로 확인했다. 이는 CanvasKit bitmap을
 detach/reattach하는 수명 smoke이며 backend 간 성능 우위를 주장하는 자료는 아니다.
 
 ## 4. 다층·시각·실제 pixel 검증
 
-![21쪽 다층 문서 34% warm cache 화면](assets/issue6042-stage3/multi-layer-34pct-warm-cache.png)
+[21쪽 다층 문서 34% warm cache 화면 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage3/multi-layer-34pct-warm-cache.png)
 
-[surface snapshot](assets/issue6042-stage3/multi-layer-21p-surface-snapshot.json)에서 active 16쪽 각각은
+[surface snapshot (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage3/multi-layer-21p-surface-snapshot.json)에서 active 16쪽 각각은
 `540×764` main과 같은 크기의 front layer 한 장을 유지했다. 20회 왕복 뒤에도 누락, main-only 표시,
 잘못된 page ownership, console warning/error가 없었다.
 
-![KTX 4-layer 100% 화면](assets/issue6042-stage3/ktx-4layer-100pct.png)
+[KTX 4-layer 100% 화면 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage3/ktx-4layer-100pct.png)
 
-[KTX snapshot](assets/issue6042-stage3/ktx-4layer-100pct-surface-snapshot.json)은 main/background/behind/front
+[KTX snapshot (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage3/ktx-4layer-100pct-surface-snapshot.json)은 main/background/behind/front
 네 장이 모두 `2246×1588`이고 실제 합이 **14,266,592px**임을 기록한다. reserved ledger도 실제 합으로
 맞춰졌으며 표시 순서는 background → behind → main → front였다. screenshot은 compositor 표시 확인용이고
 픽셀 화질 개선률 근거로 사용하지 않는다. 이 단계는 DPR과 render scale을 바꾸지 않았다.

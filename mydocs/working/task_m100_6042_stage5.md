@@ -1,5 +1,8 @@
 # Task M100 #6042 Stage 5 — A/B 검증 중 발견한 역방향 retained 회귀
 
+> 2026-09-04 증적 정리: 이 문서는 당시 단계의 결과다. 제거한 중간 자료는 정리 전 commit 링크로
+> 전환했다. 현재 보존 원시와 재집계 범위는 [최소 증거 색인](assets/issue6042/README.md)을 따른다.
+
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 측정일: 2026-09-02 KST
 - 상태: **역사적 Stage 5 중단 보고 — Stage 4 보정은 후속 검증 통과, 전체 Stage 5는 미완료**
@@ -132,15 +135,15 @@ preview의 최대 +0.5ms 차이는 고정한 10ms 경보선보다 작다. 이 St
 
 같은 4열·34%·scroll 좌표의 compositor 화면은 문서 배치와 쪽 내용이 육안상 같다.
 
-![Stage 3 before](assets/issue6042-stage5/exam-4col-34-stage3-before.jpg)
+[Stage 3 before (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/exam-4col-34-stage3-before.jpg)
 
-![Stage 4 after](assets/issue6042-stage5/exam-4col-34-stage4-after.jpg)
+[Stage 4 after (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/exam-4col-34-stage4-after.jpg)
 
-23/640,000px(0.0036%) 차이는 하단의 문서 로드 시간 숫자다. [차분](assets/issue6042-stage5/exam-4col-34-diff.png)과
-[기계 판정](assets/issue6042-stage5/exam-4col-34-visual-comparison.json)에 보존했다. JPEG source이므로 이
+23/640,000px(0.0036%) 차이는 하단의 문서 로드 시간 숫자다. [차분 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/exam-4col-34-diff.png)과
+[기계 판정 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/exam-4col-34-visual-comparison.json)에 보존했다. JPEG source이므로 이
 수치를 glyph 화질 동등성 주장에 쓰지 않는다.
 
-[DOM·surface snapshot](assets/issue6042-stage5/exam-4col-34-visual-snapshots.json)의 scroll,
+[DOM·surface snapshot (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/exam-4col-34-visual-snapshots.json)의 scroll,
 visible 12쪽, retained 20쪽, page box, 각 page DPR·scale·main/background/behind/front integer surface,
 physical pixel, image 상태와 error 배열은 revision 간 동일하다. `image.scope` 숫자만 탭별 document/view
 generation이라 다르고 decoded/cached 상태는 같다.
@@ -186,15 +189,15 @@ Stage 4 제품 코드는 이미 전체 Studio 1,409 tests, TypeScript, productio
 
 ## 10. 증거 목록
 
-- 집계기·정본: [summarize.mjs](assets/issue6042-stage5/summarize.mjs),
+- 집계기·정본: [summarize.mjs (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/summarize.mjs),
   [summary.json](assets/issue6042-stage5/summary.json)
 - 178쪽 cold 20쌍: [raw JSON](assets/issue6042-stage5/hwpspec-4col-34-cold-alternating.json)
 - 178쪽 warm 40회/revision: `hwpspec-4col-34-{a1,a2,b1,b2}.json`
 - 20쪽 다층 40회/revision: `exam-4col-34-{a1,a2,b1,b2}.json`
 - 4쪽 줌 40회/revision·보기: `four-page-{single,double}-50-100-{a1,a2,b1,b2}.json`
-- 화면 비교: [비교기](assets/issue6042-stage5/compare-visuals.mjs),
-  [판정](assets/issue6042-stage5/exam-4col-34-visual-comparison.json),
-  [차분](assets/issue6042-stage5/exam-4col-34-diff.png)
+- 화면 비교: [비교기 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/compare-visuals.mjs),
+  [판정 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/exam-4col-34-visual-comparison.json),
+  [차분 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5/exam-4col-34-diff.png)
 
 원시 JSON은 browser UA·localhost URL·fixture 경로·시간과 bounded trace만 담는다. 계정·개인 문서·토큰은
 포함하지 않았다. 이 자료는 실패 조건을 숨기지 않는 로컬 Stage 증거이며 아직 PR 자료로 게시하지 않았다.

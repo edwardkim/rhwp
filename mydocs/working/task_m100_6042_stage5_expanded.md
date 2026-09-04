@@ -1,5 +1,8 @@
 # Task M100 #6042 Stage 5 확장 — 보정 후 자동화 가능 matrix
 
+> 2026-09-04 증적 정리: 이 문서는 당시 단계의 결과다. 제거한 중간 자료는 정리 전 commit 링크로
+> 전환했다. 현재 보존 원시와 재집계 범위는 [최소 증거 색인](assets/issue6042/README.md)을 따른다.
+
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 측정일: 2026-09-02 KST
 - 상태: **자동화 가능 matrix 통과 — 잔여 조건은 후속 Stage 5 종료 보고에서 완료**
@@ -173,9 +176,9 @@ Stage 3/보정 A/B 직접 검증에 사용할 수 있다.
 
 ## 10. 증거 목록
 
-- 재집계: [summarize.mjs](assets/issue6042-stage5-expanded/summarize.mjs),
+- 재집계: [summarize.mjs (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-expanded/summarize.mjs),
   [summary.json](assets/issue6042-stage5-expanded/summary.json)
-- 기능 증적 정규화: [compact-functional-evidence.mjs](assets/issue6042-stage5-expanded/compact-functional-evidence.mjs)
+- 기능 증적 정규화: [compact-functional-evidence.mjs (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042-stage5-expanded/compact-functional-evidence.mjs)
 - 화면 비교: [compare-visuals.mjs](assets/issue6042-stage5-expanded/compare-visuals.mjs),
   [visual-comparison.json](assets/issue6042-stage5-expanded/visual-comparison.json), `*-diff.png`
 - 성능 raw: Canvas2D `exam`/`hwpspec` single·double, CanvasKit `exam`/`hwpspec` 4열,

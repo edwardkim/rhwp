@@ -1,10 +1,13 @@
 # Task M100 #6042 처리 결과 — 다중 페이지 스크롤 가상화
 
+> 아래 단계·검증 상태는 최초 제출과 당시 restack 기록이다. 후속 보정은 self-review 문서를 따른다.
+> 2026-09-04에는 증적만 최소화했으며 제품 변경이나 최신 head 성능 재측정은 하지 않았다.
+
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **native stack #6640 rebase 완료 — Full CI 대기**
+- 당시 상태: **native stack #6640 rebase 완료 — Full CI 대기**
 - branch: `codex/issue-6042-page-virtualization`
-- 현재 직접 base: #6467 `30851d4732afa94fe9a53332eadc5edb4af62d1d`
+- 당시 직접 base: #6467 `30851d4732afa94fe9a53332eadc5edb4af62d1d`
 - 최초 제출 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 수행 계획: [task_m100_6042.md](../plans/task_m100_6042.md)
 - 구현 계획: [task_m100_6042_impl.md](../plans/task_m100_6042_impl.md)
@@ -64,6 +67,11 @@ active scroll은 DOM에 실제로 붙은 surface DPR을 interaction lock으로 �
 주 수치는 Chromium 151, 1280×720 CSS px, 실제 DPR 2, Canvas2D의 로컬 A/B다. 경보선은 결과 확인 전에
 p50 `max(10ms, 5%)`, p95 `max(25ms, 10%)`로 고정했다.
 
+이 값은 단계별 A/B이며 배포판/최종 PR head 전체의 비교가 아니다. cold는 `5f5d60071` →
+`6f2d82d24`, warm·역방향/확장 성능은 `5f5d60071` → `63d29e68b`, 정착 화질은 `5f5d60071` →
+`a762e58ea`다. Stage 3 기준선에는 이미 LRU가 있다. [최소 증거 색인](../working/assets/issue6042/README.md)에
+각 입력·표본 수·재계산 가능 범위를 정리했다.
+
 ### 178쪽 `hwpspec.hwp`, 4열·34% cold jump, 20쌍
 
 | 지표 p50 / p95 | Stage 3 | scheduler | 변화 |
@@ -92,6 +100,9 @@ DPR은 1→2로 회복하지만, 그 raster 때문에 정착 포함 known work�
 33.3/54.1ms 늦어진다. visible 두 쪽 surface는 10,699,944→42,786,300px로 늘었다. 이는 scroll hot-path
 회귀가 아니라 입력 종료 뒤 읽기 화질을 회복하기 위해 명시적으로 지불하는 비용이며 64M gate로 제한한다.
 
+위 known work는 trace의 `retainedComplete`다. runner가 추가 안정 프레임까지 기다린
+`knownWorkNextFrameMs`는 332.9/349.9ms → 366.6/407.8ms이며 서로 다른 완료 경계다.
+
 ## 4. 정확성·시각·수명 결과
 
 - Canvas2D, CanvasKit, auto→Canvas2D fallback 통과.
@@ -108,7 +119,7 @@ DPR은 1→2로 회복하지만, 그 raster 때문에 정착 포함 known work�
 
 ## 5. 검증
 
-최종 `4ea694ff3`에서 다음을 통과했다.
+당시 제품 후보 `4ea694ff3`에서 다음을 통과했다. 이후 head의 검증은 별도 review 기록을 따른다.
 
 - Studio: 1,422 total / 1,421 pass / 1 skip / 0 fail
 - TypeScript `--noEmit`, Vite production build
@@ -116,7 +127,7 @@ DPR은 1→2로 회복하지만, 그 raster 때문에 정착 포함 known work�
 - 핵심 scheduler·LRU·CanvasView·budget·visibility·zoom suite: 71/71
 - headless Chrome DPR 1 ruler resize: 28/28
 - headless Chrome image failure/fallback
-- Stage 집계기 4종, 모든 `issue6042*` JSON parse, ancestry, `git diff --check`
+- 당시 Stage 집계기 4종, 모든 `issue6042*` JSON parse, ancestry, `git diff --check`
 
 Rust source/test/fixture와 CI 설정은 바꾸지 않아 Rust lint bundle 대상이 아니다. 자세한 명령과 범위 감사는
 [Stage 6](../working/task_m100_6042_stage6.md)에 있다.
@@ -135,6 +146,8 @@ merge는 후속 경계다.
 
 ## 7. 근거 문서
 
+- [개발 측정 패널 사용 안내](../manual/studio_scroll_probe_guide.md)
+- [최소 증거·재집계 범위](../working/assets/issue6042/README.md)
 - [Stage 2 — visibility index](../working/task_m100_6042_stage2.md)
 - [Stage 3 — surface LRU](../working/task_m100_6042_stage3.md)
 - [Stage 4 — scheduler](../working/task_m100_6042_stage4.md)

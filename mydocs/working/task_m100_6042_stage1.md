@@ -1,5 +1,8 @@
 # Task M100 #6042 Stage 1 — 기준선·관찰 계약
 
+> 2026-09-04 증적 정리: 이 문서는 당시 단계의 결과다. 제거한 중간 자료는 정리 전 commit 링크로
+> 전환했다. 현재 보존 원시와 재집계 범위는 [최소 증거 색인](assets/issue6042/README.md)을 따른다.
+
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 작성일: 2026-08-31 KST
 - 상태: **Stage 1 완료 — 2026-09-02 Stage 2 승인**. 제품 최적화는 이 보고 범위에서 미착수.
@@ -16,7 +19,7 @@
 
 무수정 #6467 서버(4188)와 계측 서버(4186)를 분리하고 같은 WASM·JS·font 자산을 사용했다.
 처음 연 exam_kor의 main Canvas dimensions·위치·전체 dataset은 두 서버에서 동일했다.
-[초기 DOM 대조 원본](assets/issue6042/initial-parity.json)은 픽셀 단위 screenshot 동일성 증명은 아니다.
+[초기 DOM 대조 원본 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/initial-parity.json)은 픽셀 단위 screenshot 동일성 증명은 아니다.
 
 ## 2. 관찰 계약과 발견한 계측 결함
 
@@ -29,13 +32,13 @@
   구분한다. 오래된 callback, 중단, timeout, 알려진 decode 실패를 성공 표본으로 바꾸지 않는다.
 - `setScrollTop`은 DOM 좌표만 동기로 바꾸고 visibility는 scroll rAF에서 갱신한다. 첫 관찰기는 그
   사이의 **이전 visible 집합**에 완료 mark를 찍었다. 목표 좌표·zoom·scope의 이벤트 반영 확인을 추가했다.
-  [제외 표본](assets/issue6042/discarded-pre-ack-exam-scroll.json)은 최종 통계에서 제외했다.
+  [제외 표본 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/discarded-pre-ack-exam-scroll.json)은 최종 통계에서 제외했다.
 - ruler와 geometry callback 사이에서 이미 일치한 preview를 다음 observer rAF가 놓칠 수 있었다.
-  일치한 호출 경계에서 바로 mark하도록 보정했다. [중간 표본](assets/issue6042/intermediate-ack-exam-scroll.json)도
+  일치한 호출 경계에서 바로 mark하도록 보정했다. [중간 표본 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/intermediate-ack-exam-scroll.json)도
   최종 집계에서 제외했다. 이들은 **제품 회귀가 아니라 관찰 도구 결함**이다.
 - 178→4쪽 교체에서 파싱 완료(`document-loaded`)를 화면 구성 완료로 잘못 구독해 관찰 runner가
   12초 timeout을 냈다. 실제 visible/retained 4쪽과 focus 0은 이미 정상이었다.
-  `document-view-loaded`로 교정했고, [실패 기록](assets/issue6042/discarded-document-switch-178-to-4.json)은
+  `document-view-loaded`로 교정했고, [실패 기록 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/discarded-document-switch-178-to-4.json)은
   보존했다. 성공한 scroll 표본도 최종 관찰기에서 다시 수집했다.
 - fallback timer가 job을 제거해도 아직 pending인 decoder는 완료로 승격하지 않는다. 관찰된 실패는
   interrupted, 계속 pending이면 timeout이다. 관찰을 켜기 전 끝난 decode처럼 증거가 없는 경우는
@@ -67,9 +70,9 @@
 5. `관찰 비용 A/B`는 매 round off/on 순서를 교대한다. 12 round 중 첫 2 round를 버리고 같은 실행을
    두 번 반복해 조건별 off 20 / on 20, 총 20쌍을 집계한다. off에도 같은 runner의 이벤트 ack·두 rAF
    안정화 확인이 남으므로 **완전히 관찰 없는 사용자 입력과의 비교가 아니라 wrapper 증분 비용**이다.
-6. screenshot/readback·컴파일·테스트는 최종 시간 표본과 분리한다. 원본은 [자산 폴더](assets/issue6042/)에
-   보존하고 `node mydocs/working/assets/issue6042/summarize.mjs`로 재집계한다.
-   [집계 JSON·자산 hash](assets/issue6042/summary.json)도 함께 보존했다.
+6. screenshot/readback·컴파일·테스트는 최종 시간 표본과 분리했다. 당시 원본과 `summarize.mjs`는
+   정리 전 commit에 있으며 [집계 JSON·자산 hash](assets/issue6042/summary.json)는 역사적 기록으로
+   남겼다. 현재 파일만으로 재집계할 수 있는 범위와 명령은 [최소 증거 색인](assets/issue6042/README.md)을 따른다.
 
 ## 4. 결과
 
@@ -133,14 +136,14 @@ KTX의 50→34 / 34→50 / 50→100% 줌을 각각 한 번 관찰했다. 네 지
 이는 완료 경계 확인을 위한 n=1 smoke이며 배율별 성능 비교·개선률이 아니다. 한 쪽이며 비동기 이미지가
 없어서 후반 세 경계가 같은 rAF에서 관측된 것이다.
 
-- [KTX 처음 열기](assets/issue6042/ktx-loaded.json)
-- [KTX 50→34%](assets/issue6042/ktx-zoom-50-to-34.json), [34→50%](assets/issue6042/ktx-zoom-34-to-50.json),
-  [50→100%](assets/issue6042/ktx-zoom-50-to-100.json)
-- [77쪽 문서](assets/issue6042/kps-ai-loaded.json), [21쪽 다층·decode 확인](assets/issue6042/multi-layer-loaded.json)
-- [21쪽 다층 100→34% 줌](assets/issue6042/multi-layer-zoom-100-to-34.json): preview 14.6ms,
+- [KTX 처음 열기 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/ktx-loaded.json)
+- [KTX 50→34% (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/ktx-zoom-50-to-34.json), [34→50% (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/ktx-zoom-34-to-50.json),
+  [50→100% (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/ktx-zoom-50-to-100.json)
+- [77쪽 문서 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/kps-ai-loaded.json), [21쪽 다층·decode 확인 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/multi-layer-loaded.json)
+- [21쪽 다층 100→34% 줌 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/multi-layer-zoom-100-to-34.json): preview 14.6ms,
   focused-sharp/visible-stable 184.8ms, retained-complete 263.1ms. 기존 4쪽은 cached, 새 prefetch 2쪽은
   decoded를 관측했다. 이 역시 n=1 완료 계약 확인이며 성능 개선 자료가 아니다.
-- [178쪽 두 쪽 보기 JPEG](assets/issue6042/hwpspec-double-50.jpg): 배치 확인용, 화질 판정용 아님.
+- [178쪽 두 쪽 보기 JPEG (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/hwpspec-double-50.jpg): 배치 확인용, 화질 판정용 아님.
 
 ### 해석과 다음 단계의 수용 기준 제안
 
@@ -170,11 +173,11 @@ KTX의 50→34 / 34→50 / 50→100% 줌을 각각 한 번 관찰했다. 네 지
 문서 교체 중 `[CanvasView] 페이지 N 정보가 없습니다`가 확인됐다. 다음처럼 원인을 분리했다.
 
 - **완전 무수정 #6467, 4188 서버**: exam_kor 20쪽에서 `파일 → 새로 만들기`로 바꾸자 0·1쪽에
-  같은 error 로그가 발생했다. [원본 서버 로그](assets/issue6042/document-reset-console-unmodified.json).
+  같은 error 로그가 발생했다. [원본 서버 로그 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/document-reset-console-unmodified.json).
 - **관찰 wrapper off**: KTX → hwpspec → 4쪽 문서 교체에서도 같은 계열 로그를 확인했다.
-  [off 로그](assets/issue6042/document-switch-console-off.json), [on 로그](assets/issue6042/document-switch-console-on.json).
+  [off 로그 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/document-switch-console-off.json), [on 로그 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/document-switch-console-on.json).
 - 최종 on의 178쪽 focus index 5 → 4쪽 교체는 focus 0·새 scope·새 viewport로 정상 종료했다.
-  [교체 snapshot](assets/issue6042/document-switch-178-to-4.json). 이것이 기존 중간 error를 해결했다는 뜻은 아니다.
+  [교체 snapshot (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/document-switch-178-to-4.json). 이것이 기존 중간 error를 해결했다는 뜻은 아니다.
 
 `renderCanvas()`는 WASM 예외가 아니라 `this.pages[pageIdx]`가 없을 때 위 로그를 낸다. 소스상
 `reset()`은 pages를 비우지만 VirtualScroll의 이전 geometry와 ViewportManager의 scroll rAF를 함께
@@ -199,11 +202,11 @@ empty snapshot 계약을 Stage 2 실행 기반 회귀 테스트에 포함한다.
 ## 6. 최종 검증과 인계
 
 - 집중 Node 테스트 **98/98 통과**, `tsc --noEmit` 통과, production build 통과.
-  [실행 로그](assets/issue6042/validation.log)(줄끝 공백만 정리). build의 CanvasKit `fs/path` externalization·chunk-size
+  [실행 로그 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/validation.log)(줄끝 공백만 정리). build의 CanvasKit `fs/path` externalization·chunk-size
   경고는 기록했으며, 성공 종료를 경고가 없다는 뜻으로 보고하지 않는다.
 - production JS에서 `scrollProbe`·`page-scroll-probe`·관찰 UI 문자열이 검출되지 않았다.
   기준선 worktree의 기존 build와 이번 build의 JS/CSS/WASM asset SHA-256도 모두 일치했다.
-  [asset별 비교](assets/issue6042/production-assets-parity.json). 이는 runtime asset 대조이며 PWA manifest
+  [asset별 비교 (정리 전 자료)](https://github.com/edwardkim/rhwp/blob/9b679f07a8b714d680ed822406e41cc62a6174ea/mydocs/working/assets/issue6042/production-assets-parity.json). 이는 runtime asset 대조이며 PWA manifest
   전체·서버 설정까지 비교했다는 뜻은 아니다.
 - 제품 view/Rust 파일 변경 0. 전체 Studio suite·Rust lint는 이번 단계에서 실행하지 않았으며
   Stage 6 제출 게이트를 통과한 것으로 보고하지 않는다.
