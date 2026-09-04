@@ -114,10 +114,12 @@ mydocs/report/{주제}_{회차}_{YYYYMMDD}.md
 - 저장소 내부 Markdown 링크는 이전 source 위치에서 해석한 실제 target을 기준으로 새 상대 경로를
   계산하여 이동과 같은 commit에서 갱신한다. 단순 문자열 치환으로 같은 basename의 다른 문서를
   연결하지 않는다.
-- 이동 전 경로를 파일 계약으로 여는 test·tool·generator·fixture도 저장소 전체에서 찾는다. 실제
-  파일을 읽거나 생성하는 경로는 새 archive 위치로 같은 batch에서 갱신하고 해당 focused test를
-  실행한다. 과거 실행 증적의 인용 문자열과 이동 문서 자체의 historical `canonical` 값은 실행
-  경로와 구분하며 일괄 치환하지 않는다.
+- 이동 전 경로를 파일 계약으로 여는 test·tool·generator·fixture도 저장소 전체에서 찾는다. 완성된
+  `mydocs/working/<파일>.md` 문자열뿐 아니라 `.join("mydocs").join("working")`이나
+  `Path / "mydocs" / "working"`처럼 경로 조각을 나눠 조립하는 코드도 별도로 검색한다. 실제 파일을
+  읽거나 생성하는 경로는 새 archive 위치로 같은 batch에서 갱신하고 해당 focused test를 실행한다.
+  과거 실행 증적의 인용 문자열과 이동 문서 자체의 historical `canonical` 값은 실행 경로와
+  구분하며 일괄 치환하지 않는다.
 - 대량 월별 이동에는 root를 다시 채우는 redirect stub을 만들지 않는다. 현재 branch 경로를 쓰는
   중요한 외부 링크가 확인되면 해당 링크나 별도 canonical index를 정정한다.
 

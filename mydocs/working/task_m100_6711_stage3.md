@@ -127,7 +127,7 @@ target이 없던 historical 오류이며 전수 multiset에서 신규·소실 0�
 | CI와 같은 Gym 계약 명령 | 2,125 passed, 1 skipped |
 | 변경된 Python·generator 관련 모듈 | 40개 모듈 통과 |
 | `tools.agent_onboarding.test_rhwp_doctor` | 136 passed |
-| 변경된 Rust `working` 계약 | 13개 generated suite에서 15 passed |
+| 변경된 Rust `working` 계약 | 14개 generated suite에서 16 passed |
 | native Clippy `-D warnings` | 통과 |
 | WASM library Clippy `-D warnings` | 통과 |
 | workspace build | 통과 |
@@ -141,3 +141,15 @@ target이 없던 historical 오류이며 전수 multiset에서 신규·소실 0�
 정정 뒤 누적 변경은 rename-aware 1,257개, rename을 전혀 인정하지 않는 보수적 경로 2,368개다.
 PR files API 3,000개 한도 안이며, canonical Markdown 링크 오류는 계속 0건이고 metadata 오류는
 기존 4개 문서의 16건 그대로다.
+
+첫 정정 head `03417efe2d`의
+[`Archive C 실제 실행`](https://github.com/edwardkim/rhwp/actions/runs/33867686045/job/101007764193)은
+`agent_surface_skill_contract::working_doc_closes_issue_5326`에서 실패했다. 이 계약은 경로를
+`.join("mydocs").join("working").join("agent_surface_skill.md")`로 나눠 조립했기 때문에 완성된
+경로 문자열을 중심으로 한 첫 감사에서 빠졌다. `working` 다음에 `archives`를 추가하고, 저장소
+전체에서 완성 문자열과 분할 조립 경로를 별도로 재검색했다.
+
+해당 focused nextest는 1 passed이며, 수정 뒤 `cargo fmt --all -- --check`, native·WASM Clippy,
+workspace build, workspace all-targets Clippy와 integration manifest 48/48을 다시 통과했다. 첫 head와
+첫 정정 head는 모두 최종 후보가 아니며, 이 두 CI 실패를 보존한 채 다음 exact-head CI가 전부
+성공해야 self-review로 넘어간다.
