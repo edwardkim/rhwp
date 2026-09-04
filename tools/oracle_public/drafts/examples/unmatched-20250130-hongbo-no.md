@@ -50,7 +50,7 @@ python tools/oracle_public/oracle_resolver.py --pretty --validate
 ## 환경
 
 - 리포트 출처: `oracle_public.fatten_catalog.cheap`
-- 리포트 시각: 2026-08-18T10:37:44Z
+- 리포트 시각: 2026-09-03T13:33:12Z
 - rhwp 바이너리: `(unused)`
 - DPI: 96
 - pixel_diff_threshold: 12

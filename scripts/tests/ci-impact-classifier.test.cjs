@@ -371,8 +371,6 @@ test('new review reference assets require no product or CodeQL worker', () => {
     'samples/new-reference.pdf',
     'samples/new-reference.png',
     'pdf/new-reference.pdf',
-    'pdf-2020/new-reference.pdf',
-    'pdf-large/nested/new-reference.pdf',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -413,8 +411,6 @@ test('Gym-only changes require no product or CodeQL worker', () => {
 test('existing PDF reference updates require no product or CodeQL worker', () => {
   for (const filename of [
     'pdf/existing-reference.pdf',
-    'pdf-2020/existing-reference.pdf',
-    'pdf-large/nested/existing-reference.pdf',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -438,8 +434,6 @@ test('existing sample reference changes and removed PDFs remain fail-closed', ()
     { filename: 'samples/existing-reference.pdf', status: 'modified' },
     { filename: 'samples/existing-reference.png', status: 'modified' },
     { filename: 'pdf/existing-reference.pdf', status: 'removed' },
-    { filename: 'pdf-2020/existing-reference.pdf', status: 'removed' },
-    { filename: 'pdf-large/nested/existing-reference.pdf', status: 'removed' },
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -454,7 +448,7 @@ test('reference assets mixed with source preserve the source impact', () => {
   const result = classifyChanges({
     eventName: 'pull_request',
     files: [
-      { filename: 'pdf-2020/new-reference.pdf', status: 'added' },
+      { filename: 'pdf/new-reference.pdf', status: 'added' },
       { filename: 'src/parser/hwpx/mod.rs', status: 'modified' },
     ],
   });
@@ -462,6 +456,20 @@ test('reference assets mixed with source preserve the source impact', () => {
   assert.equal(result.codeql_languages, 'rust');
   assert.equal(result.classification_status, 'classified');
   assert.equal(result.reason, 'classified:rust');
+});
+
+test('retired PDF roots are not accepted as review-only references', () => {
+  for (const filename of [
+    'pdf-2020/new-reference.pdf',
+    'pdf-large/nested/new-reference.pdf',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'added' }],
+    });
+    assert.equal(result.classification_status, 'full', filename);
+    assert.equal(result.reason, 'fail-closed:unclassified-path', filename);
+  }
 });
 
 test('rename evaluates fail-closed before either path can be skipped', () => {

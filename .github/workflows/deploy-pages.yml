@@ -7,8 +7,6 @@ on:
       - 'mydocs/**'
       - 'samples/**'
       - 'pdf/**'
-      - 'pdf-2020/**'
-      - 'pdf-large/**'
       - 'assets/**'
       - '*.md'
       - 'LICENSE'

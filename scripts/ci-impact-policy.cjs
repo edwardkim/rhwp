@@ -20,8 +20,6 @@ const CI_PUSH_PATHS_IGNORE = [
   'mydocs/**',
   'samples/**',
   'pdf/**',
-  'pdf-2020/**',
-  'pdf-large/**',
   'assets/chrome/**',
   'assets/edge/**',
   'assets/logo/**',
@@ -57,8 +55,6 @@ const CODEQL_PUSH_PATHS_IGNORE = [
   'mydocs/**',
   'samples/**',
   'pdf/**',
-  'pdf-2020/**',
-  'pdf-large/**',
   'assets/**',
   '*.md',
   'LICENSE',
@@ -88,8 +84,6 @@ const DEPLOY_PAGES_PUSH_PATHS_IGNORE = [
   'mydocs/**',
   'samples/**',
   'pdf/**',
-  'pdf-2020/**',
-  'pdf-large/**',
   'assets/**',
   '*.md',
   'LICENSE',
@@ -314,7 +308,7 @@ function isSampleReviewReferencePath(filename) {
 }
 
 function isPdfReviewReferencePath(filename) {
-  const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+  const pdfPrefixes = ['pdf/'];
   return (
     pdfPrefixes.some((prefix) => filename.startsWith(prefix))
     && filename.endsWith('.pdf')

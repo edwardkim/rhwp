@@ -2,18 +2,16 @@
   "schemaVersion": "1.0",
   "generator": "tools/oracle_public/oracle_resolver.py",
   "targetPairCount": 269,
-  "pairCount": 13,
+  "pairCount": 11,
   "matchedSampleCount": 8,
   "unmatchedCount": 2,
-  "oracleLinkCount": 13,
+  "oracleLinkCount": 11,
   "oracleRoots": [
-    "pdf",
-    "pdf-2020",
-    "pdf-large"
+    "pdf"
   ],
   "byHancomVersion": {
     "2018": 1,
-    "2020": 6,
+    "2020": 4,
     "2022": 5,
     "2024": 1
   },
@@ -59,16 +57,6 @@
       "oracleRoot": "pdf"
     },
     {
-      "id": "samples/exam_kor.hwp::pdf-2020/exam_kor-2020.pdf",
-      "sample": "samples/exam_kor.hwp",
-      "pdf": "pdf-2020/exam_kor-2020.pdf",
-      "stem": "exam_kor",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwp",
-      "oracleRoot": "pdf-2020"
-    },
-    {
       "id": "samples/exam_kor.hwpx::pdf/exam_kor-2022.pdf",
       "sample": "samples/exam_kor.hwpx",
       "pdf": "pdf/exam_kor-2022.pdf",
@@ -87,16 +75,6 @@
       "variant": "2020",
       "sourceFormat": "hwpx",
       "oracleRoot": "pdf"
-    },
-    {
-      "id": "samples/exam_kor.hwpx::pdf-2020/exam_kor-2020.pdf",
-      "sample": "samples/exam_kor.hwpx",
-      "pdf": "pdf-2020/exam_kor-2020.pdf",
-      "stem": "exam_kor",
-      "hancomVersion": "2020",
-      "variant": "2020",
-      "sourceFormat": "hwpx",
-      "oracleRoot": "pdf-2020"
     },
     {
       "id": "samples/hwp3-sample-hwpx.hwpx::pdf/hwp3-sample-hwpx-2022.pdf",

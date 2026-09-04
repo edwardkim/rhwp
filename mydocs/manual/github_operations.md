@@ -244,8 +244,8 @@ fast-pass로 숨기지 않고 CI 영향 분류가 fail-closed 해야 한다. 기
 
 ### 7.3 reference-only 자산
 
-현재 반복적으로 대형 참조 자료가 들어오는 경로는 `samples/**`, `pdf/**`, `pdf-2020/**`,
-`pdf-large/**`다. 운영 정책은 다음처럼 분리한다.
+현재 반복적으로 대형 참조 자료가 들어오는 경로는 `samples/**`, `pdf/**`다.
+운영 정책은 다음처럼 분리한다.
 
 - protected branch의 reference-only push는 제품 소스 CI와 CodeQL을 다시 실행하지 않는 것을 기본으로 한다.
 - PR에서는 새 참조 자산만 있는 변경을 review-only fast-pass로 판정할 수 있다.

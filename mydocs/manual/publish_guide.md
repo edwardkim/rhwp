@@ -138,7 +138,7 @@ GitHub Actions에서 사용하는 시크릿 (Settings → Secrets and variables 
 - npm Trusted Publisher를 사용할 때는 `NODE_AUTH_TOKEN`/`NPM_TOKEN` 환경변수 주입을 피한다.
 - GitHub Actions environment 이름과 secret 이름을 혼동하지 않는다. 현재 npm environment 이름은 `NPM_TOKEN`이다.
 - 브라우저 확장 reviewer note에는 권한 사용 목적만 설명하고 민감정보를 적지 않는다.
-- AMO source zip에는 `node_modules/`, `target/`, `dist/`, `output/`, `samples/`, `pdf-large/`를 포함하지 않는다.
+- AMO source zip에는 `node_modules/`, `target/`, `dist/`, `output/`, `samples/`, `pdf/`를 포함하지 않는다.
 - Firefox AMO source upload 제한은 200 MB이므로 전체 Git tree archive를 업로드하지 않는다.
 - Chrome/Edge host permission 설명은 manifest의 `permissions`와 `content_scripts.matches` 기준으로 작성한다.
 - 배포 산출물 zip에는 개발용 `.env`, 로컬 인증 파일, 개인 폰트, 임시 저장 파일이 포함되지 않았는지 확인한다.
@@ -236,13 +236,13 @@ zip -d rhwp-firefox/rhwp-source-{version}-amo.zip "rhwp-source/rhwp-studio/publi
 
 Firefox AMO 제출 시에는 확장 패키지와 함께 검토용 source zip을 업로드한다.
 AMO source 업로드 제한은 200 MB 이므로 전체 Git tree를 압축하지 않는다. 전체 archive는
-`samples/`, `pdf-large/` 같은 대형 fixture를 포함해 제한을 초과할 수 있다.
+`samples/`, `pdf/` 같은 대형 fixture를 포함해 제한을 초과할 수 있다.
 
 source zip은 확장 재빌드에 필요한 경로만 포함한다.
 
 - 포함: `src/`, `rhwp-studio/`, `rhwp-firefox/`, `rhwp-shared/`, workspace member,
   `Cargo.lock`, build script와 production `include_str!`/`include_bytes!` 리소스
-- 제외: top-level `samples/`, `pdf-large/`, `output/`, `target/`, `node_modules/`, extension `dist/`
+- 제외: top-level `samples/`, `pdf/`, `output/`, `target/`, `node_modules/`, extension `dist/`
 
 #### 확장 스토어 제출 문서
 
@@ -588,7 +588,7 @@ Permission denied: pkg/package.json
 ### Firefox AMO source zip 반려
 
 - source zip 크기가 200 MB 이하인지 확인
-- `samples/`, `pdf-large/`, `output/`, `target/`, `node_modules/`, `dist/`가 포함되지 않았는지 확인
+- `samples/`, `pdf/`, `output/`, `target/`, `node_modules/`, `dist/`가 포함되지 않았는지 확인
 - `LICENSE`, `THIRD_PARTY_LICENSES.md`, 빌드에 필요한 `package.json`/lockfile, `Cargo.toml`/`Cargo.lock`이 포함되었는지 확인
 - reviewer note에 source zip의 재빌드 범위를 설명한다.
 

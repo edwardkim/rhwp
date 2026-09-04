@@ -3,7 +3,7 @@
 
 MEGA QUEUE M01-4 (#5344). `scripts/visual_sweep.py` 는 건드리지 않는다.
 M01-1 `oracle_resolver` 가 없어도 동작한다: 로컬 글롭 `pdf/{stem}.pdf` ·
-`pdf/{stem}-*.pdf` (pdf/ · pdf-2020/ · pdf-large/) 또는 `--manifest`.
+`pdf/{stem}-*.pdf` 또는 `--manifest`.
 
 판정은 데이터다. 기본 종료 코드는 불일치가 있어도 0 이다. `--strict` 만
 MISMATCH/ERROR 에서 1 을 낸다.
@@ -35,7 +35,7 @@ from typing import Any, Iterable, Sequence
 SCHEMA_VERSION = 1
 KIND = "pageSmokeReport"
 PAIR_KIND = "pageSmokePairs"
-DEFAULT_PDF_DIRS = ("pdf", "pdf-2020", "pdf-large")
+DEFAULT_PDF_DIRS = ("pdf",)
 DEFAULT_DOCS = ("samples",)
 DOC_SUFFIXES = {".hwp", ".hwpx"}
 TEXT_PAGE_TOTAL_RE = re.compile(r"\((\d+)\s*페이지\)")
@@ -678,7 +678,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--pdf-dirs",
         action="append",
         default=None,
-        help="PDF 루트. 반복 가능. 기본 pdf/ pdf-2020/ pdf-large/",
+        help="PDF 루트. 반복 가능. 기본 pdf/",
     )
     p.add_argument("--pair", nargs=2, metavar=("DOC", "PDF"), help="단짝 재현")
     p.add_argument("--pdf-count", type=Path, default=None, help="PDF 쪽수만 출력 (렌더 없음)")
@@ -736,7 +736,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             notes.append(
                 "PDF 루트 없음: "
                 + ", ".join(missing_pdf)
-                + " — `git sparse-checkout add pdf pdf-2020 pdf-large` 후 전수 스윕"
+                + " — `git sparse-checkout add pdf` 후 전수 스윕"
             )
         pairs, unpaired = discover_pairs(repo, docs_roots=docs_roots, pdf_roots=pdf_roots)
         pair_source = "glob:pdf/{stem}.pdf|pdf/{stem}-*.pdf"

@@ -45,8 +45,7 @@ function allowedReviewOnlyFile(file) {
   const lowerName = filename.toLowerCase();
   const sampleReference = filename.startsWith("samples/")
     && [".hwp", ".hwpx", ".pdf", ".png"].some((extension) => lowerName.endsWith(extension));
-  const pdfReference = ["pdf/", "pdf-2020/", "pdf-large/"]
-    .some((prefix) => filename.startsWith(prefix))
+  const pdfReference = filename.startsWith("pdf/")
     && lowerName.endsWith(".pdf");
   if (pdfReference) {
     return file.status === "added" || file.status === "modified";

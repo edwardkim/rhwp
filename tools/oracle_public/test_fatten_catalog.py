@@ -47,7 +47,7 @@ class MiniRepoFattenTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_run_writes_expected_artifacts(self) -> None:
-        summary = fatten.run(MINI_REPO, self.out, ("pdf", "pdf-2020", "pdf-large"))
+        summary = fatten.run(MINI_REPO, self.out, ("pdf",))
         self.assertGreaterEqual(summary["pairCount"], 1)
         self.assertGreaterEqual(summary["unmatchedCount"], 1)
         self.assertFalse(summary["constraints"]["visualSweepTouched"])
@@ -100,7 +100,7 @@ class MiniRepoFattenTests(unittest.TestCase):
         self.assertIn("`hwp`", matrix)
 
     def test_pair_index_tsv_columns(self) -> None:
-        fatten.run(MINI_REPO, self.out, ("pdf", "pdf-2020", "pdf-large"))
+        fatten.run(MINI_REPO, self.out, ("pdf",))
         tsv = (self.out / "fixtures" / "pairs" / "index.tsv").read_text(encoding="utf-8")
         header = tsv.splitlines()[0].split("\t")
         self.assertEqual(

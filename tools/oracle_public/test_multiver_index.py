@@ -134,27 +134,25 @@ class MeasureTests(unittest.TestCase):
 class IndexFixtureTests(unittest.TestCase):
     def _tree(self, root: Path) -> None:
         write_minimal_pdf(root / "pdf" / "same-2018.pdf", 1)
+        write_minimal_pdf(root / "pdf" / "same-2020.pdf", 1)
         write_minimal_pdf(root / "pdf" / "same-2022.pdf", 2)
         write_minimal_pdf(root / "pdf" / "agree-2020.pdf", 1)
         write_minimal_pdf(root / "pdf" / "agree-2022.pdf", 1)
         write_minimal_pdf(root / "pdf" / "solo-2022.pdf", 1)
         write_minimal_pdf(root / "pdf" / "nover.pdf", 4)
-        write_minimal_pdf(root / "pdf-2020" / "same-2020.pdf", 1)
-        write_minimal_pdf(root / "pdf-large" / "big-2022.pdf", 5)
-        write_lfs_pointer(root / "pdf-large" / "orphan.pdf")
+        write_minimal_pdf(root / "pdf" / "big-2022.pdf", 5)
+        write_lfs_pointer(root / "pdf" / "orphan.pdf")
 
-    def test_incorporation_lists_2020_and_large(self) -> None:
+    def test_incorporation_lists_the_single_oracle_tree(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._tree(root)
             index = mx.build_index(root)
-        self.assertEqual(index["trees"]["pdf-2020"]["file_count"], 1)
-        self.assertEqual(index["trees"]["pdf-large"]["file_count"], 2)
-        paths_2020 = [r["path"] for r in index["incorporation"]["pdf-2020"]]
-        paths_large = [r["path"] for r in index["incorporation"]["pdf-large"]]
-        self.assertEqual(paths_2020, ["pdf-2020/same-2020.pdf"])
-        self.assertIn("pdf-large/big-2022.pdf", paths_large)
-        self.assertIn("pdf-large/orphan.pdf", paths_large)
+        self.assertEqual(index["trees"]["pdf"]["file_count"], 9)
+        paths = [r["path"] for r in index["incorporation"]["pdf"]]
+        self.assertIn("pdf/same-2020.pdf", paths)
+        self.assertIn("pdf/big-2022.pdf", paths)
+        self.assertIn("pdf/orphan.pdf", paths)
 
     def test_disagreement_is_measured_not_invented(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -182,22 +180,23 @@ class IndexFixtureTests(unittest.TestCase):
         self.assertEqual(agrees["agree"]["min_pages"], 1)
         self.assertEqual(agrees["agree"]["max_pages"], 1)
 
-    def test_dir_default_version_for_pdf(self) -> None:
+    def test_directory_does_not_infer_a_version(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._tree(root)
             index = mx.build_index(root)
         nover = next(r for r in index["files"] if r["path"] == "pdf/nover.pdf")
-        self.assertEqual(nover["hangul_version"], "2022")
-        self.assertEqual(nover["version_source"], "inferred_dir")
+        self.assertIsNone(nover["hangul_version"])
+        self.assertEqual(nover["version_source"], "unknown")
+        self.assertFalse(nover["version_inferred"])
         self.assertEqual(nover["page_count"], 4)
 
-    def test_pdf_large_has_no_default_version(self) -> None:
+    def test_unversioned_lfs_pointer_stays_unknown(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._tree(root)
             index = mx.build_index(root)
-        orphan = next(r for r in index["files"] if r["path"] == "pdf-large/orphan.pdf")
+        orphan = next(r for r in index["files"] if r["path"] == "pdf/orphan.pdf")
         self.assertIsNone(orphan["hangul_version"])
         self.assertEqual(orphan["version_source"], "unknown")
         self.assertIsNone(orphan["page_count"])
@@ -238,14 +237,13 @@ class IndexFixtureTests(unittest.TestCase):
         self.assertIn("same", md)
         self.assertIn("out_of_scope", md)
 
-    def test_missing_tree_is_zero_not_error(self) -> None:
+    def test_single_default_tree_is_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_minimal_pdf(root / "pdf" / "a-2022.pdf", 1)
             index = mx.build_index(root)
         self.assertTrue(index["trees"]["pdf"]["present"])
-        self.assertFalse(index["trees"]["pdf-2020"]["present"])
-        self.assertEqual(index["trees"]["pdf-2020"]["file_count"], 0)
+        self.assertEqual(set(index["trees"]), {"pdf"})
         self.assertEqual(index["counts"]["files"], 1)
 
 

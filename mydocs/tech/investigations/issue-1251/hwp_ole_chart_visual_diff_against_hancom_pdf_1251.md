@@ -9,7 +9,7 @@ last_verified: 2026-07-16
 
 - **이슈**: [#1251](https://github.com/edwardkim/rhwp/issues/1251)
 - **대상 HWP**: `samples/143E433F503322BD33.hwp`
-- **정답 PDF**: `pdf-large/hwpx/143E433F503322BD33.pdf`
+- **정답 PDF**: `pdf/hwpx/143E433F503322BD33.pdf`
 - **현재 출력**: `output/poc/task1251/hwp/143E433F503322BD33.svg`
 - **작성일**: 2026-06-03
 
@@ -26,8 +26,8 @@ last_verified: 2026-07-16
 정답 PDF를 PNG로 렌더링하고 현재 SVG도 PNG로 변환해 비교했다.
 
 ```text
-/Users/melee/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/pdfinfo pdf-large/hwpx/143E433F503322BD33.pdf
-/Users/melee/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/pdftoppm -png -r 144 pdf-large/hwpx/143E433F503322BD33.pdf tmp/pdfs/task1251/answer
+/Users/melee/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/pdfinfo pdf/hwpx/143E433F503322BD33.pdf
+/Users/melee/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/pdftoppm -png -r 144 pdf/hwpx/143E433F503322BD33.pdf tmp/pdfs/task1251/answer
 /Users/melee/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --input-type=module -e "... sharp SVG to PNG ..."
 ```
 

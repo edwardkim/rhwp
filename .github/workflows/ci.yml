@@ -8,8 +8,6 @@ on:
       - 'mydocs/**'
       - 'samples/**'
       - 'pdf/**'
-      - 'pdf-2020/**'
-      - 'pdf-large/**'
       - 'assets/chrome/**'
       - 'assets/edge/**'
       - 'assets/logo/**'
@@ -228,7 +226,7 @@ jobs:
             }
 
             function isPdfReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              const pdfPrefixes = ['pdf/'];
               return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
@@ -1067,6 +1065,7 @@ jobs:
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
           python3 -m unittest scripts/tests/test_codeql_workflow.py
           python3 -m unittest scripts/tests/test_nextest_archive_workflow.py
+          python3 -m unittest scripts/tests/test_oracle_public_advisory_workflow.py
           python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
           python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
