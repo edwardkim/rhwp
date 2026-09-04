@@ -23,33 +23,12 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-/// 재현물은 코퍼스 문서다.
+/// #6697의 공개 정식 fixture를 CI에서 항상 읽는다.
 ///
-/// `hwpdocs_10k_share/opinion_downloads/농림축산식품부/
-///  80550_(규제영향분석서) 농업기계화 촉진법 시행규칙 일부개정령(안).hwpx`
-///
-/// `RHWP_ISSUE6697_SAMPLE` 로 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6697_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        r"C:\Users\planet\hwpdocs_10k_share\opinion_downloads\농림축산식품부",
-        r"D:\hwpdocs_10k_share\opinion_downloads\농림축산식품부",
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.starts_with("80550_") && name.ends_with(".hwpx") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+/// 원본 80550 HWPX는 `samples/issue6697/MANIFEST.json`에 SHA-256과 출처가 고정돼 있다.
+/// 개인 corpus나 환경 변수 fallback을 쓰지 않아 fixture 부재를 성공으로 처리할 수 없다.
+fn sample() -> &'static [u8] {
+    include_bytes!("../../samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx")
 }
 
 fn collect_text(node: &RenderNode, out: &mut String) {
@@ -64,10 +43,7 @@ fn collect_text(node: &RenderNode, out: &mut String) {
 /// 블록 표를 앵커한 칸 문단의 캡션이 그 쪽에 그려져야 한다.
 #[test]
 fn cell_host_paragraph_caption_is_drawn_on_its_page() {
-    let Some(bytes) = sample() else {
-        return;
-    };
-    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let core = DocumentCore::from_bytes(sample()).expect("문서 로드");
     assert_eq!(core.page_count(), 31, "한/글 2020 과 같은 31쪽이어야 한다");
 
     let tree = core.build_page_render_tree(29).expect("30쪽 render tree");
