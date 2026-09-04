@@ -1,31 +1,25 @@
-# PR #6698 review - NBSP advance width
+# PR #6698 검토 - NBSP 전진폭
 
-## Metadata
+## 메타데이터
 
-| Item | Value |
+| 항목 | 값 |
 | --- | --- |
-| Source PR | [#6698](https://github.com/edwardkim/rhwp/pull/6698) |
-| Author | `jeong-sik` |
-| Base / source head | `devel` / `7e47ef6914edfed1852c7fff99cd04cdc71713a4` |
-| Integration branch | `review/green-ci-batch-20260904-full` |
-| Applied commit | `c0145ec66` (`-x`) |
-| Scope | NBSP measurement and one `exam_eng.hwp` regression case |
-| Related issue | [#6646](https://github.com/edwardkim/rhwp/issues/6646) |
+| 원 PR | [#6698](https://github.com/edwardkim/rhwp/pull/6698) |
+| 작성자 | `jeong-sik` |
+| base / 원 head | `devel` / `7e47ef6914edfed1852c7fff99cd04cdc71713a4` |
+| 통합 브랜치 | `review/green-ci-batch-20260904-full` |
+| 적용 commit | `c0145ec66` (`-x`) |
+| 관련 이슈 | [#6646](https://github.com/edwardkim/rhwp/issues/6646) |
 
-## Review
+## 검토 결과
 
-- Reviewer `jangster77` was assigned before local integration.
-- The source head was `MERGEABLE/CLEAN` at selection and its required CI checks
-  were green or policy-expected skips.
-- The change reuses the established ordinary-space measurement path for `U+00A0`;
-  it does not introduce a font-specific constant. The test locks the affected
-  line's punctuation-to-text advance rather than a broad document coordinate.
-- Integration-head local lint/test and current-head visual confirmation remain
-  unrun, so source CI is not recorded as an integration result.
+- reviewer `jangster77`을 지정했고 원 head required CI는 선정 시 성공 또는 정책상 skip이었다.
+- `U+00A0`을 이미 검증된 일반 공백 측정 경로로 보내며 글꼴별 신규 상수를 추가하지 않는다.
+- 회귀 테스트는 `exam_eng.hwp`의 문항 번호 뒤 실제 전진폭을 잠근다.
+- 통합 head의 lint, test, 시각 검증은 아직 실행하지 않았다.
 
-## Final decision
+## 최종 판정
 
-- Decision: **머지 보류**
-- Release condition: complete the integration lint/test gates and inspect the
-  relevant `exam_eng.hwp` output against the cited Hancom spacing before approval.
-- Remote action: none.
+- 판정: **머지 보류**
+- 해제 조건: 통합 head Rust 검증 및 `exam_eng.hwp`의 한컴 기준 간격 직접 검증.
+- 원격 조치: 수행하지 않았다.

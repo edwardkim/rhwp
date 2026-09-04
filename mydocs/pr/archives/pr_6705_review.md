@@ -1,32 +1,26 @@
-# PR #6705 review - continued-paragraph floating picture anchor
+# PR #6705 검토 - 이어진 문단의 떠 있는 그림 앵커
 
-## Metadata
+## 메타데이터
 
-| Item | Value |
+| 항목 | 값 |
 | --- | --- |
-| Source PR | [#6705](https://github.com/edwardkim/rhwp/pull/6705) |
-| Author | `jeong-sik` |
-| Base / source head | `devel` / `05325df7c4350b101276580803a208c62709c05a` |
-| Integration branch | `review/green-ci-batch-20260904-full` |
-| Applied commits | `7b15d9582`, `dda7902e5` (`-x`) |
-| Scope | `src/renderer/layout.rs`, `hwp3-sample.hwp` SVG assertions |
-| Related issue | [#6704](https://github.com/edwardkim/rhwp/issues/6704) |
+| 원 PR | [#6705](https://github.com/edwardkim/rhwp/pull/6705) |
+| 작성자 | `jeong-sik` |
+| base / 원 head | `devel` / `05325df7c4350b101276580803a208c62709c05a` |
+| 통합 브랜치 | `review/green-ci-batch-20260904-full` |
+| 적용 commit | `7b15d9582`, `dda7902e5` (`-x`) |
+| 관련 이슈 | [#6704](https://github.com/edwardkim/rhwp/issues/6704) |
 
-## Review
+## 검토 결과
 
-- Reviewer `jangster77` was assigned before local integration.
-- The source head was `MERGEABLE/CLEAN` with required CI checks green or
-  policy-expected skips at selection time.
-- The change reuses the existing `PartialParagraph { start_line > 0 }` meaning
-  for a `vert=Para` picture anchored in a paragraph that continues from an
-  earlier page. The new case checks both the corrected 519px picture and an
-  unchanged local-anchor footer picture.
-- The PR claims a page-visible geometry correction, so source CI is insufficient
-  to approve the combined integration head without direct current-head output.
+- reviewer `jangster77`을 지정했고 원 head required CI는 선정 시 성공 또는 정책상 skip이었다.
+- 앞쪽에서 이어진 `vert=Para` 그림은 기존 `PartialParagraph { start_line > 0 }` 의미에 맞춰
+  현재 쪽 본문 상단을 기준으로 놓는다.
+- 회귀 테스트는 고쳐진 큰 그림과 움직이면 안 되는 같은 쪽 바닥글 그림을 함께 확인한다.
+- 통합 head의 lint, test, 시각 검증은 아직 실행하지 않았다.
 
-## Final decision
+## 최종 판정
 
-- Decision: **머지 보류**
-- Release condition: required integration Rust gates and a current-head
-  `hwp3-sample.hwp` page-7 visual comparison against the stated Hancom geometry.
-- Remote action: none.
+- 판정: **머지 보류**
+- 해제 조건: 통합 head Rust 검증 및 `hwp3-sample.hwp` 7쪽 한컴 기준 직접 시각 검증.
+- 원격 조치: 수행하지 않았다.

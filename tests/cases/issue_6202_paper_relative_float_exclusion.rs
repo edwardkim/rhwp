@@ -22,40 +22,18 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+use std::path::Path;
+
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/korea_downloads/농촌진흥청/
-///  156483689_1-1_국내산강황제조기술표준화로산업화길활짝(원예원).hwp`
-///
-/// ⚠ `.hwp` 를 `samples/` 에 넣으면 `ir_field_sweep_baseline` 이 `samples/` 전체를 스윕해
-/// 무관한 직렬화 발산을 끌고 온다. `RHWP_ISSUE6202_SAMPLE` 로 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6202_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        concat!(
-            r"C:\Users\planet\hwpdocs_10k_share",
-            r"\korea_downloads\농촌진흥청"
-        ),
-        concat!(r"D:\hwpdocs_10k_share", r"\korea_downloads\농촌진흥청"),
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.starts_with("156483689") && name.ends_with(".hwp") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+const SAMPLE: &str = "samples/issue6202/156483689-turmeric-industry-standardization.hwp";
+
+/// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
+/// 성공 조건이 아니므로 읽기 실패를 즉시 드러낸다.
+fn sample() -> Vec<u8> {
+    std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE))
+        .expect("#6202 정식 HWP fixture 읽기")
 }
 
 /// 1쪽에서 그림 밴드에 깎인 줄들의 오른쪽 끝.
@@ -87,9 +65,7 @@ fn carved_right_edges(core: &DocumentCore) -> Vec<f64> {
 /// 정적 렌더는 그대로여야 한다 — 계산이 저장 사다리를 재현하므로 우단 564.5px.
 #[test]
 fn static_render_keeps_the_stored_band() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let edges = carved_right_edges(&core);
     assert!(
@@ -108,9 +84,7 @@ fn static_render_keeps_the_stored_band() {
 /// 종전에는 옛 밴드(우단 564.5)가 그대로 남아 그림이 글자를 덮었다.
 #[test]
 fn moving_the_float_reflows_the_body() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let mut core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     // 이슈의 재현 그대로 — horzOffset 42333 → 22333 (266.7px 왼쪽으로).
     core.set_picture_properties_native(0, 5, 0, r#"{"horzOffset":22333}"#)

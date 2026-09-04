@@ -1,29 +1,26 @@
-# Green CI external PR batch - implementation and review plan
+# Green CI 외부 PR batch - 통합·검토 계획
 
-## Routing
+## 적용 경로
 
 ```text
-base route: collaborator_external_pr.md
-modifiers: intake_and_review.md, local_validation.md,
-  visual_fixture_evidence.md, multi_pr_update_branch.md
-loaded documents: pr_review_workflow.md, pr_review/README.md,
-  collaborator_external_pr.md, intake_and_review.md, local_validation.md,
+기본 경로: collaborator_external_pr.md
+보조 경로: intake_and_review.md, local_validation.md,
   visual_fixture_evidence.md, multi_pr_update_branch.md
 ```
 
-## Selection
+## 선정 결과
 
-The 2026-09-04 open-PR scan excluded requested PR #6713, drafts #6702, #6685,
-#6670, and #5953, plus #6637 because its re-query result was
-`CONFLICTING/DIRTY`. The selected source heads were `MERGEABLE/CLEAN` with
-latest CI, CodeQL, Render Diff, Adapter inter-diff, and Proptest success or
-policy-expected skips: #6683, #6690, #6698, #6703, #6705, #6709, and #6710.
+2026-09-04 열린 PR 목록에서 요청대로 #6713을 제외했다. draft #6702, #6685, #6670,
+#5953과 재조회 시 `CONFLICTING/DIRTY`였던 #6637도 제외했다. #6683, #6690, #6698,
+#6703, #6705, #6709, #6710만 최신 source head의 CI, CodeQL, Render Diff, Adapter
+inter-diff, Proptest가 성공 또는 정책상 skip이었다.
 
-## Integration history
+## 통합 이력
 
-Base: `upstream/devel` `009e30fe1`.
+기준은 `upstream/devel` `009e30fe1`이며 브랜치는
+`review/green-ci-batch-20260904-full`이다.
 
-| Source PR | Source commits | Integration commits |
+| 원 PR | source commit | 통합 commit |
 | --- | --- | --- |
 | #6683 | `e5f385c17`, `e5dde4373` | `dd8ca73a2`, `4c333ab94` |
 | #6690 | `f9d76b11c`, `c37925771` | `eb84bbbc7`, `9f0455b6f` |
@@ -33,31 +30,23 @@ Base: `upstream/devel` `009e30fe1`.
 | #6709 | `df9c6c612`, `36b550089` | `e6b9a3ed5`, `ffd47191e` |
 | #6710 | `ceb649a2d`, `4a1eb7c27` | `c340bd7a8`, `61cd71fb9` |
 
-All source commits were applied with `git cherry-pick -x` in their original
-PR order. The first attempted single-head import was abandoned before use
-because #6683 and #6690 have trailing commits; the final branch contains the
-complete source commit series. The final import completed without manual
-conflict resolution.
+각 PR의 모든 source commit을 원래 순서로 `git cherry-pick -x` 적용했다. source head만
+적용하면 #6683과 #6690의 선행 동작 commit을 빠뜨리므로 사용하지 않는다.
 
-## Maintainer correction
+## 메인터너 보정과 fixture 등록
 
-`872f3d4c5` changes only regression tests for #6202 and #5057. It preserves
-the allowed missing-private-fixture skip but replaces post-fixture `return`
-paths with `expect`, preventing false green results on picture-edit, HWPX
-export, ZIP read, or ZIP write failure.
+- `872f3d4c5`은 #6202 그림 이동과 #5057 HWPX export/ZIP 처리의 fixture 발견 뒤 오류를
+  성공으로 삼키지 않도록 fail-closed로 바꾼다.
+- `samples/issue6202/`와 `samples/issue5057/`에 원본 HWP, SHA-256 manifest, 한국어
+  README를 등록한다. 테스트는 환경 변수와 Windows 개인 경로를 제거하고 이 정식 fixture를
+  반드시 읽는다.
 
-## Remaining gates
+## 남은 수용 게이트
 
-1. Run the prescribed integration-head Rust lint/test gates sequentially in a
-   dedicated review target.
-2. Run external-fixture cases with `RHWP_ISSUE5941_SAMPLE`,
-   `RHWP_ISSUE6202_SAMPLE`, and `RHWP_ISSUE5057_SAMPLE` set to the identified
-   private corpus inputs.
-3. Produce and inspect integration-head visual evidence for each page-visible
-   claim. Copy only representative current-head PNGs to stable
-   `mydocs/pr/assets/` paths and record hashes, pages, metrics, and limitations.
-4. Add a review/today trailing commit only after the above evidence is factual,
-   then obtain explicit approval before any push or PR creation.
+1. 새 HWP fixture의 IR field sweep 및 overflow-cell 원장 절차를 수행한다.
+2. 전용 target에서 통합 head Rust lint와 관련 focused test를 실행한다.
+3. 통합 head에서 한컴 기준 PDF와 representative visual asset을 만들고 직접 판정한다.
+4. 위 결과를 사실대로 review·오늘할일에 반영한 trailing commit 뒤, 작업지시자 승인 후에만
+   push 또는 PR 생성을 진행한다.
 
-No GitHub source comment, close, push, PR creation, approval, or merge was
-performed in this stage.
+이 단계에서 GitHub comment, close, push, PR 생성, approve, merge는 수행하지 않았다.

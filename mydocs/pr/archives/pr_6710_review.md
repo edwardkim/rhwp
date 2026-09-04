@@ -1,42 +1,31 @@
-# PR #6710 review - profile-agnostic first-fragment allowance
+# PR #6710 검토 - 출처 표식과 무관한 첫 조각 초과 허용치
 
-## Metadata
+## 메타데이터
 
-| Item | Value |
+| 항목 | 값 |
 | --- | --- |
-| Source PR | [#6710](https://github.com/edwardkim/rhwp/pull/6710) |
-| Author | `planet6897` |
-| Base / source head | `devel` / `4a1eb7c27552dd9dd619a9aef1b9aaaf997a6fdb` |
-| Integration branch | `review/green-ci-batch-20260904-full` |
-| Applied commits | `c340bd7a8`, `61cd71fb9` (`-x`) |
-| Maintainer correction | `872f3d4c5` |
-| Scope | stored first-fragment allowance, `#4658` test mediation, two source PNGs |
-| Related issue | [#5057](https://github.com/edwardkim/rhwp/issues/5057) |
+| 원 PR | [#6710](https://github.com/edwardkim/rhwp/pull/6710) |
+| 작성자 | `planet6897` |
+| base / 원 head | `devel` / `4a1eb7c27552dd9dd619a9aef1b9aaaf997a6fdb` |
+| 통합 브랜치 | `review/green-ci-batch-20260904-full` |
+| 적용 commit | `c340bd7a8`, `61cd71fb9` (`-x`) |
+| 메인터너 보정 | `872f3d4c5` 및 정식 fixture 등록 후속 commit |
+| 관련 이슈 | [#5057](https://github.com/edwardkim/rhwp/issues/5057) |
 
-## Review
+## 검토 결과
 
-- Reviewer `jangster77` was assigned before local integration. The source head
-  was `MERGEABLE/CLEAN`; latest required CI checks were success or
-  policy-expected skips.
-- The implementation makes the saved first-fragment allowance available to the
-  direct-HWPX stored-layout path as well as native HWP5, and updates the
-  page-count-based `#4658` mediation so its different-page contract remains
-  meaningful.
-- `before_p7.png` and `after_p7.png` were cherry-picked as source references,
-  not accepted as integration-head visual evidence.
-- The contributor test skipped on a missing private fixture as intended, but
-  also returned successfully after HWPX export/ZIP processing failures.
-  Maintainer correction `872f3d4c5` makes every post-fixture failure explicit.
-- The local `21484591` corpus file is available for
-  `RHWP_ISSUE5057_SAMPLE`; no resulting integration-head test or visual output
-  has yet been produced.
+- reviewer `jangster77`을 지정했고 원 head required CI는 선정 시 성공 또는 정책상 skip이었다.
+- 저장된 첫 조각 source frame 허용치를 native HWP5와 direct-HWPX 저장 조판 경로 모두에
+  적용하고, 기존 페이지 수 차이를 매개로 하던 `#4658` 계약도 별도 차이 입력으로 유지한다.
+- source PNG는 참고 자료일 뿐 통합 head 시각 증적이 아니다.
+- 기존 private-path 탐색과 export/ZIP 오류 성공 처리를 제거한다. 원본 HWP는
+  `samples/issue5057/`에 SHA-256 manifest와 함께 등록하고 모든 fixture 발견 뒤 오류는 실패한다.
+- 통합 head의 lint, test, 시각 검증은 아직 실행하지 않았다.
 
-## Final decision
+## 최종 판정
 
-- Decision: **메인터너 보정 후 수용 가능**
-- Original head: `4a1eb7c27552dd9dd619a9aef1b9aaaf997a6fdb` can hide failed
-  regression-test setup after a fixture is found.
-- Corrected integration head: includes `872f3d4c5`; acceptance still requires
-  the integration lint/test gates and direct HWP5/direct-HWPX page-visible
-  evidence with stable review assets.
-- Remote action: none.
+- 판정: **메인터너 보정 후 수용 가능**
+- 원 head: private fixture와 export/ZIP 오류를 엄격히 검증하지 못한다.
+- 보정 뒤 통합 head: 정식 fixture와 fail-closed 테스트를 포함한다.
+- 수용 전 조건: 통합 Rust 검증 및 HWP5/direct-HWPX의 페이지·표 영역 직접 시각 증적.
+- 원격 조치: 수행하지 않았다.
