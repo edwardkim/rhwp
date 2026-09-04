@@ -45,3 +45,8 @@ samples/issue6202/*.hwp -text -diff
 
 # Issue #5941 canonical HWP fixture
 samples/issue5941/1480000-201900698-native-neartop-reset.hwp -text -diff
+
+# #6697/#6718 회귀 입력은 원본 한컴 바이트다. 텍스트 변환이나 diff 정규화가
+# manifest의 SHA-256과 renderer 재현성을 바꾸면 안 된다.
+samples/issue6697/*.hwpx -text -diff
+samples/issue6718/*.hwp -text -diff
