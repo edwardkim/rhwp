@@ -78,41 +78,36 @@ fn direct_hwpx_profile_agrees_with_native_hwp5() {
         return;
     };
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    let Ok(hwpx) = core.export_hwpx_native() else {
-        return;
-    };
+    let hwpx = core.export_hwpx_native().expect("HWPX 내보내기");
 
     // 표식만 뺀 사본을 만든다 — 나머지 엔트리는 그대로다.
     let cursor = std::io::Cursor::new(hwpx.clone());
-    let Ok(mut zip) = zip::ZipArchive::new(cursor) else {
-        return;
-    };
+    let mut zip = zip::ZipArchive::new(cursor).expect("내보낸 HWPX ZIP 열기");
     let mut out = Vec::new();
     {
         let mut writer = zip::ZipWriter::new(std::io::Cursor::new(&mut out));
         let options = zip::write::SimpleFileOptions::default()
             .compression_method(zip::CompressionMethod::Deflated);
         for index in 0..zip.len() {
-            let Ok(mut entry) = zip.by_index(index) else {
-                return;
-            };
+            let mut entry = zip.by_index(index).expect("내보낸 HWPX ZIP 항목 읽기");
             let name = entry.name().to_string();
             if name.contains("rhwp-hwp5-origin") {
                 continue;
             }
             use std::io::Read as _;
             let mut buf = Vec::new();
-            if entry.read_to_end(&mut buf).is_err() {
-                return;
-            }
+            entry
+                .read_to_end(&mut buf)
+                .expect("내보낸 HWPX ZIP 항목 본문 읽기");
             use std::io::Write as _;
-            if writer.start_file(name, options).is_err() || writer.write_all(&buf).is_err() {
-                return;
-            }
+            writer
+                .start_file(name, options)
+                .expect("표식 없는 HWPX ZIP 항목 시작");
+            writer
+                .write_all(&buf)
+                .expect("표식 없는 HWPX ZIP 항목 쓰기");
         }
-        if writer.finish().is_err() {
-            return;
-        }
+        writer.finish().expect("표식 없는 HWPX ZIP 마무리");
     }
 
     let direct = DocumentCore::from_bytes(&out).expect("표식 없는 HWPX 로드");

@@ -113,12 +113,8 @@ fn moving_the_float_reflows_the_body() {
     };
     let mut core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     // 이슈의 재현 그대로 — horzOffset 42333 → 22333 (266.7px 왼쪽으로).
-    if core
-        .set_picture_properties_native(0, 5, 0, r#"{"horzOffset":22333}"#)
-        .is_err()
-    {
-        return;
-    }
+    core.set_picture_properties_native(0, 5, 0, r#"{"horzOffset":22333}"#)
+        .expect("개체 이동 뒤 Picture band 재투영");
     let edges = carved_right_edges(&core);
     assert!(
         !edges.is_empty(),
