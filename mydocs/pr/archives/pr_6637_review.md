@@ -248,10 +248,31 @@ DPR/예산/줌 정책 변경은 이번 승인 범위에 포함하지 않았다.
   개선률도 주장하지 않는다. 추가 재계산은 focus 변경 시 남은 queue가 있을 때 현재 working set에 한정된다.
 - 원격 CI는 push 후 새 exact head에서 별도로 확인한다. 이전 head CI와 위 로컬 검증을 혼동하지 않는다.
 
+## 2026-09-04 추가 수정 보존·기준선 통합
+
+- 사용자 추가 commit `1c9b5245e217f6b4a6da4b8ceba7eb2c402423b8`을 보존했다. DPR plan 변경 후
+  `renderCanvas`가 실패하면 active surface를 회수하도록 보정해, 실패한 Canvas가 완료된 쪽으로 남는
+  인접 결함을 막는다. DPR 후보나 예산 정책을 바꾸는 수정은 아니다.
+- `devel@a1be9d49313002a42dbca3ec5c03529c00dd6a4b`과 자동 병합은 충돌 없이 완료됐다.
+  merge commit은 `9a52b09d229b474b5ac268a1a41fcca9673fa496`이며, 자동 병합 tree와 동일함을 확인했다.
+  원 PR 커밋을 재작성하거나 추가 source 보정을 하지 않았다. 이후 문서 commit은 이동된 할일 문서의
+  상대 링크, 과거 제출 기록과 현재 검증 상태의 구분, 이 검토 결과만 정리한다.
+- 통합 source 검증: Studio **1,438 total / 1,437 pass / 1 policy skip / 0 fail**, TypeScript
+  noEmit, Vite production build, E2E manifest **127/127**, 변경 문서 링크와 `git diff --check` 통과.
+  build에는 CanvasKit의 Node 모듈 externalization 및 chunk-size 경고가 있다.
+- 최신 source로 WASM을 다시 빌드했다. Docker daemon이 실행되지 않아 문서화된 native
+  `--no-opt` 진단 경로를 사용했다. Rust release 최적화는 적용되지만 `wasm-opt`는 생략하므로,
+  이 서버의 시간 수치를 최적화된 배포판과의 정량 성능 비교에 사용하지 않는다.
+- 새 로컬 서버 `http://127.0.0.1:4198/?renderer=canvas2d&url=/samples/exam_kor.hwp`에서
+  `exam_kor.hwp` 20쪽을 열었다. 100% 본문·표·ruler의 실제 렌더링과 브라우저 error log 0건을
+  확인했다. 이번 확인은 문서 열기 smoke이며 기존 전체 시각·성능 게이트의 재실행을 뜻하지 않는다.
+- 사용자 지시에 따라 새 head를 push하고 서버를 제공하되, CI 완료는 기다리지 않는다. 현재 검증은
+  사용자가 직접 스크롤·줌·클릭을 비교하기 위한 준비이며 merge 승인을 대신하지 않는다.
+
 ## 현재 판정
 
-- 판정: **두 인라인 finding 보정·로컬 검증 통과, 새 head CI 확인 대기**
+- 판정: **머지 보류**
 - 원격 상태: Ready / OPEN, 직접 base `devel`; 하위 #6458·#6467 병합 완료
-- 남은 조건: 새 exact head required checks와 사용자 merge 승인
-- 원격 조치: 수정 push와 인라인 답글만 수행한다. self PR의 GitHub approval review와 thread resolve는
-  만들지 않으며 merge는 사용자 승인 전까지 수행하지 않는다.
+- 남은 조건: 새 exact head required checks, 로컬 사용자 확인과 별도 merge 승인
+- 이번 원격 조치는 기존 PR branch push에 한정한다. self PR의 GitHub approval review와 thread
+  resolve는 만들지 않으며 merge는 사용자 승인 전까지 수행하지 않는다.

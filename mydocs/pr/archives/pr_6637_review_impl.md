@@ -111,3 +111,19 @@ Stage 5에서 나온 불리한 `exam_kor` 역방향 결과를 숨기지 않고 �
   않았다. 전체 성능 A/B의 재측정도 이번 제한된 보정에는 포함하지 않았다.
 - 4의 push·답글과 새 head CI는 원격 실행 결과로 확인한다. 세부 재현·수용 근거 및 한계는
   [review 기록](pr_6637_review.md)의 2026-09-04 보정 절을 따른다.
+
+### 2026-09-04 기준선 정리·로컬 사용자 검증
+
+- 사용자 추가 수정 head `1c9b5245e217f6b4a6da4b8ceba7eb2c402423b8`을 보존한다. DPR plan 재래스터
+  실패 쪽을 `discardActivePageSurface`로 회수하는 #6467 인접 결함 수정이며, 별도 정책 변경은 아니다.
+- 사용자의 후속 진행·push·서버 실행 승인에 따라 최신 `devel@a1be9d49313002a42dbca3ec5c03529c00dd6a4b`을
+  merge commit으로 통합한다. 원 PR 커밋을 재작성하지 않으며 자동 병합 외 source 보정은 하지 않는다.
+- 할일 문서의 다른 작업 기록과 archive 위치를 보존하고, 이 PR의 이동 후 상대 링크·현재 상태만 정리한다.
+- 통합 source의 WASM·Studio 로컬 검증 뒤 push하고 새 head를 실행하는 loopback 서버를 제공한다.
+  사용자가 CI 완료 대기를 생략하도록 지시했으므로 원격 CI 통과나 merge 완료로 보고하지 않는다.
+
+실행 결과: `9a52b09d229b474b5ac268a1a41fcca9673fa496`으로 충돌 없이 통합했다. Studio 전체
+1,437 pass / 1 policy skip, TypeScript·production build·E2E manifest 127/127 및 문서 검사를
+통과했다. 새 WASM을 사용하는 `4198` 서버에서 `exam_kor.hwp` 20쪽의 100% 문서 열기 smoke와
+브라우저 오류 0건을 확인했다. native `--no-opt` 빌드이므로 정량 성능 비교용은 아니며, 사용자
+스크롤·줌 확인과 새 head의 원격 CI 및 merge 승인은 별도 조건으로 남긴다.
