@@ -3203,6 +3203,8 @@ pub(crate) fn layout_picture_band(
     column_width_px: f64,
     styles: &ResolvedStyleSet,
     dpi: f64,
+    // [#6202] 용지 기준(`Paper`/`Page`) 어울림 개체를 재는 데 필요한 본문 상자의 용지 원점.
+    paper_origin_px: (f64, f64),
 ) -> Option<PictureBandLayout> {
     let host = paragraphs.get(host_index)?;
     let column_horizontal = 0..px_to_hwpunit(column_width_px, dpi);
@@ -3272,6 +3274,17 @@ pub(crate) fn layout_picture_band(
         column_horizontal.clone(),
         host_paragraph_horizontal,
         anchor_top,
+        crate::renderer::float_placement::PaperOrigin {
+            body_left: px_to_hwpunit(paper_origin_px.0, dpi),
+            body_top: px_to_hwpunit(paper_origin_px.1, dpi),
+            // 밴드는 host 문단에서 시작한다 — 그 문단의 저장 절대 위치가 로컬 원점이다.
+            band_abs_top: host
+                .line_segs
+                .iter()
+                .find(|seg| seg.tag & 0x8000_0000 == 0)
+                .map(|seg| seg.vertical_pos)
+                .unwrap_or(0),
+        },
     )?;
     let exclusion_end = exclusion.vertical.end;
     let mut frame = host_box.frame_with(0, vec![exclusion]);
@@ -5071,6 +5084,7 @@ mod frame_reflow_tests {
             0..COLUMN_WIDTH,
             paragraph_reference.clone(),
             0,
+            crate::renderer::float_placement::PaperOrigin::default(),
         )
         .expect("supported Paragraph-relative Picture");
         assert_eq!(expected_exclusion.horizontal, 12_000..15_000);
@@ -5090,6 +5104,7 @@ mod frame_reflow_tests {
             crate::renderer::hwpunit_to_px(COLUMN_WIDTH, DPI),
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("the one-row Paragraph-relative Picture band");
 
@@ -5130,8 +5145,15 @@ mod frame_reflow_tests {
         let column_width = page_layout.column_areas[0].width;
         let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
 
-        let band = layout_picture_band(&section.paragraphs, 325, column_width, &styles, DPI)
-            .expect("one Picture + trailing TAC Equation p325 band");
+        let band = layout_picture_band(
+            &section.paragraphs,
+            325,
+            column_width,
+            &styles,
+            DPI,
+            (0.0, 0.0),
+        )
+        .expect("one Picture + trailing TAC Equation p325 band");
 
         assert_eq!(band.paragraph_range, 325..332);
         assert_eq!(band.line_segs.len(), 7);
@@ -5216,8 +5238,15 @@ mod frame_reflow_tests {
         let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
 
         assert!(
-            layout_picture_band(&section.paragraphs[325..329], 0, column_width, &styles, DPI)
-                .is_none(),
+            layout_picture_band(
+                &section.paragraphs[325..329],
+                0,
+                column_width,
+                &styles,
+                DPI,
+                (0.0, 0.0)
+            )
+            .is_none(),
             "a subset ending before the exclusion clears cannot be published"
         );
     }
@@ -5260,7 +5289,15 @@ mod frame_reflow_tests {
             "fixture premise: pic2's first paragraph has two floating pictures"
         );
         assert!(
-            layout_picture_band(&section.paragraphs, 0, column_width, &styles, DPI).is_none(),
+            layout_picture_band(
+                &section.paragraphs,
+                0,
+                column_width,
+                &styles,
+                DPI,
+                (0.0, 0.0)
+            )
+            .is_none(),
             "two floating pictures are deliberately not a one-picture band"
         );
     }

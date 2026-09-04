@@ -530,7 +530,7 @@ impl DocumentCore {
         &self,
         section_idx: usize,
         para_idx: usize,
-    ) -> Option<(usize, std::ops::Range<usize>, f64)> {
+    ) -> Option<(usize, std::ops::Range<usize>, f64, (f64, f64))> {
         let section = self.document.sections.get(section_idx)?;
         let host_index = (0..=para_idx).rev().find(|&index| {
             section.paragraphs[index].controls.iter().any(|control| {
@@ -558,6 +558,7 @@ impl DocumentCore {
             column_width,
             &self.styles,
             self.dpi,
+            (layout.body_area.x, layout.body_area.y),
         )?;
         // Carries px, not HWPUNIT: the conversion belongs to `ParagraphBox`, so
         // that one paragraph gets one box however it is reached.
@@ -565,6 +566,7 @@ impl DocumentCore {
             host_index,
             band.paragraph_range,
             column_width,
+            (layout.body_area.x, layout.body_area.y),
         ))
     }
 
@@ -708,7 +710,7 @@ impl DocumentCore {
     where
         F: FnOnce(&mut Paragraph),
     {
-        let Some((host_index, old_range, column_width_px)) =
+        let Some((host_index, old_range, column_width_px, paper_origin_px)) =
             self.picture_band_owning_body_paragraph(section_idx, para_idx)
         else {
             return Ok(None);
@@ -732,6 +734,7 @@ impl DocumentCore {
             column_width_px,
             &self.styles,
             self.dpi,
+            paper_origin_px,
         ) else {
             return Err(HwpError::RenderError(format!(
                 "그림 배치 영역({}..)의 편집 결과를 완전한 줄 배치로 만들 수 없습니다",
@@ -7633,6 +7636,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("p325 Picture frame");
         assert_eq!(initial_band.paragraph_range, HOST..DOWNSTREAM);
@@ -7697,6 +7701,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("edited p325 Picture frame");
         let inserted_range = inserted_band.paragraph_range.clone();
@@ -7753,6 +7758,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("inserted Picture frame before delete");
         assert_eq!(before_delete_band.paragraph_range, HOST..331);
@@ -7764,6 +7770,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("restored p325 Picture frame");
         let deleted_range = deleted_band.paragraph_range.clone();
@@ -7935,7 +7942,7 @@ mod tests {
         core.paginate();
 
         let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp) = core
+        let (_, _, before_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("initial Picture band");
         assert_eq!(
@@ -7947,7 +7954,7 @@ mod tests {
             .expect("host insert succeeds");
 
         let after_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp) = core
+        let (_, fresh_range, after_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("Picture band after pagination");
         assert_eq!(after_col, 1, "the expanded host moves to the wide column");
@@ -7962,6 +7969,7 @@ mod tests {
             after_width_hwp,
             &core.styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("fresh band at the post-pagination column width");
         assert_eq!(fresh_band.paragraph_range, fresh_range);
@@ -8027,7 +8035,7 @@ mod tests {
         core.paginate();
 
         let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp) = core
+        let (_, _, before_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("initial Picture band");
         assert_eq!(before_col, 0, "fixture starts in the narrow column");
@@ -8039,7 +8047,7 @@ mod tests {
         core.end_batch_native().expect("end batch");
 
         let after_flush_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp) = core
+        let (_, fresh_range, after_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("Picture band after final pagination");
         assert_eq!(
@@ -8058,6 +8066,7 @@ mod tests {
             after_width_hwp,
             &core.styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("fresh band at the post-batch column width");
         assert_eq!(fresh_band.paragraph_range, fresh_range);
@@ -8133,7 +8142,7 @@ mod tests {
         core.paginate();
 
         let before_col = core.para_column_map[0][HOST];
-        let (_, before_range, before_width_px) = core
+        let (_, before_range, before_width_px, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("supported Picture band in the wide source column");
         assert_eq!(before_col, 0, "fixture starts in the wide column");

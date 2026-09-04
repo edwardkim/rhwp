@@ -1331,6 +1331,7 @@ impl DocumentCore {
                             picture_col_width,
                             &styles,
                             dpi,
+                            (layout.body_area.x, layout.body_area.y),
                         );
                         // A tracked host keeps ownership until a complete
                         // projection proves that its band already ended.
