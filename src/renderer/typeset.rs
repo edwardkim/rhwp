@@ -5409,6 +5409,9 @@ struct FormattedParagraph {
     spacing_after: f64,
     /// trailing line_spacing을 제외한 판단용 높이
     height_for_fit: f64,
+    /// `total_height` 에 섞어 넣은 TAC 표 바깥 여백(세로). 저장 사다리 지문처럼
+    /// **생성기가 쓴 값과 대조하는** 계산에서는 이 몫을 도로 빼야 한다.
+    tac_outer_margin_v_px: f64,
 }
 
 impl FormattedParagraph {
@@ -16813,7 +16816,8 @@ impl TypesetEngine {
                         match ls_type {
                             LineSpacingType::Percent => {
                                 // [#2279] sub-100% 퍼센트 음수 gap 존중 (line_breaking 정합)
-                                let extra = if ls_val > 0.0 {
+                                // 0% 는 실값이다 — line_breaking 과 같은 계약(>=)으로 맞춘다.
+                                let extra = if ls_val >= 0.0 {
                                     max_fs * (ls_val - 100.0) / 100.0
                                 } else {
                                     0.0
@@ -16940,7 +16944,37 @@ impl TypesetEngine {
             .zip(line_spacings.iter())
             .map(|(h, s)| h + s)
             .sum();
-        let total_height = spacing_before + lines_total + spacing_after;
+        // 글자처럼 취급되는 표의 **바깥 여백**은 줄 상자 밖이지만 쪽 예산은 차지한다.
+        // 한컴 저장 lineseg 의 vertsize 가 `표 높이 + outMargin(위+아래)` 이다(실측 18/18).
+        // 줄 높이 자체에 더하면 그리기 좌표까지 밀려 조판이 무너지므로(실측 82.3%→54.0%),
+        // **예산 값(total_height·height_for_fit)에만** 더한다.
+        //
+        // 🔴 이 가산분은 `tac_outer_margin_v_px` 로 따로 들고 다닌다. HWPX 저장조판의
+        // "사다리가 문단 여백을 뺐는가" 지문(아래 `ladder_omits_spacing`)이 **±2px 창**이라,
+        // 이 3.7px 가 섞이면 판정이 뒤집혀 cap 승격과 전방 스냅이 통째로 사라진다.
+        // 그러면 표가 없는 뒤 문단까지 32px 씩 당겨 올라가 용지 밖으로 밀린다(실측 28.3px).
+        //
+        // 🔴 **저장 조판이 없는 문단에만** 더한다. 파일에서 열린 문단은 한컴이 계산해 둔
+        // `lineseg` 를 그대로 쓰므로 여기서 또 더하면 이중 가산이 되어, 분할 표 꼬리가 페이지를
+        // 단독 점유하고 뒤 본문이 밀린다(#2373 핀: 한글 2022 정답지 4쪽 ↔ 가산 시 5쪽).
+        // 다시 조판해야 하는 문단(붙여넣기·생성계)에서만 이 몫이 실제로 빠져 있다.
+        let tac_outer_margin_v_px: f64 = if crate::renderer::para_has_no_stored_line_segs(para) {
+            para.controls
+                .iter()
+                .filter_map(|ctrl| match ctrl {
+                    Control::Table(t) if t.common.treat_as_char => {
+                        Some(crate::renderer::hwpunit_to_px(
+                            i32::from(t.common.margin.top) + i32::from(t.common.margin.bottom),
+                            self.dpi,
+                        ))
+                    }
+                    _ => None,
+                })
+                .fold(0.0f64, f64::max)
+        } else {
+            0.0
+        };
+        let total_height = spacing_before + lines_total + spacing_after + tac_outer_margin_v_px;
 
         // 적합성 판단용: trailing line_spacing 제외
         let trailing_ls = line_spacings.last().copied().unwrap_or(0.0);
@@ -16985,6 +17019,7 @@ impl TypesetEngine {
             spacing_before,
             spacing_after,
             height_for_fit,
+            tac_outer_margin_v_px,
         }
     }
 
@@ -18911,7 +18946,26 @@ impl TypesetEngine {
             None
         };
         let height_for_fit = if has_tac {
-            first_line_tac_height.unwrap_or(fmt.height_for_fit)
+            // 글자처럼 취급되는 표는 **바깥 여백(위·아래)까지 쪽 예산을 차지**한다.
+            // 한컴 저장 lineseg 의 vertsize 가 `표 선언높이 + outMargin.top + outMargin.bottom`
+            // 이다(본 문서 TAC 개체 18/18 일치, 2248+283+283=2814). 이 항이 빠져 쪽마다
+            // 566 HU 씩 덜 쌓였고, 소제목 표가 앞 쪽 바닥에 남아 이후 쪽이 통째로 밀렸다.
+            // 🔴 줄 높이(`inline_control_*`) 자체에 더하면 흐름 좌표까지 이중 가산돼
+            //    조판이 크게 어긋난다(실측 82.3% → 54.0%). **수용 판정 값에만** 더한다.
+            let tac_outer_margin_px: f64 = para
+                .controls
+                .iter()
+                .filter_map(|ctrl| match ctrl {
+                    Control::Table(t) if self.is_effective_tac_table(para, t, &fmt) => {
+                        Some(crate::renderer::hwpunit_to_px(
+                            i32::from(t.common.margin.top) + i32::from(t.common.margin.bottom),
+                            self.dpi,
+                        ))
+                    }
+                    _ => None,
+                })
+                .fold(0.0f64, f64::max);
+            first_line_tac_height.unwrap_or(fmt.height_for_fit) + tac_outer_margin_px
         } else {
             fmt.total_height
         };
@@ -19752,10 +19806,13 @@ impl TypesetEngine {
             // 부족분이 sb/sa 서명과 다른 ladder(#2352 host 줄박스 계열,
             // 36392557 pi27 부족분 13.3px)는 대상이 아니다 — 그 경로의 별도
             // 가산과 이중 성장(+1쪽 회귀 실측)한다.
+            // 🔴 지문은 **생성기가 쓴 값**과 대조하는 것이라, 우리가 예산용으로 더한
+            // TAC 바깥 여백은 빼고 비교해야 한다(창이 ±2px 인데 그 몫이 3.7px 다).
+            let ladder_total = fmt.total_height - fmt.tac_outer_margin_v_px;
             let ladder_omits_spacing = stored_step_px
-                .filter(|&step| step + 1.0 < fmt.total_height && cap + 1.0 < fmt.total_height)
+                .filter(|&step| step + 1.0 < ladder_total && cap + 1.0 < ladder_total)
                 .map(|step| {
-                    let shortfall = fmt.total_height - step;
+                    let shortfall = ladder_total - step;
                     let sig = fmt.spacing_before + fmt.spacing_after;
                     sig > 0.5 && (shortfall - sig).abs() < 2.0
                 })
@@ -19800,7 +19857,7 @@ impl TypesetEngine {
                 height_before
             };
             let cap = if ladder_omits_spacing {
-                fmt.total_height
+                ladder_total
             } else {
                 cap
             };
@@ -27130,6 +27187,7 @@ mod issue_3780_line_advance_oob {
             spacing_before: 0.0,
             spacing_after: 0.0,
             height_for_fit: 0.0,
+            tac_outer_margin_v_px: 0.0,
         }
     }
 

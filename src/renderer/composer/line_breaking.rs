@@ -170,6 +170,9 @@ pub(crate) fn is_line_start_forbidden(ch: char) -> bool {
             | '\u{3002}'
             | '\u{2026}'
             | '\u{00B7}'
+            // ‧ HYPHENATION POINT — 한컴 저장 조판 실측: 줄머리 0건 · 줄끝 2건.
+            // `·`(U+00B7)는 이미 있는데 이것만 빠져 있어 줄 머리로 내려갔다.
+            | '\u{2027}'
             | '\u{2015}'
             | '\u{30FC}'
             | '\u{300B}'
@@ -521,18 +524,50 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 } else {
                     12.0
                 };
-                let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
+                let mut w = estimate_text_width_unrounded(&ch.to_string(), &ts)
                     + inline_width_px_at(inline_controls, i);
+                // 글자 모드에서도 **줄 머리 금칙**을 지킨다.
+                //
+                // 어절 모드(위 분기)만 후행 금칙 문자를 앞 토큰에 흡수하고 있어, 글자 모드
+                // 문단은 쉼표·가운뎃점이 다음 줄 첫 글자로 내려갔다. 한글은 같은 문단 설정에서도
+                // 그렇게 조판하지 않는다 — 실측: 원본 파일 284줄 중 줄머리 금칙 0건,
+                // 우리 재조판 291줄 중 6건(", 생산성 정체를…" · "·경쟁하면서…").
+                // 저장된 사다리가 있는 문서는 그 값을 쓰므로 영향이 없고, 편집·붙여넣기처럼
+                // 다시 조판하는 경우에만 달라진다.
+                let start = i;
+                i += 1;
+                while i < text_len
+                    && is_line_start_forbidden(text_chars[i])
+                    && text_chars[i] != '\n'
+                    && text_chars[i] != '\t'
+                    // 🔴 금칙 문자 바로 뒤에 라틴/숫자 낱말이 이어지면 앞 글자에 붙이지 않는다.
+                    // 한컴은 `한다.111…` 에서 `.` 을 앞의 `다` 가 아니라 뒤의 숫자 낱말에 붙여
+                    // 통째로 다음 줄로 내린다(#2214 핀: 줄 시작 129 = `.`). 뒤가 공백·한글·끝이면
+                    // 종전대로 앞 글자에 흡수한다(`, 생산성`·`‧기업` — 정답지 284줄 줄머리 금칙 0건).
+                    && !text_chars
+                        .get(i + 1)
+                        .is_some_and(|next| next.is_ascii_alphanumeric())
+                {
+                    let follow_pos = if i < char_offsets.len() {
+                        char_offsets[i]
+                    } else {
+                        i as u32
+                    };
+                    let follow_style = find_active_char_shape(char_shapes, follow_pos);
+                    let follow_ts = resolved_to_text_style(styles, follow_style, current_lang);
+                    w += estimate_text_width_unrounded(&text_chars[i].to_string(), &follow_ts)
+                        + inline_width_px_at(inline_controls, i);
+                    i += 1;
+                }
                 tokens.push(BreakToken::Text {
-                    start_idx: i,
-                    end_idx: i + 1,
+                    start_idx: start,
+                    end_idx: i,
                     base_width: w,
                     width: w,
                     max_font_size: fs,
                     base_char_widths: vec![],
                     char_widths: vec![],
                 });
-                i += 1;
                 continue;
             }
         }
@@ -1178,8 +1213,32 @@ fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
 }
 
 // 한컴은 HWPUNIT 정수 양자화 시 미세한 반올림 차이를 허용한다.
-// 15 HU 이내의 초과는 줄에 포함한다.
-const LINE_BREAK_TOLERANCE: i32 = 15;
+// 이 값 이내의 초과는 줄에 포함한다.
+//
+// 15 는 실측보다 작았다. 한컴이 저장한 조판을 우리 폭 지표로 되재면, 한컴이 **받아들인**
+// 줄들이 상자를 38·113·188 HWPUNIT 씩 넘는다(간격 75 HU = 1px — 줄 안 run 수에 따른
+// 추정 오차 누적으로 보인다). 줄바꿈은 실제 글꼴이 아니라 엔진의 폭 **추정**으로 정해지므로
+// 이 여유가 그 추정 오차를 흡수하는 자리다. 15 에서는 한컴이 담은 줄을 우리가 잘라
+// 줄마다 마지막 글자가 밀렸다.
+// 실측 스윕(재조판 ↔ 한컴 저장 조판 줄 단위 일치율): 15·40 → 65.0% / **50 → 82.3%** /
+// 60~100 → 81.6% / 150 → 79.7% / 300 → 74.4%. 너무 키우면 반대로 과하게 담는다.
+//
+// 🔴 그 50 은 **본문 폭 38,640 HWPUNIT 짜리 줄에서 잰 값**이다. 오차가 줄 안 run 수를 따라
+// 쌓이는 것이므로 여유도 상자 폭에 비례해야 한다. 상수로 두면 폭이 14배 좁은 표 칸
+// (2,720 HU)에서 글자 폭의 5.5% 나 되는 **진짜 초과**까지 삼켜, 한컴이 두 줄로 쪼개는 문단이
+// 한 줄로 남는다(셀 안 여백을 키운 뒤 재조판). 하한 15 는 종전 상수값이라 어떤 상자도
+// 그보다 빡빡해지지 않는다.
+const LINE_BREAK_TOLERANCE_MIN_HWP: i32 = 15;
+const LINE_BREAK_TOLERANCE_MAX_HWP: i32 = 50;
+/// 여유 1 HWPUNIT 당 상자 폭 — 38,640 / 50 ≈ 760.
+const LINE_BREAK_TOLERANCE_WIDTH_PER_HWP: i32 = 760;
+
+/// 상자 폭에 비례하는 줄바꿈 여유(HWPUNIT).
+#[inline]
+fn line_break_tolerance_hwp(box_width_hwp: i32) -> i32 {
+    (box_width_hwp.max(0) / LINE_BREAK_TOLERANCE_WIDTH_PER_HWP)
+        .clamp(LINE_BREAK_TOLERANCE_MIN_HWP, LINE_BREAK_TOLERANCE_MAX_HWP)
+}
 
 fn condense_fit_can_pull_next_token(
     current_width_hwp: i32,
@@ -1222,7 +1281,14 @@ fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: us
     }
     letter_spacing_px
         .get(token_end_idx - 1)
-        .map(|spacing| to_hwp(*spacing))
+        // 이 보정은 "줄 끝 글자 뒤의 빈 자간을 빼는" **좁히는** 보정이다.
+        // 자간이 음수면 뺄 것이 없다 — 마지막 글자의 전진폭에 이미 축소분이 접혀 있고,
+        // 한컴 저장 lineseg 도 그 접힌 폭으로 담는다(실측: 41자 전진폭 38613 HU ≤ horzsize 38640).
+        // 음수를 그대로 빼면 `w - (-x) = w + x` 라 후보가 |자간| 만큼 **넓어져** 판정만 엄격해진다
+        // (13pt·−8% 에서 +103 HWPUNIT). 실제 부족분은 21~30 HU 였고, 이 한 항 때문에 줄마다
+        // 마지막 한 글자가 다음 줄로 밀렸다(문서 전체 줄 284 → 290).
+        // 자간 ≥ 0 이면 `max(0)` 은 항등이라 종전 동작이 그대로다.
+        .map(|spacing| to_hwp(*spacing).max(0))
         .unwrap_or(0)
 }
 
@@ -1288,8 +1354,9 @@ fn text_token_fits_line_hwp(
 ) -> bool {
     let natural_candidate = current_width_hwp + token_width.0;
     let condensed_candidate = condensed_line_width_hwp(natural_candidate, space_savings_hwp);
-    let needs_condense_to_fit = natural_candidate > effective_width_hwp + LINE_BREAK_TOLERANCE
-        && condensed_candidate <= effective_width_hwp + LINE_BREAK_TOLERANCE;
+    let tolerance_hwp = line_break_tolerance_hwp(effective_width_hwp);
+    let needs_condense_to_fit = natural_candidate > effective_width_hwp + tolerance_hwp
+        && condensed_candidate <= effective_width_hwp + tolerance_hwp;
     let condense_pull_allowed = !needs_condense_to_fit
         || condense_fit_can_pull_next_token(
             current_width_hwp,
@@ -1298,7 +1365,7 @@ fn text_token_fits_line_hwp(
             max_font_size,
         );
 
-    condensed_candidate <= effective_width_hwp + LINE_BREAK_TOLERANCE && condense_pull_allowed
+    condensed_candidate <= effective_width_hwp + tolerance_hwp && condense_pull_allowed
 }
 
 /// Greedy line-fill continuation.
@@ -1671,7 +1738,19 @@ fn fill_one_interval(
                 // admitted the same glyph on 36966 − 980 = 35708 ≤ 36587. Sharing
                 // `text_token_fits_line_hwp` makes all six rows of that cell
                 // character-identical to the HWP 2024 PDF.
-                if *end_idx - *start_idx == 1 && *start_idx > cursor.line_start_idx && token_fits {
+                let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
+                    .iter()
+                    .all(|c| is_line_start_forbidden(*c));
+                if tail_all_line_start_forbidden && *start_idx > cursor.line_start_idx && token_fits
+                {
+                    // 글자 모드의 후행 금칙 흡수분도 같은 "줄 끝 자리"로 본다.
+                    //
+                    // 한컴은 줄 끝 금칙 문자를 상자 밖에 매달지 않고 **그 줄 안에** 넣는다
+                    // (실측: 정렬줄 중 금칙으로 끝나는 21줄 전부가 상자 안, 줄머리 금칙 0건).
+                    // 종전 `== 1` 가드는 흡수가 만든 2글자 묶음(`력·`)을 폭 판정에 통과하고도
+                    // 줄 끝 후보에서 배제해, 줄이 묶음 **앞** 한 글자로 되감겼다 — 원본이
+                    // `…상호 협력·` 로 끝내는 자리에서 우리는 `…상호 협` 으로 끝나 두 글자를 잃었다.
+                    // 1글자 토큰은 아래 슬라이스가 비어 `all()` 이 참이라 종전 동작 그대로다.
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
                         // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
@@ -1950,7 +2029,11 @@ fn fill_lines_before_cursor(
                     *max_font_size,
                 );
                 // Same single predicate as the live fill — see the note there.
-                if *end_idx - *start_idx == 1 && *start_idx > line_start_idx && token_fits {
+                let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
+                    .iter()
+                    .all(|c| is_line_start_forbidden(*c));
+                // 위 `fill_one_interval` 과 같은 계약(흡수 묶음도 줄 끝 후보).
+                if tail_all_line_start_forbidden && *start_idx > line_start_idx && token_fits {
                     let c = text_chars[*start_idx];
                     let allow_break = if is_hangul(c) {
                         // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
@@ -2179,6 +2262,22 @@ fn char_level_break_hwp(
     }
 
     (results, lw, line_max_fs)
+}
+
+/// 문단이 참조하는 글자모양 중 가장 큰 글꼴 크기(px). 글자모양이 없으면 None.
+///
+/// 글자가 없는 문단(글자처럼 취급되는 표·그림만 든 문단)은 줄에 글자 폭이 없어 `max_font_size` 가
+/// 0 으로 떨어지고, 그러면 줄간격 기준이 12px 하드코딩으로 내려간다. 한컴은 그 문단의
+/// 글자모양 높이를 그대로 줄간격 기준으로 쓴다(실측: 14pt 문단 표 줄 spacing 912 HU, 12px 폴백은 585).
+fn paragraph_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<f64> {
+    para.char_shapes
+        .iter()
+        .filter_map(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+        .map(|style| style.font_size)
+        .filter(|fs| *fs > 0.0)
+        .fold(None, |acc: Option<f64>, fs| {
+            Some(acc.map_or(fs, |a| a.max(fs)))
+        })
 }
 
 fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
@@ -2432,8 +2531,9 @@ fn inline_control_requires_own_line(
         &[],
     ));
 
-    (control_width > available_hwp + LINE_BREAK_TOLERANCE
-        || prefix_width + control_width > available_hwp + LINE_BREAK_TOLERANCE)
+    let tolerance_hwp = line_break_tolerance_hwp(available_hwp);
+    (control_width > available_hwp + tolerance_hwp
+        || prefix_width + control_width > available_hwp + tolerance_hwp)
         .then_some((position, height))
 }
 
@@ -3502,10 +3602,15 @@ fn reflow_line_segs_impl(
 
             let orig_line_segs = para.line_segs.clone();
             let mut new_line_segs = Vec::with_capacity(line_specs.len());
+            // 개체만 있는 줄도 줄간격 기준은 **그 문단의 글자모양 크기**다. 한컴은 개체 높이를
+            // line_height 에만 반영하고 spacing 은 글자 높이로 계산한다(정답지 개체 줄 18/18:
+            // 165%·14pt 문단의 표 줄 spacing 912 = 1400×0.65, 160%·10pt 문단의 그림 줄 600 = 1000×0.6).
+            // 0.0 을 넘기면 내부 기본 12px(900 HU)로 떨어져 585 가 되고, 쪽마다 327 HU 씩 덜 쌓인다.
+            let paragraph_font_px = paragraph_font_size_px(para, styles).unwrap_or(12.0);
             for (line_idx, (start_pos, _line_width, height_hwp)) in
                 line_specs.into_iter().enumerate()
             {
-                let mut seg = make_line_seg(start_pos, 0.0);
+                let mut seg = make_line_seg(start_pos, paragraph_font_px);
                 if let Some(template) = orig_line_segs
                     .get(line_idx)
                     .or_else(|| orig_line_segs.first())
@@ -3535,12 +3640,7 @@ fn reflow_line_segs_impl(
         } else {
             // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
             // 치수를 복사하면 TAC 그림 높이까지 상속되므로 vpos 원점만 보존한다.
-            let font_size = para
-                .char_shapes
-                .first()
-                .and_then(|char_shape| styles.char_styles.get(char_shape.char_shape_id as usize))
-                .map(|style| style.font_size)
-                .unwrap_or(12.0);
+            let font_size = paragraph_font_size_px(para, styles).unwrap_or(12.0);
             let mut seg = make_line_seg(0, font_size);
             if let Some(template) = orig.as_ref() {
                 seg.vertical_pos = template.vertical_pos;
@@ -3757,7 +3857,7 @@ fn reflow_line_segs_impl(
         let fs = if lb.max_font_size > 0.0 {
             lb.max_font_size
         } else {
-            12.0
+            paragraph_font_size_px(para, styles).unwrap_or(12.0)
         };
         let mut text_seg = make_line_seg(utf16_start, fs);
         if forced_inline_line.is_some_and(|(position, _)| position == lb.start_idx) {
@@ -3794,7 +3894,10 @@ fn reflow_line_segs_impl(
     }
 
     if new_line_segs.is_empty() {
-        new_line_segs.push(make_line_seg(0, 12.0));
+        new_line_segs.push(make_line_seg(
+            0,
+            paragraph_font_size_px(para, styles).unwrap_or(12.0),
+        ));
     }
 
     if forced_inline_line.is_none() && inline_controls.is_empty() {
@@ -4064,9 +4167,20 @@ fn compute_line_spacing_hwp(
             // line=60% 를 advance 13.6px(=lh×0.6)로 렌더한다 (36398700 pi20
             // 한글 재저장 anchor 1020HU 실측). 종전 .max(0) 클램프는 fresh
             // 합성을 lh 그대로(+9px/문단) 팽창시켰다.
-            // ls_value<=0 은 결손 데이터(속성 미지정 파싱 0) — 음수 적용 금지.
-            if ls_value > 0.0 {
-                (line_height_hwp as f64 * (ls_value - 100.0) / 100.0).round() as i32
+            // **0% 는 한컴이 실제로 쓰는 값이다.** `secPr`·`colPr`·`pageNum`
+            // 만 든 구역정의 첫 문단에 `PERCENT 0` 을 주어 advance 0(높이 없음)으로 만든다.
+            // 한글 저장본도 `spacing = -vertsize` 로 같은 값을 적는다(실측 26/26 일치,
+            // 본 문서 paraPr 43: vertsize 1500 · spacing −1500 · 다음 문단 vertpos 0).
+            // 종전 `> 0.0` 가드가 이를 결손으로 보고 0 으로 깎아 **재조판 시 본문이 20px
+            // 내려갔다**(원본 130.8 ↔ 재조판 150.8px, 변형 4종으로 잔차 0.000 확인).
+            // 결손 판정은 음수로 좁힌다 — 미지정 0 은 파서에서 160% 로 채운다.
+            if ls_value >= 0.0 {
+                // 한컴은 퍼센트 줄간격을 **4 HWPUNIT 배수로** 반올림한다(half away from zero).
+                // 165%×1400 → 910 이 아니라 912, 145%×600 → 272, 145%×500 → 224.
+                // 코퍼스 101,321줄(개체 없는 문단): 현재식 75.2% ↔ 4배수 스냅 98.9% 일치.
+                // 160·140·130·100·200% 는 원래 4 배수라 무변화 — 바뀌는 것은 145·165·105·110·115% 계열뿐.
+                let raw = line_height_hwp as f64 * (ls_value - 100.0) / 100.0;
+                ((raw.abs() / 4.0 + 0.5).floor() * 4.0 * raw.signum()) as i32
             } else {
                 0
             }

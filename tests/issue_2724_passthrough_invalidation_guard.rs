@@ -594,6 +594,8 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
 /// 증가는 통과하며 갱신을 안내한다. 함수 단위 검사(검사 1)가 못 잡는 "한 함수 안 여러
 /// 무효화 갈래 중 일부만 제거" 를 잡는 것이 목적이다.
 const INVALIDATION_LEDGER: &[(&str, usize)] = &[
+    // 한글 클립보드 문서모델 붙여넣기 — 서식표 병합 1 · 구역 raw_stream 1 · 진입점 1
+    ("commands/foreign_paste.rs", 3),
     ("commands/clipboard.rs", 4),
     ("commands/footnote_ops.rs", 6),
     ("commands/formatting.rs", 16),

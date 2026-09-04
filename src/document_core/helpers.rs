@@ -1181,10 +1181,21 @@ pub(crate) fn parse_html_attr_f64(tag: &str, attr: &str) -> Option<f64> {
             let after = &tag[start + pat.len()..];
             let delim = if pat.ends_with('"') { '"' } else { '\'' };
             if let Some(end) = after.find(delim) {
-                let val_str = &after[..end];
-                // "200px" → 200.0, "200" → 200.0
-                let num_str = val_str.trim_end_matches("px").trim();
-                return num_str.parse().ok();
+                let val_str = &after[..end].trim();
+                // 한글은 `width="97pt"` 로 낸다 — pt 를 px 로 읽으면 그림이 25% 작아진다.
+                // "200px"·"200" → 200.0, "97pt" → 129.3(px), "2cm"·"20mm" 도 px 로 환산.
+                let (num_str, factor) = if let Some(v) = val_str.strip_suffix("pt") {
+                    (v, 96.0 / 72.0)
+                } else if let Some(v) = val_str.strip_suffix("cm") {
+                    (v, 96.0 / 2.54)
+                } else if let Some(v) = val_str.strip_suffix("mm") {
+                    (v, 96.0 / 25.4)
+                } else if let Some(v) = val_str.strip_suffix("in") {
+                    (v, 96.0)
+                } else {
+                    (val_str.trim_end_matches("px"), 1.0)
+                };
+                return num_str.trim().parse::<f64>().ok().map(|n| n * factor);
             }
         }
     }

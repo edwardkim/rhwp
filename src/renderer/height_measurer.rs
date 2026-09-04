@@ -1004,7 +1004,8 @@ impl HeightMeasurer {
                         let (base, extra) = match ls_type {
                             LineSpacingType::Percent => {
                                 // [#2279] sub-100% 퍼센트 음수 gap 존중 (line_breaking 정합)
-                                let e = if ls_val > 0.0 {
+                                // 0% 는 실값이다 — line_breaking 과 같은 계약(>=)으로 맞춘다.
+                                let e = if ls_val >= 0.0 {
                                     max_fs * (ls_val - 100.0) / 100.0
                                 } else {
                                     0.0
@@ -2913,6 +2914,18 @@ impl HeightMeasurer {
             // 마지막 글줄을 clip 한다 (exam_eng 선택지 ① 1.3px, 심사서식
             // 반 줄 미만 초과). 한글은 그 행을 내용에 맞춰 키운다.
             let mut floors = vec![0.0f64; row_count];
+            // 🔴 저장 LINE_SEG 로 하한을 만들 수 없는 표는 하한이 0 이 되어
+            // "이 행은 얼마든지 눌러도 된다"가 된다 — 바로 위 #6030 이 막으려던 클립이
+            // 클립보드 재구성·생성계 문서에서 그대로 재발한다(실측: 행 52.91×3 이
+            // 47.86/62.99/47.86 으로 눌려 셋째 줄 baseline 438.18 이 클립 바닥 436.03 아래로
+            // 나가 "확보" 가 괘선에 잘렸다). 저장분이 **하나라도** 있는 표는 종전 그대로 둔다.
+            // (`any(!no_ls)` 로 판정한다. `all(no_ls)` 는 문단이 없는 셀에서 공허참이 되어
+            //  정상 저장 문서까지 이 경로로 새어 든다.)
+            let table_has_stored_segs = table
+                .cells
+                .iter()
+                .flat_map(|c| c.paragraphs.iter())
+                .any(|p| !crate::renderer::para_has_no_stored_line_segs(p));
             for cell in &table.cells {
                 let r = cell.row as usize;
                 if cell.row_span != 1 || r >= row_count || cell.paragraphs.is_empty() {
@@ -2923,6 +2936,14 @@ impl HeightMeasurer {
                     .iter()
                     .any(crate::renderer::para_has_no_stored_line_segs)
                 {
+                    if !table_has_stored_segs {
+                        // 2단계에서 이미 잰 이 행의 콘텐츠 필요 높이(상하 여백 포함)를
+                        // 하한으로 쓴다. 새 계산·새 필드 없이 기존 값을 그대로 쓴다.
+                        let floor = content_row_floor[r].min(row_heights[r]);
+                        if floor > floors[r] {
+                            floors[r] = floor;
+                        }
+                    }
                     continue;
                 }
                 let content_hu = cell
