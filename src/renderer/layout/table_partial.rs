@@ -2393,15 +2393,42 @@ impl LayoutEngine {
                                         if let Some(vpos_px) = stored_flow_vpos {
                                             content_top + vpos_px + v_off
                                         } else {
-                                            match effective_align {
-                                                VerticalAlign::Top => content_top + v_off,
+                                            // [#6782] 오프셋이 그림을 **자기 칸 밖으로 통째로**
+                                            // 밀어내면 한/글은 그 오프셋을 쓰지 않는다.
+                                            //
+                                            // 한/글 2020 오라클 실측 (`1480000-201900042`
+                                            // 76~78쪽 슬라이스, 그 표의 그림 12장):
+                                            //
+                                            //   문제 그림 h=65.7   한/글 y=235.9
+                                            //   rhwp 종전            y=−233.4  ← 용지 밖, 소실
+                                            //   오프셋 무시 시       y=238.7   (한/글과 2.8px)
+                                            //
+                                            //   voff −70,819HU = −944.25px 를 그대로 실으면
+                                            //   232.1 + (79.05 − 65.8 − 944.25)/2 = −233.4.
+                                            //
+                                            // ⚠ **음수라고 무조건 버리면 안 된다.** `#5734`
+                                            // (156684746 9쪽 왼쪽 칸)의 첫 그림도 저장 vpos 가
+                                            // 0이라 이 갈래로 오는데 −1,079HU(14.4px)는
+                                            // 적용되는 것이 정답이다(그 핀이 잠그고 있다).
+                                            // 갈리는 축은 부호도 크기도 아니라 **결과가 칸과
+                                            // 겹치는가**다.
+                                            //
+                                            //   #6782  y+h = −167.6 ≤ 칸 상단 232.1  → 칸 밖 → 무시
+                                            //   #5734  y+h =  701.1 >  칸 상단 631.0  → 겹침 → 적용
+                                            let place = |off: f64| match effective_align {
+                                                VerticalAlign::Top => content_top + off,
                                                 VerticalAlign::Center => {
-                                                    content_top
-                                                        + (inner_height - pic_h + v_off) / 2.0
+                                                    content_top + (inner_height - pic_h + off) / 2.0
                                                 }
                                                 VerticalAlign::Bottom => {
-                                                    content_top + inner_height - pic_h - v_off
+                                                    content_top + inner_height - pic_h - off
                                                 }
+                                            };
+                                            let with_offset = place(v_off);
+                                            if v_off < 0.0 && with_offset + pic_h <= content_top {
+                                                place(0.0)
+                                            } else {
+                                                with_offset
                                             }
                                         }
                                     } else {
