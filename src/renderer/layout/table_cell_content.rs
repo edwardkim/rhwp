@@ -822,21 +822,9 @@ impl LayoutEngine {
         let row_count = table.row_count as usize;
         let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
 
-        // 열 폭 계산
-        let mut col_widths = vec![0.0f64; col_count];
-        for cell in &table.cells {
-            if cell.col_span == 1 && (cell.col as usize) < col_count {
-                let w = hwpunit_to_px(cell.width as i32, self.dpi);
-                if w > col_widths[cell.col as usize] {
-                    col_widths[cell.col as usize] = w;
-                }
-            }
-        }
-        for c in 0..col_count {
-            if col_widths[c] <= 0.0 {
-                col_widths[c] = container.width / col_count as f64;
-            }
-        }
+        // 본문 표와 같이 병합 셀의 선언 폭으로 미지 열 폭을 먼저 푼다.
+        // 컨테이너 균등 폭으로 채우면 뒤의 비례 축소가 정상 단일 셀까지 줄인다.
+        let mut col_widths = self.resolve_column_widths(table, col_count);
 
         // 글상자 내부 표: 셀 너비 합이 컨테이너 폭을 초과하면 비례 축소
         let col_sum: f64 = col_widths.iter().sum();
