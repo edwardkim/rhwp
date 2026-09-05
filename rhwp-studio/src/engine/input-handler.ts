@@ -2436,7 +2436,15 @@ export class InputHandler {
           changed = true;
         }
         // [Task #2370] 이미 빈 칸만 골랐으면 문서가 그대로다 → 기록하지 않는다.
-        return changed ? cursorBefore : null;
+        if (!changed) return null;
+        // 캐럿이 방금 비운 칸 안이면 그 칸의 시작으로 내린다. `moveTo` 는 클램프하지 않으므로
+        // 지우기 전 오프셋을 그대로 돌려주면 빈 칸에 범위 밖 위치가 남고, 이후 편집이
+        // 문단 길이 검사에 걸린다. 문단이 여럿이던 칸은 cellParaIndex 도 범위 밖이 된다.
+        const caretCleared = cursorBefore.cellIndex !== undefined
+          && block.cellIndices.includes(cursorBefore.cellIndex);
+        return caretCleared
+          ? { ...cursorBefore, cellParaIndex: 0, charOffset: 0 }
+          : cursorBefore;
       },
       selectionBefore: selection ? { mode: 'cellBlock', state: selection } : null,
     });
