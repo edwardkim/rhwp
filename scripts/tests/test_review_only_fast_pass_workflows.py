@@ -23,13 +23,6 @@ WORKER_PREFLIGHTS = {
         "true",
         "false",
     ),
-    "adapter": (
-        ROOT / ".github/workflows/adapter-diff.yml",
-        "\n\n      # 기준선 병합을 fast-pass bridge로",
-        "adapter_required",
-        "false",
-        "true",
-    ),
 }
 RESOLUTION_CHECK = ROOT / "scripts/verify_review_only_merge_resolution.py"
 

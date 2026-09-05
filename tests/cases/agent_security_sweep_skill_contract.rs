@@ -65,8 +65,6 @@ fn skill_frontmatter_and_index() {
         "edit redact",
         "edit sanitize",
         "--no-raw",
-        "untrustedContent",
-        "untrustedFields",
         "findingCount == 0",
         "clean == true",
         "info → digest → fields → inspect",

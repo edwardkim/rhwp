@@ -3,7 +3,6 @@
 mod diagnostics;
 mod edit;
 mod metadata;
-mod protocol;
 mod public;
 mod sink;
 
@@ -49,7 +48,6 @@ fn legacy_detail_lines(head: &str, sub: Option<&str>) -> Vec<String> {
     sink::collect(head, sub, || {
         public::print();
         edit::print();
-        protocol::print();
         diagnostics::print();
     })
 }

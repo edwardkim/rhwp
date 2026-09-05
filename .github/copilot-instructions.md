@@ -10,9 +10,8 @@ rhwp 는 Rust+WASM 한글(HWP/HWPX/HWP3/HML) 문서 엔진이고, CLI `--json` �
    결정 표·봉투 필드 사전·실패 사전이 한 곳에 있다. 명령 자기서술은 `rhwp capabilities`.
 2. 판정은 화면 출력이 아니라 **`--json` 봉투와 종료 코드**(0 성공/1 런타임/2 사용법/3 판정
    데이터, #2707)로 한다.
-3. 문서 편집 작업은 영수증과 함께 남기는 것을 권장한다 —
-   `rhwp replay --plan-json <계획> --capsule work.capsule.json` (연속 작업은 `--parent`
-   로 계보 연결, 폴더 재검증은 `rhwp audit`). 상세: AGENTS.md 의 "작업 증빙" 절.
+3. 문서 편집 작업은 판정 근거(`--json` 봉투 원문·종료 코드)를 PR 에 남긴다.
+   상세: AGENTS.md 의 "작업 증빙" 절.
 4. PR 은 base `devel`, 브랜치는 최신 `upstream/devel` 기준. PR 본문은
    [템플릿](pull_request_template.md)의 체크리스트를 채운다.
 5. 렌더링·레이아웃 변경은 시각 검증 근거(PDF/SVG 비교)를 남긴다.

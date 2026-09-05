@@ -6,7 +6,6 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{ConversionVerifyOptions, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -417,13 +416,10 @@ fn batch_record(mode: BatchMode<'_>, path: &str) -> serde_json::Value {
 }
 
 pub(crate) fn fail_record(path: &str, message: String) -> serde_json::Value {
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": path,
-            "error": message,
-            "exitClass": "runtime",
-        }),
-        "batch",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": path,
+        "error": message,
+        "exitClass": "runtime",
+    })
 }

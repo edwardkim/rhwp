@@ -1,5 +1,0 @@
-{
-  "surface": "hwp_extract_data / hwp_doc_extract_data",
-  "core": "extract_data",
-  "envelope": "extract_data_json_value"
-}

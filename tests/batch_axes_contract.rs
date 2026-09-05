@@ -259,58 +259,6 @@ fn capabilities_batch_list_includes_new_axes() {
     }
 }
 
-#[test]
-fn mcp_batch_tools_are_invocable_from_their_declaration() {
-    // [#3346] MCP 도구는 **선언만 보고 호출**할 수 있어야 한다. `--query` 가 필수인
-    // search 축을 인자 자리표시자 없이 hwp_batch 의 enum 에만 넣으면, 매니페스트를
-    // 따르는 클라이언트가 `batch search --json` 을 만들어 항상 exit 2 를 받는다.
-    // 그래서 search 는 전용 도구(hwp_batch_search)로 분리한다.
-    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
-        .args(["capabilities", "--mcp"])
-        .output()
-        .expect("rhwp 실행 실패");
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("MCP JSON");
-    let tools = v["tools"].as_array().expect("tools");
-
-    let batch = tools
-        .iter()
-        .find(|t| t["name"] == "hwp_batch")
-        .expect("hwp_batch 도구");
-    let subs: Vec<&str> = batch["inputSchema"]["properties"]["subcommand"]["enum"]
-        .as_array()
-        .expect("subcommand enum")
-        .iter()
-        .filter_map(|s| s.as_str())
-        .collect();
-    assert!(
-        !subs.contains(&"search"),
-        "search 는 --query 가 필수라 hwp_batch 로는 호출할 수 없습니다: {subs:?}"
-    );
-    assert!(
-        !subs.contains(&"convert"),
-        "convert 는 파일을 쓰므로 hwp_batch MCP 도구로 호출할 수 없습니다: {subs:?}"
-    );
-
-    let search = tools
-        .iter()
-        .find(|t| t["name"] == "hwp_batch_search")
-        .expect("hwp_batch_search 도구가 있어야 합니다");
-    let required: Vec<&str> = search["inputSchema"]["required"]
-        .as_array()
-        .expect("required")
-        .iter()
-        .filter_map(|s| s.as_str())
-        .collect();
-    assert!(required.contains(&"query"), "{search}");
-
-    // 인자 템플릿에 {query} 자리표시자가 실제로 있어야 값을 넘길 수 있다.
-    let args_str = search["cli"]["args"].to_string();
-    assert!(
-        args_str.contains("{query}"),
-        "cli.args 에 {{query}} 자리표시자가 필요합니다: {args_str}"
-    );
-}
-
 // ── [#3626] convert 축 ─────────────────────────────────────────────────────
 
 /// convert 축은 파일을 쓴다 — 테스트마다 격리된 임시 폴더를 쓴다.
@@ -728,9 +676,5 @@ fn capabilities_batch_declares_convert_axis_and_exit_aggregation() {
     assert!(
         v["batch"]["exitAggregation"].is_string(),
         "종료 코드 집계 규칙이 자기서술에 있어야 합니다: {v}"
-    );
-    assert!(
-        v["batch"]["mcp"]["excluded"]["convert"].as_str().is_some(),
-        "convert 의 CLI-only 경계를 자기서술해야 합니다: {v}"
     );
 }

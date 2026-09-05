@@ -329,7 +329,7 @@ fn convert_json_envelope_with_verify() {
 
 #[test]
 fn capabilities_reports_output_axis_json() {
-    // 드리프트 가드: 자기서술과 MCP 선언이 새 계약을 함께 실어야 한다.
+    // 드리프트 가드: 자기서술이 새 계약을 실어야 한다.
     let output = run(&["capabilities"]);
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("capabilities JSON");
     for name in ["export-pdf", "export-markdown", "export-hwpx"] {
@@ -343,17 +343,5 @@ fn capabilities_reports_output_axis_json() {
             entry["json"], true,
             "{name} 은 json:true 여야 합니다: {entry}"
         );
-    }
-
-    let mcp = run(&["capabilities", "--mcp"]);
-    let m: serde_json::Value = serde_json::from_slice(&mcp.stdout).expect("mcp JSON");
-    let tools: Vec<&str> = m["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .filter_map(|t| t["name"].as_str())
-        .collect();
-    for t in ["hwp_export_pdf", "hwp_export_markdown", "hwp_convert_hwpx"] {
-        assert!(tools.contains(&t), "{t} 가 MCP 선언에 없습니다: {tools:?}");
     }
 }

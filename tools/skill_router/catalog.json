@@ -2,27 +2,6 @@
   "schemaVersion": "1.0",
   "skills": [
     {
-      "id": "rhwp-agent-surface",
-      "capabilityId": "rhwp-agent-surface",
-      "registrationId": "LEGACY-e79f11308",
-      "path": ".agents/skills/rhwp-agent-surface/SKILL.md",
-      "authority": "mydocs/manual/agent_surface_playbook.md",
-      "triggers": [
-        "표면 추가/새 MCP 도구/새 --json 명령",
-        "3층 계약",
-        "capabilities 가 SSOT",
-        "드리프트 가드",
-        "판정은 데이터",
-        "조각을 더하는 수용 기준"
-      ],
-      "intents": ["add-surface", "capabilities-ssot"],
-      "nonOverlap": "호스트 부착·CLI 명령 매핑·대전 항해를 다시 쓰지 않고, 새 CLI/MCP 이름·DocumentCore 편집 로직·gym 경로를 발명하지 않는다.",
-      "probe": {
-        "sample": "samples/basic/english.hwp",
-        "render": "export-svg"
-      }
-    },
-    {
       "id": "rhwp-bug-hunter",
       "capabilityId": "rhwp-bug-hunter",
       "registrationId": "LEGACY-e79f11308",
@@ -33,7 +12,9 @@
         "정답지와 비교해",
         "playbook 여정 실행"
       ],
-      "intents": ["hunt-bug"],
+      "intents": [
+        "hunt-bug"
+      ],
       "nonOverlap": "gym·새 CLI·DocumentCore 수정은 책임 밖이며, 수정 구현은 요청 시 별도 작업이다.",
       "probe": {
         "sample": "samples/basic/request.hwp",
@@ -53,7 +34,9 @@
         "서식 하나에 여러 명 데이터 채워(메일머지)",
         "rhwp batch"
       ],
-      "intents": ["batch-folder"],
+      "intents": [
+        "batch-folder"
+      ],
       "nonOverlap": "새 batch 축·전역 --password·gym·이웃 스킬 재작성은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -75,7 +58,9 @@
         "서비스 루프 감시/확장",
         "이 요청 유형 자동화해줘"
       ],
-      "intents": ["run-request-queue"],
+      "intents": [
+        "run-request-queue"
+      ],
       "nonOverlap": "코어 구현 변경 판단·한컴 최종 판정·머지 판단·표 밖 goal 유사도 실행은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -97,7 +82,10 @@
         "HWPX→HWP 저장 차이 분석",
         "rhwp <명령>"
       ],
-      "intents": ["analyze-export", "debug-layout"],
+      "intents": [
+        "analyze-export",
+        "debug-layout"
+      ],
       "nonOverlap": "구현 변경·한컴 최종 판정은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -117,7 +105,9 @@
         "대전 재생성/문서 신선도",
         "rhwp capabilities 항해"
       ],
-      "intents": ["navigate-codex"],
+      "intents": [
+        "navigate-codex"
+      ],
       "nonOverlap": "생성 장 수기 수정·새 CLI·DocumentCore 편집·이웃 스킬 재작성·gym은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -137,7 +127,10 @@
         "버그 고쳐서 제출",
         "기여 절차"
       ],
-      "intents": ["open-pr", "contribute"],
+      "intents": [
+        "open-pr",
+        "contribute"
+      ],
       "nonOverlap": "리뷰·머지 판단은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -158,7 +151,9 @@
         "이 문서의 날짜/금액 뽑아줘",
         "긴 문서인데 다 읽지 말고 파악해줘"
       ],
-      "intents": ["triage-doc"],
+      "intents": [
+        "triage-doc"
+      ],
       "nonOverlap": "편집·보안 판정·표 왕복·서식 채움은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -178,7 +173,9 @@
         "/rhwp-exam-ingest",
         "시험문제 변환"
       ],
-      "intents": ["ingest-exam"],
+      "intents": [
+        "ingest-exam"
+      ],
       "nonOverlap": "일반 문서 양식 생성은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -198,7 +195,9 @@
         "문서 탐색/뭘 하고 놀지",
         "rhwp explore"
       ],
-      "intents": ["explore-doc"],
+      "intents": [
+        "explore-doc"
+      ],
       "nonOverlap": "gym·새 CLI·편집 로직·이웃 스킬 재작성은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -219,7 +218,9 @@
         "고객 회신 초안",
         "이거 버그면 이슈까지"
       ],
-      "intents": ["triage-symptom"],
+      "intents": [
+        "triage-symptom"
+      ],
       "nonOverlap": "코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -238,7 +239,9 @@
         "fidelity_compare 돌려줘",
         "한컴이 뽑은 PDF랑 rhwp가 같은지"
       ],
-      "intents": ["compare-fidelity"],
+      "intents": [
+        "compare-fidelity"
+      ],
       "nonOverlap": "자기 일관성 render-diff·버그 헌팅 여정·새 비교 CLI·gym·DocumentCore 수정은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/request.hwp",
@@ -259,78 +262,12 @@
         "서식에 뭘 채워야 하는지 알려줘",
         "제출용으로 만들어줘"
       ],
-      "intents": ["fill-form"],
+      "intents": [
+        "fill-form"
+      ],
       "nonOverlap": "gym·새 edit 로직·표 칸 set-cell·온보딩/MCP/안전편집/출처/트리아지 스킬 재작성은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/BlogForm_BookReview.hwp",
-        "render": "export-svg"
-      }
-    },
-    {
-      "id": "rhwp-handoff",
-      "capabilityId": "rhwp-handoff",
-      "registrationId": "LEGACY-e79f11308",
-      "path": ".agents/skills/rhwp-handoff/SKILL.md",
-      "authority": "tools/handoff/orchestrator.py",
-      "triggers": [
-        "세션 핸드오프",
-        "컨텍스트 부족해서 넘겨",
-        "이어서 해",
-        "시트 리필",
-        "orchestrator.py",
-        "--parent 캡슐",
-        "result.json 읽어",
-        "작업 인수인계"
-      ],
-      "intents": ["handoff-session"],
-      "nonOverlap": "단건 증명(work-receipt)을 재작성하지 않고, 새 CLI·DocumentCore 편집·gym·named worktree 훔치기는 책임 밖이다.",
-      "probe": {
-        "sample": "samples/basic/english.hwp",
-        "render": "export-svg"
-      }
-    },
-    {
-      "id": "rhwp-knowledge-map",
-      "capabilityId": "rhwp-knowledge-map",
-      "registrationId": "LEGACY-e79f11308",
-      "path": ".agents/skills/rhwp-knowledge-map/SKILL.md",
-      "authority": "mydocs/manual/agent_knowledge_map.md",
-      "triggers": [
-        "지식 지도",
-        "어디 문서부터",
-        "이 필드가 뭐야",
-        "llms.txt 다음",
-        "capabilities 재측정",
-        "last_verified stale",
-        "바이너리 버전 불일치"
-      ],
-      "intents": ["find-canonical"],
-      "nonOverlap": "rhwp-codex(대전 항해)·rhwp-agent-surface(3층 계약)를 다시 쓰지 않고, 전용 명령·gym·정본에 없는 필드 이름은 책임 밖이다.",
-      "probe": {
-        "sample": "samples/basic/english.hwp",
-        "render": "export-svg"
-      }
-    },
-    {
-      "id": "rhwp-mcp-session",
-      "capabilityId": "rhwp-mcp-session",
-      "registrationId": "LEGACY-1ac20c359",
-      "path": ".agents/skills/rhwp-mcp-session/SKILL.md",
-      "authority": "mydocs/manual/mcp_integration_guide.md",
-      "triggers": [
-        "rhwp 를 MCP로 붙여/등록해",
-        "mcp-serve",
-        ".mcp.json",
-        "세션으로 문서 열어",
-        "hwp_open/hwp_doc_*",
-        "재파싱 없이 반복 조회",
-        "MCP 도구 목록/스키마/레시피 리소스",
-        "프로필로 도구 좁혀"
-      ],
-      "intents": ["attach-mcp"],
-      "nonOverlap": "gym 트레이스·온보딩 닥터·안전 편집·출처 표지·문서 트리아지·새 CLI/도구 발명은 책임 밖이다.",
-      "probe": {
-        "sample": "samples/basic/english.hwp",
         "render": "export-svg"
       }
     },
@@ -348,30 +285,10 @@
         "rhwp 뭐부터",
         ".mcp.json 만들어줘"
       ],
-      "intents": ["onboard-agent"],
-      "nonOverlap": "새 CLI·gym·대신 cargo build·이웃 스킬 편집 절차 복제는 책임 밖이다.",
-      "probe": {
-        "sample": "samples/basic/english.hwp",
-        "render": "export-svg"
-      }
-    },
-    {
-      "id": "rhwp-provenance",
-      "capabilityId": "rhwp-provenance",
-      "registrationId": "LEGACY-1ac20c359",
-      "path": ".agents/skills/rhwp-provenance/SKILL.md",
-      "authority": "mydocs/tech/envelope_provenance.md",
-      "triggers": [
-        "이 값이 문서에서 온 건가",
-        "untrustedFields/출처 표지",
-        "export-provenance-map",
-        "프롬프트 주입 방어",
-        "신뢰할 수 없는/출처 모르는 문서 처리",
-        "문서 텍스트를 LLM에 넣어도 되나",
-        "inspect injection"
+      "intents": [
+        "onboard-agent"
       ],
-      "intents": ["mark-provenance"],
-      "nonOverlap": "새 CLI 추가·문서 검열·gym 시나리오·온보딩/MCP/safe-edit/doc-triage 스킬 변경은 책임 밖이다.",
+      "nonOverlap": "새 CLI·gym·대신 cargo build·이웃 스킬 편집 절차 복제는 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
         "render": "export-svg"
@@ -388,7 +305,9 @@
         "서식 채워/표 CSV/마스킹/첨부 안전/메일머지/레이아웃 비교/폴더 일괄/내보내기 전 점검",
         "07·08 레시피"
       ],
-      "intents": ["pick-recipe"],
+      "intents": [
+        "pick-recipe"
+      ],
       "nonOverlap": "gym·새 CLI·이웃 스킬(form-fill/table-exchange/security-sweep/bulk-pipeline/visual-regression) 재작성은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/BlogForm_BookReview.hwp",
@@ -413,7 +332,9 @@
         "dry-run으로 먼저",
         "run 계획서"
       ],
-      "intents": ["safe-edit"],
+      "intents": [
+        "safe-edit"
+      ],
       "nonOverlap": "새 edit 하위명령·새 run action·gym·온보딩/MCP/출처/트리아지 스킬 재작성은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/BlogForm_BookReview.hwp",
@@ -434,7 +355,9 @@
         "메타데이터 지워줘",
         "rhwp inspect/redact/sanitize"
       ],
-      "intents": ["security-sweep"],
+      "intents": [
+        "security-sweep"
+      ],
       "nonOverlap": "새 CLI·탐지 로직 발명·gym·워터마크 제거는 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -453,7 +376,9 @@
         "create a skill",
         "SKILL.md 작성"
       ],
-      "intents": ["author-skill"],
+      "intents": [
+        "author-skill"
+      ],
       "nonOverlap": "새 rhwp CLI·이웃 스킬 본문·test_route.py·리뷰·머지 판단·gym은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -473,7 +398,9 @@
         "이 서식 채워줘",
         "execution graph"
       ],
-      "intents": ["route"],
+      "intents": [
+        "route"
+      ],
       "nonOverlap": "다른 스킬 본문 구현·재작성·새 rhwp CLI·리뷰·머지 판단·gym은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -494,7 +421,9 @@
         "주장마다 쪽·문단 좌표",
         "chief 목표형 요청"
       ],
-      "intents": ["build-strategy"],
+      "intents": [
+        "build-strategy"
+      ],
       "nonOverlap": "근거 없는 전망·예측 생성·코어 구현 변경 판단·한컴 최종 판정·머지 판단은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/english.hwp",
@@ -514,7 +443,9 @@
         "표↔스프레드시트 왕복",
         "표 셀 하나만 고쳐줘"
       ],
-      "intents": ["table-csv-roundtrip"],
+      "intents": [
+        "table-csv-roundtrip"
+      ],
       "nonOverlap": "새 하위명령·DocumentCore 표 크기 변경·gym·이웃 스킬 재작성·csv-to-chart는 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/issue1994_behindtext_table_20200830.hwp",
@@ -534,32 +465,12 @@
         "render-diff 돌려줘",
         "바뀐 게 의도한 것뿐인지"
       ],
-      "intents": ["visual-regression"],
+      "intents": [
+        "visual-regression"
+      ],
       "nonOverlap": "gym·새 CLI·이웃 스킬 재작성은 책임 밖이다.",
       "probe": {
         "sample": "samples/basic/request.hwp",
-        "render": "export-svg"
-      }
-    },
-    {
-      "id": "rhwp-work-receipt",
-      "capabilityId": "rhwp-work-receipt",
-      "registrationId": "LEGACY-7e7b3261b",
-      "path": ".agents/skills/rhwp-work-receipt/SKILL.md",
-      "authority": "mydocs/manual/cli_commands.md",
-      "triggers": [
-        "이 작업 증명해/영수증 남겨",
-        "타인 산출물 재현 검증",
-        "작업 캡슐/체인 만들어",
-        "캡슐 폴더 감사",
-        "계보 검증",
-        "재현율",
-        "rhwp replay/audit/lineage"
-      ],
-      "intents": ["attest-work"],
-      "nonOverlap": "새 receipt/prove 명령·gym·귀속/서명 주장·이웃 스킬 재작성은 책임 밖이다.",
-      "probe": {
-        "sample": "samples/basic/english.hwp",
         "render": "export-svg"
       }
     }

@@ -1,6 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "command": "fill-fields",
-  "exit": 3,
-  "verify": { "identical": true, "diffCount": 3 }
-}

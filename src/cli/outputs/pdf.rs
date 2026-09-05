@@ -6,7 +6,6 @@ use std::fs;
 use std::path::Path;
 
 #[cfg(not(target_arch = "wasm32"))]
-use rhwp::provenance;
 #[cfg(not(target_arch = "wasm32"))]
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
@@ -457,19 +456,16 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             };
             println!(
                 "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "source": file_path,
-                        "format": "pdf",
-                        "backend": backend_name,
-                        "output": output_file,
-                        "bytes": pdf_bytes.len(),
-                        "pageCount": page_count,
-                        "renderedCount": pages.len(),
-                    }),
-                    "export-pdf",
-                )
+                serde_json::json!({
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                    "source": file_path,
+                    "format": "pdf",
+                    "backend": backend_name,
+                    "output": output_file,
+                    "bytes": pdf_bytes.len(),
+                    "pageCount": page_count,
+                    "renderedCount": pages.len(),
+                })
             );
         } else {
             println!(

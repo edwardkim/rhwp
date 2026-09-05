@@ -290,20 +290,6 @@
       "noNewCli": true
     },
     {
-      "id": "J022",
-      "title": "세션 반복 조회",
-      "branch": "대량",
-      "steps": [
-        "capabilities --mcp",
-        "mcp-serve",
-        "hwp_open → hwp_doc_* → hwp_close"
-      ],
-      "stop": "X13",
-      "outcome": "rhwp-mcp-session",
-      "notGym": true,
-      "noNewCli": true
-    },
-    {
       "id": "J023",
       "title": "명령 미지 — 검색 폴백",
       "branch": "자기서술",

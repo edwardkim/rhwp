@@ -18,9 +18,7 @@
     "rhwp-bulk-pipeline",
     "rhwp-visual-regression",
     "rhwp-onboarding",
-    "rhwp-mcp-session",
     "rhwp-safe-edit",
-    "rhwp-provenance",
     "rhwp-doc-triage"
   ]
 }

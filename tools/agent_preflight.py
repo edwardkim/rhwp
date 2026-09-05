@@ -352,11 +352,10 @@ def check_fmt(repo: Path, files: list[Path], rep: Report) -> None:
 def load_surface(binary: Path, rep: Report):
     """capabilities 두 축과 help 를 한 번에 읽는다."""
     caps = run([str(binary), "capabilities"])
-    mcp = run([str(binary), "capabilities", "--mcp"])
     helptext = run([str(binary), "--help"])
     try:
         caps_j = json.loads(caps.stdout)
-        mcp_j = json.loads(mcp.stdout)
+        mcp_j = {"tools": []}
     except json.JSONDecodeError as exc:
         rep.fail(
             "표면 읽기",
@@ -890,17 +889,10 @@ def main() -> int:
         else:
             surface = load_surface(binary, rep)
             if surface:
-                caps_j, mcp_j, helptext = surface
-                # argv 예외는 계약 테스트, help 가시성은 CLI catalog가 정본이다.
-                non_argv = load_allowlist(
-                    repo, MCP_CONTRACT, "NON_ARGV_PROPERTIES", {"paths", "password"}, rep
-                )
+                caps_j, _mcp_j, helptext = surface
+                # help 가시성은 CLI catalog가 정본이다.
                 help_hidden = load_help_hidden(repo, rep)
-                mcp_excluded = load_mcp_exclusions(repo, rep)
-                check_mcp_input_schema(mcp_j, rep)
-                check_property_wiring(mcp_j, non_argv, rep)
                 check_help_coverage(caps_j, helptext, help_hidden, rep)
-                check_json_has_mcp_tool(caps_j, mcp_j, mcp_excluded, rep)
                 check_declared_flags_real(binary, caps_j, rep)
                 check_failure_stdout_silent(binary, caps_j, rep)
                 check_undeclared_commands_are_not_invisible(binary, caps_j, helptext, rep)

@@ -555,10 +555,10 @@ fn missing_required_args_is_usage_error() {
 // 4면 배선
 // ---------------------------------------------------------------------------
 
-/// capabilities·MCP·help 세 곳이 함께 갱신돼야 에이전트가 쓸 수 있다
-/// (`table_csv_contract::capabilities_and_mcp_declare_both_commands` 의 짝).
+/// capabilities·help 두 곳이 함께 갱신돼야 에이전트가 쓸 수 있다
+/// (`table_csv_contract::capabilities_and_help_declare_both_commands` 의 짝).
 #[test]
-fn capabilities_and_mcp_declare_both_commands() {
+fn capabilities_and_help_declare_both_commands() {
     let cap = json_of(&run(&["capabilities"]));
     let names: Vec<&str> = cap["commands"]
         .as_array()
@@ -568,22 +568,6 @@ fn capabilities_and_mcp_declare_both_commands() {
         .collect();
     for expected in ["chart-to-csv", "csv-to-chart"] {
         assert!(names.contains(&expected), "capabilities 누락: {expected}");
-    }
-
-    let mcp = json_of(&run(&["capabilities", "--mcp"]));
-    let tools = mcp["tools"].as_array().expect("tools");
-    for (tool_name, command) in [
-        ("hwp_chart_to_csv", "chart-to-csv"),
-        ("hwp_csv_to_chart", "csv-to-chart"),
-    ] {
-        let t = tools
-            .iter()
-            .find(|t| t["name"] == tool_name)
-            .unwrap_or_else(|| panic!("MCP 도구 누락: {tool_name}"));
-        assert_eq!(t["cli"]["command"], command, "{t}");
-        assert_eq!(t["inputSchema"]["type"], "object", "{t}");
-        assert!(t["inputSchema"]["properties"].is_object(), "{t}");
-        assert!(t["inputSchema"]["required"].is_array(), "{t}");
     }
 
     let help = run(&["--help"]);

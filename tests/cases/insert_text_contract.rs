@@ -68,19 +68,6 @@ fn first_para_text(path: &Path) -> String {
     doc.document().sections[0].paragraphs[0].text.clone()
 }
 
-fn insert_text_tool_definition() -> serde_json::Value {
-    let args = ["capabilities", "--mcp"];
-    let output = run(&args);
-    let v = parse_json(&args, &output);
-    v["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_insert_text")
-        .expect("hwp_insert_text 도구")
-        .clone()
-}
-
 #[test]
 fn insert_text_writes_and_reports_address() {
     let src = sample_arg();
@@ -214,25 +201,6 @@ fn unknown_flag_is_usage_error_with_empty_stdout() {
         describe(&args, &output)
     );
     assert!(output.stdout.is_empty(), "{}", describe(&args, &output));
-}
-
-#[test]
-fn mcp_tool_is_declared() {
-    let tool = insert_text_tool_definition();
-    assert_eq!(tool["cli"]["command"], "edit");
-    let args = tool["cli"]["args"]
-        .as_array()
-        .expect("cli.args")
-        .iter()
-        .filter_map(|v| v.as_str())
-        .collect::<Vec<_>>();
-    assert!(args.contains(&"insert-text"), "{args:?}");
-    assert!(args.contains(&"--text"), "{args:?}");
-    let required = tool["inputSchema"]["required"]
-        .as_array()
-        .expect("required");
-    assert!(required.iter().any(|v| v == "path"));
-    assert!(required.iter().any(|v| v == "text"));
 }
 
 #[test]

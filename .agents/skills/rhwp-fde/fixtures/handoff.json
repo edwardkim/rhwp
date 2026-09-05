@@ -24,10 +24,6 @@
       "when": "주입·은닉 의심"
     },
     {
-      "skill": "rhwp-provenance",
-      "when": "문서 파생 값 격리"
-    },
-    {
       "skill": "bug-hunter",
       "when": "여정 vs 정답지. 재작성 금지"
     }

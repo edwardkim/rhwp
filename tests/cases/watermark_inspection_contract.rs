@@ -170,12 +170,6 @@ fn clean_documents_report_a_complete_empty_envelope() {
             serde_json::json!({"hidden_char": 0, "homoglyph": 0, "whitespace": 0}),
             "{rel}: {value}"
         );
-        assert_eq!(value["untrustedContent"], false, "{rel}: {value}");
-        assert_eq!(
-            value["untrustedFields"],
-            serde_json::json!([]),
-            "{rel}: {value}"
-        );
     }
 }
 
@@ -213,12 +207,6 @@ fn all_three_axes_are_detected_in_real_hwp_and_hwpx_documents() {
                 .as_str()
                 .is_some_and(|location| location.starts_with("cell["))),
             "표 셀 중첩 위치가 보존되어야 한다: {format}: {value}"
-        );
-        assert_eq!(value["untrustedContent"], true, "{format}: {value}");
-        assert_eq!(
-            value["untrustedFields"],
-            serde_json::json!(["findings[].excerpt"]),
-            "{format}: {value}"
         );
     }
 }
@@ -389,7 +377,7 @@ fn password_paths_preserve_success_usage_and_runtime_exit_contracts() {
 }
 
 #[test]
-fn capabilities_and_mcp_declare_the_watermark_contract() {
+fn capabilities_declares_the_watermark_contract() {
     let capabilities_args = ["capabilities"];
     let capabilities = parse_success(&capabilities_args, &run(&capabilities_args));
     let inspect = capabilities["commands"]
@@ -407,48 +395,4 @@ fn capabilities_and_mcp_declare_the_watermark_contract() {
     assert!(watermark["summary"]
         .as_str()
         .is_some_and(|summary| summary.contains("숨은 마크")));
-
-    let mcp_args = ["capabilities", "--mcp"];
-    let mcp = parse_success(&mcp_args, &run(&mcp_args));
-    let tool = mcp["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|tool| tool["name"] == "hwp_inspect_watermark")
-        .expect("hwp_inspect_watermark tool");
-    assert_eq!(tool["annotations"]["readOnlyHint"], true, "{tool}");
-    assert_eq!(tool["annotations"]["destructiveHint"], false, "{tool}");
-    assert_eq!(
-        tool["cli"]["args"],
-        serde_json::json!(["inspect", "watermark", "{path}", "--json"])
-    );
-    assert_eq!(
-        tool["inputSchema"]["properties"]["kind"]["enum"],
-        serde_json::json!(["hidden", "homoglyph", "whitespace", "all"]),
-        "{tool}"
-    );
-    assert_eq!(
-        tool["cli"]["passwordStdin"]["flag"], "--password-stdin",
-        "{tool}"
-    );
-    for field in [
-        "kindFilter",
-        "scannedChars",
-        "findings",
-        "findingCount",
-        "severityCounts",
-        "kindCounts",
-        "clean",
-        "untrustedContent",
-        "untrustedFields",
-    ] {
-        assert!(
-            tool["outputFields"]
-                .as_array()
-                .expect("outputFields")
-                .iter()
-                .any(|value| value == field),
-            "{field} 누락: {tool}"
-        );
-    }
 }

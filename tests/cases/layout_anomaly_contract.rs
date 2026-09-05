@@ -529,31 +529,3 @@ fn help_mentions_batch_and_exit_contract() {
         "help 가 exit 계약을 밝히지 않습니다:\n{joined}"
     );
 }
-
-#[test]
-fn mcp_extends_existing_layout_anomaly_tool() {
-    let args = ["capabilities", "--mcp"];
-    let v = parse_stdout_json(&args, &run(&args));
-    let tool = v["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_layout_anomaly")
-        .expect("기존 hwp_layout_anomaly 를 유지해야 한다");
-    let props = &tool["inputSchema"]["properties"];
-    for want in ["path", "page", "strict", "types", "batch"] {
-        assert!(props.get(want).is_some(), "{want} 누락: {tool}");
-    }
-    let names: Vec<&str> = v["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter_map(|t| t["name"].as_str())
-        .filter(|n| n.contains("layout_anomaly"))
-        .collect();
-    assert_eq!(
-        names,
-        ["hwp_layout_anomaly"],
-        "배치 전용 MCP 도구를 따로 만들지 않는다: {names:?}"
-    );
-}

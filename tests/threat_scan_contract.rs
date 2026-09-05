@@ -9,7 +9,6 @@
 //! - 스트림 밖을 가리키는 레코드 → `malformed_record` high 신고,
 //! - 정상 문서 → `clean`(오탐 없음 — 한글 기본 Scripts 스텁에 걸리지 않는다),
 //! - HWPX 내장 실행체·원격 외부참조 신고,
-//! - 봉투가 `--json` 출처 표지(untrustedContent/untrustedFields)를 실제로 싣는다,
 //! - 결정론 — 같은 입력은 같은 봉투.
 
 #![cfg(not(target_arch = "wasm32"))]
@@ -305,7 +304,6 @@ fn temp_write(name: &str, bytes: &[u8]) -> std::path::PathBuf {
 
 #[test]
 fn cli_json_envelope_carries_provenance_flag_without_doc_strings() {
-    // 실행체 신고에는 문서 파생 문자열이 없으므로 untrustedContent=false 여야 한다.
     let mut streams = vec![
         ("/FileHeader", file_header(0)),
         ("/DocInfo", record(0x10, 0, &[0x01])),
@@ -325,36 +323,5 @@ fn cli_json_envelope_carries_provenance_flag_without_doc_strings() {
         .unwrap()
         .iter()
         .any(|f| f["kind"] == "embedded_executable"));
-    // 표지는 늘 실린다. 실행체 신고에는 detail 이 없어 문서 파생 값이 없다.
-    assert_eq!(
-        env["untrustedContent"], false,
-        "실행체 신고에는 문서 파생 문자열이 없다: {env}"
-    );
-    assert_eq!(env["untrustedFields"], serde_json::json!([]));
-    let _ = std::fs::remove_file(&path);
-}
-
-#[test]
-fn cli_json_envelope_marks_external_reference_detail_untrusted() {
-    let manifest = r#"<?xml version="1.0"?>
-<manifest><item id="e" href="https://evil.example/x" media-type="application/octet-stream" isEmbeded="0"/></manifest>"#;
-    let hwpx = build_hwpx(&[
-        ("mimetype", b"application/hwp+zip".to_vec()),
-        ("Contents/content.hpf", manifest.as_bytes().to_vec()),
-    ]);
-    let path = temp_write("ext.hwpx", &hwpx);
-
-    let (code, stdout) = run_cli(&path, &["--json"]);
-    assert_eq!(code, 0, "{stdout}");
-    let env: serde_json::Value = serde_json::from_str(&stdout).expect("봉투 JSON");
-    assert_eq!(
-        env["untrustedContent"], true,
-        "외부참조 대상(URL)은 문서 파생이라 표지가 켜져야 한다: {env}"
-    );
-    assert_eq!(
-        env["untrustedFields"],
-        serde_json::json!(["findings[].detail"]),
-        "출처 표지는 findings[].detail 을 가리켜야 한다: {env}"
-    );
     let _ = std::fs::remove_file(&path);
 }

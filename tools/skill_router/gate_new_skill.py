@@ -60,11 +60,6 @@ ENVELOPE_KEYS = (
 # Mapping to the same skill is best-effort; a valid route.py JSON envelope is
 # enough.
 PROBES: dict[str, tuple[str, str, str]] = {
-    "rhwp-agent-surface": (
-        "새 MCP 도구 추가해줘",
-        "드리프트 가드 확인해",
-        "capabilities 가 SSOT 인지 확인해",
-    ),
     "rhwp-bug-hunter": (
         "버그 찾아줘 실사용 기준으로",
         "정답지와 비교해",
@@ -125,30 +120,10 @@ PROBES: dict[str, tuple[str, str, str]] = {
         "fill this form",
         "누름틀에 값 넣어줘",
     ),
-    "rhwp-handoff": (
-        "세션 핸드오프 해줘",
-        "컨텍스트 바닥이라 핸드오프해",
-        "작업 인수인계 result.json 읽어",
-    ),
-    "rhwp-knowledge-map": (
-        "지식 지도 어디 문서부터",
-        "이 필드가 뭐야",
-        "llms.txt 다음이 뭐야",
-    ),
-    "rhwp-mcp-session": (
-        "rhwp 를 MCP로 붙여줘",
-        "start mcp-serve and list session tools",
-        "hwp_open 으로 문서 열어",
-    ),
     "rhwp-onboarding": (
         "rhwp 처음인데 온보딩해줘",
         "rhwp_doctor로 온보딩해",
         ".mcp.json 만들어줘",
-    ),
-    "rhwp-provenance": (
-        "이 값이 문서에서 온 건가",
-        "mark untrustedFields provenance",
-        "출처 모르는 문서 처리해",
     ),
     "rhwp-recipes": (
         "어떤 레시피로 가?",
@@ -189,11 +164,6 @@ PROBES: dict[str, tuple[str, str, str]] = {
         "편집 전후 화면 비교해",
         "run render-diff for visual regression",
         "레이아웃 회귀 깨졌는지 확인",
-    ),
-    "rhwp-work-receipt": (
-        "이 작업 영수증 남겨",
-        "replay the work capsule and audit lineage",
-        "재현율 검증해줘",
     ),
 }
 

@@ -58,7 +58,7 @@ fn declared() -> Vec<(String, Vec<String>)> {
 fn every_declared_command_answers_help_on_stdout() {
     let commands = declared();
     assert!(
-        commands.len() >= 90,
+        commands.len() >= 70,
         "명령 수가 갑자기 줄었다: {}",
         commands.len()
     );
@@ -150,7 +150,7 @@ fn scoped_help_is_a_fraction_of_the_whole_help() {
         "명령별 도움말이 비었다 — 통짜와의 비교가 무의미하다"
     );
     assert!(
-        whole.len() > scoped.len() * 20,
+        whole.len() > scoped.len() * 10,
         "명령별 도움말이 통짜 대비 충분히 작지 않다 (통짜 {} B, fields {} B)",
         whole.len(),
         scoped.len()

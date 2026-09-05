@@ -4,8 +4,8 @@ use std::{fs, path::Path, process};
 
 use super::runtime::finish_edit_write;
 use crate::{
-    edit_output_format, edit_serialize, edit_verify_report, load_document, provenance,
-    EditOutputFormat, ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
+    edit_output_format, edit_serialize, edit_verify_report, load_document, EditOutputFormat,
+    ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
 };
 
 pub(super) fn edit_insert_text(args: &[String]) -> i32 {
@@ -199,7 +199,7 @@ pub(super) fn edit_insert_text(args: &[String]) -> i32 {
         }
         // 삽입 문자열은 호출자 인자이지 문서 유래가 아니다 — 표지는 항상 싣되
         // untrustedFields 는 비운다 (키 부재 = 판정 안 함).
-        println!("{}", provenance::marked(envelope, "edit"));
+        println!("{}", envelope);
         if verify_failed {
             process::exit(3);
         }

@@ -1,5 +1,0 @@
-{
-  "surface": "hwp_set_cell / hwp_doc_set_cell",
-  "core": "set_cell + overflow probe",
-  "envelope": "set_cell_json_value"
-}

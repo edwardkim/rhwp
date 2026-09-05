@@ -37,12 +37,6 @@ fn assert_envelope(v: &serde_json::Value) {
     assert!(v["schemaVersion"].as_str().is_some(), "{v}");
     assert_eq!(v["tool"], "rhwp-q-font-trace", "{v}");
     assert_eq!(v["command"], "font-trace", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["source", "trace"]),
-        "{v}"
-    );
 }
 
 #[test]

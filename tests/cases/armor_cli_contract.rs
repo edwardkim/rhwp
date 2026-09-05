@@ -92,13 +92,6 @@ fn assert_complete_envelope(value: &serde_json::Value, expected_pages: Option<u6
     assert!(value["injectionSignals"].is_array(), "{value}");
     assert!(value["signalCount"].is_u64(), "{value}");
     assert!(value["clean"].is_boolean(), "{value}");
-    assert_eq!(value["untrustedContent"], true, "{value}");
-    assert!(
-        value["untrustedFields"]
-            .as_array()
-            .is_some_and(|fields| fields.iter().any(|field| field == "armoredText")),
-        "{value}"
-    );
 
     let armored = value["armoredText"].as_str().expect("armoredText");
     let open = value["safety"]["fenceOpen"].as_str().expect("fenceOpen");

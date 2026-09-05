@@ -26,8 +26,6 @@
   ],
   "forbiddenSkillsTouch": [
     "rhwp-onboarding",
-    "rhwp-mcp-session",
-    "rhwp-safe-edit",
-    "rhwp-provenance"
+    "rhwp-safe-edit"
   ]
 }

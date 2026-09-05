@@ -2,7 +2,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{collect_field_records, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -364,7 +363,7 @@ pub(crate) fn run(args: &[String]) -> i32 {
             "failCount": fail_count,
             "verdict": verdict,
         });
-        println!("{}", provenance::marked(envelope, "verify"));
+        println!("{}", envelope);
     } else {
         for e in &expectations {
             let mark = if e["pass"].as_bool() == Some(true) {

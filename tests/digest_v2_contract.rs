@@ -342,30 +342,6 @@ fn digest_v2_options_registered_in_capabilities() {
     );
 }
 
-#[test]
-fn digest_v2_options_registered_in_mcp_schema() {
-    let mcp = parse_stdout_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));
-    let digest = mcp["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_digest")
-        .cloned()
-        .unwrap_or_else(|| panic!("MCP 도구 hwp_digest 누락: {mcp}"));
-    let props = &digest["inputSchema"]["properties"];
-    assert!(props.get("sections").is_some(), "{digest}");
-    assert!(props.get("pages").is_some(), "{digest}");
-    // required 는 path 하나만 유지 — 옵션이 필수로 승격되면 안 된다.
-    let required = digest["inputSchema"]["required"]
-        .as_array()
-        .expect("required");
-    assert_eq!(required.len(), 1, "{digest}");
-    assert_eq!(required[0], "path", "{digest}");
-    // [#3633] 초소형 모델 컨텍스트 절약 계약(40자 이내 설명)은 v2 에서도 유지.
-    let desc = digest["description"].as_str().expect("description");
-    assert!(desc.chars().count() <= 40, "{desc}");
-}
-
 /// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
 /// nextest가 런타임에 재매핑해 주입하는 CARGO_BIN_EXE_rhwp를 우선한다.
 fn rhwp_bin() -> String {

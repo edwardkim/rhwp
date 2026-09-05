@@ -1425,11 +1425,6 @@ fn capabilities() -> serde_json::Value {
     json_of(&args, &run(&args))
 }
 
-fn capabilities_mcp() -> serde_json::Value {
-    let args = ["capabilities", "--mcp"];
-    json_of(&args, &run(&args))
-}
-
 #[test]
 fn capabilities_declares_the_fill_axis() {
     let v = capabilities();
@@ -1534,64 +1529,6 @@ fn declared_batch_flags_are_accepted_by_some_axis() {
             "capabilities 가 선언한 {flag} 를 받아 주는 batch 축이 하나도 없습니다"
         );
     }
-}
-
-#[test]
-fn mcp_declares_batch_fill_and_wires_every_input() {
-    let v = capabilities_mcp();
-    let tools = v["tools"].as_array().expect("tools");
-    let tool = tools
-        .iter()
-        .find(|t| t["name"] == "hwp_batch_fill")
-        .unwrap_or_else(|| panic!("hwp_batch_fill 도구 누락: {v}"));
-
-    let schema = &tool["inputSchema"];
-    assert_eq!(schema["type"], "object", "{tool}");
-    let props = schema["properties"].as_object().expect("properties");
-    let required: Vec<&str> = schema["required"]
-        .as_array()
-        .expect("required 는 배열이어야 합니다")
-        .iter()
-        .filter_map(|s| s.as_str())
-        .collect();
-    for key in ["form", "data", "outDir"] {
-        assert!(required.contains(&key), "required 에 {key} 누락: {tool}");
-    }
-
-    // 선언만 하고 배선하지 않으면 서버는 그 인자를 조용히 버린 채 성공을 보고한다.
-    let mut wired: Vec<String> = tool["cli"]["args"]
-        .as_array()
-        .expect("cli.args")
-        .iter()
-        .filter_map(|a| a.as_str())
-        .filter(|s| s.starts_with('{') && s.ends_with('}') && s.len() > 2)
-        .map(|s| s[1..s.len() - 1].to_string())
-        .collect();
-    for o in tool["cli"]["optionalArgs"]
-        .as_array()
-        .expect("cli.optionalArgs")
-    {
-        wired.push(o["when"].as_str().expect("when").to_string());
-    }
-    for key in props.keys() {
-        assert!(
-            wired.contains(key),
-            "hwp_batch_fill.{key} 가 CLI 인자에 배선되지 않았습니다: {tool}"
-        );
-    }
-    assert_eq!(tool["cli"]["command"], "batch", "{tool}");
-
-    // stdin 도구가 아니다 — 서버가 paths 를 요구하면 fill 은 영영 호출되지 않는다.
-    let stdin_tools: Vec<&str> = v["invocation"]["stdinTools"]
-        .as_array()
-        .expect("invocation.stdinTools")
-        .iter()
-        .filter_map(|s| s.as_str())
-        .collect();
-    assert!(
-        !stdin_tools.contains(&"hwp_batch_fill"),
-        "fill 은 stdin 을 읽지 않는데 stdinTools 에 있습니다: {stdin_tools:?}"
-    );
 }
 
 #[test]

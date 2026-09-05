@@ -1,7 +1,7 @@
 //! [#5511 Stage 1~2] 최상위 dispatch와 자기서술·모듈 소유권의 characterization 계약.
 //!
 //! handler 이동 전에 실제 `main()` 102개 arm과 catalog를 양방향으로 대조한다.
-//! help·capabilities·MCP의 현재 결과도 같은 catalog와 비교하되, 이 단계에서는
+//! help·capabilities의 현재 결과도 같은 catalog와 비교하되, 이 단계에서는
 //! 기존 출력 생성기를 바꾸지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -107,7 +107,7 @@ fn catalog_is_unique_and_matches_all_top_level_dispatch_arms() {
     let dispatch = dispatch_names();
     let dispatch_set: BTreeSet<&str> = dispatch.iter().copied().collect();
 
-    assert_eq!(commands().len(), 102, "characterization 기준선");
+    assert_eq!(commands().len(), 76, "characterization 기준선");
     assert_eq!(catalog_names.len(), commands().len(), "catalog 이름 중복");
     assert_eq!(dispatch.len(), dispatch_set.len(), "dispatch arm 이름 중복");
     assert_eq!(dispatch_set, catalog_names, "dispatch↔catalog drift");
@@ -160,27 +160,13 @@ fn capabilities_order_and_metadata_match_catalog() {
 }
 
 #[test]
-fn help_and_mcp_participation_match_catalog() {
+fn help_participation_matches_catalog() {
     let expected_help: BTreeSet<String> = commands()
         .iter()
         .filter(|command| command.in_help())
         .map(|command| command.name.to_string())
         .collect();
     assert_eq!(help_names(), expected_help, "help↔catalog drift");
-
-    let manifest = json(&["capabilities", "--mcp"]);
-    let live_mcp: BTreeSet<&str> = manifest["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .filter_map(|tool| tool["cli"]["command"].as_str())
-        .collect();
-    let expected_mcp: BTreeSet<&str> = commands()
-        .iter()
-        .filter(|command| command.mcp)
-        .map(|command| command.name)
-        .collect();
-    assert_eq!(live_mcp, expected_mcp, "MCP↔catalog drift");
 }
 
 #[test]
@@ -211,7 +197,7 @@ fn exceptional_visibility_is_small_explicit_and_explained() {
     );
     assert_eq!(
         dispatch_only.keys().copied().collect::<BTreeSet<_>>(),
-        BTreeSet::from(["dump-anchors", "dump-carets", "export-llm", "ir-sweep"])
+        BTreeSet::from(["dump-anchors", "dump-carets", "ir-sweep"])
     );
 }
 

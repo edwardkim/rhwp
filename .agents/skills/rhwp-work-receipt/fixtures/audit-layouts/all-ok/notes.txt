@@ -1,1 +1,0 @@
-이 파일은 *.capsule.json 이 아니다. audit 가 세면 안 된다.

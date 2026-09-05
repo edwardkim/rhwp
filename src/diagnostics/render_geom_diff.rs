@@ -13,8 +13,6 @@ use std::time::Instant;
 
 use serde_json::{json, Value};
 
-use crate::provenance;
-
 use crate::document_core::DocumentCore;
 use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 use crate::HwpError;
@@ -651,34 +649,31 @@ fn single_envelope(
         .into_iter()
         .map(page_json)
         .collect();
-    provenance::marked(
-        json!({
-            "schemaVersion": SCHEMA_VERSION,
-            // 두 파일 비교에는 "경유 포맷"이 없다 — 라운드트립 축과 섞이지 않게 mode 로 가른다.
-            "mode": if pair { "pair" } else { "roundtrip" },
-            "sourceA": opts.positionals[0].display().to_string(),
-            "sourceB": if pair {
-                json!(opts.positionals[1].display().to_string())
-            } else {
-                Value::Null
-            },
-            "via": if pair { Value::Null } else { json!(via_str(opts.via)) },
-            "pageFilter": opt_u32(opts.page),
-            "threshold": fnum(opts.max_disp),
-            "pageCountA": diff.page_count_a,
-            "pageCountB": diff.page_count_b,
-            "pageCountMismatch": diff.page_count_mismatch(),
-            "maxDisp": fnum(sum.max_disp),
-            "worstPage": opt_u32(sum.worst_page),
-            "overPages": sum.over_pages,
-            "structPages": sum.struct_pages,
-            "hardStructPages": sum.hard_struct_pages,
-            "status": status,
-            "regression": status_is_hard_failure(status),
-            "pages": pages,
-        }),
-        "render-diff",
-    )
+    json!({
+        "schemaVersion": SCHEMA_VERSION,
+        // 두 파일 비교에는 "경유 포맷"이 없다 — 라운드트립 축과 섞이지 않게 mode 로 가른다.
+        "mode": if pair { "pair" } else { "roundtrip" },
+        "sourceA": opts.positionals[0].display().to_string(),
+        "sourceB": if pair {
+            json!(opts.positionals[1].display().to_string())
+        } else {
+            Value::Null
+        },
+        "via": if pair { Value::Null } else { json!(via_str(opts.via)) },
+        "pageFilter": opt_u32(opts.page),
+        "threshold": fnum(opts.max_disp),
+        "pageCountA": diff.page_count_a,
+        "pageCountB": diff.page_count_b,
+        "pageCountMismatch": diff.page_count_mismatch(),
+        "maxDisp": fnum(sum.max_disp),
+        "worstPage": opt_u32(sum.worst_page),
+        "overPages": sum.over_pages,
+        "structPages": sum.struct_pages,
+        "hardStructPages": sum.hard_struct_pages,
+        "status": status,
+        "regression": status_is_hard_failure(status),
+        "pages": pages,
+    })
 }
 
 /// 페이지 목록을 `page` 필터로 좁힌 뷰를 만든다(소유 복제 회피용 참조 벡터).
@@ -818,7 +813,7 @@ fn batch_record(opts: &CliOptions, row: &BatchRow) -> Value {
     if !row.error.is_empty() {
         rec["error"] = json!(row.error);
     }
-    provenance::marked(rec, "render-diff")
+    rec
 }
 
 /// 문서 전 페이지의 타입 델타를 타입별 순증감으로 집계 (예: `Line:-4;RawSvg:-1`).

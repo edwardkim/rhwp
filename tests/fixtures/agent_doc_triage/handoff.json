@@ -17,11 +17,6 @@
       "why": "K9 DoD 의 주입 갈래는 K5 인계"
     },
     {
-      "signal": "문서 파생 값을 프롬프트에 넣어야 한다",
-      "skill": "rhwp-provenance",
-      "why": "untrustedContent/untrustedFields 소비 규약"
-    },
-    {
       "signal": "원본을 고쳐야 한다",
       "skill": "rhwp-safe-edit",
       "why": "이 스킬은 읽기 전용. -o 분리·dry-run·verify 는 안전 편집"

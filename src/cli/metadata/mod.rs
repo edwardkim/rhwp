@@ -2,4 +2,3 @@
 
 pub(crate) mod capabilities;
 pub(crate) mod help;
-pub(crate) mod mcp;

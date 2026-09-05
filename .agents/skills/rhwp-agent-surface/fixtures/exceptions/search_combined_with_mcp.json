@@ -1,8 +1,0 @@
-{
-  "id": "search_combined_with_mcp",
-  "title": "--search 와 --mcp/--profile 동시",
-  "layer": "cli-json",
-  "stderr": "오류: --search 는 --mcp/--profile 과 함께 쓸 수 없습니다.",
-  "exit": 2,
-  "fix": "한 번에 하나만. 검색 후 나온 이름을 --mcp 목록에서 확인"
-}

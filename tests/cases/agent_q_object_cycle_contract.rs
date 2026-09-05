@@ -57,8 +57,6 @@ fn json_envelope_on_form01() {
     assert!(v["schemaVersion"].is_string(), "{v}");
     assert_eq!(v["tool"], TOOL, "{v}");
     assert_eq!(v["command"], "object-cycle", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert!(v["untrustedFields"].is_array(), "{v}");
     assert_eq!(v["source"], source, "{v}");
     let cycle = v["cycle"].as_array().expect("cycle 배열");
     assert_eq!(v["cycleCount"], cycle.len(), "{v}");

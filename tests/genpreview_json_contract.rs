@@ -209,16 +209,4 @@ fn capabilities_reports_genpreview_json() {
             "{name} 은 json:true 여야 합니다: {entry}"
         );
     }
-
-    let mcp = run(&["capabilities", "--mcp"]);
-    let m: serde_json::Value = serde_json::from_slice(&mcp.stdout).expect("mcp JSON");
-    let tools: Vec<&str> = m["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .filter_map(|t| t["name"].as_str())
-        .collect();
-    for t in ["hwp_build_from_ingest", "hwp_thumbnail"] {
-        assert!(tools.contains(&t), "{t} 가 MCP 선언에 없습니다: {tools:?}");
-    }
 }

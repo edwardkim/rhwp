@@ -117,7 +117,6 @@ python3 tools/fde/triage.py <고객문서> --bin <rhwp> --symptom "<증상 문�
 - 누름틀이 안 채워짐 + 사다리 통과 → `rhwp-form-fill`
 - 표가 깨짐 + 사다리 통과 → `rhwp-table-exchange`
 - 배포 전/주입 의심 → `rhwp-security-sweep`
-- 문서 파생 값 → `rhwp-provenance`
 - 우리가 고른 여정 vs 정답지 → `bug-hunter` (재작성하지 않는다)
 
 상세: [21_handoff.md](references/21_handoff.md)

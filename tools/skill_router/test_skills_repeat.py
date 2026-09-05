@@ -54,9 +54,6 @@ ROUTER_SKILLS: frozenset[str] = frozenset(
         "rhwp-security-sweep",
         "rhwp-bulk-pipeline",
         "rhwp-visual-regression",
-        "rhwp-work-receipt",
-        "rhwp-mcp-session",
-        "rhwp-provenance",
         "rhwp-exam-ingest",
         "rhwp-contributor",
         "rhwp-cli",
@@ -67,11 +64,6 @@ ROUTER_SKILLS: frozenset[str] = frozenset(
 # Three Korean phrasings per skill. Router skills use intent-pattern hits.
 # Extra catalog skills only need a valid envelope.
 PHRASINGS: dict[str, tuple[str, str, str]] = {
-    "rhwp-agent-surface": (
-        "에이전트 표면 추가해줘",
-        "드리프트 가드 확인해줘",
-        "3층 계약 지켜줘",
-    ),
     "rhwp-bug-hunter": (
         "버그 찾아줘",
         "정답지와 비교해줘",
@@ -132,30 +124,10 @@ PHRASINGS: dict[str, tuple[str, str, str]] = {
         "양식 채워 주세요",
         "누름틀에 값 넣어줘",
     ),
-    "rhwp-handoff": (
-        "세션 핸드오프 해줘",
-        "컨텍스트 부족해서 넘겨줘",
-        "작업 인수인계 해줘",
-    ),
-    "rhwp-knowledge-map": (
-        "지식 지도 보여줘",
-        "어디 문서부터 읽어야 해",
-        "llms.txt 다음 단계 알려줘",
-    ),
-    "rhwp-mcp-session": (
-        "MCP로 붙여줘",
-        "MCP 세션 열어줘",
-        "재파싱 없이 조회해줘",
-    ),
     "rhwp-onboarding": (
         "온보딩 진행해줘",
         "rhwp 처음 써봐",
         "셋업부터 해줘",
-    ),
-    "rhwp-provenance": (
-        "출처 표지 달아줘",
-        "신뢰할 수 없는 문서 처리해줘",
-        "문서에서 온 값인지 확인해줘",
     ),
     "rhwp-recipes": (
         "어떤 레시피로 가?",
@@ -191,11 +163,6 @@ PHRASINGS: dict[str, tuple[str, str, str]] = {
         "시각 회귀 확인해줘",
         "편집 전후 화면 비교해줘",
         "레이아웃 회귀 있는지 봐줘",
-    ),
-    "rhwp-work-receipt": (
-        "작업 영수증 남겨줘",
-        "작업 캡슐 만들어줘",
-        "계보 검증해줘",
     ),
 }
 

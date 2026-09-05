@@ -107,7 +107,7 @@ cargo build --release
 - `batch fill` 에 stdin 경로 목록을 넣기
 - convert 이름 충돌을 무시하고 일부만 쓰기
 - 입력 N 게이트를 건너뛰기
-- 이 스킬 안에서 onboarding / mcp-session / safe-edit / provenance / doc-triage / form-fill 본문을 재작성
+- 이 스킬 안에서 onboarding / safe-edit / doc-triage / form-fill 본문을 재작성
 
 ## 인계
 
@@ -115,8 +115,7 @@ cargo build --release
 - 서식 1건 채우기·순번 → `rhwp-form-fill`
 - 표 CSV 왕복 → `rhwp-table-exchange`
 - 배포 전 점검 → `rhwp-security-sweep`
-- 원본을 계획서로 여러 번 고침 → `rhwp-safe-edit`
-- MCP 로 붙이기 → `rhwp-mcp-session` (`hwp_batch` 에는 convert 쓰기 축 없음)
+- 원본을 여러 번 고침 → `rhwp-safe-edit`
 
 상세: [20_handoff.md](references/20_handoff.md)
 

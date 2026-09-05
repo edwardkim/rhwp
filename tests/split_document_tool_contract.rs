@@ -1,5 +1,5 @@
-//! [#3622] `hwp_split_document` — extract-pages(--json 기보유)의 MCP 노출 + 자기서술
-//! 등재. 드리프트 가드가 못 잡던 사각(계약은 완성인데 capabilities·도구 미등재) 봉합.
+//! [#3622] extract-pages(--json 기보유)의 자기서술 등재. 드리프트 가드가 못 잡던
+//! 사각(계약은 완성인데 capabilities 미등재) 봉합.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::{Path, PathBuf};
@@ -74,8 +74,8 @@ fn split_envelope_and_reread_page_count() {
 }
 
 #[test]
-fn capabilities_and_mcp_declare_split() {
-    // [#3622] 사각 봉합의 본론: json:true 등재 + 도구 대응.
+fn capabilities_declares_split() {
+    // [#3622] 사각 봉합의 본론: json:true 등재.
     let caps = run(&["capabilities"]);
     let v: serde_json::Value = serde_json::from_slice(&caps.stdout).expect("caps");
     let entry = v["commands"]
@@ -85,29 +85,4 @@ fn capabilities_and_mcp_declare_split() {
         .find(|c| c["name"] == "extract-pages")
         .expect("extract-pages 등재");
     assert_eq!(entry["json"], true, "{entry}");
-
-    let mcp = run(&["capabilities", "--mcp"]);
-    let m: serde_json::Value = serde_json::from_slice(&mcp.stdout).expect("mcp");
-    let tool = m["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|t| t["name"] == "hwp_split_document")
-        .expect("hwp_split_document 선언");
-    let targs: Vec<&str> = tool["cli"]["args"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter_map(|a| a.as_str())
-        .collect();
-    for ph in ["{path}", "{output}", "{from}", "{to}"] {
-        assert!(targs.contains(&ph), "{targs:?}");
-    }
-    let req: Vec<&str> = tool["inputSchema"]["required"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter_map(|r| r.as_str())
-        .collect();
-    assert_eq!(req.len(), 4, "required↔자리표시자 1:1: {req:?}");
 }

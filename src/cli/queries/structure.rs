@@ -2,7 +2,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -13,16 +12,13 @@ pub(crate) fn structure_json_value(
     file_path: &str,
     st: &rhwp::document_core::queries::structure::StructureDoc,
 ) -> serde_json::Value {
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "mode": st.mode,
-            "nodeCount": st.node_count,
-            "structure": st,
-        }),
-        "export-structure",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": file_path,
+        "mode": st.mode,
+        "nodeCount": st.node_count,
+        "structure": st,
+    })
 }
 
 /// `export-structure` — 문서 개요/조문 계층을 중첩 JSON 트리로 추출 (조문 DB화용).

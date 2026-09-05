@@ -1,6 +1,6 @@
 use std::{fs, path::Path, process};
 
-use rhwp::{provenance, schema_registry::ENVELOPE_SCHEMA_VERSION};
+use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::runtime::{
     edit_output_format, edit_serialize, edit_verify_report, finish_edit_write, EditOutputFormat,
@@ -458,7 +458,7 @@ pub(super) fn edit_set_cell(args: &[String]) -> i32 {
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             envelope["verify"] = verify_report.clone();
         }
-        println!("{}", provenance::marked(envelope, "edit"));
+        println!("{}", envelope);
         if verify_failed {
             process::exit(3);
         }

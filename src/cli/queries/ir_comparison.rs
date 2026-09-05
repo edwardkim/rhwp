@@ -4,7 +4,6 @@ use std::fs;
 use std::path::Path;
 
 use rhwp::model::document::Document;
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 use rhwp::wasm_api::HwpDocument;
 
@@ -739,7 +738,7 @@ pub(crate) fn ir_sweep(args: &[String]) -> i32 {
             "categories": tally(&report),
             "divergences": rows,
         });
-        println!("{}", provenance::marked(envelope, "ir-sweep"));
+        println!("{}", envelope);
         // `ir-diff` 와 같은 규약 — 차이가 있으면 3.
         return if report.is_empty() { EXIT_OK } else { 3 };
     }
@@ -992,7 +991,7 @@ fn finish_ir_diff(
             "pageCountA": page_count_a,
             "pageCountB": page_count_b,
         });
-        println!("{}", provenance::marked(envelope, "ir-diff"));
+        println!("{}", envelope);
         return if total_diffs == 0 { EXIT_OK } else { 3 };
     }
     println!("\n=== 비교 완료: 차이 {} 건 ===", total_diffs);

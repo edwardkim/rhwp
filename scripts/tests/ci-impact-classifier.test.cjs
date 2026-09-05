@@ -179,9 +179,7 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
 
 test('every direct CLI page renderer caller has an explicit workflow-consumer decision', () => {
   const buckets = {
-    nativeConsumer: [
-      'src/cli/outputs/raster.rs',
-    ],
+    nativeConsumer: [],
     notWorkflowConsumer: [
       'src/cli/commands/caption_validation.rs',
       'src/cli/outputs/vector.rs',

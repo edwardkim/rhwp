@@ -13,7 +13,6 @@ CI_WORKFLOW = REPO_ROOT / ".github/workflows/ci.yml"
 WORKFLOWS = {
     "ci": REPO_ROOT / ".github/workflows/ci.yml",
     "codeql": REPO_ROOT / ".github/workflows/codeql.yml",
-    "adapter": REPO_ROOT / ".github/workflows/adapter-diff.yml",
     "proptest": REPO_ROOT / ".github/workflows/proptest-roundtrip.yml",
 }
 
@@ -70,7 +69,6 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         expected_workflow_files = {
             "ci": "workflow_file: ci.yml",
             "codeql": "workflow_file: codeql.yml",
-            "adapter": "workflow_file: adapter-diff.yml",
             "proptest": "workflow_file: proptest-roundtrip.yml",
         }
         for name, workflow_path in WORKFLOWS.items():
@@ -99,9 +97,6 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn('"proptest-roundtrip.yml"', workflow)
         self.assertIn('preflight: "Proptest preflight"', workflow)
         self.assertIn('worker: "prop roundtrip"', workflow)
-        self.assertIn('"adapter-diff.yml"', workflow)
-        self.assertIn('preflight: "adapter inter-diff preflight"', workflow)
-        self.assertIn('worker: "adapter inter-diff"', workflow)
         self.assertIn('job.conclusion === "skipped"', workflow)
 
     def test_trusted_reuse_evaluator_contracts_are_invoked_by_ci(self) -> None:

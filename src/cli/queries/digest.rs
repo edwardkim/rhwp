@@ -3,8 +3,7 @@
 use std::fs;
 
 use crate::{
-    info_json_value, load_document, provenance, ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME,
-    EXIT_USAGE,
+    info_json_value, load_document, ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
 };
 
 /// [#3633] `nextStep` 고정 문자열 계약 — 봉투를 받은 초소형 모델이 다음 행동을
@@ -233,7 +232,7 @@ pub(crate) fn digest_document(args: &[String]) -> i32 {
             "truncated": truncated,
             "nextStep": DIGEST_SECTIONS_NEXT_STEP,
         });
-        println!("{}", provenance::marked(envelope, "digest"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -284,7 +283,7 @@ pub(crate) fn digest_document(args: &[String]) -> i32 {
             "truncated": truncated,
             "nextStep": next_step,
         });
-        println!("{}", provenance::marked(envelope, "digest"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -327,6 +326,6 @@ pub(crate) fn digest_document(args: &[String]) -> i32 {
         "truncated": truncated,
         "nextStep": DIGEST_NEXT_STEP,
     });
-    println!("{}", provenance::marked(envelope, "digest"));
+    println!("{}", envelope);
     EXIT_OK
 }

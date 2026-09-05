@@ -1,5 +1,0 @@
-# Match repo rustfmt policy. Isolated crate; not a new CLI.
-edition = "2021"
-max_width = 100
-newline_style = "Unix"
-use_small_heuristics = "Default"

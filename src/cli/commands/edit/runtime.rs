@@ -4,7 +4,6 @@ use std::fs;
 use std::path::Path;
 use std::process;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::cli::integrity::sha256_hex_of;
@@ -172,19 +171,16 @@ pub(crate) fn check_expect_sha256(
         return None;
     }
     if json_mode {
-        let envelope = provenance::marked(
-            serde_json::json!({
-                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                "source": source,
-                "preconditionFailed": {
-                    "kind": "inputSha256",
-                    "expected": normalized,
-                    "actual": actual,
-                },
-                "error": "입력 문서가 기대 해시와 다릅니다 — 다른 에이전트/사람이 먼저 바꿨을 수 있습니다. 문서를 다시 읽고 계획을 재수립하세요 (#3905 CAS).",
-            }),
-            "edit",
-        );
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": source,
+            "preconditionFailed": {
+                "kind": "inputSha256",
+                "expected": normalized,
+                "actual": actual,
+            },
+            "error": "입력 문서가 기대 해시와 다릅니다 — 다른 에이전트/사람이 먼저 바꿨을 수 있습니다. 문서를 다시 읽고 계획을 재수립하세요 (#3905 CAS).",
+        });
         println!("{envelope}");
     } else {
         eprintln!("검증 실패: 입력 해시 불일치 (기대 {normalized} / 실제 {actual}) — 저장하지 않았습니다.");
@@ -259,7 +255,7 @@ pub(crate) fn finish_edit_write(
             extra["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             extra["verify"] = verify_report;
         }
-        println!("{}", provenance::marked(extra, "edit"));
+        println!("{}", extra);
         if verify_failed {
             process::exit(3);
         }

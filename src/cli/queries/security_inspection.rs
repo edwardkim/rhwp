@@ -3,8 +3,8 @@
 use std::fs;
 
 use crate::{
-    display_safe, injection_scan_scopes, load_document, load_document_core, mcp_tool_name_registry,
-    provenance, ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
+    display_safe, injection_scan_scopes, load_document, load_document_core,
+    ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
 };
 
 /// `inspect hidden-text` — 사람 눈에 안 보이는데 추출기는 읽어 가는 텍스트를 보고한다.
@@ -82,7 +82,7 @@ pub(crate) fn inspect_hidden_text(args: &[String]) -> i32 {
             "hiddenCharCount": report.hidden_char_count,
             "clean": report.clean,
         });
-        println!("{}", provenance::marked(envelope, "inspect"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -194,7 +194,7 @@ pub(crate) fn inspect_injection(args: &[String]) -> i32 {
     let options = scan::InjectionScanOptions {
         min_confidence,
         include_fields,
-        tool_names: mcp_tool_name_registry(),
+        tool_names: Vec::new(),
     };
     // HwpDocument 는 DocumentCore 로 Deref 한다 — 질의는 코어에서 직접 돈다.
     let signals = doc.scan_injection(&options);
@@ -214,7 +214,7 @@ pub(crate) fn inspect_injection(args: &[String]) -> i32 {
             "highestConfidence": summary.highest_confidence(),
             "clean": summary.clean(),
         });
-        println!("{}", provenance::marked(envelope, "inspect"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -304,7 +304,7 @@ pub(crate) fn threat_scan(args: &[String]) -> i32 {
 
     if json_mode {
         let envelope = threat_scan::envelope(&report);
-        println!("{}", provenance::marked(envelope, "threat-scan"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -454,7 +454,7 @@ pub(crate) fn armor_command(args: &[String]) -> i32 {
     let options = scan::InjectionScanOptions {
         min_confidence: scan::Confidence::Low,
         include_fields: false,
-        tool_names: mcp_tool_name_registry(),
+        tool_names: Vec::new(),
     };
     // HwpDocument 는 DocumentCore 로 Deref 한다 — 격벽·스캔은 코어에서 직접 돈다.
     let armored = doc.armor(&nonce, &body, &options);
@@ -483,7 +483,7 @@ pub(crate) fn armor_command(args: &[String]) -> i32 {
             "signalCount": summary.signals.len(),
             "clean": summary.clean(),
         });
-        println!("{}", provenance::marked(envelope, "armor"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -749,7 +749,7 @@ pub(crate) fn inspect_watermark(args: &[String]) -> i32 {
             "severityCounts": severity_counts,
             "kindCounts": serde_json::Value::Object(kind_counts),
         });
-        println!("{}", provenance::marked(envelope, "inspect"));
+        println!("{}", envelope);
         // 탐지 건수는 실행 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
         return EXIT_OK;
     }
@@ -1021,7 +1021,7 @@ pub(crate) fn inspect_unicode(args: &[String]) -> i32 {
             "severityCounts": severity_counts,
             "kindCounts": serde_json::Value::Object(kind_counts),
         });
-        println!("{}", provenance::marked(envelope, "inspect"));
+        println!("{}", envelope);
         // 탐지 건수는 실행 실패가 아니다 — 1은 런타임 실패 전용이다(#2707).
         return EXIT_OK;
     }

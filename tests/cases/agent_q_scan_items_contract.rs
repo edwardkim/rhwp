@@ -32,12 +32,6 @@ fn json_envelope_on_form01_with_limit() {
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert_eq!(v["tool"], "rhwp-q-scan-items", "{v}");
     assert_eq!(v["command"], "scan-items", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["source", "items[].text"]),
-        "{v}"
-    );
     assert_eq!(v["source"], src, "{v}");
     assert_eq!(v["limit"], 20, "{v}");
     assert_eq!(v["itemCount"], 20, "{v}");

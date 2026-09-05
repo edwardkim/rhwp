@@ -4,7 +4,6 @@ use std::fs;
 use std::path::Path;
 use std::process;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::runtime::{
@@ -466,7 +465,7 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
         // [#3885] 이 봉투의 값은 전부 호출자 인자·엔진 판정이라 문서 유래 경로가
         // 없지만, 표지 자체는 항상 싣는다 — 키 부재는 "안전"이 아니라 "판정 안 함"
         // 으로 읽어야 하기 때문이다(S1).
-        println!("{}", provenance::marked(envelope, "edit"));
+        println!("{}", envelope);
         if verify_failed {
             process::exit(3);
         }

@@ -11,7 +11,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{load_document, LoadError, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -348,7 +347,7 @@ pub(crate) fn run(args: &[String]) -> i32 {
             "files": run.records,
             "summary": scan_summary(&run, options.probe),
         });
-        println!("{}", provenance::marked(envelope, "scan"));
+        println!("{}", envelope);
     } else {
         write_scan_human(&run, options.probe);
     }

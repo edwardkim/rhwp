@@ -1,6 +1,5 @@
 //! Stream-anchor and caret-coordinate diagnostic query adapters.
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -151,7 +150,7 @@ pub(crate) fn dump_carets(args: &[String]) -> i32 {
             "count": rows.len(),
             "carets": rows,
         });
-        println!("{}", provenance::marked(envelope, "dump-carets"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
     for r in &rows {

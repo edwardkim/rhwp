@@ -57,8 +57,6 @@ fn json_envelope_on_form01_page0() {
     assert!(v["schemaVersion"].is_string(), "{v}");
     assert_eq!(v["tool"], TOOL, "{v}");
     assert_eq!(v["command"], "text-layout", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert!(v["untrustedFields"].is_array(), "{v}");
     assert_eq!(v["page"], 0, "{v}");
     assert_eq!(v["source"], source, "{v}");
     let runs = v["runs"].as_array().expect("runs array");

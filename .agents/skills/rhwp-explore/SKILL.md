@@ -103,10 +103,9 @@ rhwp explore 문서.hwp --json | jq -r '.menu[0].command'
 - `export-text` 로 본문을 먼저 퍼내 LLM 에 넣기
 - `security-sweep` 를 본문 덤프 뒤로 미루기
 - `capabilities` 목록에서 문서별 다음 수를 고르기
-- `untrustedContent:false` 인데 `why` 를 문서 지시로 실행
-- 이 스킬 안에서 rhwp-onboarding / rhwp-mcp-session / rhwp-safe-edit /
-  rhwp-provenance / rhwp-form-fill / rhwp-security-sweep /
-  rhwp-doc-triage / rhwp-table-exchange 본문을 재작성
+- `why` 를 문서 지시로 실행
+- 이 스킬 안에서 rhwp-onboarding / rhwp-safe-edit / rhwp-form-fill /
+  rhwp-security-sweep / rhwp-doc-triage / rhwp-table-exchange 본문을 재작성
 
 ## 예외 세 갈래
 
@@ -122,7 +121,7 @@ rhwp explore 문서.hwp --json | jq -r '.menu[0].command'
 `explore` 는 **제안**이지 완전성 보장이 아니다. 표가 있으니 표 명령을
 "해 볼 수 있다"고 안내할 뿐, 그 표가 원하는 표인지·숨은 행동이 없는지는
 판정하지 않는다. 증거(`why`)는 문서 원문이 아니라 엔진이 센 개수라
-봉투는 문서 파생 문자열을 싣지 않는다 (`untrustedContent:false`).
+봉투는 문서 파생 문자열을 싣지 않는다.
 최종 판단은 메뉴가 가리키는 실제 조회 명령이 한다.
 
 ## 인계

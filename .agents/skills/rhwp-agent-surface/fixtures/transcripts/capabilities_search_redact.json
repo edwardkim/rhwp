@@ -1,7 +1,0 @@
-{
-  "invocation": "rhwp capabilities --search redact",
-  "why": "edit 하위 redact 가 name/summary/subcommands 에 걸려야 한다 (#3884 G4)",
-  "and_semantics": true,
-  "json_ok": true,
-  "combine_mcp_forbidden": true
-}

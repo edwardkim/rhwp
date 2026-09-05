@@ -2,7 +2,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -111,7 +110,7 @@ pub(crate) fn run(args: &[String]) -> i32 {
             "respectVposReset": respect_vpos_reset,
             "pages": doc.dump_page_items_json(target_page),
         });
-        println!("{}", provenance::marked(envelope, "dump-pages"));
+        println!("{}", envelope);
     } else {
         println!("문서 로드: {} ({}페이지)", file_path, page_count);
         print!("{}", doc.dump_page_items(target_page));

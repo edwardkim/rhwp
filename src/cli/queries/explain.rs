@@ -3,8 +3,8 @@
 use std::fs;
 
 use crate::{
-    collect_field_records, load_document, provenance, ENVELOPE_SCHEMA_VERSION, EXIT_OK,
-    EXIT_RUNTIME, EXIT_USAGE,
+    collect_field_records, load_document, ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME,
+    EXIT_USAGE,
 };
 
 /// [#3828] `explain --json` 봉투의 표 항목 — `export-tables` 격자에서 텍스트를 빼고
@@ -120,22 +120,19 @@ fn explain_json_value(
         endnote_count,
         encrypted,
     );
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "format": format_label,
-            "pageCount": page_count,
-            "paragraphCount": para_count,
-            "tables": tables,
-            "fields": field_names,
-            "footnoteCount": footnote_count,
-            "endnoteCount": endnote_count,
-            "encrypted": encrypted,
-            "summary": summary,
-        }),
-        "explain",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": file_path,
+        "format": format_label,
+        "pageCount": page_count,
+        "paragraphCount": para_count,
+        "tables": tables,
+        "fields": field_names,
+        "footnoteCount": footnote_count,
+        "endnoteCount": endnote_count,
+        "encrypted": encrypted,
+        "summary": summary,
+    })
 }
 
 /// `rhwp explain <파일> [--json]` — 처음 보는 문서를 결정론적 규칙 문장으로 설명한다.

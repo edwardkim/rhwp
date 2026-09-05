@@ -266,15 +266,6 @@ fn white_text_on_white_page_is_detected() {
     let path = synth_hml("white", &[("TextColor", "16777215")], Some(INJECTION));
     let v = inspect_json(&path, &[]);
     assert_eq!(v["clean"], false, "{v}");
-    assert_eq!(
-        v["untrustedContent"], true,
-        "은닉 문자열 발췌는 문서 파생값입니다: {v}"
-    );
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["hiddenText[].excerpt"]),
-        "{v}"
-    );
     assert!(
         kinds(&v).iter().any(|k| k == "same_as_background"),
         "same_as_background 가 없습니다: {v}"
@@ -631,46 +622,6 @@ fn unknown_axis_suggests_the_real_one() {
 }
 
 // ── 자기서술 계약 ──────────────────────────────────────────────────────────
-
-#[test]
-fn mcp_tool_is_declared_and_fully_wired() {
-    // 드리프트 가드: 선언한 입력 속성이 전부 CLI 인자에 배선돼야 한다. 배선되지 않은
-    // 속성은 서버가 조용히 버리고 성공을 보고한다 — 에이전트는 반영됐다고 믿는다.
-    let out = run(&["capabilities", "--mcp"]);
-    let v: serde_json::Value =
-        serde_json::from_slice(&out.stdout).expect("capabilities --mcp JSON");
-    let tool = v["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_inspect_hidden_text")
-        .unwrap_or_else(|| panic!("hwp_inspect_hidden_text 도구가 없습니다: {v}"));
-
-    assert_eq!(tool["inputSchema"]["type"], "object", "{tool}");
-    assert!(tool["inputSchema"]["properties"].is_object(), "{tool}");
-    assert!(
-        tool["inputSchema"]["required"].is_array(),
-        "required 는 배열이어야 합니다: {tool}"
-    );
-    assert_eq!(tool["cli"]["command"], "inspect", "{tool}");
-
-    let wired = tool["cli"].to_string();
-    for key in ["thresholdPt", "includeOffPage"] {
-        assert!(
-            wired.contains(key),
-            "{key} 가 cli.args/optionalArgs 어디에도 배선되지 않았습니다: {tool}"
-        );
-    }
-    // 선언한 출력 필드는 실제 봉투에 있어야 한다.
-    let envelope = inspect_json(&repo(HML_FIXTURE), &[]);
-    for field in tool["outputFields"].as_array().expect("outputFields") {
-        let name = field.as_str().unwrap();
-        assert!(
-            !envelope[name].is_null(),
-            "봉투에 {name} 이 없습니다: {envelope}"
-        );
-    }
-}
 
 #[test]
 fn capabilities_and_help_both_advertise_inspect() {

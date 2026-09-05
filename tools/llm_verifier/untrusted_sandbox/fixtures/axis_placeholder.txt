@@ -1,1 +1,0 @@
-axis_closed_set.tsv is written by generate_corpus.py (closed slot x leak x nonce_kind x source_label_kind).

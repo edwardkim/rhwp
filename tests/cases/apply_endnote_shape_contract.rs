@@ -103,17 +103,3 @@ fn unknown_flag_empty_stdout() {
     assert!(out.stdout.is_empty());
     let _ = std::fs::remove_file(&src);
 }
-
-#[test]
-fn mcp_declared() {
-    let output = Command::new(rhwp_bin())
-        .args(["capabilities", "--mcp"])
-        .output()
-        .unwrap();
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert!(v["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|t| t["name"] == "hwp_apply_endnote_shape"));
-}

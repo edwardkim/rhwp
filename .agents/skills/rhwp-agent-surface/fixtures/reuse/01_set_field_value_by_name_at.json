@@ -1,5 +1,0 @@
-{
-  "surface": "hwp_fill_fields / hwp_doc_fill_fields",
-  "core": "set_field_value_by_name_at / collect_field_records",
-  "envelope": "fill_fields_json_value"
-}

@@ -330,22 +330,6 @@ fn security_sweep_documents() -> Vec<PathBuf> {
     docs
 }
 
-fn mcp_tool_names() -> Vec<String> {
-    let args = ["capabilities", "--mcp"];
-    let out = run(&args);
-    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
-    let manifest = parse_stdout_json(&args, &out);
-    manifest["tools"]
-        .as_array()
-        .map(|tools| {
-            tools
-                .iter()
-                .filter_map(|tool| tool["name"].as_str().map(str::to_string))
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
 fn unicode_finding_count(core: &DocumentCore) -> usize {
     let mut findings = 0usize;
     for section in &core.document().sections {
@@ -398,7 +382,6 @@ fn new_sample_documents_are_clean_across_all_three_detectors() {
     let mut checked_injection = 0usize;
     let mut checked_unicode = 0usize;
     let mut dirty: Vec<String> = Vec::new();
-    let tool_names = mcp_tool_names();
 
     for path in &docs {
         let name = path.file_name().unwrap().to_string_lossy().to_string();
@@ -422,7 +405,7 @@ fn new_sample_documents_are_clean_across_all_three_detectors() {
             signals: core.scan_injection(&InjectionScanOptions {
                 min_confidence: Confidence::Low,
                 include_fields: true,
-                tool_names: tool_names.clone(),
+                tool_names: Vec::new(),
             }),
         };
         checked_injection += 1;

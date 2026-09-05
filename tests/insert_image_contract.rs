@@ -126,20 +126,6 @@ fn paper_size_hu(path: &str, image: &str) -> (i64, i64) {
     )
 }
 
-/// `capabilities --mcp` 가 선언한 `hwp_insert_image` 도구 정의.
-fn insert_image_tool_definition() -> serde_json::Value {
-    let args = ["capabilities", "--mcp"];
-    let output = run(&args);
-    let v = parse_json(&args, &output);
-    v["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_insert_image")
-        .expect("hwp_insert_image 도구")
-        .clone()
-}
-
 /// 산출물을 다시 파싱해 **실제로 들어간** 그림들의 (binDataId, 폭, 높이, x, y) 를 모은다.
 /// 선언(봉투)이 아니라 파일이 답하게 한다.
 fn pictures_of(path: &Path) -> Vec<(u16, u32, u32, u32, u32)> {
@@ -242,59 +228,6 @@ fn insert_image_writes_picture_and_reports_placement() {
     assert!(
         pictures.contains(&expected),
         "산출물에 봉투가 말한 그림이 없습니다: 기대 {expected:?} / 실제 {pictures:?} / {v}"
-    );
-
-    let _ = std::fs::remove_file(&out);
-    let _ = std::fs::remove_file(&stamp);
-}
-
-/// 봉투가 **자기서술과 같은 말**을 하는가 — 매니페스트의 outputFields 전부가 실제
-/// 봉투 키로 나와야 한다. 선언만 있고 값이 없으면 파서를 자동 생성한 에이전트가 깨진다.
-#[test]
-fn envelope_carries_every_declared_output_field() {
-    let src = sample_arg();
-    let stamp = temp_path("fields", "png");
-    write_stamp_png(&stamp, 40, 20);
-    let out = temp_path("fields-out", "hwp");
-
-    let args = [
-        "edit",
-        "insert-image",
-        src.as_str(),
-        "--image",
-        stamp.to_str().unwrap(),
-        "-o",
-        out.to_str().unwrap(),
-        "--verify",
-        "--json",
-    ];
-    let output = run(&args);
-    assert_eq!(
-        output.status.code(),
-        Some(0),
-        "{}",
-        describe(&args, &output)
-    );
-    let v = parse_json(&args, &output);
-    let envelope = v.as_object().expect("봉투는 JSON 객체");
-
-    // 필드 이름을 시험에 박지 않는다 — 선언(매니페스트)을 읽어 그대로 대조한다.
-    let declared = insert_image_tool_definition();
-    let fields: Vec<&str> = declared["outputFields"]
-        .as_array()
-        .expect("outputFields")
-        .iter()
-        .filter_map(|f| f.as_str())
-        .collect();
-    assert!(fields.len() >= 10, "선언이 너무 얕습니다: {fields:?}");
-    let missing: Vec<&str> = fields
-        .iter()
-        .copied()
-        .filter(|f| !envelope.contains_key(*f))
-        .collect();
-    assert!(
-        missing.is_empty(),
-        "선언했는데 봉투에 없는 키: {missing:?}\n봉투: {v}"
     );
 
     let _ = std::fs::remove_file(&out);
@@ -1037,10 +970,10 @@ fn unknown_option_and_duplicate_input_are_usage_errors() {
     let _ = std::fs::remove_file(&stamp);
 }
 
-// ── ⑪ 자기서술 계약 (capabilities / MCP) ────────────────────────────────────
+// ── ⑪ 자기서술 계약 (capabilities) ──────────────────────────────────────────
 
 #[test]
-fn capabilities_and_mcp_declare_insert_image_axis() {
+fn capabilities_and_help_declare_insert_image_axis() {
     // 매니페스트만 읽는 에이전트에게는 선언이 곧 기능이다 — 빠지면 영영 못 쓴다.
     let cap: serde_json::Value =
         serde_json::from_slice(&run(&["capabilities"]).stdout).expect("capabilities JSON");
@@ -1062,64 +995,6 @@ fn capabilities_and_mcp_declare_insert_image_axis() {
             "edit flags 에 {expected} 누락: {flags:?}"
         );
     }
-
-    let mcp: serde_json::Value = serde_json::from_slice(&run(&["capabilities", "--mcp"]).stdout)
-        .expect("capabilities --mcp JSON");
-    let tool = mcp["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_insert_image")
-        .expect("hwp_insert_image 도구");
-    let required: Vec<&str> = tool["inputSchema"]["required"]
-        .as_array()
-        .expect("required 배열")
-        .iter()
-        .filter_map(|r| r.as_str())
-        .collect();
-    assert!(required.contains(&"path"), "{tool}");
-    assert!(required.contains(&"image"), "{tool}");
-    // 단위 함정은 설명에 박혀 있어야 한다 — 픽셀로 오해하면 도장이 사라진다.
-    let description = tool["description"].as_str().unwrap_or_default();
-    assert!(description.contains("HWPUNIT"), "{tool}");
-    let output_fields: Vec<&str> = tool["outputFields"]
-        .as_array()
-        .expect("outputFields")
-        .iter()
-        .filter_map(|f| f.as_str())
-        .collect();
-    for expected in ["binDataId", "overflow", "changedPages"] {
-        assert!(
-            output_fields.contains(&expected),
-            "hwp_insert_image 출력 계약에 {expected} 누락: {tool}"
-        );
-    }
-
-    // 선언한 입력 속성은 전부 자식 CLI 에 닿아야 한다. 닿지 않으면 서버가 그 인자를
-    // 조용히 버리고 성공을 보고한다 — 도구 하나 범위에서 같은 규칙을 다시 못 박는다.
-    let wired: Vec<String> = tool["cli"]["args"]
-        .as_array()
-        .expect("cli.args")
-        .iter()
-        .filter_map(|v| v.as_str())
-        .filter(|s| s.starts_with('{') && s.ends_with('}') && s.len() > 2)
-        .map(|s| s[1..s.len() - 1].to_string())
-        .chain(
-            tool["cli"]["optionalArgs"]
-                .as_array()
-                .expect("cli.optionalArgs")
-                .iter()
-                .filter_map(|o| o["when"].as_str().map(String::from)),
-        )
-        .collect();
-    let properties = tool["inputSchema"]["properties"]
-        .as_object()
-        .expect("properties");
-    let orphans: Vec<&String> = properties.keys().filter(|k| !wired.contains(k)).collect();
-    assert!(
-        orphans.is_empty(),
-        "선언만 되고 배선되지 않은 입력 인자: {orphans:?}\n{tool}"
-    );
 
     // 선언한 CLI 플래그는 실제로 수용돼야 한다 — 매니페스트가 광고한 축을 그대로 호출해 본다.
     let src = sample_arg();

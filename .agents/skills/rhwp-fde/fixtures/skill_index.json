@@ -78,9 +78,7 @@
   ],
   "forbiddenSkillsTouch": [
     "rhwp-onboarding",
-    "rhwp-mcp-session",
     "rhwp-safe-edit",
-    "rhwp-provenance",
     "rhwp-doc-triage",
     "rhwp-form-fill",
     "rhwp-bug-hunter"
@@ -94,7 +92,6 @@
     "rhwp-form-fill",
     "rhwp-table-exchange",
     "rhwp-security-sweep",
-    "rhwp-provenance",
     "bug-hunter"
   ],
   "engineRoutes": [

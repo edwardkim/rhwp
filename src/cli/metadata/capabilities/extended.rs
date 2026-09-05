@@ -23,16 +23,6 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
             "문서를 페이지별 PNG로 렌더 (native-skia)",
             cfg!(feature = "native-skia"),
         ),
-        cmd_gated(
-            "export-png-gpu",
-            "SVG를 GPU(vello/wgpu)로 래스터화해 페이지별 PNG로 렌더 (--benchmark 로 CPU 대비 실측)",
-            cfg!(feature = "gpu"),
-        ),
-        cmd_gated(
-            "gpu-info",
-            "사용 가능한 GPU 어댑터 열거 (export-png-gpu 가 쓸 백엔드 확인)",
-            cfg!(feature = "gpu"),
-        ),
         cmd_json(
             "export-pdf",
             "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",
@@ -105,33 +95,6 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "assetsDir",
                 "assetCount",
                 "lossCount",
-            ],
-        ),
-        cmd_json(
-            "export-capabilities-schema",
-            "capabilities 자기서술 자체의 JSON Schema 산출 — 명령 표면 코드 생성의 단일 출처 (#3776)",
-            &["--json", "--bare", "-o"],
-            &[
-                "schemaVersion",
-                "capabilitiesSchemaVersion",
-                "dialect",
-                "definitionCount",
-                "schema",
-                "mcpSchema",
-            ],
-        ),
-        // [#3907 O1] 자기서술 4축(IR 스키마·capabilities·MCP 도구·출처 지도)에서
-        // 실행 시점에 기계 유도하는 JSON-LD 온톨로지 — 손 나열 상수 0.
-        cmd_json(
-            "export-ontology",
-            "자기서술에서 기계 유도한 JSON-LD 온톨로지 산출 — IR 클래스·속성, 명령/MCP 행위, 신뢰 술어 (#3907 O1)",
-            &["--json", "--bare", "-o"],
-            &[
-                "schemaVersion",
-                "ontology",
-                "classCount",
-                "propertyCount",
-                "actionCount",
             ],
         ),
         cmd_json(

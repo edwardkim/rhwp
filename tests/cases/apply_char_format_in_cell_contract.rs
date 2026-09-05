@@ -197,17 +197,3 @@ fn unknown_flag_empty_stdout() {
     assert_eq!(out.status.code(), Some(2));
     assert_eq!(out.stdout.len(), 0);
 }
-
-#[test]
-fn mcp_declared() {
-    let output = Command::new(rhwp_bin())
-        .args(["capabilities", "--mcp"])
-        .output()
-        .unwrap();
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert!(v["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|t| t["name"] == "hwp_apply_char_format_in_cell"));
-}

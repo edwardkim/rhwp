@@ -1,6 +1,6 @@
 ---
 name: rhwp-contributor
-description: rhwp 저장소에 기여(이슈·코드 변경·문서·PR)할 때의 공식 절차를 안내합니다. 이슈 등록 → 분석 → 브랜치(upstream/devel) → 구현 → 로컬 검증 게이트 → 작업 증빙(캡슐) → 처리 결과 문서 → 한국어 PR 까지의 순서와, 변경 범위별 필수 검증(fmt/clippy/test·시각 검증)을 저장소 규약대로 밟습니다. 트리거 — 사용자가 "rhwp에 기여", "PR 올려", "이슈 만들고 수정", "버그 고쳐서 제출", "기여 절차" 등을 요청할 때. 규약 정본은 AGENTS.md 와 CONTRIBUTING.md.
+description: rhwp 저장소에 기여(이슈·코드 변경·문서·PR)할 때의 공식 절차를 안내합니다. 이슈 등록 → 분석 → 브랜치(upstream/devel) → 구현 → 로컬 검증 게이트 → 작업 증빙 → 처리 결과 문서 → 한국어 PR 까지의 순서와, 변경 범위별 필수 검증(fmt/clippy/test·시각 검증)을 저장소 규약대로 밟습니다. 트리거 — 사용자가 "rhwp에 기여", "PR 올려", "이슈 만들고 수정", "버그 고쳐서 제출", "기여 절차" 등을 요청할 때. 규약 정본은 AGENTS.md 와 CONTRIBUTING.md.
 ---
 
 # rhwp-contributor — 기여 절차 Skill
@@ -48,7 +48,6 @@ SKILL.md 는 라우터다. 단계에 맞는 자식을 **읽고 나서** 명령�
 | 5 rustfmt | Unix | [references/rustfmt-unix.md](references/rustfmt-unix.md) |
 | 5 clippy·test | 검증 | [references/clippy-and-tests.md](references/clippy-and-tests.md) |
 | 5 렌더 | 시각 | [references/visual-evidence.md](references/visual-evidence.md) |
-| 6 영수증 | 포인터 | [references/work-receipt-pointers.md](references/work-receipt-pointers.md) |
 | 7 처리 결과 | 문서 | [references/working-doc.md](references/working-doc.md) |
 | 8 PR | 한국어 | [references/korean-pr.md](references/korean-pr.md) |
 | 8 템플릿 | 첫 칸 | [references/pr-template-checkboxes.md](references/pr-template-checkboxes.md) |
@@ -82,9 +81,9 @@ SKILL.md 는 라우터다. 단계에 맞는 자식을 **읽고 나서** 명령�
    - 변경 집합에 `.agents/skills/` 또는 `.agents/skills/` 가 있으면
      **스킬 경로 게이트**(아래 절)를 PR 전에 명령마다 세 번
    `crates/` 가 있으면 fmt 는 반드시 통과해야 한다.
-6. **작업 영수증** — 문서를 실제로 편집·생성했으면
-   `rhwp replay --capsule` / `rhwp audit` / `rhwp lineage` 포인터를 따른다.
-   그 스킬 본문을 이 파동에서 다시 쓰지 않는다.
+6. **작업 증빙** — 문서를 실제로 편집·변환했으면 관련 `--json` 봉투 원문
+   (종료 코드 포함)을 PR 본문에 남긴다 — 예: `rhwp edit fill-fields … --verify --json`,
+   `rhwp ir-diff <원본> <산출> --json`. 정본은 `AGENTS.md` 작업 증빙 절.
 7. **처리 결과 문서** — 규모 있는 변경은 `mydocs/working/` 에 무엇을·왜·어떻게·
    검증 실측을 남긴다.
 8. **한국어 PR** — fmt 게이트(그리고 스킬 경로가 있으면 스킬 경로 게이트)
@@ -119,8 +118,7 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 `cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapture` 의
 `skills_have_valid_frontmatter_and_are_executable` 가 실패하면 기여를
 멈춘다. 스킬 본문에 실행 가능한 `rhwp <cmd>` 가 없으면 하드 페일이다.
-새 rhwp CLI 를 만들지 않는다. 기존 예(`rhwp replay --capsule` /
-`rhwp audit` / `rhwp lineage`)를 지우지 않는다.
+새 rhwp CLI 를 만들지 않는다.
 
 ## 하지 않는 것
 
@@ -131,7 +129,7 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 - named worktree 를 훔치지 않는다.
 - DocumentCore 편집 로직을 발명하지 않는다.
 - 새 rhwp CLI 명령을 만들지 않는다.
-- `gym/` 과 다른 스킬 본문(영수증 스킬 포함)을 고치지 않는다.
+- `gym/` 과 다른 스킬 본문을 고치지 않는다.
 - 열린 PR 의 파일을 가로채 고치지 않는다.
 
 ## 상세 레퍼런스

@@ -212,28 +212,3 @@ fn measure_width_rejects_a_flag_consumed_as_an_option_value() {
 }
 
 // ── run 예외의 자기서술 (G3) ─────────────────────────────────────────────
-
-#[test]
-fn run_failure_envelope_exception_is_self_described() {
-    // run 은 실패도 봉투로 보고하는 의도된 예외다(judgment-as-data). 예외가 실물에만
-    // 있고 자기서술에 없으면, "실패 = stdout 0바이트"를 믿는 소비자가 run 에서 깨진다.
-    //
-    // 호출은 bare `capabilities` — 이 명령은 플래그 없이 JSON 이 기본 출력이고,
-    // `--json` 은 `--search` 전용이다(직접 확인: 병합 전 0889974a0 도 `--json` 을
-    // "알 수 없는 옵션"으로 거부했다 — --search 병합의 회귀가 아니라 원래 계약).
-    let args = ["capabilities"];
-    let out = run(&args);
-    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
-    let v: serde_json::Value = serde_json::from_slice(&out.stdout).expect("capabilities JSON");
-    let failure = v["jsonContract"]["failure"]
-        .as_str()
-        .expect("jsonContract.failure");
-    assert!(
-        failure.contains("run"),
-        "run 의 stdout 예외가 자기서술에 없다: {failure}"
-    );
-    assert!(
-        failure.contains("invalid"),
-        "계획 무효(exit 2 + invalid[]) 예외가 자기서술에 없다: {failure}"
-    );
-}

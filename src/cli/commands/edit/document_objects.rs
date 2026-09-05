@@ -2,7 +2,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::runtime::finish_edit_write;
@@ -108,7 +107,7 @@ pub(super) fn edit_set_chart_data(args: &[String]) -> i32 {
                         "dryRun": dry_run,
                         "invalid": parsed["invalid"],
                     });
-                    println!("{}", provenance::marked(envelope, "edit"));
+                    println!("{}", envelope);
                 } else {
                     eprintln!("오류: 차트 데이터 변경 실패 - {raw}");
                 }

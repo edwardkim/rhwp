@@ -99,7 +99,6 @@ info --json
 - 표 작업 → `rhwp-table-exchange`
 - 누름틀 채움 → `rhwp-form-fill`
 - 배포 전 점검·주입 → `rhwp-security-sweep`
-- 출처 표지 소비 → `rhwp-provenance`
 - 원본 수정 → `rhwp-safe-edit`
 - 폴더 수백 건 → `rhwp-bulk-pipeline`
 

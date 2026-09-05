@@ -1,5 +1,0 @@
-{
-  "surface": "edit * -o / hwp_doc_save",
-  "core": "edit_serialize",
-  "envelope": "save/verify envelope"
-}

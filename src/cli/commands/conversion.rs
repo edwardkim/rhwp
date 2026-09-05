@@ -3,11 +3,10 @@
 use std::fs;
 use std::process;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{
-    atomic_file, cli_output_password, load_document, load_document_core, paths_refer_to_same_file,
+    cli_output_password, load_document, load_document_core, paths_refer_to_same_file,
     verification_exit_code, ConversionVerifyOptions, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
 };
 
@@ -171,20 +170,17 @@ pub(crate) fn extract_pages(args: &[String]) -> i32 {
     if json_mode {
         println!(
             "{}",
-            provenance::marked(
-                serde_json::json!({
-                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                    "source": input,
-                    "output": output,
-                    "from": from,
-                    "to": to,
-                    "pagesBefore": report.pages_before,
-                    "pagesAfter": report.pages_after,
-                    "paragraphsKept": report.kept,
-                    "paragraphsRemoved": report.removed,
-                }),
-                "extract-pages",
-            )
+            serde_json::json!({
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                "source": input,
+                "output": output,
+                "from": from,
+                "to": to,
+                "pagesBefore": report.pages_before,
+                "pagesAfter": report.pages_after,
+                "paragraphsKept": report.kept,
+                "paragraphsRemoved": report.removed,
+            })
         );
     } else {
         println!(
@@ -274,20 +270,17 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
         |bytes_len: usize, verify: serde_json::Value, verify_pages: serde_json::Value| {
             println!(
                 "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "source": input_path,
-                        "output": output_path,
-                        "format": "hwp5",
-                        "bytes": bytes_len,
-                        "wasDistribution": was_distribution,
-                        "passwordProtected": output_password.is_some(),
-                        "verify": verify,
-                        "verifyPages": verify_pages,
-                    }),
-                    "convert",
-                )
+                serde_json::json!({
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                    "source": input_path,
+                    "output": output_path,
+                    "format": "hwp5",
+                    "bytes": bytes_len,
+                    "wasDistribution": was_distribution,
+                    "passwordProtected": output_password.is_some(),
+                    "verify": verify,
+                    "verifyPages": verify_pages,
+                })
             );
         };
     let export_snapshot = doc.prepare_hwp_export_snapshot();
@@ -488,19 +481,16 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
         |bytes_len: usize, verify: serde_json::Value, verify_pages: serde_json::Value| {
             println!(
                 "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "source": positionals[0],
-                        "output": output_path.display().to_string(),
-                        "format": "hwpx",
-                        "bytes": bytes_len,
-                        "passwordProtected": output_password.is_some(),
-                        "verify": verify,
-                        "verifyPages": verify_pages,
-                    }),
-                    "export-hwpx",
-                )
+                serde_json::json!({
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                    "source": positionals[0],
+                    "output": output_path.display().to_string(),
+                    "format": "hwpx",
+                    "bytes": bytes_len,
+                    "passwordProtected": output_password.is_some(),
+                    "verify": verify,
+                    "verifyPages": verify_pages,
+                })
             );
         };
 
@@ -707,23 +697,20 @@ pub(crate) fn export_hml(args: &[String]) {
         print_hml_export_error(&error);
         process::exit(1);
     });
-    atomic_file::write_atomically(&paths.output, &bytes).unwrap_or_else(|error| {
+    std::fs::write(&paths.output, &bytes).unwrap_or_else(|error| {
         eprintln!("오류: 파일 저장 실패 - {}: {error}", paths.output.display());
         process::exit(1);
     });
     if paths.json {
         println!(
             "{}",
-            provenance::marked(
-                serde_json::json!({
-                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                    "source": paths.input.display().to_string(),
-                    "output": paths.output.display().to_string(),
-                    "format": "hml",
-                    "bytes": bytes.len(),
-                }),
-                "export-hml",
-            )
+            serde_json::json!({
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                "source": paths.input.display().to_string(),
+                "output": paths.output.display().to_string(),
+                "format": "hml",
+                "bytes": bytes.len(),
+            })
         );
     } else {
         println!(

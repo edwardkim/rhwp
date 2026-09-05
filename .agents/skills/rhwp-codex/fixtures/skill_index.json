@@ -69,14 +69,11 @@
   ],
   "forbiddenSkillsTouch": [
     "rhwp-onboarding",
-    "rhwp-mcp-session",
     "rhwp-safe-edit",
-    "rhwp-provenance",
     "rhwp-doc-triage",
     "rhwp-form-fill",
     "rhwp-table-exchange",
     "rhwp-security-sweep",
-    "rhwp-work-receipt",
     "rhwp-bulk-pipeline",
     "rhwp-visual-regression"
   ],

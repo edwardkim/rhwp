@@ -5,7 +5,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -98,7 +97,7 @@ pub(crate) fn form_value(args: &[String]) -> i32 {
                 envelope[k] = v.clone();
             }
         }
-        println!("{}", provenance::marked(envelope, "form-value"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
     if form["ok"] == true {
@@ -239,7 +238,7 @@ pub(crate) fn header_footer(args: &[String]) -> i32 {
                 }
             }
         }
-        println!("{}", provenance::marked(envelope, "header-footer"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
     let kind = if is_header { "머리말" } else { "꼬리말" };
@@ -315,7 +314,7 @@ pub(crate) fn headers_footers(args: &[String]) -> i32 {
             "count": count,
             "headersFooters": items,
         });
-        println!("{}", provenance::marked(envelope, "headers-footers"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
     println!("{file_path}: 머리말/꼬리말 {count}개");

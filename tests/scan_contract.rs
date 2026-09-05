@@ -180,36 +180,6 @@ fn limit_truncates_after_deterministic_sort() {
 }
 
 #[test]
-fn provenance_marks_are_honest_per_invocation() {
-    let dir = corpus();
-    // probe 실패 메시지가 실린 호출 — 파서가 문서 바이트에서 만든 문자열이므로 표지가 붙는다.
-    let out = run(&["scan", dir.to_str().unwrap(), "--probe", "--json"]);
-    assert_eq!(out.status.code(), Some(0));
-    let v = stdout_json(&out);
-    assert_eq!(v["untrustedContent"], true);
-    let fields: Vec<&str> = v["untrustedFields"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter_map(|f| f.as_str())
-        .collect();
-    assert!(
-        fields.contains(&"files[].probe.error"),
-        "출처 지도의 선언이 봉투 표지에 나타나야 한다: {fields:?}"
-    );
-
-    // probe 없는 호출 — 문서를 열지 않았으므로 표지는 정직하게 false 다.
-    let out = run(&["scan", dir.to_str().unwrap(), "--json"]);
-    assert_eq!(out.status.code(), Some(0));
-    let v = stdout_json(&out);
-    assert_eq!(
-        v["untrustedContent"], false,
-        "실리지 않은 필드를 광고하면 표지가 거짓말이 된다"
-    );
-    assert_eq!(v["untrustedFields"].as_array().map(Vec::len), Some(0));
-}
-
-#[test]
 fn human_output_preserves_summary_and_classification_notes() {
     let dir = corpus();
     let liar = dir.join("b-거짓말.hwp");

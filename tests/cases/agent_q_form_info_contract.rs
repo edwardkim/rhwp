@@ -57,8 +57,6 @@ fn form01_json_envelope() {
         v["schemaVersion"],
         rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION
     );
-    assert_eq!(v["untrustedContent"], true);
-    assert_eq!(v["untrustedFields"], serde_json::json!(["source", "form"]));
     assert_eq!(v["section"], 0);
     assert_eq!(v["para"], 0);
     assert_eq!(v["ci"], 0);

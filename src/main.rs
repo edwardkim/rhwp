@@ -2,18 +2,7 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::process;
-
-mod agent_profiles;
-mod anchor_log;
-mod atomic_file;
-mod audit_standard;
-mod capsule_sign;
 mod cli;
-mod disclose;
-mod lineage_bundle;
-mod mcp_serve;
-mod policy_gate;
-mod settle;
 use cli::commands::edit::runtime::{
     check_expect_sha256, edit_output_format, edit_serialize, edit_verify_report, finish_edit_write,
     EditOutputFormat,
@@ -34,7 +23,6 @@ use cli::integrity::{
     cas_test_mark_checked_and_wait, cas_test_synchronize_before_lock, sha256_hex_of, CasPathLock,
 };
 pub(crate) use cli::units::{hu_to_mm, hu_to_mm_i};
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 /// [#2707] CLI 종료 코드 계약 — 성공.
@@ -114,15 +102,10 @@ fn main() {
             exit_with(cli::queries::structure::export_structure(&args[2..]))
         }
         Some("export-png") => exit_with(cli::outputs::raster::export_png(&args[2..])),
-        // [gym_gpu_raster] GPU 가속 PNG 래스터화 (feature = "gpu"). export-png(native-skia)과
-        // 같은 방식으로 feature 게이팅 — 미빌드 바이너리는 사용법 오류(exit 2)로 안내한다.
-        Some("export-png-gpu") => exit_with(cli::outputs::raster::export_png_gpu(&args[2..])),
-        Some("gpu-info") => exit_with(cli::outputs::raster::gpu_info(&args[2..])),
         Some("export-pdf") => exit_with(cli::outputs::pdf::export_pdf(&args[2..])),
         Some("export-text") => exit_with(cli::outputs::text::export_text(&args[2..])),
         Some("export-markdown") => exit_with(cli::outputs::text::export_markdown(&args[2..])),
         Some("export-tables") => exit_with(cli::outputs::tabular::export_tables(&args[2..])),
-        Some("export-llm") => exit_with(cli::outputs::text::export_llm(&args[2..])),
         Some("table-to-csv") => exit_with(cli::outputs::tabular::table_to_csv(&args[2..])),
         Some("csv-to-table") => exit_with(cli::commands::tabular_import::csv_to_table(&args[2..])),
         Some("chart-to-csv") => exit_with(cli::outputs::tabular::chart_to_csv(&args[2..])),
@@ -130,17 +113,9 @@ fn main() {
         Some("export-hwpx") => exit_with(cli::commands::conversion::export_hwpx(&args[2..])),
         Some("export-hml") => cli::commands::conversion::export_hml(&args[2..]),
         Some("export-doclang") => exit_with(cli::outputs::doclang::export_doclang(&args[2..])),
-        Some("export-ir-schema") => exit_with(cmd_export_ir_schema(&args[2..])),
-        Some("export-capabilities-schema") => exit_with(cmd_export_capabilities_schema(&args[2..])),
-        Some("export-ontology") => exit_with(cmd_export_ontology(&args[2..])),
         Some("capabilities") => {
             exit_with(cli::metadata::capabilities::show_capabilities(&args[2..]))
         }
-        Some("export-provenance-map") => exit_with(
-            cli::metadata::capabilities::export_provenance_map(&args[2..]),
-        ),
-        Some("export-agent-manifest") => exit_with(cmd_export_agent_manifest(&args[2..])),
-        Some("mcp-serve") => exit_with(mcp_serve::run(&args[2..])),
         Some("batch") => exit_with(cli::batch::run(&args[2..])),
         Some("scan") => exit_with(cli::queries::scan::run(&args[2..])),
         Some("threat-scan") => {
@@ -239,27 +214,6 @@ fn main() {
         Some("explain") => exit_with(cli::queries::explain::explain_document(&args[2..])),
         Some("explore") => exit_with(cli::queries::explore::explore_document(&args[2..])),
         Some("edit") => exit_with(cli::commands::edit::run(&args[2..])),
-        Some("run") => exit_with(cli::protocol::cmd_run_plan(&args[2..])),
-        Some("replay") => exit_with(cli::protocol::cmd_replay(&args[2..])),
-        Some("audit") => exit_with(cli::protocol::cmd_audit(&args[2..])),
-        Some("lineage") => exit_with(cli::protocol::cmd_lineage(&args[2..])),
-        Some("keygen") => exit_with(cli::protocol::cmd_keygen(&args[2..])),
-        Some("verify-signature") => exit_with(cli::protocol::cmd_verify_signature(&args[2..])),
-        Some("harness") => exit_with(cli::protocol::cmd_harness(&args[2..])),
-        // [#4537] 통합 판정은 **읽기 전용**이라 쓰기 명령(harness)과 표면을 나눈다 —
-        // capabilities 의 category 가 도구 주석(readOnlyHint)의 교차 검증 원천이므로,
-        // 한 명령이 쓰기·읽기를 겸하면 MCP 주석 계약이 성립하지 않는다.
-        Some("harness-status") => exit_with(cli::protocol::cmd_harness_status(&args[2..])),
-        Some("anchor") => exit_with(cli::protocol::cmd_anchor(&args[2..])),
-        Some("gate") => exit_with(cli::protocol::cmd_gate(&args[2..])),
-        Some("bundle") => exit_with(cli::protocol::cmd_bundle(&args[2..])),
-        Some("disclose") => exit_with(cli::protocol::cmd_disclose(&args[2..])),
-        Some("settle") => exit_with(cli::protocol::cmd_settle(&args[2..])),
-        Some("audit-report") => exit_with(cli::protocol::cmd_audit_report(&args[2..])),
-        Some("recall-scope") => exit_with(cli::protocol::cmd_recall_scope(&args[2..])),
-        Some("conformance") => exit_with(cli::protocol::cmd_conformance(&args[2..])),
-        // [#3719 §6-4] 계획을 *만드는* 쪽의 정답지 — `run` 바로 옆에 둔다.
-        Some("export-plan-schema") => exit_with(cmd_export_plan_schema(&args[2..])),
         // [#2707] 알 수 없는 명령·명령 누락은 사용법 오류다. 표준 CLI 관례대로 stderr 로 안내하고
         // 종료 코드 2로 끝낸다(기존에는 stdout + 0이라 오타 낸 명령이 스크립트에서 성공으로 보였다).
         other => {
@@ -308,15 +262,12 @@ fn tables_json_value(
     file_path: &str,
     tables: &[rhwp::document_core::queries::table_extract::TableGrid],
 ) -> serde_json::Value {
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "tableCount": tables.len(),
-            "tables": tables,
-        }),
-        "export-tables",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": file_path,
+        "tableCount": tables.len(),
+        "tables": tables,
+    })
 }
 
 /// [#3346] `fields --json` 과 `batch fields` 가 공유하는 봉투.
@@ -325,16 +276,13 @@ fn fields_json_value(file_path: &str, fields: &[serde_json::Value]) -> serde_jso
         .iter()
         .filter_map(|f| f["name"].as_str().map(String::from))
         .collect();
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "fieldCount": fields.len(),
-            "fields": fields,
-            "textSecurity": text_security_value(&names),
-        }),
-        "fields",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": file_path,
+        "fieldCount": fields.len(),
+        "fields": fields,
+        "textSecurity": text_security_value(&names),
+    })
 }
 
 /// 누름틀 이름 축의 유니코드 기만 판정 봉투.
@@ -394,23 +342,20 @@ fn search_json_value(
     matches: &[rhwp::document_core::queries::grep::GrepMatch],
     total_match_count: usize,
 ) -> serde_json::Value {
-    provenance::marked(
-        serde_json::json!({
-        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-        "source": file_path,
-        "query": query,
-        "caseSensitive": case_sensitive,
-        "matchCount": matches.len(),
-        "totalMatchCount": total_match_count,
-        "truncated": matches.len() < total_match_count,
-        // [#3787 S7] 절단 축의 어휘를 텍스트 축(`export-text --max-chars`)과 맞춘다.
-        // `totalMatchCount - matchCount` 로 유도할 수 있는 값이지만, 유도를 요구하면
-        // "전부 봤다"는 오독이 그대로 남는다 — 생략량은 명시가 계약이다.
-        "omittedCount": total_match_count.saturating_sub(matches.len()),
-        "matches": matches,
-        }),
-        "search",
-    )
+    serde_json::json!({
+    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+    "source": file_path,
+    "query": query,
+    "caseSensitive": case_sensitive,
+    "matchCount": matches.len(),
+    "totalMatchCount": total_match_count,
+    "truncated": matches.len() < total_match_count,
+    // [#3787 S7] 절단 축의 어휘를 텍스트 축(`export-text --max-chars`)과 맞춘다.
+    // `totalMatchCount - matchCount` 로 유도할 수 있는 값이지만, 유도를 요구하면
+    // "전부 봤다"는 오독이 그대로 남는다 — 생략량은 명시가 계약이다.
+    "omittedCount": total_match_count.saturating_sub(matches.len()),
+    "matches": matches,
+    })
 }
 
 /// [#3787 S7] 페이지 텍스트 산출의 문자 예산 절단 — CLI `export-text --json` 과
@@ -543,43 +488,40 @@ fn info_json_value(
             "confidence": "metadata",
         })
     });
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "format": format_str,
-            "sizeBytes": file_size,
-            "version": version,
-            "sections": document.sections.len(),
-            "pageCount": doc.page_count(),
-            "paraCount": para_count,
-            "fonts": fonts,
-            // [#3407] best-effort 문서 제목 — 없으면 null. batch info 로 자동 전파.
-            "title": document_title(doc),
-            // HWP5 summary 또는 HWPX version.xml 메타데이터다. 원 작성 제품이 아니라
-            // 마지막 저장 제품을 가리키며 없거나 수정될 수 있다.
-            "lastSavedWith": last_saved_with,
-            // [#6208] 문서에 실린 인쇄 방식(모아 찍기 등). rhwp 는 이 값을 **출력에
-            // 반영하지 않으므로**, 한글 오라클 PDF 와 대조할 때 `impliesNup` 이 true
-            // 면 한글 쪽 장 수·용지 방향이 달라 좌표를 그대로 견주면 오판한다.
-            // 값이 문서에 없으면 `printMethod: null`.
-            "printMethod": doc.document().doc_info.print_method,
-            "printMethodImpliesNup": rhwp::model::document::print_method_implies_nup(
-                doc.document().doc_info.print_method,
-            ),
-            // [#3880 T1] 파싱 중 건너뛴 것을 봉투가 스스로 밝힌다.
-            //
-            // 인간 출력은 `warnings: N` 과 상세를 stderr 로 내는데 JSON 분기는 그
-            // 앞에서 `return EXIT_OK` 로 끝나 도달하지 못했다. 그래서 리소스가 조용히
-            // 잘린 문서가 **exit 0 + 완전해 보이는 봉투**를 냈다 — `fonts` 가 부분
-            // 목록인데 봉투는 그렇다고 말하지 않았다(#3719 "부분 목록 금지" 위반).
-            //
-            // 경고가 없으면 빈 배열이다. 키를 빼면 소비자가 "경고 없음"과 "이 빌드는
-            // 경고를 모름"을 구별할 수 없다.
-            "warnings": info_warnings_value(doc),
-        }),
-        "info",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": file_path,
+        "format": format_str,
+        "sizeBytes": file_size,
+        "version": version,
+        "sections": document.sections.len(),
+        "pageCount": doc.page_count(),
+        "paraCount": para_count,
+        "fonts": fonts,
+        // [#3407] best-effort 문서 제목 — 없으면 null. batch info 로 자동 전파.
+        "title": document_title(doc),
+        // HWP5 summary 또는 HWPX version.xml 메타데이터다. 원 작성 제품이 아니라
+        // 마지막 저장 제품을 가리키며 없거나 수정될 수 있다.
+        "lastSavedWith": last_saved_with,
+        // [#6208] 문서에 실린 인쇄 방식(모아 찍기 등). rhwp 는 이 값을 **출력에
+        // 반영하지 않으므로**, 한글 오라클 PDF 와 대조할 때 `impliesNup` 이 true
+        // 면 한글 쪽 장 수·용지 방향이 달라 좌표를 그대로 견주면 오판한다.
+        // 값이 문서에 없으면 `printMethod: null`.
+        "printMethod": doc.document().doc_info.print_method,
+        "printMethodImpliesNup": rhwp::model::document::print_method_implies_nup(
+            doc.document().doc_info.print_method,
+        ),
+        // [#3880 T1] 파싱 중 건너뛴 것을 봉투가 스스로 밝힌다.
+        //
+        // 인간 출력은 `warnings: N` 과 상세를 stderr 로 내는데 JSON 분기는 그
+        // 앞에서 `return EXIT_OK` 로 끝나 도달하지 못했다. 그래서 리소스가 조용히
+        // 잘린 문서가 **exit 0 + 완전해 보이는 봉투**를 냈다 — `fonts` 가 부분
+        // 목록인데 봉투는 그렇다고 말하지 않았다(#3719 "부분 목록 금지" 위반).
+        //
+        // 경고가 없으면 빈 배열이다. 키를 빼면 소비자가 "경고 없음"과 "이 빌드는
+        // 경고를 모름"을 구별할 수 없다.
+        "warnings": info_warnings_value(doc),
+    })
 }
 
 /// [#3880 T1] `info --json` 의 `warnings[]` — 파싱이 건너뛴 것의 기계 판정용.
@@ -619,19 +561,16 @@ fn extract_data_json_value(
     total_item_count: usize,
     counts: &serde_json::Value,
 ) -> serde_json::Value {
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "kind": kind,
-            "itemCount": items.len(),
-            "totalItemCount": total_item_count,
-            "truncated": items.len() < total_item_count,
-            "counts": counts,
-            "items": items,
-        }),
-        "extract-data",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": file_path,
+        "kind": kind,
+        "itemCount": items.len(),
+        "totalItemCount": total_item_count,
+        "truncated": items.len() < total_item_count,
+        "counts": counts,
+        "items": items,
+    })
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -1045,428 +984,6 @@ pub(crate) fn collect_field_records(doc: &rhwp::wasm_api::HwpDocument) -> Vec<se
         .collect()
 }
 
-/// [#3762] `export-ir-schema` — 공개 IR 의 JSON Schema 를 낸다 (M18 바인딩 착수 조건).
-///
-/// 문서를 입력으로 받지 않는다 — 스키마는 **타입의 자기서술**이지 특정 문서의
-/// 속성이 아니다. capabilities 가 명령 표면을 설명하듯, 이 명령은 문서 모델을
-/// 설명한다. 외부 바인딩 세대가 코드 생성의 단일 출처로 쓴다.
-fn cmd_export_ir_schema(args: &[String]) -> i32 {
-    let mut out_path: Option<&str> = None;
-    let mut json_mode = false;
-    let mut bare = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--json" => json_mode = true,
-            // 봉투 없이 스키마 본문만 — JSON Schema 도구에 바로 먹이려는 용도.
-            "--bare" => bare = true,
-            "-o" | "--out" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.as_str()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            other => {
-                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
-                return EXIT_USAGE;
-            }
-        }
-        i += 1;
-    }
-
-    let payload = if bare {
-        // --bare 는 JSON Schema 검증기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
-        rhwp::ir_schema::ir_schema()
-    } else {
-        // [#3885] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
-        // untrustedContent:false 를 명시한다. 키 부재는 "안전"이 아니라
-        // "이 빌드는 표지를 모른다"로 읽히기 때문이다.
-        provenance::marked(rhwp::ir_schema::envelope(), "export-ir-schema")
-    };
-    let text = match serde_json::to_string_pretty(&payload) {
-        Ok(t) => t,
-        Err(e) => {
-            eprintln!("오류: 스키마 직렬화 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    if let Some(path) = out_path {
-        if let Err(e) = fs::write(path, text.as_bytes()) {
-            eprintln!("오류: 스키마를 쓸 수 없습니다 - {}: {}", path, e);
-            return EXIT_RUNTIME;
-        }
-        if json_mode {
-            // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
-            println!(
-                "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "irSchemaVersion": rhwp::ir_schema::IR_SCHEMA_VERSION,
-                        "output": path,
-                        "bytes": text.len(),
-                    }),
-                    "export-ir-schema"
-                )
-            );
-        } else {
-            println!("IR 스키마 저장: {} ({} bytes)", path, text.len());
-        }
-        return EXIT_OK;
-    }
-
-    println!("{text}");
-    EXIT_OK
-}
-
-/// [#3719 §6-4] `export-plan-schema` — `run` 계획서 문법의 JSON Schema 를 낸다.
-///
-/// 문서를 입력으로 받지 않는다 — 스키마는 **계획서 문법의 자기서술**이지 특정 문서의
-/// 속성이 아니다. `run --json` 이 이미 쓴 계획을 검사한다면, 이 명령은 계획을 **쓰기
-/// 전에** 읽는 정답지다. 필드명을 지어내고 `invalid[]` 로 되돌아오는 왕복이 계획 생성
-/// 실패의 대부분이라, 그 왕복을 없애는 것이 목적이다.
-fn cmd_export_plan_schema(args: &[String]) -> i32 {
-    let mut out_path: Option<&str> = None;
-    let mut json_mode = false;
-    let mut bare = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--json" => json_mode = true,
-            // 봉투 없이 스키마 본문만 — JSON Schema 검증기에 바로 먹이려는 용도.
-            "--bare" => bare = true,
-            "-o" | "--out" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.as_str()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            other => {
-                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
-                return EXIT_USAGE;
-            }
-        }
-        i += 1;
-    }
-
-    let payload = if bare {
-        // --bare 는 JSON Schema 검증기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
-        rhwp::plan_schema::plan_schema()
-    } else {
-        // [#3787 S1] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
-        // untrustedContent:false 를 명시한다는 것이 capabilities 의 선언이다.
-        provenance::marked(rhwp::plan_schema::envelope(), "export-plan-schema")
-    };
-    let text = match serde_json::to_string_pretty(&payload) {
-        Ok(t) => t,
-        Err(e) => {
-            eprintln!("오류: 스키마 직렬화 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    if let Some(path) = out_path {
-        if let Err(e) = fs::write(path, text.as_bytes()) {
-            eprintln!("오류: 스키마를 쓸 수 없습니다 - {}: {}", path, e);
-            return EXIT_RUNTIME;
-        }
-        if json_mode {
-            // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
-            println!(
-                "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "planSchemaVersion": rhwp::plan_schema::PLAN_SCHEMA_VERSION,
-                        "output": path,
-                        "bytes": text.len(),
-                    }),
-                    "export-plan-schema"
-                )
-            );
-        } else {
-            println!("계획 스키마 저장: {} ({} bytes)", path, text.len());
-        }
-        return EXIT_OK;
-    }
-
-    println!("{text}");
-    EXIT_OK
-}
-
-/// [#3776] `export-capabilities-schema` — capabilities 자체의 JSON Schema 를 낸다.
-fn cmd_export_capabilities_schema(args: &[String]) -> i32 {
-    let mut out_path: Option<&str> = None;
-    let mut json_mode = false;
-    let mut bare = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--json" => json_mode = true,
-            "--bare" => bare = true,
-            "-o" | "--out" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.as_str()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            other => {
-                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
-                return EXIT_USAGE;
-            }
-        }
-        i += 1;
-    }
-
-    let payload = if bare {
-        // --bare 는 JSON Schema 검증기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
-        rhwp::capabilities_schema::capabilities_schema()
-    } else {
-        // [#3885] export-ir-schema 와 같은 사유 — 문서를 열지 않아도 표지는 싣는다.
-        provenance::marked(
-            rhwp::capabilities_schema::envelope(),
-            "export-capabilities-schema",
-        )
-    };
-    let text = match serde_json::to_string_pretty(&payload) {
-        Ok(t) => t,
-        Err(e) => {
-            eprintln!("오류: 스키마 직렬화 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    if let Some(path) = out_path {
-        if let Err(e) = fs::write(path, text.as_bytes()) {
-            eprintln!("오류: 스키마를 쓸 수 없습니다 - {}: {}", path, e);
-            return EXIT_RUNTIME;
-        }
-        if json_mode {
-            println!(
-                "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "capabilitiesSchemaVersion":
-                            rhwp::capabilities_schema::CAPABILITIES_SCHEMA_VERSION,
-                        "output": path,
-                        "bytes": text.len(),
-                    }),
-                    "export-capabilities-schema"
-                )
-            );
-        } else {
-            println!("capabilities 스키마 저장: {} ({} bytes)", path, text.len());
-        }
-        return EXIT_OK;
-    }
-
-    println!("{text}");
-    EXIT_OK
-}
-
-/// [#3907 O1] `export-ontology` — 자기서술에서 JSON-LD 온톨로지를 기계 유도한다.
-///
-/// 문서를 입력으로 받지 않는다 — 온톨로지는 rhwp 라는 **도구 자신**(IR 타입·명령
-/// 표면·신뢰 경계)의 서술이지 특정 문서의 속성이 아니다. 유도 원천은 전부 같은
-/// 크레이트의 단일 출처 함수다: `ir_schema()`·`cli::metadata::capabilities::capabilities_value()`·
-/// `cli::metadata::mcp::mcp_tool_definitions()`·`provenance::MAP`. 손 나열 상수가 없으므로 원천이
-/// 바뀌면 온톨로지가 함께 바뀐다 — 드리프트 구조적 불가능이 이 명령의 논지다.
-/// 문서 인스턴스 모드(O2)는 후속이다.
-fn cmd_export_ontology(args: &[String]) -> i32 {
-    let mut out_path: Option<&str> = None;
-    let mut json_mode = false;
-    let mut bare = false;
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--json" => json_mode = true,
-            // 봉투 없이 JSON-LD 본문만 — RDF/JSON-LD 도구에 바로 먹이려는 용도.
-            "--bare" => bare = true,
-            "-o" | "--out" => {
-                i += 1;
-                match args.get(i) {
-                    Some(v) => out_path = Some(v.as_str()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            other => {
-                eprintln!("오류: 알 수 없는 옵션입니다 - {}", other);
-                return EXIT_USAGE;
-            }
-        }
-        i += 1;
-    }
-
-    let caps = cli::metadata::capabilities::capabilities_value();
-    let tools = cli::metadata::mcp::mcp_tool_definitions();
-    let payload = if bare {
-        // --bare 는 JSON-LD 처리기에 그대로 먹이는 본문이다 — 봉투 표지를 섞지 않는다.
-        rhwp::ontology::ontology(&caps, &tools)
-    } else {
-        // [#3885] "표지는 항상 실린다" — 문서를 열지 않는 명령의 봉투도
-        // untrustedContent:false 를 명시한다.
-        provenance::marked(rhwp::ontology::envelope(&caps, &tools), "export-ontology")
-    };
-    let text = match serde_json::to_string_pretty(&payload) {
-        Ok(t) => t,
-        Err(e) => {
-            eprintln!("오류: 온톨로지 직렬화 실패 - {}", e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    if let Some(path) = out_path {
-        if let Err(e) = fs::write(path, text.as_bytes()) {
-            eprintln!("오류: 온톨로지를 쓸 수 없습니다 - {}: {}", path, e);
-            return EXIT_RUNTIME;
-        }
-        if json_mode {
-            // 파일로 뺐어도 stdout 은 기계 계약을 유지한다 — 어디에 썼는지 알려준다.
-            println!(
-                "{}",
-                provenance::marked(
-                    serde_json::json!({
-                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                        "ontologyVersion": rhwp::ontology::ONTOLOGY_VERSION,
-                        "output": path,
-                        "bytes": text.len(),
-                    }),
-                    "export-ontology"
-                )
-            );
-        } else {
-            println!("온톨로지 저장: {} ({} bytes)", path, text.len());
-        }
-        return EXIT_OK;
-    }
-
-    println!("{text}");
-    EXIT_OK
-}
-
-/// [#3828 B2] `export-agent-manifest` 조립 코어 — capabilities·irSchema·provenanceMap·
-/// planSchema 를 왕복 1회로 묶는다.
-///
-/// 각 서브필드는 해당 명령의 기존 산출 함수를 그대로 불러 조립만 한다 — 스키마·지도
-/// 로직을 여기서 다시 만들지 않는다. `missingAxes` 는 네 축이 모두 실린 지금 빈
-/// 배열이지만 필드 자체는 남긴다 — 앞으로 축이 늘 때 "아직 없는 축"을 이 배열로
-/// 알리는 것이 B2 의 계약이고, null 로 채우면 "값이 비었다"와 "명령이 아직 없다"를
-/// 소비자가 구분할 수 없다.
-fn agent_manifest_value(bare: bool) -> serde_json::Value {
-    let mut fields = serde_json::Map::new();
-    fields.insert(
-        "capabilities".to_string(),
-        provenance::marked(
-            cli::metadata::capabilities::capabilities_value(),
-            "capabilities",
-        ),
-    );
-    fields.insert("irSchema".to_string(), rhwp::ir_schema::ir_schema());
-    fields.insert(
-        "provenanceMap".to_string(),
-        provenance::marked(
-            provenance::map_json(&rhwp::version()),
-            "export-provenance-map",
-        ),
-    );
-    // [#3808] planSchema 축 — irSchema 처럼 bare 본문을 싣는다. 본문이 `$id`·
-    // `planSchemaVersion` 을 자체 내장하므로 봉투 메타를 중복하지 않는다.
-    fields.insert("planSchema".to_string(), rhwp::plan_schema::plan_schema());
-    fields.insert("missingAxes".to_string(), serde_json::json!([]));
-
-    if bare {
-        return serde_json::Value::Object(fields);
-    }
-    let mut envelope = serde_json::Map::new();
-    envelope.insert(
-        "schemaVersion".to_string(),
-        serde_json::json!(ENVELOPE_SCHEMA_VERSION),
-    );
-    envelope.extend(fields);
-    serde_json::Value::Object(envelope)
-}
-
-/// [#3828 B2] `export-agent-manifest` — 처음 붙는 에이전트가 capabilities →
-/// export-ir-schema → export-provenance-map → export-plan-schema 를 각각 따로
-/// 호출하던 왕복 4회를 1회로 줄인다.
-fn cmd_export_agent_manifest(args: &[String]) -> i32 {
-    let mut json_mode = false;
-    let mut bare = false;
-    for arg in args {
-        match arg.as_str() {
-            "--json" => json_mode = true,
-            "--bare" => bare = true,
-            other => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-        }
-    }
-
-    let manifest = provenance::marked(agent_manifest_value(bare), "export-agent-manifest");
-
-    if json_mode {
-        let text = match serde_json::to_string_pretty(&manifest) {
-            Ok(t) => t,
-            Err(e) => {
-                eprintln!("오류: 매니페스트 직렬화 실패 - {}", e);
-                return EXIT_RUNTIME;
-            }
-        };
-        println!("{text}");
-        return EXIT_OK;
-    }
-
-    println!("rhwp 에이전트 매니페스트 (capabilities + irSchema + provenanceMap 조립)");
-    println!();
-    println!("  capabilities     포함");
-    println!("  irSchema         포함");
-    println!("  provenanceMap    포함");
-    println!("  planSchema       포함");
-    println!();
-    println!("기계 계약은 --json 을 쓰세요 (--bare 로 최상위 표지 없이).");
-    EXIT_OK
-}
-
-/// [#3787 S2] `tool_directive` 판정에 쓰는 **도구 이름 등록부**.
-///
-/// 이름을 탐지 모듈에 하드코딩하지 않는다. 도구가 늘어도 목록이 따라오지 않으면
-/// 새 도구를 부르는 주입문이 조용히 통과하기 때문이다. 원천은 이 저장소가 이미
-/// 가진 두 등록부다 — 무상태 도구는 `cli::metadata::mcp::mcp_tool_definitions()`(= `capabilities --mcp`
-/// 의 stdout), 세션 도구는 `agent_profiles::ALL_SESSION_TOOLS`(= `mcp-serve` 가 여는
-/// 집합). 둘 중 어디에 도구를 더해도 탐지가 함께 자란다.
-fn mcp_tool_name_registry() -> Vec<String> {
-    let mut names: Vec<String> = cli::metadata::mcp::mcp_tool_definitions()
-        .iter()
-        .filter_map(|t| t["name"].as_str().map(String::from))
-        .collect();
-    names.extend(
-        agent_profiles::ALL_SESSION_TOOLS
-            .iter()
-            .map(|s| s.to_string()),
-    );
-    names.sort();
-    names.dedup();
-    names
-}
-
 /// `inspect` — 문서를 **읽기만** 하는 보안 검사 명령군.
 ///
 /// `hidden-text`·`injection`·`unicode`는 각각 조판 은닉, 문장형 지시, 화면과 바이트의
@@ -1557,9 +1074,6 @@ fn display_safe(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use crate::cli::outputs::allows_implicit_sibling_resources;
-    use crate::cli::protocol::{
-        collect_audit_capsules, replay_scratch_dir, with_replay_input_snapshot,
-    };
 
     use super::{
         cli_output_password, cli_password, set_cli_output_password, set_cli_password,
@@ -1572,66 +1086,6 @@ mod tests {
         assert!(!allows_implicit_sibling_resources(FileFormat::Hml));
         assert!(allows_implicit_sibling_resources(FileFormat::Hwp));
         assert!(allows_implicit_sibling_resources(FileFormat::Hwpx));
-    }
-
-    #[test]
-    fn replay_engine_receives_the_hashed_input_snapshot() {
-        let original =
-            std::env::temp_dir().join(format!("rhwp-replay-original-{}.hwp", std::process::id()));
-        std::fs::write(&original, b"original bytes").expect("원본 작성");
-        let mut plan = serde_json::json!({ "input": original.to_string_lossy() });
-        let scratch = replay_scratch_dir("unit").expect("전용 임시 폴더");
-        let scratch_path = scratch.0.clone();
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            assert_eq!(
-                std::fs::metadata(&scratch_path)
-                    .expect("전용 임시 폴더 metadata")
-                    .permissions()
-                    .mode()
-                    & 0o777,
-                0o700
-            );
-        }
-        let seen = with_replay_input_snapshot(
-            &mut plan,
-            b"hashed snapshot",
-            &scratch.0,
-            |snapshot_plan| {
-                std::fs::write(&original, b"changed after hashing").expect("원본 교체");
-                let snapshot_path = snapshot_plan["input"].as_str().expect("스냅샷 경로");
-                #[cfg(unix)]
-                {
-                    use std::os::unix::fs::PermissionsExt;
-                    assert_eq!(
-                        std::fs::metadata(snapshot_path)
-                            .expect("입력 스냅샷 metadata")
-                            .permissions()
-                            .mode()
-                            & 0o777,
-                        0o600
-                    );
-                }
-                std::fs::read(snapshot_path).expect("스냅샷 읽기")
-            },
-        )
-        .expect("스냅샷 실행");
-        assert_eq!(seen, b"hashed snapshot");
-        assert_eq!(plan["input"], original.to_string_lossy().as_ref());
-        drop(scratch);
-        assert!(!scratch_path.exists(), "전용 임시 폴더는 RAII 정리");
-        let _ = std::fs::remove_file(original);
-    }
-
-    #[test]
-    fn audit_directory_entry_errors_are_not_silently_dropped() {
-        let entries: [std::io::Result<std::path::PathBuf>; 1] = [Err(std::io::Error::new(
-            std::io::ErrorKind::PermissionDenied,
-            "denied",
-        ))];
-        let error = collect_audit_capsules(entries).expect_err("항목 오류는 fail-closed");
-        assert!(error.contains("폴더 항목 읽기 실패"));
     }
 
     #[test]

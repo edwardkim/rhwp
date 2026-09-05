@@ -2,10 +2,7 @@
 
 use std::fs;
 
-use crate::{
-    load_document, mcp_tool_name_registry, provenance, ENVELOPE_SCHEMA_VERSION, EXIT_OK,
-    EXIT_RUNTIME, EXIT_USAGE,
-};
+use crate::{load_document, ENVELOPE_SCHEMA_VERSION, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
 /// `rhwp explore <파일> [--json]` — 이 문서로 **무엇을 할 수 있는지** 어포던스 메뉴를 라우팅한다.
 ///
@@ -82,7 +79,7 @@ pub(crate) fn explore_document(args: &[String]) -> i32 {
     let injection_options = scan::InjectionScanOptions {
         min_confidence: scan::Confidence::Low,
         include_fields: true,
-        tool_names: mcp_tool_name_registry(),
+        tool_names: Vec::new(),
     };
     let injection_signal_count = doc.scan_injection(&injection_options).len();
     let hidden = doc.detect_hidden_text(&HiddenTextOptions::default());
@@ -118,19 +115,16 @@ pub(crate) fn explore_document(args: &[String]) -> i32 {
                 })
             })
             .collect();
-        let envelope = provenance::marked(
-            serde_json::json!({
-                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                "source": file_path,
-                "format": format_label,
-                "pageCount": facts.page_count,
-                "encrypted": facts.encrypted,
-                "affordanceCount": menu.len(),
-                "menu": menu_json,
-                "note": HONESTY_NOTE,
-            }),
-            "explore",
-        );
+        let envelope = serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": file_path,
+            "format": format_label,
+            "pageCount": facts.page_count,
+            "encrypted": facts.encrypted,
+            "affordanceCount": menu.len(),
+            "menu": menu_json,
+            "note": HONESTY_NOTE,
+        });
         println!("{envelope}");
         return EXIT_OK;
     }

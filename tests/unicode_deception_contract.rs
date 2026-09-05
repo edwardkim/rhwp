@@ -171,16 +171,6 @@ fn bidi_finding_shows_rendered_and_raw_disagreeing() {
     // 이 축의 전부는 "화면과 바이트가 어긋난다"이다. 차이를 못 보이면 보고가 공허하다.
     let doc = attack_document("bidi", "hwp");
     let v = inspect(&doc, &["--kind", "bidi"]);
-    assert_eq!(v["untrustedContent"], true, "문서 파생 문자열입니다: {v}");
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!([
-            "findings[].excerpt",
-            "findings[].rendered",
-            "findings[].raw",
-        ]),
-        "{v}"
-    );
     let findings = v["findings"].as_array().expect("findings");
     let rlo = findings
         .iter()
@@ -311,99 +301,6 @@ fn kind_filter_partitions_the_findings_exactly() {
     let explicit = inspect(&doc, &["--kind", "all"]);
     assert_eq!(explicit["findingCount"], all["findingCount"], "{explicit}");
     let _ = std::fs::remove_file(&doc);
-}
-
-#[test]
-fn declared_kind_enum_is_accepted_by_the_cli() {
-    // 드리프트 가드: MCP `inputSchema` 가 광고하는 enum 값은 CLI 가 실제로 받아야 한다.
-    // 선언과 파서가 다른 목록을 들면, 스키마를 읽고 값을 고른 에이전트가 usage 오류를 맞는다.
-    let mcp = parse_stdout_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));
-    let tool = mcp["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_inspect_unicode")
-        .unwrap_or_else(|| panic!("hwp_inspect_unicode 도구 누락: {mcp}"));
-    let declared: Vec<&str> = tool["inputSchema"]["properties"]["kind"]["enum"]
-        .as_array()
-        .unwrap_or_else(|| panic!("kind enum 누락: {tool}"))
-        .iter()
-        .filter_map(|v| v.as_str())
-        .collect();
-    assert!(declared.contains(&"all"), "{tool}");
-    assert!(declared.len() >= 5, "축 4종 + all: {tool}");
-
-    let src = manifest(SAMPLE);
-    for value in declared {
-        let p = src.to_str().expect("경로");
-        let args = ["inspect", "unicode", p, "--json", "--kind", value];
-        let output = run(&args);
-        assert_eq!(
-            output.status.code(),
-            Some(0),
-            "선언된 enum 값 {value} 를 CLI 가 거부했습니다\n{}",
-            describe(&args, &output)
-        );
-    }
-}
-
-#[test]
-fn mcp_tool_declares_required_and_wires_every_property() {
-    // 드리프트 가드: `required` 배열이 없으면 자동 등록 클라이언트가 스키마를 못 읽는다.
-    // 선언한 속성이 argv 에 닿지 않으면 서버는 그 인자를 조용히 버리고 성공을 보고한다.
-    let mcp = parse_stdout_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));
-    let tool = mcp["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_inspect_unicode")
-        .unwrap_or_else(|| panic!("hwp_inspect_unicode 누락: {mcp}"));
-
-    assert_eq!(tool["inputSchema"]["type"], "object", "{tool}");
-    let required = tool["inputSchema"]["required"]
-        .as_array()
-        .unwrap_or_else(|| panic!("required 배열 누락: {tool}"));
-    assert!(required.iter().any(|r| r == "path"), "{tool}");
-    assert_eq!(tool["cli"]["command"], "inspect", "{tool}");
-
-    let mut wired: Vec<String> = tool["cli"]["args"]
-        .as_array()
-        .expect("cli.args")
-        .iter()
-        .filter_map(|v| v.as_str())
-        .filter(|s| s.starts_with('{') && s.ends_with('}'))
-        .map(|s| s[1..s.len() - 1].to_string())
-        .collect();
-    if let Some(optional) = tool["cli"]["optionalArgs"].as_array() {
-        for o in optional {
-            if let Some(k) = o["when"].as_str() {
-                wired.push(k.to_string());
-            }
-        }
-    }
-    for key in tool["inputSchema"]["properties"]
-        .as_object()
-        .expect("properties")
-        .keys()
-    {
-        // password 는 argv 가 아니라 stdin 축이다(cli.passwordStdin 계약).
-        // 이를 optionalArgs 로 넣으면 비밀값이 프로세스 목록에 노출될 수 있다.
-        if key == "password" {
-            assert_eq!(
-                tool["cli"]["passwordStdin"]["argument"], "password",
-                "passwordStdin 계약 누락: {tool}"
-            );
-            assert_eq!(
-                tool["cli"]["passwordStdin"]["flag"], "--password-stdin",
-                "passwordStdin 플래그 계약 누락: {tool}"
-            );
-            continue;
-        }
-        assert!(
-            wired.iter().any(|w| w == key),
-            "{key} 가 선언만 되고 CLI 에 배선되지 않았습니다: {tool}"
-        );
-    }
 }
 
 #[test]

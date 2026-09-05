@@ -3,7 +3,6 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -119,18 +118,15 @@ pub(crate) fn build_from_ingest(args: &[String]) -> i32 {
             if json_mode {
                 println!(
                     "{}",
-                    provenance::marked(
-                        serde_json::json!({
-                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                            "source": input,
-                            "output": output,
-                            "format": "hwpx",
-                            "bytes": hwpx_bytes.len(),
-                            "questionCount": ingest.questions.len(),
-                            "paragraphCount": paragraph_count,
-                        }),
-                        "build-from-ingest",
-                    )
+                    serde_json::json!({
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                        "source": input,
+                        "output": output,
+                        "format": "hwpx",
+                        "bytes": hwpx_bytes.len(),
+                        "questionCount": ingest.questions.len(),
+                        "paragraphCount": paragraph_count,
+                    })
                 );
             } else {
                 println!(
@@ -261,19 +257,16 @@ pub(crate) fn run_scaffold(args: &[String]) -> i32 {
             if json_mode {
                 println!(
                     "{}",
-                    provenance::marked(
-                        serde_json::json!({
-                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                            "source": input,
-                            "output": output,
-                            "format": "hwpx",
-                            "bytes": hwpx_bytes.len(),
-                            "blockCount": spec.blocks.len(),
-                            "paragraphCount": paragraph_count,
-                            "tableCount": table_count,
-                        }),
-                        "scaffold",
-                    )
+                    serde_json::json!({
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                        "source": input,
+                        "output": output,
+                        "format": "hwpx",
+                        "bytes": hwpx_bytes.len(),
+                        "blockCount": spec.blocks.len(),
+                        "paragraphCount": paragraph_count,
+                        "tableCount": table_count,
+                    })
                 );
             } else {
                 println!(

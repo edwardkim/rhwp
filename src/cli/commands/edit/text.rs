@@ -4,7 +4,6 @@ use std::fs;
 use std::path::Path;
 use std::process;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::runtime::{
@@ -234,7 +233,7 @@ pub(super) fn edit_replace_text(args: &[String]) -> i32 {
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             envelope["verify"] = verify_report.clone();
         }
-        println!("{}", provenance::marked(envelope, "edit"));
+        println!("{}", envelope);
         if verify_failed {
             process::exit(3);
         }

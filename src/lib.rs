@@ -4,44 +4,22 @@
 
 use wasm_bindgen::prelude::*;
 
-pub mod agent;
-pub mod agent_seal;
-pub mod capabilities_schema;
 pub mod diagnostics;
-pub mod docdiff;
 pub mod doclang;
 pub mod document_core;
 pub mod emf;
 pub mod eps;
 pub mod error;
-pub use rhwp_contracts::ir_schema;
 pub mod model;
 pub mod ole_chart;
-pub use rhwp_contracts::ontology;
 pub use rhwp_ooxml_chart as ooxml_chart;
 pub mod paint;
 pub mod parser;
 pub use rhwp_password_crypto as password_crypto;
-pub mod plan_schema;
-pub mod pq_sign;
-pub use rhwp_contracts::provenance;
-pub mod rag;
-pub mod render_backend;
 pub mod renderer;
 pub mod scaffold;
 pub mod schema_registry;
-pub mod security_trailer;
 pub mod serializer;
-pub mod service;
-/// 핫패치 벤더(Dioxus subsecond) 어댑터. **rhwp 의 API 가 아니다** (#4580).
-///
-/// `pub` 인 이유는 `tools/rhwp-subsecond` 가 `link_wasm_exports()` 를 불러 wasm export 를 살려
-/// 둬야 하기 때문이지, 이 안의 함수들을 밖에서 쓰라는 뜻이 아니다. 격리 자체는 feature 가 이미
-/// 지킨다 — `subsecond-dev` 없이는 모듈이 존재하지 않으므로 릴리스 표면에는 처음부터 나오지
-/// 않는다. `#[doc(hidden)]` 은 그 사실을 문서에도 적는 것이다.
-#[doc(hidden)]
-#[cfg(feature = "subsecond-dev")]
-pub mod subsecond_dev;
 pub mod wasm_api;
 pub mod wmf;
 

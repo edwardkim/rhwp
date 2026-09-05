@@ -396,10 +396,6 @@ jobs:
                   preflight: "Proptest preflight",
                   worker: "prop roundtrip",
                 },
-                "adapter-diff.yml": {
-                  preflight: "adapter inter-diff preflight",
-                  worker: "adapter inter-diff",
-                },
               }[process.env.WORKFLOW_FILE];
               const fullLaneRunIds = [];
               if (requireFullLaneEvidence) {

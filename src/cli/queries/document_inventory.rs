@@ -5,7 +5,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{
@@ -68,7 +67,7 @@ pub(crate) fn word_count(args: &[String]) -> i32 {
             "wordCount": word_count,
             "pageCount": page_count,
         });
-        println!("{}", provenance::marked(envelope, "word-count"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
     println!(
@@ -133,7 +132,7 @@ pub(crate) fn bookmarks(args: &[String]) -> i32 {
             "count": count,
             "bookmarks": items,
         });
-        println!("{}", provenance::marked(envelope, "bookmarks"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
     println!("{file_path}: 책갈피 {count}개");
@@ -205,7 +204,7 @@ pub(crate) fn charts(args: &[String]) -> i32 {
             "count": count,
             "charts": items,
         });
-        println!("{}", provenance::marked(envelope, "charts"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
     println!("{file_path}: 차트 {count}개");

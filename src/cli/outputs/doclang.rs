@@ -2,7 +2,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{paths_refer_to_same_file, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -125,20 +124,17 @@ pub(crate) fn export_doclang(args: &[String]) -> i32 {
                 // assetsDir 는 --assets-dir 를 준 경우에만 문자열, 아니면 null.
                 println!(
                     "{}",
-                    provenance::marked(
-                        serde_json::json!({
-                            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                            "source": file_path,
-                            "output": output_path.display().to_string(),
-                            "format": "doclang",
-                            "doclangVersion": rhwp::doclang::DOCLANG_VERSION,
-                            "bytes": outcome.xml.len(),
-                            "assetsDir": assets_dir.as_ref().map(|d| d.display().to_string()),
-                            "assetCount": outcome.assets.len(),
-                            "lossCount": outcome.loss.len(),
-                        }),
-                        "export-doclang",
-                    )
+                    serde_json::json!({
+                        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                        "source": file_path,
+                        "output": output_path.display().to_string(),
+                        "format": "doclang",
+                        "doclangVersion": rhwp::doclang::DOCLANG_VERSION,
+                        "bytes": outcome.xml.len(),
+                        "assetsDir": assets_dir.as_ref().map(|d| d.display().to_string()),
+                        "assetCount": outcome.assets.len(),
+                        "lossCount": outcome.loss.len(),
+                    })
                 );
                 return EXIT_OK;
             }

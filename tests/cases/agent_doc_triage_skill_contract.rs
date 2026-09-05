@@ -137,7 +137,6 @@ fn handoff_skills_are_named() {
         "rhwp-table-exchange",
         "rhwp-form-fill",
         "rhwp-security-sweep",
-        "rhwp-provenance",
         "rhwp-safe-edit",
         "rhwp-bulk-pipeline",
     ] {

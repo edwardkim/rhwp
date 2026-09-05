@@ -475,7 +475,6 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
 
 class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
     expected_workflows = {
-        ".github/workflows/adapter-diff.yml",
         ".github/workflows/ci.yml",
         ".github/workflows/codeql.yml",
         ".github/workflows/deploy-pages.yml",

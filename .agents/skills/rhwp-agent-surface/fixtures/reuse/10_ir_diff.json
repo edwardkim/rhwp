@@ -1,5 +1,0 @@
-{
-  "surface": "hwp_ir_diff",
-  "core": "ir_diff",
-  "envelope": "ir_diff_json_value"
-}

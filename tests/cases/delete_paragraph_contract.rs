@@ -78,17 +78,3 @@ fn dry_run_no_file() {
     assert_eq!(output.status.code(), Some(0), "{:?}", output);
     assert!(!out.exists());
 }
-
-#[test]
-fn mcp_declared() {
-    let output = Command::new(rhwp_bin())
-        .args(["capabilities", "--mcp"])
-        .output()
-        .unwrap();
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert!(v["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|t| t["name"] == "hwp_delete_paragraph"));
-}

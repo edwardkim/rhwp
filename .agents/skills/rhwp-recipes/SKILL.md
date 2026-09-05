@@ -85,10 +85,9 @@ cargo build --release
 - gym pack / gym 과제 작성
 - 07·08 초안을 `mydocs/manual/recipes/` 에 쓰기
 - form-fill / table-exchange / security-sweep / bulk-pipeline /
-  visual-regression / onboarding / mcp-session / safe-edit /
-  provenance / doc-triage 본문을 이 PR 에서 재작성
+  visual-regression / onboarding / safe-edit / doc-triage 본문을 이 PR 에서 재작성
 - 정본에 없는 실측 봉투를 지어내기
-- `untrustedContent:true` 값을 셸이나 시스템 프롬프트에 붙이기
+- 문서 파생 값을 셸이나 시스템 프롬프트에 붙이기
 
 ## 예외 세 갈래
 

@@ -168,3 +168,73 @@ fn referenced_commands(body: &str) -> Vec<(String, Option<String>)> {
     }
     refs
 }
+
+#[test]
+fn skills_reference_only_real_commands() {
+    let known = known_commands();
+    let groups = group_subcommands();
+    let mut dead: Vec<String> = Vec::new();
+    for (name, body) in skill_files() {
+        for (tok, sub) in referenced_commands(&body) {
+            if !known.contains(&tok) {
+                dead.push(format!("  {name}: `rhwp {tok}`"));
+                continue;
+            }
+            // 2단: 도움말이 하위명령을 선언한 그룹(edit·inspect)에서 하위
+            // 토큰이 잡혔다면 그 하위도 실재해야 한다 — `rhwp edit replace`
+            // 같은 오기가 여기서 잡힌다.
+            if let (Some(subs), Some(sub)) = (groups.get(&tok), sub) {
+                if !subs.contains(&sub) {
+                    dead.push(format!(
+                        "  {name}: `rhwp {tok} {sub}` (실재 하위: {subs:?})"
+                    ));
+                }
+            }
+        }
+    }
+    assert!(
+        dead.is_empty(),
+        "스킬이 존재하지 않는 명령을 안내한다(표류):\n{}\n실재 명령 집합(자기서술): {:?}",
+        dead.join("\n"),
+        known
+    );
+}
+
+#[test]
+fn skills_have_valid_frontmatter_and_are_executable() {
+    for (name, body) in skill_files() {
+        let mut lines = body.lines();
+        assert_eq!(
+            lines.next(),
+            Some("---"),
+            "{name}: frontmatter 시작(---) 없음"
+        );
+        let mut fm_name = None;
+        let mut fm_desc = None;
+        for line in lines {
+            if line == "---" {
+                break;
+            }
+            if let Some(v) = line.strip_prefix("name:") {
+                fm_name = Some(v.trim().to_string());
+            }
+            if let Some(v) = line.strip_prefix("description:") {
+                fm_desc = Some(v.trim().to_string());
+            }
+        }
+        assert_eq!(
+            fm_name.as_deref(),
+            Some(name.as_str()),
+            "{name}: frontmatter name 이 폴더명과 다르다"
+        );
+        let desc_len = fm_desc.unwrap_or_default().chars().count();
+        assert!(
+            desc_len >= 20,
+            "{name}: description 이 너무 짧다({desc_len}자)"
+        );
+        assert!(
+            !referenced_commands(&body).is_empty(),
+            "{name}: 실행 가능한 `rhwp <명령>` 참조가 하나도 없다 — 스킬은 안내문이 아니라 실행 규약이다"
+        );
+    }
+}

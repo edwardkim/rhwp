@@ -147,15 +147,4 @@ fn capabilities_reports_export_doclang_json() {
         .find(|c| c["name"] == "export-doclang")
         .expect("export-doclang 등재");
     assert_eq!(entry["json"], true, "{entry}");
-
-    let mcp = run(&["capabilities", "--mcp"]);
-    let m: serde_json::Value = serde_json::from_slice(&mcp.stdout).expect("mcp");
-    assert!(
-        m["tools"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|t| t["name"] == "hwp_export_doclang"),
-        "hwp_export_doclang 누락"
-    );
 }

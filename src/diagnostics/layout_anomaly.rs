@@ -1110,50 +1110,44 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
     // 하나라도 빠뜨렸을 때 JSON 안에서 서로 모순되는 값이 나가는 것을 막는다.
     let doc = &filtered_for_page(doc, opts.page);
     let pages: Vec<Value> = doc.pages.iter().map(page_json).collect();
-    crate::provenance::marked(
-        json!({
-            "schemaVersion": SCHEMA_VERSION,
-            "mode": if opts.batch { "batch" } else { "single" },
-            "source": source,
-            "pageCount": doc.page_count,
-            "pageFilter": opts.page,
-            "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
-            "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
-            "types": types_json(opts),
-            "strict": opts.strict,
-            "overflowCount": doc.overflow_count(),
-            "offCanvasCount": doc.off_canvas_count(),
-            "overlapCount": doc.overlap_count(),
-            "textOverlapCount": doc.text_overlap_count(),
-            "emptyPageCount": doc.empty_page_count(),
-            "hasSignal": doc.has_signal(),
-            "pages": pages,
-        }),
-        "layout-anomaly",
-    )
+    json!({
+        "schemaVersion": SCHEMA_VERSION,
+        "mode": if opts.batch { "batch" } else { "single" },
+        "source": source,
+        "pageCount": doc.page_count,
+        "pageFilter": opts.page,
+        "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
+        "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+        "types": types_json(opts),
+        "strict": opts.strict,
+        "overflowCount": doc.overflow_count(),
+        "offCanvasCount": doc.off_canvas_count(),
+        "overlapCount": doc.overlap_count(),
+        "textOverlapCount": doc.text_overlap_count(),
+        "emptyPageCount": doc.empty_page_count(),
+        "hasSignal": doc.has_signal(),
+        "pages": pages,
+    })
 }
 
 fn error_envelope(source: &str, error: &str, opts: &CliOptions, elapsed_ms: u128) -> Value {
-    let mut rec = crate::provenance::marked(
-        json!({
-            "schemaVersion": SCHEMA_VERSION,
-            "mode": "batch",
-            "source": source,
-            "pageCount": 0,
-            "pageFilter": opts.page,
-            "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
-            "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
-            "types": types_json(opts),
-            "strict": opts.strict,
-            "overflowCount": 0,
-            "overlapCount": 0,
-            "emptyPageCount": 0,
-            "hasSignal": false,
-            "pages": [],
-            "elapsedMs": elapsed_ms as u64,
-        }),
-        "layout-anomaly",
-    );
+    let mut rec = json!({
+        "schemaVersion": SCHEMA_VERSION,
+        "mode": "batch",
+        "source": source,
+        "pageCount": 0,
+        "pageFilter": opts.page,
+        "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
+        "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+        "types": types_json(opts),
+        "strict": opts.strict,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": false,
+        "pages": [],
+        "elapsedMs": elapsed_ms as u64,
+    });
     rec["error"] = json!(error);
     rec
 }

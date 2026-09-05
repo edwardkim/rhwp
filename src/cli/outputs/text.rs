@@ -3,7 +3,6 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{load_document, truncate_page_texts, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -166,7 +165,7 @@ pub(crate) fn export_text(args: &[String]) -> i32 {
             "omittedCount": omitted_count,
             "pages": page_objs,
         });
-        println!("{}", provenance::marked(result, "export-text"));
+        println!("{}", result);
         return EXIT_OK;
     }
 
@@ -217,193 +216,6 @@ pub(crate) fn export_text(args: &[String]) -> i32 {
     } else {
         EXIT_RUNTIME
     }
-}
-
-/// `export-tables` — 표를 격자 JSON 으로 추출 (병합·중첩 보존).
-///
-/// 평문·Markdown 추출은 병합(rowSpan/colSpan)을 잃어 소비자가 덮인 칸을 별개 열로
-/// 오독한다. 본 명령은 `Table.cells`(앵커 셀 + span)를 그대로 직역해 격자를 보존한다.
-pub(crate) fn export_llm(args: &[String]) -> i32 {
-    use rhwp::document_core::queries::structure::StructureMode;
-    use rhwp::rag::{build_chunks, ChunkOptions, LlmChunk, TOKEN_ESTIMATOR};
-
-    let mut file_path: Option<&str> = None;
-    let mut out_path: Option<String> = None;
-    let mut max_tokens: usize = 512;
-    let mut format = "jsonl".to_string();
-    let mut mode = "auto".to_string();
-
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--max-tokens" => {
-                i += 1;
-                match args.get(i).and_then(|v| v.parse::<usize>().ok()) {
-                    Some(n) if n >= 1 => max_tokens = n,
-                    _ => {
-                        eprintln!("오류: --max-tokens 뒤에 1 이상의 정수가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--format" => {
-                i += 1;
-                match args.get(i).map(|s| s.as_str()) {
-                    Some("jsonl") => format = "jsonl".to_string(),
-                    Some("json") => format = "json".to_string(),
-                    _ => {
-                        eprintln!("오류: --format 은 jsonl 또는 json 이어야 합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "--mode" => {
-                i += 1;
-                match args.get(i) {
-                    Some(m) if StructureMode::parse(m).is_some() => mode = m.clone(),
-                    _ => {
-                        eprintln!("오류: --mode 는 auto | outline | clause 여야 합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            "-o" | "--out" | "--output" => {
-                i += 1;
-                match args.get(i) {
-                    Some(p) => out_path = Some(p.clone()),
-                    None => {
-                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
-                        return EXIT_USAGE;
-                    }
-                }
-            }
-            other if other.starts_with('-') => {
-                eprintln!("알 수 없는 옵션: {other}");
-                return EXIT_USAGE;
-            }
-            other => {
-                if file_path.replace(other).is_some() {
-                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다.");
-                    return EXIT_USAGE;
-                }
-            }
-        }
-        i += 1;
-    }
-
-    let Some(file_path) = file_path else {
-        eprintln!(
-            "사용법: rhwp export-llm <파일.hwp|파일.hwpx> [--max-tokens <N>] \
-             [--format jsonl|json] [--mode auto|outline|clause] [-o <출력>]"
-        );
-        return EXIT_USAGE;
-    };
-
-    let data = match fs::read(file_path) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
-            return EXIT_RUNTIME;
-        }
-    };
-    let doc = match load_document(&data) {
-        Ok(d) => d,
-        Err(e) => return e.report(),
-    };
-
-    let opts = ChunkOptions {
-        max_tokens,
-        mode: StructureMode::parse(&mode).unwrap_or(StructureMode::Auto),
-    };
-    let chunks = build_chunks(doc.document(), &opts);
-
-    // NDJSON 한 줄 = 청크 값 + 자기서술 키(schemaVersion/source) + 출처 표지.
-    // 봉투 출처 계약(mydocs/tech/envelope_provenance.md)을 소비한다 — export-llm 은
-    // 아직 capabilities/MCP/provenance-map 에 등재되지 않았으므로(후속 과제) 표지를
-    // 직접 붙인다. 값을 담은 필드만 표지에 남긴다.
-    let chunk_record = |chunk: &LlmChunk| -> serde_json::Value {
-        let mut value = serde_json::to_value(chunk).unwrap_or(serde_json::Value::Null);
-        if let Some(obj) = value.as_object_mut() {
-            let fields = chunk.untrusted_fields();
-            obj.insert(
-                "schemaVersion".to_string(),
-                serde_json::json!(ENVELOPE_SCHEMA_VERSION),
-            );
-            obj.insert("source".to_string(), serde_json::json!(file_path));
-            obj.insert(
-                "untrustedContent".to_string(),
-                serde_json::json!(!fields.is_empty()),
-            );
-            obj.insert("untrustedFields".to_string(), serde_json::json!(fields));
-        }
-        value
-    };
-
-    let body = if format == "json" {
-        // 단일 봉투. 표지는 실제로 값이 실린 chunks[] 경로만 광고한다.
-        let mut untrusted_fields: Vec<&str> = Vec::new();
-        if chunks.iter().any(|c| !c.heading_path.is_empty()) {
-            untrusted_fields.push("chunks[].headingPath");
-        }
-        if chunks.iter().any(|c| !c.text.is_empty()) {
-            untrusted_fields.push("chunks[].text");
-        }
-        let envelope = serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "maxTokens": max_tokens,
-            "mode": mode,
-            "tokenEstimator": TOKEN_ESTIMATOR,
-            "chunkCount": chunks.len(),
-            "chunks": chunks,
-            "untrustedContent": !untrusted_fields.is_empty(),
-            "untrustedFields": untrusted_fields,
-        });
-        match serde_json::to_string(&envelope) {
-            Ok(s) => s,
-            Err(e) => {
-                eprintln!("오류: JSON 직렬화 실패 - {}", e);
-                return EXIT_RUNTIME;
-            }
-        }
-    } else {
-        // NDJSON — 한 줄당 청크 하나.
-        let mut lines = String::new();
-        for chunk in &chunks {
-            match serde_json::to_string(&chunk_record(chunk)) {
-                Ok(s) => {
-                    lines.push_str(&s);
-                    lines.push('\n');
-                }
-                Err(e) => {
-                    eprintln!("오류: JSON 직렬화 실패 - {}", e);
-                    return EXIT_RUNTIME;
-                }
-            }
-        }
-        lines
-    };
-
-    if let Some(p) = out_path {
-        return match fs::write(&p, body.as_bytes()) {
-            Ok(_) => {
-                println!("LLM 청크 내보내기 완료: {}개 → {}", chunks.len(), p);
-                EXIT_OK
-            }
-            Err(e) => {
-                eprintln!("오류: 출력 쓰기 실패 - {}: {}", p, e);
-                EXIT_RUNTIME
-            }
-        };
-    }
-
-    // 스트림 출력 — stdout 은 순수 NDJSON/JSON 이다(진행 메시지 없음).
-    if format == "json" {
-        println!("{body}");
-    } else {
-        print!("{body}");
-    }
-    EXIT_OK
 }
 
 /// `table-to-csv` — 본문 최상위 표를 RFC 4180 CSV 로 내보낸다 (#3719 §6).
@@ -735,19 +547,16 @@ pub(crate) fn export_markdown(args: &[String]) -> i32 {
     if json_mode {
         println!(
             "{}",
-            provenance::marked(
-                serde_json::json!({
-                    "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                    "source": file_path,
-                    "format": "markdown",
-                    "outputDir": output_dir,
-                    "pageCount": page_count,
-                    "renderedCount": written_page_count,
-                    "imageCount": written_image_count,
-                    "pages": manifest,
-                }),
-                "export-markdown",
-            )
+            serde_json::json!({
+                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+                "source": file_path,
+                "format": "markdown",
+                "outputDir": output_dir,
+                "pageCount": page_count,
+                "renderedCount": written_page_count,
+                "imageCount": written_image_count,
+                "pages": manifest,
+            })
         );
     } else if written_image_count > 0 {
         println!(

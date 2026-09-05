@@ -7,9 +7,8 @@
 //! 실패 시 stdout 은 0바이트(소비자는 stdout 만 파싱), 종료 코드는 [#2707] 계약.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
+use std::process::{Command, Output};
 
 /// 파싱까지 성공하는 실제 샘플 (cli_json_contract.rs 와 동일 원천).
 const SAMPLE: &str = "samples/hwp3-sample.hwp";
@@ -181,7 +180,7 @@ fn digest_multiple_files_exit_usage_silent_stdout() {
     assert!(output.stdout.is_empty(), "{}", describe(&args, &output));
 }
 
-// ── ③ capabilities/MCP 등재 ────────────────────────────────────────────────
+// ── ③ capabilities 등재 ────────────────────────────────────────────────────
 
 #[test]
 fn digest_registered_in_capabilities() {
@@ -200,64 +199,6 @@ fn digest_registered_in_capabilities() {
             "digest recordFields 에 {expected} 누락: {digest}"
         );
     }
-}
-
-#[test]
-fn digest_registered_in_mcp_with_compact_description() {
-    let mcp = parse_stdout_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));
-    let tools = mcp["tools"].as_array().expect("tools 배열");
-    let digest = tools
-        .iter()
-        .find(|t| t["name"] == "hwp_digest")
-        .unwrap_or_else(|| panic!("MCP 도구 hwp_digest 누락: {mcp}"));
-    assert_eq!(digest["cli"]["command"], "digest", "{digest}");
-    let required = digest["inputSchema"]["required"].as_array().unwrap();
-    assert!(required.iter().any(|r| r == "path"), "{digest}");
-    // [#3633] 초소형 모델 컨텍스트 절약 계약: 설명은 40자 이내로 극단 압축한다.
-    let desc = digest["description"].as_str().expect("description");
-    assert!(
-        desc.chars().count() <= 40,
-        "hwp_digest 설명은 40자 이내여야 합니다 ({}자): {desc}",
-        desc.chars().count()
-    );
-}
-
-#[test]
-fn digest_mcp_forwards_optional_max_chars() {
-    let sample = sample_path();
-    let mut child = Command::new(rhwp_bin())
-        .arg("mcp-serve")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("mcp-serve");
-    let mut stdin = child.stdin.take().unwrap();
-    let mut stdout = BufReader::new(child.stdout.take().unwrap());
-    let request = serde_json::json!({
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "tools/call",
-        "params": {
-            "name": "hwp_digest",
-            "arguments": { "path": sample, "maxChars": 16 }
-        }
-    });
-    writeln!(stdin, "{request}").unwrap();
-    stdin.flush().unwrap();
-
-    let mut line = String::new();
-    assert!(stdout.read_line(&mut line).unwrap() > 0, "조기 종료");
-    let response: serde_json::Value = serde_json::from_str(line.trim()).unwrap();
-    let excerpt = response["result"]["structuredContent"]["excerpt"]
-        .as_str()
-        .unwrap_or_else(|| panic!("MCP digest 실패: {response}"));
-    assert!(
-        excerpt.chars().count() <= 16,
-        "maxChars 가 CLI에 전달돼야 합니다: {response}"
-    );
-    let _ = child.kill();
-    let _ = child.wait();
 }
 
 /// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,

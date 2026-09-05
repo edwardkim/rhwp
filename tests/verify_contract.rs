@@ -2,7 +2,7 @@
 //!
 //! 계약: 전부 만족 exit 0 / 불일치 **봉투를 먼저 내고** exit 3 / 실행 실패 stdout
 //! 0 B + exit 1 / 조립 오류 exit 2. 봉투는 순수 JSON 하나이고 조건별 판정이
-//! 데이터로 실리며, 문서 파생 값(expectations[].actual)은 출처 표지가 가린다.
+//! 데이터로 실린다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::{Path, PathBuf};
@@ -75,40 +75,6 @@ fn mismatch_emits_envelope_then_exit_three() {
     assert_eq!(e["pass"], false);
     assert_eq!(e["expected"], 99);
     assert_eq!(e["actual"], 3, "field-01 은 3쪽이다");
-}
-
-#[test]
-fn contains_and_field_mark_untrusted_actuals() {
-    let s = sample();
-    let out = run(&[
-        "verify",
-        s.to_str().unwrap(),
-        "--expect-contains",
-        "회사명",
-        "--expect-not-contains",
-        "존재할리없는문자열zz",
-        "--expect-field",
-        "회사명=",
-        "--json",
-    ]);
-    assert_eq!(
-        out.status.code(),
-        Some(0),
-        "{}",
-        String::from_utf8_lossy(&out.stderr)
-    );
-    let v = stdout_json(&out);
-    assert_eq!(v["untrustedContent"], true, "actual 은 문서 파생 값이다");
-    let fields: Vec<&str> = v["untrustedFields"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter_map(|f| f.as_str())
-        .collect();
-    assert!(
-        fields.contains(&"expectations[].actual"),
-        "출처 지도의 선언이 봉투 표지에 나타나야 한다: {fields:?}"
-    );
 }
 
 #[test]

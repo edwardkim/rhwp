@@ -4,7 +4,6 @@ use std::fs;
 use std::path::Path;
 use std::process;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::cli::commands::edit::runtime::{
@@ -285,7 +284,7 @@ pub(crate) fn csv_to_table(args: &[String]) -> i32 {
                 "dryRun": dry_run,
                 "changedPages": serde_json::Value::Null,
             });
-            println!("{}", provenance::marked(envelope, "csv-to-table"));
+            println!("{}", envelope);
         } else {
             for item in &invalid {
                 eprintln!(
@@ -431,7 +430,7 @@ pub(crate) fn csv_to_table(args: &[String]) -> i32 {
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             envelope["verify"] = verify_report.clone();
         }
-        println!("{}", provenance::marked(envelope, "csv-to-table"));
+        println!("{}", envelope);
         if verify_failed {
             process::exit(3);
         }
@@ -602,7 +601,7 @@ pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
                     "wrote": [], "dryRun": dry_run,
                     "changedPages": serde_json::Value::Null,
                 });
-                println!("{}", provenance::marked(envelope, "csv-to-chart"));
+                println!("{}", envelope);
             } else {
                 eprintln!("오류: {e}");
             }
@@ -643,7 +642,7 @@ pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
                 "wrote": [], "dryRun": dry_run,
                 "changedPages": serde_json::Value::Null,
             });
-            println!("{}", provenance::marked(envelope, "csv-to-chart"));
+            println!("{}", envelope);
         } else {
             for item in invalid.as_array().unwrap_or(&Vec::new()) {
                 eprintln!(
@@ -716,7 +715,7 @@ pub(crate) fn csv_to_chart(args: &[String]) -> i32 {
             envelope["outputFormat"] = serde_json::Value::String(out_format.label().to_string());
             envelope["verify"] = verify_report.clone();
         }
-        println!("{}", provenance::marked(envelope, "csv-to-chart"));
+        println!("{}", envelope);
         if verify_failed {
             process::exit(3);
         }

@@ -1,7 +1,0 @@
-{
-  "id": "capabilities_version_matches_version_flag",
-  "file": "tests/cli_json_contract.rs",
-  "from": "capabilities.version",
-  "to": "rhwp --version",
-  "on_fail": "version 원천을 하나로"
-}

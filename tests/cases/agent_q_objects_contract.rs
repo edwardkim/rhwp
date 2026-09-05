@@ -57,8 +57,6 @@ fn json_envelope_on_form01() {
     assert!(v["schemaVersion"].is_string(), "{v}");
     assert_eq!(v["tool"], TOOL, "{v}");
     assert_eq!(v["command"], "objects", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert!(v["untrustedFields"].is_array(), "{v}");
     assert_eq!(v["source"], source, "{v}");
     let controls = v["controls"].as_array().expect("controls 배열");
     assert_eq!(v["controlCount"], controls.len(), "{v}");

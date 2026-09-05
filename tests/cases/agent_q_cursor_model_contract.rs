@@ -32,12 +32,6 @@ fn json_envelope_on_form01() {
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert_eq!(v["tool"], "rhwp-q-cursor-model", "{v}");
     assert_eq!(v["command"], "cursor-model", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["source", "root", "lists"]),
-        "{v}"
-    );
     assert_eq!(v["source"], src, "{v}");
     assert_eq!(v["listCount"], 2, "{v}");
     assert!(v["root"].is_object(), "{v}");

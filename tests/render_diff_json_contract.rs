@@ -117,11 +117,6 @@ fn render_diff_json_roundtrip_envelope_contract() {
     }
     assert_eq!(v["status"], "PASS", "{v}");
     assert_eq!(v["regression"], false, "{v}");
-    assert_eq!(
-        v["untrustedContent"], false,
-        "기하 진단 봉투에는 본문이 없습니다: {v}"
-    );
-    assert_eq!(v["untrustedFields"], serde_json::json!([]), "{v}");
 
     let pages = v["pages"].as_array().expect("pages 는 배열");
     assert_eq!(
@@ -563,66 +558,12 @@ fn exit_code_dictionary_names_render_diff_without_dropping_the_others() {
         "exit 3 사전이 render-diff 표면을 빠뜨렸습니다: {three}"
     );
     // 기존 표면 서술을 지우면 cli_json_contract 의 사전 가드가 깨진다.
-    for surface in ["convert", "edit", "run"] {
+    for surface in ["convert", "edit"] {
         assert!(
             three.contains(surface),
             "exit 3 사전에서 {surface} 표면이 사라졌습니다: {three}"
         );
     }
-}
-
-#[test]
-fn mcp_manifest_registers_hwp_render_diff_fully_wired() {
-    let args = ["capabilities", "--mcp"];
-    let m = parse_stdout_json(&args, &run(&args));
-    let tool = m["tools"]
-        .as_array()
-        .expect("tools")
-        .iter()
-        .find(|t| t["name"] == "hwp_render_diff")
-        .expect("hwp_render_diff 등재");
-
-    assert_eq!(tool["cli"]["command"], "render-diff", "{tool}");
-    assert_eq!(tool["inputSchema"]["type"], "object", "{tool}");
-    assert!(tool["inputSchema"]["properties"].is_object(), "{tool}");
-    // 필수 인자는 배열로 반드시 선언한다 — 부재와 "필수 없음"은 다르다.
-    let required: Vec<&str> = tool["inputSchema"]["required"]
-        .as_array()
-        .expect("required 배열")
-        .iter()
-        .filter_map(|r| r.as_str())
-        .collect();
-    assert_eq!(required, vec!["path"], "{tool}");
-
-    // 선언한 모든 입력 속성이 CLI 에 닿아야 한다.
-    let mut wired: Vec<String> = tool["cli"]["args"]
-        .as_array()
-        .expect("args")
-        .iter()
-        .filter_map(|v| v.as_str())
-        .filter(|s| s.starts_with('{') && s.ends_with('}') && s.len() > 2)
-        .map(|s| s[1..s.len() - 1].to_string())
-        .collect();
-    for o in tool["cli"]["optionalArgs"]
-        .as_array()
-        .expect("optionalArgs")
-    {
-        wired.push(o["when"].as_str().expect("when").to_string());
-    }
-    for key in tool["inputSchema"]["properties"]
-        .as_object()
-        .expect("properties")
-        .keys()
-    {
-        assert!(wired.contains(key), "{key} 가 배선되지 않았습니다: {tool}");
-    }
-
-    // 도구가 광고하는 출력 필드는 자기서술 recordFields 와 같은 목록이어야 한다.
-    let entry = render_diff_command_entry();
-    assert_eq!(
-        tool["outputFields"], entry["recordFields"],
-        "MCP 출력 필드와 capabilities recordFields 가 어긋납니다"
-    );
 }
 
 #[test]

@@ -11,9 +11,7 @@
   "huntingNotFix": true,
   "forbiddenSkillsTouch": [
     "rhwp-onboarding",
-    "rhwp-mcp-session",
     "rhwp-safe-edit",
-    "rhwp-provenance",
     "rhwp-doc-triage",
     "rhwp-form-fill",
     "rhwp-visual-regression"

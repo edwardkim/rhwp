@@ -2,7 +2,6 @@
 
 use std::fs;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::fail_record;
@@ -38,15 +37,12 @@ pub(super) fn export_text_record(path: &str) -> serde_json::Value {
         }
     }
 
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": path,
-            "pageCount": page_count,
-            "text": text,
-        }),
-        "export-text",
-    )
+    serde_json::json!({
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+        "source": path,
+        "pageCount": page_count,
+        "text": text,
+    })
 }
 
 /// [#3830] `batch extract-data --json` 의 파일당 레코드 — 단건 `extract-data --json`

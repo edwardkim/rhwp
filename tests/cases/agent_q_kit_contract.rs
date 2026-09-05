@@ -46,8 +46,6 @@ fn assert_envelope(v: &serde_json::Value, command: &str) {
     assert!(v["schemaVersion"].is_string(), "{v}");
     assert_eq!(v["tool"], TOOL, "{v}");
     assert_eq!(v["command"], command, "{v}");
-    assert!(v["untrustedContent"].is_boolean(), "{v}");
-    assert!(v["untrustedFields"].is_array(), "{v}");
 }
 
 #[test]

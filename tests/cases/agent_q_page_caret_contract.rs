@@ -37,12 +37,6 @@ fn assert_envelope(v: &serde_json::Value) {
     assert!(v["schemaVersion"].as_str().is_some(), "{v}");
     assert_eq!(v["tool"], "rhwp-q-page-caret", "{v}");
     assert_eq!(v["command"], "page-caret", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["source", "pages"]),
-        "{v}"
-    );
 }
 
 #[test]

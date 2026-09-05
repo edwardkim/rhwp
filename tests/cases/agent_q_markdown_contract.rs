@@ -32,12 +32,6 @@ fn json_envelope_on_form01_page0() {
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert_eq!(v["tool"], "rhwp-q-markdown", "{v}");
     assert_eq!(v["command"], "markdown", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["source", "markdown"]),
-        "{v}"
-    );
     assert_eq!(v["source"], src, "{v}");
     assert_eq!(v["page"], 0, "{v}");
     let markdown = v["markdown"].as_str().expect("markdown string");

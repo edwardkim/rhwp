@@ -112,15 +112,4 @@ fn capabilities_reports_export_hml_json() {
         .find(|c| c["name"] == "export-hml")
         .expect("export-hml 등재");
     assert_eq!(entry["json"], true, "{entry}");
-
-    let mcp = run(&["capabilities", "--mcp"]);
-    let m: serde_json::Value = serde_json::from_slice(&mcp.stdout).expect("mcp");
-    assert!(
-        m["tools"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|t| t["name"] == "hwp_export_hml"),
-        "hwp_export_hml 누락"
-    );
 }

@@ -1,38 +1,23 @@
-//! 공개 `rhwp` 제품의 스키마 레지스트리 파사드.
-//!
-//! 계약 축 정의와 JSON 조립은 `rhwp-contracts`가 소유하지만, 공개
-//! `crateVersion`은 루트 제품 크레이트의 버전이어야 한다. 내부 크레이트의
-//! `CARGO_PKG_VERSION`이 봉투로 새지 않도록 이 경계에서 제품 버전을 주입한다.
+//! 공개 `rhwp` 제품의 스키마 버전 단일 출처.
 
-pub use rhwp_contracts::schema_registry::{
-    CAPABILITIES_SCHEMA_VERSION, ENVELOPE_SCHEMA_VERSION, IR_SCHEMA_VERSION, PLAN_SCHEMA_VERSION,
-    SIGNING_SCHEMA_VERSION,
-};
+/// 명령별 `--json` 봉투 최상위 `schemaVersion`.
+///
+/// 바인딩(python `SUPPORTED_SCHEMA_VERSION` · node `SUPPORTED_SCHEMA_VERSION`)이
+/// 정확히 이 값과 대조한다 — 이 값을 올리면 바인딩 상수·호환 계층을 같은
+/// 릴리스에서 함께 올려야 한다.
+pub const ENVELOPE_SCHEMA_VERSION: &str = "1.0";
 
-/// [#gym] scaffold 축 — `rhwp scaffold` 입력 명세(`scaffold_schema_v1`)의 판.
-/// 서명 축과 같은 **입력/교환 파일 형식** 버전이라 capabilities 의
-/// schemaRegistry 축 집합(봉투 계약 축 고정)에는 싣지 않는다.
+/// scaffold 축 — `rhwp scaffold` 입력 명세(`scaffold_schema_v1`)의 판.
 /// 소비처는 `src/scaffold/schema.rs` 의 재수출이 유일하다.
 pub const SCAFFOLD_SCHEMA_VERSION: &str = "1";
 
 /// #4962 W3가 기존 10k POC usage projection과 대사할 때 유지하는 legacy schema 판.
-///
-/// 공개 capabilities의 계약 축은 아니며, read-only font metric coverage 분석기의
-/// 호환 projection에서만 소비한다.
 pub(crate) const LEGACY_FONT_LAYOUT_HABITS_SCHEMA_VERSION: &str = "poc-font-layout-habits-v2";
 
 /// #4966의 정본 폰트 규칙 레지스트리에서 생성하는 backend projection의 schema 판.
-///
-/// Rust projection은 생성 파일마다 버전 리터럴을 복제하지 않고 이 단일 출처를
-/// 참조한다. JSON/TypeScript 산출물의 같은 판은 projection manifest로 대사한다.
 pub(crate) const FONT_RULE_PROJECTION_SCHEMA_VERSION: &str = "1.0";
 
 /// 공개 `rhwp` 제품의 릴리스 semver.
 pub fn crate_version() -> &'static str {
     env!("CARGO_PKG_VERSION")
-}
-
-/// 공개 제품 버전을 포함한 기계 소비용 스키마 레지스트리.
-pub fn registry_value() -> serde_json::Value {
-    rhwp_contracts::schema_registry::registry_value_with_crate_version(crate_version())
 }

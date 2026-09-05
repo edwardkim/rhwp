@@ -86,22 +86,3 @@ fn dry_run_no_file() {
     assert_eq!(output.status.code(), Some(0), "{:?}", output);
     assert!(!out.exists());
 }
-
-#[test]
-fn mcp_declared() {
-    let output = Command::new(rhwp_bin())
-        .args(["capabilities", "--mcp"])
-        .output()
-        .unwrap();
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    let tool = v["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|t| t["name"] == "hwp_add_bookmark")
-        .expect("hwp_add_bookmark 도구");
-    assert_eq!(
-        tool["inputSchema"]["properties"]["name"]["pattern"], r".*\S.*",
-        "MCP schema도 CLI와 같이 빈·공백 이름을 거부해야 한다: {tool}"
-    );
-}

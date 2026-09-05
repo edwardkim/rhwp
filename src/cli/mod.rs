@@ -11,7 +11,6 @@ pub(crate) mod document_io;
 pub(crate) mod integrity;
 pub(crate) mod metadata;
 pub(crate) mod outputs;
-pub(crate) mod protocol;
 pub(crate) mod queries;
 pub(crate) mod units;
 

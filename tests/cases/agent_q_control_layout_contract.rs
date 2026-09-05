@@ -48,11 +48,6 @@ fn form01_json_envelope() {
         v["schemaVersion"],
         rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION
     );
-    assert_eq!(v["untrustedContent"], true);
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["source", "controls"])
-    );
     assert_eq!(v["page"], 0);
     assert_eq!(v["source"], source);
     let controls = v["controls"].as_array().expect("controls array");

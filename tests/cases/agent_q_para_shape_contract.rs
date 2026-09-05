@@ -57,8 +57,6 @@ fn json_envelope_on_form01_list0_para0() {
     assert!(v["schemaVersion"].is_string(), "{v}");
     assert_eq!(v["tool"], TOOL, "{v}");
     assert_eq!(v["command"], "para-shape", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert!(v["untrustedFields"].is_array(), "{v}");
     assert_eq!(v["list"], 0, "{v}");
     assert_eq!(v["para"], 0, "{v}");
     assert_eq!(v["source"], source, "{v}");

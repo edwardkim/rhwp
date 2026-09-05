@@ -1,8 +1,0 @@
-{
-  "id": "json_without_search",
-  "title": "capabilities --json 만",
-  "layer": "cli-json",
-  "stderr": "오류: --json 은 --search 와 함께 사용합니다 (capabilities --search <키워드> --json).",
-  "exit": 2,
-  "note": "인자 없는 rhwp capabilities 는 언제나 JSON 이다. --json 을 붙이지 않는다"
-}

@@ -1,9 +1,0 @@
-{
-  "id": "identical_false_is_data",
-  "title": "identical:false 를 isError 로 오독",
-  "layer": "cli-json",
-  "cli_exit": 3,
-  "mcp_is_error": false,
-  "field": "identical",
-  "fix": "봉투를 읽고 categories/diffCount 로 판단. 재시도 금지"
-}

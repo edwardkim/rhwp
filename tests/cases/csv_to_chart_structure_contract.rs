@@ -3,7 +3,7 @@
 //! 구조 편집(행·열 증감, 계열명·라벨 변경)은 **옵트인**이다 — 플래그 없는 CSV 는 B1 그대로
 //! 치수 불일치를 거부한다(`tests/chart_csv_contract.rs` 가 그 계약을 쥔다). 여기서는 플래그가
 //! 있을 때의 왕복, 종류별 가드의 CLI 전달(exit 2 + `invalid[]`), `edit set-chart-data --dry-run`
-//! 이 코어 검증을 거치는 것, capabilities/`--mcp`/`--help` 3면 자기서술을 고정한다.
+//! 이 코어 검증을 거치는 것, capabilities/`--help` 양면 자기서술을 고정한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::{Path, PathBuf};
@@ -377,9 +377,9 @@ fn set_chart_data_dry_run_goes_through_core_validation() {
     assert!(!dest.exists(), "dry-run 인데 파일을 썼다");
 }
 
-/// capabilities · `--mcp` · `--help` 3면이 `structure` 를 함께 선언한다.
+/// capabilities · `--help` 양면이 `structure` 를 함께 선언한다.
 #[test]
-fn capabilities_mcp_and_help_declare_structure() {
+fn capabilities_and_help_declare_structure() {
     let cap = json_of(&run(&["capabilities"]));
     let cmd = cap["commands"]
         .as_array()
@@ -397,32 +397,6 @@ fn capabilities_mcp_and_help_declare_structure() {
         flags.contains(&"--structure"),
         "capabilities flags: {flags:?}"
     );
-
-    let mcp = json_of(&run(&["capabilities", "--mcp"]));
-    let tools = mcp["tools"].as_array().expect("tools");
-    let csv_tool = tools
-        .iter()
-        .find(|t| t["name"] == "hwp_csv_to_chart")
-        .expect("hwp_csv_to_chart");
-    assert_eq!(
-        csv_tool["inputSchema"]["properties"]["structure"]["type"], "boolean",
-        "{csv_tool}"
-    );
-    let set_tool = tools
-        .iter()
-        .find(|t| t["name"] == "hwp_set_chart_data")
-        .expect("hwp_set_chart_data");
-    let data_desc = set_tool["inputSchema"]["properties"]["data"]["description"]
-        .as_str()
-        .unwrap_or_default();
-    assert!(data_desc.contains("structure"), "{set_tool}");
-    let fields: Vec<&str> = set_tool["outputFields"]
-        .as_array()
-        .expect("outputFields")
-        .iter()
-        .filter_map(|f| f.as_str())
-        .collect();
-    assert!(fields.contains(&"invalid"), "{fields:?}");
 
     let help = run(&["--help"]);
     let help_text = String::from_utf8_lossy(&help.stdout);

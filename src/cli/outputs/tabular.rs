@@ -3,7 +3,6 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{load_document, tables_json_value, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -83,7 +82,7 @@ pub(crate) fn export_tables(args: &[String]) -> i32 {
     }
 
     if json_mode {
-        println!("{}", provenance::marked(envelope, "export-tables"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -270,7 +269,7 @@ pub(crate) fn table_to_csv(args: &[String]) -> i32 {
             envelope["output"] = serde_json::Value::String(p);
             envelope["outputFormat"] = serde_json::Value::String("csv".to_string());
         }
-        println!("{}", provenance::marked(envelope, "table-to-csv"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 
@@ -510,7 +509,7 @@ pub(crate) fn chart_to_csv(args: &[String]) -> i32 {
             envelope["output"] = serde_json::Value::String(p);
             envelope["outputFormat"] = serde_json::Value::String("csv".to_string());
         }
-        println!("{}", provenance::marked(envelope, "chart-to-csv"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 

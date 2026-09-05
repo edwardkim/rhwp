@@ -165,32 +165,3 @@ fn set_cell_reports_changed_pages() {
     assert_valid_pages(&v, page_count_of(table_sample.to_str().unwrap()));
     let _ = std::fs::remove_file(&out);
 }
-
-/// rhwp run 저널 — 전 step 합집합을 최상위 changedPages 로 보고한다.
-#[test]
-fn run_plan_journal_reports_changed_pages_union() {
-    let p = sample();
-    if !p.exists() {
-        eprintln!("샘플 없음 — 건너뜀");
-        return;
-    }
-    let out = temp_path("plan", "hwp");
-    let plan = serde_json::json!({
-        "planVersion": "1.0",
-        "input": p.to_str().unwrap(),
-        "output": out.to_str().unwrap(),
-        "steps": [
-            { "action": "fill_fields", "data": {"회사명": "합집합사"} },
-            { "action": "replace_text", "find": "마케팅", "replace": "기획" },
-        ],
-        "assertions": { "verify": true },
-    });
-    let plan_path = temp_path("plan", "json");
-    std::fs::write(&plan_path, serde_json::to_vec(&plan).unwrap()).unwrap();
-    let output = run(&["run", plan_path.to_str().unwrap(), "--json"]);
-    assert_eq!(output.status.code(), Some(0));
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("envelope");
-    assert_valid_pages(&v, page_count_of(p.to_str().unwrap()));
-    let _ = std::fs::remove_file(&out);
-    let _ = std::fs::remove_file(&plan_path);
-}

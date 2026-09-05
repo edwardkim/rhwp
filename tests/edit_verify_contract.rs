@@ -2,9 +2,8 @@
 //! 봉투-exit 정합: identical=false 면 봉투 출력 후 exit 3 (판정은 데이터).
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
+use std::process::{Command, Output};
 
 const SAMPLE: &str = "samples/field-01.hwp";
 
@@ -136,55 +135,5 @@ fn set_cell_and_replace_accept_verify() {
     let output = run(&args);
     let v: serde_json::Value = serde_json::from_slice(&output.stdout).expect("envelope");
     assert!(v["verify"]["identical"].is_boolean(), "{v}");
-    let _ = std::fs::remove_file(&out);
-}
-
-#[test]
-fn session_save_verify_true_carries_report() {
-    let p = sample();
-    if !p.exists() {
-        eprintln!("샘플 없음 — 건너뜀");
-        return;
-    }
-    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
-        .arg("mcp-serve")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    let mut stdin = child.stdin.take().unwrap();
-    let mut stdout = BufReader::new(child.stdout.take().unwrap());
-    let out = temp_path("sess");
-    let reqs = [
-        format!(
-            r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"hwp_open","arguments":{{"path":{}}}}}}}"#,
-            serde_json::json!(p.to_str().unwrap())
-        ),
-        format!(
-            r#"{{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{{"name":"hwp_doc_save","arguments":{{"docId":"doc-1","output":{},"verify":true}}}}}}"#,
-            serde_json::json!(out.to_str().unwrap())
-        ),
-    ];
-    for r in &reqs {
-        writeln!(stdin, "{r}").unwrap();
-    }
-    stdin.flush().unwrap();
-    let mut verify_seen = false;
-    let mut line = String::new();
-    for _ in 0..2 {
-        line.clear();
-        assert!(stdout.read_line(&mut line).unwrap() > 0);
-        let v: serde_json::Value = serde_json::from_str(line.trim()).unwrap();
-        if v["id"] == 2 {
-            let text = v["result"]["content"][0]["text"].as_str().unwrap();
-            let body: serde_json::Value = serde_json::from_str(text).unwrap();
-            assert!(body["verify"]["identical"].is_boolean(), "{body}");
-            verify_seen = true;
-        }
-    }
-    assert!(verify_seen);
-    let _ = child.kill();
-    let _ = child.wait();
     let _ = std::fs::remove_file(&out);
 }

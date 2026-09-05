@@ -201,17 +201,3 @@ fn invalid_style_and_unknown_flag_keep_stdout_empty() {
         assert!(output.stdout.is_empty());
     }
 }
-
-#[test]
-fn mcp_declared() {
-    let output = Command::new(rhwp_bin())
-        .args(["capabilities", "--mcp"])
-        .output()
-        .unwrap();
-    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert!(value["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|tool| tool["name"] == "hwp_apply_cell_style"));
-}

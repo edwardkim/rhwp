@@ -5,13 +5,6 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 const configDir = import.meta.dirname;
 const pkg = JSON.parse(readFileSync(resolve(configDir, 'package.json'), 'utf-8'));
-const subsecondWasmDir = resolve(
-  configDir,
-  '..',
-  'target',
-  'rhwp-subsecond-vite',
-);
-const useSubsecondWasm = process.env.RHWP_SUBSECOND === '1';
 /**
  * hwpctrl 플러그인 포함 여부.
  *
@@ -34,9 +27,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(configDir, 'src'),
-      '@wasm/rhwp.js': useSubsecondWasm
-        ? resolve(subsecondWasmDir, 'rhwp-subsecond.js')
-        : resolve(configDir, '..', 'pkg', 'rhwp.js'),
+      '@wasm/rhwp.js': resolve(configDir, '..', 'pkg', 'rhwp.js'),
       '@wasm': resolve(configDir, '..', 'pkg'),
       // 플러그인 패키지 — 동적 import 로만 들어오므로 별도 청크가 된다.
       // 올리지 않으면 코드도 로드되지 않는다(플러그인 없는 studio 의 초기 비용 0).
@@ -46,38 +37,17 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 7700,
-    proxy: useSubsecondWasm ? {
-      '/_dioxus': {
-        target: 'http://127.0.0.1:7711',
-        ws: true,
-      },
-      '/wasm': {
-        target: 'http://127.0.0.1:7711',
-      },
-    } : undefined,
     fs: {
       // [Task #741 후속] 외부 file path 그림 영역 영역 samples/ dir 영역 영역 fetch 가능 영역.
       allow: [
         configDir,
         resolve(configDir, '..', 'pkg'),
-        subsecondWasmDir,
         resolve(configDir, '..', 'samples'),
         resolve(configDir, '..', 'npm', 'editor'),
       ],
     },
-    watch: {
-      ignored: ['**/librhwp-subsecond-patch-*.wasm'],
-    },
   },
   plugins: [
-    {
-      name: 'ignore-subsecond-patch-artifacts',
-      handleHotUpdate(context) {
-        if (/librhwp-subsecond-patch-\d+\.wasm$/.test(context.file)) {
-          return [];
-        }
-      },
-    },
     // [Task #741 후속] dev 서버 영역 영역 /samples/* 경로 영역 영역 parent samples/ dir 영역
     // 영역 정적 serve 영역 — wasm-bridge.ts 영역 영역 외부 image fetch 영역 영역 영역.
     {

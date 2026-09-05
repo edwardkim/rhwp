@@ -1,6 +1,6 @@
 ---
 name: rhwp-onboarding
-description: rhwp 를 처음 만나는 에이전트를 한 명령으로 온보딩합니다. tools/agent_onboarding/rhwp_doctor.py 하나로 바이너리 위치·버전 확인 → 번들 샘플 자가검증(info/export-text) → 붙여넣기용 .mcp.json 방출 → 첫 5분 레시피 지도(트리아지·표 추출·서식 조사·보안 스윕·작업 영수증)까지 끝내고, 종료 코드로 정상/빌드필요를 신호합니다. 트리거 — 사용자가 "rhwp 처음/설치/시작/온보딩", "rhwp 어떻게 붙여/시작해", "rhwp 돌아가는지 확인", "rhwp 셋업/부트스트랩", "rhwp 뭐부터", ".mcp.json 만들어줘" 등을 요청할 때. 5분 경로 정본은 mydocs/manual/agent_onboarding.md. gym 이 아니라 실사용 에이전트 경로다.
+description: rhwp 를 처음 만나는 에이전트를 한 명령으로 온보딩합니다. tools/agent_onboarding/rhwp_doctor.py 하나로 바이너리 위치·버전 확인 → 번들 샘플 자가검증(info/export-text) → 붙여넣기용 .mcp.json 방출 → 첫 5분 레시피 지도(트리아지·표 추출·서식 조사·보안 스윕)까지 끝내고, 종료 코드로 정상/빌드필요를 신호합니다. 트리거 — 사용자가 "rhwp 처음/설치/시작/온보딩", "rhwp 어떻게 붙여/시작해", "rhwp 돌아가는지 확인", "rhwp 셋업/부트스트랩", "rhwp 뭐부터", ".mcp.json 만들어줘" 등을 요청할 때. 5분 경로 정본은 mydocs/manual/agent_onboarding.md. gym 이 아니라 실사용 에이전트 경로다.
 ---
 
 # rhwp-onboarding — 제로프릭션 온보딩 Skill
@@ -14,9 +14,6 @@ rhwp 를 **처음 보는** 에이전트(또는 그 사람)를 "설치 → 검증
 - 닥터: [`tools/agent_onboarding/rhwp_doctor.py`](../../../tools/agent_onboarding/rhwp_doctor.py) (순수 Python 3, 의존성 0)
 - 5분 경로 정본: [`mydocs/manual/agent_onboarding.md`](../../../mydocs/manual/agent_onboarding.md)
 - 작업 기록: [`mydocs/working/agent_onboarding.md`](../../../mydocs/working/archives/agent_onboarding.md)
-
-이미 MCP 로 붙어 있고 **세션/무상태 도구 선택**이 논점이면 이 스킬이 아니라
-`rhwp-mcp-session` 을 쓴다. 이 스킬은 그 앞단(0→1 부트스트랩) 전용이다.
 
 이 스킬은 **gym 을 돌리지 않는다.** 실사용 에이전트가 문서를 읽고 표를 뽑고 서식을
 조사하고 보안 신호를 보고 MCP 에 붙는 경로만 다룬다.
@@ -41,9 +38,8 @@ python tools/agent_onboarding/rhwp_doctor.py --offline  # 네트워크 프로브
 2. **자가검증** — `samples/` 의 작은 문서로 `info` / `export-text --json` 을 돌리기
    *전에* 매직 바이트로 불량 샘플을 거른다. 통과를 위조하지 않는다.
    상세는 [sample-selftest.md](references/sample-selftest.md).
-3. **`.mcp.json` 방출** — `{ "mcpServers": { "rhwp": { "command": "rhwp", "args": ["mcp-serve"] } } }`.
-   `PATH` 에 없으면 절대 경로를 채워준다. `--write <경로>` 로 파일로 쓰되 기존
-   파일은 `--force` 없이 덮어쓰지 않는다. 호스트별 모양은
+3. **`.mcp.json` 방출** — `PATH` 에 없으면 절대 경로를 채워준다. `--write <경로>` 로
+   파일로 쓰되 기존 파일은 `--force` 없이 덮어쓰지 않는다. 호스트별 모양은
    [mcp-json-paste.md](references/mcp-json-paste.md).
 4. **첫 5분 레시피 지도** — 실존하는 스킬·레시피만 인용한다. 지도는
    [first-5-min.md](references/first-5-min.md).
@@ -67,13 +63,7 @@ rhwp digest samples/basic/english.hwp --json --max-chars 500
 rhwp inspect injection samples/basic/english.hwp --json
 ```
 
-`.mcp.json` 이 띄우는 상주 서버도 같은 바이너리다 — 배선 전에 한 번 손으로 띄워 본다.
-
-```bash
-rhwp mcp-serve
-```
-
-붙였으면 첫 과제로 넘어간다. 어느 스킬로 갈지는 아래 지도를 따르되, 한 문서를 빠르게
+자가검증이 끝났으면 첫 과제로 넘어간다. 어느 스킬로 갈지는 아래 지도를 따르되, 한 문서를 빠르게
 파악하는 최단 경로는 이 두 명령이다.
 
 ```bash
@@ -110,7 +100,6 @@ rhwp digest samples/basic/english.hwp --json
 | 2 | 표 좌표 | `export-tables` → `table-to-csv` | [first-5-min-tables.md](references/first-5-min-tables.md) |
 | 3 | 서식 조사 | `fields` 만. 채움은 기존 스킬 | [first-5-min-form-read.md](references/first-5-min-form-read.md) |
 | 4 | 보안 스윕 | `inspect` 3축 | [first-5-min-security.md](references/first-5-min-security.md) |
-| 5 | MCP·영수증 입구 | `mcp-serve` / `capabilities --mcp` / `replay` | [mcp-json-paste.md](references/mcp-json-paste.md) |
 
 편집 로직을 이 스킬에서 발명하지 않는다. `edit fill-fields` / `csv-to-table` /
 `edit redact` 는 이미 있는 스킬·레시피로 위임한다.
@@ -137,4 +126,4 @@ python tools/agent_onboarding/rhwp_doctor.py --list-recipes
 - MCP 통합 전체 절차: [`mydocs/manual/mcp_integration_guide.md`](../../../mydocs/manual/mcp_integration_guide.md)
 - CLI 전체 명령: [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
 - 과제별 스킬: `rhwp-doc-triage` · `rhwp-table-exchange` · `rhwp-form-fill` ·
-  `rhwp-security-sweep` · `rhwp-work-receipt`
+  `rhwp-security-sweep`

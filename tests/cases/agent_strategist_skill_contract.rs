@@ -122,13 +122,9 @@ fn skill_does_not_add_cli_and_stays_out_of_other_skills() {
     );
     for forbidden in [
         ".agents/skills/rhwp-onboarding/SKILL.md",
-        ".agents/skills/rhwp-mcp-session/SKILL.md",
-        ".agents/skills/rhwp-provenance/SKILL.md",
         ".agents/skills/rhwp-safe-edit/SKILL.md",
         ".agents/skills/rhwp-doc-triage/SKILL.md",
         ".agents/skills/rhwp-form-fill/SKILL.md",
-        ".agents/agents/rhwp-fde.md",
-        ".agents/agents/rhwp-chief.md",
     ] {
         assert!(
             repo().join(forbidden).is_file(),

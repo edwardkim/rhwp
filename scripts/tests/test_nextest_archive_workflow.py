@@ -306,7 +306,6 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("cargo test --workspace", step)
         for package in (
             "rhwp",
-            "rhwp-subsecond",
             "rhwp-native-ffi",
             "batch-convert",
         ):

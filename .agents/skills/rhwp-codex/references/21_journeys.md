@@ -1,6 +1,6 @@
 # 항해 여정
 
-기계 가독 정본: `fixtures/journeys.json` (40건).
+기계 가독 정본: `fixtures/journeys.json` (39건).
 각 여정은 기존 명령만 나열한다. gym 아님. 아래는 핵심 여정만 풀어 적는다.
 
 ## J001 — 처음 보는 공문 — 쪽수만
@@ -204,16 +204,6 @@
   1. `목록 stdin`
   1. `batch export-text --json`
   1. `실패 행 jq`
-
-## J022 — 세션 반복 조회
-
-- 갈래: 대량
-- 정지: X13
-- 결과: rhwp-mcp-session
-- 단계:
-  1. `capabilities --mcp`
-  1. `mcp-serve`
-  1. `hwp_open → hwp_doc_* → hwp_close`
 
 ## J023 — 명령 미지 — 검색 폴백
 

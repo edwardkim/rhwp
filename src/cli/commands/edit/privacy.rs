@@ -5,11 +5,10 @@ use std::path::Path;
 use std::process;
 
 use rhwp::document_core::queries::pii_scan::PiiKind;
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::runtime::{edit_output_format, edit_serialize, edit_verify_report, EditOutputFormat};
-use crate::{atomic_file, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
+use crate::{EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
 // ─── [#3719 §6-11] 공개 전 정리 — edit redact / edit sanitize ───
 
@@ -264,7 +263,7 @@ fn execute_redact(args: RedactArgs<'_>) -> i32 {
                 return EXIT_RUNTIME;
             }
         };
-        if let Err(e) = atomic_file::write_atomically(Path::new(&output_path), &out_bytes) {
+        if let Err(e) = std::fs::write(Path::new(&output_path), &out_bytes) {
             eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
             return EXIT_RUNTIME;
         }
@@ -326,7 +325,7 @@ fn execute_redact(args: RedactArgs<'_>) -> i32 {
         // 값을 싣는 봉투가 출처 표지 없이 나가면 S1 계약("표지는 항상 실린다")이
         // 정확히 그 지점에서 무너진다. --no-raw 면 raw 경로가 봉투에 없으므로
         // 표지도 masked 만 선언한다(실재 경로 필터).
-        println!("{}", provenance::marked(envelope, "edit"));
+        println!("{}", envelope);
         if verify_failed {
             process::exit(3);
         }
@@ -765,7 +764,7 @@ pub(super) fn edit_sanitize(args: &[String]) -> i32 {
             return EXIT_RUNTIME;
         }
     };
-    if let Err(e) = atomic_file::write_atomically(Path::new(&output_path), &out_bytes) {
+    if let Err(e) = std::fs::write(Path::new(&output_path), &out_bytes) {
         eprintln!("오류: 출력 쓰기 실패 - {}: {}", output_path, e);
         return EXIT_RUNTIME;
     }
@@ -785,7 +784,7 @@ pub(super) fn edit_sanitize(args: &[String]) -> i32 {
         });
         // [#3885] removed[].before 는 지워진 문서 속성 원문이다 — 제목·작성자에
         // 더해 preview.text 는 본문 첫 화면 발췌라 문서 문장이 통째로 실린다.
-        println!("{}", provenance::marked(envelope, "edit"));
+        println!("{}", envelope);
         return EXIT_OK;
     }
 

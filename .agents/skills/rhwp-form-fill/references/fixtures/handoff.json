@@ -26,11 +26,6 @@
       "when": "채우지 말고 문서가 뭔지만",
       "to": "rhwp-doc-triage",
       "cmd": "info → explain → …"
-    },
-    {
-      "when": "출처 표지 소비",
-      "to": "rhwp-provenance",
-      "cmd": "export-provenance-map"
     }
   ]
 }

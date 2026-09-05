@@ -26,11 +26,6 @@
       "when": "문서가 뭔지만",
       "to": "rhwp-doc-triage",
       "cmd": "info / explain. 비교하지 않음"
-    },
-    {
-      "when": "작업 영수증이 필요",
-      "to": "rhwp-work-receipt",
-      "cmd": "replay. 이 스킬은 레이아웃만"
     }
   ]
 }

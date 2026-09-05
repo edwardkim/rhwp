@@ -49,13 +49,10 @@
   ],
   "forbiddenSkillsTouch": [
     "rhwp-onboarding",
-    "rhwp-mcp-session",
     "rhwp-safe-edit",
     "rhwp-doc-triage",
-    "rhwp-provenance",
     "rhwp-form-fill",
-    "rhwp-table-exchange",
-    "rhwp-work-receipt"
+    "rhwp-table-exchange"
   ],
   "allowedCommands": [
     "inspect hidden-text",

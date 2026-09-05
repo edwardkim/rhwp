@@ -1,7 +1,0 @@
-{
-  "issue": 5339,
-  "title": "agent: 세션 핸드오프 오케스트레이터 스킬 신설",
-  "branch": "feat/agent-handoff",
-  "base": "devel",
-  "isolation": "C:\\Users\\swsz9\\rhwp-agent-handoff"
-}

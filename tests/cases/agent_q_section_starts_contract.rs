@@ -32,12 +32,6 @@ fn json_envelope_on_form01() {
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     assert_eq!(v["tool"], "rhwp-q-section-starts", "{v}");
     assert_eq!(v["command"], "section-starts", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["source", "starts"]),
-        "{v}"
-    );
     assert_eq!(v["source"], src, "{v}");
     let starts = v["starts"]
         .as_array()

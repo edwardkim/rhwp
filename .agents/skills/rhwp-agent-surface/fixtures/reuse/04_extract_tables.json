@@ -1,5 +1,0 @@
-{
-  "surface": "hwp_export_tables / hwp_doc_tables",
-  "core": "extract_tables",
-  "envelope": "export_tables_json_value"
-}

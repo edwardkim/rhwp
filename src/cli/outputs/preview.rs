@@ -3,7 +3,6 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
@@ -98,7 +97,7 @@ pub(crate) fn extract_thumbnail(args: &[String]) -> i32 {
         }
         // [#3787 S1] base64/dataUri 는 문서에 내장된 미리보기 이미지다 — extra 를
         // 합친 **뒤에** 표지를 찍어야 그 모드의 봉투가 맞게 표시된다.
-        provenance::marked(v, "thumbnail")
+        v
     };
 
     match mode {

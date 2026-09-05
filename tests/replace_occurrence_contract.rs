@@ -158,24 +158,3 @@ fn occurrence_invalid_value_is_usage_error() {
         describe(&args, &output)
     );
 }
-
-#[test]
-fn capabilities_declares_set_checkbox_tool() {
-    let mcp = run(&["capabilities", "--mcp"]);
-    let m: serde_json::Value = serde_json::from_slice(&mcp.stdout).expect("mcp");
-    let tool = m["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|t| t["name"] == "hwp_set_checkbox")
-        .expect("hwp_set_checkbox 선언");
-    // 배선 검증: occurrence 자리표시자가 required 와 1:1 (플레이북 DoD).
-    let args: Vec<&str> = tool["cli"]["args"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter_map(|a| a.as_str())
-        .collect();
-    assert!(args.contains(&"{occurrence}"), "{args:?}");
-    assert!(args.contains(&"--occurrence"), "{args:?}");
-}

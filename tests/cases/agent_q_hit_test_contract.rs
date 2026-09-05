@@ -57,10 +57,6 @@ fn json_envelope_on_form01_page0_at_120_120() {
     assert!(v["schemaVersion"].is_string(), "{v}");
     assert_eq!(v["tool"], TOOL, "{v}");
     assert_eq!(v["command"], "hit-test", "{v}");
-    assert_eq!(v["untrustedContent"], true, "{v}");
-    let fields = v["untrustedFields"].as_array().expect("untrustedFields");
-    assert!(fields.iter().any(|f| f == "source"), "{v}");
-    assert!(fields.iter().any(|f| f == "hit"), "{v}");
     assert_eq!(v["page"], 0, "{v}");
     assert_eq!(v["x"], 120.0, "{v}");
     assert_eq!(v["y"], 120.0, "{v}");

@@ -178,15 +178,6 @@ fn table_to_csv_json_envelope_contract() {
         assert!(t["colCount"].is_u64(), "{t}");
         assert!(t["csv"].is_string(), "{t}");
     }
-    assert_eq!(
-        v["untrustedContent"], true,
-        "CSV 본문은 문서 파생값입니다: {v}"
-    );
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["tables[].csv"]),
-        "{v}"
-    );
 }
 
 #[test]
@@ -511,15 +502,6 @@ fn value_written_by_csv_is_readable_back() {
     assert_eq!(v["changedCount"].as_u64(), Some(1), "{v}");
     assert_eq!(v["changed"][0]["newText"], marker, "{v}");
     assert!(v["changed"][0]["oldText"].is_string(), "{v}");
-    assert_eq!(
-        v["untrustedContent"], true,
-        "변경 전 셀 값은 문서 파생값입니다: {v}"
-    );
-    assert_eq!(
-        v["untrustedFields"],
-        serde_json::json!(["changed[].oldText"]),
-        "{v}"
-    );
 
     // 저장본을 다시 CSV 로 뽑아 값이 실제로 문서에 들어갔는지 본다.
     let back = run(&[
@@ -754,8 +736,8 @@ fn malformed_csv_is_invalid_not_a_panic() {
 // ── 자기서술 정합 ───────────────────────────────────────────────────────────
 
 #[test]
-fn capabilities_and_mcp_declare_both_commands() {
-    // 드리프트 가드: 명령·MCP 도구·help 세 곳이 함께 갱신돼야 에이전트가 쓸 수 있다.
+fn capabilities_and_help_declare_both_commands() {
+    // 드리프트 가드: 명령·help 두 곳이 함께 갱신돼야 에이전트가 쓸 수 있다.
     let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
     let names: Vec<&str> = cap["commands"]
         .as_array()
@@ -765,22 +747,6 @@ fn capabilities_and_mcp_declare_both_commands() {
         .collect();
     for expected in ["table-to-csv", "csv-to-table"] {
         assert!(names.contains(&expected), "capabilities 누락: {expected}");
-    }
-
-    let mcp = parse_stdout_json(&["capabilities", "--mcp"], &run(&["capabilities", "--mcp"]));
-    let tools = mcp["tools"].as_array().expect("tools");
-    for (tool_name, command) in [
-        ("hwp_table_to_csv", "table-to-csv"),
-        ("hwp_csv_to_table", "csv-to-table"),
-    ] {
-        let t = tools
-            .iter()
-            .find(|t| t["name"] == tool_name)
-            .unwrap_or_else(|| panic!("MCP 도구 누락: {tool_name}"));
-        assert_eq!(t["cli"]["command"], command, "{t}");
-        assert_eq!(t["inputSchema"]["type"], "object", "{t}");
-        assert!(t["inputSchema"]["properties"].is_object(), "{t}");
-        assert!(t["inputSchema"]["required"].is_array(), "{t}");
     }
 
     let help = run(&["--help"]);

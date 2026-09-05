@@ -92,14 +92,3 @@ fn unknown_flag_empty_stdout() {
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
 }
-
-#[test]
-fn mcp_declared() {
-    let output = run(&["capabilities", "--mcp"]);
-    let v: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert!(v["tools"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|t| t["name"] == "hwp_insert_paragraph"));
-}

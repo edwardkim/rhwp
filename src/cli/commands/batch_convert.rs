@@ -3,7 +3,6 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::cli::batch::fail_record;
@@ -105,21 +104,18 @@ pub(crate) fn record(
 
     let bytes_len = bytes.len();
     let envelope = |verify: serde_json::Value, verify_pages: serde_json::Value| {
-        provenance::marked(
-            serde_json::json!({
-                "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-                "source": path,
-                "output": output_path.display().to_string(),
-                "format": "hwp5",
-                "bytes": bytes_len,
-                "wasDistribution": was_distribution,
-                // batch 는 비밀번호 옵션을 받지 않는다(run_batch 가드) — 늘 false 다.
-                "passwordProtected": false,
-                "verify": verify,
-                "verifyPages": verify_pages,
-            }),
-            "convert",
-        )
+        serde_json::json!({
+            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
+            "source": path,
+            "output": output_path.display().to_string(),
+            "format": "hwp5",
+            "bytes": bytes_len,
+            "wasDistribution": was_distribution,
+            // batch 는 비밀번호 옵션을 받지 않는다(run_batch 가드) — 늘 false 다.
+            "passwordProtected": false,
+            "verify": verify,
+            "verifyPages": verify_pages,
+        })
     };
 
     if !verify_options.enabled() {

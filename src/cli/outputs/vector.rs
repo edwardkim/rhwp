@@ -3,7 +3,6 @@
 use std::fs;
 use std::path::Path;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::allows_implicit_sibling_resources;
@@ -507,7 +506,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
             "overflowCellLines": overflow_cell_total,
             "pages": manifest,
         });
-        println!("{}", provenance::marked(envelope, "export-svg"));
+        println!("{}", envelope);
     } else {
         println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
     }

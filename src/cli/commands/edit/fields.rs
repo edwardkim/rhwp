@@ -4,7 +4,6 @@ use std::fs;
 use std::path::Path;
 use std::process;
 
-use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::runtime::{edit_output_format, edit_serialize, edit_verify_report, EditOutputFormat};
@@ -357,7 +356,7 @@ pub(crate) fn fill_fields_core(
     }
 
     Ok(FillOutcome {
-        envelope: provenance::marked(envelope, "edit"),
+        envelope,
         output_path,
         output_format: out_format,
         verify_failed,
