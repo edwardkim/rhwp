@@ -15,6 +15,27 @@ WORKFLOW_PATH = (
     / "workflows"
     / "oracle-public-advisory.yml"
 )
+DOCUMENT_COMMANDS_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "src"
+    / "document_core"
+    / "commands"
+    / "document.rs"
+)
+BLANK_TEMPLATE_PATH = Path(__file__).resolve().parents[2] / "saved" / "blank2010.hwp"
+MCP_SERVE_PATH = Path(__file__).resolve().parents[2] / "src" / "mcp_serve.rs"
+MCP_DOCUMENT_PATHS = (
+    "mydocs/manual/agent_knowledge_map.md",
+    "mydocs/manual/agent_troubleshooting_guide.md",
+    "mydocs/manual/recipes/01_fill_form_and_submit.md",
+    "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+    "mydocs/manual/recipes/03_redact_before_sharing.md",
+    "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+    "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+    "mydocs/manual/recipes/06_visual_regression_before_after.md",
+    "mydocs/tech/agent_roadmap/atlas_r1_r200.md",
+    "gym/README.md",
+)
 
 
 class OraclePublicAdvisoryWorkflowTests(unittest.TestCase):
@@ -71,6 +92,29 @@ class OraclePublicAdvisoryWorkflowTests(unittest.TestCase):
         self.assertNotIn("pdf-large", self.workflow)
         self.assertIn('roots = [Path("pdf")]', self.workflow)
         self.assertIn("--pdf-dirs pdf", self.workflow)
+
+    def test_sparse_checkout_includes_out_of_tree_production_inputs(self) -> None:
+        repo_root = Path(__file__).resolve().parents[2]
+        document_source = DOCUMENT_COMMANDS_PATH.read_text(encoding="utf-8")
+        self.assertIn(
+            'include_bytes!("../../../saved/blank2010.hwp")',
+            document_source,
+        )
+        self.assertTrue(BLANK_TEMPLATE_PATH.is_file())
+
+        mcp_source = MCP_SERVE_PATH.read_text(encoding="utf-8")
+        self.assertIn('include_str!("../llms.txt")', mcp_source)
+        self.assertTrue((repo_root / "llms.txt").is_file())
+        for relative in MCP_DOCUMENT_PATHS:
+            self.assertIn(f'include_str!("../{relative}")', mcp_source)
+            self.assertTrue((repo_root / relative).is_file(), relative)
+
+        checkout = self.workflow.split(
+            "      - name: Check out sparse oracle tree\n", maxsplit=1
+        )[1].split("      - name: Gate on real oracle PDFs\n", maxsplit=1)[0]
+        checkout_entries = {line.strip() for line in checkout.splitlines()}
+        required_entries = {"saved/blank2010.hwp", *MCP_DOCUMENT_PATHS}
+        self.assertTrue(required_entries.issubset(checkout_entries))
 
     def test_advisory_has_narrow_bootstrap_and_remains_non_required(self) -> None:
         active_triggers = self.workflow.split("permissions:\n", maxsplit=1)[0]

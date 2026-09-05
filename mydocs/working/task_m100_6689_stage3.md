@@ -139,3 +139,46 @@ push한 뒤 Oracle push run을 카나리로 확인하고, 성공할 때만 여�
 - 정책 event 전수 확인: Oracle만 `push,workflow_dispatch`, 나머지 7개는 `workflow_dispatch`
 - `test_workflow_contract_wiring.py`: Stage 4에서 promotion 계약 테스트를 CI Lint job에 배선하기 전까지
   의도된 RED 2건 유지; 누락 항목은 `test_workflow_promotion_preflight.py` 한 파일뿐이다.
+
+## 7. Oracle bootstrap 실실행이 발견한 원래 build 계약 결함
+
+수정 candidate를 push하자 GitHub가 Oracle workflow를 identity `350728119`로 등록하고 exact-head push run
+`33948729770`을 생성했다. bootstrap 경로 자체는 성공했다.
+
+| 항목 | 관찰값 |
+| --- | --- |
+| event / actor | `push` / `edwardkim` |
+| head SHA | `43e5f986ad4ecca162355dbebc16cbfa8f485a16` |
+| job | `oracle-public-compare-advisory` — 외형상 success |
+| 실제 build | exit 101, `saved/blank2010.hwp` 없음 |
+| verdict artifact | `oracle-public-advisory-verdict`, artifact `9964161896` |
+| artifact digest | `sha256:3462f456284fca007da60b057ece35aba3a84afabead9d269e133a9f1c0bc91a` |
+| verdict | `build-failed`, `promotionEligible=false` |
+| compare / pack | skipped / skipped |
+
+`continue-on-error` 때문에 workflow run과 job은 녹색이지만 `steps.build.outcome=failure`를 읽은 구조화 verdict가
+승격 불가로 판정했다. Stage 3에서 verdict artifact를 추가하지 않았다면 또다시 거짓 녹색을 증적으로 채택할
+수 있었던 사례다.
+
+원인 계보는 다음과 같다.
+
+1. `create_blank_document_native()`는 최초 commit `f0f7f1a4b`부터
+   `include_bytes!("../../../saved/blank2010.hwp")`를 production build에 포함한다.
+2. MCP 내장 문서 의존성은 2026-08-01 `d5272294d`, 2026-08-07 `0fdac31ba`, 2026-08-13
+   `358a195793`에 걸쳐 `mydocs` 문서 9개와 `gym/README.md`까지 확장됐다.
+3. Oracle workflow 최초 commit `8b684ac27`은 그보다 늦은 2026-08-18 sparse checkout을 도입하면서도
+   `saved`·`mydocs`·`gym` compile-time 입력을 모두 넣지 않았다.
+4. 이후 PDF root와 artifact 계약은 여러 번 바뀌었지만 실제 원격 build 증적이 없어 누락이 드러나지 않았다.
+5. #6689 exact-head 실실행이 최초로 source tree와 sparse tree의 불일치를 검출했다.
+
+원격 실패 뒤 `saved`만 넣은 임시 sparse build는 다음 단계에서 `mydocs`·`gym` 누락 10건을 추가로
+검출했다. 세 root 전체의 로컬 크기는 각각 38MB·1.2GB·358MB이므로 통째 checkout하지 않고 필요한 파일
+11개만 cone-mode 경로로 지정했다. 부모·동급 파일을 포함한 실제 추가 checkout은 약 6MB였다. 세 root를
+통째 추가한 진단 build는 3분 9초, 수정된 workflow의 19개 sparse 항목을 직접 추출한 최종 release build는
+7분 47초에 성공했다. 후자는 LTO 중 `rustc` CPU 100%가 관찰돼 hang이 아닌 정상 최적화 구간임을 확인했다.
+source의 compile-time 입력·실파일·workflow 경로를 하나의 계약 테스트로 묶어 sparse checkout의 비용 절감
+목적과 build 완전성을 함께 유지한다.
+
+최종 로컬 검증은 focused Python 계약 37건, Oracle YAML/actionlint, policy JSON parse,
+`git diff --check`를 모두 통과했다. actionlint의 기존 `SC2016` 정보 진단과 Stage 4 CI 배선 전 의도된 RED
+2건은 이번 compile-time 입력 수정과 무관하게 앞 절의 상태를 유지한다.

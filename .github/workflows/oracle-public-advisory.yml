@@ -70,6 +70,17 @@ jobs:
             crates
             tests
             samples
+            saved/blank2010.hwp
+            mydocs/manual/agent_knowledge_map.md
+            mydocs/manual/agent_troubleshooting_guide.md
+            mydocs/manual/recipes/01_fill_form_and_submit.md
+            mydocs/manual/recipes/02_table_csv_roundtrip.md
+            mydocs/manual/recipes/03_redact_before_sharing.md
+            mydocs/manual/recipes/04_safety_check_untrusted_doc.md
+            mydocs/manual/recipes/05_mail_merge_batch_fill.md
+            mydocs/manual/recipes/06_visual_regression_before_after.md
+            mydocs/tech/agent_roadmap/atlas_r1_r200.md
+            gym/README.md
             pdf
             tools
             bindings
