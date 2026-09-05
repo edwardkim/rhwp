@@ -364,3 +364,38 @@ DPR/예산/줌 정책 변경은 이번 승인 범위에 포함하지 않았다.
 - 남은 조건: 증적 정리 push 승인, 이후 exact head required checks와 별도 merge 승인
 - 이번 작업은 원격 조치를 아직 하지 않았다. self PR의 GitHub approval review와 thread resolve를
   만들지 않으며 push·merge는 각각 사용자 승인 전까지 수행하지 않는다.
+
+## 2026-09-06 CI 계약 보정 후 최종 검증
+
+판정: **메인터너 보정 완료, 수용 가능**. 아래 기록은 앞선 로컬 검증 시점의
+"영구 테스트 변경 없음" 범위를 보완한다. 제품 보정 `89042d5aefaea8cbb28f8027ffff0c8496eb11cf`는
+유지했고, CI 계약 테스트 보정은 별도 커밋
+`418a58d2e24a3f6445beea25aceb4b37afdfad27`으로 반영했다.
+
+- 이전 Render Diff 실패는 픽셀 비교 결과가 아니라, 모의 CanvasKit의 `PathBuilder` 누락과
+  구형 `new Path()` 구현을 강제하던 정적 계약 검사 때문이었다.
+- `rhwp-studio/e2e/renderer-contract.test.mjs`의 세 모의 객체를 생성용 `PathBuilder`와 완성된
+  `Path`로 구분했다. 경로 detach, builder 해제, 완성된 path 해제를 각각 한 번 확인한다.
+- 정적 검사는 `createCommandPath` 호출과 `PathBuilder` 생성, 명령 적용, detach,
+  `finally` 해제 계약을 검사하도록 보정했다. 제품 코드를 구형 모의 객체에 맞춰 되돌리지 않았다.
+- 실패했던 CI 단계와 동일한 JavaScript 구문 검사, Python 구문 컴파일,
+  native/CanvasKit 비교 provenance self-test, `npm run e2e:renderer-contract`,
+  `npm run e2e:canvaskit-font-coverage`를 모두 실행했고 종료 코드 0으로 통과했다.
+- 이번 추가 보정은 JavaScript 계약 테스트만 변경했다. 이미 기록한 제품 단위 테스트와 브라우저
+  시각 검증 결과를 다시 실행한 것으로 집계하지 않으며, Rust 전체 회귀 테스트도 추가 실행하지 않았다.
+
+보정 head `418a58d2e24a3f6445beea25aceb4b37afdfad27`의 실제 GitHub Actions 결과:
+
+| Workflow | 결과 | 실행 증적 |
+| --- | --- | --- |
+| CI | 성공 | [실행 33977030278](https://github.com/edwardkim/rhwp/actions/runs/33977030278) |
+| CodeQL | 성공 | [실행 33977030301](https://github.com/edwardkim/rhwp/actions/runs/33977030301) |
+| Render Diff | 성공 | [실행 33977030107](https://github.com/edwardkim/rhwp/actions/runs/33977030107) |
+| Adapter inter-diff | 성공 | [실행 33977030296](https://github.com/edwardkim/rhwp/actions/runs/33977030296) |
+| Proptest roundtrip | 성공 | [실행 33977030254](https://github.com/edwardkim/rhwp/actions/runs/33977030254) |
+
+이 기록은 보정 code head의 결과이며, 뒤따르는 문서 commit의 CI나 devel push CI 성공을
+미리 단정하지 않는다. 최신 head 검사 완료 후 병합하고, 기존 후속 comment 계획에 실제 merge SHA와
+최종 PR/devel CI 결과를 반영한다. PR과 Issue #6042에는 기존 대표 PNG 두 장을 merge SHA로 고정하여
+직접 표시하며, 같은 증적을 중복 게시하지 않는다. 오늘할일과 대표 asset은 원 PR에 이미 포함되어 있어
+별도 후속 PR은 만들지 않는다.
