@@ -5,7 +5,7 @@ import type {
   WasmBridge,
 } from '@/core/wasm-bridge';
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef, CellProperties } from '@/core/types';
-import type { HeaderFooterTextPosition } from './cursor';
+import type { HeaderFooterTextPosition, CellBlockSelectionState } from './cursor';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
@@ -103,7 +103,22 @@ export type HeaderFooterSelectionSnapshot = {
   readonly previewPage: number;
 };
 
-export type EditSelectionSnapshot = BodySelectionSnapshot | HeaderFooterSelectionSnapshot;
+/**
+ * [Task #6741] F5 셀 블록 선택 스냅샷.
+ *
+ * 셀 블록은 `cellAnchor`/`cellFocus` 축이라 본문 텍스트 선택(start/end)을 만들지 않는다.
+ * 그래서 `BodySelectionSnapshot` 에 얹지 못하고 별도 분기로 둔다 — 머리말/꼬리말 서브모드가
+ * `mode` 태그로 갈라지는 것과 같은 형태다.
+ */
+export type CellBlockSelectionSnapshot = {
+  readonly mode: 'cellBlock';
+  readonly state: CellBlockSelectionState;
+};
+
+export type EditSelectionSnapshot =
+  | BodySelectionSnapshot
+  | HeaderFooterSelectionSnapshot
+  | CellBlockSelectionSnapshot;
 
 /** text mutation의 document pagination/flow 경계와 immediate 완료를 함께 전달한다. */
 export interface FocusedCellCursorGeometry {
