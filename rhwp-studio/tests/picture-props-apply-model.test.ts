@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { codeOnly } from './support/source-guard.ts';
+import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
 import type { CellPathLike, PictureProperties, ShapeProperties } from '../src/core/types.ts';
 import {
   buildPicturePropsPatch,
@@ -734,3 +734,56 @@ test('[#6758] 다이얼로그가 크기 칸을 공용 서식으로 채운다', (
     '높이 칸을 공용 서식으로 채우지 않는다');
 });
 
+test('[#6769] 건드리지 않은 위치 오프셋은 패치에 실리지 않는다', () => {
+  // group-box.hwp 의 가로선 실측값. 8554 HWPUNIT 은 "30.18" 로 보이고 되돌리면 8555 라
+  // 사용자가 아무것도 안 고쳐도 종전에는 변경으로 판정됐다. 한글 2024 는 같은 조작에서
+  // 이 값을 그대로 둔다(#6769 실측 — 설정만 누르고 저장한 파일이 원본과 필드 동일).
+  const props = pictureProps({ horzOffset: 8554, vertOffset: 16620 });
+  const form = applyForm();
+  form.common.horzOffset = '30.18';
+  form.common.vertOffset = '58.63';
+
+  const patch = buildPicturePropsPatch('shape', props, shapeProps(), form);
+
+  assert.equal('horzOffset' in patch, false, '표시값 그대로 돌아온 가로 오프셋은 무변경이다');
+  assert.equal('vertOffset' in patch, false, '표시값 그대로 돌아온 세로 오프셋은 무변경이다');
+});
+
+test('[#6769] 실제로 고친 오프셋은 그대로 실린다', () => {
+  const props = pictureProps({ horzOffset: 8554, vertOffset: 16620 });
+  const form = applyForm();
+  form.common.horzOffset = '40.00';
+  form.common.vertOffset = '58.63';
+
+  const patch = buildPicturePropsPatch('shape', props, shapeProps(), form);
+
+  assert.equal(patch.horzOffset, Math.round(40 * (7200 / 25.4)), '고친 값은 보낸다');
+  assert.equal('vertOffset' in patch, false, '안 고친 칸은 함께 실리지 않는다');
+});
+
+test('[#6769] 오프셋 판정은 크기의 0 클램프를 물려받지 않는다', () => {
+  // 크기는 `Math.max(0, ...)` 로 음수를 막지만 오프셋에 음수는 정당하다.
+  // 클램프를 함께 복사하면 왼쪽/위쪽으로 나간 개체를 0 으로 끌어당긴다.
+  const model = codeOnly(
+    readFileSync(
+      join(dirname(dirname(fileURLToPath(import.meta.url))), 'src/ui/picture-props-apply-model.ts'),
+      'utf8',
+    ),
+  );
+  const body = functionBodyFrom(model, 'function addChangedOffset');
+  assert.match(body, /untouchedMm\(raw, current\)/, '판정은 크기와 같은 소유자를 쓴다');
+  assert.doesNotMatch(body, /Math\.max\(/, '오프셋에 0 클램프를 두지 않는다');
+});
+
+test('[#6769] 다이얼로그가 오프셋 칸도 공용 서식으로 채운다', () => {
+  const dialog = codeOnly(
+    readFileSync(
+      join(dirname(dirname(fileURLToPath(import.meta.url))), 'src/ui/picture-props-dialog.ts'),
+      'utf8',
+    ),
+  );
+  assert.match(dialog, /this\.horzOffsetInput\.value = displayedMm\(this\.props\.horzOffset\);/,
+    '가로 오프셋 칸을 공용 서식으로 채우지 않는다');
+  assert.match(dialog, /this\.vertOffsetInput\.value = displayedMm\(this\.props\.vertOffset\);/,
+    '세로 오프셋 칸을 공용 서식으로 채우지 않는다');
+});
