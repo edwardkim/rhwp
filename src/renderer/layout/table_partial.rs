@@ -432,16 +432,41 @@ fn cell_cut_window(
     start_cut: &[usize],
     end_cut: &[usize],
     units_len: Option<usize>,
+    // [#6756] 컷 부기가 담긴 행(시작/끝) — 행-지역 서수 판정용.
+    start_row_for_cut: usize,
+    end_row_for_cut: usize,
 ) -> (usize, usize) {
+    // [#6756] 블록 서수가 **컷 벡터 범위를 벗어나면** 행-지역 서수로 되찾는다. `start_cut`/`end_cut` 부기는 `advance_row_cut` 이 **컷 행의 `row_span==1`
+    // 셀만** 담기 때문이다(`single_row_cut_index` 와 같은 순서). 그런데 종전에는
+    // 블록 분할이면 무조건 `block_cut_index` 로 찾아, 컷 행이 **큰 rowspan 블록 안에**
+    // 있으면 두 서수 공간이 어긋난다.
+    //
+    // 17253153: 셀 (11,0) 이 `row_span=17` 이라 블록이 `(11, 28)` 로 잡히고, 컷 행 14
+    // 의 셀 (14,1) 은 블록 서수 **7** 이 된다. `end_cut` 은 항목이 **2개**뿐이라
+    // `get(7) == None` → `eu = usize::MAX` → **컷이 사라져 그 행 전체가 그려진다.**
+    // 그 행은 다음 조각이 `start_cut` 대로 다시 그려 **중복**이 된다(2쪽 끝 두 줄이
+    // 3쪽 머리에 다시 나오고, 본문 하한을 48.2px·용지를 10.6px 넘는다).
+    //
+    // `#1748` 이 남긴 "컷 부기는 컷 행의 row_span==1 셀만 담는다"는 관찰 그대로다 —
+    // 거기서는 **걸친 rowspan 셀**만 높이 기반 경로로 구제했고, 블록 안의 보통 셀은
+    // 그대로 남아 있었다.
+    let row_local_cut_index = |cut_row: usize| -> Option<usize> {
+        (cell.row_span == 1 && cell.row as usize == cut_row)
+            .then(|| single_row_cut_index(table, cell))
+    };
     let (su, eu) = if is_block_split {
         let su = match (apply_start, start_block) {
             (true, Some((bs, be))) => block_cut_index(table, bs, be, cell)
+                .filter(|i| *i < start_cut.len())
+                .or_else(|| row_local_cut_index(start_row_for_cut))
                 .and_then(|i| start_cut.get(i).copied())
                 .unwrap_or(0),
             _ => 0,
         };
         let eu = match (apply_end, end_block) {
             (true, Some((bs, be))) => block_cut_index(table, bs, be, cell)
+                .filter(|i| *i < end_cut.len())
+                .or_else(|| row_local_cut_index(end_row_for_cut))
                 .and_then(|i| end_cut.get(i).copied())
                 .unwrap_or(usize::MAX),
             _ => usize::MAX,
@@ -549,6 +574,8 @@ impl LayoutEngine {
             start_cut,
             end_cut,
             Some(units_len),
+            start_row,
+            end_row.saturating_sub(1),
         );
         ord >= su && (ord < eu || (ord == eu && at_line_start))
     }
@@ -612,6 +639,8 @@ impl LayoutEngine {
             start_cut,
             end_cut,
             None,
+            start_row,
+            end_row.saturating_sub(1),
         );
         let units = self.cell_units(cell, table, styles);
         let lo = su.min(units.len());
@@ -1067,6 +1096,8 @@ impl LayoutEngine {
                     start_cut,
                     end_cut,
                     None,
+                    start_row,
+                    end_row.saturating_sub(1),
                 ))
             } else if native_two_row_paragraph_owner_boundary {
                 let su = usize::from(straddles_fragment_start);
@@ -3431,6 +3462,8 @@ impl LayoutEngine {
                             start_cut,
                             end_cut,
                             Some(units.len()),
+                            start_row,
+                            end_row.saturating_sub(1),
                         );
                         if eu > su {
                             has_visible_range = true;
