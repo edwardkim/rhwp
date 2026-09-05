@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 // [Task #2328] 스냅샷 상한 정합 + 예외 안전 스택 이동 소스 가드.
 //
@@ -12,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 // 별도 수행한다 (PR 검증 섹션).
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const source = (rel: string): string => readFileSync(join(rootDir, rel), 'utf8');
+const source = (rel: string): string => codeOnly(readFileSync(join(rootDir, rel), 'utf8'));
 
 /** `undo(...) {` ~ 다음 메서드 전까지의 블록을 추출한다. */
 function methodBlock(src: string, signature: string): string {
@@ -188,6 +189,19 @@ test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 여유를 뺀 값�
   const idxEnforce = exec.indexOf('this.enforceSnapshotBudget(wasm)');
   assert.ok(idxPush !== -1 && idxEnforce !== -1 && idxPush < idxEnforce,
     'execute 가 push 이후에 enforceSnapshotBudget 를 호출해야 함(전이면 미반영)');
+});
+
+test('[#6332] recordWithoutExecute 도 스냅샷 예산을 강제한다', () => {
+  // 예산 불변식의 undoStack push 진입점은 execute 와 recordWithoutExecute 둘이다.
+  // execute 쪽 강제는 위 [결함1] 이 고정한다 — 이 테스트는 record 경로가 미보호로
+  // 남지 않게 고정한다. 현재 record 커맨드는 스냅샷 0개라 no-op 방어지만, 스냅샷
+  // 보유 커맨드가 이 경로에 추가되면 강제 없이는 무통보 축출이 재발한다(#2328).
+  const block = methodBlock(history, 'recordWithoutExecute(command: EditCommand, wasm?: WasmBridge): void {');
+  const idxPush = block.indexOf('this.undoStack.push(command)');
+  const idxEnforce = block.indexOf('this.enforceSnapshotBudget(wasm)');
+  assert.ok(idxPush !== -1, 'push 지점을 찾지 못함 — 시그니처가 바뀌었으면 가드 갱신');
+  assert.ok(idxEnforce !== -1 && idxPush < idxEnforce,
+    'recordWithoutExecute 가 push 이후에 enforceSnapshotBudget 를 호출해야 함');
 });
 
 test('[#5769] undo 도 스냅샷 id 를 늘리므로 undo 경로에서 예산을 강제한다', () => {
