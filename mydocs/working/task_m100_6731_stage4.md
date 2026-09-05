@@ -53,3 +53,19 @@ remote push와 PR 생성 승인을 받은 뒤 다음 순서로 진행한다.
 4. CodeQL workflow·query·path가 기준선과 같고 다른 password source 탐지를 제외하지 않았음을
    diff와 run 설정으로 재확인한다.
 5. flow가 남으면 sanitizer·query 제외를 추가하지 않고 SARIF delta와 수정 수행계획을 보고한다.
+
+## PR 생성 직전 구조 재점검 보정
+
+첫 remote push 뒤 PR 본문을 준비하면서 외부 facade뿐 아니라 공통 원자적 helper도 여전히
+`DocumentInfo`를 만들고 반환한다는 허점을 발견했다. 이 상태에서는 password command가 반환값을 버려도
+내부 metadata 생성과 외부 query가 중복되고, CodeQL의 내부 flow가 남을 수 있다.
+
+승인된 command/query 분리 범위 안에서 다음과 같이 보정했다.
+
+- `loadDocumentAtomically()`도 `void` command로 전환하고 내부 `getDocumentInfo()` 생성을 제거했다.
+- 기존 평문 `loadDocument()`만 command 성공 뒤 `getDocumentInfo()`를 한 번 호출해 public 반환 계약을
+  유지한다.
+- 페이지 수 log는 교체된 문서의 `pageCount` getter를 사용한다.
+- 보호 계약에 원자적 helper의 `void`와 metadata query 부재, 평문 public query 순서를 추가했다.
+
+이 보정 head를 다시 로컬 검증하고 원격에 push한 뒤에만 PR을 생성한다.

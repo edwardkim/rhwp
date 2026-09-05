@@ -161,6 +161,8 @@ test('#6731 DocumentInfo와 폰트 snapshot digest에는 password 운반 필드�
 
 test('WasmBridge는 다음 문서를 모두 준비한 뒤에만 기존 문서를 교체한다', () => {
   const atomic = between(bridgeSource, 'private loadDocumentAtomically', 'loadDocument(data: Uint8Array');
+  assert.match(atomic, /createDocument: \(\) => HwpDocument,\s*\): void/, '원자적 교체 helper도 void command여야 한다');
+  assert.doesNotMatch(atomic, /getDocumentInfo\(\)|return\s+info/, '교체 command 안에서 metadata query 결과를 만들거나 반환하지 않는다');
   assert.doesNotMatch(atomic, /this\.releaseDocument\(\)/, '실패 전에 현재 문서를 해제하지 않는다');
   assert.match(atomic, /requiresPasswordForSave: boolean/, '다음 문서의 보호 의도를 명시적으로 받는다');
   assert.match(atomic, /nextDoc = createDocument\(\);/, '일반/암호 문서 생성 경로를 한 계약으로 묶는다');
@@ -172,6 +174,7 @@ test('WasmBridge는 다음 문서를 모두 준비한 뒤에만 기존 문서를
 
   const plainLoad = between(bridgeSource, 'loadDocument(data: Uint8Array', 'loadDocumentWithPassword');
   assert.match(plainLoad, /loadDocumentAtomically\([\s\S]*false/, '평문 load는 보호 의도를 해제한다');
+  assert.match(plainLoad, /return this\.getDocumentInfo\(\);/, '평문 public API도 교체 성공 뒤 별도 metadata query를 사용한다');
   const passwordLoad = between(
     bridgeSource,
     'loadDocumentWithPassword',

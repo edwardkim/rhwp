@@ -340,7 +340,7 @@ export class WasmBridge {
     fileName: string | undefined,
     requiresPasswordForSave: boolean,
     createDocument: () => HwpDocument,
-  ): DocumentInfo {
+  ): void {
     const nextFileName = fileName ?? 'document.hwp';
     const nextDocumentDigest = `blake3:${bytesToHex(blake3(data))}`;
     let nextDoc: HwpDocument | null = null;
@@ -350,7 +350,6 @@ export class WasmBridge {
       nextDoc.convertToEditable();
       this.ensureParagraphStableIdsFor(nextDoc);
       nextDoc.setFileName(nextFileName);
-      const info: DocumentInfo = JSON.parse(nextDoc.getDocumentInfo());
 
       // 새 문서를 끝까지 준비한 뒤에만 기존 문서를 교체한다. 암호 필요·오답·손상
       // 오류에서는 현재 문서와 최근 문서 연결을 그대로 유지해야 한다 (#3474).
@@ -370,14 +369,13 @@ export class WasmBridge {
           /* noop */
         }
       }
-      console.log(`[WasmBridge] 문서 로드: ${info.pageCount}페이지`);
+      console.log(`[WasmBridge] 문서 로드: ${this.pageCount}페이지`);
 
       // [Task #741 후속] 외부 file path 그림 영역 영역 dev 환경 영역 영역 fetch (basename 영역
       // 영역 영역 same dir 영역 image 영역 영역 영역 — 본 환경 dev 영역 영역 samples/ 영역
       // Vite asset). 영역 영역 영역 영역 영역 부재 영역 영역 placeholder 표시.
       void this.populateExternalImagesFromDevServer();
 
-      return info;
     } catch (error) {
       if (nextDoc) {
         try {
@@ -391,7 +389,8 @@ export class WasmBridge {
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
+    this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
+    return this.getDocumentInfo();
   }
 
   loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): void {
