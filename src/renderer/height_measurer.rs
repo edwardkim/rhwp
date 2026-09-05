@@ -4,13 +4,176 @@
 //! LayoutEngine과 동일한 계산 로직을 사용하여 정확한 높이를 산출한다.
 
 use super::composer::{compose_paragraph, ComposedParagraph, SingleLineOverflowCache};
+use super::float_placement::signed_hwpunit;
 use super::style_resolver::ResolvedStyleSet;
 use super::{hwpunit_to_px, DEFAULT_DPI};
 use crate::model::control::Control;
 use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::paragraph::{LineSeg, Paragraph};
-use crate::model::shape::{Caption, CommonObjAttr, TextWrap, VertRelTo};
+use crate::model::shape::{Caption, CommonObjAttr, HorzRelTo, TextWrap, VertRelTo};
 use crate::model::table::{Table, TablePageBreak};
+
+/// 저장 `Square` 그림과 같은 세로 band에 있는 저장 텍스트 줄인지 판정한다.
+fn stored_square_picture_adjacent_line(
+    line_segs: &[LineSeg],
+    object_top: i64,
+    object_bottom: i64,
+    object_left: i64,
+    object_right: i64,
+) -> bool {
+    const POSITION_TOLERANCE_HU: i64 = 2;
+    line_segs.iter().any(|candidate| {
+        if candidate.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || candidate.segment_width <= 0
+            || candidate.line_height <= 0
+        {
+            return false;
+        }
+        let line_top = i64::from(candidate.vertical_pos);
+        let line_bottom = line_top + i64::from(candidate.line_height);
+        if line_bottom <= object_top || line_top >= object_bottom {
+            return false;
+        }
+
+        let mut same_line = line_segs.iter().filter(|seg| {
+            seg.vertical_pos == candidate.vertical_pos
+                && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && seg.segment_width > 0
+                && seg.line_height > 0
+        });
+        same_line.clone().any(|seg| {
+            i64::from(seg.column_start) + i64::from(seg.segment_width)
+                <= object_left + POSITION_TOLERANCE_HU
+        }) || same_line
+            .any(|seg| i64::from(seg.column_start) >= object_right - POSITION_TOLERANCE_HU)
+    })
+}
+
+/// 저장 `Square` 그림의 anchor와 인접 텍스트를 연결하는 메타데이터를 반환한다.
+///
+/// HWP5 원본은 그림 anchor와 텍스트를 별도 문단에 두거나, 한 문단의 텍스트와 그림을
+/// 함께 두면서 `LINE_SEG`의 좌우 경계를 저장한다. 두 형상 모두 그림의 물리 영역과
+/// 겹치는 텍스트 줄이 그림의 좌우 경계에서 끝나거나 시작한다는 증거를 요구한다.
+fn stored_square_picture_wrap_anchor_for_control(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+    control_idx: usize,
+    target_para_idx: Option<usize>,
+) -> Option<crate::renderer::pagination::WrapAnchorRef> {
+    let para = cell.paragraphs.get(para_idx)?;
+    let Control::Picture(picture) = para.controls.get(control_idx)? else {
+        return None;
+    };
+    let common = &picture.common;
+    if common.treat_as_char
+        || !common.flow_with_text
+        || !matches!(common.text_wrap, TextWrap::Square)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+        || !matches!(common.horz_rel_to, HorzRelTo::Para)
+        || common.width == 0
+        || common.height == 0
+    {
+        return None;
+    }
+
+    let anchor = para.line_segs.iter().find(|seg| {
+        seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && !seg.is_empty_segment()
+            && seg.line_height > 0
+    })?;
+    let object_top = i64::from(anchor.vertical_pos)
+        + i64::from(signed_hwpunit(common.vertical_offset))
+        - i64::from(common.margin.top);
+    let object_bottom = object_top
+        + i64::from(common.height)
+        + i64::from(common.margin.top)
+        + i64::from(common.margin.bottom);
+    let object_left =
+        i64::from(signed_hwpunit(common.horizontal_offset)) - i64::from(common.margin.left);
+    let object_right = object_left
+        + i64::from(common.width)
+        + i64::from(common.margin.left)
+        + i64::from(common.margin.right);
+    if object_bottom <= object_top || object_right <= object_left {
+        return None;
+    }
+
+    let target = if !para.text.trim().is_empty() {
+        (target_para_idx.is_none() || target_para_idx == Some(para_idx))
+            .then(|| {
+                stored_square_picture_adjacent_line(
+                    &para.line_segs,
+                    object_top,
+                    object_bottom,
+                    object_left,
+                    object_right,
+                )
+            })
+            .filter(|matched| *matched)
+            .map(|_| para_idx)
+    } else {
+        cell.paragraphs
+            .iter()
+            .enumerate()
+            .skip(para_idx + 1)
+            .filter(|(candidate_idx, candidate)| {
+                target_para_idx.is_none_or(|target_idx| target_idx == *candidate_idx)
+                    && !candidate.text.trim().is_empty()
+            })
+            .find_map(|(candidate_idx, candidate)| {
+                stored_square_picture_adjacent_line(
+                    &candidate.line_segs,
+                    object_top,
+                    object_bottom,
+                    object_left,
+                    object_right,
+                )
+                .then_some(candidate_idx)
+            })
+    }?;
+
+    let first_seg = para.line_segs.first()?;
+    let result = crate::renderer::pagination::WrapAnchorRef {
+        anchor_para_index: para_idx,
+        anchor_cs: first_seg.column_start as i32,
+        anchor_sw: first_seg.segment_width as i32,
+        anchor_image_margin_right: common.margin.right as i32,
+    };
+    if target_para_idx.is_some_and(|target_idx| target_idx != target) {
+        return None;
+    }
+    Some(result)
+}
+
+/// 셀 문단에 적용할 저장 `Square` 그림 어울림 anchor를 찾는다.
+pub(crate) fn stored_square_picture_wrap_anchor_for_para(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+) -> Option<crate::renderer::pagination::WrapAnchorRef> {
+    (0..para_idx).find_map(|anchor_para_idx| {
+        let para = cell.paragraphs.get(anchor_para_idx)?;
+        (0..para.controls.len()).find_map(|control_idx| {
+            stored_square_picture_wrap_anchor_for_control(
+                cell,
+                anchor_para_idx,
+                control_idx,
+                Some(para_idx),
+            )
+        })
+    })
+}
+
+/// 저장 `Square` 그림이 셀의 저장 텍스트 줄과 실제로 인접한 경우.
+///
+/// anchor 높이가 별도 flow unit으로 다시 더해지면 `LINE_SEG` 사다리와 중복되므로,
+/// 셀 높이·렌더 cursor 양쪽에서 이 판정을 공유한다.
+pub(crate) fn stored_square_picture_has_adjacent_text(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+    control_idx: usize,
+) -> bool {
+    stored_square_picture_wrap_anchor_for_control(cell, para_idx, control_idx, None).is_some()
+}
 
 /// [#6299] 같은 `vertical_pos` 를 공유하는 LINE_SEG 는 한 줄의 가로 조각
 /// (어울림 개체 좌·우). 높이 회계에서는 이어지는 두 번째 이후 조각을 건너뛴다.
@@ -1705,6 +1868,14 @@ impl HeightMeasurer {
                             } else {
                                 0.0
                             };
+                            let stored_square_picture_anchor = p.controls.len() == 1
+                                && stored_square_picture_has_adjacent_text(cell, pidx, 0);
+                            if stored_square_picture_anchor {
+                                // 저장 Square 그림의 빈 앵커 줄은 다음 문단의 좌우
+                                // LINE_SEG가 이미 그림 높이를 예약한 자리다. 줄박스까지
+                                // 더하면 같은 흐름을 한 번 더 세게 된다.
+                                return spacing_before + spacing_after;
+                            }
                             if comp.lines.is_empty() {
                                 // [#2169] NO_LS 순수 빈 문단 = em 줄박스 (한글 공식).
                                 let h = if crate::renderer::para_has_no_stored_line_segs(p)

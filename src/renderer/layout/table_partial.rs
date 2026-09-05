@@ -2,7 +2,7 @@
 
 use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::float_placement::native_hwp5_stored_reset_fragment_paint_geometry;
-use super::super::height_measurer::MeasuredTable;
+use super::super::height_measurer::{stored_square_picture_has_adjacent_text, MeasuredTable};
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
@@ -3526,7 +3526,27 @@ impl LayoutEngine {
                                     p.controls.iter().any(|ct| matches!(ct, Control::Table(_)))
                                 })
                         });
-                        if !row_has_nested {
+                        let row_has_stored_square_picture_flow = table.cells.iter().any(|cell| {
+                            cell.row as usize == r
+                                && cell.row_span == 1
+                                && cell.paragraphs.iter().enumerate().any(|(para_idx, para)| {
+                                    para.controls.iter().enumerate().any(|(control_idx, _)| {
+                                        stored_square_picture_has_adjacent_text(
+                                            cell,
+                                            para_idx,
+                                            control_idx,
+                                        )
+                                    })
+                                })
+                        });
+                        if !row_has_nested
+                            || (self.profile.get().hwp5_stored_pagination_layout()
+                                && matches!(
+                                    table.page_break,
+                                    crate::model::table::TablePageBreak::RowBreak
+                                )
+                                && row_has_stored_square_picture_flow)
+                        {
                             continue;
                         }
                     }

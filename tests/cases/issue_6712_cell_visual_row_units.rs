@@ -119,6 +119,33 @@ fn glyph_pages(core: &DocumentCore) -> std::collections::BTreeMap<char, (u32, f6
     out
 }
 
+const KOREAN_SQUARE_PICTURE_SAMPLE: &[u8] = include_bytes!(
+    "../../samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp"
+);
+const CHINESE_SQUARE_PICTURE_SAMPLE: &[u8] = include_bytes!(
+    "../../samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp"
+);
+
+fn assert_issue_6712_two_page_oracle(label: &str, bytes: &[u8]) {
+    let core =
+        DocumentCore::from_bytes(bytes).unwrap_or_else(|error| panic!("{label} 열기: {error:?}"));
+    assert_eq!(
+        core.page_count(),
+        2,
+        "{label}: 한컴 기준 PDF는 2쪽이다. 저장된 Square 그림 옆 줄의 그림 높이를 중복 계상하면 3쪽이 된다."
+    );
+}
+
+#[test]
+fn stored_square_picture_flow_matches_korean_hancom_oracle() {
+    assert_issue_6712_two_page_oracle("한국어 가정통신문", KOREAN_SQUARE_PICTURE_SAMPLE);
+}
+
+#[test]
+fn stored_square_picture_flow_matches_chinese_hancom_oracle() {
+    assert_issue_6712_two_page_oracle("중국어 가정통신문", CHINESE_SQUARE_PICTURE_SAMPLE);
+}
+
 #[test]
 fn whole_table_preserves_both_fragments_on_each_visual_row() {
     let core = document(4, 7200, true, false);
