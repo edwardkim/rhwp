@@ -1,9 +1,15 @@
 import type { CursorRect, LineInfo } from '@/core/types';
 
-/** 시각 줄 affinity 로 rect 를 다시 조회하는 데 필요한 최소 질의 집합. */
+/**
+ * 시각 줄 affinity 로 rect 를 다시 조회하는 데 필요한 최소 질의 집합.
+ *
+ * 두 질의 모두 **실패를 null 로 알린다**. 어느 한쪽이라도 예외를 던지면 호출부의 바깥
+ * catch 로 빠져 조합 오버레이가 통째로 사라지는데, 그것은 `exact` 로 물러나는 것보다
+ * 나쁜 결과다. 구현부가 wasm 예외를 삼켜 null 로 바꿔서 넘긴다.
+ */
 export interface LineAffinityLookup {
-  /** `charOffset` 이 속한 시각 줄 정보. */
-  lineInfoAt(charOffset: number): LineInfo;
+  /** `charOffset` 이 속한 시각 줄 정보. 조회할 수 없으면 null. */
+  lineInfoAt(charOffset: number): LineInfo | null;
   /** `lineIndex` 줄의 시작 rect. 조회할 수 없으면 null. */
   rectAtLineStart(lineIndex: number): CursorRect | null;
 }
@@ -16,9 +22,8 @@ export interface LineAffinityLookup {
  * TextRun 에 먼저 매치돼 그 줄 끝을 돌려준다. 캐럿에는 그 affinity 가 맞지만, 그 offset 의
  * 글자를 덮어 그리는 오버레이에는 한 줄 위를 가리키는 값이 된다(#6553).
  *
- * 모호한 경계(= offset 이 두 번째 이후 줄의 시작)일 때만 시각 줄을 명시해 다시 조회하고,
- * 그 밖에는 `exact` 를 그대로 돌려준다 — 조합 갱신마다 도는 경로라 불필요한 질의를 늘리지
- * 않는다.
+ * 조합 갱신마다 도는 경로다. `lineInfoAt` 은 매번 한 번 돌지만, 무거운 쪽인
+ * `rectAtLineStart` 는 모호한 경계(= offset 이 두 번째 이후 줄의 시작)에서만 부른다.
  */
 export function resolveGlyphStartRect(
   charOffset: number,
@@ -26,20 +31,26 @@ export function resolveGlyphStartRect(
   lookup: LineAffinityLookup,
 ): CursorRect {
   const line = lookup.lineInfoAt(charOffset);
+  if (!line) return exact;
   // 첫 줄은 앞줄이 없어 모호하지 않다.
   if (line.lineIndex <= 0 || charOffset !== line.charStart) return exact;
 
   const onLine = lookup.rectAtLineStart(line.lineIndex);
   if (!onLine) return exact;
 
-  // getCursorRectOnLine 은 셀 bbox 를 싣지 않는다 — 오버레이의 셀 클램프(#1951)가 쓰는
-  // cellBounds 는 exact 쪽 값을 유지한다.
+  // `cellBounds`(와 그 파생 `cellOverflowed`)는 그 rect 가 놓인 **쪽의** 셀 bbox 다.
+  // getCursorRectOnLine 은 이 둘을 싣지 않으므로 같은 쪽일 때만 exact 것을 이어 쓴다 —
+  // 쪽이 바뀌었는데 그대로 들고 가면 오버레이의 셀 클램프(#1951)가 다른 쪽 bbox 로
+  // 좌표를 가둔다. 쪽이 다르면 클램프 없이 두는 편이 틀린 곳에 가두는 것보다 낫다.
+  const samePage = onLine.pageIndex === exact.pageIndex;
   return {
     ...exact,
     pageIndex: onLine.pageIndex,
     x: onLine.x,
     y: onLine.y,
     height: onLine.height,
+    cellBounds: samePage ? exact.cellBounds : undefined,
+    cellOverflowed: samePage ? exact.cellOverflowed : undefined,
   };
 }
 
