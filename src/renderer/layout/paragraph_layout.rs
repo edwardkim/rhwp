@@ -936,11 +936,17 @@ fn tac_offsets_for_line(
     };
     let start = line.char_start;
     let end = composed_line_char_end(comp, line_idx);
+    // [#6754] 폭이 0 인 줄은 `char_pos_in_line` 이 TAC 를 **하나만** 소유하게 한다.
+    // 글자 없이 TAC 개체만 담은 **한 줄짜리** 문단은 그 개체들이 모두 같은 줄에
+    // 나란히 놓이는데(저장 사다리도 같은 `vpos` 를 적는다), 그 규칙 때문에 둘째부터
+    // 어느 줄에도 안 실려 그려지지 않았다 — 156585314 3쪽: 그림(pos 0)만 그려지고
+    // 4×8 표(pos 1)가 사라진다.
+    let single_empty_line = comp.lines.len() == 1 && end <= start;
     tac_offsets_px
         .iter()
         .copied()
         .filter(|(pos, _, _)| {
-            char_pos_in_line(*pos, start, end)
+            (single_empty_line || char_pos_in_line(*pos, start, end))
                 // [#5727] 앞선 빈 줄(개체 자기 줄)이 소유한 경계 TAC 는 제외
                 && !tac_owned_by_prior_empty_line(comp, line_idx, *pos)
         })
@@ -8049,6 +8055,66 @@ impl LayoutEngine {
                             img_x += tac_w;
                             empty_line_mark_x = img_x;
                             empty_line_logical_end += 1;
+                            continue;
+                        }
+                        // [#6754] 빈 문단의 인라인 TAC **표** — 종전에는 이 루프가
+                        // 그림·도형만 그리고 표는 조용히 건너뛰었다. 표가 인라인으로
+                        // 분류되면 PageItem 경로도 그리지 않으므로 표가 통째로 사라진다
+                        // (156585314 3쪽 4×8 표). 그림과 같은 줄에 나란히 그린다.
+                        if let Control::Table(t) = ctrl {
+                            if t.common.treat_as_char
+                                && tree
+                                    .get_inline_shape_position(
+                                        vars.section_index,
+                                        vars.para_index,
+                                        tac_ci,
+                                        cell_ctx.as_ref(),
+                                    )
+                                    .is_none()
+                            {
+                                let om_l = hwpunit_to_px(t.outer_margin_left as i32, self.dpi);
+                                let om_top = hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                                let table_x = img_x + om_l;
+                                let table_y = vars.y + om_top;
+                                if let Some(bdc) = bin_data_content {
+                                    self.layout_table(
+                                        tree,
+                                        line_node,
+                                        t,
+                                        vars.section_index,
+                                        styles,
+                                        0,
+                                        col_area,
+                                        table_y,
+                                        bdc,
+                                        None,
+                                        0,
+                                        Some((vars.para_index, tac_ci)),
+                                        vars.alignment,
+                                        cell_ctx.clone(),
+                                        0.0,
+                                        0.0,
+                                        Some(table_x),
+                                        None,
+                                        None,
+                                        None,
+                                        false,
+                                        false,
+                                        false,
+                                    );
+                                }
+                                tree.set_inline_shape_position(
+                                    vars.section_index,
+                                    vars.para_index,
+                                    tac_ci,
+                                    cell_ctx.as_ref(),
+                                    table_x,
+                                    table_y,
+                                );
+                                img_x += tac_w;
+                                empty_line_mark_x = img_x;
+                                empty_line_logical_end += 1;
+                            }
                             continue;
                         }
                         if let Control::Picture(pic) = ctrl {
