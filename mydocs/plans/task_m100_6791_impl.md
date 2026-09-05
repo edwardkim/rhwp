@@ -6,7 +6,7 @@
 - 작업 브랜치: `codex/6791-contributing-validation`
 - 수행계획 승인: 2026-09-06 사용자 “진행해줘”, 기록 commit `a2c00f16d`
 - 구현계획 승인: 2026-09-06 사용자 “진행해줘”. 공개 문서 Stage 1 착수 승인.
-- 현재 상태: Stage 1 진행
+- 현재 상태: Stage 1 완료, Stage 2 진행 승인 대기. [Stage 1 보고서](../working/task_m100_6791_stage1.md)
 
 ## 1. 구현 계약
 

@@ -1,26 +1,10 @@
 # Contributing to rhwp
 
-> **PR·push 차단 게이트 — 하나라도 실패하면 `gh pr create` / `git push` 하지 마세요.**
-> 테스트·baseline만 고친 뒤에도 포맷과 Clippy를 다시 확인하세요. 일반 기여자의 source PR
-> checkout에서는 generated suite를 준비하지 않으며, maintainer review worktree의 전체 lint gate는
-> [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)을 따릅니다.
->
-> ```bash
-> cargo fmt --all
-> cargo fmt --all -- --check
-> cargo clippy --locked -- -D warnings
-> cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
-> cargo build --locked --workspace --target-dir target/pr-review
-> cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
-> ```
->
-> CI Lint job은 Format check 외에도 native·WASM32·workspace Clippy를 실행합니다. `cargo fmt --check`
-> 또는 native Clippy 하나만으로는 충분하지 않습니다. 실패하면 수정 후 같은 명령을 다시 통과시킨 뒤
-> PR을 만드세요.
-> `src/**`의 `#[cfg(test)]`를 바꾼 경우에는 추가로
-> `node scripts/rust-unit-test-tiers.mjs --check`를 실행하세요. 이 검사는 source와 추적 정책만
-> 읽으며 파생 inventory를 만들거나 stage하지 않습니다. 반면
-> `rust-test-suite-manifest.mjs --prepare`와 manifest `--check`는 review worktree와 CI만 수행합니다.
+> **PR·push 전에는 [변경 범위별 체크리스트](#pr-전-체크리스트)를 확인하세요.**
+> 해당하는 필수 검증이 하나라도 실패하면 수정·재검증 전에는 `git push` / `gh pr create` 하지 마세요.
+> Rust source·test/baseline helper 변경에는 전체 fmt와 native·WASM32·workspace Clippy가 필요합니다.
+> Studio 단독 변경은 [프런트엔드 검증](#프런트엔드-변경-검증)을 따르고, 혼합 변경은 두 범위를 모두
+> 검증합니다. 파생 suite·manifest는 검증 산출물이며 PR에 포함하지 않습니다.
 
 rhwp에 관심을 가져주셔서 감사합니다!
 
@@ -157,27 +141,68 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 ### PR 전 체크리스트
 
+변경 파일과 동작을 기준으로 아래에서 해당하는 검증을 모두 선택하세요. Rust 검증을 위한 파생 suite는
+원본을 커밋한 뒤 별도 review worktree에서 준비합니다([회귀 테스트 가이드](#회귀-테스트-가이드)).
+이 worktree는 기여자 본인이 제출 전 검증을 위해 만들 수 있습니다. source 제출 checkout과 분리하는
+절차이지, maintainer만 생성기를 실행할 수 있다는 뜻이 아닙니다.
+
+| 변경 범위 | 제출 전 필수 검증 |
+| --- | --- |
+| Rust parser/model/CLI source | 아래 Rust lint 묶음, 관련 focused 회귀, `release-test` 전체 integration |
+| Rust test/baseline helper | Rust lint 묶음, 관련 focused 회귀와 해당 snapshot 결정성 확인. 테스트만 바꿔도 fmt·세 Clippy를 생략하지 않음 |
+| Rust renderer/layout/typeset/WASM source | Rust lint 묶음, 관련 focused 회귀, `release-test` 전체 integration, Native Skia 3종(lib·누락 이미지·직접 PDF 회귀), fresh WASM build와 [시각 검증](#렌더링-pr-자가-검증-도구-한컴-없이-가능) |
+| Studio 단독 (`rhwp-studio/` 변경, Rust 검증 입력 변경 없음) | [프런트엔드 검증](#프런트엔드-변경-검증): fresh WASM 준비, TypeScript, 단위 테스트, production build, 브라우저 동작 변경 시 관련 E2E·실제 브라우저 확인 |
+| `npm/editor` public API·transport·type·package manifest | [프런트엔드 검증](#프런트엔드-변경-검증)의 package 계약 검사, iframe RPC·기본 옵션·WASM 초기화 변경 시 embed E2E |
+| Rust와 Studio 등 혼합 변경 | 해당하는 모든 행의 검증. 프런트엔드 검증이 Rust 검증을 대체하지 않음 |
+| 기존 fixture/golden/baseline data만 변경 | 관련 focused 회귀와 해당 snapshot 결정성 확인. Rust helper도 바꾸면 Rust lint 묶음 추가 |
+| 문서만 변경 | `git diff --check`, 변경 문서의 링크·내용 정합성. 실행 절차를 바꿨다면 해당 절차의 실제 동작 확인 |
+
+`Cargo.toml`, `Cargo.lock`, Rust toolchain·빌드 설정도 Rust 검증 입력입니다. 이런 파일을 함께 바꾸면
+Studio 단독으로 분류하지 않고 Rust lint·관련 회귀와 영향을 받는 프런트엔드 검증을 수행하세요.
+새 sample·fixture, workflow 등 표 밖의 변경도 실제 영향에 맞는 검증이 필요합니다. 위 표는 로컬 검증의
+범위이며 CI job의 skip을 보장하지 않습니다. 모든 PR은 최신 head의 GitHub required checks를 충족해야 합니다.
+
+검증한 commit SHA와 실제 명령·결과를 PR 본문에 기록하세요. 범위상 해당하지 않아 실행하지 않은 검사는
+그 사유를 적고, 실행 실패나 미완료를 PASS로 표시하지 않습니다.
+
+#### Rust lint와 회귀
+
+위 표에서 Rust lint가 필요한 변경은 다음 묶음을 모두 통과해야 합니다. 아래 명령은 파생 suite를 준비한
+별도 review worktree의 저장소 루트에서 순차 실행합니다. `cargo fmt --check` 또는 native Clippy 하나만으로는
+CI의 Format check·WASM cfg·workspace 전체 lint를 대신할 수 없습니다.
+
 ```bash
-cargo install cargo-nextest --locked             # 최초 1회
-cargo fmt --all                                  # 로컬 포맷 적용
-cargo fmt --all -- --check                       # CI와 같은 포맷 검증 — PR 전 필수
-cargo clippy --locked -- -D warnings              # native root lint
-cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings # WASM cfg lint
+cargo fmt --all -- --check
+cargo clippy --locked --target-dir target/pr-review -- -D warnings
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
+  --target-dir target/pr-review -- -D warnings
 cargo build --locked --workspace --target-dir target/pr-review
 cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+```
+
+한 검사라도 실패하면 원인을 수정하고 해당 검사를 다시 통과시킨 뒤 제출하세요. Rust integration test
+source를 변경한 경우에는 배정 규칙의 계약 검사도 실행합니다.
+
+```bash
 node --test scripts/tests/rust-test-suite-manifest.test.mjs
-# `src/**`의 `#[cfg(test)]`를 변경한 경우에만 실행한다. 파생 파일은 생성하지 않는다.
+```
+
+`src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]`를 변경한 경우에만 다음 무생성 정책 검사를 추가합니다.
+
+```bash
 node scripts/rust-unit-test-tiers.mjs --check
+```
+
+표에서 전체 integration 회귀가 필요한 변경은 다음을 실행합니다. 관련 focused 회귀만 필요한 변경은
+[회귀 테스트 가이드](#회귀-테스트-가이드)에 따라 변경 기능을 검증합니다.
+
+```bash
+cargo install cargo-nextest --locked             # nextest가 없을 때 최초 1회
 cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir target/pr-review \
-  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast                          # 통합 테스트 포함 전체
-cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트 경고 0건
+  --tests --no-fail-fast
 ```
-
-`cargo fmt --all -- --check` 가 실패하면 PR을 만들지 마세요. `cargo fmt --check`
-만으로는 CI `Lint (fmt, clippy, WASM check)` 와 같지 않습니다. 포맷이 깨졌거나 native/WASM
-Clippy가 경고를 내면 수정 뒤 해당 lint를 다시 통과한 다음에만 PR을 생성해주세요.
 
 새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/suites/suite-policy.json`,
 `tests/suites/unit-test-tier-policy.json`은 추적하는 정책이고, `tests/generated/`, `tests/suites/manifest.json`,
@@ -188,7 +213,7 @@ Clippy가 경고를 내면 수정 뒤 해당 lint를 다시 통과한 다음에�
 `rust-unit-test-tiers.mjs --check`는 source-side `#[cfg(test)]` 변경의 정책 검사로만 실행할 수 있으며
 파일을 생성하지 않습니다. 새 원본의 배정과 harness 검증은 PR review 전용 worktree 및 CI가
 `--prepare` 뒤 manifest `--check`로 수행합니다.
-로컬에서는 위 계약 단위 테스트와 필요한 Rust 회귀 테스트만 실행하세요.
+검증 worktree에서는 위 표에 해당하는 Rust lint·회귀와 manifest 확인을 완료하세요.
 
 - `release-test` 프로필은 PR CI와 같은 기준이며 debug 대비 수 배 빠릅니다.
 - nextest는 현재 host에 맞는 기본 동시성을 사용합니다. 기본값을 먼저 쓰고, CPU·메모리·동시 작업을
@@ -204,17 +229,33 @@ cargo build --profile release-test --target-dir target/pr-review
 ```
 
 이 명령은 `rhwp` 바이너리를 만들어 시각 대조를 준비할 뿐, 테스트를 실행하지 않습니다. **PR 전 검증을
-대체하지 않으므로**, 코드 변경 뒤에는 위의 전체 `cargo nextest run ... --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast`를 반드시
-완료하세요. 상세 절차는 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따릅니다.
+대체하지 않으므로**, Rust 렌더링 source 변경 뒤에는 위의 전체 `cargo nextest run ... --tests --no-fail-fast`를
+반드시 완료하세요.
 
 ### 프런트엔드 변경 검증
 
-`rhwp-studio/`, `npm/editor/`, WASM과 Studio의 연결 코드 또는 브라우저 UI를 바꾸는 PR은 Rust 검증과 별도로
-아래 범위에서 검증합니다. 메인터너용 PR review 문서를 읽거나 저장소에 검토 기록을 추가할 필요는 없습니다.
-PR 본문에 실제로 실행한 명령, 통과 결과, 수동 확인한 동작과 사용한 공개 sample만 적어주세요.
+Studio 단독 변경은 아래 프런트엔드 검증을 수행합니다. Rust source·test/baseline helper·Cargo 설정 등
+Rust 검증 입력도 바꿨다면 [변경 범위별 체크리스트](#pr-전-체크리스트)의 Rust 검증을 함께 수행하세요.
+Studio 단독 변경에 Rust 전체 fmt·Clippy·integration 회귀를 추가로 요구하지는 않습니다.
+`npm/editor/`나 WASM과 Studio의 연결 코드 변경은 아래의 해당 package·embed 검사도 확인하세요.
 
-WASM package를 다시 만들 때는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전
-metadata 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
+메인터너용 PR review 문서를 읽거나 저장소에 검토 기록을 추가할 필요는 없습니다. PR 본문에 검증한
+commit SHA, 실제 명령·결과, 수동 확인한 동작과 사용한 공개 sample을 적어주세요.
+
+아래 명령은 저장소 루트에서 실행합니다. 먼저 Node.js/npm, 저장소의 `rust-toolchain.toml`에 지정된 Rust
+toolchain·WASM target, `wasm-pack`을 준비하고 Studio 의존성을 설치합니다.
+
+```bash
+npm --prefix rhwp-studio ci
+```
+
+**타입 검사·build·브라우저 검증 전에 해당 commit의 WASM package를 새로 만드세요.** 깨끗한 checkout에는
+`pkg/`가 없으며, 다른 commit의 WASM을 복사하면 현재 변경을 검증한 것이 아닙니다. CI의 frontend package
+gate도 fresh WASM build를 먼저 실행합니다. 이 준비는 Studio가 사용할 WASM 산출물을 만드는 단계로,
+Studio 단독 변경에 Rust 전체 lint·회귀를 요구하는 것과는 구분합니다.
+
+macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전 metadata
+호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
 
 ```bash
 CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
@@ -244,10 +285,10 @@ rhwp-wasm-build
 set "CARGO_TARGET_DIR="
 ```
 
-먼저 의존성을 설치한 뒤 Studio의 타입·단위·번들을 확인합니다.
+WASM 준비가 성공한 뒤 Studio의 타입·단위·번들을 순차 확인합니다. 각 명령이 실패하면 원인을 수정하고
+다시 실행한 결과를 기록하세요. 생성된 `pkg/`·빌드 산출물은 PR에 포함하지 않습니다.
 
 ```bash
-npm --prefix rhwp-studio ci
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
 npm --prefix rhwp-studio run build
