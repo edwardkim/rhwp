@@ -10967,11 +10967,25 @@ impl LayoutEngine {
                 });
                 unit_cum += para_h;
             } else {
-                // 일반 텍스트 문단 — 합성 줄마다 유닛 1개.
-                for (li, line) in comp.lines.iter().enumerate() {
-                    let h = corrected_h(line, li);
+                // 저장 좌우 조각은 한 물리 줄이므로 조각 사이에서는 셀을 분할하지 않는다.
+                let is_row_fragment = |li| {
+                    line_count == p.line_segs.len()
+                        && crate::renderer::height_measurer::stored_seg_is_row_fragment(p, li)
+                };
+                for li in 0..line_count {
+                    if is_row_fragment(li) {
+                        continue;
+                    }
+                    let mut row_end = li + 1;
+                    while row_end < line_count && is_row_fragment(row_end) {
+                        row_end += 1;
+                    }
+                    // layout_composed_paragraph도 마지막 가로 조각에서만 y를 전진한다.
+                    let last_fragment = row_end - 1;
+                    let line = &comp.lines[last_fragment];
+                    let h = corrected_h(line, last_fragment);
                     let ls = hwpunit_to_px(line.line_spacing, self.dpi);
-                    let is_cell_last_line = is_last_para && li + 1 == line_count;
+                    let is_cell_last_line = is_last_para && row_end == line_count;
                     // [#5923] trailing ls — 비-TAC 표는 문단 수 무관 마지막 줄
                     // 제외 (HeightMeasurer 와 동일 회계). TAC 표의 다문단 셀은
                     // 보존 핀(KTX TOC 등) 유지.
@@ -10984,7 +10998,7 @@ impl LayoutEngine {
                         if li == 0 {
                             lh += spacing_before;
                         }
-                        if li == line_count - 1 {
+                        if row_end == line_count {
                             lh += spacing_after;
                         }
                     }
@@ -11050,7 +11064,7 @@ impl LayoutEngine {
                         vis_end: if collapse_empty_rowbreak_spacer {
                             0
                         } else {
-                            li + 1
+                            row_end
                         },
                         nested_row: None,
                         nested_table_fragment: None,
