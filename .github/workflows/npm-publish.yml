@@ -1,10 +1,29 @@
 name: Publish All Packages
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      publish:
+        description: 'Publish packages and extensions after verification'
+        required: false
+        type: boolean
+        default: false
+      publish_extensions:
+        description: 'Publish VSCode Marketplace and Open VSX extensions'
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      VSCE_PAT:
+        required: false
+      OVSX_PAT:
+        required: false
   workflow_dispatch:
     inputs:
+      publish:
+        description: 'Publish packages and extensions (requires an exact v* tag ref)'
+        type: boolean
+        default: false
       publish_extensions:
         description: 'Publish VSCode Marketplace and Open VSX extensions'
         type: boolean
@@ -12,11 +31,46 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
+  validate-release-source:
+    name: Validate release source
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout exact workflow source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Read published release metadata
+        if: inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${GITHUB_REF_NAME}" \
+            > "${RUNNER_TEMP}/release.json"
+
+      - name: Validate exact release source
+        env:
+          PUBLISH_MODE: ${{ inputs.publish && 'publish' || 'verify' }}
+        run: |
+          release_args=()
+          if [[ "${PUBLISH_MODE}" == "publish" ]]; then
+            release_args+=(--release-json "${RUNNER_TEMP}/release.json")
+          fi
+          python3 scripts/release_publish_guard.py \
+            --mode "${PUBLISH_MODE}" \
+            --event-name "${GITHUB_EVENT_NAME}" \
+            --ref "${GITHUB_REF}" \
+            --ref-type "${GITHUB_REF_TYPE}" \
+            --ref-name "${GITHUB_REF_NAME}" \
+            --github-sha "${GITHUB_SHA}" \
+            "${release_args[@]}"
+
   build-wasm:
     name: Build WASM
+    needs: validate-release-source
     runs-on: ubuntu-latest
 
     steps:
@@ -53,8 +107,12 @@ jobs:
   publish-npm-core:
     name: Publish @rhwp/core
     needs: build-wasm
+    if: inputs.publish
     runs-on: ubuntu-latest
     environment: NPM_TOKEN
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -88,8 +146,12 @@ jobs:
   publish-npm-editor:
     name: Publish @rhwp/editor
     needs: build-wasm
+    if: inputs.publish
     runs-on: ubuntu-latest
     environment: NPM_TOKEN
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -114,7 +176,7 @@ jobs:
   publish-vscode:
     name: Publish VSCode Extension
     needs: build-wasm
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish_extensions }}
+    if: ${{ inputs.publish && inputs.publish_extensions }}
     runs-on: ubuntu-latest
 
     steps:

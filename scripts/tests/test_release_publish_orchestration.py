@@ -8,6 +8,8 @@ import unittest
 from datetime import datetime
 from pathlib import Path
 
+from scripts.release_publish_guard import evaluate_release_source
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BINARY_WORKFLOW = REPO_ROOT / ".github/workflows/release-binary.yml"
@@ -105,10 +107,30 @@ class ReleasePublishOrchestrationRedTests(unittest.TestCase):
         )
 
     def test_release_binary_calls_same_commit_package_workflow_after_release(self):
+        binary_header = self.binary.split("\njobs:", maxsplit=1)[0]
+        package_header = self.package.split("\njobs:", maxsplit=1)[0]
+        release = job_block(self.binary, "release")
         caller = job_block(self.binary, "publish-packages")
-        self.assertIn("needs: release", caller)
+        npm_core = job_block(self.package, "publish-npm-core")
+        npm_editor = job_block(self.package, "publish-npm-editor")
+        self.assertNotIn("contents: write", binary_header)
+        self.assertNotIn("id-token: write", package_header)
+        self.assertIn(
+            "if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')",
+            release,
+        )
+        self.assertIn("contents: write", release)
+        self.assertIn("needs: [build, release]", caller)
+        self.assertIn("needs.build.result == 'success'", caller)
+        self.assertIn("needs.release.result == 'success'", caller)
+        self.assertIn("needs.release.result == 'skipped'", caller)
+        self.assertIn("id-token: write", caller)
         self.assertIn("uses: ./.github/workflows/npm-publish.yml", caller)
-        self.assertIn("secrets: inherit", caller)
+        self.assertNotIn("secrets: inherit", caller)
+        self.assertIn("VSCE_PAT: ${{ secrets.VSCE_PAT }}", caller)
+        self.assertIn("OVSX_PAT: ${{ secrets.OVSX_PAT }}", caller)
+        self.assertIn("id-token: write", npm_core)
+        self.assertIn("id-token: write", npm_editor)
 
     def test_production_publish_invokes_exact_release_source_guard(self):
         self.assertIn("scripts/release_publish_guard.py", self.package)
@@ -134,6 +156,77 @@ class ReleasePublishOrchestrationRedTests(unittest.TestCase):
         workflows = self.policy["workflows"]
         self.assertIn(".github/workflows/release-binary.yml", workflows)
         self.assertIn(".github/workflows/npm-publish.yml", workflows)
+
+
+class ReleasePublishGuardTests(unittest.TestCase):
+    def valid_context(self, *, mode: str = "publish") -> dict[str, object]:
+        sha = "a" * 40
+        return {
+            "mode": mode,
+            "eventName": "push" if mode == "publish" else "workflow_dispatch",
+            "ref": "refs/tags/v0.8.6" if mode == "publish" else "refs/heads/devel",
+            "refType": "tag" if mode == "publish" else "branch",
+            "refName": "v0.8.6" if mode == "publish" else "devel",
+            "githubSha": sha,
+            "checkoutSha": sha,
+            "tagSha": sha if mode == "publish" else None,
+            "versions": {
+                "cargo": "0.8.6",
+                "npmEditor": "0.8.6",
+                "vscode": "0.8.6",
+            },
+            "release": (
+                {
+                    "tag_name": "v0.8.6",
+                    "draft": False,
+                    "prerelease": False,
+                    "published_at": "2026-09-02T03:00:31Z",
+                }
+                if mode == "publish"
+                else None
+            ),
+        }
+
+    def test_exact_stable_release_is_accepted(self):
+        verdict = evaluate_release_source(self.valid_context())
+        self.assertTrue(verdict["accepted"], verdict["errors"])
+
+    def test_verify_mode_accepts_branch_without_release_metadata(self):
+        verdict = evaluate_release_source(self.valid_context(mode="verify"))
+        self.assertTrue(verdict["accepted"], verdict["errors"])
+        self.assertEqual(verdict["mode"], "verify")
+
+    def test_publish_rejects_non_tag_ref(self):
+        context = self.valid_context()
+        context.update(
+            {"ref": "refs/heads/main", "refType": "branch", "refName": "main"}
+        )
+        verdict = evaluate_release_source(context)
+        self.assertFalse(verdict["accepted"])
+        self.assertIn("publish-ref-not-tag", verdict["errors"])
+
+    def test_publish_rejects_tag_sha_mismatch(self):
+        context = self.valid_context()
+        context["tagSha"] = "b" * 40
+        verdict = evaluate_release_source(context)
+        self.assertFalse(verdict["accepted"])
+        self.assertIn("tag-sha-mismatch", verdict["errors"])
+
+    def test_publish_rejects_package_version_mismatch(self):
+        context = self.valid_context()
+        context["versions"]["npmEditor"] = "0.8.5"
+        verdict = evaluate_release_source(context)
+        self.assertFalse(verdict["accepted"])
+        self.assertIn("version-mismatch:npmEditor", verdict["errors"])
+
+    def test_publish_rejects_draft_or_prerelease(self):
+        for field in ("draft", "prerelease"):
+            with self.subTest(field=field):
+                context = self.valid_context()
+                context["release"][field] = True
+                verdict = evaluate_release_source(context)
+                self.assertFalse(verdict["accepted"])
+                self.assertIn(f"release-is-{field}", verdict["errors"])
 
 
 if __name__ == "__main__":
