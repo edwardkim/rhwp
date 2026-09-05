@@ -2154,10 +2154,10 @@ export class PicturePropsDialog {
       ? 'TakePlace'
       : this.props.horzRelTo;
     this.horzAlignSelect.value = this.props.horzAlign;
-    this.horzOffsetInput.value = hwpToMm(this.props.horzOffset).toFixed(2);
+    this.horzOffsetInput.value = displayedMm(this.props.horzOffset);
     this.vertRelSelect.value = this.props.vertRelTo;
     this.vertAlignSelect.value = this.props.vertAlign;
-    this.vertOffsetInput.value = hwpToMm(this.props.vertOffset).toFixed(2);
+    this.vertOffsetInput.value = displayedMm(this.props.vertOffset);
     this.pageAreaLimitCheck.checked = this.props.restrictInPage ?? true;
     this.overlapAllowCheck.checked = this.props.allowOverlap ?? false;
     this.descInput.value = this.props.description;

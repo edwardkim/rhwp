@@ -998,6 +998,19 @@ export class DeleteSelectionCommand implements EditCommand {
         );
         return { ...start };
       });
+    } else if (start.sectionIndex !== end.sectionIndex) {
+      // 교차 구역 선택 — 조각 캡처는 단일 구역 전제(start.sectionIndex 만 사용,
+      // delete_fragment.rs)라 다른 구역의 문단 인덱스를 넘기면 캡처 단계에서
+      // 오류가 나거나 잘못된 범위를 잡는다. 스냅샷은 통째 복원이라 어떤 선택
+      // 모양이든 되돌릴 수 있다 — 방어적 폴백.
+      this.fragment = null;
+      this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
+        wasm.deleteRange(
+          start.sectionIndex, start.paragraphIndex, start.charOffset,
+          end.paragraphIndex, end.charOffset,
+        );
+        return { ...start };
+      });
     } else {
       // 비셀 선택 — 조각 경로 (#5769)
       this.snapshot = null;

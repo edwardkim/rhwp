@@ -166,6 +166,60 @@ function latestCandidateRun(runs, pullRequest, repository, candidateSha) {
   ))[0];
 }
 
+// A classified frontend-only CI has no Rust timing data to reuse. Require the
+// exact current CI job contract instead of treating any green aggregate as proof.
+// Unknown, duplicate, missing, pending, or unexpectedly skipped jobs fail closed.
+export function frontendOnlyCiRunIsReusable(impact, jobs) {
+  if (
+    impact?.classification_status !== "classified"
+    || impact.rust_required !== "false"
+    || impact.native_skia_required !== "false"
+    || !["unit", "package"].includes(impact.frontend_mode)
+    || !Array.isArray(jobs)
+  ) {
+    return false;
+  }
+  const expected = new Map([
+    ["trusted_postmerge_reuse / Verify trusted post-merge reuse", "success"],
+    ["CI preflight", "success"],
+    ["Build & Test", "success"],
+    ["Frontend unit gates", impact.frontend_mode === "unit" ? "success" : "skipped"],
+    ["Frontend package gates", impact.frontend_mode === "package" ? "success" : "skipped"],
+    ["WASM Build", "skipped"],
+    ["Resolve nextest target duration policy", "skipped"],
+    ["Lint (fmt, clippy, WASM check)", "skipped"],
+    ["Native Skia tests", "skipped"],
+    ["Workflow promotion preflight", "skipped"],
+    ["Refresh nextest target duration data", "skipped"],
+    ...["a", "b", "c", "d"].flatMap((label) => [
+      [`build-test-archive-${label}`, "skipped"],
+      [`test-archive-${label}-shard-1`, "skipped"],
+    ]),
+  ]);
+  if (jobs.length !== expected.size) {
+    return false;
+  }
+  for (const job of jobs) {
+    if (
+      !job
+      || !expected.has(job.name)
+      || job.status !== "completed"
+      || job.conclusion !== expected.get(job.name)
+    ) {
+      return false;
+    }
+    expected.delete(job.name);
+  }
+  return expected.size === 0;
+}
+
+function hasFrontendOnlyEvidence(input, run) {
+  const runId = String(run?.id || "");
+  return Array.isArray(input?.frontendOnlyRunIds)
+    && runId !== ""
+    && input.frontendOnlyRunIds.some((id) => String(id) === runId);
+}
+
 function hasFullLaneEvidence(input, run) {
   if (!Array.isArray(input?.fullLaneRunIds)) {
     return true;
@@ -315,15 +369,22 @@ export function evaluateTrustedPostMergeReuse(input) {
     return denied("review-tail-evidence-unavailable");
   }
 
+  // Frontend evidence is collected only for this exact final PR head. Do not
+  // generalize it to an older code candidate hidden behind a skipped review tail.
+  const frontendOnly = hasFrontendOnlyEvidence(input, finalHeadCandidate);
   if (
     finalHeadCandidate
     && finalHeadCandidate.status === "completed"
     && finalHeadCandidate.conclusion === "success"
-    && hasFullLaneEvidence(input, finalHeadCandidate)
+    && (hasFullLaneEvidence(input, finalHeadCandidate) || frontendOnly)
   ) {
     return {
       reuse: true,
-      reason: !headContainsBase
+      reason: frontendOnly
+        ? (candidateSource.hasReviewOnlyTail
+          ? "review-tail-final-head-green-frontend-ci-reused"
+          : "exact-green-frontend-ci-reused")
+        : !headContainsBase
         ? (candidateSource.hasReviewOnlyTail
           ? "review-tail-exact-merge-tree-green-pr-workflow-reused"
           : "exact-merge-tree-green-pr-workflow-reused")
@@ -332,6 +393,7 @@ export function evaluateTrustedPostMergeReuse(input) {
           : "exact-green-pr-workflow-reused"),
       sourceRunId: String(finalHeadCandidate.id),
       pullNumber: String(pullRequest.number),
+      ...(frontendOnly ? { refreshDurationData: false } : {}),
     };
   }
 
