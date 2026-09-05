@@ -17,7 +17,9 @@ last_verified: 2026-09-05
 2. candidate exact SHA에서 해당 workflow가 실제로 실행됐는가
 3. 필수 job·verdict가 성공했는가, 또는 승인된 제한 waiver가 있는가
 
-기계 판독 snapshot은 [`baseline.json`](baseline.json)에 있다. 모든 시각은 별도 표기가 없으면 UTC다.
+기계 판독 snapshot은 [`baseline.json`](baseline.json)에 있다. Stage 5의 exact `devel` Fuzz 실실행
+영수증은 [`fuzz-smoke-dogfood.json`](fuzz-smoke-dogfood.json)에 있다. 모든 시각은 별도 표기가 없으면
+UTC다.
 
 ## Git 기준선
 
