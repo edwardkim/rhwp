@@ -131,6 +131,33 @@ visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요�
 ![PR N visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<file>.png)
 ~~~
 
+### 커밋할 최종 증적과 제외할 중간 산출물
+
+PR 검증 과정에서 생성됐다는 이유만으로 output 디렉터리 전체를 커밋하지 않는다.
+`Merge 후 contributor PR comment 계획`에 실제 사용할 파일을 먼저 열거하고,
+그 계획에 필요한 최종 대표 PNG만 `mydocs/pr/assets/`에 남긴다.
+
+| 구분 | 커밋 기준 |
+| --- | --- |
+| 최종 대표 PNG | PR·이슈 코멘트에서 직접 표시할 비교 패널, 전후 화면 또는 잔여 문제 증명에 꼭 필요한 이미지만 포함한다. |
+| 최종 기준 PDF | 위 기준 PDF 보존 절차와 크기 제한에 따라 `pdf/`에 보존한다. 임시 raster와 함께 제외하지 않는다. |
+| 중간 PNG | 페이지별 원시 raster, 중복 compare·overlay·review, contact sheet, 탐색용·실패한 캡처 등 최종 코멘트에 사용하지 않는 이미지는 제외한다. |
+| 생성 SVG·JSON | export SVG, render-tree JSON, 분석·metric JSON, run manifest, MCP 응답 JSON 등 검증 중간 산출물은 제외한다. |
+| 실행 로그 | build·test·lint·WASM·Studio·회귀 검증의 `.log` 및 그 밖의 원시 실행 로그는 제외한다. 통과 사실만으로 로그 파일을 첨부하지 않는다. |
+
+- 이미지가 여러 형식으로 중복 생성되면 코멘트에서 결론을 직접 확인할 수 있는 최종 패널을 우선한다.
+  검증한 전체 페이지 수와 보존할 대표 이미지 수를 같게 맞출 필요는 없다.
+- 제외할 산출물은 검증에 필요한 동안 저장소 밖 임시 경로에서 관리하고, 커밋에 포함하지 않는다.
+  검토 전용으로 생성한 파일만 정리하며 다른 작업이나 기존 source PR의 파일을 확장자로 일괄 삭제하지 않는다.
+- 원본 HWP/HWPX·첨부 자료, 정식 sample의 `MANIFEST.json`, 저장소가 관리하는 fixture·baseline은
+  중간 산출물과 구분한다. `*.png`, `*.svg`, `*.json` 전체를 전역 ignore하거나 삭제하지 않는다.
+- 실행 명령·실제 종료 코드·통과/실패/skip 수, 원본과 바이너리의 SHA-256, 비교한 페이지 매핑·지표·판정·한계는
+  review 또는 visual sweep Markdown 문서에 기록한다. 이 정보를 남기기 위해 임시 JSON·로그를 커밋하지 않는다.
+- 임시 output 경로는 로컬 진단 참고용으로만 적는다. 영구 증적 링크와 코멘트 이미지는 남겨 둔 최종 파일을
+  가리켜야 하며, 파일을 제외하면 관련 링크와 comment 계획도 함께 정리한다.
+- commit 전 포함 경로를 확인하여 위 허용 목록에 없는 검증 중간 파일이 stage되지 않았는지 점검한다.
+  일반 `git add .`로 output 전체를 넣지 않고, 코드·정식 fixture·문서와 최종 증적 경로를 구분해 지정한다.
+
 ### asset 반영 경로
 
 1. **옵션 M — maintainer 직접 운영 기록 반영**: 원 코드 PR merge 뒤 devel을 fast-forward하고,
