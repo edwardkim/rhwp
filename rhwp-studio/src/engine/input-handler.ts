@@ -3582,13 +3582,21 @@ export class InputHandler {
     if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return exact;
     if ((anchor.cellPath?.length ?? 0) > 1) return exact;
     const inCell = anchor.parentParaIndex !== undefined;
+    // 두 질의 모두 실패를 null 로 알린다 — 여기서 예외가 새면 updateCaret 의 바깥 catch 가
+    // 조합 오버레이를 통째로 접어버려, exact 로 물러나는 것보다 나쁜 결과가 된다.
     return resolveGlyphStartRect(anchor.charOffset, exact, {
-      lineInfoAt: (charOffset) => (inCell
-        ? this.wasm.getLineInfoInCell(
-            anchor.sectionIndex, anchor.parentParaIndex!, anchor.controlIndex!,
-            anchor.cellIndex!, anchor.cellParaIndex!, charOffset,
-          )
-        : this.wasm.getLineInfo(anchor.sectionIndex, anchor.paragraphIndex, charOffset)),
+      lineInfoAt: (charOffset) => {
+        try {
+          return inCell
+            ? this.wasm.getLineInfoInCell(
+                anchor.sectionIndex, anchor.parentParaIndex!, anchor.controlIndex!,
+                anchor.cellIndex!, anchor.cellParaIndex!, charOffset,
+              )
+            : this.wasm.getLineInfo(anchor.sectionIndex, anchor.paragraphIndex, charOffset);
+        } catch {
+          return null;
+        }
+      },
       rectAtLineStart: (lineIndex) => {
         try {
           return this.wasm.getCursorRectOnLine(

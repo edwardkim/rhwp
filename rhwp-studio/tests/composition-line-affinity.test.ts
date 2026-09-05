@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { resolveGlyphStartRect, isCompositionBoxRepresentable } from '../src/engine/line-start-affinity.ts';
-import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
+import { balancedFrom, codeOnly, functionBodyFrom } from './support/source-guard.ts';
 import type { CursorRect, LineInfo } from '../src/core/types.ts';
 
 /** 이전 줄 끝 — 줄 affinity 없는 exact 조회 결과. */
@@ -21,11 +21,14 @@ const CARET_ON_NEXT_LINE: CursorRect = { pageIndex: 0, x: 134.9, y: 147.1, heigh
 /** 글자가 놓인 줄의 시작. */
 const NEXT_LINE_START: CursorRect = { pageIndex: 0, x: 121.6, y: 146.5, height: 21.3 };
 
+/** 소스 가드용 — 줄바꿈·연속 공백을 한 칸으로 눌러 서식 의존을 없앤다. */
+const flatten = (src: string) => src.replace(/\s+/g, ' ');
+
 /** offset 22 가 두 번째 줄(lineIndex 1)의 시작인 문단. */
 const WRAP_BOUNDARY_LINE: LineInfo = { lineIndex: 1, lineCount: 2, charStart: 22, charEnd: 45 };
 
 function lookup(
-  line: LineInfo,
+  line: LineInfo | null,
   onLine: CursorRect | null,
 ): { calls: { lineInfoAt: number[]; rectAtLineStart: number[] } } & Parameters<typeof resolveGlyphStartRect>[2] {
   const calls = { lineInfoAt: [] as number[], rectAtLineStart: [] as number[] };
@@ -109,16 +112,18 @@ test('updateCaret 의 조합 분기가 폭 계산 전에 줄 affinity 를 적용
   assert.ok(width >= 0);
   assert.ok(applied < width, '폭 계산 전에 원점을 확정해야 한다');
 
-  const resolver = functionBodyFrom(source, 'private compositionOverlayStartRect(');
-  assert.match(resolver, /resolveGlyphStartRect\(anchor\.charOffset, exact,/);
+  // 아래 가드들은 서식이 아니라 **의미**를 잠근다 — 줄바꿈·들여쓰기·연산자 간격이 바뀌어도
+  // 통과해야 한다(무해한 재포맷에 깨지는 구조 정규식을 쓰지 않는다).
+  const resolver = flatten(functionBodyFrom(source, 'private compositionOverlayStartRect('));
+  assert.match(resolver, /resolveGlyphStartRect\(\s*anchor\.charOffset\s*,\s*exact\s*,/);
   assert.match(
     resolver,
-    /if \(this\.cursor\.isInHeaderFooter\(\) \|\| this\.cursor\.isInFootnote\(\)\) return exact;/,
+    /isInHeaderFooter\(\)\s*\|\|\s*this\.cursor\.isInFootnote\(\)\s*\)\s*return exact;/,
     '머리말・꼬리말·각주는 getCursorRectOnLine 대상이 아니라 exact 를 유지한다',
   );
   assert.match(
     resolver,
-    /if \(\(anchor\.cellPath\?\.length \?\? 0\) > 1\) return exact;/,
+    /anchor\.cellPath\?\.length\s*\?\?\s*0\s*\)\s*>\s*1\s*\)\s*return exact;/,
     '2단 이상 중첩 셀은 getCursorRectOnLine 이 문단을 지목할 수 없어 exact 를 유지한다',
   );
   assert.match(resolver, /this\.wasm\.getCursorRectOnLine\(/);
@@ -150,12 +155,61 @@ test('그릴 수 없는 조합은 오버레이 대신 일반 캐럿으로 물러
   const source = codeOnly(readFileSync(new URL('../src/engine/input-handler.ts', import.meta.url), 'utf8'));
   const updateCaret = functionBodyFrom(source, 'private updateCaret(');
 
-  assert.match(
-    updateCaret,
-    /if \(!isCompositionBoxRepresentable\(startRect, rect\)\) \{\s*this\.caret\.hideComposition\(\);\s*this\.caret\.update\(rect, zoom\);\s*\} else \{/,
-    '그릴 수 없으면 조회 실패와 같은 경로(hideComposition + 일반 캐럿)로 물러나야 한다',
-  );
+  // 블록을 괄호 짝으로 잘라 **무엇을 하는지**만 본다 — 문 사이 서식에 걸리지 않는다.
+  const fallback = balancedFrom(updateCaret, 'if (!isCompositionBoxRepresentable', '{');
+  assert.match(fallback, /this\.caret\.hideComposition\(\)/, '그릴 수 없으면 오버레이를 접어야 한다');
+  assert.match(fallback, /this\.caret\.update\(\s*rect\s*,/, '조회 실패와 같은 경로로 일반 캐럿을 보여야 한다');
+  assert.doesNotMatch(fallback, /showComposition/, '그릴 수 없는데 오버레이를 그리면 안 된다');
   const guard = updateCaret.indexOf('isCompositionBoxRepresentable(startRect, rect)');
   const show = updateCaret.indexOf('this.caret.showComposition(');
   assert.ok(guard >= 0 && show > guard, '오버레이 표시 전에 판정해야 한다');
+});
+
+test('줄 정보를 조회할 수 없으면 exact 동작을 유지한다', () => {
+  // lineInfoAt 이 던지지 않고 null 로 실패를 알리는 계약. 예외가 새면 호출부 바깥 catch 가
+  // 조합 오버레이를 통째로 접어, exact 로 물러나는 것보다 나쁜 결과가 된다.
+  const deps = lookup(null, NEXT_LINE_START);
+  const resolved = resolveGlyphStartRect(22, EXACT_PREV_LINE_END, deps);
+
+  assert.deepEqual(resolved, EXACT_PREV_LINE_END);
+  assert.deepEqual(deps.calls.rectAtLineStart, [], '줄을 모르면 줄 조회로 넘어가지 않는다');
+});
+
+test('줄이 다른 쪽에 있으면 셀 bbox 를 이어 쓰지 않는다', () => {
+  // cellBounds 는 그 rect 가 놓인 쪽의 셀 bbox 다. 쪽이 바뀌었는데 들고 가면
+  // clampCompositionBox 가 다른 쪽 bbox 로 좌표를 가둔다.
+  const exactInCell: CursorRect = {
+    ...EXACT_PREV_LINE_END,
+    cellBounds: { x: 100, y: 120, w: 300, h: 60 },
+    cellOverflowed: true,
+  };
+  const onNextPage: CursorRect = { ...NEXT_LINE_START, pageIndex: 1 };
+  const resolved = resolveGlyphStartRect(22, exactInCell, lookup(WRAP_BOUNDARY_LINE, onNextPage));
+
+  assert.equal(resolved.pageIndex, 1);
+  assert.equal(resolved.cellBounds, undefined);
+  assert.equal(resolved.cellOverflowed, undefined);
+});
+
+test('소스 가드는 서식이 아니라 의미를 잠근다', () => {
+  // [자기리뷰 P3] 구조 정규식은 무해한 재포맷에 깨진다. 위 가드들이 줄바꿈·들여쓰기
+  // 변형을 견디는지 같은 의미의 다른 서식으로 확인한다.
+  const reformatted = `
+private compositionOverlayStartRect(a: X, exact: Y): Y {
+  if (
+    this.cursor.isInHeaderFooter()
+    || this.cursor.isInFootnote()
+  ) return exact;
+  if ((anchor.cellPath?.length ?? 0) > 1) return exact;
+  return resolveGlyphStartRect(
+    anchor.charOffset,
+    exact,
+    { rectAtLineStart: () => this.wasm.getCursorRectOnLine() },
+  );
+}`;
+  const flat = flatten(functionBodyFrom(reformatted, 'private compositionOverlayStartRect('));
+
+  assert.match(flat, /resolveGlyphStartRect\(\s*anchor\.charOffset\s*,\s*exact\s*,/);
+  assert.match(flat, /isInHeaderFooter\(\)\s*\|\|\s*this\.cursor\.isInFootnote\(\)\s*\)\s*return exact;/);
+  assert.match(flat, /anchor\.cellPath\?\.length\s*\?\?\s*0\s*\)\s*>\s*1\s*\)\s*return exact;/);
 });
