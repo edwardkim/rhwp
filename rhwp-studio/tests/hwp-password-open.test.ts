@@ -28,7 +28,8 @@ test('암호 문서는 명시적인 암호 필요 오류에서만 입력 UI로 �
   const openPath = between(mainSource, 'async function loadDocumentForOpen', 'function showLoadErrorUnlessCancelled');
   assert.match(openPath, /wasm\.loadDocument\(data, fileName\)/, '일반 문서 열기를 유지한다');
   assert.match(openPath, /if \(!isPasswordRequiredError\(error\)\) throw error;/, '다른 파싱/DRM/지원 불가 오류는 숨기지 않는다');
-  assert.match(openPath, /return loadPasswordProtectedDocument\(data, fileName\);/, '암호 필요일 때만 대화상자로 전환한다');
+  assert.match(openPath, /await openPasswordProtectedDocument\(data, fileName\);/, '암호 필요일 때만 open command로 전환한다');
+  assert.match(openPath, /return wasm\.getDocumentInfo\(\);/, '암호 open 성공 뒤 별도 metadata query를 사용한다');
 });
 
 test('드롭 문서도 파일 메뉴와 같은 암호 열기 경로를 쓰며 File System Access handle을 capture하지 않는다', () => {
@@ -40,15 +41,16 @@ test('드롭 문서도 파일 메뉴와 같은 암호 열기 경로를 쓰며 Fi
   assert.match(dropPath, /await loadFile\(file\);/, '드롭 문서는 파일 메뉴와 같은 loadFile 경로를 사용해야 합니다');
   assert.doesNotMatch(dropPath, /captureDroppedFileHandle|getAsFileSystemHandle|fileHandle:/,
     '암호 문서 드롭에서 Chromium File System Access IPC를 시작하면 안 됩니다');
-  assert.match(mainSource, /async function loadDocumentForOpen[\s\S]*loadPasswordProtectedDocument/,
+  assert.match(mainSource, /async function loadDocumentForOpen[\s\S]*openPasswordProtectedDocument/,
     'loadFile 이후 암호 감지와 password dialog 경로를 유지해야 합니다');
 });
 
 test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속 경로에 도달하지 않는다', () => {
-  const passwordPath = between(mainSource, 'async function loadPasswordProtectedDocument', 'async function loadDocumentForOpen');
+  const passwordPath = between(mainSource, 'async function openPasswordProtectedDocument', 'async function loadDocumentForOpen');
   assert.match(passwordPath, /showHwpPasswordDialog\(fileName, retryMessage\)/, '문서 이름만 대화상자에 전달한다');
   assert.match(passwordPath, /if \(password === null\) throw new DocumentOpenCancelledError\(\);/, '취소를 별도 상태로 전달한다');
   assert.match(passwordPath, /wasm\.loadDocumentWithPassword\(data, password, fileName\)/, 'WASM 암호 열기 API를 사용한다');
+  assert.doesNotMatch(passwordPath, /return\s+wasm\.loadDocumentWithPassword/, '암호 open 반환값을 metadata로 전달하지 않는다');
   assert.match(passwordPath, /password = '';/, '시도 뒤 지역 암호 참조를 비운다');
   assert.doesNotMatch(passwordPath, /localStorage|sessionStorage|addRecentDoc|autosave|documentDigest|console\./, '암호값을 영속/로그 경로로 보내지 않는다');
   assert.match(passwordPath, /암호가 일치하지 않거나 문서가 손상되었습니다\. 다시 입력하세요\./, '오입력/암호문 손상은 재입력 상태로 설명한다');

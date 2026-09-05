@@ -653,11 +653,12 @@ async function verifyProtectedReopen(page, password, format) {
       } catch {
         unprotectedFailed = true;
       }
-      const info = window.__wasm.loadDocumentWithPassword(
+      window.__wasm.loadDocumentWithPassword(
         bytes,
         passwordValue,
         `protected-reopen.${outputFormat}`,
       );
+      const info = window.__wasm.getDocumentInfo();
       return {
         unprotectedFailed,
         pageCount: info.pageCount,
