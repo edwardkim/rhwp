@@ -4073,6 +4073,27 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// [#6771] 표 셀/글상자 내부 **표** 삭제 (by_path).
+    ///
+    /// 셀 안 1×1 안내 상자처럼 본문 리스트 밖에 있는 표를 지운다 — `deleteControlAt` 은
+    /// 본문만, `deleteTableControl` 은 `(구역, 문단, 컨트롤)` 만 다뤄 짚지 못하던 자리다.
+    #[wasm_bindgen(js_name = deleteCellTableControlByPath)]
+    pub fn delete_cell_table_control_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        cell_path_json: &str,
+        inner_control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.delete_cell_table_control_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            cell_path_json,
+            inner_control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// [#4694] 문서의 모든 차트를 문서 순서로 열거한다.
     ///
     /// 반환: JSON `[{ index, section, paragraph, control, container?, zipPart?, nestedCopy? }]`
