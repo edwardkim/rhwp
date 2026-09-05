@@ -2,8 +2,9 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 기준: `51ad998e33ef7f5191b0e1b0b656dc44cef33a1c`
-- 상태: **1단계 완료 (2026-09-06) — 2단계 착수 승인 대기**
+- 상태: **2단계 완료 (2026-09-06) — 3단계 제품 검증·PR 준비 승인 대기**
 - 단계 결과: [1단계 완료보고서](../working/task_m100_6788_stage1.md)
+  · [2단계 완료보고서](../working/task_m100_6788_stage2.md)
 - 상위 문서: [수행계획서](task_m100_6788.md)
 
 ## 1. 설계 결정
@@ -74,6 +75,8 @@ interface CharShapeRun {
 수정 후보:
 
 - `src/document_core/commands/formatting.rs`: 조회·복원 네이티브 경로 및 구간 검증.
+  구현에서는 같은 commands 계층의 `formatting_runs.rs`로 분리하여 기존 대형 파일과
+  독립적으로 범위 검증·복원 계약을 관리한다(공개 API/기능 범위는 계획과 동일).
 - `src/wasm_api.rs`: WASM export 연결.
 - `rhwp-studio/src/core/types.ts`, `rhwp-studio/src/core/wasm-bridge.ts`: typed bridge와 입력/응답 정합.
 - `rhwp-studio/src/engine/command.ts`: `ParaFormatEntry`의 before/after 구간 목록 저장·복원.

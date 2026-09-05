@@ -3,6 +3,15 @@
 use super::control::{Control, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
+/// 문자 offset 단위의 글자 모양 복원 구간. IR의 UTF-16 위치와 구분한다.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CharShapeRun {
+    pub start_offset: usize,
+    pub end_offset: usize,
+    pub char_shape_id: u32,
+}
+
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Paragraph {
@@ -1954,6 +1963,84 @@ impl Paragraph {
         }
 
         self.char_shapes = merged;
+    }
+
+    /// 검증된 문자 범위의 모양을 연속 구간으로 조회한다(문자별 WASM 왕복 없음).
+    pub(crate) fn char_shape_runs(&self, start: usize, end: usize) -> Vec<CharShapeRun> {
+        let mut runs: Vec<CharShapeRun> = Vec::new();
+        let mut shape_index = 0;
+        for offset in start..end {
+            let pos = self.char_offsets[offset];
+            while shape_index + 1 < self.char_shapes.len()
+                && self.char_shapes[shape_index + 1].start_pos <= pos
+            {
+                shape_index += 1;
+            }
+            let id = self
+                .char_shapes
+                .get(shape_index)
+                .map_or(0, |r| r.char_shape_id);
+            if let Some(last) = runs.last_mut() {
+                if last.char_shape_id == id {
+                    last.end_offset = offset + 1;
+                    continue;
+                }
+            }
+            runs.push(CharShapeRun {
+                start_offset: offset,
+                end_offset: offset + 1,
+                char_shape_id: id,
+            });
+        }
+        runs
+    }
+
+    /// 사전 검증된 구간 목록을 한 번에 복원한다. 선택 밖/문단 끝 ref는 유지한다.
+    pub(crate) fn restore_char_shape_runs(
+        &mut self,
+        start: usize,
+        end: usize,
+        runs: &[CharShapeRun],
+    ) {
+        let Some((from, to, text_end)) = self.char_shape_range_bounds(start, end) else {
+            return;
+        };
+        let mut refs: Vec<CharShapeRef> = self
+            .char_shapes
+            .iter()
+            .take_while(|r| r.start_pos < from)
+            .cloned()
+            .collect();
+        if refs.is_empty() && from > 0 {
+            refs.push(CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            });
+        }
+        refs.extend(runs.iter().map(|run| CharShapeRef {
+            start_pos: self.char_offsets[run.start_offset],
+            char_shape_id: run.char_shape_id,
+        }));
+        if to < text_end {
+            let id = self
+                .char_shapes
+                .iter()
+                .rev()
+                .find(|r| r.start_pos <= to)
+                .map_or(0, |r| r.char_shape_id);
+            refs.push(CharShapeRef {
+                start_pos: to,
+                char_shape_id: id,
+            });
+        }
+        refs.extend(
+            self.char_shapes
+                .iter()
+                .filter(|r| r.start_pos >= to)
+                .cloned(),
+        );
+        refs.dedup_by(|a, b| a.start_pos == b.start_pos || a.char_shape_id == b.char_shape_id);
+        self.char_shapes = refs;
     }
 
     /// 문단의 글자 모양을 단일 CharShapeRef로 초기화한다.

@@ -26,8 +26,8 @@ function classBlock(name: string): string {
 test('ApplyCharFormatCommand 셀 서식 적용/복원이 최내곽 셀 대상 ...ByPath 로 라우팅한다', () => {
   const block = classBlock('ApplyCharFormatCommand');
   assert.match(block, /applyCharFormatInCellByPath\(/, 'execute 는 applyCharFormatInCellByPath 로 최내곽 셀 적용');
-  assert.match(block, /getCellCharPropertiesAtByPath\(/, 'before/after charShapeId 도 ...ByPath 로 조회');
-  assert.match(block, /setCharShapeIdInCellByPath\(/, 'undo(restoreCharShapeIds)도 ...ByPath 로 복원');
+  assert.match(block, /getCharShapeRunsInCellByPath\(/, 'before/after 구간도 ...ByPath 로 조회');
+  assert.match(block, /setCharShapeRunsInCellByPath\(/, 'undo 구간도 ...ByPath 로 복원');
 });
 
 test('ApplyCharFormatCommand 가 flat 셀 축 API/좌표를 쓰지 않는다', () => {

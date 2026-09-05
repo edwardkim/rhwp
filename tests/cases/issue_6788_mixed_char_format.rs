@@ -313,3 +313,120 @@ fn hwp_and_hwpx_roundtrips_keep_mixed_colors_and_highlight() {
         assert_eq!(colors, [0, 0, PURPLE, PURPLE, 0, 0].map(|c| (c, YELLOW)));
     }
 }
+
+#[test]
+fn run_capture_restore_roundtrips_partial_and_unicode_ranges() {
+    for (start, end) in [(0, 7), (1, 6), (2, 4), (3, 5), (4, 4)] {
+        let mut doc = body("가😀나다라마바");
+        let before = body_shapes(&doc);
+        let runs = doc.get_char_shape_runs_native(0, 0, start, end).unwrap();
+        let parsed: Vec<rhwp::model::paragraph::CharShapeRun> =
+            serde_json::from_str(&runs).unwrap();
+        if start != end {
+            assert_eq!(parsed.first().unwrap().start_offset, start);
+            assert_eq!(parsed.last().unwrap().end_offset, end);
+        } else {
+            assert!(parsed.is_empty());
+        }
+        doc.apply_char_format_native(0, 0, start, end, HIGHLIGHT)
+            .unwrap();
+        let after = body_shapes(&doc);
+        let after_runs = doc.get_char_shape_runs_native(0, 0, start, end).unwrap();
+        for _ in 0..3 {
+            doc.set_char_shape_runs_native(0, 0, start, end, &runs)
+                .unwrap();
+            assert_eq!(body_shapes(&doc), before);
+            doc.set_char_shape_runs_native(0, 0, start, end, &after_runs)
+                .unwrap();
+            assert_eq!(body_shapes(&doc), after);
+        }
+    }
+}
+
+#[test]
+fn malformed_run_payloads_do_not_partially_mutate_document() {
+    let mut doc = body(TEXT);
+    let id = doc.document().sections[0].paragraphs[0]
+        .char_shape_id_at(2)
+        .unwrap();
+    for json in [
+        "[]".to_string(),
+        "null".to_string(),
+        "{".to_string(),
+        format!(
+            r#"[{{"startOffset":0,"endOffset":3,"charShapeId":{id}}},{{"startOffset":3,"endOffset":6,"charShapeId":4294967295}}]"#
+        ),
+        format!(
+            r#"[{{"startOffset":0,"endOffset":3,"charShapeId":{id}}},{{"startOffset":4,"endOffset":6,"charShapeId":0}}]"#
+        ),
+        format!(
+            r#"[{{"startOffset":0,"endOffset":3,"charShapeId":{id}}},{{"startOffset":2,"endOffset":6,"charShapeId":0}}]"#
+        ),
+        r#"[{"startOffset":0,"endOffset":7,"charShapeId":0}]"#.into(),
+        r#"[{"startOffset":0,"endOffset":0,"charShapeId":0}]"#.into(),
+        r#"[{"startOffset":0,"endOffset":6,"charShapeId":-1}]"#.into(),
+    ] {
+        let before = format!("{:?}", doc.document());
+        assert!(
+            doc.set_char_shape_runs_native(0, 0, 0, 6, &json).is_err(),
+            "{json}"
+        );
+        assert_eq!(format!("{:?}", doc.document()), before);
+    }
+    assert!(doc.get_char_shape_runs_native(0, 0, 0, 99).is_err());
+    assert!(doc.get_char_shape_runs_native(99, 0, 0, 6).is_err());
+    assert!(doc.set_char_shape_runs_native(0, 0, 99, 99, "[]").is_err());
+}
+
+#[test]
+fn cell_run_restore_is_atomic_and_preserves_outer_cell() {
+    for nested in [false, true] {
+        let (mut doc, p, c) = table_doc(nested);
+        let path = if nested {
+            vec![(c, 0, 0), (0, 0, 0)]
+        } else {
+            vec![(c, 0, 0)]
+        };
+        let before = shapes(&doc, cell(&doc, p, c, nested));
+        let outer = shapes(&doc, cell(&doc, p, c, false));
+        let runs = doc
+            .get_char_shape_runs_in_cell_by_path_native(0, p, &path, 1, 5)
+            .unwrap();
+        doc.apply_char_format_in_cell_by_path(0, p, &path, 1, 5, HIGHLIGHT)
+            .unwrap();
+        let applied = format!("{:?}", doc.document());
+        assert!(doc.set_char_shape_runs_in_cell_by_path_native(0, p, &path, 1, 5,
+            r#"[{"startOffset":1,"endOffset":3,"charShapeId":0},{"startOffset":3,"endOffset":5,"charShapeId":4294967295}]"#).is_err());
+        assert_eq!(format!("{:?}", doc.document()), applied);
+        doc.set_char_shape_runs_in_cell_by_path_native(0, p, &path, 1, 5, &runs)
+            .unwrap();
+        assert_eq!(shapes(&doc, cell(&doc, p, c, nested)), before);
+        if nested {
+            assert_eq!(shapes(&doc, cell(&doc, p, c, false)), outer);
+        }
+        assert!(doc
+            .get_char_shape_runs_in_cell_by_path_native(0, p, &[], 0, 6)
+            .is_err());
+    }
+}
+
+#[test]
+fn run_restore_keeps_terminal_and_outside_shape_boundaries() {
+    let mut doc = body(TEXT);
+    let para = &mut doc.document_mut().sections[0].paragraphs[0];
+    let terminal_id = para.char_shape_id_at(2).unwrap();
+    let end = para.char_offsets.last().unwrap() + 1;
+    para.char_shapes.push(CharShapeRef {
+        start_pos: end,
+        char_shape_id: terminal_id,
+    });
+    let before_refs =
+        serde_json::to_value(&doc.document().sections[0].paragraphs[0].char_shapes).unwrap();
+    let runs = doc.get_char_shape_runs_native(0, 0, 0, 6).unwrap();
+    doc.apply_char_format_native(0, 0, 0, 6, HIGHLIGHT).unwrap();
+    doc.set_char_shape_runs_native(0, 0, 0, 6, &runs).unwrap();
+    assert_eq!(
+        serde_json::to_value(&doc.document().sections[0].paragraphs[0].char_shapes).unwrap(),
+        before_refs
+    );
+}
