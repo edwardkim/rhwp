@@ -18,6 +18,14 @@
 name: Oracle Public Advisory
 
 on:
+  # workflow_dispatch identity가 아직 기본 브랜치에 등록되지 않은 후보도
+  # workflow 파일 자체를 바꾼 신뢰 push에서 한 번 실실행한다.
+  push:
+    branches:
+      - devel
+      - 'task_m100_*'
+    paths:
+      - '.github/workflows/oracle-public-advisory.yml'
   workflow_dispatch:
     inputs:
       top_n:
@@ -169,8 +177,8 @@ jobs:
         if: ${{ steps.pdf.outputs.should_run == 'true' && steps.build.outcome == 'success' }}
         shell: bash
         env:
-          TOP_N: ${{ inputs.top_n }}
-          LIMIT: ${{ inputs.limit }}
+          TOP_N: ${{ inputs.top_n || '10' }}
+          LIMIT: ${{ inputs.limit || '0' }}
         run: |
           set -uo pipefail
           mkdir -p oracle-advisory/top
@@ -205,7 +213,7 @@ jobs:
         if: ${{ steps.pdf.outputs.should_run == 'true' && steps.build.outcome == 'success' }}
         shell: bash
         env:
-          TOP_N: ${{ inputs.top_n }}
+          TOP_N: ${{ inputs.top_n || '10' }}
           COMPARE_EXIT: ${{ steps.compare.outputs.compare_exit }}
         run: |
           set -euo pipefail

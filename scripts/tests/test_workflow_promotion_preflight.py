@@ -465,7 +465,12 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
             )
             self.assertTrue(entry["requiredJobs"])
             self.assertIn("requiredSkippedJobs", entry)
-            self.assertEqual(entry["allowedEvents"], ["workflow_dispatch"])
+            expected_events = (
+                ["push", "workflow_dispatch"]
+                if entry["path"] == ".github/workflows/oracle-public-advisory.yml"
+                else ["workflow_dispatch"]
+            )
+            self.assertEqual(entry["allowedEvents"], expected_events)
             self.assertEqual(entry["allowedActors"], ["edwardkim"])
         self.assertEqual(enriched["policyViolations"], [])
 
@@ -609,6 +614,13 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         self.assertIn("oracle-advisory/verdict.json", workflow)
         self.assertIn("name: oracle-public-advisory-verdict", workflow)
         self.assertIn("if-no-files-found: error", workflow)
+
+    def test_oracle_policy_accepts_bootstrap_push_but_rejects_other_events(self) -> None:
+        config = self.policy["workflows"][
+            ".github/workflows/oracle-public-advisory.yml"
+        ]
+        self.assertEqual(config["allowedEvents"], ["push", "workflow_dispatch"])
+        self.assertNotIn("pull_request", config["allowedEvents"])
 
     def test_oracle_structured_verdict_must_be_completed(self) -> None:
         inventory = {

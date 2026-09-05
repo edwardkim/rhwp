@@ -72,10 +72,25 @@ class OraclePublicAdvisoryWorkflowTests(unittest.TestCase):
         self.assertIn('roots = [Path("pdf")]', self.workflow)
         self.assertIn("--pdf-dirs pdf", self.workflow)
 
-    def test_advisory_remains_manual_and_non_required(self) -> None:
+    def test_advisory_has_narrow_bootstrap_and_remains_non_required(self) -> None:
         active_triggers = self.workflow.split("permissions:\n", maxsplit=1)[0]
-        self.assertIn("on:\n  workflow_dispatch:\n", active_triggers)
-        self.assertNotIn("\non:\n  pull_request:\n", active_triggers)
+        self.assertIn(
+            "on:\n"
+            "  # workflow_dispatch identity가 아직 기본 브랜치에 등록되지 않은 후보도\n"
+            "  # workflow 파일 자체를 바꾼 신뢰 push에서 한 번 실실행한다.\n"
+            "  push:\n"
+            "    branches:\n"
+            "      - devel\n"
+            "      - 'task_m100_*'\n"
+            "    paths:\n"
+            "      - '.github/workflows/oracle-public-advisory.yml'\n"
+            "  workflow_dispatch:\n",
+            active_triggers,
+        )
+        self.assertNotIn("\n  pull_request:\n", active_triggers)
+        self.assertNotIn("\n      - main\n", active_triggers)
+        self.assertIn("TOP_N: ${{ inputs.top_n || '10' }}", self.workflow)
+        self.assertIn("LIMIT: ${{ inputs.limit || '0' }}", self.workflow)
         self.assertIn("continue-on-error: true", self.workflow)
         self.assertIn("이 잡은 advisory 이며 required check 가 아닙니다.", self.workflow)
 

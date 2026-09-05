@@ -63,7 +63,7 @@
         "requiredPath": "verdict.json",
         "acceptedVerdicts": ["completed"]
       },
-      "allowedEvents": ["workflow_dispatch"],
+      "allowedEvents": ["push", "workflow_dispatch"],
       "allowedActors": ["edwardkim"]
     },
     ".github/workflows/proptest-roundtrip.yml": {

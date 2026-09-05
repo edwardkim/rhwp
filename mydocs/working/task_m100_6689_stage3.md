@@ -46,8 +46,9 @@ ci: add workflow promotion execution modes (#6689)
 | Proptest roundtrip | direct | Proptest preflight, prop roundtrip | 없음 |
 | Render Diff | direct | Render Diff preflight, Canvas visual diff | `render-diff-artifacts` |
 
-모든 pre-main 증적 event는 `workflow_dispatch`, actor는 `edwardkim`으로 제한한다. mode 문자열만 믿지 않고
-Pages와 Gym의 금지된 job이 실제로 `skipped`인지 함께 검증한다.
+일반 pre-main 증적 event는 `workflow_dispatch`, actor는 `edwardkim`으로 제한한다. Oracle은 등록되지 않은
+workflow identity를 bootstrap하기 위해 workflow 파일 자체가 바뀐 신뢰 branch의 `push`도 허용한다. mode
+문자열만 믿지 않고 Pages와 Gym의 금지된 job이 실제로 `skipped`인지 함께 검증한다.
 
 ## 3. 로컬 검증
 
@@ -100,3 +101,41 @@ PR 중 `.github/workflows/**` 또는 `.github/actions/**`를 변경하는 PR은 
 5. 하나라도 누락·실패하면 Stage 3를 닫지 않고 원인과 재실행 범위를 분리한다.
 
 push와 workflow dispatch는 이 문서의 로컬 결과 승인과 별도로 각각 메인테이너 승인을 받는다.
+
+## 6. 원격 카나리 결과와 Oracle 경로 정정
+
+원격 candidate `a1a199e96697aab43508d5d06c625d1ffec95f23`에서 먼저 세 개의 카나리를 순차
+실행했다.
+
+| workflow | run | 결과 |
+| --- | --- | --- |
+| Deploy Pages | `33940406533` | Build=success, Deploy=skipped, `github-pages` artifact 생성 |
+| Gym | `33940407609` | contracts=success, full benchmark=skipped |
+| Oracle advisory | run 없음 | workflow dispatch endpoint HTTP 404 |
+
+Oracle 파일은 기본 브랜치 `main`에 존재하고 YAML·actionlint 검사를 통과했지만 Actions API가 반환한
+27개 workflow identity에는 포함되지 않았다. 나머지 다섯 workflow는 카나리 실패 즉시 중단하여 실행하지
+않았다.
+
+이 발견에 따라 Oracle에만 다음 bootstrap을 추가한다.
+
+- branch: `devel`, `task_m100_*`
+- path: `.github/workflows/oracle-public-advisory.yml` 단일 경로
+- event: `push`
+- permissions: `contents: read`
+- dispatch input이 없는 push fallback: `top_n=10`, `limit=0`
+
+일반 소스 push와 PR에서는 새 runner 비용이 생기지 않는다. 정정 commit은 candidate SHA를 바꾸므로 위 두
+성공 run은 mode·권한 경계의 관찰 근거일 뿐 최종 exact-head 증적으로 재사용하지 않는다. 새 candidate를
+push한 뒤 Oracle push run을 카나리로 확인하고, 성공할 때만 여덟 workflow의 새 exact-head 증적 수집을
+재개한다.
+
+정정 구현의 로컬 검증 결과는 다음과 같다.
+
+- Stage 3 focused Python 계약: 36건 통과
+- Oracle workflow YAML parse: 통과
+- actionlint 1.7.12: 기존 candidate에도 있던 `SC2016` 정보 진단 한 건을 제외하면 통과
+- execution policy JSON parse·Python compile·`git diff --check`: 통과
+- 정책 event 전수 확인: Oracle만 `push,workflow_dispatch`, 나머지 7개는 `workflow_dispatch`
+- `test_workflow_contract_wiring.py`: Stage 4에서 promotion 계약 테스트를 CI Lint job에 배선하기 전까지
+  의도된 RED 2건 유지; 누락 항목은 `test_workflow_promotion_preflight.py` 한 파일뿐이다.
