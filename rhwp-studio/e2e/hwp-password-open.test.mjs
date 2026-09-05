@@ -133,20 +133,39 @@ runTest('Issue #3474/#3481/#5986 HWP3/HWP5/HWPX 암호 문서 열기와 보호 �
     );
     await waitForCanvas(page, 30_000);
 
-    const finalState = await page.evaluate((password) => ({
-      pageCount: window.__wasm?.pageCount ?? 0,
-      fileName: window.__wasm?.fileName ?? '',
-      requiresPasswordForSave: window.__wasm?.requiresPasswordForSave ?? null,
-      dialogGone: !document.querySelector('#hwp-password-input'),
-      localHasPassword: JSON.stringify(localStorage).includes(password),
-      sessionHasPassword: JSON.stringify(sessionStorage).includes(password),
-    }), fixturePassword);
+    const finalState = await page.evaluate((password) => {
+      const documentInfo = window.__wasm?.getDocumentInfo();
+      return {
+        pageCount: window.__wasm?.pageCount ?? 0,
+        fileName: window.__wasm?.fileName ?? '',
+        requiresPasswordForSave: window.__wasm?.requiresPasswordForSave ?? null,
+        dialogGone: !document.querySelector('#hwp-password-input'),
+        localHasPassword: JSON.stringify(localStorage).includes(password),
+        sessionHasPassword: JSON.stringify(sessionStorage).includes(password),
+        documentInfoHasPassword: JSON.stringify(documentInfo).includes(password),
+        documentInfoKeys: Object.keys(documentInfo ?? {}).sort(),
+      };
+    }, fixturePassword);
     assert(finalState.pageCount === fixture.pageCount, `올바른 암호로 ${fixture.name}를 연다`);
     assert(/\.hwpx?$/i.test(finalState.fileName) && finalState.dialogGone, '성공 뒤 입력 대화상자를 제거한다');
     assert(finalState.requiresPasswordForSave === true,
       `${fixture.name} 성공 load는 다음 저장의 암호 재입력 의도를 유지한다`);
     assert(!finalState.localHasPassword && !finalState.sessionHasPassword,
       '암호를 local/session storage에 보관하지 않는다');
+    assert(!finalState.documentInfoHasPassword,
+      `${fixture.name} DocumentInfo에 입력 암호를 반환하지 않는다`);
+    const allowedDocumentInfoKeys = new Set([
+      'encrypted',
+      'fallbackFont',
+      'fontSubstitutions',
+      'fontsUsed',
+      'hwp3Variant',
+      'pageCount',
+      'sectionCount',
+      'version',
+    ]);
+    assert(finalState.documentInfoKeys.every(key => allowedDocumentInfoKeys.has(key)),
+      `${fixture.name} DocumentInfo는 승인된 metadata 필드만 반환한다`);
 
     if (fixture.canvasAt144Dpi) {
       const canvasExtent = await page.evaluate(() => {
