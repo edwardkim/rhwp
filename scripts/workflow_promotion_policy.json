@@ -66,25 +66,6 @@
         "edwardkim"
       ]
     },
-    ".github/workflows/gym-release-gate.yml": {
-      "executionMode": "contracts-only",
-      "sensitiveSurfaces": [
-        "artifact"
-      ],
-      "requiredJobs": [
-        "Gym benchmark contracts"
-      ],
-      "requiredSkippedJobs": [
-        "Full Gym benchmark validation"
-      ],
-      "requiredArtifacts": [],
-      "allowedEvents": [
-        "workflow_dispatch"
-      ],
-      "allowedActors": [
-        "edwardkim"
-      ]
-    },
     ".github/workflows/oracle-public-advisory.yml": {
       "executionMode": "direct",
       "sensitiveSurfaces": [
@@ -104,24 +85,6 @@
       },
       "allowedEvents": [
         "push",
-        "workflow_dispatch"
-      ],
-      "allowedActors": [
-        "edwardkim"
-      ]
-    },
-    ".github/workflows/proptest-roundtrip.yml": {
-      "executionMode": "direct",
-      "sensitiveSurfaces": [
-        "cache"
-      ],
-      "requiredJobs": [
-        "Proptest preflight",
-        "prop roundtrip"
-      ],
-      "requiredSkippedJobs": [],
-      "requiredArtifacts": [],
-      "allowedEvents": [
         "workflow_dispatch"
       ],
       "allowedActors": [

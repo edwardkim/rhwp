@@ -1057,34 +1057,9 @@ jobs:
           python3 -m unittest scripts/tests/test_workflow_promotion_preflight.py
           python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
-          python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
           python3 -m unittest scripts/tests/test_trusted_postmerge_ci_reuse_workflow.py
           python3 -m unittest scripts/tests/test_undo_depth_e2e_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
-
-      # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.
-      # 바이너리 불요(커밋 문서만) — 표면이 늘어도 표준 링크가 끊기지 않게 한다.
-      - name: Validate adoption spine contract
-        run: python3 -m unittest scripts/tests/test_adoption_spine.py
-
-      # [#4718] 계획 템플릿 형식 계약 — 자가검증 계획 시작점이 스키마를 지키는지.
-      - name: Validate planner templates
-        run: python3 -m unittest scripts/tests/test_planner_templates.py
-
-      # [#4720] 에이전트 노동 운영체제 — 부서가 실재 pack/트랙/과제에 매핑되고
-      # 자동 배치기가 유효한 배정을 내는지. 바이너리 불요.
-      - name: Validate agent org contract
-        run: python3 -m unittest scripts/tests/test_agent_org.py
-
-      # [#4726] 에이전트 프레임 메타 가드 — 등재된 모든 하위체계가 가드를 가지고
-      # 머지분은 실재하는지. 틀 밖 확장을 막는 상위 불변식. 바이너리 불요.
-      - name: Validate agent frame contract
-        run: python3 -m unittest scripts/tests/test_agent_frame.py
-
-      # [#4728] 외부 현실 채점 계약 — 코어 견인과 메타-시스템 외부 채택을
-      # 섞지 않고, self-graded 상태를 정직하게 보고하는지. 바이너리 불요.
-      - name: Validate external reality check contract
-        run: python3 -m unittest scripts/tests/test_reality_check.py
 
       - name: Clippy
         run: cargo clippy -- -D warnings
@@ -1105,16 +1080,6 @@ jobs:
         run: |
           cargo build --workspace
           cargo clippy --workspace --all-targets -- -D warnings
-
-      # [로드맵 R12] 에이전트 표면 선검사 — 실패 경로 전수(전 명령 "없는 파일" 호출
-      # → exit≠0 + stdout 0바이트)·미선언 명령 감지(capabilities 에 flags 를 선언하지
-      # 않은 명령이 미지 플래그를 exit 0 으로 조용히 삼키는지)를 한 번에 돌린다.
-      # 바로 위 스텝의 `cargo build --workspace` 가 만든 debug 바이너리를 그대로 쓴다
-      # — 이 게이트만을 위해 release 를 다시 빌드하지 않는다. 큐 규율 검사(gh
-      # PR 목록 조회, 경고 전용)는 이 저장소의 병렬 세션 운영 규약용이라 CI 실행과는
-      # 무관하므로 --no-network 로 끈다(tools/agent_preflight.py 참고).
-      - name: Agent preflight (failure-path sweep + undeclared-command detection)
-        run: python3 tools/agent_preflight.py --repo . --bin target/debug/rhwp --no-network
 
       - name: Check WASM target
         run: cargo check --target wasm32-unknown-unknown --lib

@@ -17,7 +17,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 TARGET = REPO_ROOT / "scripts/workflow_promotion_preflight.py"
 POLICY_PATH = REPO_ROOT / "scripts/workflow_promotion_policy.json"
 DEPLOY_WORKFLOW = REPO_ROOT / ".github/workflows/deploy-pages.yml"
-GYM_WORKFLOW = REPO_ROOT / ".github/workflows/gym-release-gate.yml"
 ORACLE_WORKFLOW = REPO_ROOT / ".github/workflows/oracle-public-advisory.yml"
 SPEC = importlib.util.spec_from_file_location("workflow_promotion_preflight", TARGET)
 if SPEC is None or SPEC.loader is None:
@@ -478,9 +477,7 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         ".github/workflows/ci.yml",
         ".github/workflows/codeql.yml",
         ".github/workflows/deploy-pages.yml",
-        ".github/workflows/gym-release-gate.yml",
         ".github/workflows/oracle-public-advisory.yml",
-        ".github/workflows/proptest-roundtrip.yml",
         ".github/workflows/render-diff.yml",
     }
 
@@ -650,16 +647,6 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
             deploy,
         )
         self.assertIn("permissions:\n      pages: write\n      id-token: write", deploy)
-
-    def test_gym_dispatch_defaults_to_contracts_only_and_actions_are_pinned(self) -> None:
-        workflow = GYM_WORKFLOW.read_text(encoding="utf-8")
-        trigger = workflow.split("permissions:", maxsplit=1)[0]
-        self.assertIn("mode:", trigger)
-        self.assertIn("default: contracts", trigger)
-        full = workflow.split("  full-benchmark:\n", maxsplit=1)[1]
-        self.assertIn("inputs.mode == 'full'", full)
-        self.assertNotIn("actions/checkout@v4", workflow)
-        self.assertNotIn("dtolnay/rust-toolchain@stable", workflow)
 
     def test_oracle_emits_a_machine_verdict_artifact(self) -> None:
         workflow = ORACLE_WORKFLOW.read_text(encoding="utf-8")

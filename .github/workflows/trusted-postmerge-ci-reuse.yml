@@ -392,10 +392,6 @@ jobs:
               const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
                 .includes(process.env.WORKFLOW_FILE);
               const reviewOnlyWorker = {
-                "proptest-roundtrip.yml": {
-                  preflight: "Proptest preflight",
-                  worker: "prop roundtrip",
-                },
               }[process.env.WORKFLOW_FILE];
               const fullLaneRunIds = [];
               if (requireFullLaneEvidence) {

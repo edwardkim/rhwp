@@ -13,7 +13,6 @@ CI_WORKFLOW = REPO_ROOT / ".github/workflows/ci.yml"
 WORKFLOWS = {
     "ci": REPO_ROOT / ".github/workflows/ci.yml",
     "codeql": REPO_ROOT / ".github/workflows/codeql.yml",
-    "proptest": REPO_ROOT / ".github/workflows/proptest-roundtrip.yml",
 }
 
 
@@ -69,7 +68,6 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         expected_workflow_files = {
             "ci": "workflow_file: ci.yml",
             "codeql": "workflow_file: codeql.yml",
-            "proptest": "workflow_file: proptest-roundtrip.yml",
         }
         for name, workflow_path in WORKFLOWS.items():
             with self.subTest(workflow=name):
@@ -94,9 +92,6 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
     def test_direct_review_only_reuse_requires_the_exact_skipped_worker(self) -> None:
         workflow = REUSABLE.read_text(encoding="utf-8")
         self.assertIn("reviewOnlyFastPassRunIds", workflow)
-        self.assertIn('"proptest-roundtrip.yml"', workflow)
-        self.assertIn('preflight: "Proptest preflight"', workflow)
-        self.assertIn('worker: "prop roundtrip"', workflow)
         self.assertIn('job.conclusion === "skipped"', workflow)
 
     def test_trusted_reuse_evaluator_contracts_are_invoked_by_ci(self) -> None:

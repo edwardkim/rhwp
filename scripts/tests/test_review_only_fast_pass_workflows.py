@@ -16,13 +16,6 @@ WORKFLOWS = {
     "render-diff": ROOT / ".github/workflows/render-diff.yml",
 }
 WORKER_PREFLIGHTS = {
-    "proptest": (
-        ROOT / ".github/workflows/proptest-roundtrip.yml",
-        "\n\n      # 기준선 병합을 fast-pass bridge로",
-        "fast_pass",
-        "true",
-        "false",
-    ),
 }
 RESOLUTION_CHECK = ROOT / "scripts/verify_review_only_merge_resolution.py"
 

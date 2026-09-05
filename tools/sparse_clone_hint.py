@@ -123,7 +123,7 @@ PRESETS: dict[str, dict] = {
     },
     "gym": {
         "paths": ["gym", "tools", "mydocs/tech/agent_org", "mydocs/tech/agent_roadmap"],
-        "note": "에이전트 배치·훈련 과제(gym) — 부서표·로드맵·배치 도구(tools/agent_dispatch.py 등) 포함.",
+        "note": "에이전트 훈련 과제(gym).",
     },
     "ci-ops": {
         "paths": [".github", "scripts", "mydocs/manual"],
