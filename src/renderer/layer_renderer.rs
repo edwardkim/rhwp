@@ -489,6 +489,7 @@ impl TextVariantCandidate {
                             options.backend,
                             VariantSelectionBackend::CanvasKit
                                 | VariantSelectionBackend::CanvasKitBrowser
+                                | VariantSelectionBackend::NativeSkia
                         ))
                 {
                     reasons.insert(VariantRejectReason::BackendDoesNotSupportVariant);
