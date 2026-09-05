@@ -389,6 +389,10 @@ impl DocumentCore {
 
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
 
+        // [#6740] 변환 파생 상태 무효화 판정용 — 어떤 대입보다 먼저 잰다.
+        let transform_before =
+            super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr());
+
         // CommonObjAttr 업데이트
         // 리사이즈 핸들을 반대편으로 끌어당길 때 studio가 width/height=0 을 보내
         // 도형이 렌더러상 사라지는 버그 방어: 최소 크기 clamp.
@@ -622,11 +626,18 @@ impl DocumentCore {
             if let Some(nh) = new_h {
                 group.shape_attr.current_height = nh;
             }
-            // 회전 중심 갱신
+            // 회전 중심 갱신 — common 에서 다시 세우므로 무변경 시 멱등이다.
             group.shape_attr.rotation_center.x = (group.common.width / 2) as i32;
             group.shape_attr.rotation_center.y = (group.common.height / 2) as i32;
-            // raw_rendering 초기화 → 직렬화 시 스케일 행렬 재생성
-            group.shape_attr.raw_rendering = Vec::new();
+            // [#6740] raw_rendering 초기화는 **실제로 변환이 바뀐 뒤에만** 한다.
+            // 종전에는 `if let Some(..)` 가드 밖에서 무조건 비웠기 때문에, 크기 키가
+            // 없는 속성(예: 빈 JSON)이나 같은 값 재적용에도 한컴 원본 행렬이 사라졌다.
+            // 판정 형태는 #6355(그림)와 같다.
+            if super::common::shape_transform_fingerprint(&group.common, &group.shape_attr)
+                != transform_before
+            {
+                group.shape_attr.raw_rendering = Vec::new();
+            }
         }
 
         if caption_changed {
@@ -769,6 +780,10 @@ impl DocumentCore {
         props_json: &str,
     ) -> bool {
         use crate::document_core::helpers::{json_bool, json_i32, json_str};
+
+        // [#6740] 변환 파생 상태 무효화 판정용 — 어떤 대입보다 먼저 잰다.
+        let transform_before =
+            super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr());
 
         let c = shape.common_mut();
         let new_w = crate::document_core::helpers::json_u32(props_json, "width")
@@ -979,7 +994,12 @@ impl DocumentCore {
             }
             group.shape_attr.rotation_center.x = (group.common.width / 2) as i32;
             group.shape_attr.rotation_center.y = (group.common.height / 2) as i32;
-            group.shape_attr.raw_rendering = Vec::new();
+            // [#6740] 본문 경로(set_shape_properties_native)와 같은 판정 — 실제 변화 시에만.
+            if super::common::shape_transform_fingerprint(&group.common, &group.shape_attr)
+                != transform_before
+            {
+                group.shape_attr.raw_rendering = Vec::new();
+            }
         }
         caption_changed
     }

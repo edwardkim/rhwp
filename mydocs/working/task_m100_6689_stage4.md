@@ -162,3 +162,32 @@ pagination이 완결된 8개 run 중 7개를 수락하고, CI에 대해
 `run-not-green:.github/workflows/ci.yml:completed:failure`와
 `job-not-green:Build & Test:failure`를 동시에 보고하며 최종 verdict를 거부했다. token·API
 snapshot·artifact는 파일로 저장하지 않고 메모리에서만 검증했다.
+
+## 8. Stage 4-C — 최신 devel 병합
+
+정정 commit `ad6a90d43481e3337352c06f3f6c85c6cd4ab37b`를 push하기 직전에
+`upstream/devel`이 `f7426ad95f2eb6f30732749bc50b32d60a3f343a`에서
+`2c144b180dd776aa450c499778510199ae6cdf89`로 17 commit 이동한 것을 확인했다.
+최신 base가 task branch의 조상이 아니어서 원격 push를 중단하고 먼저 merge했다.
+
+충돌은 `mydocs/orders/20260905.md`의 문서 끝 append 지점 한 곳뿐이었다. task의 #6689
+진행 기록과 devel의 CI 그린 PR 9건 통합 기록은 서로 다른 섹션이므로 둘 다 순서대로
+보존했다. 다른 파일은 Git이 자동 병합했고 conflict marker가 남지 않았다.
+
+최신 `upstream/devel` 대비 task delta에는 Rust source, Rust test, `Cargo.toml`, `Cargo.lock`
+변경이 0건이다. 따라서 devel에서 이미 통합된 Rust 변경을 task의 신규 변경으로 중복
+취급하지 않고, task가 추가한 workflow·Python 계약·문서 표면을 재검증했다.
+
+| 병합 후 검사 | 결과 |
+| --- | --- |
+| CI impact classifier Node | 44건 통과 |
+| CI impact policy Node | 37건 통과 |
+| CI impact·Gym·promotion 직접 영향 Python | 80건 통과 |
+| CI `Validate workflow contracts` 동일 명령 묶음 | 196건 통과 |
+| Python `py_compile` | 통과 |
+| 변경 workflow YAML parse·actionlint v1.7.12 | 4개 모두 통과 |
+| #6689 관련 문서 상대 링크 | 9개 통과 |
+| conflict marker·`git diff --check` | 이상 없음 |
+
+병합 후 정적 검증까지 모두 통과했다. 병합 commit으로 새 candidate SHA를 고정한 뒤
+push하고, 그 exact SHA에서 8개 workflow를 전건 재실행한다.
