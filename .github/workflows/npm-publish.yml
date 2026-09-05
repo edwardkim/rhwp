@@ -32,6 +32,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-publish-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   validate-release-source:
     name: Validate release source
@@ -104,12 +108,59 @@ jobs:
           name: wasm-pkg
           path: pkg/
 
+  build-vsix:
+    name: Build VSIX once
+    needs: build-wasm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: wasm-pkg
+          path: pkg/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: rhwp-vscode/package-lock.json
+
+      - name: Install extension dependencies
+        working-directory: rhwp-vscode
+        run: npm ci
+
+      - name: Copy extension assets
+        run: |
+          cp assets/logo/logo-128.png rhwp-vscode/media/icon.png
+          cp pkg/rhwp_bg.wasm rhwp-vscode/media/
+          cp pkg/rhwp.js rhwp-vscode/media/
+
+      - name: Package VSIX
+        working-directory: rhwp-vscode
+        run: |
+          package_version=$(node -p "require('./package.json').version")
+          npx vsce package --out "../rhwp-vscode-${package_version}.vsix"
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vscode-vsix
+          path: rhwp-vscode-*.vsix
+          if-no-files-found: error
+          retention-days: 7
+
   publish-npm-core:
     name: Publish @rhwp/core
     needs: build-wasm
     if: inputs.publish
     runs-on: ubuntu-latest
     environment: NPM_TOKEN
+    outputs:
+      state: ${{ steps.outcome.outputs.state }}
     permissions:
       contents: read
       id-token: write
@@ -132,16 +183,38 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
-      - name: Publish to npm
-        working-directory: pkg
+      - name: Probe exact npm version
+        id: probe
         run: |
-          package_name=$(node -p "require('./package.json').name")
-          package_version=$(node -p "require('./package.json').version")
-          if npm view "${package_name}@${package_version}" version >/dev/null 2>&1; then
-            echo "${package_name}@${package_version} already exists; skipping publish"
+          package_name=$(node -p "require('./pkg/package.json').name")
+          package_version=$(node -p "require('./pkg/package.json').version")
+          [[ "${package_name}" == '@rhwp/core' ]]
+          python3 scripts/release_channel_status.py \
+            --channel npm \
+            --identifier "${package_name}" \
+            --version "${package_version}" \
+            --github-output "${GITHUB_OUTPUT}"
+
+      - name: Publish to npm
+        id: publish
+        if: steps.probe.outputs.present == 'false'
+        working-directory: pkg
+        run: npm publish --access public
+
+      - name: Resolve npm channel outcome
+        id: outcome
+        if: always()
+        run: |
+          if [[ "${{ steps.probe.outcome }}" != "success" ]]; then
+            state=failed
+          elif [[ "${{ steps.probe.outputs.present }}" == "true" ]]; then
+            state=already-present
+          elif [[ "${{ steps.publish.outcome }}" == "success" ]]; then
+            state=published
           else
-            npm publish --access public
+            state=failed
           fi
+          echo "state=${state}" >> "${GITHUB_OUTPUT}"
 
   publish-npm-editor:
     name: Publish @rhwp/editor
@@ -149,6 +222,8 @@ jobs:
     if: inputs.publish
     runs-on: ubuntu-latest
     environment: NPM_TOKEN
+    outputs:
+      state: ${{ steps.outcome.outputs.state }}
     permissions:
       contents: read
       id-token: write
@@ -162,57 +237,211 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
-      - name: Publish to npm
-        working-directory: npm/editor
+      - name: Probe exact npm version
+        id: probe
         run: |
-          package_name=$(node -p "require('./package.json').name")
-          package_version=$(node -p "require('./package.json').version")
-          if npm view "${package_name}@${package_version}" version >/dev/null 2>&1; then
-            echo "${package_name}@${package_version} already exists; skipping publish"
-          else
-            npm publish --access public
-          fi
+          package_name=$(node -p "require('./npm/editor/package.json').name")
+          package_version=$(node -p "require('./npm/editor/package.json').version")
+          [[ "${package_name}" == '@rhwp/editor' ]]
+          python3 scripts/release_channel_status.py \
+            --channel npm \
+            --identifier "${package_name}" \
+            --version "${package_version}" \
+            --github-output "${GITHUB_OUTPUT}"
 
-  publish-vscode:
-    name: Publish VSCode Extension
-    needs: build-wasm
+      - name: Publish to npm
+        id: publish
+        if: steps.probe.outputs.present == 'false'
+        working-directory: npm/editor
+        run: npm publish --access public
+
+      - name: Resolve npm channel outcome
+        id: outcome
+        if: always()
+        run: |
+          if [[ "${{ steps.probe.outcome }}" != "success" ]]; then
+            state=failed
+          elif [[ "${{ steps.probe.outputs.present }}" == "true" ]]; then
+            state=already-present
+          elif [[ "${{ steps.publish.outcome }}" == "success" ]]; then
+            state=published
+          else
+            state=failed
+          fi
+          echo "state=${state}" >> "${GITHUB_OUTPUT}"
+
+  publish-vscode-marketplace:
+    name: Publish VS Code Marketplace extension
+    needs: build-vsix
     if: ${{ inputs.publish && inputs.publish_extensions }}
     runs-on: ubuntu-latest
+    outputs:
+      state: ${{ steps.outcome.outputs.state }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Download WASM artifacts
+      - name: Download VSIX artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: wasm-pkg
-          path: pkg/
+          name: vscode-vsix
+          path: dist/
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 20
 
-      - name: Install dependencies
-        working-directory: rhwp-vscode
-        run: npm install
-
-      - name: Copy logo
-        run: cp assets/logo/logo-128.png rhwp-vscode/media/icon.png
-
-      - name: Copy WASM files
+      - name: Probe exact VS Code Marketplace version
+        id: probe
         run: |
-          cp pkg/rhwp_bg.wasm rhwp-vscode/media/
-          cp pkg/rhwp.js rhwp-vscode/media/
-
-      - name: Build extension
-        working-directory: rhwp-vscode
-        run: npm run compile
+          extension_id=$(node -p "require('./rhwp-vscode/package.json').publisher + '.' + require('./rhwp-vscode/package.json').name")
+          package_version=$(node -p "require('./rhwp-vscode/package.json').version")
+          [[ "${extension_id}" == 'edwardkim.rhwp-vscode' ]]
+          python3 scripts/release_channel_status.py \
+            --channel vscode-marketplace \
+            --identifier "${extension_id}" \
+            --version "${package_version}" \
+            --github-output "${GITHUB_OUTPUT}"
 
       - name: Publish to VS Code Marketplace
-        working-directory: rhwp-vscode
-        run: npx vsce publish -p ${{ secrets.VSCE_PAT }}
+        id: publish
+        if: steps.probe.outputs.present == 'false'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          shopt -s nullglob
+          vsix_files=(dist/*.vsix)
+          [[ ${#vsix_files[@]} -eq 1 ]]
+          npx vsce publish --packagePath "${vsix_files[0]}" -p "${VSCE_PAT}"
+
+      - name: Resolve VS Code Marketplace outcome
+        id: outcome
+        if: always()
+        run: |
+          if [[ "${{ steps.probe.outcome }}" != "success" ]]; then
+            state=failed
+          elif [[ "${{ steps.probe.outputs.present }}" == "true" ]]; then
+            state=already-present
+          elif [[ "${{ steps.publish.outcome }}" == "success" ]]; then
+            state=published
+          else
+            state=failed
+          fi
+          echo "state=${state}" >> "${GITHUB_OUTPUT}"
+
+  publish-open-vsx:
+    name: Publish Open VSX extension
+    needs: build-vsix
+    if: ${{ inputs.publish && inputs.publish_extensions }}
+    runs-on: ubuntu-latest
+    outputs:
+      state: ${{ steps.outcome.outputs.state }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: vscode-vsix
+          path: dist/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 20
+
+      - name: Probe exact Open VSX version
+        id: probe
+        run: |
+          extension_id=$(node -p "require('./rhwp-vscode/package.json').publisher + '.' + require('./rhwp-vscode/package.json').name")
+          package_version=$(node -p "require('./rhwp-vscode/package.json').version")
+          [[ "${extension_id}" == 'edwardkim.rhwp-vscode' ]]
+          python3 scripts/release_channel_status.py \
+            --channel open-vsx \
+            --identifier "${extension_id}" \
+            --version "${package_version}" \
+            --github-output "${GITHUB_OUTPUT}"
 
       - name: Publish to Open VSX
-        working-directory: rhwp-vscode
-        run: npx ovsx publish -p ${{ secrets.OVSX_PAT }}
+        id: publish
+        if: steps.probe.outputs.present == 'false'
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          shopt -s nullglob
+          vsix_files=(dist/*.vsix)
+          [[ ${#vsix_files[@]} -eq 1 ]]
+          npx ovsx publish "${vsix_files[0]}" -p "${OVSX_PAT}"
+
+      - name: Resolve Open VSX outcome
+        id: outcome
+        if: always()
+        run: |
+          if [[ "${{ steps.probe.outcome }}" != "success" ]]; then
+            state=failed
+          elif [[ "${{ steps.probe.outputs.present }}" == "true" ]]; then
+            state=already-present
+          elif [[ "${{ steps.publish.outcome }}" == "success" ]]; then
+            state=published
+          else
+            state=failed
+          fi
+          echo "state=${state}" >> "${GITHUB_OUTPUT}"
+
+  publish-complete:
+    name: Publish channel aggregate
+    needs:
+      - validate-release-source
+      - build-wasm
+      - build-vsix
+      - publish-npm-core
+      - publish-npm-editor
+      - publish-vscode-marketplace
+      - publish-open-vsx
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Aggregate publish evidence
+        env:
+          PUBLISH_MODE: ${{ inputs.publish && 'publish' || 'verify' }}
+          EXTENSIONS_REQUESTED: ${{ inputs.publish_extensions }}
+          VALIDATE_RESULT: ${{ needs.validate-release-source.result }}
+          WASM_RESULT: ${{ needs.build-wasm.result }}
+          VSIX_RESULT: ${{ needs.build-vsix.result }}
+          NPM_CORE_RESULT: ${{ needs.publish-npm-core.result }}
+          NPM_CORE_STATE: ${{ needs.publish-npm-core.outputs.state }}
+          NPM_EDITOR_RESULT: ${{ needs.publish-npm-editor.result }}
+          NPM_EDITOR_STATE: ${{ needs.publish-npm-editor.outputs.state }}
+          VSCODE_RESULT: ${{ needs.publish-vscode-marketplace.result }}
+          VSCODE_STATE: ${{ needs.publish-vscode-marketplace.outputs.state }}
+          OPEN_VSX_RESULT: ${{ needs.publish-open-vsx.result }}
+          OPEN_VSX_STATE: ${{ needs.publish-open-vsx.outputs.state }}
+        run: |
+          python3 scripts/release_publish_evidence.py \
+            --mode "${PUBLISH_MODE}" \
+            --extensions-requested "${EXTENSIONS_REQUESTED}" \
+            --github-sha "${GITHUB_SHA}" \
+            --ref-name "${GITHUB_REF_NAME}" \
+            --gate validate-release-source "${VALIDATE_RESULT}" \
+            --gate build-wasm "${WASM_RESULT}" \
+            --gate build-vsix "${VSIX_RESULT}" \
+            --channel npm-core "${NPM_CORE_RESULT}" "${NPM_CORE_STATE}" \
+            --channel npm-editor "${NPM_EDITOR_RESULT}" "${NPM_EDITOR_STATE}" \
+            --channel vscode-marketplace "${VSCODE_RESULT}" "${VSCODE_STATE}" \
+            --channel open-vsx "${OPEN_VSX_RESULT}" "${OPEN_VSX_STATE}" \
+            --output "${RUNNER_TEMP}/release-publish-evidence.json" \
+            --summary "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload publish evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-publish-evidence
+          path: ${{ runner.temp }}/release-publish-evidence.json
+          if-no-files-found: error
+          retention-days: 30
