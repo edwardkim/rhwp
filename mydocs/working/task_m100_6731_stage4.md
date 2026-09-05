@@ -69,3 +69,17 @@ remote push와 PR 생성 승인을 받은 뒤 다음 순서로 진행한다.
 - 보호 계약에 원자적 helper의 `void`와 metadata query 부재, 평문 public query 순서를 추가했다.
 
 이 보정 head를 다시 로컬 검증하고 원격에 push한 뒤에만 PR을 생성한다.
+
+## exact-head 결과
+
+보정 head `751b4c5fc67f4e63c147a2aa7f3acced928839be`를 push해 PR #6748을 생성했다. GitHub가 만든
+merge ref `a547f5ae51e5c101d98c4618f610f73ef5d9eb36`의 두 parent는 계획 기준선
+`9bf5bcfd061b491c89be1ea28ef1fff8a892b6d1`과 위 보정 head다.
+
+CodeQL run `33933481795`의 JavaScript/TypeScript analysis `1727960739`는 87개 rule을 실제로 실행해
+`results_count=0`으로 종료됐다. `refs/pull/6748/merge`의 open code-scanning alert도 0건이다. query,
+workflow와 path를 바꾸지 않은 상태에서 기존 네 flow가 사라졌으므로 Stage 4의 exact-head gate를
+충족했다. CI `33933481838`, Render Diff, Proptest roundtrip과 Adapter inter-diff도 모두 성공했다.
+
+alert #186 자체의 `dismissed` / `used in tests` 분류는 변경하지 않았다. 최종 branch 판정은 merge 뒤
+`devel` full CodeQL에서 수행한다.
