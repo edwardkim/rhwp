@@ -799,7 +799,8 @@ pub fn corrected_line_metrics(
         match ls_type {
             LineSpacingType::Percent => {
                 // [#2279] sub-100% 퍼센트 음수 gap 존중 (line_breaking 정합)
-                let extra = if ls_val > 0.0 {
+                // 0% 는 실값이다 — line_breaking 과 같은 계약(>=)으로 맞춘다.
+                let extra = if ls_val >= 0.0 {
                     max_fs * (ls_val - 100.0) / 100.0
                 } else {
                     0.0

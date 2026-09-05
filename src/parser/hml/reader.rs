@@ -661,6 +661,14 @@ impl<'a> ReadState<'a> {
             alignment: parse_alignment(attribute(element, b"Align")?.as_deref()),
             tab_def_id: parse_attribute(element, b"TabDef")?.unwrap_or(0),
             para_level: parse_attribute(element, b"Level")?.unwrap_or(0),
+            // `<PARAMARGIN>` 이 없는 PARASHAPE 도 "미지정 = 160%" 계약을 따른다.
+            // 160 기본값이 capture_para_margin() 안에만 있어 PARAMARGIN 없는 문단이
+            // line_spacing 0 으로 남았는데, 0 을 실값(advance 0)으로 존중하게 바꾼 뒤로는
+            // 그 문단의 줄이 전부 본문 상단 한 점에 겹쳤다.
+            // `LineSpacing="0"` 이 명시된 문서는 capture_para_margin() 이 0 으로 덮어쓰므로
+            // "미지정 vs 명시 0" 구분은 그대로다.
+            line_spacing: 160,
+            line_spacing_type: LineSpacingType::Percent,
             ..Default::default()
         };
         if !set_indexed(

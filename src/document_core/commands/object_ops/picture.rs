@@ -1401,7 +1401,7 @@ impl DocumentCore {
     /// 최댓값+1 로 채번한다 — 순번 채번은 storage id 에 구멍이 있는 문서에서
     /// 기존 이미지와 스트림 이름이 충돌해 저장 시 이미지가 뒤바뀌거나
     /// 소실된다. (insert_picture_native 와 그림 지정이 규칙 공유.)
-    fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
+    pub(crate) fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
         use crate::model::bin_data::{
             BinData, BinDataCompression, BinDataContent, BinDataStatus, BinDataType,
         };

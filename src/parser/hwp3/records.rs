@@ -329,7 +329,9 @@ impl Default for Hwp3ParaShape {
             left_margin: 0,
             right_margin: 0,
             indent: 0,
-            line_spacing: 0,
+            // 미지정 기본은 160%(MSB=0 이라 퍼센트 해석). 실제 레코드가
+            // 있으면 `read()` 가 덮어쓴다. 0 은 이제 "advance 0" 의 실값이라 구분이 필요하다.
+            line_spacing: 160,
             margin_bottom: 0,
             word_spacing: 0,
             align: 0,
