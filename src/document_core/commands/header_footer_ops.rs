@@ -853,13 +853,13 @@ impl DocumentCore {
                 continue;
             }
 
-            let base_id = self
+            let base_ids = self
                 .get_hf_paragraph_ref(section_idx, is_header, apply_to, hf_para_idx)
-                .and_then(|paragraph| paragraph.char_shape_id_at(range_start))
-                .unwrap_or(0);
-            let new_id = self.document.find_or_create_char_shape(base_id, &mods);
+                .map(|paragraph| paragraph.char_shape_ids_in_range(range_start, range_end))
+                .unwrap_or_default();
+            let ids = self.document.modified_char_shape_ids(base_ids, &mods);
             self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?
-                .apply_char_shape_range(range_start, range_end, new_id);
+                .map_char_shape_range(range_start, range_end, |id| ids[&id]);
             changed_paragraphs.push((hf_para_idx, range_start, range_end));
         }
 

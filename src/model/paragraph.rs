@@ -1817,54 +1817,68 @@ impl Paragraph {
         end_char_offset: usize,
         new_char_shape_id: u32,
     ) {
-        if start_char_offset >= end_char_offset || self.char_offsets.is_empty() {
-            return;
+        self.map_char_shape_range(start_char_offset, end_char_offset, |_| new_char_shape_id);
+    }
+
+    /// 범위 적용과 원본 ID 수집이 같은 UTF-16 경계를 사용한다.
+    /// 마지막 텍스트 뒤의 문단 끝 모양은 적용 범위에 포함하지 않는다.
+    fn char_shape_range_bounds(&self, start: usize, end: usize) -> Option<(u32, u32, u32)> {
+        if start >= end {
+            return None;
         }
+        let utf16_start = *self.char_offsets.get(start)?;
+        let last_idx = self.char_offsets.len() - 1;
+        let text_end = self.char_offsets[last_idx]
+            + self
+                .text
+                .chars()
+                .nth(last_idx)
+                .map_or(1, |c| c.len_utf16() as u32);
+        let utf16_end = self.char_offsets.get(end).copied().unwrap_or(text_end);
+        (utf16_start < utf16_end).then_some((utf16_start, utf16_end, text_end))
+    }
+
+    /// [#6788] 선택과 겹치는 원본 ID를 변경 전에 수집한다. 중복 ID는 호출자가 재사용한다.
+    pub(crate) fn char_shape_ids_in_range(&self, start: usize, end: usize) -> Vec<u32> {
+        let Some((utf16_start, utf16_end, _)) = self.char_shape_range_bounds(start, end) else {
+            return Vec::new();
+        };
+        if self.char_shapes.is_empty() {
+            return vec![0];
+        }
+        self.char_shapes
+            .iter()
+            .enumerate()
+            .filter(|(i, shape)| {
+                let seg_end = self
+                    .char_shapes
+                    .get(i + 1)
+                    .map_or(u32::MAX, |s| s.start_pos);
+                shape.start_pos < utf16_end && seg_end > utf16_start
+            })
+            .map(|(_, shape)| shape.char_shape_id)
+            .collect()
+    }
+
+    /// 기존 구간별 ID를 변환한다. 범위 분할·범위 밖 복원은 단일 ID 적용과 공유한다.
+    /// 호출자는 구간마다 재조판하지 않고 문단 갱신 뒤 한 번만 후처리한다.
+    pub(crate) fn map_char_shape_range(
+        &mut self,
+        start: usize,
+        end: usize,
+        mut map_id: impl FnMut(u32) -> u32,
+    ) {
+        let Some((utf16_start, utf16_end, text_utf16_end)) =
+            self.char_shape_range_bounds(start, end)
+        else {
+            return;
+        };
         if self.char_shapes.is_empty() {
             self.char_shapes.push(CharShapeRef {
                 start_pos: 0,
                 char_shape_id: 0,
             });
         }
-
-        // char offset → UTF-16 위치 변환
-        let utf16_start = if start_char_offset < self.char_offsets.len() {
-            self.char_offsets[start_char_offset]
-        } else {
-            return;
-        };
-        let utf16_end = if end_char_offset < self.char_offsets.len() {
-            self.char_offsets[end_char_offset]
-        } else if !self.char_offsets.is_empty() {
-            let last = *self.char_offsets.last().unwrap();
-            let last_char = self.text.chars().nth(self.char_offsets.len() - 1);
-            last + last_char
-                .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
-                .unwrap_or(1)
-        } else {
-            return;
-        };
-
-        if utf16_start >= utf16_end {
-            return;
-        }
-
-        // 문단 내 텍스트가 차지하는 UTF-16 영역의 끝 위치 (복원 범위 제한용)
-        // 컨트롤이 있으면 char_offsets가 0이 아닌 위치에서 시작하므로
-        // 단순 텍스트 길이가 아닌 마지막 문자의 UTF-16 끝 위치를 사용해야 한다.
-        let text_utf16_end: u32 = if !self.char_offsets.is_empty() {
-            let last_idx = self.char_offsets.len() - 1;
-            let last_char = self.text.chars().nth(last_idx);
-            self.char_offsets[last_idx]
-                + last_char
-                    .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
-                    .unwrap_or(1)
-        } else {
-            self.text
-                .chars()
-                .map(|c| if (c as u32) > 0xFFFF { 2u32 } else { 1u32 })
-                .sum()
-        };
 
         // 새 CharShapeRef 배열을 구축
         let mut new_refs: Vec<CharShapeRef> = Vec::new();
@@ -1883,6 +1897,7 @@ impl Paragraph {
                 new_refs.push(csr.clone());
             } else {
                 // 겹침 발생
+                let new_char_shape_id = map_id(csr.char_shape_id);
                 // 범위 앞부분 (seg_start < utf16_start)
                 if seg_start < utf16_start {
                     new_refs.push(CharShapeRef {

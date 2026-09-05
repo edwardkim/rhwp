@@ -570,6 +570,20 @@ impl Document {
         new_id
     }
 
+    /// [#6788] 선택 안의 각 원본 모양에만 속성을 병합한다. 같은 ID는 한 번만 해소한다.
+    pub(crate) fn modified_char_shape_ids(
+        &mut self,
+        base_ids: Vec<u32>,
+        mods: &super::style::CharShapeMods,
+    ) -> std::collections::HashMap<u32, u32> {
+        let mut ids = std::collections::HashMap::new();
+        for base_id in base_ids {
+            ids.entry(base_id)
+                .or_insert_with(|| self.find_or_create_char_shape(base_id, mods));
+        }
+        ids
+    }
+
     /// 기존 ParaShape를 복제하고 수정사항을 적용한 후, 동일한 것이 있으면 재사용한다.
     ///
     /// 반환값: 적용된 ParaShape의 ID (기존 또는 새로 생성)

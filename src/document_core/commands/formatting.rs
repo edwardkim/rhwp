@@ -1165,7 +1165,7 @@ impl DocumentCore {
             mods.border_fill_id = Some(bf_id);
         }
 
-        // 셀 내 문단의 기존 char_shape_id를 기반으로 새 ID 생성
+        // 선택 안의 원본 모양 각각에 속성을 병합한다.
         {
             let para = self
                 .get_cell_paragraph_ref(
@@ -1176,8 +1176,8 @@ impl DocumentCore {
                     cell_para_idx,
                 )
                 .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
-            let base_id = para.char_shape_id_at(start_offset).unwrap_or(0);
-            let new_id = self.document.find_or_create_char_shape(base_id, &mods);
+            let base_ids = para.char_shape_ids_in_range(start_offset, end_offset);
+            let ids = self.document.modified_char_shape_ids(base_ids, &mods);
 
             // 셀 문단에 범위 적용
             let cell_para = self.get_cell_paragraph_mut(
@@ -1187,7 +1187,7 @@ impl DocumentCore {
                 cell_idx,
                 cell_para_idx,
             )?;
-            cell_para.apply_char_shape_range(start_offset, end_offset, new_id);
+            cell_para.map_char_shape_range(start_offset, end_offset, |id| ids[&id]);
         }
 
         // 텍스트 폭/높이에 영향을 주는 글자 모양 변경 시 셀 내 LineSeg 재계산.
@@ -1256,14 +1256,14 @@ impl DocumentCore {
             let bf_id = self.create_border_fill_from_json(props_json);
             mods.border_fill_id = Some(bf_id);
         }
-        let base_id = {
+        let base_ids = {
             let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
-            para.char_shape_id_at(start_offset).unwrap_or(0)
+            para.char_shape_ids_in_range(start_offset, end_offset)
         };
-        let new_id = self.document.find_or_create_char_shape(base_id, &mods);
+        let ids = self.document.modified_char_shape_ids(base_ids, &mods);
         {
             let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
-            para.apply_char_shape_range(start_offset, end_offset, new_id);
+            para.map_char_shape_range(start_offset, end_offset, |id| ids[&id]);
         }
         // [#2755] 깊이 ≥ 2 중첩 셀도 텍스트 흐름에 영향 주는 변경 시 최내곽 셀 폭으로 재래핑한다
         // (apply_char_format_in_cell_native 의 char_shape_mods_affect_text_flow 게이팅과 동형 —
@@ -2139,14 +2139,13 @@ impl DocumentCore {
         end_offset: usize,
         mods: &crate::model::style::CharShapeMods,
     ) {
-        let base_id = self.document.sections[sec_idx].paragraphs[para_idx]
-            .char_shape_id_at(start_offset)
-            .unwrap_or(0);
-        let new_id = self.document.find_or_create_char_shape(base_id, mods);
-        self.document.sections[sec_idx].paragraphs[para_idx].apply_char_shape_range(
+        let base_ids = self.document.sections[sec_idx].paragraphs[para_idx]
+            .char_shape_ids_in_range(start_offset, end_offset);
+        let ids = self.document.modified_char_shape_ids(base_ids, mods);
+        self.document.sections[sec_idx].paragraphs[para_idx].map_char_shape_range(
             start_offset,
             end_offset,
-            new_id,
+            |id| ids[&id],
         );
     }
 
