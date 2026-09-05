@@ -79,17 +79,35 @@ pub fn is_tac_table_inline(
         return (table_width as i32) < (seg_width as f64 * 0.9) as i32;
     }
 
-    // 텍스트 없는 문단: 다중 TAC 표의 합산 너비가 줄 너비 이내이면 인라인
-    let tac_tables: Vec<&Table> = controls
+    // 텍스트 없는 문단: 나란히 놓일 TAC 개체들의 합산 너비가 줄 너비 이내이면 인라인.
+    //
+    // [#6754] 종전에는 **표만** 셌다. 그래서 `TAC 그림 + TAC 표` 문단에서 표가 하나뿐이라
+    // `len() >= 2` 를 못 넘고 블록으로 떨어져, 표가 그림 **옆이 아니라 아래**에 놓였다
+    // (156585314 3쪽: 그림 9302HU + 표 38274HU = 47576 ≤ 줄폭 48188 인데 세로로 쌓여
+    // +147.9px, 그 아래 전부가 밀려 마지막 표의 캡션 행이 용지 밖으로 나가 19자 소실).
+    // 저장 사다리도 둘을 **같은 vpos**(9237)에 적어 나란히임을 증언한다.
+    //
+    // 그림·도형도 같은 줄을 나눠 쓰므로 폭 합산에 함께 넣는다. 대상이 둘 이상일 때만
+    // 보는 것은 종전과 같다 — 하나뿐인 표는 위 90% 규칙(텍스트 있는 문단)이나
+    // `is_tac_table_inline_in_para` 의 다른 증거가 판단한다.
+    let tac_widths: Vec<u32> = controls
         .iter()
         .filter_map(|c| match c {
-            Control::Table(t) if t.common.treat_as_char => Some(t.as_ref()),
+            Control::Table(t) if t.common.treat_as_char => Some(tac_width(t)),
+            // 그림·도형은 저장 프레임 폭과 요소 표시 폭 중 **큰 값**을 쓴다
+            // (`ShapeObject::flow_height_hu` 의 가로 짝).
+            Control::Picture(p) if p.common.treat_as_char => {
+                Some((p.common.width).max(p.shape_attr.current_width))
+            }
+            Control::Shape(sh) if sh.common().treat_as_char => {
+                Some((sh.common().width).max(sh.shape_attr().current_width))
+            }
             _ => None,
         })
         .collect();
 
-    if tac_tables.len() >= 2 {
-        let total_width: u32 = tac_tables.iter().map(|t| tac_width(t)).sum();
+    if tac_widths.len() >= 2 {
+        let total_width: u32 = tac_widths.iter().sum();
         return (total_width as i32) <= seg_width;
     }
 

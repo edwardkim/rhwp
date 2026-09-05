@@ -549,6 +549,194 @@ fn create_fontdb(options: &PdfExportOptions) -> usvg::fontdb::Database {
     fontdb
 }
 
+// A document with more distinct fallback characters than this is unusual enough
+// that keeping the stock resolver is safer than retaining an unbounded index.
+#[cfg(not(target_arch = "wasm32"))]
+const PDF_FONT_FALLBACK_INDEX_MAX_CHARS: usize = 4_096;
+
+// Coverage is stored as one Option<bool> slot per visited face position. Cap the
+// total logical slot length as well as the number of characters so Vec capacity
+// and HashMap metadata cannot grow with an unbounded system font inventory.
+#[cfg(not(target_arch = "wasm32"))]
+const PDF_FONT_FALLBACK_INDEX_MAX_FACE_SLOTS: usize = 262_144;
+
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Debug)]
+struct PdfFontFallbackIndex {
+    database: Option<(std::sync::Weak<usvg::fontdb::Database>, usize)>,
+    coverage_by_char: std::collections::HashMap<char, Vec<Option<bool>>>,
+    face_slot_count: usize,
+    disabled: bool,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl PdfFontFallbackIndex {
+    fn new() -> Self {
+        Self {
+            database: None,
+            coverage_by_char: std::collections::HashMap::new(),
+            face_slot_count: 0,
+            disabled: false,
+        }
+    }
+
+    fn disable(&mut self) {
+        self.coverage_by_char.clear();
+        self.face_slot_count = 0;
+        self.disabled = true;
+    }
+
+    fn select(
+        &mut self,
+        c: char,
+        used_fonts: &[usvg::fontdb::ID],
+        fontdb: &std::sync::Arc<usvg::fontdb::Database>,
+        max_chars: usize,
+        max_face_slots: usize,
+    ) -> PdfFontFallbackLookup {
+        if self.disabled {
+            return PdfFontFallbackLookup::Default;
+        }
+
+        // A custom select_font callback may add faces through Arc::make_mut. Cached
+        // IDs and ordering only describe the exact database observed on first use;
+        // fall back globally if that identity or face inventory changes.
+        let database = std::sync::Arc::downgrade(fontdb);
+        let face_count = fontdb.len();
+        match self.database.as_ref() {
+            None => self.database = Some((database, face_count)),
+            Some((cached, cached_face_count))
+                if *cached_face_count != face_count
+                    || !std::sync::Weak::ptr_eq(cached, &database) =>
+            {
+                self.disable();
+                return PdfFontFallbackLookup::Default;
+            }
+            Some(_) => {}
+        }
+
+        if !self.coverage_by_char.contains_key(&c) {
+            if self.coverage_by_char.len() >= max_chars {
+                self.disable();
+                return PdfFontFallbackLookup::Default;
+            }
+            self.coverage_by_char.insert(c, Vec::new());
+        }
+
+        // Preserve usvg 0.45's exact short-circuit order: exclusion and face
+        // compatibility are checked before the potentially expensive cmap probe,
+        // and the first supporting face returns immediately. The index only
+        // replaces has_char calls that stock usvg would otherwise repeat.
+        let base_face = fontdb.face(used_fonts[0]);
+        for (face_index, face) in fontdb.faces().enumerate() {
+            if used_fonts.contains(&face.id) {
+                continue;
+            }
+            let Some(base_face) = base_face else {
+                return PdfFontFallbackLookup::Cached(None);
+            };
+            if base_face.style != face.style
+                && base_face.weight != face.weight
+                && base_face.stretch != face.stretch
+            {
+                continue;
+            }
+
+            let cached = self
+                .coverage_by_char
+                .get(&c)
+                .and_then(|coverage| coverage.get(face_index))
+                .copied()
+                .flatten();
+            let supports_char = match cached {
+                Some(supports_char) => supports_char,
+                None => {
+                    let Some(required_len) = face_index.checked_add(1) else {
+                        self.disable();
+                        return PdfFontFallbackLookup::Default;
+                    };
+                    let current_len = self
+                        .coverage_by_char
+                        .get(&c)
+                        .map_or(0, |coverage| coverage.len());
+                    let additional_slots = required_len.saturating_sub(current_len);
+                    let Some(next_face_slot_count) =
+                        self.face_slot_count.checked_add(additional_slots)
+                    else {
+                        self.disable();
+                        return PdfFontFallbackLookup::Default;
+                    };
+                    if next_face_slot_count > max_face_slots {
+                        self.disable();
+                        return PdfFontFallbackLookup::Default;
+                    }
+
+                    let supports_char = pdf_font_face_has_char(fontdb, face.id, c);
+                    let coverage = self
+                        .coverage_by_char
+                        .get_mut(&c)
+                        .expect("fallback coverage was inserted above");
+                    if coverage.len() < required_len {
+                        coverage.resize(required_len, None);
+                        self.face_slot_count = next_face_slot_count;
+                    }
+                    coverage[face_index] = Some(supports_char);
+                    supports_char
+                }
+            };
+            if supports_char {
+                return PdfFontFallbackLookup::Cached(Some(face.id));
+            }
+        }
+
+        PdfFontFallbackLookup::Cached(None)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+enum PdfFontFallbackLookup {
+    Cached(Option<usvg::fontdb::ID>),
+    Default,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn pdf_font_face_has_char(fontdb: &usvg::fontdb::Database, id: usvg::fontdb::ID, c: char) -> bool {
+    fontdb
+        .with_face_data(id, |font_data, face_index| {
+            ttf_parser::Face::parse(font_data, face_index)
+                .ok()
+                .and_then(|face| face.glyph_index(c))
+                .is_some()
+        })
+        .unwrap_or(false)
+}
+
+/// Builds the bounded fallback selector used by compatibility PDF conversion.
+///
+/// The limits are arguments so integration tests can exercise overflow without
+/// manufacturing a production-sized font database. Callers should normally use
+/// [`svgs_to_pdf_with_options`] instead.
+#[cfg(not(target_arch = "wasm32"))]
+#[doc(hidden)]
+pub fn pdf_font_fallback_selector_with_limits(
+    max_chars: usize,
+    max_face_slots: usize,
+) -> usvg::FallbackSelectionFn<'static> {
+    let index = std::sync::Mutex::new(PdfFontFallbackIndex::new());
+    let default_selector = usvg::FontResolver::default_fallback_selector();
+
+    Box::new(move |c, used_fonts, fontdb| {
+        let lookup = match index.lock() {
+            Ok(mut index) => index.select(c, used_fonts, fontdb, max_chars, max_face_slots),
+            Err(_) => PdfFontFallbackLookup::Default,
+        };
+        match lookup {
+            PdfFontFallbackLookup::Cached(id) => id,
+            PdfFontFallbackLookup::Default => default_selector(c, used_fonts, fontdb),
+        }
+    })
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 fn warn_missing_family(
     fontdb: &usvg::fontdb::Database,
@@ -1024,6 +1212,10 @@ where
     let fontdb = create_fontdb(export_options);
     let mut options = usvg::Options::default();
     options.fontdb = std::sync::Arc::new(fontdb);
+    options.font_resolver.select_fallback = pdf_font_fallback_selector_with_limits(
+        PDF_FONT_FALLBACK_INDEX_MAX_CHARS,
+        PDF_FONT_FALLBACK_INDEX_MAX_FACE_SLOTS,
+    );
     options.image_href_resolver = pdf_image_href_resolver();
 
     let mut alloc = Ref::new(1);

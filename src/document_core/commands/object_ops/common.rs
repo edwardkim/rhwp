@@ -7,6 +7,31 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::ShapeObject;
 
+/// [#6740] 변환 파생 상태(`raw_rendering`)의 무효화 판정용 지문.
+///
+/// 직렬화기는 `raw_rendering` 이 비어 있을 때만 변환 행렬을 새로 만든다
+/// (`serializer/control.rs` 의 rendering 블록). 그러므로 setter 가 값 변화 없이
+/// raw 를 비우면 한컴 원본 행렬이 rhwp 재생성본으로 바뀌고, 속성 bag 에는 원본
+/// 바이트가 없으므로 되돌릴 길이 없다(#5890 이중 장부 비용).
+///
+/// #6355 가 그림에서 도입한 판정과 같은 형태다 — 실제로 변환이 바뀐 뒤에만 비운다.
+pub(crate) fn shape_transform_fingerprint(
+    common: &crate::model::shape::CommonObjAttr,
+    attr: &crate::model::shape::ShapeComponentAttr,
+) -> (u32, u32, u32, u32, u32, u32, i16, bool, bool) {
+    (
+        common.width,
+        common.height,
+        common.horizontal_offset,
+        common.vertical_offset,
+        attr.current_width,
+        attr.current_height,
+        attr.rotation_angle,
+        attr.horz_flip,
+        attr.vert_flip,
+    )
+}
+
 impl DocumentCore {
     const COMMON_OBJ_ATTR_KNOWN_MASK: u32 = 0x01
         | (0x03 << 3)

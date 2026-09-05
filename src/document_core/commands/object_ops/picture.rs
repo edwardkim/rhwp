@@ -224,17 +224,8 @@ impl DocumentCore {
     fn picture_transform_fingerprint(
         pic: &crate::model::image::Picture,
     ) -> (u32, u32, u32, u32, u32, u32, i16, bool, bool) {
-        (
-            pic.common.width,
-            pic.common.height,
-            pic.common.horizontal_offset,
-            pic.common.vertical_offset,
-            pic.shape_attr.current_width,
-            pic.shape_attr.current_height,
-            pic.shape_attr.rotation_angle,
-            pic.shape_attr.horz_flip,
-            pic.shape_attr.vert_flip,
-        )
+        // [#6740] 판정은 도형 경로와 공용이다 — 둘이 갈라지면 같은 결함이 한쪽에만 남는다.
+        super::common::shape_transform_fingerprint(&pic.common, &pic.shape_attr)
     }
     pub(crate) fn picture_rotated_bounds(width: u32, height: u32, angle: i16) -> (u32, u32) {
         if width == 0 || height == 0 || angle.rem_euclid(360) == 0 {
