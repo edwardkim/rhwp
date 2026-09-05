@@ -771,6 +771,27 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
                     },
                 )
 
+        release = self.policy["workflows"][".github/workflows/release-binary.yml"]
+        caller_name = "Publish packages after binary release"
+        self.assertEqual(
+            release["requiredJobs"][5:],
+            [
+                f"{caller_name} / Validate release source",
+                f"{caller_name} / Build WASM",
+                f"{caller_name} / Build VSIX once",
+                f"{caller_name} / Publish channel aggregate",
+            ],
+        )
+        self.assertEqual(
+            release["requiredSkippedJobs"][1:],
+            [
+                f"{caller_name} / Publish @rhwp/core",
+                f"{caller_name} / Publish @rhwp/editor",
+                f"{caller_name} / Publish VS Code Marketplace extension",
+                f"{caller_name} / Publish Open VSX extension",
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

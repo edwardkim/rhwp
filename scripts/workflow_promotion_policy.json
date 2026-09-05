@@ -84,17 +84,17 @@
         "Build x86_64-apple-darwin",
         "Build aarch64-apple-darwin",
         "Build x86_64-pc-windows-msvc",
-        "publish-packages / Validate release source",
-        "publish-packages / Build WASM",
-        "publish-packages / Build VSIX once",
-        "publish-packages / Publish channel aggregate"
+        "Publish packages after binary release / Validate release source",
+        "Publish packages after binary release / Build WASM",
+        "Publish packages after binary release / Build VSIX once",
+        "Publish packages after binary release / Publish channel aggregate"
       ],
       "requiredSkippedJobs": [
         "Attach to GitHub Release",
-        "publish-packages / Publish @rhwp/core",
-        "publish-packages / Publish @rhwp/editor",
-        "publish-packages / Publish VS Code Marketplace extension",
-        "publish-packages / Publish Open VSX extension"
+        "Publish packages after binary release / Publish @rhwp/core",
+        "Publish packages after binary release / Publish @rhwp/editor",
+        "Publish packages after binary release / Publish VS Code Marketplace extension",
+        "Publish packages after binary release / Publish Open VSX extension"
       ],
       "requiredArtifacts": [
         "rhwp-test-linux-x86_64.tar.gz",
