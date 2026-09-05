@@ -172,12 +172,14 @@ function mmToHwp(raw: string | undefined): number {
 }
 
 /**
- * [Task #6758] 다이얼로그가 크기 칸에 처음 채우는 표시값.
+ * [Task #6758] 크기 칸의 표시값 — **이 모듈이 서식의 단일 소유자다.**
  *
- * `picture-props-dialog` 는 `(hwp / HWP_PER_MM).toFixed(2)` 로 채운다. 같은 식을 여기서
- * 다시 만들어 "사용자가 이 칸을 건드렸는가"를 **표시 문자열끼리** 비교한다.
+ * 아래 `addChangedSize` 는 "사용자가 이 칸을 건드렸는가"를 표시값과 견줘 판정한다. 그래서
+ * 다이얼로그가 칸을 채우는 서식과 여기 서식이 반드시 같아야 한다 — 갈라지면 판정이 늘
+ * "바뀌었다"가 되어 #6758(무변경 확인이 치수를 200 으로 부풀림)이 되살아난다.
+ * 두 벌을 두고 가드로 묶는 대신, 다이얼로그가 이 함수를 가져다 쓴다.
  */
-function displayedMm(hwp: number): string {
+export function displayedMm(hwp: number): string {
   return (hwp / HWP_PER_MM).toFixed(2);
 }
 
