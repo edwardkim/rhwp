@@ -83,4 +83,3 @@ v0.8.6 tag는 `f1f9c6ae58344ee9368996d3543f76b9345cf227`이지만 수동 복구 
 - 기존 `release.published` 단독 구조: **폐기 대상**
 - 과거 성공 이력의 binary gate 증명력: **없음**
 - Stage 2 진입 조건: RED 계약이 위 세 결함과 promotion policy 누락에서만 실패해야 함
-
