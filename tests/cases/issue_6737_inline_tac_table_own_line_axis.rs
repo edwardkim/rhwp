@@ -33,34 +33,13 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/korea_downloads/해양경찰청/
-///  156487948_해양경찰청, 해양오염방제관련 소관법령 마련 용역 완료.hwp`
-///
-/// ⚠ `.hwp` 를 `samples/` 에 넣으면 `ir_field_sweep_baseline` 이 `samples/` 전체를
-/// 스윕한다. `RHWP_ISSUE6737_SAMPLE` 로 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6737_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        r"C:\Users\planet\hwpdocs_10k_share\korea_downloads\해양경찰청",
-        r"D:\hwpdocs_10k_share\korea_downloads\해양경찰청",
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.starts_with("156487948_") && name.ends_with(".hwp") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+/// 원 이슈의 실물 문서를 저장소 샘플로 고정한다.
+/// 출처와 원본 SHA-256은 `samples/issue6737/README.md`에 기록한다.
+fn sample() -> Vec<u8> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue6737/156487948-marine-pollution-law.hwp");
+    std::fs::read(&path)
+        .unwrap_or_else(|error| panic!("필수 회귀 샘플 {} 읽기 실패: {error}", path.display()))
 }
 
 fn collect(node: &RenderNode, tables: &mut Vec<(f64, f64)>, runs: &mut Vec<(f64, f64, String)>) {
@@ -79,9 +58,7 @@ fn collect(node: &RenderNode, tables: &mut Vec<(f64, f64)>, runs: &mut Vec<(f64,
 /// 표는 본문 왼쪽에서 시작하고 용지 안에 들어와야 한다.
 #[test]
 fn inline_tac_table_with_leading_spaces_starts_at_the_body_left() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     assert_eq!(core.page_count(), 2, "한/글 2024 와 같은 2쪽이어야 한다");
 
@@ -117,9 +94,7 @@ fn inline_tac_table_with_leading_spaces_starts_at_the_body_left() {
 /// 대조를 통과하므로 **x 가 용지 안인지**를 봐야 한다.
 #[test]
 fn cells_pushed_off_the_paper_are_back_inside_the_paper() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
     let paper_right = tree.root.bbox.x + tree.root.bbox.width;

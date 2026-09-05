@@ -28,34 +28,13 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/korea_downloads/농촌진흥청/
-///  156585314_14-2_새싹,보리밥용도로딱좋은 ‘싹이랑’ 신청하세요(식량원).hwp`
-///
-/// ⚠ `.hwp` 를 `samples/` 에 넣으면 `ir_field_sweep_baseline` 이 `samples/` 전체를
-/// 스윕한다. `RHWP_ISSUE6754_SAMPLE` 로 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6754_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        r"C:\Users\planet\hwpdocs_10k_share\korea_downloads\농촌진흥청",
-        r"D:\hwpdocs_10k_share\korea_downloads\농촌진흥청",
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.starts_with("156585314_") && name.ends_with(".hwp") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+/// 원 이슈의 실물 문서를 저장소 샘플로 고정한다.
+/// 출처와 원본 SHA-256은 `samples/issue6754/README.md`에 기록한다.
+fn sample() -> Vec<u8> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue6754/156585314-ssagirang-barley.hwp");
+    std::fs::read(&path)
+        .unwrap_or_else(|error| panic!("필수 회귀 샘플 {} 읽기 실패: {error}", path.display()))
 }
 
 fn tables(node: &RenderNode, out: &mut Vec<(u16, u16, f64, f64)>) {
@@ -82,9 +61,7 @@ fn lowest_run_bottom(node: &RenderNode) -> f64 {
 /// 그림 옆에 놓여야 할 4×8 표가 **그려져야** 하고, 저장 사다리가 적은 자리에 있어야 한다.
 #[test]
 fn tac_table_shares_the_line_with_the_tac_picture() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     assert_eq!(core.page_count(), 3, "한/글 2024 와 같은 3쪽이어야 한다");
 
@@ -113,9 +90,7 @@ fn tac_table_shares_the_line_with_the_tac_picture() {
 /// 수정이 그 행을 되살렸을 때 자리를 지키는 가드다.
 #[test]
 fn last_caption_row_stays_on_the_paper() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let tree = core.build_page_render_tree(2).expect("3쪽 render tree");
     let paper_bottom = tree.root.bbox.y + tree.root.bbox.height;
