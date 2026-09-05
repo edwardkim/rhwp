@@ -1,0 +1,22 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6778,
+  "title": "동물복지 사육관리 지침서 4종 첫 발간 보도자료",
+  "entries": [
+    {
+      "path": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6778",
+      "originalFilename": "156757920_22-2_동물복지사육관리지침서4종첫발간동물복지농가전용기술기준제시(축산원).hwp",
+      "bytes": 1478144,
+      "sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a",
+      "lastSavedWith": {
+        "product": "hancom-office-2024",
+        "version": "13.0.0.564"
+      },
+      "referenceEngine": "2024",
+      "contract": "Square(어울림) 표 옆 레인에서 렌더 흐름도 host 줄만 전진하고 표 높이는 세로 배제 밴드로 잡는다. 밴드는 저장 column_start=0 인 전폭 문단에서 닫는다."
+    }
+  ]
+}
