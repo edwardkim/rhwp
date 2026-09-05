@@ -1252,6 +1252,9 @@ struct TypesetState {
     vpos_col_anchor: f64,
     /// HWP3-origin 흐름에서는 vpos 보정에서 spacing_before 사전 차감을 생략한다(#1116).
     skip_spacing_before_prededuct: bool,
+    /// [#6753] 직전 문단이 `#2279 ①` 트림으로 흐름에서 뺀 `spacing_before`(px).
+    /// lazy 기준 역산이 그 트림분을 기준점에 싣지 않도록 `HeightCursor` 로 넘긴다.
+    vpos_prev_trimmed_sb_px: f64,
 }
 
 /// [Task #1363] 미주 높이 모델 SSOT 마이그레이션 단계 플래그(`RHWP_EN_SSOT`).
@@ -4675,6 +4678,7 @@ impl TypesetState {
             vpos_prev_partial_table: false,
             vpos_col_anchor: 0.0,
             skip_spacing_before_prededuct: false,
+            vpos_prev_trimmed_sb_px: 0.0,
         }
     }
 
@@ -4696,6 +4700,7 @@ impl TypesetState {
     /// 렌더러 build_single_column 진입 정합: page/lazy base·prev 초기화,
     /// anchor 를 현 current_height(컬럼 시작값)로 설정.
     fn reset_vpos_cursor(&mut self) {
+        self.vpos_prev_trimmed_sb_px = 0.0;
         self.vpos_page_base = None;
         self.vpos_lazy_base = None;
         self.vpos_page_base_stored = false;
@@ -5461,6 +5466,40 @@ impl FormattedParagraph {
         (start..end)
             .map(|i| self.line_heights[i] + self.line_spacings[i])
             .sum()
+    }
+
+    /// [#6753] `flow_advance_height` 가 실제로 트림한 것 중 **`spacing_before` 몫**(px).
+    ///
+    /// 트림 자체는 "저장 사다리가 이미 담았고 vpos-snap 이 좌표를 복원한다"는 전제 위에
+    /// 서지만, **lazy 기준 역산**은 그 복원 이전의 sequential y 를 쓴다. 그래서 역산에만
+    /// 이 값을 되돌려 준다(전진량은 그대로 둔다).
+    fn flow_trimmed_spacing_before(
+        &self,
+        para: &Paragraph,
+        col_count: u16,
+        allow_spacing_before_only: bool,
+        ladder_dirty: bool,
+        lazy_base: bool,
+    ) -> f64 {
+        let advance = self.flow_advance_height(
+            para,
+            col_count,
+            allow_spacing_before_only,
+            ladder_dirty,
+            lazy_base,
+        );
+        if advance + 0.5 >= self.total_height {
+            return 0.0; // 트림이 발동하지 않았다.
+        }
+        // `flow_advance_height` 의 `sb_trim` 과 같은 판정 — sa 만 트림된 경우는 0.
+        let sa_trim = self.spacing_after > 0.5;
+        let sb_trim =
+            allow_spacing_before_only && self.spacing_before > 0.5 && !(lazy_base && !sa_trim);
+        if sb_trim {
+            self.spacing_before
+        } else {
+            0.0
+        }
     }
 
     fn flow_advance_height(
@@ -16393,6 +16432,7 @@ impl TypesetEngine {
             prev_layout_para: st.vpos_prev_layout_para,
             prev_item_was_partial_table: st.vpos_prev_partial_table,
             skip_spacing_before_prededuct: st.skip_spacing_before_prededuct,
+            trimmed_prev_spacing_before_px: st.vpos_prev_trimmed_sb_px,
             allow_vpos_rewind: false,
             allow_start_height_backtrack: false,
             suppress_large_forward_jump: false,
@@ -17383,6 +17423,17 @@ impl TypesetEngine {
                 fmt.spacing_before,
                 self.dpi,
             );
+        // [#6753] 트림된 `sb` 되돌리기는 **저장 사다리가 권위인 네이티브 HWP5** 에 한정한다.
+        //
+        // HWPX 의 `vpos` 리셋은 writer-local 재시작일 수 있어 별도 기계(`#5801` 의 HWPX 전용
+        // dirty 철회 · `#6063` · `hwpx_saved_reset_fragment_matches_current_flow`)가 따로 다룬다.
+        // 전 포맷에 켠 판은 `samples/` 전수에서 `issue1880_*.hwpx` 2건을 악화시켰다
+        // (5쪽 넘침 1 → 4, 최대 +82.65px). 같은 판에서 HWP5 문서는 3건 전부 개선이었다.
+        let trimmed_sb_gate = if st.profile.hwp5_stored_pagination_layout() {
+            1.0
+        } else {
+            0.0
+        };
 
         // [#2279 OMIT-fit] spacing-누락 문서군에서 **저장 리셋 직전의 페이지말
         // 빈 문단**은 다음 쪽 상단 귀속이다 — 한글 fresh 는 누락 spacing 을
@@ -17601,6 +17652,14 @@ impl TypesetEngine {
                     st.current_height,
                 );
             }
+            st.vpos_prev_trimmed_sb_px = trimmed_sb_gate
+                * fmt.flow_trimmed_spacing_before(
+                    para,
+                    st.col_count,
+                    trim_spacing_before_for_flow,
+                    st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                    st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
+                );
             st.current_height += advance;
             st.flow_underrun += (fmt.total_height - advance).max(0.0);
             if let Some(v) = body_bottom_vpos {
@@ -17734,6 +17793,7 @@ impl TypesetEngine {
                 st.current_items.push(PageItem::FullParagraph {
                     para_index: para_idx,
                 });
+                st.vpos_prev_trimmed_sb_px = 0.0;
                 st.current_height += fmt.total_height;
                 if let Some(v) = body_bottom_vpos {
                     st.prev_body_bottom_vpos = Some(v);
@@ -17772,6 +17832,14 @@ impl TypesetEngine {
                 st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
                 false,
             );
+            st.vpos_prev_trimmed_sb_px = trimmed_sb_gate
+                * fmt.flow_trimmed_spacing_before(
+                    para,
+                    st.col_count,
+                    trim_spacing_before_for_flow,
+                    st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                    false,
+                );
             st.current_height += advance;
             st.flow_underrun += (fmt.total_height - advance).max(0.0);
             if let Some(v) = body_bottom_vpos {
@@ -18328,6 +18396,7 @@ impl TypesetEngine {
                     end_line,
                 });
             }
+            st.vpos_prev_trimmed_sb_px = 0.0;
             st.current_height += part_height;
 
             if end_line >= line_count {
