@@ -198,7 +198,9 @@ export function displayedMm(hwp: number): string {
  * (`"10"` 과 `"10.00"`)가 변경으로 잡힌다.
  */
 function untouchedMm(raw: string | undefined, current: number): boolean {
-  return numberOr(raw, 0).toFixed(2) === displayedMm(current);
+  // -1 HWPUNIT displays as "-0.00", but parsing the input normalizes it to zero.
+  // Compare rounded numeric values so an untouched negative offset is preserved.
+  return Number(numberOr(raw, 0).toFixed(2)) === Number(displayedMm(current));
 }
 
 function addChangedSize(

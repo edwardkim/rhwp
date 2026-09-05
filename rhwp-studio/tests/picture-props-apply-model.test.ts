@@ -787,3 +787,29 @@ test('[#6769] 다이얼로그가 오프셋 칸도 공용 서식으로 채운다'
   assert.match(dialog, /this\.vertOffsetInput\.value = displayedMm\(this\.props\.vertOffset\);/,
     '세로 오프셋 칸을 공용 서식으로 채우지 않는다');
 });
+
+for (const objectType of ['image', 'shape', 'line', 'group', 'ole'] as const) {
+  test(`[#6769] ${objectType}: 표시 정밀도에서 음의 0이 된 위치는 그대로 보존한다`, () => {
+    const props = pictureProps({ horzOffset: -1, vertOffset: -1 });
+    const form = applyForm();
+    form.common.horzOffset = '-0.00';
+    form.common.vertOffset = '0.00';
+
+    const patch = buildPicturePropsPatch(objectType, props, shapeProps(), form);
+
+    assert.equal('horzOffset' in patch, false, '음의 0을 재입력해도 원본 -1을 보존한다');
+    assert.equal('vertOffset' in patch, false, '같은 표시 정밀도의 양의 0도 무변경이다');
+  });
+
+  test(`[#6769] ${objectType}: 실제 음수 위치 편집은 클램프 없이 전달한다`, () => {
+    const props = pictureProps({ horzOffset: -1, vertOffset: -365 });
+    const form = applyForm();
+    form.common.horzOffset = '-40.00';
+    form.common.vertOffset = '-1.29';
+
+    const patch = buildPicturePropsPatch(objectType, props, shapeProps(), form);
+
+    assert.equal(patch.horzOffset, Math.round(-40 * (7200 / 25.4)));
+    assert.equal('vertOffset' in patch, false, '바꾸지 않은 음수 세로 위치는 보존한다');
+  });
+}
