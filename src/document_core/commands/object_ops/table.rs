@@ -1419,6 +1419,54 @@ impl DocumentCore {
         cell_path_json: &str,
         inner_control_idx: usize,
     ) -> Result<String, HwpError> {
+        self.delete_cell_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+            |c| matches!(c, Control::Picture(_)),
+            "그림이",
+        )
+    }
+
+    /// [#6771] 표 셀/글상자 **내부 표** 삭제 (cell_path 기반).
+    ///
+    /// 공공 양식은 작성 안내문을 셀 안 1×1 표(점선 상자)로 넣어 두고 본문에 "안내 박스는
+    /// 반드시 삭제 후 제출"이라고 적는다. 글자는 `delete_text_in_cell_by_path` 로 지울 수
+    /// 있었지만 **그릇을 지울 길이 없었다** — `delete_control_at` 은 본문 리스트만 다루고
+    /// `delete_table_control` 은 `(구역, 문단, 컨트롤)` 셋만 받아 셀 안을 짚지 못한다.
+    /// 절차는 그림 삭제와 같으므로 몸통을 공유한다.
+    pub fn delete_cell_table_control_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_cell_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+            |c| matches!(c, Control::Table(_)),
+            "표가",
+        )
+    }
+
+    /// 셀·글상자 안 컨트롤 하나를 지우는 공통 몸통 — 그림·표가 같은 절차를 쓴다.
+    ///
+    /// `accepts` 가 지목한 컨트롤 종류를 검사하고, 그 컨트롤이 본문에서 차지하던 8바이트
+    /// 자리를 걷어낸 뒤 문단을 다시 흘린다. `kind_label` 은 오류 문구의 조사까지 담는다
+    /// ("그림이" / "표가").
+    fn delete_cell_control_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+        accepts: fn(&Control) -> bool,
+        kind_label: &str,
+    ) -> Result<String, HwpError> {
         let path = Self::parse_cell_path_json(cell_path_json)?;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
@@ -1431,10 +1479,11 @@ impl DocumentCore {
                     inner_control_idx
                 )));
             }
-            if !matches!(&para.controls[inner_control_idx], Control::Picture(_)) {
-                return Err(HwpError::RenderError(
-                    "지정된 셀 내 컨트롤이 그림이 아닙니다".to_string(),
-                ));
+            if !accepts(&para.controls[inner_control_idx]) {
+                return Err(HwpError::RenderError(format!(
+                    "지정된 셀 내 컨트롤이 {} 아닙니다",
+                    kind_label
+                )));
             }
 
             let text_chars: Vec<char> = para.text.chars().collect();
