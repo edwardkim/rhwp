@@ -92,6 +92,9 @@ Docker가 설치되지 않아 [개발 환경 안내](../../manual/dev_environmen
 - 최초 [CI run](https://github.com/edwardkim/rhwp/actions/runs/33965216622)은 작성 시점 진행 중이다.
   로컬 성공을 GitHub CI 성공으로 대체하지 않는다. code candidate CI 완료 전에 trailing push하면
   재사용할 녹색 후보가 없을 수 있으므로 전체 CI 재실행을 정상 가능성으로 구분한다.
+- trailing commit `873f05cc0` push 뒤 base가 `afe91c021`로 전진해 오늘할일 끝부분만 충돌했다.
+  다른 작업의 기록을 source에 복사하거나 rebase하지 않고, #5874 항목을 충돌 없는 문서 앞부분으로
+  옮겼다. 최종 문서 후보의 merge simulation과 최신 GitHub mergeability를 다시 확인한다.
 
 ## Merge 후 contributor PR comment 계획
 
