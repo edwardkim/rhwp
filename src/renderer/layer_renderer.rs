@@ -627,7 +627,9 @@ fn collect_glyph_run_reject_reasons(
     if !run.paint_style.is_fill_only_glyph_replay() {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
     }
-    if run.shape_key.font_instance.synthetic_bold || run.shape_key.font_instance.synthetic_italic {
+    if (run.shape_key.font_instance.synthetic_bold || run.shape_key.font_instance.synthetic_italic)
+        && options.backend != VariantSelectionBackend::NativeSkia
+    {
         reasons.insert(VariantRejectReason::SyntheticStyleAuthorityPending);
     }
     if !matches!(run.direction, TextDirection::Ltr)
@@ -663,7 +665,9 @@ fn collect_glyph_run_reject_reasons(
             | VariantSelectionBackend::CanvasKitBrowser
             | VariantSelectionBackend::NativeSkia
     ) {
-        if !run.shape_key.font_instance.variations.is_empty() {
+        if !run.shape_key.font_instance.variations.is_empty()
+            && options.backend != VariantSelectionBackend::NativeSkia
+        {
             reasons.insert(VariantRejectReason::VariationUnsupported);
         }
         if matches!(
@@ -808,11 +812,48 @@ fn collect_glyph_run_font_resource_reject_reasons(
             {
                 reasons.insert(VariantRejectReason::FontBlobDigestMismatch);
             }
+            let parsed_face = ttf_parser::Face::parse(bytes, face.face_index);
             if (face.face_index != 0
-                && options.backend != VariantSelectionBackend::CanvasKitBrowser)
-                || ttf_parser::Face::parse(bytes, face.face_index).is_err()
+                && !matches!(
+                    options.backend,
+                    VariantSelectionBackend::CanvasKitBrowser | VariantSelectionBackend::NativeSkia
+                ))
+                || parsed_face.is_err()
             {
                 reasons.insert(VariantRejectReason::FaceIndexUnsupported);
+            }
+            if options.backend == VariantSelectionBackend::NativeSkia
+                && !run.shape_key.font_instance.variations.is_empty()
+            {
+                // This proves the portable instance contract, not Skia construction.
+                // Native replay must still prepare the exact Typeface before selecting
+                // any part of the strict variant or suppressing its TextRun fallback.
+                let variations = &run.shape_key.font_instance.variations;
+                let mut seen = BTreeSet::new();
+                let valid = variations.len()
+                    <= crate::renderer::shaping::MAX_SHAPING_VARIATION_AXES
+                    && parsed_face.as_ref().is_ok_and(|parsed| {
+                        variations.iter().all(|variation| {
+                            let Ok(tag_bytes) = <&[u8; 4]>::try_from(variation.tag.as_bytes())
+                            else {
+                                return false;
+                            };
+                            if !tag_bytes.iter().all(|byte| (0x20..=0x7e).contains(byte))
+                                || !variation.value.is_finite()
+                                || !seen.insert(variation.tag.as_str())
+                            {
+                                return false;
+                            }
+                            parsed.variation_axes().into_iter().any(|axis| {
+                                axis.tag == ttf_parser::Tag::from_bytes(tag_bytes)
+                                    && variation.value >= axis.min_value
+                                    && variation.value <= axis.max_value
+                            })
+                        })
+                    });
+                if !valid {
+                    reasons.insert(VariantRejectReason::VariationUnsupported);
+                }
             }
         }
         None => {
@@ -2016,7 +2057,7 @@ mod tests {
     }
 
     #[test]
-    fn native_skia_rejects_variation_instances_until_exact_construction_is_proven() {
+    fn native_skia_rejects_variation_axes_missing_from_the_exact_face() {
         let mut op = glyph_run(diagnostics(), 42);
         if let PaintOp::GlyphRun { run, .. } = &mut op {
             run.shape_key.font_instance.variations = vec![VariationAxisValue {
@@ -2034,18 +2075,19 @@ mod tests {
     }
 
     #[test]
-    fn native_skia_rejects_non_default_collection_face_until_exact_construction_is_proven() {
+    fn native_skia_accepts_a_parseable_non_default_collection_face_contract() {
         let report = first_report_with_resource_setup(
             vec![text_op(), glyph_run(diagnostics(), 42)],
             native_skia_options(),
             |resources| add_portable_font_bytes(resources, FIXTURE_TTC, 1),
         );
 
-        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
-        assert!(report.fallback_required);
-        assert!(report.rejected_variants[0]
-            .reasons
-            .contains(&VariantRejectReason::FaceIndexUnsupported));
+        assert_eq!(
+            report.selected_variant_kind,
+            Some(TextVariantKind::GlyphRun)
+        );
+        assert!(!report.fallback_required);
+        assert!(report.rejected_variants.is_empty());
     }
 
     #[test]
