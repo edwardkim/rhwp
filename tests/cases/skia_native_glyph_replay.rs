@@ -267,6 +267,60 @@ fn native_glyph_replay_changes_ink_for_exact_synthetic_instances() {
 }
 
 #[test]
+fn native_glyph_replay_preserves_shadow_outline_and_relief_passes() {
+    let normal = glyph_tree(TTF, 0, 'A');
+    let normal_pixels = assert_selected(&normal);
+    let mut images = Vec::new();
+    for effect in 0..5 {
+        let mut tree = normal.clone();
+        let style = &mut glyph_mut(&mut tree).paint_style;
+        match effect {
+            0 | 4 => {
+                style.shadow_type = 1;
+                style.shadow_color = 0xff0000;
+                style.shadow_offset_x = 8.0;
+                style.shadow_offset_y = 5.0;
+                if effect == 4 {
+                    style.outline_type = 1;
+                }
+            }
+            1 => style.outline_type = 1,
+            2 => style.emboss = true,
+            _ => style.engrave = true,
+        }
+        assert!(proof(&tree).typeface_constructible, "effect {effect}");
+        let image = assert_selected(&tree);
+        assert_ne!(normal_pixels, image, "effect {effect}");
+        if effect == 0 || effect == 4 {
+            assert!(image.pixels().any(|pixel| pixel[2] > 200 && pixel[0] < 30));
+        }
+        images.push(image);
+    }
+    assert_ne!(images[1], images[4], "outline must retain its shadow");
+    assert_ne!(images[2], images[3], "relief direction must change");
+    let mut relief = normal.clone();
+    glyph_mut(&mut relief).paint_style.emboss = true;
+    let expected = assert_selected(&relief);
+    let style = &mut glyph_mut(&mut relief).paint_style;
+    style.engrave = true;
+    style.outline_type = 1;
+    style.shadow_type = 1;
+    style.shadow_offset_x = 8.0;
+    style.shadow_offset_y = 5.0;
+    assert_eq!(expected, assert_selected(&relief));
+    for offset in [f64::NAN, f64::INFINITY, f64::MAX] {
+        let mut tree = normal.clone();
+        let style = &mut glyph_mut(&mut tree).paint_style;
+        style.shadow_type = 1;
+        style.shadow_offset_x = offset;
+        assert!(proof(&tree)
+            .reasons
+            .contains(&NativeGlyphRunReplayProofReason::UnsupportedPaintEffect));
+        assert_eq!(render(&tree), render(&fallback_tree()));
+    }
+}
+
+#[test]
 fn native_glyph_replay_constructs_requested_variable_axis_and_rejects_invalid_tuples() {
     let normal = glyph_tree(VARIABLE, 0, '가');
     let axis = ttf_parser::Face::parse(VARIABLE, 0)

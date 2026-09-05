@@ -234,6 +234,9 @@ pub(super) fn construct_glyph_font(
     let transforms =
         vec![matrix(run.placement.run_to_page)
             .ok_or_else(|| vec![FontFailure::PlacementNotFinite])?];
+    if !run.paint_style.is_fill_only_glyph_replay() {
+        return prepare_glyph_effects(run, &font, transforms, bytes.len());
+    }
     Ok(PreparedGlyph {
         byte_cost: bytes.len() + run.glyph_ids.len() * (std::mem::size_of::<Point>() + 2),
         draws: vec![PreparedDraw {
@@ -250,6 +253,91 @@ pub(super) fn construct_glyph_font(
             },
         }],
     })
+}
+
+fn prepare_glyph_effects(
+    run: &LayerGlyphRunPaint,
+    font: &Font,
+    transforms: Vec<Matrix>,
+    font_byte_cost: usize,
+) -> Result<PreparedGlyph, Vec<FontFailure>> {
+    let unsupported = || vec![FontFailure::UnsupportedPaintEffect];
+    let mut paths = Vec::with_capacity(run.glyph_ids.len());
+    let mut byte_cost = font_byte_cost;
+    // Resolve every outline before suppressing the TextRun. A missing outline
+    // is safe only for an actually empty glyph, such as a space.
+    for (&glyph, position) in run.glyph_ids.iter().zip(&run.positions) {
+        let Some(path) = font.get_path(glyph as u16) else {
+            let mut bounds = [Rect::default()];
+            font.get_bounds(&[glyph as u16], &mut bounds, None);
+            if !bounds[0].is_empty() {
+                return Err(unsupported());
+            }
+            continue;
+        };
+        let path = path.with_offset((position.x as f32, position.y as f32));
+        if !path.is_finite() || path.count_verbs() > MAX_PATH_COMMANDS {
+            return Err(unsupported());
+        }
+        byte_cost = byte_cost
+            .checked_add(path.approximate_bytes_used())
+            .filter(|cost| *cost <= MAX_PREPARED_GLYPH_BYTES)
+            .ok_or_else(unsupported)?;
+        paths.push(path);
+    }
+    let style = &run.paint_style;
+    let fill = fill_paint(colorref_to_skia(style.color, 1.0));
+    let highlight = fill_paint(Color::WHITE);
+    let mut passes = Vec::with_capacity(3);
+    if style.emboss || style.engrave {
+        let offset = (style.font_size as f32 / 20.0).max(1.0);
+        let relief_shadow = fill_paint(Color::from_rgb(0x80, 0x80, 0x80));
+        let (upper, lower) = if style.emboss {
+            (highlight, relief_shadow)
+        } else {
+            (relief_shadow, highlight)
+        };
+        passes.push((upper, (-offset, -offset)));
+        passes.push((lower, (offset, offset)));
+        passes.push((fill, (0.0, 0.0)));
+    } else {
+        if style.shadow_type > 0 {
+            passes.push((
+                fill_paint(colorref_to_skia(style.shadow_color, 1.0)),
+                (style.shadow_offset_x as f32, style.shadow_offset_y as f32),
+            ));
+        }
+        if style.outline_type > 0 {
+            let mut stroke = fill;
+            stroke.set_style(skia_safe::paint::Style::Stroke);
+            stroke.set_stroke_width((style.font_size as f32 / 25.0).max(0.5));
+            passes.push((highlight, (0.0, 0.0)));
+            passes.push((stroke, (0.0, 0.0)));
+        } else {
+            passes.push((fill, (0.0, 0.0)));
+        }
+    }
+    let mut draws = Vec::with_capacity(paths.len() * passes.len());
+    // Preserve the branch's effect precedence and complete pass ordering:
+    // relief overrides shadow/outline; shadow precedes white fill and stroke.
+    for (paint, offset) in passes {
+        for path in &paths {
+            let shifted = path.with_offset(offset);
+            if !shifted.is_finite() {
+                return Err(unsupported());
+            }
+            byte_cost = byte_cost
+                .checked_add(shifted.approximate_bytes_used())
+                .filter(|cost| *cost <= MAX_PREPARED_GLYPH_BYTES)
+                .ok_or_else(unsupported)?;
+            draws.push(PreparedDraw {
+                transforms: transforms.clone(),
+                paint: paint.clone(),
+                content: DrawContent::Path(shifted),
+            });
+        }
+    }
+    Ok(PreparedGlyph { draws, byte_cost })
 }
 
 fn path(commands: &[PathCommand], fill_rule: GlyphOutlineFillRule) -> Option<Path> {

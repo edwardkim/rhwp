@@ -212,7 +212,13 @@ fn prepare_native_glyph_run(
     if run.diagnostics.replay_eligibility != GlyphRunReplayEligibility::Portable {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::ReplayEligibilityNotPortable);
     }
-    if !run.paint_style.is_fill_only_glyph_replay() {
+    if !run.paint_style.is_simple_glyph_run_replay()
+        || !finite_scalar(run.paint_style.font_size)
+        || run.paint_style.font_size <= 0.0
+        || (run.paint_style.shadow_type != 0
+            && (!finite_scalar(run.paint_style.shadow_offset_x)
+                || !finite_scalar(run.paint_style.shadow_offset_y)))
+    {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::UnsupportedPaintEffect);
     }
     if run
