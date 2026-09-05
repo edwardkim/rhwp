@@ -417,6 +417,61 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
         self.assertFalse(rejected["ok"])
         self.assertIn("invalid-waiver:.github/workflows/fuzz-smoke.yml", rejected["errors"])
 
+    def test_waiver_cannot_cover_permissions_or_security_surfaces(self) -> None:
+        inventory = self.inventory()
+        inventory["entries"][0]["riskAxes"] = ["permissions"]
+        inventory["inventorySha256"] = canonical_sha256(
+            {key: value for key, value in inventory.items() if key != "inventorySha256"}
+        )
+        waiver = {
+            "path": ".github/workflows/fuzz-smoke.yml",
+            "candidateSha": self.candidate,
+            "workflowSha256": self.workflow_hash,
+            "approvedBy": "edwardkim",
+            "reason": "runner unavailable",
+            "scope": ["github-hosted-runner-unavailable"],
+            "expiresAt": "2026-09-06T00:00:00Z",
+            "url": "https://github.com/edwardkim/rhwp/issues/6689#issuecomment-2",
+        }
+        verdict = MODULE.verify_evidence(
+            inventory,
+            [],
+            [waiver],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertFalse(verdict["ok"])
+        self.assertIn("invalid-waiver:.github/workflows/fuzz-smoke.yml", verdict["errors"])
+
+    def test_deleted_workflow_waiver_is_bound_to_before_hash(self) -> None:
+        inventory = self.inventory()
+        entry = inventory["entries"][0]
+        entry["status"] = "deleted"
+        entry["before"] = {"sha256": self.workflow_hash}
+        entry["after"] = None
+        entry["riskAxes"] = ["trigger"]
+        inventory["inventorySha256"] = canonical_sha256(
+            {key: value for key, value in inventory.items() if key != "inventorySha256"}
+        )
+        waiver = {
+            "path": ".github/workflows/fuzz-smoke.yml",
+            "candidateSha": self.candidate,
+            "workflowSha256": self.workflow_hash,
+            "approvedBy": "edwardkim",
+            "reason": "deleted workflow has no candidate run",
+            "scope": ["safe-equivalent-adapter"],
+            "expiresAt": "2026-09-06T00:00:00Z",
+            "url": "https://github.com/edwardkim/rhwp/issues/6689#issuecomment-3",
+        }
+        verdict = MODULE.verify_evidence(
+            inventory,
+            [],
+            [waiver],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertTrue(verdict["ok"], verdict["errors"])
+
 
 class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
     expected_workflows = {

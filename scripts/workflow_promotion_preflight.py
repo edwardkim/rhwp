@@ -670,7 +670,13 @@ def verify_evidence(
         path = str(raw_entry.get("path", ""))
         evidence_path = str(raw_entry.get("evidencePath", path))
         after = raw_entry.get("after")
-        expected_hash = str(after.get("sha256", "")) if isinstance(after, Mapping) else ""
+        before = raw_entry.get("before")
+        evidence_blob = after if isinstance(after, Mapping) else before
+        expected_hash = (
+            str(evidence_blob.get("sha256", ""))
+            if isinstance(evidence_blob, Mapping)
+            else ""
+        )
         if not path or not _FULL_SHA256.fullmatch(expected_hash):
             errors.append(f"invalid-entry:{path or '<missing-path>'}")
             continue
@@ -849,6 +855,7 @@ def verify_evidence(
         )
         if waiver is not None and _valid_waiver(
             waiver,
+            entry=raw_entry,
             now=now,
             trusted_maintainers=trusted_maintainers,
         ):
@@ -895,6 +902,7 @@ def _parse_timestamp(value: object) -> datetime | None:
 def _valid_waiver(
     waiver: Mapping[str, Any],
     *,
+    entry: Mapping[str, Any],
     now: datetime,
     trusted_maintainers: frozenset[str],
 ) -> bool:
@@ -905,8 +913,21 @@ def _valid_waiver(
     }
     scopes = waiver.get("scope")
     expiry = _parse_timestamp(waiver.get("expiresAt"))
+    protected_surfaces = {
+        "permissions",
+        "secret",
+        "secrets",
+        "security",
+        "deployment",
+    }
+    entry_surfaces = {
+        str(value)
+        for field in ("riskAxes", "sensitiveSurfaces")
+        for value in (entry.get(field) if isinstance(entry.get(field), list) else [])
+    }
     return bool(
-        waiver.get("approvedBy") in trusted_maintainers
+        not entry_surfaces.intersection(protected_surfaces)
+        and waiver.get("approvedBy") in trusted_maintainers
         and isinstance(waiver.get("reason"), str)
         and str(waiver.get("reason")).strip()
         and isinstance(scopes, list)
