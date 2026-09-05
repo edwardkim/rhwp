@@ -697,8 +697,16 @@ pub(super) fn prepare_glyph_outline(
             if pixels == 0 || pixels > MAX_IMAGE_PIXELS {
                 return None;
             }
-            // Image construction alone only reads a header. Eagerly decode before
-            // replacing the text fallback so a truncated strike cannot drop ink.
+            // Skia's lazy image and raster copy can accept incomplete encoded
+            // data. Require a bounded, successful full decode before replacing
+            // text, then retain Skia's own color-managed raster for replay.
+            let mut decoder = image::ImageReader::new(std::io::Cursor::new(bytes))
+                .with_guessed_format()
+                .ok()?;
+            let mut limits = image::Limits::default();
+            limits.max_alloc = Some(MAX_PREPARED_GLYPH_BYTES as u64);
+            decoder.limits(limits);
+            decoder.decode().ok()?;
             let image = encoded.make_raster_image(None, None)?;
             let transforms = optional_matrix(payload.transform_to_run)?;
             result.byte_cost = pixels as usize * 4;

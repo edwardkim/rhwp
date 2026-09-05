@@ -227,6 +227,17 @@ fn render(tree: &PageLayerTree) -> image::RgbaImage {
     image::load_from_memory(&png).unwrap().to_rgba8()
 }
 
+fn assert_same_pixels(actual: image::RgbaImage, expected: image::RgbaImage) {
+    assert_eq!(actual.dimensions(), expected.dimensions());
+    if let Some(((x, y, actual), expected)) = actual
+        .enumerate_pixels()
+        .zip(expected.pixels())
+        .find(|((_, _, actual), expected)| *actual != *expected)
+    {
+        panic!("first differing pixel ({x}, {y}): {actual:?}, expected {expected:?}");
+    }
+}
+
 fn assert_selected(tree: &PageLayerTree) -> image::RgbaImage {
     let image = render(tree);
     assert!(
@@ -262,7 +273,7 @@ fn native_glyph_replay_changes_ink_for_exact_synthetic_instances() {
         instance.synthetic_bold = bold;
         instance.synthetic_italic = italic;
         assert!(proof(&tree).typeface_constructible);
-        assert_ne!(normal_pixels, assert_selected(&tree));
+        assert!(normal_pixels != assert_selected(&tree));
     }
 }
 
@@ -290,14 +301,14 @@ fn native_glyph_replay_preserves_shadow_outline_and_relief_passes() {
         }
         assert!(proof(&tree).typeface_constructible, "effect {effect}");
         let image = assert_selected(&tree);
-        assert_ne!(normal_pixels, image, "effect {effect}");
+        assert!(normal_pixels != image, "effect {effect}");
         if effect == 0 || effect == 4 {
             assert!(image.pixels().any(|pixel| pixel[2] > 200 && pixel[0] < 30));
         }
         images.push(image);
     }
-    assert_ne!(images[1], images[4], "outline must retain its shadow");
-    assert_ne!(images[2], images[3], "relief direction must change");
+    assert!(images[1] != images[4], "outline must retain its shadow");
+    assert!(images[2] != images[3], "relief direction must change");
     let mut relief = normal.clone();
     glyph_mut(&mut relief).paint_style.emboss = true;
     let expected = assert_selected(&relief);
@@ -307,7 +318,7 @@ fn native_glyph_replay_preserves_shadow_outline_and_relief_passes() {
     style.shadow_type = 1;
     style.shadow_offset_x = 8.0;
     style.shadow_offset_y = 5.0;
-    assert_eq!(expected, assert_selected(&relief));
+    assert_same_pixels(assert_selected(&relief), expected);
     for offset in [f64::NAN, f64::INFINITY, f64::MAX] {
         let mut tree = normal.clone();
         let style = &mut glyph_mut(&mut tree).paint_style;
@@ -316,7 +327,7 @@ fn native_glyph_replay_preserves_shadow_outline_and_relief_passes() {
         assert!(proof(&tree)
             .reasons
             .contains(&NativeGlyphRunReplayProofReason::UnsupportedPaintEffect));
-        assert_eq!(render(&tree), render(&fallback_tree()));
+        assert_same_pixels(render(&tree), render(&fallback_tree()));
     }
 }
 
@@ -339,7 +350,7 @@ fn native_glyph_replay_constructs_requested_variable_axis_and_rejects_invalid_tu
         assert!(proof(&tree).typeface_constructible);
         images.push(assert_selected(&tree));
     }
-    assert_ne!(images.first(), images.last());
+    assert!(images.first() != images.last());
     for axes in [
         vec![VariationAxisValue {
             tag: "wght".into(),
@@ -366,7 +377,7 @@ fn native_glyph_replay_constructs_requested_variable_axis_and_rejects_invalid_tu
         assert!(proof(&tree)
             .reasons
             .contains(&NativeGlyphRunReplayProofReason::FontVariationUnsupported));
-        assert_eq!(render(&tree), render(&fallback_tree()));
+        assert_same_pixels(render(&tree), render(&fallback_tree()));
     }
 }
 
@@ -395,7 +406,7 @@ fn native_glyph_replay_rejects_invalid_bytes_digest_face_and_geometry_without_fo
             }
         }
         assert!(!proof(&tree).typeface_constructible, "case {case}");
-        assert_eq!(render(&tree), fallback, "case {case}");
+        assert_same_pixels(render(&tree), fallback.clone());
     }
 }
 
@@ -496,9 +507,10 @@ fn native_glyph_replay_requires_every_variant_part_and_every_path() {
         BoundingBox::new(10.0, 10.0, 30.0, 30.0),
         second,
     ));
-    assert_eq!(render(&tree), render(&fallback_tree()));
+    assert_same_pixels(render(&tree), render(&fallback_tree()));
     ops_mut(&mut tree).pop();
-    assert_eq!(render(&tree), render(&fallback_tree()));
+    let error = SkiaLayerRenderer::new().render_png(&tree).unwrap_err();
+    assert!(error.to_string().contains("has 1 parts, expected 2"));
 }
 
 fn bitmap_tree(bytes: &[u8]) -> PageLayerTree {
@@ -531,7 +543,7 @@ fn native_glyph_replay_decodes_bitmap_before_selection_and_preserves_payload_pla
     assert_eq!(image.get_pixel(30, 20).0, [0, 0, 255, 255]);
     assert_eq!(image.get_pixel(12, 12)[3], 0);
     let corrupt = &encoded.get_ref()[..encoded.get_ref().len() / 2];
-    assert_eq!(render(&bitmap_tree(corrupt)), render(&fallback_tree()));
+    assert_same_pixels(render(&bitmap_tree(corrupt)), render(&fallback_tree()));
 }
 
 fn svg_tree(fragment: &str) -> PageLayerTree {
@@ -566,7 +578,7 @@ fn native_glyph_replay_uses_static_svg_viewbox_and_rejects_unsafe_resources() {
         "<svg><image href=\"file:///private/missing.png\"/><path d=\"M10 20H40V50Z\"/></svg>",
         "<svg><path d=\"Mbroken\"/></svg>",
     ] {
-        assert_eq!(render(&svg_tree(fragment)), render(&fallback_tree()));
+        assert_same_pixels(render(&svg_tree(fragment)), render(&fallback_tree()));
     }
 }
 
@@ -610,5 +622,5 @@ fn native_glyph_replay_renders_resolved_colrv0_layers_in_order() {
         .as_mut()
         .unwrap()
         .rgba[0] = f32::NAN;
-    assert_eq!(render(&tree), render(&fallback_tree()));
+    assert_same_pixels(render(&tree), render(&fallback_tree()));
 }
