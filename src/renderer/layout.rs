@@ -11094,7 +11094,30 @@ impl LayoutEngine {
                                 )
                                 .is_some();
                         let trailing_spacing = hwpunit_to_px(seg.line_spacing, self.dpi);
-                        y_offset += if current_owned_row_covers_object {
+                        // [#6793] 저장 사다리가 **다음 문단을 새 쪽 상단**(`vpos == 0`)
+                        // 에 두었고 이 host 줄의 꼬리 간격이 쪽 규모면, 그 간격은 흐름
+                        // 간격이 아니라 **쪽 끝까지 채우는 패딩**이다. 흐름에 태우면
+                        // 다음 문단이 그만큼 아래로 밀린다.
+                        //
+                        // 1611000-201000141 1쪽 실측: 표지 1×1 TAC 표 host 의
+                        // `ls[1] line_spacing = 36960 HU = 492.8px` 를 태워
+                        // `< 차 례 >` 가 표 바닥 965.1 에서 494.6px 아래인 1459.7 에
+                        // 그려지고 용지 밖 363.9px 로 사라진다. 한/글은 그 줄을
+                        // **2쪽 첫 줄**에 놓는다(사다리 `pi=1 vpos=0`).
+                        //
+                        // 쪽 규모(단 높이의 1/4 초과)로 좁힌다 — 보통 줄간격은 건드리지
+                        // 않는다.
+                        let next_starts_new_page = paragraphs
+                            .get(para_index + 1)
+                            .and_then(|next| {
+                                next.line_segs.iter().find(|s| s.tag & 0x8000_0000 == 0)
+                            })
+                            .is_some_and(|s| s.vertical_pos == 0);
+                        let page_tail_padding =
+                            next_starts_new_page && trailing_spacing > col_area.height * 0.25;
+                        y_offset += if page_tail_padding {
+                            0.0
+                        } else if current_owned_row_covers_object {
                             trailing_spacing / 2.0
                         } else {
                             trailing_spacing
