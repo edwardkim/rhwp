@@ -827,10 +827,7 @@ fn collect_max_field_id_from_control(ctrl: &Control, max_id: &mut u32) {
     }
 }
 
-fn collect_max_field_id_from_shape(
-    shape: &crate::model::shape::ShapeObject,
-    max_id: &mut u32,
-) {
+fn collect_max_field_id_from_shape(shape: &crate::model::shape::ShapeObject, max_id: &mut u32) {
     match shape {
         crate::model::shape::ShapeObject::Picture(picture) => {
             if let Some(caption) = &picture.caption {

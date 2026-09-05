@@ -55,13 +55,17 @@ fn unsupported_control_and_invalid_image_are_errors() {
     assert!(unsupported_error.contains("지원하지 않는 hwpjson control 종류"));
 
     let invalid_image = r#"{"bi": [{"sr": "missing.png", "ty": "image/png"}]}"#;
-    let image_error = hwpjson_to_hwpx_parts(invalid_image).unwrap_err().to_string();
+    let image_error = hwpjson_to_hwpx_parts(invalid_image)
+        .unwrap_err()
+        .to_string();
     assert!(image_error.contains("hwpjson 이미지 원본이 없다"));
 
     let corrupt_image = r#"{
         "bi": [{"sr": "broken.png", "ty": "image/png"}],
         "bidt": {"broken.png": "not-base64"}
     }"#;
-    let corrupt_error = hwpjson_to_hwpx_parts(corrupt_image).unwrap_err().to_string();
+    let corrupt_error = hwpjson_to_hwpx_parts(corrupt_image)
+        .unwrap_err()
+        .to_string();
     assert!(corrupt_error.contains("hwpjson 이미지 base64가 손상됐다"));
 }

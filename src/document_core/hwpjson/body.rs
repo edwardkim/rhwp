@@ -969,12 +969,7 @@ fn split_run(ch: &[Value]) -> Vec<&[Value]> {
     vec![ch]
 }
 
-fn emit_run(
-    m: &Model,
-    ids: &mut Ids,
-    cp_objid: &str,
-    ch: &[Value],
-) -> Result<String, String> {
+fn emit_run(m: &Model, ids: &mut Ids, cp_objid: &str, ch: &[Value]) -> Result<String, String> {
     let cid = charpr_ref(ids, cp_objid);
     let has_obj = ch.iter().any(|c| c.get("t").is_none());
     let mut body = String::new();
