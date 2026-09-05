@@ -11,14 +11,15 @@
 
 ```bash
 cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp
-venv/bin/python mydocs/pr/assets/issue_5874/reproduce.py \
-  --binary target/pr-review/release-test/rhwp --label before
+target/pr-review/release-test/rhwp export-pdf samples/issue5874/italic-repro.hwpx \
+  -o output/issue5874/before.pdf
 ```
 
 - 빌드 성공: 2분 40초.
 - 입력/출처: [샘플 설명](../../samples/issue5874/README.md).
-- 실측: [before-comparison.json](../pr/assets/issue_5874/before-comparison.json).
-- PDF: [원본](../../pdf/issue_5874/before.pdf), [기울임 제거 대조본](../../pdf/issue_5874/before-upright.pdf).
+- 대조본은 ZIP의 `Contents/header.xml`에서 `<hh:italic/>` 1개만 제거해 같은 명령으로 출력했다.
+  두 PDF를 144 DPI로 raster한 결과와 추출 텍스트를 비교했다.
+- PDF: [수정 전 원본](../../pdf/issue_5874/before.pdf). byte-identical 대조본은 로컬 임시 파일로만 보관한다.
 - 작성자 기준: [한컴 화면](../pr/assets/issue_5874/reporter-hancom.png).
 
 ## 원인과 범위
@@ -31,3 +32,6 @@ Text IR v2의 `syntheticStyleAuthorityPending`을 제거하거나 flag를 일괄
 실제 italic/oblique face는 유지하고, 혼합 face/복잡한 배치는 경고로 구분한다.
 기본 PDF 경계만 수정하며, 선택적 Skia direct PDF/공통 Text IR authority까지 해결했다고
 주장하지 않는다. 레이아웃과 텍스트 선택 기능을 보존하는 계약 테스트를 추가한다.
+
+사용자 후속 지시에 따라 실행 log/JSON/개별 페이지 PNG/SVG는 커밋 대상에서 제외했다.
+코멘트에 사용할 비교 이미지와 원본 입력, 전후 PDF만 남긴다.
