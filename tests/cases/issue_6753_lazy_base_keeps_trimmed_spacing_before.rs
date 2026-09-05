@@ -40,6 +40,32 @@
 //! 기준을 단정하지 않고 역산식만 고치면 242 가 유지된다.
 #![cfg(not(target_arch = "wasm32"))]
 
+#[path = "../../src/renderer/height_cursor_lazy_base.rs"]
+mod lazy_base_rounding;
+
+#[test]
+fn trimmed_lazy_base_rounding_precedes_fallback_selection() {
+    for (y_delta, trailing, trimmed, expected) in [
+        (14962, 1600, 40.0, 0),
+        (14960, 1600, 40.0, 0),
+        (14976, 1600, 40.0, 0),
+        (14977, 1600, 40.0, 1583),
+        (14962, 1600, 0.0, 1598),
+        (14962, 1600, 0.5, 1598),
+        (14950, 1600, 40.0, 10),
+        (15060, 1600, 40.0, 1500),
+        (16562, 1600, 40.0, 0),
+        (16577, 1600, 40.0, -17),
+        (16562, 0, 40.0, 0),
+    ] {
+        assert_eq!(
+            lazy_base_rounding::resolve_lazy_base(16560, y_delta, trailing, trimmed),
+            expected,
+            "y_delta={y_delta}, trailing={trailing}, trimmed={trimmed}"
+        );
+    }
+}
+
 use std::fs;
 use std::path::Path;
 

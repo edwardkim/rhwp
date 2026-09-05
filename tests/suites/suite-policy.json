@@ -29,6 +29,13 @@
   ],
   "moduleIntegrationOverrides": [
     {
+      "path": "tests/cases/issue_6753_lazy_base_keeps_trimmed_spacing_before.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
       "path": "tests/cli_json_contract.rs",
       "allowBlockers": [
         "path_attr",

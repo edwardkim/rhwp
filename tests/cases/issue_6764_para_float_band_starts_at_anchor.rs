@@ -29,8 +29,7 @@
 //! 실측(`layout-anomaly`): 용지밖 6 → 5건, **표 최대 초과 885.6 → 13.4px**,
 //! 넘침 63 → 62, 쪽수 200 → **201** (한/글 2024 = 204쪽 — 방향이 맞다).
 //!
-//! ⚠ 재현물은 12.8MB 라 저장소에 넣지 않는다(`.hwp` 는 `ir_field_sweep_baseline`
-//! 이 `samples/` 전체를 훑는다). 코퍼스에 없으면 건너뛴다.
+//! 재현 원본은 samples/issue6764/에 정식 등록했다. 파일 부재는 실패다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -39,21 +38,11 @@ use std::path::PathBuf;
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-const CORPUS_REL: &str = concat!(
-    "prism_downloads/국토교통부/",
-    "1613000-202200037_D0150004-1-001_[최종보고서]항공교통관제사 CBTA 체계 도입 연구 방안 용역 Ver.6 [최종].hwp"
-);
+const SAMPLE: &str = "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp";
 
-/// 코퍼스 문서 경로. `RHWP_ISSUE_6764_DOC` 로 덮어쓸 수 있다.
-fn document_path() -> Option<PathBuf> {
-    if let Ok(explicit) = std::env::var("RHWP_ISSUE_6764_DOC") {
-        let path = PathBuf::from(explicit);
-        return path.is_file().then_some(path);
-    }
-    let root = std::env::var("RHWP_CORPUS_ROOT")
-        .unwrap_or_else(|_| "C:/Users/planet/hwpdocs_10k_share".to_string());
-    let path = PathBuf::from(root).join(CORPUS_REL);
-    path.is_file().then_some(path)
+/// 작업 디렉터리나 비공개 환경 변수와 무관한 정식 회귀 입력.
+fn document_path() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)
 }
 
 fn paper_bottom(node: &RenderNode) -> f64 {
@@ -78,11 +67,8 @@ fn worst_table_overhang(node: &RenderNode, paper_bottom: f64) -> f64 {
 /// 남아 있는 최대 초과는 다른 축(#6764 밖)의 `13.4px` 다.
 #[test]
 fn para_float_band_keeps_the_next_table_fragment_on_paper() {
-    let Some(path) = document_path() else {
-        eprintln!("[#6764] 코퍼스 문서 없음 — 건너뜀 ({CORPUS_REL})");
-        return;
-    };
-    let bytes = std::fs::read(&path).expect("#6764 코퍼스 문서 읽기");
+    let path = document_path();
+    let bytes = std::fs::read(&path).expect("#6764 정식 회귀 sample 읽기");
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
 
     let mut worst = 0.0f64;

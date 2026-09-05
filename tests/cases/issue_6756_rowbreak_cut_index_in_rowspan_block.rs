@@ -31,42 +31,19 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/.../17253153_[별표 2] 교통안전특정해역 지정항로의 범위….hwp`
-///
-/// ⚠ `.hwp` 를 `samples/` 에 넣으면 `ir_field_sweep_baseline` 이 `samples/` 전체를
-/// 스윕한다. `RHWP_ISSUE6756_SAMPLE` 로 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6756_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let root = r"C:\Users\planet\hwpdocs_10k_share";
-    fn walk(dir: &std::path::Path, depth: usize) -> Option<Vec<u8>> {
-        if depth > 4 {
-            return None;
-        }
-        for entry in std::fs::read_dir(dir).ok()?.flatten() {
-            let path = entry.path();
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if path.is_dir() {
-                if let Some(found) = walk(&path, depth + 1) {
-                    return Some(found);
-                }
-            } else if name.starts_with("17253153") && name.ends_with(".hwp") {
-                return std::fs::read(&path).ok();
-            }
-        }
-        None
-    }
-    walk(std::path::Path::new(root), 0)
+/// 공개 회귀 입력이 없으면 검사 없이 통과하지 않고 즉시 실패한다.
+fn sample() -> Vec<u8> {
+    std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue6756/17253153-traffic-safety-designated-routes.hwp"),
+    )
+    .expect("#6756 정식 회귀 sample 읽기")
 }
 
 fn page_text(core: &DocumentCore, page: u32) -> String {
-    let Ok(tree) = core.build_page_render_tree(page) else {
-        return String::new();
-    };
+    let tree = core
+        .build_page_render_tree(page)
+        .expect("#6756 페이지 렌더 트리 생성");
     fn collect(node: &RenderNode, out: &mut String) {
         if let RenderNodeType::TextRun(run) = &node.node_type {
             out.push_str(&run.text);
@@ -85,9 +62,7 @@ fn page_text(core: &DocumentCore, page: u32) -> String {
 /// 2쪽 끝 두 줄(`3.`·`4.` 좌표)이 3쪽 머리에 다시 나오던 결함.
 #[test]
 fn fragment_boundary_row_is_not_painted_twice() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     assert_eq!(core.page_count(), 5, "한/글 2024 와 같은 5쪽이어야 한다");
 
@@ -106,9 +81,7 @@ fn fragment_boundary_row_is_not_painted_twice() {
 /// 조각이 용지 밖으로 나가면 안 된다.
 #[test]
 fn fragment_stays_on_the_paper() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let tree = core.build_page_render_tree(1).expect("2쪽 render tree");
     let paper_bottom = tree.root.bbox.y + tree.root.bbox.height;

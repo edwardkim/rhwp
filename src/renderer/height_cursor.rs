@@ -143,6 +143,9 @@ pub(crate) struct HeightCursor {
     pub trimmed_prev_spacing_before_px: f64,
 }
 
+#[path = "height_cursor_lazy_base.rs"]
+mod lazy_base_rounding;
+
 impl HeightCursor {
     /// 컬럼 진입 시 생성. `vpos_page_base` 초기값은 호출자가 첫 PageItem 에서 산출.
     pub(crate) fn new(
@@ -336,23 +339,12 @@ impl HeightCursor {
             let y_delta_hu =
                 ((untrimmed_y_offset - self.col_area_y) / self.dpi * 7200.0).round() as i32;
             let lazy_base_corrected = prev_vpos_end - (y_delta_hu + trailing_ls_hu);
-            let mut lazy_base = if lazy_base_corrected >= 0 {
-                lazy_base_corrected
-            } else {
-                prev_vpos_end - y_delta_hu
-            };
-            // 되돌린 값은 정답 기준 0 을 **반올림 잡음만큼 밑도는** 음수로 떨어진다
-            // (실측 −2 HU = 0.027px). 종전 `< 0 → 역산 무효` 가드에 그대로 걸리면
-            // 스냅을 통째로 잃어 현행보다 나빠지므로, **되돌림이 실제로 있었을 때만**
-            // 그 잡음 폭을 0 으로 접는다. 자리차지 표 등에서 크게 음수인 경우는
-            // 종전대로 무효 처리한다.
-            const LAZY_BASE_ROUNDING_HU: i32 = 16; // 0.21px
-            if self.trimmed_prev_spacing_before_px > 0.5
-                && lazy_base < 0
-                && lazy_base >= -LAZY_BASE_ROUNDING_HU
-            {
-                lazy_base = 0;
-            }
+            let lazy_base = lazy_base_rounding::resolve_lazy_base(
+                prev_vpos_end,
+                y_delta_hu,
+                trailing_ls_hu,
+                self.trimmed_prev_spacing_before_px,
+            );
             if lazy_base < 0 {
                 // 역산 무효(자리차지 표 등): 이전 개체 높이가 sequential y 에 이미
                 // 반영된 상태다. 여기서 vpos 보정을 적용하면 단 상단으로 되감겨
