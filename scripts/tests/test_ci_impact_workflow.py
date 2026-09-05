@@ -523,6 +523,8 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
             "FRONTEND_PACKAGE_RESULT": "skipped",
+            "PROMOTION_RESULT": "skipped",
+            "CANONICAL_PROMOTION": "false",
             **overrides,
         }
         return subprocess.run(
@@ -1129,6 +1131,32 @@ mod support;
             with self.subTest(lane=name):
                 result = self._run_aggregate(**env)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_aggregate_accepts_canonical_promotion_only_after_gate_success(self) -> None:
+        accepted = self._run_aggregate(
+            CANONICAL_PROMOTION="true",
+            PROMOTION_RESULT="success",
+        )
+        self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+
+        rejected_cases = {
+            "canonical-gate-skipped": {
+                "CANONICAL_PROMOTION": "true",
+                "PROMOTION_RESULT": "skipped",
+            },
+            "noncanonical-gate-ran": {
+                "CANONICAL_PROMOTION": "false",
+                "PROMOTION_RESULT": "success",
+            },
+            "canonical-state-missing": {
+                "CANONICAL_PROMOTION": "",
+                "PROMOTION_RESULT": "skipped",
+            },
+        }
+        for name, env in rejected_cases.items():
+            with self.subTest(case=name):
+                result = self._run_aggregate(**env)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_aggregate_rejects_axis_result_mismatches(self) -> None:
         cases = {

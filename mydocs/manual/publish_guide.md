@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-09-02
+last_verified: 2026-09-05
 ---
 
 # 배포 가이드
@@ -372,6 +372,21 @@ gh pr create --repo edwardkim/rhwp --base main --head devel \
 release 검증도 고정 thread 수를 복사하지 않는다. nextest 기본 동시성을 먼저 사용하고, release host의
 CPU·메모리·동시 작업을 기준으로 사용자가 필요할 때만 `--test-threads <현재 환경에 맞는 값>`을 지정한다.
 
+release PR을 열기 전에 [Workflow promotion preflight](github_operations.md#76-workflow-promotion-preflight)를
+반드시 실행한다. `git fetch upstream main devel` 후 exact `upstream/main`이 exact
+`upstream/devel`의 ancestor인지 확인하고, inventory의 executable workflow를 정책이 지정한
+direct·contracts-only·verify-only 방식으로 그 `devel` SHA에서 실행한다. head가 바뀌거나
+`main`이 앞서 나가면 기존 run을 재사용하지 않고 동기화·전건 재실행한다.
+
+same-repository `devel -> main` PR에서 `Workflow promotion preflight`와 required context
+`Build & Test`가 모두 성공해야 병합할 수 있다. 실행 영수증은
+`workflow-promotion-evidence-<run-id>` artifact의 inventory·runs·waivers·verdict로 확인한다.
+waiver는 permission·secret·security·deployment 변경이나 실패한 테스트를 숨기는 수단이 아니다.
+
+#6634의 **GitHub Release 생성 후 publish workflow 자동 기동** 확인은 이 preflight와 별개다.
+promotion gate가 성공해도 Release 생성 후 `Publish All Packages`가 실제로 시작했는지는
+5·6단계에서 따로 확인한다.
+
 > release 준비 변경도 `upstream/devel`에 직접 push하지 않는다. 작업 브랜치 PR과 CI를 거쳐 통합하고,
 > 검증된 `devel`을 `main` 대상 release PR로 올린다.
 >
@@ -470,13 +485,16 @@ GitHub Release 생성 후 Actions 탭에서 `Publish All Packages` 워크플로�
 - [ ] 확장 스토어 제출 문서 현행화 (`mydocs/feedback/`)
 - [ ] 배포 zip에 `.env`, 개인 폰트, token, `node_modules/`, `target/`, `dist/` 불포함 확인
 - [ ] Release Binary dry-run 5플랫폼 성공 및 Linux AArch64 archive·ELF architecture 확인
+- [ ] exact `main..devel` workflow inventory 생성 및 필수 workflow exact-head 실행 완료
 
 ### 배포 순서
 
 - [ ] devel 대상 PR merge → CI 통과 확인
+- [ ] same-repository `devel -> main` PR의 `Workflow promotion preflight` 및 `Build & Test` 성공
 - [ ] main 대상 release PR merge → GitHub Pages 배포 확인
 - [ ] v0.8.6 Release Binary 5개 archive와 `SHA256SUMS.txt` 확인
 - [ ] GitHub Release 생성 → Actions 탭에서 `Publish All Packages` 실행 확인
+- [ ] #6634와 관련한 Release 후 publish trigger를 promotion gate와 별도로 확인
 - [ ] @rhwp/core npm 배포 확인
 - [ ] @rhwp/editor npm 배포 확인
 - [ ] VS Code Marketplace 배포 확인
