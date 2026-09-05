@@ -28,14 +28,14 @@ Counts: 9/9 pass. Repeat=1. stderr empty on all nine. 각 봉투 `schemaVersion`
 
 | # | Skill path | Confidence | Graph nodes |
 |---|------------|------------|-------------|
-| 1 | `.claude/skills/rhwp-form-fill/SKILL.md` | 0.99 | fields → dry-run-fill → fill-verify → sanitize |
-| 2 | `.claude/skills/rhwp-contributor/SKILL.md` | 0.9 | issue → analyze → branch → implement → fmt-clippy-test → working-doc → pr |
-| 3 | `.claude/skills/rhwp-skill-router/SKILL.md` | 0.876 | capabilities → info → export-svg |
-| 4 | `.claude/skills/rhwp-table-exchange/SKILL.md` | 0.96 | export-tables → table-to-csv → csv-dry-run → csv-verify |
-| 5 | `.claude/skills/rhwp-security-sweep/SKILL.md` | 0.864 | hidden-text → injection → unicode → redact-dry-run → redact-sanitize → resweep |
-| 6 | `.claude/skills/rhwp-bug-hunter/SKILL.md` | 0.844 | info → export-svg → render-diff → inspect |
-| 7 | `.claude/skills/rhwp-fidelity-compare/SKILL.md` | 0.95 | info → export-svg → export-render-tree |
-| 8 | `.claude/skills/rhwp-chief/SKILL.md` | 0.932 | info → export-pdf → export-tables → fill |
-| 9 | `.claude/skills/rhwp-onboarding/SKILL.md` | 0.91 | doctor → binary → selftest → mcp-json → first-5-min |
+| 1 | `.agents/skills/rhwp-form-fill/SKILL.md` | 0.99 | fields → dry-run-fill → fill-verify → sanitize |
+| 2 | `.agents/skills/rhwp-contributor/SKILL.md` | 0.9 | issue → analyze → branch → implement → fmt-clippy-test → working-doc → pr |
+| 3 | `.agents/skills/rhwp-skill-router/SKILL.md` | 0.876 | capabilities → info → export-svg |
+| 4 | `.agents/skills/rhwp-table-exchange/SKILL.md` | 0.96 | export-tables → table-to-csv → csv-dry-run → csv-verify |
+| 5 | `.agents/skills/rhwp-security-sweep/SKILL.md` | 0.864 | hidden-text → injection → unicode → redact-dry-run → redact-sanitize → resweep |
+| 6 | `.agents/skills/rhwp-bug-hunter/SKILL.md` | 0.844 | info → export-svg → render-diff → inspect |
+| 7 | `.agents/skills/rhwp-fidelity-compare/SKILL.md` | 0.95 | info → export-svg → export-render-tree |
+| 8 | `.agents/skills/rhwp-chief/SKILL.md` | 0.932 | info → export-pdf → export-tables → fill |
+| 9 | `.agents/skills/rhwp-onboarding/SKILL.md` | 0.91 | doctor → binary → selftest → mcp-json → first-5-min |
 
 `requiredCapabilities[0]` 는 각 행의 Selected 와 같다.

@@ -14,7 +14,7 @@ LLM-as-Verifier 축 V-lineage (작업 사슬). 구현자 산문은 증거가 아
 - `parentOk=false` 는 부모 파일 변조 (`PARENT_TAMPERED`)
 - 산문/`source=prose` 는 `PROSE_NOT_EVIDENCE`
 - `--deep`/`reproduced` 는 V-replay 축이라 읽어도 쓰지 않음
-- `.claude/skills/rhwp-work-receipt` 는 재작성하지 않고 기존 필드 계약만 래핑
+- `.agents/skills/rhwp-work-receipt` 는 재작성하지 않고 기존 필드 계약만 래핑
 - 커밋된 결정 사례 코퍼스 126000행 (서로 다른 행, 주석 패딩 아님)
 
 ## 관련 이슈
@@ -45,4 +45,4 @@ closes #5516
 
 `third_party_replay`, `verdict_protocol`, `oracle_vs_self`, `claim_bind`,
 `best_of_n`, `process_steps`, `untrusted_sandbox`, `gym/`,
-`.claude/skills/rhwp-work-receipt` 는 건드리지 않았습니다.
+`.agents/skills/rhwp-work-receipt` 는 건드리지 않았습니다.

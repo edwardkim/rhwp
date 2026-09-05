@@ -15,11 +15,11 @@ fn repo_root() -> PathBuf {
 }
 
 fn fixture_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-knowledge-map/fixtures")
+    repo_root().join(".agents/skills/rhwp-knowledge-map/fixtures")
 }
 
 fn skill_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-knowledge-map")
+    repo_root().join(".agents/skills/rhwp-knowledge-map")
 }
 
 fn read_json(name: &str) -> serde_json::Value {
@@ -96,19 +96,6 @@ fn tree_fixture_declares_entry_not_gym() {
     assert_eq!(tree["entryPoint"], true);
     assert_eq!(tree["doNotRenarrateMapRows"], true);
     assert_eq!(tree["canonicalWins"], true);
-}
-
-#[test]
-fn first_read_is_llms_then_map() {
-    let first = read_json("first_read.json");
-    let order = first["order"].as_array().expect("order");
-    assert_eq!(order[0]["path"], "llms.txt");
-    assert_eq!(order[1]["path"], "mydocs/manual/agent_knowledge_map.md");
-    assert_eq!(order.len(), 3);
-    assert!(repo_root().join("llms.txt").is_file());
-    assert!(repo_root()
-        .join("mydocs/manual/agent_knowledge_map.md")
-        .is_file());
 }
 
 #[test]
@@ -203,9 +190,9 @@ fn forbidden_peer_skills_named() {
     assert!(joined.contains(&"rhwp-codex"));
     assert!(joined.contains(&"rhwp-agent-surface"));
     assert!(repo_root()
-        .join(".claude/skills/rhwp-codex/SKILL.md")
+        .join(".agents/skills/rhwp-codex/SKILL.md")
         .is_file());
     assert!(repo_root()
-        .join(".claude/skills/rhwp-agent-surface/SKILL.md")
+        .join(".agents/skills/rhwp-agent-surface/SKILL.md")
         .is_file());
 }

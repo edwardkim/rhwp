@@ -58,7 +58,7 @@ event를 만들지 않는다. 이 review와 오늘할일만 추가한 trailing h
 | 수정 | 138 | incoming 링크, 실행 경로 소비자, 거버넌스·계획·단계 증적 갱신 |
 | 삭제 | 8 | 기존 archive와 SHA-256이 같은 root 중복만 제거 |
 | 추가 | 1 | Stage 3 결과 보고서 |
-| 예상 밖 최상위 범위 | 0 | `mydocs`, `.agents`, `.claude`, `gym`, `scripts`, `tests`, `tools`, `rhwp-studio`만 변경 |
+| 예상 밖 최상위 범위 | 0 | `mydocs`, `.agents`, `.agents`, `gym`, `scripts`, `tests`, `tools`, `rhwp-studio`만 변경 |
 
 동명 archive가 있던 root 문서 8건은 Stage 3 보고서에 기록한 SHA-256이 각각 기존 archive와
 일치한다. 내용이 다른 동명 충돌은 0건이다. 이동 직후 root에는 Stage 3-B 후보 1,120건과 9월

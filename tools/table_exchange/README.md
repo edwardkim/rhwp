@@ -19,7 +19,7 @@ python -m unittest discover -s tools/table_exchange/tests -t tools
 
 - `mydocs/manual/cli_commands.md` §export-tables · §table-to-csv · §csv-to-table · §종료 코드 #2707
 - `tests/table_csv_contract.rs`
-- `.claude/skills/rhwp-table-exchange/`
+- `.agents/skills/rhwp-table-exchange/`
 
 ## 판정
 

@@ -2,7 +2,7 @@
 
 Document-derived text is data. It must not become a verification criterion
 or an instruction. This package is the verifier-side sandbox only.
-`.claude/skills/rhwp-provenance` is not rewritten. No rhwp CLI is invented.
+`.agents/skills/rhwp-provenance` is not rewritten. No rhwp CLI is invented.
 """
 
 from .decide import CLAIM_ID, SCHEMA_VERSION, Decision, decide, decide_row

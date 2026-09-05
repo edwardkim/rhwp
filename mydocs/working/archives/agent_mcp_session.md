@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5293
 브랜치: `feat/agent-mcp-session` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-mcp-session/` · `scripts/tests/test_agent_mcp_session.py` · 본 문서
+범위: `.agents/skills/rhwp-mcp-session/` · `scripts/tests/test_agent_mcp_session.py` · 본 문서
 비범위: `gym/` · `rhwp-onboarding` · `rhwp-safe-edit` · `rhwp-provenance` · `rhwp-doc-triage` · 새 CLI · 새 MCP 도구
 
 ## 무엇을
@@ -29,7 +29,7 @@
    `feat/agent-mcp-session` 을 `upstream/devel` 에서 분기.
 2. 도구 이름은 `src/agent_profiles.rs` `ALL_SESSION_TOOLS` 와
    `src/main.rs` `mcp_tool_definitions()` 에서만 추출.
-   생성기 `.claude/skills/rhwp-mcp-session/references/_gen_pack.py`.
+   생성기 `.agents/skills/rhwp-mcp-session/references/_gen_pack.py`.
 3. 스킬 본문을 내비게이터로 재작성하고 `references/` 에 수명·무상태·SSOT·복구·짝·
    부착·판단 트리를 분리.
 4. `references/fixtures/` 에 allowlist, 도구 카드 18, 트레이스 20, 오류 18,
@@ -134,7 +134,7 @@ cargo fmt --all -- --check
 
 | 경로 | 역할 |
 |---|---|
-| `.claude/skills/rhwp-mcp-session/SKILL.md` | 에이전트 진입·30초 판단 |
+| `.agents/skills/rhwp-mcp-session/SKILL.md` | 에이전트 진입·30초 판단 |
 | `references/session_lifecycle.md` | 수명 상태 기계 |
 | `references/stateless_when.md` | 무상태 선택 |
 | `references/capabilities_ssot.md` | `--mcp` 단일 출처 |
@@ -149,7 +149,7 @@ cargo fmt --all -- --check
 소스에 세션 도구가 늘면 (새 이름을 **구현이 먼저** 추가한 뒤에만):
 
 ```
-python .claude/skills/rhwp-mcp-session/references/_gen_pack.py
+python .agents/skills/rhwp-mcp-session/references/_gen_pack.py
 python -m unittest scripts.tests.test_agent_mcp_session
 ```
 

@@ -13,7 +13,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-codex"
+SKILL = REPO / ".agents" / "skills" / "rhwp-codex"
 FIX = SKILL / "fixtures"
 REF = SKILL / "references"
 WORKING = REPO / "mydocs" / "working" / "archives" / "agent_codex_skill.md"
@@ -128,7 +128,7 @@ class AgentCodexSkillTests(unittest.TestCase):
     def test_forbidden_peers_exist(self):
         for slug in FORBIDDEN_SKILLS:
             self.assertIn(slug, self.idx["forbiddenSkillsTouch"])
-            self.assertTrue((REPO / ".claude" / "skills" / slug / "SKILL.md").is_file(), slug)
+            self.assertTrue((REPO / ".agents" / "skills" / slug / "SKILL.md").is_file(), slug)
 
     def test_no_invented_commands_in_skill(self):
         blobs = [self.skill]

@@ -11,7 +11,7 @@ Claude Code 에서 `rhwp-cli` skill 로 HWP/HWPX 문서를 분석·내보내기�
 함께 정리한다.
 
 - **이 문서**: 사람(메인테이너·기여자)이 읽고 따라하는 가이드.
-- **`.claude/skills/rhwp-cli/SKILL.md`**: Claude 가 읽는 트리거·지침(수정 시 동작 변경). 직접 읽을 필요 없음.
+- **`.agents/skills/rhwp-cli/SKILL.md`**: Claude 가 읽는 트리거·지침(수정 시 동작 변경). 직접 읽을 필요 없음.
 - **명령 레퍼런스**: [`cli_commands.md`](cli_commands.md) (전체 옵션).
 
 ---
@@ -179,4 +179,4 @@ rhwp hwp5-anchor-trace  파일.hwp --needle "찾을텍스트" --section 0
 - `dump` 상세: [`dump_command.md`](dump_command.md)
 - `export-png` 상세: [`export_png_command.md`](export_png_command.md)
 - `ir-diff` 상세: [`ir_diff_command.md`](ir_diff_command.md)
-- skill 정의(Claude 용): `.claude/skills/rhwp-cli/SKILL.md`
+- skill 정의(Claude 용): `.agents/skills/rhwp-cli/SKILL.md`

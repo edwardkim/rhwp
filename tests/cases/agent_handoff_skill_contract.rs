@@ -15,7 +15,7 @@ fn repo() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo().join(".claude/skills/rhwp-handoff")
+    repo().join(".agents/skills/rhwp-handoff")
 }
 
 fn read_skill(rel: &str) -> String {
@@ -123,12 +123,12 @@ fn skill_does_not_add_cli_and_stays_out_of_other_skills() {
         "새 [[bin]] 을 추가하지 마세요 (rhwp, font-metric-gen 만): {bins}"
     );
     for forbidden in [
-        ".claude/skills/rhwp-onboarding/SKILL.md",
-        ".claude/skills/rhwp-mcp-session/SKILL.md",
-        ".claude/skills/rhwp-provenance/SKILL.md",
-        ".claude/skills/rhwp-safe-edit/SKILL.md",
-        ".claude/skills/rhwp-doc-triage/SKILL.md",
-        ".claude/skills/rhwp-work-receipt/SKILL.md",
+        ".agents/skills/rhwp-onboarding/SKILL.md",
+        ".agents/skills/rhwp-mcp-session/SKILL.md",
+        ".agents/skills/rhwp-provenance/SKILL.md",
+        ".agents/skills/rhwp-safe-edit/SKILL.md",
+        ".agents/skills/rhwp-doc-triage/SKILL.md",
+        ".agents/skills/rhwp-work-receipt/SKILL.md",
     ] {
         assert!(
             repo().join(forbidden).is_file(),

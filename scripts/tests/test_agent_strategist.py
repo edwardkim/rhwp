@@ -14,13 +14,13 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-strategist"
+SKILL = REPO / ".agents" / "skills" / "rhwp-strategist"
 REF = SKILL / "references"
 FIX = SKILL / "fixtures"
 EX = SKILL / "examples"
 WORKING = REPO / "mydocs" / "working" / "archives" / "agent_strategist.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
-AGENT = REPO / ".claude" / "agents" / "rhwp-strategist.md"
+AGENT = REPO / ".agents" / "agents" / "rhwp-strategist.md"
 ENGINE = REPO / "tools" / "strategist" / "engagement.py"
 
 FORBIDDEN_SKILLS = [
@@ -109,7 +109,7 @@ class AgentStrategistContract(unittest.TestCase):
 
     def test_neighbor_skills_untouched_exist(self):
         for slug in FORBIDDEN_SKILLS:
-            path = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            path = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(path.is_file(), slug)
 
     def test_engine_copy_coords_contract(self):

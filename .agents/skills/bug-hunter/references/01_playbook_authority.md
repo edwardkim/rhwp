@@ -23,7 +23,7 @@ playbook 은 이미 실패에서 나온 규칙이다.
 - 요청 → 기존 CLI 매핑
 - 정지 규칙 ID (F01–F16) — playbook 문장의 가리킴
 - 여정·분류·이슈 템플릿의 **기계 가독 픽스처**
-- Claude 얇은 포인터 `.claude/skills/rhwp-bug-hunter/`
+- Claude 얇은 포인터 `.agents/skills/rhwp-bug-hunter/`
 
 가리킴이 playbook 문장과 다르면 픽스처가 틀린 것이다.
 

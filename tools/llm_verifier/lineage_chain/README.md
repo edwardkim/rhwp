@@ -5,7 +5,7 @@ Issue #5516. 구현자 산문은 증거가 아니다.
 부모 `outputSha256` / 자식 `inputSha256` 만 본다.
 
 이 디렉터리는 기존 lineage 계약을 **감싸는 검증기**다.
-`.claude/skills/rhwp-work-receipt` 를 재작성하지 않는다.
+`.agents/skills/rhwp-work-receipt` 를 재작성하지 않는다.
 단건 `rhwp replay --expect-output-sha256` / `reproduced` 는 V-replay 축이며
 여기서 재구현하지 않는다.
 

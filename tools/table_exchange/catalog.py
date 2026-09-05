@@ -2,7 +2,7 @@
 
 Values come from devel `cli_commands.md` §export-tables · §table-to-csv ·
 §csv-to-table · §종료 코드 #2707, `tests/table_csv_contract.rs`, and
-`.claude/skills/rhwp-table-exchange/`. Nothing here invents a new flag
+`.agents/skills/rhwp-table-exchange/`. Nothing here invents a new flag
 or edit verb.
 """
 
@@ -299,10 +299,10 @@ SOURCE_REFS = (
     "mydocs/manual/recipes/02_table_csv_roundtrip.md",
     "tests/table_csv_contract.rs",
     "tests/table_extract_json_contract.rs",
-    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
-    ".claude/skills/rhwp-table-exchange/references/dry_run_verify.md",
-    ".claude/skills/rhwp-table-exchange/references/export_tables_matrix.md",
-    ".claude/skills/rhwp-table-exchange/references/table_to_csv_envelopes.md",
+    ".agents/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+    ".agents/skills/rhwp-table-exchange/references/dry_run_verify.md",
+    ".agents/skills/rhwp-table-exchange/references/export_tables_matrix.md",
+    ".agents/skills/rhwp-table-exchange/references/table_to_csv_envelopes.md",
 )
 
 

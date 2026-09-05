@@ -36,7 +36,7 @@ Zed·Goose·Continue 는 각자 다른 스키마다(아래 표 참고).
 
 | 호스트 | 설정 파일 | 모양 | 확신도 |
 |---|---|---|---|
-| **Claude Code** | `.mcp.json`(프로젝트) · `~/.claude.json`(사용자) · `claude mcp add rhwp -- rhwp mcp-serve` | A | 저장소 실증 |
+| **Claude Code** | `.mcp.json`(프로젝트) · `~/.agents.json`(사용자) · `claude mcp add rhwp -- rhwp mcp-serve` | A | 저장소 실증 |
 | **Claude Desktop** | Win `%APPDATA%\Claude\claude_desktop_config.json` · mac `~/Library/Application Support/Claude/claude_desktop_config.json` | A | 높음 |
 | **Cursor** | `.cursor/mcp.json`(프로젝트) · `~/.cursor/mcp.json`(전역) | A | 높음 |
 | **Cline**(VS Code 확장) | MCP 설정 UI → `cline_mcp_settings.json` | A(+옵션 `disabled`·`autoApprove`) | 높음 |

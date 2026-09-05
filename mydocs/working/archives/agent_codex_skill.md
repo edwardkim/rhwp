@@ -7,7 +7,7 @@ issue: 5318
 # 에이전트 대전(Codex) 항해 스킬 고도화 (#5318)
 
 작업 브랜치: `feat/agent-codex`
-대상 스킬: `.claude/skills/rhwp-codex/`
+대상 스킬: `.agents/skills/rhwp-codex/`
 이슈: [agent: 대전(Codex) 항해 스킬 고도화](https://github.com/edwardkim/rhwp/issues/5318)
 
 ## 1. 한 줄
@@ -28,7 +28,7 @@ issue: 5318
 - `capabilities --search` 폴백
 - 봉투 필드 사전은 지식지도 §2-2, 스킬이 아님
 - 85장은 개발자 전용
-- `.claude/skills/rhwp-codex/` SKILL.md + references/ + examples/ + fixtures
+- `.agents/skills/rhwp-codex/` SKILL.md + references/ + examples/ + fixtures
 - `mydocs/working/agent_codex_skill.md` (이 파일)
 - 계약 시험 (형제 에이전트 PR 과 같은 꼴)
 - additions 5000–10000, 최소 5000
@@ -62,7 +62,7 @@ issue: 5318
 
 | 경로 | 역할 |
 |------|------|
-| `.claude/skills/rhwp-codex/SKILL.md` | 30초 인덱스 · 7갈래 · 정지 표 |
+| `.agents/skills/rhwp-codex/SKILL.md` | 30초 인덱스 · 7갈래 · 정지 표 |
 | `references/` | 4규약 · 트리 · 읽는 법 · 신선도 · 검색 · 경계 · 85 · 가족 장 항해 |
 | `examples/` | 실측 표본을 흉내 내는 레시피 28편 |
 | `fixtures/` | 카탈로그 · 발화 · 여정 · 검색 폴백 · 생성 장에서 추출한 봉투 전사 |

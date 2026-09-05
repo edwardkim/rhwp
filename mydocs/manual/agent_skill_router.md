@@ -28,7 +28,7 @@ last_verified: 2026-08-20
 | 1 요청 | `request` | 사용자가 한 말을 그대로 싣는다. 명령을 발명하지 않는다. |
 | 2 의도 | `intent` | 요청을 의도 슬러그로 분류한다. 서식 채움은 `fill-form`, PR·기여는 `contribute`. |
 | 3 capability | `requiredCapabilities` | 카탈로그의 capability ID. 서식은 `rhwp-form-fill` (`CAP-5300`), 기여는 `rhwp-contributor` (`CAP-4561`). |
-| 4 스킬 | `skillSelection` | 그 capability 의 Claude/Codex 진입점. 보통 `.claude/skills/<id>/SKILL.md`. |
+| 4 스킬 | `skillSelection` | 그 capability 의 Claude/Codex 진입점. 보통 `.agents/skills/<id>/SKILL.md`. |
 | 5 그래프 | `executionGraph` | 실행 순서. `{nodes, edges}`. 노드는 `id`, `skill`, `action`, `command`. 가장자리는 `from` → `to`. |
 
 봉투 최상위는 항상 다음 키를 가진다.
@@ -74,7 +74,7 @@ $ python tools/skill_router/route.py "이 서식 채워줘" --json
   "skillSelection": [
     {
       "id": "rhwp-form-fill",
-      "path": ".claude/skills/rhwp-form-fill/SKILL.md",
+      "path": ".agents/skills/rhwp-form-fill/SKILL.md",
       "reason": "서식 채움 요청이므로 rhwp-form-fill 을(를) 선택한다 (겹치면 더 구체적인 스킬)"
     }
   ],
@@ -127,7 +127,7 @@ $ python tools/skill_router/route.py "이 서식 채워줘" --json
 
 그래프는 `fields` 다음에 fill 이다. 서식 스킬 권위는
 [서식 자동화 가이드](form_filling_guide.md) 와
-[rhwp-form-fill Skill](../../.claude/skills/rhwp-form-fill/SKILL.md).
+[rhwp-form-fill Skill](../../.agents/skills/rhwp-form-fill/SKILL.md).
 
 ### PR 올려
 
@@ -147,7 +147,7 @@ $ python tools/skill_router/route.py "PR 올려" --json
   "skillSelection": [
     {
       "id": "rhwp-contributor",
-      "path": ".claude/skills/rhwp-contributor/SKILL.md",
+      "path": ".agents/skills/rhwp-contributor/SKILL.md",
       "reason": "기여·PR 요청이므로 rhwp-contributor 을(를) 선택한다 (겹치면 더 구체적인 스킬)"
     }
   ],
@@ -230,7 +230,7 @@ $ python tools/skill_router/route.py "PR 올려" --json
 
 그래프는 issue 노드와 pr 노드를 포함한다. 기여 절차 정본은
 [CONTRIBUTING.md](../../CONTRIBUTING.md) 와
-[rhwp-contributor Skill](../../.claude/skills/rhwp-contributor/SKILL.md).
+[rhwp-contributor Skill](../../.agents/skills/rhwp-contributor/SKILL.md).
 HARD GATE 는 `cargo fmt --all -- --check`. 라우터는 그 절차를 그래프에 올리고
 리뷰·머지 판단은 하지 않는다.
 
@@ -249,7 +249,7 @@ python -m unittest tools/skill_router/test_route.py
 
 ## 새·변경 SKILL.md
 
-`.claude/skills/<name>/SKILL.md` 를 새로 만들거나 바꾸면 아래를 만족해야
+`.agents/skills/<name>/SKILL.md` 를 새로 만들거나 바꾸면 아래를 만족해야
 한다. 라우터 스킬도 예외가 아니다.
 
 1. YAML frontmatter 의 `name` 은 폴더명과 같다. `description` 은 20자 이상.
@@ -284,7 +284,7 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 `request → intent → requiredCapabilities → skillSelection → executionGraph`
 
 경로 스킬은 **rhwp-skill-author** 다. `skillSelection` 은
-[`.claude/skills/rhwp-skill-author/SKILL.md`](../../.claude/skills/rhwp-skill-author/SKILL.md).
+[`.agents/skills/rhwp-skill-author/SKILL.md`](../../.agents/skills/rhwp-skill-author/SKILL.md).
 스킬 본문을 추측해 쓰지 않는다. CAP ID 를 발명하지 않는다.
 
 새 스킬은 아래 세 명령을 **반드시 3회** 통과해야 끝이다. 카탈로그에 넣은

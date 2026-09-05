@@ -1,8 +1,8 @@
-# Frontmatter re-scan B — `.claude/skills/*/SKILL.md` (27)
+# Frontmatter re-scan B — `.agents/skills/*/SKILL.md` (27)
 
 PASS — 27/27. FAIL — 0/27. Offenders: none.
 
-재측정 B: 2026-08-20. `.claude/skills/*/SKILL.md` 27개 전수 재독(동일 파서 3회, SHA-256 일치).
+재측정 B: 2026-08-20. `.agents/skills/*/SKILL.md` 27개 전수 재독(동일 파서 3회, SHA-256 일치).
 신규 `rhwp-skill-author` 포함. SKILL.md 수정 없음. 커밋 없음. push 없음.
 기준은 `tests/skills_contract.rs` 의
 `skills_have_valid_frontmatter_and_are_executable` 와 동일한 파싱이다

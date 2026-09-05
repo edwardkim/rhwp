@@ -55,4 +55,4 @@ rhwp-studio/public/samples/BlogForm_BookReview.hwp
 .git/
 
 # ─── Claude Code 메모리 ───
-.claude/
+.agents/

@@ -13,7 +13,7 @@
 이 엔진은 전략을 만들지 않는다. 엔진이 보장하는 것은 세 가지뿐이다 —
 수집의 전수성(코퍼스 전 문서 지도화), 근거의 좌표(봉투 값 그대로, 조작 없음),
 주장-근거 연결의 기계 검증(`--validate`). 전략적 판단(무엇을 주장할지)은
-에이전트([rhwp-strategist](../../.claude/agents/rhwp-strategist.md))의 몫이되,
+에이전트([rhwp-strategist](../../.agents/agents/rhwp-strategist.md))의 몫이되,
 그 주장이 산출물에 실리려면 근거 대장의 실좌표에 연결되어야 한다.
 
 ## 엔게이지먼트 프로토콜 (playbook §2 가 정본)

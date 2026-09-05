@@ -67,7 +67,7 @@ SHA-256이 같은 것을 확인한 뒤 기존 archive를 유지하고 root의 by
 | 외부 범위 | 문서 수 |
 | --- | ---: |
 | `.agents` | 2 |
-| `.claude` | 25 |
+| `.agents` | 25 |
 | `gym` | 30 |
 | 다른 `mydocs` 역할 문서 | 6 |
 

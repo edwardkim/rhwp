@@ -8,7 +8,7 @@ HWPX 로 바꾸도록 문서·픽스처·헬퍼 dry 경로가 같은 단어를 �
 gym/ 을 열지 않는다. 네트워크를 부르지 않는다.
 poppler/ImageMagick 이 없는 환경에서도 통과해야 한다.
 
-정본: .claude/skills/rhwp-exam-ingest/
+정본: .agents/skills/rhwp-exam-ingest/
 작업 기록: mydocs/working/archives/agent_exam_ingest.md
 """
 
@@ -23,7 +23,7 @@ from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-exam-ingest"
+SKILL = REPO / ".agents" / "skills" / "rhwp-exam-ingest"
 SKILL_MD = SKILL / "SKILL.md"
 REFS = SKILL / "references"
 EXAMPLES = SKILL / "examples"
@@ -209,7 +209,7 @@ class AgentExamIngestSkillTests(unittest.TestCase):
     def test_forbidden_peer_skills_exist_but_are_not_rewritten(self):
         for slug in SIBLING_SKILLS:
             self.assertIn(slug, self.index["forbiddenSkillsTouch"])
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
 
     def test_no_invented_commands_in_markdown(self):

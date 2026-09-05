@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Repeat-route every catalog skill (stdlib unittest).
 
-For each skill id in catalog.json (or .claude/skills folder names if the
+For each skill id in catalog.json (or .agents/skills folder names if the
 JSON is missing) run three Korean phrasings, three times each. Missing
 route.py fails immediately; this module does not hang.
 
@@ -26,7 +26,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 ROUTE_PY = HERE / "route.py"
 CATALOG_JSON = HERE / "catalog.json"
-SKILLS_DIR = REPO / ".claude" / "skills"
+SKILLS_DIR = REPO / ".agents" / "skills"
 CLI_TIMEOUT_SEC = 20
 REPEAT = 3
 
@@ -397,7 +397,7 @@ class SkillsRepeatTests(unittest.TestCase):
 
     def test_every_skill_three_phrasings_three_runs(self) -> None:
         skill_ids = _load_skill_ids()
-        self.assertTrue(skill_ids, "no skill ids from catalog.json or .claude/skills")
+        self.assertTrue(skill_ids, "no skill ids from catalog.json or .agents/skills")
         for skill_id in skill_ids:
             phrasings = _phrasings_for(skill_id)
             self.assertEqual(len(phrasings), 3, skill_id)

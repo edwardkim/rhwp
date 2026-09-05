@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5312
 브랜치: `feat/agent-visual-regression` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-visual-regression/` ·
+범위: `.agents/skills/rhwp-visual-regression/` ·
 `tests/agent_visual_regression_skill_contract.rs` ·
 `scripts/tests/test_agent_visual_regression.py` ·
 capability 등록부 `CAP-5312` · 본 문서

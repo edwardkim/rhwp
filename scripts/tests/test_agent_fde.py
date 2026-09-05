@@ -15,12 +15,12 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-fde"
+SKILL = REPO / ".agents" / "skills" / "rhwp-fde"
 REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
 GEN = REF / "_gen_pack.py"
-AGENT = REPO / ".claude" / "agents" / "rhwp-fde.md"
+AGENT = REPO / ".agents" / "agents" / "rhwp-fde.md"
 WORKING = REPO / "mydocs" / "working" / "archives" / "agent_fde.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
 PLAYBOOK = REPO / "mydocs" / "manual" / "fde_playbook.md"
@@ -238,11 +238,11 @@ class AgentFdeSkillTests(unittest.TestCase):
         for slug in FORBIDDEN_SKILLS:
             self.assertIn(slug, self.idx["forbiddenSkillsTouch"])
             if slug == "rhwp-bug-hunter":
-                peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+                peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
                 alt = REPO / ".agents" / "skills" / "bug-hunter" / "SKILL.md"
                 self.assertTrue(peer.is_file() or alt.is_file(), slug)
             else:
-                peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+                peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
                 self.assertTrue(peer.is_file(), slug)
 
     def test_no_invented_commands_in_markdown(self):
@@ -391,7 +391,7 @@ class AgentFdeSkillTests(unittest.TestCase):
         reg = read(REGISTRY)
         self.assertIn("CAP-4893", reg)
         self.assertIn("rhwp-fde", reg)
-        self.assertIn(".claude/skills/rhwp-fde/SKILL.md", reg)
+        self.assertIn(".agents/skills/rhwp-fde/SKILL.md", reg)
 
     def test_generator_roundtrip_issue_constant(self):
         self.assertEqual(self.gen.ISSUE, 5333)

@@ -77,7 +77,7 @@ devel 에는 이미 세 명령이 있다.
 - `src/serializer` 페이지 수
 - `tools/oracle_public` · `tools/fidelity_compare` · `tools/page_roundtrip`
 - `gym/`
-- `.claude/skills/` 다른 스킬
+- `.agents/skills/` 다른 스킬
 
 ## 5. 계약 언어 (devel 정본을 그대로)
 

@@ -22,7 +22,7 @@ agent_bug_hunter_skill_contract::skill_frontmatter_names_bug_hunter       ... FA
 인덱스 바이트는 LF 라 Ubuntu CI 는 초록인데, Windows 체크아웃은 작업 트리에 CRLF 로 풀어
 `---\r\n` 이 된다.
 
-- `.claude/skills/*/SKILL.md` **27개 전부** 작업 트리 CRLF (인덱스는 전부 LF)
+- `.agents/skills/*/SKILL.md` **27개 전부** 작업 트리 CRLF (인덱스는 전부 LF)
 - 같은 판정을 쓰는 계약 14본 — 그중 1본은 `.agents/skills/bug-hunter/SKILL.md` 를 읽는다
 - `.gitattributes` 에 스킬 마크다운 개행 지정이 없었다
 
@@ -31,7 +31,7 @@ agent_bug_hunter_skill_contract::skill_frontmatter_names_bug_hunter       ... FA
 `.gitattributes` 두 줄. 선례는 같은 파일의 `tests/golden_svg/**/*.svg text eol=lf` (#1786).
 
 ```
-.claude/skills/**/*.md text eol=lf
+.agents/skills/**/*.md text eol=lf
 .agents/skills/**/*.md text eol=lf
 ```
 
@@ -49,7 +49,7 @@ Linux/macOS·CI 는 영향이 없다. `*.md` 로 좁혔다 — 같은 트리의 
 | 020 | 2본 (fde·fidelity_compare) | FAILED | ok |
 | **합계** | **14본** | 14 FAILED | **14 ok** |
 
-- `.claude/skills/*/SKILL.md` CRLF **27/27 → 0/27**
+- `.agents/skills/*/SKILL.md` CRLF **27/27 → 0/27**
 - `python tools/skill_router/gate_new_skill.py` — OK (27 skills × 3 scans)
 - `cargo test --test regression_suite_011` — 122 passed (skills·cli_json 계약)
 - `cargo test --test regression_suite_020` 전체 — 121 passed
@@ -59,6 +59,6 @@ Linux/macOS·CI 는 영향이 없다. `*.md` 로 좁혔다 — 같은 트리의 
 속성은 다음 체크아웃부터 적용된다. 지금 작업 트리를 맞추려면:
 
 ```bash
-git ls-files .claude/skills .agents/skills | grep '\.md$' | xargs rm -f
-git checkout -- .claude/skills .agents/skills
+git ls-files .agents/skills .agents/skills | grep '\.md$' | xargs rm -f
+git checkout -- .agents/skills .agents/skills
 ```

@@ -13,7 +13,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-fidelity-compare"
+SKILL = REPO / ".agents" / "skills" / "rhwp-fidelity-compare"
 REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
@@ -186,7 +186,7 @@ class AgentFidelityCompareSkillTests(unittest.TestCase):
     def test_forbidden_peers_exist_untouched_here(self):
         for slug in FORBIDDEN_SKILLS:
             self.assertIn(slug, self.idx["forbiddenSkillsTouch"])
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
 
     def test_invented_commands_forbidden(self):

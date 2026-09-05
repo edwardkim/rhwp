@@ -16,7 +16,7 @@ last_verified: 2026-08-21
 | 라우팅 | `maintainer_general` + `intake_and_review` + `multi_pr_update_branch` |
 
 Windows `core.autocrlf=true` checkout에서 Rust skill frontmatter contract가 `---\\n` 대신 `---\\r\\n`을 읽어
-실패하던 문제다. `.gitattributes`에 `.claude/skills/**/*.md`, `.agents/skills/**/*.md`의 `text eol=lf`를
+실패하던 문제다. `.gitattributes`에 `.agents/skills/**/*.md`, `.agents/skills/**/*.md`의 `text eol=lf`를
 명시해 checkout 바이트를 고정한다. TSV/CSV fixture 범위는 건드리지 않는다.
 
 통합 후보에서 `git check-attr -a`와 `git ls-files --eol`로 두 경로의 attribute `text`, `eol=lf`와

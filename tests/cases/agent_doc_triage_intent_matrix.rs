@@ -21,7 +21,7 @@ fn read_json(name: &str) -> serde_json::Value {
 fn read_ref(name: &str) -> String {
     fs::read_to_string(
         repo_root()
-            .join(".claude/skills/rhwp-doc-triage/references")
+            .join(".agents/skills/rhwp-doc-triage/references")
             .join(name),
     )
     .unwrap_or_else(|e| panic!("{name}: {e}"))

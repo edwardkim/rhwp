@@ -5,7 +5,7 @@ Issue #5502. 구현자 산문은 증거가 아니다.
 workCapsule `receipt.reproduced` 만 본다.
 
 이 디렉터리는 기존 replay 계약을 **감싸는 검증기**다.
-`.claude/skills/rhwp-work-receipt` 와 M-rcpt 픽스처를 재작성하지 않는다.
+`.agents/skills/rhwp-work-receipt` 와 M-rcpt 픽스처를 재작성하지 않는다.
 
 ## 축
 

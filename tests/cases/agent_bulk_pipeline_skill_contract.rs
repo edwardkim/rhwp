@@ -15,7 +15,7 @@ fn repo_root() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-bulk-pipeline")
+    repo_root().join(".agents/skills/rhwp-bulk-pipeline")
 }
 
 fn fixture_dir() -> PathBuf {

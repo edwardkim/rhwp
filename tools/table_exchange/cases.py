@@ -272,7 +272,7 @@ def _make_csv_case(
         envelope=envelope,
         source_refs=_refs(
             "tests/table_csv_contract.rs",
-            ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+            ".agents/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
             *extra_refs,
         ),
     )
@@ -438,7 +438,7 @@ def build_dimension_cases() -> list[Case]:
                     mode="dry-run",
                     notes=f"{table.rows}×{table.cols} 치수 계약. 조용한 절삭 금지.",
                     extra_refs=(
-                        ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+                        ".agents/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
                     ),
                 )
             )
@@ -486,7 +486,7 @@ def build_dimension_cases() -> list[Case]:
             mode="dry-run",
             notes="playbook §10-5. rowCountMismatch + colCountMismatch.",
             extra_refs=(
-                ".claude/skills/rhwp-table-exchange/fixtures/envelopes/csv_to_table_table001_both_mismatch.json",
+                ".agents/skills/rhwp-table-exchange/fixtures/envelopes/csv_to_table_table001_both_mismatch.json",
             ),
         )
     )
@@ -537,7 +537,7 @@ def build_covered_cases() -> list[Case]:
                     mode="dry-run",
                     notes=f"{table.notes} covered={table.occupancy.covered_count}. 한 칸도 안 씀.",
                     extra_refs=(
-                        ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+                        ".agents/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
                         "tests/table_csv_contract.rs value_in_a_merged_covered_cell_is_invalid",
                     ),
                 )
@@ -621,7 +621,7 @@ def build_dry_run_cases() -> list[Case]:
                 mode="dry-run",
                 notes="changedPages=null, output=null, -o 를 줘도 파일 없음.",
                 extra_refs=(
-                    ".claude/skills/rhwp-table-exchange/references/dry_run_verify.md",
+                    ".agents/skills/rhwp-table-exchange/references/dry_run_verify.md",
                     "tests/table_csv_contract.rs dry_run_writes_no_file",
                 ),
             )
@@ -763,8 +763,8 @@ def build_verify_cases() -> list[Case]:
                 verify_diff=diff,
                 notes="고장이 아니라 판정 데이터. invalid [] 이고 outputKept true.",
                 extra_refs=(
-                    ".claude/skills/rhwp-table-exchange/references/dry_run_verify.md",
-                    ".claude/skills/rhwp-table-exchange/fixtures/envelopes/csv_to_table_verify_fail.json",
+                    ".agents/skills/rhwp-table-exchange/references/dry_run_verify.md",
+                    ".agents/skills/rhwp-table-exchange/fixtures/envelopes/csv_to_table_verify_fail.json",
                 ),
             )
         )
@@ -840,7 +840,7 @@ def build_export_tables_cases() -> list[Case]:
                 changed=[],
                 envelope=envelope,
                 source_refs=_refs(
-                    ".claude/skills/rhwp-table-exchange/references/export_tables_matrix.md",
+                    ".agents/skills/rhwp-table-exchange/references/export_tables_matrix.md",
                     "tests/table_extract_json_contract.rs",
                 ),
             )
@@ -890,7 +890,7 @@ def build_export_tables_cases() -> list[Case]:
                 changed=[],
                 envelope=envelope,
                 source_refs=_refs(
-                    ".claude/skills/rhwp-table-exchange/references/export_tables_matrix.md"
+                    ".agents/skills/rhwp-table-exchange/references/export_tables_matrix.md"
                 ),
             )
         )
@@ -1037,7 +1037,7 @@ def build_table_to_csv_cases() -> list[Case]:
                 changed=[],
                 envelope=envelope,
                 source_refs=_refs(
-                    ".claude/skills/rhwp-table-exchange/references/table_to_csv_envelopes.md",
+                    ".agents/skills/rhwp-table-exchange/references/table_to_csv_envelopes.md",
                     "tests/table_csv_contract.rs merged_table_csv_is_a_full_rectangle",
                 ),
             )
@@ -1243,7 +1243,7 @@ def build_table_to_csv_cases() -> list[Case]:
                 output="out/tables",
                 output_is_dir=True,
             ),
-            source_refs=_refs(".claude/skills/rhwp-table-exchange/references/table_to_csv_envelopes.md"),
+            source_refs=_refs(".agents/skills/rhwp-table-exchange/references/table_to_csv_envelopes.md"),
         )
     )
     _ = t1

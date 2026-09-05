@@ -46,7 +46,7 @@ LLM 주장 한 줄마다 기존 `search`/`extract-data` 봉투의
 
 ## 만지지 않은 경로
 
-- `.claude/skills/rhwp-strategist/`, `.claude/skills/rhwp-provenance/`
+- `.agents/skills/rhwp-strategist/`, `.agents/skills/rhwp-provenance/`
 - `tools/strategist/engagement.py`
 - `tools/llm_verifier/verdict_protocol/` 및 다른 verifier 축
 - `gym/`, DocumentCore, rhwp CLI 명령

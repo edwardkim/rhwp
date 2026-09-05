@@ -14,7 +14,7 @@
     → 재독/봉투 검증 → 3부 회신문 + 산출물 + 티켓 기록
 
 까지 사람 없이 완주한다. 결정적으로 못 푸는 요청은 `needs-agent` 로 표시만 하고
-멈춘다 — 그건 LLM 에이전트([rhwp-chief](../../.claude/agents/rhwp-chief.md))의
+멈춘다 — 그건 LLM 에이전트([rhwp-chief](../../.agents/agents/rhwp-chief.md))의
 몫이고, 에이전트가 푼 방법은 이 루프의 라우팅 규칙으로 재축적된다
 (playbook §5). 자동 처리 커버리지는 그렇게 단조 증가한다.
 

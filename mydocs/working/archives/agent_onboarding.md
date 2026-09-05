@@ -15,9 +15,9 @@ gym 이 아니라 **실사용 에이전트**가 rhwp 에 붙는 경로를 키운
 | 포함 | 제외 |
 |---|---|
 | `tools/agent_onboarding/rhwp_doctor.py` | `gym/` 전체 |
-| `tools/agent_onboarding/test_rhwp_doctor.py` | 다른 `.claude/skills/*` |
+| `tools/agent_onboarding/test_rhwp_doctor.py` | 다른 `.agents/skills/*` |
 | `tools/agent_onboarding/fixtures/` | 열린 PR 문서 |
-| `.claude/skills/rhwp-onboarding/` + `references/` | 새 `src/bin` / 새 하위명령 |
+| `.agents/skills/rhwp-onboarding/` + `references/` | 새 `src/bin` / 새 하위명령 |
 | 이 파일 | 한컴 호환·렌더 픽셀 |
 
 ## 한 일
@@ -83,18 +83,18 @@ Rust 소스 변경 없음. `cargo fmt --all -- --check` 는 포맷 게이트 유
 | `tools/agent_onboarding/fixtures/mcp/` | 호스트 스니펫 픽스처 |
 | `tools/agent_onboarding/fixtures/reports/` | 리포트 형태 픽스처 |
 | `tools/agent_onboarding/fixtures/recipes/` | 첫 5분 인덱스 JSON |
-| `.claude/skills/rhwp-onboarding/SKILL.md` | 스킬 진입 |
-| `.claude/skills/rhwp-onboarding/references/first-5-min.md` | 5분 지도 |
-| `.claude/skills/rhwp-onboarding/references/first-5-min-triage.md` | 트리아지 레시피 |
-| `.claude/skills/rhwp-onboarding/references/first-5-min-tables.md` | 표 레시피 |
-| `.claude/skills/rhwp-onboarding/references/first-5-min-form-read.md` | 서식 조사 레시피 |
-| `.claude/skills/rhwp-onboarding/references/first-5-min-security.md` | 보안 스윕 레시피 |
-| `.claude/skills/rhwp-onboarding/references/mcp-json-paste.md` | 호스트 붙여넣기 |
-| `.claude/skills/rhwp-onboarding/references/binary-discovery.md` | 바이너리 발견 |
-| `.claude/skills/rhwp-onboarding/references/sample-selftest.md` | 자가검증 계약 |
-| `.claude/skills/rhwp-onboarding/references/exception-missing-binary.md` | exit 3 플레이북 |
-| `.claude/skills/rhwp-onboarding/references/exception-bad-sample.md` | 불량 샘플 플레이북 |
-| `.claude/skills/rhwp-onboarding/references/exception-no-network.md` | 오프라인 플레이북 |
+| `.agents/skills/rhwp-onboarding/SKILL.md` | 스킬 진입 |
+| `.agents/skills/rhwp-onboarding/references/first-5-min.md` | 5분 지도 |
+| `.agents/skills/rhwp-onboarding/references/first-5-min-triage.md` | 트리아지 레시피 |
+| `.agents/skills/rhwp-onboarding/references/first-5-min-tables.md` | 표 레시피 |
+| `.agents/skills/rhwp-onboarding/references/first-5-min-form-read.md` | 서식 조사 레시피 |
+| `.agents/skills/rhwp-onboarding/references/first-5-min-security.md` | 보안 스윕 레시피 |
+| `.agents/skills/rhwp-onboarding/references/mcp-json-paste.md` | 호스트 붙여넣기 |
+| `.agents/skills/rhwp-onboarding/references/binary-discovery.md` | 바이너리 발견 |
+| `.agents/skills/rhwp-onboarding/references/sample-selftest.md` | 자가검증 계약 |
+| `.agents/skills/rhwp-onboarding/references/exception-missing-binary.md` | exit 3 플레이북 |
+| `.agents/skills/rhwp-onboarding/references/exception-bad-sample.md` | 불량 샘플 플레이북 |
+| `.agents/skills/rhwp-onboarding/references/exception-no-network.md` | 오프라인 플레이북 |
 | `mydocs/working/agent_onboarding.md` | 이 기록 |
 
 ## 에이전트가 이 문서를 쓰는 법

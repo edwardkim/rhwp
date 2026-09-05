@@ -120,6 +120,6 @@
   },
   "sourceRefs": [
     "tests/table_csv_contract.rs",
-    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md"
+    ".agents/skills/rhwp-table-exchange/references/csv_to_table_contract.md"
   ]
 }

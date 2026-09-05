@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5333
 브랜치: `feat/agent-fde` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-fde/` · `mydocs/working/agent_fde.md` ·
+범위: `.agents/skills/rhwp-fde/` · `mydocs/working/agent_fde.md` ·
 `scripts/tests/test_agent_fde.py` · `tests/agent_fde_skill_contract.rs` ·
 capability 등록부 `CAP-4893` 스킬 진입점
 비범위: `gym/` · bug-hunter 스킬 재작성 · 다른 스킬 본문 · DocumentCore ·
@@ -13,13 +13,13 @@ capability 등록부 `CAP-4893` 스킬 진입점
 
 에이전트가 고객이 들고 온 현장 증상(안 열린다 / 깨진다 / 필드가 안 채워진다)을
 실시간으로 접수·트리아지·응급처치·재현체·업스트림 이슈화하도록
-`.claude/skills/rhwp-fde/` 를 신설했다.
+`.agents/skills/rhwp-fde/` 를 신설했다.
 
 기존에 있던 부품은 그대로 둔다.
 
 - 정본 playbook: `mydocs/manual/fde_playbook.md`
 - 엔진: `tools/fde/triage.py` (읽기 전용 사다리, 라우트 박힌 JSON 티켓)
-- 에이전트 정의: `.claude/agents/rhwp-fde.md` — 링크만. 엔진을 다시 쓰지 않는다.
+- 에이전트 정의: `.agents/agents/rhwp-fde.md` — 링크만. 엔진을 다시 쓰지 않는다.
 
 없는 것은 접점 스킬이었다. 이 PR 은 그 스킬과 계약 시험만 닫는다.
 
@@ -54,7 +54,7 @@ DoD: additions 5000–10000 (최소 5000). PR 전 `cargo fmt --all -- --check`.
 - `tools/fde/triage.py` 의 `decide_route` / `LADDER` / `MAGIC` 변경
 - 새 rhwp 하위명령·플래그
 - gym pack / 과제 / 채점기
-- `.agents/skills/bug-hunter/` 또는 `.claude/skills/rhwp-bug-hunter/` 재작성
+- `.agents/skills/bug-hunter/` 또는 `.agents/skills/rhwp-bug-hunter/` 재작성
 - 다른 스킬 SKILL.md 수정
 - DocumentCore / 한컴 최종 판정 / 머지 판단
 

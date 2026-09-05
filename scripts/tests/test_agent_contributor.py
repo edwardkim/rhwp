@@ -6,7 +6,7 @@
 새 CLI 를 시험하지 않는다. gym/ 을 열지 않는다.
 다른 에이전트 스킬 본문을 요구하거나 바꾸지 않는다. 바이너리·네트워크를 부르지 않는다.
 
-정본: .claude/skills/rhwp-contributor/
+정본: .agents/skills/rhwp-contributor/
 작업 기록: mydocs/working/archives/agent_contributor.md
 """
 
@@ -19,7 +19,7 @@ from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-contributor"
+SKILL = REPO / ".agents" / "skills" / "rhwp-contributor"
 SKILL_MD = SKILL / "SKILL.md"
 REFS = SKILL / "references"
 EXAMPLES = SKILL / "examples"
@@ -167,7 +167,7 @@ class SkillLayoutTests(unittest.TestCase):
 
     def test_sibling_skills_exist_untouched_by_this_suite(self):
         for name in SIBLING_SKILLS:
-            path = REPO / ".claude" / "skills" / name / "SKILL.md"
+            path = REPO / ".agents" / "skills" / name / "SKILL.md"
             self.assertTrue(path.is_file(), path)
 
     def test_does_not_live_under_gym(self):

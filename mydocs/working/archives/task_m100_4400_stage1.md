@@ -37,7 +37,7 @@
 
 ### 자기검증에서 나온 잔여 결함 (미해결로 기록)
 
-gestell 방법론(`~/.claude/skills/gestell/references/maintenance.md`)의 "total
+gestell 방법론(`~/.agents/skills/gestell/references/maintenance.md`)의 "total
 independence — zero imports, either direction" 기준으로 재검토한 결과, 이 이동은
 **완전하지 않다**:
 

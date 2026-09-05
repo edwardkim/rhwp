@@ -7,7 +7,7 @@
 다른 네 에이전트 스킬(onboarding / mcp-session / provenance / doc-triage)의
 본문을 요구하거나 바꾸지 않는다. 바이너리·네트워크를 부르지 않는다.
 
-정본: .claude/skills/rhwp-safe-edit/
+정본: .agents/skills/rhwp-safe-edit/
 작업 기록: mydocs/working/archives/agent_safe_edit.md
 """
 
@@ -20,7 +20,7 @@ from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-safe-edit"
+SKILL = REPO / ".agents" / "skills" / "rhwp-safe-edit"
 SKILL_MD = SKILL / "SKILL.md"
 REFS = SKILL / "references"
 EXAMPLES = SKILL / "examples"
@@ -202,7 +202,7 @@ class SkillLayoutTests(unittest.TestCase):
     def test_sibling_skills_exist_untouched_by_this_suite(self):
         # 존재만 확인한다. 본문 토큰을 요구하면 이 파동이 형제 스킬에 결합된다.
         for name in SIBLING_SKILLS:
-            path = REPO / ".claude" / "skills" / name / "SKILL.md"
+            path = REPO / ".agents" / "skills" / name / "SKILL.md"
             self.assertTrue(path.is_file(), path)
 
     def test_does_not_live_under_gym(self):

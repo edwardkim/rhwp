@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5300
 브랜치: `feat/agent-form-fill` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-form-fill/` ·
+범위: `.agents/skills/rhwp-form-fill/` ·
 `tests/cases/agent_form_fill_skill_contract.rs` · `scripts/tests/test_agent_form_fill.py` ·
 capability 등록부 `CAP-5300` · 본 문서
 비범위: `gym/` · `rhwp-onboarding` · `rhwp-mcp-session` · `rhwp-safe-edit` ·

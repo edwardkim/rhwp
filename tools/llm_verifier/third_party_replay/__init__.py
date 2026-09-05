@@ -3,7 +3,7 @@
 LLM-as-Verifier axis for issue #5502. Implementer prose is not evidence.
 Only `rhwp replay --expect-output-sha256` / workCapsule `receipt.reproduced`
 count. This package wraps that existing contract; it does not rewrite
-`.claude/skills/rhwp-work-receipt` or M-rcpt fixtures.
+`.agents/skills/rhwp-work-receipt` or M-rcpt fixtures.
 """
 
 from .decide import (

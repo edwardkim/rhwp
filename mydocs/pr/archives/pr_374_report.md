@@ -38,7 +38,7 @@ PR #374 의 결함 (kps-ai p56 외부 표 클립) 은 메인테이너 **Task #36
 
 작업지시자 관측 — **한컴 호환은 일반화보다 케이스별 명시 가드가 안전**. 한컴 자체의 비일관성으로 일반화 알고리즘이 다른 케이스에서 회귀 발생. PR #374 의 일반화 clamp 접근은 이 원칙과 배치.
 
-상세: `~/.claude/projects/.../memory/feedback_hancom_compat_specific_over_general.md`
+상세: `~/.agents/projects/.../memory/feedback_hancom_compat_specific_over_general.md`
 
 ## 처리 단계
 

@@ -177,7 +177,7 @@ Stage 0에선 뼈대 필드(섹션 수·리소스 카운트)만 비교. Stage별
 - 단계별 보고서: `mydocs/working/task_m100_182_stage{0..5}.md`
 - OWPML 참조 가이드: `mydocs/tech/hwpx_hancom_reference.md`
 - DVC 참조 가이드: `mydocs/tech/hwpx_dvc_reference.md`
-- Plan 모드 산출: `~/.claude/plans/staged-foraging-naur.md`
+- Plan 모드 산출: `~/.agents/plans/staged-foraging-naur.md`
 
 ## 8. 커밋 이력
 

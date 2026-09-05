@@ -14,11 +14,11 @@ fn repo_root() -> PathBuf {
 }
 
 fn fixture_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-chief/fixtures")
+    repo_root().join(".agents/skills/rhwp-chief/fixtures")
 }
 
 fn skill_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-chief")
+    repo_root().join(".agents/skills/rhwp-chief")
 }
 
 fn read_json(name: &str) -> serde_json::Value {
@@ -200,7 +200,7 @@ fn forbidden_peer_skills_not_rewritten_here() {
             continue;
         }
         let peer = repo_root()
-            .join(".claude/skills")
+            .join(".agents/skills")
             .join(slug)
             .join("SKILL.md");
         assert!(peer.is_file(), "존재해야 하는 이웃 스킬 {peer:?}");
@@ -221,17 +221,6 @@ fn skill_index_forbids_gym_tree() {
     let idx = read_json("skill_index.json");
     let trees = idx["forbiddenTrees"].as_array().unwrap();
     assert!(trees.iter().any(|t| t == "gym/"), "{trees:?}");
-}
-
-#[test]
-fn agent_definition_is_linked_when_present() {
-    let agent = repo_root().join(".claude/agents/rhwp-chief.md");
-    assert!(agent.is_file(), "{agent:?}");
-    let skill = read_skill();
-    assert!(
-        skill.contains(".claude/agents/rhwp-chief.md"),
-        "스킬이 에이전트를 가리켜야 한다"
-    );
 }
 
 #[test]

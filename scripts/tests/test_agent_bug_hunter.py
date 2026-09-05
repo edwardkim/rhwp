@@ -19,7 +19,7 @@ REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
 GEN = REF / "_gen_pack.py"
-POINTER = REPO / ".claude" / "skills" / "rhwp-bug-hunter" / "SKILL.md"
+POINTER = REPO / ".agents" / "skills" / "rhwp-bug-hunter" / "SKILL.md"
 WORKING = REPO / "mydocs" / "working" / "archives" / "agent_bug_hunter.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
 PLAYBOOK = REPO / "mydocs" / "manual" / "bug_hunting_playbook.md"
@@ -210,7 +210,7 @@ class AgentBugHunterSkillTests(unittest.TestCase):
     def test_forbidden_peer_skills_exist_but_are_not_rewritten(self):
         for slug in FORBIDDEN_SKILLS:
             self.assertIn(slug, self.idx["forbiddenSkillsTouch"])
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
 
     def test_no_invented_commands_in_markdown(self):

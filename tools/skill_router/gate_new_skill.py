@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate for adding or editing a skill under .claude/skills/.
+"""Gate for adding or editing a skill under .agents/skills/.
 
 Mirrors tests/skills_contract.rs (frontmatter + executable `rhwp <cmd>`),
 re-scans every skill three times, checks catalog.json paths, and probes
@@ -30,7 +30,7 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
-SKILLS_DIR = REPO / ".claude" / "skills"
+SKILLS_DIR = REPO / ".agents" / "skills"
 CATALOG_JSON = HERE / "catalog.json"
 ROUTE_PY = HERE / "route.py"
 
@@ -313,7 +313,7 @@ def list_skill_dirs() -> list[Path]:
         path for path in SKILLS_DIR.iterdir() if path.is_dir() and not path.name.startswith(".")
     )
     if len(dirs) < 1:
-        raise GateFail("no skill folders under .claude/skills/")
+        raise GateFail("no skill folders under .agents/skills/")
     return dirs
 
 
@@ -824,7 +824,7 @@ def run_gate(json_mode: bool, rhwp_bin: str | None = None) -> dict[str, Any]:
 def _parse_argv(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="gate_new_skill.py",
-        description="Gate for new or edited .claude/skills/*/SKILL.md files.",
+        description="Gate for new or edited .agents/skills/*/SKILL.md files.",
         add_help=False,
     )
     parser.add_argument("--json", action="store_true", help="write a summary envelope to stdout")

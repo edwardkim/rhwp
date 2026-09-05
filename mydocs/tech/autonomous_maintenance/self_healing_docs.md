@@ -167,7 +167,7 @@ $ grep -n "mydocs" .github/workflows/ci.yml
 |---|---:|---|---|
 | `docs/` | 19 | **밖** | 공개 기술 문서(`canvaskit-parity-implementation.md`·`text-ir-v2.md`) |
 | `bindings/` | 18 | **밖** | 바인딩 README |
-| `.claude/` · `.agents/` | 3+ | **밖** | Skill·에이전트 정의. **capability 등록부가 가리키는 대상** |
+| `.agents/` · `.agents/` | 3+ | **밖** | Skill·에이전트 정의. **capability 등록부가 가리키는 대상** |
 | `.github/` | 5 | **밖** | 이슈 템플릿·기여 안내 |
 
 > **2026-09-03 후속 정리:** 이 표는 2026-08-04 측정값을 보존한다. 당시 루트 `docs/`의
@@ -175,7 +175,7 @@ $ grep -n "mydocs" .github/workflows/ci.yml
 > 루트 `docs/` 검사 공백은 현재 과제가 아니며 이동된 문서는 `mydocs/tech` 메타데이터·링크
 > 검사 범위에 포함된다.
 
-`.claude/` 가 밖인 것은 특히 어색하다 — 등록부 검증(2.1 의 5번)은 `.claude/skills/...` 경로를
+`.agents/` 가 밖인 것은 특히 어색하다 — 등록부 검증(2.1 의 5번)은 `.agents/skills/...` 경로를
 **해석**하지만, 그 파일들 자신의 링크는 검사하지 않는다.
 
 **확인되지 않음:** 이 범위가 의도인지 누락인지. `DEFAULT_PATHS` 에 사유 주석이 없다.
@@ -573,7 +573,7 @@ doc:L3:mydocs/tech/agent_security/README.md:cli.subcommands(edit)
    접두어, provider 이름, 연산 어휘 전부 미확정이다.
 2. **(나) 좁힌 형태의 오탐률.** 5.7 의 "`rhwp <토큰>` 형태만 본다"가 실제로 오탐이
    낮은지 재어 보지 않았다.
-3. **검사 범위 밖 경로가 의도인지 누락인지.** 2.4 의 `.claude/`·`bindings/`.
+3. **검사 범위 밖 경로가 의도인지 누락인지.** 2.4 의 `.agents/`·`bindings/`.
    루트 `docs/` 공백은 2026-09-03 구조 정리로 해소됐지만 나머지 `DEFAULT_PATHS`에는 사유 주석이 없다.
 4. **앵커 검사의 비용.** 3.2 에서 앵커가 가장 위험하다고 봤지만, 절 제목→앵커 slug 변환
    규칙(GitHub 방언)을 정확히 구현하는 비용을 산정하지 않았다.

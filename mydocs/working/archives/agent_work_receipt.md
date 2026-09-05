@@ -7,7 +7,7 @@ issue: 5308
 # 에이전트 작업 영수증·감사·계보 스킬 고도화 (#5308)
 
 작업 브랜치: `feat/agent-work-receipt`
-대상 스킬: `.claude/skills/rhwp-work-receipt/`
+대상 스킬: `.agents/skills/rhwp-work-receipt/`
 이슈: [agent: 작업 영수증·감사·계보 스킬 고도화](https://github.com/edwardkim/rhwp/issues/5308)
 
 ## 1. 한 줄
@@ -26,7 +26,7 @@ issue: 5308
 - lineage / lineage `--deep` (`parentOk`, `lineageOk`, `reproduced`, `brokenAt`)
 - exit 3 = 판정 데이터, exit 1 = IO, exit 2 = 사용법
 - `toolVersion` 불일치 함정, attribution/signature claim 없음
-- `.claude/skills/rhwp-work-receipt/` SKILL.md + references/ + examples/ + fixtures
+- `.agents/skills/rhwp-work-receipt/` SKILL.md + references/ + examples/ + fixtures
 - `mydocs/working/agent_work_receipt.md` (이 파일)
 - 계약 시험 (순수, 픽스처 기반)
 - additions 5000–10000, 최소 5000
@@ -60,7 +60,7 @@ K 트랙의 작업 영수증 스킬은 이미 SKILL.md 한 장으로 사다리 3
 
 | 경로 | 역할 |
 |------|------|
-| `.claude/skills/rhwp-work-receipt/SKILL.md` | 라우터. 자식 표, 하지 않는 것 |
+| `.agents/skills/rhwp-work-receipt/SKILL.md` | 라우터. 자식 표, 하지 않는 것 |
 | `references/replay-attest.md` | 3해시 · attest/verify |
 | `references/capsule-chain.md` | 불변 · 상대 경로 · 같은 파일 거부 |
 | `references/audit-accounting.md` | 비재귀 · reproducedRate |
@@ -80,11 +80,11 @@ K 트랙의 작업 영수증 스킬은 이미 SKILL.md 한 장으로 사다리 3
 
 - `src/` CLI 구현, DocumentCore
 - `gym/` 전부
-- `.claude/skills/rhwp-onboarding/`
-- `.claude/skills/rhwp-mcp-session/`
-- `.claude/skills/rhwp-provenance/`
-- `.claude/skills/rhwp-doc-triage/`
-- `.claude/skills/rhwp-safe-edit/`
+- `.agents/skills/rhwp-onboarding/`
+- `.agents/skills/rhwp-mcp-session/`
+- `.agents/skills/rhwp-provenance/`
+- `.agents/skills/rhwp-doc-triage/`
+- `.agents/skills/rhwp-safe-edit/`
 - 공개 샘플 HWP 바이너리
 
 ## 5. 기존 계약의 지도
@@ -108,7 +108,7 @@ capability 카탈로그에 `rhwp-work-receipt` 행이 원래 없었다. 이 파�
 ## 6. 디렉터리 규약
 
 ```
-.claude/skills/rhwp-work-receipt/
+.agents/skills/rhwp-work-receipt/
   SKILL.md
   references/          라우터 자식
   examples/            워크스루 20 + README

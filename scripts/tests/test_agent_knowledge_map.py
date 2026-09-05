@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-knowledge-map"
+SKILL = REPO / ".agents" / "skills" / "rhwp-knowledge-map"
 REF = SKILL / "references"
 EXAMPLES = SKILL / "examples"
 FIXT = SKILL / "fixtures"
@@ -224,12 +224,12 @@ class AgentKnowledgeMapSkillTests(unittest.TestCase):
 
     def test_peer_skills_exist_but_codex_not_rewritten(self):
         for slug in PEER_ON_DEVEL:
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
         self.assertIn("rhwp-codex", self.idx["forbiddenSkillsTouch"])
         self.assertIn("rhwp-agent-surface", self.idx["forbiddenSkillsTouch"])
         # 표면 스킬은 이 나무에 없을 수 있다. 만들지 않았는지만 본다.
-        surface = REPO / ".claude" / "skills" / "rhwp-agent-surface" / "SKILL.md"
+        surface = REPO / ".agents" / "skills" / "rhwp-agent-surface" / "SKILL.md"
         self.assertFalse(surface.is_file())
 
     def test_skill_does_not_rewrite_codex_or_surface(self):

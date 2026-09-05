@@ -15,7 +15,7 @@ last_verified: 2026-08-16
 왔는지 확인하려면 컨설턴트를 다시 불러야 한다.
 
 기계 골격은 [`tools/strategist/engagement.py`](../../tools/strategist/engagement.py),
-전략 판단의 주체는 [`rhwp-strategist` 에이전트](../../.claude/agents/rhwp-strategist.md)다.
+전략 판단의 주체는 [`rhwp-strategist` 에이전트](../../.agents/agents/rhwp-strategist.md)다.
 (등록 이슈: #4903)
 
 ## 1. 정직한 경계 — 엔진은 전략을 만들지 않는다

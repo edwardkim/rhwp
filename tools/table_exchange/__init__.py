@@ -9,7 +9,7 @@ Python 으로 다시 적어, 치수·coveredCellNotEmpty·dry-run/verify 픽스�
 (`fidelity_compare`, `hwp5_inventory`, `form_fill`, `work_receipt`,
 inspect, provenance) 은 범위 밖이다.
 
-정본: `.claude/skills/rhwp-table-exchange/`,
+정본: `.agents/skills/rhwp-table-exchange/`,
 `tests/table_csv_contract.rs`, `mydocs/manual/cli_commands.md`.
 """
 

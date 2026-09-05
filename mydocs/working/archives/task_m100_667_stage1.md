@@ -15,7 +15,7 @@
   - 질문별 stem/choice를 단순 문단으로 조립
   - image는 placeholder 텍스트로 출력
   - header/footer, shared passage, boxed block 매핑 없음
-- `.claude/skills/rhwp-exam-ingest/SKILL.md`
+- `.agents/skills/rhwp-exam-ingest/SKILL.md`
   - 공유 지문은 `auto_number=false`와 직접 그룹 지시문으로 우회하도록 안내
 
 ## 구현 메모

@@ -15,7 +15,7 @@ import tempfile
 import unittest
 from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-chief"
+SKILL = REPO / ".agents" / "skills" / "rhwp-chief"
 REF = SKILL / "references"
 EXAMPLES = SKILL / "examples"
 FIXT = SKILL / "fixtures"
@@ -23,7 +23,7 @@ GEN = SKILL / "_gen_pack.py"
 LOOP = REPO / "tools" / "chief" / "service_loop.py"
 WORKING = REPO / "mydocs" / "working" / "archives" / "agent_chief.md"
 PLAYBOOK = REPO / "mydocs" / "manual" / "chief_playbook.md"
-AGENT = REPO / ".claude" / "agents" / "rhwp-chief.md"
+AGENT = REPO / ".agents" / "agents" / "rhwp-chief.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
 
 REQUIRED_REFS = [
@@ -138,7 +138,7 @@ class AgentChiefSkillTests(unittest.TestCase):
             "rhwp export-pdf",
             "rhwp export-text",
             "rhwp edit fill-fields",
-            ".claude/agents/rhwp-chief.md",
+            ".agents/agents/rhwp-chief.md",
             "references/01_queue_protocol.md",
             "references/04_routing_table.md",
             "C03",
@@ -174,7 +174,7 @@ class AgentChiefSkillTests(unittest.TestCase):
     def test_forbidden_peer_skills_exist_but_are_not_rewritten(self):
         for slug in FORBIDDEN_SKILLS:
             self.assertIn(slug, self.idx["forbiddenSkillsTouch"])
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
 
     def test_no_invented_commands_in_markdown(self):

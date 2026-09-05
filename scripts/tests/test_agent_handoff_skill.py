@@ -9,7 +9,7 @@
 기존 scripts/tests/test_agent_handoff.py (오케스트레이터 본체) 를 수정하지 않는다.
 바이너리·네트워크를 부르지 않는다.
 
-정본: .claude/skills/rhwp-handoff/
+정본: .agents/skills/rhwp-handoff/
 작업 기록: mydocs/working/archives/agent_handoff.md
 """
 
@@ -23,7 +23,7 @@ from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-handoff"
+SKILL = REPO / ".agents" / "skills" / "rhwp-handoff"
 SKILL_MD = SKILL / "SKILL.md"
 REFS = SKILL / "references"
 EXAMPLES = SKILL / "examples"
@@ -190,7 +190,7 @@ class SkillLayoutTests(unittest.TestCase):
 
     def test_sibling_skills_exist_untouched_by_this_suite(self):
         for name in SIBLING_SKILLS:
-            path = REPO / ".claude" / "skills" / name / "SKILL.md"
+            path = REPO / ".agents" / "skills" / name / "SKILL.md"
             self.assertTrue(path.is_file(), path)
 
     def test_does_not_live_under_gym(self):
@@ -199,7 +199,7 @@ class SkillLayoutTests(unittest.TestCase):
 
     def test_does_not_rewrite_work_receipt_or_orchestrator_test(self):
         # 이 시험은 파일 존재만 본다. 본문 해시를 고정하지 않는다.
-        self.assertTrue((REPO / ".claude" / "skills" / "rhwp-work-receipt" / "SKILL.md").is_file())
+        self.assertTrue((REPO / ".agents" / "skills" / "rhwp-work-receipt" / "SKILL.md").is_file())
         self.assertTrue(EXISTING_ORCH_TEST.is_file())
 
 

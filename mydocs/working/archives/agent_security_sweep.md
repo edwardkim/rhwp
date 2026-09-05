@@ -5,7 +5,7 @@ gym 이 아니다. 실사용 에이전트가 배포 전/수신 후 스윕을 닫
 
 ## 무엇을
 
-`.claude/skills/rhwp-security-sweep/` 를 인덱스(`SKILL.md`) + `references/` 22장
+`.agents/skills/rhwp-security-sweep/` 를 인덱스(`SKILL.md`) + `references/` 22장
 + `examples/` 18장면 + `fixtures/` 봉투·규칙 표로 나눴다.
 
 계약 시험은 `tests/cases/agent_security_sweep_*.rs` — 순수 픽스처.

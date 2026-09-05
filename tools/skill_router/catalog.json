@@ -5,7 +5,7 @@
       "id": "rhwp-agent-surface",
       "capabilityId": "rhwp-agent-surface",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-agent-surface/SKILL.md",
+      "path": ".agents/skills/rhwp-agent-surface/SKILL.md",
       "authority": "mydocs/manual/agent_surface_playbook.md",
       "triggers": [
         "표면 추가/새 MCP 도구/새 --json 명령",
@@ -26,7 +26,7 @@
       "id": "rhwp-bug-hunter",
       "capabilityId": "rhwp-bug-hunter",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-bug-hunter/SKILL.md",
+      "path": ".agents/skills/rhwp-bug-hunter/SKILL.md",
       "authority": "mydocs/manual/bug_hunting_playbook.md",
       "triggers": [
         "버그 찾아줘(실사용 기준)",
@@ -44,7 +44,7 @@
       "id": "rhwp-bulk-pipeline",
       "capabilityId": "rhwp-bulk-pipeline",
       "registrationId": "LEGACY-5bd8f7147",
-      "path": ".claude/skills/rhwp-bulk-pipeline/SKILL.md",
+      "path": ".agents/skills/rhwp-bulk-pipeline/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         "폴더 전체를 텍스트로/한꺼번에 변환",
@@ -64,7 +64,7 @@
       "id": "rhwp-chief",
       "capabilityId": "rhwp-chief",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-chief/SKILL.md",
+      "path": ".agents/skills/rhwp-chief/SKILL.md",
       "authority": "mydocs/manual/chief_playbook.md",
       "triggers": [
         "요청 큐 돌려/처리해",
@@ -86,7 +86,7 @@
       "id": "rhwp-cli",
       "capabilityId": "rhwp-cli",
       "registrationId": "LEGACY-d86c935bc",
-      "path": ".claude/skills/rhwp-cli/SKILL.md",
+      "path": ".agents/skills/rhwp-cli/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         ".hwp/.hwpx 파일을 SVG/PNG/PDF/텍스트로 내보내",
@@ -108,7 +108,7 @@
       "id": "rhwp-codex",
       "capabilityId": "rhwp-codex",
       "registrationId": "LEGACY-c5fba42e9",
-      "path": ".claude/skills/rhwp-codex/SKILL.md",
+      "path": ".agents/skills/rhwp-codex/SKILL.md",
       "authority": "mydocs/manual/agent_codex/",
       "triggers": [
         "rhwp 사용법/전체 명령/뭘 쓸지 모르겠다",
@@ -128,7 +128,7 @@
       "id": "rhwp-contributor",
       "capabilityId": "rhwp-contributor",
       "registrationId": "CAP-4561",
-      "path": ".claude/skills/rhwp-contributor/SKILL.md",
+      "path": ".agents/skills/rhwp-contributor/SKILL.md",
       "authority": "CONTRIBUTING.md",
       "triggers": [
         "rhwp에 기여",
@@ -148,7 +148,7 @@
       "id": "rhwp-doc-triage",
       "capabilityId": "rhwp-doc-triage",
       "registrationId": "LEGACY-ffb20d80a",
-      "path": ".claude/skills/rhwp-doc-triage/SKILL.md",
+      "path": ".agents/skills/rhwp-doc-triage/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         "이 hwp 뭔 문서야?",
@@ -169,7 +169,7 @@
       "id": "rhwp-exam-ingest",
       "capabilityId": "rhwp-exam-ingest",
       "registrationId": "CAP-660",
-      "path": ".claude/skills/rhwp-exam-ingest/SKILL.md",
+      "path": ".agents/skills/rhwp-exam-ingest/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         "HWPX로 만들어줘",
@@ -189,7 +189,7 @@
       "id": "rhwp-explore",
       "capabilityId": "rhwp-explore",
       "registrationId": "LEGACY-ba097d6bf",
-      "path": ".claude/skills/rhwp-explore/SKILL.md",
+      "path": ".agents/skills/rhwp-explore/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         "이 문서로 뭘 할 수 있어?",
@@ -209,7 +209,7 @@
       "id": "rhwp-fde",
       "capabilityId": "rhwp-fde",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-fde/SKILL.md",
+      "path": ".agents/skills/rhwp-fde/SKILL.md",
       "authority": "mydocs/manual/fde_playbook.md",
       "triggers": [
         "고객이 이 문서가 안 열린대",
@@ -230,7 +230,7 @@
       "id": "rhwp-fidelity-compare",
       "capabilityId": "rhwp-fidelity-compare",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-fidelity-compare/SKILL.md",
+      "path": ".agents/skills/rhwp-fidelity-compare/SKILL.md",
       "authority": "mydocs/manual/verification/visual_verification_governance.md",
       "triggers": [
         "한컴 PDF와 비교",
@@ -249,7 +249,7 @@
       "id": "rhwp-form-fill",
       "capabilityId": "rhwp-form-fill",
       "registrationId": "LEGACY-ffb20d80a",
-      "path": ".claude/skills/rhwp-form-fill/SKILL.md",
+      "path": ".agents/skills/rhwp-form-fill/SKILL.md",
       "authority": "mydocs/manual/form_filling_guide.md",
       "triggers": [
         "이 서식/신청서/양식 채워줘",
@@ -270,7 +270,7 @@
       "id": "rhwp-handoff",
       "capabilityId": "rhwp-handoff",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-handoff/SKILL.md",
+      "path": ".agents/skills/rhwp-handoff/SKILL.md",
       "authority": "tools/handoff/orchestrator.py",
       "triggers": [
         "세션 핸드오프",
@@ -293,7 +293,7 @@
       "id": "rhwp-knowledge-map",
       "capabilityId": "rhwp-knowledge-map",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-knowledge-map/SKILL.md",
+      "path": ".agents/skills/rhwp-knowledge-map/SKILL.md",
       "authority": "mydocs/manual/agent_knowledge_map.md",
       "triggers": [
         "지식 지도",
@@ -315,7 +315,7 @@
       "id": "rhwp-mcp-session",
       "capabilityId": "rhwp-mcp-session",
       "registrationId": "LEGACY-1ac20c359",
-      "path": ".claude/skills/rhwp-mcp-session/SKILL.md",
+      "path": ".agents/skills/rhwp-mcp-session/SKILL.md",
       "authority": "mydocs/manual/mcp_integration_guide.md",
       "triggers": [
         "rhwp 를 MCP로 붙여/등록해",
@@ -338,7 +338,7 @@
       "id": "rhwp-onboarding",
       "capabilityId": "rhwp-onboarding",
       "registrationId": "LEGACY-316959379",
-      "path": ".claude/skills/rhwp-onboarding/SKILL.md",
+      "path": ".agents/skills/rhwp-onboarding/SKILL.md",
       "authority": "mydocs/manual/agent_onboarding.md",
       "triggers": [
         "rhwp 처음/설치/시작/온보딩",
@@ -359,7 +359,7 @@
       "id": "rhwp-provenance",
       "capabilityId": "rhwp-provenance",
       "registrationId": "LEGACY-1ac20c359",
-      "path": ".claude/skills/rhwp-provenance/SKILL.md",
+      "path": ".agents/skills/rhwp-provenance/SKILL.md",
       "authority": "mydocs/tech/envelope_provenance.md",
       "triggers": [
         "이 값이 문서에서 온 건가",
@@ -381,7 +381,7 @@
       "id": "rhwp-recipes",
       "capabilityId": "rhwp-recipes",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-recipes/SKILL.md",
+      "path": ".agents/skills/rhwp-recipes/SKILL.md",
       "authority": "mydocs/manual/recipes/",
       "triggers": [
         "어떤 레시피로 가?",
@@ -399,7 +399,7 @@
       "id": "rhwp-safe-edit",
       "capabilityId": "rhwp-safe-edit",
       "registrationId": "LEGACY-1ac20c359",
-      "path": ".claude/skills/rhwp-safe-edit/SKILL.md",
+      "path": ".agents/skills/rhwp-safe-edit/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         "누름틀 채워",
@@ -424,7 +424,7 @@
       "id": "rhwp-security-sweep",
       "capabilityId": "rhwp-security-sweep",
       "registrationId": "LEGACY-5bd8f7147",
-      "path": ".claude/skills/rhwp-security-sweep/SKILL.md",
+      "path": ".agents/skills/rhwp-security-sweep/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         "이 문서 보내도 돼/배포 전 점검",
@@ -445,7 +445,7 @@
       "id": "rhwp-skill-author",
       "capabilityId": "rhwp-skill-author",
       "registrationId": "CAP-5706",
-      "path": ".claude/skills/rhwp-skill-author/SKILL.md",
+      "path": ".agents/skills/rhwp-skill-author/SKILL.md",
       "authority": "tools/skill_router/README.md",
       "triggers": [
         "새 스킬",
@@ -464,7 +464,7 @@
       "id": "rhwp-skill-router",
       "capabilityId": "rhwp-skill-router",
       "registrationId": "CAP-5706",
-      "path": ".claude/skills/rhwp-skill-router/SKILL.md",
+      "path": ".agents/skills/rhwp-skill-router/SKILL.md",
       "authority": "mydocs/manual/agent_skill_router.md",
       "triggers": [
         "라우터",
@@ -484,7 +484,7 @@
       "id": "rhwp-strategist",
       "capabilityId": "rhwp-strategist",
       "registrationId": "LEGACY-e79f11308",
-      "path": ".claude/skills/rhwp-strategist/SKILL.md",
+      "path": ".agents/skills/rhwp-strategist/SKILL.md",
       "authority": "mydocs/manual/strategist_playbook.md",
       "triggers": [
         "이 문서들로 전략 보고서/제안서",
@@ -505,7 +505,7 @@
       "id": "rhwp-table-exchange",
       "capabilityId": "rhwp-table-exchange",
       "registrationId": "LEGACY-ffb20d80a",
-      "path": ".claude/skills/rhwp-table-exchange/SKILL.md",
+      "path": ".agents/skills/rhwp-table-exchange/SKILL.md",
       "authority": "mydocs/manual/recipes/02_table_csv_roundtrip.md",
       "triggers": [
         "표를 CSV/엑셀로 뽑아줘",
@@ -525,7 +525,7 @@
       "id": "rhwp-visual-regression",
       "capabilityId": "rhwp-visual-regression",
       "registrationId": "LEGACY-5bd8f7147",
-      "path": ".claude/skills/rhwp-visual-regression/SKILL.md",
+      "path": ".agents/skills/rhwp-visual-regression/SKILL.md",
       "authority": "mydocs/manual/recipes/06_visual_regression_before_after.md",
       "triggers": [
         "편집 전후 화면 비교",
@@ -545,7 +545,7 @@
       "id": "rhwp-work-receipt",
       "capabilityId": "rhwp-work-receipt",
       "registrationId": "LEGACY-7e7b3261b",
-      "path": ".claude/skills/rhwp-work-receipt/SKILL.md",
+      "path": ".agents/skills/rhwp-work-receipt/SKILL.md",
       "authority": "mydocs/manual/cli_commands.md",
       "triggers": [
         "이 작업 증명해/영수증 남겨",

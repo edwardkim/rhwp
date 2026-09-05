@@ -167,8 +167,8 @@ let landscape_rowbreak_bleed = st.layout.body_area.height < 700.0;   // 이 문�
 전수 실패 17건의 귀속:
 
 - **13건** — `agent_*_skill_contract`. 이 장비가 `core.autocrlf=true` 로 체크아웃해
-  `.claude/skills/*/SKILL.md` 가 CRLF(`2D 2D 2D 0D 0A`)로 시작하는데 테스트는 LF 기준
-  `starts_with` 를 본다. 이 변경과 무관한 환경 요인이며 `.claude/` 는 건드리지 않았다.
+  `.agents/skills/*/SKILL.md` 가 CRLF(`2D 2D 2D 0D 0A`)로 시작하는데 테스트는 LF 기준
+  `starts_with` 를 본다. 이 변경과 무관한 환경 요인이며 `.agents/` 는 건드리지 않았다.
 - **4건** — 전부 위 편람 문서 쪽수 단정이고 이번 갱신 대상이다. 재검증에서 통과했다.
 
 `cargo fmt --all -- --check` 전체는 이 장비의 CRLF 체크아웃 때문에 저장소 전역이 실패하므로

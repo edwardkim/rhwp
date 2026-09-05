@@ -40,7 +40,7 @@ rhwp 를 "에이전트 도구가 딸린 문서 엔진"에서 **검증 가능하�
 | 8 | 에이전트 메모리 | **빠짐** | 세션 도구(`mcp-serve`)는 재파싱을 피하지만 작업 간 기억이 아니다 |
 | 9 | 출처·영수증·계보·감사 | **있음(강함)** | `replay --capsule`·`lineage`·`anchor`·`audit`·`settle`·`conformance`, [AWS/1.0](agent_work_standard.md) 5단 표준 |
 | 10 | MCP 통합 | **있음** | `mcp-serve` 세션·무상태 도구, `capabilities --mcp` 가 도구 정의의 단일 출처 |
-| 11 | 하니스 통합 | **부분** | `.claude/` 에이전트·Skill, `.agents/` — 런타임 계약과의 접합은 미정 |
+| 11 | 하니스 통합 | **부분** | `.agents/` 에이전트·Skill, `.agents/` — 런타임 계약과의 접합은 미정 |
 | 12 | 보안·주입·비신뢰 문서 격리 | **있음** | `inspect`(은닉·주입·유니코드)·`threat-scan`·출처 표지(`untrustedContent`/`untrustedFields`)·`export-provenance-map` |
 
 **따라서 이 아키텍처의 1차 작업은 발명이 아니라 결속이다.** 있는 것을 프로토콜로

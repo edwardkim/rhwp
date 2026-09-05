@@ -1,7 +1,0 @@
-{
-  "id": "skills_reference_only_real_commands",
-  "file": "tests/skills_contract.rs",
-  "from": ".claude/skills/**/SKILL.md rhwp <tok>",
-  "to": "capabilities ∪ --help",
-  "on_fail": "죽은 명령을 스킬에서 지운다"
-}

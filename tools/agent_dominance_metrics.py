@@ -40,7 +40,7 @@ AXIS = [
     ("지식지도·통합 문서", ["mydocs/manual/agent_knowledge_map.md",
                         "mydocs/manual/mcp_integration_guide.md",
                         "mydocs/manual/agent_codex"]),
-    ("스킬", [".claude/skills"]),
+    ("스킬", [".agents/skills"]),
     ("에이전트 코어(src)", ["src/mcp_serve.rs", "src/agent_profiles.rs",
                          "src/provenance.rs", "src/schema_registry.rs",
                          "src/capsule_sign.rs"]),
@@ -106,7 +106,7 @@ def surface_metrics():
     for t in tests:
         fn += io.open(t, encoding="utf-8", errors="replace").read().count("#[test]")
     out["계약 가드 테스트 함수"] = fn
-    skills = os.path.join(ROOT, ".claude", "skills")
+    skills = os.path.join(ROOT, ".agents", "skills")
     if os.path.isdir(skills):
         out["스킬 수"] = len([d for d in os.listdir(skills)
                            if os.path.isdir(os.path.join(skills, d))])

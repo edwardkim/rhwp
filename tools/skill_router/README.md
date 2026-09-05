@@ -26,7 +26,7 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 
 ## git pre-commit
 
-Skill-path changes (`.claude/skills/`, `.agents/skills/`, `tools/skill_router/`)
+Skill-path changes (`.agents/skills/`, `.agents/skills/`, `tools/skill_router/`)
 run the 3-pass gate automatically on commit.
 
 ```bash

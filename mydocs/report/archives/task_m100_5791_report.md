@@ -95,7 +95,7 @@ test result: FAILED. 3 passed; 6 failed
 
 `agent_knowledge_map_skill_contract::skill_frontmatter_names_knowledge_map` 이
 `SKILL.md` 를 `starts_with("---\n")` 로 본다. Windows 기본 `core.autocrlf=true` 체크아웃에서는
-`.claude/skills/*/SKILL.md` 27개가 전부 CRLF 라 이 판정이 거짓 실패한다(같은 패턴의 계약 14본).
+`.agents/skills/*/SKILL.md` 27개가 전부 CRLF 라 이 판정이 거짓 실패한다(같은 패턴의 계약 14본).
 저장소 인덱스는 LF 라 Ubuntu CI 는 초록이다. 이 PR 과 무관하며 별도로 다룬다.
 
 ## 4. 안전 경계

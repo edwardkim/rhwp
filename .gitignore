@@ -58,11 +58,11 @@ Thumbs.db
 /saved/*.hwp
 !/saved/blank2010.hwp
 !/saved/pr360-edward.hwp
-.claude/*
-# .claude/skills/는 프로젝트 종속 Skill (rhwp 바이너리 호출, ingest_schema_v1 사용)이므로 추적
-!.claude/skills/
-# .claude/agents/는 프로젝트 종속 서브에이전트 정의(bug-hunter 등, #3398)이므로 추적
-!.claude/agents/
+.agents/*
+# .agents/skills/는 프로젝트 종속 Skill (rhwp 바이너리 호출, ingest_schema_v1 사용)이므로 추적
+!.agents/skills/
+# .agents/agents/는 프로젝트 종속 서브에이전트 정의(bug-hunter 등, #3398)이므로 추적
+!.agents/agents/
 
 # 환경변수 (민감 정보)
 .env

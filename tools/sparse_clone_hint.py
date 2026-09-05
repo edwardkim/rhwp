@@ -54,7 +54,7 @@ SCHEMA_VERSION = "1.0"
 # 모든 프리셋에 공통으로 얹는 최소 진입점 — CLAUDE.md 의 "로딩 순서"가 가리키는
 # 뿌리 파일들과 에이전트 설정이다. 전부 작아서 항상 받아도 부담이 없다.
 ALWAYS = [
-    ".claude",
+    ".agents",
     "AGENTS.md",
     "CLAUDE.md",
     "Cargo.toml",

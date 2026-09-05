@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed sync: .claude/skills folders == catalog.json ids ==
+"""Fail-closed sync: .agents/skills folders == catalog.json ids ==
 intents.py skills == graph.py builders.
 
     python tools/skill_router/check_catalog_sync.py
@@ -20,7 +20,7 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
-SKILLS_DIR = REPO / ".claude" / "skills"
+SKILLS_DIR = REPO / ".agents" / "skills"
 CATALOG_JSON = HERE / "catalog.json"
 INTENTS_PY = HERE / "intents.py"
 GRAPH_PY = HERE / "graph.py"
@@ -122,7 +122,7 @@ def list_skill_dirs() -> list[str]:
         if (child / "SKILL.md").is_file():
             ids.append(child.name)
     if not ids:
-        raise SyncFail("no .claude/skills/*/SKILL.md folders")
+        raise SyncFail("no .agents/skills/*/SKILL.md folders")
     return _sorted_unique(ids)
 
 

@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5337
 브랜치: `feat/agent-chief` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-chief/` · `tools/chief/service_loop.py` ·
+범위: `.agents/skills/rhwp-chief/` · `tools/chief/service_loop.py` ·
 `tests/agent_chief_skill_contract.rs` · `scripts/tests/test_agent_chief.py` ·
 capability 등록부 `CAP-4900` 진입점 · 본 문서
 비범위: `gym/` · FDE/Strategist 스킬 재작성 · 다른 열린 PR 파일 ·
@@ -76,7 +76,7 @@ DoD: additions 5000–10000 (최소 5000). PR 전 `cargo fmt --all -- --check`.
 ## 검증
 
 ```bash
-python .claude/skills/rhwp-chief/_gen_pack.py
+python .agents/skills/rhwp-chief/_gen_pack.py
 python -m unittest scripts.tests.test_agent_chief
 cargo fmt --all -- --check
 cargo test --test agent_chief_skill_contract
@@ -88,7 +88,7 @@ capabilities 거부 계약은 그대로 통과해야 한다.
 ## 권위
 
 - `mydocs/manual/chief_playbook.md`
-- `.claude/agents/rhwp-chief.md`
+- `.agents/agents/rhwp-chief.md`
 - `tools/chief/service_loop.py`
 - `mydocs/manual/fde_playbook.md` (게이트만)
 - `mydocs/manual/agent_capability_registry.md` (`CAP-4900`)

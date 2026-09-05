@@ -18,7 +18,7 @@ rhwp `--json` 봉투에는 엔진 값과 문서 작성자가 정한 값이 한 �
 
 ## 2. 한 일
 
-`.claude/skills/rhwp-provenance/` 를 스킬 + 레퍼런스 + 픽스처로 키웠다.
+`.agents/skills/rhwp-provenance/` 를 스킬 + 레퍼런스 + 픽스처로 키웠다.
 
 | 경로 | 역할 |
 | --- | --- |

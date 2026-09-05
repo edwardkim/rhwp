@@ -11,8 +11,8 @@ from tools.skill_router.precommit_skill_gate import _is_trigger, _normalize_path
 class NormalizePathTests(unittest.TestCase):
     def test_dot_claude_keeps_leading_dot(self) -> None:
         self.assertEqual(
-            _normalize_path(".claude/skills/rhwp-skill-author/SKILL.md"),
-            ".claude/skills/rhwp-skill-author/SKILL.md",
+            _normalize_path(".agents/skills/rhwp-skill-author/SKILL.md"),
+            ".agents/skills/rhwp-skill-author/SKILL.md",
         )
 
     def test_dot_agents_keeps_leading_dot(self) -> None:
@@ -29,14 +29,14 @@ class NormalizePathTests(unittest.TestCase):
 
     def test_backslash_to_slash(self) -> None:
         self.assertEqual(
-            _normalize_path(".claude\\skills\\x\\SKILL.md"),
-            ".claude/skills/x/SKILL.md",
+            _normalize_path(".agents\\skills\\x\\SKILL.md"),
+            ".agents/skills/x/SKILL.md",
         )
 
 
 class TriggerTests(unittest.TestCase):
     def test_claude_skill_triggers(self) -> None:
-        self.assertTrue(_is_trigger(".claude/skills/rhwp-skill-author/SKILL.md"))
+        self.assertTrue(_is_trigger(".agents/skills/rhwp-skill-author/SKILL.md"))
 
     def test_agents_skill_triggers(self) -> None:
         self.assertTrue(_is_trigger(".agents/skills/bug-hunter/SKILL.md"))

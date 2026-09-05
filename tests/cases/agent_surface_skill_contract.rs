@@ -16,7 +16,7 @@ fn root() -> PathBuf {
 
 fn skill_dir() -> PathBuf {
     root()
-        .join(".claude")
+        .join(".agents")
         .join("skills")
         .join("rhwp-agent-surface")
 }

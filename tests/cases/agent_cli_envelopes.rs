@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use serde_json::Value;
 
 fn skill_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(".claude/skills/rhwp-cli")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(".agents/skills/rhwp-cli")
 }
 
 fn read_text(rel: &str) -> String {

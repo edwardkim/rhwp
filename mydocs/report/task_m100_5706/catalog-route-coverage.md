@@ -71,6 +71,6 @@ Counts: 3/3 pass. 27/27 skills covered. 0 failed to win.
 | 2 | 0 | OK: 27 skills x 3 scans, catalog=26, route_probes=78, rhwp=207 |
 | 3 | 0 | OK: 27 skills x 3 scans, catalog=27, route_probes=81, rhwp=207 |
 
-Counts: 3/3 pass. Repeats 1–2 ran while catalog.json still had 26 skills (`rhwp-skill-author` existed under `.claude/skills/` and was scanned). Repeat 3 ran after `rhwp-skill-author` was in catalog.json (27 ids, 81 route probes). `rhwp.exe` command check: 207 known, 189 refs.
+Counts: 3/3 pass. Repeats 1–2 ran while catalog.json still had 26 skills (`rhwp-skill-author` existed under `.agents/skills/` and was scanned). Repeat 3 ran after `rhwp-skill-author` was in catalog.json (27 ids, 81 route probes). `rhwp.exe` command check: 207 known, 189 refs.
 
 Live rhwp: `C:\Users\swsz9\rhwp-skill-router\target\release\rhwp.exe`.

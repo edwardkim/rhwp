@@ -119,7 +119,7 @@ FIRST_5_MIN = [
             'rhwp digest "<파일>" --json --max-chars 1000',
         ],
         "skill": "rhwp-doc-triage",
-        "reference": ".claude/skills/rhwp-onboarding/references/first-5-min-triage.md",
+        "reference": ".agents/skills/rhwp-onboarding/references/first-5-min-triage.md",
         "readOnly": True,
         "gate": "format 와 pageCount 가 있고, digest.truncated 를 읽어 절단을 숨기지 않는다",
     },
@@ -132,7 +132,7 @@ FIRST_5_MIN = [
             'rhwp table-to-csv "<파일>" --table 0 --json',
         ],
         "skill": "rhwp-table-exchange",
-        "reference": ".claude/skills/rhwp-onboarding/references/first-5-min-tables.md",
+        "reference": ".agents/skills/rhwp-onboarding/references/first-5-min-tables.md",
         "readOnly": True,
         "gate": "tables[].index / rows / cols / colSpan / rowSpan 을 읽고 병합이면 CSV 왕복을 하지 않는다",
     },
@@ -144,7 +144,7 @@ FIRST_5_MIN = [
             'rhwp fields "<파일>" --json',
         ],
         "skill": "rhwp-form-fill",
-        "reference": ".claude/skills/rhwp-onboarding/references/first-5-min-form-read.md",
+        "reference": ".agents/skills/rhwp-onboarding/references/first-5-min-form-read.md",
         "readOnly": True,
         "gate": "fieldCount 와 fields[].name 을 읽고, fieldCount==0 이면 이 축을 포기한다",
     },
@@ -158,7 +158,7 @@ FIRST_5_MIN = [
             'rhwp inspect unicode "<파일>" --json',
         ],
         "skill": "rhwp-security-sweep",
-        "reference": ".claude/skills/rhwp-onboarding/references/first-5-min-security.md",
+        "reference": ".agents/skills/rhwp-onboarding/references/first-5-min-security.md",
         "readOnly": True,
         "gate": "clean 필드로 분기한다. 신호 발견은 exit 0 이며 오류가 아니다",
     },
@@ -172,7 +172,7 @@ FIRST_5_MIN = [
             'rhwp replay --plan-json \'{"planVersion":"1.0","input":"<파일>","output":"<산출>","steps":[]}\' --json',
         ],
         "skill": "rhwp-mcp-session",
-        "reference": ".claude/skills/rhwp-onboarding/references/mcp-json-paste.md",
+        "reference": ".agents/skills/rhwp-onboarding/references/mcp-json-paste.md",
         "readOnly": True,
         "gate": "stdio MCP 만 쓴다. 포트·인증을 만들지 않는다. replay 는 기존 계획 스키마만 인용한다",
     },
@@ -182,97 +182,97 @@ FIRST_5_MIN = [
 ONBOARDING_REFERENCES = [
     {
         "id": "skill",
-        "path": ".claude/skills/rhwp-onboarding/SKILL.md",
+        "path": ".agents/skills/rhwp-onboarding/SKILL.md",
         "role": "스킬 진입점",
     },
     {
         "id": "first-5-min",
-        "path": ".claude/skills/rhwp-onboarding/references/first-5-min.md",
+        "path": ".agents/skills/rhwp-onboarding/references/first-5-min.md",
         "role": "첫 5분 레시피 지도",
     },
     {
         "id": "first-5-min-triage",
-        "path": ".claude/skills/rhwp-onboarding/references/first-5-min-triage.md",
+        "path": ".agents/skills/rhwp-onboarding/references/first-5-min-triage.md",
         "role": "트리아지 레시피",
     },
     {
         "id": "first-5-min-tables",
-        "path": ".claude/skills/rhwp-onboarding/references/first-5-min-tables.md",
+        "path": ".agents/skills/rhwp-onboarding/references/first-5-min-tables.md",
         "role": "표 추출 레시피",
     },
     {
         "id": "first-5-min-form-read",
-        "path": ".claude/skills/rhwp-onboarding/references/first-5-min-form-read.md",
+        "path": ".agents/skills/rhwp-onboarding/references/first-5-min-form-read.md",
         "role": "서식 조사 레시피(읽기 전용)",
     },
     {
         "id": "first-5-min-security",
-        "path": ".claude/skills/rhwp-onboarding/references/first-5-min-security.md",
+        "path": ".agents/skills/rhwp-onboarding/references/first-5-min-security.md",
         "role": "보안 스윕 레시피",
     },
     {
         "id": "mcp-json-paste",
-        "path": ".claude/skills/rhwp-onboarding/references/mcp-json-paste.md",
+        "path": ".agents/skills/rhwp-onboarding/references/mcp-json-paste.md",
         "role": "호스트별 .mcp.json 붙여넣기",
     },
     {
         "id": "binary-discovery",
-        "path": ".claude/skills/rhwp-onboarding/references/binary-discovery.md",
+        "path": ".agents/skills/rhwp-onboarding/references/binary-discovery.md",
         "role": "바이너리 발견 순서",
     },
     {
         "id": "sample-selftest",
-        "path": ".claude/skills/rhwp-onboarding/references/sample-selftest.md",
+        "path": ".agents/skills/rhwp-onboarding/references/sample-selftest.md",
         "role": "샘플 자가검증 계약",
     },
     {
         "id": "exception-missing-binary",
-        "path": ".claude/skills/rhwp-onboarding/references/exception-missing-binary.md",
+        "path": ".agents/skills/rhwp-onboarding/references/exception-missing-binary.md",
         "role": "예외: 바이너리 없음",
     },
     {
         "id": "exception-bad-sample",
-        "path": ".claude/skills/rhwp-onboarding/references/exception-bad-sample.md",
+        "path": ".agents/skills/rhwp-onboarding/references/exception-bad-sample.md",
         "role": "예외: 불량 샘플",
     },
     {
         "id": "exception-no-network",
-        "path": ".claude/skills/rhwp-onboarding/references/exception-no-network.md",
+        "path": ".agents/skills/rhwp-onboarding/references/exception-no-network.md",
         "role": "예외: 네트워크 없음",
     },
     {
         "id": "exception-transcripts",
-        "path": ".claude/skills/rhwp-onboarding/references/exception-transcripts.md",
+        "path": ".agents/skills/rhwp-onboarding/references/exception-transcripts.md",
         "role": "예외 리포트 트랜스크립트",
     },
     {
         "id": "first-5-min-envelopes",
-        "path": ".claude/skills/rhwp-onboarding/references/first-5-min-envelopes.md",
+        "path": ".agents/skills/rhwp-onboarding/references/first-5-min-envelopes.md",
         "role": "첫 5분 봉투 필드",
     },
     {
         "id": "binary-discovery-matrix",
-        "path": ".claude/skills/rhwp-onboarding/references/binary-discovery-matrix.md",
+        "path": ".agents/skills/rhwp-onboarding/references/binary-discovery-matrix.md",
         "role": "OS별 바이너리 자리",
     },
     {
         "id": "host-paste-examples",
-        "path": ".claude/skills/rhwp-onboarding/references/host-paste-examples.md",
+        "path": ".agents/skills/rhwp-onboarding/references/host-paste-examples.md",
         "role": "호스트별 붙여넣기 예",
     },
     {
         "id": "first-5-min-receipt",
-        "path": ".claude/skills/rhwp-onboarding/references/first-5-min-receipt.md",
+        "path": ".agents/skills/rhwp-onboarding/references/first-5-min-receipt.md",
         "role": "작업 영수증 입구",
     },
     {
         "id": "doctor-report-schema",
-        "path": ".claude/skills/rhwp-onboarding/references/doctor-report-schema.md",
+        "path": ".agents/skills/rhwp-onboarding/references/doctor-report-schema.md",
         "role": "닥터 JSON 리포트 스키마",
     },
     {
         "id": "onboarding-catalog",
-        "path": ".claude/skills/rhwp-onboarding/references/onboarding-catalog.md",
+        "path": ".agents/skills/rhwp-onboarding/references/onboarding-catalog.md",
         "role": "명령·예외·호스트 교차표",
     },
     {
@@ -526,7 +526,7 @@ def resolve_recipe_map(repo_root: Path):
     """RECIPES 를 실존 검증과 함께 해석한다. 없는 스킬/레시피는 정직하게 표시."""
     out = []
     for r in RECIPES:
-        skill_rel = f".claude/skills/{r['skill']}"
+        skill_rel = f".agents/skills/{r['skill']}"
         skill_exists = (repo_root / skill_rel / "SKILL.md").is_file()
         recipe_rel = r["recipe"]
         recipe_exists = bool(recipe_rel) and (repo_root / recipe_rel).is_file()
@@ -549,7 +549,7 @@ def resolve_first_5_min(repo_root: Path):
     out = []
     for step in FIRST_5_MIN:
         ref = step["reference"]
-        skill_rel = f".claude/skills/{step['skill']}"
+        skill_rel = f".agents/skills/{step['skill']}"
         out.append(
             {
                 "id": step["id"],
@@ -740,7 +740,7 @@ def exception_playbook(kind: str):
                 "산출물 target/release/rhwp (Windows: rhwp.exe) 를 확인한다.",
                 "PATH 에 넣거나 --rhwp / RHWP_BIN 으로 절대 경로를 준다.",
                 "닥터를 다시 실행한다. 긴 빌드를 닥터에게 맡기지 않는다.",
-                "상세: .claude/skills/rhwp-onboarding/references/exception-missing-binary.md",
+                "상세: .agents/skills/rhwp-onboarding/references/exception-missing-binary.md",
             ],
         },
         EXC_BAD_SAMPLE: {
@@ -750,7 +750,7 @@ def exception_playbook(kind: str):
                 "직접 준 파일이면 OLE(D0 CF 11 E0) 또는 ZIP(PK) 시그니처를 확인한다.",
                 "빈 파일·txt 를 .hwp 로 이름만 바꾼 입력은 자가검증 대상이 아니다.",
                 "--sample <실제.hwp|실제.hwpx> 로 정상 문서를 지정한다.",
-                "상세: .claude/skills/rhwp-onboarding/references/exception-bad-sample.md",
+                "상세: .agents/skills/rhwp-onboarding/references/exception-bad-sample.md",
             ],
         },
         EXC_NO_NETWORK: {
@@ -760,7 +760,7 @@ def exception_playbook(kind: str):
                 "cargo build 는 의존성이 캐시돼 있으면 오프라인에서도 된다.",
                 "crates.io / GitHub 에서 새로 받기는 미룬다.",
                 "--offline 으로 프로브를 건너뛸 수 있다.",
-                "상세: .claude/skills/rhwp-onboarding/references/exception-no-network.md",
+                "상세: .agents/skills/rhwp-onboarding/references/exception-no-network.md",
             ],
         },
         EXC_WRITE_EXISTS: {

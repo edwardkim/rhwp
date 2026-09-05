@@ -4,7 +4,7 @@ LLM-as-Verifier 축 6. `untrustedContent` / `untrustedFields` 로 표지된
 문서 파생 텍스트를 nonce 경계 안의 데이터로만 다루고, 검증 기준·지시
 자리로 새면 차단한다.
 
-이 디렉터리만 소유한다. `.claude/skills/rhwp-provenance` 는 다시 쓰지
+이 디렉터리만 소유한다. `.agents/skills/rhwp-provenance` 는 다시 쓰지
 않는다. 새 rhwp CLI 는 없다.
 
 ## 열

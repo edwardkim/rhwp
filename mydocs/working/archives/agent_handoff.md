@@ -9,7 +9,7 @@ taskId: t-ord
 # 에이전트 세션 핸드오프 오케스트레이터 스킬 신설 (#5339)
 
 작업 브랜치: `feat/agent-handoff`
-정본 스킬: `.claude/skills/rhwp-handoff/`
+정본 스킬: `.agents/skills/rhwp-handoff/`
 이슈: [agent: 세션 핸드오프 오케스트레이터 스킬 신설](https://github.com/edwardkim/rhwp/issues/5339)
 
 ## 1. 한 줄
@@ -23,7 +23,7 @@ taskId: t-ord
 
 요구:
 
-- `.claude/skills/rhwp-handoff/` SKILL.md + references/ + examples/ + fixtures
+- `.agents/skills/rhwp-handoff/` SKILL.md + references/ + examples/ + fixtures
 - `mydocs/working/agent_handoff.md` (이 파일)
 - 계약 시험 (파이썬 + 픽스처 기반 Rust)
 - 언제 넘기는가: 컨텍스트 예산, 세션 중단, 시트 리필
@@ -56,7 +56,7 @@ taskId: t-ord
 
 | 경로 | 역할 |
 |------|------|
-| `.claude/skills/rhwp-handoff/SKILL.md` | 신설. 요약 규약 |
+| `.agents/skills/rhwp-handoff/SKILL.md` | 신설. 요약 규약 |
 | `references/` | 트리거·프로토콜·예외·금지 |
 | `examples/` | 워크스루 28 |
 | `fixtures/` | 캡슐 체인·봉투·저널·시나리오 |
@@ -68,14 +68,14 @@ taskId: t-ord
 
 - `src/` CLI, DocumentCore
 - `gym/` 전부
-- `.claude/skills/rhwp-work-receipt/` 본문
-- `.claude/skills/rhwp-onboarding/` 외 형제 스킬
+- `.agents/skills/rhwp-work-receipt/` 본문
+- `.agents/skills/rhwp-onboarding/` 외 형제 스킬
 - `scripts/tests/test_agent_handoff.py` (오케스트레이터 기존 시험)
 
 ## 5. 인계 머리 (이 작업 자체)
 
 - result: (이 PR 은 문서·픽스처. 오케스트레이터 실구동 산출은 fixtures/results/)
-- capsule: `.claude/skills/rhwp-handoff/fixtures/capsules/s24.capsule.json` (체인 머리 표본)
+- capsule: `.agents/skills/rhwp-handoff/fixtures/capsules/s24.capsule.json` (체인 머리 표본)
 - parent: `s23.capsule.json` (상대)
 - journal: `fixtures/journals/ok.ndjson`
 

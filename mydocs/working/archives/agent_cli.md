@@ -7,7 +7,7 @@ issue: 5316
 # 에이전트 CLI 분석·디버깅 스킬 고도화 (#5316)
 
 작업 브랜치: `feat/agent-cli`
-대상 스킬: `.claude/skills/rhwp-cli/`
+대상 스킬: `.agents/skills/rhwp-cli/`
 이슈: [agent: CLI 분석·디버깅 스킬 고도화](https://github.com/edwardkim/rhwp/issues/5316)
 
 이슈 번호 5315 는 보안 스윕(#5307) 고도화다. 본 파동은 열린 이슈
@@ -23,7 +23,7 @@ issue: 5316
 
 요구:
 
-- `.claude/skills/rhwp-cli/` SKILL.md + references/ + examples/ + fixtures
+- `.agents/skills/rhwp-cli/` SKILL.md + references/ + examples/ + fixtures
 - 요청→명령: export-svg/png/pdf/text/markdown, dump-pages, dump, dump-records,
   diag, info, export-render-tree, ir-diff, thumbnail, convert, hwp5-*
 - 레이아웃/겹침 순서: export-svg --debug-overlay → dump-pages → dump →
@@ -66,7 +66,7 @@ K 트랙의 `rhwp-cli` 는 이미 SKILL.md 한 장으로 매핑과 디버그 순
 
 | 경로 | 역할 |
 |------|------|
-| `.claude/skills/rhwp-cli/SKILL.md` | 라우터. 매핑, 6단, 봉투, 하지 않는 것 |
+| `.agents/skills/rhwp-cli/SKILL.md` | 라우터. 매핑, 6단, 봉투, 하지 않는 것 |
 | `references/00`–`28` | 명령 장·디버그 순서·단위·왕복·저장 계약·예외 |
 | `examples/01`–`24` | 워크스루 |
 | `fixtures/` | 명령 맵·봉투·시나리오·트레이스 |
@@ -78,7 +78,7 @@ K 트랙의 `rhwp-cli` 는 이미 SKILL.md 한 장으로 매핑과 디버그 순
 
 - `src/` CLI 구현, DocumentCore
 - `gym/` 전부
-- 다른 `.claude/skills/*` 본문
+- 다른 `.agents/skills/*` 본문
 - 공개 샘플 HWP 바이너리
 
 ## 5. 기존 계약의 지도
@@ -103,7 +103,7 @@ capability 카탈로그의 `rhwp-cli` 행은 `LEGACY-d86c935bc` 로 이미 있�
 ## 6. 디렉터리 규약
 
 ```
-.claude/skills/rhwp-cli/
+.agents/skills/rhwp-cli/
   SKILL.md
   references/          00–28 + _gen_pack.py
   examples/            워크스루 24 + README

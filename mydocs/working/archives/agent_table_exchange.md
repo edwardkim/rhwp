@@ -7,7 +7,7 @@ issue: 5306
 # 에이전트 표↔CSV 왕복 스킬 고도화 (#5306)
 
 작업 브랜치: `feat/agent-table-exchange`
-대상 스킬: `.claude/skills/rhwp-table-exchange/`
+대상 스킬: `.agents/skills/rhwp-table-exchange/`
 이슈: [agent: 표 CSV 왕복(table-exchange) 스킬 고도화](https://github.com/edwardkim/rhwp/issues/5306)
 
 ## 1. 한 줄
@@ -23,7 +23,7 @@ issue: 5306
 
 - 치수 계약·병합 셀·dry-run/verify 실패 봉투·BOM/인코딩을 에이전트가
   **데이터로** 읽는 레시피·시험.
-- `.claude/skills/rhwp-table-exchange/` SKILL.md + references/ +
+- `.agents/skills/rhwp-table-exchange/` SKILL.md + references/ +
   examples/ + fixtures.
 - 기존 CLI 만: `export-tables`, `table-to-csv` (`--table` `--bom`),
   `csv-to-table` (`--dry-run` `--verify`).
@@ -70,7 +70,7 @@ K 트랙 표 왕복 스킬은 이미 있다. SKILL.md 한 장이 판단 트리�
 
 | 경로 | 역할 |
 |------|------|
-| `.claude/skills/rhwp-table-exchange/SKILL.md` | 라우터. 30초 트리, 하지 않는 것 |
+| `.agents/skills/rhwp-table-exchange/SKILL.md` | 라우터. 30초 트리, 하지 않는 것 |
 | `references/export_tables_matrix.md` | 좌표·병합·컨테이너·info 대비 |
 | `references/table_to_csv_envelopes.md` | `--table`/`-o`/`--bom` 봉투 |
 | `references/csv_to_table_contract.md` | 치수·covered·control·csvParse |
@@ -88,7 +88,7 @@ K 트랙 표 왕복 스킬은 이미 있다. SKILL.md 한 장이 판단 트리�
 만지지 않은 것:
 
 - `gym/`
-- `.claude/skills/` 의 다른 스킬
+- `.agents/skills/` 의 다른 스킬
 - `src/document_core/`
 - 새 `[[bin]]` / 새 CLI 하위명령
 - 열려 있는 형제 PR 의 파일 (`rhwp-safe-edit` 등)

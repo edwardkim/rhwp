@@ -6,8 +6,8 @@
 
 대조 대상:
 
-- `.claude/skills/rhwp-contributor/SKILL.md` — `## 스킬 경로 게이트 (PR 직전 필수)`
-- `.claude/skills/rhwp-skill-author/SKILL.md` — `## 3-pass 게이트 — 끝내기 전에 명령마다 세 번`
+- `.agents/skills/rhwp-contributor/SKILL.md` — `## 스킬 경로 게이트 (PR 직전 필수)`
+- `.agents/skills/rhwp-skill-author/SKILL.md` — `## 3-pass 게이트 — 끝내기 전에 명령마다 세 번`
 
 기대 세 명령: `gate_new_skill`, `test_route`, `regression_suite_015 --nocapture`.
 
@@ -27,7 +27,7 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 
 | 파일 | 절 | 펜스 |
 |------|-----|------|
-| `.claude/skills/rhwp-contributor/SKILL.md` | 스킬 경로 게이트 | L113–117 |
-| `.claude/skills/rhwp-skill-author/SKILL.md` | 3-pass 게이트 | L44–48 |
+| `.agents/skills/rhwp-contributor/SKILL.md` | 스킬 경로 게이트 | L113–117 |
+| `.agents/skills/rhwp-skill-author/SKILL.md` | 3-pass 게이트 | L44–48 |
 
 DIFF 가 아니므로 본문 인용은 위 공통 블록 한 번만 둔다.

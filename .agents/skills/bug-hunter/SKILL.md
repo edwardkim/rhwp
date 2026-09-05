@@ -171,7 +171,7 @@ venv/bin/python tools/fidelity_compare/fidelity_compare.py <키> <시작> <끝> 
 25. [24_existing_cli.md](references/24_existing_cli.md) — 기존 CLI 만
 
 예제: [examples/](examples/). 기계 가독 픽스처: [fixtures/](fixtures/).
-Claude 진입 포인터: [`.claude/skills/rhwp-bug-hunter/`](../../../.claude/skills/rhwp-bug-hunter/SKILL.md).
+Claude 진입 포인터: [`.agents/skills/rhwp-bug-hunter/`](../../../.agents/skills/rhwp-bug-hunter/SKILL.md).
 
 ## 권위
 

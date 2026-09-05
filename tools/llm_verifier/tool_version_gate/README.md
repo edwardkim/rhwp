@@ -5,7 +5,7 @@ Issue #5518. 영수증 `toolVersion` 이 검증기 바이너리 버전과 다르
 
 이 디렉터리는 기존 `receipt.toolVersion` 계약을 **감싸는 검증기**다.
 새 rhwp CLI 를 만들지 않는다.
-`.claude/skills/rhwp-work-receipt` 와 V-replay 를 재작성하지 않는다.
+`.agents/skills/rhwp-work-receipt` 와 V-replay 를 재작성하지 않는다.
 
 ## 축
 

@@ -22,7 +22,7 @@
 | Cursor | `.cursor/rules/rhwp.mdc` (alwaysApply) | 신설 (얇은 포인터) |
 | Gemini CLI | `GEMINI.md` | 신설 (얇은 포인터) |
 | Windsurf/Cline | `.windsurfrules` · `.clinerules` | 신설 (얇은 포인터) |
-| Claude 스킬 | `.claude/skills/rhwp-contributor` — 기여 절차 8단계 체크리스트 | 신설, 등록부 `CAP-4561` 등재 |
+| Claude 스킬 | `.agents/skills/rhwp-contributor` — 기여 절차 8단계 체크리스트 | 신설, 등록부 `CAP-4561` 등재 |
 | 사람 문서 | `CONTRIBUTING.md` "LLM/에이전트 보조 기여" 절 (도구별 표 포함) | 추가 |
 | LLM 인덱스 | `llms.txt` 증빙 규약 항목 | 추가 |
 
