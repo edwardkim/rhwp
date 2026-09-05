@@ -5408,6 +5408,9 @@ impl LayoutEngine {
             // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
             let mut prior_float_table_stacked = false;
             let mut rendered_top_and_bottom_non_inline = false;
+            // [#6787] 같은 칸 문단의 문단-기준 자리차지 중첩 표들이 **가로 오프셋으로
+            // 나란히** 놓이는 무리(`#6494` 의 칸 안 짝). 앞 표가 쓴 x 끝과 그 줄 상단.
+            let mut cell_float_lane: Option<(f64, f64)> = None;
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 match ctrl {
@@ -6438,6 +6441,7 @@ impl LayoutEngine {
                     }
                     Control::Table(nested_table) => {
                         let is_tac_table = nested_table.common.treat_as_char;
+
                         // HWPX의 같은 빈 host 문단 안에 있는 `글 뒤로` 1×1 표는
                         // 문단 흐름을 차지하지 않는 overlay control이다. 특히 자동날인
                         // 안내처럼 세 control이 같은 `vpos`에 있고 horzOffset만 다른
@@ -6494,6 +6498,28 @@ impl LayoutEngine {
                         // 읽지 않아 표가 호스트 줄과 같은 y 에 놓였다.
                         let nested_y =
                             nested_y + para_relative_float_table_lead(nested_table, self.dpi);
+                        // [#6787] 칸 안 문단-기준 자리차지 중첩 표의 **가로 오프셋**.
+                        //
+                        // 16774617 1쪽 후보자 카드 2장은 `horz=Para(1547)` / `Para(23743)`
+                        // 로 가로 위치가 문서에 실려 있고 한/글은 그대로 나란히 놓는다
+                        // (오라클 카드 상자 x 122.7 / 418.5). rhwp 는 오프셋을 버리고
+                        // 둘 다 가운데 정렬한 뒤 `para_y` 를 표 높이만큼 전진시켜
+                        // **세로로 쌓았다** — 그 칸이 선언 251.97px 대비 854.7px 로
+                        // 부풀어 표 전체가 용지를 넘고 361자가 잘렸다.
+                        let cell_float_lane_x = (!is_tac_table
+                            && matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom)
+                            && matches!(nested_table.common.vert_rel_to, VertRelTo::Para)
+                            && matches!(nested_table.common.horz_rel_to, HorzRelTo::Para))
+                        .then(|| signed_hwpunit(nested_table.common.horizontal_offset))
+                        .filter(|off| *off > 0)
+                        .map(|off| inner_area.x + hwpunit_to_px(off, self.dpi));
+                        // 앞 표가 쓴 x 끝보다 오른쪽에서 시작하면 같은 줄을 나눠 갖는다.
+                        let nested_y = match (cell_float_lane_x, cell_float_lane) {
+                            (Some(x), Some((lane_top, lane_x_end))) if x >= lane_x_end - 0.5 => {
+                                lane_top
+                            }
+                            _ => nested_y,
+                        };
                         let nested_y = if single_row_continuation || hwp5_rowbreak_fragment {
                             nested_y
                         } else {
@@ -6763,6 +6789,10 @@ impl LayoutEngine {
                                 }
                                 cell_node.children.push(line_node);
                             }
+                            let float_x = cell_float_lane_x;
+                            // ⚠ `ctrl_area.x` 는 건드리지 않는다 — 아래 `layout_table` 의
+                            // `inline_x_override` 가 이미 절대 x 를 정한다. 둘 다 주면
+                            // 오프셋이 **두 번** 실린다(카드 A 119.2 → 139.8).
                             let ctrl_area = LayoutRect {
                                 x: inner_area.x + tac_text_offset,
                                 y: nested_y,
@@ -6814,7 +6844,12 @@ impl LayoutEngine {
                                 nested_ctx,
                                 0.0,
                                 0.0,
-                                hwpx_nested_behind_text_overlay.then_some(inner_area.x),
+                                // ⚠ `compute_table_x_position` 이 이 override 에 non-TAC
+                                // `horzOffset` 을 **스스로 더한다**. 여기서 오프셋까지
+                                // 실으면 두 번 실린다(카드 A 119.2 → 139.8).
+                                hwpx_nested_behind_text_overlay
+                                    .then_some(inner_area.x)
+                                    .or(float_x.map(|_| inner_area.x)),
                                 nested_split,
                                 None,
                                 None,
@@ -6840,12 +6875,28 @@ impl LayoutEngine {
                                 .flatten()
                                 .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
                                 .filter(|h| *h > 0.0);
-                                para_y = nested_y
-                                    + square_wrap_anchor_h.unwrap_or_else(|| {
-                                        nested_split
-                                            .map(|split| split.flow_height)
-                                            .unwrap_or(table_h)
-                                    });
+                                let advance = square_wrap_anchor_h.unwrap_or_else(|| {
+                                    nested_split
+                                        .map(|split| split.flow_height)
+                                        .unwrap_or(table_h)
+                                });
+                                if let Some(x) = float_x {
+                                    // [#6787] 나란히 무리는 **가장 높은 표** 만큼만 흐름을
+                                    // 전진시키고, 가로만 채워 나간다.
+                                    let lane_bottom = cell_float_lane
+                                        .map(|(top, _)| (top + advance).max(para_y))
+                                        .unwrap_or(nested_y + advance);
+                                    cell_float_lane = Some((
+                                        nested_y,
+                                        x + hwpunit_to_px(
+                                            nested_table.common.width.min(i32::MAX as u32) as i32,
+                                            self.dpi,
+                                        ),
+                                    ));
+                                    para_y = lane_bottom.max(nested_y + advance);
+                                } else {
+                                    para_y = nested_y + advance;
+                                }
                                 // [#5712] TopAndBottom 흐름 표가 커서를 전진시켰다 —
                                 // 같은 문단 뒤 TAC 표의 co-anchored 적층 판별 신호.
                                 if square_wrap_anchor_h.is_none()

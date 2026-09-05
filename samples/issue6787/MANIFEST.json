@@ -1,0 +1,22 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6787,
+  "title": "전자투표용지(사진 사용) 별지 제2호서식",
+  "entries": [
+    {
+      "path": "samples/issue6787/16774617-electronic-ballot-form.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6787",
+      "originalFilename": "16774617_[별지 제2호서식] 전자투표용지(사진 사용)¸ 전자투표용지(사진 미사용)(전자투표 및 개표에 관한 규칙).hwp",
+      "bytes": 54272,
+      "sha256": "b68b1d54a4e52f282d5ae699f4aa5d8cd5d580c982ec79a1d1e8099e69c1c088",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.7571"
+      },
+      "referenceEngine": "2024",
+      "contract": "칸 안 문단-기준 자리차지 중첩 표들이 가로 오프셋으로 겹치지 않으면 같은 줄에 나란히 놓이고, 칸 높이는 합이 아니라 최댓값이다."
+    }
+  ]
+}
