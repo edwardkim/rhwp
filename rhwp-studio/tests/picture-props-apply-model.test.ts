@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 import type { CellPathLike, PictureProperties, ShapeProperties } from '../src/core/types.ts';
 import {
   buildPicturePropsPatch,
@@ -711,5 +715,22 @@ test('[#6758] 같은 값의 다른 표기는 변경이 아니다', () => {
 
   assert.equal('width' in patch, false, '"10" 과 "10.00" 은 같은 값이다');
   assert.equal('height' in patch, false, '"20" 과 "20.00" 은 같은 값이다');
+});
+
+test('[#6758] 다이얼로그가 크기 칸을 공용 서식으로 채운다', () => {
+  // `addChangedSize` 는 입력값을 **표시값과 견줘** 사용자가 건드렸는지 판정한다. 그래서
+  // 다이얼로그가 칸을 채우는 서식과 apply-model 의 서식이 갈라지면 판정이 늘 "바뀌었다"가
+  // 되어 #6758 이 되살아난다. 두 벌을 두지 않도록 다이얼로그가 `displayedMm` 를 쓴다.
+  const dialog = codeOnly(
+    readFileSync(
+      join(dirname(dirname(fileURLToPath(import.meta.url))), 'src/ui/picture-props-dialog.ts'),
+      'utf8',
+    ),
+  );
+
+  assert.match(dialog, /this\.widthInput\.value = displayedMm\(this\.props\.width\);/,
+    '너비 칸을 공용 서식으로 채우지 않는다');
+  assert.match(dialog, /this\.heightInput\.value = displayedMm\(this\.props\.height\);/,
+    '높이 칸을 공용 서식으로 채우지 않는다');
 });
 
