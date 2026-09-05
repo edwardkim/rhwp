@@ -624,7 +624,12 @@ fn collect_glyph_run_reject_reasons(
     {
         reasons.insert(VariantRejectReason::GlyphAdvanceCountMismatch);
     }
-    if !run.paint_style.is_fill_only_glyph_replay() {
+    let paint_supported = if options.backend == VariantSelectionBackend::NativeSkia {
+        run.paint_style.is_simple_glyph_run_replay()
+    } else {
+        run.paint_style.is_fill_only_glyph_replay()
+    };
+    if !paint_supported {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
     }
     if (run.shape_key.font_instance.synthetic_bold || run.shape_key.font_instance.synthetic_italic)
