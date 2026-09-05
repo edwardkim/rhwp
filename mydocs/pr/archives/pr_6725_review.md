@@ -111,6 +111,33 @@ expected skip이었다. 성공으로 오인하지 않았으며, 이 문서에서
 - 넓은 layout 변경이라 public sample 하나가 모든 HWP/HWPX 조판을 대표하지는 않는다. 정확한
   candidate의 CI, existing regression archive, Canvas visual diff가 현 범위의 회귀 방어선이다.
 
+## Merge 후 contributor PR comment 계획
+
+최신 PR head `245bded88382c78ee207ba41bd172e79061b6354`는 이 review/오늘 기록을 포함한
+`a279837e...` 위에 당시 최신 `devel`을 merge한 commit이다. 해당 head의 Full CI와 모든 실행
+worker가 성공했지만, 이 계획을 추가한 후속 head도 같은 merge gate를 다시 통과해야 한다.
+
+merge SHA가 `upstream/devel`에 포함되고 devel push CI의 aggregate 및 실행 worker가 성공한 뒤,
+원 PR에 `--body-file`로 한 번만 다음 내용을 게시한다.
+
+- rhwp 첫 기여에 대한 감사와 환영, 그리고 HWPJSON native paste·HTML paste·조판 보정이라는
+  contributor 원 구현의 범위
+- maintainer 보정 `d64c94cc...`의 무음 content 유실 차단, `826e3840...`의 포맷 정정,
+  `00efe0e0...`의 CI test-tier 기준선 정정. contributor commit을 rebase, amend, force-push하지
+  않았다는 사실
+- 최신 PR Full CI, CodeQL, Canvas visual diff, Adapter, Proptest와 merge 뒤 devel CI의 실제 run
+  링크 및 성공 결과
+- **사용자 실사용 검증:** 작업지시자가 Windows에서 rhwp를 build한 뒤 Hancom Office 2024에서 문서
+  전체를 복사해 rhwp에 붙여넣는 동작이 성공했다고 확인했다. 이는 사용자 수동 검증이며 GitHub
+  Actions 자동화 검증으로 바꾸어 표현하지 않는다.
+- public HWPX sample의 provenance와, PR 본문의 11-page PNG/98.9% 수치는 contributor 보고 범위이며
+  maintainer 독립 oracle sweep 결과로 과장하지 않는다는 경계
+- PR 본문에 closing keyword가 없어 issue를 자동 또는 수동 close하지 않으며, contributor fork branch도
+  보존한다는 사실
+
+이미 같은 merge SHA와 검증 증적을 담은 maintainer comment가 있으면 새 comment를 중복 게시하지 않고
+기존 permalink만 최종 상태에 기록한다.
+
 ## 최종 판정과 다음 조건
 
 - 판정: **메인터너 보정 됨, 수용 가능**
