@@ -3050,7 +3050,7 @@ export class InputHandler {
       } else if (range.mode === 'cellBlock') {
         // [Task #6741] 한컴은 셀 블록에서 지운 뒤 되돌리면 지우기 전 블록을 되살린다(실측).
         // `resetDerivedStateAfterHistoryJump` 가 방금 해제한 것을 여기서 다시 세운다 —
-        // F3 확장 단계를 `selectRange(start, end, blockPhase)` 로 되살리는 것과 같은 자리다.
+        // F3 확장 단계를 본문 범위와 같은 호출로 되살리는 것과 같은 자리다.
         // 표가 사라졌거나 범위가 밖으로 나가면 `restoreCellSelection` 이 거절한다(#2339 규약).
         if (this.cursor.restoreCellSelection(range.state)) {
           this.caret.hide();
