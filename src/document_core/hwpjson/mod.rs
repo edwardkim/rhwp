@@ -45,7 +45,7 @@ pub fn hwpjson_to_hwpx_parts(json: &str) -> Result<HwpxParts, HwpError> {
 
     let mut ids = ctx::Ids::default();
     // ① 그림 먼저 — 본문의 binaryItemIDRef 가 이 번호를 그대로 쓴다.
-    let bins = pack::bin_entries(&model, &mut ids);
+    let bins = pack::bin_entries(&model, &mut ids).map_err(HwpError::InvalidFile)?;
     // ② 글꼴 수집 → 글꼴표
     fonts_charpr::collect_fonts(&model, &mut ids);
     let fontfaces = fonts_charpr::emit_fontfaces(&ids);
@@ -62,7 +62,7 @@ pub fn hwpjson_to_hwpx_parts(json: &str) -> Result<HwpxParts, HwpError> {
         &charprops,
         &paraprops,
     );
-    let section_xml = body::emit_section_file(&model, &mut ids);
+    let section_xml = body::emit_section_file(&model, &mut ids).map_err(HwpError::InvalidFile)?;
 
     Ok(HwpxParts {
         header_xml,

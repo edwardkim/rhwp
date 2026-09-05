@@ -789,31 +789,116 @@ fn next_free_field_id(doc: &Document) -> u32 {
 fn collect_max_field_id(paragraphs: &[Paragraph], max_id: &mut u32) {
     for para in paragraphs {
         for ctrl in &para.controls {
-            match ctrl {
-                Control::Field(field) => *max_id = (*max_id).max(field.field_id),
-                Control::Table(table) => {
-                    for cell in &table.cells {
-                        collect_max_field_id(&cell.paragraphs, max_id);
-                    }
-                    if let Some(caption) = &table.caption {
-                        collect_max_field_id(&caption.paragraphs, max_id);
-                    }
-                }
-                Control::Shape(shape) => {
-                    if let Some(drawing) = shape.drawing() {
-                        if let Some(text_box) = &drawing.text_box {
-                            collect_max_field_id(&text_box.paragraphs, max_id);
-                        }
-                    }
-                }
-                Control::Picture(picture) => {
-                    if let Some(caption) = &picture.caption {
-                        collect_max_field_id(&caption.paragraphs, max_id);
-                    }
-                }
-                _ => {}
+            collect_max_field_id_from_control(ctrl, max_id);
+        }
+    }
+}
+
+/// `RemapCtx::control` 과 같은 문단 트리를 훑어 field id 최대값을 수집한다.
+///
+/// 새 필드 id는 이 순회가 본 문서에서 이미 쓰인 모든 id보다 커야 한다. 재작성 경로가
+/// 닿는 하위 문단을 하나라도 빼면 붙여넣은 필드가 기존 field id와 충돌한다.
+fn collect_max_field_id_from_control(ctrl: &Control, max_id: &mut u32) {
+    match ctrl {
+        Control::Field(field) => {
+            *max_id = (*max_id).max(field.field_id);
+            collect_max_field_id(&field.memo_paragraphs, max_id);
+        }
+        Control::Table(table) => {
+            for cell in &table.cells {
+                collect_max_field_id(&cell.paragraphs, max_id);
+            }
+            if let Some(caption) = &table.caption {
+                collect_max_field_id(&caption.paragraphs, max_id);
             }
         }
+        Control::Picture(picture) => {
+            if let Some(caption) = &picture.caption {
+                collect_max_field_id(&caption.paragraphs, max_id);
+            }
+        }
+        Control::Shape(shape) => collect_max_field_id_from_shape(shape, max_id),
+        Control::Header(header) => collect_max_field_id(&header.paragraphs, max_id),
+        Control::Footer(footer) => collect_max_field_id(&footer.paragraphs, max_id),
+        Control::Footnote(footnote) => collect_max_field_id(&footnote.paragraphs, max_id),
+        Control::Endnote(endnote) => collect_max_field_id(&endnote.paragraphs, max_id),
+        Control::HiddenComment(comment) => collect_max_field_id(&comment.paragraphs, max_id),
+        _ => {}
+    }
+}
+
+fn collect_max_field_id_from_shape(
+    shape: &crate::model::shape::ShapeObject,
+    max_id: &mut u32,
+) {
+    match shape {
+        crate::model::shape::ShapeObject::Picture(picture) => {
+            if let Some(caption) = &picture.caption {
+                collect_max_field_id(&caption.paragraphs, max_id);
+            }
+        }
+        crate::model::shape::ShapeObject::Ole(ole) => {
+            if let Some(caption) = &ole.caption {
+                collect_max_field_id(&caption.paragraphs, max_id);
+            }
+        }
+        crate::model::shape::ShapeObject::Group(group) => {
+            for child in &group.children {
+                collect_max_field_id_from_shape(child, max_id);
+            }
+            if let Some(caption) = &group.caption {
+                collect_max_field_id(&caption.paragraphs, max_id);
+            }
+        }
+        crate::model::shape::ShapeObject::Chart(chart) => {
+            if let Some(caption) = &chart.caption {
+                collect_max_field_id(&caption.paragraphs, max_id);
+            }
+        }
+        _ => {}
+    }
+    if let Some(drawing) = shape.drawing() {
+        if let Some(text_box) = &drawing.text_box {
+            collect_max_field_id(&text_box.paragraphs, max_id);
+        }
+        if let Some(caption) = &drawing.caption {
+            collect_max_field_id(&caption.paragraphs, max_id);
+        }
+    }
+}
+
+#[cfg(test)]
+mod field_id_tests {
+    use super::next_free_field_id;
+    use crate::model::control::{Control, Field};
+    use crate::model::document::{Document, Section};
+    use crate::model::header_footer::Header;
+    use crate::model::paragraph::Paragraph;
+
+    #[test]
+    fn next_field_id_includes_header_sublist_fields() {
+        let header_field = Paragraph {
+            controls: vec![Control::Field(Field {
+                field_id: 41,
+                ..Default::default()
+            })],
+            ..Default::default()
+        };
+        let document = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Header(Box::new(Header {
+                        paragraphs: vec![header_field],
+                        ..Default::default()
+                    }))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        assert_eq!(next_free_field_id(&document), 42);
     }
 }
 

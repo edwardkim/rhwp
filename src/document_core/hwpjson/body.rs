@@ -568,7 +568,7 @@ fn obj_common_attrs(o: &Value, extra: &[(&str, Option<String>)]) -> String {
 
 // ---------------------------------------------------------------- 표
 
-fn emit_tbl(m: &Model, ids: &mut Ids, o: &Value) -> String {
+fn emit_tbl(m: &Model, ids: &mut Ids, o: &Value) -> Result<String, String> {
     let a = obj_common_attrs(
         o,
         &[
@@ -601,13 +601,13 @@ fn emit_tbl(m: &Model, ids: &mut Ids, o: &Value) -> String {
     for row in getarr(o, "tr") {
         out.push_str("<hp:tr>");
         for cell in row.as_array().map_or(&[][..], |v| &v[..]) {
-            out.push_str(&emit_tc(m, ids, cell));
+            out.push_str(&emit_tc(m, ids, cell)?);
         }
         out.push_str("</hp:tr>");
     }
     out.push_str(&emit_shapecomment(o));
     out.push_str("</hp:tbl>");
-    out
+    Ok(out)
 }
 
 /// `tr[][].ps = {na:539, pa:[{na:16384, ty:1, va:"셀이름"}]}` → `hp:tc/@name`.
@@ -627,7 +627,7 @@ fn cell_name(cell: &Value) -> String {
     String::new()
 }
 
-fn emit_tc(m: &Model, ids: &mut Ids, cell: &Value) -> String {
+fn emit_tc(m: &Model, ids: &mut Ids, cell: &Value) -> Result<String, String> {
     let head = m.table("sl").get(gets(cell, "so")).unwrap_or(nullv());
     let tc = sub(head, "tc");
     let a = attrs(&[
@@ -643,7 +643,7 @@ fn emit_tc(m: &Model, ids: &mut Ids, cell: &Value) -> String {
         ),
     ]);
     let mut out = format!("<hp:tc{a}>");
-    out.push_str(&emit_sublist(m, ids, head));
+    out.push_str(&emit_sublist(m, ids, head)?);
     out.push_str(&format!(
         "<hp:cellAddr colAddr=\"{}\" rowAddr=\"{}\"/>",
         geti(tc, "ac", 0),
@@ -667,11 +667,11 @@ fn emit_tc(m: &Model, ids: &mut Ids, cell: &Value) -> String {
         geti(tc, "mb", 0)
     ));
     out.push_str("</hp:tc>");
-    out
+    Ok(out)
 }
 
 /// 표 칸·도형 글상자의 `hp:subList` (문단 포함).
-fn emit_sublist(m: &Model, ids: &mut Ids, head: &Value) -> String {
+fn emit_sublist(m: &Model, ids: &mut Ids, head: &Value) -> Result<String, String> {
     // JSON 은 객체, HWPX 는 그 JSON 문자열을 속성에 이스케이프해 넣는다
     let metatag = getobj(head, "mt")
         .filter(|mt| !mt.is_empty())
@@ -702,11 +702,11 @@ fn emit_sublist(m: &Model, ids: &mut Ids, head: &Value) -> String {
     let sl = m.table("sl");
     for pid in m.sublist_paragraph_ids(gets(head, "hp")) {
         if let Some(p) = sl.get(&pid) {
-            out.push_str(&emit_paragraph(m, ids, p));
+            out.push_str(&emit_paragraph(m, ids, p)?);
         }
     }
     out.push_str("</hp:subList>");
-    out
+    Ok(out)
 }
 
 fn non_empty(s: &str) -> Option<&str> {
@@ -719,12 +719,12 @@ fn non_empty(s: &str) -> Option<&str> {
 
 // ---------------------------------------------------------------- 그리기 개체
 
-fn emit_gso(m: &Model, ids: &mut Ids, o: &Value) -> String {
+fn emit_gso(m: &Model, ids: &mut Ids, o: &Value) -> Result<String, String> {
     let rc = sub(o, "rc");
     if geti(rc, "ci", 0) == RC_REC {
         emit_rect(m, ids, o, rc)
     } else {
-        emit_pic(m, ids, o, rc)
+        Ok(emit_pic(m, ids, o, rc))
     }
 }
 
@@ -850,7 +850,7 @@ fn emit_pic(m: &Model, ids: &mut Ids, o: &Value, rc: &Value) -> String {
     out
 }
 
-fn emit_rect(m: &Model, ids: &mut Ids, o: &Value, rc: &Value) -> String {
+fn emit_rect(m: &Model, ids: &mut Ids, o: &Value, rc: &Value) -> Result<String, String> {
     let mut out = emit_shape_head(o, rc, "rect", &[("ratio", av(geti(rc, "rra", 0)))]);
     let ls = sub(rc, "ls");
     out.push_str(&format!(
@@ -904,7 +904,7 @@ fn emit_rect(m: &Model, ids: &mut Ids, o: &Value, rc: &Value) -> String {
             lw,
             b01(getb(dt, "ed"))
         ));
-        out.push_str(&emit_sublist(m, ids, head));
+        out.push_str(&emit_sublist(m, ids, head)?);
         out.push_str(&format!(
             "<hp:textMargin left=\"{}\" right=\"{}\" top=\"{}\" bottom=\"{}\"/>",
             geti(dt, "ml", 0),
@@ -928,23 +928,26 @@ fn emit_rect(m: &Model, ids: &mut Ids, o: &Value, rc: &Value) -> String {
     out.push_str(&emit_shapecomment(o));
     out.push_str(&emit_paramset(o));
     out.push_str("</hp:rect>");
-    out
+    Ok(out)
 }
 
 // ---------------------------------------------------------------- 문단·run
 
 /// `{cc, ci, co}` 제어문자 → 그 자리에 인라인 중첩되는 HWPX 요소.
-fn emit_control(m: &Model, ids: &mut Ids, ch: &Value) -> String {
-    let Some(o) = m.table("cs").get(gets(ch, "co")) else {
-        return String::new();
+fn emit_control(m: &Model, ids: &mut Ids, ch: &Value) -> Result<String, String> {
+    let control_id = gets(ch, "co");
+    let Some(o) = m.table("cs").get(control_id) else {
+        return Err(format!("지원하지 않는 hwpjson control 참조: {control_id}"));
     };
     match geti(ch, "ci", 0) {
-        CI_SECD => emit_secpr(m, ids, o), // ctrl 래핑 없음(사양서 반증 확정)
-        CI_COLD => emit_colpr(o),         // ctrl 래핑 있음
-        CI_PGNP => emit_pagenum(o),       // ctrl 래핑 있음
+        CI_SECD => Ok(emit_secpr(m, ids, o)), // ctrl 래핑 없음(사양서 반증 확정)
+        CI_COLD => Ok(emit_colpr(o)),         // ctrl 래핑 있음
+        CI_PGNP => Ok(emit_pagenum(o)),       // ctrl 래핑 있음
         CI_TBL => emit_tbl(m, ids, o),
         CI_GSO => emit_gso(m, ids, o),
-        _ => String::new(),
+        ci => Err(format!(
+            "지원하지 않는 hwpjson control 종류: ci={ci}, co={control_id}"
+        )),
     }
 }
 
@@ -966,7 +969,12 @@ fn split_run(ch: &[Value]) -> Vec<&[Value]> {
     vec![ch]
 }
 
-fn emit_run(m: &Model, ids: &mut Ids, cp_objid: &str, ch: &[Value]) -> String {
+fn emit_run(
+    m: &Model,
+    ids: &mut Ids,
+    cp_objid: &str,
+    ch: &[Value],
+) -> Result<String, String> {
     let cid = charpr_ref(ids, cp_objid);
     let has_obj = ch.iter().any(|c| c.get("t").is_none());
     let mut body = String::new();
@@ -982,19 +990,19 @@ fn emit_run(m: &Model, ids: &mut Ids, cp_objid: &str, ch: &[Value]) -> String {
                 body.push_str(&format!("<hp:t>{}</hp:t>", esc_text(t)));
             }
         } else {
-            body.push_str(&emit_control(m, ids, c));
+            body.push_str(&emit_control(m, ids, c)?);
         }
     }
     // 🔴 정본은 참조가 없어도 속성을 생략하지 않는다(빈 run 도 charPrIDRef 를 달고 나간다).
     let cid = opt_str(cid);
     if body.is_empty() {
-        format!("<hp:run charPrIDRef=\"{cid}\"/>")
+        Ok(format!("<hp:run charPrIDRef=\"{cid}\"/>"))
     } else {
-        format!("<hp:run charPrIDRef=\"{cid}\">{body}</hp:run>")
+        Ok(format!("<hp:run charPrIDRef=\"{cid}\">{body}</hp:run>"))
     }
 }
 
-fn emit_paragraph(m: &Model, ids: &mut Ids, p: &Value) -> String {
+fn emit_paragraph(m: &Model, ids: &mut Ids, p: &Value) -> Result<String, String> {
     let bf = geti(p, "bf", 0);
     let sec_break = bf & 1; // 구역 나누기 — HWPX 는 구조로 표현, 속성은 전부 0
     let a = attrs(&[
@@ -1022,33 +1030,33 @@ fn emit_paragraph(m: &Model, ids: &mut Ids, p: &Value) -> String {
         let ch = getarr(run, "ch");
         let cp = gets(run, "cp").to_string();
         for part in split_run(ch) {
-            out.push_str(&emit_run(m, ids, &cp, part));
+            out.push_str(&emit_run(m, ids, &cp, part)?);
         }
     }
     // hp:linesegarray 는 레이아웃 캐시이며 클립보드 모델에 값이 없다 → 생략
     // (한글이 열 때 다시 계산한다)
     out.push_str("</hp:p>");
-    out
+    Ok(out)
 }
 
 // ---------------------------------------------------------------- 공개 API
 
 /// `<hs:sec …> … </hs:sec>` 전체를 문자열로 만든다.
-pub fn emit_section(m: &Model, ids: &mut Ids) -> String {
+pub fn emit_section(m: &Model, ids: &mut Ids) -> Result<String, String> {
     let mut out = String::from(SEC_OPEN);
     let ro = m.table("ro");
     for pid in m.body_paragraph_ids() {
         if let Some(p) = ro.get(&pid) {
-            out.push_str(&emit_paragraph(m, ids, p));
+            out.push_str(&emit_paragraph(m, ids, p)?);
         }
     }
     out.push_str("</hs:sec>");
-    out
+    Ok(out)
 }
 
 /// XML 선언 + 본문.
-pub fn emit_section_file(m: &Model, ids: &mut Ids) -> String {
+pub fn emit_section_file(m: &Model, ids: &mut Ids) -> Result<String, String> {
     let mut s = String::from(SEC_XML_DECL);
-    s.push_str(&emit_section(m, ids));
-    s
+    s.push_str(&emit_section(m, ids)?);
+    Ok(s)
 }

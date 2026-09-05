@@ -259,7 +259,7 @@ pub fn build_header(
 /// `bidt`(표준 base64) → `(1-base 번호, MIME, 바이트)` 목록. `ids.bin_id` 를 채운다.
 ///
 /// 🔴 모델 `bi` 배열의 위치가 곧 `imageN` 번호다(본문 `binaryItemIDRef` 가 이 번호를 가리킨다).
-pub fn bin_entries(m: &Model, ids: &mut Ids) -> Vec<(u16, String, Vec<u8>)> {
+pub fn bin_entries(m: &Model, ids: &mut Ids) -> Result<Vec<(u16, String, Vec<u8>)>, String> {
     use base64::Engine as _;
     let mut out = Vec::new();
     for (idx, item) in m.bi().iter().enumerate() {
@@ -272,14 +272,17 @@ pub fn bin_entries(m: &Model, ids: &mut Ids) -> Vec<(u16, String, Vec<u8>)> {
             .bidt()
             .get(sr)
             .and_then(Value::as_str)
-            .unwrap_or("")
+            .ok_or_else(|| format!("hwpjson 이미지 원본이 없다: {sr}"))?
             // 줄바꿈이 섞여 와도 디코드되게 공백류만 걷어낸다(표준 base64 자체는 그대로).
             .chars()
             .filter(|c| !c.is_ascii_whitespace())
             .collect();
+        if b64.is_empty() {
+            return Err(format!("hwpjson 이미지 원본이 비어 있다: {sr}"));
+        }
         let data = base64::engine::general_purpose::STANDARD
             .decode(b64.as_bytes())
-            .unwrap_or_default();
+            .map_err(|e| format!("hwpjson 이미지 base64가 손상됐다: {sr}: {e}"))?;
         let mime = {
             let ty = gets(item, "ty");
             if ty.is_empty() {
@@ -292,5 +295,5 @@ pub fn bin_entries(m: &Model, ids: &mut Ids) -> Vec<(u16, String, Vec<u8>)> {
         ids.bin_id.insert(sr.to_string(), n);
         out.push((n, mime, data));
     }
-    out
+    Ok(out)
 }
