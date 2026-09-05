@@ -1,0 +1,23 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6764,
+  "title": "항공교통관제사 CBTA 체계 도입 연구 방안 용역 최종보고서",
+  "entries": [
+    {
+      "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6764",
+      "originalFilename": "1613000-202200037_D0150004-1-001_[최종보고서]항공교통관제사 CBTA 체계 도입 연구 방안 용역 Ver.6 [최종].hwp",
+      "bytes": 12851712,
+      "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.0.0.7888"
+      },
+      "referenceEngine": "2020",
+      "contract": "앞 문단의 자리차지 표 배제 밴드를 후속 블록 표의 분할 예산에 반영한다. 잔여 제목 문단 결함의 전체 해결을 뜻하지 않는다."
+    }
+  ]
+}
+

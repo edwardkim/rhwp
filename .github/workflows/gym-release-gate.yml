@@ -15,6 +15,15 @@ on:
       - 'scripts/tests/test_gym_*.py'
       - '.github/workflows/gym-release-gate.yml'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'contracts만 검증하거나 full benchmark까지 실행한다'
+        required: true
+        default: contracts
+        type: choice
+        options:
+          - contracts
+          - full
 
 permissions:
   contents: read
@@ -30,7 +39,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Validate Gym contracts
         run: >-
@@ -61,17 +70,17 @@ jobs:
   full-benchmark:
     name: Full Gym benchmark validation
     needs: contracts
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'full' }}
     runs-on: ubuntu-latest
     # 로컬 실측: 기준풀이 약 24분, discrimination 약 6분, trajectory 약 2분.
     # cold cache와 runner 편차를 포함하되 무한 실행은 막는다.
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
 
       - name: Build benchmark subject
         run: cargo build --locked --bin rhwp

@@ -126,7 +126,25 @@ pub(crate) struct HeightCursor {
     /// 페인트된 표 밴드 위로 되감기지 못하게 하는 바닥(절대 y px). 기본 `f64::MIN`
     /// = 비활성. 표 아이템 배치 후 자기모순 판별이 참일 때만 호출자가 올린다.
     pub min_flow_floor: f64,
+    /// [#6753] 직전 문단이 `#2279 ①` 트림으로 흐름에서 **빼고 전진한 `spacing_before`**(px).
+    ///
+    /// lazy 기준 역산은 sequential `y_offset` 을 사다리 좌표에 맞대어 기준점을 구하는데,
+    /// 그 `y_offset` 에는 트림분이 빠져 있다. 그대로 역산하면 **트림된 `sb` 가 기준점에
+    /// 그대로 실려** 그 쪽 전체 좌표계가 그만큼 어긋난다.
+    ///
+    /// `27469` 5쪽 실측 — `pi=26` 이 `sb 40.00px`(3000 HU)을 트림당한 뒤 `pi=27` 에서 역산:
+    ///
+    /// ```text
+    ///   현행   16560 − (11962 + 1600) = 2998 HU   ← 트림된 sb 그 자체
+    ///   되돌림 16560 − (14962 + 1600) =   −2 HU   → 0 (페인트가 실제로 쓰는 기준)
+    /// ```
+    ///
+    /// 0 이면 종전과 완전히 같은 경로다(트림이 없었거나 sb 몫이 아닐 때).
+    pub trimmed_prev_spacing_before_px: f64,
 }
+
+#[path = "height_cursor_lazy_base.rs"]
+mod lazy_base_rounding;
 
 impl HeightCursor {
     /// 컬럼 진입 시 생성. `vpos_page_base` 초기값은 호출자가 첫 PageItem 에서 산출.
@@ -160,6 +178,7 @@ impl HeightCursor {
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
+            trimmed_prev_spacing_before_px: 0.0,
         }
     }
 
@@ -308,13 +327,24 @@ impl HeightCursor {
                     .map(|s| s.line_spacing.max(0))
                     .unwrap_or(0)
             };
-            let y_delta_hu = ((y_offset - self.col_area_y) / self.dpi * 7200.0).round() as i32;
+            // [#6753] 역산 기준을 **트림 이전의 흐름 위치**로 맞춘다.
+            //
+            // `y_offset` 은 직전 문단이 `#2279 ①` 트림으로 `sb` 를 빼고 전진한 결과다.
+            // 그대로 역산하면 그 `sb` 가 기준점에 실려 쪽 전체가 그만큼 위로 쏠린다
+            // (`27469` 5쪽: 기준 2998 HU = 트림된 40.00px, 이후 모든 문단이
+            // `px(vpos − 2998) − sb` 로 놓여 페인트보다 40px 위에서 적합 판정된다).
+            //
+            // 트림이 없었으면 `trimmed_prev_spacing_before_px == 0.0` 이라 종전과 같은 식이다.
+            let untrimmed_y_offset = y_offset + self.trimmed_prev_spacing_before_px;
+            let y_delta_hu =
+                ((untrimmed_y_offset - self.col_area_y) / self.dpi * 7200.0).round() as i32;
             let lazy_base_corrected = prev_vpos_end - (y_delta_hu + trailing_ls_hu);
-            let lazy_base = if lazy_base_corrected >= 0 {
-                lazy_base_corrected
-            } else {
-                prev_vpos_end - y_delta_hu
-            };
+            let lazy_base = lazy_base_rounding::resolve_lazy_base(
+                prev_vpos_end,
+                y_delta_hu,
+                trailing_ls_hu,
+                self.trimmed_prev_spacing_before_px,
+            );
             if lazy_base < 0 {
                 // 역산 무효(자리차지 표 등): 이전 개체 높이가 sequential y 에 이미
                 // 반영된 상태다. 여기서 vpos 보정을 적용하면 단 상단으로 되감겨

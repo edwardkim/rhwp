@@ -3,6 +3,7 @@ import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
 import { CursorState } from './cursor';
 import { CaretRenderer } from './caret-renderer';
+import { resolveGlyphStartRect, isCompositionBoxRepresentable } from './line-start-affinity';
 import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
@@ -2395,6 +2396,62 @@ export class InputHandler {
     return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices };
   }
 
+  /**
+   * [Task #6741] 선택한 셀 블록의 내용을 한 번에 지운다.
+   *
+   * 한컴은 셀 블록에서 `Delete` 를 누르면 선택한 칸들의 글자를 모두 지우고 블록을 유지한다
+   * (#6741 실측). 종전 rhwp 에는 이 조작 자체가 없어 `Delete` 가 블록을 해제하고 캐럿에서
+   * 한 글자만 지웠다.
+   *
+   * 지우는 것이 글자만이 아니라 문단·서식·인라인 컨트롤까지라 역연산으로 되돌릴 수 없다 →
+   * 스냅샷으로 기록한다(#3230 로드맵의 "내용 보관이 필요한 조작" 분류).
+   * 지우기 전 셀 블록을 함께 실어 undo 뒤 복원되게 한다.
+   */
+  private clearSelectedCellBlock(): boolean {
+    const block = this.getSelectedCellBlock();
+    if (!block || block.cellIndices.length === 0) return false;
+    const selection = this.cursor.captureCellSelection();
+    const cursorBefore = this.cursor.getPosition();
+
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'clearCellBlock',
+      operation: (wasm) => {
+        let changed = false;
+        for (const cellIdx of block.cellIndices) {
+          if (block.cellPath) {
+            const headJson = JSON.stringify(withCellPathTarget(block.cellPath, cellIdx));
+            const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, headJson);
+            const lastPara = Math.max(0, paraCount - 1);
+            const lastJson = JSON.stringify(withCellPathTarget(block.cellPath, cellIdx, lastPara));
+            const lastLen = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, lastJson);
+            if (paraCount <= 1 && lastLen === 0) continue;
+            wasm.deleteRangeInCellByPath(block.sec, block.ppi, headJson, 0, 0, lastPara, lastLen);
+          } else {
+            const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
+            const lastPara = Math.max(0, paraCount - 1);
+            const lastLen = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, lastPara);
+            if (paraCount <= 1 && lastLen === 0) continue;
+            wasm.deleteRangeInCell(block.sec, block.ppi, block.ci, cellIdx, 0, 0, lastPara, lastLen);
+          }
+          changed = true;
+        }
+        // [Task #2370] 이미 빈 칸만 골랐으면 문서가 그대로다 → 기록하지 않는다.
+        if (!changed) return null;
+        // 캐럿이 방금 비운 칸 안이면 그 칸의 시작으로 내린다. `moveTo` 는 클램프하지 않으므로
+        // 지우기 전 오프셋을 그대로 돌려주면 빈 칸에 범위 밖 위치가 남고, 이후 편집이
+        // 문단 길이 검사에 걸린다. 문단이 여럿이던 칸은 cellParaIndex 도 범위 밖이 된다.
+        const caretCleared = cursorBefore.cellIndex !== undefined
+          && block.cellIndices.includes(cursorBefore.cellIndex);
+        return caretCleared
+          ? { ...cursorBefore, cellParaIndex: 0, charOffset: 0 }
+          : cursorBefore;
+      },
+      selectionBefore: selection ? { mode: 'cellBlock', state: selection } : null,
+    });
+    return true;
+  }
+
   private getParaFormatTargetsAtCursor(): ParaFormatTarget[] {
     const block = this.getSelectedCellBlock();
     if (block) return this.getParaFormatTargetsForCellBlock(block);
@@ -2991,6 +3048,16 @@ export class InputHandler {
     if ('mode' in range) {
       if (range.mode === 'headerFooter') {
         this.cursor.selectHeaderFooterRange(range.start, range.end, range.previewPage);
+      } else if (range.mode === 'cellBlock') {
+        // [Task #6741] 한컴은 셀 블록에서 지운 뒤 되돌리면 지우기 전 블록을 되살린다(실측).
+        // `resetDerivedStateAfterHistoryJump` 가 방금 해제한 것을 여기서 다시 세운다 —
+        // F3 확장 단계를 본문 범위와 같은 호출로 되살리는 것과 같은 자리다.
+        // 표가 사라졌거나 범위가 밖으로 나가면 `restoreCellSelection` 이 거절한다(#2339 규약).
+        if (this.cursor.restoreCellSelection(range.state)) {
+          this.caret.hide();
+          this.selectionRenderer.clear();
+          this.updateCellSelection();
+        }
       }
       return;
     }
@@ -3081,7 +3148,13 @@ export class InputHandler {
                 desc.operation,
                 desc.editContext,
               )
-          : new SnapshotCommand(desc.operationType, cursorBefore, cursorBefore, desc.operation);
+          : new SnapshotCommand(
+              desc.operationType,
+              cursorBefore,
+              cursorBefore,
+              desc.operation,
+              desc.selectionBefore ?? null,
+            );
         const newPos = this.history.execute(cmd, this.wasm);
         const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
         // 무변경 경로에서도 pending 플래그는 소비한다 — 남겨 두면 다음 연산으로 샌다.
@@ -3497,6 +3570,49 @@ export class InputHandler {
   }
 
   /**
+   * IME 조합 오버레이의 원점 rect 를 돌려준다.
+   *
+   * [Issue #6553] 조합 중인 글자가 soft-wrap 으로 다음 줄로 넘어가면 `anchor.charOffset` 이
+   * 줄 경계 offset 이 되고, 줄 affinity 인자가 없는 exact 조회는 이전 줄 끝을 돌려준다.
+   * 오버레이는 글자가 실제로 그려지는 줄에 놓여야 하므로 시각 줄을 명시해 다시 조회한다.
+   * 머리말/꼬리말·각주와 2단 이상 중첩 셀은 `getCursorRectOnLine` 이 대상 문단을 지목할 수
+   * 없어 제외한다(exact 유지).
+   */
+  private compositionOverlayStartRect(anchor: DocumentPosition, exact: CursorRect): CursorRect {
+    if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return exact;
+    if ((anchor.cellPath?.length ?? 0) > 1) return exact;
+    const inCell = anchor.parentParaIndex !== undefined;
+    // 두 질의 모두 실패를 null 로 알린다 — 여기서 예외가 새면 updateCaret 의 바깥 catch 가
+    // 조합 오버레이를 통째로 접어버려, exact 로 물러나는 것보다 나쁜 결과가 된다.
+    return resolveGlyphStartRect(anchor.charOffset, exact, {
+      lineInfoAt: (charOffset) => {
+        try {
+          return inCell
+            ? this.wasm.getLineInfoInCell(
+                anchor.sectionIndex, anchor.parentParaIndex!, anchor.controlIndex!,
+                anchor.cellIndex!, anchor.cellParaIndex!, charOffset,
+              )
+            : this.wasm.getLineInfo(anchor.sectionIndex, anchor.paragraphIndex, charOffset);
+        } catch {
+          return null;
+        }
+      },
+      rectAtLineStart: (lineIndex) => {
+        try {
+          return this.wasm.getCursorRectOnLine(
+            anchor.sectionIndex, anchor.paragraphIndex, lineIndex, false,
+            anchor.parentParaIndex ?? 0xFFFFFFFF, anchor.controlIndex ?? 0xFFFFFFFF,
+            anchor.cellIndex ?? 0xFFFFFFFF, anchor.cellParaIndex ?? 0xFFFFFFFF,
+          );
+        } catch {
+          // getCursorRectOnLine 을 내보내지 않는 wasm 빌드 — 기존 exact 동작을 유지한다.
+          return null;
+        }
+      },
+    });
+  }
+
+  /**
    * 캐럿 위치를 갱신한다.
    *
    * @param skipScroll true 시 `scrollCaretIntoView` 호출 skip — cursor 변경 trigger 가 동반되지 않은
@@ -3541,15 +3657,24 @@ export class InputHandler {
               anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
             );
           }
-          const charWidth = rect.x - startRect.x;
-          const text = this.textarea.value || '';
-          // 현재 커서 위치의 글꼴 정보
-          let fontFamily = 'sans-serif';
-          try {
-            const props = this.getCharPropertiesAtCursor();
-            if (props.fontFamily) fontFamily = props.fontFamily;
-          } catch { /* fallback */ }
-          this.caret.showComposition(startRect, charWidth, zoom, text, fontFamily);
+          startRect = this.compositionOverlayStartRect(anchor, startRect);
+          if (!isCompositionBoxRepresentable(startRect, rect)) {
+            // [Issue #6738] 머리말/꼬리말·각주·2단계 이상 중첩 셀에는 줄 affinity 를 물을
+            // API 가 없어, 조합 글자가 줄이나 쪽을 넘어가도 시작 좌표를 바로잡을 수 없다.
+            // 틀린 자리에 박스를 그리는 대신 조회 실패와 같은 경로로 일반 캐럿을 보여준다.
+            this.caret.hideComposition();
+            this.caret.update(rect, zoom);
+          } else {
+            const charWidth = rect.x - startRect.x;
+            const text = this.textarea.value || '';
+            // 현재 커서 위치의 글꼴 정보
+            let fontFamily = 'sans-serif';
+            try {
+              const props = this.getCharPropertiesAtCursor();
+              if (props.fontFamily) fontFamily = props.fontFamily;
+            } catch { /* fallback */ }
+            this.caret.showComposition(startRect, charWidth, zoom, text, fontFamily);
+          }
         } catch {
           // getCursorRect 실패 시 일반 캐럿
           this.caret.hideComposition();

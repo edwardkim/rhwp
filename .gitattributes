@@ -50,3 +50,7 @@ samples/issue5941/1480000-201900698-native-neartop-reset.hwp -text -diff
 # manifest의 SHA-256과 renderer 재현성을 바꾸면 안 된다.
 samples/issue6697/*.hwpx -text -diff
 samples/issue6718/*.hwp -text -diff
+
+# Preserve the original bytes of the #6756/#6764 regression inputs.
+samples/issue6756/*.hwp -text -diff
+samples/issue6764/*.hwp -text -diff

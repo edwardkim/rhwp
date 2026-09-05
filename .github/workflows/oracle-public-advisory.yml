@@ -18,6 +18,14 @@
 name: Oracle Public Advisory
 
 on:
+  # workflow_dispatch identity가 아직 기본 브랜치에 등록되지 않은 후보도
+  # workflow 파일 자체를 바꾼 신뢰 push에서 한 번 실실행한다.
+  push:
+    branches:
+      - devel
+      - 'task_m100_*'
+    paths:
+      - '.github/workflows/oracle-public-advisory.yml'
   workflow_dispatch:
     inputs:
       top_n:
@@ -62,6 +70,17 @@ jobs:
             crates
             tests
             samples
+            saved/blank2010.hwp
+            mydocs/manual/agent_knowledge_map.md
+            mydocs/manual/agent_troubleshooting_guide.md
+            mydocs/manual/recipes/01_fill_form_and_submit.md
+            mydocs/manual/recipes/02_table_csv_roundtrip.md
+            mydocs/manual/recipes/03_redact_before_sharing.md
+            mydocs/manual/recipes/04_safety_check_untrusted_doc.md
+            mydocs/manual/recipes/05_mail_merge_batch_fill.md
+            mydocs/manual/recipes/06_visual_regression_before_after.md
+            mydocs/tech/agent_roadmap/atlas_r1_r200.md
+            gym/README.md
             pdf
             tools
             bindings
@@ -169,8 +188,8 @@ jobs:
         if: ${{ steps.pdf.outputs.should_run == 'true' && steps.build.outcome == 'success' }}
         shell: bash
         env:
-          TOP_N: ${{ inputs.top_n }}
-          LIMIT: ${{ inputs.limit }}
+          TOP_N: ${{ inputs.top_n || '10' }}
+          LIMIT: ${{ inputs.limit || '0' }}
         run: |
           set -uo pipefail
           mkdir -p oracle-advisory/top
@@ -201,10 +220,11 @@ jobs:
           exit 0
 
       - name: Pack top-N failures
+        id: pack
         if: ${{ steps.pdf.outputs.should_run == 'true' && steps.build.outcome == 'success' }}
         shell: bash
         env:
-          TOP_N: ${{ inputs.top_n }}
+          TOP_N: ${{ inputs.top_n || '10' }}
           COMPARE_EXIT: ${{ steps.compare.outputs.compare_exit }}
         run: |
           set -euo pipefail
@@ -380,6 +400,79 @@ jobs:
                   print(f"issue_draft skipped rc={proc.returncode}", file=sys.stderr)
           PY
           cat oracle-advisory/summary.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Finalize advisory verdict
+        id: verdict
+        if: ${{ always() }}
+        shell: bash
+        env:
+          SHOULD_RUN: ${{ steps.pdf.outputs.should_run || 'false' }}
+          GATE_REASON: ${{ steps.pdf.outputs.reason || 'gate-unavailable' }}
+          BUILD_OUTCOME: ${{ steps.build.outcome || 'skipped' }}
+          COMPARE_OUTCOME: ${{ steps.compare.outcome || 'skipped' }}
+          COMPARE_EXIT: ${{ steps.compare.outputs.compare_exit || '' }}
+          PACK_OUTCOME: ${{ steps.pack.outcome || 'skipped' }}
+        run: |
+          set -euo pipefail
+          mkdir -p oracle-advisory
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          should_run = os.environ["SHOULD_RUN"] == "true"
+          build = os.environ["BUILD_OUTCOME"]
+          compare = os.environ["COMPARE_OUTCOME"]
+          compare_exit = os.environ["COMPARE_EXIT"]
+          pack = os.environ["PACK_OUTCOME"]
+
+          if not should_run:
+              verdict = "skipped"
+          elif build != "success":
+              verdict = "build-failed"
+          elif compare != "success":
+              verdict = "compare-step-failed"
+          elif compare_exit != "0":
+              verdict = "compare-failed"
+          elif pack != "success":
+              verdict = "pack-failed"
+          else:
+              verdict = "completed"
+
+          summary = {}
+          top_n = Path("oracle-advisory/top-n.json")
+          if top_n.is_file():
+              try:
+                  summary = json.loads(top_n.read_text(encoding="utf-8")).get("summary") or {}
+              except (OSError, json.JSONDecodeError):
+                  summary = {}
+
+          payload = {
+              "schemaVersion": 1,
+              "verdict": verdict,
+              "promotionEligible": verdict == "completed",
+              "gateReason": os.environ["GATE_REASON"],
+              "buildOutcome": build,
+              "compareOutcome": compare,
+              "compareExit": compare_exit,
+              "packOutcome": pack,
+              "summary": summary,
+          }
+          Path("oracle-advisory/verdict.json").write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+      - name: Upload advisory verdict
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: oracle-public-advisory-verdict
+          path: oracle-advisory/verdict.json
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload advisory artifacts
         if: ${{ always() }}

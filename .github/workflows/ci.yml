@@ -89,6 +89,7 @@ jobs:
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
       postmerge_reuse: ${{ needs.trusted_postmerge_reuse.outputs.reuse || 'false' }}
       postmerge_source_run_id: ${{ needs.trusted_postmerge_reuse.outputs.source_run_id || '' }}
+      postmerge_refresh_duration_data: ${{ needs.trusted_postmerge_reuse.outputs.refresh_duration_data || 'false' }}
       # [#3790 Stage 4·5B] frontend_mode·render_required·rust_required·
       # native_skia_required는 이 workflow의 worker 조건에 사용한다. codeql_languages는
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
@@ -1066,6 +1067,9 @@ jobs:
           python3 -m unittest scripts/tests/test_codeql_workflow.py
           python3 -m unittest scripts/tests/test_nextest_archive_workflow.py
           python3 -m unittest scripts/tests/test_oracle_public_advisory_workflow.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_evidence.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_gate_workflow.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_preflight.py
           python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
           python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
@@ -1542,6 +1546,10 @@ jobs:
         && github.event_name == 'push'
         && github.ref == 'refs/heads/devel'
         && needs.preflight.result == 'success'
+        && (
+          needs.preflight.outputs.postmerge_reuse != 'true'
+          || needs.preflight.outputs.postmerge_refresh_duration_data == 'true'
+        )
         && needs.preflight.outputs.rust_required == 'true'
         && (
           (
@@ -1659,6 +1667,139 @@ jobs:
           git commit -m "ci: nextest target duration data ${GITHUB_SHA}"
           git push origin "HEAD:refs/heads/${METRICS_BRANCH}"
 
+  workflow-promotion-preflight:
+    name: Workflow promotion preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [preflight]
+    if: >-
+      ${{
+        github.event_name == 'pull_request'
+        && github.base_ref == 'main'
+        && github.head_ref == 'devel'
+        && github.event.pull_request.head.repo.full_name == github.repository
+      }}
+    permissions:
+      actions: read
+      contents: read
+      issues: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify canonical promotion topology
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$(git rev-parse HEAD)" != "${CANDIDATE_SHA}" ]]; then
+            echo "::error::checkout is not the canonical candidate SHA"
+            exit 1
+          fi
+          if ! git cat-file -e "${BASE_SHA}^{commit}"; then
+            echo "::error::main base commit is unavailable in the checkout"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "${BASE_SHA}" "${CANDIDATE_SHA}"; then
+            echo "::error::main must be an ancestor of the canonical devel candidate"
+            exit 1
+          fi
+          merge_tree="$(git merge-tree --write-tree "${BASE_SHA}" "${CANDIDATE_SHA}")"
+          candidate_tree="$(git rev-parse "${CANDIDATE_SHA}^{tree}")"
+          if [[ "${merge_tree}" != "${candidate_tree}" ]]; then
+            echo "::error::main/devel merge tree differs from the exact candidate tree"
+            exit 1
+          fi
+
+      - name: Build workflow promotion inventory
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: |
+          set -euo pipefail
+          mkdir -p "${EVIDENCE_DIR}"
+          python3 scripts/workflow_promotion_preflight.py inventory \
+            --repo . \
+            --base-sha "${BASE_SHA}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --policy scripts/workflow_promotion_policy.json \
+            --format json > "${EVIDENCE_DIR}/inventory.json"
+          python3 scripts/workflow_promotion_preflight.py inventory \
+            --repo . \
+            --base-sha "${BASE_SHA}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --policy scripts/workflow_promotion_policy.json \
+            --format markdown >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Collect exact-head Actions evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+          RELEASE_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 scripts/workflow_promotion_evidence.py
+          --inventory "${EVIDENCE_DIR}/inventory.json"
+          --runs-output "${EVIDENCE_DIR}/runs.json"
+          --waivers-output "${EVIDENCE_DIR}/waivers.json"
+          --issue-number "${RELEASE_PR_NUMBER}"
+          --trusted-maintainer edwardkim
+
+      - name: Verify workflow promotion evidence
+        id: verify-promotion
+        continue-on-error: true
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: >-
+          python3 scripts/workflow_promotion_preflight.py verify
+          --inventory "${EVIDENCE_DIR}/inventory.json"
+          --runs "${EVIDENCE_DIR}/runs.json"
+          --waivers "${EVIDENCE_DIR}/waivers.json"
+          --trusted-maintainer edwardkim
+          > "${EVIDENCE_DIR}/verdict.json"
+
+      - name: Summarize workflow promotion verdict
+        if: ${{ always() }}
+        shell: bash
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: |
+          if [[ -f "${EVIDENCE_DIR}/verdict.json" ]]; then
+            {
+              echo
+              echo '## Workflow promotion verdict'
+              echo
+              echo '```json'
+              cat "${EVIDENCE_DIR}/verdict.json"
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Upload workflow promotion evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: workflow-promotion-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/workflow-promotion
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce workflow promotion verdict
+        if: ${{ always() }}
+        env:
+          VERIFY_OUTCOME: ${{ steps.verify-promotion.outcome }}
+        run: |
+          if [[ "${VERIFY_OUTCOME}" != "success" ]]; then
+            echo "::error::workflow promotion evidence is incomplete or invalid"
+            exit 1
+          fi
+
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -1678,6 +1819,7 @@ jobs:
       - native-skia-tests
       - frontend-unit-gates
       - frontend-package-gates
+      - workflow-promotion-preflight
     if: ${{ always() }}
     permissions:
       contents: read
@@ -1813,7 +1955,21 @@ jobs:
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_UNIT_RESULT: ${{ needs['frontend-unit-gates'].result }}
           FRONTEND_PACKAGE_RESULT: ${{ needs['frontend-package-gates'].result }}
+          PROMOTION_RESULT: ${{ needs['workflow-promotion-preflight'].result }}
+          CANONICAL_PROMOTION: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'devel' && github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
+          case "${CANONICAL_PROMOTION}" in
+            true)
+              [[ "${PROMOTION_RESULT}" == "success" ]] || { echo "::error::Canonical devel -> main promotion evidence failed: ${PROMOTION_RESULT}"; exit 1; }
+              ;;
+            false)
+              [[ "${PROMOTION_RESULT}" == "skipped" ]] || { echo "::error::Workflow promotion gate must be skipped outside canonical release PRs: ${PROMOTION_RESULT}"; exit 1; }
+              ;;
+            *)
+              echo "::error::Unknown canonical promotion state: ${CANONICAL_PROMOTION}"
+              exit 1
+              ;;
+          esac
           if [[ "${PREFLIGHT_RESULT}" != "success" ]]; then
             echo "::error::CI preflight did not succeed: ${PREFLIGHT_RESULT}"
             exit 1

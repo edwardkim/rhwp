@@ -9206,6 +9206,34 @@ impl LayoutEngine {
                         })
                         .unwrap_or(0.0)
                 };
+                // [#6737] leading 을 실었을 때 표가 단 오른쪽을 **한 글자 이상** 넘으면
+                // 그 leading 은 실제가 아니다 — 한컴은 그런 표를 다음 줄 좌단에 둔다.
+                //
+                // `stored_own_line` 만으로는 못 걸러진다. 그 판정은 표의 **문자 축**
+                // 위치와 저장 `text_start`(**HWP5 축**)를 견주는데, 앞에 확장 컨트롤이
+                // 있으면 컨트롤 하나당 8 유닛씩 벌어져 영원히 거짓이 된다
+                // (156487948 pi=0: 문자 40 vs 저장 72 — 그림 2개 때문에 32 차이).
+                // `#6167` 이 그 술어를 세울 때 쓴 문서는 선행 컨트롤이 없어 두 축이
+                // 우연히 겹쳤을 뿐이다.
+                //
+                // 축 환산 대신 **기하**로 막는다. 156487948: leading 392.0 + 표 635.5
+                // = 1027.5 가 단폭 642.5 를 385px 넘겨, 표 오른쪽 절반과 셀 4개가
+                // 용지 밖으로 나가 70자가 사라졌다.
+                //
+                // ⚠ 여유 한 글자(16px)는 필러 기반 leading 을 지키기 위한 것이다 —
+                // `복학원서.hwp`(#677 골든)는 leading 5.13px + 표 642.5 로 단폭을
+                // 5.1px 만 넘는데, 그 축은 `#1195` 한컴 실측으로 보정된 별도 축이다.
+                const TAC_LEADING_OVERHANG_TOLERANCE_PX: f64 = 16.0;
+                let leading = {
+                    let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
+                    let avail = (col_area.width - effective_margin - margin_right).max(0.0);
+                    if leading > 0.0 && leading + tbl_w > avail + TAC_LEADING_OVERHANG_TOLERANCE_PX
+                    {
+                        0.0
+                    } else {
+                        leading
+                    }
+                };
                 // [Issue #3396] 한글은 TAC 표를 "문자"로 취급해 advance =
                 // outMargin.left + 표폭 + outMargin.right 로 잡고, 괘선(테두리)은
                 // pen + outMargin.left 에 그린다 (오라클 실측: 156678235 p1 JUSTIFY

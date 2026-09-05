@@ -44,6 +44,30 @@ const PAGINATION_BOUNDARY_KEYS = new Set([
  * 전역 편집 명령이다. 이 모드의 문자 입력은 아래 전용 분기가 소유하지만, 되돌리기와
  * 찾아가기는 문서 전체 명령이므로 조기 반환 전에 dispatcher로 전달해야 한다.
  */
+/**
+ * [Task #6741] 셀 블록 선택을 **유지한 채** 통과시키는 명령.
+ *
+ * 한컴은 셀 블록에서 되돌리기를 해도 블록을 놓지 않는다(실측: undo 뒤 지우기 전 블록이
+ * 되살아난다). 종전 rhwp 는 방향키·Escape 외의 키를 전부 "그 외 키"로 흘려 블록을 먼저
+ * 해제했으므로, undo 가 실행될 때는 되살릴 선택이 이미 없었다.
+ *
+ * 서브모드(머리말/꼬리말·각주)의 우회로보다 좁게 잡는다 — goto·select-all 은 셀 블록을
+ * 들고 있을 이유가 없는 조작이라 종전대로 블록을 해제하고 넘긴다.
+ */
+const CELL_BLOCK_GLOBAL_COMMANDS = new Set([
+  'edit:undo',
+  'edit:redo',
+]);
+
+function dispatchCellBlockGlobalShortcut(this: any, e: KeyboardEvent): boolean {
+  if (!this.dispatcher) return false;
+  const commandId = matchShortcut(e, defaultShortcuts);
+  if (!commandId || !CELL_BLOCK_GLOBAL_COMMANDS.has(commandId)) return false;
+  e.preventDefault();
+  this.dispatcher.dispatch(commandId);
+  return true;
+}
+
 const SUBMODE_GLOBAL_COMMANDS = new Set([
   'edit:undo',
   'edit:redo',
@@ -1229,6 +1253,21 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.cursor.exitCellSelectionMode();
       this.cellSelectionRenderer?.clear();
       this.updateCaret();
+      return;
+    }
+
+    // [Task #6741] 되돌리기/다시실행은 블록을 놓지 않고 통과시킨다. 히스토리 점프가
+    // 파생 상태를 해제하면(#2339) undo 쪽은 커맨드가 실어 둔 셀 블록으로 다시 세워진다.
+    if (dispatchCellBlockGlobalShortcut.call(this, e)) return;
+
+    // [Task #6741] 선택한 칸들의 내용을 한 번에 지우고 블록을 유지한다 — 한컴과 같다.
+    // 종전에는 아래 "그 외 키"로 떨어져 블록이 풀리고 캐럿에서 한 글자만 지워졌다.
+    if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      if (!this.cursor.isProtectedCellSelectionMode()) {
+        this.clearSelectedCellBlock();
+        this.updateCellSelection();
+      }
       return;
     }
     const cellArrowAction = getCellSelectionArrowAction(e);

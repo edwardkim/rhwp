@@ -30,15 +30,20 @@ fn sample() -> Vec<u8> {
     std::fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"))
 }
 
-/// 이미 찬 쪽의 저장 near-top 리셋은 살아 있어야 한다 — 지우면 202 → 200 이 된다.
+/// 이미 찬 쪽의 저장 near-top 리셋은 살아 있어야 한다 — 지우면 203 → 201 이 된다.
+///
+/// [#6718 잔여] 핀을 202 → **203** 으로 갱신한다. `vpos == 0` 되감김 승격이 "이미
+/// 쪼개지기로 정해진 문단" 에서도 사다리 위치를 따르게 되면서 이 문서의 쪽 하나가
+/// 되살아났다. **정답 방향으로 간 것**이다 — 한/글 2024 는 205 이므로 거리가 3 → 2 로
+/// 줄었고, 같은 판에서 본문 넘침도 52 → 47 로 줄었다(off-canvas·text-overlap 불변).
 #[test]
 fn stored_neartop_reset_survives_on_a_filled_page() {
     let bytes = sample();
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
     let pages = doc.page_count();
     assert_eq!(
-        pages, 202,
-        "이미 찬 쪽의 저장 near-top 리셋을 지우면 202 → 200 이 된다 — #5941 축 B 회귀 \
+        pages, 203,
+        "이미 찬 쪽의 저장 near-top 리셋을 지우면 203 → 201 이 된다 — #5941 축 B 회귀 \
          (한/글 2024 는 205). got {pages}"
     );
 }

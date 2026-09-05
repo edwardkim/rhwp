@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "repository": "edwardkim/rhwp",
+  "workflows": {
+    ".github/workflows/adapter-diff.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": ["cache"],
+      "requiredJobs": ["adapter inter-diff preflight", "adapter inter-diff"],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/ci.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": ["cache", "artifact"],
+      "requiredJobs": ["CI preflight", "Build & Test"],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/codeql.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": ["permissions", "matrix", "security"],
+      "requiredJobs": [
+        "CodeQL preflight",
+        "Analyze (javascript-typescript)",
+        "Analyze (python)",
+        "Analyze (rust)"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/deploy-pages.yml": {
+      "executionMode": "verify-only",
+      "sensitiveSurfaces": ["permissions", "artifact", "deployment"],
+      "requiredJobs": ["Build"],
+      "requiredSkippedJobs": ["Deploy"],
+      "requiredArtifacts": ["github-pages"],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/gym-release-gate.yml": {
+      "executionMode": "contracts-only",
+      "sensitiveSurfaces": ["artifact"],
+      "requiredJobs": ["Gym benchmark contracts"],
+      "requiredSkippedJobs": ["Full Gym benchmark validation"],
+      "requiredArtifacts": [],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/oracle-public-advisory.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": ["artifact"],
+      "requiredJobs": ["oracle-public-compare-advisory"],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "requiredVerdictArtifact": {
+        "name": "oracle-public-advisory-verdict",
+        "requiredPath": "verdict.json",
+        "acceptedVerdicts": ["completed"]
+      },
+      "allowedEvents": ["push", "workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/proptest-roundtrip.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": ["cache"],
+      "requiredJobs": ["Proptest preflight", "prop roundtrip"],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/render-diff.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": ["cache", "artifact"],
+      "requiredJobs": ["Render Diff preflight", "Canvas visual diff"],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": ["render-diff-artifacts"],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    }
+  }
+}

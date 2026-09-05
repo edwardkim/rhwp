@@ -289,6 +289,90 @@ API pagination 경계, candidate의 fast-pass 실행, failed·pending run, GHAS 
 반영하기 전에는 live `pull_request_target` controller가 존재하지 않으며, 그 기간의 workflow PR은 계속 Full
 실행하는 것이 정상이다.
 
+### 7.6 Workflow promotion preflight
+
+`devel`의 workflow 변경을 `main`으로 올리는 유일한 정규 경로는 같은 저장소의
+`devel -> main` PR이다. 이 PR에서 CI의 `Workflow promotion preflight`가 두 tree 사이의
+`.github/workflows/*.yml`과 `.github/actions/**` 변경을 inventory로 만들고, 후보 exact SHA에
+귀속된 Actions run·job·artifact를 검증한다. 일반 PR, fork PR, push에서는 이 job이
+skip되어야 하며 기존 required context인 `Build & Test`가 이 경계를 함께 강제한다.
+
+릴리스 PR 전에 먼저 최신 원격과 후보 topology를 확인한다.
+
+```bash
+git fetch upstream main devel
+base_sha="$(git rev-parse upstream/main)"
+candidate_sha="$(git rev-parse upstream/devel)"
+git merge-base --is-ancestor "${base_sha}" "${candidate_sha}"
+python3 scripts/workflow_promotion_preflight.py inventory \
+  --repo . --base-sha "${base_sha}" --candidate-sha "${candidate_sha}" \
+  --policy scripts/workflow_promotion_policy.json --format markdown
+```
+
+inventory의 executable 항목은 `scripts/workflow_promotion_policy.json`이 지정한 direct,
+contracts-only 또는 verify-only 방식으로 **같은 exact `devel` SHA**에서 실행한다. 실행이
+완료된 뒤 `devel -> main` PR을 열고 `Workflow promotion preflight`와 `Build & Test`가
+모두 성공했는지 확인한다. gate 자체는 다른 workflow를 dispatch하지 않고 `actions: read`,
+`contents: read`, `issues: read`로 증적만 수집한다. 수집 결과는
+`workflow-promotion-evidence-<run-id>` artifact에 30일간 남는다.
+
+현재 정책의 실행 표면은 다음과 같다. 다음 `gh workflow run`은 원격 run을 생성하는
+mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 나온 executable 항목만 실행하며,
+여기에 없는 신규 workflow는 policy와 동등 adapter를 먼저 추가한다.
+
+| Workflow | 실행 명령 | 필수 경계 |
+| --- | --- | --- |
+| Adapter inter-diff | `gh workflow run adapter-diff.yml --ref devel` | direct |
+| CI | `gh workflow run ci.yml --ref devel -f release_grade=false` | direct |
+| CodeQL | `gh workflow run codeql.yml --ref devel` | direct |
+| Pages | `gh workflow run deploy-pages.yml --ref devel` | verify-only, Deploy job skipped |
+| Gym | `gh workflow run gym-release-gate.yml --ref devel -f mode=contracts` | contracts-only, full benchmark skipped |
+| Oracle advisory | `gh workflow run oracle-public-advisory.yml --ref devel` | verdict artifact 필수 |
+| Proptest roundtrip | `gh workflow run proptest-roundtrip.yml --ref devel` | direct |
+| Render Diff | `gh workflow run render-diff.yml --ref devel` | direct, artifact 필수 |
+
+`workflow_dispatch` API의 `ref`는 branch 또는 tag이므로 명령에 commit SHA를 직접 넘겨 exact성을
+보장하지 않는다. 따라서 dispatch 직전의 `candidate_sha`를 기록하고, 생성된 모든 run의
+`head_sha` 가 그 값과 같은지 `gh run view <run-id> --json headSha,event,status,conclusion,url,jobs`로
+재확인한다. 중간에 `devel`이 움직였으면 그 세트는 증적으로 재사용하지 않는다.
+
+다음 경우에는 우회하지 말고 증적을 다시 만든다.
+
+- `devel` head가 바뀌었으면 새 exact SHA에서 필수 workflow를 다시 실행한다.
+- `main`이 앞서 나갔거나 ancestor 검사·merge tree가 다르면 `devel`을 동기화한 뒤 전 절차를
+  다시 실행한다.
+- missing, pending, failed, cancelled, 필수 job skipped, pagination 누락, SHA·workflow hash 불일치는
+  모두 fail-closed다.
+- 증적에 private corpus, 개인 폰트, secret 값, 인증 URL을 담지 않는다.
+
+예외가 불가피하면 메인테이너가 릴리스 PR의 issue comment에 다음 표식과 JSON을
+게시한다. `approvedBy`와 `url`은 본문을 믿지 않고 GitHub API의 comment 작성자·URL로
+덮어쓴다.
+
+````markdown
+<!-- rhwp-workflow-promotion-waiver:v1 -->
+```json
+{
+  "path": ".github/workflows/example.yml",
+  "candidateSha": "<40-hex exact devel SHA>",
+  "workflowSha256": "<64-hex workflow content hash>",
+  "reason": "<예외가 필요한 구체적 사유>",
+  "scope": ["workflow-dispatch-registration"],
+  "expiresAt": "<UTC ISO-8601 expiry>"
+}
+```
+````
+
+허용 scope는 `workflow-dispatch-registration`, `github-hosted-runner-unavailable`,
+`safe-equivalent-adapter`뿐이다. permission·secret·security·deployment 표면, 실패한 exact run,
+신뢰하지 않는 작성자, 만료·SHA·hash 불일치는 waiver로 숨길 수 없다. waiver는
+성공 표식이 아니라 실행 불가 범위를 한시적으로 고정하는 별도 증적이다.
+
+promotion gate가 거부하면 artifact의 `inventory.json`, `runs.json`, `waivers.json`,
+`verdict.json`을 먼저 확인한다. stale head나 main drift는 동기화 후 재실행하고, workflow
+계약 오류는 `devel` 작업 PR로 고친다. #6634의 Release 게시 후 package publish trigger는
+별도 경계이며, promotion preflight 성공을 publish 자동 기동 증거로 해석하지 않는다.
+
 ## 8. required check와 branch protection
 
 required context 이름은 외부 계약이다. job 이름 변경, workflow 분리, path skip, matrix 이름 변경은 YAML

@@ -116,3 +116,32 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# #6779: contract checks for trusted frontend evidence and separate timing output.
+import pathlib as frontend_pathlib
+import unittest as frontend_unittest
+
+
+class FrontendOnlyPostmergeReuseWorkflowTests(frontend_unittest.TestCase):
+    def test_frontend_evidence_uses_the_trusted_classifier_and_exact_run_jobs(self):
+        root = frontend_pathlib.Path(__file__).resolve().parents[2]
+        workflow = (root / '.github/workflows/trusted-postmerge-ci-reuse.yml').read_text()
+        self.assertIn('scripts/ci-impact-classifier.cjs', workflow)
+        self.assertIn("ref: ${{ steps.source-base.outputs.sha }}", workflow)
+        self.assertIn("classifyChanges({ eventName: 'pull_request', files: pullFiles })", workflow)
+        self.assertIn("run_id: finalHeadRun.id, filter: 'latest'", workflow)
+        self.assertIn('frontendOnlyCiRunIsReusable(impact, jobs)', workflow)
+        self.assertIn('frontendOnlyRunIds.push(String(finalHeadRun.id))', workflow)
+        self.assertIn('artifact.expired !== true', workflow)
+
+    def test_frontend_reuse_does_not_require_or_refresh_rust_timings(self):
+        root = frontend_pathlib.Path(__file__).resolve().parents[2]
+        workflow = (root / '.github/workflows/trusted-postmerge-ci-reuse.yml').read_text()
+        ci = (root / '.github/workflows/ci.yml').read_text()
+        self.assertIn("if (result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true')", workflow)
+        self.assertIn('if (result.refreshDurationData !== false)', workflow)
+        self.assertIn("core.setOutput('refresh_duration_data'", workflow)
+        self.assertIn("postmerge_refresh_duration_data: ${{ needs.trusted_postmerge_reuse.outputs.refresh_duration_data || 'false' }}", ci)
+        self.assertIn("needs.preflight.outputs.postmerge_reuse != 'true'", ci)
+        self.assertIn("needs.preflight.outputs.postmerge_refresh_duration_data == 'true'", ci)
