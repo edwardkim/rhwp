@@ -1689,6 +1689,19 @@ export class WasmBridge {
     return JSON.parse(this.doc.getLineInfoInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset));
   }
 
+  /**
+   * 문서에 **저장된** 캐럿 스탬프({@link setCaretPosition} 가 남긴 값,
+   * `doc_properties.caret_list_id/caret_para_id/caret_char_pos`)를 읽는다.
+   *
+   * **표 셀 컨텍스트는 실리지 않는다.** 반환 타입이 `DocumentPosition` 이라
+   * `parentParaIndex`/`controlIndex`/`cellIndex`/`cellPath`/`isTextBox` 가 채워질 것처럼
+   * 보이지만, 이 API 는 위 세 값(`sectionIndex`·`paragraphIndex`·`charOffset`)만 채운다 —
+   * 커서가 표 셀 안에 있어도 마찬가지다. 저장 시점 복원용 좌표라 그렇다.
+   *
+   * 지금 커서가 어느 셀에 있는지가 필요하면 편집 중인 커서를 쓴다:
+   * `InputHandler.getCursorPosition()`(내부적으로 `Cursor.getPosition()`). 스튜디오 자신도
+   * 셀 진입 판정에 그 경로를 쓴다 — `pos.parentParaIndex !== undefined` 로 셀 안을 가른다.
+   */
   getCaretPosition(): DocumentPosition | null {
     if (!this.doc) return null;
     try {
