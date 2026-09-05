@@ -89,6 +89,7 @@ jobs:
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
       postmerge_reuse: ${{ needs.trusted_postmerge_reuse.outputs.reuse || 'false' }}
       postmerge_source_run_id: ${{ needs.trusted_postmerge_reuse.outputs.source_run_id || '' }}
+      postmerge_refresh_duration_data: ${{ needs.trusted_postmerge_reuse.outputs.refresh_duration_data || 'false' }}
       # [#3790 Stage 4·5B] frontend_mode·render_required·rust_required·
       # native_skia_required는 이 workflow의 worker 조건에 사용한다. codeql_languages는
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
@@ -1545,6 +1546,10 @@ jobs:
         && github.event_name == 'push'
         && github.ref == 'refs/heads/devel'
         && needs.preflight.result == 'success'
+        && (
+          needs.preflight.outputs.postmerge_reuse != 'true'
+          || needs.preflight.outputs.postmerge_refresh_duration_data == 'true'
+        )
         && needs.preflight.outputs.rust_required == 'true'
         && (
           (

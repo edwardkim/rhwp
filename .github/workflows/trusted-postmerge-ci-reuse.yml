@@ -20,7 +20,7 @@ on:
         required: true
         type: string
       require_duration_artifacts:
-        description: Require B/C duration artifacts before permitting CI worker reuse.
+        description: Require B/C/D duration artifacts for accepted Rust CI reuse, not frontend-only CI.
         required: false
         default: false
         type: boolean
@@ -34,6 +34,9 @@ on:
       source_run_id:
         description: Exact successful PR workflow run used as evidence.
         value: ${{ jobs.verify.outputs.source_run_id }}
+      refresh_duration_data:
+        description: Whether accepted CI reuse supplies Rust duration data to refresh.
+        value: ${{ jobs.verify.outputs.refresh_duration_data }}
 
 permissions: {}
 
@@ -50,6 +53,7 @@ jobs:
       reuse: ${{ steps.evaluate.outputs.reuse || steps.defaults.outputs.reuse }}
       reason: ${{ steps.evaluate.outputs.reason || steps.defaults.outputs.reason }}
       source_run_id: ${{ steps.evaluate.outputs.source_run_id || '' }}
+      refresh_duration_data: ${{ steps.evaluate.outputs.refresh_duration_data || 'false' }}
     steps:
       - name: Default to full verification
         id: defaults
@@ -194,6 +198,7 @@ jobs:
           ref: ${{ steps.source-base.outputs.sha }}
           sparse-checkout: |
             scripts/verify-trusted-postmerge-ci-reuse.mjs
+            scripts/ci-impact-classifier.cjs
           sparse-checkout-cone-mode: false
 
       - name: Evaluate exact PR workflow evidence
@@ -213,11 +218,18 @@ jobs:
             const { owner, repo } = context.repo;
             let classifyReviewOnlyCommit;
             let evaluateTrustedPostMergeReuse;
+            let frontendOnlyCiRunIsReusable;
+            let classifyChanges;
             try {
-              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse } = await import(pathToFileURL(path.join(
+              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable } = await import(pathToFileURL(path.join(
                 process.env.GITHUB_WORKSPACE,
                 'scripts/verify-trusted-postmerge-ci-reuse.mjs',
               )).href));
+              if (process.env.WORKFLOW_FILE === 'ci.yml') {
+                ({ classifyChanges } = require(path.join(
+                  process.env.GITHUB_WORKSPACE, 'scripts/ci-impact-classifier.cjs',
+                )));
+              }
             } catch (error) {
               core.warning(`Trusted base has no compatible verifier; running full. ${error.message}`);
               core.setOutput('reuse', 'false');
@@ -351,6 +363,32 @@ jobs:
                 );
                 await recordMergeTreeEvidence(finalHeadRun, artifacts);
               }
+              // Only the trusted pre-merge classifier sees API metadata here;
+              // no candidate code or candidate-provided lane marker is executed.
+              const frontendOnlyRunIds = [];
+              if (
+                process.env.WORKFLOW_FILE === 'ci.yml'
+                && typeof classifyChanges === 'function'
+                && typeof frontendOnlyCiRunIsReusable === 'function'
+                && finalHeadRun?.status === 'completed'
+                && finalHeadRun?.conclusion === 'success'
+              ) {
+                const impact = classifyChanges({ eventName: 'pull_request', files: pullFiles });
+                if (
+                  impact.classification_status === 'classified'
+                  && impact.rust_required === 'false'
+                  && impact.native_skia_required === 'false'
+                  && ['unit', 'package'].includes(impact.frontend_mode)
+                ) {
+                  const jobs = await github.paginate(
+                    github.rest.actions.listJobsForWorkflowRun,
+                    { owner, repo, run_id: finalHeadRun.id, filter: 'latest', per_page: 100 },
+                  );
+                  if (frontendOnlyCiRunIsReusable(impact, jobs)) {
+                    frontendOnlyRunIds.push(String(finalHeadRun.id));
+                  }
+                }
+              }
               const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
                 .includes(process.env.WORKFLOW_FILE);
               const reviewOnlyWorker = {
@@ -377,7 +415,9 @@ jobs:
                     const expected = new Set(["b", "c", "d"].map((label) => (
                       `nextest-target-durations-${workflowRun.id}-${label}`
                     )));
-                    const available = new Set(artifacts.map((artifact) => artifact.name));
+                    const available = new Set(artifacts
+                      .filter((artifact) => artifact.expired !== true)
+                      .map((artifact) => artifact.name));
                     if ([...expected].every((name) => available.has(name))) {
                       fullLaneRunIds.push(String(workflowRun.id));
                       await recordMergeTreeEvidence(workflowRun, artifacts);
@@ -436,6 +476,7 @@ jobs:
                 prCommits,
                 workflowRuns,
                 mergeTreeEvidenceByRunId,
+                frontendOnlyRunIds,
               };
               if (requireFullLaneEvidence) {
                 evidence.fullLaneRunIds = fullLaneRunIds;
@@ -466,38 +507,45 @@ jobs:
               };
             }
             if (result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true') {
-              try {
-                const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
-                  owner,
-                  repo,
-                  run_id: Number(result.sourceRunId),
-                  per_page: 100,
-                });
-                const expected = new Set([
-                  `nextest-target-durations-${result.sourceRunId}-b`,
-                  `nextest-target-durations-${result.sourceRunId}-c`,
-                  `nextest-target-durations-${result.sourceRunId}-d`,
-                ]);
-                const available = new Set(artifacts.map((artifact) => artifact.name));
-                if (![...expected].every((name) => available.has(name))) {
+              if (result.refreshDurationData !== false) {
+                try {
+                  const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+                    owner,
+                    repo,
+                    run_id: Number(result.sourceRunId),
+                    per_page: 100,
+                  });
+                  const expected = new Set([
+                    `nextest-target-durations-${result.sourceRunId}-b`,
+                    `nextest-target-durations-${result.sourceRunId}-c`,
+                    `nextest-target-durations-${result.sourceRunId}-d`,
+                  ]);
+                  const available = new Set(artifacts
+                        .filter((artifact) => artifact.expired !== true)
+                        .map((artifact) => artifact.name));
+                  if (![...expected].every((name) => available.has(name))) {
+                    result = {
+                      reuse: false,
+                      reason: 'candidate-duration-artifacts-unavailable',
+                      sourceRunId: '',
+                      pullNumber: '',
+                    };
+                  }
+                } catch (error) {
+                  core.warning(`Could not inspect candidate duration artifacts; running full. ${error.message}`);
                   result = {
                     reuse: false,
-                    reason: 'candidate-duration-artifacts-unavailable',
+                    reason: 'candidate-duration-artifact-check-error',
                     sourceRunId: '',
                     pullNumber: '',
                   };
                 }
-              } catch (error) {
-                core.warning(`Could not inspect candidate duration artifacts; running full. ${error.message}`);
-                result = {
-                  reuse: false,
-                  reason: 'candidate-duration-artifact-check-error',
-                  sourceRunId: '',
-                  pullNumber: '',
-                };
               }
             }
             core.setOutput('reuse', result.reuse ? 'true' : 'false');
             core.setOutput('reason', result.reason);
             core.setOutput('source_run_id', result.sourceRunId || '');
-            core.info(`reuse=${result.reuse} reason=${result.reason} source_run_id=${result.sourceRunId || 'none'}`);
+            core.setOutput('refresh_duration_data',
+              result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true'
+                && result.refreshDurationData !== false ? 'true' : 'false');
+            core.info(`reuse=${result.reuse} reason=${result.reason} source_run_id=${result.sourceRunId || 'none'} refresh_duration_data=${result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true' && result.refreshDurationData !== false}`);
