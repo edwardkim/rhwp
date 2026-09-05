@@ -8514,6 +8514,28 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 한글 클립보드 문서모델(hwpjson)을 캐럿 위치에 삽입한다 (본문).
+    ///
+    /// 한글은 Ctrl+C 시 클립보드 HTML 끝 주석에 문서 모델 전체를 싣는다. HTML 에는 없는
+    /// 글꼴 등록·문단모양·쪽 설정·셀 속성·그림 원본이 여기 있어, 이 경로라야 원본과 같은
+    /// 조판이 나온다. 실패하면 호출한 쪽이 종전 `pasteHtml` 로 되돌아가면 된다.
+    #[wasm_bindgen(js_name = pasteHwpJson)]
+    pub fn paste_hwp_json(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.paste_hwp_json_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+            json,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// HTML 문자열을 파싱하여 캐럿 위치에 삽입한다 (본문).
     #[wasm_bindgen(js_name = pasteHtml)]
     pub fn paste_html(

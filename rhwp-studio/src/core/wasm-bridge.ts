@@ -2704,6 +2704,20 @@ export class WasmBridge {
     return (this.doc as any).exportSelectionInCellHtmlByPath(sec, parentPara, pathJson, startCellPara, startOffset, endCellPara, endOffset);
   }
 
+  /**
+   * 한글 클립보드 문서모델(hwpjson) 붙여넣기.
+   *
+   * HTML 에는 글꼴 등록·문단모양 정의·쪽 설정이 없어 원본 조판이 재현되지 않는다.
+   * 한글이 클립보드 주석에 함께 싣는 문서 모델을 코어가 HWPX 로 옮겨 붙인다.
+   * 코어가 이 진입점을 갖고 있지 않은 옛 wasm 에서도 죽지 않도록 존재를 확인한다.
+   */
+  pasteHwpJson(sec: number, para: number, charOffset: number, json: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const fn = (this.doc as any).pasteHwpJson;
+    if (typeof fn !== 'function') return '{"ok":false,"error":"pasteHwpJson 미지원"}';
+    return fn.call(this.doc, sec, para, charOffset, json);
+  }
+
   pasteHtml(sec: number, para: number, charOffset: number, html: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.pasteHtml(sec, para, charOffset, html);
