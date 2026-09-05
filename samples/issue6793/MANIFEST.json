@@ -1,0 +1,22 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6793,
+  "title": "소형항공운송사업 발전방안 연구용역 과업지시서(최종)",
+  "entries": [
+    {
+      "path": "samples/issue6793/1611000-201000141-small-air-transport-study.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6793",
+      "originalFilename": "1611000-201000141_D0150012-1-000_소형항공운송사업 발전방안 연구용역 과업지시서(최종).hwp",
+      "bytes": 51200,
+      "sha256": "25cc60d379f68246875e968978c13f3273fcc3f6b04fc1fe726434e4626e447d",
+      "lastSavedWith": {
+        "product": null,
+        "version": "9.1.1.4072"
+      },
+      "referenceEngine": "2024",
+      "contract": "저장 사다리가 다음 문단을 새 쪽 상단(vpos=0)에 두었고 TAC host 줄의 꼬리 간격이 쪽 규모면 그 간격은 흐름이 아니라 쪽-끝 패딩이다. 「< 차 례 >」가 어느 쪽에 놓이는지는 계약하지 않는다."
+    }
+  ]
+}
