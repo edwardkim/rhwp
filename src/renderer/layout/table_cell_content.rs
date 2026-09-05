@@ -661,6 +661,37 @@ impl LayoutEngine {
         // [Task #1138] 표 셀 컨텍스트: (section_idx, outer_para_idx, outer_table_ctrl_idx, cell_idx, cell_para_idx, inner_control_idx)
         table_cell_ctx: Option<(usize, usize, usize, usize, usize, usize)>,
     ) {
+        self.layout_cell_shape_with_parent_path(
+            tree,
+            cell_node,
+            shape,
+            inner_area,
+            para_y,
+            para_alignment,
+            styles,
+            bin_data_content,
+            clamp_header_negative_para_offset,
+            table_cell_ctx,
+            &[],
+        );
+    }
+
+    /// 글상자/중첩 표 경로까지 가진 셀 도형을 레이아웃한다.
+    #[allow(clippy::too_many_arguments)]
+    fn layout_cell_shape_with_parent_path(
+        &self,
+        tree: &mut PageLayoutContext,
+        cell_node: &mut RenderNode,
+        shape: &crate::model::shape::ShapeObject,
+        inner_area: &LayoutRect,
+        para_y: f64,
+        para_alignment: Alignment,
+        styles: &ResolvedStyleSet,
+        bin_data_content: &[BinDataContent],
+        clamp_header_negative_para_offset: bool,
+        table_cell_ctx: Option<(usize, usize, usize, usize, usize, usize)>,
+        parent_cell_path: &[CellPathEntry],
+    ) {
         let child_common = shape.common();
 
         let child_w = hwpunit_to_px(child_common.width as i32, self.dpi);
@@ -737,7 +768,7 @@ impl LayoutEngine {
             styles,
             bin_data_content,
             &empty_map,
-            &[],
+            parent_cell_path,
             shape_table_cell_ref,
             false,
         );
@@ -1113,6 +1144,7 @@ impl LayoutEngine {
                 .zip(cell.paragraphs.iter())
                 .enumerate()
             {
+                let para_y_before_compose = para_y;
                 // enclosing context가 있으면 글상자 경로 + 표 셀 경로를 합성
                 let cell_ctx = enclosing_ctx.map(|(sec_idx, para_idx, parent_path, table_ci)| {
                     let mut path = parent_path.to_vec();
@@ -1289,6 +1321,60 @@ impl LayoutEngine {
                                     pic_y,
                                 );
                             }
+                        }
+                        Control::Shape(shape) => {
+                            let para_alignment = styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map(|style| style.alignment)
+                                .unwrap_or(Alignment::Left);
+                            let shape_y = if shape.common().treat_as_char {
+                                para.line_segs
+                                    .first()
+                                    .map_or(para_y_before_compose, |first_ls| {
+                                        cell_y
+                                            + pad_top
+                                            + hwpunit_to_px(first_ls.vertical_pos, self.dpi)
+                                    })
+                            } else if matches!(
+                                shape.common().vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            ) {
+                                para_y_before_compose
+                            } else {
+                                para_y
+                            };
+                            let (table_cell_ctx, shape_parent_path) = match enclosing_ctx {
+                                Some((sec_idx, outer_pi, parent_path, table_ci)) => {
+                                    let mut path = parent_path.to_vec();
+                                    path.push(CellPathEntry {
+                                        control_index: table_ci,
+                                        cell_index: cell_idx,
+                                        cell_para_index: pidx,
+                                        text_direction: cell.text_direction,
+                                    });
+                                    (
+                                        Some((
+                                            sec_idx, outer_pi, table_ci, cell_idx, pidx, ctrl_idx,
+                                        )),
+                                        path,
+                                    )
+                                }
+                                None => (None, Vec::new()),
+                            };
+                            self.layout_cell_shape_with_parent_path(
+                                tree,
+                                &mut cell_node,
+                                shape,
+                                &inner_area,
+                                shape_y,
+                                para_alignment,
+                                styles,
+                                bin_data_content,
+                                false,
+                                table_cell_ctx,
+                                &shape_parent_path,
+                            );
                         }
                         _ => {}
                     }
