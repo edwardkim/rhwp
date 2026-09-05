@@ -8,6 +8,7 @@ as executable and therefore needs candidate-bound evidence.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import re
@@ -39,10 +40,12 @@ _BLOCK_SCALAR = re.compile(r"^[>|](?:[+-]?[1-9]?|[1-9][+-]?)?$", re.ASCII)
 _FULL_SHA = re.compile(r"^[0-9a-fA-F]{40}$", re.ASCII)
 _FULL_SHA256 = re.compile(r"^[0-9a-fA-F]{64}$", re.ASCII)
 _GITHUB_RUN_URL = re.compile(
-    r"^https://github\.com/[^/]+/[^/]+/actions/runs/(?P<id>[1-9][0-9]*)(?:/.*)?$",
+    r"^https://github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/actions/runs/"
+    r"(?P<id>[1-9][0-9]*)(?:/.*)?$",
     re.ASCII,
 )
 _DEFAULT_ALLOWED_EVENTS = frozenset({"push", "pull_request", "workflow_dispatch"})
+_EXECUTION_MODES = frozenset({"direct", "contracts-only", "verify-only"})
 
 _RISK_ORDER = (
     "trigger",
@@ -458,6 +461,137 @@ def build_inventory(
     return envelope
 
 
+def _policy_string_list(
+    config: Mapping[str, Any],
+    field: str,
+    *,
+    path: str,
+    allow_empty: bool = False,
+) -> list[str]:
+    value = config.get(field)
+    if not isinstance(value, list) or (not value and not allow_empty):
+        raise PromotionPolicyError(f"invalid-workflow-policy:{path}:{field}")
+    normalized = [str(item) for item in value]
+    if any(not item for item in normalized) or len(set(normalized)) != len(normalized):
+        raise PromotionPolicyError(f"invalid-workflow-policy:{path}:{field}")
+    return normalized
+
+
+def apply_execution_policy(
+    inventory: Mapping[str, Any],
+    policy: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bind execution requirements to an inventory and renew its digest."""
+
+    if policy.get("schemaVersion") != 1:
+        raise PromotionPolicyError("invalid-workflow-policy:schema-version")
+    repository = str(policy.get("repository", ""))
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        raise PromotionPolicyError("invalid-workflow-policy:repository")
+    workflow_policies = policy.get("workflows")
+    if not isinstance(workflow_policies, Mapping):
+        raise PromotionPolicyError("invalid-workflow-policy:workflows")
+
+    enriched = copy.deepcopy(dict(inventory))
+    entries = enriched.get("entries")
+    if not isinstance(entries, list):
+        raise PromotionPolicyError("invalid-inventory:entries")
+    raw_violations = enriched.get("policyViolations", [])
+    if not isinstance(raw_violations, list):
+        raise PromotionPolicyError("invalid-inventory:policy-violations")
+    violations = {str(item) for item in raw_violations if str(item)}
+
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise PromotionPolicyError("invalid-inventory:entry")
+        changed_axes = entry.get("riskAxes", [])
+        if not isinstance(changed_axes, list):
+            raise PromotionPolicyError("invalid-inventory:risk-axes")
+        entry["changedAxes"] = list(changed_axes)
+        if entry.get("classification") == "comment-only":
+            continue
+
+        path = str(entry.get("path", ""))
+        config = workflow_policies.get(path)
+        if not isinstance(config, Mapping):
+            violations.add(f"missing-workflow-policy:{path or '<missing-path>'}")
+            continue
+
+        execution_mode = str(config.get("executionMode", ""))
+        if execution_mode not in _EXECUTION_MODES:
+            raise PromotionPolicyError(f"invalid-workflow-policy:{path}:executionMode")
+        evidence_path = str(config.get("evidencePath", path))
+        if not evidence_path.startswith(".github/workflows/"):
+            raise PromotionPolicyError(f"invalid-workflow-policy:{path}:evidencePath")
+
+        entry["executionMode"] = execution_mode
+        entry["evidencePath"] = evidence_path
+        entry["sensitiveSurfaces"] = _policy_string_list(
+            config,
+            "sensitiveSurfaces",
+            path=path,
+            allow_empty=True,
+        )
+        entry["requiredJobs"] = _policy_string_list(
+            config,
+            "requiredJobs",
+            path=path,
+        )
+        entry["requiredSkippedJobs"] = _policy_string_list(
+            config,
+            "requiredSkippedJobs",
+            path=path,
+            allow_empty=True,
+        )
+        entry["requiredArtifacts"] = _policy_string_list(
+            config,
+            "requiredArtifacts",
+            path=path,
+            allow_empty=True,
+        )
+        entry["allowedEvents"] = _policy_string_list(
+            config,
+            "allowedEvents",
+            path=path,
+        )
+        entry["allowedActors"] = _policy_string_list(
+            config,
+            "allowedActors",
+            path=path,
+        )
+        required_verdict = config.get("requiredVerdictArtifact")
+        if required_verdict is not None:
+            if not isinstance(required_verdict, Mapping):
+                raise PromotionPolicyError(
+                    f"invalid-workflow-policy:{path}:requiredVerdictArtifact"
+                )
+            name = str(required_verdict.get("name", ""))
+            required_path = str(required_verdict.get("requiredPath", ""))
+            accepted_verdicts = required_verdict.get("acceptedVerdicts")
+            if (
+                not name
+                or not required_path
+                or not isinstance(accepted_verdicts, list)
+                or not accepted_verdicts
+                or any(not str(item) for item in accepted_verdicts)
+            ):
+                raise PromotionPolicyError(
+                    f"invalid-workflow-policy:{path}:requiredVerdictArtifact"
+                )
+            entry["requiredVerdictArtifact"] = {
+                "name": name,
+                "requiredPath": required_path,
+                "acceptedVerdicts": [str(item) for item in accepted_verdicts],
+            }
+
+    enriched["repository"] = repository
+    enriched["policySha256"] = _canonical_sha256(policy)
+    enriched["policyViolations"] = sorted(violations)
+    enriched.pop("inventorySha256", None)
+    enriched["inventorySha256"] = _canonical_sha256(enriched)
+    return enriched
+
+
 def verify_evidence(
     inventory: Mapping[str, Any],
     runs: Iterable[Mapping[str, Any]],
@@ -470,6 +604,7 @@ def verify_evidence(
 
     candidate_sha = str(inventory.get("candidateSha", "")).lower()
     inventory_sha = str(inventory.get("inventorySha256", ""))
+    repository = str(inventory.get("repository", ""))
     errors: list[str] = []
     accepted_runs: list[dict[str, Any]] = []
     accepted_waivers: list[dict[str, Any]] = []
@@ -560,6 +695,11 @@ def verify_evidence(
             url_match = _GITHUB_RUN_URL.fullmatch(run_url)
             if url_match is None or str(run_id) != url_match.group("id"):
                 current_errors.append(f"invalid-run-url:{run_id}")
+            elif repository and (
+                f"{url_match.group('owner')}/{url_match.group('repo')}".lower()
+                != repository.lower()
+            ):
+                current_errors.append(f"run-repository-mismatch:{run_id}")
 
             configured_events = raw_entry.get("allowedEvents")
             if configured_events is None:
@@ -572,6 +712,14 @@ def verify_evidence(
             event = str(run.get("event", ""))
             if event not in allowed_events:
                 current_errors.append(f"run-event-not-allowed:{event or '<missing>'}")
+
+            expected_mode = raw_entry.get("executionMode")
+            if expected_mode is not None:
+                observed_mode = str(run.get("executionMode", ""))
+                if observed_mode != str(expected_mode):
+                    current_errors.append(
+                        f"execution-mode-mismatch:{observed_mode or '<missing>'}:{expected_mode}"
+                    )
 
             configured_actors = raw_entry.get("allowedActors")
             if configured_actors is not None:
@@ -607,16 +755,66 @@ def verify_evidence(
                 job_conclusion = str(job.get("conclusion", "missing"))
                 if job_status != "completed" or job_conclusion != "success":
                     current_errors.append(f"job-not-green:{name}:{job_conclusion}")
+            for required_skipped_job in raw_entry.get("requiredSkippedJobs", []):
+                name = str(required_skipped_job)
+                job = jobs_by_name.get(name)
+                if job is None:
+                    current_errors.append(f"missing-skipped-job:{name}")
+                    continue
+                job_status = str(job.get("status", "missing"))
+                job_conclusion = str(job.get("conclusion", "missing"))
+                if job_status != "completed" or job_conclusion != "skipped":
+                    current_errors.append(
+                        f"job-not-skipped:{name}:{job_conclusion}"
+                    )
 
-            required_artifact = raw_entry.get("requiredVerdictArtifact")
-            if required_artifact:
-                artifacts = run.get("artifacts")
-                artifact_names = {
-                    str(item.get("name", "")) if isinstance(item, Mapping) else str(item)
-                    for item in (artifacts if isinstance(artifacts, list) else [])
-                }
+            artifacts = run.get("artifacts")
+            artifact_list = artifacts if isinstance(artifacts, list) else []
+            artifacts_by_name = {
+                str(item.get("name", "")): item
+                for item in artifact_list
+                if isinstance(item, Mapping) and item.get("name")
+            }
+            artifact_names = {
+                str(item.get("name", "")) if isinstance(item, Mapping) else str(item)
+                for item in artifact_list
+            }
+            for required_artifact in raw_entry.get("requiredArtifacts", []):
                 if str(required_artifact) not in artifact_names:
-                    current_errors.append(f"missing-verdict-artifact:{required_artifact}")
+                    current_errors.append(f"missing-artifact:{required_artifact}")
+
+            required_verdict = raw_entry.get("requiredVerdictArtifact")
+            if isinstance(required_verdict, Mapping):
+                verdict_name = str(required_verdict.get("name", ""))
+                verdict_artifact = artifacts_by_name.get(verdict_name)
+                if verdict_artifact is None:
+                    current_errors.append(f"missing-verdict-artifact:{verdict_name}")
+                else:
+                    verdict_sha = str(verdict_artifact.get("sha256", ""))
+                    if not _FULL_SHA256.fullmatch(verdict_sha):
+                        current_errors.append(
+                            f"invalid-verdict-artifact-sha256:{verdict_name}"
+                        )
+                    verdict_value = str(verdict_artifact.get("verdict", ""))
+                    accepted_verdicts = {
+                        str(item) for item in required_verdict.get("acceptedVerdicts", [])
+                    }
+                    if verdict_value not in accepted_verdicts:
+                        current_errors.append(
+                            f"verdict-not-accepted:{verdict_name}:{verdict_value or '<missing>'}"
+                        )
+                    required_path = str(required_verdict.get("requiredPath", ""))
+                    files = verdict_artifact.get("files")
+                    artifact_files = (
+                        {str(item) for item in files} if isinstance(files, list) else set()
+                    )
+                    if required_path not in artifact_files:
+                        current_errors.append(
+                            f"missing-verdict-file:{verdict_name}:{required_path}"
+                        )
+            elif required_verdict:
+                if str(required_verdict) not in artifact_names:
+                    current_errors.append(f"missing-verdict-artifact:{required_verdict}")
 
             if not current_errors:
                 accepted_run = run
@@ -630,6 +828,7 @@ def verify_evidence(
                     "path": path,
                     "id": accepted_run.get("id"),
                     "url": accepted_run.get("url", ""),
+                    "executionMode": accepted_run.get("executionMode", ""),
                 }
             )
             continue
@@ -673,6 +872,7 @@ def verify_evidence(
         "schemaVersion": 1,
         "candidateSha": candidate_sha,
         "inventorySha256": inventory_sha,
+        "policySha256": inventory.get("policySha256", ""),
         "ok": not errors,
         "errors": sorted(set(errors)),
         "acceptedRuns": sorted(accepted_runs, key=lambda item: item["path"]),
@@ -729,18 +929,20 @@ def render_inventory_markdown(inventory: Mapping[str, Any]) -> str:
         f"- Candidate SHA: `{inventory.get('candidateSha', '')}`",
         f"- Merge base: `{inventory.get('mergeBase', '')}`",
         f"- Inventory SHA-256: `{inventory.get('inventorySha256', '')}`",
+        f"- Policy SHA-256: `{inventory.get('policySha256', '')}`",
         "",
-        "| Status | Classification | Path | Risk axes |",
-        "| --- | --- | --- | --- |",
+        "| Status | Classification | Path | Changed axes | Mode | Sensitive surfaces |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     for entry in inventory.get("entries", []):
         axes = ", ".join(entry.get("riskAxes", [])) or "none"
+        surfaces = ", ".join(entry.get("sensitiveSurfaces", [])) or "none"
         path = str(entry.get("path", ""))
         if entry.get("oldPath"):
             path = f"{entry['oldPath']} -> {path}"
         lines.append(
             f"| {entry.get('status', '')} | {entry.get('classification', '')} | "
-            f"`{path}` | {axes} |"
+            f"`{path}` | {axes} | {entry.get('executionMode', '')} | {surfaces} |"
         )
     violations = inventory.get("policyViolations", [])
     if violations:
@@ -769,6 +971,7 @@ def _main(argv: list[str] | None = None) -> int:
     inventory_parser.add_argument("--repo", default=".")
     inventory_parser.add_argument("--base-sha", required=True)
     inventory_parser.add_argument("--candidate-sha", required=True)
+    inventory_parser.add_argument("--policy")
     inventory_parser.add_argument("--format", choices=("json", "markdown"), default="json")
 
     verify_parser = subparsers.add_parser("verify")
@@ -782,6 +985,11 @@ def _main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "inventory":
             result = build_inventory(args.repo, args.base_sha, args.candidate_sha)
+            if args.policy:
+                policy = _load_json(args.policy)
+                if not isinstance(policy, Mapping):
+                    raise PromotionPolicyError("workflow policy는 JSON object여야 한다")
+                result = apply_execution_policy(result, policy)
             if args.format == "markdown":
                 sys.stdout.write(render_inventory_markdown(result))
             else:

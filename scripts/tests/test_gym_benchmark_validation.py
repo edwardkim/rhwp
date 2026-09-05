@@ -56,7 +56,10 @@ class GymBenchmarkWorkflowTests(unittest.TestCase):
     def test_full_audits_are_manual_only(self) -> None:
         full = self.workflow.split("  full-benchmark:", maxsplit=1)[1]
         self.assertIn("needs: contracts", full)
-        self.assertIn("if: ${{ github.event_name == 'workflow_dispatch' }}", full)
+        self.assertIn(
+            "if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'full' }}",
+            full,
+        )
         for tool in (
             "authority_ledger.py",
             "oracle_probe.py",

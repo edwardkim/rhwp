@@ -15,6 +15,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TARGET = REPO_ROOT / "scripts/workflow_promotion_preflight.py"
+POLICY_PATH = REPO_ROOT / "scripts/workflow_promotion_policy.json"
+DEPLOY_WORKFLOW = REPO_ROOT / ".github/workflows/deploy-pages.yml"
+GYM_WORKFLOW = REPO_ROOT / ".github/workflows/gym-release-gate.yml"
+ORACLE_WORKFLOW = REPO_ROOT / ".github/workflows/oracle-public-advisory.yml"
 SPEC = importlib.util.spec_from_file_location("workflow_promotion_preflight", TARGET)
 if SPEC is None or SPEC.loader is None:
     raise RuntimeError(f"모듈을 불러올 수 없다: {TARGET}")
@@ -412,6 +416,268 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
         rejected = self.verify([], [waiver])
         self.assertFalse(rejected["ok"])
         self.assertIn("invalid-waiver:.github/workflows/fuzz-smoke.yml", rejected["errors"])
+
+
+class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
+    expected_workflows = {
+        ".github/workflows/adapter-diff.yml",
+        ".github/workflows/ci.yml",
+        ".github/workflows/codeql.yml",
+        ".github/workflows/deploy-pages.yml",
+        ".github/workflows/gym-release-gate.yml",
+        ".github/workflows/oracle-public-advisory.yml",
+        ".github/workflows/proptest-roundtrip.yml",
+        ".github/workflows/render-diff.yml",
+    }
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+
+    def test_policy_covers_baseline_and_is_bound_to_inventory_hash(self) -> None:
+        self.assertEqual(set(self.policy["workflows"]), self.expected_workflows)
+        inventory = {
+            "schemaVersion": 1,
+            "baseSha": "a" * 40,
+            "candidateSha": "b" * 40,
+            "mergeBase": "a" * 40,
+            "entries": [
+                {
+                    "path": path,
+                    "classification": "executable",
+                    "after": {"sha256": sha256(path)},
+                    "riskAxes": ["trigger"],
+                }
+                for path in sorted(self.expected_workflows)
+            ],
+            "policyViolations": [],
+        }
+        inventory["inventorySha256"] = canonical_sha256(inventory)
+        enriched = MODULE.apply_execution_policy(inventory, self.policy)
+        self.assertRegex(enriched["policySha256"], r"^[0-9a-f]{64}$")
+        self.assertNotEqual(enriched["inventorySha256"], inventory["inventorySha256"])
+        self.assertEqual(enriched["repository"], "edwardkim/rhwp")
+        for entry in enriched["entries"]:
+            self.assertEqual(entry["changedAxes"], entry["riskAxes"])
+            self.assertIn(
+                entry["executionMode"],
+                {"direct", "contracts-only", "verify-only"},
+            )
+            self.assertTrue(entry["requiredJobs"])
+            self.assertIn("requiredSkippedJobs", entry)
+            self.assertEqual(entry["allowedEvents"], ["workflow_dispatch"])
+            self.assertEqual(entry["allowedActors"], ["edwardkim"])
+        self.assertEqual(enriched["policyViolations"], [])
+
+    def test_missing_policy_and_execution_mode_mismatch_fail_closed(self) -> None:
+        inventory = {
+            "schemaVersion": 1,
+            "baseSha": "a" * 40,
+            "candidateSha": "b" * 40,
+            "mergeBase": "a" * 40,
+            "entries": [
+                {
+                    "path": ".github/workflows/unknown.yml",
+                    "classification": "executable",
+                    "after": {"sha256": "c" * 64},
+                    "riskAxes": ["trigger"],
+                }
+            ],
+            "policyViolations": [],
+        }
+        inventory["inventorySha256"] = canonical_sha256(inventory)
+        enriched = MODULE.apply_execution_policy(inventory, self.policy)
+        self.assertIn(
+            "missing-workflow-policy:.github/workflows/unknown.yml",
+            enriched["policyViolations"],
+        )
+
+        candidate_run = {
+            "id": 77,
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/77",
+            "path": ".github/workflows/deploy-pages.yml",
+            "event": "workflow_dispatch",
+            "actor": "edwardkim",
+            "headSha": "b" * 40,
+            "workflowSha256": sha256(".github/workflows/deploy-pages.yml"),
+            "executionMode": "direct",
+            "paginationComplete": True,
+            "status": "completed",
+            "conclusion": "success",
+            "jobs": [{"name": "Build", "status": "completed", "conclusion": "success"}],
+            "artifacts": [{"name": "github-pages"}],
+        }
+        baseline = {
+            **inventory,
+            "entries": [
+                {
+                    "path": ".github/workflows/deploy-pages.yml",
+                    "classification": "executable",
+                    "after": {"sha256": sha256(".github/workflows/deploy-pages.yml")},
+                    "riskAxes": ["trigger"],
+                }
+            ],
+            "policyViolations": [],
+        }
+        baseline["inventorySha256"] = canonical_sha256(
+            {key: value for key, value in baseline.items() if key != "inventorySha256"}
+        )
+        deploy_inventory = MODULE.apply_execution_policy(baseline, self.policy)
+        verdict = MODULE.verify_evidence(
+            deploy_inventory,
+            [candidate_run],
+            [],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertFalse(verdict["ok"])
+        self.assertIn("execution-mode-mismatch:direct:verify-only", verdict["errors"])
+
+    def test_verify_only_requires_deploy_job_to_be_skipped(self) -> None:
+        inventory = {
+            "schemaVersion": 1,
+            "baseSha": "a" * 40,
+            "candidateSha": "b" * 40,
+            "mergeBase": "a" * 40,
+            "entries": [
+                {
+                    "path": ".github/workflows/deploy-pages.yml",
+                    "classification": "executable",
+                    "after": {"sha256": "c" * 64},
+                    "riskAxes": ["permissions"],
+                }
+            ],
+            "policyViolations": [],
+        }
+        inventory["inventorySha256"] = canonical_sha256(inventory)
+        enriched = MODULE.apply_execution_policy(inventory, self.policy)
+        run = {
+            "id": 78,
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/78",
+            "path": ".github/workflows/deploy-pages.yml",
+            "event": "workflow_dispatch",
+            "actor": "edwardkim",
+            "headSha": "b" * 40,
+            "workflowSha256": "c" * 64,
+            "executionMode": "verify-only",
+            "paginationComplete": True,
+            "status": "completed",
+            "conclusion": "success",
+            "jobs": [
+                {"name": "Build", "status": "completed", "conclusion": "success"},
+                {"name": "Deploy", "status": "completed", "conclusion": "success"},
+            ],
+            "artifacts": [{"name": "github-pages"}],
+        }
+        verdict = MODULE.verify_evidence(
+            enriched,
+            [run],
+            [],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertFalse(verdict["ok"])
+        self.assertIn("job-not-skipped:Deploy:success", verdict["errors"])
+
+    def test_pages_manual_run_builds_but_never_deploys(self) -> None:
+        workflow = DEPLOY_WORKFLOW.read_text(encoding="utf-8")
+        global_permissions = workflow.split("concurrency:", maxsplit=1)[0]
+        self.assertIn("permissions:\n  contents: read", global_permissions)
+        self.assertNotIn("pages: write", global_permissions)
+        self.assertNotIn("id-token: write", global_permissions)
+        deploy = workflow.split("  deploy:\n", maxsplit=1)[1]
+        self.assertIn(
+            "if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}",
+            deploy,
+        )
+        self.assertIn("permissions:\n      pages: write\n      id-token: write", deploy)
+
+    def test_gym_dispatch_defaults_to_contracts_only_and_actions_are_pinned(self) -> None:
+        workflow = GYM_WORKFLOW.read_text(encoding="utf-8")
+        trigger = workflow.split("permissions:", maxsplit=1)[0]
+        self.assertIn("mode:", trigger)
+        self.assertIn("default: contracts", trigger)
+        full = workflow.split("  full-benchmark:\n", maxsplit=1)[1]
+        self.assertIn("inputs.mode == 'full'", full)
+        self.assertNotIn("actions/checkout@v4", workflow)
+        self.assertNotIn("dtolnay/rust-toolchain@stable", workflow)
+
+    def test_oracle_emits_a_machine_verdict_artifact(self) -> None:
+        workflow = ORACLE_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("id: pack", workflow)
+        self.assertIn("- name: Finalize advisory verdict", workflow)
+        self.assertIn("oracle-advisory/verdict.json", workflow)
+        self.assertIn("name: oracle-public-advisory-verdict", workflow)
+        self.assertIn("if-no-files-found: error", workflow)
+
+    def test_oracle_structured_verdict_must_be_completed(self) -> None:
+        inventory = {
+            "schemaVersion": 1,
+            "baseSha": "a" * 40,
+            "candidateSha": "b" * 40,
+            "mergeBase": "a" * 40,
+            "entries": [
+                {
+                    "path": ".github/workflows/oracle-public-advisory.yml",
+                    "classification": "executable",
+                    "after": {"sha256": "c" * 64},
+                    "riskAxes": ["job-command"],
+                }
+            ],
+            "policyViolations": [],
+        }
+        inventory["inventorySha256"] = canonical_sha256(inventory)
+        enriched = MODULE.apply_execution_policy(inventory, self.policy)
+        run = {
+            "id": 88,
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/88",
+            "path": ".github/workflows/oracle-public-advisory.yml",
+            "event": "workflow_dispatch",
+            "actor": "edwardkim",
+            "headSha": "b" * 40,
+            "workflowSha256": "c" * 64,
+            "executionMode": "direct",
+            "paginationComplete": True,
+            "status": "completed",
+            "conclusion": "success",
+            "jobs": [
+                {
+                    "name": "oracle-public-compare-advisory",
+                    "status": "completed",
+                    "conclusion": "success",
+                }
+            ],
+            "artifacts": [
+                {
+                    "name": "oracle-public-advisory-verdict",
+                    "sha256": "d" * 64,
+                    "verdict": "completed",
+                    "files": ["verdict.json"],
+                }
+            ],
+        }
+        accepted = MODULE.verify_evidence(
+            enriched,
+            [run],
+            [],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertTrue(accepted["ok"], accepted["errors"])
+
+        run["artifacts"][0]["verdict"] = "skipped"
+        rejected = MODULE.verify_evidence(
+            enriched,
+            [run],
+            [],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertFalse(rejected["ok"])
+        self.assertIn(
+            "verdict-not-accepted:oracle-public-advisory-verdict:skipped",
+            rejected["errors"],
+        )
 
 
 if __name__ == "__main__":
