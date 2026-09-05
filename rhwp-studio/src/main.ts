@@ -1446,7 +1446,7 @@ function passwordOpenFailure(error: unknown): Error {
  * 일반 열기를 먼저 시도하고, 지원되는 HWP3/HWP5 암호 문서가 감지된 경우에만 암호
  * 입력 UI로 전환한다. 암호 문자열은 이 함수의 단일 시도 범위를 벗어나 보관하지 않는다.
  */
-async function loadPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<DocumentInfo> {
+async function openPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<void> {
   let retryMessage: string | undefined;
 
   while (true) {
@@ -1454,7 +1454,8 @@ async function loadPasswordProtectedDocument(data: Uint8Array, fileName: string)
     if (password === null) throw new DocumentOpenCancelledError();
 
     try {
-      return wasm.loadDocumentWithPassword(data, password, fileName);
+      wasm.loadDocumentWithPassword(data, password, fileName);
+      return;
     } catch (error) {
       // CFB 암호문은 인증 태그가 없으므로 오입력과 암호화 데이터 손상을 완전히 구분할 수
       // 없다. 두 경우만 재입력 상태로 안내하고, 지원하지 않는 암호화/DRM 등은 원래의
@@ -1477,7 +1478,8 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string): Promise<
     return wasm.loadDocument(data, fileName);
   } catch (error) {
     if (!isPasswordRequiredError(error)) throw error;
-    return loadPasswordProtectedDocument(data, fileName);
+    await openPasswordProtectedDocument(data, fileName);
+    return wasm.getDocumentInfo();
   }
 }
 

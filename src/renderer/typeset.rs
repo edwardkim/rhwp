@@ -3877,6 +3877,11 @@ fn paragraph_saved_vpos_reset_starts_new_page_after(
 /// 쪽 중간에서 인정하면 한 문서 안에서 가드가 연쇄 발동해 쪽수가 늘어난다
 /// (`156633519 산업활동동향`: pi 501개 이동 +3쪽). 이 조건 하나로 PI 코호트 회귀가
 /// 2건에서 0건이 됐고, 50·75·90% 가 모두 같은 결과라 가장 조인 값을 쓴다.
+/// [#6718] 저장 사다리가 지시한 쪽 경계를 "이 문단은 어차피 넘치지 않는다"로 걸러낼 때
+/// 쓰는 반올림 여유. 27469 `pi=62` 는 7줄 합 246.4 vs 예산 247.2 로 **0.8px** 차이로
+/// 들어가 사다리(@6)를 못 따랐다 — 그 0.8px 은 조판 차이가 아니라 계산 오차 규모다.
+const LADDER_FIT_EPSILON_PX: f64 = 1.0;
+
 const STORED_VPOS_REWIND_MIN_FILL: f64 = 0.90;
 
 /// 저장 `vpos` 가 되돌아가는 자리 — 한글이 거기서 쪽을 끊었다는 신호다 [#3837].
@@ -4164,6 +4169,10 @@ const SAVED_LINE_FLOW_ANCHOR_TOLERANCE_PX: f64 = 16.0;
 /// 덮고, frame 깊숙이 지나간 stale anchor(수백 px 뒤처짐)는 기각한다.
 const SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX: f64 = 64.0;
 
+/// [#5941] "흐름이 body 바닥에 앉았다"고 볼 여유. 이보다 적게 남았으면 저장 tail 의
+/// 쪽 배정은 일반 fit 의 소관이다(`task1725` 242쪽 핀: 여유 0.0).
+const BODY_BOTTOM_SEAT_PX: f64 = 10.0;
+
 /// [#2097→#5714] 표를 완결하는 마지막 행의 쪽 하단 압축 수용치 — 한글은 쪽
 /// 경계에서 말미 행이 잔여를 이 이내로 초과하면 행 밴드를 잔여로 압축해 쪽을
 /// 완결한다 (1741000 실측 초과 6.8px 수용, 삭제 전 #2097 상수 그대로).
@@ -4373,9 +4382,20 @@ fn saved_tail_overflow_to_fit(
     // 이미 넘긴 뒤(직전 문단이 넘겨 쓴 상태)의 tail 만 저장 bot 까지의 정확한
     // 차이로 구제한다 — 대표 p61: cur 878.3 > body 876.9. 각주 실가용도 함께
     // 요구해 각주 쪽의 과대 구제를 막는다.
+    //
+    // [#5941 잔존] `cur > body` 하나만으로는 잔존 회귀 42건이 안 열린다. 거부되는
+    // 세 형상은 **다른 조건은 전부 통과**하고 이 하나에만 걸린다(실측 `body − cur`
+    // = 85.4 · 15.6 · 32.6). 반면 이 조건을 넣게 만든 반례(`task1725` 국제고속선기준
+    // 242쪽 핀)는 **흐름이 body 바닥에 정확히 앉아 있다**(`body − cur == 0.0`;
+    // 넣을 당시 기록은 1006.1 < 1009.1 로 **값이 그 뒤 움직였다**).
+    //
+    // 그래서 "흐름이 body 안이면 무조건 거부" 대신 **바닥에 앉은 형상만** 거부한다.
+    // 여유가 한 줄 규모 이상 남았으면 그 tail 은 아직 이 쪽의 source 증거다.
+    let flow_seated_at_body_bottom =
+        current_height <= body_height && body_height - current_height <= BODY_BOTTOM_SEAT_PX;
     let drift_reaches_saved_tail = top > 0.0
         && current_height > bottom
-        && current_height > body_height
+        && !flow_seated_at_body_bottom
         && current_height - top <= SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX
         && bottom <= body_height - footnote_height;
     (top >= 0.0
@@ -18238,11 +18258,11 @@ impl TypesetEngine {
             let ladder_page_is_full = |k: usize| -> bool {
                 let upto = fmt.line_advances_sum(cursor_line..k);
                 let next = fmt.line_advances_sum(k..k + 1);
-                upto + next > avail_for_lines + 0.5
+                upto + next > avail_for_lines - LADDER_FIT_EPSILON_PX
             };
             if st.profile.hwp5_stored_pagination_layout()
                 && end_line > cursor_line + 1
-                && cumulative > avail_for_lines
+                && cumulative > avail_for_lines - LADDER_FIT_EPSILON_PX
             {
                 let rewind_line = (cursor_line + 1..end_line).find(|&k| {
                     match (para.line_segs.get(k - 1), para.line_segs.get(k)) {

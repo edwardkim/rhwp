@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-09-03
+last_verified: 2026-09-05
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -333,6 +333,48 @@ mutation은 O4이며 별도 승인을 받는다.
 
 보안 취약점 자체는 공개 Issue나 PR comment에 상세 재현을 쓰지 않고 [보안 정책](../../.github/SECURITY.md)의
 비공개 신고 경로를 따른다.
+
+### 9.4 CodeQL alert 귀속과 `used in tests` 근거 보존
+
+PR의 종합 CodeQL check가 기존 alert를 표시한 시점은 취약 코드가 처음 도입된 시점과 같지 않을 수 있다.
+파일 이동·경로 변경·분석기 upgrade·data-flow 확장으로 이미 존재하던 sink가 현재 PR에 처음 귀속될 수도
+있다. 따라서 check 화면의 PR 번호만 보고 source 도입 commit 또는 회귀 책임을 정하지 않는다.
+
+alert triage는 다음 네 시점을 분리한다.
+
+1. source·sink 코드가 각각 처음 도입된 commit과 시각
+2. 두 지점을 연결한 data-flow가 코드상 성립한 최초 commit
+3. CodeQL 분석이 alert를 처음 등록한 analysis ID·commit·ref·시각·도구 버전
+4. 현재 PR 또는 branch 분석이 같은 flow를 재현하거나 제거한 exact head·merge ref·analysis ID
+
+`gh`로 live 상태를 수집할 때는 alert와 analysis를 별도로 조회한다. 목록 API는 pagination을 적용하고,
+SARIF 원문은 필요한 analysis ID만 내려받는다.
+
+```bash
+gh api repos/edwardkim/rhwp/code-scanning/alerts/<alert-number>
+gh api --paginate \
+  'repos/edwardkim/rhwp/code-scanning/analyses?tool_name=CodeQL&per_page=100'
+gh api repos/edwardkim/rhwp/code-scanning/analyses/<analysis-id> \
+  -H 'Accept: application/sarif+json'
+```
+
+최초·현재 SARIF를 비교할 때는 query ID, source·sink message, 모든 flow location, 분석 CodeQL 버전,
+analysis ID, ref와 commit SHA를 보존한다. 줄 번호만 달라진 동일 flow와 파일·message topology가 달라진
+flow를 구분한다. 증적 문서는 secret 값, raw password, token, 사용자 절대 경로와 private corpus 식별자를
+담지 않으며, 큰 SARIF 전체를 그대로 커밋하기보다 판정에 필요한 결과를 결정적으로 정규화한다.
+
+`used in tests`는 다음 조건을 모두 확인한 뒤 메인테이너가 선택할 수 있는 운영 분류다.
+
+- sink의 실제 역할이 테스트·계측·fixture 무결성이고 제품의 인증·암호 저장·검증이 아니다.
+- 민감정보로 지목된 값이 허용된 projection인지 확인했고 raw secret의 유입·반환·저장·로그 경로가 없다.
+- source·sink 사이의 실제 runtime 경계를 설명하고 이를 단위·브라우저·통합 계약으로 고정했다.
+- query·language·path를 제외하거나 sanitizer로 넓게 가려 실제 보안 탐지를 약화하지 않았다.
+
+분류 변경은 O1 보안 metadata mutation이므로 명시 승인 없이 `false positive`, `won't fix` 등으로
+재분류하지 않는다. 기존 메인테이너 판정은 조사 중에도 유지하고, 구현 효과는 분류 문자열이 아니라 exact
+PR merge ref의 SARIF 결과 수와 merge 뒤 protected branch full scan으로 판정한다. PR 분석에서 flow가
+사라져도 merge 직후 branch scan이 같은 language와 query를 실행해 재발하지 않는지 확인하기 전에는 관련
+이슈를 닫지 않는다.
 
 ## 10. cache, artifact, runner와 LFS
 
