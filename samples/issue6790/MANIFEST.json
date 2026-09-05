@@ -1,0 +1,22 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6790,
+  "title": "전문인력 양성기관 지정기준의 세부기준 [별표]",
+  "entries": [
+    {
+      "path": "samples/issue6790/17544911-sericulture-training-criteria.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6790",
+      "originalFilename": "17544911_[별표 ] 전문인력 양성기관 지정기준의 세부기준(제2조제3항 관련)(기능성 양잠산업 육성 및 지원에 관한 법률 시행규칙).hwp",
+      "bytes": 58880,
+      "sha256": "59857dfd443c282ef3a7384558be36266e7476363d182b0c85d690b9b841dba4",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8362"
+      },
+      "referenceEngine": "2024",
+      "contract": "저장 프레임 꼬리 확장은 확장 뒤에도 조각이 쪽 예산 안에 있을 때만 쓴다. 잔여 26자·글자겹침 2건은 중첩 표 이어지는 조각의 별개 축이다."
+    }
+  ]
+}
