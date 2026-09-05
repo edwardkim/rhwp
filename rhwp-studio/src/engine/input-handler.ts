@@ -2396,6 +2396,54 @@ export class InputHandler {
     return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices };
   }
 
+  /**
+   * [Task #6741] 선택한 셀 블록의 내용을 한 번에 지운다.
+   *
+   * 한컴은 셀 블록에서 `Delete` 를 누르면 선택한 칸들의 글자를 모두 지우고 블록을 유지한다
+   * (#6741 실측). 종전 rhwp 에는 이 조작 자체가 없어 `Delete` 가 블록을 해제하고 캐럿에서
+   * 한 글자만 지웠다.
+   *
+   * 지우는 것이 글자만이 아니라 문단·서식·인라인 컨트롤까지라 역연산으로 되돌릴 수 없다 →
+   * 스냅샷으로 기록한다(#3230 로드맵의 "내용 보관이 필요한 조작" 분류).
+   * 지우기 전 셀 블록을 함께 실어 undo 뒤 복원되게 한다.
+   */
+  private clearSelectedCellBlock(): boolean {
+    const block = this.getSelectedCellBlock();
+    if (!block || block.cellIndices.length === 0) return false;
+    const selection = this.cursor.captureCellSelection();
+    const cursorBefore = this.cursor.getPosition();
+
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'clearCellBlock',
+      operation: (wasm) => {
+        let changed = false;
+        for (const cellIdx of block.cellIndices) {
+          if (block.cellPath) {
+            const headJson = JSON.stringify(withCellPathTarget(block.cellPath, cellIdx));
+            const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, headJson);
+            const lastPara = Math.max(0, paraCount - 1);
+            const lastJson = JSON.stringify(withCellPathTarget(block.cellPath, cellIdx, lastPara));
+            const lastLen = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, lastJson);
+            if (paraCount <= 1 && lastLen === 0) continue;
+            wasm.deleteRangeInCellByPath(block.sec, block.ppi, headJson, 0, 0, lastPara, lastLen);
+          } else {
+            const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
+            const lastPara = Math.max(0, paraCount - 1);
+            const lastLen = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, lastPara);
+            if (paraCount <= 1 && lastLen === 0) continue;
+            wasm.deleteRangeInCell(block.sec, block.ppi, block.ci, cellIdx, 0, 0, lastPara, lastLen);
+          }
+          changed = true;
+        }
+        // [Task #2370] 이미 빈 칸만 골랐으면 문서가 그대로다 → 기록하지 않는다.
+        return changed ? cursorBefore : null;
+      },
+      selectionBefore: selection ? { mode: 'cellBlock', state: selection } : null,
+    });
+    return true;
+  }
+
   private getParaFormatTargetsAtCursor(): ParaFormatTarget[] {
     const block = this.getSelectedCellBlock();
     if (block) return this.getParaFormatTargetsForCellBlock(block);
@@ -2992,6 +3040,16 @@ export class InputHandler {
     if ('mode' in range) {
       if (range.mode === 'headerFooter') {
         this.cursor.selectHeaderFooterRange(range.start, range.end, range.previewPage);
+      } else if (range.mode === 'cellBlock') {
+        // [Task #6741] 한컴은 셀 블록에서 지운 뒤 되돌리면 지우기 전 블록을 되살린다(실측).
+        // `resetDerivedStateAfterHistoryJump` 가 방금 해제한 것을 여기서 다시 세운다 —
+        // F3 확장 단계를 `selectRange(start, end, blockPhase)` 로 되살리는 것과 같은 자리다.
+        // 표가 사라졌거나 범위가 밖으로 나가면 `restoreCellSelection` 이 거절한다(#2339 규약).
+        if (this.cursor.restoreCellSelection(range.state)) {
+          this.caret.hide();
+          this.selectionRenderer.clear();
+          this.updateCellSelection();
+        }
       }
       return;
     }
