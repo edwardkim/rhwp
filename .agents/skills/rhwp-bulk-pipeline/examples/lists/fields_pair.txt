@@ -1,2 +1,0 @@
-samples/field-01.hwp
-samples/hwp3-sample.hwp

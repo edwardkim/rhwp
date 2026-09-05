@@ -1,9 +1,0 @@
-{
-  "id": "T18",
-  "utterance": "한컴 저장이랑 달라",
-  "command": "hwp5-inventory-diff",
-  "note": "oracle vs generated",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

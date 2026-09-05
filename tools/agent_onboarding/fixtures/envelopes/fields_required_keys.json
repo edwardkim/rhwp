@@ -1,7 +1,0 @@
-{
-  "command": "fields",
-  "required": [
-    "fieldCount",
-    "fields"
-  ]
-}

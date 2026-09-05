@@ -1,9 +1,0 @@
-{
- "schemaVersion": "1",
- "generatedBy": "tools/chief/service_loop.py",
- "goal": "stamp",
- "route": "resolve-now",
- "status": "needs-agent",
- "reason": "모르는 goal: stamp",
- "stop": "C06"
-}

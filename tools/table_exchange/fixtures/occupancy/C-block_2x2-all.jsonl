@@ -1,4 +1,0 @@
-{"caseId":"C-block_2x2-all","kind":"covered","row":1,"col":2,"anchorRow":1,"anchorCol":1}
-{"caseId":"C-block_2x2-all","kind":"covered","row":2,"col":1,"anchorRow":1,"anchorCol":1}
-{"caseId":"C-block_2x2-all","kind":"covered","row":2,"col":2,"anchorRow":1,"anchorCol":1}
-{"caseId":"C-block_2x2-all","kind":"merged-anchor","row":1,"col":1,"rowSpan":2,"colSpan":2,"text":"bloc1_1"}

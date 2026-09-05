@@ -1,6 +1,0 @@
-{
- "doc": "scan.jpg",
- "symptom": "JPG 를 HWP 로 오인",
- "params": {},
- "goal": "export-pdf"
-}

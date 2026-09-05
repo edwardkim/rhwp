@@ -1,6 +1,0 @@
-{
- "doc": "/etc/passwd",
- "symptom": "절대경로 거부",
- "params": {},
- "goal": "export-text"
-}

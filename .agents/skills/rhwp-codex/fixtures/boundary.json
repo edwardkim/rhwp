@@ -1,9 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "issue": 5318,
-  "envelopeFieldDictionary": "mydocs/manual/agent_knowledge_map.md §2-2",
-  "notInThisSkill": true,
-  "skillMayListFieldNames": true,
-  "skillMustNotRedefineTypes": true,
-  "provenanceMapCommand": "export-provenance-map"
-}

@@ -1,9 +1,0 @@
-{
-  "id": "T10",
-  "utterance": "문단 속성",
-  "command": "dump",
-  "note": "-s -p 는 구역/문단",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

@@ -1,7 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "helper": "crop_image.sh",
-  "ok": false,
-  "code": "CROP_BBOX_EMPTY",
-  "message": "오류: bbox 폭/높이는 1 이상이어야 합니다 (w=0 h=80)"
-}

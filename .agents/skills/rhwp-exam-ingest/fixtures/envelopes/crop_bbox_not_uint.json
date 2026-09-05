@@ -1,7 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "helper": "crop_image.sh",
-  "ok": false,
-  "code": "CROP_BBOX_NOT_UINT",
-  "message": "오류: bbox 는 10진 정수여야 합니다 (x=10.5 y=20 w=100 h=80)"
-}

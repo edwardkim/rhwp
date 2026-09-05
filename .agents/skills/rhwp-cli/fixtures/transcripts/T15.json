@@ -1,9 +1,0 @@
-{
-  "id": "T15",
-  "utterance": "hwpx랑 hwp 비교",
-  "command": "ir-diff",
-  "note": "--json 이면 exit 3=차이",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

@@ -1,7 +1,0 @@
-{
-  "command": "inspect injection",
-  "required": [
-    "clean",
-    "signalCount"
-  ]
-}

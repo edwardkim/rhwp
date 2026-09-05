@@ -1,9 +1,0 @@
-{
-  "id": "T16",
-  "utterance": "썸네일만",
-  "command": "thumbnail",
-  "note": "PrvImage, 렌더 아님",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

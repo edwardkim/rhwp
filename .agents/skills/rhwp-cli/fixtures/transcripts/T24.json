@@ -1,9 +1,0 @@
-{
-  "id": "T24",
-  "utterance": "간격이 이상해",
-  "command": "dump-pages",
-  "note": "2단 높이",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

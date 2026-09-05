@@ -1,4 +1,0 @@
-ground truth: none
-rhwp render-diff samples/form-01.hwp --via hwpx
-status: PASS
-limit: self-consistency only. not Hangul fidelity. F04

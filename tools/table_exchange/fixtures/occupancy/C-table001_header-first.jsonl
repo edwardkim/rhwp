@@ -1,9 +1,0 @@
-{"caseId":"C-table001_header-first","kind":"covered","row":0,"col":2,"anchorRow":0,"anchorCol":1}
-{"caseId":"C-table001_header-first","kind":"covered","row":0,"col":3,"anchorRow":0,"anchorCol":1}
-{"caseId":"C-table001_header-first","kind":"covered","row":0,"col":5,"anchorRow":0,"anchorCol":4}
-{"caseId":"C-table001_header-first","kind":"covered","row":0,"col":6,"anchorRow":0,"anchorCol":4}
-{"caseId":"C-table001_header-first","kind":"covered","row":1,"col":7,"anchorRow":0,"anchorCol":7}
-{"caseId":"C-table001_header-first","kind":"covered","row":2,"col":7,"anchorRow":0,"anchorCol":7}
-{"caseId":"C-table001_header-first","kind":"merged-anchor","row":0,"col":1,"rowSpan":1,"colSpan":3,"text":"5월"}
-{"caseId":"C-table001_header-first","kind":"merged-anchor","row":0,"col":4,"rowSpan":1,"colSpan":3,"text":"6월"}
-{"caseId":"C-table001_header-first","kind":"merged-anchor","row":0,"col":7,"rowSpan":3,"colSpan":1,"text":"비고"}

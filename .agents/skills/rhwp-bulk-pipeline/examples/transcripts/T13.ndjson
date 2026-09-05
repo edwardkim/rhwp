@@ -1,3 +1,0 @@
-{"schemaVersion":"1.0","source":"samples/form-01.hwp","row":0,"dryRun":false,"filledCount":1,"filled":[{"name":"myMsg01","occurrence":0,"value":"홍길동 귀하"}],"notFound":[],"ambiguous":[],"output":"out/홍길동.hwp","outputFormat":"hwp5"}
-{"schemaVersion":"1.0","source":"samples/form-01.hwp","row":1,"dryRun":false,"filledCount":1,"filled":[{"name":"myMsg01","occurrence":0,"value":"김철수 귀하"}],"notFound":[],"ambiguous":[],"output":"out/김철수.hwp","outputFormat":"hwp5"}
-{"schemaVersion":"1.0","source":"samples/form-01.hwp","row":2,"dryRun":false,"filledCount":1,"filled":[{"name":"myMsg01","occurrence":0,"value":"이영희 귀하"}],"notFound":[],"ambiguous":[],"output":"out/이영희.hwp","outputFormat":"hwp5"}

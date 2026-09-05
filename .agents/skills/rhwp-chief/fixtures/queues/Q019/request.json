@@ -1,6 +1,0 @@
-{
- "doc": "budget.hwpx",
- "symptom": "예산 표 수확 (1차)",
- "params": {},
- "goal": "extract-tables"
-}

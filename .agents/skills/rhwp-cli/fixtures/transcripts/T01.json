@@ -1,9 +1,0 @@
-{
-  "id": "T01",
-  "utterance": "svg로 빼줘",
-  "command": "export-svg",
-  "note": "시각 확인 1단",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

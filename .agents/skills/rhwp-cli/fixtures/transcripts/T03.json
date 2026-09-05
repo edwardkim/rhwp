@@ -1,9 +1,0 @@
-{
-  "id": "T03",
-  "utterance": "debug overlay",
-  "command": "export-svg",
-  "note": "--debug-overlay",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

@@ -1,6 +1,0 @@
-{
- "doc": "../secrets.hwp",
- "symptom": "경로 탈출 시도",
- "params": {},
- "goal": "export-text"
-}

@@ -1,9 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "issue": 5331,
-  "note": "이 스킬은 요청을 mydocs/manual/recipes/ 의 실무 플레이북으로 보내는 라우터다. 01·02·03·04·05·06·09·10 만 존재한다. 07·08 은 #3905 다중 에이전트 협업 예약 결번이며 파일을 만들지 않는다. 이웃 스킬(form-fill / table-exchange / security-sweep / bulk-pipeline / visual-regression)을 여기서 재작성하지 않는다.",
-  "doNotInvent07": true,
-  "doNotInvent08": true,
-  "routerOnly": true,
-  "notGym": true
-}

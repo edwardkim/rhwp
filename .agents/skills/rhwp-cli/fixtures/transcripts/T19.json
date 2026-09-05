@@ -1,9 +1,0 @@
-{
-  "id": "T19",
-  "utterance": "표 저장 계약",
-  "command": "hwp5-table-probe",
-  "note": "hwp5 가족",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

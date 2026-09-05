@@ -1,9 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "command": "build-from-ingest",
-  "ok": false,
-  "code": "BUILD_MISSING_O",
-  "exit": 2,
-  "stderrContains": "오류: -o <출력 경로> 가 누락되었습니다",
-  "note": "기존 CLI 사용법. 새 플래그 아님"
-}

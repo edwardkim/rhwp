@@ -1,9 +1,0 @@
-{
- "schemaVersion": "1",
- "generatedBy": "tools/chief/service_loop.py",
- "goal": "translate",
- "route": "resolve-now",
- "status": "needs-agent",
- "reason": "모르는 goal: translate",
- "stop": "C06"
-}

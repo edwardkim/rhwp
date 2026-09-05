@@ -1,9 +1,0 @@
-{
-  "id": "T05",
-  "utterance": "png로 비전 모델에",
-  "command": "export-png",
-  "note": "--vlm-target claude",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

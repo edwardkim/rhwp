@@ -1,9 +1,0 @@
-{
-  "id": "T09",
-  "utterance": "이 페이지 배치",
-  "command": "dump-pages",
-  "note": "디버그 2단",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

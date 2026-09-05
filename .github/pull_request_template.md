@@ -20,7 +20,6 @@ closes #
 - [ ] 웹(WASM) 렌더링 확인 (해당하는 경우)
 - [ ] rhwp-studio 편집·UI 변경 시: e2e 시나리오(`rhwp-studio/e2e/…`) 또는 편집 커맨드 리뷰 체크리스트(`mydocs/manual/edit_command_review_checklist.md`) 통과 · 링크:
 - [ ] (에이전트 보조 작업 권장) 작업 증빙 첨부 — 관련 `--json` 봉투 원문 ([AGENTS.md 작업 증빙 절](../AGENTS.md#작업-증빙--에이전트-기본-경로-권장))
-- [ ] `.agents/agents/`, `.agents/skills/`, `.agents/skills/` 변경 시: [capability 카탈로그](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/agent_capability_registry.md)의 등록·검증 규칙을 반영
 
 > `node scripts/rust-test-suite-manifest.mjs --prepare`와 이어지는 `--check`는 파생 suite를
 > 준비한 PR review worktree와 CI의 절차입니다. 일반 기여자의 source PR checkout에서는

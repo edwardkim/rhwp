@@ -1,6 +1,0 @@
-fields: 0
-tables: 39
-set-cell table=5 row=0 col=1 written=시연용가상기업
-reread table=5 row=0 col=1 value=시연용가상기업
-match: true
-filing: refused

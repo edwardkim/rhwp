@@ -1,6 +1,0 @@
-$ cat /tmp/rhwp-fidelity-issue/page-count-ledger.tsv
-source	pages	delta_vs_reference	scope	note
-reference_pdf	35	0	full PDF	comparison baseline
-rhwp_svg	37	2	full export	page-count difference is a candidate, not a global-break fix
-rhwp_render_tree	37	2	full render tree	page-count difference is a candidate, not a global-break fix
-# F11 — 전역 page-break 패치를 열지 않는다. owner 쪽을 조사한다.

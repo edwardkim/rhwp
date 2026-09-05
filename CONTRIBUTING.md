@@ -630,7 +630,7 @@ PR에 포함할 파일과 검증 범위는 이 문서가 정하며, 자동 로�
 
 | 도구 | 자동 로딩 파일 |
 |---|---|
-| Claude Code | `CLAUDE.md` → `AGENTS.md` (+ `.agents/skills/` 자동 발견 — 기여 절차는 `rhwp-contributor`) |
+| Claude Code | `CLAUDE.md` → `AGENTS.md` |
 | Codex | `AGENTS.md` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
 | Cursor | `.cursor/rules/rhwp.mdc` |

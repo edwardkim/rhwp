@@ -1,9 +1,0 @@
-{
-  "id": "T22",
-  "utterance": "자기 라운드트립",
-  "command": "hwp5-roundtrip",
-  "note": "한컴 호환이 아님",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

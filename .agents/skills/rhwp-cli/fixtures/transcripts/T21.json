@@ -1,9 +1,0 @@
-{
-  "id": "T21",
-  "utterance": "CHAR_SHAPE 차이",
-  "command": "hwp5-char-shape-audit",
-  "note": "--out 필수",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

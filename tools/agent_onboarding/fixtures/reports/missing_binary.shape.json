@@ -1,8 +1,0 @@
-{
-  "exitCode": 3,
-  "binary.found": false,
-  "exceptions.kind": [
-    "missing_binary"
-  ],
-  "ok": false
-}

@@ -1,6 +1,0 @@
-{
- "doc": "roster.hwp",
- "symptom": "명단 표 (야간)",
- "params": {},
- "goal": "extract-tables"
-}

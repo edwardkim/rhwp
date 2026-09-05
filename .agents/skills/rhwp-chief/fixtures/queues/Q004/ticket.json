@@ -1,7 +1,0 @@
-{
- "schemaVersion": "1",
- "generatedBy": "tools/fde/triage.py",
- "route": "resolve-now",
- "routeReason": "고시 인쇄본 (1차)",
- "steps": []
-}

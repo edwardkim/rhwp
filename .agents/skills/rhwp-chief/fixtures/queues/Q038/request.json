@@ -1,6 +1,0 @@
-{
- "doc": "crash.hwpx",
- "symptom": "패닉 문서에 PDF 강행 금지",
- "params": {},
- "goal": "export-pdf"
-}

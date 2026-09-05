@@ -1,9 +1,0 @@
-{
- "schemaVersion": "1",
- "generatedBy": "tools/chief/service_loop.py",
- "goal": "fill",
- "route": "resolve-now",
- "status": "needs-agent",
- "reason": "params.data(값 JSON 파일) 없음",
- "stop": "C08"
-}

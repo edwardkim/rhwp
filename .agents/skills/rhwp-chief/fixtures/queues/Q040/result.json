@@ -1,9 +1,0 @@
-{
- "schemaVersion": "1",
- "generatedBy": "tools/chief/service_loop.py",
- "goal": "export-text",
- "route": null,
- "status": "failed",
- "reason": "요청 폴더 안 문서가 없음: ../secrets.hwp",
- "stop": "C02"
-}

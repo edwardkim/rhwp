@@ -1,9 +1,0 @@
-{
-  "id": "T12",
-  "utterance": "번호가 이상해",
-  "command": "diag",
-  "note": "개요/글머리표",
-  "pageZeroBased": true,
-  "newCli": false,
-  "gym": false
-}

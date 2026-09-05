@@ -1,9 +1,0 @@
-{
-  "exitCode": 1,
-  "binary.found": true,
-  "exceptions.kind": [
-    "bad_sample"
-  ],
-  "sampleClassification.ok": false,
-  "ok": false
-}

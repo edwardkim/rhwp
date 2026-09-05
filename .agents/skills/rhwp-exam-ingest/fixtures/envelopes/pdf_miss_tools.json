@@ -1,7 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "helper": "pdf_to_pngs.sh",
-  "ok": false,
-  "code": "PDF_MISS_TOOLS",
-  "message": "오류: pdftoppm / magick / convert 중 하나가 필요합니다 (poppler-utils 또는 ImageMagick)"
-}

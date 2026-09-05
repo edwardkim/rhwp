@@ -1,6 +1,0 @@
-{
- "doc": "gosi.hwp",
- "symptom": "고시 인쇄본 (1차)",
- "params": {},
- "goal": "export-pdf"
-}

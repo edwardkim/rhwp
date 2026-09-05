@@ -1,6 +1,0 @@
-{
- "doc": "legacy.hwp",
- "symptom": "HWP5를 HWPX로 (야간)",
- "params": {},
- "goal": "export-hwpx"
-}

@@ -1,7 +1,0 @@
-{
-  "schemaVersion": "1.0",
-  "helper": "pdf_to_pngs.sh",
-  "ok": false,
-  "code": "PDF_DPI_RANGE",
-  "message": "오류: DPI 는 72–600 정수여야 합니다 (got 30)"
-}
