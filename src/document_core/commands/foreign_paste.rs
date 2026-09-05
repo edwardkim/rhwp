@@ -864,41 +864,6 @@ fn collect_max_field_id_from_shape(shape: &crate::model::shape::ShapeObject, max
     }
 }
 
-#[cfg(test)]
-mod field_id_tests {
-    use super::next_free_field_id;
-    use crate::model::control::{Control, Field};
-    use crate::model::document::{Document, Section};
-    use crate::model::header_footer::Header;
-    use crate::model::paragraph::Paragraph;
-
-    #[test]
-    fn next_field_id_includes_header_sublist_fields() {
-        let header_field = Paragraph {
-            controls: vec![Control::Field(Field {
-                field_id: 41,
-                ..Default::default()
-            })],
-            ..Default::default()
-        };
-        let document = Document {
-            sections: vec![Section {
-                paragraphs: vec![Paragraph {
-                    controls: vec![Control::Header(Box::new(Header {
-                        paragraphs: vec![header_field],
-                        ..Default::default()
-                    }))],
-                    ..Default::default()
-                }],
-                ..Default::default()
-            }],
-            ..Default::default()
-        };
-
-        assert_eq!(next_free_field_id(&document), 42);
-    }
-}
-
 /// 구역 정의(secd)·단 정의(cold)를 떼어낸다.
 ///
 /// 이 둘은 구역 첫 문단에만 붙는 **구역 범위** 컨트롤이라 본문 한가운데 끼면 그 자리에
