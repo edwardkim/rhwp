@@ -78,8 +78,21 @@ test('셀 블록 내용 지우기는 스냅샷으로 기록하고 지우기 전 
   assert.match(fn, /selectionBefore:[\s\S]*mode: 'cellBlock'/,
     '캡처한 셀 블록을 selectionBefore 로 싣지 않는다 — undo 가 되살릴 근거가 없다');
   // [#2370] 이미 빈 칸만 골랐으면 문서가 그대로다 → 유령 undo 엔트리를 막는다.
-  assert.match(fn, /return changed \? cursorBefore : null;/,
+  assert.match(fn, /if \(!changed\) return null;/,
     '무변경 시 null 을 돌려 기록을 취소해야 한다');
+});
+
+test('비운 칸 안에 있던 캐럿은 그 칸의 시작으로 내린다', () => {
+  // `cursor.moveTo` 는 클램프하지 않는다(position 을 그대로 대입). 지우기 전 오프셋을
+  // 사후 커서로 돌려주면 빈 칸에 범위 밖 위치가 남고, 이후 편집이 문단 길이 검사에 걸린다.
+  // 문단이 여럿이던 칸은 cellParaIndex 도 범위 밖이 된다.
+  const ih = codeOnly(source('src/engine/input-handler.ts'));
+  const fn = functionBodyFrom(ih, 'private clearSelectedCellBlock()');
+
+  assert.match(fn, /block\.cellIndices\.includes\(cursorBefore\.cellIndex\)/,
+    '캐럿이 비운 칸 안이었는지 판정하지 않는다');
+  assert.match(fn, /\{ \.\.\.cursorBefore, cellParaIndex: 0, charOffset: 0 \}/,
+    '비운 칸 안 캐럿을 칸 시작으로 내리지 않는다 — charOffset 만 내리면 다문단 칸에서 여전히 범위 밖');
 });
 
 test('undo 는 셀 블록을 되살리고 redo 는 되살리지 않는다 — 한컴 실측', () => {
