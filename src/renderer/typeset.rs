@@ -22402,7 +22402,34 @@ impl TypesetEngine {
                             && res.consumed_height >= 3.0 * extension
                             && frame_tail_rest > 0.5
                             && frame_tail_rest <= 64.0);
-                    if extension > 0.5 && mid_extension_ok {
+                    // [#6790] 확장해도 **조각이 쪽 예산 안에 있어야** 한다.
+                    //
+                    // `#6549` 가 어울림(Square)에 상한을 달았지만 위아래
+                    // (TopAndBottom)는 그대로 상한이 없었다. 17544911 은 그 갈래에서
+                    // 예산 920.6 → **1178.5**(+257.9, 한 유닛 규모 24px 의 10배)로
+                    // 늘어나 조각이 1263.3 이 되고 쪽 예산 1005.4 를 254px 넘긴다.
+                    // 표가 안 쪼개져 한/글 3쪽이 rhwp 2쪽이 되고 105자가 사라진다.
+                    //
+                    // ⚠ 크기(24px·107.4px 등)로 가르지 않는다 — `#6549` 가 편람 핀
+                    // (확장 15.3~107.4px)과 갈리지 않는다고 기록했다. 대신 확장의
+                    // **결과**를 본다: 저장 프레임은 "한글이 여기서 끊었다"는 증거지
+                    // "쪽을 넘겨도 된다"는 허가가 아니다. 이미 예산을 넘긴 조각
+                    // (`consumed > avail_for_rows`)은 이 규칙과 무관하므로 건드리지
+                    // 않는다 — 그 초과는 `#5057` 저장 첫-조각 허용치가 따로 판정한다.
+                    //
+                    // ⚠⚠ **결과만으로 걸면 안 된다** — 편람 핀들은 확장이 예산을 넘겨야
+                    // 성립한다. 결과 조건만 달았더니 `issue_5801`·`issue_3930`·
+                    // `issue_3931`·`issue_5584`·`issue_6025` + 오라클 쪽수 파티션 0/1 +
+                    // 글자겹침 파티션 2, **11건**이 깨졌다. 그래서 **근소(near-miss)를
+                    // 벗어난 확장**에만 결과 조건을 건다. 핀들의 확장은 15.3~107.4px
+                    // 이고 이 건은 257.9px 로 그 범위 **밖**이다.
+                    const NEAR_MISS_EXTENSION_PX: f64 = 120.0;
+                    let extended_fragment_fits = extension <= NEAR_MISS_EXTENSION_PX || {
+                        let extended =
+                            consumed + cs_before + padding + source_tail_cut.consumed_height;
+                        extended <= avail_for_rows + 0.5 || consumed > avail_for_rows + 0.5
+                    };
+                    if extension > 0.5 && mid_extension_ok && extended_fragment_fits {
                         // Downstream fit/retry decisions must reason in the
                         // same frame-sized budget as the cut.  The precise
                         // physical overfill is measured from the painted
