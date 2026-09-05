@@ -171,6 +171,42 @@ function mmToHwp(raw: string | undefined): number {
   return Math.round(numberOr(raw, 0) * HWP_PER_MM);
 }
 
+/**
+ * [Task #6758] 크기 칸의 표시값 — **이 모듈이 서식의 단일 소유자다.**
+ *
+ * 아래 `addChangedSize` 는 "사용자가 이 칸을 건드렸는가"를 표시값과 견줘 판정한다. 그래서
+ * 다이얼로그가 칸을 채우는 서식과 여기 서식이 반드시 같아야 한다 — 갈라지면 판정이 늘
+ * "바뀌었다"가 되어 #6758(무변경 확인이 치수를 200 으로 부풀림)이 되살아난다.
+ * 두 벌을 두고 가드로 묶는 대신, 다이얼로그가 이 함수를 가져다 쓴다.
+ */
+export function displayedMm(hwp: number): string {
+  return (hwp / HWP_PER_MM).toFixed(2);
+}
+
+/**
+ * [Task #6758] 크기 전용 — 사용자가 칸을 건드렸을 때만 패치에 싣는다.
+ *
+ * 종전에는 되돌린 HWPUNIT 과 모델 값을 비교했다(`addChanged`). 그런데 mm 2자리 표시는
+ * 저장 단위를 잃는다 — 높이 1 HWPUNIT 은 `"0.00"` 으로 보이고 되돌리면 `0` 이라 모델의
+ * `1` 과 달라져, **사용자가 아무것도 안 고쳐도 변경으로 판정돼** 패치에 실렸다. 그 `0` 이
+ * 엔진의 최소 크기 클램프(`MIN_SHAPE_SIZE = 200`)에 걸려 가는 선이 200배로 두꺼워졌다.
+ *
+ * 한글 2024 는 같은 표시 정밀도를 쓰면서도 확인에서 치수를 그대로 둔다(#6758 실측).
+ * 입력값이 표시값과 같으면 사용자가 건드리지 않은 것이므로 보내지 않는다.
+ *
+ * 비교는 **표시 정밀도로 정규화해서** 한다 — 문자열을 그대로 견주면 같은 값의 다른 표기
+ * (`"10"` 과 `"10.00"`)가 변경으로 잡힌다.
+ */
+function addChangedSize(
+  patch: PicturePropsPatch,
+  key: string,
+  raw: string | undefined,
+  current: number,
+): void {
+  if (numberOr(raw, 0).toFixed(2) === displayedMm(current)) return;
+  patch[key] = Math.max(0, mmToHwp(raw));
+}
+
 function hexToColorRef(hex: string): number {
   const value = hex.replace('#', '');
   const red = parseInt(value.substring(0, 2), 16);
@@ -211,8 +247,8 @@ function appendCommonSize(
 ): void {
   addChanged(patch, 'sizeProtect', form.sizeProtect, props.sizeProtect ?? false);
   if (form.sizeProtect) return;
-  addChanged(patch, 'width', Math.max(0, mmToHwp(form.width)), props.width);
-  addChanged(patch, 'height', Math.max(0, mmToHwp(form.height)), props.height);
+  addChangedSize(patch, 'width', form.width, props.width);
+  addChangedSize(patch, 'height', form.height, props.height);
 }
 
 function appendCommonPosition(

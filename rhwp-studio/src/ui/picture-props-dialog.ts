@@ -18,6 +18,7 @@ import { userSettings } from '@/core/user-settings';
 import { enableDialogDrag } from './dialog-drag';
 import {
   buildPicturePropsPatch,
+  displayedMm,
   resolvePicturePropsApplyTarget,
   type PicturePropsApplyForm,
   type PicturePropsApplyTarget,
@@ -2143,8 +2144,9 @@ export class PicturePropsDialog {
         this.picEmbedCheck.checked = true;
       }
     }
-    this.widthInput.value = hwpToMm(this.props.width).toFixed(2);
-    this.heightInput.value = hwpToMm(this.props.height).toFixed(2);
+    // [Task #6758] 크기 칸의 서식 소유자는 apply-model 이다 — 판정이 이 표시값과 견준다.
+    this.widthInput.value = displayedMm(this.props.width);
+    this.heightInput.value = displayedMm(this.props.height);
     this.sizeFixedCheck.checked = this.props.sizeProtect ?? false;
     this.treatAsCharCheck.checked = this.props.treatAsChar;
     this.selectWrap(this.wrapValues.indexOf(this.props.textWrap));
