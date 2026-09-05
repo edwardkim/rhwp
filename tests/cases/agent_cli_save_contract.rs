@@ -11,7 +11,7 @@ fn repo() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo().join(".claude/skills/rhwp-cli")
+    repo().join(".agents/skills/rhwp-cli")
 }
 
 fn read_text(rel: &str) -> String {

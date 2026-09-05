@@ -36,7 +36,7 @@ claim: V-lineage
 금지:
 
 - V-replay(단건 `rhwp replay --expect-output-sha256` / `reproduced`) 재구현
-- `.claude/skills/rhwp-work-receipt` 재작성
+- `.agents/skills/rhwp-work-receipt` 재작성
 - `gym/`
 - `git add -A`
 - 금지 워크트리: `rhwp`, `rhwp-desk*`, `rhwp-handoff`, `rhwp-scaffold-final`, `rhwp-doc-repro`

@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5313
 브랜치: `feat/agent-explore` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-explore/` ·
+범위: `.agents/skills/rhwp-explore/` ·
 `scripts/tests/test_agent_explore.py` · capability 등록부 `CAP-5313` · 본 문서
 비범위: `gym/` · 이웃 스킬 재작성 · 새 CLI · DocumentCore 편집 구현 ·
 `rhwp-desk*` / `rhwp-handoff` / `rhwp-scaffold-final` / `rhwp-doc-repro`

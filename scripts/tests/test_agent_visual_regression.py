@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-visual-regression"
+SKILL = REPO / ".agents" / "skills" / "rhwp-visual-regression"
 REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
@@ -187,7 +187,7 @@ class AgentVisualRegressionSkillTests(unittest.TestCase):
     def test_forbidden_peer_skills_exist_but_are_not_rewritten(self):
         for slug in FORBIDDEN_SKILLS:
             self.assertIn(slug, self.idx["forbiddenSkillsTouch"])
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
 
     def test_no_invented_commands_in_markdown(self):

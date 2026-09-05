@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pre-commit gate for skill-path changes.
 
-If staged or working-tree paths include `.claude/skills/`, `.agents/skills/`,
+If staged or working-tree paths include `.agents/skills/`, `.agents/skills/`,
 or `tools/skill_router/`, run `gate_new_skill.py` three times and
 `python -m unittest tools.skill_router.test_route` once. Unrelated changes
 exit 0 without blocking.
@@ -26,7 +26,7 @@ RUN_TIMEOUT_SEC = 300
 ROUTE_UNITTEST_MODULE = "tools.skill_router.test_route"
 
 TRIGGER_PREFIXES = (
-    ".claude/skills/",
+    ".agents/skills/",
     ".agents/skills/",
     "tools/skill_router/",
 )

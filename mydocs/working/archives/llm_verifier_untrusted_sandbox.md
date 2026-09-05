@@ -33,7 +33,7 @@ LLM-as-verifier 축 6. `untrustedContent` / `untrustedFields` 로 표지된
 
 금지:
 
-- `.claude/skills/rhwp-provenance` 재작성
+- `.agents/skills/rhwp-provenance` 재작성
 - 새 rhwp CLI 발명
 - 다른 V-\* (`verdict_protocol`, `claim_bind`, `best_of_n`,
   `process_steps`, `oracle_vs_self`) 디렉터리 작성

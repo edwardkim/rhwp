@@ -645,7 +645,7 @@ def author_skill_graph(skill: str) -> dict[str, Any]:
             (
                 "scaffold",
                 "scaffold SKILL.md",
-                "write .claude/skills/<id>/SKILL.md "
+                "write .agents/skills/<id>/SKILL.md "
                 "(name+description; rhwp capabilities; "
                 "rhwp info <파일> --json; rhwp export-svg <파일> -p 0)",
             ),

@@ -14,7 +14,7 @@ capability: `CAP-5706`
 `mydocs/manual/agent_skill_router.md`, 본 파일.
 
 비범위(다른 에이전트 소유): `catalog.json`, `route.py`, `intents.py`,
-`graph.py`, `.claude/skills/rhwp-skill-router/SKILL.md`, capability 등록부,
+`graph.py`, `.agents/skills/rhwp-skill-router/SKILL.md`, capability 등록부,
 `mydocs/report/task_m100_5706/` PNG.
 
 ## 무엇을
@@ -80,7 +80,7 @@ issue·pr. stdout 은 JSON 객체 하나.
 시각 PNG 는 `mydocs/report/task_m100_5706/` (verify-A/B 소유)에 산다. 이
 기록은 터미널 창을 찍었다고 주장하지 않는다.
 
-`.claude/skills/<name>/SKILL.md` 를 새로 쓰거나 고치면 PR 전에 세 번 더
+`.agents/skills/<name>/SKILL.md` 를 새로 쓰거나 고치면 PR 전에 세 번 더
 돌린다.
 
 ```bash
@@ -102,7 +102,7 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 
 `"새 스킬 만들어"` 도 `request → intent → requiredCapabilities →
 skillSelection → executionGraph` 를 탄다. 경로 스킬은 `rhwp-skill-author`
-(`.claude/skills/rhwp-skill-author/SKILL.md`). CAP ID 를 발명하지 않는다.
+(`.agents/skills/rhwp-skill-author/SKILL.md`). CAP ID 를 발명하지 않는다.
 
 카탈로그 스킬에 `PROBES` 가 없으면 `gate_new_skill.py` 가 실패한다.
 

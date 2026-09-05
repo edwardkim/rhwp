@@ -4,7 +4,7 @@
 이슈: https://github.com/edwardkim/rhwp/issues/5324
 브랜치: `feat/agent-bug-hunter` (`upstream/devel` 기준 격리 worktree)
 범위: `.agents/skills/bug-hunter/` ·
-`.claude/skills/rhwp-bug-hunter/` (얇은 포인터) ·
+`.agents/skills/rhwp-bug-hunter/` (얇은 포인터) ·
 `scripts/tests/test_agent_bug_hunter.py` ·
 `tests/agent_bug_hunter_skill_contract.rs` ·
 capability 등록부 `CAP-5324` · 본 문서
@@ -62,7 +62,7 @@ DoD: additions 5000–10000 (최소 5000). PR 전 `cargo fmt --all -- --check`.
 4. `examples/` 20건: playbook 예시 1–7 + 카탈로그 + 함정/템플릿.
 5. `_gen_pack.py` 가 `fixtures/` 에 JSON·TSV·트레이스·이슈
    템플릿을 방출. 여정 80+, 발화 120+, 트레이스 40, 분류 12행.
-6. `.claude/skills/rhwp-bug-hunter/SKILL.md` 는 포인터만.
+6. `.agents/skills/rhwp-bug-hunter/SKILL.md` 는 포인터만.
 7. `scripts/tests/test_agent_bug_hunter.py` 가 발명 명령·gym·
    이웃 스킬 재작성·playbook 권위·분류 단어·이슈 3필수를
    바이너리 없이 검사.

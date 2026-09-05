@@ -7,7 +7,7 @@ issue: 5322
 # 에이전트 기여 절차(contributor) 스킬 고도화 (#5322)
 
 작업 브랜치: `feat/agent-contributor`
-대상 스킬: `.claude/skills/rhwp-contributor/`
+대상 스킬: `.agents/skills/rhwp-contributor/`
 이슈: [agent: 기여 절차(contributor) 스킬 고도화](https://github.com/edwardkim/rhwp/issues/5322)
 
 ## 1. 한 줄
@@ -32,7 +32,7 @@ issue: 5322
   중복 열린 PR, CI noci vs FAILURE
 - 작업 영수증은 `replay --capsule` / `audit` / `lineage` 포인터만
   (그 스킬을 다시 쓰지 않음)
-- `.claude/skills/rhwp-contributor/` SKILL.md + references/ + examples/ + fixtures
+- `.agents/skills/rhwp-contributor/` SKILL.md + references/ + examples/ + fixtures
 - `mydocs/working/agent_contributor.md` (이 파일)
 - 계약 시험 (순수, 픽스처 기반)
 - additions 5000–10000, 최소 5000
@@ -65,7 +65,7 @@ FAILURE 를 섞는 구멍이 표본으로 막혀 있지 않았다.
 
 | 경로 | 역할 |
 |------|------|
-| `.claude/skills/rhwp-contributor/SKILL.md` | 라우터. 8단, HARD GATE, 하지 않는 것 |
+| `.agents/skills/rhwp-contributor/SKILL.md` | 라우터. 8단, HARD GATE, 하지 않는 것 |
 | `references/` | 단계·예외·함정·필드 카탈로그 |
 | `examples/01`–`24` | 워크스루 |
 | `fixtures/` | 체크리스트·봉투·시나리오 카드·금지 워크트리 |
@@ -77,8 +77,8 @@ FAILURE 를 섞는 구멍이 표본으로 막혀 있지 않았다.
 
 - `src/` CLI 구현, DocumentCore
 - `gym/` 전부
-- `.claude/skills/rhwp-work-receipt/` 본문
-- `.claude/skills/rhwp-onboarding/` 외 형제 스킬
+- `.agents/skills/rhwp-work-receipt/` 본문
+- `.agents/skills/rhwp-onboarding/` 외 형제 스킬
 - `.github/pull_request_template.md` (열린 fmt-gate PR 과 겹침)
 - 공개 샘플 HWP 바이너리
 
@@ -100,7 +100,7 @@ capability 카탈로그에 `rhwp-contributor` 행은 이미 있다 (`CAP-4561`).
 ## 6. 디렉터리 규약
 
 ```
-.claude/skills/rhwp-contributor/
+.agents/skills/rhwp-contributor/
   SKILL.md
   references/          라우터 자식
   examples/            워크스루 24 + README

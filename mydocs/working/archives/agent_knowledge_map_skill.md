@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5342
 브랜치: `feat/agent-knowledge-map` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-knowledge-map/` ·
+범위: `.agents/skills/rhwp-knowledge-map/` ·
 `scripts/tests/test_agent_knowledge_map.py` ·
 `tests/cases/agent_knowledge_map_skill_contract.rs` ·
 본 문서

@@ -929,7 +929,7 @@
     {
       "id": "I116",
       "utterance": "포인터 스킬",
-      "command": ".claude/skills/rhwp-bug-hunter",
+      "command": ".agents/skills/rhwp-bug-hunter",
       "reference": "01_playbook_authority.md",
       "stop": "F01",
       "notGym": true
@@ -937,7 +937,7 @@
     {
       "id": "I117",
       "utterance": "에이전트 정의",
-      "command": ".claude/agents/bug-hunter.md",
+      "command": ".agents/agents/bug-hunter.md",
       "reference": "01_playbook_authority.md",
       "stop": "F01",
       "notGym": true

@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-agent-surface"
+SKILL = REPO / ".agents" / "skills" / "rhwp-agent-surface"
 REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
@@ -331,7 +331,7 @@ class AgentSurfaceSkillTests(unittest.TestCase):
         # 이 시험은 작업 트리에 형제 스킬 폴더가 그대로 있는지만 본다.
         # 본문을 고치면 git status 가 아니라 이 스킬의 금지를 상기시킨다.
         for name in SIBLING_SKILLS:
-            path = REPO / ".claude" / "skills" / name / "SKILL.md"
+            path = REPO / ".agents" / "skills" / name / "SKILL.md"
             self.assertTrue(path.is_file(), path)
 
     def test_scenarios_stay_on_allowlist(self):

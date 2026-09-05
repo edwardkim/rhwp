@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-form-fill"
+SKILL = REPO / ".agents" / "skills" / "rhwp-form-fill"
 REF = SKILL / "references"
 FIXT = REF / "fixtures"
 GEN = REF / "_gen_pack.py"
@@ -147,7 +147,7 @@ class AgentFormFillSkillTests(unittest.TestCase):
     def test_forbidden_peer_skills_exist_but_are_not_rewritten(self):
         for slug in FORBIDDEN_SKILLS:
             self.assertIn(slug, self.idx["forbiddenSkillsTouch"])
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
 
     def test_skill_does_not_rewrite_peer_skill_bodies(self):

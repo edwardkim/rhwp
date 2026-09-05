@@ -15,7 +15,7 @@ fn fixture_dir() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-doc-triage")
+    repo_root().join(".agents/skills/rhwp-doc-triage")
 }
 
 fn read_json(name: &str) -> serde_json::Value {

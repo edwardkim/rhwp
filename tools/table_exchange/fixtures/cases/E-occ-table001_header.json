@@ -116,6 +116,6 @@
     }
   },
   "sourceRefs": [
-    ".claude/skills/rhwp-table-exchange/references/export_tables_matrix.md"
+    ".agents/skills/rhwp-table-exchange/references/export_tables_matrix.md"
   ]
 }

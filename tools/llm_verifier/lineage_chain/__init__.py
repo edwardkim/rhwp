@@ -3,7 +3,7 @@
 LLM-as-Verifier axis for issue #5516. Implementer prose is not evidence.
 Only existing `rhwp lineage` fields `parentOk`, `lineageOk`, `brokenAt`
 plus the two hashes decide. This package wraps that contract; it does not
-rewrite `.claude/skills/rhwp-work-receipt` and it does not reimplement
+rewrite `.agents/skills/rhwp-work-receipt` and it does not reimplement
 V-replay (`reproduced` / `--expect-output-sha256`).
 """
 

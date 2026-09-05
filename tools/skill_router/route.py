@@ -28,24 +28,24 @@ import intents
 SCHEMA_VERSION = "1.0"
 USAGE = 'usage: python tools/skill_router/route.py "<request>" --json'
 
-# Matches .claude/skills/<name>/SKILL.md so the router works with no catalog.json.
+# Matches .agents/skills/<name>/SKILL.md so the router works with no catalog.json.
 DEFAULT_SKILL_PATHS: dict[str, str] = {
-    "rhwp-onboarding": ".claude/skills/rhwp-onboarding/SKILL.md",
-    "rhwp-doc-triage": ".claude/skills/rhwp-doc-triage/SKILL.md",
-    "rhwp-form-fill": ".claude/skills/rhwp-form-fill/SKILL.md",
-    "rhwp-table-exchange": ".claude/skills/rhwp-table-exchange/SKILL.md",
-    "rhwp-safe-edit": ".claude/skills/rhwp-safe-edit/SKILL.md",
-    "rhwp-security-sweep": ".claude/skills/rhwp-security-sweep/SKILL.md",
-    "rhwp-bulk-pipeline": ".claude/skills/rhwp-bulk-pipeline/SKILL.md",
-    "rhwp-visual-regression": ".claude/skills/rhwp-visual-regression/SKILL.md",
-    "rhwp-work-receipt": ".claude/skills/rhwp-work-receipt/SKILL.md",
-    "rhwp-mcp-session": ".claude/skills/rhwp-mcp-session/SKILL.md",
-    "rhwp-provenance": ".claude/skills/rhwp-provenance/SKILL.md",
-    "rhwp-exam-ingest": ".claude/skills/rhwp-exam-ingest/SKILL.md",
-    "rhwp-contributor": ".claude/skills/rhwp-contributor/SKILL.md",
-    "rhwp-cli": ".claude/skills/rhwp-cli/SKILL.md",
-    "rhwp-codex": ".claude/skills/rhwp-codex/SKILL.md",
-    "rhwp-skill-router": ".claude/skills/rhwp-skill-router/SKILL.md",
+    "rhwp-onboarding": ".agents/skills/rhwp-onboarding/SKILL.md",
+    "rhwp-doc-triage": ".agents/skills/rhwp-doc-triage/SKILL.md",
+    "rhwp-form-fill": ".agents/skills/rhwp-form-fill/SKILL.md",
+    "rhwp-table-exchange": ".agents/skills/rhwp-table-exchange/SKILL.md",
+    "rhwp-safe-edit": ".agents/skills/rhwp-safe-edit/SKILL.md",
+    "rhwp-security-sweep": ".agents/skills/rhwp-security-sweep/SKILL.md",
+    "rhwp-bulk-pipeline": ".agents/skills/rhwp-bulk-pipeline/SKILL.md",
+    "rhwp-visual-regression": ".agents/skills/rhwp-visual-regression/SKILL.md",
+    "rhwp-work-receipt": ".agents/skills/rhwp-work-receipt/SKILL.md",
+    "rhwp-mcp-session": ".agents/skills/rhwp-mcp-session/SKILL.md",
+    "rhwp-provenance": ".agents/skills/rhwp-provenance/SKILL.md",
+    "rhwp-exam-ingest": ".agents/skills/rhwp-exam-ingest/SKILL.md",
+    "rhwp-contributor": ".agents/skills/rhwp-contributor/SKILL.md",
+    "rhwp-cli": ".agents/skills/rhwp-cli/SKILL.md",
+    "rhwp-codex": ".agents/skills/rhwp-codex/SKILL.md",
+    "rhwp-skill-router": ".agents/skills/rhwp-skill-router/SKILL.md",
 }
 
 ENVELOPE_KEYS = (
@@ -175,7 +175,7 @@ def load_catalog(here: Path | None = None) -> dict[str, dict[str, str]]:
 def _skill_record(skill_id: str, catalog: dict[str, dict[str, str]]) -> dict[str, str]:
     if skill_id in catalog:
         return catalog[skill_id]
-    path = DEFAULT_SKILL_PATHS.get(skill_id, f".claude/skills/{skill_id}/SKILL.md")
+    path = DEFAULT_SKILL_PATHS.get(skill_id, f".agents/skills/{skill_id}/SKILL.md")
     return {"id": skill_id, "path": path, "capabilityId": skill_id}
 
 

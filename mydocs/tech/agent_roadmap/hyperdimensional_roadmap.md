@@ -106,7 +106,7 @@ plan 문자열 잎 전부 sha256(값‖salt) 커밋 치환 + 비밀 개봉 파�
 
 | 도구/진영 | 자동 로딩 표면 |
 |---|---|
-| Claude Code | `CLAUDE.md → AGENTS.md + .claude/skills/rhwp-contributor` |
+| Claude Code | `CLAUDE.md → AGENTS.md + .agents/skills/rhwp-contributor` |
 | Codex·OpenCode·Jules·Amp·Zed·Devin·Antigravity·Grok Build·Kimi CLI·Pi | `AGENTS.md (업계 표준)` |
 | 오케스트레이터(ADE) — Orca 등 | `자체 파일 없음 — 부리는 에이전트의 파일이 그대로 적용(경유 도달)` |
 | GitHub Copilot | `.github/copilot-instructions.md` |

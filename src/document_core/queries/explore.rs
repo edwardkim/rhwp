@@ -80,7 +80,7 @@ pub struct Affordance {
     pub why: String,
     /// 다음에 실행할 rhwp 명령 템플릿. 경로 자리는 `<file>` 자리표시자.
     pub command: &'static str,
-    /// 이 행동을 다루는 스킬 이름(.claude/skills/<name>).
+    /// 이 행동을 다루는 스킬 이름(.agents/skills/<name>).
     pub skill: &'static str,
     /// 확신도 — high/medium/low. 신호가 강할수록 높다.
     pub confidence: &'static str,

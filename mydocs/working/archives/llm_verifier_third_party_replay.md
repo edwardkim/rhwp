@@ -33,7 +33,7 @@ claim: V-replay
 
 금지:
 
-- `.claude/skills/rhwp-work-receipt` 재작성
+- `.agents/skills/rhwp-work-receipt` 재작성
 - M-rcpt 도구·픽스처 재작성
 - `verdict_protocol`, `oracle_vs_self`, `claim_bind`, `best_of_n`,
   `process_steps`, `untrusted_sandbox`

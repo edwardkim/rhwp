@@ -14,11 +14,11 @@ fn repo_root() -> PathBuf {
 }
 
 fn fixture_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-recipes/fixtures")
+    repo_root().join(".agents/skills/rhwp-recipes/fixtures")
 }
 
 fn skill_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-recipes")
+    repo_root().join(".agents/skills/rhwp-recipes")
 }
 
 fn recipes_dir() -> PathBuf {
@@ -207,7 +207,7 @@ fn forbidden_peer_skills_not_rewritten_here() {
     for name in idx["forbiddenSkillsTouch"].as_array().unwrap() {
         let slug = name.as_str().unwrap();
         let peer = repo_root()
-            .join(".claude/skills")
+            .join(".agents/skills")
             .join(slug)
             .join("SKILL.md");
         assert!(peer.is_file(), "존재해야 하는 이웃 스킬 {peer:?}");

@@ -39,7 +39,7 @@ devel 의 `fields` / `edit fill-fields` / `batch fill` 계약을 픽스처로 �
 
 - `src/` · `src/document_core/`
 - `gym/`
-- `.claude/skills/`
+- `.agents/skills/`
 - `scripts/visual_sweep.py`
 - 다른 MEGA 시트(`tools/fidelity_compare`, `tools/oracle_public`, inspect)
 

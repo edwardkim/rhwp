@@ -51,13 +51,13 @@
 | 자가 수정 영역 | (PR 단일 인도물) | e2e hotfix + v2 redesign | **정합** (자가 수정 영역 우수) |
 | 코드 영역 규모 | src +62/-28 | src/parser/ingest + src/document_core/builders + main.rs +900 | **PR #668이 본질적 신규 영역** |
 | 인도물 본질 | 기존 영역 결함 정정 | 신규 영역 도입 | **본질적 차이** |
-| 인도물 영역 위치 | 기존 영역 (renderer/layout) | 신규 영역 (parser/ingest, document_core/builders, .claude/skills) | **본질적 차이** |
+| 인도물 영역 위치 | 기존 영역 (renderer/layout) | 신규 영역 (parser/ingest, document_core/builders, .agents/skills) | **본질적 차이** |
 | 시각 정답지 권위 | 기존 sample (exam_science) | 신규 sample (수능 PDF) | **본질적 차이** |
 
 **본질적 결론**:
 - PR #629의 거버넌스 정합 영역(mydocs 산출물 + AI 페어프로그래밍 + 단계별 보고서)은 본 PR이 **정합 본질로 준수**
 - PR #629의 "본질 cherry-pick" 패턴(src만 cherry-pick, mydocs 제외)은 본 PR에 **정합 적용 가능**
-- 단, PR #668은 **본질적 신규 영역 도입**(parser/ingest + document_core/builders + .claude/skills)이라 PR #629(기존 영역 결함 정정)와 본질적으로 다른 영역
+- 단, PR #668은 **본질적 신규 영역 도입**(parser/ingest + document_core/builders + .agents/skills)이라 PR #629(기존 영역 결함 정정)와 본질적으로 다른 영역
 
 본 영역은 PR #668의 본질적 검토 영역(아키텍처 신규 영역 + Skill 영역)이 **PR #629의 권위 자료 영역에 부재**한 영역이므로, 본 영역은 메인테이너 정책 결정 영역에 본질적으로 위치.
 
@@ -92,12 +92,12 @@
 
 | 영역 | 파일 | 규모 | 평가 |
 |------|------|------|------|
-| Skill 정의 | `.claude/skills/rhwp-exam-ingest/SKILL.md` | 234L | 5단계 워크플로우 |
+| Skill 정의 | `.agents/skills/rhwp-exam-ingest/SKILL.md` | 234L | 5단계 워크플로우 |
 | pdf_to_pngs.sh | helpers | 52L | PDF → PNG (e2e hotfix 정정) |
 | crop_image.sh | helpers | 42L | bbox crop |
 | extract_docx.py | helpers | 71L | DOCX → text + 이미지 |
 | check_deps.sh | helpers | 68L | 의존성 점검 |
-| `.gitignore` | `.claude/*` + `!.claude/skills/` | +3/-1 | 영역 트래킹 |
+| `.gitignore` | `.agents/*` + `!.agents/skills/` | +3/-1 | 영역 트래킹 |
 
 본 영역은 PR #629에 **부재**한 영역. AI 페어프로그래밍 거버넌스 영역의 **신규 인도물**이며, 본 영역의 본질적 정합은 메인테이너 정책 결정 영역.
 
@@ -144,23 +144,23 @@ GitHub Issues는 누구나 등록 가능 영역이지만, **rhwp 마일스톤(M1
 
 **검토 영역**: 본 후속 이슈 영역의 본질적 분류 + 권한 검토 영역 + 마일스톤 정합.
 
-### 검토 영역 2: `.claude/` 워크플로우 인프라 영역
+### 검토 영역 2: `.agents/` 워크플로우 인프라 영역
 
-PR이 `.gitignore`를 수정해 `.claude/skills/`를 트래킹 대상으로 포함:
+PR이 `.gitignore`를 수정해 `.agents/skills/`를 트래킹 대상으로 포함:
 ```diff
-- .claude/
-+ .claude/*
-+ !.claude/skills/
+- .agents/
++ .agents/*
++ !.agents/skills/
 ```
 
-`.claude/` 영역은 본 레포에서 본질적으로:
-- `.claude/projects/.../memory/` — 메인테이너 + Claude 본인 영역 (auto-memory 영역, **로컬 영역**, git 트래킹 부재)
-- `.claude/skills/` — 본 PR이 신규 도입하는 영역
+`.agents/` 영역은 본 레포에서 본질적으로:
+- `.agents/projects/.../memory/` — 메인테이너 + Claude 본인 영역 (auto-memory 영역, **로컬 영역**, git 트래킹 부재)
+- `.agents/skills/` — 본 PR이 신규 도입하는 영역
 
 **검토 영역**:
-- `.claude/skills/`이 본 레포의 본질적 영역인지?
+- `.agents/skills/`이 본 레포의 본질적 영역인지?
 - 또는 본 영역을 `tools/rhwp-skills/` 또는 별도 영역으로 분리?
-- `.gitignore` 정책의 본질적 영역 — `.claude/` 일괄 제외 영역을 negate하는 본질적 정합 영역?
+- `.gitignore` 정책의 본질적 영역 — `.agents/` 일괄 제외 영역을 negate하는 본질적 정합 영역?
 
 본 영역은 메인테이너 정책 결정 영역. AI 페어프로그래밍 거버넌스 시각에서 Claude Code Skill 영역을 본 레포에 본질적으로 포함하는 것은 **거버넌스 인프라 영역의 본질적 인도물**로 평가 가능.
 
@@ -220,7 +220,7 @@ PR #629 권위 영역 — 단일 task(#628), 단일 PR. 본 영역은 PR #668의
 
 ### 검토 영역 6: Claude Code Skill 의존성 영역
 
-본 PR이 추가하는 `.claude/skills/rhwp-exam-ingest/SKILL.md`는:
+본 PR이 추가하는 `.agents/skills/rhwp-exam-ingest/SKILL.md`는:
 - Claude Code Skill 영역에 의존 (Anthropic 영역)
 - "Read tool로 시험지 PNG 직접 보고 자연어 분석" 영역 — Claude 본인 vision 영역
 - "한국어 시험지 layout 의미적 이해" 영역 — Claude 본인 LLM 영역
@@ -246,12 +246,12 @@ PR #629 권위 영역 — 단일 task(#628), 단일 PR. 본 영역은 PR #668의
 
 ### 옵션 A: PR #629 권위 영역 정합 — 본질 cherry-pick + 메인테이너 시각 정답지 게이트웨이 통과
 
-본 옵션은 PR #629 패턴 정합. 컨트리뷰터의 거버넌스 정합 영역을 인정하면서, 메인테이너가 cherry-pick으로 src/.claude 영역만 머지(mydocs 제외).
+본 옵션은 PR #629 패턴 정합. 컨트리뷰터의 거버넌스 정합 영역을 인정하면서, 메인테이너가 cherry-pick으로 src/.agents 영역만 머지(mydocs 제외).
 
 **본 옵션 처리 영역**:
 1. 메인테이너가 `local/devel`에서 cherry-pick (4 본 작업 커밋, author email `한 <han@han-ui-Macmini.local>` 보존):
    - 045ac58 (Task #660 본 작업): src/parser/ingest + src/document_core/builders + main.rs + tools/rhwp-ingest + Cargo.toml + search_query.rs
-   - 7112183 (Task #662 Skill 선행): .claude/skills + .gitignore (검토 영역 2 본질 영역 — Skill 영역 본 레포 포함 여부 결정 영역)
+   - 7112183 (Task #662 Skill 선행): .agents/skills + .gitignore (검토 영역 2 본질 영역 — Skill 영역 본 레포 포함 여부 결정 영역)
    - d7a8dc4 (Task #660 e2e hotfix): pdf_to_pngs.sh 정정 + exam_paper.rs apply_number_prefix
    - 29ae304 (Task #660 v2 redesign): auto_number 명시 필드 도입
 2. cherry-pick 시 mydocs 영역 본질적 제외 (PR #629 패턴):
@@ -284,7 +284,7 @@ PR #629 권위 영역 — 단일 task(#628), 단일 PR. 본 영역은 PR #668의
    - 045ac58 (Task #660 본 작업): Skill 변경 부분(`.gitignore`)만 본질적 제외하고 Rust 본체 영역 cherry-pick
    - d7a8dc4 (Task #660 e2e hotfix): exam_paper.rs apply_number_prefix만 cherry-pick (pdf_to_pngs.sh는 Skill 영역 → 제외)
    - 29ae304 (Task #660 v2 redesign): auto_number 명시 필드 도입
-2. cherry-pick 시 mydocs + .claude/skills 영역 본질적 제외
+2. cherry-pick 시 mydocs + .agents/skills 영역 본질적 제외
 3. (옵션 A의 단계 3~7과 동일) 시각 정답지 게이트웨이 통과 후 머지
 4. PR #668 close + Task #662 Skill 영역 별도 PR 재제출 권유 코멘트
 5. 후속 이슈 #665/#666/#667 영역 검토
@@ -299,7 +299,7 @@ PR #629 권위 영역 — 단일 task(#628), 단일 PR. 본 영역은 PR #668의
 1. PR #668 OPEN 유지 + 본질적 협의 코멘트
 2. 검토 영역 1~6 영역의 본질적 합의:
    - 영역 1: 후속 이슈 분류 권한
-   - 영역 2: `.claude/` 인프라 영역 + Skill 본 레포 포함 여부
+   - 영역 2: `.agents/` 인프라 영역 + Skill 본 레포 포함 여부
    - 영역 3: 본체 아키텍처 신규 영역 위치 (`parser/ingest` vs `src/ingest`)
    - 영역 4: 시각 정답지 게이트웨이 본질
    - 영역 5: 단일 PR 묶음 분리
@@ -350,7 +350,7 @@ PR #629 권위 영역 — exam_science page 4 시각 통과 ★ 패턴. 본 PR�
 
 1. 옵션 A/B/C 중 어느 영역으로 진행? (PR #629 권위 영역 정합 시 옵션 A 본질)
 2. 검토 영역 1 (후속 이슈 #665/#666/#667) — 메인테이너 권한 검토 + 마일스톤 분류 영역?
-3. 검토 영역 2 (`.claude/skills/`) — 본 영역을 rhwp 레포에 본질적으로 포함하는 영역? `.gitignore` negate 패턴 본질적 정합?
+3. 검토 영역 2 (`.agents/skills/`) — 본 영역을 rhwp 레포에 본질적으로 포함하는 영역? `.gitignore` negate 패턴 본질적 정합?
 4. 검토 영역 3 (본체 아키텍처) — `parser/ingest/` + `document_core/builders/` + `tools/rhwp-ingest/` 영역의 본질적 정합? cherry-pick 시 본질적 재배치 영역?
 5. 검토 영역 4 (시각 정답지 게이트웨이) — 한컴 2022로 e2e HWPX 시각 검증 본질적 진행? 본 영역의 통과 본질이 머지 가부 본질?
 6. 검토 영역 5 (단일 PR 묶음) — Task #660 본체 + Task #662 Skill 본질적 분리? 또는 단일 cherry-pick?

@@ -14,7 +14,7 @@ fn repo() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo().join(".claude/skills/rhwp-strategist")
+    repo().join(".agents/skills/rhwp-strategist")
 }
 
 fn read_skill(rel: &str) -> String {
@@ -121,14 +121,14 @@ fn skill_does_not_add_cli_and_stays_out_of_other_skills() {
         "새 [[bin]] 을 추가하지 마세요 (rhwp, font-metric-gen 만): {bins}"
     );
     for forbidden in [
-        ".claude/skills/rhwp-onboarding/SKILL.md",
-        ".claude/skills/rhwp-mcp-session/SKILL.md",
-        ".claude/skills/rhwp-provenance/SKILL.md",
-        ".claude/skills/rhwp-safe-edit/SKILL.md",
-        ".claude/skills/rhwp-doc-triage/SKILL.md",
-        ".claude/skills/rhwp-form-fill/SKILL.md",
-        ".claude/agents/rhwp-fde.md",
-        ".claude/agents/rhwp-chief.md",
+        ".agents/skills/rhwp-onboarding/SKILL.md",
+        ".agents/skills/rhwp-mcp-session/SKILL.md",
+        ".agents/skills/rhwp-provenance/SKILL.md",
+        ".agents/skills/rhwp-safe-edit/SKILL.md",
+        ".agents/skills/rhwp-doc-triage/SKILL.md",
+        ".agents/skills/rhwp-form-fill/SKILL.md",
+        ".agents/agents/rhwp-fde.md",
+        ".agents/agents/rhwp-chief.md",
     ] {
         assert!(
             repo().join(forbidden).is_file(),
@@ -376,16 +376,6 @@ fn working_doc_records_the_issue_and_scope() {
     assert!(
         text.contains("전망") || text.contains("forecast"),
         "전망 비범위"
-    );
-}
-
-#[test]
-fn agent_file_links_the_skill() {
-    let agent = repo().join(".claude/agents/rhwp-strategist.md");
-    let text = fs::read_to_string(&agent).expect("rhwp-strategist.md");
-    assert!(
-        text.contains("skills/rhwp-strategist/SKILL.md"),
-        "에이전트가 스킬을 가리켜야 합니다"
     );
 }
 

@@ -29,11 +29,11 @@
 | 신규 빌더 | `src/document_core/builders/{mod,exam_paper}.rs` | +374 |
 | 신규 CLI | `src/main.rs` build-from-ingest | +108 |
 | 신규 스키마 | `tools/rhwp-ingest/schema/{ingest_schema_v1,sample_minimal}.json` | +171 |
-| Skill 인프라 | `.claude/skills/rhwp-exam-ingest/SKILL.md` + helpers 4종 | +467 |
+| Skill 인프라 | `.agents/skills/rhwp-exam-ingest/SKILL.md` + helpers 4종 | +467 |
 | Cargo.toml | serde_json = "1" 추가 | +1 |
 | 부수 변경 | `src/document_core/mod.rs`, `src/parser/mod.rs` (모듈 등록) | +2 |
 | 부수 변경 | `src/document_core/queries/search_query.rs` Vec 타입 명시 | ±3 |
-| 부수 변경 | `.gitignore` `.claude/skills/` negate | ±3 |
+| 부수 변경 | `.gitignore` `.agents/skills/` negate | ±3 |
 
 ### 제외 영역 (7 파일, PR #629 패턴 정합)
 

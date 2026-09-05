@@ -198,7 +198,7 @@ git commit --author="Jaeook Ryu <jaeook.ryu@gmail.com>" \
 **사유**:
 1. **본 환경 결정적 검증 모두 통과** — cargo test 1155 / svg_snapshot 7/7 (issue_617 신규 포함) / clippy 0 / exam_kor 영역 회귀 0
 2. **본질 정정 영역의 정합성** — `feedback_hancom_compat_specific_over_general` 메모리 룰 영역 정합 (다중 줄 = 구조적 가드, 측정 의존 없음)
-3. **본 환경 패턴 정합** — PR #629 (외부 컨트리뷰터의 src + .claude/skills 영역만 cherry-pick + `mydocs/` 거버넌스 산출물 영역 제외) + PR #668 (동일 패턴) 영역의 본 환경 권위 적용 케이스 영역
+3. **본 환경 패턴 정합** — PR #629 (외부 컨트리뷰터의 src + .agents/skills 영역만 cherry-pick + `mydocs/` 거버넌스 산출물 영역 제외) + PR #668 (동일 패턴) 영역의 본 환경 권위 적용 케이스 영역
 4. **명명 규약 영역의 영구 영역 충돌 회피** — `task_m07_617` 영역은 본 환경 `task_m100_{이슈번호}` 영역의 변형 영역 → cherry-pick 제외로 영구 영역 부담 영역 회피
 5. **회귀 차단 가드 영구 보존** — issue_617 svg_snapshot 테스트 + 골든 SVG (1893 LOC) 영구 보존
 

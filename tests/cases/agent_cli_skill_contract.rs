@@ -13,7 +13,7 @@ fn repo() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo().join(".claude/skills/rhwp-cli")
+    repo().join(".agents/skills/rhwp-cli")
 }
 
 fn read_skill(rel: &str) -> String {
@@ -129,7 +129,7 @@ fn skill_does_not_add_cli_and_stays_out_of_peers() {
     let idx = read_json("fixtures/skill_index.json");
     for name in idx["forbiddenSkillsTouch"].as_array().unwrap() {
         let slug = name.as_str().unwrap();
-        let peer = repo().join(".claude/skills").join(slug).join("SKILL.md");
+        let peer = repo().join(".agents/skills").join(slug).join("SKILL.md");
         assert!(peer.is_file(), "이웃 스킬을 지우지 말 것: {peer:?}");
     }
 }

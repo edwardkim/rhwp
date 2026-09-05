@@ -1,7 +1,7 @@
 # task_m100_4528 stage1 — rhwp-work-receipt 스킬 (검증 사다리 실행 규약)
 
 - 이슈: #4528 / 브랜치: task_m100_4528 (base devel)
-- 산출물: .claude/skills/rhwp-work-receipt/SKILL.md
+- 산출물: .agents/skills/rhwp-work-receipt/SKILL.md
 
 ## 설계
 

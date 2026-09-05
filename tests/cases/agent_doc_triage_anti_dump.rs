@@ -9,7 +9,7 @@ fn repo_root() -> PathBuf {
 }
 
 fn skill_text() -> String {
-    let dir = repo_root().join(".claude/skills/rhwp-doc-triage");
+    let dir = repo_root().join(".agents/skills/rhwp-doc-triage");
     let mut all = fs::read_to_string(dir.join("SKILL.md")).unwrap();
     for name in [
         "00_tree.md",
@@ -51,7 +51,7 @@ fn stop_s15_is_documented() {
 #[test]
 fn skill_declares_read_only_and_not_gym() {
     let skill =
-        fs::read_to_string(repo_root().join(".claude/skills/rhwp-doc-triage/SKILL.md")).unwrap();
+        fs::read_to_string(repo_root().join(".agents/skills/rhwp-doc-triage/SKILL.md")).unwrap();
     assert!(skill.contains("읽기 전용"));
     assert!(skill.to_ascii_lowercase().contains("gym"));
     assert!(skill.contains("새 CLI") || skill.contains("새 서브"));

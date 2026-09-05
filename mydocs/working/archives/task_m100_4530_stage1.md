@@ -4,7 +4,7 @@
 - 산출물 4종: tools/gen_agent_codex.py(생성 하네스, --check 멱등) ·
   mydocs/manual/agent_codex/ 13파일(생성 10장 + 손글 서문·판단트리·README,
   총 ~4.7천 줄) · tests/agent_codex_contract.rs(커버리지 가드 2) ·
-  .claude/skills/rhwp-codex(진입 스킬)
+  .agents/skills/rhwp-codex(진입 스킬)
 
 ## 구조 결정
 

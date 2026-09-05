@@ -7,7 +7,7 @@ issue: 5294
 # 에이전트 안전 편집 스킬 고도화 (#5294)
 
 작업 브랜치: `feat/agent-safe-edit`
-대상 스킬: `.claude/skills/rhwp-safe-edit/`
+대상 스킬: `.agents/skills/rhwp-safe-edit/`
 이슈: [agent: 안전 편집(run 계획·dry-run·verify) 스킬 고도화](https://github.com/edwardkim/rhwp/issues/5294)
 
 ## 1. 한 줄
@@ -21,7 +21,7 @@ issue: 5294
 
 - 원본 훼손 없이 편집하는 실사용 경로를 키운다.
 - 기존 edit + run 계획 (dry-run, `-o`, `--verify`, exit 3/4 를 데이터로)을 문서화·배선.
-- `.claude/skills/rhwp-safe-edit/` 확장 — SKILL.md + `references/`
+- `.agents/skills/rhwp-safe-edit/` 확장 — SKILL.md + `references/`
   (single edit, run plans, verify loops, failure envelopes).
 - 워크스루를 마크다운/JSON 픽스처 + 테스트로 남긴다.
 - `mydocs/working/agent_safe_edit.md` (이 파일).
@@ -65,7 +65,7 @@ SKILL.md 한 장이 판단 트리와 함정 10개조를 담고, exit 3 을 판�
 
 | 경로 | 역할 |
 |------|------|
-| `.claude/skills/rhwp-safe-edit/SKILL.md` | 라우터. 자식 문서 표, 하지 않는 것, CAS·조건절 함정 추가 |
+| `.agents/skills/rhwp-safe-edit/SKILL.md` | 라우터. 자식 문서 표, 하지 않는 것, CAS·조건절 함정 추가 |
 | `references/single_edit.md` | 1층 6종 + csv-to-table + batch fill |
 | `references/run_plans.md` | 계획서 스키마 1.1, action 4, if, assertions, CAS |
 | `references/verify_loops.md` | 발견→dry-run→-o/--verify→재독→눈검증→ir-diff |
@@ -82,10 +82,10 @@ SKILL.md 한 장이 판단 트리와 함정 10개조를 담고, exit 3 을 판�
 
 - `src/` 편집 엔진, `run_plan_engine`, 새 CLI 플래그
 - `gym/` 전부
-- `.claude/skills/rhwp-onboarding/`
-- `.claude/skills/rhwp-mcp-session/`
-- `.claude/skills/rhwp-provenance/`
-- `.claude/skills/rhwp-doc-triage/`
+- `.agents/skills/rhwp-onboarding/`
+- `.agents/skills/rhwp-mcp-session/`
+- `.agents/skills/rhwp-provenance/`
+- `.agents/skills/rhwp-doc-triage/`
 - 다른 스킬 SKILL.md
 - 공개 샘플 HWP 바이너리 (새 픽스처를 스킬 폴더에 넣지 않음)
 
@@ -149,7 +149,7 @@ failure_envelopes.md §3 과 12·11·14 편이 이 갈래의 표본이다.
 ## 8. 디렉터리 규약
 
 ```
-.claude/skills/rhwp-safe-edit/
+.agents/skills/rhwp-safe-edit/
   SKILL.md                 라우터 (frontmatter name == 폴더명)
   references/
     single_edit.md

@@ -118,8 +118,8 @@
   },
   "sourceRefs": [
     "tests/table_csv_contract.rs",
-    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
-    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+    ".agents/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+    ".agents/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
     "tests/table_csv_contract.rs value_in_a_merged_covered_cell_is_invalid"
   ]
 }

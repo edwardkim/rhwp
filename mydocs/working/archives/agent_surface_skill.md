@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5326
 브랜치: `feat/agent-surface` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-agent-surface/` · `scripts/tests/test_agent_surface.py` ·
+범위: `.agents/skills/rhwp-agent-surface/` · `scripts/tests/test_agent_surface.py` ·
 `tests/agent_surface_skill_contract.rs` · 본 문서
 비범위: `gym/` · `rhwp-mcp-session` · `rhwp-cli` · `rhwp-codex` · 다른 스킬 ·
 새 CLI · DocumentCore 편집 로직 · 열린 PR 이 만지는 공유 파일
@@ -32,7 +32,7 @@ gym 금지, 새 CLI 금지.
 1. 격리 worktree `C:/Users/swsz9/rhwp-agent-surface` 에
    `feat/agent-surface` 를 `upstream/devel` 에서 분기.
 2. 이름은 소스에서만 추출.
-   생성기 `.claude/skills/rhwp-agent-surface/references/_gen_pack.py`.
+   생성기 `.agents/skills/rhwp-agent-surface/references/_gen_pack.py`.
    - `mcp_tool_definitions()` → 무상태
    - `ALL_SESSION_TOOLS` → 세션 18종
    - `capabilities_command_entries()` → CLI
@@ -85,7 +85,7 @@ gym 금지, 새 CLI 금지.
 ## 검증
 
 ```
-python .claude/skills/rhwp-agent-surface/references/_gen_pack.py
+python .agents/skills/rhwp-agent-surface/references/_gen_pack.py
 python -m unittest scripts.tests.test_agent_surface
 cargo fmt --all -- --check
 ```

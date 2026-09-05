@@ -32,7 +32,7 @@ last_verified: 2026-08-11
 | 바인딩(node) | 18/26 (69%) | 18,043/22,048 (82%) |
 | 하네스 도구 | 3/5 (60%) | 786/1,147 (69%) |
 
-경로군 정의(원문): {"로드맵·조망": ["mydocs/tech/agent_roadmap"], "지식지도·통합 문서": ["mydocs/manual/agent_knowledge_map.md", "mydocs/manual/mcp_integration_guide.md", "mydocs/manual/agent_codex"], "스킬": [".claude/skills"], "에이전트 코어(src)": ["src/mcp_serve.rs", "src/agent_profiles.rs", "src/provenance.rs", "src/schema_registry.rs", "src/capsule_sign.rs"], "계약 가드(tests)": ["tests/*contract*.rs"], "바인딩(node)": ["bindings/node"], "하네스 도구": ["tools/roadmap_progress.py", "tools/agent_preflight.py", "tools/gen_agent_codex.py", "tools/agent_dominance_metrics.py"]}
+경로군 정의(원문): {"로드맵·조망": ["mydocs/tech/agent_roadmap"], "지식지도·통합 문서": ["mydocs/manual/agent_knowledge_map.md", "mydocs/manual/mcp_integration_guide.md", "mydocs/manual/agent_codex"], "스킬": [".agents/skills"], "에이전트 코어(src)": ["src/mcp_serve.rs", "src/agent_profiles.rs", "src/provenance.rs", "src/schema_registry.rs", "src/capsule_sign.rs"], "계약 가드(tests)": ["tests/*contract*.rs"], "바인딩(node)": ["bindings/node"], "하네스 도구": ["tools/roadmap_progress.py", "tools/agent_preflight.py", "tools/gen_agent_codex.py", "tools/agent_dominance_metrics.py"]}
 
 ## 3. 최근 30일 동적 (--since 2026-07-12)
 

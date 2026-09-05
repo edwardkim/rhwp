@@ -16,7 +16,7 @@ fn repo() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo().join(".claude/skills/rhwp-codex")
+    repo().join(".agents/skills/rhwp-codex")
 }
 
 fn read_skill(rel: &str) -> String {
@@ -355,7 +355,7 @@ fn forbidden_peer_skills_not_rewritten_here() {
     let idx = read_json("fixtures/skill_index.json");
     for name in idx["forbiddenSkillsTouch"].as_array().unwrap() {
         let slug = name.as_str().unwrap();
-        let peer = repo().join(".claude/skills").join(slug).join("SKILL.md");
+        let peer = repo().join(".agents/skills").join(slug).join("SKILL.md");
         assert!(peer.is_file(), "존재해야 하는 이웃 스킬 {peer:?}");
     }
     let trees = idx["forbiddenTrees"].as_array().unwrap();

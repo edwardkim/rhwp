@@ -88,7 +88,7 @@ flowchart LR
 - **지금** — #4562/#4574로 devel 착지. AGENTS.md "작업 증빙" 절을 단일 정본으로,
   22종 도구별 파일(copilot-instructions·cursor mdc·GEMINI·windsurf·cline·QWEN·
   CONVENTIONS·goosehints·roo·kilocode·junie·trae·amazonq·augment·continue·kiro
-  등)이 얇은 포인터로 그곳을 가리킨다. `.claude/skills/` 13종.
+  등)이 얇은 포인터로 그곳을 가리킨다. `.agents/skills/` 13종.
 - **설계** — (완료) 벤더 모델은 저장소 파일을 직접 안 읽으므로, 그 모델을 부리는
   CLI/IDE의 규약 파일을 깐다. 영상·미디어 생성형은 저장소를 안 읽어 범위 밖(정직).
 - **DoD** — 22 표면이 AGENTS.md 단일 정본을 가리킴(#4562 diff). 통합 머지 확인.

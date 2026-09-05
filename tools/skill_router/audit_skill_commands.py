@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit `rhwp <cmd>` tokens in `.claude/skills/*/SKILL.md` against live rhwp.
+"""Audit `rhwp <cmd>` tokens in `.agents/skills/*/SKILL.md` against live rhwp.
 
 Extracts `rhwp [a-z][a-z0-9_-]*` (and group subcommands such as
 `edit fill-fields`) the same way tests/skills_contract.rs and
@@ -29,7 +29,7 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
-SKILLS_DIR = REPO / ".claude" / "skills"
+SKILLS_DIR = REPO / ".agents" / "skills"
 
 SCHEMA_VERSION = "1.0"
 SCAN_TIMES = 3
@@ -141,7 +141,7 @@ def list_skill_dirs() -> list[Path]:
         path for path in SKILLS_DIR.iterdir() if path.is_dir() and not path.name.startswith(".")
     )
     if len(dirs) < 1:
-        raise AuditFail("no skill folders under .claude/skills/")
+        raise AuditFail("no skill folders under .agents/skills/")
     return dirs
 
 

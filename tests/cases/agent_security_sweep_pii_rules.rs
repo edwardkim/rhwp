@@ -14,7 +14,7 @@ fn repo() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo().join(".claude/skills/rhwp-security-sweep")
+    repo().join(".agents/skills/rhwp-security-sweep")
 }
 
 fn read_skill(rel: &str) -> String {

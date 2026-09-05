@@ -17,7 +17,7 @@ Workflow name: `Skill router gate`
 
 `pull_request` (branches `main`, `devel`; types opened / reopened / synchronize) when any of:
 
-- `.claude/skills/**`
+- `.agents/skills/**`
 - `.agents/skills/**`
 - `tools/skill_router/**`
 - `scripts/tests/test_skill_router_gate.py`

@@ -218,7 +218,7 @@ $hwp.SaveAs($out, "PDF", "")
 디렉터리로 생성됨)이 남아 있다. 툴체인 소실과의 인과는 확인하지 못했으므로 추정으로만 기록한다.
 
 이후 확인에서 `~/.ssh` 와 gh 설정(`%APPDATA%\GitHub CLI`)도 함께 없어진 것이 드러났다. 단일 도구
-제거가 아니라 사용자 프로필의 도구 설정 디렉터리들이 함께 사라진 형태다. `.claude`·`.config`·
+제거가 아니라 사용자 프로필의 도구 설정 디렉터리들이 함께 사라진 형태다. `.agents`·`.config`·
 `.docker`·`.gitconfig` 는 남아 있다. MSVC Build Tools 2022 와 Docker 는 무사했다.
 
 복구: rustup 재설치 → `rust-toolchain.toml` 이 1.93.1(+clippy·rustfmt·wasm32) 을 자동 적용.

@@ -61,7 +61,7 @@ rhwp 를 지켜보는 사람들이 늘고 있다 — oosmetrics Top 2 등재, 8�
 
 - **`mydocs/report/x_hwp_viewer_voices.md`**: 외부 사용자 발언 원문 보존이 목적. 원문 수정 금지. 단 문서 **첫머리 주석** 필수 ("외부 공개 인터넷 발언 인용, rhwp 프로젝트 견해 아님").
 - **archives (`mydocs/**/archives/`)**: 과거 타스크 기록이라 역사적 가치 존중. 단 외부 공개 가능성 있으면 본 체크리스트 동일 적용 (과거라고 면제되지 않는다).
-- **feedback (`mydocs/feedback/`)**: 내부 소통용이나 리포지토리에 공개되어 있음. 민감 건은 `.gitignore` 또는 `/home/edward/.claude/...` 경로로 옮긴다.
+- **feedback (`mydocs/feedback/`)**: 내부 소통용이나 리포지토리에 공개되어 있음. 민감 건은 `.gitignore` 또는 `/home/edward/.agents/...` 경로로 옮긴다.
 
 ### 7. 자동 발견 도구
 

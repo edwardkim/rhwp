@@ -18,7 +18,7 @@
 
 | 파일 | 줄수 | 상태 |
 |------|------|------|
-| `~/.claude/.../memory/MEMORY.md` | 24 | AI 메모리 원본 (오늘 AMO 항목까지 갱신됨) |
+| `~/.agents/.../memory/MEMORY.md` | 24 | AI 메모리 원본 (오늘 AMO 항목까지 갱신됨) |
 | `mydocs/manual/MEMORY.md` | 22 | 중복 · 링크 깨짐 (상대 경로인데 같은 폴더에 파일 없음) |
 | `mydocs/manual/memory/MEMORY.md` | 20 | 공개 사본 · 링크 정상, 그러나 구버전 |
 
@@ -32,7 +32,7 @@
 - `mydocs/manual/MEMORY.md` (22줄, 깨진 링크) 삭제
 
 ### 3.2 공개 사본 인덱스 갱신
-- `mydocs/manual/memory/MEMORY.md` 를 `~/.claude/.../memory/MEMORY.md` 최신본으로 덮어씀
+- `mydocs/manual/memory/MEMORY.md` 를 `~/.agents/.../memory/MEMORY.md` 최신본으로 덮어씀
 - 20행 → 24행 (4 항목 증가)
 
 ### 3.3 누락 메모리 파일 추가
@@ -49,7 +49,7 @@
 ## 4. 검증
 
 - [x] `mydocs/manual/MEMORY.md` 삭제 확인
-- [x] `mydocs/manual/memory/MEMORY.md` 가 `~/.claude/.../memory/MEMORY.md` 와 diff 0
+- [x] `mydocs/manual/memory/MEMORY.md` 가 `~/.agents/.../memory/MEMORY.md` 와 diff 0
 - [x] `mydocs/manual/memory/MEMORY.md` 24 항목
 - [x] 모든 링크 대상 파일이 같은 폴더에 존재
 
@@ -68,7 +68,7 @@
 
 본 수정은 **일회성 동기화**. 근본적 drift 방지책이 필요:
 
-- **문제**: AI 메모리 시스템(`~/.claude/.../memory/`) 과 공개 사본(`mydocs/manual/memory/`) 이 서로 다른 경로라 메모리 추가/갱신 시 두 곳을 동시에 수정해야 함. 이번처럼 drift 가 재발할 수 있음.
+- **문제**: AI 메모리 시스템(`~/.agents/.../memory/`) 과 공개 사본(`mydocs/manual/memory/`) 이 서로 다른 경로라 메모리 추가/갱신 시 두 곳을 동시에 수정해야 함. 이번처럼 drift 가 재발할 수 있음.
 - **권고**: AI 메모리 등록/갱신 프로토콜에 **"공개 사본 동시 갱신"** 단계 포함.
 - **처리**: 별도 이슈로 등록할지 작업지시자 결정 사항.
 

@@ -4,7 +4,7 @@
   "skill": "bug-hunter",
   "notGym": true,
   "noNewCli": true,
-  "claudePointer": ".claude/skills/rhwp-bug-hunter/SKILL.md",
+  "claudePointer": ".agents/skills/rhwp-bug-hunter/SKILL.md",
   "playbook": "mydocs/manual/bug_hunting_playbook.md",
   "secondRubricForbidden": true,
   "noNewEditLogic": true,

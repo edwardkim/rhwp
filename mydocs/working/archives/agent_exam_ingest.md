@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5319
 브랜치: `feat/agent-exam-ingest` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-exam-ingest/` (SKILL.md · references/ ·
+범위: `.agents/skills/rhwp-exam-ingest/` (SKILL.md · references/ ·
 examples/ · fixtures/ · helpers/) ·
 `scripts/tests/test_agent_exam_ingest.py` · 본 문서
 비범위: `gym/` · 다른 스킬 · 열린 PR 파일 ·

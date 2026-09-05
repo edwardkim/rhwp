@@ -5,7 +5,7 @@ gym 이 아니다. 실사용 에이전트가 긴 HWP 를 처음부터 덤프하�
 
 ## 무엇을
 
-`.claude/skills/rhwp-doc-triage/` 를 인덱스(`SKILL.md`) + `references/` 16장으로 나눴다.
+`.agents/skills/rhwp-doc-triage/` 를 인덱스(`SKILL.md`) + `references/` 16장으로 나눴다.
 사다리는 `info → explain → export-structure → digest → search → extract-data` 이고,
 핵심은 **답이 나오면 멈춘다**.
 
@@ -117,8 +117,8 @@ node scripts/run-rust-test.mjs agent_doc_triage_anti_dump
 ## 범위 밖
 
 - gym/
-- .claude/skills/rhwp-onboarding
-- .claude/skills/rhwp-mcp-session
-- .claude/skills/rhwp-safe-edit
-- .claude/skills/rhwp-provenance
+- .agents/skills/rhwp-onboarding
+- .agents/skills/rhwp-mcp-session
+- .agents/skills/rhwp-safe-edit
+- .agents/skills/rhwp-provenance
 - 새 rhwp 서브커맨드/플래그

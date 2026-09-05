@@ -150,7 +150,7 @@ fn issue_template_requires_repro_path_and_truth() {
 
 #[test]
 fn claude_pointer_exists() {
-    let path = repo_root().join(".claude/skills/rhwp-bug-hunter/SKILL.md");
+    let path = repo_root().join(".agents/skills/rhwp-bug-hunter/SKILL.md");
     let text = fs::read_to_string(&path).unwrap();
     assert!(text.contains("얇은 포인터"), "{text}");
     assert!(text.contains(".agents/skills/bug-hunter"), "{text}");

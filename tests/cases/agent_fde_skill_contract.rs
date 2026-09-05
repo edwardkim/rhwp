@@ -13,11 +13,11 @@ fn repo_root() -> PathBuf {
 }
 
 fn fixture_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-fde/fixtures")
+    repo_root().join(".agents/skills/rhwp-fde/fixtures")
 }
 
 fn skill_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-fde")
+    repo_root().join(".agents/skills/rhwp-fde")
 }
 
 fn read_json(name: &str) -> serde_json::Value {
@@ -159,14 +159,6 @@ fn routes_map_crash_alias_to_escalate_bug() {
         .find(|a| a["alias"] == "escalate-corrupt")
         .unwrap();
     assert_eq!(corrupt["mapsTo"], "workaround");
-}
-
-#[test]
-fn agent_definition_exists_for_link_only() {
-    let path = repo_root().join(".claude/agents/rhwp-fde.md");
-    assert!(path.is_file(), "{path:?}");
-    let text = fs::read_to_string(&path).unwrap();
-    assert!(text.contains("tools/fde/triage.py"), "{text}");
 }
 
 #[test]

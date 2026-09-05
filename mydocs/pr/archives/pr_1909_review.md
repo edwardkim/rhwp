@@ -32,7 +32,7 @@
   - `boxed` 블록을 별도 paragraph border/fill 스타일로 출력
   - header/footer metadata를 Header/Footer control로 출력
 - 문서/샘플
-  - `.claude/skills/rhwp-exam-ingest/SKILL.md`
+  - `.agents/skills/rhwp-exam-ingest/SKILL.md`
   - `mydocs/manual/cli_commands.md`
   - `tools/rhwp-ingest/schema/ingest_schema_v1.json`
   - `tools/rhwp-ingest/schema/sample_structured.json`
@@ -93,4 +93,3 @@ target/debug/rhwp export-svg tmp/issue667-prcheck/sample_structured.hwpx \
 
 PR head 최신 커밋 기준 GitHub Actions가 통과하면 merge 후보로 판단한다.
 옵션 1 self PR 경로이므로 review 문서와 오늘할일을 PR head에 포함한다.
-

@@ -77,11 +77,11 @@ python tools/agent_onboarding/rhwp_doctor.py
 
 | 과제 | 명령(1차) | 스킬 | 레시피 |
 |---|---|---|---|
-| 문서 트리아지 (처음 보는 문서 파악) | `rhwp digest "<파일>" --json` | [`rhwp-doc-triage`](../../.claude/skills/rhwp-doc-triage/SKILL.md) | — |
-| 표 추출 (병합 보존 / CSV 왕복) | `rhwp export-tables "<파일>" --json` | [`rhwp-table-exchange`](../../.claude/skills/rhwp-table-exchange/SKILL.md) | [레시피 02](recipes/02_table_csv_roundtrip.md) |
-| 서식 채우기 (누름틀 → 제출본) | `rhwp fields "<파일>" --json` → `rhwp edit fill-fields …` | [`rhwp-form-fill`](../../.claude/skills/rhwp-form-fill/SKILL.md) | [레시피 01](recipes/01_fill_form_and_submit.md) · [05](recipes/05_mail_merge_batch_fill.md) |
-| 보안 스윕 (주입·은닉·유니코드) | `rhwp inspect injection "<파일>" --json` | [`rhwp-security-sweep`](../../.claude/skills/rhwp-security-sweep/SKILL.md) | [레시피 10](recipes/10_security_sweep_before_share.md) · [04](recipes/04_safety_check_untrusted_doc.md) |
-| 작업 영수증 (3-해시 증명) | `rhwp replay --plan-json '{…}' --json` | [`rhwp-work-receipt`](../../.claude/skills/rhwp-work-receipt/SKILL.md) | — |
+| 문서 트리아지 (처음 보는 문서 파악) | `rhwp digest "<파일>" --json` | [`rhwp-doc-triage`](../../.agents/skills/rhwp-doc-triage/SKILL.md) | — |
+| 표 추출 (병합 보존 / CSV 왕복) | `rhwp export-tables "<파일>" --json` | [`rhwp-table-exchange`](../../.agents/skills/rhwp-table-exchange/SKILL.md) | [레시피 02](recipes/02_table_csv_roundtrip.md) |
+| 서식 채우기 (누름틀 → 제출본) | `rhwp fields "<파일>" --json` → `rhwp edit fill-fields …` | [`rhwp-form-fill`](../../.agents/skills/rhwp-form-fill/SKILL.md) | [레시피 01](recipes/01_fill_form_and_submit.md) · [05](recipes/05_mail_merge_batch_fill.md) |
+| 보안 스윕 (주입·은닉·유니코드) | `rhwp inspect injection "<파일>" --json` | [`rhwp-security-sweep`](../../.agents/skills/rhwp-security-sweep/SKILL.md) | [레시피 10](recipes/10_security_sweep_before_share.md) · [04](recipes/04_safety_check_untrusted_doc.md) |
+| 작업 영수증 (3-해시 증명) | `rhwp replay --plan-json '{…}' --json` | [`rhwp-work-receipt`](../../.agents/skills/rhwp-work-receipt/SKILL.md) | — |
 
 과제를 무엇으로 풀지 막힐 때의 판단 트리·봉투 실측은
 [에이전트 실무 대체 예제집](agent_task_playbook.md)과
@@ -133,6 +133,6 @@ binary{found,path,source,onPath,version}, sample, checks[], mcpJson, recipes[], 
 ## 다음 단계
 
 - MCP 세션 도구(재파싱 없는 반복 조회 `hwp_open`→`hwp_doc_text`→`hwp_close`)와 무상태 도구
-  선택 기준: [MCP 통합 가이드](mcp_integration_guide.md), 스킬 [`rhwp-mcp-session`](../../.claude/skills/rhwp-mcp-session/SKILL.md).
+  선택 기준: [MCP 통합 가이드](mcp_integration_guide.md), 스킬 [`rhwp-mcp-session`](../../.agents/skills/rhwp-mcp-session/SKILL.md).
 - rhwp 참조 문서 전체 지도: [에이전트 지식 지도](agent_knowledge_map.md).
 - 사람(기여자) 관점의 저장소 진입점: [rhwp 온보딩 가이드](onboarding_guide.md).

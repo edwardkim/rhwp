@@ -228,7 +228,7 @@ mod tests {
 #### 작업
 1. 최종 결과 보고서 `mydocs/report/task_m100_259_report.md`
 2. 오늘할일 `mydocs/orders/20260423.md` 에 "11. Task #259 …" 섹션 추가
-3. 메모리 등록 (`~/.claude/.../memory/feedback_font_alias_sync.md`):
+3. 메모리 등록 (`~/.agents/.../memory/feedback_font_alias_sync.md`):
    > 한글 폰트 추가 시 `font_metrics_data.rs::resolve_metric_alias` 에도 매핑 동기화 필수. 누락 시 find_metric 이 None 반환 → 기본 폭 사용 → 글자 겹침.
 4. MEMORY.md 인덱스 갱신
 5. 매뉴얼: `mydocs/tech/font_fallback_strategy.md` 에 본한글 → Pretendard 근사 정책 기록

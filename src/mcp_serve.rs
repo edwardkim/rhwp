@@ -823,7 +823,7 @@ const DOC_RESOURCES: &[DocResource] = &[
         title: "rhwp 문서 지도 (llms.txt)",
         description: "에이전트 진입점 — 계약·실무·문제 해결 문서로 가는 링크 목록.",
         mime_type: "text/plain",
-        text: include_str!("../llms.txt"),
+        text: include_str!("../mydocs/manual/agent_docs_map.txt"),
     },
     DocResource {
         uri: "rhwp://docs/agent_knowledge_map.md",

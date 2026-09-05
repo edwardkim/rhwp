@@ -7,7 +7,7 @@ HWP/HWPX 를 분석·디버깅하도록 문서·픽스처가 같은 단어를 �
 새 CLI 를 시험하지 않는다. gym/ 을 열지 않는다.
 다른 에이전트 스킬 본문을 요구하거나 바꾸지 않는다. 바이너리·네트워크를 부르지 않는다.
 
-정본: .claude/skills/rhwp-cli/
+정본: .agents/skills/rhwp-cli/
 작업 기록: mydocs/working/archives/agent_cli.md
 """
 
@@ -19,7 +19,7 @@ from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-cli"
+SKILL = REPO / ".agents" / "skills" / "rhwp-cli"
 SKILL_MD = SKILL / "SKILL.md"
 REFS = SKILL / "references"
 EXAMPLES = SKILL / "examples"
@@ -142,7 +142,7 @@ class AgentCliSkillTests(unittest.TestCase):
 
     def test_siblings_still_present(self):
         for slug in SIBLING_SKILLS:
-            peer = REPO / ".claude" / "skills" / slug / "SKILL.md"
+            peer = REPO / ".agents" / "skills" / slug / "SKILL.md"
             self.assertTrue(peer.is_file(), slug)
 
     def test_no_new_bin(self):

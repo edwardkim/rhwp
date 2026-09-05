@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5331
 브랜치: `feat/agent-recipes` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-recipes/` ·
+범위: `.agents/skills/rhwp-recipes/` ·
 `scripts/tests/test_agent_recipes.py` ·
 `tests/agent_recipes_skill_contract.rs` ·
 capability 등록부 `CAP-5331` · 본 문서

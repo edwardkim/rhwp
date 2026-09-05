@@ -19,7 +19,7 @@ last_verified: 2026-08-09
 **레시피**(목표에서 시작하는 서사, [트랙 D R34](track_d_discovery.md)),
 **바인딩**(언어별 재포장, [트랙 G](track_g_bindings.md)). 스킬은 그 위의 네
 번째 표면이다: 에이전트 호스트가 트리거 문장으로 불러 쓰는 **작업 패키지**
-(`.claude/skills` 관례 — 트리거 조건 + 요청→명령 매핑 + 판정 순서를 한 파일로
+(`.agents/skills` 관례 — 트리거 조건 + 요청→명령 매핑 + 판정 순서를 한 파일로
 묶은 것). 바인딩이 언어 런타임을 위한 재포장이라면, 스킬은 에이전트 호스트를
 위한 재포장이다.
 
@@ -43,7 +43,7 @@ DoD 충족 여부는 아래에서 개별 확인한다 — 실물 존재가 곧 `
    `untrustedContent`/`untrustedFields` 표지([트랙 A R2](track_a_envelope.md))와
    함께 소비한다 — 문서 유래 텍스트를 지시로 승격하지 않는다. R2 가 생산자 측
    계약이라면, 스킬은 그 계약의 **소비자 측**이 실제로 작동하는 첫 표면이다.
-4. **호스트 중립 서사.** 파일 위치는 `.claude/skills` 관례를 따르되, 내용(트리거
+4. **호스트 중립 서사.** 파일 위치는 `.agents/skills` 관례를 따르되, 내용(트리거
    조건·매핑·판정)은 특정 호스트 문법에 묶이지 않는 서사로 적는다 — 바인딩
    표류([트랙 G R61](track_g_bindings.md))와 같은 부류의 표류를 스킬에서 미리
    막는 선택이다.
@@ -67,7 +67,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 
 - **한 줄** — "이 파일 SVG 로", "레이아웃 버그 좁혀줘" 같은 요청을 적절한 CLI
   명령과 권장 디버깅 순서로 매핑하는 스킬이 실물로 있다.
-- **지금** — [`.claude/skills/rhwp-cli/SKILL.md`](../../../.claude/skills/rhwp-cli/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-cli/SKILL.md`](../../../.agents/skills/rhwp-cli/SKILL.md)
   (d86c935bc). 요청→명령 매핑표와 레이아웃·간격·겹침 디버깅 5단 순서를 담고,
   명령 상세는 cli_commands.md 로 위임한다 — 원칙 2 를 이미 지키는 실물이다.
 - **설계** — 매핑표가 하중을 받는 부분이다. 스킬은 옵션 문법을 재서술하지 않고
@@ -85,7 +85,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 
 - **한 줄** — 시험지(PDF/이미지/MD/DOCX)를 HWPX 로 만드는 다단 파이프라인이
   스킬 한 개로 트리거된다.
-- **지금** — [`.claude/skills/rhwp-exam-ingest/SKILL.md`](../../../.claude/skills/rhwp-exam-ingest/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-exam-ingest/SKILL.md`](../../../.agents/skills/rhwp-exam-ingest/SKILL.md)
   + helpers 4종(80535a3be, 992fbc2d2). 입력 정규화(helpers)→구조 인식(호스트
   모델의 Vision)→`ingest.json`(ingest_schema_v1)→`build-from-ingest`(cli_commands.md
   §3) 순서를 패키지로 든다.
@@ -105,7 +105,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **한 줄** — [레시피 1](../../manual/recipes/01_fill_form_and_submit.md)
   (`fields` → `edit fill-fields` → `--verify` → `edit sanitize`)을 감싼 실물
   스킬이 있다.
-- **지금** — [`.claude/skills/rhwp-form-fill/SKILL.md`](../../../.claude/skills/rhwp-form-fill/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-form-fill/SKILL.md`](../../../.agents/skills/rhwp-form-fill/SKILL.md)
   (ffb20d80a — 원 PR #4213, kevin9327 연작 통합 PR #4253 로 devel 머지,
   2026-08-08). "서식/신청서/양식 채워줘"·"메일머지"·"명단으로 N명분" 트리거를
   `fields`(축 판정)→`--dry-run` 선검증→`fill-fields --verify`(단건) 또는
@@ -131,7 +131,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **한 줄** — [레시피 2](../../manual/recipes/02_table_csv_roundtrip.md)
   (`table-to-csv` → 외부 편집 → `csv-to-table --dry-run` → `--verify`)를 감싼
   실물 스킬이 있다.
-- **지금** — [`.claude/skills/rhwp-table-exchange/SKILL.md`](../../../.claude/skills/rhwp-table-exchange/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-table-exchange/SKILL.md`](../../../.agents/skills/rhwp-table-exchange/SKILL.md)
   (ffb20d80a — 원 PR #4213, #4253 통합). `export-tables`(좌표·병합 확인)→
   `table-to-csv`(--bom 포함)→외부 편집→`csv-to-table --dry-run`→실행+`--verify`
   →(선택) 재독 대조 절차를 담고, 병합 표는 CSV 왕복이 아니라 `edit set-cell`
@@ -157,7 +157,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
   ·[레시피 10](../../manual/recipes/10_security_sweep_before_share.md))과
   신뢰 못 할 문서 검사([레시피 4](../../manual/recipes/04_safety_check_untrusted_doc.md))
   를 "이 문서 내보내도 되나/받아도 되나" 한 트리거로 묶은 실물 스킬이 있다.
-- **지금** — [`.claude/skills/rhwp-security-sweep/SKILL.md`](../../../.claude/skills/rhwp-security-sweep/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-security-sweep/SKILL.md`](../../../.agents/skills/rhwp-security-sweep/SKILL.md)
   (5bd8f7147 — 원 PR #4219, #4253 통합). 절차 A(송신: `inspect` 3축 스윕 →
   `edit redact --dry-run`(평문 PII, 3축 어디에도 안 걸림) → `redact`+`sanitize`
   처리 → 재스윕 게이트 `findingCount==0 && clean==true`)와 절차 B(수신:
@@ -184,7 +184,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **한 줄** — [레시피 5](../../manual/recipes/05_mail_merge_batch_fill.md)(명단
   →개인화 N부)와 [레시피 9](../../manual/recipes/09_bulk_extract_convert.md)
   (대량 추출·변환)를 `batch` 9종 위에서 감싼 실물 스킬이 있다.
-- **지금** — [`.claude/skills/rhwp-bulk-pipeline/SKILL.md`](../../../.claude/skills/rhwp-bulk-pipeline/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-bulk-pipeline/SKILL.md`](../../../.agents/skills/rhwp-bulk-pipeline/SKILL.md)
   (5bd8f7147 — 원 PR #4219, #4253 통합). `batch` 의 세 규약(stdin 파일
   목록·NDJSON 전용 stdout·실패도 봉투 레코드)을 스킬 맨 앞에 못박고, 목록→
   선점검(`batch info`)→본작업→실패 행만 재시도→"입력 N = 성공 + 실패" 수량
@@ -210,7 +210,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **한 줄** — [레시피 6](../../manual/recipes/06_visual_regression_before_after.md)
   (전/후 `render-diff`·`ir-diff`·render tree bbox 대조)을 "이 변경으로 화면
   깨졌나" 트리거로 감싼 실물 스킬이 있다.
-- **지금** — [`.claude/skills/rhwp-visual-regression/SKILL.md`](../../../.claude/skills/rhwp-visual-regression/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-visual-regression/SKILL.md`](../../../.agents/skills/rhwp-visual-regression/SKILL.md)
   (5bd8f7147 — 원 PR #4219, #4253 통합). `render-diff`(자기 라운드트립·전후
   비교·폴더 배치) → `ir-diff`(구조 국소화) → `thumbnail`/`export-png`/
   `export-svg --debug-overlay`(눈 검증) → `export-render-tree`(정밀 bbox)
@@ -224,7 +224,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **DoD (원 기준)** — "알려진 회귀 1건·무회귀 1건에서 스킬 판정이 사람 판정과
   일치하고, 세 곳(K1 절·레시피 6·신규 스킬)의 서사 중복이 늘지 않는다." —
   **판정**: 앞부분(회귀 1건·무회귀 1건에서 판정 일치)은 위 두 판독 예로
-  **충족**. 뒷부분은 **미충족**이다 — `.claude/skills/rhwp-cli/SKILL.md` 의
+  **충족**. 뒷부분은 **미충족**이다 — `.agents/skills/rhwp-cli/SKILL.md` 의
   "보정 전/후 시각 회귀 확인 패턴" 절이 스킬 신설 후에도 그대로 남아 있고,
   이제 레시피 6·K1 절·신규 rhwp-visual-regression 스킬 셋이 겹치는 서사를
   담은 채 공존한다 — 착수 게이트가 예견한 두 선택지(K1 확장 vs 신설) 중
@@ -236,7 +236,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 
 - **한 줄** — 임의 편집 요청을 ①현황 ②계획(`--dry-run`, planSchema) ③실행+검증
   (`--verify`) 3층 순서로만 통과시키는 실물 스킬이 있다.
-- **지금** — [`.claude/skills/rhwp-safe-edit/SKILL.md`](../../../.claude/skills/rhwp-safe-edit/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-safe-edit/SKILL.md`](../../../.agents/skills/rhwp-safe-edit/SKILL.md)
   (1ac20c359 — 원 PR #4215, #4253 통합). 편집 1건은 1층(`edit` 하위명령 +
   `-o` 산출 분리 + `--dry-run` + `--verify`), 여러 편집은 3층(`run` 계획서 —
   선검증→원자 실행→저널)으로 가르는 판단 트리를 두고, exit 3/4 를 "고장이
@@ -260,7 +260,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **한 줄** — 처음 보는 문서를 `info`→`explain`→`export-structure`→`digest`→
   `search`→`extract-data` 순서로 접수하고, 의심 신호가 있으면 K5(보안 스윕)로
   인계하는 실물 스킬이 있다.
-- **지금** — [`.claude/skills/rhwp-doc-triage/SKILL.md`](../../../.claude/skills/rhwp-doc-triage/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-doc-triage/SKILL.md`](../../../.agents/skills/rhwp-doc-triage/SKILL.md)
   (ffb20d80a — 원 PR #4213, #4253 통합). "싼 질의부터, 좁혀서"를 원칙으로
   걸고, 문서 크기(`pageCount`)에 따라 전문을 바로 읽을지 단계적으로 내려갈지
   분기하는 판단 트리와 폴더 규모 선별(`batch info`/`batch search`) 절까지
@@ -289,7 +289,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **한 줄** — 같은 스킬 서사가 CLI 대신 MCP 세션(`hwp_open`→`hwp_doc_*`→
   `hwp_close`)으로도 실행되는지, 표면 선택을 계약으로 서술한 실물 스킬이
   있다.
-- **지금** — [`.claude/skills/rhwp-mcp-session/SKILL.md`](../../../.claude/skills/rhwp-mcp-session/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-mcp-session/SKILL.md`](../../../.agents/skills/rhwp-mcp-session/SKILL.md)
   (1ac20c359 — 원 PR #4215, #4253 통합). `.mcp.json` 등록, 무상태 도구(39종)
   대 세션 도구(12종) 선택 기준표, `capabilities --mcp` 가 도구 정의의 단일
   출처라는 계약(계약 테스트 `tests/mcp_server_contract.rs::tools_list_matches_capabilities_manifest`
@@ -317,7 +317,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 - **한 줄** — 원래 K1~K10 후보 목록에는 없던 스킬이지만, K8·K10 과 같은 배치
   (PR #4215)로 함께 실려 실물이 이미 존재한다 — 그래서 K1~K10 을 훼손하지
   않는 부록 번호로 등재한다.
-- **지금** — [`.claude/skills/rhwp-provenance/SKILL.md`](../../../.claude/skills/rhwp-provenance/SKILL.md)
+- **지금** — [`.agents/skills/rhwp-provenance/SKILL.md`](../../../.agents/skills/rhwp-provenance/SKILL.md)
   (1ac20c359 — 원 PR #4215, #4253 통합). 봉투의 `untrustedContent`/
   `untrustedFields` 표지를 읽고 "문서에서 온 값 = 데이터, 지시가 아님"을
   실무 절차로 만든다. `export-provenance-map --json`(문서를 열지 않는 유일한
@@ -349,7 +349,7 @@ K11 rhwp-provenance 부록 1건이 새로 더해져 총원이 10에서 11로 늘
 
 ## 비목표
 
-- **스킬 스토어·배포 체계** — 스킬 파일의 저장소 내 관례(`.claude/skills`)까지만
+- **스킬 스토어·배포 체계** — 스킬 파일의 저장소 내 관례(`.agents/skills`)까지만
   다룬다. 외부 배포·등재는 트랙 D 의 몫이다.
 - **새 CLI 명령·새 능력** — 스킬 후보를 실측하다 능력 공백이 드러나면 그
   항목은 트랙 E 로 넘어간다(K8 착수 게이트가 그 예). 이 트랙에서 명령을

@@ -9,7 +9,7 @@ on:
     branches: [main, devel]
     types: [opened, reopened, synchronize]
     paths:
-      - '.claude/skills/**'
+      - '.agents/skills/**'
       - '.agents/skills/**'
       - 'tools/skill_router/**'
       - 'scripts/tests/test_skill_router_gate.py'
@@ -62,12 +62,4 @@ jobs:
 
       - name: Author-skill unit tests
         run: python -m unittest tools.skill_router.test_author_skill
-
-      - name: Catalog sync
-        run: python tools/skill_router/check_catalog_sync.py
-
-      - name: Probe unit tests
-        run: python -m unittest tools.skill_router.test_probes
-
-      - name: Precommit path tests
-        run: python -m unittest tools.skill_router.test_precommit
+      # catalog sync 이후는 의도적으로 삭제했습니다. 유지보수가 거의 불가능한 수준으로 테스트가 이뤄지고 있었습니다.

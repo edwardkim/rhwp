@@ -15,7 +15,7 @@ fn fixture_dir() -> PathBuf {
 }
 
 fn skill_dir() -> PathBuf {
-    repo_root().join(".claude/skills/rhwp-doc-triage")
+    repo_root().join(".agents/skills/rhwp-doc-triage")
 }
 
 fn read_json(name: &str) -> serde_json::Value {
@@ -151,7 +151,7 @@ fn forbidden_peer_skills_not_rewritten_here() {
     for name in idx["forbiddenSkillsTouch"].as_array().unwrap() {
         let slug = name.as_str().unwrap();
         let peer = repo_root()
-            .join(".claude/skills")
+            .join(".agents/skills")
             .join(slug)
             .join("SKILL.md");
         assert!(peer.is_file(), "존재해야 하는 이웃 스킬 {peer:?}");

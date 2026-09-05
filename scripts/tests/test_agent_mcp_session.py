@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-mcp-session"
+SKILL = REPO / ".agents" / "skills" / "rhwp-mcp-session"
 REF = SKILL / "references"
 FIXT = REF / "fixtures"
 GEN = REF / "_gen_pack.py"
@@ -210,7 +210,7 @@ class AgentMcpSessionSkillTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("CAP-5293", registry)
         self.assertIn("rhwp-mcp-session", registry)
-        self.assertIn(".claude/skills/rhwp-mcp-session/SKILL.md", registry)
+        self.assertIn(".agents/skills/rhwp-mcp-session/SKILL.md", registry)
 
     def test_session_count_matches_source_constant(self):
         # 개수는 계약이 아니지만, 카드·상수 드리프트는 잡는다.

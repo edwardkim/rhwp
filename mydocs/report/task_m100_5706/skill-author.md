@@ -12,7 +12,7 @@ issue bundle). Catalog `capabilityId` is unique: `rhwp-skill-author`.
 
 | Path | Change |
 |------|--------|
-| `.claude/skills/rhwp-skill-author/SKILL.md` | NEW skill |
+| `.agents/skills/rhwp-skill-author/SKILL.md` | NEW skill |
 | `tools/skill_router/catalog.json` | append one object, id `rhwp-skill-author` |
 | `tools/skill_router/intents.py` | append `author-skill` spec, specificity 96 |
 | `tools/skill_router/graph.py` | append `author_skill_graph` (scaffold → catalog → gate 3x → unittest 3x) |
@@ -66,7 +66,7 @@ python tools/skill_router/route.py "새 스킬 만들어" --json
   "skillSelection": [
     {
       "id": "rhwp-skill-author",
-      "path": ".claude/skills/rhwp-skill-author/SKILL.md",
+      "path": ".agents/skills/rhwp-skill-author/SKILL.md",
       "reason": "스킬 작성 요청이므로 rhwp-skill-author 을(를) 선택한다 (겹치면 더 구체적인 스킬)"
     }
   ]

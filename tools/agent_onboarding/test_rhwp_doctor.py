@@ -186,8 +186,8 @@ class TestRecipeMap(unittest.TestCase):
             root = Path(d)
             # 첫 레시피의 스킬 SKILL.md 를 만들어 실존 검출을 확인.
             skill = doc.RECIPES[0]["skill"]
-            (root / ".claude" / "skills" / skill).mkdir(parents=True)
-            (root / ".claude" / "skills" / skill / "SKILL.md").write_text("x", encoding="utf-8")
+            (root / ".agents" / "skills" / skill).mkdir(parents=True)
+            (root / ".agents" / "skills" / skill / "SKILL.md").write_text("x", encoding="utf-8")
             # recipe 가 있는 항목 하나를 골라 파일 생성.
             with_recipe = next(r for r in doc.RECIPES if r["recipe"])
             rp = root / with_recipe["recipe"]
@@ -995,7 +995,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
         self.assertEqual(missing, [])
 
     def test_skill_mentions_doctor_and_not_gym_score(self):
-        text = (doc.default_repo_root() / ".claude/skills/rhwp-onboarding/SKILL.md").read_text(encoding="utf-8")
+        text = (doc.default_repo_root() / ".agents/skills/rhwp-onboarding/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("rhwp_doctor.py", text)
         self.assertIn("missing_binary", text)
         self.assertIn("bad_sample", text)
@@ -1011,7 +1011,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
         self.assertIn("rhwp_doctor.py", text)
 
     def test_exception_docs_name_their_kind(self):
-        root = doc.default_repo_root() / ".claude/skills/rhwp-onboarding/references"
+        root = doc.default_repo_root() / ".agents/skills/rhwp-onboarding/references"
         mapping = {
             "exception-missing-binary.md": "missing_binary",
             "exception-bad-sample.md": "bad_sample",
@@ -1025,7 +1025,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_mcp_paste_has_no_listen_port(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/mcp-json-paste.md"
+            / ".agents/skills/rhwp-onboarding/references/mcp-json-paste.md"
         ).read_text(encoding="utf-8")
         self.assertIn("stdio", text)
         self.assertIn("claude-code", text)
@@ -1036,7 +1036,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_form_read_does_not_invent_fill_flags(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/first-5-min-form-read.md"
+            / ".agents/skills/rhwp-onboarding/references/first-5-min-form-read.md"
         ).read_text(encoding="utf-8")
         self.assertIn("rhwp fields", text)
         self.assertIn("읽기 전용", text)
@@ -1046,7 +1046,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_triage_uses_existing_read_commands(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/first-5-min-triage.md"
+            / ".agents/skills/rhwp-onboarding/references/first-5-min-triage.md"
         ).read_text(encoding="utf-8")
         for cmd in ("rhwp info", "rhwp explain", "rhwp digest"):
             self.assertIn(cmd, text)
@@ -1054,7 +1054,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_tables_points_at_export_tables(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/first-5-min-tables.md"
+            / ".agents/skills/rhwp-onboarding/references/first-5-min-tables.md"
         ).read_text(encoding="utf-8")
         self.assertIn("export-tables", text)
         self.assertIn("table-to-csv", text)
@@ -1063,7 +1063,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_security_is_read_only_inspect(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/first-5-min-security.md"
+            / ".agents/skills/rhwp-onboarding/references/first-5-min-security.md"
         ).read_text(encoding="utf-8")
         self.assertIn("inspect hidden-text", text)
         self.assertIn("inspect injection", text)
@@ -1073,7 +1073,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_sample_selftest_lists_candidates(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/sample-selftest.md"
+            / ".agents/skills/rhwp-onboarding/references/sample-selftest.md"
         ).read_text(encoding="utf-8")
         for rel in doc.SAMPLE_CANDIDATES:
             self.assertIn(rel, text)
@@ -1081,7 +1081,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_binary_discovery_lists_search_order(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/binary-discovery.md"
+            / ".agents/skills/rhwp-onboarding/references/binary-discovery.md"
         ).read_text(encoding="utf-8")
         self.assertIn("RHWP_BIN", text)
         self.assertIn("target/release", text)
@@ -1091,7 +1091,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_report_schema_documents_1_1(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/doctor-report-schema.md"
+            / ".agents/skills/rhwp-onboarding/references/doctor-report-schema.md"
         ).read_text(encoding="utf-8")
         self.assertIn("schemaVersion", text)
         self.assertIn("1.1", text)
@@ -1102,7 +1102,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_envelopes_do_not_invent_keys(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/first-5-min-envelopes.md"
+            / ".agents/skills/rhwp-onboarding/references/first-5-min-envelopes.md"
         ).read_text(encoding="utf-8")
         self.assertIn("format", text)
         self.assertIn("pageCount", text)
@@ -1113,7 +1113,7 @@ class TestReferenceFilesExistInWorktree(unittest.TestCase):
     def test_catalog_says_not_gym(self):
         text = (
             doc.default_repo_root()
-            / ".claude/skills/rhwp-onboarding/references/onboarding-catalog.md"
+            / ".agents/skills/rhwp-onboarding/references/onboarding-catalog.md"
         ).read_text(encoding="utf-8")
         self.assertIn("never start gym here", text)
         self.assertIn("--offline", text)

@@ -1,4 +1,4 @@
 {
-  "skillFixtures": ".claude/skills/rhwp-security-sweep/fixtures",
+  "skillFixtures": ".agents/skills/rhwp-security-sweep/fixtures",
   "issue": 5307
 }

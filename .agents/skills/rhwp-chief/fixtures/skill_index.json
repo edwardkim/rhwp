@@ -1,0 +1,94 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "skill": "rhwp-chief",
+ "agent": ".agents/agents/rhwp-chief.md",
+ "loop": "tools/chief/service_loop.py",
+ "playbook": "mydocs/manual/chief_playbook.md",
+ "working": "mydocs/working/archives/agent_chief.md",
+ "references": [
+  "00_layers.md",
+  "01_queue_protocol.md",
+  "02_request_schema.md",
+  "03_triage_gate.md",
+  "04_routing_table.md",
+  "05_diagnose.md",
+  "06_export_text.md",
+  "07_export_pdf.md",
+  "08_export_hwpx.md",
+  "09_convert_hwp.md",
+  "10_extract_tables.md",
+  "11_fill.md",
+  "12_needs_agent.md",
+  "13_response.md",
+  "14_idempotency.md",
+  "15_data_not_instructions.md",
+  "16_coverage.md",
+  "17_service_loop.md",
+  "18_envelopes.md",
+  "19_stop_rules.md",
+  "20_handoff.md",
+  "21_pitfalls.md",
+  "22_worked_traces.md",
+  "23_intent_matrix.md",
+  "24_queue_transcripts.md",
+  "25_exit_codes.md",
+  "26_verification_gates.md",
+  "27_agent_edge.md",
+  "README.md"
+ ],
+ "forbiddenTrees": [
+  "gym/"
+ ],
+ "forbiddenSkillsTouch": [
+  "rhwp-fde",
+  "rhwp-strategist",
+  "rhwp-onboarding",
+  "rhwp-mcp-session",
+  "rhwp-safe-edit",
+  "rhwp-provenance",
+  "rhwp-doc-triage"
+ ],
+ "forbiddenInventedCommands": [
+  "rhwp chief",
+  "rhwp queue",
+  "rhwp serve-queue",
+  "rhwp request",
+  "rhwp diagnose-queue"
+ ],
+ "outputs": [
+  "result.json",
+  "response.md",
+  "ticket.json",
+  "out/"
+ ],
+ "requestFields": [
+  "doc",
+  "goal",
+  "symptom",
+  "params"
+ ],
+ "knownGoals": [
+  "diagnose",
+  "export-text",
+  "export-pdf",
+  "export-hwpx",
+  "convert-hwp",
+  "extract-tables",
+  "fill"
+ ],
+ "missingGoal": "diagnose",
+ "offTable": "needs-agent",
+ "triageSkipGoal": [
+  "escalate-bug",
+  "invalid-input"
+ ]
+}

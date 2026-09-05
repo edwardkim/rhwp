@@ -3,7 +3,7 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5311
 브랜치: `feat/agent-bulk-pipeline` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-bulk-pipeline/` ·
+범위: `.agents/skills/rhwp-bulk-pipeline/` ·
 `tests/agent_bulk_pipeline_skill_contract.rs` ·
 `scripts/tests/test_agent_bulk_pipeline.py` · 본 문서
 비범위: `gym/` · 다른 스킬 본문 · 새 CLI 명령 · DocumentCore 편집 구현 ·

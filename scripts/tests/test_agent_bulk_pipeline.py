@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILL = REPO / ".claude" / "skills" / "rhwp-bulk-pipeline"
+SKILL = REPO / ".agents" / "skills" / "rhwp-bulk-pipeline"
 REF = SKILL / "references"
 FIXT = SKILL / "fixtures"
 EX = SKILL / "examples"

@@ -14,7 +14,7 @@ CI는 cargo/rust 전체를 기다리지 않는다. `.github/workflows/skill-rout
 
 - `gate_new_skill.py` ×3
 - `test_route` / `test_skill_router_gate` / `test_catalog_routes` / `test_author_skill`
-- `check_catalog_sync.py` — `.claude/skills` ≡ `catalog.json` ≡ `intents.py` ≡ `graph.py` (27/27)
+- `check_catalog_sync.py` — `.agents/skills` ≡ `catalog.json` ≡ `intents.py` ≡ `graph.py` (27/27)
 
 로컬은 `precommit_skill_gate.py` + `install_git_hook.py` 가 같은 3-pass를 커밋 직전에 돌린다. `audit_skill_commands.py` 는 `target/release/rhwp.exe` v0.8.4 실명령 집합(207 known)과 SKILL.md 참조(189, unknown 0)를 대조한다.
 

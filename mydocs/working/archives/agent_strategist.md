@@ -3,11 +3,11 @@
 날짜: 2026-08-18
 이슈: https://github.com/edwardkim/rhwp/issues/5335
 브랜치: `feat/agent-strategist` (`upstream/devel` 기준 격리 worktree)
-범위: `.claude/skills/rhwp-strategist/` ·
+범위: `.agents/skills/rhwp-strategist/` ·
 `tests/cases/agent_strategist_skill_contract.rs` ·
 `scripts/tests/test_agent_strategist.py` ·
 capability 등록부 `CAP-4903` 스킬 진입점 ·
-`.claude/agents/rhwp-strategist.md` 스킬 링크 · 본 문서
+`.agents/agents/rhwp-strategist.md` 스킬 링크 · 본 문서
 비범위: `gym/` · FDE/bug-hunter/chief 스킬 재작성 · 새 CLI ·
 DocumentCore · 편집 로직 · 시장 전망 생성
 
@@ -36,7 +36,7 @@ DocumentCore · 편집 로직 · 시장 전망 생성
 - 프로토콜: `engagement.json` `{objective, corpus, questions}`
 - 엔진: `tools/strategist/engagement.py` (CAP-4903)
 - 정본: `mydocs/manual/strategist_playbook.md`
-- 에이전트: `.claude/agents/rhwp-strategist.md`
+- 에이전트: `.agents/agents/rhwp-strategist.md`
 
 에이전트가 필요한 것은 새 구현이 아니라 **언제 엔진을 치고, 어느 봉투
 키만 옮기며, 어느 정지 규칙으로 멈추는가** 이다. page 를 추정하거나
@@ -50,7 +50,7 @@ DoD: additions 5000–10000 (최소 5000). PR 전 `cargo fmt --all -- --check`.
    `feat/agent-strategist` 를 `upstream/devel` 에서 분기.
    `rhwp-desk*` · `rhwp-handoff` · `rhwp-scaffold-final` · `rhwp-doc-repro`
    는 쓰지 않음. 기존 named worktree 를 훔치지 않음.
-2. `.claude/skills/rhwp-strategist/SKILL.md` 를 라우터로 신설.
+2. `.agents/skills/rhwp-strategist/SKILL.md` 를 라우터로 신설.
 3. `references/` 21장: 권위, engagement 프로토콜, 코퍼스 지도, 근거 대장,
    §5 게이트, 좌표 규칙, search/extract-data 봉투, 종료 코드, 비범위,
    FDE·Chief 층, SWS, 함정, 판단 트리, 레시피 색인, 필드 카탈로그,
