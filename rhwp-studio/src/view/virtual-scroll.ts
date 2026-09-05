@@ -24,6 +24,37 @@ export interface AutoPageColumnMetrics {
   hysteresisPx?: number;
 }
 
+export interface VisibilityQueryStats {
+  /** Y/X 인덱스가 실제 후보로 조사한 논리 행 수. */
+  readonly rowsExamined: number;
+  /** 기존 strict AABB predicate를 실제 적용한 페이지 수. */
+  readonly pagesExamined: number;
+}
+
+export interface VisibilitySnapshot {
+  readonly geometryRevision: number;
+  readonly scrollX: number;
+  readonly scrollY: number;
+  readonly viewportWidth: number;
+  readonly viewportHeight: number;
+  readonly visiblePages: readonly number[];
+  readonly visibleRows: readonly number[];
+  readonly firstVisibleRow: number | null;
+  readonly lastVisibleRow: number | null;
+  /** visible 바깥에서 기존 ±1행/±1쪽 규칙으로 더한 후보. */
+  readonly adjacentPages: readonly number[];
+  readonly prefetchPages: readonly number[];
+  readonly queryStats: VisibilityQueryStats;
+}
+
+interface VisibilityCacheKey {
+  geometryRevision: number;
+  scrollX: number;
+  scrollY: number;
+  viewportWidth: number;
+  viewportHeight: number;
+}
+
 /**
  * 자동 쪽 배치의 가로 열 수를 표시 geometry만으로 결정한다.
  *
@@ -85,6 +116,13 @@ export class VirtualScroll {
   private pageRows: number[] = [];
   private pageColumns: number[] = [];
   private rowPages: number[][] = [];
+  private rowTops: number[] = [];
+  private rowBottoms: number[] = [];
+  private geometryRevision = 0;
+  private visibilityCache: {
+    key: VisibilityCacheKey;
+    snapshot: VisibilitySnapshot;
+  } | null = null;
   private maxPageWidth = 0;
   private totalHeight = 0;
   private totalWidth = 0;
@@ -109,6 +147,8 @@ export class VirtualScroll {
     movement: PageMovementDirection = 'vertical',
     viewportHeight = 0,
   ): void {
+    this.geometryRevision += 1;
+    this.visibilityCache = null;
     this.pageGap = resolvePageGap(zoom, this.pageGapAt100Percent);
     this.pageHeights = pages.map((p) => p.height * zoom);
     this.pageWidths = pages.map((p) => p.width * zoom);
@@ -119,6 +159,7 @@ export class VirtualScroll {
       this.committedAutoColumns = undefined;
       this.gridMode = false;
       this.layoutHorizontalRow(viewportWidth, viewportHeight);
+      this.rebuildVisibilityIndex();
       return;
     }
 
@@ -164,10 +205,33 @@ export class VirtualScroll {
         break;
     }
     this.applyHorizontalPanSpace(viewportWidth);
+    this.rebuildVisibilityIndex();
   }
 
   /** 문서 교체 시 이전 문서의 자동 열 commit이 새 문서 경계 판단에 섞이지 않게 한다. */
   resetAutoColumnCommit(): void {
+    this.committedAutoColumns = undefined;
+  }
+
+  /** 문서 수명 전환 중 늦은 viewport 갱신이 이전 문서 geometry를 보지 못하게 한다. */
+  reset(): void {
+    this.geometryRevision += 1;
+    this.visibilityCache = null;
+    this.pageOffsets = [];
+    this.pageHeights = [];
+    this.pageWidths = [];
+    this.pageLefts = [];
+    this.pageRows = [];
+    this.pageColumns = [];
+    this.rowPages = [];
+    this.rowTops = [];
+    this.rowBottoms = [];
+    this.maxPageWidth = 0;
+    this.totalHeight = 0;
+    this.totalWidth = 0;
+    this.columns = 1;
+    this.gridMode = false;
+    this.horizontalMode = false;
     this.committedAutoColumns = undefined;
   }
 
@@ -333,6 +397,159 @@ export class VirtualScroll {
     this.totalWidth = baseWidth + pan * 2;
   }
 
+  /** layout 결과만 읽는 파생 인덱스. 기존 page 좌표의 권위는 바꾸지 않는다. */
+  private rebuildVisibilityIndex(): void {
+    this.rowTops = new Array(this.rowPages.length).fill(0);
+    this.rowBottoms = new Array(this.rowPages.length).fill(0);
+    for (let row = 0; row < this.rowPages.length; row++) {
+      const pages = this.rowPages[row] ?? [];
+      let top = Infinity;
+      let bottom = -Infinity;
+      for (const pageIdx of pages) {
+        const pageTop = this.pageOffsets[pageIdx] ?? 0;
+        top = Math.min(top, pageTop);
+        bottom = Math.max(bottom, pageTop + (this.pageHeights[pageIdx] ?? 0));
+      }
+      this.rowTops[row] = top === Infinity ? 0 : top;
+      this.rowBottoms[row] = bottom === -Infinity ? 0 : bottom;
+    }
+  }
+
+  private sameVisibilityKey(a: VisibilityCacheKey, b: VisibilityCacheKey): boolean {
+    return a.geometryRevision === b.geometryRevision
+      && Object.is(a.scrollX, b.scrollX)
+      && Object.is(a.scrollY, b.scrollY)
+      && Object.is(a.viewportWidth, b.viewportWidth)
+      && Object.is(a.viewportHeight, b.viewportHeight);
+  }
+
+  private firstIndexWhere(length: number, predicate: (index: number) => boolean): number {
+    let low = 0;
+    let high = length;
+    while (low < high) {
+      const mid = low + Math.floor((high - low) / 2);
+      if (predicate(mid)) high = mid;
+      else low = mid + 1;
+    }
+    return low;
+  }
+
+  private candidateRows(vpTop: number, vpBottom: number): number[] {
+    const rowCount = this.rowPages.length;
+    if (rowCount === 0) return [];
+    if (Number.isNaN(vpTop) || Number.isNaN(vpBottom) || vpBottom < vpTop) {
+      return Array.from({ length: rowCount }, (_, row) => row);
+    }
+    const first = this.firstIndexWhere(rowCount, row => this.rowBottoms[row] > vpTop);
+    const end = this.firstIndexWhere(rowCount, row => this.rowTops[row] >= vpBottom);
+    if (first >= end) return [];
+    return Array.from({ length: end - first }, (_, offset) => first + offset);
+  }
+
+  private horizontalCandidatePages(vpLeft: number, vpRight: number): number[] {
+    const count = this.pageCount;
+    if (count === 0) return [];
+    if (Number.isNaN(vpLeft) || Number.isNaN(vpRight) || vpRight < vpLeft) {
+      return Array.from({ length: count }, (_, pageIdx) => pageIdx);
+    }
+    const first = this.firstIndexWhere(
+      count,
+      pageIdx => (this.pageLefts[pageIdx] ?? 0) + (this.pageWidths[pageIdx] ?? 0) > vpLeft,
+    );
+    const end = vpRight === Infinity
+      ? count
+      : this.firstIndexWhere(count, pageIdx => (this.pageLefts[pageIdx] ?? 0) >= vpRight);
+    if (first >= end) return [];
+    return Array.from({ length: end - first }, (_, offset) => first + offset);
+  }
+
+  /**
+   * 같은 geometry/viewport 입력의 visible·prefetch를 한 번만 계산한 불변 결과.
+   * 기존 wrapper는 이 snapshot을 복사해 반환하므로 호출자가 캐시 배열을 바꿀 수 없다.
+   */
+  getVisibilitySnapshot(
+    scrollY: number,
+    viewportHeight: number,
+    scrollX = 0,
+    viewportWidth = 0,
+  ): VisibilitySnapshot {
+    const key: VisibilityCacheKey = {
+      geometryRevision: this.geometryRevision,
+      scrollX,
+      scrollY,
+      viewportWidth,
+      viewportHeight,
+    };
+    if (this.visibilityCache && this.sameVisibilityKey(this.visibilityCache.key, key)) {
+      return this.visibilityCache.snapshot;
+    }
+
+    const vpTop = scrollY;
+    const vpBottom = scrollY + viewportHeight;
+    const vpLeft = scrollX;
+    const vpRight = viewportWidth > 0 ? scrollX + viewportWidth : Infinity;
+    const candidateRows = this.horizontalMode
+      ? (this.rowPages.length > 0 ? [0] : [])
+      : this.candidateRows(vpTop, vpBottom);
+    const candidates = this.horizontalMode
+      ? this.horizontalCandidatePages(vpLeft, vpRight)
+      : candidateRows.flatMap(row => this.rowPages[row] ?? []);
+    const visible: number[] = [];
+    for (const pageIdx of candidates) {
+      const pageTop = this.pageOffsets[pageIdx];
+      const pageBottom = pageTop + this.pageHeights[pageIdx];
+      const pageLeft = this.getPageLeftResolved(pageIdx, this.totalWidth);
+      const pageRight = pageLeft + this.pageWidths[pageIdx];
+      if (
+        pageTop < vpBottom
+        && pageBottom > vpTop
+        && pageLeft < vpRight
+        && pageRight > vpLeft
+      ) visible.push(pageIdx);
+    }
+    visible.sort((a, b) => a - b);
+
+    const visibleRows = [...new Set(visible.map(pageIdx => this.pageRows[pageIdx] ?? 0))]
+      .sort((a, b) => a - b);
+    const firstVisibleRow = visibleRows[0] ?? null;
+    const lastVisibleRow = visibleRows[visibleRows.length - 1] ?? null;
+    const prefetch = new Set(visible);
+    if (visible.length > 0) {
+      if (this.horizontalMode) {
+        const first = visible[0];
+        const last = visible[visible.length - 1];
+        if (first > 0) prefetch.add(first - 1);
+        if (last + 1 < this.pageCount) prefetch.add(last + 1);
+      } else if (firstVisibleRow !== null && lastVisibleRow !== null) {
+        for (const row of [firstVisibleRow - 1, lastVisibleRow + 1]) {
+          for (const pageIdx of this.rowPages[row] ?? []) prefetch.add(pageIdx);
+        }
+      }
+    }
+    const prefetchPages = [...prefetch].sort((a, b) => a - b);
+    const visibleSet = new Set(visible);
+    const adjacentPages = prefetchPages.filter(pageIdx => !visibleSet.has(pageIdx));
+    const snapshot: VisibilitySnapshot = Object.freeze({
+      geometryRevision: this.geometryRevision,
+      scrollX,
+      scrollY,
+      viewportWidth,
+      viewportHeight,
+      visiblePages: Object.freeze(visible),
+      visibleRows: Object.freeze(visibleRows),
+      firstVisibleRow,
+      lastVisibleRow,
+      adjacentPages: Object.freeze(adjacentPages),
+      prefetchPages: Object.freeze(prefetchPages),
+      queryStats: Object.freeze({
+        rowsExamined: candidateRows.length,
+        pagesExamined: candidates.length,
+      }),
+    });
+    this.visibilityCache = { key, snapshot };
+    return snapshot;
+  }
+
   /** 뷰포트에 보이는 페이지 인덱스 목록을 반환한다 */
   getVisiblePages(
     scrollY: number,
@@ -340,28 +557,12 @@ export class VirtualScroll {
     scrollX = 0,
     viewportWidth = 0,
   ): number[] {
-    const vpTop = scrollY;
-    const vpBottom = scrollY + viewportHeight;
-    const vpLeft = scrollX;
-    const vpRight = viewportWidth > 0 ? scrollX + viewportWidth : Infinity;
-    const visible: number[] = [];
-
-    for (let i = 0; i < this.pageOffsets.length; i++) {
-      const pageTop = this.pageOffsets[i];
-      const pageBottom = pageTop + this.pageHeights[i];
-      const pageLeft = this.getPageLeftResolved(i, this.totalWidth);
-      const pageRight = pageLeft + this.pageWidths[i];
-
-      if (
-        pageTop < vpBottom
-        && pageBottom > vpTop
-        && pageLeft < vpRight
-        && pageRight > vpLeft
-      ) {
-        visible.push(i);
-      }
-    }
-    return visible;
+    return [...this.getVisibilitySnapshot(
+      scrollY,
+      viewportHeight,
+      scrollX,
+      viewportWidth,
+    ).visiblePages];
   }
 
   /** 프리페치 대상 페이지 (visible 범위 ± 1행) */
@@ -371,27 +572,12 @@ export class VirtualScroll {
     scrollX = 0,
     viewportWidth = 0,
   ): number[] {
-    const visible = this.getVisiblePages(scrollY, viewportHeight, scrollX, viewportWidth);
-    if (visible.length === 0) return [];
-
-    const prefetch = new Set(visible);
-
-    if (this.horizontalMode) {
-      const first = visible[0];
-      const last = visible[visible.length - 1];
-      if (first > 0) prefetch.add(first - 1);
-      if (last + 1 < this.pageCount) prefetch.add(last + 1);
-      return Array.from(prefetch).sort((a, b) => a - b);
-    }
-
-    const visibleRows = visible.map((pageIdx) => this.pageRows[pageIdx] ?? 0);
-    const firstRow = Math.min(...visibleRows);
-    const lastRow = Math.max(...visibleRows);
-    for (const row of [firstRow - 1, lastRow + 1]) {
-      for (const pageIdx of this.rowPages[row] ?? []) prefetch.add(pageIdx);
-    }
-
-    return Array.from(prefetch).sort((a, b) => a - b);
+    return [...this.getVisibilitySnapshot(
+      scrollY,
+      viewportHeight,
+      scrollX,
+      viewportWidth,
+    ).prefetchPages];
   }
 
   /** 특정 문서 Y 좌표가 속하는 페이지 인덱스를 반환한다 */
@@ -406,12 +592,15 @@ export class VirtualScroll {
    */
   getPageAtY(docY: number): number {
     if (this.horizontalMode) return 0;
-    for (let i = this.pageOffsets.length - 1; i >= 0; i--) {
-      if (docY >= this.pageOffsets[i]) {
-        return i;
-      }
-    }
-    return 0;
+    if (this.rowPages.length === 0 || Number.isNaN(docY)) return 0;
+    if (docY < this.rowTops[0]) return 0;
+    const firstAfter = this.firstIndexWhere(
+      this.rowTops.length,
+      row => this.rowTops[row] > docY,
+    );
+    const row = Math.max(0, firstAfter - 1);
+    const pages = this.rowPages[row] ?? [];
+    return pages[pages.length - 1] ?? 0;
   }
 
   /**
@@ -423,10 +612,31 @@ export class VirtualScroll {
     if (this.horizontalMode) return 0;
     const rowLastIdx = this.getPageAtY(docY);
     if (!this.gridMode) return rowLastIdx;
-    const rowOffset = this.pageOffsets[rowLastIdx];
-    let rowFirst = rowLastIdx;
-    while (rowFirst > 0 && this.pageOffsets[rowFirst - 1] === rowOffset) rowFirst--;
-    return rowFirst;
+    const row = this.pageRows[rowLastIdx] ?? 0;
+    return this.rowPages[row]?.[0] ?? rowLastIdx;
+  }
+
+  private pageAtX(pageIndices: readonly number[], docX: number): number {
+    if (pageIndices.length === 0) return 0;
+    if (!Number.isFinite(docX)) return pageIndices[0];
+    const firstNotLeft = this.firstIndexWhere(
+      pageIndices.length,
+      index => {
+        const pageIdx = pageIndices[index];
+        const right = (this.pageLefts[pageIdx] ?? 0) + (this.pageWidths[pageIdx] ?? 0);
+        return right >= docX;
+      },
+    );
+    if (firstNotLeft >= pageIndices.length) return pageIndices[pageIndices.length - 1];
+    const nextPage = pageIndices[firstNotLeft];
+    const nextLeft = this.pageLefts[nextPage] ?? 0;
+    if (docX >= nextLeft) return nextPage;
+    if (firstNotLeft === 0) return nextPage;
+
+    const previousPage = pageIndices[firstNotLeft - 1];
+    const previousRight = (this.pageLefts[previousPage] ?? 0)
+      + (this.pageWidths[previousPage] ?? 0);
+    return docX - previousRight <= nextLeft - docX ? previousPage : nextPage;
   }
 
   /** 한 행에 놓이는 쪽 수. 단일 컬럼 모드는 1. */
@@ -442,46 +652,14 @@ export class VirtualScroll {
    */
   getPageAtPoint(docX: number, docY: number): number {
     if (this.horizontalMode) {
-      let bestIdx = 0;
-      let bestDist = Infinity;
-      for (let pageIdx = 0; pageIdx < this.pageLefts.length; pageIdx++) {
-        const left = this.pageLefts[pageIdx] ?? 0;
-        const right = left + (this.pageWidths[pageIdx] ?? 0);
-        if (docX >= left && docX <= right) return pageIdx;
-        const dist = docX < left ? left - docX : docX - right;
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestIdx = pageIdx;
-        }
-      }
-      return bestIdx;
+      return this.pageAtX(this.rowPages[0] ?? [], docX);
     }
+    if (this.rowPages.length === 0 || Number.isNaN(docY) || docY < this.rowTops[0]) return 0;
 
     const rowLastIdx = this.getPageAtY(docY);
     if (!this.gridMode) return rowLastIdx;
-
-    // 같은 row 의 페이지 범위 (rowLastIdx 부터 row 시작까지)
-    const rowOffset = this.pageOffsets[rowLastIdx];
-    let rowFirst = rowLastIdx;
-    while (rowFirst > 0 && this.pageOffsets[rowFirst - 1] === rowOffset) rowFirst--;
-
-    // X 가 페이지 안에 속하는 첫 번째 페이지 반환
-    for (let i = rowFirst; i <= rowLastIdx; i++) {
-      const left = this.pageLefts[i] ?? 0;
-      const right = left + (this.pageWidths[i] ?? 0);
-      if (docX >= left && docX <= right) return i;
-    }
-
-    // gap / margin 영역 — 가장 가까운 페이지로 fallback
-    let bestIdx = rowFirst;
-    let bestDist = Infinity;
-    for (let i = rowFirst; i <= rowLastIdx; i++) {
-      const left = this.pageLefts[i] ?? 0;
-      const right = left + (this.pageWidths[i] ?? 0);
-      const dist = docX < left ? left - docX : (docX > right ? docX - right : 0);
-      if (dist < bestDist) { bestDist = dist; bestIdx = i; }
-    }
-    return bestIdx;
+    const row = this.pageRows[rowLastIdx] ?? 0;
+    return this.pageAtX(this.rowPages[row] ?? [], docX);
   }
 
   getPageOffset(pageIdx: number): number {

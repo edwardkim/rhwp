@@ -4,6 +4,8 @@ export const DEFAULT_CANVAS2D_LAYER_COUNT = 4;
 export const DEFAULT_VISIBLE_SURFACE_PIXEL_BUDGET = 32_000_000;
 /** visible에 prefetch용 25% headroom을 더한 약 153MiB RGBA surface 한도다. */
 export const DEFAULT_RETAINED_SURFACE_PIXEL_BUDGET = 40_000_000;
+/** scroll 정착 뒤 visible 화질을 올릴 때 허용하는 별도 mandatory surface hard gate다. */
+export const DEFAULT_SETTLED_VISIBLE_SURFACE_PIXEL_LIMIT = 64_000_000;
 export const SURFACE_BUDGET_RELEASE_RATIO = 0.88;
 
 const DPR_EPSILON = 0.001;
@@ -20,6 +22,8 @@ export interface RenderSurfacePageInput {
   visible: boolean;
   focused: boolean;
   distanceFromFocus: number;
+  /** interaction 동안 이미 완성된 surface의 DPR을 그대로 쓰는 실행 제약이다. */
+  lockedEffectiveDpr?: number;
 }
 
 export interface RenderSurfaceBudgetInput {
@@ -60,6 +64,7 @@ interface MutablePageState extends RenderSurfacePageInput {
   layerCount: number;
   steps: number[];
   stepIndex: number;
+  interactionLocked: boolean;
 }
 
 function positive(value: number, fallback: number): number {
@@ -126,7 +131,9 @@ function previousStepIndex(state: MutablePageState, previous: number | undefined
 }
 
 function canDemote(state: MutablePageState): boolean {
-  return !state.focused && state.stepIndex + 1 < state.steps.length;
+  return !state.focused
+    && !state.interactionLocked
+    && state.stepIndex + 1 < state.steps.length;
 }
 
 function demotionOrder(
@@ -196,6 +203,8 @@ export function planRenderSurfaceBudget(input: RenderSurfaceBudgetInput): Render
     distanceFromFocus: Math.max(0, positive(page.distanceFromFocus, 0)),
     steps: renderDprSteps(rawDpr),
     stepIndex: 0,
+    // 편집 focus의 raw DPR 보호가 interaction lock보다 강하다.
+    interactionLocked: !page.focused && Number.isFinite(page.lockedEffectiveDpr),
   }));
 
   const fullQuality = totals(states, zoom, layerCount);
@@ -205,9 +214,16 @@ export function planRenderSurfaceBudget(input: RenderSurfaceBudgetInput): Render
     && fullQuality.retained <= releaseRetained;
   let heldByHysteresis = false;
 
+  if (!exportProfile) {
+    for (const state of states) {
+      if (!state.interactionLocked) continue;
+      state.stepIndex = previousStepIndex(state, state.lockedEffectiveDpr);
+    }
+  }
+
   if (!exportProfile && !mayPromoteAll && input.previousEffectiveDpr) {
     for (const state of states) {
-      if (state.focused) continue;
+      if (state.focused || state.interactionLocked) continue;
       state.stepIndex = previousStepIndex(
         state,
         input.previousEffectiveDpr.get(state.pageIndex),
@@ -250,4 +266,46 @@ export function planRenderSurfaceBudget(input: RenderSurfaceBudgetInput): Render
       && finalTotals.retained <= retainedPixelBudget,
     heldByHysteresis,
   };
+}
+
+export interface SettledVisibleEffectiveDprInput {
+  pages: readonly Pick<
+    RenderSurfacePageInput,
+    'width' | 'height' | 'layerCount' | 'focused'
+  >[];
+  zoom: number;
+  rawDpr: number;
+  layerCount: number;
+  absolutePixelLimit?: number;
+}
+
+/**
+ * scroll 정착 visible 집합을 raw DPR로 복원할 수 있는지 한 번 계산한다.
+ * raw가 hard gate를 넘으면 1.5만 한 번 시도하고, 그것도 넘으면 기존 planner에 맡긴다.
+ */
+export function resolveSettledVisibleEffectiveDpr(
+  input: SettledVisibleEffectiveDprInput,
+): number | null {
+  if (input.pages.length === 0) return null;
+  const rawDpr = positive(input.rawDpr, 1);
+  const fallbackDpr = Math.min(rawDpr, 1.5);
+  const candidates = fallbackDpr < rawDpr - DPR_EPSILON
+    ? [rawDpr, fallbackDpr]
+    : [rawDpr];
+  const absolutePixelLimit = positive(
+    input.absolutePixelLimit ?? DEFAULT_SETTLED_VISIBLE_SURFACE_PIXEL_LIMIT,
+    DEFAULT_SETTLED_VISIBLE_SURFACE_PIXEL_LIMIT,
+  );
+  for (const candidate of candidates) {
+    const pixels = input.pages.reduce((sum, page) => (
+      sum + pageSurfacePixels(
+        page,
+        input.zoom,
+        page.focused ? rawDpr : candidate,
+        input.layerCount,
+      )
+    ), 0);
+    if (pixels <= absolutePixelLimit) return candidate;
+  }
+  return null;
 }

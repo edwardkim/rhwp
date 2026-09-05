@@ -464,7 +464,7 @@ test('CanvasView scales existing pages during zoom and rerenders only after sett
 
   assert.match(
     source,
-    /eventBus\.on\('viewport-scroll', \(\) => \{[\s\S]*?if \(!this\.viewportManager\.isZoomAnimating\(\)\) this\.updateVisiblePages\(\);[\s\S]*?\}\)/,
+    /eventBus\.on\('viewport-scroll', \(\) => \{[\s\S]*?if \(!this\.viewportManager\.isZoomAnimating\(\)\) this\.updateVisiblePages\('scroll'\);[\s\S]*?\}\)/,
   );
   assert.match(
     source,

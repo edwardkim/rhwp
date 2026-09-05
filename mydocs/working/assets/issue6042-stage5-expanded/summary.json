@@ -1,0 +1,948 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "summarize.mjs",
+  "comparison": {
+    "baseline": {
+      "label": "Stage 3",
+      "sha": "5f5d60071"
+    },
+    "corrected": {
+      "label": "Stage 4 correction",
+      "sha": "63d29e68b"
+    },
+    "browser": "Chromium 151",
+    "viewportCssPx": {
+      "width": 1280,
+      "height": 720
+    },
+    "actualDpr": 2
+  },
+  "coverage": {
+    "renderers": [
+      "Canvas2D",
+      "CanvasKit",
+      "auto→Canvas2D"
+    ],
+    "documents": [
+      "exam_kor.hwp",
+      "hwpspec.hwp",
+      "kps-ai.hwp",
+      "basic/KTX.hwp",
+      "4-page real HWP",
+      "21-page layered HWP"
+    ],
+    "arrangements": [
+      "auto",
+      "single",
+      "double",
+      "fixed four",
+      "facing"
+    ],
+    "interactions": [
+      "vertical scroll",
+      "horizontal scroll",
+      "rapid reverse",
+      "zoom 34/50/100/200",
+      "document switch",
+      "edit/undo/redo"
+    ],
+    "automationLimits": {
+      "actualDpr1": "not measured: in-app browser context is fixed to DPR 2",
+      "liveViewportResize": "not measured: in-app browser viewport is fixed to 1280x720",
+      "imageFailureInjection": "not measured: successful 4-layer/image lifecycle only",
+      "userVisualApproval": "pending"
+    }
+  },
+  "alertThresholds": {
+    "p50Regression": "max(10ms, 5%)",
+    "p95Regression": "max(25ms, 10%)"
+  },
+  "stage4CorrectionAccepted": true,
+  "performance": {
+    "canvas2dExamSingle50": {
+      "name": "Canvas2D exam_kor single 50%",
+      "baseline": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 33.8,
+          "mean": 41.2
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 25.4,
+          "mean": 23.8
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 25.4,
+          "mean": 23.8
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 25.4,
+          "mean": 33.6
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.3,
+          "p95": 0.5,
+          "mean": 5.4
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.1
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 3,
+          "p95": 3,
+          "mean": 3
+        },
+        "errors": 0
+      },
+      "corrected": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 25.9,
+          "mean": 33.9
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.6,
+          "mean": 20.3
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.6,
+          "mean": 20.3
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.6,
+          "mean": 26.1
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.4,
+          "p95": 0.5,
+          "mean": 4.2
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.1
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 3,
+          "p95": 3,
+          "mean": 3
+        },
+        "errors": 0
+      },
+      "retainedCompleteDelta": {
+        "p50": {
+          "absolute": -0.2,
+          "percent": -1.2
+        },
+        "p95": {
+          "absolute": -7.8,
+          "percent": -30.7
+        }
+      },
+      "limitsMs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "accepted": true
+    },
+    "canvas2dExamDouble50": {
+      "name": "Canvas2D exam_kor double 50%",
+      "baseline": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 332.5,
+          "p95": 344,
+          "mean": 344.8
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 123.2,
+          "p95": 132.1,
+          "mean": 114.5
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 123.2,
+          "p95": 132.1,
+          "mean": 114.5
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 331.6,
+          "p95": 342.8,
+          "mean": 343.7
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 116.7,
+          "p95": 120.8,
+          "mean": 102.8
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 6,
+          "p95": 6,
+          "mean": 6
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 6,
+          "p95": 6,
+          "mean": 6
+        },
+        "errors": 0
+      },
+      "corrected": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 346.5,
+          "p95": 363,
+          "mean": 352.8
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 63.3,
+          "p95": 71.2,
+          "mean": 59
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 126.5,
+          "p95": 137.3,
+          "mean": 115.7
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 346.2,
+          "p95": 362.2,
+          "mean": 352.2
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 58.8,
+          "p95": 65.2,
+          "mean": 51.2
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 6,
+          "p95": 6,
+          "mean": 6
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 6,
+          "p95": 6,
+          "mean": 6
+        },
+        "errors": 0
+      },
+      "retainedCompleteDelta": {
+        "p50": {
+          "absolute": 14.6,
+          "percent": 4.4
+        },
+        "p95": {
+          "absolute": 19.4,
+          "percent": 5.7
+        }
+      },
+      "limitsMs": {
+        "p50": 16.6,
+        "p95": 34.3
+      },
+      "accepted": true
+    },
+    "canvas2dHwpspecSingle50": {
+      "name": "Canvas2D hwpspec single 50%",
+      "baseline": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 25.9,
+          "mean": 27.3
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.7,
+          "mean": 17.3
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.7,
+          "mean": 17.3
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.7,
+          "mean": 19.7
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.3,
+          "p95": 0.5,
+          "mean": 1.4
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.1
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 3,
+          "p95": 3,
+          "mean": 3
+        },
+        "errors": 0
+      },
+      "corrected": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 25.9,
+          "mean": 27.2
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.6,
+          "mean": 17.2
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.6,
+          "mean": 17.2
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.6,
+          "mean": 19.3
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.3,
+          "p95": 0.7,
+          "mean": 1.4
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.1
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 3,
+          "p95": 3,
+          "mean": 3
+        },
+        "errors": 0
+      },
+      "retainedCompleteDelta": {
+        "p50": {
+          "absolute": -0.2,
+          "percent": -1.2
+        },
+        "p95": {
+          "absolute": -0.1,
+          "percent": -0.6
+        }
+      },
+      "limitsMs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "accepted": true
+    },
+    "canvas2dHwpspecDouble50": {
+      "name": "Canvas2D hwpspec double 50%",
+      "baseline": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 25.9,
+          "mean": 28.2
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.8,
+          "mean": 18.5
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.8,
+          "mean": 18.5
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.8,
+          "mean": 20.5
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.4,
+          "p95": 0.6,
+          "mean": 2.3
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.3
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 6,
+          "p95": 6,
+          "mean": 6
+        },
+        "errors": 0
+      },
+      "corrected": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 26,
+          "mean": 29
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.7,
+          "mean": 18
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.7,
+          "mean": 18.4
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.7,
+          "mean": 20.8
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.4,
+          "p95": 0.5,
+          "mean": 1.9
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.3
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 6,
+          "p95": 6,
+          "mean": 6
+        },
+        "errors": 0
+      },
+      "retainedCompleteDelta": {
+        "p50": {
+          "absolute": -0.2,
+          "percent": -1.2
+        },
+        "p95": {
+          "absolute": -0.1,
+          "percent": -0.6
+        }
+      },
+      "limitsMs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "accepted": true
+    },
+    "canvasKitExamFour34": {
+      "name": "CanvasKit exam_kor four columns 34%",
+      "baseline": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 26,
+          "mean": 24.8
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.8,
+          "p95": 17.7,
+          "mean": 16.7
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.8,
+          "p95": 17.7,
+          "mean": 16.7
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.8,
+          "p95": 17.7,
+          "mean": 16.7
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.3,
+          "p95": 0.5,
+          "mean": 0.3
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 4,
+          "mean": 2
+        },
+        "errors": 0
+      },
+      "corrected": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 24.9,
+          "p95": 25.7,
+          "mean": 24.9
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.4,
+          "mean": 16.6
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.4,
+          "mean": 16.6
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.7,
+          "p95": 17.4,
+          "mean": 16.6
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.4,
+          "p95": 0.7,
+          "mean": 0.5
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 4,
+          "mean": 2
+        },
+        "errors": 0
+      },
+      "retainedCompleteDelta": {
+        "p50": {
+          "absolute": -0.1,
+          "percent": -0.6
+        },
+        "p95": {
+          "absolute": -0.3,
+          "percent": -1.7
+        }
+      },
+      "limitsMs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "accepted": true
+    },
+    "canvasKitHwpspecFour34": {
+      "name": "CanvasKit hwpspec four columns 34%",
+      "baseline": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 26,
+          "mean": 41.6
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.9,
+          "mean": 27.1
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.9,
+          "mean": 27.1
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.9,
+          "p95": 17.9,
+          "mean": 33.9
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.6,
+          "p95": 0.7,
+          "mean": 11.4
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.6
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 12,
+          "p95": 12,
+          "mean": 12
+        },
+        "errors": 0
+      },
+      "corrected": {
+        "samples": 40,
+        "complete": 40,
+        "knownWorkNextFrameMs": {
+          "n": 40,
+          "p50": 25,
+          "p95": 25.8,
+          "mean": 38.5
+        },
+        "visibleFirstMs": {
+          "n": 40,
+          "p50": 16.6,
+          "p95": 17.1,
+          "mean": 17.6
+        },
+        "visibleStableMs": {
+          "n": 40,
+          "p50": 16.6,
+          "p95": 17.1,
+          "mean": 25.6
+        },
+        "retainedCompleteMs": {
+          "n": 40,
+          "p50": 16.6,
+          "p95": 17.1,
+          "mean": 30.4
+        },
+        "visibilityUpdateMs": {
+          "n": 40,
+          "p50": 0.7,
+          "p95": 0.8,
+          "mean": 0.7
+        },
+        "rasterCalls": {
+          "n": 40,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.6
+        },
+        "cacheTakeCalls": {
+          "n": 40,
+          "p50": 12,
+          "p95": 12,
+          "mean": 12
+        },
+        "errors": 0
+      },
+      "retainedCompleteDelta": {
+        "p50": {
+          "absolute": -0.3,
+          "percent": -1.8
+        },
+        "p95": {
+          "absolute": -0.8,
+          "percent": -4.5
+        }
+      },
+      "limitsMs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "accepted": true
+    },
+    "canvas2dKpsAiFour34": {
+      "name": "Canvas2D kps-ai four columns 34%",
+      "baseline": {
+        "samples": 20,
+        "complete": 20,
+        "knownWorkNextFrameMs": {
+          "n": 20,
+          "p50": 24.9,
+          "p95": 26,
+          "mean": 39.9
+        },
+        "visibleFirstMs": {
+          "n": 20,
+          "p50": 16.8,
+          "p95": 17.9,
+          "mean": 27.2
+        },
+        "visibleStableMs": {
+          "n": 20,
+          "p50": 16.8,
+          "p95": 17.9,
+          "mean": 27.2
+        },
+        "retainedCompleteMs": {
+          "n": 20,
+          "p50": 16.8,
+          "p95": 17.9,
+          "mean": 32.1
+        },
+        "visibilityUpdateMs": {
+          "n": 20,
+          "p50": 0.6,
+          "p95": 0.7,
+          "mean": 10.6
+        },
+        "rasterCalls": {
+          "n": 20,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.6
+        },
+        "cacheTakeCalls": {
+          "n": 20,
+          "p50": 12,
+          "p95": 12,
+          "mean": 12
+        },
+        "errors": 0
+      },
+      "corrected": {
+        "samples": 20,
+        "complete": 20,
+        "knownWorkNextFrameMs": {
+          "n": 20,
+          "p50": 25,
+          "p95": 25.8,
+          "mean": 40.1
+        },
+        "visibleFirstMs": {
+          "n": 20,
+          "p50": 16.7,
+          "p95": 17.5,
+          "mean": 17.8
+        },
+        "visibleStableMs": {
+          "n": 20,
+          "p50": 16.7,
+          "p95": 17.5,
+          "mean": 27.4
+        },
+        "retainedCompleteMs": {
+          "n": 20,
+          "p50": 16.7,
+          "p95": 17.5,
+          "mean": 32.3
+        },
+        "visibilityUpdateMs": {
+          "n": 20,
+          "p50": 0.8,
+          "p95": 0.9,
+          "mean": 1.3
+        },
+        "rasterCalls": {
+          "n": 20,
+          "p50": 0,
+          "p95": 0,
+          "mean": 0.6
+        },
+        "cacheTakeCalls": {
+          "n": 20,
+          "p50": 12,
+          "p95": 12,
+          "mean": 12
+        },
+        "errors": 0
+      },
+      "retainedCompleteDelta": {
+        "p50": {
+          "absolute": -0.1,
+          "percent": -0.6
+        },
+        "p95": {
+          "absolute": -0.4,
+          "percent": -2.2
+        }
+      },
+      "limitsMs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "accepted": true
+    }
+  },
+  "functional": {
+    "autoZoom": {
+      "samples": 7,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "horizontal": {
+      "samples": 6,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "facing": {
+      "samples": 2,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "lastIncompleteRow": {
+      "samples": 1,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "fixedSingleZoom": {
+      "samples": 5,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "fixedDoubleZoom": {
+      "samples": 5,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "canvas2dKtxZoom": {
+      "samples": 7,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "canvas2dKtxZoomRepeat2": {
+      "samples": 7,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "canvasKitKtxZoom": {
+      "samples": 7,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "documentSwitch": {
+      "samples": 6,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "autoBackend": {
+      "samples": 1,
+      "healthy": true,
+      "layoutEquivalent": true
+    },
+    "rapidReverse": {
+      "healthy": true,
+      "statusCountsEqual": true,
+      "layoutEquivalent": true,
+      "baselineStatusCounts": {
+        "complete": 24,
+        "superseded": 16
+      },
+      "correctedStatusCounts": {
+        "superseded": 16,
+        "complete": 24
+      }
+    },
+    "zoomCoordinateRepeatability": {
+      "baselineWithinRevisionMaxCssPx": 1,
+      "correctedWithinRevisionMaxCssPx": 1,
+      "firstCrossRevisionMaxCssPx": 2.5,
+      "repeatedCrossRevisionMaxCssPx": 0.5,
+      "correctedNotWorseThanThreeCssPx": true
+    },
+    "editUndoRedo": {
+      "healthy": true,
+      "fourDistinctInvalidationScopes": true,
+      "layoutEquivalent": true
+    },
+    "canvasKitIdentity": {
+      "baselineIsCanvasKit": true,
+      "correctedIsCanvasKit": true
+    },
+    "autoFallback": {
+      "baselineBackend": "canvas2d",
+      "correctedBackend": "canvas2d",
+      "healthy": true
+    }
+  },
+  "verdict": {
+    "automatedMatrixAccepted": true,
+    "fullStage5Accepted": false,
+    "remaining": [
+      "actual DPR 1",
+      "live viewport resize",
+      "image failure injection",
+      "user visual approval"
+    ]
+  }
+}
