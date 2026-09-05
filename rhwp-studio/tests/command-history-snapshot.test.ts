@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 // [Task #2328] 스냅샷 상한 정합 + 예외 안전 스택 이동 소스 가드.
 //
@@ -12,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 // 별도 수행한다 (PR 검증 섹션).
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const source = (rel: string): string => readFileSync(join(rootDir, rel), 'utf8');
+const source = (rel: string): string => codeOnly(readFileSync(join(rootDir, rel), 'utf8'));
 
 /** `undo(...) {` ~ 다음 메서드 전까지의 블록을 추출한다. */
 function methodBlock(src: string, signature: string): string {

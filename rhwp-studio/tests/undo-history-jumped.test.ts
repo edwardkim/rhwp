@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 // [Task #2339] history-jumped 이벤트 소스 가드.
 //
@@ -11,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 // 관례) 소스 배선을 핀한다. 행위 증명은 브라우저 실동작으로 별도 수행(PR 검증 섹션).
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const source = (rel: string): string => readFileSync(join(rootDir, rel), 'utf8');
+const source = (rel: string): string => codeOnly(readFileSync(join(rootDir, rel), 'utf8'));
 
 const inputHandler = source('src/engine/input-handler.ts');
 const findDialog = source('src/ui/find-dialog.ts');
