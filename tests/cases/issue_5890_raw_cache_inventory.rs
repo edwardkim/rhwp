@@ -15,25 +15,52 @@ fn repo() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// `src/model/*.rs` 의 `pub raw_*` 필드를 `이름@파일` 별 **개수**로 모은다.
+/// `src/model/**` 의 `pub raw_*` 필드를 `이름@파일` 별 **개수**로 모은다.
 ///
 /// 라인 번호는 대조에 쓰지 않는다 — 문서에는 위치를 적어 두되, 주석 한 줄 추가처럼
 /// 무관한 편집으로 시험이 깨지면 가드가 소음이 된다. 대신 같은 파일 안 동명 필드가
 /// 여럿이므로(`style.rs` 의 `raw_data` 8개) 개수까지 세어 누락·삭제를 잡는다.
-fn fields_in_source() -> BTreeMap<String, usize> {
-    let dir = repo().join("src/model");
-    let mut out: BTreeMap<String, usize> = BTreeMap::new();
-    let entries = std::fs::read_dir(&dir).expect("src/model 디렉터리");
+///
+/// 하위 디렉터리까지 훑는다. `src/model` 에는 `paragraph/`·`table/` 가 있고, 지금은 그 안에
+/// `pub raw_*` 가 없지만 비재귀로 두면 나중에 하위에 추가된 필드를 조용히 놓쳐 문서가
+/// 낡는다 — 그것을 막는 것이 이 시험의 존재 이유다. 키는 `src/model` 기준 상대 경로라
+/// 하위에 같은 파일명이 생겨도 섞이지 않는다.
+fn collect_model_files(
+    dir: &std::path::Path,
+    base: &std::path::Path,
+    out: &mut Vec<(String, PathBuf)>,
+) {
+    let entries = match std::fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(e) => panic!("{}: {e}", dir.display()),
+    };
     for entry in entries.filter_map(|e| e.ok()) {
         let path = entry.path();
+        if path.is_dir() {
+            collect_model_files(&path, base, out);
+            continue;
+        }
         if path.extension().and_then(|e| e.to_str()) != Some("rs") {
             continue;
         }
-        let file = path
-            .file_name()
-            .and_then(|f| f.to_str())
-            .expect("파일명")
-            .to_string();
+        // 경로 구분자는 OS 마다 다르므로 컴포넌트를 모아 "/" 로 잇는다(리터럴 백슬래시 회피).
+        let rel = path
+            .strip_prefix(base)
+            .expect("src/model 하위 경로")
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy().into_owned())
+            .collect::<Vec<_>>()
+            .join("/");
+        out.push((rel, path));
+    }
+}
+
+fn fields_in_source() -> BTreeMap<String, usize> {
+    let dir = repo().join("src/model");
+    let mut out: BTreeMap<String, usize> = BTreeMap::new();
+    let mut files = Vec::new();
+    collect_model_files(&dir, &dir, &mut files);
+    for (file, path) in files {
         let text = std::fs::read_to_string(&path).expect("모델 파일 읽기");
         for (i, line) in text.lines().enumerate() {
             let t = line.trim_start();
