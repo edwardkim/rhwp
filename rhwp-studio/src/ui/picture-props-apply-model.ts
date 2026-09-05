@@ -197,14 +197,40 @@ export function displayedMm(hwp: number): string {
  * 비교는 **표시 정밀도로 정규화해서** 한다 — 문자열을 그대로 견주면 같은 값의 다른 표기
  * (`"10"` 과 `"10.00"`)가 변경으로 잡힌다.
  */
+function untouchedMm(raw: string | undefined, current: number): boolean {
+  // -1 HWPUNIT displays as "-0.00", but parsing the input normalizes it to zero.
+  // Compare rounded numeric values so an untouched negative offset is preserved.
+  return Number(numberOr(raw, 0).toFixed(2)) === Number(displayedMm(current));
+}
+
 function addChangedSize(
   patch: PicturePropsPatch,
   key: string,
   raw: string | undefined,
   current: number,
 ): void {
-  if (numberOr(raw, 0).toFixed(2) === displayedMm(current)) return;
+  if (untouchedMm(raw, current)) return;
   patch[key] = Math.max(0, mmToHwp(raw));
+}
+
+/**
+ * [Task #6769] 위치 오프셋 전용 — 판정은 크기와 같고, 0 클램프만 두지 않는다.
+ *
+ * 오프셋도 같은 mm 2자리를 왕복하므로 무변경 확인에서 값이 흔들린다. 크기와 달리
+ * 엔진 클램프가 없어 눈에 보이는 파손은 없지만, `horizontal_offset`/`vertical_offset`
+ * 은 `shape_transform_fingerprint`(`object_ops/common.rs`)의 구성 요소다 — 1 HWPUNIT
+ * 만 흔들려도 지문이 달라져 #6740 이 지키려던 한컴 원본 `raw_rendering` 이 지워진다.
+ *
+ * 음수 오프셋이 정당하므로 크기와 달리 `Math.max(0, ...)` 을 쓰지 않는다.
+ */
+function addChangedOffset(
+  patch: PicturePropsPatch,
+  key: string,
+  raw: string | undefined,
+  current: number,
+): void {
+  if (untouchedMm(raw, current)) return;
+  patch[key] = mmToHwp(raw);
 }
 
 function hexToColorRef(hex: string): number {
@@ -265,10 +291,10 @@ function appendCommonPosition(
     addChanged(patch, 'horzRelTo', form.horzRelTo, props.horzRelTo);
   }
   addChanged(patch, 'horzAlign', form.horzAlign, props.horzAlign);
-  addChanged(patch, 'horzOffset', mmToHwp(form.horzOffset), props.horzOffset);
+  addChangedOffset(patch, 'horzOffset', form.horzOffset, props.horzOffset);
   addChanged(patch, 'vertRelTo', form.vertRelTo, props.vertRelTo);
   addChanged(patch, 'vertAlign', form.vertAlign, props.vertAlign);
-  addChanged(patch, 'vertOffset', mmToHwp(form.vertOffset), props.vertOffset);
+  addChangedOffset(patch, 'vertOffset', form.vertOffset, props.vertOffset);
   addChanged(patch, 'restrictInPage', form.restrictInPage, props.restrictInPage ?? true);
   addChanged(patch, 'allowOverlap', form.allowOverlap, props.allowOverlap ?? false);
 }

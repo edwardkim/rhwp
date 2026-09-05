@@ -3,7 +3,7 @@ import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
 import { CursorState } from './cursor';
 import { CaretRenderer } from './caret-renderer';
-import { resolveGlyphStartRect } from './line-start-affinity';
+import { resolveGlyphStartRect, isCompositionBoxRepresentable } from './line-start-affinity';
 import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
@@ -3582,13 +3582,21 @@ export class InputHandler {
     if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return exact;
     if ((anchor.cellPath?.length ?? 0) > 1) return exact;
     const inCell = anchor.parentParaIndex !== undefined;
+    // 두 질의 모두 실패를 null 로 알린다 — 여기서 예외가 새면 updateCaret 의 바깥 catch 가
+    // 조합 오버레이를 통째로 접어버려, exact 로 물러나는 것보다 나쁜 결과가 된다.
     return resolveGlyphStartRect(anchor.charOffset, exact, {
-      lineInfoAt: (charOffset) => (inCell
-        ? this.wasm.getLineInfoInCell(
-            anchor.sectionIndex, anchor.parentParaIndex!, anchor.controlIndex!,
-            anchor.cellIndex!, anchor.cellParaIndex!, charOffset,
-          )
-        : this.wasm.getLineInfo(anchor.sectionIndex, anchor.paragraphIndex, charOffset)),
+      lineInfoAt: (charOffset) => {
+        try {
+          return inCell
+            ? this.wasm.getLineInfoInCell(
+                anchor.sectionIndex, anchor.parentParaIndex!, anchor.controlIndex!,
+                anchor.cellIndex!, anchor.cellParaIndex!, charOffset,
+              )
+            : this.wasm.getLineInfo(anchor.sectionIndex, anchor.paragraphIndex, charOffset);
+        } catch {
+          return null;
+        }
+      },
       rectAtLineStart: (lineIndex) => {
         try {
           return this.wasm.getCursorRectOnLine(
@@ -3650,15 +3658,23 @@ export class InputHandler {
             );
           }
           startRect = this.compositionOverlayStartRect(anchor, startRect);
-          const charWidth = rect.x - startRect.x;
-          const text = this.textarea.value || '';
-          // 현재 커서 위치의 글꼴 정보
-          let fontFamily = 'sans-serif';
-          try {
-            const props = this.getCharPropertiesAtCursor();
-            if (props.fontFamily) fontFamily = props.fontFamily;
-          } catch { /* fallback */ }
-          this.caret.showComposition(startRect, charWidth, zoom, text, fontFamily);
+          if (!isCompositionBoxRepresentable(startRect, rect)) {
+            // [Issue #6738] 머리말/꼬리말·각주·2단계 이상 중첩 셀에는 줄 affinity 를 물을
+            // API 가 없어, 조합 글자가 줄이나 쪽을 넘어가도 시작 좌표를 바로잡을 수 없다.
+            // 틀린 자리에 박스를 그리는 대신 조회 실패와 같은 경로로 일반 캐럿을 보여준다.
+            this.caret.hideComposition();
+            this.caret.update(rect, zoom);
+          } else {
+            const charWidth = rect.x - startRect.x;
+            const text = this.textarea.value || '';
+            // 현재 커서 위치의 글꼴 정보
+            let fontFamily = 'sans-serif';
+            try {
+              const props = this.getCharPropertiesAtCursor();
+              if (props.fontFamily) fontFamily = props.fontFamily;
+            } catch { /* fallback */ }
+            this.caret.showComposition(startRect, charWidth, zoom, text, fontFamily);
+          }
         } catch {
           // getCursorRect 실패 시 일반 캐럿
           this.caret.hideComposition();
