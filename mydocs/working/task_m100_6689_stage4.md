@@ -118,3 +118,47 @@ candidate와 다시 대조하도록 했다.
 
 로컬 정적 검증은 완료됐다. 최종 exact-head 여덟 workflow 재실행은 현재 변경을 commit·push해
 새 candidate SHA를 고정한 뒤에만 의미가 있으므로 다음 승인 단위로 남겨 둔다.
+
+## 7. Stage 4-C — 1차 exact candidate 거부와 정정
+
+Stage 4-B를 포함한 1차 candidate
+`5280da82252e57856feee8a4e6613706bf65ce78`에서 8개 workflow를 전건 dispatch했다.
+
+| Workflow | Run | 결과·경계 |
+| --- | ---: | --- |
+| Adapter inter-diff | `33957846114` | success |
+| CI | `33957847604` | failure — Lint의 `Validate CI impact classifier` |
+| CodeQL | `33957848830` | JavaScript·Python·Rust success |
+| Pages | `33957849904` | Build success, Deploy skipped |
+| Gym | `33957850921` | contracts success, full benchmark skipped |
+| Oracle advisory | `33957852294` | success, verdict `completed` |
+| Proptest roundtrip | `33957853498` | success |
+| Render Diff | `33957854604` | success |
+
+CI의 제품 worker가 실패한 것이 아니다. 기존 `test_ci_impact_workflow.py`가 `Build & Test`
+aggregate shell을 직접 실행하면서 새 `CANONICAL_PROMOTION`과 `PROMOTION_RESULT`를 테스트
+환경에 넣지 않았다. 두 값이 빈 문자열이 되자 guard가 5개 기존 lane을
+`Unknown canonical promotion state` 로 거부했다. 이는 guard의 fail-closed 동작은 올바르고,
+테스트 하네스의 입력 계약이 누락된 것이 원인이다.
+
+로컬 검증에서 `Validate workflow contracts` 명령 묶음 196건은 실행했지만, Lint의 별도
+`Validate CI impact classifier`에 있는 `test_ci_impact_workflow.py`를 함께 실행하지 않았다. 이
+검증 범위 선택 누락 때문에 원격에서 처음 RED가 발견됐다.
+
+정정은 실행 guard를 느슨하게 바꾸지 않고 테스트 하네스만 현재 계약에 맞춰다.
+
+- 일반 workflow의 기본을 `CANONICAL_PROMOTION=false`, `PROMOTION_RESULT=skipped`로 명시했다.
+- canonical promotion은 gate `success`일 때만 통과하는 positive 계약을 추가했다.
+- canonical gate skip, 비정규 PR의 gate 실행, canonical 상태 누락은 모두 거부하는 negative 계약을
+  추가했다.
+
+원격에서 실패한 명령과 동일한 classifier Node 44건, policy Node 37건,
+aggregate Python 35건이 모두 통과했고 promotion focused 40건도 재통과했다. 정정을
+commit하면 candidate SHA가 바뀌므로, 1차의 성공 run 7개를 최종 증적으로 재사용하지
+않고 새 SHA에서 8개를 다시 실행한다.
+
+새 collector로 1차 run을 GitHub API에서 다시 수집한 dogfood도 동일한 결론을 냈다.
+pagination이 완결된 8개 run 중 7개를 수락하고, CI에 대해
+`run-not-green:.github/workflows/ci.yml:completed:failure`와
+`job-not-green:Build & Test:failure`를 동시에 보고하며 최종 verdict를 거부했다. token·API
+snapshot·artifact는 파일로 저장하지 않고 메모리에서만 검증했다.
