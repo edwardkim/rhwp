@@ -687,6 +687,9 @@ struct FormattedTable {
 
 #[derive(Debug, Clone, Copy)]
 struct VisibleFloatExclusion {
+    /// 이 밴드를 만든 host 문단. 같은 문단의 co-anchored float 은 밴드를 서로
+    /// 넘겨 짚으면 안 되므로(`#1510`) 소유자를 함께 싣는다.
+    para_index: usize,
     /// visible host 문단의 자리차지 float 표가 후속 본문을 피하게 만드는 y 구간.
     top: f64,
     bottom: f64,
@@ -5376,6 +5379,41 @@ impl TypesetState {
         for zone in &self.visible_float_exclusions {
             let natural_top = jump_to + natural_top_lead;
             if natural_top + 0.5 >= zone.top && natural_top < zone.bottom {
+                jump_to = jump_to.max(zone.bottom);
+            }
+        }
+        if jump_to > self.current_height + 0.5 {
+            self.current_height = jump_to;
+        }
+    }
+
+    /// [#6764] 블록 표를 이 쪽에 앉히기 전에, **다른 문단**이 남긴 자리차지 밴드를
+    /// 표 높이로 한 번 짚는다.
+    ///
+    /// 문단 흐름용 `apply_visible_float_exclusions` 의 겹침 프로브는 HWPX 저장
+    /// 프로파일 전용이라, 네이티브 HWP5 에서 `vertical_offset` 이 앵커와 표 상단
+    /// 사이를 벌려 놓으면 그 틈에서 시작하는 표가 밴드를 **그냥 통과한다.**
+    /// 계상은 틈 위에 남고 페인트는 밴드 아래로 가므로 분할 예산이 통째로 어긋난다
+    /// (1613000-202200037 182쪽: 예산 817.6px 로 23행을 잘라 넣었는데 페인트는
+    /// 용지 밖 885.6px). 표는 한 덩어리라 어긋남이 쪽 규모로 드러난다.
+    ///
+    /// 같은 문단이 만든 밴드는 건드리지 않는다 — co-anchored float 스택은 자기
+    /// 밴드를 넘겨 짚으면 안 된다(`#1510`).
+    fn apply_float_band_before_block_table(&mut self, para_index: usize, probe_height: f64) {
+        if self.visible_float_exclusions.is_empty() || probe_height <= 0.5 {
+            return;
+        }
+        self.visible_float_exclusions
+            .retain(|zone| self.current_height < zone.bottom - 0.5);
+
+        let mut jump_to = self.current_height;
+        for zone in &self.visible_float_exclusions {
+            if zone.para_index == para_index {
+                continue;
+            }
+            let starts_in_zone = jump_to + 0.5 >= zone.top && jump_to < zone.bottom;
+            let crosses_zone = jump_to < zone.top && jump_to + probe_height > zone.top + 0.5;
+            if starts_in_zone || crosses_zone {
                 jump_to = jump_to.max(zone.bottom);
             }
         }
@@ -20744,6 +20782,7 @@ impl TypesetEngine {
             if signed_vertical_offset > 0 {
                 if table_bottom > table_top + 0.5 {
                     st.visible_float_exclusions.push(VisibleFloatExclusion {
+                        para_index: para_idx,
                         top: table_top,
                         bottom: table_bottom,
                     });
@@ -22799,6 +22838,11 @@ impl TypesetEngine {
         composed_all: &[ComposedParagraph],
         suspend_before_drain: bool,
     ) -> Option<BlockTableContinuationContext> {
+        // [#6764] 다른 문단이 남긴 자리차지 밴드를 표 높이로 먼저 짚는다 — 예산은
+        // 밴드 아래에서 시작한다. HWPX 는 문단 프로브가 이미 같은 일을 하므로 제외.
+        if !st.profile.hwpx_stored_layout() {
+            st.apply_float_band_before_block_table(para_idx, ft.effective_height);
+        }
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let mut total_footnote =
             st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
