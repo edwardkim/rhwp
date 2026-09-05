@@ -548,7 +548,7 @@ pub(super) fn prepare_glyph_outline(
                     }
                     result.byte_cost = result
                         .byte_cost
-                        .checked_add(commands.len() * std::mem::size_of::<PathCommand>())?;
+                        .checked_add(std::mem::size_of_val(commands))?;
                     if result.byte_cost > MAX_PREPARED_GLYPH_BYTES {
                         return None;
                     }
