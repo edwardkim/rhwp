@@ -76,9 +76,11 @@ def evaluate_publish_evidence(context: Mapping[str, Any]) -> dict[str, Any]:
             "state": state,
         }
 
+    accepted = not errors
     return {
         "schemaVersion": 1,
-        "accepted": not errors,
+        "accepted": accepted,
+        "verdict": "completed" if accepted else "failed",
         "mode": mode,
         "extensionsRequested": extensions_requested,
         "githubSha": github_sha,
@@ -162,6 +164,7 @@ def main(argv: list[str] | None = None) -> int:
         verdict = {
             "schemaVersion": 1,
             "accepted": False,
+            "verdict": "failed",
             "mode": args.mode,
             "extensionsRequested": args.extensions_requested,
             "githubSha": args.github_sha,

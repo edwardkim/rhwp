@@ -15,6 +15,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BINARY_WORKFLOW = REPO_ROOT / ".github/workflows/release-binary.yml"
 PACKAGE_WORKFLOW = REPO_ROOT / ".github/workflows/npm-publish.yml"
 PROMOTION_POLICY = REPO_ROOT / "scripts/workflow_promotion_policy.json"
+OPERATIONS_GUIDE = REPO_ROOT / "mydocs/manual/github_operations.md"
+PUBLISH_GUIDE = REPO_ROOT / "mydocs/manual/publish_guide.md"
 LINEAGE_FIXTURE = (
     REPO_ROOT
     / "mydocs/tech/investigations/issue-6634/release_publish_lineage.json"
@@ -92,6 +94,8 @@ class ReleasePublishOrchestrationRedTests(unittest.TestCase):
         cls.binary = BINARY_WORKFLOW.read_text(encoding="utf-8")
         cls.package = PACKAGE_WORKFLOW.read_text(encoding="utf-8")
         cls.policy = json.loads(PROMOTION_POLICY.read_text(encoding="utf-8"))
+        cls.operations = OPERATIONS_GUIDE.read_text(encoding="utf-8")
+        cls.publish_guide = PUBLISH_GUIDE.read_text(encoding="utf-8")
 
     def test_package_workflow_does_not_depend_on_release_published_event(self):
         self.assertNotRegex(self.package, r"(?m)^  release:\s*$")
@@ -154,8 +158,35 @@ class ReleasePublishOrchestrationRedTests(unittest.TestCase):
 
     def test_promotion_policy_covers_both_release_workflows(self):
         workflows = self.policy["workflows"]
-        self.assertIn(".github/workflows/release-binary.yml", workflows)
-        self.assertIn(".github/workflows/npm-publish.yml", workflows)
+        for path in (
+            ".github/workflows/release-binary.yml",
+            ".github/workflows/npm-publish.yml",
+        ):
+            with self.subTest(path=path):
+                self.assertIn(path, workflows)
+                self.assertEqual(workflows[path]["executionMode"], "verify-only")
+                self.assertIn(
+                    "release-publish-evidence", workflows[path]["requiredArtifacts"]
+                )
+                self.assertEqual(
+                    workflows[path]["requiredVerdictArtifact"]["acceptedVerdicts"],
+                    ["completed"],
+                )
+
+    def test_operations_and_publish_guides_match_direct_call_contract(self):
+        self.assertIn(
+            "gh workflow run release-binary.yml --ref devel -f tag=test",
+            self.operations,
+        )
+        self.assertIn(
+            "gh workflow run npm-publish.yml --ref devel -f publish=false",
+            self.operations,
+        )
+        self.assertIn("same-commit package workflow 직접 호출", self.publish_guide)
+        self.assertIn("--ref \"${tag}\"", self.publish_guide)
+        self.assertIn("-f publish=true", self.publish_guide)
+        self.assertIn("release-publish-evidence", self.publish_guide)
+        self.assertNotIn("gh release create v0.7.3", self.publish_guide)
 
 
 class ReleasePublishGuardTests(unittest.TestCase):

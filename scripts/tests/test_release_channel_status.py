@@ -108,6 +108,10 @@ class PublishEvidenceFixtureTests(unittest.TestCase):
                     }
                 )
                 self.assertEqual(verdict["accepted"], case["expectedAccepted"])
+                self.assertEqual(
+                    verdict["verdict"],
+                    "completed" if case["expectedAccepted"] else "failed",
+                )
                 if case["mode"] == "verify":
                     self.assertEqual(
                         {item["state"] for item in verdict["channels"].values()},

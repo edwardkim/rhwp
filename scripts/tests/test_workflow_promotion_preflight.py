@@ -482,6 +482,8 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         ".github/workflows/gym-release-gate.yml",
         ".github/workflows/oracle-public-advisory.yml",
         ".github/workflows/proptest-roundtrip.yml",
+        ".github/workflows/release-binary.yml",
+        ".github/workflows/npm-publish.yml",
         ".github/workflows/render-diff.yml",
     }
 
@@ -745,6 +747,29 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
             "verdict-not-accepted:oracle-public-advisory-verdict:skipped",
             rejected["errors"],
         )
+
+    def test_release_workflows_require_verify_only_publish_verdict(self) -> None:
+        for path in (
+            ".github/workflows/release-binary.yml",
+            ".github/workflows/npm-publish.yml",
+        ):
+            with self.subTest(path=path):
+                config = self.policy["workflows"][path]
+                self.assertEqual(config["executionMode"], "verify-only")
+                self.assertIn("Publish channel aggregate", "\n".join(config["requiredJobs"]))
+                self.assertIn(
+                    "Publish VS Code Marketplace extension",
+                    "\n".join(config["requiredSkippedJobs"]),
+                )
+                self.assertIn("release-publish-evidence", config["requiredArtifacts"])
+                self.assertEqual(
+                    config["requiredVerdictArtifact"],
+                    {
+                        "name": "release-publish-evidence",
+                        "requiredPath": "release-publish-evidence.json",
+                        "acceptedVerdicts": ["completed"],
+                    },
+                )
 
 
 if __name__ == "__main__":
