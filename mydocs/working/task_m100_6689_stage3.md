@@ -182,3 +182,54 @@ source의 compile-time 입력·실파일·workflow 경로를 하나의 계약 �
 최종 로컬 검증은 focused Python 계약 37건, Oracle YAML/actionlint, policy JSON parse,
 `git diff --check`를 모두 통과했다. actionlint의 기존 `SC2016` 정보 진단과 Stage 4 CI 배선 전 의도된 RED
 2건은 이번 compile-time 입력 수정과 무관하게 앞 절의 상태를 유지한다.
+
+## 8. 최종 exact-head 원격 실행 결과
+
+최신 `upstream/devel`을 병합한 candidate
+`e33792ce9e2aaa1f959a362249c67dbd90120107`을 원격 task branch에 push했다. push 직전에 task branch와
+원격 ref가 일치하고 `upstream/devel`보다 뒤처진 commit이 0개임을 확인했다.
+
+Oracle push bootstrap 카나리 `33952169281`은 build·compare·pack을 모두 통과했다. verdict artifact
+`9965344537`의 digest는
+`sha256:70563d949c0cc92c425a1bfecbed289f867fbb99c86cd84b5dc52943d0a60147`이고,
+`verdict=completed`, `promotionEligible=true`였다. 비교 집계는 1,030쌍 중 match 999, mismatch 29,
+error 2이며 unpaired는 414건이다.
+
+같은 exact ref에서 여덟 workflow를 `workflow_dispatch`로 병렬 실행했다.
+
+| workflow | run | 결과·필수 계약 |
+| --- | ---: | --- |
+| Adapter inter-diff | `33952874356` | success; preflight·adapter inter-diff success |
+| CI | `33952874349` | failure; Stage 4 배선 RED가 Lint와 집계 `Build & Test`를 실패시킴 |
+| CodeQL | `33952874343` | success; JavaScript/TypeScript·Python·Rust 분석 success |
+| Deploy Pages | `33952873955` | success; Build=success, Deploy=skipped |
+| Gym | `33952874053` | success; contracts=success, full benchmark=skipped |
+| Oracle advisory | `33952873996` | success; verdict=`completed`, `promotionEligible=true` |
+| Proptest roundtrip | `33952874468` | success; preflight·prop roundtrip success |
+| Render Diff | `33952874068` | success; preflight·Canvas visual diff success |
+
+Pages의 `github-pages` artifact `9965492802` digest는
+`sha256:db612b6c7ff877b85a46de446cae2f4d1d455b6bf4f4d456f158e52694a1c117`, Render Diff의
+`render-diff-artifacts` artifact `9965494929` digest는
+`sha256:584e14c082800437227ae031b33b7dec5787900b5343dc2cd723d911c7b4c63d`이다. Oracle 수동
+verdict artifact `9965531336`의 digest는
+`sha256:5bb37faa9d432ff018ecb0b080679427a8a1f1685f275e238e8164968a6d7c6b`이며, 실제 다운로드한
+ZIP의 SHA-256과 GitHub API digest가 일치했다.
+
+모든 job과 artifact pagination을 끝까지 수집해 offline verifier에 넣은 결과는 다음과 같다.
+
+| 항목 | 값 |
+| --- | --- |
+| policy SHA-256 | `8bdd86975c6b69502caa7a959c14579f88117ee70904972f2217d74b1d384d0b` |
+| inventory SHA-256 | `1209f2021ea4ba474032de6b3c14674876b7030def44c8f66b422d87166ac3a9` |
+| exact-head / pagination | 8/8 일치 / 8/8 완전 |
+| accepted run | 7개 |
+| verdict SHA-256 | `31c0644a880e9d49461cc57203a97f0fe1c44ddef4ac0f69a5fc3a00a5f39c04` |
+| 최종 판정 | fail-closed |
+
+거부 오류는 `run-not-green:.github/workflows/ci.yml:completed:failure`와
+`job-not-green:Build & Test:failure` 두 항목뿐이다. 원인은 `Validate workflow contracts`가
+`test_workflow_promotion_preflight.py`의 CI 미배선을 검출한 의도된 RED 2건이다. CI의 WASM, 네 개 test
+archive build·실행, Frontend package gates, Native Skia tests는 모두 성공했다. 따라서 제품 회귀나 새 원격
+실행 결함은 없지만 보호 불변식상 Stage 3를 성공으로 닫지는 않는다. Stage 4에서 CI Lint의 계약 목록에 해당
+테스트를 최소 배선하고, 새 exact candidate에서 CI와 promotion verifier를 다시 통과시켜야 한다.
