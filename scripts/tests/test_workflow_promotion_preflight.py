@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from datetime import UTC, datetime
@@ -17,6 +19,7 @@ SPEC = importlib.util.spec_from_file_location("workflow_promotion_preflight", TA
 if SPEC is None or SPEC.loader is None:
     raise RuntimeError(f"모듈을 불러올 수 없다: {TARGET}")
 MODULE = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
@@ -57,6 +60,16 @@ def inventory_entry(inventory: dict, path: str) -> dict:
 
 def sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def canonical_sha256(value: dict) -> str:
+    payload = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 class WorkflowPromotionInventoryTests(unittest.TestCase):
@@ -101,11 +114,54 @@ class WorkflowPromotionInventoryTests(unittest.TestCase):
         )
         self.assertIn("actions/checkout@v4", result["policyViolations"])
 
+    def test_preexisting_unpinned_action_is_not_a_new_policy_violation(self) -> None:
+        before = """name: Existing\non: [push]\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: echo before\n"""
+        after = before.replace("echo before", "echo after")
+        base = self.repo.commit({".github/workflows/existing.yml": before}, "base")
+        candidate = self.repo.commit({".github/workflows/existing.yml": after}, "candidate")
+
+        result = MODULE.build_inventory(self.repo.root, base, candidate)
+        self.assertEqual(result["policyViolations"], [])
+
+    def test_cli_json_and_markdown_share_the_inventory_identity(self) -> None:
+        before = "name: CLI\non: [push]\njobs: {}\n"
+        after = before.replace("[push]", "[workflow_dispatch]")
+        base = self.repo.commit({".github/workflows/cli.yml": before}, "base")
+        candidate = self.repo.commit({".github/workflows/cli.yml": after}, "candidate")
+        command = [
+            sys.executable,
+            str(TARGET),
+            "inventory",
+            "--repo",
+            str(self.repo.root),
+            "--base-sha",
+            base,
+            "--candidate-sha",
+            candidate,
+        ]
+        json_run = subprocess.run(command, check=True, capture_output=True, text=True)
+        markdown_run = subprocess.run(
+            [*command, "--format", "markdown"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        inventory = json.loads(json_run.stdout)
+        self.assertIn(inventory["inventorySha256"], markdown_run.stdout)
+        self.assertIn(".github/workflows/cli.yml", markdown_run.stdout)
+
     def test_add_delete_and_rename_are_deterministic(self) -> None:
         workflow = "name: A\non: [push]\njobs: {}\n"
+        deleted_workflow = "name: Deleted\n" + "\n".join(
+            f"delete-key-{index}: alpha-{index}" for index in range(20)
+        )
+        added_workflow = "name: Added\n" + "\n".join(
+            f"added-key-{index}: omega-value-with-a-different-shape-{index}"
+            for index in range(20)
+        )
         base = self.repo.commit(
             {
-                ".github/workflows/delete.yml": workflow,
+                ".github/workflows/delete.yml": deleted_workflow,
                 ".github/workflows/old.yml": workflow.replace("A", "Old"),
             },
             "base",
@@ -113,7 +169,7 @@ class WorkflowPromotionInventoryTests(unittest.TestCase):
         git(self.repo.root, "mv", ".github/workflows/old.yml", ".github/workflows/new.yml")
         (self.repo.root / ".github/workflows/delete.yml").unlink()
         candidate = self.repo.commit(
-            {".github/workflows/add.yml": workflow.replace("A", "Added")},
+            {".github/workflows/add.yml": added_workflow},
             "candidate",
         )
 
@@ -137,7 +193,7 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
     workflow_hash = sha256(workflow_text)
 
     def inventory(self) -> dict:
-        return {
+        inventory = {
             "schemaVersion": 1,
             "baseSha": "a" * 40,
             "candidateSha": self.candidate,
@@ -157,6 +213,8 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
                 }
             ],
         }
+        inventory["inventorySha256"] = canonical_sha256(inventory)
+        return inventory
 
     def candidate_run(
         self, *, head_sha: str | None = None, conclusion: str = "success"
@@ -168,6 +226,8 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
             "event": "workflow_dispatch",
             "headSha": head_sha or self.candidate,
             "workflowSha256": self.workflow_hash,
+            "actor": "edwardkim",
+            "paginationComplete": True,
             "status": "completed",
             "conclusion": conclusion,
             "jobs": [
@@ -205,6 +265,113 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
         verdict = self.verify([stale, stale_hash])
         self.assertFalse(verdict["ok"])
         self.assertIn("no-exact-run:.github/workflows/fuzz-smoke.yml", verdict["errors"])
+
+    def test_inventory_digest_and_policy_violations_fail_closed(self) -> None:
+        inventory = self.inventory()
+        inventory["policyViolations"] = ["actions/checkout@v4"]
+        inventory["inventorySha256"] = canonical_sha256(
+            {key: value for key, value in inventory.items() if key != "inventorySha256"}
+        )
+        policy_verdict = MODULE.verify_evidence(
+            inventory,
+            [self.candidate_run()],
+            [],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertFalse(policy_verdict["ok"])
+        self.assertIn("policy-violation:actions/checkout@v4", policy_verdict["errors"])
+
+        inventory["entries"][0]["path"] = ".github/workflows/tampered.yml"
+        tampered = MODULE.verify_evidence(
+            inventory,
+            [],
+            [],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertIn("invalid-inventory-sha256", tampered["errors"])
+
+    def test_unapproved_event_and_invalid_run_url_fail_closed(self) -> None:
+        run = self.candidate_run()
+        run["event"] = "schedule"
+        run["url"] = "https://example.invalid/run/42"
+        verdict = self.verify([run])
+        self.assertFalse(verdict["ok"])
+        self.assertIn("run-event-not-allowed:schedule", verdict["errors"])
+        self.assertIn("invalid-run-url:42", verdict["errors"])
+
+    def test_actor_and_pagination_contract_fail_closed(self) -> None:
+        inventory = self.inventory()
+        inventory["entries"][0]["allowedActors"] = ["edwardkim"]
+        inventory["inventorySha256"] = canonical_sha256(
+            {key: value for key, value in inventory.items() if key != "inventorySha256"}
+        )
+        run = self.candidate_run()
+        run["actor"] = "untrusted-user"
+        run["paginationComplete"] = False
+        verdict = MODULE.verify_evidence(
+            inventory,
+            [run],
+            [],
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertFalse(verdict["ok"])
+        self.assertIn("run-actor-not-allowed:untrusted-user", verdict["errors"])
+        self.assertIn(
+            "incomplete-job-pagination:.github/workflows/fuzz-smoke.yml",
+            verdict["errors"],
+        )
+
+    def test_malformed_run_id_and_snapshot_shape_fail_closed(self) -> None:
+        malformed_run = self.candidate_run()
+        malformed_run["id"] = "not-an-id"
+        verdict = self.verify([malformed_run])
+        self.assertFalse(verdict["ok"])
+        self.assertIn("invalid-run-id:not-an-id", verdict["errors"])
+
+        malformed_snapshot = MODULE.verify_evidence(
+            self.inventory(),
+            {},
+            {},
+            now=datetime(2026, 9, 5, 2, 0, tzinfo=UTC),
+            trusted_maintainers=frozenset({"edwardkim"}),
+        )
+        self.assertFalse(malformed_snapshot["ok"])
+        self.assertIn("invalid-evidence:runs", malformed_snapshot["errors"])
+        self.assertIn("invalid-evidence:waivers", malformed_snapshot["errors"])
+
+    def test_cli_verify_exit_code_follows_verdict(self) -> None:
+        inventory = self.inventory()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            inventory_path = root / "inventory.json"
+            runs_path = root / "runs.json"
+            inventory_path.write_text(json.dumps(inventory), encoding="utf-8")
+            runs_path.write_text(json.dumps([self.candidate_run()]), encoding="utf-8")
+            command = [
+                sys.executable,
+                str(TARGET),
+                "verify",
+                "--inventory",
+                str(inventory_path),
+                "--runs",
+                str(runs_path),
+                "--now",
+                "2026-09-05T02:00:00Z",
+                "--trusted-maintainer",
+                "edwardkim",
+            ]
+            accepted = subprocess.run(command, check=False, capture_output=True, text=True)
+            self.assertEqual(accepted.returncode, 0, accepted.stdout)
+            self.assertTrue(json.loads(accepted.stdout)["ok"])
+
+            stale = self.candidate_run(head_sha="c" * 40)
+            runs_path.write_text(json.dumps([stale]), encoding="utf-8")
+            rejected = subprocess.run(command, check=False, capture_output=True, text=True)
+            self.assertEqual(rejected.returncode, 1, rejected.stdout)
+            self.assertFalse(json.loads(rejected.stdout)["ok"])
 
     def test_missing_or_skipped_required_job_is_not_green(self) -> None:
         run = self.candidate_run()
