@@ -1,6 +1,6 @@
 ---
 kind: report
-status: active
+status: final
 canonical: mydocs/report/task_m100_6689_report.md
 last_verified: 2026-09-05
 ---
@@ -175,6 +175,10 @@ required context 이름 `Build & Test`는 유지하고, branch protection을 먼
 
 ## 7. 완료 판정과 남은 절차
 
-구현, 로컬 검증, 8-workflow dogfood, Fuzz 6-matrix 결과 보존까지 완료됐다. 원격 task branch push와 devel
-대상 PR 생성, PR exact-head CI, self-review, merge, 이슈 close는 아직 수행하지 않았다. 각 외부 변경은
-거버넌스에 따라 별도 승인 뒤 진행한다.
+구현, 로컬 검증, 8-workflow dogfood, Fuzz 6-matrix 결과 보존까지 완료됐다. PR
+[#6772](https://github.com/edwardkim/rhwp/pull/6772)의 code candidate
+`ccb732752cb7a8b0bda45d22833967811b9c08b8`은 exact-head Full CI와 self-review를 통과했고, 메인테이너의
+결과 승인을 반영해 이 보고서를 `final`로 전환했다.
+
+review-only trailing 문서의 push와 새 head Actions 확인, merge, post-merge 검증 및 이슈 close는 아직
+수행하지 않았다. 각 외부 변경은 거버넌스에 따라 별도 승인 뒤 진행한다.
