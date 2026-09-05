@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createServer } from 'vite';
 import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
 
 // [#6741] F5 셀 블록에서 Delete / 되돌리기의 동작을 한컴에 맞춘다.
@@ -21,6 +22,52 @@ import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const source = (p: string) => readFileSync(join(rootDir, p), 'utf8');
+
+test('일반 snapshot 생성에도 삭제 전 셀 선택을 전달한다', () => {
+  const ih = codeOnly(source('src/engine/input-handler.ts'));
+  assert.match(ih,
+    /new SnapshotCommand\(\s*desc\.operationType,\s*cursorBefore,\s*cursorBefore,\s*desc\.operation,\s*desc\.selectionBefore \?\? null,?\s*\)/,
+    'editContext 없는 셀 블록 삭제의 selectionBefore가 snapshot 생성 중 유실된다');
+});
+
+test('일반 snapshot의 undo는 내용과 선택 증적을 보존하고 redo 선택은 만들지 않는다', async () => {
+  const vite = await createServer({
+    root: rootDir, appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    const { SnapshotCommand } = await vite.ssrLoadModule('/src/engine/command.ts');
+    const pos = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
+    const selection = { mode: 'cellBlock', state: {
+      sec: 0, ppi: 1, ci: 0,
+      anchor: { row: 0, col: 0 }, focus: { row: 1, col: 1 },
+      phase: 2, excluded: [],
+    } };
+    let text = '삭제 전 내용';
+    let nextId = 0;
+    const snapshots = new Map<number, string>();
+    const wasm = {
+      saveSnapshot() { const id = ++nextId; snapshots.set(id, text); return id; },
+      restoreSnapshot(id: number) { text = snapshots.get(id)!; },
+      discardSnapshot(id: number) { snapshots.delete(id); },
+    };
+    const cmd = new SnapshotCommand('clearCellBlock', pos, pos, () => {
+      text = ''; return pos;
+    }, selection);
+    cmd.execute(wasm);
+    assert.equal(text, '');
+    cmd.undo(wasm);
+    assert.equal(text, '삭제 전 내용');
+    assert.deepEqual(cmd.selectionBefore(), selection);
+    cmd.execute(wasm);
+    assert.equal(text, '');
+    assert.equal(cmd.selectionAfter?.() ?? null, null);
+    assert.deepEqual(cmd.selectionBefore(), selection, 'redo 뒤 다음 undo의 선택도 유지한다');
+    cmd.discard(wasm);
+    assert.equal(snapshots.size, 0);
+    const ordinary = new SnapshotCommand('ordinary', pos, pos, null);
+    assert.equal(ordinary.selectionBefore(), null, '기존 호출자는 선택 복원 없이 동작한다');
+  } finally { await vite.close(); }
+});
 
 /**
  * 셀 선택 모드 분기 본문만 잘라낸다.

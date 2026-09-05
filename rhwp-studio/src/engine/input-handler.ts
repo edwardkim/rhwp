@@ -3148,7 +3148,13 @@ export class InputHandler {
                 desc.operation,
                 desc.editContext,
               )
-          : new SnapshotCommand(desc.operationType, cursorBefore, cursorBefore, desc.operation);
+          : new SnapshotCommand(
+              desc.operationType,
+              cursorBefore,
+              cursorBefore,
+              desc.operation,
+              desc.selectionBefore ?? null,
+            );
         const newPos = this.history.execute(cmd, this.wasm);
         const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
         // 무변경 경로에서도 pending 플래그는 소비한다 — 남겨 두면 다음 연산으로 샌다.

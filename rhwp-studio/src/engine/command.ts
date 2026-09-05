@@ -2796,9 +2796,13 @@ export class SnapshotCommand implements EditCommand {
     private cursorBefore: DocumentPosition,
     private cursorAfter: DocumentPosition,
     private operation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
+    private readonly undoSelection: EditSelectionSnapshot | null = null,
   ) {
     this.type = `snapshot:${operationType}`;
   }
+
+  /** 일반 snapshot도 삭제 전 셀 블록을 보존하되 redo 선택은 복원하지 않는다. */
+  selectionBefore(): EditSelectionSnapshot | null { return this.undoSelection; }
 
   execute(wasm: WasmBridge): DocumentPosition {
     if (this.executed) {
