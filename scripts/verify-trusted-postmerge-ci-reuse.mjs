@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { execFileSync } from "node:child_process";
+
 const SHA = /^[0-9a-f]{40}$/;
 
 function denied(reason) {
@@ -73,7 +75,16 @@ export function classifyReviewOnlyCommit(commit) {
   return { kind: "review", parentSha: commit.parents[0].sha };
 }
 
-export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
+// A structural bridge is only a search hint. Reuse also requires independent tree proof.
+export function currentBaseReviewBridgeSource(commit, baseSha) {
+  const parents = commit?.parents;
+  return validSha(commit?.sha) && validSha(baseSha) && Array.isArray(parents)
+    && parents.length === 2 && parents[1]?.sha === baseSha
+    && validSha(parents[0]?.sha) && parents[0].sha !== baseSha
+    ? parents[0].sha : "";
+}
+
+export function selectTrustedPostMergeCandidate(pullRequest, prCommits, baseSha) {
   if (!validSha(pullRequest?.head?.sha) || !Array.isArray(prCommits) || prCommits.length === 0) {
     return null;
   }
@@ -81,10 +92,22 @@ export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
   let expectedSha = pullRequest.head.sha;
   let hasReviewOnlyTail = false;
   const fullLaneCandidates = [];
+  let bridgeSha = "";
   for (let index = prCommits.length - 1; index >= 0; index -= 1) {
     const commit = prCommits[index];
     if (commit?.sha !== expectedSha) {
       return null;
+    }
+    const bridgeSource = currentBaseReviewBridgeSource(commit, baseSha);
+    if (bridgeSource) {
+      if (bridgeSha) {
+        return null;
+      }
+      bridgeSha = commit.sha;
+      fullLaneCandidates.push({ sha: commit.sha, hasReviewOnlyTail });
+      expectedSha = bridgeSource;
+      hasReviewOnlyTail = true;
+      continue;
     }
     const classification = classifyReviewOnlyCommit(commit);
     if (classification.kind === "invalid") {
@@ -94,6 +117,7 @@ export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
       return {
         sha: commit.sha,
         hasReviewOnlyTail,
+        ...(bridgeSha ? { bridgeSha } : {}),
         fullLaneCandidates: [
           ...fullLaneCandidates,
           { sha: commit.sha, hasReviewOnlyTail },
@@ -106,6 +130,62 @@ export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
   }
 
   return null;
+}
+
+// Run only from the trusted base checkout; the inspected commits are data, never code.
+export function verifyPostMergeReviewBridgeTree(repository, identity) {
+  const { baseSha, bridgeSha, mergeSha, candidateSha, testedMergeSha } = identity;
+  if (![baseSha, bridgeSha, mergeSha, candidateSha, testedMergeSha].every(validSha)) {
+    throw new Error("invalid-review-bridge-identity");
+  }
+  const git = (...args) => execFileSync("git", ["-C", repository, "--no-replace-objects", ...args], {
+    encoding: "utf8", timeout: 30000, maxBuffer: 1024 * 1024,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  const readCommit = (sha) => {
+    // Pretty-printing hides parents at a depth=1 boundary; raw headers retain the real identity.
+    if (git("cat-file", "-t", sha).trim() !== "commit") {
+      throw new Error("review-bridge-commit-unavailable");
+    }
+    const headers = git("cat-file", "commit", sha).split("\n\n", 1)[0].split("\n");
+    const trees = headers.filter(line => line.startsWith("tree ")).map(line => line.slice(5));
+    const parents = headers.filter(line => line.startsWith("parent ")).map(line => line.slice(7));
+    if (trees.length !== 1 || !validSha(trees[0]) || !parents.every(validSha)) {
+      throw new Error("review-bridge-commit-unavailable");
+    }
+    return { sha, treeSha: trees[0], parents: parents.map(sha => ({ sha })) };
+  };
+  const bridge = readCommit(bridgeSha);
+  const tested = readCommit(testedMergeSha);
+  const final = readCommit(mergeSha);
+  if (!currentBaseReviewBridgeSource(bridge, baseSha)
+    || tested.parents.length !== 2 || tested.parents[0].sha !== baseSha
+    || tested.parents[1].sha !== candidateSha || candidateSha === baseSha
+    || final.parents.length < 1 || final.parents.length > 2
+    || final.parents[0].sha !== baseSha) {
+    throw new Error("review-bridge-base-mismatch");
+  }
+  const paths = git("diff", "--name-only", "-z", "--no-renames", "--no-ext-diff",
+    "--no-textconv", "--ignore-submodules=none", tested.treeSha, final.treeSha, "--")
+    .split("\0").filter(Boolean);
+  if (!paths.every(path => path.startsWith("mydocs/")
+    && path !== "mydocs/tech/text-ir-v2.md"
+    && path !== "mydocs/tech/canvaskit-parity-implementation.md")) {
+    throw new Error("review-bridge-non-review-tree-change");
+  }
+  return { baseSha, bridgeSha, mergeSha, candidateSha, testedMergeSha,
+    testedTreeSha: tested.treeSha, finalTreeSha: final.treeSha };
+}
+
+function hasReviewBridgeTreeEvidence(input, run, baseSha, bridgeSha, finalTreeSha) {
+  const tested = input.mergeTreeEvidenceByRunId?.[String(run.id)];
+  const proof = input.reviewBridgeTreeEvidenceByRunId?.[String(run.id)];
+  return hasIntermediateCandidateMergeTreeEvidence(input, run)
+    && tested.parents[0] === baseSha
+    && proof?.baseSha === baseSha && proof.bridgeSha === bridgeSha
+    && proof.mergeSha === input.mergeSha && proof.candidateSha === run.head_sha
+    && proof.testedMergeSha === tested.sha && proof.testedTreeSha === tested.treeSha
+    && proof.finalTreeSha === finalTreeSha;
 }
 
 function isDirectReviewOnlyPullRequest(pullRequest, pullFiles, prCommits) {
@@ -364,7 +444,7 @@ export function evaluateTrustedPostMergeReuse(input) {
     };
   }
 
-  const candidateSource = selectTrustedPostMergeCandidate(pullRequest, input.prCommits);
+  const candidateSource = selectTrustedPostMergeCandidate(pullRequest, input.prCommits, baseParent);
   if (!candidateSource) {
     return denied("review-tail-evidence-unavailable");
   }
@@ -400,7 +480,12 @@ export function evaluateTrustedPostMergeReuse(input) {
   let foundCandidateRun = false;
   let foundFullLaneCandidate = false;
   let missingIntermediateCandidateEvidence = false;
+  let missingBridgeEvidence = false;
   let unsuccessfulCandidate = false;
+  if (candidateSource.bridgeSha && (!finalHeadCandidate
+    || finalHeadCandidate.status !== "completed" || finalHeadCandidate.conclusion !== "success")) {
+    return denied("review-bridge-final-head-not-successful");
+  }
   for (const candidateSourceEntry of candidateSource.fullLaneCandidates) {
     const candidate = latestCandidateRun(
       input.workflowRuns,
@@ -420,6 +505,12 @@ export function evaluateTrustedPostMergeReuse(input) {
       unsuccessfulCandidate = true;
       continue;
     }
+    if (candidateSource.bridgeSha && !hasReviewBridgeTreeEvidence(
+      input, candidate, baseParent, candidateSource.bridgeSha, mergeTreeSha,
+    )) {
+      missingBridgeEvidence = true;
+      continue;
+    }
     if (
       candidateSourceEntry.sha !== candidateSource.sha
       && !hasIntermediateCandidateMergeTreeEvidence(input, candidate)
@@ -433,7 +524,9 @@ export function evaluateTrustedPostMergeReuse(input) {
     }
     return {
       reuse: true,
-      reason: candidateSourceEntry.hasReviewOnlyTail
+      reason: candidateSource.bridgeSha
+        ? "current-base-review-bridge-green-pr-workflow-reused"
+        : candidateSourceEntry.hasReviewOnlyTail
         ? "review-tail-green-pr-workflow-reused"
         : "exact-green-pr-workflow-reused",
       sourceRunId: String(candidate.id),
@@ -445,6 +538,9 @@ export function evaluateTrustedPostMergeReuse(input) {
   }
   if (!foundFullLaneCandidate) {
     return denied("candidate-full-lane-evidence-unavailable");
+  }
+  if (missingBridgeEvidence) {
+    return denied("review-bridge-tree-evidence-unavailable");
   }
   if (missingIntermediateCandidateEvidence) {
     return denied("review-tail-candidate-merge-tree-evidence-unavailable");
