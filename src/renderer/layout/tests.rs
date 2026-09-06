@@ -3159,3 +3159,97 @@ fn whitespace_tac_carrier_paint_y_rejects_missing_or_block_tac() {
         None
     );
 }
+
+/// [#6778] 옆 레인 술어는 **개체 오른쪽 경계와 대조**한다.
+///
+/// 156757920 1쪽 실측값: 단 폭 `48160HU`(642.5px), 개체는 `horz=문단(0)` 폭
+/// `17070HU`(227.5px) → 우단 `17070`. 레인 문단은 `cs=17626 sw=30562`.
+fn lane_para(column_start: i32, segment_width: i32) -> Paragraph {
+    Paragraph {
+        line_segs: vec![LineSeg {
+            column_start,
+            segment_width,
+            ..Default::default()
+        }],
+        ..Default::default()
+    }
+}
+
+const LANE_COL_W_HU: i32 = 48160;
+const LANE_OBJ_LEFT_HU: i32 = 0;
+const LANE_OBJ_RIGHT_HU: i32 = 17070;
+
+#[test]
+fn side_lane_predicate_accepts_the_stored_lane_segment() {
+    let para = lane_para(17626, 30562);
+    assert!(
+        stored_seg_is_side_lane(
+            Some(&para),
+            LANE_COL_W_HU,
+            LANE_OBJ_LEFT_HU,
+            LANE_OBJ_RIGHT_HU
+        ),
+        "개체 우단 밖에서 시작하고 개체 폭의 절반 이상 좁아진 줄은 레인이다"
+    );
+}
+
+/// ⚠ 음성 대조 — **폭 조건만 만족하는 큰 들여쓰기**는 레인이 아니다.
+///
+/// `sw` 는 레인과 같게 두고 `cs` 만 일반 들여쓰기 수준으로 낮췄다. 종전 술어는
+/// `cs > 0` 만 봐서 이것을 레인으로 오인하고 흐름을 표 옆으로 되감았다.
+#[test]
+fn side_lane_predicate_rejects_a_plain_indent_of_the_same_width() {
+    for indent in [200, 1000, 2000, 8000, LANE_OBJ_RIGHT_HU - 1] {
+        let para = lane_para(indent, 30562);
+        assert!(
+            !stored_seg_is_side_lane(
+                Some(&para),
+                LANE_COL_W_HU,
+                LANE_OBJ_LEFT_HU,
+                LANE_OBJ_RIGHT_HU
+            ),
+            "개체 우단({LANE_OBJ_RIGHT_HU}) 안쪽에서 시작하는 cs={indent} 는 들여쓰기다"
+        );
+    }
+}
+
+/// ⚠ 음성 대조 — **왼쪽 레인(`cs == 0`)은 이 축이 잡지 않는다**(`#4090` 형상).
+#[test]
+fn side_lane_predicate_rejects_the_left_lane() {
+    let para = lane_para(0, 26319);
+    assert!(
+        !stored_seg_is_side_lane(Some(&para), LANE_COL_W_HU, 26319, 26319 + 17070),
+        "개체가 오른쪽이고 글이 왼쪽으로 흐르는 형상은 제외한다"
+    );
+}
+
+/// ⚠ 경계 — 우단에서 정확히 시작하면 레인, 한 단위라도 안쪽이면 아니다.
+#[test]
+fn side_lane_predicate_boundary_is_the_object_right_edge() {
+    let at_edge = lane_para(LANE_OBJ_RIGHT_HU, 30562);
+    let inside = lane_para(LANE_OBJ_RIGHT_HU - 1, 30562);
+    assert!(stored_seg_is_side_lane(
+        Some(&at_edge),
+        LANE_COL_W_HU,
+        LANE_OBJ_LEFT_HU,
+        LANE_OBJ_RIGHT_HU
+    ));
+    assert!(!stored_seg_is_side_lane(
+        Some(&inside),
+        LANE_COL_W_HU,
+        LANE_OBJ_LEFT_HU,
+        LANE_OBJ_RIGHT_HU
+    ));
+}
+
+/// ⚠ 음성 대조 — 우단 밖이어도 **충분히 좁아지지 않았으면** 레인이 아니다.
+#[test]
+fn side_lane_predicate_rejects_a_full_width_line_past_the_object() {
+    let para = lane_para(17626, LANE_COL_W_HU);
+    assert!(!stored_seg_is_side_lane(
+        Some(&para),
+        LANE_COL_W_HU,
+        LANE_OBJ_LEFT_HU,
+        LANE_OBJ_RIGHT_HU
+    ));
+}

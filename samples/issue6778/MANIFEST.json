@@ -16,7 +16,7 @@
         "version": "13.0.0.564"
       },
       "referenceEngine": "2024",
-      "contract": "Square(어울림) 표 옆 레인에서 렌더 흐름도 host 줄만 전진하고 표 높이는 세로 배제 밴드로 잡는다. 밴드는 저장 column_start=0 인 전폭 문단에서 닫는다."
+      "contract": "Square(어울림) 표 옆 레인에서 렌더 흐름도 host 줄만 전진하고 표 높이는 세로 배제 밴드로 잡는다. 레인 술어(column_start 가 개체 우단 밖 + segment_width 가 개체 폭의 절반 이상 좁음)를 만족하지 않는 첫 항목에서 밴드를 닫으며, 그 항목은 표 바닥 아래에서 시작한다."
     }
   ]
 }
