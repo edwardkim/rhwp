@@ -75,6 +75,69 @@
       "allowedEvents": ["workflow_dispatch"],
       "allowedActors": ["edwardkim"]
     },
+    ".github/workflows/release-binary.yml": {
+      "executionMode": "verify-only",
+      "sensitiveSurfaces": ["permissions", "secrets", "matrix", "artifact", "deployment"],
+      "requiredJobs": [
+        "Build x86_64-unknown-linux-gnu",
+        "Build aarch64-unknown-linux-gnu",
+        "Build x86_64-apple-darwin",
+        "Build aarch64-apple-darwin",
+        "Build x86_64-pc-windows-msvc",
+        "Publish packages after binary release / Validate release source",
+        "Publish packages after binary release / Build WASM",
+        "Publish packages after binary release / Build VSIX once",
+        "Publish packages after binary release / Publish channel aggregate"
+      ],
+      "requiredSkippedJobs": [
+        "Attach to GitHub Release",
+        "Publish packages after binary release / Publish @rhwp/core",
+        "Publish packages after binary release / Publish @rhwp/editor",
+        "Publish packages after binary release / Publish VS Code Marketplace extension",
+        "Publish packages after binary release / Publish Open VSX extension"
+      ],
+      "requiredArtifacts": [
+        "rhwp-test-linux-x86_64.tar.gz",
+        "rhwp-test-linux-aarch64.tar.gz",
+        "rhwp-test-macos-x86_64.tar.gz",
+        "rhwp-test-macos-aarch64.tar.gz",
+        "rhwp-test-windows-x86_64.zip",
+        "wasm-pkg",
+        "vscode-vsix",
+        "release-publish-evidence"
+      ],
+      "requiredVerdictArtifact": {
+        "name": "release-publish-evidence",
+        "requiredPath": "release-publish-evidence.json",
+        "acceptedVerdicts": ["completed"]
+      },
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
+    ".github/workflows/npm-publish.yml": {
+      "executionMode": "verify-only",
+      "sensitiveSurfaces": ["permissions", "secrets", "artifact", "deployment"],
+      "requiredJobs": [
+        "Validate release source",
+        "Build WASM",
+        "Build VSIX once",
+        "Publish channel aggregate"
+      ],
+      "requiredSkippedJobs": [
+        "Publish @rhwp/core",
+        "Publish @rhwp/editor",
+        "Publish VS Code Marketplace extension",
+        "Publish Open VSX extension"
+      ],
+      "requiredArtifacts": ["wasm-pkg", "vscode-vsix", "release-publish-evidence"],
+      "requiredVerdictArtifact": {
+        "name": "release-publish-evidence",
+        "requiredPath": "release-publish-evidence.json",
+        "acceptedVerdicts": ["completed"]
+      },
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
     ".github/workflows/render-diff.yml": {
       "executionMode": "direct",
       "sensitiveSurfaces": ["cache", "artifact"],

@@ -81,6 +81,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-595.test.mjs` | 진단 | hold | Issue #595 진단 e2e | exam_math.hwp | 수동 | legacy-name · #595 진단 (assertion 0) |
 | `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |
 | `issue-6117-cell-underline-canvas2d.test.mjs` | 상시 | active | #6117 표 칸 안 밑줄이 우측 괘선을 넘어 그려지지 않는 Canvas2D 잉크 경계 | issue6117/52690_higher_education_decree.hwp | 수동 | 9쪽 실제 fixture, `output/6117` 증적 |
+| `issue-6202-picture-move-reflow.test.mjs` | 상시 | active | #6202 어울림 그림 이동 뒤 본문 화면 갱신 | 143E433F503322BD33.hwp | 수동 | legacy-name |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
 | `loading-busy-cursor.test.mjs` | 상시 | active | #5740 대형 문서 로딩 중 busy 상태와 wait cursor 표시 계약 | 2025 행정업무운영 편람(최종).hwp | npm e2e:loading-busy-cursor |  |
 | `merged-cell-boundary-drag.test.mjs` | 상시 | active | #6557 세로 병합 셀 표에서 하위 행만 선택하고 열 경계를 드래그 — 선택 필터의 병합 셀 포함·걸친 모든 행의 이웃 보상·균일 결과 무마킹 세 층이 함께 고쳐져야 경계가 전 행에서 같은 x 로 이동 | — | npm e2e:issue-6557-merged-col | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
@@ -106,6 +107,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `responsive.test.mjs` | 상시 | active | #6118 서식 바 경계·문단 더보기, #6138 도구 한 줄 스크롤, #6187 모든 너비·낮은 높이의 눈금자 표시와 grid 정렬 검증 (resize 프레임 공백 검증은 별도) | — | npm e2e:responsive + CI |  |
 | `ruler-document-switch.test.mjs` | 상시 | active | 문서를 바꿔 열면 눈금자가 새 문서의 쪽을 다시 그린다 (`document-view-loaded`) — 문단 여백이 같은 문서를 잇달아 열 때 앞 문서 눈금이 남는 회귀 가드 | 누름틀-2024.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:ruler-document-switch |  |
 | `ruler-resize.test.mjs` | 상시 | active | #6187 resize 경계의 눈금자 grid·정렬·실제 화면 snapshot 검사; 전체 합성 프레임 보증과 구분, browser-client driver 주입 지원 | exam_kor.hwp | 수동 |  |
+| `page-virtualization-image-failure.test.mjs` | 상시 | active | #6042 실제 Chromium에서 첫 embedded-image decode 실패를 주입하고 PageRenderer fallback 뒤 scheduler·image job·flow layer 정착을 검사 | test-image.hwp | 수동 |  |
 | `run-render-diff.mjs` | 유틸 | active | render-diff CI 러너 (canvas/pdf diff 오케스트레이션) | — | npm+CI |  |
 | `run-with-vite.mjs` | 유틸 | active | Vite dev server 기동 + 임의 명령 실행 공용 러너 (VITE_URL 주입, 종료 코드 전파) | — | npm e2e:undo-depth |  |
 | `save-as-format.test.mjs` | 상시 | active | 저장 출력 포맷 선택 (file:save-as-hwp / file:save-as-hwpx) E2E — #1613 | biz_plan.hwp, hwpx/footnote-01.hwpx | 수동 |  |
@@ -128,6 +130,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `theme-auto-dark.test.mjs` | 상시 | active | Chrome Auto Dark Mode 대응 | — | 수동 |  |
 | `theme-bootstrap.test.mjs` | 상시 | active | 초기 테마 bootstrap | — | 수동 |  |
 | `theme-mode.test.mjs` | 상시 | active | 보기 > 테마 | — | 수동 |  |
+| `toolbar-color-activation-issue6635.test.mjs` | 상시 | active | #6635 색상 버튼 Enter/Space·마우스 활성화, Tab 이동·Esc 닫기·포커스 복원, 선택 보존과 색 적용·undo | 없음 | npm e2e:issue-6635 | dev server 필요, native picker 창 표시는 별도 검증 |
 | `toolbox-visibility.test.mjs` | 상시 | active | 기본 도구 상자 접기/펴기와 표시 상태 저장·복원 | — | npm e2e:toolbox-visibility |  |
 | `topmost-hittest.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 클릭 = "최상단 개체" 선택 | textbox-under-image.hwp | 수동 |  |
 | `topmost-lifecycle.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 최상단 선택 → 연산 lifecycle | textbox-under-image.hwp | 수동 |  |

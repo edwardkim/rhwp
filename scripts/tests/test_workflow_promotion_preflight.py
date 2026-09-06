@@ -482,6 +482,8 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         ".github/workflows/gym-release-gate.yml",
         ".github/workflows/oracle-public-advisory.yml",
         ".github/workflows/proptest-roundtrip.yml",
+        ".github/workflows/release-binary.yml",
+        ".github/workflows/npm-publish.yml",
         ".github/workflows/render-diff.yml",
     }
 
@@ -744,6 +746,50 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         self.assertIn(
             "verdict-not-accepted:oracle-public-advisory-verdict:skipped",
             rejected["errors"],
+        )
+
+    def test_release_workflows_require_verify_only_publish_verdict(self) -> None:
+        for path in (
+            ".github/workflows/release-binary.yml",
+            ".github/workflows/npm-publish.yml",
+        ):
+            with self.subTest(path=path):
+                config = self.policy["workflows"][path]
+                self.assertEqual(config["executionMode"], "verify-only")
+                self.assertIn("Publish channel aggregate", "\n".join(config["requiredJobs"]))
+                self.assertIn(
+                    "Publish VS Code Marketplace extension",
+                    "\n".join(config["requiredSkippedJobs"]),
+                )
+                self.assertIn("release-publish-evidence", config["requiredArtifacts"])
+                self.assertEqual(
+                    config["requiredVerdictArtifact"],
+                    {
+                        "name": "release-publish-evidence",
+                        "requiredPath": "release-publish-evidence.json",
+                        "acceptedVerdicts": ["completed"],
+                    },
+                )
+
+        release = self.policy["workflows"][".github/workflows/release-binary.yml"]
+        caller_name = "Publish packages after binary release"
+        self.assertEqual(
+            release["requiredJobs"][5:],
+            [
+                f"{caller_name} / Validate release source",
+                f"{caller_name} / Build WASM",
+                f"{caller_name} / Build VSIX once",
+                f"{caller_name} / Publish channel aggregate",
+            ],
+        )
+        self.assertEqual(
+            release["requiredSkippedJobs"][1:],
+            [
+                f"{caller_name} / Publish @rhwp/core",
+                f"{caller_name} / Publish @rhwp/editor",
+                f"{caller_name} / Publish VS Code Marketplace extension",
+                f"{caller_name} / Publish Open VSX extension",
+            ],
         )
 
 
