@@ -2,7 +2,7 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 작성일: 2026-09-06
-- 상태: **승인된 CLI 분리 검증 경로로 3단계 완료 — push·PR 생성 승인 대기**
+- 상태: **Chrome·Firefox 직접 UI 및 HWP/HWPX 저장 후 재열기 검증 완료 — push·PR 생성 승인 대기**
 - 계획: [수행계획서](../plans/task_m100_6788.md), [구현계획서](../plans/task_m100_6788_impl.md)
 - 이전 결과: [2단계](task_m100_6788_stage2.md)
 - 검증 source: `ff716d797dedb60ee8db236b28428be88089af9f` + 아래 가드 분류 보완.
@@ -10,11 +10,11 @@
 
 ## 최종 판정 및 승인 범위
 
-사용자는 확장 교체 없이 로컬 Studio로 확인하는 방침과, UI 저장 조작 대신 CLI 저장·재열기 및
-PNG 전수 검증을 진행하는 대안을 승인했다. 이후 보고·로컬 커밋·PR 초안 준비와 의도된 동작의
-스크린샷 포함을 승인했다. 이에 따라 자동 검증, Chrome 직접 UI, 8개 파일 저장 왕복·native PNG
-검증으로 이 단계를 마감한다. **Firefox 직접 UI·OS 저장 대화상자·최적화 배포본 검증은 미완료**이며
-완료 범위에 포함하지 않는다. 아래 2–4절의 중간 대기 기록은 당시 경과이며 최종 상태는 이 절과 8절이다.
+로컬 Studio에서 Chrome·Firefox 각각 새 문서 작성부터 전체/부분 형광펜 적용 → Undo → Redo를
+직접 검증했다. 사용자가 각 브라우저에서 저장한 HWP·HWPX 네 파일을 에이전트가 해당 브라우저의
+파일 열기로 다시 열어 보라색과 형광펜 보존을 확인했다. 저장 파일의 문자별 색상 데이터도 일치한다.
+최신 직접 UI 증적과 최종 결과는 **9절**이다. 2–8절의 대기·제약은 추가 검증 이전의 경과 기록이며,
+현재 Firefox UI 및 네 파일 재열기 완료 상태를 대체하지 않는다. 최적화 배포본 검증은 별도다.
 
 최종 결과: [최종보고서](../report/task_m100_6788_report.md).
 
@@ -191,3 +191,45 @@ JPEG를 PNG로 변환한 화면이므로 이 이미지에는 픽셀 동일성 �
 - 로컬 Studio `http://127.0.0.1:7718/`는 사용자 추가 확인을 위해 유지한다.
 - 이후 별도 승인 시 upstream 작업 branch push → `devel` 대상 Open PR 생성 → 실제 PR 번호에
   맞춘 archive self-review 기록 → 최신 head CI·merge 승인 순서다. 아직 원격 작업은 하지 않았다.
+
+## 9. Chrome·Firefox 새 문서부터 직접 UI 재검증 및 실제 저장본 재열기
+
+2026-09-06 사용자는 CLI 대안 중심의 복잡한 PR 설명 대신 두 브라우저를 직접 조작하는 검증을
+요청했다. Computer Use로 `http://127.0.0.1:7718/`의 새 문서에서 각각 `가나다라마바사`를 입력하고,
+24pt와 `다라`의 보라색 `#a020c0`을 실제 글자색 선택기로 지정했다. CLI 파일을 초기 문서로 쓰지 않았다.
+각 브라우저에서 전체 선택과 부분 선택 `나다라마`의 노란 형광펜 적용 → Undo → Redo를 확인했다.
+보라색과 기존 굵기가 유지되며 부분 선택 밖 `가`·`바사`는 변하지 않았다.
+
+![Chrome·Firefox 실제 UI: 적용 전·형광펜·Undo·Redo](../pr/assets/issue6788_browser_behavior.png)
+
+사용자가 각 브라우저의 부분 형광펜 Redo 상태를 HWP·HWPX로 다운로드 폴더에 저장했다.
+에이전트가 실제 파일 열기 메뉴와 OS 파일 선택 창을 조작하여 아래 네 파일을 원래 브라우저에서
+각각 다시 열었다. 파일명·로딩 완료 상태와 본문 화면을 확인했고, 기존 파일은 덮어쓰지 않았다.
+
+| 브라우저 | 파일 | 재열기 | SHA-256 |
+| --- | --- | --- | --- |
+| Chrome | `rhwp-6788-chrome-highlight.hwp` | 정상 | `1594a26b2bbedf35fccd46f259807d59d1b5a718ca1d99c2a115bda07589d740` |
+| Chrome | `rhwp-6788-chrome-highlight.hwpx` | 정상 | `02535f621a54ff2b620a49b31938133bd628de40bd308b1a2ab6802583772a90` |
+| Firefox | `rhwp-6788-firefox-highlight.hwp` | 정상 | `a96a644d6359ec5b476ece8cbaf26411340cfc551c8364daa5de9032c965f685` |
+| Firefox | `rhwp-6788-firefox-highlight.hwpx` | 정상 | `3f626ebd9a5fe0117db4b115ee8e9a0ada6027da43901f5b168291e3b4bf3d18` |
+
+![Chrome·Firefox HWP·HWPX 실제 재열기](../pr/assets/issue6788_browser_reopen.png)
+
+네 파일을 `pkg-node/rhwp.js`의 `HwpDocument`로 읽어 `getCharPropertiesAt(0, 0, i)`를
+7글자 전체에 적용했다. `textColor`는 `다라`만 `#a020c0`, 나머지는 `#000000`;
+`shadeColor`는 `나다라마`만 `#ffff00`, 나머지는 `#ffffff`임을 assertion으로 확인했다.
+Chrome의 굵기는 `다라`, Firefox의 굵기는 `다라마바사`에 설정돼 있어 두 UI 문서를 동일한
+굵기 fixture로 취급하지 않는다. 각 브라우저 안에서 해당 굵기가 HWP·HWPX 모두 보존된다.
+
+Firefox 재열기 전체 화면에서 글자가 검정으로 보인다는 잠정 관찰은 문서 영역 crop을 확대해
+직접 확인한 뒤 판독 오류로 정정했다. 보라색이 실제 화면에도 남아 있으며 저장 데이터·도구 모음의
+색상 값과 일치한다. 별도 제품 결함으로 분류하거나 코드 변경을 하지 않았다.
+
+원시 UI 증적과 패널 생성기는 `/private/tmp/rhwp-6788-browser-ui.QeG9sh`에 보관한다.
+공개 패널은 원본 JPEG의 문서 영역을 PNG로 변환·crop하여 배치하고 바깥 라벨만 추가했다.
+본문의 색상·글자 픽셀은 수정하지 않았으며 브라우저 북마크·프로필 영역은 포함하지 않았다.
+Firefox의 추가 전체 화면 조회는 작업 외 정보 노출 위험으로 안전 검토에서 거절되어 중단했다.
+최종 판정에는 이미 확보한 재열기 화면의 문서 영역과 저장 파일의 읽기 전용 검사를 사용했다.
+
+이번 추가 검증은 문서·이미지 증적만 변경한다. 1절의 제품 소스 검증 결과는 유지하며,
+PR 본문 대표 이미지는 이 절의 두 패널로 교체한다. 원격 push·PR 생성은 아직 수행하지 않았다.

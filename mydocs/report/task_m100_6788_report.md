@@ -2,7 +2,7 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 작성일: 2026-09-06
-- 상태: 로컬 구현·승인된 범위의 검증 완료, remote push·PR 생성 승인 대기.
+- 상태: 로컬 구현·Chrome/Firefox 직접 UI·HWP/HWPX 재열기 검증 완료, remote push·PR 생성 승인 대기.
 - 계획: [수행계획](../plans/task_m100_6788.md), [구현계획](../plans/task_m100_6788_impl.md).
 - 단계 증빙: [1단계](../working/task_m100_6788_stage1.md),
   [2단계](../working/task_m100_6788_stage2.md), [3단계](../working/task_m100_6788_stage3.md).
@@ -20,12 +20,17 @@ Undo/Redo는 형광펜 적용 전후의 구간별 모양을 복원한다. 선택
 Studio는 구간 경계·ID 목록을 capture/restore한다. 본문·일반/중첩 셀과 기존 F5·머리말/꼬리말
 경로를 검증했다. renderer/layout 정책은 바꾸지 않았다.
 
-## 의도된 동작 — Chrome 실제 화면
+## 의도된 동작 — Chrome·Firefox 실제 화면
 
-사용자가 재열어둔 `03-undo-cli.hwpx`에서 `다라`는 보라색·굵게, `나다라마`만 노란 형광펜이다.
-위에서 적용 전 → 형광펜 → Undo → Redo. 실제 화면 본문 crop에 상태 라벨만 추가했다.
+두 브라우저의 새 문서에서 `다라`는 보라색, `나다라마`만 노란 형광펜이다.
+위에서 적용 전 → 형광펜 → Undo → Redo. 실제 UI를 조작하고 본문 crop에 상태 라벨만 추가했다.
 
-![Chrome 형광펜 적용·Undo·Redo](../pr/assets/issue6788_chrome_behavior.png)
+![Chrome·Firefox 형광펜 적용·Undo·Redo](../pr/assets/issue6788_browser_behavior.png)
+
+각 브라우저에서 사용자가 저장한 HWP·HWPX를 에이전트가 직접 다시 열었다.
+네 파일 모두 보라색·형광펜이 유지되며, 문자별 색상 데이터 검사도 통과했다.
+
+![Chrome·Firefox HWP·HWPX 재열기](../pr/assets/issue6788_browser_reopen.png)
 
 ## 검증 요약
 
@@ -37,7 +42,8 @@ Studio는 구간 경계·ID 목록을 capture/restore한다. 본문·일반/중�
 | Studio 전체 / binding 계약 | 1427 / 22 passed, 실패·skip 0. |
 | 실제 WASM+Studio history focused | 13개 시나리오 통과. Rust focused 15개, Studio 관련 62개 통과. |
 | Studio·Firefox 확장 빌드 | 통과. web/Node/Firefox WASM 동일 해시. |
-| Chrome 직접 UI | 전체·부분 적용, Undo/Redo; 사용자 재열기 HWPX 문서 확인. |
+| Chrome·Firefox 직접 UI | 각 새 문서의 전체·부분 형광펜 적용, Undo/Redo 정상. |
+| 브라우저에서 저장한 HWP·HWPX 네 파일 | 해당 브라우저의 파일 열기로 재열기 정상, 7글자 전체 색상·형광펜 보존. |
 | HWP/HWPX 4상태 × 2포맷 | CLI 재저장 8개 IR diffCount 0, 1페이지 유지. 재적재 후 7글자의 이슈 대상 5속성 일치. |
 | Native PNG 전체 페이지 비교 | before=undo, highlight=redo, 동일 상태 HWP=HWPX: 총 8쌍 모두 0픽셀 차이. |
 
@@ -48,8 +54,7 @@ Chrome 스크린샷이나 한컴 독립 정답지가 아니다.
 
 ## 한계와 후속 게이트
 
-- 사용자 승인에 따라 확장을 교체하지 않고 로컬 Studio 및 CLI 분리 경로로 검증했다.
-  Firefox 직접 UI, 브라우저 OS 저장 창, 8개 파일의 브라우저 UI 전수 열기는 완료하지 않았다.
+- 브라우저 검증 대상은 로컬 Studio다. 기존 확장은 교체하지 않았다.
 - Docker daemon 부재로 locked native `--no-opt` WASM을 사용했다. 최적화 배포 산출물 검증은 아니다.
 - nextest 성공 실행에 `issue_2007_single_cell_continuation_does_not_repaint_boundary_fragments`
   LEAK 1건이 있었다. 잔류 출력 핸들/자식 프로세스의 원인은 확정하지 않았다.
@@ -65,9 +70,10 @@ Chrome 스크린샷이나 한컴 독립 정답지가 아니다.
 
 ## PR 제출 준비
 
-3단계 마감 commit은 `c3b1398e4745f6d0030321df525e787d575f8ab3`이며,
-[PR 본문 초안](../working/task_m100_6788_pr_body.md)의 이미지·보고서 URL은 이 SHA에 고정했다.
-이후 문서 전용 commit은 제품/test source를 바꾸지 않는다. 아직 원격에 push하지 않아 해당
+자동 검증 마감 commit은 `c3b1398e4745f6d0030321df525e787d575f8ab3`이다.
+이후 Chrome·Firefox 직접 검증을 추가하고 [PR 본문 초안](../working/task_m100_6788_pr_body.md)을
+핵심 변경·검증·실제 UI 패널 중심으로 줄였다. 이미지·보고서 URL은 새 증적 commit SHA에 고정한다.
+문서·이미지 전용 후속 commit은 제품/test source를 바꾸지 않는다. 아직 원격에 push하지 않아
 새 commit URL은 게시 후에만 유효하다.
 
 다음은 **승인 후 실행할 명령이며 아직 실행하지 않았다**. 제출 직전 devel 대비 상태와 후보 source,
