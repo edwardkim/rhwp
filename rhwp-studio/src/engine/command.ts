@@ -1133,8 +1133,9 @@ export class ApplyCharFormatCommand implements EditCommand {
     }
 
     const propsJson = JSON.stringify(this.props);
+    const attempted: ParaFormatEntry[] = [];
+    const applyFailures: unknown[] = [];
     const apply = () => {
-      const attempted: ParaFormatEntry[] = [];
       try {
         for (const entry of this.entries) {
           attempted.push(entry);
@@ -1148,21 +1149,36 @@ export class ApplyCharFormatCommand implements EditCommand {
           entry.afterRuns = this.readRuns(wasm, p, from, to, entry.cellPathJson);
         }
       } catch (error) {
-        const failures: unknown[] = [];
+        // batch의 finally/endBatch 오류가 최초 적용 오류를 덮지 않도록 밖에서 보고한다.
+        applyFailures.push(error);
+      }
+    };
+    try {
+      if (cell) wasm.runInBatch(apply);
+      else apply();
+    } catch (error) { applyFailures.push(error); }
+    if (applyFailures.length > 0) {
+      const failures: unknown[] = [];
+      const rollback = () => {
         for (const entry of attempted.reverse()) {
           try { this.writeRuns(wasm, entry, entry.beforeRuns); }
           catch (rollbackError) { failures.push(rollbackError); }
         }
-        this.recoveryNeeded = failures.length > 0;
-        // 복원이 덜 끝났으면 before를 유지하고, 복구 후 Redo는 처음부터 다시 적용한다.
-        for (const entry of this.entries) entry.afterRuns = undefined;
-        if (this.recoveryNeeded) throw new CharFormatRecoveryError([error, ...failures]);
-        this.entries = [];
-        throw error;
+      };
+      if (attempted.length > 0) {
+        try {
+          if (cell) wasm.runInBatch(rollback);
+          else rollback();
+        } catch (error) { failures.push(error); }
       }
-    };
-    if (cell) wasm.runInBatch(apply);
-    else apply();
+      this.recoveryNeeded = failures.length > 0;
+      // 복원이 덜 끝났으면 before를 유지하고, 복구 후 Redo는 처음부터 다시 적용한다.
+      for (const entry of this.entries) entry.afterRuns = undefined;
+      if (this.recoveryNeeded) throw new CharFormatRecoveryError([...applyFailures, ...failures]);
+      this.entries = [];
+      if (applyFailures.length === 1) throw applyFailures[0];
+      throw new CharFormatError('글자 서식을 적용하지 못했습니다.', { cause: new AggregateError(applyFailures) });
+    }
     return { ...this.start };
   }
 
@@ -1189,8 +1205,8 @@ export class ApplyCharFormatCommand implements EditCommand {
   }
 
   private restoreCharShapeRuns(wasm: WasmBridge, side: 'before' | 'after'): void {
+    const failures: unknown[] = [];
     const restore = () => {
-      const failures: unknown[] = [];
       for (const entry of this.entries) {
         try {
           const runs = side === 'before' ? entry.beforeRuns : entry.afterRuns;
@@ -1198,11 +1214,13 @@ export class ApplyCharFormatCommand implements EditCommand {
           this.writeRuns(wasm, entry, runs);
         } catch (error) { failures.push(error); }
       }
-      this.recoveryNeeded = failures.length > 0;
-      if (this.recoveryNeeded) throw new CharFormatRecoveryError(failures);
     };
-    if (isCell(this.start)) wasm.runInBatch(restore);
-    else restore();
+    try {
+      if (isCell(this.start)) wasm.runInBatch(restore);
+      else restore();
+    } catch (error) { failures.push(error); }
+    this.recoveryNeeded = failures.length > 0;
+    if (this.recoveryNeeded) throw new CharFormatRecoveryError(failures);
   }
 
   isNoOp(): boolean { return this.entries.length === 0; }

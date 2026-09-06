@@ -33,7 +33,7 @@ function fixture(cell = false) {
   const restores = [];
   const applyError = new Error('apply paragraph 2');
   const rollbackError = new Error('restore paragraph 1');
-  const flags = { apply: false, restore: new Set(), capture: false };
+  const flags = { apply: false, restore: new Set(), capture: false, batchFailures: new Set() };
   let batches = 0;
   const wasm = {
     getParagraphLength: () => 3,
@@ -51,7 +51,11 @@ function fixture(cell = false) {
       if (flags.restore.has(p)) throw rollbackError;
       state[p] = structuredClone(runs);
     },
-    runInBatch: fn => { batches++; return fn(); },
+    runInBatch: fn => {
+      batches++;
+      try { return fn(); }
+      finally { if (flags.batchFailures.has(batches)) throw new Error(`endBatch ${batches}`); }
+    },
   };
   const from = pos(0, 0), to = pos(2, 3);
   if (cell) {
@@ -115,6 +119,39 @@ for (const cell of [false, true]) {
   assert.throws(() => f.history.execute(f.command, f.wasm), e => e.cause === f.applyError);
   assert.deepEqual(f.state, f.before);
   assert.equal(f.history.canUndo(), false, 'rollback 성공은 실패 command를 기록하지 않는다');
+}
+
+// 셀 batch 종료 오류도 원래 적용/복원 오류와 함께 복구 경계에서 처리한다.
+{
+  const f = fixture(true);
+  f.flags.batchFailures.add(1);
+  assert.throws(() => f.history.execute(f.command, f.wasm), e => e.cause?.message === 'endBatch 1');
+  assert.deepEqual(f.state, f.before, 'batch 종료 실패도 최초 적용을 rollback한다');
+  assert.equal(f.history.canUndo(), false);
+}
+{
+  const f = fixture(true);
+  f.flags.apply = true;
+  f.flags.restore.add(1);
+  f.flags.batchFailures = new Set([1, 2]);
+  assert.throws(() => f.history.execute(f.command, f.wasm), e => {
+    assert.deepEqual(e.errors.map(v => v.message), ['apply paragraph 2', 'endBatch 1', 'restore paragraph 1', 'endBatch 2']);
+    return true;
+  });
+  assert.deepEqual(f.restores, [2, 1, 0]);
+  assert.equal(f.history.peekUndoTop(), f.command);
+  f.flags.restore.clear();
+  f.flags.batchFailures.clear();
+  f.history.undo(f.wasm);
+  assert.deepEqual(f.state, f.before);
+  f.flags.apply = false;
+  f.history.redo(f.wasm);
+  f.flags.batchFailures.add(f.batches() + 1);
+  assert.throws(() => f.history.undo(f.wasm), CharFormatRecoveryError);
+  assert.equal(f.history.peekUndoTop(), f.command, 'Undo batch 종료 오류도 복원 정보를 보존한다');
+  f.flags.batchFailures.clear();
+  f.history.undo(f.wasm);
+  assert.deepEqual(f.state, f.before);
 }
 
 // 새 오류 계약이 다른 command의 기존 실패시 제거 계약을 바꾸지 않는다.
