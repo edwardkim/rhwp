@@ -854,6 +854,59 @@ impl CellContext {
     }
 }
 
+/// [#6778] 항목이 가리키는 문단 서수.
+fn page_item_para_index(item: &PageItem) -> Option<usize> {
+    match item {
+        PageItem::FullParagraph { para_index }
+        | PageItem::PartialParagraph { para_index, .. }
+        | PageItem::Table { para_index, .. }
+        | PageItem::PartialTable { para_index, .. }
+        | PageItem::Shape { para_index, .. } => Some(*para_index),
+        PageItem::EndnoteSeparator { .. } => None,
+    }
+}
+
+/// [#6778] 저장 사다리가 이 문단을 **개체 오른쪽 레인**에 두었는가.
+///
+/// 두 조건을 **모두** 요구한다. 둘 다 개체 상자와 직접 대조하므로, 폭만 우연히 맞는
+/// 큰 들여쓰기 문단은 걸리지 않는다.
+///
+/// 1. **줄 시작이 개체의 오른쪽 경계 밖**이다 — `column_start >= object_right_hu`.
+///    개체와 겹치지 않으려면 레인은 그 밖에서 시작할 수밖에 없다. 들여쓰기는 개체와
+///    무관한 값이라 이 대조에서 갈린다(156757920: `cs=17626` vs 개체 우단 `17070`;
+///    두 글자 들여쓰기 `≈2000` 은 통과 못 한다).
+/// 2. **좁아진 폭이 개체 폭의 절반 이상**이다 — 개체가 실제로 그 줄을 밀어낸 증거.
+///
+/// ⚠ `column_start == 0` 인 **왼쪽 레인은 이 술어가 잡지 않는다.** 개체가 오른쪽에
+/// 놓이고 글이 왼쪽으로 흐르는 형상(`#4090` 156492236: `horz=문단(26319)`, 후속
+/// 문단 `cs=0`)이 여기 해당한다 — 렌더가 이미 제자리에 놓으므로 손대지 않는다.
+/// 이 축이 고치는 것은 **오른쪽 레인**뿐이다.
+fn stored_seg_is_side_lane(
+    para: Option<&Paragraph>,
+    col_w_hu: i32,
+    object_left_hu: i32,
+    object_right_hu: i32,
+) -> bool {
+    let Some(para) = para else {
+        return false;
+    };
+    let Some(seg) = para.line_segs.iter().find(|s| s.tag & 0x8000_0000 == 0) else {
+        return false;
+    };
+    let cs = seg.column_start as i64;
+    let sw = seg.segment_width as i64;
+    if sw <= 0 || cs <= 0 || object_right_hu <= 0 {
+        return false;
+    }
+    // (1) 개체 오른쪽 경계 밖에서 시작하는가.
+    if cs < object_right_hu as i64 {
+        return false;
+    }
+    // (2) 개체 폭의 절반 이상 좁아졌는가.
+    let object_w_hu = (object_right_hu - object_left_hu).max(0) as i64;
+    (col_w_hu as i64 - sw) * 2 >= object_w_hu
+}
+
 fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
@@ -6490,6 +6543,8 @@ impl LayoutEngine {
         }
 
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
+        let mut square_beside_band: Option<(f64, i32, i32)> = None;
+        let col_w_hu = px_to_hwpunit(col_area.width, self.dpi);
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             // vpos 기반 y_offset 보정
             let item_para = match item {
@@ -7661,6 +7716,102 @@ impl LayoutEngine {
                             );
                         }
                         new_y = _y_in;
+                    }
+                }
+            }
+            // [#6778] Square(어울림) 표 옆 레인 — 흐름은 host 줄만 전진한다.
+            //
+            // 조판(`#4090` `hangul_flowed_beside_table`)은 저장 host 줄높이가 표
+            // 높이의 1/4 미만이면 표를 **세로 배제 밴드**로 잡고 흐름은 host 줄만
+            // 전진시킨다. 렌더에는 그 짝이 없어 표 높이를 통째로 태웠고, 저장 사다리가
+            // 옆 레인(`column_start`/`segment_width`)을 지정한 후속 문단이 **가로만**
+            // 옆으로 가고 세로는 표 아래로 밀렸다(156757920 1쪽: 렌더 +202.1px,
+            // 4줄이 본문·용지 밖). 되돌리려 해도 역행이 커서 vpos 스냅 가드가 기각한다.
+            if let Some((bottom, lane_left_hu, lane_right_hu)) = square_beside_band {
+                // 레인 술어를 만족하지 않는 **첫 항목**에서 밴드를 닫는다 — 그 항목은
+                // 전폭으로 돌아온 것이므로 표 바닥 아래에서 시작해야 한다.
+                if !stored_seg_is_side_lane(
+                    paragraphs.get(item_para),
+                    col_w_hu,
+                    lane_left_hu,
+                    lane_right_hu,
+                ) {
+                    new_y = new_y.max(bottom);
+                    square_beside_band = None;
+                }
+            }
+            if let PageItem::Table {
+                para_index,
+                control_index,
+            } = item
+            {
+                if let Some((advance, band_bottom, lane_left_hu, lane_right_hu)) =
+                    paragraphs.get(*para_index).and_then(|para| {
+                        let Some(Control::Table(t)) = para.controls.get(*control_index) else {
+                            return None;
+                        };
+                        if t.common.treat_as_char
+                            || !matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square)
+                            || para_has_visible_text(para)
+                        {
+                            return None;
+                        }
+                        // 개체 상자를 **단 기준**으로 읽을 수 있을 때만 진행한다 —
+                        // `column_start` 가 단 기준이라 다른 기준계와는 대조가 성립하지
+                        // 않는다.
+                        if !matches!(
+                            t.common.horz_rel_to,
+                            crate::model::shape::HorzRelTo::Column
+                                | crate::model::shape::HorzRelTo::Para
+                        ) {
+                            return None;
+                        }
+                        let total =
+                            hwpunit_to_px(t.common.height.min(i32::MAX as u32) as i32, self.dpi)
+                                + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
+                        let host_lh = para
+                            .line_segs
+                            .iter()
+                            .find(|s| s.tag & 0x8000_0000 == 0)
+                            .map(|s| hwpunit_to_px(s.line_height, self.dpi))?;
+                        let table_w_hu = t.common.width.min(i32::MAX as u32) as i32;
+                        let left_hu = crate::renderer::float_placement::signed_hwpunit(
+                            t.common.horizontal_offset,
+                        )
+                        .max(0);
+                        (total > 1.0 && host_lh < total * 0.25 && table_w_hu > 0).then_some((
+                            host_lh,
+                            _y_in + total,
+                            left_hu,
+                            left_hu.saturating_add(table_w_hu),
+                        ))
+                    })
+                {
+                    // ⚠ 저장 사다리가 **다음 항목을 개체 오른쪽 레인에 두었을 때만**
+                    // 발동한다. 이 한 겹이 `#4090`(156492236)을 가른다 — 그 문서는
+                    // 개체가 오른쪽(`horz=문단(26319)`)이고 후속 문단이 `cs=0` 인
+                    // 왼쪽 레인이라 술어를 통과하지 못한다(실측: 해당 문서의 Square
+                    // 표 15곳 전부 `next_is_lane=false`). 이 겹을 빼면 그 문서의
+                    // 레인과 표 아래 꼬리가 함께 위로 밀려 글자겹침이 4 → 64건이 된다.
+                    let next_is_lane = col_content
+                        .items
+                        .get(item_ordinal + 1)
+                        .and_then(page_item_para_index)
+                        .and_then(|next_pi| paragraphs.get(next_pi))
+                        .is_some_and(|next| {
+                            stored_seg_is_side_lane(
+                                Some(next),
+                                col_w_hu,
+                                lane_left_hu,
+                                lane_right_hu,
+                            )
+                        });
+                    // 렌더가 host 줄보다 많이 태웠을 때만 되돌린다. 이미 host 줄만
+                    // 전진했다면 손댈 것이 없다.
+                    if next_is_lane && new_y > _y_in + advance + 0.5 {
+                        new_y = _y_in + advance;
+                        square_beside_band = Some((band_bottom, lane_left_hu, lane_right_hu));
                     }
                 }
             }
