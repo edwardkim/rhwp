@@ -1061,6 +1061,7 @@ jobs:
         run: |
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
+          node --test scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
           python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
