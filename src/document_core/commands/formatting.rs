@@ -1020,7 +1020,7 @@ impl DocumentCore {
             let bf_id = self.create_border_fill_from_json(props_json);
             mods.border_fill_id = Some(bf_id);
         }
-        self.apply_char_mods_to_paragraph(sec_idx, para_idx, start_offset, end_offset, &mods);
+        self.apply_char_mods_to_paragraph(sec_idx, para_idx, start_offset, end_offset, &mods)?;
 
         // 텍스트 폭/높이에 영향을 주는 글자 모양 변경 시 LineSeg 재계산.
         // 장평/자간은 글꼴 크기처럼 줄나눔과 페이지네이션을 바꾼다.
@@ -1187,7 +1187,11 @@ impl DocumentCore {
                 cell_idx,
                 cell_para_idx,
             )?;
-            cell_para.map_char_shape_range(start_offset, end_offset, |id| ids[&id]);
+            cell_para.try_map_char_shape_range(start_offset, end_offset, |id| {
+                ids.get(&id)
+                    .copied()
+                    .ok_or_else(|| HwpError::RenderError(format!("글자 모양 변환 ID {id} 누락")))
+            })?;
         }
 
         // 텍스트 폭/높이에 영향을 주는 글자 모양 변경 시 셀 내 LineSeg 재계산.
@@ -1263,7 +1267,11 @@ impl DocumentCore {
         let ids = self.document.modified_char_shape_ids(base_ids, &mods);
         {
             let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
-            para.map_char_shape_range(start_offset, end_offset, |id| ids[&id]);
+            para.try_map_char_shape_range(start_offset, end_offset, |id| {
+                ids.get(&id)
+                    .copied()
+                    .ok_or_else(|| HwpError::RenderError(format!("글자 모양 변환 ID {id} 누락")))
+            })?;
         }
         // [#2755] 깊이 ≥ 2 중첩 셀도 텍스트 흐름에 영향 주는 변경 시 최내곽 셀 폭으로 재래핑한다
         // (apply_char_format_in_cell_native 의 char_shape_mods_affect_text_flow 게이팅과 동형 —
@@ -2138,15 +2146,19 @@ impl DocumentCore {
         start_offset: usize,
         end_offset: usize,
         mods: &crate::model::style::CharShapeMods,
-    ) {
+    ) -> Result<(), HwpError> {
         let base_ids = self.document.sections[sec_idx].paragraphs[para_idx]
             .char_shape_ids_in_range(start_offset, end_offset);
         let ids = self.document.modified_char_shape_ids(base_ids, mods);
-        self.document.sections[sec_idx].paragraphs[para_idx].map_char_shape_range(
+        self.document.sections[sec_idx].paragraphs[para_idx].try_map_char_shape_range(
             start_offset,
             end_offset,
-            |id| ids[&id],
-        );
+            |id| {
+                ids.get(&id)
+                    .copied()
+                    .ok_or_else(|| HwpError::RenderError(format!("글자 모양 변환 ID {id} 누락")))
+            },
+        )
     }
 
     /// 문단 번호 시작 방식을 설정한다.

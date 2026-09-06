@@ -155,6 +155,82 @@ fn direct_shape_id_replacement_still_unifies_the_selected_range() {
 }
 
 #[test]
+fn delayed_first_shape_ref_preserves_prefix_and_outside_on_apply_and_restore() {
+    for (start, end) in [(0, 3), (1, 3), (0, 5), (0, 6), (3, 6)] {
+        let mut doc = body(TEXT);
+        let para = &mut doc.document_mut().sections[0].paragraphs[0];
+        let purple_id = para.char_shape_id_at(2).unwrap();
+        // 비정규 입력: 첫 ref 이전도 기존 조회 규칙은 첫 ID를 상속한다.
+        para.char_offsets = (0..6).collect();
+        para.char_shapes = vec![CharShapeRef {
+            start_pos: 5,
+            char_shape_id: purple_id,
+        }];
+        let before = body_shapes(&doc);
+        let runs = doc.get_char_shape_runs_native(0, 0, start, end).unwrap();
+        let captured: serde_json::Value = serde_json::from_str(&runs).unwrap();
+        assert_eq!(captured[0]["charShapeId"], purple_id);
+        // 적용하지 않고 같은 payload를 복원해도 선택 밖 의미가 달라지면 안 된다.
+        doc.set_char_shape_runs_native(0, 0, start, end, &runs)
+            .unwrap();
+        assert_eq!(body_shapes(&doc), before);
+        // 원래 비정규 ref에서의 적용도 검사한다.
+        doc.document_mut().sections[0].paragraphs[0].char_shapes = vec![CharShapeRef {
+            start_pos: 5,
+            char_shape_id: purple_id,
+        }];
+        doc.apply_char_format_native(0, 0, start, end, HIGHLIGHT)
+            .unwrap();
+        assert_highlight_only(&before, &body_shapes(&doc), start, end);
+        let after = doc.get_char_shape_runs_native(0, 0, start, end).unwrap();
+        doc.set_char_shape_runs_native(0, 0, start, end, &runs)
+            .unwrap();
+        assert_eq!(body_shapes(&doc), before);
+        doc.set_char_shape_runs_native(0, 0, start, end, &after)
+            .unwrap();
+        assert_highlight_only(&before, &body_shapes(&doc), start, end);
+        let refs = &doc.document().sections[0].paragraphs[0].char_shapes;
+        assert!(refs
+            .windows(2)
+            .all(|pair| pair[0].start_pos < pair[1].start_pos));
+    }
+}
+
+#[test]
+fn run_validation_errors_identify_the_failed_contract_without_mutation() {
+    let mut doc = body(TEXT);
+    let before = body_shapes(&doc);
+    for (payload, expected) in [
+        ("{", "JSON 디코딩"),
+        ("[]", "구간 끝"),
+        (
+            r#"[{"startOffset":1,"endOffset":3,"charShapeId":0}]"#,
+            "기대 시작 0",
+        ),
+        (
+            r#"[{"startOffset":0,"endOffset":3,"charShapeId":4294967295}]"#,
+            "모양 수",
+        ),
+    ] {
+        let error = doc
+            .set_char_shape_runs_native(0, 0, 0, 3, payload)
+            .unwrap_err();
+        assert!(error.to_string().contains(expected), "{error}");
+        assert_eq!(body_shapes(&doc), before);
+    }
+    assert!(doc
+        .get_char_shape_runs_native(0, 0, 0, 99)
+        .unwrap_err()
+        .to_string()
+        .contains("문단 길이"));
+    assert!(doc
+        .get_char_shape_runs_native(0, 99, 0, 3)
+        .unwrap_err()
+        .to_string()
+        .contains("문단 99 없음"));
+}
+
+#[test]
 fn terminal_shape_boundary_survives_highlighting_to_text_end() {
     let mut doc = body(TEXT);
     let para = &mut doc.document_mut().sections[0].paragraphs[0];

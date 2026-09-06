@@ -10,6 +10,7 @@ import type { CharShapeRun } from '@/core/types';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
+import { CharFormatError, CharFormatRecoveryError, isCharFormatError } from '../core/char-format-error';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -36,6 +37,8 @@ export interface EditCommand {
    * 구현하지 않으면 종전대로 항상 기록된다.
    */
   isNoOp?(): boolean;
+  /** 부분 변경이 남았으면 실패해도 Undo 정보를 폐기하지 않는다. */
+  retainOnFailure?(): boolean;
   /** page-local refresh 판정을 위한 가벼운 텍스트 편집 payload. */
   getPageLocalTextEditOptions?(): { insertedText?: string; deleteCount?: number };
   /** 방금 실행한 mutation effect를 한 번만 반환한다. */
@@ -1073,6 +1076,7 @@ export class DeleteSelectionCommand implements EditCommand {
 /** 문단 하나에 대한 서식 적용 정보 */
 interface ParaFormatEntry {
   paraIndex: number;
+  cellPathJson?: string;
   startOffset: number;
   endOffset: number;
   beforeRuns: CharShapeRun[];
@@ -1083,6 +1087,7 @@ export class ApplyCharFormatCommand implements EditCommand {
   readonly type = 'applyCharFormat';
   readonly timestamp = Date.now();
   private entries: ParaFormatEntry[] = [];
+  private recoveryNeeded = false;
 
   constructor(
     private start: DocumentPosition,
@@ -1091,6 +1096,15 @@ export class ApplyCharFormatCommand implements EditCommand {
   ) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
+    try {
+      return this.executeFormat(wasm);
+    } catch (error) {
+      if (isCharFormatError(error)) throw error;
+      throw new CharFormatError('글자 서식을 적용하지 못했습니다.', { cause: error });
+    }
+  }
+
+  private executeFormat(wasm: WasmBridge): DocumentPosition {
     if (this.entries.length > 0 && this.entries.every((entry) => entry.afterRuns !== undefined)) {
       this.restoreCharShapeRuns(wasm, 'after');
       return { ...this.start };
@@ -1103,17 +1117,22 @@ export class ApplyCharFormatCommand implements EditCommand {
     // 모든 before를 변경 전에 확보한다. 구버전 WASM/잘못된 범위는 mutation 전에 실패한다.
     this.entries = [];
     for (let p = first; p <= last; p++) {
+      const cellPathJson = cell ? cellPathJsonForPara(start, p) : undefined;
       const from = p === first ? start.charOffset : 0;
-      const to = p === last ? end.charOffset : cell
-        ? wasm.getCellParagraphLengthByPath(start.sectionIndex, start.parentParaIndex!, cellPathJsonForPara(start, p))
-        : wasm.getParagraphLength(start.sectionIndex, p);
+      let to = end.charOffset;
+      if (p !== last) {
+        to = cellPathJson !== undefined
+          ? wasm.getCellParagraphLengthByPath(start.sectionIndex, start.parentParaIndex!, cellPathJson)
+          : wasm.getParagraphLength(start.sectionIndex, p);
+      }
       if (to <= from) continue;
       this.entries.push({
-        paraIndex: p, startOffset: from, endOffset: to,
-        beforeRuns: this.readRuns(wasm, p, from, to),
+        paraIndex: p, cellPathJson, startOffset: from, endOffset: to,
+        beforeRuns: this.readRuns(wasm, p, from, to, cellPathJson),
       });
     }
 
+    const propsJson = JSON.stringify(this.props);
     const apply = () => {
       const attempted: ParaFormatEntry[] = [];
       try {
@@ -1122,19 +1141,23 @@ export class ApplyCharFormatCommand implements EditCommand {
           const { paraIndex: p, startOffset: from, endOffset: to } = entry;
           if (cell) {
             wasm.applyCharFormatInCellByPath(start.sectionIndex, start.parentParaIndex!,
-              cellPathJsonForPara(start, p), from, to, JSON.stringify(this.props));
+              entry.cellPathJson!, from, to, propsJson);
           } else {
-            wasm.applyCharFormat(start.sectionIndex, p, from, to, JSON.stringify(this.props));
+            wasm.applyCharFormat(start.sectionIndex, p, from, to, propsJson);
           }
-          entry.afterRuns = this.readRuns(wasm, p, from, to);
+          entry.afterRuns = this.readRuns(wasm, p, from, to, entry.cellPathJson);
         }
       } catch (error) {
-        // 실패한 최초 실행은 history에 들어가지 않는다. 이미 적용한 문단도 되돌린다.
-        try {
-          for (const entry of attempted.reverse()) this.writeRuns(wasm, entry, entry.beforeRuns);
-        } finally {
-          this.entries = [];
+        const failures: unknown[] = [];
+        for (const entry of attempted.reverse()) {
+          try { this.writeRuns(wasm, entry, entry.beforeRuns); }
+          catch (rollbackError) { failures.push(rollbackError); }
         }
+        this.recoveryNeeded = failures.length > 0;
+        // 복원이 덜 끝났으면 before를 유지하고, 복구 후 Redo는 처음부터 다시 적용한다.
+        for (const entry of this.entries) entry.afterRuns = undefined;
+        if (this.recoveryNeeded) throw new CharFormatRecoveryError([error, ...failures]);
+        this.entries = [];
         throw error;
       }
     };
@@ -1143,10 +1166,10 @@ export class ApplyCharFormatCommand implements EditCommand {
     return { ...this.start };
   }
 
-  private readRuns(wasm: WasmBridge, para: number, from: number, to: number): CharShapeRun[] {
+  private readRuns(wasm: WasmBridge, para: number, from: number, to: number, path?: string): CharShapeRun[] {
     const { start } = this;
-    return isCell(start)
-      ? wasm.getCharShapeRunsInCellByPath(start.sectionIndex, start.parentParaIndex!, cellPathJsonForPara(start, para), from, to)
+    return path !== undefined
+      ? wasm.getCharShapeRunsInCellByPath(start.sectionIndex, start.parentParaIndex!, path, from, to)
       : wasm.getCharShapeRuns(start.sectionIndex, para, from, to);
   }
 
@@ -1154,7 +1177,7 @@ export class ApplyCharFormatCommand implements EditCommand {
     const { start } = this;
     if (isCell(start)) {
       wasm.setCharShapeRunsInCellByPath(start.sectionIndex, start.parentParaIndex!,
-        cellPathJsonForPara(start, entry.paraIndex), entry.startOffset, entry.endOffset, runs);
+        entry.cellPathJson!, entry.startOffset, entry.endOffset, runs);
     } else {
       wasm.setCharShapeRuns(start.sectionIndex, entry.paraIndex, entry.startOffset, entry.endOffset, runs);
     }
@@ -1167,17 +1190,23 @@ export class ApplyCharFormatCommand implements EditCommand {
 
   private restoreCharShapeRuns(wasm: WasmBridge, side: 'before' | 'after'): void {
     const restore = () => {
+      const failures: unknown[] = [];
       for (const entry of this.entries) {
-        const runs = side === 'before' ? entry.beforeRuns : entry.afterRuns;
-        if (!runs) throw new Error('글자 모양 복원 구간이 없습니다');
-        this.writeRuns(wasm, entry, runs);
+        try {
+          const runs = side === 'before' ? entry.beforeRuns : entry.afterRuns;
+          if (!runs) throw new Error('글자 모양 복원 구간이 없습니다');
+          this.writeRuns(wasm, entry, runs);
+        } catch (error) { failures.push(error); }
       }
+      this.recoveryNeeded = failures.length > 0;
+      if (this.recoveryNeeded) throw new CharFormatRecoveryError(failures);
     };
     if (isCell(this.start)) wasm.runInBatch(restore);
     else restore();
   }
 
   isNoOp(): boolean { return this.entries.length === 0; }
+  retainOnFailure(): boolean { return this.recoveryNeeded; }
   mergeWith(): null { return null; }
 }
 

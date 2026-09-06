@@ -188,7 +188,8 @@ for (const isHeader of [true, false]) {
     return apply(sec, p, ...args);
   };
   const history = new CommandHistory();
-  assert.throws(() => history.execute(new ApplyCharFormatCommand(pos(0, 0), pos(1, 7), yellow), wasm), /injected failure/);
+  assert.throws(() => history.execute(new ApplyCharFormatCommand(pos(0, 0), pos(1, 7), yellow), wasm),
+    error => error.cause?.message === 'injected failure');
   assert.deepEqual(bodyState(wasm, 2), before);
   assert.equal(history.undo(wasm), null);
   doc.free();

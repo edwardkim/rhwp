@@ -855,11 +855,17 @@ impl DocumentCore {
 
             let base_ids = self
                 .get_hf_paragraph_ref(section_idx, is_header, apply_to, hf_para_idx)
-                .map(|paragraph| paragraph.char_shape_ids_in_range(range_start, range_end))
-                .unwrap_or_default();
+                .ok_or_else(|| {
+                    HwpError::RenderError(format!("머리말/꼬리말 문단 {hf_para_idx} 누락"))
+                })?
+                .char_shape_ids_in_range(range_start, range_end);
             let ids = self.document.modified_char_shape_ids(base_ids, &mods);
             self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?
-                .map_char_shape_range(range_start, range_end, |id| ids[&id]);
+                .try_map_char_shape_range(range_start, range_end, |id| {
+                    ids.get(&id).copied().ok_or_else(|| {
+                        HwpError::RenderError(format!("글자 모양 변환 ID {id} 누락"))
+                    })
+                })?;
             changed_paragraphs.push((hf_para_idx, range_start, range_end));
         }
 

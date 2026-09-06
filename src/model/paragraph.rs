@@ -1826,7 +1826,10 @@ impl Paragraph {
         end_char_offset: usize,
         new_char_shape_id: u32,
     ) {
-        self.map_char_shape_range(start_char_offset, end_char_offset, |_| new_char_shape_id);
+        self.try_map_char_shape_range(start_char_offset, end_char_offset, |_| {
+            Ok::<_, std::convert::Infallible>(new_char_shape_id)
+        })
+        .unwrap_or_else(|never| match never {});
     }
 
     /// 범위 적용과 원본 ID 수집이 같은 UTF-16 경계를 사용한다.
@@ -1847,66 +1850,77 @@ impl Paragraph {
         (utf16_start < utf16_end).then_some((utf16_start, utf16_end, text_end))
     }
 
+    /// 첫 ref는 시작 위치 앞에도 유효하다(char_shape_id_at과 같은 상속 규칙).
+    /// ID 수집과 적용이 이 iterator의 동일한 겹침 판정을 사용한다.
+    fn char_shape_segments(
+        &self,
+        from: u32,
+        to: u32,
+    ) -> impl Iterator<Item = (CharShapeRef, u32, bool)> + '_ {
+        self.char_shapes
+            .iter()
+            .enumerate()
+            .map(move |(i, shape)| {
+                let start = if i == 0 { 0 } else { shape.start_pos };
+                let end = self
+                    .char_shapes
+                    .get(i + 1)
+                    .map_or(u32::MAX, |s| s.start_pos);
+                (
+                    CharShapeRef {
+                        start_pos: start,
+                        char_shape_id: shape.char_shape_id,
+                    },
+                    end,
+                    start < to && end > from,
+                )
+            })
+            .chain(self.char_shapes.is_empty().then_some((
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 0,
+                },
+                u32::MAX,
+                true,
+            )))
+    }
+
     /// [#6788] 선택과 겹치는 원본 ID를 변경 전에 수집한다. 중복 ID는 호출자가 재사용한다.
     pub(crate) fn char_shape_ids_in_range(&self, start: usize, end: usize) -> Vec<u32> {
         let Some((utf16_start, utf16_end, _)) = self.char_shape_range_bounds(start, end) else {
             return Vec::new();
         };
-        if self.char_shapes.is_empty() {
-            return vec![0];
-        }
-        self.char_shapes
-            .iter()
-            .enumerate()
-            .filter(|(i, shape)| {
-                let seg_end = self
-                    .char_shapes
-                    .get(i + 1)
-                    .map_or(u32::MAX, |s| s.start_pos);
-                shape.start_pos < utf16_end && seg_end > utf16_start
-            })
-            .map(|(_, shape)| shape.char_shape_id)
+        self.char_shape_segments(utf16_start, utf16_end)
+            .filter(|(_, _, overlaps)| *overlaps)
+            .map(|(shape, _, _)| shape.char_shape_id)
             .collect()
     }
 
     /// 기존 구간별 ID를 변환한다. 범위 분할·범위 밖 복원은 단일 ID 적용과 공유한다.
     /// 호출자는 구간마다 재조판하지 않고 문단 갱신 뒤 한 번만 후처리한다.
-    pub(crate) fn map_char_shape_range(
+    pub(crate) fn try_map_char_shape_range<E>(
         &mut self,
         start: usize,
         end: usize,
-        mut map_id: impl FnMut(u32) -> u32,
-    ) {
+        mut map_id: impl FnMut(u32) -> Result<u32, E>,
+    ) -> Result<(), E> {
         let Some((utf16_start, utf16_end, text_utf16_end)) =
             self.char_shape_range_bounds(start, end)
         else {
-            return;
+            return Ok(());
         };
-        if self.char_shapes.is_empty() {
-            self.char_shapes.push(CharShapeRef {
-                start_pos: 0,
-                char_shape_id: 0,
-            });
-        }
 
         // 새 CharShapeRef 배열을 구축
         let mut new_refs: Vec<CharShapeRef> = Vec::new();
 
-        for (i, csr) in self.char_shapes.iter().enumerate() {
+        for (csr, seg_end, overlaps) in self.char_shape_segments(utf16_start, utf16_end) {
             let seg_start = csr.start_pos;
-            // 다음 CharShapeRef의 start_pos 또는 문단 끝
-            let seg_end = if i + 1 < self.char_shapes.len() {
-                self.char_shapes[i + 1].start_pos
-            } else {
-                u32::MAX
-            };
-
-            if seg_end <= utf16_start || seg_start >= utf16_end {
+            if !overlaps {
                 // 범위와 겹치지 않음 — 그대로 유지
-                new_refs.push(csr.clone());
+                new_refs.push(csr);
             } else {
                 // 겹침 발생
-                let new_char_shape_id = map_id(csr.char_shape_id);
+                let new_char_shape_id = map_id(csr.char_shape_id)?;
                 // 범위 앞부분 (seg_start < utf16_start)
                 if seg_start < utf16_start {
                     new_refs.push(CharShapeRef {
@@ -1963,6 +1977,7 @@ impl Paragraph {
         }
 
         self.char_shapes = merged;
+        Ok(())
     }
 
     /// 검증된 문자 범위의 모양을 연속 구간으로 조회한다(문자별 WASM 왕복 없음).
@@ -2014,20 +2029,16 @@ impl Paragraph {
         if refs.is_empty() && from > 0 {
             refs.push(CharShapeRef {
                 start_pos: 0,
-                char_shape_id: 0,
+                char_shape_id: self.char_shapes.first().map_or(0, |r| r.char_shape_id),
             });
         }
         refs.extend(runs.iter().map(|run| CharShapeRef {
             start_pos: self.char_offsets[run.start_offset],
             char_shape_id: run.char_shape_id,
         }));
-        if to < text_end {
-            let id = self
-                .char_shapes
-                .iter()
-                .rev()
-                .find(|r| r.start_pos <= to)
-                .map_or(0, |r| r.char_shape_id);
+        // 경계에 원본 ref가 있으면 그것만 유지한다. 합성 tail과 같은 위치로 중복하지 않는다.
+        if to < text_end && !self.char_shapes.iter().any(|r| r.start_pos == to) {
+            let id = self.char_shape_id_at(end).unwrap_or(0);
             refs.push(CharShapeRef {
                 start_pos: to,
                 char_shape_id: id,
@@ -2039,7 +2050,7 @@ impl Paragraph {
                 .filter(|r| r.start_pos >= to)
                 .cloned(),
         );
-        refs.dedup_by(|a, b| a.start_pos == b.start_pos || a.char_shape_id == b.char_shape_id);
+        refs.dedup_by(|a, b| a.char_shape_id == b.char_shape_id);
         self.char_shapes = refs;
     }
 

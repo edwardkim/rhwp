@@ -7,13 +7,16 @@ use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::resolve_styles_for_document;
 
-fn range_error() -> HwpError {
-    HwpError::RenderError("글자 모양 구간/범위/ID가 유효하지 않습니다".into())
+fn range_error(detail: impl std::fmt::Display) -> HwpError {
+    HwpError::RenderError(format!("글자 모양 구간: {detail}"))
 }
 
 fn validate_range(para: &Paragraph, start: usize, end: usize) -> Result<(), HwpError> {
     if start > end || end > para.char_offsets.len() {
-        return Err(range_error());
+        return Err(range_error(format!(
+            "범위 {start}..{end}, 문단 길이 {}",
+            para.char_offsets.len()
+        )));
     }
     Ok(())
 }
@@ -33,12 +36,17 @@ fn validate_runs(
             || run.end_offset > end
             || run.char_shape_id as usize >= count
         {
-            return Err(range_error());
+            return Err(range_error(format!(
+                "구간 {}..{}, 기대 시작 {next}, 범위 끝 {end}, ID {} (모양 수 {count})",
+                run.start_offset, run.end_offset, run.char_shape_id
+            )));
         }
         next = run.end_offset;
     }
     if next != end {
-        return Err(range_error());
+        return Err(range_error(format!(
+            "구간 끝 {next}가 요청 끝 {end}와 다릅니다"
+        )));
     }
     Ok(())
 }
@@ -56,9 +64,10 @@ impl DocumentCore {
             .sections
             .get(sec)
             .and_then(|s| s.paragraphs.get(para))
-            .ok_or_else(range_error)?;
+            .ok_or_else(|| range_error(format!("구역 {sec} / 문단 {para} 없음")))?;
         validate_range(paragraph, start, end)?;
-        serde_json::to_string(&paragraph.char_shape_runs(start, end)).map_err(|_| range_error())
+        serde_json::to_string(&paragraph.char_shape_runs(start, end))
+            .map_err(|error| range_error(format!("JSON 인코딩 실패: {error}")))
     }
 
     pub fn get_char_shape_runs_in_cell_by_path_native(
@@ -71,7 +80,8 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let paragraph = self.get_cell_paragraph_mut_by_path(sec, para, path)?;
         validate_range(paragraph, start, end)?;
-        serde_json::to_string(&paragraph.char_shape_runs(start, end)).map_err(|_| range_error())
+        serde_json::to_string(&paragraph.char_shape_runs(start, end))
+            .map_err(|error| range_error(format!("JSON 인코딩 실패: {error}")))
     }
 
     pub fn set_char_shape_runs_native(
@@ -82,13 +92,14 @@ impl DocumentCore {
         end: usize,
         json: &str,
     ) -> Result<String, HwpError> {
-        let runs: Vec<CharShapeRun> = serde_json::from_str(json).map_err(|_| range_error())?;
+        let runs: Vec<CharShapeRun> = serde_json::from_str(json)
+            .map_err(|error| range_error(format!("JSON 디코딩 실패: {error}")))?;
         let paragraph = self
             .document
             .sections
             .get(sec)
             .and_then(|s| s.paragraphs.get(para))
-            .ok_or_else(range_error)?;
+            .ok_or_else(|| range_error(format!("구역 {sec} / 문단 {para} 없음")))?;
         validate_runs(
             paragraph,
             start,
@@ -136,7 +147,8 @@ impl DocumentCore {
         end: usize,
         json: &str,
     ) -> Result<String, HwpError> {
-        let runs: Vec<CharShapeRun> = serde_json::from_str(json).map_err(|_| range_error())?;
+        let runs: Vec<CharShapeRun> = serde_json::from_str(json)
+            .map_err(|error| range_error(format!("JSON 디코딩 실패: {error}")))?;
         let count = self.document.doc_info.char_shapes.len();
         let paragraph = self.get_cell_paragraph_mut_by_path(sec, para, path)?;
         validate_runs(paragraph, start, end, &runs, count)?;
@@ -144,7 +156,7 @@ impl DocumentCore {
             return Ok("{\"ok\":true}".into());
         }
         paragraph.restore_char_shape_runs(start, end, &runs);
-        let &(control, cell, cell_para) = path.last().ok_or_else(range_error)?;
+        let &(control, cell, cell_para) = path.last().ok_or_else(|| range_error("빈 셀 경로"))?;
         if path.len() == 1 {
             self.reflow_cell_paragraph(sec, para, control, cell, cell_para);
         } else {

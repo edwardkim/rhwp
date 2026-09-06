@@ -96,7 +96,14 @@ export class CommandHistory {
   /** 명령 실행 + 히스토리 기록. 실행 후 커서 위치 반환 */
   execute(command: EditCommand, wasm: WasmBridge): DocumentPosition {
     this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;
-    const cursorAfter = command.execute(wasm);
+    let cursorAfter: DocumentPosition;
+    try {
+      cursorAfter = command.execute(wasm);
+    } catch (error) {
+      // 부분 변경이 남았으면 복원 정보를 보존하여 Undo로 재시도한다.
+      if (command.retainOnFailure?.()) this.recordWithoutExecute(command, wasm);
+      throw error;
+    }
     this.captureExecutionEffects(command);
 
     // [Task #2370 클러스터 A] 문서를 바꾸지 않은 명령은 기록하지 않는다.
@@ -180,6 +187,7 @@ export class CommandHistory {
     try {
       cursorAfter = command.undo(wasm);
     } catch (e) {
+      if (command.retainOnFailure?.()) throw e;
       this.undoStack.pop();
       command.discard?.(wasm);
       throw e;
@@ -206,7 +214,12 @@ export class CommandHistory {
       cursorAfter = command.execute(wasm);
     } catch (e) {
       this.redoStack.pop();
-      command.discard?.(wasm);
+      if (command.retainOnFailure?.()) {
+        // 부분 Redo는 이미 문서에 반영됐다. 이전 명령보다 먼저 Undo해야 한다.
+        this.undoStack.push(command);
+      } else {
+        command.discard?.(wasm);
+      }
       throw e;
     }
     this.captureExecutionEffects(command);

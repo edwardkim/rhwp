@@ -1,5 +1,5 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
-import { requireCharShapeRunsDocument, parseCharShapeRuns } from './char-shape-runs';
+import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
 import type { CharShapeRun } from './types';
 import * as wasmExports from '@wasm/rhwp.js';
 import { blake3 } from '@noble/hashes/blake3.js';
@@ -2776,9 +2776,9 @@ export class WasmBridge {
   }
 
   setCharShapeRuns(sec: number, para: number, start: number, end: number, runs: CharShapeRun[]): string {
-    const json = JSON.stringify(runs);
-    parseCharShapeRuns(json, start, end);
-    return requireCharShapeRunsDocument(this.doc).setCharShapeRuns(sec, para, start, end, json);
+    const doc = requireCharShapeRunsDocument(this.doc);
+    const json = JSON.stringify(validateCharShapeRuns(runs, start, end));
+    return doc.setCharShapeRuns(sec, para, start, end, json);
   }
 
   getCharShapeRunsInCellByPath(sec: number, para: number, path: string, start: number, end: number): CharShapeRun[] {
@@ -2786,9 +2786,9 @@ export class WasmBridge {
   }
 
   setCharShapeRunsInCellByPath(sec: number, para: number, path: string, start: number, end: number, runs: CharShapeRun[]): string {
-    const json = JSON.stringify(runs);
-    parseCharShapeRuns(json, start, end);
-    return requireCharShapeRunsDocument(this.doc).setCharShapeRunsInCellByPath(sec, para, path, start, end, json);
+    const doc = requireCharShapeRunsDocument(this.doc);
+    const json = JSON.stringify(validateCharShapeRuns(runs, start, end));
+    return doc.setCharShapeRunsInCellByPath(sec, para, path, start, end, json);
   }
 
   setCharShapeId(sec: number, para: number, startOffset: number, endOffset: number, charShapeId: number): string {
