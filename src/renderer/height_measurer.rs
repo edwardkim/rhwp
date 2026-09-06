@@ -180,6 +180,8 @@ pub(crate) fn stored_square_picture_has_adjacent_text(
 pub(crate) fn stored_square_picture_empty_anchor_advance(
     cell: &crate::model::table::Cell,
     para_idx: usize,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
 ) -> Option<i32> {
     let para = cell.paragraphs.get(para_idx)?;
     if !para.text.trim().is_empty()
@@ -188,14 +190,32 @@ pub(crate) fn stored_square_picture_empty_anchor_advance(
     {
         return None;
     }
-    let [line] = para.line_segs.as_slice() else {
+    let line = para.line_segs.first()?;
+    if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || para.line_segs.iter().enumerate().skip(1).any(|(idx, seg)| {
+            !stored_seg_is_row_fragment(para, idx)
+                || seg.line_height != line.line_height
+                || seg.line_spacing != line.line_spacing
+        })
+    {
         return None;
-    };
-    let next = cell.paragraphs.get(para_idx + 1)?.line_segs.first()?;
+    }
+    let next_para = cell.paragraphs.get(para_idx + 1)?;
+    let next = next_para.line_segs.first()?;
     let step = line.line_height.checked_add(line.line_spacing)?;
+    let paragraph_spacing = styles
+        .para_styles
+        .get(para.para_shape_id as usize)?
+        .spacing_after
+        + styles
+            .para_styles
+            .get(next_para.para_shape_id as usize)?
+            .spacing_before;
+    let stored_gap = next.vertical_pos.checked_sub(line.vertical_pos)?;
     (step > 0
         && next.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-        && next.vertical_pos.checked_sub(line.vertical_pos)? == step)
+        && (hwpunit_to_px(stored_gap, dpi) - hwpunit_to_px(step, dpi) - paragraph_spacing).abs()
+            < 0.02)
         .then_some(step)
 }
 
@@ -1938,7 +1958,7 @@ impl HeightMeasurer {
                                     && !table.common.treat_as_char
                                     && matches!(table.page_break, TablePageBreak::RowBreak)
                                 {
-                                    stored_square_picture_empty_anchor_advance(cell, pidx)
+                                    stored_square_picture_empty_anchor_advance(cell, pidx, styles, self.dpi)
                                         .map_or(0.0, |step| hwpunit_to_px(step, self.dpi))
                                 } else {
                                     0.0

@@ -5323,7 +5323,9 @@ impl LayoutEngine {
                     && start_line == 0
                     && end_line > start_line
                 {
-                    if let Some(step) = stored_square_picture_empty_anchor_advance(cell, cp_idx) {
+                    if let Some(step) =
+                        stored_square_picture_empty_anchor_advance(cell, cp_idx, styles, self.dpi)
+                    {
                         para_y += hwpunit_to_px(step, self.dpi);
                     }
                 }
@@ -9726,7 +9728,8 @@ impl LayoutEngine {
                 && stored_square_picture_controls.len() == 1
                 && matches!(p.controls.first(), Some(Control::Picture(_)))
                 && (!self.profile.get().hwp5_stored_pagination_layout()
-                    || stored_square_picture_empty_anchor_advance(cell, pi).is_none());
+                    || stored_square_picture_empty_anchor_advance(cell, pi, styles, self.dpi)
+                        .is_none());
             let stored_square_picture_flow_h: f64 = stored_square_picture_controls
                 .iter()
                 .filter_map(|&control_idx| p.controls.get(control_idx))

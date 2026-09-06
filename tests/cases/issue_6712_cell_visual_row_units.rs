@@ -406,6 +406,7 @@ fn empty_picture_anchor_preserves_its_distinct_stored_row_advance() {
     }
     for (bytes, anchor, page) in [
         (KOREAN_SQUARE_PICTURE_SAMPLE, 8, 0),
+        (KOREAN_SQUARE_PICTURE_SAMPLE, 34, 0),
         (CHINESE_SQUARE_PICTURE_SAMPLE, 40, 1),
     ] {
         let core = DocumentCore::from_bytes(bytes).expect("newsletter");
@@ -415,7 +416,12 @@ fn empty_picture_anchor_preserves_its_distinct_stored_row_advance() {
         let para = &table.cells[3].paragraphs[anchor];
         let next = &table.cells[3].paragraphs[anchor + 1];
         assert!(para.text.trim().is_empty());
-        let step = para.line_segs[0].line_height + para.line_segs[0].line_spacing;
+        let styles = &core.document().doc_info.para_shapes;
+        let step = para.line_segs[0].line_height
+            + para.line_segs[0].line_spacing
+            + (styles[para.para_shape_id as usize].spacing_after
+                + styles[next.para_shape_id as usize].spacing_before)
+                / 2;
         assert_eq!(
             next.line_segs[0].vertical_pos - para.line_segs[0].vertical_pos,
             step

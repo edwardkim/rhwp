@@ -1903,8 +1903,9 @@ impl LayoutEngine {
                         wrap_anchor.as_ref(),
                     );
                     if collapse_stored_wrap_spacers && start_line == 0 && end_line > start_line {
-                        if let Some(step) = stored_square_picture_empty_anchor_advance(cell, cp_idx)
-                        {
+                        if let Some(step) = stored_square_picture_empty_anchor_advance(
+                            cell, cp_idx, styles, self.dpi,
+                        ) {
                             para_y += hwpunit_to_px(step, self.dpi);
                         }
                     }
