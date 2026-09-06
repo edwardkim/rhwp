@@ -162,6 +162,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
     ),
     (
+        "commands/formatting_runs.rs",
+        "get_char_shape_runs_in_cell_by_path_native",
+        Exempt::SessionState,
+        "[#6788] 구간 검증과 모양 목록 직렬화만 하는 순수 조회. `&mut` 는 가변 셀 접근자 재사용 때문이며 문서 IR 비변경.",
+    ),
+    (
         "commands/header_footer_ops.rs",
         "copy_selection_in_header_footer_native",
         Exempt::SessionState,

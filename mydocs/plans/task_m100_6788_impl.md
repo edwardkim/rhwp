@@ -2,9 +2,11 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 기준: `51ad998e33ef7f5191b0e1b0b656dc44cef33a1c`
-- 상태: **2단계 완료 (2026-09-06) — 3단계 제품 검증·PR 준비 승인 대기**
+- 상태: **3단계 완료 (2026-09-06) — push·PR 생성 승인 대기**
 - 단계 결과: [1단계 완료보고서](../working/task_m100_6788_stage1.md)
   · [2단계 완료보고서](../working/task_m100_6788_stage2.md)
+  · [3단계 완료보고서](../working/task_m100_6788_stage3.md)
+  · [최종보고서](../report/task_m100_6788_report.md)
 - 상위 문서: [수행계획서](task_m100_6788.md)
 
 ## 1. 설계 결정
@@ -152,3 +154,7 @@ Node 자식 프로세스가 포함된 Studio npm test는 프로젝트 메모리�
 
 최종 성공은 원 신고 재현이 정상화되고, 혼합 모양·경계·저장 왕복·Undo/Redo 계약과 필수
 로컬 검증이 모두 충족되는 것이다. 승인 전 remote push·PR 생성·merge·이슈 종료는 수행하지 않는다.
+
+실행 결과는 3단계 보고서에 기록했다. 사용자가 승인한 CLI 분리 검증에 따라 실제 Studio history와
+CLI 저장 왕복·8개 PNG 전수 비교로 저장 파일을 검증하고, Chrome에서 사용자가 재열어둔 문서의
+직접 UI를 확인했다. Firefox UI·OS 저장 창·최적화 배포본은 완료로 간주하지 않는다.
