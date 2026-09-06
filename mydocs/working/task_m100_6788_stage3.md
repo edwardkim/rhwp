@@ -2,7 +2,7 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 작성일: 2026-09-06
-- 상태: **Chrome·Firefox 직접 UI 및 HWP/HWPX 저장 후 재열기 검증 완료 — push·PR 생성 승인 대기**
+- 상태: **Chrome·Firefox 직접 UI 및 저장 후 재열기 검증 완료 — PR #6814 생성, 최신 CI·merge 승인 대기**
 - 계획: [수행계획서](../plans/task_m100_6788.md), [구현계획서](../plans/task_m100_6788_impl.md)
 - 이전 결과: [2단계](task_m100_6788_stage2.md)
 - 검증 source: `ff716d797dedb60ee8db236b28428be88089af9f` + 아래 가드 분류 보완.
@@ -233,3 +233,13 @@ Firefox의 추가 전체 화면 조회는 작업 외 정보 노출 위험으로 
 
 이번 추가 검증은 문서·이미지 증적만 변경한다. 1절의 제품 소스 검증 결과는 유지하며,
 PR 본문 대표 이미지는 이 절의 두 패널로 교체한다. 원격 push·PR 생성은 아직 수행하지 않았다.
+
+## 10. PR 제출
+
+9절까지의 검증과 간결한 PR 초안 공유 후 사용자의 “진행해줘”로 push·PR 생성을 승인받았다.
+`4936663ea4b6019ddc83c0ca0fafe41a0bae3058`을 upstream 작업 branch로 push하고
+[Open PR #6814](https://github.com/edwardkim/rhwp/pull/6814)를 `devel` 대상으로 생성했다.
+최신 devel과의 merge simulation·diff check·문서 7개 링크 검사, 검증 이후 코드 무변경을 확인했다.
+본문의 한글과 SHA 고정 이미지 blob도 게시 후 재조회했다.
+[self-review](../pr/archives/pr_6814_review.md)는 같은 branch의 후속 기록이다.
+GitHub Actions는 진행 중이며 merge·GitHub approve·issue close는 수행하지 않았다.

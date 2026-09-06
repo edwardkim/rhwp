@@ -2,7 +2,7 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 기준: `51ad998e33ef7f5191b0e1b0b656dc44cef33a1c`
-- 상태: **3단계 완료 (2026-09-06) — push·PR 생성 승인 대기**
+- 상태: **3단계 완료 (2026-09-06) — PR #6814 생성, 최신 CI·merge 승인 대기**
 - 단계 결과: [1단계 완료보고서](../working/task_m100_6788_stage1.md)
   · [2단계 완료보고서](../working/task_m100_6788_stage2.md)
   · [3단계 완료보고서](../working/task_m100_6788_stage3.md)

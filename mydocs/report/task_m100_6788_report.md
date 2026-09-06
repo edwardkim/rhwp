@@ -2,7 +2,7 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 작성일: 2026-09-06
-- 상태: 로컬 구현·Chrome/Firefox 직접 UI·HWP/HWPX 재열기 검증 완료, remote push·PR 생성 승인 대기.
+- 상태: 로컬 검증 완료, [PR #6814](https://github.com/edwardkim/rhwp/pull/6814) 생성. 최신 CI·merge 승인 대기.
 - 계획: [수행계획](../plans/task_m100_6788.md), [구현계획](../plans/task_m100_6788_impl.md).
 - 단계 증빙: [1단계](../working/task_m100_6788_stage1.md),
   [2단계](../working/task_m100_6788_stage2.md), [3단계](../working/task_m100_6788_stage3.md).
@@ -68,16 +68,17 @@ Chrome 스크린샷이나 한컴 독립 정답지가 아니다.
 로컬 Studio 서버는 사용자 추가 확인용으로 유지한다. 상세 명령·초기 실패·재실행·산출물 경로는
 3단계 보고서에 있다. 원시 로그·중간 JSON·중복 PNG는 커밋하지 않는다.
 
-## PR 제출 준비
+## PR 제출 기록
 
 자동 검증 마감 commit은 `c3b1398e4745f6d0030321df525e787d575f8ab3`이다.
 이후 Chrome·Firefox 직접 검증을 추가하고 [PR 본문 초안](../working/task_m100_6788_pr_body.md)을
 핵심 변경·검증·실제 UI 패널 중심으로 줄였다. 이미지·보고서 URL은 새 증적 commit SHA에 고정한다.
-문서·이미지 전용 후속 commit은 제품/test source를 바꾸지 않는다. 아직 원격에 push하지 않아
-새 commit URL은 게시 후에만 유효하다.
+문서·이미지 전용 후속 commit은 제품/test source를 바꾸지 않는다. 사용자 승인 후
+`4936663ea4b6019ddc83c0ca0fafe41a0bae3058`을 upstream 작업 branch로 push하고 Open PR #6814를
+생성했다. 게시한 한글 본문과 두 이미지의 SHA 고정 원격 blob이 로컬과 같음을 확인했다.
 
-다음은 **승인 후 실행할 명령이며 아직 실행하지 않았다**. 제출 직전 devel 대비 상태와 후보 source,
-검증 게이트의 유효성을 재확인한다. base 갱신으로 source가 바뀌면 필요한 검증도 갱신한다.
+다음 제출 명령을 실행했다. 제출 전 최신 devel `6a193a648dba3df6d5c4cffa0182bc02f3e011ff`와
+merge simulation은 충돌 없이 통과했고 검증 이후 제품/test source 변경은 없었다.
 
 ```bash
 git push upstream HEAD:codex/6788-preserve-mixed-char-format
@@ -87,5 +88,5 @@ gh pr create --repo edwardkim/rhwp --base devel \
   --body-file mydocs/working/task_m100_6788_pr_body.md
 ```
 
-실제 PR 번호를 받은 뒤 역할별 archive self-review 문서를 작성한다. 아직 PR/오늘할일을
-선행 생성하거나 원격 이슈를 종료하지 않았다.
+채번 후 [self-review](../pr/archives/pr_6814_review.md)를 같은 branch에 추가한다.
+최신 head의 GitHub Actions와 merge 승인은 남아 있으며 원격 이슈를 종료하지 않았다.
