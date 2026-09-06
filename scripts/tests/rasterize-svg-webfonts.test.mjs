@@ -39,5 +39,6 @@ test('webfont raster replaces local declarations and retains a terminal Korean f
   assert.match(svg, /https:\/\/cdn\.example\.test\/demo\.woff2/);
   assert.doesNotMatch(svg, /local\("없는 글꼴"\)/);
   assert.match(svg, /__rhwp_visual_sweep_noto_sans_kr__/);
+  assert.match(svg, /font-family="테스트 고딕, __rhwp_visual_sweep_noto_sans_kr__"/);
   assert.deepEqual(svgViewport(svg), { width: 600, height: 120 });
 });
