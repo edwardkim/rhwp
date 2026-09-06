@@ -22402,7 +22402,40 @@ impl TypesetEngine {
                             && res.consumed_height >= 3.0 * extension
                             && frame_tail_rest > 0.5
                             && frame_tail_rest <= 64.0);
-                    if extension > 0.5 && mid_extension_ok {
+                    // [#6790] 확장된 저장 프레임 컷이 **이 조각의 행 예산 자체**를
+                    // 넘으면, 그 프레임은 이 쪽의 끊는 자리 증거가 될 수 없다.
+                    //
+                    // `#5584 ②`/`#4763` 의 확장은 "한글이 여기서 끊었다"는 저장 증거를
+                    // 따라 **거의 다 담은 행을 마저 담는** 조작이다. 그런데 확장된 컷
+                    // 하나가 이 조각이 행에 쓸 수 있는 전부보다 크면, 그 컷은 혼자서도
+                    // 이 쪽에 못 들어간다 — 그 프레임은 어차피 쪽을 넘기므로 이 쪽의
+                    // 경계를 정할 자격이 없다. 크기가 아니라 **쪽 소유(page ownership)**
+                    // 판정이다.
+                    //
+                    // 실측 (r = 확장이 일어난 행):
+                    //
+                    // ```text
+                    //   문서                                 tail    avail   소유
+                    //   17544911 (누에 사육기준) r=2        1178.5  1005.4   ✗ 못 넘김
+                    //   편람 r=1                              232.3   240.7   ✔
+                    //   편람 r=4 (여섯 갈래)             82.9~386.9  108.1~458.2 ✔ 전부
+                    //   3232693 (#5584/#6025) r=7            162.7   906.6   ✔
+                    //   16418295 (#6549) r=6                  92.8  1009.1   ✔
+                    // ```
+                    //
+                    // ⚠ 크기·비율로 가르지 않는다 — `#6549` 가 기록했듯 편람 핀들의
+                    // 확장(15.3~107.4px)과 예산 초과율(17.8~112.0px)은 어느 축으로도
+                    // 갈리지 않는다. 위 표에서 갈리는 것은 **부호 하나**이며 문턱이 없다.
+                    //
+                    // ⚠ 초판에는 `|| consumed > avail_for_rows + 0.5` 우회가 있었다
+                    // ("이미 예산을 넘긴 조각은 `#5057` 이 따로 판정한다"). **제거했다** —
+                    // 그 우회는 여기서 세운 쪽 수용 불변식을 무효화할 수 있고,
+                    // `#5057` 두 시험은 이 `source_frame_tail` 갈래를 실제로 실행하지
+                    // 않는다(PR #6792 검토 실측). 우회 없이 #3930·#3931·#5057·#5584·
+                    // #5801·#6025·#6549·#6790 선택 시험 19/19 가 통과한다.
+                    let source_tail_owns_this_page =
+                        source_tail_cut.consumed_height <= avail_for_rows + 0.5;
+                    if extension > 0.5 && mid_extension_ok && source_tail_owns_this_page {
                         // Downstream fit/retry decisions must reason in the
                         // same frame-sized budget as the cut.  The precise
                         // physical overfill is measured from the painted
