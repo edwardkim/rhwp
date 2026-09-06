@@ -329,6 +329,8 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 | Gym | `gh workflow run gym-release-gate.yml --ref devel -f mode=contracts` | contracts-only, full benchmark skipped |
 | Oracle advisory | `gh workflow run oracle-public-advisory.yml --ref devel` | verdict artifact 필수 |
 | Proptest roundtrip | `gh workflow run proptest-roundtrip.yml --ref devel` | direct |
+| Release Binary | `gh workflow run release-binary.yml --ref devel -f tag=test` | verify-only, Release·외부 publish skipped, 5-platform·package artifact 필수 |
+| Publish All Packages | `gh workflow run npm-publish.yml --ref devel -f publish=false -f publish_extensions=true` | verify-only, 네 외부 채널 skipped, `completed` verdict artifact 필수 |
 | Render Diff | `gh workflow run render-diff.yml --ref devel` | direct, artifact 필수 |
 
 `workflow_dispatch` API의 `ref`는 branch 또는 tag이므로 명령에 commit SHA를 직접 넘겨 exact성을
@@ -370,8 +372,11 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 
 promotion gate가 거부하면 artifact의 `inventory.json`, `runs.json`, `waivers.json`,
 `verdict.json`을 먼저 확인한다. stale head나 main drift는 동기화 후 재실행하고, workflow
-계약 오류는 `devel` 작업 PR로 고친다. #6634의 Release 게시 후 package publish trigger는
-별도 경계이며, promotion preflight 성공을 publish 자동 기동 증거로 해석하지 않는다.
+계약 오류는 `devel` 작업 PR로 고친다. #6634에서 고정한 Release Binary와 Publish All Packages의
+verify-only run은
+직접 호출 배선·artifact·외부 publish skip을 검증하지만 production tag와 실제 registry 게시를 만들지
+않는다. 따라서 promotion preflight 성공을 정식 tag의 package publish 성공으로 해석하지 않고,
+다음 release의 exact tag run에서 `release-publish-evidence`와 네 공개 채널을 별도로 확인한다.
 
 ## 8. required check와 branch protection
 
