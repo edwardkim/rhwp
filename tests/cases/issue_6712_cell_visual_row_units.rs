@@ -239,6 +239,46 @@ fn prevention_tail_is_visible_once_on_its_original_page() {
 }
 
 #[test]
+fn empty_last_wrap_fragment_still_advances_the_visible_row() {
+    fn tops(node: &RenderNode, out: &mut Vec<f64>) {
+        if let RenderNodeType::TextLine(line) = &node.node_type {
+            if line.para_index.is_some_and(|pi| (35..=38).contains(&pi))
+                && line.line_index == Some(0)
+            {
+                out.push(node.bbox.y);
+            }
+        }
+        for child in &node.children {
+            tops(child, out);
+        }
+    }
+    let core = DocumentCore::from_bytes(CHINESE_SQUARE_PICTURE_SAMPLE).expect("Chinese newsletter");
+    let mut y = Vec::new();
+    tops(&core.build_page_render_tree(0).expect("page").root, &mut y);
+    assert_eq!(y.len(), 4);
+    for pair in y.windows(2) {
+        assert!(
+            (pair[1] - pair[0] - 1760.0 / 75.0).abs() < 0.1,
+            "stored visible rows must advance: {y:?}"
+        );
+    }
+}
+
+#[test]
+fn chinese_footer_is_painted_inside_the_second_page_clip() {
+    let core = DocumentCore::from_bytes(CHINESE_SQUARE_PICTURE_SAMPLE).expect("Chinese newsletter");
+    let lines = visible_svg_lines(&core, 1);
+    assert_eq!(
+        lines
+            .iter()
+            .filter(|line| line.contains("儿童之家婴幼儿健康管理访问项目团"))
+            .count(),
+        1,
+        "missing footer: {lines:?}"
+    );
+}
+
+#[test]
 fn stored_square_picture_flow_matches_korean_hancom_oracle() {
     assert_issue_6712_two_page_oracle("한국어 가정통신문", KOREAN_SQUARE_PICTURE_SAMPLE);
 }

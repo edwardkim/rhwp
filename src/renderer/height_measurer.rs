@@ -150,7 +150,7 @@ pub(crate) fn stored_square_picture_wrap_anchor_for_para(
     cell: &crate::model::table::Cell,
     para_idx: usize,
 ) -> Option<crate::renderer::pagination::WrapAnchorRef> {
-    (0..para_idx).find_map(|anchor_para_idx| {
+    (0..=para_idx).find_map(|anchor_para_idx| {
         let para = cell.paragraphs.get(anchor_para_idx)?;
         (0..para.controls.len()).find_map(|control_idx| {
             stored_square_picture_wrap_anchor_for_control(

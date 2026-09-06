@@ -15,7 +15,8 @@ use super::border_rendering::{
     render_transparent_borders,
 };
 use super::table_layout::{
-    calc_nested_split_rows, effective_margin_left_line, extend_completed_nested_table_border_clips,
+    calc_nested_split_rows, effective_margin_left_line,
+    expand_page_fragment_clip_to_own_text_lines, extend_completed_nested_table_border_clips,
     native_terminal_child_host_line_spacing, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
@@ -2278,6 +2279,10 @@ impl LayoutEngine {
                                     let anchor_y = if empty_top_anchored_square_with_inline_sibling
                                     {
                                         cell_y + pad_top
+                                    } else if stored_square_picture_has_adjacent_text(
+                                        cell, cp_idx, ctrl_idx,
+                                    ) {
+                                        para_y_before_compose
                                     } else if top_and_bottom_para {
                                         if cut_units.is_some() && visible_non_inline_controls {
                                             // continuation 조각에 개체 flow 유닛이 실제 포함된 경우
@@ -3017,6 +3022,15 @@ impl LayoutEngine {
                 &mut cell_node,
                 terminal_cell_fragment,
             );
+            if terminal_cell_fragment {
+                // No successor can own a crossing last line. Recover it before
+                // whole-cell residue suppression can hide its visible sliver.
+                expand_page_fragment_clip_to_own_text_lines(
+                    &mut cell_node,
+                    tree.page_size().1,
+                    true,
+                );
+            }
 
             // 셀 테두리를 엣지 그리드에 수집 (인접 셀 중복 제거)
             {

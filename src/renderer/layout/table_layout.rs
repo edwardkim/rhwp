@@ -1043,7 +1043,11 @@ const SPLIT_FRAGMENT_RECOVER_LINE_GAP_RATIO: f64 = 1.5;
 ///
 /// 같은 파일의 `extend_clipped_cell_vertical_clip_to_nearby_nested_table_borders`(테두리
 /// stroke 포섭)와 같은 결의 보정이다.
-fn expand_page_fragment_clip_to_own_text_lines(node: &mut RenderNode, page_bottom: f64) {
+pub(super) fn expand_page_fragment_clip_to_own_text_lines(
+    node: &mut RenderNode,
+    page_bottom: f64,
+    terminal_fragment: bool,
+) {
     let RenderNodeType::TableCell(meta) = &node.node_type else {
         return;
     };
@@ -1063,7 +1067,12 @@ fn expand_page_fragment_clip_to_own_text_lines(node: &mut RenderNode, page_botto
         if !child.visible || !matches!(child.node_type, RenderNodeType::TextLine(_)) {
             continue;
         }
-        if child.bbox.y <= clip_bottom {
+        let candidate_edge = if terminal_fragment {
+            child.bbox.y + child.bbox.height
+        } else {
+            child.bbox.y
+        };
+        if candidate_edge <= clip_bottom {
             continue;
         }
         // 윗변이 이미 쪽 하단 밖인 줄은 어느 부분도 그려지지 않는다 — 되살릴 것이 없다.
@@ -1130,7 +1139,7 @@ fn repair_clipped_nested_table_fragment_frame(
     let clip_bottom = node.bbox.y + node.bbox.height;
     repair_clipped_cell_text_table_seam(node, suppress_bottom_text_residue);
     suppress_future_nested_table_border_residue(node, clip_bottom);
-    expand_page_fragment_clip_to_own_text_lines(node, tree.page_size().1);
+    expand_page_fragment_clip_to_own_text_lines(node, tree.page_size().1, false);
     for table_index in 0..node.children.len() {
         if !node.children[table_index].visible
             || !matches!(
