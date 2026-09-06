@@ -2,7 +2,10 @@
 
 use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::float_placement::native_hwp5_stored_reset_fragment_paint_geometry;
-use super::super::height_measurer::{stored_square_picture_has_adjacent_text, MeasuredTable};
+use super::super::height_measurer::{
+    stored_nested_table_empty_wrap_spacer, stored_square_picture_has_adjacent_text,
+    stored_square_picture_wrap_anchor_for_para, MeasuredTable,
+};
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
@@ -1473,6 +1476,18 @@ impl LayoutEngine {
                 cell.paragraphs.len().saturating_sub(1)
             };
 
+            let collapse_stored_wrap_spacers = self.profile.get().hwp5_stored_pagination_layout()
+                && !table.common.treat_as_char
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && cell.paragraphs.iter().enumerate().any(|(pi, p)| {
+                    p.controls
+                        .iter()
+                        .enumerate()
+                        .any(|(ci, _)| stored_square_picture_has_adjacent_text(cell, pi, ci))
+                });
             let mut para_y = text_y_start;
             let mut has_preceding_text = false;
             // [#3637] 이 조각에서 **실제로 그려지는 첫 문단**의 vpos. 아래 중첩 표
@@ -1559,6 +1574,11 @@ impl LayoutEngine {
             };
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
+                if collapse_stored_wrap_spacers
+                    && stored_nested_table_empty_wrap_spacer(cell, cp_idx)
+                {
+                    continue;
+                }
                 // 분할 행이면 해당 문단의 줄 범위 적용
                 let (start_line, end_line) = if let Some(ref ranges) = line_ranges {
                     if cp_idx < ranges.len() {
@@ -1859,6 +1879,7 @@ impl LayoutEngine {
                         && !(table.row_count == 1 && table.col_count == 1);
                     self.keep_continuation_column_top_spacing_before
                         .set(keep_spacing);
+                    let wrap_anchor = stored_square_picture_wrap_anchor_for_para(cell, cp_idx);
                     para_y = self.layout_composed_paragraph(
                         tree,
                         &mut cell_node,
@@ -1877,7 +1898,7 @@ impl LayoutEngine {
                         None,
                         Some(para),
                         Some(bin_data_content),
-                        None, // 셀 컨텍스트 — wrap zone 무관
+                        wrap_anchor.as_ref(),
                     );
                     self.keep_continuation_column_top_spacing_before.set(false);
 
@@ -2421,6 +2442,11 @@ impl LayoutEngine {
                                         crate::model::shape::TextWrap::TopAndBottom
                                     ) {
                                         rendered_top_and_bottom_non_inline = true;
+                                    } else if stored_square_picture_has_adjacent_text(
+                                        cell, cp_idx, ctrl_idx,
+                                    ) {
+                                        // Adjacent stored text already owns this Square
+                                        // picture's vertical band, also on split pages.
                                     } else if fragment_owned_square_flow {
                                         para_y +=
                                             self.cell_non_inline_control_flow_height(&pic.common);

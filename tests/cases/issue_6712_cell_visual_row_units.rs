@@ -134,6 +134,108 @@ fn assert_issue_6712_two_page_oracle(label: &str, bytes: &[u8]) {
         2,
         "{label}: 한컴 기준 PDF는 2쪽이다. 저장된 Square 그림 옆 줄의 그림 높이를 중복 계상하면 3쪽이 된다."
     );
+    let _ = core.take_overflow_cell_lines();
+    for page in 0..core.page_count() {
+        let _ = core.build_page_render_tree(page).expect("render page");
+        assert_eq!(
+            core.take_overflow_cell_lines(),
+            0,
+            "{label} page {page}: missing tail lines"
+        );
+    }
+}
+
+fn visible_svg_lines(core: &DocumentCore, page: u32) -> Vec<String> {
+    let svg = core.render_page_svg_native(page).expect("SVG");
+    let xml = roxmltree::Document::parse(&svg).expect("SVG XML");
+    let height: f64 = xml
+        .root_element()
+        .attribute("height")
+        .unwrap()
+        .parse()
+        .unwrap();
+    let mut lines = std::collections::BTreeMap::<i64, String>::new();
+    for glyph in xml.descendants().filter(|node| node.has_tag_name("text")) {
+        let Some(y) = glyph
+            .attribute("y")
+            .and_then(|value| value.parse::<f64>().ok())
+        else {
+            continue;
+        };
+        let inside_clips = glyph.ancestors().all(|ancestor| {
+            let Some(id) = ancestor
+                .attribute("clip-path")
+                .and_then(|value| value.strip_prefix("url(#"))
+                .and_then(|value| value.strip_suffix(')'))
+            else {
+                return true;
+            };
+            let clip = xml
+                .descendants()
+                .find(|node| node.attribute("id") == Some(id))
+                .expect("referenced clip");
+            let rect = clip
+                .children()
+                .find(|node| node.has_tag_name("rect"))
+                .expect("rect clip");
+            let top: f64 = rect.attribute("y").unwrap().parse().unwrap();
+            let h: f64 = rect.attribute("height").unwrap().parse().unwrap();
+            y >= top && y <= top + h
+        });
+        if (0.0..=height).contains(&y) && inside_clips {
+            let text = glyph
+                .descendants()
+                .filter_map(|node| node.is_text().then(|| node.text()).flatten())
+                .collect::<String>();
+            lines
+                .entry((y * 10.0).round() as i64)
+                .or_default()
+                .extend(text.chars().filter(|c| !c.is_whitespace()));
+        }
+    }
+    lines.into_values().collect()
+}
+
+#[test]
+fn prevention_tail_is_visible_once_on_its_original_page() {
+    for (bytes, phrases) in [
+        (
+            KOREAN_SQUARE_PICTURE_SAMPLE,
+            [
+                "30초이상손씻기",
+                "눈,얼굴을손으로만지거나비비지않기",
+                "개인물품따로쓰기",
+                "사람많은곳에가지않기",
+            ],
+        ),
+        (
+            CHINESE_SQUARE_PICTURE_SAMPLE,
+            [
+                "洗手30秒以上",
+                "眼睛和脸部不要用手摸或揉",
+                "洗漱用品等个人物品",
+                "流行眼病时禁止去游泳池等人多的地方",
+            ],
+        ),
+    ] {
+        let core = DocumentCore::from_bytes(bytes).expect("newsletter");
+        let first = visible_svg_lines(&core, 0);
+        let second = visible_svg_lines(&core, 1);
+        for phrase in phrases {
+            assert_eq!(
+                first.iter().filter(|line| line.contains(phrase)).count(),
+                1,
+                "missing or duplicate {phrase}: {first:?}"
+            );
+        }
+        // Handwashing advice legitimately repeats on page 2. The eye-disease
+        // instruction is the page-specific owner marker, not its shared phrases.
+        let owner_marker = phrases[3];
+        assert!(
+            !second.iter().any(|line| line.contains(owner_marker)),
+            "moved to page 2: {owner_marker}"
+        );
+    }
 }
 
 #[test]

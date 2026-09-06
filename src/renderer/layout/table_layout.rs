@@ -3,8 +3,9 @@
 use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph};
 use super::super::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
-    fit_measured_table_nested_tail_to_declared_height, stored_square_picture_has_adjacent_text,
-    stored_square_picture_wrap_anchor_for_para, MeasuredTable,
+    fit_measured_table_nested_tail_to_declared_height, stored_nested_table_empty_wrap_spacer,
+    stored_square_picture_has_adjacent_text, stored_square_picture_wrap_anchor_for_para,
+    MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -4994,6 +4995,18 @@ impl LayoutEngine {
             })
         });
         self.cell_has_square_float.set(cell_square_float);
+        let collapse_stored_wrap_spacers = self.profile.get().hwp5_stored_pagination_layout()
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && cell.paragraphs.iter().enumerate().any(|(pi, p)| {
+                p.controls
+                    .iter()
+                    .enumerate()
+                    .any(|(ci, _)| stored_square_picture_has_adjacent_text(cell, pi, ci))
+            });
         // 셀 내 문단 + 컨트롤 통합 레이아웃
         let mut para_y = text_y_start;
         let mut has_preceding_text = false;
@@ -5002,6 +5015,11 @@ impl LayoutEngine {
             .zip(cell.paragraphs.iter())
             .enumerate()
         {
+            // Keep rendering and fragment-unit accounting on the same cursor:
+            // these empty wrap lines already belong to the preceding nested table.
+            if collapse_stored_wrap_spacers && stored_nested_table_empty_wrap_spacer(cell, cp_idx) {
+                continue;
+            }
             // [#5601] 이 문단이 저장-앵커 스냅으로 spacing_before 를 선차감했는지.
             let mut snap_anchored_with_spacing_before = false;
             let (start_line, end_line) = fragment_line_ranges
@@ -9822,51 +9840,9 @@ impl LayoutEngine {
             } else {
                 false
             };
-            let collapse_stored_square_picture_empty_run =
-                if self.profile.get().hwp5_stored_pagination_layout()
-                    && is_block_rowbreak
-                    && cell_has_stored_square_picture_flow
-                    && is_empty_spacer_para
-                {
-                    let run_start = (0..pi)
-                        .rev()
-                        .find(|&idx| !plain_empty_paragraph[idx])
-                        .map_or(0, |idx| idx + 1);
-                    let run_end = ((pi + 1)..para_count)
-                        .find(|&idx| !plain_empty_paragraph[idx])
-                        .unwrap_or(para_count);
-                    let has_stored_wrap_segment = cell.paragraphs[run_start..run_end]
-                        .iter()
-                        .all(|paragraph| paragraph.line_segs.len() == 1)
-                        && cell.paragraphs[run_start..run_end]
-                            .iter()
-                            .flat_map(|paragraph| paragraph.line_segs.iter())
-                            .any(|seg| {
-                                !line_seg_is_synthetic(seg)
-                                    && seg.line_height > 0
-                                    && seg.column_start > 0
-                            });
-                    let follows_nested_table = run_start > 0
-                        && cell.paragraphs[run_start - 1]
-                            .controls
-                            .iter()
-                            .any(|control| matches!(control, Control::Table(_)));
-                    let has_visible_successor = run_end < para_count
-                        && (!cell.paragraphs[run_end].text.trim().is_empty()
-                            || !cell.paragraphs[run_end].controls.is_empty());
-                    run_end - run_start >= 2
-                        && has_stored_wrap_segment
-                        && follows_nested_table
-                        && has_visible_successor
-                        && cell.paragraphs[run_start..run_end].iter().all(|paragraph| {
-                            matches!(
-                                paragraph.column_type,
-                                crate::model::paragraph::ColumnBreakType::None
-                            )
-                        })
-                } else {
-                    false
-                };
+            let collapse_stored_square_picture_empty_run = is_block_rowbreak
+                && cell_has_stored_square_picture_flow
+                && stored_nested_table_empty_wrap_spacer(cell, pi);
             let collapse_empty_rowbreak_spacer = legacy_single_cell_empty_spacer
                 || collapse_native_float_ladder_spacer
                 || collapse_stored_square_picture_empty_run;

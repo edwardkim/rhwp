@@ -175,6 +175,44 @@ pub(crate) fn stored_square_picture_has_adjacent_text(
     stored_square_picture_wrap_anchor_for_control(cell, para_idx, control_idx, None).is_some()
 }
 
+/// Empty stored wrap lines beside a nested table consume its already-owned height.
+/// Callers restrict this to native RowBreak cells with verified Square picture flow.
+pub(crate) fn stored_nested_table_empty_wrap_spacer(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+) -> bool {
+    let plain_empty = |p: &Paragraph| p.text.trim().is_empty() && p.controls.is_empty();
+    if !cell.paragraphs.get(para_idx).is_some_and(plain_empty) {
+        return false;
+    }
+    let start = (0..para_idx)
+        .rev()
+        .find(|&idx| !plain_empty(&cell.paragraphs[idx]))
+        .map_or(0, |idx| idx + 1);
+    let end = ((para_idx + 1)..cell.paragraphs.len())
+        .find(|&idx| !plain_empty(&cell.paragraphs[idx]))
+        .unwrap_or(cell.paragraphs.len());
+    if end - start < 2 || start == 0 || end == cell.paragraphs.len() {
+        return false;
+    }
+    let follows_table = cell.paragraphs[start - 1]
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::Table(_)));
+    let run = &cell.paragraphs[start..end];
+    follows_table
+        && run.iter().all(|p| {
+            matches!(
+                p.column_type,
+                crate::model::paragraph::ColumnBreakType::None
+            ) && matches!(p.line_segs.as_slice(), [seg]
+                    if seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        })
+        && run
+            .iter()
+            .any(|p| p.line_segs[0].line_height > 0 && p.line_segs[0].column_start > 0)
+}
+
 /// [#6299] 같은 `vertical_pos` 를 공유하는 LINE_SEG 는 한 줄의 가로 조각
 /// (어울림 개체 좌·우). 높이 회계에서는 이어지는 두 번째 이후 조각을 건너뛴다.
 ///
