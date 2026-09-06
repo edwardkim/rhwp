@@ -1766,7 +1766,14 @@ impl HeightMeasurer {
             .iter()
             .enumerate()
             .map(|(pidx, p)| {
-                let nested_h: f64 = p
+                // [#6787] 같은 문단의 문단-기준 자리차지 중첩 표들이 **가로 오프셋으로
+                // 나란히** 놓이면 높이는 합이 아니라 **최댓값**이다(`#6494` 의 칸 안 짝).
+                // 16774617 1쪽 후보자 카드 2장(`horz=Para(1547)` / `Para(23743)`, 각
+                // 253.2px)은 서로 겹치지 않아 한/글이 같은 y 에 놓는다 — 합산하면 그 칸이
+                // 선언 251.97px 대비 854.7px 로 부풀어 표 전체가 용지를 넘고 361자가 잘린다.
+                let nested_side_by_side =
+                    crate::renderer::float_placement::para_float_group_is_side_by_side(p);
+                let nested_heights: Vec<f64> = p
                     .controls
                     .iter()
                     .filter_map(|ctrl| {
@@ -1785,7 +1792,12 @@ impl HeightMeasurer {
                             None
                         }
                     })
-                    .sum();
+                    .collect();
+                let nested_h: f64 = if nested_side_by_side {
+                    nested_heights.iter().copied().fold(0.0, f64::max)
+                } else {
+                    nested_heights.iter().sum()
+                };
                 if nested_h <= 0.0 {
                     0.0
                 } else {
