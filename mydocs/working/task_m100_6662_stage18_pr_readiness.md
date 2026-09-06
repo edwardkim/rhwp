@@ -57,7 +57,7 @@ Pretendard-Regular(custom webfont)를 사용하며 '여' bbox width=29.9534px를
 - `rhwp info --json`: 한국어 `hancom-office-2020 / 11.0.0.9136`,
   중국어 `hancom-office-2024 / 13.0.0.3379`.
 - 기준은 `pdf/issue6712/`의 같은 이름 `-2020.pdf`와 `-2024.pdf`다. 기존 PDF를 그대로
-  재사용했다. 두 원본 및 PDF는 [fixture README](../../samples/issue6712/README.md)에 연결되어 있다.
+  재사용했다. 두 원본 및 PDF는 [fixture README](../../../samples/issue6712/README.md)에 연결되어 있다.
 - HWP SHA-256: 한국어 `70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097`,
   중국어 `34a5964fa791ae662052cba8482efae682f13b45a0c0cd6ce633425566a2d5a9`.
 - PDF SHA-256: 한국어 `ff0ab5e0cc70c4104d9dae960be01f736c0bf7a6d9a394212efb860dda1bdfd8`,
