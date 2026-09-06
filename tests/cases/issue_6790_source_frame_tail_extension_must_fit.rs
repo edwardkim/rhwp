@@ -37,8 +37,9 @@
 //! (초판은 `extension <= 120.0` 이라는 경험적 경계를 썼다 — 관측 최대 107.4px 바로
 //! 위에 둔 값이라 근거가 없었고, PR #6792 검토 지적에 따라 제거했다.)
 //!
-//! ⚠ 이미 예산을 넘긴 조각(`consumed > avail_for_rows`)은 이 규칙과 무관하다 —
-//! 그 초과는 `#5057` 저장 첫-조각 허용치가 따로 판정한다.
+//! ⚠ 초판에는 `|| consumed > avail_for_rows` 우회가 있었다. **제거했다** — 그 우회는
+//! 위 쪽 수용 불변식을 무효화할 수 있고, `#5057` 두 시험은 이 `source_frame_tail`
+//! 갈래를 실제로 실행하지 않는다(PR #6792 검토 실측). 우회 없이 선택 시험 19/19 통과.
 //!
 //! 결과: 쪽수 2 → **3**(= 한/글 2024), 넘침·용지밖 1·1 → **0·0**,
 //! 공백 제거 글자 결손 105 → **26**자.
@@ -113,33 +114,43 @@ fn first_fragment_stays_inside_the_body() {
     );
 }
 
-/// 반대 방향 — **정상 프레임 확장은 그대로 보존한다**.
+/// 반대 방향 — **예산 안에 들어가는 저장 프레임 확장은 그대로 적용된다**.
 ///
-/// `#5584 ②`/`#4763` 이 세운 확장은 `source_tail_cut` 이 조각의 행 예산 안에 들어가는
-/// 형상이라 이 판정에 걸리지 않는다. 두 대표 문서로 양쪽을 함께 잠근다.
+/// `#5584 ②`/`#4763` 의 확장은 `source_tail_cut` 이 조각의 행 예산 안에 들어가는
+/// 형상이라 이 판정에 걸리지 않는다.
 ///
 /// ```text
-///   문서                                  tail    avail   확장
-///   3232693  (#5584 / #6025) r=7          162.7   906.6   유지 → 4쪽
-///   16418295 (#6549)         r=6           92.8  1009.1   유지 → 2쪽
-///   17544911 (이 이슈)       r=2         1178.5  1005.4   기각 → 3쪽
+///   문서                          tail    avail   mid_ok  확장 적용
+///   3232693 (#5584 / #6025) r=7   162.7   906.6   true    ✔  → 4쪽
+///   17544911 (이 이슈)      r=2  1178.5  1005.4   —       ✗ 기각 → 3쪽
 /// ```
+///
+/// ⚠ 초판은 여기에 `16418295`(#6549)도 양성 사례로 적었는데 **틀렸다**(PR #6792
+/// 검토 실측). 그 문서는 `extension=25.6`, `mid_extension_ok=false` 라 애초에 확장이
+/// **적용되지 않는다** — 이 판정과 무관하다. 아래 `..._is_unaffected` 로 분리했다.
 #[test]
 fn a_source_frame_that_fits_still_extends() {
-    for (path, pages) in [
-        (
-            "samples/issue5584/3232693_employment_support_criteria.hwpx",
-            4,
-        ),
-        ("samples/issue6549/16418295_square_rowbreak_table.hwp", 2),
-    ] {
-        let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(path))
-            .unwrap_or_else(|e| panic!("{path} 읽기: {e}"));
-        let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-        assert_eq!(
-            core.page_count(),
-            pages,
-            "예산 안에 들어가는 저장 프레임 확장은 유지돼야 한다 — {path}"
-        );
-    }
+    let path = "samples/issue5584/3232693_employment_support_criteria.hwpx";
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(path))
+        .unwrap_or_else(|e| panic!("{path} 읽기: {e}"));
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    assert_eq!(
+        core.page_count(),
+        4,
+        "예산 안에 들어가는 저장 프레임 확장은 유지돼야 한다 — {path}"
+    );
+}
+
+/// `#6549`(어울림 상한) 문서는 이 판정과 **무관하다**.
+///
+/// `mid_extension_ok=false` 로 이미 `#6549` 상한에서 걸러지므로 새 조건이 켜지든
+/// 꺼지든 결과가 같다. 그래도 쪽수를 핀으로 남겨 이 축이 그 문서를 건드리지 않음을
+/// 고정한다.
+#[test]
+fn the_square_wrap_bound_document_is_unaffected() {
+    let path = "samples/issue6549/16418295_square_rowbreak_table.hwp";
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(path))
+        .unwrap_or_else(|e| panic!("{path} 읽기: {e}"));
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    assert_eq!(core.page_count(), 2, "#6549 쪽수 핀 — {path}");
 }

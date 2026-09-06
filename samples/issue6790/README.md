@@ -12,11 +12,16 @@
 - 기준 엔진: **`2020`** (저장 제품이 `hancom-office-2020` 이므로
   [시각·fixture 증적](../../mydocs/manual/pr_review/visual_fixture_evidence.md) §3.5.1
   에 따라 `hwp2024Convert` MCP 의 `engine: 2020`).
-  ⚠⚠ **engine 2020 기준 PDF 는 아직 없다** — 이 작업 PC 에는 그 MCP 의
-  `.env.local`(endpoint·token)이 없어 산출하지 못했다.
-- 현재 증적은 **한/글 2024** 출력이다: **3쪽**, 공백 제거 글자 수 `[623, 623, 21]`.
-  2020 저장본이라 정본과 드리프트가 있을 수 있으므로 engine 2020 PDF 를 받는 대로
-  다시 대조한다.
+- **기준 PDF: 메인테이너 환경에서 생성됨**(PR #6792) —
+  `pdf/17544911-sericulture-training-criteria-2020.pdf`,
+  `engine_profile=2020`, Hancom `12.0.0.4605`, **3쪽**, 152,160 bytes,
+  SHA-256 `c0c2e379da79eae2305006b2dede5e07c995d42be19c9ba7d879821fd810177b`.
+  ⚠ 이 작업 PC 에는 그 MCP 의 `.env.local` 이 없어 직접 산출하지 못했고, 파일은 아직
+  이 branch 에 없다.
+- ⚠ **쪽수는 3으로 일치하지만 쪽 경계는 아직 다르다.** 한/글 2020 은 1쪽에
+  `4) 양잠산물의 산업화` 일부까지 담는데 rhwp 는 3번 행에서 끊고, 한/글 3쪽에는
+  마지막 한 줄만 남지만 rhwp 는 앞선 여러 줄부터 남는다. 이 차이와 text-overlap 2건은
+  `#6790` 에서 계속 추적한다 — **이 PR 은 overflow 제거의 점진적 수정이다.**
 - 회귀 계약: `#5584 ②` 저장 프레임 꼬리 확장은 **확장된 컷이 이 조각의 행 예산 안에
   들어갈 때만** 쓴다(쪽 소유 판정, 문턱 상수 없음).
 
