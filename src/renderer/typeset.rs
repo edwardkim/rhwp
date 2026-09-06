@@ -22402,34 +22402,37 @@ impl TypesetEngine {
                             && res.consumed_height >= 3.0 * extension
                             && frame_tail_rest > 0.5
                             && frame_tail_rest <= 64.0);
-                    // [#6790] 확장해도 **조각이 쪽 예산 안에 있어야** 한다.
+                    // [#6790] 확장된 저장 프레임 컷이 **이 조각의 행 예산 자체**를
+                    // 넘으면, 그 프레임은 이 쪽의 끊는 자리 증거가 될 수 없다.
                     //
-                    // `#6549` 가 어울림(Square)에 상한을 달았지만 위아래
-                    // (TopAndBottom)는 그대로 상한이 없었다. 17544911 은 그 갈래에서
-                    // 예산 920.6 → **1178.5**(+257.9, 한 유닛 규모 24px 의 10배)로
-                    // 늘어나 조각이 1263.3 이 되고 쪽 예산 1005.4 를 254px 넘긴다.
-                    // 표가 안 쪼개져 한/글 3쪽이 rhwp 2쪽이 되고 105자가 사라진다.
+                    // `#5584 ②`/`#4763` 의 확장은 "한글이 여기서 끊었다"는 저장 증거를
+                    // 따라 **거의 다 담은 행을 마저 담는** 조작이다. 그런데 확장된 컷
+                    // 하나가 이 조각이 행에 쓸 수 있는 전부보다 크면, 그 컷은 혼자서도
+                    // 이 쪽에 못 들어간다 — 그 프레임은 어차피 쪽을 넘기므로 이 쪽의
+                    // 경계를 정할 자격이 없다. 크기가 아니라 **쪽 소유(page ownership)**
+                    // 판정이다.
                     //
-                    // ⚠ 크기(24px·107.4px 등)로 가르지 않는다 — `#6549` 가 편람 핀
-                    // (확장 15.3~107.4px)과 갈리지 않는다고 기록했다. 대신 확장의
-                    // **결과**를 본다: 저장 프레임은 "한글이 여기서 끊었다"는 증거지
-                    // "쪽을 넘겨도 된다"는 허가가 아니다. 이미 예산을 넘긴 조각
-                    // (`consumed > avail_for_rows`)은 이 규칙과 무관하므로 건드리지
-                    // 않는다 — 그 초과는 `#5057` 저장 첫-조각 허용치가 따로 판정한다.
+                    // 실측 (r = 확장이 일어난 행):
                     //
-                    // ⚠⚠ **결과만으로 걸면 안 된다** — 편람 핀들은 확장이 예산을 넘겨야
-                    // 성립한다. 결과 조건만 달았더니 `issue_5801`·`issue_3930`·
-                    // `issue_3931`·`issue_5584`·`issue_6025` + 오라클 쪽수 파티션 0/1 +
-                    // 글자겹침 파티션 2, **11건**이 깨졌다. 그래서 **근소(near-miss)를
-                    // 벗어난 확장**에만 결과 조건을 건다. 핀들의 확장은 15.3~107.4px
-                    // 이고 이 건은 257.9px 로 그 범위 **밖**이다.
-                    const NEAR_MISS_EXTENSION_PX: f64 = 120.0;
-                    let extended_fragment_fits = extension <= NEAR_MISS_EXTENSION_PX || {
-                        let extended =
-                            consumed + cs_before + padding + source_tail_cut.consumed_height;
-                        extended <= avail_for_rows + 0.5 || consumed > avail_for_rows + 0.5
-                    };
-                    if extension > 0.5 && mid_extension_ok && extended_fragment_fits {
+                    // ```text
+                    //   문서                                 tail    avail   소유
+                    //   17544911 (누에 사육기준) r=2        1178.5  1005.4   ✗ 못 넘김
+                    //   편람 r=1                              232.3   240.7   ✔
+                    //   편람 r=4 (여섯 갈래)             82.9~386.9  108.1~458.2 ✔ 전부
+                    //   3232693 (#5584/#6025) r=7            162.7   906.6   ✔
+                    //   16418295 (#6549) r=6                  92.8  1009.1   ✔
+                    // ```
+                    //
+                    // ⚠ 크기·비율로 가르지 않는다 — `#6549` 가 기록했듯 편람 핀들의
+                    // 확장(15.3~107.4px)과 예산 초과율(17.8~112.0px)은 어느 축으로도
+                    // 갈리지 않는다. 위 표에서 갈리는 것은 **부호 하나**이며 문턱이 없다.
+                    //
+                    // ⚠ 이미 예산을 넘긴 조각(`consumed > avail_for_rows`)은 이 규칙과
+                    // 무관하다 — 그 초과는 `#5057` 저장 첫-조각 허용치가 따로 판정한다.
+                    let source_tail_owns_this_page = source_tail_cut.consumed_height
+                        <= avail_for_rows + 0.5
+                        || consumed > avail_for_rows + 0.5;
+                    if extension > 0.5 && mid_extension_ok && source_tail_owns_this_page {
                         // Downstream fit/retry decisions must reason in the
                         // same frame-sized budget as the cut.  The precise
                         // physical overfill is measured from the painted
