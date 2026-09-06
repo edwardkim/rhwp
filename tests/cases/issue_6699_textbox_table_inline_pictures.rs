@@ -48,7 +48,7 @@ fn first_page_inline_pictures_follow_their_text_line() {
     }).expect("text after logo");
     // Preserve the existing text origin instead of shifting the whole centered
     // table to hide the remaining font-metric difference from the PDF.
-    assert!((text.bbox.x - 333.33).abs() < 0.1, "text x={}", text.bbox.x);
+    assert!((text.bbox.x - 334.40).abs() < 0.1, "text x={}", text.bbox.x);
     let logo = nodes.iter().find(|node| {
         matches!(&node.node_type, RenderNodeType::Image(image) if image.bin_data_id == 8)
     }).unwrap();

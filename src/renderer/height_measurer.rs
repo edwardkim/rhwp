@@ -1583,6 +1583,55 @@ impl HeightMeasurer {
         total
     }
 
+    /// [#6660] 선언 높이에 딱 맞는 저장 한 줄은 fallback 하단 여백으로 늘리지 않는다.
+    ///
+    /// 표 기본 여백이 없고 개별 여백도 비활성인 병합 제목 셀은 저장 줄+상단
+    /// 여백만으로 선언 높이를 채울 수 있다. 이때 하단의 저장값까지 필수 높이에
+    /// 더하면 뒤 본문을 밀어낸다. 행별 HU 반올림 이내의 차이만 인정하며,
+    /// 실제 내용 넘침이나 명시적으로 활성화된 여백에는 이 예외를 적용하지 않는다.
+    fn merged_cell_restore_floor_hu(
+        table: &Table,
+        cell: &crate::model::table::Cell,
+        content_hu: i64,
+    ) -> i64 {
+        let padded = content_hu + i64::from(cell.stored_vertical_padding_hu());
+        if !table.common.treat_as_char
+            || cell.apply_inner_margin
+            || !crate::model::table::Cell::table_padding_unspecified(&table.padding)
+            || cell.vertical_align != crate::model::table::VerticalAlign::Top
+            || cell.text_direction != 0
+            || cell.row_span <= 1
+            || cell.paragraphs.len() != 1
+            || !(1..2500).contains(&cell.padding.top)
+            || !(1..2500).contains(&cell.padding.bottom)
+        {
+            return padded;
+        }
+        let paragraph = &cell.paragraphs[0];
+        if paragraph.stored_text_partition_dirty
+            || paragraph.layout_only_fill_lines != 0
+            || paragraph.text.trim().is_empty()
+            || !paragraph.controls.is_empty()
+            || paragraph.line_segs.len() != 1
+        {
+            return padded;
+        }
+        let line = &paragraph.line_segs[0];
+        let declared = i64::from(cell.height);
+        let content_with_top = content_hu + i64::from(cell.padding.top);
+        if line.vertical_pos == 0
+            && line.line_height > 0
+            && line.line_height == line.text_height
+            && declared >= content_hu
+            && content_with_top >= declared
+            && content_with_top - declared <= i64::from(cell.row_span)
+        {
+            content_with_top
+        } else {
+            padded
+        }
+    }
+
     /// [#6124] 비례 축소로 내용 아래까지 눌린 세로 병합 묶음을 되돌린다.
     ///
     /// TAC 표 축소(#5748)의 행별 내용 하한은 `row_span == 1` 셀만 세운다. 세로
@@ -1621,13 +1670,55 @@ impl HeightMeasurer {
             if content_hu <= 0 {
                 continue;
             }
-            let pad = hwpunit_to_px(cell.stored_vertical_padding_hu(), dpi);
-            let needed = hwpunit_to_px(content_hu as i32, dpi) + pad;
+            let needed = hwpunit_to_px(
+                Self::merged_cell_restore_floor_hu(table, cell, content_hu) as i32,
+                dpi,
+            );
             // 걸친 행 사이의 칸 간격도 내용이 쓸 수 있는 높이다.
             let spanned: f64 = row_heights[r..end].iter().sum::<f64>()
                 + cell_spacing * (end - r).saturating_sub(1) as f64;
             if needed > spanned + 0.5 {
                 row_heights[end - 1] += needed - spanned;
+            }
+        }
+    }
+
+    /// [#6660] 병합 칸을 복원한 뒤, 병합되지 않은 행의 남은 여유만 회수한다.
+    ///
+    /// 첫 축소는 병합 칸의 하한을 모르므로, #6124 복원 뒤에는 선언 높이를
+    /// 넘으면서도 다른 행에 여유가 남을 수 있다. exam_science 1쪽 문단 23의
+    /// 보기 표가 이 경우다. 복원한 병합 묶음은 그대로 보존하고, 단일행 셀의
+    /// 저장 내용+여백 하한 위에 남은 몫만 줄인다. 하한 합이 선언을 넘으면
+    /// 필요한 초과 높이는 유지한다. 거대 overfill의 균일 축소에는 적용하지 않는다.
+    fn reclaim_unmerged_row_slack(
+        table: &Table,
+        row_heights: &mut [f64],
+        row_floors: &[f64],
+        cell_spacing: f64,
+        dpi: f64,
+    ) {
+        let row_count = row_heights.len();
+        let target = hwpunit_to_px(table.common.height as i32, dpi);
+        let mut excess = row_heights.iter().sum::<f64>()
+            + cell_spacing * row_count.saturating_sub(1) as f64
+            - target;
+        if excess <= 0.5 {
+            return;
+        }
+
+        let mut merged_rows = vec![false; row_count];
+        for cell in &table.cells {
+            let start = cell.row as usize;
+            let span = cell.row_span as usize;
+            if span > 1 && start < row_count {
+                merged_rows[start..(start + span).min(row_count)].fill(true);
+            }
+        }
+        for ((height, floor), merged) in row_heights.iter_mut().zip(row_floors).zip(merged_rows) {
+            if !merged {
+                let recovered = (*height - floor).max(0.0).min(excess);
+                *height -= recovered;
+                excess -= recovered;
             }
         }
     }
@@ -3347,6 +3438,13 @@ impl HeightMeasurer {
                     table,
                     row_count,
                     &mut row_heights,
+                    cell_spacing,
+                    self.dpi,
+                );
+                Self::reclaim_unmerged_row_slack(
+                    table,
+                    &mut row_heights,
+                    &floors,
                     cell_spacing,
                     self.dpi,
                 );
