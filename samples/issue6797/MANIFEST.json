@@ -15,8 +15,9 @@
         "product": "hancom-office-2010",
         "version": "8.5.8.1522"
       },
-      "referenceEngine": null,
-      "contract": "표 항목도 앞 문단의 자리차지 밴드를 비켜 간다. 시작점뿐 아니라 자기 높이로 밴드를 가로지르는지도 본다."
+      "referenceEngine": "2020",
+      "referencePdfStatus": "pending — 저장 제품이 hancom-office-2010 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다.",
+      "contract": "빈 host 의 표 항목은, 저장 사다리가 그 문단을 앞 문단 자리차지 밴드의 바닥 아래에 둔 경우 그 저장 위치로 비켜 간다. host 에 보이는 글이 있으면 그 줄이 스냅을 지므로 손대지 않는다(synam-001 pi=229). 크기 문턱 없음."
     }
   ]
 }
