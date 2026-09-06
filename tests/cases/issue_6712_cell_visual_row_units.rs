@@ -278,6 +278,69 @@ fn chinese_footer_is_painted_inside_the_second_page_clip() {
     );
 }
 
+fn second_page_wrap_starts(core: &DocumentCore) -> [f64; 3] {
+    fn collect(node: &RenderNode, out: &mut [Vec<f64>; 3]) {
+        if let RenderNodeType::TextLine(line) = &node.node_type {
+            if let Some(pi @ 41..=43) = line.para_index {
+                if line.line_index == Some(0) {
+                    out[pi - 41].push(node.bbox.x);
+                }
+            }
+        }
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    let mut starts: [Vec<f64>; 3] = Default::default();
+    collect(
+        &core.build_page_render_tree(1).expect("page 2").root,
+        &mut starts,
+    );
+    starts.map(|values| {
+        assert_eq!(values.len(), 1, "one source line: {values:?}");
+        values[0]
+    })
+}
+
+#[test]
+fn following_paragraph_wraps_beside_a_picture_with_its_own_title() {
+    let core = DocumentCore::from_bytes(KOREAN_SQUARE_PICTURE_SAMPLE).expect("newsletter");
+    let [title, following, below] = second_page_wrap_starts(&core);
+    assert!(
+        (following - title).abs() < 0.1,
+        "title={title}, following={following}"
+    );
+    assert!(
+        (following - below - 5297.0 / 75.0).abs() < 0.1,
+        "following={following}, below={below}"
+    );
+}
+
+#[test]
+fn following_paragraph_requires_real_adjacent_stored_segments() {
+    for synthetic in [false, true] {
+        let mut core = DocumentCore::from_bytes(KOREAN_SQUARE_PICTURE_SAMPLE).expect("newsletter");
+        let mut doc = core.document().clone();
+        let Control::Table(table) = &mut doc.sections[0].paragraphs[0].controls[2] else {
+            panic!("outer table");
+        };
+        for seg in &mut table.cells[3].paragraphs[42].line_segs {
+            if synthetic {
+                seg.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+            } else {
+                seg.column_start = 0;
+                seg.segment_width = 46208;
+            }
+        }
+        core.set_document(doc);
+        let [title, following, below] = second_page_wrap_starts(&core);
+        assert!(
+            (following - below).abs() < 0.1,
+            "synthetic={synthetic}: {title}/{following}/{below}"
+        );
+    }
+}
+
 #[test]
 fn stored_square_picture_flow_matches_korean_hancom_oracle() {
     assert_issue_6712_two_page_oracle("한국어 가정통신문", KOREAN_SQUARE_PICTURE_SAMPLE);

@@ -98,39 +98,39 @@ fn stored_square_picture_wrap_anchor_for_control(
         return None;
     }
 
-    let target = if !para.text.trim().is_empty() {
-        (target_para_idx.is_none() || target_para_idx == Some(para_idx))
-            .then(|| {
-                stored_square_picture_adjacent_line(
-                    &para.line_segs,
-                    object_top,
-                    object_bottom,
-                    object_left,
-                    object_right,
-                )
-            })
-            .filter(|matched| *matched)
-            .map(|_| para_idx)
-    } else {
-        cell.paragraphs
+    let mut target = None;
+    let mut previous_top = anchor.vertical_pos;
+    for (candidate_idx, candidate) in cell.paragraphs.iter().enumerate().skip(para_idx) {
+        let Some(first) = candidate
+            .line_segs
             .iter()
-            .enumerate()
-            .skip(para_idx + 1)
-            .filter(|(candidate_idx, candidate)| {
-                target_para_idx.is_none_or(|target_idx| target_idx == *candidate_idx)
-                    && !candidate.text.trim().is_empty()
-            })
-            .find_map(|(candidate_idx, candidate)| {
-                stored_square_picture_adjacent_line(
-                    &candidate.line_segs,
-                    object_top,
-                    object_bottom,
-                    object_left,
-                    object_right,
-                )
-                .then_some(candidate_idx)
-            })
-    }?;
+            .find(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && seg.line_height > 0)
+        else {
+            break;
+        };
+        // A stored vpos reset starts another fragment, not a continuation of
+        // this picture's wrap band even when its coordinates happen to match.
+        if candidate_idx > para_idx
+            && (first.vertical_pos < previous_top || i64::from(first.vertical_pos) >= object_bottom)
+        {
+            break;
+        }
+        previous_top = first.vertical_pos;
+        if target_para_idx.is_none_or(|target_idx| target_idx == candidate_idx)
+            && !candidate.text.trim().is_empty()
+            && stored_square_picture_adjacent_line(
+                &candidate.line_segs,
+                object_top,
+                object_bottom,
+                object_left,
+                object_right,
+            )
+        {
+            target = Some(candidate_idx);
+            break;
+        }
+    }
+    let target = target?;
 
     let first_seg = para.line_segs.first()?;
     let result = crate::renderer::pagination::WrapAnchorRef {
