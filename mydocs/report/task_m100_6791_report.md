@@ -4,7 +4,8 @@
 - 브랜치: `codex/6791-contributing-validation`
 - 담당자: `postmelee`, 마일스톤: `v1.0.0`
 - 문서 검증 SHA: `b5a33bfe3b85b9b0f4ebe119a1d1addeb8c1e43b`
-- 상태: 로컬 구현·검증·PR 준비 완료. 원격 push·PR 생성 승인 대기
+- PR: [#6810](https://github.com/edwardkim/rhwp/pull/6810) — Open, base `devel`
+- 상태: 사용자 승인 후 원격 push·PR 생성 완료. 최신 CI·병합 승인 대기
 
 ## 결과와 출처
 
@@ -39,7 +40,8 @@ Rust lint·회귀 정책과 CI·생성기·Cargo·제품 코드는 바꾸지 않
 | Stage 2 | [worktree·제출·템플릿 정렬](../working/task_m100_6791_stage2.md), 승인 `c210cb7e7`, 구현 `b5a33bfe3` |
 | Stage 3 | [공개 명령 실검증](../working/task_m100_6791_stage3.md), 승인 `16c41bc87`, 결과는 이 보고서와 함께 commit |
 
-collaborator self 절차에 따라 PR 번호가 없는 현재는 `pr_N_*`와 오늘할일을 만들지 않았다.
+PR 채번 전에는 review·오늘할일을 만들지 않았고, 사용자 원격 승인 후 #6810을 생성해
+[self-review](../pr/archives/pr_6810_review.md)와 [오늘할일](../orders/20260906.md)을 후속 기록했다.
 #6786의 기능 리뷰·head·본문·comment·merge는 별도 작업으로 유지했다.
 
 ## 검증과 제한
@@ -57,14 +59,14 @@ prepare → `cargo fmt --all -- --check` → manifest `--check`와 SHA·clean �
 통합 결과의 공개 두 파일은 검증 SHA와 동일했다. 이후 base·head가 바뀌면 원격 조치 전에 다시 확인한다.
 
 문서만 바꾸므로 전체 Rust build·Clippy·nextest·Native Skia·Studio build·브라우저 테스트를 반복하지 않았다.
-문서에서 그 검사를 안내하는 것과 실제 실행한 검증을 구분한다. GitHub CI는 아직 실행하지 않았으며,
+문서에서 그 검사를 안내하는 것과 실제 실행한 검증을 구분한다. PR 생성으로 GitHub CI가 시작됐으며,
 현재 classifier v7은 `.github/pull_request_template.md` 때문에 이 PR을 전체 CI로 분류한다.
 
-## PR 초안
+## 게시한 PR 본문
 
 제목: `docs: 기여 검증 범위와 Rust worktree 준비 순서 명확화 (#6791)`
 
-아래 본문을 UTF-8 파일 `/private/tmp/rhwp-6791-pr-body.md`로 준비한다. 이 임시 파일이 없어지면 아래
+아래 본문을 UTF-8 파일 `/private/tmp/rhwp-6791-pr-body.md`로 준비해 게시했다. 이 임시 파일이 없어지면 아래
 본문을 다시 저장해 `--body-file`로 전달한다.
 
 ```markdown
@@ -80,7 +82,7 @@ Refs #6791. 문제 제기의 출처는 baba9811의 PR #6786 본문 「외부 기
 
 ## 검증
 
-- 검증 commit: b5a33bfe3b85b9b0f4ebe119a1d1addeb8c1e43b. 후속 commit은 계획·결과 기록만 추가합니다.
+- 검증 commit: b5a33bfe3b85b9b0f4ebe119a1d1addeb8c1e43b. 후속 작업은 계획·결과 기록과 최신 devel 동기화이며, 공개 문서 두 파일은 검증한 내용과 동일합니다.
 - 새 clean source에서 공개 명령을 그대로 실행: 별도 review worktree 생성, suite prepare, cargo fmt --all -- --check, manifest --check, SHA·clean 상태 확인 통과.
 - Rust 원본·Cargo 파일 2,206개 hash 불변. harness 28개·manifest는 review worktree의 ignored 파일이며 제출 diff에 포함하지 않았습니다.
 - 변경 문서 상대 링크·공백 검사, 내부·교차 anchor 21개, Rust 절 bash 구문 10개 확인.
@@ -93,10 +95,11 @@ Refs #6791. 문제 제기의 출처는 baba9811의 PR #6786 본문 「외부 기
 문서만 변경하므로 제품 실행 성능 영향은 없습니다. 성능 측정은 하지 않았습니다.
 ```
 
-## 승인 후 원격 명령
+## 승인 후 실행한 원격 명령
 
 현재 remote는 `upstream=edwardkim/rhwp`, `origin=postmelee/rhwp`다. collaborator self 절차에 따라 upstream의
-작업 branch로 제출한다. 조회 시 `task_m100_6791` 원격 branch는 없었다. **아래 명령은 아직 실행하지 않았다.**
+작업 branch로 제출한다. 중복 PR·원격 branch가 없음을 확인한 뒤 아래 명령을 실행했다. 먼저 최신 devel을 충돌 없이
+병합한 `15f5a5574f1e9f989fdead277ccf2345e604e331`을 제출했으며, 공개 두 파일은 검증 SHA와 동일했다.
 
 ```bash
 git status --short
@@ -106,12 +109,13 @@ gh pr create --repo edwardkim/rhwp --base devel --head task_m100_6791 \
   --body-file /private/tmp/rhwp-6791-pr-body.md --milestone v1.0.0 --assignee @me
 ```
 
-원격 push·PR 생성 승인 후 Open PR 번호를 받으면 archive self-review와 필요한 오늘할일을 같은 branch의
-후속 commit으로 기록한다. 최신 CI·mergeability를 확인하고 merge·이슈 close는 후속 승인으로 처리한다.
+2026-09-06 사용자 “진행해줘”로 원격 push·PR 생성을 승인받아 Open PR #6810을 생성했다.
+API 재조회로 게시 본문 일치·한글 보존·담당자 `postmelee`·마일스톤 `v1.0.0`을 확인했다.
+archive self-review와 기존 내용을 보존한 오늘할일을 같은 branch의 후속 commit으로 기록한다. 최신 CI·mergeability를 확인하고 merge·이슈 close는 후속 승인으로 처리한다.
 이슈를 자동으로 닫는 문구 대신 `Refs #6791`을 써 이슈 close 승인도 분리했다.
 
 ## 남은 상태
 
-로컬 작업과 검증은 완료했다. 남은 단계는 결과 검토, 원격 push·Open PR 생성 승인, PR 번호 기반 기록,
-최신 GitHub CI 확인, merge·이슈 close 승인이다. 계획·검증용 worktree와 로그는 승인·통합 후 정리할 수
+로컬 작업·검증·Open PR 생성은 완료했다. 남은 단계는 기록 commit을 포함한 최신 GitHub CI 확인과
+별도 merge·이슈 close 승인이다. 계획·검증용 worktree와 로그는 승인·통합 후 정리할 수
 있도록 보존하며 다른 작업의 경로·target에는 변경을 가하지 않았다.

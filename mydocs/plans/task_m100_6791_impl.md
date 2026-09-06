@@ -8,7 +8,8 @@
 - 구현계획 승인: 2026-09-06 사용자 “진행해줘”. 공개 문서 Stage 1 착수 승인.
 - Stage 2 승인: 2026-09-06 사용자 “진행해줘”.
 - Stage 3 승인: 2026-09-06 사용자 “진행해줘”. clean 실검증·최종 보고·로컬 PR 준비 진행.
-- 현재 상태: Stage 3 완료. [Stage 3 보고서](../working/task_m100_6791_stage3.md), [최종 결과](../report/task_m100_6791_report.md)
+- 원격 승인: 2026-09-06 사용자 “진행해줘”. upstream push·Open PR #6810 생성 완료. merge·이슈 close는 별도 승인.
+- 현재 상태: Stage 3 및 PR 생성 완료. [Stage 3 보고서](../working/task_m100_6791_stage3.md), [최종 결과](../report/task_m100_6791_report.md)
 
 ## 1. 구현 계약
 
