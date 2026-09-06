@@ -3,7 +3,8 @@
 > 2026-09-07 후속 상태: 아래의 최초 승인 판정은 기존 후보에 대한 기록이다.
 > [리뷰 보정](pr_6814_review_impl.md)의 최종 코드 `01df465fa`에서 로컬 필수 검증을 완료했다.
 > Rust 9073개, fresh WASM Studio 1428개 통과 및 8파일 재열기·PNG 비교를 확인해 **push 가능**으로
-> 판단한다. 최신 head CI와 merge 승인은 별도이며, 오늘할일은 사용자 승인에 따라 병합 시 갱신한다.
+> 판단한다. 이후 `bb01f0f96`의 Full CI가 성공했고 사용자가 오늘할일 갱신·merge와 최신 devel
+> 반영을 승인했다. 아래 병합 준비 기록에 기준선 갱신과 최종 게이트를 구분한다.
 > 아래 최초 검증 기록과 이번 재검증 결과는 구분한다.
 
 ## 접수 및 경로
@@ -119,3 +120,28 @@ flagged, pixel_match, visual_accuracy_proxy_percent는 측정하지 않았고 �
 - GitHub Actions는 작성 시점에 진행 중이다. 이전 로컬 성공을 GitHub CI 성공으로 취급하지 않는다.
   녹색 GitHub candidate가 아직 없으므로 trailing 문서 head의 fast-pass를 미리 단정하지 않는다.
 - 이 기록은 GitHub approve·merge·issue close 승인이 아니며 해당 조치를 수행하지 않았다.
+
+## 병합 준비 — 2026-09-07 후속
+
+- base route: `collaborator_self_merge.md`.
+- modifiers: `intake_and_review.md`, `local_validation.md`, `visual_fixture_evidence.md`,
+  `review_only_fast_pass.md`, `multi_pr_update_branch.md`, `rework_and_exceptions.md`, `post_merge.md`.
+- loaded documents: `pr_review_workflow.md`, `pr_review/README.md`, 위 기본·보조 문서.
+- 녹색 candidate: `bb01f0f964c18b8beed25daccd9bb8c875e60535`.
+  [Full CI](https://github.com/edwardkim/rhwp/actions/runs/34057450989),
+  [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34057450998),
+  [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34057450848),
+  Adapter inter-diff·Proptest·CI Impact Policy 성공을 확인했다.
+- 오늘할일이 source에는 없고 devel에만 있어, 사용자 추가 승인 후 current base
+  `56706247f4950286117496c41f5b2c4b1cdbddc5`를 merge commit `3e9451552`로 반영했다.
+  실제 tree `4c61a2064547130de403f35d5884c0641275204f`는 자동 merge-tree와 같으며 수동 코드 보정은 없다.
+- `mydocs/orders/20260907.md`는 기존 #6818 본문을 보존하고 todo 표에 #6788의 완료한 검증과
+  남은 최종 검사·병합을 구분해 추가한다. 문서만 single-parent trailing commit으로 잇는다.
+- Cargo manifest/lock과 npm lock은 바뀌지 않았다. devel의 Studio 변경에 대해 `npm test`
+  **1492 passed, 0 failed, 0 skipped**, TypeScript/Vite 빌드를 다시 통과했다.
+- 통합 코드 `3e9451552`의 Rust 집중 회귀 `issue_6788_mixed_char_format`은
+  **17 passed, 173 filtered/skipped**로 재통과했다. 로그는 기존 검증 경로의 `merge-focused.log`다.
+- 기존 code candidate의 Full CI와 자동 current-base bridge를 근거로 광범위 Rust 전체 회귀는
+  중복 실행하지 않는다. 최종 head의 fast-pass/Full 판정과 required aggregate 성공은 별도로 확인한다.
+- 판정: **승인**. 병합 전 최신 head/CI/mergeability 재확인 조건은 유지하며 `--admin`을 사용하지 않는다.
+  이 문서 작성 시점에는 merge와 이슈 종료를 아직 수행하지 않았다.
