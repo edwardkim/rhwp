@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import {
   evaluateTrustedPostMergeReuse, selectTrustedPostMergeCandidate,
   currentBaseReviewBridgeSource, verifyPostMergeReviewBridgeTree,
@@ -156,8 +157,12 @@ function gitFixture(t, changedPath = "mydocs/pr/review.md") {
   write(changedPath, "final change\n");
   const sourceSha = save();
   const bridgeSha = git("commit-tree", tree(), "-p", sourceSha, "-p", baseSha, "-m", "bridge");
+  write("mydocs/pr/tail.md", "trailing review\n");
+  save();
+  const headSha = git("commit-tree", tree(), "-p", bridgeSha, "-m", "tail");
   const mergeSha = git("commit-tree", tree(), "-p", baseSha, "-m", "squash");
-  return { directory, git, identity: { baseSha, bridgeSha, mergeSha, candidateSha, testedMergeSha } };
+  return { directory, git, sourceSha, headSha,
+    identity: { baseSha, bridgeSha, mergeSha, candidateSha, testedMergeSha } };
 }
 
 test("Git object proof accepts review documents, including spaces and newline paths", t => {
@@ -187,3 +192,148 @@ test("Git object proof accepts identical trees and rejects wrong parents and inv
   assert.throws(() => verifyPostMergeReviewBridgeTree(directory, { ...identity, mergeSha: "--help" }), /invalid-review-bridge-identity/);
   assert.throws(() => verifyPostMergeReviewBridgeTree(directory, { ...identity, mergeSha: "a".repeat(40) }));
 });
+
+test("Git object proof works with the runner's depth=1 fetched commits", t => {
+  const { directory, identity, git } = gitFixture(t);
+  const shallow = mkdtempSync(path.join(tmpdir(), "postmerge-shallow-"));
+  t.after(() => rmSync(shallow, { recursive: true, force: true }));
+  const command = (...args) => execFileSync("git", ["-C", shallow, ...args], {
+    encoding: "utf8", stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+  command("init", "--quiet");
+  command("fetch", "--no-tags", "--depth=1", "--no-write-fetch-head", directory,
+    identity.mergeSha, identity.bridgeSha, identity.testedMergeSha);
+  assert.equal(command("rev-parse", "--is-shallow-repository"), "true");
+  assert.equal(command("show", "-s", "--format=%P", identity.bridgeSha), "");
+  const proof = verifyPostMergeReviewBridgeTree(shallow, identity);
+  assert.equal(proof.testedTreeSha, git("rev-parse", `${identity.testedMergeSha}^{tree}`));
+});
+
+// Execute the actual github-script body over real Git objects, with only API/network calls mocked.
+const workflow = readFileSync(new URL("../../.github/workflows/trusted-postmerge-ci-reuse.yml", import.meta.url), "utf8");
+const script = workflow.split("- name: Evaluate exact PR workflow evidence")[1]
+  .split("script: |\n")[1].split("\n").map(line => line.replace(/^ {12}/, "")).join("\n");
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const require = createRequire(import.meta.url);
+
+async function runWorkflow(t, workflowFile = "ci.yml", options = {}) {
+  const f = gitFixture(t, options.changedPath);
+  const { baseSha, candidateSha, bridgeSha, mergeSha, testedMergeSha } = f.identity;
+  const commits = new Map();
+  for (const sha of [baseSha, candidateSha, f.sourceSha, bridgeSha, f.headSha, mergeSha, testedMergeSha]) {
+    const [parents, tree] = f.git("show", "-s", "--format=%P%n%T", sha).split("\n");
+    commits.set(sha, { sha, parents: parents.split(" ").map(sha => ({ sha })),
+      commit: { tree: { sha: tree } }, files: [file(
+        sha === candidateSha ? "src/lib.rs" : "mydocs/pr/review.md",
+      )] });
+  }
+  const data = fixture();
+  const pr = { ...data.pullRequests[0], changed_files: 2, merge_commit_sha: mergeSha,
+    head: { ...data.pullRequests[0].head, sha: f.headSha } };
+  const summary = { ...pr };
+  delete summary.changed_files;
+  const runs = data.workflowRuns.map((run, index) => ({ ...run,
+    head_sha: index === 0 ? candidateSha : f.headSha,
+  }));
+  const headers = [candidateSha, f.sourceSha, bridgeSha, f.headSha].map(sha => ({ sha }));
+  const artifacts = ["b", "c", "d"].map(label => ({
+    name: `nextest-target-durations-${fullRunId}-${label}`, expired: false,
+  }));
+  artifacts.push({ name: `trusted-postmerge-merge-tree-v1-${testedMergeSha}-${commits.get(testedMergeSha).commit.tree.sha}`,
+    expired: false });
+  const state = { pr, runs, headers, artifacts, commits };
+  options.mutate?.(state);
+  const apiCalls = [], gitCalls = [], outputs = {}, warnings = [];
+  const endpoint = name => name;
+  const github = { rest: {
+    repos: {
+      getCommit: async ({ ref }) => {
+        apiCalls.push(["getCommit", ref]);
+        assert.ok(commits.has(ref), `unknown commit ${ref}`);
+        return { data: commits.get(ref) };
+      },
+      compareCommits: async () => ({ data: { merge_base_commit: { sha: baseSha } } }),
+      listPullRequestsAssociatedWithCommit: endpoint("associated"),
+    },
+    pulls: { get: async () => ({ data: pr }), listFiles: endpoint("files"), listCommits: endpoint("commits") },
+    actions: { listWorkflowRuns: endpoint("runs"), listWorkflowRunArtifacts: endpoint("artifacts"),
+      listJobsForWorkflowRun: endpoint("jobs") },
+  }, paginate: async (method, args) => {
+    apiCalls.push([method, args]);
+    switch (method) {
+      case "associated": return [summary];
+      case "files": return [file("src/lib.rs"), file("mydocs/pr/review.md")];
+      case "commits": return headers;
+      case "runs": return runs;
+      case "artifacts": return args.run_id === fullRunId ? artifacts : [];
+      case "jobs": return ["rust", "javascript-typescript", "python"].map(language => ({
+        name: `Analyze (${language})`, status: "completed",
+        conclusion: args.run_id === fullRunId ? "success" : "skipped",
+      }));
+      default: throw new Error(`unexpected API: ${method}`);
+    }
+  } };
+  mkdirSync(path.join(f.directory, "scripts"));
+  for (const name of ["verify-trusted-postmerge-ci-reuse.mjs", "ci-impact-classifier.cjs"]) {
+    copyFileSync(new URL(`../${name}`, import.meta.url), path.join(f.directory, "scripts", name));
+  }
+  const testRequire = name => name === "node:child_process" ? {
+    execFileSync: (command, args, settings) => {
+      gitCalls.push([command, args]);
+      assert.equal(command, "git");
+      assert.ok(["cat-file", "fetch"].includes(args[0]));
+      if (options.fetch && args[0] === "cat-file") throw new Error("object not present yet");
+      if (args[0] === "fetch") {
+        assert.deepEqual(args.slice(0, 7), ["fetch", "--no-tags", "--filter=blob:none", "--depth=1",
+          "--no-write-fetch-head", "origin", mergeSha]);
+        assert.deepEqual(args.slice(7), [bridgeSha, testedMergeSha]);
+        if (options.fetch === "failure") throw new Error("fetch failed");
+        return Buffer.alloc(0);
+      }
+      return execFileSync(command, args, settings);
+    },
+  } : require(name);
+  await new AsyncFunction("require", "github", "context", "core", "process", script)(
+    testRequire, github, { repo: { owner: "edwardkim", repo: "rhwp" } },
+    { setOutput: (key, value) => { outputs[key] = value; }, warning: message => warnings.push(message), info: () => {} },
+    { env: { GITHUB_WORKSPACE: f.directory, GITHUB_REPOSITORY: "edwardkim/rhwp", WORKFLOW_FILE: workflowFile,
+      CALLER_EVENT_NAME: "push", CALLER_REF: "refs/heads/devel", CALLER_SHA: mergeSha,
+      REQUIRE_DURATION_ARTIFACTS: workflowFile === "ci.yml" ? "true" : "false" } },
+  );
+  return { outputs, apiCalls, gitCalls, warnings, candidateSha };
+}
+
+for (const workflowFile of ["ci.yml", "codeql.yml"]) {
+  test(`actual ${workflowFile} collector traverses bridge and reuses the tested full run`, async t => {
+    const result = await runWorkflow(t, workflowFile);
+    assert.deepEqual(result.outputs, { reuse: "true",
+      reason: "current-base-review-bridge-green-pr-workflow-reused", source_run_id: String(fullRunId),
+      refresh_duration_data: workflowFile === "ci.yml" ? "true" : "false" });
+    assert.ok(result.apiCalls.some(([method, ref]) => method === "getCommit" && ref === result.candidateSha));
+    assert.deepEqual(result.warnings, []);
+  });
+}
+
+test("actual workflow fetches only missing immutable objects without checking out PR code", async t => {
+  const result = await runWorkflow(t, "ci.yml", { fetch: "success" });
+  assert.equal(result.outputs.reuse, "true");
+  assert.equal(result.gitCalls.filter(([, args]) => args[0] === "fetch").length, 1);
+});
+
+for (const [name, options] of [
+  ["fetch failure", { fetch: "failure" }],
+  ["code conflict resolution", { changedPath: "src/lib.rs" }],
+  ["expired immutable artifact", { mutate: d => { d.artifacts.at(-1).expired = true; } }],
+  ["missing duration artifact", { mutate: d => { d.artifacts.shift(); } }],
+  ["failed final head", { mutate: d => { d.runs[1].conclusion = "failure"; } }],
+  ["truncated file listing", { mutate: d => { d.pr.changed_files += 1; } }],
+  ["PR commit API cap", { mutate: d => { d.headers.push(...Array(246).fill(d.headers[0])); } }],
+  ["PR detail identity changed", { mutate: d => { d.pr.merge_commit_sha = "f".repeat(40); } }],
+]) {
+  test(`actual workflow preserves full lane on ${name}`, async t => {
+    const { outputs } = await runWorkflow(t, "ci.yml", options);
+    assert.equal(outputs.reuse, "false");
+    assert.equal(outputs.source_run_id, "");
+    assert.equal(outputs.refresh_duration_data, "false");
+  });
+}

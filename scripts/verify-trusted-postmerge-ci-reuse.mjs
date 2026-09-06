@@ -138,17 +138,22 @@ export function verifyPostMergeReviewBridgeTree(repository, identity) {
   if (![baseSha, bridgeSha, mergeSha, candidateSha, testedMergeSha].every(validSha)) {
     throw new Error("invalid-review-bridge-identity");
   }
-  const git = (...args) => execFileSync("git", ["-C", repository, ...args], {
+  const git = (...args) => execFileSync("git", ["-C", repository, "--no-replace-objects", ...args], {
     encoding: "utf8", timeout: 30000, maxBuffer: 1024 * 1024,
     stdio: ["ignore", "pipe", "pipe"],
   });
   const readCommit = (sha) => {
-    const [actual, parentLine, treeSha] = git("show", "-s", "--no-show-signature",
-      "--format=%H%n%P%n%T", sha).trim().split("\n");
-    if (actual !== sha || !validSha(treeSha)) {
+    // Pretty-printing hides parents at a depth=1 boundary; raw headers retain the real identity.
+    if (git("cat-file", "-t", sha).trim() !== "commit") {
       throw new Error("review-bridge-commit-unavailable");
     }
-    return { sha, treeSha, parents: parentLine.split(" ").map(sha => ({ sha })) };
+    const headers = git("cat-file", "commit", sha).split("\n\n", 1)[0].split("\n");
+    const trees = headers.filter(line => line.startsWith("tree ")).map(line => line.slice(5));
+    const parents = headers.filter(line => line.startsWith("parent ")).map(line => line.slice(7));
+    if (trees.length !== 1 || !validSha(trees[0]) || !parents.every(validSha)) {
+      throw new Error("review-bridge-commit-unavailable");
+    }
+    return { sha, treeSha: trees[0], parents: parents.map(sha => ({ sha })) };
   };
   const bridge = readCommit(bridgeSha);
   const tested = readCommit(testedMergeSha);
