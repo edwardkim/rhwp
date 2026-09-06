@@ -3,8 +3,9 @@
 use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::float_placement::native_hwp5_stored_reset_fragment_paint_geometry;
 use super::super::height_measurer::{
-    stored_nested_table_empty_wrap_spacer, stored_square_picture_has_adjacent_text,
-    stored_square_picture_wrap_anchor_for_para, MeasuredTable,
+    stored_nested_table_empty_wrap_spacer, stored_square_picture_empty_anchor_advance,
+    stored_square_picture_has_adjacent_text, stored_square_picture_wrap_anchor_for_para,
+    MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -1901,6 +1902,12 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         wrap_anchor.as_ref(),
                     );
+                    if collapse_stored_wrap_spacers && start_line == 0 && end_line > start_line {
+                        if let Some(step) = stored_square_picture_empty_anchor_advance(cell, cp_idx)
+                        {
+                            para_y += hwpunit_to_px(step, self.dpi);
+                        }
+                    }
                     self.keep_continuation_column_top_spacing_before.set(false);
 
                     let has_visible_text = composed

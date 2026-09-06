@@ -395,6 +395,42 @@ fn footer_overlay_group_images_are_owned_once_by_the_last_page() {
 }
 
 #[test]
+fn empty_picture_anchor_preserves_its_distinct_stored_row_advance() {
+    fn line_top(node: &RenderNode, para: usize) -> Option<f64> {
+        if let RenderNodeType::TextLine(line) = &node.node_type {
+            if line.para_index == Some(para) && line.line_index == Some(0) {
+                return Some(node.bbox.y);
+            }
+        }
+        node.children.iter().find_map(|child| line_top(child, para))
+    }
+    for (bytes, anchor, page) in [
+        (KOREAN_SQUARE_PICTURE_SAMPLE, 8, 0),
+        (CHINESE_SQUARE_PICTURE_SAMPLE, 40, 1),
+    ] {
+        let core = DocumentCore::from_bytes(bytes).expect("newsletter");
+        let Control::Table(table) = &core.document().sections[0].paragraphs[0].controls[2] else {
+            panic!("table");
+        };
+        let para = &table.cells[3].paragraphs[anchor];
+        let next = &table.cells[3].paragraphs[anchor + 1];
+        assert!(para.text.trim().is_empty());
+        let step = para.line_segs[0].line_height + para.line_segs[0].line_spacing;
+        assert_eq!(
+            next.line_segs[0].vertical_pos - para.line_segs[0].vertical_pos,
+            step
+        );
+        let tree = core.build_page_render_tree(page).expect("page");
+        let actual = line_top(&tree.root, anchor + 1).expect("next line")
+            - line_top(&tree.root, anchor).expect("anchor line");
+        assert!(
+            (actual - f64::from(step) / 75.0).abs() < 0.1,
+            "anchor={anchor}: actual={actual}, stored={step} HU"
+        );
+    }
+}
+
+#[test]
 fn stored_square_picture_flow_matches_korean_hancom_oracle() {
     assert_issue_6712_two_page_oracle("한국어 가정통신문", KOREAN_SQUARE_PICTURE_SAMPLE);
 }

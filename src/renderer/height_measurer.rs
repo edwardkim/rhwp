@@ -175,6 +175,30 @@ pub(crate) fn stored_square_picture_has_adjacent_text(
     stored_square_picture_wrap_anchor_for_control(cell, para_idx, control_idx, None).is_some()
 }
 
+/// A distinct empty anchor row can precede the text inside a Square wrap band.
+/// Only a real, exact successor ladder proves that this is not a zero-flow guide.
+pub(crate) fn stored_square_picture_empty_anchor_advance(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+) -> Option<i32> {
+    let para = cell.paragraphs.get(para_idx)?;
+    if !para.text.trim().is_empty()
+        || para.controls.len() != 1
+        || !stored_square_picture_has_adjacent_text(cell, para_idx, 0)
+    {
+        return None;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let next = cell.paragraphs.get(para_idx + 1)?.line_segs.first()?;
+    let step = line.line_height.checked_add(line.line_spacing)?;
+    (step > 0
+        && next.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next.vertical_pos.checked_sub(line.vertical_pos)? == step)
+        .then_some(step)
+}
+
 /// Empty stored wrap lines beside a nested table consume its already-owned height.
 /// Callers restrict this to native RowBreak cells with verified Square picture flow.
 pub(crate) fn stored_nested_table_empty_wrap_spacer(
@@ -1906,13 +1930,20 @@ impl HeightMeasurer {
                             } else {
                                 0.0
                             };
-                            let stored_square_picture_anchor = p.controls.len() == 1
+                            let stored_square_picture_anchor = p.text.trim().is_empty()
+                                && p.controls.len() == 1
                                 && stored_square_picture_has_adjacent_text(cell, pidx, 0);
                             if stored_square_picture_anchor {
-                                // 저장 Square 그림의 빈 앵커 줄은 다음 문단의 좌우
-                                // LINE_SEG가 이미 그림 높이를 예약한 자리다. 줄박스까지
-                                // 더하면 같은 흐름을 한 번 더 세게 된다.
-                                return spacing_before + spacing_after;
+                                let row_advance = if self.is_native_hwp5
+                                    && !table.common.treat_as_char
+                                    && matches!(table.page_break, TablePageBreak::RowBreak)
+                                {
+                                    stored_square_picture_empty_anchor_advance(cell, pidx)
+                                        .map_or(0.0, |step| hwpunit_to_px(step, self.dpi))
+                                } else {
+                                    0.0
+                                };
+                                return spacing_before + row_advance + spacing_after;
                             }
                             if comp.lines.is_empty() {
                                 // [#2169] NO_LS 순수 빈 문단 = em 줄박스 (한글 공식).

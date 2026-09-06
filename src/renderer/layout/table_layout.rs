@@ -4,8 +4,8 @@ use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph}
 use super::super::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, stored_nested_table_empty_wrap_spacer,
-    stored_square_picture_has_adjacent_text, stored_square_picture_wrap_anchor_for_para,
-    MeasuredTable,
+    stored_square_picture_empty_anchor_advance, stored_square_picture_has_adjacent_text,
+    stored_square_picture_wrap_anchor_for_para, MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -5317,6 +5317,16 @@ impl LayoutEngine {
                     Some(bin_data_content),
                     stored_square_picture_wrap_anchor.as_ref(),
                 );
+                if self.profile.get().hwp5_stored_pagination_layout()
+                    && !table.common.treat_as_char
+                    && matches!(table.page_break, TablePageBreak::RowBreak)
+                    && start_line == 0
+                    && end_line > start_line
+                {
+                    if let Some(step) = stored_square_picture_empty_anchor_advance(cell, cp_idx) {
+                        para_y += hwpunit_to_px(step, self.dpi);
+                    }
+                }
 
                 let has_visible_text = composed
                     .lines
@@ -9708,15 +9718,15 @@ impl LayoutEngine {
                         .then_some(control_idx)
                 })
                 .collect();
-            // [#6712] 빈 Picture anchor 문단의 Square 줄은 renderer가 실제 cursor를
-            // 전진시키지 않는다. 인접한 저장 LINE_SEG가 확인된 단일 그림만 같은 원장
-            // 규칙으로 0 높이로 기록한다. 텍스트가 같은 문단에 있거나 다른 control이
-            // 섞인 경우는 줄 전진의 의미가 있으므로 보정하지 않는다.
+            // A verified empty guide owns no image-height reservation. A distinct
+            // source row still owns its exact advance to the following paragraph.
             let collapse_stored_square_picture_source_line = native_hwp5_rowbreak_float_ladder
                 && p.text.trim().is_empty()
                 && p.controls.len() == 1
                 && stored_square_picture_controls.len() == 1
-                && matches!(p.controls.first(), Some(Control::Picture(_)));
+                && matches!(p.controls.first(), Some(Control::Picture(_)))
+                && (!self.profile.get().hwp5_stored_pagination_layout()
+                    || stored_square_picture_empty_anchor_advance(cell, pi).is_none());
             let stored_square_picture_flow_h: f64 = stored_square_picture_controls
                 .iter()
                 .filter_map(|&control_idx| p.controls.get(control_idx))
