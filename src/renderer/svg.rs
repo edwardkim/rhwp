@@ -3908,10 +3908,16 @@ fn color_to_svg(color: u32) -> String {
     format!("#{:02x}{:02x}{:02x}", r, g, b)
 }
 
-fn svg_text_length_attrs(cluster_str: &str, cluster_advance: f64, scale_x: f64) -> String {
-    if !cluster_str
-        .chars()
-        .any(|ch| ch.is_ascii_alphanumeric() || is_halfwidth_cjk_quote(ch))
+fn svg_text_length_attrs(
+    cluster_str: &str,
+    cluster_advance: f64,
+    scale_x: f64,
+    fit_narrow_hangul: bool,
+) -> String {
+    if !fit_narrow_hangul
+        && !cluster_str
+            .chars()
+            .any(|ch| ch.is_ascii_alphanumeric() || is_halfwidth_cjk_quote(ch))
     {
         return String::new();
     }
@@ -3940,7 +3946,43 @@ fn svg_cluster_text_length_attrs(
     let Some(glyph_advance) = style.glyph_fit_advance(layout_cluster_advance) else {
         return String::new();
     };
-    svg_text_length_attrs(cluster_str, glyph_advance * script_advance_scale, scale_x)
+    // Proportional Hangul metrics can be much narrower than the browser fallback.
+    // Fit without moving origins; uniform Hangul metrics may also be below one em.
+    let mut chars = cluster_str.chars();
+    let fit_narrow_hangul = chars.next().is_some_and(|ch| {
+        ('\u{ac00}'..='\u{d7a3}').contains(&ch)
+            && chars.next().is_none()
+            && style.letter_spacing == 0.0
+            && super::font_metrics_data::find_metric(
+                style
+                    .font_family
+                    .split(',')
+                    .next()
+                    .unwrap_or("")
+                    .trim()
+                    .trim_matches('\''),
+                style.is_visually_bold(),
+                style.italic,
+            )
+            .is_some_and(|found| {
+                found.metric.get_width(ch).is_some_and(|width| {
+                    width > 0
+                        && width < found.metric.em_size
+                        && found.metric.hangul.is_some_and(|hangul| {
+                            hangul
+                                .widths
+                                .iter()
+                                .any(|&other| other > 0 && other != width)
+                        })
+                })
+            })
+    });
+    svg_text_length_attrs(
+        cluster_str,
+        glyph_advance * script_advance_scale,
+        scale_x,
+        fit_narrow_hangul,
+    )
 }
 
 /// XML 특수문자 이스케이프

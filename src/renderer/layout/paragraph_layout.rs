@@ -5587,9 +5587,29 @@ impl LayoutEngine {
             );
             // Square wrap host 의 빈 guide 줄은 advance 를 건너뛰지만, 같은 줄에
             // TAC 수식/개체가 있으면 실제 콘텐츠 줄이므로 높이를 보존한다.
+            // The preceding visible fragment deferred its advance to this row's
+            // last fragment. An empty right-hand fragment must still pay it.
+            let completes_visible_stored_row = cell_ctx.is_some()
+                && para.is_some_and(|p| {
+                    crate::renderer::height_measurer::stored_seg_is_row_fragment(p, line_idx)
+                        && (0..line_idx)
+                            .rev()
+                            .take_while(|&idx| {
+                                p.line_segs
+                                    .get(idx)
+                                    .zip(p.line_segs.get(line_idx))
+                                    .is_some_and(|(a, b)| a.vertical_pos == b.vertical_pos)
+                            })
+                            .any(|idx| {
+                                composed.lines.get(idx).is_some_and(|line| {
+                                    line.runs.iter().any(|run| !run.text.trim().is_empty())
+                                })
+                            })
+                });
             let skip_advance_empty_wrap = has_picture_shape_square_wrap
                 && !has_ole_shape_square_wrap
                 && runs_all_whitespace
+                && !completes_visible_stored_row
                 && !line_has_tac_control(composed, line_idx);
             // 촘촘한 미주 수식 문단에는 다음 줄과 char_start가 같은 선행
             // 퇴화 LINE_SEG가 들어오는 경우가 있다. 해당 줄 자체에는 TAC가
@@ -8613,7 +8633,9 @@ fn make_picture_image_node(
             brightness: pic.image_attr.brightness,
             contrast: pic.image_attr.contrast,
             opacity: pic.image_attr.opacity(),
-            text_wrap: Some(pic.common.text_wrap),
+            // Inline glyphs stay in flow even if the saved object retains a
+            // floating wrap mode. Otherwise a textbox fill covers its pictures.
+            text_wrap: (!pic.common.treat_as_char).then_some(pic.common.text_wrap),
             transform: extract_shape_transform(&pic.shape_attr),
             external_path: pic.image_attr.external_path.clone(),
             ..ImageNode::new(bin_data_id, image_data)
