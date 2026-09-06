@@ -3,9 +3,9 @@
 use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::float_placement::native_hwp5_stored_reset_fragment_paint_geometry;
 use super::super::height_measurer::{
-    stored_nested_table_empty_wrap_spacer, stored_square_picture_empty_anchor_advance,
-    stored_square_picture_has_adjacent_text, stored_square_picture_wrap_anchor_for_para,
-    MeasuredTable,
+    stored_nested_table_empty_wrap_spacer, stored_nested_table_wrap_successor,
+    stored_square_picture_empty_anchor_advance, stored_square_picture_has_adjacent_text,
+    stored_square_picture_wrap_anchor_for_para, MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -2972,11 +2972,21 @@ impl LayoutEngine {
                     }
                 }
 
-                if has_table_ctrl && mixed_nested_split.is_none() {
+                let wrap_successor = collapse_stored_wrap_spacers
+                    .then(|| stored_nested_table_wrap_successor(cell, cp_idx))
+                    .flatten()
+                    .filter(|&idx| {
+                        line_ranges.as_ref().is_none_or(|ranges| {
+                            ranges.get(idx).is_some_and(|&(start, end)| start < end)
+                        })
+                    });
+                if has_table_ctrl && (mixed_nested_split.is_none() || wrap_successor.is_some()) {
                     // LINE_SEG vpos 기반으로 para_y 보정.
                     let is_last_para = cp_idx + 1 == cell.paragraphs.len();
                     if !is_last_para {
-                        if let Some(next_para) = cell.paragraphs.get(cp_idx + 1) {
+                        if let Some(next_para) =
+                            cell.paragraphs.get(wrap_successor.unwrap_or(cp_idx + 1))
+                        {
                             if let Some(next_seg) = next_para.line_segs.first() {
                                 // [#3637] `vertical_pos` 는 **셀 전체** 좌표라 조각 시작
                                 // 유닛만큼의 원점이 빠져 있지 않다. 조각 후반부(start_cut 이
@@ -3002,7 +3012,9 @@ impl LayoutEngine {
                                 // 셀에서는 layout_composed_paragraph 의 재가산 몫을
                                 // 빼고 밀어야 이중 가산이 없다(위 preserve 스냅과
                                 // 같은 규약). 그 외 형상은 기존 밀어내기 보존.
-                                let next_spacing_before = if preserve_linear_single_cell_vpos {
+                                let next_spacing_before = if preserve_linear_single_cell_vpos
+                                    || wrap_successor.is_some()
+                                {
                                     styles
                                         .para_styles
                                         .get(next_para.para_shape_id as usize)

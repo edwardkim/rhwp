@@ -442,6 +442,41 @@ fn stored_square_picture_flow_matches_korean_hancom_oracle() {
 }
 
 #[test]
+fn text_after_a_nested_square_table_keeps_the_stored_successor_slot() {
+    fn first_line(node: &RenderNode, para: usize) -> Option<f64> {
+        if matches!(&node.node_type, RenderNodeType::TextLine(line)
+            if line.para_index == Some(para) && line.line_index == Some(0))
+        {
+            return Some(node.bbox.y);
+        }
+        node.children
+            .iter()
+            .find_map(|child| first_line(child, para))
+    }
+    for bytes in [KOREAN_SQUARE_PICTURE_SAMPLE, CHINESE_SQUARE_PICTURE_SAMPLE] {
+        let core = DocumentCore::from_bytes(bytes).expect("newsletter");
+        let Control::Table(table) = &core.document().sections[0].paragraphs[0].controls[2] else {
+            panic!("outer table");
+        };
+        let cell = &table.cells[3];
+        let host = 17;
+        let next = (host + 1..cell.paragraphs.len())
+            .find(|&idx| !cell.paragraphs[idx].text.trim().is_empty())
+            .expect("text after empty side band");
+        let expected = f64::from(
+            cell.paragraphs[next].line_segs[0].vertical_pos
+                - cell.paragraphs[host].line_segs[0].vertical_pos,
+        ) / 75.0;
+        let tree = core.build_page_render_tree(0).expect("page");
+        let actual = first_line(&tree.root, next).unwrap() - first_line(&tree.root, host).unwrap();
+        assert!(
+            (actual - expected).abs() < 0.1,
+            "actual={actual}, expected={expected}, next={next}"
+        );
+    }
+}
+
+#[test]
 fn stored_square_picture_flow_matches_chinese_hancom_oracle() {
     assert_issue_6712_two_page_oracle("중국어 가정통신문", CHINESE_SQUARE_PICTURE_SAMPLE);
 }

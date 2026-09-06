@@ -4,8 +4,9 @@ use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph}
 use super::super::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, stored_nested_table_empty_wrap_spacer,
-    stored_square_picture_empty_anchor_advance, stored_square_picture_has_adjacent_text,
-    stored_square_picture_wrap_anchor_for_para, MeasuredTable,
+    stored_nested_table_wrap_successor, stored_square_picture_empty_anchor_advance,
+    stored_square_picture_has_adjacent_text, stored_square_picture_wrap_anchor_for_para,
+    MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -7070,7 +7071,17 @@ impl LayoutEngine {
                 let is_last_para = cp_idx + 1 == composed_paras.len();
                 // 다음 문단의 vpos가 있으면 그것을 기준으로 para_y 보정
                 if !is_last_para {
-                    if let Some(next_para) = cell.paragraphs.get(cp_idx + 1) {
+                    let wrap_successor = collapse_stored_wrap_spacers
+                        .then(|| stored_nested_table_wrap_successor(cell, cp_idx))
+                        .flatten()
+                        .filter(|&idx| {
+                            fragment_line_ranges.as_ref().is_none_or(|ranges| {
+                                ranges.get(idx).is_some_and(|&(start, end)| start < end)
+                            })
+                        });
+                    if let Some(next_para) =
+                        cell.paragraphs.get(wrap_successor.unwrap_or(cp_idx + 1))
+                    {
                         if let Some(next_seg) = next_para.line_segs.first() {
                             let next_vpos_y =
                                 text_y_start + hwpunit_to_px(next_seg.vertical_pos, self.dpi);

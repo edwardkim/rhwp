@@ -257,6 +257,42 @@ pub(crate) fn stored_nested_table_empty_wrap_spacer(
             .any(|p| p.line_segs[0].line_height > 0 && p.line_segs[0].column_start > 0)
 }
 
+/// Find the real successor after the empty side band of a stored Square table.
+pub(crate) fn stored_nested_table_wrap_successor(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+) -> Option<usize> {
+    let para = cell.paragraphs.get(para_idx)?;
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        return None;
+    };
+    if table.common.treat_as_char
+        || !table.common.flow_with_text
+        || !matches!(table.common.text_wrap, TextWrap::Square)
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || !stored_nested_table_empty_wrap_spacer(cell, para_idx + 1)
+    {
+        return None;
+    }
+    let next_idx = ((para_idx + 1)..cell.paragraphs.len()).find(|&idx| {
+        let p = &cell.paragraphs[idx];
+        !p.text.trim().is_empty() || !p.controls.is_empty()
+    })?;
+    let next = &cell.paragraphs[next_idx];
+    if next.text.trim().is_empty() || !next.controls.is_empty() {
+        return None;
+    }
+    let mut previous = para.line_segs.last()?.vertical_pos;
+    for p in &cell.paragraphs[para_idx + 1..=next_idx] {
+        let seg = p.line_segs.first()?;
+        if seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || seg.vertical_pos <= previous {
+            return None;
+        }
+        previous = seg.vertical_pos;
+    }
+    Some(next_idx)
+}
+
 /// [#6299] 같은 `vertical_pos` 를 공유하는 LINE_SEG 는 한 줄의 가로 조각
 /// (어울림 개체 좌·우). 높이 회계에서는 이어지는 두 번째 이후 조각을 건너뛴다.
 ///
