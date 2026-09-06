@@ -1,0 +1,23 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6803,
+  "title": "[별표 6] 근린생활시설용지 건축물 용도 · 건폐율 · 용적률 · 높이",
+  "entries": [
+    {
+      "path": "samples/issue6803/1376496-neighborhood-facility-land-table.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6803",
+      "originalFilename": "1376496_[별표 6] 근린생활시설용지 건축물 용도 · 건폐율 · 용적률 · 높이(전주·완주 혁신도시개발사업 실시계획 승인).hwp",
+      "bytes": 32768,
+      "sha256": "2482b695bc92c0cafe661af63c54acea834b6927bf9c666bdf47299910e3801d",
+      "lastSavedWith": {
+        "product": null,
+        "version": "6.7.10.1058"
+      },
+      "referenceEngine": "2020",
+      "contract": "쪽 분할 조각의 시작 행에서 시작해 끝 행을 넘는 rowspan 셀은, 다음 조각이 su 를 구할 때와 같은 식(온전 행 컷 측정 높이 + 경계 행 컷까지 높이)으로 끝 컷을 받는다. 조각들이 셀 문단을 빠짐없이·겹침없이 나눠 갖는다.",
+      "referencePdfStatus": "pending — lastSavedWith.product 가 null 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다. 현재 증적은 한/글 2024 출력이다."
+    }
+  ]
+}
