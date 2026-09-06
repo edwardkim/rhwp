@@ -7836,6 +7836,62 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 문자 offset 범위의 모양 구간 목록을 조회한다.
+    #[wasm_bindgen(js_name = getCharShapeRuns)]
+    pub fn get_char_shape_runs(
+        &self,
+        sec: usize,
+        para: usize,
+        start: usize,
+        end: usize,
+    ) -> Result<String, JsValue> {
+        self.get_char_shape_runs_native(sec, para, start, end)
+            .map_err(Into::into)
+    }
+
+    /// 구간 목록 전체를 검사한 뒤 본문 모양을 복원한다.
+    #[wasm_bindgen(js_name = setCharShapeRuns)]
+    pub fn set_char_shape_runs(
+        &mut self,
+        sec: usize,
+        para: usize,
+        start: usize,
+        end: usize,
+        runs_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_char_shape_runs_native(sec, para, start, end, runs_json)
+            .map_err(Into::into)
+    }
+
+    #[wasm_bindgen(js_name = getCharShapeRunsInCellByPath)]
+    pub fn get_char_shape_runs_in_cell_by_path(
+        &mut self,
+        sec: usize,
+        para: usize,
+        path_json: &str,
+        start: usize,
+        end: usize,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.get_char_shape_runs_in_cell_by_path_native(sec, para, &path, start, end)
+            .map_err(Into::into)
+    }
+
+    #[wasm_bindgen(js_name = setCharShapeRunsInCellByPath)]
+    pub fn set_char_shape_runs_in_cell_by_path(
+        &mut self,
+        sec: usize,
+        para: usize,
+        path_json: &str,
+        start: usize,
+        end: usize,
+        runs_json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.set_char_shape_runs_in_cell_by_path_native(sec, para, &path, start, end, runs_json)
+            .map_err(Into::into)
+    }
+
     /// 글자 서식 ID를 직접 복원한다 (본문 문단).
     #[wasm_bindgen(js_name = setCharShapeId)]
     pub fn set_char_shape_id(
