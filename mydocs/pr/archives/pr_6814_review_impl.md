@@ -40,7 +40,7 @@
 - 기존 CI 성공에는 실제 WASM Studio 테스트의 skip이 포함됐다. 로컬 실제 WASM 성공과
   CI에서 항상 실행되는 회귀의 범위를 구분한다.
 
-## 구현 및 현재 검증 결과 (2026-09-07)
+## 최초 보정 및 공간 확보 전 검증 기록 (2026-09-07)
 
 - 계획 commit: `e7380e47a`. 구현 candidate: `2f6f46376`.
 - 1~12번 관련 보정 구현: fallible ID lookup, 겹침 iterator 공유, 첫 ref 상속,
@@ -61,7 +61,7 @@
   다른 review worktree의 읽기 전용 cache를 APFS clone으로 별도 target에 복사했으며 원본은
   변경하지 않았다. 이 검사는 필수 lint 묶음이나 Rust 행위 회귀를 대체하지 않는다.
 
-### 남은 게이트와 중단 조건
+### 당시 남은 게이트와 중단 조건 — 아래 재개 검증으로 해소
 
 - 저장 공간이 작업 중 8.6GiB에서 **6.4GiB**로 감소했다. 저장소 추적 파일만 약 3.34GiB다.
   별도 review checkout과 workspace/native/WASM 빌드가 필요한 전체 검증을 현재 여유 공간으로
@@ -82,3 +82,58 @@
   비교했다. gh 출력의 추가 끝 개행 1개를 정규화한 뒤 일치함을 확인했다.
   한글 치환·선두 BOM 문제는 없다.
 - 보정 문서 3개의 상대 링크 검사와 `git diff --check`가 통과했다.
+
+## 공간 확보 후 최종 재검증 (2026-09-07)
+
+- 사용자 공간 확보 후 여유 81GiB에서 별도 review worktree를 만들고 재개했다.
+- 최종 코드: `01df465fabba276d0063cb06aa25f633aca2d825`.
+  `cef551e2e`는 Undo 복구 대기 중 후속 Redo를 차단하되 순서를 보존하며,
+  `01df465fa`는 셀 batch 종료 오류까지 적용·복원 오류와 함께 보존한다.
+  apply/endBatch/rollback/endBatch 복합 오류와 Undo batch 종료 실패의 재시도를 추가 검사했다.
+- review checkout은 `a8ba4b0ea`에서 Rust 검증을 실행한 뒤 최종 코드로 fast-forward했다.
+  사이 변경은 Studio command/history와 해당 테스트뿐이며 Rust 소스·테스트·Cargo는 동일하다.
+- 로그·생성물: `/private/tmp/rhwp-6814-revalidation.PRSoBQ/`.
+  review checkout: 같은 경로의 `review/`, target: `review/target/pr-review`.
+
+| 검증 | 결과 |
+| --- | --- |
+| suite prepare → fmt → fmt check → native Clippy → WASM lib Clippy → workspace build → workspace/all-targets Clippy → manifest check | 순차 통과, 모든 Clippy `-D warnings` |
+| Rust focused `issue_6788_mixed_char_format` | 17 passed, 153 filtered/skipped |
+| Rust release-test 전체 nextest | **9073 passed, 0 failed, 46 skipped**, slow 1, LEAK 표시 없음 |
+| Native Skia lib | rhwp 3930 + workspace 182 passed, 13 ignored |
+| Native Skia placeholder / direct PDF | 2 / 4 passed |
+| locked host WASM nodejs / web `--no-opt` | 새 Rust로 모두 빌드 성공 |
+| 최종 코드 + fresh WASM Studio `npm test` | **1428 passed, 0 failed, 0 skipped**, 실제 WASM-command-history 13개 시나리오 포함 |
+| frontend binding + suite manifest 계약 | 22 passed, 0 failed, 0 skipped |
+| 최종 Studio TypeScript/Vite / Firefox 확장 build | 모두 통과, 설치된 확장은 교체하지 않음 |
+| HWP/HWPX 4상태 × 2포맷 export·재열기 | 8파일, 7글자의 textColor/shadeColor/bold/fontSize/fontFamily 일치 |
+| Native PNG 전체 페이지 비교 | before=undo, highlight=redo, HWP=HWPX 총 8쌍 모두 0픽셀 차이 |
+
+### 시각 증적과 해석 범위
+
+- `generate.mjs`는 최종 Studio의 실제 ApplyCharFormatCommand/CommandHistory/WasmBridge와
+  새 Node WASM으로 4상태를 생성·저장·재열기한다. `roundtrip/expected-properties.json`에 결과를 남겼다.
+- fresh Native Skia CLI `export-png --page 0 --profile screen --scale 2`로 8파일을 렌더했다.
+  `compare-png.mjs`의 전체 페이지 비교 결과는 `roundtrip/png-checks.json`에 있다.
+  1588×2245 페이지 출력에서 문서 영역만 잘라 좌우 HWP/HWPX, 위에서 적용 전/형광펜/Undo/Redo로
+  배치한 패널을 직접 확인했다. 보라색·굵기는 유지되고 선택한 네 글자의 형광펜만 제거·복원된다.
+- 새 패널 SHA-256은 `7566cbaeba0f24cf322a24f3ed6aeafe7ce524df8d1d0694ba297fd0209f1e22`로
+  기존 [CLI 증적](../assets/issue6788_cli_roundtrip.png)과 동일하다. 중복 이미지는 추가하지 않는다.
+- web/Node/Firefox WASM SHA-256은 모두
+  `c0df102c41d5b1a3cfbc002e98ff46a53b59210d3425e40ee41be6ece00bcce1`이다.
+- Chrome 플러그인 연결이 제공되지 않아 이번 보정의 새 브라우저 UI 실행은 하지 않았다.
+  기존 Chrome·Firefox 스크린샷은 최초 구현의 직접 UI 증적이며, 이번 증적은 fresh WASM 기능 테스트와
+  native PNG다. Docker daemon 부재로 `--no-opt`를 사용했으므로 최적화 배포 패키지 검증은 아니다.
+- 기존과 같이 HWPX fillType/patternColor/patternType 차이는 적용 전부터 존재한다.
+  이슈 대상 5속성 보존을 확인했으며 모든 속성의 무손실을 주장하지 않는다.
+
+### 제출 전 판단과 후속 처리
+
+- 최신 devel `56706247f4950286117496c41f5b2c4b1cdbddc5`와 최종 코드의 merge-tree는
+  `b122242bb2cb184b74f52db08eb6ad593e3cc57d`로 충돌 없이 생성됐다.
+  변경된 코어/Studio 주요 경로에는 최초 기준 이후 devel 변경이 없다. 이는 최신 CI를 대체하지 않는다.
+- 로컬 필수 게이트를 완료해 보정 push 가능으로 판단한다. 최신 PR head CI와 merge 승인은 별도다.
+- 리뷰 13은 사용자 답변 **“오늘할일은 병합 시점에 갱신”**에 따라 병합 시점에 처리한다.
+  최신 devel의 다른 PR 기록을 복사하거나 덮어쓰지 않는다.
+- 기존 보정 코멘트는 이 결과로 갱신하며 PR 본문은 기존 화면을 유지하고 검증 수치만 간결하게 보완한다.
+  merge·이슈 종료는 수행하지 않는다.
