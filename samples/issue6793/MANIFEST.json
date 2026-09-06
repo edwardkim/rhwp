@@ -13,10 +13,11 @@
       "sha256": "25cc60d379f68246875e968978c13f3273fcc3f6b04fc1fe726434e4626e447d",
       "lastSavedWith": {
         "product": null,
-        "version": "9.1.1.4072"
+        "version": "6.7.8.1045"
       },
-      "referenceEngine": "2024",
-      "contract": "저장 사다리가 다음 문단을 새 쪽 상단(vpos=0)에 두었고 TAC host 줄의 꼬리 간격이 쪽 규모면 그 간격은 흐름이 아니라 쪽-끝 패딩이다. 「< 차 례 >」가 어느 쪽에 놓이는지는 계약하지 않는다."
+      "referenceEngine": "2020",
+      "contract": "앞 문단의 저장 꼬리(vpos+lh+gap)가 쪽 예산을 넘고 이 문단의 첫 비합성 저장 줄이 vpos==0 이면 새 쪽에서 시작한다. < 차 례 > 는 2쪽 본문 상단에 놓인다. 크기 문턱 없음.",
+      "referencePdfStatus": "pending — lastSavedWith.product 가 null 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다. 현재 증적은 한/글 2024 출력이다."
     }
   ]
 }
