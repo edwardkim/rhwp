@@ -73,6 +73,25 @@ fn full_em_unknown_face_and_explicit_tracking_keep_existing_paint() {
 }
 
 #[test]
+fn uniform_sub_em_hangul_keeps_existing_paint() {
+    for font_family in ["함초롬바탕", "HCR Batang", "'함초롬바탕',serif"] {
+        for bold in [false, true] {
+            let s = TextStyle {
+                font_family: font_family.into(),
+                font_size: 14.6666666667,
+                bold,
+                ..Default::default()
+            };
+            for positions in [None, Some([0.0, 14.2266666667, 28.4533333334])] {
+                let svg = draw(&s, "여름", positions.as_ref().map(|p| p.as_slice()));
+                assert_eq!(attr(&svg, "여", "textLength"), None, "{s:?}");
+                assert_eq!(attr(&svg, "름", "textLength"), None, "{s:?}");
+            }
+        }
+    }
+}
+
+#[test]
 fn jamo_cluster_is_not_fitted_as_a_single_precomposed_syllable() {
     let svg = draw(&style(), "\u{1112}\u{1161}\u{11ab}", None);
     assert!(!svg.contains("textLength="));

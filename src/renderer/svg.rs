@@ -3947,7 +3947,7 @@ fn svg_cluster_text_length_attrs(
         return String::new();
     };
     // Proportional Hangul metrics can be much narrower than the browser fallback.
-    // Fit that glyph without moving the stored origin or changing full-em Hangul.
+    // Fit without moving origins; uniform Hangul metrics may also be below one em.
     let mut chars = cluster_str.chars();
     let fit_narrow_hangul = chars.next().is_some_and(|ch| {
         ('\u{ac00}'..='\u{d7a3}').contains(&ch)
@@ -3965,10 +3965,16 @@ fn svg_cluster_text_length_attrs(
                 style.italic,
             )
             .is_some_and(|found| {
-                found
-                    .metric
-                    .get_width(ch)
-                    .is_some_and(|width| width > 0 && width < found.metric.em_size)
+                found.metric.get_width(ch).is_some_and(|width| {
+                    width > 0
+                        && width < found.metric.em_size
+                        && found.metric.hangul.is_some_and(|hangul| {
+                            hangul
+                                .widths
+                                .iter()
+                                .any(|&other| other > 0 && other != width)
+                        })
+                })
             })
     });
     svg_text_length_attrs(
