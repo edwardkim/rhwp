@@ -6141,9 +6141,18 @@ impl LayoutEngine {
                         // Shape/TextBox는 control entry 뒤의 physical fragment에서도
                         // 잔여 내부 문단을 계속 렌더한다. entry-only 판정은 원자적으로
                         // 소유하는 Picture에만 적용한다.
+                        let owns_overlay_anchor = start_line == 0
+                            && end_line > start_line
+                            && matches!(
+                                shape.common().text_wrap,
+                                TextWrap::InFrontOfText | TextWrap::BehindText
+                            );
+                        // Keep zero-flow overlays with their first source line;
+                        // continuation-only text must not repeat the object.
                         if !shape.common().treat_as_char
                             && fragment_cut_units.is_some()
                             && !visible_non_inline_controls
+                            && !owns_overlay_anchor
                         {
                             continue;
                         }

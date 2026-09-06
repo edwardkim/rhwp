@@ -6,7 +6,7 @@ use rhwp::model::control::Control;
 use rhwp::model::document::{Document, Section};
 use rhwp::model::page::PageDef;
 use rhwp::model::paragraph::{LineSeg, Paragraph};
-use rhwp::model::shape::{TextWrap, VertRelTo};
+use rhwp::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use rhwp::model::style::ParaShape;
 use rhwp::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -338,6 +338,59 @@ fn following_paragraph_requires_real_adjacent_stored_segments() {
             (following - below).abs() < 0.1,
             "synthetic={synthetic}: {title}/{following}/{below}"
         );
+    }
+}
+
+#[test]
+fn footer_overlay_group_images_are_owned_once_by_the_last_page() {
+    fn source_images(shape: &ShapeObject, ids: &mut Vec<u16>) {
+        match shape {
+            ShapeObject::Picture(picture) => ids.push(picture.image_attr.bin_data_id),
+            ShapeObject::Group(group) => {
+                for child in &group.children {
+                    source_images(child, ids);
+                }
+            }
+            _ => {}
+        }
+    }
+    fn painted_images(node: &RenderNode, ids: &mut Vec<u16>) {
+        if !node.visible {
+            return;
+        }
+        if let RenderNodeType::Image(image) = &node.node_type {
+            ids.push(image.bin_data_id);
+        }
+        for child in &node.children {
+            painted_images(child, ids);
+        }
+    }
+    let core = DocumentCore::from_bytes(KOREAN_SQUARE_PICTURE_SAMPLE).expect("newsletter");
+    let Control::Table(table) = &core.document().sections[0].paragraphs[0].controls[2] else {
+        panic!("table");
+    };
+    let mut expected = Vec::new();
+    for control in &table.cells[3].paragraphs[67].controls {
+        if let Control::Shape(shape) = control {
+            assert_eq!(shape.common().text_wrap, TextWrap::InFrontOfText);
+            source_images(shape, &mut expected);
+        }
+    }
+    assert!(!expected.is_empty(), "footer group images in source");
+    assert_eq!(core.page_count(), 2);
+    for page in 0..core.page_count() {
+        let mut painted = Vec::new();
+        painted_images(
+            &core.build_page_render_tree(page).expect("page").root,
+            &mut painted,
+        );
+        for id in &expected {
+            assert_eq!(
+                painted.iter().filter(|actual| *actual == id).count(),
+                usize::from(page == 1),
+                "page {page}: bin {id}, actual={painted:?}"
+            );
+        }
     }
 }
 

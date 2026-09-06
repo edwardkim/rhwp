@@ -2466,9 +2466,19 @@ impl LayoutEngine {
                                 // fragment에 걸쳐 내부 문단을 이어 그릴 수 있다. Picture의
                                 // entry-only owner 규칙을 Shape에 적용하면 뒤 fragment의
                                 // 잔여 TextBox가 통째로 사라진다(rowbreak p17).
+                                let owns_overlay_anchor = start_line == 0
+                                    && end_line > start_line
+                                    && matches!(
+                                        shape.common().text_wrap,
+                                        crate::model::shape::TextWrap::InFrontOfText
+                                            | crate::model::shape::TextWrap::BehindText
+                                    );
+                                // Zero-flow overlays belong to the first source
+                                // line, not to a nonexistent height reservation.
                                 if !shape.common().treat_as_char
                                     && cut_units.is_some()
                                     && !visible_non_inline_controls
+                                    && !owns_overlay_anchor
                                 {
                                     continue;
                                 }
