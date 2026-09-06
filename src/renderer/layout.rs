@@ -7483,6 +7483,64 @@ impl LayoutEngine {
                 }
             }
 
+            // [#6797] **표 항목도** 앞 문단의 자리차지 밴드를 비켜 간다.
+            //
+            // 위 배제 블록은 `item_is_paragraph` 전용이라, 빈 host 에 표만 달린 항목
+            // (`PageItem::Table`)은 앞 문단 float 표의 밴드를 그대로 통과했다.
+            // 156160455 7쪽: `pi=70` 의 자리차지 표가 `181.5..294.9` 인데 `pi=71` 의
+            // 표가 `174.8` 에 놓여 633.1x113.4px 겹친다. 저장 사다리는 `pi=71` 을
+            // `vpos=16306`(단 기준 217.4px = 앞 표 바닥)에 두어 겹치지 않는다.
+            if !item_is_paragraph && !visible_float_exclusions.is_empty() {
+                if let PageItem::Table {
+                    para_index: table_para,
+                    ..
+                } = item
+                {
+                    // ⚠ 여기서 `retain` 으로 밴드를 **지우면 안 된다** — 뒤따르는
+                    // 형제 float 이 아직 그 밴드를 봐야 한다(`#2439` 의 zero-offset
+                    // 첫 표가 후행 형제를 위해 남기는 zone 이 사라져 겹친다).
+                    // 문단 경로가 제 시점에 정리한다. 여기서는 **읽기만** 한다.
+                    // ⚠ 시작점만 보면 안 된다 — 이 표는 밴드 **위**에서 시작해 밴드를
+                    // 가로지른다(174.8 시작, 밴드 181.5..294.9). `#6764` 와 같은 교훈:
+                    // 자기 높이로 밴드를 넘는지 함께 봐야 한다.
+                    let table_h = paragraphs
+                        .get(*table_para)
+                        .and_then(|p| {
+                            p.controls.iter().find_map(|c| match c {
+                                Control::Table(t) if is_para_topbottom_float(&t.common) => {
+                                    Some(hwpunit_to_px(signed_hwpunit(t.common.height), self.dpi))
+                                }
+                                _ => None,
+                            })
+                        })
+                        .unwrap_or(0.0);
+                    let jump_to = visible_float_exclusions
+                        .iter()
+                        .filter(|zone| zone.blocks_text && zone.owner_para != *table_para)
+                        .filter(|zone| {
+                            let starts_in = y_offset + 0.5 >= zone.top && y_offset < zone.bottom;
+                            // ⚠ **스치는 정도로는 옮기지 않는다.** 밴드 바닥에는
+                            // 표 바깥여백·host 줄간격이 실려 있어(`#2439`), 살짝
+                            // 걸치는 표까지 밀면 host 줄과 표 사이가 벌어진다
+                            // (`issue_synam001`: gap 20.71px). 한 줄(24px)을 넘게
+                            // 파고들 때만 옮긴다 — 156160455 는 159px 파고든다.
+                            // (24px 로는 `issue_synam001` 이 1.71px 더 벌어져 핀을 넘었다.)
+                            const MIN_BAND_INTRUSION_PX: f64 = 64.0;
+                            let bottom = y_offset + table_h;
+                            let intrusion = bottom.min(zone.bottom) - y_offset.max(zone.top);
+                            let crosses = table_h > 0.0
+                                && y_offset < zone.top
+                                && intrusion > MIN_BAND_INTRUSION_PX;
+                            starts_in || crosses
+                        })
+                        .map(|zone| zone.bottom)
+                        .fold(y_offset, f64::max);
+                    if jump_to > y_offset + 0.5 {
+                        y_offset = jump_to;
+                    }
+                }
+            }
+
             let _dbg_tac = std::env::var("RHWP_DEBUG_TAC_CURSOR").is_ok();
             let _y_in = y_offset;
             let _item_desc = if _dbg_tac {
