@@ -26,10 +26,12 @@ rhwp에 관심을 가져주셔서 감사합니다!
 # 클론
 git clone https://github.com/edwardkim/rhwp.git
 cd rhwp
+cargo build --locked
 ```
 
-Rust 빌드·테스트는 [Rust 검증 worktree 준비와 실행](#rust-검증-worktree-준비와-실행)을 따라 별도
-작업공간에서 시작하세요. 깨끗한 clone에는 Cargo가 참조하는 파생 integration suite가 없습니다.
+위 빌드는 컴파일만 수행하며 파생 integration suite가 없어도 실행할 수 있습니다.
+테스트·전체 포맷 검사는 [Rust 검증 worktree 준비와 실행](#rust-검증-worktree-준비와-실행)을 따라 별도
+작업공간에서 시작하세요. 깨끗한 clone에는 전체 테스트·포맷 검사에 필요한 파생 integration suite가 없습니다.
 Studio를 실행하려면 [프런트엔드 변경 검증](#프런트엔드-변경-검증)의 의존성·WASM 준비를 먼저 마친 뒤
 그 절의 개발 서버 명령을 사용하세요. 실제 기여는 아래 Fork 흐름을 따릅니다.
 
@@ -113,8 +115,8 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
   대해 조기 피드백을 요청할 때만 사용합니다.
 - **하나의 PR에 여러 fix를 담을 때는 이슈별로 커밋을 분리**해주세요. 여러 수정이 한 커밋에
   섞이면 회귀 추적·선별 반영·리뷰가 어려워져 머지가 지연됩니다.
-- **`mydocs/orders/YYYYMMDD.md`는 PR에 포함하지 마세요.** 이 파일은 병합 결과와 후속 작업을 관리하는
-  메인터너 전용 일일 운영 기록입니다. 필요한 기록은 PR 병합 뒤 메인터너가 작성합니다.
+- **외부 기여자는 `mydocs/orders/YYYYMMDD.md`를 PR에 포함하지 마세요.** 이 파일은 저장소 운영 기록입니다.
+  승인된 collaborator self PR의 번호 기반 기록은 아래 역할별 예외를 따릅니다.
 
 ### 메인터너 검토 기록과의 구분
 
@@ -127,9 +129,13 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 - `mydocs/pr/`, `mydocs/pr/archives/`, `mydocs/pr/assets/`, `mydocs/orders/` 하위 파일
 
 특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
-기록은 **메인터너만** 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
+기록은 **메인터너 또는 승인된 collaborator**가 역할별 절차에 따라 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
 스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
 요청한 경우에만 그 요청 범위에서 예외로 합니다.
+
+collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
+[collaborator self 절차](mydocs/manual/pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
+따라 review·오늘할일을 같은 PR의 후속 commit에 포함합니다. 이 운영 예외는 외부 기여자의 제출 의무가 아닙니다.
 
 ### Claude·Codex capability 기여
 
@@ -155,19 +161,39 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 | Rust parser/model/CLI source | 아래 Rust lint 묶음, 관련 focused 회귀, `release-test` 전체 integration |
 | Rust test/baseline helper | Rust lint 묶음, 관련 focused 회귀와 해당 snapshot 결정성 확인. 테스트만 바꿔도 fmt·세 Clippy를 생략하지 않음 |
 | Rust renderer/layout/typeset/WASM source | Rust lint 묶음, 관련 focused 회귀, `release-test` 전체 integration, Native Skia 3종(lib·누락 이미지·직접 PDF 회귀), fresh WASM build와 [시각 검증](#렌더링-pr-자가-검증-도구-한컴-없이-가능) |
-| Studio 단독 (`rhwp-studio/` 변경, Rust 검증 입력 변경 없음) | [프런트엔드 검증](#프런트엔드-변경-검증): fresh WASM 준비, TypeScript, 단위 테스트, production build, 브라우저 동작 변경 시 관련 E2E·실제 브라우저 확인 |
+| Studio 테스트 전용 (`rhwp-studio/tests/**`만 변경) | [프런트엔드 검증](#프런트엔드-변경-검증)의 unit 경로: CI unit 설정 TypeScript 검사·단위 테스트. WASM·production build 생략 |
+| 그 외 Studio 단독 (Rust 검증 입력 변경 없음) | [프런트엔드 검증](#프런트엔드-변경-검증)의 package 경로: fresh dev WASM, TypeScript·단위 테스트·production build, 브라우저 동작 변경 시 관련 E2E·실제 브라우저 확인 |
 | `npm/editor` public API·transport·type·package manifest | [프런트엔드 검증](#프런트엔드-변경-검증)의 package 계약 검사, iframe RPC·기본 옵션·WASM 초기화 변경 시 embed E2E |
 | Rust와 Studio 등 혼합 변경 | 해당하는 모든 행의 검증. 프런트엔드 검증이 Rust 검증을 대체하지 않음 |
 | 기존 fixture/golden/baseline data만 변경 | 관련 focused 회귀와 해당 snapshot 결정성 확인. Rust helper도 바꾸면 Rust lint 묶음 추가 |
-| 문서만 변경 | `git diff --check`, 변경 문서의 링크·내용 정합성. 실행 절차를 바꿨다면 해당 절차의 실제 동작 확인 |
+| CI workflow·archive label·trusted post-merge reuse | [정본 범위 표와 추가 계약 검사](mydocs/manual/pr_review/local_validation.md#43-변경-범위별-기본-검증), [운영 변경 등급별 검증](mydocs/manual/github_operations.md) |
+| 문서만 변경 | 아래 commit 범위 공백 검사, 변경 문서의 링크·내용 정합성. 실행 절차를 바꿨다면 해당 절차의 실제 동작 확인 |
 
 `Cargo.toml`, `Cargo.lock`, Rust toolchain·빌드 설정도 Rust 검증 입력입니다. 이런 파일을 함께 바꾸면
 Studio 단독으로 분류하지 않고 Rust lint·관련 회귀와 영향을 받는 프런트엔드 검증을 수행하세요.
-새 sample·fixture, workflow 등 표 밖의 변경도 실제 영향에 맞는 검증이 필요합니다. 위 표는 로컬 검증의
+이 공개 표는 [로컬 검증 정본 §4.3](mydocs/manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)의
+기여자용 안내입니다. 새 sample·fixture 등 표 밖의 변경은 정본에서 해당 범위를 확인하세요. 위 표는 로컬 검증의
 범위이며 CI job의 skip을 보장하지 않습니다. 모든 PR은 최신 head의 GitHub required checks를 충족해야 합니다.
 
 검증한 commit SHA와 실제 명령·결과를 PR 본문에 기록하세요. 범위상 해당하지 않아 실행하지 않은 검사는
 그 사유를 적고, 실행 실패나 미완료를 PASS로 표시하지 않습니다.
+
+#### 모든 범위의 commit 공백 검사
+
+원본 commit 후 source checkout에서 다음을 실행합니다. `upstream`은 앞서 등록한 원본 저장소 remote입니다.
+기준 devel SHA와 제출 HEAD를 결과에 함께 기록하세요. 깨끗한 트리의 `git diff --check`만으로는 이미
+commit한 공백 오류·충돌 마커를 검사할 수 없으므로 PR 범위 검사도 수행합니다.
+
+```bash
+(
+  set -eu
+  git fetch upstream devel
+  git rev-parse upstream/devel HEAD
+  git diff --check upstream/devel...HEAD
+  git diff --check
+  test -z "$(git status --porcelain)"
+)
+```
 
 ### Rust 검증 worktree 준비와 실행
 
@@ -183,7 +209,8 @@ Git Bash에서 아래 준비·검증을 실행하거나 같은 SHA·worktree 순
 
 #### 1. 검증 worktree 준비와 포맷 검사
 
-source checkout의 저장소 루트에서 실행합니다. 작업 중 변경이 남아 있으면 먼저 원본 commit을 마치세요.
+source checkout의 저장소 루트에서 실행합니다. 먼저 위 commit 공백 검사로 최신 devel을 가져오세요.
+작업 중 변경이 남아 있으면 원본 commit을 마치세요.
 아래 worktree 경로가 이미 있으면 `-rust-review` 접미사를 새 이름으로 바꾸고, 기존 작업공간을 덮어쓰지
 마세요. 이후 블록은 **같은 셸에서**, 이 블록이 성공한 뒤 실행합니다. 괄호 안의 `set -eu`는 실패 시 해당
 블록을 즉시 중단하며, 어느 블록이든 실패하면 다음 블록·push로 넘어가지 않습니다.
@@ -191,13 +218,17 @@ source checkout의 저장소 루트에서 실행합니다. 작업 중 변경이 
 ```bash
 rhwp_source_dir="$(git rev-parse --show-toplevel)" &&
 rhwp_review_sha="$(git rev-parse HEAD)" &&
+rhwp_review_base_sha="$(git rev-parse upstream/devel)" &&
 rhwp_review_dir="${rhwp_source_dir}-rust-review" &&
+rhwp_review_target_dir="${rhwp_source_dir}-review-target" &&
 (
   set -eu
   git -C "$rhwp_source_dir" status --short
   test -z "$(git -C "$rhwp_source_dir" status --porcelain)"
+  git -C "$rhwp_source_dir" diff --check "$rhwp_review_base_sha...$rhwp_review_sha"
   git -C "$rhwp_source_dir" worktree add --detach "$rhwp_review_dir" "$rhwp_review_sha"
-  cd "$rhwp_review_dir"
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
   git rev-parse HEAD
   node scripts/rust-test-suite-manifest.mjs --prepare
   cargo fmt --all -- --check
@@ -210,6 +241,11 @@ rhwp_review_dir="${rhwp_source_dir}-rust-review" &&
 PASS로 바꾸지 말고 준비된 worktree에서 같은 검사를 다시 실행하세요. 실제 포맷 diff가 나오면 아래
 [포맷 정책](#포맷-정책)에 따라 원본을 보정하고 새 commit을 다시 검증합니다.
 
+target은 source checkout 옆의 이 작업 전용 절대 경로에 둡니다. worktree 이름을 바꾸는 재검증에서도
+`rhwp_review_target_dir`는 유지해 Cargo 캐시를 재사용합니다. 모든 Cargo `--target-dir`과 host WASM의
+`CARGO_TARGET_DIR`가 같은 경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다.
+캐시는 이전 검증 결과를 재사용하는 근거가 아니며 새 SHA의 필수 검사는 다시 실행합니다.
+
 #### 2. Rust lint
 
 위 표에서 Rust lint가 필요한 변경은 세 Clippy를 모두 통과해야 합니다. 1번의 전체 fmt check와 함께
@@ -219,12 +255,13 @@ CI의 Format check·native·WASM cfg·workspace lint에 대응합니다. native 
 ```bash
 (
   set -eu
-  cd "$rhwp_review_dir"
-  cargo clippy --locked --target-dir target/pr-review -- -D warnings
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
+  cargo clippy --locked --target-dir "${rhwp_review_target_dir:?}" -- -D warnings
   cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
-    --target-dir target/pr-review -- -D warnings
-  cargo build --locked --workspace --target-dir target/pr-review
-  cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+    --target-dir "${rhwp_review_target_dir:?}" -- -D warnings
+  cargo build --locked --workspace --target-dir "${rhwp_review_target_dir:?}"
+  cargo clippy --locked --workspace --all-targets --target-dir "${rhwp_review_target_dir:?}" -- -D warnings
 )
 ```
 
@@ -233,28 +270,48 @@ CI의 Format check·native·WASM cfg·workspace lint에 대응합니다. native 
 Rust integration test source를 변경한 경우에는 배정 규칙의 계약 검사도 실행합니다.
 
 ```bash
-(cd "$rhwp_review_dir" && node --test scripts/tests/rust-test-suite-manifest.test.mjs)
+(
+  set -eu
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
+  node --test scripts/tests/rust-test-suite-manifest.test.mjs
+)
 ```
 
 `src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]`를 변경한 경우에만 다음 무생성 정책 검사를 추가합니다.
 
 ```bash
-(cd "$rhwp_review_dir" && node scripts/rust-unit-test-tiers.mjs --check)
+(
+  set -eu
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
+  node scripts/rust-unit-test-tiers.mjs --check
+)
 ```
 
 관련 focused 회귀는 실제 test source의 확장자를 뺀 이름으로 선택합니다. 아래 `TEST_SOURCE_NAME`을 바꿔
 실행하세요. wrapper가 현재 suite와 filter를 찾고 `--locked`를 적용하므로 suite 번호를 고정하지 않습니다.
 
 ```bash
-(cd "$rhwp_review_dir" && node scripts/run-rust-test.mjs TEST_SOURCE_NAME -- \
-  --cargo-profile release-test --target-dir target/pr-review)
+(
+  set -eu
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
+  node scripts/run-rust-test.mjs TEST_SOURCE_NAME -- \
+    --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?}"
+)
 ```
 
 범위 표에서 전체 integration 회귀가 필요한 변경은 다음도 실행합니다.
 
 ```bash
-(cd "$rhwp_review_dir" && cargo nextest run --locked \
-  --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast)
+(
+  set -eu
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
+  cargo nextest run --locked \
+    --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?}" --tests --no-fail-fast
+)
 ```
 
 - `release-test` 프로필은 PR CI와 같은 기준이며 debug 대비 수 배 빠릅니다.
@@ -268,12 +325,13 @@ Rust renderer/layout/typeset/WASM 변경은 같은 worktree에서 Native Skia 3�
 ```bash
 (
   set -eu
-  cd "$rhwp_review_dir"
-  cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
+  cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?}" --features native-skia --lib
   node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
-    --cargo-profile release-test --target-dir target/pr-review --features native-skia
+      --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?}" --features native-skia
   node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
-    --cargo-profile release-test --target-dir target/pr-review --features native-skia
+      --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?}" --features native-skia
 )
 ```
 
@@ -284,19 +342,20 @@ Rust renderer/layout/typeset/WASM 변경은 같은 worktree에서 Native Skia 3�
 ```bash
 (
   set -eu
-  cd "$rhwp_review_dir"
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
   if [ ! -f .env.docker ]; then cp .env.docker.example .env.docker; fi
   docker compose --env-file .env.docker run --rm wasm
 )
 ```
 
 Docker를 사용할 수 없을 때의 진단 경로는 같은 worktree에서
-`CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt`입니다.
+`CARGO_TARGET_DIR="${rhwp_review_target_dir:?}" scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt`입니다.
 이 경우 Docker 부재·대체 명령을 기록하고, 최적화된 표준 빌드를 통과했다고 쓰지 마세요. Windows native
 wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이미 WASM을 준비했다면 이어지는 frontend
 검사·시각 대조를 위해 다시 빌드할 필요는 없습니다.
 
-비교 도구가 최신 실행 파일을 보도록 `cargo build --locked --profile release-test --target-dir target/pr-review`로
+비교 도구가 최신 실행 파일을 보도록 `cargo build --locked --profile release-test --target-dir "${rhwp_review_target_dir:?}"`로
 검증 worktree의 `rhwp` 바이너리를 만들 수 있습니다. 이 빌드는 테스트를 실행하지 않으므로 위 회귀를
 대체하지 않습니다. 혼합 변경의 frontend 검사도 마친 뒤 다음 최종 확인으로 넘어갑니다.
 
@@ -308,9 +367,10 @@ wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이�
 ```bash
 (
   set -eu
-  cd "$rhwp_review_dir"
-  test "$(git rev-parse HEAD)" = "$rhwp_review_sha"
+  cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
   node scripts/rust-test-suite-manifest.mjs --check
+  git diff --check "${rhwp_review_base_sha:?}...${rhwp_review_sha:?}"
   git diff --check
   git status --short
   test -z "$(git status --porcelain)"
@@ -334,9 +394,9 @@ wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이�
 ```bash
 (
   set -eu
-  cd "$rhwp_source_dir"
+  cd "${rhwp_source_dir:?}"
   test -n "$(git branch --show-current)"
-  test "$(git rev-parse HEAD)" = "$rhwp_review_sha"
+  test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
   test -z "$(git status --porcelain)"
   git push -u origin HEAD
 )
@@ -344,6 +404,27 @@ wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이�
 
 위 명령은 본인 Fork의 `origin`에 현재 작업 branch를 push합니다. 이후 `devel` 대상 PR을 만들고 최신
 head의 required checks를 확인하세요.
+
+#### 5. 검증 worktree 정리
+
+증적을 worktree 밖에 보존하고 실행 중인 검사·개발 서버가 없을 때만 정리합니다. 이 명령은 검증 실패 후
+보정 파일을 source에 반영한 뒤에도 사용할 수 있습니다. ignored 산출물도 함께 삭제되므로 아래 목록을
+먼저 확인하세요. 기록할 원본 변경이 남았거나 Git이 제거를 거부하면 원인을 확인하고 강제 삭제하지 않습니다.
+
+```bash
+(
+  set -eu
+  cd "${rhwp_source_dir:?}"
+  test "${rhwp_review_dir:?}" != "$rhwp_source_dir"
+  git -C "$rhwp_review_dir" status --short --ignored
+  test -z "$(git -C "$rhwp_review_dir" status --porcelain)"
+  test "$(git -C "$rhwp_review_dir" rev-parse HEAD)" = "${rhwp_review_sha:?}"
+  git worktree remove "$rhwp_review_dir"
+)
+```
+
+source checkout과 외부 `rhwp_review_target_dir`는 보존됩니다. 보정 commit은 같은 셸에서도 **1번 준비부터**
+다시 시작하세요. 정상 제거 뒤에는 `git worktree prune`을 추가로 실행할 필요가 없습니다.
 
 ### 프런트엔드 변경 검증
 
@@ -355,29 +436,66 @@ Studio 단독 변경에 Rust 전체 fmt·Clippy·integration 회귀를 추가로
 메인터너용 PR review 문서를 읽거나 저장소에 검토 기록을 추가할 필요는 없습니다. PR 본문에 검증한
 commit SHA, 실제 명령·결과, 수동 확인한 동작과 사용한 공개 sample을 적어주세요.
 
-아래 명령은 저장소 루트에서 실행합니다. 먼저 Node.js/npm, 저장소의 `rust-toolchain.toml`에 지정된 Rust
-toolchain·WASM target, `wasm-pack`을 준비하고 Studio 의존성을 설치합니다.
+모든 frontend 블록의 실행 위치는 **Studio 단독이면 원본 commit의 clean source checkout 루트**,
+**혼합 변경이면 Rust를 검사한 동일 SHA의 review worktree 루트**입니다. 혼합 변경은 위 셸에서
+`cd "${rhwp_review_dir:?}"`로 이동하고 `git rev-parse HEAD`가 `rhwp_review_sha`와 같은지 확인하세요.
+Windows native shell도 동일한 절대 경로로 이동하고 SHA를 확인합니다. 다른 checkout의 `pkg/`를 복사하지 않습니다.
+아래부터 끝까지 선택한 트리를 유지하고, 새 셸에서는 실행 경로·SHA 확인을 다시 수행하세요.
+
+먼저 Node.js/npm을 준비하고 선택한 루트에서 원본 commit·clean 상태를 확인한 뒤 의존성을 설치합니다.
 
 ```bash
-npm --prefix rhwp-studio ci
+(
+  set -eu
+  git rev-parse --show-toplevel HEAD
+  test -z "$(git status --porcelain)"
+  npm --prefix rhwp-studio ci
+)
 ```
+
+#### Studio 테스트 전용
+
+변경 전체가 `rhwp-studio/tests/**` 안에만 있는 경우 CI `frontend-unit-gates`와 같은 검사를 실행합니다.
+Rust·production source·package·설정·E2E를 함께 바꿨다면 이 분기를 단독으로 적용하지 않습니다.
+이 경로에는 Rust toolchain·WASM package·production build가 필요하지 않습니다.
+
+```bash
+(
+  set -eu
+  (cd rhwp-studio && npx tsc --project tsconfig.ci-unit.json --noEmit)
+  npm --prefix rhwp-studio test
+)
+```
+
+검사 후 아래 최종 SHA·clean 확인과 commit 공백 검사를 마치면 package 경로를 생략할 수 있습니다.
+
+#### Studio package·브라우저 검증
+
+그 외 Studio source·package·브라우저 변경은 같은 선택 루트에서 진행합니다. 저장소의
+`rust-toolchain.toml`에 지정된 Rust toolchain·WASM target과 `wasm-pack`을 추가로 준비하세요.
 
 **타입 검사·build·브라우저 검증 전에 해당 commit의 WASM package를 새로 만드세요.** 깨끗한 checkout에는
 `pkg/`가 없으며, 다른 commit의 WASM을 복사하면 현재 변경을 검증한 것이 아닙니다. CI의 frontend package
-gate도 fresh WASM build를 먼저 실행합니다. 이 준비는 Studio가 사용할 WASM 산출물을 만드는 단계로,
+gate와 같이 `--dev`로 fresh WASM을 먼저 만듭니다. Studio production bundle 검사는 아래에서 별도로
+실행합니다. 이 준비는 Studio가 사용할 WASM 산출물을 만드는 단계로,
 Studio 단독 변경에 Rust 전체 lint·회귀를 요구하는 것과는 구분합니다.
+
+렌더링 출력·성능이나 release WASM을 검증할 때는 Rust 절의 표준 Docker 빌드·시각 검증을 적용합니다.
+`--dev` 성공을 최적화된 release WASM의 검증으로 기록하지 않습니다. 동일 SHA로 이미 요구되는 WASM을
+준비했다면 package 검사를 위해 재빌드하지 않습니다.
 
 macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전 metadata
 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
 
 ```bash
-CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev
 ```
 
-반복 실행할 때는 macOS/Linux 셸에서 아래 alias를 둘 수 있습니다.
+혼합 변경에서 host WASM 캐시를 재사용하려면 위 명령의 `target/pr-review` 대신
+`"${rhwp_review_target_dir:?}"`를 지정합니다. 반복 실행용 alias도 같은 선택 루트에서만 사용하세요.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev'
 rhwp-wasm-build
 ```
 
@@ -385,14 +503,14 @@ Windows에서는 native wrapper를 사용합니다.
 
 ```powershell
 $env:CARGO_TARGET_DIR = 'target\pr-review'
-.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
+.\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg --dev
 Remove-Item Env:CARGO_TARGET_DIR
 ```
 
 `cmd.exe`에서는 아래처럼 `doskey` macro를 현재 세션에 등록할 수 있습니다. macro는 세션 종료 시 사라집니다.
 
 ```bat
-doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
+doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg --dev $*
 set "CARGO_TARGET_DIR=target\pr-review"
 rhwp-wasm-build
 set "CARGO_TARGET_DIR="
@@ -402,15 +520,21 @@ WASM 준비가 성공한 뒤 Studio의 타입·단위·번들을 순차 확인�
 다시 실행한 결과를 기록하세요. 생성된 `pkg/`·빌드 산출물은 PR에 포함하지 않습니다.
 
 ```bash
-(cd rhwp-studio && npx tsc --noEmit)
-npm --prefix rhwp-studio test
-npm --prefix rhwp-studio run build
+(
+  set -eu
+  (cd rhwp-studio && npx tsc --noEmit)
+  npm --prefix rhwp-studio test
+  npm --prefix rhwp-studio run build
+)
 ```
 
 사용자 상호작용, Canvas, 선택·입력·저장, bridge, plugin 등 브라우저 동작을 바꿨다면
 [`rhwp-studio/e2e/MANIFEST.md`](rhwp-studio/e2e/MANIFEST.md)에서 변경 기능에 대응하는 E2E를 골라 함께
 실행합니다. 예를 들어 `e2e/`에 새 회귀를 추가했다면 manifest와 package script도 함께 갱신하고,
-해당 script를 PR 본문에 기록합니다.
+해당 script를 PR 본문에 기록합니다. 편집 command·Undo/Redo 변경은
+[편집 Command/Undo 체크리스트](mydocs/manual/edit_command_review_checklist.md)도 사용하세요.
+headless Chrome을 실행할 수 없다면 미실행 사유와 체크리스트의 수동 확인 결과를 기록하고 검토자에게
+대체 증적을 제시합니다. 체크리스트만으로 필수 E2E·required check를 통과했다고 표시하지 않습니다.
 
 ```bash
 # 예: 수정한 기능에 맞는 한 가지 이상의 E2E를 선택한다.
@@ -437,6 +561,13 @@ VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 
 브라우저 화면·영상·개인정보가 포함된 sample은 저장소에 커밋하지 않고 PR 본문에 공개 가능한 범위로 첨부합니다.
 렌더링 또는 페이지네이션을 바꿨다면 이 절차에 더해 아래의 시각 검증 안내를 따릅니다.
+
+#### frontend 최종 확인
+
+선택한 source 또는 review 루트에서 다시 `git rev-parse HEAD`와 `git status --short`를 확인하고 시작 SHA와
+같은지 대조합니다. [commit 공백 검사](#모든-범위의-commit-공백-검사)도 수행하세요. 혼합 변경은 같은 셸에서
+Rust 절의 manifest·원본 제출 확인으로 돌아갑니다. Studio 단독도 미커밋 변경이나 새 commit이 생기면
+새 SHA로 해당 검증을 다시 수행하고, 검증한 source HEAD를 제출합니다.
 
 ### 성능 검증 책임
 
@@ -545,7 +676,7 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
 1. **결정적 자동 검증** (필수):
    - Rust 렌더링 source 변경은 위 Rust lint·전체 `cargo nextest run`·Native Skia 회귀
    - SVG snapshot은 전체 integration 회귀에 포함되며, 실패 원인 확인·결정성 확인 시 준비된 worktree에서
-     `node scripts/run-rust-test.mjs svg_snapshot -- --cargo-profile release-test --target-dir target/pr-review`로 선택 실행
+     `node scripts/run-rust-test.mjs svg_snapshot -- --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?}"`로 선택 실행
    - Studio 렌더링 UI 변경은 해당 frontend·E2E 회귀와 fresh WASM 검증
 
 2. **시각 검증** (참고):

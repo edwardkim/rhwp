@@ -1,5 +1,5 @@
 > **PR base 브랜치가 `devel` 인지 확인해주세요** (`main` 아님 — GitHub 기본 선택이 main 일 수 있습니다).
-> 작업 브랜치는 최신 `upstream/devel` 에서 생성합니다. 상세: [CONTRIBUTING.md](../CONTRIBUTING.md)
+> 작업 브랜치는 최신 `upstream/devel` 에서 생성합니다. 상세: [CONTRIBUTING.md](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md)
 
 ## 변경 요약
 
@@ -17,22 +17,23 @@ closes #
 - 검증한 commit SHA:
 - 실행 명령·결과 및 해당 없음 사유:
 
-- [ ] [변경 범위별 필수 검증](../CONTRIBUTING.md#pr-전-체크리스트)을 수행하고, 제출 HEAD가 검증한 commit과 같음을 확인
-- [ ] Rust source·test/baseline helper·Rust 검증 입력 변경 시: [별도 worktree 준비](../CONTRIBUTING.md#rust-검증-worktree-준비와-실행) 후 `cargo fmt --all -- --check`, native·WASM32·workspace all-target Clippy 통과
+- [ ] [변경 범위별 필수 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#pr-전-체크리스트)을 수행하고, 제출 HEAD가 검증한 commit과 같음을 확인
+- [ ] Rust source·test/baseline helper·Rust 검증 입력 변경 시: [별도 worktree 준비](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#rust-검증-worktree-준비와-실행) 후 `cargo fmt --all -- --check`, native·WASM32·workspace all-target Clippy 통과
 - [ ] Rust 변경 시: 범위에 해당하는 focused·전체 integration·Native Skia 회귀 및 시각 검증 수행
 - [ ] 새 integration test는 원본을 `tests/cases/*.rs`에만 추가했고 `tests/generated/`, `tests/suites/manifest.json`, 일반 PR의 Cargo generated test target을 포함하지 않음 (`--sync-cargo-targets` 메인터너 registry PR은 marker 블록만 예외)
 - [ ] `src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]` 변경 시: `node scripts/rust-unit-test-tiers.mjs --check` 통과 (무생성 검사)
-- [ ] Studio 변경 시: [fresh WASM 준비 → TypeScript·단위·production build](../CONTRIBUTING.md#프런트엔드-변경-검증) 통과, 브라우저 동작 변경 시 관련 E2E·실제 동작 확인 · 명령/결과:
+- [ ] Studio 변경 시: [테스트 전용 unit 또는 fresh dev WASM package 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#프런트엔드-변경-검증) 통과, 브라우저 동작 변경 시 관련 E2E·실제 동작 확인 · 명령/결과:
+- [ ] 편집 command·Undo/Redo 변경 시: [편집 체크리스트](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/edit_command_review_checklist.md) 확인; E2E 미실행 시 사유와 대체 증적 기록
 - [ ] npm/editor 변경 시: 해당 package·embed 계약 검사 수행
-- [ ] 문서 변경 시: `git diff --check`, 링크·내용 정합성과 변경한 실행 절차 확인
-- [ ] (에이전트 보조 작업 권장) 작업 증빙 첨부 — `rhwp replay --capsule` 영수증 캡슐 또는 관련 `--json` 봉투 원문 ([AGENTS.md 작업 증빙 절](../AGENTS.md#작업-증빙--에이전트-기본-경로-권장))
+- [ ] 문서 변경 시: 최신 base 기준 `git diff --check upstream/devel...HEAD` 및 `git diff --check`, 링크·내용 정합성과 변경한 실행 절차 확인
+- [ ] (에이전트 보조 작업 권장) 작업 증빙 첨부 — `rhwp replay --capsule` 영수증 캡슐 또는 관련 `--json` 봉투 원문 ([AGENTS.md 작업 증빙 절](https://github.com/edwardkim/rhwp/blob/devel/AGENTS.md#작업-증빙--에이전트-기본-경로-권장))
 - [ ] `.claude/agents/`, `.claude/skills/`, `.agents/skills/` 변경 시: [capability 카탈로그](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/agent_capability_registry.md)의 등록·검증 규칙을 반영
 
 > Rust 검증이 필요하면 기여자 본인이 원본 commit의 별도 review worktree를 만들어
 > `--prepare` → fmt·lint·해당 회귀 → manifest `--check` 순서로 검증합니다. source 제출 checkout에서
 > 생성하지 않으며, 파생 파일은 PR에 포함하지 않습니다. suite 누락으로 실패한 fmt를 PASS로 기록하지 마세요.
 > Studio 단독 변경은 frontend 검증, 혼합 변경은 두 범위를 모두 적용합니다. 최신 GitHub required checks도
-> 충족해야 합니다. 상세 순서는 [공개 검증 절차](../CONTRIBUTING.md#rust-검증-worktree-준비와-실행)를 따릅니다.
+> 충족해야 합니다. 상세 순서는 [공개 검증 절차](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#rust-검증-worktree-준비와-실행)를 따릅니다.
 
 ## 성능 영향 및 측정 결과 (해당하는 경우)
 
