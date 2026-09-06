@@ -1632,6 +1632,46 @@ impl HeightMeasurer {
         }
     }
 
+    /// [#6660] 병합 칸을 복원한 뒤, 병합되지 않은 행의 남은 여유만 회수한다.
+    ///
+    /// 첫 축소는 병합 칸의 하한을 모르므로, #6124 복원 뒤에는 선언 높이를
+    /// 넘으면서도 다른 행에 여유가 남을 수 있다. exam_science 1쪽 문단 23의
+    /// 보기 표가 이 경우다. 복원한 병합 묶음은 그대로 보존하고, 단일행 셀의
+    /// 저장 내용+여백 하한 위에 남은 몫만 줄인다. 하한 합이 선언을 넘으면
+    /// 필요한 초과 높이는 유지한다. 거대 overfill의 균일 축소에는 적용하지 않는다.
+    fn reclaim_unmerged_row_slack(
+        table: &Table,
+        row_heights: &mut [f64],
+        row_floors: &[f64],
+        cell_spacing: f64,
+        dpi: f64,
+    ) {
+        let row_count = row_heights.len();
+        let target = hwpunit_to_px(table.common.height as i32, dpi);
+        let mut excess = row_heights.iter().sum::<f64>()
+            + cell_spacing * row_count.saturating_sub(1) as f64
+            - target;
+        if excess <= 0.5 {
+            return;
+        }
+
+        let mut merged_rows = vec![false; row_count];
+        for cell in &table.cells {
+            let start = cell.row as usize;
+            let span = cell.row_span as usize;
+            if span > 1 && start < row_count {
+                merged_rows[start..(start + span).min(row_count)].fill(true);
+            }
+        }
+        for ((height, floor), merged) in row_heights.iter_mut().zip(row_floors).zip(merged_rows) {
+            if !merged {
+                let recovered = (*height - floor).max(0.0).min(excess);
+                *height -= recovered;
+                excess -= recovered;
+            }
+        }
+    }
+
     /// 표의 높이를 측정한다.
     /// layout_table과 동일한 방식으로 셀 내용 높이를 고려한다.
     fn measure_table(
@@ -3347,6 +3387,13 @@ impl HeightMeasurer {
                     table,
                     row_count,
                     &mut row_heights,
+                    cell_spacing,
+                    self.dpi,
+                );
+                Self::reclaim_unmerged_row_slack(
+                    table,
+                    &mut row_heights,
+                    &floors,
                     cell_spacing,
                     self.dpi,
                 );

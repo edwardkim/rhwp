@@ -36,6 +36,60 @@ use crate::model::table::Table;
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
 
+/// [#6699] 그림 뒤 문자열의 마지막 자간은 다음 글자가 없는 정렬 폭에 넣지 않는다.
+/// 글자 전진 폭과 그림 뒤 원본 공백은 유지하고, 가운데/오른쪽 정렬의 점유 폭만 줄인다.
+fn terminal_tracking_after_inline_picture(
+    line: &ComposedLine,
+    para: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    tac_offsets: &[(usize, f64, usize)],
+) -> f64 {
+    if tac_offsets.is_empty()
+        || line
+            .runs
+            .iter()
+            .any(|run| run.char_overlap.is_some() || run.display_text.is_some())
+    {
+        return 0.0;
+    }
+    let text_end = line.char_start
+        + line
+            .runs
+            .iter()
+            .map(|run| run.text.chars().count())
+            .sum::<usize>();
+    // 문자열 뒤 개체에는 실제로 자간 다음 내용이 있으므로 기존 전진 폭을 쓴다.
+    if tac_offsets.iter().any(|(pos, _, _)| *pos >= text_end)
+        || !tac_offsets.iter().any(|(_, _, index)| {
+            matches!(
+                para.and_then(|p| p.controls.get(*index)),
+                Some(Control::Picture(picture)) if picture.common.treat_as_char
+            )
+        })
+    {
+        return 0.0;
+    }
+    let Some(run) = line.runs.iter().rev().find(|run| !run.text.is_empty()) else {
+        return 0.0;
+    };
+    let Some(last) =
+        unicode_segmentation::UnicodeSegmentation::graphemes(run.text.as_str(), true).next_back()
+    else {
+        return 0.0;
+    };
+    if last.chars().any(char::is_whitespace) {
+        return 0.0;
+    }
+    let mut style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+    if style.letter_spacing <= 0.0 || style.kerning {
+        return 0.0;
+    }
+    // 폰트별 글자 폭에 비례하는 자간을 기존 측정 함수로 구한다. 정수 반올림은 하지 않는다.
+    let tracked = estimate_text_width_unrounded(last, &style);
+    style.letter_spacing = 0.0;
+    (tracked - estimate_text_width_unrounded(last, &style)).max(0.0)
+}
+
 /// 최종 emitted text run에서만 exact pair positions를 게시한다.
 ///
 /// `fallback_width`는 K0의 기존 반올림·field projection·줄-말미 공백 회수 계약을
@@ -5166,6 +5220,21 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
+            let terminal_tracking_width = if cell_ctx.is_some()
+                && matches!(alignment, Alignment::Center | Alignment::Right)
+                && !center_packed_cell_label_as_right
+                && !has_tabs
+                && extra_char_sp == 0.0
+            {
+                terminal_tracking_after_inline_picture(
+                    comp_line,
+                    para,
+                    styles,
+                    &line_tac_offsets_for_width,
+                )
+            } else {
+                0.0
+            };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
@@ -5173,7 +5242,9 @@ impl LayoutEngine {
                     } else if non_cell_tac_only_line {
                         0.0
                     } else {
-                        (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                        (available_width
+                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
+                            .max(0.0)
                             / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
@@ -5190,7 +5261,9 @@ impl LayoutEngine {
                     x_base
                         + inline_offset
                         + num_x_offset
-                        + (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                        + (available_width
+                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
+                            .max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
