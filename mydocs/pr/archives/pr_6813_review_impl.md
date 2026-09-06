@@ -16,10 +16,9 @@
    source head는 리베이스하지 않았다. `964ef10a6`을 upstream 작업 branch에 push해 Open PR #6813을 생성했다.
 3. 완료: 초기 exact PR head `964ef10a6`의 CI, CodeQL, Render Diff, Adapter, Proptest가 모두 성공했다.
    GitHub merge commit `c0687162210c4277d44a506bdff325ec3e548861`을 검증 기준으로 고정했다.
-4. 진행: 초기 CI 성공 뒤 review/오늘할일 문서만 trailing commit으로 push한다. latest base의 오늘 기록을
-   삭제하지 않는다. 사전 simulation에서 오늘할일 신규 파일의 add/add 충돌을 확인했으므로,
-   문서 commit 뒤 exact current base bridge 한 번에서 mydocs 충돌만 양쪽 기록을 보존해 해소한다.
-   기록 commit의 문서-only 범위, bridge remerge diff의 mydocs 한정 여부, 최종 tree 링크를 검사한다.
+4. 로컬 완료, push 진행: 문서 commit `d7f165819` 뒤 exact current base bridge `359f4d3ea`에서
+   오늘할일 add/add 충돌만 양쪽 기록을 보존해 해소했다. verifier는 mydocs-only, exit 0이었다.
+   초기 검증된 GitHub merge commit 대비 코드 diff 0, 최종 tree의 세 문서 링크/diff check도 통과했다.
 5. 대기: trailing head CI와 mergeability를 다시 확인한 뒤 결과를 보고한다. 이번 지시를 admin merge나
    issue 선행 close 승인으로 확대하지 않는다.
 6. 별도 merge 승인 뒤: `post_merge.md`를 다시 읽고 exact head를 merge한다. merge SHA와 devel 포함을

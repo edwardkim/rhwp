@@ -63,10 +63,15 @@
   최초 merge tree `c8c104b0f4bd0845a4fb20b2a309da1bc58ae684`의 diff check도 통과했다.
   코드 head를 재베이스하지 않았으며 새 base와의 실행 호환성은 이번 PR CI에서 확인한다.
 - 오늘할일을 추가한 문서 후보는 `mydocs/orders/20260906.md`만 add/add 충돌했다.
-  기존 base에는 파일이 없고 upstream에서 별도로 생성됐기 때문이다. 초기 CI 성공 뒤 정확한 current base를
-  한 번 merge하는 review-only bridge에서 해당 문서의 기존 기록과 이번 항목을 모두 보존한다.
-  source/test/fixture/workflow의 수동 충돌 해소는 하지 않는다. bridge는 불필요한 최신화가 아니라
+  기존 base에는 파일이 없고 upstream에서 별도로 생성됐기 때문이다. 초기 CI 성공 뒤 문서 commit
+  `d7f165819`과 current base `3960844b2`를 잇는 bridge `359f4d3ea`에서 기존 기록과 이번 항목을
+  모두 보존했다. source/test/fixture/workflow의 수동 충돌 해소는 없었다. bridge는 불필요한 최신화가 아니라
   실제로 확인한 오늘할일 충돌을 해소하기 위한 예외이며 fast-pass를 성공으로 미리 단정하지 않는다.
+- bridge의 `git show --remerge-diff`는 오늘할일 한 파일의 충돌 marker 제거만 보고했다.
+  `verify_review_only_merge_resolution.py --repository . --base-sha 3960844b2f4a546a120cbbb50ae72ef2e5e7239f
+  359f4d3eaf38af5c38c39ea475bcac372a7169ac`는 `current-base-merge-resolution-mydocs-only`, exit 0이었다.
+  초기 GitHub merge commit 대비 diff는 review 두 문서와 오늘할일뿐이며 mydocs 밖 diff는 0이다.
+  최종 tree의 위 세 문서 내부 링크 및 diff check가 통과했다.
 
 ## 시각 검증
 
@@ -153,7 +158,7 @@ pixel-perfect 또는 전체 fidelity 완료를 주장하지 않는다. #6712의 
 | [Proptest 34029158575](https://github.com/edwardkim/rhwp/actions/runs/34029158575) | success |
 
 - 검사된 GitHub merge commit은 `c0687162210c4277d44a506bdff325ec3e548861`이고 부모는
-  `3960844b2`와 `964ef10a6`이다. 문서 bridge 뒤 이 commit과 mydocs 밖 diff가 없는지 확인한다.
+  `3960844b2`와 `964ef10a6`이다. 문서 bridge 뒤 이 commit과 mydocs 밖 diff가 없음을 확인했다.
 - GitHub raw URL의 대표 PNG 6개를 실제 받아 PNG signature/content-type 및 로컬 SHA-256 일치를 확인했다.
 - 오늘할일과 이 review 및 실행 계획을 같은 PR branch에 trailing commit으로 포함한다.
   single-parent 기록 commit은 문서만 바꾼다. current-base bridge는 remerge diff의 수동 해소가
