@@ -2,7 +2,8 @@
 
 - Issue: [#6788](https://github.com/edwardkim/rhwp/issues/6788)
 - 작성일: 2026-09-06
-- 상태: 로컬 검증 완료, [PR #6814](https://github.com/edwardkim/rhwp/pull/6814) 생성. 최신 CI·merge 승인 대기.
+- 상태: 최초 구현 검증·[PR #6814](https://github.com/edwardkim/rhwp/pull/6814) 생성 후
+  [리뷰 보정 검증 중](../pr/archives/pr_6814_review_impl.md). 아래 최초 검증 수치는 새 보정 후보와 구분한다.
 - 계획: [수행계획](../plans/task_m100_6788.md), [구현계획](../plans/task_m100_6788_impl.md).
 - 단계 증빙: [1단계](../working/task_m100_6788_stage1.md),
   [2단계](../working/task_m100_6788_stage2.md), [3단계](../working/task_m100_6788_stage3.md).
