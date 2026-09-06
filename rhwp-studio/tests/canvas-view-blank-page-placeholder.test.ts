@@ -36,7 +36,7 @@ test('빈 쪽 자리표시자는 첫 쪽을 그린 뒤에만 걷는다', () => {
   const view = source('src/view/canvas-view.ts');
   const load = section(view, '  async loadDocument(): Promise<void> {', '\n  /** WASM 문서 교체');
 
-  const visibleIndex = load.indexOf('this.updateVisiblePages();');
+  const visibleIndex = load.indexOf("this.updateVisiblePages('initial');");
   const clearIndex = load.indexOf('this.clearBlankPagePlaceholder();');
   assert.ok(visibleIndex >= 0, '문서 로드는 보이는 쪽을 그려야 한다');
   assert.ok(clearIndex > visibleIndex, '쪽을 그린 뒤에 자리표시자를 걷어야 한다');

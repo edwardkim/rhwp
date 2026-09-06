@@ -1,0 +1,1200 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "summarize.mjs",
+  "comparison": {
+    "before": {
+      "label": "Stage 3",
+      "sha": "5f5d60071"
+    },
+    "after": {
+      "label": "Stage 4",
+      "sha": "6f2d82d24"
+    },
+    "browser": "Chromium 151 / Canvas2D",
+    "viewportCssPx": {
+      "width": 1280,
+      "height": 720
+    },
+    "actualDpr": 2
+  },
+  "alertThresholds": {
+    "p50Regression": "max(10ms, 5%)",
+    "p95Regression": "max(25ms, 10%)"
+  },
+  "hwpspecFourColumns34Cold": {
+    "before": {
+      "samples": 20,
+      "complete": 20,
+      "knownWorkNextFrameMs": {
+        "n": 20,
+        "p50": 390.3,
+        "p95": 400.7,
+        "max": 403.1,
+        "mean": 387.2
+      },
+      "visibleFirstMs": {
+        "n": 20,
+        "p50": 271.2,
+        "p95": 278.9,
+        "max": 279.8,
+        "mean": 271.6
+      },
+      "visibleStableMs": {
+        "n": 20,
+        "p50": 271.2,
+        "p95": 278.9,
+        "max": 279.8,
+        "mean": 271.6
+      },
+      "retainedCompleteMs": {
+        "n": 20,
+        "p50": 377,
+        "p95": 396.3,
+        "max": 402.4,
+        "mean": 379.4
+      },
+      "visibilityUpdateMs": {
+        "n": 20,
+        "p50": 243.8,
+        "p95": 247.7,
+        "max": 252,
+        "mean": 243.6
+      },
+      "budgetRefreshMs": {
+        "n": 20,
+        "p50": 18.9,
+        "p95": 19.6,
+        "max": 19.9,
+        "mean": 19
+      },
+      "rasterCalls": {
+        "n": 20,
+        "p50": 12,
+        "p95": 12,
+        "max": 12,
+        "mean": 12
+      },
+      "rasterInclusiveMs": {
+        "n": 20,
+        "p50": 315,
+        "p95": 323.2,
+        "max": 327.8,
+        "mean": 315.1
+      },
+      "frameIntervalsMs": {
+        "n": 101,
+        "p50": 13.3,
+        "p95": 272.3,
+        "max": 278.5,
+        "mean": 76.3
+      },
+      "longTasks": {
+        "count": 40,
+        "totalMs": 6887
+      },
+      "errors": 0
+    },
+    "after": {
+      "samples": 20,
+      "complete": 20,
+      "knownWorkNextFrameMs": {
+        "n": 20,
+        "p50": 352.2,
+        "p95": 360.2,
+        "max": 362.7,
+        "mean": 351.1
+      },
+      "visibleFirstMs": {
+        "n": 20,
+        "p50": 56.5,
+        "p95": 59,
+        "max": 60.3,
+        "mean": 56.2
+      },
+      "visibleStableMs": {
+        "n": 20,
+        "p50": 250.9,
+        "p95": 259.7,
+        "max": 263.2,
+        "mean": 251.6
+      },
+      "retainedCompleteMs": {
+        "n": 20,
+        "p50": 351.6,
+        "p95": 359.7,
+        "max": 362.2,
+        "mean": 350.6
+      },
+      "visibilityUpdateMs": {
+        "n": 20,
+        "p50": 19.1,
+        "p95": 19.6,
+        "max": 19.8,
+        "mean": 19.1
+      },
+      "budgetRefreshMs": {
+        "n": 20,
+        "p50": 18.7,
+        "p95": 19.2,
+        "max": 19.5,
+        "mean": 18.7
+      },
+      "rasterCalls": {
+        "n": 20,
+        "p50": 12,
+        "p95": 12,
+        "max": 12,
+        "mean": 12
+      },
+      "rasterInclusiveMs": {
+        "n": 20,
+        "p50": 274.2,
+        "p95": 278.3,
+        "max": 287,
+        "mean": 274.6
+      },
+      "frameIntervalsMs": {
+        "n": 375,
+        "p50": 22.7,
+        "p95": 36.5,
+        "max": 45.2,
+        "mean": 18.6
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0
+      },
+      "errors": 0
+    },
+    "change": {
+      "knownWorkNextFrameMs": {
+        "p50Percent": -9.8,
+        "p95Percent": -10.1
+      },
+      "visibleFirstMs": {
+        "p50Percent": -79.2,
+        "p95Percent": -78.8
+      },
+      "visibleStableMs": {
+        "p50Percent": -7.5,
+        "p95Percent": -6.9
+      },
+      "retainedCompleteMs": {
+        "p50Percent": -6.7,
+        "p95Percent": -9.2
+      },
+      "visibilityUpdateMs": {
+        "p50Percent": -92.2,
+        "p95Percent": -92.1
+      },
+      "rasterInclusiveMs": {
+        "p50Percent": -13,
+        "p95Percent": -13.9
+      }
+    }
+  },
+  "hwpspecFourColumns34Warm": {
+    "before": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 25,
+        "p95": 37.2,
+        "max": 394.8,
+        "mean": 43.4
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 16.8,
+        "p95": 29.2,
+        "max": 289.9,
+        "mean": 30.1
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 16.8,
+        "p95": 29.2,
+        "max": 289.9,
+        "mean": 30.1
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 16.8,
+        "p95": 29.2,
+        "max": 394.3,
+        "mean": 35.7
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 0.6,
+        "p95": 1.1,
+        "max": 260.4,
+        "mean": 13.3
+      },
+      "budgetRefreshMs": {
+        "n": 40,
+        "p50": 0.1,
+        "p95": 0.2,
+        "max": 19.4,
+        "mean": 1
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "max": 12,
+        "mean": 0.6
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "max": 334.1,
+        "mean": 16.3
+      },
+      "frameIntervalsMs": {
+        "n": 87,
+        "p50": 8.1,
+        "p95": 21.1,
+        "max": 289,
+        "mean": 16.3
+      },
+      "longTasks": {
+        "count": 4,
+        "totalMs": 714
+      },
+      "errors": 0
+    },
+    "after": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 25,
+        "p95": 26.5,
+        "max": 362.8,
+        "mean": 41.5
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 18.9,
+        "max": 64.8,
+        "mean": 18.7
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 18.9,
+        "max": 269.8,
+        "mean": 28.8
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 18.9,
+        "max": 362.4,
+        "mean": 33.6
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 0.7,
+        "p95": 2.1,
+        "max": 20.1,
+        "mean": 1.7
+      },
+      "budgetRefreshMs": {
+        "n": 40,
+        "p50": 0.1,
+        "p95": 0.2,
+        "max": 19.7,
+        "mean": 1
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "max": 12,
+        "mean": 0.6
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "max": 283.2,
+        "mean": 14
+      },
+      "frameIntervalsMs": {
+        "n": 112,
+        "p50": 8.3,
+        "p95": 33.3,
+        "max": 37.2,
+        "mean": 11.9
+      },
+      "longTasks": {
+        "count": 0,
+        "totalMs": 0
+      },
+      "errors": 0
+    },
+    "beforeFinalLedger": {
+      "activePixels": 7838640,
+      "idlePoolPixels": 0,
+      "detachedCachePixels": 7013520,
+      "reservedPixels": 7838640,
+      "totalAccountedPixels": 14852160,
+      "overBudgetMandatory": false,
+      "pendingImages": 0,
+      "pendingPrefetch": 0
+    },
+    "afterFinalLedger": {
+      "activePixels": 7838640,
+      "idlePoolPixels": 0,
+      "detachedCachePixels": 7013520,
+      "reservedPixels": 7838640,
+      "totalAccountedPixels": 14852160,
+      "overBudgetMandatory": false,
+      "pendingImages": 0,
+      "pendingPrefetch": 0
+    }
+  },
+  "examFourColumns34": {
+    "before": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 164.3,
+        "p95": 222.4,
+        "max": 244.1,
+        "mean": 187.7
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 152.9,
+        "p95": 158.2,
+        "max": 160,
+        "mean": 153.5
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 152.9,
+        "p95": 158.2,
+        "max": 160,
+        "mean": 153.5
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 158.2,
+        "p95": 221.9,
+        "max": 243.5,
+        "mean": 185.5
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 141.2,
+        "p95": 147.4,
+        "max": 148.9,
+        "mean": 142.6
+      },
+      "budgetRefreshMs": {
+        "n": 40,
+        "p50": 140.6,
+        "p95": 147.2,
+        "max": 148.4,
+        "mean": 142.4
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 2,
+        "p95": 3,
+        "max": 3,
+        "mean": 2.5
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 148.3,
+        "p95": 205.5,
+        "max": 206.6,
+        "mean": 171.3
+      },
+      "frameIntervalsMs": {
+        "n": 115,
+        "p50": 59.2,
+        "p95": 151.1,
+        "max": 153.9,
+        "mean": 63.2
+      },
+      "longTasks": {
+        "count": 60,
+        "totalMs": 6966
+      },
+      "errors": 0
+    },
+    "after": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 157.6,
+        "p95": 311,
+        "max": 316,
+        "mean": 223.6
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 55.3,
+        "p95": 69.2,
+        "max": 70.1,
+        "mean": 58.8
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 55.3,
+        "p95": 150.7,
+        "max": 151.7,
+        "mean": 98.5
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 151.7,
+        "p95": 310.1,
+        "max": 314.2,
+        "mean": 221.1
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 0.6,
+        "p95": 61.3,
+        "max": 61.6,
+        "mean": 29.6
+      },
+      "budgetRefreshMs": {
+        "n": 40,
+        "p50": 0.1,
+        "p95": 0.3,
+        "max": 0.3,
+        "mean": 0.1
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 2,
+        "p95": 5,
+        "max": 5,
+        "mean": 3.5
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 143,
+        "p95": 280.8,
+        "max": 282.7,
+        "mean": 202.2
+      },
+      "frameIntervalsMs": {
+        "n": 271,
+        "p50": 41.8,
+        "p95": 80.2,
+        "max": 86.2,
+        "mean": 32.1
+      },
+      "longTasks": {
+        "count": 98,
+        "totalMs": 6423
+      },
+      "errors": 0
+    },
+    "down": {
+      "before": {
+        "samples": 20,
+        "complete": 20,
+        "knownWorkNextFrameMs": {
+          "n": 20,
+          "p50": 154.7,
+          "p95": 163.8,
+          "max": 164.3,
+          "mean": 156
+        },
+        "visibleFirstMs": {
+          "n": 20,
+          "p50": 152.8,
+          "p95": 157,
+          "max": 158.2,
+          "mean": 152.1
+        },
+        "visibleStableMs": {
+          "n": 20,
+          "p50": 152.8,
+          "p95": 157,
+          "max": 158.2,
+          "mean": 152.1
+        },
+        "retainedCompleteMs": {
+          "n": 20,
+          "p50": 152.8,
+          "p95": 157,
+          "max": 158.2,
+          "mean": 152.1
+        },
+        "visibilityUpdateMs": {
+          "n": 20,
+          "p50": 141.2,
+          "p95": 148.1,
+          "max": 148.9,
+          "mean": 142.8
+        },
+        "budgetRefreshMs": {
+          "n": 20,
+          "p50": 140.6,
+          "p95": 147.6,
+          "max": 148.4,
+          "mean": 142.4
+        },
+        "rasterCalls": {
+          "n": 20,
+          "p50": 2,
+          "p95": 2,
+          "max": 2,
+          "mean": 2
+        },
+        "rasterInclusiveMs": {
+          "n": 20,
+          "p50": 140.6,
+          "p95": 147.5,
+          "max": 148.3,
+          "mean": 142.4
+        },
+        "frameIntervalsMs": {
+          "n": 40,
+          "p50": 8.9,
+          "p95": 152.3,
+          "max": 153.9,
+          "mean": 75.8
+        },
+        "longTasks": {
+          "count": 20,
+          "totalMs": 2911
+        },
+        "errors": 0
+      },
+      "after": {
+        "samples": 20,
+        "complete": 20,
+        "knownWorkNextFrameMs": {
+          "n": 20,
+          "p50": 149.1,
+          "p95": 156.9,
+          "max": 157.6,
+          "mean": 149.9
+        },
+        "visibleFirstMs": {
+          "n": 20,
+          "p50": 66.6,
+          "p95": 69.3,
+          "max": 70.1,
+          "mean": 66.5
+        },
+        "visibleStableMs": {
+          "n": 20,
+          "p50": 146,
+          "p95": 151,
+          "max": 151.7,
+          "mean": 145.8
+        },
+        "retainedCompleteMs": {
+          "n": 20,
+          "p50": 146,
+          "p95": 151,
+          "max": 151.7,
+          "mean": 145.8
+        },
+        "visibilityUpdateMs": {
+          "n": 20,
+          "p50": 58.2,
+          "p95": 61.4,
+          "max": 61.6,
+          "mean": 58.7
+        },
+        "budgetRefreshMs": {
+          "n": 20,
+          "p50": 0.1,
+          "p95": 0.2,
+          "max": 0.2,
+          "mean": 0.1
+        },
+        "rasterCalls": {
+          "n": 20,
+          "p50": 2,
+          "p95": 2,
+          "max": 2,
+          "mean": 2
+        },
+        "rasterInclusiveMs": {
+          "n": 20,
+          "p50": 132.9,
+          "p95": 141.2,
+          "max": 143,
+          "mean": 134.8
+        },
+        "frameIntervalsMs": {
+          "n": 60,
+          "p50": 61.7,
+          "p95": 81.7,
+          "max": 86.2,
+          "mean": 48.5
+        },
+        "longTasks": {
+          "count": 40,
+          "totalMs": 2780
+        },
+        "errors": 0
+      }
+    },
+    "up": {
+      "before": {
+        "samples": 20,
+        "complete": 20,
+        "knownWorkNextFrameMs": {
+          "n": 20,
+          "p50": 218.8,
+          "p95": 228.2,
+          "max": 244.1,
+          "mean": 219.3
+        },
+        "visibleFirstMs": {
+          "n": 20,
+          "p50": 153.8,
+          "p95": 159,
+          "max": 160,
+          "mean": 155
+        },
+        "visibleStableMs": {
+          "n": 20,
+          "p50": 153.8,
+          "p95": 159,
+          "max": 160,
+          "mean": 155
+        },
+        "retainedCompleteMs": {
+          "n": 20,
+          "p50": 218.4,
+          "p95": 227.8,
+          "max": 243.5,
+          "mean": 218.9
+        },
+        "visibilityUpdateMs": {
+          "n": 20,
+          "p50": 140.7,
+          "p95": 146.4,
+          "max": 147.4,
+          "mean": 142.5
+        },
+        "budgetRefreshMs": {
+          "n": 20,
+          "p50": 140.5,
+          "p95": 146.3,
+          "max": 147.2,
+          "mean": 142.4
+        },
+        "rasterCalls": {
+          "n": 20,
+          "p50": 3,
+          "p95": 3,
+          "max": 3,
+          "mean": 3
+        },
+        "rasterInclusiveMs": {
+          "n": 20,
+          "p50": 197.2,
+          "p95": 206.5,
+          "max": 206.6,
+          "mean": 200.3
+        },
+        "frameIntervalsMs": {
+          "n": 75,
+          "p50": 59.2,
+          "p95": 150.4,
+          "max": 152.1,
+          "mean": 56.4
+        },
+        "longTasks": {
+          "count": 40,
+          "totalMs": 4055
+        },
+        "errors": 0
+      },
+      "after": {
+        "samples": 20,
+        "complete": 20,
+        "knownWorkNextFrameMs": {
+          "n": 20,
+          "p50": 295.4,
+          "p95": 312.2,
+          "max": 316,
+          "mean": 297.3
+        },
+        "visibleFirstMs": {
+          "n": 20,
+          "p50": 52.4,
+          "p95": 55.2,
+          "max": 55.3,
+          "mean": 51.1
+        },
+        "visibleStableMs": {
+          "n": 20,
+          "p50": 52.4,
+          "p95": 55.2,
+          "max": 55.3,
+          "mean": 51.1
+        },
+        "retainedCompleteMs": {
+          "n": 20,
+          "p50": 294.7,
+          "p95": 310.5,
+          "max": 314.2,
+          "mean": 296.3
+        },
+        "visibilityUpdateMs": {
+          "n": 20,
+          "p50": 0.5,
+          "p95": 0.5,
+          "max": 0.6,
+          "mean": 0.5
+        },
+        "budgetRefreshMs": {
+          "n": 20,
+          "p50": 0.2,
+          "p95": 0.3,
+          "max": 0.3,
+          "mean": 0.2
+        },
+        "rasterCalls": {
+          "n": 20,
+          "p50": 5,
+          "p95": 5,
+          "max": 5,
+          "mean": 5
+        },
+        "rasterInclusiveMs": {
+          "n": 20,
+          "p50": 269.2,
+          "p95": 282.5,
+          "max": 282.7,
+          "mean": 269.6
+        },
+        "frameIntervalsMs": {
+          "n": 211,
+          "p50": 2,
+          "p95": 79.2,
+          "max": 86,
+          "mean": 27.4
+        },
+        "longTasks": {
+          "count": 58,
+          "totalMs": 3643
+        },
+        "errors": 0
+      }
+    },
+    "change": {
+      "overallKnownWorkNextFrameMs": {
+        "p50Percent": -4.1,
+        "p95Percent": 39.8
+      },
+      "overallRetainedCompleteMs": {
+        "p50Percent": -4.1,
+        "p95Percent": 39.7
+      },
+      "upwardKnownWorkNextFrameMs": {
+        "p50Percent": 35,
+        "p95Percent": 36.8
+      },
+      "upwardRetainedCompleteMs": {
+        "p50Percent": 34.9,
+        "p95Percent": 36.3
+      }
+    },
+    "beforeFinalLedger": {
+      "activePixels": 39090060,
+      "idlePoolPixels": 0,
+      "detachedCachePixels": 0,
+      "reservedPixels": 39090060,
+      "totalAccountedPixels": 39090060,
+      "overBudgetMandatory": false,
+      "pendingImages": 0,
+      "pendingPrefetch": 0
+    },
+    "afterFinalLedger": {
+      "activePixels": 39090060,
+      "idlePoolPixels": 0,
+      "detachedCachePixels": 0,
+      "reservedPixels": 41256000,
+      "totalAccountedPixels": 41256000,
+      "overBudgetMandatory": true,
+      "pendingImages": 0,
+      "pendingPrefetch": 0
+    }
+  },
+  "fourPageZoom50To100": {
+    "single": {
+      "before": {
+        "50": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 14.5,
+            "p95": 15.3,
+            "max": 16,
+            "mean": 14.6
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 127.8,
+            "p95": 132.7,
+            "max": 133.9,
+            "mean": 127.7
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 127.8,
+            "p95": 132.7,
+            "max": 133.9,
+            "mean": 127.7
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 145.8,
+            "p95": 151.1,
+            "max": 152.5,
+            "mean": 146.2
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 2,
+            "p95": 2,
+            "max": 2,
+            "mean": 2
+          },
+          "finalPixels": [
+            1783324
+          ],
+          "errors": 0
+        },
+        "100": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 14.8,
+            "p95": 15.3,
+            "max": 16.2,
+            "mean": 14.7
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 129.1,
+            "p95": 133.4,
+            "max": 133.5,
+            "mean": 127.6
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 129.1,
+            "p95": 133.4,
+            "max": 133.5,
+            "mean": 127.6
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 147.5,
+            "p95": 152.3,
+            "max": 152.6,
+            "mean": 146.5
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 2,
+            "p95": 2,
+            "max": 2,
+            "mean": 2
+          },
+          "finalPixels": [
+            7133296
+          ],
+          "errors": 0
+        }
+      },
+      "after": {
+        "50": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 15,
+            "p95": 15.4,
+            "max": 16.1,
+            "mean": 14.9
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 124.8,
+            "p95": 127.5,
+            "max": 127.6,
+            "mean": 123.6
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 124.8,
+            "p95": 127.5,
+            "max": 127.6,
+            "mean": 123.6
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 140.4,
+            "p95": 144,
+            "max": 145.4,
+            "mean": 139.8
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 2,
+            "p95": 2,
+            "max": 2,
+            "mean": 2
+          },
+          "finalPixels": [
+            1783324
+          ],
+          "errors": 0
+        },
+        "100": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 15.1,
+            "p95": 15.5,
+            "max": 15.5,
+            "mean": 14.7
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 124.5,
+            "p95": 128.3,
+            "max": 128.6,
+            "mean": 124
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 124.5,
+            "p95": 128.3,
+            "max": 128.6,
+            "mean": 124
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 140.7,
+            "p95": 147.2,
+            "max": 148,
+            "mean": 141.3
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 2,
+            "p95": 2,
+            "max": 2,
+            "mean": 2
+          },
+          "finalPixels": [
+            7133296
+          ],
+          "errors": 0
+        }
+      }
+    },
+    "double": {
+      "before": {
+        "50": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 14.9,
+            "p95": 15.8,
+            "max": 16,
+            "mean": 14.8
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 144.8,
+            "p95": 149.2,
+            "max": 149.6,
+            "mean": 145
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 144.8,
+            "p95": 149.2,
+            "max": 149.6,
+            "mean": 145
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 180.6,
+            "p95": 185.4,
+            "max": 187.8,
+            "mean": 181.2
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 4,
+            "p95": 4,
+            "max": 4,
+            "mean": 4
+          },
+          "finalPixels": [
+            3566648
+          ],
+          "errors": 0
+        },
+        "100": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 14.8,
+            "p95": 15.3,
+            "max": 15.5,
+            "mean": 14.7
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 144.2,
+            "p95": 149.6,
+            "max": 149.9,
+            "mean": 143.6
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 144.2,
+            "p95": 149.6,
+            "max": 149.9,
+            "mean": 143.6
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 181.3,
+            "p95": 196.7,
+            "max": 232.5,
+            "mean": 184.8
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 4,
+            "p95": 4,
+            "max": 4,
+            "mean": 4
+          },
+          "finalPixels": [
+            14266592
+          ],
+          "errors": 0
+        }
+      },
+      "after": {
+        "50": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 14.8,
+            "p95": 15.2,
+            "max": 15.2,
+            "mean": 14.7
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 140.5,
+            "p95": 144.1,
+            "max": 144.5,
+            "mean": 138.9
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 140.5,
+            "p95": 144.1,
+            "max": 144.5,
+            "mean": 138.9
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 173.4,
+            "p95": 177.7,
+            "max": 177.9,
+            "mean": 172.3
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 4,
+            "p95": 4,
+            "max": 4,
+            "mean": 4
+          },
+          "finalPixels": [
+            3566648
+          ],
+          "errors": 0
+        },
+        "100": {
+          "samples": 20,
+          "complete": 20,
+          "previewMs": {
+            "n": 20,
+            "p50": 14.9,
+            "p95": 15.8,
+            "max": 16.1,
+            "mean": 14.8
+          },
+          "focusedSharpMs": {
+            "n": 20,
+            "p50": 140.4,
+            "p95": 143.7,
+            "max": 144,
+            "mean": 138.4
+          },
+          "visibleStableMs": {
+            "n": 20,
+            "p50": 140.4,
+            "p95": 143.7,
+            "max": 144,
+            "mean": 138.4
+          },
+          "retainedCompleteMs": {
+            "n": 20,
+            "p50": 175.3,
+            "p95": 178.6,
+            "max": 211.8,
+            "mean": 175.7
+          },
+          "rasterCalls": {
+            "n": 20,
+            "p50": 4,
+            "p95": 4,
+            "max": 4,
+            "mean": 4
+          },
+          "finalPixels": [
+            14266592
+          ],
+          "errors": 0
+        }
+      }
+    }
+  },
+  "verdict": {
+    "stage5Accepted": false,
+    "reason": "exam_kor 4-column 34% upward return adds speculative raster work and breaches the predeclared retained-complete p95 regression threshold"
+  }
+}

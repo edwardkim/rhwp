@@ -20,10 +20,10 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 |------|---------|----------|--------|
 | GitHub Pages (데모) | — | CI/CD 자동 | main push 또는 태그 |
 | GitHub Release CLI | `rhwp` | CI/CD 자동 | `v*` 태그 push |
-| npm WASM 코어 | @rhwp/core | CI/CD 자동 | GitHub Release 생성 |
-| npm 에디터 | @rhwp/editor | CI/CD 자동 | GitHub Release 생성 |
-| VSCode Marketplace | rhwp-vscode | CI/CD 자동 | GitHub Release 생성 |
-| Open VSX | rhwp-vscode | CI/CD 자동 | GitHub Release 생성 |
+| npm WASM 코어 | @rhwp/core | CI/CD 자동 | stable `v*` Release Binary의 직접 호출 또는 exact-tag 수동 복구 |
+| npm 에디터 | @rhwp/editor | CI/CD 자동 | stable `v*` Release Binary의 직접 호출 또는 exact-tag 수동 복구 |
+| VSCode Marketplace | rhwp-vscode | CI/CD 자동 | stable `v*` Release Binary의 직접 호출 또는 exact-tag 수동 복구 |
+| Open VSX | rhwp-vscode | CI/CD 자동 | stable `v*` Release Binary의 직접 호출 또는 exact-tag 수동 복구 |
 | Chrome Web Store | rhwp-chrome | 수동 업로드 | 확장 릴리즈 |
 | Microsoft Edge Add-ons | rhwp-chrome | 수동 업로드 | 확장 릴리즈 |
 | Firefox AMO | rhwp-firefox | 수동 업로드 | 확장 릴리즈 |
@@ -39,8 +39,8 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 | `.github/workflows/ci.yml` | push/PR (main, devel) | cargo build + test + clippy 검증 |
 | `.github/workflows/gym-release-gate.yml` | Gym 관련 PR, 수동 실행 | AI 에이전트 벤치마크 계약·전건 판별력 검증 |
 | `.github/workflows/deploy-pages.yml` | main push, 태그 | WASM 빌드 → rhwp-studio 빌드 → GitHub Pages 배포 |
-| `.github/workflows/release-binary.yml` | `v*` 태그, 수동 실행 | 5플랫폼 CLI 빌드 → archive·SHA-256을 GitHub Release에 첨부 |
-| `.github/workflows/npm-publish.yml` | **GitHub Release 생성** 또는 수동 실행 | WASM 빌드 → @rhwp/core + @rhwp/editor + VSCode/Open VSX 익스텐션 배포 |
+| `.github/workflows/release-binary.yml` | `v*` 태그, 수동 실행 | 5플랫폼 CLI → Release 첨부 → 같은 commit의 package workflow 직접 호출 |
+| `.github/workflows/npm-publish.yml` | `workflow_call` 또는 수동 실행 | exact source 검증 → WASM·VSIX → 네 채널 독립 배포·완료 집계 |
 
 ### CI/CD 자동 배포 흐름
 
@@ -51,15 +51,17 @@ devel 대상 PR merge → CI 자동 실행 (build + test + clippy)
   ↓
 main 대상 release PR merge → GitHub Pages 자동 배포
   ↓
-GitHub Release 생성 (태그)
-  ↓ Release Binary가 Linux x86_64/AArch64, macOS x86_64/AArch64,
-    Windows x86_64 CLI archive와 SHA256SUMS.txt 첨부
-  ↓ npm-publish.yml 자동 실행
-  ├─ WASM 빌드
-  ├─ npm @rhwp/core 배포
-  ├─ npm @rhwp/editor 배포
-  ├─ VS Code Marketplace 배포
-  └─ Open VSX 배포
+stable v* tag push → Release Binary 시작
+  ↓ Linux x86_64/AArch64, macOS x86_64/AArch64,
+    Windows x86_64 CLI archive 빌드·검증
+  ↓ GitHub Release 게시 + archive·SHA256SUMS.txt 첨부
+  ↓ 같은 tag commit의 npm-publish.yml을 직접 호출
+  ↓ exact tag/SHA/version/Release 검증 + WASM·VSIX 단일 빌드
+  ├─ npm @rhwp/core 상태 확인 → 필요할 때만 배포
+  ├─ npm @rhwp/editor 상태 확인 → 필요할 때만 배포
+  ├─ VS Code Marketplace 상태 확인 → 필요할 때만 배포
+  └─ Open VSX 상태 확인 → 필요할 때만 배포
+  ↓ release-publish-evidence aggregate 성공
   ↓
 브라우저 확장 zip 별도 생성
   ├─ Chrome Web Store 수동 업로드
@@ -67,9 +69,10 @@ GitHub Release 생성 (태그)
   └─ Firefox AMO 확장 zip + source zip 수동 업로드
 ```
 
-> **중요**: GitHub Release를 생성하면 npm 2종과 VS Code/Open VSX 배포가 자동 실행된다. 수동 `npm publish`나 `publish.sh`를 실행하지 않는다.
-> 단, release workflow를 재실행하면서 이미 VS Code/Open VSX 배포가 끝난 경우에는
-> `workflow_dispatch`의 `publish_extensions=false` 입력으로 npm publish만 다시 시도한다.
+> **중요**: package publish의 기동 원인은 GitHub Release의 `published` 이벤트가 아니라
+> stable `v*` tag에서 성공한 `Release Binary`의 same-commit 직접 호출이다. 수동 `npm publish`나
+> `publish.sh`를 먼저 실행하지 않는다. 부분 실패는 exact tag에서 `Publish All Packages`를 다시 실행하며,
+> 각 채널의 exact version 상태 판정이 이미 게시된 채널을 건너뛴다.
 > Chrome/Edge/Firefox 브라우저 확장은 스토어 심사 흐름이 달라 현재 수동 업로드한다.
 
 ### Gym 운영 경계
@@ -103,15 +106,18 @@ Linux AArch64는 cross compile이나 self-hosted runner가 아니라 GitHub 표�
 확인한다.
 
 릴리즈 전 dry-run은 작업 브랜치 exact head에서 `workflow_dispatch`의 `tag=test`로 실행한다.
-이 값은 `v`로 시작하지 않으므로 release job은 실행되지 않고 build artifact만 만든다. Linux AArch64
-job이 성공하면 `rhwp-test-linux-aarch64.tar.gz`를 내려받아 다음을 확인한다.
+수동 실행에서는 Release job과 네 외부 publish job이 skipped되며, 다섯 CLI archive와 reusable package의
+`wasm-pkg`, `vscode-vsix`, `release-publish-evidence` artifact를 만든다. evidence의 verdict는
+`completed`, 네 채널 상태는 `verify-only`여야 한다. Linux AArch64 job이 성공하면
+`rhwp-test-linux-aarch64.tar.gz`를 내려받아 다음을 확인한다.
 
 - archive 내부: `rhwp/rhwp`, `rhwp/LICENSE`, `rhwp/README.md`, `rhwp/README_EN.md`
 - 실행 파일: ELF 64-bit AArch64
 - Actions log: `rhwp --version` 종료 코드 0
 
 정식 `v*` 실행에서는 다섯 archive가 모두 성공한 뒤에만 release job이 `SHA256SUMS.txt`와 함께
-GitHub Release에 첨부한다.
+GitHub Release에 첨부한다. stable tag는 이어서 같은 commit의 package workflow를 직접 호출하고,
+prerelease 표식(`-rc`, `-beta`, `-alpha` 등)이 있는 tag는 외부 package를 게시하지 않는다.
 
 ### GitHub Secrets 설정
 
@@ -383,9 +389,9 @@ same-repository `devel -> main` PR에서 `Workflow promotion preflight`와 requi
 `workflow-promotion-evidence-<run-id>` artifact의 inventory·runs·waivers·verdict로 확인한다.
 waiver는 permission·secret·security·deployment 변경이나 실패한 테스트를 숨기는 수단이 아니다.
 
-#6634의 **GitHub Release 생성 후 publish workflow 자동 기동** 확인은 이 preflight와 별개다.
-promotion gate가 성공해도 Release 생성 후 `Publish All Packages`가 실제로 시작했는지는
-5·6단계에서 따로 확인한다.
+#6634의 **Release Binary에서 same-commit package workflow 직접 호출** 확인은 이 preflight와 별개다.
+promotion gate의 verify-only 실행이 성공해도 정식 tag에서 `Publish All Packages`가 production mode로
+실행되고 네 공개 채널이 완료됐는지는 5·6단계에서 따로 확인한다.
 
 > release 준비 변경도 `upstream/devel`에 직접 push하지 않는다. 작업 브랜치 PR과 CI를 거쳐 통합하고,
 > 검증된 `devel`을 `main` 대상 release PR로 올린다.
@@ -394,37 +400,50 @@ promotion gate가 성공해도 Release 생성 후 `Publish All Packages`가 실�
 > - `ci.yml` → build + test + clippy 검증
 > - `deploy-pages.yml` → GitHub Pages 데모 사이트 자동 배포
 
-### 5단계: GitHub Release 생성 → npm 자동 배포
+### 5단계: stable tag push → Release·package 자동 배포
 
 ```bash
 git tag v0.7.3
 git push origin v0.7.3
-gh release create v0.7.3 --title "v0.7.3 — 제목" --notes "릴리즈 노트"
 ```
 
-> **Release 생성 시 `npm-publish.yml` 자동 실행:**
-> 1. WASM 빌드
-> 2. `scripts/prepare-npm.sh` 실행
-> 3. npm Trusted Publishing(OIDC)으로 `@rhwp/core`, `@rhwp/editor` 배포
-> 4. VS Code Marketplace / Open VSX 배포
+tag push 직후 별도의 `gh release create`를 동시에 실행하지 않는다. `Release Binary`가 다섯 플랫폼을
+모두 통과한 뒤 GitHub Release를 생성·첨부하고, 같은 workflow run에서 `npm-publish.yml`을 직접 호출한다.
+Release job이 성공한 뒤 준비된 release note를 반영한다.
+
+```bash
+gh release edit v0.7.3 \
+  --repo edwardkim/rhwp \
+  --title "v0.7.3 — 제목" \
+  --notes-file path/to/release-notes.md
+```
+
+자동 package 경로는 다음 순서를 보장한다.
+
+1. tag, checkout, `GITHUB_SHA`, Cargo·npm·VS Code version과 published stable Release가 정확히 일치하는지 검증
+2. WASM build와 VSIX 단일 package
+3. npm Trusted Publishing(OIDC)으로 `@rhwp/core`, `@rhwp/editor`의 미게시 exact version만 배포
+4. VS Code Marketplace와 Open VSX를 독립 조회해 미게시 exact version만 배포
+5. `release-publish-evidence`에 네 채널 상태와 `completed` verdict 집계
 >
 > Trusted Publishing 사용 시 provenance attestation은 npm이 자동 생성한다.
 >
-> 수동으로 `cd pkg && npm publish`를 실행하지 않는다.
-> 이미 VS Code/Open VSX가 배포된 뒤 npm만 재시도해야 하면 Actions에서 `npm-publish.yml`을
-> `workflow_dispatch`로 실행하고 `publish_extensions=false`를 선택한다.
+> 수동으로 `cd pkg && npm publish`를 실행하지 않는다. 부분 실패 복구는 아래 exact-tag dispatch를 쓴다.
 
 ### 6단계: 배포 확인 (자동 완료 대기)
 
-GitHub Release 생성 후 Actions 탭에서 `Publish All Packages` 워크플로우가 실행되는 것을 확인한다.
+Actions 탭에서 하나의 `Release Binary` tag run이 다섯 native build, Release, reusable package 호출까지
+이어지는지 확인한다. package 부분의 핵심 job은 다음과 같다.
 
-4개 job이 순차 실행된다:
-1. **Build WASM** — WASM 빌드 + 아티팩트 업로드
-2. **Publish @rhwp/core** — npm 배포
-3. **Publish @rhwp/editor** — npm 배포
-4. **Publish VSCode Extension** — Marketplace + Open VSX 배포
+1. **Validate release source** — exact tag/SHA/version/Release 검증
+2. **Build WASM** — WASM build와 artifact 업로드
+3. **Build VSIX once** — extension을 한 번만 package
+4. **Publish @rhwp/core**, **Publish @rhwp/editor** — 독립 npm 상태 확인·필요 시 배포
+5. **Publish VS Code Marketplace extension**, **Publish Open VSX extension** — 같은 VSIX의 독립 상태 확인·배포
+6. **Publish channel aggregate** — 모든 요청 채널과 build 결과를 fail-closed로 집계
 
-> 전체 소요 시간: 약 5~10분
+`release-publish-evidence` artifact에서 `githubSha`가 tag commit과 같고 `verdict=completed`인지 확인한다.
+채널 상태는 `already-present` 또는 `published`여야 한다. job 성공만 보고 공개 배포 완료로 판정하지 않는다.
 
 ### 7단계: 배포 확인
 
@@ -484,7 +503,8 @@ GitHub Release 생성 후 Actions 탭에서 `Publish All Packages` 워크플로�
 - [ ] THIRD_PARTY_LICENSES.md 현행화
 - [ ] 확장 스토어 제출 문서 현행화 (`mydocs/feedback/`)
 - [ ] 배포 zip에 `.env`, 개인 폰트, token, `node_modules/`, `target/`, `dist/` 불포함 확인
-- [ ] Release Binary dry-run 5플랫폼 성공 및 Linux AArch64 archive·ELF architecture 확인
+- [ ] Release Binary dry-run 5플랫폼·WASM·VSIX·aggregate 성공 및 외부 publish 4 job skipped 확인
+- [ ] Linux AArch64 archive·ELF architecture 확인
 - [ ] exact `main..devel` workflow inventory 생성 및 필수 workflow exact-head 실행 완료
 
 ### 배포 순서
@@ -492,9 +512,9 @@ GitHub Release 생성 후 Actions 탭에서 `Publish All Packages` 워크플로�
 - [ ] devel 대상 PR merge → CI 통과 확인
 - [ ] same-repository `devel -> main` PR의 `Workflow promotion preflight` 및 `Build & Test` 성공
 - [ ] main 대상 release PR merge → GitHub Pages 배포 확인
-- [ ] v0.8.6 Release Binary 5개 archive와 `SHA256SUMS.txt` 확인
-- [ ] GitHub Release 생성 → Actions 탭에서 `Publish All Packages` 실행 확인
-- [ ] #6634와 관련한 Release 후 publish trigger를 promotion gate와 별도로 확인
+- [ ] stable `<tag>` push 뒤 Release Binary 5개 archive와 `SHA256SUMS.txt` 확인
+- [ ] 같은 Release Binary run에서 same-commit `Publish All Packages` 직접 호출 확인
+- [ ] `release-publish-evidence`의 tag SHA·`completed` verdict와 네 채널 상태 확인
 - [ ] @rhwp/core npm 배포 확인
 - [ ] @rhwp/editor npm 배포 확인
 - [ ] VS Code Marketplace 배포 확인
@@ -592,11 +612,29 @@ Permission denied: pkg/package.json
 
 이미 VS Code Marketplace / Open VSX 배포가 완료된 상태에서 npm publish만 실패했다면:
 
-1. Actions → `Publish All Packages` → Run workflow
-2. `publish_extensions=false` 선택
-3. `@rhwp/core`, `@rhwp/editor` job만 재시도
+```bash
+tag=v0.7.3
+git fetch upstream tag "${tag}"
+tag_sha="$(git rev-parse "refs/tags/${tag}^{commit}")"
+gh workflow run npm-publish.yml \
+  --repo edwardkim/rhwp \
+  --ref "${tag}" \
+  -f publish=true \
+  -f publish_extensions=false
+```
 
-이 절차는 extension marketplace 중복 버전 업로드 오류를 피하기 위한 것이다.
+1. `--ref`에는 branch가 아니라 복구할 exact release tag를 지정한다.
+2. 생성된 run의 `headSha`가 `tag_sha`와 같은지 확인한다.
+3. source guard, WASM·VSIX와 npm 두 채널, aggregate가 성공했는지 확인한다.
+4. extension 두 job은 `skipped`, evidence에서는 `not-requested`여야 한다.
+
+네 채널 중 어느 것이 완료됐는지 불명확하면 `publish_extensions=true`로 실행한다. 공개 exact-version
+조회가 기게시 채널을 `already-present`로 건너뛰므로 중복 업로드하지 않는다. 조회 timeout·5xx·schema
+오류는 미게시로 추정하지 않고 실패한다. `publish`의 기본값은 `false`이며 branch ref에서
+`publish=true`를 요청하면 exact release source guard가 거부한다.
+
+package 복구를 위해 `Release Binary` 전체를 다시 실행하면 다섯 native build와 Release 첨부까지 반복된다.
+binary artifact 복구가 목적이 아니라면 위 `npm-publish.yml` exact-tag 경로를 사용한다.
 
 ### Open VSX 배포 실패
 

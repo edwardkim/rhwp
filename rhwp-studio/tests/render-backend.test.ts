@@ -665,11 +665,20 @@ test('순수 RawSvg 프리페치는 PageLayerTree bbox 계약으로 SVG URL을 �
   assert.equal(urls.length, 1, '내부 raster data URL이 있는 rawSvg는 별도 프리페치하지 않는다');
 });
 
-test('CanvasView renders visible pages before deferred prefetch work', () => {
+test('CanvasView gives visible work precedence over deferred prefetch work', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
-  assert.match(codeOnly(source), /for \(const pageIdx of visiblePages\)/);
-  assert.match(source, /this\.schedulePrefetchPages\(prefetchPages\.filter/);
-  assert.match(source, /requestIdleCallback\(run, \{ timeout: 1000 \}\)/);
+  const scheduler = readFileSync(
+    new URL('../src/view/page-render-scheduler.ts', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    codeOnly(source),
+    /const visibleWork = isScroll[\s\S]*?buildVisibleRenderWork[\s\S]*?const prefetchWork = this\.buildPrefetchRenderWork[\s\S]*?pageRenderScheduler\.setDesiredWork/,
+  );
+  assert.match(scheduler, /if \(this\.visible\.size > 0\) \{[\s\S]*?this\.cancelDeferredTask\(\)/);
+  assert.match(scheduler, /const DEFAULT_IDLE_TIMEOUT_MS = 1000/);
+  assert.match(scheduler, /requestIdleCallback\?[\s\S]*?requestIdle:/);
+  assert.match(scheduler, /runOnePrefetch/);
   assert.match(source, /cancelPendingPrefetch\(\)/);
 });
 

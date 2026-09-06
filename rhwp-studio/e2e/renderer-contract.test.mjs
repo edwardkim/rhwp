@@ -944,13 +944,21 @@ function runExecutableStrokeDashReplay() {
     delete() { events.push({ type: 'paint.delete' }); }
   }
   class FakePath {
+    delete() { events.push({ type: 'path.delete' }); }
+  }
+  class FakePathBuilder {
     moveTo() {}
     lineTo() {}
-    delete() { events.push({ type: 'path.delete' }); }
+    detach() {
+      events.push({ type: 'pathBuilder.detach' });
+      return new FakePath();
+    }
+    delete() { events.push({ type: 'pathBuilder.delete' }); }
   }
   const renderer = new CanvasKitLayerRendererRuntime({
     Paint: FakePaint,
     Path: FakePath,
+    PathBuilder: FakePathBuilder,
     PaintStyle: { Fill: 0, Stroke: 1 },
     PathEffect: {
       MakeDash(intervals, phase) {
@@ -1012,13 +1020,18 @@ function runExecutableGradientFillReplay() {
     delete() { events.push({ type: 'paint.delete' }); }
   }
   class FakePath {
+    delete() { events.push({ type: 'path.delete' }); }
+  }
+  class FakePathBuilder {
     moveTo() {}
     lineTo() {}
-    delete() { events.push({ type: 'path.delete' }); }
+    detach() { return new FakePath(); }
+    delete() { events.push({ type: 'pathBuilder.delete' }); }
   }
   const renderer = new CanvasKitLayerRendererRuntime({
     Paint: FakePaint,
     Path: FakePath,
+    PathBuilder: FakePathBuilder,
     PaintStyle: { Fill: 0, Stroke: 1 },
     TileMode: { Clamp: 0 },
     Shader: {
@@ -1109,14 +1122,19 @@ function runExecutableM07PackReplay() {
     delete() { events.push({ type: 'paint.delete' }); }
   }
   class FakePath {
+    delete() { events.push({ type: 'path.delete' }); }
+  }
+  class FakePathBuilder {
     moveTo(x, y) { events.push({ type: 'path.moveTo', x, y }); }
     lineTo(x, y) { events.push({ type: 'path.lineTo', x, y }); }
     close() { events.push({ type: 'path.close' }); }
-    delete() { events.push({ type: 'path.delete' }); }
+    detach() { return new FakePath(); }
+    delete() { events.push({ type: 'pathBuilder.delete' }); }
   }
   const renderer = new CanvasKitLayerRendererRuntime({
     Paint: FakePaint,
     Path: FakePath,
+    PathBuilder: FakePathBuilder,
     PaintStyle: { Fill: 0, Stroke: 1 },
     PathEffect: { MakeDash() { return { delete() {} }; } },
     Color: (r, g, b, a) => [r, g, b, a],
@@ -1910,6 +1928,13 @@ const fontNativeGlyphReplayEvents = runExecutableFontNativeGlyphReplay();
 assert.ok(fontNativeGlyphReplayEvents.includes('canvas.drawImageRect'));
 assert.ok(fontNativeGlyphReplayEvents.includes('canvas.drawPath'));
 const strokeDashReplay = runExecutableStrokeDashReplay();
+for (const type of ['pathBuilder.detach', 'pathBuilder.delete', 'path.delete']) {
+  assert.equal(
+    strokeDashReplay.events.filter(event => event.type === type).length,
+    1,
+    `path replay should perform ${type} exactly once`,
+  );
+}
 assert.deepEqual(
   strokeDashReplay.events
     .filter(event => event.type === 'pathEffect.create')
@@ -2036,8 +2061,13 @@ requireSnippet(
 );
 requireSnippet(
   renderPathBody,
-  /new this\.canvasKit\.Path\(\)[\s\S]*?this\.applyPathCommand[\s\S]*?this\.drawStyledPath/,
-  'path replay should build CanvasKit paths through applyPathCommand and drawStyledPath',
+  /this\.createCommandPath\(op\.commands \?\? \[\], op\.bbox\.x, op\.bbox\.y\)[\s\S]*?this\.drawStyledPath/,
+  'path replay should build command paths before drawing the serialized style',
+);
+requireSnippet(
+  extractMethodBody(canvaskitSource, 'createCommandPath'),
+  /new this\.canvasKit\.PathBuilder\(\)[\s\S]*?try\s*\{[\s\S]*?this\.applyPathCommand\(builder,[\s\S]*?return builder\.detach\(\);[\s\S]*?finally\s*\{\s*builder\.delete\(\);/,
+  'command paths should use PathBuilder, detach the completed Path, and always release the builder',
 );
 requireSnippet(
   renderLineBody,

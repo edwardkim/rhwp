@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -16,7 +17,8 @@ function cellBranchBlock(): string {
   assert.notEqual(cellStart, -1, 'cell branch not found');
   const cellEnd = cursor.indexOf('// ─── 단어 단위 이동', cellStart);
   assert.notEqual(cellEnd, -1, 'cell branch end not found');
-  return cursor.slice(cellStart, cellEnd);
+  // [Task #6759 후속] 구간 경계는 주석 표지로 잡고, 위치 판정은 코드만 본다.
+  return codeOnly(cursor.slice(cellStart, cellEnd));
 }
 
 test('Ctrl+Up inside a table cell stops at current paragraph start when mid-paragraph', () => {
