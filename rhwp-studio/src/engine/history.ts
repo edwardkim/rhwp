@@ -205,6 +205,9 @@ export class CommandHistory {
   /** Redo — 성공 시 커서 위치 반환, 스택 비었으면 null */
   redo(wasm: WasmBridge): DocumentPosition | null {
     this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;
+    // 부분 Undo/Redo가 남아 있으면 기존 redo command의 시작 상태가 아니다.
+    // 먼저 Undo 복원을 완료해야 더 최신 명령을 안전하게 다시 실행할 수 있다.
+    if (this.peekUndoTop()?.retainOnFailure?.()) return null;
     const command = this.redoStack[this.redoStack.length - 1];
     if (!command) return null;
 
@@ -266,7 +269,7 @@ export class CommandHistory {
   }
 
   canUndo(): boolean { return this.undoStack.length > 0; }
-  canRedo(): boolean { return this.redoStack.length > 0; }
+  canRedo(): boolean { return this.redoStack.length > 0 && !this.peekUndoTop()?.retainOnFailure?.(); }
 
   /**
    * [Task #2337] 직전 undo/redo 로 방금 이동한 커맨드를 조회한다.

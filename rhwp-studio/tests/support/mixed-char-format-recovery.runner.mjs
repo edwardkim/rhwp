@@ -121,6 +121,26 @@ for (const cell of [false, true]) {
 {
   const f = fixture();
   f.history.execute(f.command, f.wasm);
+  let newerExecutions = 0;
+  const newer = { type: 'newer', execute: () => { newerExecutions++; return pos(0, 0); }, undo: () => pos(0, 0), mergeWith: () => null };
+  f.history.execute(newer, f.wasm);
+  f.history.undo(f.wasm);
+  f.flags.restore.add(1);
+  assert.throws(() => f.history.undo(f.wasm), CharFormatRecoveryError);
+  assert.equal(f.history.peekRedoTop(), newer, '더 최신 Redo 정보도 유지한다');
+  assert.equal(f.history.canRedo(), false);
+  assert.equal(f.history.redo(f.wasm), null, '부분 Undo 상태에서 최신 Redo를 실행하지 않는다');
+  assert.equal(newerExecutions, 1);
+  f.flags.restore.clear();
+  f.history.undo(f.wasm);
+  f.history.redo(f.wasm);
+  f.history.redo(f.wasm);
+  assert.equal(newerExecutions, 2, '복원 완료 후 원래 순서의 Redo가 가능하다');
+}
+
+{
+  const f = fixture();
+  f.history.execute(f.command, f.wasm);
   f.history.undo(f.wasm);
   const redo = f.history.peekRedoTop();
   f.history.execute(new ApplyCharFormatCommand(pos(0, 0), pos(0, 0), {}), f.wasm);
