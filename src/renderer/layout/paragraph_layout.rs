@@ -5546,6 +5546,47 @@ impl LayoutEngine {
                 }
             }
 
+            // [#6800] 탭이 든 `TextRun` 의 bbox 폭이 **줄 끝까지** 잡힌다.
+            //
+            // 탭 전진은 다음 탭 스톱까지인데 폭 계산이 줄 폭을 그대로 실어,
+            // 그 런이 뒤따르는 런을 통째로 덮은 것처럼 보인다
+            // (1192000-202100017: `"  - 	"` 런이 x=221.8 w=496.0 인데 다음 런은
+            //  x=249.1 에서 시작 — 468.7px 겹침으로 계수된다).
+            // 잉크는 안 겹치므로 출력은 멀쩡하지만(한/글과 글자 수 완전 일치),
+            // `text_overlap_baseline` 래칫이 이 가짜 겹침을 세어 **진짜 글자겹침을
+            // 가린다.**
+            //
+            // 탭이 실제로 든 런만, 그리고 **다음 런의 시작 x** 로만 자른다 —
+            // 줄 마지막 런은 다음이 없으므로 그대로 둔다.
+            {
+                let run_starts: Vec<f64> = line_node
+                    .children
+                    .iter()
+                    .filter(|child| matches!(child.node_type, RenderNodeType::TextRun(_)))
+                    .map(|child| child.bbox.x)
+                    .collect();
+                for child in &mut line_node.children {
+                    let has_tab = matches!(
+                        &child.node_type,
+                        RenderNodeType::TextRun(tr) if tr.text.contains('\t')
+                    );
+                    if !has_tab {
+                        continue;
+                    }
+                    let x = child.bbox.x;
+                    if let Some(next_x) = run_starts
+                        .iter()
+                        .copied()
+                        .filter(|nx| *nx > x + 0.5)
+                        .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+                    {
+                        if x + child.bbox.width > next_x + 0.5 {
+                            child.bbox.width = (next_x - x).max(0.0);
+                        }
+                    }
+                }
+            }
+
             col_node.children.push(line_node);
             // 줄간격 적용:
             //   - 셀 내 마지막 문단의 마지막 줄: trailing line_spacing 제외
