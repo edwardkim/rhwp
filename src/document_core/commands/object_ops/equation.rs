@@ -144,6 +144,12 @@ impl DocumentCore {
     ) {
         use crate::document_core::helpers::{json_i32, json_str, json_u32};
 
+        // [#6807] 자동 크기 재계산의 근거는 "크기 키가 없다" 가 아니라 "크기를 결정하는 값이
+        // 바뀌었다" 다. 종전에는 색·기준선·글꼴 이름만 담은 봉지에도 `intrinsic_size_hwp` 가
+        // 돌아 한컴이 저장한 상자 크기를 rhwp 계산값으로 바꿨다(corpus 수식 2257건 전부 해당).
+        let script_before = eq.script.clone();
+        let font_size_before = eq.font_size;
+
         if let Some(s) = json_str(props_json, "script") {
             eq.script = s;
         }
@@ -169,7 +175,8 @@ impl DocumentCore {
         // 스크립트·글자크기 편집의 자동 크기 재계산은 종전대로 동작한다.
         let explicit_width = json_u32(props_json, "width").is_some();
         let explicit_height = json_u32(props_json, "height").is_some();
-        if !explicit_width || !explicit_height {
+        let size_driver_changed = eq.script != script_before || eq.font_size != font_size_before;
+        if size_driver_changed && (!explicit_width || !explicit_height) {
             let (width, height) =
                 crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
             if !explicit_width {
