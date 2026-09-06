@@ -1583,6 +1583,55 @@ impl HeightMeasurer {
         total
     }
 
+    /// [#6660] 선언 높이에 딱 맞는 저장 한 줄은 fallback 하단 여백으로 늘리지 않는다.
+    ///
+    /// 표 기본 여백이 없고 개별 여백도 비활성인 병합 제목 셀은 저장 줄+상단
+    /// 여백만으로 선언 높이를 채울 수 있다. 이때 하단의 저장값까지 필수 높이에
+    /// 더하면 뒤 본문을 밀어낸다. 행별 HU 반올림 이내의 차이만 인정하며,
+    /// 실제 내용 넘침이나 명시적으로 활성화된 여백에는 이 예외를 적용하지 않는다.
+    fn merged_cell_restore_floor_hu(
+        table: &Table,
+        cell: &crate::model::table::Cell,
+        content_hu: i64,
+    ) -> i64 {
+        let padded = content_hu + i64::from(cell.stored_vertical_padding_hu());
+        if !table.common.treat_as_char
+            || cell.apply_inner_margin
+            || !crate::model::table::Cell::table_padding_unspecified(&table.padding)
+            || cell.vertical_align != crate::model::table::VerticalAlign::Top
+            || cell.text_direction != 0
+            || cell.row_span <= 1
+            || cell.paragraphs.len() != 1
+            || !(1..2500).contains(&cell.padding.top)
+            || !(1..2500).contains(&cell.padding.bottom)
+        {
+            return padded;
+        }
+        let paragraph = &cell.paragraphs[0];
+        if paragraph.stored_text_partition_dirty
+            || paragraph.layout_only_fill_lines != 0
+            || paragraph.text.trim().is_empty()
+            || !paragraph.controls.is_empty()
+            || paragraph.line_segs.len() != 1
+        {
+            return padded;
+        }
+        let line = &paragraph.line_segs[0];
+        let declared = i64::from(cell.height);
+        let content_with_top = content_hu + i64::from(cell.padding.top);
+        if line.vertical_pos == 0
+            && line.line_height > 0
+            && line.line_height == line.text_height
+            && declared >= content_hu
+            && content_with_top >= declared
+            && content_with_top - declared <= i64::from(cell.row_span)
+        {
+            content_with_top
+        } else {
+            padded
+        }
+    }
+
     /// [#6124] 비례 축소로 내용 아래까지 눌린 세로 병합 묶음을 되돌린다.
     ///
     /// TAC 표 축소(#5748)의 행별 내용 하한은 `row_span == 1` 셀만 세운다. 세로
@@ -1621,8 +1670,10 @@ impl HeightMeasurer {
             if content_hu <= 0 {
                 continue;
             }
-            let pad = hwpunit_to_px(cell.stored_vertical_padding_hu(), dpi);
-            let needed = hwpunit_to_px(content_hu as i32, dpi) + pad;
+            let needed = hwpunit_to_px(
+                Self::merged_cell_restore_floor_hu(table, cell, content_hu) as i32,
+                dpi,
+            );
             // 걸친 행 사이의 칸 간격도 내용이 쓸 수 있는 높이다.
             let spanned: f64 = row_heights[r..end].iter().sum::<f64>()
                 + cell_spacing * (end - r).saturating_sub(1) as f64;
