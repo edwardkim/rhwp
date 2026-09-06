@@ -20220,6 +20220,46 @@ impl TypesetEngine {
         let raw_top = saved_page_top
             .or(stored_single_topbottom_top)
             .unwrap_or_else(|| (para_start_height + v_offset_px).max(para_start_height));
+        // [#6795] 같은 문단의 **앞 자리차지 표가 쪽에 걸쳐 쪼개져** 이 쪽을 이미 차지한
+        // 경우, 그 조각은 `PageItem::PartialTable` 로 나가고 lane 에는 등록되지 않는다.
+        // `para_start_height` 는 문단이 시작한 쪽의 값이라 이어지는 쪽에서는 거의 0 이고,
+        // 빈 lane 을 그대로 믿으면 두 표가 같은 앵커에 겹쳐 놓인다
+        // (1341000-201100013 31쪽: 548.0 × 401.9px — 아래 표 341.9px 가 안 보인다).
+        // 조각이 소비한 흐름 바닥을 raw top 으로 삼으면 lane 이 available 을 넘어
+        // 아래 block 경로로 되돌아가고, 한/글처럼 표가 제 쪽을 받는다(45쪽 중 28쪽).
+        let raw_top = {
+            let blocked_by_fragment = st.current_items.iter().any(|item| match item {
+                PageItem::PartialTable {
+                    para_index,
+                    control_index,
+                    ..
+                } if *para_index == para_idx => match para.controls.get(*control_index) {
+                    Some(Control::Table(previous)) => {
+                        let previous_width =
+                            hwpunit_to_px(signed_hwpunit(previous.common.width), self.dpi);
+                        let (previous_start, previous_end) = horizontal_range(
+                            &previous.common,
+                            previous_width,
+                            placement_ctx,
+                            self.dpi,
+                        );
+                        crate::renderer::float_placement::ranges_overlap(
+                            x_start,
+                            x_end,
+                            previous_start,
+                            previous_end,
+                        )
+                    }
+                    _ => false,
+                },
+                _ => false,
+            });
+            if blocked_by_fragment {
+                raw_top.max(st.current_height)
+            } else {
+                raw_top
+            }
+        };
         // Square float의 native HWP LINE_SEG는 도형 선언 높이를 anchor와 함께 보존한다.
         // 셀 내용 재측정/host trailing spacing은 block flow에서만 쓰며, lane 예약에 더하면
         // p14처럼 실제로 들어가는 pair를 1~수십 px 초과로 오판한다.
@@ -23471,9 +23511,24 @@ impl TypesetEngine {
         // 표 자체가 한 쪽에 들어갈 때만 — 첫 표는 정상 fit/분할 경로를 그대로
         // 타고, 쪽보다 큰 표는 한글도 분할하므로(20320575 별표 24쪽: 통째-배치
         // 시 27→8쪽 붕괴 실측) 구제 대상이 아니다.
+        // [#6795] 앞 co-anchored 표가 쪽에 걸쳐 쪼개져 **이 쪽이 그 조각으로 시작**하면,
+        // 저장 앵커 줄 vpos 는 이 쪽이 아니라 문단이 시작한 쪽의 좌표다. 그 값을 근거로
+        // "한글이 스택을 통째로 이 쪽에 놓았다"고 보면, 조각이 이미 차지한 자리에 뒤 표를
+        // 겹쳐 놓는다(1341000-201100013 31쪽 548.0 × 401.9px, 아래 표 401.9px 소실).
+        let page_starts_with_own_fragment = st.current_items.iter().any(|item| {
+            matches!(
+                item,
+                PageItem::PartialTable {
+                    para_index,
+                    is_continuation: true,
+                    ..
+                } if *para_index == para_idx
+            )
+        });
         let saved_host_line_after_stack_fits = host_line_trails_float_stack
             && has_preceding_coanchored_float
-            && table_total <= available;
+            && table_total <= available
+            && !page_starts_with_own_fragment;
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
                 "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",
