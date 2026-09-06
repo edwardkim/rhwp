@@ -1090,7 +1090,7 @@ impl LayoutEngine {
             // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
             // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
             let cut_units: Option<(usize, usize)> = if is_in_split_row {
-                Some(cell_cut_window(
+                let (su, mut eu) = cell_cut_window(
                     table,
                     cell,
                     is_block_split,
@@ -1103,7 +1103,54 @@ impl LayoutEngine {
                     None,
                     start_row,
                     end_row.saturating_sub(1),
-                ))
+                );
+                // [#6803] 조각 **시작 행에서 시작해 끝 행을 넘는** rowspan 셀은 끝 컷을
+                // 받지 못한다. `end_cut` 은 `end_row-1` 행의 부기라 그 셀이 담기지 않고
+                // (`apply_end == false` → `eu == usize::MAX`), 시작 행에 걸린 탓에
+                // `#1748` 의 높이-기반 구제(`is_rowbreak_straddle`)는 `!is_in_split_row`
+                // 조건에서 막힌다. 그래서 조각이 **다음 쪽이 다시 그릴 몫까지** 배치한다
+                // (1376496 3쪽: 셀 r=8 rs=6 이 pi=0..66 을 전부 그려 글줄이 용지 아래
+                // 1,015px, `export-text` 3쪽 `A1` 이 2 대신 6).
+                //
+                // 같은 셀이 다음 조각에서는 `is_rowbreak_straddle` 로 높이 컷을 받아
+                // 정확히 이어받는다 — 두 경로의 비대칭만 메운다. 시작 컷(`su`)은 그대로
+                // 두고 끝만 이 조각의 셀 상자 높이로 정한다.
+                if eu == usize::MAX && cell.row_span > 1 && cell_end_row > render_range_end {
+                    // ⚠ 셀 상자 높이(`cell_h`)로 재면 **한 유닛 모자란다**. 선언 행높이
+                    // 합(861.7px)이 실제 조판(880.1px)보다 짧아 경계 줄이 상자 밖에서
+                    // 시작하기 때문이다(`#5862` 가 clip 을 그 줄까지 늘리는 바로 그
+                    // 어긋남). 그러면 `pi=33` 이 어느 쪽에도 안 남는다.
+                    //
+                    // 대신 다음 조각이 `is_rowbreak_straddle` 에서 `su` 를 구할 때 쓰는
+                    // **같은 식**으로 잰다 — 온전 행은 컷 측정 높이, 경계 행은 컷까지의
+                    // 높이. 그래서 `이 조각의 eu == 다음 조각의 su` 가 산술적으로
+                    // 보장된다(같은 파일 아래 `#1748` 주석의 관찰 그대로다).
+                    let boundary_row = render_range_end.saturating_sub(1);
+                    let mut consumed_h = 0.0f64;
+                    for r in cell_row..boundary_row {
+                        let has_single_row_cells = table
+                            .cells
+                            .iter()
+                            .any(|c| c.row as usize == r && c.row_span == 1);
+                        let h = if has_single_row_cells {
+                            let h = self.row_cut_content_height(table, r, &[], &[], styles);
+                            if h > 0.0 {
+                                h
+                            } else {
+                                resolved_row_heights.get(r).copied().unwrap_or(0.0)
+                            }
+                        } else {
+                            resolved_row_heights.get(r).copied().unwrap_or(0.0)
+                        };
+                        consumed_h += h + cell_spacing;
+                    }
+                    consumed_h +=
+                        self.row_cut_content_height(table, boundary_row, &[], end_cut, styles);
+                    eu = self
+                        .cell_units_fitting_height(cell, table, styles, consumed_h - pad_top)
+                        .max(su);
+                }
+                Some((su, eu))
             } else if native_two_row_paragraph_owner_boundary {
                 let su = usize::from(straddles_fragment_start);
                 let eu = if straddles_fragment_end {
