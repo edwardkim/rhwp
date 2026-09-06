@@ -405,6 +405,18 @@ impl<'a> Parser<'a> {
                 Ok(Node::Font("mathbf".into(), Box::new(target)))
             }
             _ => {
+                // A font switch may run straight into its argument with no
+                // space — `rmC` for `rm C`. The whole word then misses the
+                // command table, so without this it falls through as an
+                // identifier and emits a literal `\text{rmC}`: a wrong symbol
+                // rather than a missing one. Splitting here yields the same
+                // node the spaced form builds, so everything downstream —
+                // superscripts, the LaTeX backend — is already correct.
+                if crate::doclang::eqedit::latex::command_for(&word).is_none() {
+                    if let Some((cmd, rest)) = split_font_prefix(&word) {
+                        return Ok(Node::Font(cmd.into(), Box::new(classify_word(rest))));
+                    }
+                }
                 // Either a known no-argument command (greek, operators, …) or an
                 // unknown identifier; the LaTeX backend resolves which. The
                 // original casing is preserved so uppercase Greek (`GAMMA`) and
@@ -558,6 +570,32 @@ fn classify_word(word: &str) -> Node {
     } else {
         Node::Ident(word.to_string())
     }
+}
+
+/// Splits a font switch that runs straight into its argument — `rmC` for
+/// `rm C` — returning the LaTeX command and the remaining argument text.
+///
+/// This mirrors `renderer/equation/tokenizer.rs`, which does the same split at
+/// the lexer level. The eligible set is deliberately the three font switches
+/// and nothing else: a rule keyed on every command prefix would turn the
+/// corpus's own `pit` into pi followed by t, and the decorations are worse
+/// still, since `bar` is a pressure unit and `dot`, `vec` and `check` are
+/// ordinary words. Matching is case-insensitive because the dispatch above is,
+/// but the argument keeps the source casing so `rmAgCl` stays AgCl.
+fn split_font_prefix(word: &str) -> Option<(&'static str, &str)> {
+    for (prefix, command) in [("bold", "mathbf"), ("rm", "mathrm"), ("it", "mathit")] {
+        // `get` both bounds the slice and proves the split point is a char
+        // boundary, so the index below cannot panic on multi-byte input.
+        let Some(rest) = word.get(prefix.len()..) else {
+            continue;
+        };
+        if word[..prefix.len()].eq_ignore_ascii_case(prefix)
+            && rest.starts_with(|c: char| c.is_ascii_alphanumeric())
+        {
+            return Some((command, rest));
+        }
+    }
+    None
 }
 
 #[cfg(test)]
