@@ -6,7 +6,7 @@
 - 문서 검증 SHA: `b5a33bfe3b85b9b0f4ebe119a1d1addeb8c1e43b`
 - PR: [#6810](https://github.com/edwardkim/rhwp/pull/6810) — Open, base `devel`
 - 최신 보정 검증 SHA: `25d1d1011`; [Stage 4 결과](../working/task_m100_6791_stage4.md)
-- 상태: 2026-09-07 리뷰 보정·충돌 해소·로컬 검증 완료. 보정 push·댓글 게시 후 최신 CI·병합 승인 확인
+- 상태: 2026-09-07 보정·충돌 해소·검증·push·보정 댓글 게시 완료. 최신 CI·별도 병합 승인 대기
 
 ## 결과와 출처
 
@@ -126,3 +126,12 @@ PR 본문과 보정 댓글은 최신 문서 SHA, unit/package 분기, 실제 검
 로컬 작업·검증·Open PR 생성은 완료했다. 남은 단계는 기록 commit을 포함한 최신 GitHub CI 확인과
 별도 merge·이슈 close 승인이다. 계획·검증용 worktree와 로그는 승인·통합 후 정리할 수
 있도록 보존하며 다른 작업의 경로·target에는 변경을 가하지 않았다.
+
+
+## 보정 게시 확인 — 2026-09-07
+
+`9e2c08299`까지 보정·충돌 해소·검증 기록을 upstream source branch에 push했다. PR 본문을 갱신하고
+[보정 댓글](https://github.com/edwardkim/rhwp/pull/6810#issuecomment-5561501940)을 게시했다. API 재조회에서
+본문·댓글이 준비한 UTF-8 원문과 일치했고 한글·BOM 검사를 통과했다. 조회 시 `MERGEABLE / BLOCKED`,
+새 CI 진행 중이며 실패는 없었다. 이 게시 기록을 같은 PR에 후속 반영하며 공개 두 파일은 `25d1d1011`과
+동일하다. merge·issue close는 수행하지 않았다.
