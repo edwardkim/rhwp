@@ -10,8 +10,52 @@ use super::{hwpunit_to_px, DEFAULT_DPI};
 use crate::model::control::Control;
 use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::paragraph::{LineSeg, Paragraph};
-use crate::model::shape::{Caption, CommonObjAttr, HorzRelTo, TextWrap, VertRelTo};
+use crate::model::shape::{Caption, CommonObjAttr, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 use crate::model::table::{Table, TablePageBreak};
+
+/// A stored Square table fits between its host line and the next visible paragraph.
+pub(crate) fn stored_square_table_anchor_offset(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+) -> Option<i32> {
+    let para = cell.paragraphs.get(para_idx)?;
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        return None;
+    };
+    let common = &table.common;
+    let offset = signed_hwpunit(common.vertical_offset);
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    if common.treat_as_char
+        || !common.flow_with_text
+        || common.text_wrap != TextWrap::Square
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || signed_hwpunit(common.height) <= 0
+        || host.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || host.line_height <= 0
+        || offset < 0
+        || i64::from(offset) > i64::from(host.line_height) + i64::from(host.line_spacing)
+    {
+        return None;
+    }
+    let successor = cell
+        .paragraphs
+        .iter()
+        .skip(para_idx + 1)
+        .find(|p| !p.text.trim().is_empty() || !p.controls.is_empty())?;
+    let next = successor.line_segs.first()?;
+    let bottom = i64::from(host.vertical_pos)
+        + i64::from(offset)
+        + i64::from(common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    (next.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next.line_height > 0
+        && i64::from(next.vertical_pos) >= bottom)
+        .then_some(offset)
+}
 
 /// 저장 `Square` 그림과 같은 세로 band에 있는 저장 텍스트 줄인지 판정한다.
 fn stored_square_picture_adjacent_line(

@@ -6541,7 +6541,17 @@ impl LayoutEngine {
                                 && nested_table.common.flow_with_text
                                 && matches!(nested_table.common.vert_rel_to, VertRelTo::Para)
                                 && matches!(nested_table.common.horz_rel_to, HorzRelTo::Column);
-                        let nested_y = if has_preceding_text {
+                        let stored_square_offset = (collapse_stored_wrap_spacers
+                            && start_line == 0)
+                            .then(|| {
+                                super::super::height_measurer::stored_square_table_anchor_offset(
+                                    cell, cp_idx,
+                                )
+                            })
+                            .flatten();
+                        let nested_y = if let Some(offset) = stored_square_offset {
+                            para_y_before_compose + hwpunit_to_px(offset, self.dpi)
+                        } else if has_preceding_text {
                             para_y
                         } else {
                             inner_area.y

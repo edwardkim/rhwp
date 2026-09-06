@@ -2681,7 +2681,12 @@ impl LayoutEngine {
                                 // calc_nested_split_rows 로 행 범위를 필터한다.
                                 {
                                     // 중첩 표가 셀 가용 공간을 초과하면 행 범위 필터 적용
-                                    let nested_y = if has_preceding_text {
+                                    let stored_square_offset = (collapse_stored_wrap_spacers && start_line == 0)
+                                        .then(|| super::super::height_measurer::stored_square_table_anchor_offset(cell, cp_idx))
+                                        .flatten();
+                                    let nested_y = if let Some(offset) = stored_square_offset {
+                                        para_y_before_lines + hwpunit_to_px(offset, self.dpi)
+                                    } else if has_preceding_text {
                                         if table_host_line_only_fragment {
                                             para_y_before_lines
                                         } else {

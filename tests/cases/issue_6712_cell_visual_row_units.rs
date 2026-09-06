@@ -482,6 +482,51 @@ fn stored_square_picture_flow_matches_chinese_hancom_oracle() {
 }
 
 #[test]
+fn nested_square_tables_use_the_host_origin_and_stored_offset() {
+    fn line_top(node: &RenderNode, para: usize) -> Option<f64> {
+        if matches!(&node.node_type, RenderNodeType::TextLine(line)
+            if line.para_index == Some(para) && line.line_index == Some(0))
+        {
+            return Some(node.bbox.y);
+        }
+        node.children.iter().find_map(|child| line_top(child, para))
+    }
+    fn table_top(node: &RenderNode, para: usize) -> Option<f64> {
+        if matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.para_index == Some(para) && table.cell_context.is_some())
+        {
+            return Some(node.bbox.y);
+        }
+        node.children
+            .iter()
+            .find_map(|child| table_top(child, para))
+    }
+    for (bytes, second_host) in [
+        (KOREAN_SQUARE_PICTURE_SAMPLE, 61),
+        (CHINESE_SQUARE_PICTURE_SAMPLE, 60),
+    ] {
+        let core = DocumentCore::from_bytes(bytes).expect("newsletter");
+        let Control::Table(outer) = &core.document().sections[0].paragraphs[0].controls[2] else {
+            panic!("outer table");
+        };
+        for (page, host) in [(0, 17), (1, second_host)] {
+            let Control::Table(nested) = &outer.cells[3].paragraphs[host].controls[0] else {
+                panic!("nested table");
+            };
+            let expected = f64::from(nested.common.vertical_offset as i32) / 75.0
+                + f64::from(nested.outer_margin_top) / 75.0;
+            let tree = core.build_page_render_tree(page).expect("page");
+            let actual = table_top(&tree.root, host).expect("nested paint")
+                - line_top(&tree.root, host).expect("host line");
+            assert!(
+                (actual - expected).abs() < 0.1,
+                "page={page}, host={host}: actual={actual}, expected={expected}"
+            );
+        }
+    }
+}
+
+#[test]
 fn whole_table_preserves_both_fragments_on_each_visual_row() {
     let core = document(4, 7200, true, false);
     assert_eq!(core.page_count(), 1, "four 16px rows fit in 96px");
