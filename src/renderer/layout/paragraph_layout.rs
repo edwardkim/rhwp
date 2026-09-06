@@ -6149,6 +6149,44 @@ impl LayoutEngine {
                         }
                         _ => {}
                     }
+                    // [#6800] **같은 재배치가 그 탭 런의 advance 도 정한다.**
+                    //
+                    // 오른쪽/가운데 탭의 전진량은 "탭 스톱까지"가 아니라 "뒤따르는
+                    // 블록이 스톱에 맞도록 필요한 만큼"이다. 그런데 런 폭은
+                    // `estimate_text_width` 가 낸 **탭 스톱까지** 값이 그대로 남아,
+                    // 그 런이 뒤 런을 통째로 덮은 것처럼 보였다
+                    // (1192000-202100017 1쪽: `"  - 	"` 런이 x=221.8 w=496.0 인데
+                    //  다음 런은 x=249.1 — 468.7px 가짜 겹침으로 계수된다).
+                    // 잉크는 안 겹치므로 출력은 불변이지만, `text_overlap_baseline`
+                    // 래칫이 그 가짜 겹침을 세어 **진짜 글자겹침을 가린다.**
+                    //
+                    // 아래 leader 보정과 **같은 `x`** 를 쓴다 — 재배치가 정한 값
+                    // 하나로 bbox·리더 기하가 함께 정해진다. 여기서만 하므로
+                    // ① 이 재배치를 유발한 **논리적 끝 탭**의 런에만 닿고
+                    // ② 탭 뒤에 가시문자가 있는 런은 애초에 `pending` 을 세우지
+                    //    않으므로 대상이 아니며
+                    // ③ 재배치가 없는 줄의 런은 전혀 건드리지 않는다.
+                    if let Some(tab_run_idx) = line_node.children.iter().rposition(|n| {
+                        matches!(&n.node_type, RenderNodeType::TextRun(tr) if tr.text.contains('\t'))
+                    }) {
+                        let tab_run_x = line_node.children[tab_run_idx].bbox.x;
+                        // 탭 런과 현재 런 사이에 이미 emit 된 런(공백 only carry-over)이
+                        // 있으면 그 앞까지가 이 탭의 전진량이다.
+                        let end_x = line_node.children[tab_run_idx + 1..]
+                            .iter()
+                            .filter(|n| matches!(n.node_type, RenderNodeType::TextRun(_)))
+                            .map(|n| n.bbox.x)
+                            .fold(x, f64::min);
+                        // 그 런의 장식 상자(글자 배경·테두리·형광펜)는 같은 x 에서
+                        // 같은 폭으로 emit 돼 있다 — 하나의 end_x 로 함께 맞춘다.
+                        for node in &mut line_node.children[tab_run_idx..] {
+                            if (node.bbox.x - tab_run_x).abs() <= 0.5
+                                && node.bbox.x + node.bbox.width > end_x + 0.5
+                            {
+                                node.bbox.width = (end_x - node.bbox.x).max(0.0);
+                            }
+                        }
+                    }
                     // [Task #279] 직전 run 의 leader 끝 위치를 페이지번호 시작 x 직전까지 단축.
                     // 한컴은 페이지번호 폭에 따라 리더 길이가 달라지도록 조판한다 (한 자리 vs
                     // 두 자리 페이지번호의 leader 끝점이 다름). cross-run RIGHT 정렬 후
