@@ -5554,6 +5554,30 @@ impl LayoutEngine {
                                 } else {
                                     pic_h
                                 };
+                                // A fallback TAC picture has its own baseline. Align it
+                                // within the stored text box, not at the line's top edge.
+                                // A picture that fills the text box needs no displacement.
+                                let baseline_offset = para
+                                    .line_segs
+                                    .get(target_line)
+                                    .filter(|seg| {
+                                        seg.tag
+                                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                            == 0
+                                            && seg.text_height > 0
+                                            && seg.baseline_distance > 0
+                                            && seg.baseline_distance <= seg.text_height
+                                            && pic.caption.is_none()
+                                            && pic.common.margin.top == 0
+                                            && pic.common.margin.bottom == 0
+                                    })
+                                    .map(|seg| {
+                                        let text_h = hwpunit_to_px(seg.text_height, self.dpi);
+                                        hwpunit_to_px(seg.baseline_distance, self.dpi)
+                                            * (1.0 - clamped_h / text_h).max(0.0)
+                                    })
+                                    .unwrap_or(0.0);
+                                let picture_y = tac_img_y + baseline_offset;
                                 if std::env::var("RHWP_6313_DBG").is_ok() && tac_img_y > 700.0 {
                                     let segs: Vec<(i32, i32)> = para
                                         .line_segs
@@ -5566,7 +5590,7 @@ impl LayoutEngine {
                                 }
                                 let pic_area = LayoutRect {
                                     x: inline_x,
-                                    y: tac_img_y,
+                                    y: picture_y,
                                     width: clamped_w,
                                     height: clamped_h,
                                 };
@@ -5591,7 +5615,7 @@ impl LayoutEngine {
                                     tac_flow_bottom = Some(
                                         tac_flow_bottom
                                             .unwrap_or(f64::MIN)
-                                            .max(tac_img_y + clamped_h),
+                                            .max(picture_y + clamped_h),
                                     );
                                 }
                                 inline_x += clamped_w;
