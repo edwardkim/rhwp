@@ -5,7 +5,8 @@
 - 담당자: `postmelee`, 마일스톤: `v1.0.0`
 - 문서 검증 SHA: `b5a33bfe3b85b9b0f4ebe119a1d1addeb8c1e43b`
 - PR: [#6810](https://github.com/edwardkim/rhwp/pull/6810) — Open, base `devel`
-- 상태: 사용자 승인 후 원격 push·PR 생성 완료. 최신 CI·병합 승인 대기
+- 최신 보정 검증 SHA: `25d1d1011`; [Stage 4 결과](../working/task_m100_6791_stage4.md)
+- 상태: 2026-09-07 리뷰 보정·충돌 해소·로컬 검증 완료. 보정 push·댓글 게시 후 최신 CI·병합 승인 확인
 
 ## 결과와 출처
 
@@ -62,7 +63,7 @@ prepare → `cargo fmt --all -- --check` → manifest `--check`와 SHA·clean �
 문서에서 그 검사를 안내하는 것과 실제 실행한 검증을 구분한다. PR 생성으로 GitHub CI가 시작됐으며,
 현재 classifier v7은 `.github/pull_request_template.md` 때문에 이 PR을 전체 CI로 분류한다.
 
-## 게시한 PR 본문
+## 최초 게시한 PR 본문 (보정 전 기록)
 
 제목: `docs: 기여 검증 범위와 Rust worktree 준비 순서 명확화 (#6791)`
 
@@ -113,6 +114,12 @@ gh pr create --repo edwardkim/rhwp --base devel --head task_m100_6791 \
 API 재조회로 게시 본문 일치·한글 보존·담당자 `postmelee`·마일스톤 `v1.0.0`을 확인했다.
 archive self-review와 기존 내용을 보존한 오늘할일을 같은 branch의 후속 commit으로 기록한다. 최신 CI·mergeability를 확인하고 merge·이슈 close는 후속 승인으로 처리한다.
 이슈를 자동으로 닫는 문구 대신 `Refs #6791`을 써 이슈 close 승인도 분리했다.
+
+## 리뷰 보정
+
+2026-09-07 사용자 승인으로 리뷰 11건을 검토·보정하고 오늘할일 충돌을 양쪽 기록 보존으로 해소했다.
+[Stage 4](../working/task_m100_6791_stage4.md)의 최신 결과가 초기 SHA의 검증·본문 기록을 갱신한다.
+PR 본문과 보정 댓글은 최신 문서 SHA, unit/package 분기, 실제 검증과 미실행 범위로 갱신한다.
 
 ## 남은 상태
 

@@ -51,13 +51,27 @@ classifier v7은 PR 템플릿을 workflow-contract로 판단해 전체 CI를 요
 
 ## 문제·위험과 후속 조건
 
-현재 수정이 필요한 문서 결함은 발견하지 않았다. 미래 suite·CI 명령 변경에 따른 문서 불일치 가능성은
+최초 self-review에서는 결함을 발견하지 못했으나 9월 7일 리뷰로 링크·범위 검사·셸 가드 결함을 확인했다.
+아래 재검토 기록이 최초 판정을 갱신한다. 미래 suite·CI 명령 변경에 따른 문서 불일치 가능성은
 남으며 이번 PR에서 생성기·정책을 바꾸지 않는다. 무관한 코드나 성능 개선 주장은 없다.
 GitHub checks 미완료를 로컬 검증 성공으로 대체하지 않으며, merge와 #6791 close는 아직 승인되지 않았다.
 실행 순서·승인 및 정리 경계는 [review implementation](pr_6810_review_impl.md)에 기록했다.
 
+## 2026-09-07 재검토
+
+[리뷰 11건](https://github.com/edwardkim/rhwp/pull/6810#issuecomment-5561356545)을 재현·검토한 뒤
+사용자 보정·충돌 해소·댓글 게시 승인으로 공개 문서를 `25d1d1011`에서 수정했다.
+최신 devel `07bc5e549`와의 충돌은 오늘할일 한 파일에서 양쪽 기록을 보존해 해소했다.
+[Stage 4](../../working/task_m100_6791_stage4.md)에 항목별 판단과 실제 실행 결과를 기록했다.
+
+공개 준비·fmt·manifest·정리, 실패 가드 48건, WASM 없는 Studio unit 및 fresh dev WASM 뒤 package 검사가
+모두 통과했다. unit은 1,489 passed / 1 skipped이며 production bundle도 성공했다. tracked Rust·Cargo
+2,215개 hash는 그대로였다. GitHub 렌더링 절대 링크 8개·anchor 26개와 문서 링크를 확인했다.
+세 Clippy·전체 nextest·Native Skia·Windows native·Docker·브라우저 E2E는 이번 문서 보정에서는 미실행이다.
+공개 문서 변경이므로 review-only tail만으로 취급하지 않고 새 head CI를 확인한다.
+
 ## 최종 판정
 
-**승인** — 공개 절차와 범위 정합성을 검토하고 변경한 준비·검증 경로의 실행 증적을 확인했다.
+**승인** — 보정 문서 SHA `25d1d1011`의 공개 절차·범위 정합성과 새 실행 증적을 확인했다.
 이는 문서 self-review 판정이다. 최종 merge 조건은 기록을 포함한 최신 head의 GitHub Actions 통과,
 최신 base와의 정합성·mergeability 재확인, 대형 PR에 대한 작업지시자의 별도 merge 승인이다.
