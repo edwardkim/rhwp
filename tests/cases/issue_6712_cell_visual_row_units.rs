@@ -278,6 +278,40 @@ fn chinese_footer_is_painted_inside_the_second_page_clip() {
     );
 }
 
+#[test]
+fn terminal_frame_does_not_cross_the_recovered_footer_line() {
+    fn outer_table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(table) if table.cell_context.is_none()) {
+            return Some(node);
+        }
+        node.children.iter().find_map(outer_table)
+    }
+    let core = DocumentCore::from_bytes(CHINESE_SQUARE_PICTURE_SAMPLE).expect("newsletter");
+    let tree = core.build_page_render_tree(1).expect("page");
+    let table = outer_table(&tree.root).expect("outer table");
+    let cell = table.children.iter().find(|node|
+        matches!(&node.node_type, RenderNodeType::TableCell(meta) if meta.model_cell_index == Some(3)))
+        .expect("content cell");
+    let footer = cell.children.iter().find(|node|
+        matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(65)))
+        .expect("footer line");
+    let frame_bottom = table
+        .children
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::Line(line) if (line.y1 - line.y2).abs() < 0.01 => Some(line.y1),
+            _ => None,
+        })
+        .reduce(f64::max)
+        .expect("horizontal frame");
+    let footer_bottom = footer.bbox.y + footer.bbox.height;
+    assert!(
+        frame_bottom >= footer_bottom + 850.0 / 75.0 - 0.1,
+        "frame={frame_bottom}, footer={footer_bottom}"
+    );
+    assert!(frame_bottom <= tree.root.bbox.height, "frame stays on page");
+}
+
 fn second_page_wrap_starts(core: &DocumentCore) -> [f64; 3] {
     fn collect(node: &RenderNode, out: &mut [Vec<f64>; 3]) {
         if let RenderNodeType::TextLine(line) = &node.node_type {

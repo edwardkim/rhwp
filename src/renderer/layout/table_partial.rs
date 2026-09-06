@@ -3066,7 +3066,14 @@ impl LayoutEngine {
                 } else {
                     tree.page_size().1
                 };
+                let previous_bottom = cell_node.bbox.y + cell_node.bbox.height;
                 expand_page_fragment_clip_to_own_text_lines(&mut cell_node, paint_bottom, true);
+                let recovered_bottom = cell_node.bbox.y + cell_node.bbox.height;
+                if collapse_stored_wrap_spacers && recovered_bottom > previous_bottom + 0.01 {
+                    cell_node.bbox.height = (recovered_bottom + pad_bottom.max(0.0))
+                        .min(paint_bottom)
+                        - cell_node.bbox.y;
+                }
             }
 
             // 셀 테두리를 엣지 그리드에 수집 (인접 셀 중복 제거)
@@ -3939,6 +3946,54 @@ impl LayoutEngine {
             clamp_header_negative_para_offset,
             probe,
         );
+
+        // A recovered terminal Square-flow line also owns the final frame edge.
+        // Keep the paginator's consumed height separate from this paint-only expansion.
+        if self.profile.get().hwp5_stored_pagination_layout()
+            && enclosing_cell_ctx.is_none()
+            && is_continuation
+            && end_cut.is_empty()
+            && end_row >= row_count
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+        {
+            let mut frame_height = partial_table_height;
+            for child in &table_node.children {
+                let RenderNodeType::TableCell(meta) = &child.node_type else {
+                    continue;
+                };
+                if !meta.clip
+                    || !meta.page_fragment
+                    || usize::from(meta.row) + usize::from(meta.row_span) != row_count
+                {
+                    continue;
+                }
+                let Some(cell) = meta
+                    .model_cell_index
+                    .and_then(|idx| table.cells.get(idx as usize))
+                else {
+                    continue;
+                };
+                let has_stored_wrap = cell.paragraphs.iter().enumerate().any(|(pi, para)| {
+                    para.controls
+                        .iter()
+                        .enumerate()
+                        .any(|(ci, _)| stored_square_picture_has_adjacent_text(cell, pi, ci))
+                });
+                if has_stored_wrap {
+                    let body_bottom = col_area.y + col_area.height;
+                    let recovered_bottom = (child.bbox.y + child.bbox.height).min(body_bottom);
+                    frame_height = frame_height.max(recovered_bottom - table_y);
+                }
+            }
+            if let Some(last_edge) = grid_row_y.last_mut() {
+                *last_edge = frame_height;
+            }
+            table_node.bbox.height = frame_height;
+        }
 
         // [#5877] `h_edges`/`v_edges`/`grid_row_y` 는 **조각-지역 행 인덱스**
         // (`render_rows` 순서)인데 `row_col_x` 는 **원본 행 전체**다. 테두리
