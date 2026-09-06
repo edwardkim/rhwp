@@ -58,6 +58,40 @@ runTest('색상 버튼 표준 활성화와 선택 보존 (#6635)', async ({ page
   const before = await properties(page);
   const undoDepth = await page.evaluate(() => window.__inputHandler.history.undoStack.length);
 
+  setTestCase('숨겨진 색상 input을 건너뛰는 양방향 Tab 이동');
+  await tabTo(page, '#btn-text-color');
+  await page.keyboard.press('Tab');
+  assert(await page.$eval('#btn-highlight', button => button === document.activeElement),
+    '글자색에서 Tab 한 번으로 형광펜 버튼에 도달한다');
+  await tabTo(page, '#btn-highlight');
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('Tab');
+  await page.keyboard.up('Shift');
+  assert(await page.$eval('#btn-text-color', button => button === document.activeElement),
+    '형광펜에서 Shift+Tab 한 번으로 글자색 버튼에 도달한다');
+
+  for (const [target, tabs] of [['형광펜 버튼', 0], ['색 없음', 1], ['다른 색', 2]]) {
+    setTestCase(`${target}: Escape로 닫기와 포커스·선택 보존`);
+    await tabTo(page, '#btn-highlight');
+    await page.keyboard.press('Enter');
+    assert(await isOpen(page), `${target}: 키보드로 팔레트가 열린다`);
+    for (let i = 0; i < tabs; i++) await page.keyboard.press('Tab');
+    const selector = tabs === 0 ? '#btn-highlight' : tabs === 1 ? NONE : OTHER;
+    assert(await page.$eval(selector, button => button === document.activeElement),
+      `${target}: Escape를 누를 요소에 포커스가 있다`);
+    await page.keyboard.press('Escape');
+    assert(!await isOpen(page), `${target}: Escape로 팔레트가 닫힌다`);
+    assert(await page.$eval('#btn-highlight', button => button === document.activeElement),
+      `${target}: 형광펜 버튼으로 포커스가 복원된다`);
+    assert(await selection(page) === selected, `${target}: 선택 영역이 보존된다`);
+    assert(JSON.stringify(await properties(page)) === JSON.stringify(before),
+      `${target}: 닫기만으로 서식이 바뀌지 않는다`);
+    assert(await page.evaluate(() => window.__inputHandler.history.undoStack.length) === undoDepth,
+      `${target}: 닫기만으로 undo 기록이 생기지 않는다`);
+    // 수정 전 실패를 확인할 때도 다음 사례의 시작 상태를 일정하게 유지한다.
+    if (await isOpen(page)) await page.click('#btn-highlight');
+  }
+
   await page.evaluate(() => {
     window.__colorPickerClicks = { text: 0, highlight: 0 };
     document.querySelector('#text-color-picker').addEventListener('click', () => {

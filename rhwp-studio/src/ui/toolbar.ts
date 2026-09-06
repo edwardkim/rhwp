@@ -443,6 +443,14 @@ export class Toolbar {
       this.highlightDropdown.classList.toggle('open');
     });
 
+    this.highlightDropdown.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !this.highlightDropdown.classList.contains('open')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.highlightDropdown.classList.remove('open');
+      this.btnHighlight.focus();
+    });
+
     // 외부 클릭 시 닫기
     document.addEventListener('mousedown', (e) => {
       if (!this.highlightDropdown.contains(e.target as Node)) {
