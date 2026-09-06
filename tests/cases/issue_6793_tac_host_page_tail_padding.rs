@@ -1,29 +1,45 @@
-//! [Issue #6793] TAC 표 host 줄의 **꼬리 간격**이 쪽 규모인데 그대로 흐름에 실려,
-//! 다음 문단이 492.8px 아래·**용지 밖 363.9px** 로 나갔다.
+//! [Issue #6793] 표지 TAC 표 다음 문단 `< 차 례 >` 의 **쪽 귀속**이 틀렸다.
 //!
-//! `1611000-201000141` 1쪽 — 표지 상자(1×1 TAC 표, 선언 817.6px)의 저장 사다리:
-//!
-//! ```text
-//!   문단 0.0  ls[0] vpos=0     lh=61600  th=1000     ← 앵커 줄
-//!             ls[1] vpos=1600  lh=61600  ls=36960    ← 표 줄 + 꼬리 간격 492.8px
-//!   문단 0.1  ls[0] vpos=0                           ← **새 쪽 상단**
-//! ```
-//!
-//! 사다리는 `pi=1` 을 **새 쪽 상단**에 두었으므로 `ls=36960` 은 흐름 간격이 아니라
-//! **쪽 끝까지 채우는 패딩**이다. 흐름에 태우면 그만큼 다음 문단이 밀린다.
+//! `1611000-201000141` 실측:
 //!
 //! ```text
-//!   VPOS_CORR pi=1 prev_lh=61600 prev_ls=36960 y_in=836.80 end_y=1329.60 applied=false
-//!   페인트    표 바닥 965.1  →  「< 차 례 >」 y=1459.7   (용지 1122.5 밖 363.9px)
+//!   pi=0  ls[0] vpos=0     lh=61600 th=1000     ← 앵커 줄
+//!         ls[1] vpos=1600  lh=61600 gap=36960   ← 표 줄 + 꼬리
+//!         저장 꼬리 끝 = (1600 + 61600 + 36960) / 75 = 1335.5px   > 예산 876.9
+//!   pi=1  ls[0] vpos=0                          ← 새 쪽 상단
 //! ```
 //!
-//! ⚠ **글자 수 대조는 점 리더(`···`)를 빼고 재야 한다.** 그대로 재면 결손 1,468자로
-//! 나오는데 그 대부분이 차례의 탭 채움 점이다(rhwp PDF 는 안 싣는다). 점·공백을 빼면
-//! 수정 전 **4자**, 수정 후 **0자**다.
+//! 흐름 계상이 **842.7 에서 멈춰** `pi=1` 이 1쪽 꼬리에 붙었고, 렌더가 그 꼬리
+//! 간격(492.8px)을 더해 `< 차 례 >` 를 표 바닥 965.1 에서 494.6px 아래인 1459.7 에
+//! 그렸다 — 용지 밖 **363.9px**.
 //!
-//! ⚠ **남는 축** — 「< 차 례 >」가 rhwp 는 1쪽 끝, 한/글은 2쪽 첫 줄이다(1쪽 글자
-//! 37 vs 33). 사다리 `vpos == 0` 을 쪽 경계로 승격하는 별개 축이라 여기서는
-//! **용지 밖 이탈이 없을 것**만 계약한다.
+//! ⚠⚠ **초판은 이것을 렌더에서 고쳤다** — 꼬리 간격을 흐름에 안 태우는 방식.
+//! 글은 보이게 됐지만 `< 차 례 >` 가 **1쪽 표지 맨 아래**에 남아 쪽 귀속은 여전히
+//! 틀렸고(한/글은 2쪽 첫 줄), 시험이 그 틀린 배치를 성공 조건으로 고정했다
+//! (PR #6794 지적). 렌더 변경을 되돌리고 **조판(typeset)의 쪽 귀속**을 고쳤다.
+//!
+//! ⭐ 판정은 저장 사다리 둘이 함께 준다 — **크기 문턱이 없다.**
+//!   1. 이 문단의 첫 **비합성** 저장 줄이 `vpos == 0`.
+//!   2. 앞 문단의 마지막 비합성 저장 줄이 `vpos + lh + gap` 으로 **이 쪽 예산을
+//!      넘는다** — 그 꼬리가 쪽-끝 채움이라는 뜻이다.
+//!
+//! ⚠ 2 가 없으면 안 된다. `vpos == 0` 은 새 쪽 상단인 동시에 **"앵커 없음" 센티널**
+//! 이기도 하다 — `#6753` 이 남긴 함정이다(조각 시작 `vpos == 0` 을 무조건 쪽 경계로
+//! 읽은 선행 시도가 242쪽을 243쪽으로 늘려 기각됐다). 저장 사다리가 권위인
+//! **네이티브 HWP5** 조판에 한정한다.
+//!
+//! 초판의 `col_area.height * 0.25` 경험적 문턱은 **사라졌다** — 조판이 쪽을 닫으면
+//! 렌더는 손댈 것이 없다.
+//!
+//! 결과: `< 차 례 >` 가 **2쪽 첫 줄**(y=132.3 = 본문 상단), 1쪽 용지 밖 1 → **0**,
+//! 쪽수 12 유지.
+//!
+//! ⚠ 남는 text-overlap 16건은 **수정 전부터** 있던 2.07px 미세 겹침으로 이 축과
+//! 무관하다.
+//!
+//! ⚠ fixture 는 `lastSavedWith.version = 6.7.8.1045`, `product = null` 이라 저장소
+//! 정책상 기준 엔진은 **2020** 이다. 초판 manifest 의 `9.1.1.4072`·`2024` 는 틀렸다
+//! (PR #6794 지적) — 정정했다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -33,6 +49,7 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6793/1611000-201000141-small-air-transport-study.hwp";
+const TOC_TEXT: &str = "차";
 
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
 /// 성공 조건이 아니므로 읽기 실패를 즉시 드러낸다.
@@ -41,74 +58,95 @@ fn sample() -> Vec<u8> {
         .expect("#6793 정식 HWP fixture 읽기")
 }
 
-fn worst_text_below(node: &RenderNode, bottom: f64, out: &mut f64) {
-    if matches!(node.node_type, RenderNodeType::TextRun(_)) {
-        *out = out.max(node.bbox.y + node.bbox.height - bottom);
+fn find_body(node: &RenderNode) -> Option<&RenderNode> {
+    if matches!(node.node_type, RenderNodeType::Body { .. }) {
+        return Some(node);
+    }
+    node.children.iter().find_map(find_body)
+}
+
+/// `pi` 로 식별한 그 문단의 글줄 상자들(본문 직계·표 안 모두).
+fn runs_of_para(node: &RenderNode, pi: usize, out: &mut Vec<(String, f64, f64)>) {
+    if let RenderNodeType::TextRun(tr) = &node.node_type {
+        if tr.para_index == Some(pi) && !tr.text.trim().is_empty() {
+            out.push((tr.text.clone(), node.bbox.y, node.bbox.y + node.bbox.height));
+        }
     }
     for child in &node.children {
-        worst_text_below(child, bottom, out);
+        runs_of_para(child, pi, out);
     }
 }
 
-/// 1쪽 글자가 **용지** 밖으로 나가면 안 된다.
+fn page_runs(core: &DocumentCore, page: u32, pi: usize) -> Vec<(String, f64, f64)> {
+    let tree = core.build_page_render_tree(page).expect("render tree");
+    let mut out = Vec::new();
+    runs_of_para(&tree.root, pi, &mut out);
+    out
+}
+
+/// `< 차 례 >`(`pi=1`)는 **2쪽**에 있고 1쪽에는 없다.
 ///
-/// 수정 전 「< 차 례 >」가 `y=1459.7..1486.4` — 용지(1122.5px) 밖 `+363.9px`.
+/// 수정 전: 1쪽 y=1459.7(용지 밖 363.9px). 초판 수정: 1쪽 y=966.9(보이지만 틀린 쪽).
 #[test]
-fn tac_host_page_tail_padding_keeps_text_on_paper() {
+fn the_toc_heading_belongs_to_the_second_page() {
     let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    assert_eq!(core.page_count(), 12, "한/글 2024 와 같은 12쪽이어야 한다");
+    assert_eq!(core.page_count(), 12, "쪽수 핀 — 한/글 2024 도 12쪽");
 
-    let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
-    let paper_bottom = tree.root.bbox.y + tree.root.bbox.height;
-
-    let mut over = 0.0f64;
-    worst_text_below(&tree.root, paper_bottom, &mut over);
-
+    let first = page_runs(&core, 0, 1);
     assert!(
-        over <= 0.5,
-        "1쪽 글자가 용지 밖으로 나가면 안 된다 — #6793 회귀          \
-         (초과 {over:.1}px, 용지 하한 {paper_bottom:.1}; 수정 전 +363.9px)"
+        first.is_empty(),
+        "1쪽에 `< 차 례 >`(pi=1)가 있으면 안 된다 — #6793 쪽 귀속 회귀 (찾음 {first:?})"
+    );
+
+    let second = page_runs(&core, 1, 1);
+    assert!(
+        second.iter().any(|(t, ..)| t.contains(TOC_TEXT)),
+        "2쪽에 `< 차 례 >`(pi=1)가 있어야 한다 — 찾은 런 {second:?}"
     );
 }
 
-/// 표지 상자 다음 문단이 표 바닥 **바로 아래**에 와야 한다.
-///
-/// 수정 전에는 꼬리 간격 492.8px 을 흐름에 태워 494.6px 아래에 놓였다.
+/// 그 줄은 2쪽 **본문 흐름 상단**에서 시작한다(저장 `vpos == 0`).
 #[test]
-fn next_paragraph_follows_the_cover_table_closely() {
+fn the_toc_heading_starts_at_the_top_of_the_second_page() {
+    let bytes = sample();
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+
+    let tree = core.build_page_render_tree(1).expect("2쪽 render tree");
+    let body_top = find_body(&tree.root).expect("Body 노드").bbox.y;
+    let runs = page_runs(&core, 1, 1);
+    let top = runs.iter().map(|(_, y, _)| *y).fold(f64::MAX, f64::min);
+
+    // 저장 상단 허용오차 — 한 줄(26.7px) 안.
+    assert!(
+        (top - body_top).abs() <= 27.0,
+        "`< 차 례 >`는 2쪽 본문 상단에서 시작해야 한다 — #6793 회귀          (줄 상단 {top:.1}, 본문 상단 {body_top:.1})"
+    );
+}
+
+/// 1쪽의 모든 글자가 용지 안에 있다.
+///
+/// 수정 전 `< 차 례 >`가 용지 밖 363.9px 였다.
+#[test]
+fn no_text_leaves_the_paper_on_the_cover_page() {
     let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
+    let paper_bottom = tree.root.bbox.y + tree.root.bbox.height;
 
-    fn table_bottom(node: &RenderNode, out: &mut f64) {
-        if matches!(node.node_type, RenderNodeType::Table { .. }) {
-            *out = out.max(node.bbox.y + node.bbox.height);
+    fn worst(node: &RenderNode, bottom: f64, out: &mut f64) {
+        if matches!(node.node_type, RenderNodeType::TextRun(_)) {
+            *out = out.max(node.bbox.y + node.bbox.height - bottom);
         }
         for child in &node.children {
-            table_bottom(child, out);
+            worst(child, bottom, out);
         }
     }
-    fn lowest_text_top(node: &RenderNode, above: f64, out: &mut f64) {
-        if matches!(node.node_type, RenderNodeType::TextRun(_)) && node.bbox.y > above {
-            *out = out.min(node.bbox.y);
-        }
-        for child in &node.children {
-            lowest_text_top(child, above, out);
-        }
-    }
-    let mut bottom = 0.0f64;
-    table_bottom(&tree.root, &mut bottom);
-    assert!(bottom > 0.0, "표지 상자를 찾아야 한다");
+    let mut over = 0.0f64;
+    worst(&tree.root, paper_bottom, &mut over);
 
-    let mut top = f64::MAX;
-    lowest_text_top(&tree.root, bottom, &mut top);
-    assert!(top < f64::MAX, "표 아래 글줄이 있어야 한다");
-
-    let gap = top - bottom;
     assert!(
-        gap < 100.0,
-        "표 바닥과 다음 글줄 사이가 쪽 규모로 벌어지면 안 된다 — #6793 회귀          \
-         (간격 {gap:.1}px, 표 바닥 {bottom:.1}; 수정 전 494.6px)"
+        over <= 0.5,
+        "1쪽 글자가 용지를 넘으면 안 된다 — #6793 회귀          (초과 {over:.1}px, 용지 하한 {paper_bottom:.1}; 수정 전 +363.9px)"
     );
 }
