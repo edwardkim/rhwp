@@ -106,7 +106,23 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
         self.assertIn("input.currentHeadSha = process.env.CURRENT_HEAD_SHA", self.workflow)
         self.assertIn("github.rest.pulls.get({", self.workflow)
         self.assertIn("livePull.head.sha !== process.env.HEAD_SHA", self.workflow)
-        self.assertIn("cancel-in-progress: true", self.workflow)
+
+    def test_completion_audit_cannot_cancel_running_pr_head_controller(self) -> None:
+        concurrency = self.workflow.split("\nconcurrency:\n", 1)[1].split("\njobs:\n", 1)[0]
+        cancel_policy = concurrency.split("  cancel-in-progress: ", 1)[1].strip()
+        self.assertEqual(
+            cancel_policy,
+            "${{ github.event_name == 'pull_request_target' }}",
+        )
+
+    def test_publish_and_audit_share_exact_source_head_serialization(self) -> None:
+        concurrency = self.workflow.split("\nconcurrency:\n", 1)[1].split("\njobs:\n", 1)[0]
+        group = concurrency.split("  group: >-\n", 1)[1].split("  cancel-in-progress:", 1)[0]
+        self.assertEqual(
+            " ".join(group.split()),
+            "ci-impact-policy-${{ github.event.pull_request.head.sha "
+            "|| github.event.workflow_run.head_sha || github.run_id }}",
+        )
 
     def test_cancelled_controller_cannot_summarize_or_publish(self) -> None:
         guarded = "if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}"
