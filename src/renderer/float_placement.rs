@@ -51,6 +51,48 @@ pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
     value as i32
 }
 
+/// [#6787] 이 문단의 중첩 표들이 **가로 오프셋으로 나란히** 놓이는 무리인가.
+///
+/// 문단-기준(`VertRelTo::Para`) 자리차지(`TopAndBottom`) 비-TAC 표들이 각자
+/// `horzOffset` 을 갖고 **가로로 겹치지 않으면** 한/글은 같은 y 에 놓는다
+/// (`#6494` 의 칸 안 짝). 하나라도 조건을 벗어나면 종전대로 세로 적층으로 본다.
+///
+/// ⚠ **측정(`height_measurer`)과 배치(`table_layout`)가 이 하나의 판정을 함께 쓴다.**
+/// 종전에는 측정만 `horzOffset == 0` 을 무리의 시작으로 인정하고 배치는 `> 0` 만
+/// 레인에 넣어, 첫 표 오프셋이 0 인 무리에서 측정은 최대 높이만 예약하고 배치는
+/// 세로로 쌓아 뒤 표가 칸 밖으로 사라졌다. 또 배치는 표를 순차 처리하며 뒤 표가
+/// 조건에 걸리면 앞 표의 레인을 되돌리지 못했다 — 문단 단위 사전 판정으로 두 축을
+/// 함께 닫는다.
+pub(crate) fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
+    let mut spans: Vec<(i32, i32)> = Vec::new();
+    for ctrl in &para.controls {
+        let Control::Table(table) = ctrl else {
+            continue;
+        };
+        if !para_float_group_member_is_eligible(table) {
+            return false;
+        }
+        let start = signed_hwpunit(table.common.horizontal_offset);
+        let width = table.common.width.min(i32::MAX as u32) as i32;
+        spans.push((start, start.saturating_add(width)));
+    }
+    if spans.len() < 2 {
+        return false;
+    }
+    spans.sort_unstable();
+    // 가로 구간이 하나라도 겹치면 나란히 놓을 수 없다.
+    spans.windows(2).all(|w| w[0].1 <= w[1].0 + 1)
+}
+
+/// 나란히 무리의 자격 — 무리 판정과 레인 배치가 **같은 술어**를 쓴다.
+pub(crate) fn para_float_group_member_is_eligible(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+        && matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        && signed_hwpunit(table.common.horizontal_offset) >= 0
+}
+
 /// Resolve the deliberately small Picture/Square side-wrap subset used by a
 /// caller-owned `LayoutFrame`.
 ///
@@ -1710,5 +1752,103 @@ mod tests {
             &spanning_row,
             Some(&next),
         ));
+    }
+}
+
+/// [#6787] 나란히 무리 판정 — **측정과 배치가 함께 쓰는** 단일 술어의 경계·음성 대조.
+#[cfg(test)]
+mod side_by_side_group_tests {
+    use super::*;
+    use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign};
+
+    /// 16774617 1쪽 후보자 카드: `horz=Para(off)`, 폭 18991HU.
+    fn card(offset: i32, width: u32) -> Control {
+        Control::Table(Box::new(Table {
+            common: CommonObjAttr {
+                width,
+                height: 18892,
+                treat_as_char: false,
+                text_wrap: TextWrap::TopAndBottom,
+                vert_rel_to: VertRelTo::Para,
+                vert_align: VertAlign::Top,
+                horz_rel_to: HorzRelTo::Para,
+                horz_align: HorzAlign::Left,
+                horizontal_offset: offset as HwpUnit,
+                ..Default::default()
+            },
+            ..Default::default()
+        }))
+    }
+
+    fn para(controls: Vec<Control>) -> Paragraph {
+        Paragraph {
+            controls,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn side_by_side_group_accepts_the_stored_card_pair() {
+        let p = para(vec![card(1547, 18991), card(23743, 18991)]);
+        assert!(para_float_group_is_side_by_side(&p));
+    }
+
+    /// ⚠ 경계 — **첫 표 오프셋이 0** 이어도 같은 무리다.
+    ///
+    /// 종전에는 측정만 0 을 인정하고 배치는 `> 0` 만 레인에 넣어, 이 형상에서 측정은
+    /// 최대 높이만 예약하고 배치는 세로로 쌓았다(검토자 실측: 카드 2장 중 1장만 검출).
+    #[test]
+    fn side_by_side_group_accepts_a_zero_offset_first_card() {
+        let p = para(vec![card(0, 18991), card(23743, 18991)]);
+        assert!(para_float_group_is_side_by_side(&p));
+        let Control::Table(first) = &p.controls[0] else {
+            unreachable!()
+        };
+        assert!(
+            para_float_group_member_is_eligible(first),
+            "무리 판정이 인정한 표는 배치 자격도 가져야 한다 — 두 축이 같은 술어다"
+        );
+    }
+
+    /// ⚠ 음성 — 가로 구간이 **겹치면** 나란히 놓을 수 없다.
+    #[test]
+    fn side_by_side_group_rejects_overlapping_spans() {
+        let p = para(vec![card(1547, 18991), card(10000, 18991)]);
+        assert!(!para_float_group_is_side_by_side(&p));
+    }
+
+    /// ⚠ 음성 — **적격·부적격 혼합** 무리는 통째로 세로 적층이다.
+    #[test]
+    fn side_by_side_group_rejects_a_mixed_eligibility_group() {
+        for spoil in 0..4 {
+            let mut bad = card(23743, 18991);
+            if let Control::Table(t) = &mut bad {
+                match spoil {
+                    0 => t.common.treat_as_char = true,
+                    1 => t.common.text_wrap = TextWrap::Square,
+                    2 => t.common.vert_rel_to = VertRelTo::Page,
+                    _ => t.common.horz_rel_to = HorzRelTo::Column,
+                }
+            }
+            let p = para(vec![card(1547, 18991), bad]);
+            assert!(
+                !para_float_group_is_side_by_side(&p),
+                "하나라도 부적격이면 무리가 아니다 (spoil={spoil})"
+            );
+        }
+    }
+
+    /// ⚠ 음성 — 표가 하나뿐이면 무리가 아니다(종전 세로 흐름 그대로).
+    #[test]
+    fn side_by_side_group_rejects_a_single_table() {
+        let p = para(vec![card(1547, 18991)]);
+        assert!(!para_float_group_is_side_by_side(&p));
+    }
+
+    /// ⚠ 음성 — 음수 오프셋(칸 밖으로 나가는 배치)은 제외한다.
+    #[test]
+    fn side_by_side_group_rejects_a_negative_offset() {
+        let p = para(vec![card(-500, 18991), card(23743, 18991)]);
+        assert!(!para_float_group_is_side_by_side(&p));
     }
 }

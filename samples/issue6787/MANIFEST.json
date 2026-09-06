@@ -15,7 +15,8 @@
         "product": "hancom-office-2020",
         "version": "11.0.0.7571"
       },
-      "referenceEngine": "2024",
+      "referenceEngine": "2020",
+      "referencePdfStatus": "pending — 저장 제품이 hancom-office-2020 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다. 현재 증적은 한/글 2024 출력이다.",
       "contract": "칸 안 문단-기준 자리차지 중첩 표들이 가로 오프셋으로 겹치지 않으면 같은 줄에 나란히 놓이고, 칸 높이는 합이 아니라 최댓값이다."
     }
   ]

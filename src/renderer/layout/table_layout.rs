@@ -5410,6 +5410,13 @@ impl LayoutEngine {
             let mut rendered_top_and_bottom_non_inline = false;
             // [#6787] 같은 칸 문단의 문단-기준 자리차지 중첩 표들이 **가로 오프셋으로
             // 나란히** 놓이는 무리(`#6494` 의 칸 안 짝). 앞 표가 쓴 x 끝과 그 줄 상단.
+            //
+            // ⚠ 무리 판정은 **컨트롤 루프에 들어가기 전에 문단 단위로 한 번** 한다 —
+            // 측정(`height_measurer`)과 같은 함수다. 표를 순차 처리하며 판정하면 뒤
+            // 표가 조건에 걸렸을 때 앞 표의 레인을 되돌릴 수 없고, 측정은 최대 높이만
+            // 예약했는데 배치는 세로로 쌓는 어긋남이 생긴다.
+            let cell_float_group_side_by_side =
+                crate::renderer::float_placement::para_float_group_is_side_by_side(para);
             let mut cell_float_lane: Option<(f64, f64)> = None;
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -6506,12 +6513,14 @@ impl LayoutEngine {
                         // 둘 다 가운데 정렬한 뒤 `para_y` 를 표 높이만큼 전진시켜
                         // **세로로 쌓았다** — 그 칸이 선언 251.97px 대비 854.7px 로
                         // 부풀어 표 전체가 용지를 넘고 361자가 잘렸다.
-                        let cell_float_lane_x = (!is_tac_table
-                            && matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom)
-                            && matches!(nested_table.common.vert_rel_to, VertRelTo::Para)
-                            && matches!(nested_table.common.horz_rel_to, HorzRelTo::Para))
+                        //
+                        // ⚠ 자격 술어는 무리 판정과 **같은 함수**를 쓴다. 종전에는
+                        // 여기서만 `off > 0` 을 요구해, 첫 표 오프셋이 0 인 무리에서
+                        // 측정(최대 높이)과 배치(세로 적층)가 어긋났다.
+                        let cell_float_lane_x = (cell_float_group_side_by_side
+                            && crate::renderer::float_placement::
+                                para_float_group_member_is_eligible(nested_table))
                         .then(|| signed_hwpunit(nested_table.common.horizontal_offset))
-                        .filter(|off| *off > 0)
                         .map(|off| inner_area.x + hwpunit_to_px(off, self.dpi));
                         // 앞 표가 쓴 x 끝보다 오른쪽에서 시작하면 같은 줄을 나눠 갖는다.
                         let nested_y = match (cell_float_lane_x, cell_float_lane) {

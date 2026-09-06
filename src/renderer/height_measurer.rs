@@ -55,42 +55,6 @@ fn is_last_visual_line_for_cell_height(
         .unwrap_or(true)
 }
 
-/// 이 문단의 중첩 표들이 가로 오프셋으로 나란히 놓이는 무리인가 (`#6787`).
-///
-/// 문단-기준(`VertRelTo::Para`) 자리차지(`TopAndBottom`) 비-TAC 표들이 각자
-/// `horzOffset` 을 갖고 **가로로 겹치지 않으면** 한/글은 같은 y 에 놓는다.
-/// 하나라도 조건을 벗어나면 종전대로 세로로 쌓인 것으로 본다.
-fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
-    let mut spans: Vec<(i32, i32)> = Vec::new();
-    for ctrl in &para.controls {
-        let Control::Table(table) = ctrl else {
-            continue;
-        };
-        if table.common.treat_as_char
-            || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-            || !matches!(table.common.vert_rel_to, VertRelTo::Para)
-            || !matches!(
-                table.common.horz_rel_to,
-                crate::model::shape::HorzRelTo::Para
-            )
-        {
-            return false;
-        }
-        let start =
-            crate::renderer::float_placement::signed_hwpunit(table.common.horizontal_offset);
-        if start < 0 {
-            return false;
-        }
-        let width = table.common.width.min(i32::MAX as u32) as i32;
-        spans.push((start, start.saturating_add(width)));
-    }
-    if spans.len() < 2 {
-        return false;
-    }
-    spans.sort_unstable();
-    spans.windows(2).all(|w| w[0].1 <= w[1].0 + 1)
-}
-
 /// treat_as_char 표가 인라인(텍스트와 나란히)인지 판별
 ///
 /// 인라인 조건:
@@ -1482,7 +1446,8 @@ impl HeightMeasurer {
                 // 16774617 1쪽 후보자 카드 2장(`horz=Para(1547)` / `Para(23743)`, 각
                 // 253.2px)은 서로 겹치지 않아 한/글이 같은 y 에 놓는다 — 합산하면 그 칸이
                 // 선언 251.97px 대비 854.7px 로 부풀어 표 전체가 용지를 넘고 361자가 잘린다.
-                let nested_side_by_side = para_float_group_is_side_by_side(p);
+                let nested_side_by_side =
+                    crate::renderer::float_placement::para_float_group_is_side_by_side(p);
                 let nested_heights: Vec<f64> = p
                     .controls
                     .iter()
