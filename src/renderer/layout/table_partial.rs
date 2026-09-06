@@ -3022,14 +3022,16 @@ impl LayoutEngine {
                 &mut cell_node,
                 terminal_cell_fragment,
             );
-            if terminal_cell_fragment {
+            if terminal_cell_fragment && cell_end_row == row_count {
                 // No successor can own a crossing last line. Recover it before
-                // whole-cell residue suppression can hide its visible sliver.
-                expand_page_fragment_clip_to_own_text_lines(
-                    &mut cell_node,
-                    tree.page_size().1,
-                    true,
-                );
+                // residue suppression, but never into another row or the footer.
+                let (_, body_y, _, body_h) = self.current_body_area.get();
+                let paint_bottom = if body_h > 0.0 {
+                    (body_y + body_h).min(tree.page_size().1)
+                } else {
+                    tree.page_size().1
+                };
+                expand_page_fragment_clip_to_own_text_lines(&mut cell_node, paint_bottom, true);
             }
 
             // 셀 테두리를 엣지 그리드에 수집 (인접 셀 중복 제거)

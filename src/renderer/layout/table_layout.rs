@@ -1075,6 +1075,9 @@ pub(super) fn expand_page_fragment_clip_to_own_text_lines(
         if candidate_edge <= clip_bottom {
             continue;
         }
+        if terminal_fragment && page_bottom > 0.0 && candidate_edge > page_bottom {
+            continue;
+        }
         // 윗변이 이미 쪽 하단 밖인 줄은 어느 부분도 그려지지 않는다 — 되살릴 것이 없다.
         if page_bottom > 0.0 && child.bbox.y > page_bottom {
             continue;
