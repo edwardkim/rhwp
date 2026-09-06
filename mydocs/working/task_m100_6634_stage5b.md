@@ -1,14 +1,14 @@
 ---
 kind: snapshot
-status: active
+status: completed
 canonical: mydocs/plans/task_m100_6634.md
 issue: 6634
 last_verified: 2026-09-06
 ---
 
-# #6634 Stage 5-B 1차 실증 — exact-head 비게시 Actions와 정책 정정
+# #6634 Stage 5-B 실증 — exact-head 비게시 Actions와 정책 정정
 
-## 실행 기준
+## 1차 실행 기준
 
 - 후보 branch: `task_m100_6634`
 - exact remote SHA: `829b698cbd9626fd40a4f05a22a3780c3f9204ca`
@@ -20,7 +20,7 @@ last_verified: 2026-09-06
 두 workflow는 같은 exact SHA에서 2026-09-05 14:45 UTC에 시작했다. KST 기준 완료 시각은 날짜가
 바뀐 2026-09-06이다.
 
-## 원격 실행 결과
+## 1차 원격 실행 결과
 
 | workflow | run | 소요 | 판정 |
 | --- | --- | ---: | --- |
@@ -78,18 +78,58 @@ collector 실행 뒤 결과 표시용 `jq`가 runs JSON을 객체로 잘못 가�
 원본은 정상 배열이었고 훼손되지 않았다. 배열 스키마로 다시 표시하고 같은 원본에 offline verifier를
 실행했으며 위 성공 판정을 얻었다.
 
-## 현재 판정과 다음 게이트
+## 최종 exact-head 재실증
 
-1차 원격 실증은 workflow 실행계약과 정정 방향을 입증했다. 그러나 정정한 policy와 회귀 테스트는 아직
-로컬 변경이며, 이를 commit하면 후보 SHA가 달라진다. #6689의 exact-head 불변식 때문에 이전 녹색 run을
-새 최종 후보의 promotion 증적으로 재사용하지 않는다.
+정정 policy와 회귀 테스트를 commit하고 최신 `upstream/devel`을 병합한 뒤, 원격 작업 브랜치의 정확한
+SHA에서 두 workflow를 다시 실행했다.
 
-따라서 Stage 5-B의 현재 상태는 **정책 결함 정정 완료, 최종 exact-head 재실증 대기**다. 다음 순서는
-다음과 같다.
+| 항목 | 값 |
+| --- | --- |
+| branch | `task_m100_6634` |
+| exact remote SHA | `559edb06826e7b8bfa2348d5951d78cf18d066e9` |
+| 포함한 devel | `ff1ce007b428547da74e0d6b7e9a196592c60ff6` |
+| Release Binary | [34001610087](https://github.com/edwardkim/rhwp/actions/runs/34001610087), 26분 34초, success |
+| Publish All Packages | [34001611474](https://github.com/edwardkim/rhwp/actions/runs/34001611474), 11분 23초, success |
 
-1. policy 정정·회귀·이 기록을 로컬 commit
-2. 별도 승인 뒤 새 task head를 push
-3. 별도 승인 뒤 두 verify-only workflow를 새 exact head에서 다시 실행
-4. collector `ok=true`, 외부 채널 무변경을 재확인한 뒤 Stage 5-B 종료
+Release Binary는 5개 native archive build가 모두 성공하고 `Attach to GitHub Release`가 skipped됐다.
+이어진 reusable workflow에서는 source guard, WASM, VSIX와 aggregate가 성공하고 외부 publish job 4개가
+skipped됐다. CLI archive 5개, `wasm-pkg`, `vscode-vsix`, `release-publish-evidence`의 artifact 8개가
+생성됐다.
 
-verifier를 완화하거나 waiver를 사용하지 않는다.
+직접 Publish All Packages도 source guard, WASM, VSIX와 aggregate가 성공하고 외부 publish job 4개가
+skipped됐다. `wasm-pkg`, `vscode-vsix`, `release-publish-evidence` artifact 3개가 생성됐다.
+
+두 aggregate evidence는 모두 다음 계약을 만족했다.
+
+- `mode=verify`, `githubSha=559edb06826e7b8bfa2348d5951d78cf18d066e9`
+- source guard, WASM, VSIX gate `success`
+- npm core/editor, VS Code Marketplace, Open VSX `jobResult=skipped`, `state=verify-only`
+- `errors=[]`, `accepted=true`, `verdict=completed`
+
+정정된 policy로 새 exact-head run을 수집한 결과 run 2개와 모든 job·artifact pagination이 완결됐고
+waiver는 0건이었다. offline verifier는 두 run을 모두 `verify-only`로 수락했다.
+
+| verifier 항목 | 값 |
+| --- | --- |
+| policy SHA-256 | `dbd0bcd8d2829fdf7ffebfab5245f2cf9d2fc022906a2cf556d58f0579bd7b24` |
+| inventory SHA-256 | `c8ac74b8cfc885817c73b6e317943e0a7fcd8030cb7f2b15e50897eac3805df5` |
+| verdict SHA-256 | `febb524fa0a9df0ab39700ebcf1a85115eda85fc4afe8d54b7a1a14c240d0385` |
+| errors / verdict | 0건 / `ok=true` |
+
+실행 후 `@rhwp/core`, `@rhwp/editor`, VS Code Marketplace, Open VSX는 모두 기존 `0.8.6`의
+`already-present` 상태였다. `test` Git tag와 GitHub Release도 생성되지 않았다.
+
+## 최종 판정과 다음 게이트
+
+Stage 5 종료 게이트인 **전체 직접 호출 경로 성공, 외부 publish 차단, 공개 채널 무변경, 정정 policy의
+exact-head 증적 수락**을 모두 충족했다. verifier를 완화하거나 waiver를 사용하지 않았다.
+
+이 문서는 원격 실증 뒤 작성하는 증적 기록이므로, 이를 commit한 SHA 자체를 위 workflow가 검증했다고
+주장하지 않는다. 다음 `devel -> main` promotion에서는 #6689 절차에 따라 그 시점의 exact `devel` SHA로
+새 증적을 만들어야 한다.
+
+다음은 Stage 6이다.
+
+1. 최신 `upstream/devel`과 열린 workflow PR을 재확인하고 merge tree를 검증한다.
+2. 최종 보고서에 원인·변경·검증·보안·비용·rollback·다음 release canary를 정리한다.
+3. 보고서 결과 승인 뒤 commit, push와 PR 생성은 각각 별도 승인을 받는다.
