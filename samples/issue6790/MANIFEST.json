@@ -16,8 +16,9 @@
         "version": "11.0.0.8362"
       },
       "referenceEngine": "2020",
-      "referencePdfStatus": "pending — 저장 제품이 hancom-office-2020 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다. 현재 증적은 한/글 2024 출력이다.",
-      "contract": "저장 프레임 꼬리 확장은 확장된 컷(source_tail_cut)이 이 조각의 행 예산(avail_for_rows) 안에 들어갈 때만 쓴다 — 쪽 소유 판정이며 문턱 상수가 없다. 17544911 r=2 는 tail 1178.5 > avail 1005.4 라 기각된다. 잔여 26자·글자겹침 2건은 중첩 표 이어지는 조각의 별개 축이다."
+      "referencePdfStatus": "메인테이너 환경에서 생성됨 (PR #6792) — engine_profile=2020, Hancom 12.0.0.4605, 3쪽, 152,160 bytes, SHA-256 c0c2e379da79eae2305006b2dede5e07c995d42be19c9ba7d879821fd810177b. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local 이 없어 직접 산출하지 못했고, 파일은 아직 이 branch 에 없다.",
+      "contract": "저장 프레임 꼬리 확장은 확장된 컷(source_tail_cut)이 이 조각의 행 예산(avail_for_rows) 안에 들어갈 때만 쓴다 — 쪽 소유 판정이며 문턱 상수도 우회도 없다. 17544911 r=2 는 tail 1178.5 > avail 1005.4 라 기각된다.",
+      "referencePdf": "pdf/17544911-sericulture-training-criteria-2020.pdf"
     }
   ]
 }

@@ -22427,11 +22427,14 @@ impl TypesetEngine {
                     // 확장(15.3~107.4px)과 예산 초과율(17.8~112.0px)은 어느 축으로도
                     // 갈리지 않는다. 위 표에서 갈리는 것은 **부호 하나**이며 문턱이 없다.
                     //
-                    // ⚠ 이미 예산을 넘긴 조각(`consumed > avail_for_rows`)은 이 규칙과
-                    // 무관하다 — 그 초과는 `#5057` 저장 첫-조각 허용치가 따로 판정한다.
-                    let source_tail_owns_this_page = source_tail_cut.consumed_height
-                        <= avail_for_rows + 0.5
-                        || consumed > avail_for_rows + 0.5;
+                    // ⚠ 초판에는 `|| consumed > avail_for_rows + 0.5` 우회가 있었다
+                    // ("이미 예산을 넘긴 조각은 `#5057` 이 따로 판정한다"). **제거했다** —
+                    // 그 우회는 여기서 세운 쪽 수용 불변식을 무효화할 수 있고,
+                    // `#5057` 두 시험은 이 `source_frame_tail` 갈래를 실제로 실행하지
+                    // 않는다(PR #6792 검토 실측). 우회 없이 #3930·#3931·#5057·#5584·
+                    // #5801·#6025·#6549·#6790 선택 시험 19/19 가 통과한다.
+                    let source_tail_owns_this_page =
+                        source_tail_cut.consumed_height <= avail_for_rows + 0.5;
                     if extension > 0.5 && mid_extension_ok && source_tail_owns_this_page {
                         // Downstream fit/retry decisions must reason in the
                         // same frame-sized budget as the cut.  The precise
