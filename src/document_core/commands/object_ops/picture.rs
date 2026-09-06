@@ -987,12 +987,18 @@ impl DocumentCore {
         let transform_before = Self::picture_transform_fingerprint(pic);
         let mut rotation_changed = false;
 
-        // 크기 변경
+        // 크기 변경 — [#6806] 키가 있어도 값이 같으면 건드리지 않는다. 종전에는 게터가 낸
+        // 봉지를 그대로 되먹여도 `current_*` 가 `common.*` 로 덮여(파싱값이 1 어긋난 문서가
+        // corpus 에 69건) 지문이 흔들리고 한컴 원본 렌더링 행렬이 지워졌다.
         if let Some(w) = json_u32(props_json, "width") {
-            Self::apply_picture_display_width(pic, w);
+            if w != pic.common.width {
+                Self::apply_picture_display_width(pic, w);
+            }
         }
         if let Some(h) = json_u32(props_json, "height") {
-            Self::apply_picture_display_height(pic, h);
+            if h != pic.common.height {
+                Self::apply_picture_display_height(pic, h);
+            }
         }
 
         // 위치 속성
@@ -1106,10 +1112,14 @@ impl DocumentCore {
             };
         }
 
-        // 회전/대칭
+        // 회전/대칭 — [#6806] "키 존재" 가 아니라 "값 변화" 가 회전 변경이다. 게터는 이 키를
+        // 항상 내보내므로, 종전에는 같은 각도를 되먹여도 `refresh_picture_rotation_layout_for_save`
+        // 가 돌아 `common` 을 `current` 로 다시 세웠다(#6355 지문 판정을 앞단에서 무력화).
         if let Some(v) = json_i16(props_json, "rotationAngle") {
-            pic.shape_attr.rotation_angle = v;
-            rotation_changed = true;
+            if v != pic.shape_attr.rotation_angle {
+                pic.shape_attr.rotation_angle = v;
+                rotation_changed = true;
+            }
         }
         if let Some(v) = json_bool(props_json, "horzFlip") {
             pic.shape_attr.horz_flip = v;
