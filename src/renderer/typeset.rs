@@ -6548,16 +6548,9 @@ impl TypesetEngine {
             state.flush_column_always();
         }
         state.ensure_page();
-        let (hf_entries, page_number_pos, new_page_numbers, page_hides) =
+        let (hf_entries, page_number_pos) =
             Self::collect_header_footer_controls(paragraphs, section_index);
-        Self::finalize_pages(
-            &mut state.pages,
-            &hf_entries,
-            &page_number_pos,
-            &new_page_numbers,
-            &page_hides,
-            section_index,
-        );
+        Self::finalize_pages(&mut state.pages, &hf_entries, &page_number_pos, paragraphs);
         Some(PaginationResult {
             pages: state.pages,
             wrap_around_paras: Vec::new(),
@@ -7461,7 +7454,7 @@ impl TypesetEngine {
         st.current_zone_design_spacing_px = column_def_design_spacing_px(column_def, self.dpi);
 
         // 머리말/꼬리말/쪽 번호/새 번호/감추기 컨트롤 수집
-        let (hf_entries, page_number_pos, new_page_numbers, page_hides) =
+        let (hf_entries, page_number_pos) =
             Self::collect_header_footer_controls(paragraphs, section_index);
         // [#2559] 조건부(Even/Odd)까지 포함해 어떤 꼬리말이라도 정의돼 있으면
         // 밴드가 점유될 수 있다. 완전히 비어 있는 구역에서만 각주 회수를 허용한다.
@@ -9720,14 +9713,7 @@ impl TypesetEngine {
         Self::discard_terminal_blank_only_page(&mut st.pages, paragraphs);
 
         // 페이지 번호 + 머리말/꼬리말 할당
-        Self::finalize_pages(
-            &mut st.pages,
-            &hf_entries,
-            &page_number_pos,
-            &new_page_numbers,
-            &page_hides,
-            section_index,
-        );
+        Self::finalize_pages(&mut st.pages, &hf_entries, &page_number_pos, paragraphs);
 
         if let Some(started) = issue2424_ts_started {
             let total = started.elapsed();
@@ -27073,17 +27059,12 @@ impl TypesetEngine {
     ) -> (
         Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)>,
         Option<crate::model::control::PageNumberPos>,
-        Vec<(usize, u16)>,
-        Vec<(usize, crate::model::control::PageHide)>,
     ) {
         let mut hf_entries = Vec::new();
         let mut page_number_pos = None;
-        let mut new_page_numbers = Vec::new();
-        let mut page_hides: Vec<(usize, crate::model::control::PageHide)> = Vec::new();
-
         for (pi, para) in paragraphs.iter().enumerate() {
-            for (ci, ctrl) in para.controls.iter().enumerate() {
-                match ctrl {
+            for (ci, control) in para.controls.iter().enumerate() {
+                match control {
                     Control::Header(h) => {
                         let r = HeaderFooterRef {
                             para_index: pi,
@@ -27102,26 +27083,8 @@ impl TypesetEngine {
                         };
                         hf_entries.push((pi, r, false, f.apply_to));
                     }
-                    Control::PageNumberPos(pnp) => {
-                        page_number_pos = Some(pnp.clone());
-                    }
-                    Control::NewNumber(nn) => {
-                        if nn.number_type == crate::model::control::AutoNumberType::Page {
-                            new_page_numbers.push((pi, nn.number));
-                        }
-                    }
-                    Control::PageHide(ph) => {
-                        page_hides.push((pi, ph.clone()));
-                    }
+                    Control::PageNumberPos(pos) => page_number_pos = Some(pos.clone()),
                     Control::Table(table) => {
-                        Self::collect_page_controls_in_table(
-                            table,
-                            pi,
-                            &mut page_hides,
-                            &mut new_page_numbers,
-                        );
-                        // 표 셀 안에 정의된 머리말/꼬리말도 수집한다 (수능 수학 선택과목
-                        // 소책자의 4쪽 머리말이 제목표 셀 안에 있는 사례).
                         crate::renderer::pagination::collect_nested_header_footer_controls(
                             table,
                             pi,
@@ -27135,46 +27098,7 @@ impl TypesetEngine {
                 }
             }
         }
-
-        (hf_entries, page_number_pos, new_page_numbers, page_hides)
-    }
-
-    /// 표 셀 안 paragraph 의 PageHide·NewNumber(쪽 번호)를 재귀 수집.
-    /// 외부 paragraph index `pi` 를 그대로 사용해 페이지 매핑 정합성 유지.
-    ///
-    /// [Issue #6206] 조판 경로도 페이지네이션 경로(`pagination::engine`)와 같은 규칙을
-    /// 써야 두 경로의 쪽 번호가 어긋나지 않는다. 두 벌이 따로 놀지 않도록 함께 고친다.
-    fn collect_page_controls_in_table(
-        table: &crate::model::table::Table,
-        pi: usize,
-        page_hides: &mut Vec<(usize, crate::model::control::PageHide)>,
-        new_page_numbers: &mut Vec<(usize, u16)>,
-    ) {
-        for cell in &table.cells {
-            for cp in &cell.paragraphs {
-                for ctrl in &cp.controls {
-                    match ctrl {
-                        Control::PageHide(ph) => {
-                            page_hides.push((pi, ph.clone()));
-                        }
-                        Control::NewNumber(nn) => {
-                            if nn.number_type == crate::model::control::AutoNumberType::Page {
-                                new_page_numbers.push((pi, nn.number));
-                            }
-                        }
-                        Control::Table(inner) => {
-                            Self::collect_page_controls_in_table(
-                                inner,
-                                pi,
-                                page_hides,
-                                new_page_numbers,
-                            );
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+        (hf_entries, page_number_pos)
     }
 
     /// 끝 페이지가 가시 내용이나 명시적인 쪽/구역 나누기 없이 빈 문단만 가진 경우
@@ -27236,18 +27160,17 @@ impl TypesetEngine {
         pages: &mut [PageContent],
         hf_entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
         page_number_pos: &Option<crate::model::control::PageNumberPos>,
-        new_page_numbers: &[(usize, u16)],
-        page_hides: &[(usize, crate::model::control::PageHide)],
-        _section_index: usize,
+        paragraphs: &[Paragraph],
     ) {
         // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
         // 머리말/꼬리말 선택은 engine.rs 와 같은 규칙을 쓴다 — 종류별로 누적하고 쪽 홀짝에
         // 더 구체적인 것을 고른다. 한 변수에 덮어쓰면 등장 순서가 구체성을 이긴다 (#3234).
         let mut active_hf = crate::renderer::pagination::ActiveHeaderFooter::default();
+        let events = crate::renderer::page_number::PageControlEvents::collect(pages, paragraphs);
         let mut assigner =
-            crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
+            crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1);
 
-        for page in pages.iter_mut() {
+        for (i, page) in pages.iter_mut().enumerate() {
             let page_num = assigner.assign(page);
 
             // 이 페이지에 속하는 머리말/꼬리말 갱신
@@ -27278,31 +27201,9 @@ impl TypesetEngine {
                 page.page_number_pos = page_number_pos.clone();
             }
 
-            // PageHide: 해당 문단이 이 페이지에서 **처음** 시작하는 경우만 적용
-            // (engine.rs 의 동일 로직과 일치 — 머리말/꼬리말/바탕쪽/페이지번호 감추기)
-            for (ph_para, ph) in page_hides {
-                let starts = page.column_contents.iter().any(|col| {
-                    col.items.iter().any(|item| match item {
-                        PageItem::FullParagraph { para_index } => *para_index == *ph_para,
-                        PageItem::PartialParagraph {
-                            para_index,
-                            start_line,
-                            ..
-                        } => *para_index == *ph_para && *start_line == 0,
-                        PageItem::Table { para_index, .. } => *para_index == *ph_para,
-                        PageItem::PartialTable {
-                            para_index,
-                            is_continuation,
-                            ..
-                        } => *para_index == *ph_para && !*is_continuation,
-                        PageItem::Shape { para_index, .. } => *para_index == *ph_para,
-                        PageItem::EndnoteSeparator { .. } => false,
-                    })
-                });
-                if starts {
-                    page.page_hide = Some(ph.clone());
-                    break;
-                }
+            // 한 컨트롤의 감추기는 소스 위치가 매핑된 한 쪽에만 적용한다.
+            if let Some((_, hide)) = events.hides.iter().find(|(target, _)| *target == i) {
+                page.page_hide = Some(hide.clone());
             }
         }
     }
@@ -28921,7 +28822,9 @@ mod tests {
             }]),
         ];
 
-        TypesetEngine::finalize_pages(&mut pages, &[], &None, &[], &[(7, hide)], 0);
+        let mut paragraphs = vec![Paragraph::default(); 8];
+        paragraphs[7].controls = vec![Control::Table(Box::default()), Control::PageHide(hide)];
+        TypesetEngine::finalize_pages(&mut pages, &[], &None, &paragraphs);
 
         assert!(pages[0].page_hide.is_some());
         assert!(pages[1].page_hide.is_none());
