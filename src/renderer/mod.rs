@@ -613,6 +613,45 @@ pub fn expand_gradient_steps(
     (out_colors, out_positions)
 }
 
+/// [#6845] HWP 그러데이션 각도를 **사용자 좌표계**의 축 양 끝점으로 옮긴다.
+///
+/// 종전 두 렌더러는 각도를 상자 정규화 공간에서 다뤄 **가로세로비만큼 축이 눕는** 결함이
+/// 있었다 — SVG 는 `objectBoundingBox` 백분율을 그대로 냈고, canvas 는 방향을
+/// `(sin·w/2, cos·h/2)` 로 축별 배율했다. 둘 다 정사각형 상자에서만 옳다.
+///
+/// ## 축 방향은 `(sin a, −cos a)` 다
+///
+/// 한/글 2024 정본(`pdf/113424_evaluation_guideline-2024.pdf`)에서 두 각도로 확정했다.
+///
+/// ```text
+///   angle=0    5쪽 목차 막대 `#C8EDFF → #FFFFFF`
+///              정본은 아래가 `#C8EDFF`, 위가 흰색 → 축은 **위쪽**       (0, −1)
+///   angle=90   29쪽 구분 막대 `#000080 → #99CCFF`  → 축은 오른쪽        (1, 0)
+///   angle=110  7쪽 장 제목 막대, 등색선 기울기 dx/dy = −0.365
+///              → 축 (0.939, 0.343) = (sin 110°, −cos 110°)
+/// ```
+///
+/// SVG·canvas 는 y 가 아래로 자라므로 `cos` 의 부호를 뒤집어야 한다. 종전 코드는 `+cos`
+/// 라 `angle=0` 에서 위아래가 반대였다.
+///
+/// ## 끝점은 상자를 덮도록 잡는다
+///
+/// 상자를 축 방향으로 정사영한 길이의 절반이 `(|dx|·w + |dy|·h) / 2` 이므로, 중심에서
+/// 그만큼 양쪽으로 벌리면 어떤 각도에서도 상자 전체가 램프 안에 들어온다.
+pub fn linear_gradient_axis(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64, f64, f64, f64) {
+    let a = ((angle % 360 + 360) % 360) as f64;
+    let rad = a.to_radians();
+    let (dx, dy) = (rad.sin(), -rad.cos());
+    let (cx, cy) = (x + w / 2.0, y + h / 2.0);
+    let half = (dx.abs() * w + dy.abs() * h) / 2.0;
+    (
+        cx - dx * half,
+        cy - dy * half,
+        cx + dx * half,
+        cy + dy * half,
+    )
+}
+
 /// 선 렌더링 스타일
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct LineStyle {

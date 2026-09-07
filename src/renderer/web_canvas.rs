@@ -1570,31 +1570,13 @@ impl WebCanvasRenderer {
 
     /// HWP 각도(도) → Canvas linearGradient 좌표 변환
     /// 사각형 (x, y, w, h) 기준으로 (x0, y0, x1, y1) 반환
+    /// [#6845] 그러데이션 축은 SVG 와 **같은 계산**을 쓴다.
+    ///
+    /// 종전에는 방향을 `(sin·w/2, cos·h/2)` 로 축별 배율해 가로세로비만큼 각도가 눕고
+    /// (SVG 의 `objectBoundingBox` 와 같은 왜곡), `cos` 부호가 뒤집혀 `angle=0` 의
+    /// 위아래가 반대였다. 두 렌더러가 규칙을 두 벌로 갖고 있던 것도 함께 없앤다.
     fn angle_to_canvas_coords(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64, f64, f64, f64) {
-        let a = ((angle % 360 + 360) % 360) as f64;
-        match a as i32 {
-            0 => (x, y, x, y + h),
-            45 => (x, y, x + w, y + h),
-            90 => (x, y, x + w, y),
-            135 => (x, y + h, x + w, y),
-            180 => (x, y + h, x, y),
-            225 => (x + w, y + h, x, y),
-            270 => (x + w, y, x, y),
-            315 => (x + w, y, x, y + h),
-            _ => {
-                let rad = a.to_radians();
-                let sin_a = rad.sin();
-                let cos_a = rad.cos();
-                let cx = x + w / 2.0;
-                let cy = y + h / 2.0;
-                (
-                    cx - sin_a * w / 2.0,
-                    cy - cos_a * h / 2.0,
-                    cx + sin_a * w / 2.0,
-                    cy + cos_a * h / 2.0,
-                )
-            }
-        }
+        crate::renderer::linear_gradient_axis(angle, x, y, w, h)
     }
 
     /// PatternFillInfo → Canvas createPattern으로 패턴 채우기 적용
