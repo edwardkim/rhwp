@@ -54,3 +54,31 @@ rhwp-studio에서 원본 1페이지의 그림과 TAC 표 조판 문제가 해결
 이번 판정은 제한된 타스크 범위의 구현·시각 수용 완료다. push, PR 생성, merge,
 GitHub #6812 close는 이번 지시로 실행하지 않았다. 향후 통합을 지시받으면 현재
 기준본에 남은 코드·시험의 제출 범위와 해당 검증 게이트를 별도로 확인한다.
+
+## 5. 후속 제출 준비 점검 (2026-09-07)
+
+메인테이너의 다음 절차 승인으로 제출 전 범위·통합 점검을 수행했다. 자체 작업 PR 준비로
+문서·Git 워크플로와 self-merge, local-validation, visual-fixture 가이드를 적용했다.
+이 단계에서 PR 번호를 예측해 review 문서를 만들거나 원격 상태를 변경하지 않았다.
+
+- 검사 head: `6edf4eb3a` (제품·시험·Cargo는 `edf083614`와 동일).
+- `git fetch upstream devel`로 확인한 최신 base:
+  `1098e7210452a1bfe536729963844d023b499b5f`.
+  앞선 `08bf41c69e` 이후 변경은 의존성 통합 #6838과 CI controller #6820 두 커밋이다.
+- `git merge-tree --write-tree HEAD upstream/devel`: exit 0, 충돌 없음.
+  결과 tree: `8479a197fa5f31fd69e315992e64866dd51b0f9c`.
+  merge tree의 `git diff --check`도 통과했다. 실제 merge나 로컬 devel 전환은 하지 않았다.
+- 원본 fixture `samples/issue6797/156160455-social-pig-farm-income.hwp`는
+  현재 후보와 merge tree에 포함된다. 다른 worktree에만 의존한 PR이 되는 상황은 아니다.
+- 기존 `inline-body-validated-head.log`에서 `edf083614`의 20 PASS / 1 FAIL을
+  재확인했다. 이번에 새로 테스트를 실행한 결과는 아니다. 실패 이름은
+  `issue_6812_cell_inline_table_respects_its_own_picture_exclusion`이며, 원본을
+  바깥 셀과 중첩 TAC 구조로 바꾼 별도 합성 시험이다. 이후 생성한 Center/Bottom
+  쪽 분할 시험과는 다른 시험이며, 해당 문서들에 대한 판정을 자동 전용하지 않는다.
+
+제출 준비는 아직 완료되지 않았다. 권고는 제품 코드를 수용 baseline에 유지하면서,
+이번 범위 밖인 셀 확장 시험 1건과 그 전용 helper를 보존 이력에 남기고 제출 대상에서
+분리하는 것이다. 통과로 위장하는 ignore·기대값 완화는 하지 않는다. 시험 분리의
+메인테이너 승인을 받은 뒤 새 제출 후보에서 집중 검사와 필수 검증을 수행한다.
+최신 devel의 의존성 변경을 포함한 컴파일·회귀는 아직 확인하지 않았으며,
+텍스트 병합 무충돌을 그 검증의 대체물로 사용하지 않는다.
