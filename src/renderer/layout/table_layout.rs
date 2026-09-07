@@ -151,13 +151,20 @@ fn cell_is_page_split_candidate(
 /// ⚠ `vertical_offset` 은 `u32` 에 담긴 **부호 있는** 값이다(`4294944683` = −22613HU).
 /// `signed_hwpunit` 없이 `> 0` 을 보면 음수가 통과해 표가 위로 튄다(3184241 −301.5px).
 ///
-/// ⚠ 범위는 **자리차지(TopAndBottom)** 로만 좁힌다. 글 앞/뒤 overlay 표는 세로 배치
-/// 계약이 따로 있고, 그쪽까지 먹이면 편람 1×1 안내 상자가 본문 글자 위로 내려앉는다
-/// (`text_overlap` 18 → 22).
-pub(crate) fn para_relative_float_table_lead(table: &crate::model::table::Table, dpi: f64) -> f64 {
+/// ⚠ 범위는 텍스트를 밀어내는 **어울림**(`TopAndBottom`·`Square`) 로 한정한다. 두
+/// wrap 모두 문단 기준 `vertOffset` 을 따르는데, 셀 안 제목 줄이 어울림 표를 안으면
+/// (`#6697` 이 그 제목 줄을 그리기 시작한 뒤) `Square` 표만 오프셋이 빠져 표가 제목
+/// 줄과 같은 y 에 겹친다. 글 앞/뒤 overlay(`InFrontOfText`·`BehindText`) 표는 세로
+/// 배치 계약이 따로 있어 제외한다 — 그쪽까지 먹이면 편람 1×1 안내 상자가 본문 글자
+/// 위로 내려앉는다(`text_overlap` 18 → 22).
+#[doc(hidden)]
+pub fn para_relative_float_table_lead(table: &crate::model::table::Table, dpi: f64) -> f64 {
     if table.common.treat_as_char
         || !matches!(table.common.vert_rel_to, VertRelTo::Para)
-        || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(
+            table.common.text_wrap,
+            TextWrap::TopAndBottom | TextWrap::Square
+        )
     {
         return 0.0;
     }

@@ -2754,6 +2754,9 @@ pub(crate) use border_rendering::{
     body_page_border_outset, border_line_visual_span, border_width_to_px, create_border_line_nodes,
 };
 pub use paragraph_layout::map_pua_bullet_char;
+// para_relative_float_table_lead 는 통합 테스트(tests/issue_6697_square_float_lead.rs)
+// 에서 어울림 wrap 리드 계약을 직접 검증한다.
+pub use table_layout::para_relative_float_table_lead;
 pub(crate) use utils::{
     default_outline_numbering, drawing_to_line_style, drawing_to_shape_style,
     expand_numbering_format, find_bin_data, find_bin_data_bytes, find_bin_data_index,
