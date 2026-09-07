@@ -413,14 +413,26 @@ draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 여섯이고, �
 | `off_canvas_baseline` | `tests/fixtures/off_canvas_baseline.tsv` | `samples/` 전수 | **예** |
 | `text_overlap_baseline` | `tests/fixtures/text_overlap_baseline.tsv` | `samples/` 전수 | **예** |
 | `oracle_page_count_baseline` | `tests/fixtures/oracle_page_count_baseline.tsv` | 그 TSV 의 행만 순회 | 아니오 (아래 참조) |
-| `clipping_baseline` | `tests/fixtures/clipping_baseline.tsv` | `tests/fixtures/render_page_controlset.tsv` | 아니오 |
+| `clipping_baseline` | `tests/fixtures/clipping_baseline.tsv` | `tests/fixtures/render_page_controlset.tsv` | 아니오 (아래 참조) |
 
-넷을 한 번에 돌리는 필터다. 나머지 둘도 함께 걸어 두면 회귀를 같이 본다.
+넷을 한 번에 돌리는 필터다. `oracle_page_count` 도 함께 걸어 두면 쪽수 회귀를 같이 본다.
 
 ~~~bash
 cargo nextest run --cargo-profile release-test --no-fail-fast -E \
- 'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|oracle_page_count|clipping/)'
+ 'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|oracle_page_count/)'
 ~~~
+
+> ⚠ **`clipping_gate.py` 는 클론만으로는 아무것도 검사하지 못한다.**
+> `render_page_controlset.tsv` 의 92개 행이 모두 저장소 밖 문서를 가리키므로 실행하면
+> `ERR/누락=92 baseline없음=92 회귀=0` 으로 **exit 0** 이 된다. 이 exit 0 은
+> "이상 없음" 이 아니라 **"검사 대상 0"** 이다 — 게이트 통과로 적지 말고, 검사하지
+> 못했다는 사실을 그대로 적는다. 그 문서들이 있는 환경에서만 의미가 있다.
+>
+> ~~~bash
+> python tools/clipping_gate.py --check tests/fixtures/clipping_baseline.tsv \
+>   --exe target/release/rhwp
+> # 출력 마지막 줄의 `ERR/누락` 과 `baseline없음` 을 반드시 읽는다.
+> ~~~
 
 > ⚠ **IR sweep 과 overflow-cell 둘만 돌리고 "게이트 통과" 로 판단하지 않는다.**
 > `off_canvas` 와 `text_overlap` 은 `samples/` 를 같은 방식으로 훑으므로 새 fixture 가
