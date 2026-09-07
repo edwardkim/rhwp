@@ -26,6 +26,7 @@ fn check_rectangles(core: &DocumentCore, foreground_stroke: bool) {
     let boxes: Vec<_> = xml
         .descendants()
         .filter(|node| node.has_tag_name("rect"))
+        .filter(|node| !node.ancestors().any(|parent| parent.has_tag_name("clipPath")))
         .filter(|node| {
             node.attribute("x").is_some()
                 && node.attribute("y").is_some()
