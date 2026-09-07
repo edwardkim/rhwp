@@ -38,12 +38,28 @@ DIAG_FRAG pi=6 ci=0 rows=10..14 start_cut=[1] end_cut=[5]
 [시각·fixture 증적](../../mydocs/manual/pr_review/visual_fixture_evidence.md) §3.5.1 에 따라
 `hwp2024Convert` MCP 의 `engine: 2020` 이다.
 
-⚠⚠ **그 기준 PDF 는 아직 없다** — 이 작업 PC 에는 그 MCP 의 `.env.local`(endpoint·token)이
-없어 산출하지 못했다. 현재 증적은 **한/글 2024** 출력이며, 저장 버전이 `6.7.10.1058` 이라
-드리프트가 있을 수 있다. 다만 **쪽수 5로 일치**하고 `A1` 쪽별 계수가 판정을 준다.
+기준 PDF: [`pdf/1376496-neighborhood-facility-land-table-2020.pdf`](../../pdf/1376496-neighborhood-facility-land-table-2020.pdf)
+— 153,835 bytes, SHA-256 `ef7ac0c12d37f8b96f1af5e2d67e812151d9b9862c4f42824fee8bc04a5dda12`.
+
+| MCP 산출 증적 | 값 |
+| --- | --- |
+| job id | `586dd5c8-8ffe-469e-9b79-d3023ed5b6af` |
+| status | `succeeded` → `success` (phase `completed`) |
+| 요청 engine / 응답 engine | `2020` / `2020` |
+| `engine_profile` / `hancom_version` | `2020` / `12.0.0.4605` |
+| backend | `hwp-managed-direct-dll-host` |
+| blob 검증 | client·server byte 수와 SHA-256 일치 (`verified`) |
+| `pdf_page_count` | 5 (rhwp 와 동일) |
+
+`product` 가 `null` 이므로 이 메타데이터는 원 작성 제품의 증명이 아니다 —
+재저장·삭제·변조될 수 있다.
+
+## 판정 수치
+
+`A1` 쪽별 계수가 결함을 직접 준다.
 
 ```
-        수정 전   수정 후   한/글 2024
+        수정 전   수정 후   한/글 2020
 p2         2        2          2
 p3         6        2          2      ← 결함
 p4         3        3          3
@@ -51,4 +67,7 @@ p5         1        1          1
 ```
 
 `export-pdf` 전체 글자 수도 수정 후 **3,299 = 한/글 3,299** 로 일치한다
-(공백·점 리더 제거 기준).
+(공백·점 리더 제거 기준). 쪽수는 셋 다 5다.
+
+세 지표 모두 engine 2024 로 먼저 잰 값과 같았다 — 이 문서에서 두 엔진은
+`A1` 계수·글자 수·쪽수가 동일하다.
