@@ -418,7 +418,7 @@ draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 여섯이고, �
 넷을 한 번에 돌리는 필터다. `oracle_page_count` 도 함께 걸어 두면 쪽수 회귀를 같이 본다.
 
 ~~~bash
-cargo nextest run --cargo-profile release-test --no-fail-fast -E \
+cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast -E \
  'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|oracle_page_count/)'
 ~~~
 
@@ -478,6 +478,34 @@ python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe
 
 모아 찍기(`printMethod` 4·5) 문서는 한/글이 한 장에 여러 쪽을 실으므로 이 축의 대상이
 아니다 — 재생성 단계에서 제외된다. `rhwp info --json` 의 `printMethodImpliesNup` 으로 확인한다.
+
+### 새 sample 보안 검사 입력도 별도로 전달한다
+
+위 여섯 layout/시각 래칫을 통과했다고 새 문서의 보안 코퍼스 검사까지 완료한 것은 아니다.
+`security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors`는
+`RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 전달한 문서를 검사한다. 환경변수 없이 전체 회귀를
+실행한 결과만으로 새 문서의 hidden text·prompt injection·unicode deception 검사 통과를
+주장하지 않는다. 입력 없이 반환된 테스트의 성공과 실제 문서 검사를 구분한다.
+
+검토 base 대비 `samples/`의 추가·복사·수정·이동 문서를 확인하고, 해당 HWP/HWPX/HML의
+현재 경로를 JSON 배열로 전달한다. 아직 커밋하지 않은 이 작업 소유 fixture도 목록에 포함한다.
+아래 경로는 예시이므로 실제 검토 대상 전체로 교체한다. 공백·한글이 있는 경로도 JSON 문자열로
+보존하며 셸 공백 분할로 목록을 만들지 않는다.
+
+~~~bash
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx"]' \
+  cargo nextest run --locked --cargo-profile release-test \
+  --target-dir target/pr-review --tests --no-fail-fast \
+  -E 'test(/security_corpus_regression/)'
+~~~
+
+- 대상이 없으면 `신규/변경 sample 없음: 해당 검사 입력 대상 없음`으로 기록한다. 빈 목록이나
+  환경변수 누락을 새 문서 검사 통과 증적으로 쓰지 않는다.
+- 결과에는 입력 경로·문서 수와 실제 실행한 테스트 결과를 함께 기록한다. 기존 fixture로 입력
+  전달 경로만 점검했다면 신규 fixture 검사와 구분한다.
+- 탐지가 발생하면 정상 자료 여부와 탐지 신호를 조사한다. 통과시키기 위해 검사 목록에서 빼거나
+  탐지기를 비활성화하거나 일괄 allowlist/baseline에 넣지 않는다.
+- 새 sample 보안 검사는 위 여섯 래칫과 별도 게이트다. 둘 중 하나로 다른 검사를 대체하지 않는다.
 
 ### IR field sweep
 
