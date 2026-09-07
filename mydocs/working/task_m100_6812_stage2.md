@@ -11,10 +11,10 @@ last_verified: 2026-09-07
 ## 1. 현재 완료 범위
 
 메인테이너가 승인한 [구현계획](../plans/task_m100_6812_impl.md)에 따라 착수했다.
-**Stage 2 전체 완료가 아니다.** 두 번째 절편에서 본문 블록 TAC 경로에 그림 점유 영역,
-가용 줄 구간, 아래 줄 이동 및 페이지 예산을 연결했다. 최초 핵심 RED 3건은 GREEN으로
-전환했으며 #6812 시험은 14건 통과했다. 본문 inline·셀 경로와 변형 입력의 후속 흐름
-경고는 남아 있다. 이번 절편의 상세 결과는 5절이며, 2~3절은 첫 절편의 이력이다.
+**Stage 2 전체 완료가 아니다.** 본문 블록 TAC의 그림 회피·페이지 예산 연결 후, 세 번째
+절편에서 후속 표 겹침·본문 넘침 두 건을 이번 구현의 회귀로 확정하고 수정했다.
+#6812 집중 시험은 16건 통과했다. 본문 inline·셀 등 소비 경로 연결과 확대 검증은 남아 있다.
+최신 결과는 6절이며, 2~3절과 5절은 앞선 절편의 이력이다.
 
 | 로컬 commit | 역할 |
 | --- | --- |
@@ -125,9 +125,8 @@ WASM cfg Clippy·workspace/all-targets 전체 lint 묶음과 Docker WASM·시각
 
 ## 4. 남은 구현 순서
 
-1. 5.4절의 두 변형에서 발생한 **후속 흐름 경고**를 먼저 실패 assertion으로 고정한다.
-   원본의 첫 표 개선과 변형 전체의 무회귀를 구분하고, 저장 줄높이·flow floor·쪽 fit의
-   불일치를 해결한다. 경고를 끄거나 fixture를 축소해서 통과 처리하지 않는다.
+1. 5.4절의 두 경고는 6절에서 실패 assertion·동일 변형 대조·수정을 완료했다.
+   두 시험을 유지하고, 이후 inline·셀 연결에서도 재실행한다.
 2. 본문 inline TAC·텍스트 혼재 및 셀 문맥에 동일한 규칙을 연결한다. 비표 문단의
    Para 기준 그림은 실제 문단 원점 소유자를 연결한다. 원시 vpos로 추정하지 않는다.
 3. 다단/zone·caption·LeftOnly/RightOnly·단보다 넓은 표·합성 LineSeg와 증분 재조판에서
@@ -217,7 +216,7 @@ CLI render tree 산출물은 검증 worktree의
   원본에 `rustfmt`를 적용했다. source 줄 수 변경으로 suite 배정도 바뀌므로 마지막 commit에서
   다시 `--prepare` 후 `--check`하며 generated 파일은 commit하지 않는다.
 
-### 5.4 통과 시험과 별개로 남은 경고 — Stage 2 완료 차단
+### 5.4 두 번째 절편에서 남았던 경고 — 세 번째 절편에서 해결
 
 14개 시험의 현재 assertion은 각 이름에 명시된 계약만 검사한다. 다음 stderr를 무시한
 "전체 무회귀" 판정을 하지 않는다.
@@ -230,3 +229,65 @@ CLI render tree 산출물은 검증 worktree의
 두 항목의 수정 전 동일 변형 대조와 후속 내용 assertion을 추가해야 한다. 이 경고가
 기존 문제인지 새 회귀인지 아직 확정하지 않았으며, Stage 3·push의 통과 증적으로 사용할 수 없다.
 원본 첫 그림/표의 겹침 해결과 일반 규칙 전체 완성을 구분한다.
+
+## 6. 세 번째 절편 — 후속 흐름 회귀 두 건 수정
+
+### 6.1 동일 변형 대조와 분류
+
+2026-09-07 메인테이너의 다음 절차 승인에 따라 5.4절 두 경고를 공개 API 회귀 시험으로
+고정했다. 첫 쪽의 표 두 개가 모두 존재하면서 선행 표 하단을 침범하지 않는지 검사하고,
+복수 그림 변형에서는 문단 pi 8의 세 줄이 전 페이지에 걸쳐 누락/중복 없이 존재하며
+각 단의 실제 하단 안에 놓이는지 검사한다. 경고 메시지 유무 대신 RenderTree bbox를 판정한다.
+
+| 코드 기준 | 후속 표 겹침 시험 | 후속 본문 넘침 시험 |
+| --- | --- | --- |
+| `b0c292abe` — 그림 회피 구현 전 + 동일한 새 시험 | PASS | PASS |
+| `8980a498e` — 두 번째 절편 구현 + 새 실패 시험 | FAIL, 겹침 90.6px | FAIL, 넘침 23.6px |
+| `20e40349e` — 선행 물리 하단/좌표 되감김 보호 | PASS | FAIL — host cap 문제 잔존 |
+| `653d7f08d` — host cap의 물리 높이 보존 추가 | PASS | PASS |
+
+**두 건 모두 이번 그림 회피 구현에서 발생한 회귀다.** 이 분류는 두 변형의 후속 흐름에
+대한 것이며, 최초 원본의 그림/표 겹침 발생 계보를 새롭게 확정한 것은 아니다.
+
+수정 전 대조 commit `a4589c1d588c12f5f802bcbae9847f3b0577f0cb`는 `b0c292abe` tree에
+`8980a498e`의 `tests/cases/issue_6812_square_picture_tac_table.rs` blob만 얹은 로컬 검증
+snapshot이다. `git diff --stat b0c292abe a4589c1d`로 test source 1개만 다른 것을 확인했다.
+기존 detached review worktree와 고정 target을 재사용했고 새 작업 브랜치는 만들지 않았다.
+대조 뒤 review HEAD는 수정 후보로 복귀했다. 이 snapshot을 원격 commit으로 참조하지 않는다.
+
+### 6.2 원인과 수정 경계
+
+1. **선행 표 하단 누락**: 저장 host 높이가 짧을 때 분할기의 cursor만으로 후보 줄을
+   찾으면, 이미 놓인 표보다 위에서 새 그림 회피를 시작한다. 새 metadata가 렌더의
+   정상적인 선행 표 아래 위치를 덮어써 후속 표가 올라갔다. `inline_box_flow_bottom`으로
+   TAC의 측정 높이·바깥 여백에 따른 하단을 추적하고 후보 줄의 시작을 제한한다.
+   그림이 실제로 겹치지 않는 후보에는 새 배치를 강제로 만들지 않는다.
+2. **host cap이 물리 높이를 삭제**: 복수 그림 변형에서 표 배치 직후 높이는 282.6px인데
+   저장 host의 4px cap + 회피량으로 128.1px까지 되감겼다. 렌더는 실제 표 높이를 유지해
+   뒤 본문이 분할기의 fit보다 아래에 그려졌다. 해당 단에 확정된 회피 배치가 있으면 cap을
+   물리 하단보다 작게 줄이지 않는다. 후속 vpos 스냅도 렌더처럼 순차 cursor를 보호한다.
+
+물리 하단은 표 배치 전에 기록한다. 배치 중 후속 텍스트가 새 단으로 넘어가면 flush가
+폐기하므로, 이전 단의 하단이 새 단으로 유출되지 않는다. 새 테스트는 `tests/cases/`에만
+추가했으며 src 테스트나 generated suite·manifest·Cargo 파일을 제출 대상으로 만들지 않았다.
+
+### 6.3 검증 증적
+
+- 검증 source: `653d7f08d`; #6812 suite 013에서 **16/16 PASS**.
+- 인접 회귀: #6754 2건, #6596 1건, #6104 1건, #5929 두 source 각 1건 — **6/6 PASS**.
+- 포맷 검사와 suite manifest 검사 PASS: 1180 sources / 48 targets / 5007 static test attrs.
+- native Clippy `-- -D warnings` PASS(exit 0, 28.19s), integration 배정 정책 계약 21/21 PASS.
+  WASM cfg·workspace/all-targets Clippy는 제출 전 별도 게이트로 남아 있다.
+- 원본 CLI는 11쪽을 유지한다. `output/6812/stage2/followup-flow/render_tree_001.json`의
+  SHA-256은 `91870e650f8e5bfd81e96cc7351b2ad0eaa31111d9c69d00f533ca9a4d32359d`로 직전
+  절편과 동일하다. 첫 그림·표와 후속 제목·본문의 개선 좌표를 유지했다.
+- 로그는 review worktree의 `output/6812/stage2/flow-placement/`에 보존한다.
+  `following-red.log`, `following-before-rule.log`, `following-text-trace.log`,
+  `followup-{suite}-{filter}.log`가 각각 실패·대조·원인 추적·수정 후 검증에 해당한다.
+
+전 페이지를 읽는 새 시험에서 7쪽(pi 70/71) 표 겹침 159.1px 경고도 관찰했다.
+**그림 회피 구현 전 대조에서도 동일하게 재현**되므로 이번 두 회귀와 구분한다. 이를 없애기
+위해 #6798의 코드를 이번 절편에 가져오지 않았으며, 전체 문서가 무경고라고 보고하지 않는다.
+
+본문 inline·셀·비표 문단 Para 원점 연결, 다단/증분 재조판 등 4절의 후속 범위는 남아 있다.
+Stage 3·Docker WASM·Studio 서버 교체·원격 push·PR 생성은 이번 절편에서 수행하지 않았다.
