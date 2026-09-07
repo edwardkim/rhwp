@@ -17,7 +17,10 @@
       },
       "referenceEngine": "2020",
       "contract": "앞 문단의 저장 꼬리(vpos+lh+gap)가 쪽 예산을 넘고 이 문단의 첫 비합성 저장 줄이 vpos==0 이면 새 쪽에서 시작한다. < 차 례 > 는 2쪽 본문 상단에 놓인다. 크기 문턱 없음.",
-      "referencePdfStatus": "pending — lastSavedWith.product 가 null 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다. 현재 증적은 한/글 2024 출력이다."
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 12쪽, 쪽별 공백 제거 글자 수 [33,144,246,355,339,255,262,414,431,503,275,352] 로 rhwp 와 12쪽 전부 일치. 1쪽에 < 차 례 > 가 없고 2쪽이 <차례> 로 시작한다 — 이 PR 의 쪽 귀속 수정이 정본과 같다.",
+      "referencePdf": "pdf/1611000-201000141-small-air-transport-study-2020.pdf",
+      "referencePdfSha256": "34bc3082d666d9112ed073de468586490dd57c93c920bfd6d681e5221e4dda85",
+      "referencePdfBytes": 179155
     }
   ]
 }
