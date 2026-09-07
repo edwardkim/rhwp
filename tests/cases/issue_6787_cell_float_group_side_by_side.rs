@@ -8,7 +8,7 @@
 //!   카드 B  tac=false wrap=TopAndBottom vert=Para(-20579) horz=Para(23743)  w=18991
 //! ```
 //!
-//! 두 가로 구간 `1547..20538` 과 `23743..42734` 는 **겹치지 않는다.** 한/글 2024 PDF 도
+//! 두 가로 구간 `1547..20538` 과 `23743..42734` 는 **겹치지 않는다.** 한/글 2020 PDF 도
 //! 두 카드를 같은 줄에 놓는다(카드 상자 x `122.7..376.8` / `418.5..672.4`,
 //! y 둘 다 `311.0`). rhwp 는 오프셋을 버리고 둘 다 가운데 정렬한 뒤 `para_y` 를 표
 //! 높이만큼 전진시켜 세로로 쌓았다.
@@ -97,7 +97,7 @@ fn cell_float_group_shares_one_line() {
 fn ballot_table_fits_the_page() {
     let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    assert_eq!(core.page_count(), 2, "한/글 2024 와 같은 2쪽이어야 한다");
+    assert_eq!(core.page_count(), 2, "한/글 2020 와 같은 2쪽이어야 한다");
 
     let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
     let paper_bottom = tree.root.bbox.y + tree.root.bbox.height;
@@ -118,4 +118,144 @@ fn ballot_table_fits_the_page() {
         "표가 용지 밖으로 나가면 안 된다 — #6787 회귀          \
          (초과 {over:.1}px, 용지 하한 {paper_bottom:.1}; 수정 전 +415.8px)"
     );
+}
+
+fn variant_core(mut edit: impl FnMut(&mut rhwp::model::paragraph::Paragraph)) -> DocumentCore {
+    use rhwp::model::control::Control;
+    fn visit(
+        para: &mut rhwp::model::paragraph::Paragraph,
+        edit: &mut impl FnMut(&mut rhwp::model::paragraph::Paragraph),
+    ) -> usize {
+        let cards = para
+            .controls
+            .iter()
+            .filter(|ctrl| matches!(ctrl, Control::Table(t) if t.common.width == 18991))
+            .count();
+        if cards == 2 {
+            edit(para);
+            return 1;
+        }
+        let mut hits = 0;
+        for ctrl in &mut para.controls {
+            if let Control::Table(table) = ctrl {
+                for cell in &mut table.cells {
+                    for child in &mut cell.paragraphs {
+                        hits += visit(child, edit);
+                    }
+                }
+            }
+        }
+        hits
+    }
+    let mut core = DocumentCore::from_bytes(&sample()).expect("원본 로드");
+    let mut model = core.document().clone();
+    let mut hits = 0;
+    for section in &mut model.sections {
+        for para in &mut section.paragraphs {
+            hits += visit(para, &mut edit);
+        }
+    }
+    assert_eq!(hits, 1, "실물 후보자 카드 문단 하나를 변경해야 한다");
+    core.set_document(model);
+    core
+}
+
+fn variant_cards(core: &DocumentCore) -> Vec<(u32, f64, f64)> {
+    let mut result = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).expect("변형 문서 렌더");
+        let mut cards = Vec::new();
+        card_boxes(&tree.root, &mut cards);
+        result.extend(cards.into_iter().map(|(x, y)| (page, x, y)));
+    }
+    assert!(result.len() >= 2, "두 카드가 사라지면 안 된다: {result:?}");
+    result
+}
+
+fn shares_a_line(cards: &[(u32, f64, f64)]) -> bool {
+    cards.len() == 2
+        && cards[0].0 == cards[1].0
+        && (cards[0].2 - cards[1].2).abs() <= 2.0
+        && (cards[0].1 - cards[1].1).abs() > 200.0
+}
+
+#[test]
+fn zero_horizontal_offset_is_a_valid_group_member() {
+    use rhwp::model::control::Control;
+    let core = variant_core(|para| {
+        let first = para
+            .controls
+            .iter_mut()
+            .find_map(|c| match c {
+                Control::Table(t) => Some(t),
+                _ => None,
+            })
+            .expect("첫 카드");
+        first.common.horizontal_offset = 0;
+    });
+    assert!(
+        shares_a_line(&variant_cards(&core)),
+        "0 오프셋도 나란히 배치해야 한다"
+    );
+}
+
+#[test]
+fn horizontally_overlapping_cards_do_not_form_a_side_by_side_group() {
+    use rhwp::model::control::Control;
+    let core = variant_core(|para| {
+        for ctrl in &mut para.controls {
+            if let Control::Table(t) = ctrl {
+                t.common.horizontal_offset = 1547;
+            }
+        }
+    });
+    assert!(
+        !shares_a_line(&variant_cards(&core)),
+        "겹치는 가로 구간을 나란히 그룹으로 묶으면 안 된다"
+    );
+}
+
+#[test]
+fn a_negative_offset_disqualifies_the_group() {
+    use rhwp::model::control::Control;
+    let core = variant_core(|para| {
+        let first = para
+            .controls
+            .iter_mut()
+            .find_map(|c| match c {
+                Control::Table(t) => Some(t),
+                _ => None,
+            })
+            .expect("첫 카드");
+        first.common.horizontal_offset = (-1_i32) as u32;
+    });
+    assert!(
+        !shares_a_line(&variant_cards(&core)),
+        "음수 오프셋은 그룹 대상이 아니다"
+    );
+}
+
+#[test]
+fn a_mixed_group_is_rejected_independently_of_member_order() {
+    use rhwp::model::control::Control;
+    for reverse in [false, true] {
+        let core = variant_core(|para| {
+            let first = para
+                .controls
+                .iter_mut()
+                .find_map(|c| match c {
+                    Control::Table(t) => Some(t),
+                    _ => None,
+                })
+                .expect("첫 카드");
+            first.common.horizontal_offset = (-1_i32) as u32;
+            if reverse {
+                para.controls.reverse();
+            }
+        });
+        assert!(
+            !shares_a_line(&variant_cards(&core)),
+            "부적격 카드 순서에 따라 그룹 판정이 바뀌면 안 된다"
+        );
+    }
 }

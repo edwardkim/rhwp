@@ -1,0 +1,24 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6782,
+  "title": "조각 표 셀의 CCC 그림이 음수 오프셋으로 용지 밖으로 밀리는 회귀",
+  "entries": [
+    {
+      "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6782",
+      "originalFilename": "1480000-201900042_D0150004-1-001_(최종보고서) 안전확인대상생활화학제품 표시기준 제정 연구(부록 제외).hwp",
+      "bytes": 6521856,
+      "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1677"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "referencePdfPageCount": 103,
+      "contract": "물리 77쪽 row4/col3의 CCC 그림 복원과 칸 안 그림 11개 보존. 전체 페이지 동일 주장은 하지 않는다."
+    }
+  ]
+}

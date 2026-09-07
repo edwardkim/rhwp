@@ -24,60 +24,21 @@
 //!   #5734  y + h =  701.1 >  칸 상단 631.0   → 겹침    → 오프셋 적용
 //! ```
 //!
-//! ## 재현물이 코퍼스에 있는 이유
-//!
-//! `extract-pages` 로 두 쪽만 잘라도 **5.1MB** 다 — BinData(그림)가 걷히지 않아 범위와
-//! 무관하게 크기가 거의 그대로다(76~77쪽 5,104KB · 77쪽만 5,103KB). 저장소 fixture
-//! (`issue6718` 54KB · `issue6697` 322KB)로 담기에 과해서 `issue_6599` 와 같은 방식으로
-//! 코퍼스에서 찾고 없으면 건너뛴다. `RHWP_ISSUE6782_SAMPLE` 로 경로를 덮어쓸 수 있다.
+//! ## 필수 실물 재현물
+//! 원문 전체를 samples/issue6782에 보존한다. 조각 표의 문맥과 BinData를 바꾸지 않으며,
+//! fixture가 없으면 실패한다. 개인 PC 경로 탐색이나 환경 변수에 따른 묵시적 skip은 없다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
-/// 0-based — 문제 그림이 있는 물리 77쪽(인쇄 쪽번호 56).
 const PAGE_INDEX: u32 = 76;
 const PAGE_HEIGHT_PX: f64 = 1122.5;
+const SAMPLE: &str = "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp";
 
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6782_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    for base in [
-        concat!(r"C:\Users\planet\hwpdocs_10k_share", r"\prism_downloads"),
-        concat!(r"D:\hwpdocs_10k_share", r"\prism_downloads"),
-    ] {
-        for path in walk(std::path::Path::new(base), 0) {
-            if path
-                .file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| name.starts_with("1480000-201900042") && name.ends_with(".hwp"))
-            {
-                return std::fs::read(path).ok();
-            }
-        }
-    }
-    None
-}
-
-/// 코퍼스는 부처별 하위 폴더로 나뉜다 — 두 단계까지만 훑는다.
-fn walk(dir: &std::path::Path, depth: usize) -> Vec<std::path::PathBuf> {
-    let mut out = Vec::new();
-    if depth > 2 {
-        return out;
-    }
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return out;
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.is_dir() {
-            out.extend(walk(&path, depth + 1));
-        } else {
-            out.push(path);
-        }
-    }
-    out
+fn sample() -> Vec<u8> {
+    std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE))
+        .expect("#6782 정식 실물 fixture 읽기")
 }
 
 fn collect_cell_images<'a>(
@@ -102,10 +63,7 @@ fn collect_cell_images<'a>(
 
 #[test]
 fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
-    let Some(bytes) = sample() else {
-        eprintln!("코퍼스 재현물 없음 — 건너뛴다 (RHWP_ISSUE6782_SAMPLE 로 지정 가능)");
-        return;
-    };
+    let bytes = sample();
     let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
     assert_eq!(document.page_count(), 104, "쪽수는 104쪽이어야 한다");
 
@@ -115,11 +73,7 @@ fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
     let mut images = Vec::new();
     collect_cell_images(&tree.root, None, &mut images);
 
-    assert!(
-        images.len() >= 10,
-        "77쪽 표에 칸 안 그림이 10장 이상이어야 한다 — 표본이 어긋났다. got {}",
-        images.len()
-    );
+    assert_eq!(images.len(), 11, "77쪽의 칸 안 그림 11개를 보존해야 한다");
 
     for (cell_y, image_y, image_h) in &images {
         assert!(
@@ -135,4 +89,39 @@ fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
              그림 {image_y:.1}+{image_h:.1}px"
         );
     }
+}
+
+#[test]
+fn the_ccc_image_is_restored_in_its_original_fragment_cell() {
+    fn collect<'a>(node: &'a RenderNode, in_target: bool, out: &mut Vec<&'a RenderNode>) {
+        let in_target = match &node.node_type {
+            RenderNodeType::TableCell(cell) => {
+                cell.row == 4 && cell.col == 3 && cell.model_cell_index == Some(19)
+            }
+            _ => in_target,
+        };
+        if in_target && matches!(node.node_type, RenderNodeType::Image(_)) {
+            out.push(node);
+        }
+        for child in &node.children {
+            collect(child, in_target, out);
+        }
+    }
+    let document = HwpDocument::from_bytes(&sample()).expect("문서 로드");
+    let tree = document.build_page_render_tree(PAGE_INDEX).expect("77쪽");
+    let mut images = Vec::new();
+    collect(&tree.root, false, &mut images);
+    assert_eq!(images.len(), 1, "row4/col3 조각 셀의 CCC 그림 하나");
+    let image = images[0];
+    if let RenderNodeType::Image(data) = &image.node_type {
+        assert_eq!(data.bin_data_id, 79, "원본 CCC 이미지 참조 보존");
+        assert_eq!(data.para_index, Some(118));
+    }
+    // engine 2020 기준 y=235.9. 현재 오차 약 2.8px를 명시적으로 제한한다.
+    assert!(
+        (image.bbox.y - 235.9).abs() <= 3.0,
+        "CCC 위치: {:?}",
+        image.bbox
+    );
+    assert!((image.bbox.height - 65.8).abs() <= 1.0, "CCC 크기 보존");
 }

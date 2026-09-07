@@ -6179,7 +6179,10 @@ impl LayoutEngine {
                             .fold(x, f64::min);
                         let width = match &mut line_node.children[tab_run_idx].node_type {
                             RenderNodeType::TextRun(run) => {
-                                run.resolve_trailing_tab_end((end_x - tab_run_x).max(0.0))
+                                run.resolve_trailing_tab_end(
+                                    (end_x - tab_run_x).max(0.0),
+                                    (x - tab_run_x).max(0.0),
+                                )
                             }
                             _ => None,
                         };

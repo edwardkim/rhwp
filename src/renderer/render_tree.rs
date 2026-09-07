@@ -854,9 +854,18 @@ pub struct TextRunNode {
 impl TextRunNode {
     /// [#6801] 다음 블록 배치가 확정한 끝 탭 경계를 모든 replay 소비자에 전달한다.
     /// 앞선 가시 문자의 폭은 보존하고 뒤 공백/탭만 남은 advance에 맞춘다.
-    pub(crate) fn resolve_trailing_tab_end(&mut self, requested_width: f64) -> Option<f64> {
+    pub(crate) fn resolve_trailing_tab_end(
+        &mut self,
+        requested_width: f64,
+        leader_limit_width: f64,
+    ) -> Option<f64> {
         let text = self.display_or_text();
-        if !text.ends_with('\t') || !requested_width.is_finite() || requested_width < 0.0 {
+        if !text.ends_with('\t')
+            || !requested_width.is_finite()
+            || requested_width < 0.0
+            || !leader_limit_width.is_finite()
+            || leader_limit_width < requested_width
+        {
             return None;
         }
         let chars: Vec<char> = text.chars().collect();
@@ -874,9 +883,12 @@ impl TextRunNode {
         *positions.last_mut()? = width;
         super::validated_replay_positions(text, Some(&positions))?;
         self.layout_positions = Some(positions);
+        // 공백 carry-over의 논리 경계와 점선의 그리기 끝은 다르다.
+        // 기존 점선은 공백 구간을 지나갈 수 있지만 다음 가시 런을 침범하지 않는다.
+        // 저장된 점선 끝을 늘리지 않아 목차 번호 앞의 원래 간격도 보존한다.
         for leader in &mut self.style.tab_leaders {
-            leader.start_x = leader.start_x.min(width);
-            leader.end_x = leader.end_x.min(width).max(leader.start_x);
+            leader.start_x = leader.start_x.min(leader_limit_width);
+            leader.end_x = leader.end_x.min(leader_limit_width).max(leader.start_x);
         }
         Some(width)
     }
