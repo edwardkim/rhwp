@@ -16,9 +16,11 @@
         "version": "11.0.0.8362"
       },
       "referenceEngine": "2020",
-      "referencePdfStatus": "메인테이너 환경에서 생성됨 (PR #6792) — engine_profile=2020, Hancom 12.0.0.4605, 3쪽, 152,160 bytes, SHA-256 c0c2e379da79eae2305006b2dede5e07c995d42be19c9ba7d879821fd810177b. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local 이 없어 직접 산출하지 못했고, 파일은 아직 이 branch 에 없다.",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP, engine_profile=2020). 3쪽, 152,162 bytes. 메인테이너 산출본과 바이트는 다르지만(PDF 가 생성 시각·/ID 를 담는다) 쪽수·쪽별 글자 수가 같다.",
       "contract": "저장 프레임 꼬리 확장은 확장된 컷(source_tail_cut)이 이 조각의 행 예산(avail_for_rows) 안에 들어갈 때만 쓴다 — 쪽 소유 판정이며 문턱 상수도 우회도 없다. 17544911 r=2 는 tail 1178.5 > avail 1005.4 라 기각된다.",
-      "referencePdf": "pdf/17544911-sericulture-training-criteria-2020.pdf"
+      "referencePdf": "pdf/17544911-sericulture-training-criteria-2020.pdf",
+      "referencePdfSha256": "df968a2e9237256e4d03d195c568b0d3ed70218191179ad2b6f6e8f5d37f740e",
+      "referencePdfBytes": 152162
     }
   ]
 }
