@@ -5107,7 +5107,7 @@ impl TypesetState {
             paper: &paper,
             paragraph_y: column.y + paragraph_top.unwrap_or(0.0),
             alignment: style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
-            dpi: self.dpi,
+            dpi: self.layout.dpi,
         };
         if let Some(exclusion) = frame.picture_exclusion(picture) {
             self.side_wrap_exclusions

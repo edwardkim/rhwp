@@ -96,7 +96,7 @@ fn issue_6812_original_paper_picture_precedes_tac_table_without_intersection() {
     assert_eq!(picture.common.vert_rel_to, VertRelTo::Paper);
     assert!(
         picture.common.allow_overlap,
-        "原本 bit 14를 꺼서 회피 조건을 맞추지 않는다"
+        "원본 bit 14를 꺼서 회피 조건을 맞추지 않는다"
     );
     eprintln!(
         "#6812 원본 overlap={}, attr={:#x}, flow={:?}",
@@ -214,4 +214,93 @@ fn issue_6812_picture_outside_the_horizontal_frame_does_not_push_table_down() {
         (before.y - after.y).abs() < 0.01,
         "가로로 만나지 않는 영역은 줄을 차지하지 않는다"
     );
+}
+
+#[test]
+fn issue_6812_small_table_uses_the_available_side_lane() {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    let para = &mut doc.sections[0].paragraphs[0];
+    let Control::Picture(picture) = &mut para.controls[3] else {
+        panic!("그림");
+    };
+    picture.common.width = 12000;
+    picture.shape_attr.current_width = 12000;
+    let Control::Table(table) = &mut para.controls[4] else {
+        panic!("표");
+    };
+    let mut cell = table.cells[9].clone();
+    cell.row = 0;
+    cell.col = 0;
+    cell.row_span = 1;
+    cell.col_span = 1;
+    cell.width = 10000;
+    cell.height = 2500;
+    table.row_count = 1;
+    table.col_count = 1;
+    table.cells = vec![cell];
+    table.cell_grid = vec![Some(0)];
+    table.common.width = 10000;
+    table.common.height = 2500;
+    table.row_sizes = vec![2500];
+    core.set_document(doc);
+    let (picture, table) = boxes(&core);
+    assert!(
+        table.x >= picture.x + picture.width - 0.5,
+        "옆 구간: {picture:?}, {table:?}"
+    );
+    assert!(
+        table.y < picture.y + picture.height - 1.0,
+        "옆에 공간이 있으면 내려가지 않는다"
+    );
+}
+
+#[test]
+fn issue_6812_already_below_picture_does_not_add_another_clearance() {
+    let mut core = sample();
+    change_picture(&mut core, |picture| picture.common.vertical_offset = 0);
+    let (_, before) = boxes(&core);
+    change_picture(&mut core, |picture| picture.common.height += 750);
+    let (picture, after) = boxes(&core);
+    assert!(picture.y + picture.height < after.y);
+    assert!((before.y - after.y).abs() < 0.01);
+}
+
+#[test]
+fn issue_6812_missing_lineseg_does_not_disable_physical_clearance() {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    doc.sections[0].paragraphs[0].line_segs.clear();
+    core.set_document(doc);
+    assert_below_picture(&core);
+}
+
+#[test]
+fn issue_6812_equivalent_paper_page_and_paragraph_anchors_share_clearance() {
+    let mut core = sample();
+    let (original_picture, original_table) = boxes(&core);
+    let page = &core.document().sections[0].section_def.page_def;
+    let layout = PageLayoutInfo::from_page_def(page, &Default::default(), 96.0);
+    for paragraph in [false, true] {
+        change_picture(&mut core, |picture| {
+            picture.common.horz_rel_to = HorzRelTo::Column;
+            picture.common.vert_rel_to = if paragraph {
+                VertRelTo::Para
+            } else {
+                VertRelTo::Page
+            };
+            picture.common.horizontal_offset =
+                ((original_picture.x - layout.body_area.x) * 75.0).round() as u32;
+            picture.common.vertical_offset =
+                ((original_picture.y - layout.body_area.y) * 75.0).round() as u32;
+        });
+        let (picture, table) = boxes(&core);
+        assert!((picture.x - original_picture.x).abs() < 0.02);
+        assert!((picture.y - original_picture.y).abs() < 0.02);
+        assert!(
+            (table.y - original_table.y).abs() < 0.02,
+            "동일 물리 배치의 줄 위치"
+        );
+        assert_below_picture(&core);
+    }
 }
