@@ -16,8 +16,11 @@
         "version": "10.0.0.10376"
       },
       "referenceEngine": "2020",
-      "referencePdfStatus": "pending — 저장 제품이 hancom-office-2018 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다. 다만 이 축은 출력 불변(1쪽 SVG SHA-256 동일)이라 기준 PDF 대조가 판정을 주지 않는다.",
-      "contract": "탭이 든 TextRun 의 bbox 폭은 다음 런의 시작 x 를 넘지 않는다. 출력(잉크)은 불변 — 트리 계약만 고친다."
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 1쪽, 공백 제거 글자 수 574 로 rhwp 와 완전 일치(5-gram 차이 0). 이 축은 출력 불변이라 수정 전후 동일하다.",
+      "contract": "탭이 든 TextRun 의 bbox 폭은 다음 런의 시작 x 를 넘지 않는다. 출력(잉크)은 불변 — 트리 계약만 고친다.",
+      "referencePdf": "pdf/1192000-202100017-policy-research-report-2020.pdf",
+      "referencePdfSha256": "34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48",
+      "referencePdfBytes": 62122
     }
   ]
 }
