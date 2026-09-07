@@ -3934,6 +3934,69 @@ fn preceding_stored_vpos(paragraphs: &[Paragraph], para_idx: usize) -> Option<i3
         })
 }
 
+/// 저장 줄이 쪽 하단까지 찬 직후 `vpos=0`으로 시작하는 문단은 다음 쪽 소유다.
+///
+/// 일반 되감김 판정은 직전 줄의 *시작* `vpos > 5000`을 요구한다. 거의 한 쪽 높이인
+/// TAC 표처럼 줄 시작은 위쪽이지만 `line_height`가 본문 하단까지 닿는 경우에는 그
+/// 조건으로 새 쪽 신호를 놓친다. 이 보조 판정은 atomic TAC의 하단 여백 spill 예외만
+/// 제한하며, 저장 줄 하단이 본문의 85%에 못 미치거나 다음 줄이 정확히 0에서 시작하지
+/// 않으면 기존 top-fit 동작을 유지한다.
+fn stored_zero_vpos_after_near_full_line(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    body_height_hu: i32,
+) -> bool {
+    let current_starts_at_zero = paragraphs
+        .get(para_idx)
+        .and_then(|para| {
+            para.line_segs
+                .iter()
+                .find(|seg| !is_synthetic_line_seg(seg))
+        })
+        .is_some_and(|seg| seg.vertical_pos == 0);
+    if !current_starts_at_zero || body_height_hu <= 0 {
+        return false;
+    }
+
+    paragraphs[..para_idx.min(paragraphs.len())]
+        .iter()
+        .rev()
+        .find_map(|para| {
+            para.line_segs
+                .iter()
+                .rev()
+                .find(|seg| !is_synthetic_line_seg(seg))
+        })
+        .is_some_and(|seg| {
+            let bottom = seg.vertical_pos.saturating_add(seg.line_height);
+            bottom >= body_height_hu.saturating_mul(85) / 100
+        })
+}
+
+/// Native HWP5의 저장된 다행 RowBreak 프레임을 현재 쪽 소유로 되감아도 되는
+/// page-tail 서명인지 판정한다.
+///
+/// 순차 host-spacing 누적은 저장 top보다 소폭 앞설 수 있지만, 일반적인 과거
+/// anchor까지 되감으면 표가 여러 쪽씩 압축된다. 실제 저장본에서 관측한 3.2px
+/// drift와 5.1px body-tail 여유만 포괄하도록 양쪽 경계를 제한한다.
+fn native_hwp5_saved_rowbreak_tail_frame_matches(
+    source_top: f64,
+    source_bottom: f64,
+    current_height: f64,
+    available: f64,
+) -> bool {
+    const MIN_HOST_SPACING_DRIFT_PX: f64 = 1.0;
+    const MAX_HOST_SPACING_DRIFT_PX: f64 = 4.0;
+    const MAX_BODY_TAIL_GAP_PX: f64 = 8.0;
+
+    let host_spacing_drift = current_height - source_top;
+    let body_tail_gap = available - source_bottom;
+    host_spacing_drift >= MIN_HOST_SPACING_DRIFT_PX
+        && host_spacing_drift <= MAX_HOST_SPACING_DRIFT_PX
+        && body_tail_gap >= 0.0
+        && body_tail_gap <= MAX_BODY_TAIL_GAP_PX
+}
+
 fn paragraph_forces_page_boundary_after(
     current_para: &Paragraph,
     next_para: &Paragraph,
@@ -17881,7 +17944,16 @@ impl TypesetEngine {
                 }
                 _ => false,
             });
-        if is_atomic_tac_singleton && st.current_height < available && !st.current_items.is_empty()
+        let stored_next_page_atomic = st.col_count == 1
+            && stored_zero_vpos_after_near_full_line(
+                paragraphs,
+                para_idx,
+                crate::renderer::px_to_hwpunit(st.base_available_height(), self.dpi),
+            );
+        if is_atomic_tac_singleton
+            && !stored_next_page_atomic
+            && st.current_height < available
+            && !st.current_items.is_empty()
         {
             // 추가 가드: 본문 + 하단 여백 안에 들어가야 함 (footer 침범 금지)
             let bottom_margin_px = hwpunit_to_px(
@@ -23870,6 +23942,7 @@ impl TypesetEngine {
             && table_total <= declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO
             && st.current_height + declared_object_total <= available;
 
+        let mut source_anchor_splits_here = false;
         if let Some(declared_total) = declared_empty_para_float_total {
             // 빈 host 문단의 자리차지 RowBreak 표는 렌더러가 문서에 저장된 표 선언
             // 높이를 하한으로 그린다. 저장 LineSeg가 있는 HWP5 문서는 이 선언 높이가
@@ -23925,6 +23998,34 @@ impl TypesetEngine {
                         && anchor_delay <= measured_declared_excess + ANCHOR_DELAY_FLOAT_EPS_PX
                         && bottom_px <= available
                 });
+            // Native HWP5 can carry a complete multi-row RowBreak object frame
+            // at the end of a stored page even when sequential host-spacing
+            // accounting has drifted a few pixels past its saved anchor.  If the
+            // object itself still ends inside the body and the next host rewinds,
+            // preserve that source frame for the whole-fit path below instead of
+            // deferring the table before it can resynchronize to the saved top.
+            let native_hwp5_saved_rowbreak_object_frame_fits = st.profile.native_hwp5_layout()
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && table.row_count > 1
+                && para.controls.len() == 1
+                && !para_has_visible_text(para)
+                && ft.table_footnotes.is_empty()
+                && signed_hwpunit(table.common.vertical_offset) <= 0
+                && next_rewinds_after_table
+                && !has_internal_saved_vpos_reset
+                && saved_span.is_some_and(|(_anchor_px, top_px, bottom_px)| {
+                    native_hwp5_saved_rowbreak_tail_frame_matches(
+                        top_px,
+                        bottom_px,
+                        st.current_height,
+                        available,
+                    )
+                });
             // [#2097] 저장 앵커가 현재 흐름 위치와 정합하는데 저장 하단이 쪽 본문을
             // 넘으면, 원본 한글 레이아웃은 이월이 아니라 이 지점에서 표를 분할했다
             // (2572521 pi36: 앵커 11000HU=146.7px == cur_h, 선언 839.8px 로 하단
@@ -23946,6 +24047,7 @@ impl TypesetEngine {
                 && saved_span.is_some_and(|(_anchor_px, _top_px, bottom_px)| {
                     bottom_px > available
                 });
+            source_anchor_splits_here = saved_anchor_splits_here;
             // [#3820 Stage 7] 표 44(pi=1778)는 앞선 표의 row-internal tail 뒤에서
             // host anchor가 흐름보다 19.1px 앞선다. 저장된 object bottom 자체는
             // 현재 body 안에 있지만, 일반 declared-height defer gate가 그 19.1px을
@@ -24225,6 +24327,7 @@ impl TypesetEngine {
                 && !native_hwp5_multirow_internal_reset_needs_anchor_resync
                 && !native_hwp5_own_footnote_fragment_can_start_before_reservation
                 && !saved_host_line_after_stack_fits
+                && !native_hwp5_saved_rowbreak_object_frame_fits
                 && !single_row_object_declared_fits_current
                 && !native_hwp5_large_single_cell_rowbreak_needs_fragment_scan
                 && !native_hwp5_stored_rowbreak_needs_fragment_scan
@@ -24502,7 +24605,8 @@ impl TypesetEngine {
         // 다행 RowBreak 표는 common.height가 첫 fragment만 뜻할 수도 있다. cell
         // 내부 reset 없이 다음 host가 새 물리 page를 명시할 때만, object frame을
         // 현 page 전체를 소유한 frame으로 쓴다.
-        let saved_rowbreak_object_frame = (st.profile.hwpx_container()
+        let saved_rowbreak_object_frame = ((st.profile.hwpx_container()
+            || st.profile.native_hwp5_layout())
             && !table.common.treat_as_char
             && matches!(
                 table.page_break,
@@ -24528,8 +24632,17 @@ impl TypesetEngine {
         .flatten()
         .and_then(|(source_top, _)| {
             let source_bottom = source_top + declared_object_total - host_spacing_total;
-            (source_top < st.current_height && source_bottom <= available)
-                .then_some((source_top, source_bottom))
+            let source_frame_matches_profile = if st.profile.hwpx_container() {
+                source_top < st.current_height && source_bottom <= available
+            } else {
+                native_hwp5_saved_rowbreak_tail_frame_matches(
+                    source_top,
+                    source_bottom,
+                    st.current_height,
+                    available,
+                )
+            };
+            source_frame_matches_profile.then_some((source_top, source_bottom))
         });
         let saved_table_source_frame =
             saved_single_inline_table_source_frame.or(saved_rowbreak_object_frame);
@@ -25185,6 +25298,18 @@ impl TypesetEngine {
                 && row_count > 1
                 && first_block_end < row_count
                 && fits_fresh_page;
+            // A native HWP5 host whose stored anchor overlaps the current flow,
+            // whose declared bottom crosses this body frame, and whose following
+            // paragraph rewinds owns a physical first fragment here.  The generic
+            // clean-defer rule must not move that source-owned prefix wholesale to
+            // the next page merely because its first row is atomic.  The force-split
+            // floor above proves that at least the visible first-row content fits;
+            // the row scanner then admits only that first row and resumes at the
+            // recorded next-page frame.
+            let source_owned_atomic_first_fragment = source_anchor_splits_here
+                && next_rewinds_after_table
+                && first_row_force_splittable
+                && remaining_on_page >= min_content;
             // native HWP5 2행 그림+caption 표는 첫 그림 행만으로 계산한 일반
             // clean-defer budget이 기존 각주의 40px safety buffer 때문에 소폭 부족해도,
             // 표 전체가 실제 FootnoteArea 앞에 끝날 수 있다. 이 경우까지 다음 page로
@@ -25193,8 +25318,9 @@ impl TypesetEngine {
             // 실제 table total로 다시 확인한다.
             let native_picture_caption_fits_actual_footnote =
                 multirow_clean_defer && native_picture_caption_fits_actual_footnote_boundary;
-            let multirow_clean_defer =
-                multirow_clean_defer && !native_picture_caption_fits_actual_footnote;
+            let multirow_clean_defer = multirow_clean_defer
+                && !native_picture_caption_fits_actual_footnote
+                && !source_owned_atomic_first_fragment;
             // [#2097 진단] 첫 행 이월 결정 입력 — 동작 불변.
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(

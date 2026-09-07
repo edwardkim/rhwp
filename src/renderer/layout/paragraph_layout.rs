@@ -4581,8 +4581,8 @@ impl LayoutEngine {
             // `HeadType::None` 인 본문 문단은 빠져 있었는데, 그 주석이 스스로 적어
             // 두었듯 위험은 목록이 아니라 **비어 있음**에 있다.
             let own_margin_hu = crate::renderer::px_to_hwpunit(margin_left, self.dpi);
-            let cs_is_own_margin = (comp_line.column_start - own_margin_hu).abs()
-                <= EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU;
+            let cs_is_own_margin = comp_line.column_start.abs_diff(own_margin_hu)
+                <= EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU as u32;
             let empty_stored_wrap_line = cell_ctx.is_none()
                 && para
                     .map(|p| p.text.is_empty() && p.controls.is_empty())
