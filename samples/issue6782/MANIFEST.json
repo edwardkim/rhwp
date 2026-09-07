@@ -1,0 +1,31 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6782,
+  "title": "안전확인대상생활화학제품 표시기준 제정 연구 (최종보고서)",
+  "entries": [
+    {
+      "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6782",
+      "originalFilename": "1480000-201900042_D0150004-1-001_(최종보고서) 안전확인대상생활화학제품 표시기준 제정 연구(부록 제외).hwp",
+      "derivedFrom": {
+        "bytes": 6521856,
+        "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+        "transform": "BinData 204개 스트림을 같은 확장자의 1×1 stub 이미지로 치환한 뒤 rhwp convert 로 재저장했다. 그림 상자 치수·위치는 컨트롤 레코드가 정하므로 조판은 바뀌지 않는다.",
+        "verifiedIdentical": "77쪽(idx 76) render tree 의 image 11개가 원본과 좌표·치수까지 동일하다. 쪽수 104, lastSavedWith·printMethod 도 같다."
+      },
+      "bytes": 193536,
+      "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1677"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "referencePdfSha256": "32e0e6d41d53b755b3dc4bcc31937e8b4f0921b282c2e5d3633a3f3617761912",
+      "referencePdfPageCount": 103,
+      "contract": "칸 앵커 그림의 음수 세로 오프셋이 그림을 칸 내용 영역 위로 통째로 밀어내면(배치 결과 바닥 <= content_top) 그 오프셋을 버리고 오프셋 0 으로 놓는다. 77쪽(idx 76) 표 pi=118 ci=0 의 row=4 col=3 칸, 그림 w=81.1 h=65.8 이 대상이다. 한/글 2020 정본 y=235.9px."
+    }
+  ]
+}
