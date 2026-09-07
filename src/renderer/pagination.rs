@@ -455,6 +455,11 @@ pub struct FootnoteRef {
 /// 한 단(Column)에 배치될 콘텐츠
 #[derive(Debug, Clone)]
 pub struct ColumnContent {
+    /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).
+    pub inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
+    /// #6812: 분할기에서 확정한 단 기준 TAC 배치. 그림 paint 순서와 무관하다.
+    pub inline_placements:
+        std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
     /// 단 인덱스 (0-based)
     pub column_index: u16,
     /// 단 시작 시점의 논리 높이(px).
@@ -868,7 +873,17 @@ impl PaginationResult {
                 .iter()
                 .zip(old_page.column_contents.iter())
                 .all(|(nc, oc)| {
-                    nc.items.len() == oc.items.len()
+                    nc.inline_flow_plans.len() == oc.inline_flow_plans.len()
+                        && oc.inline_flow_plans.iter().all(|(&pi, plan)| {
+                            let new_pi = (pi as i64 + offset as i64).max(0) as usize;
+                            nc.inline_flow_plans.get(&new_pi) == Some(plan)
+                        })
+                        && nc.inline_placements.len() == oc.inline_placements.len()
+                        && oc.inline_placements.iter().all(|(&(pi, ci), placement)| {
+                            let new_pi = (pi as i64 + offset as i64).max(0) as usize;
+                            nc.inline_placements.get(&(new_pi, ci)) == Some(placement)
+                        })
+                        && nc.items.len() == oc.items.len()
                         && nc
                             .items
                             .iter()
@@ -908,6 +923,20 @@ impl PaginationResult {
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         overlay_continuations: cc.overlay_continuations.clone(),
                         overlay_cuts: cc.overlay_cuts.clone(),
+                        inline_placements: cc
+                            .inline_placements
+                            .iter()
+                            .map(|(&(pi, ci), &placement)| {
+                                (((pi as i64 + offset as i64).max(0) as usize, ci), placement)
+                            })
+                            .collect(),
+                        inline_flow_plans: cc
+                            .inline_flow_plans
+                            .iter()
+                            .map(|(&pi, plan)| {
+                                ((pi as i64 + offset as i64).max(0) as usize, plan.clone())
+                            })
+                            .collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
                         wrap_around_paras: cc

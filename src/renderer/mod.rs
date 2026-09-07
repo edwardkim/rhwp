@@ -33,6 +33,7 @@ pub mod height_measurer;
 pub mod html;
 pub(crate) mod image_header;
 pub mod image_resolver;
+pub mod inline_flow;
 pub(crate) mod kerning;
 pub mod layer_renderer;
 pub mod layout;

@@ -20,7 +20,7 @@ use crate::model::control::Control;
 use crate::model::footnote::{FootnoteShape, NumberFormat};
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
-    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
+    Caption, CaptionDirection, CommonObjAttr, HorzAlign, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Alignment, LineSpacingType};
 
@@ -491,51 +491,16 @@ impl LayoutEngine {
         para_y: f64,
         alignment: Alignment,
     ) -> (f64, f64) {
-        let h_offset = hwpunit_to_px(common.horizontal_offset as i32, self.dpi);
-        let v_offset = hwpunit_to_px(common.vertical_offset as i32, self.dpi);
-
-        let x = if common.treat_as_char {
-            match alignment {
-                Alignment::Center | Alignment::Distribute => {
-                    container.x + (container.width - obj_width).max(0.0) / 2.0
-                }
-                Alignment::Right => container.x + (container.width - obj_width).max(0.0),
-                _ => container.x,
-            }
-        } else {
-            // 가로 기준 영역 결정
-            let (ref_x, ref_w) = match common.horz_rel_to {
-                HorzRelTo::Paper => (paper_area.x, paper_area.width),
-                HorzRelTo::Page => (body_area.x, body_area.width),
-                HorzRelTo::Column => (col_area.x, col_area.width),
-                HorzRelTo::Para => (container.x, container.width),
-            };
-            // 가로 정렬 방식 적용
-            match common.horz_align {
-                HorzAlign::Left | HorzAlign::Inside => ref_x + h_offset,
-                HorzAlign::Center => ref_x + (ref_w - obj_width) / 2.0 + h_offset,
-                HorzAlign::Right | HorzAlign::Outside => ref_x + ref_w - obj_width - h_offset,
-            }
-        };
-
-        let y = if common.treat_as_char {
-            para_y
-        } else {
-            // 세로 기준 영역 결정
-            let (ref_y, ref_h) = match common.vert_rel_to {
-                VertRelTo::Paper => (paper_area.y, paper_area.height),
-                VertRelTo::Page => (body_area.y, body_area.height),
-                VertRelTo::Para => (para_y, container.height),
-            };
-            // 세로 정렬 방식 적용
-            match common.vert_align {
-                VertAlign::Top | VertAlign::Inside => ref_y + v_offset,
-                VertAlign::Center => ref_y + (ref_h - obj_height) / 2.0 + v_offset,
-                VertAlign::Bottom | VertAlign::Outside => ref_y + ref_h - obj_height - v_offset,
-            }
-        };
-
-        (x, y)
+        crate::renderer::float_placement::ObjectPlacementFrame {
+            container,
+            column: col_area,
+            body: body_area,
+            paper: paper_area,
+            paragraph_y: para_y,
+            alignment,
+            dpi: self.dpi,
+        }
+        .position(common, obj_width, obj_height)
     }
 
     /// 본문 그림(Picture) 개체를 레이아웃하고 업데이트된 y_offset을 반환한다.

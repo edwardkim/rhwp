@@ -3537,6 +3537,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
 }
 
 mod line_breaking;
+pub(crate) use line_breaking::frame_metrics_for_line;
 pub mod lineseg_compare;
 
 pub(crate) use line_breaking::{

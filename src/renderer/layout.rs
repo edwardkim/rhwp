@@ -64,6 +64,8 @@ struct ColumnItemCtx<'a> {
     wrap_around_paras: &'a [super::pagination::WrapAroundPara],
     /// [Task #604 R3] anchor ↔ wrap text 매칭 메타데이터 (typeset 출력 → layout 소비)
     wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
+    inline_placements:
+        &'a std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
 }
 
 pub(crate) const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
@@ -5995,6 +5997,8 @@ impl LayoutEngine {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
         };
         let page_content = PageContent {
             page_index: 0,
@@ -6598,6 +6602,8 @@ impl LayoutEngine {
                         prev_tac_seg_applied,
                         column_wrap_around_paras,
                         &col_content.wrap_anchors,
+                        &col_content.inline_placements,
+                        &col_content.inline_flow_plans,
                     );
                     y_offset = new_y;
                     endnote_sep_body_floor = Some(new_y);
@@ -7737,7 +7743,14 @@ impl LayoutEngine {
                 prev_tac_seg_applied,
                 column_wrap_around_paras,
                 &col_content.wrap_anchors,
+                &col_content.inline_placements,
+                &col_content.inline_flow_plans,
             );
+            if let PageItem::FullParagraph { para_index } = item {
+                if let Some(plan) = col_content.inline_flow_plans.get(para_index) {
+                    hcursor.min_flow_floor = hcursor.min_flow_floor.max(col_area.y + plan.end);
+                }
+            }
             if zero_between_shape_tail_margin_px > 0.0 {
                 // 미주 사이 0에서 직전 미주의 마지막 수식 tail을 앞 단에 남기고
                 // 비TAC 그림만 다음 단으로 넘긴 경우, 한컴은 그림 뒤 bottom margin을
@@ -8037,6 +8050,9 @@ impl LayoutEngine {
                 if page_content
                     .ladder_band_tables
                     .contains(&(*para_index, *control_index))
+                    || col_content
+                        .inline_placements
+                        .contains_key(&(*para_index, *control_index))
                 {
                     let content_bottom = self.last_item_content_bottom.get();
                     if content_bottom.is_finite() {
@@ -8173,6 +8189,7 @@ impl LayoutEngine {
                 prev_tac_seg_applied: false,
                 wrap_around_paras: column_wrap_around_paras,
                 wrap_anchors: &col_content.wrap_anchors,
+                inline_placements: &col_content.inline_placements,
             };
             // 이 단에 이미 그려진 표들의 최상단 y — 잔여 행이 그 아래로 내려가면
             // #4514 가 잡은 표 겹침이 재발한다(실측: pi=158 잔여 행 727px ↔ pi=186
@@ -8442,6 +8459,11 @@ impl LayoutEngine {
         prev_tac_seg_applied: bool,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
         wrap_anchors: &std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
+        inline_placements: &std::collections::HashMap<
+            (usize, usize),
+            super::float_placement::InlineBoxPlacement,
+        >,
+        inline_flow_plans: &std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     ) -> (f64, bool) {
         let ctx = ColumnItemCtx {
             page_content,
@@ -8458,9 +8480,33 @@ impl LayoutEngine {
             prev_tac_seg_applied,
             wrap_around_paras,
             wrap_anchors,
+            inline_placements,
         };
         match item {
             PageItem::FullParagraph { para_index } => {
+                if let Some(plan) = inline_flow_plans.get(para_index) {
+                    let para = &paragraphs[*para_index];
+                    self.apply_paragraph_numbering(
+                        composed.get(*para_index),
+                        para,
+                        styles,
+                        outline_numbering_id,
+                    );
+                    para_start_y.insert(*para_index, col_area.y + plan.start);
+                    self.layout_inline_flow_plan(
+                        tree,
+                        col_node,
+                        para,
+                        styles,
+                        col_area,
+                        page_content.section_index,
+                        *para_index,
+                        bin_data_content,
+                        measured_tables,
+                        plan,
+                    );
+                    return (col_area.y + plan.end, false);
+                }
                 let deferred_empty_float_text_anchor_y =
                     para_index.checked_sub(1).and_then(|host_index| {
                         let host = paragraphs.get(host_index)?;
@@ -9288,7 +9334,7 @@ impl LayoutEngine {
         let TableControlVars {
             mut y_offset,
             para_y_for_table,
-            tac_table_y_before,
+            mut tac_table_y_before,
             is_tac,
             is_current_empty_para_float,
             is_current_empty_square_sibling_float,
@@ -9298,9 +9344,20 @@ impl LayoutEngine {
             para_index,
             control_index,
         } = v;
+        let flow_placement = ctx
+            .inline_placements
+            .get(&(para_index, control_index))
+            .filter(|_| is_tac);
         let mut tac_seg_applied = false;
         let mut para_float_lane_info: Option<(f64, f64, f64, f64, f64)> = None;
         if let Some(Control::Table(t)) = para.controls.get(control_index) {
+            if let Some(placement) = flow_placement {
+                // metadata는 여백 포함 줄의 pen이다. inline_x_override가 있는 표 paint는
+                // 호출자가 여백을 소비한 테두리 좌표를 받으므로 여기서 한 번 변환한다.
+                y_offset =
+                    col_area.y + placement.y + hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                tac_table_y_before = y_offset;
+            }
             let raw_mt = measured_tables
                 .iter()
                 .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
@@ -9558,6 +9615,11 @@ impl LayoutEngine {
             } else {
                 None
             };
+            let tbl_inline_x = flow_placement
+                .map(|placement| {
+                    col_area.x + placement.x + hwpunit_to_px(t.outer_margin_left as i32, self.dpi)
+                })
+                .or(tbl_inline_x);
             let tac_detached_line_shift =
                 if is_tac && inline_pos.is_none() && table_has_detached_para_flow_object(t) {
                     para.line_segs

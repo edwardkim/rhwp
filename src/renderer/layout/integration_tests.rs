@@ -118,6 +118,8 @@ mod tests {
                 wrap_anchors: std::collections::HashMap::new(),
                 overlay_continuations: Vec::new(),
                 overlay_cuts: Vec::new(),
+                inline_placements: Default::default(),
+                inline_flow_plans: Default::default(),
             }],
             active_header: None,
             active_footer: None,

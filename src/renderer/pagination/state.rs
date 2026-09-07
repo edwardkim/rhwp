@@ -100,6 +100,8 @@ impl PaginationState {
             // 아직 만들지 않는다 — TypesetEngine 경로만 채운다.
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -124,6 +126,8 @@ impl PaginationState {
             // 아직 만들지 않는다 — TypesetEngine 경로만 채운다.
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
