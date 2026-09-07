@@ -3095,7 +3095,18 @@ mod tests {
             cfb::CompoundFile::open(std::io::Cursor::new(data.to_vec())).expect("cfb open");
         let mut stream = compound.create_stream(path).expect("테스트 스트림 교체");
         stream.write_all(payload).unwrap();
-        compound.into_inner().into_inner()
+        // Stream buffers writes independently of CompoundFile::into_inner().
+        stream.flush().expect("flush replacement stream");
+        let bytes = compound.into_inner().into_inner();
+        let mut reopened = cfb_reader::CfbReader::open(&bytes).expect("reopen CFB fixture");
+        assert_eq!(
+            reopened
+                .read_stream_raw(path)
+                .expect("read replacement stream"),
+            payload,
+            "replacement stream must retain the complete payload"
+        );
+        bytes
     }
 
     /// 기본 CFB reader가 열기 단계에서 거부하지만 LenientCfbReader는 계속 읽을 수 있는
@@ -3284,18 +3295,27 @@ mod tests {
         let oversized_doc_info = raw_deflate(&vec![0; LIMIT + 1]);
         let strict_rejected = replace_raw_stream(&source, "/DocInfo", &oversized_doc_info);
         let mutated = force_lenient_cfb_fallback(&strict_rejected);
+        let lenient = cfb_reader::LenientCfbReader::open(&mutated).expect("lenient fixture");
+        assert_eq!(
+            lenient.read_stream("DocInfo").expect("lenient DocInfo"),
+            oversized_doc_info,
+            "FAT mutation must preserve the oversized DocInfo payload"
+        );
 
         let result = with_document_open_decompression_policy_for_test(
             hwp5_document_open_policy_for_test(LIMIT, LIMIT * 2),
             || parse_document(&mutated),
         );
 
-        assert!(matches!(
-            result,
-            Err(ParseError::CfbError(cfb_reader::CfbError::LimitExceeded(
-                LIMIT
-            )))
-        ));
+        assert!(
+            matches!(
+                result,
+                Err(ParseError::CfbError(cfb_reader::CfbError::LimitExceeded(
+                    LIMIT
+                )))
+            ),
+            "expected DocInfo output limit, got {result:?}"
+        );
     }
 
     /// Lenient fallback에서도 배포 플래그가 켜졌다면 정확한 ViewText hierarchy만
