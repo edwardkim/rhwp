@@ -400,10 +400,74 @@ libtest 동시성을 현재 host에 맞춰 조정해야 하면 Cargo 옵션 뒤�
 필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
 사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
 
-## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — IR sweep + overflow-cell 원장
+## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — 코퍼스 래칫 여섯
 
 samples 아래 HWP 또는 HWPX fixture를 새로 추가·교체·이동하면 renderer 변경 여부와 무관하게 PR 생성 또는
-draft 해제 전에 **두 baseline 절차**를 수행한다: ① IR field sweep(아래), ② overflow-cell 원장(이 절 말미).
+draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 여섯이고, 그중 **넷은 `samples/` 를 스스로 훑기 때문에
+파일을 놓는 순간 "신규 발생(baseline 없음)" 으로 실패한다.**
+
+| 래칫 | fixture | 대상 선정 | 새 sample 이 즉시 걸리나 |
+| --- | --- | --- | --- |
+| `ir_field_sweep_baseline` | `tests/fixtures/ir_field_sweep_baseline.tsv` | `samples/` 전수 | **예** |
+| `overflow_cell_baseline` | `tests/fixtures/overflow_cell_baseline.tsv` | `samples/` 전수 | **예** |
+| `off_canvas_baseline` | `tests/fixtures/off_canvas_baseline.tsv` | `samples/` 전수 | **예** |
+| `text_overlap_baseline` | `tests/fixtures/text_overlap_baseline.tsv` | `samples/` 전수 | **예** |
+| `oracle_page_count_baseline` | `tests/fixtures/oracle_page_count_baseline.tsv` | 그 TSV 의 행만 순회 | 아니오 (아래 참조) |
+| `clipping_baseline` | `tests/fixtures/clipping_baseline.tsv` | `tests/fixtures/render_page_controlset.tsv` | 아니오 |
+
+넷을 한 번에 돌리는 필터다. 나머지 둘도 함께 걸어 두면 회귀를 같이 본다.
+
+~~~bash
+cargo nextest run --cargo-profile release-test --no-fail-fast -E \
+ 'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|oracle_page_count|clipping/)'
+~~~
+
+> ⚠ **IR sweep 과 overflow-cell 둘만 돌리고 "게이트 통과" 로 판단하지 않는다.**
+> `off_canvas` 와 `text_overlap` 은 `samples/` 를 같은 방식으로 훑으므로 새 fixture 가
+> 0 이 아닌 값을 가지면 반드시 실패한다. 로컬에서 둘만 확인하고 올렸다가 CI 에서 그 둘에
+> 걸린 사례가 있다(PR #6804 · #6796).
+
+### 신규 행은 "내 수정 탓인가" 부터 가른다
+
+새 fixture 가 0 이 아닌 값을 갖는다고 곧바로 baseline 에 싣지 않는다. **그 수정이 없는
+빌드를 대조군으로 같은 fixture 를 다시 재서**, 값이 수정 때문에 생긴 것인지 문서 고유의
+것인지 먼저 가른다. 두 값이 같으면 fixture 가 코퍼스에 처음 들어와 래칫이 켜진 것이고,
+수정 후가 더 크면 회귀이므로 **원인을 고친다**.
+
+- `rhwp layout-anomaly <문서> --json` 의 `offCanvasCount` · `textOverlapCount` 가 곧
+  그 두 원장의 값이다. **0 이면 행을 만들지 않는다.**
+- 기존 문서의 수치 **증가**는 회귀다 — baseline 으로 숨기지 않는다.
+- 감소·해소는 통과다. 다만 브랜치 base 가 `devel` 보다 뒤처져 있으면 그 수치가 devel 에서도
+  같다는 보장이 없으므로, **리베이스 없이 감소분으로 래칫을 조이지 않는다.** 실측만 PR 에 적는다.
+- 행을 추가·갱신하면 문서 경로·SHA-256·수치·판정 근거를 review 문서에 적는다.
+
+### `samples/` 를 훑는 넷의 dump 재생성
+
+`off_canvas`·`overflow_cell`·`text_overlap` 은 16개 partition test 가 병렬로 dump 를 쓰므로,
+지정한 경로가 아니라 `<경로>.part00-of16` 부터 `.part15-of16` 까지를 이어 붙여 비교한다.
+파일 안의 행 순서는 판정에 영향이 없다(래칫이 경로→건수 map 으로 읽는다).
+
+| 래칫 | dump 환경변수 |
+| --- | --- |
+| `ir_field_sweep_baseline` | `RHWP_IR_SWEEP_DUMP` (상세는 `RHWP_IR_SWEEP_DETAIL`) |
+| `overflow_cell_baseline` | `RHWP_OVERFLOW_CELL_DUMP` |
+| `off_canvas_baseline` | `RHWP_OFF_CANVAS_DUMP` |
+| `text_overlap_baseline` | `RHWP_TEXT_OVERLAP_DUMP` |
+
+### 정답지 PDF 를 함께 넣었다면 — `oracle_page_count_baseline`
+
+이 래칫은 `samples/` 를 훑지 않고 **자기 TSV 에 이미 있는 행만** 순회한다. 따라서
+`pdf/` 에 한/글 정답지를 새로 넣어도 그 문서는 자동으로 쪽수 축의 보호를 받지 못한다.
+정답지를 추가했으면 픽스처를 재생성해 그 문서를 원장에 넣는다.
+
+~~~bash
+python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe
+~~~
+
+모아 찍기(`printMethod` 4·5) 문서는 한/글이 한 장에 여러 쪽을 실으므로 이 축의 대상이
+아니다 — 재생성 단계에서 제외된다. `rhwp info --json` 의 `printMethodImpliesNup` 으로 확인한다.
+
+### IR field sweep
 
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
