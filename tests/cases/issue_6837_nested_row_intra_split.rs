@@ -39,6 +39,19 @@
 //! 확장이 먼저 1쪽을 254px 넘기게 만들어 이 축이 관측되지 않는다.
 //!
 //! 결과: 쪽별 글자 수가 **2020 정본과 완전히 같아진다** — `[618, 614, 20]`.
+//!
+//! ⭐ **글자겹침 2건도 같이 닫힌다**(`text_overlap` 래칫 2 → **0**). 같은 뿌리다 —
+//! 행 4 가 원자라 2쪽 이어받는 조각의 높이가 실제 페인트와 어긋났고, 그 회계로
+//! 놓인 행 5 가 행 4 꼬리 **위로** 9.1px 올라갔다.
+//!
+//! ```text
+//!   2쪽, 수정 전        행4 꼬리 `바) 뽕잎…` y=376.8   행5 `가) 누에 사육기술…` y=367.7
+//!                       → 6.90px 겹침 (169.0px · 224.0px 폭 두 쌍)
+//!   2쪽, 수정 후        행4 꼬리 `사) 오디…` 끝 244.1  행5 `가) …` 시작 246.0
+//!                       → 겹침 없음
+//!   `tests/fixtures/text_overlap_baseline.tsv` 를 2 → 0 으로 낮춰 잠갔다.
+//!   (래칫은 감소를 통과시키므로 낮추지 않으면 재발이 안 잡힌다.)
+//! ```
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -154,5 +167,57 @@ fn the_page_distribution_matches_the_reference_engine() {
     assert!(
         counts[2] * 10 < counts[0],
         "정본 3쪽은 한 줄 규모다 — #6837 회귀 (실측 {counts:?}; 수정 전 3쪽 89자)"
+    );
+}
+
+/// 2쪽에서 중첩 **행4 의 꼬리와 행5 가 겹치지 않는다**.
+///
+/// 행 4 가 원자였을 때는 2쪽 이어받는 조각의 높이가 실제 페인트와 어긋나, 그 회계로
+/// 놓인 행 5 가 행 4 꼬리 **위로** 9.1px 올라가 6.90px 겹쳤다(169.0 · 224.0px 폭 두 쌍).
+#[test]
+fn the_continued_nested_row_does_not_overlap_the_next_row() {
+    let bytes = sample();
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let tree = core.build_page_render_tree(1).expect("2쪽 render tree");
+    let body = find_body(&tree.root).expect("Body 노드");
+
+    // (텍스트, 상단, 하단, 좌, 우)
+    let mut runs: Vec<(String, f64, f64, f64, f64)> = Vec::new();
+    fn walk(node: &RenderNode, out: &mut Vec<(String, f64, f64, f64, f64)>) {
+        if let RenderNodeType::TextRun(tr) = &node.node_type {
+            if !tr.text.trim().is_empty() {
+                out.push((
+                    tr.text.clone(),
+                    node.bbox.y,
+                    node.bbox.y + node.bbox.height,
+                    node.bbox.x,
+                    node.bbox.x + node.bbox.width,
+                ));
+            }
+        }
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    walk(body, &mut runs);
+
+    let mut worst = 0.0f64;
+    let mut worst_pair = String::new();
+    for i in 0..runs.len() {
+        for j in (i + 1)..runs.len() {
+            let (a, b) = (&runs[i], &runs[j]);
+            let ox = a.4.min(b.4) - a.3.max(b.3);
+            let oy = a.2.min(b.2) - a.1.max(b.1);
+            if ox > 1.0 && oy > 1.0 && oy > worst {
+                worst = oy;
+                worst_pair = format!("{:?} x {:?}", &a.0, &b.0);
+            }
+        }
+    }
+
+    assert!(
+        worst <= 0.5,
+        "2쪽 글줄이 겹치면 안 된다 — #6837 회귀 (세로 겹침 {worst:.2}px, {worst_pair}; \
+         수정 전 6.90px)"
     );
 }
