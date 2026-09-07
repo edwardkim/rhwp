@@ -352,3 +352,13 @@ clipping 별도 실행은 하지 않았고 해당 gate를 통과했다고 주장
 추가해 같은 원격 작업 브랜치를 fast-forward 갱신한다. 원격 devel SHA 일치와 ancestry를
 push의 명시적 선행 조건으로 확인한다. PR 생성 뒤 번호 기반 접수 기록을 추가하되,
 최종 self-review·CI 통과·병합·이슈 종료를 미리 완료로 기록하지 않는다.
+
+## 11. PR 생성
+
+2026-09-08 원격 devel이 `ac8c9fa2c9`로 유지됨과 작업 head의 ancestry를 확인한 뒤
+`3e02fcc51`을 기존 원격 작업 브랜치에 fast-forward push했다.
+[PR #6850](https://github.com/edwardkim/rhwp/pull/6850)을 devel 대상으로 생성했고,
+assignee edwardkim·milestone v1.0.0·관련 labels를 적용했다. 게시 본문의 UTF-8 원문 일치도
+API 재조회로 확인했다. [번호 기반 접수 기록](../pr/archives/pr_6850_review.md)과
+9월 8일 오늘할일을 같은 PR에 추가한다. 생성 당시 CI는 진행 중이며 최종 self-review,
+병합 및 #6812 종료는 아직 미수행이다.
