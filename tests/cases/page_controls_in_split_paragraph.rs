@@ -28,7 +28,12 @@ fn fixture(hide_after_shapes: bool) -> Document {
     let mut paragraphs: Vec<_> = (0..20)
         .map(|i| Paragraph {
             char_count: 1,
-            line_segs: vec![line(0, i * 2_500, 2_500)],
+            // Keep the fallback paginator's prefix safely below the page-tail
+            // boundary. The stored vpos ladder still places the following
+            // control paragraph near the source page bottom, while small font
+            // metric changes cannot turn this compatibility assertion into an
+            // unrelated overflow test.
+            line_segs: vec![line(0, i * 2_500, 2_000)],
             ..Default::default()
         })
         .collect();
