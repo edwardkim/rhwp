@@ -51,6 +51,25 @@ fn actual_resize_undo_redo_restores_original_transform_without_document_snapshot
 }
 
 #[test]
+fn capture_and_discard_preserve_picture_state_and_section_passthrough() {
+    let mut core = load();
+    let before = state(&core);
+    let raw_before = core.document().sections[0].raw_stream.clone();
+    assert!(raw_before.is_some(), "원본 구역 패스스루가 있는 실물 문서");
+    let id = core
+        .capture_picture_transform_native(r#"{"sec":0,"ppi":236,"ci":0}"#)
+        .unwrap();
+    assert_eq!(state(&core), before);
+    assert_eq!(core.document().sections[0].raw_stream, raw_before);
+    core.discard_picture_transform_native(id);
+    assert_eq!(state(&core), before);
+    assert_eq!(core.document().sections[0].raw_stream, raw_before);
+    assert!(core.swap_picture_transform_native(id).is_err());
+    assert_eq!(state(&core), before);
+    assert_eq!(core.document().sections[0].raw_stream, raw_before);
+}
+
+#[test]
 fn invalid_picture_journal_target_fails_without_mutation() {
     let mut core = load();
     let before = state(&core);
