@@ -576,6 +576,11 @@ fn issue_6812_cell_inline_table_respects_its_own_picture_exclusion() {
     inner.raw_break_type = 0;
     inner.char_offsets = vec![8, 17];
     inner.char_count = 19;
+    assert_eq!(inner.control_text_positions(), vec![0, 1]);
+    let Control::Table(nested) = &inner.controls[1] else {
+        panic!("셀 내부 TAC 표")
+    };
+    let outer_margin_top = f64::from(nested.outer_margin_top) / 75.0;
     let Control::Picture(picture) = &mut inner.controls[0] else {
         panic!("그림")
     };
@@ -596,6 +601,7 @@ fn issue_6812_cell_inline_table_respects_its_own_picture_exclusion() {
     let host = &mut doc.sections[0].paragraphs[0];
     host.text.clear();
     host.char_offsets.clear();
+    host.char_count = 33; // 네 extended control과 문단 끝.
     host.controls.truncate(3);
     host.controls.push(Control::Table(outer));
     core.set_document(doc);
@@ -604,8 +610,24 @@ fn issue_6812_cell_inline_table_respects_its_own_picture_exclusion() {
     collect_nested_pair(&tree.root, &mut pictures, &mut tables);
     assert_eq!(pictures.len(), 1, "셀 그림 누락/중복 금지");
     assert_eq!(tables.len(), 1, "셀 TAC 표 누락/중복 금지");
+    let picture = pictures[0];
+    let table = tables[0];
+    let horizontal_overlap =
+        ((picture.x + picture.width).min(table.x + table.width) - picture.x.max(table.x)).max(0.0);
+    let vertical_overlap = ((picture.y + picture.height).min(table.y + table.height)
+        - picture.y.max(table.y))
+    .max(0.0);
     assert!(
-        tables[0].y + 0.5 >= pictures[0].y + pictures[0].height + 141.0 / 75.0,
+        horizontal_overlap > 0.5,
+        "셀의 남은 가로 폭에 들어가지 않는 입력"
+    );
+    assert!(
+        vertical_overlap <= 0.5,
+        "셀 그림/표 교집합: 가로 {horizontal_overlap:.3}, 세로 {vertical_overlap:.3}; \
+         그림 {picture:?}, 표 {table:?}"
+    );
+    assert!(
+        tables[0].y + 0.5 >= pictures[0].y + pictures[0].height + outer_margin_top,
         "셀 원점의 선행 그림 아래에 nested TAC를 놓는다: picture={:?}, table={:?}",
         pictures[0],
         tables[0]
