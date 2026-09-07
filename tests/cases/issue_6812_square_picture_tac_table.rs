@@ -6,7 +6,8 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::image::Picture;
-use rhwp::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+use rhwp::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use rhwp::renderer::page_layout::PageLayoutInfo;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 fn sample() -> DocumentCore {
@@ -93,11 +94,79 @@ fn issue_6812_original_paper_picture_precedes_tac_table_without_intersection() {
     assert_eq!(picture.common.text_wrap, TextWrap::Square);
     assert_eq!(picture.common.horz_rel_to, HorzRelTo::Paper);
     assert_eq!(picture.common.vert_rel_to, VertRelTo::Paper);
+    assert!(
+        picture.common.allow_overlap,
+        "原本 bit 14를 꺼서 회피 조건을 맞추지 않는다"
+    );
     eprintln!(
         "#6812 원본 overlap={}, attr={:#x}, flow={:?}",
         picture.common.allow_overlap, picture.common.attr, picture.common.text_flow
     );
     assert_below_picture(&core);
+}
+
+/// 실제 paint의 Paper/Page 기준·정렬·여백은 공통 좌표 계산 분리 후에도 유지한다.
+/// 기대값은 공개 PageDef/ColumnDef의 물리 영역에서 직접 구하고 내부 helper는 호출하지 않는다.
+#[test]
+fn issue_6812_reference_frame_geometry_preserves_alignment_and_outer_margins() {
+    let mut core = sample();
+    let page = &core.document().sections[0].section_def.page_def;
+    let layout = PageLayoutInfo::from_page_def(page, &Default::default(), 96.0);
+    for paper in [true, false] {
+        for horizontal in [HorzAlign::Left, HorzAlign::Center, HorzAlign::Right] {
+            for vertical in [VertAlign::Top, VertAlign::Center, VertAlign::Bottom] {
+                change_picture(&mut core, |picture| {
+                    picture.common.horz_rel_to = if paper {
+                        HorzRelTo::Paper
+                    } else {
+                        HorzRelTo::Page
+                    };
+                    picture.common.vert_rel_to = if paper {
+                        VertRelTo::Paper
+                    } else {
+                        VertRelTo::Page
+                    };
+                    picture.common.horz_align = horizontal;
+                    picture.common.vert_align = vertical;
+                    picture.common.horizontal_offset = 750;
+                    picture.common.vertical_offset = 1500;
+                    picture.common.margin.left = 75;
+                    picture.common.margin.right = 150;
+                    picture.common.margin.top = 225;
+                    picture.common.margin.bottom = 300;
+                });
+                let (image, _) = boxes(&core);
+                let (x, y, w, h) = if paper {
+                    (0.0, 0.0, layout.page_width, layout.page_height)
+                } else {
+                    let body = &layout.body_area;
+                    (body.x, body.y, body.width, body.height)
+                };
+                let box_width = image.width + 3.0;
+                let box_height = image.height + 7.0;
+                let expected_x = match horizontal {
+                    HorzAlign::Left => x + 10.0,
+                    HorzAlign::Center => x + (w - box_width) / 2.0 + 10.0,
+                    HorzAlign::Right => x + w - box_width - 10.0,
+                    _ => unreachable!(),
+                } + 1.0;
+                let expected_y = match vertical {
+                    VertAlign::Top => y + 20.0,
+                    VertAlign::Center => y + (h - box_height) / 2.0 + 20.0,
+                    VertAlign::Bottom => y + h - box_height - 20.0,
+                    _ => unreachable!(),
+                } + 3.0;
+                assert!(
+                    (image.x - expected_x).abs() < 0.01,
+                    "paper={paper}, {horizontal:?}: {image:?}, expected_x={expected_x}"
+                );
+                assert!(
+                    (image.y - expected_y).abs() < 0.01,
+                    "paper={paper}, {vertical:?}: {image:?}, expected_y={expected_y}"
+                );
+            }
+        }
+    }
 }
 
 #[test]

@@ -8,6 +8,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
 };
+use crate::model::style::Alignment;
 use crate::model::table::{Table, TablePageBreak};
 use crate::model::HwpUnit;
 
@@ -15,6 +16,70 @@ use super::hwpunit_to_px;
 use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy};
 use super::page_layout::LayoutRect;
+
+/// 개체 배치에 쓰이는 실제 좌표계. Paper와 Page(본문 영역)를 구분하며,
+/// 셀/문단의 container를 종이나 단으로 대체하지 않는다.
+///
+/// #6812: 점유 영역도 paint와 같은 원점·정렬 해석을 사용할 수 있도록
+/// 렌더 노드 생성과 무관한 계산으로 분리한다. 크기는 호출자가 캡션과
+/// 바깥 여백까지 포함해 해석한 개체 상자의 크기다.
+pub(crate) struct ObjectPlacementFrame<'a> {
+    pub(crate) container: &'a LayoutRect,
+    pub(crate) column: &'a LayoutRect,
+    pub(crate) body: &'a LayoutRect,
+    pub(crate) paper: &'a LayoutRect,
+    pub(crate) paragraph_y: f64,
+    pub(crate) alignment: Alignment,
+    pub(crate) dpi: f64,
+}
+
+impl ObjectPlacementFrame<'_> {
+    /// 기준 영역 → 정렬 → signed offset. 저장 LineSeg나 paint 목록은 읽지 않는다.
+    pub(crate) fn position(&self, common: &CommonObjAttr, width: f64, height: f64) -> (f64, f64) {
+        let h_offset = hwpunit_to_px(signed_hwpunit(common.horizontal_offset), self.dpi);
+        let v_offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), self.dpi);
+        let x = if common.treat_as_char {
+            match self.alignment {
+                Alignment::Center | Alignment::Distribute => {
+                    self.container.x + (self.container.width - width).max(0.0) / 2.0
+                }
+                Alignment::Right => self.container.x + (self.container.width - width).max(0.0),
+                _ => self.container.x,
+            }
+        } else {
+            let reference = match common.horz_rel_to {
+                HorzRelTo::Paper => self.paper,
+                HorzRelTo::Page => self.body,
+                HorzRelTo::Column => self.column,
+                HorzRelTo::Para => self.container,
+            };
+            match common.horz_align {
+                HorzAlign::Left | HorzAlign::Inside => reference.x + h_offset,
+                HorzAlign::Center => reference.x + (reference.width - width) / 2.0 + h_offset,
+                HorzAlign::Right | HorzAlign::Outside => {
+                    reference.x + reference.width - width - h_offset
+                }
+            }
+        };
+        let y = if common.treat_as_char {
+            self.paragraph_y
+        } else {
+            let (reference_y, reference_height) = match common.vert_rel_to {
+                VertRelTo::Paper => (self.paper.y, self.paper.height),
+                VertRelTo::Page => (self.body.y, self.body.height),
+                VertRelTo::Para => (self.paragraph_y, self.container.height),
+            };
+            match common.vert_align {
+                VertAlign::Top | VertAlign::Inside => reference_y + v_offset,
+                VertAlign::Center => reference_y + (reference_height - height) / 2.0 + v_offset,
+                VertAlign::Bottom | VertAlign::Outside => {
+                    reference_y + reference_height - height - v_offset
+                }
+            }
+        };
+        (x, y)
+    }
+}
 
 /// A paper/page-anchored side-wrap float that can explain a stored body row's
 /// missing right-side width.
