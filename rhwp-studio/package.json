@@ -77,7 +77,7 @@
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.7",
+    "@types/chrome": "^0.2.8",
     "puppeteer-core": "^25.9.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
