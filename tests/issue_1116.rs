@@ -288,28 +288,71 @@ fn sample16_hwp3_page3_latin_font_matches_legacy_hancom_mapping() {
     assert_page3_latin_poppy_resolves_to_palatino("samples/hwp3-sample16.hwp");
 }
 
+/// [#6670] 3쪽 제목 자리를 한/글과 **같은 쪽 안의 글줄 간격**으로 고정한다.
+///
+/// 종전에는 제목 숫자의 SVG `y` 를 한/글 PDF 글자 bbox **top**(337.2 / 749.3)과
+/// 맞췄다. 그런데 rhwp 의 `y` 는 baseline 계열이라 top 과는 22.8px(16pt 제목의
+/// top→baseline) 차이가 나야 정상이다. 수정 전에는 도형 전용 문단(pi=71, 머리
+/// 상자)의 꼬리 줄간격 10.4px 이 빠져 그 아래 줄이 전부 10.4px 위로 올라와 있었고,
+/// 그 어긋남이 우연히 22.8 − 10.4 ≈ 12.4 = 이 문서의 `y` − baseline 상수와 겹쳐
+/// 숫자만 맞았다. 저장 사다리(pi=71 vpos 5760 + lh 9764 + ls 780 = pi=72 vpos 16304)와
+/// `pdf/hwp3-sample16-2020.pdf` 3쪽 baseline(pymupdf `spans[].origin`) 실측:
+///
+/// | 줄 | 한/글 baseline | rhwp `y` 수정 전 (y−base) | 수정 후 (y−base) |
+/// |---|---|---|---|
+/// | 우리공사 전산기… (도형 앞) | 204.0 | 192.7 (−11.3) | 192.7 (−11.3) |
+/// | 2. 추진방향 (도형 뒤) | 360.0 | 337.2 (−22.8) | 347.6 (−12.4) |
+/// | 터의 전산기… | 424.0 | 402.4 (−21.6) | 412.8 (−11.2) |
+/// | 3. 주요 추진내용 | 772.0 | 749.3 (−22.7) | 759.7 (−12.3) |
+///
+/// 수정 후에는 도형 앞뒤 모든 줄이 같은 상수(−11.2~−12.4)라 흐름이 한/글과 맞고,
+/// 수정 전에는 도형 뒤에서 10.4px 계단이 생긴다. 그래서 절대 top 대신 도형 **앞**
+/// 첫 본문 줄을 기준으로 제목까지의 거리를 한/글 baseline 거리와 비교한다.
 #[test]
 fn sample16_hwp5_page3_heading_positions_follow_lineseg_vpos() {
     let svg = render_svg("samples/hwp3-sample16-hwp5.hwp", 2);
     let twos = extract_text_positions(&svg, "2");
     let threes = extract_text_positions(&svg, "3");
+    // 도형 문단 앞 첫 본문 줄 "우리공사 전산기 구성체계를…" 의 첫 글자.
+    let reference_y = extract_text_positions(&svg, "우")
+        .iter()
+        .map(|(_, y)| *y)
+        .fold(f64::INFINITY, f64::min);
+    assert!(
+        reference_y.is_finite(),
+        "p3 기준 줄(`우리공사 전산기…`)의 `우` 글자를 찾지 못함"
+    );
+
+    // 한/글 PDF baseline 거리: 360.0 − 204.0 = 156.0, 772.0 − 204.0 = 568.0.
+    const HANCOM_HEADING2_FROM_REFERENCE: f64 = 156.0;
+    const HANCOM_HEADING3_FROM_REFERENCE: f64 = 568.0;
+    const TOLERANCE: f64 = 2.5;
 
     let heading2 = twos
         .iter()
-        .find(|(x, y)| (*x - 83.36).abs() < 1.0 && (*y - 337.2).abs() < 2.0)
+        .find(|(x, y)| {
+            (*x - 83.36).abs() < 1.0
+                && (*y - reference_y - HANCOM_HEADING2_FROM_REFERENCE).abs() < TOLERANCE
+        })
         .copied();
     assert!(
         heading2.is_some(),
-        "p3 `2. 추진방향` heading digit must match the 3mm-grid Hancom PDF y≈337.2: {twos:?}"
+        "p3 `2. 추진방향` 숫자는 기준 줄({reference_y:.1})에서 한/글 PDF baseline 거리 \
+         {HANCOM_HEADING2_FROM_REFERENCE}px 안에 있어야 한다 (꼬리 줄간격이 빠지면 10.4px \
+         가까워진다): {twos:?}"
     );
 
     let heading3 = threes
         .iter()
-        .find(|(x, y)| (*x - 83.36).abs() < 1.0 && (*y - 749.3).abs() < 2.0)
+        .find(|(x, y)| {
+            (*x - 83.36).abs() < 1.0
+                && (*y - reference_y - HANCOM_HEADING3_FROM_REFERENCE).abs() < TOLERANCE
+        })
         .copied();
     assert!(
         heading3.is_some(),
-        "p3 `3. 주요 추진내용` heading digit must match the 3mm-grid Hancom PDF y≈749.3: {threes:?}"
+        "p3 `3. 주요 추진내용` 숫자는 기준 줄({reference_y:.1})에서 한/글 PDF baseline 거리 \
+         {HANCOM_HEADING3_FROM_REFERENCE}px 안에 있어야 한다: {threes:?}"
     );
 }
 
@@ -427,33 +470,44 @@ fn sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg() {
     );
 }
 
-/// p83 본문 줄. #6665 로 도형 전용 줄의 꼬리 줄간격이 실리면서 이 쪽 전체가
-/// 10.4px 내려가 881.35 → 891.75 가 됐다.
-///
-/// 이 값은 한/글 값이 아니다. 한/글 PDF 는 여기서 다시 12px 아래에 있다(#6671).
-/// 이 테스트가 지키는 것은 절대 위치가 아니라 **꼬리 글자가 본문 줄에 남는지**다.
-const P83_BODY_LINE_Y: f64 = 891.75;
-/// 꼬리 글자가 떨어졌을 때 놓이는 다음 줄 머리. 본문 줄에서 한 줄 아래다.
-const P83_ORPHAN_LINE_Y: f64 = 919.5;
-const P83_ORPHAN_LINE_X: f64 = 126.7;
-
+/// [#6670] `립` 의 절대 y(881.35 → #6671 에서 891.75)는 도형 문단(pi=71)의 꼬리
+/// 줄간격 10.4px 이 빠졌다 들어온 자리였다(위
+/// `sample16_hwp5_page3_heading_positions_follow_lineseg_vpos` 주석의 실측). 이
+/// 테스트의 계약은 "`수립` 의 `립` 이 BCP 문단 줄에 접혀 있고 다음 줄 머리에 홀로
+/// 떨어지지 않는다" 이므로, 절대 좌표 대신 **같은 줄의 첫 글자**와의 관계로
+/// 고정한다. `pdf/hwp3-sample16-hwp5-2022.pdf` 3쪽 BCP 줄 baseline 903.2, rhwp
+/// 수정 후 891.7(이 문서의 `y`−baseline 상수 −11.5, 쪽 전체 균일).
 #[test]
 fn sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line() {
     let svg = render_svg("samples/hwp3-sample16-hwp5-2022.hwp", 2);
     let tail_glyphs = extract_text_positions(&svg, "립");
+    // BCP 문단 "□ 공사 정보처리 연속성 확보를 위한 비상대응체계(BCP: … 수립" 의 줄 머리 글자.
+    let line_heads: Vec<(f64, f64)> = extract_text_positions(&svg, "공")
+        .into_iter()
+        .filter(|(x, _)| (100.0..200.0).contains(x))
+        .collect();
+    // 본문 줄 간격(한/글 24.5px 피치) — 다음 줄 머리 판정 창.
+    const LINE_PITCH: f64 = 24.5;
 
     let folded_tail = tail_glyphs
         .iter()
-        .find(|(x, y)| *x > 620.0 && (*y - P83_BODY_LINE_Y).abs() < 1.0)
+        .find(|(x, y)| {
+            *x > 620.0
+                && line_heads
+                    .iter()
+                    .any(|(_, head_y)| (*y - head_y).abs() < 1.0)
+        })
         .copied();
     assert!(
         folded_tail.is_some(),
-        "2022 p83 BCP `수립`의 `립`은 p83 본문 줄 y≈{P83_BODY_LINE_Y}에 있어야 함: {tail_glyphs:?}"
+        "2022 p83 BCP `수립`의 `립`은 한컴오피스처럼 BCP 문단 줄(`공`으로 시작하는 줄 {line_heads:?})에 \
+         접혀 있어야 함: {tail_glyphs:?}"
     );
+    let (_, folded_y) = folded_tail.expect("checked above");
 
     let orphan_tail = tail_glyphs
         .iter()
-        .find(|(x, y)| (*x - P83_ORPHAN_LINE_X).abs() < 2.0 && (*y - P83_ORPHAN_LINE_Y).abs() < 2.0)
+        .find(|(x, y)| *x < 200.0 && (*y - folded_y - LINE_PITCH).abs() < 4.0)
         .copied();
     assert!(
         orphan_tail.is_none(),
