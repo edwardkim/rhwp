@@ -39,8 +39,9 @@ rhwp-studio에서 원본 1페이지의 그림과 TAC 표 조판 문제가 해결
 - Stage 1 조사 기준 `7c67bff3a`는 `task_m100_6812_stage1_baseline` 브랜치와
   `baseline/6812-stage1` 태그로 보존한다. 이는 1페이지 수정 전 코드다.
 - 수용한 `edf083614`에도 당시 미완성 확장과 셀 시험 실패가 포함되어 있었다.
-  보존된 후속 기록의 해당 후보 검사 결과는 20 PASS / 셀 1 FAIL이다. 이번 턴에서
-  이를 재실행하거나 시험을 삭제·완화하지 않았고 전체 회귀 통과로 주장하지 않는다.
+  보존된 후속 기록의 해당 후보 검사 결과는 20 PASS / 셀 1 FAIL이다. 최초 완료 판정 시에는
+  이를 재실행하거나 시험을 삭제·완화하지 않았다. 이후 승인된 시험 분리와 실제 재검증은
+  6절에 기록하며, 전체 회귀 통과로 확대하지 않는다.
 - Center/Bottom 합성 문서는 메인테이너가 비정상 문서로 판단하여 조판 판정 근거에서
   제외했다. 이 문서로 도출한 기대값을 일반 규칙 또는 후속 구현의 정답으로 사용하지 않는다.
 - MCP PDF의 이미지 누락은 메인테이너 관측으로 기록한다. 그 사실만으로 쪽 수·주변
@@ -94,5 +95,38 @@ GitHub #6812 close는 이번 지시로 실행하지 않았다. 향후 통합을 
 후속 확장 작업은 별도 보존 브랜치 `task_m100_6812`에 남아 있다.
 이는 셀 문제의 해결 또는 시험 PASS가 아니라 승인된 제출 범위 분리다.
 
-집중 검사와 필수 lint·회귀는 이 분리를 반영한 후보에서 순차 실행하며,
-실제 종료 결과를 확인하기 전에는 PR 준비 완료로 기록하지 않는다.
+### 6.1 실제 검증 결과
+
+- 제출 후보: `0c23e325a230b5ef49999a859afe783527fdbbde`.
+- 검증 checkout: `/home/edward/mygithub/rhwp-review-6812` (위 후보의 detached HEAD).
+- 고정 target: `/home/edward/mygithub/rhwp-6812-review-target` 재사용.
+- `node scripts/rust-test-suite-manifest.mjs --prepare`: PASS. 파생 suite는 검증
+  worktree에만 준비했으며 커밋하지 않았다.
+- `node scripts/run-rust-test.mjs --cargo-test issue_6812_square_picture_tac_table --
+  --target-dir /home/edward/mygithub/rhwp-6812-review-target`: **20 PASS / 0 FAIL /
+  0 ignored**, 148 filtered. 컴파일 1분 12초, 실행 1.72초.
+- 다음 묶음은 동일 target에서 순차 실행했으며 전체 명령 체인 exit 0을 확인했다.
+  - `cargo fmt --all` 및 `cargo fmt --all -- --check`: PASS.
+  - native `cargo clippy --locked … -- -D warnings`: PASS (45.37초).
+  - `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown … -- -D warnings`:
+    PASS (1분 13초).
+  - `cargo build --locked --workspace …`: PASS.
+  - `cargo clippy --locked --workspace --all-targets … -- -D warnings`: PASS (1분 29초).
+  - `node scripts/rust-test-suite-manifest.mjs --check`: PASS
+    (1,180 sources / 5,011 static test attrs / 48 integration targets).
+  - `node scripts/rust-unit-test-tiers.mjs --check`: PASS (4,205 tests / 298 modules).
+  위 Cargo 명령의 `…`는 모두 `--target-dir /home/edward/mygithub/rhwp-6812-review-target`이다.
+- 검증 종료 후 review worktree의 tracked/untracked 변경 없음.
+  `git diff --exit-code edf083614 -- src crates Cargo.toml Cargo.lock`도 exit 0이다.
+  Studio에 제공 중인 승인 baseline WASM은 변경하지 않았다.
+
+### 6.2 남은 제출 게이트
+
+이번 결과는 범위 분리 후 집중 검사·lint 통과이며 **PR 준비 완료가 아니다**.
+release-test 전체 nextest, Native Skia 3종은 이번 실행에 포함하지 않았다.
+최신 `upstream/devel` 의존성 변경의 실제 병합도 아직 하지 않았다.
+다음 권고 순서는 최신 원격 재확인 → 작업 브랜치에 devel 통합 → 통합 후보의
+필수 lint·전체 회귀·Native Skia·Docker WASM 및 원본 시각 재확인이다.
+의존성 통합 전후에 긴 전체 회귀를 중복 실행하지 않도록 통합 승인을 먼저 받는다.
+기존 baseline/확장 보존 브랜치는 그대로 유지하며, push·PR 생성·merge·issue close는
+별도 승인 전에는 수행하지 않는다.
