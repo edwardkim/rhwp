@@ -18,6 +18,10 @@ permissions: {}
 # Completion events for one candidate serialize on the exact head SHA. The newest event
 # recomputes all workflow evidence, so completion order cannot overwrite a failure with
 # partial success from another workflow.
+# [#6819] Completion audits must wait for the running controller: their default-branch
+# checks cannot replace a cancelled pull_request_target check on the PR head. Keep one
+# shared group so the initial publisher cannot race an audit and overwrite its status.
+# Only a new pull_request_target event may supersede a running controller for this head.
 concurrency:
   group: >-
     ci-impact-policy-${{
@@ -25,7 +29,7 @@ concurrency:
       || github.event.workflow_run.head_sha
       || github.run_id
     }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 jobs:
   controller:
