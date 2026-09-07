@@ -9091,13 +9091,16 @@ impl LayoutEngine {
             .inline_placements
             .get(&(para_index, control_index))
             .filter(|_| is_tac);
-        if let Some(placement) = flow_placement {
-            y_offset = col_area.y + placement.y;
-            tac_table_y_before = y_offset;
-        }
         let mut tac_seg_applied = false;
         let mut para_float_lane_info: Option<(f64, f64, f64, f64, f64)> = None;
         if let Some(Control::Table(t)) = para.controls.get(control_index) {
+            if let Some(placement) = flow_placement {
+                // metadata는 여백 포함 줄의 pen이다. inline_x_override가 있는 표 paint는
+                // 호출자가 여백을 소비한 테두리 좌표를 받으므로 여기서 한 번 변환한다.
+                y_offset =
+                    col_area.y + placement.y + hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                tac_table_y_before = y_offset;
+            }
             let raw_mt = measured_tables
                 .iter()
                 .find(|mt| mt.para_index == para_index && mt.control_index == control_index);

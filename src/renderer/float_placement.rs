@@ -137,7 +137,7 @@ impl ObjectPlacementFrame<'_> {
 
 /// 분할기가 확정한 TAC 줄의 배치. x/y는 해당 단 원점 기준(px), 여백 포함 pen 좌표다.
 /// 렌더는 이 결과를 소비하며 별도의 그림 회피 판정을 반복하지 않는다.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct InlineBoxPlacement {
     pub x: f64,
     pub y: f64,

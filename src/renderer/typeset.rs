@@ -20636,9 +20636,9 @@ impl TypesetEngine {
             .map(|line| fmt.line_advance(line))
             .sum();
         let advance = hwpunit_to_px(
-            table.common.width as i32
-                + i32::from(table.outer_margin_left)
-                + i32::from(table.outer_margin_right),
+            (table.common.width as i32)
+                .saturating_add(i32::from(table.outer_margin_left))
+                .saturating_add(i32::from(table.outer_margin_right)),
             self.dpi,
         );
         let band_height = ft.total_height

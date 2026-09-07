@@ -871,7 +871,12 @@ impl PaginationResult {
                 .iter()
                 .zip(old_page.column_contents.iter())
                 .all(|(nc, oc)| {
-                    nc.items.len() == oc.items.len()
+                    nc.inline_placements.len() == oc.inline_placements.len()
+                        && oc.inline_placements.iter().all(|(&(pi, ci), placement)| {
+                            let new_pi = (pi as i64 + offset as i64).max(0) as usize;
+                            nc.inline_placements.get(&(new_pi, ci)) == Some(placement)
+                        })
+                        && nc.items.len() == oc.items.len()
                         && nc
                             .items
                             .iter()
@@ -911,7 +916,13 @@ impl PaginationResult {
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         overlay_continuations: cc.overlay_continuations.clone(),
                         overlay_cuts: cc.overlay_cuts.clone(),
-                        inline_placements: cc.inline_placements.clone(),
+                        inline_placements: cc
+                            .inline_placements
+                            .iter()
+                            .map(|(&(pi, ci), &placement)| {
+                                (((pi as i64 + offset as i64).max(0) as usize, ci), placement)
+                            })
+                            .collect(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
                         wrap_around_paras: cc

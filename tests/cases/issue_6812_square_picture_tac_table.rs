@@ -242,7 +242,7 @@ fn issue_6812_small_table_uses_the_available_side_lane() {
     table.cell_grid = vec![Some(0)];
     table.common.width = 10000;
     table.common.height = 2500;
-    table.row_sizes = vec![2500];
+    table.row_sizes = vec![1];
     core.set_document(doc);
     let (picture, table) = boxes(&core);
     assert!(
@@ -303,4 +303,84 @@ fn issue_6812_equivalent_paper_page_and_paragraph_anchors_share_clearance() {
         );
         assert_below_picture(&core);
     }
+}
+
+fn table_box_for_control(node: &RenderNode, control_index: usize, out: &mut Vec<BoundingBox>) {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.para_index == Some(0)
+            && table.control_index == Some(control_index)
+            && table.cell_context.is_none()
+        {
+            out.push(node.bbox);
+        }
+    }
+    for child in &node.children {
+        table_box_for_control(child, control_index, out);
+    }
+}
+
+#[test]
+fn issue_6812_multiple_picture_boundaries_are_consumed_before_placing_table() {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    let para = &mut doc.sections[0].paragraphs[0];
+    let Control::Picture(mut second) = para.controls[3].clone() else {
+        panic!("그림");
+    };
+    second.common.vertical_offset += 4500;
+    let required_top =
+        (f64::from(second.common.vertical_offset + second.common.height) + 141.0) / 75.0;
+    para.controls.insert(4, Control::Picture(second));
+    core.set_document(doc);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut tables = Vec::new();
+    table_box_for_control(&tree.root, 5, &mut tables);
+    assert_eq!(tables.len(), 1);
+    assert!(
+        tables[0].y + 0.5 >= required_top,
+        "두 경계를 모두 지나야 한다: {:?}, {required_top}",
+        tables[0]
+    );
+}
+
+#[test]
+fn issue_6812_future_picture_does_not_reposition_an_already_placed_table() {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    doc.sections[0].paragraphs[0].controls.swap(3, 4);
+    core.set_document(doc);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut tables = Vec::new();
+    table_box_for_control(&tree.root, 3, &mut tables);
+    assert_eq!(tables.len(), 1);
+    assert!(
+        (tables[0].y - 81.24).abs() < 0.5,
+        "뒤에서 등장한 그림을 미리 예약하면 안 된다"
+    );
+}
+
+#[test]
+fn issue_6812_clearance_participates_in_page_fit_and_expires_at_page_boundary() {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    doc.sections.truncate(1);
+    doc.sections[0].paragraphs.truncate(1);
+    let page = &mut doc.sections[0].section_def.page_def;
+    let layout = PageLayoutInfo::from_page_def(page, &Default::default(), 96.0);
+    // 표 단독은 들어가지만 그림을 피한 표는 들어가지 않는 200px 본문이다.
+    page.height = page.height - (layout.body_area.height * 75.0).round() as u32 + 15000;
+    core.set_document(doc);
+    assert_eq!(core.page_count(), 2, "추가 줄 이동량도 쪽 예산을 소비한다");
+    let first = core.build_page_render_tree(0).unwrap();
+    let second = core.build_page_render_tree(1).unwrap();
+    let (mut old, mut moved) = (Vec::new(), Vec::new());
+    table_box_for_control(&first.root, 4, &mut old);
+    table_box_for_control(&second.root, 4, &mut moved);
+    assert!(old.is_empty(), "표가 첫 쪽에 중복/넘침 배치되면 안 된다");
+    assert_eq!(moved.len(), 1);
+    assert!(
+        (moved[0].y - layout.body_area.y - 141.0 / 75.0).abs() < 0.5,
+        "앞 쪽의 그림 회피를 새 쪽에 중복 가산하면 안 된다: {:?}",
+        moved[0]
+    );
 }
