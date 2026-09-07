@@ -605,6 +605,85 @@ fn issue_6812_inline_text_and_table_use_available_side_lane() {
     assert_inline_text_order(&core);
 }
 
+#[test]
+fn issue_6812_inline_table_wrap_does_not_pull_preceding_text_below_picture() {
+    let mut core = sample();
+    let mut doc = inline_host_document();
+    let Control::Picture(picture) = &mut doc.sections[0].paragraphs[0].controls[3] else {
+        panic!("그림")
+    };
+    // 오른쪽에 글자는 들어가지만 표의 바깥 폭은 들어가지 않는다.
+    picture.common.width = 39000;
+    picture.shape_attr.current_width = 39000;
+    core.set_document(doc);
+    let (picture, table) = boxes(&core);
+    assert!(table.y >= picture.y + picture.height);
+    fn preceding_y(node: &RenderNode) -> Option<f64> {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.para_index == Some(0) && run.cell_context.is_none() && run.char_start == Some(0)
+            {
+                return Some(node.bbox.y);
+            }
+        }
+        node.children.iter().find_map(preceding_y)
+    }
+    let tree = core.build_page_render_tree(0).unwrap();
+    assert!(
+        preceding_y(&tree.root).unwrap() < picture.y + picture.height,
+        "선행 텍스트는 그림 옆 기존 줄에 남는다"
+    );
+    assert_inline_text_order(&core);
+}
+
+#[test]
+fn issue_6812_inline_flow_page_fit_drops_previous_page_exclusion() {
+    let mut core = sample();
+    let mut doc = inline_host_document();
+    doc.sections.truncate(1);
+    doc.sections[0].paragraphs.truncate(1);
+    let mut text_host = doc.sections[0].paragraphs[0].clone();
+    let table = text_host.controls.remove(4);
+    text_host.controls = vec![table];
+    text_host.char_offsets = vec![0, 9];
+    text_host.char_count = 11;
+    text_host.column_type = Default::default();
+    text_host.raw_break_type = 0;
+    let picture_host = &mut doc.sections[0].paragraphs[0];
+    picture_host.controls.truncate(4);
+    picture_host.text.clear();
+    picture_host.char_offsets.clear();
+    picture_host.char_count = 33;
+    doc.sections[0].paragraphs.push(text_host);
+    let page = &mut doc.sections[0].section_def.page_def;
+    let layout = PageLayoutInfo::from_page_def(page, &Default::default(), 96.0);
+    page.height = page.height - (layout.body_area.height * 75.0).round() as u32 + 7500;
+    core.set_document(doc);
+    assert_eq!(
+        core.page_count(),
+        2,
+        "회피 후 물리 높이를 쪽 예산에 포함한다"
+    );
+    let mut first = Vec::new();
+    let mut second = Vec::new();
+    collect_top_level_tables(&core.build_page_render_tree(0).unwrap().root, &mut first);
+    collect_top_level_tables(&core.build_page_render_tree(1).unwrap().root, &mut second);
+    assert!(first.is_empty());
+    assert_eq!(second.len(), 1);
+    let (_, _, table) = second[0];
+    assert!(
+        table.y + table.height <= layout.body_area.y + 100.0 + 0.5,
+        "새 쪽의 실제 본문 하단 안에 배치"
+    );
+    let Control::Picture(picture) = &core.document().sections[0].paragraphs[0].controls[3] else {
+        panic!("그림")
+    };
+    let previous_bottom = f64::from(picture.common.vertical_offset + picture.common.height) / 75.0;
+    assert!(
+        table.y < previous_bottom,
+        "앞 쪽 그림의 하단을 새 쪽에 재사용하지 않는다"
+    );
+}
+
 fn assert_inline_text_order(core: &DocumentCore) {
     fn collect_text(node: &RenderNode, result: &mut Vec<(usize, String, BoundingBox)>) {
         if let RenderNodeType::TextRun(run) = &node.node_type {
