@@ -384,3 +384,45 @@ fn issue_6812_clearance_participates_in_page_fit_and_expires_at_page_boundary() 
         moved[0]
     );
 }
+
+#[test]
+fn issue_6812_previous_paragraph_picture_reserves_space_until_its_bottom() {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    doc.sections.truncate(1);
+    doc.sections[0].paragraphs.truncate(1);
+    let picture_host = &mut doc.sections[0].paragraphs[0];
+    let table = picture_host.controls.remove(4);
+    let mut table_host = picture_host.clone();
+    table_host.controls = vec![table];
+    // 앞 문단은 그림의 앵커이며 짧은 실제 줄이다. 표를 포함했던 저장 줄높이를
+    // 남겨서 우연히 이미 그림 아래에 놓이는 가짜 대조를 만들지 않는다.
+    picture_host.line_segs.clear();
+    table_host.line_segs.clear();
+    doc.sections[0].paragraphs.push(table_host);
+    core.set_document(doc);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut tables = Vec::new();
+    collect_top_level_tables(&tree.root, &mut tables);
+    let matching: Vec<_> = tables.iter().filter(|(pi, ci, _)| (*pi, *ci) == (1, 0)).collect();
+    assert_eq!(matching.len(), 1);
+    let (mut pictures, mut unused) = (Vec::new(), Vec::new());
+    collect(&tree.root, &mut pictures, &mut unused);
+    assert_eq!(pictures.len(), 1);
+    let required_y = pictures[0].y + pictures[0].height + 141.0 / 75.0;
+    assert!((matching[0].2.y - required_y).abs() < 0.5,
+        "다른 문단의 유효한 선행 점유 영역도 소비한다: {:?}, {required_y}", matching[0]);
+}
+
+fn collect_top_level_tables(node: &RenderNode, out: &mut Vec<(usize, usize, BoundingBox)>) {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.cell_context.is_none() {
+            if let (Some(pi), Some(ci)) = (table.para_index, table.control_index) {
+                out.push((pi, ci, node.bbox));
+            }
+        }
+    }
+    for child in &node.children {
+        collect_top_level_tables(child, out);
+    }
+}
