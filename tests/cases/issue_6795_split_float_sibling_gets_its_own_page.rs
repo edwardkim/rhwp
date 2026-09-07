@@ -21,76 +21,67 @@
 //! ①만 고치면 ②가 받아 같은 자리에 놓고, ②만 고치면 ①이 먼저 놓는다. **둘 다** 고쳐야
 //! 닫힌다(실측: `lane` 단독 겹침 1, `guard` 단독 겹침 1, 둘 다 0).
 //!
-//! ## 재현체 실측 — `1341000-201100013`(사이버대학 인가신청서) 31쪽
+//! ## 수정 역적용 실측 (red → green)
+//!
+//! `git apply -R` 로 `typeset.rs` hunk 57줄만 되돌리고 이 파일의 5개 시험을 돌린 결과다
+//! (`samples/issue6795/…-cyber-university-application.hwp`, 쪽 인덱스는 0-based).
 //!
 //! ```text
-//!   PartialTable pi=113 ci=0   y=143.6..560.1   27×10 의 마지막 조각
-//!   Table        pi=113 ci=1   y=158.2..854.2   19×6  통짜
-//!                              → 548.0 × 401.9px 겹침 (아래 표가 통째로 가려진다)
+//!   수정 전  idx 30  pi=113 ci=0  y=143.6..560.1
+//!                    pi=113 ci=1  y=158.2..854.2  → 같은 쪽, 548.0 × 401.9px 겹침
+//!            idx 31  pi=114 ci=0                  (형제 표가 없어 한 쪽씩 앞당겨진다)
+//!            idx 32  pi=121 ci=0
+//!   수정 후  idx 30  pi=113 ci=0 단독 (y=143.6..560.1)
+//!            idx 31  pi=113 ci=1 단독 (y=143.6..839.6, 본문 143.6..854.2 안)
+//!            idx 32  pi=114 ci=0 단독
 //! ```
 //!
-//! 한/글 2018 오라클(문서 `lastSavedWith = 6.7.6.1002`, 설치본 중 최근접)은 27쪽에 조각,
-//! **28쪽에 `현장실사 … 위원회 심의결과` 표 단독**, 29쪽에 `XIV. 종합의견` 을 둔다.
-//! 수정 후 rhwp 도 같은 순서 · 같은 45쪽이 된다(종전 44쪽).
+//! 역적용 판에서 아래 다섯 중 **넷이 실패**하고, `#2813` 음성 통제군만 통과한다 —
+//! 가드가 대상 형상만 잡고 통제군을 건드리지 않는다는 증거다.
+//!
+//! 한/글 **2020** 오라클(`lastSavedWith.product = null`, `version 6.7.6.1002` → 저장소
+//! 정책 §3.5.1 의 2022 이하 버킷)도 같은 순서다 — 인쇄 쪽번호 `- 27 -` 조각,
+//! `- 28 -` `현장실사 … 위원회 심의결과` 단독, `- 29 -` `XIV. 종합의견`. 총 45쪽.
 //!
 //! ## 지키는 계약
 //!
-//! 겹침 자체가 결함이다 — 쪽수는 버전 드리프트가 있는 문서라 판정에 쓰지 않고,
-//! **같은 쪽의 자리차지 표 두 장이 겹치지 않는다** 와 **문서 순서가 보존된다** 만 잠근다.
+//! 대상을 `pi`/`ci` 로 직접 집는다 — 표 개수나 인접 상자 관계만 보면 대상 표가 사라지거나
+//! 다른 쪽으로 가도 통과한다.
 //!
-//! ⚠ 기각한 안 두 개를 남긴다. `is_deferred_coanchored_rowbreak_table` 의
-//! `vertical_offset > 0` 을 `>= 0` 으로 넓히면 겹침은 사라지지만 표가 `pi=114` 뒤로 가
-//! **쪽 순서가 뒤집힌다**. 문단 기준 높이(`para_start_height`)를 쪽 넘김 뒤 다시 잡는
-//! 안은 ②가 막아 효과가 0이다.
+//! ⚠ 기각한 안 둘. `is_deferred_coanchored_rowbreak_table` 의 `vertical_offset > 0` 을
+//! `>= 0` 으로 넓히면 겹침은 사라지지만 표가 `pi=114` 뒤로 가 **쪽 순서가 뒤집힌다**.
+//! 문단 기준 높이(`para_start_height`)를 쪽 넘김 뒤 다시 잡는 안은 ②가 막아 효과가 0이다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/prism_downloads/교육부/1341000-201100013_D0150004-2-002_
-/// 2011개교예정_사이버대학인가신청서-제2차보고서-최종.hwp`
-///
-/// ⚠ `samples/` 에 넣으면 `samples/` 전체를 스윕하는 다른 기준선까지 끌고 온다
-/// (`#6599` 와 같은 이유). 코퍼스에서 찾고, 없으면 건너뛴다.
-/// `RHWP_ISSUE6795_SAMPLE` 로 경로를 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE6795_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        concat!(
-            r"C:\Users\planet\hwpdocs_10k_share",
-            r"\prism_downloads\교육부"
-        ),
-        concat!(r"D:\hwpdocs_10k_share", r"\prism_downloads\교육부"),
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.starts_with("1341000-201100013") && name.ends_with(".hwp") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+const SAMPLE: &str = "samples/issue6795/1341000-201100013-cyber-university-application.hwp";
+
+/// `#2813` 통짜-배치 구제가 **살아 있어야 하는** 통제군 — 이 fixture 의 쪽에는 자기 문단의
+/// continuation 조각이 없으므로 새 가드가 발동하면 안 된다.
+const CONTROL_SAMPLE: &str = "samples/issue2813/dangjik_dutylog.hwpx";
+
+fn read(rel: &str) -> Vec<u8> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
+    std::fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()))
 }
 
-/// `Column` 의 **직계** 표만 모은다 — 칸 안의 중첩 표는 세지 않는다.
-fn column_tables(node: &RenderNode, in_column: bool, out: &mut Vec<(f64, f64, f64, f64)>) {
+/// `Column` 의 **직계** 표만 `(pi, ci, y0, y1, x0, x1)` 로 모은다 — 칸 안의 중첩 표는
+/// 세지 않는다.
+type TableBox = (Option<usize>, Option<usize>, f64, f64, f64, f64);
+
+fn column_tables(node: &RenderNode, in_column: bool, out: &mut Vec<TableBox>) {
     if in_column {
-        if let RenderNodeType::Table(_) = &node.node_type {
+        if let RenderNodeType::Table(table) = &node.node_type {
             out.push((
-                node.bbox.x,
-                node.bbox.x + node.bbox.width,
+                table.para_index,
+                table.control_index,
                 node.bbox.y,
                 node.bbox.y + node.bbox.height,
+                node.bbox.x,
+                node.bbox.x + node.bbox.width,
             ));
             return;
         }
@@ -101,104 +92,140 @@ fn column_tables(node: &RenderNode, in_column: bool, out: &mut Vec<(f64, f64, f6
     }
 }
 
+fn body_bounds(node: &RenderNode) -> Option<(f64, f64)> {
+    if matches!(node.node_type, RenderNodeType::Body { .. }) {
+        return Some((node.bbox.y, node.bbox.y + node.bbox.height));
+    }
+    node.children.iter().find_map(body_bounds)
+}
+
+fn page_tables(document: &HwpDocument, page: u32) -> Vec<TableBox> {
+    let tree = document
+        .build_page_render_tree(page)
+        .unwrap_or_else(|error| panic!("쪽 idx {page} render tree: {error:?}"));
+    let mut out = Vec::new();
+    column_tables(&tree.root, false, &mut out);
+    out
+}
+
 /// 괘선 두께·반올림을 넘는 실질 겹침만 센다.
 const TOLERANCE_PX: f64 = 8.0;
 
+/// 조각이 차지한 쪽에는 형제 표가 함께 오지 않는다 — 겹침의 직접 계약.
 #[test]
-fn split_float_sibling_does_not_overlap_the_fragment() {
-    let Some(bytes) = sample() else {
-        return;
-    };
-    let document = HwpDocument::from_bytes(&bytes).expect("문서 로드");
-    let page_count = document.page_count();
-    assert!(
-        page_count >= 40,
-        "표본이 어긋났다 — 40쪽 이상이어야 한다. got {page_count}"
+fn split_fragment_page_holds_only_the_fragment() {
+    let document = HwpDocument::from_bytes(&read(SAMPLE)).expect("문서 로드");
+
+    let fragment_page = page_tables(&document, 30);
+    assert_eq!(
+        fragment_page.len(),
+        1,
+        "쪽 idx 30 에는 조각 하나만 있어야 한다 — 회귀 시 `pi=113 ci=1` 이 함께 와 \
+         548.0 × 401.9px 겹친다. got {fragment_page:?}"
     );
-
-    // 문제 문단(pi=113)은 31쪽 언저리다. 쪽수가 하나 늘어나므로 앞뒤로 넉넉히 본다.
-    let last = page_count.saturating_sub(1).min(34);
-    let mut worst: Option<(u32, f64, f64)> = None;
-    for page in 28..=last {
-        let Ok(tree) = document.build_page_render_tree(page) else {
-            continue;
-        };
-        let mut tables = Vec::new();
-        column_tables(&tree.root, false, &mut tables);
-        for i in 0..tables.len() {
-            for j in (i + 1)..tables.len() {
-                let (ax0, ax1, ay0, ay1) = tables[i];
-                let (bx0, bx1, by0, by1) = tables[j];
-                let w = ax1.min(bx1) - ax0.max(bx0);
-                let h = ay1.min(by1) - ay0.max(by0);
-                if w > TOLERANCE_PX
-                    && h > TOLERANCE_PX
-                    && worst.is_none_or(|(_, pw, ph)| w * h > pw * ph)
-                {
-                    worst = Some((page, w, h));
-                }
-            }
-        }
-    }
-
+    let (pi, ci, y0, y1, ..) = fragment_page[0];
+    assert_eq!(
+        (pi, ci),
+        (Some(113), Some(0)),
+        "쪽 idx 30 의 표는 27×10 표의 마지막 조각(pi=113 ci=0)이어야 한다"
+    );
     assert!(
-        worst.is_none(),
-        "같은 쪽의 자리차지 표 두 장이 겹쳤다 — #6795 회귀 {worst:?} \
-         (회귀 시 31쪽에서 548.0 × 401.9px, 아래 표가 통째로 가려진다)"
+        (y0 - 143.6).abs() < TOLERANCE_PX && (y1 - 560.1).abs() < TOLERANCE_PX,
+        "조각 상자가 실측(y=143.6..560.1)에서 벗어났다 — got {y0:.1}..{y1:.1}"
     );
 }
 
-/// 겹침만 없애고 표를 뒤로 미루는 안(`>= 0` 완화)을 함께 막는다 — 문서 순서가
-/// 한/글 오라클과 같아야 한다: 조각 → `위원회 심의결과`(ci=1) → `종합의견`(pi=114).
+/// 형제 표는 **자기 쪽 상단**에 단독으로, 본문 안에 놓인다.
+#[test]
+fn split_float_sibling_gets_its_own_page_inside_the_body() {
+    let document = HwpDocument::from_bytes(&read(SAMPLE)).expect("문서 로드");
+
+    let tree = document
+        .build_page_render_tree(31)
+        .expect("쪽 idx 31 render tree");
+    let (body_top, body_bottom) = body_bounds(&tree.root).expect("쪽 idx 31 Body");
+    let mut tables = Vec::new();
+    column_tables(&tree.root, false, &mut tables);
+
+    assert_eq!(
+        tables.len(),
+        1,
+        "쪽 idx 31 에는 형제 표 하나만 있어야 한다. got {tables:?}"
+    );
+    let (pi, ci, y0, y1, ..) = tables[0];
+    assert_eq!(
+        (pi, ci),
+        (Some(113), Some(1)),
+        "쪽 idx 31 의 표는 19×6 형제 표(pi=113 ci=1)여야 한다 — 회귀 시 이 표가 idx 30 조각 위에 \
+         겹쳐 그려지고 32쪽에는 오지 않는다"
+    );
+    assert!(
+        (y0 - body_top).abs() < TOLERANCE_PX,
+        "형제 표는 본문 상단({body_top:.1})에서 시작해야 한다 — got {y0:.1}"
+    );
+    assert!(
+        y1 <= body_bottom + TOLERANCE_PX,
+        "형제 표 하단({y1:.1})이 본문 하한({body_bottom:.1})을 넘었다 — \
+         겹침을 넘침으로 바꾸기만 한 판이다"
+    );
+}
+
+/// 겹침만 없애고 표를 뒤로 미루는 안(`vertical_offset >= 0` 완화)을 막는다 — 문서 순서가
+/// 한/글 2020 오라클과 같아야 한다.
 #[test]
 fn split_float_sibling_keeps_document_order() {
-    let Some(bytes) = sample() else {
-        return;
-    };
-    let document = HwpDocument::from_bytes(&bytes).expect("문서 로드");
+    let document = HwpDocument::from_bytes(&read(SAMPLE)).expect("문서 로드");
 
-    // `ci=1` 표의 머리글은 이 문자열로만 나온다.
-    const SIBLING_HEAD: &str = "위원회";
-    // `pi=114` 표의 머리글.
-    const NEXT_HEAD: &str = "종합의견";
+    let next = page_tables(&document, 32);
+    assert_eq!(
+        next.len(),
+        1,
+        "쪽 idx 32 에는 다음 문단의 표 하나만 있어야 한다. got {next:?}"
+    );
+    assert_eq!(
+        (next[0].0, next[0].1),
+        (Some(114), Some(0)),
+        "쪽 idx 32 의 표는 `XIV. 종합의견`(pi=114 ci=0)이어야 한다 — 기각한 `>= 0` 완화 판은 \
+         여기에 pi=114 를 앞세우고 pi=113 ci=1 을 뒤로 보내 쪽 순서를 뒤집는다"
+    );
+}
 
-    fn page_text(document: &HwpDocument, page: u32) -> String {
-        let Ok(tree) = document.build_page_render_tree(page) else {
-            return String::new();
-        };
-        let mut out = String::new();
-        fn walk(node: &RenderNode, out: &mut String) {
-            if let RenderNodeType::TextRun(run) = &node.node_type {
-                out.push_str(&run.text);
-            }
-            for child in &node.children {
-                walk(child, out);
-            }
-        }
-        walk(&tree.root, &mut out);
-        out
-    }
+/// 어느 쪽에서도 자리차지 표 두 장이 겹치지 않는다 — 형상이 바뀌어도 남는 상위 계약.
+#[test]
+fn no_page_stacks_two_float_tables_on_top_of_each_other() {
+    let document = HwpDocument::from_bytes(&read(SAMPLE)).expect("문서 로드");
+    let last = document.page_count().saturating_sub(1).min(34);
 
-    let last = document.page_count().saturating_sub(1).min(36);
-    let mut sibling_page = None;
-    let mut next_page = None;
     for page in 28..=last {
-        let text = page_text(&document, page);
-        if sibling_page.is_none() && text.contains(SIBLING_HEAD) {
-            sibling_page = Some(page);
-        }
-        if next_page.is_none() && text.contains(NEXT_HEAD) {
-            next_page = Some(page);
+        let tables = page_tables(&document, page);
+        for i in 0..tables.len() {
+            for j in (i + 1)..tables.len() {
+                let (api, aci, ay0, ay1, ax0, ax1) = tables[i];
+                let (bpi, bci, by0, by1, bx0, bx1) = tables[j];
+                let w = ax1.min(bx1) - ax0.max(bx0);
+                let h = ay1.min(by1) - ay0.max(by0);
+                assert!(
+                    w <= TOLERANCE_PX || h <= TOLERANCE_PX,
+                    "쪽 idx {page} 에서 자리차지 표 두 장이 {w:.1} × {h:.1}px 겹쳤다 — \
+                     pi={api:?} ci={aci:?} vs pi={bpi:?} ci={bci:?}"
+                );
+            }
         }
     }
+}
 
-    let (sibling_page, next_page) = match (sibling_page, next_page) {
-        (Some(a), Some(b)) => (a, b),
-        other => panic!("표본이 어긋났다 — 두 표를 못 찾았다 {other:?}"),
-    };
-    assert!(
-        sibling_page < next_page,
-        "`위원회 심의결과` 표({sibling_page}쪽)가 `종합의견`({next_page}쪽)보다 뒤에 있다 \
-         — 쪽 순서 역전. 한/글 2018 오라클은 28쪽 → 29쪽 순서다."
+/// **음성 통제군** — `#2813` 통짜-배치 구제는 그대로 살아 있어야 한다.
+///
+/// 새 가드는 "이 쪽이 자기 문단의 continuation 조각으로 시작할 때"만 구제를 끈다.
+/// 이 fixture 의 스택은 조각 없이 1쪽에 통째로 앉으므로 가드가 발동하면 안 되고,
+/// 발동하면 쪽수가 2 → 3 으로 늘어난다(`#2813` 원 회귀).
+#[test]
+fn issue_2813_whole_placement_rescue_still_applies() {
+    let document = HwpDocument::from_bytes(&read(CONTROL_SAMPLE)).expect("통제군 로드");
+    assert_eq!(
+        document.page_count(),
+        2,
+        "#2813 스택은 1쪽에 통째로 앉아 2쪽이어야 한다 — 새 가드가 조각 없는 쪽까지 \
+         끄면 3쪽으로 과분할된다"
     );
 }
