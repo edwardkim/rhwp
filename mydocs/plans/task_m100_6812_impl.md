@@ -116,3 +116,24 @@ last_verified: 2026-09-07
 - 기존 7708 PR 서버를 덮어쓰지 않는다. 이번 후보의 출처가 구분되는 Studio URL을 준비한다.
 - 이번 승인은 최소 구현과 focused 검증 범위다. 원격 push·PR 생성·merge·이슈 종료 및
   전체 CI 성격의 광범위 검증은 각각 해당 승인 게이트를 유지한다.
+
+## 6. Stage 2 착수 후 확인한 실제 연결 경계
+
+2026-09-07 첫 절편의 증적은 [Stage 2 작업 보고서](../working/task_m100_6812_stage2.md)에
+기록한다. 목표·승인 범위는 유지하며 다음 확인 사항을 구현 순서에 반영한다.
+
+- **운영 페이지 분할의 주 소비자는 `typeset.rs`의 `TypesetEngine`이다.**
+  `height_measurer.rs`의 문단 `total_height`와 구형 `pagination/engine.rs`만 수정해서는
+  기본 `DocumentCore`/Studio 경로를 고칠 수 없다. 셀·표의 실측 높이와 운영 페이지
+  예산을 구분하고 `TypesetEngine` 연결을 필수로 한다.
+- `LayoutFrame`은 재사용할 줄 구간 계산을 갖지만, `layout_picture_band`의 현재
+  진입 조건은 TAC 표·복수 그림을 허용하지 않는다. 이 경로를 연결했다고 가정하지 않는다.
+- 기존 `resolve_picture_exclusion`은 Paper/Page를 같은 원점으로 취급하며,
+  실제 paint의 여백 포함 상자 정렬과도 다르다. 이를 그대로 복사하는 대신
+  paint에서 사용하던 좌표 계산을 `ObjectPlacementFrame`으로 분리했다.
+- 원본의 `allow_overlap=true`를 시험에서 고정했다. 이 속성을 본문/TAC의 어울림
+  무효화 조건으로 사용하지 않는다. non-TAC 개체끼리의 충돌 허용과는 별개로 판정한다.
+
+첫 절편은 수정 전 실패 시험과 좌표 해석 공통화까지다. 활성 점유 영역 수집, TAC의 가용
+줄 구간·다음 줄 계산, 운영 페이지 예산·블록/inline/셀 소비 연결은 **아직 미완료**다.
+이 절편의 통과 시험을 전체 엔진 규칙 구현 완료나 Stage 3 진입 근거로 사용하지 않는다.
