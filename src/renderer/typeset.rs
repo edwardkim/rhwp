@@ -20641,7 +20641,9 @@ impl TypesetEngine {
                 .saturating_add(i32::from(table.outer_margin_right)),
             self.dpi,
         );
-        let band_height = ft.total_height
+        // total_height에는 host 문단 간격도 들어 있다. 점유 줄 상자는 표의
+        // 측정 높이와 바깥 여백만 쓰고, 문단 간격은 기존 회계가 한 번 소비한다.
+        let band_height = ft.effective_height
             + hwpunit_to_px(
                 i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
                 self.dpi,
@@ -20657,6 +20659,13 @@ impl TypesetEngine {
             self.dpi,
         );
         let clearance = side_wrap_placement.map_or(0.0, |p| p.clearance);
+        // 그림 회피로 확정한 물리 줄은 저장 host 줄높이가 작아도 축소되지 않는다.
+        // 렌더만 아래로 옮기고 fit에는 짧은 host 높이를 쓰면 쪽 하단을 넘는다.
+        let table_height = if side_wrap_placement.is_some() {
+            table_height.max(band_height)
+        } else {
+            table_height
+        };
         let available = st.available_height();
         let current_column_has_only_overlay_shapes = st.current_height <= 0.5
             && st

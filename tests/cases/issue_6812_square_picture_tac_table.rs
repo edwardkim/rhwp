@@ -370,7 +370,7 @@ fn issue_6812_clearance_participates_in_page_fit_and_expires_at_page_boundary() 
     // 표 단독은 들어가지만 그림을 피한 표는 들어가지 않는 200px 본문이다.
     page.height = page.height - (layout.body_area.height * 75.0).round() as u32 + 15000;
     core.set_document(doc);
-    assert_eq!(core.page_count(), 2, "추가 줄 이동량도 쪽 예산을 소비한다: {:?}", boxes(&core));
+    assert_eq!(core.page_count(), 2, "추가 줄 이동량도 쪽 예산을 소비한다");
     let first = core.build_page_render_tree(0).unwrap();
     let second = core.build_page_render_tree(1).unwrap();
     let (mut old, mut moved) = (Vec::new(), Vec::new());

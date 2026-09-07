@@ -118,7 +118,10 @@ impl ObjectPlacementFrame<'_> {
         if common.flow_with_text && common.vert_rel_to == VertRelTo::Para {
             y = y.min((self.column.y + self.column.height - height).max(self.column.y));
         }
-        if ![x, y, width, height].iter().all(|value| value.is_finite()) {
+        if width <= 0.0
+            || height <= 0.0
+            || ![x, y, width, height].iter().all(|value| value.is_finite())
+        {
             return None;
         }
         let hu = |px| super::px_to_hwpunit(px, self.dpi);
