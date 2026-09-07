@@ -309,7 +309,8 @@ fn row_geometry(
         intervals.last()?
     } else {
         intervals.first()?
-    };
+    }
+    .clone();
     let left = hwpunit_to_px(lane.start, dpi);
     let spare = (hwpunit_to_px(lane.end - lane.start, dpi) - width).max(0.0);
     let x = left
