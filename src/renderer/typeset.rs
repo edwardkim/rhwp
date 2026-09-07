@@ -1100,6 +1100,8 @@ struct TypesetState {
         std::collections::BTreeMap<(usize, usize), super::layout_frame::FrameExclusion>,
     inline_placements:
         std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
+    /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
+    inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
     /// 후속 섹션 블록 뒤로 잠시 미루기 위한 큐.
     deferred_table_controls: Vec<DeferredTableControl>,
@@ -4637,6 +4639,7 @@ impl TypesetState {
             visible_float_exclusions: Vec::new(),
             side_wrap_exclusions: std::collections::BTreeMap::new(),
             inline_placements: std::collections::HashMap::new(),
+            inline_box_flow_bottom: 0.0,
             deferred_table_controls: Vec::new(),
             deferred_next_page_square_pictures: Vec::new(),
             page_start_square_pictures: Vec::new(),
@@ -5132,6 +5135,7 @@ impl TypesetState {
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
         self.side_wrap_exclusions.clear();
+        self.inline_box_flow_bottom = 0.0;
         if self.current_items.is_empty()
             && self.current_column_wrap_around_paras.is_empty()
             && self.page_start_square_pictures.is_empty()
@@ -5223,6 +5227,7 @@ impl TypesetState {
     /// 비어있어도 flush
     fn flush_column_always(&mut self) {
         self.side_wrap_exclusions.clear();
+        self.inline_box_flow_bottom = 0.0;
         let col_content = ColumnContent {
             column_index: self.current_column,
             start_height: self.current_start_height,
@@ -16565,6 +16570,11 @@ impl TypesetEngine {
         if y < st.ladder_band_floor {
             y = st.ladder_band_floor;
         }
+        // 렌더의 min_flow_floor는 floor뿐 아니라 직전 순차 cursor도 보호한다.
+        // 회피한 표 이후 분할기만 저장 vpos로 되감으면 쪽 fit와 출력이 갈라진다.
+        if !st.inline_placements.is_empty() {
+            y = y.max(st.current_height);
+        }
         // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
         // fresh 재계산 성장분을 낡은 기계 v0 가 되돌리지 못하게 한다(전방만 허용).
         // [#2279 OMIT-sa] spacing-누락 문서군은 합성(비저장) base 사다리도 동일 —
@@ -20649,15 +20659,20 @@ impl TypesetEngine {
                 self.dpi,
             );
         let exclusions: Vec<_> = st.side_wrap_exclusions.values().cloned().collect();
+        let natural_top = st.current_height + before_text;
         let mut side_wrap_placement = super::float_placement::place_inline_box(
             (column.x + left)..(column.x + column.width - right),
-            column.y + st.current_height + before_text,
+            column.y + natural_top.max(st.inline_box_flow_bottom),
             advance,
             band_height,
             style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
             &exclusions,
             self.dpi,
-        );
+        )
+        .map(|mut placement| {
+            placement.clearance = (placement.y - column.y - natural_top).max(0.0);
+            placement
+        });
         let clearance = side_wrap_placement.map_or(0.0, |p| p.clearance);
         // 그림 회피로 확정한 물리 줄은 저장 host 줄높이가 작아도 축소되지 않는다.
         // 렌더만 아래로 옮기고 fit에는 짧은 host 높이를 쓰면 쪽 하단을 넘는다.
@@ -20730,6 +20745,10 @@ impl TypesetEngine {
             st.inline_placements.insert((para_idx, ctrl_idx), placement);
             st.vpos_ladder_dirty |= placement.clearance > 0.0;
         }
+        // place_table_with_text의 후속 텍스트가 새 단으로 넘어가면 flush가 폐기한다.
+        // 호출 뒤 갱신하면 이전 단의 표 하단을 새 단에 유출할 수 있다.
+        st.inline_box_flow_bottom =
+            st.current_height.max(st.inline_box_flow_bottom) + before_text + band_height;
         self.place_table_with_text(
             st,
             para_idx,
