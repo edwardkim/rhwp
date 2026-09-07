@@ -7033,6 +7033,24 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 그림 리사이즈 전에 원본 변환만 보관한다.
+    #[wasm_bindgen(js_name = capturePictureTransform)]
+    pub fn capture_picture_transform(&mut self, target_json: &str) -> Result<u32, JsValue> {
+        self.capture_picture_transform_native(target_json)
+            .map_err(|e| e.into())
+    }
+
+    /// 저장 상태와 현재 상태를 교환한다. 같은 ID로 Undo/Redo를 수행한다.
+    #[wasm_bindgen(js_name = swapPictureTransform)]
+    pub fn swap_picture_transform(&mut self, id: u32) -> Result<(), JsValue> {
+        self.swap_picture_transform_native(id).map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = discardPictureTransform)]
+    pub fn discard_picture_transform(&mut self, id: u32) {
+        self.discard_picture_transform_native(id);
+    }
+
     /// 캡처한 구역 raw 를 되돌린다 — old 속성 재적용(재무효화) **뒤** 에 불린다 (#5769 Stage 4).
     #[wasm_bindgen(js_name = restoreSectionRaw)]
     pub fn restore_section_raw(&mut self, id: u32) -> Result<String, JsValue> {
