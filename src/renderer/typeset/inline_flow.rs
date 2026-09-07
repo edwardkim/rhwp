@@ -16,6 +16,15 @@ impl TypesetEngine {
         if !inline_flow::supports(para, super::super::px_to_hwpunit(column.width, self.dpi)) {
             return false;
         }
+        if st.side_wrap_exclusions.is_empty()
+            && !para.controls.iter().any(|c| {
+                matches!(c, Control::Picture(p) if !p.common.treat_as_char
+                && p.common.text_wrap == crate::model::shape::TextWrap::Square)
+            })
+        {
+            // 어울림 입력이 없는 기존 inline 문단에서는 토큰/plan도 만들지 않는다.
+            return false;
+        }
         let build = |st: &TypesetState, start: f64, preceding: bool| {
             let column = st.inline_flow_column();
             let style = styles.para_styles.get(para.para_shape_id as usize)?;

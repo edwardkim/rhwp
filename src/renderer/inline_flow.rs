@@ -71,6 +71,23 @@ enum Atom {
     Break,
 }
 
+#[derive(Clone, Copy, Default)]
+struct RowMetrics {
+    width: f64,
+    baseline: f64,
+    descent: f64,
+}
+
+impl RowMetrics {
+    fn with(self, item: &InlineFlowBox) -> Self {
+        Self {
+            width: self.width + item.width,
+            baseline: self.baseline.max(item.baseline),
+            descent: self.descent.max(item.height - item.baseline),
+        }
+    }
+}
+
 /// 현재 연결된 계약은 본문의 텍스트 / TAC 표 / 그림 / 구조 marker다.
 /// 다른 소유자의 수식·각주·필드를 누락시키지 않고 연결 전까지 기존 경로로 반환한다.
 pub(crate) fn supports(para: &Paragraph, width_hu: i32) -> bool {
@@ -181,6 +198,7 @@ pub(crate) fn plan(
         next_row_top: top,
     };
     let mut row = Vec::new();
+    let mut row_metrics = RowMetrics::default();
     for atom in atoms {
         match atom {
             Atom::Float(exclusion) => {
@@ -194,6 +212,7 @@ pub(crate) fn plan(
                     frame.dpi,
                 )?;
                 exclusions.push(exclusion);
+                row_metrics = RowMetrics::default();
             }
             Atom::Break => {
                 finish_row(
@@ -204,6 +223,7 @@ pub(crate) fn plan(
                     style,
                     frame.dpi,
                 )?;
+                row_metrics = RowMetrics::default();
             }
             Atom::Box(item) => {
                 if ![item.width, item.height, item.baseline]
@@ -214,32 +234,30 @@ pub(crate) fn plan(
                 {
                     return None;
                 }
-                let width: f64 = row.iter().map(|b: &InlineFlowBox| b.width).sum();
                 let moves_existing_row = if row.is_empty() {
                     false
                 } else {
                     let old = row_geometry(
-                        &row,
+                        row_metrics,
                         &horizontal,
                         result.next_row_top,
                         &exclusions,
                         style,
                         frame.dpi,
                     )?;
-                    row.push(item.clone());
                     let next = row_geometry(
-                        &row,
+                        row_metrics.with(&item),
                         &horizontal,
                         result.next_row_top,
                         &exclusions,
                         style,
                         frame.dpi,
                     )?;
-                    row.pop();
                     next.1 > old.1 + 0.01
                 };
                 if !row.is_empty()
-                    && (width + item.width > frame.container.width + 0.01 || moves_existing_row)
+                    && (row_metrics.width + item.width > frame.container.width + 0.01
+                        || moves_existing_row)
                 {
                     finish_row(
                         &mut result,
@@ -249,7 +267,9 @@ pub(crate) fn plan(
                         style,
                         frame.dpi,
                     )?;
+                    row_metrics = RowMetrics::default();
                 }
+                row_metrics = row_metrics.with(&item);
                 row.push(item);
             }
         }
@@ -283,8 +303,17 @@ fn finish_row(
         .map(|b| b.height - b.baseline)
         .fold(0.0, f64::max);
     let height = baseline + descent;
-    let (mut x, y, carved) =
-        row_geometry(row, horizontal, plan.next_row_top, exclusions, style, dpi)?;
+    let row_metrics = row
+        .iter()
+        .fold(RowMetrics::default(), |metrics, item| metrics.with(item));
+    let (mut x, y, carved) = row_geometry(
+        row_metrics,
+        horizontal,
+        plan.next_row_top,
+        exclusions,
+        style,
+        dpi,
+    )?;
     plan.carved |= carved;
     let has_table = row
         .iter()
@@ -310,20 +339,15 @@ fn finish_row(
 }
 
 fn row_geometry(
-    row: &[InlineFlowBox],
+    metrics: RowMetrics,
     horizontal: &Range<f64>,
     top: f64,
     exclusions: &[FrameExclusion],
     style: &ResolvedParaStyle,
     dpi: f64,
 ) -> Option<(f64, f64, bool)> {
-    let width: f64 = row.iter().map(|b| b.width).sum();
-    let baseline = row.iter().map(|b| b.baseline).fold(0.0, f64::max);
-    let descent = row
-        .iter()
-        .map(|b| b.height - b.baseline)
-        .fold(0.0, f64::max);
-    let height = baseline + descent;
+    let width = metrics.width;
+    let height = metrics.baseline + metrics.descent;
     let base = px_to_hwpunit(horizontal.start, dpi)..px_to_hwpunit(horizontal.end, dpi);
     let base_width = base.end.checked_sub(base.start).filter(|w| *w > 0)?;
     let mut frame = LayoutFrame::new(base.clone(), px_to_hwpunit(top, dpi), exclusions.to_vec());
