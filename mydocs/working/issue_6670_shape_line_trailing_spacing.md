@@ -34,6 +34,24 @@ last_verified: 2026-09-07
 | 2025 행정업무운영 편람 s10 | pi=21: 2400 + 500 + 1000 = 3900 = pi=22 vpos |
 | hwp3-sample16-hwp5 | pi=71: 5760 + 9764 + 780 = 16304 = pi=72 vpos |
 
+### 전수 계측 (samples 856개 문서)
+
+바닥값 블록에 임시 계측기(`RHWP_FLOOR_DOC`)를 심고 `export-render-tree` 로 전부 렌더했다.
+
+| | 값 |
+|---|---|
+| 블록 도달 문서 / 이긴 문단 | 131 / 465 |
+| 꼬리 ls>0 로 실제 움직인 문단 (문서) | 440 (104) — 대개 6~13px, 최대 31.2 |
+| "도형이 글줄보다 큼"(주석의 원래 목적) | 1 |
+| 움직인 문단 중 덤프로 사다리 대조 가능 | 181 |
+| 그중 `다음.vpos − (vpos + lh) = ls (+ sa/2)` (한/글도 꼬리 ls 넣음) | **181** (172 + qsb 포함 9) |
+| 반대(`sa/2` 만) / 기타 | **0 / 0** |
+
+대조 불가: hwpx 중복 191, 하위 폴더 덤프 없음 33, 같은 pi 도형 문단 복수 25, 다음 문단이 다른 쪽 10.
+`y_before = 문단 top + ls + sa` 로 나오는 것은 `layout_paragraph` 이 도형 전용 줄의 줄 높이를 세지
+않는다는 뜻이다 — 바닥값 블록은 그 누락을 메우는 자리이고, 이 수정으로 결과 값은 한/글과 같아진다.
+스크립트: `floor_census.sh` · `floor_census_summary.py` · `ladder_check.py`(세션 scratchpad).
+
 ## 3. sample16 3쪽 — `pdf/hwp3-sample16-2020.pdf` baseline 대조
 
 | 줄 | 한/글 baseline | 수정 전 `y` (y−base) | 수정 후 `y` (y−base) |
