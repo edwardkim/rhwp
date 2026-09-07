@@ -2264,10 +2264,10 @@ impl Paginator {
                 table.common.vert_rel_to,
                 crate::model::shape::VertRelTo::Para
             )
-            && table.common.vertical_offset > 0
+            && Self::get_table_vertical_offset(table) > 0
         {
             let v_off =
-                crate::renderer::hwpunit_to_px(table.common.vertical_offset as i32, self.dpi);
+                crate::renderer::hwpunit_to_px(Self::get_table_vertical_offset(table), self.dpi);
             // 표의 절대 하단 y = 문단 시작 y + vert_offset + 표 높이
             // 피트 판단식: current_height + effective_table_height <= available
             // 이를 만족하도록 effective_table_height = abs_bottom - current_height
@@ -2464,10 +2464,9 @@ impl Paginator {
                     table.common.vert_rel_to,
                     crate::model::shape::VertRelTo::Para
                 )
-                && table.common.vertical_offset > 0;
+                && vertical_offset > 0;
             if is_independent_float {
-                let v_off =
-                    crate::renderer::hwpunit_to_px(table.common.vertical_offset as i32, self.dpi);
+                let v_off = crate::renderer::hwpunit_to_px(vertical_offset, self.dpi);
                 let float_bottom = para_start_height + v_off + effective_height;
                 if float_bottom > st.current_height {
                     st.current_height = float_bottom;
@@ -2596,7 +2595,7 @@ impl Paginator {
 
         // vertical_offset: 레이아웃에서 표 위에 v_offset만큼 공간을 확보하므로 가용 높이 차감
         let v_offset_px = if vertical_offset > 0 {
-            crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi)
+            crate::renderer::hwpunit_to_px(vertical_offset, self.dpi)
         } else {
             0.0
         };
@@ -3095,8 +3094,8 @@ impl Paginator {
         false
     }
 
-    /// 표의 세로 오프셋 추출
-    fn get_table_vertical_offset(table: &crate::model::table::Table) -> u32 {
-        table.common.vertical_offset as u32
+    /// Decode the signed offset before both comparisons and height arithmetic.
+    fn get_table_vertical_offset(table: &crate::model::table::Table) -> i32 {
+        crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset)
     }
 }

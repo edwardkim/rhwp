@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
-import { basename, dirname, resolve } from 'node:path';
+import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { basename, delimiter, dirname, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { spawn } from 'node:child_process';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(SCRIPT_DIR, '..');
@@ -68,7 +68,8 @@ export function buildWebfontCss(root, selectedRules) {
 
 function appendTerminalFallback(fontList) {
   if (fontList.includes(TERMINAL_FALLBACK_FAMILY)) return fontList;
-  return `${fontList.trim()}, ${cssString(TERMINAL_FALLBACK_FAMILY)}`;
+  // This identifier needs no CSS quotes, which would break quoted SVG attributes.
+  return `${fontList.trim()}, ${TERMINAL_FALLBACK_FAMILY}`;
 }
 
 export function prepareSvgForWebfontRaster(svgSource, webfontCss) {
@@ -103,8 +104,7 @@ function optionValue(args, name) {
 }
 
 function findChrome(configured) {
-  if (configured) return configured;
-  const candidates = [
+  const candidates = configured ? [configured] : [
     process.env.VISUAL_SWEEP_CHROME,
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/Applications/Chromium.app/Contents/MacOS/Chromium',
@@ -114,66 +114,48 @@ function findChrome(configured) {
     'chromium-browser',
   ].filter(Boolean);
   for (const candidate of candidates) {
-    if (!candidate.includes('/') || existsSync(candidate)) return candidate;
+    if (existsSync(candidate)) return resolve(candidate);
+    for (const directory of (process.env.PATH ?? '').split(delimiter).filter(Boolean)) {
+      const executable = resolve(directory, candidate);
+      if (existsSync(executable)) return executable;
+      if (process.platform === 'win32' && existsSync(`${executable}.exe`)) return `${executable}.exe`;
+    }
   }
   throw new Error('Chrome/Chromium을 찾지 못했습니다. VISUAL_SWEEP_CHROME으로 실행 경로를 지정하세요.');
 }
 
 async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, profileDir }) {
-  const args = [
-    '--headless=new',
-    '--disable-gpu',
-    '--hide-scrollbars',
-    '--no-first-run',
-    '--no-default-browser-check',
-    '--allow-file-access-from-files',
-    `--user-data-dir=${profileDir}`,
-    '--virtual-time-budget=10000',
-    `--force-device-scale-factor=${zoom}`,
-    `--window-size=${Math.ceil(viewport.width)},${Math.ceil(viewport.height)}`,
-    `--screenshot=${outputPath}`,
-    pathToFileURL(htmlPath).href,
-  ];
-  await new Promise((resolvePromise, reject) => {
-    const child = spawn(chrome, args, { stdio: ['ignore', 'ignore', 'pipe'] });
-    let stderr = '';
-    let completed = false;
-    let screenshotReady = false;
-    let killTimer;
-    const finish = error => {
-      if (completed) return;
-      completed = true;
-      clearInterval(poll);
-      clearTimeout(timeout);
-      clearTimeout(killTimer);
-      if (error) reject(error);
-      else resolvePromise();
-    };
-    const terminate = () => {
-      if (child.killed) return;
-      child.kill('SIGTERM');
-      killTimer = setTimeout(() => child.kill('SIGKILL'), 2000);
-    };
-    const poll = setInterval(() => {
-      if (existsSync(outputPath) && statSync(outputPath).size > 0) {
-        screenshotReady = true;
-        terminate();
-      }
-    }, 100);
-    const timeout = setTimeout(() => {
-      terminate();
-      finish(new Error(`Chrome webfont raster timeout: ${stderr.trim()}`));
-    }, 30000);
-    child.stderr.on('data', chunk => { stderr += chunk; });
-    child.on('error', error => finish(error));
-    child.on('close', code => {
-      if (screenshotReady && existsSync(outputPath) && statSync(outputPath).size > 0) {
-        finish();
-      } else if (!completed) {
-        finish(new Error(`Chrome webfont raster failed (exit=${code}): ${stderr.trim()}`));
-      }
-    });
+  const studioRequire = createRequire(resolve(ROOT, 'rhwp-studio/package.json'));
+  let puppeteerPath;
+  try {
+    puppeteerPath = studioRequire.resolve('puppeteer-core');
+  } catch {
+    throw new Error('puppeteer-core가 없습니다. npm --prefix rhwp-studio ci를 먼저 실행하세요.');
+  }
+  const { default: puppeteer } = await import(pathToFileURL(puppeteerPath).href);
+  const browser = await puppeteer.launch({
+    executablePath: chrome,
+    headless: true,
+    userDataDir: profileDir,
+    timeout: 30000,
+    protocolTimeout: 30000,
+    args: ['--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files'],
   });
+  try {
+    const page = await browser.newPage();
+    // Window size includes browser chrome on some platforms. Set the content
+    // viewport through CDP so the full SVG survives capture at every DPI.
+    await page.setViewport({
+      width: Math.ceil(viewport.width),
+      height: Math.ceil(viewport.height),
+      deviceScaleFactor: zoom,
+    });
+    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: 30000 });
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    await page.screenshot({ path: outputPath, type: 'png' });
+  } finally {
+    await browser.close();
+  }
 }
 
 async function main() {

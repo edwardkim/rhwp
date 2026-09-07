@@ -123,6 +123,11 @@ rhwp export-svg samples/exam_kor.hwp \
 폰트 섹션을 참고한다.
 
 기본 `scripts/visual_sweep.py`는 `export-svg --font-style` 뒤에 Chrome headless를 사용한다.
+브라우저 제어에는 Studio의 `puppeteer-core`를 재사용하므로 최초 사용 전
+`npm --prefix rhwp-studio ci`로 해당 의존성을 준비한다. Chrome 실행 파일은 별도로
+설치하거나 `VISUAL_SWEEP_CHROME`으로 지정한다. 캡처는 실제 content viewport를
+SVG 크기로 설정하고 글꼴 로딩과 screenshot 완료를 기다린다. `--window-size`만으로
+외부 창 크기를 맞추면 브라우저 장식 영역 때문에 페이지 하단이 누락될 수 있다.
 `rhwp-studio/src/core/generated/font-rule-projections/webfont-supply.ts`의 현재 Studio 공통
 webfont projection에서 SVG에 실제로 나타난 family만 선택해 `@font-face`로 다시 공급한다.
 따라서 `함초롬바탕` 같은 CDN webfont와 `한양중고딕` 같은 번들 대체 webfont가 Studio와 같은
@@ -133,6 +138,18 @@ webfont projection에서 SVG에 실제로 나타난 family만 선택해 `@font-f
 로그와 run manifest에 선택한 rasterizer 및 Git HEAD가 남으므로, PR 판정에는 실행 OS와
 `webfont` 경로 사용 여부를 함께 기록한다. 한컴/HY 전용 실폰트의 glyph 형태까지 동일하다는
 증명은 아니며, 그러한 결론에는 한컴 PDF와 OVL 또는 개체 단위 대조가 추가로 필요하다.
+
+하단선이나 도형이 누락된 경우 SVG의 요소 좌표와 조상 clip을 먼저 확인한다. SVG에는
+페이지 안에 존재하는데 PNG의 동일 높이 이하가 통째로 비면 renderer 결함으로 확정하지
+않고 캡처 환경을 검사한다. 브라우저 변경 뒤에는 다음 실측 검사를 사용할 수 있다.
+
+```bash
+VISUAL_SWEEP_CHROME=/path/to/chrome venv/bin/python scripts/tests/test_webfont_raster_viewport.py
+```
+
+이 검사는 독립 SVG의 네 모서리를 1배·2배 PNG 픽셀로 확인한다. 캡처 도구를 수정한
+뒤 기존 checkpoint를 `--resume`으로 재사용하면 잘못된 PNG도 남을 수 있으므로 새
+출력 디렉터리에서 다시 산출한다.
 
 네트워크 없이 설치 글꼴만 비교해야 하는 특수 상황에서는 다음처럼 기존 경로를 명시한다.
 

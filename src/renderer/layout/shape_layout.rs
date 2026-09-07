@@ -340,7 +340,14 @@ fn textbox_tac_space_advance_override(
     alignment: Alignment,
     dpi: f64,
 ) -> Option<f64> {
-    if !matches!(alignment, Alignment::Left) || total_inline_width <= 0.0 {
+    if !matches!(alignment, Alignment::Left)
+        || total_inline_width <= 0.0
+        // A table's leading spaces are a text prefix, not spacing distributed
+        // between the picture glyphs of a stored logo line.
+        || para.controls.iter().any(|control| {
+            matches!(control, Control::Table(table) if table.common.treat_as_char)
+        })
+    {
         return None;
     }
 
@@ -3246,6 +3253,11 @@ impl LayoutEngine {
                         max_inline_height =
                             max_inline_height.max(hwpunit_to_px(eq.common.height as i32, self.dpi));
                     }
+                    Control::Table(table) if table.common.treat_as_char => {
+                        total_inline_width += hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
+                            + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                            + hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
+                    }
                     _ => {}
                 }
             }
@@ -3594,6 +3606,17 @@ impl LayoutEngine {
                             .get(para.para_shape_id as usize)
                             .map(|ps| ps.alignment)
                             .unwrap_or(Alignment::Left);
+                        let table_inline_x = if table.common.treat_as_char {
+                            advance_to_control(&mut inline_x);
+                            let x =
+                                inline_x + hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
+                            inline_x += hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
+                            Some(x)
+                        } else {
+                            None
+                        };
                         inline_y = self.layout_embedded_table(
                             tree,
                             &mut textbox_node,
@@ -3609,6 +3632,7 @@ impl LayoutEngine {
                             )),
                             bin_data_content,
                             host_align,
+                            table_inline_x,
                         );
                     }
                     _ => {}

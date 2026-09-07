@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-03
+last_verified: 2026-09-06
 ---
 
 # Review-only fast-pass
@@ -124,6 +124,27 @@ Adapter inter-diff와 Proptest roundtrip은 `devel` push에도 required check �
 
 direct push, fork PR, PR 식별 불명확, merge tree 불일치, workflow·CI policy 변경, 비허용 파일, merge
 commit 또는 worker-skip 증거 누락은 재사용하지 않고 Full 실행한다.
+
+### B.2 Full candidate 뒤 문서 merge의 post-merge 재사용
+
+코드 PR의 문서-only trailing 사이에 current-base 충돌 해소 merge가 있으면, CI/CodeQL의 공통
+post-merge verifier가 다음 조건에서만 이전 Full 검증을 재사용한다.
+
+- source 부모 + 최종 devel base 부모 순서의 bridge 한 개이며, 그 앞뒤 commit 계보가 연속이다.
+- 최종 head workflow가 성공했고, 선택한 이전 Full 실행의 PR/branch/repository/SHA/time이 일치한다.
+- CI는 만료되지 않은 B/C/D duration artifact, CodeQL은 실제 분석 성공 증거를 요구한다.
+- Full 실행에 속한 immutable merge-tree artifact의 base/head/tree를 Git 객체와 대조한다.
+- 그 실제 검사 tree와 최종 merge tree 차이는 `mydocs/**` 문서뿐이다.
+  `mydocs/tech/text-ir-v2.md`, `mydocs/tech/canvaskit-parity-implementation.md`는 실행 계약이므로 제외한다.
+
+단순히 부모가 둘이거나 PR fast-pass aggregate가 green이라는 이유로 승인하지 않는다. base의 신뢰
+검증 코드가 객체를 fetch/diff하며 PR head를 checkout/실행하지 않는다. 코드·테스트·기준 PDF 변경,
+stale base, 복수 bridge, 목록 잘림, fetch 실패, 증거 불일치는 Full로 닫는다.
+정상 재사용 시 초기 Full run의 duration artifact로 timing을 갱신하며 required check 이름은 유지한다.
+
+재사용 정책 자체를 바꾸는 PR은 Full 대상이다. trusted verifier는 병합 전 base에서 로드하므로 최초
+적용 PR의 post-merge도 Full일 수 있다. 지원 완료는 이후 코드 PR의 문서 merge 사례에서 실제
+`reuse=true`, CI/CodeQL heavy skip, duration 재사용을 확인한 뒤 판단한다.
 
 ## Full CI fallback
 

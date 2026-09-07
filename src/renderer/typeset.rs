@@ -27,7 +27,7 @@ use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
-    MeasuredTable,
+    stored_square_picture_has_adjacent_text, MeasuredTable,
 };
 use crate::renderer::layout::table_layout::native_terminal_child_host_line_spacing;
 use crate::renderer::layout::{
@@ -24458,13 +24458,37 @@ impl TypesetEngine {
         // 같은 행의 row_span==1 셀 내용이 저장 행 높이를 초과하면, 저장 높이가 실제
         // 셀 내용보다 작게 기록된 경우이므로 컷 높이를 쓴다.
         // 이 판정은 파일명/페이지가 아니라 표 셀 내용 높이와 저장 행 높이의 차이에 근거한다.
+        let row_has_stored_square_picture_flow = |row: usize| {
+            if !st.profile.hwp5_stored_pagination_layout()
+                || !matches!(
+                    row_geometry_table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+            {
+                return false;
+            }
+            row_geometry_table.cells.iter().any(|cell| {
+                cell.row as usize == row
+                    && cell.row_span == 1
+                    && cell.paragraphs.iter().enumerate().any(|(para_idx, para)| {
+                        para.controls.iter().enumerate().any(|(control_idx, _)| {
+                            stored_square_picture_has_adjacent_text(cell, para_idx, control_idx)
+                        })
+                    })
+            })
+        };
         let cut_row_h: Vec<f64> = (0..row_count)
             .map(|r| {
                 let has_single_row_cells = row_geometry_table
                     .cells
                     .iter()
                     .any(|c| c.row as usize == r && c.row_span == 1);
-                let row_cut_h = if has_single_row_cells {
+                let row_cut_h = if row_has_stored_square_picture_flow(r) {
+                    // native HWP5 RowBreak stores the adjacent text LINE_SEG ladder as
+                    // the authoritative row height. Recomputing this whole row from
+                    // cell_units would add the same Square flow band again.
+                    mt.row_heights[r]
+                } else if has_single_row_cells {
                     layout_engine.row_cut_content_height(row_geometry_table, r, &[], &[], styles)
                 } else {
                     0.0

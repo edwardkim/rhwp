@@ -36,6 +36,60 @@ use crate::model::table::Table;
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
 
+/// [#6699] 그림 뒤 문자열의 마지막 자간은 다음 글자가 없는 정렬 폭에 넣지 않는다.
+/// 글자 전진 폭과 그림 뒤 원본 공백은 유지하고, 가운데/오른쪽 정렬의 점유 폭만 줄인다.
+fn terminal_tracking_after_inline_picture(
+    line: &ComposedLine,
+    para: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    tac_offsets: &[(usize, f64, usize)],
+) -> f64 {
+    if tac_offsets.is_empty()
+        || line
+            .runs
+            .iter()
+            .any(|run| run.char_overlap.is_some() || run.display_text.is_some())
+    {
+        return 0.0;
+    }
+    let text_end = line.char_start
+        + line
+            .runs
+            .iter()
+            .map(|run| run.text.chars().count())
+            .sum::<usize>();
+    // 문자열 뒤 개체에는 실제로 자간 다음 내용이 있으므로 기존 전진 폭을 쓴다.
+    if tac_offsets.iter().any(|(pos, _, _)| *pos >= text_end)
+        || !tac_offsets.iter().any(|(_, _, index)| {
+            matches!(
+                para.and_then(|p| p.controls.get(*index)),
+                Some(Control::Picture(picture)) if picture.common.treat_as_char
+            )
+        })
+    {
+        return 0.0;
+    }
+    let Some(run) = line.runs.iter().rev().find(|run| !run.text.is_empty()) else {
+        return 0.0;
+    };
+    let Some(last) =
+        unicode_segmentation::UnicodeSegmentation::graphemes(run.text.as_str(), true).next_back()
+    else {
+        return 0.0;
+    };
+    if last.chars().any(char::is_whitespace) {
+        return 0.0;
+    }
+    let mut style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+    if style.letter_spacing <= 0.0 || style.kerning {
+        return 0.0;
+    }
+    // 폰트별 글자 폭에 비례하는 자간을 기존 측정 함수로 구한다. 정수 반올림은 하지 않는다.
+    let tracked = estimate_text_width_unrounded(last, &style);
+    style.letter_spacing = 0.0;
+    (tracked - estimate_text_width_unrounded(last, &style)).max(0.0)
+}
+
 /// 최종 emitted text run에서만 exact pair positions를 게시한다.
 ///
 /// `fallback_width`는 K0의 기존 반올림·field projection·줄-말미 공백 회수 계약을
@@ -5166,6 +5220,21 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
+            let terminal_tracking_width = if cell_ctx.is_some()
+                && matches!(alignment, Alignment::Center | Alignment::Right)
+                && !center_packed_cell_label_as_right
+                && !has_tabs
+                && extra_char_sp == 0.0
+            {
+                terminal_tracking_after_inline_picture(
+                    comp_line,
+                    para,
+                    styles,
+                    &line_tac_offsets_for_width,
+                )
+            } else {
+                0.0
+            };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
@@ -5173,7 +5242,9 @@ impl LayoutEngine {
                     } else if non_cell_tac_only_line {
                         0.0
                     } else {
-                        (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                        (available_width
+                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
+                            .max(0.0)
                             / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
@@ -5190,7 +5261,9 @@ impl LayoutEngine {
                     x_base
                         + inline_offset
                         + num_x_offset
-                        + (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                        + (available_width
+                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
+                            .max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
@@ -5587,9 +5660,29 @@ impl LayoutEngine {
             );
             // Square wrap host 의 빈 guide 줄은 advance 를 건너뛰지만, 같은 줄에
             // TAC 수식/개체가 있으면 실제 콘텐츠 줄이므로 높이를 보존한다.
+            // The preceding visible fragment deferred its advance to this row's
+            // last fragment. An empty right-hand fragment must still pay it.
+            let completes_visible_stored_row = cell_ctx.is_some()
+                && para.is_some_and(|p| {
+                    crate::renderer::height_measurer::stored_seg_is_row_fragment(p, line_idx)
+                        && (0..line_idx)
+                            .rev()
+                            .take_while(|&idx| {
+                                p.line_segs
+                                    .get(idx)
+                                    .zip(p.line_segs.get(line_idx))
+                                    .is_some_and(|(a, b)| a.vertical_pos == b.vertical_pos)
+                            })
+                            .any(|idx| {
+                                composed.lines.get(idx).is_some_and(|line| {
+                                    line.runs.iter().any(|run| !run.text.trim().is_empty())
+                                })
+                            })
+                });
             let skip_advance_empty_wrap = has_picture_shape_square_wrap
                 && !has_ole_shape_square_wrap
                 && runs_all_whitespace
+                && !completes_visible_stored_row
                 && !line_has_tac_control(composed, line_idx);
             // 촘촘한 미주 수식 문단에는 다음 줄과 char_start가 같은 선행
             // 퇴화 LINE_SEG가 들어오는 경우가 있다. 해당 줄 자체에는 TAC가
@@ -8613,7 +8706,9 @@ fn make_picture_image_node(
             brightness: pic.image_attr.brightness,
             contrast: pic.image_attr.contrast,
             opacity: pic.image_attr.opacity(),
-            text_wrap: Some(pic.common.text_wrap),
+            // Inline glyphs stay in flow even if the saved object retains a
+            // floating wrap mode. Otherwise a textbox fill covers its pictures.
+            text_wrap: (!pic.common.treat_as_char).then_some(pic.common.text_wrap),
             transform: extract_shape_transform(&pic.shape_attr),
             external_path: pic.image_attr.external_path.clone(),
             ..ImageNode::new(bin_data_id, image_data)

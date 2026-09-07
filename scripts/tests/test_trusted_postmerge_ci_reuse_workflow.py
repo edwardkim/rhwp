@@ -112,6 +112,20 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn(
             "scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs", ci
         )
+        self.assertIn("scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs", ci)
+
+    def test_review_bridge_uses_trusted_object_proof_without_checkout(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        self.assertIn("currentBaseReviewBridgeSource(commit, baseParent)", workflow)
+        self.assertIn("multiple current-base review bridges", workflow)
+        self.assertIn("selectTrustedPostMergeCandidate(pr, prCommits, baseParent)", workflow)
+        self.assertIn("prCommitHeaders.length >= 250", workflow)
+        self.assertIn("pullFiles.length !== pr.changed_files", workflow)
+        self.assertIn("reviewBridgeTreeEvidenceByRunId", workflow)
+        self.assertIn("verifyPostMergeReviewBridgeTree(process.env.GITHUB_WORKSPACE", workflow)
+        self.assertIn("['fetch', '--no-tags', '--filter=blob:none', '--depth=1'", workflow)
+        self.assertIn("'--no-write-fetch-head', 'origin', ...missing", workflow)
+        self.assertNotIn("execFileSync('git', ['checkout'", workflow)
 
 
 if __name__ == "__main__":

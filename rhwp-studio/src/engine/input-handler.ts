@@ -1,4 +1,5 @@
 import { WasmBridge } from '@/core/wasm-bridge';
+import { isCharFormatError, CharFormatRecoveryError } from '@/core/char-format-error';
 import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
 import { CursorState } from './cursor';
@@ -2885,7 +2886,9 @@ export class InputHandler {
   /** Undo 처리 */
   private handleUndo(): void {
     this.flushDeferredPaginationIfNeeded('before-undo', false);
-    const newPos = this.history.undo(this.wasm);
+    let newPos: DocumentPosition | null;
+    try { newPos = this.history.undo(this.wasm); }
+    catch (error) { this.handleCharFormatError(error); return; }
     if (newPos) {
       this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
       this.clearTableResizeRuntimeCache();
@@ -2903,7 +2906,9 @@ export class InputHandler {
   /** Redo 처리 */
   private handleRedo(): void {
     this.flushDeferredPaginationIfNeeded('before-redo', false);
-    const newPos = this.history.redo(this.wasm);
+    let newPos: DocumentPosition | null;
+    try { newPos = this.history.redo(this.wasm); }
+    catch (error) { this.handleCharFormatError(error); return; }
     if (newPos) {
       const boundaryHandled = this.prepareTextMutationBeforeCursor(
         this.history.consumeLastExecutionEffects(),
@@ -3085,6 +3090,18 @@ export class InputHandler {
    * 호출부는 OperationDescriptor로 "무엇을 하려는가"만 서술하고,
    * 라우터가 적절한 Undo 전략을 자동 선택한다.
    */
+  private handleCharFormatError(error: unknown): void {
+    if (!isCharFormatError(error)) throw error;
+    console.error(error);
+    if (error instanceof CharFormatRecoveryError) {
+      // 실패하더라도 부분 변경은 실제 상태다. 화면과 dirty/history UI를 갱신한다.
+      this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+      this.resetDerivedStateAfterHistoryJump();
+      this.afterEdit();
+    }
+    alert(error.message);
+  }
+
   executeOperation(desc: OperationDescriptor): void {
     if (!this.isOperationAllowedInEditMode(desc)) return;
     switch (desc.kind) {
@@ -3096,7 +3113,9 @@ export class InputHandler {
         if (keepFieldStartOutside) {
           this.wasm.clearActiveField();
         }
-        const newPos = this.history.execute(desc.command, this.wasm);
+        let newPos: DocumentPosition;
+        try { newPos = this.history.execute(desc.command, this.wasm); }
+        catch (error) { this.handleCharFormatError(error); return; }
         const boundaryHandled = this.prepareTextMutationBeforeCursor(
           this.history.consumeLastExecutionEffects(),
         );

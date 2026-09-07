@@ -215,16 +215,26 @@ jobs:
           script: |
             const path = require('node:path');
             const { pathToFileURL } = require('node:url');
+            const { execFileSync } = require('node:child_process');
             const { owner, repo } = context.repo;
             let classifyReviewOnlyCommit;
             let evaluateTrustedPostMergeReuse;
             let frontendOnlyCiRunIsReusable;
             let classifyChanges;
+            let currentBaseReviewBridgeSource;
+            let selectTrustedPostMergeCandidate;
+            let verifyPostMergeReviewBridgeTree;
             try {
-              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable } = await import(pathToFileURL(path.join(
+              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable,
+                currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
+                verifyPostMergeReviewBridgeTree } = await import(pathToFileURL(path.join(
                 process.env.GITHUB_WORKSPACE,
                 'scripts/verify-trusted-postmerge-ci-reuse.mjs',
               )).href));
+              if ([currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
+                verifyPostMergeReviewBridgeTree].some((fn) => typeof fn !== 'function')) {
+                throw new Error('trusted base has no review-bridge verifier');
+              }
               if (process.env.WORKFLOW_FILE === 'ci.yml') {
                 ({ classifyChanges } = require(path.join(
                   process.env.GITHUB_WORKSPACE, 'scripts/ci-impact-classifier.cjs',
@@ -259,7 +269,16 @@ jobs:
               if (pullRequest.length !== 1) {
                 return { mergeCommit, pullRequests, pullFiles: [], workflowRuns: [] };
               }
-              const pr = pullRequest[0];
+              const summary = pullRequest[0];
+              const pr = (await github.rest.pulls.get({
+                owner, repo, pull_number: summary.number,
+              })).data;
+              if (pr.number !== summary.number || pr.head?.sha !== summary.head.sha
+                || pr.merge_commit_sha !== mergeSha || pr.state !== 'closed' || !pr.merged_at
+                || pr.base?.ref !== 'devel'
+                || pr.head?.repo?.full_name !== process.env.GITHUB_REPOSITORY) {
+                throw new Error('PR detail identity mismatch');
+              }
               const mergeParents = (mergeCommit.parents || []).map((parent) => parent.sha);
               const baseParent = mergeParents.length === 1
                 ? mergeParents[0]
@@ -286,18 +305,33 @@ jobs:
                 github.rest.pulls.listCommits,
                 { owner, repo, pull_number: pr.number, per_page: 100 },
               );
+              if (prCommitHeaders.length === 0 || prCommitHeaders.length >= 250
+                || pullFiles.length === 0 || pullFiles.length >= 3000
+                || pullFiles.length !== pr.changed_files) {
+                throw new Error('incomplete PR commit or file inventory');
+              }
               const prCommits = [];
+              let bridgeSha = '';
               for (let index = prCommitHeaders.length - 1; index >= 0; index -= 1) {
                 const commit = (await github.rest.repos.getCommit({
                   owner,
                   repo,
                   ref: prCommitHeaders[index].sha,
                 })).data;
+                if (commit.sha !== prCommitHeaders[index].sha) {
+                  throw new Error('PR commit identity mismatch');
+                }
                 prCommits.unshift(commit);
+                if (currentBaseReviewBridgeSource(commit, baseParent)) {
+                  if (bridgeSha) throw new Error('multiple current-base review bridges');
+                  bridgeSha = commit.sha;
+                  continue;
+                }
                 if (classifyReviewOnlyCommit(commit).kind !== "review") {
                   break;
                 }
               }
+              const sourceSelection = selectTrustedPostMergeCandidate(pr, prCommits, baseParent);
               const mergeTreeEvidenceByRunId = {};
               const createdAt = Date.parse(pr.created_at || '');
               const mergedAt = Date.parse(pr.merged_at || '');
@@ -467,6 +501,46 @@ jobs:
                   }
                 }
               }
+              const reviewBridgeTreeEvidenceByRunId = {};
+              if (sourceSelection?.bridgeSha && requireFullLaneEvidence) {
+                for (const run of workflowRuns) {
+                  const tested = mergeTreeEvidenceByRunId[String(run.id)];
+                  if (!fullLaneRunIds.includes(String(run.id)) || !tested
+                    || tested.parents[0] !== baseParent
+                    || !sourceSelection.fullLaneCandidates.some((c) => c.sha === run.head_sha)) {
+                    continue;
+                  }
+                  try {
+                    // Fetch immutable objects only. Keep the trusted checkout and never run PR code.
+                    const refs = [mergeSha, sourceSelection.bridgeSha, tested.sha];
+                    if (!refs.every((sha) => /^[0-9a-f]{40}$/.test(sha))) {
+                      throw new Error('invalid review-bridge object identity');
+                    }
+                    const gitOptions = { cwd: process.env.GITHUB_WORKSPACE,
+                      timeout: 120000, maxBuffer: 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] };
+                    const missing = refs.filter((sha) => {
+                      try {
+                        execFileSync('git', ['cat-file', '-e', `${sha}^{commit}`], gitOptions);
+                        return false;
+                      } catch { return true; }
+                    });
+                    if (missing.length) {
+                      execFileSync('git', ['fetch', '--no-tags', '--filter=blob:none', '--depth=1',
+                        '--no-write-fetch-head', 'origin', ...missing], gitOptions);
+                    }
+                    const proof = verifyPostMergeReviewBridgeTree(process.env.GITHUB_WORKSPACE, {
+                      baseSha: baseParent, bridgeSha: sourceSelection.bridgeSha, mergeSha,
+                      candidateSha: run.head_sha, testedMergeSha: tested.sha,
+                    });
+                    if (proof.testedTreeSha !== tested.treeSha) {
+                      throw new Error('review-bridge artifact tree mismatch');
+                    }
+                    reviewBridgeTreeEvidenceByRunId[String(run.id)] = proof;
+                  } catch (error) {
+                    core.warning(`Review-bridge tree proof unavailable for run ${run.id}; running full. ${error.message}`);
+                  }
+                }
+              }
               const evidence = {
                 mergeCommit,
                 pullRequests,
@@ -476,6 +550,7 @@ jobs:
                 prCommits,
                 workflowRuns,
                 mergeTreeEvidenceByRunId,
+                reviewBridgeTreeEvidenceByRunId,
                 frontendOnlyRunIds,
               };
               if (requireFullLaneEvidence) {

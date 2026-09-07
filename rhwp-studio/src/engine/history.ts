@@ -96,7 +96,14 @@ export class CommandHistory {
   /** 명령 실행 + 히스토리 기록. 실행 후 커서 위치 반환 */
   execute(command: EditCommand, wasm: WasmBridge): DocumentPosition {
     this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;
-    const cursorAfter = command.execute(wasm);
+    let cursorAfter: DocumentPosition;
+    try {
+      cursorAfter = command.execute(wasm);
+    } catch (error) {
+      // 부분 변경이 남았으면 복원 정보를 보존하여 Undo로 재시도한다.
+      if (command.retainOnFailure?.()) this.recordWithoutExecute(command, wasm);
+      throw error;
+    }
     this.captureExecutionEffects(command);
 
     // [Task #2370 클러스터 A] 문서를 바꾸지 않은 명령은 기록하지 않는다.
@@ -180,6 +187,7 @@ export class CommandHistory {
     try {
       cursorAfter = command.undo(wasm);
     } catch (e) {
+      if (command.retainOnFailure?.()) throw e;
       this.undoStack.pop();
       command.discard?.(wasm);
       throw e;
@@ -197,6 +205,9 @@ export class CommandHistory {
   /** Redo — 성공 시 커서 위치 반환, 스택 비었으면 null */
   redo(wasm: WasmBridge): DocumentPosition | null {
     this.lastExecutionEffects = NO_TEXT_MUTATION_EFFECTS;
+    // 부분 Undo/Redo가 남아 있으면 기존 redo command의 시작 상태가 아니다.
+    // 먼저 Undo 복원을 완료해야 더 최신 명령을 안전하게 다시 실행할 수 있다.
+    if (this.peekUndoTop()?.retainOnFailure?.()) return null;
     const command = this.redoStack[this.redoStack.length - 1];
     if (!command) return null;
 
@@ -206,7 +217,12 @@ export class CommandHistory {
       cursorAfter = command.execute(wasm);
     } catch (e) {
       this.redoStack.pop();
-      command.discard?.(wasm);
+      if (command.retainOnFailure?.()) {
+        // 부분 Redo는 이미 문서에 반영됐다. 이전 명령보다 먼저 Undo해야 한다.
+        this.undoStack.push(command);
+      } else {
+        command.discard?.(wasm);
+      }
       throw e;
     }
     this.captureExecutionEffects(command);
@@ -253,7 +269,7 @@ export class CommandHistory {
   }
 
   canUndo(): boolean { return this.undoStack.length > 0; }
-  canRedo(): boolean { return this.redoStack.length > 0; }
+  canRedo(): boolean { return this.redoStack.length > 0 && !this.peekUndoTop()?.retainOnFailure?.(); }
 
   /**
    * [Task #2337] 직전 undo/redo 로 방금 이동한 커맨드를 조회한다.

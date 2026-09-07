@@ -8697,7 +8697,46 @@ impl LayoutEngine {
                                 };
                                 let shape_bottom = para_start + sb_applied + effective_h;
                                 if shape_bottom > y_offset {
-                                    y_offset = shape_bottom + sa;
+                                    // [#6665] HWP3 계보 휴리스틱은 2024 저장본도
+                                    // 포함한다. 계보 전체를 배제하지 않고, 빈 도형 줄의
+                                    // 다음 저장 vpos가 lh + ls 전진을 증명할 때만 ls를
+                                    // 복원한다. 원본 HWP3/HWPX와 저장 사다리가 다른
+                                    // 문단은 유지한다. 바닥값 판정에는 ls를 넣지 않는다.
+                                    // lh == 도형 프레임 높이인 순수 개체 줄(#1116)은
+                                    // paragraph_layout의 높이 접힘과 짝을 이뤄 ls 없는
+                                    // 바닥값이 전진량을 소유한다. 프레임보다 큰 저장
+                                    // 줄 상자를 복원할 때만 별도의 꼬리 ls를 더한다.
+                                    let profile = self.profile.get();
+                                    let stored_shape_line = (profile
+                                        .hwp5_stored_pagination_layout()
+                                        || profile.hwp3_layout())
+                                        && !profile.hwp3_native_layout()
+                                        && !profile.hwpx_stored_layout()
+                                        && para.text.chars().all(|c| {
+                                            c.is_whitespace() || c <= '\u{001F}' || c == '\u{FFFC}'
+                                        });
+                                    let trailing_ls = match para.line_segs.as_slice() {
+                                        [seg]
+                                            if stored_shape_line
+                                                && seg.line_height > 0
+                                                && seg.line_spacing > 0
+                                                && shape_max_h
+                                                    < hwpunit_to_px(seg.line_height, self.dpi)
+                                                && paragraphs
+                                                    .get(*para_index + 1)
+                                                    .and_then(|next| next.line_segs.first())
+                                                    .is_some_and(|next| {
+                                                        i64::from(next.vertical_pos)
+                                                            - i64::from(seg.vertical_pos)
+                                                            == i64::from(seg.line_height)
+                                                                + i64::from(seg.line_spacing)
+                                                    }) =>
+                                        {
+                                            hwpunit_to_px(seg.line_spacing, self.dpi)
+                                        }
+                                        _ => 0.0,
+                                    };
+                                    y_offset = shape_bottom + trailing_ls + sa;
                                 }
                             }
                         }

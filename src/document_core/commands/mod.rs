@@ -7,6 +7,7 @@ mod document;
 mod footnote_ops;
 mod foreign_paste;
 mod formatting;
+mod formatting_runs;
 mod header_footer_ops;
 mod html_import;
 mod object_ops;
