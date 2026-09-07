@@ -321,17 +321,12 @@ fn table_box_for_control(node: &RenderNode, control_index: usize, out: &mut Vec<
 
 #[test]
 fn issue_6812_multiple_picture_boundaries_are_consumed_before_placing_table() {
-    let mut core = sample();
-    let mut doc = core.document().clone();
-    let para = &mut doc.sections[0].paragraphs[0];
-    let Control::Picture(mut second) = para.controls[3].clone() else {
-        panic!("그림");
+    let core = multiple_pictures();
+    let Control::Picture(second) = &core.document().sections[0].paragraphs[0].controls[4] else {
+        panic!("두 번째 그림");
     };
-    second.common.vertical_offset += 4500;
     let required_top =
         (f64::from(second.common.vertical_offset + second.common.height) + 141.0) / 75.0;
-    para.controls.insert(4, Control::Picture(second));
-    core.set_document(doc);
     let tree = core.build_page_render_tree(0).unwrap();
     let mut tables = Vec::new();
     table_box_for_control(&tree.root, 5, &mut tables);
@@ -341,6 +336,91 @@ fn issue_6812_multiple_picture_boundaries_are_consumed_before_placing_table() {
         "두 경계를 모두 지나야 한다: {:?}, {required_top}",
         tables[0]
     );
+}
+
+fn multiple_pictures() -> DocumentCore {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    let para = &mut doc.sections[0].paragraphs[0];
+    let Control::Picture(mut second) = para.controls[3].clone() else {
+        panic!("그림");
+    };
+    second.common.vertical_offset += 4500;
+    para.controls.insert(4, Control::Picture(second));
+    core.set_document(doc);
+    core
+}
+
+#[test]
+fn issue_6812_following_table_preserves_the_preceding_table_flow_bottom() {
+    let mut core = sample();
+    let mut doc = core.document().clone();
+    doc.sections[0].paragraphs[0].controls.swap(3, 4);
+    core.set_document(doc);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut tables = Vec::new();
+    collect_top_level_tables(&tree.root, &mut tables);
+    let preceding: Vec<_> = tables
+        .iter()
+        .filter(|(pi, ci, _)| (*pi, *ci) == (0, 3))
+        .collect();
+    let following: Vec<_> = tables
+        .iter()
+        .filter(|(pi, ci, _)| (*pi, *ci) == (1, 0))
+        .collect();
+    assert_eq!(preceding.len(), 1);
+    assert_eq!(following.len(), 1);
+    assert!(
+        following[0].2.y + 0.5 >= preceding[0].2.y + preceding[0].2.height,
+        "후속 표가 선행 표의 실제 하단을 되돌아가지 않는다: before={:?}, after={:?}",
+        preceding[0],
+        following[0]
+    );
+}
+
+#[test]
+fn issue_6812_following_text_respects_column_bottom_after_multiple_pictures() {
+    let core = multiple_pictures();
+    let mut lines = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).unwrap();
+        collect_body_lines(&tree.root, None, &mut lines);
+    }
+    let target: Vec<_> = lines.iter().filter(|(pi, _, _)| *pi == 8).collect();
+    assert_eq!(
+        target.len(),
+        3,
+        "문단의 세 줄을 쪽을 넘어도 누락/중복하지 않는다"
+    );
+    for (_, line, bottom) in target {
+        assert!(
+            line.y + line.height <= bottom + 0.5,
+            "그림 뒤 문단 줄의 실제 하단은 단 안에 있어야 한다: {line:?}, column_bottom={bottom}"
+        );
+    }
+}
+
+fn collect_body_lines(
+    node: &RenderNode,
+    column_bottom: Option<f64>,
+    out: &mut Vec<(usize, BoundingBox, f64)>,
+) {
+    if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+        return;
+    }
+    let column_bottom = if matches!(node.node_type, RenderNodeType::Column(_)) {
+        Some(node.bbox.y + node.bbox.height)
+    } else {
+        column_bottom
+    };
+    if let (RenderNodeType::TextLine(line), Some(bottom)) = (&node.node_type, column_bottom) {
+        if let Some(pi) = line.para_index {
+            out.push((pi, node.bbox, bottom));
+        }
+    }
+    for child in &node.children {
+        collect_body_lines(child, column_bottom, out);
+    }
 }
 
 #[test]
