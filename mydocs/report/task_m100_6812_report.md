@@ -3,7 +3,7 @@ kind: report
 status: active
 canonical: mydocs/plans/task_m100_6812.md
 issue: 6812
-last_verified: 2026-09-07
+last_verified: 2026-09-08
 ---
 
 # #6812 완료 보고 — 원본 1페이지 해결로 범위 확정
@@ -298,3 +298,57 @@ overflow dump는 기존 12행과 일치한다. 원장 파일을 갱신하거나 
 메인테이너 시각 수용을 유지하며, 전체 11쪽 시각 승인이나 셀 확장 완료를 주장하지 않는다.
 원격 push·PR 생성은 이번 승인 범위에 포함되지만 CI 완료·최종 self-review·병합·이슈 종료는
 아직 미수행이다. PR 채번 후 별도 번호 기반 review 기록과 오늘할일을 같은 PR에 포함한다.
+
+## 10. #6848 추가 통합 및 최종 제출 검증 (2026-09-08)
+
+9절 종료 직전 원격 devel에 #6848이 추가 병합되어
+`ac8c9fa2c9bfcaadb74f3b46a8ec2a879c3a8099`로 전진했다. 에이전트가 fetch 결과를
+판정하기 전에 후속 push를 실행한 순서 오류로, `262f7c38f`가 원격 작업 브랜치에 먼저
+올라갔다. PR은 만들지 않았고 이 오류를 메인테이너에게 즉시 보고했다.
+이는 devel 직접 push나 병합이 아니며, 이전 검증 결과를 새 devel의 통과로 주장하지 않았다.
+
+승인된 최신 통합·검증·push·PR 생성 순서를 계속 적용했다. 추가 통합에서는
+오늘할일 문서 한 곳의 add/add 내용 충돌을 양쪽 기록 모두 보존하여 해소했다.
+제품 소스는 자동 병합됐으며 별도의 조판 보정은 하지 않았다.
+최종 검증 코드 commit은 **`380f838300db555d511a7267421fd65d317dc111`**이다.
+
+### 10.1 실제 결과
+
+| 검증 | 결과 |
+| --- | --- |
+| #6812·인접 조판·새 object 속성/수식/gradient 집중 nextest | **92 PASS / 0 FAIL**, 실행 0.953초. 필터 비대상/기존 skip 9,172건 |
+| fmt / native·WASM32·workspace all-target Clippy / workspace build | 모두 PASS |
+| manifest / source-side unit tier | PASS / PASS (1,195 sources / 4,205 unit tests) |
+| release-test 전체 nextest | **9,218 PASS / 0 FAIL / 기존 46 skipped**, 실행 427.848초 |
+| Native Skia lib | **4,112 PASS / 0 FAIL / 기존 13 ignored** |
+| Native Skia 이미지 대체 표시 / 직접 PDF export | **2 PASS / 4 PASS**, 비대상 skip 각각 179 / 191 |
+| Studio npm test / TypeScript noEmit | **1,493 PASS / 0 FAIL / 기존 2 skipped** / PASS |
+| Docker WASM | **PASS**, 최적화 포함 8분 31초 |
+
+Cargo는 기존 review worktree·고정 target에서 순차 실행했다. Docker는 메인 checkout의
+별도 target에서 병행했다. Studio 검사는 새 devel에서 유입된 그림 Undo 코드를 추가로
+확인한 것이며 이번 PR의 Studio 변경이라고 분류하지 않는다. 위 실행 시간은 병행 작업과
+호스트 부하를 포함한 검증 소요 시간이지 통제된 성능 비교가 아니다.
+
+새 local-validation §4.3.1을 읽고 네 코퍼스 dump를 같은 전체 nextest에서 수집했다.
+IR 571→253행(318행 감소), overflow 12→12행, off-canvas 83→70행,
+text-overlap 162→152행이며 신규 문서·수치 증가가 없다. 원장이나 기대값은 바꾸지 않았다.
+전체 회귀에 포함된 oracle page count와, 외부 controlset이 필요한 clipping 검사를 구분한다.
+clipping 별도 실행은 하지 않았고 해당 gate를 통과했다고 주장하지 않는다.
+최신 base 대비 신규/변경 HWP·HWPX·HML·PDF가 없으므로 신규 fixture 보안 검사 입력 대상은 없다.
+
+### 10.2 수용 출력 보존
+
+- WASM 10,352,999 bytes,
+  SHA-256 `c22fa7685f3d0b6b66b8efbc69323bec1ae152164bf95684aab7952224af558f`.
+- 동일 원본 11쪽 로드, 1쪽 SVG 338,679 bytes.
+- SVG SHA-256 `b4703e335a54c1200f5455c7de5622a384a3edb3ddd7caeb70640ed10904a9ab`로
+  메인테이너가 승인한 `edf083614` 출력과 바이트 단위 동일.
+- Studio 7700번 WASM HTTP 200 및 새 로컬 파일과 일치 확인.
+- 메인 checkout의 `output/6812/integration-380f83830/`에 전체 로그, 네 dump,
+  SVG, WASM 검증 JSON·스크립트를 보관했다. Git 생성물은 추가하지 않았다.
+
+이전 head의 push 이후 새 통합 후보 검증을 완료했으며, 검증 코드는 변경하지 않고 보고서만
+추가해 같은 원격 작업 브랜치를 fast-forward 갱신한다. 원격 devel SHA 일치와 ancestry를
+push의 명시적 선행 조건으로 확인한다. PR 생성 뒤 번호 기반 접수 기록을 추가하되,
+최종 self-review·CI 통과·병합·이슈 종료를 미리 완료로 기록하지 않는다.
