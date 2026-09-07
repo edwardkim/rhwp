@@ -82,6 +82,11 @@ impl TypesetEngine {
             let Some(candidate) = build(st, st.current_height, false) else {
                 return false;
             };
+            if candidate.end > st.available_height() + 0.01 {
+                // 실제 다음 단의 폭/각주 예산이 예비 후보와 다르면 기존 분할기로 넘긴다.
+                // 수용 불가능한 plan을 확정 metadata로 게시하지 않는다.
+                return false;
+            }
             plan = candidate;
         }
         st.current_items

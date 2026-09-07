@@ -188,6 +188,10 @@ pub(crate) fn plan(
             baseline: hwpunit_to_px(metrics.baseline_distance, frame.dpi),
         }));
     }
+    if controls.peek().is_some() {
+        // 범위 밖 anchor를 누락시킨 부분 결과를 확정하지 않는다.
+        return None;
+    }
     let mut exclusions = preceding.to_vec();
     let horizontal = frame.container.x..frame.container.x + frame.container.width;
     let mut result = InlineFlowPlan {
@@ -283,7 +287,7 @@ pub(crate) fn plan(
         frame.dpi,
     )?;
     result.end = result.end.max(result.next_row_top) + style.spacing_after;
-    Some(result)
+    (result.start.is_finite() && result.end.is_finite()).then_some(result)
 }
 
 fn finish_row(
