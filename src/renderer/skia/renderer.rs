@@ -369,7 +369,7 @@ impl SkiaLayerRenderer {
                     }
                     if let Ok(data) = std::fs::read(&path) {
                         let skia_data = skia_safe::Data::new_copy(&data);
-                        if let Some(typeface) = font_mgr.new_from_data(&skia_data, None) {
+                        if let Some(typeface) = font_mgr.new_from_data(skia_data, None) {
                             let family = typeface.family_name();
                             into.entry(family).or_insert(typeface);
                         }

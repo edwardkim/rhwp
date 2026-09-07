@@ -637,7 +637,7 @@ fn issue_4969_q3_c_native_skia_exact_blob_instance_round_trips_coordinates() {
     use skia_safe::{Font, FontArguments, FontMgr, FourByteTag};
 
     let default_typeface = FontMgr::default()
-        .new_from_data(HAPPINESS, Some(0))
+        .new_from_data(skia_safe::Data::new_copy(HAPPINESS), Some(0))
         .expect("Native Skia must construct the exact official variable TTF");
     let coordinates = [
         Coordinate {
