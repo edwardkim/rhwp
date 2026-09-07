@@ -6187,6 +6187,8 @@ impl LayoutEngine {
                             let old_width = line_node.children[tab_run_idx].bbox.width;
                             line_node.children[tab_run_idx].bbox.width = width;
                             // 이미 생성한 같은 런의 장식도 동일한 확정 끝을 사용한다.
+                            // 장식은 TextRun보다 먼저 생성되므로 tab_run_idx 앞도 순회한다.
+                            // 원 PR #6801의 c7dade57c 보정 취지를 유지한다.
                             // 다른 TextRun이나 크기가 다른 개체의 상자는 수정하지 않는다.
                             for node in &mut line_node.children {
                                 if !matches!(node.node_type, RenderNodeType::TextRun(_))
