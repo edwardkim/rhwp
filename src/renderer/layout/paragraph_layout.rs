@@ -6086,7 +6086,13 @@ impl LayoutEngine {
                             .fold(x, f64::min);
                         // 그 런의 장식 상자(글자 배경·테두리·형광펜)는 같은 x 에서
                         // 같은 폭으로 emit 돼 있다 — 하나의 end_x 로 함께 맞춘다.
-                        for node in &mut line_node.children[tab_run_idx..] {
+                        //
+                        // ⚠ **`tab_run_idx` 부터 훑으면 안 된다.** 장식 `rect_node` 는
+                        // TextRun 보다 **먼저** push 되므로 그보다 낮은 서수에 있다
+                        // (초판이 이걸 놓쳤다 — PR #6801 자체 점검에서 발견).
+                        // 같은 줄에서 런들의 `bbox.x` 는 증가하므로, x 가 일치하는
+                        // 노드는 이 런 자신의 것뿐이다.
+                        for node in &mut line_node.children {
                             if (node.bbox.x - tab_run_x).abs() <= 0.5
                                 && node.bbox.x + node.bbox.width > end_x + 0.5
                             {
