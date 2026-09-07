@@ -362,3 +362,14 @@ assignee edwardkim·milestone v1.0.0·관련 labels를 적용했다. 게시 본�
 API 재조회로 확인했다. [번호 기반 접수 기록](../pr/archives/pr_6850_review.md)과
 9월 8일 오늘할일을 같은 PR에 추가한다. 생성 당시 CI는 진행 중이며 최종 self-review,
 병합 및 #6812 종료는 아직 미수행이다.
+
+## 12. CI 완료 및 최종 self-review (2026-09-08)
+
+메인테이너의 CI 완료 후 다음 단계 진행 지시에 따라 `b08b765a8`의 CI·CodeQL·Render Diff·
+adapter inter-diff·Proptest·CI Impact Policy 성공을 확인했다. 최신 source diff 및 회귀
+시험을 대조한 최종 self-review는 **승인 판정**이며, 승인된 원본 1페이지 범위에서 병합을
+막을 새 결함을 발견하지 않았다. 검토 시점 원격 상태는 MERGEABLE/CLEAN이다.
+
+[최종 review 기록](../pr/archives/pr_6850_review.md)에 코드 검토 항목·CI 실행 링크·
+SKIPPED 구분과 수용 범위를 남겼다. 제품 코드는 변경하지 않았으며 전체 로컬 검증을
+반복하지 않았다. 이 기록의 push 및 병합·#6812 종료는 남은 승인 절차로 분리한다.

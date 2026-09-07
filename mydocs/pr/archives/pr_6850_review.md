@@ -1,10 +1,11 @@
-# PR #6850 접수·검증 기록 — 같은 문단의 어울림 그림과 TAC 표 줄 배치
+# PR #6850 self-review — 같은 문단의 어울림 그림과 TAC 표 줄 배치
 
-## 최종 판정: 머지 보류
+## 최종 판정: self-review 승인 — 병합 승인 대기
 
-2026-09-08 PR 생성 후의 접수 기록이다. 필수 로컬 검증은 완료했지만 GitHub CI와
-최종 self-review는 아직 완료하지 않았다. 최신 trailing head의 required checks 확인과
-메인테이너의 self-review·병합 승인이 필요하다. GitHub approve event는 생성하지 않았다.
+2026-09-08 메인테이너의 CI 완료 후 다음 단계 진행 지시에 따라 최종 self-review를
+수행했다. `b08b765a857afeffabb7002021ccf8fe9d9b1aeb`의 CI 성공과 변경 코드를
+확인했으며, 승인된 원본 1페이지 완료 범위에서 병합을 막을 새 결함을 발견하지 않았다.
+이 판정은 메인테이너의 병합 승인을 대신하지 않는다. GitHub approve event는 생성하지 않았다.
 
 ## 1. 접수와 경로
 
@@ -16,12 +17,13 @@
 | 최초 PR head | `3e02fcc51ccb7c00acd64e6c060867729b661dc9` (검증 코드 이후 보고서만 추가) |
 | 최신 통합 devel | `ac8c9fa2c9bfcaadb74f3b46a8ec2a879c3a8099` |
 | 최초 규모 | 28 files, +3,078/-70줄 (이 접수 기록 추가 전) |
-| GitHub 상태 | Open, MERGEABLE, BLOCKED — CI 진행 중이며 최종 판정값 아님 |
+| 최종 검토 head | `b08b765a857afeffabb7002021ccf8fe9d9b1aeb` |
+| GitHub 상태 | Open, MERGEABLE, CLEAN — 최종 검토 시점 참고값, 병합 직전 재확인 필요 |
 | 트리야지 | assignee edwardkim, milestone v1.0.0, bug/rust/hwp5/layout/rendering/test/table |
 
 자체 작업 PR이므로 collaborator-self-merge 경로를 적용하고 reviewer를 지정하지 않았다.
 intake-and-review, local-validation, visual-fixture-evidence와 1,000줄 초과 대형 PR 지침을
-함께 적용한다. 이번 기록은 대형 PR의 최종 코드 검토나 admin merge 승인을 대신하지 않는다.
+함께 적용했다. 아래 코드 검토를 수행했으며 admin merge는 승인받거나 실행하지 않았다.
 
 ## 2. 문제·구현·수용 범위
 
@@ -71,9 +73,49 @@ renderer/typeset 변경이므로 시각 근거가 필요하다. 메인테이너�
 Merge 후 contributor PR comment 계획: 자체 PR이므로 외부 contributor에게 보낼 별도
 검토 댓글은 이번 범위에 없다. #6798 등 다른 PR의 댓글·종료를 자동 수행하지 않는다.
 
-## 5. 남은 절차
+## 5. 최종 코드 검토
 
-이 접수 기록과 오늘할일을 같은 PR의 문서 trailing commit으로 push한다. 제품 코드·시험을
-바꾸지 않으므로 로컬 전체 회귀를 반복하지 않는다. 최신 trailing head의 CI 확인 → 승인된
-최종 self-review → 별도 승인된 병합 및 #6812 종료 순서를 따른다. 병합 방식은 메인테이너의
-merge commit 지시를 따르며 squash나 admin 우회를 자동 선택하지 않는다.
+최신 base `ac8c9fa2c9` 대비 source diff와 #6812 integration source의 20건을 읽고
+다음 경계를 대조했다. CI 통과만으로 코드 검토를 대체하지 않았다.
+
+- `ObjectPlacementFrame::position` 추출 전후 Paper/Page/Column/Para 기준과 정렬·offset
+  계산을 대조했다. 그림의 점유 영역과 표의 바깥 여백을 분리해 적용하는 경로를 확인했다.
+- `place_inline_box`의 실제 교차 조건·유한값 검사·가용 구간 선택과, typeset의 회피 높이
+  계상 → layout의 확정 좌표 소비를 대조했다. 표를 paint 단계에서만 이동시키는 구조가 아니다.
+- 단 flush 시 그림 점유 상태와 흐름 하단을 초기화하고 확정 배치를 이전 단에 넘기는 경로,
+  pagination의 동일 페이지 비교 및 문단 offset 이동에 새 metadata를 포함한 것을 확인했다.
+- inline flow의 지원 제어 조건과 기존 경로로의 복귀, 제어문자 순서·텍스트/표 배치 및
+  후속 본문 하단 보호를 읽었다. 셀·복합 inline의 전면 호환성을 보증하는 검토는 아니다.
+- 기존 source-side 시험 변경은 새 구조체 필드 초기화다. 새 회귀 시험은 `tests/cases/`에
+  있고 파생 suite·manifest 변경은 PR에 없다. EDF 대비 시험 변경은 승인받은 범위 밖
+  셀 시험 1건·전용 helper 91줄 제거뿐이며 나머지 20건의 기대값은 그대로다.
+
+합성·변형 입력의 기하 검사는 내부 불변식 검사이며 한컴의 공식 조판 정답을 입증하지 않는다.
+한컴과의 시각 수용 근거는 4절의 원본 1페이지에 한정한다. 전체 문서·셀 확장·성능 동등성은
+이번 self-review의 완료 주장에 포함하지 않는다.
+
+## 6. GitHub CI 완료 확인
+
+아래는 모두 최종 검토 head `b08b765a8`에 대한 결과다. 단순 문서 fast-pass로 추정하지 않고
+실제 check 결과를 확인했다.
+
+| 검사 | 결과와 실행 근거 |
+| --- | --- |
+| CI / Build & Test | SUCCESS — [run 34137911281](https://github.com/edwardkim/rhwp/actions/runs/34137911281). Lint, Native Skia, archive A/B/C/D build·test 및 frontend package gate 성공 |
+| CodeQL | SUCCESS — [run 34137911208](https://github.com/edwardkim/rhwp/actions/runs/34137911208). Rust/Python/JavaScript-TypeScript 분석 모두 성공, CodeQL 최종 check 성공 |
+| Render Diff | SUCCESS — [run 34137910908](https://github.com/edwardkim/rhwp/actions/runs/34137910908), Canvas visual diff 성공 |
+| Adapter inter-diff | SUCCESS — [run 34137911153](https://github.com/edwardkim/rhwp/actions/runs/34137911153) |
+| Proptest roundtrip | SUCCESS — [run 34137911138](https://github.com/edwardkim/rhwp/actions/runs/34137911138) |
+| CI Impact Policy | SUCCESS — [run 34139192174](https://github.com/edwardkim/rhwp/actions/runs/34139192174) |
+
+실패·대기 check는 없었다. WASM Build, Frontend unit gates, Workflow promotion preflight,
+Refresh nextest target duration data는 SKIPPED이며 실행 PASS로 세지 않는다.
+로컬 Docker WASM 및 Studio 검증 결과는 3절과 별개로 유지한다.
+
+## 7. 남은 절차
+
+이 최종 review와 오늘할일·보고서 갱신은 문서만 변경한 로컬 후속 commit으로 남긴다.
+승인 후 같은 PR branch에 push하고 최신 trailing head의 required checks를 확인한다.
+제품 코드·시험을 바꾸지 않았으므로 로컬 전체 회귀를 반복하거나 문서 기록만을 위해
+devel을 다시 병합하지 않는다. 그 뒤 별도 승인에 따라 merge commit 병합 및 #6812 종료를
+처리한다. squash나 admin 우회를 자동 선택하지 않는다. 현재 병합·이슈 종료는 미실행이다.
