@@ -6167,7 +6167,7 @@ impl LayoutEngine {
                     //    않으므로 대상이 아니며
                     // ③ 재배치가 없는 줄의 런은 전혀 건드리지 않는다.
                     if let Some(tab_run_idx) = line_node.children.iter().rposition(|n| {
-                        matches!(&n.node_type, RenderNodeType::TextRun(tr) if tr.text.contains('\t'))
+                        matches!(&n.node_type, RenderNodeType::TextRun(tr) if tr.display_or_text().ends_with('\t'))
                     }) {
                         let tab_run_x = line_node.children[tab_run_idx].bbox.x;
                         // 탭 런과 현재 런 사이에 이미 emit 된 런(공백 only carry-over)이
@@ -6177,13 +6177,24 @@ impl LayoutEngine {
                             .filter(|n| matches!(n.node_type, RenderNodeType::TextRun(_)))
                             .map(|n| n.bbox.x)
                             .fold(x, f64::min);
-                        // 그 런의 장식 상자(글자 배경·테두리·형광펜)는 같은 x 에서
-                        // 같은 폭으로 emit 돼 있다 — 하나의 end_x 로 함께 맞춘다.
-                        for node in &mut line_node.children[tab_run_idx..] {
-                            if (node.bbox.x - tab_run_x).abs() <= 0.5
-                                && node.bbox.x + node.bbox.width > end_x + 0.5
-                            {
-                                node.bbox.width = (end_x - node.bbox.x).max(0.0);
+                        let width = match &mut line_node.children[tab_run_idx].node_type {
+                            RenderNodeType::TextRun(run) => {
+                                run.resolve_trailing_tab_end((end_x - tab_run_x).max(0.0))
+                            }
+                            _ => None,
+                        };
+                        if let Some(width) = width {
+                            let old_width = line_node.children[tab_run_idx].bbox.width;
+                            line_node.children[tab_run_idx].bbox.width = width;
+                            // 이미 생성한 같은 런의 장식도 동일한 확정 끝을 사용한다.
+                            // 다른 TextRun이나 크기가 다른 개체의 상자는 수정하지 않는다.
+                            for node in &mut line_node.children {
+                                if !matches!(node.node_type, RenderNodeType::TextRun(_))
+                                    && (node.bbox.x - tab_run_x).abs() <= 0.5
+                                    && (node.bbox.width - old_width).abs() <= 0.5
+                                {
+                                    node.bbox.width = (tab_run_x + width - node.bbox.x).max(0.0);
+                                }
                             }
                         }
                     }

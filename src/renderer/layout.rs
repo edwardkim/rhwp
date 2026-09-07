@@ -7538,58 +7538,87 @@ impl LayoutEngine {
                 }
             }
 
-            // [#6797] **표 항목도** 앞 문단의 자리차지 밴드를 비켜 간다.
-            //
-            // 위 배제 블록은 `item_is_paragraph` 전용이라, 빈 host 에 표만 달린 항목
-            // (`PageItem::Table`)은 앞 문단 float 표의 밴드를 그대로 통과했다.
-            // 156160455 7쪽: `pi=70` 의 자리차지 표가 만든 밴드 `181.5..296.8` 안에
-            // `pi=71` 의 표가 `174.8` 로 들어가 633.1x113.4px 겹친다.
-            //
-            // ⭐ **판정은 저장 사다리가 한다 — 크기 문턱이 없다.**
-            //
-            // ```text
-            //                        host 글  저장 vpos(절대)  밴드 바닥   판정
-            //   156160455 pi=71       없음        296.77         296.8    옮긴다
-            //   synam-001 pi=229      있음        930.16         930.2    안 옮긴다
-            // ```
-            //
-            // 두 문서 모두 저장 사다리가 문단을 **밴드 바닥 정확히 그 자리**에 둔다.
-            // 갈리는 것은 **host 문단에 보이는 글이 있는가** 하나다 —
-            // `synam-001 pi=229` 는 host 줄(`vpos=64094`)이 그 스냅을 이미 지고 있어
-            // 문단 경로가 제자리에 놓는다. 표 항목까지 따로 옮기면 **이중 적용**이라
-            // host 줄과 표 사이가 벌어진다(`issue_3521_synam001` 핀).
-            // 빈 host 는 그 스냅을 질 줄이 없으므로 표 항목 자신이 비켜야 한다.
-            //
-            // ⚠ 여기서 `retain` 으로 밴드를 **지우면 안 된다** — 뒤따르는 형제 float 이
-            // 아직 그 밴드를 봐야 한다(`#2439` 의 zero-offset 첫 표가 후행 형제를 위해
-            // 남기는 zone 이 사라져 오히려 겹친다). 문단 경로가 제 시점에 정리한다.
-            // 여기서는 **읽기만** 한다.
+            // [#6797, #6798] 빈 host의 표가 앞 문단 float 밴드와 실제로 충돌할
+            // 때만 저장 앵커로 회피한다. 원본 pi=71의 목표 top은 296.8px다.
+            // host 텍스트가 있는 경우는 문단 경로가 스냅을 소유한다.
+            // 이 경로는 현재 단에 들어가는 유효한 저장 좌표만 사용하며, offset
+            // 배치 또는 이미 회피된 표를 다시 이동하지 않는다.
+            // exclusion은 후행 형제도 소비하므로 여기서 제거하지 않는다.
             if !item_is_paragraph && !visible_float_exclusions.is_empty() {
                 if let PageItem::Table {
                     para_index: table_para,
-                    ..
+                    control_index,
                 } = item
                 {
                     let anchor = paragraphs.get(*table_para);
-                    // host 에 보이는 글이 있으면 그 줄이 저장 스냅을 진다 — 손대지 않는다.
-                    let empty_host = anchor.is_some_and(|para| !para_has_visible_text(para));
-                    // 저장 사다리가 말하는 이 문단의 절대 상단. 합성 줄은 rhwp 가
-                    // 물리식으로 만든 값이라 증거로 쓰지 않는다.
+                    // [#6798] 문단 상단 기준의 zero-offset 표에만 저장 앵커를 적용한다.
+                    // 바깥 여백은 위치 offset이 아니다. 원본 pi=71도 위 여백이
+                    // 141 HU이므로 이를 0으로 제한하면 정상 회피까지 막는다.
+                    // 다른 위치 기준, 정렬, offset은 표 배치 경로의 소유다.
+                    let flow_table = anchor.and_then(|para| {
+                        let Some(Control::Table(table)) = para.controls.get(*control_index) else {
+                            return None;
+                        };
+                        (!para_has_visible_text(para)
+                            && !table.common.treat_as_char
+                            && table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+                            && table.common.vert_align == crate::model::shape::VertAlign::Top
+                            && table.common.vertical_offset == 0)
+                            .then_some(table)
+                    });
                     let stored_top = anchor
-                        .and_then(|para| para.line_segs.iter().find(|s| s.tag & 0x8000_0000 == 0))
+                        .and_then(|para| {
+                            para.line_segs.iter().find(|seg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                        })
                         .map(|seg| col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi));
-                    if let (true, Some(stored_top)) = (empty_host, stored_top) {
-                        let jump_to = visible_float_exclusions
-                            .iter()
-                            .filter(|zone| zone.blocks_text && zone.owner_para != *table_para)
-                            // 저장 사다리가 이 문단을 **밴드 바닥 아래**에 두었는가.
-                            // 그렇다면 한글은 이 표를 밴드 밖으로 내보낸 것이다.
-                            .filter(|zone| stored_top + 0.5 >= zone.bottom)
-                            .fold(y_offset, |acc, _| acc.max(stored_top));
-                        if jump_to > y_offset + 0.5 {
-                            y_offset = jump_to;
+                    if let (Some(table), Some(stored_top)) = (flow_table, stored_top) {
+                        let height = hwpunit_to_px(
+                            table.common.height.min(i32::MAX as u32) as i32,
+                            self.dpi,
+                        ) + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                            + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                        let column_bottom = col_area.y + col_area.height;
+                        // 현재 페이지에 속한 완전한 표만 대상으로 한다. 범위 밖 저장
+                        // 좌표를 clamp한 뒤 채택하면 잘못된 페이지 소유를 감추게 된다.
+                        if stored_top.is_finite()
+                            && y_offset.is_finite()
+                            && height > 0.0
+                            && stored_top >= col_area.y
+                            && stored_top + height <= column_bottom + 0.5
+                        {
+                            let jump_to = visible_float_exclusions
+                                .iter()
+                                .filter(|zone| zone.blocks_text && zone.owner_para < *table_para)
+                                // 이미 회피한 표, 또는 밴드에 닿지 않는 표는 불변이다.
+                                .filter(|zone| {
+                                    y_offset < zone.bottom
+                                        && y_offset + height > zone.top
+                                        && stored_top + 0.5 >= zone.bottom
+                                })
+                                .fold(y_offset, |acc, _| acc.max(stored_top));
+                            if jump_to > y_offset + 0.5 {
+                                y_offset = jump_to;
+                            }
                         }
                     }
+                }
+            }
+
+            // [#6784] 밴드를 벗어난 첫 항목 자체를 표 아래에서 그린다.
+            // paint 뒤 new_y만 올리면 저장 vpos가 없는 첫 항목은 이미 겹쳐 있다.
+            if let Some((bottom, lane_left_hu, lane_right_hu)) = square_beside_band {
+                if !stored_seg_is_side_lane(
+                    paragraphs.get(item_para),
+                    col_w_hu,
+                    lane_left_hu,
+                    lane_right_hu,
+                ) {
+                    y_offset = y_offset.max(bottom);
+                    square_beside_band = None;
                 }
             }
 
@@ -7782,19 +7811,6 @@ impl LayoutEngine {
             // 옆 레인(`column_start`/`segment_width`)을 지정한 후속 문단이 **가로만**
             // 옆으로 가고 세로는 표 아래로 밀렸다(156757920 1쪽: 렌더 +202.1px,
             // 4줄이 본문·용지 밖). 되돌리려 해도 역행이 커서 vpos 스냅 가드가 기각한다.
-            if let Some((bottom, lane_left_hu, lane_right_hu)) = square_beside_band {
-                // 레인 술어를 만족하지 않는 **첫 항목**에서 밴드를 닫는다 — 그 항목은
-                // 전폭으로 돌아온 것이므로 표 바닥 아래에서 시작해야 한다.
-                if !stored_seg_is_side_lane(
-                    paragraphs.get(item_para),
-                    col_w_hu,
-                    lane_left_hu,
-                    lane_right_hu,
-                ) {
-                    new_y = new_y.max(bottom);
-                    square_beside_band = None;
-                }
-            }
             if let PageItem::Table {
                 para_index,
                 control_index,

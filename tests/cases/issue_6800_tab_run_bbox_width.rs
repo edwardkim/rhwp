@@ -55,6 +55,97 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6800/1192000-202100017-policy-research-report.hwp";
 
+fn maintainer_public_tab_run(core: &DocumentCore) -> serde_json::Value {
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(0)
+            .expect("공개 text-layout"),
+    )
+    .expect("text-layout JSON");
+    layout["runs"]
+        .as_array()
+        .expect("runs")
+        .iter()
+        .find(|run| run["text"].as_str() == Some("  - \t"))
+        .expect("대상 끝 탭 런")
+        .clone()
+}
+
+fn maintainer_tab_identity(node: &RenderNode) -> Option<(usize, usize, usize)> {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.display_or_text() == "  - \t" {
+            return Some((run.section_index?, run.para_index?, run.char_start?));
+        }
+    }
+    node.children.iter().find_map(maintainer_tab_identity)
+}
+
+/// [#6801] 공개 charX와 bbox는 탭의 같은 확정 advance를 사용한다.
+#[test]
+fn maintainer_public_character_positions_share_the_resolved_tab_end() {
+    let core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
+    let run = maintainer_public_tab_run(&core);
+    let positions: Vec<f64> = run["charX"]
+        .as_array()
+        .expect("charX")
+        .iter()
+        .map(|value| value.as_f64().expect("문자 경계"))
+        .collect();
+    let width = run["w"].as_f64().expect("bbox 폭");
+    assert_eq!(positions.len(), "  - \t".chars().count() + 1);
+    assert_eq!(positions[0], 0.0);
+    assert!(positions.iter().all(|x| x.is_finite() && *x >= 0.0));
+    assert!(positions.windows(2).all(|pair| pair[0] <= pair[1]));
+    assert!(
+        (positions.last().expect("끝 경계") - width).abs() <= 0.2,
+        "bbox만 27.3px로 줄이고 charX 끝을 496.3px에 남기면 안 된다"
+    );
+    assert!(
+        positions[3] > positions[2],
+        "가시 하이픈의 폭은 보존해야 한다"
+    );
+}
+
+/// [#6801] 공개 hit-test도 재측정한 탭 스톱이 아니라 확정 경계를 소비한다.
+#[test]
+fn maintainer_hit_test_uses_the_resolved_trailing_tab_positions() {
+    let core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
+    let run = maintainer_public_tab_run(&core);
+    let tree = core
+        .build_page_render_tree(0)
+        .expect("대상 런의 render tree");
+    let (section_index, paragraph_index, char_start) =
+        maintainer_tab_identity(&tree.root).expect("대상 탭 런의 논리 주소");
+    let x = run["x"].as_f64().expect("런 x");
+    let y = run["y"].as_f64().expect("런 y");
+    let width = run["w"].as_f64().expect("런 폭");
+    let height = run["h"].as_f64().expect("런 높이");
+    let visible_end = run["charX"][3].as_f64().expect("하이픈 끝");
+    assert!(width > visible_end, "탭 앞 공백의 클릭 구간이 필요하다");
+    let click_x = x + (visible_end + width) * 0.5 + 0.1;
+    let hit: serde_json::Value = serde_json::from_str(
+        &core
+            .hit_test_native(0, click_x, y + height * 0.5)
+            .expect("공개 hit-test"),
+    )
+    .expect("hit-test JSON");
+    // native API는 hit 여부 bool이 아니라 논리 주소와 cursorRect를 직접 반환한다.
+    // 다른 문단이나 탭 앞 하이픈으로 잘못 붙은 hit를 성공으로 처리하지 않는다.
+    assert_eq!(hit["sectionIndex"].as_u64(), Some(section_index as u64));
+    assert_eq!(hit["paragraphIndex"].as_u64(), Some(paragraph_index as u64));
+    assert_eq!(
+        hit["charOffset"].as_u64(),
+        Some((char_start + 4) as u64),
+        "클릭은 끝 공백 뒤, 폭이 확정된 탭 시작 경계에 붙어야 한다: {hit}"
+    );
+    assert_eq!(hit["cursorRect"]["pageIndex"], 0);
+    let caret_x = hit["cursorRect"]["x"].as_f64().expect("캐럿 x");
+    assert!(
+        (caret_x - (x + width)).abs() <= 0.5,
+        "끝 공백/탭의 캐럿은 확정 끝 경계를 사용해야 한다: caret={caret_x}"
+    );
+}
+
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
 /// 성공 조건이 아니므로 읽기 실패를 즉시 드러낸다.
 fn sample() -> Vec<u8> {

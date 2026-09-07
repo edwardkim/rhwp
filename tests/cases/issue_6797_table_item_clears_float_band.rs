@@ -62,6 +62,75 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6797/156160455-social-pig-farm-income.hwp";
 
+fn maintainer_float_variant(
+    vertical_pos: Option<i32>,
+    vertical_offset: u32,
+    synthetic: bool,
+) -> RenderNode {
+    let mut core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
+    let paragraph = &mut core.document_mut().sections[0].paragraphs[71];
+    if let Some(vertical_pos) = vertical_pos {
+        assert!(!paragraph.line_segs.is_empty(), "저장 사다리가 필요하다");
+        for segment in &mut paragraph.line_segs {
+            segment.vertical_pos = vertical_pos;
+            if synthetic {
+                segment.tag |= rhwp::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+            }
+        }
+    } else {
+        paragraph.line_segs.clear();
+    }
+    let rhwp::model::control::Control::Table(table) = &mut paragraph.controls[0] else {
+        panic!("pi=71 ci=0 표가 필요하다");
+    };
+    table.common.vertical_offset = vertical_offset;
+    page_column(&core, 6)
+}
+
+/// [#6798] 이미 밴드 아래에 놓인 offset 표를 저장 앵커로 다시 이동하지 않는다.
+#[test]
+fn maintainer_an_already_clear_offset_table_is_not_snapped_again() {
+    let column = maintainer_float_variant(Some(45_000), 30_000, false);
+    let owner = top_level_table(&column, 70, 0).expect("밴드 소유 표");
+    let follower = top_level_table(&column, 71, 0).expect("후속 표");
+    assert!(follower.bbox.y >= owner.bbox.y + owner.bbox.height);
+    // 기존 owner의 hunk-off 공개 IR 대조가 확인한 위치다. 877.4px 추가 스냅은 실패한다.
+    assert!(
+        (follower.bbox.y - 574.8).abs() <= 0.5,
+        "기존 offset 배치를 유지해야 한다: y={}",
+        follower.bbox.y
+    );
+}
+
+/// [#6798] 범위 밖 사다리가 흐름을 용지 아래로 민 뒤 최종 bbox clamp로 숨으면 실패한다.
+#[test]
+fn maintainer_out_of_column_stored_coordinates_do_not_force_a_bottom_clamp() {
+    for vertical_pos in [-1, 1_000_000] {
+        let column = maintainer_float_variant(Some(vertical_pos), 0, false);
+        let follower = top_level_table(&column, 71, 0).expect("후속 표의 존재/쪽 귀속");
+        let bottom = column.bbox.y + column.bbox.height;
+        assert!(follower.bbox.y.is_finite());
+        assert!(
+            follower.bbox.y + follower.bbox.height < bottom - 0.5,
+            "잘못된 저장 좌표로 표가 페이지 바닥에 밀리면 안 된다: vpos={vertical_pos}, y={}",
+            follower.bbox.y
+        );
+    }
+}
+
+/// [#6798] 합성 또는 누락된 사다리를 원본의 페이지 소유 증거로 쓰지 않는다.
+#[test]
+fn maintainer_synthetic_and_missing_stored_anchors_do_not_supply_a_jump() {
+    let missing = maintainer_float_variant(None, 0, false);
+    let synthetic = maintainer_float_variant(Some(1_000_000), 0, true);
+    let missing_table = top_level_table(&missing, 71, 0).expect("사다리 없는 후속 표");
+    let synthetic_table = top_level_table(&synthetic, 71, 0).expect("합성 사다리 후속 표");
+    assert!(
+        (missing_table.bbox.y - synthetic_table.bbox.y).abs() <= 0.5,
+        "합성 사다리의 큰 좌표를 배제 밴드 스냅에 쓰면 안 된다"
+    );
+}
+
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
 /// 성공 조건이 아니므로 읽기 실패를 즉시 드러낸다.
 fn sample() -> Vec<u8> {
@@ -105,6 +174,9 @@ fn page_column(core: &DocumentCore, page: u32) -> RenderNode {
 }
 
 /// 7쪽 `pi=70 ci=0` 자리차지 표와 `pi=71 ci=0` 표가 **세로로 겹치지 않는다**.
+///
+/// 후속 표의 위쪽 바깥 여백은 141 HU다. zero-offset과 여백 0을 혼동하여
+/// 이 정상 사례를 제외하면 실패해야 한다. 바깥 여백을 지워 통과시키지 않는다.
 ///
 /// 두 표를 `pi`/`ci` 로 직접 집어 존재·쪽 귀속·상자 관계를 함께 고정한다.
 /// 수정 전: `pi=70` 표 `181.5..294.9` 와 `pi=71` 표 `174.8..340.5` 가 **113.4px** 겹쳤다

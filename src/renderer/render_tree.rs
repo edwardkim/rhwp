@@ -838,8 +838,8 @@ pub struct TextRunNode {
     /// Layout owner가 확정한 run-relative 문자 경계값.
     ///
     /// 보이는 문자열 N개 scalar에 N+1개 값을 보존한다. exact kerning이 실제로
-    /// 적용된 K1 run에서만 `Some`이며 K0·미지원·fail-closed에서는 필드를
-    /// 직렬화하지 않아 기존 layer-tree byte 계약을 유지한다. Font payload나
+    /// 적용된 K1 run 또는 cross-run 끝 탭의 advance를 확정한 run에서 `Some`이다.
+    /// 그 외 K0·미지원·fail-closed에서는 필드를 직렬화하지 않는다. Font payload나
     /// source provenance는 이 필드에 들어가지 않는다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub layout_positions: Option<Vec<f64>>,
@@ -852,6 +852,35 @@ pub struct TextRunNode {
 }
 
 impl TextRunNode {
+    /// [#6801] 다음 블록 배치가 확정한 끝 탭 경계를 모든 replay 소비자에 전달한다.
+    /// 앞선 가시 문자의 폭은 보존하고 뒤 공백/탭만 남은 advance에 맞춘다.
+    pub(crate) fn resolve_trailing_tab_end(&mut self, requested_width: f64) -> Option<f64> {
+        let text = self.display_or_text();
+        if !text.ends_with('\t') || !requested_width.is_finite() || requested_width < 0.0 {
+            return None;
+        }
+        let chars: Vec<char> = text.chars().collect();
+        let mut positions = self.replay_positions_for(text).into_owned();
+        super::validated_replay_positions(text, Some(&positions))?;
+        let visible_end = chars
+            .iter()
+            .rposition(|ch| !ch.is_whitespace())
+            .map_or(0, |index| index + 1);
+        // 실제 잉크가 다음 블록을 침범하면 그 겹침을 bbox 절단으로 숨기지 않는다.
+        let width = requested_width.max(positions[visible_end]);
+        for position in &mut positions[visible_end..] {
+            *position = position.min(width);
+        }
+        *positions.last_mut()? = width;
+        super::validated_replay_positions(text, Some(&positions))?;
+        self.layout_positions = Some(positions);
+        for leader in &mut self.style.tab_leaders {
+            leader.start_x = leader.start_x.min(width);
+            leader.end_x = leader.end_x.min(width).max(leader.start_x);
+        }
+        Some(width)
+    }
+
     /// 사람이 보게 될 텍스트 — 그리기·폭 계산, 그리고 **문자열을 만들어 내보내는**
     /// 추출·직렬화(쪽 텍스트, 마크다운)가 이것을 쓴다.
     ///

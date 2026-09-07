@@ -63,6 +63,119 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp";
 
+fn maintainer_square_bounds(node: &RenderNode) -> Option<(f64, f64)> {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.para_index == Some(12) && table.cell_context.is_none() {
+            return Some((node.bbox.y, node.bbox.y + node.bbox.height));
+        }
+    }
+    node.children.iter().find_map(maintainer_square_bounds)
+}
+
+fn maintainer_body_line_top(node: &RenderNode, para_index: usize) -> Option<f64> {
+    if matches!(node.node_type, RenderNodeType::Table(_)) {
+        return None;
+    }
+    if let RenderNodeType::TextLine(line) = &node.node_type {
+        if line.para_index == Some(para_index) {
+            return Some(node.bbox.y);
+        }
+    }
+    node.children
+        .iter()
+        .filter_map(|child| maintainer_body_line_top(child, para_index))
+        .min_by(f64::total_cmp)
+}
+
+/// 우단, 원본 레인 시작, 레인 폭, 단 폭을 저장된 원본에서 읽는다.
+/// 이 fixture의 실제 우단은 17,060 HU이며 17,070 HU가 아니다.
+fn maintainer_lane_geometry() -> (i32, i32, i32, i32) {
+    let mut core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
+    let paragraphs = &core.document_mut().sections[0].paragraphs;
+    let host = &paragraphs[12];
+    let rhwp::model::control::Control::Table(table) = &host.controls[0] else {
+        panic!("pi=12 ci=0 Square 표가 필요하다");
+    };
+    let left = i32::try_from(table.common.horizontal_offset).expect("원본의 양수 단 기준 위치");
+    let width = i32::try_from(table.common.width).expect("원본 표 폭");
+    let right = left.checked_add(width).expect("원본 우단");
+    let stored_segment = |para: &rhwp::model::paragraph::Paragraph| {
+        para.line_segs
+            .iter()
+            .find(|seg| seg.tag & rhwp::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+            .map(|seg| (seg.column_start, seg.segment_width))
+            .expect("원본 저장 사다리")
+    };
+    let (_, column_width) = stored_segment(host);
+    let (lane_start, lane_width) = stored_segment(&paragraphs[13]);
+    assert!(right > 8_000 && lane_start >= right);
+    assert!(lane_width > 0 && lane_width < column_width);
+    (right, lane_start, lane_width, column_width)
+}
+
+fn maintainer_lane_variant(column_start: i32, segment_width: i32) -> RenderNode {
+    let mut core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
+    let paragraph = &mut core.document_mut().sections[0].paragraphs[13];
+    assert!(
+        !paragraph.line_segs.is_empty(),
+        "원본 저장 사다리가 필요하다"
+    );
+    for segment in &mut paragraph.line_segs {
+        segment.column_start = column_start;
+        segment.segment_width = segment_width;
+    }
+    core.build_page_render_tree(0)
+        .expect("변형 render tree")
+        .root
+}
+
+/// [#6784] 같은 좁은 폭이어도 개체 우단 안의 일반 들여쓰기는 레인이 아니다.
+#[test]
+fn maintainer_plain_indents_do_not_rewind_into_the_square_band() {
+    let (right, _, lane_width, _) = maintainer_lane_geometry();
+    for column_start in [200, 2_000, 8_000, right - 1] {
+        let root = maintainer_lane_variant(column_start, lane_width);
+        let (_, bottom) = maintainer_square_bounds(&root).expect("pi=12 Square 표");
+        let top = maintainer_body_line_top(&root, 13).expect("pi=13 첫 본문 줄");
+        assert!(
+            top + 0.5 >= bottom,
+            "일반 들여쓰기를 레인으로 되감으면 안 된다: cs={column_start}, top={top}, bottom={bottom}"
+        );
+    }
+}
+
+/// [#6784] 개체 우단의 양성 경계와 전폭 음성 경계를 공개 render tree로 잠근다.
+#[test]
+fn maintainer_square_lane_requires_the_right_edge_and_narrow_width() {
+    let (right, lane_start, lane_width, column_width) = maintainer_lane_geometry();
+    for column_start in [right, lane_start] {
+        let root = maintainer_lane_variant(column_start, lane_width);
+        let (_, bottom) = maintainer_square_bounds(&root).expect("pi=12 Square 표");
+        let top = maintainer_body_line_top(&root, 13).expect("pi=13 첫 본문 줄");
+        assert!(top < bottom, "우단 밖 좁은 줄은 표 옆에 놓여야 한다");
+    }
+    let root = maintainer_lane_variant(lane_start, column_width);
+    let (_, bottom) = maintainer_square_bounds(&root).expect("pi=12 Square 표");
+    let top = maintainer_body_line_top(&root, 13).expect("pi=13 첫 본문 줄");
+    assert!(top + 0.5 >= bottom, "전폭 문단은 표 아래에 있어야 한다");
+}
+
+/// [#6784] 첫 비-레인 항목의 사다리를 실제로 제거하여 paint 전 종료를 검증한다.
+#[test]
+fn maintainer_first_item_without_stored_vpos_starts_below_the_square_band() {
+    let mut core = DocumentCore::from_bytes(&sample()).expect("정식 원본");
+    core.document_mut().sections[0].paragraphs[14]
+        .line_segs
+        .clear();
+    let tree = core.build_page_render_tree(0).expect("변형 render tree");
+    let (_, bottom) = maintainer_square_bounds(&tree.root).expect("pi=12 Square 표");
+    let top = maintainer_body_line_top(&tree.root, 14).expect("pi=14 첫 비-레인 본문 줄");
+    assert!(
+        top + 0.5 >= bottom,
+        "다음 항목이 아니라 이 항목부터 밴드 아래여야 한다: top={top}, bottom={bottom}"
+    );
+}
+
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
 /// 성공 조건이 아니므로 읽기 실패를 즉시 드러낸다.
 fn sample() -> Vec<u8> {
