@@ -130,3 +130,92 @@ release-test 전체 nextest, Native Skia 3종은 이번 실행에 포함하지 �
 의존성 통합 전후에 긴 전체 회귀를 중복 실행하지 않도록 통합 승인을 먼저 받는다.
 기존 baseline/확장 보존 브랜치는 그대로 유지하며, push·PR 생성·merge·issue close는
 별도 승인 전에는 수행하지 않는다.
+
+## 7. 승인된 최신 devel 통합과 제출 검증 (2026-09-07)
+
+메인테이너가 최신 devel 통합 후 전체 회귀·Native Skia·Docker WASM 검증을 승인했다.
+
+### 7.1 통합 후보와 보존
+
+- 통합 전 HEAD: `3e3a88055`. tracked/untracked 변경 없음.
+- `git fetch upstream devel`로 재확인한 원격:
+  `1098e7210452a1bfe536729963844d023b499b5f` (5절 이후 추가 변경 없음).
+- merge-tree 사전 점검 exit 0 후 `git merge --no-ff upstream/devel` 실행.
+  충돌 없이 생성된 merge commit: `5c55848a6ed386960480eafd98924fa5e53dcfa3`.
+- 작업 브랜치는 `task_m100_6812_edf083614_baseline`을 유지했다. 로컬 devel을
+  별도로 전환·이동하거나 원격에 push하지 않았다.
+- 수용한 `edf083614` 대비 제품 소스 차이는 devel에서 유입된 `src/parser/mod.rs`의
+  압축 호환 보정과 `src/renderer/skia/renderer.rs`의 Skia 호환 보정이다.
+  #6812 줄 배치 구현을 추가 수정하거나 보존된 셀 확장 구현을 다시 넣지 않았다.
+- 보존 브랜치 `task_m100_6812@8a032d96b`,
+  `task_m100_6812_stage1_baseline@7c67bff3a`는 그대로다.
+
+### 7.2 통합 후보의 실제 게이트
+
+Rust 검증은 기존 review worktree를 `5c55848a6` detached HEAD로 전환하고
+기존 고정 target을 재사용했다. 모든 Cargo 명령은 순차 실행했다.
+호스트는 WSL2 Linux, Rust 1.93.1, nextest 0.9.137, 논리 CPU 16개다.
+전체 nextest와 Skia lib의 테스트 동시성은 가용 메모리 약 26GiB를 확인한 뒤 8로 설정했다.
+
+| 게이트 | 결과 |
+| --- | --- |
+| suite prepare·manifest check·source-side unit tier check | 모두 PASS, 파생물은 미커밋 |
+| fmt 적용·fmt check | PASS |
+| native Clippy / WASM lib Clippy | PASS / PASS (59.72초 / 52.77초) |
+| workspace build / workspace all-targets Clippy | PASS / PASS (1분 25초 / 1분 21초) |
+| release-test 전체 nextest | **9,143 PASS / 0 FAIL / 46 skipped**, 78 binaries. 컴파일 5분 26초, 실행 321.641초 |
+| #6812 집중 시험 | 위 전체 실행에 포함된 **20 PASS**. 분리한 셀 시험은 포함하지 않음 |
+| Native Skia lib | **4,112 PASS / 0 FAIL / 13 ignored** (root 3,930 + 내부 crate 15/165/2) |
+| Native Skia 이미지 누락 대체 표시 | **2 PASS / 0 FAIL**, 비대상 168 skipped |
+| Native Skia 직접 PDF export | **4 PASS / 0 FAIL**, 비대상 168 skipped |
+| Docker 표준 WASM | **PASS**, 최적화 포함 6분 56초 |
+
+전체 회귀 명령은 `cargo nextest run --locked --cargo-profile release-test
+--target-dir /home/edward/mygithub/rhwp-6812-review-target --tests --test-threads 8
+--no-fail-fast`다. IR/overflow dump 환경변수를 함께 지정해 같은 실행에서 계측했다.
+Skia 3종은 local-validation의 lib 및 두 source wrapper 명령에 같은 target과
+`--features native-skia`를 사용했다.
+
+nextest는 권장 버전 0.9.140보다 낮다는 경고와 `report-skipped` 설정 미인식 경고를 냈다.
+최소 요구 버전 0.9.91은 충족했고, 실제 전체 실행 및 위 PASS/skip 집계를 확인했다.
+검증 도중 도구 버전이나 timeout·skip 정책·시험 기대값을 바꾸지 않았다.
+대형 CellBreak #2063 검사는 215.731초에 PASS했다. 이는 이번 실행 시간이지
+변경 전후 성능 비교 또는 성능 개선의 증거는 아니다.
+
+### 7.3 새 fixture의 기준선 검사
+
+- 원본 fixture SHA-256은 2절의 입력과 같은
+  `1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8`이다.
+- IR field sweep: PASS. 기존 TSV 568행 대비 현재 dump 250행이며 새 행·증가 없음.
+  318행 감소를 이번 #6812의 개선으로 귀속하지 않고, 무관한 기준선 일괄 변경도 하지 않았다.
+- overflow-cell: 16개 partition dump를 정렬·병합한 결과 기존 12행과 완전히 일치.
+- 두 dump 모두 새 `issue6797/` fixture의 비영 발산/overflow 행은 없다.
+  따라서 이 샘플을 위해 기준선 행을 억지로 추가하거나 회귀를 허용하지 않았다.
+
+### 7.4 WASM·승인 출력 보존 확인
+
+메인 checkout에서 `docker compose --env-file .env.docker run --rm wasm`을 실행했다.
+
+- 새 WASM: 10,316,029 bytes,
+  SHA-256 `10d8823ab1a2cae0d90dcc491ecd6c2c42fe3caea6865d9c2f37f3c282927042`.
+- 원본 로드 11쪽, 1페이지 SVG 338,679 bytes.
+- SVG SHA-256:
+  `b4703e335a54c1200f5455c7de5622a384a3edb3ddd7caeb70640ed10904a9ab`.
+  메인테이너가 승인한 `edf083614`의 SVG와 **바이트 단위 일치**.
+- 기존 Studio 7700번 HTTP 200. Studio가 제공하는 WASM 응답과 새 로컬 WASM도 바이트 일치.
+  서버를 재시작하거나 다른 review 서버를 바꾸지 않았다.
+- 이는 수용된 1페이지 출력 보존의 기계적 확인이다. 이번에 메인테이너의 새 시각 판정을
+  받은 것으로 기록하지 않으며, 전체 11쪽의 시각 PASS로 확대하지 않는다.
+
+메인 checkout의 `output/6812/integration-5c55848a6/`에 lint·nextest·Skia·Docker 로그,
+IR/overflow dump, 검증 스크립트·JSON과 `156160455-social-pig-farm-income_001.svg`를 보관했다.
+생성물은 Git에 포함하지 않았다. 검증 종료 후 review worktree 변경 없음 및
+`git diff --check upstream/devel...HEAD` PASS를 확인했다.
+
+### 7.5 다음 승인 경계
+
+최신 devel을 통합한 후보의 이번 필수 검증은 통과했다. 다음은 원격 push와 devel 대상
+PR 생성이며 별도 승인이 필요하다. push 직전에는 원격 devel을 다시 확인한다.
+PR에는 #6812 원본 1페이지 해결, 셀 시험의 승인된 범위 분리, 기존 skip/ignore 수,
+7쪽 및 셀 확장 미해결 범위를 숨기지 않고 기록한다. PR CI·self-review·병합·이슈 close는
+아직 실행하지 않았다.
