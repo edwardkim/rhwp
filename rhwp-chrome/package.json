@@ -13,7 +13,7 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "puppeteer": "^25.9.0",
+    "puppeteer": "^25.10.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
   }
