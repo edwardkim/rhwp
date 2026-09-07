@@ -407,14 +407,25 @@ fn issue_6812_previous_paragraph_picture_reserves_space_until_its_bottom() {
     let tree = core.build_page_render_tree(0).unwrap();
     let mut tables = Vec::new();
     collect_top_level_tables(&tree.root, &mut tables);
-    let matching: Vec<_> = tables.iter().filter(|(pi, ci, _)| (*pi, *ci) == (1, 0)).collect();
-    assert_eq!(matching.len(), 1, "본문 표 목록: {tables:?}, 쪽 수: {}", core.page_count());
+    let matching: Vec<_> = tables
+        .iter()
+        .filter(|(pi, ci, _)| (*pi, *ci) == (1, 0))
+        .collect();
+    assert_eq!(
+        matching.len(),
+        1,
+        "본문 표 목록: {tables:?}, 쪽 수: {}",
+        core.page_count()
+    );
     let (mut pictures, mut unused) = (Vec::new(), Vec::new());
     collect(&tree.root, &mut pictures, &mut unused);
     assert_eq!(pictures.len(), 1);
     let required_y = pictures[0].y + pictures[0].height + 141.0 / 75.0;
-    assert!((matching[0].2.y - required_y).abs() < 0.5,
-        "다른 문단의 유효한 선행 점유 영역도 소비한다: {:?}, {required_y}", matching[0]);
+    assert!(
+        (matching[0].2.y - required_y).abs() < 0.5,
+        "다른 문단의 유효한 선행 점유 영역도 소비한다: {:?}, {required_y}",
+        matching[0]
+    );
 }
 
 fn collect_top_level_tables(node: &RenderNode, out: &mut Vec<(usize, usize, BoundingBox)>) {
