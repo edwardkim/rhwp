@@ -10122,8 +10122,6 @@ impl LayoutEngine {
                                 .filter(|cell| cell.row as usize == ri && cell.row_span == 1)
                                 .collect();
                             row_cells.sort_by_key(|cell| cell.col);
-                            let row_is_auto_height = !row_cells.is_empty()
-                                && row_cells.iter().all(|cell| cell.height == 0);
                             let row_has_crossing_span = nt.cells.iter().any(|cell| {
                                 let start = cell.row as usize;
                                 let end = start + (cell.row_span as usize).max(1);
@@ -10144,6 +10142,32 @@ impl LayoutEngine {
                                 })
                                 .map(|(index, _)| index);
 
+                            // [#6837] 선언 행높이가 **자기 내용의 한 줄보다도 작으면**
+                            // 그것은 실제 높이가 아니라 껍데기다 — 그 행의 높이는
+                            // 내용이 정한다. `height == 0` 만 auto 로 보던 종전 술어는
+                            // 그런 행을 원자로 묶어, 남은 예산보다 큰 행이 통째로 다음
+                            // 쪽에 넘어가고 그만큼 앞쪽이 빈다(17544911: 1쪽 예산
+                            // 1005.4 중 874.4 만 소비 — 130.8px 낭비). 한/글은 그 행
+                            // 안에서 끊는다.
+                            //
+                            // ⚠ **비율로 가르지 않는다.** `issue3637` 의 4x3 중첩 표는
+                            // 선언 28.4px 에 실제 34.4px(83%)로 살짝 넘칠 뿐이라 선언이
+                            // 진짜 높이다 — 한 줄(13.3px)보다 크므로 여기서 갈린다.
+                            // 17544911 은 선언 3.8px 에 한 줄이 16.0px 다.
+                            let row_declared_px = row_cells
+                                .iter()
+                                .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+                                .fold(0.0f64, f64::max);
+                            let row_min_unit_px = row_units
+                                .iter()
+                                .flat_map(|cell_units| cell_units.iter())
+                                .map(|unit| unit.height)
+                                .fold(f64::MAX, f64::min);
+                            let declared_is_stub = row_min_unit_px.is_finite()
+                                && row_declared_px + 0.5 < row_min_unit_px;
+                            let row_is_auto_height = !row_cells.is_empty()
+                                && (row_cells.iter().all(|cell| cell.height == 0)
+                                    || (declared_is_stub && *rh > row_declared_px + 0.5));
                             if let Some(driver_index) = driver.filter(|driver_index| {
                                 row_is_auto_height
                                     && !row_has_crossing_span
