@@ -395,6 +395,9 @@ fn issue_6812_previous_paragraph_picture_reserves_space_until_its_bottom() {
     let table = picture_host.controls.remove(4);
     let mut table_host = picture_host.clone();
     table_host.controls = vec![table];
+    // 구역 첫 문단을 복제한 것이므로 새 문단에 명시적 구역/쪽 나눔을 복제하지 않는다.
+    table_host.column_type = Default::default();
+    table_host.raw_break_type = 0;
     // 앞 문단은 그림의 앵커이며 짧은 실제 줄이다. 표를 포함했던 저장 줄높이를
     // 남겨서 우연히 이미 그림 아래에 놓이는 가짜 대조를 만들지 않는다.
     picture_host.line_segs.clear();
