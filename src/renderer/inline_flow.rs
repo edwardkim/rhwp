@@ -14,7 +14,7 @@ use super::{
     layout::{estimate_text_width, resolved_to_text_style},
     layout_frame::{FrameExclusion, LayoutFrame},
     px_to_hwpunit,
-    style_resolver::{detect_lang_category, ResolvedStyleSet},
+    style_resolver::{detect_lang_category, ResolvedParaStyle, ResolvedStyleSet},
 };
 
 /// 문자 또는 표. 식별자는 paragraph.text의 scalar index / control index다.
@@ -50,12 +50,14 @@ pub struct InlineFlowPlan {
     pub boxes: Vec<InlineFlowBox>,
     /// 원래 가용 폭/높이에 실제로 간섭한 제외 영역이 있었는가.
     pub(crate) carved: bool,
+    next_row_top: f64,
 }
 
 impl InlineFlowPlan {
     pub(crate) fn relative_to(&mut self, x: f64, y: f64) {
         self.start -= y;
         self.end -= y;
+        self.next_row_top -= y;
         for item in &mut self.boxes {
             item.x -= x;
             item.y -= y;
@@ -148,7 +150,14 @@ pub(crate) fn plan(
         let lang = detect_lang_category(ch);
         let text_style = resolved_to_text_style(styles, cs, lang);
         let width = estimate_text_width(&ch.to_string(), &text_style);
-        let height = text_style.font_size;
+        let metrics = super::composer::frame_metrics_for_line(
+            text_style.font_size,
+            12.0,
+            style.line_spacing_type,
+            style.line_spacing,
+            frame.dpi,
+        );
+        let height = hwpunit_to_px(metrics.line_height, frame.dpi);
         atoms.push(Atom::Box(InlineFlowBox {
             content: InlineFlowContent::Text {
                 range: position..position + 1,
@@ -159,7 +168,7 @@ pub(crate) fn plan(
             y: 0.0,
             width,
             height,
-            baseline: height * 0.8,
+            baseline: hwpunit_to_px(metrics.baseline_distance, frame.dpi),
         }));
     }
     let mut exclusions = preceding.to_vec();
@@ -169,6 +178,7 @@ pub(crate) fn plan(
         end: top,
         boxes: Vec::new(),
         carved: false,
+        next_row_top: top,
     };
     let mut row = Vec::new();
     for atom in atoms {
@@ -180,7 +190,7 @@ pub(crate) fn plan(
                     &mut row,
                     &horizontal,
                     &exclusions,
-                    style.alignment,
+                    style,
                     frame.dpi,
                 )?;
                 exclusions.push(exclusion);
@@ -191,7 +201,7 @@ pub(crate) fn plan(
                     &mut row,
                     &horizontal,
                     &exclusions,
-                    style.alignment,
+                    style,
                     frame.dpi,
                 )?;
             }
@@ -211,18 +221,18 @@ pub(crate) fn plan(
                     let old = row_geometry(
                         &row,
                         &horizontal,
-                        result.end,
+                        result.next_row_top,
                         &exclusions,
-                        style.alignment,
+                        style,
                         frame.dpi,
                     )?;
                     row.push(item.clone());
                     let next = row_geometry(
                         &row,
                         &horizontal,
-                        result.end,
+                        result.next_row_top,
                         &exclusions,
-                        style.alignment,
+                        style,
                         frame.dpi,
                     )?;
                     row.pop();
@@ -236,7 +246,7 @@ pub(crate) fn plan(
                         &mut row,
                         &horizontal,
                         &exclusions,
-                        style.alignment,
+                        style,
                         frame.dpi,
                     )?;
                 }
@@ -249,10 +259,10 @@ pub(crate) fn plan(
         &mut row,
         &horizontal,
         &exclusions,
-        style.alignment,
+        style,
         frame.dpi,
     )?;
-    result.end += style.spacing_after;
+    result.end = result.end.max(result.next_row_top) + style.spacing_after;
     Some(result)
 }
 
@@ -261,7 +271,7 @@ fn finish_row(
     row: &mut Vec<InlineFlowBox>,
     horizontal: &Range<f64>,
     exclusions: &[FrameExclusion],
-    alignment: Alignment,
+    style: &ResolvedParaStyle,
     dpi: f64,
 ) -> Option<()> {
     if row.is_empty() {
@@ -273,15 +283,29 @@ fn finish_row(
         .map(|b| b.height - b.baseline)
         .fold(0.0, f64::max);
     let height = baseline + descent;
-    let (mut x, y, carved) = row_geometry(row, horizontal, plan.end, exclusions, alignment, dpi)?;
+    let (mut x, y, carved) =
+        row_geometry(row, horizontal, plan.next_row_top, exclusions, style, dpi)?;
     plan.carved |= carved;
+    let has_table = row
+        .iter()
+        .any(|b| matches!(b.content, InlineFlowContent::Table { .. }));
     for mut item in row.drain(..) {
         item.x = x;
         item.y = y + baseline - item.baseline;
         x += item.width;
         plan.boxes.push(item);
     }
-    plan.end = y + height;
+    let metrics = super::composer::frame_metrics_for_line(
+        height,
+        height,
+        style.line_spacing_type,
+        style.line_spacing,
+        dpi,
+    );
+    let gap = hwpunit_to_px(metrics.line_spacing, dpi);
+    // 텍스트의 sub-100% 간격은 유지하되, 표의 물리 하단을 후속 줄이 침범하지 않는다.
+    plan.next_row_top = y + height + if has_table { gap.max(0.0) } else { gap };
+    plan.end = plan.end.max(y + height);
     Some(())
 }
 
@@ -290,7 +314,7 @@ fn row_geometry(
     horizontal: &Range<f64>,
     top: f64,
     exclusions: &[FrameExclusion],
-    alignment: Alignment,
+    style: &ResolvedParaStyle,
     dpi: f64,
 ) -> Option<(f64, f64, bool)> {
     let width: f64 = row.iter().map(|b| b.width).sum();
@@ -305,7 +329,7 @@ fn row_geometry(
     let mut frame = LayoutFrame::new(base.clone(), px_to_hwpunit(top, dpi), exclusions.to_vec());
     frame.minimum_width = px_to_hwpunit(width, dpi).max(1).min(base_width);
     let intervals = frame.carve(px_to_hwpunit(height, dpi).max(1));
-    let lane = if alignment == Alignment::Right {
+    let lane = if style.alignment == Alignment::Right {
         intervals.last()?
     } else {
         intervals.first()?
@@ -314,7 +338,7 @@ fn row_geometry(
     let left = hwpunit_to_px(lane.start, dpi);
     let spare = (hwpunit_to_px(lane.end - lane.start, dpi) - width).max(0.0);
     let x = left
-        + match alignment {
+        + match style.alignment {
             Alignment::Right => spare,
             Alignment::Center => spare / 2.0,
             _ => 0.0,
