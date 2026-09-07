@@ -564,6 +564,80 @@ fn issue_6812_inline_table_between_text_respects_picture_exclusion() {
     let mut core = sample();
     core.set_document(inline_host_document());
     assert_below_picture(&core);
+    assert_inline_text_order(&core);
+    let mut lines = Vec::new();
+    for page in 0..core.page_count() {
+        collect_body_lines(
+            &core.build_page_render_tree(page).unwrap().root,
+            None,
+            &mut lines,
+        );
+    }
+    let following: Vec<_> = lines.iter().filter(|(pi, _, _)| *pi == 8).collect();
+    assert_eq!(following.len(), 3, "후속 문단 세 줄 보존");
+    for (_, bbox, bottom) in following {
+        assert!(
+            bbox.y + bbox.height <= bottom + 0.5,
+            "후속 본문이 단 하단 안에 있어야 한다: {bbox:?}, {bottom}"
+        );
+    }
+}
+
+#[test]
+fn issue_6812_inline_text_and_table_use_available_side_lane() {
+    let mut core = sample();
+    let mut doc = inline_host_document();
+    let Control::Picture(picture) = &mut doc.sections[0].paragraphs[0].controls[3] else {
+        panic!("그림")
+    };
+    picture.common.width = 9000;
+    picture.shape_attr.current_width = 9000;
+    core.set_document(doc);
+    let (picture, table) = boxes(&core);
+    assert!(
+        table.y < picture.y + picture.height,
+        "충분한 옆 공간을 사용해야 한다"
+    );
+    assert!(
+        table.x >= picture.x + picture.width,
+        "그림 오른쪽 가용 구간"
+    );
+    assert_inline_text_order(&core);
+}
+
+fn assert_inline_text_order(core: &DocumentCore) {
+    fn collect_text(node: &RenderNode, result: &mut Vec<(usize, String, BoundingBox)>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.para_index == Some(0) && run.cell_context.is_none() {
+                result.push((run.char_start.unwrap(), run.text.clone(), node.bbox));
+            }
+        }
+        for child in &node.children {
+            collect_text(child, result);
+        }
+    }
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut runs = Vec::new();
+    collect_text(&tree.root, &mut runs);
+    runs.sort_by_key(|r| r.0);
+    assert_eq!(
+        runs.iter().map(|r| r.1.as_str()).collect::<String>(),
+        "앞뒤",
+        "텍스트 누락/중복 금지"
+    );
+    assert_eq!(runs.len(), 2, "표 anchor에서 텍스트 경계 보존");
+    assert_eq!((runs[0].0, runs[1].0), (0, 1));
+    let (_, table) = boxes(core);
+    let before = runs[0].2;
+    let after = runs[1].2;
+    assert!(
+        before.y + before.height <= table.y + 0.5 || before.x + before.width <= table.x + 0.5,
+        "앞 텍스트는 표 앞: {before:?}, {table:?}"
+    );
+    assert!(
+        after.y >= table.y + table.height - 0.5 || after.x >= table.x + table.width - 0.5,
+        "뒤 텍스트는 표 뒤: {after:?}, {table:?}"
+    );
 }
 
 #[test]

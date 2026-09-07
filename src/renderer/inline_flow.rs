@@ -48,6 +48,8 @@ pub struct InlineFlowPlan {
     pub start: f64,
     pub end: f64,
     pub boxes: Vec<InlineFlowBox>,
+    /// 원래 가용 폭/높이에 실제로 간섭한 제외 영역이 있었는가.
+    pub(crate) carved: bool,
 }
 
 impl InlineFlowPlan {
@@ -142,17 +144,7 @@ pub(crate) fn plan(
             atoms.push(Atom::Break);
             continue;
         }
-        let raw = para
-            .char_offsets
-            .get(position)
-            .copied()
-            .unwrap_or(position as u32);
-        let cs = para
-            .char_shapes
-            .iter()
-            .rev()
-            .find(|cs| cs.start_pos <= raw)
-            .map_or(0, |cs| u32::from(cs.char_shape_id));
+        let cs = super::composer::find_active_char_shape_visible(&para.char_shapes, position);
         let lang = detect_lang_category(ch);
         let text_style = resolved_to_text_style(styles, cs, lang);
         let width = estimate_text_width(&ch.to_string(), &text_style);
@@ -171,14 +163,12 @@ pub(crate) fn plan(
         }));
     }
     let mut exclusions = preceding.to_vec();
-    if exclusions.is_empty() && !atoms.iter().any(|a| matches!(a, Atom::Float(_))) {
-        return None;
-    }
     let horizontal = frame.container.x..frame.container.x + frame.container.width;
     let mut result = InlineFlowPlan {
         start: frame.paragraph_y,
         end: top,
         boxes: Vec::new(),
+        carved: false,
     };
     let mut row = Vec::new();
     for atom in atoms {
@@ -215,7 +205,32 @@ pub(crate) fn plan(
                     return None;
                 }
                 let width: f64 = row.iter().map(|b: &InlineFlowBox| b.width).sum();
-                if !row.is_empty() && width + item.width > frame.container.width + 0.01 {
+                let moves_existing_row = if row.is_empty() {
+                    false
+                } else {
+                    let old = row_geometry(
+                        &row,
+                        &horizontal,
+                        result.end,
+                        &exclusions,
+                        style.alignment,
+                        frame.dpi,
+                    )?;
+                    row.push(item.clone());
+                    let next = row_geometry(
+                        &row,
+                        &horizontal,
+                        result.end,
+                        &exclusions,
+                        style.alignment,
+                        frame.dpi,
+                    )?;
+                    row.pop();
+                    next.1 > old.1 + 0.01
+                };
+                if !row.is_empty()
+                    && (width + item.width > frame.container.width + 0.01 || moves_existing_row)
+                {
                     finish_row(
                         &mut result,
                         &mut row,
@@ -252,6 +267,32 @@ fn finish_row(
     if row.is_empty() {
         return Some(());
     }
+    let baseline = row.iter().map(|b| b.baseline).fold(0.0, f64::max);
+    let descent = row
+        .iter()
+        .map(|b| b.height - b.baseline)
+        .fold(0.0, f64::max);
+    let height = baseline + descent;
+    let (mut x, y, carved) = row_geometry(row, horizontal, plan.end, exclusions, alignment, dpi)?;
+    plan.carved |= carved;
+    for mut item in row.drain(..) {
+        item.x = x;
+        item.y = y + baseline - item.baseline;
+        x += item.width;
+        plan.boxes.push(item);
+    }
+    plan.end = y + height;
+    Some(())
+}
+
+fn row_geometry(
+    row: &[InlineFlowBox],
+    horizontal: &Range<f64>,
+    top: f64,
+    exclusions: &[FrameExclusion],
+    alignment: Alignment,
+    dpi: f64,
+) -> Option<(f64, f64, bool)> {
     let width: f64 = row.iter().map(|b| b.width).sum();
     let baseline = row.iter().map(|b| b.baseline).fold(0.0, f64::max);
     let descent = row
@@ -261,7 +302,7 @@ fn finish_row(
     let height = baseline + descent;
     let base = px_to_hwpunit(horizontal.start, dpi)..px_to_hwpunit(horizontal.end, dpi);
     let base_width = base.end.checked_sub(base.start).filter(|w| *w > 0)?;
-    let mut frame = LayoutFrame::new(base, px_to_hwpunit(plan.end, dpi), exclusions.to_vec());
+    let mut frame = LayoutFrame::new(base.clone(), px_to_hwpunit(top, dpi), exclusions.to_vec());
     frame.minimum_width = px_to_hwpunit(width, dpi).max(1).min(base_width);
     let intervals = frame.carve(px_to_hwpunit(height, dpi).max(1));
     let lane = if alignment == Alignment::Right {
@@ -271,19 +312,13 @@ fn finish_row(
     };
     let left = hwpunit_to_px(lane.start, dpi);
     let spare = (hwpunit_to_px(lane.end - lane.start, dpi) - width).max(0.0);
-    let mut x = left
+    let x = left
         + match alignment {
             Alignment::Right => spare,
             Alignment::Center => spare / 2.0,
             _ => 0.0,
         };
-    let y = hwpunit_to_px(frame.top, dpi).max(plan.end);
-    for mut item in row.drain(..) {
-        item.x = x;
-        item.y = y + baseline - item.baseline;
-        x += item.width;
-        plan.boxes.push(item);
-    }
-    plan.end = y + height;
-    Some(())
+    let y = hwpunit_to_px(frame.top, dpi).max(top);
+    let carved = y > top + 0.01 || lane.start > base.start || lane.end < base.end;
+    Some((x, y, carved))
 }

@@ -57,6 +57,9 @@ impl TypesetEngine {
         let Some(mut plan) = build(st, st.current_height, true) else {
             return false;
         };
+        if !plan.carved {
+            return false;
+        }
         if plan.end > st.available_height() + 0.01 {
             // 새 단 후보가 실제로 수용 가능할 때만 상태를 전진한다.
             // 한 단보다 큰 혼합 문단의 fragment owner는 아직 기존 경로에 있다.
