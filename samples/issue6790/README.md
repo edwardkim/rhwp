@@ -12,12 +12,17 @@
 - 기준 엔진: **`2020`** (저장 제품이 `hancom-office-2020` 이므로
   [시각·fixture 증적](../../mydocs/manual/pr_review/visual_fixture_evidence.md) §3.5.1
   에 따라 `hwp2024Convert` MCP 의 `engine: 2020`).
-- **기준 PDF: 메인테이너 환경에서 생성됨**(PR #6792) —
-  `pdf/17544911-sericulture-training-criteria-2020.pdf`,
-  `engine_profile=2020`, Hancom `12.0.0.4605`, **3쪽**, 152,160 bytes,
-  SHA-256 `c0c2e379da79eae2305006b2dede5e07c995d42be19c9ba7d879821fd810177b`.
-  ⚠ 이 작업 PC 에는 그 MCP 의 `.env.local` 이 없어 직접 산출하지 못했고, 파일은 아직
-  이 branch 에 없다.
+- **기준 PDF: `pdf/17544911-sericulture-training-criteria-2020.pdf`** — `engine: 2020`
+  으로 직접 산출해 저장했다. **3쪽**, 152,162 bytes, SHA-256 `df968a2e9237256e4d03d195c568b0d3…`.
+  ⚠ 메인테이너 산출본(152,160 bytes, `c0c2e379…`)과 **바이트는 다르다** — PDF 가
+  생성 시각과 `/ID` 를 담아 매 실행마다 달라진다(2바이트 차). **쪽수 3과 쪽별 글자
+  수가 같다.**
+
+  ```text
+    쪽별 공백·점 제거 글자 수
+      2020 정본  [618, 614, 20]   합 1,252
+      rhwp       [528, 636, 88]   합 1,252   ← 총량 동일, 배분 다름
+  ```
 - ⚠ **쪽수는 3으로 일치하지만 쪽 경계는 아직 다르다.** 한/글 2020 은 1쪽에
   `4) 양잠산물의 산업화` 일부까지 담는데 rhwp 는 3번 행에서 끊고, 한/글 3쪽에는
   마지막 한 줄만 남지만 rhwp 는 앞선 여러 줄부터 남는다. 이 차이와 text-overlap 2건은
