@@ -1,0 +1,45 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6776,
+  "title": "(규제영향분석서) 가상융합산업 진흥법 시행령 제정령(안)",
+  "entries": [
+    {
+      "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6776",
+      "originalFilename": "78494_(규제영향분석서) 가상융합산업 진흥법 시행령 제정령(안).hwpx",
+      "bytes": 576512,
+      "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.90.0.983"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "referencePdfBytes": 745738,
+      "referencePdfSha256": "f6e8eca2ff0de55271d3ccb04b08d68244aee9ca6424de42fcce3bc55ffcb5f7",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 74쪽. rhwp 75쪽의 차 1 은 9쪽이 빈 쪽으로 나오는 devel 기존 결함(별개 축)이다.",
+      "contract": "줄이 **0개인** 칸 문단의 글자처럼 취급(TAC) 그림도 cell_units 회계에 넣는다. 19쪽 자식 1×1 표의 725.4px 그림이 y=1327.7..2053.0 으로 용지(1,122.5px) 아래 930.5px 에 그려지던 것이 닫히고, 21쪽 y=79.0..804.4 에 온전히 앉는다. 줄이 있는 문단에서는 세지 않는다 — 그때 그림은 이미 줄 높이에 들어 있다."
+    },
+    {
+      "path": "samples/issue6776/36367506-water-facility-approval.hwpx",
+      "format": "hwpx",
+      "role": "negative_control",
+      "source": "https://github.com/edwardkim/rhwp/issues/6776",
+      "originalFilename": "36367506_결재문서본문.hwpx",
+      "bytes": 16251,
+      "sha256": "62ee54efc7fd9f5fd06cbfdb5843edcdbf84074b05ede5571c15078d4f1b14ab",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/36367506-water-facility-approval-2020.pdf",
+      "referencePdfBytes": 80371,
+      "referencePdfSha256": "74fc13ac6bbfc706814270e1f9cf3c092c8e0621e369a0984a725022c429f1c0",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 3쪽.",
+      "contract": "칸 안 **비-TAC(어울림) 그림**은 cell_units 회계에 넣지 않는다. 넣으면 para_non_inline_h 와 이중 계상돼 이 문서가 용지 밖 1건·넘침 1건으로 무너진다. 코퍼스 10,000건 중 이 술어가 실제로 갈리는 5건 가운데 가장 작다(16KB)."
+    }
+  ]
+}
