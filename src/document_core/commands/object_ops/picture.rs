@@ -102,7 +102,7 @@ impl DocumentCore {
             )),
         }
     }
-    fn resolve_picture_control_mut(
+    pub(crate) fn resolve_picture_control_mut(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
