@@ -246,3 +246,55 @@ PR에는 #6812 원본 1페이지 해결, 셀 시험의 승인된 범위 분리, 
 필수 전체 게이트 및 원본 1페이지 출력 보존을 다시 확인하는 것이다. 새로운 조판 변경과의
 통합·재검증 승인을 요청한다. 실패가 발견되면 원인을 분리해 보고하며, 완료 범위 밖 셀
 확장이나 7쪽 구현을 임의로 재개하지 않는다.
+
+## 9. #6847 통합 후 재검증 완료 (2026-09-07)
+
+메인테이너가 새 devel 통합 → 집중 검사 → 전체 게이트·1페이지 보존 확인 → push·PR
+생성을 승인했다. 시작 시 원격은 `a3a30d99d4`로 유지되어 있었고, 충돌 없이 생성한
+통합 후보는 `51ed17d3b9c1d7088566557b79eef5850da59231`이다.
+조판 소스나 시험 기대값을 추가 보정하지 않았다. 원본 fixture는 이미 devel에 동일
+바이트로 포함되어 이번 PR의 신규 HWP 파일이 아니다.
+
+### 9.1 실제 검증
+
+기존 review worktree를 위 후보로 전환하고 suite를 준비했다. 고정 Cargo target은
+유지했고, 각 target의 Cargo 명령은 순차 실행했다. 마지막 Native Skia와 Docker WASM만
+서로 다른 checkout·target에서 병행했다. 전체 nextest와 Skia lib의 동시성은 8이다.
+
+| 검증 | 결과 |
+| --- | --- |
+| #6812 + #6778/#6782/#6787/#6790/#6793/#6795/#6797/#6800/#6803/#6837 집중 검사 | **68 PASS / 0 FAIL**, 0.649초. 9,169건은 집중 필터 비대상/기존 skip |
+| fmt 적용·check, native·WASM32·workspace all-targets Clippy, workspace build | 모두 PASS |
+| manifest / source-side unit tier check | PASS / PASS (1,191 sources, 48 integration targets / 4,205 tests) |
+| release-test 전체 nextest | **9,191 PASS / 0 FAIL / 기존 46 skipped**, 실행 345.793초 |
+| Native Skia lib | **4,112 PASS / 0 FAIL / 기존 13 ignored** |
+| Native Skia 이미지 누락 대체 표시 | **2 PASS / 0 FAIL**, 비대상 175 skipped |
+| Native Skia 직접 PDF export | **4 PASS / 0 FAIL**, 비대상 191 skipped |
+| Docker WASM | **PASS**, 최적화 포함 7분 55초 |
+
+전체 nextest 및 Skia 명령은 7.2절과 동일하며 새 후보에서 다시 실행한 결과다.
+집중 검사는 전체 nextest 명령에
+`-E 'test(/issue_(6812|6778|6782|6787|6790|6793|6795|6797|6800|6803|6837)_/)'`를
+추가했다. 최종 전체 실행에는 필터를 사용하지 않았다. 기존 nextest 권장 버전 경고는
+동일하며 도구 버전·skip·timeout 정책을 바꾸지 않았다.
+
+IR dump는 새 devel 원장 571행 대비 253행이며 새 행·증가 없이 기존 318행 감소만 남았다.
+overflow dump는 기존 12행과 일치한다. 원장 파일을 갱신하거나 무관한 감소를 이번 개선으로
+귀속하지 않았다. #6812 원본의 신규 비영 IR/overflow 행은 없다.
+
+### 9.2 승인된 출력 보존과 Studio
+
+- 새 WASM: 10,334,418 bytes,
+  SHA-256 `66d053824d13a5c9f40f179ea984509f0017dcb5b257bf703271d04a49851bce`.
+- 원본은 기존 SHA-256과 동일하며 11쪽으로 로드됐다.
+- 1페이지 SVG: 338,679 bytes,
+  SHA-256 `b4703e335a54c1200f5455c7de5622a384a3edb3ddd7caeb70640ed10904a9ab`.
+  승인된 `edf083614` 출력과 **바이트 단위 동일**하다.
+- 7700번 Studio와 WASM 응답은 HTTP 200이고, 제공 WASM은 로컬 새 산출물과 동일하다.
+- 검증 로그·dump·SVG·JSON·재현 스크립트는 메인 checkout의
+  `output/6812/integration-51ed17d3b/`에 보관했다. 생성물은 커밋하지 않는다.
+
+8절의 새 devel 통합 미검증 상태는 위 결과로 해소했다. 원본 1페이지에 대한 기존
+메인테이너 시각 수용을 유지하며, 전체 11쪽 시각 승인이나 셀 확장 완료를 주장하지 않는다.
+원격 push·PR 생성은 이번 승인 범위에 포함되지만 CI 완료·최종 self-review·병합·이슈 종료는
+아직 미수행이다. PR 채번 후 별도 번호 기반 review 기록과 오늘할일을 같은 PR에 포함한다.
