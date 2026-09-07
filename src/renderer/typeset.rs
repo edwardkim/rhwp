@@ -17234,6 +17234,76 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         is_last_in_section: bool,
     ) {
+        // [#6793] 앞 문단의 **저장 꼬리가 쪽을 채우고** 이 문단의 첫 저장 줄이
+        // `vpos == 0` 이면, 한글은 이 문단을 **다음 쪽 상단**에 둔 것이다. 쪽을 닫는다.
+        //
+        // 1611000-201000141 표지 실측:
+        //
+        // ```text
+        //   pi=0  ls[0] vpos=0     lh=61600 th=1000     ← 앵커 줄
+        //         ls[1] vpos=1600  lh=61600 gap=36960   ← 표 줄 + 꼬리
+        //         저장 꼬리 끝 = (1600 + 61600 + 36960)/75 = 1335.5px  > 예산 876.9
+        //   pi=1  ls[0] vpos=0                          ← 새 쪽 상단
+        // ```
+        //
+        // 종전에는 흐름 계상이 842.7 에서 멈춰 `pi=1`(`< 차 례 >`)이 1쪽 꼬리에
+        // 붙었고, 렌더가 그 꼬리 간격을 더해 용지 밖 363.9px 로 내보냈다.
+        // 보이게만 고치면 **쪽 귀속이 여전히 틀리다** — 한/글은 2쪽 첫 줄이다.
+        //
+        // ⭐ 판정은 저장 사다리 둘이 함께 준다 — 크기 문턱이 없다.
+        //   ① 이 문단의 첫 **비합성** 저장 줄이 `vpos == 0`.
+        //   ② 앞 문단의 마지막 비합성 저장 줄이 `vpos + lh + gap` 으로 **이 쪽
+        //      예산을 넘는다** — 그 꼬리가 쪽-끝 채움이라는 뜻이다.
+        //
+        // ⚠ ② 가 없으면 안 된다. `vpos == 0` 은 새 쪽 상단인 동시에 **"앵커 없음"
+        // 센티널**이기도 하다(`#6753` 이 남긴 함정 — 조각 시작 `vpos == 0` 을 무조건
+        // 쪽 경계로 읽은 선행 시도가 242쪽을 243쪽으로 늘려 기각됐다).
+        // 저장 사다리가 권위인 **네이티브 HWP5** 조판에 한정한다.
+        if st.profile.hwp5_stored_pagination_layout()
+            && para_idx > 0
+            && st.current_height > 0.5
+            && para
+                .line_segs
+                .iter()
+                .find(|seg| !is_synthetic_line_seg(seg))
+                .is_some_and(|seg| seg.vertical_pos == 0)
+        {
+            // 이 문단의 첫 저장 줄 높이 — 아래 검사의 허용오차다.
+            let this_line_px = para
+                .line_segs
+                .iter()
+                .find(|seg| !is_synthetic_line_seg(seg))
+                .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
+                .unwrap_or(0.0);
+            let prev_tail_fills_the_page = paragraphs
+                .get(para_idx - 1)
+                .and_then(|prev| {
+                    prev.line_segs
+                        .iter()
+                        .rev()
+                        .find(|s| !is_synthetic_line_seg(s))
+                })
+                .is_some_and(|seg| {
+                    let without_gap =
+                        hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), self.dpi);
+                    let with_gap = without_gap + hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
+                    // ⚠ **흐름이 사다리가 앞 문단을 남겨 둔 자리에 있어야 한다.**
+                    // 어긋나 있으면 이미 쪽 경계가 지나간 것이라, 여기서 또 닫으면
+                    // 쪽이 하나 늘어난다 (`#5941` 1490000-201600081 `pi=1201`:
+                    // 사다리 867.3 대 흐름 28.4 — 이미 다음 쪽이다. 304 → 305).
+                    let flow_matches_ladder =
+                        (st.current_height - without_gap).abs() <= this_line_px + 0.5;
+                    // 꼬리 **없이는** 쪽 안에 들어가는데 꼬리를 실으면 넘는다 —
+                    // 그 꼬리가 흐름 간격이 아니라 쪽-끝 채움이라는 뜻이다.
+                    flow_matches_ladder
+                        && without_gap <= st.available_height() + 0.5
+                        && with_gap > st.available_height() - 0.5
+                });
+            if prev_tail_fills_the_page {
+                st.current_height = st.current_height.max(st.available_height());
+            }
+        }
+
         // [#2243 진단] 문단 진입 시 누적 높이 — 항목별 실소비 델타 추적용. 동작 불변.
         if std::env::var("RHWP_DIAG_FLOW").is_ok() {
             eprintln!(
@@ -19056,6 +19126,7 @@ impl TypesetEngine {
                 mt.para_index == deferred.para_index && mt.control_index == deferred.control_index
             });
             let para_start_height = st.current_height;
+
             self.typeset_block_table(
                 st,
                 deferred.para_index,
@@ -20338,6 +20409,46 @@ impl TypesetEngine {
         let raw_top = saved_page_top
             .or(stored_single_topbottom_top)
             .unwrap_or_else(|| (para_start_height + v_offset_px).max(para_start_height));
+        // [#6795] 같은 문단의 **앞 자리차지 표가 쪽에 걸쳐 쪼개져** 이 쪽을 이미 차지한
+        // 경우, 그 조각은 `PageItem::PartialTable` 로 나가고 lane 에는 등록되지 않는다.
+        // `para_start_height` 는 문단이 시작한 쪽의 값이라 이어지는 쪽에서는 거의 0 이고,
+        // 빈 lane 을 그대로 믿으면 두 표가 같은 앵커에 겹쳐 놓인다
+        // (1341000-201100013 31쪽: 548.0 × 401.9px — 아래 표 341.9px 가 안 보인다).
+        // 조각이 소비한 흐름 바닥을 raw top 으로 삼으면 lane 이 available 을 넘어
+        // 아래 block 경로로 되돌아가고, 한/글처럼 표가 제 쪽을 받는다(45쪽 중 28쪽).
+        let raw_top = {
+            let blocked_by_fragment = st.current_items.iter().any(|item| match item {
+                PageItem::PartialTable {
+                    para_index,
+                    control_index,
+                    ..
+                } if *para_index == para_idx => match para.controls.get(*control_index) {
+                    Some(Control::Table(previous)) => {
+                        let previous_width =
+                            hwpunit_to_px(signed_hwpunit(previous.common.width), self.dpi);
+                        let (previous_start, previous_end) = horizontal_range(
+                            &previous.common,
+                            previous_width,
+                            placement_ctx,
+                            self.dpi,
+                        );
+                        crate::renderer::float_placement::ranges_overlap(
+                            x_start,
+                            x_end,
+                            previous_start,
+                            previous_end,
+                        )
+                    }
+                    _ => false,
+                },
+                _ => false,
+            });
+            if blocked_by_fragment {
+                raw_top.max(st.current_height)
+            } else {
+                raw_top
+            }
+        };
         // Square float의 native HWP LINE_SEG는 도형 선언 높이를 anchor와 함께 보존한다.
         // 셀 내용 재측정/host trailing spacing은 block flow에서만 쓰며, lane 예약에 더하면
         // p14처럼 실제로 들어가는 pair를 1~수십 px 초과로 오판한다.
@@ -22577,7 +22688,40 @@ impl TypesetEngine {
                             && res.consumed_height >= 3.0 * extension
                             && frame_tail_rest > 0.5
                             && frame_tail_rest <= 64.0);
-                    if extension > 0.5 && mid_extension_ok {
+                    // [#6790] 확장된 저장 프레임 컷이 **이 조각의 행 예산 자체**를
+                    // 넘으면, 그 프레임은 이 쪽의 끊는 자리 증거가 될 수 없다.
+                    //
+                    // `#5584 ②`/`#4763` 의 확장은 "한글이 여기서 끊었다"는 저장 증거를
+                    // 따라 **거의 다 담은 행을 마저 담는** 조작이다. 그런데 확장된 컷
+                    // 하나가 이 조각이 행에 쓸 수 있는 전부보다 크면, 그 컷은 혼자서도
+                    // 이 쪽에 못 들어간다 — 그 프레임은 어차피 쪽을 넘기므로 이 쪽의
+                    // 경계를 정할 자격이 없다. 크기가 아니라 **쪽 소유(page ownership)**
+                    // 판정이다.
+                    //
+                    // 실측 (r = 확장이 일어난 행):
+                    //
+                    // ```text
+                    //   문서                                 tail    avail   소유
+                    //   17544911 (누에 사육기준) r=2        1178.5  1005.4   ✗ 못 넘김
+                    //   편람 r=1                              232.3   240.7   ✔
+                    //   편람 r=4 (여섯 갈래)             82.9~386.9  108.1~458.2 ✔ 전부
+                    //   3232693 (#5584/#6025) r=7            162.7   906.6   ✔
+                    //   16418295 (#6549) r=6                  92.8  1009.1   ✔
+                    // ```
+                    //
+                    // ⚠ 크기·비율로 가르지 않는다 — `#6549` 가 기록했듯 편람 핀들의
+                    // 확장(15.3~107.4px)과 예산 초과율(17.8~112.0px)은 어느 축으로도
+                    // 갈리지 않는다. 위 표에서 갈리는 것은 **부호 하나**이며 문턱이 없다.
+                    //
+                    // ⚠ 초판에는 `|| consumed > avail_for_rows + 0.5` 우회가 있었다
+                    // ("이미 예산을 넘긴 조각은 `#5057` 이 따로 판정한다"). **제거했다** —
+                    // 그 우회는 여기서 세운 쪽 수용 불변식을 무효화할 수 있고,
+                    // `#5057` 두 시험은 이 `source_frame_tail` 갈래를 실제로 실행하지
+                    // 않는다(PR #6792 검토 실측). 우회 없이 #3930·#3931·#5057·#5584·
+                    // #5801·#6025·#6549·#6790 선택 시험 19/19 가 통과한다.
+                    let source_tail_owns_this_page =
+                        source_tail_cut.consumed_height <= avail_for_rows + 0.5;
+                    if extension > 0.5 && mid_extension_ok && source_tail_owns_this_page {
                         // Downstream fit/retry decisions must reason in the
                         // same frame-sized budget as the cut.  The precise
                         // physical overfill is measured from the painted
@@ -23646,9 +23790,24 @@ impl TypesetEngine {
         // 표 자체가 한 쪽에 들어갈 때만 — 첫 표는 정상 fit/분할 경로를 그대로
         // 타고, 쪽보다 큰 표는 한글도 분할하므로(20320575 별표 24쪽: 통째-배치
         // 시 27→8쪽 붕괴 실측) 구제 대상이 아니다.
+        // [#6795] 앞 co-anchored 표가 쪽에 걸쳐 쪼개져 **이 쪽이 그 조각으로 시작**하면,
+        // 저장 앵커 줄 vpos 는 이 쪽이 아니라 문단이 시작한 쪽의 좌표다. 그 값을 근거로
+        // "한글이 스택을 통째로 이 쪽에 놓았다"고 보면, 조각이 이미 차지한 자리에 뒤 표를
+        // 겹쳐 놓는다(1341000-201100013 31쪽 548.0 × 401.9px, 아래 표 401.9px 소실).
+        let page_starts_with_own_fragment = st.current_items.iter().any(|item| {
+            matches!(
+                item,
+                PageItem::PartialTable {
+                    para_index,
+                    is_continuation: true,
+                    ..
+                } if *para_index == para_idx
+            )
+        });
         let saved_host_line_after_stack_fits = host_line_trails_float_stack
             && has_preceding_coanchored_float
-            && table_total <= available;
+            && table_total <= available
+            && !page_starts_with_own_fragment;
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
                 "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",

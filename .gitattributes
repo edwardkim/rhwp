@@ -54,3 +54,6 @@ samples/issue6718/*.hwp -text -diff
 # Preserve the original bytes of the #6756/#6764 regression inputs.
 samples/issue6756/*.hwp -text -diff
 samples/issue6764/*.hwp -text -diff
+
+# PR #6796: original HWP bytes
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp -text -diff
