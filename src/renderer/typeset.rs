@@ -1100,6 +1100,7 @@ struct TypesetState {
         std::collections::BTreeMap<(usize, usize), super::layout_frame::FrameExclusion>,
     inline_placements:
         std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
+    inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
@@ -4639,6 +4640,7 @@ impl TypesetState {
             visible_float_exclusions: Vec::new(),
             side_wrap_exclusions: std::collections::BTreeMap::new(),
             inline_placements: std::collections::HashMap::new(),
+            inline_flow_plans: std::collections::HashMap::new(),
             inline_box_flow_bottom: 0.0,
             deferred_table_controls: Vec::new(),
             deferred_next_page_square_pictures: Vec::new(),
@@ -5155,6 +5157,7 @@ impl TypesetState {
             overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.inline_placements),
+            inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5241,6 +5244,7 @@ impl TypesetState {
             overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.inline_placements),
+            inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5558,6 +5562,9 @@ struct FormattedParagraph {
     /// **생성기가 쓴 값과 대조하는** 계산에서는 이 몫을 도로 빼야 한다.
     tac_outer_margin_v_px: f64,
 }
+
+#[path = "typeset/inline_flow.rs"]
+mod inline_flow;
 
 impl FormattedParagraph {
     /// 특정 줄의 advance 높이 (콘텐츠 + 줄간격)
@@ -8638,15 +8645,17 @@ impl TypesetEngine {
                         st.advance_column_or_new_page();
                     }
                 }
-                self.typeset_paragraph(
-                    &mut st,
-                    para_idx,
-                    para,
-                    &formatted,
-                    paragraphs,
-                    styles,
-                    is_last_in_section,
-                );
+                if !self.typeset_inline_flow(&mut st, para_idx, para, styles, measured_tables) {
+                    self.typeset_paragraph(
+                        &mut st,
+                        para_idx,
+                        para,
+                        &formatted,
+                        paragraphs,
+                        styles,
+                        is_last_in_section,
+                    );
+                }
                 // HWPX가 수식 인라인 개체를 포함한 문단의 line_seg 높이를 실제
                 // 조판보다 작게 저장하는 경우, 다음 문단의 양수 VPOS가 같은 물리
                 // 쪽의 정확한 흐름 끝을 가리킨다. 일반 문단과 표에는 적용하지 않고,
@@ -16572,7 +16581,7 @@ impl TypesetEngine {
         }
         // 렌더의 min_flow_floor는 floor뿐 아니라 직전 순차 cursor도 보호한다.
         // 회피한 표 이후 분할기만 저장 vpos로 되감으면 쪽 fit와 출력이 갈라진다.
-        if !st.inline_placements.is_empty() {
+        if !st.inline_placements.is_empty() || !st.inline_flow_plans.is_empty() {
             y = y.max(st.current_height);
         }
         // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
@@ -28637,6 +28646,7 @@ mod tests {
                 overlay_continuations: Vec::new(),
                 overlay_cuts: Vec::new(),
                 inline_placements: Default::default(),
+                inline_flow_plans: Default::default(),
             }],
             active_header: None,
             active_footer: None,

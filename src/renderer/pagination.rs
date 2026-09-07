@@ -455,6 +455,8 @@ pub struct FootnoteRef {
 /// 한 단(Column)에 배치될 콘텐츠
 #[derive(Debug, Clone)]
 pub struct ColumnContent {
+    /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).
+    pub inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     /// #6812: 분할기에서 확정한 단 기준 TAC 배치. 그림 paint 순서와 무관하다.
     pub inline_placements:
         std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
@@ -871,7 +873,12 @@ impl PaginationResult {
                 .iter()
                 .zip(old_page.column_contents.iter())
                 .all(|(nc, oc)| {
-                    nc.inline_placements.len() == oc.inline_placements.len()
+                    nc.inline_flow_plans.len() == oc.inline_flow_plans.len()
+                        && oc.inline_flow_plans.iter().all(|(&pi, plan)| {
+                            let new_pi = (pi as i64 + offset as i64).max(0) as usize;
+                            nc.inline_flow_plans.get(&new_pi) == Some(plan)
+                        })
+                        && nc.inline_placements.len() == oc.inline_placements.len()
                         && oc.inline_placements.iter().all(|(&(pi, ci), placement)| {
                             let new_pi = (pi as i64 + offset as i64).max(0) as usize;
                             nc.inline_placements.get(&(new_pi, ci)) == Some(placement)
@@ -921,6 +928,13 @@ impl PaginationResult {
                             .iter()
                             .map(|(&(pi, ci), &placement)| {
                                 (((pi as i64 + offset as i64).max(0) as usize, ci), placement)
+                            })
+                            .collect(),
+                        inline_flow_plans: cc
+                            .inline_flow_plans
+                            .iter()
+                            .map(|(&pi, plan)| {
+                                ((pi as i64 + offset as i64).max(0) as usize, plan.clone())
                             })
                             .collect(),
                         zone_layout: cc.zone_layout.clone(),

@@ -2173,6 +2173,101 @@ impl LayoutEngine {
         (i64::from(ls.line_height) - (om_top_hu + declared + om_bottom_hu)).abs() <= 8
     }
 
+    /// #6812: 측정/fit 소유자가 확정한 줄 결과를 그린다. 여기서 회피·줄바꿈을 재판정하지 않는다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn layout_inline_flow_plan(
+        &self,
+        tree: &mut PageLayoutContext,
+        col_node: &mut RenderNode,
+        para: &Paragraph,
+        styles: &ResolvedStyleSet,
+        col_area: &LayoutRect,
+        section_index: usize,
+        para_index: usize,
+        bin_data_content: &[BinDataContent],
+        measured_tables: &[MeasuredTable],
+        plan: &crate::renderer::inline_flow::InlineFlowPlan,
+    ) {
+        use crate::renderer::inline_flow::InlineFlowContent;
+        let chars: Vec<_> = para.text.chars().collect();
+        for item in &plan.boxes {
+            let x = col_area.x + item.x;
+            let y = col_area.y + item.y;
+            match &item.content {
+                InlineFlowContent::Text { range, style, lang } => {
+                    let text: String = chars[range.clone()].iter().collect();
+                    let text_style = resolved_to_text_style(styles, *style, *lang);
+                    let node = RenderNode::new(
+                        tree.next_id(),
+                        RenderNodeType::TextRun(TextRunNode {
+                            text,
+                            style: text_style,
+                            char_shape_id: Some(*style),
+                            para_shape_id: Some(para.para_shape_id),
+                            section_index: Some(section_index),
+                            para_index: Some(para_index),
+                            char_start: Some(range.start),
+                            cell_context: None,
+                            is_para_end: range.end == chars.len(),
+                            is_line_break_end: false,
+                            rotation: 0.0,
+                            is_vertical: false,
+                            char_overlap: None,
+                            border_fill_id: styles
+                                .char_styles
+                                .get(*style as usize)
+                                .map_or(0, |s| s.border_fill_id),
+                            baseline: item.baseline,
+                            field_marker: FieldMarkerType::None,
+                            layout_positions: None,
+                            display_text: None,
+                        }),
+                        BoundingBox::new(x, y, item.width, item.height),
+                    );
+                    col_node.children.push(node);
+                }
+                InlineFlowContent::Table {
+                    control,
+                    margin_left,
+                    margin_top,
+                } => {
+                    let crate::model::control::Control::Table(table) = &para.controls[*control]
+                    else {
+                        continue;
+                    };
+                    let measured = measured_tables
+                        .iter()
+                        .find(|m| m.para_index == para_index && m.control_index == *control);
+                    self.layout_table(
+                        tree,
+                        col_node,
+                        table,
+                        section_index,
+                        styles,
+                        0,
+                        col_area,
+                        y + margin_top,
+                        bin_data_content,
+                        measured,
+                        0,
+                        Some((para_index, *control)),
+                        Alignment::Left,
+                        None,
+                        0.0,
+                        0.0,
+                        Some(x + margin_left),
+                        None,
+                        Some(col_area.y + plan.start),
+                        None,
+                        false,
+                        false,
+                        false,
+                    );
+                }
+            }
+        }
+    }
+
     pub(crate) fn layout_inline_table_paragraph(
         &self,
         tree: &mut PageLayoutContext,

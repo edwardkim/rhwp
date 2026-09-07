@@ -8789,6 +8789,7 @@ mod tests {
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
         };
 
         let h = compute_hwp_used_height(&cc, &paragraphs, 96.0).expect("값이 있어야 함");

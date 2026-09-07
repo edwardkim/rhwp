@@ -5942,6 +5942,7 @@ impl LayoutEngine {
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
         };
         let page_content = PageContent {
             page_index: 0,
@@ -6544,6 +6545,7 @@ impl LayoutEngine {
                         column_wrap_around_paras,
                         &col_content.wrap_anchors,
                         &col_content.inline_placements,
+                        &col_content.inline_flow_plans,
                     );
                     y_offset = new_y;
                     endnote_sep_body_floor = Some(new_y);
@@ -7600,7 +7602,13 @@ impl LayoutEngine {
                 column_wrap_around_paras,
                 &col_content.wrap_anchors,
                 &col_content.inline_placements,
+                &col_content.inline_flow_plans,
             );
+            if let PageItem::FullParagraph { para_index } = item {
+                if let Some(plan) = col_content.inline_flow_plans.get(para_index) {
+                    hcursor.min_flow_floor = hcursor.min_flow_floor.max(col_area.y + plan.end);
+                }
+            }
             if zero_between_shape_tail_margin_px > 0.0 {
                 // 미주 사이 0에서 직전 미주의 마지막 수식 tail을 앞 단에 남기고
                 // 비TAC 그림만 다음 단으로 넘긴 경우, 한컴은 그림 뒤 bottom margin을
@@ -8230,6 +8238,7 @@ impl LayoutEngine {
             (usize, usize),
             super::float_placement::InlineBoxPlacement,
         >,
+        inline_flow_plans: &std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     ) -> (f64, bool) {
         let ctx = ColumnItemCtx {
             page_content,
@@ -8250,6 +8259,29 @@ impl LayoutEngine {
         };
         match item {
             PageItem::FullParagraph { para_index } => {
+                if let Some(plan) = inline_flow_plans.get(para_index) {
+                    let para = &paragraphs[*para_index];
+                    self.apply_paragraph_numbering(
+                        composed.get(*para_index),
+                        para,
+                        styles,
+                        outline_numbering_id,
+                    );
+                    para_start_y.insert(*para_index, col_area.y + plan.start);
+                    self.layout_inline_flow_plan(
+                        tree,
+                        col_node,
+                        para,
+                        styles,
+                        col_area,
+                        page_content.section_index,
+                        *para_index,
+                        bin_data_content,
+                        measured_tables,
+                        plan,
+                    );
+                    return (col_area.y + plan.end, false);
+                }
                 let deferred_empty_float_text_anchor_y =
                     para_index.checked_sub(1).and_then(|host_index| {
                         let host = paragraphs.get(host_index)?;
