@@ -20123,8 +20123,16 @@ impl TypesetEngine {
                 .filter(|((pi, _), _)| *pi == para_idx)
                 .map(|(_, placement)| placement.clearance)
                 .sum();
-            if st.current_height - snapped_base > cap + side_wrap_clearance {
-                st.current_height = snapped_base + cap + side_wrap_clearance;
+            let capped_bottom = snapped_base + cap + side_wrap_clearance;
+            // 저장 host가 4px여도 회피 줄의 실측 표 높이는 되돌릴 수 없다.
+            // 뒤 표까지 같은 단에서 물리 하단을 이어야 렌더와 fit의 cursor가 같다.
+            let capped_bottom = if st.inline_placements.is_empty() {
+                capped_bottom
+            } else {
+                capped_bottom.max(st.inline_box_flow_bottom)
+            };
+            if st.current_height > capped_bottom {
+                st.current_height = capped_bottom;
             }
         }
     }
