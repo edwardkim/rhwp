@@ -7512,21 +7512,52 @@ impl LayoutEngine {
             if !item_is_paragraph && !visible_float_exclusions.is_empty() {
                 if let PageItem::Table {
                     para_index: table_para,
-                    ..
+                    control_index,
                 } = item
                 {
                     let anchor = paragraphs.get(*table_para);
                     // host 에 보이는 글이 있으면 그 줄이 저장 스냅을 진다 — 손대지 않는다.
                     let empty_host = anchor.is_some_and(|para| !para_has_visible_text(para));
-                    // 저장 사다리가 말하는 이 문단의 절대 상단. 합성 줄은 rhwp 가
-                    // 물리식으로 만든 값이라 증거로 쓰지 않는다.
+                    // 저장 사다리가 말하는 이 문단의 절대 상단.
+                    //
+                    // ⚠ 합성 줄은 rhwp 가 물리식으로 만든 값이라 증거로 쓰지 않는다
+                    // (`TAG_IMPLEMENTATION_PROPERTY`).
+                    // ⚠⚠ **좌표가 이 단 안에 있어야 한다.** 저장값이 손상되었거나
+                    // 다른 쪽 기준이면(합성 대조 `vertical_pos = 1_000_000`) 흐름이
+                    // 13,412.7px 까지 전진해 본문 하한을 12,369.5px 넘긴다.
+                    // 범위 밖 입력은 증거로 인정하지 않고 그대로 둔다.
                     let stored_top = anchor
-                        .and_then(|para| para.line_segs.iter().find(|s| s.tag & 0x8000_0000 == 0))
-                        .map(|seg| col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi));
+                        .and_then(|para| {
+                            para.line_segs.iter().find(|s| {
+                                s.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                        })
+                        .filter(|seg| seg.vertical_pos >= 0)
+                        .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi))
+                        .filter(|top_in_col| *top_in_col <= col_area.height + 0.5)
+                        .map(|top_in_col| col_area.y + top_in_col);
+                    // 이 표가 **지금** 놓일 자리. 자리차지 표는 문단-기준 세로 오프셋을
+                    // 자기 상단에 싣는다.
+                    let table_top_now = anchor
+                        .and_then(|para| para.controls.get(*control_index))
+                        .and_then(|c| match c {
+                            Control::Table(t) if is_para_topbottom_float(&t.common) => Some(
+                                hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi),
+                            ),
+                            _ => None,
+                        })
+                        .map_or(y_offset, |v_off| y_offset + v_off.max(0.0));
                     if let (true, Some(stored_top)) = (empty_host, stored_top) {
                         let jump_to = visible_float_exclusions
                             .iter()
                             .filter(|zone| zone.blocks_text && zone.owner_para != *table_para)
+                            // ⚠⚠ **이 표가 실제로 그 밴드와 부딪혀야 한다.** 이미 밴드
+                            // 아래에 놓이는 표를 더 뒤 저장 좌표로 옮기면 안 된다
+                            // (합성 대조: 표 상단 574.8 > 밴드 바닥 294.9 인데도
+                            // 877.4 로 302.6px 추가 이동했다).
+                            .filter(|zone| table_top_now < zone.bottom - 0.5)
                             // 저장 사다리가 이 문단을 **밴드 바닥 아래**에 두었는가.
                             // 그렇다면 한글은 이 표를 밴드 밖으로 내보낸 것이다.
                             .filter(|zone| stored_top + 0.5 >= zone.bottom)

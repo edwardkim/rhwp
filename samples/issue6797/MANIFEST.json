@@ -16,8 +16,11 @@
         "version": "8.5.8.1522"
       },
       "referenceEngine": "2020",
-      "referencePdfStatus": "pending — 저장 제품이 hancom-office-2010 이라 정책상 engine 2020 기준 PDF 가 필요하다. 이 작업 PC 에는 hwp2024Convert MCP 의 .env.local(endpoint·token)이 없어 산출하지 못했다.",
-      "contract": "빈 host 의 표 항목은, 저장 사다리가 그 문단을 앞 문단 자리차지 밴드의 바닥 아래에 둔 경우 그 저장 위치로 비켜 간다. host 에 보이는 글이 있으면 그 줄이 스냅을 지므로 손대지 않는다(synam-001 pi=229). 크기 문턱 없음."
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 11쪽, 쪽별 공백 제거 글자 수가 rhwp 와 11쪽 전부 일치. 메인테이너 산출본과 바이트는 다르지만(PDF 가 생성 시각·/ID 를 담는다) 쪽수·쪽별 글자 수가 같다.",
+      "contract": "빈 host 의 표 항목은, 저장 사다리가 그 문단을 앞 문단 자리차지 밴드의 바닥 아래에 둔 경우 그 저장 위치로 비켜 간다. host 에 보이는 글이 있으면 그 줄이 스냅을 지므로 손대지 않는다(synam-001 pi=229). 크기 문턱 없음.",
+      "referencePdf": "pdf/156160455-social-pig-farm-income-2020.pdf",
+      "referencePdfSha256": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65",
+      "referencePdfBytes": 393142
     }
   ]
 }
