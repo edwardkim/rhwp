@@ -291,3 +291,60 @@ snapshot이다. `git diff --stat b0c292abe a4589c1d`로 test source 1개만 다�
 
 본문 inline·셀·비표 문단 Para 원점 연결, 다단/증분 재조판 등 4절의 후속 범위는 남아 있다.
 Stage 3·Docker WASM·Studio 서버 교체·원격 push·PR 생성은 이번 절편에서 수행하지 않았다.
+
+## 7. 네 번째 절편 — 본문 inline·셀의 미연결 계약 확인
+
+### 7.1 수행 범위와 재현 입력
+
+2026-09-07 다음 절차 승인에 따라 기존 블록 배치 결과를 본문 inline·셀 경로에 연결할 수
+있는지 조사하고, 두 경로를 구분하는 실패 시험을 추가했다. 제품 코드는 이번 절편에서
+수정하지 않았다. 공개 fixture의 메모리 clone만 변경하며 파일명별 분기는 추가하지 않는다.
+
+- 본문: 첫 문단을 `앞 + TAC 표 + 뒤`로 구성한다. 선행 그림은 기존 Paper/Square 속성을
+  유지하고 표는 1셀로 줄인다. 문자 offset과 control 위치를 맞추며 저장 LineSeg는 제거한다.
+  공개 `is_tac_table_inline_in_para` 판정으로 블록 아닌 inline 경로의 입력임을 확인한다.
+- 셀: 위 구조를 외부 표의 한 셀에 넣는다. 그림은 Para/Para 기준으로 설정하고 선행 그림과
+  중첩 TAC의 문자 anchor가 각각 0/1임을 검사한다. 바깥 host는 텍스트 없이 네 extended
+  control과 문단 끝에 맞는 문자 수를 사용한다. 그림·표가 각각 하나 존재하는지도 검사한다.
+- 두 시험은 현재 실제 가로 교집합과 세로 교집합을 각각 검사한다. 표가 사라지거나 바깥
+  여백만 무시해서 통과하지 못한다. 향후 GREEN 검증에는 앞뒤 텍스트의 보존·순서와 측정
+  높이·쪽 귀속 assertion도 추가해야 한다. 이 두 RED만으로 전체 계약을 대표하지 않는다.
+
+### 7.2 구조적 원인과 기존 보호 경계
+
+| 경로 | 확인된 소유 경계 | 단순 표 좌표 전달이 부족한 이유 |
+| --- | --- | --- |
+| 본문 블록 TAC | `typeset.rs`의 PageItem 표 배치 → column metadata → block renderer | 앞 절편의 16건이 검증한 경로이며 본문 텍스트 중간의 inline 표와 다름 |
+| 본문 inline | `paragraph_layout.rs::layout_inline_table_paragraph`와 일반 `layout_line`의 inline 제어 처리 | renderer가 텍스트/표 경계와 줄 높이를 별도로 결정하므로, 표 y만 옮기면 뒤 텍스트와 fit 예산이 달라짐 |
+| composer | `line_breaking.rs::flow_inline_controls`가 TAC 표를 의도적으로 제외 | 표 폭을 다음 글자에 합산하면 기존 `abc + table + efg` 경계가 사라진다는 보호 주석이 있음. 제외 조건 삭제로 해결할 수 없음 |
+| 그림 band | `supports_picture_band_frame_controls`는 TAC 표를 수용하지 않음 | 기존 band 지원을 모든 inline 개체의 지원으로 간주할 수 없음 |
+| 셀 재조판·측정 | `recompose_cell_lines_in_frame`의 저장 줄 경로는 exclusion을 빈 배열로 전달하며 #5818 셀 계약을 명시. `measure_table_impl`은 절대 page/cell 원점 인자를 받지 않음 | 셀의 상대 폭/높이 측정과 실제 종이 위 좌표가 확정되는 시점이 다름. 본문 map을 붙이는 것만으로 셀 높이·행 분할이 함께 갱신되지 않음 |
+
+따라서 현재 필요한 연결은 **표 한 개의 이동 좌표가 아니라, 텍스트와 표를 함께 놓은
+줄 결과를 측정·페이지 분할·그리기가 공유하도록 하는 것**이다. 셀의 기존 정책을 제거하거나
+표만 그린 뒤 이동시키는 우회 수정을 하지 않았다. 실제 데이터 구조와 소비자 변경은
+[구현계획서 7절](../plans/task_m100_6812_impl.md#7-본문-inline셀-연결-수정안--승인-대기)의 승인 대기 수정안이다.
+
+### 7.3 검증과 현재 판정
+
+- RED 시험 추가: `1e42a8928`; 셀 anchor·문자 수·교집합 판정 보완: `826f941e7`.
+- source를 로컬 commit한 뒤 기존 detached review worktree를 같은 SHA로 전환하고 suite를
+  다시 준비했다. 원본/파생물의 분리와 고정 target 재사용을 유지했다.
+- 최종 `826f941e7`의 suite 026에서 18건 실행: **16 PASS / 2 FAIL**, exit 101,
+  실행 1.62초(컴파일 6.13초). 로그는 review worktree의
+  `output/6812/stage2/flow-placement/inline-cell-red-final.log`다.
+  `cargo fmt --all -- --check`와 manifest `--check`는 PASS(1180 sources /
+  5009 static test attrs / 48 targets). 이번 시험 추가 후 Clippy·전체 회귀·WASM은
+  실행하지 않았으며, 이전 절편의 통과를 이번 SHA의 제출 게이트로 전용하지 않는다.
+- 기존 16건의 PASS와 새 두 건의 RED를 구분한다. 본문은 실제 교집합 가로 133.333px /
+  세로 33.333px, 셀은 가로 115.213px / 세로 33.333px로 겹쳤다. 아래 여백만의 문제가 아니다.
+- 새 입력은 한컴으로 재출력한 별도 정답지가 아니라 승인한 일반 조판 규칙에 대한 합성
+  계약 시험이다. 원본 PDF 대조와 동일한 수준의 증거라고 표시하지 않는다.
+- 이 절편은 미연결 경로의 현재 실패를 확인한 것이다. 새 두 입력의 과거 devel 대조는
+  아직 수행하지 않았으므로 최초 발생 시기나 기존 버전의 회귀 여부까지 단정하지 않는다.
+- pi 8의 단 하단 초과 경고도 새 변형에서 관찰했다. 현재 두 RED는 그림/표 교집합에 관한
+  assertion이므로 이 경고가 해결되었다고 주장하지 않는다. 기존 7쪽 pi 70/71 경고의 대조
+  결과는 6.3절과 별개로 유지한다.
+
+Stage 2는 진행 중이며 RED 상태를 제출 가능으로 판정하지 않는다. 수정안 승인 전에는 공통
+줄 결과/소유자 확장 구현을 시작하지 않는다. Stage 3·WASM·Studio 교체·push·PR도 미수행이다.
