@@ -334,6 +334,8 @@ fn stored_row_matches_frame_expectation(expected: &Range<i32>, stored: &LineSeg)
 pub(crate) enum FrameExclusionPolicy {
     BothSides,
     LargestSide,
+    LeftSide,
+    RightSide,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -419,7 +421,11 @@ impl LayoutFrame {
                     } else if interval.start < left && right < interval.end {
                         let left_interval = interval.start..left;
                         let right_interval = right..interval.end;
-                        if exclusion.policy == FrameExclusionPolicy::LargestSide {
+                        if exclusion.policy == FrameExclusionPolicy::LeftSide {
+                            carved.push(left_interval);
+                        } else if exclusion.policy == FrameExclusionPolicy::RightSide {
+                            carved.push(right_interval);
+                        } else if exclusion.policy == FrameExclusionPolicy::LargestSide {
                             let left_width = left_interval.end - left_interval.start;
                             let right_width = right_interval.end - right_interval.start;
                             // HWP's `LargestOnly` choice normally keeps the
@@ -436,9 +442,13 @@ impl LayoutFrame {
                             carved.push(left_interval);
                             carved.push(right_interval);
                         }
-                    } else if interval.start < left {
+                    } else if interval.start < left
+                        && exclusion.policy != FrameExclusionPolicy::RightSide
+                    {
                         carved.push(interval.start..left);
-                    } else if right < interval.end {
+                    } else if right < interval.end
+                        && exclusion.policy != FrameExclusionPolicy::LeftSide
+                    {
                         carved.push(right..interval.end);
                     } else {
                         carved.push(interval.start..interval.start);

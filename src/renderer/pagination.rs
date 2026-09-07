@@ -455,6 +455,9 @@ pub struct FootnoteRef {
 /// 한 단(Column)에 배치될 콘텐츠
 #[derive(Debug, Clone)]
 pub struct ColumnContent {
+    /// #6812: 분할기에서 확정한 단 기준 TAC 배치. 그림 paint 순서와 무관하다.
+    pub inline_placements:
+        std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
     /// 단 인덱스 (0-based)
     pub column_index: u16,
     /// 단 시작 시점의 논리 높이(px).
@@ -908,6 +911,7 @@ impl PaginationResult {
                         items: cc.items.iter().map(|it| it.with_offset(offset)).collect(),
                         overlay_continuations: cc.overlay_continuations.clone(),
                         overlay_cuts: cc.overlay_cuts.clone(),
+                        inline_placements: cc.inline_placements.clone(),
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
                         wrap_around_paras: cc

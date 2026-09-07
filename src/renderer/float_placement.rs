@@ -14,7 +14,7 @@ use crate::model::HwpUnit;
 
 use super::hwpunit_to_px;
 use super::layout::picture_flow_frame_size_hu;
-use super::layout_frame::{FrameExclusion, FrameExclusionPolicy};
+use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
 /// 개체 배치에 쓰이는 실제 좌표계. Paper와 Page(본문 영역)를 구분하며,
@@ -79,6 +79,131 @@ impl ObjectPlacementFrame<'_> {
         };
         (x, y)
     }
+
+    /// 실제 출력과 같은 여백·캡션 포함 상자. 흐름에 영향을 주는 Square 그림만 등록한다.
+    /// `allow_overlap`은 floating 개체 간 허용이며 TAC 줄의 어울림을 취소하지 않는다.
+    pub(crate) fn picture_exclusion(&self, picture: &Picture) -> Option<FrameExclusion> {
+        let common = &picture.common;
+        if common.treat_as_char || common.text_wrap != TextWrap::Square {
+            return None;
+        }
+        let (width, height) = picture_flow_frame_size_hu(picture);
+        if width <= 0 || height <= 0 {
+            return None;
+        }
+        let mut width = hwpunit_to_px(width, self.dpi);
+        let mut height = hwpunit_to_px(height, self.dpi);
+        if let Some(caption) = &picture.caption {
+            use crate::model::shape::CaptionDirection;
+            let spacing = hwpunit_to_px(caption.spacing as i32, self.dpi);
+            match caption.direction {
+                CaptionDirection::Top | CaptionDirection::Bottom => {
+                    height +=
+                        super::composer::caption_height_px(&picture.caption, self.dpi) + spacing;
+                }
+                CaptionDirection::Left | CaptionDirection::Right => {
+                    width += hwpunit_to_px(caption.width as i32, self.dpi) + spacing;
+                }
+            }
+        }
+        width += hwpunit_to_px(
+            i32::from(common.margin.left) + i32::from(common.margin.right),
+            self.dpi,
+        );
+        height += hwpunit_to_px(
+            i32::from(common.margin.top) + i32::from(common.margin.bottom),
+            self.dpi,
+        );
+        let (x, mut y) = self.position(common, width, height);
+        if common.flow_with_text && common.vert_rel_to == VertRelTo::Para {
+            y = y.min((self.column.y + self.column.height - height).max(self.column.y));
+        }
+        if ![x, y, width, height].iter().all(|value| value.is_finite()) {
+            return None;
+        }
+        let hu = |px| super::px_to_hwpunit(px, self.dpi);
+        Some(FrameExclusion {
+            horizontal: hu(x)..hu(x + width),
+            vertical: hu(y)..hu(y + height),
+            policy: match common.text_flow {
+                TextFlow::BothSides => FrameExclusionPolicy::BothSides,
+                TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
+                TextFlow::LeftOnly => FrameExclusionPolicy::LeftSide,
+                TextFlow::RightOnly => FrameExclusionPolicy::RightSide,
+            },
+        })
+    }
+}
+
+/// 분할기가 확정한 TAC 줄의 배치. x/y는 해당 단 원점 기준(px), 여백 포함 pen 좌표다.
+/// 렌더는 이 결과를 소비하며 별도의 그림 회피 판정을 반복하지 않는다.
+#[derive(Debug, Clone, Copy)]
+pub struct InlineBoxPlacement {
+    pub x: f64,
+    pub y: f64,
+    pub clearance: f64,
+}
+
+/// 가로 구간에서 원자적 inline 상자가 들어갈 첫 줄을 찾는다.
+/// 그림 경계에서만 이동하는 LayoutFrame을 사용하며 저장 vpos는 입력받지 않는다.
+/// 원래 프레임보다 넓은 상자는 축소하지 않고, 배제 영역이 없는 전폭 줄까지 기다린다.
+pub(crate) fn place_inline_box(
+    horizontal: Range<f64>,
+    top: f64,
+    width: f64,
+    height: f64,
+    alignment: Alignment,
+    exclusions: &[FrameExclusion],
+    dpi: f64,
+) -> Option<InlineBoxPlacement> {
+    if exclusions.is_empty()
+        || ![horizontal.start, horizontal.end, top, width, height, dpi]
+            .iter()
+            .all(|v| v.is_finite())
+        || horizontal.end <= horizontal.start
+        || width <= 0.0
+        || height <= 0.0
+        || dpi <= 0.0
+    {
+        return None;
+    }
+    let hu = |px| super::px_to_hwpunit(px, dpi);
+    let base = hu(horizontal.start)..hu(horizontal.end);
+    let base_width = base
+        .end
+        .checked_sub(base.start)
+        .filter(|width| *width > 0)?;
+    let start = hu(top);
+    let band_height = hu(height).max(1);
+    // 다른 세로/가로 영역의 그림 때문에 기존 정렬·leading 경로를 대체하지 않는다.
+    if !exclusions.iter().any(|e| {
+        e.horizontal.start < base.end
+            && base.start < e.horizontal.end
+            && e.vertical.start < start.saturating_add(band_height)
+            && start < e.vertical.end
+    }) {
+        return None;
+    }
+    let mut frame = LayoutFrame::new(base.clone(), start, exclusions.to_vec());
+    frame.minimum_width = hu(width).max(1).min(base_width);
+    let intervals = frame.carve(band_height);
+    let lane = match alignment {
+        Alignment::Right => intervals.last(),
+        _ => intervals.first(),
+    }?;
+    let left = hwpunit_to_px(lane.start, dpi);
+    let right = hwpunit_to_px(lane.end, dpi);
+    let x = match alignment {
+        Alignment::Right => (right - width).max(left),
+        Alignment::Center => (left + (right - left - width) / 2.0).max(left),
+        _ => left,
+    };
+    let y = hwpunit_to_px(frame.top, dpi).max(top);
+    Some(InlineBoxPlacement {
+        x,
+        y,
+        clearance: y - top,
+    })
 }
 
 /// A paper/page-anchored side-wrap float that can explain a stored body row's

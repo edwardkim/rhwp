@@ -1095,6 +1095,11 @@ struct TypesetState {
     pending_body_wide_top_reserve: f64,
     /// visible text host 의 양수 offset 자리차지 표가 후속 문단을 밀어내는 구간.
     visible_float_exclusions: Vec<VisibleFloatExclusion>,
+    /// 현재 단에 실제 배치된 그림의 점유 영역. 단/쪽 전환에서 폐기한다.
+    side_wrap_exclusions:
+        std::collections::BTreeMap<(usize, usize), super::layout_frame::FrameExclusion>,
+    inline_placements:
+        std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
     /// 후속 섹션 블록 뒤로 잠시 미루기 위한 큐.
     deferred_table_controls: Vec<DeferredTableControl>,
@@ -4630,6 +4635,8 @@ impl TypesetState {
             on_first_multicolumn_page: false,
             pending_body_wide_top_reserve: 0.0,
             visible_float_exclusions: Vec::new(),
+            side_wrap_exclusions: std::collections::BTreeMap::new(),
+            inline_placements: std::collections::HashMap::new(),
             deferred_table_controls: Vec::new(),
             deferred_next_page_square_pictures: Vec::new(),
             page_start_square_pictures: Vec::new(),
@@ -5042,6 +5049,72 @@ impl TypesetState {
         }
     }
 
+    fn inline_flow_column(&self) -> super::page_layout::LayoutRect {
+        let layout = self.current_zone_layout.as_ref().unwrap_or(&self.layout);
+        let mut column = layout
+            .column_areas
+            .get(self.current_column as usize)
+            .copied()
+            .unwrap_or(layout.body_area);
+        column.y += self.current_zone_y_offset;
+        column.height = (column.height - self.current_zone_y_offset).max(0.0);
+        column
+    }
+
+    /// 실제로 현재 단에 방출한 그림만 등록한다. 미래/다른 쪽의 그림은 예약하지 않는다.
+    fn register_side_wrap_picture(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+        para: &Paragraph,
+        paragraph_top: Option<f64>,
+        styles: &ResolvedStyleSet,
+    ) {
+        let Some(Control::Picture(picture)) = para.controls.get(control_index) else {
+            return;
+        };
+        if picture.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+            && paragraph_top.is_none()
+        {
+            // 배치 소유자가 아직 문단 원점을 전달하지 않은 경로는 원시 vpos로 추정하지 않는다.
+            return;
+        }
+        if !self.current_items.iter().any(|item| {
+            matches!(item, PageItem::Shape { para_index: pi, control_index: ci }
+            if *pi == para_index && *ci == control_index)
+        }) {
+            return;
+        }
+        let column = self.inline_flow_column();
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        let left = style.map_or(0.0, |s| s.margin_left);
+        let right = style.map_or(0.0, |s| s.margin_right);
+        let container = super::page_layout::LayoutRect {
+            x: column.x + left,
+            width: (column.width - left - right).max(0.0),
+            ..column
+        };
+        let paper = super::page_layout::LayoutRect {
+            x: 0.0,
+            y: 0.0,
+            width: self.layout.page_width,
+            height: self.layout.page_height,
+        };
+        let frame = super::float_placement::ObjectPlacementFrame {
+            container: &container,
+            column: &column,
+            body: &self.layout.body_area,
+            paper: &paper,
+            paragraph_y: column.y + paragraph_top.unwrap_or(0.0),
+            alignment: style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
+            dpi: self.dpi,
+        };
+        if let Some(exclusion) = frame.picture_exclusion(picture) {
+            self.side_wrap_exclusions
+                .insert((para_index, control_index), exclusion);
+        }
+    }
+
     /// Square 표 옆으로 흐른 문단이 표보다 아래까지 이어지면, 그 저장 좌표의 마지막
     /// 줄까지 배제 밴드를 확장한다. 표 자체만 예약하면 전폭 복귀 뒤의 fit 경로가 그
     /// 텍스트 높이를 잃어 뒤쪽 본문을 과도하게 같은 쪽에 배치한다.
@@ -5058,6 +5131,7 @@ impl TypesetState {
     fn flush_column(&mut self) {
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
+        self.side_wrap_exclusions.clear();
         if self.current_items.is_empty()
             && self.current_column_wrap_around_paras.is_empty()
             && self.page_start_square_pictures.is_empty()
@@ -5076,6 +5150,7 @@ impl TypesetState {
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
             overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
+            inline_placements: std::mem::take(&mut self.inline_placements),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5147,6 +5222,7 @@ impl TypesetState {
 
     /// 비어있어도 flush
     fn flush_column_always(&mut self) {
+        self.side_wrap_exclusions.clear();
         let col_content = ColumnContent {
             column_index: self.current_column,
             start_height: self.current_start_height,
@@ -5159,6 +5235,7 @@ impl TypesetState {
             wrap_anchors: std::mem::take(&mut self.current_column_wrap_anchors),
             overlay_continuations: std::mem::take(&mut self.current_column_overlay_continuations),
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
+            inline_placements: std::mem::take(&mut self.inline_placements),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -9023,6 +9100,7 @@ impl TypesetEngine {
                                 }
                             }
                             // [Task #1052] 글상자 내 각주 수집 (engine.rs:1376-1398 동등)
+                            st.register_side_wrap_picture(para_idx, ctrl_idx, para, None, styles);
                             // footnote-tbox-01.hwpx 의 글상자 안 각주 본문이 페이지 하단 영역
                             // 에 누락되는 결함 정정. engine.rs (legacy) 는 이미 처리하나
                             // typeset.rs (main, default) 만 누락 — feedback_image_renderer_paths_separate.
@@ -19786,6 +19864,13 @@ impl TypesetEngine {
                     } else if let Some(extra) = non_tac_pushdown_h {
                         st.current_height += extra;
                     }
+                    st.register_side_wrap_picture(
+                        para_idx,
+                        ctrl_idx,
+                        para,
+                        Some(para_start_height),
+                        styles,
+                    );
                 }
                 _ => {}
             }
@@ -20022,8 +20107,14 @@ impl TypesetEngine {
                     st.current_height - snapped_base > cap
                 );
             }
-            if st.current_height - snapped_base > cap {
-                st.current_height = snapped_base + cap;
+            let side_wrap_clearance: f64 = st
+                .inline_placements
+                .iter()
+                .filter(|((pi, _), _)| *pi == para_idx)
+                .map(|(_, placement)| placement.clearance)
+                .sum();
+            if st.current_height - snapped_base > cap + side_wrap_clearance {
+                st.current_height = snapped_base + cap + side_wrap_clearance;
             }
         }
     }
@@ -20537,6 +20628,35 @@ impl TypesetEngine {
         };
 
         // TAC 표는 분할하지 않고 통째로 배치
+        let column = st.inline_flow_column();
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        let left = style.map_or(0.0, |s| s.margin_left);
+        let right = style.map_or(0.0, |s| s.margin_right);
+        let before_text: f64 = (0..tac_table_line_idx.unwrap_or(0))
+            .map(|line| fmt.line_advance(line))
+            .sum();
+        let advance = hwpunit_to_px(
+            table.common.width as i32
+                + i32::from(table.outer_margin_left)
+                + i32::from(table.outer_margin_right),
+            self.dpi,
+        );
+        let band_height = ft.total_height
+            + hwpunit_to_px(
+                i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+                self.dpi,
+            );
+        let exclusions: Vec<_> = st.side_wrap_exclusions.values().cloned().collect();
+        let mut side_wrap_placement = super::float_placement::place_inline_box(
+            (column.x + left)..(column.x + column.width - right),
+            column.y + st.current_height + before_text,
+            advance,
+            band_height,
+            style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
+            &exclusions,
+            self.dpi,
+        );
+        let clearance = side_wrap_placement.map_or(0.0, |p| p.clearance);
         let available = st.available_height();
         let current_column_has_only_overlay_shapes = st.current_height <= 0.5
             && st
@@ -20582,15 +20702,25 @@ impl TypesetEngine {
             && !same_para_already_placed
             && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
             && stored_vpos_rewinds(prev_stored_vpos, para);
-        if (st.current_height + table_height + tac_trailing_spacing_for_fit > available
-            && !fits_after_overlay_shapes
-            && !saved_tac_table_bottom_fits
+        if (st.current_height + clearance + table_height + tac_trailing_spacing_for_fit > available
+            && (!fits_after_overlay_shapes || side_wrap_placement.is_some())
+            && (!saved_tac_table_bottom_fits || side_wrap_placement.is_some())
             && !st.current_items.is_empty())
             || stored_vpos_rewind_break
         {
             st.advance_column_or_new_page();
+            // 이전 단의 그림은 새 단을 점유하지 않는다. 이미 확정한 다른 표의 metadata는
+            // flush가 전 단에 보존하고 이 표는 새 단의 기존 배치 정책으로 시작한다.
+            side_wrap_placement = None;
         }
 
+        if let Some(mut placement) = side_wrap_placement {
+            st.current_height += placement.clearance;
+            placement.x -= column.x;
+            placement.y -= column.y;
+            st.inline_placements.insert((para_idx, ctrl_idx), placement);
+            st.vpos_ladder_dirty |= placement.clearance > 0.0;
+        }
         self.place_table_with_text(
             st,
             para_idx,
@@ -20610,7 +20740,7 @@ impl TypesetEngine {
         );
         // [#5699 H1] 교정 계상으로 확보한 표 밴드 하단을 흐름 바닥으로 고정 —
         // 후속 문단의 저장 vpos 스냅이 밴드 위로 되감지 못한다(쪽/단 단위 리셋).
-        if owns_tac_band {
+        if owns_tac_band || side_wrap_placement.is_some() {
             st.ladder_band_floor = st.ladder_band_floor.max(st.current_height);
         }
     }
@@ -28470,6 +28600,7 @@ mod tests {
                 wrap_anchors: std::collections::HashMap::new(),
                 overlay_continuations: Vec::new(),
                 overlay_cuts: Vec::new(),
+                inline_placements: Default::default(),
             }],
             active_header: None,
             active_footer: None,
