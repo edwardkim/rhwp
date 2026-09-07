@@ -520,3 +520,117 @@ fn collect_top_level_tables(node: &RenderNode, out: &mut Vec<(usize, usize, Boun
         collect_top_level_tables(child, out);
     }
 }
+
+fn inline_host_document() -> rhwp::model::document::Document {
+    let core = sample();
+    let mut doc = core.document().clone();
+    let para = &mut doc.sections[0].paragraphs[0];
+    para.text = "앞뒤".into();
+    // 네 선행 extended control(32 units), 앞, 표(8 units), 뒤.
+    para.char_offsets = vec![32, 41];
+    para.char_count = 43;
+    para.line_segs.clear();
+    assert_eq!(
+        para.control_text_positions()[4],
+        1,
+        "표 앵커는 두 글자 사이"
+    );
+    let Control::Table(table) = &mut para.controls[4] else {
+        panic!("표")
+    };
+    let mut cell = table.cells[9].clone();
+    cell.row = 0;
+    cell.col = 0;
+    cell.row_span = 1;
+    cell.col_span = 1;
+    cell.width = 10000;
+    cell.height = 2500;
+    table.row_count = 1;
+    table.col_count = 1;
+    table.cells = vec![cell];
+    table.cell_grid = vec![Some(0)];
+    table.common.width = 10000;
+    table.common.height = 2500;
+    table.row_sizes = vec![1];
+    let Control::Table(table) = &para.controls[4] else {
+        panic!("표")
+    };
+    assert!(rhwp::renderer::height_measurer::is_tac_table_inline_in_para(table, 48000, para));
+    doc
+}
+
+#[test]
+fn issue_6812_inline_table_between_text_respects_picture_exclusion() {
+    let mut core = sample();
+    core.set_document(inline_host_document());
+    assert_below_picture(&core);
+}
+
+#[test]
+fn issue_6812_cell_inline_table_respects_its_own_picture_exclusion() {
+    let mut core = sample();
+    let mut doc = inline_host_document();
+    let mut inner = doc.sections[0].paragraphs[0].clone();
+    inner.controls.drain(0..3);
+    inner.column_type = Default::default();
+    inner.raw_break_type = 0;
+    inner.char_offsets = vec![8, 17];
+    inner.char_count = 19;
+    let Control::Picture(picture) = &mut inner.controls[0] else {
+        panic!("그림")
+    };
+    picture.common.horz_rel_to = HorzRelTo::Para;
+    picture.common.vert_rel_to = VertRelTo::Para;
+    picture.common.horizontal_offset = 0;
+    picture.common.vertical_offset = 0;
+    picture.common.width = 45000;
+    picture.shape_attr.current_width = 45000;
+    let Control::Table(mut outer) = doc.sections[0].paragraphs[0].controls[4].clone() else {
+        panic!("외부 표")
+    };
+    outer.common.width = 48000;
+    outer.common.height = 20000;
+    outer.cells[0].width = 48000;
+    outer.cells[0].height = 20000;
+    outer.cells[0].paragraphs = vec![inner];
+    let host = &mut doc.sections[0].paragraphs[0];
+    host.text.clear();
+    host.char_offsets.clear();
+    host.controls.truncate(3);
+    host.controls.push(Control::Table(outer));
+    core.set_document(doc);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let (mut pictures, mut tables) = (Vec::new(), Vec::new());
+    collect_nested_pair(&tree.root, &mut pictures, &mut tables);
+    assert_eq!(pictures.len(), 1, "셀 그림 누락/중복 금지");
+    assert_eq!(tables.len(), 1, "셀 TAC 표 누락/중복 금지");
+    assert!(
+        tables[0].y + 0.5 >= pictures[0].y + pictures[0].height + 141.0 / 75.0,
+        "셀 원점의 선행 그림 아래에 nested TAC를 놓는다: picture={:?}, table={:?}",
+        pictures[0],
+        tables[0]
+    );
+}
+
+fn collect_nested_pair(
+    node: &RenderNode,
+    pictures: &mut Vec<BoundingBox>,
+    tables: &mut Vec<BoundingBox>,
+) {
+    match &node.node_type {
+        RenderNodeType::Image(image)
+            if image.cell_context.is_some() && image.control_index == Some(0) =>
+        {
+            pictures.push(node.bbox)
+        }
+        RenderNodeType::Table(table)
+            if table.cell_context.is_some() && table.control_index == Some(1) =>
+        {
+            tables.push(node.bbox)
+        }
+        _ => {}
+    }
+    for child in &node.children {
+        collect_nested_pair(child, pictures, tables);
+    }
+}
