@@ -405,6 +405,20 @@ impl Document {
         .with_hwp3_password_layout(
             self.provenance.format == SourceFormat::Hwp3 && self.header.encrypted,
         )
+        // native HWP5 는 로드 시 raw_stream 을 보유한 섹션을 raw_provenance 로
+        // 봉인한다(파서 seal_body_raw_provenance). 편집 명령은 raw_stream 만
+        // None 으로 지우고 봉인은 남기므로, "봉인은 있는데 raw_stream 이 사라짐"
+        // = 이 세션의 문서 변조 신호다. 합성·신규 문서(Document::default 직접
+        // 구성)는 봉인 자체가 없어 편집이 아니어도 raw_stream 이 없으므로,
+        // raw_stream 부재만으로 판정하면 오탐이다(오라클 미편집인데 편집 게이트
+        // 발동). 봉인 존재를 함께 요구해 실제 로드된 문서의 편집만 잡는다.
+        .with_session_edited(
+            self.provenance.format == SourceFormat::Hwp5
+                && self
+                    .sections
+                    .iter()
+                    .any(|s| s.raw_provenance.is_some() && s.raw_stream.is_none()),
+        )
     }
 
     /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.
