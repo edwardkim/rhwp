@@ -1,0 +1,45 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6854,
+  "title": "잉크 없는 빈 문단이 쪽을 통째로 차지해 고아 쪽이 생긴다",
+  "entries": [
+    {
+      "path": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6854",
+      "originalFilename": "70833_(규제영향분석서) 전기안전관리법 시행규칙 일부개정령(안).hwp",
+      "bytes": 70656,
+      "sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.6402"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf",
+      "referencePdfBytes": 532111,
+      "referencePdfSha256": "6186340bd7ea889f9bf9bfc1d7de0df09455e49d29d1644e7ef8a77d420bef2f",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 18쪽 — 수정 후 rhwp 와 같다(수정 전 19쪽).",
+      "contract": "글자도 컨트롤도 없는 한 줄 문단(pi=84)이 쪽 예산을 한 줄 미만으로 넘겨 혼자 새 쪽을 열면 안 된다 — 바로 다음 문단이 선언된 쪽나누기라 그 쪽은 꼬리말 '- 14 -' 만 담는 고아 쪽이 된다."
+    },
+    {
+      "path": "samples/issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6854",
+      "originalFilename": "22037757_[별표 13] 신규임용시험 가산대상 자격증(춘천시 공무원 인사 규칙).hwpx",
+      "bytes": 91186,
+      "sha256": "1d2ae7a559189f73d41f380da59b03aba41102511a69fbf67514141362cb962f",
+      "lastSavedWith": {
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4204"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/22037757-chuncheon-personnel-rule-annex13-2020.pdf",
+      "referencePdfBytes": 128414,
+      "referencePdfSha256": "847a0bcdd721ba33fff94a6f2b8dd6faea54e818f9fdf28405c0d49eca4e67f0",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 15쪽 — 수정 후 rhwp 와 같다(수정 전 16쪽).",
+      "contract": "같은 결함의 두 번째 정본 대조 — 표 별표 문서에서도 고아 쪽 하나가 사라져 정본과 쪽수가 같아진다."
+    }
+  ]
+}
