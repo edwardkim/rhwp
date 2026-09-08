@@ -1,7 +1,7 @@
 # #6899 결과보고서 — CI Impact Policy Controller 실패 증적 보고
 
 - Issue: #6899. 날짜: 2026-09-08.
-- 상태: [PR #6903](https://github.com/edwardkim/rhwp/pull/6903) CI 실패 뒤 재설계 R2 구현·실제 실패 재생 검증 완료. 수정 push·원격 CI·운영 적용 미수행.
+- 상태: [PR #6903](https://github.com/edwardkim/rhwp/pull/6903) R2 반영·원격 CI 성공·최종 self-review 완료. 병합 및 main 운영 적용은 미수행.
 - [수행계획](../plans/task_m100_6899.md) · [구현계획](../plans/task_m100_6899_impl.md) ·
   [원인 조사](../working/task_m100_6899_stage1.md) · [구현 검증](../working/task_m100_6899_stage2.md) ·
   [최종 로컬 검증](../working/task_m100_6899_stage3.md).
@@ -10,7 +10,10 @@
 
 후속 반영 승인에 따라 최신 devel `9e4f504fe`를 통합했다. 제출 전 재검증은 Node 122건,
 재사용 계약 120건, Python workflow 230건 및 actionlint 통과다. 아래 432건은 R2 최초 검증 기록이다.
-판정·재평가·트리거를 유지하고 보고 개선만 기존 PR에 반영한다. 새 head 원격 CI·main 적용은 별도 gate다.
+판정·재평가·트리거를 유지하고 보고 개선만 기존 PR에 반영했다.
+검토 head `bbcdf40ca7bb14340eb6ba128c8732b17c13a64f`의 CI Full·CodeQL Analyze·독립 GHAS check·
+CI Impact Policy가 성공했다. [최종 self-review](../pr/archives/pr_6903_review.md)는 승인이다.
+후속 문서 head checks·병합 승인·main 운영 적용은 남은 gate다. 기존 Controller 성공을 새 reporter의 운영 증적으로 간주하지 않는다.
 
 이전 구현은 main에 미적용인 문제 외에도 **설치 네트워크 오류 상세와 GHAS CodeQL 실패를 누락하는
 설계 결함**이 있었다. 로컬 테스트 개수가 실제 보고 품질의 충분한 증거가 아니었다.
@@ -23,7 +26,8 @@
   R2는 설치 연결 재설정·다운로드 실패·테스트 미실행 및 GHAS High 1건의 규칙·경로/202행·설명을 표시했다.
 - 실제 R2 진단 비용: 8요청, 최종 재생 약 3.88초(첫 재생 약 3.65초). 준비 API 3회 별도. 소수 관측이며 CI 성능 목표가 아니다.
 - CodeQL이 지적한 테스트 assertion은 태그명 정규식 대신 `<`/`>` 부재와 대소문자 escape 검증으로 보완했다.
-  sanitizer 제품 결함으로 단정하거나 alert dismiss하지 않았다. CodeQL 경고 해소는 수정 head의 원격 검사로 확인해야 한다.
+  sanitizer 제품 결함으로 단정하거나 alert dismiss하지 않았다. 수정 head의 독립 GHAS check
+  `102081029082`가 성공했고 변경 코드 신규 경고 없음·annotation 0건을 확인했다.
 - Node 122건, 재사용 계약 83건, Python workflow 227건 통과. 변경 YAML actionlint 통과.
 
 [R2 증적·제한·명령](../working/task_m100_6899_rework_stage1.md)을 기준으로 판단한다.
@@ -66,9 +70,8 @@ Controller 내부 오류는 단계 수준 진단이며 모든 예외의 상세 �
 ## 남은 절차와 완료 조건 (R2)
 
 1. 완료: 원격 최신 devel `e7e978589` 재확인 → `bdd1e8a6e` push → devel 대상 PR #6903 생성.
-2. R2 수정 결과 승인 후 최신 devel/PR head 확인, 기존 PR에 수정 push·본문 현행화 후 CI 재검증.
-   [리뷰 접수 기록](../pr/archives/pr_6903_review.md)은 보류 상태를 유지하며 최종 self-review는 새 CI 확인 뒤 진행.
-3. 승인 후 병합. 이 시점은 devel 구현 반영이며 #6899 운영 완료가 아니다.
+2. 완료: R2 수정 push·본문 현행화, head `bbcdf40ca7` CI 성공 및 승인된 최종 self-review.
+3. 후속 문서 head checks와 최신 base를 확인한 뒤 별도 승인 후 병합. 이 시점은 devel 구현 반영이며 #6899 운영 완료가 아니다.
 4. 별도 승인된 main 배포 뒤 live 요약·원본 링크·판정 보존을 확인하고 #6899 종료.
 
 main 직접 push/dispatch, 보호 규칙 수정, 자동 재실행·comment, 원본 제품 오류 수정은 하지 않았다.
