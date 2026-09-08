@@ -96,6 +96,21 @@ fn footnote_composed_line_count(
         .sum()
 }
 
+/// [#6866] 회전 프레임 그림의 노드 상자 — `pic`(회전 전 비트맵)과 **중심이 같은**
+/// `size` 상자를 만든다. `size` 가 `pic` 과 같으면 원래 상자 그대로다.
+fn rotated_frame_node_box(
+    pic_x: f64,
+    pic_y: f64,
+    pic_width: f64,
+    pic_height: f64,
+    size: (f64, f64),
+) -> BoundingBox {
+    let (width, height) = size;
+    let center_x = pic_x + pic_width / 2.0;
+    let center_y = pic_y + pic_height / 2.0;
+    BoundingBox::new(center_x - width / 2.0, center_y - height / 2.0, width, height)
+}
+
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_picture(
@@ -202,6 +217,24 @@ impl LayoutEngine {
             pic_width *= scale;
         }
 
+        // [#6866] **회전 프레임 그림의 노드 상자는 `frame`(= 선언 상자)이다.**
+        //
+        // 페인터는 `ShapeTransform::effective_image_bbox` 로 90/270° 회전 그림의
+        // bbox 가로세로를 **먼저 뒤집은 뒤** 회전을 건다(이중회전 방지, shot 05).
+        // 즉 페인터는 노드 상자가 **회전 후** 상자라고 전제한다. 그런데 위에서
+        // `pic_*`(= `current_*`, 회전 **전** 비트맵)로 상자를 내면 그 전제가 깨져
+        // 뒤집기가 한 번 더 걸린다 — 선언 29.3×53.7 이 53.7×29.3 으로 눕는다
+        // (156627451 12쪽 `angle=270`, 같은 문서 `angle=0` 15장은 정상).
+        //
+        // 두 상자는 중심이 같으므로, 노드에 `frame` 을 실으면 페인터의 뒤집기가
+        // 정확히 `pic` 을 만들어 내고 회전이 다시 `frame` 으로 돌려놓는다.
+        // 두 상자는 중심이 같으므로 원점도 그 중심에서 되짚는다.
+        let node_box_size = if uses_rotated_frame {
+            (frame_width, frame_height)
+        } else {
+            (pic_width, pic_height)
+        };
+
         // [#6284] 캡션 띠 — 그림이 차지하는 블록은 그림 + 캡션이다.
         //
         // 이 계약은 형제 함수 `layout_body_picture` 에 이미 있었는데, 본문 그림을
@@ -307,7 +340,7 @@ impl LayoutEngine {
                         cell_ctx.cloned(),
                     ),
                 ),
-                BoundingBox::new(pic_x, pic_y, pic_width, pic_height),
+                rotated_frame_node_box(pic_x, pic_y, pic_width, pic_height, node_box_size),
             ));
             return;
         }
@@ -358,7 +391,7 @@ impl LayoutEngine {
                 cell_context: cell_ctx.cloned(),
                 ..ImageNode::new(bin_data_id, image_data)
             }),
-            BoundingBox::new(pic_x, pic_y, pic_width, pic_height),
+            rotated_frame_node_box(pic_x, pic_y, pic_width, pic_height, node_box_size),
         );
 
         parent_node.children.push(img_node);
