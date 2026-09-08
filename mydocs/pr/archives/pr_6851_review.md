@@ -1,0 +1,60 @@
+# PR #6851 검토
+
+## 판정: 승인 (그라데이션 축 방향 한정)
+
+5·7·29쪽의 그라데이션 방향을 대조했다. 7쪽 일부 글자에 상자형 대체 글리프가 보여 문서 전체 시각 일치는 승인하지 않는다.
+
+**통합 판정은 메인터너 보정 완료, 수용 가능(검토 범위 한정)이다.** #6853의 물리 18·19쪽 그래프 분할과 추가 보정 중 발생한 #1939 HWPX 왕복 렌더 회귀를 해결했다. 최종 미커밋 작업 트리에서 8스레드 전체 회귀 9,241건이 통과했다. 아래에 명시한 글꼴·세부 간격 및 개별 PR의 범위 밖 차이를 전체 시각 일치로 해석하지 않는다. 최종 커밋의 원격 CI와 머지 승인은 별도다.
+
+## 검토 기준과 출처
+
+- 검토일: 2026-09-08. [원 PR](https://github.com/edwardkim/rhwp/pull/6851), [관련 이슈](https://github.com/edwardkim/rhwp/issues/6845).
+- 원 head: `a1fe3cec58892f061ba168c5cb8f59a2299a62ba`. [원 PR CI](https://github.com/edwardkim/rhwp/pull/6851/checks)는 확인 당시 통과했다.
+- 적용 원 커밋: 6ed6c7c197fe21a4286ece94408e5ee5fb6d55c1. 로컬 커밋: ed636de85. 체리픽의 원 커밋 출처를 보존했다.
+- 기준 upstream/devel: `91147aec332651309029faac521d19106305c6f5`. 체리픽 완료 head(보정 전): `d66f2a6a5aaccc8deae4d77877835ce1a5fdeb86`.
+- 브랜치: `review/planet6897-ci-green-20260908`. 이번 재검증 대상은 위 체리픽 SHA에 #6853 조판·테스트 보정과 #1939 왕복 동등성 보정을 더한 미커밋 작업 트리다. 아직 새 커밋 SHA는 없으며 문서·PDF 갱신을 원격 CI 검증 완료로 해석하지 않는다.
+
+## 실제 검증
+
+- 해당 회귀 테스트: 4건 통과.
+- 최종 전체 통합 회귀: 8스레드로 9,241건 실행, 9,241 통과, 실패 0, 46 건너뜀, exit 0. 실행 388.355초. #6776의 페이지 경계와 #1939의 왕복 렌더 계약을 포함한다.
+- 이전 제품 코드 검증: Native Skia 선택 테스트 76건 통과, Studio 1,493 통과·2 제외, TypeScript·Clippy·fmt 및 개발용 WASM 빌드 통과. 최종 조판·왕복 보정 후에는 전체 Rust 회귀를 재실행했으며 위 별도 검사는 반복하지 않았다.
+- 상세 명령, 실패 원인, 시각 대조 한계는 [공통 검증 기록](pr_6849_6867_planet6897_visual_sweep.md)을 따른다. 기여자의 단독 CI 통과를 통합 성공으로 대체하지 않는다.
+
+## 시각 증적
+
+![gradient-p005.png](../assets/pr_6849_6867_planet6897_20260908/gradient-p005.png)
+
+![gradient-p007.png](../assets/pr_6849_6867_planet6897_20260908/gradient-p007.png)
+
+![gradient-p029.png](../assets/pr_6849_6867_planet6897_20260908/gradient-p029.png)
+
+## 후속 코멘트 계획
+
+모든 머지 조건 충족 후 실제 통합 merge SHA, 최종 PR/devel CI 결과와 이 판정 범위를 원 PR 및 관련 이슈에 UTF-8 body-file 방식으로 기록한다. 기존 동일 작업 코멘트가 있으면 갱신하고 중복 게시하지 않는다. 원 PR 직접 머지가 아니라 출처 보존 체리픽 수용임을 명시한다.
+
+위 최종 PNG만 실제 merge SHA의 raw.githubusercontent.com URL로 본문에 직접 삽입한다. PDF는 같은 SHA의 pdf/ 경로를 연결한다. 코멘트 게시 후 API로 본문을 재조회하고 실제 closing reference와 이슈 상태를 확인한 뒤 필요한 close를 처리한다. 현재 코멘트·close·push·통합 PR 생성은 수행하지 않았다.
+
+## 최신 검증: 조판·왕복 보정 완료, 8스레드 전체 회귀 통과
+
+- 검증 대상: 체리픽 완료 head에 중첩 빈 셀 문단 복원, NO_LS 빈 문단 높이 보존, TAC 표 뒤 간격 반영, HWP5 원본/계보 HWPX 공통 조판 조건 및 #6776 경계 테스트 보정을 더한 미커밋 작업 트리.
+- 최종 전체 회귀: 9,241건 실행, **9,241 통과·실패 0·46 건너뜀**, 느린 테스트 3건, exit 0. 실행 388.355초, 테스트 바이너리 빌드 6분 33초.
+- 실행 ID: daba02f9-1099-415a-98a1-d7dbc5d85541. 78개 테스트 바이너리, 8스레드, no-fail-fast로 끝까지 실행했다.
+- #1939 HWP5 원본 → HWPX 왕복 렌더 테스트와 #6776의 물리 19쪽 그래프 배치·용지 경계 테스트를 포함해 모두 통과했다. 허용치 완화나 실패 테스트 제외로 통과시킨 것이 아니다.
+- 시각 대조: #1939 형식 동등성 보정까지 포함한 최종 작업 트리의 CLI를 새로 빌드하고 기준 PDF와 물리 18·19·20쪽을 재산출했다. 18쪽에는 그래프가 없고, 19쪽에는 312.4px 그래프가 y=78.9667px에, 20쪽에는 725.36px 그림이 y=78.9667px에 배치됨을 SVG 좌표와 세 대조 PNG에서 확인했다. CLI 빌드는 exit 0, 1분 37초이며 바이너리 SHA-256은 6f5e9f7ce8de9ea5d78840a56dd8201a48571e55c11386e5abfbebd0b8708296이다. 원문과 기준 PDF는 변경하지 않았다.
+- 남은 한계: 글꼴 대체와 일부 세부 간격 차이는 남는다. 페이지 경계 해결을 픽셀 단위 동일성으로 주장하지 않는다. Native Skia·Studio·Node/Python 계약·fmt·TypeScript·Clippy·WASM의 이전 결과를 이번 최종 변경의 재실행 결과로 표시하지 않는다.
+
+```sh
+cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast
+```
+
+로그는 임시 경로에만 보관하고 커밋에 추가하지 않는다. 이번 증적 갱신에서는 최종 CLI 빌드와 18·19·20쪽 시각 대조를 수행했고 전체 회귀는 반복하지 않았다. 이 절은 증적 갱신 당시의 기록이며, 이후 상태는 아래 PR 생성 직전 최종 기록을 따른다.
+
+## PR 생성 직전 최종 기록 (2026-09-08)
+
+- 메인터너 보정 커밋: `64f33cfc1c96d893c7e081b987349994dbff2717`. 앞 절의 미커밋 작업 트리 검증은 이 커밋으로 보존한 보정 내용에 해당한다.
+- 사용자 승인 후 최종 필수 lint를 순차 재실행했다. suite prepare/check, fmt/check, native Clippy, WASM32 Clippy, workspace build, workspace all-target Clippy가 모두 종료 코드 0으로 통과했다.
+- native Clippy 25.79초, WASM32 Clippy 13.87초, workspace build 43.49초, workspace all-target Clippy 30.62초다. 대상 디렉터리는 `target/pr-review`다.
+- 전체 회귀는 이미 완료한 8스레드 결과인 **9,241 통과, 0 실패, 46 건너뜀**, 388.355초를 사용하며 이번 lint 실행 중 반복하지 않았다.
+- 오늘할일과 개별 리뷰, 최종 기준 PDF 7개, 코멘트용 PNG 12개를 같은 통합 PR에 포함한다. 임시 로그·중간 PNG/SVG/JSON 및 generated suite는 추가하지 않는다.
+- 이 기록 작성 시점에는 최종 head의 원격 CI와 병합이 아직 수행되지 않았다. 로컬 검증 통과를 원격 CI 통과로 대체하지 않는다. 원 source PR/이슈의 코멘트·종료는 병합 후 절차로 남긴다.

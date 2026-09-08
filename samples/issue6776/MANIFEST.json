@@ -1,0 +1,47 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6776,
+  "title": "(규제영향분석서) 가상융합산업 진흥법 시행령 제정령(안)",
+  "entries": [
+    {
+      "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6776",
+      "originalFilename": "78494_(규제영향분석서) 가상융합산업 진흥법 시행령 제정령(안).hwpx",
+      "bytes": 576512,
+      "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.90.0.983"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "referencePdfBytes": 745736,
+      "referencePdfSha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "referencePdfStatus": "2026-09-08 새 MCP에서 start/status/download 비동기 재산출 완료. engine 2020, 실제 한컴 12.0.0.4605, 74쪽. 다운로드 바이트와 SHA-256을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다. 통합본도 74쪽이나 기존 19쪽 고정 테스트는 호스트가 18쪽으로 이동해 실패했다. 원본 TAC 그림 높이로 호스트를 식별하도록 메인터너 보정했다. 집중 테스트 7건 및 전체 회귀 9,241건 모두 통과하여 보류 사유가 해소됐다. 후속 18·19쪽 시각 대조에서 그래프 페이지가 다름을 확인했다. 중첩 빈 문단 제품 코드 보정 후에도 이 차이는 남아 있으며, 8스레드 전체 회귀 9,241건 통과와 별개로 시각 판정은 보류한다.",
+      "contract": "줄이 0개인 칸 문단의 TAC 그림 높이를 정확히 한 번 계상하여 그림 전체를 용지 안에 배치한다. 줄이 있는 문단과 비-TAC 그림은 이중 계상하지 않는다. 단독 PR의 고정 페이지 번호는 통합본에서 달라질 수 있다.",
+      "originalIdentityStatus": "2026-09-08 korea_downloads에서 원문을 찾아 등록 샘플과 SHA-256이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
+    },
+    {
+      "path": "samples/issue6776/36367506-water-facility-approval.hwpx",
+      "format": "hwpx",
+      "role": "negative_control",
+      "source": "https://github.com/edwardkim/rhwp/issues/6776",
+      "originalFilename": "36367506_결재문서본문.hwpx",
+      "bytes": 16251,
+      "sha256": "62ee54efc7fd9f5fd06cbfdb5843edcdbf84074b05ede5571c15078d4f1b14ab",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/36367506-water-facility-approval-2020.pdf",
+      "referencePdfBytes": 80369,
+      "referencePdfSha256": "fe82e237046659fdd770811dbd30c8f199d155d9737f1a8d0732f19f2049deda",
+      "referencePdfStatus": "2026-09-08 새 MCP에서 start/status/download 비동기 재산출 완료. engine 2020, 실제 한컴 12.0.0.4605, 3쪽. 다운로드 바이트와 SHA-256을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다.",
+      "contract": "칸 안 **비-TAC(어울림) 그림**은 cell_units 회계에 넣지 않는다. 넣으면 para_non_inline_h 와 이중 계상돼 이 문서가 용지 밖 1건·넘침 1건으로 무너진다. 코퍼스 10,000건 중 이 술어가 실제로 갈리는 5건 가운데 가장 작다(16KB).",
+      "originalIdentityStatus": "2026-09-08 korea_downloads에서 원문을 찾아 등록 샘플과 SHA-256이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
+    }
+  ]
+}

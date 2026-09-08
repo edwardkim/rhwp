@@ -158,6 +158,8 @@ pub enum HwpxError {
     ZipError(String),
     /// XML 파싱 오류
     XmlError(String),
+    /// Incomplete owned drawing text structure must reach the document caller.
+    DrawingTextStructure(String),
     /// 필수 파일 누락
     MissingFile(String),
     /// 데이터 변환 오류
@@ -185,6 +187,7 @@ impl std::fmt::Display for HwpxError {
         match self {
             HwpxError::ZipError(e) => write!(f, "ZIP 오류: {}", e),
             HwpxError::XmlError(e) => write!(f, "XML 파싱 오류: {}", e),
+            HwpxError::DrawingTextStructure(e) => write!(f, "그리기 내부 영역 구조 오류: {}", e),
             HwpxError::MissingFile(e) => write!(f, "필수 파일 누락: {}", e),
             HwpxError::ConversionError(e) => write!(f, "변환 오류: {}", e),
             HwpxError::Encrypted(e) => write!(f, "암호화된 문서: {}", e),
@@ -325,7 +328,7 @@ fn attach_hwpx_master_page(
     section: &mut Section,
     master_page_href: &str,
     bin_data_items: &[content::PackageItem],
-) -> bool {
+) -> Result<bool, HwpxError> {
     match reader.read_file(master_page_href) {
         Ok(master_page_xml) => match section::parse_hwpx_master_page(&canonicalize_bin_item_refs(
             &master_page_xml,
@@ -333,16 +336,17 @@ fn attach_hwpx_master_page(
         )) {
             Ok(master_page) => {
                 section.section_def.master_pages.push(master_page);
-                true
+                Ok(true)
             }
+            Err(e @ HwpxError::DrawingTextStructure(_)) => Err(e),
             Err(e) => {
                 eprintln!("경고: {} 파싱 실패: {}", master_page_href, e);
-                false
+                Ok(false)
             }
         },
         Err(e) => {
             eprintln!("경고: {} 읽기 실패: {}", master_page_href, e);
-            false
+            Ok(false)
         }
     }
 }
@@ -518,7 +522,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
                         &mut section,
                         master_page_href,
                         &package_info.bin_data_items,
-                    ) {
+                    )? {
                         attached_master_page_count += 1;
                     }
                 }
@@ -535,13 +539,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
                                     &mut section,
                                     master_page_href,
                                     &package_info.bin_data_items,
-                                );
+                                )?;
                             }
                         }
                     }
                 }
                 sections.push(section);
             }
+            Err(e @ HwpxError::DrawingTextStructure(_)) => return Err(e),
             Err(e) => {
                 eprintln!("경고: {} 파싱 실패: {}", section_href, e);
                 sections.push(Section::default());
