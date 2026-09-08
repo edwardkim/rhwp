@@ -42,6 +42,59 @@ fn damaged_hwp_section(nested: bool, missing_paragraph: bool) -> Vec<u8> {
     write_records(&records)
 }
 
+fn zero_paragraph_hwp_section(nested: bool) -> Vec<u8> {
+    let mut records = Record::read_all(&damaged_hwp_section(nested, true)).unwrap();
+    let list = records
+        .iter_mut()
+        .find(|r| r.tag_id == tags::HWPTAG_LIST_HEADER)
+        .unwrap();
+    assert_eq!(&list.data[..4], &[1, 0, 0, 0]);
+    list.data[..2].fill(0);
+    write_records(&records)
+}
+
+#[test]
+fn hwp_zero_paragraph_owned_list_is_corrupt_not_an_ordinary_rectangle() {
+    for nested in [false, true] {
+        assert!(matches!(
+            parse_body_text_section(&zero_paragraph_hwp_section(nested)),
+            Err(BodyTextError::DrawingTextStructure(_))
+        ));
+    }
+}
+
+#[test]
+fn hwp_drawing_count_does_not_truncate_its_upper_sixteen_bits() {
+    let mut records = Record::read_all(&zero_paragraph_hwp_section(false)).unwrap();
+    let list = records
+        .iter_mut()
+        .find(|r| r.tag_id == tags::HWPTAG_LIST_HEADER)
+        .unwrap();
+    list.data[..4].copy_from_slice(&65536_u32.to_le_bytes());
+    let Err(BodyTextError::DrawingTextStructure(message)) =
+        parse_body_text_section(&write_records(&records))
+    else {
+        panic!("missing declared paragraphs must be rejected")
+    };
+    assert!(message.contains("declares 65536 paragraphs"), "{message}");
+}
+
+#[test]
+fn hwp_zero_paragraph_corruption_reaches_normal_and_lenient_document_open() {
+    for nested in [false, true] {
+        let bytes = hwp_container(&zero_paragraph_hwp_section(nested));
+        for bytes in [bytes.clone(), force_lenient(bytes)] {
+            assert!(matches!(
+                rhwp::parser::parse_document(&bytes),
+                Err(ParseError::BodyTextError(
+                    BodyTextError::DrawingTextStructure(_)
+                ))
+            ));
+            assert!(rhwp::document_core::DocumentCore::from_bytes(&bytes).is_err());
+        }
+    }
+}
+
 #[test]
 fn hwp_owned_missing_structure_is_an_error_even_in_groups() {
     for nested in [false, true] {

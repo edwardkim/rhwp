@@ -5,16 +5,16 @@ use crate::parser::{record::Record, tags};
 struct Owner {
     level: u16,
     rectangle: bool,
-    declared: Option<u16>,
+    declared: Option<u32>,
     paragraphs: usize,
 }
 
 impl Owner {
     fn finish_list(&self) -> Result<(), BodyTextError> {
         if let Some(declared) = self.declared {
-            // Zero is not adjudicated here: a complete zero-paragraph declaration
-            // has a separate compatibility decision, not a missing-record diagnosis.
-            if usize::from(declared) > self.paragraphs {
+            // #6856: Hancom rejects the maintainer-checked zero-paragraph fixture.
+            // No owned list is a rectangle; an owned list must declare a paragraph.
+            if declared == 0 || u64::from(declared) > self.paragraphs as u64 {
                 return Err(BodyTextError::DrawingTextStructure(format!(
                     "rectangle at level {} declares {} paragraphs, found {}",
                     self.level, declared, self.paragraphs
@@ -65,7 +65,11 @@ pub(super) fn validate(records: &[Record]) -> Result<(), BodyTextError> {
                         record.data.len()
                     )));
                 }
-                owner.declared = Some(u16::from_le_bytes([record.data[0], record.data[1]]));
+                // Match the drawing parser/writer's UINT32 count layout. Reading
+                // only the low 16 bits would misclassify 65,536 as zero.
+                owner.declared = Some(u32::from_le_bytes(
+                    record.data[..4].try_into().expect("minimum header checked"),
+                ));
                 owner.paragraphs = 0;
             }
             tags::HWPTAG_PARA_HEADER if owner.declared.is_some() => owner.paragraphs += 1,
