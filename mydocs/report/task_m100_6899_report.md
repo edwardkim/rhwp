@@ -1,7 +1,7 @@
 # #6899 결과보고서 — CI Impact Policy Controller 실패 증적 보고
 
 - Issue: #6899. 날짜: 2026-09-08.
-- 상태: 구현·로컬 검증 완료, 결과 및 push·PR 생성 승인 대기. **운영 미적용**.
+- 상태: 승인 후 [PR #6903](https://github.com/edwardkim/rhwp/pull/6903) 생성 완료. 최신 head CI 및 최종 self-review 대기. **운영 미적용**.
 - [수행계획](../plans/task_m100_6899.md) · [구현계획](../plans/task_m100_6899_impl.md) ·
   [원인 조사](../working/task_m100_6899_stage1.md) · [구현 검증](../working/task_m100_6899_stage2.md) ·
   [최종 로컬 검증](../working/task_m100_6899_stage3.md).
@@ -42,8 +42,8 @@ Controller 내부 오류는 단계 수준 진단이며 모든 예외의 상세 �
 
 ## 남은 절차와 완료 조건
 
-1. 승인 후 원격 최신 devel 재확인 → 작업 브랜치 push → devel 대상 PR 생성.
-2. 채번 후 self-review·필요한 오늘할일 문서를 동일 PR에 포함하고 최신 CI 확인.
+1. 완료: 원격 최신 devel `e7e978589` 재확인 → `bdd1e8a6e` push → devel 대상 PR #6903 생성.
+2. [리뷰 접수 기록](../pr/archives/pr_6903_review.md)·오늘할일을 동일 PR에 포함하고 최신 CI 확인. 최종 self-review 확정은 승인 뒤 진행.
 3. 승인 후 병합. 이 시점은 devel 구현 반영이며 #6899 운영 완료가 아니다.
 4. 별도 승인된 main 배포 뒤 live 요약·원본 링크·판정 보존을 확인하고 #6899 종료.
 
