@@ -147,6 +147,16 @@ export class CanvasView {
   private documentLoadPrepared = false;
   private layoutViewportSize = { width: 0, height: 0 };
   private blankPagePlaceholder: HTMLElement | null = null;
+  /**
+   * [#6902] 문서 교체가 만든 리사이즈 한 번은 스크롤 앵커를 걸지 않는다.
+   *
+   * 쪽맞춤에서 빈 쪽 자리표시자는 한 쪽 크기라 스크롤바 없이 딱 맞는데, 문서가 실려
+   * 여러 쪽이 되면 세로 스크롤바가 생기며 컨테이너 폭이 줄고(1380→1365) ResizeObserver
+   * 가 뜬다. `onViewportResize` 의 중심 앵커는 **이전 문서/이전 기하** 기준이라 갓 연
+   * 문서에는 보존할 읽던 자리가 없는데도 `setScrollTop(7)` 을 걸고, 다음 프레임에
+   * 0 으로 되돌려져 한 프레임짜리 7px 왕복(=화면 흔들림)이 된다.
+   */
+  private suppressResizeScrollAnchor = false;
   private lastPageSize: { width: number; height: number } | null = null;
   private disposed = false;
 
@@ -182,6 +192,9 @@ export class CanvasView {
 
     this.unsubscribers.push(
       eventBus.on('viewport-scroll', () => {
+        // [#6902] 사용자가 한 번이라도 스크롤했으면 보존할 읽던 자리가 생긴다 —
+        // 문서 교체용 앵커 억제를 그때 거둔다(억제가 다음 리사이즈까지 남지 않게).
+        this.suppressResizeScrollAnchor = false;
         if (!this.viewportManager.isZoomAnimating()) this.updateVisiblePages('scroll');
       }),
       eventBus.on('viewport-resize', () => this.onViewportResize()),
@@ -273,6 +286,8 @@ export class CanvasView {
     );
 
     this.container.scrollTop = 0;
+    // [#6902] 이 대입 직후 스크롤바 출현이 리사이즈를 부른다 — 그 한 번은 앵커를 끈다.
+    this.suppressResizeScrollAnchor = true;
     this.lastPageSize = { width: this.pages[0].width, height: this.pages[0].height };
     this.updateVisiblePages('initial');
     this.clearBlankPagePlaceholder();
@@ -311,6 +326,7 @@ export class CanvasView {
     this.pageRenderer.beginDocument();
     this.activeRendererDecisionKey = null;
     this.reset();
+    this.suppressResizeScrollAnchor = true;
     this.showBlankPagePlaceholder();
   }
 
@@ -321,6 +337,8 @@ export class CanvasView {
   showBlankPage(): void {
     if (this.disposed) return;
     this.reset();
+    // [#6902] 자리표시자로 갈아타는 전이도 스크롤바 유무를 뒤집을 수 있다.
+    this.suppressResizeScrollAnchor = true;
     this.showBlankPagePlaceholder();
   }
 
@@ -1616,8 +1634,14 @@ export class CanvasView {
       return;
     }
 
+    // [#6902] 문서 교체가 부른 리사이즈에는 앵커를 걸지 않는다 — 보존할 읽던 자리가
+    // 없는데도 이전 기하 기준으로 스크롤을 옮겨 한 프레임 튄다.
+    const suppressAnchor = this.suppressResizeScrollAnchor;
+    this.suppressResizeScrollAnchor = false;
+
     const previousViewport = this.layoutViewportSize;
-    const canPreserveCenter = previousViewport.width > 0 && previousViewport.height > 0;
+    const canPreserveCenter =
+      !suppressAnchor && previousViewport.width > 0 && previousViewport.height > 0;
     const scrollLeft = this.viewportManager.getScrollX();
     const scrollTop = this.viewportManager.getScrollY();
     const focusPage = canPreserveCenter
