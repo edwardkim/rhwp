@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6862,
+  "title": "빈 누름틀 안내문이 가운데 정렬 칸에서 쏠리고 칸 안에서 접히지 않는다",
+  "entries": [
+    {
+      "path": "samples/issue6862/2249811-vessel-collision-analysis-form.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6862",
+      "originalFilename": "2249811_[별지 11] 선박충돌재현시스템 분석결과보고서((해양경찰청) 과학수사 기본규칙).hwp",
+      "bytes": 54784,
+      "sha256": "9c7952549166ec9b20efc8f32521fd3d1673f367599e6e82652b65c782e6bc44",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/2249811-vessel-collision-analysis-form-2020.pdf",
+      "referencePdfBytes": 47353,
+      "referencePdfSha256": "f0107a78935ef254ec8fd6a61d2da8735b199d779b75dbbcae96096ec54b4a72",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 1쪽. ⚠ 정본에는 빈 누름틀 안내문이 **하나도 없다** — 한컴은 인쇄·PDF 로 내보내지 않는다. rhwp 도 같은 규약(shows_editor_visuals)이라 이 축은 기준 PDF 로 판정되지 않는다. 형상 확인용이다.",
+      "contract": "빈 누름틀 안내문은 ① 가운데/오른쪽 정렬 빈 줄에서 자기 폭을 반영해 놓이고 ② 칸 안에서도 줄 상자 폭으로 접힌다. 종전에는 칸 중앙에서 시작해 용지 밖 352.8px 까지 나갔다(41 글리프)."
+    }
+  ]
+}

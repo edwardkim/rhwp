@@ -7693,11 +7693,50 @@ impl LayoutEngine {
                         // 한글 편집기는 안내문을 누름틀 줄 상자 안에서 접는다. 안내문은
                         // 흐름에 영향이 없는 편집 전용 표시라(아래 `with_editor_only`),
                         // 접힌 뒤 줄들은 순수 오버레이로 아래에 쌓는다 — 첫 조각만
-                        // 마커 shift 폭에 계상한다. 셀 안은 가용 폭 기준이 다르므로
-                        // 종전대로 한 줄에 둔다.
+                        // 마커 shift 폭에 계상한다.
+                        //
+                        // [#6862] **칸 안도 접는다.** `#6111` 은 "셀은 가용 폭 기준이
+                        // 다르므로 종전대로 한 줄"로 남겼는데, 그 기준은 이미 손에 있다 —
+                        // **이 줄의 상자**(`line_node.bbox`)가 칸 안여백까지 반영한 텍스트
+                        // 상자다. 2249811 1쪽은 안내문이 전부 표 칸 안이라 그 예외가
+                        // 그대로 증상이 됐다(용지 밖 352.8px).
+                        //
+                        // ⚠ 본문 갈래는 종전 기준(`current_body_area`)을 그대로 둔다 —
+                        // `#6111` 의 확정 핀이 그 값으로 잠겨 있다.
                         let (body_x, _, body_w, _) = self.current_body_area.get();
-                        let wrap_limit = if cell_ctx.is_none() && body_w > 0.0 {
+                        let line_right = line_node.bbox.x + line_node.bbox.width;
+                        // [#6862] **빈 줄에서는 안내문 자신이 그 줄의 내용이다.**
+                        //
+                        // 빈 누름틀 줄은 글자 폭이 0 이라 `find_x_for_char` 가 돌려주는
+                        // 것은 **정렬 앵커**(가운데 정렬이면 줄 중앙)다. 안내문을 거기서
+                        // 오른쪽으로 그리면 통째로 폭의 절반만큼 밀린다.
+                        //
+                        // ```text
+                        //   칸 286.9..670.1  중앙 478.5   안내문 폭 668.0
+                        //     종전 시작 478.5           = 중앙 (폭을 안 뺐다)
+                        //     정상 시작 478.5 − 334.0   = 144.5
+                        // ```
+                        //
+                        // 줄에 보이는 글자가 있으면 그 앵커는 실제 글자 자리이므로
+                        // 건드리지 않는다.
+                        let line_has_visible_text =
+                            comp_line.runs.iter().any(|run| !run.text.trim().is_empty());
+                        let guide_alignment = styles
+                            .para_styles
+                            .get(para_style_id as usize)
+                            .map(|style| style.alignment);
+                        let guide_owns_the_line = !line_has_visible_text
+                            && line_node.bbox.width > 0.0
+                            && matches!(
+                                guide_alignment,
+                                Some(Alignment::Center) | Some(Alignment::Right)
+                            );
+                        let wrap_limit = if guide_owns_the_line {
+                            line_node.bbox.width
+                        } else if cell_ctx.is_none() && body_w > 0.0 {
                             (body_x + body_w - guide_x).max(0.0)
+                        } else if line_right > guide_x {
+                            line_right - guide_x
                         } else {
                             0.0
                         };
@@ -7707,6 +7746,18 @@ impl LayoutEngine {
                             .first()
                             .map(|chunk| estimate_text_width(chunk, &guide_style))
                             .unwrap_or(0.0);
+                        let guide_x = if guide_owns_the_line {
+                            match guide_alignment {
+                                Some(Alignment::Right) => {
+                                    (line_right - guide_width).max(line_node.bbox.x)
+                                }
+                                _ => (line_node.bbox.x
+                                    + (line_node.bbox.width - guide_width) / 2.0)
+                                    .max(line_node.bbox.x),
+                            }
+                        } else {
+                            guide_x
+                        };
                         for (idx, chunk) in guide_chunks.iter().enumerate().skip(1) {
                             let extra_id = tree.next_id();
                             let extra = RenderNode::new(
