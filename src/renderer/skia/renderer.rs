@@ -30,8 +30,8 @@ use super::font_lookup::{
     SystemFontFamilies,
 };
 use super::glyph_replay::{
-    construct_glyph_font, finite_scalar, prepare_glyph_outline, PreparedGlyph,
-    MAX_PREPARED_GLYPH_BYTES,
+    construct_glyph_font, finite_scalar, glyph_run_minimum_byte_cost, prepare_glyph_outline,
+    GlyphPreparationBudget, PreparedGlyph,
 };
 use super::image_conv::{draw_image_bytes, draw_svg_fragment, ImageSampling};
 use super::text_replay::SkiaTextReplay;
@@ -163,6 +163,7 @@ fn prepare_native_glyph_run(
     }
     if !finite_scalar(run.shape_key.font_instance.size_px)
         || run.shape_key.font_instance.size_px <= 0.0
+        || run.shape_key.font_instance.size_px > crate::paint::MAX_GLYPH_FONT_SIZE_PX
     {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::FontInstanceInvalid);
     }
@@ -215,6 +216,7 @@ fn prepare_native_glyph_run(
     if !run.paint_style.is_simple_glyph_run_replay()
         || !finite_scalar(run.paint_style.font_size)
         || run.paint_style.font_size <= 0.0
+        || run.paint_style.font_size > crate::paint::MAX_GLYPH_FONT_SIZE_PX
         || (run.paint_style.shadow_type != 0
             && (!finite_scalar(run.paint_style.shadow_offset_x)
                 || !finite_scalar(run.paint_style.shadow_offset_y)))
@@ -887,7 +889,7 @@ impl SkiaLayerRenderer {
             LayerNodeKind::Leaf { ops } => {
                 let mut variant_order = 0usize;
                 let mut prepared_glyphs = HashMap::<usize, PreparedGlyph>::new();
-                let mut prepared_bytes = 0usize;
+                let mut preparation_budget = GlyphPreparationBudget::new();
                 let mut glyph_variants =
                     HashMap::<String, HashMap<String, (usize, u32, HashSet<u32>, bool)>>::new();
                 let mut glyph_variant_sources = HashMap::<String, u32>::new();
@@ -899,12 +901,23 @@ impl SkiaLayerRenderer {
                         PaintOp::GlyphRun { run, .. } => Some((
                             &run.variant,
                             run.source.id.0,
-                            prepare_native_glyph_run(run, resources, &self.font_mgr).1,
+                            glyph_run_minimum_byte_cost(run, resources).and_then(|minimum_bytes| {
+                                preparation_budget.prepare(minimum_bytes, || {
+                                    prepare_native_glyph_run(run, resources, &self.font_mgr).1
+                                })
+                            }),
                         )),
                         PaintOp::GlyphOutline { outline, bbox } => Some((
                             &outline.variant,
                             outline.source.id.0,
-                            prepare_glyph_outline(outline, *bbox, resources, fallback_raster_scale),
+                            preparation_budget.prepare(0, || {
+                                prepare_glyph_outline(
+                                    outline,
+                                    *bbox,
+                                    resources,
+                                    fallback_raster_scale,
+                                )
+                            }),
                         )),
                         _ => None,
                     };
@@ -926,15 +939,8 @@ impl SkiaLayerRenderer {
                         if !state.2.insert(variant.part_index) {
                             state.3 = false;
                         }
-                        let prepared = prepared.filter(|prepared| {
-                            prepared_glyphs.len() < 4096
-                                && prepared_bytes
-                                    .checked_add(prepared.byte_cost)
-                                    .is_some_and(|bytes| bytes <= MAX_PREPARED_GLYPH_BYTES)
-                        });
                         state.3 &= prepared.is_some();
                         if let Some(prepared) = prepared {
-                            prepared_bytes += prepared.byte_cost;
                             prepared_glyphs.insert(op_index, prepared);
                         }
                     }

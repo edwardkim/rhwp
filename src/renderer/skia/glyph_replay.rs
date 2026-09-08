@@ -33,6 +33,68 @@ pub(super) struct PreparedGlyph {
     pub byte_cost: usize,
 }
 
+pub(super) struct GlyphPreparationBudget {
+    remaining_entries: usize,
+    remaining_bytes: usize,
+}
+
+impl GlyphPreparationBudget {
+    pub fn new() -> Self {
+        Self {
+            remaining_entries: 4096,
+            remaining_bytes: MAX_PREPARED_GLYPH_BYTES,
+        }
+    }
+
+    pub fn prepare(
+        &mut self,
+        minimum_bytes: usize,
+        prepare: impl FnOnce() -> Option<PreparedGlyph>,
+    ) -> Option<PreparedGlyph> {
+        if self.remaining_entries == 0
+            || self.remaining_bytes == 0
+            || minimum_bytes > self.remaining_bytes
+        {
+            return None;
+        }
+        // Charge before parsing/copying. A failed candidate must not restore
+        // the work allowance and repeatedly prepare the same large resource.
+        self.remaining_entries -= 1;
+        self.remaining_bytes -= minimum_bytes;
+        let prepared = prepare()?;
+        let additional_bytes = prepared.byte_cost.saturating_sub(minimum_bytes);
+        let Some(remaining) = self.remaining_bytes.checked_sub(additional_bytes) else {
+            // Outline costs are known only after preparation. Stop further
+            // preparation if this candidate exhausted the remaining allowance.
+            self.remaining_bytes = 0;
+            return None;
+        };
+        self.remaining_bytes = remaining;
+        Some(prepared)
+    }
+}
+
+pub(super) fn glyph_run_minimum_byte_cost(
+    run: &LayerGlyphRunPaint,
+    resources: &ResourceArena,
+) -> Option<usize> {
+    let fonts = resources.font_resources();
+    let face = fonts
+        .faces
+        .iter()
+        .find(|face| face.id == run.shape_key.font_instance.face_key)?;
+    let blob = fonts.blobs.iter().find(|blob| blob.id == face.blob_key)?;
+    let bytes = resources.font_blob_bytes_for_ref(blob.data_ref.as_ref()?)?;
+    let placement_bytes = if run.paint_style.is_fill_only_glyph_replay() {
+        run.glyph_ids
+            .len()
+            .checked_mul(std::mem::size_of::<Point>() + std::mem::size_of::<u16>())?
+    } else {
+        0
+    };
+    bytes.len().checked_add(placement_bytes)
+}
+
 struct PreparedDraw {
     transforms: Vec<Matrix>,
     paint: Paint,
@@ -798,18 +860,34 @@ fn svg_glyph_image(
     {
         return None;
     }
-    // The payload viewBox is authoritative. SVG containers act as groups in
-    // the static path contract, preserving their paint/transform attributes.
+    // The payload viewBox replaces only the outer container's viewport.
+    // Nested SVG elements retain their own viewport, scaling and clipping.
     let mut reader = Reader::from_str(fragment);
     let mut writer = Writer::new(Vec::new());
+    let mut depth = 0usize;
     loop {
         let event = reader.read_event().ok()?;
         let empty = matches!(&event, Event::Empty(_));
+        let rewrite_container = match &event {
+            Event::Start(element) | Event::Empty(element) => {
+                depth == 0 && element.name().as_ref() == "svg"
+            }
+            Event::End(element) => depth == 1 && element.name().as_ref() == "svg",
+            _ => false,
+        };
+        match &event {
+            Event::Start(_) => depth = depth.checked_add(1)?,
+            Event::End(_) => depth = depth.checked_sub(1)?,
+            _ => {}
+        }
         match event {
-            Event::Eof => break,
-            Event::Start(mut element) | Event::Empty(mut element)
-                if element.name().as_ref() == "svg" =>
-            {
+            Event::Eof => {
+                if depth != 0 {
+                    return None;
+                }
+                break;
+            }
+            Event::Start(mut element) | Event::Empty(mut element) if rewrite_container => {
                 element.set_name("g");
                 writer
                     .write_event(if empty {
@@ -819,7 +897,7 @@ fn svg_glyph_image(
                     })
                     .ok()?;
             }
-            Event::End(element) if element.name().as_ref() == "svg" => {
+            Event::End(_) if rewrite_container => {
                 writer.write_event(Event::End(BytesEnd::new("g"))).ok()?;
             }
             event => {
