@@ -928,7 +928,11 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
 /// 서명란·발신명의 호스트를 위한 것이라 이 형상에서는 제목을 마지막 쪽 표
 /// 하단 밖으로 보냈다. 저장 기하가 "전 줄이 표 위"를 증언할 때만 지연을 끈다 —
 /// 일부 줄만 위인 혼합 형상은 뒤 텍스트가 소실될 수 있어 제외한다.
-fn stored_host_lines_precede_float(para: &Paragraph, table: &crate::model::table::Table) -> bool {
+fn stored_host_lines_precede_float(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    control_index: usize,
+) -> bool {
     let v_off = signed_hwpunit(table.common.vertical_offset);
     if v_off <= 0 {
         return false;
@@ -941,13 +945,78 @@ fn stored_host_lines_precede_float(para: &Paragraph, table: &crate::model::table
     let Some(base) = stored.first().map(|ls| ls.vertical_pos) else {
         return false;
     };
-    // 줄이 표 상단 **위에서 끝나야** 한다 — 표 상단(v_off)이 줄 밴드 안이면 그
+    // [#6860] `v_off` 의 기준은 문단 첫 줄이 아니라 **앵커 줄**(표 제어 문자가 실린
+    // 저장 줄)이다. 호스트가 한 줄이면 둘이 같아 #5584·#1686 핀은 그대로다.
+    let anchor_top = stored_float_anchor_line_top(para, control_index, &stored).unwrap_or(base);
+    let float_top = (anchor_top as i64 - base as i64) + v_off as i64;
+    // 줄이 표 상단 **위에서 끝나야** 한다 — 표 상단이 줄 밴드 안이면 그
     // 줄은 표의 앵커 줄이지 선행 줄이 아니다(pr-1674 #1686 핀: v_off 607 <
     // 줄 높이 1200 → 안내문은 표 뒤가 정답). 00072 제목은 v_off 4129 ≥ 줄
     // 끝 1500 으로 표 위 선행 줄임이 증명된다.
-    stored.iter().all(|ls| {
-        (ls.vertical_pos as i64 - base as i64) + i64::from(ls.line_height) <= v_off as i64
-    })
+    stored
+        .iter()
+        .all(|ls| (ls.vertical_pos as i64 - base as i64) + i64::from(ls.line_height) <= float_top)
+}
+
+/// [#6860] 자리차지 개체의 **앵커 줄** 상단 — 그 개체의 제어 문자가 실린 저장 줄이다.
+///
+/// 한글은 `vertOffset` 을 문단 첫 줄이 아니라 앵커 줄 기준으로 잰다. 3067979 문단 1523
+/// (호스트 2줄, 표 제어 문자는 텍스트 맨 끝)의 저장 기하가 그 증거다 — 앵커 줄1 기준
+/// 표 상단 32332+1256 = 33588 은 줄1 끝(33332) 바로 아래인데, 첫 줄 기준 30732+1256 =
+/// 31988 은 줄0 이 끝난(31732) 뒤 줄1 이 시작(32332)하기도 전인 빈 자리다.
+///
+/// 제어 문자 위치를 못 구하면 `None` 을 돌려 호출부가 첫 줄로 되돌아가게 한다 — 호스트가
+/// 한 줄이면 어느 쪽이든 같은 값이라 종전 계약(#5584 · #1686)은 그대로다.
+fn stored_float_anchor_line_top(
+    para: &Paragraph,
+    control_index: usize,
+    stored: &[&crate::model::paragraph::LineSeg],
+) -> Option<i32> {
+    let char_pos = para.control_text_positions().get(control_index).copied()?;
+    // 줄의 `text_start` 와 같은 축(HWP5 UTF-16)으로 올려서 견준다. 제어 문자가 텍스트
+    // 끝에 있으면 `char_offsets` 범위를 벗어나므로 마지막 글자 바로 뒤로 잡는다.
+    let anchor_u16 = para
+        .char_offsets
+        .get(char_pos)
+        .copied()
+        .or_else(|| para.char_offsets.last().map(|last| last + 1))?;
+    stored
+        .iter()
+        .rev()
+        .find(|ls| para.line_seg_text_start_of(ls.text_start) <= anchor_u16)
+        .map(|ls| ls.vertical_pos)
+}
+
+/// [#6860] 앵커 줄이 문단 첫 줄보다 아래일 때 그 **간격**(px).
+///
+/// `vertOffset` 의 기준점이 앵커 줄이므로 개체의 세로 원점도 그만큼 내려가야 한다.
+/// 3067979 문단 1523: 앵커 줄1 이 첫 줄보다 1600HU(21.3px) 아래고, 정본도 캡션·표를
+/// 딱 그만큼 아래에 그린다(정본 캡션 상단 = 둘째 줄 상단 + 16.2, 첫 괘선 = +29.7).
+///
+/// [`stored_host_lines_precede_float`] 이 참일 때만 돌려준다 — 그 게이트가 거짓이면
+/// 호스트 줄이 개체 아래로 가는 형상이라 원점을 옮길 근거가 없다. 호스트가 한 줄이거나
+/// 제어 문자가 첫 줄에 있으면 0 이므로 종전 배치가 그대로 보존된다.
+pub(crate) fn stored_float_anchor_offset_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    control_index: usize,
+    dpi: f64,
+) -> f64 {
+    if !stored_host_lines_precede_float(para, table, control_index) {
+        return 0.0;
+    }
+    let stored: Vec<&crate::model::paragraph::LineSeg> = para
+        .line_segs
+        .iter()
+        .filter(|ls| ls.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    let Some(base) = stored.first().map(|ls| ls.vertical_pos) else {
+        return 0.0;
+    };
+    let Some(anchor_top) = stored_float_anchor_line_top(para, control_index, &stored) else {
+        return 0.0;
+    };
+    hwpunit_to_px((anchor_top - base).max(0), dpi)
 }
 
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
@@ -11640,7 +11709,7 @@ impl LayoutEngine {
                             && para_has_non_whitespace_text(para)
                             // [#5584] 저장 기하가 "호스트 줄 전부가 표 위" 를
                             // 증언하면 지연하지 않는다 — 그 줄은 pre-text 다.
-                            && !stored_host_lines_precede_float(para, t) =>
+                            && !stored_host_lines_precede_float(para, t, control_index) =>
                     {
                         Some(t.row_count as usize)
                     }
@@ -11685,7 +11754,19 @@ impl LayoutEngine {
                                     })
                                     .map(|i| i + 1)
                                     .unwrap_or(comp.lines.len());
-                                para_start_y.insert(para_index, y_offset);
+                                // [#6860] 자리차지 개체의 세로 원점은 문단 상단이 아니라 **앵커 줄** 상단이다.
+                                // 호스트 줄을 표 위에 그리는 이 경로에서 원점을 옮기지 않으면 앞 줄이 캡션과
+                                // 겹친다 (3067979: 줄 517.3/538.7 vs 캡션 534.1 — 20.8px 겹침).
+                                let anchor_offset = match para.controls.get(control_index) {
+                                    Some(Control::Table(t)) => stored_float_anchor_offset_px(
+                                        para,
+                                        t,
+                                        control_index,
+                                        self.dpi,
+                                    ),
+                                    _ => 0.0,
+                                };
+                                para_start_y.insert(para_index, y_offset + anchor_offset);
                                 let _text_y_end = self.layout_partial_paragraph(
                                     tree,
                                     col_node,
