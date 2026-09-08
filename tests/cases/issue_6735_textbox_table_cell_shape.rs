@@ -11,7 +11,7 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::document::{Document, Section};
-use rhwp::model::paragraph::Paragraph;
+use rhwp::model::paragraph::{LineSeg, Paragraph};
 use rhwp::model::shape::{
     CommonObjAttr, DrawingObjAttr, RectangleShape, ShapeObject, TextBox, TextWrap,
 };
@@ -168,4 +168,67 @@ fn textbox_embedded_table_cell_inline_shape_keeps_its_textbox_content() {
 #[test]
 fn textbox_embedded_table_cell_floating_shape_keeps_its_textbox_content() {
     assert_nested_shape_content(false);
+}
+
+fn inline_pair_positions(multiline: bool) -> Vec<(String, f64, f64)> {
+    let mut doc = document_with_shape_inside_textbox_table_cell(true);
+    let Control::Shape(outer) = &mut doc.sections[0].paragraphs[0].controls[0] else {
+        unreachable!()
+    };
+    let ShapeObject::Rectangle(outer) = outer.as_mut() else {
+        unreachable!()
+    };
+    let Control::Table(table) =
+        &mut outer.drawing.text_box.as_mut().unwrap().paragraphs[0].controls[0]
+    else {
+        unreachable!()
+    };
+    let para = &mut table.cells[0].paragraphs[0];
+    para.controls = ["FIRST", "SECOND"]
+        .into_iter()
+        .map(|text| Control::Shape(Box::new(rectangle_textbox(6000, 2500, true, vec![paragraph(text)]))))
+        .collect();
+    para.char_count = 17;
+    if multiline {
+        para.line_segs = [0, 8].into_iter().enumerate().map(|(i, start)| LineSeg {
+            text_start: start,
+            vertical_pos: i as i32 * 3000,
+            line_height: 2500,
+            text_height: 2500,
+            baseline_distance: 2000,
+            segment_width: 24000,
+            ..Default::default()
+        }).collect();
+    }
+    let mut core = DocumentCore::new_empty();
+    core.set_document(doc);
+    fn collect(node: &RenderNode, out: &mut Vec<(String, f64, f64)>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if matches!(run.display_or_text(), "FIRST" | "SECOND") {
+                assert_eq!(run.cell_context.as_ref().unwrap().path.len(), 3);
+                out.push((run.display_or_text().into(), node.bbox.x, node.bbox.y));
+            }
+        }
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    let mut positions = Vec::new();
+    collect(&core.build_page_render_tree(0).unwrap().root, &mut positions);
+    assert_eq!(positions.len(), 2);
+    positions
+}
+
+#[test]
+fn embedded_cell_inline_shapes_advance_on_same_line() {
+    let positions = inline_pair_positions(false);
+    assert!(positions[1].1 >= positions[0].1 + 79.9, "{positions:?}");
+    assert!((positions[1].2 - positions[0].2).abs() < 0.1, "{positions:?}");
+}
+
+#[test]
+fn embedded_cell_inline_shapes_follow_stored_lines() {
+    let positions = inline_pair_positions(true);
+    assert!(positions[1].2 >= positions[0].2 + 39.9, "{positions:?}");
+    assert!((positions[1].1 - positions[0].1).abs() < 0.1, "{positions:?}");
 }
