@@ -13,6 +13,7 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::parser::cfb_reader::LenientCfbReader;
+use std::io::{Cursor, Write};
 
 const SAMPLE: &str = "samples/issue5169_viewtext_changetracking.hwp";
 const CAP: usize = 64 * 1024 * 1024;
@@ -73,4 +74,96 @@ fn lenient_body_text_section_reads_bodytext_storage() {
         BODY_LEN,
         "본문 섹션 읽기가 ViewText 스트림을 집었다"
     );
+}
+
+// 아래 합성 CFB는 directory entry가 root 포함 4개 이하인 v3 문서다.
+// 실제 문서나 암호화 내용을 바꾸지 않고 디렉터리 링크 손상만 재현한다.
+fn small_cfb(streams: &[(&str, &[u8])]) -> Vec<u8> {
+    let mut cfb =
+        cfb::CompoundFile::create_with_version(cfb::Version::V3, Cursor::new(Vec::new())).unwrap();
+    for &(path, contents) in streams {
+        let parent = std::path::Path::new(path).parent().unwrap();
+        cfb.create_storage_all(parent).unwrap();
+        cfb.create_stream(path)
+            .unwrap()
+            .write_all(contents)
+            .unwrap();
+    }
+    cfb.into_inner().into_inner()
+}
+
+fn directory_offset(bytes: &[u8]) -> usize {
+    assert_eq!(u16::from_le_bytes(bytes[30..32].try_into().unwrap()), 9);
+    let sid = u32::from_le_bytes(bytes[48..52].try_into().unwrap()) as usize;
+    (sid + 1) * 512
+}
+
+fn set_u32(bytes: &mut [u8], offset: usize, value: u32) {
+    bytes[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+}
+
+#[test]
+fn lenient_cfb_invalid_named_slot_falls_back_to_valid_stream() {
+    for invalid_type in [0, 255] {
+        let mut bytes = small_cfb(&[("/FileHeader", b"valid header")]);
+        let dir = directory_offset(&bytes);
+        let valid_id = u32::from_le_bytes(bytes[dir + 76..dir + 80].try_into().unwrap());
+        assert_eq!(valid_id, 1);
+        let entry = bytes[dir + 128..dir + 256].to_vec();
+        bytes[dir + 256..dir + 384].copy_from_slice(&entry);
+        bytes[dir + 256 + 66] = invalid_type;
+        set_u32(&mut bytes, dir + 76, 2);
+
+        let reader = LenientCfbReader::open(&bytes).unwrap();
+        assert_eq!(reader.read_file_header().unwrap(), b"valid header");
+    }
+}
+
+#[test]
+fn lenient_cfb_broken_child_link_recovers_only_unique_names() {
+    let mut bytes = small_cfb(&[("/FileHeader", b"valid header")]);
+    let dir = directory_offset(&bytes);
+    set_u32(&mut bytes, dir + 76, 10_000);
+    let reader = LenientCfbReader::open(&bytes).unwrap();
+    assert_eq!(reader.read_file_header().unwrap(), b"valid header");
+
+    let mut bytes = sample();
+    let dir = directory_offset(&bytes);
+    set_u32(&mut bytes, dir + 76, 10_000);
+    let reader = LenientCfbReader::open(&bytes).unwrap();
+    // 트리 밖에 Section0이 둘이면 임의의 것을 선택하면 안 된다.
+    assert!(!reader.has_stream("/BodyText/Section0"));
+    assert!(reader
+        .read_stream_raw_limited("/BodyText/Section0", CAP)
+        .is_err());
+}
+
+#[test]
+fn lenient_cfb_stream_cannot_be_used_as_parent_storage() {
+    let mut bytes = small_cfb(&[("/BodyText/Section0", b"body"), ("/Section0", b"other")]);
+    let dir = directory_offset(&bytes);
+    // create 순서상 entry 1은 BodyText storage다. child pointer를 유지한 채
+    // stream으로 손상시켜도 이를 부모 storage로 통과시켜서는 안 된다.
+    assert_eq!(bytes[dir + 128 + 66], 1);
+    bytes[dir + 128 + 66] = 2;
+    let reader = LenientCfbReader::open(&bytes).unwrap();
+    assert!(reader
+        .read_stream_raw_limited("/BodyText/Section0", CAP)
+        .is_err());
+}
+
+#[test]
+fn lenient_cfb_cyclic_sibling_link_terminates_and_recovers_unique_name() {
+    let mut bytes = small_cfb(&[("/FileHeader", b"valid header")]);
+    let dir = directory_offset(&bytes);
+    let entry = bytes[dir + 128..dir + 256].to_vec();
+    bytes[dir + 256..dir + 384].copy_from_slice(&entry);
+    bytes[dir + 256 + 66] = 0;
+    // 다른 이름의 삭제 슬롯만 순환하도록 만들어 유일 이름 fallback을 검사한다.
+    bytes[dir + 256] = b'X';
+    set_u32(&mut bytes, dir + 256 + 68, 2);
+    set_u32(&mut bytes, dir + 256 + 72, 2);
+    set_u32(&mut bytes, dir + 76, 2);
+    let reader = LenientCfbReader::open(&bytes).unwrap();
+    assert_eq!(reader.read_file_header().unwrap(), b"valid header");
 }

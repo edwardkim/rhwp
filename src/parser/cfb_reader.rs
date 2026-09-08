@@ -817,9 +817,16 @@ impl LenientCfbReader {
         {
             let mut current = Some(root_id);
             for segment in parents {
-                current = current.and_then(|id| self.find_child_entry_by_name(id, segment));
+                current = current
+                    .and_then(|id| self.find_child_entry_by_name(id, segment))
+                    .filter(|&id| self.directory_entries[id].obj_type == 1);
             }
-            if let Some(id) = current.and_then(|id| self.find_child_entry_by_name(id, last)) {
+            // 손상된 링크가 이름만 남은 삭제 슬롯을 가리킬 수 있다.
+            // 무효 entry는 채택하지 않고 아래의 유일 이름 복구를 시도한다.
+            if let Some(id) = current
+                .and_then(|id| self.find_child_entry_by_name(id, last))
+                .filter(|&id| matches!(self.directory_entries[id].obj_type, 1 | 2 | 5))
+            {
                 return Some(id);
             }
         }
