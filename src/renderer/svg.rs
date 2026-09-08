@@ -1222,16 +1222,7 @@ impl SvgRenderer {
 
         // 조판부호 개체 마커 (붉은색 대괄호) — 조판부호 ON일 때만
         if self.show_control_codes {
-            let label = match &node.node_type {
-                RenderNodeType::Table(_) => Some("[표]"),
-                RenderNodeType::Image(_) => Some("[그림]"),
-                RenderNodeType::TextBox => Some("[글상자]"),
-                RenderNodeType::Equation(_) => Some("[수식]"),
-                RenderNodeType::Header => Some("[머리말]"),
-                RenderNodeType::Footer => Some("[꼬리말]"),
-                RenderNodeType::FootnoteArea => Some("[각주]"),
-                _ => None,
-            };
+            let label = node.control_code_label();
             if let Some(label) = label {
                 let fs = 10.0; // 조판부호 고정 크기
                 self.output.push_str(&format!(

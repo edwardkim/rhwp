@@ -331,7 +331,8 @@ pub struct DrawingObjAttr {
     pub inst_id: u32,
     /// 그림자 투명도
     pub shadow_alpha: u8,
-    /// 글상자 (텍스트가 있는 경우)
+    /// 이 도형이 소유한 내부 문단 영역. 빈 문단/그림 전용 영역도 Some이다.
+    /// 배경 이미지(fill)나 캡션의 문단은 이 영역이 아니다.
     pub text_box: Option<TextBox>,
     /// 캡션
     pub caption: Option<Caption>,
@@ -620,6 +621,25 @@ pub struct RectangleShape {
     pub x_coords: [i32; 4],
     /// 꼭짓점 Y 좌표 (4개)
     pub y_coords: [i32; 4],
+}
+
+/// 사각형 기하의 구조적 컨트롤 종류. 글자·그림·채움·선 속성과 독립적이다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+pub enum RectangleControlKind {
+    Rectangle,
+    TextBox,
+}
+
+impl RectangleShape {
+    /// 파서가 보존한 소유 문단 영역으로 식별한다. 구조 파싱 오류를 복구하는 함수가 아니다.
+    /// 문단 수가 0이어도 존재하는 영역을 일반 사각형으로 바꾸지 않는다.
+    pub fn control_kind(&self) -> RectangleControlKind {
+        if self.drawing.text_box.is_some() {
+            RectangleControlKind::TextBox
+        } else {
+            RectangleControlKind::Rectangle
+        }
+    }
 }
 
 /// 타원 개체 (HWPTAG_SHAPE_COMPONENT_ELLIPSE)
