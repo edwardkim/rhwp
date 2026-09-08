@@ -18,9 +18,10 @@
       "referenceEngine": "2020",
       "referencePdf": "pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf",
       "referencePdfBytes": 532111,
-      "referencePdfSha256": "6186340bd7ea889f9bf9bfc1d7de0df09455e49d29d1644e7ef8a77d420bef2f",
-      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 18쪽 — 수정 후 rhwp 와 같다(수정 전 19쪽).",
-      "contract": "글자도 컨트롤도 없는 한 줄 문단(pi=84)이 쪽 예산을 한 줄 미만으로 넘겨 혼자 새 쪽을 열면 안 된다 — 바로 다음 문단이 선언된 쪽나누기라 그 쪽은 꼬리말 '- 14 -' 만 담는 고아 쪽이 된다."
+      "referencePdfSha256": "ae8b6bd5a07fa543dd9f69be750690851846a3e4e09668e3158bb05fa71bc126",
+      "referencePdfStatus": "2026-09-08 새 MCP에서 start/status/download 비동기 재산출 완료. engine 2020, 실제 한컴 12.0.0.4605, 18쪽. 다운로드 바이트와 SHA-256을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다.",
+      "contract": "글자도 컨트롤도 없는 한 줄 문단(pi=84)이 쪽 예산을 한 줄 미만으로 넘겨 혼자 새 쪽을 열면 안 된다 — 바로 다음 문단이 선언된 쪽나누기라 그 쪽은 꼬리말 '- 14 -' 만 담는 고아 쪽이 된다.",
+      "originalIdentityStatus": "2026-09-08 korea_downloads에서 원문을 찾아 등록 샘플과 SHA-256이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
     },
     {
       "path": "samples/issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
@@ -37,9 +38,10 @@
       "referenceEngine": "2020",
       "referencePdf": "pdf/22037757-chuncheon-personnel-rule-annex13-2020.pdf",
       "referencePdfBytes": 128414,
-      "referencePdfSha256": "847a0bcdd721ba33fff94a6f2b8dd6faea54e818f9fdf28405c0d49eca4e67f0",
-      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 15쪽 — 수정 후 rhwp 와 같다(수정 전 16쪽).",
-      "contract": "같은 결함의 두 번째 정본 대조 — 표 별표 문서에서도 고아 쪽 하나가 사라져 정본과 쪽수가 같아진다."
+      "referencePdfSha256": "2df4d48c365dbae60ab88b32969720e7d83a211084620d97f93f2606dd90498e",
+      "referencePdfStatus": "2026-09-08 새 MCP에서 start/status/download 비동기 재산출 완료. engine 2020, 실제 한컴 12.0.0.4605, 15쪽. 다운로드 바이트와 SHA-256을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다.",
+      "contract": "같은 결함의 두 번째 정본 대조 — 표 별표 문서에서도 고아 쪽 하나가 사라져 정본과 쪽수가 같아진다.",
+      "originalIdentityStatus": "2026-09-08 korea_downloads에서 원문을 찾아 등록 샘플과 SHA-256이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
     }
   ]
 }

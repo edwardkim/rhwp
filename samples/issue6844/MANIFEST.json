@@ -17,10 +17,11 @@
       },
       "referenceEngine": "2020",
       "referencePdf": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
-      "referencePdfBytes": 572168,
-      "referencePdfSha256": "a3ba2c831939a3ebb60e4070d66929908d7d5a0f0a9571e3cba6876746ef8609",
-      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 22쪽. 이 축은 출력 불변이라 기준 PDF 가 판정을 주지는 않는다 — 형상 확인용이다.",
-      "contract": "4쪽 목차의 `\t8` 런처럼 **탭과 쪽번호가 한 런**에 든 경우, bbox 폭이 마지막 문자 경계(charX 끝)와 같아야 한다. 종전에는 78.0px 로 남아 글리프(683.9..693.7)가 상자(595.4..673.4) 밖에 있었다."
+      "referencePdfBytes": 572193,
+      "referencePdfSha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+      "referencePdfStatus": "2026-09-08 새 MCP에서 start/status/download 비동기 재산출 완료. engine 2020, 실제 한컴 12.0.0.4605, 22쪽. 다운로드 바이트와 SHA-256을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다. bbox 판정은 구조 테스트 2건으로 수행했다. PDF만으로 히트 테스트를 검증한 것은 아니다.",
+      "contract": "4쪽 목차의 `\t8` 런처럼 **탭과 쪽번호가 한 런**에 든 경우, bbox 폭이 마지막 문자 경계(charX 끝)와 같아야 한다. 종전에는 78.0px 로 남아 글리프(683.9..693.7)가 상자(595.4..673.4) 밖에 있었다.",
+      "originalIdentityStatus": "2026-09-08 korea_downloads에서 원문을 찾아 등록 샘플과 SHA-256이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
     }
   ]
 }
