@@ -975,6 +975,7 @@ jobs:
         run: |
           node --test scripts/tests/ci-impact-classifier.test.cjs
           node --test scripts/tests/ci-impact-policy.test.cjs
+          node --test scripts/tests/ci-impact-report.test.cjs
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 
       - name: Validate Rust test suite manifest
