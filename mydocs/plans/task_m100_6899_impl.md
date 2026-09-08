@@ -1,6 +1,6 @@
 # #6899 구현계획 — 판정과 독립된 실패 진단 보고
 
-- 상태: 2026-09-08 메인테이너 구현계획 승인. Stage 2 구현 착수.
+- 상태: 2026-09-08 승인 범위 구현 및 Stage 3 로컬 검증 완료. remote push·PR 생성 승인 대기.
 - 근거: [수행계획](task_m100_6899.md), [Stage 1 조사](../working/task_m100_6899_stage1.md).
 - 핵심 결정: `auditPolicyRuns`의 판정 및 reason 계약은 유지하고, 별도 reporter가 증적을 연결한다.
 
@@ -17,6 +17,10 @@
 필요하면 작은 정규화 JSON fixture를 scripts/tests/fixtures 아래 추가한다.
 `ci-impact-policy.cjs`의 verdict 함수를 보고 기능 때문에 변경하지 않는다.
 Rust source/test, 샘플, baseline, CI worker 실행 범위, 권한 및 concurrency는 변경하지 않는다.
+
+Stage 3 검증 보완: 신규 테스트의 CI 미배선을 발견해 `ci.yml`의 기존 lint 단계에 reporter 테스트 실행을
+추가하고 `test_workflow_contract_wiring.py` 목록을 현행화했다. `ci-impact-policy.test.cjs`에는
+collector 부가 필드 전후 verdict 동일성 검사를 추가했다. 정책 구현 자체는 변경하지 않는다.
 
 ## 2. 배선과 데이터 계약
 
