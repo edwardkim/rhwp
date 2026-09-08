@@ -2,7 +2,7 @@
 
 - Issue: [#6852](https://github.com/edwardkim/rhwp/issues/6852).
 - 작성일: 2026-09-08.
-- 상태: **로컬 최종 검증 완료, 결과보고 승인 요청. 원격 통합 전.**
+- 상태: **결과보고 승인·이슈 본문 정정·원격 push·PR #6858 등록 완료. CI·self-review·병합 대기.**
 - 검증 후보: `393401e5a`; 제품 변경은 `232edb22b`, 집중 시험 후보는 `9f4f451b7`과 같다.
 - 계획: [수행계획](../plans/task_m100_6852.md).
 - 증거: [Stage 2](../working/task_m100_6852_stage2.md), [Stage 3](../working/task_m100_6852_stage3.md).
@@ -84,9 +84,10 @@
 
 ## 5. 남은 통합 절차
 
-이 보고서의 결과 승인을 받는다. GitHub 본문은 아직 최초 API/UI 범위이므로
-실제 수용 범위와 #6856 분리를 반영한 정정 초안을 준비했다. 원격 게시는 아직 하지 않았다.
+메인테이너가 결과보고 후속 절차를 승인하여 #6852 본문·제목을 실제 실선 수정 범위와 #6856 분리로
+정정했다. `aa3cc0bfd`를 원격 작업 브랜치에 push하고 [PR #6858](https://github.com/edwardkim/rhwp/pull/6858)을
+devel 대상으로 등록했다. 담당자·milestone·관련 라벨도 적용했다. 게시 후 API로 본문·metadata를 재확인했다.
 
-그다음 최신 devel 재확인·충돌 확인 → 승인된 이슈 본문 정정·push·PR 생성 → CI 완료 →
-self-review → 승인된 merge commit 병합 → 실제 devel 포함 확인과 #6852 close 순서다.
+남은 순서는 최신 PR head CI 완료 → self-review → 승인된 merge commit 병합 → 실제 devel 포함 확인과
+#6852 close다. [접수 기록](../pr/archives/pr_6858_review.md)에 승인 경계와 현재 한계를 기록한다.
 IR 확장을 재편입하지 않으며 필요한 대표 시각 증적의 장기 보존은 PR 기록 절차를 따른다.
