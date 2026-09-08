@@ -21292,8 +21292,9 @@ impl TypesetEngine {
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
             let table_top = if signed_vertical_offset > 0 {
                 // [#6879] 세로 기준점은 앵커 줄이다 — layout 이 같은 값을 더하므로
-                // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다.
-                let anchor_offset_px = crate::renderer::layout::stored_float_anchor_offset_px(
+                // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다. layout 과 **같은**
+                // 게이트(TAC 형제 유무)를 써야 배치와 예약이 갈리지 않는다.
+                let anchor_offset_px = crate::renderer::layout::tac_sibling_float_anchor_offset_px(
                     para, table, ctrl_idx, self.dpi,
                 );
                 let stored_top = para_start_height + anchor_offset_px + outer_top_px + v_off_px;

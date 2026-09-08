@@ -1059,6 +1059,43 @@ pub(crate) fn stored_float_anchor_offset_hu(
     (anchor_top - base).max(0)
 }
 
+/// [#6879] 이 float 보다 **앞에** 줄을 차지하는 TAC 형제가 있는가.
+///
+/// `#6879` 가 앵커 줄 기준점을 조각 경로 밖(일반 배치·흐름 예약)까지 넓힌 형상은
+/// "TAC 형제가 첫 줄을 차지하고 그 **뒤에** float 이 앵커된" 문단이다
+/// (156767332 pi=73: ci=0 라벨 `tac=1` → ci=1 float).
+///
+/// 그 형제가 없으면 원점을 내릴 근거가 없다. 제어 문자가 여러 줄짜리 본문 **끝**에
+/// 실린 평범한 문단도 앵커 줄이 마지막 줄로 잡히는데, 여기서 원점을 내리면
+/// `#6718` 의 `vpos == 0` 되감김이 무효가 된다 — 27469 pi=23(표 하나 · `tac=false` ·
+/// 형제 없음 · 제어 문자가 126자 끝 · 저장 줄 3개 spread 5280HU = 70.4px)에서
+/// 4쪽 본문이 쪽 하한을 73.6px 넘었다.
+///
+/// 조각 경로(`#6860`)는 이 게이트를 쓰지 않는다 — 3067979 문단 1523 은 형제가 없어도
+/// 앵커 줄 기준이 정본과 맞고, 그 경로는 `#6718` 되감김과 만나지 않는다.
+pub(crate) fn has_line_taking_tac_sibling_before(para: &Paragraph, control_index: usize) -> bool {
+    para.controls
+        .iter()
+        .take(control_index)
+        .any(|ctrl| ctrl.is_treat_as_char_object())
+}
+
+/// [#6879] 일반 배치·흐름 예약이 쓰는 앵커 오프셋 — TAC 형제가 있을 때만 0 이 아니다.
+///
+/// 두 호출부가 같은 값을 봐야 배치와 예약이 어긋나지 않으므로 게이트를 여기 한 곳에
+/// 둔다. 게이트가 거짓이면 종전(문단 상단 기준) 동작 그대로다.
+pub(crate) fn tac_sibling_float_anchor_offset_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    control_index: usize,
+    dpi: f64,
+) -> f64 {
+    if !has_line_taking_tac_sibling_before(para, control_index) {
+        return 0.0;
+    }
+    stored_float_anchor_offset_px(para, table, control_index, dpi)
+}
+
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
 ///
 /// 선행 문단이 앵커한 자리차지 표가 흐름 커서를 표 하단까지 밀어낸 뒤에 오는,
@@ -10938,7 +10975,8 @@ impl LayoutEngine {
             // 이것을 안 옮기면 float 이 그 줄 위로 올라가 겹친다 (156767332 pi=73:
             // 라벨 98.2..138.4 vs float 128.0). 앵커가 첫 줄이면 0 이라 종전과 같다.
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
-                let anchor_offset = stored_float_anchor_offset_px(para, t, control_index, self.dpi);
+                let anchor_offset =
+                    tac_sibling_float_anchor_offset_px(para, t, control_index, self.dpi);
                 if anchor_offset > 0.0 {
                     para_y_for_table += anchor_offset;
                 }
