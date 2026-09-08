@@ -1,6 +1,9 @@
 # SVG 골든 스냅샷 — 렌더러 생성물(LF)과 바이트 비교하므로 CRLF 변환 금지 (#1786)
 tests/golden_svg/**/*.svg text eol=lf
 
+# Cargo의 generated test target 블록은 플랫폼과 무관하게 LF로 체크아웃한다.
+/Cargo.toml text eol=lf
+
 # Lawful HML corpus — preserve provenance bytes (BOM/CRLF/trailing spaces) and verify by SHA
 samples/hml/*.hml -text -diff
 

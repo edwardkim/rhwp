@@ -98,6 +98,41 @@ function writeRepositoryFixture(root) {
   return manifest;
 }
 
+test('Cargo CRLF 블록은 허용하지만 실제 target drift는 거절한다', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-cargo-crlf-'));
+  try {
+    writeRepositoryFixture(root);
+    const cargoPath = path.join(root, 'Cargo.toml');
+    const original = readFileSync(cargoPath, 'utf8');
+    for (const eol of ['\n', '\r\n']) {
+      const contents = original.replace(/\r?\n/g, eol);
+      writeFileSync(cargoPath, contents);
+      assert.deepEqual(validateRepository(root).errors, []);
+      assert.equal(readFileSync(cargoPath, 'utf8'), contents, '검사는 파일을 쓰지 않는다');
+      writeFileSync(cargoPath, contents.replace('name = "regression_suite_001"', 'name = "wrong_target"'));
+      assert.ok(validateRepository(root).errors.some(
+        (error) => error.includes('Cargo.toml generated test target block drift'),
+      ));
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Cargo checkout은 core.autocrlf=true여도 저장소 속성에 따라 LF를 유지한다', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-cargo-checkout-'));
+  try {
+    writeRepositoryFixture(root);
+    writeFileSync(path.join(root, '.gitattributes'), readFileSync(path.join(ROOT, '.gitattributes')));
+    runGit(root, ['add', '.gitattributes']);
+    runGit(root, ['-c', 'core.autocrlf=true', 'checkout-index', '-f', '--', 'Cargo.toml']);
+    assert.ok(!readFileSync(path.join(root, 'Cargo.toml'), 'utf8').includes('\r'));
+    assert.deepEqual(validateRepository(root).errors, []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('전체 integration source는 파생 산출물을 쓰지 않고 검증한다', () => {
   const policyPath = path.join(ROOT, 'tests', 'suites', 'suite-policy.json');
   const policyBefore = readFileSync(policyPath, 'utf8');
