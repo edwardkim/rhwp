@@ -1,4 +1,57 @@
-# #6899 구현계획 — 판정과 독립된 실패 진단 보고
+# #6899 구현계획 R2 — 실패 증적 중심 보고
+
+## R2 재설계 (2026-09-08, 메인테이너의 재설계·구현 지시)
+
+아래 R2가 이후에 남겨 둔 최초 계획보다 우선한다. 기존 후보 `38bb7bb87`은 Git 이력에 보존한다.
+새로운 자식 이슈, branch reset, baseline 변경은 하지 않는다.
+
+### 잘못 잡았던 경계
+
+- workflow conclusion만 따라갔으므로 CodeQL Analyze 성공 뒤 GHAS CodeQL check 실패가 누락됐다.
+- 테스트 panic 중심 추출은 설치 단계 네트워크 오류를 exit code로 축약했다.
+- 첫 workflow 로그 수집이 뒤 workflow/check의 제한된 진단 예산을 먼저 소모할 수 있었다.
+- 테스트 개수와 안전성은 검증했지만 실제 실패 보고의 정보 충족 여부를 완료 gate로 삼지 못했다.
+- devel 구현과 main 운영 배포를 구분했으나, 미적용 상태를 최종 목표의 미완료로 충분히 강조하지 못했다.
+
+### R2 데이터 흐름과 불변식
+
+1. 기존 policy status 게시 → 독립 진단. policy 판정과 진단 관측 결과를 별도 필드로 표시한다.
+2. live PR identity 검증 → workflow/run/attempt 및 실패 job/step **목록을 먼저** 수집한다.
+3. 동일 head의 GitHub Advanced Security CodeQL check를 workflow 성공 여부와 독립적으로 읽는다.
+   provider/name/head/PR 연결을 확인한다. GHAS check를 Actions attempt에 귀속한다고 추정하지 않는다.
+4. check title·annotation의 경로/행/규칙 제목/검출 설명을 길이 제한·escape 후 제공한다.
+   API 응답의 arbitrary URL/raw_details는 출력하지 않는다. 현재 head의 검사 결과임을 표시한다.
+5. 모든 목록 수집 후 제한된 worker 로그를 보강한다. 집계 실패와 직접 실패를 구분하고,
+   설치/테스트/분석의 실패 위치를 명시한다. 네트워크 오류는 확인된 오류 패턴을 근거로만 분류한다.
+6. 요약 계약: **어디서 / 어떤 증적 때문에 / 무엇이 미확인인지 / 다음 조치 / 원본 링크**.
+   추출한 관측을 근본 원인·제품 회귀로 자동 승격하지 않는다.
+7. `checks: read`만 추가한다. 기존 write 권한 확대·verdict/required check 변경은 금지한다.
+   Checks annotations API에 필요한 최소 read 권한이며 원격 배포는 별도 승인한다.
+8. 24요청/45초/요청당 5초, 6개 상세 job, 1 MiB/job, 2 MiB metadata, 16 KiB summary 유지.
+   성공/대기라도 완료 CodeQL workflow가 있으면 check 조회가 필요하므로 **항상 API 0회 주장을 폐기**한다.
+   초기 publish·비대상·stale는 로그를 조회하지 않는다. 제한에 걸리면 누락을 명시한다.
+
+### 운영 및 검증 gate
+
+- 이번 PR의 실제 Archive B 설치 실패와 GHAS 경고를 같은 reporter로 read-only 재생해
+  로컬 Markdown 보고서를 만들고 위 다섯 정보가 모두 나오는지 직접 확인한다.
+- 오프라인 테스트는 두 실제 실패의 정규화 fixture, CodeQL workflow 성공/check 실패 단독,
+  API 권한 실패, stale·다른 head/provider/PR, 목록·시간·크기 상한을 검사한다.
+- CodeQL이 지적한 테스트는 sanitizer가 아니라 출력 assertion이다. 태그명 하나가 아닌
+  `<`, `>` 전체 부재 및 대소문자 변형의 동일 escape를 검사하도록 고친다. alert dismiss는 하지 않는다.
+- 기존 policy/classifier source는 그대로 두고 기존 계약 전체를 재실행한다.
+- GitHub check_run trigger는 head가 Actions와 연결된 경우 재귀 방지로 실행되지 않을 수 있어
+  즉시 해결책으로 추가하지 않는다. 기존 workflow_run 시점의 snapshot임을 명시한다.
+  이후 늦게 바뀐 GHAS check는 다음 Controller 이벤트/승인된 재실행에서 확인할 수 있으며
+  이 한계를 감추고 실시간 전수 보고라고 주장하지 않는다.
+- main 적용 이전에는 운영 완료가 아니다. 로컬 재생 → 승인된 PR push/CI → 승인된 병합 →
+  별도 main 적용 승인 → 실제 Controller summary 검증까지 #6899를 유지한다.
+- 외부 근거: [Checks API](https://docs.github.com/en/rest/checks/runs?apiVersion=2022-11-28),
+  [이벤트 실행 제약](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows).
+
+---
+
+## 최초 계획 (R2 이전 기록, 아래 API 0회·권한 불변 항목은 R2로 대체)
 
 - 상태: 2026-09-08 승인 범위 구현 및 Stage 3 로컬 검증 완료. remote push·PR 생성 승인 대기.
 - 근거: [수행계획](task_m100_6899.md), [Stage 1 조사](../working/task_m100_6899_stage1.md).
