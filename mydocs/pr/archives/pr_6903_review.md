@@ -1,5 +1,16 @@
 # PR #6903 — CI Controller 실패 증적 보고
 
+## R2 재작업 상태 (2026-09-08)
+
+원격 `38bb7bb87`의 CI는 Archive B 설치 단계 Connection reset by peer로 실패했고,
+GHAS CodeQL은 테스트 assertion의 Bad HTML filtering regexp 경고로 실패했다.
+기존 reporter가 이 두 실패를 충분히 보고하지 못하는 설계 결함을 확인해 메인테이너 지시로 재설계했다.
+[R2 검증 기록](../../working/task_m100_6899_rework_stage1.md)에 실제 before/after 재생을 남겼다.
+로컬 R2 검증은 통과했으나 수정 push·CodeQL 경고 해소·원격 CI 검증은 아직 하지 않았다.
+따라서 아래 접수 당시 metadata와 로컬 통과 기록을 R2 원격 성공으로 해석하지 않으며 **머지 보류**를 유지한다.
+
+## 최초 접수 기록
+
 - 관련 이슈: #6899.
 - 작성자 self-review 접수 기록. 메인테이너의 push·PR 생성 승인에 따른 기록이며 최종 self-review 확정·병합 승인은 별도다.
 - 일자: 2026-09-08. GitHub 상태는 작성 시점 참고값이며 merge 직전에 재조회한다.

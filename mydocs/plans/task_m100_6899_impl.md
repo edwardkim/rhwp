@@ -28,7 +28,7 @@
 7. `checks: read`만 추가한다. 기존 write 권한 확대·verdict/required check 변경은 금지한다.
    Checks annotations API에 필요한 최소 read 권한이며 원격 배포는 별도 승인한다.
 8. 24요청/45초/요청당 5초, 6개 상세 job, 1 MiB/job, 2 MiB metadata, 16 KiB summary 유지.
-   성공/대기라도 완료 CodeQL workflow가 있으면 check 조회가 필요하므로 **항상 API 0회 주장을 폐기**한다.
+   audit에서는 CodeQL workflow 증적 유무·성공 여부와 독립적으로 check를 조회하므로 **항상 API 0회 주장을 폐기**한다.
    초기 publish·비대상·stale는 로그를 조회하지 않는다. 제한에 걸리면 누락을 명시한다.
 
 ### 운영 및 검증 gate

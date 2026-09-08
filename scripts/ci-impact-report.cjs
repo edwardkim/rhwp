@@ -69,7 +69,7 @@ async function boundedBody(response, cap, partial) {
   } finally { reader.releaseLock(); }
 }
 
-function transport({ token, fetchImpl = fetch, now = Date.now }) {
+function transport({ token, fetchImpl = fetch, now = () => performance.now() }) {
   const started = now();
   let count = 0;
   const check = () => { if (now() - started >= LIMITS.durationMs) throw fault('deadline'); };
@@ -139,6 +139,19 @@ function extractErrors(text) {
     if (rust) errors.add(`Rust 컴파일 오류: ${rust[1]}`);
     const exit = line.match(/Process completed with exit code (\d{1,3})\./);
     if (exit) errors.add(`프로세스 exit code ${exit[1]}`);
+    // Only classify a diagnostic error line, not commands or arbitrary echoed prose.
+    if (/\berror(?: downloading file|:)|##\[error\]/i.test(line)) {
+      if (/Connection reset by peer|ECONNRESET/.test(line)) {
+        errors.add('네트워크 연결 재설정 (Connection reset by peer / ECONNRESET)');
+      }
+      if (/could not download file|error downloading file|failed to download/i.test(line)) {
+        errors.add('필수 파일 다운로드 실패');
+      }
+      if (/No space left on device|ENOSPC/.test(line)) errors.add('실행 환경 저장 공간 부족');
+      if (/Could not resolve host|Temporary failure in name resolution|ENOTFOUND/.test(line)) {
+        errors.add('실행 환경 DNS 이름 해석 실패');
+      }
+    }
     if (line.includes('layout-anomaly text-overlap')) errors.add('글자 겹침(text-overlap) 보호 검사 실패');
     const baseline = line.match(/신규 발생: .{0,1000} — (\d{1,8})건 \(baseline 없음\)/);
     if (baseline) errors.add(`신규 검출 ${baseline[1]}건 (baseline 없음; 회귀 여부 미확정)`);
@@ -146,7 +159,7 @@ function extractErrors(text) {
     if (/##\[error\].{0,200}(?:timed out|timeout exceeded)/i.test(line)) errors.add('실행 시간 제한 초과');
     if (errors.size >= 6) break;
   }
-  return [...errors];
+  return [...errors].slice(0, 6);
 }
 
 function identityFor(input) {
@@ -172,6 +185,7 @@ async function diagnoseRun(input, name, evidence, client, budget) {
     result.url = `https://github.com/${input.repository}/actions/runs/${run.id}/attempts/${run.run_attempt}`;
     result.attempt = run.run_attempt;
     result.conclusion = run.conclusion;
+    if (!BAD.has(run.conclusion)) return result;
     const jobs = [];
     for (let page = 1; page <= 2; page += 1) {
       const data = await client.json(`${prefix}/attempts/${run.run_attempt}/jobs?per_page=100&page=${page}`);
@@ -191,39 +205,101 @@ async function diagnoseRun(input, name, evidence, client, budget) {
         result.notes.push('job-identity-mismatch'); continue;
       }
       budget.jobs += 1;
+      const failedSteps = (Array.isArray(job.steps) ? job.steps : []).filter((step) => BAD.has(step.conclusion));
+      const setupFailure = failedSteps.some((step) => /^(?:Set up|Install|Download|Run actions\/checkout)\b/.test(step.name));
+      const skippedTest = (job.steps || []).some((step) => step.conclusion === 'skipped'
+        && /^(?:Run Archive|Run .*tests|Test\b)/.test(step.name));
       const item = { name: field(job.name), conclusion: field(job.conclusion),
         aggregate: job.name === 'Build & Test', errors: [],
+        phase: setupFailure ? '실행 준비/의존성 설치' : '검증 실행',
+        testExecution: setupFailure && skippedTest ? '테스트 미실행 (준비 단계 실패 뒤 skipped)' : '',
+        nextAction: setupFailure ? '환경·다운로드 원인 확인 후 실패 job 재실행 검토 (자동 재실행 안 함)'
+          : '실패 검증의 증적과 변경 전 기준을 대조 (회귀 자동 단정 안 함)',
         url: `https://github.com/${input.repository}/actions/runs/${run.id}/job/${job.id}`,
-        steps: (Array.isArray(job.steps) ? job.steps : []).filter((step) => BAD.has(step.conclusion))
+        steps: failedSteps
           .slice(0, 6).map((step) => `${numericId(step.number) ? step.number : '?'}: ${field(step.name)}`) };
       result.jobs.push(item);
-      if (!item.aggregate) {
-        try {
-          const log = await client.log(input.repository, job.id);
-          client.check();
-          item.errors = extractErrors(log.text);
-          if (log.truncated) item.note = 'log-truncated';
-          else if (!item.errors.length) item.note = 'no-recognized-error';
-        } catch (error) { item.note = shortError(error); }
-      }
+      if (!item.aggregate) budget.logs.push({ item, id: job.id });
     }
     if (!failures.length) result.notes.push('no-failed-job-evidence');
   } catch (error) { result.notes.push(shortError(error)); }
   return result;
 }
 
+// GHAS checks are attached to a commit, not an Actions run attempt. Never invent that link.
+async function diagnoseSecurity(input, client) {
+  const result = { name: 'CodeQL 보안 검사 (동일 head)', items: [], notes: [] };
+  const prefix = `/repos/${input.repository}`;
+  try {
+    const checks = [];
+    for (let page = 1; page <= 2; page += 1) {
+      const data = await client.json(`${prefix}/commits/${input.headSha}/check-runs?check_name=CodeQL&filter=latest&per_page=100&page=${page}`);
+      if (!Array.isArray(data.check_runs) || data.check_runs.length > 100) throw fault('metadata-unavailable');
+      checks.push(...data.check_runs);
+      if (checks.length >= data.total_count || data.check_runs.length < 100) break;
+      if (page === 2) result.notes.push('check-list-truncated');
+    }
+    const match = (check) => check?.name === 'CodeQL'
+      && check.app?.slug === 'github-advanced-security' && check.head_sha === input.headSha
+      && numericId(check.id) && Number.isFinite(Date.parse(check.started_at))
+      && (!check.pull_requests?.length || check.pull_requests.some((pull) => Number(pull.number) === Number(input.pullNumber)));
+    const candidates = checks.filter(match).sort((a, b) => Date.parse(b.started_at) - Date.parse(a.started_at)
+      || Number(b.id) - Number(a.id));
+    if (!candidates.length) { result.notes.push('security-check-unavailable'); return result; }
+    const ref = candidates[0];
+    const check = await client.json(`${prefix}/check-runs/${ref.id}`);
+    if (!match(check) || Number(check.id) !== Number(ref.id) || check.started_at !== ref.started_at) throw fault('identity-mismatch');
+    const item = { id: check.id, conclusion: field(check.conclusion || check.status),
+      failed: BAD.has(check.conclusion), title: field(check.output?.title), annotations: [],
+      url: `https://github.com/${input.repository}/runs/${check.id}` };
+    result.items.push(item);
+    if (item.failed) {
+      const annotations = await client.json(`${prefix}/check-runs/${check.id}/annotations?per_page=6&page=1`);
+      if (!Array.isArray(annotations) || annotations.length > 6) throw fault('metadata-unavailable');
+      for (const annotation of annotations) {
+        const file = String(annotation.path || '');
+        const safePath = file.length <= 240 && file.split('/').every((part) => part && part !== '.' && part !== '..'
+          && /^[A-Za-z0-9_. -]+$/.test(part));
+        item.annotations.push({ path: safePath ? field(file) : '경로 표시 제한',
+          line: numericId(annotation.start_line) ? Number(annotation.start_line) : '?',
+          title: field(annotation.title), message: field(annotation.message) });
+      }
+      if (Number(check.output?.annotations_count) > annotations.length) result.notes.push('annotations-truncated');
+      if (!annotations.length) result.notes.push('annotations-unavailable');
+    }
+  } catch (error) { result.notes.push(shortError(error)); }
+  return result;
+}
+
 function render(input, report) {
   const labels = { 'upstream-failure': '선행 검증 실패 — Controller 자체 장애와 구분',
+    'security-failure': 'CodeQL 보안 검사 실패 — workflow 성공과 별개',
     'controller-error': 'Controller 내부 단계 오류', 'evidence-unavailable': '증적 미확인',
     'policy-blocked': '정책 차단 — 선행 테스트 오류와 구분',
-    success: '검증 성공', pending: '검증 대기', 'stale/skipped': '오래된 이벤트 또는 비대상' };
+    success: '정책상 성공 (전체 보안 검사 성공을 뜻하지 않음)', pending: '검증 대기', 'stale/skipped': '오래된 이벤트 또는 비대상' };
   const lines = ['### CI 실패 진단', '', `- 유형: ${labels[report.kind]}`,
+    `- 기존 policy 판정: ${field(input.conclusion || input.publishedState || '미확인')}`,
     `- PR: ${numericId(input.pullNumber) ? `#${input.pullNumber}` : '미확인'}`,
     `- head: ${SHA.test(input.headSha || '') ? input.headSha : '미확인'}`,
     `- base: ${SHA.test(input.baseSha || '') ? input.baseSha : '미확인'}`,
     '- 이 보고는 기존 CI 판정을 변경하지 않습니다. 원본 로그의 관찰이며 회귀/근본 원인 확정이 아닙니다.'];
   if (report.internal.length) lines.push(`- Controller 단계: ${report.internal.join(', ')}`);
+  if (numericId(input.controllerRunId) && REPO.test(input.repository || '')) {
+    lines.push(`- [원본 Controller 실행](https://github.com/${input.repository}/actions/runs/${input.controllerRunId})`);
+  }
   if (report.notes.length) lines.push(`- 상세 미확인/수집 제한: ${report.notes.join(', ')}`);
+  // Security findings precede bounded log detail so one noisy worker cannot hide them.
+  for (const check of report.checks) {
+    lines.push('', `#### ${check.name}`, '- Actions workflow 성공과 보안 check 통과는 별개입니다. attempt 귀속은 주장하지 않습니다.');
+    for (const item of check.items) {
+      lines.push(`- [원본 보안 check](${item.url}) — ${item.conclusion}`, `  - 검사 결과: ${item.title}`);
+      for (const annotation of item.annotations) lines.push(
+        `  - 위치: ${annotation.path}:${annotation.line}; 규칙: ${annotation.title}`,
+        `    - 검출 설명: ${annotation.message}`);
+      if (item.failed) lines.push('  - 다음 조치: 지적된 코드와 규칙을 검토하고 수정 또는 오탐 근거 검증. 자동 dismiss/재실행 안 함.');
+    }
+    if (check.notes.length) lines.push(`- 보안 증적 미확인/제한: ${check.notes.join(', ')}`);
+  }
   for (const run of report.runs) {
     lines.push('', `#### ${run.name}`, run.url
       ? `- [원본 실행 · attempt ${run.attempt}](${run.url}) — ${field(run.conclusion)}`
@@ -231,8 +307,11 @@ function render(input, report) {
     for (const job of run.jobs) {
       lines.push(`- [${job.aggregate ? '집계' : '실패 job'}: ${job.name}](${job.url}) — ${job.conclusion}`);
       if (job.steps.length) lines.push(`  - 실패 step: ${job.steps.join('; ')}`);
+      if (!job.aggregate) lines.push(`  - 실패 위치: ${job.phase}`);
+      if (job.testExecution) lines.push(`  - ${job.testExecution}`);
       for (const error of job.errors) lines.push(`  - ${error}`);
       if (job.note) lines.push(`  - 오류 상세 미확인/부분 수집: ${job.note}`);
+      if (!job.aggregate) lines.push(`  - 다음 조치: ${job.nextAction}`);
     }
     if (run.notes.length) lines.push(`- 증적 상태: ${run.notes.join(', ')}`);
   }
@@ -249,7 +328,7 @@ function render(input, report) {
 
 async function createReport(input, dependencies = {}) {
   const client = transport(dependencies);
-  const report = { kind: 'evidence-unavailable', internal: [], notes: [], runs: [] };
+  const report = { kind: 'evidence-unavailable', internal: [], notes: [], runs: [], checks: [] };
   for (const stage of STAGES) {
     if (input.outcomes?.[stage] === 'failure'
       && !(stage === 'publish' && input.published === 'true')) report.internal.push(stage);
@@ -262,12 +341,16 @@ async function createReport(input, dependencies = {}) {
   else if (input.conclusion === 'failure' && input.decision !== 'blocked') report.kind = 'upstream-failure';
   else report.notes.push('policy-evidence-unavailable');
 
-  if (report.kind === 'upstream-failure') {
+  // Audit the independent check even if CodeQL workflow metadata is still absent/pending.
+  const securityExpected = input.mode === 'audit'
+    || ['success', ...BAD].includes(input.workflows?.CodeQL?.run?.conclusion);
+  const inspectSecurity = securityExpected && ['success', 'pending', 'upstream-failure'].includes(report.kind);
+  if (report.kind === 'upstream-failure' || inspectSecurity) {
     if (!REPO.test(input.repository || '') || !REPO.test(input.headRepository || '')
       || !SHA.test(input.headSha || '') || !SHA.test(input.baseSha || '') || !numericId(input.pullNumber)) {
       report.kind = 'evidence-unavailable'; report.notes.push('identity-mismatch');
     } else {
-      const budget = { jobs: 0 };
+      const budget = { jobs: 0, logs: [] };
       try {
         const pull = await client.json(`/repos/${input.repository}/pulls/${input.pullNumber}`);
         if (pull.state !== 'open' || pull.head?.sha !== input.headSha || pull.base?.sha !== input.baseSha
@@ -280,7 +363,22 @@ async function createReport(input, dependencies = {}) {
             if (!BAD.has(evidence?.run?.conclusion)) continue;
             report.runs.push(await diagnoseRun(input, name, evidence, client, budget));
           }
-          if (!report.runs.length) { report.kind = 'evidence-unavailable'; report.notes.push('metadata-unavailable'); }
+          if (inspectSecurity) {
+            report.checks.push(await diagnoseSecurity(input, client));
+            if (report.kind !== 'upstream-failure' && report.checks.some((check) => check.items.some((item) => item.failed))) {
+              report.kind = 'security-failure';
+            }
+          }
+          for (const { item, id } of budget.logs) {
+            try {
+              const log = await client.log(input.repository, id);
+              client.check();
+              item.errors = extractErrors(log.text);
+              if (log.truncated) item.note = 'log-truncated';
+              else if (!item.errors.length) item.note = 'no-recognized-error';
+            } catch (error) { item.note = shortError(error); }
+          }
+          if (!report.runs.length && !report.checks.length) { report.kind = 'evidence-unavailable'; report.notes.push('metadata-unavailable'); }
         }
       } catch (error) { report.kind = 'evidence-unavailable'; report.notes.push(shortError(error)); }
     }
@@ -297,6 +395,8 @@ function loadInput(env, workspace) {
     workflows = JSON.parse(fs.readFileSync(file, 'utf8'));
   } catch { /* Missing evidence is reported explicitly, never guessed. */ }
   return { repository: env.GITHUB_REPOSITORY, pullNumber: env.PULL_NUMBER,
+    mode: env.MODE,
+    controllerRunId: env.GITHUB_RUN_ID,
     headSha: env.HEAD_SHA, baseSha: env.BASE_SHA, headBranch: env.HEAD_BRANCH,
     headRepository: env.HEAD_REPOSITORY, active: env.ACTIVE, stale: env.STALE,
     auditPublish: env.AUDIT_PUBLISH, conclusion: env.AUDIT_CONCLUSION,

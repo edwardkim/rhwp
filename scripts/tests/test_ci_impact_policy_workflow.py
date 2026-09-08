@@ -29,6 +29,9 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
         self.assertIn("permissions: {}", self.workflow)
         self.assertEqual(self.workflow.count("      statuses: write"), 1)
         self.assertEqual(self.workflow.count("      actions: read"), 1)
+        self.assertEqual(self.workflow.count("      checks: read"), 1)
+        reporter = self.workflow.split("      - name: Explain CI failure evidence", 1)[1]
+        self.assertIn("MODE: ${{ steps.resolve.outputs.mode }}", reporter)
         self.assertNotIn("      actions: write", self.workflow)
         self.assertNotIn("      checks: write", self.workflow)
         self.assertNotIn("      contents: write", self.workflow)

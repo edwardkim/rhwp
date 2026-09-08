@@ -70,7 +70,7 @@ test('reports #6898 original worker, step, test and overlap count without changi
   for (const call of f.calls) assert.equal(call.init.method, 'GET');
 });
 
-for (const state of ['success', 'pending']) test(`${state} adds no API calls`, async () => {
+for (const state of ['success', 'pending']) test(`${state} without completed CodeQL evidence adds no API calls`, async () => {
   const { report, calls } = await example({}, { conclusion: state });
   assert.equal(report.kind, state); assert.equal(calls.length, 0);
 });
@@ -199,7 +199,12 @@ test('hung fetch aborts within remaining overall deadline', async () => {
 });
 test('report escapes metadata and redacts credentials; extraction has a strict vocabulary', () => {
   const escaped = field('<script>[link](https://evil.example)\n::error:: ghp_abcdef secret=xxx');
-  assert.doesNotMatch(escaped, /<script>|\[link\]|::error::|ghp_|xxx|evil.example/);
+  assert.doesNotMatch(escaped, /[<>]|\[link\]|::error::|ghp_|xxx|evil.example/);
+  for (const tag of ['<script>', '<SCRIPT>', '<ScRiPt>', '<img onerror=x>', '</SCRIPT>']) {
+    assert.doesNotMatch(field(tag), /[<>]/);
+    assert.ok(field(tag).startsWith('&#60;'));
+    assert.ok(field(tag).endsWith('&#62;'));
+  }
   assert.match(escaped, /redacted/);
   assert.equal(shortError(new Error('password=SECRET')), 'evidence-unavailable');
   assert.deepEqual(extractErrors('anything dangerous\nerror[E0308]: private text\nassertion failed: private'),
@@ -266,4 +271,141 @@ test('workflow bootstrap fallback works when trusted helper is missing or throws
     assert.match(summary, /trusted reporter unavailable/); assert.match(summary, /RESOLVE/);
     assert.doesNotMatch(summary, /SECRET/);
   }
+});
+
+function securityFixture(changes = {}) {
+  const check = { id: 102065590077, name: 'CodeQL', head_sha: HEAD,
+    app: { slug: 'github-advanced-security' }, started_at: '2026-09-08T12:42:56Z',
+    status: 'completed', conclusion: 'failure', pull_requests: [],
+    output: { title: '1 new alert including 1 high severity security vulnerability', annotations_count: 1 },
+    ...changes };
+  const annotation = { path: 'scripts/tests/ci-impact-report.test.cjs', start_line: 202,
+    title: 'Bad HTML filtering regexp',
+    message: 'This regular expression does not match upper case <SCRIPT> tags.' };
+  return { check, annotation, override: (url) => {
+    if (url.includes('/commits/')) return Response.json({ total_count: 1, check_runs: [check] });
+    if (url.includes('/annotations?')) return Response.json([annotation]);
+    if (url.endsWith(`/check-runs/${check.id}`)) return Response.json(check);
+    return null;
+  } };
+}
+const codeqlSuccess = { run: { id: RUN + 1, attempt: 1, conclusion: 'success' } };
+
+test('R2 actual failure shapes: installation network error AND successful workflow with GHAS failure', async () => {
+  const security = securityFixture();
+  const { report, calls } = await example({ override: security.override,
+    job: { steps: [{ number: 3, name: 'Install Rust toolchain', conclusion: 'failure' },
+      { number: 6, name: 'Run Archive B', conclusion: 'skipped' }] },
+    log: 'error: could not download file from private-location: Connection reset by peer (os error 104)\n'
+      + '##[error]Process completed with exit code 1.' },
+  { workflows: { ...input().workflows, CodeQL: codeqlSuccess } });
+  assert.match(report.summary, /Connection reset by peer/);
+  assert.match(report.summary, /필수 파일 다운로드 실패/);
+  assert.match(report.summary, /테스트 미실행/);
+  assert.match(report.summary, /3: Install Rust toolchain/);
+  assert.match(report.summary, /1 high severity/);
+  assert.ok(report.summary.includes(field('scripts/tests/ci-impact-report.test.cjs') + ':202'));
+  assert.match(report.summary, /Bad HTML filtering regexp/);
+  assert.ok(report.summary.includes(field(security.annotation.message)));
+  assert.match(report.summary, /다음 조치/);
+  assert.doesNotMatch(report.summary, /private-location/);
+  const logs = calls.findIndex((call) => call.url.includes('/actions/jobs/'));
+  const annotations = calls.findIndex((call) => call.url.includes('/annotations?'));
+  assert.ok(annotations >= 0 && annotations < logs, 'metadata before any worker log');
+  assert.equal(report.stats.requests, 8);
+});
+
+test('R2 GHAS failure alone is visible without changing successful policy or downloading logs', async () => {
+  const f = securityFixture();
+  const source = { ...input(), conclusion: 'success', workflows: { CodeQL: codeqlSuccess } };
+  const original = structuredClone(source);
+  const fixtureData = fixture({ override: f.override });
+  const report = await createReport(source, { fetchImpl: fixtureData.fetchImpl });
+  assert.equal(report.kind, 'security-failure');
+  assert.deepEqual(source, original);
+  assert.match(report.summary, /기존 policy 판정: success/);
+  assert.equal(report.stats.requests, 4);
+  assert.ok(fixtureData.calls.every((call) => !call.url.includes('/actions/jobs/')));
+});
+
+test('R2 rejects wrong security check head, provider, PR association and invalid ID', async () => {
+  for (const changes of [{ head_sha: 'b'.repeat(40) }, { app: { slug: 'untrusted' } },
+    { pull_requests: [{ number: 99999 }] }, { id: '../123' }, { name: 'Lookalike CodeQL' }]) {
+    const security = securityFixture(changes);
+    const { report } = await example({ override: security.override },
+      { conclusion: 'success', workflows: { CodeQL: codeqlSuccess } });
+    assert.match(report.summary, /security-check-unavailable/);
+    assert.equal(report.checks[0].items.length, 0);
+  }
+});
+
+test('R2 checks permission failure cannot hide the independent installation error', async () => {
+  const { report } = await example({ override: (url) => url.includes('/commits/')
+    ? new Response('secret response', { status: 403 }) : null,
+  log: 'error: failed to download: Connection reset by peer' },
+  { workflows: { ...input().workflows, CodeQL: codeqlSuccess } });
+  assert.match(report.summary, /http-403/);
+  assert.match(report.summary, /Connection reset by peer/);
+  assert.doesNotMatch(report.summary, /secret response/);
+});
+
+test('R2 annotation text is bounded and escaped, omitted annotation count is explicit', async () => {
+  const security = securityFixture({ output: { title: 'failure', annotations_count: 100 } });
+  security.annotation.path = '../../private/file';
+  security.annotation.message = '<SCRIPT>ghp_abcdef\n::error:: https://evil.example?secret=private ' + '한'.repeat(1000);
+  const { report } = await example({ override: security.override },
+    { conclusion: 'success', workflows: { CodeQL: codeqlSuccess } });
+  assert.match(report.summary, /경로 표시 제한/);
+  assert.match(report.summary, /annotations-truncated/);
+  assert.doesNotMatch(report.summary, /[<>]|ghp_|::error::|evil.example|private/);
+  assert.ok(Buffer.byteLength(report.summary) <= LIMITS.summaryBytes);
+});
+
+test('R2 completed successful CodeQL check is inspected, initial publish remains zero-cost', async () => {
+  const security = securityFixture({ conclusion: 'success', output: { title: 'No new alerts', annotations_count: 0 } });
+  const { report, calls } = await example({ override: security.override },
+    { conclusion: 'success', workflows: { CodeQL: codeqlSuccess } });
+  assert.equal(report.stats.requests, 3);
+  assert.equal(report.checks[0].items[0].failed, false);
+  assert.ok(calls.every((call) => !call.url.includes('/annotations?')));
+  const initial = await example({}, { conclusion: '', publishedState: 'pending', workflows: {} });
+  assert.equal(initial.report.stats.requests, 0);
+});
+
+test('R2 security check identity is revalidated before annotations are read', async () => {
+  const security = securityFixture();
+  const { report, calls } = await example({ override: (url) => url.endsWith(`/check-runs/${security.check.id}`)
+    ? Response.json({ ...security.check, head_sha: 'b'.repeat(40) }) : security.override(url) },
+  { conclusion: 'success', workflows: { CodeQL: codeqlSuccess } });
+  assert.match(report.summary, /identity-mismatch/);
+  assert.ok(calls.every((call) => !call.url.includes('/annotations?')));
+});
+
+test('R2 security list pagination is capped and newest matching check wins', async () => {
+  const security = securityFixture({ conclusion: 'success', output: { title: 'No new alerts', annotations_count: 0 } });
+  const older = { ...security.check, id: security.check.id - 1, conclusion: 'failure', started_at: '2026-09-07T00:00:00Z' };
+  const page = [older, security.check, ...Array.from({ length: 98 }, (_, n) => ({ ...older, id: n + 1, name: 'Other' }))];
+  const { report, calls } = await example({ override: (url) => url.includes('/commits/')
+    ? Response.json({ total_count: 300, check_runs: page }) : security.override(url) },
+  { conclusion: 'success', workflows: { CodeQL: codeqlSuccess } });
+  assert.match(report.summary, /check-list-truncated/);
+  assert.equal(report.checks[0].items[0].failed, false);
+  assert.equal(calls.filter((call) => call.url.includes('/commits/')).length, 2);
+});
+
+test('R2 empty/missing GHAS evidence is not claimed as all checks passed', async () => {
+  const { report } = await example({ override: (url) => url.includes('/commits/')
+    ? Response.json({ total_count: 0, check_runs: [] }) : null },
+  { conclusion: 'success', workflows: { CodeQL: codeqlSuccess } });
+  assert.match(report.summary, /security-check-unavailable/);
+  assert.match(report.summary, /전체 보안 검사 성공을 뜻하지 않음/);
+});
+
+test('R2 audit finds independent GHAS failure even when workflow metadata is missing', async () => {
+  const security = securityFixture();
+  const { report } = await example({ override: security.override },
+    { mode: 'audit', conclusion: 'pending', workflows: {} });
+  assert.equal(report.kind, 'security-failure');
+  assert.match(report.summary, /기존 policy 판정: pending/);
+  assert.match(report.summary, /Bad HTML filtering regexp/);
 });

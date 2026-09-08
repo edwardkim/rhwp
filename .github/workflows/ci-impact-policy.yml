@@ -46,6 +46,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       actions: read
+      checks: read
       contents: read
       pull-requests: read
       statuses: write
@@ -712,6 +713,7 @@ jobs:
         timeout-minutes: 1
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
+          MODE: ${{ steps.resolve.outputs.mode }}
           ACTIVE: ${{ steps.resolve.outputs.active }}
           PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
