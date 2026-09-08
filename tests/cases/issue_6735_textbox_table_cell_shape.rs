@@ -15,7 +15,7 @@ use rhwp::model::paragraph::{LineSeg, Paragraph};
 use rhwp::model::shape::{
     CommonObjAttr, DrawingObjAttr, RectangleShape, ShapeObject, TextBox, TextWrap,
 };
-use rhwp::model::style::ParaShape;
+use rhwp::model::style::{Alignment, ParaShape};
 use rhwp::model::table::{Cell, Table};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::serializer::hwpx::serialize_hwpx;
@@ -170,8 +170,16 @@ fn textbox_embedded_table_cell_floating_shape_keeps_its_textbox_content() {
     assert_nested_shape_content(false);
 }
 
-fn inline_pair_positions(multiline: bool) -> Vec<(String, f64, f64)> {
+fn inline_pair_positions(
+    multiline: bool,
+    prefix: &str,
+    alignment: Alignment,
+) -> Vec<(String, f64, f64)> {
     let mut doc = document_with_shape_inside_textbox_table_cell(true);
+    doc.doc_info.para_shapes.push(ParaShape {
+        alignment,
+        ..Default::default()
+    });
     let Control::Shape(outer) = &mut doc.sections[0].paragraphs[0].controls[0] else {
         unreachable!()
     };
@@ -186,19 +194,33 @@ fn inline_pair_positions(multiline: bool) -> Vec<(String, f64, f64)> {
     let para = &mut table.cells[0].paragraphs[0];
     para.controls = ["FIRST", "SECOND"]
         .into_iter()
-        .map(|text| Control::Shape(Box::new(rectangle_textbox(6000, 2500, true, vec![paragraph(text)]))))
+        .map(|text| {
+            Control::Shape(Box::new(rectangle_textbox(
+                6000,
+                2500,
+                true,
+                vec![paragraph(text)],
+            )))
+        })
         .collect();
-    para.char_count = 17;
+    para.para_shape_id = 1;
+    para.text = prefix.into();
+    para.char_offsets = (0..prefix.len() as u32).collect();
+    para.char_count = prefix.len() as u32 + 17;
     if multiline {
-        para.line_segs = [0, 8].into_iter().enumerate().map(|(i, start)| LineSeg {
-            text_start: start,
-            vertical_pos: i as i32 * 3000,
-            line_height: 2500,
-            text_height: 2500,
-            baseline_distance: 2000,
-            segment_width: 24000,
-            ..Default::default()
-        }).collect();
+        para.line_segs = [0, 8]
+            .into_iter()
+            .enumerate()
+            .map(|(i, start)| LineSeg {
+                text_start: start,
+                vertical_pos: i as i32 * 3000,
+                line_height: 2500,
+                text_height: 2500,
+                baseline_distance: 2000,
+                segment_width: 24000,
+                ..Default::default()
+            })
+            .collect();
     }
     let mut core = DocumentCore::new_empty();
     core.set_document(doc);
@@ -214,21 +236,50 @@ fn inline_pair_positions(multiline: bool) -> Vec<(String, f64, f64)> {
         }
     }
     let mut positions = Vec::new();
-    collect(&core.build_page_render_tree(0).unwrap().root, &mut positions);
+    collect(
+        &core.build_page_render_tree(0).unwrap().root,
+        &mut positions,
+    );
     assert_eq!(positions.len(), 2);
     positions
 }
 
 #[test]
 fn embedded_cell_inline_shapes_advance_on_same_line() {
-    let positions = inline_pair_positions(false);
+    let positions = inline_pair_positions(false, "", Alignment::Left);
     assert!(positions[1].1 >= positions[0].1 + 79.9, "{positions:?}");
-    assert!((positions[1].2 - positions[0].2).abs() < 0.1, "{positions:?}");
+    assert!(
+        (positions[1].2 - positions[0].2).abs() < 0.1,
+        "{positions:?}"
+    );
 }
 
 #[test]
 fn embedded_cell_inline_shapes_follow_stored_lines() {
-    let positions = inline_pair_positions(true);
+    let positions = inline_pair_positions(true, "", Alignment::Left);
     assert!(positions[1].2 >= positions[0].2 + 39.9, "{positions:?}");
-    assert!((positions[1].1 - positions[0].1).abs() < 0.1, "{positions:?}");
+    assert!(
+        (positions[1].1 - positions[0].1).abs() < 0.1,
+        "{positions:?}"
+    );
+}
+
+#[test]
+fn embedded_cell_inline_shapes_align_as_one_group() {
+    for (alignment, expected_x) in [(Alignment::Center, 80.0), (Alignment::Right, 160.0)] {
+        let positions = inline_pair_positions(false, "", alignment);
+        assert!((positions[0].1 - expected_x).abs() < 0.1, "{positions:?}");
+        assert!(
+            (positions[1].1 - positions[0].1 - 80.0).abs() < 0.1,
+            "{positions:?}"
+        );
+    }
+}
+
+#[test]
+fn embedded_cell_inline_shapes_follow_preceding_text() {
+    let plain = inline_pair_positions(false, "", Alignment::Left);
+    let positions = inline_pair_positions(false, "PREFIX", Alignment::Left);
+    assert!(positions[0].1 > plain[0].1 + 10.0, "{positions:?}");
+    assert!(positions[1].1 >= positions[0].1 + 79.9, "{positions:?}");
 }

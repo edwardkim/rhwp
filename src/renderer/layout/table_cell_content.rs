@@ -1170,7 +1170,7 @@ impl LayoutEngine {
                     composed.lines.len(),
                     sec_for_layout,
                     para_for_layout,
-                    ctx,
+                    ctx.clone(),
                     // [#6630] 첫 문단에 위 여백(저장 vpos 상한)이 있으면 column-top 규칙을 허용해
                     // 정렬 계산(`first_para_lead`)과 같은 값을 두게 한다.
                     !matches!(cell.vertical_align, VerticalAlign::Top)
@@ -1317,7 +1317,7 @@ impl LayoutEngine {
                                 .get(para.para_shape_id as usize)
                                 .map(|style| style.alignment)
                                 .unwrap_or(Alignment::Left);
-                            let shape_y = if shape.common().treat_as_char {
+                            let mut shape_y = if shape.common().treat_as_char {
                                 para.line_segs
                                     .first()
                                     .map_or(para_y_before_compose, |first_ls| {
@@ -1333,6 +1333,59 @@ impl LayoutEngine {
                             } else {
                                 para_y
                             };
+                            let mut shape_area = inner_area;
+                            let mut shape_alignment = para_alignment;
+                            if shape.common().treat_as_char {
+                                // Match the gap reserved by paragraph layout. Empty cell lines
+                                // defer TAC placement here, so retain their source-line ownership.
+                                let (shape_x, inline_y) = tree
+                                    .get_inline_shape_position(
+                                        sec_for_layout,
+                                        para_for_layout,
+                                        ctrl_idx,
+                                        ctx.as_ref(),
+                                    )
+                                    .unwrap_or_else(|| {
+                                        let line = super::control_line_seg_index(para, ctrl_idx)
+                                            .unwrap_or(0);
+                                        let mut preceding_width = 0.0;
+                                        let mut line_width = 0.0;
+                                        for &(_, width, ci) in &composed.tac_controls {
+                                            if super::control_line_seg_index(para, ci).unwrap_or(0)
+                                                == line
+                                            {
+                                                let width = hwpunit_to_px(width, self.dpi);
+                                                line_width += width;
+                                                if ci < ctrl_idx {
+                                                    preceding_width += width;
+                                                }
+                                            }
+                                        }
+                                        let align_offset = match para_alignment {
+                                            Alignment::Center | Alignment::Distribute => {
+                                                (inner_area.width - line_width).max(0.0) / 2.0
+                                            }
+                                            Alignment::Right => {
+                                                (inner_area.width - line_width).max(0.0)
+                                            }
+                                            _ => 0.0,
+                                        };
+                                        let y = para.line_segs.get(line).map_or(
+                                            para_y_before_compose,
+                                            |seg| {
+                                                cell_y
+                                                    + pad_top
+                                                    + hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                            },
+                                        );
+                                        (inner_area.x + align_offset + preceding_width, y)
+                                    });
+                                shape_area.x = shape_x;
+                                shape_area.width =
+                                    hwpunit_to_px(shape.common().width as i32, self.dpi);
+                                shape_y = inline_y;
+                                shape_alignment = Alignment::Left;
+                            }
                             let (table_cell_ctx, shape_parent_path) = match enclosing_ctx {
                                 Some((sec_idx, outer_pi, parent_path, table_ci)) => {
                                     let mut path = parent_path.to_vec();
@@ -1355,9 +1408,9 @@ impl LayoutEngine {
                                 tree,
                                 &mut cell_node,
                                 shape,
-                                &inner_area,
+                                &shape_area,
                                 shape_y,
-                                para_alignment,
+                                shape_alignment,
                                 styles,
                                 bin_data_content,
                                 false,

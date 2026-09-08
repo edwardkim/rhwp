@@ -33,3 +33,22 @@ last_verified: 2026-09-08
 수정 전 focused nextest: 4건 중 기존 2건 통과, 새 위치 회귀 2건 실패(exit 100).
 두 label 좌표는 두 경우 모두 `(0, 0)`이다. 첫 실행은 자동 suite 재배정 전 번호를 사용해
 0건(exit 4)이었으며, 새 manifest의 suite 009로 재실행한 위 결과만 회귀 근거로 삼는다.
+
+## 2단계: 메인터너 보정과 집중 검증
+
+- 1단계 고정 commit: `6bb9b5298`.
+- `table_cell_content.rs`: 문단에서 등록한 좌표를 동일 cell context로 조회한다.
+  미등록 TAC는 `control_line_seg_index`로 소유 줄을 해석하고 같은 줄 개체 폭을 합산한다.
+  정렬은 개별 도형이 아닌 전체 줄 개체 묶음에 한 번 적용한다. floating 분기는 유지한다.
+- 추가 회귀: 같은 줄, 다른 저장 줄, 가운데/오른쪽 정렬, 도형 앞 텍스트 4건.
+  원 기존 내용 보존 2건과 함께 6/6 통과했다.
+- 원 PR의 네 module을 manifest로 다시 선택해 **18/18 통과**, 필터 밖 677 skipped,
+  exit 0. 빌드 37.39초, 테스트 0.068초. 소스 변경 뒤 첫 빌드는 5분 48초였다.
+- 독립 probe: 같은 줄 `FIRST=(0,0), SECOND=(80,0)`, 다른 줄
+  `FIRST=(0,0), SECOND=(0,40)`. 두 assertion 모두 exit 0이며 Chrome PNG도 직접 확인했다.
+- `cargo fmt --all -- --check`, `git diff --check`, suite manifest `--check` 통과.
+- 보정 바이너리 SHA-256:
+  `ef407f4e48c3aed60a814fc73c36c8d532480641cc77c48e7f681320ad6608dc`.
+- 유사 문서 4종, 40쪽 전체 SVG는 보정 전과 byte-identical이다. 신규 전체 회귀,
+  세 Clippy, Native Skia, WASM 검증은 수행하지 않았으며 PR 직전 승인 검증으로 남긴다.
+- 원격 push, PR 생성, comment, merge는 수행하지 않았다.
