@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6861,
+  "title": "셀 안 중첩 표의 오른쪽 테두리를 조상 셀 clip 이 지운다",
+  "entries": [
+    {
+      "path": "samples/issue6861/3194097-performance-rating-roster.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6861",
+      "originalFilename": "3194097_[별지 13] 근무성적평정 순위명부(법무부 공무직 등 근로자 관리지침).hwp",
+      "bytes": 32768,
+      "sha256": "13e9bef258573d3a06e27793d17b97138f4d86e1368bfdb00d27179269d3c060",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8969"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/3194097-performance-rating-roster-2020.pdf",
+      "referencePdfBytes": 29415,
+      "referencePdfSha256": "6254374c077e0558133fdc5e03c20fc7d8740a1395bace3e6007cc8707052107",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 1쪽. 정본은 중첩 표 오른쪽 테두리를 749.7px 에 그린다 — 바깥 표 오른쪽 끝(720.0)을 넘긴 자리다.",
+      "contract": "저장 줄 폭(`sw=50,440`)이 중첩 표 선언 폭(50,170)을 품는 과폭 중첩 표는 조상 셀 clip 으로 자르지 않는다. 종전에는 clip 우단 720.00 이 세로 테두리를 통째로, 가로 괘선 꼬리 30.15px 를 지웠다(720 초과 괘선 13개). ⚠ 음성 대조는 `#5587` 의 `samples/basic/issue1994_behindtext_table_20200830.hwp` — 거기선 `sw=34,160 < 35,144` 라 부모 clip 을 그대로 쓴다."
+    }
+  ]
+}
