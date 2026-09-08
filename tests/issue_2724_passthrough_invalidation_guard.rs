@@ -246,6 +246,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "[#5769] 구역 raw 저널에서 항목 제거. 문서 IR 비변경.",
     ),
     (
+        "commands/picture_transform_journal.rs",
+        "capture_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 common/shape 변환 상태를 복제해 Undo 저널과 ID만 갱신. 원본 문서 IR·구역 raw는 읽기만 한다.",
+    ),
+    (
+        "commands/picture_transform_journal.rs",
+        "discard_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 변환 Undo 저널에서 handle만 제거. 문서 IR·구역 raw는 변경하지 않는다.",
+    ),
+    (
         "commands/formatting.rs",
         "get_cell_char_properties_at_by_path",
         Exempt::SessionState,

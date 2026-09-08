@@ -3028,6 +3028,26 @@ export class WasmBridge {
 
   // ─── Undo/Redo 스냅샷 API ──────────────────────────
 
+  capturePictureTransform(target: Record<string, unknown>): number {
+    const doc = this.doc as any;
+    if (!doc || typeof doc.capturePictureTransform !== 'function'
+      || typeof doc.swapPictureTransform !== 'function'
+      || typeof doc.discardPictureTransform !== 'function') {
+      throw new Error('그림 리사이즈 Undo를 지원하는 WASM 빌드가 필요합니다');
+    }
+    return doc.capturePictureTransform(JSON.stringify(target));
+  }
+
+  swapPictureTransform(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    (this.doc as any).swapPictureTransform(id);
+  }
+
+  discardPictureTransform(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    (this.doc as any).discardPictureTransform(id);
+  }
+
   saveSnapshot(): number {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.saveSnapshot();

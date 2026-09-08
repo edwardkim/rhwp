@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6790,
+  "title": "전문인력 양성기관 지정기준의 세부기준 [별표]",
+  "entries": [
+    {
+      "path": "samples/issue6790/17544911-sericulture-training-criteria.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6790",
+      "originalFilename": "17544911_[별표 ] 전문인력 양성기관 지정기준의 세부기준(제2조제3항 관련)(기능성 양잠산업 육성 및 지원에 관한 법률 시행규칙).hwp",
+      "bytes": 58880,
+      "sha256": "59857dfd443c282ef3a7384558be36266e7476363d182b0c85d690b9b841dba4",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8362"
+      },
+      "referenceEngine": "2020",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP, engine_profile=2020). 3쪽, 152,162 bytes. 메인테이너 산출본과 바이트는 다르지만(PDF 가 생성 시각·/ID 를 담는다) 쪽수·쪽별 글자 수가 같다.",
+      "contract": "저장 프레임 꼬리 확장은 확장된 컷(source_tail_cut)이 이 조각의 행 예산(avail_for_rows) 안에 들어갈 때만 쓴다 — 쪽 소유 판정이며 문턱 상수도 우회도 없다. 17544911 r=2 는 tail 1178.5 > avail 1005.4 라 기각된다.",
+      "referencePdf": "pdf/17544911-sericulture-training-criteria-2020.pdf",
+      "referencePdfSha256": "df968a2e9237256e4d03d195c568b0d3ed70218191179ad2b6f6e8f5d37f740e",
+      "referencePdfBytes": 152162
+    }
+  ]
+}

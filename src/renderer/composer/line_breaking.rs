@@ -2582,7 +2582,7 @@ fn apply_inline_control_frame_height(metrics: &mut FrameRowMetrics, height_hwp: 
     }
 }
 
-fn frame_metrics_for_line(
+pub(crate) fn frame_metrics_for_line(
     max_font_size: f64,
     fallback_font_size: f64,
     line_spacing_type: LineSpacingType,

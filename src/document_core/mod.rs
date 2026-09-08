@@ -267,6 +267,12 @@ pub struct DocumentCore {
     pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
     /// 다음 구역 raw 캡처 ID
     pub(crate) next_section_raw_id: u32,
+    /// 그림 크기 변경의 원본 변환 상태. 문서/이미지 전체는 복제하지 않는다.
+    pub(crate) picture_transform_store: Vec<(
+        u32,
+        commands::picture_transform_journal::PictureTransformCapture,
+    )>,
+    pub(crate) next_picture_transform_id: u32,
     /// 머리말/꼬리말 감추기: (global_page_index, is_header) 조합
     pub(crate) hidden_header_footer: std::collections::HashSet<(u32, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
@@ -508,6 +514,8 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            picture_transform_store: Vec::new(),
+            next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,

@@ -1,6 +1,5 @@
 //! 공통 개체 속성/헬퍼 + 새 번호 (object_ops 분할, #1904).
 
-use super::MIN_SHAPE_SIZE;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -199,11 +198,12 @@ impl DocumentCore {
     ) {
         use crate::document_core::helpers::{json_bool, json_i16, json_str, json_u32};
 
+        // [#6806] 퇴화값 0 만 최소 크기로 올린다 — 한컴 문서에는 200 미만 치수가 정당하게 있다.
         if let Some(w) = json_u32(props_json, "width") {
-            c.width = w.max(MIN_SHAPE_SIZE);
+            c.width = super::clamp_degenerate_size(w);
         }
         if let Some(h) = json_u32(props_json, "height") {
-            c.height = h.max(MIN_SHAPE_SIZE);
+            c.height = super::clamp_degenerate_size(h);
         }
         if let Some(tac) = json_bool(props_json, "treatAsChar") {
             c.treat_as_char = tac;
@@ -257,12 +257,13 @@ impl DocumentCore {
                 _ => c.text_wrap,
             };
         }
+        // [#6806] 「쪽 영역 안으로 제한」과 「서로 겹침 허용」은 독립이다 — 한컴은 둘을 동시에 켜서
+        // 저장한다(corpus 그림 70·도형 12·표 39건). 종전의 "제한이면 겹침 해제" 결합은 파싱 경로에는
+        // 없고 setter 에만 있어, 같은 봉지를 되먹이는 것만으로 겹침 허용이 꺼졌다.
         if let Some(v) = json_bool(props_json, "restrictInPage") {
             c.flow_with_text = v;
             if v {
                 c.attr |= 1 << 13;
-                c.allow_overlap = false;
-                c.attr &= !(1 << 14);
             } else {
                 c.attr &= !(1 << 13);
             }
@@ -282,10 +283,6 @@ impl DocumentCore {
             } else {
                 c.attr &= !(1 << 20);
             }
-        }
-        if c.flow_with_text {
-            c.allow_overlap = false;
-            c.attr &= !(1 << 14);
         }
         if let Some(v) = json_u32(props_json, "vertOffset") {
             c.vertical_offset = v;

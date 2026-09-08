@@ -24,7 +24,7 @@ fn cursor_positions_for_render_run(run: &TextRunNode, bbox_width: f64) -> Vec<f6
     if is_expanded_field_marker {
         vec![0.0, bbox_width]
     } else {
-        crate::renderer::layout::compute_char_positions(&run.text, &run.style)
+        run.replay_positions_for(&run.text).into_owned()
     }
 }
 

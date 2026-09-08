@@ -33,6 +33,7 @@ pub mod height_measurer;
 pub mod html;
 pub(crate) mod image_header;
 pub mod image_resolver;
+pub mod inline_flow;
 pub(crate) mod kerning;
 pub mod layer_renderer;
 pub mod layout;
@@ -510,6 +511,9 @@ pub struct GradientFillInfo {
     /// 세로 중심 (%)
     pub center_y: i16,
     /// 색상 목록 (ColorRef)
+    ///
+    /// [`expand_gradient_steps`] 가 편 **띠 단위 stop** 이다 — 모델의 색 목록과 1:1 이
+    /// 아니다. `positions` 와 길이가 같고, 같은 offset 이 두 번 나오면 하드 경계다.
     pub colors: Vec<ColorRef>,
     /// 색상 위치 (0.0~1.0 정규화)
     pub positions: Vec<f64>,
@@ -552,6 +556,100 @@ pub fn linear_gradient_axis(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64,
         cx + dx * half,
         cy + dy * half,
     )
+}
+
+/// 두 색 사이를 채널별로 선형 보간한다.
+fn lerp_color(from: ColorRef, to: ColorRef, t: f64) -> ColorRef {
+    let t = t.clamp(0.0, 1.0);
+    let mut out = 0u32;
+    for shift in [0, 8, 16] {
+        let a = ((from >> shift) & 0xff) as f64;
+        let b = ((to >> shift) & 0xff) as f64;
+        let v = (a + (b - a) * t).round().clamp(0.0, 255.0) as u32;
+        out |= v << shift;
+    }
+    out
+}
+
+/// `(colors, positions)` 가 이루는 색 램프를 `t`(0~1) 에서 표집한다.
+fn sample_ramp(colors: &[ColorRef], positions: &[f64], t: f64) -> ColorRef {
+    match colors.len() {
+        0 => 0,
+        1 => colors[0],
+        n => {
+            let at = |i: usize| -> f64 {
+                positions
+                    .get(i)
+                    .copied()
+                    .unwrap_or(i as f64 / (n - 1) as f64)
+            };
+            let t = t.clamp(0.0, 1.0);
+            for i in 1..n {
+                let (p0, p1) = (at(i - 1), at(i));
+                if t <= p1 || i == n - 1 {
+                    let span = p1 - p0;
+                    let local = if span.abs() < f64::EPSILON {
+                        0.0
+                    } else {
+                        (t - p0) / span
+                    };
+                    return lerp_color(colors[i - 1], colors[i], local);
+                }
+            }
+            colors[n - 1]
+        }
+    }
+}
+
+/// HWP 그러데이션의 `step`(띠 개수)·`step_center`(전이 위치 %)를 렌더 stop 목록으로 편다.
+///
+/// [#6822] 한/글은 그러데이션 축을 **`step` 개의 띠**로 잘라 각 띠를 단색으로 칠하고,
+/// 띠 경계들의 가운데를 `step_center`% 지점에 놓는다. 렌더 IR 은 이 두 값을 담지 않아
+/// 전이가 언제나 50% 에 고정됐다.
+///
+/// 실측(`samples/issue6551/113424_evaluation_guideline.hwpx`, 한/글 2024 정본):
+///
+/// ```text
+///   step=2  stepCenter=8   장 제목 막대  초록→흰색 하드 경계가 축의 8% 지점
+///   step=50 stepCenter=50  구분 막대     균등한 50개 띠 (사실상 매끄러운 램프)
+/// ```
+///
+/// `step <= 1` 이거나 색이 둘 미만이면 띠를 만들지 않고 원본을 그대로 돌려준다 —
+/// 값이 없는 문서의 현행 동작을 바꾸지 않기 위해서다.
+pub fn expand_gradient_steps(
+    colors: &[ColorRef],
+    positions: &[f64],
+    step: i16,
+    step_center: u8,
+) -> (Vec<ColorRef>, Vec<f64>) {
+    let bands = step.max(0) as usize;
+    if bands <= 1 || colors.len() < 2 {
+        return (colors.to_vec(), positions.to_vec());
+    }
+
+    // 띠 경계는 균등 위치 `m` 을 두 구간 선형으로 옮겨 가운데(m=0.5)가 `c` 에 오게 한다.
+    // `c == 0.5` 면 항등이므로 기본값 문서는 지금 그리는 것과 같은 균등 띠가 된다.
+    let c = (step_center as f64 / 100.0).clamp(0.0, 1.0);
+    let warp = |m: f64| -> f64 {
+        if m <= 0.5 {
+            2.0 * m * c
+        } else {
+            c + (m - 0.5) * 2.0 * (1.0 - c)
+        }
+    };
+
+    let mut out_colors = Vec::with_capacity(bands * 2);
+    let mut out_positions = Vec::with_capacity(bands * 2);
+    for i in 0..bands {
+        let color = sample_ramp(colors, positions, i as f64 / (bands - 1) as f64);
+        let start = warp(i as f64 / bands as f64);
+        let end = warp((i + 1) as f64 / bands as f64);
+        out_colors.push(color);
+        out_positions.push(start.clamp(0.0, 1.0));
+        out_colors.push(color);
+        out_positions.push(end.clamp(0.0, 1.0));
+    }
+    (out_colors, out_positions)
 }
 
 /// 선 렌더링 스타일
