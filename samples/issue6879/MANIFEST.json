@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6879,
+  "title": "TAC 라벨 표 위로 자리차지 float 이 올라가 '붙임' 라벨이 쪽 맨 아래로 밀린다",
+  "entries": [
+    {
+      "path": "samples/issue6879/156767332-broadcast-revenue-attachment.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6879",
+      "originalFilename": "156767332_260619 (보도자료) 2025년 방송사업매출, 3년 연속 감소.hwp",
+      "bytes": 893952,
+      "sha256": "958272e13220f4296755e0f7cfa0f477e013f8dee411080e500b46e68c2d9634",
+      "derivation": "원본 그대로. HWP5 구역 2개라 슬라이스하면 한컴이 손상 판정하므로 자르지 않았다.",
+      "lastSavedWith": {
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4426"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/156767332-broadcast-revenue-attachment-2020.pdf",
+      "referencePdfSha256": "eb7d86e5e604e6461e136435eb51395c3714598540df153b655b93b9f9768d06",
+      "referencePdfPageCount": 8,
+      "contract": "7쪽(0-based 6) 문단 73 의 형제 표 둘은 저장 차례대로 놓인다 — TAC 라벨(ci=0)이 쪽 상단, 자리차지 float(ci=1)이 그 아래. float 의 세로 기준점은 문단 첫 줄이 아니라 앵커 줄(줄1, vertpos 4060)이라 상단 = 문단top + 54.1 + vOff 33.5 다. 정본은 라벨 글자 y=107.5 · 그림 185.6/576.5 이고 rhwp 는 라벨 98.2..138.4 · 그림 184.0/575.4 로 1.6px 안에서 맞는다. 총 8쪽."
+    }
+  ]
+}
