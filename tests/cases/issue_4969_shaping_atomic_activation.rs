@@ -1247,8 +1247,8 @@ fn issue_4969_q3_e4_native_instance_publishes_atomic_portable_outline() {
         ),
         (
             VariantSelectionBackend::NativeSkia,
-            TextVariantKind::TextRun,
-            true,
+            TextVariantKind::GlyphOutline,
+            false,
         ),
         (VariantSelectionBackend::Svg, TextVariantKind::TextRun, true),
         (
