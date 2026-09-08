@@ -71,16 +71,29 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           CALLER_SHA: ${{ inputs.caller_sha }}
+          CALLER_REF: ${{ inputs.caller_ref }}
           WORKFLOW_FILE: ${{ inputs.workflow_file }}
         with:
           script: |
             const fs = require('node:fs');
             const mergeSha = process.env.CALLER_SHA;
             const pullRequest = context.payload.pull_request;
+            const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
+            const runAttempt = Number(process.env.GITHUB_RUN_ATTEMPT);
+            const isFork = pullRequest?.head?.repo?.full_name !== process.env.GITHUB_REPOSITORY;
             if (
               !/^[0-9a-f]{40}$/.test(mergeSha || '')
               || !pullRequest
-              || pullRequest.head?.repo?.full_name !== process.env.GITHUB_REPOSITORY
+              || pullRequest.base?.repo?.full_name !== process.env.GITHUB_REPOSITORY
+              || !Number.isSafeInteger(repositoryId) || repositoryId <= 0
+              || pullRequest.base.repo.id !== repositoryId
+              || pullRequest.base.ref !== 'devel'
+              || !Number.isSafeInteger(pullRequest.number) || pullRequest.number <= 0
+              || process.env.CALLER_REF !== `refs/pull/${pullRequest.number}/merge`
+              || !Number.isSafeInteger(runAttempt) || runAttempt <= 0
+              || !Number.isSafeInteger(pullRequest.head?.repo?.id) || pullRequest.head.repo.id <= 0
+              || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(pullRequest.head.repo.full_name || '')
+              || (isFork && (pullRequest.head.repo.fork !== true || pullRequest.head.repo.id === repositoryId))
               || !/^[0-9a-f]{40}$/.test(pullRequest.base?.sha || '')
               || !/^[0-9a-f]{40}$/.test(pullRequest.head?.sha || '')
             ) {
@@ -104,10 +117,16 @@ jobs:
                 core.warning('PR merge ref does not match the event base/head pair; no evidence will be published.');
                 return;
               }
-              const artifactName = `trusted-postmerge-merge-tree-v1-${mergeSha}-${treeSha}`;
+              const artifactName = isFork
+                ? `trusted-postmerge-fork-merge-tree-v1-${pullRequest.number}-${repositoryId}-${pullRequest.head.repo.id}-${runAttempt}-${mergeSha}-${treeSha}`
+                : `trusted-postmerge-merge-tree-v1-${mergeSha}-${treeSha}`;
               fs.writeFileSync('trusted-postmerge-merge-tree.json', `${JSON.stringify({
-                schema: 1,
+                schema: isFork ? 2 : 1,
                 repository: process.env.GITHUB_REPOSITORY,
+                repository_id: repositoryId,
+                pull_number: pullRequest.number,
+                head_repository_id: pullRequest.head.repo.id,
+                run_attempt: runAttempt,
                 workflow_file: process.env.WORKFLOW_FILE,
                 run_id: String(context.runId),
                 merge_sha: mergeSha,
@@ -224,15 +243,21 @@ jobs:
             let currentBaseReviewBridgeSource;
             let selectTrustedPostMergeCandidate;
             let verifyPostMergeReviewBridgeTree;
+            let verifyForkPostMergeTree;
+            let trustedPullRequestSource;
+            let trustedPullRequestWorkflowRun;
+            const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
             try {
               ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable,
                 currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
-                verifyPostMergeReviewBridgeTree } = await import(pathToFileURL(path.join(
+                verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree,
+                trustedPullRequestSource, trustedPullRequestWorkflowRun } = await import(pathToFileURL(path.join(
                 process.env.GITHUB_WORKSPACE,
                 'scripts/verify-trusted-postmerge-ci-reuse.mjs',
               )).href));
               if ([currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
-                verifyPostMergeReviewBridgeTree].some((fn) => typeof fn !== 'function')) {
+                verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree,
+                trustedPullRequestSource, trustedPullRequestWorkflowRun].some((fn) => typeof fn !== 'function')) {
                 throw new Error('trusted base has no review-bridge verifier');
               }
               if (process.env.WORKFLOW_FILE === 'ci.yml') {
@@ -264,7 +289,7 @@ jobs:
                 && candidate.merged_at
                 && candidate.merge_commit_sha === mergeSha
                 && candidate.base?.ref === 'devel'
-                && candidate.head?.repo?.full_name === process.env.GITHUB_REPOSITORY
+                && trustedPullRequestSource(candidate, process.env.GITHUB_REPOSITORY, repositoryId)
               ));
               if (pullRequest.length !== 1) {
                 return { mergeCommit, pullRequests, pullFiles: [], workflowRuns: [] };
@@ -276,9 +301,12 @@ jobs:
               if (pr.number !== summary.number || pr.head?.sha !== summary.head.sha
                 || pr.merge_commit_sha !== mergeSha || pr.state !== 'closed' || !pr.merged_at
                 || pr.base?.ref !== 'devel'
-                || pr.head?.repo?.full_name !== process.env.GITHUB_REPOSITORY) {
+                || !trustedPullRequestSource(pr, process.env.GITHUB_REPOSITORY, repositoryId)
+                || pr.head.repo.id !== summary.head.repo.id
+                || pr.head.repo.full_name !== summary.head.repo.full_name) {
                 throw new Error('PR detail identity mismatch');
               }
+              const isFork = pr.head.repo.full_name !== process.env.GITHUB_REPOSITORY;
               const mergeParents = (mergeCommit.parents || []).map((parent) => parent.sha);
               const baseParent = mergeParents.length === 1
                 ? mergeParents[0]
@@ -332,14 +360,15 @@ jobs:
                 }
               }
               const sourceSelection = selectTrustedPostMergeCandidate(pr, prCommits, baseParent);
+              const matchesRun = (run) => trustedPullRequestWorkflowRun(
+                run, pr, process.env.GITHUB_REPOSITORY, repositoryId, process.env.WORKFLOW_FILE,
+              );
               const mergeTreeEvidenceByRunId = {};
               const createdAt = Date.parse(pr.created_at || '');
               const mergedAt = Date.parse(pr.merged_at || '');
               const finalHeadRuns = workflowRuns.filter((run) => (
-                run.event === 'pull_request'
+                matchesRun(run)
                 && run.head_sha === pr.head.sha
-                && run.head_branch === pr.head.ref
-                && run.head_repository?.full_name === process.env.GITHUB_REPOSITORY
                 && Number.isFinite(createdAt)
                 && Number.isFinite(mergedAt)
                 && Date.parse(run.created_at || '') >= createdAt
@@ -352,20 +381,28 @@ jobs:
               const finalHeadRun = finalHeadRuns[0];
               async function recordMergeTreeEvidence(workflowRun, artifacts) {
                 if (
-                  workflowRun?.event !== 'pull_request'
-                  || workflowRun?.head_branch !== pr.head.ref
-                  || workflowRun?.head_repository?.full_name !== process.env.GITHUB_REPOSITORY
-                  || !/^[0-9a-f]{40}$/.test(workflowRun?.head_sha || '')
+                  !matchesRun(workflowRun)
                 ) {
                   return;
                 }
                 const evidenceArtifacts = artifacts
                   .filter((artifact) => artifact.expired !== true)
-                  .map((artifact) => ({
-                    artifact,
-                    match: /^trusted-postmerge-merge-tree-v1-([0-9a-f]{40})-([0-9a-f]{40})$/
-                      .exec(artifact.name || ''),
-                  }))
+                  .map((artifact) => {
+                    if (isFork) {
+                      const identity = /^trusted-postmerge-fork-merge-tree-v1-([1-9][0-9]*)-([1-9][0-9]*)-([1-9][0-9]*)-([1-9][0-9]*)-([0-9a-f]{40})-([0-9a-f]{40})$/
+                        .exec(artifact.name || '');
+                      const matchesIdentity = identity
+                        && identity[1] === String(pr.number)
+                        && identity[2] === String(repositoryId)
+                        && identity[3] === String(pr.head.repo.id)
+                        && identity[4] === String(workflowRun.run_attempt);
+                      return { artifact, match: matchesIdentity
+                        ? [identity[0], identity[5], identity[6]] : null };
+                    }
+                    return { artifact,
+                      match: /^trusted-postmerge-merge-tree-v1-([0-9a-f]{40})-([0-9a-f]{40})$/
+                        .exec(artifact.name || '') };
+                  })
                   .filter(({ match }) => match !== null);
                 if (evidenceArtifacts.length === 1) {
                   const [, testedMergeSha, encodedTreeSha] = evidenceArtifacts[0].match;
@@ -386,6 +423,8 @@ jobs:
                       sha: testedMergeSha,
                       parents: testedParents,
                       treeSha: testedTreeSha,
+                      ...(isFork ? { pullNumber: pr.number, repositoryId,
+                        headRepositoryId: pr.head.repo.id, runAttempt: workflowRun.run_attempt } : {}),
                     };
                   }
                 }
@@ -424,7 +463,7 @@ jobs:
                 }
               }
               const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
-                .includes(process.env.WORKFLOW_FILE);
+                .includes(process.env.WORKFLOW_FILE) || isFork;
               const reviewOnlyWorker = {
                 "proptest-roundtrip.yml": {
                   preflight: "Proptest preflight",
@@ -438,7 +477,7 @@ jobs:
               const fullLaneRunIds = [];
               if (requireFullLaneEvidence) {
                 for (const workflowRun of workflowRuns) {
-                  if (workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
+                  if (!matchesRun(workflowRun) || workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
                     continue;
                   }
                   if (process.env.WORKFLOW_FILE === "ci.yml") {
@@ -462,11 +501,16 @@ jobs:
                     github.rest.actions.listJobsForWorkflowRun,
                     { owner, repo, run_id: workflowRun.id, per_page: 100 },
                   );
-                  if (jobs.some((job) => (
+                  const executed = reviewOnlyWorker
+                    ? [reviewOnlyWorker.preflight, reviewOnlyWorker.worker].every((name) => jobs.some((job) => (
+                      job.name === name && job.status === 'completed' && job.conclusion === 'success'
+                    )))
+                    : jobs.some((job) => (
                     /^Analyze \(.+\)$/.test(job.name || "")
                     && job.status === "completed"
                     && job.conclusion === "success"
-                  ))) {
+                  ));
+                  if (executed) {
                     fullLaneRunIds.push(String(workflowRun.id));
                     const artifacts = await github.paginate(
                       github.rest.actions.listWorkflowRunArtifacts,
@@ -479,7 +523,7 @@ jobs:
               const reviewOnlyFastPassRunIds = [];
               if (reviewOnlyWorker) {
                 for (const workflowRun of workflowRuns) {
-                  if (workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
+                  if (!matchesRun(workflowRun) || workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
                     continue;
                   }
                   const jobs = await github.paginate(
@@ -502,6 +546,37 @@ jobs:
                 }
               }
               const reviewBridgeTreeEvidenceByRunId = {};
+              const forkMergeTreeEvidenceByRunId = {};
+              if (isFork && sourceSelection) {
+                for (const run of workflowRuns) {
+                  const tested = mergeTreeEvidenceByRunId[String(run.id)];
+                  if (!matchesRun(run) || !fullLaneRunIds.includes(String(run.id)) || !tested
+                    || tested.parents[0] !== baseParent
+                    || !sourceSelection.fullLaneCandidates.some((candidate) => candidate.sha === run.head_sha)) {
+                    continue;
+                  }
+                  try {
+                    // Compare immutable trees with trusted code; never execute fork code here.
+                    const refs = [mergeSha, tested.sha];
+                    if (!refs.every((sha) => /^[0-9a-f]{40}$/.test(sha))) {
+                      throw new Error('invalid fork merge-tree identity');
+                    }
+                    const gitOptions = { cwd: process.env.GITHUB_WORKSPACE,
+                      timeout: 120000, maxBuffer: 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] };
+                    execFileSync('git', ['fetch', '--no-tags', '--filter=blob:none', '--depth=1',
+                      '--no-write-fetch-head', 'origin', ...refs], gitOptions);
+                    const proof = verifyForkPostMergeTree(process.env.GITHUB_WORKSPACE, {
+                      baseSha: baseParent, mergeSha, candidateSha: run.head_sha, testedMergeSha: tested.sha,
+                    });
+                    if (proof.testedTreeSha !== tested.treeSha) {
+                      throw new Error('fork artifact tree mismatch');
+                    }
+                    forkMergeTreeEvidenceByRunId[String(run.id)] = proof;
+                  } catch (error) {
+                    core.warning(`Fork tree proof unavailable for run ${run.id}; running full. ${error.message}`);
+                  }
+                }
+              }
               if (sourceSelection?.bridgeSha && requireFullLaneEvidence) {
                 for (const run of workflowRuns) {
                   const tested = mergeTreeEvidenceByRunId[String(run.id)];
@@ -551,6 +626,7 @@ jobs:
                 workflowRuns,
                 mergeTreeEvidenceByRunId,
                 reviewBridgeTreeEvidenceByRunId,
+                forkMergeTreeEvidenceByRunId,
                 frontendOnlyRunIds,
               };
               if (requireFullLaneEvidence) {
@@ -569,6 +645,8 @@ jobs:
                 eventName: process.env.CALLER_EVENT_NAME,
                 ref: process.env.CALLER_REF,
                 repository: process.env.GITHUB_REPOSITORY,
+                repositoryId,
+                workflowFile: process.env.WORKFLOW_FILE,
                 mergeSha: process.env.CALLER_SHA,
                 ...evidence,
               });

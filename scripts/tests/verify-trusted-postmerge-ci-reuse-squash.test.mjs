@@ -83,7 +83,7 @@ test("fails closed when a squash merge tree differs from the reviewed PR head", 
 test("fails closed when a squash merge has no unique associated PR", () => {
   const result = evaluateTrustedPostMergeReuse(input({ pullRequests: [] }));
   assert.equal(result.reuse, false);
-  assert.equal(result.reason, "merge-commit-must-map-to-one-merged-same-repository-pr");
+  assert.equal(result.reason, "merge-commit-must-map-to-one-trusted-merged-pr");
 });
 
 test("does not apply two-parent merge-ref evidence to a stale squash merge", () => {
