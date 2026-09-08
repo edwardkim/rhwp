@@ -282,7 +282,62 @@ use crate::model::shape::{
 /// 00387's dotted 46,490HU box inside a 45,359HU cell — and 한글 paints it cut
 /// at the parent's edge.  Widening the clip for that shape would drag the
 /// dotted frame past the outer table border, so it keeps the host viewport.
-fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut RenderNode) {
+/// [#6861] **저장 사다리가 자리를 잡아 준 과폭 중첩 표**의 host 셀 모델 인덱스.
+///
+/// `#5587` 은 "부모 셀보다 넓게 저장된 중첩 표는 한글도 부모 경계에서 자른다"로 정리했다.
+/// 그런데 `3194097` 1쪽은 정반대다 — 한글이 바깥 표 오른쪽 끝을 **30.15px 넘겨** 중첩 표
+/// 테두리를 그대로 그린다.
+///
+/// 갈림은 **저장 줄 폭**이 준다. 호스트 문단의 `LINE_SEG.segment_width` 가 중첩 표의
+/// 선언 폭을 품고 있으면 한글이 그 폭만큼 **자리를 잡아 준 것**이고, 못 품으면 자리를
+/// 안 준 것이다.
+///
+/// ```text
+///   3194097   sw 50,440 >= 중첩 50,170   → 자리를 잡아 줬다 → 넘겨 그린다
+///   #5587     sw 34,160 <  중첩 35,144   → 안 잡아 줬다     → 부모 경계에서 자른다
+/// ```
+///
+/// 문턱 상수가 없다 — 문서가 스스로 두 값을 준다(환산 오차 0.5 HU 허용은 없다,
+/// 둘 다 HWPUNIT 정수 비교다).
+pub(super) fn cells_with_ladder_reserved_nested_overflow(
+    table: &crate::model::table::Table,
+) -> std::collections::HashSet<u32> {
+    let mut reserved = std::collections::HashSet::new();
+    for (index, cell) in table.cells.iter().enumerate() {
+        for para in &cell.paragraphs {
+            let widest_stored = para
+                .line_segs
+                .iter()
+                .map(|segment| segment.segment_width)
+                .max()
+                .unwrap_or(0);
+            if widest_stored <= 0 {
+                continue;
+            }
+            let reserves_any_nested = para.controls.iter().any(|control| match control {
+                Control::Table(nested) => {
+                    nested.common.width > 0 && widest_stored >= nested.common.width as i32
+                }
+                _ => false,
+            });
+            if reserves_any_nested {
+                if let Ok(index) = u32::try_from(index) {
+                    reserved.insert(index);
+                }
+                break;
+            }
+        }
+    }
+    reserved
+}
+
+fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(
+    cell_node: &mut RenderNode,
+    ladder_reserved_cells: &std::collections::HashSet<u32>,
+    // [#6861] 넓힌 clip 의 상한 — 본문 우단. 사다리가 자리를 잡아 줬어도 **용지 밖까지**
+    // 내보내지는 않는다(1480000-201200206: 상한 없이 켜면 용지 밖 2 → 9).
+    ladder_reserved_clip_right_limit: f64,
+) {
     let RenderNodeType::TableCell(cell_meta) = &cell_node.node_type else {
         return;
     };
@@ -303,7 +358,17 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut R
         let table_left = table_node.bbox.x;
         let table_right = table_node.bbox.x + table_node.bbox.width;
         // [#5587] 부모 셀보다 넓게 저장된 중첩표는 clip 확장 대상이 아니다.
-        let over_wide = table_node.bbox.width > host_clip_width + NESTED_OVER_WIDE_EPSILON_PX;
+        // [#6861] 단, **저장 사다리가 그 폭만큼 자리를 잡아 준** 경우는 예외다 —
+        // 한글도 그때는 부모 경계를 넘겨 그린다(위 헬퍼의 판별).
+        let ladder_reserved = cell_meta
+            .model_cell_index
+            .is_some_and(|index| ladder_reserved_cells.contains(&index));
+        // 사다리가 잡아 준 자리라도 본문 우단을 넘어서까지 열어 주지는 않는다.
+        let ladder_reserved = ladder_reserved
+            && table_node.bbox.x + table_node.bbox.width
+                <= ladder_reserved_clip_right_limit + NESTED_OVER_WIDE_EPSILON_PX;
+        let over_wide = table_node.bbox.width > host_clip_width + NESTED_OVER_WIDE_EPSILON_PX
+            && !ladder_reserved;
         let mut found_outer_vertical_border = false;
 
         if !over_wide {
@@ -1367,6 +1432,10 @@ pub(super) fn extend_completed_nested_table_border_clips(
     node: &mut RenderNode,
     suppress_bottom_text_residue: bool,
     repair_unclipped_hwpx_top_residue: bool,
+    // [#6861] 저장 사다리가 과폭 중첩 표의 자리를 잡아 준 host 셀들과, 그때 열어 줄
+    // 오른쪽 상한(본문 우단).
+    ladder_reserved_cells: &std::collections::HashSet<u32>,
+    ladder_reserved_clip_right_limit: f64,
 ) {
     for child in &mut node.children {
         extend_completed_nested_table_border_clips(
@@ -1374,10 +1443,16 @@ pub(super) fn extend_completed_nested_table_border_clips(
             child,
             suppress_bottom_text_residue,
             repair_unclipped_hwpx_top_residue,
+            ladder_reserved_cells,
+            ladder_reserved_clip_right_limit,
         );
     }
     extend_table_horizontal_bbox_to_direct_cell_paint(node);
-    extend_clipped_cell_horizontal_clip_to_nested_table_borders(node);
+    extend_clipped_cell_horizontal_clip_to_nested_table_borders(
+        node,
+        ladder_reserved_cells,
+        ladder_reserved_clip_right_limit,
+    );
     extend_clipped_cell_vertical_clip_to_nearby_nested_table_borders(node);
     repair_clipped_nested_table_fragment_frame(
         tree,
@@ -3197,6 +3272,10 @@ impl LayoutEngine {
             self.profile.get().hwp5_stored_pagination_layout()
                 || self.profile.get().hwp5_origin_hwpx(),
             self.profile.get().hwpx_container(),
+            &cells_with_ladder_reserved_nested_overflow(table),
+            // 상한은 **용지**다 — 한글은 본문 밖·용지 안에 그린다(3194097: 본문 우단
+            // 720.0, 그림 749.4, 용지 793.7). 본문으로 잡으면 이 축이 통째로 닫힌다.
+            self.current_paper_width.get(),
         );
 
         col_node.children.push(table_node);
