@@ -922,7 +922,7 @@ fn parse_hwp_with_lenient(
         } else if encrypted {
             // 비밀번호 암호 문서: lenient reader 로 raw 섹션 바이트를 얻어 복호화.
             let raw = lenient
-                .read_stream_raw_limited(&format!("Section{}", i), section_raw_limit)
+                .read_body_text_section_raw_limited(i, section_raw_limit)
                 .map_err(ParseError::CfbError)?;
             crypto::decrypt_password_protected_limited(
                 &raw,
@@ -942,7 +942,7 @@ fn parse_hwp_with_lenient(
                 Some(decoded) => decoded,
                 None => {
                     let raw = lenient
-                        .read_stream_raw_limited(&format!("Section{}", i), section_raw_limit)
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
                         .map_err(ParseError::CfbError)?;
                     cfb_reader::decode_stream_limited(raw, compressed, section_output_limit)
                         .map_err(ParseError::CfbError)?
@@ -1097,7 +1097,7 @@ fn load_bin_data_content_lenient(
         let stream_compressed =
             bin_data_stream_is_compressed(bd.compression, compressed, encrypted);
 
-        match lenient.read_stream(&storage_name) {
+        match lenient.read_stream(&format!("/BinData/{}", storage_name)) {
             Ok(data) => {
                 let mut decompressed = if encrypted {
                     let pwd = password.unwrap();
