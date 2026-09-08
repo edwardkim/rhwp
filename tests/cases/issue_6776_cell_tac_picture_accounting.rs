@@ -1,7 +1,7 @@
 //! [#6776] 칸 안 **줄이 0개인 문단의 글자처럼 취급(TAC) 그림**이 `cell_units`
 //! 회계에서 통째로 빠져, 조각이 자기 프레임을 넘어 용지 밖까지 그린다.
 //!
-//! `samples/issue6776/78494-virtual-convergence-industry-decree.hwpx` 19쪽은 바깥
+//! 단독 수정 당시 `samples/issue6776/78494-virtual-convergence-industry-decree.hwpx` 19쪽은 바깥
 //! 7×2 표의 마지막 행 칸에 1×1 중첩 표를 담고, 그 자식 칸(33문단)의 `pi=12`·`pi=23`
 //! 이 **글자 없는 문단에 TAC 그림 하나**씩만 담는다(312.4px · 725.4px).
 //!
@@ -22,7 +22,8 @@
 //! ⚠ 총 쪽수는 74 → 75 로 늘지만 이 축의 회귀가 아니다. 정본과 쪽 단위로 맞춰 보면
 //! **수정 전에도 9쪽부터 이미 한 쪽 밀려 있었고**(rhwp 9쪽은 꼬리말만 있는 빈 쪽),
 //! 그 +1 이 이 결함으로 잃던 −1 과 상계돼 총합만 74 로 맞았다. 빈 9쪽은 `devel` 의
-//! 별개 결함이라 여기서 잠그지 않는다.
+//! 별개 결함이었다. #6854 통합 뒤에도 NO_LS 빈 문단과 TAC 표 뒤 간격을 잃으면
+//! 그래프가 18쪽에 잘못 들어간다. 새 한컴 PDF와 대조한 18/19쪽 경계를 함께 잠근다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -36,8 +37,8 @@ const NEGATIVE: &str = "samples/issue6776/36367506-water-facility-approval.hwpx"
 
 /// 이 문서가 조판하는 A4 세로 종이 높이(px, 96dpi).
 const PAPER_HEIGHT_PX: f64 = 1122.5;
-/// 결함이 드러나던 쪽(0 기준) — 자식 1×1 표의 첫 조각이 앉는 자리.
-const HOST_PAGE: u32 = 18;
+/// 자식 1×1 표의 첫 조각을 식별하는 작은 TAC 그림의 높이(px).
+const HOST_PICTURE_H_PX: f64 = 312.4;
 /// 회계에서 빠져 있던 큰 TAC 그림의 높이(px). 726,000HWPUNIT 은 아니고 저장 원본 값이다.
 const BIG_PICTURE_H_PX: f64 = 725.4;
 
@@ -73,20 +74,43 @@ fn page_svg(core: &DocumentCore, page: u32) -> String {
 #[test]
 fn issue_6776_host_page_paints_no_picture_past_the_paper() {
     let core = open(SAMPLE);
-    let svg = page_svg(&core, HOST_PAGE);
-    let imgs = images(&svg);
+    let page_count = u32::try_from(core.page_count()).expect("page count fits u32");
+    let mut hosts = Vec::new();
+    for page in 0..page_count {
+        let imgs = images(&page_svg(&core, page));
+        for (_, h) in &imgs {
+            if (h - HOST_PICTURE_H_PX).abs() <= 1.0 {
+                hosts.push(page);
+            }
+        }
+    }
+    assert_eq!(
+        hosts.len(),
+        1,
+        "{HOST_PICTURE_H_PX}px 호스트 TAC 그림은 정확히 한 번 존재해야 한다: {hosts:?}"
+    );
+    let host_page = hosts[0];
+    assert_eq!(
+        host_page, 18,
+        "한컴 PDF 물리 18쪽은 추정 설명으로 끝나고 그래프는 19쪽에 있어야 한다"
+    );
+    let imgs = images(&page_svg(&core, host_page));
+    let graph_y = imgs
+        .iter()
+        .find(|(_, h)| (h - HOST_PICTURE_H_PX).abs() <= 1.0)
+        .expect("호스트 쪽의 그래프")
+        .0;
     assert!(
-        !imgs.is_empty(),
-        "{}쪽에는 자식 칸의 TAC 그림이 있어야 한다",
-        HOST_PAGE + 1
+        (75.0..90.0).contains(&graph_y),
+        "그래프는 19쪽 본문 상단에 온전히 배치되어야 한다: y={graph_y}"
     );
     for (y, h) in &imgs {
         assert!(
-            y + h <= PAPER_HEIGHT_PX + 0.5,
+            y >= &-0.5 && y + h <= PAPER_HEIGHT_PX + 0.5,
             "{}쪽 TAC 그림이 종이({PAPER_HEIGHT_PX}) 안에 있어야 한다 — 회계에서 빠지면 \
              725.4px 그림이 y=1327.7..2053.0 으로 용지 아래 930.5px 에 그려진다 \
              (실측 y={y:.1} h={h:.1})",
-            HOST_PAGE + 1
+            host_page + 1
         );
     }
 }

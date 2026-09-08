@@ -7187,6 +7187,32 @@ impl LayoutEngine {
                         }
                     }
                 }
+                // [#6776] NO_LS TAC 표 전용 문단은 줄이 없어 표의 아래끝으로
+                // 커서를 갱신한다. 이때 앞서 계산한 문단 뒤 간격이 표 높이에
+                // 흡수되므로, CellUnit과 같이 표를 모두 그린 뒤 한 번만 더한다.
+                // 분할 조각에서는 마지막 원문 유닛을 소유한 조각에만 적용한다.
+                let owns_paragraph_end = fragment_cut_units.is_none_or(|(start, end)| {
+                    self.cell_units(cell, table, styles)
+                        .iter()
+                        .rposition(|unit| unit.para_idx == cp_idx)
+                        .is_some_and(|last| start <= last && last < end)
+                });
+                if !is_last_para
+                    && self.profile.get().hwp5_stored_pagination_layout()
+                    && crate::renderer::para_has_no_stored_line_segs(para)
+                    && composed.lines.is_empty()
+                    && para.text.trim().is_empty()
+                    && para.controls.iter().all(
+                        |control| matches!(control, Control::Table(t) if t.common.treat_as_char),
+                    )
+                    && owns_paragraph_end
+                {
+                    para_y += styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .map(|style| style.spacing_after)
+                        .unwrap_or(0.0);
+                }
                 // 음수 line_spacing 처리 (중첩 구조에서 para_y 되돌리기)
                 if !(is_last_para && enclosing_cell_ctx.is_some()) {
                     if let Some(last_line) = composed.lines.last() {
@@ -9969,7 +9995,13 @@ impl LayoutEngine {
                 && table.col_count == 1
                 && is_empty_spacer_para
                 && cell_has_visible_content
-                && !preserve_vpos_empty_spacer;
+                && !preserve_vpos_empty_spacer
+                // [#6776] 저장 좌표가 없는 HWP5 원본/계보 HWPX 빈 문단은 겹침용
+                // overlay라는 근거가 없다. 원문 글자 크기와 줄 간격으로 만든
+                // 줄박스를 보존한다. 합성 LINE_SEG도 저장 좌표로 취급하지 않는다.
+                // 원본과 자기-export HWPX에 같은 계약을 적용한다(#1939).
+                && !(self.profile.get().hwp5_stored_pagination_layout()
+                    && crate::renderer::para_has_no_stored_line_segs(p));
             let collapse_native_float_ladder_spacer = if native_hwp5_rowbreak_float_ladder
                 && is_empty_spacer_para
                 && cell_has_visible_content

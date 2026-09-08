@@ -646,6 +646,14 @@ impl DocumentCore {
                                         dpi,
                                     );
                                 }
+                                if include_cell_empty && !include_empty {
+                                    Self::reflow_nested_native_empty_cell_paragraphs(
+                                        cell_para,
+                                        styles,
+                                        dpi,
+                                        section_sized,
+                                    );
+                                }
                             }
                             if include_empty && is_rowbreak_table {
                                 Self::fit_hwpx_rowbreak_synthetic_cell_lines(
@@ -1112,6 +1120,71 @@ impl DocumentCore {
     fn clear_missing_lineseg_placeholders_in_caption(caption: &mut Caption) {
         for para in &mut caption.paragraphs {
             Self::clear_missing_lineseg_placeholder_in_paragraph(para);
+        }
+    }
+
+    /// Native HWP의 순수 빈 셀 문단 복원을 중첩 표에도 적용한다.
+    ///
+    /// 바깥 표만 처리하면 중첩 셀의 NO_LS 빈 문단이 높이 0으로 남아,
+    /// 뒤따르는 TAC 그림이 앞쪽 페이지의 잔여 공간에 잘못 들어간다(#6776).
+    /// 기존 #2195와 동일하게 텍스트/컨트롤 호스트와 대각선 셀은 제외하고,
+    /// 저장 줄 및 구역의 0높이 줄 권위도 그대로 보존한다.
+    fn reflow_nested_native_empty_cell_paragraphs(
+        para: &mut Paragraph,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+        section_sized: bool,
+    ) {
+        for control in &mut para.controls {
+            let Control::Table(table) = control else {
+                continue;
+            };
+            let owner_widths = table.paragraph_frame_owner_widths();
+            let table_padding = table.padding;
+            let bf_has_diagonal = |id: u16| {
+                id != 0
+                    && styles
+                        .border_styles
+                        .get((id as usize).saturating_sub(1))
+                        .is_some_and(crate::renderer::layout::border_style_has_diagonal)
+            };
+            for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
+                let padding = cell.paragraph_frame_padding(&table_padding);
+                let inner_width = crate::renderer::composer::cell_inner_text_width(
+                    crate::renderer::hwpunit_to_px(owner_width, dpi),
+                    crate::renderer::hwpunit_to_px(padding.left as i32, dpi),
+                    crate::renderer::hwpunit_to_px(padding.right as i32, dpi),
+                    dpi,
+                );
+                let diagonal = bf_has_diagonal(cell.border_fill_id)
+                    || table.zones.iter().any(|zone| {
+                        zone.start_row <= cell.row
+                            && cell.row <= zone.end_row
+                            && zone.start_col <= cell.col
+                            && cell.col <= zone.end_col
+                            && bf_has_diagonal(zone.border_fill_id)
+                    });
+                for child_para in &mut cell.paragraphs {
+                    if !diagonal
+                        && child_para.text.is_empty()
+                        && child_para.controls.is_empty()
+                        && Self::needs_line_seg_reflow_in_scope(child_para, true, section_sized)
+                    {
+                        reflow_line_segs(
+                            child_para,
+                            ParagraphBox::content_width_px(inner_width, dpi),
+                            styles,
+                            dpi,
+                        );
+                    }
+                    Self::reflow_nested_native_empty_cell_paragraphs(
+                        child_para,
+                        styles,
+                        dpi,
+                        section_sized,
+                    );
+                }
+            }
         }
     }
 
