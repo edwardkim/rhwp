@@ -2,7 +2,7 @@
 
 - Issue: [#6852](https://github.com/edwardkim/rhwp/issues/6852).
 - 2026-09-08 메인테이너의 후속 절차 승인에 따라 시작했다.
-- 상태: **검증 진행 중. PR·원격 push·merge·close는 아직 수행하지 않았다.**
+- 상태: **최종 후보의 Rust·Skia·Docker WASM 검증 완료. PR·원격 push·merge·close는 아직 수행하지 않았다.**
 - 계획: [수행계획](../plans/task_m100_6852.md), 선행 증거: [Stage 2](task_m100_6852_stage2.md).
 
 ## 범위와 기준선
@@ -57,7 +57,7 @@ renderer/fixture는 `visual_fixture_evidence.md`를 적용한다. 외부 contrib
 | `sections[].paragraphs[].controls[].paragraphs[].raw_header_extra[]` | 10 | 10 |
 | `sections[].paragraphs[].raw_header_extra[]` | 212 | 212 |
 
-合계 626건의 경로·원본값·재생성값이 전후 모두 동일하다. 626건 전부의 상세 값도 확보했으며
+합계 626건의 경로·원본값·재생성값이 전후 모두 동일하다. 626건 전부의 상세 값도 확보했으며
 `raw_header_extra`의 6·7·9번 바이트, 즉 HWPX 문단 ID를 담는 6..10 영역에만 차이가 있다.
 `src/parser/hwpx/section.rs`는 원본 `hp:p/@id`를 이 영역에 보존하고,
 `src/serializer/hwpx/context.rs::next_para_id` 및 section serializer는 문서 전역 ID를 순차 발급한다.
@@ -79,3 +79,39 @@ clipping controlset 92개 원본은 이 checkout에 0개 존재하며 신규 sam
 JUnit `report-skipped` 키 경고가 났다. 테스트 실패와 별개이며 도구 버전을 임의 변경하지 않았다.
 진단 중 worktree 상대경로로 주 checkout의 JSON을 읽으려던 조회 1회는 실패했으며,
 주 checkout 경로에서 다시 조회해 위 결과를 확정했다. 제품·시험 실행의 실패와 구분한다.
+
+## 2차 검증 최종 결과
+
+네 원장 행과 대조 증거를 `393401e5a`로 커밋하고 같은 review worktree에서 재검증했다.
+제품 코드는 추가 변경하지 않았다. `output/6852/stage3/pass2/` 및 `status-pass2.log`에
+1차 기록과 분리하여 명령별 종료 결과를 보존했다.
+
+| 게이트 | 결과 |
+| --- | --- |
+| prepare, fmt 적용·check, native Clippy, WASM32 Clippy, workspace build, all-target Clippy, manifest | 전부 PASS |
+| 전체 nextest | 9,224 PASS / 0 FAIL / 46 skipped, test 323.175초, compile 포함 약 565초 |
+| 신규 sample 보안 | 실제 HWPX 1개를 전달한 검사 PASS |
+| IR field sweep | 125.957초 PASS, 1차 실패 해소 |
+| Native Skia lib | root 3,930 + workspace member 15·165·2 = 4,112 PASS / 13 ignored |
+| Native Skia 그림 | 2 PASS, 필터 제외 169 |
+| Native Skia 직접 PDF | 4 PASS, 필터 제외 167 |
+| diff check | PASS |
+| Docker 최적화 WASM | exit 0, wasm-pack 보고 6분 42초, Rust compile 3분 50초 포함 |
+
+실행한 Docker 명령은 주 checkout의 `docker compose --env-file .env.docker run --rm wasm`이다.
+기존 named volume과 `.env.docker`를 사용했다. 새 WASM SHA-256:
+`f64fdc47e0847cde8adb2b7044c22ab281ab3dd6bade9411e8f405f9b8423bd0`.
+
+새 WASM을 Node에서 직접 로드하여 두 원본의 11쪽 유지, 5쪽 앞쪽 실선 존재를 확인했다.
+각 문서의 1·5·7쪽 SVG는 기존 후보 CLI 출력과 모두 바이트 동일하다. 5쪽 출력은 이미 메인테이너가
+시각 수용한 SVG와 같은 hash다. 이는 새 브라우저 시각 판정을 받았다는 주장이 아니다.
+
+기존 7700 서버의 HTML은 HTTP 200이고, Vite의 실제 `/@fs/.../pkg/rhwp_bg.wasm` 경로로 받은
+파일이 WASM 형식이며 로컬 산출물과 hash까지 동일함을 확인했다. 서버는 종료·재시작하지 않았다.
+초기 `/pkg/` 조회는 SPA HTML fallback이었으므로 검증으로 인정하지 않고 alias의 실제 경로로 정정했다.
+WASM 진단 선택자도 처음에는 x좌표만 사용해 같은 쪽 아래 도형까지 2개를 셌다. 대상 y좌표를 포함해
+정확한 원본 그룹을 선택한 뒤 재실행했다. 테스트 기대값이나 제품 코드를 바꾼 것이 아니다.
+
+마지막 fetch에서도 원격 devel은 `7138fe784`이며 후보와의 merge-tree는 clean이다(8/0).
+이후 작성되는 결과보고 commit은 문서 전용이다. 원격 게시 전에는 head와 devel을 다시 확인한다.
+검증 worktree는 `393401e5a`에서 tracked 변경 없이 깨끗하며, 파생 파일은 source에 stage하지 않았다.
