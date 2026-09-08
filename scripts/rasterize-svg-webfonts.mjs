@@ -15,6 +15,20 @@ function cssString(value) {
   return `"${value.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`;
 }
 
+function fontFaceFamily(rule) {
+  const value = rule.match(/(?:^|[;{])\s*font-family\s*:\s*([^;}]+)/iu)?.[1]?.trim();
+  if (!value) return null;
+  return value.replace(/^(['"])(.*)\1$/u, '$2').toLocaleLowerCase('en-US');
+}
+
+function declaredFontFaceFamilies(source) {
+  return new Set(
+    [...source.matchAll(/@font-face\s*\{[^{}]*\}/giu)]
+      .map(match => fontFaceFamily(match[0]))
+      .filter(family => family !== null),
+  );
+}
+
 export function parseWebfontRules(source) {
   const marker = 'export const FONT_RULE_CANVAS2D_WEBFONT_RULES';
   const markerOffset = source.indexOf(marker);
@@ -37,10 +51,12 @@ export function parseWebfontRules(source) {
 
 export function selectWebfontRules(svgSource, rules) {
   const lowerSource = svgSource.toLocaleLowerCase('en-US');
+  const declaredFamilies = declaredFontFaceFamilies(svgSource);
   const selected = new Map();
   for (const rule of rules) {
     const sourceFace = rule.sourceFace.toLocaleLowerCase('en-US');
-    if (lowerSource.includes(sourceFace)) {
+    if (lowerSource.includes(sourceFace)
+      && !declaredFamilies.has(rule.supply.fontFamily.toLocaleLowerCase('en-US'))) {
       selected.set(`${rule.supply.fontFamily}\u0000${rule.supply.sourceUrl}`, rule);
     }
   }
@@ -73,18 +89,27 @@ function appendTerminalFallback(fontList) {
 }
 
 export function prepareSvgForWebfontRaster(svgSource, webfontCss) {
-  const withoutLocalFaces = svgSource.replace(/@font-face\s*\{[^{}]*\}/giu, '');
-  const withAttributeFallback = withoutLocalFaces.replace(
+  // [#6891] export-svg --font-style owns local aliases and legacy-face safety
+  // ordering. Webfont supply must supplement, not discard or shadow, that policy.
+  const declaredFamilies = declaredFontFaceFamilies(svgSource);
+  const supplementalCss = webfontCss.replace(
+    /@font-face\s*\{[^{}]*\}/giu,
+    rule => declaredFamilies.has(fontFaceFamily(rule)) ? '' : rule,
+  );
+  const withAttributeFallback = svgSource.replace(
     /font-family=(['"])(.*?)\1/giu,
     (_match, quote, fontList) => `font-family=${quote}${appendTerminalFallback(fontList)}${quote}`,
   );
   const withCssFallback = withAttributeFallback.replace(
-    /(font-family\s*:\s*)([^;}]+)/giu,
-    (_match, prefix, fontList) => `${prefix}${appendTerminalFallback(fontList)}`,
+    /@font-face\s*\{[^{}]*\}|(font-family\s*:\s*)([^;}]+)/giu,
+    // A font-face family descriptor accepts one family, not a fallback list.
+    (match, prefix, fontList) => prefix
+      ? `${prefix}${appendTerminalFallback(fontList)}`
+      : match,
   );
   return withCssFallback.replace(
     /<svg\b[^>]*>/iu,
-    match => `${match}<style>${webfontCss}</style>`,
+    match => `${match}<style>${supplementalCss}</style>`,
   );
 }
 
@@ -200,6 +225,7 @@ async function main() {
     viewport,
     projectionSha256: createHash('sha256').update(projectionSource).digest('hex'),
     appliedRuleIds: rules.map(rule => rule.ruleId),
+    preservedFontFaceFamilies: [...declaredFontFaceFamilies(svgSource)],
     terminalFallbackFamily: TERMINAL_FALLBACK_FAMILY,
   }));
 }
