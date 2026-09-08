@@ -7,6 +7,9 @@ GHAS CodeQL은 테스트 assertion의 Bad HTML filtering regexp 경고로 실패
 기존 reporter가 이 두 실패를 충분히 보고하지 못하는 설계 결함을 확인해 메인테이너 지시로 재설계했다.
 [R2 검증 기록](../../working/task_m100_6899_rework_stage1.md)에 실제 before/after 재생을 남겼다.
 로컬 R2 검증은 통과했으나 수정 push·CodeQL 경고 해소·원격 CI 검증은 아직 하지 않았다.
+후속 승인에 따라 기존 PR에 R2를 반영한다. 구현 `f3da27503`에 최신 devel `9e4f504fe`를
+`5c283c337`로 충돌 없이 통합했고, Node 122건·재사용 계약 120건·Python 230건 및 actionlint를 통과했다.
+원격 CodeQL 경고 해소와 전체 CI 성공은 새 push head 기준으로 확인해야 한다.
 따라서 아래 접수 당시 metadata와 로컬 통과 기록을 R2 원격 성공으로 해석하지 않으며 **머지 보류**를 유지한다.
 
 ## 최초 접수 기록
