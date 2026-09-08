@@ -119,11 +119,7 @@ fn issue_6862_field_guides_stay_inside_their_cell() {
             .filter(|(cx, cright, cy, cbottom)| {
                 left + 0.5 >= *cx && left < *cright && top + 0.5 >= *cy && top < *cbottom
             })
-            .min_by(|a, b| {
-                (a.1 - a.0)
-                    .partial_cmp(&(b.1 - b.0))
-                    .expect("유한한 칸 폭")
-            });
+            .min_by(|a, b| (a.1 - a.0).partial_cmp(&(b.1 - b.0)).expect("유한한 칸 폭"));
         let Some((cell_left, cell_right, _, _)) = owner else {
             continue;
         };
