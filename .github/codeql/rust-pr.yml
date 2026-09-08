@@ -5,3 +5,20 @@ paths:
   - crates/**
   - rhwp-desk/src/**
   - build.rs
+
+# #6876: PR에서는 경고를 생성하지 않는 내부 통계 3개만 제외한다.
+# CodeQL 2.26.4 / rust-queries 0.1.41에서는 이 쿼리들에
+# exclude-from-incremental 태그가 없으므로 정확한 ID로 제한한다.
+# metric 조건도 함께 적용하여 향후 경고 쿼리로 바뀌면 제외하지 않는다.
+# 보안 탐지와 추출 오류/경고, 파일 수/커버리지 진단은 그대로 유지한다.
+# devel push와 schedule의 full scan에는 이 설정을 적용하지 않는다.
+query-filters:
+  - exclude:
+      id: rust/summary/summary-statistics
+      kind: metric
+  - exclude:
+      id: rust/summary/reduced-summary-statistics
+      kind: metric
+  - exclude:
+      id: rust/summary/query-sink-counts
+      kind: metric
