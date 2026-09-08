@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6844,
+  "title": "런 안의 오른쪽 탭 — bbox 가 문자 위치와 어긋난다",
+  "entries": [
+    {
+      "path": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6844",
+      "originalFilename": "30269_붙임1)제도개선권고안.hwp",
+      "bytes": 470016,
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "lastSavedWith": {
+        "product": null,
+        "version": "7.5.12.614"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+      "referencePdfBytes": 572168,
+      "referencePdfSha256": "a3ba2c831939a3ebb60e4070d66929908d7d5a0f0a9571e3cba6876746ef8609",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 22쪽. 이 축은 출력 불변이라 기준 PDF 가 판정을 주지는 않는다 — 형상 확인용이다.",
+      "contract": "4쪽 목차의 `\t8` 런처럼 **탭과 쪽번호가 한 런**에 든 경우, bbox 폭이 마지막 문자 경계(charX 끝)와 같아야 한다. 종전에는 78.0px 로 남아 글리프(683.9..693.7)가 상자(595.4..673.4) 밖에 있었다."
+    }
+  ]
+}
