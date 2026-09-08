@@ -329,7 +329,7 @@ impl Paginator {
             .with_legacy_hwp3_stored_geometry(legacy_hwp3_stored_geometry);
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
-        let (hf_entries, page_number_pos, page_hides, new_page_numbers) =
+        let (hf_entries, page_number_pos) =
             Self::collect_header_footer_controls(paragraphs, section_index);
 
         let col_count = column_def.column_count.max(1);
@@ -1153,14 +1153,7 @@ impl Paginator {
             }
         }
         // 페이지 번호 + 머리말/꼬리말 할당
-        Self::finalize_pages(
-            &mut st.pages,
-            &hf_entries,
-            &page_number_pos,
-            &page_hides,
-            &new_page_numbers,
-            section_index,
-        );
+        Self::finalize_pages(&mut st.pages, &hf_entries, &page_number_pos, paragraphs);
 
         PaginationResult {
             pages: st.pages,
@@ -1177,25 +1170,19 @@ impl Paginator {
         }
     }
 
-    /// 머리말/꼬리말/쪽 번호 위치/새 번호 컨트롤 수집
+    /// 머리말/꼬리말/쪽 번호 위치 컨트롤 수집
     fn collect_header_footer_controls(
         paragraphs: &[Paragraph],
         section_index: usize,
     ) -> (
         Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)>,
         Option<crate::model::control::PageNumberPos>,
-        Vec<(usize, crate::model::control::PageHide)>,
-        Vec<(usize, u16)>,
     ) {
-        let mut hf_entries: Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)> = Vec::new();
-        let mut page_number_pos: Option<crate::model::control::PageNumberPos> = None;
-        // (para_index, PageHide) — 각 PageHide가 속한 문단 인덱스
-        let mut page_hides: Vec<(usize, crate::model::control::PageHide)> = Vec::new();
-        let mut new_page_numbers: Vec<(usize, u16)> = Vec::new();
-
+        let mut hf_entries = Vec::new();
+        let mut page_number_pos = None;
         for (pi, para) in paragraphs.iter().enumerate() {
-            for (ci, ctrl) in para.controls.iter().enumerate() {
-                match ctrl {
+            for (ci, control) in para.controls.iter().enumerate() {
+                match control {
                     Control::Header(h) => {
                         let r = HeaderFooterRef {
                             para_index: pi,
@@ -1214,24 +1201,8 @@ impl Paginator {
                         };
                         hf_entries.push((pi, r, false, f.apply_to));
                     }
-                    Control::PageHide(ph) => {
-                        page_hides.push((pi, ph.clone()));
-                    }
-                    Control::PageNumberPos(pnp) => {
-                        page_number_pos = Some(pnp.clone());
-                    }
-                    Control::NewNumber(nn) => {
-                        if nn.number_type == crate::model::control::AutoNumberType::Page {
-                            new_page_numbers.push((pi, nn.number));
-                        }
-                    }
+                    Control::PageNumberPos(pos) => page_number_pos = Some(pos.clone()),
                     Control::Table(table) => {
-                        Self::collect_page_controls_in_table(
-                            table,
-                            pi,
-                            &mut page_hides,
-                            &mut new_page_numbers,
-                        );
                         crate::renderer::pagination::collect_nested_header_footer_controls(
                             table,
                             pi,
@@ -1245,48 +1216,7 @@ impl Paginator {
                 }
             }
         }
-
-        (hf_entries, page_number_pos, page_hides, new_page_numbers)
-    }
-
-    /// 표 셀 안 paragraph 의 PageHide·NewNumber(쪽 번호)를 재귀 수집.
-    /// 외부 paragraph index `pi` 를 그대로 사용해 페이지 매핑 정합성 유지.
-    ///
-    /// [Issue #6206] `새 번호로 시작`(`hp:newNum numType="PAGE"`)이 표 셀 안에 있으면
-    /// 최상위 문단만 훑는 위 루프가 통째로 놓쳐 쪽 번호가 재시작하지 않았다. PageHide 와
-    /// 같은 경로로 함께 걷어 올린다 — 바깥 `pi` 를 그대로 쓰므로 어시스턴트가 기대하는
-    /// "소유 문단 인덱스 오름차순"도 유지된다.
-    fn collect_page_controls_in_table(
-        table: &crate::model::table::Table,
-        pi: usize,
-        page_hides: &mut Vec<(usize, crate::model::control::PageHide)>,
-        new_page_numbers: &mut Vec<(usize, u16)>,
-    ) {
-        for cell in &table.cells {
-            for cp in &cell.paragraphs {
-                for ctrl in &cp.controls {
-                    match ctrl {
-                        Control::PageHide(ph) => {
-                            page_hides.push((pi, ph.clone()));
-                        }
-                        Control::NewNumber(nn) => {
-                            if nn.number_type == crate::model::control::AutoNumberType::Page {
-                                new_page_numbers.push((pi, nn.number));
-                            }
-                        }
-                        Control::Table(inner) => {
-                            Self::collect_page_controls_in_table(
-                                inner,
-                                pi,
-                                page_hides,
-                                new_page_numbers,
-                            );
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+        (hf_entries, page_number_pos)
     }
 
     /// 다단 나누기 처리
@@ -2974,13 +2904,12 @@ impl Paginator {
         pages: &mut [PageContent],
         hf_entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
         page_number_pos: &Option<crate::model::control::PageNumberPos>,
-        page_hides: &[(usize, crate::model::control::PageHide)],
-        new_page_numbers: &[(usize, u16)],
-        _section_index: usize,
+        paragraphs: &[Paragraph],
     ) {
         // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
+        let events = crate::renderer::page_number::PageControlEvents::collect(pages, paragraphs);
         let mut assigner =
-            crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
+            crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1);
         // 머리말/꼬리말은 한번 설정되면 이후 페이지에도 유지 (누적).
         // 선택 규칙은 typeset.rs 와 공유한다 (#3234).
         let mut active_hf = crate::renderer::pagination::ActiveHeaderFooter::default();
@@ -3038,40 +2967,13 @@ impl Paginator {
             if !assigner.should_hide_page_number() {
                 page.page_number_pos = page_number_pos.clone();
             }
-            // PageHide: 해당 문단이 이 페이지에서 **처음** 시작하는 경우만 적용
-            // (문단이 여러 페이지에 걸치면 첫 페이지에서만 감추기 적용)
-            for (ph_para, ph) in page_hides {
-                if Self::para_starts_in_page(page, *ph_para) {
-                    page.page_hide = Some(ph.clone());
-                    break;
-                }
+            // 한 컨트롤의 감추기는 소스 위치가 매핑된 한 쪽에만 적용한다.
+            if let Some((_, hide)) = events.hides.iter().find(|(target, _)| *target == i) {
+                page.page_hide = Some(hide.clone());
             }
 
             let _ = page_last_para;
         }
-    }
-
-    /// 문단이 해당 페이지에서 **처음 시작**하는지 확인
-    /// (PartialParagraph의 start_line==0 또는 FullParagraph만 해당)
-    fn para_starts_in_page(page: &PageContent, para_idx: usize) -> bool {
-        for col in &page.column_contents {
-            for item in &col.items {
-                match item {
-                    PageItem::FullParagraph { para_index } if *para_index == para_idx => {
-                        return true
-                    }
-                    PageItem::PartialParagraph {
-                        para_index,
-                        start_line,
-                        ..
-                    } if *para_index == para_idx && *start_line == 0 => return true,
-                    PageItem::Table { para_index, .. } if *para_index == para_idx => return true,
-                    PageItem::Shape { para_index, .. } if *para_index == para_idx => return true,
-                    _ => {}
-                }
-            }
-        }
-        false
     }
 
     /// 문단 인덱스가 해당 페이지에 속하는지 확인
