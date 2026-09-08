@@ -1,7 +1,7 @@
 # #6856 결과보고서 — 소유 구조 기반 사각형·글상자 식별
 
 - Issue: #6856. 날짜: 2026-09-08.
-- 상태: 전체 로컬 검증·PR 준비 완료, 메인테이너의 원격 push·PR 생성 승인 접수. 이슈 close 미수행.
+- 상태: [PR #6894](https://github.com/edwardkim/rhwp/pull/6894) 제출 완료. 메인테이너가 병합·close를 승인했으며 최신 CI 확인 뒤 진행한다.
 - [승인 계획](../plans/task_m100_6856_restart_impl.md) · [전체 검증 기록](../working/task_m100_6856_restart_stage6.md) · [PR 제출 초안](../plans/task_m100_6856_pr.md).
 - 제품 source 후보 `492bdb3f7`, 시험 정정 포함 검증 후보 `bc0bc00e4`.
 
@@ -87,6 +87,7 @@ HWP 오류는 일반/lenient 문서 열기, HWPX 오류는 section·master page�
 
 ## 남은 절차
 
-전체 로컬 게이트와 최신 base 통합 검증을 통과했으므로 승인된 원격 push·Open PR 생성을 진행한다.
-PR 번호를 받은 뒤 번호 기반 self-review 기록과 최신 GitHub CI 확인을 진행한다. 이 보고서만으로
-원격 이슈 현행화·close, GitHub comment·review·merge를 실행하지 않는다.
+전체 로컬 게이트와 최신 base 통합 검증을 통과해 PR #6894를 생성했다.
+[Self-review](../pr/archives/pr_6894_review.md)와 오늘할일을 같은 PR의 후속 문서 commit으로 포함한다.
+메인테이너의 병합·close 승인에 따라 최신 CI 확인 → merge commit 병합 → devel 반영 확인 →
+승인된 재착수 범위를 명시한 이슈 현행화·종료 순으로 처리한다. 실제 종료 상태는 GitHub의 PR·이슈를 따른다.
