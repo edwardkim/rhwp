@@ -847,6 +847,9 @@ fn parse_sections_strict(
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
+            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+                return Err(ParseError::BodyTextError(e));
+            }
             Err(e) => {
                 // 개별 섹션 파싱 실패 시 빈 섹션으로 대체 (전체 실패 방지)
                 eprintln!("경고: Section{} 파싱 실패: {}", i, e);
@@ -957,6 +960,9 @@ fn parse_hwp_with_lenient(
             Ok(mut section) => {
                 section.raw_stream = Some(section_data);
                 sections.push(section);
+            }
+            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+                return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
                 eprintln!("경고: Section{} 파싱 실패 (lenient): {}", i, e);
