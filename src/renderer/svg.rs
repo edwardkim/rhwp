@@ -669,7 +669,10 @@ impl SvgRenderer {
                 }
                 // 그라데이션 (배경색 위에 덮음)
                 if let Some(grad) = &bg.gradient {
-                    let grad_id = self.create_gradient_def(grad);
+                    let grad_id = self.create_gradient_def(
+                        grad,
+                        (node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height),
+                    );
                     self.output.push_str(&format!(
                         "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"url(#{})\"/>\n",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height, grad_id,
@@ -1309,7 +1312,11 @@ impl SvgRenderer {
     }
 
     /// 그라데이션 SVG 정의 생성, ID 반환
-    fn create_gradient_def(&mut self, grad: &GradientFillInfo) -> String {
+    fn create_gradient_def(
+        &mut self,
+        grad: &GradientFillInfo,
+        bbox: (f64, f64, f64, f64),
+    ) -> String {
         self.gradient_counter += 1;
         let id = format!("grad{}", self.gradient_counter);
 
@@ -1327,11 +1334,26 @@ impl SvgRenderer {
             }
             _ => {
                 // 선형 (Linear) — gradient_type 1(줄무늬), 3(원뿔), 4(사각) 모두 선형으로 근사
-                let (x1, y1, x2, y2) = Self::angle_to_svg_coords(grad.angle);
-                format!(
-                    "<linearGradient id=\"{}\" x1=\"{}%\" y1=\"{}%\" x2=\"{}%\" y2=\"{}%\">\n{}</linearGradient>\n",
-                    id, x1, y1, x2, y2, stops,
-                )
+                //
+                // [#6845] 축은 **사용자 좌표계**로 낸다. `objectBoundingBox` 백분율은
+                // 상자의 가로·세로를 각각 0~1 로 정규화하므로 가로세로비가 1 이 아니면
+                // 각도가 눕는다 — 113424 7쪽(623.6×37.8px)에서 등색선 기울기가
+                // 한/글 −0.365 인데 rhwp 는 +3.72 였다.
+                let (bx, by, bw, bh) = bbox;
+                if bw > 0.0 && bh > 0.0 {
+                    let (x1, y1, x2, y2) = super::linear_gradient_axis(grad.angle, bx, by, bw, bh);
+                    format!(
+                        "<linearGradient id=\"{}\" gradientUnits=\"userSpaceOnUse\" x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\">\n{}</linearGradient>\n",
+                        id, x1, y1, x2, y2, stops,
+                    )
+                } else {
+                    // 치수를 모르면 정규화 공간으로 물러난다(빈 상자 등).
+                    let (x1, y1, x2, y2) = Self::angle_to_svg_coords(grad.angle);
+                    format!(
+                        "<linearGradient id=\"{}\" x1=\"{}%\" y1=\"{}%\" x2=\"{}%\" y2=\"{}%\">\n{}</linearGradient>\n",
+                        id, x1, y1, x2, y2, stops,
+                    )
+                }
             }
         };
 
@@ -1386,9 +1408,10 @@ impl SvgRenderer {
         &mut self,
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
+        bbox: (f64, f64, f64, f64),
     ) -> String {
         if let Some(grad) = gradient {
-            let grad_id = self.create_gradient_def(grad);
+            let grad_id = self.create_gradient_def(grad, bbox);
             format!(" fill=\"url(#{})\"", grad_id)
         } else if let Some(ref pat) = style.pattern {
             let pat_id = self.create_pattern_def(pat);
@@ -1630,7 +1653,7 @@ impl SvgRenderer {
             ));
         }
 
-        attrs.push_str(&self.build_fill_attr(style, gradient));
+        attrs.push_str(&self.build_fill_attr(style, gradient, (x, y, w, h)));
 
         if let Some(stroke) = style.stroke_color {
             attrs.push_str(&format!(
@@ -1666,7 +1689,11 @@ impl SvgRenderer {
     ) {
         let mut attrs = format!("cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\"", cx, cy, rx, ry);
 
-        attrs.push_str(&self.build_fill_attr(style, gradient));
+        attrs.push_str(&self.build_fill_attr(
+            style,
+            gradient,
+            (cx - rx, cy - ry, rx * 2.0, ry * 2.0),
+        ));
 
         if let Some(stroke) = style.stroke_color {
             attrs.push_str(&format!(
@@ -1716,7 +1743,7 @@ impl SvgRenderer {
 
         let mut attrs = format!("d=\"{}\"", d.trim());
 
-        attrs.push_str(&self.build_fill_attr(style, gradient));
+        attrs.push_str(&self.build_fill_attr(style, gradient, path_bbox(commands)));
 
         if let Some(stroke) = style.stroke_color {
             attrs.push_str(&format!(
@@ -3897,6 +3924,40 @@ impl Renderer for SvgRenderer {
 
     fn draw_path(&mut self, commands: &[PathCommand], style: &ShapeStyle) {
         self.draw_path_with_gradient(commands, style, None);
+    }
+}
+
+/// [#6845] 패스 명령이 지나는 점들의 외접 상자.
+///
+/// 그러데이션 축을 사용자 좌표계로 내려면 도형의 치수가 필요한데, 패스는 사각형·타원과
+/// 달리 호출부가 상자를 들고 있지 않다. 곡선 제어점까지 포함한 근사 상자로 충분하다 —
+/// 축은 상자를 덮기만 하면 되고, 램프의 기울기는 각도가 정한다.
+fn path_bbox(commands: &[PathCommand]) -> (f64, f64, f64, f64) {
+    let (mut min_x, mut min_y) = (f64::INFINITY, f64::INFINITY);
+    let (mut max_x, mut max_y) = (f64::NEG_INFINITY, f64::NEG_INFINITY);
+    let mut see = |x: f64, y: f64| {
+        min_x = min_x.min(x);
+        min_y = min_y.min(y);
+        max_x = max_x.max(x);
+        max_y = max_y.max(y);
+    };
+    for cmd in commands {
+        match *cmd {
+            PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => see(x, y),
+            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
+                see(x1, y1);
+                see(x2, y2);
+                see(x, y);
+            }
+            PathCommand::ArcTo(_, _, _, _, _, x, y) => see(x, y),
+            PathCommand::ClosePath => {}
+        }
+    }
+    if min_x.is_finite() && min_y.is_finite() && max_x > min_x && max_y > min_y {
+        (min_x, min_y, max_x - min_x, max_y - min_y)
+    } else {
+        // 점 하나뿐이거나 한 축이 0 인 패스 — 정규화 공간 폴백으로 넘긴다.
+        (0.0, 0.0, 0.0, 0.0)
     }
 }
 

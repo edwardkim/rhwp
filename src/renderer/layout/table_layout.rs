@@ -7187,6 +7187,32 @@ impl LayoutEngine {
                         }
                     }
                 }
+                // [#6776] NO_LS TAC 표 전용 문단은 줄이 없어 표의 아래끝으로
+                // 커서를 갱신한다. 이때 앞서 계산한 문단 뒤 간격이 표 높이에
+                // 흡수되므로, CellUnit과 같이 표를 모두 그린 뒤 한 번만 더한다.
+                // 분할 조각에서는 마지막 원문 유닛을 소유한 조각에만 적용한다.
+                let owns_paragraph_end = fragment_cut_units.is_none_or(|(start, end)| {
+                    self.cell_units(cell, table, styles)
+                        .iter()
+                        .rposition(|unit| unit.para_idx == cp_idx)
+                        .is_some_and(|last| start <= last && last < end)
+                });
+                if !is_last_para
+                    && self.profile.get().hwp5_stored_pagination_layout()
+                    && crate::renderer::para_has_no_stored_line_segs(para)
+                    && composed.lines.is_empty()
+                    && para.text.trim().is_empty()
+                    && para.controls.iter().all(
+                        |control| matches!(control, Control::Table(t) if t.common.treat_as_char),
+                    )
+                    && owns_paragraph_end
+                {
+                    para_y += styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .map(|style| style.spacing_after)
+                        .unwrap_or(0.0);
+                }
                 // 음수 line_spacing 처리 (중첩 구조에서 para_y 되돌리기)
                 if !(is_last_para && enclosing_cell_ctx.is_some()) {
                     if let Some(last_line) = composed.lines.last() {
@@ -8363,15 +8389,21 @@ impl LayoutEngine {
             // 중첩 표 포함 문단(atomic) — line_count==0 또는 has_table_in_para
             let has_table_in_para = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
             if line_count == 0 || has_table_in_para {
+                // [#6776] **줄이 0개일 때만** TAC 그림을 함께 센다 — canonical 원장과 같은
+                // 누락이 이 투영 경로들에도 있었다. 한쪽만 고치면 회계와 컷이 어긋나
+                // 글자를 잃는다(실측 −324자). 줄이 있으면 TAC 그림은 이미 그 줄
+                // 높이에 들어 있어 이중 계상이 된다.
                 let nested_h: f64 = para
                     .controls
                     .iter()
-                    .map(|ctrl| {
-                        if let Control::Table(t) = ctrl {
-                            self.calc_nested_table_height(t, styles)
-                        } else {
-                            0.0
+                    .map(|ctrl| match ctrl {
+                        Control::Table(t) => self.calc_nested_table_height(t, styles),
+                        Control::Picture(pic) if pic.common.treat_as_char && line_count == 0 => {
+                            hwpunit_to_px(pic.common.height.min(i32::MAX as u32) as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.top as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi)
                         }
+                        _ => 0.0,
                     })
                     .sum();
                 let para_h = if line_count == 0 {
@@ -8645,8 +8677,21 @@ impl LayoutEngine {
             // (18098267 p2: 괘선 최하 1603.2pt / 용지 841.9). canonical 원장은 이
             // 셀을 63 유닛으로 분해하므로 그대로 투영한다. 한 쪽 언저리 표(form-002
             // ·76076 계열 반증 사례)는 2쪽 임계에 걸리지 않는다.
-            let reset_free_multi_page_projection =
-                stored_page_frame_boundaries == 0 && nested_table_height > page_height * 2.0 + 0.5;
+            // [#6776] 판정은 **선언 높이가 아니라 실제 내용 높이**로 한다.
+            //
+            // `calc_nested_table_height` 는 저장된 표 높이를 준다. 78494 의 자식 1×1
+            // 표는 선언 801.7px 인데 내용은 **2,188.6px**(= 2.25쪽)다. 선언으로 재면
+            // 2쪽 임계에 못 미쳐 legacy 폴백으로 가고, 그 폴백은 자식 유닛과 서수가
+            // 1:1 이 아니라 조각 경계를 픽셀 오프셋으로 왕복 변환한다 — 그 왕복에서
+            // 어긋나 같은 내용이 인접 조각에 다시 그려진다(실측 p19∩p20 12-gram 267개).
+            // canonical 원장은 유닛을 그대로 투영하므로 서수가 보존된다.
+            let nested_content_height: f64 = self
+                .cell_units(cell, table, styles)
+                .iter()
+                .map(|unit| unit.height)
+                .sum();
+            let reset_free_multi_page_projection = stored_page_frame_boundaries == 0
+                && nested_table_height.max(nested_content_height) > page_height * 2.0 + 0.5;
             if canonical_stored_frame_profile
                 && (stored_page_frame_boundaries >= 2
                     || has_authoritative_frame_boundary
@@ -8776,15 +8821,23 @@ impl LayoutEngine {
                 // 933px vs mt·한글 ~1402px 의 -448 주성분. 중첩 표는
                 // calc_nested_table_height(행합+cs+outer margin, 측정 단일 출처),
                 // 빈 문단은 #2169 em 줄박스 규칙으로 유닛화한다.
+                // [#6776] **줄이 0개일 때만** TAC 그림을 함께 센다 — canonical 원장과 같은
+                // 누락이 이 투영 경로들에도 있었다. 한쪽만 고치면 회계와 컷이 어긋나
+                // 글자를 잃는다(실측 −324자). 줄이 있으면 TAC 그림은 이미 그 줄
+                // 높이에 들어 있어 이중 계상이 된다.
                 let nested_h: f64 = para
                     .controls
                     .iter()
-                    .map(|ctrl| {
-                        if let Control::Table(t) = ctrl {
-                            self.calc_nested_table_height(t, styles)
-                        } else {
-                            0.0
+                    .map(|ctrl| match ctrl {
+                        Control::Table(t) => self.calc_nested_table_height(t, styles),
+                        Control::Picture(pic)
+                            if pic.common.treat_as_char && comp.lines.is_empty() =>
+                        {
+                            hwpunit_to_px(pic.common.height.min(i32::MAX as u32) as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.top as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi)
                         }
+                        _ => 0.0,
                     })
                     .sum();
                 let empty_line_box = if comp.lines.is_empty()
@@ -9942,7 +9995,13 @@ impl LayoutEngine {
                 && table.col_count == 1
                 && is_empty_spacer_para
                 && cell_has_visible_content
-                && !preserve_vpos_empty_spacer;
+                && !preserve_vpos_empty_spacer
+                // [#6776] 저장 좌표가 없는 HWP5 원본/계보 HWPX 빈 문단은 겹침용
+                // overlay라는 근거가 없다. 원문 글자 크기와 줄 간격으로 만든
+                // 줄박스를 보존한다. 합성 LINE_SEG도 저장 좌표로 취급하지 않는다.
+                // 원본과 자기-export HWPX에 같은 계약을 적용한다(#1939).
+                && !(self.profile.get().hwp5_stored_pagination_layout()
+                    && crate::renderer::para_has_no_stored_line_segs(p));
             let collapse_native_float_ladder_spacer = if native_hwp5_rowbreak_float_ladder
                 && is_empty_spacer_para
                 && cell_has_visible_content
@@ -11088,21 +11147,29 @@ impl LayoutEngine {
                 }
             }
             if line_count == 0 || has_table_in_para {
-                // 중첩 표/빈 문단 — atomic 유닛 1개.
+                // [#6776] **글자처럼 취급(TAC) 그림도 함께 센다.** 종전에는 `Control::Table`
+                // 만 계상해, 줄이 0개인 문단의 TAC 그림이 회계에서 통째로 빠졌다
+                // (78494 자식 1×1 칸 `pi=12` 312.4px · `pi=23` 725.4px, 합 1,037.8px).
+                // 페인트는 그 높이만큼 자리를 잡으므로 컷만 짧아져 조각이 프레임을 넘었다.
+                // 비-TAC 그림은 `para_non_inline_h` 소관이라 제외한다(이중 계상 방지).
                 let nested_h: f64 = p
                     .controls
                     .iter()
-                    .map(|ctrl| {
-                        if let Control::Table(t) = ctrl {
+                    .map(|ctrl| match ctrl {
+                        Control::Table(t) => {
                             self.calc_nested_table_height(t, styles)
                                 + if host_is_cell_last_para {
                                     para_relative_float_table_lead(t, self.dpi)
                                 } else {
                                     0.0
                                 }
-                        } else {
-                            0.0
                         }
+                        Control::Picture(pic) if pic.common.treat_as_char && line_count == 0 => {
+                            hwpunit_to_px(pic.common.height.min(i32::MAX as u32) as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.top as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi)
+                        }
+                        _ => 0.0,
                     })
                     .sum();
                 let para_h = if collapse_empty_rowbreak_spacer {
@@ -11880,7 +11947,7 @@ impl LayoutEngine {
             .controls
             .iter()
             .map(|ctrl| match ctrl {
-                Control::Table(t) => self.calc_nested_table_height(t, styles),
+                Control::Table(t) => self.calc_nested_table_height(t.as_ref(), styles),
                 _ => 0.0,
             })
             .sum();
@@ -15489,15 +15556,21 @@ impl LayoutEngine {
             // [Task #362] nested table paragraph 의 실제 콘텐츠 높이
             // (compute_cell_line_ranges 와 동일한 시멘틱)
             let para_h = if line_count == 0 || has_table_in_para {
+                // [#6776] **줄이 0개일 때만** TAC 그림을 함께 센다 — canonical 원장과 같은
+                // 누락이 이 투영 경로들에도 있었다. 한쪽만 고치면 회계와 컷이 어긋나
+                // 글자를 잃는다(실측 −324자). 줄이 있으면 TAC 그림은 이미 그 줄
+                // 높이에 들어 있어 이중 계상이 된다.
                 let nested_h: f64 = para
                     .controls
                     .iter()
-                    .map(|ctrl| {
-                        if let Control::Table(t) = ctrl {
-                            self.calc_nested_table_height(t, styles)
-                        } else {
-                            0.0
+                    .map(|ctrl| match ctrl {
+                        Control::Table(t) => self.calc_nested_table_height(t, styles),
+                        Control::Picture(pic) if pic.common.treat_as_char && line_count == 0 => {
+                            hwpunit_to_px(pic.common.height.min(i32::MAX as u32) as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.top as i32, self.dpi)
+                                + hwpunit_to_px(pic.common.margin.bottom as i32, self.dpi)
                         }
+                        _ => 0.0,
                     })
                     .sum();
                 if line_count == 0 {

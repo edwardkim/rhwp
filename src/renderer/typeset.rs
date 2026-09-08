@@ -17730,6 +17730,18 @@ impl TypesetEngine {
             fmt.height_for_fit,
             omit_untrusted_empty || strict_after_empty_host_float,
         );
+        // [#6855] "이 쪽이 찼는가"를 `current_height` 로만 물으면 **자리차지 밴드가
+        // 차지한 쪽을 빈 쪽으로 읽는다.** 1613000-202200037 182쪽은 29×3 표가
+        // `184.3..960.6` 을 이미 그려 놓았는데 흐름 계상은 118.0 에 머문다 — 자리차지
+        // 표는 흐름에 host 줄만 계상하기 때문이다(그 규칙 자체는 바꾸지 않는다).
+        // 그 118.0 으로 재니 아래 `#3837` 되감김 관문이 열리지 않아, 한/글이 쪽을 끊은
+        // 자리에서 계속 담고 `pi=3`(`과목 2: 인적 요소`)을 **용지 45.5px 아래**에
+        // 그렸다. 문턱(`MIN_FILL`)은 그대로 두고 **재는 양만** 실제 점유로 바꾼다.
+        let page_occupied_height = st
+            .visible_float_exclusions
+            .iter()
+            .map(|zone| zone.bottom)
+            .fold(st.current_height, f64::max);
         // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
         let stored_vpos_rewind_base = st.col_count == 1
             && !st.current_items.is_empty()
@@ -17740,13 +17752,16 @@ impl TypesetEngine {
                 .iter()
                 .any(|it| page_item_para_index(it) == Some(para_idx))
             && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
-        let stored_vpos_rewind_break =
-            stored_vpos_rewind_base && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL;
+        let stored_vpos_rewind_break = stored_vpos_rewind_base
+            && page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL;
         // [#5755] 되돌아간 문단이 통째로는 안 들어가는 경우 — 어차피 전체 배치는 실패라
         // 종전엔 split 경로로 흘러가 저장 좌표(새 쪽의 쪽-지역 좌표)를 현재 쪽 꼬리
         // 적합 근거로 오독, 본문 밖·용지 밖까지 그렸다(156677324 pi=9: 996>934px).
         // 한글은 이 문단을 통째로 다음 쪽에 둔다(2쪽 925.1≤933.6 정확 재현). 실제
         // 넘침이 있을 때만 발동하므로 MIN_FILL 완화의 연쇄(+3쪽) 부작용과 무관하다.
+        // ⚠ [#6855] 여기까지 `page_occupied_height` 로 넓히면 안 된다 — 코퍼스 실측에서
+        // `1480000-201600147` 의 **글자 겹침이 33 → 37** 로 는다. 이 술어는 종전대로
+        // 흐름 계상으로 잰다.
         let stored_vpos_rewind_overflow_break =
             stored_vpos_rewind_base && st.current_height + page_end_fit_height > available;
         // [compat 2024] 앵커 줄 회수분이 있거나 앞선 경계를 이미 덮은 상태에서
@@ -17970,19 +17985,59 @@ impl TypesetEngine {
             }
             forced
         };
+        // [#6854] 같은 걸음을 **문서가 스스로 선언한 쪽나누기**로만 다시 판정한다.
+        // `paragraph_forces_page_boundary_after` 는 저장 사다리에서 **추론한** 경계도
+        // 참으로 보는데, 그 추론이 맞아도 흐름이 실제로 거기서 끊기지는 않는 문서가
+        // 있다 — 그런 곳에서 아래 완화를 걸면 고아 쪽은 그대로 두고 넘침만 하나 는다
+        // (코퍼스 실측 7건). 선언된 `column_type` 은 그런 어긋남이 없다.
+        let next_para_declares_page_break = {
+            let mut idx = para_idx + 1;
+            let mut declared = false;
+            while let Some(next_para) = paragraphs.get(idx) {
+                if matches!(
+                    next_para.column_type,
+                    ColumnBreakType::Page | ColumnBreakType::Section
+                ) {
+                    declared = true;
+                    break;
+                }
+                let is_empty = next_para.text.trim().is_empty() && next_para.controls.is_empty();
+                if !is_empty {
+                    break;
+                }
+                idx += 1;
+            }
+            declared
+        };
         // 본문 높이를 바꾸지 않는 컨트롤(각주/미주)만 허용 — 표/그림/글상자가 있으면
         // 줄 단위 split/배치 규칙이 달라지므로 제외.
         let only_note_controls = para
             .controls
             .iter()
             .all(|c| matches!(c, Control::Footnote(_) | Control::Endnote(_)));
+        // [Task #1537] 원래 대상 — 폰트 치환 drift 로 꼬리 한 줄이 흘러넘치는 **글자 있는**
+        // 여러 줄 문단.
+        let font_drift_tail = !para.text.trim().is_empty() && fmt.line_heights.len() >= 2;
+        // [#6854] 같은 고아 쪽이 **잉크 없는 빈 문단**으로도 생긴다. 78494 `pi=86` 은
+        // 글자가 없는 한 줄짜리 문단인데 8쪽을 **2.3px** 넘겨(953.6+20.0 vs 971.3) 혼자
+        // 9쪽을 열고, 바로 다음 `pi=87` 이 명시적 쪽나누기라 그 쪽에 더는 아무것도
+        // 안 들어온다 — 꼬리말 `- 9 -` 만 있는 빈 쪽이 되고 이후 전 쪽이 +1 밀린다.
+        //
+        // 빈 문단은 하단 여백으로 흘려도 **그려지는 것이 없다** — 넘침이 잉크가 되지
+        // 않으므로 `#1537` 이 걱정하던 bleed 가 성립하지 않는다. 초과 상한은 그대로
+        // "한 줄 미만"을 쓴다(새 문턱을 만들지 않는다).
+        //
+        // ⚠ 여기서는 **선언된** 쪽나누기만 인정한다 — 사다리에서 추론한 경계까지 받으면
+        // 쪽 이득 없이 넘침만 는다.
+        let inkless_tail = para.text.trim().is_empty()
+            && fmt.line_heights.len() == 1
+            && next_para_declares_page_break;
         if st.col_count == 1
             && forced_page_break_line.is_none()
             && next_para_forces_break
-            && !para.text.trim().is_empty()
             && only_note_controls
             && !st.current_items.is_empty()
-            && fmt.line_heights.len() >= 2
+            && (font_drift_tail || inkless_tail)
         {
             let first_line_advance = fmt.line_advance(0);
             // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를

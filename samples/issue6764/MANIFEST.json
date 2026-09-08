@@ -16,8 +16,12 @@
         "version": "10.0.0.7888"
       },
       "referenceEngine": "2020",
-      "contract": "앞 문단의 자리차지 표 배제 밴드를 후속 블록 표의 분할 예산에 반영한다. 잔여 제목 문단 결함의 전체 해결을 뜻하지 않는다."
+      "contract": "앞 문단의 자리차지 표 배제 밴드를 후속 블록 표의 분할 예산에 반영한다. 잔여 제목 문단 결함의 전체 해결을 뜻하지 않는다.",
+      "originalIdentityStatus": "2026-09-08 korea_downloads에서 원문을 찾아 등록 샘플과 SHA-256이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다.",
+      "referencePdf": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+      "referencePdfBytes": 3819664,
+      "referencePdfSha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b",
+      "referencePdfStatus": "2026-09-08 새 MCP에서 start/status/download 비동기 재산출 완료. engine 2020, 실제 한컴 12.0.0.4605, 204쪽. 다운로드 바이트와 SHA-256을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다. rhwp는 201쪽이다. #6859의 국소 누락 문구는 rhwp 물리 183쪽과 PDF 물리 186쪽으로 대응한다. 전체 페이지 수 및 수직 위치 차이는 남아 있다."
     }
   ]
 }
-
