@@ -76,4 +76,6 @@
 - 파서의 손상/소유권 경계, 편람 대표 자료 및 원래 계획의 추가 수용 조건은 미완료.
 - review worktree generated suite, 전체 Rust lint/native·WASM·workspace, 전체 integration,
   Native Skia 게이트는 PR 준비 단계에서 별도 승인 후 수행한다. 현재 PR 준비 완료 상태가 아니다.
-- 제품 변경의 commit/push/PR은 아직 하지 않았다. 이번 turn에서는 승인된 계획 기록만 commit했다.
+- 이 보고서의 최초 작성 시점에는 계획 기록만 커밋한 상태였다. 메인테이너의 다음 절차 승인 후
+  제품 변경·집중 시험·본 보고서를 `157717f6d`로 커밋했다. push/PR은 하지 않았다.
+  후속 경계 검증은 [Stage 3](task_m100_6856_restart_stage3.md)에 기록한다.
