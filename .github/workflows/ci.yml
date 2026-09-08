@@ -1413,6 +1413,14 @@ jobs:
           VITE_PORT: '7720'
         run: npm run e2e:responsive
 
+      - name: Run Studio document-load scroll pin gate (#6902)
+        # CI wiring: rhwp-studio/e2e/document-load-scroll-pin-issue6902.test.mjs
+        # via npm e2e:document-load-scroll-pin.
+        working-directory: rhwp-studio
+        env:
+          VITE_PORT: '7740'
+        run: npm run e2e:document-load-scroll-pin
+
       - name: Build Studio
         run: npm --prefix rhwp-studio run build
 

@@ -146,6 +146,15 @@ export class CanvasView {
   private autoRendererReselectionTimer: ReturnType<typeof setTimeout> | null = null;
   private documentLoadPrepared = false;
   private layoutViewportSize = { width: 0, height: 0 };
+  /**
+   * [#6902] `loadDocument` 가 스크롤을 맨 위로 되돌린 뒤 아직 아무도 스크롤하지 않았다.
+   *
+   * 이 상태에서 오는 첫 `viewport-resize` 는 **문서 교체 자신이 낸 것**이다 — 자리표시자
+   * 한 쪽이 스크롤바 없이 들어가던 자리에 여러 쪽 문서가 들어오면 세로 스크롤바가
+   * 생기고 컨테이너 폭이 줄어든다. 그때 중심 앵커로 스크롤을 다시 잡으면 **새 문서에는
+   * 없던 위치**를 복원하는 셈이라 첫 쪽이 한 프레임 튄다.
+   */
+  private scrollPinnedByDocumentLoad = false;
   private blankPagePlaceholder: HTMLElement | null = null;
   private lastPageSize: { width: number; height: number } | null = null;
   private disposed = false;
@@ -182,6 +191,8 @@ export class CanvasView {
 
     this.unsubscribers.push(
       eventBus.on('viewport-scroll', () => {
+        // [#6902] 사용자가 한 번이라도 스크롤했으면 그 자리는 복원할 값이 된다.
+        this.scrollPinnedByDocumentLoad = false;
         if (!this.viewportManager.isZoomAnimating()) this.updateVisiblePages('scroll');
       }),
       eventBus.on('viewport-resize', () => this.onViewportResize()),
@@ -273,6 +284,10 @@ export class CanvasView {
     );
 
     this.container.scrollTop = 0;
+    // [#6902] 이 0 은 새 문서의 시작 위치다 — 자리표시자에서 첫 쪽으로 넘어가며 생기는
+    // 스크롤바가 곧 `viewport-resize` 를 낼 텐데, 그 resize 는 앵커로 되살릴 이전 위치가
+    // 없다. 사용자가 스크롤하기 전까지 이 0 을 고정으로 표시한다.
+    this.scrollPinnedByDocumentLoad = true;
     this.lastPageSize = { width: this.pages[0].width, height: this.pages[0].height };
     this.updateVisiblePages('initial');
     this.clearBlankPagePlaceholder();
@@ -1616,8 +1631,20 @@ export class CanvasView {
       return;
     }
 
+    // [#6902] 문서를 막 열어 맨 위에 고정된 상태에서 오는 resize 는 **문서 교체 자신이
+    // 낸 것**이다. 빈 쪽 자리표시자는 로드될 문서의 쪽 수를 모른 채 한 쪽 크기로 서므로,
+    // 쪽 맞춤에서 자리표시자가 스크롤바 없이 딱 들어가면 첫 쪽이 들어오는 순간 세로
+    // 스크롤바가 생기고 컨테이너 폭이 줄어든다(1380 → 1365). 그 폭 전이가 ResizeObserver
+    // 를 깨우는데, 그때 복원할 "이전 위치" 는 새 문서에 존재한 적이 없다 — 중심 앵커는
+    // 자리표시자의 기하를 새 문서에 옮겨 적어 첫 쪽을 7px 밀어 올린다(한 프레임 튐).
+    //
+    // 레이아웃·가로 가운데 맞춤·가시 쪽 갱신은 그대로 하고 **세로 앵커만 건너뛴다.**
+    const preservesLoadPin = this.scrollPinnedByDocumentLoad;
+    this.scrollPinnedByDocumentLoad = false;
     const previousViewport = this.layoutViewportSize;
-    const canPreserveCenter = previousViewport.width > 0 && previousViewport.height > 0;
+    const canPreserveCenter = !preservesLoadPin
+      && previousViewport.width > 0
+      && previousViewport.height > 0;
     const scrollLeft = this.viewportManager.getScrollX();
     const scrollTop = this.viewportManager.getScrollY();
     const focusPage = canPreserveCenter
