@@ -72,7 +72,9 @@ fn text_baselines(svg: &str) -> Vec<f64> {
     let mut out = Vec::new();
     for cap in svg.split("<text ").skip(1) {
         let head = &cap[..cap.find('>').unwrap_or(cap.len())];
-        let Some(ys) = head.find("y=\"") else { continue };
+        let Some(ys) = head.find("y=\"") else {
+            continue;
+        };
         let s = ys + 3;
         if let Some(e) = head[s..].find('"') {
             if let Ok(y) = head[s..s + e].parse::<f64>() {
