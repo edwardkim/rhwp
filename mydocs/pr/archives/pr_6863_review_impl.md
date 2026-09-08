@@ -49,6 +49,34 @@ last_verified: 2026-09-08
 - `cargo fmt --all -- --check`, `git diff --check`, suite manifest `--check` 통과.
 - 보정 바이너리 SHA-256:
   `ef407f4e48c3aed60a814fc73c36c8d532480641cc77c48e7f681320ad6608dc`.
-- 유사 문서 4종, 40쪽 전체 SVG는 보정 전과 byte-identical이다. 신규 전체 회귀,
-  세 Clippy, Native Skia, WASM 검증은 수행하지 않았으며 PR 직전 승인 검증으로 남긴다.
+- 유사 문서 4종, 40쪽 전체 SVG는 보정 전과 byte-identical이다. 이 단계에서는 집중 검증만
+  수행했고, 이후 승인받은 전체 회귀/세 Clippy/Native Skia/WASM 결과는 3단계에 기록했다.
 - 원격 push, PR 생성, comment, merge는 수행하지 않았다.
+
+## 3단계: PR 직전 전체 검증
+
+사용자가 집중 검증 결과 뒤 전체 검증과 review 문서 재작성을 승인했다.
+대상 code head는 `0ee3641be`이며 코드 변경 없이 검증한다.
+
+- Native Clippy: 통과(1분 10초).
+- WASM32 Clippy: 통과(1분 00초).
+- workspace build: 통과(3분 00초), workspace all-target Clippy: 통과(2분 40초).
+- 전체 nextest: **9,260/9,260 통과**, 46 skipped, 6 slow, exit 0.
+  빌드 10분 43초, 실행 408.906초. 대형 표 `issue_2063`도 305.553초에 통과했다.
+- Native Skia 3종: 모두 통과. lib는 rhwp 3,930건 + 보조 library 182건 통과,
+  13 ignored(빌드 5분 22초, rhwp 실행 18.32초). placeholder 2/2(1.115초),
+  직접 PDF 출력 4/4(0.557초), 각각 exit 0.
+- WASM: Docker 미설치로 문서에 지정된 locked wrapper의 `--no-opt` 경로를 사용했다.
+  전체 412초(Rust 빌드 6분 33초), exit 0. 최적화 배포 빌드 통과로 표기하지 않는다.
+- `svg_native_wasm_diff.mjs`: 실문서 4종 40쪽 + 공개 합성 HWPX 2종 2쪽, **42쪽 모두 일치**,
+  exit 0. 보정 후 default CLI 사본과 새 WASM을 비교했다.
+- Chrome 152.0.7977.75: 실제 `HwpDocument`의 page count, SVG 및 Canvas API로 **9쪽 통과**,
+  page error 0, exit 0. 대표 실문서 7쪽과 합성 2쪽의 Canvas PNG를 직접 확인했다.
+  두 도형은 가로 80px/세로 40px로 분리되고 한글 본문/표/쪽 번호를 유지했다.
+  임시 검사 스크립트의 단일 text node 가정을 실제 글자별 SVG 구조에 맞게 보정한 뒤 재실행했다.
+- 최종 판정: 메인터너 보정 후 수용 가능. 비공개 89쪽 원본은 검증하지 못했고 사용자 승인에 따라
+  대체 문서를 사용했다. Docker 최적화 빌드 및 새 원격 head CI는 별도다.
+- 동시성: 16 logical CPU, 15GiB RAM을 확인해 Cargo build jobs 2, nextest threads 12,
+  Native Skia libtest threads 8로 설정했다. Cargo 명령은 고정 review target에서 순차 실행한다.
+- 임시 실행 로그는 `output/pr6863/full-validation`에만 두며 커밋에 넣지 않는다.
+  최종 문서에는 실행 결과와 필수 코멘트 이미지 외 임시 산출물을 포함하지 않는다.
