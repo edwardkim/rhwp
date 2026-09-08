@@ -25862,7 +25862,15 @@ impl TypesetEngine {
                 // HwpUnit=u32 이므로 음수 (u32 wrap) 는 i32 로 캐스트 후 확인.
                 let v_off_i32 = table.common.vertical_offset as i32;
                 if is_para_relative_table && v_off_i32 > 0 {
-                    let raw = hwpunit_to_px(v_off_i32, self.dpi);
+                    // [#6860] `v_off` 의 기준점은 문단 상단이 아니라 **앵커 줄**(표 제어
+                    // 문자가 실린 저장 줄)이다. layout 이 개체 원점을 그만큼 내리므로
+                    // (`stored_float_anchor_offset_px`) 예산도 같이 내려야 컷과 배치가
+                    // 어긋나지 않는다 — 안 빼면 3067979 87쪽 첫 조각이 본문을 10.3px 넘는다.
+                    // 호스트가 한 줄이거나 제어 문자가 첫 줄이면 0 이라 종전과 같다.
+                    let raw = hwpunit_to_px(v_off_i32, self.dpi)
+                        + crate::renderer::layout::stored_float_anchor_offset_px(
+                            para, table, ctrl_idx, self.dpi,
+                        );
                     // [#2015] host 텍스트가 pre-emit(pre_emit_visible_rowbreak_host_text)
                     // 되어 current_height 를 para_start → para_start+host_h 로 전진시킨 경우,
                     // vert_off(para_start 기준 표 오프셋)를 그대로 빼면 host_h 만큼 이중계상되어

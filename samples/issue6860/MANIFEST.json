@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6860,
+  "title": "자리차지 표의 앵커 줄을 첫 줄로 봐서 호스트 문단 두 줄이 표 뒤로 밀린다",
+  "entries": [
+    {
+      "path": "samples/issue6860/3067979-road-lighting-photometric-appendix.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6860",
+      "originalFilename": "3067979_[붙임 2] 도로안전시설 설치 및 관리 지침- 조명시설편(도로안전시설 설치 및 관리지침).hwpx",
+      "bytes": 26868,
+      "sha256": "8680bcbf2b5c84aef36d3836bf114613da965d747e9b58bd7ef921e2916c2282",
+      "derivation": "원본 2,502,806 바이트에서 구역0 최상위 hp:p 1747개 중 0·1521·1522·1523·1524 만 남기고(0 은 secPr 보유) BinData 56개를 스텁으로 치환. 결함 좌표는 원본과 완전히 같다.",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/3067979-road-lighting-photometric-appendix-2020.pdf",
+      "referencePdfSha256": "dda5c4b1b26a72238d38b3b6af8a9814ae103b3bb7e52f31dd7477d009e1ece8",
+      "referencePdfPageCount": 2,
+      "contract": "자리차지(TopAndBottom, vertRelTo=PARA) 표를 앵커한 호스트 문단의 글자 두 줄은 표보다 **위**, 표가 시작하는 쪽(1쪽)에 있어야 하고 마지막 표 조각 뒤에 남지 않는다. 어느 쪽에서도 흐름 항목이 본문(75.6..1084.7)을 넘지 않는다. 정본 1쪽 y=179.8·201.2 두 줄 → 캡션 217.4 → 첫 괘선 247.1 로 같은 차례다. ⚠ 쪽 수는 계약이 아니다 — 절단본이라 rhwp(저장 vertpos 추종)의 문단 블록이 저장 사다리보다 31.9px 아래에 있어 1쪽 표 예산이 줄고 꼬리 한 행이 3쪽으로 넘어간다(rhwp 3쪽 · 정본 2쪽). 원본 문서 104쪽은 수정 전후 불변이다."
+    }
+  ]
+}
