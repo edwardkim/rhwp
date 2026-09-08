@@ -378,6 +378,47 @@ verify-only run은
 않는다. 따라서 promotion preflight 성공을 정식 tag의 package publish 성공으로 해석하지 않고,
 다음 release의 exact tag run에서 `release-publish-evidence`와 네 공개 채널을 별도로 확인한다.
 
+### 7.7 CI Impact Policy Controller 실패 진단 읽기 (#6899)
+
+Controller가 빨간색이라고 해서 Controller 코드 자체의 장애인 것은 아니다. 선행 CI·CodeQL·Render Diff의
+실패를 정확한 head에 게시한 뒤 의도적으로 실패 처리하는 경우도 있다. `CI 실패 진단` 요약은 기존 정책
+판정 뒤에 실행되는 보조 보고이며, 아래를 구분한다.
+
+- **선행 검증 실패**: 원본 workflow run/attempt → 실패 worker job → 실패 step을 따라 확인한다.
+  `Build & Test` 같은 집계 job은 worker와 구분하며 다중 실패 중 하나를 근본 원인으로 단정하지 않는다.
+- **CodeQL 보안 검사 실패**: Analyze workflow 성공과 별개인 GHAS check도 확인한다.
+  동일 head의 `github-advanced-security` / `CodeQL`만 조회하며 규칙 제목·경로/행·검출 설명과 링크를 표시한다.
+  GHAS check를 특정 Actions attempt에 귀속한다고 추정하지 않는다. 기존 policy 판정은 별도 표시한다.
+- **설치/다운로드 실패**: 준비 단계와 실제 검증 단계를 구분한다. `Connection reset by peer` 등
+  확인된 진단 패턴을 표시하고, 준비 실패 뒤 테스트 step이 skipped이면 테스트 미실행이라고 명시한다.
+- **Controller 내부 단계 오류**: resolve·checkout·collect·policy·status 게시 등 실제 실패 단계를 확인한다.
+  이미 failure status를 정상 게시한 경우의 publish 실패는 API 장애로 분류하지 않는다.
+- **증적 미확인/상세 수집 제한**: API 권한·로그 부재·attempt 불일치·크기/시간 상한 등 사유를 확인하고
+  제공된 원본 job 링크로 이동한다. 추출되지 않은 오류를 제품 결함으로 추정하지 않는다.
+- **오래된 이벤트/비대상**, **검증 대기/성공**, **정책 차단**은 각각 별도로 표시한다.
+
+테스트명·오류 코드·baseline 신규 검출 건수 등 제한된 오류 형태만 추출하고 원문 전체 로그·문서 내용은
+복제하지 않는다. `baseline 없음`은 새 샘플에서 기존 결함이 드러난 경우도 있으므로 회귀 확정이 아니다.
+GitHub 로그 다운로드 host는 확인된 `*.blob.core.windows.net`의 단일 storage account 호스트만 허용하며,
+GitHub 인증 토큰은 storage 요청에 전달하지 않는다. 다른 host는 임의 허용하지 않고 미확인으로 처리한다.
+GHAS annotation은 원문 로그가 아니라 제한된 검사 메타데이터로 읽고, 표시 길이 제한·escape·credential
+필터를 적용한다. `raw_details`, API 응답 URL은 복제하지 않는다. 조회에는 `checks: read`가 필요하다.
+
+초기 publish·비대상·stale는 로그를 조회하지 않는다. audit는 성공/pending을 포함해 CodeQL workflow
+증적 유무와 독립적으로 보안 check를 조회한다. 따라서 정상 경로가 항상 API 0회라는 최초 계약은 폐기했다.
+실패 목록과 보안 check를 먼저 읽고 worker 로그 상세를 보강한다. 진단은 전체 24회/45초, 요청당 5초,
+상세 실패 job 6개, 로그 job당 1 MiB/전체 6 MiB, metadata 응답당 2 MiB, summary 16 KiB 상한이다.
+reporter 실패는 기존 verdict를 바꾸지 않는다. runner 강제 종료·전체 job timeout에서는 요약 자체가
+남지 않을 수 있으므로 Actions 기본 오류와 원본 로그를 확인한다.
+
+보고는 Controller 이벤트 시점 snapshot이다. 이후 늦게 변경된 GHAS 결과는 다음 이벤트/승인된 재실행에서
+확인해야 한다. GitHub의 재귀 방지 제약 때문에 `check_run` trigger 추가만으로 해결됐다고 간주하지 않는다.
+[Checks API 권한](https://docs.github.com/en/rest/checks/runs?apiVersion=2022-11-28)과
+[이벤트 제약](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)을 참고한다.
+
+이 절은 #6899 R2 구현 후보의 동작 계약이다. devel 반영만으로 default-branch Controller 배포가 끝난 것은
+아니며, main YAML과 trusted-base helper가 모두 준비된 live 실행에서 요약을 확인한 뒤 적용 완료로 판정한다.
+
 ## 8. required check와 branch protection
 
 required context 이름은 외부 계약이다. job 이름 변경, workflow 분리, path skip, matrix 이름 변경은 YAML
