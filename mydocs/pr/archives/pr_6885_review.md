@@ -183,6 +183,28 @@ CI가 녹색이라는 사실만으로 이 회귀를 승인하지 않는다.
 
 따라서 줄바꿈만으로 drift 판정이 달라질 수 있다는 지적에는 코드·진단 근거가 있다. 다만
 작성자의 clean CRLF checkout 전체 실행과 `49 > 48` 연쇄 오류는 독립 재현하지 않았다.
-`Cargo.toml text eol=lf` 지정, LF/CRLF 회귀와 필요 시 비교 정규화는 parser 수정과 분리한
-후속 검토를 제안한다. 이번 PR에 `.gitattributes`나 생성기 변경을 섞지 않는다.
-답변 초안은 사용자 승인 전이며 GitHub에 게시하지 않는다. 새 head CI 확인 후 최종 판정을 갱신한다.
+처음에는 별도 후속 작업을 제안했으나, 사용자가 이번 PR에서 함께 개선하도록 요청해 아래처럼
+직접 보완했다. 답변 초안은 사용자 승인 전이며 GitHub에 게시하지 않는다.
+새 head CI 확인 후 최종 판정을 갱신한다.
+
+### 같은 PR에서 CRLF 문제 보완
+
+- 보정 SHA: `3fadf95246e4b3dec124525832f815b76ee0de51`.
+- `.gitattributes`에 `/Cargo.toml text eol=lf`를 추가해 루트 Cargo manifest의 checkout을 LF로 고정했다.
+- 기존 CRLF checkout이나 에디터가 기록한 CRLF도 허용하도록 generated Cargo block 비교에서
+  CRLF만 LF로 정규화한다. target 이름·순서·내용 변경과 기타 공백은 그대로 drift로 검사한다.
+- 실제 Git 임시 저장소에서 `core.autocrlf=true`와 `checkout-index`를 사용해 저장소 속성이 LF를
+  유지하는지 검증했다. 사용자 checkout의 Git 설정이나 Cargo 내용은 바꾸지 않았다.
+- LF/CRLF 모두 동일한 target은 통과하고, target 이름 변경은 둘 다 거절하며, 검사가 파일을 쓰지
+  않는지 회귀 테스트로 고정했다. 최초 테스트 작성 시 `derive` 모드가 Cargo 검사를 생략하는 것을
+  음성 대조군이 검출해, 실제 Cargo 검사를 수행하는 기본 validation으로 바로잡은 뒤 재실행했다.
+- `node --test scripts/tests/rust-test-suite-manifest.test.mjs`: **23/23 통과**, exit 0.
+- manifest `--prepare`와 `--check`: **48/48 targets**, exit 0. `git diff --check`: 통과.
+- 이번 추가 commit은 `.gitattributes`와 Node 생성기·테스트만 변경한다. 앞서 9,222개 전체 회귀와
+  Rust lint를 통과한 Rust source/test 및 `Cargo.toml` 내용은 동일해 Cargo 전체 검증은 반복하지 않았다.
+- `49 > 48` 연쇄 오류 전체의 재현·해결까지 확대해서 주장하지 않는다. 개행으로 인한 Cargo drift를
+  해결하고 실제 target 예산 검사와 내용 drift 검사를 유지하는 것이 이번 보완 범위다.
+
+앞선 code·review head `a772883fffd6fbc8c6453458944eca71918eeb85`는 원 PR에 push한 뒤
+GitHub head 일치를 확인했다. 해당 head의 새 CI는 외부 fork 실행 승인 대기(`action_required`)였으며,
+통과로 기록하지 않는다. 이번 보완도 원 contributor 브랜치에 추가 commit으로 push하며 force-push하지 않는다.
