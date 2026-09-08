@@ -972,14 +972,39 @@ fn stored_float_anchor_line_top(
     control_index: usize,
     stored: &[&crate::model::paragraph::LineSeg],
 ) -> Option<i32> {
-    let char_pos = para.control_text_positions().get(control_index).copied()?;
-    // 줄의 `text_start` 와 같은 축(HWP5 UTF-16)으로 올려서 견준다. 제어 문자가 텍스트
-    // 끝에 있으면 `char_offsets` 범위를 벗어나므로 마지막 글자 바로 뒤로 잡는다.
-    let anchor_u16 = para
-        .char_offsets
-        .get(char_pos)
-        .copied()
-        .or_else(|| para.char_offsets.last().map(|last| last + 1))?;
+    // 줄의 `text_start` 와 같은 축(HWP5 UTF-16)으로 올려서 견준다.
+    let anchor_u16 = if para.char_offsets.is_empty() {
+        // [#6879] 글자가 하나도 없이 개체만 실린 문단은 `char_offsets` 가 비어 있어
+        // 위 사상이 불가능하다. 이 형상에서는 인라인 개체 하나가 축을 정확히 8 유닛씩
+        // 차지하므로 **앞선 인라인 개체 수 × 8** 이 곧 제어 문자 자리다
+        // (156767332 pi=73: TAC 라벨 뒤 float → 8, 저장 줄1 `textpos=8` 과 일치).
+        let inline_before = para
+            .controls
+            .iter()
+            .take(control_index)
+            .filter(|ctrl| {
+                matches!(
+                    ctrl,
+                    Control::Shape(_)
+                        | Control::Table(_)
+                        | Control::Picture(_)
+                        | Control::Equation(_)
+                        | Control::Footnote(_)
+                        | Control::Endnote(_)
+                        | Control::AutoNumber(_)
+                )
+            })
+            .count();
+        (inline_before as u32).saturating_mul(8)
+    } else {
+        let char_pos = para.control_text_positions().get(control_index).copied()?;
+        // 제어 문자가 텍스트 끝에 있으면 `char_offsets` 범위를 벗어나므로 마지막 글자
+        // 바로 뒤로 잡는다.
+        para.char_offsets
+            .get(char_pos)
+            .copied()
+            .or_else(|| para.char_offsets.last().map(|last| last + 1))?
+    };
     stored
         .iter()
         .rev()
@@ -1002,8 +1027,23 @@ pub(crate) fn stored_float_anchor_offset_px(
     control_index: usize,
     dpi: f64,
 ) -> f64 {
+    hwpunit_to_px(
+        stored_float_anchor_offset_hu(para, table, control_index),
+        dpi,
+    )
+}
+
+/// [#6860] 같은 값의 HWPUNIT 판 — 저장 사다리와 같은 축에서 견주는 호출부용.
+///
+/// `#6879`(typeset 의 `#5807` 판별식)는 TAC 줄 높이(HWPUNIT)와 직접 비교하므로 px 로
+/// 내려갔다 오면 반올림이 섞인다.
+pub(crate) fn stored_float_anchor_offset_hu(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    control_index: usize,
+) -> i32 {
     if !stored_host_lines_precede_float(para, table, control_index) {
-        return 0.0;
+        return 0;
     }
     let stored: Vec<&crate::model::paragraph::LineSeg> = para
         .line_segs
@@ -1011,12 +1051,12 @@ pub(crate) fn stored_float_anchor_offset_px(
         .filter(|ls| ls.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
         .collect();
     let Some(base) = stored.first().map(|ls| ls.vertical_pos) else {
-        return 0.0;
+        return 0;
     };
     let Some(anchor_top) = stored_float_anchor_line_top(para, control_index, &stored) else {
-        return 0.0;
+        return 0;
     };
-    hwpunit_to_px((anchor_top - base).max(0), dpi)
+    (anchor_top - base).max(0)
 }
 
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
@@ -10891,6 +10931,16 @@ impl LayoutEngine {
                         para_start_y.insert(para_index, saved_para_y);
                         rewind_anchor_snapped = true;
                     }
+                }
+            }
+            // [#6879] float 의 세로 기준점은 문단 상단이 아니라 **앵커 줄**(그 개체의
+            // 제어 문자가 실린 저장 줄)이다. 앞선 TAC 형제가 첫 줄을 차지한 문단에서
+            // 이것을 안 옮기면 float 이 그 줄 위로 올라가 겹친다 (156767332 pi=73:
+            // 라벨 98.2..138.4 vs float 128.0). 앵커가 첫 줄이면 0 이라 종전과 같다.
+            if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                let anchor_offset = stored_float_anchor_offset_px(para, t, control_index, self.dpi);
+                if anchor_offset > 0.0 {
+                    para_y_for_table += anchor_offset;
                 }
             }
             let is_current_visible_para_float = para
