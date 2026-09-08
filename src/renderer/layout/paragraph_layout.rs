@@ -1480,6 +1480,90 @@ pub(crate) fn resolve_last_tab_pending(
     }
 }
 
+/// [#6844] 런 **안**에 오른쪽/가운데 탭이 있는 런의 bbox 를 **문자 위치에 맞춘다.**
+///
+/// `pending_right_tab_render` 는 런이 탭으로 **끝날 때**만 서므로(정렬 대상이 다음 런에
+/// 있는 교차-run 형상), 한컴 목차가 흔히 쓰는 `"\t8"`(탭 + 쪽번호를 한 런에) 형상은
+/// 그 경로를 안 탄다. 그런 런은 `layout_positions` 가 이미 오른쪽 정렬된 자리를 담는데
+/// **bbox 폭만 `estimate_text_width` 값(탭 스톱까지)으로 남아** 글리프가 자기 상자
+/// **밖**에 그려졌다.
+///
+/// ```text
+///   30269 목차 4번째 줄   런 "\t8"  x=595.4
+///     bbox   595.4 .. 673.4   (w=78.0)
+///     글리프 683.9 .. 693.7   ← 상자 밖. 형제 줄들도 693.7 에서 끝난다.
+/// ```
+///
+/// 이 런은 탭 뒤가 **가시문자로 끝나므로** 마지막 문자 경계가 곧 잉크의 끝이다. 폭을
+/// 거기에 맞추면 bbox·장식·리더·문자 위치가 하나의 값을 공유한다.
+///
+/// 대상은 코퍼스 실측으로 좁혔다 — 우/가운데 스톱에 걸리는 **런의 마지막 탭**이고 그 런이
+/// **줄의 마지막**인 형상(중간탭 9,923건 중 2,556건; 그중 998건이 글리프가 상자 밖).
+///
+/// ⚠ 문자 위치 자체를 옮기지는 않는다. 교차-run 경로의 `effective_pos` 변환을 그대로
+/// 가져와 재정렬해 봤더니 34건이 움직였고 그중 `3142535`(별지 5 징수결정액통지서)의
+/// 글자가 `x=671.4 → 1000.1` 로 **용지(793.7) 밖**으로 나갔다. 이 런들의 위치는 이미
+/// 기존 기계가 정하고 있고, 그 계약은 이 이슈의 범위가 아니다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn resolve_intra_run_right_tab(
+    run_text: &str,
+    full_width: f64,
+    layout_positions: Option<Vec<f64>>,
+    text_style: &TextStyle,
+    tab_extended: &[[u16; 7]],
+    inline_tab_base: usize,
+    tab_stops: &[TabStop],
+    tab_width: f64,
+    auto_tab_right: bool,
+    available_width: f64,
+) -> (f64, Option<Vec<f64>>) {
+    let chars: Vec<char> = run_text.chars().collect();
+    let Some(tab_idx) = chars.iter().rposition(|c| *c == '\t') else {
+        return (full_width, layout_positions);
+    };
+    if chars[tab_idx + 1..].iter().collect::<String>().trim().is_empty() {
+        return (full_width, layout_positions);
+    }
+    // inline_tabs 가 LEFT 를 명시하면 대상이 아니다 (`resolve_last_tab_pending` 과 같은 규칙).
+    let tab_ordinal = chars[..tab_idx].iter().filter(|c| **c == '\t').count();
+    let inline_idx = inline_tab_base + tab_ordinal;
+    if inline_idx < tab_extended.len() {
+        match ((tab_extended[inline_idx][2] >> 8) & 0xFF) as u8 {
+            2 | 3 => {}
+            _ => return (full_width, layout_positions),
+        }
+    }
+    // ⚠ `layout_positions` 는 **그대로 돌려준다.** 소비자(`replay_positions_for`)는
+    // `None` 이면 style 로 같은 배열을 다시 계산하므로, 여기서 채워 넣어도 값은 같지만
+    // "positions 가 있는가"로 갈리는 하류 분기가 움직인다(골든 SVG clip 폭이
+    // `642.5333333333334 → …35` 로 흔들렸다). 폭만 고친다.
+    let ink_end = match layout_positions.as_deref() {
+        Some(positions) if positions.len() == chars.len() + 1 => positions[chars.len()],
+        None => {
+            let computed = compute_char_positions(run_text, text_style);
+            if computed.len() != chars.len() + 1 {
+                return (full_width, layout_positions);
+            }
+            computed[chars.len()]
+        }
+        _ => return (full_width, layout_positions),
+    };
+    let before: String = chars[..tab_idx].iter().collect();
+    let w_before = estimate_text_width(&before, text_style);
+    let abs_before = text_style.line_x_offset + w_before;
+    let tw = if tab_width > 0.0 { tab_width } else { 48.0 };
+    let (_tab_pos, tab_type, _fill_type) =
+        find_next_tab_stop(abs_before, tab_stops, tw, auto_tab_right, available_width);
+    if tab_type != 1 && tab_type != 2 {
+        return (full_width, layout_positions);
+    }
+    // 두 값이 실질적으로 같으면 손대지 않는다 — 부동소수 잡음으로 골든을 흔들지 않는다.
+    if !ink_end.is_finite() || ink_end < 0.0 || (ink_end - full_width).abs() <= 0.05 {
+        return (full_width, layout_positions);
+    }
+    (ink_end, layout_positions)
+}
+
 /// 우측/가운데 탭 정렬 단위의 폭(px).
 ///
 /// 탭 직후 run(`start`)부터 `\t` 를 포함하지 않는 연속 run 들의 `estimate_text_width` 합산.
@@ -6477,6 +6561,24 @@ impl LayoutEngine {
                     &composed.tab_extended,
                 );
             }
+            // [#6844] 런 안의 오른쪽/가운데 탭 — 정렬 블록이 이 런 안에서 끝나는 형상만.
+            let (full_width, layout_positions) =
+                if has_tabs && run.text.contains('\t') && run_idx + 1 == comp_line.runs.len() {
+                    resolve_intra_run_right_tab(
+                        &run.text,
+                        full_width,
+                        layout_positions,
+                        &text_style,
+                        &composed.tab_extended,
+                        inline_tab_cursor_render,
+                        &tab_stops,
+                        tab_width,
+                        auto_tab_right,
+                        available_width,
+                    )
+                } else {
+                    (full_width, layout_positions)
+                };
             // 교차 run 오른쪽/가운데 탭 감지 — Task #290:
             // inline_tabs(composed.tab_extended) 가 LEFT 를 명시하면 cross-run pending 을 설정하지 않는다.
             // [Task #279] trailing 공백 (\t 뒤에 따라오는 ' ') 도 허용 — 목차 소제목의
