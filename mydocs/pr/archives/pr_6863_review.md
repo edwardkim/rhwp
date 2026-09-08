@@ -14,9 +14,29 @@ last_verified: 2026-09-08
 대표 7쪽 및 공개 합성 before/after PNG를 직접 확인했다. 비공개 원본 제출 불가는 보류 사유로 삼지 않는다.
 보정 head의 전체 nextest 9,260건, 세 Clippy, workspace build, Native Skia 3종이 통과했다.
 WASM `--no-opt` 빌드, native/WASM 42쪽 SVG 일치, 실제 브라우저 9쪽 SVG/Canvas 검증도 통과했다.
-Docker 미설치로 최적화 배포 빌드는 미실행이다. 원 contributor head에는 보정이 없으므로 직접
-merge하면 안 된다. 보정 포함 PR을 위한 로컬 검증/기록은 준비됐으며 새 원격 head CI와 merge 승인은 별도다.
-remote push, GitHub 검토 코멘트, approve, merge는 수행하지 않았다.
+Docker 미설치로 최적화 배포 빌드는 미실행이다. 위 전체 검증은 `0ee3641be`의 결과이며 새 source head의
+전체 회귀 성공으로 옮겨 적지 않는다. 기존 원 head `1e82075a8`에는 보정이 없으므로 그대로 merge하면 안 된다.
+사용자는 이후 별도 통합 PR 없이 **원 PR #6863 직접 push**를 승인했다. 현재 보정 code head는
+`4413ff666`이며 최신 source 검증·CI는 다음 절에 별도 기록한다. merge 승인은 이번 범위가 아니다.
+
+## 원 PR 직접 push 전환
+
+- 최신 `upstream/devel`은 `5111c24c7`이며 로컬 `devel`도 동기화했다.
+- 로컬 검토 후보를 최신 devel로 리베이스한 결과 충돌은 없었다. 그 결과는 `f5ac3d6da`다.
+- 첫 기여자 지침에 따라 원 기여 커밋은 재작성/force-push하지 않는다. 로컬 메인터너 추가 commit만
+  `git rebase --onto`로 원 head `1e82075a8` 위로 옮겼다. 별도 체리픽 또는 새 PR은 생성하지 않는다.
+- 원 head 이후 추가분은 재현 `41389ffaa`, 보정 `4413ff666`, 검토 기록 `175dff884`다.
+- `upstream/devel`과 source-tail `175dff884`의 merge tree는
+  `e6fe25dd147a90f6725bde6e1fde4f8d763941f1`이며, 최신 devel 리베이스 후보 `f5ac3d6da`의 tree와 같다.
+  이는 적용 내용 동일성 검증이며 기존 전체 회귀를 새 head에서 재실행했다는 뜻은 아니다.
+- 코드/테스트 보정과 review·오늘할일은 별도 commit으로 유지한다. 이후 사용자가 추가 테스트를
+  금지하고 즉시 push하도록 지시하여, CI 대기 후 trailing push 대신 준비된 commit을 한 번에 push한다.
+  source branch는 `kyunghwan-AITeam/rhwp:codex/fix-actual-curriculum-visual-parity`다.
+- 새 source 기준 fmt, native Clippy(1분 07초), WASM Clippy(1분 01초), workspace build(3분 05초),
+  all-target Clippy(2분 36초), manifest 검사는 통과했다. 추가 focused nextest는 빌드 중 사용자
+  지시에 따라 중단(exit 130)했으며 통과로 집계하지 않는다. 원격 CI 결과도 아직 확정하지 않는다.
+- 첫 기여를 환영하고 보정 이유·실제 검증 범위를 안내한다. 비공개 원본 제출이나 contributor fork
+  branch 삭제를 요구하지 않는다. LFS 판독, dry-run, source SHA 재확인 후 fast-forward push한다.
 
 ## 접수와 적용
 
@@ -35,7 +55,7 @@ remote push, GitHub 검토 코멘트, approve, merge는 수행하지 않았다.
 | reviewer | `jangster77` 요청 확인 |
 | 본문과 대화 | #6863 본문, #6735, 대체된 #6749 확인; #6863 issue/inline comment 및 review 없음 |
 
-기본 경로는 collaborator external PR이다. intake, local validation, first-time contributor,
+최초 검토 경로는 collaborator external PR의 로컬 적용이었다. intake, local validation, first-time contributor,
 대규모 변경 및 visual fixture evidence 지침을 함께 적용했다. 최신 devel에서 다음 원 커밋을 순서대로
 체리픽했으며 충돌은 없었다. 보정 전 적용 tree는 `git merge-tree --write-tree` 결과와 같다.
 이후 사용자 승인으로 별도 회귀/보정 commit을 추가했으며 contributor history는 변경하지 않았다.
@@ -233,7 +253,7 @@ SVG 0으로 적었다. 실제 SVG 1개, render tree 1개, PDF 1쪽을 확인했�
 physical p1을 판정했다. `review_2568129.png`는 2568129쪽이 아니라 실제 p1이다.
 
 임시 원장/compare/overlay/review/JSON/SVG는 `output/pr6863/fidelity-*`, `output/pr6863/visual*`에 있다.
-커밋 대상은 아래 코멘트용 최종 PNG 4개와 검토/보정 문서다. 오늘할일은 생성하지 않았다.
+커밋 대상은 아래 코멘트용 최종 PNG 4개와 검토/보정 문서다. 이후 사용자 승인으로 오늘할일도 추가했다.
 
 ## 입력과 binary SHA-256
 

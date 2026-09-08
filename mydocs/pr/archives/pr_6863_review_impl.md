@@ -80,3 +80,12 @@ last_verified: 2026-09-08
   Native Skia libtest threads 8로 설정했다. Cargo 명령은 고정 review target에서 순차 실행한다.
 - 임시 실행 로그는 `output/pr6863/full-validation`에만 두며 커밋에 넣지 않는다.
   최종 문서에는 실행 결과와 필수 코멘트 이미지 외 임시 산출물을 포함하지 않는다.
+
+## 4단계: 원 PR 직접 보정 push
+
+- 최신 devel `5111c24c7` 리베이스는 충돌 없이 완료했다. 메인터너 추가분만 원 head `1e82075a8`
+  위로 재배치해 원 기여 이력을 보존했다. 보정 head는 `4413ff666`, 별도 통합 PR은 만들지 않는다.
+- 새 source에서 fmt·세 Clippy·workspace build·manifest가 통과했다. 추가 focused nextest는
+  빌드 중 사용자 지시로 중단(exit 130)했고 이전 전체 회귀 결과와 구분한다.
+- 사용자가 테스트 금지와 즉시 push를 지시했다. 코드와 문서는 별도 commit으로 유지하되,
+  CI 완료 후 trailing push 대기는 생략하고 원 PR #6863에 준비된 내용을 함께 push한다.
