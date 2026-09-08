@@ -18,7 +18,7 @@ use super::shaping_vertical::{
 };
 use super::{GradientFillInfo, LineStyle, PathCommand, ShapeStyle, TextStyle};
 use crate::model::image::ImageEffect;
-use crate::model::shape::TextWrap;
+use crate::model::shape::{RectangleControlKind, TextWrap};
 use crate::model::style::ImageFillMode;
 use crate::model::{ColorRef, Rect};
 
@@ -153,6 +153,17 @@ pub struct RenderNode {
     /// 문단 부호·투명 테두리처럼 편집 화면에서만 보여야 하는 보조 표시.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub editor_only: bool,
+    /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
+    #[serde(skip)]
+    pub control_code: ControlCode,
+}
+
+#[derive(Debug, Default, Clone, Copy, Serialize)]
+pub enum ControlCode {
+    #[default]
+    Automatic,
+    Hidden,
+    Rectangle(RectangleControlKind),
 }
 
 impl RenderNode {
@@ -165,6 +176,7 @@ impl RenderNode {
             children: Vec::new(),
             visible: true,
             editor_only: false,
+            control_code: ControlCode::Automatic,
         }
     }
 
@@ -183,6 +195,35 @@ impl RenderNode {
     pub fn with_editor_only(mut self) -> Self {
         self.editor_only = true;
         self
+    }
+
+    /// 사각형 컨트롤 하나에 부호 하나만 부여한다. 내부 TextBox는 편집 영역이지 새 컨트롤이 아니다.
+    pub fn set_rectangle_control_kind(&mut self, kind: RectangleControlKind) {
+        self.control_code = ControlCode::Rectangle(kind);
+        for child in &mut self.children {
+            if matches!(child.node_type, RenderNodeType::TextBox) {
+                child.control_code = ControlCode::Hidden;
+            }
+        }
+    }
+
+    pub fn control_code_label(&self) -> Option<&'static str> {
+        match self.control_code {
+            ControlCode::Hidden => return None,
+            ControlCode::Rectangle(RectangleControlKind::Rectangle) => return Some("[사각형]"),
+            ControlCode::Rectangle(RectangleControlKind::TextBox) => return Some("[글상자]"),
+            ControlCode::Automatic => {}
+        }
+        match self.node_type {
+            RenderNodeType::Table(_) => Some("[표]"),
+            RenderNodeType::Image(_) => Some("[그림]"),
+            RenderNodeType::TextBox => Some("[글상자]"),
+            RenderNodeType::Equation(_) => Some("[수식]"),
+            RenderNodeType::Header => Some("[머리말]"),
+            RenderNodeType::Footer => Some("[꼬리말]"),
+            RenderNodeType::FootnoteArea => Some("[각주]"),
+            _ => None,
+        }
     }
 
     /// 렌더 트리를 JSON 문자열로 직렬화한다.

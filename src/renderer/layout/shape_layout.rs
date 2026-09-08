@@ -1381,6 +1381,7 @@ impl LayoutEngine {
                     matrix_positioned,
                     textbox_vpos_origin_hu(shape.common(), matrix_positioned),
                 );
+                node.set_rectangle_control_kind(rect.control_kind());
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
