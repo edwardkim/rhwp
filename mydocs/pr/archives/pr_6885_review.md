@@ -2,7 +2,7 @@
 
 ## 대상과 판정
 
-- 현재 판정: **머지 보류 — 원 코드 P2는 보정·로컬 검증 완료, 새 PR head CI 대기**
+- 현재 판정: **승인 — 원 PR의 보정된 head 검증 완료**. 최종 문서 head의 CI 확인 후 병합한다.
 - PR: [#6885](https://github.com/edwardkim/rhwp/pull/6885)
 - 이슈: [#6884](https://github.com/edwardkim/rhwp/issues/6884)
 - 작성자: `zunstudio` (저장소 PR 이력 조회상 첫 외부 PR)
@@ -208,3 +208,26 @@ CI가 녹색이라는 사실만으로 이 회귀를 승인하지 않는다.
 앞선 code·review head `a772883fffd6fbc8c6453458944eca71918eeb85`는 원 PR에 push한 뒤
 GitHub head 일치를 확인했다. 해당 head의 새 CI는 외부 fork 실행 승인 대기(`action_required`)였으며,
 통과로 기록하지 않는다. 이번 보완도 원 contributor 브랜치에 추가 commit으로 push하며 force-push하지 않는다.
+
+## 최종 CI 및 병합 준비
+
+- 검증 head: `182a6cdbf293c03570e4d720704e3b19e1f81064`.
+- [CI 34226937127](https://github.com/edwardkim/rhwp/actions/runs/34226937127):
+  Build & Test, archive A~D, lint, Native Skia, Frontend package gates 성공.
+- [CodeQL 34226937176](https://github.com/edwardkim/rhwp/actions/runs/34226937176):
+  Rust/JavaScript/Python 분석 성공, 종합 CodeQL도 SUCCESS.
+- [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34226937108),
+  [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34226937021), CI Impact Policy 성공.
+- 조회 시점 `MERGEABLE / CLEAN`. 앞선 실행 승인 대기는 해소됐다.
+- 사용자에게 CI 완료 후 merge·후속 처리 및 작업 소유 원격 브랜치 정리를 승인받았다.
+  이 문서와 오늘할일의 최종 기록만 trailing push한 뒤 최신 head checks를 다시 확인한다.
+  병합과 issue close를 미리 완료한 것으로 기록하지 않는다.
+
+### Merge 후 contributor PR comment 계획
+
+첫 기여 환영과 감사, 실제 merge SHA 및 검증 링크를 남긴다. contributor의 경로 기반 조회와
+회귀 2개, collaborator의 손상 슬롯·부모 타입 보정 및 CRLF 개선을 구분한다.
+로컬 9,222개·focused 6개·Node 23개와 실제 성공한 CI만 기록하며 PDF 시각 동등성은 주장하지 않는다.
+별도 후속 작업을 제안했던 승인 전 CRLF 댓글 초안은 게시하지 않고, 이번 PR에서 완료한 개선 사실을
+merge 후 결과 기록에 포함한다. #6884의 해결 범위를 대조하고 종료·검증 결과를 중복 없이 기록한다.
+contributor fork branch와 shared target/pr-review는 보존하고 작업 소유 local review/fetch ref만 정리한다.
