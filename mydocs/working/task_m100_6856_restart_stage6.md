@@ -49,6 +49,11 @@
 걸렸다. `Box::default()`로 정정하고 불필요해진 import를 제거한다. 제품 동작·시험 기대값은 변경하지
 않으며 lint를 allow하지 않는다. 정정 commit을 검증 worktree에 반영하고 lint 묶음부터 재실행한다.
 
+정정 뒤 formatter가 위 호출을 한 줄로 줄여 test source의 크기가 바뀌었다. 이 때문에 포맷 전 생성한
+가중치 기반 suite 배정과 포맷 후 manifest의 배정이 달라져 drift가 검출되었다. 포맷 결과를 source
+commit에 반영하고 그 commit에서 다시 `--prepare`한 뒤 fmt check·manifest check가 모두 통과했다.
+이는 파생 준비 순서의 문제이며 생성기·정책·시험 기대값은 수정하지 않았다.
+
 ## PR 범위와 보고 경계
 
 이번 승인 구현은 소유 내부 영역에 따른 사각형/글상자 식별, 조판부호 소비 통일, HWPX 빈 문단 보존,

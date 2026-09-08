@@ -26,9 +26,7 @@ fn eighteen_variations_have_two_rectangles_and_sixteen_textboxes() {
                     paragraph.text = "본문".into();
                 }
                 if mask & 2 != 0 {
-                    paragraph
-                        .controls
-                        .push(Control::Picture(Box::default()));
+                    paragraph.controls.push(Control::Picture(Box::default()));
                 }
                 if mask & 4 != 0 {
                     paragraph
