@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
+import textwrap
 import unittest
 from pathlib import Path
 
@@ -19,6 +22,51 @@ WORKFLOWS = {
 
 
 class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
+    def test_fork_artifact_binds_upstream_pr_head_repository_and_attempt(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        capture = workflow.split("- name: Capture PR merge-tree evidence", 1)[1].split(
+            "- name: Upload PR merge-tree evidence", 1
+        )[0]
+        self.assertIn("pullRequest.base.repo.id !== repositoryId", capture)
+        self.assertIn("refs/pull/${pullRequest.number}/merge", capture)
+        self.assertIn("trusted-postmerge-fork-merge-tree-v1-${pullRequest.number}", capture)
+        self.assertIn("${repositoryId}-${pullRequest.head.repo.id}-${runAttempt}", capture)
+        self.assertNotIn("|| pullRequest.head?.repo?.full_name !==", capture)
+        self.assertIn("identity[1] === String(pr.number)", workflow)
+        self.assertIn("identity[2] === String(repositoryId)", workflow)
+        self.assertIn("identity[3] === String(pr.head.repo.id)", workflow)
+        self.assertIn("identity[4] === String(workflowRun.run_attempt)", workflow)
+        self.assertIn("artifact.expired !== true", workflow)
+
+    def test_fork_collection_requires_trusted_run_and_independent_tree_proof(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        collect = workflow.split("async function collectEvidence()", 1)[1]
+        self.assertIn("trustedPullRequestSource(candidate, process.env.GITHUB_REPOSITORY, repositoryId)", collect)
+        self.assertIn("trustedPullRequestWorkflowRun(", collect)
+        self.assertIn("pr.head.repo.id !== summary.head.repo.id", collect)
+        self.assertIn('.includes(process.env.WORKFLOW_FILE) || isFork', collect)
+        self.assertIn("[reviewOnlyWorker.preflight, reviewOnlyWorker.worker].every", collect)
+        self.assertIn("verifyForkPostMergeTree(process.env.GITHUB_WORKSPACE", collect)
+        self.assertIn("tested.parents[0] !== baseParent", collect)
+        self.assertIn("forkMergeTreeEvidenceByRunId", collect)
+        self.assertIn("fork artifact tree mismatch", collect)
+        self.assertNotIn("execFileSync('git', ['checkout'", collect)
+
+    def test_inline_github_scripts_parse_as_async_javascript(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        scripts = re.findall(r"(?m)^          script: \|\n((?:            .*\n|\n)+)", workflow)
+        self.assertGreaterEqual(len(scripts), 3)
+        node = shutil.which("node")
+        self.assertIsNotNone(node)
+        for index, script in enumerate(scripts):
+            with self.subTest(script=index):
+                result = subprocess.run(
+                    [node, "--check", "--input-type=commonjs"],
+                    input="async function workflowStep() {\n" + textwrap.dedent(script) + "\n}\n",
+                    text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_reusable_workflow_actions_are_pinned_to_full_commit_shas(self) -> None:
         workflow = REUSABLE.read_text(encoding="utf-8")
         pins = re.findall(

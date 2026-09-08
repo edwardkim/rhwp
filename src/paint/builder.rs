@@ -8,7 +8,7 @@ use crate::paint::profile::RenderProfile;
 use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
-use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
+use crate::renderer::render_tree::{ControlCode, PageRenderTree, RenderNode, RenderNodeType};
 
 const TEXT_MARK_BODY_CLIP_RIGHT_PAD: f64 = 48.0;
 
@@ -96,12 +96,9 @@ impl LayerBuilder {
             .collect::<Vec<_>>();
         if self.output_options.show_control_codes {
             let label = match &node.node_type {
-                RenderNodeType::Table(_) => Some("[표]"),
-                RenderNodeType::TextBox => Some("[글상자]"),
-                RenderNodeType::Header => Some("[머리말]"),
-                RenderNodeType::Footer => Some("[꼬리말]"),
-                RenderNodeType::FootnoteArea => Some("[각주]"),
-                _ => None,
+                // 그림·수식은 전용 paint 하위화 경로에서 조판부호를 생성한다.
+                RenderNodeType::Image(_) | RenderNodeType::Equation(_) => None,
+                _ => node.control_code_label(),
             };
             if let Some(label) = label {
                 children.push(
@@ -180,7 +177,10 @@ impl LayerBuilder {
 
         if let Some(ops) = own_ops {
             let own_leaf = LayerNode::leaf(node.bbox, Some(node.id), ops).with_layer(node.layer);
-            return if node.children.is_empty() {
+            // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
+            let has_source_marker = self.output_options.show_control_codes
+                && matches!(node.control_code, ControlCode::Rectangle(_));
+            return if node.children.is_empty() && !has_source_marker {
                 Some(own_leaf)
             } else {
                 let mut children = Vec::with_capacity(node.children.len() + 1);

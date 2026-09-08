@@ -906,7 +906,8 @@ function inspectRepository(
     }
     try {
       const bounds = cargoBlockBounds(cargoManifest);
-      const actual = cargoManifest.slice(bounds.start, bounds.end);
+      // 기존 CRLF checkout도 허용하되 target 내용·순서의 drift는 계속 검사한다.
+      const actual = cargoManifest.slice(bounds.start, bounds.end).replaceAll('\r\n', '\n');
       const expected = renderCargoTestBlock(manifest);
       if (actual !== expected) {
         errors.push('Cargo.toml generated test target block drift');

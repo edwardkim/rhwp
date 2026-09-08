@@ -661,6 +661,37 @@ impl LayoutEngine {
         // [Task #1138] 표 셀 컨텍스트: (section_idx, outer_para_idx, outer_table_ctrl_idx, cell_idx, cell_para_idx, inner_control_idx)
         table_cell_ctx: Option<(usize, usize, usize, usize, usize, usize)>,
     ) {
+        self.layout_cell_shape_with_parent_path(
+            tree,
+            cell_node,
+            shape,
+            inner_area,
+            para_y,
+            para_alignment,
+            styles,
+            bin_data_content,
+            clamp_header_negative_para_offset,
+            table_cell_ctx,
+            &[],
+        );
+    }
+
+    /// 글상자/중첩 표 경로까지 가진 셀 도형을 레이아웃한다.
+    #[allow(clippy::too_many_arguments)]
+    fn layout_cell_shape_with_parent_path(
+        &self,
+        tree: &mut PageLayoutContext,
+        cell_node: &mut RenderNode,
+        shape: &crate::model::shape::ShapeObject,
+        inner_area: &LayoutRect,
+        para_y: f64,
+        para_alignment: Alignment,
+        styles: &ResolvedStyleSet,
+        bin_data_content: &[BinDataContent],
+        clamp_header_negative_para_offset: bool,
+        table_cell_ctx: Option<(usize, usize, usize, usize, usize, usize)>,
+        parent_cell_path: &[CellPathEntry],
+    ) {
         let child_common = shape.common();
 
         let child_w = hwpunit_to_px(child_common.width as i32, self.dpi);
@@ -737,7 +768,7 @@ impl LayoutEngine {
             styles,
             bin_data_content,
             &empty_map,
-            &[],
+            parent_cell_path,
             shape_table_cell_ref,
             false,
         );
@@ -791,21 +822,9 @@ impl LayoutEngine {
         let row_count = table.row_count as usize;
         let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
 
-        // 열 폭 계산
-        let mut col_widths = vec![0.0f64; col_count];
-        for cell in &table.cells {
-            if cell.col_span == 1 && (cell.col as usize) < col_count {
-                let w = hwpunit_to_px(cell.width as i32, self.dpi);
-                if w > col_widths[cell.col as usize] {
-                    col_widths[cell.col as usize] = w;
-                }
-            }
-        }
-        for c in 0..col_count {
-            if col_widths[c] <= 0.0 {
-                col_widths[c] = container.width / col_count as f64;
-            }
-        }
+        // 본문 표와 같이 병합 셀의 선언 폭으로 미지 열 폭을 먼저 푼다.
+        // 컨테이너 균등 폭으로 채우면 뒤의 비례 축소가 정상 단일 셀까지 줄인다.
+        let mut col_widths = self.resolve_column_widths(table, col_count);
 
         // 글상자 내부 표: 셀 너비 합이 컨테이너 폭을 초과하면 비례 축소
         let col_sum: f64 = col_widths.iter().sum();
@@ -1114,6 +1133,7 @@ impl LayoutEngine {
                 .zip(cell.paragraphs.iter())
                 .enumerate()
             {
+                let para_y_before_compose = para_y;
                 // enclosing context가 있으면 글상자 경로 + 표 셀 경로를 합성
                 let cell_ctx = enclosing_ctx.map(|(sec_idx, para_idx, parent_path, table_ci)| {
                     let mut path = parent_path.to_vec();
@@ -1150,7 +1170,7 @@ impl LayoutEngine {
                     composed.lines.len(),
                     sec_for_layout,
                     para_for_layout,
-                    ctx,
+                    ctx.clone(),
                     // [#6630] 첫 문단에 위 여백(저장 vpos 상한)이 있으면 column-top 규칙을 허용해
                     // 정렬 계산(`first_para_lead`)과 같은 값을 두게 한다.
                     !matches!(cell.vertical_align, VerticalAlign::Top)
@@ -1290,6 +1310,113 @@ impl LayoutEngine {
                                     pic_y,
                                 );
                             }
+                        }
+                        Control::Shape(shape) => {
+                            let para_alignment = styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map(|style| style.alignment)
+                                .unwrap_or(Alignment::Left);
+                            let mut shape_y = if shape.common().treat_as_char {
+                                para.line_segs
+                                    .first()
+                                    .map_or(para_y_before_compose, |first_ls| {
+                                        cell_y
+                                            + pad_top
+                                            + hwpunit_to_px(first_ls.vertical_pos, self.dpi)
+                                    })
+                            } else if matches!(
+                                shape.common().vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            ) {
+                                para_y_before_compose
+                            } else {
+                                para_y
+                            };
+                            let mut shape_area = inner_area;
+                            let mut shape_alignment = para_alignment;
+                            if shape.common().treat_as_char {
+                                // Match the gap reserved by paragraph layout. Empty cell lines
+                                // defer TAC placement here, so retain their source-line ownership.
+                                let (shape_x, inline_y) = tree
+                                    .get_inline_shape_position(
+                                        sec_for_layout,
+                                        para_for_layout,
+                                        ctrl_idx,
+                                        ctx.as_ref(),
+                                    )
+                                    .unwrap_or_else(|| {
+                                        let line = super::control_line_seg_index(para, ctrl_idx)
+                                            .unwrap_or(0);
+                                        let mut preceding_width = 0.0;
+                                        let mut line_width = 0.0;
+                                        for &(_, width, ci) in &composed.tac_controls {
+                                            if super::control_line_seg_index(para, ci).unwrap_or(0)
+                                                == line
+                                            {
+                                                let width = hwpunit_to_px(width, self.dpi);
+                                                line_width += width;
+                                                if ci < ctrl_idx {
+                                                    preceding_width += width;
+                                                }
+                                            }
+                                        }
+                                        let align_offset = match para_alignment {
+                                            Alignment::Center | Alignment::Distribute => {
+                                                (inner_area.width - line_width).max(0.0) / 2.0
+                                            }
+                                            Alignment::Right => {
+                                                (inner_area.width - line_width).max(0.0)
+                                            }
+                                            _ => 0.0,
+                                        };
+                                        let y = para.line_segs.get(line).map_or(
+                                            para_y_before_compose,
+                                            |seg| {
+                                                cell_y
+                                                    + pad_top
+                                                    + hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                            },
+                                        );
+                                        (inner_area.x + align_offset + preceding_width, y)
+                                    });
+                                shape_area.x = shape_x;
+                                shape_area.width =
+                                    hwpunit_to_px(shape.common().width as i32, self.dpi);
+                                shape_y = inline_y;
+                                shape_alignment = Alignment::Left;
+                            }
+                            let (table_cell_ctx, shape_parent_path) = match enclosing_ctx {
+                                Some((sec_idx, outer_pi, parent_path, table_ci)) => {
+                                    let mut path = parent_path.to_vec();
+                                    path.push(CellPathEntry {
+                                        control_index: table_ci,
+                                        cell_index: cell_idx,
+                                        cell_para_index: pidx,
+                                        text_direction: cell.text_direction,
+                                    });
+                                    (
+                                        Some((
+                                            sec_idx, outer_pi, table_ci, cell_idx, pidx, ctrl_idx,
+                                        )),
+                                        path,
+                                    )
+                                }
+                                None => (None, Vec::new()),
+                            };
+                            self.layout_cell_shape_with_parent_path(
+                                tree,
+                                &mut cell_node,
+                                shape,
+                                &shape_area,
+                                shape_y,
+                                shape_alignment,
+                                styles,
+                                bin_data_content,
+                                false,
+                                table_cell_ctx,
+                                &shape_parent_path,
+                            );
                         }
                         _ => {}
                     }

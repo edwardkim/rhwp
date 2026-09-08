@@ -522,17 +522,26 @@ fn parse_paragraph(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
+    parse_paragraph_element(e, reader, false)
+}
+
+fn parse_paragraph_element(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+    self_closing: bool,
+) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     // [#4759] 문단-경유 상호재귀(표·글상자·서브리스트) 깊이 상한 — 위 가드 참고.
     // 가드는 큰 본문 프레임을 쌓기 전에 실행한다. 상한 초과 호출이
     // `Paragraph`·`SectionDef` 지역 상태를 먼저 잡으면 기본 스택에서
     // 가드보다 SIGSEGV 가 앞설 수 있다.
     let _depth_guard = SectionDepthGuard::enter()?;
-    parse_paragraph_body(e, reader)
+    parse_paragraph_body(e, reader, self_closing)
 }
 
 fn parse_paragraph_body(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
+    self_closing: bool,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     let mut para = Paragraph::default();
     let mut sec_def: Option<SectionDef> = None;
@@ -593,7 +602,11 @@ fn parse_paragraph_body(
     // `\u{0004}` 와 1:1 대응. 고아 fieldEnd 복원에 사용.
     let mut field_end_attrs: Vec<(u32, u32)> = Vec::new();
 
+    // Empty elements share attributes/finalization but must not consume a sibling.
     loop {
+        if self_closing {
+            break;
+        }
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref ce)) => {
                 let cname = ce.name();
@@ -4246,6 +4259,21 @@ fn parse_shape_shadow_attr(e: &quick_xml::events::BytesStart) -> (u32, u32, i32,
 
 /// `<hp:drawText>` 내부의 `<hp:subList>` → `<hp:p>` 문단을 파싱한다.
 fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result<(), HwpxError> {
+    let content_start = reader.buffer_position();
+    parse_draw_text_body(reader, text_box).map_err(|error| match error {
+        // Some semantic/resource guards also use XmlError. Only an actual XML
+        // reader error inside this area is structural damage; keep other policies.
+        HwpxError::XmlError(message) if reader.error_position() >= content_start => {
+            HwpxError::DrawingTextStructure(message)
+        }
+        other => other,
+    })
+}
+
+fn parse_draw_text_body(
+    reader: &mut Reader<&[u8]>,
+    text_box: &mut TextBox,
+) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     loop {
         let event = reader.read_event_into(&mut buf);
@@ -4297,9 +4325,9 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                     }
                     // `<hp:p/>` 는 내용이 없는 문단이다 — 여는 태그로 보고 문단 파서를
                     // 태우면 다음 `</hp:p>` 까지, 즉 뒤 문단·형제 도형을 삼킨다.
-                    b"p" if !self_closing => {
+                    b"p" => {
                         // subList 내 p를 독립 파싱
-                        let (para, _) = parse_paragraph(ce, reader)?;
+                        let (para, _) = parse_paragraph_element(ce, reader, self_closing)?;
                         text_box.paragraphs.push(para);
                     }
                     b"textMargin" => {
@@ -4322,7 +4350,11 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                     break;
                 }
             }
-            Ok(Event::Eof) => break,
+            Ok(Event::Eof) => {
+                return Err(HwpxError::DrawingTextStructure(
+                    "drawText: unexpected EOF".into(),
+                ));
+            }
             Err(e) => return Err(HwpxError::XmlError(format!("drawText: {}", e))),
             _ => {}
         }

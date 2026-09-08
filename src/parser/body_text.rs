@@ -19,6 +19,8 @@ use super::byte_reader::ByteReader;
 use super::record::Record;
 use super::tags;
 
+mod drawing_text_structure;
+
 use crate::model::control::{Control, UnknownControl};
 use crate::model::document::{RawRecord, Section, SectionDef};
 use crate::model::footnote::FootnoteShape;
@@ -52,12 +54,17 @@ struct ParaTextParts {
 pub enum BodyTextError {
     RecordError(String),
     ParseError(String),
+    /// An owned drawing text area is incomplete; never replace its section with an empty one.
+    DrawingTextStructure(String),
 }
 
 impl std::fmt::Display for BodyTextError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BodyTextError::RecordError(e) => write!(f, "BodyText 레코드 오류: {}", e),
+            BodyTextError::DrawingTextStructure(e) => {
+                write!(f, "그리기 내부 영역 구조 오류: {}", e)
+            }
             BodyTextError::ParseError(e) => write!(f, "BodyText 파싱 오류: {}", e),
         }
     }
@@ -70,6 +77,7 @@ impl std::error::Error for BodyTextError {}
 /// data: 압축 해제된(배포용은 복호화+해제된) 레코드 바이트 스트림
 pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     let records = Record::read_all(data).map_err(|e| BodyTextError::RecordError(e.to_string()))?;
+    drawing_text_structure::validate(&records)?;
 
     let mut section = Section::default();
     let mut idx = 0;

@@ -1,3 +1,5 @@
+// [#6840] 발췌 산출물에서 참조 없는 BinData 를 버린다 — 쪽을 잘라도 파일이 줄지 않던 문제.
+pub(crate) mod bin_data_prune;
 mod clipboard;
 // [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore
 // 필드로 쓰이므로 pub(crate).

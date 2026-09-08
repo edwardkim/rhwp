@@ -1,7 +1,8 @@
 //! 쪽번호 할당 (Issue #353)
 //!
-//! NewNumber 컨트롤은 그 컨트롤의 소유 문단이 페이지에서 **처음 등장**할 때
-//! 1회만 page_number 를 갱신해야 한다. 그 외 페이지는 직전 page_number + 1.
+//! NewNumber 컨트롤은 배치 후 소스 위치로 확정한 페이지에서 1회만
+//! page_number 를 갱신한다. 그 외 페이지는 직전 page_number + 1.
+//! 문단의 첫 등장 규칙은 소스 줄을 결정할 수 없을 때의 fallback이다.
 //!
 //! "처음 등장" 판정 — PartialParagraph/PartialTable 의 분할은 첫 분할만 인정:
 //! - FullParagraph                                : 항상 인정
@@ -19,6 +20,9 @@ pub(crate) struct PageNumberAssigner<'a> {
     new_page_numbers: &'a [(usize, u16)],
     consumed: HashSet<usize>,
     counter: u32,
+    /// production은 배치 후 확정된 쪽 이벤트를 사용한다.
+    targets_are_pages: bool,
+    page_ordinal: usize,
     /// NewNumber 컨트롤이 1건 이상 소비되었는지 여부.
     /// 한컴 호환: NewNumber가 존재하면 첫 발화 전 페이지에는 쪽번호 미표시.
     numbering_started: bool,
@@ -34,9 +38,18 @@ impl<'a> PageNumberAssigner<'a> {
             new_page_numbers,
             consumed: HashSet::new(),
             counter: initial,
+            targets_are_pages: false,
+            page_ordinal: 0,
             numbering_started: false,
             last_restarted: false,
         }
+    }
+
+    /// 배치 후 소스 위치로 해석한 (구역 내 쪽 순번, 새 번호) 이벤트를 사용한다.
+    pub fn new_for_pages(new_page_numbers: &'a [(usize, u16)], initial: u32) -> Self {
+        let mut assigner = Self::new(new_page_numbers, initial);
+        assigner.targets_are_pages = true;
+        assigner
     }
 
     /// 페이지에 쪽번호를 할당하고, 다음 페이지를 위해 카운터를 1 증가시킨다.
@@ -49,7 +62,12 @@ impl<'a> PageNumberAssigner<'a> {
             if self.consumed.contains(&idx) {
                 continue;
             }
-            if Self::para_first_appears(page, nn_pi) {
+            let applies = if self.targets_are_pages {
+                nn_pi == self.page_ordinal
+            } else {
+                Self::para_first_appears(page, nn_pi)
+            };
+            if applies {
                 self.counter = nn_num as u32;
                 self.consumed.insert(idx);
                 self.numbering_started = true;
@@ -58,6 +76,7 @@ impl<'a> PageNumberAssigner<'a> {
         }
         let assigned = self.counter;
         self.counter += 1;
+        self.page_ordinal += 1;
         assigned
     }
 
@@ -99,6 +118,149 @@ impl<'a> PageNumberAssigner<'a> {
             })
         })
     }
+}
+
+/// 소스 컨트롤을 배치된 쪽에 매핑한 1회성 이벤트. 두 조판 경로가 공유한다.
+#[derive(Default)]
+pub(crate) struct PageControlEvents {
+    pub new_numbers: Vec<(usize, u16)>,
+    pub hides: Vec<(usize, crate::model::control::PageHide)>,
+}
+
+impl PageControlEvents {
+    pub fn collect(
+        pages: &[PageContent],
+        paragraphs: &[crate::model::paragraph::Paragraph],
+    ) -> Self {
+        use crate::model::control::Control;
+        let mut by_paragraph: std::collections::HashMap<usize, Vec<(usize, &PageItem)>> =
+            std::collections::HashMap::new();
+        for (page_index, page) in pages.iter().enumerate() {
+            for item in page.column_contents.iter().flat_map(|col| &col.items) {
+                if !matches!(item, PageItem::EndnoteSeparator { .. }) {
+                    by_paragraph
+                        .entry(item.para_index())
+                        .or_default()
+                        .push((page_index, item));
+                }
+            }
+        }
+        let mut events = Self::default();
+        for (pi, para) in paragraphs.iter().enumerate() {
+            for (ci, control) in para.controls.iter().enumerate() {
+                if matches!(
+                    control,
+                    Control::PageHide(_) | Control::NewNumber(_) | Control::Table(_)
+                ) {
+                    let items = by_paragraph.get(&pi).map(Vec::as_slice).unwrap_or(&[]);
+                    // 미배치 NewNumber도 남겨 첫 발화 전 번호 숨김 계약을 보존한다.
+                    let page = control_page(para, ci, items).unwrap_or(usize::MAX);
+                    events.collect_control(control, page);
+                }
+            }
+        }
+        events
+    }
+
+    fn collect_control(&mut self, control: &crate::model::control::Control, page: usize) {
+        use crate::model::control::{AutoNumberType, Control};
+        match control {
+            Control::PageHide(hide) => self.hides.push((page, hide.clone())),
+            Control::NewNumber(number) if number.number_type == AutoNumberType::Page => {
+                self.new_numbers.push((page, number.number));
+            }
+            // #6206: 셀 안 metadata는 외부 표의 첫 배치 쪽에 적용하는 기존 계약 유지.
+            Control::Table(table) => {
+                for cell in &table.cells {
+                    for para in &cell.paragraphs {
+                        for control in &para.controls {
+                            self.collect_control(control, page);
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn item_starts(item: &PageItem) -> bool {
+    match item {
+        PageItem::FullParagraph { .. } | PageItem::Table { .. } | PageItem::Shape { .. } => true,
+        PageItem::PartialParagraph { start_line, .. } => *start_line == 0,
+        PageItem::PartialTable {
+            is_continuation, ..
+        } => !*is_continuation,
+        PageItem::EndnoteSeparator { .. } => false,
+    }
+}
+
+fn control_page(
+    para: &crate::model::paragraph::Paragraph,
+    control_index: usize,
+    items: &[(usize, &PageItem)],
+) -> Option<usize> {
+    let first = items
+        .iter()
+        .find(|(_, item)| item_starts(item))
+        .map(|(page, _)| *page);
+    if para.line_segs.len() < 2 || items.iter().all(|(page, _)| Some(*page) == first) {
+        return first;
+    }
+    // 빈 컨트롤 전용 문단에는 visible char_offsets가 없다. 논리 위치는 PageHide 등을
+    // 0칸으로 세므로 원본 char_count가 증명하는 8-unit 스트림 순서를 사용한다.
+    let positions = if para.text.is_empty()
+        && para.char_offsets.is_empty()
+        && para.char_count as usize >= para.controls.len().saturating_mul(8)
+    {
+        (0..para.controls.len())
+            .map(|ci| (ci as u32).saturating_mul(8))
+            .collect()
+    } else {
+        para.control_utf16_positions()
+    };
+    let source_line = |ci: usize| {
+        let position = *positions.get(ci)?;
+        (0..para.line_segs.len())
+            .rev()
+            .find(|&line| para.line_seg_text_start(line) <= position)
+    };
+    let Some(target_line) = source_line(control_index) else {
+        return first;
+    };
+    // 본문이 분할된 문단은 해당 소스 줄을 가진 fragment가 권위자다.
+    if let Some((page, _)) = items.iter().find(|(_, item)| match item {
+        PageItem::PartialParagraph {
+            start_line,
+            end_line,
+            ..
+        } => (*start_line..*end_line).contains(&target_line),
+        PageItem::FullParagraph { .. } => !para.text.is_empty(),
+        _ => false,
+    }) {
+        return Some(*page);
+    }
+    // 컨트롤 전용 문단에는 본문 fragment가 없으므로 같은 소스 줄에 실제 배치된
+    // 표/도형을 따른다. 분할 표의 continuation은 첫 등장으로 취급하지 않는다.
+    items
+        .iter()
+        .filter_map(|(page, item)| {
+            let ci = match item {
+                PageItem::Table { control_index, .. } | PageItem::Shape { control_index, .. } => {
+                    *control_index
+                }
+                PageItem::PartialTable {
+                    control_index,
+                    is_continuation: false,
+                    ..
+                } => *control_index,
+                _ => return None,
+            };
+            (source_line(ci) == Some(target_line)).then_some((ci.abs_diff(control_index), *page))
+        })
+        .min_by_key(|&(distance, page)| (distance, page))
+        .map(|(_, page)| page)
+        .or(first)
 }
 
 #[cfg(test)]
