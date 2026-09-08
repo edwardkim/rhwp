@@ -108,7 +108,12 @@ fn rotated_frame_node_box(
     let (width, height) = size;
     let center_x = pic_x + pic_width / 2.0;
     let center_y = pic_y + pic_height / 2.0;
-    BoundingBox::new(center_x - width / 2.0, center_y - height / 2.0, width, height)
+    BoundingBox::new(
+        center_x - width / 2.0,
+        center_y - height / 2.0,
+        width,
+        height,
+    )
 }
 
 impl LayoutEngine {
