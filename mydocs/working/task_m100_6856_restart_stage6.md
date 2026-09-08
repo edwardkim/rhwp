@@ -56,6 +56,41 @@ commit에 반영하고 그 commit에서 다시 `--prepare`한 뒤 fmt check·man
 
 ## PR 범위와 보고 경계
 
+### 전체 회귀 1차 결과와 #5797 기대값 정정
+
+`4784ec0a4`에서 전체 lint·manifest check 및 배정 규칙 21개가 통과했다.
+전체 nextest는 컴파일 4분 04초, 시험 317.855초에 **9,247 통과·1 실패·46 skip**으로 종료했다.
+실패는 `issue5797_self_closing_paragraph_does_not_swallow_next_paragraph` 한 건이다.
+이슈 #6856의 집중 시험 및 #6852 보호 시험 30개는 모두 통과했다.
+
+기존 #5797 입력은 첫 도형에 `<p/>`와 `검토/승인` 문단을 순서대로 가진다. 시험 helper가 모든
+문단 텍스트를 `join("\n")`하므로, 승인된 P1의 빈 문단 보존 뒤 결과는 `"\n검토/승인"`이다.
+기존 기대값 `"검토/승인"`은 빈 문단을 버린 결과였다. 실제 뒤 두 형제의 id와 글자는 그대로였다.
+따라서 이번 실패는 뒤 문단 소실 회귀가 아니라 **빈 문단 보존 계약과 이전 기대값의 불일치**다.
+기대 문자열과 설명을 정정하되 trim/filter로 빈 문단을 숨기지 않고 형제 검사도 유지한다.
+제품 source·golden·baseline 원장은 바꾸지 않는다. 정정 뒤 필수 lint와 전체 회귀를 재실행한다.
+
+Native Skia와 Docker WASM은 실패한 전체 회귀 뒤 실행하지 않았고 미실행으로 남겼다.
+1차 실패 로그는 review worktree의 `output/6856/pr-validation/full-nextest-first.log`에 보존한다.
+
+### 최신 대표 출력 확인
+
+제품 코드가 같은 `492bdb3f7`의 workspace debug 바이너리로 A4 HWP/HWPX를 canonical layer SVG로
+내보냈다. 두 출력은 바이트 단위 동일하며 사각형 1개·글상자 2개를 표시했다. PNG를 직접 열어
+한글 label과 실선, 빈 글상자 및 글자 포함 글상자를 확인했다. legacy SVG도 선행 메인테이너 판정본
+`output/6856/identification/a4-hwp-control-codes.svg`와 바이트 단위 동일했다.
+
+- 대표 PNG: `mydocs/pr/assets/issue6856_a4_control_codes.png`.
+- PNG SHA256: `c92adc23dacf6bb36b9d1f48d44afea369b2522a0f4abde1009ea955554d868a`.
+- A4 layer SVG SHA256(두 형식 동일): `38f06fd85f5813db0e9a628c8cac8ad61f14d591adeab96b3725ba074c626078`.
+- 바이너리 SHA256: `89951139972dd4402c13bfdbd4228f9b215c25b3321d33f9b59e45667e980238`.
+- 원본 #6852 HWP/HWPX 5쪽 layer SVG도 동일(`81312df7ceace805dd48154b79d55791f4c506f026d3858befbc7db5ed875e9c`), 각 11쪽·선택 5쪽 overflow 0이었다.
+- 편람 쌍은 열기·9쪽 내보내기에 성공했다. HWP 384쪽/HWPX 382쪽은 이번 실행의 관측값이며
+  포맷 간 전체 출력 동일성이나 한컴 정답 판정을 의미하지 않는다.
+- 동일 0문단 HWP 원본은 최신 CLI `info`에서도 구조 오류로 거부했다.
+
+이 확인은 이미 승인된 조판부호의 유지 검증이며 새로운 PDF fidelity sweep 통과 주장이 아니다.
+
 이번 승인 구현은 소유 내부 영역에 따른 사각형/글상자 식별, 조판부호 소비 통일, HWPX 빈 문단 보존,
 확정적 소유 구조 오류의 문서 열기 전달, HWP 사각형 소유 목록의 0문단 거부다.
 18조합 모델 시험은 한컴 정상 fixture 18개를 확보했다는 뜻이 아니다.
