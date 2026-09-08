@@ -806,6 +806,51 @@ fn row_has_stored_same_vpos_split_signal(table: &crate::model::table::Table, row
         })
 }
 
+/// [#6860] 셀의 첫 한 줄 뒤에서 다음 문단이 같은 0으로 재개하고, 그 다음
+/// 문단부터 정상 전진하는 저장 경계. 모든 문단을 0으로 저장한 입력이나
+/// 개체/빈 문단, 서로 다른 열의 줄은 쪽 경계 증거로 사용하지 않는다.
+fn row_has_stored_cross_paragraph_zero_reset(
+    table: &crate::model::table::Table,
+    row: usize,
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .any(|cell| {
+            let Some(paragraphs) = cell.paragraphs.get(..3) else {
+                return false;
+            };
+            if paragraphs
+                .iter()
+                .any(|para| !para.controls.is_empty() || para.text.trim().is_empty())
+            {
+                return false;
+            }
+            let [first] = paragraphs[0].line_segs.as_slice() else {
+                return false;
+            };
+            let [second] = paragraphs[1].line_segs.as_slice() else {
+                return false;
+            };
+            let Some(third) = paragraphs[2].line_segs.first() else {
+                return false;
+            };
+            [first, second, third].iter().all(|seg| {
+                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && seg.line_height > 0
+                    && seg.column_start == first.column_start
+                    && seg.segment_width == first.segment_width
+            }) && first.vertical_pos == 0
+                && second.vertical_pos == 0
+                && third.vertical_pos > 0
+                && i64::from(third.vertical_pos)
+                    == i64::from(second.line_height) + i64::from(second.line_spacing.max(0))
+        })
+}
+
 /// Native HWP로 저장·재파싱한 뒤에도 남는 "1열 셀을 1×2로 분할"한 표 구조.
 ///
 /// [`crate::model::table::Table::split_cell_into`]는 기존 1열의 다른 셀을 새 2열
@@ -23016,7 +23061,14 @@ impl TypesetEngine {
             let row_split_min_keep_uses_painted_height = strict_painted_bottom_fit
                 || native_hwp5_internal_reset_row_tail
                 || uses_source_frame_tail
-                || native_short_parent_child_splittable;
+                || native_short_parent_child_splittable
+                // [#6860] 문단 경계의 저장 reset도 한컴이 첫 줄을 남긴 증거다.
+                // 24px 내용 + 3.8px 패딩은 25px 최소 표시 높이를 만족한다.
+                // 일반 고아 줄 기준이나 아래의 실제 페이지 예산 검사는 완화하지 않는다.
+                || (st.profile.hwpx_stored_layout()
+                    && mt.allows_row_break_split()
+                    && res.consumed_height > 0.5
+                    && row_has_stored_cross_paragraph_zero_reset(table, r));
             // [#6035] HWPX 저장 사다리가 이 행을 **쪽 경계에서 줄 단위로 나눈
             // 흔적**(셀 문단의 비전진 동일-vpos 연속 seg 쌍, 좌우분할 아님)을
             // 담고 있으면, 완결 유닛 ≥1 컷에 25px 고아 가드를 적용하지 않는다 —

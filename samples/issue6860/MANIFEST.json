@@ -21,6 +21,24 @@
       "referencePdfSha256": "dda5c4b1b26a72238d38b3b6af8a9814ae103b3bb7e52f31dd7477d009e1ece8",
       "referencePdfPageCount": 2,
       "contract": "자리차지(TopAndBottom, vertRelTo=PARA) 표를 앵커한 호스트 문단의 글자 두 줄은 표보다 **위**, 표가 시작하는 쪽(1쪽)에 있어야 하고 마지막 표 조각 뒤에 남지 않는다. 어느 쪽에서도 흐름 항목이 본문(75.6..1084.7)을 넘지 않는다. 정본 1쪽 y=179.8·201.2 두 줄 → 캡션 217.4 → 첫 괘선 247.1 로 같은 차례다. ⚠ 쪽 수는 계약이 아니다 — 절단본이라 rhwp(저장 vertpos 추종)의 문단 블록이 저장 사다리보다 31.9px 아래에 있어 1쪽 표 예산이 줄고 꼬리 한 행이 3쪽으로 넘어간다(rhwp 3쪽 · 정본 2쪽). 원본 문서 104쪽은 수정 전후 불변이다."
+    },
+    {
+      "path": "samples/issue6860/3067979-road-lighting-photometric-hancom2020.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6860",
+      "bytes": 57893,
+      "sha256": "028c3d318e121120ed4b8a71ba11bbb343d724da3563d4133bd354ca4fb61b2a",
+      "derivation": "기존 appendix.hwpx 절단본(8680bcbf2b5c84aef36d3836bf114613da965d747e9b58bd7ef921e2916c2282)을 2026-09-08 한컴 MCP engine 2020에서 HWP로 저장한 뒤 HWPX로 재저장했다. 실제 한컴 제품은 2022, 버전은 12.0.0.4605이다. 원본의 저장 좌표를 유지하는 기존 절단본은 변경하지 않는다.",
+      "lastSavedWith": {
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4605"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/3067979-road-lighting-photometric-hancom2020.pdf",
+      "referencePdfSha256": "d2ef6b035034036f769a94a550efbfaf6a542d14846e16ad88ad3b53c1e59182",
+      "referencePdfPageCount": 2,
+      "contract": "동일 재저장 HWPX와 그 파일에서 생성한 한컴 PDF를 비교한다. 두 쪽을 유지하고 마지막 표 행의 Tilt=<filename> 또는 INCLUDE 또는 NONE 첫 줄은 1쪽에 남으며 2쪽에 중복하지 않는다. 문단 간 저장 vertpos가 0, 0, 다음 한 줄 높이로 이어지는 쪽 경계 증거가 없으면 기존 고아 줄 기준을 유지한다. 기존 절단본과 이 재저장본의 절대 좌표를 동일한 계약으로 취급하지 않는다."
     }
   ]
 }
