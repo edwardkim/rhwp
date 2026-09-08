@@ -138,6 +138,8 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
             if step_name in {
                 "Classify with trusted base implementation",
                 "Evaluate trusted policy and aggregate audit",
+                "Prepare trusted policy input",
+                "Publish exact-head policy status",
             }:
                 marker = f"      - name: {step_name}\n        id: "
                 start = self.workflow.index(marker)
@@ -145,6 +147,29 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
                 self.assertIn(guarded, block)
             else:
                 self.assertIn(marker, self.workflow)
+
+    def test_failure_reporting_is_best_effort_after_status_publication(self) -> None:
+        marker = "      - name: Explain CI failure evidence"
+        report = self.workflow.split(marker, 1)[1]
+        self.assertGreater(self.workflow.index(marker), self.workflow.index("core.setOutput('published', 'true')"))
+        self.assertIn("if: ${{ always() && !cancelled() }}", report)
+        self.assertIn("continue-on-error: true", report)
+        self.assertIn("timeout-minutes: 1", report)
+        self.assertIn("retries: 0", report)
+        self.assertIn("trusted-base/scripts/ci-impact-report.cjs", report)
+        self.assertIn("trusted reporter unavailable", report)
+        self.assertNotIn("core.setFailed", report)
+        self.assertNotIn("createCommitStatus", report)
+        self.assertNotIn("core.setOutput", report)
+        self.assertIn("            scripts/ci-impact-report.cjs\n", self.workflow)
+
+    def test_failure_report_retains_run_job_attempt_and_publish_outcomes(self) -> None:
+        for field in ["id: run.id", "attempt: run.run_attempt", "id: job.id",
+                      "runId: job.run_id", "attempt: job.run_attempt", "number: step.number"]:
+            self.assertIn(field, self.workflow)
+        for stage in ["RESOLVE", "CHECKOUT", "COLLECT", "CLASSIFY", "INPUT", "POLICY", "PUBLISH"]:
+            self.assertIn(f"OUTCOME_{stage}:", self.workflow)
+        self.assertIn("STATUS_PUBLISHED: ${{ steps.publish-status.outputs.published }}", self.workflow)
 
     def test_workers_consume_only_exact_trusted_review_reuse_status(self) -> None:
         for workflow in (self.ci_workflow, self.codeql_workflow, self.render_workflow):

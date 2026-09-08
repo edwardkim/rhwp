@@ -151,6 +151,7 @@ jobs:
           sparse-checkout: |
             scripts/ci-impact-classifier.cjs
             scripts/ci-impact-policy.cjs
+            scripts/ci-impact-report.cjs
             scripts/verify_review_only_merge_resolution.py
           sparse-checkout-cone-mode: false
 
@@ -329,6 +330,8 @@ jobs:
                 }
                 const collected = {
                   run: {
+                    id: run.id,
+                    attempt: run.run_attempt,
                     name: run.name,
                     path: String(run.path || '').split('@')[0],
                     event: run.event,
@@ -344,10 +347,14 @@ jobs:
                   },
                   jobsCollected,
                   jobs: jobs.map((job) => ({
+                    id: job.id,
+                    runId: job.run_id,
+                    attempt: job.run_attempt,
                     name: job.name,
                     status: job.status,
                     conclusion: job.conclusion || '',
                     steps: (job.steps || []).map((step) => ({
+                      number: step.number,
                       name: step.name,
                       status: step.status,
                       conclusion: step.conclusion || '',
@@ -473,6 +480,7 @@ jobs:
           > .ci-impact-classification.json
 
       - name: Prepare trusted policy input
+        id: policy-input
         if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -616,6 +624,7 @@ jobs:
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Publish exact-head policy status
+        id: publish-status
         if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -641,6 +650,7 @@ jobs:
             });
             const livePull = response.data;
             if (livePull.state !== 'open' || livePull.head.sha !== process.env.HEAD_SHA) {
+              core.setOutput('stale', 'true');
               core.info(
                 `Do not publish stale policy status for PR #${process.env.PULL_NUMBER}: `
                 + `resolved=${process.env.HEAD_SHA} live=${livePull.head.sha} state=${livePull.state}.`,
@@ -684,10 +694,63 @@ jobs:
               description: process.env.DESCRIPTION,
               target_url: `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`,
             });
+            core.setOutput('published', 'true');
+            core.setOutput('state', state);
             if (state === 'failure') {
               core.setFailed(
                 process.env.MODE === 'audit'
                   ? `Trusted CI impact audit failed: ${process.env.AUDIT_REASON}`
                   : 'Untrusted head changed the enforcement surface.',
               );
+            }
+
+      # Reporting is best-effort and runs AFTER the authoritative status publication.
+      # The trusted-base helper only reads metadata/logs. It cannot authorize fast-pass.
+      - name: Explain CI failure evidence
+        if: ${{ always() && !cancelled() }}
+        continue-on-error: true
+        timeout-minutes: 1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          ACTIVE: ${{ steps.resolve.outputs.active }}
+          PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
+          HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
+          HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
+          STALE: ${{ steps.publish-status.outputs.stale }}
+          STATUS_PUBLISHED: ${{ steps.publish-status.outputs.published }}
+          PUBLISHED_STATE: ${{ steps.publish-status.outputs.state }}
+          AUDIT_PUBLISH: ${{ steps.policy.outputs.audit_publish }}
+          AUDIT_CONCLUSION: ${{ steps.policy.outputs.audit_conclusion }}
+          DECISION: ${{ steps.policy.outputs.decision }}
+          OUTCOME_RESOLVE: ${{ steps.resolve.outcome }}
+          OUTCOME_CHECKOUT: ${{ steps.checkout-policy.outcome }}
+          OUTCOME_COLLECT: ${{ steps.collect.outcome }}
+          OUTCOME_CLASSIFY: ${{ steps.classify.outcome }}
+          OUTCOME_INPUT: ${{ steps.policy-input.outcome }}
+          OUTCOME_POLICY: ${{ steps.policy.outcome }}
+          OUTCOME_PUBLISH: ${{ steps.publish-status.outcome }}
+          REPORT_TOKEN: ${{ github.token }}
+        with:
+          retries: 0
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            // This fixed fallback must work even if resolve/checkout/helper loading failed.
+            const failed = ['RESOLVE', 'CHECKOUT', 'COLLECT', 'CLASSIFY', 'INPUT', 'POLICY', 'PUBLISH']
+              .filter((stage) => process.env[`OUTCOME_${stage}`] === 'failure'
+                && !(stage === 'PUBLISH' && process.env.STATUS_PUBLISHED === 'true'));
+            try {
+              const { createReport, loadInput } = require(path.join(
+                process.env.GITHUB_WORKSPACE, 'trusted-base/scripts/ci-impact-report.cjs',
+              ));
+              const report = await createReport(loadInput(process.env, process.env.GITHUB_WORKSPACE), {
+                token: process.env.REPORT_TOKEN,
+              });
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, report.summary);
+            } catch {
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+                '\n### CI 실패 진단\n\n상세 미확인: trusted reporter unavailable. 기존 CI 판정은 유지됩니다.\n'
+                + (failed.length ? `Controller 오류 단계: ${failed.join(', ')}\n` : '원본 job 로그 확인이 필요합니다.\n'));
             }

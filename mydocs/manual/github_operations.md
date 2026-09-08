@@ -378,6 +378,33 @@ verify-only run은
 않는다. 따라서 promotion preflight 성공을 정식 tag의 package publish 성공으로 해석하지 않고,
 다음 release의 exact tag run에서 `release-publish-evidence`와 네 공개 채널을 별도로 확인한다.
 
+### 7.7 CI Impact Policy Controller 실패 진단 읽기 (#6899)
+
+Controller가 빨간색이라고 해서 Controller 코드 자체의 장애인 것은 아니다. 선행 CI·CodeQL·Render Diff의
+실패를 정확한 head에 게시한 뒤 의도적으로 실패 처리하는 경우도 있다. `CI 실패 진단` 요약은 기존 정책
+판정 뒤에 실행되는 보조 보고이며, 아래를 구분한다.
+
+- **선행 검증 실패**: 원본 workflow run/attempt → 실패 worker job → 실패 step을 따라 확인한다.
+  `Build & Test` 같은 집계 job은 worker와 구분하며 다중 실패 중 하나를 근본 원인으로 단정하지 않는다.
+- **Controller 내부 단계 오류**: resolve·checkout·collect·policy·status 게시 등 실제 실패 단계를 확인한다.
+  이미 failure status를 정상 게시한 경우의 publish 실패는 API 장애로 분류하지 않는다.
+- **증적 미확인/상세 수집 제한**: API 권한·로그 부재·attempt 불일치·크기/시간 상한 등 사유를 확인하고
+  제공된 원본 job 링크로 이동한다. 추출되지 않은 오류를 제품 결함으로 추정하지 않는다.
+- **오래된 이벤트/비대상**, **검증 대기/성공**, **정책 차단**은 각각 별도로 표시한다.
+
+테스트명·오류 코드·baseline 신규 검출 건수 등 제한된 오류 형태만 추출하고 원문 전체 로그·문서 내용은
+복제하지 않는다. `baseline 없음`은 새 샘플에서 기존 결함이 드러난 경우도 있으므로 회귀 확정이 아니다.
+GitHub 로그 다운로드 host는 확인된 `*.blob.core.windows.net`의 단일 storage account 호스트만 허용하며,
+GitHub 인증 토큰은 storage 요청에 전달하지 않는다. 다른 host는 임의 허용하지 않고 미확인으로 처리한다.
+
+정상·pending·skip 경로의 추가 진단 API는 0회다. 실패 진단은 전체 24회/45초, 요청당 5초,
+상세 실패 job 6개, 로그 job당 1 MiB/전체 6 MiB, metadata 응답당 2 MiB, summary 16 KiB 상한이다.
+reporter 실패는 기존 verdict를 바꾸지 않는다. runner 강제 종료·전체 job timeout에서는 요약 자체가
+남지 않을 수 있으므로 Actions 기본 오류와 원본 로그를 확인한다.
+
+이 절은 #6899 구현 후보의 동작 계약이다. devel 반영만으로 default-branch Controller 배포가 끝난 것은
+아니며, main YAML과 trusted-base helper가 모두 준비된 live 실행에서 요약을 확인한 뒤 적용 완료로 판정한다.
+
 ## 8. required check와 branch protection
 
 required context 이름은 외부 계약이다. job 이름 변경, workflow 분리, path skip, matrix 이름 변경은 YAML
