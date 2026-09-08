@@ -1,7 +1,7 @@
 # #6856 결과보고서 — 소유 구조 기반 사각형·글상자 식별
 
 - Issue: #6856. 날짜: 2026-09-08.
-- 상태: 전체 로컬 검증·PR 준비 완료. 보고서 및 원격 push·PR 생성 승인 대기. 이슈 close 미수행.
+- 상태: 전체 로컬 검증·PR 준비 완료, 메인테이너의 원격 push·PR 생성 승인 접수. 이슈 close 미수행.
 - [승인 계획](../plans/task_m100_6856_restart_impl.md) · [전체 검증 기록](../working/task_m100_6856_restart_stage6.md) · [PR 제출 초안](../plans/task_m100_6856_pr.md).
 - 제품 source 후보 `492bdb3f7`, 시험 정정 포함 검증 후보 `bc0bc00e4`.
 
@@ -68,6 +68,13 @@ HWP 오류는 일반/lenient 문서 열기, HWPX 오류는 section·master page�
 
 ## 범위와 잔여 한계
 
+게시 승인 뒤 최신 `devel=a7de17ff8`의 PR #6889 변경을 기존 review worktree에서 합쳐 재검증했다.
+통합 tree `e68d40647229f6a57a3471a984be20a0461afcdd`에서 fmt·세 Clippy·workspace build·manifest,
+전체 nextest **9,266 통과·0 실패·46 skip**, Native Skia **4,112 / 2 / 4개 통과**, Docker WASM
+최적화 빌드(6분 48초)와 실제 WASM 스모크가 모두 통과했다. A4 SVG 유지·0문단 HWP 거부도 확인했다.
+원격 변경을 기본 작업 branch에 merge/rebase하지 않았으며 추가 제품·시험 보정은 없다.
+명령·입력·해시는 Stage 6의 게시 승인 뒤 통합 재검증 절에 기록했다. 기존 Studio WASM은 유지했다.
+
 1. 초기 이슈 본문의 A 선 억제 정책 정정은 이번 승인된 재착수 범위에 포함하지 않았다. 해당 조건을
    바꾸거나 옳다고 확정하지 않았다. PR에는 `Refs #6856`을 사용하고 close 전 이슈 범위를 현행화한다.
 2. 0문단 거부는 확인된 HWP 사각형 소유 목록에 한정한다. HWPX·표·캡션의 모든 0 개수나 손상
@@ -80,6 +87,6 @@ HWP 오류는 일반/lenient 문서 열기, HWPX 오류는 section·master page�
 
 ## 남은 절차
 
-전체 로컬 게이트를 성공했으므로 메인테이너에게 결과 및 원격 push·Open PR 생성 승인을 요청한다.
+전체 로컬 게이트와 최신 base 통합 검증을 통과했으므로 승인된 원격 push·Open PR 생성을 진행한다.
 PR 번호를 받은 뒤 번호 기반 self-review 기록과 최신 GitHub CI 확인을 진행한다. 이 보고서만으로
 원격 이슈 현행화·close, GitHub comment·review·merge를 실행하지 않는다.

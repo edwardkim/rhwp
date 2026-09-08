@@ -132,3 +132,35 @@ default profile 실제 실행·종료 코드 0과 테스트 수를 확인했다.
 - [결과보고서](../report/task_m100_6856_report.md) 및 [PR 제출 계획](../plans/task_m100_6856_pr.md)을
   준비했다. 게시용 본문은 `output/6856/pr-validation/pr-body.md`에 별도 준비하며 원격 push·PR 생성
   승인을 기다린다. 이슈 현행화·close·comment·merge는 실행하지 않았다.
+
+## 게시 승인 뒤 최신 devel 통합 재검증 (2026-09-08)
+
+메인테이너가 원격 push·PR 생성을 승인했다. 직전 fetch에서 `upstream/devel`이
+`a7de17ff8ed911727fa5ff129945b341c79f8c7d`로 전진한 것을 확인했다. PR #6889의 기여자 통합으로
+renderer·문서 편집·시험·fixture가 추가됐으며 `svg.rs`, `web_canvas.rs`가 이번 변경 파일과 겹친다.
+겹치는 수정은 그라데이션 좌표 처리이며 조판부호 변경과 다른 구간이지만, 이전 검증의 제품 입력과
+더 이상 같지 않으므로 검증 결과를 그대로 재사용하지 않았다.
+
+기본 작업 branch는 `ac22d309b`에 유지하고, clean한 기존 `rhwp-review-6856`에서 그 head를
+checkout한 뒤 `git merge --no-commit --no-ff a7de17ff8`로 통합했다. 자동 병합은 충돌 없으며
+검증 tree는 `e68d40647229f6a57a3471a984be20a0461afcdd`다. 새 branch·worktree는 만들지 않았고
+원격 변경을 우리 source commit에 합쳐 제출하지 않는다.
+
+- 같은 고정 Cargo target과 threads 8, `--locked` 조건으로 순차 재검증했다.
+- fmt/check, native·WASM32·workspace all-target Clippy, workspace build 모두 통과했다.
+- manifest prepare/check 및 배정 규칙 21개가 통과했다. formatter에 의한 추가 source 수정은 없다.
+- 전체 nextest: 컴파일 4분 29초, 시험 337.163초, **9,266 통과·0 실패·46 skip**.
+  선행 후보의 9,248개보다 18개 늘어난 것은 최신 devel의 추가 시험이다.
+- 통합본 debug CLI의 A4 HWP legacy SVG는 메인테이너 판정본과 바이트 동일했다. HWPX layer SVG도
+  선행 검증본과 동일했다. 동일한 0문단 HWP는 구조 오류로 거부했다.
+- Native Skia lib 4,112 통과·13 ignored, missing picture 2 통과, direct PDF 4 통과.
+  focused 실행의 184/169 skip은 같은 suite의 선택하지 않은 시험이다.
+- 통합본 Docker WASM은 wasm-opt 포함 6분 48초에 통과했다(컴파일 4분 01초).
+  기본 checkout에서 기존 `.env.docker`·image·named volume을 사용하되
+  `docker compose --env-file .env.docker run --rm -v /home/edward/mygithub/rhwp-review-6856:/app wasm`으로
+  `/app`만 통합 검증 worktree로 지정했다. 기본 checkout의 `pkg/`와 Studio 서버는 바꾸지 않는다.
+- `node output/6856/pr-validation/merge-wasm-smoke.mjs`로 실제 새 WASM을 초기화해 A4 HWP/HWPX의
+  1쪽·사각형 1개·글상자 2개, 부호 OFF, 동일 손상 HWP의 오류 거부를 모두 확인했다.
+  통합 WASM SHA256: `3e4b1e60112933cc3c0f70b18981301ef2e0c2927bd0d9a15c4a687bde1efcdc`.
+- 통합 후 제품·시험·baseline 추가 수정은 없다. 기본 branch에는 이 재검증의 문서 기록만 추가한다.
+- 추가 로그: review worktree의 `output/6856/pr-validation/merge-*.log`.
