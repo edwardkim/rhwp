@@ -17970,19 +17970,59 @@ impl TypesetEngine {
             }
             forced
         };
+        // [#6854] 같은 걸음을 **문서가 스스로 선언한 쪽나누기**로만 다시 판정한다.
+        // `paragraph_forces_page_boundary_after` 는 저장 사다리에서 **추론한** 경계도
+        // 참으로 보는데, 그 추론이 맞아도 흐름이 실제로 거기서 끊기지는 않는 문서가
+        // 있다 — 그런 곳에서 아래 완화를 걸면 고아 쪽은 그대로 두고 넘침만 하나 는다
+        // (코퍼스 실측 7건). 선언된 `column_type` 은 그런 어긋남이 없다.
+        let next_para_declares_page_break = {
+            let mut idx = para_idx + 1;
+            let mut declared = false;
+            while let Some(next_para) = paragraphs.get(idx) {
+                if matches!(
+                    next_para.column_type,
+                    ColumnBreakType::Page | ColumnBreakType::Section
+                ) {
+                    declared = true;
+                    break;
+                }
+                let is_empty = next_para.text.trim().is_empty() && next_para.controls.is_empty();
+                if !is_empty {
+                    break;
+                }
+                idx += 1;
+            }
+            declared
+        };
         // 본문 높이를 바꾸지 않는 컨트롤(각주/미주)만 허용 — 표/그림/글상자가 있으면
         // 줄 단위 split/배치 규칙이 달라지므로 제외.
         let only_note_controls = para
             .controls
             .iter()
             .all(|c| matches!(c, Control::Footnote(_) | Control::Endnote(_)));
+        // [Task #1537] 원래 대상 — 폰트 치환 drift 로 꼬리 한 줄이 흘러넘치는 **글자 있는**
+        // 여러 줄 문단.
+        let font_drift_tail = !para.text.trim().is_empty() && fmt.line_heights.len() >= 2;
+        // [#6854] 같은 고아 쪽이 **잉크 없는 빈 문단**으로도 생긴다. 78494 `pi=86` 은
+        // 글자가 없는 한 줄짜리 문단인데 8쪽을 **2.3px** 넘겨(953.6+20.0 vs 971.3) 혼자
+        // 9쪽을 열고, 바로 다음 `pi=87` 이 명시적 쪽나누기라 그 쪽에 더는 아무것도
+        // 안 들어온다 — 꼬리말 `- 9 -` 만 있는 빈 쪽이 되고 이후 전 쪽이 +1 밀린다.
+        //
+        // 빈 문단은 하단 여백으로 흘려도 **그려지는 것이 없다** — 넘침이 잉크가 되지
+        // 않으므로 `#1537` 이 걱정하던 bleed 가 성립하지 않는다. 초과 상한은 그대로
+        // "한 줄 미만"을 쓴다(새 문턱을 만들지 않는다).
+        //
+        // ⚠ 여기서는 **선언된** 쪽나누기만 인정한다 — 사다리에서 추론한 경계까지 받으면
+        // 쪽 이득 없이 넘침만 는다.
+        let inkless_tail = para.text.trim().is_empty()
+            && fmt.line_heights.len() == 1
+            && next_para_declares_page_break;
         if st.col_count == 1
             && forced_page_break_line.is_none()
             && next_para_forces_break
-            && !para.text.trim().is_empty()
             && only_note_controls
             && !st.current_items.is_empty()
-            && fmt.line_heights.len() >= 2
+            && (font_drift_tail || inkless_tail)
         {
             let first_line_advance = fmt.line_advance(0);
             // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를
