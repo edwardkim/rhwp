@@ -1,0 +1,53 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6873,
+  "title": "짝 없는 UTF-16 서로게이트가 h2x 에서 사라진다",
+  "entries": [
+    {
+      "path": "samples/issue6873/19211507-chungju-paid-restroom-certificate.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6873",
+      "originalFilename": "19211507_[별지 제2호서식] 유료화장실 신고필증(충주시 공중화장실 등의 설치와 관리 조례).hwp",
+      "bytes": 47104,
+      "sha256": "03da409ce69894bdfcb8a0b0f00b85803dd599586198b7b0c64e850268904bcb",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.0.0.11808"
+      },
+      "referenceEngine": "2020",
+      "referenceHwpx": "hwpx/19211507-chungju-paid-restroom-certificate-2020.hwpx",
+      "referenceHwpxBytes": 43780,
+      "referenceHwpxSha256": "aae30dd14c59d20e7aa4317a9f26c11cc2270d6cdad543269fdab2aaae415cf3",
+      "referencePdf": "pdf/19211507-chungju-paid-restroom-certificate-2020.pdf",
+      "referencePdfBytes": 44906,
+      "referencePdfSha256": "d18abdec891664e3288f94fc65cf9c2ddbe21e320e665b65d565e77a45579ace",
+      "referencePdfStatus": "2026-09-08 MCP convert 로 engine 2020 산출. 1쪽. 이 축의 정본은 PDF 가 아니라 같이 담은 HWPX 다 — 한글 자신의 h2x 산출이 이 이슈가 묻는 바로 그 값을 준다. PDF 는 형상 확인용이며, 그 안에서 이 글자는 ToUnicode 가 U+FFFF 로 빠지는 기호 글리프로 인쇄된다.",
+      "contract": "`PARA_TEXT` 마지막이 짝 없는 상위 서로게이트 `DB80` 다. 정본 HWPX 는 그 자리를 `□`(U+25A1) 로 적는다 — `<hp:t>충    주    시    장 </hp:t><hp:t>□</hp:t>`. 종전 rhwp 파서는 `char::from_u32` 가 `None` 을 줘 글자를 통째로 버렸고 h2x 에서 사라졌다.",
+      "originalIdentityStatus": "2026-09-08 코퍼스 `ordin_downloads/충주시` 원문과 SHA-256 이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
+    },
+    {
+      "path": "samples/issue6873/18096141-gyeongju-gas-subsidy-plan.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6873",
+      "originalFilename": "18096141_별지 제2호서식 사업계획서(경주시 도시가스 공급사업 보조금 지원에 관한 조례).hwp",
+      "bytes": 12800,
+      "sha256": "1712e862c6aacccd53e385c8fda8a470f9b2f41b7514f9458c7256bfeb293912",
+      "lastSavedWith": {
+        "product": null,
+        "version": "9.6.0.2365"
+      },
+      "referenceEngine": "2020",
+      "referenceHwpx": "hwpx/18096141-gyeongju-gas-subsidy-plan-2020.hwpx",
+      "referenceHwpxBytes": 32286,
+      "referenceHwpxSha256": "5c8147d37c28d4f106f9e08ce6c6f0eeacb035885815220fe59971d6e882d744",
+      "referencePdf": "pdf/18096141-gyeongju-gas-subsidy-plan-2020.pdf",
+      "referencePdfBytes": 39249,
+      "referencePdfSha256": "1e6e3282f44cd01534ec05f83541da0eaec8c069d4178e755bd05bd2c5f6fb2c",
+      "referencePdfStatus": "2026-09-08 MCP convert 로 engine 2020 산출. 1쪽. PDF 안에서 네 글자가 모두 ToUnicode U+FFFF 로 빠지는 기호 글리프다 — 인쇄에는 나오고 텍스트로는 못 꺼낸다.",
+      "contract": "네 개 항목 머리글이 짝 없는 하위 서로게이트 `DFDA` 다. 정본 HWPX 는 넷 다 `□`(U+25A1) 로 적는다 — `<hp:t> □   신 청 인</hp:t>`. 같은 문서의 형제 항목이 대조군이 된다.",
+      "originalIdentityStatus": "2026-09-08 코퍼스 `ordin_downloads/경주시` 원문과 SHA-256 이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
+    }
+  ]
+}
