@@ -1,6 +1,5 @@
 //! #6856: 18가지 유무 동치류. 정상 한컴 fixture 18건을 뜻하지 않는다.
 use rhwp::model::control::{AutoNumber, Control};
-use rhwp::model::image::Picture;
 use rhwp::model::paragraph::Paragraph;
 use rhwp::model::shape::{Caption, RectangleControlKind, RectangleShape, TextBox};
 use rhwp::model::style::{FillType, ImageFill};
@@ -29,7 +28,7 @@ fn eighteen_variations_have_two_rectangles_and_sixteen_textboxes() {
                 if mask & 2 != 0 {
                     paragraph
                         .controls
-                        .push(Control::Picture(Box::new(Picture::default())));
+                        .push(Control::Picture(Box::default()));
                 }
                 if mask & 4 != 0 {
                     paragraph

@@ -1,0 +1,74 @@
+# #6856 PR 본문 초안 — 게시 전 검증 대기
+
+- Issue: #6856. 아직 PR을 생성하지 않았으며 번호를 예측하지 않는다.
+- 제안 제목: `fix: identify rectangle controls by owned text structure (#6856)`
+- base: `devel`, head: `task_m100_6856_baseline`.
+- 예정 트리야지: assignee `edwardkim`, milestone `v1.0.0`, 기존 labels `bug`, `rendering`, `test`.
+- 로컬 검증 현황: [Stage 6](../working/task_m100_6856_restart_stage6.md).
+
+---
+
+## 변경 요약
+
+사각형 기하와 글상자 소유 구조를 별개의 축으로 처리한다. 내부 문단 영역이 없는 사각형은
+`[사각형]`, 영역이 있는 사각형은 내용이 비어 있거나 그림만 있어도 `[글상자]`로 식별한다.
+문자 수·배경 이미지·선 속성으로 종류를 추측하지 않는다.
+
+- IR의 기존 `Option<TextBox>`를 단일 근거로 사용하고, SVG·HTML·Canvas·paint의 조판부호 소비를 통일한다.
+- 원본 컨트롤과 내부 렌더 노드의 중복 조판부호를 방지한다. 기하·선 억제 정책은 바꾸지 않는다.
+- HWPX 그리기 내부 `<p/>`의 문단 속성과 빈 문단을 보존하고 뒤 형제를 소비하지 않는다.
+- 확정적 소유 영역 손상은 타입 있는 오류로 문서 열기까지 전달한다. 기존의 다른 복구 정책은 유지한다.
+- 한컴에서 손상 판정을 받은 HWP 사각형 소유 0문단 목록을 거부한다. 목록 없는 사각형과
+  빈 문단 1개가 있는 글상자는 허용한다. 이 규칙을 HWPX·표·캡션의 0 개수 필드로 확대하지 않는다.
+
+## 관련 이슈와 범위
+
+Refs #6856. [승인된 재착수 계획](../plans/task_m100_6856_restart_impl.md)에 따른다.
+원격 이슈 초기 본문의 A 선 억제 조건 정정까지 완료했다는 의미는 아니다. 해당 조건은 이번 PR에서
+변경하지 않으며, 최신 승인 범위와 이슈 본문의 차이는 close 전 별도로 현행화해야 한다.
+
+18조합은 구조 식별의 모델 동치류이며 18개의 한컴 정상 문서가 아니다. 실제 한컴 A4 쌍 및
+편람 HWP/HWPX 쌍을 내부 합성 오류 시험과 구분한다. 새 sample·PDF·golden·baseline을 추가하거나
+기존 원본 파일을 변경하지 않는다.
+
+## 테스트
+
+- 변경 범위: Rust parser/model/renderer/paint 및 integration 원본 시험.
+- 제품·시험 검증 후보: `492bdb3f75`.
+- 최신 확인 base: `91147aec33`, 충돌 없는 통합 tree: `2763cf48762211a494c86eaf519db2f0e89e4f8e`.
+- 선행 집중 검증: 30개 통과. 전체 게이트의 대체 증적이 아니며 Stage 6에서 정식 suite를 재검증한다.
+- 전체 lint·nextest·Native Skia·Docker WASM: **진행 중, 전체 통과로 게시하지 않음**.
+- 새 integration source는 `tests/cases/`에만 포함한다. generated suite·manifest 및 target은 제외한다.
+- 기존 `src/**`의 테스트 본문, Studio source, npm/editor, workflow, Cargo 입력은 변경하지 않는다.
+
+## 시각 근거와 한계
+
+메인테이너는 A4 쌍의 조판부호 식별을 통과 판정했다. 별도로 `a4-zero-paragraph.hwp`는 한컴에서
+파일 손상 판정을 받았으며 rhwp도 동일 입력을 구조 오류로 거부하는 것을 확인했다.
+이 두 판정과 전체 문서 조판·한컴 호환성의 전면 통과는 구분한다.
+최종 제품의 대표 출력 경로·동일성 확인 결과는 검증 완료 후 채운다.
+
+## 성능 영향
+
+HWP 검증기는 이미 해석한 레코드를 순차 검사하고 소유 깊이 스택을 사용한다. 선언된 문단 수만큼
+메모리를 할당하지 않으며 원본 파일을 다시 읽는 전수 파싱을 추가하지 않는다.
+런타임 처리 시간이 증가할 가능성은 있고 동일 환경 전후 시간은 별도 계측하지 않았다.
+전체 회귀 실행 시간은 제품 성능 비교값이 아니다.
+
+---
+
+## 승인 후 실행할 명령 — 아직 실행하지 않음
+
+최종 검증 결과와 제출 head를 일치시키고 최신 devel의 충돌 여부를 재확인한 뒤, 원격 push와 PR 생성
+각각의 승인을 받은 경우에만 실행한다. 아래 본문의 대기 항목을 완료 결과로 정리한 이후 사용한다.
+
+```bash
+git push upstream HEAD:task_m100_6856_baseline
+gh pr create --repo edwardkim/rhwp --base devel --head task_m100_6856_baseline \
+  --title 'fix: identify rectangle controls by owned text structure (#6856)' \
+  --body-file <게시용-본문.md> --assignee edwardkim --milestone v1.0.0 \
+  --label bug --label rendering --label test
+```
+
+이 초안의 운영용 머리말·명령 절은 게시용 본문에서 제외한다. 번호가 채번되면 해당 번호의 archive
+self-review 문서를 작성한다. PR 생성·이슈 현행화·comment·close는 이 문서 작성으로 승인되지 않는다.
