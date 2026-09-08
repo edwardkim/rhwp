@@ -1521,7 +1521,12 @@ pub(crate) fn resolve_intra_run_right_tab(
     let Some(tab_idx) = chars.iter().rposition(|c| *c == '\t') else {
         return (full_width, layout_positions);
     };
-    if chars[tab_idx + 1..].iter().collect::<String>().trim().is_empty() {
+    if chars[tab_idx + 1..]
+        .iter()
+        .collect::<String>()
+        .trim()
+        .is_empty()
+    {
         return (full_width, layout_positions);
     }
     // inline_tabs 가 LEFT 를 명시하면 대상이 아니다 (`resolve_last_tab_pending` 과 같은 규칙).

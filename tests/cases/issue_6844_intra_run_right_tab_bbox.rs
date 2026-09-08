@@ -97,9 +97,7 @@ fn issue_6844_toc_page_numbers_share_one_right_edge() {
             let tail = run_text(run).trim_end();
             !tail.is_empty() && tail.chars().all(|ch| ch.is_ascii_digit() || ch == '\t')
         })
-        .map(|run| {
-            run["x"].as_f64().expect("런 x") + run["w"].as_f64().expect("런 폭")
-        })
+        .map(|run| run["x"].as_f64().expect("런 x") + run["w"].as_f64().expect("런 폭"))
         .collect();
     right_edges.sort_by(|a, b| a.partial_cmp(b).expect("유한값"));
     assert!(
