@@ -2,7 +2,7 @@
 
 - PR: [#6858](https://github.com/edwardkim/rhwp/pull/6858).
 - Issue: [#6852](https://github.com/edwardkim/rhwp/issues/6852).
-- 작성일: 2026-09-08. **접수 완료, CI 및 정식 self-review 대기.**
+- 작성일: 2026-09-08. **최신 제출 HEAD CI 성공 확인·self-review 승인. 리뷰 기록 push·병합은 미실행.**
 
 ## 라우팅과 접수
 
@@ -20,7 +20,7 @@
 | 전체 로컬 검증 후보 | `393401e5a` (그 뒤 최초 제출까지 문서만 변경) |
 | 최신 base | `7138fe784`, fetch·merge-tree clean |
 | 규모 | 최초 제출 9 files, +755/-23. 이 접수 기록 추가 전 수치 |
-| 상태 | Open, MERGEABLE / BLOCKED, CI 진행 중 |
+| 상태 | 접수 당시 Open, MERGEABLE / BLOCKED. 아래 self-review 시점에는 MERGEABLE / CLEAN |
 | milestone | `v1.0.0` |
 | labels | `bug`, `rust`, `rendering`, `layout`, `hwp5`, `hwpx` |
 
@@ -47,6 +47,32 @@ head SHA·CI·merge 상태는 변할 수 있으며 최종 판단 시 다시 조�
 - clipping controlset 외부 원본 92개가 이 환경에 없어 해당 gate 통과는 주장하지 않는다.
   기존 선 보정 A의 정당성, 전체 문서의 한컴 완전 일치도 주장하지 않는다.
 
+## 최신 HEAD 확인과 self-review
+
+검토한 원격 HEAD는 `7887e5c6683e26a469f4bb114c4e8559411b5949`다.
+전체 로컬 검증 후보 `393401e5a` 이후에는 mydocs 문서만 변경되었다.
+최신 `upstream/devel`은 `7138fe7848a0cda157bce33f73c9d9d7e977209a`이며
+fetch 후 merge-tree clean, GitHub에서도 MERGEABLE / CLEAN을 확인했다.
+
+- [Full CI](https://github.com/edwardkim/rhwp/actions/runs/34173615768): 성공.
+  Lint, Native Skia, frontend package, build/test archive와 Build & Test를 확인했다.
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34173615743): JS·Python·Rust 성공.
+- [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34173615671),
+  [adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34173615778),
+  [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34173615760): 성공.
+- CI Impact Policy도 성공이며 의도된 skipped job 외 실패·대기 check가 없었다.
+- 소스 검토: 일반 흰 사각형의 B 억제만 제거했고, 기존 A는 글상자가 있는 경로에 남는다.
+  선 없음의 실선 강제, 기하·그림자 변경 또는 API/UI 확장은 없다.
+- 회귀 검토: 실제 HWP/HWPX와 선 없음·비채움·빈/공백 글상자·기존 A를 검사한다.
+  SVG clipPath 사각형은 대상에서 제외한다. IR 원장은 수정 전후 동일한 네 경로만 등록했다.
+- 검증 후보의 기존 review worktree와 target를 재사용하여 집중 회귀를 재실행했다.
+  `node scripts/run-rust-test.mjs issue_6852_group_rectangle_stroke -- --cargo-profile release-test
+  --target-dir /home/edward/mygithub/rhwp-6812-review-target --no-fail-fast` 결과는
+  **6 PASS / 0 FAIL**, 필터 제외 180건이다.
+  로컬 로그: `output/6852/stage3/self-review-focused.log`.
+  제품 코드 동일성과 최신 Full CI 성공을 근거로 전체 회귀는 다시 반복하지 않았다.
+- 새 integration 원본만 제출하며 generated suite·manifest·Cargo 파생물과 private corpus는 없다.
+
 ## 시각 증거와 후속 기록 계획
 
 renderer와 실제 HWPX fixture를 변경하므로 시각 검증 대상이다. 메인테이너는 원본 5쪽 앞쪽
@@ -59,14 +85,19 @@ renderer와 실제 HWPX fixture를 변경하므로 시각 검증 대상이다. �
 
 본인 PR이므로 contributor 감사 대신 실제 수정·판정·잔여 범위를 기록한다. 게시 자체는 별도 승인 대상이다.
 메인테이너 시각 수용 범위는 원본 5쪽이며, 일반 흰 사각형 stroke 외 다른 SVG 불변 및 11쪽 유지가 근거다.
-최종 self-review에서 해당 SVG의 대표 PNG를 `mydocs/pr/assets/pr_6858_page5_after.png`로 보존하고
-직접 열어 대상 식별 가능 여부를 확인한다. **현재 이 PNG는 아직 생성하지 않았다.**
-생성된 실제 asset과 hash를 기록한 뒤에만 merge 후 `<merge-commit-sha>` 고정 raw URL로 게시한다.
+해당 SVG를 `rsvg-convert --zoom 2 --background-color white`로 래스터화하여
+대표 PNG를 [pr_6858_page5_after.png](../assets/pr_6858_page5_after.png)에 보존했다.
+직접 열어 소제목 앞 흰 사각형의 위·왼쪽 선과 뒤쪽 그림자를 식별할 수 있음을 확인했다.
+PNG는 1588×2246이며 SHA-256은
+`7c5a18a392821e639efd46fecbf2213529eb96d6bd4481c5bf6c915ef34fafe0`이다.
+이는 수용한 SVG의 보존용 이미지이지 독립적인 한컴 비교나 새 픽셀 계측이 아니다.
+원격 게시 시에는 merge 후 `<merge-commit-sha>` 고정 raw URL을 사용한다.
 비교 방법 정본 링크와 픽셀 점수 미측정·전체 fidelity 보증 아님을 함께 명시한다.
 
 ## 최종 판정
 
-**머지 보류.** 현재는 접수 기록이며 최신 PR HEAD의 CI가 진행 중이고 정식 self-review는 아직 수행하지 않았다.
-이 판정은 새 제품 결함을 발견했다는 뜻이 아니다. CI 성공 확인과 self-review, 대표 시각 asset의
-장기 보존 기록, 메인테이너 병합 승인 후에만 병합 단계로 진행한다.
+**Self-review 승인.** 수용한 최소 수정 범위에서 병합을 막을 새 결함을 발견하지 않았다.
+이 판정은 #6856의 IR 구조 보존이나 기존 A 조건을 승인하는 것이 아니다.
+리뷰 문서·대표 PNG는 로컬 커밋으로 남기며 아직 원격에 반영하지 않았다.
+남은 절차는 승인된 기록 push → 새 원격 HEAD checks 확인 → 별도 승인된 병합이다.
 승인 없이 merge·issue close·브랜치 삭제는 하지 않는다. 일반 merge commit 방식을 유지한다.

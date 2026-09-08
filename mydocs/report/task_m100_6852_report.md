@@ -2,7 +2,7 @@
 
 - Issue: [#6852](https://github.com/edwardkim/rhwp/issues/6852).
 - 작성일: 2026-09-08.
-- 상태: **결과보고 승인·이슈 본문 정정·원격 push·PR #6858 등록 완료. CI·self-review·병합 대기.**
+- 상태: **PR #6858 최신 제출 HEAD의 CI 성공·self-review 완료. 리뷰 기록 push·병합 대기.**
 - 검증 후보: `393401e5a`; 제품 변경은 `232edb22b`, 집중 시험 후보는 `9f4f451b7`과 같다.
 - 계획: [수행계획](../plans/task_m100_6852.md).
 - 증거: [Stage 2](../working/task_m100_6852_stage2.md), [Stage 3](../working/task_m100_6852_stage3.md).
@@ -88,6 +88,10 @@
 정정했다. `aa3cc0bfd`를 원격 작업 브랜치에 push하고 [PR #6858](https://github.com/edwardkim/rhwp/pull/6858)을
 devel 대상으로 등록했다. 담당자·milestone·관련 라벨도 적용했다. 게시 후 API로 본문·metadata를 재확인했다.
 
-남은 순서는 최신 PR head CI 완료 → self-review → 승인된 merge commit 병합 → 실제 devel 포함 확인과
-#6852 close다. [접수 기록](../pr/archives/pr_6858_review.md)에 승인 경계와 현재 한계를 기록한다.
-IR 확장을 재편입하지 않으며 필요한 대표 시각 증적의 장기 보존은 PR 기록 절차를 따른다.
+제출 HEAD `7887e5c66`의 Full CI·CodeQL 및 관련 checks 성공을 확인하고 self-review를 완료했다.
+제품 코드 동일성을 확인했으며 집중 회귀 재실행도 6건 모두 통과했다.
+[리뷰 기록](../pr/archives/pr_6858_review.md)에 승인 판정·CI 링크·대표 5쪽 PNG와 한계를 남긴다.
+
+남은 순서는 리뷰 기록·PNG의 승인된 push → 새 원격 HEAD checks 확인 → 별도 승인된 merge commit
+병합 → 실제 devel 포함 확인과 #6852 close다. 병합·이슈 종료는 수행하지 않았다.
+IR 확장은 재편입하지 않는다.
