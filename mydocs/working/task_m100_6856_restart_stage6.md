@@ -3,12 +3,12 @@
 - Issue: #6856. 2026-09-08 메인테이너의 “전체 검증과 PR 준비를 하세요” 지시에 따른다.
 - 선행 결과: [Stage 5](task_m100_6856_restart_stage5.md).
 - 기준 계약: [재착수 구현계획](../plans/task_m100_6856_restart_impl.md), 특히 §6.5의 HWP 0문단 손상 거부.
-- 제품·시험 후보: `492bdb3f75` (`task_m100_6856_baseline`).
+- 최종 제품·시험 검증 후보: `bc0bc00e4` (`task_m100_6856_baseline`). 제품 source는 `492bdb3f7`과 같다.
 - 이 승인은 로컬 전체 검증과 PR 초안 준비이며 원격 push·PR 생성·merge·issue close는 포함하지 않는다.
 
 ## 검증 기준과 원격 정합
 
-`upstream/devel`을 fetch해 `91147aec33`을 확인했다. 후보와 공통 조상은 `b5eee9c50`이며,
+착수 시 `upstream/devel`을 fetch해 `91147aec33`을 확인했다. 최초 후보와 공통 조상은 `b5eee9c50`이며,
 후보 고유 7커밋·devel 고유 4커밋이다. devel 추가 변경은 `.github/codeql/rust-pr.yml`,
 오늘할일, PR #6877 리뷰 기록뿐이고 제품 source·test·Cargo 변경은 없다.
 `git merge-tree --write-tree upstream/devel HEAD`는 충돌 없이 종료했으며 통합 tree는
@@ -31,14 +31,14 @@
 | 검증 | 상태 |
 | --- | --- |
 | 전체 fmt 및 fmt check | 통과, 원본 파일 포맷 변경 없음 |
-| native root Clippy (`--locked`, `-D warnings`) | 통과, 52.65초 |
-| WASM32 library Clippy | 최초 후보 통과, 48.57초 |
-| workspace build / all-target Clippy | build 통과 1분 26초, all-target에서 새 시험 `clippy::box_default` 1건 검출 |
-| manifest check / 배정 규칙 계약 시험 | 대기 |
-| release-test 전체 nextest | 대기 |
-| Native Skia 3종 | 대기 |
-| Docker WASM / 최신 산출물 확인 | 대기 |
-| 대표 시각 산출물·문서 정합 | 대기 |
+| native root Clippy (`--locked`, `-D warnings`) | 최종 후보 통과 |
+| WASM32 library Clippy | 최종 후보 통과 |
+| workspace build / all-target Clippy | 최종 후보 통과, 최초 실패·정정은 아래 기록 |
+| manifest check / 배정 규칙 계약 시험 | 통과 / 21개 통과 |
+| release-test 전체 nextest | `bc0bc00e4`에서 9,248 통과·0 실패·46 skip, 컴파일 1분 06초·시험 309.428초 |
+| Native Skia 3종 | lib 4,112 통과·13 ignored, missing picture 2 통과, direct PDF 4 통과 |
+| Docker WASM / 최신 산출물 확인 | 표준 최적화 빌드 통과, 새 WASM 실행 스모크 통과 |
+| 대표 시각 산출물·문서 정합 | A4 판정본 동일성·최신 PNG 확인, 링크 검사 통과 |
 
 위 대기 항목을 통과하기 전 PR 준비 완료로 보고하지 않는다. 실패 시 원인과 후보 귀속을 먼저 확인하며,
 실패를 피하기 위한 baseline 변경·테스트 제외·오류 무시는 하지 않는다.
@@ -70,7 +70,13 @@ commit에 반영하고 그 commit에서 다시 `--prepare`한 뒤 fmt check·man
 기대 문자열과 설명을 정정하되 trim/filter로 빈 문단을 숨기지 않고 형제 검사도 유지한다.
 제품 source·golden·baseline 원장은 바꾸지 않는다. 정정 뒤 필수 lint와 전체 회귀를 재실행한다.
 
-Native Skia와 Docker WASM은 실패한 전체 회귀 뒤 실행하지 않았고 미실행으로 남겼다.
+P1 구현 시 기존 #5797 기대값과의 정합성 점검을 누락했다. 이번 전체 검증에서 이를 발견해 정정했다.
+재실행 후보 `bc0bc00e4`는 native·WASM32·workspace lint, manifest check·규칙 21개와 전체
+nextest 9,248개가 모두 통과했다. 46개 skip은 기존 nextest 설정의 제외이며 통과 건수에 합산하지 않았다.
+nextest 0.9.137에서 권장 0.9.140 안내 및 CI 전용 `report-skipped` 설정 경고가 있었으며,
+default profile 실제 실행·종료 코드 0과 테스트 수를 확인했다. 경고를 없애려고 도구·설정은 바꾸지 않았다.
+
+1차 실패 직후에는 Native Skia와 Docker WASM을 실행하지 않았고 미실행으로 남겼다.
 1차 실패 로그는 review worktree의 `output/6856/pr-validation/full-nextest-first.log`에 보존한다.
 
 ### 최신 대표 출력 확인
@@ -103,3 +109,26 @@ Native Skia와 Docker WASM은 실패한 전체 회귀 뒤 실행하지 않았고
 기존 조판부호 시각 판정 통과와 0문단 파일의 한컴 손상 판정은 메인테이너 근거다.
 새 parser 검증 뒤의 정상 지정 샘플·출력 유지와 전체 회귀는 별도로 기록한다.
 미실행 성능 측정, 전체 한컴 호환성 또는 코퍼스 전수 정답 검증을 통과로 확대하지 않는다.
+
+## 최종 완료 기록
+
+- Native Skia lib는 root 3,930개와 내부 crate 182개가 통과했고 기존 ignored는 13개다.
+  missing picture 2개와 direct PDF 4개도 통과했다. 각 focused 실행의 188/168 skipped는 필터로
+  선택하지 않은 같은 suite의 시험 수이지 이슈 회귀를 새로 제외한 것이 아니다.
+- native 묶음 종료 후 기본 checkout에서 `docker compose --env-file .env.docker run --rm wasm`을
+  실행했다. 기존 이미지·named volume·환경 파일을 재사용했다. 컴파일 3분 41초, wasm-opt 포함
+  전체 6분 22초에 종료 코드 0이었다. host native WASM으로 대체하지 않았다.
+- 새 `pkg/rhwp_bg.wasm`: 10,359,673 bytes,
+  SHA256 `e2fcd65cc84dc758621711ee3b95ed264e0cda3d977ad39c916474d156c4f7ce`.
+- `node output/6856/pr-validation/wasm-smoke.mjs`로 새 WASM을 직접 초기화해 A4 HWP/HWPX의
+  1쪽·사각형 1개·글상자 2개, 표시 OFF 때 부호 없음, 실제 0문단 손상 파일의 오류 거부를 확인했다.
+  이 실행은 Node의 WASM 스모크이며 Studio 마우스 상호작용 재검증으로 부풀리지 않는다.
+- 기존 7700 Studio 서버는 유지했다. `/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm`의 HTTP
+  수신 바이트 SHA256이 새 WASM 파일과 같았다. 프런트엔드 source·dist는 수정하지 않았다.
+- 종료 전 `upstream/devel`을 다시 fetch해 `91147aec33` 유지와 PR 미생성을 확인했다.
+  `bc0bc00e4`의 최신 base 통합 tree는 `73077c707c8fe270bef039648e9c361bd4904a75`, 충돌 없음이다.
+- source/test 검증 이후 변경은 결과보고서·Stage 6·PR 제출 계획뿐이다. 검증 입력·baseline은 같다.
+  generated suite·manifest는 review worktree의 ignored 산출물이고 tracked 변경·stage는 없다.
+- [결과보고서](../report/task_m100_6856_report.md) 및 [PR 제출 계획](../plans/task_m100_6856_pr.md)을
+  준비했다. 게시용 본문은 `output/6856/pr-validation/pr-body.md`에 별도 준비하며 원격 push·PR 생성
+  승인을 기다린다. 이슈 현행화·close·comment·merge는 실행하지 않았다.
