@@ -259,12 +259,22 @@ pub struct ResolvedImageFill {
     pub bin_data_id: u16,
     /// 이미지 채우기 모드
     pub fill_mode: ImageFillMode,
-    /// 밝기
+    /// [`crate::model::style::ImageFill::brightness`] 그대로 — 이진 순서다(화면 `contrast`).
     pub brightness: i8,
-    /// 명암
+    /// [`crate::model::style::ImageFill::contrast`] 그대로 — 이진 순서다(화면 `bright`).
     pub contrast: i8,
     /// 그림 효과
     pub effect: ImageEffect,
+}
+
+impl ResolvedImageFill {
+    /// 화면 순서의 `(bright, contrast)`.
+    ///
+    /// [`crate::model::style::ImageFill::display_brightness_contrast`] 와 같은 계약이다 —
+    /// 이 구조체는 `ImageFill` 의 두 필드를 순서 그대로 옮겨 담는다(#6895).
+    pub const fn display_brightness_contrast(&self) -> (i8, i8) {
+        (self.contrast, self.brightness)
+    }
 }
 
 impl Default for ResolvedBorderStyle {

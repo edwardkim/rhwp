@@ -2525,13 +2525,18 @@ impl LayoutEngine {
                 };
 
                 let img_id = tree.next_id();
+                // [#6895] `ImageNode` 는 화면 순서를, `ImageFill` 은 이진 순서를 담는다.
+                // HWPX 파서가 `hc:img` 를 정규화하게 되었으므로(그 전에는 이 축만 안 했다)
+                // 여기서 되돌린다. HWP5·HWP3 도형 채움은 종전부터 이진 순서였고 이 자리가
+                // 맞바꾸지 않아 색조가 반대로 그려지고 있었다.
+                let (img_bright, img_contrast) = img_fill.display_brightness_contrast();
                 let img_node = RenderNode::new(
                     img_id,
                     RenderNodeType::Image(ImageNode {
                         fill_mode: Some(img_fill.fill_mode),
                         original_size,
-                        brightness: img_fill.brightness,
-                        contrast: img_fill.contrast,
+                        brightness: img_bright,
+                        contrast: img_contrast,
                         effect: match img_fill.effect {
                             1 => crate::model::image::ImageEffect::GrayScale,
                             2 => crate::model::image::ImageEffect::BlackWhite,
