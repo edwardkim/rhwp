@@ -71,10 +71,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let Self {
             context_current,
             definitions,
-            brush_only_rop_sequence: _,
+            brush_only_rop_sequence,
             elements,
             ..
         } = self;
+
+        let (definitions, elements) = brush_only_rop_sequence.finish(definitions, elements);
 
         // [Task #860] WMF binary 의 SetWindowExt 가 actual element 의 bbox 보다 작은 경우
         // (예: HWP3 sample14 의 WMF 가 1189 인데 image y+height=2304) viewBox 가 element
@@ -191,6 +193,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
             .run(
                 &mut self.definitions,
                 &mut self.brush_only_rop_sequence,
@@ -265,6 +271,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
             .run(
                 &mut self.definitions,
                 &mut self.brush_only_rop_sequence,
@@ -339,6 +349,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
             .run(
                 &mut self.definitions,
                 &mut self.brush_only_rop_sequence,
@@ -427,6 +441,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
             .run(
                 &mut self.definitions,
                 &mut self.brush_only_rop_sequence,
@@ -478,6 +496,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
             .run(
                 &mut self.definitions,
                 &mut self.brush_only_rop_sequence,
