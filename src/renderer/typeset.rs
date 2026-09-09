@@ -21433,32 +21433,24 @@ impl TypesetEngine {
             let table_bottom = v_off_px + table_total_height;
             st.current_height += pre_height.max(table_bottom);
         } else if is_visible_para_float {
-            let resolved = super::float_placement::ParagraphFloatPlacement::from_stored_host(
-                para,
-                table,
-                ctrl_idx,
-                para_start_height
-                    + if para_start_height > 0.0 {
-                        fmt.spacing_before
-                    } else {
-                        0.0
-                    },
-                table_total_height,
-                self.dpi,
-            );
+            // 통째 배치의 fit 판정에서 확정한 결과를 그대로 소비한다.
+            // 이월 뒤에는 이전 단의 원점으로 배치를 재생성하지 않는다.
+            let resolved = st
+                .paragraph_float_placements
+                .get(&(para_idx, ctrl_idx))
+                .copied();
             let v_off_px = hwpunit_to_px(signed_vertical_offset, self.dpi);
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-            let table_top = if signed_vertical_offset > 0 {
+            let table_top = if let Some(placement) = resolved {
+                placement.table_top
+            } else if signed_vertical_offset > 0 {
                 // [#6879] 세로 기준점은 앵커 줄이다 — layout 이 같은 값을 더하므로
                 // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다. layout 과 **같은**
                 // 게이트(TAC 형제 유무)를 써야 배치와 예약이 갈리지 않는다.
                 let anchor_offset_px = crate::renderer::layout::tac_sibling_float_anchor_offset_px(
                     para, table, ctrl_idx, self.dpi,
                 );
-                let stored_top = resolved.map_or(
-                    para_start_height + anchor_offset_px + outer_top_px + v_off_px,
-                    |placement| placement.table_top,
-                );
+                let stored_top = para_start_height + anchor_offset_px + outer_top_px + v_off_px;
                 // [#2439] 같은 visible host 의 첫 표가 offset=0이면 flow 를 전진시키지만
                 // exclusion 은 만들지 않는다. 후행 양수-offset 표의 저장 상단이 그 표
                 // 내부에 있으면 한컴은 앞 표 아래로 밀어 전체 높이를 보존한다. 저장
@@ -24975,13 +24967,48 @@ impl TypesetEngine {
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
             st.defer_host_line_item_para = Some(para_idx);
         }
-        if st.current_height + whole_fit_table_total <= available
+        let whole_placement_height =
+            if let Some((source_top, source_bottom)) = saved_table_source_frame {
+                source_bottom - source_top
+            } else if let Some(advance) = single_row_object_height_advance {
+                advance
+            } else if is_para_topbottom_float(&table.common)
+                && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
+            {
+                ft.effective_height
+            } else {
+                table_total
+            };
+        let resolved_host_placement = para_has_non_whitespace_text(para)
+            .then(|| {
+                super::float_placement::ParagraphFloatPlacement::from_stored_host(
+                    para,
+                    table,
+                    ctrl_idx,
+                    placement_para_start_height
+                        + if placement_para_start_height > 0.0 {
+                            fmt.spacing_before
+                        } else {
+                            0.0
+                        },
+                    whole_placement_height,
+                    self.dpi,
+                )
+            })
+            .flatten();
+        let legacy_whole_fits = st.current_height + whole_fit_table_total <= available
             || fits_after_overlay_shapes
             || single_row_object_height_advance.is_some()
             || declared_table_whole_fits
             || saved_host_line_after_stack_fits
-            || saved_table_source_frame.is_some()
-        {
+            || saved_table_source_frame.is_some();
+        // 예약 구간의 하단으로 fit을 판정한다. current_height는 앵커 줄이
+        // 아니므로 여기에 표 높이만 더하면 뒤 줄의 앵커 거리가 예산에서 빠진다.
+        if resolved_host_placement.map_or(legacy_whole_fits, |p| p.occupied_bottom <= available) {
+            if let Some(placement) = resolved_host_placement {
+                st.paragraph_float_placements
+                    .insert((para_idx, ctrl_idx), placement);
+            }
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
                 eprintln!(
@@ -25003,17 +25030,7 @@ impl TypesetEngine {
                 table,
                 fmt,
                 placement_para_start_height,
-                if let Some((source_top, source_bottom)) = saved_table_source_frame {
-                    source_bottom - source_top
-                } else if let Some(advance) = single_row_object_height_advance {
-                    advance
-                } else if is_para_topbottom_float(&table.common)
-                    && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
-                {
-                    ft.effective_height
-                } else {
-                    table_total
-                },
+                whole_placement_height,
                 is_first_placed,
                 is_last_placed,
                 ft.strict_following_plain_text_fit,

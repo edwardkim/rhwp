@@ -2351,6 +2351,7 @@ impl LayoutEngine {
                         false,
                         false,
                         false,
+                        None,
                     );
                 }
             }
@@ -3121,6 +3122,7 @@ impl LayoutEngine {
                     false,
                     false,
                     false,
+                    None,
                 );
                 if table_bottom > max_table_bottom {
                     max_table_bottom = table_bottom;
@@ -3177,6 +3179,7 @@ impl LayoutEngine {
                 false,
                 false,
                 false,
+                None,
             );
             if table_bottom > max_table_bottom {
                 max_table_bottom = table_bottom;
@@ -7475,6 +7478,7 @@ impl LayoutEngine {
                                     false,
                                     false,
                                     false,
+                                    None,
                                 );
                                 // 스킵 마커 등록 (별도 Table PageItem에서 중복 렌더 방지)
                                 tree.set_inline_shape_position(
@@ -8546,6 +8550,7 @@ impl LayoutEngine {
                                         false,
                                         false,
                                         false,
+                                        None,
                                     );
                                 }
                                 tree.set_inline_shape_position(

@@ -158,3 +158,52 @@ fn unproven_source_coordinates_do_not_supply_a_stored_plan() {
         ParagraphFloatPlacement::from_stored_host(&para, &table, 0, 0.0, 100.0, 96.0).is_none()
     );
 }
+
+#[test]
+fn shorter_body_does_not_hide_table_overflow_by_moving_it_over_host_text() {
+    // 직접 구성한 IR의 영역 경계 검사다. 한컴에서 저장한 별도 샘플이 아니다.
+    for reduction in [6000, 12000, 18000] {
+        let mut core = core();
+        let mut document = core.document().clone();
+        document.sections[0].section_def.page_def.margin_bottom += reduction;
+        core.set_document(document);
+        let mut table_fragments = 0;
+        for page in 0..core.page_count() {
+            let tree = core.build_page_render_tree(page).expect("영역 변경 후 조판");
+            let mut items = Vec::new();
+            body_items(&tree.root, &mut items);
+            let host_bottom = items.iter().filter_map(|n| match &n.node_type {
+                RenderNodeType::TextLine(line) if line.para_index == Some(1) =>
+                    Some(n.bbox.y + n.bbox.height),
+                _ => None,
+            }).fold(0.0_f64, f64::max);
+            for node in &items {
+                if matches!(&node.node_type, RenderNodeType::Table(t)
+                    if t.para_index == Some(1) && t.control_index == Some(0)) {
+                    table_fragments += 1;
+                    assert!(node.bbox.y >= host_bottom - 0.1,
+                        "영역 축소 {reduction}, 쪽 {page}: 본문 끝 {host_bottom}, 표 {}", node.bbox.y);
+                }
+            }
+        }
+        assert!(table_fragments > 0, "영역 축소로 표가 사라지면 안 된다");
+    }
+}
+
+#[test]
+fn reflowed_host_does_not_use_stale_stored_line_coordinates() {
+    // 저장 줄 캐시가 없는 편집 상태를 직접 구성한다. 파일을 변조해 저장하지 않는다.
+    let mut core = core();
+    let mut document = core.document().clone();
+    document.sections[0].paragraphs[1].invalidate_layout_inputs();
+    core.set_document(document);
+    let tree = core.build_page_render_tree(0).expect("호스트 재조판");
+    let mut items = Vec::new();
+    body_items(&tree.root, &mut items);
+    let host: Vec<_> = items.iter().filter(|n| matches!(&n.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(1))).collect();
+    assert!(!host.is_empty());
+    let (top, _) = table(&items, 1, 0);
+    let bottom = host.iter().map(|n| n.bbox.y + n.bbox.height).fold(0.0_f64, f64::max);
+    assert!(top >= bottom, "재조판된 본문 끝 {bottom}, 표 상단 {top}");
+}

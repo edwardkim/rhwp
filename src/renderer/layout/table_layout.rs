@@ -2428,6 +2428,7 @@ impl LayoutEngine {
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
     ) -> f64 {
         if table.cells.is_empty() {
             if depth == 0 {
@@ -2628,6 +2629,7 @@ impl LayoutEngine {
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
                             false,
+                            None,
                         );
 
                         // The unwrapped child determines the minimum visual content height, but it
@@ -2970,7 +2972,10 @@ impl LayoutEngine {
 
         // inline_x_override가 있으면 외부에서 inline 위치를 계산했으므로 x/y 기준은 유지한다.
         // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
-        let flow_table_y = if inline_x_override.is_some() {
+        let flow_table_y = if let Some(table_top) = resolved_table_top {
+            // typeset에서 fit과 예약까지 확정한 표 상단은 다시 해석하지 않는다.
+            table_top
+        } else if inline_x_override.is_some() {
             y_start + inline_top_caption_offset
         } else {
             let computed_y = self.compute_table_y_position(
@@ -6900,6 +6905,7 @@ impl LayoutEngine {
                                     false,
                                     clamp_header_negative_para_offset,
                                     false,
+                                    None,
                                 );
                                 inline_x += tac_om_l + tac_w + tac_om_r;
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
@@ -7066,6 +7072,7 @@ impl LayoutEngine {
                                 false,
                                 clamp_header_negative_para_offset,
                                 false,
+                                None,
                             );
                             if !hwpx_nested_behind_text_overlay {
                                 // [#5702] 어울림(Square/Tight/Through) 중첩표는 글이 옆으로

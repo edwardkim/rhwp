@@ -3042,6 +3042,7 @@ impl LayoutEngine {
                                             false,
                                             clamp_header_negative_para_offset,
                                             false,
+                                            None,
                                         )
                                     };
                                     let visible_table_h = mixed_nested_split
