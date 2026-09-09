@@ -29,3 +29,16 @@
 2. 사용자 승인 후 `review/6883-6909-20260909`를 원본 저장소 branch로 push하고 `devel` 대상 통합 PR을 만든다.
 3. 통합 PR의 최신 head CI에서 `Build & Test`, lint/WASM, Native Skia를 확인한다.
 4. CI 녹색 뒤 사용자의 병합 승인에 따라 병합하고, 별도 `post_merge.md` 절차로 merge SHA와 comment 계획을 기록한다.
+
+## Merge 후 확정 기록
+
+- 통합 PR [#6944](https://github.com/edwardkim/rhwp/pull/6944)는 `2026-09-09T08:54:54Z`에 merge되었으며 merge commit은 [`74d0a68b74919761cc30343f7511dbc5d0fe32d3`](https://github.com/edwardkim/rhwp/commit/74d0a68b74919761cc30343f7511dbc5d0fe32d3)이다.
+- 병합 직전 `44b2c1def8dc43ff4bd4dfcce7264dfa725eb8a5`의 필수 CI가 모두 green이었고, merge SHA가 `upstream/devel`의 조상임을 확인했다.
+- `pdf/synth_cell_enter_table_growth-2020.pdf`와 `mydocs/pr/assets/pr_6883_6909_20260909/`의 대표 PNG 두 장만 영구 증적으로 보존한다. 원시 sweep 출력은 PR 범위 밖 중간 산출물이므로 제외한다.
+- 원 PR #6883/#6909에는 #6944 수용 사실을 게시한 뒤 superseded로 close한다. 이슈 #6882는 close하고, #6806은 잔여 범위 때문에 OPEN으로 유지한다.
+
+## Merge 후 contributor PR comment 계획
+
+- #6883: 통합 merge SHA, green CI, Hancom 2020 기준 PDF와 대표 PNG 링크, fixture 범위를 게시한다.
+- #6909: 통합 merge SHA, green CI와 focused test 3/3, #6806 OPEN 유지 사유를 게시한다.
+- #6882: 해결 근거를 게시한 뒤 close한다. #6806: 이번 하위 범위만 해결됐음을 게시하고 OPEN 상태를 유지한다.

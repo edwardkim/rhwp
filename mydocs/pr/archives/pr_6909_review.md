@@ -37,3 +37,16 @@
 ## 판정
 
 코드 수준의 차단 결함은 발견하지 못했다. 누적 통합 PR 생성은 가능하며, 최종 GitHub 승인과 병합은 통합 head의 CI가 녹색인 상태에서 진행한다.
+
+## Merge 후 확정 기록
+
+- 원 PR #6909의 변경은 통합 PR [#6944](https://github.com/edwardkim/rhwp/pull/6944)로 수용되었고, merge commit은 [`74d0a68b74919761cc30343f7511dbc5d0fe32d3`](https://github.com/edwardkim/rhwp/commit/74d0a68b74919761cc30343f7511dbc5d0fe32d3)이다.
+- 통합 head `44b2c1def8dc43ff4bd4dfcce7264dfa725eb8a5`의 필수 CI는 모두 성공했다. 로컬 검토에서 PR #6909 관련 focused test 3/3도 통과했다.
+- 이슈 #6806은 `original_width`/`original_height` 보존이라는 이번 하위 범위는 해결됐지만, 기존 메인터너 기록의 잔여 resize 경로 때문에 계속 OPEN으로 유지한다.
+- 원 contributor PR #6909은 수용 경로와 이슈 범위 제한을 설명한 뒤 superseded로 close한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 게시 대상: PR #6909과 이슈 #6806.
+- 게시 순서: 이 아카이브 기록을 담은 문서 전용 후속 PR이 `devel`에 merge된 뒤, #6909에 통합 merge SHA와 CI/focused-test 결론을 남긴다. 이어서 #6806에 이번 수용 범위와 OPEN 유지 사유를 기록한다.
+- 코멘트에는 #6909 원 head가 직접 merge된 것이 아니라 #6944에 cherry-pick 수용되었다는 점과, 이슈 전체 해결을 주장하지 않는다는 점을 명시한다.
