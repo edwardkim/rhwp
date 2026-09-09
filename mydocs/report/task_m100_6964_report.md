@@ -101,3 +101,12 @@ Rust/WASM/Studio source 무변경이므로 Rust 전체 회귀·lint와 레이아
 자체 저장 Blob을 외부 입력처럼 자동 여는 문제와 같은 다운로드 이벤트가 겹쳐 중복 처리되는
 문제는 구분한다. 전자는 기존 뷰어 외에 저장본 뷰어를 추가하고, 후자가 겹치면 추가 생성도
 중복될 수 있다. 사용자의 과거 “2개”가 전체 탭 수인지 추가 탭 수인지는 단정하지 않는다.
+
+
+## Draft PR 제출
+
+사용자의 명시 승인 후 upstream 작업 branch에 push하고 [PR #6966](https://github.com/edwardkim/rhwp/pull/6966)를 devel 대상으로 draft 생성했다.
+[작성자 검토 기록](../pr/archives/pr_6966_review.md)을 같은 PR에 포함한다. 최초 head는
+`53e3e701b0656468198f7d102c0077032332163e`이며, 이후 기록 commit도 같은 branch에 push한다.
+생성 후 API에서 base/head/draft와 한글 본문을 재확인했다. CI는 작성 시점 실행 중이며,
+ready 전환·merge·issue close·배포는 수행하지 않았다.

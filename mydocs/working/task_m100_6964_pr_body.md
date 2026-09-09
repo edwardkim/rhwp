@@ -24,3 +24,17 @@ Closes #6964
 첫 browser API 호출은 기존처럼 이벤트 전달 중 시작하고, 같은 ID의 후속 이벤트만 기다리도록
 보정했다. 이 호출 시점 계약을 테스트로 고정했고 새 Firefox 프로필 3회가 연속 통과했다.
 Firefox 내부 원인을 단정하지 않는다. OS 네이티브 저장 대화상자는 검증하지 않았다.
+
+## 제출 기준
+
+- 검증한 code commit: `5de285adbfcf9e52b5e03c0ca6da750ec931714d`
+- 최초 제출 head: `53e3e701b0656468198f7d102c0077032332163e` (code 검증 이후 변경은 `mydocs/` 기록뿐)
+- 최신 devel `0d36da409`와 merge-tree 충돌 없음.
+- 변경 범위: 확장 JavaScript·회귀 테스트·작업 문서. Rust/WASM/Studio source와 CI 설정은 변경하지 않았다.
+- [x] 변경 범위의 로컬 검증과 실제 브라우저 검증을 수행했다.
+- [x] `git diff --check`와 최신 base 결합을 확인했다.
+- 캡슐은 문서 편집 산출물 생성 작업이 아니므로 미첨부.
+
+사용자 승인에 따라 draft로 제출한다. ready 전환·merge·배포는 별도 단계다.
+
+관련 PR: #6965. [작성자 검토 기록](https://github.com/edwardkim/rhwp/blob/codex/issue-6964-download-duplicates/mydocs/pr/archives/pr_6966_review.md).
