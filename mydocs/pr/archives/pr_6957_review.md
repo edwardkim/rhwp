@@ -1,5 +1,15 @@
 # PR #6957 self-review
 
+## 통합 merge 확정 기록 (2026-09-09)
+
+- [통합 PR #6957](https://github.com/edwardkim/rhwp/pull/6957)은 2026-09-09 14:41:08 UTC에 일반 merge로 통합됐다. merge SHA는 `d43937e0de7cf465185d23ce6b06fa47e7824e57`, 승인한 PR head는 `4e422a57d6775eb2f11dffb70b37632823659829`다.
+- merge 직전 최신 head는 `MERGEABLE / CLEAN`이었다. [Build & Test 및 Rust/Lint/Native Skia](https://github.com/edwardkim/rhwp/actions/runs/34363253946), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34363253722), [CodeQL 언어별 분석](https://github.com/edwardkim/rhwp/actions/runs/34363253980), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34363253961), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34363253986)가 성공했다. GHAS CodeQL check는 `NEUTRAL`, [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/34365098894)는 `SUCCESS`였고 대기·실패 항목은 없었다.
+- review·오늘할일·최종 PDF 2개·대표 PNG 5개는 코드 PR head에 이미 포함되어 merge됐다. source PR review 3개는 이번 문서-only 후속 처리에서 archive로 이동한다. 오늘할일에는 새 운영 항목을 반복 추가하지 않고 이동된 링크만 보정한다.
+- 리베이스 후 추가 로컬 테스트·PDF 출력은 사용자 지시대로 생략했다. 이번 GitHub Full CI 성공은 이전 로컬 검증과 별도 근거다. devel push의 post-merge CI는 PR head CI와 구분하며 이 기록에서 성공을 선언하지 않는다.
+- 후속 문서 PR 완료와 최종 devel sync 뒤 #6872/#6941을 해결 범위 내에서 종료하고 #6949/#6952를 통합 대체로 종료할 계획이다. #6865는 회색조·아이콘·영문 배너 잔여를 기록하고 OPEN을 유지한다. 이 절은 comment 게시 전 확정 기록이며 실제 게시 permalink와 종료 상태는 원 PR/이슈에 남긴다.
+- 이번 작업 전용 local·remote branch 정리는 사용자 승인 범위다. 기여자 `planet6897/rhwp`의 source branch, 기본 작업공간과 공유 `target/pr-review`는 보존한다.
+- 아래 Open/CI 대기/미게시 표기는 작성 당시 이력이다. 현재 통합 결과는 이 절이 우선하며 최종 판정의 기술적 범위와 잔여는 변경하지 않는다.
+
 ## 최종 판정
 
 **최종 판정: 메인터너 보정 후 수용 가능.** #6949/#6952의 원 head를 그대로 승인하는 것이 아니라,
@@ -34,8 +44,8 @@
 - #6952 원 head: `4529c2a0c0104a2783b44a5b798a7badce628042`.
   각주/미주 USER_CHAR 왕복을 보존하고 #6940의 명시적 빈 접미 처리를 유지했다.
   메인터너 회귀 fixture의 charPrIDRef 오류를 정상 참조 등록으로 수정했다.
-- source PR의 발견 사항·이슈별 범위는 [#6949 review](../pr_6949_review.md),
-  [#6952 review](../pr_6952_review.md)를 따른다. 관련 이슈는 #6865, #6872, #6941이다.
+- source PR의 발견 사항·이슈별 범위는 [#6949 review](pr_6949_review.md),
+  [#6952 review](pr_6952_review.md)를 따른다. 관련 이슈는 #6865, #6872, #6941이다.
 - 소스·테스트·증적을 바꾸지 않는 문서 후속 commit으로 이 self-review와 오늘할일을 PR에 포함한다.
 
 ## 리베이스와 해시 확인
@@ -45,7 +55,7 @@
 `fe92170a0cac3e21aca3281b7e4a054052dadf5b`로 바뀌었다.
 
 PR의 소스·테스트 7개, 후보 PDF 2개, 대표 PNG 5개는 리베이스 전 `8be25bae1`와 Git blob 대조에서
-동일했다. 파일별 SHA-256과 commit 대응표는 [통합 해시 기록](../pr_6949_6952_review_impl.md#리베이스-해시-대응표)에 보존했다.
+동일했다. 파일별 SHA-256과 commit 대응표는 [통합 해시 기록](pr_6949_6952_review_impl.md#리베이스-해시-대응표)에 보존했다.
 기존 바이너리도 해시를 재확인했지만 최신 base에서 재빌드한 바이너리는 아니다.
 
 ## 완료 검증 및 추가 실행 생략
@@ -64,7 +74,7 @@ PR의 소스·테스트 7개, 후보 PDF 2개, 대표 PNG 5개는 리베이스 �
 사용자가 "다른 conflict가 없으면 추가 테스트 없이 PR"을 지시했으므로 리베이스 후 build/회귀/Clippy/
 Native Skia/WASM/시각 검증은 추가 실행하지 않았다. 최신 base의 #6773은 표 삭제·model·WASM 코드를
 변경했다. 이번 PR 파일의 동일성은 최신 base 전체의 실행 호환성을 보장하지 않으므로 통합 CI는 남은 게이트다.
-구체적 명령·실행 시간·과거 실패 및 최종 통과 이력은 [통합 검증 기록](../pr_6949_6952_review_impl.md)을 따른다.
+구체적 명령·실행 시간·과거 실패 및 최종 통과 이력은 [통합 검증 기록](pr_6949_6952_review_impl.md)을 따른다.
 
 ## 시각 판정과 잔여 범위
 

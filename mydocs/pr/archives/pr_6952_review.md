@@ -1,5 +1,15 @@
 # PR #6952 검토 기록
 
+## 통합 merge 확정 기록 (2026-09-09)
+
+- [통합 PR #6957](https://github.com/edwardkim/rhwp/pull/6957)은 2026-09-09 14:41:08 UTC에 일반 merge로 통합됐다. merge SHA는 `d43937e0de7cf465185d23ce6b06fa47e7824e57`, 승인한 PR head는 `4e422a57d6775eb2f11dffb70b37632823659829`다.
+- merge 직전 최신 head는 `MERGEABLE / CLEAN`이었다. [Build & Test 및 Rust/Lint/Native Skia](https://github.com/edwardkim/rhwp/actions/runs/34363253946), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34363253722), [CodeQL 언어별 분석](https://github.com/edwardkim/rhwp/actions/runs/34363253980), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34363253961), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34363253986)가 성공했다. GHAS CodeQL check는 `NEUTRAL`, [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/34365098894)는 `SUCCESS`였고 대기·실패 항목은 없었다.
+- review·오늘할일·최종 PDF 2개·대표 PNG 5개는 코드 PR head에 이미 포함되어 merge됐다. source PR review 3개는 이번 문서-only 후속 처리에서 archive로 이동한다. 오늘할일에는 새 운영 항목을 반복 추가하지 않고 이동된 링크만 보정한다.
+- 리베이스 후 추가 로컬 테스트·PDF 출력은 사용자 지시대로 생략했다. 이번 GitHub Full CI 성공은 이전 로컬 검증과 별도 근거다. devel push의 post-merge CI는 PR head CI와 구분하며 이 기록에서 성공을 선언하지 않는다.
+- 후속 문서 PR 완료와 최종 devel sync 뒤 #6872/#6941을 해결 범위 내에서 종료하고 #6949/#6952를 통합 대체로 종료할 계획이다. #6865는 회색조·아이콘·영문 배너 잔여를 기록하고 OPEN을 유지한다. 이 절은 comment 게시 전 확정 기록이며 실제 게시 permalink와 종료 상태는 원 PR/이슈에 남긴다.
+- 이번 작업 전용 local·remote branch 정리는 사용자 승인 범위다. 기여자 `planet6897/rhwp`의 source branch, 기본 작업공간과 공유 `target/pr-review`는 보존한다.
+- 아래 Open/CI 대기/미게시 표기는 작성 당시 이력이다. 현재 통합 결과는 이 절이 우선하며 최종 판정의 기술적 범위와 잔여는 변경하지 않는다.
+
 ## 최신 upstream/devel 동기화 및 해시 대조 (2026-09-09)
 
 - 기준 base: `d8e4ab727b70b6abfcf11766134e09a9a9bfc982`. `review/planet6897-6949-6952-20260909`를 이 base 위로 리베이스했다. 오늘할일을 포함한 모든 파일이 충돌 없이 적용됐으며 수동 충돌 해소는 없었다.
@@ -7,7 +17,7 @@
 - 소스·테스트 7개 파일, 최종 PDF 2개와 대표 PNG 5개를 리베이스 전 head `8be25bae1`와 Git blob 대조했고 모두 동일했다. SHA-256도 다시 산출했다. 상세 해시와 커밋 대응표는 [통합 기록](pr_6949_6952_review_impl.md#리베이스-해시-대응표)을 따른다.
 - 기존 전체 회귀·Clippy·Native Skia·WASM·시각 증적은 리베이스 전 검증 결과다. 작업지시자의 "다른 conflict가 없으면 추가 테스트 없이 PR" 지시에 따라 리베이스 후 build/test/lint/시각 출력은 재실행하지 않았다. 기존 바이너리 해시는 보존된 검증 실행 파일의 식별자이며 최신 base 재빌드 증거가 아니다.
 - 최신 base에는 #6773의 표 삭제 및 관련 model/WASM 변경이 포함됐다. 이번 PR 파일의 바이트 동일성과 무충돌 리베이스가 저장소 전체의 실행 호환성을 보장하지는 않으므로, 최신 통합 head의 GitHub CI와 작업지시자 승인 게이트를 유지한다.
-- 현재 판정은 `메인터너 보정 후 수용 가능`을 유지한다. 원격 PR 번호·head·CI의 최신 진행 상태는 [오늘할일](../orders/20260909.md)의 통합 PR 항목과 채번 후 생성하는 self-review 기록을 따른다. 아래 검증 당시의 미게시·미생성 문구는 당시 작업 범위의 이력이다.
+- 현재 판정은 `메인터너 보정 후 수용 가능`을 유지한다. 원격 PR 번호·head·CI의 최신 진행 상태는 [오늘할일](../../orders/20260909.md)의 통합 PR 항목과 채번 후 생성하는 self-review 기록을 따른다. 아래 검증 당시의 미게시·미생성 문구는 당시 작업 범위의 이력이다.
 
 ## 발견 사항과 최종 판정
 
@@ -32,7 +42,7 @@
 
 ### 시험 범위의 공백
 
-[추가 시험 6개](../../tests/cases/issue_6872_hwpx_footnote_autonum_roundtrip.rs#L72)는 합성 IR을 직렬화하는 계약이다. 원 HWPX의 userChar를 읽는 parser, 미주 Endnote 경로, 인라인 AutoNumber의 USER_CHAR parse/serialize 왕복은 직접 다루지 않는다. 따라서 "네 필드 모두 왕복 검증"을 이 6개 시험만으로 입증할 수 없다.
+[추가 시험 6개](../../../tests/cases/issue_6872_hwpx_footnote_autonum_roundtrip.rs#L72)는 합성 IR을 직렬화하는 계약이다. 원 HWPX의 userChar를 읽는 parser, 미주 Endnote 경로, 인라인 AutoNumber의 USER_CHAR parse/serialize 왕복은 직접 다루지 않는다. 따라서 "네 필드 모두 왕복 검증"을 이 6개 시험만으로 입증할 수 없다.
 
 수용 전에는 명시적 빈 DIGIT/USER_CHAR 접미와 기존 #2742 계약, footNote/endNote의 userChar, 인라인 autoNum 5개 슬롯을 함께 확인해야 한다. 추가적인 확정 런타임 결함은 현재 읽은 변경 범위에서 발견하지 못했지만, 이 공백과 통합 검증 누락은 남아 있다.
 
@@ -64,11 +74,11 @@
 
 대상 원본은 기존 #6940 검토와 같은 `156584446` 및 `156513948` HWPX다. 기준은 기존 `pdf/pr6940-156584446-source-2020.pdf`, `pdf/pr6940-156513948-source-2020.pdf`를 우선 재사용한다. 이번에는 PDF를 다시 출력하거나 새 증적 파일을 복제하지 않았다.
 
-기존 [#6940 review](archives/pr_6940_review.md)의 68쪽 텍스트/대표 2쪽 raster 일치는 이전 candidate 결과다. #6952 보정본의 결과로 재사용하지 않는다. #6941은 해당 문서의 인라인 USER_CHAR 손실이 한컴 PDF에 나타나지 않았다고 보고하므로, 그림만 같아도 성공으로 판단하지 않고 section3.xml의 인라인 autoNum 5개 type/userChar 및 note 속성을 직접 대조해야 한다.
+기존 [#6940 review](pr_6940_review.md)의 68쪽 텍스트/대표 2쪽 raster 일치는 이전 candidate 결과다. #6952 보정본의 결과로 재사용하지 않는다. #6941은 해당 문서의 인라인 USER_CHAR 손실이 한컴 PDF에 나타나지 않았다고 보고하므로, 그림만 같아도 성공으로 판단하지 않고 section3.xml의 인라인 autoNum 5개 type/userChar 및 note 속성을 직접 대조해야 한다.
 
 ## Merge 후 contributor PR comment 계획
 
-- 정본: [Visual Sweep GitHub merge comment](../manual/verification/visual_sweep_guide.md#github-merge-comment).
+- 정본: [Visual Sweep GitHub merge comment](../../manual/verification/visual_sweep_guide.md#github-merge-comment).
 - 통합 후보의 실물 왕복 XML과 36쪽/32쪽 PDF 비교를 완료했다. 최종 바이너리의 왕복 HWPX가 검증본과 바이트 단위로 같음을 확인해 기존 후보 PDF를 재사용했으며, #6940의 예전 결과를 이번 결과로 바꿔 쓰지 않는다. 총 68쪽 모두 RGB 차이 32 초과 픽셀은 0이고, 문서 A 2쪽의 임계값 이하 3픽셀 차이도 함께 기록한다.
 - 번호 토큰, footNote/endNote 속성 이름, 인라인 autoNum 5개 슬롯과 빈 접미 보존의 실제 XML 결과를 대표 PDF 판독과 함께 기록한다. 대표 PNG는 `assets/pr_6949_6952_maintainer_20260909/pr6952-note-a-p010-review.png`, `pr6952-note-b-p013-review.png`이며, 두 후보 PDF와 함께 보정 커밋에 포함했다. 중간 파일/로그는 output에 두고 커밋에서 제외했다.
 - 그 결과에 따라 #6872와 #6941의 수용/close 범위를 각각 판단한다. 현재 두 이슈는 close하지 않았다.
@@ -129,7 +139,7 @@
 ### Merge 후 contributor PR comment 계획 보완
 
 회귀 입력 오류 수정 및 전체 검증 전에는 게시/merge/close하지 않는다. 완료 후 실제 최종 head 결과를
-반영하고 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)과
+반영하고 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)과
 위 XML·PDF 비교 방법, 68페이지/후보 0개/대표 2페이지/임계값 이하 차이의 한계를 함께 기록한다.
 
 - `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6952-note-a-p010-review.png`
@@ -163,6 +173,6 @@
 - 기존 원 PR head의 충돌 상태나 CI를 이번 로컬 통합 후보의 결과로 바꿔 쓰지 않는다.
   소스·증적 commit은 완료했으며, push/PR 생성/GitHub comment/merge는 아직 수행하지 않았다.
 
-![각주 A p10 비교](assets/pr_6949_6952_maintainer_20260909/pr6952-note-a-p010-review.png)
+![각주 A p10 비교](../assets/pr_6949_6952_maintainer_20260909/pr6952-note-a-p010-review.png)
 
-![각주 B p13 비교](assets/pr_6949_6952_maintainer_20260909/pr6952-note-b-p013-review.png)
+![각주 B p13 비교](../assets/pr_6949_6952_maintainer_20260909/pr6952-note-b-p013-review.png)
