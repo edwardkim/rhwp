@@ -1433,17 +1433,24 @@ pub(super) fn extend_completed_nested_table_border_clips(
     suppress_bottom_text_residue: bool,
     repair_unclipped_hwpx_top_residue: bool,
     // [#6861] 저장 사다리가 과폭 중첩 표의 자리를 잡아 준 host 셀들과, 그때 열어 줄
-    // 오른쪽 상한(본문 우단).
+    // 오른쪽 상한(용지 우단).
     ladder_reserved_cells: &std::collections::HashSet<u32>,
     ladder_reserved_clip_right_limit: f64,
 ) {
+    // 셀 번호는 각 표 안에서 다시 시작한다. 하위 표는 자신의 layout에서
+    // 계산한 예약만 사용하며, 상위 표의 같은 번호를 물려받지 않는다.
+    let no_inherited_reservations = std::collections::HashSet::new();
     for child in &mut node.children {
         extend_completed_nested_table_border_clips(
             tree,
             child,
             suppress_bottom_text_residue,
             repair_unclipped_hwpx_top_residue,
-            ladder_reserved_cells,
+            if matches!(child.node_type, RenderNodeType::Table(_)) {
+                &no_inherited_reservations
+            } else {
+                ladder_reserved_cells
+            },
             ladder_reserved_clip_right_limit,
         );
     }
@@ -7878,6 +7885,11 @@ impl LayoutEngine {
             let stored_flow_shape_is_trusted = (depth > 0 || table.common.treat_as_char)
                 && stored_flow_extent > 0.0
                 && non_flow_object_extent <= stored_flow_extent + 0.5
+                // [#6896] TopAndBottom도 빈 anchor 한 줄만 저장된 경우에는
+                // 개체 높이를 품지 않는다. 실제 flow band가 저장 extent보다
+                // 크면 composed 높이를 유지해 가운데 정렬의 아래쪽 이탈을 막는다.
+                && self.calc_non_inline_controls_flow_height(&cell.paragraphs)
+                    <= stored_flow_extent + 0.5
                 && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum
                 && stored_flow_has_para_anchors;
             // 일반 셀은 저장 extent가 자체 측정값보다 실제로 압축된 경우에만

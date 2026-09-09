@@ -37,7 +37,7 @@ Rust `char` 도 XML 도 그 값을 담지 못한다. 종전 파서는 `char::fro
 
 ⚠ **인쇄(PDF)와 저장(HWPX)의 답이 다르다.** 같은 engine 2020 이 PDF 로는 그 기호를
 글리프로 찍고(ToUnicode 가 U+FFFF 로 빠져 텍스트로는 못 꺼낸다) HWPX 로는 `□` 로 적는다.
-이 이슈는 h2x 축이므로 HWPX 쪽이 판정을 준다. `pdf/` 는 형상 확인용이다.
+이 이슈는 h2x 축이므로 HWPX 쪽이 판정을 준다. 저장소 루트 `pdf/`의 [충주 PDF](../../pdf/19211507-chungju-paid-restroom-certificate-2020.pdf)와 [경주 PDF](../../pdf/18096141-gyeongju-gas-subsidy-plan-2020.pdf)는 형상 확인용이다.
 
 ## 코퍼스 실측 (`.hwp` 6,582건 전수)
 

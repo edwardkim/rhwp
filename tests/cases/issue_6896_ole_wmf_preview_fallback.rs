@@ -40,11 +40,13 @@
 //!   후   RawSvg      pi=59 ci=0  x=100.7 y=541.5 w=602.4 h=844.7   (내부 SVG 406,671B)
 //! ```
 //!
-//! ## 잠그지 않는 것 — 세로 위치
+//! ## 메인터너 보정: 세로 위치도 검증
 //!
-//! 정본(engine 2020)은 같은 그림을 **y=128.3** 에 둔다. 크기는 601.9 × 843.7 로 맞지만
-//! 세로가 413px 어긋난다. 그 축은 미리보기 선택과 무관한 별개 결함이라 이 시험이 걸지
-//! 않는다 — 여기서 잠그는 것은 **자리표시자가 아니라 미리보기가 그려진다**는 계약이다.
+//! 정본(engine 2020)은 같은 그림을 **y=128.3** 에 둔다. 빈 anchor 한 줄의 저장 높이가
+//! TopAndBottom 개체를 포함한다고 오인하면 가운데 정렬에서 413px 아래로 밀린다.
+//! 저장 extent가 실제 flow band를 담는 경우에만 신뢰하여, 미리보기와 쪽 안 배치를 함께 잠근다.
+//! 위치는 #6912의 셀 윗선 대비 11.53px로 검증한다. 표 전체의 기존 쪽 좌표 차이를
+//! 이 개체의 셀 내부 정렬 계약과 섞지 않는다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -110,13 +112,32 @@ fn ole_preview_renders_instead_of_a_placeholder() {
 #[test]
 fn ole_preview_keeps_the_declared_box() {
     let root = page_tree(PAGE);
-    fn find(node: &RenderNode) -> Option<(f64, f64)> {
+    fn find(node: &RenderNode, cell_top: Option<f64>) -> Option<(f64, f64, f64, f64, f64)> {
+        let cell_top = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            Some(node.bbox.y)
+        } else {
+            cell_top
+        };
         if matches!(node.node_type, RenderNodeType::RawSvg(_)) {
-            return Some((node.bbox.width, node.bbox.height));
+            return Some((
+                node.bbox.x,
+                node.bbox.y,
+                node.bbox.width,
+                node.bbox.height,
+                cell_top?,
+            ));
         }
-        node.children.iter().find_map(find)
+        node.children.iter().find_map(|child| find(child, cell_top))
     }
-    let (w, h) = find(&root).expect("OLE RawSvg");
+    let (x, y, w, h, cell_top) = find(&root, None).expect("셀 안 OLE RawSvg");
+    assert!(
+        (x - 100.6).abs() <= 2.0 && (y - cell_top - 11.53).abs() <= 0.5,
+        "미리보기의 셀 상대 위치가 정본에서 벗어났다: x={x:.1}, y={y:.1}, cell_top={cell_top:.1}"
+    );
+    assert!(
+        y + h <= root.bbox.y + root.bbox.height,
+        "복원한 OLE 미리보기가 용지 아래로 이탈했다"
+    );
     assert!(
         (598.0..=606.0).contains(&w) && (840.0..=849.0).contains(&h),
         "미리보기 상자가 정본(601.9 × 843.7)에서 벗어났다 — {w:.1} × {h:.1}"
