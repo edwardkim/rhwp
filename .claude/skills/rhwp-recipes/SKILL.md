@@ -150,4 +150,4 @@ cargo build --release
 
 - [`mydocs/manual/recipes/`](../../../mydocs/manual/recipes/)
 - [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
-- 처리 결과: [`mydocs/working/agent_recipes.md`](../../../mydocs/working/agent_recipes.md)
+- 처리 결과: [`mydocs/working/agent_recipes.md`](../../../mydocs/working/archives/agent_recipes.md)

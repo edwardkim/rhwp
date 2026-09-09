@@ -1,0 +1,16 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 5057,
+  "title": "HWP5/HWPX 첫 조각 초과 허용치",
+  "entries": [
+    {
+      "path": "samples/issue5057/21484591-gimcheon-sewage-ordinance.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "#5057에서 식별한 21484591 김천시 하수도 사용 조례 시행규칙 별지 서식 원본",
+      "bytes": 46080,
+      "sha256": "87ac4934e661fd0e177d35f355030bff26d2b764bc25b0ccf69aa7cc66f6dfc7",
+      "contract": "HWP5와 출처 표식만 제거한 direct-HWPX의 페이지 수 일치"
+    }
+  ]
+}

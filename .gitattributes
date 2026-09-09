@@ -1,11 +1,8 @@
-# Git LFS — pdf-large/ 폴더 한정 추적
-#
-# 본질: 50 MB 초과 PDF 영역 영역 git history 영역 영역 직접 진입을 차단
-# 다른 PDF 폴더 (pdf/, pdf-2020/, pdf-2010/) 영역 영역 일반 git 영역 영역 보존
-pdf-large/**/*.pdf filter=lfs diff=lfs merge=lfs -text
-
 # SVG 골든 스냅샷 — 렌더러 생성물(LF)과 바이트 비교하므로 CRLF 변환 금지 (#1786)
 tests/golden_svg/**/*.svg text eol=lf
+
+# Cargo의 generated test target 블록은 플랫폼과 무관하게 LF로 체크아웃한다.
+/Cargo.toml text eol=lf
 
 # Lawful HML corpus — preserve provenance bytes (BOM/CRLF/trailing spaces) and verify by SHA
 samples/hml/*.hml -text -diff
@@ -43,3 +40,23 @@ gym/leaderboard/*.ndjson     -text
 samples/issue5447/*.hwp   -text -diff
 samples/issue5447/*.hwpx  -text -diff
 pdf/issue5447/*.pdf       -text -diff
+
+# #5057/#6202 회귀 입력은 한컴 원본 바이트다. 텍스트 변환이나 diff 정규화가
+# manifest의 SHA-256과 parser 재현성을 바꾸면 안 된다.
+samples/issue5057/*.hwp -text -diff
+samples/issue6202/*.hwp -text -diff
+
+# Issue #5941 canonical HWP fixture
+samples/issue5941/1480000-201900698-native-neartop-reset.hwp -text -diff
+
+# #6697/#6718 회귀 입력은 원본 한컴 바이트다. 텍스트 변환이나 diff 정규화가
+# manifest의 SHA-256과 renderer 재현성을 바꾸면 안 된다.
+samples/issue6697/*.hwpx -text -diff
+samples/issue6718/*.hwp -text -diff
+
+# Preserve the original bytes of the #6756/#6764 regression inputs.
+samples/issue6756/*.hwp -text -diff
+samples/issue6764/*.hwp -text -diff
+
+# PR #6796: original HWP bytes
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp -text -diff

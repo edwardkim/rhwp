@@ -43,6 +43,9 @@ impl SkiaTextReplay<'_> {
         is_para_end: bool,
         is_line_break_end: bool,
         layout_positions: Option<&[f64]>,
+        trim_trailing_spaces: usize,
+        suppress_glyphs: bool,
+        render_marks: bool,
     ) {
         let canvas = self.canvas;
         let output_options = self.output_options;
@@ -295,7 +298,13 @@ impl SkiaTextReplay<'_> {
                 let char_positions =
                     crate::renderer::replay_positions_or_compute(text, style, layout_positions);
                 let clusters = split_into_clusters(text);
-                let text_width = *char_positions.last().unwrap_or(&0.0) as f32;
+                let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
+                let trim = trim_trailing_spaces.min(trailing);
+                let text_width = char_positions
+                    .get(text.chars().count().saturating_sub(trim))
+                    .copied()
+                    .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
+                    as f32;
                 // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
                 let (font_size, ratio) = {
                     let (fs, r) =
@@ -303,7 +312,9 @@ impl SkiaTextReplay<'_> {
                     (fs as f32, r as f32)
                 };
                 let has_ratio = (ratio - 1.0).abs() > 0.01;
-                if crate::model::color::char_shade(style.shade_color).is_some() && text_width > 0.0
+                if !suppress_glyphs
+                    && crate::model::color::char_shade(style.shade_color).is_some()
+                    && text_width > 0.0
                 {
                     let mut shade = Paint::default();
                     shade.set_anti_alias(true);
@@ -518,30 +529,32 @@ impl SkiaTextReplay<'_> {
                     }
                 };
 
-                if style.shadow_type > 0 {
-                    draw_text_pass(
-                        colorref_to_skia(style.shadow_color, 1.0),
-                        0.0,
-                        style.shadow_offset_x as f32,
-                        style.shadow_offset_y as f32,
-                    );
+                if !suppress_glyphs {
+                    if style.shadow_type > 0 {
+                        draw_text_pass(
+                            colorref_to_skia(style.shadow_color, 1.0),
+                            0.0,
+                            style.shadow_offset_x as f32,
+                            style.shadow_offset_y as f32,
+                        );
+                    }
+                    if style.outline_type > 0 {
+                        draw_text_pass(
+                            colorref_to_skia(style.color, 1.0),
+                            (font_size * 0.08).max(0.8),
+                            0.0,
+                            0.0,
+                        );
+                    }
+                    if style.emboss {
+                        draw_text_pass(Color::WHITE, 0.0, -1.0, -1.0);
+                        draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, 1.0, 1.0);
+                    } else if style.engrave {
+                        draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, -1.0, -1.0);
+                        draw_text_pass(Color::WHITE, 0.0, 1.0, 1.0);
+                    }
+                    draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
                 }
-                if style.outline_type > 0 {
-                    draw_text_pass(
-                        colorref_to_skia(style.color, 1.0),
-                        (font_size * 0.08).max(0.8),
-                        0.0,
-                        0.0,
-                    );
-                }
-                if style.emboss {
-                    draw_text_pass(Color::WHITE, 0.0, -1.0, -1.0);
-                    draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, 1.0, 1.0);
-                } else if style.engrave {
-                    draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, -1.0, -1.0);
-                    draw_text_pass(Color::WHITE, 0.0, 1.0, 1.0);
-                }
-                draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
 
                 if !matches!(style.underline, UnderlineType::None) && text_width > 0.0 {
                     // COLORREF 0 은 미지정이 아니라 검정 — svg.rs 와 같은 계약.
@@ -810,16 +823,18 @@ impl SkiaTextReplay<'_> {
             is_vertical,
             char_overlap,
         );
-        draw_text_marks(
-            text,
-            bbox,
-            style,
-            baseline,
-            rotation,
-            is_vertical,
-            is_marker,
-            is_para_end,
-            is_line_break_end,
-        );
+        if render_marks {
+            draw_text_marks(
+                text,
+                bbox,
+                style,
+                baseline,
+                rotation,
+                is_vertical,
+                is_marker,
+                is_para_end,
+                is_line_break_end,
+            );
+        }
     }
 }

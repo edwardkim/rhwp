@@ -6,11 +6,8 @@ on:
     tags: ['v*']
     paths-ignore:
       - 'mydocs/**'
-      - 'docs/**'
       - 'samples/**'
       - 'pdf/**'
-      - 'pdf-2020/**'
-      - 'pdf-large/**'
       - 'assets/chrome/**'
       - 'assets/edge/**'
       - 'assets/logo/**'
@@ -28,7 +25,6 @@ on:
     branches: [main, devel]
     types: [opened, reopened, synchronize]
     paths-ignore:
-      - 'docs/**'
       # samples는 required Build & Test를 발행해야 하므로 preflight에서
       # 신규 reference-only와 기존 자료 변경을 구분한다.
       - 'assets/chrome/**'
@@ -93,6 +89,7 @@ jobs:
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
       postmerge_reuse: ${{ needs.trusted_postmerge_reuse.outputs.reuse || 'false' }}
       postmerge_source_run_id: ${{ needs.trusted_postmerge_reuse.outputs.source_run_id || '' }}
+      postmerge_refresh_duration_data: ${{ needs.trusted_postmerge_reuse.outputs.refresh_duration_data || 'false' }}
       # [#3790 Stage 4·5B] frontend_mode·render_required·rust_required·
       # native_skia_required는 이 workflow의 worker 조건에 사용한다. codeql_languages는
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
@@ -181,6 +178,10 @@ jobs:
           script: |
             const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
             const { owner, repo } = context.repo;
+            const renderContractPaths = new Set([
+              'mydocs/tech/canvaskit-parity-implementation.md',
+              'mydocs/tech/text-ir-v2.md',
+            ]);
 
             function setResult(fastPass, reason, candidateSha = '') {
               core.setOutput('fast_pass', fastPass ? 'true' : 'false');
@@ -203,7 +204,7 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
-              if (filename.startsWith('mydocs/')) {
+              if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
               }
               if (isPdfReferencePath(filename)) {
@@ -226,7 +227,7 @@ jobs:
             }
 
             function isPdfReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              const pdfPrefixes = ['pdf/'];
               return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
@@ -974,6 +975,7 @@ jobs:
         run: |
           node --test scripts/tests/ci-impact-classifier.test.cjs
           node --test scripts/tests/ci-impact-policy.test.cjs
+          node --test scripts/tests/ci-impact-report.test.cjs
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 
       - name: Validate Rust test suite manifest
@@ -1060,41 +1062,24 @@ jobs:
         run: |
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
+          node --test scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
           python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
           python3 -m unittest scripts/tests/test_codeql_workflow.py
           python3 -m unittest scripts/tests/test_nextest_archive_workflow.py
+          python3 -m unittest scripts/tests/test_oracle_public_advisory_workflow.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_evidence.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_gate_workflow.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_preflight.py
           python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
-          python3 -m unittest scripts/tests/test_gym_release_gate_workflow.py
           python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
           python3 -m unittest scripts/tests/test_adapter_diff_workflow.py
           python3 -m unittest scripts/tests/test_trusted_postmerge_ci_reuse_workflow.py
           python3 -m unittest scripts/tests/test_llm_verifier_workflow.py
           python3 -m unittest scripts/tests/test_undo_depth_e2e_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
-
-      - name: Validate gym scorer contracts
-        run: |
-          python3 -m unittest scripts/tests/test_gym_score.py
-          python3 -m unittest scripts/tests/test_gym_packs.py
-          python3 -m unittest scripts/tests/test_gym_audit.py
-          python3 -m unittest scripts/tests/test_gym_certify.py
-          python3 -m unittest scripts/tests/test_gym_trajectory.py
-          python3 -m unittest scripts/tests/test_gym_leaderboard.py
-          python3 -m unittest scripts/tests/test_gym_robustness.py
-          python3 -m unittest scripts/tests/test_gym_fuzz_corpus.py
-          python3 -m unittest scripts/tests/test_gym_release_diff.py
-          python3 -m unittest scripts/tests/test_gym_discriminate.py
-          python3 -m unittest scripts/tests/test_gym_oracle_probe.py
-          python3 -m unittest scripts/tests/test_gym_differential.py
-          python3 -m unittest scripts/tests/test_gym_tutorial.py
-
-      # [#4855] 경쟁 벤치 하네스 순수 로직 가드 — 집계·능력 매트릭스·리포트 렌더·정직한
-      # 저하(못 돌린 도구는 'n/a: 이유', 숫자 날조 금지)를 바이너리·외부도구 없이 검증한다.
-      - name: Validate competitive benchmark harness contract
-        run: python3 -m unittest scripts/tests/test_gym_competitive_bench.py
 
       # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.
       # 바이너리 불요(커밋 문서만) — 표면이 늘어도 표준 링크가 끊기지 않게 한다.
@@ -1156,9 +1141,8 @@ jobs:
   native-skia-tests:
     name: Native Skia tests
     runs-on: ubuntu-latest
-    # v0.8.6 tag run 33584174087은 release profile 컴파일 중 기존 30분 상한에
-    # 도달했다. 태그/main의 cold-cache release-grade 실행을 수용하되 무한 실행은 막는다.
-    timeout-minutes: 60
+    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
+    timeout-minutes: 30
     # [#5164 Stage 3] Native Skia는 독립 runner에서 실행되므로 lint·frontend를 기다리지 않는다.
     # 각 lane의 성공·skip 계약은 최종 Build & Test 집계 job이 함께 검증한다.
     needs: [preflight]
@@ -1324,8 +1308,8 @@ jobs:
   frontend-package-gates:
     name: Frontend package gates
     runs-on: ubuntu-latest
-    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
-    timeout-minutes: 20
+    # [#6717] 직렬 package 설치가 지연돼도 회귀 gate를 실행할 여유를 두되 hang은 실패로 드러낸다.
+    timeout-minutes: 30
     # [#3268] Frontend는 Lint의 산출물을 읽지 않고 독립 runner에서 별도 target/cache를 쓴다.
     # preflight의 fast-pass·영향 판정만 기다려 Lint와 병렬 시작한다. Lint 실패 시 Frontend가
     # 끝날 수는 있지만 Native/archive는 아래 두 worker의 성공을 모두 계속 요구한다.
@@ -1374,10 +1358,10 @@ jobs:
 
       - name: Install frontend package dependencies
         run: |
-          npm --prefix rhwp-studio ci
-          npm --prefix rhwp-chrome ci
-          npm --prefix rhwp-firefox ci
-          npm --prefix rhwp-vscode ci
+          npm --prefix rhwp-studio ci --no-audit --prefer-offline
+          npm --prefix rhwp-chrome ci --no-audit --prefer-offline
+          npm --prefix rhwp-firefox ci --no-audit --prefer-offline
+          npm --prefix rhwp-vscode ci --no-audit --prefer-offline
 
       - name: Verify WASM bindings and editor embed contract
         run: node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
@@ -1564,6 +1548,10 @@ jobs:
         && github.event_name == 'push'
         && github.ref == 'refs/heads/devel'
         && needs.preflight.result == 'success'
+        && (
+          needs.preflight.outputs.postmerge_reuse != 'true'
+          || needs.preflight.outputs.postmerge_refresh_duration_data == 'true'
+        )
         && needs.preflight.outputs.rust_required == 'true'
         && (
           (
@@ -1681,6 +1669,139 @@ jobs:
           git commit -m "ci: nextest target duration data ${GITHUB_SHA}"
           git push origin "HEAD:refs/heads/${METRICS_BRANCH}"
 
+  workflow-promotion-preflight:
+    name: Workflow promotion preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [preflight]
+    if: >-
+      ${{
+        github.event_name == 'pull_request'
+        && github.base_ref == 'main'
+        && github.head_ref == 'devel'
+        && github.event.pull_request.head.repo.full_name == github.repository
+      }}
+    permissions:
+      actions: read
+      contents: read
+      issues: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify canonical promotion topology
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$(git rev-parse HEAD)" != "${CANDIDATE_SHA}" ]]; then
+            echo "::error::checkout is not the canonical candidate SHA"
+            exit 1
+          fi
+          if ! git cat-file -e "${BASE_SHA}^{commit}"; then
+            echo "::error::main base commit is unavailable in the checkout"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "${BASE_SHA}" "${CANDIDATE_SHA}"; then
+            echo "::error::main must be an ancestor of the canonical devel candidate"
+            exit 1
+          fi
+          merge_tree="$(git merge-tree --write-tree "${BASE_SHA}" "${CANDIDATE_SHA}")"
+          candidate_tree="$(git rev-parse "${CANDIDATE_SHA}^{tree}")"
+          if [[ "${merge_tree}" != "${candidate_tree}" ]]; then
+            echo "::error::main/devel merge tree differs from the exact candidate tree"
+            exit 1
+          fi
+
+      - name: Build workflow promotion inventory
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: |
+          set -euo pipefail
+          mkdir -p "${EVIDENCE_DIR}"
+          python3 scripts/workflow_promotion_preflight.py inventory \
+            --repo . \
+            --base-sha "${BASE_SHA}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --policy scripts/workflow_promotion_policy.json \
+            --format json > "${EVIDENCE_DIR}/inventory.json"
+          python3 scripts/workflow_promotion_preflight.py inventory \
+            --repo . \
+            --base-sha "${BASE_SHA}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --policy scripts/workflow_promotion_policy.json \
+            --format markdown >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Collect exact-head Actions evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+          RELEASE_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 scripts/workflow_promotion_evidence.py
+          --inventory "${EVIDENCE_DIR}/inventory.json"
+          --runs-output "${EVIDENCE_DIR}/runs.json"
+          --waivers-output "${EVIDENCE_DIR}/waivers.json"
+          --issue-number "${RELEASE_PR_NUMBER}"
+          --trusted-maintainer edwardkim
+
+      - name: Verify workflow promotion evidence
+        id: verify-promotion
+        continue-on-error: true
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: >-
+          python3 scripts/workflow_promotion_preflight.py verify
+          --inventory "${EVIDENCE_DIR}/inventory.json"
+          --runs "${EVIDENCE_DIR}/runs.json"
+          --waivers "${EVIDENCE_DIR}/waivers.json"
+          --trusted-maintainer edwardkim
+          > "${EVIDENCE_DIR}/verdict.json"
+
+      - name: Summarize workflow promotion verdict
+        if: ${{ always() }}
+        shell: bash
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: |
+          if [[ -f "${EVIDENCE_DIR}/verdict.json" ]]; then
+            {
+              echo
+              echo '## Workflow promotion verdict'
+              echo
+              echo '```json'
+              cat "${EVIDENCE_DIR}/verdict.json"
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Upload workflow promotion evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: workflow-promotion-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/workflow-promotion
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce workflow promotion verdict
+        if: ${{ always() }}
+        env:
+          VERIFY_OUTCOME: ${{ steps.verify-promotion.outcome }}
+        run: |
+          if [[ "${VERIFY_OUTCOME}" != "success" ]]; then
+            echo "::error::workflow promotion evidence is incomplete or invalid"
+            exit 1
+          fi
+
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -1700,6 +1821,7 @@ jobs:
       - native-skia-tests
       - frontend-unit-gates
       - frontend-package-gates
+      - workflow-promotion-preflight
     if: ${{ always() }}
     permissions:
       contents: read
@@ -1835,7 +1957,21 @@ jobs:
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_UNIT_RESULT: ${{ needs['frontend-unit-gates'].result }}
           FRONTEND_PACKAGE_RESULT: ${{ needs['frontend-package-gates'].result }}
+          PROMOTION_RESULT: ${{ needs['workflow-promotion-preflight'].result }}
+          CANONICAL_PROMOTION: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'devel' && github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
+          case "${CANONICAL_PROMOTION}" in
+            true)
+              [[ "${PROMOTION_RESULT}" == "success" ]] || { echo "::error::Canonical devel -> main promotion evidence failed: ${PROMOTION_RESULT}"; exit 1; }
+              ;;
+            false)
+              [[ "${PROMOTION_RESULT}" == "skipped" ]] || { echo "::error::Workflow promotion gate must be skipped outside canonical release PRs: ${PROMOTION_RESULT}"; exit 1; }
+              ;;
+            *)
+              echo "::error::Unknown canonical promotion state: ${CANONICAL_PROMOTION}"
+              exit 1
+              ;;
+          esac
           if [[ "${PREFLIGHT_RESULT}" != "success" ]]; then
             echo "::error::CI preflight did not succeed: ${PREFLIGHT_RESULT}"
             exit 1

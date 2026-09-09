@@ -136,7 +136,7 @@ Canvas2D와 CanvasKit은 로컬 폰트를 조달하는 능력이 다르다.
 
 ## 관련 문서
 
-- [#4741 수행계획](../../../plans/task_m100_4741.md)
+- [#4741 수행계획](../../../plans/archives/task_m100_4741.md)
 - [#4739 조사](../issue-4739/README.md)
 - [폰트 fallback 전략](../../font_fallback_strategy.md)
 - [Studio CDP 가이드](../../../manual/e2e-cdp.md)

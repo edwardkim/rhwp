@@ -34,7 +34,7 @@
       "op": "json_value_eq",
       "file": "plan-schema.json",
       "path": "planSchemaVersion",
-      "value": "1.1"
+      "value": "1.2"
     },
     {
       "name": "schema $ref",

@@ -9,7 +9,8 @@
             "{input}",
             "--json"
           ],
-          "path": "charts"
+          "path": "charts",
+          "len": true
         }
       }
     }

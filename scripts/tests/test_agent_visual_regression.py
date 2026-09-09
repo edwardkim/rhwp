@@ -19,7 +19,7 @@ REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
 GEN = REF / "_gen_pack.py"
-WORKING = REPO / "mydocs" / "working" / "agent_visual_regression.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_visual_regression.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
 
 FORBIDDEN_SKILLS = [

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/wasm_agent_surface/zero_install_onboarding.md
-last_verified: 2026-08-03
+last_verified: 2026-09-03
 ---
 
 # 설치 0 온보딩 — 오프라인 데모 페이지 설계
@@ -55,7 +55,7 @@ last_verified: 2026-08-03
 | 프런트 빌드 | `npx vite build --base=/rhwp/` | 82 |
 | 배포 | `actions/deploy-pages` | 100 |
 
-트리거는 `main` 푸시이며 `mydocs/**`·`docs/**`·`samples/**` 변경은 제외한다(6-19행).
+트리거는 `main` 푸시이며 `mydocs/**`·`samples/**` 변경은 제외한다(6-18행).
 공개 URL 은 `https://edwardkim.github.io/rhwp/` (`npm/editor/package.json:32` `homepage`).
 
 버전 고정 정책은 [../wasm_pack_version_policy.md](../wasm_pack_version_policy.md).

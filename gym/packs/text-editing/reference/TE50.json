@@ -29,7 +29,7 @@
             "--",
             "짐표지TE50"
           ],
-          "path": "matches[0].offset"
+          "path": "matches[0].charOffset"
         }
       }
     }

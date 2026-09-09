@@ -884,7 +884,16 @@ fn parse_para_shape(
     reader: &mut Reader<&[u8]>,
     doc_info: &mut DocInfo,
 ) -> Result<(), HwpxError> {
-    let mut ps = ParaShape::default();
+    // `lineSpacing` 요소가 없는 paraPr 은 종전 0 이 그대로 남았다.
+    // 0% 를 실값으로 존중하도록 고친 뒤(`compute_line_spacing_hwp`)로는 그 0 이
+    // "advance 0" 으로 읽혀 줄이 겹친다 → 미지정은 HWP 기본 160% 로 채워 명시 0 과 가른다.
+    // HWP5(`doc_info.rs`)·HML(`hml/reader.rs`)은 이미 `unwrap_or(160)` 으로 같은 계약이다.
+    // 실제 요소가 있으면 아래 평문·switch 경로가 무조건 덮어쓰므로 기존 문서는 무영향.
+    let mut ps = ParaShape {
+        line_spacing: 160,
+        line_spacing_type: crate::model::style::LineSpacingType::Percent,
+        ..ParaShape::default()
+    };
     // OWPML ParaShapeType의 snapToGrid 기본값은 true.
     ps.attr1 |= 1 << 8;
     let mut id: Option<usize> = None;

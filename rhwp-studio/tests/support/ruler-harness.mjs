@@ -66,6 +66,7 @@ class FakeCanvas extends FakeTarget {
       stroke: () => this.paint.strokes++,
       fill: () => this.paint.fills++,
       fillText: text => this.paint.labels.push(text),
+      measureText: text => ({ width: String(text).length * 5 }),
     };
   }
   get width() { return this.bitmapSize.width; }

@@ -364,7 +364,7 @@ fn forbidden_peer_skills_not_rewritten_here() {
 
 #[test]
 fn working_doc_exists() {
-    let path = repo().join("mydocs/working/agent_codex_skill.md");
+    let path = repo().join("mydocs/working/archives/agent_codex_skill.md");
     assert!(path.is_file(), "{path:?}");
     let text = fs::read_to_string(&path).unwrap();
     assert!(text.contains("#5318") || text.contains("5318"), "{text}");

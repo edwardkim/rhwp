@@ -70,6 +70,38 @@ class ExecutableDiscoveryTests(unittest.TestCase):
         self.assertEqual(resolved, str(chrome))
 
 
+class SvgPagePathTests(unittest.TestCase):
+    def test_accepts_unsuffixed_svg_for_single_first_page(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            single = root / "bitmap.svg"
+            single.write_text("<svg/>", encoding="utf-8")
+
+            paths = FIDELITY.svg_paths_for_page(root, 0)
+
+        self.assertEqual(paths, [single])
+
+    def test_does_not_reuse_unsuffixed_svg_for_later_page(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "bitmap.svg").write_text("<svg/>", encoding="utf-8")
+
+            paths = FIDELITY.svg_paths_for_page(root, 1)
+
+        self.assertEqual(paths, [])
+
+    def test_prefers_indexed_svg_when_both_forms_exist(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "bitmap.svg").write_text("<svg/>", encoding="utf-8")
+            indexed = root / "bitmap_001.svg"
+            indexed.write_text("<svg/>", encoding="utf-8")
+
+            paths = FIDELITY.svg_paths_for_page(root, 0)
+
+        self.assertEqual(paths, [indexed])
+
+
 class ChromeCaptureTests(unittest.TestCase):
     def test_capture_retries_once_and_surfaces_first_stderr(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

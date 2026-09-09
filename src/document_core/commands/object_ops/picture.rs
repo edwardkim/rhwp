@@ -102,7 +102,7 @@ impl DocumentCore {
             )),
         }
     }
-    fn resolve_picture_control_mut(
+    pub(crate) fn resolve_picture_control_mut(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -224,17 +224,8 @@ impl DocumentCore {
     fn picture_transform_fingerprint(
         pic: &crate::model::image::Picture,
     ) -> (u32, u32, u32, u32, u32, u32, i16, bool, bool) {
-        (
-            pic.common.width,
-            pic.common.height,
-            pic.common.horizontal_offset,
-            pic.common.vertical_offset,
-            pic.shape_attr.current_width,
-            pic.shape_attr.current_height,
-            pic.shape_attr.rotation_angle,
-            pic.shape_attr.horz_flip,
-            pic.shape_attr.vert_flip,
-        )
+        // [#6740] 판정은 도형 경로와 공용이다 — 둘이 갈라지면 같은 결함이 한쪽에만 남는다.
+        super::common::shape_transform_fingerprint(&pic.common, &pic.shape_attr)
     }
     pub(crate) fn picture_rotated_bounds(width: u32, height: u32, angle: i16) -> (u32, u32) {
         if width == 0 || height == 0 || angle.rem_euclid(360) == 0 {
@@ -996,12 +987,18 @@ impl DocumentCore {
         let transform_before = Self::picture_transform_fingerprint(pic);
         let mut rotation_changed = false;
 
-        // 크기 변경
+        // 크기 변경 — [#6806] 키가 있어도 값이 같으면 건드리지 않는다. 종전에는 게터가 낸
+        // 봉지를 그대로 되먹여도 `current_*` 가 `common.*` 로 덮여(파싱값이 1 어긋난 문서가
+        // corpus 에 69건) 지문이 흔들리고 한컴 원본 렌더링 행렬이 지워졌다.
         if let Some(w) = json_u32(props_json, "width") {
-            Self::apply_picture_display_width(pic, w);
+            if w != pic.common.width {
+                Self::apply_picture_display_width(pic, w);
+            }
         }
         if let Some(h) = json_u32(props_json, "height") {
-            Self::apply_picture_display_height(pic, h);
+            if h != pic.common.height {
+                Self::apply_picture_display_height(pic, h);
+            }
         }
 
         // 위치 속성
@@ -1115,10 +1112,14 @@ impl DocumentCore {
             };
         }
 
-        // 회전/대칭
+        // 회전/대칭 — [#6806] "키 존재" 가 아니라 "값 변화" 가 회전 변경이다. 게터는 이 키를
+        // 항상 내보내므로, 종전에는 같은 각도를 되먹여도 `refresh_picture_rotation_layout_for_save`
+        // 가 돌아 `common` 을 `current` 로 다시 세웠다(#6355 지문 판정을 앞단에서 무력화).
         if let Some(v) = json_i16(props_json, "rotationAngle") {
-            pic.shape_attr.rotation_angle = v;
-            rotation_changed = true;
+            if v != pic.shape_attr.rotation_angle {
+                pic.shape_attr.rotation_angle = v;
+                rotation_changed = true;
+            }
         }
         if let Some(v) = json_bool(props_json, "horzFlip") {
             pic.shape_attr.horz_flip = v;
@@ -1401,7 +1402,7 @@ impl DocumentCore {
     /// 최댓값+1 로 채번한다 — 순번 채번은 storage id 에 구멍이 있는 문서에서
     /// 기존 이미지와 스트림 이름이 충돌해 저장 시 이미지가 뒤바뀌거나
     /// 소실된다. (insert_picture_native 와 그림 지정이 규칙 공유.)
-    fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
+    pub(crate) fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
         use crate::model::bin_data::{
             BinData, BinDataCompression, BinDataContent, BinDataStatus, BinDataType,
         };
@@ -1808,15 +1809,9 @@ impl DocumentCore {
                 .unwrap_or_else(|| parent.text.chars().count())
                 + 1;
 
-            // outer table dirty 마킹 (재측정 유도)
+            // 최외곽 표 host 문단의 측정 revision을 무효화한다.
             let outer_ctrl = cell_path[0].0;
-            if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
-                [para_idx]
-                .controls
-                .get_mut(outer_ctrl)
-            {
-                t.dirty = true;
-            }
+            self.mark_cell_control_dirty(section_idx, para_idx, outer_ctrl);
             self.mark_section_dirty(section_idx);
             self.paginate_if_needed();
             // [Task #1151 v9 결함 F] page tree cache invalidate — v5 와 동일 결함 (다른

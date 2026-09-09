@@ -189,7 +189,7 @@ last_verified: 2026-08-18
 ## 실패 모드 카탈로그 (여정 공통)
 
 아래는 과제 하나가 아니라 pack 전체가 반복해서 잡는 실수다. 예외·가장자리
-상세는 [mydocs/working/gym_serialization_exceptions.md](../../../mydocs/working/gym_serialization_exceptions.md)
+상세는 [mydocs/working/gym_serialization_exceptions.md](../../../mydocs/working/archives/gym_serialization_exceptions.md)
 에 적는다.
 
 ### F1. 무편집 복사
@@ -287,7 +287,7 @@ python -m unittest scripts.tests.test_gym_serialization_pack -v
 갈라 놓은 후속이다.
 
 상세 설계·예외는
-[mydocs/working/gym_serialization_pack.md](../../../mydocs/working/gym_serialization_pack.md)
+[mydocs/working/gym_serialization_pack.md](../../../mydocs/working/archives/gym_serialization_pack.md)
 와
-[mydocs/working/gym_serialization_exceptions.md](../../../mydocs/working/gym_serialization_exceptions.md)
+[mydocs/working/gym_serialization_exceptions.md](../../../mydocs/working/archives/gym_serialization_exceptions.md)
 를 본다.

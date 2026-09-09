@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "key": "issue6718",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6718/27469-child-allowance-retroactive-support.hwp",
+      "sha256": "f619b8745d179562755e767307a3728dc7f8952fe70d376fbfe28aaf77ff66d7"
+    },
+    "pdf": {
+      "path": "pdf/issue6718-27469-2020.pdf",
+      "sha256": "87fa64ad9b7061de3e321f16af5c4e1eb0eda81354c084864ab308f497345fc6"
+    },
+    "git_head": "8204bdb29999fdbf96c3227fa25ee860211fd3b1",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "d367dba28c3620d5d2bba6d236a443597c2710c3b7c2efa06611f087708b94e8"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review-ci-green-20260905/release-test/rhwp",
+      "path": "target/pr-review-ci-green-20260905/release-test/rhwp",
+      "sha256": "d34749fbff8d855ef6f019a6ea9b59b272e287399ea72c2adfa5f229c57ed5fc"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    7
+  ],
+  "requested_page_shards": [
+    [
+      7
+    ]
+  ],
+  "run_state": "complete"
+}

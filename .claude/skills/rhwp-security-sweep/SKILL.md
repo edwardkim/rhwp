@@ -17,7 +17,7 @@ description: HWP/HWPX 문서의 배포 전/수신 후 보안 점검을 수행합
 권위: [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
 (§inspect · §edit redact · §edit sanitize · §export-provenance-map).
 실측 원형: 레시피 3(마스킹)·4(수신 선검사)·10(송신 스윕).
-처리 기록: [`mydocs/working/agent_security_sweep.md`](../../../mydocs/working/agent_security_sweep.md).
+처리 기록: [`mydocs/working/agent_security_sweep.md`](../../../mydocs/working/archives/agent_security_sweep.md).
 
 ## 바이너리
 

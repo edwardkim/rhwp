@@ -229,7 +229,7 @@ fn exception_catalog_covers_required_paths() {
 
 #[test]
 fn working_doc_exists() {
-    let path = repo_root().join("mydocs/working/agent_fidelity_compare.md");
+    let path = repo_root().join("mydocs/working/archives/agent_fidelity_compare.md");
     assert!(path.is_file(), "{path:?}");
     let text = fs::read_to_string(&path).unwrap();
     assert!(text.contains("#5329"), "{text}");

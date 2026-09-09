@@ -16,7 +16,7 @@
         "schemaVersion": {
           "cmd": [
             "lineage",
-            "{file:receipts/day.capsule.json}",
+            "{sub:receipts/day.capsule.json}",
             "--json"
           ],
           "path": "schemaVersion"

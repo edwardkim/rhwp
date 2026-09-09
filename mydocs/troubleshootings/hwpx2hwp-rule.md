@@ -725,7 +725,7 @@ ir-diff가 같으므로 HWP5 저장 contract도 맞다고 판단하지 않는다
 rhwp-studio reload가 성공했으므로 한컴 HWP 로딩도 성공한다고 판단하지 않는다.
 ```
 
-`examples/hwpx_roundtrip.rs`와 같은 HWPX self-roundtrip 도구도 한컴 oracle이 아니다.
+`tools/diagnostics/hwpx_roundtrip.rs`와 같은 HWPX self-roundtrip 도구도 한컴 oracle이 아니다.
 같은 포맷 안에서 자기 보존성을 확인하는 용도로만 사용한다.
 
 ```text

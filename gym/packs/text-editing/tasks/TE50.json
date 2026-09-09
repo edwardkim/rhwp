@@ -34,7 +34,7 @@
       "name": "첫 일치 오프셋",
       "op": "answer_eq",
       "answer": "off",
-      "path": "matches[0].offset",
+      "path": "matches[0].charOffset",
       "cmd": [
         "search",
         "{file:ins50.hwp}",

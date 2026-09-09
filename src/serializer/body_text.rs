@@ -165,7 +165,7 @@ fn serialize_memo_tail(
                 }]
             }),
         line_segs: last_para
-            .map(|p| p.line_segs.clone())
+            .map(|p| p.serializable_line_segs().to_vec())
             .filter(|segs| !segs.is_empty())
             .unwrap_or_else(|| Paragraph::new_empty().line_segs),
         raw_header_extra: vec![0; 12],
@@ -308,9 +308,10 @@ fn serialize_paragraph_with_msb(
     // HWPX 파서만 채우므로(HWP5·HWP3·HML 출처는 0), x2h 에서만 발동한다. HWPX 재수출
     // (x2x)은 이 함수를 거치지 않고 `serializer/hwpx` 가 날값을 유지한다 — 거기서 축을
     // 옮기면 왕복마다 8씩 흘러내린다(#5943 주석).
+    let serializable_line_segs = para.serializable_line_segs();
     let hwp5_axis_line_segs: Option<Vec<LineSeg>> =
-        (para.hwpx_axis_shift != 0 && !para.line_segs.is_empty()).then(|| {
-            para.line_segs
+        (para.hwpx_axis_shift != 0 && !serializable_line_segs.is_empty()).then(|| {
+            serializable_line_segs
                 .iter()
                 .map(|seg| LineSeg {
                     text_start: para.line_seg_text_start_of(seg.text_start),
@@ -318,7 +319,9 @@ fn serialize_paragraph_with_msb(
                 })
                 .collect()
         });
-    let source_line_segs = hwp5_axis_line_segs.as_deref().unwrap_or(&para.line_segs);
+    let source_line_segs = hwp5_axis_line_segs
+        .as_deref()
+        .unwrap_or(serializable_line_segs);
 
     // [#4677] 본문에 대응하지 않는 lineseg 는 파일에 내보내지 않는다 — 조판 전용 보강 줄과
     // PARA_TEXT 밖을 가리키는 줄 두 갈래다(판정은 `line_segs_within_text` 주석 참조).
@@ -332,11 +335,7 @@ fn serialize_paragraph_with_msb(
         // template. They are not a serializable partition of the new text.
         &source_line_segs[..0]
     } else {
-        line_segs_within_text(
-            source_line_segs,
-            actual_char_count,
-            para.layout_only_fill_lines,
-        )
+        line_segs_within_text(source_line_segs, actual_char_count)
     };
 
     // PARA_HEADER (effective_char_shapes 길이 반영)
@@ -1234,13 +1233,8 @@ fn push_field_end_ctrl(code_units: &mut Vec<u16>, marker: FieldEndMarker) {
 /// (`char_count=9`, 줄 `[0, 9]`)이 그렇고, 저장소 샘플 5건에서 40개 문단이 이 형태다.
 /// 한글은 그 문서를 정상 개방하므로 끝 위치를 가리키는 줄은 버릴 값이 아니다. 오라클로
 /// 본문 폐기를 확정한 값은 모두 끝을 **넘어선다**(`char_count=5` 에 `10`, `37` 에 `40`).
-fn line_segs_within_text(
-    line_segs: &[LineSeg],
-    char_count: u32,
-    layout_only_fill_lines: usize,
-) -> &[LineSeg] {
-    let real = line_segs.len().saturating_sub(layout_only_fill_lines);
-    let in_range = line_segs_within_text_axis(&line_segs[..real], char_count);
+fn line_segs_within_text(line_segs: &[LineSeg], char_count: u32) -> &[LineSeg] {
+    let in_range = line_segs_within_text_axis(line_segs, char_count);
     if in_range.is_empty() {
         line_segs
     } else {
@@ -2097,6 +2091,39 @@ mod tests {
             1,
             "조판 전용 보강 줄은 레코드에서 제외된다"
         );
+
+        memo_root_copies_only_source_line_segments();
+    }
+
+    fn memo_root_copies_only_source_line_segments() {
+        let mut last = Paragraph::new_empty();
+        last.line_segs = vec![
+            LineSeg {
+                text_start: 0,
+                line_height: 500,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 1,
+                line_height: 500,
+                ..Default::default()
+            },
+        ];
+        last.layout_only_fill_lines = 1;
+        let section = Section {
+            paragraphs: vec![last],
+            ..Default::default()
+        };
+        let memo_lists = vec![(1, vec![Paragraph::new_empty()])];
+        let mut records = Vec::new();
+
+        serialize_memo_tail(&section, &memo_lists, &mut records);
+
+        let root_lines = records
+            .iter()
+            .find(|record| record.tag_id == tags::HWPTAG_PARA_LINE_SEG)
+            .expect("memo root line record");
+        assert_eq!(root_lines.data.len(), 36, "one source LineSeg only");
     }
 
     /// PARA_RANGE_TAG 라운드트립

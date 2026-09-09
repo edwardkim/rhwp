@@ -48,4 +48,4 @@ status: active
 7. `devel` sync, #3315 open/#3637 closed 상태 확인, upstream integration branch·`local/pr3665*`·
    `local/pr3666` refs·전용 target의 정확한 종료 대상만 post-merge 절차에 따라 정리한다.
 
-오늘 작업 상태와 merge 전 조건은 [2026년 8월 1일 오늘할일](../../orders/20260801.md)에 함께 기록한다.
+오늘 작업 상태와 merge 전 조건은 [2026년 8월 1일 오늘할일](../../orders/archives/20260801.md)에 함께 기록한다.

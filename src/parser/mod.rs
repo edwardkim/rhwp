@@ -847,6 +847,9 @@ fn parse_sections_strict(
                 section.raw_stream = Some(section_data);
                 sections.push(section);
             }
+            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+                return Err(ParseError::BodyTextError(e));
+            }
             Err(e) => {
                 // 개별 섹션 파싱 실패 시 빈 섹션으로 대체 (전체 실패 방지)
                 eprintln!("경고: Section{} 파싱 실패: {}", i, e);
@@ -922,7 +925,7 @@ fn parse_hwp_with_lenient(
         } else if encrypted {
             // 비밀번호 암호 문서: lenient reader 로 raw 섹션 바이트를 얻어 복호화.
             let raw = lenient
-                .read_stream_raw_limited(&format!("Section{}", i), section_raw_limit)
+                .read_body_text_section_raw_limited(i, section_raw_limit)
                 .map_err(ParseError::CfbError)?;
             crypto::decrypt_password_protected_limited(
                 &raw,
@@ -942,7 +945,7 @@ fn parse_hwp_with_lenient(
                 Some(decoded) => decoded,
                 None => {
                     let raw = lenient
-                        .read_stream_raw_limited(&format!("Section{}", i), section_raw_limit)
+                        .read_body_text_section_raw_limited(i, section_raw_limit)
                         .map_err(ParseError::CfbError)?;
                     cfb_reader::decode_stream_limited(raw, compressed, section_output_limit)
                         .map_err(ParseError::CfbError)?
@@ -957,6 +960,9 @@ fn parse_hwp_with_lenient(
             Ok(mut section) => {
                 section.raw_stream = Some(section_data);
                 sections.push(section);
+            }
+            Err(e @ body_text::BodyTextError::DrawingTextStructure(_)) => {
+                return Err(ParseError::BodyTextError(e));
             }
             Err(e) => {
                 eprintln!("경고: Section{} 파싱 실패 (lenient): {}", i, e);
@@ -1097,7 +1103,7 @@ fn load_bin_data_content_lenient(
         let stream_compressed =
             bin_data_stream_is_compressed(bd.compression, compressed, encrypted);
 
-        match lenient.read_stream(&storage_name) {
+        match lenient.read_stream(&format!("/BinData/{}", storage_name)) {
             Ok(data) => {
                 let mut decompressed = if encrypted {
                     let pwd = password.unwrap();
@@ -3095,7 +3101,18 @@ mod tests {
             cfb::CompoundFile::open(std::io::Cursor::new(data.to_vec())).expect("cfb open");
         let mut stream = compound.create_stream(path).expect("테스트 스트림 교체");
         stream.write_all(payload).unwrap();
-        compound.into_inner().into_inner()
+        // Stream buffers writes independently of CompoundFile::into_inner().
+        stream.flush().expect("flush replacement stream");
+        let bytes = compound.into_inner().into_inner();
+        let mut reopened = cfb_reader::CfbReader::open(&bytes).expect("reopen CFB fixture");
+        assert_eq!(
+            reopened
+                .read_stream_raw(path)
+                .expect("read replacement stream"),
+            payload,
+            "replacement stream must retain the complete payload"
+        );
+        bytes
     }
 
     /// 기본 CFB reader가 열기 단계에서 거부하지만 LenientCfbReader는 계속 읽을 수 있는
@@ -3284,18 +3301,27 @@ mod tests {
         let oversized_doc_info = raw_deflate(&vec![0; LIMIT + 1]);
         let strict_rejected = replace_raw_stream(&source, "/DocInfo", &oversized_doc_info);
         let mutated = force_lenient_cfb_fallback(&strict_rejected);
+        let lenient = cfb_reader::LenientCfbReader::open(&mutated).expect("lenient fixture");
+        assert_eq!(
+            lenient.read_stream("DocInfo").expect("lenient DocInfo"),
+            oversized_doc_info,
+            "FAT mutation must preserve the oversized DocInfo payload"
+        );
 
         let result = with_document_open_decompression_policy_for_test(
             hwp5_document_open_policy_for_test(LIMIT, LIMIT * 2),
             || parse_document(&mutated),
         );
 
-        assert!(matches!(
-            result,
-            Err(ParseError::CfbError(cfb_reader::CfbError::LimitExceeded(
-                LIMIT
-            )))
-        ));
+        assert!(
+            matches!(
+                result,
+                Err(ParseError::CfbError(cfb_reader::CfbError::LimitExceeded(
+                    LIMIT
+                )))
+            ),
+            "expected DocInfo output limit, got {result:?}"
+        );
     }
 
     /// Lenient fallback에서도 배포 플래그가 켜졌다면 정확한 ViewText hierarchy만

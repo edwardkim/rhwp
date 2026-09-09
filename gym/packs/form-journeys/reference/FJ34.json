@@ -13,7 +13,8 @@
             "--dry-run",
             "--json"
           ],
-          "path": "notFound"
+          "path": "notFound",
+          "len": true
         }
       }
     }

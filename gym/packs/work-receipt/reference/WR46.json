@@ -16,7 +16,7 @@
         "schemaVersion": {
           "cmd": [
             "audit",
-            "{file:receipts}",
+            "{sub:receipts}",
             "--json"
           ],
           "path": "schemaVersion"

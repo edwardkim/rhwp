@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   detectPlatformKind,
   formatShortcutLabel,
+  getCellSelectionArrowAction,
   getNavigationAction,
   shouldSuppressUnmappedNavigation,
   type NavigationKeyInput,
@@ -83,6 +84,14 @@ test('Windows/Linux keymap은 Alt+Arrow 단어 이동을 처리하지 않는다'
   assert.equal(shouldSuppressUnmappedNavigation(key({ key: 'ArrowRight', altKey: true }), 'other'), true);
   assert.equal(shouldSuppressUnmappedNavigation(key({ key: 'ArrowUp', altKey: true }), 'other'), false);
   assert.equal(shouldSuppressUnmappedNavigation(key({ key: 'ArrowLeft', altKey: true }), 'mac'), false);
+});
+
+test('셀 선택 Arrow ownership은 지속 가능한 resize만 소비하고 Alt/Shift는 탐색한다', () => {
+  assert.equal(getCellSelectionArrowAction(key({ key: 'ArrowRight', ctrlKey: true })), 'resize');
+  assert.equal(getCellSelectionArrowAction(key({ key: 'ArrowDown', metaKey: true })), 'resize');
+  assert.equal(getCellSelectionArrowAction(key({ key: 'ArrowLeft', altKey: true })), 'navigate');
+  assert.equal(getCellSelectionArrowAction(key({ key: 'ArrowUp', shiftKey: true })), 'navigate');
+  assert.equal(getCellSelectionArrowAction(key({ key: 'Enter', shiftKey: true })), null);
 });
 
 test('Home/End는 플랫폼 공통 줄 처음/끝으로 처리하고 Ctrl/Meta 조합은 기존 경로에 남긴다', () => {

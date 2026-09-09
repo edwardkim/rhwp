@@ -19,7 +19,7 @@ REF = SKILL / "references"
 EXAMPLES = SKILL / "examples"
 FIXT = SKILL / "fixtures"
 GEN = REF / "_gen_pack.py"
-WORKING = REPO / "mydocs" / "working" / "agent_recipes.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_recipes.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
 RECIPES = REPO / "mydocs" / "manual" / "recipes"
 

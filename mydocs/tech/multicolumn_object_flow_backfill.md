@@ -71,7 +71,7 @@ ls[2] vpos=26644   ← vpos 리셋! 단1 시작 (26644 < 62511)
 - 차트 점유 크기: `resolve_object_size` (common 80mm) — 정상
 - hwp_used 추정: `rendering.rs:3456` `compute_hwp_used_height` (LINE_SEG vpos 기준)
 
-## 4.1 정답지 PDF 시각 확인 (`pdf-large/hwpx/143E433F503322BD33.pdf`)
+## 4.1 정답지 PDF 시각 확인 (`pdf/hwpx/143E433F503322BD33.pdf`)
 
 한컴 출력 (정답지):
 - **왼쪽 단(단0)**: 텍스트 본문 + 표("연금 재정 전망") + 텍스트가 단 끝까지

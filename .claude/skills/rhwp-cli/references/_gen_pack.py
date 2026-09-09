@@ -1534,7 +1534,7 @@ def main() -> None:
                 "rhwp-table-exchange",
                 "rhwp-visual-regression",
             ],
-            "workingDoc": "mydocs/working/agent_cli.md",
+            "workingDoc": "mydocs/working/archives/agent_cli.md",
             "capabilityNote": "CAP-5316 expands existing rhwp-cli (LEGACY-d86c935bc), no new capability id",
         },
     )

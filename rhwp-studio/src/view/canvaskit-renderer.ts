@@ -70,7 +70,10 @@ import {
   decodedImageMatchesEncodedHeader,
   replayableEncodedImageHeader,
 } from './canvaskit/image-header';
-import { canvaskitClipRightPad } from './canvaskit/policy';
+import {
+  canvasKitCanonicalClipEnabled,
+  canvasKitCanonicalClipRect,
+} from './canvaskit/clip-replay';
 import {
   canvasKitCanvasSupportsGlyphRunReplay,
   CanvasKitGlyphRunFontCache,
@@ -136,7 +139,6 @@ const VERTICAL_PRESENTATION_BASE_TEXT = new Map<string, string>([
   ['\uFE44', '\u300F'],
 ]);
 const COMPLEX_SHAPING_UNICODE_CATEGORY = /[\p{M}\p{Cf}]/u;
-type MutablePath = Path & Pick<PathBuilder, 'arcToRotated' | 'close' | 'cubicTo' | 'lineTo' | 'moveTo'>;
 type LayerColorGraph = NonNullable<NonNullable<LayerGlyphOutlineOp['colorLayers']>['paintGraph']>;
 type LayerColorGraphNode = NonNullable<LayerColorGraph['nodes']>[number];
 interface CanvasKitSurfaceTarget {
@@ -346,6 +348,7 @@ export class CanvasKitLayerRenderer {
   private currentFontResources: LayerFontResources | undefined;
   private currentShowParagraphMarks = false;
   private currentShowControlCodes = false;
+  private currentClipEnabled = true;
   private currentReplayFeatureCounts: CanvasKitReplayFeatureCounts = {
     dashedStrokes: 0,
     glyphRuns: 0,
@@ -647,6 +650,10 @@ export class CanvasKitLayerRenderer {
       );
       this.currentShowParagraphMarks = tree.outputOptions?.showParagraphMarks === true;
       this.currentShowControlCodes = tree.outputOptions?.showControlCodes === true;
+      this.currentClipEnabled = canvasKitCanonicalClipEnabled(
+        tree.buildOptions?.clipEnabled,
+        tree.outputOptions?.clipEnabled,
+      );
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
       this.selectTextVariants(tree.root, canvas);
       let hasPageBackground = false;
@@ -664,10 +671,8 @@ export class CanvasKitLayerRenderer {
       canvas.save();
       canvas.clear(this.color(hasPageBackground ? 'rgba(0,0,0,0)' : '#ffffff'));
       canvas.scale(scale, scale);
-      const rightOverflowSlop =
-        tree.outputOptions?.showParagraphMarks || tree.outputOptions?.showControlCodes ? 48 : undefined;
       for (const replayPlane of CANVASKIT_REPLAY_PLANES) {
-        this.renderNode(canvas, tree.root, tree.profile ?? 'screen', replayPlane, null, rightOverflowSlop);
+        this.renderNode(canvas, tree.root, tree.profile ?? 'screen', replayPlane, null);
       }
       if (pageInfo) {
         const paint = this.makeStrokePaint('#c0c0c0', 0.3);
@@ -698,6 +703,7 @@ export class CanvasKitLayerRenderer {
       this.currentFontResources = undefined;
       this.currentShowParagraphMarks = false;
       this.currentShowControlCodes = false;
+      this.currentClipEnabled = true;
       this.lastRenderDurationMs = performance.now() - renderStartedAt;
       this.renderCount += 1;
     }
@@ -1190,17 +1196,20 @@ export class CanvasKitLayerRenderer {
     profile: LayerRenderProfile,
     replayPlane: CanvasKitReplayPlane,
     inheritedLayer: LayerInfo | null = null,
-    rightOverflowSlop?: number,
   ): void {
     const activeLayer = node.layer ?? inheritedLayer;
     if (node.kind === 'group') {
       for (const child of node.children) {
-        this.renderNode(canvas, child, profile, replayPlane, activeLayer, rightOverflowSlop);
+        this.renderNode(canvas, child, profile, replayPlane, activeLayer);
       }
       return;
     }
     if (node.kind === 'clipRect') {
-      this.renderClipNode(canvas, node, profile, replayPlane, activeLayer, rightOverflowSlop);
+      if (!this.currentClipEnabled) {
+        this.renderNode(canvas, node.child, profile, replayPlane, activeLayer);
+        return;
+      }
+      this.renderClipNode(canvas, node, profile, replayPlane, activeLayer);
       return;
     }
     this.renderLeaf(canvas, node, profile, replayPlane, activeLayer);
@@ -1212,16 +1221,16 @@ export class CanvasKitLayerRenderer {
     profile: LayerRenderProfile,
     replayPlane: CanvasKitReplayPlane,
     inheritedLayer: LayerInfo | null,
-    rightOverflowSlop?: number,
   ): void {
-    const pad = canvaskitClipRightPad(this.renderMode, profile, node.clipKind, rightOverflowSlop);
-    const clip = {
-      ...node.clip,
-      width: node.clip.width + pad,
-    };
     canvas.save();
-    canvas.clipRect(this.rect(clip), this.canvasKit.ClipOp?.Intersect ?? 0, true);
-    this.renderNode(canvas, node.child, profile, replayPlane, inheritedLayer, rightOverflowSlop);
+    canvas.clipRect(
+      canvasKitCanonicalClipRect(node.clip, (x, y, width, height) =>
+        this.canvasKit.XYWHRect(x, y, width, height),
+      ),
+      this.canvasKit.ClipOp?.Intersect ?? 0,
+      true,
+    );
+    this.renderNode(canvas, node.child, profile, replayPlane, inheritedLayer);
     canvas.restore();
   }
 
@@ -1281,10 +1290,23 @@ export class CanvasKitLayerRenderer {
         this.renderFormObject(canvas, op);
         return;
       case 'placeholder':
-        this.renderPlaceholder(canvas, op, profile);
+        this.renderPlaceholder(canvas, op);
         return;
       case 'equation':
         this.renderEquation(canvas, op);
+        return;
+      case 'controlLabel':
+        this.renderTextRun(canvas, {
+          type: 'textRun',
+          bbox: op.bbox,
+          text: op.label,
+          baseline: op.fontSize ?? 10,
+          style: {
+            fontFamily: 'sans-serif',
+            fontSize: op.fontSize ?? 10,
+            color: op.color ?? '#cc3333',
+          },
+        });
         return;
       case 'rawSvg':
         this.unsupportedOps.add('rawSvg:unsupportedDirectReplay');
@@ -1399,12 +1421,7 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderPath(canvas: SkCanvas, op: LayerPathOp): void {
-    const path = new this.canvasKit.Path() as MutablePath;
-    let currentX = op.bbox.x;
-    let currentY = op.bbox.y;
-    for (const command of op.commands ?? []) {
-      [currentX, currentY] = this.applyPathCommand(path, command, currentX, currentY);
-    }
+    const path = this.createCommandPath(op.commands ?? [], op.bbox.x, op.bbox.y);
     const style: LayerShapeStyle = op.style ?? (op.lineStyle ? {} : {
       strokeColor: '#000000',
       strokeWidth: 1,
@@ -1473,7 +1490,24 @@ export class CanvasKitLayerRenderer {
     path.delete?.();
   }
 
-  private applyPathCommand(path: MutablePath, command: LayerPathCommand, currentX: number, currentY: number): [number, number] {
+  private createCommandPath(
+    commands: readonly LayerPathCommand[],
+    currentX = 0,
+    currentY = 0,
+  ): Path {
+    const builder = new this.canvasKit.PathBuilder();
+    try {
+      for (const command of commands) {
+        [currentX, currentY] = this.applyPathCommand(builder, command, currentX, currentY);
+      }
+      // CanvasKit 0.42의 Path는 생성 명령을 받지 않는다. 완성된 경로만 넘긴다.
+      return builder.detach();
+    } finally {
+      builder.delete();
+    }
+  }
+
+  private applyPathCommand(path: PathBuilder, command: LayerPathCommand, currentX: number, currentY: number): [number, number] {
     switch (command.type) {
       case 'moveTo':
         path.moveTo(command.x, command.y);
@@ -1669,13 +1703,8 @@ export class CanvasKitLayerRenderer {
     try {
       (canvas as unknown as { concat: (matrix: number[]) => void }).concat(matrix);
       for (const outline of op.paths) {
-        const path = new this.canvasKit.Path() as MutablePath;
-        let currentX = 0;
-        let currentY = 0;
+        const path = this.createCommandPath(outline.commands ?? []);
         try {
-          for (const command of outline.commands ?? []) {
-            [currentX, currentY] = this.applyPathCommand(path, command, currentX, currentY);
-          }
           this.applyGlyphPathFillRule(path, outline.fillRule);
           canvas.drawPath(path, fill);
           if (stroke) canvas.drawPath(path, stroke);
@@ -1731,12 +1760,7 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('glyphOutline:replayInvariant');
       return;
     }
-    const path = new this.canvasKit.Path() as MutablePath;
-    let currentX = 0;
-    let currentY = 0;
-    for (const command of pathNode.commands) {
-      [currentX, currentY] = this.applyPathCommand(path, command, currentX, currentY);
-    }
+    const path = this.createCommandPath(pathNode.commands);
     this.applyFillRule(path, pathNode.fillRule);
     const paint = new this.canvasKit.Paint();
     let shader: unknown | undefined;
@@ -1789,7 +1813,7 @@ export class CanvasKitLayerRenderer {
     ];
   }
 
-  private applyFillRule(path: MutablePath, fillRule: string | undefined): void {
+  private applyFillRule(path: Path, fillRule: string | undefined): void {
     if (fillRule === 'evenodd') {
       (path as unknown as { setFillType?: (fillType: unknown) => void }).setFillType?.(this.canvasKit.FillType.EvenOdd);
     }
@@ -3601,9 +3625,8 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private renderPlaceholder(canvas: SkCanvas, op: LayerPlaceholderOp, profile: LayerRenderProfile): void {
+  private renderPlaceholder(canvas: SkCanvas, op: LayerPlaceholderOp): void {
     if (op.kind === 'missingPicture') {
-      if (profile === 'print' || profile === 'highQuality') return;
       if (![op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height].every(Number.isFinite)
         || op.bbox.width <= 0 || op.bbox.height <= 0) return;
       const paint = this.makeStrokePaint(op.strokeColor ?? '#999999', 1);
@@ -3961,41 +3984,49 @@ export class CanvasKitLayerRenderer {
       tipX + along * alongX + perp * perpX,
       tipY + along * alongY + perp * perpY,
     ];
-    const path = new this.canvasKit.Path() as MutablePath;
+    const builder = new this.canvasKit.PathBuilder();
     const fill = this.makeFillPaint(color);
     const stroke = this.makeStrokePaint(color, Math.max(0.5, strokeWidth * 0.3));
     const openFill = this.makeFillPaint('#ffffff');
+    const drawPath = (paint: SkPaint, outline?: SkPaint): void => {
+      const path = builder.detach();
+      try {
+        canvas.drawPath(path, paint);
+        if (outline) canvas.drawPath(path, outline);
+      } finally {
+        path.delete();
+      }
+    };
     try {
       if (arrowStyle === 'arrow') {
         const [bx1, by1] = toWorld(arrowW, -halfH);
         const [bx2, by2] = toWorld(arrowW, halfH);
-        path.moveTo(tipX, tipY);
-        path.lineTo(bx1, by1);
-        path.lineTo(bx2, by2);
-        path.close();
-        canvas.drawPath(path, fill);
+        builder.moveTo(tipX, tipY);
+        builder.lineTo(bx1, by1);
+        builder.lineTo(bx2, by2);
+        builder.close();
+        drawPath(fill);
       } else if (arrowStyle === 'concaveArrow') {
         const [bx1, by1] = toWorld(arrowW, -halfH);
         const [bx2, by2] = toWorld(arrowW, halfH);
         const [cx, cy] = toWorld(arrowW - arrowW * 0.3, 0);
-        path.moveTo(tipX, tipY);
-        path.lineTo(bx1, by1);
-        path.lineTo(cx, cy);
-        path.lineTo(bx2, by2);
-        path.close();
-        canvas.drawPath(path, fill);
+        builder.moveTo(tipX, tipY);
+        builder.lineTo(bx1, by1);
+        builder.lineTo(cx, cy);
+        builder.lineTo(bx2, by2);
+        builder.close();
+        drawPath(fill);
       } else if (arrowStyle === 'diamond' || arrowStyle === 'openDiamond') {
         const [px1, py1] = toWorld(0, 0);
         const [px2, py2] = toWorld(arrowW / 2, -halfH);
         const [px3, py3] = toWorld(arrowW, 0);
         const [px4, py4] = toWorld(arrowW / 2, halfH);
-        path.moveTo(px1, py1);
-        path.lineTo(px2, py2);
-        path.lineTo(px3, py3);
-        path.lineTo(px4, py4);
-        path.close();
-        canvas.drawPath(path, arrowStyle === 'diamond' ? fill : openFill);
-        if (arrowStyle === 'openDiamond') canvas.drawPath(path, stroke);
+        builder.moveTo(px1, py1);
+        builder.lineTo(px2, py2);
+        builder.lineTo(px3, py3);
+        builder.lineTo(px4, py4);
+        builder.close();
+        drawPath(arrowStyle === 'diamond' ? fill : openFill, arrowStyle === 'openDiamond' ? stroke : undefined);
       } else if (arrowStyle === 'circle' || arrowStyle === 'openCircle') {
         const [cx, cy] = toWorld(arrowW / 2, 0);
         const oval = this.canvasKit.XYWHRect(cx - arrowW * 0.4, cy - halfH * 0.8, arrowW * 0.8, arrowH * 0.8);
@@ -4006,19 +4037,18 @@ export class CanvasKitLayerRenderer {
         const [px2, py2] = toWorld(arrowW, -halfH);
         const [px3, py3] = toWorld(arrowW, halfH);
         const [px4, py4] = toWorld(0, halfH);
-        path.moveTo(px1, py1);
-        path.lineTo(px2, py2);
-        path.lineTo(px3, py3);
-        path.lineTo(px4, py4);
-        path.close();
-        canvas.drawPath(path, arrowStyle === 'square' ? fill : openFill);
-        if (arrowStyle === 'openSquare') canvas.drawPath(path, stroke);
+        builder.moveTo(px1, py1);
+        builder.lineTo(px2, py2);
+        builder.lineTo(px3, py3);
+        builder.lineTo(px4, py4);
+        builder.close();
+        drawPath(arrowStyle === 'square' ? fill : openFill, arrowStyle === 'openSquare' ? stroke : undefined);
       }
     } finally {
       openFill.delete?.();
       stroke.delete?.();
       fill.delete?.();
-      path.delete?.();
+      builder.delete();
     }
   }
 

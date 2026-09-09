@@ -8,6 +8,19 @@ import type { CellSelectionPhase, CellSelectionPoint } from './cell-selection-ph
 
 type CellSelectionReason = 'manual' | 'protected';
 
+/** [Task #6741] undo 복원을 위해 캡처한 셀 블록 선택 상태. */
+export type CellBlockSelectionState = {
+  readonly sec: number;
+  readonly ppi: number;
+  readonly ci: number;
+  readonly cellPath?: CellPathEntry[];
+  readonly anchor: CellSelectionPoint;
+  readonly focus: CellSelectionPoint;
+  readonly phase: CellSelectionPhase;
+  readonly reason: CellSelectionReason;
+  readonly excluded: string[];
+};
+
 export type HeaderFooterTextPosition = {
   sectionIdx: number;
   isHeader: boolean;
@@ -1430,6 +1443,63 @@ export class CursorState {
   getCellSelectionFocus(): CellSelectionPoint | null {
     if (!this._cellSelectionMode || !this.cellFocus) return null;
     return { ...this.cellFocus };
+  }
+
+  /**
+   * [Task #6741] 셀 블록 선택을 undo 복원용으로 캡처한다.
+   *
+   * 한컴은 셀 블록에서 내용을 지우고 되돌리면 지우기 전 블록을 되살린다(#6741 실측).
+   * rhwp 는 히스토리 점프 시 파생 상태를 해제하므로(#2339), 되살리려면 해제 전에
+   * 잡아 둔 값이 필요하다 — F3 확장 단계가 `blockPhase` 로 그렇게 하는 것과 같다(#5691).
+   *
+   * `rowCount`/`colCount` 는 담지 않는다. 복원 시점의 표에서 다시 읽어야 그 사이
+   * 행·열이 바뀐 경우에 유령 범위를 만들지 않는다.
+   */
+  captureCellSelection(): CellBlockSelectionState | null {
+    if (!this._cellSelectionMode || !this.cellAnchor || !this.cellFocus || !this.cellTableCtx) return null;
+    const { sec, ppi, ci, cellPath } = this.cellTableCtx;
+    return {
+      sec, ppi, ci,
+      cellPath: cellPath ? cellPath.map((e) => ({ ...e })) : undefined,
+      anchor: { ...this.cellAnchor },
+      focus: { ...this.cellFocus },
+      phase: this._cellSelectionPhase,
+      reason: this._cellSelectionReason,
+      excluded: [...this.excludedCells],
+    };
+  }
+
+  /**
+   * [Task #6741] 캡처한 셀 블록 선택을 되살린다.
+   *
+   * 표가 사라졌거나 행·열이 줄어 범위가 밖으로 나가면 되살리지 않고 `false` 를 준다 —
+   * 유령 범위를 만들지 않는 것이 #2339 가 세운 규약이다.
+   */
+  restoreCellSelection(state: CellBlockSelectionState): boolean {
+    let dims: { rowCount: number; colCount: number };
+    try {
+      dims = state.cellPath && state.cellPath.length > 0
+        ? this.wasm.getTableDimensionsByPath(state.sec, state.ppi, JSON.stringify(state.cellPath))
+        : this.wasm.getTableDimensions(state.sec, state.ppi, state.ci);
+    } catch {
+      return false;
+    }
+    const inside = (p: CellSelectionPoint) =>
+      p.row >= 0 && p.col >= 0 && p.row < dims.rowCount && p.col < dims.colCount;
+    if (!inside(state.anchor) || !inside(state.focus)) return false;
+
+    this.cellAnchor = { ...state.anchor };
+    this.cellFocus = { ...state.focus };
+    this.cellTableCtx = {
+      sec: state.sec, ppi: state.ppi, ci: state.ci,
+      rowCount: dims.rowCount, colCount: dims.colCount,
+      cellPath: state.cellPath,
+    };
+    this._cellSelectionMode = true;
+    this._cellSelectionPhase = state.phase;
+    this._cellSelectionReason = state.reason;
+    this.excludedCells = new Set(state.excluded);
+    return true;
   }
 
   /** F5 반복: 셀 선택 단계를 다음으로 진행한다. */

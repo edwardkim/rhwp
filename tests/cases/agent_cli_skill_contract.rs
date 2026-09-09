@@ -136,7 +136,7 @@ fn skill_does_not_add_cli_and_stays_out_of_peers() {
 
 #[test]
 fn working_doc_records_issue_and_scope() {
-    let path = repo().join("mydocs/working/agent_cli.md");
+    let path = repo().join("mydocs/working/archives/agent_cli.md");
     let text = fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
     assert!(text.contains("5316"), "이슈 번호");
     assert!(text.contains("export-svg"));

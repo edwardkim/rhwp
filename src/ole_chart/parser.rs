@@ -140,13 +140,24 @@ fn parse_legacy_hwp_chart_contents(
         SeriesAxis::Rows => (grid.data_rows(), grid.data_cols()),
         SeriesAxis::Columns => (grid.data_cols(), grid.data_rows()),
     };
+    let labels: Vec<_> = (1..=category_count)
+        .map(|index| grid_category_label(&grid, series_axis, index))
+        .collect();
+    let has_labels = labels.iter().any(Option::is_some);
+    let categories = labels
+        .into_iter()
+        .enumerate()
+        .map(|(index, label)| match label {
+            Some(text) => text.to_string(),
+            None if has_labels => String::new(),
+            None => (index + 1).to_string(),
+        })
+        .collect();
 
     Ok(OleChart {
         chart_type: OleChartType::Unknown,
         title: extract_chart_title(bytes),
-        categories: (1..=category_count)
-            .map(|index| grid_category_label(&grid, series_axis, index))
-            .collect(),
+        categories,
         series: (1..=series_count)
             .map(|index| OleChartSeries {
                 name: grid_series_name(&grid, series_axis, index),
@@ -164,33 +175,29 @@ fn parse_legacy_hwp_chart_contents(
 /// 모르는 것은 다르다.
 fn grid_series_name(grid: &LegacyChartGrid, axis: SeriesAxis, index: usize) -> Option<String> {
     let label = match axis {
-        SeriesAxis::Rows => grid.row_label(index as u16),
-        SeriesAxis::Columns => grid.column_label(index as u16),
+        SeriesAxis::Rows => grid.row_label(grid.data_row_at(index as u16)),
+        SeriesAxis::Columns => grid.column_label(grid.data_col_at(index as u16)),
     };
     label.map(str::to_string)
 }
 
-/// 카테고리 이름. 라벨이 없으면 1-based 서수로 채워 `categories.len()` 이 데이터 치수와
-/// 어긋나지 않게 한다 — 렌더러가 카테고리 개수로 축을 잡는다.
-fn grid_category_label(grid: &LegacyChartGrid, axis: SeriesAxis, index: usize) -> String {
-    let label = match axis {
-        SeriesAxis::Rows => grid.column_label(index as u16),
-        SeriesAxis::Columns => grid.row_label(index as u16),
-    };
-    label
-        .map(str::to_string)
-        .unwrap_or_else(|| index.to_string())
+/// 카테고리 이름. 일부 눈금만 표시한 축의 빈 칸과 아예 이름 없는 축을 구분한다.
+fn grid_category_label(grid: &LegacyChartGrid, axis: SeriesAxis, index: usize) -> Option<&str> {
+    match axis {
+        SeriesAxis::Rows => grid.column_label(grid.data_col_at(index as u16)),
+        SeriesAxis::Columns => grid.row_label(grid.data_row_at(index as u16)),
+    }
 }
 
 /// 계열 `series` 의 카테고리 `category` 값.
 ///
-/// `scan_legacy_grid` 가 데이터 칸과 수치 셀의 일대일 대응을 이미 보장하므로 `None` 은
-/// 도달하지 않는다.
+/// 빈 데이터 칸은 결함이 아니므로(코퍼스 74개 중 5개) `None` 은 0 으로 채운다.
 fn grid_value(grid: &LegacyChartGrid, axis: SeriesAxis, series: usize, category: usize) -> f64 {
-    let (row, col) = match axis {
+    let (data_row, data_col) = match axis {
         SeriesAxis::Rows => (series as u16, category as u16),
         SeriesAxis::Columns => (category as u16, series as u16),
     };
+    let (row, col) = (grid.data_row_at(data_row), grid.data_col_at(data_col));
     grid.number(row, col).unwrap_or(0.0)
 }
 
@@ -226,8 +233,18 @@ pub fn probe_ole_chart_contents(bytes: &[u8]) -> Result<OleChartContentsProbe, O
     let has_ooxml_chart_marker = bytes
         .windows(b"chartSpace".len())
         .any(|w| w == b"chartSpace");
+    // [#6922] `w1 == w2` 를 요구하지 않는다.
+    //
+    // 종전 술어는 앞 16바이트 네 워드 중 **둘째·셋째가 같을 것**을 요구했다. 그 조건이
+    // 왜 성립해야 하는지는 근거로 적혀 있지 않았고, 실측하면 두 값은 **서로 다른 두
+    // 크기값**이다(148735526 `Contents`: `w1=0x3a65`(14,949) · `w2=0x22d4`(8,916)).
+    // 지금까지 표본에서 우연히 같았을 뿐이라, `VtChart`·`VtDataGrid` 표지를 둘 다 가진
+    // 진짜 레거시 한/글 차트가 `UNSUPPORTED_CONTENTS_LAYOUT` 으로 떨어졌다.
+    //
+    // 남는 술어는 그대로다 — `w0 == 0x0001_0000`, `w3`(개체 시작 오프셋)가 스트림 안의
+    // 합리적 값, 그리고 **`VtDataGrid` 표지**(아래 `likely_legacy_hwp_chart_contents`).
+    // `#5724`(StaticMetafile)·`#5725`(수식 OLE)는 그 표지가 없어 영향받지 않는다.
     let legacy_chart_object_start = if first_words_le[0] == 0x0001_0000
-        && first_words_le[1] == first_words_le[2]
         && first_words_le[3] >= 0x20
         && (first_words_le[3] as usize) < bytes.len()
     {

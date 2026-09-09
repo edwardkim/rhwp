@@ -18,7 +18,7 @@ PACK = GYM / "packs" / "form-journeys"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_form_journeys.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_form_journeys.md"
 MAINTAINER = GYM / "profiles" / "maintainer.json"
 
 EXISTING_OPS = {
@@ -127,7 +127,7 @@ class FormJourneysPackLayoutTests(unittest.TestCase):
             self.assertIn(needle, text, f"README 에 '{needle}' 가 없다")
 
     def test_working_notes_exist_and_are_korean(self):
-        self.assertTrue(WORKING.is_file(), "mydocs/working/gym_form_journeys.md 가 없다")
+        self.assertTrue(WORKING.is_file(), "mydocs/working/archives/gym_form_journeys.md 가 없다")
         text = WORKING.read_text(encoding="utf-8")
         self.assertGreater(len(text), 2000)
         for needle in ("FJ06", "FJ56", "기존 표본", "T07", "audit", "test_gym_packs"):

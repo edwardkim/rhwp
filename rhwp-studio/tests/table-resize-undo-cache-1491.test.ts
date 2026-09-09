@@ -27,19 +27,24 @@ function constructorEventsBlock(): string {
   return inputHandler.slice(start, end);
 }
 
-// #1491 Stage 1: undo 후 stale local resize segment가 다음 resize에 재적용되면 안 된다.
-test('undo/redo는 표 로컬 resize 런타임 캐시를 비운다', () => {
+test('undo/redo는 표 resize 런타임 캐시를 비운다', () => {
   const undo = methodBlock('handleUndo');
   const redo = methodBlock('handleRedo');
 
-  assert.match(undo, /clearTableResizeRuntimeCache\(\)/, 'undo 후 local resize 캐시를 비워야 함');
-  assert.match(redo, /clearTableResizeRuntimeCache\(\)/, 'redo 후 local resize 캐시를 비워야 함');
+  assert.match(undo, /clearTableResizeRuntimeCache\(\)/, 'undo 후 resize 캐시를 비워야 함');
+  assert.match(redo, /clearTableResizeRuntimeCache\(\)/, 'redo 후 resize 캐시를 비워야 함');
 });
 
-test('표 resize 런타임 캐시 정리는 local segment와 bbox 캐시를 함께 비운다', () => {
+test('표 resize 런타임 캐시 정리는 bbox와 marker 상태를 함께 비운다', () => {
   const clear = methodBlock('clearTableResizeRuntimeCache');
+  const tableResize = source('src/engine/input-handler-table.ts');
 
-  assert.match(clear, /tableLocalResizeSegments\.clear\(\)/, 'local resize segment 캐시 삭제 필요');
+  assert.doesNotMatch(clear, /tableLocalResizeSegments/, '지원하지 않는 local geometry sidecar 금지');
+  assert.doesNotMatch(
+    tableResize,
+    /tableLocalResizeSegments|pushLocalResize|clampSingleCell|clampCompensatedDisplayDelta/,
+    '지원하지 않는 projection의 sidecar와 payload builder를 제품 코드에 남기면 안 됨',
+  );
   assert.match(clear, /cachedTableRef = null/, '표 ref 캐시 삭제 필요');
   assert.match(clear, /cachedCellBboxes = null/, 'bbox 캐시 삭제 필요');
   assert.match(clear, /tableResizeRenderer\?\.clear\(\)/, 'hover/drag marker 삭제 필요');

@@ -8,6 +8,7 @@ import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 import { cacheTableCellBboxes, ensureTableCellBboxCache } from './table-bbox-cache';
+import { shouldStartPersistentTableResize } from './table-resize-updates';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -695,9 +696,9 @@ export function onClick(this: any, e: MouseEvent): void {
   if (this.cursor.isInCellSelectionMode()) {
     // 우클릭 → 셀 선택 영역 유지 (컨텍스트 메뉴에서 처리)
     if (e.button === 2) return;
-    // 경계선 클릭 → 셀 선택 유지 + 리사이즈 드래그 시작
-    // Shift+드래그는 단일 셀 경계 resize 의도이므로 Shift+클릭 확장 선택보다 먼저 판정한다.
-    if (e.button === 0 && this.tableResizeRenderer) {
+    // Shift+경계 클릭은 아래 셀 범위 선택이 소유한다. 지속 가능한 일반
+    // geometry만 drag listener와 marker lifecycle을 시작한다.
+    if (shouldStartPersistentTableResize(e.button, e.shiftKey) && this.tableResizeRenderer) {
       const ctx = this.cursor.getCellTableContext();
       if (ctx) {
         try {
@@ -721,7 +722,7 @@ export function onClick(this: any, e: MouseEvent): void {
             const edge = this.tableResizeRenderer.hitTestBorder(pageX, pageY, pageBboxes);
             if (edge) {
               e.preventDefault();
-              this.startResizeDrag(edge, pageX, pageY, pageBboxes, e.shiftKey);
+              this.startResizeDrag(edge, pageX, pageY, pageBboxes);
               this.textarea.focus();
               return;
             }
@@ -788,14 +789,14 @@ export function onClick(this: any, e: MouseEvent): void {
   const pageY = (contentY - pageOffset) / zoom;
 
   // 표 경계선 클릭 → 리사이즈 드래그 시작
-  if (e.button === 0 && this.tableResizeRenderer) {
+  if (shouldStartPersistentTableResize(e.button, e.shiftKey) && this.tableResizeRenderer) {
     const resizeHit = resolveTableResizeHit(this, pageIdx, pageX, pageY);
     const edge = resizeHit
       ? this.tableResizeRenderer.hitTestBorder(pageX, pageY, resizeHit.pageBboxes)
       : null;
     if (edge) {
       e.preventDefault();
-      this.startResizeDrag(edge, pageX, pageY, resizeHit!.pageBboxes, e.shiftKey);
+      this.startResizeDrag(edge, pageX, pageY, resizeHit!.pageBboxes);
       this.textarea.focus();
       return;
     }

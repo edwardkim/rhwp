@@ -1340,8 +1340,8 @@ fn dry_run_reports_the_diff_without_writing() {
 /// 편집은 `bin_data_content` 의 바이트만 바꾸는데, 렌더된 차트 SVG 는
 /// `page_tree_cache` 에 RawSvg 소유값으로 남는다 — 무효화가 빠지면 재렌더가
 /// 캐시된 옛 그림을 그대로 돌려준다 (PR #4603 리뷰에서 실측된 회귀).
-/// legacy 경로(`render_page_svg_native`)는 캐시를 타지 않으므로 반드시
-/// layer 경로로 잰다.
+/// production `render_page_svg_native`도 screen layer 경로를 쓰지만, 이 테스트는
+/// 캐시 무효화 계약을 이름으로 고정하기 위해 명시적 layer API로 잰다.
 #[test]
 fn t8_rerender_after_an_edit_draws_the_new_chart() {
     let hwpx = manifest("samples/chart/세로막대형/묶은세로막대형.hwpx");

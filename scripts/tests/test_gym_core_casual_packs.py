@@ -16,7 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 GYM = REPO_ROOT / "gym"
 CORE = GYM / "packs" / "core-cli"
 CASUAL = GYM / "packs" / "casual-rides"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_core_casual.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_core_casual.md"
 MAINTAINER = GYM / "profiles" / "maintainer.json"
 
 EXISTING_OPS = {

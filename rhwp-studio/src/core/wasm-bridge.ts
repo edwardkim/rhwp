@@ -1,4 +1,6 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
+import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
+import type { CharShapeRun } from './types';
 import * as wasmExports from '@wasm/rhwp.js';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
@@ -340,7 +342,7 @@ export class WasmBridge {
     fileName: string | undefined,
     requiresPasswordForSave: boolean,
     createDocument: () => HwpDocument,
-  ): DocumentInfo {
+  ): void {
     const nextFileName = fileName ?? 'document.hwp';
     const nextDocumentDigest = `blake3:${bytesToHex(blake3(data))}`;
     let nextDoc: HwpDocument | null = null;
@@ -350,7 +352,6 @@ export class WasmBridge {
       nextDoc.convertToEditable();
       this.ensureParagraphStableIdsFor(nextDoc);
       nextDoc.setFileName(nextFileName);
-      const info: DocumentInfo = JSON.parse(nextDoc.getDocumentInfo());
 
       // 새 문서를 끝까지 준비한 뒤에만 기존 문서를 교체한다. 암호 필요·오답·손상
       // 오류에서는 현재 문서와 최근 문서 연결을 그대로 유지해야 한다 (#3474).
@@ -370,14 +371,13 @@ export class WasmBridge {
           /* noop */
         }
       }
-      console.log(`[WasmBridge] 문서 로드: ${info.pageCount}페이지`);
+      console.log(`[WasmBridge] 문서 로드: ${this.pageCount}페이지`);
 
       // [Task #741 후속] 외부 file path 그림 영역 영역 dev 환경 영역 영역 fetch (basename 영역
       // 영역 영역 same dir 영역 image 영역 영역 영역 — 본 환경 dev 영역 영역 samples/ 영역
       // Vite asset). 영역 영역 영역 영역 영역 부재 영역 영역 placeholder 표시.
       void this.populateExternalImagesFromDevServer();
 
-      return info;
     } catch (error) {
       if (nextDoc) {
         try {
@@ -391,11 +391,12 @@ export class WasmBridge {
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
+    this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
+    return this.getDocumentInfo();
   }
 
-  loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): DocumentInfo {
-    return this.loadDocumentAtomically(
+  loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): void {
+    this.loadDocumentAtomically(
       data,
       fileName,
       true,
@@ -1690,6 +1691,19 @@ export class WasmBridge {
     return JSON.parse(this.doc.getLineInfoInCell(sec, parentPara, controlIdx, cellIdx, cellParaIdx, charOffset));
   }
 
+  /**
+   * 문서에 **저장된** 캐럿 스탬프({@link setCaretPosition} 가 남긴 값,
+   * `doc_properties.caret_list_id/caret_para_id/caret_char_pos`)를 읽는다.
+   *
+   * **표 셀 컨텍스트는 실리지 않는다.** 반환 타입이 `DocumentPosition` 이라
+   * `parentParaIndex`/`controlIndex`/`cellIndex`/`cellPath`/`isTextBox` 가 채워질 것처럼
+   * 보이지만, 이 API 는 위 세 값(`sectionIndex`·`paragraphIndex`·`charOffset`)만 채운다 —
+   * 커서가 표 셀 안에 있어도 마찬가지다. 저장 시점 복원용 좌표라 그렇다.
+   *
+   * 지금 커서가 어느 셀에 있는지가 필요하면 편집 중인 커서를 쓴다:
+   * `InputHandler.getCursorPosition()`(내부적으로 `Cursor.getPosition()`). 스튜디오 자신도
+   * 셀 진입 판정에 그 경로를 쓴다 — `pos.parentParaIndex !== undefined` 로 셀 안을 가른다.
+   */
   getCaretPosition(): DocumentPosition | null {
     if (!this.doc) return null;
     try {
@@ -2705,6 +2719,20 @@ export class WasmBridge {
     return (this.doc as any).exportSelectionInCellHtmlByPath(sec, parentPara, pathJson, startCellPara, startOffset, endCellPara, endOffset);
   }
 
+  /**
+   * 한글 클립보드 문서모델(hwpjson) 붙여넣기.
+   *
+   * HTML 에는 글꼴 등록·문단모양 정의·쪽 설정이 없어 원본 조판이 재현되지 않는다.
+   * 한글이 클립보드 주석에 함께 싣는 문서 모델을 코어가 HWPX 로 옮겨 붙인다.
+   * 코어가 이 진입점을 갖고 있지 않은 옛 wasm 에서도 죽지 않도록 존재를 확인한다.
+   */
+  pasteHwpJson(sec: number, para: number, charOffset: number, json: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const fn = (this.doc as any).pasteHwpJson;
+    if (typeof fn !== 'function') return '{"ok":false,"error":"pasteHwpJson 미지원"}';
+    return fn.call(this.doc, sec, para, charOffset, json);
+  }
+
   pasteHtml(sec: number, para: number, charOffset: number, html: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.pasteHtml(sec, para, charOffset, html);
@@ -2741,6 +2769,26 @@ export class WasmBridge {
   applyCharFormat(sec: number, para: number, startOffset: number, endOffset: number, propsJson: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.applyCharFormat(sec, para, startOffset, endOffset, propsJson);
+  }
+
+  getCharShapeRuns(sec: number, para: number, start: number, end: number): CharShapeRun[] {
+    return parseCharShapeRuns(requireCharShapeRunsDocument(this.doc).getCharShapeRuns(sec, para, start, end), start, end);
+  }
+
+  setCharShapeRuns(sec: number, para: number, start: number, end: number, runs: CharShapeRun[]): string {
+    const doc = requireCharShapeRunsDocument(this.doc);
+    const json = JSON.stringify(validateCharShapeRuns(runs, start, end));
+    return doc.setCharShapeRuns(sec, para, start, end, json);
+  }
+
+  getCharShapeRunsInCellByPath(sec: number, para: number, path: string, start: number, end: number): CharShapeRun[] {
+    return parseCharShapeRuns(requireCharShapeRunsDocument(this.doc).getCharShapeRunsInCellByPath(sec, para, path, start, end), start, end);
+  }
+
+  setCharShapeRunsInCellByPath(sec: number, para: number, path: string, start: number, end: number, runs: CharShapeRun[]): string {
+    const doc = requireCharShapeRunsDocument(this.doc);
+    const json = JSON.stringify(validateCharShapeRuns(runs, start, end));
+    return doc.setCharShapeRunsInCellByPath(sec, para, path, start, end, json);
   }
 
   setCharShapeId(sec: number, para: number, startOffset: number, endOffset: number, charShapeId: number): string {
@@ -2979,6 +3027,26 @@ export class WasmBridge {
   }
 
   // ─── Undo/Redo 스냅샷 API ──────────────────────────
+
+  capturePictureTransform(target: Record<string, unknown>): number {
+    const doc = this.doc as any;
+    if (!doc || typeof doc.capturePictureTransform !== 'function'
+      || typeof doc.swapPictureTransform !== 'function'
+      || typeof doc.discardPictureTransform !== 'function') {
+      throw new Error('그림 리사이즈 Undo를 지원하는 WASM 빌드가 필요합니다');
+    }
+    return doc.capturePictureTransform(JSON.stringify(target));
+  }
+
+  swapPictureTransform(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    (this.doc as any).swapPictureTransform(id);
+  }
+
+  discardPictureTransform(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    (this.doc as any).discardPictureTransform(id);
+  }
 
   saveSnapshot(): number {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');

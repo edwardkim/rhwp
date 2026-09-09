@@ -1,6 +1,6 @@
 # 웹한글컨트롤 호환 차등 하니스 (P0)
 
-계획서: [`mydocs/plans/hwpctrl_ocx_full_compat.md`](../../mydocs/plans/hwpctrl_ocx_full_compat.md)
+계획서: [`mydocs/plans/hwpctrl_ocx_full_compat.md`](../../mydocs/plans/archives/hwpctrl_ocx_full_compat.md)
 
 **판정자는 문서가 아니라 설치된 한글이다.** 같은 시나리오를 한글 COM 과 rhwp 양쪽에 돌려
 반환값·문서 상태를 대조한다.

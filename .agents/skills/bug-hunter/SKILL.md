@@ -179,4 +179,4 @@ Claude 진입 포인터: [`.claude/skills/rhwp-bug-hunter/`](../../../.claude/sk
 - [`tools/fidelity_compare/README.md`](../../../tools/fidelity_compare/README.md)
 - [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
 - [`mydocs/manual/verification/visual_verification_governance.md`](../../../mydocs/manual/verification/visual_verification_governance.md)
-- 처리 결과: [`mydocs/working/agent_bug_hunter.md`](../../../mydocs/working/agent_bug_hunter.md)
+- 처리 결과: [`mydocs/working/agent_bug_hunter.md`](../../../mydocs/working/archives/agent_bug_hunter.md)

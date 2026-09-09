@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 // [#5769 후속] z 순서 역연산화 소스 가드 — 클래스 라이프사이클 전용.
 //
@@ -14,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 // 은 Rust 게이트 tests/cases/issue_5769_zorder_inverse_byte_identity.rs 다.
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const cmdSrc = readFileSync(join(rootDir, 'src/engine/command.ts'), 'utf8');
+const cmdSrc = codeOnly(readFileSync(join(rootDir, 'src/engine/command.ts'), 'utf8'));
 
 test('SetZOrderCommand 배선 핀 — probe 선차단, 캡처 선행, undo 는 old 대입 뒤 raw 복원', () => {
   const start = cmdSrc.indexOf('export class SetZOrderCommand');

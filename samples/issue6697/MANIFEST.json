@@ -1,0 +1,16 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6697,
+  "title": "칸 안 문단 기준 자리차지 중첩 표 vertOffset",
+  "entries": [
+    {
+      "path": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+      "format": "hwpx",
+      "role": "visual_regression_fixture",
+      "source": "#6697에서 식별한 80550 농업기계화 촉진법 시행규칙 일부개정령(안) 원본",
+      "bytes": 322323,
+      "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "contract": "칸 안 문단 기준 TopAndBottom 중첩 표가 저장 vertOffset 3062HU만큼 호스트 문단 아래에 배치됨"
+    }
+  ]
+}

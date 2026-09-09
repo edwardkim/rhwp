@@ -277,7 +277,7 @@ ONBOARDING_REFERENCES = [
     },
     {
         "id": "working-doc",
-        "path": "mydocs/working/agent_onboarding.md",
+        "path": "mydocs/working/archives/agent_onboarding.md",
         "role": "작업 기록(스테이지)",
     },
     {

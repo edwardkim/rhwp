@@ -180,7 +180,7 @@ fn playbook_file_is_the_authority() {
 
 #[test]
 fn working_doc_exists() {
-    let path = repo_root().join("mydocs/working/agent_fde.md");
+    let path = repo_root().join("mydocs/working/archives/agent_fde.md");
     assert!(path.is_file(), "{path:?}");
     let text = fs::read_to_string(&path).unwrap();
     assert!(text.contains("#5333"), "{text}");

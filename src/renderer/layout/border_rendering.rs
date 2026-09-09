@@ -4,7 +4,7 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedBorderStyle;
 use super::super::{LineStyle, StrokeDash};
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
-use crate::model::table::{Cell, Table, MAX_TABLE_GRID_CELLS};
+use crate::model::table::{Cell, Table, TableZone, MAX_TABLE_GRID_CELLS};
 
 /// [#4287] `build_row_col_x` 가 `row_count × col_count` 2D 그리드를 예약하지 않는 이유.
 ///
@@ -181,7 +181,7 @@ pub(crate) fn build_row_col_x(
     // 이 결함은 전역 grid 가 선언 폭과 어긋난 표에서만 나타난다.
     let global_grid_matches_declared =
         (base_rx.last().copied().unwrap_or(0.0) - target_total).abs() <= 0.5;
-    if table.local_resize_rows.is_empty() && !global_grid_matches_declared {
+    if !global_grid_matches_declared {
         let mut declared = vec![base_rx.clone(); row_count];
         let mut any_declared_row = false;
         for (r, row_x) in declared.iter_mut().enumerate().take(row_count) {
@@ -238,101 +238,6 @@ pub(crate) fn build_row_col_x(
 
     if table.common.treat_as_char {
         return Ok(vec![base_rx; row_count]);
-    }
-
-    let inferred_local_resize_rows = table.inferred_local_resize_rows();
-    if !table.local_resize_rows.is_empty() || !inferred_local_resize_rows.is_empty() {
-        let mut row_col_x_from_cells = vec![base_rx.clone(); row_count];
-        let mut has_cell_order_row = false;
-        for (r, row_x) in row_col_x_from_cells.iter_mut().enumerate().take(row_count) {
-            let row_idx = r as u16;
-            let is_explicit_local_resize = table.local_resize_rows.contains(&row_idx);
-            let is_inferred_local_resize = inferred_local_resize_rows.contains(&row_idx);
-            if !is_explicit_local_resize && !is_inferred_local_resize {
-                continue;
-            }
-            let mut row_cells: Vec<_> = table
-                .cells
-                .iter()
-                .enumerate()
-                .filter(|(_, cell)| cell.row as usize == r && cell.row_span == 1)
-                .collect();
-            row_cells.sort_by_key(|(_, cell)| cell.col);
-            let has_width_overrides = row_cells.iter().any(|(cell_idx, _)| {
-                table
-                    .local_resize_cell_widths
-                    .iter()
-                    .any(|(idx, _)| idx == cell_idx)
-            });
-
-            let mut cursor = 0.0;
-            let mut next_col = 0usize;
-            let mut candidate = vec![0.0f64; col_count + 1];
-            let mut valid = !row_cells.is_empty();
-            for (cell_idx, cell) in row_cells {
-                let c = cell.col as usize;
-                let span = cell.col_span.max(1) as usize;
-                let end = (c + span).min(col_count);
-                if c != next_col || end <= c {
-                    valid = false;
-                    break;
-                }
-
-                candidate[c] = cursor;
-                let cell_w = table
-                    .local_resize_cell_widths
-                    .iter()
-                    .find(|(idx, _)| *idx == cell_idx)
-                    .map(|(_, width)| hwpunit_to_px(*width as i32, dpi))
-                    .unwrap_or_else(|| {
-                        if has_width_overrides {
-                            (base_rx[end] - base_rx[c]).max(0.0)
-                        } else {
-                            hwpunit_to_px(cell.width as i32, dpi) * width_scale
-                        }
-                    });
-                let end_x = cursor + cell_w;
-                for inner_col in c + 1..end {
-                    let ratio = (inner_col - c) as f64 / span as f64;
-                    candidate[inner_col] = cursor + cell_w * ratio;
-                }
-                candidate[end] = end_x;
-                cursor = end_x + if end < col_count { cell_spacing } else { 0.0 };
-                next_col = end;
-            }
-
-            if valid && next_col == col_count {
-                let residual = target_total - cursor;
-                if residual < -0.5 {
-                    valid = false;
-                } else if residual > 0.5 {
-                    if is_explicit_local_resize {
-                        // Studio 런타임의 명시적 힌트는 기존 동작을 보존한다.
-                        candidate[col_count] += residual;
-                    } else {
-                        // 자동 추론 행의 부족 폭을 마지막 셀에 몰아주면 퇴화한
-                        // 앞 셀 폭이 그대로 노출된다. 추론이 불완전하면 base grid로
-                        // 폴백하고 마지막 셀의 경계를 임의로 늘리지 않는다.
-                        valid = false;
-                    }
-                }
-            }
-
-            if valid && next_col == col_count {
-                *row_x = candidate;
-                has_cell_order_row = true;
-            }
-        }
-
-        if has_cell_order_row
-            && row_col_x_from_cells.iter().any(|rx| {
-                rx.iter()
-                    .zip(base_rx.iter())
-                    .any(|(a, b)| (a - b).abs() > 0.01)
-            })
-        {
-            return Ok(row_col_x_from_cells);
-        }
     }
 
     let has_independent_widths = cell_width_grid.iter().any(|row| {
@@ -438,7 +343,6 @@ fn declared_row_col_x(
     }
     Some(candidate)
 }
-
 /// 셀 테두리를 엣지 그리드에 수집
 /// h_edges[row_boundary][col]: 수평 엣지 (row_boundary 0..=row_count, col 0..col_count)
 /// v_edges[col_boundary][row]: 수직 엣지 (col_boundary 0..=col_count, row 0..row_count)
@@ -483,6 +387,79 @@ pub(crate) fn collect_cell_borders(
         for r in row..end_row {
             merge_edge_slot(&mut v_edges[end_col][r], &borders[1]);
         }
+    }
+}
+
+/// [#6619] `hp:cellzone` 의 테두리를 zone **바깥 네 변**에 덮어쓴다.
+///
+/// zone 은 셀 고유 `borderFillIDRef` 위에 얹는 **영역 덮어쓰기**다. 종전 렌더러는
+/// zone 에 대해 배경(`render_cell_background`)과 대각선만 그리고 네 변을 한 번도
+/// 방출하지 않아, 오직 zone 만 참조하는 선이 통째로 사라졌다.
+///
+/// `156745900` 2쪽 `일 러 두 기` 틀은 왼쪽 가로선·좌우 세로선·아래 가로선이 전부
+/// zone(38·39)의 `#BBBBBB 0.4mm` 다 — 다섯 선이 통째로 빠졌다. 31쪽 통계표는
+/// zone(30)의 SOLID 가 무시돼 셀 고유의 **점선**이 그대로 남았다.
+///
+/// ⚠ **`None` 인 변은 덮어쓰지 않는다.** zone 을 완전한 덮어쓰기로 보면 `None` 이
+/// 기존 셀 선을 지워야 하지만, 이 문서에서 한/글이 더 그리는 선은 있어도 **덜 그리는
+/// 선은 없다**(오라클 13 vs rhwp 6, rhwp 에만 있는 선 0). 근거 없는 지우기를 넣지
+/// 않는다.
+///
+/// ⚠⚠ **끝 주소는 병합 span 으로 환산한다.** `startColAddr`/`endColAddr` 는 그리드
+/// 좌표가 아니라 **칸 주소**다. `156745900` 2쪽 표는 3×3 인데 zone 38 이 가리키는
+/// `(row2, col0)` 칸이 `colSpan=3` 이라, `end_col + 1` 로 계산하면 오른쪽 변이 표
+/// 한복판(x=290.4)에 서고 아래 변도 거기서 끊긴다. 끝 주소의 칸을 찾아
+/// `col + col_span` · `row + row_span` 을 써야 표 오른쪽 끝(x=720.0)까지 간다.
+pub(crate) fn apply_cellzone_border_fill(
+    h_edges: &mut [Vec<Option<BorderLine>>],
+    v_edges: &mut [Vec<Option<BorderLine>>],
+    zone_borders: &[BorderLine; 4],
+    zone: &TableZone,
+    cells: &[Cell],
+) {
+    if h_edges.is_empty() || v_edges.is_empty() {
+        return;
+    }
+    let col_count = h_edges[0].len();
+    let row_count = v_edges[0].len();
+    if h_edges.len() != row_count + 1 || v_edges.len() != col_count + 1 {
+        return;
+    }
+
+    let sc = zone.start_col as usize;
+    let sr = zone.start_row as usize;
+    if sc >= col_count || sr >= row_count {
+        return;
+    }
+    // 끝 주소의 칸이 병합돼 있으면 그 span 끝까지가 zone 의 바깥 변이다.
+    let end_cell = cells.iter().find(|c| {
+        c.row as usize == zone.end_row as usize && c.col as usize == zone.end_col as usize
+    });
+    let ec = end_cell
+        .map(|c| c.col as usize + (c.col_span as usize).max(1))
+        .unwrap_or(zone.end_col as usize + 1)
+        .min(col_count);
+    let er = end_cell
+        .map(|c| c.row as usize + (c.row_span as usize).max(1))
+        .unwrap_or(zone.end_row as usize + 1)
+        .min(row_count);
+    if ec <= sc || er <= sr {
+        return;
+    }
+
+    let overwrite = |slot: &mut Option<BorderLine>, border: &BorderLine| {
+        if border.line_type != BorderLineType::None {
+            *slot = Some(*border);
+        }
+    };
+
+    for c in sc..ec {
+        overwrite(&mut h_edges[sr][c], &zone_borders[2]); // 위
+        overwrite(&mut h_edges[er][c], &zone_borders[3]); // 아래
+    }
+    for r in sr..er {
+        overwrite(&mut v_edges[sc][r], &zone_borders[0]); // 왼쪽
+        overwrite(&mut v_edges[ec][r], &zone_borders[1]); // 오른쪽
     }
 }
 
@@ -1316,27 +1293,78 @@ pub(crate) fn body_page_border_outset(border: &BorderLine) -> f64 {
     }
 }
 
-/// HWP 테두리 굵기 인덱스 → 픽셀 변환
-/// HWP 스펙 (표 28): mm 값을 96dpi 기준 px로 변환
+/// HWP 테두리 굵기 인덱스 → 픽셀 변환 (96dpi 고정)
+///
+/// [#6913] 한/글은 테두리 굵기를 **1/600 inch 격자에 반올림해서** 그린다. 정본 PDF 의
+/// stroke width 는 언제나 `units × 0.12 pt` 로 떨어진다. 격자 계산은 두 단계다 —
+/// 선언 mm 를 HWPUNIT(1/7200 inch)으로 반올림한 뒤 그것을 600dpi 로 **half-up**
+/// 반올림한다. 한 단계로 `round(mm × 600/25.4)` 를 쓰면 정확히 `.5` 에 걸리는
+/// 0.7mm(16.5)와 4.0mm(94.5)에서 1 units 씩 어긋난다.
+///
+/// 16단계 전부를 단일 변수 실험으로 쟀다 — 같은 문서(`samples/issue6913/…`)의
+/// `borderFill 14` 굵기만 바꾼 변형본을 engine 2020 으로 각각 변환해 1쪽 머리 표의
+/// stroke width 를 읽었다(안 건드린 0.12mm 칸이 매 변형본에서 0.36pt 로 남아
+/// 통제군이 된다). **16/16 일치.**
+///
+/// ```text
+///   선언 mm   정본 pt   ÷0.12   격자 units   px@96
+///     0.1      0.240      2            2             0.32
+///     0.12     0.360      3            3             0.48
+///     0.15     0.480      4            4             0.64
+///     0.2      0.600      5            5             0.80
+///     0.25     0.720      6            6             0.96
+///     0.3      0.840      7            7             1.12
+///     0.4      1.079      9            9             1.44
+///     0.5      1.439     12           12             1.92
+///     0.6      1.679     14           14             2.24
+///     0.7      2.039     17           17             2.72
+///     1.0      2.878     24           24             3.84
+///     1.5      4.198     35           35             5.60
+///     2.0      5.637     47           47             7.52
+///     3.0      8.515     71           71            11.36
+///     4.0     11.394     95           95            15.20
+///     5.0     14.152    118          118            18.88
+/// ```
+///
+/// 종전 표는 `mm × 96/25.4` 를 소수 첫째자리로 반올림한 값이라 격자를 못 맞췄다.
+/// 특히 얇은 쪽이 크게 틀렸다 — 0.1mm 는 0.4px 로 **25% 두꺼웠고**, 0.2mm 는
+/// 0.75px 로 6% 얇았다.
 pub(crate) fn border_width_to_px(width: u8) -> f64 {
-    const WIDTHS_PX: [f64; 16] = [
-        0.4,  // 0: 0.1mm
-        0.5,  // 1: 0.12mm
-        0.6,  // 2: 0.15mm
-        0.75, // 3: 0.2mm
-        1.0,  // 4: 0.25mm
-        1.1,  // 5: 0.3mm
-        1.5,  // 6: 0.4mm
-        1.9,  // 7: 0.5mm
-        2.3,  // 8: 0.6mm
-        2.6,  // 9: 0.7mm
-        3.8,  // 10: 1.0mm
-        5.7,  // 11: 1.5mm
-        7.6,  // 12: 2.0mm
-        11.3, // 13: 3.0mm
-        15.1, // 14: 4.0mm
-        18.9, // 15: 5.0mm
+    /// 한/글이 굵기를 반올림하는 격자 — 1/600 inch.
+    const GRID_DPI: f64 = 600.0;
+    /// 산출 dpi. 이 함수는 96dpi 고정 표다.
+    const OUT_DPI: f64 = 96.0;
+    const WIDTHS_MM: [f64; 16] = [
+        0.1, 0.12, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
     ];
+    const WIDTHS_PX: [f64; 16] = [
+        0.32,  // 0: 0.1mm   → 2 units
+        0.48,  // 1: 0.12mm  → 3
+        0.64,  // 2: 0.15mm  → 4
+        0.8,   // 3: 0.2mm   → 5
+        0.96,  // 4: 0.25mm  → 6
+        1.12,  // 5: 0.3mm   → 7
+        1.44,  // 6: 0.4mm   → 9
+        1.92,  // 7: 0.5mm   → 12
+        2.24,  // 8: 0.6mm   → 14
+        2.72,  // 9: 0.7mm   → 17
+        3.84,  // 10: 1.0mm  → 24
+        5.6,   // 11: 1.5mm  → 35
+        7.52,  // 12: 2.0mm  → 47
+        11.36, // 13: 3.0mm  → 71
+        15.2,  // 14: 4.0mm  → 95
+        18.88, // 15: 5.0mm  → 118
+    ];
+    debug_assert!(
+        WIDTHS_MM.iter().zip(WIDTHS_PX.iter()).all(|(mm, px)| {
+            // mm → HWPUNIT(1/7200 inch) → 600dpi 격자. 두 번째 반올림은 half-up
+            // 이어야 0.7mm(16.5)와 4.0mm(94.5)가 맞는다.
+            let hwpunit = (mm * 7200.0 / 25.4).round();
+            let units = (hwpunit * GRID_DPI / 7200.0 + 0.5).floor();
+            (units * OUT_DPI / GRID_DPI - px).abs() < 1e-9
+        }),
+        "WIDTHS_PX 는 mm → HWPUNIT → 600dpi 격자(half-up) × 96/600 이어야 한다"
+    );
     if let Some(&px) = WIDTHS_PX.get(width as usize) {
         px
     } else {

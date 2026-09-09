@@ -10,6 +10,7 @@ import {
 import * as _connector from './input-handler-connector';
 import {
   detectPlatformKind,
+  getCellSelectionArrowAction,
   getNavigationAction,
   shouldSuppressUnmappedNavigation,
   type NavigationAction,
@@ -18,6 +19,8 @@ import {
 import type { DocumentPosition, CursorRect, CellBbox, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
+import { inlineOfficeClipboardImages, liftImagesToBlockLevel, needsRtfImageInlining } from './office-clipboard-images';
+import { sanitizeOfficeHtmlForCore } from './office-html-sanitize';
 import { scrollByPageStep, type PageScrollDirection } from '@/view/page-scroll';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 
@@ -41,6 +44,30 @@ const PAGINATION_BOUNDARY_KEYS = new Set([
  * 전역 편집 명령이다. 이 모드의 문자 입력은 아래 전용 분기가 소유하지만, 되돌리기와
  * 찾아가기는 문서 전체 명령이므로 조기 반환 전에 dispatcher로 전달해야 한다.
  */
+/**
+ * [Task #6741] 셀 블록 선택을 **유지한 채** 통과시키는 명령.
+ *
+ * 한컴은 셀 블록에서 되돌리기를 해도 블록을 놓지 않는다(실측: undo 뒤 지우기 전 블록이
+ * 되살아난다). 종전 rhwp 는 방향키·Escape 외의 키를 전부 "그 외 키"로 흘려 블록을 먼저
+ * 해제했으므로, undo 가 실행될 때는 되살릴 선택이 이미 없었다.
+ *
+ * 서브모드(머리말/꼬리말·각주)의 우회로보다 좁게 잡는다 — goto·select-all 은 셀 블록을
+ * 들고 있을 이유가 없는 조작이라 종전대로 블록을 해제하고 넘긴다.
+ */
+const CELL_BLOCK_GLOBAL_COMMANDS = new Set([
+  'edit:undo',
+  'edit:redo',
+]);
+
+function dispatchCellBlockGlobalShortcut(this: any, e: KeyboardEvent): boolean {
+  if (!this.dispatcher) return false;
+  const commandId = matchShortcut(e, defaultShortcuts);
+  if (!commandId || !CELL_BLOCK_GLOBAL_COMMANDS.has(commandId)) return false;
+  e.preventDefault();
+  this.dispatcher.dispatch(commandId);
+  return true;
+}
+
 const SUBMODE_GLOBAL_COMMANDS = new Set([
   'edit:undo',
   'edit:redo',
@@ -1228,13 +1255,23 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.updateCaret();
       return;
     }
-    // 셀 크기 조절 — 한컴 3모드 (help.hancom.com hwp/table/table(size).htm):
-    //   Ctrl/Cmd+방향키  = 칸/줄 전체 크기 조절, 표 전체 크기 변화
-    //   Alt+방향키       = 선택 칸/줄 전체와 바로 오른쪽/아래 이웃을 반대로 조절 (표 크기 유지)
-    //   Shift+방향키     = 경계 이동 — 셀이 커진 만큼 이웃 셀이 작아짐
-    const isArrow = e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight';
-    if ((e.ctrlKey || e.metaKey) && isArrow) {
+
+    // [Task #6741] 되돌리기/다시실행은 블록을 놓지 않고 통과시킨다. 히스토리 점프가
+    // 파생 상태를 해제하면(#2339) undo 쪽은 커맨드가 실어 둔 셀 블록으로 다시 세워진다.
+    if (dispatchCellBlockGlobalShortcut.call(this, e)) return;
+
+    // [Task #6741] 선택한 칸들의 내용을 한 번에 지우고 블록을 유지한다 — 한컴과 같다.
+    // 종전에는 아래 "그 외 키"로 떨어져 블록이 풀리고 캐럿에서 한 글자만 지워졌다.
+    if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      if (!this.cursor.isProtectedCellSelectionMode()) {
+        this.clearSelectedCellBlock();
+        this.updateCellSelection();
+      }
+      return;
+    }
+    const cellArrowAction = getCellSelectionArrowAction(e);
+    if (cellArrowAction === 'resize') {
       e.preventDefault();
       const phase = this.cursor.getCellSelectionPhase();
       if (phase === 3) {
@@ -1246,18 +1283,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       }
       return;
     }
-    if (e.altKey && isArrow) {
-      e.preventDefault();
-      this.resizeCellLocalByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
-      return;
-    }
-    if (e.shiftKey && isArrow) {
-      e.preventDefault();
-      this.resizeCellBoundaryByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
-      return;
-    }
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    if (cellArrowAction === 'navigate') {
       e.preventDefault();
       const dr = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0;
       const dc = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
@@ -1877,6 +1903,8 @@ export function onCut(this: any, e: ClipboardEvent): void {
   this.deleteSelection();
 }
 
+
+
 export function onPaste(this: any, e: ClipboardEvent): void {
   if (!this.active) return;
   e.preventDefault();
@@ -1900,6 +1928,7 @@ export function onPaste(this: any, e: ClipboardEvent): void {
   const clipboardData = e.clipboardData;
   const html = clipboardData?.getData('text/html') || '';
   const text = clipboardData?.getData('text/plain') || '';
+  const rtf = clipboardData?.getData('text/rtf') || '';
   // HF는 이번 이슈에서 rich clipboard round-trip을 만들지 않는다. 내부 marker/HTML이
   // 있어도 시스템 plain text를 코어의 원자 범위 primitive로 삽입·치환한다.
   if (this.cursor.isInHeaderFooter()) {
@@ -1992,33 +2021,126 @@ export function onPaste(this: any, e: ClipboardEvent): void {
 
   // 외부 클립보드: HTML이 있으면 pasteHtml로 표/서식 보존 붙여넣기
   if (html) {
-    this.executeOperation({ kind: 'snapshot', operationType: 'pasteHtml', operation: (wasm: WasmBridge) => {
-      if (hasSelection) this.deleteSelection({ deferRecord: true });
-      const p = this.cursor.getPosition();
-      let result: string;
-      if (isNestedCellPosition(p)) {
-        result = wasm.pasteHtmlInCellByPath(
-          p.sectionIndex, p.parentParaIndex!, JSON.stringify(p.cellPath), p.charOffset, html,
-        );
-      } else if (p.parentParaIndex !== undefined) {
-        result = wasm.pasteHtmlInCell(
-          p.sectionIndex, p.parentParaIndex, p.controlIndex!,
-          p.cellIndex!, p.cellParaIndex!, p.charOffset, html,
-        );
-      } else {
-        result = wasm.pasteHtml(p.sectionIndex, p.paragraphIndex, p.charOffset, html);
-      }
-      const parsed = JSON.parse(result);
-      if (parsed.ok) {
-        return positionAfterPasteResult(p, parsed);
-      }
-      return p;
-    }});
+    // 🔴 한글에서 복사한 것이면 **문서 모델**을 먼저 쓴다.
+    //
+    // 한글은 클립보드 HTML 끝 주석 `[data-hwpjson]` 에 문서 모델 전체를 싣는다(실측 1.08MB).
+    // HTML 에는 글꼴 등록·문단모양 정의·쪽 설정·셀 속성이 없어, HTML 만 읽으면 대상 문서의
+    // 기본 글꼴로 떨어지고 줄바꿈·쪽수가 어긋난다(표 셀 글자가 행 높이에 잘려 보이던 원인).
+    // 실패하면 조용히 종전 HTML 경로로 되돌아간다 — 워드·엑셀·파워포인트에는 이 주석이 없다.
+    const model = extractHwpJsonModel(html);
+    if (model && pasteHwpJsonModel.call(this, model, hasSelection)) return;
+    // 한글은 그림을 HTML 에 file:/// 로만 적고 실제 픽셀은 같은 클립보드의
+    // text/rtf 안에 둔다. 그 경우에만 RTF 에서 그림을 꺼내 data URI 로 채운 뒤 붙여넣는다.
+    if (needsRtfImageInlining(html, rtf)) {
+      void (async () => {
+        let merged = html;
+        try {
+          merged = await inlineOfficeClipboardImages(html, rtf);
+        } catch (error) {
+          console.warn('[paste] RTF 그림 삽입 실패 — 그림 없이 붙여넣기:', error);
+        }
+        pasteExternalHtml.call(this, merged, text, hasSelection);
+      })();
+      return;
+    }
+    pasteExternalHtml.call(this, liftImagesToBlockLevel(html), text, hasSelection);
     return;
   }
 
   // 플레인 텍스트 붙여넣기 (fallback — 기존 InsertTextCommand 사용, 정밀 undo 유지)
   pastePlainText.call(this, text, hasSelection);
+}
+
+
+/**
+ * 한글 클립보드 HTML 에서 문서 모델 JSON 을 꺼낸다.
+ *
+ * 형태는 `<!--[data-hwpjson]{ … }-->` 이고, 주석 안이 통째로 JSON 이다.
+ * 없으면 한글이 아닌 곳(워드·엑셀·브라우저)에서 온 것이므로 null 을 준다.
+ */
+export function extractHwpJsonModel(html: string): string | null {
+  const marker = html.indexOf('[data-hwpjson]');
+  if (marker < 0) return null;
+  const start = html.indexOf('{', marker);
+  if (start < 0) return null;
+  const end = html.indexOf('-->', start);
+  const raw = (end < 0 ? html.slice(start) : html.slice(start, end)).trim();
+  if (raw.length < 2 || raw[0] !== '{') return null;
+  return raw;
+}
+
+/**
+ * 문서 모델 붙여넣기. 코어가 이 경로를 못 다루면 false 를 돌려
+ * 호출한 쪽이 종전 HTML 경로로 되돌아가게 한다.
+ */
+function pasteHwpJsonModel(this: any, model: string, hasSelection: boolean): boolean {
+  let ok = false;
+  try {
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'pasteHwpJson',
+      operation: (wasm: WasmBridge) => {
+        const p = this.cursor.getPosition();
+        // 표 칸 안은 아직 HTML 경로가 담당한다(코어에 셀 진입점이 없다).
+        if (p.parentParaIndex !== undefined) return undefined;
+        if (hasSelection) this.deleteSelection({ deferRecord: true });
+        const result = wasm.pasteHwpJson(p.sectionIndex, p.paragraphIndex, p.charOffset, model);
+        console.debug('[paste] pasteHwpJson 결과:', String(result).slice(0, 200));
+        const parsed = JSON.parse(result);
+        if (!parsed.ok) return undefined;
+        ok = true;
+        return positionAfterPasteResult(p, parsed);
+      },
+    });
+  } catch (error) {
+    console.warn('[paste] 문서모델 붙여넣기 실패 — HTML 경로로 되돌아감:', error);
+    return false;
+  }
+  if (!ok) console.debug('[paste] 문서모델 경로 미적용 — HTML 경로로 되돌아감');
+  return ok;
+}
+
+/** jb: 외부 HTML 붙여넣기 본체 — 코어 정리 → pasteHtml → 실패 시 text/plain 폴백. */
+function pasteExternalHtml(this: any, html: string, text: string, hasSelection: boolean): void {
+  const htmlForCore = sanitizeOfficeHtmlForCore(html);
+  console.debug(`[paste] HTML 붙여넣기 시작: 원본 ${html.length}자 → 정리 ${htmlForCore.length}자, img ${(htmlForCore.match(/<img\b/gi) ?? []).length}개`);
+  let htmlPasted = false;
+  let selectionConsumed = false;
+  try {
+    this.executeOperation({ kind: 'snapshot', operationType: 'pasteHtml', operation: (wasm: WasmBridge) => {
+      if (hasSelection) {
+        this.deleteSelection({ deferRecord: true });
+        selectionConsumed = true;
+      }
+      const p = this.cursor.getPosition();
+      let result: string;
+      if (isNestedCellPosition(p)) {
+        result = wasm.pasteHtmlInCellByPath(
+          p.sectionIndex, p.parentParaIndex!, JSON.stringify(p.cellPath), p.charOffset, htmlForCore,
+        );
+      } else if (p.parentParaIndex !== undefined) {
+        result = wasm.pasteHtmlInCell(
+          p.sectionIndex, p.parentParaIndex, p.controlIndex!,
+          p.cellIndex!, p.cellParaIndex!, p.charOffset, htmlForCore,
+        );
+      } else {
+        result = wasm.pasteHtml(p.sectionIndex, p.paragraphIndex, p.charOffset, htmlForCore);
+      }
+      const parsed = JSON.parse(result);
+      console.debug('[paste] pasteHtml 결과:', String(result).slice(0, 200));
+      if (parsed.ok) {
+        htmlPasted = true;
+        return positionAfterPasteResult(p, parsed);
+      }
+      console.warn('[paste] HTML 가져오기 거절(ok=false) — 텍스트로 폴백:', parsed.error ?? parsed);
+      return p;
+    }});
+  } catch (error) {
+    console.warn('[paste] HTML 붙여넣기 실패 — 텍스트로 폴백:', error);
+  }
+  if (!htmlPasted && text) {
+    pastePlainText.call(this, text, hasSelection && !selectionConsumed);
+  }
 }
 
 /** 클립보드의 이미지 파일을 커서 위치에 삽입한다. */

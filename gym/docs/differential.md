@@ -9,7 +9,7 @@ last_verified: 2026-08-18
 
 이 문서는 `gym/tools/differential.py` 의 **오검출 관문**, **짝짓기**, **본문
 해시**, **관측 kind**, **예외 경로 계약**을 고정한다. 작업 기록은
-[`mydocs/working/gym_differential.md`](../../mydocs/working/gym_differential.md)
+[`mydocs/working/gym_differential.md`](../../mydocs/working/archives/gym_differential.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_differential.py` 가 기계로 고정한다.
 
 릴리스 차등(`release_diff.py`)은 같은 원리를 **시간축**(구/신 바이너리)으로

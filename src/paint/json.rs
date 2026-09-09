@@ -64,6 +64,9 @@ const KNOWN_TEXT_FEATURES: &[&str] = &[
     "text.tabLeaderOp.bounded",
     "text.decorationOp",
     "text.decorationOp.bounded",
+    "text.visualSourceBinding",
+    "text.decorationOp.producerExtent",
+    "paint.controlLabel",
     "text.displayText",
     "text.vertical.mixedPerGlyph",
 ];
@@ -174,6 +177,17 @@ impl PageLayerTree {
 
 fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &ResourceArena) {
     let externalized_visuals = externalized_text_visuals(root);
+    let has_producer_decoration_extent = layer_tree_has_op(root, |op| {
+        matches!(
+            op,
+            PaintOp::TextDecoration {
+                trim_trailing_spaces,
+                ..
+            } if *trim_trailing_spaces > 0
+        )
+    });
+    let has_control_labels =
+        layer_tree_has_op(root, |op| matches!(op, PaintOp::ControlLabel { .. }));
     let text_variant_features = collect_text_variant_features(root, resources);
     let has_variant_groups = text_variant_features.has_variant_groups();
     let has_glyph_runs = text_variant_features.has_glyph_runs;
@@ -229,6 +243,20 @@ fn write_text_export_metadata(buf: &mut String, root: &LayerNode, resources: &Re
     }
     if externalized_visuals.contains(&"decorations") {
         buf.push_str(",\"text.decorationOp\",\"text.decorationOp.bounded\"");
+    }
+    if externalized_visuals.iter().any(|visual| {
+        matches!(
+            *visual,
+            "charOverlap" | "controlMarks" | "tabLeaders" | "decorations"
+        )
+    }) {
+        buf.push_str(",\"text.visualSourceBinding\"");
+    }
+    if has_producer_decoration_extent {
+        buf.push_str(",\"text.decorationOp.producerExtent\"");
+    }
+    if has_control_labels {
+        buf.push_str(",\"paint.controlLabel\"");
     }
     let mut optional_features = Vec::new();
     if has_glyph_runs || has_glyph_outlines {
@@ -430,6 +458,19 @@ fn externalized_text_visuals(root: &LayerNode) -> Vec<&'static str> {
     visuals
 }
 
+fn layer_tree_has_op(root: &LayerNode, predicate: impl Fn(&PaintOp) -> bool) -> bool {
+    let mut stack = vec![root];
+    while let Some(node) = stack.pop() {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => stack.extend(children),
+            LayerNodeKind::ClipRect { child, .. } => stack.push(child),
+            LayerNodeKind::Leaf { ops } if ops.iter().any(&predicate) => return true,
+            LayerNodeKind::Leaf { .. } => {}
+        }
+    }
+    false
+}
+
 impl LayerNode {
     fn write_json(
         &self,
@@ -545,11 +586,11 @@ impl PaintOp {
                 }
                 buf.push('}');
             }
-            PaintOp::TextRun { bbox, run } => {
+            PaintOp::TextRun { bbox, run, source } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"textRun\",\"bbox\":");
                 write_bbox(buf, *bbox);
-                let source = text_sources.next_text_run_span(run);
+                let source = text_sources.next_text_run_span(run, source.as_ref());
                 let display_text = display_text_for_text_run(run);
                 let _ = write!(
                     buf,
@@ -706,11 +747,11 @@ impl PaintOp {
                 write_glyph_run_diagnostics(buf, &outline.diagnostics);
                 buf.push('}');
             }
-            PaintOp::CharOverlap { bbox, run } => {
+            PaintOp::CharOverlap { bbox, run, source } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"charOverlap\",\"bbox\":");
                 write_bbox(buf, *bbox);
-                if let Some(source) = text_sources.last_source.as_ref() {
+                if let Some(source) = source {
                     buf.push_str(",\"source\":");
                     write_text_source_span(buf, source);
                 }
@@ -734,11 +775,11 @@ impl PaintOp {
                 write_char_overlap(buf, run.char_overlap.as_ref());
                 buf.push('}');
             }
-            PaintOp::TextControlMark { bbox, run } => {
+            PaintOp::TextControlMark { bbox, run, source } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"textControlMark\",\"bbox\":");
                 write_bbox(buf, *bbox);
-                if let Some(source) = text_sources.last_source.as_ref() {
+                if let Some(source) = source {
                     buf.push_str(",\"source\":");
                     write_text_source_span(buf, source);
                 }
@@ -759,11 +800,11 @@ impl PaintOp {
                 }
                 buf.push('}');
             }
-            PaintOp::TabLeader { bbox, run } => {
+            PaintOp::TabLeader { bbox, run, source } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"tabLeader\",\"bbox\":");
                 write_bbox(buf, *bbox);
-                if let Some(source) = text_sources.last_source.as_ref() {
+                if let Some(source) = source {
                     buf.push_str(",\"source\":");
                     write_text_source_span(buf, source);
                 }
@@ -781,17 +822,33 @@ impl PaintOp {
                     run.is_vertical,
                 );
             }
-            PaintOp::TextDecoration { bbox, run, kind } => {
+            PaintOp::TextDecoration {
+                bbox,
+                run,
+                kind,
+                trim_trailing_spaces,
+                source,
+            } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"textDecoration\",\"bbox\":");
                 write_bbox(buf, *bbox);
-                if let Some(source) = text_sources.last_source.as_ref() {
+                if let Some(source) = source {
                     buf.push_str(",\"source\":");
                     write_text_source_span(buf, source);
                 }
                 buf.push_str(",\"decoration\":");
-                write_text_decoration(buf, *kind, run);
+                write_text_decoration(buf, *kind, run, *trim_trailing_spaces);
                 buf.push('}');
+            }
+            PaintOp::ControlLabel { bbox, label } => {
+                buf.push('{');
+                buf.push_str("\"type\":\"controlLabel\",\"bbox\":");
+                write_bbox(buf, *bbox);
+                let _ = write!(
+                    buf,
+                    ",\"label\":{},\"fontSize\":10,\"color\":\"#cc3333\"}}",
+                    json_escape(label)
+                );
             }
             PaintOp::FootnoteMarker { bbox, marker } => {
                 buf.push('{');
@@ -1064,14 +1121,15 @@ struct TextSourceExportState {
 }
 
 impl TextSourceExportState {
-    fn next_text_run_span(&mut self, run: &TextRunNode) -> TextSourceSpan {
-        let span = TextSourceSpan {
-            id: TextSourceId(self.next_id),
-            utf8_range: TextSourceRange::new(0, run.text.len() as u32),
-            utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
-            stable_source_key: stable_text_source_key(run),
-        };
-        self.next_id = self.next_id.saturating_add(1);
+    fn next_text_run_span(
+        &mut self,
+        run: &TextRunNode,
+        source: Option<&TextSourceSpan>,
+    ) -> TextSourceSpan {
+        let span = source
+            .cloned()
+            .unwrap_or_else(|| TextSourceSpan::for_text_run(self.next_id, run));
+        self.next_id = self.next_id.max(span.id.0.saturating_add(1));
         self.last_source = Some(span.clone());
         span
     }
@@ -2559,7 +2617,12 @@ fn write_glyph_run_diagnostics(buf: &mut String, diagnostics: &GlyphRunDiagnosti
     buf.push('}');
 }
 
-fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextRunNode) {
+fn write_text_decoration(
+    buf: &mut String,
+    kind: TextDecorationKind,
+    run: &TextRunNode,
+    trim_trailing_spaces: usize,
+) {
     let (color, shape, underline, emphasis_dot) = match kind {
         TextDecorationKind::Underline => (
             // COLORREF 0 은 미지정이 아니라 검정 — svg.rs 와 같은 계약.
@@ -2588,6 +2651,13 @@ fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextR
     let (font_size, baseline) = effective_text_font_size_and_baseline(run);
     let (bounded_text, complete) = bounded_display_text_for_run(run);
     let positions = run.replay_positions_prefix_for(run.display_or_text(), &bounded_text);
+    let trailing = bounded_text
+        .chars()
+        .rev()
+        .take_while(|ch| *ch == ' ')
+        .count();
+    let trim = trim_trailing_spaces.min(trailing);
+    let position_count = positions.len().saturating_sub(trim);
     let _ = write!(
         buf,
         "{{\"kind\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{},\"fontSize\":{:.3},\"ratio\":{:.6},\"color\":{},\"shape\":{},\"underline\":{},\"emphasisDot\":{},\"positions\":[",
@@ -2602,7 +2672,7 @@ fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextR
         json_escape(underline_type_str(underline)),
         emphasis_dot,
     );
-    for (idx, position) in positions.iter().enumerate() {
+    for (idx, position) in positions.iter().take(position_count).enumerate() {
         if idx > 0 {
             buf.push(',');
         }

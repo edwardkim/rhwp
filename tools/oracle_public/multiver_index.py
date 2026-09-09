@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""pdf/ · pdf-2020/ · pdf-large/ 한컴 오라클 편입 + 다중버전 쪽수 불일치 목록.
+"""단일 pdf/ 한컴 오라클 색인 + 다중버전 쪽수 불일치 목록.
 
 M01-5 (#5345). 전부 신규 파일. scripts/visual_sweep.py 는 건드리지 않는다.
 
 무엇을 하는가
 -------------
-세 오라클 트리를 순회해 stem(원본 문서 이름) × 한글 버전(2010/2018/2020/2022/2024)으로
+단일 오라클 트리를 순회해 stem(원본 문서 이름) × 한글 버전(2010/2018/2020/2022/2024)으로
 묶고, 같은 stem 에 버전이 둘 이상이면 pypdf 로 쪽수를 잰다. 쪽수가 갈리면 불일치
 목록에 넣고, 갈리지 않으면 일치로 남긴다. 픽셀 차이는 이 클레임 범위 밖이라
 측정하지 않고 보고서에도 적지 않는다.
@@ -19,8 +19,8 @@ M01-5 (#5345). 전부 신규 파일. scripts/visual_sweep.py 는 건드리지 �
 (`kopub`/`no-ttf`/`hwp`/`hwpx`/`hancom`)를 벗긴 나머지가 stem 이다.
 `hwp3-sample16-hwp5-2018-2020.pdf` 처럼 연도가 두 개면 **마지막**만 오라클
 버전이고 앞 연도는 stem 에 남긴다(변환에 쓴 한글 버전).
-접미가 없으면 디렉터리 기본값만 쓴다: pdf/=2022, pdf-2020/=2020.
-pdf-large/ 는 기본값이 없다.
+접미가 없으면 버전을 `unknown` 으로 둔다. 단일 `pdf/` 경로는 한글 버전을
+증명하지 않으며, 파일명에서 명시적으로 탐지한 연도만 사용한다.
 
 종료 코드: 0 성공 / 2 사용법·경로 오류.
 """
@@ -41,13 +41,7 @@ PIXEL_DIFF_SCOPE = "out_of_scope"
 
 HANGUL_YEARS = frozenset({"2010", "2018", "2020", "2022", "2024"})
 VARIANT_TOKENS = frozenset({"kopub", "no-ttf", "hwp", "hwpx", "hancom"})
-DEFAULT_TREES = ("pdf", "pdf-2020", "pdf-large")
-DIR_DEFAULT_VERSION = {
-    "pdf": "2022",
-    "pdf-2020": "2020",
-    "pdf-2010": "2010",
-    "pdf-large": None,
-}
+DEFAULT_TREES = ("pdf",)
 LFS_PREFIX = b"version https://git-lfs.github.com"
 REPORT_DIRNAME = "reports"
 
@@ -130,15 +124,8 @@ def describe_file(root: Path, path: Path, *, measure: bool) -> dict[str, Any]:
     rel = path.relative_to(root).as_posix()
     tree = tree_of(rel)
     stem, explicit, variants = parse_oracle_name(path.stem)
-    inferred = False
     version = explicit
     version_source = "explicit" if explicit is not None else "unknown"
-    if explicit is None:
-        default = DIR_DEFAULT_VERSION.get(tree)
-        if default is not None:
-            version = default
-            inferred = True
-            version_source = "inferred_dir"
     rec: dict[str, Any] = {
         "path": rel,
         "tree": tree,
@@ -146,7 +133,7 @@ def describe_file(root: Path, path: Path, *, measure: bool) -> dict[str, Any]:
         "stem": stem,
         "hangul_version": version,
         "version_source": version_source,
-        "version_inferred": inferred,
+        "version_inferred": False,
         "variants": variants,
         "size_bytes": path.stat().st_size,
         "page_count": None,
@@ -234,17 +221,13 @@ def build_index(
         subset = [r for r in files if r["tree"] == tree]
         tree_stats[tree] = {
             "present": (root / tree).is_dir(),
-            "default_hangul_version": DIR_DEFAULT_VERSION.get(tree),
+            "default_hangul_version": None,
             "file_count": len(subset),
             "measured": sum(1 for r in subset if r["page_count"] is not None),
             "unmeasured": sum(1 for r in subset if r["page_count"] is None),
         }
 
-    incorporation = {
-        tree: [r for r in files if r["tree"] == tree]
-        for tree in trees
-        if tree != "pdf"
-    }
+    incorporation = {tree: [r for r in files if r["tree"] == tree] for tree in trees}
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -298,7 +281,7 @@ def render_markdown(index: dict[str, Any]) -> str:
             f"| `{name}/` | {present} | {default} | {stat['file_count']} | "
             f"{stat['measured']} | {stat['unmeasured']} |"
         )
-    lines.extend(["", "## pdf-2020/ · pdf-large/ 편입 목록", ""])
+    lines.extend(["", "## 단일 오라클 트리 파일 목록", ""])
     for tree, recs in index["incorporation"].items():
         lines.append(f"### `{tree}/` ({len(recs)}건)")
         lines.append("")
@@ -452,7 +435,7 @@ def write_reports(index: dict[str, Any], out_dir: Path) -> list[Path]:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="pdf/pdf-2020/pdf-large 다중버전 한글 오라클 색인"
+        description="단일 pdf 트리의 다중버전 한글 오라클 색인"
     )
     parser.add_argument(
         "--root",
@@ -463,7 +446,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--trees",
         default=",".join(DEFAULT_TREES),
-        help="쉼표 구분 트리 (기본: pdf,pdf-2020,pdf-large)",
+        help="쉼표 구분 트리 (기본: pdf)",
     )
     parser.add_argument(
         "--write-reports",

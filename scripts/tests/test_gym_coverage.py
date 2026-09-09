@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -518,7 +519,7 @@ class CliTests(unittest.TestCase):
             cap = Path(tmp) / "cap.json"
             self._cap(cap)
             proc = subprocess.run(
-                ["python", str(TOOL), "--capabilities", str(cap), "--json"],
+                [sys.executable, str(TOOL), "--capabilities", str(cap), "--json"],
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -538,7 +539,7 @@ class CliTests(unittest.TestCase):
             cap = Path(tmp) / "cap.json"
             self._cap(cap)
             proc = subprocess.run(
-                ["python", str(TOOL), "--capabilities", str(cap)],
+                [sys.executable, str(TOOL), "--capabilities", str(cap)],
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -552,7 +553,7 @@ class CliTests(unittest.TestCase):
         import subprocess
 
         proc = subprocess.run(
-            ["python", str(TOOL)],
+            [sys.executable, str(TOOL)],
             capture_output=True,
             text=True,
             encoding="utf-8",

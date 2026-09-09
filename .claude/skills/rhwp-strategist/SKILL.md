@@ -162,6 +162,6 @@ python3 tools/strategist/engagement.py --validate spec.json --evidence evidence.
 - 질문: [references/20_question_design.md](references/20_question_design.md)
 - 워크스루: [examples/README.md](examples/README.md)
 - 픽스처: [fixtures/catalog.json](fixtures/catalog.json)
-- 작업 기록: [`mydocs/working/agent_strategist.md`](../../../mydocs/working/agent_strategist.md)
+- 작업 기록: [`mydocs/working/agent_strategist.md`](../../../mydocs/working/archives/agent_strategist.md)
 - 정본: [`mydocs/manual/strategist_playbook.md`](../../../mydocs/manual/strategist_playbook.md)
 - SWS: [`mydocs/tech/standards/strategy_work_standard.md`](../../../mydocs/tech/standards/strategy_work_standard.md)

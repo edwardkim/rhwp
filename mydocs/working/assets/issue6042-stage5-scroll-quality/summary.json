@@ -1,0 +1,89 @@
+{
+  "schema": "rhwp.issue6042.stage5.scroll-quality.v1",
+  "measuredAt": "2026-09-02 KST",
+  "environment": {
+    "browser": "Chromium 151",
+    "devicePixelRatio": 2,
+    "viewportCssPx": [1280, 720],
+    "document": "samples/exam_kor.hwp",
+    "before": {
+      "port": 4191,
+      "revision": "5f5d60071bb403b361e796e6d229d2d5b5a9ebef"
+    },
+    "after": {
+      "port": 4193,
+      "revision": "a762e58ea"
+    }
+  },
+  "qualityAb": {
+    "arrangement": "double",
+    "zoom": 1,
+    "action": "scroll to the next row without clicking",
+    "focusedPage": 0,
+    "visiblePages": [2, 3],
+    "scroll": { "x": 0, "y": 1597.5 },
+    "beforeVisibleDpr": [1, 1],
+    "afterVisibleDpr": [2, 2],
+    "beforePixelsPerVisiblePage": 5349972,
+    "afterPixelsPerVisiblePage": 21393150
+  },
+  "performance20Rounds": {
+    "scenario": "double, 100%, alternating rows; quality settlement included in known-work completion",
+    "before": {
+      "syncMs": { "p50": 0, "p95": 0.1 },
+      "visibleFirstMs": { "p50": 124.1, "p95": 134.2 },
+      "visibleBitmapStableMs": { "p50": 124.1, "p95": 134.2 },
+      "settledKnownWorkMs": { "p50": 332.3, "p95": 349.4 },
+      "mainRasterCalls": { "p50": 6, "p95": 6 }
+    },
+    "after": {
+      "syncMs": { "p50": 0, "p95": 0.1 },
+      "visibleFirstMs": { "p50": 70.5, "p95": 79.2 },
+      "visibleBitmapStableMs": { "p50": 135.2, "p95": 147.0 },
+      "settledKnownWorkMs": { "p50": 365.6, "p95": 403.5 },
+      "mainRasterCalls": { "p50": 6, "p95": 6 }
+    },
+    "deltaAfterMinusBeforeMs": {
+      "syncP50": 0,
+      "syncP95": 0,
+      "settledKnownWorkP50": 33.3,
+      "settledKnownWorkP95": 54.1
+    },
+    "note": "visibleBitmapStable marks visible bitmap availability, not the later scroll-settled quality promotion; settledKnownWork includes the promotion."
+  },
+  "policyChecks": {
+    "auto34NextRow": {
+      "columns": 3,
+      "visiblePages": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      "beforeVisibleDpr": [2, 2, 2, 2, 2, 2, 2, 2, 2],
+      "afterVisibleDpr": [2, 2, 2, 2, 2, 2, 2, 2, 2],
+      "beforeActivePixels": 30529440,
+      "afterActivePixels": 30529440,
+      "scrollY": 545.5
+    },
+    "single200NonFocused": {
+      "visiblePages": [1],
+      "focusedPage": 0,
+      "beforeDpr": 1,
+      "afterDpr": 1.5,
+      "afterVisiblePixels": 48125352,
+      "absolutePixelLimit": 64000000
+    },
+    "double200NonFocused": {
+      "visiblePages": [2, 3],
+      "focusedPage": 0,
+      "beforeDpr": [1, 1],
+      "afterDpr": [1, 1],
+      "reason": "aggregate DPR 1.5 cost exceeds the 64M absolute gate; preserve the #6467 planner result"
+    }
+  },
+  "validation": {
+    "focusedPageUnchanged": true,
+    "scrollSettleQueueDrained": true,
+    "errors": 0,
+    "targetedTests": { "total": 37, "passed": 37 },
+    "studioTests": { "total": 1422, "passed": 1421, "skipped": 1, "failed": 0 },
+    "productionBuild": "passed",
+    "e2eManifest": { "tracked": 125, "manifest": 125, "status": "passed" }
+  }
+}

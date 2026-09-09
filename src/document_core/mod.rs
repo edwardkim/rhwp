@@ -10,6 +10,8 @@ pub mod builders;
 mod commands;
 pub mod converters;
 pub(crate) mod html_table_import;
+/// 한글 클립보드 문서모델(hwpjson) → HWPX 변환
+pub mod hwpjson;
 pub mod queries;
 pub mod table_calc;
 pub mod text_security;
@@ -65,6 +67,9 @@ pub(crate) struct ClipboardData {
     pub(crate) paragraphs: Vec<Paragraph>,
     /// 플레인 텍스트
     pub(crate) plain_text: String,
+    /// The copied control owns renderer text-reflow provenance that must be
+    /// inherited by a pasted table clone.
+    pub(crate) copied_table_text_reflowed: bool,
 }
 
 /// 표 셀 행/열 바꿈 전용 내부 버퍼
@@ -129,12 +134,25 @@ pub(crate) struct RenderNormalizedSection {
     pub(crate) composed: Arc<Vec<ComposedParagraph>>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub(crate) struct TableTextReflowKey(usize);
+
+impl TableTextReflowKey {
+    pub(crate) fn from_table(table: &crate::model::table::Table) -> Self {
+        Self(table as *const crate::model::table::Table as usize)
+    }
+}
+
 #[derive(Default)]
 pub(crate) struct RenderNormalizationState {
     pub(crate) document_epoch: u64,
     pub(crate) section_revisions: Vec<u64>,
     pub(crate) sections: Vec<Option<RenderNormalizedSection>>,
     pub(crate) path_revisions: HashMap<RenderPath, u64>,
+    /// Stable live Box identities whose stored frame was superseded by text
+    /// reflow. Box pointees survive paragraph/control-vector moves; clones are
+    /// admitted only by explicit split/clipboard inheritance.
+    pub(crate) text_reflowed_tables: std::collections::HashSet<TableTextReflowKey>,
     pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 
@@ -236,7 +254,7 @@ pub struct DocumentCore {
     pub(crate) overflow_links_cache:
         RefCell<HashMap<usize, Vec<queries::doc_tree_nav::OverflowLink>>>,
     /// Undo/Redo용 Document 스냅샷 저장소 (ID → Document 클론)
-    pub(crate) snapshot_store: Vec<(u32, Document)>,
+    pub(crate) snapshot_store: Vec<(u32, Document, std::collections::HashSet<RenderPath>)>,
     /// 다음 스냅샷 ID
     pub(crate) next_snapshot_id: u32,
     /// [#5769] Undo/Redo용 삭제 조각 저장소 (ID → DeleteFragment).
@@ -249,6 +267,12 @@ pub struct DocumentCore {
     pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
     /// 다음 구역 raw 캡처 ID
     pub(crate) next_section_raw_id: u32,
+    /// 그림 크기 변경의 원본 변환 상태. 문서/이미지 전체는 복제하지 않는다.
+    pub(crate) picture_transform_store: Vec<(
+        u32,
+        commands::picture_transform_journal::PictureTransformCapture,
+    )>,
+    pub(crate) next_picture_transform_id: u32,
     /// 머리말/꼬리말 감추기: (global_page_index, is_header) 조합
     pub(crate) hidden_header_footer: std::collections::HashSet<(u32, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
@@ -490,6 +514,8 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            picture_transform_store: Vec::new(),
+            next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,

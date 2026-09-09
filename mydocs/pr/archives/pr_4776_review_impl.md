@@ -37,5 +37,5 @@ fast-forward push했다. 원래 기여 커밋은 다시 쓰지 않았고 force p
 ## 검증 근거
 
 - GitHub full CI, CodeQL, Canvas visual diff 통과: [PR review](pr_4776_review.md)
-- 구현 단계 계약: [Stage 1](../../working/task_m100_4776_stage1_empty_paragraph_field_end_order.md)
+- 구현 단계 계약: [Stage 1](../../working/archives/task_m100_4776_stage1_empty_paragraph_field_end_order.md)
 - docs-only 후속 head는 fast-pass와 최신 mergeability 확인이 필요하다.

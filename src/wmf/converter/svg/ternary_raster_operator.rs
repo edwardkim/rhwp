@@ -1,5 +1,5 @@
 use crate::wmf::converter::{
-    svg::{node::Node, util::url_string, Fill},
+    svg::{device_context::BlitDestRect, node::Node, util::url_string, Fill},
     *,
 };
 
@@ -11,7 +11,7 @@ pub enum TernaryRasterOperationError {
     NoSource { cause: String },
 }
 
-type BrushOnlyRopKey = (i16, i16, i16, i16, String);
+type BrushOnlyRopKey = (i32, i32, i32, i32, String);
 
 #[derive(Default)]
 pub struct BrushOnlyRopSequence {
@@ -83,10 +83,8 @@ impl BrushOnlyRopSequence {
 
 pub struct TernaryRasterOperator {
     operation: TernaryRasterOperation,
-    x: i16,
-    y: i16,
-    height: i16,
-    width: i16,
+    /// [#6617] 장치 좌표로 정규화한 목적 사각형(`DeviceContext::blit_dest_rect`).
+    rect: BlitDestRect,
     brush: Option<Brush>,
     source: Option<Source>,
 }
@@ -97,42 +95,39 @@ enum Source {
 }
 
 impl TernaryRasterOperator {
-    pub fn new(operation: TernaryRasterOperation, x: i16, y: i16, height: i16, width: i16) -> Self {
+    pub fn new(operation: TernaryRasterOperation, rect: BlitDestRect) -> Self {
         Self {
             operation,
-            x,
-            y,
-            height,
-            width,
+            rect,
             brush: None,
             source: None,
         }
     }
 
-    /// [#6140] 목적 사각형이 음수 폭/높이로 온 경우의 SVG 정규화.
+    /// 목적 사각형과, 뒤집힌 축이 있으면 그 축을 되돌리는 `transform`.
     ///
-    /// GDI 는 `dest_height`/`dest_width` 가 음수면 그 축으로 뒤집어 blit 한다.
-    /// SVG 의 `width`/`height` 는 **음수를 오류로 규정**하므로 그대로 내보내면
-    /// 브라우저가 그 속성을 무시하고(=절대값·비반전) 그린다 — bottom-up WMF 가
-    /// 이미 y-flip 그룹 안에 있으면 그 결과가 상하 반전이 된다(156462405 7쪽
-    /// 인물 사진). 원점·크기를 양수로 정규화하고, 뒤집힘은 요소 자신의
-    /// `transform` 으로 표현한다.
+    /// [#6140] SVG 의 `width`/`height` 는 음수를 오류로 규정하므로 사각형은 항상 양수 크기로
+    /// 두고 뒤집힘을 요소 자신의 `transform` 으로 표현한다. [#6617] 어느 축이 뒤집히는지는
+    /// 논리 폭/높이 부호가 아니라 장치 좌표에서 정한다(`DeviceContext::blit_dest_rect`) —
+    /// y-up 창의 음수 높이 DIB 는 뒤집히지 않는다.
     fn normalized_rect(&self) -> (i32, i32, i32, i32, Option<String>) {
-        let (x, y) = (i32::from(self.x), i32::from(self.y));
-        let (w, h) = (i32::from(self.width), i32::from(self.height));
-        let x_norm = if w < 0 { x + w } else { x };
-        let y_norm = if h < 0 { y + h } else { y };
-        let w_abs = w.abs();
-        let h_abs = h.abs();
+        let BlitDestRect {
+            x,
+            y,
+            width,
+            height,
+            flip_x,
+            flip_y,
+        } = self.rect;
         let mut parts = Vec::new();
-        if w < 0 {
-            parts.push(format!("translate({},0) scale(-1,1)", 2 * x_norm + w_abs));
+        if flip_x {
+            parts.push(format!("translate({},0) scale(-1,1)", 2 * x + width));
         }
-        if h < 0 {
-            parts.push(format!("translate(0,{}) scale(1,-1)", 2 * y_norm + h_abs));
+        if flip_y {
+            parts.push(format!("translate(0,{}) scale(1,-1)", 2 * y + height));
         }
         let transform = (!parts.is_empty()).then(|| parts.join(" "));
-        (x_norm, y_norm, w_abs, h_abs, transform)
+        (x, y, width, height, transform)
     }
 
     pub fn brush(mut self, brush: Brush) -> Self {
@@ -178,10 +173,10 @@ impl TernaryRasterOperator {
 
         let result: Node = match self.operation {
             TernaryRasterOperation::BLACKNESS => Node::new("rect")
-                .set("x", self.x)
-                .set("y", self.y)
-                .set("width", self.width)
-                .set("height", self.height)
+                .set("x", self.rect.x)
+                .set("y", self.rect.y)
+                .set("width", self.rect.width)
+                .set("height", self.rect.height)
                 .set("stroke", "none")
                 .set("fill", "black"),
             TernaryRasterOperation::SRCCOPY => {
@@ -216,17 +211,17 @@ impl TernaryRasterOperator {
                 };
 
                 Node::new("rect")
-                    .set("x", self.x)
-                    .set("y", self.y)
-                    .set("width", self.width)
-                    .set("height", self.height)
+                    .set("x", self.rect.x)
+                    .set("y", self.rect.y)
+                    .set("width", self.rect.width)
+                    .set("height", self.rect.height)
                     .set("fill", fill.as_str())
             }
             TernaryRasterOperation::WHITENESS => Node::new("rect")
-                .set("x", self.x)
-                .set("y", self.y)
-                .set("width", self.width)
-                .set("height", self.height)
+                .set("x", self.rect.x)
+                .set("y", self.rect.y)
+                .set("width", self.rect.width)
+                .set("height", self.rect.height)
                 .set("stroke", "none")
                 .set("fill", "white"),
             // [#6469] 미구현 ROP 을 **통째로 버리지 않는다.**
@@ -273,16 +268,22 @@ impl TernaryRasterOperator {
                 // 그림(흰 원)을 덮는다. 다만 전역 이력에서 같은 키를 찾으면 독립된
                 // 후속 draw까지 지워질 수 있으므로, 출력 요소 순서상 연속한
                 // PATINVERT → DPA → PATINVERT만 상쇄한다.
-                let key = (self.x, self.y, self.width, self.height, fill.clone());
+                let key = (
+                    self.rect.x,
+                    self.rect.y,
+                    self.rect.width,
+                    self.rect.height,
+                    fill.clone(),
+                );
                 if brush_only_rop_sequence.observe(operation, key, element_count) {
                     return Ok(None);
                 }
 
                 Node::new("rect")
-                    .set("x", self.x)
-                    .set("y", self.y)
-                    .set("width", self.width)
-                    .set("height", self.height)
+                    .set("x", self.rect.x)
+                    .set("y", self.rect.y)
+                    .set("width", self.rect.width)
+                    .set("height", self.rect.height)
                     .set("fill", fill.as_str())
             }
             operation if operation.use_source() => {

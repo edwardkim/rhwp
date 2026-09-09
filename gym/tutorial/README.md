@@ -19,7 +19,7 @@ last_verified: 2026-08-18
 입구 안내다. 판정 정본은 `gym/core/checks.py` 와 각 `packs/*/tasks/*.json` 이다.
 
 규약 정본(기계가 잠그는 계약)은 [../docs/tutorial.md](../docs/tutorial.md) 다.
-작업 기록은 [../../mydocs/working/gym_tutorial.md](../../mydocs/working/gym_tutorial.md).
+작업 기록은 [../../mydocs/working/gym_tutorial.md](../../mydocs/working/archives/gym_tutorial.md).
 
 ---
 

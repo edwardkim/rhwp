@@ -2,7 +2,7 @@
   "id": "TB39",
   "tier": 4,
   "title": "가로쌍 표지",
-  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "input": "samples/table-001.hwp",
   "instructions": "첫 번째 표의 (0행,0열) 을 '가로1' · (0행,1열) 을 '가로2'으로 바꾼 h_pair.hwp 를 제출하라. 채점은 그 좌표만 대조한다. 힌트: rhwp edit set-cell.",
   "submit": {
     "kind": "artifact",

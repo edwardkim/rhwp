@@ -34,11 +34,18 @@ pub struct DeviceContext {
     pub viewport_org: (i32, i32),
     pub viewport_ext: (i32, i32),
     pub current_pos: (i32, i32),
+    /// [#6577] 현재 클립 사각형(논리 좌표, `left top right bottom`).
+    ///
+    /// `EMR_INTERSECTCLIPRECT` 로 좁혀지고 `SaveDC`/`RestoreDC` 와 함께 저장·복원된다.
+    /// 156627451 내장 EMF 는 이 레코드를 112건 쓰는데, 종전에는 클립이 아예 없어
+    /// 도형이 제 영역 밖까지 그려졌다.
+    pub clip_rect: Option<(i32, i32, i32, i32)>,
 }
 
 impl Default for DeviceContext {
     fn default() -> Self {
         Self {
+            clip_rect: None,
             pen: None,
             brush: None,
             font: None,

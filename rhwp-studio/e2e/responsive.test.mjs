@@ -415,7 +415,7 @@ async function run() {
           const charfxOpened = charfxDropdown.classList.contains('open');
           charfxItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
 
-          highlightButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          highlightButton.click();
           const highlightOpened = highlightDropdown.classList.contains('open');
           highlightSwatch.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
 

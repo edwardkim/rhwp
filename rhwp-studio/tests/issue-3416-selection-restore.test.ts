@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { functionBodyFrom } from './support/source-guard.ts';
+import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
 
 // [#3416] undo 뒤 "지우기 전 선택" 복원.
 //
@@ -25,6 +25,15 @@ import { functionBodyFrom } from './support/source-guard.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const src = (rel: string): string => readFileSync(join(rootDir, rel), 'utf8');
+/**
+ * 소스 계약 단언용 — 주석을 지운 본문만 본다.
+ *
+ * 아래 단언들은 이름의 **위치**로 순서를 재거나(`indexOf` 비교) 이름의 부재를 단언한다.
+ * 원문 그대로 보면 이 레포의 관습(주석에 선언·호출을 그대로 인용)에 뚫린다 — 실제로
+ * `restoreSelectionAfterUndo` 에 붙은 주석이 `selectRange` 를 인용하자 마지막 시험의
+ * 순서 판정이 뒤집혔다(#6741 작업 중 CI 에서 드러남). #6335 가 세운 규약을 따른다.
+ */
+const code = (rel: string): string => codeOnly(src(rel));
 
 test('[#3416] 선택 삭제 커맨드가 지우기 전 범위를 들고 있다', async () => {
   const vite = await createServer({
@@ -47,7 +56,7 @@ test('[#3416] 선택 삭제 커맨드가 지우기 전 범위를 들고 있다',
 });
 
 test('[#3416] undo 경로가 선택을 되살린다 — redo 경로에는 없다', () => {
-  const handler = src('src/engine/input-handler.ts');
+  const handler = code('src/engine/input-handler.ts');
   const undo = functionBodyFrom(handler, 'private handleUndo()');
   const redo = functionBodyFrom(handler, 'private handleRedo()');
 
@@ -62,7 +71,7 @@ test('[#3416] undo 경로가 선택을 되살린다 — redo 경로에는 없다
 });
 
 test('[#3416] 유효성은 호출부가 아니라 selectRange 안에서 판정된다', () => {
-  const cursor = src('src/engine/cursor.ts');
+  const cursor = code('src/engine/cursor.ts');
   const select = functionBodyFrom(cursor, 'selectRange(');
 
   // 확인이 대입보다 먼저여야 한다 — 뒤면 유령 범위가 이미 선 뒤다.
@@ -73,14 +82,14 @@ test('[#3416] 유효성은 호출부가 아니라 selectRange 안에서 판정�
   assert.match(select, /return false/, '세우지 못하면 그 사실을 돌려줘야 한다');
 
   // 호출부에 같은 판정을 두면 계약이 두 곳으로 갈라진다 — 그때부터 한쪽만 고쳐진다.
-  const handler = src('src/engine/input-handler.ts');
+  const handler = code('src/engine/input-handler.ts');
   const restore = functionBodyFrom(handler, 'private restoreSelectionAfterUndo');
   assert.doesNotMatch(restore, /getParagraphCount|getParagraphLength|parentParaIndex/,
     '실재 판정을 호출부가 되풀이하면 안 된다');
 });
 
 test('[#3416] 해제는 그대로 남는다 — 복원은 그 위에 얹는 향상이다', () => {
-  const handler = src('src/engine/input-handler.ts');
+  const handler = code('src/engine/input-handler.ts');
   const reset = functionBodyFrom(handler, 'private resetDerivedStateAfterHistoryJump');
   assert.match(reset, /exitBlockSelectionMode\(\)/, '#2339 의 해제가 유지돼야 한다');
   assert.match(reset, /exitCellSelectionMode\(\)/);
@@ -138,7 +147,7 @@ test('[#3416] selectRange 는 실재하지 않는 범위를 거절한다 — 실
 });
 
 test('[#3416] 구역을 걸치는 범위는 복원 대상이 아니다 (실측 범위 밖)', () => {
-  const handler = src('src/engine/input-handler.ts');
+  const handler = code('src/engine/input-handler.ts');
   const restore = functionBodyFrom(handler, 'private restoreSelectionAfterUndo');
   assert.match(restore, /sectionIndex !== range\.end\.sectionIndex/, '구역 정책은 호출부가 갖는다');
   const idxPolicy = restore.indexOf('sectionIndex !==');

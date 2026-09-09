@@ -219,4 +219,4 @@ rhwp search 개정본.hwp "2025년" --json | jq .matchCount     # → 0 이어�
 - `run` 실측 저널·실패 사례: [`mydocs/manual/agent_task_playbook.md`](../../../mydocs/manual/agent_task_playbook.md) §12
 - dry-run→저장→changedPages 루프 실측: [`mydocs/manual/agent_surface_playbook.md`](../../../mydocs/manual/agent_surface_playbook.md) §9
 - 봉투 필드 사전·`null` 사전: [`mydocs/manual/agent_knowledge_map.md`](../../../mydocs/manual/agent_knowledge_map.md) §2
-- 이 파동의 작업 기록: [`mydocs/working/agent_safe_edit.md`](../../../mydocs/working/agent_safe_edit.md)
+- 이 파동의 작업 기록: [`mydocs/working/agent_safe_edit.md`](../../../mydocs/working/archives/agent_safe_edit.md)

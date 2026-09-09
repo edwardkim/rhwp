@@ -1,4 +1,4 @@
-//! [#6557] 병합 셀이 낀 셀 선택 열 경계 드래그의 local_resize 마킹 계약.
+//! [#6557] 병합 셀이 낀 셀 선택 열 경계 드래그의 persisted geometry 계약.
 //!
 //! studio 마우스 드래그는 폭 보존 update(경계 왼쪽 셀 +d, 오른쪽 이웃 -d)를
 //! `resizeTableCells` 로 보낸다. 적용 결과가 전 행 균일하면 행 단위 resize 로
@@ -64,11 +64,6 @@ fn uniform_result_with_vertical_merge_keeps_base_grid() {
         .expect("경계 드래그 적용");
 
     let table = table_of(&doc, para_idx);
-    assert!(
-        table.local_resize_rows.is_empty(),
-        "전 행 균일 결과는 행 단위 resize 마킹 대상이 아니다: {:?}",
-        table.local_resize_rows
-    );
     let widths = table.get_column_widths();
     assert_eq!(
         widths[0] as i64,
@@ -92,10 +87,9 @@ fn uniform_result_with_vertical_merge_keeps_base_grid() {
 }
 
 #[test]
-fn divergent_row_still_marks_local_resize() {
-    // 대조군: 결과가 실제로 갈라지면(선택 행만 이동) 종전과 같이 그 행을
-    // local_resize 로 마킹한다. 병합 없는 3x2 표에서 row1 만 +d/-d 를 받으면
-    // row1 의 폭 벡터가 base grid 와 달라진다.
+fn divergent_row_is_stored_in_its_cell_widths() {
+    // 병합 없는 3x2 표에서 row1 만 +d/-d 를 받으면 source cell widths가
+    // 직접 그 독립 경계를 보존한다.
     let mut doc = HwpDocument::create_empty();
     let created = doc.create_table_native(0, 0, 0, 3, 2).expect("3x2 표");
     let para_idx = table_para_idx(&created);
@@ -110,9 +104,6 @@ fn divergent_row_still_marks_local_resize() {
         .expect("행 한정 드래그 적용");
 
     let table = table_of(&doc, para_idx);
-    assert_eq!(
-        table.local_resize_rows,
-        vec![1],
-        "갈라진 행은 종전대로 행 단위 resize 로 마킹된다"
-    );
+    assert_ne!(table.cells[r1c0].width, table.cells[0].width);
+    assert_ne!(table.cells[r1c1].width, table.cells[1].width);
 }

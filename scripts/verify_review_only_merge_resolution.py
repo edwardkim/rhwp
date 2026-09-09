@@ -10,6 +10,10 @@ from pathlib import Path
 
 
 SAFE_REASON = "current-base-merge-resolution-mydocs-only"
+NON_REVIEW_ONLY_MYDOCS_PATHS = {
+    "mydocs/tech/canvaskit-parity-implementation.md",
+    "mydocs/tech/text-ir-v2.md",
+}
 
 
 def remerge_resolution_paths(repository: Path, merge_sha: str) -> list[str]:
@@ -54,7 +58,10 @@ def is_current_base_merge(repository: Path, merge_sha: str, base_sha: str) -> bo
 
 
 def is_mydocs_only(paths: list[str]) -> bool:
-    return bool(paths) and all(path.startswith("mydocs/") for path in paths)
+    return bool(paths) and all(
+        path.startswith("mydocs/") and path not in NON_REVIEW_ONLY_MYDOCS_PATHS
+        for path in paths
+    )
 
 
 def main() -> int:

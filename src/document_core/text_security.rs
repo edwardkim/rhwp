@@ -759,6 +759,18 @@ fn bidi_severity(c: u32) -> Severity {
 /// **라틴 낱말로 위장한 경우만** 잡는다: 라틴 글자 2자 이상 + 라틴 동형자를 가진 비라틴
 /// 글자 1자 이상. 이 조건이 오탐의 대부분을 막는다 —
 /// 순수 러시아어(`Москва`)·그리스 수식 기호(`αβγ`)·`Δt` 같은 표기는 전부 통과한다.
+/// 또한 `TNFα` 같은 생의학 약어의 끝 `α`·`β`·`γ`는 정당한 그리스 문자 접미사로
+/// 취급한다. 대문자 ASCII 약어 뒤의 정확히 한 글자에만 적용하므로 `Тotal` 같은
+/// 동형자 위장과 제로폭 문자로 낱말을 분할한 우회는 계속 잡는다.
+fn is_biomedical_greek_suffix(chars: &[char], start: usize, end: usize, at: usize) -> bool {
+    if at + 1 != end || !matches!(chars[at], 'α' | 'β' | 'γ') {
+        return false;
+    }
+
+    let acronym = &chars[start..at];
+    acronym.len() >= 2 && acronym.iter().all(|ch| ch.is_ascii_uppercase())
+}
+
 fn confusable_offender(chars: &[char], start: usize, end: usize) -> Option<(usize, char)> {
     let latin = chars[start..end]
         .iter()
@@ -774,7 +786,10 @@ fn confusable_offender(chars: &[char], start: usize, end: usize) -> Option<(usiz
             !matches!(script_of(**c), Some(ConfusableScript::Latin) | None)
                 && confusable_to_latin(**c).is_some()
         })
-        .map(|(i, c)| (start + i, *c))
+        .and_then(|(i, c)| {
+            let at = start + i;
+            (!is_biomedical_greek_suffix(chars, start, end, at)).then_some((at, *c))
+        })
 }
 
 /// 문자열 하나를 **코드포인트 1패스**로 훑어 유니코드 기만 신호를 모은다.
@@ -1212,13 +1227,31 @@ mod tests {
             "{split:?}"
         );
 
-        // 순수 러시아어·그리스 수식·라틴 1자 혼합은 정상이다.
-        for ok in ["Москва 방문", "αβγ 계수", "Δt 구간", "총액 α 값"] {
+        // 순수 러시아어·그리스 수식·라틴 1자 혼합과 생의학 약어 접미사는 정상이다.
+        for ok in [
+            "Москва 방문",
+            "αβγ 계수",
+            "Δt 구간",
+            "총액 α 값",
+            "TNFα 발현",
+            "TGFβ 신호",
+            "IFNγ 반응",
+        ] {
             assert!(
                 !scan_deception(ok, None)
                     .iter()
                     .any(|f| f.kind == DeceptionKind::Confusable),
                 "오탐: {ok}"
+            );
+        }
+
+        // 대문자 약어의 끝 한 글자만 완화한다. 일반적인 혼합 표기와 제로폭 우회는 유지한다.
+        for suspicious in ["Totaα", "Тotal", "TNF\u{200B}α"] {
+            assert!(
+                scan_deception(suspicious, None)
+                    .iter()
+                    .any(|f| f.kind == DeceptionKind::Confusable),
+                "동형자 완화가 과도함: {suspicious}"
             );
         }
     }

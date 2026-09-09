@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-07-17
+last_verified: 2026-09-04
 ---
 
 # Hyper-Waterfall 문서 체계 가이드
@@ -89,6 +89,18 @@ task_m100_86_stage3.md  ← 3단계 완료: Chrome 확장 연동
 타스크가 완료되면 최종 보고서를 작성한다. 계획과 결과를 비교하고, 차이가 있으면 그 이유를 기록한다.
 
 **역할**: 계획-실행-검증의 사이클을 닫는다. 계획과 결과의 차이가 다음 타스크의 계획 정확도를 높인다.
+
+### 현재 작업 집합과 archives/
+
+기록을 영구 보존하는 것과 매 세션에 모든 기록을 한꺼번에 읽는 것은 다른 문제다. `orders`,
+`plans`, `pr`, `report`, `working`의 직접 하위는 당월 작업을 빠르게 찾는 집합으로 유지하고 이전
+달 문서는 각 폴더의 `archives/`에 보존한다.
+
+archive 경로는 완료나 폐기를 뜻하지 않는다. 오래 진행되는 열린 이슈의 문서도 생성 월이 지나면
+archive에서 계속 갱신할 수 있다. 현재 일을 찾을 때는 root를 우선하고, 특정 이슈의 과거 계획·판단을
+복원할 때는 `archives/`까지 함께 찾는다. 월별 경계, Git 생성일 판정, 충돌과 링크 보존의 상세 규칙은
+[문서·Git 워크플로의 월별 아카이브 거버넌스](codex/docs_and_git_workflow.md#monthly-archive-governance)가
+정본이다.
 
 ### feedback/ — 피드백 기록
 

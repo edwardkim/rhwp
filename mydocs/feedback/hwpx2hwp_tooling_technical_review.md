@@ -23,8 +23,8 @@
 | `ir-diff` | HWPX vs HWP **IR** 차이 | △ IR 차이만, record/control contract 아님 |
 | `dump-pages` | 페이지 배치 결과 | ✗ lowering 무관 |
 | `diag` | 진단 | △ 범용 |
-| `examples/hwpx_hwp_ir_diff.rs` | HWPX↔HWP IR diff | △ IR 레벨 |
-| `examples/hwpx_roundtrip.rs` | HWPX 라운드트립 | △ 자기 검증 (한컴 oracle 아님) |
+| `tools/diagnostics/hwpx_hwp_ir_diff.rs` | HWPX↔HWP IR diff | △ IR 레벨 |
+| `tools/diagnostics/hwpx_roundtrip.rs` | HWPX 라운드트립 | △ 자기 검증 (한컴 oracle 아님) |
 | `tests/hwpx_to_hwp_adapter.rs` | 어댑터 통합 테스트 | △ 회복 측정, record 대조 아님 |
 | `diff_hwpx_vs_serializer_assumptions` | 직렬화 가정 차이 | △ 가정 차이만 |
 
@@ -122,7 +122,7 @@ rhwp hwp5-contract-check  → 전 unit 회귀 일괄 검증 (CI 통합)
 HWP5 record contract 검증이 아님" 경고를 명시해야 §7 금지 규칙
 ("rhwp reload 성공만으로 판단 금지") 와 일관.
 
-### 3.2 `examples/hwpx_roundtrip.rs` 위험성 표기
+### 3.2 `tools/diagnostics/hwpx_roundtrip.rs` 위험성 표기
 자기 라운드트립은 `feedback_self_verification_not_hancom` 위반 소지. 도구 주석에
 "한컴 oracle 아님, 충분 조건 아님" 명시 + §7 금지 규칙 링크.
 

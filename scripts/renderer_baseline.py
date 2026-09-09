@@ -374,6 +374,8 @@ def capture_native_sample(
             str(sample_path),
             "--page",
             target_page,
+            "--backend",
+            "legacy",
             "--output",
             str(legacy_dir),
         ],

@@ -18,6 +18,7 @@ import { userSettings } from '@/core/user-settings';
 import { enableDialogDrag } from './dialog-drag';
 import {
   buildPicturePropsPatch,
+  displayedMm,
   resolvePicturePropsApplyTarget,
   type PicturePropsApplyForm,
   type PicturePropsApplyTarget,
@@ -2143,8 +2144,9 @@ export class PicturePropsDialog {
         this.picEmbedCheck.checked = true;
       }
     }
-    this.widthInput.value = hwpToMm(this.props.width).toFixed(2);
-    this.heightInput.value = hwpToMm(this.props.height).toFixed(2);
+    // [Task #6758] 크기 칸의 서식 소유자는 apply-model 이다 — 판정이 이 표시값과 견준다.
+    this.widthInput.value = displayedMm(this.props.width);
+    this.heightInput.value = displayedMm(this.props.height);
     this.sizeFixedCheck.checked = this.props.sizeProtect ?? false;
     this.treatAsCharCheck.checked = this.props.treatAsChar;
     this.selectWrap(this.wrapValues.indexOf(this.props.textWrap));
@@ -2152,10 +2154,10 @@ export class PicturePropsDialog {
       ? 'TakePlace'
       : this.props.horzRelTo;
     this.horzAlignSelect.value = this.props.horzAlign;
-    this.horzOffsetInput.value = hwpToMm(this.props.horzOffset).toFixed(2);
+    this.horzOffsetInput.value = displayedMm(this.props.horzOffset);
     this.vertRelSelect.value = this.props.vertRelTo;
     this.vertAlignSelect.value = this.props.vertAlign;
-    this.vertOffsetInput.value = hwpToMm(this.props.vertOffset).toFixed(2);
+    this.vertOffsetInput.value = displayedMm(this.props.vertOffset);
     this.pageAreaLimitCheck.checked = this.props.restrictInPage ?? true;
     this.overlapAllowCheck.checked = this.props.allowOverlap ?? false;
     this.descInput.value = this.props.description;

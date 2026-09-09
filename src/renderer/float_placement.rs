@@ -8,13 +8,206 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, TextFlow, TextWrap, VertAlign, VertRelTo,
 };
+use crate::model::style::Alignment;
 use crate::model::table::{Table, TablePageBreak};
 use crate::model::HwpUnit;
 
 use super::hwpunit_to_px;
 use super::layout::picture_flow_frame_size_hu;
-use super::layout_frame::{FrameExclusion, FrameExclusionPolicy};
+use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
+
+/// 개체 배치에 쓰이는 실제 좌표계. Paper와 Page(본문 영역)를 구분하며,
+/// 셀/문단의 container를 종이나 단으로 대체하지 않는다.
+///
+/// #6812: 점유 영역도 paint와 같은 원점·정렬 해석을 사용할 수 있도록
+/// 렌더 노드 생성과 무관한 계산으로 분리한다. 크기는 호출자가 캡션과
+/// 바깥 여백까지 포함해 해석한 개체 상자의 크기다.
+pub(crate) struct ObjectPlacementFrame<'a> {
+    pub(crate) container: &'a LayoutRect,
+    pub(crate) column: &'a LayoutRect,
+    pub(crate) body: &'a LayoutRect,
+    pub(crate) paper: &'a LayoutRect,
+    pub(crate) paragraph_y: f64,
+    pub(crate) alignment: Alignment,
+    pub(crate) dpi: f64,
+}
+
+impl ObjectPlacementFrame<'_> {
+    /// 기준 영역 → 정렬 → signed offset. 저장 LineSeg나 paint 목록은 읽지 않는다.
+    pub(crate) fn position(&self, common: &CommonObjAttr, width: f64, height: f64) -> (f64, f64) {
+        let h_offset = hwpunit_to_px(signed_hwpunit(common.horizontal_offset), self.dpi);
+        let v_offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), self.dpi);
+        let x = if common.treat_as_char {
+            match self.alignment {
+                Alignment::Center | Alignment::Distribute => {
+                    self.container.x + (self.container.width - width).max(0.0) / 2.0
+                }
+                Alignment::Right => self.container.x + (self.container.width - width).max(0.0),
+                _ => self.container.x,
+            }
+        } else {
+            let reference = match common.horz_rel_to {
+                HorzRelTo::Paper => self.paper,
+                HorzRelTo::Page => self.body,
+                HorzRelTo::Column => self.column,
+                HorzRelTo::Para => self.container,
+            };
+            match common.horz_align {
+                HorzAlign::Left | HorzAlign::Inside => reference.x + h_offset,
+                HorzAlign::Center => reference.x + (reference.width - width) / 2.0 + h_offset,
+                HorzAlign::Right | HorzAlign::Outside => {
+                    reference.x + reference.width - width - h_offset
+                }
+            }
+        };
+        let y = if common.treat_as_char {
+            self.paragraph_y
+        } else {
+            let (reference_y, reference_height) = match common.vert_rel_to {
+                VertRelTo::Paper => (self.paper.y, self.paper.height),
+                VertRelTo::Page => (self.body.y, self.body.height),
+                VertRelTo::Para => (self.paragraph_y, self.container.height),
+            };
+            match common.vert_align {
+                VertAlign::Top | VertAlign::Inside => reference_y + v_offset,
+                VertAlign::Center => reference_y + (reference_height - height) / 2.0 + v_offset,
+                VertAlign::Bottom | VertAlign::Outside => {
+                    reference_y + reference_height - height - v_offset
+                }
+            }
+        };
+        (x, y)
+    }
+
+    /// 실제 출력과 같은 여백·캡션 포함 상자. 흐름에 영향을 주는 Square 그림만 등록한다.
+    /// `allow_overlap`은 floating 개체 간 허용이며 TAC 줄의 어울림을 취소하지 않는다.
+    pub(crate) fn picture_exclusion(&self, picture: &Picture) -> Option<FrameExclusion> {
+        let common = &picture.common;
+        if common.treat_as_char || common.text_wrap != TextWrap::Square {
+            return None;
+        }
+        let (width, height) = picture_flow_frame_size_hu(picture);
+        if width <= 0 || height <= 0 {
+            return None;
+        }
+        let mut width = hwpunit_to_px(width, self.dpi);
+        let mut height = hwpunit_to_px(height, self.dpi);
+        if let Some(caption) = &picture.caption {
+            use crate::model::shape::CaptionDirection;
+            let spacing = hwpunit_to_px(caption.spacing as i32, self.dpi);
+            match caption.direction {
+                CaptionDirection::Top | CaptionDirection::Bottom => {
+                    height +=
+                        super::composer::caption_height_px(&picture.caption, self.dpi) + spacing;
+                }
+                CaptionDirection::Left | CaptionDirection::Right => {
+                    width += hwpunit_to_px(caption.width as i32, self.dpi) + spacing;
+                }
+            }
+        }
+        width += hwpunit_to_px(
+            i32::from(common.margin.left) + i32::from(common.margin.right),
+            self.dpi,
+        );
+        height += hwpunit_to_px(
+            i32::from(common.margin.top) + i32::from(common.margin.bottom),
+            self.dpi,
+        );
+        let (x, mut y) = self.position(common, width, height);
+        if common.flow_with_text && common.vert_rel_to == VertRelTo::Para {
+            y = y.min((self.column.y + self.column.height - height).max(self.column.y));
+        }
+        if width <= 0.0
+            || height <= 0.0
+            || ![x, y, width, height].iter().all(|value| value.is_finite())
+        {
+            return None;
+        }
+        let hu = |px| super::px_to_hwpunit(px, self.dpi);
+        Some(FrameExclusion {
+            horizontal: hu(x)..hu(x + width),
+            vertical: hu(y)..hu(y + height),
+            policy: match common.text_flow {
+                TextFlow::BothSides => FrameExclusionPolicy::BothSides,
+                TextFlow::LargestOnly => FrameExclusionPolicy::LargestSide,
+                TextFlow::LeftOnly => FrameExclusionPolicy::LeftSide,
+                TextFlow::RightOnly => FrameExclusionPolicy::RightSide,
+            },
+        })
+    }
+}
+
+/// 분할기가 확정한 TAC 줄의 배치. x/y는 해당 단 원점 기준(px), 여백 포함 pen 좌표다.
+/// 렌더는 이 결과를 소비하며 별도의 그림 회피 판정을 반복하지 않는다.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct InlineBoxPlacement {
+    pub x: f64,
+    pub y: f64,
+    pub clearance: f64,
+}
+
+/// 가로 구간에서 원자적 inline 상자가 들어갈 첫 줄을 찾는다.
+/// 그림 경계에서만 이동하는 LayoutFrame을 사용하며 저장 vpos는 입력받지 않는다.
+/// 원래 프레임보다 넓은 상자는 축소하지 않고, 배제 영역이 없는 전폭 줄까지 기다린다.
+pub(crate) fn place_inline_box(
+    horizontal: Range<f64>,
+    top: f64,
+    width: f64,
+    height: f64,
+    alignment: Alignment,
+    exclusions: &[FrameExclusion],
+    dpi: f64,
+) -> Option<InlineBoxPlacement> {
+    if exclusions.is_empty()
+        || ![horizontal.start, horizontal.end, top, width, height, dpi]
+            .iter()
+            .all(|v| v.is_finite())
+        || horizontal.end <= horizontal.start
+        || width <= 0.0
+        || height <= 0.0
+        || dpi <= 0.0
+    {
+        return None;
+    }
+    let hu = |px| super::px_to_hwpunit(px, dpi);
+    let base = hu(horizontal.start)..hu(horizontal.end);
+    let base_width = base
+        .end
+        .checked_sub(base.start)
+        .filter(|width| *width > 0)?;
+    let start = hu(top);
+    let band_height = hu(height).max(1);
+    // 다른 세로/가로 영역의 그림 때문에 기존 정렬·leading 경로를 대체하지 않는다.
+    if !exclusions.iter().any(|e| {
+        e.horizontal.start < base.end
+            && base.start < e.horizontal.end
+            && e.vertical.start < start.saturating_add(band_height)
+            && start < e.vertical.end
+    }) {
+        return None;
+    }
+    let mut frame = LayoutFrame::new(base.clone(), start, exclusions.to_vec());
+    frame.minimum_width = hu(width).max(1).min(base_width);
+    let intervals = frame.carve(band_height);
+    let lane = match alignment {
+        Alignment::Right => intervals.last(),
+        _ => intervals.first(),
+    }?;
+    let left = hwpunit_to_px(lane.start, dpi);
+    let right = hwpunit_to_px(lane.end, dpi);
+    let x = match alignment {
+        Alignment::Right => (right - width).max(left),
+        Alignment::Center => (left + (right - left - width) / 2.0).max(left),
+        _ => left,
+    };
+    let y = hwpunit_to_px(frame.top, dpi).max(top);
+    Some(InlineBoxPlacement {
+        x,
+        y,
+        clearance: y - top,
+    })
+}
 
 /// A paper/page-anchored side-wrap float that can explain a stored body row's
 /// missing right-side width.
@@ -49,6 +242,50 @@ impl FloatCarveEvidence {
 /// Interpret an HWPUNIT value that may have been stored through a signed field.
 pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
     value as i32
+}
+
+/// [#6787] 이 문단의 중첩 표들이 **가로 오프셋으로 나란히** 놓이는 무리인가.
+///
+/// 문단-기준(`VertRelTo::Para`) 자리차지(`TopAndBottom`) 비-TAC 표들이 각자
+/// `horzOffset` 을 갖고 **가로로 겹치지 않으면** 한/글은 같은 y 에 놓는다
+/// (`#6494` 의 칸 안 짝). 하나라도 조건을 벗어나면 종전대로 세로 적층으로 본다.
+///
+/// ⭐ **측정(`height_measurer`)과 배치(`table_layout`)가 이 하나의 판정을 함께 쓴다** —
+/// 두 축이 문자 그대로 같은 함수를 부르므로 발동 조건이 갈리는 일이 구조적으로 없다.
+/// (그 비대칭이 `#6787` 의 실제 결함이었다.)
+/// 종전에는 측정만 `horzOffset == 0` 을 무리의 시작으로 인정하고 배치는 `> 0` 만
+/// 레인에 넣어, 첫 표 오프셋이 0 인 무리에서 측정은 최대 높이만 예약하고 배치는
+/// 세로로 쌓아 뒤 표가 칸 밖으로 사라졌다. 또 배치는 표를 순차 처리하며 뒤 표가
+/// 조건에 걸리면 앞 표의 레인을 되돌리지 못했다 — 문단 단위 사전 판정으로 두 축을
+/// 함께 닫는다.
+pub(crate) fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
+    let mut spans: Vec<(i32, i32)> = Vec::new();
+    for ctrl in &para.controls {
+        let Control::Table(table) = ctrl else {
+            continue;
+        };
+        if !para_float_group_member_is_eligible(table) {
+            return false;
+        }
+        let start = signed_hwpunit(table.common.horizontal_offset);
+        let width = table.common.width.min(i32::MAX as u32) as i32;
+        spans.push((start, start.saturating_add(width)));
+    }
+    if spans.len() < 2 {
+        return false;
+    }
+    spans.sort_unstable();
+    // 가로 구간이 하나라도 겹치면 나란히 놓을 수 없다.
+    spans.windows(2).all(|w| w[0].1 <= w[1].0 + 1)
+}
+
+/// 나란히 무리의 자격 — 무리 판정과 레인 배치가 **같은 술어**를 쓴다.
+pub(crate) fn para_float_group_member_is_eligible(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+        && matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        && signed_hwpunit(table.common.horizontal_offset) >= 0
 }
 
 /// Resolve the deliberately small Picture/Square side-wrap subset used by a
@@ -111,18 +348,58 @@ pub(crate) fn paper_or_page_float_carve_evidence(
     evidence
 }
 
+/// [#6202] 용지 기준(`Paper`/`Page`) 어울림 개체를 재는 데 필요한 쪽 원점.
+///
+/// `Column`/`Para` 기준은 문단 밴드 안에서 끝나지만, 용지 기준은 본문 상자가 용지 안
+/// 어디에 있는지를 알아야 한다. 그 값 **두 개**면 공식은 같다 — 기준점만 바뀐다.
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct PaperOrigin {
+    /// 본문 상자의 용지 기준 왼쪽 (HWPUNIT).
+    pub(crate) body_left: i32,
+    /// 본문 상자의 용지 기준 위쪽 (HWPUNIT).
+    pub(crate) body_top: i32,
+    /// 이 밴드가 시작하는 문단의 **본문 절대** 세로 위치 (HWPUNIT).
+    ///
+    /// `Para` 기준은 `paragraph_top`(밴드-로컬)에 오프셋을 더하면 되지만, 용지 기준은
+    /// 절대 좌표로 나오므로 밴드-로컬로 옮겨야 한다. 두 좌표계를 섞으면 밴드 끝이
+    /// 어긋나 배제 루프가 밴드 밖 문단까지 훑는다(#6202 실측: pi=8 까지 가서 bail).
+    pub(crate) band_abs_top: i32,
+}
+
 pub(crate) fn resolve_picture_exclusion(
     picture: &Picture,
     column_horizontal: Range<i32>,
     paragraph_horizontal: Range<i32>,
     paragraph_top: i32,
+    paper: PaperOrigin,
 ) -> Option<FrameExclusion> {
     let common = &picture.common;
+    // [#6202] 용지 기준 개체도 잰다. 코퍼스 1,997건 표본에서 Square float 개체를
+    // 막는 관문은 사실상 `horz_rel`/`vert_rel` 의 `Paper|Page` 뿐이었다(각 57건).
+    //
+    // 156483689 실측 — 계산이 저장 사다리를 **1 HU 오차로 재현**한다:
+    //
+    // ```text
+    //   그림  w=12482 h=9366  vert=Paper(36844) horz=Paper(42333)
+    //   본문  왼쪽 5670 HU · 폭 48188 HU
+    //   가로  깎인 줄 오른끝 5670+36664 = 42334   vs  그림 왼쪽 42333   (1 HU)
+    //   세로  밴드 36844−5670 .. +9366 = 31174..40540
+    //         pi=5 29631..32031 깎임 · pi=6 34431 깎임 · pi=7 에서 40540 지나 전폭 복귀
+    // ```
+    let paper_relative_horz = matches!(common.horz_rel_to, HorzRelTo::Paper | HorzRelTo::Page);
+    let paper_relative_vert = matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page);
     if common.treat_as_char
-        || picture.caption.is_some()
+        // [#6202] 캡션이 붙은 개체도 잰다 — 156483689 실측에서 밴드 높이는 캡션을 뺀
+        // 그림 높이(9366 HU) 그대로이고, 저장 사다리의 깎임 끝(40540 HU)과 일치한다.
         || common.text_wrap != TextWrap::Square
-        || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
-        || common.vert_rel_to != VertRelTo::Para
+        || !matches!(
+            common.horz_rel_to,
+            HorzRelTo::Column | HorzRelTo::Para | HorzRelTo::Paper | HorzRelTo::Page
+        )
+        || !matches!(
+            common.vert_rel_to,
+            VertRelTo::Para | VertRelTo::Paper | VertRelTo::Page
+        )
         || !matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
     {
         return None;
@@ -140,10 +417,14 @@ pub(crate) fn resolve_picture_exclusion(
     }
 
     let horizontal_offset = signed_hwpunit(common.horizontal_offset);
+    let column_end = column_horizontal.end;
     let reference = match common.horz_rel_to {
         HorzRelTo::Column => column_horizontal,
         HorzRelTo::Para => paragraph_horizontal,
-        HorzRelTo::Paper | HorzRelTo::Page => return None,
+        // 용지 기준은 본문 왼쪽을 빼 컬럼 좌표로 옮긴다 — 이후 공식은 동일하다.
+        HorzRelTo::Paper | HorzRelTo::Page => {
+            (-paper.body_left)..(column_end.saturating_sub(paper.body_left))
+        }
     };
     let reference_width = reference.end.saturating_sub(reference.start);
     let visible_left = match common.horz_align {
@@ -162,7 +443,15 @@ pub(crate) fn resolve_picture_exclusion(
             .saturating_sub(width)
             .saturating_sub(horizontal_offset),
     };
-    let visible_top = paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset));
+    let visible_top = if paper_relative_vert {
+        // 용지 기준 세로 = (용지 오프셋 − 본문 위쪽) − 밴드 시작 문단의 절대 위치.
+        signed_hwpunit(common.vertical_offset)
+            .saturating_sub(paper.body_top)
+            .saturating_sub(paper.band_abs_top)
+    } else {
+        paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset))
+    };
+    let _ = paper_relative_horz;
     let horizontal = visible_left.saturating_sub(i32::from(common.margin.left))
         ..visible_left
             .saturating_add(width)
@@ -487,6 +776,29 @@ pub(crate) fn native_empty_host_cellbreak_fragment_repeats_outer_margin(
         && is_para_topbottom_float(&table.common)
         && matches!(table.page_break, TablePageBreak::CellBreak)
         && !has_non_whitespace_text(para)
+}
+
+/// [#6887] 문단 기준 왼쪽 정렬 어울림 표가 원점에 싣는 바깥 왼쪽 여백 (HU).
+///
+/// 한글은 `horzRelTo="PARA"` + `horzAlign="LEFT"` 인 float 의 저장 `horzOffset` 을
+/// **바깥 여백 상자의 왼끝** 기준으로 읽는다 — 표 자신의 왼끝은 거기서
+/// `outMargin.left` 만큼 더 안쪽이다. 같은 좌표를 다루는 개체 경로
+/// (`shape_layout::form_object_origin`)는 이미 `ref_x + m_left + h_offset` 로
+/// 이 여백을 싣고 있고, 표 경로만 빠져 있었다 (156492236: 선언 outMargin.left
+/// 1417HU=18.89px 만큼 그림이 17쪽 전부에서 왼쪽으로 치우침).
+///
+/// `#6378` 이 연 `HorzRelTo::Column` 형상과 겹치지 않게 `Para` 기준으로만 열고,
+/// 오른쪽·가운데 정렬은 `ref_w` 산식이 달라 건드리지 않는다. 여백이 0 이면
+/// 더해질 값이 없어 no-op 다.
+pub(crate) fn para_relative_left_aligned_outer_margin_left_hu(table: &Table) -> Option<i32> {
+    if table.common.treat_as_char
+        || !matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || table.outer_margin_left <= 0
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_left))
 }
 
 /// [#6378] 원본 HWPX 단 기준 RowBreak 자리차지 표의 사방 균등 outMargin (HU).
@@ -1084,6 +1396,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .expect("BothSides is represented by the physical row frame");
         assert_eq!(both_sides.policy, FrameExclusionPolicy::BothSides);
@@ -1093,6 +1406,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .expect("LargestOnly has a recovered frame policy");
         assert_eq!(largest_only.policy, FrameExclusionPolicy::LargestSide);
@@ -1102,6 +1416,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .is_none());
         assert!(resolve_picture_exclusion(
@@ -1109,6 +1424,7 @@ mod tests {
             0..1_000,
             0..1_000,
             50,
+            PaperOrigin::default(),
         )
         .is_none());
     }
@@ -1119,8 +1435,9 @@ mod tests {
         picture.shape_attr.current_width = 900;
         picture.shape_attr.current_height = 800;
 
-        let exclusion = resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 50)
-            .expect("Square side-wrap float has a physical row frame");
+        let exclusion =
+            resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 50, PaperOrigin::default())
+                .expect("Square side-wrap float has a physical row frame");
 
         assert_eq!(exclusion.horizontal, 0..300);
         assert_eq!(exclusion.vertical, 50..250);
@@ -1130,11 +1447,17 @@ mod tests {
     fn picture_exclusion_rejects_non_square_or_inline_hosts() {
         let mut picture = supported_picture(TextFlow::BothSides);
         picture.common.treat_as_char = true;
-        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
+        assert!(
+            resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0, PaperOrigin::default())
+                .is_none()
+        );
 
         picture.common.treat_as_char = false;
         picture.common.text_wrap = TextWrap::TopAndBottom;
-        assert!(resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0).is_none());
+        assert!(
+            resolve_picture_exclusion(&picture, 0..1_000, 0..1_000, 0, PaperOrigin::default())
+                .is_none()
+        );
     }
 
     #[test]

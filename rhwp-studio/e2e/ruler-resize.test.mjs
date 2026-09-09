@@ -94,7 +94,13 @@ if (typeof process !== 'undefined' && process.argv[1] && import.meta.url === pat
     const firstRun = await page.$('.skin-onboarding-body');
     if (firstRun) await page.keyboard.press('Escape');
     await page.focus('[aria-label="문서 편집 입력"]');
-    await page.keyboard.press('Control+Home');
+    await page.keyboard.down('Control');
+    await page.keyboard.press('Home');
+    await page.keyboard.up('Control');
+    if (process.argv.includes('--mode=headless')) {
+      assert.equal(await page.evaluate(() => devicePixelRatio), 1,
+        'headless resize 검증은 실제 DPR 1 환경이어야 한다');
+    }
     const samples = await runResizeSnapshots({
       setViewport: size => page.setViewport(size),
       screenshot: () => page.screenshot({ type: 'png' }),

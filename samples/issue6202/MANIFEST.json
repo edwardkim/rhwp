@@ -1,0 +1,16 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6202,
+  "title": "용지 기준 Square 그림 이동 뒤 본문 재투영",
+  "entries": [
+    {
+      "path": "samples/issue6202/156483689-turmeric-industry-standardization.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "#6202에서 식별한 156483689 국내산 강황 제조기술 표준화 보고서 원본",
+      "bytes": 2247680,
+      "sha256": "bd24e80fda9e298ffb05dcdb64c22752a4ed78716b358076db26b2e721e41dc4",
+      "contract": "용지 기준 Square 그림 이동 뒤 본문이 새 배제 밴드로 재투영됨"
+    }
+  ]
+}

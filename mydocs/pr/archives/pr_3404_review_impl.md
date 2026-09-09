@@ -117,7 +117,7 @@ release 실측값과 render-tree 확인 절차로 정정하고, 잘못된 수치
 
 owner가 [#3445](https://github.com/edwardkim/rhwp/issues/3445#issuecomment-5083833363)에서 당시 열린
 PR을 v0.8.2 hotfix 기준선에서 제외했지만, 이후
-[v0.8.2 릴리즈가 완료](../../report/task_m100_3445_report.md)됐다. #3445는 운영 기록상 open을
+[v0.8.2 릴리즈가 완료](../../report/archives/task_m100_3445_report.md)됐다. #3445는 운영 기록상 open을
 유지하는 이슈이며, 최초 범위 지시를 현재 `devel` merge 보류로 확장하지 않는다. 다음 순서로 처리한다.
 
 1. review·asset·오늘할일 commit을 통합 branch에 추가하고 `devel` 대상 통합 PR을 만든다.

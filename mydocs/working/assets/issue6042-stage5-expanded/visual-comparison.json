@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "comparisons": {
+    "canvas2dAuto34": {
+      "before": "canvas2d-exam-auto-34-stage3.jpg",
+      "after": "canvas2d-exam-auto-34-corrected.jpg",
+      "diff": "canvas2d-exam-auto-34-diff.png",
+      "width": 1280,
+      "height": 720,
+      "threshold": 0.1,
+      "includeAntialiasing": false,
+      "differingPixels": 546,
+      "differingPercent": 0.0592,
+      "note": "동일 1280x720·DPR 2·자동 보기·34%의 browser JPEG compositor 비교다. footer 시간과 probe 상태 문구를 포함한다."
+    },
+    "canvasKitKtx100": {
+      "before": "canvaskit-ktx-100-stage3.jpg",
+      "after": "canvaskit-ktx-100-corrected.jpg",
+      "diff": "canvaskit-ktx-100-diff.png",
+      "width": 1280,
+      "height": 720,
+      "threshold": 0.1,
+      "includeAntialiasing": false,
+      "differingPixels": 1802,
+      "differingPercent": 0.1955,
+      "note": "동일 1280x720·DPR 2·CanvasKit·KTX 4-layer·100%의 browser JPEG compositor 비교다. footer 시간과 probe 상태 문구를 포함한다."
+    }
+  }
+}

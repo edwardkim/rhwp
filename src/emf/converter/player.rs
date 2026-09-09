@@ -4,7 +4,7 @@
 
 use std::fmt::Write;
 
-use crate::emf::parser::objects::{Header, LogBrush, LogPen, PointL, RectL};
+use crate::emf::parser::objects::{Header, LogBrush, LogPen, PointL, RectL, XForm};
 use crate::emf::parser::records::{ExtTextOut, Record, StretchDIBits};
 use crate::emf::Error;
 
@@ -23,6 +23,8 @@ pub struct Player {
     // 패스 상태
     path_active: bool,
     path_d: String,
+    /// [#6577] 이미 방출한 `<clipPath>` 의 사각형 → id 사상.
+    clip_ids: std::collections::BTreeMap<(i32, i32, i32, i32), String>,
 }
 
 impl Player {
@@ -36,6 +38,7 @@ impl Player {
             header: None,
             path_active: false,
             path_d: String::new(),
+            clip_ids: std::collections::BTreeMap::new(),
         }
     }
 
@@ -103,9 +106,16 @@ impl Player {
             Record::RestoreDC { relative } => {
                 self.dc_stack.restore(*relative);
             }
-            Record::SetWorldTransform(_) | Record::ModifyWorldTransform { .. } => {
-                // 단계 12에서는 WorldTransform을 DC에 저장만 하고 출력 적용은 생략.
-                // 단계 13~14에서 개별 도형에 transform 적용.
+            Record::SetWorldTransform(x) => self.dc_stack.current_mut().world_xform = *x,
+            Record::ModifyWorldTransform { xform, mode } => {
+                let dc = self.dc_stack.current_mut();
+                // MS-EMF 2.1.29 ModifyWorldTransformMode
+                dc.world_xform = match mode {
+                    1 => XForm::identity(),                 // MWT_IDENTITY
+                    2 => mul_xform(xform, &dc.world_xform), // MWT_LEFTMULTIPLY
+                    3 => mul_xform(&dc.world_xform, xform), // MWT_RIGHTMULTIPLY
+                    _ => *xform,                            // MWT_SET
+                };
             }
 
             // 좌표계/색상
@@ -120,7 +130,15 @@ impl Player {
             Record::SetBkColor(v) => self.dc_stack.current_mut().bk_color = *v,
 
             // 드로잉
-            Record::MoveToEx(p) => self.dc_stack.current_mut().current_pos = (p.x, p.y),
+            Record::MoveToEx(p) => {
+                // [#6577] 패스 모드에서는 새 서브패스의 시작점이다. 종전에는
+                // current_pos 만 갱신하고 `path_d` 를 비워 둬, 뒤이은 `FillPath` 가
+                // 빈 패스를 채우고 도형이 통째로 사라졌다.
+                if self.path_active {
+                    let _ = write!(self.path_d, " M{} {}", p.x, p.y);
+                }
+                self.dc_stack.current_mut().current_pos = (p.x, p.y);
+            }
             Record::LineTo(p) => self.emit_line_to(p),
             Record::Rectangle(r) => self.emit_rect(r, None),
             Record::RoundRect {
@@ -137,6 +155,29 @@ impl Player {
             Record::Polyline16 { points, .. } => self.emit_polyline16(points, false),
             Record::Polygon16 { points, .. } => self.emit_polyline16(points, true),
             Record::PolyBezier16 { points, .. } => self.emit_polybezier16(points),
+            Record::PolylineTo16 { points, .. } => self.emit_polyline_to16(points),
+            Record::PolyBezierTo16 { points, .. } => self.emit_polybezier_to16(points),
+
+            // [#6577] 클리핑 — 현재 클립과 교차시킨다.
+            Record::IntersectClipRect(r) => {
+                let dc = self.dc_stack.current_mut();
+                dc.clip_rect = Some(match dc.clip_rect {
+                    Some((l, t, rr, b)) => (
+                        l.max(r.left),
+                        t.max(r.top),
+                        rr.min(r.right),
+                        b.min(r.bottom),
+                    ),
+                    None => (r.left, r.top, r.right, r.bottom),
+                });
+            }
+            // `RGN_COPY`(5) + 영역 없음 = 클립 해제. 그 밖의 조합은 영역 연산이라
+            // 사각형으로 표현할 수 없으니 건드리지 않는다.
+            Record::ExtSelectClipRgn { mode, has_region } => {
+                if *mode == 5 && !*has_region {
+                    self.dc_stack.current_mut().clip_rect = None;
+                }
+            }
 
             // 패스
             Record::BeginPath => {
@@ -199,7 +240,7 @@ impl Player {
             escape_xml(&family), size, weight, italic, color,
             escape_xml(&t.text),
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
     }
 
     fn emit_bitmap(&mut self, bmp: &StretchDIBits) {
@@ -209,10 +250,64 @@ impl Player {
             "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"none\" href=\"{data_url}\"/>",
             bmp.x_dest, bmp.y_dest, bmp.cx_dest, bmp.cy_dest,
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
+    }
+
+    /// [#6577] 스톡 오브젝트(`0x8000_0000 | index`)를 DC 에 반영한다.
+    ///
+    /// `SelectObject` 의 상당수가 스톡 핸들이다 — 156627451 내장 EMF 는 338건 중
+    /// **197건(58%)** 이 스톡인데, 종전에는 `objects` 에 없다고 **그냥 무시**해서
+    /// 직전 펜/브러시가 그대로 남았다. `NULL_PEN`/`NULL_BRUSH` 가 안 먹히니 모든
+    /// 도형이 같은 색·같은 굵기로 뭉친다.
+    ///
+    /// 인덱스는 MS-EMF 2.1.31 StockObject: 0 WHITE_BRUSH · 1 LTGRAY · 2 GRAY ·
+    /// 3 DKGRAY · 4 BLACK_BRUSH · 5 NULL_BRUSH · 6 WHITE_PEN · 7 BLACK_PEN ·
+    /// 8 NULL_PEN. 폰트류(10~13)는 이 단계에서 다루지 않는다.
+    fn stock_object(index: u32) -> Option<GraphicsObject> {
+        const BS_SOLID: u32 = 0;
+        const BS_NULL: u32 = 1;
+        const PS_SOLID: u32 = 0;
+        const PS_NULL: u32 = 5;
+        let brush = |color: u32, style: u32| {
+            Some(GraphicsObject::Brush(LogBrush {
+                style,
+                color,
+                hatch: 0,
+            }))
+        };
+        let pen = |color: u32, style: u32| {
+            Some(GraphicsObject::Pen(LogPen {
+                style,
+                width: 1,
+                _reserved: 0,
+                color,
+            }))
+        };
+        match index {
+            0 => brush(0x00FF_FFFF, BS_SOLID),
+            1 => brush(0x00C0_C0C0, BS_SOLID),
+            2 => brush(0x0080_8080, BS_SOLID),
+            3 => brush(0x0040_4040, BS_SOLID),
+            4 => brush(0x0000_0000, BS_SOLID),
+            5 => brush(0x0000_0000, BS_NULL),
+            6 => pen(0x00FF_FFFF, PS_SOLID),
+            7 => pen(0x0000_0000, PS_SOLID),
+            8 => pen(0x0000_0000, PS_NULL),
+            _ => None,
+        }
     }
 
     fn select_object(&mut self, handle: u32) {
+        if handle & 0x8000_0000 != 0 {
+            if let Some(obj) = Self::stock_object(handle & 0x7FFF_FFFF) {
+                match obj {
+                    GraphicsObject::Pen(p) => self.dc_stack.current_mut().pen = Some(p),
+                    GraphicsObject::Brush(b) => self.dc_stack.current_mut().brush = Some(b),
+                    GraphicsObject::Font(f) => self.dc_stack.current_mut().font = Some(f),
+                }
+            }
+            return;
+        }
         let Some(obj) = self.objects.get(handle) else {
             return;
         };
@@ -274,7 +369,7 @@ impl Player {
             }
             let _ = write!(self.path_d, "L{} {} ", to.x, to.y);
         } else {
-            self.svg.push(&node);
+            self.push_clipped(&node);
         }
         self.dc_stack.current_mut().current_pos = (to.x, to.y);
     }
@@ -291,7 +386,7 @@ impl Player {
             "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\"{rx_attr}{ry_attr} fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             r.left, r.top, r.width(), r.height(), stroke.width,
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
     }
 
     fn emit_ellipse(&mut self, r: &RectL) {
@@ -306,7 +401,7 @@ impl Player {
             "<ellipse cx=\"{cx}\" cy=\"{cy}\" rx=\"{rx}\" ry=\"{ry}\" fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
     }
 
     fn emit_arc_like(&mut self, r: &RectL, start: &PointL, end: &PointL, kind: ArcKind) {
@@ -335,7 +430,7 @@ impl Player {
             "<path d=\"{d}\" fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
     }
 
     fn emit_polyline16(&mut self, points: &[(i16, i16)], close: bool) {
@@ -359,7 +454,7 @@ impl Player {
             "<{tag} points=\"{pts}\" fill=\"{fill}\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
     }
 
     fn emit_polybezier16(&mut self, points: &[(i16, i16)]) {
@@ -382,7 +477,124 @@ impl Player {
             "<path d=\"{d}\" fill=\"none\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
             stroke.width,
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
+    }
+
+    /// [#6577] `EMR_POLYLINETO16` — 현재 위치에서 이어지는 선분열을 패스에 누적한다.
+    ///
+    /// 패스 기반 EMF(Office·Illustrator 내장본)는 도형을 거의 전부
+    /// `BeginPath → MoveTo → {PolylineTo16 | PolyBezierTo16}* → CloseFigure → FillPath`
+    /// 로 표현한다. 이 두 레코드가 없으면 패스가 비어 채움이 통째로 사라진다
+    /// (156627451 내장 EMF: POLYBEZIERTO16 758건 · POLYLINETO16 644건).
+    fn emit_polyline_to16(&mut self, points: &[(i16, i16)]) {
+        if points.is_empty() {
+            return;
+        }
+        if !self.path_active {
+            // 패스 밖의 `…To` 는 현재 위치에서 시작하는 선분열로 그린다.
+            let (cx, cy) = self.dc_stack.current().current_pos;
+            let mut all = vec![(cx as i16, cy as i16)];
+            all.extend_from_slice(points);
+            self.emit_polyline16(&all, false);
+        } else {
+            for (x, y) in points {
+                let _ = write!(self.path_d, " L{x} {y}");
+            }
+        }
+        if let Some((x, y)) = points.last() {
+            self.dc_stack.current_mut().current_pos = (i32::from(*x), i32::from(*y));
+        }
+    }
+
+    /// [#6577] `EMR_POLYBEZIERTO16` — 현재 위치에서 이어지는 3차 베지에열.
+    fn emit_polybezier_to16(&mut self, points: &[(i16, i16)]) {
+        if points.len() < 3 {
+            return;
+        }
+        let mut d = String::new();
+        let mut i = 0;
+        while i + 2 < points.len() {
+            let (c1x, c1y) = points[i];
+            let (c2x, c2y) = points[i + 1];
+            let (ex, ey) = points[i + 2];
+            let _ = write!(d, " C{c1x} {c1y} {c2x} {c2y} {ex} {ey}");
+            i += 3;
+        }
+        if self.path_active {
+            self.path_d.push_str(&d);
+        } else {
+            let (cx, cy) = self.dc_stack.current().current_pos;
+            let stroke = self.stroke_spec();
+            let stroke_color = stroke.color.as_deref().unwrap_or("none");
+            let node = format!(
+                "<path d=\"M{cx} {cy}{d}\" fill=\"none\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
+                stroke.width,
+            );
+            self.push_clipped(&node);
+        }
+        if let Some((x, y)) = points.get(i.saturating_sub(1)).or_else(|| points.last()) {
+            self.dc_stack.current_mut().current_pos = (i32::from(*x), i32::from(*y));
+        }
+    }
+
+    /// [#6577 ④] 도형 노드 하나를 현재 DC 의 월드 변환·클립을 반영해 방출한다.
+    ///
+    /// ⚠ **퇴화 사각형(`right <= left` 또는 `bottom <= top`)은 클립을 걸지 않는다.**
+    /// 규약만 보면 빈 클립 영역은 "그리지 말라"로 읽히지만, 실측이 반대다.
+    /// 156627451 내장 EMF 는 `(0,0,0,0)` 을 4건 쓰는데 **그 안에 아이콘 4개(QPU 칩·
+    /// 알고리즘 노드·네트워크 구·센싱 호)가 들어 있다.** 한/글은 그 아이콘들을 그린다.
+    /// 억제하도록 만들었더니 넷 다 사라졌다 — 작성기가 무의미한 사각형을 no-op 로
+    /// 쓰는 것이다.
+    ///
+    /// 그 밖의 사각형은 `<g clip-path="url(#…)">` 로 감싼다. 같은 사각형은 id 를
+    /// 재사용한다(이 파일은 12건이지만 서로 다른 사각형은 5개뿐).
+    fn push_clipped(&mut self, node: &str) {
+        // 클립 사각형은 `INTERSECTCLIPRECT` 시점의 좌표계에 있고 도형은 그 뒤에 걸린
+        // 월드 변환을 받는다. 그래서 변환을 **안쪽**에 둔다.
+        let node = &self.world_wrap(node);
+        let Some((l, t, r, b)) = self.dc_stack.current().clip_rect else {
+            self.svg.push(node);
+            return;
+        };
+        if r <= l || b <= t {
+            self.svg.push(node);
+            return;
+        }
+        let key = (l, t, r, b);
+        if !self.clip_ids.contains_key(&key) {
+            let id = format!("emfclip{}", self.clip_ids.len());
+            let def = format!(
+                "<clipPath id=\"{id}\"><rect x=\"{l}\" y=\"{t}\" width=\"{}\" height=\"{}\"/></clipPath>",
+                r - l,
+                b - t,
+            );
+            self.svg.push(&def);
+            self.clip_ids.insert(key, id);
+        }
+        let id = self.clip_ids.get(&key).cloned().unwrap_or_default();
+        self.svg
+            .push(&format!("<g clip-path=\"url(#{id})\">{node}</g>"));
+    }
+
+    /// [#6577 ④] 월드 변환이 걸려 있으면 도형을 `<g transform="matrix(…)">` 로 감싼다.
+    ///
+    /// 종전에는 `SetWorldTransform`·`ModifyWorldTransform` 을 **받고도 버렸다**. 이
+    /// 파일군의 아이콘은 원본 기하를 `0.062` 로 축소해 그리는데, 변환을 버리면 16배로
+    /// 그려져 화면 전체를 덮는 덩어리가 된다.
+    fn world_wrap(&self, node: &str) -> String {
+        let x = self.dc_stack.current().world_xform;
+        if is_identity(&x) {
+            return node.to_string();
+        }
+        format!(
+            "<g transform=\"matrix({} {} {} {} {} {})\">{node}</g>",
+            fmt_f32(x.m11),
+            fmt_f32(x.m12),
+            fmt_f32(x.m21),
+            fmt_f32(x.m22),
+            fmt_f32(x.dx),
+            fmt_f32(x.dy),
+        )
     }
 
     fn emit_path(&mut self, fill: Option<String>, stroke: Option<StrokeSpec>) {
@@ -398,9 +610,34 @@ impl Player {
             self.path_d.trim(),
             stroke_width,
         );
-        self.svg.push(&node);
+        self.push_clipped(&node);
         self.path_d.clear();
     }
+}
+
+/// 행벡터 규약(GDI)에서 `p` 를 먼저, `q` 를 나중에 적용하는 합성.
+fn mul_xform(p: &XForm, q: &XForm) -> XForm {
+    XForm {
+        m11: p.m11 * q.m11 + p.m12 * q.m21,
+        m12: p.m11 * q.m12 + p.m12 * q.m22,
+        m21: p.m21 * q.m11 + p.m22 * q.m21,
+        m22: p.m21 * q.m12 + p.m22 * q.m22,
+        dx: p.dx * q.m11 + p.dy * q.m21 + q.dx,
+        dy: p.dx * q.m12 + p.dy * q.m22 + q.dy,
+    }
+}
+
+fn is_identity(x: &XForm) -> bool {
+    (x.m11 - 1.0).abs() < 1e-6
+        && x.m12.abs() < 1e-6
+        && x.m21.abs() < 1e-6
+        && (x.m22 - 1.0).abs() < 1e-6
+        && x.dx.abs() < 1e-6
+        && x.dy.abs() < 1e-6
+}
+
+fn fmt_f32(v: f32) -> String {
+    format!("{v:.6}")
 }
 
 #[derive(Copy, Clone)]

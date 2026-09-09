@@ -115,7 +115,7 @@ rhwp-studio 안에서는 **플러그인**으로 얹힌다 — `@rhwp/hwpctrl/stu
 `rhwp-studio/src/hwpctl/`은 별개이고 아직 동결 상태다. 이 패키지가 원장 100%에 도달하면
 그 층을 철거하고 studio 를 이쪽으로 이관한다(계획서 §6.2). 그 이관에 필요한 배선(플러그인 호스트·
 트랜잭션·좌표 변환)은 이미 서 있다 —
-[`rhwp_studio_hwpctrl_plugin.md`](../../mydocs/plans/rhwp_studio_hwpctrl_plugin.md).
+[`rhwp_studio_hwpctrl_plugin.md`](../../mydocs/plans/archives/rhwp_studio_hwpctrl_plugin.md).
 
 ## 개발과 검증
 

@@ -17,7 +17,7 @@ SKILL = REPO / ".claude" / "skills" / "rhwp-fidelity-compare"
 REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
-WORKING = REPO / "mydocs" / "working" / "agent_fidelity_compare.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_fidelity_compare.md"
 TOOL_README = REPO / "tools" / "fidelity_compare" / "README.md"
 GOVERNANCE = (
     REPO / "mydocs" / "manual" / "verification" / "visual_verification_governance.md"

@@ -6,8 +6,11 @@
         "edit",
         "redact",
         "{input}",
+        "--kind",
+        "phone",
+        "--no-raw",
         "-o",
-        "{sub:masked.hwp}",
+        "{sub:phone-masked.hwpx}",
         "--json"
       ]
     }

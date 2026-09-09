@@ -25,7 +25,7 @@
   `packsUnavailable` 과 예외 칸에 같이 남긴다.
 
 카탈로그·봉투 계약은 `gym/docs/certify_report.md` 가 정본이다. 작업 기록은
-`mydocs/working/gym_certify_report.md`. 시험은 `scripts/tests/test_gym_report.py`.
+`mydocs/working/archives/gym_certify_report.md`. 시험은 `scripts/tests/test_gym_report.py`.
 
 새 CLI 플래그는 없다. `--bin` `--scorecard` `--coverage` `--json` `--out` 만 쓴다.
 

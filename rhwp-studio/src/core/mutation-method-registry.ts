@@ -54,10 +54,11 @@ export const MUTATING_METHODS: readonly string[] = [
   'mergeParagraphInFootnote', 'applyParaFormatInFootnote',
   // 붙여넣기
   'pasteInternal', 'pasteInternalInCell', 'pasteInternalInCellByPath', 'pasteControl',
-  'pasteHtml', 'pasteHtmlInCell', 'pasteHtmlInCellByPath',
+  'pasteHtml', 'pasteHtmlInCell', 'pasteHtmlInCellByPath', 'pasteHwpJson',
   // 글자/문단 모양
   'applyCharFormat', 'setCharShapeId', 'applyCharFormatInCell', 'applyCharFormatInCellByPath',
   'setCharShapeIdInCell', 'setCharShapeIdInCellByPath',
+  'setCharShapeRuns', 'setCharShapeRunsInCellByPath',
   'applyParaFormat', 'setParaShapeId', 'applyParaFormatInCell', 'setCellParaShapeId',
   // 스타일/번호 정의 (DocInfo 변이 포함)
   'updateStyle', 'updateStyleShapes', 'createStyle', 'deleteStyle', 'applyStyle',

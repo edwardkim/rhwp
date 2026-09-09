@@ -1,0 +1,20 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6887,
+  "title": "문단 상대 Square 표의 왼쪽 바깥 여백",
+  "entries": [
+    {
+      "path": "samples/issue4090/156492236_규제샌드박스_min.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6887",
+      "bytes": 58337,
+      "sha256": "d6f4d431b9a4d934b3b4e4330546ef61768c953c2e1328010d2f75440fefa070",
+      "derivation": "기존 issue4090 최소본 재사용: BinData/Preview만 치환, section/header XML 보존",
+      "originalSha256": "af198ad2dff0c1ad0458d7147ca8fcf42b45b0d2e5ceb2e10353debc8250a5b9",
+      "originalBytes": 23230621,
+      "originalReferencePdf": "pdf/156492236-regulatory-sandbox-full-2020.pdf",
+      "referenceEngine": "2020"
+    }
+  ]
+}

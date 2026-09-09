@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-15
+last_verified: 2026-09-06
 ---
 
 # Review-only fast-pass
@@ -12,16 +12,18 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 
 [CI workflow](../../../.github/workflows/ci.yml)의 preflight는 다음 허용 범위를 사용한다.
 
-- mydocs 아래 모든 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
-  올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다.
+- mydocs 아래 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
+  올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다. 단,
+  `mydocs/tech/text-ir-v2.md`와 `mydocs/tech/canvaskit-parity-implementation.md`는 렌더 검증이
+  직접 소비하는 계약이므로 review-only에서 제외한다.
 - added 상태의 samples 아래 pdf, png
 - added 상태의 samples 아래 hwp, hwpx, hml은 review-only가 아니다. 새 문서 샘플은 Build & Test가
   실행되며, CI preflight가 PR에서 새로 추가된 문서 경로만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로
   전달한다. `security_corpus_regression`과 `injection_scan_contract`의 정상 샘플 오탐 검사는 이 env가
   가리키는 신규 샘플만 대상으로 하며, 대표 샘플이나 기존 samples 전체를 fallback으로 돌리지 않는다.
-- added 또는 modified 상태의 pdf, pdf-2020, pdf-large 아래 PDF
+- added 또는 modified 상태의 `pdf/**` PDF
 
-기존 samples 파일의 수정·삭제·rename, 신규 문서 샘플(hwp/hwpx/hml), 세 PDF 디렉터리 파일의
+기존 samples 파일의 수정·삭제·rename, 신규 문서 샘플(hwp/hwpx/hml), `pdf/**` 파일의
 삭제·rename, source, test, workflow, Cargo.lock, golden, baseline은 허용 범위가 아니다. 기준 PDF를
 재산출해 같은 경로에 갱신하는 경우만 세 PDF 디렉터리에서 modified 상태를 허용한다.
 
@@ -44,9 +46,10 @@ Update branch, merge, rebase를 수행하지 않는다. 따라서 직전 green P
    한 번만 예외로 허용한다.
 2. current base 병합 bridge는 정확히 2-parent이고 parent 하나만 현재 PR base SHA와 같아야 한다. preflight가
    `git merge-tree`로 계산한 자동 3-way merge tree가 실제 merge commit tree와 같으면 그대로 재사용한다.
-   자동 병합이 충돌한 경우에는 `git show --remerge-diff`가 보고하는 **수동 충돌 해소 경로 전체가 `mydocs/`
-   아래일 때만** 재사용한다. source, test, workflow, sample, PDF 등 하나라도 포함되거나 경로를 확인할 수 없으면
-   full CI로 fallback한다. 이 확인은 current base에 있는 검사기를 사용하며 PR source를 실행하지 않는다.
+   자동 병합이 충돌한 경우에는 `git show --remerge-diff`가 보고하는 **수동 충돌 해소 경로 전체가 허용된
+   `mydocs/` 아래일 때만** 재사용한다. 위 두 렌더 계약 문서, source, test, workflow, sample, PDF 등이
+   하나라도 포함되거나 경로를 확인할 수 없으면 full CI로 fallback한다. 이 확인은 current base에 있는
+   검사기를 사용하며 PR source를 실행하지 않는다.
 3. candidate SHA는 현재 PR commit history의 code 후보여야 하며, CI·CodeQL·Render Diff 결과는 같은 PR의
    head branch, source repository, event, candidate SHA와 정확히 일치해야 한다. 현재 base 전진은 단독으로
    재사용 거부 사유가 아니다.
@@ -122,15 +125,36 @@ Adapter inter-diff와 Proptest roundtrip은 `devel` push에도 required check �
 direct push, fork PR, PR 식별 불명확, merge tree 불일치, workflow·CI policy 변경, 비허용 파일, merge
 commit 또는 worker-skip 증거 누락은 재사용하지 않고 Full 실행한다.
 
+### B.2 Full candidate 뒤 문서 merge의 post-merge 재사용
+
+코드 PR의 문서-only trailing 사이에 current-base 충돌 해소 merge가 있으면, CI/CodeQL의 공통
+post-merge verifier가 다음 조건에서만 이전 Full 검증을 재사용한다.
+
+- source 부모 + 최종 devel base 부모 순서의 bridge 한 개이며, 그 앞뒤 commit 계보가 연속이다.
+- 최종 head workflow가 성공했고, 선택한 이전 Full 실행의 PR/branch/repository/SHA/time이 일치한다.
+- CI는 만료되지 않은 B/C/D duration artifact, CodeQL은 실제 분석 성공 증거를 요구한다.
+- Full 실행에 속한 immutable merge-tree artifact의 base/head/tree를 Git 객체와 대조한다.
+- 그 실제 검사 tree와 최종 merge tree 차이는 `mydocs/**` 문서뿐이다.
+  `mydocs/tech/text-ir-v2.md`, `mydocs/tech/canvaskit-parity-implementation.md`는 실행 계약이므로 제외한다.
+
+단순히 부모가 둘이거나 PR fast-pass aggregate가 green이라는 이유로 승인하지 않는다. base의 신뢰
+검증 코드가 객체를 fetch/diff하며 PR head를 checkout/실행하지 않는다. 코드·테스트·기준 PDF 변경,
+stale base, 복수 bridge, 목록 잘림, fetch 실패, 증거 불일치는 Full로 닫는다.
+정상 재사용 시 초기 Full run의 duration artifact로 timing을 갱신하며 required check 이름은 유지한다.
+
+재사용 정책 자체를 바꾸는 PR은 Full 대상이다. trusted verifier는 병합 전 base에서 로드하므로 최초
+적용 PR의 post-merge도 Full일 수 있다. 지원 완료는 이후 코드 PR의 문서 merge 사례에서 실제
+`reuse=true`, CI/CodeQL heavy skip, duration 재사용을 확인한 뒤 판단한다.
+
 ## Full CI fallback
 
 다음 중 하나면 fast-pass로 단정하지 않고 workflow의 full CI 결과를 기다린다.
 
 - code, test, CI workflow, Cargo.lock 변경. 단, CI workflow 변경 뒤 review-only 기록만 추가된 경우에는
   A.1의 trusted controller 증명이 전부 성립할 때만 예외로 한다.
-- 기존 sample, golden, baseline, fixture의 수정·삭제·rename. 단, pdf, pdf-2020, pdf-large 아래
+- 기존 sample, golden, baseline, fixture의 수정·삭제·rename. 단, `pdf/**` 아래
   기존 PDF의 modified 상태는 기준 PDF 재산출 증적 갱신으로 보아 허용한다.
-- pdf, pdf-2020, pdf-large 아래 기존 PDF의 삭제·rename
+- `pdf/**` 아래 기존 PDF의 삭제·rename
 - 허용 목록 밖의 신규 파일
 - A 경로의 candidate workflow 누락·실패·미완료·PR identity 불일치, current-base merge tree 불일치,
   `mydocs/` 밖 충돌 해소·해소 경로 조회 실패·복수 base merge 또는 허용되지 않은 merge 형태

@@ -158,4 +158,4 @@ cargo test --test regression_suite_015 skills_have_valid_frontmatter -- --nocapt
 - 명령·필드: [references/command-field-catalog.md](references/command-field-catalog.md)
 - 워크스루: [examples/README.md](examples/README.md)
 - 픽스처: [fixtures/catalog.json](fixtures/catalog.json)
-- 작업 기록: [`mydocs/working/agent_contributor.md`](../../../mydocs/working/agent_contributor.md)
+- 작업 기록: [`mydocs/working/agent_contributor.md`](../../../mydocs/working/archives/agent_contributor.md)

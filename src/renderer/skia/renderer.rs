@@ -7,12 +7,14 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::error::HwpError;
 use crate::model::image::ImageEffect;
+use crate::model::style::UnderlineType;
 use crate::model::ColorRef;
 use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
-    paint_op_replay_plane_with_layer, GlyphRunOrientation, GlyphRunReplayEligibility,
-    LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree, PaintOp,
-    PaintReplayPlane, ResourceArena, TextVariantQuality,
+    paint_op_replay_plane_with_layer, text_visual_replay_role, validate_text_variant_scope,
+    GlyphRunOrientation, GlyphRunReplayEligibility, LayerGlyphRunPaint, LayerNode, LayerNodeKind,
+    LayerOutputOptions, PageLayerTree, PaintOp, PaintReplayPlane, ResourceArena,
+    TextDecorationKind, TextVariantQuality, TextVisualReplayRole,
 };
 use crate::renderer::form_caption::display_form_caption;
 use crate::renderer::layer_renderer::{
@@ -26,6 +28,10 @@ use super::equation_conv::render_equation;
 use super::font_lookup::{
     collect_system_families, legacy_typeface_for_style, match_system_family_style,
     SystemFontFamilies,
+};
+use super::glyph_replay::{
+    construct_glyph_font, finite_scalar, glyph_run_minimum_byte_cost, prepare_glyph_outline,
+    GlyphPreparationBudget, PreparedGlyph,
 };
 use super::image_conv::{draw_image_bytes, draw_svg_fragment, ImageSampling};
 use super::text_replay::SkiaTextReplay;
@@ -56,6 +62,12 @@ pub enum NativeGlyphRunReplayProofReason {
     FaceIndexUnsupported,
     FontVariationUnsupported,
     TypefaceConstructionNotImplemented,
+    ExactFaceUnavailable,
+    FontInstanceInvalid,
+    GlyphRunTooLarge,
+    FontResourceTooLarge,
+    FontResourceAmbiguous,
+    DirectionUnsupported,
 }
 
 impl NativeGlyphRunReplayProofReason {
@@ -85,6 +97,12 @@ impl NativeGlyphRunReplayProofReason {
             Self::FaceIndexUnsupported => "faceIndexUnsupported",
             Self::FontVariationUnsupported => "fontVariationUnsupported",
             Self::TypefaceConstructionNotImplemented => "typefaceConstructionNotImplemented",
+            Self::ExactFaceUnavailable => "exactFaceUnavailable",
+            Self::FontInstanceInvalid => "fontInstanceInvalid",
+            Self::GlyphRunTooLarge => "glyphRunTooLarge",
+            Self::FontResourceTooLarge => "fontResourceTooLarge",
+            Self::FontResourceAmbiguous => "fontResourceAmbiguous",
+            Self::DirectionUnsupported => "directionUnsupported",
         }
     }
 }
@@ -111,11 +129,43 @@ pub fn native_skia_glyph_run_replay_proof(
     run: &LayerGlyphRunPaint,
     resources: &ResourceArena,
 ) -> NativeGlyphRunReplayProof {
+    prepare_native_glyph_run(run, resources, &FontMgr::default()).0
+}
+
+fn prepare_native_glyph_run(
+    run: &LayerGlyphRunPaint,
+    resources: &ResourceArena,
+    font_mgr: &FontMgr,
+) -> (NativeGlyphRunReplayProof, Option<PreparedGlyph>) {
     let mut contract_reasons = BTreeSet::new();
     let mut construction_reasons = BTreeSet::new();
 
     if run.glyph_ids.is_empty() {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::EmptyGlyphIds);
+    }
+    if run.glyph_ids.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN
+        || run.positions.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN
+        || run.clusters.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN
+        || run
+            .advances
+            .as_ref()
+            .is_some_and(|values| values.len() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN)
+    {
+        contract_reasons.insert(NativeGlyphRunReplayProofReason::GlyphRunTooLarge);
+    }
+    if run.direction != crate::paint::TextDirection::Ltr
+        || run.shape_key.direction != crate::paint::TextDirection::Ltr
+        || run.bidi_level != Some(0)
+        || run.writing_mode != crate::paint::WritingMode::HorizontalTb
+        || run.shape_key.writing_mode != crate::paint::WritingMode::HorizontalTb
+    {
+        contract_reasons.insert(NativeGlyphRunReplayProofReason::DirectionUnsupported);
+    }
+    if !finite_scalar(run.shape_key.font_instance.size_px)
+        || run.shape_key.font_instance.size_px <= 0.0
+        || run.shape_key.font_instance.size_px > crate::paint::MAX_GLYPH_FONT_SIZE_PX
+    {
+        contract_reasons.insert(NativeGlyphRunReplayProofReason::FontInstanceInvalid);
     }
     if run.glyph_ids.len() != run.positions.len() {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::GlyphPositionCountMismatch);
@@ -139,6 +189,9 @@ pub fn native_skia_glyph_run_replay_proof(
     if run.diagnostics.missing_glyph_count != 0 {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::MissingGlyph);
     }
+    if run.diagnostics.used_fallback_font_count != 0 {
+        contract_reasons.insert(NativeGlyphRunReplayProofReason::FontBlobNotPortable);
+    }
     if run.diagnostics.cluster_mismatch_count != 0 {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::ClusterMismatch);
     }
@@ -160,13 +213,20 @@ pub fn native_skia_glyph_run_replay_proof(
     if run.diagnostics.replay_eligibility != GlyphRunReplayEligibility::Portable {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::ReplayEligibilityNotPortable);
     }
-    if !run.paint_style.is_fill_only_glyph_replay() {
+    if !run.paint_style.is_simple_glyph_run_replay()
+        || !finite_scalar(run.paint_style.font_size)
+        || run.paint_style.font_size <= 0.0
+        || run.paint_style.font_size > crate::paint::MAX_GLYPH_FONT_SIZE_PX
+        || (run.paint_style.shadow_type != 0
+            && (!finite_scalar(run.paint_style.shadow_offset_x)
+                || !finite_scalar(run.paint_style.shadow_offset_y)))
+    {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::UnsupportedPaintEffect);
     }
     if run
         .glyph_ids
         .iter()
-        .any(|glyph_id| *glyph_id > u16::MAX as u32)
+        .any(|glyph_id| *glyph_id == 0 || *glyph_id > u16::MAX as u32)
     {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::GlyphIdOutOfRange);
     }
@@ -176,14 +236,29 @@ pub fn native_skia_glyph_run_replay_proof(
         .iter()
         .find(|face| face.id == run.shape_key.font_instance.face_key);
     if let Some(face) = face {
-        if face.face_index != 0 {
-            construction_reasons.insert(NativeGlyphRunReplayProofReason::FaceIndexUnsupported);
+        if font_resources
+            .faces
+            .iter()
+            .filter(|item| item.id == face.id)
+            .count()
+            != 1
+        {
+            contract_reasons.insert(NativeGlyphRunReplayProofReason::FontResourceAmbiguous);
         }
         let blob = font_resources
             .blobs
             .iter()
             .find(|blob| blob.id == face.blob_key);
         if let Some(blob) = blob {
+            if font_resources
+                .blobs
+                .iter()
+                .filter(|item| item.id == blob.id)
+                .count()
+                != 1
+            {
+                contract_reasons.insert(NativeGlyphRunReplayProofReason::FontResourceAmbiguous);
+            }
             if !blob.portability.is_self_contained_replayable() {
                 contract_reasons.insert(NativeGlyphRunReplayProofReason::FontBlobNotPortable);
             } else if let crate::paint::FontPortability::PortableBlob { data_ref, .. } =
@@ -194,6 +269,10 @@ pub fn native_skia_glyph_run_replay_proof(
                         .insert(NativeGlyphRunReplayProofReason::FontBlobDataRefMismatch);
                 }
                 match resources.font_blob_bytes_for_ref(data_ref) {
+                    Some(bytes) if bytes.len() > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES => {
+                        contract_reasons
+                            .insert(NativeGlyphRunReplayProofReason::FontResourceTooLarge);
+                    }
                     Some(bytes) if font_blob_digest_matches(bytes, blob) => {}
                     Some(_) => {
                         contract_reasons
@@ -211,9 +290,6 @@ pub fn native_skia_glyph_run_replay_proof(
     } else {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::FontFaceMissing);
     }
-    if !run.shape_key.font_instance.variations.is_empty() {
-        construction_reasons.insert(NativeGlyphRunReplayProofReason::FontVariationUnsupported);
-    }
     let transform = run.placement.run_to_page;
     if ![
         transform.a,
@@ -225,35 +301,50 @@ pub fn native_skia_glyph_run_replay_proof(
         run.placement.baseline_y,
     ]
     .into_iter()
-    .all(f64::is_finite)
+    .all(finite_scalar)
     {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::PlacementNotFinite);
     }
     if !run
         .positions
         .iter()
-        .all(|position| position.x.is_finite() && position.y.is_finite())
+        .all(|position| finite_scalar(position.x) && finite_scalar(position.y))
+        || run.advances.as_ref().is_some_and(|values| {
+            values
+                .iter()
+                .any(|advance| !finite_scalar(advance.dx) || !finite_scalar(advance.dy))
+        })
     {
         contract_reasons.insert(NativeGlyphRunReplayProofReason::PositionNotFinite);
     }
 
     let contract_replayable = contract_reasons.is_empty();
-    if contract_replayable && construction_reasons.is_empty() {
-        construction_reasons
-            .insert(NativeGlyphRunReplayProofReason::TypefaceConstructionNotImplemented);
-    }
-    let typeface_constructible = contract_replayable && construction_reasons.is_empty();
+    let prepared = if contract_replayable {
+        match construct_glyph_font(run, resources, font_mgr) {
+            Ok(prepared) => Some(prepared),
+            Err(reasons) => {
+                construction_reasons.extend(reasons);
+                None
+            }
+        }
+    } else {
+        None
+    };
+    let typeface_constructible = prepared.is_some();
     let mut reasons = contract_reasons
         .into_iter()
         .chain(construction_reasons)
         .collect::<Vec<_>>();
     reasons.sort();
 
-    NativeGlyphRunReplayProof {
-        contract_replayable,
-        typeface_constructible,
-        reasons,
-    }
+    (
+        NativeGlyphRunReplayProof {
+            contract_replayable,
+            typeface_constructible,
+            reasons,
+        },
+        prepared,
+    )
 }
 
 fn font_blob_digest_matches(bytes: &[u8], blob: &crate::paint::FontBlobResource) -> bool {
@@ -367,7 +458,7 @@ impl SkiaLayerRenderer {
                     }
                     if let Ok(data) = std::fs::read(&path) {
                         let skia_data = skia_safe::Data::new_copy(&data);
-                        if let Some(typeface) = font_mgr.new_from_data(&skia_data, None) {
+                        if let Some(typeface) = font_mgr.new_from_data(skia_data, None) {
                             let family = typeface.family_name();
                             into.entry(family).or_insert(typeface);
                         }
@@ -555,6 +646,9 @@ impl SkiaLayerRenderer {
         fallback_raster_scale: f32,
         strict_resource_failures: bool,
     ) -> LayerRenderResult<()> {
+        validate_text_variant_scope(tree).map_err(|error| {
+            HwpError::RenderError(format!("invalid PageLayerTree text contract: {error}"))
+        })?;
         if !fallback_raster_scale.is_finite() || fallback_raster_scale <= 0.0 {
             return Err(HwpError::RenderError(format!(
                 "invalid Skia fallback raster scale: {fallback_raster_scale}"
@@ -572,7 +666,6 @@ impl SkiaLayerRenderer {
                 &tree.resources,
                 replay_plane,
                 None,
-                tree.profile.shows_editor_visuals(),
                 &mut next_text_source_id,
                 fallback_raster_scale,
                 strict_resource_failures,
@@ -589,7 +682,6 @@ impl SkiaLayerRenderer {
         resources: &ResourceArena,
         replay_plane: PaintReplayPlane,
         inherited_layer: Option<RenderLayerInfo>,
-        show_editor_placeholders: bool,
         next_text_source_id: &mut u32,
         fallback_raster_scale: f32,
         strict_resource_failures: bool,
@@ -749,7 +841,6 @@ impl SkiaLayerRenderer {
                         resources,
                         replay_plane,
                         active_layer,
-                        show_editor_placeholders,
                         next_text_source_id,
                         fallback_raster_scale,
                         strict_resource_failures,
@@ -765,7 +856,6 @@ impl SkiaLayerRenderer {
                         resources,
                         replay_plane,
                         active_layer,
-                        show_editor_placeholders,
                         next_text_source_id,
                         fallback_raster_scale,
                         strict_resource_failures,
@@ -789,7 +879,6 @@ impl SkiaLayerRenderer {
                     resources,
                     replay_plane,
                     active_layer,
-                    show_editor_placeholders,
                     next_text_source_id,
                     fallback_raster_scale,
                     strict_resource_failures,
@@ -799,35 +888,61 @@ impl SkiaLayerRenderer {
             }
             LayerNodeKind::Leaf { ops } => {
                 let mut variant_order = 0usize;
+                let mut prepared_glyphs = HashMap::<usize, PreparedGlyph>::new();
+                let mut preparation_budget = GlyphPreparationBudget::new();
                 let mut glyph_variants =
                     HashMap::<String, HashMap<String, (usize, u32, HashSet<u32>, bool)>>::new();
                 let mut glyph_variant_sources = HashMap::<String, u32>::new();
-                for op in ops {
+                for (op_index, op) in ops.iter().enumerate() {
                     if paint_op_replay_plane_with_layer(op, active_layer) != replay_plane {
                         continue;
                     }
-                    if let PaintOp::GlyphRun { run, .. } = op {
+                    let candidate = match op {
+                        PaintOp::GlyphRun { run, .. } => Some((
+                            &run.variant,
+                            run.source.id.0,
+                            glyph_run_minimum_byte_cost(run, resources).and_then(|minimum_bytes| {
+                                preparation_budget.prepare(minimum_bytes, || {
+                                    prepare_native_glyph_run(run, resources, &self.font_mgr).1
+                                })
+                            }),
+                        )),
+                        PaintOp::GlyphOutline { outline, bbox } => Some((
+                            &outline.variant,
+                            outline.source.id.0,
+                            preparation_budget.prepare(0, || {
+                                prepare_glyph_outline(
+                                    outline,
+                                    *bbox,
+                                    resources,
+                                    fallback_raster_scale,
+                                )
+                            }),
+                        )),
+                        _ => None,
+                    };
+                    if let Some((variant, source_id, prepared)) = candidate {
                         glyph_variant_sources
-                            .entry(run.variant.equivalence_group.clone())
-                            .or_insert(run.source.id.0);
+                            .entry(variant.equivalence_group.clone())
+                            .or_insert(source_id);
                         let group = glyph_variants
-                            .entry(run.variant.equivalence_group.clone())
+                            .entry(variant.equivalence_group.clone())
                             .or_default();
-                        let state =
-                            group
-                                .entry(run.variant.variant_id.clone())
-                                .or_insert_with(|| {
-                                    let order = variant_order;
-                                    variant_order = variant_order.saturating_add(1);
-                                    (order, run.variant.part_count, HashSet::new(), true)
-                                });
-                        if state.1 != run.variant.part_count || run.variant.part_count == 0 {
+                        let state = group.entry(variant.variant_id.clone()).or_insert_with(|| {
+                            let order = variant_order;
+                            variant_order = variant_order.saturating_add(1);
+                            (order, variant.part_count, HashSet::new(), true)
+                        });
+                        if state.1 != variant.part_count || variant.part_count == 0 {
                             state.3 = false;
                         }
-                        if !state.2.insert(run.variant.part_index) {
+                        if !state.2.insert(variant.part_index) {
                             state.3 = false;
                         }
-                        state.3 &= native_skia_can_replay_glyph_run(run, resources);
+                        state.3 &= prepared.is_some();
+                        if let Some(prepared) = prepared {
+                            prepared_glyphs.insert(op_index, prepared);
+                        }
                     }
                 }
                 let mut selected_text_variants = HashMap::new();
@@ -847,14 +962,17 @@ impl SkiaLayerRenderer {
                     .keys()
                     .filter_map(|group| glyph_variant_sources.get(group).copied())
                     .collect::<HashSet<_>>();
-                for op in ops {
+                for (op_index, op) in ops.iter().enumerate() {
                     if paint_op_replay_plane_with_layer(op, active_layer) != replay_plane {
                         continue;
                     }
                     let skip_unselected_text_variant = match op {
-                        PaintOp::TextRun { .. } => {
-                            let source_id = *next_text_source_id;
-                            *next_text_source_id = (*next_text_source_id).saturating_add(1);
+                        PaintOp::TextRun { source, .. } => {
+                            let source_id = source
+                                .as_ref()
+                                .map_or(*next_text_source_id, |source| source.id.0);
+                            *next_text_source_id =
+                                (*next_text_source_id).max(source_id.saturating_add(1));
                             selected_text_sources.contains(&source_id)
                         }
                         PaintOp::GlyphRun { run, .. } => {
@@ -863,7 +981,12 @@ impl SkiaLayerRenderer {
                                 None => true,
                             }
                         }
-                        PaintOp::GlyphOutline { .. } => true,
+                        PaintOp::GlyphOutline { outline, .. } => {
+                            match selected_text_variants.get(&outline.variant.equivalence_group) {
+                                Some(selected) => selected != &outline.variant.variant_id,
+                                None => true,
+                            }
+                        }
                         _ => false,
                     };
                     if skip_unselected_text_variant {
@@ -955,33 +1078,89 @@ impl SkiaLayerRenderer {
                                 canvas.draw_rect(rect, &paint);
                             }
                         }
-                        PaintOp::TextRun { bbox, run } => {
+                        PaintOp::TextRun { bbox, run, .. }
+                        | PaintOp::CharOverlap { bbox, run, .. }
+                        | PaintOp::TextControlMark { bbox, run, .. }
+                        | PaintOp::TabLeader { bbox, run, .. }
+                        | PaintOp::TextDecoration { bbox, run, .. } => {
+                            let role = text_visual_replay_role(op);
+                            if role == TextVisualReplayRole::SuppressedFallback {
+                                continue;
+                            }
+                            let mut projected = run.as_ref().clone();
+                            projected.char_overlap = None;
+                            projected.style.tab_leaders.clear();
+                            projected.style.underline = UnderlineType::None;
+                            projected.style.strikethrough = false;
+                            projected.style.emphasis_dot = 0;
+                            let (suppress_glyphs, render_marks) = match role {
+                                TextVisualReplayRole::BaseText => (false, false),
+                                TextVisualReplayRole::CharOverlap => {
+                                    projected.char_overlap = run.char_overlap.clone();
+                                    (false, false)
+                                }
+                                TextVisualReplayRole::ControlMark => (true, true),
+                                TextVisualReplayRole::TabLeader => {
+                                    projected
+                                        .style
+                                        .tab_leaders
+                                        .clone_from(&run.style.tab_leaders);
+                                    (true, false)
+                                }
+                                TextVisualReplayRole::Decoration(kind) => {
+                                    match kind {
+                                        TextDecorationKind::Underline => {
+                                            projected.style.underline = run.style.underline;
+                                        }
+                                        TextDecorationKind::Strikethrough => {
+                                            projected.style.strikethrough = run.style.strikethrough;
+                                        }
+                                        TextDecorationKind::EmphasisDot => {
+                                            projected.style.emphasis_dot = run.style.emphasis_dot;
+                                        }
+                                    }
+                                    (true, false)
+                                }
+                                TextVisualReplayRole::SuppressedFallback
+                                | TextVisualReplayRole::Other => continue,
+                            };
+                            let decoration_trim = match op {
+                                PaintOp::TextDecoration {
+                                    trim_trailing_spaces,
+                                    ..
+                                } => *trim_trailing_spaces,
+                                _ => 0,
+                            };
                             let is_marker = !matches!(
-                                run.field_marker,
+                                projected.field_marker,
                                 crate::renderer::render_tree::FieldMarkerType::None
                             );
                             text_replay.draw_text(
-                                run.display_or_text(),
+                                projected.display_or_text(),
                                 *bbox,
-                                &run.style,
-                                run.baseline,
-                                run.rotation,
-                                run.is_vertical,
-                                run.char_overlap.as_ref(),
+                                &projected.style,
+                                projected.baseline,
+                                projected.rotation,
+                                projected.is_vertical,
+                                projected.char_overlap.as_ref(),
                                 is_marker,
-                                run.is_para_end,
-                                run.is_line_break_end,
-                                run.validated_layout_positions_for(run.display_or_text()),
+                                projected.is_para_end,
+                                projected.is_line_break_end,
+                                projected
+                                    .validated_layout_positions_for(projected.display_or_text()),
+                                decoration_trim,
+                                suppress_glyphs,
+                                render_marks,
                             );
                         }
-                        PaintOp::GlyphRun { run, .. } => {
-                            if !native_skia_can_replay_glyph_run(run, resources) {
-                                continue;
+                        PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. } => {
+                            // Every selected part was prepared before its TextRun
+                            // fallback was suppressed. Drawing cannot re-resolve
+                            // a different face or re-decode a failed resource.
+                            if let Some(prepared) = prepared_glyphs.get(&op_index) {
+                                prepared.draw(canvas);
                             }
-                            // Unreachable until native_skia_can_replay_glyph_run can verify
-                            // blob-backed typeface construction. Keep the TextRun fallback.
                         }
-                        PaintOp::GlyphOutline { .. } => {}
                         PaintOp::FootnoteMarker { bbox, marker } => {
                             let style = crate::renderer::TextStyle {
                                 font_family: marker.font_family.clone(),
@@ -1001,6 +1180,20 @@ impl SkiaLayerRenderer {
                                 false,
                                 false,
                                 None,
+                                0,
+                                false,
+                                false,
+                            );
+                        }
+                        PaintOp::ControlLabel { bbox, label } => {
+                            let style = crate::renderer::TextStyle {
+                                font_size: 10.0,
+                                color: 0x003333CC,
+                                ..Default::default()
+                            };
+                            text_replay.draw_text(
+                                label, *bbox, &style, 10.0, 0.0, false, None, false, false, false,
+                                None, 0, false, false,
                             );
                         }
                         PaintOp::Line { bbox, line } => {
@@ -1294,13 +1487,7 @@ impl SkiaLayerRenderer {
                             self.draw_form_control(canvas, *bbox, form);
                         }
                         PaintOp::Placeholder { bbox, placeholder } => {
-                            // [Task #2225] 그림 미지정 placeholder 는 편집 profile에서만 표시.
-                            if placeholder.kind
-                                != crate::renderer::render_tree::PlaceholderKind::MissingPicture
-                                || show_editor_placeholders
-                            {
-                                draw_placeholder(*bbox, placeholder.label.as_str());
-                            }
+                            draw_placeholder(*bbox, placeholder.label.as_str());
                         }
                         PaintOp::RawSvg { bbox, raw } => {
                             if !draw_svg_fragment(
@@ -1321,10 +1508,6 @@ impl SkiaLayerRenderer {
                                 draw_placeholder(*bbox, "svg");
                             }
                         }
-                        PaintOp::CharOverlap { .. }
-                        | PaintOp::TextControlMark { .. }
-                        | PaintOp::TabLeader { .. }
-                        | PaintOp::TextDecoration { .. } => {}
                     }
                 }
             }
@@ -1619,17 +1802,19 @@ mod tests {
         font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
         CacheHint, FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource,
         FontFallbackPolicyId, FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster,
-        GlyphRange, GroupKind, LayerAffineTransform, LayerNode, LayerOutputOptions, LayerPoint,
-        PaintTextStyle, PaintVariantMeta, RenderProfile, ScriptTag, ShapeKey, ShapingEngineId,
-        TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, WritingMode,
+        GlyphRange, GroupKind, LayerAffineTransform, LayerBuilder, LayerNode, LayerOutputOptions,
+        LayerPoint, PaintTextStyle, PaintVariantMeta, RenderProfile, ScriptTag, ShapeKey,
+        ShapingEngineId, TextDirection, TextSourceId, TextSourceRange, TextSourceSpan,
+        TextVariantKind, WritingMode,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::ast::EqNode;
     use crate::renderer::equation::layout::EqLayout;
     use crate::renderer::render_tree::{
         BoundingBox, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
-        PageBackgroundImage, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode,
-        RectangleNode, RenderLayerInfo, TextRunNode,
+        PageBackgroundImage, PageBackgroundNode, PageNode, PageRenderTree, PathNode,
+        PlaceholderNode, RawSvgNode, RectangleNode, RenderLayerInfo, RenderNode, RenderNodeType,
+        TextRunNode,
     };
     use crate::renderer::{GradientFillInfo, PatternFillInfo, TabLeaderInfo, TextStyle};
     use image::{ImageFormat, Rgba, RgbaImage};
@@ -1769,7 +1954,7 @@ mod tests {
                 flags: Vec::new(),
             }],
             direction: TextDirection::Ltr,
-            bidi_level: None,
+            bidi_level: Some(0),
             writing_mode: WritingMode::HorizontalTb,
             orientation,
             glyph_transforms: None,
@@ -1825,7 +2010,7 @@ mod tests {
     }
 
     #[test]
-    fn native_skia_keeps_glyph_run_disabled_until_blob_typeface_replay_exists() {
+    fn native_skia_keeps_glyph_run_fallback_when_exact_blob_cannot_instantiate() {
         let resources = portable_font_resources();
         let run = portable_glyph_run(GlyphRunOrientation::Horizontal);
         let proof = native_skia_glyph_run_replay_proof(&run, &resources);
@@ -1834,12 +2019,9 @@ mod tests {
         assert!(!proof.typeface_constructible);
         assert_eq!(
             proof.reasons,
-            vec![NativeGlyphRunReplayProofReason::TypefaceConstructionNotImplemented]
+            vec![NativeGlyphRunReplayProofReason::ExactFaceUnavailable]
         );
-        assert_eq!(
-            proof.reasons[0].as_str(),
-            "typefaceConstructionNotImplemented"
-        );
+        assert_eq!(proof.reasons[0].as_str(), "exactFaceUnavailable");
         assert!(native_skia_glyph_run_contract_is_replayable(
             &run, &resources
         ));
@@ -2937,16 +3119,17 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(8.0, 8.0, 24.0, 24.0);
         let tree = PageLayerTree::new(
             40.0,
             40.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 40.0, 40.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(8.0, 8.0, 24.0, 24.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::char_overlap(bounds, run),
+                ],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2988,16 +3171,17 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(4.0, 4.0, 80.0, 28.0);
         let tree = PageLayerTree::new(
             88.0,
             36.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 88.0, 36.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(4.0, 4.0, 80.0, 28.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::tab_leader(bounds, run),
+                ],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -3034,16 +3218,17 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(4.0, 4.0, 60.0, 28.0);
         let tree = PageLayerTree::new(
             72.0,
             36.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 72.0, 36.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(4.0, 4.0, 60.0, 28.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::text_control_mark(bounds, run),
+                ],
             ),
         )
         .with_output_options(LayerOutputOptions {
@@ -3088,16 +3273,23 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(8.0, 8.0, 32.0, 28.0);
         let tree = PageLayerTree::new(
             48.0,
             40.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 48.0, 40.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(8.0, 8.0, 32.0, 28.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::text_decoration(bounds, run.clone(), TextDecorationKind::Underline),
+                    PaintOp::text_decoration(
+                        bounds,
+                        run.clone(),
+                        TextDecorationKind::Strikethrough,
+                    ),
+                    PaintOp::text_decoration(bounds, run, TextDecorationKind::EmphasisDot),
+                ],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -3324,17 +3516,28 @@ mod tests {
 
     #[test]
     fn missing_picture_placeholder_follows_render_profile() {
-        let root = LayerNode::leaf(
-            BoundingBox::new(0.0, 0.0, 32.0, 24.0),
-            None,
-            vec![PaintOp::placeholder(
-                BoundingBox::new(4.0, 4.0, 20.0, 14.0),
-                PlaceholderNode::missing_picture(None, None, None, None),
-            )],
+        let mut render_tree = PageRenderTree::new(0, 32.0, 24.0);
+        render_tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 32.0,
+            height: 24.0,
+            section_index: 0,
+        });
+        render_tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Placeholder(PlaceholderNode::missing_picture(None, None, None, None)),
+            BoundingBox::new(4.0, 4.0, 20.0, 14.0),
+        ));
+        let screen_tree = LayerBuilder::new(RenderProfile::Screen).build(&render_tree);
+        let print_tree = LayerBuilder::new(RenderProfile::Print).build(&render_tree);
+        assert!(matches!(screen_tree.root.kind, LayerNodeKind::Group { .. }));
+        let LayerNodeKind::Group { children, .. } = &print_tree.root.kind else {
+            panic!("page root must remain a group");
+        };
+        assert!(
+            children.is_empty(),
+            "print tree must omit editor placeholder"
         );
-        let screen_tree =
-            PageLayerTree::with_profile(32.0, 24.0, root.clone(), RenderProfile::Screen);
-        let print_tree = PageLayerTree::with_profile(32.0, 24.0, root, RenderProfile::Print);
         let renderer = SkiaLayerRenderer::new();
         let screen = renderer
             .render_raster_with_options(&screen_tree, RasterRenderOptions::default())

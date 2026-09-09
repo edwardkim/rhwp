@@ -80,39 +80,27 @@ impl crate::wmf::converter::Player for SVGPlayer {
         // (예: HWP3 sample14 의 WMF 가 1189 인데 image y+height=2304) viewBox 가 element
         // 를 cover 못 해 rsvg-convert 렌더 시 잘림. element 들의 max x+width / y+height
         // 까지 viewBox 확장 (한컴 SVG 변환의 자동 확장 시멘틱 정합).
+        // [#6617] 창 앞쪽(음수 장치 좌표)으로 넘친 요소는 GDI 처럼 잘린다. 예전의
+        // "min x/y 로 viewBox 앞쪽 확장"([Task #860 Stage D])은 viewBox 원점이 창 원점이던
+        // 때의 보정이라 [Task #864] 이후 원점 상대 좌표에서는 걸릴 일이 없었고, y-up 창의
+        // 음수 높이 DIB 를 논리 부호로 정규화해 생긴 가짜 음수 y 에만 걸려 viewBox 를 세로
+        // 두 배로 만들었다(bitmap.hwp, 156462405). 장치 좌표에서는 그 음수가 생기지 않는다.
         let (raw_vb_x, raw_vb_y, mut vb_w, mut vb_h) = context_current.window.as_view_box();
-        let mut vb_x = i32::from(raw_vb_x);
-        let mut vb_y = i32::from(raw_vb_y);
+        let vb_x = i32::from(raw_vb_x);
+        let vb_y = i32::from(raw_vb_y);
         let mut vb_w_i32 = i32::from(vb_w);
         let mut vb_h_i32 = i32::from(vb_h);
         let mut vb_right = vb_x + vb_w_i32;
         let mut vb_bottom = vb_y + vb_h_i32;
         for elem in elements.iter() {
-            let max_x = element_max_x(elem);
-            let max_y = element_max_y(elem);
-            let min_x = element_min_x(elem);
-            let min_y = element_min_y(elem);
-            if let Some(mx) = max_x {
+            if let Some(mx) = element_max_x(elem) {
                 if mx > vb_right {
                     vb_right = mx;
                 }
             }
-            if let Some(my) = max_y {
+            if let Some(my) = element_max_y(elem) {
                 if my > vb_bottom {
                     vb_bottom = my;
-                }
-            }
-            // [Task #860 Stage D] element 의 min y 가 viewBox y 보다 작으면 viewBox 위쪽
-            // 확장 (HWP3 sample14 의 WMF: BoundingBox origin (329, 1536) 인데 element
-            // y=1008 — Placeable header 의 BoundingBox 와 element 좌표 mismatch 보정).
-            if let Some(nx) = min_x {
-                if nx < vb_x {
-                    vb_x = nx;
-                }
-            }
-            if let Some(ny) = min_y {
-                if ny < vb_y {
-                    vb_y = ny;
                 }
             }
         }
@@ -134,24 +122,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
             document = document.add(defs);
         }
 
-        // [Task #860 Stage D] WMF SetWindowExt y < 0 (Cartesian, bottom-up) 인 경우
-        // SVG (top-down) 정합 위해 y-flip transform 적용:
-        //   transform="translate(0, vb_h) scale(1, -1)"
-        // 이는 viewBox 안 element 의 y 좌표를 flip 하여 한컴 정합.
-        // HWP3 sample14 의 WMF 가 bottom-up 좌표계 사용 (캡션 outline 위, BMP 박스 아래
-        // 의 시각이 한컴과 반대로 나타나는 결함 정정).
-        if context_current.window.y_inverted {
-            let group =
-                Node::new("g").set("transform", format!("translate(0,{vb_h_i32}) scale(1,-1)"));
-            let mut group = group;
-            for v in elements {
-                group = group.add(v);
-            }
-            document = document.add(group);
-        } else {
-            for v in elements {
-                document = document.add(v);
-            }
+        // [#6617] y-up 창(SetWindowExt y < 0)의 축 뒤집기는 요소 좌표를 만들 때
+        // `Window::to_device` 가 이미 끝냈다(장치 좌표 = viewBox 좌표). 예전의
+        // `translate(0, vb_h) scale(1,-1)` 그룹은 창 바닥이 논리 0 일 때만 맞는 특수식이라,
+        // 원점이 0 인 y-up 창(bitmap.hwp OLE 표현, 156462405)의 그림을 viewBox 밖으로 보냈다.
+        for v in elements {
+            document = document.add(v);
         }
 
         Ok(document.to_string().into_bytes())
@@ -178,12 +154,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -203,12 +177,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -256,12 +228,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -281,12 +251,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -334,17 +302,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
-                    raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -364,17 +325,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
-                    raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -436,17 +390,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
-                    raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -466,17 +413,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
-                    raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -524,11 +464,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
             ..
         } = record;
 
-        let pt = self
+        let rect = self
             .context_current
-            .point_s_to_absolute_point(&PointS { x: x_dst, y: y_dst });
-        let mut operator =
-            TernaryRasterOperator::new(raster_operation, pt.x, pt.y, dest_height, dest_width);
+            .blit_dest_rect(x_dst, y_dst, dest_width, dest_height);
+        let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
         if raster_operation.use_selected_brush() {
             operator = operator.brush(self.selected_brush().clone());
@@ -2374,18 +2313,6 @@ fn element_max_y(elem: &Node) -> Option<i32> {
         }
     }
     None
-}
-
-/// [Task #860 Stage D] Node 의 x attribute (viewBox 위쪽 확장 용).
-fn element_min_x(elem: &Node) -> Option<i32> {
-    let s = elem.to_string();
-    parse_attr_i32(&s, "x")
-}
-
-/// [Task #860 Stage D] Node 의 y attribute (viewBox 위쪽 확장 용).
-fn element_min_y(elem: &Node) -> Option<i32> {
-    let s = elem.to_string();
-    parse_attr_i32(&s, "y")
 }
 
 /// 단순 SVG attribute 값 parse (i32). 미존재 또는 parse 실패 시 None.

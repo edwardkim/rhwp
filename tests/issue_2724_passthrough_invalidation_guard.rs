@@ -162,6 +162,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
     ),
     (
+        "commands/formatting_runs.rs",
+        "get_char_shape_runs_in_cell_by_path_native",
+        Exempt::SessionState,
+        "[#6788] 구간 검증과 모양 목록 직렬화만 하는 순수 조회. `&mut` 는 가변 셀 접근자 재사용 때문이며 문서 IR 비변경.",
+    ),
+    (
         "commands/header_footer_ops.rs",
         "copy_selection_in_header_footer_native",
         Exempt::SessionState,
@@ -238,6 +244,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "discard_section_raw_native",
         Exempt::SessionState,
         "[#5769] 구역 raw 저널에서 항목 제거. 문서 IR 비변경.",
+    ),
+    (
+        "commands/picture_transform_journal.rs",
+        "capture_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 common/shape 변환 상태를 복제해 Undo 저널과 ID만 갱신. 원본 문서 IR·구역 raw는 읽기만 한다.",
+    ),
+    (
+        "commands/picture_transform_journal.rs",
+        "discard_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 변환 Undo 저널에서 handle만 제거. 문서 IR·구역 raw는 변경하지 않는다.",
     ),
     (
         "commands/formatting.rs",
@@ -460,12 +478,6 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "queries/field_query.rs",
-        "set_field_value_by_id",
-        Exempt::DelegatesTo("set_field_text_at"),
-        "필드 위치를 조회한 뒤 텍스트 치환 헬퍼에 위임.",
-    ),
-    (
-        "queries/field_query.rs",
         "set_field_value_by_name",
         Exempt::DelegatesTo("set_field_value_by_name_at"),
         "첫 occurrence를 선택하는 호환 래퍼. 실제 필드 치환·section raw_stream 무효화는 occurrence 경로가 수행.",
@@ -600,6 +612,8 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
 /// 증가는 통과하며 갱신을 안내한다. 함수 단위 검사(검사 1)가 못 잡는 "한 함수 안 여러
 /// 무효화 갈래 중 일부만 제거" 를 잡는 것이 목적이다.
 const INVALIDATION_LEDGER: &[(&str, usize)] = &[
+    // 한글 클립보드 문서모델 붙여넣기 — 서식표 병합 1 · 구역 raw_stream 1 · 진입점 1
+    ("commands/foreign_paste.rs", 3),
     ("commands/clipboard.rs", 4),
     ("commands/footnote_ops.rs", 6),
     ("commands/formatting.rs", 16),

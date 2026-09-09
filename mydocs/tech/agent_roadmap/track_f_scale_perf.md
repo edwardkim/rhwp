@@ -89,7 +89,7 @@ last_verified: 2026-08-16
 - **한 줄** — 수백 MB·만 쪽 규모에서 어디가 먼저 깨지는지 측정하고 한계를 공표한다.
 - **지금** — [`tools/scale_ladder.py`](../../../tools/scale_ladder.py)(합성 HWPX
   생성기+실측 러너, commit `837a8d19f`)와
-  [`mydocs/report/scale_ladder_r1_20260808.md`](../../report/scale_ladder_r1_20260808.md)
+  [`mydocs/report/scale_ladder_r1_20260808.md`](../../report/archives/scale_ladder_r1_20260808.md)
   (1차 실측 보고서)로 착지했다. 문단 축은 50,000 문단(3,572쪽 상당, XML 20MB)까지
   `info`·`export-text`·`export-structure` 전부 exit 0, 상한 미발견. 첫 실패 지점은
   `export-pdf` × 문단 5,000(358쪽) — 120초 타임아웃(시간 벽, 72쪽/76.9초는 통과).

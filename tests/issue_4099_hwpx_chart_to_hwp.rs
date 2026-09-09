@@ -63,15 +63,14 @@ fn convert_to_hwp(hwpx: &[u8]) -> Vec<u8> {
     core.export_hwp_with_adapter().expect("HWP 변환")
 }
 
-/// `convert --verify` 와 같은 판정 — 변환 후 재파싱해 IR 을 대조한다.
-///
-/// `main.rs` 가 어댑터로 in-place 변형된 live IR 을 expected 로 쓰므로 여기서도
-/// 변환 후의 `core.document()` 를 기준으로 삼는다.
+/// `convert --verify` 와 같은 판정 — snapshot lowering의 expected IR과 재파싱을 대조한다.
 fn verify_diff(hwpx: &[u8]) -> IrDiff {
     let mut core = DocumentCore::from_bytes(hwpx).expect("HWPX 로드");
+    let mut expected = core.document().clone();
+    convert_hwpx_to_hwp_ir(&mut expected);
     let out = core.export_hwp_with_adapter().expect("HWP 변환");
     let reloaded = DocumentCore::from_bytes(&out).expect("변환본 재파싱");
-    let diff = diff_documents(core.document(), reloaded.document());
+    let diff = diff_documents(&expected, reloaded.document());
     strip_hwpx_to_hwp_noise(diff)
 }
 
@@ -732,11 +731,10 @@ fn generate_hancom_judgment_bundle() {
 
 /// fold 산출본에 진단용 변이를 얹는다.
 ///
-/// 어댑터는 live IR 을 in-place 로 바꾸므로 한 번 export 해서 fold 를 적용시킨 뒤 IR 을
-/// 만지고 다시 export 한다. 두 번째 호출의 fold 는 멱등이라 no-op 이다.
+/// 진단 변이는 명시적으로 materialize한 작업 복제본에만 적용한다.
 fn variant(hwpx: &[u8], ole30: bool, flip: bool) -> Vec<u8> {
     let mut core = DocumentCore::from_bytes(hwpx).expect("HWPX 로드");
-    let _ = core.export_hwp_with_adapter().expect("fold 적용");
+    convert_hwpx_to_hwp_ir(core.document_mut());
     if ole30 || flip {
         let doc = core.document_mut();
         let ole = first_ole_mut(doc).expect("fold 후 OLE");
@@ -757,7 +755,7 @@ fn variant(hwpx: &[u8], ole30: bool, flip: bool) -> Vec<u8> {
             ole.raw_tag_data = raw;
         }
     }
-    core.export_hwp_with_adapter().expect("변종 저장")
+    core.export_hwp_native().expect("변종 저장")
 }
 
 fn first_ole_mut(doc: &mut Document) -> Option<&mut OleShape> {

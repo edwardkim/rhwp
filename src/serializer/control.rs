@@ -721,7 +721,11 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
         | (((cell.line_wrap as u32) & 0x03) << 19)
         | (v_align_code << 21);
     w.write_u32(list_attr).unwrap();
-    let list_header_width_ref = if cell.list_header_width_ref == 0 {
+    // 파싱한 HWP5 셀은 raw_list_extra에 LIST_HEADER 확장 바이트를 보존한다.
+    // 이 경우 width_ref=0도 유효한 원본값이므로 그대로 기록한다. 반대로 새로
+    // 만든 셀은 한컴 호환 47바이트 LIST_HEADER 계약을 위해 기본값 0x0400을 쓴다.
+    let list_header_width_ref = if cell.list_header_width_ref == 0 && cell.raw_list_extra.is_empty()
+    {
         0x0400
     } else {
         cell.list_header_width_ref

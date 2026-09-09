@@ -55,7 +55,7 @@
 
 ## 관련
 
-- 이번에 소급 작성한 [`task_m100_4080.md`](../plans/task_m100_4080.md),
-  [`task_m100_4080_impl.md`](../plans/task_m100_4080_impl.md)
+- 이번에 소급 작성한 [`task_m100_4080.md`](../plans/archives/task_m100_4080.md),
+  [`task_m100_4080_impl.md`](../plans/archives/task_m100_4080_impl.md)
 - 같은 유형의 다른 실수: 리뷰 ② 잔여 구멍을 classifier 를 실행해보지 않고 "분류가 안 되니 안 돌 것"
   이라고 추론했다가 정정했다. 실제로는 `fail-closed:unclassified-path` 로 실행된다.

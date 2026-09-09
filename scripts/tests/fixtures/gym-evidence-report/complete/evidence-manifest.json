@@ -1,0 +1,269 @@
+{
+  "generator": {
+    "name": "gymEvidenceReport",
+    "version": "1.0.0"
+  },
+  "identity": {
+    "binaryName": "rhwp",
+    "binaryPathSha256": "a5240d6a8a648f799d21896dc4de32324fc2d60f688bb2e5596601ba2447ec3a",
+    "binarySha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "counts": {
+      "auditReferences": 2,
+      "auditTasks": 2,
+      "authorityEntries": 2,
+      "authorityReferences": 2,
+      "authorityTasks": 2,
+      "discriminationControls": 2,
+      "discriminationTasks": 2,
+      "positiveTasks": 2,
+      "trajectoryTasks": 1
+    },
+    "productSourceHead": "cccccccccccccccccccccccccccccccccccccccc",
+    "runId": "20260903-fixture",
+    "runStarted": "2026-09-03T10:00:00+09:00",
+    "runnerHead": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "runnerTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "identityFingerprint": "b6818ef1147689a04869d315468a1874582176e3f4f6011a3c3d15e49c1339cb",
+  "inputs": [
+    {
+      "bytes": 2,
+      "path": "audit.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 545,
+      "kind": "gymAudit",
+      "path": "audit.json",
+      "schemaVersion": "1.0",
+      "sha256": "97167a18ada425b9a30b0013135ac03775754eb4f2cd5b12047814817eb39733"
+    },
+    {
+      "bytes": 2,
+      "path": "audit.seconds",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "bytes": 0,
+      "path": "audit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2,
+      "path": "authority-ledger.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 877,
+      "kind": "gymAuthorityLedger",
+      "path": "authority-ledger.json",
+      "schemaVersion": "1.0",
+      "sha256": "1c4a07c45018da587eaafd1670ed7adc49d87663305fa5b11da3bb3e5d4e49f8"
+    },
+    {
+      "bytes": 2,
+      "path": "authority-ledger.seconds",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "bytes": 0,
+      "path": "authority-ledger.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2,
+      "path": "discrimination.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 785,
+      "kind": "gymDiscrimination",
+      "path": "discrimination.json",
+      "schemaVersion": "1.0",
+      "sha256": "6430f3e1518ff9be1fac730b34d58423fcaf152c03bfad05335979f9bcbb7023"
+    },
+    {
+      "bytes": 2,
+      "path": "discrimination.seconds",
+      "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+    },
+    {
+      "bytes": 0,
+      "path": "discrimination.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 41,
+      "path": "gym-runner-head.txt",
+      "sha256": "5a84b79716842f146f7533d890cc7308cad7b21abdc29c1852c6b3bb8ad66672"
+    },
+    {
+      "bytes": 41,
+      "path": "gym-runner-tree.txt",
+      "sha256": "139f49a833f8c70158db3bc5b9c9693b6bc9a02a46fe833743ff3cd6e57eb7ea"
+    },
+    {
+      "bytes": 2,
+      "path": "oracle-selftest.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 283,
+      "kind": "gymOracleProbe",
+      "mode": "selftest",
+      "path": "oracle-selftest.json",
+      "schemaVersion": "1.0",
+      "sha256": "47e76bb81b1ff2fc44ed3da1c685bbd9e4b822faa53ba3f950722bdeb9487ead"
+    },
+    {
+      "bytes": 2,
+      "path": "oracle-selftest.seconds",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "bytes": 0,
+      "path": "oracle-selftest.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2,
+      "path": "oracle-structural.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 211,
+      "kind": "gymOracleProbe",
+      "mode": "structural",
+      "path": "oracle-structural.json",
+      "schemaVersion": "1.0",
+      "sha256": "7d0d157ecf38046bfce6885dd9a8cf506727c5458deb22d75c3faba8f6d2f426"
+    },
+    {
+      "bytes": 2,
+      "path": "oracle-structural.seconds",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "bytes": 0,
+      "path": "oracle-structural.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 42,
+      "path": "platform.txt",
+      "sha256": "6098e368623e9f5f17aa4c993273c335125b9b9ebddaebd6193c7b2c1e02fc9d"
+    },
+    {
+      "bytes": 2,
+      "path": "positive.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 590,
+      "kind": "gymBaselineVerification",
+      "path": "positive.json",
+      "schemaVersion": "1.0",
+      "sha256": "592b0dc9d33db5b92d0c376f9c0a3adaaebffeaeb9a5dd036d87ac0047e0cf5c"
+    },
+    {
+      "bytes": 2,
+      "path": "positive.seconds",
+      "sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3"
+    },
+    {
+      "bytes": 0,
+      "path": "positive.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 41,
+      "path": "product-source-head.txt",
+      "sha256": "b2c54548ef9312fb099460e8a556a56f4bbd5fa422100b89f8364a8ad07ce996"
+    },
+    {
+      "bytes": 14,
+      "path": "python-version.txt",
+      "sha256": "5b3e43dc38ca01e3f5a7854ba50d4330864b0c1e0f646650b2c78cf072acc366"
+    },
+    {
+      "bytes": 93,
+      "path": "rhwp-bin.sha256",
+      "sha256": "5cc7d8e60a61b1997ce7e5204d83e474446a72a88519ca456532336d4429e995"
+    },
+    {
+      "bytes": 19,
+      "path": "rhwp-version.txt",
+      "sha256": "bf39c69a7406e5e25f75ddc2a6d82fb80bda4742b2b7d825ea06aeaa42dcdcb3"
+    },
+    {
+      "bytes": 17,
+      "path": "run-id.txt",
+      "sha256": "310eb647132b3ab7841ea81d71d77041ee70f3c94e496ea38f27c4f70398d9bb"
+    },
+    {
+      "bytes": 26,
+      "path": "run-started.txt",
+      "sha256": "e536f073dfc5fb9331c637960ff2aeb3476906ba3121345459226be6d93b7c97"
+    },
+    {
+      "bytes": 13,
+      "path": "rust-version.txt",
+      "sha256": "0aec595cb559d4cdcaa643975623234c7251f572bd98101b5200adadeba8d408"
+    },
+    {
+      "bytes": 2,
+      "path": "trajectory.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 592,
+      "kind": "gymTrajectoryNecessity",
+      "path": "trajectory.json",
+      "schemaVersion": "1.0",
+      "sha256": "f1dfa4f880fc5ef335c95509b1ad11dcfd1c7e439d819919ef7296fd78502c2f"
+    },
+    {
+      "bytes": 2,
+      "path": "trajectory.seconds",
+      "sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3"
+    },
+    {
+      "bytes": 0,
+      "path": "trajectory.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2,
+      "path": "unit.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 2,
+      "path": "unit.seconds",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "bytes": 16,
+      "path": "unit.txt",
+      "sha256": "c01f9a2cc5291c469a9debed2e15a46fa09be5232173eda78f255d83d030220e"
+    }
+  ],
+  "kind": "gymEvidenceManifest",
+  "resultStatus": "PASS",
+  "roleStatus": {
+    "audit": "PASS",
+    "authorityLedger": "PASS",
+    "discrimination": "PASS",
+    "oracleSelftest": "PASS",
+    "oracleStructural": "PASS",
+    "positive": "PASS",
+    "trajectory": "PASS",
+    "unit": "PASS"
+  },
+  "schemaVersion": "1.0",
+  "scoreErrorAccounting": {
+    "intendedCount": 1,
+    "reportedCount": 1,
+    "unexplainedCount": 0
+  }
+}

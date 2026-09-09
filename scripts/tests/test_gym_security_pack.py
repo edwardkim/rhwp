@@ -17,7 +17,7 @@ PACK = GYM / "packs" / "security"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_security_pack.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_security_pack.md"
 
 # gym/core/checks.py REGISTRY 와 같은 기존 연산자만 허용.
 EXISTING_OPS = {
@@ -81,7 +81,7 @@ class SecurityPackLayoutTests(unittest.TestCase):
         self.assertNotIn("fill-fields", text)
 
     def test_working_notes_exist_and_are_korean(self):
-        self.assertTrue(WORKING.is_file(), "mydocs/working/gym_security_pack.md 가 없다")
+        self.assertTrue(WORKING.is_file(), "mydocs/working/archives/gym_security_pack.md 가 없다")
         text = WORKING.read_text(encoding="utf-8")
         self.assertGreater(len(text), 2000)
         for needle in ("SE14", "기존 표본", "T07", "audit", "test_gym_packs"):

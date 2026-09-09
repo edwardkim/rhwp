@@ -47,14 +47,13 @@ def _mini_tree(root: Path) -> None:
     _touch(root / "samples" / "readme.txt")
     sr.write_minimal_pdf(root / "pdf" / "exam_kor-2020.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "exam_kor-2022.pdf", 2)
-    sr.write_minimal_pdf(root / "pdf-2020" / "exam_kor-2020.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "hwp3-sample-hwpx-2022.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "편람-hwp-2020.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "편람-hwpx-2020.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "3-09월_교육_통합_2022.pdf", 3)
     sr.write_minimal_pdf(root / "pdf" / "basic" / "calendar_year-2022.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "unused-2022.pdf", 1)
-    sr.write_minimal_pdf(root / "pdf-large" / "hwpx" / "lonely.pdf", 1)
+    sr.write_minimal_pdf(root / "pdf" / "hwpx" / "lonely.pdf", 1)
 
 
 class FakeDump:

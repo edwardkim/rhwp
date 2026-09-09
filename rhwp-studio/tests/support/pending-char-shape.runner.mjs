@@ -61,6 +61,8 @@ const wasm = {
   },
   applyCharFormat: (sec, para, from, to, json) => doc.applyCharFormat(sec, para, from, to, json),
   setCharShapeId: (sec, para, from, to, id) => doc.setCharShapeId(sec, para, from, to, id),
+  getCharShapeRuns: (sec, para, from, to) => JSON.parse(doc.getCharShapeRuns(sec, para, from, to)),
+  setCharShapeRuns: (sec, para, from, to, runs) => doc.setCharShapeRuns(sec, para, from, to, JSON.stringify(runs)),
   getCharPropertiesAt: (sec, para, off) => JSON.parse(doc.getCharPropertiesAt(sec, para, off)),
   getParagraphLength: (sec, para) => doc.getParagraphLength(sec, para),
   getTextRange: (sec, para, off, count) => doc.getTextRange(sec, para, off, count),

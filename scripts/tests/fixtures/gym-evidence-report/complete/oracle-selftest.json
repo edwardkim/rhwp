@@ -1,0 +1,19 @@
+{
+  "checkCount": 2,
+  "checks": [
+    {
+      "name": "synthetic-a",
+      "ok": true
+    },
+    {
+      "name": "synthetic-b",
+      "ok": true
+    }
+  ],
+  "failed": [],
+  "issueCount": 0,
+  "kind": "gymOracleProbe",
+  "mode": "selftest",
+  "ok": true,
+  "schemaVersion": "1.0"
+}

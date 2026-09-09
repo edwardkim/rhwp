@@ -14,7 +14,7 @@
       "native_skia_required": "true",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "6",
+      "classifier_version": "7",
       "reason": "classified:native-skia-rust+rust+rust-render"
     }
   }

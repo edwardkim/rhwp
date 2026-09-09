@@ -26,6 +26,7 @@ pub fn paint_op_kind(op: &PaintOp) -> &'static str {
         PaintOp::TextControlMark { .. } => "textControlMark",
         PaintOp::TabLeader { .. } => "tabLeader",
         PaintOp::TextDecoration { .. } => "textDecoration",
+        PaintOp::ControlLabel { .. } => "controlLabel",
         PaintOp::FootnoteMarker { .. } => "footnoteMarker",
         PaintOp::Line { .. } => "line",
         PaintOp::Rectangle { .. } => "rectangle",

@@ -7,7 +7,7 @@
 다른 에이전트 스킬 본문을 요구하거나 바꾸지 않는다. 바이너리·네트워크를 부르지 않는다.
 
 정본: .claude/skills/rhwp-work-receipt/
-작업 기록: mydocs/working/agent_work_receipt.md
+작업 기록: mydocs/working/archives/agent_work_receipt.md
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ PLANS = FIXTURES / "plans"
 ENVS = FIXTURES / "envelopes"
 CAPS = FIXTURES / "capsules"
 CATALOG = FIXTURES / "catalog.json"
-WORKING = REPO / "mydocs" / "working" / "agent_work_receipt.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_work_receipt.md"
 
 REFERENCE_NAMES = (
     "README.md",

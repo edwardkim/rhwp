@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-08-23
+last_verified: 2026-09-03
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -229,6 +229,21 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | [6 — 편집 전후를 눈이 아니라 숫자로 비교하기](recipes/06_visual_regression_before_after.md) | 편집이 렌더링 레이아웃에 준 영향을 정량 판정 | `render-diff` |
 | [9 — 폴더 문서 대량 추출·변환](recipes/09_bulk_extract_convert.md) | 폴더 단위 메타·본문·표 데이터 추출과 일괄 변환 | `batch info`·`batch export-text`·`batch extract-data`·`batch convert` |
 | [10 — 배포 전 보안 점검 스윕](recipes/10_security_sweep_before_share.md) | 송신 전 은닉·주입·유니코드 기만·개인정보 재검사 | `inspect hidden-text`·`inspect injection`·`inspect unicode`·`edit redact`·`edit sanitize` |
+
+### 1-3-2. Gym 과제를 풀거나 벤치마크를 감사하려는가
+
+먼저 참가자와 메인테이너 감사 역할을 분리한다. 참가자는 기준풀이 `reference/`를 읽지
+않고 task를 스스로 수행한다. 메인테이너 감사는 exact source·runner·binary 신원을 고정한
+뒤 양성 기준풀이, 음성 판별력, 경로 필요성을 각각 판정한다.
+
+| 역할 | 첫 문서 | 운영 정본 |
+| --- | --- | --- |
+| Gym 참가자 | [Gym 참가자 안내](../../gym/README.md) | [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md)의 참가자 모드 |
+| 인간 개발자·메인테이너 | [Gym 벤치마크 수동 운영 매뉴얼](gym_benchmark_operations.md) | 개별 [`gym/docs/`](../../gym/docs/) 도구 규약 |
+| AI 메인테이너·감사자 | [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md) | [Gym 벤치마크 수동 운영 매뉴얼](gym_benchmark_operations.md) |
+
+Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등성이나 제품 릴리스 적합성을
+판정하지 않는다.
 
 ### 1-4. 다른 언어에서 쓰려는가 — 기계 스키마 사용
 

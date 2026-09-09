@@ -279,8 +279,6 @@ test('new sample document PR runs targeted security sweep without render workers
 test('new review reference PR keeps required aggregates without product workers', () => {
   for (const filename of [
     'pdf/new-reference.pdf',
-    'pdf-2020/new-reference.pdf',
-    'pdf-large/nested/new-reference.pdf',
   ]) {
     const files = [{ filename, status: 'added' }];
     const policy = determinePolicy(policyInput({ files }));
@@ -299,11 +297,32 @@ test('new review reference PR keeps required aggregates without product workers'
   }
 });
 
+test('Gym-only PR keeps aggregates but delegates product lanes to Gym workflow', () => {
+  const files = [
+    { filename: 'gym/packs/work-receipt/tasks/WR13.json', status: 'modified' },
+    { filename: 'scripts/tests/test_gym_work_receipt_pack.py', status: 'modified' },
+  ];
+  const policy = determinePolicy(policyInput({
+    files,
+    classification: classificationFor(files),
+  }));
+  assert.equal(policy.decision, 'selective');
+  assert.deepEqual(policy.expected_workflows, {
+    CI: 'true',
+    CodeQL: 'true',
+    'Render Diff': 'false',
+  });
+  assert.equal(policy.classification.rust_required, 'false');
+  assert.equal(policy.classification.frontend_mode, 'none');
+  assert.equal(policy.classification.render_required, 'false');
+  assert.equal(policy.classification.native_skia_required, 'false');
+  assert.equal(policy.classification.codeql_languages, 'none');
+  assert.equal(policy.classification.reason, 'classified:gym-benchmark');
+});
+
 test('existing PDF reference PR keeps required aggregates without product workers', () => {
   for (const filename of [
     'pdf/existing-reference.pdf',
-    'pdf-2020/existing-reference.pdf',
-    'pdf-large/nested/existing-reference.pdf',
   ]) {
     const files = [{ filename, status: 'modified' }];
     const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
@@ -319,6 +338,22 @@ test('existing PDF reference PR keeps required aggregates without product worker
     assert.equal(policy.classification.native_skia_required, 'false', filename);
     assert.equal(policy.classification.codeql_languages, 'none', filename);
     assert.equal(policy.classification.reason, 'classified:review-only', filename);
+  }
+});
+
+test('retired PDF roots stay on the fail-closed full policy', () => {
+  for (const filename of [
+    'pdf-2020/new-reference.pdf',
+    'pdf-large/nested/new-reference.pdf',
+  ]) {
+    const files = [{ filename, status: 'added' }];
+    const policy = determinePolicy(policyInput({
+      files,
+      classification: classificationFor(files),
+    }));
+    assert.equal(policy.decision, 'full', filename);
+    assert.equal(policy.classification.classification_status, 'full', filename);
+    assert.equal(policy.classification.reason, 'fail-closed:unclassified-path', filename);
   }
 });
 
@@ -430,7 +465,7 @@ test('compact status description round-trips workflow and impact axes', () => {
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
     v: '6',
-    cv: '6',
+    cv: '7',
     mode: 'selective',
     rfp: '0',
     wf: '111',
@@ -590,6 +625,25 @@ test('workflow selection prefers the newest run and rejects a mismatched PR asso
     ),
     newerRun,
   );
+});
+
+test('diagnostic run/job/step metadata does not change policy verdicts', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+  for (const conclusion of ['success', 'failure', 'cancelled', 'timed_out']) {
+    const workflows = workflowEvidence(policy);
+    workflows.CI.run.conclusion = conclusion;
+    const original = { ...input, policy, currentHeadSha: HEAD_SHA, workflows };
+    const enriched = structuredClone(original);
+    for (const evidence of Object.values(enriched.workflows)) {
+      Object.assign(evidence.run, { id: 12345, attempt: 2 });
+      for (const [index, item] of evidence.jobs.entries()) {
+        Object.assign(item, { id: 23456 + index, runId: 12345, attempt: 2 });
+        for (const [number, entry] of item.steps.entries()) entry.number = number + 1;
+      }
+    }
+    assert.deepEqual(auditPolicyRuns(enriched), auditPolicyRuns(original));
+  }
 });
 
 test('status description binds the same head policy to its evaluated base generation', () => {
@@ -926,6 +980,15 @@ test('review candidate lineage accepts only single-parent review tails and verif
     trailingCount: 1,
     baseMergeBridge: null,
   });
+
+  const renderContract = {
+    ...review,
+    files: [{ filename: 'mydocs/tech/text-ir-v2.md', status: 'modified' }],
+  };
+  assert.equal(
+    selectReviewOnlyCandidate([candidate, renderContract], baseSha).eligible,
+    false,
+  );
 
   const disconnectedReview = {
     ...review,

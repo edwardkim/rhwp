@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4966.md
+canonical: mydocs/plans/archives/task_m100_4966.md
 last_verified: 2026-08-24
 ---
 
@@ -12,7 +12,7 @@ last_verified: 2026-08-24
 
 ## 권위와 소비 경계
 
-- [수행계획](../../../plans/task_m100_4966.md)이 범위, 보호 불변식과 단계별 승인 게이트의 정본이다.
+- [수행계획](../../../plans/archives/task_m100_4966.md)이 범위, 보호 불변식과 단계별 승인 게이트의 정본이다.
 - [W1 조사 원장](../issue-4939/README.md)은 rule relation·evidence의 선행 근거다.
 - [W6 metric lineage](../issue-4964/README.md)는 600개 metric 값·순서·계보의 정본이다.
 - `font_rule_projection_baseline.json`은 W7 migration 전 행동 snapshot이며 canonical runtime registry가
@@ -69,7 +69,7 @@ node scripts/font_rule_projection_baseline.mjs generate
 - `font_rule_registry_migration.json`
 - [`assets/font-rules/font_rule_registry.schema.json`](../../../../assets/font-rules/font_rule_registry.schema.json)
 - [`assets/font-rules/font_rule_registry.json`](../../../../assets/font-rules/font_rule_registry.json)
-- [Stage W7-2 보고서](../../../working/task_m100_4966_w7_stage2.md)
+- [Stage W7-2 보고서](../../../working/archives/task_m100_4966_w7_stage2.md)
 
 ```bash
 node scripts/font_rule_registry.mjs check
@@ -86,7 +86,7 @@ legacy-preservation으로 유지되며, Rust metric은 W6 안정 ID 97개만 참
 - `assets/font-rules/font_rule_projection_manifest.json`
 - `scripts/font_rule_projection_gen.mjs`
 - Rust generated source 2개와 Studio TypeScript generated source 3개
-- [Stage W7-3 보고서](../../../working/task_m100_4966_w7_stage3.md)
+- [Stage W7-3 보고서](../../../working/archives/task_m100_4966_w7_stage3.md)
 
 ```bash
 node scripts/font_rule_projection_gen.mjs check
@@ -112,8 +112,8 @@ payload를 제거했다. Canvas2D paint 281행, webfont supply 153행과 CanvasK
 projection에서 읽는다. document `substFont`, local enumeration/probe, offline filter, glyph coverage와
 실제 SFNT byte 판정은 동적 상태이므로 registry로 옮기지 않았다.
 
-관련 보고서는 [W7-4](../../../working/task_m100_4966_w7_stage4.md)와
-[W7-5](../../../working/task_m100_4966_w7_stage5.md)에 있다.
+관련 보고서는 [W7-4](../../../working/archives/task_m100_4966_w7_stage4.md)와
+[W7-5](../../../working/archives/task_m100_4966_w7_stage5.md)에 있다.
 
 ## Registry schema 1.0 운영 절차
 
@@ -182,5 +182,5 @@ schema 1.0 파일을 임시로 느슨하게 만들지 않는다.
 - fresh WASM trace 3/3, Studio backend 집중 검사 38/38
 
 최종 명령·초기 스키마 계약 실패와 정정 근거는
-[W7-6 보고서](../../../working/task_m100_4966_w7_stage6.md), 전체 완료 판정과 W8 인계는
-[최종 보고서](../../../report/task_m100_4966_report.md)에 기록한다.
+[W7-6 보고서](../../../working/archives/task_m100_4966_w7_stage6.md), 전체 완료 판정과 W8 인계는
+[최종 보고서](../../../report/archives/task_m100_4966_report.md)에 기록한다.

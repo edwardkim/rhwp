@@ -978,7 +978,7 @@ def intent_rows() -> list[dict]:
         ("능력 등록 CAP-5324", "working 문서", "01_playbook_authority.md", "F01"),
         ("포인터 스킬", ".claude/skills/rhwp-bug-hunter", "01_playbook_authority.md", "F01"),
         ("에이전트 정의", ".claude/agents/bug-hunter.md", "01_playbook_authority.md", "F01"),
-        ("작업 기록", "mydocs/working/agent_bug_hunter.md", "01_playbook_authority.md", "F01"),
+        ("작업 기록", "mydocs/working/archives/agent_bug_hunter.md", "01_playbook_authority.md", "F01"),
         ("한컴 Creator 메타", "Hwp 2022 …", "05_hangul_pdf_provenance.md", "F03"),
         ("A3 841×1190", "leet provenance", "05_hangul_pdf_provenance.md", "F03"),
         ("가상 기업 데이터", "(주)시연용가상기업", "14_no_filing.md", "F13"),

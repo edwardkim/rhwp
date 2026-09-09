@@ -20,7 +20,7 @@ description: 고객 요청 큐(폴더 프로토콜)를 사람 없이 상시 처�
 권위: [`mydocs/manual/chief_playbook.md`](../../../mydocs/manual/chief_playbook.md).
 에이전트 진입점: [`.claude/agents/rhwp-chief.md`](../../agents/rhwp-chief.md)
 (있으면 연결한다. 루프가 `done` 한 요청은 에이전트가 다시 열지 않는다).
-작업 기록: [`mydocs/working/agent_chief.md`](../../../mydocs/working/agent_chief.md).
+작업 기록: [`mydocs/working/agent_chief.md`](../../../mydocs/working/archives/agent_chief.md).
 
 상세는 `references/` 를 연다. SKILL.md 는 인덱스와 정지 규칙만 담는다.
 

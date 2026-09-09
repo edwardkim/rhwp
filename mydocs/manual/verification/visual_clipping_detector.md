@@ -86,4 +86,4 @@ python tools/clipping_gate.py --check <base> --fixture <docs.tsv>            # �
 
 용도 구분: **빠른 1차 신호와 상시 회귀 가드**는 #3668 카운터(스위트에 항상 돈다),
 **요소 단위 정밀 분석·임의 문서군 비교**는 이 문서의 Python 도구. 절차는
-[`local_validation.md` 4.3.1](../pr_review/local_validation.md#431-새-hwphwpx-fixture의-baseline-등록--ir-sweep--overflow-cell-원장) 참조.
+[`local_validation.md` 4.3.1](../pr_review/local_validation.md#431-새-hwphwpx-fixture의-baseline-등록--코퍼스-래칫-여섯) 참조.

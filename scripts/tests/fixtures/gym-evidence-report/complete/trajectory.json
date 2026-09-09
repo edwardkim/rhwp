@@ -1,0 +1,33 @@
+{
+  "binPath": "/opt/rhwp-fixture/bin/rhwp",
+  "exceptionCount": 0,
+  "exceptions": [],
+  "exit": 0,
+  "kind": "gymTrajectoryNecessity",
+  "loadBearing": 1,
+  "missingBin": false,
+  "ok": true,
+  "results": [
+    {
+      "loadBearing": true,
+      "pack": "pack-a",
+      "removedStep": "run",
+      "steps": 2,
+      "task": "T01"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "skipCount": 1,
+  "skipped": [
+    {
+      "pack": "pack-a",
+      "reason": "single-step",
+      "task": "T02"
+    }
+  ],
+  "taskCount": 1,
+  "theater": [],
+  "toolErrors": [],
+  "toolFailed": false,
+  "trusted": true
+}

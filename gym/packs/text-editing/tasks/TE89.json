@@ -3,7 +3,7 @@
   "tier": 1,
   "title": "첫 '표' 문단",
   "input": "samples/table-001.hwp",
-  "instructions": "입력에서 '표' 의 첫 일치 문단 번호를 answer.json 에 {\"para\": N} 으로 제출하라.",
+  "instructions": "입력에서 '품질' 의 첫 일치 문단 번호를 answer.json 에 {\"para\": N} 으로 제출하라.",
   "submit": {
     "kind": "answer",
     "files": [
@@ -12,7 +12,7 @@
   },
   "checks": [
     {
-      "name": "첫 '표' 문단 · para",
+      "name": "첫 '품질' 문단 · para",
       "op": "answer_eq",
       "answer": "para",
       "path": "matches[0].paragraph",
@@ -21,7 +21,7 @@
         "{input}",
         "--json",
         "--",
-        "표"
+        "품질"
       ]
     }
   ],

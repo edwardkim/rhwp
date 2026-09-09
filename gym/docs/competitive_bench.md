@@ -9,7 +9,7 @@ last_verified: 2026-08-18
 
 이 문서는 `gym/tools/competitive_bench.py` 의 **정직 경계**, **보고 봉투**,
 **능력 매트릭스**, **집계·충실도·평결**, **명시 예외 코드**를 고정한다. 작업
-기록은 [`mydocs/working/gym_competitive_bench.md`](../../mydocs/working/gym_competitive_bench.md)
+기록은 [`mydocs/working/gym_competitive_bench.md`](../../mydocs/working/archives/gym_competitive_bench.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_competitive_bench.py` 와
 `scripts/tests/test_gym_competitive_bench_exceptions.py` ,
 `scripts/tests/test_gym_competitive_bench_extra.py` 가 바이너리 없이 고정한다.

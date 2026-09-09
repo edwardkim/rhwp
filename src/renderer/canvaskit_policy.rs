@@ -670,6 +670,7 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
             display_visual_position_count(run).saturating_add(run.style.tab_leaders.len())
         }
         PaintOp::TextDecoration { run, .. } => display_visual_position_count(run),
+        PaintOp::ControlLabel { label, .. } => label.chars().count(),
         _ => 0,
     };
     let payload_bytes = match op {
@@ -734,6 +735,7 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
         PaintOp::FootnoteMarker { marker, .. } => {
             marker.text.len().saturating_add(marker.font_family.len())
         }
+        PaintOp::ControlLabel { label, .. } => label.len(),
         PaintOp::Line { .. }
         | PaintOp::Rectangle { .. }
         | PaintOp::Ellipse { .. }
@@ -1400,6 +1402,15 @@ impl CanvasKitReplayPlanBuilder {
                 item.detail = Some("footnoteMarker".to_string());
                 item
             }
+            PaintOp::ControlLabel { .. } => {
+                let mut item = direct_item(
+                    path,
+                    "controlLabel",
+                    CanvasKitReplayFeature::TextSpecialVisual,
+                );
+                item.detail = Some("objectControlLabel".to_string());
+                item
+            }
             PaintOp::Image {
                 image, resolved, ..
             } => self.image_item(path, image, resolved.as_deref()),
@@ -1454,8 +1465,8 @@ impl CanvasKitReplayPlanBuilder {
                 });
                 item
             }
-            PaintOp::TextRun { bbox, run } => self.text_run_item(path, bbox, run),
-            PaintOp::CharOverlap { bbox, run } => {
+            PaintOp::TextRun { bbox, run, .. } => self.text_run_item(path, bbox, run),
+            PaintOp::CharOverlap { bbox, run, .. } => {
                 let detail = if bounded_text_char_count(&run.text)
                     > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
                 {
@@ -1489,7 +1500,7 @@ impl CanvasKitReplayPlanBuilder {
                     )
                 }
             }
-            PaintOp::TextControlMark { bbox, run } => {
+            PaintOp::TextControlMark { bbox, run, .. } => {
                 let detail = if bounded_text_char_count(&run.text)
                     > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
                     || positioned_control_mark_count(run)
@@ -1521,7 +1532,7 @@ impl CanvasKitReplayPlanBuilder {
                     )
                 }
             }
-            PaintOp::TabLeader { bbox, run } => {
+            PaintOp::TabLeader { bbox, run, .. } => {
                 let (display_text, display_complete) = bounded_display_text_for_visual(run);
                 let detail = if !display_complete
                     || run.style.tab_leaders.len()
@@ -1553,7 +1564,9 @@ impl CanvasKitReplayPlanBuilder {
                     direct_item(path, "tabLeader", CanvasKitReplayFeature::TextSpecialVisual)
                 }
             }
-            PaintOp::TextDecoration { bbox, run, kind } => {
+            PaintOp::TextDecoration {
+                bbox, run, kind, ..
+            } => {
                 let (display_text, display_complete) = bounded_display_text_for_visual(run);
                 let detail = if !display_complete {
                     Some("visualItemLimitExceeded")
@@ -1939,6 +1952,7 @@ fn paint_op_type(op: &PaintOp) -> &'static str {
             kind: TextDecorationKind::EmphasisDot,
             ..
         } => "emphasisDot",
+        PaintOp::ControlLabel { .. } => "controlLabel",
         PaintOp::FootnoteMarker { .. } => "footnoteMarker",
         PaintOp::Line { .. } => "line",
         PaintOp::Rectangle { .. } => "rectangle",

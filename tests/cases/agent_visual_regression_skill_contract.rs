@@ -295,7 +295,7 @@ fn render_diff_missing_file_is_runtime_not_usage() {
 
 #[test]
 fn working_doc_exists() {
-    let path = repo_root().join("mydocs/working/agent_visual_regression.md");
+    let path = repo_root().join("mydocs/working/archives/agent_visual_regression.md");
     assert!(path.is_file(), "{path:?}");
     let text = fs::read_to_string(&path).unwrap();
     assert!(text.contains("#5312"), "{text}");

@@ -22,9 +22,10 @@
 - 전역 훑기 연산자를 편집 축에서 사유 없이 씀
 - 짝 reference 의 id 불일치, 빈 `run`/`answer`, 고아 reference, 빈 pack
 
-을 pack 별로 보고한다. 기존 pack 을 고치지 않는다 — 도구만 추가한다.
-실제 트리 과제를 실패로 뒤집지 않도록, 새 규칙은 픽스처로 고정하고
-현재 gym/packs 가 이미 지키는 계약만 승격한다.
+을 pack 별로 보고한다. 실제 트리에서 문제가 나오면 규칙의 오검출과 과제의
+실제 결함을 먼저 분리한다. 명령 입력·경로 인덱스·금지 문장을 정답 유출로
+오인하지 않되, 필수 요구사항이 힌트에만 숨은 과제는 본문을 고친다. 전역
+exclude로 현재 트리를 억지 통과시키지 않는다.
 
 ## 종료 코드 (CI 자기시험과 게이트를 가른다)
 
@@ -99,7 +100,6 @@ OPS_NEED_VALUE = frozenset(
     {
         "value_eq",
         "value_ge",
-        "value_in",
         "cell_text_eq",
         "xml_root_eq",
         "json_value_eq",
@@ -107,6 +107,7 @@ OPS_NEED_VALUE = frozenset(
         "len_ge",
     }
 )
+OPS_NEED_VALUES = frozenset({"value_in"})
 OPS_NEED_FILE = frozenset(
     {
         "differs_from_input",
@@ -219,7 +220,7 @@ SEVERITY_WARNING = "warning"
 
 HINT_MARKERS = ("힌트:", "힌트 :", "Hint:", "hint:")
 SPOILER_RE = re.compile(
-    r"(?:정답(?:은|이)?|답은|answer\s*(?:is|:))\s+.+\S",
+    r"(?:정답(?:은|이)|정답\s*:|답은|answer\s*(?:is|:))\s*.+\S",
     re.IGNORECASE,
 )
 BARE_ANSWER_RE = re.compile(r"^\s*(?:정답|답)?\s*[=:]?\s*-?\d+(?:\.\d+)?\s*$")
@@ -457,11 +458,15 @@ def split_hint(instructions: str) -> tuple[str, str | None]:
     return body, hint
 
 
-def extract_json_fragments(text: str) -> list[object]:
-    """본문에서 `{…}` / `[…]` JSON 조각을 최대한 건진다. 깨진 중괄호는 건너뛴다."""
+def extract_json_fragment_rows(text: str) -> list[tuple[object, int, int]]:
+    """본문에서 JSON 조각과 시작·끝 offset을 건진다.
+
+    `fields[0]` 같은 경로 인덱스는 JSON 배열이 아니다. 여는 대괄호 바로 앞이
+    식별자·경로 문자인 경우 건너뛴다.
+    """
     if not text:
         return []
-    found: list[object] = []
+    found: list[tuple[object, int, int]] = []
     n = len(text)
     i = 0
     while i < n:
@@ -469,6 +474,11 @@ def extract_json_fragments(text: str) -> list[object]:
             i += 1
             continue
         opener = text[i]
+        if opener == "[" and i > 0:
+            previous = text[i - 1]
+            if previous.isalnum() or previous in "._])":
+                i += 1
+                continue
         closer = "}" if opener == "{" else "]"
         depth = 0
         in_str = False
@@ -493,7 +503,7 @@ def extract_json_fragments(text: str) -> list[object]:
                     if depth == 0:
                         blob = text[i : j + 1]
                         try:
-                            found.append(json.loads(blob))
+                            found.append((json.loads(blob), i, j + 1))
                         except ValueError:
                             pass
                         i = j + 1
@@ -502,6 +512,11 @@ def extract_json_fragments(text: str) -> list[object]:
         else:
             i += 1
     return found
+
+
+def extract_json_fragments(text: str) -> list[object]:
+    """호환 손잡이. JSON 값만 필요한 호출자에게 순서대로 돌려준다."""
+    return [value for value, _start, _end in extract_json_fragment_rows(text)]
 
 
 def is_placeholder_value(value) -> bool:
@@ -546,6 +561,52 @@ def fragment_looks_like_answer(obj) -> bool:
         if all(is_placeholder_value(v) or v in ("...", "…") for v in obj):
             return False
         return all(isinstance(v, (str, int, float, bool)) or v is None for v in obj)
+    return False
+
+
+def fragment_tokens(obj) -> list[str]:
+    """작은 JSON 조각의 구체 key/value를 비교 가능한 문자열로 낸다."""
+    raw = []
+    if isinstance(obj, dict):
+        raw.extend(obj.keys())
+        raw.extend(obj.values())
+    elif isinstance(obj, list):
+        raw.extend(obj)
+    out = []
+    for value in raw:
+        if isinstance(value, (dict, list)) or is_placeholder_value(value):
+            continue
+        if value is None:
+            token = "null"
+        elif isinstance(value, bool):
+            token = "true" if value else "false"
+        else:
+            token = str(value).strip()
+        if token:
+            out.append(token)
+    return out
+
+
+def fragment_repeats_body(obj, body: str) -> bool:
+    """본문에서 이미 준 입력을 힌트의 명령 예제가 되풀이하는가."""
+    tokens = fragment_tokens(obj)
+    return bool(tokens) and all(token_appears_bare(body, token) for token in tokens)
+
+
+def fragment_is_data_argument(text: str, start: int) -> bool:
+    """JSON 조각이 `--data`의 명령 입력인가. 출력 answer와 구별한다."""
+    prefix = text[max(0, start - 32) : start].rstrip()
+    return re.search(r"--data\s+(?:['\"])?$", prefix) is not None
+
+
+def literal_is_command_argument(task: dict, token: str) -> bool:
+    """기대 literal이 판정 명령의 명시적 입력 인수로도 쓰이는가."""
+    for check in task.get("checks") or []:
+        if not isinstance(check, dict):
+            continue
+        command = check.get("cmd")
+        if isinstance(command, list) and token in command:
+            return True
     return False
 
 
@@ -1186,6 +1247,16 @@ def scan_check_contract(
                 extra={"index": index, "op": op},
             )
         )
+    if op in OPS_NEED_VALUES and "values" not in check:
+        issues.append(
+            issue(
+                CODE_CHECK_MISSING_VALUE,
+                f"{op} 에 values 키가 없다",
+                task=tid,
+                where=where,
+                extra={"index": index, "op": op},
+            )
+        )
 
     if op in OPS_NEED_FILE:
         raw_file = check.get("file")
@@ -1687,8 +1758,12 @@ def scan_hint(task: dict, where: str, tid: str | None) -> list[dict]:
             )
         )
 
-    for fragment in extract_json_fragments(hint):
-        if fragment_looks_like_answer(fragment):
+    for fragment, start, _end in extract_json_fragment_rows(hint):
+        if (
+            fragment_looks_like_answer(fragment)
+            and not fragment_is_data_argument(hint, start)
+            and not fragment_repeats_body(fragment, body)
+        ):
             issues.append(
                 issue(
                     CODE_HINT_ANSWER_DUMP,
@@ -1709,7 +1784,11 @@ def scan_hint(task: dict, where: str, tid: str | None) -> list[dict]:
             continue
         seen.add(token)
         # 본문이 이미 시킨 값(채울 문구)을 힌트 CLI 예시에 반복하는 것은 유출이 아니다.
-        if token_appears_bare(hint, token) and token not in body:
+        if (
+            token_appears_bare(hint, token)
+            and token not in body
+            and not literal_is_command_argument(task, token)
+        ):
             issues.append(
                 issue(
                     CODE_HINT_EMBEDS_VALUE,

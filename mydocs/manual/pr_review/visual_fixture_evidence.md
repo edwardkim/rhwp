@@ -61,12 +61,42 @@ PR 또는 관련 issue 본문·comment에 첨부된 HWP/HWPX/PDF/PNG와 외부�
 내려받아 samples/issueN 또는 samples/prN 아래에 안정적인 이름으로 보존한다. 원본 첨부를 output에만
 두거나 기준 PDF라는 이유만으로 pdf에만 두지 않는다.
 
-본문 첨부 PDF를 기준 PDF로도 쓰면 원본은 samples에, 기준 사본은 pdf 아래에 보존한다. review 문서에는
-두 경로, SHA-256 동일 여부, 기준인지 참고 보고서인지를 적는다. 원본 HWP/HWPX가 없으면 독립 시각 검증과
+본문 첨부 PDF는 먼저 `pdfinfo`로 `Creator`, `Producer`, PDF version, 페이지 수와 페이지 크기를
+확인한다. **한컴에서 직접 출력한 PDF와 MCP로 변환한 PDF 모두 기준 자료로 인정한다.**
+예를 들어 `Creator: Hwp 2024 13.0.0.3901` 또는 `Creator: Hwp 2022 12.0.0.4605`와
+`Producer: Hancom PDF 1.3.0.550`이 확인되면 두 조합 모두 검토 절차상 신뢰할 한컴 생성본으로
+인정한다. PDF 1.4라는 이유로 불신하거나 MCP 재변환을 요구하지
+않는다. 아래 원문·페이지 대응 확인은 비교 대상 확인이며, 한컴 생성본이라는 판단을 다시 보류하는
+조건으로 사용하지 않는다.
+`Creator: Hwp 2022 ...` 또는 `Hwp 2024 ...`, `Producer: Hancom PDF ...` 등 한컴 생성 메타데이터와
+첨부 출처를 확인하고, 대응 원문과 대조할 페이지 범위가 맞으면 첨부본을 그대로 기준으로 재사용하며
+검토용 PDF를 별도로 재산출하지 않는다. **PDF 1.6만 허용하지 않으며, 한컴 직접 출력본의 PDF 1.4도
+동일하게 재사용한다.** 첨부본이 이미 `samples/` 등에 보존되어 있으면 `pdf/`에 같은 바이트의
+기준 사본도 추가하지 않는다. review 문서와 비교 명령은 실제로 보존한 첨부본 경로를 사용한다.
+
+검토 과정에서 PDF를 이미 산출하거나 복사했다면 첨부본과 **SHA-1 및 PDF version**을 비교한다.
+**재사용 가능한 첨부본과 SHA-1이 같으면 PDF 1.4/1.6 여부와 무관하게 이번 검토에서 만든 중복 PDF만
+제거**하고 첨부 원본을 보존한다.
+해시가 다르면 같은 파일로 간주해 삭제하지 않는다. 사용자가 만든 파일이나 다른 검토의 파일을
+확장자만 보고 일괄 삭제하지 않는다.
+
+```bash
+pdfinfo "<첨부 PDF>"
+shasum -a 1 "<첨부 PDF>" "<검토 중 산출 또는 복사한 PDF>"
+pdfinfo "<검토 중 산출 또는 복사한 PDF>"
+```
+
+review 문서에는 첨부 출처, 보존 경로, SHA-1, `Creator`, `Producer`, PDF version, 페이지 수와 크기,
+기준/참고 역할 및 재사용·중복 제거 여부를 기록한다. 기존 SHA-256 provenance도 유지한다.
+사용자가 확인한 예시에서는 MCP 산출본이 PDF 1.6, 한컴 직접 출력본이 PDF 1.4였으며 둘 다 유효한
+한컴 산출물이다. PDF 버전만으로 생성 제품, 직접 출력/MCP 경로 또는 변환 engine을 추정하지 않는다.
+원문과 첨부 PDF가 맞지 않거나 손상된 경우에는
+버전만으로 올바른 기준이라고 판정하지 않고 문제를 보고한다. 원본 HWP/HWPX가 없으면 독립 시각 검증과
 장기 재현이 불가하다는 사실을 review 문서에 명시한다.
 
 ## 3.5.1 기준 PDF 미첨부 시 버전별 HWP MCP
 
+위 한컴 첨부본 재사용 조건을 충족하면 PDF 버전과 무관하게 이 절의 MCP 재산출은 생략한다.
 PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청보다 먼저 다음 명령으로 마지막 저장
 제품 메타데이터를 확인해 해당 MCP로 기준 PDF를 산출한다.
 
@@ -86,9 +116,10 @@ PR review 기준 PDF 파일명은 engine bucket 기준으로 끝낸다. `hancom-
 증명이 아니며 재저장·삭제·변조될 수 있으므로, `null` 또는 product 미상 파일은 review 문서에
 그 사실을 함께 기록한다.
 
-- 최종 기준 PDF는 output에만 두지 않고 2020 bucket은 `pdf/{원본 stem}-2020.pdf`, 2024 bucket은
+- 새 MCP 기준 PDF를 산출한 경우에는 output에만 두지 않고 2020 bucket은 `pdf/{원본 stem}-2020.pdf`, 2024 bucket은
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
-- 50MB 미만 MCP 산출 PDF는 commit 가능한 장기 증적이다. 큰 PDF는 pdf-large와 Git LFS 정책을 따른다.
+- 파일 하나가 50 MiB 미만인 MCP 산출 PDF는 `pdf/**`에 일반 Git blob으로 commit 가능한 장기 증적이다.
+  상한을 넘는 PDF는 그대로 커밋하지 않고 축소 fixture·페이지 발췌·외부 증적 방식을 먼저 합의한다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
 - 원격 service는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 - 원본 크기와 예상 페이지 수를 먼저 확인한다. 페이지가 많거나 거대·중첩 표, 성능 sample은
@@ -129,6 +160,33 @@ visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요�
 
 ![PR N visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<file>.png)
 ~~~
+
+### 커밋할 최종 증적과 제외할 중간 산출물
+
+PR 검증 과정에서 생성됐다는 이유만으로 output 디렉터리 전체를 커밋하지 않는다.
+`Merge 후 contributor PR comment 계획`에 실제 사용할 파일을 먼저 열거하고,
+그 계획에 필요한 최종 대표 PNG만 `mydocs/pr/assets/`에 남긴다.
+
+| 구분 | 커밋 기준 |
+| --- | --- |
+| 최종 대표 PNG | PR·이슈 코멘트에서 직접 표시할 비교 패널, 전후 화면 또는 잔여 문제 증명에 꼭 필요한 이미지만 포함한다. |
+| 최종 기준 PDF | 재사용 조건을 충족하는 한컴 첨부본은 PDF 1.4/1.6 여부와 무관하게 원래 보존 경로에서 재사용하고 동일 사본을 추가하지 않는다. 새 MCP 산출본은 위 크기 제한에 따라 `pdf/`에 보존한다. 원본 기준 PDF를 임시 raster와 함께 제외하지 않는다. |
+| 중간 PNG | 페이지별 원시 raster, 중복 compare·overlay·review, contact sheet, 탐색용·실패한 캡처 등 최종 코멘트에 사용하지 않는 이미지는 제외한다. |
+| 생성 SVG·JSON | export SVG, render-tree JSON, 분석·metric JSON, run manifest, MCP 응답 JSON 등 검증 중간 산출물은 제외한다. |
+| 실행 로그 | build·test·lint·WASM·Studio·회귀 검증의 `.log` 및 그 밖의 원시 실행 로그는 제외한다. 통과 사실만으로 로그 파일을 첨부하지 않는다. |
+
+- 이미지가 여러 형식으로 중복 생성되면 코멘트에서 결론을 직접 확인할 수 있는 최종 패널을 우선한다.
+  검증한 전체 페이지 수와 보존할 대표 이미지 수를 같게 맞출 필요는 없다.
+- 제외할 산출물은 검증에 필요한 동안 저장소 밖 임시 경로에서 관리하고, 커밋에 포함하지 않는다.
+  검토 전용으로 생성한 파일만 정리하며 다른 작업이나 기존 source PR의 파일을 확장자로 일괄 삭제하지 않는다.
+- 원본 HWP/HWPX·첨부 자료, 정식 sample의 `MANIFEST.json`, 저장소가 관리하는 fixture·baseline은
+  중간 산출물과 구분한다. `*.png`, `*.svg`, `*.json` 전체를 전역 ignore하거나 삭제하지 않는다.
+- 실행 명령·실제 종료 코드·통과/실패/skip 수, 원본과 바이너리의 SHA-256, 비교한 페이지 매핑·지표·판정·한계는
+  review 또는 visual sweep Markdown 문서에 기록한다. 이 정보를 남기기 위해 임시 JSON·로그를 커밋하지 않는다.
+- 임시 output 경로는 로컬 진단 참고용으로만 적는다. 영구 증적 링크와 코멘트 이미지는 남겨 둔 최종 파일을
+  가리켜야 하며, 파일을 제외하면 관련 링크와 comment 계획도 함께 정리한다.
+- commit 전 포함 경로를 확인하여 위 허용 목록에 없는 검증 중간 파일이 stage되지 않았는지 점검한다.
+  일반 `git add .`로 output 전체를 넣지 않고, 코드·정식 fixture·문서와 최종 증적 경로를 구분해 지정한다.
 
 ### asset 반영 경로
 

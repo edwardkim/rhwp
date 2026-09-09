@@ -174,6 +174,7 @@ fn working_doc_closes_issue_5326() {
         &root()
             .join("mydocs")
             .join("working")
+            .join("archives")
             .join("agent_surface_skill.md"),
     );
     assert!(text.contains("#5326"), "작업 기록이 이슈를 가리키지 않음");

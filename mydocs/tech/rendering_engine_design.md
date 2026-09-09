@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/rendering_engine_design.md
-last_verified: 2026-08-09
+last_verified: 2026-09-03
 ---
 
 # RHWP 렌더링 엔진 아키텍처 설계서
@@ -410,9 +410,31 @@ projection만 section revision으로 무효화한 뒤 transient render 전에 so
 
 ### kill 범위 규칙 (#4335)
 
-`dirty_sections`/`dirty_paragraphs`/`Table.dirty`류 무효화 플래그의 clear(kill)는 그 플래그를 읽는
-모든 지점(use)의 immediate dominator에서만 수행한다 — 그보다 넓은 범위(예: 처리한 구역 하나만 읽고
-전체 구역을 clear)에서 지우면 아직 소비되지 않은 dirty 정보가 죽어 stale 캐시가 영구히 남는다(#4325).
+측정 무효화의 owner는 `DocumentCore.dirty_paragraphs`다. source `Table`에는 renderer cache 상태를
+두지 않는다. cell control을 바꾸는 명령은 외곽 문단을 dirty로 표시하고, 측정기는 그 문단의 중첩 표를
+모두 다시 측정한 뒤 해당 문단 key만 소비한다. 따라서 아직 측정하지 않은 다른 구역의 invalidation을
+전역 clear로 잃지 않는다(#4325).
+
+셀 단일줄 overflow memo는 source `Paragraph`가 아니라 layout/measurement session cache가 소유한다.
+key는 현재 source snapshot의 paragraph identity와 cell inner width의 `f32` bit다. source/style 변경은
+다른 pointer-key layout cache와 같은 session 경계에서 전체 clear되므로 text/char-shape mutation site가
+cache 필드를 알거나 개별 invalidation을 수동 호출하지 않는다. fresh composition끼리는 판정을 재사용하되
+overflow인 경우의 derived rewrap은 매 composition에 다시 적용한다.
+
+셀 text reflow 뒤 저장 frame을 더는 신뢰하지 않는 provenance도 source `Table`에 두지 않는다.
+`RenderNormalizationState.text_reflowed_tables`가 live `Box<Table>` identity를 소유한다. 이 pointee는
+문단·control vector 이동에도 안정적이고, 같은 format instance ID를 복제한 서로 다른 표를 섞지 않는다.
+overlay 재구축은 이 identity를 현재 source와 immutable normalized snapshot pointer로 투영한다.
+Layout과 Typeset은 같은 overlay를 읽는다. snapshot undo/redo는 identity를 당시 logical path로 투영해
+보관한 뒤 복원 문서의 새 identity로 다시 해소한다. 표 나누기와 control clipboard paste는 clone에
+provenance를 명시 상속하고, 표 붙이기는 어느 쪽이든 가진 provenance를 남은 front table에 합친다.
+
+### persistence lowering 경계
+
+HWP lowering은 `prepare_hwp_export_snapshot`이 만든 `HwpExportSnapshot`에서만 실행한다. 호환을 위해
+`&mut self` signature를 유지하는 legacy API도 live `Document`를 adapter 작업 버퍼로 쓰지 않는다.
+일반·report·password 저장과 CLI verify는 같은 snapshot type을 소비하며, CLI가 converter를 직접 불러
+expected IR을 따로 만드는 경로는 두지 않는다.
 
 ### 논리 경로와 lookup
 

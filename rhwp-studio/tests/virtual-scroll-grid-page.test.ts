@@ -21,7 +21,7 @@ function pages(n: number, width = 800, height = 1000) {
   return Array.from({ length: n }, () => ({ width, height })) as never;
 }
 
-/** 3열 그리드가 되도록 충분히 넓은 뷰포트. zoom 0.4 < 0.5 임계값. */
+/** 표시 geometry가 3열 이상이 되도록 충분히 넓은 뷰포트와 배율. */
 const ZOOM = 0.4;
 const VIEWPORT = 2000;
 

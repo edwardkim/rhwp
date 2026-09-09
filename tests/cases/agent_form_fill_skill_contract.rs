@@ -291,7 +291,7 @@ fn empty_csv_is_usage_error_when_sample_exists() {
 
 #[test]
 fn working_doc_exists() {
-    let path = repo_root().join("mydocs/working/agent_form_fill.md");
+    let path = repo_root().join("mydocs/working/archives/agent_form_fill.md");
     assert!(path.is_file(), "{path:?}");
     let text = fs::read_to_string(&path).unwrap();
     assert!(text.contains("#5300"), "{text}");

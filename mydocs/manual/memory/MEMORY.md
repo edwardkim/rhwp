@@ -97,7 +97,7 @@ last_verified: 2026-07-26
 - [브랜치 정책 + iOS 분기](project_branch_policy.md) — main/devel/local-devel + ios/devel(맥북 전용)
 - [외부 컨트리뷰터 명단](project_external_contributors.md) — 누적 32명(2026-07-04), 첫 PR/재기여 식별, merged 집계만으론 판단 금지
 - [collaborator 2명 — jangster77·postmelee](project_pr_merge_collaborator.md) — 외부 PR 머지 분업, Taegyu Lee=postmelee 동일인, assignee는 3계정만 가능
-- [LFS 쿼터 초과 — pdf-large M 오진 금지](project_lfs_quota_full.md) — 10GB 초과로 LFS 객체 미수신, 건드리지 말 것
+- [LFS 쿼터 초과 — 해결된 과거 운영 기록](project_lfs_quota_full.md) — Issue #6695에서 PDF LFS를 폐기하고 `pdf/**` 일반 blob으로 통합
 - [확장 vite publicDir:false + CSP 인라인 금지](project_extension_publicdir_false.md) — public/ 자산 build.mjs 개별 copy 필수, 인라인 script 차단
 - [알한글 iOS 프로젝트](project_alhangeul_ios.md) — iPad HWP 학습 도구, 맥북 전용
 - [10k 서베이 기준선 = r23 폰트-클린](project_survey_baseline_r23.md) — RHWP_FONT_PATH 필수, r22는 폰트 오염이라 회귀 판정 금지

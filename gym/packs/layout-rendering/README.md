@@ -213,6 +213,6 @@ objects-media 의 미리보기 여정과 명령은 같다. 이 pack 은 조판 �
 
 ## 관련 문서
 
-- 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/gym_om_lr_cd.md)
+- 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/archives/gym_om_lr_cd.md)
 - 개체 pack: [../objects-media/README.md](../objects-media/README.md)
 - 코퍼스 pack: [../corpus-diagnostics/README.md](../corpus-diagnostics/README.md)

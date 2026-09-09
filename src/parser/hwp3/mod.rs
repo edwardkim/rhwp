@@ -3829,7 +3829,12 @@ fn parse_hwp3_inner(
     let mut doc_tab_defs: Vec<crate::model::style::TabDef> = Vec::new();
 
     doc_char_shapes.push(crate::model::style::CharShape::default());
-    doc_para_shapes.push(crate::model::style::ParaShape::default());
+    // 인덱스 0 폴백도 줄간격 160% 로 — 0 은 이제 "advance 0" 의 실값이다.
+    doc_para_shapes.push(crate::model::style::ParaShape {
+        line_spacing: 160,
+        line_spacing_type: crate::model::style::LineSpacingType::Percent,
+        ..Default::default()
+    });
     doc_border_fills.push(crate::model::style::BorderFill::default()); // 인덱스 0은 기본 빈값
     doc_tab_defs.push(crate::model::style::TabDef::default()); // 인덱스 0 = 빈 tab def (정의 없음)
 

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/investigations/README.md
-last_verified: 2026-08-15
+last_verified: 2026-09-03
 ---
 
 # 이슈별 기술 조사
@@ -16,6 +16,15 @@ last_verified: 2026-08-15
 - 확정된 스펙 정정은 `mydocs/tech/hwp_spec_errata.md` 같은 canonical 문서로 승격한다.
 - 반복 가능한 증상, 확정 원인, 대응과 검증 방법은 `mydocs/troubleshootings/`에 정리한다.
 - 이 문서를 새 구현의 유일한 근거로 사용하지 말고 관련 canonical 문서와 이슈 상태를 함께 확인한다.
+
+### 이슈 전용 Rust probe
+
+특정 이슈에만 의미가 있는 진단·재현 Rust source는 루트 Cargo package의 자동 example target으로 두지 않고
+`issue-####/probes/`에 보존한다. 이 source는 당시 조사 계보이며 현재 API와의 컴파일 호환성을
+보장하지 않는다. 다시 사용할 때는 해당 이슈의 결론과 현재 canonical 문서를 확인한 뒤,
+재사용 가치가 입증된 도구만 `tools/diagnostics/`로 승격하고 `Cargo.toml`에 명시적으로 등록한다.
+probe source만 남은 디렉터리는 별도 README를 강제하지 않으며, 이슈 번호·source 머리말·연결된
+계획과 보고서가 provenance를 보존한다.
 
 ## 현재 이슈 묶음
 

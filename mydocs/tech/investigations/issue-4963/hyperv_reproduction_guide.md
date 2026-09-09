@@ -551,5 +551,5 @@ process-scope policy를 적용한 뒤 세 상태가 완료됐다. 자격 증명�
 공개 path-free 기계 결과는
 [`oracle_stage4_hyperv_reproduction_canary.json`](oracle_stage4_hyperv_reproduction_canary.json), 상세
 실행 기록은
-[`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/task_m100_4963_w5_hyperv_reproduction_canary.md)에
+[`task_m100_4963_w5_hyperv_reproduction_canary.md`](../../../working/archives/task_m100_4963_w5_hyperv_reproduction_canary.md)에
 있다. raw VM/checkpoint identity, credential, font bytes와 private corpus identity는 포함하지 않는다.

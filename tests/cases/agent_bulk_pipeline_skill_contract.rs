@@ -364,7 +364,7 @@ fn forbidden_peer_skills_not_rewritten_here() {
 
 #[test]
 fn working_doc_exists() {
-    let path = repo_root().join("mydocs/working/agent_bulk_pipeline.md");
+    let path = repo_root().join("mydocs/working/archives/agent_bulk_pipeline.md");
     assert!(path.is_file(), "{path:?}");
     let text = fs::read_to_string(&path).unwrap();
     assert!(text.contains("#5311"), "{text}");

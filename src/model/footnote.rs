@@ -89,6 +89,15 @@ pub struct FootnoteShape {
     pub print_inline_after_text: bool,
     /// HWP5 미문서화 2바이트. 한컴 UI의 "주석 사이" 값으로 사용된다.
     pub raw_unknown: u16,
+    /// [#6872] HWPX `<hp:autoNumFormat>` 의 장식 문자 속성을 **원본에서 실제로 읽었는지**.
+    ///
+    /// `'\0'` 하나로는 "원본이 명시적으로 비웠다"와 "IR 이 설정된 적 없다"를 못 가른다.
+    /// `#2742` 는 후자에서 템플릿 기본값(`suffixChar=")"`)을 유지해야 한다고 못박았고
+    /// (`issue2742_auto_num_format_keeps_template_when_ir_unset`), 전자를 그 규약으로
+    /// 처리하면 사용자 기호 각주 `*` 가 `*)` 가 된다(156513948 정답지 실측).
+    ///
+    /// HWPX 파서만 `true` 로 세운다 — HWP5/HWP3 경로는 종전 폴백을 그대로 쓴다.
+    pub deco_chars_from_source: bool,
 }
 
 impl FootnoteShape {

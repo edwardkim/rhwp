@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "repository": "edwardkim/rhwp",
+  "capturedAt": "2026-09-05T21:59:54+09:00",
+  "sources": {
+    "githubTokenContract": "https://docs.github.com/en/actions/concepts/security/github_token#when-github_token-triggers-workflow-runs",
+    "reusableWorkflowContract": "https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows",
+    "releaseAction": {
+      "repository": "softprops/action-gh-release",
+      "commit": "3d0d9888cb7fd7b750713d6e236d1fcb99157228",
+      "tokenInputDefault": "github.token"
+    }
+  },
+  "releases": [
+    {
+      "tag": "v0.8.0",
+      "tagSha": "60911e822b0d0bd4c86e7e98d31e1b13f195c99c",
+      "releaseId": 359873707,
+      "releaseAuthor": "edwardkim",
+      "releaseCreatedAt": "2026-07-25T22:14:37Z",
+      "releasePublishedAt": "2026-07-25T22:29:06Z",
+      "assetUploaders": ["github-actions[bot]"],
+      "binaryRun": {
+        "id": 30177655988,
+        "event": "push",
+        "headSha": "60911e822b0d0bd4c86e7e98d31e1b13f195c99c",
+        "createdAt": "2026-07-25T22:29:08Z",
+        "releaseJobStartedAt": "2026-07-25T22:41:09Z",
+        "releaseJobCompletedAt": "2026-07-25T22:41:15Z",
+        "conclusion": "success"
+      },
+      "automaticPackageRun": {
+        "id": 30177656006,
+        "event": "release",
+        "headSha": "60911e822b0d0bd4c86e7e98d31e1b13f195c99c",
+        "createdAt": "2026-07-25T22:29:08Z",
+        "conclusion": "success"
+      },
+      "recoveryPackageRun": null,
+      "publicationPath": "maintainer-authenticated-before-binary-attachment"
+    },
+    {
+      "tag": "v0.8.1",
+      "tagSha": "1dbf024fdc22d044c4abedb5bd801a741ce05e8a",
+      "releaseId": 360011801,
+      "releaseAuthor": "edwardkim",
+      "releaseCreatedAt": "2026-07-26T12:51:52Z",
+      "releasePublishedAt": "2026-07-26T12:59:16Z",
+      "assetUploaders": ["github-actions[bot]"],
+      "binaryRun": {
+        "id": 30203127897,
+        "event": "push",
+        "headSha": "1dbf024fdc22d044c4abedb5bd801a741ce05e8a",
+        "createdAt": "2026-07-26T12:58:51Z",
+        "releaseJobStartedAt": "2026-07-26T13:10:22Z",
+        "releaseJobCompletedAt": "2026-07-26T13:10:27Z",
+        "conclusion": "success"
+      },
+      "automaticPackageRun": {
+        "id": 30203142004,
+        "event": "release",
+        "headSha": "1dbf024fdc22d044c4abedb5bd801a741ce05e8a",
+        "createdAt": "2026-07-26T12:59:18Z",
+        "conclusion": "success"
+      },
+      "recoveryPackageRun": null,
+      "publicationPath": "maintainer-authenticated-before-binary-attachment"
+    },
+    {
+      "tag": "v0.8.2",
+      "tagSha": "9b16aa9e23f476e2b335d7c029fc9f24a199d63c",
+      "releaseId": 360057139,
+      "releaseAuthor": "edwardkim",
+      "releaseCreatedAt": "2026-07-26T15:49:57Z",
+      "releasePublishedAt": "2026-07-26T15:57:18Z",
+      "assetUploaders": ["github-actions[bot]"],
+      "binaryRun": {
+        "id": 30209302909,
+        "event": "push",
+        "headSha": "9b16aa9e23f476e2b335d7c029fc9f24a199d63c",
+        "createdAt": "2026-07-26T15:57:04Z",
+        "releaseJobStartedAt": "2026-07-26T16:08:29Z",
+        "releaseJobCompletedAt": "2026-07-26T16:08:36Z",
+        "conclusion": "success"
+      },
+      "automaticPackageRun": {
+        "id": 30209311338,
+        "event": "release",
+        "headSha": "9b16aa9e23f476e2b335d7c029fc9f24a199d63c",
+        "createdAt": "2026-07-26T15:57:20Z",
+        "conclusion": "success"
+      },
+      "recoveryPackageRun": null,
+      "publicationPath": "maintainer-authenticated-before-binary-attachment"
+    },
+    {
+      "tag": "v0.8.3",
+      "tagSha": "45af1773b4b0831c8ca1174418e115b442e3d114",
+      "releaseId": 368842121,
+      "releaseAuthor": "edwardkim",
+      "releaseCreatedAt": "2026-08-11T19:33:10Z",
+      "releasePublishedAt": "2026-08-11T20:36:50Z",
+      "assetUploaders": ["github-actions[bot]"],
+      "binaryRun": {
+        "id": 31533807349,
+        "event": "push",
+        "headSha": "45af1773b4b0831c8ca1174418e115b442e3d114",
+        "createdAt": "2026-08-11T20:36:40Z",
+        "releaseJobStartedAt": "2026-08-11T20:51:05Z",
+        "releaseJobCompletedAt": "2026-08-11T20:51:12Z",
+        "conclusion": "success"
+      },
+      "automaticPackageRun": {
+        "id": 31533824379,
+        "event": "release",
+        "headSha": "45af1773b4b0831c8ca1174418e115b442e3d114",
+        "createdAt": "2026-08-11T20:36:52Z",
+        "conclusion": "success"
+      },
+      "recoveryPackageRun": null,
+      "publicationPath": "maintainer-authenticated-before-binary-attachment"
+    },
+    {
+      "tag": "v0.8.4",
+      "tagSha": "496333b27d21ddb9114ba9ae340bcb895870c9a7",
+      "releaseId": 368939900,
+      "releaseAuthor": "edwardkim",
+      "releaseCreatedAt": "2026-08-12T01:17:59Z",
+      "releasePublishedAt": "2026-08-12T01:33:52Z",
+      "assetUploaders": ["github-actions[bot]"],
+      "binaryRun": {
+        "id": 31553193683,
+        "event": "push",
+        "headSha": "496333b27d21ddb9114ba9ae340bcb895870c9a7",
+        "createdAt": "2026-08-12T01:18:57Z",
+        "releaseJobStartedAt": "2026-08-12T01:33:44Z",
+        "releaseJobCompletedAt": "2026-08-12T01:33:55Z",
+        "conclusion": "success"
+      },
+      "automaticPackageRun": null,
+      "recoveryPackageRun": {
+        "id": 31556367061,
+        "event": "workflow_dispatch",
+        "headBranch": "main",
+        "headSha": "496333b27d21ddb9114ba9ae340bcb895870c9a7",
+        "createdAt": "2026-08-12T02:16:53Z",
+        "conclusion": "success"
+      },
+      "publicationPath": "github-token-inside-binary-attachment"
+    },
+    {
+      "tag": "v0.8.6",
+      "tagSha": "f1f9c6ae58344ee9368996d3543f76b9345cf227",
+      "releaseId": 380943572,
+      "releaseAuthor": "edwardkim",
+      "releaseCreatedAt": "2026-09-02T02:41:42Z",
+      "releasePublishedAt": "2026-09-02T03:00:31Z",
+      "assetUploaders": ["github-actions[bot]"],
+      "binaryRun": {
+        "id": 33584173937,
+        "event": "push",
+        "headSha": "f1f9c6ae58344ee9368996d3543f76b9345cf227",
+        "createdAt": "2026-09-02T02:41:47Z",
+        "releaseJobStartedAt": "2026-09-02T03:00:24Z",
+        "releaseJobCompletedAt": "2026-09-02T03:00:34Z",
+        "conclusion": "success"
+      },
+      "automaticPackageRun": null,
+      "recoveryPackageRun": {
+        "id": 33623579151,
+        "event": "workflow_dispatch",
+        "headBranch": "main",
+        "headSha": "e8800c8def63449808a4092798442652ed460552",
+        "createdAt": "2026-09-02T11:14:34Z",
+        "conclusion": "success"
+      },
+      "publicationPath": "github-token-inside-binary-attachment"
+    }
+  ]
+}

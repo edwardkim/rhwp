@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6797,
+  "title": "사회성 뛰어난 돼지로 농장 수익 높인다 (농촌진흥청 농식품 브리핑)",
+  "entries": [
+    {
+      "path": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6797",
+      "originalFilename": "156160455_1013_농촌진흥청사회성뛰어난돼지로농장수익높인다(축산원_농식품브리핑).hwp",
+      "bytes": 458752,
+      "sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1522"
+      },
+      "referenceEngine": "2020",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 11쪽, 쪽별 공백 제거 글자 수가 rhwp 와 11쪽 전부 일치. 메인테이너 산출본과 바이트는 다르지만(PDF 가 생성 시각·/ID 를 담는다) 쪽수·쪽별 글자 수가 같다.",
+      "contract": "빈 host 의 표 항목은, 저장 사다리가 그 문단을 앞 문단 자리차지 밴드의 바닥 아래에 둔 경우 그 저장 위치로 비켜 간다. host 에 보이는 글이 있으면 그 줄이 스냅을 지므로 손대지 않는다(synam-001 pi=229). 크기 문턱 없음.",
+      "referencePdf": "pdf/156160455-social-pig-farm-income-2020.pdf",
+      "referencePdfSha256": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65",
+      "referencePdfBytes": 393142
+    }
+  ]
+}

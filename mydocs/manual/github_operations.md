@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-08-15
+last_verified: 2026-09-05
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -237,10 +237,15 @@ ignore되지 않은 파일 하나가 섞이면 workflow 전체가 시작된다. 
 - add, modify, delete, rename
 - `push`, 내부 PR, fork PR, `workflow_dispatch`
 
+저장소 루트 `docs/`는 문서 저장 경로로 사용하지 않는다. 새 루트 `docs/**`가 생기면 일반 문서
+fast-pass로 숨기지 않고 CI 영향 분류가 fail-closed 해야 한다. 기술 문서는 `mydocs/tech/`에 둔다.
+다만 `mydocs/tech/text-ir-v2.md`와 `mydocs/tech/canvaskit-parity-implementation.md`는 Render Diff가
+직접 소비하는 계약이므로 일반 `mydocs/**` review-only fast-pass에서 제외한다.
+
 ### 7.3 reference-only 자산
 
-현재 반복적으로 대형 참조 자료가 들어오는 경로는 `samples/**`, `pdf/**`, `pdf-2020/**`,
-`pdf-large/**`다. 운영 정책은 다음처럼 분리한다.
+현재 반복적으로 대형 참조 자료가 들어오는 경로는 `samples/**`, `pdf/**`다.
+운영 정책은 다음처럼 분리한다.
 
 - protected branch의 reference-only push는 제품 소스 CI와 CodeQL을 다시 실행하지 않는 것을 기본으로 한다.
 - PR에서는 새 참조 자산만 있는 변경을 review-only fast-pass로 판정할 수 있다.
@@ -283,6 +288,136 @@ API pagination 경계, candidate의 fast-pass 실행, failed·pending run, GHAS 
 이 controller는 default branch 등록형이므로 `devel` 병합은 배포 전 검증 단계다. 정상 release로 `main`에
 반영하기 전에는 live `pull_request_target` controller가 존재하지 않으며, 그 기간의 workflow PR은 계속 Full
 실행하는 것이 정상이다.
+
+### 7.6 Workflow promotion preflight
+
+`devel`의 workflow 변경을 `main`으로 올리는 유일한 정규 경로는 같은 저장소의
+`devel -> main` PR이다. 이 PR에서 CI의 `Workflow promotion preflight`가 두 tree 사이의
+`.github/workflows/*.yml`과 `.github/actions/**` 변경을 inventory로 만들고, 후보 exact SHA에
+귀속된 Actions run·job·artifact를 검증한다. 일반 PR, fork PR, push에서는 이 job이
+skip되어야 하며 기존 required context인 `Build & Test`가 이 경계를 함께 강제한다.
+
+릴리스 PR 전에 먼저 최신 원격과 후보 topology를 확인한다.
+
+```bash
+git fetch upstream main devel
+base_sha="$(git rev-parse upstream/main)"
+candidate_sha="$(git rev-parse upstream/devel)"
+git merge-base --is-ancestor "${base_sha}" "${candidate_sha}"
+python3 scripts/workflow_promotion_preflight.py inventory \
+  --repo . --base-sha "${base_sha}" --candidate-sha "${candidate_sha}" \
+  --policy scripts/workflow_promotion_policy.json --format markdown
+```
+
+inventory의 executable 항목은 `scripts/workflow_promotion_policy.json`이 지정한 direct,
+contracts-only 또는 verify-only 방식으로 **같은 exact `devel` SHA**에서 실행한다. 실행이
+완료된 뒤 `devel -> main` PR을 열고 `Workflow promotion preflight`와 `Build & Test`가
+모두 성공했는지 확인한다. gate 자체는 다른 workflow를 dispatch하지 않고 `actions: read`,
+`contents: read`, `issues: read`로 증적만 수집한다. 수집 결과는
+`workflow-promotion-evidence-<run-id>` artifact에 30일간 남는다.
+
+현재 정책의 실행 표면은 다음과 같다. 다음 `gh workflow run`은 원격 run을 생성하는
+mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 나온 executable 항목만 실행하며,
+여기에 없는 신규 workflow는 policy와 동등 adapter를 먼저 추가한다.
+
+| Workflow | 실행 명령 | 필수 경계 |
+| --- | --- | --- |
+| Adapter inter-diff | `gh workflow run adapter-diff.yml --ref devel` | direct |
+| CI | `gh workflow run ci.yml --ref devel -f release_grade=false` | direct |
+| CodeQL | `gh workflow run codeql.yml --ref devel` | direct |
+| Pages | `gh workflow run deploy-pages.yml --ref devel` | verify-only, Deploy job skipped |
+| Gym | `gh workflow run gym-release-gate.yml --ref devel -f mode=contracts` | contracts-only, full benchmark skipped |
+| Oracle advisory | `gh workflow run oracle-public-advisory.yml --ref devel` | verdict artifact 필수 |
+| Proptest roundtrip | `gh workflow run proptest-roundtrip.yml --ref devel` | direct |
+| Release Binary | `gh workflow run release-binary.yml --ref devel -f tag=test` | verify-only, Release·외부 publish skipped, 5-platform·package artifact 필수 |
+| Publish All Packages | `gh workflow run npm-publish.yml --ref devel -f publish=false -f publish_extensions=true` | verify-only, 네 외부 채널 skipped, `completed` verdict artifact 필수 |
+| Render Diff | `gh workflow run render-diff.yml --ref devel` | direct, artifact 필수 |
+
+`workflow_dispatch` API의 `ref`는 branch 또는 tag이므로 명령에 commit SHA를 직접 넘겨 exact성을
+보장하지 않는다. 따라서 dispatch 직전의 `candidate_sha`를 기록하고, 생성된 모든 run의
+`head_sha` 가 그 값과 같은지 `gh run view <run-id> --json headSha,event,status,conclusion,url,jobs`로
+재확인한다. 중간에 `devel`이 움직였으면 그 세트는 증적으로 재사용하지 않는다.
+
+다음 경우에는 우회하지 말고 증적을 다시 만든다.
+
+- `devel` head가 바뀌었으면 새 exact SHA에서 필수 workflow를 다시 실행한다.
+- `main`이 앞서 나갔거나 ancestor 검사·merge tree가 다르면 `devel`을 동기화한 뒤 전 절차를
+  다시 실행한다.
+- missing, pending, failed, cancelled, 필수 job skipped, pagination 누락, SHA·workflow hash 불일치는
+  모두 fail-closed다.
+- 증적에 private corpus, 개인 폰트, secret 값, 인증 URL을 담지 않는다.
+
+예외가 불가피하면 메인테이너가 릴리스 PR의 issue comment에 다음 표식과 JSON을
+게시한다. `approvedBy`와 `url`은 본문을 믿지 않고 GitHub API의 comment 작성자·URL로
+덮어쓴다.
+
+````markdown
+<!-- rhwp-workflow-promotion-waiver:v1 -->
+```json
+{
+  "path": ".github/workflows/example.yml",
+  "candidateSha": "<40-hex exact devel SHA>",
+  "workflowSha256": "<64-hex workflow content hash>",
+  "reason": "<예외가 필요한 구체적 사유>",
+  "scope": ["workflow-dispatch-registration"],
+  "expiresAt": "<UTC ISO-8601 expiry>"
+}
+```
+````
+
+허용 scope는 `workflow-dispatch-registration`, `github-hosted-runner-unavailable`,
+`safe-equivalent-adapter`뿐이다. permission·secret·security·deployment 표면, 실패한 exact run,
+신뢰하지 않는 작성자, 만료·SHA·hash 불일치는 waiver로 숨길 수 없다. waiver는
+성공 표식이 아니라 실행 불가 범위를 한시적으로 고정하는 별도 증적이다.
+
+promotion gate가 거부하면 artifact의 `inventory.json`, `runs.json`, `waivers.json`,
+`verdict.json`을 먼저 확인한다. stale head나 main drift는 동기화 후 재실행하고, workflow
+계약 오류는 `devel` 작업 PR로 고친다. #6634에서 고정한 Release Binary와 Publish All Packages의
+verify-only run은
+직접 호출 배선·artifact·외부 publish skip을 검증하지만 production tag와 실제 registry 게시를 만들지
+않는다. 따라서 promotion preflight 성공을 정식 tag의 package publish 성공으로 해석하지 않고,
+다음 release의 exact tag run에서 `release-publish-evidence`와 네 공개 채널을 별도로 확인한다.
+
+### 7.7 CI Impact Policy Controller 실패 진단 읽기 (#6899)
+
+Controller가 빨간색이라고 해서 Controller 코드 자체의 장애인 것은 아니다. 선행 CI·CodeQL·Render Diff의
+실패를 정확한 head에 게시한 뒤 의도적으로 실패 처리하는 경우도 있다. `CI 실패 진단` 요약은 기존 정책
+판정 뒤에 실행되는 보조 보고이며, 아래를 구분한다.
+
+- **선행 검증 실패**: 원본 workflow run/attempt → 실패 worker job → 실패 step을 따라 확인한다.
+  `Build & Test` 같은 집계 job은 worker와 구분하며 다중 실패 중 하나를 근본 원인으로 단정하지 않는다.
+- **CodeQL 보안 검사 실패**: Analyze workflow 성공과 별개인 GHAS check도 확인한다.
+  동일 head의 `github-advanced-security` / `CodeQL`만 조회하며 규칙 제목·경로/행·검출 설명과 링크를 표시한다.
+  GHAS check를 특정 Actions attempt에 귀속한다고 추정하지 않는다. 기존 policy 판정은 별도 표시한다.
+- **설치/다운로드 실패**: 준비 단계와 실제 검증 단계를 구분한다. `Connection reset by peer` 등
+  확인된 진단 패턴을 표시하고, 준비 실패 뒤 테스트 step이 skipped이면 테스트 미실행이라고 명시한다.
+- **Controller 내부 단계 오류**: resolve·checkout·collect·policy·status 게시 등 실제 실패 단계를 확인한다.
+  이미 failure status를 정상 게시한 경우의 publish 실패는 API 장애로 분류하지 않는다.
+- **증적 미확인/상세 수집 제한**: API 권한·로그 부재·attempt 불일치·크기/시간 상한 등 사유를 확인하고
+  제공된 원본 job 링크로 이동한다. 추출되지 않은 오류를 제품 결함으로 추정하지 않는다.
+- **오래된 이벤트/비대상**, **검증 대기/성공**, **정책 차단**은 각각 별도로 표시한다.
+
+테스트명·오류 코드·baseline 신규 검출 건수 등 제한된 오류 형태만 추출하고 원문 전체 로그·문서 내용은
+복제하지 않는다. `baseline 없음`은 새 샘플에서 기존 결함이 드러난 경우도 있으므로 회귀 확정이 아니다.
+GitHub 로그 다운로드 host는 확인된 `*.blob.core.windows.net`의 단일 storage account 호스트만 허용하며,
+GitHub 인증 토큰은 storage 요청에 전달하지 않는다. 다른 host는 임의 허용하지 않고 미확인으로 처리한다.
+GHAS annotation은 원문 로그가 아니라 제한된 검사 메타데이터로 읽고, 표시 길이 제한·escape·credential
+필터를 적용한다. `raw_details`, API 응답 URL은 복제하지 않는다. 조회에는 `checks: read`가 필요하다.
+
+초기 publish·비대상·stale는 로그를 조회하지 않는다. audit는 성공/pending을 포함해 CodeQL workflow
+증적 유무와 독립적으로 보안 check를 조회한다. 따라서 정상 경로가 항상 API 0회라는 최초 계약은 폐기했다.
+실패 목록과 보안 check를 먼저 읽고 worker 로그 상세를 보강한다. 진단은 전체 24회/45초, 요청당 5초,
+상세 실패 job 6개, 로그 job당 1 MiB/전체 6 MiB, metadata 응답당 2 MiB, summary 16 KiB 상한이다.
+reporter 실패는 기존 verdict를 바꾸지 않는다. runner 강제 종료·전체 job timeout에서는 요약 자체가
+남지 않을 수 있으므로 Actions 기본 오류와 원본 로그를 확인한다.
+
+보고는 Controller 이벤트 시점 snapshot이다. 이후 늦게 변경된 GHAS 결과는 다음 이벤트/승인된 재실행에서
+확인해야 한다. GitHub의 재귀 방지 제약 때문에 `check_run` trigger 추가만으로 해결됐다고 간주하지 않는다.
+[Checks API 권한](https://docs.github.com/en/rest/checks/runs?apiVersion=2022-11-28)과
+[이벤트 제약](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)을 참고한다.
+
+이 절은 #6899 R2 구현 후보의 동작 계약이다. devel 반영만으로 default-branch Controller 배포가 끝난 것은
+아니며, main YAML과 trusted-base helper가 모두 준비된 live 실행에서 요약을 확인한 뒤 적용 완료로 판정한다.
 
 ## 8. required check와 branch protection
 
@@ -328,6 +463,48 @@ mutation은 O4이며 별도 승인을 받는다.
 
 보안 취약점 자체는 공개 Issue나 PR comment에 상세 재현을 쓰지 않고 [보안 정책](../../.github/SECURITY.md)의
 비공개 신고 경로를 따른다.
+
+### 9.4 CodeQL alert 귀속과 `used in tests` 근거 보존
+
+PR의 종합 CodeQL check가 기존 alert를 표시한 시점은 취약 코드가 처음 도입된 시점과 같지 않을 수 있다.
+파일 이동·경로 변경·분석기 upgrade·data-flow 확장으로 이미 존재하던 sink가 현재 PR에 처음 귀속될 수도
+있다. 따라서 check 화면의 PR 번호만 보고 source 도입 commit 또는 회귀 책임을 정하지 않는다.
+
+alert triage는 다음 네 시점을 분리한다.
+
+1. source·sink 코드가 각각 처음 도입된 commit과 시각
+2. 두 지점을 연결한 data-flow가 코드상 성립한 최초 commit
+3. CodeQL 분석이 alert를 처음 등록한 analysis ID·commit·ref·시각·도구 버전
+4. 현재 PR 또는 branch 분석이 같은 flow를 재현하거나 제거한 exact head·merge ref·analysis ID
+
+`gh`로 live 상태를 수집할 때는 alert와 analysis를 별도로 조회한다. 목록 API는 pagination을 적용하고,
+SARIF 원문은 필요한 analysis ID만 내려받는다.
+
+```bash
+gh api repos/edwardkim/rhwp/code-scanning/alerts/<alert-number>
+gh api --paginate \
+  'repos/edwardkim/rhwp/code-scanning/analyses?tool_name=CodeQL&per_page=100'
+gh api repos/edwardkim/rhwp/code-scanning/analyses/<analysis-id> \
+  -H 'Accept: application/sarif+json'
+```
+
+최초·현재 SARIF를 비교할 때는 query ID, source·sink message, 모든 flow location, 분석 CodeQL 버전,
+analysis ID, ref와 commit SHA를 보존한다. 줄 번호만 달라진 동일 flow와 파일·message topology가 달라진
+flow를 구분한다. 증적 문서는 secret 값, raw password, token, 사용자 절대 경로와 private corpus 식별자를
+담지 않으며, 큰 SARIF 전체를 그대로 커밋하기보다 판정에 필요한 결과를 결정적으로 정규화한다.
+
+`used in tests`는 다음 조건을 모두 확인한 뒤 메인테이너가 선택할 수 있는 운영 분류다.
+
+- sink의 실제 역할이 테스트·계측·fixture 무결성이고 제품의 인증·암호 저장·검증이 아니다.
+- 민감정보로 지목된 값이 허용된 projection인지 확인했고 raw secret의 유입·반환·저장·로그 경로가 없다.
+- source·sink 사이의 실제 runtime 경계를 설명하고 이를 단위·브라우저·통합 계약으로 고정했다.
+- query·language·path를 제외하거나 sanitizer로 넓게 가려 실제 보안 탐지를 약화하지 않았다.
+
+분류 변경은 O1 보안 metadata mutation이므로 명시 승인 없이 `false positive`, `won't fix` 등으로
+재분류하지 않는다. 기존 메인테이너 판정은 조사 중에도 유지하고, 구현 효과는 분류 문자열이 아니라 exact
+PR merge ref의 SARIF 결과 수와 merge 뒤 protected branch full scan으로 판정한다. PR 분석에서 flow가
+사라져도 merge 직후 branch scan이 같은 language와 query를 실행해 재발하지 않는지 확인하기 전에는 관련
+이슈를 닫지 않는다.
 
 ## 10. cache, artifact, runner와 LFS
 

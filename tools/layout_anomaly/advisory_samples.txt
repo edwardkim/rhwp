@@ -1,5 +1,5 @@
 # Layout-anomaly CI advisory 소표본. 한 줄에 경로 하나.
-# 커밋된 작은 HWP/HWPX 만. LFS·대형 시험지·pdf-large 금지.
+# 커밋된 작은 HWP/HWPX 만. PDF 오라클·대형 시험지 금지.
 samples/lseg-01-basic.hwp
 samples/para-001.hwp
 samples/form-01.hwp

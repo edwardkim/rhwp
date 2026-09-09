@@ -1,18 +1,179 @@
-use crate::paint::{ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp};
-
 use super::layer_renderer::{LayerRenderResult, LayerRenderer};
-use super::render_tree::{
-    BoundingBox, GroupNode, PageRenderTree, RenderNode, RenderNodeType, TableCellNode,
+use super::render_tree::RenderLayerInfo;
+use super::svg::{
+    LayerDebugOverlayProjection, OverlayBounds, OverlayImageInfo, OverlayTableInfo,
+    OverlayVposReset, SvgPaintDisposition, SvgRenderer,
 };
-use super::svg::SvgRenderer;
+use crate::error::HwpError;
+use crate::paint::{
+    paint_op_replay_plane_with_layer, render_layer_replay_plane, text_visual_replay_role,
+    validate_text_variant_scope, ClipKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
+    PaintReplayPlane, TextVisualReplayRole,
+};
 
-/// PageLayerTree를 SVG로 재생하는 transition renderer.
+/// Translates the canonical `PageLayerTree` paint contract into SVG syntax.
 ///
-/// 1차 전환에서는 layer tree를 temporary render node tree로 다시 조립해
-/// 기존 SVG leaf/backend 로직을 그대로 재사용한다.
+/// `LayerBuilder` has already decided visibility, output profile, paint variants, and structural
+/// clips. This backend owns only SVG serialization: it replays the shared plane order, preserves
+/// nested clip scopes, and never reconstructs a `PageRenderTree` that could reinterpret those
+/// decisions.
 pub struct SvgLayerRenderer {
     renderer: SvgRenderer,
     next_generated_id: u32,
+    generated_node_ids: std::collections::HashMap<usize, u32>,
+    clip_enabled: bool,
+}
+
+fn project_debug_overlay(root: &LayerNode) -> LayerDebugOverlayProjection {
+    fn extend_paragraph_bounds(
+        projection: &mut LayerDebugOverlayProjection,
+        section_index: usize,
+        para_index: usize,
+        bounds: crate::renderer::render_tree::BoundingBox,
+    ) {
+        let key = section_index * 100000 + para_index;
+        let entry = projection
+            .paragraph_bounds
+            .entry(key)
+            .or_insert(OverlayBounds {
+                section_index,
+                x: bounds.x,
+                y: bounds.y,
+                width: bounds.width,
+                height: bounds.height,
+            });
+        let min_x = entry.x.min(bounds.x);
+        let min_y = entry.y.min(bounds.y);
+        let max_x = (entry.x + entry.width).max(bounds.x + bounds.width);
+        let max_y = (entry.y + entry.height).max(bounds.y + bounds.height);
+        entry.x = min_x;
+        entry.y = min_y;
+        entry.width = max_x - min_x;
+        entry.height = max_y - min_y;
+    }
+
+    fn visit(projection: &mut LayerDebugOverlayProjection, node: &LayerNode, skip_depth: u32) {
+        match &node.kind {
+            LayerNodeKind::Group {
+                children,
+                group_kind,
+                ..
+            } => {
+                let mut child_skip_depth = skip_depth;
+                match group_kind {
+                    crate::paint::GroupKind::TextLine(line) if skip_depth == 0 => {
+                        if let (Some(para_index), Some(section_index)) =
+                            (line.para_index, line.section_index)
+                        {
+                            if projection.page_section == -1 {
+                                projection.page_section = section_index as i32;
+                            }
+                            if projection.page_section == section_index as i32 {
+                                extend_paragraph_bounds(
+                                    projection,
+                                    section_index,
+                                    para_index,
+                                    node.bounds,
+                                );
+                                if let (Some(line_index), Some(vpos)) = (line.line_index, line.vpos)
+                                {
+                                    if line_index > 0 && vpos == 0 {
+                                        projection.vpos_resets.push(OverlayVposReset {
+                                            section_index,
+                                            para_index,
+                                            line_index,
+                                            y: node.bounds.y,
+                                            x: node.bounds.x,
+                                            width: node.bounds.width,
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    crate::paint::GroupKind::Table(table) => {
+                        if skip_depth == 0 {
+                            if let (Some(para_index), Some(control_index)) =
+                                (table.para_index, table.control_index)
+                            {
+                                let section_index = table.section_index.unwrap_or(0);
+                                if projection.page_section == -1 {
+                                    projection.page_section = section_index as i32;
+                                }
+                                if projection.page_section == section_index as i32 {
+                                    projection.table_bounds.push(OverlayTableInfo {
+                                        section_index,
+                                        para_index,
+                                        control_index,
+                                        x: node.bounds.x,
+                                        y: node.bounds.y,
+                                        width: node.bounds.width,
+                                        height: node.bounds.height,
+                                        row_count: table.row_count,
+                                        col_count: table.col_count,
+                                    });
+                                    extend_paragraph_bounds(
+                                        projection,
+                                        section_index,
+                                        para_index,
+                                        node.bounds,
+                                    );
+                                }
+                            }
+                        }
+                        child_skip_depth += 1;
+                    }
+                    crate::paint::GroupKind::Header
+                    | crate::paint::GroupKind::Footer
+                    | crate::paint::GroupKind::MasterPage
+                    | crate::paint::GroupKind::FootnoteArea
+                    | crate::paint::GroupKind::TextBox
+                    | crate::paint::GroupKind::Group(_) => child_skip_depth += 1,
+                    _ => {}
+                }
+                for child in children {
+                    visit(projection, child, child_skip_depth);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } => visit(projection, child, skip_depth),
+            LayerNodeKind::Leaf { ops } if skip_depth == 0 => {
+                for op in ops {
+                    if let PaintOp::Image { bbox, image, .. } = op {
+                        if let (Some(para_index), Some(control_index)) =
+                            (image.para_index, image.control_index)
+                        {
+                            let section_index = image.section_index.unwrap_or(0);
+                            if projection.page_section == -1 {
+                                projection.page_section = section_index as i32;
+                            }
+                            if projection.page_section == section_index as i32 {
+                                projection.image_bounds.push(OverlayImageInfo {
+                                    section_index,
+                                    para_index,
+                                    control_index,
+                                    x: bbox.x,
+                                    y: bbox.y,
+                                    width: bbox.width,
+                                    height: bbox.height,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            LayerNodeKind::Leaf { .. } => {}
+        }
+    }
+
+    let mut projection = LayerDebugOverlayProjection {
+        paragraph_bounds: std::collections::HashMap::new(),
+        table_bounds: Vec::new(),
+        image_bounds: Vec::new(),
+        vpos_resets: Vec::new(),
+        page_section: -1,
+    };
+    visit(&mut projection, root, 0);
+    projection
 }
 
 impl SvgLayerRenderer {
@@ -20,6 +181,8 @@ impl SvgLayerRenderer {
         Self {
             renderer: SvgRenderer::new(),
             next_generated_id: 1_000_000,
+            generated_node_ids: std::collections::HashMap::new(),
+            clip_enabled: true,
         }
     }
 
@@ -27,6 +190,8 @@ impl SvgLayerRenderer {
         self.renderer.output()
     }
 
+    /// Configures SVG-only serialization such as font embedding. Paint decisions must enter
+    /// through `PageLayerTree`, not this escape hatch.
     pub fn inner_mut(&mut self) -> &mut SvgRenderer {
         &mut self.renderer
     }
@@ -35,498 +200,159 @@ impl SvgLayerRenderer {
         &self.renderer
     }
 
-    fn render_tree_from_layer_tree(&mut self, tree: &PageLayerTree) -> PageRenderTree {
-        let mut render_tree = PageRenderTree::new(0, tree.page_width, tree.page_height);
-        render_tree.root.bbox = tree.root.bounds;
-        render_tree.root.children = self.expand_children(&tree.root);
-        render_tree
+    fn active_layer(
+        node: &LayerNode,
+        inherited_layer: Option<RenderLayerInfo>,
+    ) -> Option<RenderLayerInfo> {
+        // LayerBuilder publishes master-page provenance and every backend inherits exactly the
+        // same metadata. SVG must not synthesize a private replay-plane decision from group kind.
+        node.layer.or(inherited_layer)
     }
 
-    fn expand_children(&mut self, node: &LayerNode) -> Vec<RenderNode> {
+    fn svg_emits_paint_op(op: &PaintOp) -> bool {
+        !matches!(op, PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. })
+    }
+
+    fn node_has_plane(
+        node: &LayerNode,
+        inherited_layer: Option<RenderLayerInfo>,
+        plane: PaintReplayPlane,
+    ) -> bool {
+        let active_layer = Self::active_layer(node, inherited_layer);
         match &node.kind {
             LayerNodeKind::Group { children, .. } => children
                 .iter()
-                .flat_map(|child| self.expand_node(child))
-                .collect(),
-            LayerNodeKind::ClipRect { .. } | LayerNodeKind::Leaf { .. } => self.expand_node(node),
+                .any(|child| Self::node_has_plane(child, active_layer, plane)),
+            LayerNodeKind::ClipRect { child, .. } => {
+                Self::node_has_plane(child, active_layer, plane)
+            }
+            LayerNodeKind::Leaf { ops } => ops.iter().any(|op| {
+                Self::svg_emits_paint_op(op)
+                    && paint_op_replay_plane_with_layer(op, active_layer) == plane
+            }),
         }
     }
 
-    fn expand_node(&mut self, node: &LayerNode) -> Vec<RenderNode> {
+    fn render_node(
+        &mut self,
+        node: &LayerNode,
+        inherited_layer: Option<RenderLayerInfo>,
+        plane: PaintReplayPlane,
+    ) -> LayerRenderResult<()> {
+        if !Self::node_has_plane(node, inherited_layer, plane) {
+            return Ok(());
+        }
+        let active_layer = Self::active_layer(node, inherited_layer);
         match &node.kind {
-            LayerNodeKind::Group {
-                children,
-                group_kind,
-                ..
-            } => {
-                let mut render_node = RenderNode::new(
-                    self.take_node_id(node.source_node_id),
-                    self.group_kind_to_render_node_type(group_kind),
-                    node.bounds,
-                );
-                render_node.children = children
-                    .iter()
-                    .flat_map(|child| self.expand_node(child))
-                    .collect();
-                vec![render_node]
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    self.render_node(child, active_layer, plane)?;
+                }
             }
             LayerNodeKind::ClipRect {
                 clip,
                 child,
                 clip_kind,
             } => {
-                let node_type = match clip_kind {
-                    ClipKind::Body => RenderNodeType::Body {
-                        clip_rect: Some(*clip),
-                    },
-                    ClipKind::TableCell => match &child.kind {
-                        LayerNodeKind::Group {
-                            group_kind: GroupKind::TableCell(cell),
-                            ..
-                        } => {
-                            let mut cell = cell.clone();
-                            cell.clip = true;
-                            RenderNodeType::TableCell(cell)
-                        }
-                        _ => RenderNodeType::TableCell(TableCellNode {
-                            col: 0,
-                            row: 0,
-                            col_span: 1,
-                            row_span: 1,
-                            border_fill_id: 0,
-                            text_direction: 0,
-                            clip: true,
-                            page_fragment: false,
-                            model_cell_index: None,
-                        }),
-                    },
-                    ClipKind::TextBox => RenderNodeType::TextBox,
-                    ClipKind::Generic => RenderNodeType::Body {
-                        clip_rect: Some(*clip),
-                    },
+                if !Self::node_has_plane(child, active_layer, plane) {
+                    return Ok(());
+                }
+                if !self.clip_enabled {
+                    return self.render_node(child, active_layer, plane);
+                }
+                let node_id = self.node_id(node);
+                let prefix = match clip_kind {
+                    ClipKind::Body => "body",
+                    ClipKind::TableCell => "cell",
+                    ClipKind::TextBox => "textbox",
+                    ClipKind::Generic => "generic",
                 };
-
-                let mut render_node = RenderNode::new(
-                    self.take_node_id(node.source_node_id),
-                    node_type,
-                    node.bounds,
-                );
-                render_node.children = self.expand_children(child);
-                vec![render_node]
+                let pass_count = PaintReplayPlane::ORDERED
+                    .iter()
+                    .filter(|candidate| Self::node_has_plane(child, active_layer, **candidate))
+                    .count();
+                let clip_id = if pass_count > 1 {
+                    format!("{prefix}-clip-{node_id}-{}", plane.as_str())
+                } else {
+                    format!("{prefix}-clip-{node_id}")
+                };
+                self.renderer.begin_layer_clip(*clip, &clip_id);
+                self.render_node(child, active_layer, plane)?;
+                self.renderer.end_layer_clip();
             }
-            LayerNodeKind::Leaf { ops } => ops
-                .iter()
-                .filter_map(|op| self.paint_op_to_render_node(op, node.source_node_id))
-                .collect(),
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if paint_op_replay_plane_with_layer(op, active_layer) != plane {
+                        continue;
+                    }
+                    if text_visual_replay_role(op) == TextVisualReplayRole::SuppressedFallback {
+                        // `CharOverlap` is the selected visual for this paint-order slot. Its
+                        // paired TextRun is metadata/fallback only and must not paint base glyphs.
+                        continue;
+                    }
+                    match self.renderer.render_layer_paint_op(op, node.source_node_id) {
+                        SvgPaintDisposition::Rendered => {}
+                        SvgPaintDisposition::UnsupportedTextVariant => {
+                            // `validate_text_variant_scope` proves this equivalence group has a
+                            // TextRun fallback in the same leaf. SVG chooses it explicitly while
+                            // retaining glyph-native variants for capable CanvasKit/Skia backends.
+                        }
+                    }
+                }
+            }
         }
+        Ok(())
     }
 
-    fn paint_op_to_render_node(
-        &mut self,
-        op: &PaintOp,
-        source_node_id: Option<u32>,
-    ) -> Option<RenderNode> {
-        let node = match op {
-            PaintOp::PageBackground { bbox, background } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::PageBackground(background.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::TextRun { bbox, run } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::TextRun(run.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::FootnoteMarker { bbox, marker } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::FootnoteMarker(marker.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::Line { bbox, line } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::Line(line.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::Rectangle { bbox, rect } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::Rectangle(rect.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::Ellipse { bbox, ellipse } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::Ellipse(ellipse.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::Path { bbox, path } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::Path(path.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::Image {
-                bbox,
-                image,
-                resolved,
-            } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::Image(
-                    crate::renderer::image_resolver::image_node_with_resolved_payload(
-                        image,
-                        resolved.as_deref(),
-                    ),
-                ),
-                *bbox,
-            ),
-            PaintOp::Equation { bbox, equation } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::Equation(equation.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::FormObject { bbox, form } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::FormObject(form.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::Placeholder { bbox, placeholder } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::Placeholder(placeholder.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::RawSvg { bbox, raw } => RenderNode::new(
-                self.take_node_id(source_node_id),
-                RenderNodeType::RawSvg(raw.as_ref().clone()),
-                *bbox,
-            ),
-            PaintOp::GlyphRun { .. }
-            | PaintOp::GlyphOutline { .. }
-            | PaintOp::CharOverlap { .. }
-            | PaintOp::TextControlMark { .. }
-            | PaintOp::TabLeader { .. }
-            | PaintOp::TextDecoration { .. } => return None,
-        };
-        Some(node)
-    }
-
-    fn group_kind_to_render_node_type(&self, group_kind: &GroupKind) -> RenderNodeType {
-        match group_kind {
-            GroupKind::Generic => RenderNodeType::Group(GroupNode {
-                section_index: None,
-                para_index: None,
-                control_index: None,
-            }),
-            GroupKind::MasterPage => RenderNodeType::MasterPage,
-            GroupKind::Header => RenderNodeType::Header,
-            GroupKind::Footer => RenderNodeType::Footer,
-            GroupKind::Body => RenderNodeType::Body { clip_rect: None },
-            GroupKind::Column(index) => RenderNodeType::Column(*index),
-            GroupKind::FootnoteArea => RenderNodeType::FootnoteArea,
-            GroupKind::TextLine(line) => RenderNodeType::TextLine(line.clone()),
-            GroupKind::Table(table) => RenderNodeType::Table(table.clone()),
-            GroupKind::TableCell(cell) => RenderNodeType::TableCell(cell.clone()),
-            GroupKind::TextBox => RenderNodeType::TextBox,
-            GroupKind::Group(group) => RenderNodeType::Group(group.clone()),
-        }
-    }
-
-    fn take_node_id(&mut self, source_node_id: Option<u32>) -> u32 {
-        if let Some(id) = source_node_id {
+    fn node_id(&mut self, node: &LayerNode) -> u32 {
+        if let Some(id) = node.source_node_id {
             return id;
+        }
+        let key = std::ptr::from_ref(node) as usize;
+        if let Some(id) = self.generated_node_ids.get(&key) {
+            return *id;
         }
         let id = self.next_generated_id;
         self.next_generated_id += 1;
+        self.generated_node_ids.insert(key, id);
         id
     }
 }
 
-impl LayerRenderer for SvgLayerRenderer {
-    fn render_page(&mut self, tree: &PageLayerTree) -> LayerRenderResult<()> {
-        self.renderer.show_paragraph_marks = tree.output_options.show_paragraph_marks;
-        self.renderer.show_control_codes = tree.output_options.show_control_codes;
-        self.renderer.debug_overlay = tree.output_options.debug_overlay;
-        self.renderer.show_missing_picture_placeholder = tree.profile.shows_editor_visuals();
-        // [#4379] `profile` 자체를 그대로 넘긴다 — legacy 렌더러의 editor_only 판정이
-        // paint LayerBuilder 와 같은 `RenderProfile::shows_editor_visuals` 호출로 수렴한다.
-        self.renderer.profile = tree.profile;
-        let render_tree = self.render_tree_from_layer_tree(tree);
-        self.renderer.render_tree(&render_tree);
-        Ok(())
+impl Default for SvgLayerRenderer {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::paint::{LayerBuilder, LayerOutputOptions, RenderProfile};
-    use crate::renderer::render_tree::{
-        PageNode, PlaceholderNode, RawSvgNode, RectangleNode, TextRunNode,
-    };
-    use crate::renderer::svg::SvgRenderer;
-    use crate::renderer::{ShapeStyle, TextStyle};
-
-    #[test]
-    fn replays_basic_layer_tree_to_same_svg() {
-        let mut render_tree = PageRenderTree::new(0, 400.0, 300.0);
-        render_tree.root.node_type = RenderNodeType::Page(PageNode {
-            page_index: 0,
-            width: 400.0,
-            height: 300.0,
-            section_index: 0,
-        });
-        let mut line = RenderNode::new(
-            10,
-            RenderNodeType::TextLine(crate::renderer::render_tree::TextLineNode::new(20.0, 15.0)),
-            BoundingBox::new(20.0, 20.0, 120.0, 20.0),
-        );
-        line.children.push(RenderNode::new(
-            11,
-            RenderNodeType::TextRun(TextRunNode {
-                text: "레이어".to_string(),
-                style: TextStyle {
-                    font_family: "Noto Sans CJK KR".to_string(),
-                    font_size: 14.0,
-                    ..Default::default()
-                },
-                char_shape_id: None,
-                para_shape_id: None,
-                section_index: None,
-                para_index: None,
-                char_start: None,
-                cell_context: None,
-                is_para_end: false,
-                is_line_break_end: false,
-                rotation: 0.0,
-                is_vertical: false,
-                char_overlap: None,
-                border_fill_id: 0,
-                baseline: 15.0,
-                field_marker: Default::default(),
-                layout_positions: None,
-                display_text: None,
-            }),
-            BoundingBox::new(20.0, 20.0, 60.0, 20.0),
-        ));
-        render_tree.root.children.push(line);
-        render_tree.root.children.push(RenderNode::new(
-            12,
-            RenderNodeType::Rectangle(RectangleNode::new(
-                0.0,
-                ShapeStyle {
-                    fill_color: Some(0x00F0F0F0),
-                    stroke_color: Some(0x00000000),
-                    stroke_width: 1.0,
-                    ..Default::default()
-                },
-                None,
-            )),
-            BoundingBox::new(18.0, 18.0, 90.0, 28.0),
-        ));
-
-        let mut legacy = SvgRenderer::new();
-        legacy.render_tree(&render_tree);
-
-        let mut builder = LayerBuilder::new(RenderProfile::Screen);
-        let layer_tree = builder.build(&render_tree);
-        let mut layer = SvgLayerRenderer::new();
-        layer.render_page(&layer_tree).unwrap();
-
-        assert_eq!(layer.output(), legacy.output());
-    }
-
-    #[test]
-    fn replays_raw_svg_and_placeholder_to_same_svg() {
-        let mut render_tree = PageRenderTree::new(0, 160.0, 100.0);
-        render_tree.root.node_type = RenderNodeType::Page(PageNode {
-            page_index: 0,
-            width: 160.0,
-            height: 100.0,
-            section_index: 0,
-        });
-        render_tree.root.children.push(RenderNode::new(
-            21,
-            RenderNodeType::RawSvg(RawSvgNode::new(
-                "<g><circle cx=\"20\" cy=\"20\" r=\"8\" fill=\"#ff0000\"/></g>\n".to_string(),
-            )),
-            BoundingBox::new(0.0, 0.0, 40.0, 40.0),
-        ));
-        render_tree.root.children.push(RenderNode::new(
-            22,
-            RenderNodeType::Placeholder(PlaceholderNode::new(
-                0x00F8F8F8,
-                0x00000000,
-                "OLE".to_string(),
-            )),
-            BoundingBox::new(50.0, 10.0, 80.0, 50.0),
-        ));
-
-        let mut legacy = SvgRenderer::new();
-        legacy.render_tree(&render_tree);
-
-        let mut builder = LayerBuilder::new(RenderProfile::Screen);
-        let layer_tree = builder.build(&render_tree);
-        let mut layer = SvgLayerRenderer::new();
-        layer.render_page(&layer_tree).unwrap();
-
-        assert_eq!(layer.output(), legacy.output());
-    }
-
-    #[test]
-    fn missing_picture_placeholder_follows_render_profile() {
-        let mut render_tree = PageRenderTree::new(0, 80.0, 60.0);
-        render_tree.root.node_type = RenderNodeType::Page(PageNode {
-            page_index: 0,
-            width: 80.0,
-            height: 60.0,
-            section_index: 0,
-        });
-        render_tree.root.children.push(RenderNode::new(
-            23,
-            RenderNodeType::Placeholder(PlaceholderNode::missing_picture(None, None, None, None)),
-            BoundingBox::new(10.0, 10.0, 40.0, 30.0),
-        ));
-
-        let screen_tree = LayerBuilder::new(RenderProfile::Screen).build(&render_tree);
-        let print_tree = LayerBuilder::new(RenderProfile::Print).build(&render_tree);
-        let mut screen = SvgLayerRenderer::new();
-        screen.render_page(&screen_tree).unwrap();
-        let mut print = SvgLayerRenderer::new();
-        print.render_page(&print_tree).unwrap();
-
-        // 점선은 한글 편집 화면 실측(2px on / 2px off)에 맞춘 값이다 — 차트/OLE 의
-        // "6 3" 파선과 구별된다.
-        assert!(screen.output().contains("stroke-dasharray=\"2 2\""));
-        assert!(!print.output().contains("stroke-dasharray=\"2 2\""));
-    }
-
-    /// [Issue #4379] `editor_only` 표시 판정은 legacy(`SvgRenderer::profile`)와 layer
-    /// (`LayerBuilder`/`paint/builder.rs:75`) 양쪽이 같은 `RenderProfile::shows_editor_visuals`
-    /// 술어를 호출해야 한다. 이 대조 테스트가 "같은 입력에 같은 결과" 계약의 최소 범위다 —
-    /// 프로필 4종 전부에서 두 경로의 SVG 출력이 바이트 단위로 같고, editor_only 콘텐츠의
-    /// 표시 여부가 `shows_editor_visuals()` 와 일치해야 한다. 한쪽 기본값만 바뀌면 이 테스트가
-    /// 잡는다(#4374 PR 리뷰에서 이 두 경로의 차이를 "시각 증적"으로 오해한 사고가 계기).
-    #[test]
-    fn editor_only_gate_matches_across_legacy_and_layer_paths_for_every_profile() {
-        for profile in [
-            RenderProfile::FastPreview,
-            RenderProfile::Screen,
-            RenderProfile::Print,
-            RenderProfile::HighQuality,
-        ] {
-            let mut render_tree = PageRenderTree::new(0, 100.0, 80.0);
-            render_tree.root.node_type = RenderNodeType::Page(PageNode {
-                page_index: 0,
-                width: 100.0,
-                height: 80.0,
-                section_index: 0,
-            });
-            // 항상 보여야 하는 일반 콘텐츠 — 프로필과 무관.
-            render_tree.root.children.push(RenderNode::new(
-                40,
-                RenderNodeType::Rectangle(RectangleNode::new(
-                    0.0,
-                    ShapeStyle {
-                        fill_color: Some(0x00112233),
-                        ..Default::default()
-                    },
-                    None,
-                )),
-                BoundingBox::new(0.0, 0.0, 20.0, 20.0),
-            ));
-            // 편집 화면 전용 장식(예: 투명 테두리 안내선) — editor_only 로만 표시를 가른다.
-            render_tree.root.children.push(
-                RenderNode::new(
-                    41,
-                    RenderNodeType::Rectangle(RectangleNode::new(
-                        0.0,
-                        ShapeStyle {
-                            fill_color: Some(0x00445566),
-                            ..Default::default()
-                        },
-                        None,
-                    )),
-                    BoundingBox::new(40.0, 0.0, 20.0, 20.0),
-                )
-                .with_editor_only(),
-            );
-
-            let mut legacy = SvgRenderer::new();
-            legacy.profile = profile;
-            legacy.render_tree(&render_tree);
-
-            let layer_tree = LayerBuilder::new(profile).build(&render_tree);
-            let mut layer = SvgLayerRenderer::new();
-            layer.render_page(&layer_tree).unwrap();
-
-            assert_eq!(
-                layer.output(),
-                legacy.output(),
-                "profile={profile:?} 에서 legacy/layer SVG 출력이 갈림"
-            );
-
-            let shows_editor_only = profile.shows_editor_visuals();
-            assert_eq!(
-                legacy.output().contains("665544"),
-                shows_editor_only,
-                "profile={profile:?}: editor_only 장식 표시 여부가 shows_editor_visuals()={shows_editor_only} 와 다름"
-            );
-            // 일반 콘텐츠는 모든 프로필에서 보여야 한다.
-            assert!(legacy.output().contains("332211"));
+/// Replays one in-memory layer tree without JSON or legacy render-tree reconstruction.
+impl LayerRenderer for SvgLayerRenderer {
+    fn render_page(&mut self, tree: &PageLayerTree) -> LayerRenderResult<()> {
+        validate_text_variant_scope(tree).map_err(|error| {
+            HwpError::RenderError(format!("invalid PageLayerTree text variants: {error}"))
+        })?;
+        self.next_generated_id = 1_000_000;
+        self.generated_node_ids.clear();
+        self.clip_enabled = tree.output_options.clip_enabled;
+        self.renderer.show_paragraph_marks = tree.output_options.show_paragraph_marks;
+        self.renderer.show_control_codes = tree.output_options.show_control_codes;
+        self.renderer.debug_overlay = tree.output_options.debug_overlay;
+        // Presence in the canonical tree is the visibility decision. The serializer must not
+        // apply a second profile gate to missing-picture placeholders.
+        self.renderer.show_missing_picture_placeholder = true;
+        self.renderer.profile = tree.profile;
+        self.renderer
+            .begin_layer_page(tree.page_width, tree.page_height);
+        if tree.output_options.debug_overlay {
+            self.renderer
+                .apply_layer_debug_overlay(project_debug_overlay(&tree.root));
         }
-    }
-
-    #[test]
-    fn render_page_consumes_layer_output_options() {
-        let mut render_tree = PageRenderTree::new(0, 80.0, 60.0);
-        render_tree.root.node_type = RenderNodeType::Page(PageNode {
-            page_index: 0,
-            width: 80.0,
-            height: 60.0,
-            section_index: 0,
-        });
-        render_tree.root.children.push(RenderNode::new(
-            31,
-            RenderNodeType::TextRun(TextRunNode {
-                text: "a b".to_string(),
-                style: TextStyle {
-                    font_size: 14.0,
-                    ..Default::default()
-                },
-                char_shape_id: None,
-                para_shape_id: None,
-                section_index: None,
-                para_index: None,
-                char_start: None,
-                cell_context: None,
-                is_para_end: true,
-                is_line_break_end: false,
-                rotation: 0.0,
-                is_vertical: false,
-                char_overlap: None,
-                border_fill_id: 0,
-                baseline: 16.0,
-                field_marker: Default::default(),
-                layout_positions: None,
-                display_text: None,
-            }),
-            BoundingBox::new(10.0, 15.0, 40.0, 20.0),
-        ));
-
-        let mut builder =
-            LayerBuilder::new(RenderProfile::Screen).with_output_options(LayerOutputOptions {
-                show_paragraph_marks: true,
-                show_control_codes: true,
-                ..Default::default()
-            });
-        let layer_tree = builder.build(&render_tree);
-        let mut layer = SvgLayerRenderer::new();
-        layer.render_page(&layer_tree).unwrap();
-
-        let output = layer.output();
-        assert!(
-            output.contains("\u{2228}"),
-            "layer output options should enable visible space marks:\n{output}"
-        );
-        assert!(
-            output.contains("\u{21b5}"),
-            "layer output options should enable paragraph end marks:\n{output}"
-        );
+        for plane in PaintReplayPlane::ORDERED {
+            if Self::node_has_plane(&tree.root, None, plane) {
+                self.render_node(&tree.root, None, plane)?;
+            }
+        }
+        self.renderer.end_layer_page();
+        Ok(())
     }
 }

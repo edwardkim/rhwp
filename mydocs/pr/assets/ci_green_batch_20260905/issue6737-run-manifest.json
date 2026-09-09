@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "key": "issue6737",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6737/156487948-marine-pollution-law.hwp",
+      "sha256": "a1eb5fc5a893d2f0638cb3ce8c40ffb2e763815c0c7815e875b7e246237caae9"
+    },
+    "pdf": {
+      "path": "pdf/issue6737-156487948-2020.pdf",
+      "sha256": "c5fd06be9c0d3c982fccb41837e71e6b28147a6bdd8e81fd9bf699df408d9a19"
+    },
+    "git_head": "8204bdb29999fdbf96c3227fa25ee860211fd3b1",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "d367dba28c3620d5d2bba6d236a443597c2710c3b7c2efa06611f087708b94e8"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review-ci-green-20260905/release-test/rhwp",
+      "path": "target/pr-review-ci-green-20260905/release-test/rhwp",
+      "sha256": "d34749fbff8d855ef6f019a6ea9b59b272e287399ea72c2adfa5f229c57ed5fc"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete"
+}

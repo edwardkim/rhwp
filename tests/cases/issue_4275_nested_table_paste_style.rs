@@ -69,7 +69,6 @@ fn inner_table() -> Table {
             end_row: 0,
             border_fill_id: 3,
         }],
-        dirty: true,
         ..Default::default()
     };
     table.common.width = 4000;

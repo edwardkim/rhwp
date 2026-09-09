@@ -1,0 +1,34 @@
+{
+  "agent": "maintainer-20260903-fixture",
+  "binPath": "/opt/rhwp-fixture/bin/rhwp",
+  "buildError": 0,
+  "built": 2,
+  "exit": 0,
+  "failed": 0,
+  "failedScore": 0,
+  "kind": "gymBaselineVerification",
+  "missingArtifact": 0,
+  "ok": true,
+  "packs": [
+    "pack-a"
+  ],
+  "results": [
+    {
+      "kind": "ok",
+      "message": null,
+      "ok": true,
+      "pack": "pack-a",
+      "task": "T01"
+    },
+    {
+      "kind": "ok",
+      "message": null,
+      "ok": true,
+      "pack": "pack-a",
+      "task": "T02"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "skipped": 0,
+  "taskCount": 2
+}

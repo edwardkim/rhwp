@@ -36,7 +36,7 @@ RESOLUTION_CHECK = ROOT / "scripts/verify_review_only_merge_resolution.py"
 
 class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     def test_all_preflights_share_reference_pdf_directories(self) -> None:
-        expected = "const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];"
+        expected = "const pdfPrefixes = ['pdf/'];"
         for name, workflow_path in WORKFLOWS.items():
             with self.subTest(workflow=name):
                 workflow = workflow_path.read_text(encoding="utf-8")
@@ -48,6 +48,18 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                     "pdfPrefixes.some((prefix) => filename.startsWith(prefix))",
                     workflow,
                 )
+
+    def test_render_contract_docs_are_not_review_only(self) -> None:
+        for name, workflow_path in WORKFLOWS.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                self.assertIn("const renderContractPaths = new Set([", workflow)
+                self.assertIn(
+                    "'mydocs/tech/canvaskit-parity-implementation.md'",
+                    workflow,
+                )
+                self.assertIn("'mydocs/tech/text-ir-v2.md'", workflow)
+                self.assertIn("!renderContractPaths.has(filename)", workflow)
 
     def test_sample_document_files_are_not_review_only_fast_pass_references(self) -> None:
         workflow_paths = {
@@ -448,6 +460,14 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         rejected = self._run_resolution_check("src/lib.rs")
         self.assertNotEqual(rejected.returncode, 0)
         self.assertIn("current-base-merge-resolution-not-mydocs", rejected.stderr)
+        render_contract = self._run_resolution_check(
+            "mydocs/tech/text-ir-v2.md"
+        )
+        self.assertNotEqual(render_contract.returncode, 0)
+        self.assertIn(
+            "current-base-merge-resolution-not-mydocs",
+            render_contract.stderr,
+        )
         wrong_base = self._run_resolution_check(
             "mydocs/orders/20260807.md",
             expected_base_sha="0" * 40,

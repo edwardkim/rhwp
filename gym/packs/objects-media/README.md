@@ -230,6 +230,6 @@ T07 과 겹치지 않는 것들: 값 `홍길동` 없음, 산출 `filled.hwp` 없
 
 ## 관련 문서
 
-- 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/gym_om_lr_cd.md)
+- 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/archives/gym_om_lr_cd.md)
 - 조판 pack: [../layout-rendering/README.md](../layout-rendering/README.md)
 - 코퍼스 pack: [../corpus-diagnostics/README.md](../corpus-diagnostics/README.md)

@@ -4,6 +4,7 @@
 
 pub(crate) const MAX_POSITIONED_CONTROL_MARKS_PER_RUN: usize = 4096;
 pub(crate) const MAX_PORTABLE_FONT_BLOB_BYTES: usize = 32 * 1024 * 1024;
+pub(crate) const MAX_GLYPH_FONT_SIZE_PX: f64 = 4096.0;
 pub(crate) const MAX_PORTABLE_GLYPHS_PER_RUN: usize = 4096;
 
 pub mod builder;
@@ -80,4 +81,7 @@ pub use text_v2::{
     TextV2CompatibilityProfile, TextV2Diagnostics, TextV2LineBreakRisk, TextV2LineBreakRiskLevel,
     TextV2SlotDiagnostic, TextV2ValidationIssue, TextV2ValidationSeverity, TextV2VariantDiagnostic,
 };
-pub use text_variants::{validate_text_variant_scope, TextVariantScopeError};
+pub use text_variants::{
+    text_visual_replay_role, validate_text_variant_scope, TextVariantScopeError,
+    TextVisualReplayRole,
+};

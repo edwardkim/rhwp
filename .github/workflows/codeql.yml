@@ -5,11 +5,8 @@ on:
     branches: [main, devel]
     paths-ignore:
       - 'mydocs/**'
-      - 'docs/**'
       - 'samples/**'
       - 'pdf/**'
-      - 'pdf-2020/**'
-      - 'pdf-large/**'
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -23,7 +20,6 @@ on:
   pull_request:
     branches: [main, devel]
     paths-ignore:
-      - 'docs/**'
       # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
       # 구분해 CodeQL no-op/full 판정을 발행한다.
       - 'assets/**'
@@ -101,6 +97,10 @@ jobs:
             // language-level verdict; skipped remains fail-closed here.
             const allowedSecurityConclusions = new Set(['success', 'neutral']);
             const { owner, repo } = context.repo;
+            const renderContractPaths = new Set([
+              'mydocs/tech/canvaskit-parity-implementation.md',
+              'mydocs/tech/text-ir-v2.md',
+            ]);
 
             function setResult(fastPass, reason, candidateSha = '') {
               core.setOutput('fast_pass', fastPass ? 'true' : 'false');
@@ -123,7 +123,7 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
-              if (filename.startsWith('mydocs/')) {
+              if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
               }
               if (isPdfReferencePath(filename)) {
@@ -146,7 +146,7 @@ jobs:
             }
 
             function isPdfReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              const pdfPrefixes = ['pdf/'];
               return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
@@ -814,10 +814,19 @@ jobs:
           build-mode: none
           config-file: .github/codeql/rust-pr.yml
 
-      # PR은 제품 Rust만 빠르게 검사하고, devel push·schedule은 아래 기존 전체
-      # 경로 분석을 유지한다. PR 축소가 기준선 보안 탐지를 대신하지 않게 한다.
+      # #6947: devel push도 전체 Rust 경로와 보안 쿼리를 유지하되,
+      # #6877에서 제외한 내부 metric 3개만 생략한다. PR의 paths는 가져오지 않는다.
+      - name: Initialize CodeQL (Rust post-merge)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'push' && github.ref == 'refs/heads/devel' }}
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
+          config-file: .github/codeql/rust-postmerge.yml
+
+      # main push, schedule, workflow_dispatch retain all paths and all queries.
       - name: Initialize CodeQL (Rust full scan)
-        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' }}
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' && !(github.event_name == 'push' && github.ref == 'refs/heads/devel') }}
         uses: github/codeql-action/init@v4
         with:
           languages: rust

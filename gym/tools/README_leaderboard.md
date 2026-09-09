@@ -10,7 +10,7 @@ last_verified: 2026-08-18
 위조 불가능한 점수판의 **한 페이지 운영 메모**다. 초대·등재·검증·렌더와
 예외 경로의 정본은 [`gym/docs/leaderboard.md`](../docs/leaderboard.md) 다.
 작업 기록은
-[`mydocs/working/gym_leaderboard.md`](../../mydocs/working/gym_leaderboard.md).
+[`mydocs/working/gym_leaderboard.md`](../../mydocs/working/archives/gym_leaderboard.md).
 
 ## 30초
 

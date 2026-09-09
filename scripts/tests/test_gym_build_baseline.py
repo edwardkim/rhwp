@@ -286,6 +286,12 @@ class ResolveTests(unittest.TestCase):
         mod = load()
         self.assertEqual(mod.resolve("--json", {"input": "in.hwp"}, "/tmp"), "--json")
 
+    def test_reference_file_placeholder_is_rejected(self):
+        mod = load()
+        with self.assertRaises(RuntimeError) as ctx:
+            mod.resolve("{file:out.hwp}", {"input": "in.hwp"}, "/tmp")
+        self.assertIn("{sub:}", str(ctx.exception))
+
     def test_unclosed_raises_runtime_error(self):
         mod = load()
         with tempfile.TemporaryDirectory() as sub_dir:
@@ -764,12 +770,37 @@ class SummaryTests(unittest.TestCase):
         created = mod.bump_count(None, "built")
         self.assertEqual(created["built"], 1)
 
+    def test_release_verification_report_requires_every_task_to_pass(self):
+        mod = load()
+        counts = mod.empty_counts()
+        counts["built"] = 2
+        report = mod.verification_report(
+            "/tmp/rhwp",
+            "agent",
+            ["p"],
+            counts,
+            [
+                {"pack": "p", "task": "T1", "ok": True},
+                {"pack": "p", "task": "T2", "ok": True},
+            ],
+        )
+        self.assertTrue(report["ok"])
+        self.assertEqual(report["exit"], 0)
+        self.assertEqual(report["taskCount"], 2)
+
+        counts["skipped"] = 1
+        report = mod.verification_report(
+            "/tmp/rhwp", "agent", ["p"], counts, report["results"]
+        )
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["exit"], 1)
+
 
 class CliContractTests(unittest.TestCase):
-    def test_no_new_flags(self):
+    def test_structured_release_audit_flag_is_explicit(self):
         mod = load()
-        self.assertEqual(mod.cli_flag_names(), ("--agent", "--pack", "--bin"))
-        self.assertEqual(mod.CLI_FLAGS, ("--agent", "--pack", "--bin"))
+        self.assertEqual(mod.cli_flag_names(), ("--agent", "--pack", "--bin", "--json"))
+        self.assertEqual(mod.CLI_FLAGS, ("--agent", "--pack", "--bin", "--json"))
 
     def test_parse_args_defaults(self):
         mod = load()
@@ -777,6 +808,7 @@ class CliContractTests(unittest.TestCase):
         self.assertEqual(a.agent, "claude-fable-5")
         self.assertIsNone(a.pack)
         self.assertIsNone(a.bin)
+        self.assertFalse(a.json)
 
     def test_parse_args_pack_appends(self):
         mod = load()
@@ -1026,7 +1058,7 @@ class NormalizeScoreTests(unittest.TestCase):
 
     def test_main_returns_one_when_failed(self):
         mod = load()
-        args = mock.Mock(agent="a", pack=["p"], bin=None)
+        args = mock.Mock(agent="a", pack=["p"], bin=None, json=False)
         with mock.patch.object(mod, "parse_args", return_value=args):
             with mock.patch.object(mod.runner, "find_bin", return_value="/bin/false"):
                 with mock.patch.object(mod, "process_pack",
@@ -1037,7 +1069,7 @@ class NormalizeScoreTests(unittest.TestCase):
 
     def test_main_returns_zero_when_clean(self):
         mod = load()
-        args = mock.Mock(agent="a", pack=["p"], bin=None)
+        args = mock.Mock(agent="a", pack=["p"], bin=None, json=False)
         with mock.patch.object(mod, "parse_args", return_value=args):
             with mock.patch.object(mod.runner, "find_bin", return_value="/bin/false"):
                 with mock.patch.object(mod, "process_pack"):
