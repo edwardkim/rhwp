@@ -16,6 +16,12 @@
 
 #### 해결한 차단 사유와 남은 범위
 
+통합 [PR #6951](https://github.com/edwardkim/rhwp/pull/6951)을 생성했다. 보정/증적 commit
+`d3f8dff09` 뒤 `upstream/devel` `144c224193f5508a66a7dc374036995ec6de2738`로 충돌 없이
+리베이스한 code candidate는 `e0dc1bc8a92ccd5d940419765d2e51bfe0a4d697`이다.
+오늘할일 충돌도 없었으며 추가 테스트는 실행하지 않았다. [통합 self-review](archives/pr_6951_review.md)에
+PR 채번과 리베이스 결과를 같은 PR의 문서 전용 후속 기록으로 남긴다.
+
 - `bin_data_id`를 기존 호출부와 같은 `u32`로 맞춰 컴파일 오류를 해결했다.
 - `VtPicture`의 embedded 분기에서도 null 객체 참조 `-1`을 빈 그림으로 수용했다.
 - [VtString 처리](../../src/ole_chart/legacy_presentation.rs#L204)는 길이 뒤의 예약 바이트를

@@ -10,6 +10,10 @@
 
 ## 메인터너 보정과 증적 보관
 
+- 원격 통합 PR: [#6951](https://github.com/edwardkim/rhwp/pull/6951), base `devel`. [Self-review](archives/pr_6951_review.md)는 같은 PR의 문서 전용 후속 기록이다.
+- 보정/증적 commit `d3f8dff09`를 만든 뒤 `upstream/devel` `144c224193f5508a66a7dc374036995ec6de2738`로 리베이스했다. 오늘할일을 포함해 충돌이 없었다. 리베이스 후 code candidate는 `e0dc1bc8a92ccd5d940419765d2e51bfe0a4d697`이다.
+- 명시 지시대로 추가 테스트 없이 위 candidate를 push하고 PR을 생성했다. 리베이스 전 직접 검증과 최신 PR head CI를 구분하며 이 기록에서 CI 성공/merge 완료를 주장하지 않는다.
+
 - 코드: src/ole_chart/{grid,parser,mod,legacy_presentation,legacy_combo_renderer}.rs 및 src/renderer/layout/shape_layout.rs.
 - 입력/기준: samples/issue6938/mixed_chart.hwp, mixed_chart.hwpx, mixed_chart.pdf를 보존하고 기존 기준 PDF 3개를 재사용한다. 추가 PDF를 출력하지 않았다.
 - 대표 증적: mydocs/pr/assets/pr_6938_maintainer_20260909/의 원 HWP 3쪽/추가 HWP·HWPX 1쪽 PNG 3개. 기존 pr_6938_6940_20260909/의 원 head 실패 1개와 #6940 각주 2개는 비교 근거로 보존한다.
