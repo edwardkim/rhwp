@@ -7674,6 +7674,25 @@ impl LayoutEngine {
                         _ => 0.0,
                     }
                 };
+                // NO_LS 본문은 저장 줄 probe가 0이다. 현재 frame에서 계산한
+                // 잉크 높이를 사용하되 줄간격은 기존 계약처럼 충돌 검사에서 뺀다.
+                let probe_line = match item {
+                    PageItem::PartialParagraph { start_line, .. } => *start_line,
+                    _ => 0,
+                };
+                let item_probe_height = paragraphs
+                    .get(item_para)
+                    .and_then(|para| {
+                        self.computed_plain_text_probe_height(
+                            para,
+                            composed.get(item_para),
+                            styles,
+                            col_area.width,
+                            probe_line,
+                            col_content.wrap_anchors.contains_key(&item_para),
+                        )
+                    })
+                    .unwrap_or(item_probe_height);
                 let mut jump_to = y_offset;
                 // [#2808] 단일 표 host 의 post-text 는 한컴에서 앵커에 남는다(#1549 유지).
                 // exclusion 소비는 #2439 의 다중 co-anchored float 스택(표 2개+서명란)
