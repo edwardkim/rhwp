@@ -5,7 +5,7 @@
 - 담당: postmelee
 - 기준: `upstream/devel` `a3cd825c23d550e0c5f46b4e2eb3735a537f23f2`
 - 브랜치: `codex/issue-6963-hyperlinks`
-- 상태: 단계 1 완료(기준 샘플 계약 및 재검증 도구), 제품 기능 구현 대기
+- 상태: 단계 2 완료(코어 링크 편집·HWP/HWPX 저장 왕복), PDF 영역·출력 및 Studio 연결 대기
 
 ## 목표와 범위
 
@@ -50,6 +50,9 @@ Studio에서 HTTP/HTTPS 텍스트 링크를 삽입·수정·제거하고 HWP/HWP
 | 3 | 페이지별 링크 영역 질의와 PDF 출력 | 여러 줄·여러 페이지·부분 출력·혼합 폰트·기존 링크 샘플, PDF annotation 파싱 |
 | 4 | Studio dialog·명령·shortcut·라우터 | 선택/무선택, 수정/제거/취소, undo/redo, focus·dirty, 지원 컨텍스트 |
 | 5 | Studio→저장→재열기→PDF 전체 여정 | 실제 브라우저, PDF 뷰어 클릭, 한컴 기준 URI·geometry 비교 |
+
+단계 1·2 기록: [기준 샘플 계약](../working/task_m100_6963_stage1.md),
+[코어 편집·저장 왕복](../working/task_m100_6963_stage2.md).
 
 단계가 끝나면 해당 단계 변경과 검증 결과를 커밋하고 다음 단계 기록을 시작한다.
 전체 feature 완료는 이슈의 모든 1차 범위 완료 조건 충족 후에만 보고한다.

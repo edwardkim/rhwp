@@ -53,6 +53,14 @@ pub enum DocumentEvent {
         para: usize,
     },
 
+    /// 텍스트를 보존한 하이퍼링크 메타데이터 변경.
+    HyperlinkChanged {
+        section: usize,
+        para: usize,
+        cell_path: Vec<(usize, usize, usize)>,
+        field_id: u32,
+    },
+
     // ── 서식 변경 ──
     CharFormatChanged {
         section: usize,
@@ -166,6 +174,14 @@ impl DocumentEvent {
     /// 이벤트를 JSON 객체 문자열로 직렬화한다.
     pub fn to_json(&self) -> String {
         match self {
+            DocumentEvent::HyperlinkChanged {
+                section,
+                para,
+                cell_path,
+                field_id,
+            } => serde_json::json!({ "type": "HyperlinkChanged", "section": section,
+                    "para": para, "cellPath": cell_path, "fieldId": field_id })
+            .to_string(),
             // 텍스트 편집
             DocumentEvent::TextInserted {
                 section,

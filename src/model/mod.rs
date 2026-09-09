@@ -10,6 +10,7 @@ pub mod document;
 pub mod event;
 pub mod footnote;
 pub mod header_footer;
+pub mod hyperlink;
 pub mod image;
 pub mod page;
 pub mod paragraph;
