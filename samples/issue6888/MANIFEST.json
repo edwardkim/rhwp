@@ -1,0 +1,27 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6888,
+  "title": "자기 앵커보다 아래로 떨어진 자리차지 도형이 뒤따르는 표를 자기 높이만큼 민다",
+  "entries": [
+    {
+      "path": "samples/issue6888/156730935-marine-mobility-expo.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6888",
+      "originalFilename": "156730935_251125(조간) 2025 대한민국 해양 모빌리티 안전 엑스포 개막(해사안전정책과).hwpx",
+      "bytes": 1221176,
+      "sha256": "6fa11e6a8d3be9289d23a1f861e9833e5b2473b63d0f4b5bf6092feb164aac21",
+      "lastSavedWith": {
+        "product": "hancom-office-2024",
+        "version": "13.0.0.3050"
+      },
+      "referenceEngine": "2024",
+      "referencePdf": "pdf/156730935-marine-mobility-expo-2024.pdf",
+      "referencePdfBytes": 194326,
+      "referencePdfSha256": "c50925420f79d6b78c775e290accf1e1bb30422c886818d7e64b75a402a29dc1",
+      "referencePdfStatus": "2026-09-09 MCP convert 로 산출, 2쪽. 저장 제품이 `hancom-office-2024` 라 규약 §3.5.1 의 2024 버킷이다(이슈 본문의 'engine 2020' 은 오기). engine 2020 으로도 떠서 대조했는데 1쪽 하단 기하가 소수점까지 같다 — 표 괘선 945.2·979.4·1013.6, 도형 상자 (75.3, 1018.7, 639.2, 63.0)px. PDF 는 매 실행 SHA 가 달라지므로 이 해시는 이 사본의 것이다.",
+      "contract": "1쪽 담당자 표(TAC)가 본문(94.5..1028.1) 안 945.2..1013.6 에 있어야 한다. 같은 문단(p17)에 매달린 자리차지 도형(TopAndBottom · vert=Para · vertOffset 11271HU=150.3px · height 4700HU=62.7px)은 표보다 **아래**(1018.7)에 놓이며, 그 높이를 흐름에 계상하면 표가 1009.0 으로 밀려 본문을 49.3px 넘어 인쇄에서 사라진다.",
+      "originalIdentityStatus": "2026-09-09 코퍼스 `korea_downloads/해양수산부` 원문과 SHA-256 이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
+    }
+  ]
+}

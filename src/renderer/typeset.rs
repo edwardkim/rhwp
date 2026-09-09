@@ -9314,7 +9314,29 @@ impl TypesetEngine {
                                         _ => false,
                                     }
                                 };
-                                if !already_accounted {
+                                // [#6888] 자기 앵커보다 아래로 떨어진 개체는 뒤따르는
+                                // 문단을 밀지 않는다 — 판별은 공용 헬퍼에 둔다(배치와
+                                // 같은 답을 써야 `#409` 가 막으려던 desync 가 안 생긴다).
+                                let displaced_below_following_flow = match ctrl {
+                                    Control::Picture(pic) => {
+                                        crate::renderer::topbottom_float_displaced_below_following_flow(
+                                            para,
+                                            paragraphs.get(para_idx + 1),
+                                            &pic.common,
+                                            self.dpi,
+                                        )
+                                    }
+                                    Control::Shape(s) => {
+                                        crate::renderer::topbottom_float_displaced_below_following_flow(
+                                            para,
+                                            paragraphs.get(para_idx + 1),
+                                            s.common(),
+                                            self.dpi,
+                                        )
+                                    }
+                                    _ => false,
+                                };
+                                if !already_accounted && !displaced_below_following_flow {
                                     // [#2814] 절반쪽급 그림이 한 문단에 여럿 스택되면 한컴은
                                     // 흐름처럼 쪽을 채우며 다음 쪽으로 넘긴다(창조경제 보고서:
                                     // 절반쪽 그림 37장 = 쪽당 2장 × ~19쪽; #1995 의 전면 그림

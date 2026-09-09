@@ -226,8 +226,18 @@ pub fn probe_ole_chart_contents(bytes: &[u8]) -> Result<OleChartContentsProbe, O
     let has_ooxml_chart_marker = bytes
         .windows(b"chartSpace".len())
         .any(|w| w == b"chartSpace");
+    // [#6922] `w1 == w2` 를 요구하지 않는다.
+    //
+    // 종전 술어는 앞 16바이트 네 워드 중 **둘째·셋째가 같을 것**을 요구했다. 그 조건이
+    // 왜 성립해야 하는지는 근거로 적혀 있지 않았고, 실측하면 두 값은 **서로 다른 두
+    // 크기값**이다(148735526 `Contents`: `w1=0x3a65`(14,949) · `w2=0x22d4`(8,916)).
+    // 지금까지 표본에서 우연히 같았을 뿐이라, `VtChart`·`VtDataGrid` 표지를 둘 다 가진
+    // 진짜 레거시 한/글 차트가 `UNSUPPORTED_CONTENTS_LAYOUT` 으로 떨어졌다.
+    //
+    // 남는 술어는 그대로다 — `w0 == 0x0001_0000`, `w3`(개체 시작 오프셋)가 스트림 안의
+    // 합리적 값, 그리고 **`VtDataGrid` 표지**(아래 `likely_legacy_hwp_chart_contents`).
+    // `#5724`(StaticMetafile)·`#5725`(수식 OLE)는 그 표지가 없어 영향받지 않는다.
     let legacy_chart_object_start = if first_words_le[0] == 0x0001_0000
-        && first_words_le[1] == first_words_le[2]
         && first_words_le[3] >= 0x20
         && (first_words_le[3] as usize) < bytes.len()
     {

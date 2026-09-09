@@ -79,9 +79,67 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
         buf.clear();
     }
 
-    link_orphan_field_ends(&mut section.paragraphs);
+    link_orphan_field_ends_recursive(&mut section.paragraphs);
 
     Ok(section)
+}
+
+/// [#6868] 중첩 문단 목록까지 내려가며 목록마다 따로 짝을 잇는다.
+///
+/// `link_orphan_field_ends` 는 본디 구역 최상위 `section.paragraphs` 에만 걸렸다. 그런데
+/// 다단락 누름틀은 **글상자·표 칸·머리말·각주 안에서도** 쓰인다(36414761 결재문서: '제목'
+/// 누름틀이 글상자 subList 안에서 열리고 다음 문단에서 닫힌다). 그 목록의 종료 마커는
+/// `begin_ctrl_id` 가 0 으로 남고, HWP5 저장기의 두 방출 지점이 모두
+/// `begin_ctrl_id != 0` 을 요구하므로 **끝 표시가 통째로 사라졌다** — 끝이 없는 누름틀은
+/// 문단 나머지를 필드 안으로 삼킨다.
+///
+/// 필드는 컨테이너 경계를 넘지 못하므로 목록마다 **독립적으로** 잇는다. 최상위 목록의
+/// 열린 필드를 중첩 목록으로 물려주지 않는다 — 그렇게 하면 글상자 안 종료 마커가 바깥
+/// 문단의 필드를 닫는 짝으로 잘못 묶인다.
+fn link_orphan_field_ends_recursive(paragraphs: &mut [Paragraph]) {
+    link_orphan_field_ends(paragraphs);
+    for para in paragraphs.iter_mut() {
+        for control in para.controls.iter_mut() {
+            link_orphan_field_ends_in_control(control);
+        }
+    }
+}
+
+/// 컨트롤이 품은 문단 목록마다 [`link_orphan_field_ends_recursive`] 를 건다.
+///
+/// 컨테이너 목록은 `injection_scan` 의 방문자와 같은 것을 본다 — 표 칸·표 캡션·글상자·
+/// 도형 캡션·그림 캡션·각주·미주·머리말·꼬리말·숨은 설명.
+fn link_orphan_field_ends_in_control(control: &mut Control) {
+    match control {
+        Control::Table(table) => {
+            for cell in table.cells.iter_mut() {
+                link_orphan_field_ends_recursive(&mut cell.paragraphs);
+            }
+            if let Some(caption) = table.caption.as_mut() {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Shape(shape) => {
+            if let Some(tb) = crate::document_core::helpers::get_textbox_from_shape_mut(shape) {
+                link_orphan_field_ends_recursive(&mut tb.paragraphs);
+            }
+            if let Some(caption) = crate::document_core::helpers::get_caption_from_shape_mut(shape)
+            {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Picture(pic) => {
+            if let Some(caption) = pic.caption.as_mut() {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Footnote(fnote) => link_orphan_field_ends_recursive(&mut fnote.paragraphs),
+        Control::Endnote(en) => link_orphan_field_ends_recursive(&mut en.paragraphs),
+        Control::Header(h) => link_orphan_field_ends_recursive(&mut h.paragraphs),
+        Control::Footer(f) => link_orphan_field_ends_recursive(&mut f.paragraphs),
+        Control::HiddenComment(hc) => link_orphan_field_ends_recursive(&mut hc.paragraphs),
+        _ => {}
+    }
 }
 
 /// 같은 문단 목록 안에서 끝난 다문단 fieldEnd에 짝 fieldBegin의 HWP5 control id를 연결한다.

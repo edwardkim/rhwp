@@ -7966,6 +7966,39 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [#6888] 자기 앵커보다 **아래로 떨어진** 자리차지 개체는 흐름을 전진시키지
+            // 않는다. `#409` 의 전진은 밴드가 앵커에서 시작할 때의 계약이고, 양수
+            // `vertOffset` 이 밴드를 아래로 내려 놓으면 그 사이 콘텐츠는 밀릴 이유가 없다.
+            // 조판과 같은 판별을 써야 `#409` 가 막으려던 desync 가 안 생긴다.
+            if new_y > _y_in {
+                if let PageItem::Shape {
+                    para_index,
+                    control_index,
+                } = item
+                {
+                    let displaced = paragraphs.get(*para_index).is_some_and(|para| {
+                        para.controls
+                            .get(*control_index)
+                            .and_then(|control| match control {
+                                Control::Picture(pic) => Some(&pic.common),
+                                Control::Shape(shape) => Some(shape.common()),
+                                Control::Equation(eq) => Some(&eq.common),
+                                _ => None,
+                            })
+                            .is_some_and(|common| {
+                                crate::renderer::topbottom_float_displaced_below_following_flow(
+                                    para,
+                                    paragraphs.get(*para_index + 1),
+                                    common,
+                                    self.dpi,
+                                )
+                            })
+                    });
+                    if displaced {
+                        new_y = _y_in;
+                    }
+                }
+            }
             // [#6778] Square(어울림) 표 옆 레인 — 흐름은 host 줄만 전진한다.
             //
             // 조판(`#4090` `hangul_flowed_beside_table`)은 저장 host 줄높이가 표
@@ -11340,7 +11373,45 @@ impl LayoutEngine {
                     } else {
                         seg.line_height
                     };
-                    if gap > 0 {
+                    // [#6900] **사다리가 다음 문단을 이미 표 하단에 두면 더 띄우지 않는다.**
+                    //
+                    // 이 간격은 표 뒤 host 앵커 줄의 후행 간격이다. 그런데 앵커 줄의
+                    // 사다리(`lh`)가 **앞선 TAC 표 한 장만** 덮고 뒤따르는 비-TAC 표는
+                    // 덮지 않는 문단이 있다. 그런 문단에서는 표 하단이 이미 사다리가
+                    // 지목한 다음 문단 자리까지 내려와 있어서, 여기서 간격을 더하면
+                    // 후속 문단이 통째로 그만큼 밀린다(156521182 4쪽: 출처 줄이 본문을
+                    // 13.4px 넘어 사라짐).
+                    //
+                    // ```text
+                    //   pi=30 seg0  vpos 0      lh 45.3   ← 첫 TAC 표만 덮는다
+                    //   표 하단(그린 값)          977.4
+                    //   pi=31 저장 vpos 64803  → 977.4    ← 사다리가 표 하단을 지목
+                    //   종전                     977.4 + 14.9(seg.line_spacing) = 992.3
+                    // ```
+                    //
+                    // 다음 문단의 저장 vpos 를 이 문단의 사다리 기준점으로 환산한다.
+                    // 중복 간격이라는 증거는 그 위치가 현재 표 하단과 일치하는 것이다.
+                    // 표 하단보다 훨씬 위인 저장 위치는 재배치 또는 표 높이 변화일 수
+                    // 있으므로 간격을 없애는 근거로 쓰지 않는다. 기존 0.5px 환산 오차만
+                    // 양방향으로 허용하며, 근거가 불충분하면 종전 간격을 유지한다.
+                    let ladder_already_at_flow = self.profile.get().hwp5_stored_pagination_layout()
+                        && para
+                            .line_segs
+                            .first()
+                            .zip(
+                                paragraphs
+                                    .get(para_index + 1)
+                                    .and_then(|next| next.line_segs.first()),
+                            )
+                            .is_some_and(|(host_first, next_first)| {
+                                // 되감김(다음 쪽으로 넘어간 문단)은 기준점이 달라 못 쓴다.
+                                let next_ladder_y = para_y_for_table
+                                    - hwpunit_to_px(host_first.vertical_pos, self.dpi)
+                                    + hwpunit_to_px(next_first.vertical_pos, self.dpi);
+                                next_first.vertical_pos > host_first.vertical_pos
+                                    && (next_ladder_y - y_offset).abs() <= 0.5
+                            });
+                    if gap > 0 && !ladder_already_at_flow {
                         y_offset += hwpunit_to_px(gap, self.dpi);
                     }
                 }
