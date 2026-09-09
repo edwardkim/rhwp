@@ -639,3 +639,16 @@ test('Firefox uses receipt time for freshness even when an earlier event stalls 
     assert.equal(calls.tabsCreate.length, 1);
   });
 });
+
+test('Firefox starts the first storage request during event delivery (#6964)', async () => {
+  const env = createBrowserMock();
+  await withBrowserMock(env, async ({ listeners, calls }) => {
+    listeners.onCreated[0](hwpItem(6971));
+    assert.deepEqual(calls.sessionGet, ['rhwpDownloadState:6971'],
+      'the first browser API call must keep the original event-delivery timing');
+    listeners.onChanged[0]({ id: 6971, state: { current: 'complete' } });
+    assert.equal(calls.sessionGet.length, 1, 'only overlapping work waits');
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});

@@ -28,8 +28,9 @@ const pendingDownloadEvents = new Map();
 // Different IDs remain independent; a failed event must not poison its queue.
 function enqueueDownloadEvent(id, operation) {
   if (typeof id !== 'number') return;
-  const previous = pendingDownloadEvents.get(id) || Promise.resolve();
-  const next = previous.then(operation).catch(err => {
+  const previous = pendingDownloadEvents.get(id);
+  // Start the first browser API call during event delivery, as before the queue.
+  const next = (previous ? previous.then(operation) : operation()).catch(err => {
     console.error('[rhwp] 다운로드 이벤트 처리 오류:', err);
   });
   pendingDownloadEvents.set(id, next);
