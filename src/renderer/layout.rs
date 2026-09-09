@@ -11389,9 +11389,11 @@ impl LayoutEngine {
                     //   종전                     977.4 + 14.9(seg.line_spacing) = 992.3
                     // ```
                     //
-                    // 판별은 문서가 준다 — 다음 문단의 저장 vpos 를 이 문단의 사다리
-                    // 기준점으로 환산해 현재 흐름 위치와 견준다. 한쪽 방향만 본다:
-                    // 사다리가 **표 하단 이하**를 지목할 때만 간격을 거둔다.
+                    // 다음 문단의 저장 vpos 를 이 문단의 사다리 기준점으로 환산한다.
+                    // 중복 간격이라는 증거는 그 위치가 현재 표 하단과 일치하는 것이다.
+                    // 표 하단보다 훨씬 위인 저장 위치는 재배치 또는 표 높이 변화일 수
+                    // 있으므로 간격을 없애는 근거로 쓰지 않는다. 기존 0.5px 환산 오차만
+                    // 양방향으로 허용하며, 근거가 불충분하면 종전 간격을 유지한다.
                     let ladder_already_at_flow = self.profile.get().hwp5_stored_pagination_layout()
                         && para
                             .line_segs
@@ -11403,11 +11405,11 @@ impl LayoutEngine {
                             )
                             .is_some_and(|(host_first, next_first)| {
                                 // 되감김(다음 쪽으로 넘어간 문단)은 기준점이 달라 못 쓴다.
+                                let next_ladder_y = para_y_for_table
+                                    - hwpunit_to_px(host_first.vertical_pos, self.dpi)
+                                    + hwpunit_to_px(next_first.vertical_pos, self.dpi);
                                 next_first.vertical_pos > host_first.vertical_pos
-                                    && para_y_for_table
-                                        - hwpunit_to_px(host_first.vertical_pos, self.dpi)
-                                        + hwpunit_to_px(next_first.vertical_pos, self.dpi)
-                                        <= y_offset + 0.5
+                                    && (next_ladder_y - y_offset).abs() <= 0.5
                             });
                     if gap > 0 && !ladder_already_at_flow {
                         y_offset += hwpunit_to_px(gap, self.dpi);
