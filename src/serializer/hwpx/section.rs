@@ -906,6 +906,10 @@ pub(crate) struct InlineCursor<'a> {
     pub tab_idx: usize,
     /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
     pub title_marks: &'a [TitleMark],
+    /// [#6956] 문단의 형광펜 표지 전체 (문자 인덱스 오름차순)
+    pub markpen_marks: &'a [crate::model::paragraph::MarkpenMark],
+    /// 다음에 방출할 `markpen_marks` 인덱스
+    pub markpen_idx: usize,
     /// [#5537] `title_marks[i]` 가 **앞(닫히는) run 소유**인가 — char_shapes 경계
     /// 유닛이 표시 끝 유닛과 일치하면 원본은 표시까지를 앞 run 에 뒀다는 증거다.
     /// 비어 있으면 전부 false(종전 동작: 다음 run 머리 방출).
@@ -930,6 +934,21 @@ pub(crate) struct InlineCursor<'a> {
 impl InlineCursor<'_> {
     /// 현재 문자 위치에 걸린 제목 차례 표시를 전부 방출한다.
     fn flush_marks_at_cursor(&mut self, t_xml: &mut String, buf: &mut String) {
+        // [#6956] 형광펜 표지 — 제목 차례 표시와 같은 자리에서 순서대로 흘린다.
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
         while let Some(m) = self.title_marks.get(self.mark_idx) {
             if m.char_idx > self.char_idx {
                 break;
@@ -959,6 +978,24 @@ impl InlineCursor<'_> {
 
     /// [#5537] 조각 말미에서 닫히는 run 소유의 표시만 방출한다 — 나머지는
     /// 종전대로 다음 run 머리에서 flush 된다(한컴 실측 두 형태 공존).
+    /// [#6956] 조각 말미에서 현재 문자 위치에 걸린 형광펜 표지를 마저 낸다.
+    fn flush_markpen_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
+    }
+
     fn flush_prev_owned_marks_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
         while self.has_pending_prev_owned_mark() {
             let m = &self.title_marks[self.mark_idx];
@@ -1060,6 +1097,9 @@ pub(crate) fn render_hp_t_content(
     // [#5537] 조각 말미 — 닫히는 run 소유의 표시(경계 유닛 = 표시 끝 유닛)는 여기서
     // 방출한다. 다음 run 머리로 넘기면 재파싱 char_shapes 경계가 8유닛 무너진다.
     cursor.flush_prev_owned_marks_at_fragment_end(&mut t_xml, &mut buf);
+    // [#6956] 형광펜 닫는 표지는 런 **끝**에 오는 것이 한컴 실측 형태다. 문자 루프는
+    // 글자 **앞**에서만 흘리므로 여기서 현재 위치에 걸린 것을 마저 낸다.
+    cursor.flush_markpen_at_fragment_end(&mut t_xml, &mut buf);
     flush_buf(&mut t_xml, &mut buf);
     t_xml.push_str("</hp:t>");
     t_xml
@@ -1475,6 +1515,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         .collect();
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
+        markpen_marks: &para.markpen_marks,
+        markpen_idx: 0,
         mark_owned_by_prev: &mark_owned_by_prev,
         // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,

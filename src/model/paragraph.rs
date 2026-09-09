@@ -113,6 +113,12 @@ pub struct Paragraph {
     /// 대신 `field_ranges`·`tab_extended` 와 같은 부수 채널로 위치만 보존한다 —
     /// `text` 에 문자를 넣으면 추출·렌더·비교 축이 전부 달라진다.
     pub title_marks: Vec<TitleMark>,
+    /// [#6956] 형광펜 표시 (`<hp:t>` 안의 `<hp:markpenBegin/>`·`<hp:markpenEnd/>`)
+    ///
+    /// `title_marks` 와 같은 부수 채널이되 **글자 축을 소비하지 않는다** — 한컴 원본의
+    /// `hp:lineseg/@textpos` 가 이 표지를 세지 않으므로 `text` 에도, 유닛 계산에도
+    /// 넣지 않고 위치만 보존한다.
+    pub markpen_marks: Vec<MarkpenMark>,
     /// 문단 번호 시작 방식 오버라이드
     /// None = 앞 번호 목록에 이어 (기본)
     /// Some(NumberingRestart) = 이전 번호 이어 / 새 번호 시작
@@ -369,6 +375,18 @@ pub struct RangeTag {
 /// 8 code unit 을 점유하므로 이 마커를 버리면 문단 축이 그만큼 짧아지고,
 /// 한글은 축이 어긋난 `<hp:lineseg textpos>` 를 만나면 본문을 통째로 버린다
 /// (10k 스윕 F-절단군 — 77 문서·2,237 개).
+/// [#6956] 형광펜 표시 한 개.
+///
+/// 한컴은 여는 표지에 색을 싣고 닫는 표지는 속성이 없다. 둘 다 텍스트 원소 안 글자
+/// 사이에 오며 글자 축을 소비하지 않는다.
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
+pub struct MarkpenMark {
+    /// `text` 문자열 내 삽입 위치 (이 인덱스의 문자 **앞**에 놓인다)
+    pub char_idx: usize,
+    /// 여는 표지의 색. `None` 이면 닫는 표지다.
+    pub color: Option<String>,
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
 pub struct TitleMark {
     /// `text` 문자열 내 삽입 위치 (이 인덱스의 문자 **앞**에 놓인다)
@@ -1108,6 +1126,16 @@ impl Paragraph {
             })
             .collect();
         self.title_marks.retain(|m| m.char_idx < split_pos);
+        let new_markpen_marks: Vec<MarkpenMark> = self
+            .markpen_marks
+            .iter()
+            .filter(|m| m.char_idx >= split_pos)
+            .map(|m| MarkpenMark {
+                char_idx: m.char_idx - split_pos,
+                color: m.color.clone(),
+            })
+            .collect();
+        self.markpen_marks.retain(|m| m.char_idx < split_pos);
 
         // 3. char_shapes 분할
         let mut new_char_shapes: Vec<CharShapeRef> = Vec::new();
@@ -1351,6 +1379,8 @@ impl Paragraph {
             has_para_text: new_has_para_text,
             tab_extended: Vec::new(),
             title_marks: new_title_marks,
+            // [#6956] 형광펜 표지도 분할 위치 기준으로 갈라 준다.
+            markpen_marks: new_markpen_marks,
             numbering_restart: None,
             stored_text_partition_dirty: false,
         }
