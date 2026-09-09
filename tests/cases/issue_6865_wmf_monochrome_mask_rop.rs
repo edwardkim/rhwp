@@ -230,3 +230,187 @@ fn issue_6865_lone_monochrome_pattern_blit_is_unaffected() {
         "관용구 밖 단독 마스크 blit 은 종전대로 그려야 한다:\n{svg}"
     );
 }
+
+fn mask_prefix(pattern: Vec<u8>, middle: Vec<u8>) -> Vec<u8> {
+    let mut bytes = header();
+    for part in [
+        solid_brush((0xD9, 0xD9, 0xD9)),
+        select_object(0),
+        brush_blit(PATINVERT),
+        pattern,
+        select_object(1),
+        middle,
+    ] {
+        bytes.extend_from_slice(&part);
+    }
+    bytes
+}
+
+fn finish_sequence(mut bytes: Vec<u8>, tail: &[Vec<u8>]) -> String {
+    for part in tail {
+        bytes.extend_from_slice(part);
+    }
+    bytes.extend_from_slice(&eof());
+    to_svg(&bytes)
+}
+
+fn blit_at(rop: u32, x: i16, y: i16) -> Vec<u8> {
+    let mut bytes = brush_blit(rop);
+    bytes[20..22].copy_from_slice(&i16le(y));
+    bytes[22..24].copy_from_slice(&i16le(x));
+    bytes
+}
+
+fn blit_rect(rop: u32, x: i16, y: i16, width: i16, height: i16) -> Vec<u8> {
+    let mut bytes = blit_at(rop, x, y);
+    bytes[16..18].copy_from_slice(&i16le(height));
+    bytes[18..20].copy_from_slice(&i16le(width));
+    bytes
+}
+
+#[test]
+fn issue_6865_halftone_one_unit_edge_padding_is_removed() {
+    // Match both real fixture shapes: top/left overscan and a shifted bottom.
+    for middle in [blit_rect(DPA, 9, 9, 51, 51), blit_rect(DPA, 9, 11, 51, 50)] {
+        let svg = finish_sequence(
+            mask_prefix(dib_pattern_brush(1), middle),
+            &[select_object(0), brush_blit(PATINVERT)],
+        );
+        assert!(!svg.contains("rop_pat"));
+        assert_eq!(svg.matches("fill=\"#D9D9D9\"").count(), 1);
+    }
+}
+
+#[test]
+fn issue_6865_halftone_two_unit_edge_difference_is_preserved() {
+    let svg = finish_sequence(
+        mask_prefix(dib_pattern_brush(1), blit_rect(DPA, 8, 9, 52, 51)),
+        &[select_object(0), brush_blit(PATINVERT)],
+    );
+    assert!(svg.contains("rop_pat0"));
+}
+
+#[test]
+fn issue_6865_non_halftone_one_unit_difference_is_preserved() {
+    let mut pattern = dib_pattern_brush(1);
+    // Alter the first pixel row, leaving a valid black/white 1bpp bitmap.
+    pattern[6 + 2 + 2 + 40 + 8] = 0;
+    let svg = finish_sequence(
+        mask_prefix(pattern, blit_rect(DPA, 9, 9, 51, 51)),
+        &[select_object(0), brush_blit(PATINVERT)],
+    );
+    assert!(svg.contains("rop_pat0"));
+}
+
+#[test]
+fn issue_6865_one_unit_final_xor_difference_is_preserved() {
+    let svg = finish_sequence(
+        mask_prefix(dib_pattern_brush(1), blit_rect(DPA, 9, 9, 51, 51)),
+        &[select_object(0), blit_at(PATINVERT, 11, 10)],
+    );
+    assert!(svg.contains("rop_pat0"));
+}
+
+#[test]
+fn issue_6865_incomplete_idiom_keeps_middle_draw() {
+    let svg = finish_sequence(mask_prefix(dib_pattern_brush(1), brush_blit(DPA)), &[]);
+    assert!(
+        svg.contains("rop_pat0"),
+        "EOF must not erase an unconfirmed draw"
+    );
+}
+
+#[test]
+fn issue_6865_different_middle_region_is_not_a_mask_idiom() {
+    let svg = finish_sequence(
+        mask_prefix(dib_pattern_brush(1), blit_at(DPA, 25, 30)),
+        &[select_object(0), brush_blit(PATINVERT)],
+    );
+    assert!(svg.contains("rop_pat0"));
+    assert_eq!(
+        svg.matches("fill=\"#D9D9D9\"").count(),
+        1,
+        "preserving DPA must not disable the existing outer XOR cancellation"
+    );
+}
+
+#[test]
+fn issue_6865_different_final_region_keeps_middle_draw() {
+    let svg = finish_sequence(
+        mask_prefix(dib_pattern_brush(1), brush_blit(DPA)),
+        &[select_object(0), blit_at(PATINVERT, 25, 30)],
+    );
+    assert!(svg.contains("rop_pat0"));
+}
+
+#[test]
+fn issue_6865_different_final_brush_keeps_middle_draw() {
+    let svg = finish_sequence(
+        mask_prefix(dib_pattern_brush(1), brush_blit(DPA)),
+        &[
+            solid_brush((0x10, 0x20, 0x30)),
+            select_object(2),
+            brush_blit(PATINVERT),
+        ],
+    );
+    assert!(svg.contains("rop_pat0"));
+}
+
+#[test]
+fn issue_6865_intervening_draw_keeps_middle_draw() {
+    let svg = finish_sequence(
+        mask_prefix(dib_pattern_brush(1), brush_blit(DPA)),
+        &[
+            brush_blit(0x00F0_0021),
+            select_object(0),
+            brush_blit(PATINVERT),
+        ],
+    );
+    assert!(svg.contains("rop_pat0"));
+}
+
+#[test]
+fn issue_6865_clip_change_keeps_middle_draw() {
+    let mut clip = Vec::new();
+    for coordinate in [45i16, 45, 15, 15] {
+        clip.extend_from_slice(&i16le(coordinate));
+    }
+    let svg = finish_sequence(
+        mask_prefix(dib_pattern_brush(1), brush_blit(DPA)),
+        &[
+            record(0x0416, &clip),
+            select_object(0),
+            brush_blit(PATINVERT),
+        ],
+    );
+    assert!(svg.contains("rop_pat0"));
+    assert_eq!(
+        svg.matches("fill=\"#D9D9D9\"").count(),
+        2,
+        "different DC clips must not cancel the outer XOR draws"
+    );
+}
+
+#[test]
+fn issue_6865_colored_one_bit_pattern_is_preserved() {
+    let mut pattern = dib_pattern_brush(1);
+    let palette = 6 + 2 + 2 + 40;
+    pattern[palette..palette + 8].copy_from_slice(&[255, 0, 0, 0, 0, 0, 255, 0]);
+    let svg = finish_sequence(
+        mask_prefix(pattern, brush_blit(DPA)),
+        &[select_object(0), brush_blit(PATINVERT)],
+    );
+    assert!(svg.contains("rop_pat0"));
+}
+
+#[test]
+fn issue_6865_reversed_black_white_palette_is_a_mask() {
+    let mut pattern = dib_pattern_brush(1);
+    let palette = 6 + 2 + 2 + 40;
+    pattern[palette..palette + 8].copy_from_slice(&[255, 255, 255, 0, 0, 0, 0, 0]);
+    let svg = finish_sequence(
+        mask_prefix(pattern, brush_blit(DPA)),
+        &[select_object(0), brush_blit(PATINVERT)],
+    );
+    assert!(!svg.contains("rop_pat"));
+}

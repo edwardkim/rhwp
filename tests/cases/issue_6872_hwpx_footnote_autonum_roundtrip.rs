@@ -192,3 +192,103 @@ fn issue_6872_digit_shape_keeps_the_paren_suffix() {
         &xml[..xml.len().min(600)]
     );
 }
+
+#[test]
+fn issue_6872_explicit_empty_digit_suffix_survives_maintainer_merge() {
+    let xml = section_xml(|doc| {
+        with_footnote_shape(doc, |shape| {
+            shape.number_format = NumberFormat::Digit;
+            shape.suffix_char = '\0';
+            shape.deco_chars_from_source = true;
+        });
+    });
+    assert!(xml.contains(r#"type="DIGIT" userChar="" prefixChar="" suffixChar="""#));
+}
+
+fn literal_note_hwpx() -> Vec<u8> {
+    use std::io::{Cursor, Read, Write};
+    let mut doc = rhwp::model::document::Document::default();
+    // The literal runs below reference charPrIDRef=0. Register that shape
+    // in the serialized header rather than bypassing ID validation.
+    doc.doc_info.char_shapes.push(Default::default());
+    let mut section = rhwp::model::document::Section::default();
+    section
+        .paragraphs
+        .push(rhwp::model::paragraph::Paragraph::default());
+    doc.sections.push(section);
+    let bytes = rhwp::serializer::hwpx::serialize_hwpx(&doc).unwrap();
+    let mut source = zip::ZipArchive::new(Cursor::new(bytes)).unwrap();
+    let mut destination = zip::ZipWriter::new(Cursor::new(Vec::new()));
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"
+        xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+<hp:p id="0" paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:ctrl>
+<hp:footNote number="1" userChar="42" instId="11"><hp:subList><hp:p id="1" paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>footnote</hp:t></hp:run></hp:p></hp:subList></hp:footNote>
+<hp:endNote number="2" userChar="43" instId="12"><hp:subList><hp:p id="2" paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>endnote</hp:t></hp:run></hp:p></hp:subList></hp:endNote>
+<hp:autoNum num="1" numType="FOOTNOTE"><hp:autoNumFormat type="USER_CHAR" userChar="*" prefixChar="" suffixChar="" supscript="0"/></hp:autoNum>
+</hp:ctrl><hp:t>body</hp:t></hp:run></hp:p></hs:sec>"#;
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).unwrap();
+        let name = entry.name().to_string();
+        let mut contents = Vec::new();
+        entry.read_to_end(&mut contents).unwrap();
+        if name.ends_with("section0.xml") {
+            contents = xml.as_bytes().to_vec();
+        }
+        destination
+            .start_file(name, zip::write::SimpleFileOptions::default())
+            .unwrap();
+        destination.write_all(&contents).unwrap();
+    }
+    destination.finish().unwrap().into_inner()
+}
+
+#[test]
+fn issue_6872_parser_and_writer_preserve_footnote_and_endnote_user_char() {
+    use rhwp::model::control::Control;
+    let mut bytes = literal_note_hwpx();
+    for _ in 0..2 {
+        let doc = rhwp::parser::hwpx::parse_hwpx(&bytes).unwrap();
+        let controls = &doc.sections[0].paragraphs[0].controls;
+        let footnote = controls
+            .iter()
+            .find_map(|control| match control {
+                Control::Footnote(note) => Some(note),
+                _ => None,
+            })
+            .expect("literal footNote must be parsed");
+        assert!(footnote.decoration_is_user_char);
+        assert_eq!(footnote.after_decoration_letter, 42);
+        let endnote = controls
+            .iter()
+            .find_map(|control| match control {
+                Control::Endnote(note) => Some(note),
+                _ => None,
+            })
+            .expect("literal endNote must be parsed");
+        assert!(endnote.decoration_is_user_char);
+        assert_eq!(endnote.after_decoration_letter, 43);
+        bytes = rhwp::serializer::hwpx::serialize_hwpx(&doc).unwrap();
+    }
+}
+
+#[test]
+fn issue_6872_inline_user_char_parser_and_writer_roundtrip() {
+    use rhwp::model::control::{AutoNumberType, Control};
+    let mut bytes = literal_note_hwpx();
+    for _ in 0..2 {
+        let doc = rhwp::parser::hwpx::parse_hwpx(&bytes).unwrap();
+        let auto_num = doc.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                Control::AutoNumber(value) => Some(value),
+                _ => None,
+            })
+            .expect("literal autoNum must be parsed");
+        assert_eq!(auto_num.number_type, AutoNumberType::Footnote);
+        assert_eq!(auto_num.format, 18);
+        assert_eq!(auto_num.user_symbol, '*');
+        bytes = rhwp::serializer::hwpx::serialize_hwpx(&doc).unwrap();
+    }
+}
