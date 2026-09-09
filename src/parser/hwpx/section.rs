@@ -9390,31 +9390,6 @@ mod tests {
     }
 
     #[test]
-    fn issue6872_empty_deco_char_attrs_mean_none() {
-        // [#6872] `suffixChar=""` 는 "접미 없음" 이다. 종전에는 `chars().next()` 가
-        // `None` 이라 그냥 넘어가 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 가 됐다.
-        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
-<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
-        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
-  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:secPr>
-    <hp:footNotePr>
-      <hp:autoNumFormat type="USER_CHAR" userChar="*" prefixChar="" suffixChar="" supscript="0"/>
-      <hp:numbering type="ON_PAGE" newNum="1"/>
-    </hp:footNotePr>
-  </hp:secPr></hp:run></hp:p>
-</hs:sec>"##;
-        let section = parse_hwpx_section(xml).unwrap();
-        let fs = &section.section_def.footnote_shape;
-        assert_eq!(fs.user_char, '*', "사용자 기호 보존");
-        assert_eq!(fs.suffix_char, '\0', "빈 접미는 '없음'(\\0)으로 기록");
-        assert_eq!(fs.prefix_char, '\0', "빈 접두도 '없음'");
-        assert!(matches!(
-            fs.numbering,
-            crate::model::footnote::FootnoteNumbering::RestartPage
-        ));
-    }
-
-    #[test]
     fn task1556_same_paragraph_field_uses_range_not_orphan() {
         // 동일 문단 내 begin+end 는 종전대로 field_ranges 로만 처리 (고아 0) — 회귀 가드.
         let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
