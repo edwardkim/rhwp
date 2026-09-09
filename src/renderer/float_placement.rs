@@ -778,6 +778,29 @@ pub(crate) fn native_empty_host_cellbreak_fragment_repeats_outer_margin(
         && !has_non_whitespace_text(para)
 }
 
+/// [#6887] 문단 기준 왼쪽 정렬 어울림 표가 원점에 싣는 바깥 왼쪽 여백 (HU).
+///
+/// 한글은 `horzRelTo="PARA"` + `horzAlign="LEFT"` 인 float 의 저장 `horzOffset` 을
+/// **바깥 여백 상자의 왼끝** 기준으로 읽는다 — 표 자신의 왼끝은 거기서
+/// `outMargin.left` 만큼 더 안쪽이다. 같은 좌표를 다루는 개체 경로
+/// (`shape_layout::form_object_origin`)는 이미 `ref_x + m_left + h_offset` 로
+/// 이 여백을 싣고 있고, 표 경로만 빠져 있었다 (156492236: 선언 outMargin.left
+/// 1417HU=18.89px 만큼 그림이 17쪽 전부에서 왼쪽으로 치우침).
+///
+/// `#6378` 이 연 `HorzRelTo::Column` 형상과 겹치지 않게 `Para` 기준으로만 열고,
+/// 오른쪽·가운데 정렬은 `ref_w` 산식이 달라 건드리지 않는다. 여백이 0 이면
+/// 더해질 값이 없어 no-op 다.
+pub(crate) fn para_relative_left_aligned_outer_margin_left_hu(table: &Table) -> Option<i32> {
+    if table.common.treat_as_char
+        || !matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || table.outer_margin_left <= 0
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_left))
+}
+
 /// [#6378] 원본 HWPX 단 기준 RowBreak 자리차지 표의 사방 균등 outMargin (HU).
 ///
 /// `hwp5_stored_pagination_layout` 이 꺼진 원본 HWPX 는 native HWP5 빈-host

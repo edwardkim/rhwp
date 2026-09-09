@@ -907,10 +907,11 @@ const DOC_RESOURCES: &[DocResource] = &[
         uri: "rhwp://docs/gym",
         name: "gym-readme",
         title: "rhwp 에이전트 운동장 (gym)",
-        description:
-            "에이전트가 실문서로 실력을 겨루고 기록으로 남기는 벤치마크 — 과제판·채점·리더보드.",
+        description: "선택적 Gym 평가 도구 안내 — 제품 실행에는 Gym 설치가 필요하지 않습니다.",
         mime_type: "text/markdown",
-        text: include_str!("../gym/README.md"),
+        // #6916: URI는 보존하되 제품 빌드가 선택적 Gym 자산을 요구하지 않게 한다.
+        // 제품 소유 안내만 내장하며 Gym README 복제·런타임 파일/네트워크 조회는 하지 않는다.
+        text: include_str!("../mydocs/manual/gym_optional_tool.md"),
     },
 ];
 

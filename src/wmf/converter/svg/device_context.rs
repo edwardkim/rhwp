@@ -34,7 +34,22 @@ impl Default for DeviceContext {
             map_mode: MapMode::MM_TEXT,
             poly_fill_mode: PolyFillMode::ALTERNATE,
             text_align_horizontal: TextAlignmentMode::TA_LEFT,
-            text_align_vertical: VerticalTextAlignmentMode::VTA_BASELINE,
+            // [#6919] **재생 DC 의 기본 세로 정렬은 `TA_TOP` 이다.**
+            //
+            // [MS-WMF] 2.1.2.18 TextAlignmentMode 의 기본값은
+            // `TA_LEFT | TA_TOP | TA_NOUPDATECP`(= 0x0000) 다 — `TA_BASELINE`(0x0018)이
+            // 아니다. `META_SETTEXTALIGN` 이 하나도 없는 metafile 에서는 이 기본값이
+            // 그대로 쓰이므로, `META_EXTTEXTOUT` 의 `y` 는 **글자 셀의 위끝**이고
+            // baseline 은 `y + ascent` 다.
+            //
+            // 종전 기본값(`VTA_BASELINE`)은 `#965` 가 이미 구현해 둔 cell-top 보정
+            // (`ext_text_out` 의 `+0.8em`)에 **도달하지 못하게** 만들어, 그런 metafile 의
+            // 글자가 통째로 한 줄 위로 올라갔다(148726703 6~8쪽 차트 제목이 테두리에
+            // 걸려 잘림 — GDI+ 정답지 y 9.5..20.0 vs rhwp 4.3..13.0).
+            //
+            // `SetTextAlign` 을 부르는 metafile 은 그 핸들러가 비트를 그대로 읽으므로
+            // (`v_bits == 0x0018 → VTA_BASELINE`) 불변이다.
+            text_align_vertical: VerticalTextAlignmentMode::VTA_TOP,
             text_align_update_cp: false,
             text_bk_color: ColorRef::white(),
             text_color: ColorRef::black(),

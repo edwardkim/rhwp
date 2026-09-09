@@ -10,7 +10,8 @@ use super::float_placement::{
     empty_host_physical_ladder_extras_hu, empty_offset_float_deferred_text_ladder_hu,
     horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
     native_empty_host_rowbreak_line_advance_hu,
-    original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+    original_hwpx_column_rowbreak_equal_outer_margin_hu,
+    para_relative_left_aligned_outer_margin_left_hu, signed_hwpunit,
     stored_empty_anchor_band_host_line_advance_hu, stored_visible_anchor_band_host_line_advance_hu,
     FloatLaneSet, FloatPlacementContext,
 };
@@ -972,14 +973,39 @@ fn stored_float_anchor_line_top(
     control_index: usize,
     stored: &[&crate::model::paragraph::LineSeg],
 ) -> Option<i32> {
-    let char_pos = para.control_text_positions().get(control_index).copied()?;
-    // 줄의 `text_start` 와 같은 축(HWP5 UTF-16)으로 올려서 견준다. 제어 문자가 텍스트
-    // 끝에 있으면 `char_offsets` 범위를 벗어나므로 마지막 글자 바로 뒤로 잡는다.
-    let anchor_u16 = para
-        .char_offsets
-        .get(char_pos)
-        .copied()
-        .or_else(|| para.char_offsets.last().map(|last| last + 1))?;
+    // 줄의 `text_start` 와 같은 축(HWP5 UTF-16)으로 올려서 견준다.
+    let anchor_u16 = if para.char_offsets.is_empty() {
+        // [#6879] 글자가 하나도 없이 개체만 실린 문단은 `char_offsets` 가 비어 있어
+        // 위 사상이 불가능하다. 이 형상에서는 인라인 개체 하나가 축을 정확히 8 유닛씩
+        // 차지하므로 **앞선 인라인 개체 수 × 8** 이 곧 제어 문자 자리다
+        // (156767332 pi=73: TAC 라벨 뒤 float → 8, 저장 줄1 `textpos=8` 과 일치).
+        let inline_before = para
+            .controls
+            .iter()
+            .take(control_index)
+            .filter(|ctrl| {
+                matches!(
+                    ctrl,
+                    Control::Shape(_)
+                        | Control::Table(_)
+                        | Control::Picture(_)
+                        | Control::Equation(_)
+                        | Control::Footnote(_)
+                        | Control::Endnote(_)
+                        | Control::AutoNumber(_)
+                )
+            })
+            .count();
+        (inline_before as u32).saturating_mul(8)
+    } else {
+        let char_pos = para.control_text_positions().get(control_index).copied()?;
+        // 제어 문자가 텍스트 끝에 있으면 `char_offsets` 범위를 벗어나므로 마지막 글자
+        // 바로 뒤로 잡는다.
+        para.char_offsets
+            .get(char_pos)
+            .copied()
+            .or_else(|| para.char_offsets.last().map(|last| last + 1))?
+    };
     stored
         .iter()
         .rev()
@@ -1002,8 +1028,23 @@ pub(crate) fn stored_float_anchor_offset_px(
     control_index: usize,
     dpi: f64,
 ) -> f64 {
+    hwpunit_to_px(
+        stored_float_anchor_offset_hu(para, table, control_index),
+        dpi,
+    )
+}
+
+/// [#6860] 같은 값의 HWPUNIT 판 — 저장 사다리와 같은 축에서 견주는 호출부용.
+///
+/// `#6879`(typeset 의 `#5807` 판별식)는 TAC 줄 높이(HWPUNIT)와 직접 비교하므로 px 로
+/// 내려갔다 오면 반올림이 섞인다.
+pub(crate) fn stored_float_anchor_offset_hu(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    control_index: usize,
+) -> i32 {
     if !stored_host_lines_precede_float(para, table, control_index) {
-        return 0.0;
+        return 0;
     }
     let stored: Vec<&crate::model::paragraph::LineSeg> = para
         .line_segs
@@ -1011,12 +1052,49 @@ pub(crate) fn stored_float_anchor_offset_px(
         .filter(|ls| ls.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
         .collect();
     let Some(base) = stored.first().map(|ls| ls.vertical_pos) else {
-        return 0.0;
+        return 0;
     };
     let Some(anchor_top) = stored_float_anchor_line_top(para, control_index, &stored) else {
-        return 0.0;
+        return 0;
     };
-    hwpunit_to_px((anchor_top - base).max(0), dpi)
+    (anchor_top - base).max(0)
+}
+
+/// [#6879] 이 float 보다 **앞에** 줄을 차지하는 TAC 형제가 있는가.
+///
+/// `#6879` 가 앵커 줄 기준점을 조각 경로 밖(일반 배치·흐름 예약)까지 넓힌 형상은
+/// "TAC 형제가 첫 줄을 차지하고 그 **뒤에** float 이 앵커된" 문단이다
+/// (156767332 pi=73: ci=0 라벨 `tac=1` → ci=1 float).
+///
+/// 그 형제가 없으면 원점을 내릴 근거가 없다. 제어 문자가 여러 줄짜리 본문 **끝**에
+/// 실린 평범한 문단도 앵커 줄이 마지막 줄로 잡히는데, 여기서 원점을 내리면
+/// `#6718` 의 `vpos == 0` 되감김이 무효가 된다 — 27469 pi=23(표 하나 · `tac=false` ·
+/// 형제 없음 · 제어 문자가 126자 끝 · 저장 줄 3개 spread 5280HU = 70.4px)에서
+/// 4쪽 본문이 쪽 하한을 73.6px 넘었다.
+///
+/// 조각 경로(`#6860`)는 이 게이트를 쓰지 않는다 — 3067979 문단 1523 은 형제가 없어도
+/// 앵커 줄 기준이 정본과 맞고, 그 경로는 `#6718` 되감김과 만나지 않는다.
+pub(crate) fn has_line_taking_tac_sibling_before(para: &Paragraph, control_index: usize) -> bool {
+    para.controls
+        .iter()
+        .take(control_index)
+        .any(|ctrl| ctrl.is_treat_as_char_object())
+}
+
+/// [#6879] 일반 배치·흐름 예약이 쓰는 앵커 오프셋 — TAC 형제가 있을 때만 0 이 아니다.
+///
+/// 두 호출부가 같은 값을 봐야 배치와 예약이 어긋나지 않으므로 게이트를 여기 한 곳에
+/// 둔다. 게이트가 거짓이면 종전(문단 상단 기준) 동작 그대로다.
+pub(crate) fn tac_sibling_float_anchor_offset_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    control_index: usize,
+    dpi: f64,
+) -> f64 {
+    if !has_line_taking_tac_sibling_before(para, control_index) {
+        return 0.0;
+    }
+    stored_float_anchor_offset_px(para, table, control_index, dpi)
 }
 
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.
@@ -1238,6 +1316,35 @@ fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
             .controls
             .iter()
             .any(|ctrl| matches!(ctrl, Control::Table(t) if is_para_topbottom_float(&t.common)))
+}
+
+/// 이 단에 이미 그려진 흐름 글자의 최하단 y — 없으면 `None`.
+///
+/// 저장 사다리의 음수 줄간격(`line_spacing < 0`)은 줄 상자를 글자보다 좁게 만든다.
+/// 흐름 커서는 그 좁은 상자만 전진하므로, 뒤따르는 표가 이미 그려진 글자를 물 수
+/// 있다. 그때 하한으로 쓴다. 개체(그림·도형·글상자)는 절대 좌표라 흐름 하한이 될
+/// 수 없어 하위 노드까지 건너뛴다.
+fn painted_flow_text_bottom(node: &RenderNode) -> Option<f64> {
+    fn walk(node: &RenderNode, out: &mut f64) {
+        match &node.node_type {
+            RenderNodeType::Image(_)
+            | RenderNodeType::Rectangle(_)
+            | RenderNodeType::Ellipse(_)
+            | RenderNodeType::Path(_)
+            | RenderNodeType::Group(_)
+            | RenderNodeType::TextBox => return,
+            RenderNodeType::TextRun(_) => {
+                *out = out.max(node.bbox.y + node.bbox.height);
+            }
+            _ => {}
+        }
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    let mut bottom = f64::NEG_INFINITY;
+    walk(node, &mut bottom);
+    bottom.is_finite().then_some(bottom)
 }
 
 /// 빈 host 문단에 Para-relative Square 표 두 개가 함께 저장된 경우는 세로 block
@@ -6612,6 +6719,7 @@ impl LayoutEngine {
                 ));
         }
         hcursor.uniform_filler_ladder = self.uniform_filler_ladder.get();
+        hcursor.session_edited = self.profile.get().session_edited();
         // [Task #1246] 미주 흐름 컬럼에만 between-notes 마진(HU)을 주입 → HeightCursor 가 새 미주
         // 제목 forward 흐름의 min-gap 보정에 사용. 본문 컬럼은 0 (무영향).
         if col_content.endnote_flow {
@@ -6900,7 +7008,30 @@ impl LayoutEngine {
                                     )
                             })
                     });
+            // [편집 세션] 분할 표 조각은 typeset 이 fresh 컷으로 이 쪽 잔여에
+            // 배치한 신생 아이템이다 — 저장 사다리 전방 점프로 당기면 조각이 쪽
+            // 하단 밖에 그려진다(셀 Enter 재현: 조각이 쪽 하단을 수백 px 넘김).
+            // 이 쪽에 선행 아이템이 있는 조각은 흐름 y 를 신뢰한다.
+            let session_fresh_partial_table = self.profile.get().session_edited()
+                && item_ordinal > 0
+                && matches!(item, PageItem::PartialTable { .. });
+            // [편집 세션] 저장 사다리의 음수 줄간격은 줄 상자를 글자보다 좁게
+            // 만들어(lh > 0 · ls < 0 → 상자가 글자보다 낮음), 흐름 커서가 글자
+            // 하단보다 위에 머문다. 편집으로 표가 이 쪽에 재배치되면 그 좁은
+            // 상자 위치에 표를 그려 앞 문구를 문다. 한글은 재조판에서 표를
+            // 글자 아래에 놓는다.
+            if self.profile.get().session_edited()
+                && item_ordinal > 0
+                && matches!(item, PageItem::Table { .. } | PageItem::PartialTable { .. })
+            {
+                if let Some(text_bottom) = painted_flow_text_bottom(&col_node) {
+                    if y_offset < text_bottom {
+                        y_offset = text_bottom;
+                    }
+                }
+            }
             if !shape_jumped
+                && !session_fresh_partial_table
                 && (!prev_tac_seg_applied
                     || current_is_endnote_question_title
                     || prev_tac_host_sibling_float)
@@ -7884,6 +8015,39 @@ impl LayoutEngine {
                                 para_index, control_index, _y_in, new_y
                             );
                         }
+                        new_y = _y_in;
+                    }
+                }
+            }
+            // [#6888] 자기 앵커보다 **아래로 떨어진** 자리차지 개체는 흐름을 전진시키지
+            // 않는다. `#409` 의 전진은 밴드가 앵커에서 시작할 때의 계약이고, 양수
+            // `vertOffset` 이 밴드를 아래로 내려 놓으면 그 사이 콘텐츠는 밀릴 이유가 없다.
+            // 조판과 같은 판별을 써야 `#409` 가 막으려던 desync 가 안 생긴다.
+            if new_y > _y_in {
+                if let PageItem::Shape {
+                    para_index,
+                    control_index,
+                } = item
+                {
+                    let displaced = paragraphs.get(*para_index).is_some_and(|para| {
+                        para.controls
+                            .get(*control_index)
+                            .and_then(|control| match control {
+                                Control::Picture(pic) => Some(&pic.common),
+                                Control::Shape(shape) => Some(shape.common()),
+                                Control::Equation(eq) => Some(&eq.common),
+                                _ => None,
+                            })
+                            .is_some_and(|common| {
+                                crate::renderer::topbottom_float_displaced_below_following_flow(
+                                    para,
+                                    paragraphs.get(*para_index + 1),
+                                    common,
+                                    self.dpi,
+                                )
+                            })
+                    });
+                    if displaced {
                         new_y = _y_in;
                     }
                 }
@@ -9431,7 +9595,21 @@ impl LayoutEngine {
                 .iter()
                 .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
             let fitted_visible_mt = if is_current_visible_para_float {
-                raw_mt.map(|measured| fit_measured_table_to_declared_height(measured, t, self.dpi))
+                raw_mt.map(|measured| {
+                    // typeset format_table 과 같은 가드 — 편집 세션이거나 중첩 표
+                    // 없는 텍스트 행이 선언 행높이를 1.5배 넘게 초과했으면(셀 편집
+                    // 성장) 압축하지 않는다(압축하면 커진 행의 몫을 다른 행이
+                    // 빼앗겨 내부가 위로 밀린다).
+                    if self.profile.get().session_edited()
+                        || crate::renderer::height_measurer::measured_table_has_grown_text_row(
+                            measured, t, self.dpi,
+                        )
+                    {
+                        measured.clone()
+                    } else {
+                        fit_measured_table_to_declared_height(measured, t, self.dpi)
+                    }
+                })
             } else {
                 None
             };
@@ -9533,13 +9711,22 @@ impl LayoutEngine {
                 let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
                 let area_x = col_area.x + effective_margin;
                 let area_w = (col_area.width - effective_margin - margin_right).max(0.0);
+                // [#6887] 왼쪽 정렬 어울림 표의 저장 `horzOffset` 은 **바깥 여백
+                // 상자**의 왼끝을 가리킨다 — 표 자신의 왼끝은 거기서
+                // `outMargin.left` 만큼 안쪽이다. 바로 위 TAC 분기(`base_x`)와
+                // 개체 경로(`shape_layout::form_object_origin`)는 이미 이 여백을
+                // 싣고 있고 어울림 표 경로만 빠져 있었다. 오른쪽·가운데 정렬은
+                // 기준 폭 산식이 달라(`area_w`) 실측 근거가 나올 때까지 둔다.
+                let om_l = para_relative_left_aligned_outer_margin_left_hu(t)
+                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+                    .unwrap_or(0.0);
                 let x = match t.common.horz_align {
                     crate::model::shape::HorzAlign::Right
                     | crate::model::shape::HorzAlign::Outside => area_x + (area_w - tbl_w).max(0.0),
                     crate::model::shape::HorzAlign::Center => {
                         area_x + (area_w - tbl_w).max(0.0) / 2.0
                     }
-                    _ => area_x,
+                    _ => area_x + om_l,
                 };
                 Some(x)
             } else if is_tac {
@@ -10893,6 +11080,17 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [#6879] float 의 세로 기준점은 문단 상단이 아니라 **앵커 줄**(그 개체의
+            // 제어 문자가 실린 저장 줄)이다. 앞선 TAC 형제가 첫 줄을 차지한 문단에서
+            // 이것을 안 옮기면 float 이 그 줄 위로 올라가 겹친다 (156767332 pi=73:
+            // 라벨 98.2..138.4 vs float 128.0). 앵커가 첫 줄이면 0 이라 종전과 같다.
+            if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                let anchor_offset =
+                    tac_sibling_float_anchor_offset_px(para, t, control_index, self.dpi);
+                if anchor_offset > 0.0 {
+                    para_y_for_table += anchor_offset;
+                }
+            }
             let is_current_visible_para_float = para
                 .controls
                 .get(control_index)
@@ -11040,7 +11238,11 @@ impl LayoutEngine {
                         matches!(it, PageItem::PartialParagraph { para_index: pi, .. } if *pi == para_index)
                     })
                 });
-            if !is_tac && !text_already_laid_out {
+            // [편집 세션] host 텍스트가 typeset 에서 다음 쪽 PartialParagraph 로
+            // 재배정되면 이 쪽 items 에는 없다 — 저장-형상용 fallback 이 그걸 "미배치"로
+            // 오인해 이 쪽에 한 번 더 그리면 문구·로고가 두 쪽에 중복된다(셀 끝
+            // Enter 재현). 편집 세션은 PP 아이템 배정이 진실이므로 끈다.
+            if !is_tac && !text_already_laid_out && !self.profile.get().session_edited() {
                 let host_is_not_square =
                     if let Some(Control::Table(ht)) = para.controls.get(control_index) {
                         !matches!(ht.common.text_wrap, crate::model::shape::TextWrap::Square)
@@ -11242,7 +11444,45 @@ impl LayoutEngine {
                     } else {
                         seg.line_height
                     };
-                    if gap > 0 {
+                    // [#6900] **사다리가 다음 문단을 이미 표 하단에 두면 더 띄우지 않는다.**
+                    //
+                    // 이 간격은 표 뒤 host 앵커 줄의 후행 간격이다. 그런데 앵커 줄의
+                    // 사다리(`lh`)가 **앞선 TAC 표 한 장만** 덮고 뒤따르는 비-TAC 표는
+                    // 덮지 않는 문단이 있다. 그런 문단에서는 표 하단이 이미 사다리가
+                    // 지목한 다음 문단 자리까지 내려와 있어서, 여기서 간격을 더하면
+                    // 후속 문단이 통째로 그만큼 밀린다(156521182 4쪽: 출처 줄이 본문을
+                    // 13.4px 넘어 사라짐).
+                    //
+                    // ```text
+                    //   pi=30 seg0  vpos 0      lh 45.3   ← 첫 TAC 표만 덮는다
+                    //   표 하단(그린 값)          977.4
+                    //   pi=31 저장 vpos 64803  → 977.4    ← 사다리가 표 하단을 지목
+                    //   종전                     977.4 + 14.9(seg.line_spacing) = 992.3
+                    // ```
+                    //
+                    // 다음 문단의 저장 vpos 를 이 문단의 사다리 기준점으로 환산한다.
+                    // 중복 간격이라는 증거는 그 위치가 현재 표 하단과 일치하는 것이다.
+                    // 표 하단보다 훨씬 위인 저장 위치는 재배치 또는 표 높이 변화일 수
+                    // 있으므로 간격을 없애는 근거로 쓰지 않는다. 기존 0.5px 환산 오차만
+                    // 양방향으로 허용하며, 근거가 불충분하면 종전 간격을 유지한다.
+                    let ladder_already_at_flow = self.profile.get().hwp5_stored_pagination_layout()
+                        && para
+                            .line_segs
+                            .first()
+                            .zip(
+                                paragraphs
+                                    .get(para_index + 1)
+                                    .and_then(|next| next.line_segs.first()),
+                            )
+                            .is_some_and(|(host_first, next_first)| {
+                                // 되감김(다음 쪽으로 넘어간 문단)은 기준점이 달라 못 쓴다.
+                                let next_ladder_y = para_y_for_table
+                                    - hwpunit_to_px(host_first.vertical_pos, self.dpi)
+                                    + hwpunit_to_px(next_first.vertical_pos, self.dpi);
+                                next_first.vertical_pos > host_first.vertical_pos
+                                    && (next_ladder_y - y_offset).abs() <= 0.5
+                            });
+                    if gap > 0 && !ladder_already_at_flow {
                         y_offset += hwpunit_to_px(gap, self.dpi);
                     }
                 }
@@ -12709,25 +12949,31 @@ impl LayoutEngine {
                             // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄 앞
                             // gap ≥ 그림 높이)하면 그림 높이 추가 진행 생략(typeset pushdown
                             // 게이트와 동일 조건). #409 계열(gap 작음)은 현행 유지.
-                            let vpos_accounts_for_height = para_index > 0 && {
-                                const PUSHDOWN_GAP_TOL_PX: f64 = 8.0;
-                                let obj_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                                let v_cur = paragraphs[para_index]
-                                    .line_segs
-                                    .first()
-                                    .map(|s| s.vertical_pos);
-                                let prev_end = paragraphs[para_index - 1]
-                                    .line_segs
-                                    .last()
-                                    .map(|s| s.vertical_pos + s.line_height);
-                                match (v_cur, prev_end) {
-                                    (Some(vc), Some(pe)) if vc > pe => {
-                                        hwpunit_to_px((vc - pe) as i32, self.dpi)
-                                            >= obj_h - PUSHDOWN_GAP_TOL_PX
+                            // [편집 세션] 이 게이트의 근거(파일 vpos gap)는 저장
+                            // 시점 형상이다 — 셀 편집으로 앞 문단(표 host)이 자라면
+                            // gap 은 이미 소비된 공간이라, 그림을 gap 안(base 위)으로
+                            // 올리면 커진 표 하단에 겹친다(셀 Enter 재현: 그림이
+                            // 표 하단 위에 그려짐).
+                            let vpos_accounts_for_height =
+                                !self.profile.get().session_edited() && para_index > 0 && {
+                                    const PUSHDOWN_GAP_TOL_PX: f64 = 8.0;
+                                    let obj_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                                    let v_cur = paragraphs[para_index]
+                                        .line_segs
+                                        .first()
+                                        .map(|s| s.vertical_pos);
+                                    let prev_end = paragraphs[para_index - 1]
+                                        .line_segs
+                                        .last()
+                                        .map(|s| s.vertical_pos + s.line_height);
+                                    match (v_cur, prev_end) {
+                                        (Some(vc), Some(pe)) if vc > pe => {
+                                            hwpunit_to_px((vc - pe) as i32, self.dpi)
+                                                >= obj_h - PUSHDOWN_GAP_TOL_PX
+                                        }
+                                        _ => false,
                                     }
-                                    _ => false,
-                                }
-                            };
+                                };
                             // [#5715] #1079 gap 휴리스틱은 그 gap 이 **현재 쪽에 물리적으로
                             // 실재**할 때만 유효하다. 쪽 리셋 뒤 유령 사다리(앞 lineage 의
                             // vpos 65410 이 리셋 0-기저 쪽에 섞임)가 만든 가짜 gap 이면

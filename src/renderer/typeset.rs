@@ -8149,10 +8149,44 @@ impl TypesetEngine {
                     // 마커 문단의 미설정값이다. 이 경계를 저장 vpos 리셋으로 다시
                     // 읽으면 억제했던 단나누기가 되살아나 표 격자와 본문을 서로
                     // 다른 허위 쪽으로 갈라 놓는다(74312 12쪽).
+                    // [편집 세션] 저장 vpos 리셋은 저장 시점의 쪽 경계 신호라
+                    // 편집으로 앞 내용이 늘거나 줄면 낡은 좌표다. 다만 무조건
+                    // 무시하면 이 쪽 잔여가 몇십 px 뿐일 때 다음 쪽에서 시작하던
+                    // 표의 머리 행 조각이 잔여에 낑겨 앞 문단과 겹친다(한글
+                    // 오라클: 잔여가 작으면 표는 통째로 다음 쪽 유지). 그래서
+                    // 표 host 문단은 잔여에 표 머리(첫 두 행)가 실제로 들어갈
+                    // 때만 낡은 경계를 무시하고 fresh fit 에 맡긴다.
+                    let session_stale_reset_override =
+                        self.profile.get().session_edited() && !st.current_items.is_empty() && {
+                            let first_table_head_px =
+                                para.controls
+                                    .iter()
+                                    .enumerate()
+                                    .find_map(|(ci, c)| match c {
+                                        Control::Table(_) => measured_tables
+                                            .iter()
+                                            .find(|m| {
+                                                m.para_index == para_idx && m.control_index == ci
+                                            })
+                                            .map(|m| m.row_heights.iter().take(2).sum::<f64>()),
+                                        _ => None,
+                                    });
+                            // 표 없는 문단의 저장 리셋은 단/쪽 경계 인코딩
+                            // (#2299 shortcut.hwp: 리셋 76곳 = 다단 밴드)일 수
+                            // 있어 존중한다 — 무시 대상은 편집으로 성장하는 표
+                            // host 문단의 낡은 경계뿐이다.
+                            match first_table_head_px {
+                                Some(head) => {
+                                    st.current_height + head <= st.available_height() + 0.5
+                                }
+                                None => false,
+                            }
+                        };
                     let trigger = trigger
                         && !omit_pushed_empty_page
                         && !hangul2024_refit
-                        && !overlay_columndef_separator_break;
+                        && !overlay_columndef_separator_break
+                        && !session_stale_reset_override;
                     if trigger {
                         // [Task #724] wrap_around active 시 강제 종료 — anchor cs=0
                         // (HWP5 변환본 caption-style) 한정. 일반 wrap_around (anchor cs>0)
@@ -9314,7 +9348,29 @@ impl TypesetEngine {
                                         _ => false,
                                     }
                                 };
-                                if !already_accounted {
+                                // [#6888] 자기 앵커보다 아래로 떨어진 개체는 뒤따르는
+                                // 문단을 밀지 않는다 — 판별은 공용 헬퍼에 둔다(배치와
+                                // 같은 답을 써야 `#409` 가 막으려던 desync 가 안 생긴다).
+                                let displaced_below_following_flow = match ctrl {
+                                    Control::Picture(pic) => {
+                                        crate::renderer::topbottom_float_displaced_below_following_flow(
+                                            para,
+                                            paragraphs.get(para_idx + 1),
+                                            &pic.common,
+                                            self.dpi,
+                                        )
+                                    }
+                                    Control::Shape(s) => {
+                                        crate::renderer::topbottom_float_displaced_below_following_flow(
+                                            para,
+                                            paragraphs.get(para_idx + 1),
+                                            s.common(),
+                                            self.dpi,
+                                        )
+                                    }
+                                    _ => false,
+                                };
+                                if !already_accounted && !displaced_below_following_flow {
                                     // [#2814] 절반쪽급 그림이 한 문단에 여럿 스택되면 한컴은
                                     // 흐름처럼 쪽을 채우며 다음 쪽으로 넘긴다(창조경제 보고서:
                                     // 절반쪽 그림 37장 = 쪽당 2장 × ~19쪽; #1995 의 전면 그림
@@ -16666,6 +16722,7 @@ impl TypesetEngine {
             prev_item_content_bottom_y: None,
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
+            session_edited: self.profile.get().session_edited(),
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 문서: 흐름이
@@ -17408,6 +17465,44 @@ impl TypesetEngine {
                 st.current_items.len()
             );
         }
+        // [편집 세션] vert=Para 자리차지 그림의 하단 요구를 문단 fit 에 반영한다.
+        // 그림은 문단 y + vertical_offset + 높이까지 차지하는데, 줄 기반 fit 은
+        // 이를 모른 채 문단을 쪽 말미에 배정하고, 렌더의 쪽-안 클램프(#2032)가
+        // 그림을 끌어올려 앞 표에 겹친다(셀 Enter 재현: 그림이 커진 표 하단
+        // 위에 얹힘). 한글은 문단 블록째 다음 쪽으로 보낸다.
+        if self.profile.get().session_edited() && !st.current_items.is_empty() {
+            let para_float_bottom_req = para
+                .controls
+                .iter()
+                .filter_map(|c| match c {
+                    Control::Picture(p)
+                        if !p.common.treat_as_char
+                            && matches!(
+                                p.common.text_wrap,
+                                crate::model::shape::TextWrap::TopAndBottom
+                            )
+                            && matches!(
+                                p.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            ) =>
+                    {
+                        Some(hwpunit_to_px(
+                            signed_hwpunit(p.common.vertical_offset)
+                                .saturating_add(p.common.height.min(i32::MAX as u32) as i32),
+                            self.dpi,
+                        ))
+                    }
+                    _ => None,
+                })
+                .fold(0.0_f64, f64::max);
+            if para_float_bottom_req > 0.0
+                && st.current_height + para_float_bottom_req.max(fmt.total_height)
+                    > st.available_height()
+            {
+                st.advance_column_or_new_page();
+            }
+        }
+
         let strict_after_empty_host_float = take_strict_plain_text_fit_after_empty_host_float_once(
             &mut st.strict_plain_text_fit_after_empty_host_float_once,
             para,
@@ -18827,6 +18922,23 @@ impl TypesetEngine {
                 // 당겨져 pi16 -1쪽. 압축(fit-down)은 종전대로 비공백 텍스트 앵커 한정.
                 let shrunk = fitted.row_heights.iter().sum::<f64>()
                     < measured.row_heights.iter().sum::<f64>() - 0.01;
+                // 텍스트 앵커의 fit-down(선언 높이 압축)은 저장 시점 형상 전용
+                // 보정이다 — 편집 세션(session_edited)이나 실제 성장 행(중첩 표
+                // 없는 텍스트 행이 선언 행높이를 1.5배 초과) 판정 시 압축하지
+                // 않는다. 압축하면 커진 행의 몫을 다른 행이 빼앗겨 내부가 위로
+                // 밀리고 fit 판정이 과소해져 RowBreak 분할이 시작되지 않는다
+                // (셀 Enter 재현: 한글은 행을 키우고 넘친 부분을 다음 쪽으로
+                // 분할). 빈 host 는 아래 분기(측정 복원·tail-fit)가 종전대로
+                // 처리한다.
+                if shrunk
+                    && para_has_non_whitespace_text(para)
+                    && (self.profile.get().session_edited()
+                        || crate::renderer::height_measurer::measured_table_has_grown_text_row(
+                            measured, table, self.dpi,
+                        ))
+                {
+                    return measured.clone();
+                }
                 if shrunk && !para_has_non_whitespace_text(para) {
                     // HWP5 빈 TopAndBottom host의 다행 RowBreak 표는 통상 콘텐츠가
                     // 선언높이를 넘으면 축소하지 않는다. 다만 마지막 행 하나가 비-TAC
@@ -19419,6 +19531,26 @@ impl TypesetEngine {
         } else {
             None
         };
+        // [편집 세션] TAC 표가 셀 편집으로 자라면 저장 줄높이(표 선언 인코딩)
+        // 기반 fit 은 과소가 된다 — 실측(mt)을 하한으로 써야 넘친 표가 pre-flush
+        // 로 새 쪽에 간다(셀 Enter 재현: 실측이 선언 fit 으로 1쪽에 남아 하단이
+        // 잘림). 저장 bounds 특례도 성장 표에는 무효다(저장 좌표는 편집 전 형상).
+        let session_grown_tac_total = (has_tac && self.profile.get().session_edited())
+            .then(|| {
+                para.controls.iter().enumerate().find_map(|(ci, ctrl)| {
+                    let Control::Table(t) = ctrl else { return None };
+                    if !self.is_effective_tac_table(para, t, &fmt) {
+                        return None;
+                    }
+                    let declared = hwpunit_to_px(t.common.height as i32, self.dpi);
+                    measured_tables
+                        .iter()
+                        .find(|m| m.para_index == para_idx && m.control_index == ci)
+                        .filter(|m| m.total_height > declared + 8.0)
+                        .map(|m| m.total_height)
+                })
+            })
+            .flatten();
         let height_for_fit = if has_tac {
             // 글자처럼 취급되는 표는 **바깥 여백(위·아래)까지 쪽 예산을 차지**한다.
             // 한컴 저장 lineseg 의 vertsize 가 `표 선언높이 + outMargin.top + outMargin.bottom`
@@ -19439,11 +19571,15 @@ impl TypesetEngine {
                     _ => None,
                 })
                 .fold(0.0f64, f64::max);
-            first_line_tac_height.unwrap_or(fmt.height_for_fit) + tac_outer_margin_px
+            let base = first_line_tac_height.unwrap_or(fmt.height_for_fit) + tac_outer_margin_px;
+            session_grown_tac_total.map_or(base, |grown| base.max(grown))
         } else {
             fmt.total_height
         };
-        let saved_single_tac_bottom_fits = if has_tac && tac_count <= 1 {
+        let saved_single_tac_bottom_fits = if has_tac
+            && tac_count <= 1
+            && session_grown_tac_total.is_none()
+        {
             para.controls
                 .iter()
                 .find_map(|ctrl| match ctrl {
@@ -19587,13 +19723,26 @@ impl TypesetEngine {
             })
             .max()
             .unwrap_or(0);
+        // [#6879] `v_off` 의 기준점은 문단 상단이 아니라 **앵커 줄**(그 개체의 제어
+        // 문자가 실린 저장 줄)이다. 문단 상단 기준으로 견주면 TAC 줄 **뒤**에 앵커된
+        // float 이 "겹침"으로 오판되어 TAC 앞으로 나가고, TAC 라벨이 흐름 끝까지
+        // 밀린다 (156767332 7쪽 pi=73: TAC 줄0 lh 3580 · float 앵커 줄1 vpos 4060 ·
+        // v_off 2512 → 문단 상단 기준 2512 < 3580 "겹침"이지만 앵커 기준 6572 ≥ 3580
+        // 으로 비겹침이고, 한글도 TAC 라벨을 쪽 상단에 둔다).
+        //
+        // `stored_float_anchor_offset_hu` 는 앵커가 첫 줄이거나 저장 줄이 개체 아래로
+        // 가는 형상이면 0 을 돌려주므로, `#5807` 의 두 핀은 값이 그대로다
+        // (1880690: 앵커 줄0 → 937 < 28024 겹침 유지 / s1 p28: 9188 ≥ 8041 비겹침 유지).
         let has_tac_overlapped_by_positive_float = tac_host_line_height_hu > 0
-            && para.controls.iter().any(|c| {
+            && para.controls.iter().enumerate().any(|(ctrl_index, c)| {
                 matches!(c, Control::Table(t)
                 if is_para_topbottom_float(&t.common)
                     && {
                         let v_off = signed_hwpunit(t.common.vertical_offset);
-                        v_off > 0 && v_off < tac_host_line_height_hu
+                        let anchor_top = crate::renderer::layout::stored_float_anchor_offset_hu(
+                            para, t, ctrl_index,
+                        );
+                        v_off > 0 && anchor_top.saturating_add(v_off) < tac_host_line_height_hu
                     })
             });
         let should_sort_para_float_tables = !para_has_non_whitespace_text(para)
@@ -20342,6 +20491,10 @@ impl TypesetEngine {
             } else {
                 cap
             };
+            // [편집 세션] 셀 편집으로 자란 TAC 표는 실측 소비가 저장 줄 기반
+            // cap 을 정당하게 넘는다 — cap 으로 되감으면 후행 문단이 성장분만큼
+            // 안 밀려 쪽 하단을 넘긴다(셀 Enter 재현: 후행 안내 문단 잘림).
+            let cap = session_grown_tac_total.map_or(cap, |grown| cap.max(grown));
             if std::env::var("RHWP_DIAG_TACCAP").is_ok() {
                 eprintln!(
                     "DIAG_TACCAP pi={} tac_seg_total={:.1} cap={:.1} fmt_total={:.1} sb={:.1} cur_h={:.1} snapped_base={:.1} clamp={}",
@@ -21278,7 +21431,13 @@ impl TypesetEngine {
             let v_off_px = hwpunit_to_px(signed_vertical_offset, self.dpi);
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
             let table_top = if signed_vertical_offset > 0 {
-                let stored_top = para_start_height + outer_top_px + v_off_px;
+                // [#6879] 세로 기준점은 앵커 줄이다 — layout 이 같은 값을 더하므로
+                // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다. layout 과 **같은**
+                // 게이트(TAC 형제 유무)를 써야 배치와 예약이 갈리지 않는다.
+                let anchor_offset_px = crate::renderer::layout::tac_sibling_float_anchor_offset_px(
+                    para, table, ctrl_idx, self.dpi,
+                );
+                let stored_top = para_start_height + anchor_offset_px + outer_top_px + v_off_px;
                 // [#2439] 같은 visible host 의 첫 표가 offset=0이면 flow 를 전진시키지만
                 // exclusion 은 만들지 않는다. 후행 양수-offset 표의 저장 상단이 그 표
                 // 내부에 있으면 한컴은 앞 표 아래로 밀어 전체 높이를 보존한다. 저장
@@ -21569,7 +21728,15 @@ impl TypesetEngine {
                         + para_line_spacing_px(para, self.dpi);
                 }
             }
-            if self.tac_table_line_index(para, table, fmt) == Some(0)
+            // [편집 세션] 자리차지(topbottom) 표가 Enter로 자라 post-text가 본문
+            // 하한을 넘으면 문구를 새 쪽으로 보낸다. 저장 형상 열람은 저장 vpos를
+            // 신뢰하므로 제외한다(셀 끝 Enter 재현: 하단 문구·로고가 페이지
+            // 밖으로 잘리던 구간).
+            let session_grown_topbottom_spill = self.profile.get().session_edited()
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common);
+            if (self.tac_table_line_index(para, table, fmt) == Some(0)
+                || session_grown_topbottom_spill)
                 && st.current_height + post_height > st.available_height() + 0.5
                 && !st.current_items.is_empty()
             {
@@ -24440,6 +24607,16 @@ impl TypesetEngine {
                 && !native_hwp5_stored_rowbreak_needs_fragment_scan
                 && (saved_span.is_some() || measured_fits_current)
                 && declared_total <= available
+                // [편집 세션] 이 통째-이월(keep-together)의 근거(saved_span:
+                // 저장에서 한 쪽에 있었음)는 편집으로 앞 내용이 밀리면 낡는다 —
+                // 한글은 RowBreak(행 경계 나눔) 표를 잔여에 행 단위로 채우고
+                // 넘친 행만 다음 쪽에 둔다(셀 Enter 재현 오라클: 마지막 행만
+                // 다음 쪽). 분할 스캐너가 경계를 정하게 한다.
+                && !(self.profile.get().session_edited()
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    ))
             {
                 if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
                     eprintln!(
@@ -24589,7 +24766,13 @@ impl TypesetEngine {
             && matches!(table.page_break, crate::model::table::TablePageBreak::None)
             && ft.table_footnotes.is_empty()
             && st.current_height + ft.effective_height <= available + 0.5;
-        let declared_fit_height = if hwpx_noninline_tac_measured_fit {
+        // [편집 세션] 셀 편집으로 실측이 선언을 넘게 자란 표는 선언 기준 whole-fit
+        // 이 무의미하다 — 선언으로는 "들어간다"인데 실측은 본문 하단을 넘어,
+        // 표가 앞 쪽에 잘린 채 남는다(셀 Enter 재현). 실측을 fit 기준으로 써서
+        // 넘치면 이월·스캔 경로로 넘긴다.
+        let session_grown_measured_fit = self.profile.get().session_edited()
+            && ft.effective_height > declared_object_total + 8.0;
+        let declared_fit_height = if hwpx_noninline_tac_measured_fit || session_grown_measured_fit {
             ft.effective_height
         } else {
             declared_object_total

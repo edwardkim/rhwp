@@ -198,6 +198,14 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
 /// 개체(#4761)·HML 의 형제 가드와 같은 취지·같은 값이다. 실문서의 표 중첩은 이에 한참 못 미친다.
 pub(crate) const MAX_HWP5_SECTION_DEPTH: u32 = 64;
 
+/// 짝을 잃은 UTF-16 서로게이트 한 짝을 받는 글자 (#6873).
+///
+/// `PARA_TEXT` 는 UTF-16 코드 단위 배열이라 상위/하위 서로게이트가 **혼자** 실린 문서가
+/// 있다. Rust `char` 도 XML 도 그 값을 담지 못한다 — 한글은 HWPX 로 저장할 때 그 자리를
+/// `□` 로 적는다(engine 2020 정본 실측). 종전에는 파서가 통째로 버려 h2x 에서 글자가
+/// 사라졌다.
+const UNPAIRED_SURROGATE_CHAR: char = '\u{25A1}';
+
 thread_local! {
     static HWP5_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
 }
@@ -601,7 +609,27 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                     continue;
                 }
             }
-            if let Some(c) = char::from_u32(ch as u32) {
+            // [#6873] **짝 없는 서로게이트를 버리지 말고 한글과 같은 글자로 받는다.**
+            //
+            // 바로 위 갈래가 처리하지 못한 서로게이트 — 상위 뒤에 하위가 없거나 하위가
+            // 혼자 오는 경우 — 는 유효한 UTF-16 이 아니라 `char::from_u32` 가 `None` 을
+            // 주고, 그 글자가 모델에서 통째로 사라졌다. h2h 는 원본 코드 단위를 그대로
+            // 흘려보내 살아남지만 h2x 는 잃는다(19211507 `충 주 시 장 DB80`,
+            // 18096141 `DFDA` — 각 1글자).
+            //
+            // 한글도 XML 에 반쪽 서로게이트를 담을 수 없어 **`□`(U+25A1) 로 바꿔 쓴다** —
+            // engine 2020 정본 HWPX 로 실측한 값이다. 같은 글자로 받아 길이와 모양을
+            // 함께 맞춘다.
+            //
+            // ```text
+            //   19211507  <hp:t>충    주    시    장 </hp:t><hp:t>□</hp:t>
+            //   18096141  <hp:t> □   신 청 인</hp:t>
+            // ```
+            //
+            // 상위/하위 어느 쪽이 남았는지는 구분하지 않는다 — 정본이 둘을 같은 글자로
+            // 적는다.
+            let scalar = char::from_u32(ch as u32).or(Some(UNPAIRED_SURROGATE_CHAR));
+            if let Some(c) = scalar {
                 char_offsets.push(code_unit_pos);
                 text.push(c);
                 char_count += 1;

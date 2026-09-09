@@ -4418,7 +4418,10 @@ impl DocumentCore {
             Some(new_cell_para_idx),
         );
 
-        // raw 스트림 무효화, section dirty, 재페이지네이션
+        // raw 스트림 무효화, section dirty, 재페이지네이션.
+        // dirty 전파는 by_path 변형과 동형 — 셀 문단 분할/병합은 행 높이를
+        // 바꾸므로 최외곽 host 문단의 측정 캐시를 무효화해야 한다.
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -4555,7 +4558,10 @@ impl DocumentCore {
             None,
         );
 
-        // raw 스트림 무효화, section dirty, 재페이지네이션
+        // raw 스트림 무효화, section dirty, 재페이지네이션.
+        // dirty 전파는 by_path 변형과 동형 — 셀 문단 분할/병합은 행 높이를
+        // 바꾸므로 최외곽 host 문단의 측정 캐시를 무효화해야 한다.
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();

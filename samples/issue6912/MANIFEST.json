@@ -1,0 +1,28 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6912,
+  "title": "세로 가운데 정렬 칸의 자리차지 개체가 빈 글줄을 따라 420.6px 내려간다",
+  "entries": [
+    {
+      "path": "samples/issue6912/156564340-ip-dispute-mediation-poster-slice.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6912",
+      "originalFilename": "156564340_085 [특허청] “소송 대신 합의” 지식재산 분쟁조정 신청 ‘쑥’.hwpx",
+      "bytes": 28992,
+      "sha256": "36b0d159391dc8f96006a56fd6a146d9b229f05749e5a1420eb42548607f15e9",
+      "derivation": "원본 919,682 바이트에서 (1) 구역0 최상위 hp:p 61개 중 0(secPr 보유)과 59(결함 문단)만 남기고, (2) 그 안의 hp:ole 을 배치 속성이 완전히 같은 hp:rect 로 바꾸고 BinData/ole5.ole(12,618,756B)과 content.hpf 의 그 항목을 지웠다. 개체의 sz(45183×63356)·pos(treatAsChar=0, textWrap=TOP_AND_BOTTOM, vertRelTo=PARA, horzRelTo=COLUMN, vertOffset=724, horzOffset=1088)·outMargin(0)은 원본 OLE 값 그대로다. ⚠ hp:pic 으로 바꾸면 재현되지 않는다 — 그림은 이 문단 앵커를 따라가지 않는 별개 배치 갈래다. 결함 좌표는 원본과 같다(원본 4쪽 rhwp x=100.7 y=541.5 w=602.4 h=844.7, 이 절단본 2쪽도 같은 값).",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1677"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/156564340-ip-dispute-mediation-poster-slice-2020.pdf",
+      "referencePdfSha256": "5abcb97b4706495b442357c811239393c45e81543aef88a2dd54e5274e75958b",
+      "referencePdfBytes": 22598,
+      "referencePdfPageCount": 2,
+      "referencePdfStatus": "2026-09-09 hwp2024Convert 로 이 절단본에서 산출. job 7205f822-3742-42ae-982b-7623c062c186, 요청/응답 engine 2020, engine_profile 2020, hancom_version 12.0.0.4605, 2쪽, 22,598B, 다운로드 blob SHA-256 확인. 저장 제품이 hancom-office-2010 이라 규약 §3.5.1 의 2020 버킷이다.",
+      "contract": "2쪽(0-based 1) 1×1 표의 세로 가운데(subList vertAlign=CENTER) 칸 안에서, 자리차지 개체는 칸 윗변 + cellMargin.top(141HU=1.88px) + vertOffset(724HU=9.65px) = +11.5px 에 앉는다. 정본은 칸 116.8..974.0 에 개체 y=128.3(+11.5) h=843.9 w=602.1 로 그린다. rhwp 의 칸 상단(109.4)은 정본(116.8)과 7.4px 다른 별개 축이므로 판정은 **칸 기준 상대 위치**로 한다. 개체를 매단 빈 글줄도 같은 칸 상단 띠에 남는다 — 종전에는 줄이 (854.4-13.33)/2 = 420.5px 내려가고 개체가 따라갔다."
+    }
+  ]
+}

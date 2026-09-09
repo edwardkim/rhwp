@@ -100,10 +100,17 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
                 let mut buf = Vec::new();
                 if s.read_to_end(&mut buf).is_ok() {
                     container.preview_emf = strip_ole_presentation_header(&buf);
-                    // [#3363] EMF 부재 시 WMF 프레젠테이션 폴백 (HWP3 내장 OLE·글맵시)
-                    if container.preview_emf.is_none() {
-                        container.preview_wmf = strip_ole_presentation_header_wmf(&buf);
-                    }
+                    // [#3363] WMF 프레젠테이션 폴백 (HWP3 내장 OLE·글맵시).
+                    //
+                    // [#6896] EMF **가 있어도** 채운다. 종전에는 `preview_emf.is_none()`
+                    // 일 때만 채웠는데, EMF 를 ` WMFC` 주석으로 감싼 WMF(EMF-in-WMF)는
+                    // 그 안의 EMF 조각이 `EMR_HEADER` 로 먼저 잡히고 뒤가 잘려 있어
+                    // 렌더가 실패한다. 그때 폴백이 비어 있으면 개체가 자리표시자로만
+                    // 남는다 (156564340 4쪽: OlePres000 12MB, offset 102 의 EMF 가
+                    // 선언 6,022,292B 중 6,022,272B 에서 0xFF 로 끊긴다 — offset 40 의
+                    // WMF 는 멀쩡하다). 렌더는 `차트 → EMF → WMF → 자리표시자` 순으로
+                    // 내려가므로, 둘 다 들고 있으면 EMF 실패가 자연히 WMF 로 이어진다.
+                    container.preview_wmf = strip_ole_presentation_header_wmf(&buf);
                 }
             }
         } else if name == "OOXMLChartContents" {

@@ -4019,7 +4019,14 @@ impl LayoutEngine {
                 .and_then(|p| p.line_segs.first())
                 .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
                 .unwrap_or(0.0);
-            if vpos0_px > 0.0 {
+            // [편집 세션] Enter로 자란 자리차지 표의 post-text가 typeset에서 다음
+            // 쪽으로 재배정된 경우, 저장 vpos는 앞 쪽 하단 좌표라 무효다 — 절대
+            // 가산하면 새 쪽에서도 쪽 하단에 그려져 문구·로고가 잘린다(셀 끝
+            // Enter 재현). 단 절반을 넘는 과대 vpos만 차단해 상단 여백
+            // 재현(test-image.hwp 폴백 목적)은 유지한다.
+            let session_stale_vpos =
+                self.profile.get().session_edited() && vpos0_px > col_area.height * 0.5;
+            if vpos0_px > 0.0 && !session_stale_vpos {
                 y += vpos0_px;
             }
         }
@@ -4239,6 +4246,31 @@ impl LayoutEngine {
                         && range
                             .windows(2)
                             .all(|w| w[1].vertical_pos >= w[0].vertical_pos)
+                        // vpos 는 쪽(단) 상단 기준 쪽-상대 좌표다(아래 #3637 주석).
+                        // 단 높이를 유의미하게 넘는 vpos 는 앞 쪽 좌표계의 잔재다 —
+                        // 셀 편집으로 커진 자리차지 표가 분할 이월된 뒤의 host 후행
+                        // 줄(재현 실측: vpos 가 단 높이 초과)을 절대 스냅하면
+                        // 다음 쪽 본문 밖에 그려져 하단 문구가 소실된다. 이때는
+                        // 흐름 y(분할 조각 하단)로 폴백한다.
+                        && range.iter().all(|seg| {
+                            hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                <= col_area.height + 60.0
+                        })
+                        // [편집 세션] Enter로 자란 자리차지 표의 post-text가 다음 쪽으로
+                        // 재배정되면 저장 vpos(앞 쪽 하단 좌표)는 무효다 — 스냅하면 새
+                        // 쪽에서도 쪽 하단에 그려져 잘린다(셀 끝 Enter 재현). 스냅
+                        // 목적지가 흐름 커서보다 단 절반 이상 아래면 흐름 y 로
+                        // 폴백한다. 같은 쪽 배치(괴리 소폭)는 종전 스냅을 유지한다.
+                        // 반대 방향도 같다 — 목적지가 흐름보다 8px 넘게 **위**면 편집
+                        // 성장 전 좌표라 앞 표에 겹친다(셀 Enter 재현: 후행 안내
+                        // 문구가 저장 vpos 로 스냅돼 커진 표 하단 위에 얹힘).
+                        // 8px 는 vpos_adjust 백워드 클램프와 동일.
+                        && !(self.profile.get().session_edited()
+                            && range.first().is_some_and(|seg| {
+                                let snap_y =
+                                    col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                snap_y > y + col_area.height * 0.5 || y - snap_y > 8.0
+                            }))
                     {
                         // [#3637] 기준은 **단 상단**이다 (원점 0).
                         //
@@ -7127,7 +7159,20 @@ impl LayoutEngine {
                                     // 를 또 더하면 tac 그림이 줄보다 예약 높이만큼 아래
                                     // (쪽 밖, #6271 실측 y=2113px > 단 하단 1115px)에
                                     // 그려져 소실된다.
-                                    if raw > 40.0 && y >= col_area.y + raw - 4.0 {
+                                    // 가산 결과가 단 하단을 넘는 경우도 stale
+                                    // 예약(분할 이월 쪽의 통짜 가정)이므로 가산하지
+                                    // 않는다.
+                                    // [편집 세션] typeset 이 라인 흐름(표 아래·새 쪽
+                                    // 재배정)을 이미 끝낸 상태라 저장-형상 가정의 예약
+                                    // 가산이 이중이 된다 — 이월된 쪽에서 그림이 쪽
+                                    // 하단 밖에 그려지던 결함(셀 끝 Enter 재현).
+                                    // 흐름 y 를 그대로 신뢰한다.
+                                    if self.profile.get().session_edited() {
+                                        0.0
+                                    } else if raw > 40.0
+                                        && (y >= col_area.y + raw - 4.0
+                                            || y + raw > col_area.y + col_area.height + 3.8)
+                                    {
                                         0.0
                                     } else {
                                         raw
@@ -7800,11 +7845,50 @@ impl LayoutEngine {
                         // 한글 편집기는 안내문을 누름틀 줄 상자 안에서 접는다. 안내문은
                         // 흐름에 영향이 없는 편집 전용 표시라(아래 `with_editor_only`),
                         // 접힌 뒤 줄들은 순수 오버레이로 아래에 쌓는다 — 첫 조각만
-                        // 마커 shift 폭에 계상한다. 셀 안은 가용 폭 기준이 다르므로
-                        // 종전대로 한 줄에 둔다.
+                        // 마커 shift 폭에 계상한다.
+                        //
+                        // [#6862] **칸 안도 접는다.** `#6111` 은 "셀은 가용 폭 기준이
+                        // 다르므로 종전대로 한 줄"로 남겼는데, 그 기준은 이미 손에 있다 —
+                        // **이 줄의 상자**(`line_node.bbox`)가 칸 안여백까지 반영한 텍스트
+                        // 상자다. 2249811 1쪽은 안내문이 전부 표 칸 안이라 그 예외가
+                        // 그대로 증상이 됐다(용지 밖 352.8px).
+                        //
+                        // ⚠ 본문 갈래는 종전 기준(`current_body_area`)을 그대로 둔다 —
+                        // `#6111` 의 확정 핀이 그 값으로 잠겨 있다.
                         let (body_x, _, body_w, _) = self.current_body_area.get();
-                        let wrap_limit = if cell_ctx.is_none() && body_w > 0.0 {
+                        let line_right = line_node.bbox.x + line_node.bbox.width;
+                        // [#6862] **빈 줄에서는 안내문 자신이 그 줄의 내용이다.**
+                        //
+                        // 빈 누름틀 줄은 글자 폭이 0 이라 `find_x_for_char` 가 돌려주는
+                        // 것은 **정렬 앵커**(가운데 정렬이면 줄 중앙)다. 안내문을 거기서
+                        // 오른쪽으로 그리면 통째로 폭의 절반만큼 밀린다.
+                        //
+                        // ```text
+                        //   칸 286.9..670.1  중앙 478.5   안내문 폭 668.0
+                        //     종전 시작 478.5           = 중앙 (폭을 안 뺐다)
+                        //     정상 시작 478.5 − 334.0   = 144.5
+                        // ```
+                        //
+                        // 줄에 보이는 글자가 있으면 그 앵커는 실제 글자 자리이므로
+                        // 건드리지 않는다.
+                        let line_has_visible_text =
+                            comp_line.runs.iter().any(|run| !run.text.trim().is_empty());
+                        let guide_alignment = styles
+                            .para_styles
+                            .get(para_style_id as usize)
+                            .map(|style| style.alignment);
+                        let guide_owns_the_line = !line_has_visible_text
+                            && line_node.bbox.width > 0.0
+                            && matches!(
+                                guide_alignment,
+                                Some(Alignment::Center) | Some(Alignment::Right)
+                            );
+                        let wrap_limit = if guide_owns_the_line {
+                            line_node.bbox.width
+                        } else if cell_ctx.is_none() && body_w > 0.0 {
                             (body_x + body_w - guide_x).max(0.0)
+                        } else if line_right > guide_x {
+                            line_right - guide_x
                         } else {
                             0.0
                         };
@@ -7814,6 +7898,18 @@ impl LayoutEngine {
                             .first()
                             .map(|chunk| estimate_text_width(chunk, &guide_style))
                             .unwrap_or(0.0);
+                        let guide_x = if guide_owns_the_line {
+                            match guide_alignment {
+                                Some(Alignment::Right) => {
+                                    (line_right - guide_width).max(line_node.bbox.x)
+                                }
+                                _ => (line_node.bbox.x
+                                    + (line_node.bbox.width - guide_width) / 2.0)
+                                    .max(line_node.bbox.x),
+                            }
+                        } else {
+                            guide_x
+                        };
                         for (idx, chunk) in guide_chunks.iter().enumerate().skip(1) {
                             let extra_id = tree.next_id();
                             let extra = RenderNode::new(
@@ -8493,10 +8589,21 @@ impl LayoutEngine {
                             let sibling_reserved_px = if vars.has_topbottom_vpos_base {
                                 0.0
                             } else {
-                                hwpunit_to_px(
+                                let raw = hwpunit_to_px(
                                     calc_sibling_topandbottom_reserved_hu(&p.controls),
                                     self.dpi,
-                                )
+                                );
+                                // 위 텍스트 줄 경로와 동일한 가드 — 편집 세션은
+                                // typeset 흐름이 재배정을 끝냈으므로 예약을 가산하지
+                                // 않고, 열람은 이중 가산(줄 y 가 이미 예약 아래)만
+                                // 차단한다.
+                                if self.profile.get().session_edited() {
+                                    0.0
+                                } else if raw > 40.0 && vars.y >= raw - 4.0 {
+                                    0.0
+                                } else {
+                                    raw
+                                }
                             };
                             if vars.raw_lh + 4.0 >= pic_h {
                                 *current_line_reserved_tac_picture_height = Some(pic_h);
