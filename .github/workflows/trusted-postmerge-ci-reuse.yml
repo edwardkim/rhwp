@@ -244,13 +244,14 @@ jobs:
             let selectTrustedPostMergeCandidate;
             let verifyPostMergeReviewBridgeTree;
             let verifyForkPostMergeTree;
+            let verifyReviewOnlyBaseAdvance;
             let trustedPullRequestSource;
             let trustedPullRequestWorkflowRun;
             const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
             try {
               ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable,
                 currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
-                verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree,
+                verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree, verifyReviewOnlyBaseAdvance,
                 trustedPullRequestSource, trustedPullRequestWorkflowRun } = await import(pathToFileURL(path.join(
                 process.env.GITHUB_WORKSPACE,
                 'scripts/verify-trusted-postmerge-ci-reuse.mjs',
@@ -438,6 +439,46 @@ jobs:
               }
               // Only the trusted pre-merge classifier sees API metadata here;
               // no candidate code or candidate-provided lane marker is executed.
+              const reviewOnlyBaseAdvanceByRunId = {};
+              const testedFinalHead = mergeTreeEvidenceByRunId[String(finalHeadRun?.id)];
+              if (isFork && testedFinalHead && testedFinalHead.parents[0] !== baseParent
+                && typeof verifyReviewOnlyBaseAdvance === 'function'
+                && finalHeadRun?.status === 'completed' && finalHeadRun.conclusion === 'success') {
+                try {
+                  // Bound API/object inventory; prove ancestry and path/mode safety using raw Git.
+                  const testedBase = testedFinalHead.parents[0];
+                  const refs = new Set([mergeSha, testedFinalHead.sha, testedBase]);
+                  let cursor = baseParent;
+                  for (let count = 0; cursor !== testedBase && count < 64; count += 1) {
+                    if (!/^[0-9a-f]{40}$/.test(cursor || '')) throw new Error('invalid base identity');
+                    refs.add(cursor);
+                    const commit = (await github.rest.repos.getCommit({ owner, repo, ref: cursor })).data;
+                    if (commit.sha !== cursor || !Array.isArray(commit.parents)
+                      || commit.parents.length < 1 || commit.parents.length > 2) {
+                      throw new Error('incomplete base history');
+                    }
+                    cursor = commit.parents[0].sha;
+                  }
+                  if (cursor !== testedBase || ![...refs].every((sha) => /^[0-9a-f]{40}$/.test(sha))) {
+                    throw new Error('base history limit or identity mismatch');
+                  }
+                  execFileSync('git', ['fetch', '--no-tags', '--filter=blob:none', '--depth=1',
+                    '--no-write-fetch-head', 'origin', ...refs], {
+                    cwd: process.env.GITHUB_WORKSPACE, timeout: 120000, maxBuffer: 1024 * 1024,
+                    stdio: ['ignore', 'pipe', 'pipe'],
+                  });
+                  const proof = verifyReviewOnlyBaseAdvance(process.env.GITHUB_WORKSPACE, {
+                    baseSha: baseParent, mergeSha, candidateSha: pr.head.sha,
+                    testedMergeSha: testedFinalHead.sha,
+                  });
+                  if (proof.testedBaseSha !== testedBase || proof.testedTreeSha !== testedFinalHead.treeSha) {
+                    throw new Error('base advance artifact mismatch');
+                  }
+                  reviewOnlyBaseAdvanceByRunId[String(finalHeadRun.id)] = proof;
+                } catch (error) {
+                  core.warning(`Review-only base advance proof unavailable; running full. ${error.message}`);
+                }
+              }
               const frontendOnlyRunIds = [];
               if (
                 process.env.WORKFLOW_FILE === 'ci.yml'
@@ -627,6 +668,7 @@ jobs:
                 mergeTreeEvidenceByRunId,
                 reviewBridgeTreeEvidenceByRunId,
                 forkMergeTreeEvidenceByRunId,
+                reviewOnlyBaseAdvanceByRunId,
                 frontendOnlyRunIds,
               };
               if (requireFullLaneEvidence) {

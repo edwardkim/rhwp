@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import "./verify-trusted-postmerge-base-advance.test.mjs";
 import test from "node:test";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";

@@ -193,7 +193,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn(
             "if: ${{ matrix.language == 'rust' && "
             + selected
-            + " && github.event_name != 'pull_request' }}",
+            + " && github.event_name != 'pull_request' && !(github.event_name == 'push' && github.ref == 'refs/heads/devel') }}",
             analyze,
         )
         job_if = next(
@@ -284,6 +284,43 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn("paths:\n", config)
         for path in ("src/**", "crates/**", "rhwp-desk/src/**", "build.rs"):
             self.assertIn(f"  - {path}\n", config)
+
+    def test_postmerge_metrics_keep_full_source_scope_and_security_defaults(self) -> None:
+        config = (REPO_ROOT / ".github/codeql/rust-postmerge.yml").read_text(encoding="utf-8")
+        active = "\n".join(line for line in config.splitlines() if not line.lstrip().startswith("#"))
+        self.assertNotRegex(active, r"(?m)^\s*(paths|paths-ignore|queries|packs|disable-default-queries):")
+        self.assertEqual(re.findall(r"id: (\S+)", active), [
+            "rust/summary/summary-statistics",
+            "rust/summary/reduced-summary-statistics",
+            "rust/summary/query-sink-counts",
+        ])
+        self.assertEqual(active.count("kind: metric"), 3)
+        self.assertEqual(active.count("- exclude:"), 3)
+
+    def test_rust_initializers_are_exclusive_for_every_event_and_language(self) -> None:
+        analyze = job_body(self.workflow, "analyze")
+        blocks = re.findall(r"(?ms)^      - name: Initialize CodeQL \(Rust[^\n]*\n.*?(?=^      - name:|\Z)", analyze)
+        self.assertEqual(len(blocks), 3)
+        conditions = [re.search(r"if: \$\{\{ (.*?) \}\}", block).group(1) for block in blocks]
+        selection = "contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language))"
+        for event in ("pull_request", "push", "schedule", "workflow_dispatch"):
+            for ref in ("refs/heads/devel", "refs/heads/main"):
+                for language in ("rust", "python"):
+                    for selected in (True, False):
+                        values = []
+                        for condition in conditions:
+                            expression = condition.replace(selection, str(selected))
+                            expression = expression.replace("matrix.language", repr(language))
+                            expression = expression.replace("github.event_name", repr(event))
+                            expression = expression.replace("github.ref", repr(ref))
+                            expression = expression.replace("&&", " and ").replace("||", " or ")
+                            expression = re.sub(r"!(?!=)", "not ", expression)
+                            values.append(eval(expression, {"__builtins__": {}}, {}))
+                        expected = (0 if event == "pull_request" else
+                                    1 if event == "push" and ref == "refs/heads/devel" else 2)
+                        self.assertEqual(values, [language == "rust" and selected and i == expected for i in range(3)])
+        self.assertIn("config-file: .github/codeql/rust-postmerge.yml", blocks[1])
+        self.assertNotIn("config-file:", blocks[2])
 
     def test_temporary_measurement_jobs_and_artifacts_are_absent(self) -> None:
         workflow = self.workflow
