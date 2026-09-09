@@ -19,8 +19,9 @@
 
 ## 자산 범위
 
-- 검토 중 만든 `pdf/pr_6883_6909_20260909/`는 중간 산출물이며 stage, commit, PR 첨부 대상이 아니다.
-- 이 계획과 각 원 PR review 문서만 후속 문서 commit 후보로 둔다.
+- 최종 기준 PDF `pdf/synth_cell_enter_table_growth-2020.pdf`와 최종 review PNG 두 장 `mydocs/pr/assets/pr_6883_6909_20260909/`은 장기 재현과 PR 판독에 필요한 증적으로 포함한다.
+- `pdf/pr_6883_6909_20260909/` 아래의 원시 raster, 중복 compare·overlay·review, contact sheet, export SVG, render-tree·metric JSON, MCP 응답 JSON은 중간 산출물이며 stage, commit, PR 첨부 대상이 아니다.
+- 각 원 PR review 문서, 통합 계획, 오늘 할 일, 위 최종 증적만 후속 commit 후보로 둔다.
 
 ## 다음 단계
 

@@ -31,8 +31,8 @@
 
 ## 자산 정책
 
-- 생성된 PDF, sweep PNG, 비교 이미지, JSON은 검토 중간 산출물이다.
-- 이 PR 또는 후속 통합 PR에는 해당 산출물을 stage, commit, 첨부하지 않는다. review 문서에는 재현 조건과 판독 결과만 남긴다.
+- #6909는 최종 PDF/PNG 증적을 새로 만들지 않는다. #6883 fixture의 한컴 PDF와 review PNG는 누적 renderer 검토의 기준 증적으로만 포함한다.
+- 중단된 object visual regression의 원시 raster, compare·overlay 이미지, export SVG, render-tree·metric JSON은 중간 산출물로 제외한다.
 
 ## 판정
 

@@ -35,11 +35,13 @@
 - Native Skia: lib 3,930 성공/13 ignored, placeholder 2/2, direct PDF export 4/4 성공.
 - Docker WASM: 이 호스트에 `docker` 실행 파일이 없어 compose wrapper는 실행하지 않았다. 다만 lint 묶음의 `wasm32-unknown-unknown` Clippy는 통과했으며, Docker 부재는 로컬 수용 판단의 차단 사유가 아니다. 통합 PR CI가 동일 범위를 다시 확인한다.
 - 한컴 2020 직접 변환과 원본 fixture 스윕: 2쪽 완료, 구조 이상 플래그 0, review PNG 두 장 직접 판독에서 표 경계, 본문 프레임, 페이지 흐름의 잘림을 발견하지 못했다.
+- 최종 기준 PDF: [`pdf/synth_cell_enter_table_growth-2020.pdf`](../../pdf/synth_cell_enter_table_growth-2020.pdf), 263,932 bytes, SHA-256 `c59a49aeb564aa2aae981728dc1572698bd1434aef2bd981a02536c44cb48668`, Hancom 2020 직접 변환 2쪽이다.
+- 최종 시각 증적: [page 1 review](assets/pr_6883_6909_20260909/pr6883-synth-cell-enter-table-growth-p001-review.png), [page 2 review](assets/pr_6883_6909_20260909/pr6883-synth-cell-enter-table-growth-p002-review.png). 이는 원본 fixture와 Hancom 기준 PDF의 1-2쪽 비교이며, Enter/병합 동작 자체의 페이지 수는 focused 회귀 시험으로 확인했다.
 
 ## 자산 정책
 
-- 생성된 PDF, sweep PNG, 비교 이미지, JSON은 검토 중간 산출물이다.
-- 이 PR 또는 후속 통합 PR에는 해당 산출물을 stage, commit, 첨부하지 않는다. review 문서에는 재현 조건과 판독 결과만 남긴다.
+- 최종 기준 PDF와 위의 두 최종 review PNG는 장기 재현과 PR 판독에 필요한 증적이므로 포함한다.
+- 원시 raster, 중복 compare·overlay·review, contact sheet, export SVG, render-tree·metric JSON, MCP 응답 JSON은 중간 산출물로 제외한다.
 
 ## 판정
 
