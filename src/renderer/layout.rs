@@ -10,7 +10,8 @@ use super::float_placement::{
     empty_host_physical_ladder_extras_hu, empty_offset_float_deferred_text_ladder_hu,
     horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
     native_empty_host_rowbreak_line_advance_hu,
-    original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+    original_hwpx_column_rowbreak_equal_outer_margin_hu,
+    para_relative_left_aligned_outer_margin_left_hu, signed_hwpunit,
     stored_empty_anchor_band_host_line_advance_hu, stored_visible_anchor_band_host_line_advance_hu,
     FloatLaneSet, FloatPlacementContext,
 };
@@ -9610,13 +9611,22 @@ impl LayoutEngine {
                 let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
                 let area_x = col_area.x + effective_margin;
                 let area_w = (col_area.width - effective_margin - margin_right).max(0.0);
+                // [#6887] 왼쪽 정렬 어울림 표의 저장 `horzOffset` 은 **바깥 여백
+                // 상자**의 왼끝을 가리킨다 — 표 자신의 왼끝은 거기서
+                // `outMargin.left` 만큼 안쪽이다. 바로 위 TAC 분기(`base_x`)와
+                // 개체 경로(`shape_layout::form_object_origin`)는 이미 이 여백을
+                // 싣고 있고 어울림 표 경로만 빠져 있었다. 오른쪽·가운데 정렬은
+                // 기준 폭 산식이 달라(`area_w`) 실측 근거가 나올 때까지 둔다.
+                let om_l = para_relative_left_aligned_outer_margin_left_hu(t)
+                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+                    .unwrap_or(0.0);
                 let x = match t.common.horz_align {
                     crate::model::shape::HorzAlign::Right
                     | crate::model::shape::HorzAlign::Outside => area_x + (area_w - tbl_w).max(0.0),
                     crate::model::shape::HorzAlign::Center => {
                         area_x + (area_w - tbl_w).max(0.0) / 2.0
                     }
-                    _ => area_x,
+                    _ => area_x + om_l,
                 };
                 Some(x)
             } else if is_tac {
