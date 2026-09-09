@@ -32,7 +32,6 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `debug-textbox.mjs` | 진단 | active | E2E 디버그: 글상자 삽입 후 텍스트 위치 확인 | — | 수동 | 수동 디버그 |
 | `dialog-theme.test.mjs` | 상시 | active | 다이얼로그 다크 테마 색상 정책 | — | 수동 |  |
 | `document-agent-command.test.mjs` | 상시 | active | HWP/HWPX exact command apply·strict render·revert·focus·native typing·일반 Ctrl+Z·modal 0회 | para-001.hwp, hwpx/para-001.hwpx | npm e2e:document-agent | fresh WASM 필수 |
-| `document-load-scroll-pin-issue6902.test.mjs` | 상시 | active | #6902 문서 로드 직후 상단 고정과 사용자 스크롤 이후 리사이즈 중심점 보존 | biz_plan.hwp | npm e2e:document-load-scroll-pin, CI frontend package | run-with-vite.mjs 경유 |
 | `drag-selection-autoscroll.test.mjs` | 상시 | active | 텍스트 드래그 선택 edge 자동 스크롤 | — | npm e2e:drag-autoscroll |  |
 | `drop-confirm.test.mjs` | 상시 | active | 드롭 확인 대화상자 경계 (문서=없음, 이미지=#1439 게이트) | — | 수동 |  |
 | `edit-pipeline.test.mjs` | 상시 | active | 편집 파이프라인 검증 (Issue #2) | — | 수동 |  |
