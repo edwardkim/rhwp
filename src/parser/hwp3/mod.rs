@@ -2188,6 +2188,31 @@ fn parse_object_control_char(
             hidden_comment,
         )));
     } else if ch == 16 {
+        // [#6864] HWP3 머리말/꼬리말의 양쪽 정렬은 마지막 줄의 공백도
+        // 분배한다(#1692). HWPX 변환본의 DISTRIBUTE_SPACE와 같은 공통 IR로
+        // 정규화하여 HWP5/HWPX의 일반 Justify에 렌더러 예외를 적용하지 않는다.
+        // 본문과 공유하는 문단 모양은 수정하지 않고 별도 모양을 재사용한다.
+        for paragraph in &mut nested_paragraphs {
+            let Some(base) = doc_para_shapes.get(paragraph.para_shape_id as usize) else {
+                continue;
+            };
+            if base.alignment != crate::model::style::Alignment::Justify {
+                continue;
+            }
+            let normalized = crate::model::style::ParaShapeMods {
+                alignment: Some(crate::model::style::Alignment::Split),
+                ..Default::default()
+            }
+            .apply_to(base);
+            let shape_id = doc_para_shapes
+                .iter()
+                .position(|shape| shape == &normalized)
+                .unwrap_or_else(|| {
+                    doc_para_shapes.push(normalized);
+                    doc_para_shapes.len() - 1
+                });
+            paragraph.para_shape_id = shape_id as u16;
+        }
         let apply_to = match info_buf.get(9).copied().unwrap_or(0) {
             1 => crate::model::header_footer::HeaderFooterApply::Even,
             2 => crate::model::header_footer::HeaderFooterApply::Odd,
