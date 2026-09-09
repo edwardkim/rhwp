@@ -983,6 +983,15 @@ fn parse_paragraph_body(
                 });
                 utf16_pos += 8;
             }
+            // [#6956] 형광펜 표지 — 위치만 싣고 축은 건드리지 않는다.
+            p if p.starts_with(MARKPEN_BEGIN_PART_PREFIX) || p == MARKPEN_END_PART => {
+                para.markpen_marks
+                    .push(crate::model::paragraph::MarkpenMark {
+                        char_idx: visual_text.chars().count(),
+                        color: (p != MARKPEN_END_PART)
+                            .then(|| p[MARKPEN_BEGIN_PART_PREFIX.len()..].to_string()),
+                    });
+            }
             "\u{0012}" => {
                 // [Task #1050] AUTO_NUMBER (0x12) — HWP PARA_TEXT 정합:
                 //   char_offsets.push(pos) + text.push(' ') (placeholder) + jump 8.
@@ -1993,6 +2002,11 @@ fn parse_lineseg_element(e: &quick_xml::events::BytesStart) -> LineSeg {
 ///
 /// 표시는 텍스트가 아니라 8유닛 슬롯이라 `visual_text` 에 실리지 않는다. 표(`\u{0002}`)
 /// 처럼 조각 하나를 통째로 차지하는 마커로 두고, 문단 조립 루프가 위치만 걷어 간다.
+/// [#6956] 형광펜 여는 표지 sentinel 접두어. 뒤에 색 문자열이 붙는다.
+const MARKPEN_BEGIN_PART_PREFIX: &str = "\u{0007}B";
+/// [#6956] 형광펜 닫는 표지 sentinel.
+const MARKPEN_END_PART: &str = "\u{0007}E";
+
 const TITLE_MARK_PART_IGNORE: &str = "\u{0008}1";
 /// `text_parts` 안의 제목 차례 표시 센티널 — `ignore="0"` 쪽.
 const TITLE_MARK_PART_KEEP: &str = "\u{0008}0";
@@ -2006,6 +2020,7 @@ fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
     Ok(parts
         .into_iter()
         .filter(|p| p != TITLE_MARK_PART_IGNORE && p != TITLE_MARK_PART_KEEP)
+        .filter(|p| !p.starts_with(MARKPEN_BEGIN_PART_PREFIX) && p.as_str() != MARKPEN_END_PART)
         .collect())
 }
 
@@ -2078,6 +2093,24 @@ fn read_text_content_with_tabs(
                         saw_nb_space_element = true;
                     }
                     b"fwSpace" => text.push('\u{2007}'),
+                    // [#6956] 형광펜 표지. 글자 축을 소비하지 않으므로 `text` 에 넣지
+                    // 않고 sentinel part 로 위치만 끊어 둔다(`titleMark` 선례).
+                    b"markpenBegin" | b"markpenEnd" => {
+                        if !text.is_empty() {
+                            parts.push(std::mem::take(&mut text));
+                        }
+                        if local == b"markpenEnd" {
+                            parts.push(MARKPEN_END_PART.to_string());
+                        } else {
+                            let color = ce
+                                .attributes()
+                                .flatten()
+                                .find(|a| a.key.as_ref().as_bytes() == b"color")
+                                .map(|a| attr_str(&a))
+                                .unwrap_or_default();
+                            parts.push(format!("{MARKPEN_BEGIN_PART_PREFIX}{color}"));
+                        }
+                    }
                     // 소프트 하이픈 — 줄바꿈 자리에서만 보인다. 리터럴 '-' 와 구별해야
                     // 저장 왕복에서 단어가 갈라지지 않는다(ParaList XML schema.xml:291).
                     b"hyphen" => text.push('\u{00AD}'),
@@ -5689,6 +5722,8 @@ fn hwpx_part_utf16_width(s: &str, axis_5251: bool) -> u32 {
     match s {
         "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
         TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
+        // [#6956] 형광펜 표지는 글자 축을 소비하지 않는다.
+        p if p.starts_with(MARKPEN_BEGIN_PART_PREFIX) || p == MARKPEN_END_PART => 0,
         PAGE_FOOTER_SLOT_PART => {
             if axis_5251 {
                 0
@@ -6830,6 +6865,8 @@ fn calc_utf16_len_from_parts(parts: &[String]) -> u32 {
             // 경계가 offsets 축과 어긋났다 (143E 각주 run 경계 2 → 정답 9).
             "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
             TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
+            // [#6956] 형광펜 표지는 글자 축을 소비하지 않는다.
+            p if p.starts_with(MARKPEN_BEGIN_PART_PREFIX) || p == MARKPEN_END_PART => 0,
             PAGE_FOOTER_SLOT_PART => 8,
             _ => s.chars().map(hwpx_char_utf16_width).sum(),
         })
