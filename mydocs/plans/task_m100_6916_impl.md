@@ -4,7 +4,7 @@
 - 상위 계획: [수행계획서](task_m100_6916.md)
 - 근거: [Stage 1 조사](../working/task_m100_6916_stage1.md)
 - 기준 제품 SHA: `c72ad805cc60e4a5cf5689c18b44e7214cec68fe`
-- 상태: 2026-09-09 A안·Stage 2 구현 승인. focused 계약 검증 진행 중.
+- 상태: 2026-09-09 A안·Stage 2 구현 및 focused 계약 검증 완료. Stage 3 승인 대기.
 
 ## 1. 고정할 설계
 
@@ -91,3 +91,9 @@ main 승격 때는 기존 promotion 정책을 따르며 이번 task에서 main�
 
 복구는 제품 안내/include/Oracle sparse 입력·mirror test를 같은 단위로 되돌린다.
 Gym 자체 자산·기존 증적은 건드리지 않는다. 구현 결과 승인 전에 remote push·PR 생성은 하지 않는다.
+
+## 5. Stage 2 결과
+
+검증된 코드 head는 `369e789ee`다. 신규 MCP 계약은 수정 전 제품에서 의도대로 실패하고 수정 후 통과했다.
+기존 MCP 계약 33건도 통과했다. source/lockfile 의존 추가 없이 구현했으며,
+세부 명령·검증 한계·초기 테스트 컴파일 오류 정정은 [Stage 2 보고](../working/task_m100_6916_stage2.md)에 남겼다.
