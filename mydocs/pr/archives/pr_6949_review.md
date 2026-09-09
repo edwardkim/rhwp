@@ -1,5 +1,15 @@
 # PR #6949 검토 기록
 
+## 통합 merge 확정 기록 (2026-09-09)
+
+- [통합 PR #6957](https://github.com/edwardkim/rhwp/pull/6957)은 2026-09-09 14:41:08 UTC에 일반 merge로 통합됐다. merge SHA는 `d43937e0de7cf465185d23ce6b06fa47e7824e57`, 승인한 PR head는 `4e422a57d6775eb2f11dffb70b37632823659829`다.
+- merge 직전 최신 head는 `MERGEABLE / CLEAN`이었다. [Build & Test 및 Rust/Lint/Native Skia](https://github.com/edwardkim/rhwp/actions/runs/34363253946), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34363253722), [CodeQL 언어별 분석](https://github.com/edwardkim/rhwp/actions/runs/34363253980), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34363253961), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34363253986)가 성공했다. GHAS CodeQL check는 `NEUTRAL`, [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/34365098894)는 `SUCCESS`였고 대기·실패 항목은 없었다.
+- review·오늘할일·최종 PDF 2개·대표 PNG 5개는 코드 PR head에 이미 포함되어 merge됐다. source PR review 3개는 이번 문서-only 후속 처리에서 archive로 이동한다. 오늘할일에는 새 운영 항목을 반복 추가하지 않고 이동된 링크만 보정한다.
+- 리베이스 후 추가 로컬 테스트·PDF 출력은 사용자 지시대로 생략했다. 이번 GitHub Full CI 성공은 이전 로컬 검증과 별도 근거다. devel push의 post-merge CI는 PR head CI와 구분하며 이 기록에서 성공을 선언하지 않는다.
+- 후속 문서 PR 완료와 최종 devel sync 뒤 #6872/#6941을 해결 범위 내에서 종료하고 #6949/#6952를 통합 대체로 종료할 계획이다. #6865는 회색조·아이콘·영문 배너 잔여를 기록하고 OPEN을 유지한다. 이 절은 comment 게시 전 확정 기록이며 실제 게시 permalink와 종료 상태는 원 PR/이슈에 남긴다.
+- 이번 작업 전용 local·remote branch 정리는 사용자 승인 범위다. 기여자 `planet6897/rhwp`의 source branch, 기본 작업공간과 공유 `target/pr-review`는 보존한다.
+- 아래 Open/CI 대기/미게시 표기는 작성 당시 이력이다. 현재 통합 결과는 이 절이 우선하며 최종 판정의 기술적 범위와 잔여는 변경하지 않는다.
+
 ## 최신 upstream/devel 동기화 및 해시 대조 (2026-09-09)
 
 - 기준 base: `d8e4ab727b70b6abfcf11766134e09a9a9bfc982`. `review/planet6897-6949-6952-20260909`를 이 base 위로 리베이스했다. 오늘할일을 포함한 모든 파일이 충돌 없이 적용됐으며 수동 충돌 해소는 없었다.
@@ -7,7 +17,7 @@
 - 소스·테스트 7개 파일, 최종 PDF 2개와 대표 PNG 5개를 리베이스 전 head `8be25bae1`와 Git blob 대조했고 모두 동일했다. SHA-256도 다시 산출했다. 상세 해시와 커밋 대응표는 [통합 기록](pr_6949_6952_review_impl.md#리베이스-해시-대응표)을 따른다.
 - 기존 전체 회귀·Clippy·Native Skia·WASM·시각 증적은 리베이스 전 검증 결과다. 작업지시자의 "다른 conflict가 없으면 추가 테스트 없이 PR" 지시에 따라 리베이스 후 build/test/lint/시각 출력은 재실행하지 않았다. 기존 바이너리 해시는 보존된 검증 실행 파일의 식별자이며 최신 base 재빌드 증거가 아니다.
 - 최신 base에는 #6773의 표 삭제 및 관련 model/WASM 변경이 포함됐다. 이번 PR 파일의 바이트 동일성과 무충돌 리베이스가 저장소 전체의 실행 호환성을 보장하지는 않으므로, 최신 통합 head의 GitHub CI와 작업지시자 승인 게이트를 유지한다.
-- 현재 판정은 `메인터너 보정 후 수용 가능`을 유지한다. 원격 PR 번호·head·CI의 최신 진행 상태는 [오늘할일](../orders/20260909.md)의 통합 PR 항목과 채번 후 생성하는 self-review 기록을 따른다. 아래 검증 당시의 미게시·미생성 문구는 당시 작업 범위의 이력이다.
+- 현재 판정은 `메인터너 보정 후 수용 가능`을 유지한다. 원격 PR 번호·head·CI의 최신 진행 상태는 [오늘할일](../../orders/20260909.md)의 통합 PR 항목과 채번 후 생성하는 self-review 기록을 따른다. 아래 검증 당시의 미게시·미생성 문구는 당시 작업 범위의 이력이다.
 
 ## 발견 사항과 최종 판정
 
@@ -21,17 +31,17 @@
 
 ### P1: 완성된 ROP 관용구를 확인하기 전에 DPA를 삭제한다
 
-[drops_monochrome_mask](../../src/wmf/converter/svg/ternary_raster_operator.rs#L91)는 앞 PATINVERT로 만든 AwaitDpa 상태와 출력 요소 수만 확인한다. [observe의 DPA 분기](../../src/wmf/converter/svg/ternary_raster_operator.rs#L59)도 같은 조건에서 즉시 true를 반환해 중간 DPA를 삭제한다.
+[drops_monochrome_mask](../../../src/wmf/converter/svg/ternary_raster_operator.rs#L91)는 앞 PATINVERT로 만든 AwaitDpa 상태와 출력 요소 수만 확인한다. [observe의 DPA 분기](../../../src/wmf/converter/svg/ternary_raster_operator.rs#L59)도 같은 조건에서 즉시 true를 반환해 중간 DPA를 삭제한다.
 
 마지막 PATINVERT의 존재·브러시·좌표 일치는 나중에 확인하며, 그때 불일치하더라도 이미 삭제한 DPA를 복원하지 않는다. DPA 자체의 목적 사각형도 앞 PATINVERT와 대조하지 않는다. 따라서 `PATINVERT(A) → DPA(1bpp, B) → EOF`처럼 다른 영역의 독립된 DPA가 이어지거나, 동일 영역이라도 마지막 PATINVERT가 없는 입력에서 기존에 표시하던 패턴이 사라진다. 마지막 PATINVERT의 사각형/브러시만 달라져도 앞서 삭제한 출력은 돌아오지 않는다.
 
-현재 음성 대조는 앞 PATINVERT가 전혀 없는 단독 DPA뿐이다. [합성 시험](../../tests/cases/issue_6865_wmf_monochrome_mask_rop.rs#L214)은 위 불완전·다른 영역의 두 연산 접두부를 다루지 않는다.
+현재 음성 대조는 앞 PATINVERT가 전혀 없는 단독 DPA뿐이다. [합성 시험](../../../tests/cases/issue_6865_wmf_monochrome_mask_rop.rs#L214)은 위 불완전·다른 영역의 두 연산 접두부를 다루지 않는다.
 
 해제 조건: 세 연산과 같은 목적 영역/유효 DC 조건을 확인한 뒤 삭제를 확정하거나, 대기 중 DPA를 보존해 미완성/불일치 시 원래 출력을 복구한다. EOF, 다른 영역, 다른 마지막 브러시와 끼어드는 draw에 대한 음성 대조가 필요하다.
 
 ### P2: 1bpp만으로 흑백 마스크라고 판단한다
 
-[brush_is_monochrome_mask](../../src/wmf/converter/svg/ternary_raster_operator.rs#L111)는 DIBPatternPT의 bit_count만 검사한다. 실제 팔레트 색, 색 테이블 사용 방식, 패턴 용도는 검사하지 않는다.
+[brush_is_monochrome_mask](../../../src/wmf/converter/svg/ternary_raster_operator.rs#L111)는 DIBPatternPT의 bit_count만 검사한다. 실제 팔레트 색, 색 테이블 사용 방식, 패턴 용도는 검사하지 않는다.
 
 1bpp는 색 테이블의 두 색을 선택하는 형식이지 흑백 또는 마스크 전용 형식이 아니다. [MS-WMF BitCount 정본](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/792153f4-1e99-4ec8-93cf-d171a5f33903)은 0/1 비트가 각각 색 테이블의 첫째/둘째 색을 선택한다고 규정한다. 따라서 유효한 빨강/파랑 1bpp 패턴도 마스크로 분류되어 해당 DPA가 사라질 수 있다. "색 정보를 싣지 않는다"는 코드 주석도 이 조건에서는 성립하지 않는다.
 
@@ -63,7 +73,7 @@
 
 ## 원 PR 시각 자료 판독
 
-원 PR에 포함된 [before p3](../report/6865-wmf-monochrome-mask-rop/before-p3.png), [after p3](../report/6865-wmf-monochrome-mask-rop/after-p3.png), [before p7](../report/6865-wmf-monochrome-mask-rop/before-p7.png), [after p7](../report/6865-wmf-monochrome-mask-rop/after-p7.png)를 실제 열었다.
+원 PR에 포함된 [before p3](../../report/6865-wmf-monochrome-mask-rop/before-p3.png), [after p3](../../report/6865-wmf-monochrome-mask-rop/after-p3.png), [before p7](../../report/6865-wmf-monochrome-mask-rop/before-p7.png), [after p7](../../report/6865-wmf-monochrome-mask-rop/after-p7.png)를 실제 열었다.
 
 3쪽 패널의 체커보드 감소와 7쪽 배너의 어두운 파란 면 노출은 제공 이미지에서 보인다. 그러나 after p3는 영역 이미지이며, 이 자료는 원 contributor가 만든 before/after다. 통합 candidate를 다시 렌더한 자료도, maintainer가 기준 한컴 PDF와 직접 대조한 review PNG도 아니다. 7쪽 영문 제목 주변의 얼룩도 남아 있어 전체 도해 fidelity 해결로 표현하지 않는다.
 
@@ -71,7 +81,7 @@
 
 ## Merge 후 contributor PR comment 계획
 
-- 정본: [Visual Sweep GitHub merge comment](../manual/verification/visual_sweep_guide.md#github-merge-comment).
+- 정본: [Visual Sweep GitHub merge comment](../../manual/verification/visual_sweep_guide.md#github-merge-comment).
 - 통합 보정본의 원 문서 15쪽 visual sweep을 완료했다. 자동 구조 후보 0건, 평균 pixel_match 90.16332%, 평균 visual proxy 26.81390%이며, 이 수치를 완전한 시각 일치로 해석하지 않는다. 2/3쪽 체크무늬 재출현 해소와 7쪽 마스크 개선, 남은 회색조·아이콘·영문 배너 차이를 함께 기록한다.
 - 대표 증적은 `assets/pr_6949_6952_maintainer_20260909/pr6949-original-p002-review.png`, `pr6949-original-p003-review.png`, `pr6949-original-p007-review.png`이며 보정 커밋에 포함했다. 최소 fixture의 15개 SVG 출력도 완료했으나 원 문서 7쪽 직접 증적을 대체하지 않는다. 로그·SVG·중간 raster는 output에 보관하고 커밋에서 제외했다.
 - 향후 수용 시에도 #6865의 정확한 색상/하프톤 잔여가 해결됐는지 또는 별도 이슈로 분리됐는지 판단한 뒤 close 범위를 정한다. 현재 #6865 close나 GitHub approve/merge/comment는 수행하지 않았다.
@@ -120,7 +130,7 @@
 - `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6949-original-p003-review.png`
 - `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6949-original-p007-review.png`
 - 이미지 URL: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6949-original-p003-review.png` 및 같은 경로의 p007 파일.
-- [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)을 함께 링크하고,
+- [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 함께 링크하고,
   15페이지/자동 후보 0개/위 지표/직접 확인 범위/잔여 차이/회귀 결과를 구분해 적는다.
 - 실제 게시 시 UTF-8 `--body-file`을 사용하고 API로 본문과 commit 고정 이미지 URL을 재조회한다.
 - `.log`, 원시 raster, SVG, JSON, contact sheet는 `output/`에만 두며 커밋 대상에서 제외한다.
@@ -163,17 +173,17 @@
 - 축소 fixture `samples/issue6469/wmf_fill_shapes.hwpx`도 최종 바이너리로 15페이지 SVG를 출력했다.
   원본 image9/10이 placeholder라는 한계는 그대로이며 원본 p7 검증을 대체하지 않는다.
 
-![WMF p2 최종 비교](assets/pr_6949_6952_maintainer_20260909/pr6949-original-p002-review.png)
+![WMF p2 최종 비교](../assets/pr_6949_6952_maintainer_20260909/pr6949-original-p002-review.png)
 
-![WMF p3 최종 비교](assets/pr_6949_6952_maintainer_20260909/pr6949-original-p003-review.png)
+![WMF p3 최종 비교](../assets/pr_6949_6952_maintainer_20260909/pr6949-original-p003-review.png)
 
-![WMF p7 최종 비교](assets/pr_6949_6952_maintainer_20260909/pr6949-original-p007-review.png)
+![WMF p7 최종 비교](../assets/pr_6949_6952_maintainer_20260909/pr6949-original-p007-review.png)
 
 ### 최종 comment 계획 갱신
 
 이전 계획의 p3/p7 파일을 최종 후보 이미지로 갱신했고, 실제 경계 보정의 근거인 p2를 추가했다.
 merge 이후 사용자 승인된 comment에는 세 이미지를 모두 `<merge-commit-sha>` 고정 raw URL로 표시하고,
-[Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment), 15페이지/후보 0개/
+[Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment), 15페이지/후보 0개/
 위 지표/직접 확인 범위/잔여 한계/최종 자동 검증 결과를 함께 적는다.
 
 추가 이미지 URL 형식은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6949-original-p002-review.png`다.
