@@ -174,6 +174,9 @@ impl TableContinuationCursor {
 
 /// [#2424] continuation loop 진입 전에 한번 계산하는 owned 준비 상태.
 struct BlockTableContinuationPreparedState {
+    /// 현재 host frame에서 확정한 좌표. 다른 단으로 진행하면 앵커 거리는 소진된다.
+    host_placement: Option<super::float_placement::ParagraphFloatPlacement>,
+    host_frame: (usize, u16, u64),
     row_count: usize,
     cell_spacing: f64,
     can_intra_split: bool,
@@ -25497,6 +25500,33 @@ impl TypesetEngine {
         }
 
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인).
+        let host_frame = (
+            st.pages.len(),
+            st.current_column,
+            st.current_zone_y_offset.to_bits(),
+        );
+        let fragment_host_placement = resolved_host_placement
+            .filter(|_| placement_para_start_height + fmt.height_for_fit <= available);
+        if fragment_host_placement.is_some() && !st.pre_emitted_host_paras.contains(&para_idx) {
+            // 첫 조각과 이월 모두 같은 계산 줄을 소비한다. 저장 줄로 재측정하지 않는다.
+            let already_emitted = st.current_items.iter().any(|item| {
+                matches!(item,
+                PageItem::FullParagraph { para_index }
+                | PageItem::PartialParagraph { para_index, start_line: 0, .. }
+                if *para_index == para_idx)
+            });
+            if !already_emitted {
+                st.current_items.push(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 0,
+                    end_line: fmt.line_heights.len(),
+                });
+                let host_h = fmt.line_advances_sum(0..fmt.line_heights.len());
+                st.current_height = st.current_height.max(placement_para_start_height + host_h);
+                st.pre_emitted_host_heights.insert(para_idx, host_h);
+            }
+            st.pre_emitted_host_paras.insert(para_idx);
+        }
         // Task #398: rowspan>1 셀이 행 0의 시작점이면 블록 전체 높이로 판정.
         // [Task #1046 Stage 2] 첫(비연속) fragment 의 렌더러 y_start 점프 — host_spacing.before
         // 와 문단 기준 양수 vertical_offset — 를 잔여공간에서 차감한다.
@@ -25530,8 +25560,16 @@ impl TypesetEngine {
             };
             host_before + vert_off + fragment_outer_bottom
         };
-        let remaining_on_page =
-            (table_available - st.current_height - first_frag_overhead).max(0.0);
+        let remaining_on_page = fragment_host_placement.map_or_else(
+            || (table_available - st.current_height - first_frag_overhead).max(0.0),
+            |p| {
+                (table_available
+                    - p.table_top
+                    - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                    - ft.caption_height)
+                    .max(0.0)
+            },
+        );
         let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
             mt.row_block_for(0)
         } else {
@@ -25892,6 +25930,8 @@ impl TypesetEngine {
         #[cfg(target_arch = "wasm32")]
         let continuation_fragment_budget = usize::MAX;
         let prepared = BlockTableContinuationPreparedState {
+            host_placement: fragment_host_placement,
+            host_frame,
             row_count,
             cell_spacing: cs,
             can_intra_split,
@@ -26466,6 +26506,30 @@ impl TypesetEngine {
             } else {
                 page_avail
             };
+            let fragment_placement = prepared.host_placement.map(|original| {
+                if !is_continuation && prepared.host_frame ==
+                    (st.pages.len(), st.current_column, st.current_zone_y_offset.to_bits()) {
+                    original
+                } else {
+                    // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
+                    super::float_placement::ParagraphFloatPlacement {
+                        anchor_y: st.current_height,
+                        table_top: st.current_height + host_before_overhead,
+                        occupied_bottom: st.current_height + host_before_overhead,
+                    }
+                }
+            });
+            let page_avail = fragment_placement.map_or(page_avail, |p| {
+                let boundary = if is_continuation || prepared.host_frame !=
+                    (st.pages.len(), st.current_column, st.current_zone_y_offset.to_bits()) {
+                    st.available_height() - st.layout.pagination_tolerance_px
+                } else {
+                    first_fragment_actual_footnote_boundary.unwrap_or(table_available)
+                };
+                (boundary - p.table_top - caption_extra
+                    - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                    - first_fragment_painted_row_footer_guard).max(0.0)
+            });
 
             // RowBreak 표의 common.height가 전체 표가 아니라 첫 physical fragment를
             // 저장할 수 있다. 저장 anchor가 현재 flow와 같고 declared bottom이 이
@@ -26884,6 +26948,22 @@ impl TypesetEngine {
             // [Task #1022] walk 가 consumed 에 분할 행 기여까지 누적하므로
             // partial_height = consumed + header_overhead 로 단일화.
             let partial_height: f64 = consumed + header_overhead;
+            let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
+                if let Some(mut placement) = fragment_placement {
+                    placement.occupied_bottom = placement.table_top + owner_height
+                        + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                    st.paragraph_float_placements.insert((para_idx, ctrl_idx), placement);
+                    st.current_height = placement.occupied_bottom
+                        + if terminal { host_spacing_after_only } else { 0.0 };
+                    if terminal {
+                        st.visible_float_exclusions.push(VisibleFloatExclusion {
+                            para_index: para_idx,
+                            top: placement.table_top,
+                            bottom: placement.occupied_bottom,
+                        });
+                    }
+                }
+            };
 
             // [Task #1046 Stage 2 진단] walk 결과 — fragment 경계/소비 높이. 동작 불변.
             if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
@@ -26973,6 +27053,7 @@ impl TypesetEngine {
                         + host_spacing_after_only
                         + terminal_nested_child_host_line_spacing;
                 }
+                commit_fragment(st, caption_extra + partial_height + bottom_caption_extra, true);
                 if queue_table_footnotes {
                     self.register_queued_table_footnotes(
                         st,
@@ -27050,6 +27131,7 @@ impl TypesetEngine {
                 + vert_offset_overhead
                 + partial_height
                 + fragment_outer_bottom_overhead;
+            commit_fragment(st, caption_extra + partial_height, false);
             // 큰 RowBreak 표가 기존 각주를 이미 가진 page에서 시작할 때에는 첫 fragment의
             // cell-footnote를 같은 lane에 섞지 않는다. 그 page의 기존 각주(표 25의
             // 105·106)를 보존하고, 표가 이어지는 fresh page에서 cell-footnote를 순서대로

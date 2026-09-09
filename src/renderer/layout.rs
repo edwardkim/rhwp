@@ -12206,6 +12206,9 @@ impl LayoutEngine {
             None,
             false,
             None,
+            ctx.paragraph_float_placements
+                .get(&(para_index, control_index))
+                .map(|p| col_area.y + p.table_top),
         );
         if render_deferred_rowbreak_host_text_after {
             if let Some(para) = paragraphs.get(para_index) {

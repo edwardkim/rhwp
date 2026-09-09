@@ -65,6 +65,7 @@ struct PartialTableHostContext<'a> {
     repeat_fragment_outer_margin: bool,
     pre_emitted_host_height: f64,
     host_line_spacing: f64,
+    resolved_table_top: Option<f64>,
 }
 
 /// Returns the content table inside transparent, empty 1×1 wrapper tables.
@@ -2978,6 +2979,7 @@ impl LayoutEngine {
                                                 repeat_fragment_outer_margin: false,
                                                 pre_emitted_host_height: 0.0,
                                                 host_line_spacing: 0.0,
+                                                resolved_table_top: None,
                                             },
                                             section_index,
                                             styles,
@@ -3237,6 +3239,7 @@ impl LayoutEngine {
         enclosing_cell_ctx: Option<&CellContext>,
         clamp_header_negative_para_offset: bool,
         probe: Option<&PartialTableCellProbe>,
+        resolved_table_top: Option<f64>,
     ) -> f64 {
         let para = match paragraphs.get(para_index) {
             Some(p) => p,
@@ -3280,6 +3283,7 @@ impl LayoutEngine {
                 repeat_fragment_outer_margin,
                 pre_emitted_host_height,
                 host_line_spacing,
+                resolved_table_top,
             },
             section_index,
             styles,
@@ -3346,6 +3350,7 @@ impl LayoutEngine {
             repeat_fragment_outer_margin,
             pre_emitted_host_height,
             host_line_spacing,
+            resolved_table_top,
         } = host;
 
         // [Issue #4326] Pagination can deliberately use the rows of a transparent
@@ -3477,7 +3482,9 @@ impl LayoutEngine {
         } else {
             None
         };
-        let y_start = if is_para_flow_table {
+        let y_start = if let Some(top) = resolved_table_top {
+            top
+        } else if is_para_flow_table {
             let prev_table_end = col_node
                 .children
                 .iter()
