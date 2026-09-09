@@ -150,7 +150,7 @@ test('HWP download opens viewer once', async () => {
     listeners.onCreated[0]({
       id: 201,
       url: 'https://example.com/sample.hwp',
-      filename: 'sample.hwp',
+      filename: '/Users/example/Downloads/sample.hwp',
       mime: 'application/x-hwp',
       fileSize: 1024,
     });
@@ -200,7 +200,7 @@ test('filename finalized in onChanged is rechecked with downloads.search', async
     searchItems.set(401, {
       id: 401,
       url: 'https://example.com/download?id=401',
-      filename: 'sample.hwp',
+      filename: '/Users/example/Downloads/sample.hwp',
       mime: 'application/octet-stream',
     });
     listeners.onChanged[0]({

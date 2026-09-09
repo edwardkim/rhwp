@@ -234,6 +234,11 @@ async function runDownloadCase({
     `${testCase.id}가 다른 viewer 탭을 만들었습니다: ${JSON.stringify(newViewerUrls)}`,
   );
 
+  // #6961: real DownloadItem.filename is absolute; only its leaf may reach Studio.
+  for (const viewerUrl of matchingViewerUrls) {
+    assert.equal(new URL(viewerUrl).searchParams.get('filename'), testCase.suggestedFilename);
+  }
+
   const downloadItems = await worker.evaluate(async url => {
     const items = await chrome.downloads.search({});
     return items.filter(item => item.url === url).map(item => ({
