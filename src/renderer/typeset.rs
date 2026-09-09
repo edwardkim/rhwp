@@ -19587,13 +19587,26 @@ impl TypesetEngine {
             })
             .max()
             .unwrap_or(0);
+        // [#6879] `v_off` 의 기준점은 문단 상단이 아니라 **앵커 줄**(그 개체의 제어
+        // 문자가 실린 저장 줄)이다. 문단 상단 기준으로 견주면 TAC 줄 **뒤**에 앵커된
+        // float 이 "겹침"으로 오판되어 TAC 앞으로 나가고, TAC 라벨이 흐름 끝까지
+        // 밀린다 (156767332 7쪽 pi=73: TAC 줄0 lh 3580 · float 앵커 줄1 vpos 4060 ·
+        // v_off 2512 → 문단 상단 기준 2512 < 3580 "겹침"이지만 앵커 기준 6572 ≥ 3580
+        // 으로 비겹침이고, 한글도 TAC 라벨을 쪽 상단에 둔다).
+        //
+        // `stored_float_anchor_offset_hu` 는 앵커가 첫 줄이거나 저장 줄이 개체 아래로
+        // 가는 형상이면 0 을 돌려주므로, `#5807` 의 두 핀은 값이 그대로다
+        // (1880690: 앵커 줄0 → 937 < 28024 겹침 유지 / s1 p28: 9188 ≥ 8041 비겹침 유지).
         let has_tac_overlapped_by_positive_float = tac_host_line_height_hu > 0
-            && para.controls.iter().any(|c| {
+            && para.controls.iter().enumerate().any(|(ctrl_index, c)| {
                 matches!(c, Control::Table(t)
                 if is_para_topbottom_float(&t.common)
                     && {
                         let v_off = signed_hwpunit(t.common.vertical_offset);
-                        v_off > 0 && v_off < tac_host_line_height_hu
+                        let anchor_top = crate::renderer::layout::stored_float_anchor_offset_hu(
+                            para, t, ctrl_index,
+                        );
+                        v_off > 0 && anchor_top.saturating_add(v_off) < tac_host_line_height_hu
                     })
             });
         let should_sort_para_float_tables = !para_has_non_whitespace_text(para)
@@ -21278,7 +21291,13 @@ impl TypesetEngine {
             let v_off_px = hwpunit_to_px(signed_vertical_offset, self.dpi);
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
             let table_top = if signed_vertical_offset > 0 {
-                let stored_top = para_start_height + outer_top_px + v_off_px;
+                // [#6879] 세로 기준점은 앵커 줄이다 — layout 이 같은 값을 더하므로
+                // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다. layout 과 **같은**
+                // 게이트(TAC 형제 유무)를 써야 배치와 예약이 갈리지 않는다.
+                let anchor_offset_px = crate::renderer::layout::tac_sibling_float_anchor_offset_px(
+                    para, table, ctrl_idx, self.dpi,
+                );
+                let stored_top = para_start_height + anchor_offset_px + outer_top_px + v_off_px;
                 // [#2439] 같은 visible host 의 첫 표가 offset=0이면 flow 를 전진시키지만
                 // exclusion 은 만들지 않는다. 후행 양수-offset 표의 저장 상단이 그 표
                 // 내부에 있으면 한컴은 앞 표 아래로 밀어 전체 높이를 보존한다. 저장

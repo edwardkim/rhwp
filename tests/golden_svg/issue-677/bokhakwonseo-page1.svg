@@ -189,17 +189,17 @@
 <text x="186.39333333333337" y="356.81333333333333" font-family="&apos;한양견명조&apos;,&apos;HY견명조&apos;,&apos;HYMyeongJo-Extra&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="12" fill="#000000" textLength="6.2667" lengthAdjust="spacingAndGlyphs">s</text>
 </g>
 <g clip-path="url(#cell-clip-67)"></g>
-<line x1="79.44000000000005" y1="145.33333333333334" x2="721.84" y2="145.33333333333334" stroke="#000000" stroke-width="1.5"/>
-<line x1="79.44000000000005" y1="205.38666666666668" x2="721.84" y2="205.38666666666668" stroke="#000000" stroke-width="0.5"/>
-<line x1="79.44000000000005" y1="256.1066666666667" x2="721.84" y2="256.1066666666667" stroke="#000000" stroke-width="0.5"/>
-<line x1="79.44000000000005" y1="316.16" x2="721.84" y2="316.16" stroke="#000000" stroke-width="0.5"/>
-<line x1="79.44000000000005" y1="369.97333333333336" x2="721.84" y2="369.97333333333336" stroke="#000000" stroke-width="1.5"/>
-<line x1="79.44000000000005" y1="145.33333333333334" x2="79.44000000000005" y2="369.97333333333336" stroke="#000000" stroke-width="1.5"/>
-<line x1="206.8266666666667" y1="145.33333333333334" x2="206.8266666666667" y2="369.97333333333336" stroke="#000000" stroke-width="0.5"/>
-<line x1="387.3866666666667" y1="145.33333333333334" x2="387.3866666666667" y2="316.16" stroke="#000000" stroke-width="0.5"/>
-<line x1="503.4533333333334" y1="145.33333333333334" x2="503.4533333333334" y2="316.16" stroke="#000000" stroke-width="0.5"/>
-<line x1="721.84" y1="145.33333333333334" x2="721.84" y2="316.16" stroke="#000000" stroke-width="1.5"/>
-<line x1="721.84" y1="316.16" x2="721.84" y2="369.97333333333336" stroke="#000000" stroke-width="0.5"/>
+<line x1="79.44000000000005" y1="145.33333333333334" x2="721.84" y2="145.33333333333334" stroke="#000000" stroke-width="1.44"/>
+<line x1="79.44000000000005" y1="205.38666666666668" x2="721.84" y2="205.38666666666668" stroke="#000000" stroke-width="0.48"/>
+<line x1="79.44000000000005" y1="256.1066666666667" x2="721.84" y2="256.1066666666667" stroke="#000000" stroke-width="0.48"/>
+<line x1="79.44000000000005" y1="316.16" x2="721.84" y2="316.16" stroke="#000000" stroke-width="0.48"/>
+<line x1="79.44000000000005" y1="369.97333333333336" x2="721.84" y2="369.97333333333336" stroke="#000000" stroke-width="1.44"/>
+<line x1="79.44000000000005" y1="145.33333333333334" x2="79.44000000000005" y2="369.97333333333336" stroke="#000000" stroke-width="1.44"/>
+<line x1="206.8266666666667" y1="145.33333333333334" x2="206.8266666666667" y2="369.97333333333336" stroke="#000000" stroke-width="0.48"/>
+<line x1="387.3866666666667" y1="145.33333333333334" x2="387.3866666666667" y2="316.16" stroke="#000000" stroke-width="0.48"/>
+<line x1="503.4533333333334" y1="145.33333333333334" x2="503.4533333333334" y2="316.16" stroke="#000000" stroke-width="0.48"/>
+<line x1="721.84" y1="145.33333333333334" x2="721.84" y2="316.16" stroke="#000000" stroke-width="1.44"/>
+<line x1="721.84" y1="316.16" x2="721.84" y2="369.97333333333336" stroke="#000000" stroke-width="0.48"/>
 <text x="116.69333333333333" y="418.17333333333335" font-family="&apos;한양견명조&apos;,&apos;HY견명조&apos;,&apos;HYMyeongJo-Extra&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="17.333333333333332" fill="#000000">본</text>
 <text x="134.02666666666667" y="418.17333333333335" font-family="&apos;한양견명조&apos;,&apos;HY견명조&apos;,&apos;HYMyeongJo-Extra&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="17.333333333333332" fill="#000000">인</text>
 <text x="151.35999999999999" y="418.17333333333335" font-family="&apos;한양견명조&apos;,&apos;HY견명조&apos;,&apos;HYMyeongJo-Extra&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="17.333333333333332" fill="#000000">은</text>
@@ -414,12 +414,12 @@
 <g clip-path="url(#cell-clip-150)"></g>
 <g clip-path="url(#cell-clip-153)"></g>
 <g clip-path="url(#cell-clip-156)"></g>
-<line x1="601.5400000000001" y1="574.2933333333334" x2="716.2333333333335" y2="574.2933333333334" stroke="#000000" stroke-width="0.5"/>
-<line x1="174.7533333333334" y1="618.868408551069" x2="579.3266666666667" y2="618.868408551069" stroke="#000000" stroke-width="0.5" stroke-dasharray="2 2"/>
-<line x1="601.5400000000001" y1="618.868408551069" x2="716.2333333333335" y2="618.868408551069" stroke="#000000" stroke-width="0.5"/>
-<line x1="601.5400000000001" y1="680.5866666666668" x2="716.2333333333335" y2="680.5866666666668" stroke="#000000" stroke-width="0.5"/>
-<line x1="601.5400000000001" y1="574.2933333333334" x2="601.5400000000001" y2="680.5866666666668" stroke="#000000" stroke-width="0.5"/>
-<line x1="716.2333333333335" y1="574.2933333333334" x2="716.2333333333335" y2="680.5866666666668" stroke="#000000" stroke-width="0.5"/>
+<line x1="601.5400000000001" y1="574.2933333333334" x2="716.2333333333335" y2="574.2933333333334" stroke="#000000" stroke-width="0.48"/>
+<line x1="174.7533333333334" y1="618.868408551069" x2="579.3266666666667" y2="618.868408551069" stroke="#000000" stroke-width="0.48" stroke-dasharray="2 2"/>
+<line x1="601.5400000000001" y1="618.868408551069" x2="716.2333333333335" y2="618.868408551069" stroke="#000000" stroke-width="0.48"/>
+<line x1="601.5400000000001" y1="680.5866666666668" x2="716.2333333333335" y2="680.5866666666668" stroke="#000000" stroke-width="0.48"/>
+<line x1="601.5400000000001" y1="574.2933333333334" x2="601.5400000000001" y2="680.5866666666668" stroke="#000000" stroke-width="0.48"/>
+<line x1="716.2333333333335" y1="574.2933333333334" x2="716.2333333333335" y2="680.5866666666668" stroke="#000000" stroke-width="0.48"/>
 <text x="214.14000000000004" y="730.1866666666666" font-family="&apos;한양견명조&apos;,&apos;HY견명조&apos;,&apos;HYMyeongJo-Extra&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="26.666666666666668" fill="#000000">고</text>
 <text x="254.14000000000004" y="730.1866666666666" font-family="&apos;한양견명조&apos;,&apos;HY견명조&apos;,&apos;HYMyeongJo-Extra&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="26.666666666666668" fill="#000000">려</text>
 <text x="294.14000000000004" y="730.1866666666666" font-family="&apos;한양견명조&apos;,&apos;HY견명조&apos;,&apos;HYMyeongJo-Extra&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif" font-size="26.666666666666668" fill="#000000">대</text>

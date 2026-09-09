@@ -282,7 +282,62 @@ use crate::model::shape::{
 /// 00387's dotted 46,490HU box inside a 45,359HU cell — and 한글 paints it cut
 /// at the parent's edge.  Widening the clip for that shape would drag the
 /// dotted frame past the outer table border, so it keeps the host viewport.
-fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut RenderNode) {
+/// [#6861] **저장 사다리가 자리를 잡아 준 과폭 중첩 표**의 host 셀 모델 인덱스.
+///
+/// `#5587` 은 "부모 셀보다 넓게 저장된 중첩 표는 한글도 부모 경계에서 자른다"로 정리했다.
+/// 그런데 `3194097` 1쪽은 정반대다 — 한글이 바깥 표 오른쪽 끝을 **30.15px 넘겨** 중첩 표
+/// 테두리를 그대로 그린다.
+///
+/// 갈림은 **저장 줄 폭**이 준다. 호스트 문단의 `LINE_SEG.segment_width` 가 중첩 표의
+/// 선언 폭을 품고 있으면 한글이 그 폭만큼 **자리를 잡아 준 것**이고, 못 품으면 자리를
+/// 안 준 것이다.
+///
+/// ```text
+///   3194097   sw 50,440 >= 중첩 50,170   → 자리를 잡아 줬다 → 넘겨 그린다
+///   #5587     sw 34,160 <  중첩 35,144   → 안 잡아 줬다     → 부모 경계에서 자른다
+/// ```
+///
+/// 문턱 상수가 없다 — 문서가 스스로 두 값을 준다(환산 오차 0.5 HU 허용은 없다,
+/// 둘 다 HWPUNIT 정수 비교다).
+pub(super) fn cells_with_ladder_reserved_nested_overflow(
+    table: &crate::model::table::Table,
+) -> std::collections::HashSet<u32> {
+    let mut reserved = std::collections::HashSet::new();
+    for (index, cell) in table.cells.iter().enumerate() {
+        for para in &cell.paragraphs {
+            let widest_stored = para
+                .line_segs
+                .iter()
+                .map(|segment| segment.segment_width)
+                .max()
+                .unwrap_or(0);
+            if widest_stored <= 0 {
+                continue;
+            }
+            let reserves_any_nested = para.controls.iter().any(|control| match control {
+                Control::Table(nested) => {
+                    nested.common.width > 0 && widest_stored >= nested.common.width as i32
+                }
+                _ => false,
+            });
+            if reserves_any_nested {
+                if let Ok(index) = u32::try_from(index) {
+                    reserved.insert(index);
+                }
+                break;
+            }
+        }
+    }
+    reserved
+}
+
+fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(
+    cell_node: &mut RenderNode,
+    ladder_reserved_cells: &std::collections::HashSet<u32>,
+    // [#6861] 넓힌 clip 의 상한 — 본문 우단. 사다리가 자리를 잡아 줬어도 **용지 밖까지**
+    // 내보내지는 않는다(1480000-201200206: 상한 없이 켜면 용지 밖 2 → 9).
+    ladder_reserved_clip_right_limit: f64,
+) {
     let RenderNodeType::TableCell(cell_meta) = &cell_node.node_type else {
         return;
     };
@@ -303,7 +358,17 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(cell_node: &mut R
         let table_left = table_node.bbox.x;
         let table_right = table_node.bbox.x + table_node.bbox.width;
         // [#5587] 부모 셀보다 넓게 저장된 중첩표는 clip 확장 대상이 아니다.
-        let over_wide = table_node.bbox.width > host_clip_width + NESTED_OVER_WIDE_EPSILON_PX;
+        // [#6861] 단, **저장 사다리가 그 폭만큼 자리를 잡아 준** 경우는 예외다 —
+        // 한글도 그때는 부모 경계를 넘겨 그린다(위 헬퍼의 판별).
+        let ladder_reserved = cell_meta
+            .model_cell_index
+            .is_some_and(|index| ladder_reserved_cells.contains(&index));
+        // 사다리가 잡아 준 자리라도 본문 우단을 넘어서까지 열어 주지는 않는다.
+        let ladder_reserved = ladder_reserved
+            && table_node.bbox.x + table_node.bbox.width
+                <= ladder_reserved_clip_right_limit + NESTED_OVER_WIDE_EPSILON_PX;
+        let over_wide = table_node.bbox.width > host_clip_width + NESTED_OVER_WIDE_EPSILON_PX
+            && !ladder_reserved;
         let mut found_outer_vertical_border = false;
 
         if !over_wide {
@@ -1367,17 +1432,34 @@ pub(super) fn extend_completed_nested_table_border_clips(
     node: &mut RenderNode,
     suppress_bottom_text_residue: bool,
     repair_unclipped_hwpx_top_residue: bool,
+    // [#6861] 저장 사다리가 과폭 중첩 표의 자리를 잡아 준 host 셀들과, 그때 열어 줄
+    // 오른쪽 상한(용지 우단).
+    ladder_reserved_cells: &std::collections::HashSet<u32>,
+    ladder_reserved_clip_right_limit: f64,
 ) {
+    // 셀 번호는 각 표 안에서 다시 시작한다. 하위 표는 자신의 layout에서
+    // 계산한 예약만 사용하며, 상위 표의 같은 번호를 물려받지 않는다.
+    let no_inherited_reservations = std::collections::HashSet::new();
     for child in &mut node.children {
         extend_completed_nested_table_border_clips(
             tree,
             child,
             suppress_bottom_text_residue,
             repair_unclipped_hwpx_top_residue,
+            if matches!(child.node_type, RenderNodeType::Table(_)) {
+                &no_inherited_reservations
+            } else {
+                ladder_reserved_cells
+            },
+            ladder_reserved_clip_right_limit,
         );
     }
     extend_table_horizontal_bbox_to_direct_cell_paint(node);
-    extend_clipped_cell_horizontal_clip_to_nested_table_borders(node);
+    extend_clipped_cell_horizontal_clip_to_nested_table_borders(
+        node,
+        ladder_reserved_cells,
+        ladder_reserved_clip_right_limit,
+    );
     extend_clipped_cell_vertical_clip_to_nearby_nested_table_borders(node);
     repair_clipped_nested_table_fragment_frame(
         tree,
@@ -3197,6 +3279,10 @@ impl LayoutEngine {
             self.profile.get().hwp5_stored_pagination_layout()
                 || self.profile.get().hwp5_origin_hwpx(),
             self.profile.get().hwpx_container(),
+            &cells_with_ladder_reserved_nested_overflow(table),
+            // 상한은 **용지**다 — 한글은 본문 밖·용지 안에 그린다(3194097: 본문 우단
+            // 720.0, 그림 749.4, 용지 793.7). 본문으로 잡으면 이 축이 통째로 닫힌다.
+            self.current_paper_width.get(),
         );
 
         col_node.children.push(table_node);
@@ -5746,7 +5832,21 @@ impl LayoutEngine {
                             // 위치다. 셀 콘텐츠 상단으로 되돌리면 말풍선이 감싸야 할 문장
                             // 위로 올라가 앞 줄을 덮는다(156602560 참고2·참고4, 6개 전부
                             // −28.4~−30.8px, 참고4 는 최대 −79.1px).
+                            //
+                            // [#6892] **칸의 첫 문단일 때만** 그 전제가 성립한다. 앞에 다른
+                            // 문단이 있으면 빈 호스트 줄의 `vpos` 는 그 문단들이 만든 **진짜
+                            // 흐름 위치**이지 그림 자신의 변위가 아니다. 그런데도 앵커를 칸
+                            // 콘텐츠 상단으로 되돌리면 그림이 앞 문단들 위로 올라가 글자를
+                            // 덮는다(156726122 8쪽: 칸 여섯째 문단 `cp_idx=5` 의 Square 그림이
+                            // 자기 줄 382.7 대신 192.3 에 그려져 −189.8px, 정본 382.1).
+                            //
+                            // ⚠ **TopAndBottom 은 좁히지 않는다.** 그 wrap 이 이 분기를
+                            // 벗어나면 `#2071`(칸 valign 강제, 한글 2024 오라클로 검증된
+                            // 별개 계약)의 저장-vpos 갈래로 넘어간다. 코퍼스 10,000건에서
+                            // 술어가 뒤집히는 자리 39곳 중 **38곳이 TopAndBottom** 이라,
+                            // 함께 넓히면 이 이슈와 무관한 개체를 대량으로 옮긴다.
                             let displaced_empty_line_para = !overlay_para
+                                && (cp_idx == 0 || top_and_bottom_para)
                                 && para.text.trim().is_empty()
                                 && para
                                     .line_segs
@@ -7772,11 +7872,26 @@ impl LayoutEngine {
             };
             // Square/중첩 표 등 비-flow 개체의 시각 bottom 은 저장 LINE_SEG 흐름에
             // 포함되지 않으므로(#1486 p19 Square 그림), 그런 개체가 저장 extent 를
-            // 넘는 셀은 저장 흐름 신뢰 대상이 아니다 — TopAndBottom flow 개체만
-            // 저장 vpos 에 흡수된다(악보 셀).
+            // 넘는 셀은 저장 흐름 신뢰 대상이 아니다.
+            //
+            // [#6912] TopAndBottom flow 개체도 여기 넣는다. 종전 계약은 "TopAndBottom
+            // 은 저장 vpos 에 흡수된다(악보 셀)" 였는데, 흡수는 **결과이지 전제가
+            // 아니다** — 흡수했으면 `저장 extent ≥ 개체 띠` 라 아래 비교가 그대로
+            // 통과해 악보 셀 계약이 유지되고, 흡수하지 않았으면 띠가 extent 를
+            // 크게 넘어 신뢰를 접는다. 곧 이 `max` 는 흡수 여부를 스스로 판정한다.
+            // (`calc_non_inline_controls_flow_height` 는 문단별 띠의 **합**이다 — 흡수한
+            // 셀은 문단마다 vpos 가 자기 띠를 지나 있어 저장 extent 가 그 합 이상이다.)
+            //
+            // 156564340 4쪽: 세로 가운데 정렬 칸의 앵커 줄 `vertpos=0`(흡수 안 함)인데
+            // 개체 띠는 854.4px 다. 종전에는 저장 extent 13.33px 를 콘텐츠 높이로
+            // 믿어 빈 줄이 (854.4 − 13.33)/2 = 420.5px 내려가고, `vertRelTo=PARA` 인
+            // 개체가 그 줄을 따라가 칸·쪽 밖으로 나갔다. 한/글 자신의 저장값은 그 띠를
+            // 행 높이에 넣는다 — `tbl sz height 64362` = 63356(개체) + 724(vertOffset)
+            // + 282(`tc cellSz height` = cellMargin top+bottom, 곧 글 내용 높이 0).
             let non_flow_object_extent = self
                 .calc_nested_controls_bottom_height(&cell.paragraphs, styles)
-                .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs));
+                .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
+                .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs));
             // [#2148 #2279] 저장 vpos 흐름이 물리적으로 줄들을 담지 못하는 퇴화
             // 형상(다문단 전부 vpos=0 등, 36399374 pi=79 병합 셀: extent 35px vs
             // 줄높이 합 260px)은 신뢰 대상이 아니다 — 전 문단이 셀 상단 한 y 에
@@ -7799,6 +7914,11 @@ impl LayoutEngine {
             let stored_flow_shape_is_trusted = (depth > 0 || table.common.treat_as_char)
                 && stored_flow_extent > 0.0
                 && non_flow_object_extent <= stored_flow_extent + 0.5
+                // [#6896] TopAndBottom도 빈 anchor 한 줄만 저장된 경우에는
+                // 개체 높이를 품지 않는다. 실제 flow band가 저장 extent보다
+                // 크면 composed 높이를 유지해 가운데 정렬의 아래쪽 이탈을 막는다.
+                && self.calc_non_inline_controls_flow_height(&cell.paragraphs)
+                    <= stored_flow_extent + 0.5
                 && stored_flow_extent + 0.5 >= 0.5 * stored_flow_line_sum
                 && stored_flow_has_para_anchors;
             // 일반 셀은 저장 extent가 자체 측정값보다 실제로 압축된 경우에만

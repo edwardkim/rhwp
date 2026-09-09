@@ -149,6 +149,78 @@ function findChrome(configured) {
   throw new Error('Chrome/Chromium을 찾지 못했습니다. VISUAL_SWEEP_CHROME으로 실행 경로를 지정하세요.');
 }
 
+export async function recoverUnavailableLocalBoldFaces(page) {
+  return page.evaluate(async () => {
+    const familyKey = value => value.trim().replace(/^(['"])(.*)\1$/u, '$2').toLowerCase();
+    const weightValue = value => {
+      if (value === 'normal' || value === '') return 400;
+      if (value === 'bold') return 700;
+      return /^\d+$/u.test(value) ? Number(value) : null;
+    };
+    const faces = [...document.fonts];
+    const recovered = [];
+    for (const sheet of document.styleSheets) {
+      let rules;
+      try {
+        rules = [...sheet.cssRules];
+      } catch {
+        // Cross-origin sheets are not owned by this SVG capture.
+        continue;
+      }
+      for (const rule of rules) {
+        if (rule.type !== CSSRule.FONT_FACE_RULE) continue;
+        const source = rule.style.getPropertyValue('src').trim();
+        const remainder = source.replace(
+          /local\(\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^)]*)\s*\)/giu,
+          '',
+        ).replace(/[\s,]/gu, '');
+        // Never remove embedded/web font rules or change an available real bold face.
+        if (!source || remainder !== '') continue;
+        const family = familyKey(rule.style.getPropertyValue('font-family'));
+        const weight = weightValue(rule.style.getPropertyValue('font-weight').trim());
+        if (weight === null || weight < 600) continue;
+        const style = rule.style.getPropertyValue('font-style').trim() || 'normal';
+        const stretch = rule.style.getPropertyValue('font-stretch').trim() || 'normal';
+        const failed = faces.find(face => (
+          familyKey(face.family) === family
+          && weightValue(face.weight) === weight
+          && face.style === style
+          && face.stretch === stretch
+          && face.status === 'error'
+        ));
+        if (!failed) continue;
+        let regular;
+        for (const face of faces) {
+          if (familyKey(face.family) !== family || weightValue(face.weight) !== 400
+            || face.style !== failed.style || face.stretch !== failed.stretch
+            || face.unicodeRange !== failed.unicodeRange) continue;
+          try {
+            await face.load();
+            regular = face;
+            break;
+          } catch {
+            // Keep searching; failure alone must not discard the bold declaration.
+          }
+        }
+        if (!regular) continue;
+        // A failed explicit bold face can send Blink to LastResort instead of the
+        // safe regular alias. Removing only that rule permits synthetic bold from
+        // the loaded regular face without rewriting the SVG's text or geometry.
+        const index = [...sheet.cssRules].indexOf(rule);
+        if (index < 0) continue;
+        sheet.deleteRule(index);
+        recovered.push({ family, weight, fallback: 'synthetic-bold-from-loaded-regular' });
+      }
+    }
+    if (recovered.length > 0) {
+      // Flush style invalidation before waiting for the replacement font selection.
+      document.documentElement.getBoundingClientRect();
+      await document.fonts.ready;
+    }
+    return recovered;
+  });
+}
+
 async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, profileDir }) {
   const studioRequire = createRequire(resolve(ROOT, 'rhwp-studio/package.json'));
   let puppeteerPath;
@@ -177,7 +249,9 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
     });
     await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: 30000 });
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    const recoveredFontFaces = await recoverUnavailableLocalBoldFaces(page);
     await page.screenshot({ path: outputPath, type: 'png' });
+    return recoveredFontFaces;
   } finally {
     await browser.close();
   }
@@ -204,8 +278,9 @@ async function main() {
   const profileDir = resolve(dirname(outputPath), `.webfont-chrome-profile-${process.pid}`);
   const html = `<!doctype html><meta charset="utf-8"><style>html,body{margin:0;padding:0;overflow:hidden;width:${viewport.width}px;height:${viewport.height}px}svg{display:block}</style>${preparedSvg}`;
   writeFileSync(wrapperPath, html);
+  let recoveredFontFaces;
   try {
-    await renderWithChrome({
+    recoveredFontFaces = await renderWithChrome({
       chrome: findChrome(configuredChrome),
       htmlPath: wrapperPath,
       outputPath,
@@ -226,6 +301,7 @@ async function main() {
     projectionSha256: createHash('sha256').update(projectionSource).digest('hex'),
     appliedRuleIds: rules.map(rule => rule.ruleId),
     preservedFontFaceFamilies: [...declaredFontFaceFamilies(svgSource)],
+    recoveredFontFaces,
     terminalFallbackFamily: TERMINAL_FALLBACK_FAMILY,
   }));
 }
