@@ -7670,7 +7670,7 @@ impl DocumentCore {
             }
 
             for child in &node.children {
-                collect_line_text(child, out, has_token, items);
+                collect_line_text(child, out, has_token);
             }
         }
 
@@ -7787,7 +7787,7 @@ impl DocumentCore {
             }
 
             for child in &node.children {
-                collect_line_text(child, out, has_token);
+                collect_line_text(child, out, has_token, items);
             }
         }
 
