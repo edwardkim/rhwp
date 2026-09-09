@@ -663,8 +663,16 @@ fn split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame() {
                         assert!(node.bbox.y + node.bbox.height <= body_bottom + 0.5,
                             "본문 {body_height}, 쪽 {page}, 표 {:?}, 하한 {body_bottom}", node.bbox);
                         if page > 0 {
-                            assert!((node.bbox.y - body_top).abs() < 0.5,
-                                "새 쪽 앵커 거리 재적용 금지: {:?}, 본문 {body_top}", node.bbox);
+                            let Control::Table(target) = &core.document().sections[0].paragraphs[0].controls[0] else {
+                                panic!("표");
+                            };
+                            // 첫 조각 전체 이월은 첫 조각의 위 바깥 여백을 유지한다.
+                            // 이미 시작한 표의 연속 조각에는 이 첫 여백도 반복하지 않는다.
+                            let first_margin = if fragments == 1 {
+                                rhwp::renderer::hwpunit_to_px(target.outer_margin_top as i32, 96.0)
+                            } else { 0.0 };
+                            assert!((node.bbox.y - body_top - first_margin).abs() < 0.5,
+                                "새 쪽 앵커 거리 재적용 금지: {:?}, 본문 {body_top}, 첫 여백 {first_margin}", node.bbox);
                         }
                     }
                 }
