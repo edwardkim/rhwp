@@ -2994,8 +2994,10 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // 넘친다(36360328 +75px, 한글 2020 은 재래핑). 단, 이 계보는 **stale
     // (물리 위반) 증거가 있을 때만** 개입한다 — 증거 없이 admission 불일치
     // 만으로 재래핑하면 종전 무소유였던 float-host 문단의 확정 핀이 흔들린다.
+    // 저장 줄이 아예 없으면 보호할 저장 기하가 없다. 폭-중립 표 호스트도
+    // 아래 NO_LS fill로 보내 현재 frame의 줄 경계를 계산한다 (#6950).
     if !supports_picture_band_frame_controls(para) {
-        if !supports_cached_body_frame_controls(para) || !stale {
+        if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
             return None;
         }
     }
