@@ -8655,8 +8655,44 @@ impl LayoutEngine {
     /// 노드와 모든 자손의 y 를 dy 만큼 이동한다.
     fn translate_subtree_y(node: &mut RenderNode, dy: f64) {
         node.bbox.y += dy;
+        Self::translate_node_payload_y(node, dy);
         for child in node.children.iter_mut() {
             Self::translate_subtree_y(child, dy);
+        }
+    }
+
+    /// [#6921] `bbox` 말고 **자기 좌표**를 들고 다니는 노드의 y 도 같이 옮긴다.
+    ///
+    /// 백엔드는 노드마다 다른 것을 읽는다. `Rectangle`·`Ellipse`·`Image`·글자는
+    /// `node.bbox` 로 그리지만, `Line` 은 `x1/y1–x2/y2` 를, `Path` 는 `commands` 의
+    /// 절대 좌표를 그대로 경로로 삼는다(`svg.rs` 의 `draw_line`·`draw_path_with_gradient`).
+    /// bbox 만 옮기면 그 둘은 **옮기기 전 자리에 그려지고 bbox 만 따로 논다.**
+    ///
+    /// 148733091 12쪽: `vertAlign` 정렬이 꼬리말을 `dy = 23.88px` 내리는데 문단 테두리
+    /// 이중선의 bbox 만 `1031.8` 로 가고 방출은 `1007.92` 에 남았다. 그 자리는 아직 본문
+    /// 영역(바닥 `1009.2`) 안이라 선이 본문 마지막 글줄을 가로질렀다.
+    /// 한/글 정본(engine 2020)은 같은 선을 `1028.2` 에 그린다.
+    fn translate_node_payload_y(node: &mut RenderNode, dy: f64) {
+        match &mut node.node_type {
+            RenderNodeType::Line(line) => {
+                line.y1 += dy;
+                line.y2 += dy;
+            }
+            RenderNodeType::Path(path) => {
+                for cmd in path.commands.iter_mut() {
+                    match cmd {
+                        PathCommand::MoveTo(_, y) | PathCommand::LineTo(_, y) => *y += dy,
+                        PathCommand::CurveTo(_, y1, _, y2, _, y) => {
+                            *y1 += dy;
+                            *y2 += dy;
+                            *y += dy;
+                        }
+                        PathCommand::ArcTo(_, _, _, _, _, _, y) => *y += dy,
+                        PathCommand::ClosePath => {}
+                    }
+                }
+            }
+            _ => {}
         }
     }
 
