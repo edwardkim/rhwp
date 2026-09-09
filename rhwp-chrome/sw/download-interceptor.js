@@ -11,7 +11,7 @@
 //        경로 결정을 무효화하므로 filename 결정 단계에서 완전히 빠진다.
 
 import { openViewer } from './viewer-launcher.js';
-import { classifyDownload } from './download-interceptor-common.js';
+import { classifyDownload, isOwnExtensionBlobDownload } from './download-interceptor-common.js';
 import { loadSettingsForAutomaticActions } from './settings-store.js';
 import {
   DEFAULT_STATE_TTL_MS,
@@ -91,6 +91,7 @@ async function handleChanged(delta) {
 
 async function processDownloadCandidate(item, state, context) {
   if (!item || state?.handledAt) return state;
+  if (isOwnExtensionBlobDownload(item, chrome.runtime.getURL(''))) return state;
   if (classifyDownload(item, context).action !== 'intercept') return state;
   const existingProcessing = processingDownloadPromises.get(item.id);
   if (existingProcessing) return existingProcessing;
