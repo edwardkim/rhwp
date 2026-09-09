@@ -3,7 +3,7 @@
 - Issue: [#6916](https://github.com/edwardkim/rhwp/issues/6916)
 - 날짜: 2026-09-09
 - 브랜치: `task_m100_6916`
-- 상태: 구현·승인된 로컬 검증 완료. 메인테이너 결과 승인 및 원격 push·PR 생성 대기.
+- 상태: PR #6930 생성 및 code candidate CI 성공 후 self-review 완료. 검토 기록 push·병합 승인 대기.
 - 검증 code head: `369e789eea1839462674e8a96f09c453ff2ba111`
 - 독립 빌드 source head: `882c0dfc9a9a73d3bf5b679436697a85b000cc5f` (위 코드 + 단계 문서만 변경)
 - 기준 devel: `c72ad805cc60e4a5cf5689c18b44e7214cec68fe`
@@ -63,7 +63,7 @@ CI impact classifier, package manifest는 변경하지 않았다.
 
 - Windows/macOS 설치 실행은 미확인이다. frontend·VSIX·브라우저 확장 전체 재빌드는
   승인된 bin-only 영향 분석에 따라 생략했다. 조판 코드는 변경하지 않아 전수 시각 검증을 추가하지 않았다.
-- 실제 npm 게시나 원격 CI/Oracle 실행은 하지 않았다. 로컬 성공을 운영 배포 완료로 부르지 않는다.
+- 실제 npm 게시는 하지 않았다. 아래 후속 절차에서 원격 CI/Oracle 실행을 확인했으나 제품 배포 완료를 뜻하지 않는다.
 - 제품 안내 원본은 22,509 → 1,250 bytes로 줄었다. 이는 문서 입력 크기이며 제품 성능 개선 계측이 아니다.
 - nextest 0.9.137의 권장 버전/다른 CI profile 설정 경고는 남았다. default profile의 실행 결과는 위와 같다.
 - Stage 2의 최초 테스트 dependency 오류, Stage 3의 로컬 검사 size 가정 오류와
@@ -85,7 +85,11 @@ CI impact classifier, package manifest는 변경하지 않았다.
 - 검증 전용 `/tmp/rhwp-6916-stage3.GhIEHx`와 `rhwp-6916-review`는 결과/PR 확인에 재사용할 수 있게 유지한다.
   타스크 종료 후 이번에 생성한 정확한 경로만 정리하고 공유 캐시는 삭제하지 않는다.
 
-다음은 결과 승인 → 최신 devel 재확인 → 승인된 push·devel 대상 PR 생성 → exact-head CI/Oracle 확인
-→ 승인된 self-review·merge·이슈 close다. 현재 원격 조치는 하지 않았다.
+후속 승인으로 [PR #6930](https://github.com/edwardkim/rhwp/pull/6930)을 생성했고
+`2577e3328`의 CI·CodeQL·관련 검사가 성공한 뒤 [self-review](../pr/archives/pr_6930_review.md)를 완료했다.
+Oracle sparse 제품 빌드는 실제 성공했고 verdict=completed, compareExit=0이었다.
+단, 쪽수 비교는 1,030쌍 중 999 match / 29 mismatch / 2 error(unpaired 414)로 전건 일치가 아니다.
+비교 잔여 항목의 개별 원인·회귀 여부를 이번 분리 작업의 완료 주장에 포함하지 않는다.
+다음은 검토 기록 push 승인 → 최신 trailing head CI → 병합·이슈 close 승인 절차다.
 복구가 필요하면 제품 안내/include/Oracle sparse 입력·mirror test를 같은 단위로 되돌리며,
 Gym 자산이나 사용자 문서를 삭제하지 않는다.
