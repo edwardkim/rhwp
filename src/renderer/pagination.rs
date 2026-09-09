@@ -455,6 +455,9 @@ pub struct FootnoteRef {
 /// 한 단(Column)에 배치될 콘텐츠
 #[derive(Debug, Clone)]
 pub struct ColumnContent {
+    /// 문단 텍스트 앞/뒤 관계로 확정한 자리차지 표 배치(단 상대 좌표).
+    pub paragraph_float_placements:
+        std::collections::HashMap<(usize, usize), super::float_placement::ParagraphFloatPlacement>,
     /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).
     pub inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     /// #6812: 분할기에서 확정한 단 기준 TAC 배치. 그림 paint 순서와 무관하다.
@@ -935,6 +938,13 @@ impl PaginationResult {
                             .iter()
                             .map(|(&pi, plan)| {
                                 ((pi as i64 + offset as i64).max(0) as usize, plan.clone())
+                            })
+                            .collect(),
+                        paragraph_float_placements: cc
+                            .paragraph_float_placements
+                            .iter()
+                            .map(|(&(pi, ci), &placement)| {
+                                (((pi as i64 + offset as i64).max(0) as usize, ci), placement)
                             })
                             .collect(),
                         zone_layout: cc.zone_layout.clone(),

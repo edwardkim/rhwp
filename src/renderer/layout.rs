@@ -67,6 +67,10 @@ struct ColumnItemCtx<'a> {
     wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
     inline_placements:
         &'a std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
+    paragraph_float_placements: &'a std::collections::HashMap<
+        (usize, usize),
+        super::float_placement::ParagraphFloatPlacement,
+    >,
 }
 
 pub(crate) const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
@@ -929,7 +933,7 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
 /// 서명란·발신명의 호스트를 위한 것이라 이 형상에서는 제목을 마지막 쪽 표
 /// 하단 밖으로 보냈다. 저장 기하가 "전 줄이 표 위"를 증언할 때만 지연을 끈다 —
 /// 일부 줄만 위인 혼합 형상은 뒤 텍스트가 소실될 수 있어 제외한다.
-fn stored_host_lines_precede_float(
+pub(crate) fn stored_host_lines_precede_float(
     para: &Paragraph,
     table: &crate::model::table::Table,
     control_index: usize,
@@ -6175,6 +6179,7 @@ impl LayoutEngine {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         };
         let page_content = PageContent {
             page_index: 0,
@@ -6781,6 +6786,7 @@ impl LayoutEngine {
                         &col_content.wrap_anchors,
                         &col_content.inline_placements,
                         &col_content.inline_flow_plans,
+                        &col_content.paragraph_float_placements,
                     );
                     y_offset = new_y;
                     endnote_sep_body_floor = Some(new_y);
@@ -7945,6 +7951,7 @@ impl LayoutEngine {
                 &col_content.wrap_anchors,
                 &col_content.inline_placements,
                 &col_content.inline_flow_plans,
+                &col_content.paragraph_float_placements,
             );
             if let PageItem::FullParagraph { para_index } = item {
                 if let Some(plan) = col_content.inline_flow_plans.get(para_index) {
@@ -8423,6 +8430,7 @@ impl LayoutEngine {
                 wrap_around_paras: column_wrap_around_paras,
                 wrap_anchors: &col_content.wrap_anchors,
                 inline_placements: &col_content.inline_placements,
+                paragraph_float_placements: &col_content.paragraph_float_placements,
             };
             // 이 단에 이미 그려진 표들의 최상단 y — 잔여 행이 그 아래로 내려가면
             // #4514 가 잡은 표 겹침이 재발한다(실측: pi=158 잔여 행 727px ↔ pi=186
@@ -8697,6 +8705,10 @@ impl LayoutEngine {
             super::float_placement::InlineBoxPlacement,
         >,
         inline_flow_plans: &std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
+        paragraph_float_placements: &std::collections::HashMap<
+            (usize, usize),
+            super::float_placement::ParagraphFloatPlacement,
+        >,
     ) -> (f64, bool) {
         let ctx = ColumnItemCtx {
             page_content,
@@ -8714,6 +8726,7 @@ impl LayoutEngine {
             wrap_around_paras,
             wrap_anchors,
             inline_placements,
+            paragraph_float_placements,
         };
         match item {
             PageItem::FullParagraph { para_index } => {
@@ -10319,6 +10332,12 @@ impl LayoutEngine {
                 };
                 let allow_para_top_bleed =
                     is_current_visible_para_float && signed_hwpunit(t.common.vertical_offset) < 0;
+                // 확정 배치는 단 상대 좌표다. 좌표 변환만 수행하고 호스트 높이·
+                // 제목 줄·앵커 거리를 다시 가산한 기존 후보를 사용하지 않는다.
+                let table_y_start = ctx
+                    .paragraph_float_placements
+                    .get(&(para_index, control_index))
+                    .map_or(table_y_start, |placement| col_area.y + placement.table_top);
                 // 이월된 빈 RowBreak 그림 표의 stale negative picture offset은 native
                 // HWP5와 original HWPX 모두 outer host의 저장 vpos가 있어야만 정확히
                 // page-local top으로 정규화할 수 있다. nested/header/footer 호출은 아래
@@ -11084,7 +11103,12 @@ impl LayoutEngine {
             // 제어 문자가 실린 저장 줄)이다. 앞선 TAC 형제가 첫 줄을 차지한 문단에서
             // 이것을 안 옮기면 float 이 그 줄 위로 올라가 겹친다 (156767332 pi=73:
             // 라벨 98.2..138.4 vs float 128.0). 앵커가 첫 줄이면 0 이라 종전과 같다.
-            if let Some(Control::Table(t)) = para.controls.get(control_index) {
+            if let Some(placement) = ctx
+                .paragraph_float_placements
+                .get(&(para_index, control_index))
+            {
+                para_y_for_table = col_area.y + placement.anchor_y;
+            } else if let Some(Control::Table(t)) = para.controls.get(control_index) {
                 let anchor_offset =
                     tac_sibling_float_anchor_offset_px(para, t, control_index, self.dpi);
                 if anchor_offset > 0.0 {

@@ -1146,6 +1146,8 @@ struct TypesetState {
     inline_placements:
         std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
     inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
+    paragraph_float_placements:
+        std::collections::HashMap<(usize, usize), super::float_placement::ParagraphFloatPlacement>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
@@ -4749,6 +4751,7 @@ impl TypesetState {
             side_wrap_exclusions: std::collections::BTreeMap::new(),
             inline_placements: std::collections::HashMap::new(),
             inline_flow_plans: std::collections::HashMap::new(),
+            paragraph_float_placements: std::collections::HashMap::new(),
             inline_box_flow_bottom: 0.0,
             deferred_table_controls: Vec::new(),
             deferred_next_page_square_pictures: Vec::new(),
@@ -5266,6 +5269,7 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
+            paragraph_float_placements: std::mem::take(&mut self.paragraph_float_placements),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5353,6 +5357,7 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
+            paragraph_float_placements: std::mem::take(&mut self.paragraph_float_placements),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -21428,6 +21433,19 @@ impl TypesetEngine {
             let table_bottom = v_off_px + table_total_height;
             st.current_height += pre_height.max(table_bottom);
         } else if is_visible_para_float {
+            let resolved = super::float_placement::ParagraphFloatPlacement::from_stored_host(
+                para,
+                table,
+                ctrl_idx,
+                para_start_height
+                    + if para_start_height > 0.0 {
+                        fmt.spacing_before
+                    } else {
+                        0.0
+                    },
+                table_total_height,
+                self.dpi,
+            );
             let v_off_px = hwpunit_to_px(signed_vertical_offset, self.dpi);
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
             let table_top = if signed_vertical_offset > 0 {
@@ -21437,7 +21455,10 @@ impl TypesetEngine {
                 let anchor_offset_px = crate::renderer::layout::tac_sibling_float_anchor_offset_px(
                     para, table, ctrl_idx, self.dpi,
                 );
-                let stored_top = para_start_height + anchor_offset_px + outer_top_px + v_off_px;
+                let stored_top = resolved.map_or(
+                    para_start_height + anchor_offset_px + outer_top_px + v_off_px,
+                    |placement| placement.table_top,
+                );
                 // [#2439] 같은 visible host 의 첫 표가 offset=0이면 flow 를 전진시키지만
                 // exclusion 은 만들지 않는다. 후행 양수-offset 표의 저장 상단이 그 표
                 // 내부에 있으면 한컴은 앞 표 아래로 밀어 전체 높이를 보존한다. 저장
@@ -21472,6 +21493,15 @@ impl TypesetEngine {
                 para_start_height + outer_top_px + v_off_px
             };
             let table_bottom = table_top + table_total_height.max(0.0);
+            let table_bottom = if let Some(mut placement) = resolved {
+                placement.occupied_bottom += table_top - placement.table_top;
+                placement.table_top = table_top;
+                st.paragraph_float_placements
+                    .insert((para_idx, ctrl_idx), placement);
+                placement.occupied_bottom
+            } else {
+                table_bottom
+            };
             if signed_vertical_offset > 0 {
                 if table_bottom > table_top + 0.5 {
                     st.visible_float_exclusions.push(VisibleFloatExclusion {
@@ -29131,6 +29161,7 @@ mod tests {
                 overlay_cuts: Vec::new(),
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
+                paragraph_float_placements: Default::default(),
             }],
             active_header: None,
             active_footer: None,

@@ -17,6 +17,63 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
+/// 문단 상대 자리차지 표의 확정된 세로 배치. 모든 값은 단 상대 px다.
+/// 예약과 출력이 같은 결과를 사용하므로 renderer에서 원점을 다시 더하지 않는다.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ParagraphFloatPlacement {
+    pub anchor_y: f64,
+    pub table_top: f64,
+    pub occupied_bottom: f64,
+}
+
+impl ParagraphFloatPlacement {
+    /// 저장 줄이 호스트 텍스트 전부를 표 앞에 배치하는 계약일 때 사용한다.
+    /// `text_origin`은 spacing-before가 반영된 첫 텍스트 줄의 단 상대 원점이다.
+    /// 원본이 아닌 합성/재조판 줄은 저장 좌표의 증거로 사용하지 않는다.
+    pub fn from_stored_host(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        if !dpi.is_finite()
+            || dpi <= 0.0
+            || !table_height.is_finite()
+            || table_height < 0.0
+            || !is_para_topbottom_float(&table.common)
+            || !matches!(table.common.vert_align, VertAlign::Top)
+            || !super::layout::stored_host_lines_precede_float(para, table, control_index)
+            || para.line_segs.is_empty()
+            || para.line_segs.iter().any(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            })
+            || para.line_segs.windows(2).any(|pair| {
+                pair[1].vertical_pos < pair[0].vertical_pos
+                    || pair[1].text_start < pair[0].text_start
+            })
+        {
+            return None;
+        }
+        let anchor_y = text_origin
+            + super::layout::stored_float_anchor_offset_px(para, table, control_index, dpi);
+        let table_top = anchor_y
+            + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
+            + hwpunit_to_px(table.outer_margin_top as i32, dpi);
+        let occupied_bottom =
+            table_top + table_height + hwpunit_to_px(table.outer_margin_bottom as i32, dpi);
+        [anchor_y, table_top, occupied_bottom]
+            .iter()
+            .all(|v| v.is_finite())
+            .then_some(Self {
+                anchor_y,
+                table_top,
+                occupied_bottom,
+            })
+    }
+}
+
 /// 개체 배치에 쓰이는 실제 좌표계. Paper와 Page(본문 영역)를 구분하며,
 /// 셀/문단의 container를 종이나 단으로 대체하지 않는다.
 ///
