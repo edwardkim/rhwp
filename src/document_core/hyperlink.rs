@@ -246,7 +246,10 @@ impl DocumentCore {
         Ok(())
     }
 
-    fn hyperlink_paragraph(&self, target: &HyperlinkTarget) -> Result<&Paragraph, HwpError> {
+    pub(crate) fn hyperlink_paragraph(
+        &self,
+        target: &HyperlinkTarget,
+    ) -> Result<&Paragraph, HwpError> {
         let (paragraphs, idx) = self.hyperlink_paragraph_list(target)?;
         paragraphs
             .get(idx)

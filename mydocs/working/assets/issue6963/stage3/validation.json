@@ -1,0 +1,123 @@
+{
+  "pdf_parser": "pypdf",
+  "raster_dpi": 144,
+  "samples": [
+    {
+      "name": "textmail",
+      "uri": "http://www.hancom.co.kr",
+      "link_count": 1,
+      "generated_pdf_sha256": "4e4ec4ff6a5f5289c4b2bf6e6dd75d6ca2a90a7949174adcff48d14c55d99359",
+      "actual_rect_pt": [
+        412.495,
+        709.9861,
+        502.005,
+        719.9861
+      ],
+      "oracle_rect_pt_normalized": [
+        405.973,
+        711.65,
+        495.531,
+        721.646
+      ],
+      "rect_delta_pt": [
+        6.522,
+        -1.6639,
+        6.474,
+        -1.6599
+      ],
+      "annotation_vs_layer_max_error_pt": 1.4627798009314574e-05,
+      "before_after_changed_pixels": 0
+    },
+    {
+      "name": "lh-fragment",
+      "uri": "https://apply.lh.or.kr/LH/index.html#MN::CLCC_MN_0010:",
+      "link_count": 1,
+      "generated_pdf_sha256": "569d7f500f3cb1023369a7530680dd823c2ffd4c304f26a217831d700607367f",
+      "actual_rect_pt": [
+        324.21,
+        500.26,
+        426.02,
+        510.26
+      ],
+      "oracle_rect_pt_normalized": [
+        326.586,
+        471.045,
+        420.252,
+        481.041
+      ],
+      "rect_delta_pt": [
+        -2.376,
+        29.215,
+        5.768,
+        29.219
+      ],
+      "annotation_vs_layer_max_error_pt": 1.1368683772161603e-13,
+      "before_after_changed_pixels": 0
+    }
+  ],
+  "multiline_reordered_link_counts": [
+    33,
+    41,
+    33
+  ],
+  "cli_exports": {
+    "svg": {
+      "pdf": {
+        "path": "output/pdf/issue6963-stage3/cli-textmail-svg.pdf",
+        "sha256": "4e4ec4ff6a5f5289c4b2bf6e6dd75d6ca2a90a7949174adcff48d14c55d99359"
+      },
+      "producer": "rhwp",
+      "creator": "",
+      "pageCount": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "page": 1,
+          "rect": [
+            412.495,
+            709.9861,
+            502.005,
+            719.9861
+          ],
+          "action": "/URI",
+          "uri": "http://www.hancom.co.kr",
+          "destinationPage": null,
+          "destinationResolved": false
+        }
+      ],
+      "checks": {
+        "missingUris": [],
+        "linkCountMatches": true
+      }
+    },
+    "direct": {
+      "pdf": {
+        "path": "output/pdf/issue6963-stage3/cli-textmail-direct.pdf",
+        "sha256": "1df812f8d2a4bcc1583e1f6a6e518f411bc934b2b04af19e8c0e2c84c462eff2"
+      },
+      "producer": "rhwp PageLayerTree direct PDF (Skia)",
+      "creator": "rhwp",
+      "pageCount": 1,
+      "linkCount": 1,
+      "links": [
+        {
+          "page": 1,
+          "rect": [
+            412.495,
+            710.10608,
+            502.005,
+            720.10608
+          ],
+          "action": "/URI",
+          "uri": "http://www.hancom.co.kr",
+          "destinationPage": null,
+          "destinationResolved": false
+        }
+      ],
+      "checks": {
+        "missingUris": [],
+        "linkCountMatches": true
+      }
+    }
+  }
+}

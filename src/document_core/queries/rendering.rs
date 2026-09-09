@@ -1485,12 +1485,18 @@ impl DocumentCore {
         profile: RenderProfile,
     ) -> Result<String, HwpError> {
         let layer_tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
+        self.render_layer_tree_svg(&layer_tree)
+    }
+
+    fn render_layer_tree_svg(&self, layer_tree: &PageLayerTree) -> Result<String, HwpError> {
+        let profile = layer_tree.profile;
+
         let mut renderer = SvgLayerRenderer::new();
         // WASM에서도 문서 내장 face 사용량을 수집한다. 실제 CSS 생성은 아래의
         // embedded-only 경로가 담당하므로 시스템 font file I/O는 발생하지 않는다.
         renderer.inner_mut().font_embed_mode = crate::renderer::svg::FontEmbedMode::Style;
         renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
-        renderer.render_page(&layer_tree)?;
+        renderer.render_page(layer_tree)?;
         let mut svg = renderer.output().to_string();
 
         // [#2524/#3126] print/profile SVG도 브라우저가 문서 내장 폰트를 직접
@@ -1504,6 +1510,14 @@ impl DocumentCore {
                 let insert = format!("\n<style>\n{}</style>\n", style_css);
                 svg.insert_str(pos + 1, &insert);
             }
+        }
+        if !profile.shows_editor_visuals() {
+            let links = self
+                .hyperlinks_in_layer_tree(&layer_tree)?
+                .iter()
+                .map(|l| l.pdf_link())
+                .collect::<Vec<_>>();
+            crate::renderer::hyperlinks::append_svg_links(&mut svg, &links);
         }
         Ok(svg)
     }
@@ -1535,18 +1549,11 @@ impl DocumentCore {
         page_nums: &[u32],
         options: &crate::renderer::pdf::PdfExportOptions,
     ) -> Result<Vec<u8>, HwpError> {
-        if page_nums.is_empty() {
-            return Err(HwpError::RenderError(
-                "PDF export requires at least one page".to_string(),
-            ));
-        }
-
-        let mut svg_pages = Vec::with_capacity(page_nums.len());
-        for &page_num in page_nums {
-            svg_pages.push(self.render_page_svg_native(page_num)?);
-        }
-        crate::renderer::pdf::svgs_to_pdf_with_options(&svg_pages, options)
-            .map_err(HwpError::RenderError)
+        self.render_pages_pdf_native_with_profile_and_options(
+            page_nums,
+            RenderProfile::Screen,
+            options,
+        )
     }
 
     /// PDF export using the layered SVG compatibility path for an explicit output profile.
@@ -1564,10 +1571,18 @@ impl DocumentCore {
         }
 
         let mut svg_pages = Vec::with_capacity(page_nums.len());
+        let mut page_links = Vec::with_capacity(page_nums.len());
         for &page_num in page_nums {
-            svg_pages.push(self.render_page_svg_layer_with_profile_native(page_num, profile)?);
+            let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
+            svg_pages.push(self.render_layer_tree_svg(&tree)?);
+            page_links.push(
+                self.hyperlinks_in_layer_tree(&tree)?
+                    .iter()
+                    .map(|l| l.pdf_link())
+                    .collect(),
+            );
         }
-        crate::renderer::pdf::svgs_to_pdf_with_options(&svg_pages, options)
+        crate::renderer::pdf::svgs_to_pdf_with_links(&svg_pages, &page_links, options)
             .map_err(HwpError::RenderError)
     }
 
@@ -1636,10 +1651,18 @@ impl DocumentCore {
         }
 
         let mut layer_trees = Vec::with_capacity(page_nums.len());
+        let mut page_links = Vec::with_capacity(page_nums.len());
         for &page_num in page_nums {
-            layer_trees.push(self.build_page_layer_tree_with_profile(page_num, profile)?);
+            let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
+            page_links.push(
+                self.hyperlinks_in_layer_tree(&tree)?
+                    .iter()
+                    .map(|l| l.pdf_link())
+                    .collect(),
+            );
+            layer_trees.push(tree);
         }
-        crate::renderer::pdf::layer_trees_to_pdf_with_options(&layer_trees, options)
+        crate::renderer::pdf::layer_trees_to_pdf_with_links(&layer_trees, &page_links, options)
             .map_err(HwpError::RenderError)
     }
 
