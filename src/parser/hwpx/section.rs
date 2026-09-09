@@ -97,7 +97,7 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
 /// 열린 필드를 중첩 목록으로 물려주지 않는다 — 그렇게 하면 글상자 안 종료 마커가 바깥
 /// 문단의 필드를 닫는 짝으로 잘못 묶인다.
 fn link_orphan_field_ends_recursive(paragraphs: &mut [Paragraph]) {
-    link_orphan_field_ends(paragraphs);
+    link_orphan_field_ends(paragraphs, &mut Vec::new());
     for para in paragraphs.iter_mut() {
         for control in para.controls.iter_mut() {
             link_orphan_field_ends_in_control(control);
@@ -147,9 +147,7 @@ fn link_orphan_field_ends_in_control(control: &mut Control) {
 /// HWPX fieldEnd는 beginIDRef와 fieldid만 보관하므로, HWP5 PARA_TEXT로 다시 쓸 때 필요한
 /// field control fourcc는 앞 문단의 fieldBegin에서 찾아야 한다. 짝을 찾지 못한 종료 마커는
 /// 그대로 남긴다. 임의의 필드 종류를 만들어 내는 것보다 보존 실패를 명시하는 편이 안전하다.
-fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
-    let mut open_fields: Vec<(u32, u32)> = Vec::new();
-
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u32, u32)>) {
     for para in paragraphs.iter_mut() {
         for orphan in &mut para.orphan_field_ends {
             let Some((field_id, ctrl_id)) = open_fields.last().copied() else {
@@ -181,6 +179,29 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
                 open_fields.push((field.field_id, field.ctrl_id));
             }
         }
+    }
+}
+
+/// [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커를 잇는다.
+///
+/// [`link_orphan_field_ends_recursive`] 는 구역 하나를 파싱한 끝에 걸리므로 열린 필드
+/// 스택이 구역과 함께 버려진다. 그런데 HWPX 의 `section*.xml` 은 **한 본문 흐름을 나눠
+/// 담은 것**이라 누름틀이 구역 경계를 넘는다 — 재난안전실 36455713 은 `section0` 에서
+/// 연 `CLICK_HERE`('본문') 를 `section1` 에서 닫는다. 그 종료 마커는 `begin_ctrl_id` 가
+/// 0 으로 남고, HWP5 저장기의 두 방출 지점이 모두 `begin_ctrl_id != 0` 을 요구하므로
+/// 끝 표시가 사라진다(한/글 집계 빈 `CtrlID` 3→2). 끝이 없는 누름틀은 문단 나머지를
+/// 필드 안으로 삼킨다.
+///
+/// 그래서 구역 **최상위** 문단 목록만 하나의 스택으로 다시 훑는다. 이미 짝을 지은
+/// 마커에는 같은 값이 다시 들어갈 뿐이라(`begin_id_ref` 가 이미 그 필드를 가리킨다)
+/// 구역 안에서 닫힌 필드의 결과는 바뀌지 않는다.
+///
+/// 컨테이너(표 칸·글상자·각주…) 목록은 건드리지 않는다 — 필드는 컨테이너 경계를 넘지
+/// 못하고, 그 목록들은 이미 자기 스택으로 짝을 지었다.
+pub fn link_orphan_field_ends_across_sections(sections: &mut [Section]) {
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    for section in sections.iter_mut() {
+        link_orphan_field_ends(&mut section.paragraphs, &mut open_fields);
     }
 }
 
