@@ -742,10 +742,8 @@ pub(crate) mod tests {
         assert_eq!(grid.number(1, 1), Some(328.0));
         assert_eq!(grid.number(1, 2), Some(50.0));
         assert_eq!(grid.number(4, 3), Some(289.0));
-    }
 
-    #[test]
-    fn slot_order_places_cells_even_when_object_ids_are_far_apart() {
+        // --- slot_order_places_cells_even_when_object_ids_are_far_apart ---
         // **[#6922] 뒤집힘 자물쇠.** 종전 스캐너는 셀 위치를 아카이브 객체 id 로 잡아,
         // id 가 셀 밖 개체와 번호를 나눠 쓰는 문서에서 셀이 통째로 밀렸다. 좌표는
         // 슬롯 서수에서만 나와야 하므로, 객체 id 를 아무리 띄워도 결과가 같아야 한다.
@@ -761,34 +759,6 @@ pub(crate) mod tests {
             scan_legacy_grid(&dense).expect("scan").cells,
             "객체 id 는 셀 좌표가 아니다"
         );
-    }
-
-    #[test]
-    fn declared_label_counts_are_honoured() {
-        // **[#6922]** 머리행·머리열은 1/1 로 못박힌 값이 아니라 문서가 선언한다.
-        let bytes = synth_grid_labeled(
-            4,
-            3,
-            2,
-            1,
-            &[
-                Cell::Text(2, "머리 1"),
-                Cell::Text(3, "머리 2"),
-                Cell::Text(5, "머리 3"),
-                Cell::Text(6, "머리 4"),
-                Cell::Text(7, "계열 1"),
-                Cell::Num(8, 1.0),
-                Cell::Num(9, 2.0),
-                Cell::Text(10, "계열 2"),
-                Cell::Num(11, 3.0),
-                Cell::Num(12, 4.0),
-            ],
-        );
-        let grid = scan_legacy_grid(&bytes).expect("scan");
-        assert_eq!((grid.label_rows, grid.label_cols), (2, 1));
-        assert_eq!((grid.data_rows(), grid.data_cols()), (2, 2));
-        assert_eq!(grid.number(2, 1), Some(1.0));
-        assert_eq!(grid.number(3, 2), Some(4.0));
     }
 
     #[test]
@@ -883,10 +853,8 @@ pub(crate) mod tests {
         assert_eq!(grid.column_label(1), Some("0.7"));
         assert_eq!(grid.column_label(3), Some("2.6"));
         assert_eq!(grid.row_label(1), Some("Y1 값"));
-    }
 
-    #[test]
-    fn cp949_only_labels_without_a_utf16_half_are_decoded() {
+        // --- cp949_only_labels_without_a_utf16_half_are_decoded ---
         // **[#6922]** `\0\0` 경계 없이 cp949 한 벌만 싣는 작성기가 있다(148759031).
         // 종전에는 이 라벨 15칸이 통째로 버려졌다.
         assert_eq!(decode_cell_text(b"4\xbf\xf9"), Some("4월".to_string()));
@@ -963,6 +931,32 @@ pub(crate) mod tests {
             scan_legacy_grid(&bytes),
             Err(GridScanError::NumberCellCountMismatch { .. })
         ));
+
+        // --- declared_label_counts_are_honoured ---
+        // **[#6922]** 머리행·머리열은 1/1 로 못박힌 값이 아니라 문서가 선언한다.
+        let bytes = synth_grid_labeled(
+            4,
+            3,
+            2,
+            1,
+            &[
+                Cell::Text(2, "머리 1"),
+                Cell::Text(3, "머리 2"),
+                Cell::Text(5, "머리 3"),
+                Cell::Text(6, "머리 4"),
+                Cell::Text(7, "계열 1"),
+                Cell::Num(8, 1.0),
+                Cell::Num(9, 2.0),
+                Cell::Text(10, "계열 2"),
+                Cell::Num(11, 3.0),
+                Cell::Num(12, 4.0),
+            ],
+        );
+        let grid = scan_legacy_grid(&bytes).expect("scan");
+        assert_eq!((grid.label_rows, grid.label_cols), (2, 1));
+        assert_eq!((grid.data_rows(), grid.data_cols()), (2, 2));
+        assert_eq!(grid.number(2, 1), Some(1.0));
+        assert_eq!(grid.number(3, 2), Some(4.0));
     }
 
     #[test]
