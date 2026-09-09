@@ -122,6 +122,8 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
             if step_name in {
                 "Classify with trusted base implementation",
                 "Evaluate trusted policy and aggregate audit",
+                "Prepare trusted policy input",
+                "Publish exact-head policy status",
             }:
                 marker = f"      - name: {step_name}\n        id: "
                 start = self.workflow.index(marker)
