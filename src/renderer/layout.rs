@@ -7966,6 +7966,39 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [#6888] 자기 앵커보다 **아래로 떨어진** 자리차지 개체는 흐름을 전진시키지
+            // 않는다. `#409` 의 전진은 밴드가 앵커에서 시작할 때의 계약이고, 양수
+            // `vertOffset` 이 밴드를 아래로 내려 놓으면 그 사이 콘텐츠는 밀릴 이유가 없다.
+            // 조판과 같은 판별을 써야 `#409` 가 막으려던 desync 가 안 생긴다.
+            if new_y > _y_in {
+                if let PageItem::Shape {
+                    para_index,
+                    control_index,
+                } = item
+                {
+                    let displaced = paragraphs.get(*para_index).is_some_and(|para| {
+                        para.controls
+                            .get(*control_index)
+                            .and_then(|control| match control {
+                                Control::Picture(pic) => Some(&pic.common),
+                                Control::Shape(shape) => Some(shape.common()),
+                                Control::Equation(eq) => Some(&eq.common),
+                                _ => None,
+                            })
+                            .is_some_and(|common| {
+                                crate::renderer::topbottom_float_displaced_below_following_flow(
+                                    para,
+                                    paragraphs.get(*para_index + 1),
+                                    common,
+                                    self.dpi,
+                                )
+                            })
+                    });
+                    if displaced {
+                        new_y = _y_in;
+                    }
+                }
+            }
             // [#6778] Square(어울림) 표 옆 레인 — 흐름은 host 줄만 전진한다.
             //
             // 조판(`#4090` `hangul_flowed_beside_table`)은 저장 host 줄높이가 표
