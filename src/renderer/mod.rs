@@ -2990,3 +2990,65 @@ mod tests {
         assert_eq!(format_number(12, NumberFormat::HangulNumber), "십이");
     }
 }
+
+/// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.
+///
+/// `#409` 는 비-TAC · `vert=Para` · TopAndBottom 개체가 뒤따르는 콘텐츠를 개체 높이만큼
+/// 밀어낸다고 보고 조판·배치 양쪽에서 그 높이를 흐름에 계상한다. 그 전제는 밴드가
+/// **앵커에서 시작할 때**(`vertOffset == 0`) 참이다. 양수 오프셋이 밴드를 아래로 내려
+/// 놓으면 그 사이에 들어갈 콘텐츠는 밀릴 이유가 없다.
+///
+/// 판별은 문서가 준다 — **다음 문단의 저장 `vpos` 가 이 문단 마지막 줄 바로 뒤**면
+/// 한글이 개체 자리를 만들어 주지 않았다는 증언이다.
+///
+/// ```text
+///   156730935 1쪽  도형 h=62.7px  vOff=150.3px (TopAndBottom, vert=Para)
+///   p17 마지막 vpos 61789 + lh 1400 + ls 420 = 63609
+///   p18 저장 vpos                            63609      ← 틈 0
+///   종전: 흐름·배치가 각각 +62.7px  → 담당자 표가 본문을 49.3px 넘어 사라진다
+///   정본: 표 945.2..1013.6(본문 안) · 도형 1018.7(표 아래)
+/// ```
+///
+/// 조판(`typeset`)과 배치(`layout`)가 **같은 답**을 써야 `#409` 가 막으려던 desync 가
+/// 생기지 않으므로 한 곳에 둔다.
+pub(crate) fn topbottom_float_displaced_below_following_flow(
+    para: &crate::model::paragraph::Paragraph,
+    next_para: Option<&crate::model::paragraph::Paragraph>,
+    common: &crate::model::shape::CommonObjAttr,
+    dpi: f64,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    if common.treat_as_char
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+    {
+        return false;
+    }
+    let v_off = hwpunit_to_px(
+        crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
+        dpi,
+    );
+    if v_off <= 0.5 {
+        return false;
+    }
+    // 밴드 상단 = 앵커 문단의 첫 줄 + 세로 오프셋. 저장 사다리와 같은 좌표계다.
+    let Some(anchor_vpos) = para.line_segs.first().map(|seg| seg.vertical_pos) else {
+        return false;
+    };
+    let band_top = anchor_vpos.saturating_add(crate::renderer::float_placement::signed_hwpunit(
+        common.vertical_offset,
+    ));
+
+    next_para
+        .and_then(|next| next.line_segs.last())
+        .is_some_and(|next_last| {
+            // 다음 문단이 사다리에서 차지하는 바닥. 밴드가 **그 아래에서** 시작하면
+            // 사이에 들어갈 콘텐츠가 밀릴 이유가 없다. "틈이 없다"보다 강한 조건이다 —
+            // 오프셋이 작아 밴드가 다음 콘텐츠와 겹치면 종전대로 밀어낸다.
+            let next_bottom = next_last
+                .vertical_pos
+                .saturating_add(next_last.line_height.max(0));
+            next_last.vertical_pos > anchor_vpos && band_top >= next_bottom
+        })
+}
