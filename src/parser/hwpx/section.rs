@@ -1227,27 +1227,39 @@ fn parse_note_pr_children(
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.suffix_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.suffix_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"prefixChar" => {
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.prefix_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.prefix_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"userChar" => {
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.user_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.user_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"supscript" => {
@@ -1256,6 +1268,9 @@ fn parse_note_pr_children(
                                 _ => {}
                             }
                         }
+                        // [#6872] 이 구역의 장식 문자는 원본이 준 값이다 — 빈 값도 포함해
+                        // 그대로 되돌려 준다(직렬화기의 템플릿 폴백을 쓰지 않는다).
+                        shape.deco_chars_from_source = true;
                     }
                     b"noteLine" => {
                         for attr in e.attributes().flatten() {
