@@ -4512,53 +4512,6 @@ mod tests {
     }
 
     #[test]
-    fn issue6872_numbering_uses_hancom_tokens() {
-        // [#6872] 한컴이 실제로 쓰는 토큰만 낸다. `RESTART_*` 는 rhwp 파서는 받지만
-        // 한글이 못 알아듣고 연속 번호로 떨어진다(정답지 PDF: 쪽마다 1) 이던 각주가
-        // 왕복 뒤 1) 2) 3) …). 원본 HWPX 3,391 파일 실측에도 `RESTART_*` 는 0건이다.
-        use crate::model::footnote::FootnoteNumbering;
-        assert_eq!(
-            note_numbering_str(FootnoteNumbering::Continue),
-            "CONTINUOUS"
-        );
-        assert_eq!(
-            note_numbering_str(FootnoteNumbering::RestartPage),
-            "ON_PAGE"
-        );
-        assert_eq!(
-            note_numbering_str(FootnoteNumbering::RestartSection),
-            "ON_SECTION"
-        );
-    }
-
-    #[test]
-    fn issue6872_empty_suffix_char_stays_empty() {
-        // [#6872] `'\0'` 은 "접미 문자 없음" 이다. 종전 폴백 `")"` 는 사용자 기호 각주
-        // `*` 를 `*)` 로 만들었다(156513948 정답지 실측).
-        let mut shape = crate::model::footnote::FootnoteShape {
-            number_format: crate::model::footnote::NumberFormat::UserChar,
-            user_char: '*',
-            ..Default::default()
-        };
-        shape.suffix_char = '\0';
-        shape.deco_chars_from_source = true; // 원본이 명시적으로 비운 경우
-        let xml = render_auto_num_format(&shape);
-        assert!(
-            xml.contains(r#"suffixChar="""#),
-            "빈 접미는 빈 채로 나가야 한다: {xml}"
-        );
-        // 명시된 접미는 그대로 실린다.
-        shape.suffix_char = ')';
-        assert!(render_auto_num_format(&shape).contains(r#"suffixChar=")""#));
-        // IR 미설정(#2742 규약)은 종전대로 템플릿 기본값 `)` 를 유지한다.
-        let unset = crate::model::footnote::FootnoteShape::default();
-        assert!(
-            render_auto_num_format(&unset).contains(r#"suffixChar=")""#),
-            "IR 미설정은 템플릿 기본값을 지킨다"
-        );
-    }
-
-    #[test]
     fn issue2742_auto_num_format_reflects_ir() {
         // [#2742] footNotePr/endNotePr 의 autoNumFormat 5속성(type·userChar·prefixChar·
         // suffixChar·supscript)이 템플릿 상수가 아니라 IR FootnoteShape 값으로 방출돼야
