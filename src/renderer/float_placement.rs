@@ -27,6 +27,24 @@ pub struct ParagraphFloatPlacement {
 }
 
 impl ParagraphFloatPlacement {
+    /// 선행 개체의 점유 구간을 지나도록 표 상자만 전진시킨다.
+    /// 앵커 줄은 움직이지 않으며, 정렬된 구간을 한 번씩만 방문한다.
+    pub fn clear_occupied_bands(mut self, bands: impl IntoIterator<Item = Range<f64>>) -> Self {
+        let mut bands: Vec<_> = bands
+            .into_iter()
+            .filter(|band| band.start.is_finite() && band.end.is_finite() && band.start < band.end)
+            .collect();
+        bands.sort_by(|a, b| a.start.total_cmp(&b.start));
+        for band in bands {
+            if self.table_top < band.end && self.occupied_bottom > band.start {
+                let shift = band.end - self.table_top;
+                self.table_top = band.end;
+                self.occupied_bottom += shift;
+            }
+        }
+        self
+    }
+
     /// 저장 줄이 호스트 텍스트 전부를 표 앞에 배치하는 계약일 때 사용한다.
     /// `text_origin`은 spacing-before가 반영된 첫 텍스트 줄의 단 상대 원점이다.
     /// 원본이 아닌 합성/재조판 줄은 저장 좌표의 증거로 사용하지 않는다.

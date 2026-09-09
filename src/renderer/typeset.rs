@@ -24995,7 +24995,18 @@ impl TypesetEngine {
                     self.dpi,
                 )
             })
-            .flatten();
+            .flatten()
+            .map(|placement| {
+                if table.common.allow_overlap {
+                    return placement;
+                }
+                let outer_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                placement.clear_occupied_bands(
+                    st.visible_float_exclusions
+                        .iter()
+                        .map(|zone| zone.top..zone.bottom + outer_top),
+                )
+            });
         let legacy_whole_fits = st.current_height + whole_fit_table_total <= available
             || fits_after_overlay_shapes
             || single_row_object_height_advance.is_some()

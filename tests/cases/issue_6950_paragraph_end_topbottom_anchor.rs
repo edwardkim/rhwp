@@ -119,6 +119,18 @@ fn anchor_origin_translation_is_applied_once() {
 }
 
 #[test]
+fn occupied_bands_move_the_box_not_the_anchor_and_are_order_independent() {
+    let placement = ParagraphFloatPlacement { anchor_y: 20.0, table_top: 50.0, occupied_bottom: 100.0 };
+    let bands = [80.0..120.0, 125.0..180.0];
+    let forward = placement.clear_occupied_bands(bands.clone());
+    let reverse = placement.clear_occupied_bands(bands.into_iter().rev());
+    assert_eq!(forward, reverse);
+    assert_eq!(forward.anchor_y, placement.anchor_y);
+    assert_eq!(forward.table_top, 180.0);
+    assert_eq!(forward.occupied_bottom - forward.table_top, 50.0);
+}
+
+#[test]
 fn wrap_semantics_are_not_reclassified_as_topbottom() {
     let core = core();
     let para = &core.document().sections[0].paragraphs[1];
@@ -170,6 +182,13 @@ fn shorter_body_does_not_hide_table_overflow_by_moving_it_over_host_text() {
         let mut table_fragments = 0;
         for page in 0..core.page_count() {
             let tree = core.build_page_render_tree(page).expect("영역 변경 후 조판");
+            fn body_bottom(node: &RenderNode) -> Option<f64> {
+                if matches!(node.node_type, RenderNodeType::Body { .. }) {
+                    return Some(node.bbox.y + node.bbox.height);
+                }
+                node.children.iter().find_map(body_bottom)
+            }
+            let body_bottom = body_bottom(&tree.root).expect("본문 영역");
             let mut items = Vec::new();
             body_items(&tree.root, &mut items);
             let host_bottom = items.iter().filter_map(|n| match &n.node_type {
@@ -181,6 +200,9 @@ fn shorter_body_does_not_hide_table_overflow_by_moving_it_over_host_text() {
                 if matches!(&node.node_type, RenderNodeType::Table(t)
                     if t.para_index == Some(1) && t.control_index == Some(0)) {
                     table_fragments += 1;
+                    assert!(node.bbox.y + node.bbox.height <= body_bottom + 0.5,
+                        "영역 축소 {reduction}, 쪽 {page}: 표 하단 {}, 본문 하단 {body_bottom}",
+                        node.bbox.y + node.bbox.height);
                     assert!(node.bbox.y >= host_bottom - 0.1,
                         "영역 축소 {reduction}, 쪽 {page}: 본문 끝 {host_bottom}, 표 {}", node.bbox.y);
                 }

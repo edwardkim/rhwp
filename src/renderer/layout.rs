@@ -10624,9 +10624,15 @@ impl LayoutEngine {
                         } else {
                             0.0
                         };
+                        let placement = ctx
+                            .paragraph_float_placements
+                            .get(&(para_index, control_index));
                         visible_float_exclusions.push(VisibleFloatExclusion {
-                            top: table_visual_top,
-                            bottom: table_visual_end + margin_bottom_px + host_line_spacing_px,
+                            top: placement.map_or(table_visual_top, |p| col_area.y + p.table_top),
+                            bottom: placement.map_or(
+                                table_visual_end + margin_bottom_px + host_line_spacing_px,
+                                |p| col_area.y + p.occupied_bottom,
+                            ),
                             owner_para: para_index,
                             blocks_text: true,
                         });
