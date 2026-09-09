@@ -79,9 +79,67 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
         buf.clear();
     }
 
-    link_orphan_field_ends(&mut section.paragraphs);
+    link_orphan_field_ends_recursive(&mut section.paragraphs);
 
     Ok(section)
+}
+
+/// [#6868] 중첩 문단 목록까지 내려가며 목록마다 따로 짝을 잇는다.
+///
+/// `link_orphan_field_ends` 는 본디 구역 최상위 `section.paragraphs` 에만 걸렸다. 그런데
+/// 다단락 누름틀은 **글상자·표 칸·머리말·각주 안에서도** 쓰인다(36414761 결재문서: '제목'
+/// 누름틀이 글상자 subList 안에서 열리고 다음 문단에서 닫힌다). 그 목록의 종료 마커는
+/// `begin_ctrl_id` 가 0 으로 남고, HWP5 저장기의 두 방출 지점이 모두
+/// `begin_ctrl_id != 0` 을 요구하므로 **끝 표시가 통째로 사라졌다** — 끝이 없는 누름틀은
+/// 문단 나머지를 필드 안으로 삼킨다.
+///
+/// 필드는 컨테이너 경계를 넘지 못하므로 목록마다 **독립적으로** 잇는다. 최상위 목록의
+/// 열린 필드를 중첩 목록으로 물려주지 않는다 — 그렇게 하면 글상자 안 종료 마커가 바깥
+/// 문단의 필드를 닫는 짝으로 잘못 묶인다.
+fn link_orphan_field_ends_recursive(paragraphs: &mut [Paragraph]) {
+    link_orphan_field_ends(paragraphs);
+    for para in paragraphs.iter_mut() {
+        for control in para.controls.iter_mut() {
+            link_orphan_field_ends_in_control(control);
+        }
+    }
+}
+
+/// 컨트롤이 품은 문단 목록마다 [`link_orphan_field_ends_recursive`] 를 건다.
+///
+/// 컨테이너 목록은 `injection_scan` 의 방문자와 같은 것을 본다 — 표 칸·표 캡션·글상자·
+/// 도형 캡션·그림 캡션·각주·미주·머리말·꼬리말·숨은 설명.
+fn link_orphan_field_ends_in_control(control: &mut Control) {
+    match control {
+        Control::Table(table) => {
+            for cell in table.cells.iter_mut() {
+                link_orphan_field_ends_recursive(&mut cell.paragraphs);
+            }
+            if let Some(caption) = table.caption.as_mut() {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Shape(shape) => {
+            if let Some(tb) = crate::document_core::helpers::get_textbox_from_shape_mut(shape) {
+                link_orphan_field_ends_recursive(&mut tb.paragraphs);
+            }
+            if let Some(caption) = crate::document_core::helpers::get_caption_from_shape_mut(shape)
+            {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Picture(pic) => {
+            if let Some(caption) = pic.caption.as_mut() {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Footnote(fnote) => link_orphan_field_ends_recursive(&mut fnote.paragraphs),
+        Control::Endnote(en) => link_orphan_field_ends_recursive(&mut en.paragraphs),
+        Control::Header(h) => link_orphan_field_ends_recursive(&mut h.paragraphs),
+        Control::Footer(f) => link_orphan_field_ends_recursive(&mut f.paragraphs),
+        Control::HiddenComment(hc) => link_orphan_field_ends_recursive(&mut hc.paragraphs),
+        _ => {}
+    }
 }
 
 /// 같은 문단 목록 안에서 끝난 다문단 fieldEnd에 짝 fieldBegin의 HWP5 control id를 연결한다.
@@ -9371,6 +9429,91 @@ mod tests {
                 .map(|c| (c.start_pos, c.char_shape_id))
                 .collect::<Vec<_>>(),
             vec![(0, 3), (10, 30)],
+        );
+    }
+
+    #[test]
+    fn issue6868_orphan_field_end_links_inside_nested_paragraph_lists() {
+        // 다단락 누름틀이 **중첩 문단 목록 안에서** 열리고 닫힌다 (각주 subList / 표 칸).
+        // 종전에는 `link_orphan_field_ends` 가 구역 최상위 문단에만 걸려 이 종료 마커의
+        // `begin_ctrl_id` 가 0 으로 남았고, HWP5 저장기의 두 방출 지점이 모두
+        // `begin_ctrl_id != 0` 을 요구해 **끝 표시가 통째로 사라졌다**(#6868).
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0">
+      <hp:ctrl>
+        <hp:footNote number="1" instId="200">
+          <hp:subList>
+            <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:ctrl><hp:fieldBegin id="555000111" type="CLICK_HERE" name="각주필드" fieldid="627272811"/></hp:ctrl><hp:t>앞</hp:t></hp:run></hp:p>
+            <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>뒤</hp:t><hp:ctrl><hp:fieldEnd beginIDRef="555000111" fieldid="627272811"/></hp:ctrl></hp:run></hp:p>
+          </hp:subList>
+        </hp:footNote>
+      </hp:ctrl>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+        let section = parse_hwpx_section(xml).unwrap();
+        let footnote = section.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::Footnote(f) => Some(f),
+                _ => None,
+            })
+            .expect("각주 컨트롤");
+        let begin_ctrl_id = match footnote.paragraphs[0].controls.first() {
+            Some(Control::Field(field)) => field.ctrl_id,
+            other => panic!("각주 첫 문단이 fieldBegin 을 갖지 않는다: {other:?}"),
+        };
+        let ofe = footnote.paragraphs[1]
+            .orphan_field_ends
+            .first()
+            .expect("각주 둘째 문단에 고아 fieldEnd 기록");
+        assert_eq!(ofe.begin_id_ref, 555_000_111);
+        assert_eq!(
+            ofe.begin_ctrl_id, begin_ctrl_id,
+            "중첩 목록 안에서도 짝 fieldBegin 의 control id 를 잇는다 (0 이면 HWP5 저장에서 끝 표시가 사라진다)"
+        );
+    }
+
+    #[test]
+    fn issue6868_nested_list_does_not_borrow_outer_open_field() {
+        // 바깥 문단이 **열어 둔** 필드를 중첩 목록의 종료 마커가 닫는 짝으로 훔치면 안 된다.
+        // 목록마다 독립적으로 이어야 한다 — 필드는 컨테이너 경계를 넘지 못한다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0">
+    <hp:run charPrIDRef="0"><hp:ctrl><hp:fieldBegin id="900000001" type="CLICK_HERE" name="바깥" fieldid="1"/></hp:ctrl><hp:t>바깥열림</hp:t></hp:run>
+    <hp:run charPrIDRef="0">
+      <hp:ctrl>
+        <hp:footNote number="1" instId="200">
+          <hp:subList>
+            <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t>안</hp:t><hp:ctrl><hp:fieldEnd beginIDRef="900000001" fieldid="1"/></hp:ctrl></hp:run></hp:p>
+          </hp:subList>
+        </hp:footNote>
+      </hp:ctrl>
+    </hp:run>
+  </hp:p>
+</hs:sec>"##;
+        let section = parse_hwpx_section(xml).unwrap();
+        let footnote = section.paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::Footnote(f) => Some(f),
+                _ => None,
+            })
+            .expect("각주 컨트롤");
+        let ofe = footnote.paragraphs[0]
+            .orphan_field_ends
+            .first()
+            .expect("각주 문단의 고아 fieldEnd");
+        assert_eq!(
+            ofe.begin_ctrl_id, 0,
+            "바깥 목록의 열린 필드를 중첩 목록이 짝으로 가져오지 않는다"
         );
     }
 
