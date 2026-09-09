@@ -408,37 +408,24 @@ impl DocumentCore {
             .map(super::clamp_degenerate_size);
         Self::apply_common_obj_attr_from_json(c, props_json);
 
-        // Polygon/Curve: original_width/height는 생성 시 값으로 유지해야 렌더러의
-        // 스케일 팩터(sx = current/original)가 올바르게 동작한다.
-        let is_polygon_or_curve = matches!(
-            shape,
-            crate::model::shape::ShapeObject::Polygon(_)
-                | crate::model::shape::ShapeObject::Curve(_)
-        );
-        let saved_orig_w = if is_polygon_or_curve {
-            shape.drawing().map(|d| d.shape_attr.original_width)
-        } else {
-            None
-        };
-        let saved_orig_h = if is_polygon_or_curve {
-            shape.drawing().map(|d| d.shape_attr.original_height)
-        } else {
-            None
-        };
-
         // ShapeComponentAttr 크기/회전/채우기 동기화
         if let Some(d) = shape.drawing_mut() {
-            // [#6806] 값이 실제로 바뀔 때만 `current_*`·`original_*` 를 따라가게 한다.
+            // [#6806] 값이 실제로 바뀔 때만 `current_*` 를 따라가게 한다.
             // 게터가 내보내는 `width` 는 `common.width` 라, 종전에는 같은 봉지를 되먹여도
-            // 한컴이 저장한 생성 시 크기(`original_*`)가 현재 크기로 덮였다. Line·Arc 는
-            // `original_*` 가 렌더 스케일 분모라 그 순간 선이 실제로 움직였다.
+            // 크기가 다시 대입됐다.
+            //
+            // `original_*` 는 **생성 시 크기**(HWP5 SHAPE_COMPONENT offset 20/24)이고
+            // 도형의 로컬 좌표계 크기다 — 렌더러는 끝점·꼭짓점을 `current/original` 로
+            // 스케일한다(`layout/shape_layout.rs` Line 1388·Arc 1684·Rectangle 1156,
+            // 글상자 글꼴 비 2691). 리사이즈는 상자만 바꾸고 로컬 좌표는 그대로 두므로
+            // 여기서 `original_*` 를 다시 쓰면 분모가 분자를 따라가 스케일이 1 로 무너진다.
+            // 묶음(아래)과 Polygon·Curve 는 이미 이 규칙을 지키고 있었고, 같은 렌더러
+            // 의존을 가진 Line·Arc·Rectangle 만 빠져 있었다.
             if let Some(w) = new_w.filter(|&w| w != width_before) {
                 d.shape_attr.current_width = w;
-                d.shape_attr.original_width = w;
             }
             if let Some(h) = new_h.filter(|&h| h != height_before) {
                 d.shape_attr.current_height = h;
-                d.shape_attr.original_height = h;
             }
 
             // 회전/기울임
@@ -614,16 +601,6 @@ impl DocumentCore {
         }
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
-
-        // Polygon/Curve: original_width/height 복원 (생성 시 값 유지 → 렌더러 스케일 팩터 정상화)
-        if let Some(d) = shape.drawing_mut() {
-            if let Some(w) = saved_orig_w {
-                d.shape_attr.original_width = w;
-            }
-            if let Some(h) = saved_orig_h {
-                d.shape_attr.original_height = h;
-            }
-        }
 
         // Group 리사이즈: original_width 유지, current_width만 변경 (렌더러가 스케일 적용)
         // 한컴 방식: 자식은 변경하지 않고, 컨테이너의 current/original 비율로 스케일 결정
@@ -808,34 +785,14 @@ impl DocumentCore {
             .map(super::clamp_degenerate_size);
         Self::apply_common_obj_attr_from_json(c, props_json);
 
-        let is_polygon_or_curve = matches!(
-            shape,
-            crate::model::shape::ShapeObject::Polygon(_)
-                | crate::model::shape::ShapeObject::Curve(_)
-        );
-        let saved_orig_w = if is_polygon_or_curve {
-            shape.drawing().map(|d| d.shape_attr.original_width)
-        } else {
-            None
-        };
-        let saved_orig_h = if is_polygon_or_curve {
-            shape.drawing().map(|d| d.shape_attr.original_height)
-        } else {
-            None
-        };
-
         if let Some(d) = shape.drawing_mut() {
-            // [#6806] 값이 실제로 바뀔 때만 `current_*`·`original_*` 를 따라가게 한다.
-            // 게터가 내보내는 `width` 는 `common.width` 라, 종전에는 같은 봉지를 되먹여도
-            // 한컴이 저장한 생성 시 크기(`original_*`)가 현재 크기로 덮였다. Line·Arc 는
-            // `original_*` 가 렌더 스케일 분모라 그 순간 선이 실제로 움직였다.
+            // [#6806] 본문 경로와 동형 — 값이 바뀔 때만 `current_*` 만 따라간다.
+            // `original_*`(생성 시 크기)는 렌더 스케일 분모라 리사이즈가 다시 쓰지 않는다.
             if let Some(w) = new_w.filter(|&w| w != width_before) {
                 d.shape_attr.current_width = w;
-                d.shape_attr.original_width = w;
             }
             if let Some(h) = new_h.filter(|&h| h != height_before) {
                 d.shape_attr.current_height = h;
-                d.shape_attr.original_height = h;
             }
             if let Some(v) = json_i32(props_json, "rotationAngle") {
                 d.shape_attr.rotation_angle = v as i16;
@@ -995,15 +952,6 @@ impl DocumentCore {
         }
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
-
-        if let Some(d) = shape.drawing_mut() {
-            if let Some(w) = saved_orig_w {
-                d.shape_attr.original_width = w;
-            }
-            if let Some(h) = saved_orig_h {
-                d.shape_attr.original_height = h;
-            }
-        }
 
         if let crate::model::shape::ShapeObject::Group(ref mut group) = shape {
             // [#6806] 본문 경로와 동형 — 값이 바뀔 때만.

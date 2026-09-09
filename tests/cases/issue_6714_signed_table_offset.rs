@@ -66,6 +66,7 @@ fn paginate(offset: i32, prefix: f64, text: &str, row_heights: Vec<f64>) -> Pagi
             control_index: 0,
             total_height,
             row_heights,
+            baseline_row_heights: None,
             caption_height: 0.0,
             cell_spacing: 0.0,
             cumulative_heights,
