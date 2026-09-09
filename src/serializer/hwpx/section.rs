@@ -246,14 +246,21 @@ fn render_note_line_spacing(shape: &crate::model::footnote::FootnoteShape) -> (S
     (note_line, note_spacing)
 }
 
-/// FootnoteNumbering → HWPX `type` 토큰. 템플릿 계열(CONTINUOUS/EACH_COLUMN/DIGIT)과
-/// 동일한 UPPER_SNAKE 표기를 쓰며, 파서도 이 토큰을 수용한다.
+/// FootnoteNumbering → HWPX `type` 토큰.
+///
+/// [#6872] **한컴이 실제로 쓰는 토큰만 낸다.** 종전에는 `RESTART_PAGE`·`RESTART_SECTION`
+/// 을 냈는데, rhwp 파서는 그것을 수용하지만(그래서 x2x 가 자기 눈에는 무결했다) 한글은
+/// 못 알아듣고 **연속 번호로 떨어진다** — 쪽마다 1) 로 재시작하던 각주가 왕복 뒤
+/// 1) 2) 3) … 으로 이어진다(156584446 정답지 PDF 실측).
+///
+/// 코퍼스 실측이 토큰을 확정한다 — 원본 HWPX 3,391 파일의 `<hp:numbering type>` 은
+/// `CONTINUOUS` 7,640 · `ON_PAGE` 12 뿐이고 `RESTART_*` 는 **0건**이다.
 fn note_numbering_str(numbering: crate::model::footnote::FootnoteNumbering) -> &'static str {
     use crate::model::footnote::FootnoteNumbering::*;
     match numbering {
         Continue => "CONTINUOUS",
-        RestartSection => "RESTART_SECTION",
-        RestartPage => "RESTART_PAGE",
+        RestartSection => "ON_SECTION",
+        RestartPage => "ON_PAGE",
     }
 }
 
@@ -371,7 +378,18 @@ fn render_auto_num_format(shape: &crate::model::footnote::FootnoteShape) -> Stri
         note_number_format_str(shape.number_format),
         note_deco_char_attr(shape.user_char, ""),
         note_deco_char_attr(shape.prefix_char, ""),
-        note_deco_char_attr(shape.suffix_char, ")"),
+        // [#6872] 원본 HWPX 가 `suffixChar=""` 로 **명시적으로 비운** 경우에만 빈 채로
+        // 낸다. 그 구분이 없으면 사용자 기호 각주 `*` 가 `*)` 가 된다(156513948 정답지).
+        // IR 미설정(`deco_chars_from_source == false`)은 종전대로 템플릿 기본값 `)` —
+        // `#2742` 의 `'\0' = 미지정` 규약을 그대로 지킨다.
+        note_deco_char_attr(
+            shape.suffix_char,
+            if shape.deco_chars_from_source {
+                ""
+            } else {
+                ")"
+            },
+        ),
         u8::from(shape.number_code_superscript),
     )
 }
@@ -4480,16 +4498,63 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
 
         assert!(
-            xml.contains(r#"<hp:numbering type="RESTART_PAGE" newNum="3"/>"#),
+            xml.contains(r#"<hp:numbering type="ON_PAGE" newNum="3"/>"#),
             "각주 numbering 이 IR 값이어야 함"
         );
         assert!(
-            xml.contains(r#"<hp:numbering type="RESTART_SECTION" newNum="5"/>"#),
+            xml.contains(r#"<hp:numbering type="ON_SECTION" newNum="5"/>"#),
             "미주 numbering 이 IR 값이어야 함"
         );
         assert!(
             !xml.contains(r#"<hp:numbering type="CONTINUOUS" newNum="1"/>"#),
             "템플릿 기본 numbering 잔존 금지"
+        );
+    }
+
+    #[test]
+    fn issue6872_numbering_uses_hancom_tokens() {
+        // [#6872] 한컴이 실제로 쓰는 토큰만 낸다. `RESTART_*` 는 rhwp 파서는 받지만
+        // 한글이 못 알아듣고 연속 번호로 떨어진다(정답지 PDF: 쪽마다 1) 이던 각주가
+        // 왕복 뒤 1) 2) 3) …). 원본 HWPX 3,391 파일 실측에도 `RESTART_*` 는 0건이다.
+        use crate::model::footnote::FootnoteNumbering;
+        assert_eq!(
+            note_numbering_str(FootnoteNumbering::Continue),
+            "CONTINUOUS"
+        );
+        assert_eq!(
+            note_numbering_str(FootnoteNumbering::RestartPage),
+            "ON_PAGE"
+        );
+        assert_eq!(
+            note_numbering_str(FootnoteNumbering::RestartSection),
+            "ON_SECTION"
+        );
+    }
+
+    #[test]
+    fn issue6872_empty_suffix_char_stays_empty() {
+        // [#6872] `'\0'` 은 "접미 문자 없음" 이다. 종전 폴백 `")"` 는 사용자 기호 각주
+        // `*` 를 `*)` 로 만들었다(156513948 정답지 실측).
+        let mut shape = crate::model::footnote::FootnoteShape {
+            number_format: crate::model::footnote::NumberFormat::UserChar,
+            user_char: '*',
+            ..Default::default()
+        };
+        shape.suffix_char = '\0';
+        shape.deco_chars_from_source = true; // 원본이 명시적으로 비운 경우
+        let xml = render_auto_num_format(&shape);
+        assert!(
+            xml.contains(r#"suffixChar="""#),
+            "빈 접미는 빈 채로 나가야 한다: {xml}"
+        );
+        // 명시된 접미는 그대로 실린다.
+        shape.suffix_char = ')';
+        assert!(render_auto_num_format(&shape).contains(r#"suffixChar=")""#));
+        // IR 미설정(#2742 규약)은 종전대로 템플릿 기본값 `)` 를 유지한다.
+        let unset = crate::model::footnote::FootnoteShape::default();
+        assert!(
+            render_auto_num_format(&unset).contains(r#"suffixChar=")""#),
+            "IR 미설정은 템플릿 기본값을 지킨다"
         );
     }
 
