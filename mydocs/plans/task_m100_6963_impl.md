@@ -5,7 +5,7 @@
 - 담당: postmelee
 - 기준: `upstream/devel` `a3cd825c23d550e0c5f46b4e2eb3735a537f23f2`
 - 브랜치: `codex/issue-6963-hyperlinks`
-- 상태: 착수, 기준 샘플 계약 조사 중
+- 상태: 단계 1 완료(기준 샘플 계약 및 재검증 도구), 제품 기능 구현 대기
 
 ## 목표와 범위
 
