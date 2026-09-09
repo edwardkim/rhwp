@@ -32,11 +32,21 @@ enum BrushOnlyRopSequenceState {
 impl BrushOnlyRopSequence {
     /// Returns true only for the contiguous fallback sequence
     /// PATINVERT(key) -> DPA -> PATINVERT(key).
+    ///
+    /// [#6865] 가운데 `DPa` 의 브러시가 **1비트 마스크**면 그 blit 도 함께 지운다.
+    /// 관용구의 참 의미에서 마스크는 앞 `PATINVERT` 가 칠한 브러시 색이 어디에 남을지를
+    /// 정할 뿐이고 **그 자신이 보이는 칠이 아니다**. `#6469` 가 이 관용구를 `PATCOPY`
+    /// 로 근사하기로 했으므로 색은 이미 앞 blit 이 칠했고, 마스크를 또 칠하면 흑백
+    /// 디더가 그 위를 덮는다(156627451 3쪽: `#F5F5F5` 패널이 50% 회색).
+    ///
+    /// 마스크가 아닌 **그림**을 실은 `DPa`(`#6469` 가 살려 둔 흰 원)는 1비트가 아니므로
+    /// 종전처럼 그대로 그린다.
     fn observe(
         &mut self,
         operation: TernaryRasterOperation,
         key: BrushOnlyRopKey,
         element_count: usize,
+        brush_is_monochrome_mask: bool,
     ) -> bool {
         let state = std::mem::take(&mut self.state);
         match (state, operation) {
@@ -47,11 +57,13 @@ impl BrushOnlyRopSequence {
                 }),
                 TernaryRasterOperation::DPA,
             ) if element_count == expected_element_count => {
+                // 마스크를 지우면 요소가 늘지 않으므로 다음 기대 서수도 그대로다.
+                let emitted = usize::from(!brush_is_monochrome_mask);
                 self.state = Some(BrushOnlyRopSequenceState::AwaitFinalPatInvert {
                     key: previous_key,
-                    expected_element_count: element_count + 1,
+                    expected_element_count: element_count + emitted,
                 });
-                false
+                brush_is_monochrome_mask
             }
             (
                 Some(BrushOnlyRopSequenceState::AwaitFinalPatInvert {
@@ -69,6 +81,42 @@ impl BrushOnlyRopSequence {
             }
             _ => false,
         }
+    }
+
+    /// 이 blit 이 관용구 가운데의 마스크로 **지워질 것인가**.
+    ///
+    /// `observe` 와 같은 조건이지만 상태를 바꾸지 않는다. 지울 blit 이면 `<pattern>`
+    /// 정의부터 만들지 않으려고 먼저 묻는다 — 그러지 않으면 쓰이지 않는 `<defs>` 항목이
+    /// 남는다(156627451 7쪽: 220개).
+    fn drops_monochrome_mask(
+        &self,
+        operation: TernaryRasterOperation,
+        element_count: usize,
+        brush_is_monochrome_mask: bool,
+    ) -> bool {
+        brush_is_monochrome_mask
+            && matches!(operation, TernaryRasterOperation::DPA)
+            && matches!(
+                &self.state,
+                Some(BrushOnlyRopSequenceState::AwaitDpa {
+                    expected_element_count,
+                    ..
+                }) if *expected_element_count == element_count
+            )
+    }
+
+    /// 브러시가 **2색 1비트 패턴**인가 — 관용구에서 마스크로만 쓰이는 모양이다.
+    ///
+    /// 색 정보를 싣지 않으므로(팔레트는 흑백 두 칸) 눈에 보이는 칠이 될 수 없다.
+    fn brush_is_monochrome_mask(brush: Option<&Brush>) -> bool {
+        matches!(
+            brush,
+            Some(Brush::DIBPatternPT { brush_hatch, .. })
+                if matches!(
+                    brush_hatch.dib_header_info.bit_count(),
+                    crate::wmf::parser::BitCount::BI_BITCOUNT_1
+                )
+        )
     }
 
     fn clear_if_unrelated(&mut self, operation: TernaryRasterOperation) {
@@ -251,13 +299,24 @@ impl TernaryRasterOperator {
                     ?operation,
                     "approximating brush-only TernaryRasterOperation as PATCOPY"
                 );
-                let fill = match Fill::from(self.brush.clone().unwrap()) {
-                    Fill::Pattern { pattern } => {
-                        let id = Self::issue_id(definitions);
-                        definitions.push(pattern.set("id", id.as_str()));
-                        url_string(format!("#{id}").as_str())
+                let is_mask = BrushOnlyRopSequence::brush_is_monochrome_mask(self.brush.as_ref());
+                // [#6865] 지울 마스크면 `<pattern>` 정의도 만들지 않는다.
+                let dropped = brush_only_rop_sequence.drops_monochrome_mask(
+                    operation,
+                    element_count,
+                    is_mask,
+                );
+                let fill = if dropped {
+                    String::new()
+                } else {
+                    match Fill::from(self.brush.clone().unwrap()) {
+                        Fill::Pattern { pattern } => {
+                            let id = Self::issue_id(definitions);
+                            definitions.push(pattern.set("id", id.as_str()));
+                            url_string(format!("#{id}").as_str())
+                        }
+                        Fill::Value { value } => value,
                     }
-                    Fill::Value { value } => value,
                 };
 
                 // `PATINVERT`(D ⊕ P)는 확인된 연속 관용구 안에서만 상쇄한다.
@@ -275,9 +334,10 @@ impl TernaryRasterOperator {
                     self.rect.height,
                     fill.clone(),
                 );
-                if brush_only_rop_sequence.observe(operation, key, element_count) {
+                if brush_only_rop_sequence.observe(operation, key, element_count, is_mask) {
                     return Ok(None);
                 }
+                debug_assert!(!dropped, "지울 마스크는 위에서 돌아갔어야 한다");
 
                 Node::new("rect")
                     .set("x", self.rect.x)
