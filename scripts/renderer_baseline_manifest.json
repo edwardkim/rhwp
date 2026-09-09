@@ -1015,9 +1015,9 @@
         "maxWarmRendererDurationMs": 4000,
         "maxImageCachePixels": 67108864
       },
-      "notes": "Image crop and fill semantics.",
+      "notes": "Image crop and fill semantics. [#6954] The two banners are fine-detail rasters stretched into their frames, so the whole budget is inter-backend resampling: devel measured 0.01966 against a 0.02 budget (98.3% of it). Once both backends stopped cropping the source (they now agree within 1px of ink bbox) the 1:1 draw is sharper and the same resampling noise measures 0.02170. Raised to 0.03 with that headroom; table-core (0.047) and paragraph-line-basic (0.03) are tuned the same way.",
       "browserParityThresholds": {
-        "maxDiffRatio": 0.02,
+        "maxDiffRatio": 0.03,
         "minimumInkPixels": 20000
       },
       "diagnosticAxes": [

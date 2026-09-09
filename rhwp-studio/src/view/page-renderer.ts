@@ -22,7 +22,7 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
-import { imageCropScale } from './image-crop-scale.ts';
+import { imageCropSourceRect } from './image-crop-scale.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -1572,8 +1572,18 @@ function applyFlowImageCrop(
   frameWidth: number = image.bbox.width,
   frameHeight: number = image.bbox.height,
 ): void {
-  const crop = image.crop;
-  if (!crop || element.naturalWidth <= 0 || element.naturalHeight <= 0) {
+  // [#6954] 잘라 올 창은 CanvasKit 백엔드와 **같은 함수**가 정한다 — 축척 폴백(rust
+  // `compute_image_crop_src` 와 같은 사슬)도, "자를 것이 있나" 판정도 그 안에 있다.
+  // 종전에는 둘 다 여기 따로 있어서 갈렸다: `originalSizeHu` 가 없으면 96dpi 상수로
+  // 떨어져 원본의 다른 창을 잘라 왔고(그만큼 확대), 자를 것이 없는 그림도 소수점 창으로
+  // 다시 표본화해 CanvasKit 의 통짜 그리기와 파리티가 벌어졌다.
+  const source = imageCropSourceRect(
+    element.naturalWidth,
+    element.naturalHeight,
+    image.crop ?? undefined,
+    image.originalSizeHu,
+  );
+  if (!source) {
     element.style.left = '0';
     element.style.top = '0';
     element.style.width = '100%';
@@ -1581,25 +1591,10 @@ function applyFlowImageCrop(
     return;
   }
 
-  // [#6954] CanvasKit 백엔드·rust `compute_image_crop_src` 와 **같은 폴백 사슬**을 쓴다.
-  // 종전에는 `originalSizeHu` 가 없으면 곧장 96dpi 상수 가정으로 떨어져, imgDim 을
-  // 보존하지 않는 그림에서 원본의 다른 창을 잘라 왔다(그만큼 확대되어 보인다).
-  const { scaleX: scaleXHu, scaleY: scaleYHu } = imageCropScale(
-    image.originalSizeHu,
-    crop,
-    element.naturalWidth,
-    element.naturalHeight,
-  );
-  const sourceLeft = crop.left / scaleXHu;
-  const sourceTop = crop.top / scaleYHu;
-  const sourceWidth = (crop.right - crop.left) / scaleXHu;
-  const sourceHeight = (crop.bottom - crop.top) / scaleYHu;
-  if (sourceWidth <= 0 || sourceHeight <= 0) return;
-
-  const scaleX = (frameWidth * displayScale) / sourceWidth;
-  const scaleY = (frameHeight * displayScale) / sourceHeight;
-  element.style.left = `${-sourceLeft * scaleX}px`;
-  element.style.top = `${-sourceTop * scaleY}px`;
+  const scaleX = (frameWidth * displayScale) / source.width;
+  const scaleY = (frameHeight * displayScale) / source.height;
+  element.style.left = `${-source.x * scaleX}px`;
+  element.style.top = `${-source.y * scaleY}px`;
   element.style.width = `${element.naturalWidth * scaleX}px`;
   element.style.height = `${element.naturalHeight * scaleY}px`;
 }
