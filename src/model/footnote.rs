@@ -28,6 +28,13 @@ pub struct Footnote {
     pub instance_id: u32,
     /// LIST_HEADER property (UInt4, default 0)
     pub list_header_property: u32,
+    /// [#6872] 장식 문자를 HWPX 가 `userChar` 로 실었는가.
+    ///
+    /// HWPX 의 `<hp:footNote>`/`<hp:endNote>` 는 번호 모양이 사용자 기호일 때
+    /// `suffixChar` 대신 `userChar` 에 그 기호를 싣는다(실측: `156513948` 각주 5개가
+    /// `userChar="42"`). HWP5 의 CTRL_FOOTNOTE 에는 장식 문자 슬롯이 하나뿐이라 값은
+    /// 같은 자리에 두고, **어느 이름으로 왔는지**만 기억해 왕복에서 되돌린다.
+    pub decoration_is_user_char: bool,
 }
 
 /// 미주 ('en  ' 컨트롤) — [Task #1050] Footnote 와 동일 구조
@@ -47,6 +54,13 @@ pub struct Endnote {
     pub instance_id: u32,
     /// LIST_HEADER property (UInt4)
     pub list_header_property: u32,
+    /// [#6872] 장식 문자를 HWPX 가 `userChar` 로 실었는가.
+    ///
+    /// HWPX 의 `<hp:footNote>`/`<hp:endNote>` 는 번호 모양이 사용자 기호일 때
+    /// `suffixChar` 대신 `userChar` 에 그 기호를 싣는다(실측: `156513948` 각주 5개가
+    /// `userChar="42"`). HWP5 의 CTRL_FOOTNOTE 에는 장식 문자 슬롯이 하나뿐이라 값은
+    /// 같은 자리에 두고, **어느 이름으로 왔는지**만 기억해 왕복에서 되돌린다.
+    pub decoration_is_user_char: bool,
 }
 
 /// 각주/미주 모양 (HWPTAG_FOOTNOTE_SHAPE)
