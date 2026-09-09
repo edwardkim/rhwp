@@ -214,7 +214,7 @@ fn shorter_body_does_not_hide_table_overflow_by_moving_it_over_host_text() {
 
 #[test]
 fn reflowed_host_does_not_use_stale_stored_line_coordinates() {
-    // 저장 줄 캐시가 없는 편집 상태를 직접 구성한다. 파일을 변조해 저장하지 않는다.
+    // 저장 줄을 재조판용 템플릿으로 남기되 무효화한 편집 상태다. 파일로 저장하지 않는다.
     let mut core = core();
     let mut document = core.document().clone();
     document.sections[0].paragraphs[1].invalidate_layout_inputs();
@@ -228,6 +228,14 @@ fn reflowed_host_does_not_use_stale_stored_line_coordinates() {
     let (top, _) = table(&items, 1, 0);
     let bottom = host.iter().map(|n| n.bbox.y + n.bbox.height).fold(0.0_f64, f64::max);
     assert!(top >= bottom, "재조판된 본문 끝 {bottom}, 표 상단 {top}");
+    let anchor_top = host.iter().map(|n| n.bbox.y).fold(0.0_f64, f64::max);
+    let Control::Table(target) = &core.document().sections[0].paragraphs[1].controls[0] else {
+        panic!("표")
+    };
+    let expected = anchor_top + rhwp::renderer::hwpunit_to_px(
+        target.common.vertical_offset as i32 + i32::from(target.outer_margin_top), 96.0);
+    assert!((top - expected).abs() < 0.1,
+        "재조판된 마지막 앵커 줄 {anchor_top}와 위치 속성으로 결정한 {expected}, 출력 {top}");
 }
 
 #[test]
@@ -261,4 +269,91 @@ fn top_caption_is_inside_the_reserved_box_before_the_table_body() {
         "위 캡션은 예약 상자 안에서 한 번만 반영: {without_caption} → {with_caption}, 캡션 {caption_extra}");
     assert!(items.iter().filter(|n| matches!(&n.node_type,
         RenderNodeType::TextLine(line) if line.para_index == Some(3))).all(|n| n.bbox.y >= bottom));
+}
+
+#[test]
+fn computed_anchor_uses_scalar_positions_and_not_stored_geometry() {
+    use rhwp::renderer::float_placement::ParagraphHostLine;
+    let core = core();
+    let mut para = core.document().sections[0].paragraphs[1].clone();
+    let Control::Table(mut target) = para.controls[0].clone() else { panic!("표") };
+    // 한글·surrogate pair와 뒤 control의 UTF-16 간격을 포함한 직접 IR이다.
+    para.text = "가😀나다".into();
+    para.char_offsets = vec![0, 1, 3, 4];
+    target.common.vertical_offset = 1500;
+    let lines = [
+        ParagraphHostLine { char_start: 0, top: 0.0, height: 10.0 },
+        ParagraphHostLine { char_start: 2, top: 30.0, height: 10.0 },
+    ];
+    let place = |p: &rhwp::model::paragraph::Paragraph, origin| {
+        ParagraphFloatPlacement::from_computed_host(p, &target, 0, origin, &lines, 100.0, 96.0).unwrap()
+    };
+    let a = place(&para, 200.0);
+    assert_eq!(a.anchor_y, 230.0, "끝 control은 scalar 4에 있어 둘째 줄에 속한다");
+    for ls in &mut para.line_segs { ls.vertical_pos = 90000; ls.line_height = 50000; }
+    assert_eq!(a, place(&para, 200.0), "오래된 source 좌표를 재사용하지 않는다");
+    let b = place(&para, 320.0);
+    assert!((b.table_top - a.table_top - 120.0).abs() < 1e-9);
+    assert!((b.occupied_bottom - a.occupied_bottom - 120.0).abs() < 1e-9);
+    // 첫 문자와 둘째 문자 사이의 8 UTF-16 단위 control을 첫 줄에 대응한다.
+    para.char_offsets = vec![0, 9, 11, 12];
+    assert!(ParagraphFloatPlacement::from_computed_host(
+        &para, &target, 0, 200.0, &lines, 100.0, 96.0).is_none(),
+        "첫 줄 앵커의 표 영역에 뒤 호스트 줄이 걸리면 선행 호스트 계약이 아니다");
+}
+
+#[test]
+fn computed_host_rejects_invalid_rows_and_other_wrap_owners() {
+    use rhwp::renderer::float_placement::ParagraphHostLine;
+    let core = core();
+    let para = &core.document().sections[0].paragraphs[1];
+    let Control::Table(mut target) = para.controls[0].clone() else { panic!("표") };
+    let row = ParagraphHostLine { char_start: 0, top: 0.0, height: 10.0 };
+    for rows in [vec![], vec![ParagraphHostLine { height: f64::NAN, ..row }],
+        vec![row, ParagraphHostLine { top: -1.0, ..row }],
+        vec![row, ParagraphHostLine { char_start: usize::MAX, top: 10.0, ..row }]] {
+        assert!(ParagraphFloatPlacement::from_computed_host(
+            para, &target, 0, 0.0, &rows, 100.0, 96.0).is_none());
+    }
+    for wrap in [TextWrap::Square, TextWrap::BehindText, TextWrap::InFrontOfText] {
+        target.common.text_wrap = wrap;
+        assert!(ParagraphFloatPlacement::from_computed_host(
+            para, &target, 0, 0.0, &[row], 100.0, 96.0).is_none());
+    }
+    target.common.text_wrap = TextWrap::TopAndBottom;
+    target.common.treat_as_char = true;
+    assert!(ParagraphFloatPlacement::from_computed_host(
+        para, &target, 0, 0.0, &[row], 100.0, 96.0).is_none());
+}
+
+#[test]
+fn typeset_publishes_a_computed_placement_for_the_current_frame() {
+    use rhwp::renderer::{composer::compose_section, height_measurer::HeightMeasurer,
+        style_resolver::resolve_styles, typeset::TypesetEngine};
+    let core = core();
+    let doc = core.document();
+    let styles = resolve_styles(&doc.doc_info, 96.0);
+    let mut section = doc.sections[0].clone();
+    section.paragraphs = vec![section.paragraphs[1].clone()];
+    section.paragraphs[0].invalidate_layout_inputs();
+    let mut anchors = Vec::new();
+    for reduction in [0, 6000] {
+        let mut page = section.section_def.page_def.clone();
+        page.margin_right += reduction;
+        let width = rhwp::renderer::hwpunit_to_px(
+            (page.width - page.margin_left - page.margin_right) as i32, 96.0);
+        let composed = compose_section(&section);
+        let measured = HeightMeasurer::new(96.0).measure_section(
+            &section.paragraphs, &composed, &styles, Some(width));
+        let pages = TypesetEngine::new(96.0).typeset_section(
+            &section.paragraphs, &composed, &styles, &page, &Default::default(),
+            0, &measured.tables, false, &Default::default());
+        let placements: Vec<_> = pages.pages.iter().flat_map(|p| &p.column_contents)
+            .filter_map(|c| c.paragraph_float_placements.get(&(0, 0))).collect();
+        assert_eq!(placements.len(), 1, "현재 단에 확정 배치를 한 번 전달해야 한다");
+        let p = placements[0];
+        assert!(p.anchor_y.is_finite() && p.table_top > p.anchor_y && p.occupied_bottom > p.table_top);
+        anchors.push(p.anchor_y);
+    }
+    assert!(anchors[1] > anchors[0], "폭 축소에 따른 실제 줄바꿈이 앵커에 반영되어야 한다: {anchors:?}");
 }

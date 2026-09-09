@@ -27,7 +27,81 @@ pub struct ParagraphFloatPlacement {
     pub occupied_bottom: f64,
 }
 
+/// 실제 재조판에서 확정한 호스트 줄. 문자 위치는 `Paragraph.text`의 scalar 축,
+/// 세로 위치는 spacing-before를 제외한 첫 텍스트 줄 상대 px다.
+#[derive(Debug, Clone, Copy)]
+pub struct ParagraphHostLine {
+    pub char_start: usize,
+    pub top: f64,
+    pub height: f64,
+}
+
 impl ParagraphFloatPlacement {
+    /// 저장 LineSeg 대신 현재 frame에서 계산된 줄로 앵커를 결정한다.
+    /// 모든 호스트 줄이 표보다 앞서는 계약만 소유하며, 혼합 배치를 임의로
+    /// 본문 뒤 배치로 바꾸지 않는다. source의 UTF-16 위치/높이는 읽지 않는다.
+    pub fn from_computed_host(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        lines: &[ParagraphHostLine],
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        if !dpi.is_finite()
+            || dpi <= 0.0
+            || !table_height.is_finite()
+            || table_height < 0.0
+            || !is_para_topbottom_float(&table.common)
+            || !matches!(table.common.vert_align, VertAlign::Top)
+            || signed_hwpunit(table.common.vertical_offset) <= 0
+            || lines
+                .first()
+                .is_none_or(|line| line.char_start != 0 || line.top != 0.0)
+        {
+            return None;
+        }
+        let text_len = para.text.chars().count();
+        if lines.iter().any(|line| {
+            line.char_start > text_len
+                || !line.top.is_finite()
+                || !line.height.is_finite()
+                || line.height < 0.0
+        }) || lines
+            .windows(2)
+            .any(|pair| pair[1].char_start < pair[0].char_start || pair[1].top < pair[0].top)
+        {
+            return None;
+        }
+        let char_pos = *para.control_text_positions().get(control_index)?;
+        if char_pos > text_len {
+            return None;
+        }
+        let anchor = lines
+            .iter()
+            .rev()
+            .find(|line| line.char_start <= char_pos)?;
+        let offset_top =
+            anchor.top + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+        if lines.iter().any(|line| line.top + line.height > offset_top) {
+            return None;
+        }
+        let anchor_y = text_origin + anchor.top;
+        let table_top =
+            text_origin + offset_top + hwpunit_to_px(table.outer_margin_top as i32, dpi);
+        let occupied_bottom =
+            table_top + table_height + hwpunit_to_px(table.outer_margin_bottom as i32, dpi);
+        [anchor_y, table_top, occupied_bottom]
+            .iter()
+            .all(|v| v.is_finite())
+            .then_some(Self {
+                anchor_y,
+                table_top,
+                occupied_bottom,
+            })
+    }
+
     /// 선행 개체의 점유 구간을 지나도록 표 상자만 전진시킨다.
     /// 앵커 줄은 움직이지 않으며, 정렬된 구간을 한 번씩만 방문한다.
     pub fn clear_occupied_bands(mut self, bands: impl IntoIterator<Item = Range<f64>>) -> Self {
@@ -64,6 +138,7 @@ impl ParagraphFloatPlacement {
             || !is_para_topbottom_float(&table.common)
             || !matches!(table.common.vert_align, VertAlign::Top)
             || !super::layout::stored_host_lines_precede_float(para, table, control_index)
+            || para.stored_text_partition_is_dirty()
             || para.line_segs.is_empty()
             || para.line_segs.iter().any(|line| {
                 line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0

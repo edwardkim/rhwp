@@ -5659,6 +5659,8 @@ pub(crate) struct DumpFormattedParagraphHeight {
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
 #[derive(Debug, Clone)]
 struct FormattedParagraph {
+    /// frame이 실제로 재조판한 줄만 보존한다. Some이면 source 줄로 되돌아가지 않는다.
+    computed_host_lines: Option<Vec<super::float_placement::ParagraphHostLine>>,
     /// 총 높이 (spacing 포함)
     total_height: f64,
     /// 줄별 콘텐츠 높이 (line_height만)
@@ -17363,7 +17365,38 @@ impl TypesetEngine {
             vpos_metric.map(|v| metric.min(v)).unwrap_or(metric)
         };
 
+        // 표 없는 일반 본문에는 배치용 줄 사본을 만들지 않는다.
+        let computed_host_lines = recomposed
+            .as_ref()
+            .filter(|_| {
+                para.controls.iter().any(|control| {
+                    matches!(control,
+                Control::Table(table) if is_para_topbottom_float(&table.common))
+                })
+            })
+            .map(|comp| {
+                // 높이 보정이 줄 수를 바꾼 다른 owner의 결과를 문자 경계에 억지로 zip하지 않는다.
+                if comp.lines.len() != line_heights.len() || comp.lines.len() != line_spacings.len()
+                {
+                    return Vec::new();
+                }
+                let mut top = 0.0;
+                comp.lines
+                    .iter()
+                    .enumerate()
+                    .map(|(i, line)| {
+                        let resolved = super::float_placement::ParagraphHostLine {
+                            char_start: line.char_start,
+                            top,
+                            height: line_heights[i],
+                        };
+                        top += line_heights[i] + line_spacings[i];
+                        resolved
+                    })
+                    .collect()
+            });
         FormattedParagraph {
+            computed_host_lines,
             total_height,
             line_heights,
             line_spacings,
@@ -24981,19 +25014,32 @@ impl TypesetEngine {
             };
         let resolved_host_placement = para_has_non_whitespace_text(para)
             .then(|| {
-                super::float_placement::ParagraphFloatPlacement::from_stored_host(
-                    para,
-                    table,
-                    ctrl_idx,
-                    placement_para_start_height
-                        + if placement_para_start_height > 0.0 {
-                            fmt.spacing_before
-                        } else {
-                            0.0
-                        },
-                    whole_placement_height,
-                    self.dpi,
-                )
+                let text_origin = placement_para_start_height
+                    + if placement_para_start_height > 0.0 {
+                        fmt.spacing_before
+                    } else {
+                        0.0
+                    };
+                if let Some(lines) = &fmt.computed_host_lines {
+                    super::float_placement::ParagraphFloatPlacement::from_computed_host(
+                        para,
+                        table,
+                        ctrl_idx,
+                        text_origin,
+                        lines,
+                        whole_placement_height,
+                        self.dpi,
+                    )
+                } else {
+                    super::float_placement::ParagraphFloatPlacement::from_stored_host(
+                        para,
+                        table,
+                        ctrl_idx,
+                        text_origin,
+                        whole_placement_height,
+                        self.dpi,
+                    )
+                }
             })
             .flatten()
             .map(|placement| {
@@ -28076,6 +28122,7 @@ mod issue_3780_line_advance_oob {
 
     fn fp(lines: usize) -> FormattedParagraph {
         FormattedParagraph {
+            computed_host_lines: None,
             total_height: 0.0,
             line_heights: vec![10.0; lines],
             line_spacings: vec![2.0; lines],
