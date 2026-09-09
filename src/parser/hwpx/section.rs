@@ -1169,27 +1169,39 @@ fn parse_note_pr_children(
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.suffix_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.suffix_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"prefixChar" => {
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.prefix_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.prefix_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"userChar" => {
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.user_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.user_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"supscript" => {
@@ -1198,6 +1210,9 @@ fn parse_note_pr_children(
                                 _ => {}
                             }
                         }
+                        // [#6872] 이 구역의 장식 문자는 원본이 준 값이다 — 빈 값도 포함해
+                        // 그대로 되돌려 준다(직렬화기의 템플릿 폴백을 쓰지 않는다).
+                        shape.deco_chars_from_source = true;
                     }
                     b"noteLine" => {
                         for attr in e.attributes().flatten() {
@@ -9372,6 +9387,31 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec![(0, 3), (10, 30)],
         );
+    }
+
+    #[test]
+    fn issue6872_empty_deco_char_attrs_mean_none() {
+        // [#6872] `suffixChar=""` 는 "접미 없음" 이다. 종전에는 `chars().next()` 가
+        // `None` 이라 그냥 넘어가 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 가 됐다.
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:secPr>
+    <hp:footNotePr>
+      <hp:autoNumFormat type="USER_CHAR" userChar="*" prefixChar="" suffixChar="" supscript="0"/>
+      <hp:numbering type="ON_PAGE" newNum="1"/>
+    </hp:footNotePr>
+  </hp:secPr></hp:run></hp:p>
+</hs:sec>"##;
+        let section = parse_hwpx_section(xml).unwrap();
+        let fs = &section.section_def.footnote_shape;
+        assert_eq!(fs.user_char, '*', "사용자 기호 보존");
+        assert_eq!(fs.suffix_char, '\0', "빈 접미는 '없음'(\\0)으로 기록");
+        assert_eq!(fs.prefix_char, '\0', "빈 접두도 '없음'");
+        assert!(matches!(
+            fs.numbering,
+            crate::model::footnote::FootnoteNumbering::RestartPage
+        ));
     }
 
     #[test]
