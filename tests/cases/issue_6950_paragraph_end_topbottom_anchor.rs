@@ -620,7 +620,9 @@ fn split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame() {
         }
         node.children.iter().find_map(body)
     }
-    for body_height in [18000, 12000] {
+    // header/footer 영역도 본문 가용 높이에서 빠진다. 두 조건 모두 host는
+    // 현재 쪽에 들어가며, 첫 표 행은 각각 현재 쪽 분할/다음 쪽 이월 대상이다.
+    for body_height in [18000, 16000] {
         for without_source_rows in [false, true] {
             let mut core = core();
             let mut doc = core.document().clone();

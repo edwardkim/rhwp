@@ -25566,8 +25566,17 @@ impl TypesetEngine {
                 (table_available
                     - p.table_top
                     - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                    - ft.caption_height)
-                    .max(0.0)
+                    - table
+                        .caption
+                        .as_ref()
+                        .filter(|cap| {
+                            matches!(cap.direction, CaptionDirection::Top)
+                                && ft.caption_height > 0.0
+                        })
+                        .map_or(0.0, |cap| {
+                            ft.caption_height + hwpunit_to_px(cap.spacing as i32, self.dpi)
+                        }))
+                .max(0.0)
             },
         );
         let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
@@ -26528,7 +26537,9 @@ impl TypesetEngine {
                 };
                 (boundary - p.table_top - caption_extra
                     - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                    - first_fragment_painted_row_footer_guard).max(0.0)
+                    - if !is_continuation && start_cut.is_empty() {
+                        first_fragment_painted_row_footer_guard
+                    } else { 0.0 }).max(0.0)
             });
 
             // RowBreak 표의 common.height가 전체 표가 아니라 첫 physical fragment를
