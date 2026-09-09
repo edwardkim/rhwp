@@ -93,3 +93,44 @@ fn header_justify_keeps_natural_width_after_hwp_and_hwpx_roundtrip() {
     assert_natural_header(&doc.export_hwp().expect("HWP 저장"));
     assert_natural_header(&doc.export_hwpx().expect("HWPX 저장"));
 }
+
+#[test]
+fn hwp3_header_alignment_preserves_distinct_hancom_import_contracts() {
+    // 한컴 engine 2020 재변환: sample11의 원값 6은 JUSTIFY,
+    // SO-SUEOP의 원값 7은 DISTRIBUTE_SPACE. 둘 다 KEEP_WORD이다.
+    for (file, expected) in [
+        ("hwp3-sample11.hwp", Alignment::Justify),
+        ("SO-SUEOP.hwp", Alignment::Split),
+    ] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples")
+            .join(file);
+        let bytes = std::fs::read(path).expect("공개 HWP3 호환성 표본");
+        let exported = HwpDocument::from_bytes(&bytes)
+            .expect("HWP3 열기")
+            .export_hwpx_native()
+            .expect("HWPX 내보내기");
+        for data in [&bytes, &exported] {
+            let model = parse_document(data).expect("원본 또는 왕복 문서 파싱");
+            let mut count = 0;
+            for paragraph in model
+                .sections
+                .iter()
+                .flat_map(|section| &section.paragraphs)
+            {
+                for control in &paragraph.controls {
+                    if let Control::Header(header) = control {
+                        for paragraph in &header.paragraphs {
+                            let shape =
+                                &model.doc_info.para_shapes[paragraph.para_shape_id as usize];
+                            assert_eq!(shape.alignment, expected, "{file}: 머리말 정렬");
+                            assert_ne!(shape.attr1 & (1 << 7), 0, "{file}: KEEP_WORD 보존");
+                            count += 1;
+                        }
+                    }
+                }
+            }
+            assert!(count > 0, "{file}: 머리말 표본 누락");
+        }
+    }
+}

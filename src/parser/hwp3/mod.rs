@@ -671,12 +671,15 @@ fn convert_para_shape_with_layout_contract(
     ps.spacing_after = hwp3_para_spacing_to_ir(hwp3_ps.margin_bottom, use_password_layout_contract);
     ps.spacing_before = hwp3_para_spacing_to_ir(hwp3_ps.margin_top, use_password_layout_contract);
     ps.alignment = match hwp3_ps.align {
-        0 => crate::model::style::Alignment::Justify,
+        0 | 6 => crate::model::style::Alignment::Justify,
         1 => crate::model::style::Alignment::Left,
         2 => crate::model::style::Alignment::Right,
         3 => crate::model::style::Alignment::Center,
         4 => crate::model::style::Alignment::Distribute,
-        5 => crate::model::style::Alignment::Split,
+        // [#6864] HWP3 정렬 필드는 0..=7이다. SO-SUEOP의 원값 7은
+        // 한컴 HWPX에서 DISTRIBUTE_SPACE로 변환된다. 6(sample11)은
+        // JUSTIFY이므로 머리말 전체를 Split으로 바꾸면 안 된다.
+        5 | 7 => crate::model::style::Alignment::Split,
         _ => crate::model::style::Alignment::Justify,
     };
 
@@ -686,7 +689,8 @@ fn convert_para_shape_with_layout_contract(
     // 전수에서 예외 0 으로 확인한 규칙이다(07615: JUSTIFY→KEEP 2,988·기타→BREAK
     // 711, 교차검증 문서: 822/1,576). 배선하지 않으면 h2x 산출이 전량
     // BREAK_WORD 로 나가 본문 줄바꿈이 정답지와 어긋난다.
-    if matches!(ps.alignment, crate::model::style::Alignment::Justify) {
+    // 원값 7의 공백 분배도 한컴 변환본에서는 KEEP_WORD를 유지한다.
+    if matches!(ps.alignment, crate::model::style::Alignment::Justify) || hwp3_ps.align == 7 {
         ps.attr1 |= 1 << 7;
     }
 
@@ -2188,31 +2192,6 @@ fn parse_object_control_char(
             hidden_comment,
         )));
     } else if ch == 16 {
-        // [#6864] HWP3 머리말/꼬리말의 양쪽 정렬은 마지막 줄의 공백도
-        // 분배한다(#1692). HWPX 변환본의 DISTRIBUTE_SPACE와 같은 공통 IR로
-        // 정규화하여 HWP5/HWPX의 일반 Justify에 렌더러 예외를 적용하지 않는다.
-        // 본문과 공유하는 문단 모양은 수정하지 않고 별도 모양을 재사용한다.
-        for paragraph in &mut nested_paragraphs {
-            let Some(base) = doc_para_shapes.get(paragraph.para_shape_id as usize) else {
-                continue;
-            };
-            if base.alignment != crate::model::style::Alignment::Justify {
-                continue;
-            }
-            let normalized = crate::model::style::ParaShapeMods {
-                alignment: Some(crate::model::style::Alignment::Split),
-                ..Default::default()
-            }
-            .apply_to(base);
-            let shape_id = doc_para_shapes
-                .iter()
-                .position(|shape| shape == &normalized)
-                .unwrap_or_else(|| {
-                    doc_para_shapes.push(normalized);
-                    doc_para_shapes.len() - 1
-                });
-            paragraph.para_shape_id = shape_id as u16;
-        }
         let apply_to = match info_buf.get(9).copied().unwrap_or(0) {
             1 => crate::model::header_footer::HeaderFooterApply::Even,
             2 => crate::model::header_footer::HeaderFooterApply::Odd,
