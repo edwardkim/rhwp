@@ -2,9 +2,10 @@
 
 ## 최신 결론
 
-- [#6949 review](pr_6949_review.md): **머지 보류**. 완성된 ROP 시퀀스/같은 목적 영역을 확인하기 전 DPA 삭제(P1), 1bpp만으로 마스크 판정(P2)을 정적 검토에서 발견했다. 원 PR 제공 3/7쪽 PNG는 열었지만 통합 candidate의 직접 visual sweep은 미실행이다.
-- [#6952 review](pr_6952_review.md): **머지 보류**. 기존 #6940과의 직렬화 충돌을 보존 병합했지만 보정 후 build/회귀/Clippy/실물 왕복 검증은 미실행이다. 추가 6개 시험은 합성 IR 직렬화 범위이며 parser/미주/인라인 USER_CHAR 왕복의 직접 검증을 대체하지 않는다.
-- 현재는 로컬 누적 체리픽과 정적 PR 검토 단계다. 원격 통합 PR 생성/push/merge/원 PR close/공개 review comment는 수행하지 않았다. 원 PR 두 건의 reviewer 지정만 완료했다.
+- [#6949 review](pr_6949_review.md): **메인터너 보정 후 수용 가능**. 원 head의 P1/P2와 보정 중 드러난 WMF 회귀를 해소했다. 원 문서 15쪽 직접 visual sweep 및 2/3/7쪽 대표 PNG 판독을 완료했다. 회색조·누락 아이콘·7쪽 영문 배너 차이는 잔여 현상으로 명시하며, #6865 전체 해결이나 완전한 시각 일치를 선언하지 않는다.
+- [#6952 review](pr_6952_review.md): **메인터너 보정 후 수용 가능**. #6940의 빈 접미 보존 병합과 테스트 fixture 오류 수정을 완료했다. 실물 XML 및 두 문서 68쪽 PDF 비교를 완료했고, 최종 왕복 HWPX의 바이트 동일성을 확인해 후보 PDF를 재사용했다.
+- 두 판정의 대상은 원 PR head가 아니라 메인터너 통합 보정 커밋 `80ceb5ce1149106e389f7325a48545bb20a14031`이다. 집중 회귀 32/32, 전체 회귀 9,377/9,377(46 skipped), Native Skia·WASM 패키지와 세 Clippy 단계가 통과했고, 소스·문서·최종 증적을 커밋했다.
+- 작업지시자 시각 승인과 최종 통합 CI는 별도 후속 게이트다. 원격 통합 PR 생성/push/merge/원 PR close/공개 review comment는 수행하지 않았다. 원 PR 두 건의 reviewer 지정은 완료했다. 아래 최초 검토·실패 후보 기록은 이력이며 현재 최종 판정을 대체하지 않는다.
 
 ## 기준과 적용 순서
 
@@ -35,8 +36,8 @@
 
 ## 1차 메인터너 검증 실행 (2026-09-09)
 
-**전체 판정: 머지 보류. 집중 회귀 실패로 중단했으며 전체 회귀·Native Skia·WASM 패키지 검증은 미실행이다.**
-앞선 정적 검토와 달리 실제 보정·빌드·Clippy·시각 검증을 수행했다. 현 후보는
+**당시 결과(이력, 현재 최종 판정 아님): 머지 보류. 집중 회귀 실패로 중단했으며 전체 회귀·Native Skia·WASM 패키지 검증은 미실행이다.**
+앞선 정적 검토와 달리 실제 보정·빌드·Clippy·시각 검증을 수행했다. 당시 후보는
 `review/planet6897-6949-6952-20260909`의 `399491937` 위 미커밋 변경이다.
 기준 `upstream/devel`은 `92f6242af96f51ede912588fa6fe35f5447709bc`이며 이번 단계에서 재동기화하지 않았다.
 GitHub comment, commit, push, PR 생성, merge를 수행하지 않았다.
@@ -119,9 +120,10 @@ PDF 비교 스크립트는 `output/pr_6949_6952_maintainer_20260909/compare_note
 
 **최신 결과: 메인터너 오류 수정 및 요청한 로컬 자동 검증 완료.**
 기존 4개 회귀 실패와 추가 보정 과정에서 발견한 WMF 체크무늬 재출현을 해소했다.
-아래는 `review/planet6897-6949-6952-20260909`, `399491937` 위의 최종 미커밋 후보 결과다.
-commit SHA만으로 이 후보를 식별하지 않으며 아래 source/binary SHA-256을 함께 사용한다.
-보정 commit 고정·작업지시자 시각 승인·최종 통합 CI 및 GitHub 작업은 별도 대기다.
+아래는 `review/planet6897-6949-6952-20260909`에서 검증 후 보정 커밋
+`80ceb5ce1149106e389f7325a48545bb20a14031`으로 고정한 후보 결과다.
+검증은 커밋 전 같은 소스 바이트에 대해 수행했으며 아래 source/binary SHA-256을 함께 보존한다.
+소스·최종 증적 commit은 완료했다. 작업지시자 시각 승인·최종 통합 CI 및 GitHub 원격 작업은 별도 대기다.
 
 ### 실행 이력 구분
 
@@ -202,4 +204,4 @@ CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web \
 - 최종 comment 계획은 [#6949 review](pr_6949_review.md#최종-보정-후보-검증-2026-09-09)와
   [#6952 review](pr_6952_review.md#최종-보정-후보-검증-2026-09-09)에 갱신했다.
 - `.log`, 원시 raster, 중간 SVG/JSON, MCP 응답, WASM 패키지, generated suite/inventory와 실패 후보 이미지는
-  커밋에 포함하지 않는다. GitHub 게시·commit·push·PR 생성·merge는 이번 검증 단계에서 수행하지 않았다.
+  커밋에서 제외했다. 소스·문서·최종 증적은 `80ceb5ce1149106e389f7325a48545bb20a14031`에 커밋했으며, GitHub 게시·push·PR 생성·merge는 수행하지 않았다.
