@@ -19786,6 +19786,12 @@ impl TypesetEngine {
             .find(|&i| matches!(para.controls[i], Control::Table(_)));
 
         let mut break_after_current_table = false;
+        // [#703 잔여] 데코레이션(글앞/글뒤) 표 단축은 표만 방출하고 흐름을 0
+        // 소비했다. host 문단에 제목 등 가시 텍스트가 있으면 그 텍스트가
+        // 발행되지 않아 렌더에서 통째로 사라지고(제목 미노출), 텍스트 높이가
+        // 흐름에 안 실려 다음 표가 위로 붙는다(표 틀어짐). 단축 진입 시 host
+        // 텍스트를 한 번 발행하도록 문단 단위로 추적한다.
+        let mut host_text_emitted = false;
         for (order_pos, ctrl_idx) in ctrl_order.iter().copied().enumerate() {
             let ctrl = &para.controls[ctrl_idx];
             match ctrl {
@@ -20014,6 +20020,31 @@ impl TypesetEngine {
                         }
                         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
                         st.overlay_shape_shortcut_para = Some(para_idx);
+                        // [#703 잔여] host 문단의 가시 텍스트(제목 등)를 흐름 문단으로
+                        // 방출한다. 종전에는 표만 방출하고 `continue` 해서 이 텍스트를
+                        // 위한 PageItem 이 어디에서도 발행되지 않아 렌더에서 통째로
+                        // 사라졌고(제목 미노출), 텍스트 높이가 흐름에 실리지 않아 뒤
+                        // 문단·표가 제목 자리로 올라붙었다(표 겹침).
+                        //
+                        // 방출은 **표 배치와 흐름 전진을 모두 끝낸 뒤**여야 한다 —
+                        // 이 표의 앵커(위 anchor_y)는 vert=Para 의 문단 시작 기준
+                        // 좌표라, 텍스트를 먼저 전진시키면 글앞으로 표가 제목 높이만큼
+                        // 아래로 밀려 본문표를 파고든다(실측 +44px 겹침).
+                        // PartialParagraph = 텍스트 줄만이고 표는 Shape 가 따로
+                        // 그리므로 중복 렌더는 없다(place_table_with_text 의 pre-text
+                        // 발행과 같은 계약).
+                        if !host_text_emitted && para_has_non_whitespace_text(para) {
+                            let total_lines = fmt.line_heights.len();
+                            if total_lines > 0 {
+                                st.current_items.push(PageItem::PartialParagraph {
+                                    para_index: para_idx,
+                                    start_line: 0,
+                                    end_line: total_lines,
+                                });
+                                st.current_height += fmt.line_advances_sum(0..total_lines);
+                            }
+                            host_text_emitted = true;
+                        }
                         continue;
                     }
                     let is_column_top = st.current_height < 1.0;
