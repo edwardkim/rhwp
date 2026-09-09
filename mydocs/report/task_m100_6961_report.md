@@ -39,3 +39,20 @@ BiDi Page.url()은 확장 탭을 about:blank로 표시하여 실제 location.hre
 `issue6961-firefox-baseline.log`, `issue6961-firefox-save-as.log`.
 이 로그는 세션 증적이며 public source test가 아니다. 실제 저장본과 프로필도 /private/tmp에만 있다.
 원격 push, PR 생성, 배포는 아직 수행하지 않았다.
+
+## #6964 결합 검증 후속
+
+#6964는 독립 브랜치 `codex/issue-6964-download-duplicates`에서 구현했다
+(구현 `c4c757a18`, 첫 이벤트 호출 시점 보정 `5de285adb`).
+공통 상태 머신 정책은 그대로 두고 Firefox의 같은 ID 이벤트를 직렬화하며,
+자체 extension Blob 저장의 자동 열기를 제외한다.
+
+첫 browser API 호출은 기존처럼 이벤트 수신 중 시작하도록 보정한 뒤,
+#6961의 launcher/helper를 결합한 Firefox 155.0.1 패키지가 새 프로필 3회와 최종 재빌드에서
+정상 파일명·뷰어 1개·편집 내용 보존을 확인했다. 다운로드는 입력 1개와 저장 출력 2개이며,
+저장/다른 이름 저장 파일은 `신청서(SW) (개인)_1(1).hwp`, `신청서(SW) (개인)_1(2).hwp`였다.
+첫 큐 구현에서 관측된 간헐적 headless 누락과 호출 시점 보정은 #6964 결과보고에 기록했다.
+
+#6964 최종 관련 테스트 148/148, Chrome 기존 4종 + 자체 Blob 저장, 두 build와 dist 계약이
+통과했다. 두 브랜치는 merge-tree에서 충돌 없이 결합된다. 배포 시 두 수정의 포함 여부를 확인한다.
+원격 push/PR/배포는 아직 수행하지 않았다.
