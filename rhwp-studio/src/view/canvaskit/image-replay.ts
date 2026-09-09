@@ -100,14 +100,33 @@ export function canvasKitImageSourceRect(
     return null;
   }
 
-  const referenceWidth = cropReferenceSize?.[0];
-  const referenceHeight = cropReferenceSize?.[1];
-  const scaleX = Number.isFinite(referenceWidth) && (referenceWidth ?? 0) > 0
-    ? (referenceWidth as number) / imageWidth
-    : HWPUNIT_PER_PIXEL;
-  const scaleY = Number.isFinite(referenceHeight) && (referenceHeight ?? 0) > 0
-    ? (referenceHeight as number) / imageHeight
-    : HWPUNIT_PER_PIXEL;
+  // [#6954] `compute_image_crop_src`(src/renderer/svg.rs) 와 같은 폴백 사슬을 쓴다.
+  //
+  //   ① cropReferenceSize 가 있으면 그것
+  //   ② 없으면 crop 의 right/bottom 을 원본 전체 범위로 본다
+  //   ③ 그것도 못 쓰면 96dpi 가정(75 HU/px)
+  //
+  // ②가 없으면 `originalSizeHu` 를 싣지 않는 그림에서 곧장 ③으로 떨어져 SVG 와 다른
+  // 창을 잘라 온다 — 156627451 1쪽 로고가 원본에서 11% 좁게 잘려 같은 자리에 늘어났다.
+  // 75 HU/px 는 96dpi 상수 가정이고, ②는 이 그림이 실제로 몇 HU/px 인지를 crop 값
+  // 자신에서 읽는다.
+  const axisScale = (
+    reference: number | undefined,
+    cropExtent: number,
+    imageExtent: number,
+  ): number => {
+    if (Number.isFinite(reference) && (reference ?? 0) > 0) {
+      const scale = (reference as number) / imageExtent;
+      if (Number.isFinite(scale) && scale > 0) return scale;
+    }
+    if (cropExtent > 0) {
+      const scale = cropExtent / imageExtent;
+      if (Number.isFinite(scale) && scale > 0) return scale;
+    }
+    return HWPUNIT_PER_PIXEL;
+  };
+  const scaleX = axisScale(cropReferenceSize?.[0], crop.right, imageWidth);
+  const scaleY = axisScale(cropReferenceSize?.[1], crop.bottom, imageHeight);
   const x = crop.left / scaleX;
   const y = crop.top / scaleY;
   const width = (crop.right - crop.left) / scaleX;

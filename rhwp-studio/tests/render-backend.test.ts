@@ -802,14 +802,37 @@ test('CanvasKit image replay cache key includes payload fingerprint with repeate
   );
 });
 
+// [#6954] `originalSizeHu` 가 없는 그림에서 SVG 와 같은 창을 잘라 온다.
+//
+// 종전에는 곧장 `HWPUNIT_PER_PIXEL`(96dpi 상수 가정)로 떨어졌다. rust 는 #3239 에서
+// 그 고정 폴백이 비-96dpi 스캔을 확대·절단시킨다는 것을 실측하고 **crop 의
+// right/bottom 을 원본 전체 범위로 읽는 적응식**을 사이에 넣었는데, studio 만 그대로
+// 남아 있었다.
 test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG replay', () => {
-  const crop = canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 });
-  assert.ok(crop);
-  assert.equal(crop.x, 0);
-  assert.equal(crop.y, 0);
-  assert.ok(Math.abs(crop.width - (102366 / HWPUNIT_PER_PIXEL)) < 0.01);
-  assert.equal(crop.height, 354);
+  // 자르기 없는 그림 — right/bottom 이 원본 전체 범위라 잘라 올 창이 없다.
+  assert.equal(
+    canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 }),
+    null,
+  );
   assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }), null);
+
+  // 156627451 1쪽 ② 로고 — 실제로 잘린 그림. 고정 75 HU/px 로는 폭이 11% 좁아졌다.
+  const logo = canvasKitImageSourceRect(844, 342, {
+    left: 6947, top: 2777, right: 56348, bottom: 24865,
+  });
+  assert.ok(logo);
+  assert.ok(Math.abs(logo.x - 104.05) < 0.01, `x=${logo.x}`);
+  assert.ok(Math.abs(logo.y - 38.20) < 0.01, `y=${logo.y}`);
+  assert.ok(Math.abs(logo.width - 739.95) < 0.01, `width=${logo.width}`);
+  assert.ok(Math.abs(logo.height - 303.80) < 0.01, `height=${logo.height}`);
+  // 고정 폴백이었다면 658.68 — 11% 좁게 잘라 같은 자리에 늘려 그렸다.
+  assert.ok(Math.abs(logo.width - (56348 - 6947) / HWPUNIT_PER_PIXEL) > 80);
+
+  // right/bottom 을 못 쓰면 종전대로 96dpi 가정으로 떨어진다.
+  const degenerate = canvasKitImageSourceRect(200, 100, {
+    left: 750, top: 0, right: 0, bottom: 0,
+  });
+  assert.equal(degenerate, null);
 });
 
 test('CanvasKit image crop source honors issue2817 imgDim coordinates', () => {
