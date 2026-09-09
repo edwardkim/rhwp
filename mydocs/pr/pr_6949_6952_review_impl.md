@@ -1,10 +1,19 @@
 # PR #6949/#6952 누적 체리픽 검토
 
+## 최신 upstream/devel 동기화 및 해시 대조 (2026-09-09)
+
+- 기준 base: `d8e4ab727b70b6abfcf11766134e09a9a9bfc982`. `review/planet6897-6949-6952-20260909`를 이 base 위로 리베이스했다. 오늘할일을 포함한 모든 파일이 충돌 없이 적용됐으며 수동 충돌 해소는 없었다.
+- 현재 보정 커밋: `fe92170a0cac3e21aca3281b7e4a054052dadf5b` (리베이스 전 `80ceb5ce1149106e389f7325a48545bb20a14031`). 문서 갱신 직전 head는 `bffaab24f16fd7341d15661c4905931f5ca0ec95`다. 후속 문서 commit은 이 소스 후보를 변경하지 않는다.
+- 소스·테스트 7개 파일, 최종 PDF 2개와 대표 PNG 5개를 리베이스 전 head `8be25bae1`와 Git blob 대조했고 모두 동일했다. SHA-256도 다시 산출했다. 상세 해시와 커밋 대응표는 [통합 기록](pr_6949_6952_review_impl.md#리베이스-해시-대응표)을 따른다.
+- 기존 전체 회귀·Clippy·Native Skia·WASM·시각 증적은 리베이스 전 검증 결과다. 작업지시자의 "다른 conflict가 없으면 추가 테스트 없이 PR" 지시에 따라 리베이스 후 build/test/lint/시각 출력은 재실행하지 않았다. 기존 바이너리 해시는 보존된 검증 실행 파일의 식별자이며 최신 base 재빌드 증거가 아니다.
+- 최신 base에는 #6773의 표 삭제 및 관련 model/WASM 변경이 포함됐다. 이번 PR 파일의 바이트 동일성과 무충돌 리베이스가 저장소 전체의 실행 호환성을 보장하지는 않으므로, 최신 통합 head의 GitHub CI와 작업지시자 승인 게이트를 유지한다.
+- 현재 판정은 `메인터너 보정 후 수용 가능`을 유지한다. 원격 PR 번호·head·CI의 최신 진행 상태는 [오늘할일](../orders/20260909.md)의 통합 PR 항목과 채번 후 생성하는 self-review 기록을 따른다. 아래 검증 당시의 미게시·미생성 문구는 당시 작업 범위의 이력이다.
+
 ## 최신 결론
 
 - [#6949 review](pr_6949_review.md): **메인터너 보정 후 수용 가능**. 원 head의 P1/P2와 보정 중 드러난 WMF 회귀를 해소했다. 원 문서 15쪽 직접 visual sweep 및 2/3/7쪽 대표 PNG 판독을 완료했다. 회색조·누락 아이콘·7쪽 영문 배너 차이는 잔여 현상으로 명시하며, #6865 전체 해결이나 완전한 시각 일치를 선언하지 않는다.
 - [#6952 review](pr_6952_review.md): **메인터너 보정 후 수용 가능**. #6940의 빈 접미 보존 병합과 테스트 fixture 오류 수정을 완료했다. 실물 XML 및 두 문서 68쪽 PDF 비교를 완료했고, 최종 왕복 HWPX의 바이트 동일성을 확인해 후보 PDF를 재사용했다.
-- 두 판정의 대상은 원 PR head가 아니라 메인터너 통합 보정 커밋 `80ceb5ce1149106e389f7325a48545bb20a14031`이다. 집중 회귀 32/32, 전체 회귀 9,377/9,377(46 skipped), Native Skia·WASM 패키지와 세 Clippy 단계가 통과했고, 소스·문서·최종 증적을 커밋했다.
+- 두 판정의 대상은 원 PR head가 아니라 메인터너 통합 보정 커밋 `fe92170a0cac3e21aca3281b7e4a054052dadf5b`이다. 집중 회귀 32/32, 전체 회귀 9,377/9,377(46 skipped), Native Skia·WASM 패키지와 세 Clippy 단계가 통과했고, 소스·문서·최종 증적을 커밋했다.
 - 작업지시자 시각 승인과 최종 통합 CI는 별도 후속 게이트다. 원격 통합 PR 생성/push/merge/원 PR close/공개 review comment는 수행하지 않았다. 원 PR 두 건의 reviewer 지정은 완료했다. 아래 최초 검토·실패 후보 기록은 이력이며 현재 최종 판정을 대체하지 않는다.
 
 ## 기준과 적용 순서
@@ -121,7 +130,7 @@ PDF 비교 스크립트는 `output/pr_6949_6952_maintainer_20260909/compare_note
 **최신 결과: 메인터너 오류 수정 및 요청한 로컬 자동 검증 완료.**
 기존 4개 회귀 실패와 추가 보정 과정에서 발견한 WMF 체크무늬 재출현을 해소했다.
 아래는 `review/planet6897-6949-6952-20260909`에서 검증 후 보정 커밋
-`80ceb5ce1149106e389f7325a48545bb20a14031`으로 고정한 후보 결과다.
+`fe92170a0cac3e21aca3281b7e4a054052dadf5b`으로 고정한 후보 결과다.
 검증은 커밋 전 같은 소스 바이트에 대해 수행했으며 아래 source/binary SHA-256을 함께 보존한다.
 소스·최종 증적 commit은 완료했다. 작업지시자 시각 승인·최종 통합 CI 및 GitHub 원격 작업은 별도 대기다.
 
@@ -204,4 +213,35 @@ CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web \
 - 최종 comment 계획은 [#6949 review](pr_6949_review.md#최종-보정-후보-검증-2026-09-09)와
   [#6952 review](pr_6952_review.md#최종-보정-후보-검증-2026-09-09)에 갱신했다.
 - `.log`, 원시 raster, 중간 SVG/JSON, MCP 응답, WASM 패키지, generated suite/inventory와 실패 후보 이미지는
-  커밋에서 제외했다. 소스·문서·최종 증적은 `80ceb5ce1149106e389f7325a48545bb20a14031`에 커밋했으며, GitHub 게시·push·PR 생성·merge는 수행하지 않았다.
+  커밋에서 제외했다. 소스·문서·최종 증적은 `fe92170a0cac3e21aca3281b7e4a054052dadf5b`에 커밋했으며, GitHub 게시·push·PR 생성·merge는 수행하지 않았다.
+
+## 리베이스 해시 대응표
+
+| 단계 | 리베이스 전 | 리베이스 후 |
+| --- | --- | --- |
+| 기준 devel | `92f6242af96f51ede912588fa6fe35f5447709bc` | `d8e4ab727b70b6abfcf11766134e09a9a9bfc982` |
+| #6949 체리픽 | `32554ff8bf193e4da64e7855854dcb3b80bffa64` | `f39e79dd8098f105cdb1e22fcb67a7e18b2e74b0` |
+| #6952 체리픽 | `d01f7989b25e5ecff7a6a42a04b1d901ea44c1d6` | `a238c11141b546e861c18e3e12354bf7476406e8` |
+| 최초 review | `399491937` | `0451d49f6a2a289d1bff25cd5124f747c8a88c02` |
+| 메인터너 소스·증적 | `80ceb5ce1149106e389f7325a48545bb20a14031` | `fe92170a0cac3e21aca3281b7e4a054052dadf5b` |
+| 최종 판정 문서 | `8be25bae1` | `bffaab24f16fd7341d15661c4905931f5ca0ec95` |
+
+SHA 변경은 base와 부모 commit 변경에 따른 것이다. 아래 파일 바이트는 리베이스 전후 동일하며 해시는 `sha256sum`으로 다시 확인했다. 바이너리는 재빌드하지 않았다.
+
+| 파일 | SHA-256 |
+| --- | --- |
+| `src/wmf/converter/svg/ternary_raster_operator.rs` | `9ca704cf7ec19c9995a622177df06181f2f383d30dfed6a63167fecc7aee7bcc` |
+| `src/wmf/converter/svg/mod.rs` | `f6f9131e91352dc78ee765e70771500d3e3d0c09e755793ff56f47c01c4f6167` |
+| `src/model/footnote.rs` | `519bed04d1c65906425fee36210d32f87ae20f5ebfaa6d2e5ed960df5c386235` |
+| `src/parser/hwpx/section.rs` | `68856970f05741d37ec9d66629857de40a3e5d4d51b58f8d9c8b1875fcd71951` |
+| `src/serializer/hwpx/section.rs` | `ab055a5c8745f89d4cf6ec25cbd1dc6662bbebd9e8e4420ef12d660e10f77b74` |
+| `tests/cases/issue_6865_wmf_monochrome_mask_rop.rs` | `7291c9432b2c3b5c6bce50e0f6cd5647ef410712fbba08e2b0163ca509e1f764` |
+| `tests/cases/issue_6872_hwpx_footnote_autonum_roundtrip.rs` | `a94ab64569af51f11152bb62682e40693bf95dfbba101cfa6c5b2b52a176b9aa` |
+| `target/pr-review/debug/rhwp (이전 검증 바이너리)` | `20577fff38aa1aa2a75a68c5bdc4a2c23192bdaf8e80586041912be372470740` |
+| `pdf/pr6952-note-a-roundtrip-2020.pdf` | `ad3a16cfb1f2a3bdf157d3e7f51573e8c42463513d5c76c1c67322713798cf63` |
+| `pdf/pr6952-note-b-roundtrip-2020.pdf` | `d0c974353dd978fbe3a47c25f6f94c22a8e72123288ec24046342f0aa84b83f0` |
+| `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6949-original-p002-review.png` | `a2c4f5da8b26ac6d2a7c32ef9850d41c932895bc8956ff664aafa928ea594bc8` |
+| `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6949-original-p003-review.png` | `b093599baf4e38524929110906fed4d666a88a31700d2eacca39ae454237114e` |
+| `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6949-original-p007-review.png` | `97434772f9a8062535ec597349268fa399d983a44e9cb57d398a4f9f7ac46099` |
+| `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6952-note-a-p010-review.png` | `00bc1bd95915c0f61ead6cb45f59d968be42fed4b98e07644ea99df8c1c5ebbc` |
+| `mydocs/pr/assets/pr_6949_6952_maintainer_20260909/pr6952-note-b-p013-review.png` | `f425a5cdcd6c912c61135772515b6120ef7477b5cfded8d6cf50bdf38009e5d5` |
