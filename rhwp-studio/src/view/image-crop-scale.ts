@@ -26,6 +26,22 @@ export interface ImageCropScale {
   scaleY: number;
 }
 
+/** HWPUNIT crop 네 변. */
+export interface ImageCrop {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/** 원본 픽셀 좌표로 환산한, 실제로 잘라 올 창. */
+export interface ImageCropSourceRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 function usableScale(scaleX: number, scaleY: number): boolean {
   return (
     Number.isFinite(scaleX)
@@ -70,4 +86,64 @@ export function imageCropScale(
   }
 
   return { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL };
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+/**
+ * 원본에서 실제로 잘라 올 창. **자를 것이 없으면 `null`** 이다.
+ *
+ * 두 백엔드가 이 판정을 함께 쓴다. 한쪽만 "자를 것이 없다" 로 보면 같은 그림을 한쪽은
+ * 통째로, 한쪽은 소수점 창으로 다시 표본화해 그려 파리티가 벌어진다(#6954).
+ *
+ * 판정은 원본 픽셀 격자에서 한다 — crop 이 원본 전 범위를 가리키면(축척 폴백 ②가 그런
+ * 경우다) 잘라 올 창이 곧 원본 전체이므로 `null` 이다.
+ */
+export function imageCropSourceRect(
+  imageWidth: number,
+  imageHeight: number,
+  crop?: ImageCrop,
+  cropReferenceSize?: readonly [number, number] | null,
+): ImageCropSourceRect | null {
+  if (!crop) return null;
+  if (
+    !Number.isFinite(imageWidth)
+    || !Number.isFinite(imageHeight)
+    || imageWidth <= 0
+    || imageHeight <= 0
+    || !Number.isFinite(crop.left)
+    || !Number.isFinite(crop.top)
+    || !Number.isFinite(crop.right)
+    || !Number.isFinite(crop.bottom)
+  ) {
+    return null;
+  }
+
+  const { scaleX, scaleY } = imageCropScale(cropReferenceSize, crop, imageWidth, imageHeight);
+  const x = crop.left / scaleX;
+  const y = crop.top / scaleY;
+  const width = (crop.right - crop.left) / scaleX;
+  const height = (crop.bottom - crop.top) / scaleY;
+  if (width <= 0 || height <= 0) return null;
+
+  const clampedX = clamp(x, 0, imageWidth);
+  const clampedY = clamp(y, 0, imageHeight);
+  const clampedWidth = clamp(width, 0, imageWidth - clampedX);
+  const clampedHeight = clamp(height, 0, imageHeight - clampedY);
+  if (clampedWidth <= 0 || clampedHeight <= 0) return null;
+
+  const isCropped = x > 0.5
+    || y > 0.5
+    || Math.abs(clampedWidth - imageWidth) > 1
+    || Math.abs(clampedHeight - imageHeight) > 1;
+  if (!isCropped) return null;
+
+  return {
+    x: clampedX,
+    y: clampedY,
+    width: clampedWidth,
+    height: clampedHeight,
+  };
 }

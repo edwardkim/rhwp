@@ -1,7 +1,7 @@
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 
-import { HWPUNIT_PER_PIXEL, imageCropScale } from '../image-crop-scale.ts';
+import { HWPUNIT_PER_PIXEL, imageCropSourceRect } from '../image-crop-scale.ts';
 
 export interface CanvasKitImageBounds {
   x: number;
@@ -27,7 +27,7 @@ export interface CanvasKitImageSourceRect {
 /**
  * HWPUNIT crop 좌표의 마지막 폴백(96dpi 가정: 7200 HWPUNIT = 96 px → 75 HU/px).
  *
- * 실제 축척 판정은 canvas2d(DOM) 백엔드와 공유하는 [`imageCropScale`] 이 한다.
+ * 실제 축척 판정은 canvas2d(DOM) 백엔드와 공유하는 `image-crop-scale.ts` 가 한다.
  */
 export { HWPUNIT_PER_PIXEL };
 
@@ -83,53 +83,19 @@ export function canvasKitImageCacheKey(
     : parts.join('|');
 }
 
+/**
+ * [#6954] 잘라 올 창 판정은 canvas2d(DOM) 백엔드와 **같은 함수**가 한다.
+ *
+ * 두 백엔드가 각자 폴백과 각자 "자를 것이 있나" 판정을 갖고 있어 갈렸다. 사슬과 근거는
+ * [`imageCropSourceRect`] 주석 참조.
+ */
 export function canvasKitImageSourceRect(
   imageWidth: number,
   imageHeight: number,
   crop?: CanvasKitImageCrop,
   cropReferenceSize?: [number, number],
 ): CanvasKitImageSourceRect | null {
-  if (!crop) return null;
-  if (
-    !Number.isFinite(imageWidth)
-    || !Number.isFinite(imageHeight)
-    || imageWidth <= 0
-    || imageHeight <= 0
-    || !Number.isFinite(crop.left)
-    || !Number.isFinite(crop.top)
-    || !Number.isFinite(crop.right)
-    || !Number.isFinite(crop.bottom)
-  ) {
-    return null;
-  }
-
-  // [#6954] 축척 판정은 canvas2d(DOM) 백엔드와 **같은 함수**가 한다 — 두 백엔드가
-  // 각자 폴백을 갖고 있어 갈렸다. 사슬과 근거는 `imageCropScale` 주석 참조.
-  const { scaleX, scaleY } = imageCropScale(cropReferenceSize, crop, imageWidth, imageHeight);
-  const x = crop.left / scaleX;
-  const y = crop.top / scaleY;
-  const width = (crop.right - crop.left) / scaleX;
-  const height = (crop.bottom - crop.top) / scaleY;
-  if (width <= 0 || height <= 0) return null;
-
-  const clampedX = clamp(x, 0, imageWidth);
-  const clampedY = clamp(y, 0, imageHeight);
-  const clampedWidth = clamp(width, 0, imageWidth - clampedX);
-  const clampedHeight = clamp(height, 0, imageHeight - clampedY);
-  if (clampedWidth <= 0 || clampedHeight <= 0) return null;
-
-  const isCropped = x > 0.5
-    || y > 0.5
-    || Math.abs(clampedWidth - imageWidth) > 1
-    || Math.abs(clampedHeight - imageHeight) > 1;
-  if (!isCropped) return null;
-
-  return {
-    x: clampedX,
-    y: clampedY,
-    width: clampedWidth,
-    height: clampedHeight,
-  };
+  return imageCropSourceRect(imageWidth, imageHeight, crop, cropReferenceSize);
 }
 
 export function canvasKitImagePlacement(
@@ -171,8 +137,4 @@ export function canvasKitImageFillModeTiles(fillMode: string | undefined): boole
 
 export function canvasKitImageFillModeStretches(fillMode: string | undefined): boolean {
   return fillMode === undefined || fillMode === 'fitToSize' || fillMode === 'total';
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
 }

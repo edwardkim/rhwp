@@ -22,7 +22,7 @@ import {
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
 } from '../src/view/canvaskit/image-replay.ts';
-import { imageCropScale } from '../src/view/image-crop-scale.ts';
+import { imageCropScale, imageCropSourceRect } from '../src/view/image-crop-scale.ts';
 import {
   CANVASKIT_REPLAY_PLANES,
   layerPaintOpReplayPlane,
@@ -503,7 +503,7 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   assert.match(source, /element\.src = image\.src/);
   // [#6954] crop 축척은 CanvasKit 백엔드·rust 와 공유하는 한 함수가 정한다 — 여기에
   // 96dpi 상수를 다시 심으면 백엔드끼리 갈린다(canvas 시각 파리티 게이트가 깨졌다).
-  assert.match(codeOnly(source), /imageCropScale\(\s*image\.originalSizeHu,/);
+  assert.match(codeOnly(source), /imageCropSourceRect\(/);
   assert.doesNotMatch(codeOnly(source), /HWP_UNITS_PER_CSS_PIXEL/);
   // [#6099] 90/270° 프레임은 회전 전 치수로 만들어지므로 crop 사영도 프레임
   // 치수를 받는다.
@@ -880,6 +880,11 @@ test('image crop scale follows the rust fallback chain for both studio backends'
   const banner = imageCropScale(null, { right: 47940, bottom: 4366 }, 639, 70);
   assert.ok(Math.abs(4366 / banner.scaleY - 70) < 1e-9, `sourceHeight=${4366 / banner.scaleY}`);
   assert.ok(Math.abs(4366 / HWPUNIT_PER_PIXEL - 58.21) < 0.01);
+
+  // 자를 것이 없으면 두 백엔드가 **함께** null 을 받는다. 한쪽만 소수점 창으로 다시
+  // 표본화하면 같은 그림이 다르게 그려져 파리티가 벌어진다(게이트 실측 2.17% > 2%).
+  assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 4366 }), null);
+  assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 5280 }), null);
 
   // CanvasKit 경로가 그 축척을 그대로 쓴다 — 같은 입력에서 잘라 오는 창이 일치한다.
   const scale = imageCropScale(null, { right: 56348, bottom: 24865 }, 844, 342);
