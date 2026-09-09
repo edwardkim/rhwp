@@ -86,6 +86,18 @@ enum Exempt {
 ///
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
+    (
+        "commands/object_ops/table.rs",
+        "delete_cell_picture_control_by_path_native",
+        Exempt::DelegatesTo("delete_cell_control_by_path_native"),
+        "그림 종류를 지정하는 래퍼. 공통 helper가 삭제와 구역 raw_stream 무효화를 수행한다.",
+    ),
+    (
+        "commands/object_ops/table.rs",
+        "delete_cell_table_control_by_path_native",
+        Exempt::DelegatesTo("delete_cell_control_by_path_native"),
+        "표 종류를 지정하는 래퍼. 공통 helper가 삭제와 구역 raw_stream 무효화를 수행한다.",
+    ),
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
         "mod.rs",

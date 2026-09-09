@@ -1455,6 +1455,7 @@ impl DocumentCore {
         kind_label: &str,
     ) -> Result<String, HwpError> {
         let path = Self::parse_cell_path_json(cell_path_json)?;
+        let deleted_table;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -1520,7 +1521,7 @@ impl DocumentCore {
                 }
             }
 
-            para.controls.remove(inner_control_idx);
+            deleted_table = matches!(para.controls.remove(inner_control_idx), Control::Table(_));
             if inner_control_idx < para.ctrl_data_records.len() {
                 para.ctrl_data_records.remove(inner_control_idx);
             }
@@ -1536,12 +1537,20 @@ impl DocumentCore {
         self.paginate_if_needed();
         self.invalidate_page_tree_cache();
 
-        let outer_ctrl = path.first().unwrap().0;
-        self.event_log.push(DocumentEvent::PictureDeleted {
-            section: section_idx,
-            para: parent_para_idx,
-            ctrl: outer_ctrl,
-        });
+        if deleted_table {
+            self.event_log.push(DocumentEvent::CellTableDeleted {
+                section: section_idx,
+                para: parent_para_idx,
+                cell_path: path,
+                ctrl: inner_control_idx,
+            });
+        } else {
+            self.event_log.push(DocumentEvent::PictureDeleted {
+                section: section_idx,
+                para: parent_para_idx,
+                ctrl: path.first().unwrap().0,
+            });
+        }
         Ok("{\"ok\":true}".to_string())
     }
     pub fn set_cell_shape_properties_by_path_native(
