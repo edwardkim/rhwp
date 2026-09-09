@@ -3369,9 +3369,9 @@ impl LayoutEngine {
                 section_index,
                 para_index,
                 None,
-                false,
                 // 현재 frame에서 재조판한 줄에 이전 저장 vpos를 다시 적용하지 않는다.
                 recomposed.is_some(),
+                false,
                 0.0,
                 multi_col_width_hu,
                 Some(para),
@@ -4292,6 +4292,9 @@ impl LayoutEngine {
         let para_topbottom_line_vpos_base: Option<(i32, f64)> = {
             if cell_ctx.is_none() && has_para_topbottom_float {
                 para.and_then(|p| {
+                    if p.stored_text_partition_dirty {
+                        return None;
+                    }
                     let range = p.line_segs.get(start_line..end)?;
                     if range.iter().any(|seg| seg.vertical_pos > 0)
                         && range
