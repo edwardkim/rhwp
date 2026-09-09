@@ -54,6 +54,10 @@ pub struct LayoutCompatibilityProfile {
     hwp5_origin_hwpx: bool,
     native_hwp5_layout: bool,
     hangul2024_layout: bool,
+    /// 이 세션에서 편집 명령이 문서를 변조했다(native HWP5 섹션의 raw_stream 소실).
+    /// 저장 시점 형상 전용 보정(선언 높이 fit-down 등)은 편집 문서에서 꺼야 한다 —
+    /// 한글 편집기도 편집 중에는 측정 기반으로 재조판한다.
+    session_edited: bool,
 }
 
 impl LayoutCompatibilityProfile {
@@ -74,7 +78,20 @@ impl LayoutCompatibilityProfile {
             hwp5_origin_hwpx,
             native_hwp5_layout,
             hangul2024_layout: false,
+            session_edited: false,
         }
+    }
+
+    /// 이 세션의 편집 변조를 표시한다. `Document::layout_profile` 만 이 값을
+    /// 유도한다(native HWP5 raw_stream 소실 신호).
+    pub(crate) fn with_session_edited(mut self, enabled: bool) -> Self {
+        self.session_edited = enabled;
+        self
+    }
+
+    /// 이 세션에서 편집 명령이 문서를 변조했는가.
+    pub fn session_edited(&self) -> bool {
+        self.session_edited
     }
 
     /// HWP3 계보 레이아웃 보정(ParaShape 단위 정규화 등) 적용 여부 —

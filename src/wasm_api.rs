@@ -7033,6 +7033,24 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 그림 리사이즈 전에 원본 변환만 보관한다.
+    #[wasm_bindgen(js_name = capturePictureTransform)]
+    pub fn capture_picture_transform(&mut self, target_json: &str) -> Result<u32, JsValue> {
+        self.capture_picture_transform_native(target_json)
+            .map_err(|e| e.into())
+    }
+
+    /// 저장 상태와 현재 상태를 교환한다. 같은 ID로 Undo/Redo를 수행한다.
+    #[wasm_bindgen(js_name = swapPictureTransform)]
+    pub fn swap_picture_transform(&mut self, id: u32) -> Result<(), JsValue> {
+        self.swap_picture_transform_native(id).map_err(|e| e.into())
+    }
+
+    #[wasm_bindgen(js_name = discardPictureTransform)]
+    pub fn discard_picture_transform(&mut self, id: u32) {
+        self.discard_picture_transform_native(id);
+    }
+
     /// 캡처한 구역 raw 를 되돌린다 — old 속성 재적용(재무효화) **뒤** 에 불린다 (#5769 Stage 4).
     #[wasm_bindgen(js_name = restoreSectionRaw)]
     pub fn restore_section_raw(&mut self, id: u32) -> Result<String, JsValue> {
@@ -7834,6 +7852,62 @@ impl HwpDocument {
     ) -> Result<String, JsValue> {
         self.apply_char_format_native(sec_idx, para_idx, start_offset, end_offset, props_json)
             .map_err(|e| e.into())
+    }
+
+    /// 문자 offset 범위의 모양 구간 목록을 조회한다.
+    #[wasm_bindgen(js_name = getCharShapeRuns)]
+    pub fn get_char_shape_runs(
+        &self,
+        sec: usize,
+        para: usize,
+        start: usize,
+        end: usize,
+    ) -> Result<String, JsValue> {
+        self.get_char_shape_runs_native(sec, para, start, end)
+            .map_err(Into::into)
+    }
+
+    /// 구간 목록 전체를 검사한 뒤 본문 모양을 복원한다.
+    #[wasm_bindgen(js_name = setCharShapeRuns)]
+    pub fn set_char_shape_runs(
+        &mut self,
+        sec: usize,
+        para: usize,
+        start: usize,
+        end: usize,
+        runs_json: &str,
+    ) -> Result<String, JsValue> {
+        self.set_char_shape_runs_native(sec, para, start, end, runs_json)
+            .map_err(Into::into)
+    }
+
+    #[wasm_bindgen(js_name = getCharShapeRunsInCellByPath)]
+    pub fn get_char_shape_runs_in_cell_by_path(
+        &mut self,
+        sec: usize,
+        para: usize,
+        path_json: &str,
+        start: usize,
+        end: usize,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.get_char_shape_runs_in_cell_by_path_native(sec, para, &path, start, end)
+            .map_err(Into::into)
+    }
+
+    #[wasm_bindgen(js_name = setCharShapeRunsInCellByPath)]
+    pub fn set_char_shape_runs_in_cell_by_path(
+        &mut self,
+        sec: usize,
+        para: usize,
+        path_json: &str,
+        start: usize,
+        end: usize,
+        runs_json: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.set_char_shape_runs_in_cell_by_path_native(sec, para, &path, start, end, runs_json)
+            .map_err(Into::into)
     }
 
     /// 글자 서식 ID를 직접 복원한다 (본문 문단).

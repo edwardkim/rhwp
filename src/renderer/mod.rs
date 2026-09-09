@@ -33,6 +33,7 @@ pub mod height_measurer;
 pub mod html;
 pub(crate) mod image_header;
 pub mod image_resolver;
+pub mod inline_flow;
 pub(crate) mod kerning;
 pub mod layer_renderer;
 pub mod layout;
@@ -510,9 +511,145 @@ pub struct GradientFillInfo {
     /// 세로 중심 (%)
     pub center_y: i16,
     /// 색상 목록 (ColorRef)
+    ///
+    /// [`expand_gradient_steps`] 가 편 **띠 단위 stop** 이다 — 모델의 색 목록과 1:1 이
+    /// 아니다. `positions` 와 길이가 같고, 같은 offset 이 두 번 나오면 하드 경계다.
     pub colors: Vec<ColorRef>,
     /// 색상 위치 (0.0~1.0 정규화)
     pub positions: Vec<f64>,
+}
+
+/// 두 색 사이를 채널별로 선형 보간한다.
+fn lerp_color(from: ColorRef, to: ColorRef, t: f64) -> ColorRef {
+    let t = t.clamp(0.0, 1.0);
+    let mut out = 0u32;
+    for shift in [0, 8, 16] {
+        let a = ((from >> shift) & 0xff) as f64;
+        let b = ((to >> shift) & 0xff) as f64;
+        let v = (a + (b - a) * t).round().clamp(0.0, 255.0) as u32;
+        out |= v << shift;
+    }
+    out
+}
+
+/// `(colors, positions)` 가 이루는 색 램프를 `t`(0~1) 에서 표집한다.
+fn sample_ramp(colors: &[ColorRef], positions: &[f64], t: f64) -> ColorRef {
+    match colors.len() {
+        0 => 0,
+        1 => colors[0],
+        n => {
+            let at = |i: usize| -> f64 {
+                positions
+                    .get(i)
+                    .copied()
+                    .unwrap_or(i as f64 / (n - 1) as f64)
+            };
+            let t = t.clamp(0.0, 1.0);
+            for i in 1..n {
+                let (p0, p1) = (at(i - 1), at(i));
+                if t <= p1 || i == n - 1 {
+                    let span = p1 - p0;
+                    let local = if span.abs() < f64::EPSILON {
+                        0.0
+                    } else {
+                        (t - p0) / span
+                    };
+                    return lerp_color(colors[i - 1], colors[i], local);
+                }
+            }
+            colors[n - 1]
+        }
+    }
+}
+
+/// HWP 그러데이션의 `step`(띠 개수)·`step_center`(전이 위치 %)를 렌더 stop 목록으로 편다.
+///
+/// [#6822] 한/글은 그러데이션 축을 **`step` 개의 띠**로 잘라 각 띠를 단색으로 칠하고,
+/// 띠 경계들의 가운데를 `step_center`% 지점에 놓는다. 렌더 IR 은 이 두 값을 담지 않아
+/// 전이가 언제나 50% 에 고정됐다.
+///
+/// 실측(`samples/issue6551/113424_evaluation_guideline.hwpx`, 한/글 2024 정본):
+///
+/// ```text
+///   step=2  stepCenter=8   장 제목 막대  초록→흰색 하드 경계가 축의 8% 지점
+///   step=50 stepCenter=50  구분 막대     균등한 50개 띠 (사실상 매끄러운 램프)
+/// ```
+///
+/// `step <= 1` 이거나 색이 둘 미만이면 띠를 만들지 않고 원본을 그대로 돌려준다 —
+/// 값이 없는 문서의 현행 동작을 바꾸지 않기 위해서다.
+pub fn expand_gradient_steps(
+    colors: &[ColorRef],
+    positions: &[f64],
+    step: i16,
+    step_center: u8,
+) -> (Vec<ColorRef>, Vec<f64>) {
+    let bands = step.max(0) as usize;
+    if bands <= 1 || colors.len() < 2 {
+        return (colors.to_vec(), positions.to_vec());
+    }
+
+    // 띠 경계는 균등 위치 `m` 을 두 구간 선형으로 옮겨 가운데(m=0.5)가 `c` 에 오게 한다.
+    // `c == 0.5` 면 항등이므로 기본값 문서는 지금 그리는 것과 같은 균등 띠가 된다.
+    let c = (step_center as f64 / 100.0).clamp(0.0, 1.0);
+    let warp = |m: f64| -> f64 {
+        if m <= 0.5 {
+            2.0 * m * c
+        } else {
+            c + (m - 0.5) * 2.0 * (1.0 - c)
+        }
+    };
+
+    let mut out_colors = Vec::with_capacity(bands * 2);
+    let mut out_positions = Vec::with_capacity(bands * 2);
+    for i in 0..bands {
+        let color = sample_ramp(colors, positions, i as f64 / (bands - 1) as f64);
+        let start = warp(i as f64 / bands as f64);
+        let end = warp((i + 1) as f64 / bands as f64);
+        out_colors.push(color);
+        out_positions.push(start.clamp(0.0, 1.0));
+        out_colors.push(color);
+        out_positions.push(end.clamp(0.0, 1.0));
+    }
+    (out_colors, out_positions)
+}
+
+/// [#6845] HWP 그러데이션 각도를 **사용자 좌표계**의 축 양 끝점으로 옮긴다.
+///
+/// 종전 두 렌더러는 각도를 상자 정규화 공간에서 다뤄 **가로세로비만큼 축이 눕는** 결함이
+/// 있었다 — SVG 는 `objectBoundingBox` 백분율을 그대로 냈고, canvas 는 방향을
+/// `(sin·w/2, cos·h/2)` 로 축별 배율했다. 둘 다 정사각형 상자에서만 옳다.
+///
+/// ## 축 방향은 `(sin a, −cos a)` 다
+///
+/// 한/글 2024 정본(`pdf/113424_evaluation_guideline-2024.pdf`)에서 두 각도로 확정했다.
+///
+/// ```text
+///   angle=0    5쪽 목차 막대 `#C8EDFF → #FFFFFF`
+///              정본은 아래가 `#C8EDFF`, 위가 흰색 → 축은 **위쪽**       (0, −1)
+///   angle=90   29쪽 구분 막대 `#000080 → #99CCFF`  → 축은 오른쪽        (1, 0)
+///   angle=110  7쪽 장 제목 막대, 등색선 기울기 dx/dy = −0.365
+///              → 축 (0.939, 0.343) = (sin 110°, −cos 110°)
+/// ```
+///
+/// SVG·canvas 는 y 가 아래로 자라므로 `cos` 의 부호를 뒤집어야 한다. 종전 코드는 `+cos`
+/// 라 `angle=0` 에서 위아래가 반대였다.
+///
+/// ## 끝점은 상자를 덮도록 잡는다
+///
+/// 상자를 축 방향으로 정사영한 길이의 절반이 `(|dx|·w + |dy|·h) / 2` 이므로, 중심에서
+/// 그만큼 양쪽으로 벌리면 어떤 각도에서도 상자 전체가 램프 안에 들어온다.
+pub fn linear_gradient_axis(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64, f64, f64, f64) {
+    let a = ((angle % 360 + 360) % 360) as f64;
+    let rad = a.to_radians();
+    let (dx, dy) = (rad.sin(), -rad.cos());
+    let (cx, cy) = (x + w / 2.0, y + h / 2.0);
+    let half = (dx.abs() * w + dy.abs() * h) / 2.0;
+    (
+        cx - dx * half,
+        cy - dy * half,
+        cx + dx * half,
+        cy + dy * half,
+    )
 }
 
 /// 선 렌더링 스타일
@@ -2172,6 +2309,68 @@ fn format_hanja_number(n: u16) -> String {
         large_unit += 1;
     }
     result
+}
+
+/// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.
+///
+/// `#409` 는 비-TAC · `vert=Para` · TopAndBottom 개체가 뒤따르는 콘텐츠를 개체 높이만큼
+/// 밀어낸다고 보고 조판·배치 양쪽에서 그 높이를 흐름에 계상한다. 그 전제는 밴드가
+/// **앵커에서 시작할 때**(`vertOffset == 0`) 참이다. 양수 오프셋이 밴드를 아래로 내려
+/// 놓으면 그 사이에 들어갈 콘텐츠는 밀릴 이유가 없다.
+///
+/// 판별은 문서가 준다 — **다음 문단의 저장 `vpos` 가 이 문단 마지막 줄 바로 뒤**면
+/// 한글이 개체 자리를 만들어 주지 않았다는 증언이다.
+///
+/// ```text
+///   156730935 1쪽  도형 h=62.7px  vOff=150.3px (TopAndBottom, vert=Para)
+///   p17 마지막 vpos 61789 + lh 1400 + ls 420 = 63609
+///   p18 저장 vpos                            63609      ← 틈 0
+///   종전: 흐름·배치가 각각 +62.7px  → 담당자 표가 본문을 49.3px 넘어 사라진다
+///   정본: 표 945.2..1013.6(본문 안) · 도형 1018.7(표 아래)
+/// ```
+///
+/// 조판(`typeset`)과 배치(`layout`)가 **같은 답**을 써야 `#409` 가 막으려던 desync 가
+/// 생기지 않으므로 한 곳에 둔다.
+pub(crate) fn topbottom_float_displaced_below_following_flow(
+    para: &crate::model::paragraph::Paragraph,
+    next_para: Option<&crate::model::paragraph::Paragraph>,
+    common: &crate::model::shape::CommonObjAttr,
+    dpi: f64,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    if common.treat_as_char
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+    {
+        return false;
+    }
+    let v_off = hwpunit_to_px(
+        crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
+        dpi,
+    );
+    if v_off <= 0.5 {
+        return false;
+    }
+    // 밴드 상단 = 앵커 문단의 첫 줄 + 세로 오프셋. 저장 사다리와 같은 좌표계다.
+    let Some(anchor_vpos) = para.line_segs.first().map(|seg| seg.vertical_pos) else {
+        return false;
+    };
+    let band_top = anchor_vpos.saturating_add(crate::renderer::float_placement::signed_hwpunit(
+        common.vertical_offset,
+    ));
+
+    next_para
+        .and_then(|next| next.line_segs.last())
+        .is_some_and(|next_last| {
+            // 다음 문단이 사다리에서 차지하는 바닥. 밴드가 **그 아래에서** 시작하면
+            // 사이에 들어갈 콘텐츠가 밀릴 이유가 없다. "틈이 없다"보다 강한 조건이다 —
+            // 오프셋이 작아 밴드가 다음 콘텐츠와 겹치면 종전대로 밀어낸다.
+            let next_bottom = next_last
+                .vertical_pos
+                .saturating_add(next_last.line_height.max(0));
+            next_last.vertical_pos > anchor_vpos && band_top >= next_bottom
+        })
 }
 
 #[cfg(test)]

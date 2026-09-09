@@ -29,6 +29,9 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
         self.assertIn("permissions: {}", self.workflow)
         self.assertEqual(self.workflow.count("      statuses: write"), 1)
         self.assertEqual(self.workflow.count("      actions: read"), 1)
+        self.assertEqual(self.workflow.count("      checks: read"), 1)
+        reporter = self.workflow.split("      - name: Explain CI failure evidence", 1)[1]
+        self.assertIn("MODE: ${{ steps.resolve.outputs.mode }}", reporter)
         self.assertNotIn("      actions: write", self.workflow)
         self.assertNotIn("      checks: write", self.workflow)
         self.assertNotIn("      contents: write", self.workflow)
@@ -106,7 +109,23 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
         self.assertIn("input.currentHeadSha = process.env.CURRENT_HEAD_SHA", self.workflow)
         self.assertIn("github.rest.pulls.get({", self.workflow)
         self.assertIn("livePull.head.sha !== process.env.HEAD_SHA", self.workflow)
-        self.assertIn("cancel-in-progress: true", self.workflow)
+
+    def test_completion_audit_cannot_cancel_running_pr_head_controller(self) -> None:
+        concurrency = self.workflow.split("\nconcurrency:\n", 1)[1].split("\njobs:\n", 1)[0]
+        cancel_policy = concurrency.split("  cancel-in-progress: ", 1)[1].strip()
+        self.assertEqual(
+            cancel_policy,
+            "${{ github.event_name == 'pull_request_target' }}",
+        )
+
+    def test_publish_and_audit_share_exact_source_head_serialization(self) -> None:
+        concurrency = self.workflow.split("\nconcurrency:\n", 1)[1].split("\njobs:\n", 1)[0]
+        group = concurrency.split("  group: >-\n", 1)[1].split("  cancel-in-progress:", 1)[0]
+        self.assertEqual(
+            " ".join(group.split()),
+            "ci-impact-policy-${{ github.event.pull_request.head.sha "
+            "|| github.event.workflow_run.head_sha || github.run_id }}",
+        )
 
     def test_cancelled_controller_cannot_summarize_or_publish(self) -> None:
         guarded = "if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}"
@@ -122,6 +141,8 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
             if step_name in {
                 "Classify with trusted base implementation",
                 "Evaluate trusted policy and aggregate audit",
+                "Prepare trusted policy input",
+                "Publish exact-head policy status",
             }:
                 marker = f"      - name: {step_name}\n        id: "
                 start = self.workflow.index(marker)
@@ -129,6 +150,29 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
                 self.assertIn(guarded, block)
             else:
                 self.assertIn(marker, self.workflow)
+
+    def test_failure_reporting_is_best_effort_after_status_publication(self) -> None:
+        marker = "      - name: Explain CI failure evidence"
+        report = self.workflow.split(marker, 1)[1]
+        self.assertGreater(self.workflow.index(marker), self.workflow.index("core.setOutput('published', 'true')"))
+        self.assertIn("if: ${{ always() && !cancelled() }}", report)
+        self.assertIn("continue-on-error: true", report)
+        self.assertIn("timeout-minutes: 1", report)
+        self.assertIn("retries: 0", report)
+        self.assertIn("trusted-base/scripts/ci-impact-report.cjs", report)
+        self.assertIn("trusted reporter unavailable", report)
+        self.assertNotIn("core.setFailed", report)
+        self.assertNotIn("createCommitStatus", report)
+        self.assertNotIn("core.setOutput", report)
+        self.assertIn("            scripts/ci-impact-report.cjs\n", self.workflow)
+
+    def test_failure_report_retains_run_job_attempt_and_publish_outcomes(self) -> None:
+        for field in ["id: run.id", "attempt: run.run_attempt", "id: job.id",
+                      "runId: job.run_id", "attempt: job.run_attempt", "number: step.number"]:
+            self.assertIn(field, self.workflow)
+        for stage in ["RESOLVE", "CHECKOUT", "COLLECT", "CLASSIFY", "INPUT", "POLICY", "PUBLISH"]:
+            self.assertIn(f"OUTCOME_{stage}:", self.workflow)
+        self.assertIn("STATUS_PUBLISHED: ${{ steps.publish-status.outputs.published }}", self.workflow)
 
     def test_workers_consume_only_exact_trusted_review_reuse_status(self) -> None:
         for workflow in (self.ci_workflow, self.codeql_workflow, self.render_workflow):

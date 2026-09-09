@@ -1,3 +1,5 @@
+// [#6840] 발췌 산출물에서 참조 없는 BinData 를 버린다 — 쪽을 잘라도 파일이 줄지 않던 문제.
+pub(crate) mod bin_data_prune;
 mod clipboard;
 // [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore
 // 필드로 쓰이므로 pub(crate).
@@ -7,9 +9,11 @@ mod document;
 mod footnote_ops;
 mod foreign_paste;
 mod formatting;
+mod formatting_runs;
 mod header_footer_ops;
 mod html_import;
 mod object_ops;
+pub(crate) mod picture_transform_journal;
 // [#3565] 대형 문서 결함을 이분법으로 좁히기 위한 쪽 범위 추출.
 pub mod page_extract;
 mod table_ops;

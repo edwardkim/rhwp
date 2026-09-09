@@ -1,0 +1,29 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6913,
+  "title": "테두리 굵기 표가 한/글의 1/600 inch 격자를 안 따라 굵기가 어긋난다",
+  "entries": [
+    {
+      "path": "samples/issue6913/156591199-veterans-joint-burial-press-release.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6913",
+      "originalFilename": "156591199_230920 보도자료(호주 참전용사 배우자， 남편과 함께 부산 유엔기념공원에 합장된다)최종.hwpx",
+      "bytes": 116043,
+      "sha256": "cebb9069b4ab6755ad0ec660c4cc5015aa8f98f23d004f3f6448199fd1fe0ebe",
+      "derivation": "원본 그대로. 1쪽 머리 표 한 곳에 0.2mm 와 0.12mm 테두리가 같이 있어 굵기 축 두 값을 한 쪽에서 견줄 수 있다.",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/156591199-veterans-joint-burial-press-release-2020.pdf",
+      "referencePdfSha256": "23a09fc3c5604cc06edaa40358c569b94fd79d8b74e71d99ac33f0abf3631c8d",
+      "referencePdfBytes": 250886,
+      "referencePdfPageCount": 3,
+      "referencePdfStatus": "2026-09-09 hwp2024Convert MCP start/status/download 로 산출. engine 2020, 실제 한컴 12.0.0.4605, 3쪽. 다운로드 바이트와 SHA-256 을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다.",
+      "contract": "1쪽 머리 표(1행 3열)의 테두리 굵기가 정본과 같다 — '국가보훈부' 칸(borderFill 14, 0.2mm)은 0.80px(5 units), 나머지(0.12mm)는 0.48px(3 units). 정본 PDF 의 stroke width 는 각각 0.60pt·0.36pt 다. 굵기가 칸마다 다른 것 자체는 원본 선언이라 결함이 아니고, 잠그는 것은 한/글의 1/600 inch 격자다. 이 문서의 borderFill 14 굵기만 바꾼 변형본 16단계를 engine 2020 으로 각각 변환해 격자 규칙을 16/16 확인했다(안 건드린 0.12mm 칸이 통제군).",
+      "originalIdentityStatus": "2026-09-09 korea_downloads 원문과 SHA-256 이 동일함을 확인했다(116,043 B). 원래 형식과 바이트를 그대로 보존한다."
+    }
+  ]
+}

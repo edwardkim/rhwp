@@ -162,6 +162,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
     ),
     (
+        "commands/formatting_runs.rs",
+        "get_char_shape_runs_in_cell_by_path_native",
+        Exempt::SessionState,
+        "[#6788] 구간 검증과 모양 목록 직렬화만 하는 순수 조회. `&mut` 는 가변 셀 접근자 재사용 때문이며 문서 IR 비변경.",
+    ),
+    (
         "commands/header_footer_ops.rs",
         "copy_selection_in_header_footer_native",
         Exempt::SessionState,
@@ -238,6 +244,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "discard_section_raw_native",
         Exempt::SessionState,
         "[#5769] 구역 raw 저널에서 항목 제거. 문서 IR 비변경.",
+    ),
+    (
+        "commands/picture_transform_journal.rs",
+        "capture_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 common/shape 변환 상태를 복제해 Undo 저널과 ID만 갱신. 원본 문서 IR·구역 raw는 읽기만 한다.",
+    ),
+    (
+        "commands/picture_transform_journal.rs",
+        "discard_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 변환 Undo 저널에서 handle만 제거. 문서 IR·구역 raw는 변경하지 않는다.",
     ),
     (
         "commands/formatting.rs",

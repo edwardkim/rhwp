@@ -208,6 +208,20 @@ pub(crate) fn get_caption_from_shape(
     }
 }
 
+/// [`get_caption_from_shape`] 의 가변 짝 — 변형별 캡션 자리 판정은 그 문서를 따른다.
+pub(crate) fn get_caption_from_shape_mut(
+    shape: &mut crate::model::shape::ShapeObject,
+) -> Option<&mut crate::model::shape::Caption> {
+    use crate::model::shape::ShapeObject;
+    match shape {
+        ShapeObject::Group(g) => g.caption.as_mut(),
+        ShapeObject::Picture(p) => p.caption.as_mut(),
+        ShapeObject::Chart(c) => c.caption.as_mut(),
+        ShapeObject::Ole(o) => o.caption.as_mut(),
+        _ => shape.drawing_mut().and_then(|d| d.caption.as_mut()),
+    }
+}
+
 /// 문단 목록에서 DocumentPath를 따라 중첩 표에 대한 가변 참조를 얻는다.
 ///
 /// 경로 형식:

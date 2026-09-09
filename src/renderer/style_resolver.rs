@@ -873,12 +873,15 @@ fn resolve_single_border_style(bf: &BorderFill) -> ResolvedBorderStyle {
             } else {
                 g.positions.iter().map(|&p| p as f64 / 100.0).collect()
             };
+            // [#6822] `step`(띠 개수)·`step_center`(전이 위치)를 stop 으로 편다.
+            let (colors, positions) =
+                super::expand_gradient_steps(&g.colors, &positions, g.blur, g.step_center);
             Some(Box::new(GradientFillInfo {
                 gradient_type: g.gradient_type,
                 angle: g.angle,
                 center_x: g.center_x,
                 center_y: g.center_y,
-                colors: g.colors.clone(),
+                colors,
                 positions,
             }))
         }),

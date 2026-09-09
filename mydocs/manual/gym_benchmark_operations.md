@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/gym_benchmark_operations.md
-last_verified: 2026-09-03
+last_verified: 2026-09-09
 ---
 
 # Gym 벤치마크 수동 운영 매뉴얼
@@ -14,6 +14,15 @@ last_verified: 2026-09-03
 [`gym/AGENTS.md`](../../gym/AGENTS.md)를 적용한다.
 
 ## 1. 운영 경계
+
+의존 방향은 **Gym → rhwp CLI/API**다. rhwp 제품은 Gym 디렉터리·채점기 없이
+빌드·실행·배포할 수 있어야 한다. Gym은 동일 저장소에서 보존하는 선택적 평가 도구이며,
+평가할 때만 준비하여 아래 절차의 `--bin`으로 사용할 rhwp 바이너리를 지정한다.
+
+MCP `rhwp://docs/gym`은 제품 소유의 [선택적 Gym 안내](gym_optional_tool.md)를
+오프라인으로 제공한다. URI는 유지하지만 Gym README 전체가 아닌 짧은 안내를 반환한다.
+제품 코드에 Gym 파일 include·런타임 파일 조회·자동 네트워크 다운로드를 추가하지 않는다.
+같은 저장소의 조직·프레임 감사가 Gym 자산을 검사하는 것은 제품 빌드 의존과 구분한다.
 
 Gym은 AI 에이전트가 rhwp CLI/API를 조합해 과제를 수행하는 능력을 학습·평가하는
 벤치마크다. 다음과 같은 용도로는 사용하지 않는 것을 권고한다.

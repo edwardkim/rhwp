@@ -82,12 +82,13 @@ fn textbox_vpos_px(vertical_pos: i32, origin_hu: Option<i32>, dpi: f64) -> f64 {
     hwpunit_to_px(normalize_textbox_vpos_hu(vertical_pos, origin_hu), dpi)
 }
 
-/// 평탄화된 HWPX 그룹(matrix group) 자식의 "글상자 보조선"(검정 얇은 SOLID 테두리)은
-/// 한컴 실물에서 인쇄되지 않는다(편람 장 표지 "행정업무 운영 개요" 제목/목록 글상자).
-/// 오탐 방지를 위해 매우 좁게 한정: 그룹 자식(group_level>0) + 회전/전단 없음 + 검정
-/// (color==0) 얇은(0<width<=40 HWPUNIT) SOLID(line_type==1) 테두리 + 캡션 없음 +
-/// (a) 채우기 없는 텍스트 전용 글상자 또는 (b) 흰색 단색 마스크 박스.
-fn should_suppress_group_child_construction_stroke(drawing: &DrawingObjAttr) -> bool {
+/// #1681 편람 글상자에 도입된 경험적 보정을 텍스트가 있는 글상자에만 유지한다.
+/// 글상자 포함 여부와 비인쇄 여부는 별개이며 이 조건은 포맷의 일반 비인쇄 규칙이 아니다.
+/// #6852: 일반 도형의 흰색 채우기를 마스크로 추정하면 명시된 실선까지 소실된다.
+fn should_suppress_group_textbox_construction_stroke(drawing: &DrawingObjAttr) -> bool {
+    let Some(text_box) = drawing.text_box.as_ref() else {
+        return false;
+    };
     if drawing.caption.is_some() {
         return false;
     }
@@ -101,24 +102,10 @@ fn should_suppress_group_child_construction_stroke(drawing: &DrawingObjAttr) -> 
     if line_type != 1 || line.color != 0 || line.width <= 0 || line.width > 40 {
         return false;
     }
-    let text_only_box = drawing
-        .text_box
-        .as_ref()
-        .is_some_and(textbox_has_visible_text)
+    textbox_has_visible_text(text_box)
         && drawing.fill.fill_type == FillType::None
         && drawing.fill.gradient.is_none()
-        && drawing.fill.image.is_none();
-    if text_only_box {
-        return true;
-    }
-    drawing.text_box.is_none()
-        && drawing.fill.fill_type == FillType::Solid
-        && drawing.fill.gradient.is_none()
         && drawing.fill.image.is_none()
-        && drawing
-            .fill
-            .solid
-            .is_some_and(|solid| solid.background_color == 0x00ff_ffff && solid.pattern_type <= 0)
 }
 
 fn push_placeholder_render_node(
@@ -340,7 +327,14 @@ fn textbox_tac_space_advance_override(
     alignment: Alignment,
     dpi: f64,
 ) -> Option<f64> {
-    if !matches!(alignment, Alignment::Left) || total_inline_width <= 0.0 {
+    if !matches!(alignment, Alignment::Left)
+        || total_inline_width <= 0.0
+        // A table's leading spaces are a text prefix, not spacing distributed
+        // between the picture glyphs of a stored logo line.
+        || para.controls.iter().any(|control| {
+            matches!(control, Control::Table(table) if table.common.treat_as_char)
+        })
+    {
         return None;
     }
 
@@ -1331,8 +1325,8 @@ impl LayoutEngine {
         match shape {
             ShapeObject::Rectangle(rect) => {
                 let (mut style, gradient) = drawing_to_shape_style(&rect.drawing);
-                // 평탄화된 그룹 자식 글상자의 비인쇄 보조선(검정 얇은 SOLID)을 억제한다.
-                if should_suppress_group_child_construction_stroke(&rect.drawing) {
+                // 기존 글상자 보정만 적용한다. 일반 사각형의 선은 원본 스타일을 따른다.
+                if should_suppress_group_textbox_construction_stroke(&rect.drawing) {
                     style.stroke_color = None;
                     style.stroke_width = 0.0;
                 }
@@ -1387,6 +1381,7 @@ impl LayoutEngine {
                     matrix_positioned,
                     textbox_vpos_origin_hu(shape.common(), matrix_positioned),
                 );
+                node.set_rectangle_control_kind(rect.control_kind());
                 parent.children.push(node);
             }
             ShapeObject::Line(line) => {
@@ -3246,6 +3241,11 @@ impl LayoutEngine {
                         max_inline_height =
                             max_inline_height.max(hwpunit_to_px(eq.common.height as i32, self.dpi));
                     }
+                    Control::Table(table) if table.common.treat_as_char => {
+                        total_inline_width += hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
+                            + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                            + hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
+                    }
                     _ => {}
                 }
             }
@@ -3594,6 +3594,17 @@ impl LayoutEngine {
                             .get(para.para_shape_id as usize)
                             .map(|ps| ps.alignment)
                             .unwrap_or(Alignment::Left);
+                        let table_inline_x = if table.common.treat_as_char {
+                            advance_to_control(&mut inline_x);
+                            let x =
+                                inline_x + hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
+                            inline_x += hwpunit_to_px(table.flow_width_hu() as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                                + hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
+                            Some(x)
+                        } else {
+                            None
+                        };
                         inline_y = self.layout_embedded_table(
                             tree,
                             &mut textbox_node,
@@ -3609,6 +3620,7 @@ impl LayoutEngine {
                             )),
                             bin_data_content,
                             host_align,
+                            table_inline_x,
                         );
                     }
                     _ => {}

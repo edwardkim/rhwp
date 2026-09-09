@@ -79,9 +79,67 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
         buf.clear();
     }
 
-    link_orphan_field_ends(&mut section.paragraphs);
+    link_orphan_field_ends_recursive(&mut section.paragraphs);
 
     Ok(section)
+}
+
+/// [#6868] 중첩 문단 목록까지 내려가며 목록마다 따로 짝을 잇는다.
+///
+/// `link_orphan_field_ends` 는 본디 구역 최상위 `section.paragraphs` 에만 걸렸다. 그런데
+/// 다단락 누름틀은 **글상자·표 칸·머리말·각주 안에서도** 쓰인다(36414761 결재문서: '제목'
+/// 누름틀이 글상자 subList 안에서 열리고 다음 문단에서 닫힌다). 그 목록의 종료 마커는
+/// `begin_ctrl_id` 가 0 으로 남고, HWP5 저장기의 두 방출 지점이 모두
+/// `begin_ctrl_id != 0` 을 요구하므로 **끝 표시가 통째로 사라졌다** — 끝이 없는 누름틀은
+/// 문단 나머지를 필드 안으로 삼킨다.
+///
+/// 필드는 컨테이너 경계를 넘지 못하므로 목록마다 **독립적으로** 잇는다. 최상위 목록의
+/// 열린 필드를 중첩 목록으로 물려주지 않는다 — 그렇게 하면 글상자 안 종료 마커가 바깥
+/// 문단의 필드를 닫는 짝으로 잘못 묶인다.
+fn link_orphan_field_ends_recursive(paragraphs: &mut [Paragraph]) {
+    link_orphan_field_ends(paragraphs);
+    for para in paragraphs.iter_mut() {
+        for control in para.controls.iter_mut() {
+            link_orphan_field_ends_in_control(control);
+        }
+    }
+}
+
+/// 컨트롤이 품은 문단 목록마다 [`link_orphan_field_ends_recursive`] 를 건다.
+///
+/// 컨테이너 목록은 `injection_scan` 의 방문자와 같은 것을 본다 — 표 칸·표 캡션·글상자·
+/// 도형 캡션·그림 캡션·각주·미주·머리말·꼬리말·숨은 설명.
+fn link_orphan_field_ends_in_control(control: &mut Control) {
+    match control {
+        Control::Table(table) => {
+            for cell in table.cells.iter_mut() {
+                link_orphan_field_ends_recursive(&mut cell.paragraphs);
+            }
+            if let Some(caption) = table.caption.as_mut() {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Shape(shape) => {
+            if let Some(tb) = crate::document_core::helpers::get_textbox_from_shape_mut(shape) {
+                link_orphan_field_ends_recursive(&mut tb.paragraphs);
+            }
+            if let Some(caption) = crate::document_core::helpers::get_caption_from_shape_mut(shape)
+            {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Picture(pic) => {
+            if let Some(caption) = pic.caption.as_mut() {
+                link_orphan_field_ends_recursive(&mut caption.paragraphs);
+            }
+        }
+        Control::Footnote(fnote) => link_orphan_field_ends_recursive(&mut fnote.paragraphs),
+        Control::Endnote(en) => link_orphan_field_ends_recursive(&mut en.paragraphs),
+        Control::Header(h) => link_orphan_field_ends_recursive(&mut h.paragraphs),
+        Control::Footer(f) => link_orphan_field_ends_recursive(&mut f.paragraphs),
+        Control::HiddenComment(hc) => link_orphan_field_ends_recursive(&mut hc.paragraphs),
+        _ => {}
+    }
 }
 
 /// 같은 문단 목록 안에서 끝난 다문단 fieldEnd에 짝 fieldBegin의 HWP5 control id를 연결한다.
@@ -522,17 +580,26 @@ fn parse_paragraph(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
+    parse_paragraph_element(e, reader, false)
+}
+
+fn parse_paragraph_element(
+    e: &quick_xml::events::BytesStart,
+    reader: &mut Reader<&[u8]>,
+    self_closing: bool,
+) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     // [#4759] 문단-경유 상호재귀(표·글상자·서브리스트) 깊이 상한 — 위 가드 참고.
     // 가드는 큰 본문 프레임을 쌓기 전에 실행한다. 상한 초과 호출이
     // `Paragraph`·`SectionDef` 지역 상태를 먼저 잡으면 기본 스택에서
     // 가드보다 SIGSEGV 가 앞설 수 있다.
     let _depth_guard = SectionDepthGuard::enter()?;
-    parse_paragraph_body(e, reader)
+    parse_paragraph_body(e, reader, self_closing)
 }
 
 fn parse_paragraph_body(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
+    self_closing: bool,
 ) -> Result<(Paragraph, Option<SectionDef>), HwpxError> {
     let mut para = Paragraph::default();
     let mut sec_def: Option<SectionDef> = None;
@@ -593,7 +660,11 @@ fn parse_paragraph_body(
     // `\u{0004}` 와 1:1 대응. 고아 fieldEnd 복원에 사용.
     let mut field_end_attrs: Vec<(u32, u32)> = Vec::new();
 
+    // Empty elements share attributes/finalization but must not consume a sibling.
     loop {
+        if self_closing {
+            break;
+        }
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref ce)) => {
                 let cname = ce.name();
@@ -4246,6 +4317,21 @@ fn parse_shape_shadow_attr(e: &quick_xml::events::BytesStart) -> (u32, u32, i32,
 
 /// `<hp:drawText>` 내부의 `<hp:subList>` → `<hp:p>` 문단을 파싱한다.
 fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result<(), HwpxError> {
+    let content_start = reader.buffer_position();
+    parse_draw_text_body(reader, text_box).map_err(|error| match error {
+        // Some semantic/resource guards also use XmlError. Only an actual XML
+        // reader error inside this area is structural damage; keep other policies.
+        HwpxError::XmlError(message) if reader.error_position() >= content_start => {
+            HwpxError::DrawingTextStructure(message)
+        }
+        other => other,
+    })
+}
+
+fn parse_draw_text_body(
+    reader: &mut Reader<&[u8]>,
+    text_box: &mut TextBox,
+) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     loop {
         let event = reader.read_event_into(&mut buf);
@@ -4297,9 +4383,9 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                     }
                     // `<hp:p/>` 는 내용이 없는 문단이다 — 여는 태그로 보고 문단 파서를
                     // 태우면 다음 `</hp:p>` 까지, 즉 뒤 문단·형제 도형을 삼킨다.
-                    b"p" if !self_closing => {
+                    b"p" => {
                         // subList 내 p를 독립 파싱
-                        let (para, _) = parse_paragraph(ce, reader)?;
+                        let (para, _) = parse_paragraph_element(ce, reader, self_closing)?;
                         text_box.paragraphs.push(para);
                     }
                     b"textMargin" => {
@@ -4322,7 +4408,11 @@ fn parse_draw_text(reader: &mut Reader<&[u8]>, text_box: &mut TextBox) -> Result
                     break;
                 }
             }
-            Ok(Event::Eof) => break,
+            Ok(Event::Eof) => {
+                return Err(HwpxError::DrawingTextStructure(
+                    "drawText: unexpected EOF".into(),
+                ));
+            }
             Err(e) => return Err(HwpxError::XmlError(format!("drawText: {}", e))),
             _ => {}
         }

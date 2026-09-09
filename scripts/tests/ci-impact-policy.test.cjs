@@ -627,6 +627,25 @@ test('workflow selection prefers the newest run and rejects a mismatched PR asso
   );
 });
 
+test('diagnostic run/job/step metadata does not change policy verdicts', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+  for (const conclusion of ['success', 'failure', 'cancelled', 'timed_out']) {
+    const workflows = workflowEvidence(policy);
+    workflows.CI.run.conclusion = conclusion;
+    const original = { ...input, policy, currentHeadSha: HEAD_SHA, workflows };
+    const enriched = structuredClone(original);
+    for (const evidence of Object.values(enriched.workflows)) {
+      Object.assign(evidence.run, { id: 12345, attempt: 2 });
+      for (const [index, item] of evidence.jobs.entries()) {
+        Object.assign(item, { id: 23456 + index, runId: 12345, attempt: 2 });
+        for (const [number, entry] of item.steps.entries()) entry.number = number + 1;
+      }
+    }
+    assert.deepEqual(auditPolicyRuns(enriched), auditPolicyRuns(original));
+  }
+});
+
 test('status description binds the same head policy to its evaluated base generation', () => {
   const movedBase = 'c'.repeat(40);
   const firstPolicy = determinePolicy(policyInput());

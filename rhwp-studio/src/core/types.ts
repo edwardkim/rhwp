@@ -1804,3 +1804,9 @@ export interface LayerSvgGlyphPayload {
   interactivityAllowed?: boolean;
   transformToRun?: LayerAffineTransform;
 }
+/** 글자 모양 history 구간. offset은 문단 기준 문자 단위(UTF-16 아님). */
+export interface CharShapeRun {
+  startOffset: number;
+  endOffset: number;
+  charShapeId: number;
+}

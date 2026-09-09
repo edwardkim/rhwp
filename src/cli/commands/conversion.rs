@@ -182,14 +182,23 @@ pub(crate) fn extract_pages(args: &[String]) -> i32 {
                     "pagesAfter": report.pages_after,
                     "paragraphsKept": report.kept,
                     "paragraphsRemoved": report.removed,
+                    "binDataBefore": report.bin_data_before,
+                    "binDataAfter": report.bin_data_after,
                 }),
                 "extract-pages",
             )
         );
     } else {
         println!(
-            "추출 완료: {output} ({}~{}쪽) — {}쪽 → {}쪽, 문단 {}개 남기고 {}개 제거",
-            from, to, report.pages_before, report.pages_after, report.kept, report.removed
+            "추출 완료: {output} ({}~{}쪽) — {}쪽 → {}쪽, 문단 {}개 남기고 {}개 제거,              BinData {}개 → {}개",
+            from,
+            to,
+            report.pages_before,
+            report.pages_after,
+            report.kept,
+            report.removed,
+            report.bin_data_before,
+            report.bin_data_after
         );
     }
     EXIT_OK

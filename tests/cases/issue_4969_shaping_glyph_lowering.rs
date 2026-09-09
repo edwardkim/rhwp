@@ -513,8 +513,22 @@ fn issue_4969_q3_c_variable_outline_is_selected_only_on_proven_shadow_backends()
         assert!(!reports[0].fallback_required);
     }
 
+    let native = analyze_text_variant_selection(
+        &tree,
+        TextVariantSelectionOptions {
+            backend: VariantSelectionBackend::NativeSkia,
+            prefer_strict_outline: true,
+            ..TextVariantSelectionOptions::canvaskit()
+        },
+    );
+    assert_eq!(native.len(), 1);
+    assert_eq!(
+        native[0].selected_variant_kind,
+        Some(TextVariantKind::GlyphOutline)
+    );
+    assert!(!native[0].fallback_required);
+
     for backend in [
-        VariantSelectionBackend::NativeSkia,
         VariantSelectionBackend::Svg,
         VariantSelectionBackend::Canvas2D,
     ] {
@@ -637,7 +651,7 @@ fn issue_4969_q3_c_native_skia_exact_blob_instance_round_trips_coordinates() {
     use skia_safe::{Font, FontArguments, FontMgr, FourByteTag};
 
     let default_typeface = FontMgr::default()
-        .new_from_data(HAPPINESS, Some(0))
+        .new_from_data(skia_safe::Data::new_copy(HAPPINESS), Some(0))
         .expect("Native Skia must construct the exact official variable TTF");
     let coordinates = [
         Coordinate {

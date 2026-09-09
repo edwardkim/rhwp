@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6800,
+  "title": "정책연구 활용결과 보고서 (해양수산부)",
+  "entries": [
+    {
+      "path": "samples/issue6800/1192000-202100017-policy-research-report.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6800",
+      "originalFilename": "1192000-202100017_D0150018-1-000_정책연구 활용결과 보고서.hwp",
+      "bytes": 90112,
+      "sha256": "fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.0.0.10376"
+      },
+      "referenceEngine": "2020",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 1쪽, 공백 제거 글자 수 574 로 rhwp 와 완전 일치(5-gram 차이 0). 이 축은 출력 불변이라 수정 전후 동일하다.",
+      "contract": "탭이 든 TextRun 의 bbox 폭은 다음 런의 시작 x 를 넘지 않는다. 출력(잉크)은 불변 — 트리 계약만 고친다.",
+      "referencePdf": "pdf/1192000-202100017-policy-research-report-2020.pdf",
+      "referencePdfSha256": "34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48",
+      "referencePdfBytes": 62122
+    }
+  ]
+}

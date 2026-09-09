@@ -36,6 +36,60 @@ use crate::model::table::Table;
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
 
+/// [#6699] 그림 뒤 문자열의 마지막 자간은 다음 글자가 없는 정렬 폭에 넣지 않는다.
+/// 글자 전진 폭과 그림 뒤 원본 공백은 유지하고, 가운데/오른쪽 정렬의 점유 폭만 줄인다.
+fn terminal_tracking_after_inline_picture(
+    line: &ComposedLine,
+    para: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    tac_offsets: &[(usize, f64, usize)],
+) -> f64 {
+    if tac_offsets.is_empty()
+        || line
+            .runs
+            .iter()
+            .any(|run| run.char_overlap.is_some() || run.display_text.is_some())
+    {
+        return 0.0;
+    }
+    let text_end = line.char_start
+        + line
+            .runs
+            .iter()
+            .map(|run| run.text.chars().count())
+            .sum::<usize>();
+    // 문자열 뒤 개체에는 실제로 자간 다음 내용이 있으므로 기존 전진 폭을 쓴다.
+    if tac_offsets.iter().any(|(pos, _, _)| *pos >= text_end)
+        || !tac_offsets.iter().any(|(_, _, index)| {
+            matches!(
+                para.and_then(|p| p.controls.get(*index)),
+                Some(Control::Picture(picture)) if picture.common.treat_as_char
+            )
+        })
+    {
+        return 0.0;
+    }
+    let Some(run) = line.runs.iter().rev().find(|run| !run.text.is_empty()) else {
+        return 0.0;
+    };
+    let Some(last) =
+        unicode_segmentation::UnicodeSegmentation::graphemes(run.text.as_str(), true).next_back()
+    else {
+        return 0.0;
+    };
+    if last.chars().any(char::is_whitespace) {
+        return 0.0;
+    }
+    let mut style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+    if style.letter_spacing <= 0.0 || style.kerning {
+        return 0.0;
+    }
+    // 폰트별 글자 폭에 비례하는 자간을 기존 측정 함수로 구한다. 정수 반올림은 하지 않는다.
+    let tracked = estimate_text_width_unrounded(last, &style);
+    style.letter_spacing = 0.0;
+    (tracked - estimate_text_width_unrounded(last, &style)).max(0.0)
+}
+
 /// 최종 emitted text run에서만 exact pair positions를 게시한다.
 ///
 /// `fallback_width`는 K0의 기존 반올림·field projection·줄-말미 공백 회수 계약을
@@ -1426,6 +1480,95 @@ pub(crate) fn resolve_last_tab_pending(
     }
 }
 
+/// [#6844] 런 **안**에 오른쪽/가운데 탭이 있는 런의 bbox 를 **문자 위치에 맞춘다.**
+///
+/// `pending_right_tab_render` 는 런이 탭으로 **끝날 때**만 서므로(정렬 대상이 다음 런에
+/// 있는 교차-run 형상), 한컴 목차가 흔히 쓰는 `"\t8"`(탭 + 쪽번호를 한 런에) 형상은
+/// 그 경로를 안 탄다. 그런 런은 `layout_positions` 가 이미 오른쪽 정렬된 자리를 담는데
+/// **bbox 폭만 `estimate_text_width` 값(탭 스톱까지)으로 남아** 글리프가 자기 상자
+/// **밖**에 그려졌다.
+///
+/// ```text
+///   30269 목차 4번째 줄   런 "\t8"  x=595.4
+///     bbox   595.4 .. 673.4   (w=78.0)
+///     글리프 683.9 .. 693.7   ← 상자 밖. 형제 줄들도 693.7 에서 끝난다.
+/// ```
+///
+/// 이 런은 탭 뒤가 **가시문자로 끝나므로** 마지막 문자 경계가 곧 잉크의 끝이다. 폭을
+/// 거기에 맞추면 bbox·장식·리더·문자 위치가 하나의 값을 공유한다.
+///
+/// 대상은 코퍼스 실측으로 좁혔다 — 우/가운데 스톱에 걸리는 **런의 마지막 탭**이고 그 런이
+/// **줄의 마지막**인 형상(중간탭 9,923건 중 2,556건; 그중 998건이 글리프가 상자 밖).
+///
+/// ⚠ 문자 위치 자체를 옮기지는 않는다. 교차-run 경로의 `effective_pos` 변환을 그대로
+/// 가져와 재정렬해 봤더니 34건이 움직였고 그중 `3142535`(별지 5 징수결정액통지서)의
+/// 글자가 `x=671.4 → 1000.1` 로 **용지(793.7) 밖**으로 나갔다. 이 런들의 위치는 이미
+/// 기존 기계가 정하고 있고, 그 계약은 이 이슈의 범위가 아니다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn resolve_intra_run_right_tab(
+    run_text: &str,
+    full_width: f64,
+    layout_positions: Option<Vec<f64>>,
+    text_style: &TextStyle,
+    tab_extended: &[[u16; 7]],
+    inline_tab_base: usize,
+    tab_stops: &[TabStop],
+    tab_width: f64,
+    auto_tab_right: bool,
+    available_width: f64,
+) -> (f64, Option<Vec<f64>>) {
+    let chars: Vec<char> = run_text.chars().collect();
+    let Some(tab_idx) = chars.iter().rposition(|c| *c == '\t') else {
+        return (full_width, layout_positions);
+    };
+    if chars[tab_idx + 1..]
+        .iter()
+        .collect::<String>()
+        .trim()
+        .is_empty()
+    {
+        return (full_width, layout_positions);
+    }
+    // inline_tabs 가 LEFT 를 명시하면 대상이 아니다 (`resolve_last_tab_pending` 과 같은 규칙).
+    let tab_ordinal = chars[..tab_idx].iter().filter(|c| **c == '\t').count();
+    let inline_idx = inline_tab_base + tab_ordinal;
+    if inline_idx < tab_extended.len() {
+        match ((tab_extended[inline_idx][2] >> 8) & 0xFF) as u8 {
+            2 | 3 => {}
+            _ => return (full_width, layout_positions),
+        }
+    }
+    // ⚠ `layout_positions` 는 **그대로 돌려준다.** 소비자(`replay_positions_for`)는
+    // `None` 이면 style 로 같은 배열을 다시 계산하므로, 여기서 채워 넣어도 값은 같지만
+    // "positions 가 있는가"로 갈리는 하류 분기가 움직인다(골든 SVG clip 폭이
+    // `642.5333333333334 → …35` 로 흔들렸다). 폭만 고친다.
+    let ink_end = match layout_positions.as_deref() {
+        Some(positions) if positions.len() == chars.len() + 1 => positions[chars.len()],
+        None => {
+            let computed = compute_char_positions(run_text, text_style);
+            if computed.len() != chars.len() + 1 {
+                return (full_width, layout_positions);
+            }
+            computed[chars.len()]
+        }
+        _ => return (full_width, layout_positions),
+    };
+    let before: String = chars[..tab_idx].iter().collect();
+    let w_before = estimate_text_width(&before, text_style);
+    let abs_before = text_style.line_x_offset + w_before;
+    let tw = if tab_width > 0.0 { tab_width } else { 48.0 };
+    let (_tab_pos, tab_type, _fill_type) =
+        find_next_tab_stop(abs_before, tab_stops, tw, auto_tab_right, available_width);
+    if tab_type != 1 && tab_type != 2 {
+        return (full_width, layout_positions);
+    }
+    // 두 값이 실질적으로 같으면 손대지 않는다 — 부동소수 잡음으로 골든을 흔들지 않는다.
+    if !ink_end.is_finite() || ink_end < 0.0 || (ink_end - full_width).abs() <= 0.05 {
+        return (full_width, layout_positions);
+    }
+    (ink_end, layout_positions)
+}
+
 /// 우측/가운데 탭 정렬 단위의 폭(px).
 ///
 /// 탭 직후 run(`start`)부터 `\t` 를 포함하지 않는 연속 run 들의 `estimate_text_width` 합산.
@@ -2117,6 +2260,101 @@ impl LayoutEngine {
             return false;
         }
         (i64::from(ls.line_height) - (om_top_hu + declared + om_bottom_hu)).abs() <= 8
+    }
+
+    /// #6812: 측정/fit 소유자가 확정한 줄 결과를 그린다. 여기서 회피·줄바꿈을 재판정하지 않는다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn layout_inline_flow_plan(
+        &self,
+        tree: &mut PageLayoutContext,
+        col_node: &mut RenderNode,
+        para: &Paragraph,
+        styles: &ResolvedStyleSet,
+        col_area: &LayoutRect,
+        section_index: usize,
+        para_index: usize,
+        bin_data_content: &[BinDataContent],
+        measured_tables: &[MeasuredTable],
+        plan: &crate::renderer::inline_flow::InlineFlowPlan,
+    ) {
+        use crate::renderer::inline_flow::InlineFlowContent;
+        let chars: Vec<_> = para.text.chars().collect();
+        for item in &plan.boxes {
+            let x = col_area.x + item.x;
+            let y = col_area.y + item.y;
+            match &item.content {
+                InlineFlowContent::Text { range, style, lang } => {
+                    let text: String = chars[range.clone()].iter().collect();
+                    let text_style = resolved_to_text_style(styles, *style, *lang);
+                    let node = RenderNode::new(
+                        tree.next_id(),
+                        RenderNodeType::TextRun(TextRunNode {
+                            text,
+                            style: text_style,
+                            char_shape_id: Some(*style),
+                            para_shape_id: Some(para.para_shape_id),
+                            section_index: Some(section_index),
+                            para_index: Some(para_index),
+                            char_start: Some(range.start),
+                            cell_context: None,
+                            is_para_end: range.end == chars.len(),
+                            is_line_break_end: false,
+                            rotation: 0.0,
+                            is_vertical: false,
+                            char_overlap: None,
+                            border_fill_id: styles
+                                .char_styles
+                                .get(*style as usize)
+                                .map_or(0, |s| s.border_fill_id),
+                            baseline: item.baseline,
+                            field_marker: FieldMarkerType::None,
+                            layout_positions: None,
+                            display_text: None,
+                        }),
+                        BoundingBox::new(x, y, item.width, item.height),
+                    );
+                    col_node.children.push(node);
+                }
+                InlineFlowContent::Table {
+                    control,
+                    margin_left,
+                    margin_top,
+                } => {
+                    let crate::model::control::Control::Table(table) = &para.controls[*control]
+                    else {
+                        continue;
+                    };
+                    let measured = measured_tables
+                        .iter()
+                        .find(|m| m.para_index == para_index && m.control_index == *control);
+                    self.layout_table(
+                        tree,
+                        col_node,
+                        table,
+                        section_index,
+                        styles,
+                        0,
+                        col_area,
+                        y + margin_top,
+                        bin_data_content,
+                        measured,
+                        0,
+                        Some((para_index, *control)),
+                        Alignment::Left,
+                        None,
+                        0.0,
+                        0.0,
+                        Some(x + margin_left),
+                        None,
+                        Some(col_area.y + plan.start),
+                        None,
+                        false,
+                        false,
+                        false,
+                    );
+                }
+            }
+        }
     }
 
     pub(crate) fn layout_inline_table_paragraph(
@@ -3781,7 +4019,14 @@ impl LayoutEngine {
                 .and_then(|p| p.line_segs.first())
                 .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
                 .unwrap_or(0.0);
-            if vpos0_px > 0.0 {
+            // [편집 세션] Enter로 자란 자리차지 표의 post-text가 typeset에서 다음
+            // 쪽으로 재배정된 경우, 저장 vpos는 앞 쪽 하단 좌표라 무효다 — 절대
+            // 가산하면 새 쪽에서도 쪽 하단에 그려져 문구·로고가 잘린다(셀 끝
+            // Enter 재현). 단 절반을 넘는 과대 vpos만 차단해 상단 여백
+            // 재현(test-image.hwp 폴백 목적)은 유지한다.
+            let session_stale_vpos =
+                self.profile.get().session_edited() && vpos0_px > col_area.height * 0.5;
+            if vpos0_px > 0.0 && !session_stale_vpos {
                 y += vpos0_px;
             }
         }
@@ -4001,6 +4246,31 @@ impl LayoutEngine {
                         && range
                             .windows(2)
                             .all(|w| w[1].vertical_pos >= w[0].vertical_pos)
+                        // vpos 는 쪽(단) 상단 기준 쪽-상대 좌표다(아래 #3637 주석).
+                        // 단 높이를 유의미하게 넘는 vpos 는 앞 쪽 좌표계의 잔재다 —
+                        // 셀 편집으로 커진 자리차지 표가 분할 이월된 뒤의 host 후행
+                        // 줄(재현 실측: vpos 가 단 높이 초과)을 절대 스냅하면
+                        // 다음 쪽 본문 밖에 그려져 하단 문구가 소실된다. 이때는
+                        // 흐름 y(분할 조각 하단)로 폴백한다.
+                        && range.iter().all(|seg| {
+                            hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                <= col_area.height + 60.0
+                        })
+                        // [편집 세션] Enter로 자란 자리차지 표의 post-text가 다음 쪽으로
+                        // 재배정되면 저장 vpos(앞 쪽 하단 좌표)는 무효다 — 스냅하면 새
+                        // 쪽에서도 쪽 하단에 그려져 잘린다(셀 끝 Enter 재현). 스냅
+                        // 목적지가 흐름 커서보다 단 절반 이상 아래면 흐름 y 로
+                        // 폴백한다. 같은 쪽 배치(괴리 소폭)는 종전 스냅을 유지한다.
+                        // 반대 방향도 같다 — 목적지가 흐름보다 8px 넘게 **위**면 편집
+                        // 성장 전 좌표라 앞 표에 겹친다(셀 Enter 재현: 후행 안내
+                        // 문구가 저장 vpos 로 스냅돼 커진 표 하단 위에 얹힘).
+                        // 8px 는 vpos_adjust 백워드 클램프와 동일.
+                        && !(self.profile.get().session_edited()
+                            && range.first().is_some_and(|seg| {
+                                let snap_y =
+                                    col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                snap_y > y + col_area.height * 0.5 || y - snap_y > 8.0
+                            }))
                     {
                         // [#3637] 기준은 **단 상단**이다 (원점 0).
                         //
@@ -4432,8 +4702,8 @@ impl LayoutEngine {
             // `HeadType::None` 인 본문 문단은 빠져 있었는데, 그 주석이 스스로 적어
             // 두었듯 위험은 목록이 아니라 **비어 있음**에 있다.
             let own_margin_hu = crate::renderer::px_to_hwpunit(margin_left, self.dpi);
-            let cs_is_own_margin = (comp_line.column_start - own_margin_hu).abs()
-                <= EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU;
+            let cs_is_own_margin = comp_line.column_start.abs_diff(own_margin_hu)
+                <= EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU as u32;
             let empty_stored_wrap_line = cell_ctx.is_none()
                 && para
                     .map(|p| p.text.is_empty() && p.controls.is_empty())
@@ -5166,6 +5436,21 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
+            let terminal_tracking_width = if cell_ctx.is_some()
+                && matches!(alignment, Alignment::Center | Alignment::Right)
+                && !center_packed_cell_label_as_right
+                && !has_tabs
+                && extra_char_sp == 0.0
+            {
+                terminal_tracking_after_inline_picture(
+                    comp_line,
+                    para,
+                    styles,
+                    &line_tac_offsets_for_width,
+                )
+            } else {
+                0.0
+            };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
@@ -5173,7 +5458,9 @@ impl LayoutEngine {
                     } else if non_cell_tac_only_line {
                         0.0
                     } else {
-                        (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                        (available_width
+                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
+                            .max(0.0)
                             / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
@@ -5190,7 +5477,9 @@ impl LayoutEngine {
                     x_base
                         + inline_offset
                         + num_x_offset
-                        + (available_width - (effective_text_width - trailing_ws_width)).max(0.0)
+                        + (available_width
+                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
+                            .max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
@@ -5587,9 +5876,29 @@ impl LayoutEngine {
             );
             // Square wrap host 의 빈 guide 줄은 advance 를 건너뛰지만, 같은 줄에
             // TAC 수식/개체가 있으면 실제 콘텐츠 줄이므로 높이를 보존한다.
+            // The preceding visible fragment deferred its advance to this row's
+            // last fragment. An empty right-hand fragment must still pay it.
+            let completes_visible_stored_row = cell_ctx.is_some()
+                && para.is_some_and(|p| {
+                    crate::renderer::height_measurer::stored_seg_is_row_fragment(p, line_idx)
+                        && (0..line_idx)
+                            .rev()
+                            .take_while(|&idx| {
+                                p.line_segs
+                                    .get(idx)
+                                    .zip(p.line_segs.get(line_idx))
+                                    .is_some_and(|(a, b)| a.vertical_pos == b.vertical_pos)
+                            })
+                            .any(|idx| {
+                                composed.lines.get(idx).is_some_and(|line| {
+                                    line.runs.iter().any(|run| !run.text.trim().is_empty())
+                                })
+                            })
+                });
             let skip_advance_empty_wrap = has_picture_shape_square_wrap
                 && !has_ole_shape_square_wrap
                 && runs_all_whitespace
+                && !completes_visible_stored_row
                 && !line_has_tac_control(composed, line_idx);
             // 촘촘한 미주 수식 문단에는 다음 줄과 char_start가 같은 선행
             // 퇴화 LINE_SEG가 들어오는 경우가 있다. 해당 줄 자체에는 TAC가
@@ -6056,6 +6365,60 @@ impl LayoutEngine {
                         }
                         _ => {}
                     }
+                    // [#6800] **같은 재배치가 그 탭 런의 advance 도 정한다.**
+                    //
+                    // 오른쪽/가운데 탭의 전진량은 "탭 스톱까지"가 아니라 "뒤따르는
+                    // 블록이 스톱에 맞도록 필요한 만큼"이다. 그런데 런 폭은
+                    // `estimate_text_width` 가 낸 **탭 스톱까지** 값이 그대로 남아,
+                    // 그 런이 뒤 런을 통째로 덮은 것처럼 보였다
+                    // (1192000-202100017 1쪽: `"  - 	"` 런이 x=221.8 w=496.0 인데
+                    //  다음 런은 x=249.1 — 468.7px 가짜 겹침으로 계수된다).
+                    // 잉크는 안 겹치므로 출력은 불변이지만, `text_overlap_baseline`
+                    // 래칫이 그 가짜 겹침을 세어 **진짜 글자겹침을 가린다.**
+                    //
+                    // 아래 leader 보정과 **같은 `x`** 를 쓴다 — 재배치가 정한 값
+                    // 하나로 bbox·리더 기하가 함께 정해진다. 여기서만 하므로
+                    // ① 이 재배치를 유발한 **논리적 끝 탭**의 런에만 닿고
+                    // ② 탭 뒤에 가시문자가 있는 런은 애초에 `pending` 을 세우지
+                    //    않으므로 대상이 아니며
+                    // ③ 재배치가 없는 줄의 런은 전혀 건드리지 않는다.
+                    if let Some(tab_run_idx) = line_node.children.iter().rposition(|n| {
+                        matches!(&n.node_type, RenderNodeType::TextRun(tr) if tr.display_or_text().ends_with('\t'))
+                    }) {
+                        let tab_run_x = line_node.children[tab_run_idx].bbox.x;
+                        // 탭 런과 현재 런 사이에 이미 emit 된 런(공백 only carry-over)이
+                        // 있으면 그 앞까지가 이 탭의 전진량이다.
+                        let end_x = line_node.children[tab_run_idx + 1..]
+                            .iter()
+                            .filter(|n| matches!(n.node_type, RenderNodeType::TextRun(_)))
+                            .map(|n| n.bbox.x)
+                            .fold(x, f64::min);
+                        let width = match &mut line_node.children[tab_run_idx].node_type {
+                            RenderNodeType::TextRun(run) => {
+                                run.resolve_trailing_tab_end(
+                                    (end_x - tab_run_x).max(0.0),
+                                    (x - tab_run_x).max(0.0),
+                                )
+                            }
+                            _ => None,
+                        };
+                        if let Some(width) = width {
+                            let old_width = line_node.children[tab_run_idx].bbox.width;
+                            line_node.children[tab_run_idx].bbox.width = width;
+                            // 이미 생성한 같은 런의 장식도 동일한 확정 끝을 사용한다.
+                            // 장식은 TextRun보다 먼저 생성되므로 tab_run_idx 앞도 순회한다.
+                            // 원 PR #6801의 c7dade57c 보정 취지를 유지한다.
+                            // 다른 TextRun이나 크기가 다른 개체의 상자는 수정하지 않는다.
+                            for node in &mut line_node.children {
+                                if !matches!(node.node_type, RenderNodeType::TextRun(_))
+                                    && (node.bbox.x - tab_run_x).abs() <= 0.5
+                                    && (node.bbox.width - old_width).abs() <= 0.5
+                                {
+                                    node.bbox.width = (tab_run_x + width - node.bbox.x).max(0.0);
+                                }
+                            }
+                        }
+                    }
                     // [Task #279] 직전 run 의 leader 끝 위치를 페이지번호 시작 x 직전까지 단축.
                     // 한컴은 페이지번호 폭에 따라 리더 길이가 달라지도록 조판한다 (한 자리 vs
                     // 두 자리 페이지번호의 leader 끝점이 다름). cross-run RIGHT 정렬 후
@@ -6235,6 +6598,24 @@ impl LayoutEngine {
                     &composed.tab_extended,
                 );
             }
+            // [#6844] 런 안의 오른쪽/가운데 탭 — 정렬 블록이 이 런 안에서 끝나는 형상만.
+            let (full_width, layout_positions) =
+                if has_tabs && run.text.contains('\t') && run_idx + 1 == comp_line.runs.len() {
+                    resolve_intra_run_right_tab(
+                        &run.text,
+                        full_width,
+                        layout_positions,
+                        &text_style,
+                        &composed.tab_extended,
+                        inline_tab_cursor_render,
+                        &tab_stops,
+                        tab_width,
+                        auto_tab_right,
+                        available_width,
+                    )
+                } else {
+                    (full_width, layout_positions)
+                };
             // 교차 run 오른쪽/가운데 탭 감지 — Task #290:
             // inline_tabs(composed.tab_extended) 가 LEFT 를 명시하면 cross-run pending 을 설정하지 않는다.
             // [Task #279] trailing 공백 (\t 뒤에 따라오는 ' ') 도 허용 — 목차 소제목의
@@ -6778,7 +7159,20 @@ impl LayoutEngine {
                                     // 를 또 더하면 tac 그림이 줄보다 예약 높이만큼 아래
                                     // (쪽 밖, #6271 실측 y=2113px > 단 하단 1115px)에
                                     // 그려져 소실된다.
-                                    if raw > 40.0 && y >= col_area.y + raw - 4.0 {
+                                    // 가산 결과가 단 하단을 넘는 경우도 stale
+                                    // 예약(분할 이월 쪽의 통짜 가정)이므로 가산하지
+                                    // 않는다.
+                                    // [편집 세션] typeset 이 라인 흐름(표 아래·새 쪽
+                                    // 재배정)을 이미 끝낸 상태라 저장-형상 가정의 예약
+                                    // 가산이 이중이 된다 — 이월된 쪽에서 그림이 쪽
+                                    // 하단 밖에 그려지던 결함(셀 끝 Enter 재현).
+                                    // 흐름 y 를 그대로 신뢰한다.
+                                    if self.profile.get().session_edited() {
+                                        0.0
+                                    } else if raw > 40.0
+                                        && (y >= col_area.y + raw - 4.0
+                                            || y + raw > col_area.y + col_area.height + 3.8)
+                                    {
                                         0.0
                                     } else {
                                         raw
@@ -7451,11 +7845,50 @@ impl LayoutEngine {
                         // 한글 편집기는 안내문을 누름틀 줄 상자 안에서 접는다. 안내문은
                         // 흐름에 영향이 없는 편집 전용 표시라(아래 `with_editor_only`),
                         // 접힌 뒤 줄들은 순수 오버레이로 아래에 쌓는다 — 첫 조각만
-                        // 마커 shift 폭에 계상한다. 셀 안은 가용 폭 기준이 다르므로
-                        // 종전대로 한 줄에 둔다.
+                        // 마커 shift 폭에 계상한다.
+                        //
+                        // [#6862] **칸 안도 접는다.** `#6111` 은 "셀은 가용 폭 기준이
+                        // 다르므로 종전대로 한 줄"로 남겼는데, 그 기준은 이미 손에 있다 —
+                        // **이 줄의 상자**(`line_node.bbox`)가 칸 안여백까지 반영한 텍스트
+                        // 상자다. 2249811 1쪽은 안내문이 전부 표 칸 안이라 그 예외가
+                        // 그대로 증상이 됐다(용지 밖 352.8px).
+                        //
+                        // ⚠ 본문 갈래는 종전 기준(`current_body_area`)을 그대로 둔다 —
+                        // `#6111` 의 확정 핀이 그 값으로 잠겨 있다.
                         let (body_x, _, body_w, _) = self.current_body_area.get();
-                        let wrap_limit = if cell_ctx.is_none() && body_w > 0.0 {
+                        let line_right = line_node.bbox.x + line_node.bbox.width;
+                        // [#6862] **빈 줄에서는 안내문 자신이 그 줄의 내용이다.**
+                        //
+                        // 빈 누름틀 줄은 글자 폭이 0 이라 `find_x_for_char` 가 돌려주는
+                        // 것은 **정렬 앵커**(가운데 정렬이면 줄 중앙)다. 안내문을 거기서
+                        // 오른쪽으로 그리면 통째로 폭의 절반만큼 밀린다.
+                        //
+                        // ```text
+                        //   칸 286.9..670.1  중앙 478.5   안내문 폭 668.0
+                        //     종전 시작 478.5           = 중앙 (폭을 안 뺐다)
+                        //     정상 시작 478.5 − 334.0   = 144.5
+                        // ```
+                        //
+                        // 줄에 보이는 글자가 있으면 그 앵커는 실제 글자 자리이므로
+                        // 건드리지 않는다.
+                        let line_has_visible_text =
+                            comp_line.runs.iter().any(|run| !run.text.trim().is_empty());
+                        let guide_alignment = styles
+                            .para_styles
+                            .get(para_style_id as usize)
+                            .map(|style| style.alignment);
+                        let guide_owns_the_line = !line_has_visible_text
+                            && line_node.bbox.width > 0.0
+                            && matches!(
+                                guide_alignment,
+                                Some(Alignment::Center) | Some(Alignment::Right)
+                            );
+                        let wrap_limit = if guide_owns_the_line {
+                            line_node.bbox.width
+                        } else if cell_ctx.is_none() && body_w > 0.0 {
                             (body_x + body_w - guide_x).max(0.0)
+                        } else if line_right > guide_x {
+                            line_right - guide_x
                         } else {
                             0.0
                         };
@@ -7465,6 +7898,18 @@ impl LayoutEngine {
                             .first()
                             .map(|chunk| estimate_text_width(chunk, &guide_style))
                             .unwrap_or(0.0);
+                        let guide_x = if guide_owns_the_line {
+                            match guide_alignment {
+                                Some(Alignment::Right) => {
+                                    (line_right - guide_width).max(line_node.bbox.x)
+                                }
+                                _ => (line_node.bbox.x
+                                    + (line_node.bbox.width - guide_width) / 2.0)
+                                    .max(line_node.bbox.x),
+                            }
+                        } else {
+                            guide_x
+                        };
                         for (idx, chunk) in guide_chunks.iter().enumerate().skip(1) {
                             let extra_id = tree.next_id();
                             let extra = RenderNode::new(
@@ -8144,10 +8589,21 @@ impl LayoutEngine {
                             let sibling_reserved_px = if vars.has_topbottom_vpos_base {
                                 0.0
                             } else {
-                                hwpunit_to_px(
+                                let raw = hwpunit_to_px(
                                     calc_sibling_topandbottom_reserved_hu(&p.controls),
                                     self.dpi,
-                                )
+                                );
+                                // 위 텍스트 줄 경로와 동일한 가드 — 편집 세션은
+                                // typeset 흐름이 재배정을 끝냈으므로 예약을 가산하지
+                                // 않고, 열람은 이중 가산(줄 y 가 이미 예약 아래)만
+                                // 차단한다.
+                                if self.profile.get().session_edited() {
+                                    0.0
+                                } else if raw > 40.0 && vars.y >= raw - 4.0 {
+                                    0.0
+                                } else {
+                                    raw
+                                }
                             };
                             if vars.raw_lh + 4.0 >= pic_h {
                                 *current_line_reserved_tac_picture_height = Some(pic_h);
@@ -8613,7 +9069,9 @@ fn make_picture_image_node(
             brightness: pic.image_attr.brightness,
             contrast: pic.image_attr.contrast,
             opacity: pic.image_attr.opacity(),
-            text_wrap: Some(pic.common.text_wrap),
+            // Inline glyphs stay in flow even if the saved object retains a
+            // floating wrap mode. Otherwise a textbox fill covers its pictures.
+            text_wrap: (!pic.common.treat_as_char).then_some(pic.common.text_wrap),
             transform: extract_shape_transform(&pic.shape_attr),
             external_path: pic.image_attr.external_path.clone(),
             ..ImageNode::new(bin_data_id, image_data)

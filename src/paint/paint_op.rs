@@ -1708,15 +1708,24 @@ impl PaintTextStyle {
     /// Returns whether a backend may replay this text as a simple fill-only
     /// positioned glyph run without losing HWP text effects.
     pub fn is_fill_only_glyph_replay(&self) -> bool {
+        self.is_simple_glyph_run_replay()
+            && self.outline_type == 0
+            && self.shadow_type == 0
+            && !self.emboss
+            && !self.engrave
+    }
+
+    /// Geometry-compatible glyph replay for backends that explicitly reproduce
+    /// outline, shadow, emboss and engrave. This does not enable those effects
+    /// for fill-only consumers or change the default text variant policy.
+    pub fn is_simple_glyph_run_replay(&self) -> bool {
         let ratio = if self.ratio > 0.0 { self.ratio } else { 1.0 };
         (ratio - 1.0).abs() <= 0.001
             && self.tab_leaders.is_empty()
             && self.underline == UnderlineType::None
             && !self.strikethrough
-            && self.outline_type == 0
-            && self.shadow_type == 0
-            && !self.emboss
-            && !self.engrave
+            && (self.shadow_type == 0
+                || (self.shadow_offset_x.is_finite() && self.shadow_offset_y.is_finite()))
             && !self.superscript
             && !self.subscript
             && self.emphasis_dot == 0
