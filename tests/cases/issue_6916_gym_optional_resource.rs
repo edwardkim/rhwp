@@ -3,8 +3,36 @@
 
 use serde_json::{json, Value};
 use std::fs::{self, File};
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+struct Scratch(PathBuf);
+
+impl Scratch {
+    fn new() -> Self {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock")
+            .as_nanos();
+        let path =
+            std::env::temp_dir().join(format!("rhwp-6916-resource-{}-{nonce}", std::process::id()));
+        // Never reuse an existing path: only a successfully created directory
+        // is owned by this guard and may be removed on drop.
+        fs::create_dir(&path).expect("create isolated working directory");
+        Self(path)
+    }
+
+    fn path(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
 
 struct Server(Child);
 
@@ -19,7 +47,7 @@ fn gym_exchange() -> Vec<Value> {
     let binary =
         std::env::var_os("CARGO_BIN_EXE_rhwp").unwrap_or_else(|| env!("CARGO_BIN_EXE_rhwp").into());
     let binary = fs::canonicalize(binary).expect("rhwp binary");
-    let dir = tempfile::tempdir().expect("isolated working directory");
+    let dir = Scratch::new();
     let input = dir.path().join("requests.jsonl");
     let output = dir.path().join("responses.jsonl");
     let stderr = dir.path().join("stderr.txt");
