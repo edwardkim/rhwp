@@ -3370,7 +3370,8 @@ impl LayoutEngine {
                 para_index,
                 None,
                 false,
-                false,
+                // 현재 frame에서 재조판한 줄에 이전 저장 vpos를 다시 적용하지 않는다.
+                recomposed.is_some(),
                 0.0,
                 multi_col_width_hu,
                 Some(para),
