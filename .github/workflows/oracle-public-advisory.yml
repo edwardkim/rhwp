@@ -80,7 +80,7 @@ jobs:
             mydocs/manual/recipes/05_mail_merge_batch_fill.md
             mydocs/manual/recipes/06_visual_regression_before_after.md
             mydocs/tech/agent_roadmap/atlas_r1_r200.md
-            gym/README.md
+            mydocs/manual/gym_optional_tool.md
             pdf
             tools
             bindings

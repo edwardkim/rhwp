@@ -34,7 +34,7 @@ MCP_DOCUMENT_PATHS = (
     "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
     "mydocs/manual/recipes/06_visual_regression_before_after.md",
     "mydocs/tech/agent_roadmap/atlas_r1_r200.md",
-    "gym/README.md",
+    "mydocs/manual/gym_optional_tool.md",
 )
 
 
@@ -115,6 +115,11 @@ class OraclePublicAdvisoryWorkflowTests(unittest.TestCase):
         checkout_entries = {line.strip() for line in checkout.splitlines()}
         required_entries = {"saved/blank2010.hwp", *MCP_DOCUMENT_PATHS}
         self.assertTrue(required_entries.issubset(checkout_entries))
+        self.assertFalse(
+            any(entry == "gym" or entry.startswith("gym/") for entry in checkout_entries),
+            "Product sparse build must not require the optional Gym tree",
+        )
+        self.assertNotIn('include_str!("../gym/', mcp_source)
 
     def test_advisory_has_narrow_bootstrap_and_remains_non_required(self) -> None:
         active_triggers = self.workflow.split("permissions:\n", maxsplit=1)[0]
