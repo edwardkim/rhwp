@@ -47,6 +47,8 @@
 //! 저장 extent가 실제 flow band를 담는 경우에만 신뢰하여, 미리보기와 쪽 안 배치를 함께 잠근다.
 //! 위치는 #6912의 셀 윗선 대비 11.53px로 검증한다. 표 전체의 기존 쪽 좌표 차이를
 //! 이 개체의 셀 내부 정렬 계약과 섞지 않는다.
+//! 정본의 윗여백 141HU(1.88px)와 현재 셀 패딩 약 0.95px의 기존 차이는 0.93px다.
+//! 따라서 상대 위치 오차는 1px까지만 허용하며, 셀 하단과 용지 하단의 이탈은 별도로 금지한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -112,27 +114,38 @@ fn ole_preview_renders_instead_of_a_placeholder() {
 #[test]
 fn ole_preview_keeps_the_declared_box() {
     let root = page_tree(PAGE);
-    fn find(node: &RenderNode, cell_top: Option<f64>) -> Option<(f64, f64, f64, f64, f64)> {
-        let cell_top = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
-            Some(node.bbox.y)
+    fn find(
+        node: &RenderNode,
+        cell_bounds: Option<(f64, f64)>,
+    ) -> Option<(f64, f64, f64, f64, f64, f64)> {
+        let cell_bounds = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            Some((node.bbox.y, node.bbox.y + node.bbox.height))
         } else {
-            cell_top
+            cell_bounds
         };
         if matches!(node.node_type, RenderNodeType::RawSvg(_)) {
+            let (cell_top, cell_bottom) = cell_bounds?;
             return Some((
                 node.bbox.x,
                 node.bbox.y,
                 node.bbox.width,
                 node.bbox.height,
-                cell_top?,
+                cell_top,
+                cell_bottom,
             ));
         }
-        node.children.iter().find_map(|child| find(child, cell_top))
+        node.children
+            .iter()
+            .find_map(|child| find(child, cell_bounds))
     }
-    let (x, y, w, h, cell_top) = find(&root, None).expect("셀 안 OLE RawSvg");
+    let (x, y, w, h, cell_top, cell_bottom) = find(&root, None).expect("셀 안 OLE RawSvg");
     assert!(
-        (x - 100.6).abs() <= 2.0 && (y - cell_top - 11.53).abs() <= 0.5,
+        (x - 100.6).abs() <= 2.0 && (y - cell_top - 11.53).abs() <= 1.0,
         "미리보기의 셀 상대 위치가 정본에서 벗어났다: x={x:.1}, y={y:.1}, cell_top={cell_top:.1}"
+    );
+    assert!(
+        y >= cell_top && y + h <= cell_bottom,
+        "복원한 OLE 미리보기가 셀 밖으로 이탈했다: y={y}, h={h}, cell={cell_top}..{cell_bottom}"
     );
     assert!(
         y + h <= root.bbox.y + root.bbox.height,
