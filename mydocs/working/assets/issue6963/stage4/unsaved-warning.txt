@@ -1,0 +1,23 @@
+tton "배분 정렬"
+    - button "나눔 정렬"
+- main "문서 편집 영역":
+  - region "문서 페이지"
+  - textbox "문서 편집 입력"
+- contentinfo:
+  - button "1 / 1 쪽"
+  - generic: "구역: 1 / 1"
+  - generic: 삽입
+  - generic: 새 문서.hwp — 1페이지
+  - button "폭 맞춤"
+  - button "쪽 맞춤"
+  - button "축소 (⌘−)"
+  - slider "화면 확대/축소 배율": "500"
+  - button "확대 (⌘+)"
+  - button "100%":
+    - generic: 100%
+- text: 저장 확인
+- button "×"
+- generic: "\"새 문서.hwp\" 문서에 저장하지 않은 변경사항이 있습니다. 계속하기 전에 저장하시겠습니까?"
+- button "저장" [active]
+- button "저장 안 함"
+- button "취소"

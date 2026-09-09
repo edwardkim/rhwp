@@ -186,6 +186,7 @@ function mutatorCallCount(src: string): number {
 // 뮤테이션 표면 원장 (2026-07-17 동결). 이관/추가 시 이 표를 의식적으로 갱신한다.
 // 값을 낮추는 방향(이관)만 무해하며, 높이거나 신규 키 추가는 리뷰 대상이다.
 const BASELINE: Readonly<Record<string, number>> = {
+  'src/command/commands/hyperlink.ts': 5, // #6963: 삽입·수정·해제 및 본문/셀 글자 삽입 모두 executeOperation snapshot 내부
   'src/command/commands/edit.ts': 1,
   'src/command/commands/format.ts': 1,
   'src/command/commands/insert.ts': 16, // -3: z순서 4 호출부를 changeZOrder 헬퍼 1곳으로 합침(#2370 A)

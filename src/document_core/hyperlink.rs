@@ -11,7 +11,7 @@ use crate::model::paragraph::{FieldRange, Paragraph};
 use crate::parser::tags;
 
 /// 문단 주소. 빈 cell_path는 본문이며 각 경로 항목은 (컨트롤, 셀, 내부 문단)이다.
-#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HyperlinkTarget {
     pub section: usize,

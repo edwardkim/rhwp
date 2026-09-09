@@ -5,7 +5,7 @@
 - 담당: postmelee
 - 기준: `upstream/devel` `a3cd825c23d550e0c5f46b4e2eb3735a537f23f2`
 - 브랜치: `codex/issue-6963-hyperlinks`
-- 상태: 단계 3 완료(페이지 링크 영역 및 SVG/Skia PDF 주석), Studio 연결·브라우저 전체 여정 대기
+- 상태: 단계 4 완료(Studio 링크 편집·history 연결), 브라우저 저장·재열기·PDF 전체 여정 대기
 
 ## 목표와 범위
 
@@ -51,9 +51,10 @@ Studio에서 HTTP/HTTPS 텍스트 링크를 삽입·수정·제거하고 HWP/HWP
 | 4 | Studio dialog·명령·shortcut·라우터 | 선택/무선택, 수정/제거/취소, undo/redo, focus·dirty, 지원 컨텍스트 |
 | 5 | Studio→저장→재열기→PDF 전체 여정 | 실제 브라우저, PDF 뷰어 클릭, 한컴 기준 URI·geometry 비교 |
 
-단계 1~3 기록: [기준 샘플 계약](../working/task_m100_6963_stage1.md),
+단계 1~4 기록: [기준 샘플 계약](../working/task_m100_6963_stage1.md),
 [코어 편집·저장 왕복](../working/task_m100_6963_stage2.md),
-[페이지 영역·PDF 주석](../working/task_m100_6963_stage3.md).
+[페이지 영역·PDF 주석](../working/task_m100_6963_stage3.md),
+[Studio 편집 연결](../working/task_m100_6963_stage4.md).
 
 단계가 끝나면 해당 단계 변경과 검증 결과를 커밋하고 다음 단계 기록을 시작한다.
 전체 feature 완료는 이슈의 모든 1차 범위 완료 조건 충족 후에만 보고한다.

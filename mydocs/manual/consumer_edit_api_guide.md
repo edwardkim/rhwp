@@ -63,11 +63,41 @@ const doc3 = HwpDocument.openWithPassword(
 | 셀 내부 | `insertTextInCell`, `getTextInCell`, `applyCharFormatInCell` (표 셀 좌표 추가) |
 | 그림 | `insertPicture` |
 | 필드(누름틀) | `insertClickHereField`, `getFieldList`, `setFieldValueByName` |
+| 웹 하이퍼링크 | `getHyperlinkContext`, `insertHyperlinkEx`, `updateHyperlinkEx`, `removeHyperlinkEx` |
 | 서식 | `applyCharFormat`, `applyParaFormat`, `setCharShapeId` |
 | 저장 | `exportHwp`, `exportHwpx`, `exportHwpWithPassword`, `exportHwpxWithPassword` |
 
 정확한 시그니처·반환은 패키지의 `rhwp.d.ts`(타입 정의)를 본다. IDE 자동완성으로 인자
 이름과 타입이 표시된다.
+
+### 웹 하이퍼링크 (#6963)
+
+새 문서의 저장 왕복은 Studio와 같은 `createBlankDocument()` 템플릿 경로를 사용한다.
+`createEmpty()`만 호출한 최소 IR의 HWP5 저장은 이 링크 기능의 검증 범위에 포함하지 않는다.
+
+```ts
+const doc = HwpDocument.createEmpty();
+doc.createBlankDocument();
+doc.insertText(0, 0, 0, '한컴 링크');
+const target = { section: 0, para: 0, cellPath: [] };
+const fieldId = doc.insertHyperlinkEx(JSON.stringify({
+  target, start: 0, end: 5, uri: 'https://www.hancom.com',
+}));
+const { text, links } = JSON.parse(doc.getHyperlinkContext(JSON.stringify(target)));
+doc.updateHyperlinkEx(JSON.stringify({ target, fieldId, uri: 'https://example.com/#section' }));
+doc.removeHyperlinkEx(JSON.stringify({ target, fieldId })); // 표시 글자는 남는다.
+```
+
+`start`·`end`는 Unicode scalar 기준 반열린 범위이며 JavaScript의 UTF-16 `string.length`와
+다르다. 본문은 빈 `cellPath`, 셀·글상자는 `[controlIndex, cellIndex, cellParaIndex]`의
+배열을 바깥부터 나열한다. `para`는 가장 바깥 본문 문단이고 글상자의 `cellIndex`는 0이다.
+본문·중첩 셀·글상자의 단일 문단을 지원하며 캡션·머리말·각주·다단락 필드 등은 지원하지 않는다.
+조회 결과 `links`에는 `fieldId`, `start`, `end`, `text`, `uri`가 담긴다.
+
+추가는 field ID, 수정은 변경 여부(boolean), 해제는 void를 반환한다. 주소·범위·경로 오류는
+JS 예외다. 새 주소는 HTTP/HTTPS만 허용하며 조회는 기존 scheme을 보존한다.
+무선택 삽입은 표시 글자 삽입과 링크 추가를 같은 snapshot으로 묶고 실패 시 복원해야 한다.
+Studio는 이를 편집 라우터로 처리한다. 직접 WASM 호출은 Studio의 undo·dirty 기록을 만들지 않는다.
 
 ## 3. 래퍼(Builder) 패턴 권장
 

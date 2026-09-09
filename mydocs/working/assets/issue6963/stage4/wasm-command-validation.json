@@ -1,0 +1,15 @@
+{
+  "results": [
+    "무선택 삽입·실패 원자 복원·실제 snapshot undo/redo",
+    "동일 주소 무기록·주소 수정 undo/redo",
+    "Studio bridge 편집 후 HWP/HWPX 저장 왕복",
+    "연결 해제의 문자열 보존 및 undo/redo",
+    "선택 문자열 삽입",
+    "외부 내용 변경·문서 교체 세대 차단",
+    "모달이 열린 뒤 읽기 전용 전환 차단",
+    "한컴 중첩 셀 기존 링크 수정·무선택 신규 삽입·undo",
+    "실제 글상자 신규 링크·undo/redo·HWP/HWPX 왕복",
+    "WASM JSON 경계의 누락·음수·잘못된 경로·비정수 ID 거부"
+  ],
+  "passed": 10
+}
