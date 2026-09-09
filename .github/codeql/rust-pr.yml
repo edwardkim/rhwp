@@ -11,7 +11,8 @@ paths:
 # exclude-from-incremental 태그가 없으므로 정확한 ID로 제한한다.
 # metric 조건도 함께 적용하여 향후 경고 쿼리로 바뀌면 제외하지 않는다.
 # 보안 탐지와 추출 오류/경고, 파일 수/커버리지 진단은 그대로 유지한다.
-# devel push와 schedule의 full scan에는 이 설정을 적용하지 않는다.
+# devel push는 경로 축소가 없는 rust-postmerge.yml에서 같은 metric만 제외한다.
+# main push, schedule, workflow_dispatch에는 metric 제외를 적용하지 않는다.
 query-filters:
   - exclude:
       id: rust/summary/summary-statistics

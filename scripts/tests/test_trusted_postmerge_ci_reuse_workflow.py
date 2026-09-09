@@ -22,6 +22,22 @@ WORKFLOWS = {
 
 
 class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
+    def test_base_advance_uses_bounded_trusted_object_proof_for_final_head(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        block = workflow.split("const reviewOnlyBaseAdvanceByRunId = {};", 1)[1].split("const frontendOnlyRunIds", 1)[0]
+        for guard in (
+            "isFork && testedFinalHead", "count < 64", "cursor !== testedBase",
+            "commit.sha !== cursor", "typeof verifyReviewOnlyBaseAdvance === 'function'",
+            "finalHeadRun?.status === 'completed'", "finalHeadRun.conclusion === 'success'",
+            "verifyReviewOnlyBaseAdvance(process.env.GITHUB_WORKSPACE",
+            "candidateSha: pr.head.sha", "proof.testedTreeSha !== testedFinalHead.treeSha",
+            "reviewOnlyBaseAdvanceByRunId[String(finalHeadRun.id)] = proof",
+        ):
+            self.assertIn(guard, block)
+        self.assertNotIn("checkout", block)
+        self.assertIn("reviewOnlyBaseAdvanceByRunId,", workflow)
+        self.assertIn("candidate-duration-artifacts-unavailable", workflow)
+
     def test_fork_artifact_binds_upstream_pr_head_repository_and_attempt(self) -> None:
         workflow = REUSABLE.read_text(encoding="utf-8")
         capture = workflow.split("- name: Capture PR merge-tree evidence", 1)[1].split(

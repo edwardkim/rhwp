@@ -228,6 +228,69 @@ export function verifyForkPostMergeTree(repository, identity) {
   return verifyPostMergeTree(repository, identity, false);
 }
 
+// Only the exact final fork head may reuse a run across a Markdown-only base advance.
+// Inspect raw immutable objects, including every first-parent step, never PR code.
+export function verifyReviewOnlyBaseAdvance(repository, identity) {
+  const { baseSha, mergeSha, candidateSha, testedMergeSha } = identity;
+  if (![baseSha, mergeSha, candidateSha, testedMergeSha].every(validSha)) {
+    throw new Error("invalid-review-base-advance-identity");
+  }
+  const git = (...args) => execFileSync("git", ["-C", repository, "--no-replace-objects", ...args], {
+    encoding: "utf8", timeout: 30000, maxBuffer: 1024 * 1024,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  const commit = (sha) => {
+    const headers = git("cat-file", "commit", sha).split("\n\n", 1)[0].split("\n");
+    const trees = headers.filter(line => line.startsWith("tree ")).map(line => line.slice(5));
+    const parents = headers.filter(line => line.startsWith("parent ")).map(line => line.slice(7));
+    if (trees.length !== 1 || !validSha(trees[0]) || !parents.every(validSha)
+      || new Set(parents).size !== parents.length) {
+      throw new Error("review-base-advance-commit-unavailable");
+    }
+    return { tree: trees[0], parents };
+  };
+  const assertReviewDiff = (before, after) => {
+    const fields = git("diff", "--raw", "--no-abbrev", "-z", "--no-renames", "--no-ext-diff",
+      "--no-textconv", "--ignore-submodules=none", before, after, "--").split("\0");
+    if (fields.pop() !== "" || fields.length % 2 !== 0) {
+      throw new Error("review-base-advance-incomplete-diff");
+    }
+    for (let index = 0; index < fields.length; index += 2) {
+      const path = fields[index + 1];
+      if (!/^:(000000|100644) (000000|100644) [0-9a-f]{40} [0-9a-f]{40} [AMD]$/.test(fields[index])
+        || !path.startsWith("mydocs/") || !path.endsWith(".md")
+        || path === "mydocs/tech/text-ir-v2.md"
+        || path === "mydocs/tech/canvaskit-parity-implementation.md") {
+        throw new Error("review-base-advance-non-review-change");
+      }
+    }
+  };
+  const tested = commit(testedMergeSha);
+  const final = commit(mergeSha);
+  if (tested.parents.length !== 2 || final.parents.length !== 2
+    || tested.parents[1] !== candidateSha || final.parents[1] !== candidateSha
+    || final.parents[0] !== baseSha || tested.parents[0] === baseSha) {
+    throw new Error("review-base-advance-parent-mismatch");
+  }
+  const testedBaseSha = tested.parents[0];
+  let cursor = baseSha;
+  for (let count = 0; cursor !== testedBaseSha && count < 64; count += 1) {
+    const current = commit(cursor);
+    if (current.parents.length < 1 || current.parents.length > 2) {
+      throw new Error("review-base-advance-history-unavailable");
+    }
+    const parent = commit(current.parents[0]);
+    assertReviewDiff(parent.tree, current.tree);
+    cursor = current.parents[0];
+  }
+  if (cursor !== testedBaseSha) {
+    throw new Error("review-base-advance-history-limit");
+  }
+  assertReviewDiff(tested.tree, final.tree);
+  return { baseSha, testedBaseSha, mergeSha, candidateSha, testedMergeSha,
+    testedTreeSha: tested.tree, finalTreeSha: final.tree };
+}
+
 function hasReviewBridgeTreeEvidence(input, run, baseSha, bridgeSha, finalTreeSha) {
   const tested = input.mergeTreeEvidenceByRunId?.[String(run.id)];
   const proof = input.reviewBridgeTreeEvidenceByRunId?.[String(run.id)];
@@ -487,17 +550,32 @@ export function evaluateTrustedPostMergeReuse(input) {
     parents,
     mergeTreeSha,
   );
-  if (isFork && (!exactMergeTreeEvidence || !hasForkRunBinding(input, finalHeadCandidate, pullRequest))) {
+  const advanceProof = input.reviewOnlyBaseAdvanceByRunId?.[String(finalHeadCandidate?.id)];
+  const testedFinalHead = input.mergeTreeEvidenceByRunId?.[String(finalHeadCandidate?.id)];
+  const reviewOnlyBaseAdvance = isFork
+    && finalHeadCandidate?.status === "completed" && finalHeadCandidate.conclusion === "success"
+    && hasForkRunBinding(input, finalHeadCandidate, pullRequest)
+    && advanceProof?.baseSha === baseParent
+    && advanceProof.testedBaseSha === testedFinalHead.parents[0]
+    && advanceProof.testedBaseSha !== baseParent
+    && advanceProof.mergeSha === input.mergeSha
+    && advanceProof.candidateSha === pullRequest.head.sha
+    && advanceProof.testedMergeSha === testedFinalHead.sha
+    && advanceProof.testedTreeSha === testedFinalHead.treeSha
+    && advanceProof.finalTreeSha === mergeTreeSha;
+  if (isFork && ((!exactMergeTreeEvidence && !reviewOnlyBaseAdvance)
+    || !hasForkRunBinding(input, finalHeadCandidate, pullRequest))) {
     return denied("fork-pr-merge-tree-evidence-unavailable");
   }
   if (
     headContainsBase
     && mergeTreeSha !== input.sourceCommit?.commit?.tree?.sha
     && !exactMergeTreeEvidence
+    && !reviewOnlyBaseAdvance
   ) {
     return denied("merge-tree-does-not-match-pr-head");
   }
-  if (!headContainsBase && !exactMergeTreeEvidence) {
+  if (!headContainsBase && !exactMergeTreeEvidence && !reviewOnlyBaseAdvance) {
     return denied("pr-merge-tree-evidence-unavailable");
   }
 
@@ -540,7 +618,9 @@ export function evaluateTrustedPostMergeReuse(input) {
   ) {
     return {
       reuse: true,
-      reason: frontendOnly
+      reason: reviewOnlyBaseAdvance
+        ? "review-only-base-advance-final-head-green-pr-workflow-reused"
+        : frontendOnly
         ? (candidateSource.hasReviewOnlyTail
           ? "review-tail-final-head-green-frontend-ci-reused"
           : "exact-green-frontend-ci-reused")
