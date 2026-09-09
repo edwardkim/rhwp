@@ -7734,8 +7734,27 @@ impl DocumentCore {
             },
         }
 
-        fn collect_line_text(node: &RenderNode, out: &mut String, has_token: &mut bool) {
+        fn collect_line_text(
+            node: &RenderNode,
+            out: &mut String,
+            has_token: &mut bool,
+            items: &mut Vec<MarkdownItem>,
+        ) {
             match &node.node_type {
+                RenderNodeType::Image(image_node) => {
+                    // Preserve text/image order within a rendered line.
+                    if *has_token {
+                        items.push(MarkdownItem::Line(std::mem::take(out)));
+                        *has_token = false;
+                    }
+                    items.push(MarkdownItem::Image {
+                        sec_idx: image_node.section_index,
+                        para_idx: image_node.para_index,
+                        control_idx: image_node.control_index,
+                        bin_data_id: image_node.bin_data_id,
+                    });
+                    return;
+                }
                 RenderNodeType::TextRun(tr) => {
                     // 사람이 읽을 문자열이므로 표시 텍스트를 쓴다 — 머리말 필드는
                     // 모델에 제어문자 1자라 그대로 내보내면 값이 사라진다 (Task #3216).
@@ -7770,7 +7789,7 @@ impl DocumentCore {
             }
 
             for child in &node.children {
-                collect_line_text(child, out, has_token);
+                collect_line_text(child, out, has_token, items);
             }
         }
 
@@ -7897,7 +7916,7 @@ impl DocumentCore {
                     let mut line = String::new();
                     let mut has_token = false;
                     for child in &node.children {
-                        collect_line_text(child, &mut line, &mut has_token);
+                        collect_line_text(child, &mut line, &mut has_token, items);
                     }
                     if has_token {
                         items.push(MarkdownItem::Line(line));
