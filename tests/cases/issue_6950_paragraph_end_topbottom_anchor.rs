@@ -559,3 +559,55 @@ fn computed_frame_placement_reaches_paint_and_following_flow() {
         );
     }
 }
+
+#[test]
+fn split_computed_host_publishes_fragment_local_placements() {
+    use rhwp::renderer::{
+        composer::compose_section, height_measurer::HeightMeasurer,
+        pagination::PageItem, style_resolver::resolve_styles, typeset::TypesetEngine,
+    };
+    let core = core();
+    let doc = core.document();
+    let styles = resolve_styles(&doc.doc_info, 96.0);
+    for without_source_rows in [false, true] {
+        let mut section = doc.sections[0].clone();
+        section.paragraphs = vec![section.paragraphs[1].clone()];
+        section.paragraphs[0].invalidate_layout_inputs();
+        if without_source_rows {
+            section.paragraphs[0].line_segs.clear();
+        }
+        let mut page = section.section_def.page_def.clone();
+        page.height = page.margin_top + page.margin_bottom + 22000;
+        let width = rhwp::renderer::hwpunit_to_px(
+            (page.width - page.margin_left - page.margin_right) as i32, 96.0,
+        );
+        let composed = compose_section(&section);
+        let measured = HeightMeasurer::new(96.0).measure_section(
+            &section.paragraphs, &composed, &styles, Some(width),
+        );
+        let pages = TypesetEngine::new(96.0).typeset_section(
+            &section.paragraphs, &composed, &styles, &page, &Default::default(),
+            0, &measured.tables, false, &Default::default(),
+        );
+        let mut fragments = 0;
+        for column in pages.pages.iter().flat_map(|p| &p.column_contents) {
+            for item in &column.items {
+                if let PageItem::PartialTable { para_index: 0, control_index: 0,
+                    is_continuation, .. } = item {
+                    fragments += 1;
+                    let placement = column.paragraph_float_placements.get(&(0, 0))
+                        .expect("분할 표도 현재 단의 확정 배치를 전달해야 한다");
+                    assert!(placement.occupied_bottom > placement.table_top);
+                    if *is_continuation {
+                        assert!(placement.table_top.abs() < 0.1,
+                            "다음 단에 이전 앵커 거리 재적용 금지: {placement:?}");
+                    } else {
+                        assert!(placement.anchor_y > 0.0);
+                        assert!(placement.table_top > placement.anchor_y);
+                    }
+                }
+            }
+        }
+        assert!(fragments >= 2, "실제 분할 경로를 검증해야 한다: {fragments}");
+    }
+}
