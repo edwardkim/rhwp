@@ -229,3 +229,36 @@ fn reflowed_host_does_not_use_stale_stored_line_coordinates() {
     let bottom = host.iter().map(|n| n.bbox.y + n.bbox.height).fold(0.0_f64, f64::max);
     assert!(top >= bottom, "재조판된 본문 끝 {bottom}, 표 상단 {top}");
 }
+
+#[test]
+fn top_caption_is_inside_the_reserved_box_before_the_table_body() {
+    use rhwp::model::{paragraph::Paragraph, shape::{Caption, CaptionDirection}};
+    let baseline = core();
+    let tree = baseline.build_page_render_tree(0).unwrap();
+    let mut items = Vec::new();
+    body_items(&tree.root, &mut items);
+    let (without_caption, _) = table(&items, 1, 0);
+    let mut document = baseline.document().clone();
+    let Control::Table(target) = &mut document.sections[0].paragraphs[1].controls[0] else {
+        panic!("표")
+    };
+    target.caption = Some(Caption {
+        direction: CaptionDirection::Top, spacing: 300,
+        paragraphs: vec![Paragraph { text: "검증용 캡션".into(),
+            line_segs: vec![LineSeg { line_height: 1000, text_height: 1000,
+                baseline_distance: 800, ..Default::default() }],
+            ..Default::default() }],
+        ..Default::default()
+    });
+    let caption_extra = rhwp::renderer::composer::caption_height_px(&target.caption, 96.0) + 4.0;
+    let mut core = core();
+    core.set_document(document);
+    let tree = core.build_page_render_tree(0).unwrap();
+    items.clear();
+    body_items(&tree.root, &mut items);
+    let (with_caption, bottom) = table(&items, 1, 0);
+    assert!((with_caption - without_caption - caption_extra).abs() < 0.1,
+        "위 캡션은 예약 상자 안에서 한 번만 반영: {without_caption} → {with_caption}, 캡션 {caption_extra}");
+    assert!(items.iter().filter(|n| matches!(&n.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(3))).all(|n| n.bbox.y >= bottom));
+}

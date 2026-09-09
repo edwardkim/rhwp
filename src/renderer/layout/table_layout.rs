@@ -2974,7 +2974,13 @@ impl LayoutEngine {
         // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
         let flow_table_y = if let Some(table_top) = resolved_table_top {
             // typeset에서 fit과 예약까지 확정한 표 상단은 다시 해석하지 않는다.
+            // 위 캡션은 예약된 상자의 내부이며 표 본체 앞에 놓는다.
             table_top
+                + if render_caption {
+                    top_caption_flow_extra(&table.caption, caption_height, caption_spacing)
+                } else {
+                    0.0
+                }
         } else if inline_x_override.is_some() {
             y_start + inline_top_caption_offset
         } else {

@@ -22,6 +22,7 @@ use super::page_layout::LayoutRect;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ParagraphFloatPlacement {
     pub anchor_y: f64,
+    /// 표와 캡션을 함께 담는 배치 상자의 상단. 위 캡션은 이 상자 안에서 배치한다.
     pub table_top: f64,
     pub occupied_bottom: f64,
 }
