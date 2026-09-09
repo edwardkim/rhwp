@@ -7772,11 +7772,26 @@ impl LayoutEngine {
             };
             // Square/중첩 표 등 비-flow 개체의 시각 bottom 은 저장 LINE_SEG 흐름에
             // 포함되지 않으므로(#1486 p19 Square 그림), 그런 개체가 저장 extent 를
-            // 넘는 셀은 저장 흐름 신뢰 대상이 아니다 — TopAndBottom flow 개체만
-            // 저장 vpos 에 흡수된다(악보 셀).
+            // 넘는 셀은 저장 흐름 신뢰 대상이 아니다.
+            //
+            // [#6912] TopAndBottom flow 개체도 여기 넣는다. 종전 계약은 "TopAndBottom
+            // 은 저장 vpos 에 흡수된다(악보 셀)" 였는데, 흡수는 **결과이지 전제가
+            // 아니다** — 흡수했으면 `저장 extent ≥ 개체 띠` 라 아래 비교가 그대로
+            // 통과해 악보 셀 계약이 유지되고, 흡수하지 않았으면 띠가 extent 를
+            // 크게 넘어 신뢰를 접는다. 곧 이 `max` 는 흡수 여부를 스스로 판정한다.
+            // (`calc_non_inline_controls_flow_height` 는 문단별 띠의 **합**이다 — 흡수한
+            // 셀은 문단마다 vpos 가 자기 띠를 지나 있어 저장 extent 가 그 합 이상이다.)
+            //
+            // 156564340 4쪽: 세로 가운데 정렬 칸의 앵커 줄 `vertpos=0`(흡수 안 함)인데
+            // 개체 띠는 854.4px 다. 종전에는 저장 extent 13.33px 를 콘텐츠 높이로
+            // 믿어 빈 줄이 (854.4 − 13.33)/2 = 420.5px 내려가고, `vertRelTo=PARA` 인
+            // 개체가 그 줄을 따라가 칸·쪽 밖으로 나갔다. 한/글 자신의 저장값은 그 띠를
+            // 행 높이에 넣는다 — `tbl sz height 64362` = 63356(개체) + 724(vertOffset)
+            // + 282(`tc cellSz height` = cellMargin top+bottom, 곧 글 내용 높이 0).
             let non_flow_object_extent = self
                 .calc_nested_controls_bottom_height(&cell.paragraphs, styles)
-                .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs));
+                .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
+                .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs));
             // [#2148 #2279] 저장 vpos 흐름이 물리적으로 줄들을 담지 못하는 퇴화
             // 형상(다문단 전부 vpos=0 등, 36399374 pi=79 병합 셀: extent 35px vs
             // 줄높이 합 260px)은 신뢰 대상이 아니다 — 전 문단이 셀 상단 한 y 에
