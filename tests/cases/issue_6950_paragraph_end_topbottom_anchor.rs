@@ -611,3 +611,64 @@ fn split_computed_host_publishes_fragment_local_placements() {
         assert!(fragments >= 2, "실제 분할 경로를 검증해야 한다: {fragments}, {pages:?}");
     }
 }
+
+#[test]
+fn split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame() {
+    fn body(node: &RenderNode) -> Option<(f64, f64)> {
+        if matches!(node.node_type, RenderNodeType::Body { .. }) {
+            return Some((node.bbox.y, node.bbox.y + node.bbox.height));
+        }
+        node.children.iter().find_map(body)
+    }
+    for body_height in [18000, 12000] {
+        for without_source_rows in [false, true] {
+            let mut core = core();
+            let mut doc = core.document().clone();
+            let mut host = doc.sections[0].paragraphs[1].clone();
+            host.invalidate_layout_inputs();
+            if without_source_rows { host.line_segs.clear(); }
+            doc.sections[0].paragraphs = vec![host];
+            core.set_document(doc.clone());
+            let before = core.build_page_render_tree(0).unwrap();
+            let mut before_items = Vec::new();
+            body_items(&before.root, &mut before_items);
+            let expected_lines = before_items.iter().filter(|n| matches!(
+                &n.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)
+            )).count();
+            let page = &mut doc.sections[0].section_def.page_def;
+            page.height = page.margin_top + page.margin_bottom + body_height;
+            core.set_document(doc);
+            assert!(core.page_count() >= 2 && core.page_count() <= 4);
+            let mut host_lines = 0;
+            let mut fragments = 0;
+            for page in 0..core.page_count() {
+                let tree = core.build_page_render_tree(page).unwrap();
+                let (body_top, body_bottom) = body(&tree.root).unwrap();
+                let mut items = Vec::new();
+                body_items(&tree.root, &mut items);
+                let lines: Vec<_> = items.iter().filter(|n| matches!(
+                    &n.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)
+                )).collect();
+                host_lines += lines.len();
+                let host_bottom = lines.iter().map(|n| n.bbox.y + n.bbox.height)
+                    .fold(body_top, f64::max);
+                for node in &items {
+                    if matches!(&node.node_type, RenderNodeType::Table(t)
+                        if t.para_index == Some(0) && t.control_index == Some(0)) {
+                        fragments += 1;
+                        assert!(node.bbox.y >= host_bottom - 0.1,
+                            "본문 {body_height} / 쪽 {page}: 호스트 {host_bottom}, 표 {:?}", node.bbox);
+                        assert!(node.bbox.y + node.bbox.height <= body_bottom + 0.5,
+                            "본문 {body_height}, 쪽 {page}, 표 {:?}, 하한 {body_bottom}", node.bbox);
+                        if page > 0 {
+                            assert!((node.bbox.y - body_top).abs() < 0.5,
+                                "새 쪽 앵커 거리 재적용 금지: {:?}, 본문 {body_top}", node.bbox);
+                        }
+                    }
+                }
+            }
+            assert!(fragments > 0);
+            assert_eq!(host_lines, expected_lines, "호스트 누락/중복 금지");
+        }
+    }
+}

@@ -3339,6 +3339,9 @@ impl DocumentCore {
             None,
             false,
             Some(&probe),
+            col.paragraph_float_placements
+                .get(&(parent_para_idx, control_idx))
+                .map(|p| col_area.y + p.table_top),
         );
 
         // legacy 와 동일한 매칭 함수로 캐럿·셀 bbox 탐색
