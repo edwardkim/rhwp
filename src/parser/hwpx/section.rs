@@ -4239,8 +4239,13 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                                             val.chars().filter(|c| c.is_ascii_digit()).collect();
                                         img_fill.bin_data_id = num.parse().unwrap_or(0);
                                     }
-                                    b"bright" => img_fill.brightness = parse_i8(&attr),
-                                    b"contrast" => img_fill.contrast = parse_i8(&attr),
+                                    // [#6895] HWPX 속성명은 이진 HWP5 `FILL_INFO` 와
+                                    // 반대 순서다. 공통 `ImageFill` 은 이진 저장 순서를
+                                    // 쓰므로 여기서 정규화한다 — `header.rs` 와 동형.
+                                    // 종전엔 이 자리만 맞바꾸지 않아, 같은 구조체가
+                                    // 출처에 따라 반대 뜻을 담았다.
+                                    b"bright" => img_fill.contrast = parse_i8(&attr),
+                                    b"contrast" => img_fill.brightness = parse_i8(&attr),
                                     b"effect" => {
                                         img_fill.effect = match attr_str(&attr).as_str() {
                                             "GRAY_SCALE" => 1,
@@ -10434,8 +10439,15 @@ mod tests {
             .expect("imgBrush 는 ImageFill 을 남겨야 함");
 
         assert_eq!(img.bin_data_id, 3, "binaryItemIDRef 가 보존돼야 함");
-        assert_eq!(img.brightness, 10, "bright 가 보존돼야 함");
-        assert_eq!(img.contrast, -5, "contrast 가 보존돼야 함");
+        // [#6895] `ImageFill` 은 이진 HWP5 저장 순서를 담는다 — HWPX 속성명과 반대다.
+        // 종전엔 이 자리만 정규화를 안 해 같은 구조체가 출처에 따라 반대 뜻을 담았다.
+        assert_eq!(
+            img.display_brightness_contrast(),
+            (10, -5),
+            "화면 순서로 bright/contrast 가 보존돼야 함"
+        );
+        assert_eq!(img.brightness, -5, "이진 1번 바이트 = 화면 contrast");
+        assert_eq!(img.contrast, 10, "이진 2번 바이트 = 화면 bright");
         assert_eq!(img.effect, 1, "effect=GRAY_SCALE 가 보존돼야 함");
         assert_eq!(
             img.fill_mode,
