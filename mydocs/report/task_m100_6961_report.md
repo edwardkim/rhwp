@@ -66,3 +66,12 @@ BiDi Page.url()은 확장 탭을 about:blank로 표시하여 실제 location.hre
 1. HWP 다운로드 시 뷰어가 1개만 열린다.
 2. 편집 후 저장/다른 이름으로 저장에서 파일명에 `_Users_…` 경로 접두사가 붙지 않는다.
 3. 저장 시 추가 뷰어가 열리지 않으며 저장본에 편집 내용이 남는다.
+
+
+## Draft PR 제출
+
+사용자의 명시 승인 후 upstream 작업 branch에 push하고 [PR #6965](https://github.com/edwardkim/rhwp/pull/6965)를 devel 대상으로 draft 생성했다.
+[작성자 검토 기록](../pr/archives/pr_6965_review.md)을 같은 PR에 포함한다. 최초 head는
+`6e957ebfed0fa3f527026244c72fc6ddca0bc943`이며, 이후 기록 commit도 같은 branch에 push한다.
+생성 후 API에서 base/head/draft와 한글 본문을 재확인했다. CI는 작성 시점 실행 중이며,
+ready 전환·merge·issue close·배포는 수행하지 않았다.

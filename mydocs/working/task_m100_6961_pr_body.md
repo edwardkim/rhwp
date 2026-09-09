@@ -18,3 +18,17 @@ Closes #6961
 
 #6964의 최종 보정과 결합한 Firefox 패키지에서 탭 1개 유지·정상 파일명·편집 보존을 확인했다.
 배포에는 두 수정이 함께 포함되어야 한다.
+
+## 제출 기준
+
+- 검증한 code commit: `65e4b32e0bde1fdb0bc99300e37d85d5f57af5e7`
+- 최초 제출 head: `6e957ebfed0fa3f527026244c72fc6ddca0bc943` (code 검증 이후 변경은 `mydocs/` 기록뿐)
+- 최신 devel `0d36da409`와 merge-tree 충돌 없음.
+- 변경 범위: 확장 JavaScript·회귀 테스트·작업 문서. Rust/WASM/Studio source와 CI 설정은 변경하지 않았다.
+- [x] 변경 범위의 로컬 검증과 실제 브라우저 검증을 수행했다.
+- [x] `git diff --check`와 최신 base 결합을 확인했다.
+- 캡슐은 문서 편집 산출물 생성 작업이 아니므로 미첨부.
+
+사용자 승인에 따라 draft로 제출한다. ready 전환·merge·배포는 별도 단계다.
+
+관련 PR: #6966. [작성자 검토 기록](https://github.com/edwardkim/rhwp/blob/codex/issue-6961-download-filename/mydocs/pr/archives/pr_6965_review.md).
