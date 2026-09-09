@@ -164,8 +164,8 @@ fn parse_legacy_hwp_chart_contents(
 /// 모르는 것은 다르다.
 fn grid_series_name(grid: &LegacyChartGrid, axis: SeriesAxis, index: usize) -> Option<String> {
     let label = match axis {
-        SeriesAxis::Rows => grid.row_label(index as u16),
-        SeriesAxis::Columns => grid.column_label(index as u16),
+        SeriesAxis::Rows => grid.row_label(grid.data_row_at(index as u16)),
+        SeriesAxis::Columns => grid.column_label(grid.data_col_at(index as u16)),
     };
     label.map(str::to_string)
 }
@@ -174,8 +174,8 @@ fn grid_series_name(grid: &LegacyChartGrid, axis: SeriesAxis, index: usize) -> O
 /// 어긋나지 않게 한다 — 렌더러가 카테고리 개수로 축을 잡는다.
 fn grid_category_label(grid: &LegacyChartGrid, axis: SeriesAxis, index: usize) -> String {
     let label = match axis {
-        SeriesAxis::Rows => grid.column_label(index as u16),
-        SeriesAxis::Columns => grid.row_label(index as u16),
+        SeriesAxis::Rows => grid.column_label(grid.data_col_at(index as u16)),
+        SeriesAxis::Columns => grid.row_label(grid.data_row_at(index as u16)),
     };
     label
         .map(str::to_string)
@@ -184,13 +184,13 @@ fn grid_category_label(grid: &LegacyChartGrid, axis: SeriesAxis, index: usize) -
 
 /// 계열 `series` 의 카테고리 `category` 값.
 ///
-/// `scan_legacy_grid` 가 데이터 칸과 수치 셀의 일대일 대응을 이미 보장하므로 `None` 은
-/// 도달하지 않는다.
+/// 빈 데이터 칸은 결함이 아니므로(코퍼스 74개 중 5개) `None` 은 0 으로 채운다.
 fn grid_value(grid: &LegacyChartGrid, axis: SeriesAxis, series: usize, category: usize) -> f64 {
-    let (row, col) = match axis {
+    let (data_row, data_col) = match axis {
         SeriesAxis::Rows => (series as u16, category as u16),
         SeriesAxis::Columns => (category as u16, series as u16),
     };
+    let (row, col) = (grid.data_row_at(data_row), grid.data_col_at(data_col));
     grid.number(row, col).unwrap_or(0.0)
 }
 
