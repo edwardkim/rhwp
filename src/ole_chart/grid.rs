@@ -1,44 +1,11 @@
-//! [#4098] 레거시 `Contents` 의 `VtDataGrid` 를 **구조로** 읽는다.
+//! 레거시 `Contents`의 `VtDataGrid`를 아카이브 슬롯 순서로 읽는다.
 //!
-//! ## 왜 별도 스캐너인가
-//!
-//! 같은 모듈의 [`parser`](super::parser) 는 그리드를 **값의 성질로 짐작**했다. "정수 ·
-//! 1 이상 · 100만 이하" 만 값으로 인정하는 필터가 값을 거르는 데 그치지 않고 연속 f64
-//! 런의 **프레임 기준**이어서, 실제 차트의 `4.3` 하나가 런을 끊어 파싱 전체를 무너뜨렸다.
-//! 개수도 라벨에서 역산했기 때문에 라벨 분류가 틀리면 값 탐색까지 같이 틀렸다.
-//!
-//! 이 스캐너는 값을 **보지 않는다.** 크기·부호·정수 여부 어느 것도 판단 재료가 아니다.
-//!
-//! ## 문법 (실측: 코퍼스 28종 + 레거시 단독 대조군)
-//!
-//! `VtDataGrid` 프롤로그가 치수를 **명시**한다. 행 pitch 추론도 stride 가정도 필요 없다.
-//!
-//! ```text
-//! <u16 11> "VtDataGrid\0"   <u16 ver> <u32>
-//! <u16  9> "VtMatrix\0"     <u16 ver> <u32>
-//! <u16 13> "VtCollection\0" <u16 ver> <u16> <u32>
-//! <u16  9> "VtObject\0"     <u16 ver> <u16 ROWS> <u16 COLS>
-//! ```
-//!
-//! 이어서 셀이 온다. 셀마다 **1-based 행우선 인덱스**를 싣고 코너 셀(index 1)은 없다 —
-//! `(row, col) = ((index - 1) / COLS, (index - 1) % COLS)`. 0 행은 열 이름, 0 열은 행 이름,
-//! 나머지가 수치다.
-//!
-//! ```text
-//! <u32 owner> <u32 index> <u32 typeId>   typeId 5 = 문자, 7 = 수치
-//! [<u16 9> "VtDouble\0"|"VtString\0" <u16 ver>]   최초 사용 시에만
-//! <payload>                              f64 8B  |  <u16 len> cp949 \0\0 utf16le \0\0
-//! <separator>                            수치 뒤에만 `FF FF 06 00 00 00`
-//! ```
-//!
-//! 그래서 수치는 구분자로, 문자는 형상으로 찾고 **양쪽 다 12바이트 헤더를 되읽어
-//! `typeId` 로 확인**한다. 형상만 맞는 우연은 헤더에서 걸린다.
-//!
-//! ## 구간 제한은 필수다
-//!
-//! `VtDataGrid` 창 밖에는 축 눈금 같은 무관한 `VtDouble` 이 있다. 대조군 실측으로
-//! 제한 12 · 무제한 14 다(#4055 Stage 1).
+//! 치수와 기반 클래스 사슬은 선언에서 읽고, 객체 id는 셀 좌표로 쓰지 않는다.
+//! 수치의 크기나 부호로 데이터 여부를 추측하지 않으며 역참조는 원래 값을 보존한다.
+//! 셀에는 스칼라 객체만 허용해 중첩 그리드와 재귀 기반 클래스 입력을 거부한다.
+//! 상세 직렬화 문법은 아래 `ArchiveReader` 설명을 따른다.
 
+use std::collections::BTreeMap;
 use std::ops::Range;
 
 use encoding_rs::EUC_KR;
@@ -350,7 +317,7 @@ struct ArchiveReader<'a> {
     bytes: &'a [u8],
     at: usize,
     types: Vec<(i32, &'static [u8])>,
-    objects: Vec<i32>,
+    objects: BTreeMap<i32, GridValue>,
     rows: u16,
     cols: u16,
     cells: Vec<GridCell>,
@@ -363,7 +330,7 @@ impl<'a> ArchiveReader<'a> {
             bytes,
             at,
             types: Vec::new(),
-            objects: Vec::new(),
+            objects: BTreeMap::new(),
             rows: 0,
             cols: 0,
             cells: Vec::new(),
@@ -416,26 +383,30 @@ impl<'a> ArchiveReader<'a> {
             .copied()
             .find(|known| *known == raw)
             .ok_or_else(|| self.fail())?;
-        self.at += len + 2; // 이름 + <u16 version>
+        self.at += len;
+        let _version = self.u16()?;
         self.types.push((type_id, name));
         Ok(name)
     }
 
-    /// 기반 클래스 한 단계.
-    fn read_base(&mut self) -> Result<(), GridScanError> {
+    /// 알려진 기반 클래스만 허용하므로 입력이 재귀 사슬을 늘릴 수 없다.
+    fn read_base(&mut self, expected: &[u8]) -> Result<(), GridScanError> {
         let name = self.read_type()?;
+        if name != expected {
+            return Err(self.fail());
+        }
         self.read_from(name)?;
         Ok(())
     }
 
     fn read_from(&mut self, name: &[u8]) -> Result<Option<GridValue>, GridScanError> {
         if name == GRID_MARKER {
-            self.read_base()?; // VtMatrix — rows/cols/data 를 그 안에서 읽는다
+            self.read_base(MATRIX_MARKER)?;
             self.counts = Some((self.u16()?, self.u16()?, self.u16()?, self.u16()?));
             return Ok(None);
         }
         if name == MATRIX_MARKER {
-            self.read_base()?; // VtCollection
+            self.read_base(COLLECTION_MARKER)?;
             self.rows = self.u16()?;
             self.cols = self.u16()?;
             let cols = usize::from(self.cols);
@@ -454,13 +425,13 @@ impl<'a> ArchiveReader<'a> {
         }
         if name == COLLECTION_MARKER {
             let _count = self.i16()?;
-            self.read_base()?; // VtObject
+            self.read_base(OBJECT_MARKER)?;
             return Ok(None);
         }
         if name == DOUBLE_MARKER {
             let (value, offset) = self.f64()?;
             let _precision = self.i16()?;
-            self.read_base()?; // VtValue
+            self.read_base(VALUE_MARKER)?;
             return Ok(Some(GridValue::Number { value, offset }));
         }
         if name == STRING_MARKER {
@@ -479,11 +450,11 @@ impl<'a> ArchiveReader<'a> {
                 record = record.start..self.at + len;
                 self.at += len + 1;
             }
-            self.read_base()?; // VtValue
+            self.read_base(VALUE_MARKER)?;
             return Ok(Some(GridValue::Text { text, record }));
         }
         if name == VALUE_MARKER {
-            self.read_base()?; // VtObject
+            self.read_base(OBJECT_MARKER)?;
             return Ok(None);
         }
         if name == OBJECT_MARKER {
@@ -497,13 +468,18 @@ impl<'a> ArchiveReader<'a> {
         if object_id == -1 {
             return Ok(None);
         }
-        if self.objects.contains(&object_id) {
-            // 역참조 — 뒤에 아무것도 오지 않는다.
-            return Ok(None);
+        if let Some(value) = self.objects.get(&object_id) {
+            // 수치의 원본 offset과 문자열 record도 참조 대상 그대로 보존한다.
+            return Ok(Some(value.clone()));
         }
-        self.objects.push(object_id);
         let name = self.read_type()?;
-        self.read_from(name)
+        if name != DOUBLE_MARKER && name != STRING_MARKER {
+            // 기반 클래스 검증만으로는 셀 안의 중첩 VtDataGrid를 막을 수 없다.
+            return Err(self.fail());
+        }
+        let value = self.read_from(name)?.ok_or_else(|| self.fail())?;
+        self.objects.insert(object_id, value.clone());
+        Ok(Some(value))
     }
 }
 
