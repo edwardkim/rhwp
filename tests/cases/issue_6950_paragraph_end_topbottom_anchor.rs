@@ -505,3 +505,57 @@ fn typeset_publishes_a_computed_placement_for_the_current_frame() {
         );
     }
 }
+
+#[test]
+fn computed_frame_placement_reaches_paint_and_following_flow() {
+    for reduction in [0, 6000] {
+        let mut core = core();
+        let mut doc = core.document().clone();
+        let mut host = doc.sections[0].paragraphs[1].clone();
+        host.line_segs.clear();
+        host.invalidate_layout_inputs();
+        let mut following = doc.sections[0].paragraphs[3].clone();
+        following.line_segs.clear();
+        following.invalidate_layout_inputs();
+        doc.sections[0].paragraphs = vec![host, following];
+        doc.sections[0].section_def.page_def.margin_right += reduction;
+        core.set_document(doc);
+        let tree = core.build_page_render_tree(0).unwrap();
+        let mut items = Vec::new();
+        body_items(&tree.root, &mut items);
+        let (top, bottom) = table(&items, 0, 0);
+        let host_lines: Vec<_> = items
+            .iter()
+            .filter(|n| {
+                matches!(&n.node_type,
+            RenderNodeType::TextLine(line) if line.para_index == Some(0))
+            })
+            .collect();
+        assert!(!host_lines.is_empty());
+        let anchor = host_lines.iter().map(|n| n.bbox.y).fold(0.0_f64, f64::max);
+        let Control::Table(target) = &core.document().sections[0].paragraphs[0].controls[0] else {
+            panic!("표")
+        };
+        let expected = anchor
+            + rhwp::renderer::hwpunit_to_px(
+                target.common.vertical_offset as i32 + i32::from(target.outer_margin_top),
+                96.0,
+            );
+        assert!(
+            (top - expected).abs() < 0.1,
+            "폭 축소 {reduction}: 실제 앵커 기반 {expected}, 표 출력 {top}"
+        );
+        let next: Vec<_> = items
+            .iter()
+            .filter(|n| {
+                matches!(&n.node_type,
+            RenderNodeType::TextLine(line) if line.para_index == Some(1))
+            })
+            .collect();
+        assert!(!next.is_empty());
+        assert!(
+            next.iter().all(|n| n.bbox.y >= bottom - 0.1),
+            "폭 축소 {reduction}: 예약한 표 뒤에 다음 문단이 와야 한다"
+        );
+    }
+}
