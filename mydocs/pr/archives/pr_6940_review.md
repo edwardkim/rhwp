@@ -1,5 +1,20 @@
 # PR #6940 검토 기록
 
+## PR #6951 merge 후속 기록 (2026-09-09)
+
+- 통합 [PR #6951](https://github.com/edwardkim/rhwp/pull/6951)을 2026-09-09 11:49:59 UTC에 일반 merge했다. merge SHA는 [f14a06a46e0acb02ba1397f6991dbf3017ffadbb](https://github.com/edwardkim/rhwp/commit/f14a06a46e0acb02ba1397f6991dbf3017ffadbb)이며 upstream/devel 포함과 로컬 devel fast-forward를 확인했다.
+- 최종 PR head `459cba08d1d18adb64f55a2998948881cf2bb774`는 MERGEABLE/CLEAN이었다. [CI](https://github.com/edwardkim/rhwp/actions/runs/34345922014)의 Build & Test, A/B/C/D 회귀, lint, Native Skia가 성공했다. WASM Build 등 정책 skip은 별도이며 실행 성공으로 세지 않는다.
+- [CodeQL 분석](https://github.com/edwardkim/rhwp/actions/runs/34345922039), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34345922017), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34345921886), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34345921817)가 성공했고 CodeQL aggregate는 NEUTRAL, CI Impact Policy는 SUCCESS였다. pending/failure는 없었다.
+- 위 결과는 병합 전 정확한 PR head의 결과다. 병합 후 devel CI 또는 문서 후속 PR CI가 완료됐다는 뜻이 아니다. 추가 로컬 테스트는 실행하지 않았다.
+- 후속 문서 처리: 기준 PDF/대표 PNG/검토 기록/오늘할일은 원 PR에 이미 포함됐다. active review 3개를 archive로 이동하고 확정 merge/CI 및 comment 계획만 문서 전용 후속 PR로 남긴다. 보호된 devel에 직접 push하지 않는다.
+- 후속 문서 반영과 최종 devel sync 뒤 #6922는 남았던 원 문서 3쪽의 자리표시자/복합 차트 의미 복원 범위에서 close하고, 범례/격자/외곽선/페이지 수 잔여를 함께 설명한다. #6872는 새 [PR #6952](https://github.com/edwardkim/rhwp/pull/6952)의 추가 필드 보존 범위와 #6941 잔여를 고려해 OPEN 유지하고 #6940 수용 범위만 comment한다.
+- #6938/#6940 원 head는 각각 `a343125084db800bdd7bbb8b719ee8b2158665cd`, `52660ccb2c322b17b520103af06e3b5760899542`로 확인했다. 통합 수용 comment 뒤 superseded로 close하며 contributor fork branch는 보존한다.
+- **작업지시자 지정: #6938 close comment의 이미지는 원 HWP 3쪽 `mydocs/pr/assets/pr_6938_maintainer_20260909/pr6938-original-p003-review.png`만 사용한다.** 추가 mixed_chart HWP/HWPX 복원은 본문/개별 review 링크로 설명하고 그 PNG로 대체하지 않는다.
+- 지정 이미지: https://raw.githubusercontent.com/edwardkim/rhwp/f14a06a46e0acb02ba1397f6991dbf3017ffadbb/mydocs/pr/assets/pr_6938_maintainer_20260909/pr6938-original-p003-review.png . 원 HWP 3쪽 flagged 0/1, pixel_match 84.18302%, visual proxy 14.14239%와 실제 복원/잔여를 함께 기록한다.
+- comment는 merge SHA 고정 증적과 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 포함한 UTF-8 파일을 `--body-file`로 게시하고 API에서 본문을 확인한다. 이 절의 issue/PR close·comment는 작성 시점의 후속 실행 계획이며 이미 게시했다는 기록이 아니다.
+- 정리 범위는 이번 작업의 clean한 로컬 review/docs branch다. 기본 작업공간 /home/tsjang/rhwp, 공유 target/pr-review, contributor fork와 원격 head branch는 보존한다. 원격 branch 삭제 승인은 받지 않았다.
+
+
 ## 최종 판정
 
 - **판정: 승인.** 검토 범위는 HWPX 각주/미주 numbering 토큰과 명시적으로 빈 장식 문자의 보존이다. 이 범위에서 코드 수준 차단 결함을 발견하지 못했고, 통합 head의 기존 회귀와 한컴 왕복 증적을 확인했다.
@@ -60,20 +75,20 @@
 
 원본 저장 버전 정책에 따라 네 변환 모두 MCP `--engine 2020`을 사용했다. job의 `succeeded`, download의 `success`, byte 수와 SHA-256을 확인했다. 실제 PDF metadata는 모두 Creator `Hwp 2022 0.0.0.0`, Producer `Hancom PDF 1.3.0.550`, PDF 1.6, A4 595x841 pt였다. engine bucket과 metadata를 구분한다. 원 contributor의 2024 측정은 참고 기록이며 이번 직접 검증은 위 2020 bucket의 결과다.
 
-- 기준 A: [pr6940-156584446-source-2020.pdf](../../pdf/pr6940-156584446-source-2020.pdf), 940,153 bytes, SHA-256 `c601f5d2f4e5e071a73253f31bc18954d784d8a1faa9c636979c80d5f9c1ab5a`, SHA-1 `71b8f771cd5094ab8c1c8083ae59df94e83bd98f`.
-- 기준 B: [pr6940-156513948-source-2020.pdf](../../pdf/pr6940-156513948-source-2020.pdf), 1,171,148 bytes, SHA-256 `b1d69f9ac6ac3347172f1963bc2ceb0a357e6bbc2287141ba57b8bf94d3059f2`, SHA-1 `780558003ece60ce1c9a14d10f9e854842852385`.
+- 기준 A: [pr6940-156584446-source-2020.pdf](../../../pdf/pr6940-156584446-source-2020.pdf), 940,153 bytes, SHA-256 `c601f5d2f4e5e071a73253f31bc18954d784d8a1faa9c636979c80d5f9c1ab5a`, SHA-1 `71b8f771cd5094ab8c1c8083ae59df94e83bd98f`.
+- 기준 B: [pr6940-156513948-source-2020.pdf](../../../pdf/pr6940-156513948-source-2020.pdf), 1,171,148 bytes, SHA-256 `b1d69f9ac6ac3347172f1963bc2ceb0a357e6bbc2287141ba57b8bf94d3059f2`, SHA-1 `780558003ece60ce1c9a14d10f9e854842852385`.
 - 왕복 HWPX SHA-256: A `1e19ecabf5773c3d98c068942c5bde898d4cd9a8143baa0707517cbe9b67d98f`, B `4bfef79cd83ab8d5aab992d3c1634158e6f16635790da66e28026477f104d1ce`.
 - 왕복 PDF SHA-256: A `da6ae0ce8f60ad1eb5aee715d5c2178fc67c22979d4a088a75a88f23b9412598`, B `b73641e735bb9df0930af69e2eebfa0f30a938feb41f5341e83c1fd6b20b5ef4`. 왕복 HWPX/PDF는 재생성 가능한 중간 파일로 `/tmp/rhwp-review-6938-6940/visual/`에 보관하며 커밋하지 않는다.
-- 최종 [A 10쪽 패널](assets/pr_6938_6940_20260909/pr6940-note-a-p010-review.png)의 SHA-256은 `f46247dec2032287d91de17da1e2c38a767d2421fe498c81ed0aca12ccd22927`이다.
-- 최종 [B 13쪽 패널](assets/pr_6938_6940_20260909/pr6940-note-b-p013-review.png)의 SHA-256은 `b83643a31ede4885c8b1760038659f47b737284ad61bb44fedbe01d298d6d105`이다.
+- 최종 [A 10쪽 패널](../assets/pr_6938_6940_20260909/pr6940-note-a-p010-review.png)의 SHA-256은 `f46247dec2032287d91de17da1e2c38a767d2421fe498c81ed0aca12ccd22927`이다.
+- 최종 [B 13쪽 패널](../assets/pr_6938_6940_20260909/pr6940-note-b-p013-review.png)의 SHA-256은 `b83643a31ede4885c8b1760038659f47b737284ad61bb44fedbe01d298d6d105`이다.
 
 대표 패널은 실제로 열어 각주 표시·본문·한글 및 도구 라벨을 확인했다. 원본과 rhwp 왕복본을 **동일 한컴 엔진으로 PDF 변환한 뒤** 비교한 것이며, rhwp 자체 SVG와 PDF가 100% 일치한다는 뜻이 아니다. 전체 68쪽은 텍스트를 대조했고 raster 판독 범위는 위 2쪽이다.
 
 ## 비교 재현 및 임시 경로
 
-통합 바이너리의 `export-hwpx <원본> <왕복.hwpx>` 뒤 [MCP 가이드](../manual/mcp_hwp2024Convert_usage.md)의 `start -> status -> download`를 원본/왕복 양쪽에 실행했다. `pdftotext -layout` 전체 텍스트를 비교하고, `pdftoppm -f 10 -l 10 -r 96 -singlefile -png` 및 13쪽 대응 명령으로 raster를 만들었다.
+통합 바이너리의 `export-hwpx <원본> <왕복.hwpx>` 뒤 [MCP 가이드](../../manual/mcp_hwp2024Convert_usage.md)의 `start -> status -> download`를 원본/왕복 양쪽에 실행했다. `pdftotext -layout` 전체 텍스트를 비교하고, `pdftoppm -f 10 -l 10 -r 96 -singlefile -png` 및 13쪽 대응 명령으로 raster를 만들었다.
 
-[Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)의 `make_overlay_page`/`make_review_panels`를 사용했다. threshold는 32였으며 기준/왕복 raster 차이 자체가 0이었다. 한컴 PDF 간 대조이므로 구조 flagged 후보 수는 해당 없음이며 0건으로 가장하지 않는다.
+[Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)의 `make_overlay_page`/`make_review_panels`를 사용했다. threshold는 32였으며 기준/왕복 raster 차이 자체가 0이었다. 한컴 PDF 간 대조이므로 구조 flagged 후보 수는 해당 없음이며 0건으로 가장하지 않는다.
 
 임시 위치는 `/tmp/rhwp-review-6938-6940/visual/notes/` 아래 `compare_010.png`, `overlay_010.png`, `review/review_010.png`와 `013` 대응 파일이다. 원시 raster, JSON, 비교 중간 파일은 최종 패널과 중복으로 커밋하지 않는다.
 

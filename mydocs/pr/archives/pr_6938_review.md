@@ -1,5 +1,20 @@
 # PR #6938 검토 기록
 
+## PR #6951 merge 후속 기록 (2026-09-09)
+
+- 통합 [PR #6951](https://github.com/edwardkim/rhwp/pull/6951)을 2026-09-09 11:49:59 UTC에 일반 merge했다. merge SHA는 [f14a06a46e0acb02ba1397f6991dbf3017ffadbb](https://github.com/edwardkim/rhwp/commit/f14a06a46e0acb02ba1397f6991dbf3017ffadbb)이며 upstream/devel 포함과 로컬 devel fast-forward를 확인했다.
+- 최종 PR head `459cba08d1d18adb64f55a2998948881cf2bb774`는 MERGEABLE/CLEAN이었다. [CI](https://github.com/edwardkim/rhwp/actions/runs/34345922014)의 Build & Test, A/B/C/D 회귀, lint, Native Skia가 성공했다. WASM Build 등 정책 skip은 별도이며 실행 성공으로 세지 않는다.
+- [CodeQL 분석](https://github.com/edwardkim/rhwp/actions/runs/34345922039), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34345922017), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34345921886), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34345921817)가 성공했고 CodeQL aggregate는 NEUTRAL, CI Impact Policy는 SUCCESS였다. pending/failure는 없었다.
+- 위 결과는 병합 전 정확한 PR head의 결과다. 병합 후 devel CI 또는 문서 후속 PR CI가 완료됐다는 뜻이 아니다. 추가 로컬 테스트는 실행하지 않았다.
+- 후속 문서 처리: 기준 PDF/대표 PNG/검토 기록/오늘할일은 원 PR에 이미 포함됐다. active review 3개를 archive로 이동하고 확정 merge/CI 및 comment 계획만 문서 전용 후속 PR로 남긴다. 보호된 devel에 직접 push하지 않는다.
+- 후속 문서 반영과 최종 devel sync 뒤 #6922는 남았던 원 문서 3쪽의 자리표시자/복합 차트 의미 복원 범위에서 close하고, 범례/격자/외곽선/페이지 수 잔여를 함께 설명한다. #6872는 새 [PR #6952](https://github.com/edwardkim/rhwp/pull/6952)의 추가 필드 보존 범위와 #6941 잔여를 고려해 OPEN 유지하고 #6940 수용 범위만 comment한다.
+- #6938/#6940 원 head는 각각 `a343125084db800bdd7bbb8b719ee8b2158665cd`, `52660ccb2c322b17b520103af06e3b5760899542`로 확인했다. 통합 수용 comment 뒤 superseded로 close하며 contributor fork branch는 보존한다.
+- **작업지시자 지정: #6938 close comment의 이미지는 원 HWP 3쪽 `mydocs/pr/assets/pr_6938_maintainer_20260909/pr6938-original-p003-review.png`만 사용한다.** 추가 mixed_chart HWP/HWPX 복원은 본문/개별 review 링크로 설명하고 그 PNG로 대체하지 않는다.
+- 지정 이미지: https://raw.githubusercontent.com/edwardkim/rhwp/f14a06a46e0acb02ba1397f6991dbf3017ffadbb/mydocs/pr/assets/pr_6938_maintainer_20260909/pr6938-original-p003-review.png . 원 HWP 3쪽 flagged 0/1, pixel_match 84.18302%, visual proxy 14.14239%와 실제 복원/잔여를 함께 기록한다.
+- comment는 merge SHA 고정 증적과 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 포함한 UTF-8 파일을 `--body-file`로 게시하고 API에서 본문을 확인한다. 이 절의 issue/PR close·comment는 작성 시점의 후속 실행 계획이며 이미 게시했다는 기록이 아니다.
+- 정리 범위는 이번 작업의 clean한 로컬 review/docs branch다. 기본 작업공간 /home/tsjang/rhwp, 공유 target/pr-review, contributor fork와 원격 head branch는 보존한다. 원격 branch 삭제 승인은 받지 않았다.
+
+
 ## 발견 사항과 최종 판정
 
 ### 최신 검증 결과 (2026-09-09, 문자열 보정 및 추가 HWP/HWPX 복원 확인)
@@ -19,12 +34,12 @@
 통합 [PR #6951](https://github.com/edwardkim/rhwp/pull/6951)을 생성했다. 보정/증적 commit
 `d3f8dff09` 뒤 `upstream/devel` `144c224193f5508a66a7dc374036995ec6de2738`로 충돌 없이
 리베이스한 code candidate는 `e0dc1bc8a92ccd5d940419765d2e51bfe0a4d697`이다.
-오늘할일 충돌도 없었으며 추가 테스트는 실행하지 않았다. [통합 self-review](archives/pr_6951_review.md)에
+오늘할일 충돌도 없었으며 추가 테스트는 실행하지 않았다. [통합 self-review](pr_6951_review.md)에
 PR 채번과 리베이스 결과를 같은 PR의 문서 전용 후속 기록으로 남긴다.
 
 - `bin_data_id`를 기존 호출부와 같은 `u32`로 맞춰 컴파일 오류를 해결했다.
 - `VtPicture`의 embedded 분기에서도 null 객체 참조 `-1`을 빈 그림으로 수용했다.
-- [VtString 처리](../../src/ole_chart/legacy_presentation.rs#L204)는 길이 뒤의 예약 바이트를
+- [VtString 처리](../../../src/ole_chart/legacy_presentation.rs#L204)는 길이 뒤의 예약 바이트를
   반드시 NUL로 요구하지 않도록 보정했다. 추가 HWP의 `Contents[293] = 0x17`도 유효하며,
   길이와 읽기 범위 검사는 유지한다. 기존 grid 파서의 처리와 일치한다.
 - 원 HWP 3쪽과 추가 `mixed_chart.hwp`/`mixed_chart.hwpx` 1쪽 모두에서 빨간 꺾은선,
@@ -57,8 +72,8 @@ PR 채번과 리베이스 결과를 같은 PR의 문서 전용 후속 기록으�
 
 | 기준 | PDF metadata | SHA-1 |
 | --- | --- | --- |
-| [원 문서 PDF](../../pdf/pr6938-148735526-2020.pdf) | Creator Hwp 2022 0.0.0.0, Producer Hancom PDF 1.3.0.550, PDF 1.6, A4 595x841pt, 18쪽, 635023 bytes | `121f755d99bdf7d4d221e1719f840f2448bbb9c6` |
-| [추가 두 파일의 공통 기준 PDF](../../samples/issue6938/mixed_chart.pdf) | Creator Hwp 2024 13.0.0.3901, Producer Hancom PDF 1.3.0.550, PDF 1.4, A4 595x841pt, 1쪽, 29142 bytes | `cbd7f8961846fcdb889a7fae3aed2d60d6ef42cd` |
+| [원 문서 PDF](../../../pdf/pr6938-148735526-2020.pdf) | Creator Hwp 2022 0.0.0.0, Producer Hancom PDF 1.3.0.550, PDF 1.6, A4 595x841pt, 18쪽, 635023 bytes | `121f755d99bdf7d4d221e1719f840f2448bbb9c6` |
+| [추가 두 파일의 공통 기준 PDF](../../../samples/issue6938/mixed_chart.pdf) | Creator Hwp 2024 13.0.0.3901, Producer Hancom PDF 1.3.0.550, PDF 1.4, A4 595x841pt, 1쪽, 29142 bytes | `cbd7f8961846fcdb889a7fae3aed2d60d6ef42cd` |
 
 파일명의 `2020`은 engine bucket이며 Creator 2022와 구분한다. 기존 기준을 재사용했으며 이번
 문자열 보정 검증에서 PDF를 다시 출력하지 않았다. 앞선 불필요한 rhwp PDF 산출은 중단했고 그
@@ -68,8 +83,8 @@ PR 채번과 리베이스 결과를 같은 PR의 문서 전용 후속 기록으�
 | --- | --- |
 | 원 HWP: `148735526_2012년_6월_소비자물가동향.hwp` | `c9354fd934d772bd3c50c3f2c2a019b50b824c705563063a321db0a4ee4745ff` |
 | 원 문서 기준 PDF | `53b10ae46ca5edcc34cf4fa6f0b267e3d9e5573e57dc2bf7e5a6327aa0bc11fe` |
-| [mixed_chart.hwp](../../samples/issue6938/mixed_chart.hwp) | `109bbe0a2ef5c1d056817e3c596c5579af08503e7b2556dd5b79f91689407d92` |
-| [mixed_chart.hwpx](../../samples/issue6938/mixed_chart.hwpx) | `e09ab367c1c3c16040083fea34416692fddc5d111067490628fdb1fbe596f04c` |
+| [mixed_chart.hwp](../../../samples/issue6938/mixed_chart.hwp) | `109bbe0a2ef5c1d056817e3c596c5579af08503e7b2556dd5b79f91689407d92` |
+| [mixed_chart.hwpx](../../../samples/issue6938/mixed_chart.hwpx) | `e09ab367c1c3c16040083fea34416692fddc5d111067490628fdb1fbe596f04c` |
 | mixed_chart.pdf | `b4939db19915b270a8ad032c50268ae4dae32212ab1ba591534ab7d394f24786` |
 
 #### 실제 시각 비교 결과
@@ -104,9 +119,9 @@ venv/bin/python scripts/visual_sweep.py --key original \
 
 | 산출물 | SHA-256 |
 | --- | --- |
-| [원 HWP 3쪽](assets/pr_6938_maintainer_20260909/pr6938-original-p003-review.png) | `b037ccd9bb2335ed56fe43215faa01217c30e6c760005df4b61ac910beb5db08` |
-| [추가 HWP 1쪽](assets/pr_6938_maintainer_20260909/pr6938-mixed-hwp-p001-review.png) | `f88ae3aaea9710cb621d584c03932b1ac1c5007ec63352c8dbedbbd5fe99034c` |
-| [추가 HWPX 1쪽](assets/pr_6938_maintainer_20260909/pr6938-mixed-hwpx-p001-review.png) | `5f8231c84b516395db0e9218653abfdd7a8f33351d8a5c997264f1540cd37055` |
+| [원 HWP 3쪽](../assets/pr_6938_maintainer_20260909/pr6938-original-p003-review.png) | `b037ccd9bb2335ed56fe43215faa01217c30e6c760005df4b61ac910beb5db08` |
+| [추가 HWP 1쪽](../assets/pr_6938_maintainer_20260909/pr6938-mixed-hwp-p001-review.png) | `f88ae3aaea9710cb621d584c03932b1ac1c5007ec63352c8dbedbbd5fe99034c` |
+| [추가 HWPX 1쪽](../assets/pr_6938_maintainer_20260909/pr6938-mixed-hwpx-p001-review.png) | `5f8231c84b516395db0e9218653abfdd7a8f33351d8a5c997264f1540cd37055` |
 | 최신 legacy_presentation.rs | `a1bb0e9f53a133d16f71134712e39ec226201b2f170720e7d3a09b1328aefbf3` |
 | 최신 debug/rhwp | `4a182ae6bf7a5699aa1033076d46b4caf0e7361323487820bfadf92a346661a1` |
 | 문자열 보정 전 legacy_presentation.rs | `c1a158477f2a8b056a9e15a37b4a7c91d03423275a4544fe2a91c36f839e3baa` |
@@ -117,7 +132,7 @@ venv/bin/python scripts/visual_sweep.py --key original \
 
 #### Merge 후 contributor PR comment 계획
 
-- 정본: [Visual Sweep GitHub merge comment 절](../manual/verification/visual_sweep_guide.md#github-merge-comment).
+- 정본: [Visual Sweep GitHub merge comment 절](../../manual/verification/visual_sweep_guide.md#github-merge-comment).
 - 원 HWP 3쪽과 추가 HWP/HWPX 1쪽의 위 실제 수치, 각각 0/1 flagged, 사람이 확인한 복합 차트
   의미 복원과 범례/격자/외곽선/페이지 수 잔여를 함께 기록한다. 마지막 문자열 보정 전 전체 회귀와
   최신 focused 검증, 리베이스 후 재시험 생략 지시를 구분한다.
@@ -174,9 +189,9 @@ venv/bin/python scripts/visual_sweep.py --key original \
   기존 PNG는 보정 전 증적이다. 아래 과거 분석/검증 기록을 최신 통과 결과로 해석하지 않는다.
 
 - **판정: 머지 보류.** 한컴 기준과 다른 차트 의미를 직접 판독했고, 별도로 아래 두 코드 문제를 최소 입력으로 재현했다. 원 PR CI와 기존 전체 회귀의 성공으로 이 실패를 덮지 않는다.
-- **P1: 이중축 복합 차트를 단일축 막대 차트로 표시한다.** [3쪽 대표 패널](assets/pr_6938_6940_20260909/pr6938-chart-p003-review.png)의 한컴 기준은 소비자물가지수를 왼쪽 축(약 80-110)의 빨간 꺾은선으로, 전년동월비 등락률을 오른쪽 축(0-6)의 청록색 막대로 표시한다. rhwp는 두 계열을 약 0-106의 공통 축 막대로 표시해 등락률을 바닥에 눌러 놓으며, 가로축의 연월 라벨도 일부 서수로 바뀌고 겹친다. 색상/스타일 차이가 아니라 추이와 계열 간 관계를 잘못 전달하는 출력이다. 자리표시자가 사라졌다는 사실만으로 차트 수정 완료를 인정할 수 없으며, 차트 종류·계열별 축·연월 라벨을 보존하거나 해당 형상을 명시적으로 미지원 처리해야 한다.
-- **P1: 입력이 지정하는 기반 클래스를 무제한 재귀 호출한다.** [grid.rs:425](../../src/ole_chart/grid.rs#L425)의 `read_base`는 기대한 기반 클래스인지 확인하지 않고 `read_from(name)`을 호출한다. `VtDataGrid` 타입 id를 기반 타입으로 반복하면 약 400 KB 입력으로 stack overflow와 프로세스 abort(exit 134)가 발생했다. 알려진 기반 클래스 사슬을 강제하고 잘못된 순환/깊이를 오류로 반환해야 한다.
-- **P2: 객체 역참조를 빈 셀로 바꿔 값을 잃는다.** [grid.rs:500](../../src/ole_chart/grid.rs#L500)는 이미 본 object id에 `Ok(None)`을 반환한다. 2x3 그리드의 두 데이터 슬롯이 같은 `VtDouble(42.0)`을 참조하면 첫 셀은 `Some(42.0)`, 두 번째는 `None`이었다(단언 실패, exit 101). `parser.rs::grid_value`는 이 값을 0으로 채우므로 잘못된 차트 값을 조용히 표시한다. 참조 대상 값을 복원하거나 지원하지 않는 참조를 명시적으로 거부해야 한다.
+- **P1: 이중축 복합 차트를 단일축 막대 차트로 표시한다.** [3쪽 대표 패널](../assets/pr_6938_6940_20260909/pr6938-chart-p003-review.png)의 한컴 기준은 소비자물가지수를 왼쪽 축(약 80-110)의 빨간 꺾은선으로, 전년동월비 등락률을 오른쪽 축(0-6)의 청록색 막대로 표시한다. rhwp는 두 계열을 약 0-106의 공통 축 막대로 표시해 등락률을 바닥에 눌러 놓으며, 가로축의 연월 라벨도 일부 서수로 바뀌고 겹친다. 색상/스타일 차이가 아니라 추이와 계열 간 관계를 잘못 전달하는 출력이다. 자리표시자가 사라졌다는 사실만으로 차트 수정 완료를 인정할 수 없으며, 차트 종류·계열별 축·연월 라벨을 보존하거나 해당 형상을 명시적으로 미지원 처리해야 한다.
+- **P1: 입력이 지정하는 기반 클래스를 무제한 재귀 호출한다.** [grid.rs:425](../../../src/ole_chart/grid.rs#L425)의 `read_base`는 기대한 기반 클래스인지 확인하지 않고 `read_from(name)`을 호출한다. `VtDataGrid` 타입 id를 기반 타입으로 반복하면 약 400 KB 입력으로 stack overflow와 프로세스 abort(exit 134)가 발생했다. 알려진 기반 클래스 사슬을 강제하고 잘못된 순환/깊이를 오류로 반환해야 한다.
+- **P2: 객체 역참조를 빈 셀로 바꿔 값을 잃는다.** [grid.rs:500](../../../src/ole_chart/grid.rs#L500)는 이미 본 object id에 `Ok(None)`을 반환한다. 2x3 그리드의 두 데이터 슬롯이 같은 `VtDouble(42.0)`을 참조하면 첫 셀은 `Some(42.0)`, 두 번째는 `None`이었다(단언 실패, exit 101). `parser.rs::grid_value`는 이 값을 0으로 채우므로 잘못된 차트 값을 조용히 표시한다. 참조 대상 값을 복원하거나 지원하지 않는 참조를 명시적으로 거부해야 한다.
 - PR의 `Closes #6922`는 현재 출력으로 충족되지 않는다. 위 차트 의미 불일치는 별도 비차단 잔여로 넘기지 않고 이번 PR의 수용 차단 사유로 유지한다.
 
 ## 대상과 적용
@@ -250,11 +265,11 @@ venv/bin/python scripts/visual_sweep.py --key original \
 
 - `info --json`: `format=hwp5`, `lastSavedWith.product=null`, version `6.0.5.771`.
 - MCP는 저장 버전 정책에 따라 `--engine 2020`을 지정했다. job `1f79bdb2-0853-41a0-8987-ff67795cf9d0`, `succeeded` 뒤 download `success`, 635,023 bytes와 SHA-256을 확인했다.
-- 기준 PDF: [pr6938-148735526-2020.pdf](../../pdf/pr6938-148735526-2020.pdf). SHA-256 `53b10ae46ca5edcc34cf4fa6f0b267e3d9e5573e57dc2bf7e5a6327aa0bc11fe`, SHA-1 `121f755d99bdf7d4d221e1719f840f2448bbb9c6`.
+- 기준 PDF: [pr6938-148735526-2020.pdf](../../../pdf/pr6938-148735526-2020.pdf). SHA-256 `53b10ae46ca5edcc34cf4fa6f0b267e3d9e5573e57dc2bf7e5a6327aa0bc11fe`, SHA-1 `121f755d99bdf7d4d221e1719f840f2448bbb9c6`.
 - PDF metadata: Creator `Hwp 2022 0.0.0.0`, Producer `Hancom PDF 1.3.0.550`, PDF 1.6, 18쪽, A4 595x841 pt. 요청한 engine bucket과 실제 PDF metadata를 함께 기록하며 제품 버전을 추정하지 않는다.
 - 전수 fidelity text/layout ledger는 요청 18쪽 모두 완료했다. 전체 rhwp SVG/render tree는 19쪽이었다. 기준과의 +1쪽 차이를 이번 변경이 만든 회귀로 단정하지 않았다.
 - Visual Sweep은 3쪽을 직접 비교했다. flagged=0/1, `pixel_match_percent=79.96046`, `visual_accuracy_proxy_percent=8.79091`이다. 구조 후보 0건은 차트 의미/축/종류의 일치를 뜻하지 않는다.
-- 대표 [3쪽 review PNG](assets/pr_6938_6940_20260909/pr6938-chart-p003-review.png)를 열어 한글·도구 라벨·범례를 판독했다. 위 이중축/차트 종류 차이는 실제 이미지에서도 확인됐다.
+- 대표 [3쪽 review PNG](../assets/pr_6938_6940_20260909/pr6938-chart-p003-review.png)를 열어 한글·도구 라벨·범례를 판독했다. 위 이중축/차트 종류 차이는 실제 이미지에서도 확인됐다.
 - PNG SHA-256: `3173269d40ae37fb1cbbed57bd364426c4a859267c37a8f53f30d84b4190c999`.
 
 최종 임시 진단 위치는 `/tmp/rhwp-review-6938-6940/visual/chart-sweep/pr6938-chart/`이다. `compare/compare_003.png`, `overlay/overlay_003.png`, `review/review_003.png`를 생성했다. 초기 저장소 내 임시 출력은 검증 뒤 이 위치로 옮겼으며 커밋하지 않는다.
