@@ -577,7 +577,7 @@ fn split_computed_host_publishes_fragment_local_placements() {
             section.paragraphs[0].line_segs.clear();
         }
         let mut page = section.section_def.page_def.clone();
-        page.height = page.margin_top + page.margin_bottom + 22000;
+        page.height = page.margin_top + page.margin_bottom + 18000;
         let width = rhwp::renderer::hwpunit_to_px(
             (page.width - page.margin_left - page.margin_right) as i32, 96.0,
         );
@@ -608,6 +608,6 @@ fn split_computed_host_publishes_fragment_local_placements() {
                 }
             }
         }
-        assert!(fragments >= 2, "실제 분할 경로를 검증해야 한다: {fragments}");
+        assert!(fragments >= 2, "실제 분할 경로를 검증해야 한다: {fragments}, {pages:?}");
     }
 }
