@@ -1,6 +1,8 @@
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 
+import { HWPUNIT_PER_PIXEL, imageCropScale } from '../image-crop-scale.ts';
+
 export interface CanvasKitImageBounds {
   x: number;
   y: number;
@@ -23,10 +25,11 @@ export interface CanvasKitImageSourceRect {
 }
 
 /**
- * HWPUNIT image crop coordinates use the same 96 DPI scale as SVG replay:
- * 7200 HWPUNIT = 96 px, so 75 HWPUNIT = 1 px.
+ * HWPUNIT crop 좌표의 마지막 폴백(96dpi 가정: 7200 HWPUNIT = 96 px → 75 HU/px).
+ *
+ * 실제 축척 판정은 canvas2d(DOM) 백엔드와 공유하는 [`imageCropScale`] 이 한다.
  */
-export const HWPUNIT_PER_PIXEL = 75;
+export { HWPUNIT_PER_PIXEL };
 
 export interface CanvasKitImageCacheKeyInput {
   imageRef?: number | string;
@@ -100,33 +103,9 @@ export function canvasKitImageSourceRect(
     return null;
   }
 
-  // [#6954] `compute_image_crop_src`(src/renderer/svg.rs) 와 같은 폴백 사슬을 쓴다.
-  //
-  //   ① cropReferenceSize 가 있으면 그것
-  //   ② 없으면 crop 의 right/bottom 을 원본 전체 범위로 본다
-  //   ③ 그것도 못 쓰면 96dpi 가정(75 HU/px)
-  //
-  // ②가 없으면 `originalSizeHu` 를 싣지 않는 그림에서 곧장 ③으로 떨어져 SVG 와 다른
-  // 창을 잘라 온다 — 156627451 1쪽 로고가 원본에서 11% 좁게 잘려 같은 자리에 늘어났다.
-  // 75 HU/px 는 96dpi 상수 가정이고, ②는 이 그림이 실제로 몇 HU/px 인지를 crop 값
-  // 자신에서 읽는다.
-  const axisScale = (
-    reference: number | undefined,
-    cropExtent: number,
-    imageExtent: number,
-  ): number => {
-    if (Number.isFinite(reference) && (reference ?? 0) > 0) {
-      const scale = (reference as number) / imageExtent;
-      if (Number.isFinite(scale) && scale > 0) return scale;
-    }
-    if (cropExtent > 0) {
-      const scale = cropExtent / imageExtent;
-      if (Number.isFinite(scale) && scale > 0) return scale;
-    }
-    return HWPUNIT_PER_PIXEL;
-  };
-  const scaleX = axisScale(cropReferenceSize?.[0], crop.right, imageWidth);
-  const scaleY = axisScale(cropReferenceSize?.[1], crop.bottom, imageHeight);
+  // [#6954] 축척 판정은 canvas2d(DOM) 백엔드와 **같은 함수**가 한다 — 두 백엔드가
+  // 각자 폴백을 갖고 있어 갈렸다. 사슬과 근거는 `imageCropScale` 주석 참조.
+  const { scaleX, scaleY } = imageCropScale(cropReferenceSize, crop, imageWidth, imageHeight);
   const x = crop.left / scaleX;
   const y = crop.top / scaleY;
   const width = (crop.right - crop.left) / scaleX;

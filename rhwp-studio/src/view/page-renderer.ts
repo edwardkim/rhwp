@@ -22,6 +22,7 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
+import { imageCropScale } from './image-crop-scale.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -86,7 +87,6 @@ const IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500;
 // 순수 SVG 차트/OLE는 prefetch 대상 data URL이 없을 수 있다. 첫 paint가 시작한
 // 이미지 decode를 빠르게 반영하되, 일반 이미지처럼 전역 반복 재렌더는 피한다.
 const RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = [0, 32, 96, 240] as const;
-const HWP_UNITS_PER_CSS_PIXEL = 75;
 
 export class PageRenderer {
   private reRenderJobs = new Map<number, ReRenderJob>();
@@ -1581,12 +1581,15 @@ function applyFlowImageCrop(
     return;
   }
 
-  const scaleXHu = image.originalSizeHu
-    ? image.originalSizeHu[0] / element.naturalWidth
-    : HWP_UNITS_PER_CSS_PIXEL;
-  const scaleYHu = image.originalSizeHu
-    ? image.originalSizeHu[1] / element.naturalHeight
-    : HWP_UNITS_PER_CSS_PIXEL;
+  // [#6954] CanvasKit 백엔드·rust `compute_image_crop_src` 와 **같은 폴백 사슬**을 쓴다.
+  // 종전에는 `originalSizeHu` 가 없으면 곧장 96dpi 상수 가정으로 떨어져, imgDim 을
+  // 보존하지 않는 그림에서 원본의 다른 창을 잘라 왔다(그만큼 확대되어 보인다).
+  const { scaleX: scaleXHu, scaleY: scaleYHu } = imageCropScale(
+    image.originalSizeHu,
+    crop,
+    element.naturalWidth,
+    element.naturalHeight,
+  );
   const sourceLeft = crop.left / scaleXHu;
   const sourceTop = crop.top / scaleYHu;
   const sourceWidth = (crop.right - crop.left) / scaleXHu;

@@ -22,6 +22,7 @@ import {
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
 } from '../src/view/canvaskit/image-replay.ts';
+import { imageCropScale } from '../src/view/image-crop-scale.ts';
 import {
   CANVASKIT_REPLAY_PLANES,
   layerPaintOpReplayPlane,
@@ -500,7 +501,10 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   // [#3315] DOM <img> 는 생산자가 정한 src 를 그대로 쓴다 — 전체 트리 경로의 data URL 이든
   // 좁은 질의 경로의 신원 키별 object URL 이든 조립부는 분기하지 않는다.
   assert.match(source, /element\.src = image\.src/);
-  assert.match(codeOnly(source), /HWP_UNITS_PER_CSS_PIXEL = 75/);
+  // [#6954] crop 축척은 CanvasKit 백엔드·rust 와 공유하는 한 함수가 정한다 — 여기에
+  // 96dpi 상수를 다시 심으면 백엔드끼리 갈린다(canvas 시각 파리티 게이트가 깨졌다).
+  assert.match(codeOnly(source), /imageCropScale\(\s*image\.originalSizeHu,/);
+  assert.doesNotMatch(codeOnly(source), /HWP_UNITS_PER_CSS_PIXEL/);
   // [#6099] 90/270° 프레임은 회전 전 치수로 만들어지므로 crop 사영도 프레임
   // 치수를 받는다.
   assert.match(source, /applyFlowImageCrop\(element, image, displayScale, frameWidth, frameHeight\)/);
@@ -833,6 +837,60 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
     left: 750, top: 0, right: 0, bottom: 0,
   });
   assert.equal(degenerate, null);
+});
+
+// [#6954] canvas2d(DOM) 백엔드와 CanvasKit 백엔드가 **같은 축척 함수**를 쓴다.
+//
+// 둘이 각자 폴백을 갖고 있어 갈렸다 — CanvasKit 만 고쳤을 때 `pic-crop-01` 의 배너가
+// 두 백엔드에서 다르게 그려져 canvas 시각 파리티 게이트(image-crop)가 깨졌다.
+// 이 시험은 `imageCropScale` 이 rust `compute_image_crop_src` 의 사슬과 같은지,
+// 그리고 CanvasKit 경로가 그 함수의 결과를 그대로 쓰는지를 함께 고정한다.
+test('image crop scale follows the rust fallback chain for both studio backends', () => {
+  // ① imgDim 이 있으면 그것 — 축은 전체 좌표 범위를 디코딩 크기에 대응시킨다.
+  assert.deepEqual(
+    imageCropScale([144000, 81000], { right: 144000, bottom: 81000 }, 192, 108),
+    { scaleX: 750, scaleY: 750 },
+  );
+
+  // ② imgDim 이 없으면 crop 의 right/bottom 을 원본 전체 범위로 본다(#3239).
+  const adaptive = imageCropScale(null, { right: 56348, bottom: 24865 }, 844, 342);
+  assert.ok(Math.abs(adaptive.scaleX - 56348 / 844) < 1e-9);
+  assert.ok(Math.abs(adaptive.scaleY - 24865 / 342) < 1e-9);
+  assert.ok(adaptive.scaleX < HWPUNIT_PER_PIXEL, `scaleX=${adaptive.scaleX}`);
+
+  // ③ 둘 다 못 쓰면 96dpi 가정.
+  assert.deepEqual(
+    imageCropScale(null, { right: 0, bottom: 0 }, 200, 100),
+    { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
+  );
+  assert.deepEqual(
+    imageCropScale([0, 0], { right: -1, bottom: -1 }, 200, 100),
+    { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
+  );
+
+  // 한 축만 유효한 imgDim 은 rust 와 같이 **쌍으로** 버린다 — 섞으면 원본에 없는 사영이
+  // 된다. 여기서는 ②로 내려가 두 축 모두 crop 범위를 쓴다.
+  assert.deepEqual(
+    imageCropScale([144000, 0], { right: 96000, bottom: 54000 }, 192, 108),
+    { scaleX: 500, scaleY: 500 },
+  );
+
+  // 파리티 게이트 픽스처 `pic-crop-01` 2번 배너 — imgDim 이 없고 crop 이 원본 전체
+  // 범위다. 고정 75 HU/px 면 세로로 58.21px 만 잘라 와 70px 프레임에 늘려 그린다(+20%).
+  const banner = imageCropScale(null, { right: 47940, bottom: 4366 }, 639, 70);
+  assert.ok(Math.abs(4366 / banner.scaleY - 70) < 1e-9, `sourceHeight=${4366 / banner.scaleY}`);
+  assert.ok(Math.abs(4366 / HWPUNIT_PER_PIXEL - 58.21) < 0.01);
+
+  // CanvasKit 경로가 그 축척을 그대로 쓴다 — 같은 입력에서 잘라 오는 창이 일치한다.
+  const scale = imageCropScale(null, { right: 56348, bottom: 24865 }, 844, 342);
+  const rect = canvasKitImageSourceRect(844, 342, {
+    left: 6947, top: 2777, right: 56348, bottom: 24865,
+  });
+  assert.ok(rect);
+  assert.ok(Math.abs(rect.x - 6947 / scale.scaleX) < 1e-9);
+  assert.ok(Math.abs(rect.y - 2777 / scale.scaleY) < 1e-9);
+  assert.ok(Math.abs(rect.width - (56348 - 6947) / scale.scaleX) < 1e-9);
+  assert.ok(Math.abs(rect.height - (24865 - 2777) / scale.scaleY) < 1e-9);
 });
 
 test('CanvasKit image crop source honors issue2817 imgDim coordinates', () => {
