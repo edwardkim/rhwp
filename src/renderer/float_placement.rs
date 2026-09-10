@@ -40,6 +40,27 @@ pub struct ParagraphHostLine {
 }
 
 impl ParagraphFloatPlacement {
+    /// First fragments use the paragraph reference before spacing-before, not
+    /// the whole-object outer-margin box. Keep the text anchor unchanged, and
+    /// place the border (or top caption) below the actual last host line.
+    /// Call before resolving preceding-object exclusions: converting an already
+    /// constrained box could move it back into an occupied band.
+    pub fn for_first_fragment(
+        mut self,
+        table: &Table,
+        applied_spacing_before: f64,
+        host_line_height: f64,
+        dpi: f64,
+    ) -> Self {
+        let box_tail = self.occupied_bottom - self.table_top;
+        let paragraph_anchor = self.anchor_y - applied_spacing_before;
+        let positioned_top =
+            paragraph_anchor + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+        self.table_top = positioned_top.max(self.anchor_y + host_line_height);
+        self.occupied_bottom = self.table_top + box_tail;
+        self
+    }
+
     /// Recover a stored host only when the next source row accounts for exactly
     /// this measured band. A raw vpos by itself is not a page-layout oracle.
     /// The caller supplies a continuous, unedited column source frame; no painted

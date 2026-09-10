@@ -25,6 +25,78 @@ fn stored_band_core() -> DocumentCore {
 }
 
 #[test]
+fn first_fragment_uses_paragraph_reference_not_text_or_outer_box() {
+    let core = core();
+    let para = &core.document().sections[0].paragraphs[1];
+    let Control::Table(mut table) = para.controls[0].clone() else {
+        panic!("table")
+    };
+    // Algorithm variations, not generated Hancom oracle documents.
+    for spacing in [0.0, 20.0, 80.0] {
+        for margin in [0, 141, 900] {
+            table.outer_margin_top = margin;
+            table.common.vertical_offset = 4129;
+            let whole = ParagraphFloatPlacement {
+                anchor_y: 100.0 + spacing,
+                stored_host_origin: None,
+                table_top: 100.0 + spacing + 4129.0 / 75.0 + f64::from(margin) / 75.0,
+                occupied_bottom: 400.0 + spacing + 4129.0 / 75.0 + f64::from(margin) / 75.0,
+            };
+            let fragment = whole.for_first_fragment(&table, spacing, 20.0, 96.0);
+            let expected = (100.0 + 4129.0 / 75.0_f64).max(100.0 + spacing + 20.0);
+            assert!((fragment.table_top - expected).abs() < 1e-8);
+            assert_eq!(
+                fragment.anchor_y, whole.anchor_y,
+                "text anchor does not move"
+            );
+            assert!((fragment.occupied_bottom - fragment.table_top - 300.0).abs() < 1e-8);
+            let excluded = fragment.clear_occupied_bands([110.0..250.0]);
+            assert_eq!(
+                excluded.table_top, 250.0,
+                "resolve exclusions after origin conversion"
+            );
+        }
+    }
+}
+
+#[test]
+fn first_fragment_real_fixture_matches_paragraph_offset_without_extra_margins() {
+    let bytes = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue6025/3232693_employment_support_criteria.hwpx"),
+    )
+    .unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    let doc = core.document();
+    let host = &doc.sections[0].paragraphs[1];
+    let Control::Table(source) = &host.controls[0] else {
+        panic!("table")
+    };
+    let styles = rhwp::renderer::style_resolver::resolve_styles(&doc.doc_info, 96.0);
+    let spacing_before = styles.para_styles[host.para_shape_id as usize].spacing_before;
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut items = Vec::new();
+    body_items(&tree.root, &mut items);
+    let title = items
+        .iter()
+        .find(|n| {
+            matches!(&n.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(1))
+        })
+        .unwrap();
+    let (top, _) = table(&items, 1, 0);
+    // Actual 0.8.6 export + maintainer observation: paragraph reference precedes
+    // spacing-before. Do not replace the existing #6025 last-line coordinate pin.
+    let expected = title.bbox.y - spacing_before + source.common.vertical_offset as f64 / 75.0;
+    assert!(
+        (top - expected).abs() < 0.02,
+        "table {top}, paragraph-relative {expected}"
+    );
+    assert!(top >= title.bbox.y + title.bbox.height);
+    assert_eq!(core.page_count(), 4);
+}
+
+#[test]
 fn stored_band_origin_requires_measured_successor_agreement_and_valid_source() {
     let core = stored_band_core();
     let paragraphs = &core.document().sections[0].paragraphs;

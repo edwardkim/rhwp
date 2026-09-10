@@ -25024,7 +25024,7 @@ impl TypesetEngine {
             } else {
                 table_total
             };
-        let resolved_host_placement = para_has_non_whitespace_text(para)
+        let unconstrained_host_placement = para_has_non_whitespace_text(para)
             .then(|| {
                 let text_origin = placement_para_start_height
                     + if placement_para_start_height > 0.0 {
@@ -25102,8 +25102,9 @@ impl TypesetEngine {
                     ),
                     _ => placement,
                 }
-            })
-            .map(|mut placement| {
+            });
+        let constrain_host_placement =
+            |mut placement: super::float_placement::ParagraphFloatPlacement, st: &TypesetState| {
                 if table.common.allow_overlap {
                     return placement;
                 }
@@ -25121,7 +25122,9 @@ impl TypesetEngine {
                         .iter()
                         .map(|zone| zone.top..zone.bottom + outer_top),
                 )
-            });
+            };
+        let resolved_host_placement =
+            unconstrained_host_placement.map(|p| constrain_host_placement(p, st));
         let legacy_whole_fits = st.current_height + whole_fit_table_total <= available
             || fits_after_overlay_shapes
             || single_row_object_height_advance.is_some()
@@ -25571,8 +25574,30 @@ impl TypesetEngine {
             st.current_column,
             st.current_zone_y_offset.to_bits(),
         );
-        let fragment_host_placement = resolved_host_placement
-            .filter(|_| placement_para_start_height + fmt.height_for_fit <= available);
+        // The first fragment's border is paragraph-relative, whereas a whole
+        // object's placement includes its outer-margin box. Convert before
+        // exclusions, and share this result with both the row budget and paint.
+        let fragment_host_placement = unconstrained_host_placement
+            .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
+            .map(|placement| {
+                let applied_before = if placement_para_start_height > 0.0 {
+                    fmt.spacing_before
+                } else {
+                    0.0
+                };
+                let host_line_height = fmt.computed_host_lines.as_ref().map_or_else(
+                    || {
+                        para.line_segs
+                            .last()
+                            .map_or(0.0, |line| hwpunit_to_px(line.line_height, self.dpi))
+                    },
+                    |lines| lines.last().map_or(0.0, |line| line.height),
+                );
+                constrain_host_placement(
+                    placement.for_first_fragment(table, applied_before, host_line_height, self.dpi),
+                    st,
+                )
+            });
         if fragment_host_placement.is_some() && !st.pre_emitted_host_paras.contains(&para_idx) {
             // 첫 조각과 이월 모두 같은 계산 줄을 소비한다. 저장 줄로 재측정하지 않는다.
             let already_emitted = st.current_items.iter().any(|item| {
