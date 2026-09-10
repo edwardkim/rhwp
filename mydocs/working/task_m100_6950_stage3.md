@@ -1019,3 +1019,23 @@ synam00130쪽의 새 SVG는 앞서 승인된 `pi224-prepaint-svg/synam-001_030.s
 기존 Studio 화면이 아니라 위 SVG로 확인을 요청한다. 전체 nextest 재실행, 신규 fixture IR
 baseline 축, 빈 문단 후속 흐름과 최종 Rust/WASM/workspace·Native Skia 게이트는 남아 있다.
 원격 push·PR·이슈 상태는 변경하지 않았다.
+
+### 19.4 SVG 승인과 WASM 확인 준비
+
+메인테이너가 §19.3의 SVG 시각 판정 통과를 확인하고 같은 수정본의 WASM 빌드를 요청했다.
+소스 기준은 `9d928ff27`이며, 기존 `.env.docker`와 named volume을 보존한 채
+`docker compose --env-file .env.docker run --rm wasm`을 실행한다.
+기존7700 Vite 서버는 재시작하지 않는다. 새 WASM API의 표 위치·속성 및 실제 HTTP 제공
+파일의 SHA-256 일치를 확인한 뒤 Studio 시각 판정을 요청한다.
+
+- Docker 최적화 빌드 성공: wasm-pack6분23초(Rust 컴파일3분40초 포함).
+- 새 WASM SHA-256: `fb1d46401f0bd3a2295a21c7246961705311ea14c2b6359c633616e9ac536445`.
+- 새 WASM API에서 #6025의1쪽 표 상단156.24px, 가로709/세로4129HU, 총4쪽을 단언했다.
+  synam001은35쪽과30쪽 표 괘선635.88/669.08px를, #6950 원본은3쪽과1쪽 SVG 생성 성공을 확인했다.
+- 기존7700 Vite의 실제 `/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm` 응답은HTTP200이며
+  위 로컬 파일 해시와 일치한다. 샘플의 `/samples/issue6025/3232693_employment_support_criteria.hwpx`
+  응답도HTTP200이다. 서버·제품 코드·의존성은 추가 변경하지 않았다.
+- 로그·재현 검사: `output/6950/stage3/fragment-origin-wasm-build.log`,
+  `fragment-origin-wasm-verify.mjs`, `fragment-origin-wasm-verify.json`.
+- 메인테이너는 기존 Studio 탭에서 강력 새로고침 후 샘플을 다시 열어1쪽을 확인한다.
+  SVG 시각 판정은 통과, **Studio/WASM 시각 판정은 대기**다. 전체 회귀 게이트 완료를 뜻하지 않는다.
