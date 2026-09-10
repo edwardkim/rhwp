@@ -38,3 +38,10 @@ Firefox 내부 원인을 단정하지 않는다. OS 네이티브 저장 대화�
 사용자 승인에 따라 draft로 제출한다. ready 전환·merge·배포는 별도 단계다.
 
 관련 PR: #6965. [작성자 검토 기록](https://github.com/edwardkim/rhwp/blob/codex/issue-6964-download-duplicates/mydocs/pr/archives/pr_6966_review.md).
+
+
+## 추가 Chrome smoke
+
+- `9bbdc46dbc55dc3dd3e3dedc4ecb04cb6071815e`에서 `npm --prefix rhwp-chrome run test:e2e:smoke` 통과.
+- production build, 보조 계약 4/4, 실제 Chrome headless의 viewer/options/print/service worker/content script 모두 PASS.
+- 기존 다운로드 E2E에 추가한 검증이며, 소스 수정 없이 실행했다. 기존 WASM 재사용.
