@@ -2430,6 +2430,64 @@ impl LayoutEngine {
         physical_outer_box_paint_inset: bool,
         resolved_table_top: Option<f64>,
     ) -> f64 {
+        self.layout_table_with_wrapper_margin(
+            tree,
+            col_node,
+            table,
+            section_index,
+            styles,
+            outline_numbering_id,
+            col_area,
+            y_start,
+            bin_data_content,
+            measured_table,
+            depth,
+            table_meta,
+            host_alignment,
+            enclosing_cell_ctx,
+            host_margin_left,
+            host_margin_right,
+            inline_x_override,
+            nested_split,
+            para_y,
+            outer_host_stored_vpos_hu,
+            allow_para_top_bleed,
+            clamp_header_negative_para_offset,
+            physical_outer_box_paint_inset,
+            resolved_table_top,
+            false,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn layout_table_with_wrapper_margin(
+        &self,
+        tree: &mut PageLayoutContext,
+        col_node: &mut RenderNode,
+        table: &crate::model::table::Table,
+        section_index: usize,
+        styles: &ResolvedStyleSet,
+        outline_numbering_id: u16,
+        col_area: &LayoutRect,
+        y_start: f64,
+        bin_data_content: &[BinDataContent],
+        measured_table: Option<&MeasuredTable>,
+        depth: usize,
+        table_meta: Option<(usize, usize)>,
+        host_alignment: Alignment,
+        enclosing_cell_ctx: Option<CellContext>,
+        host_margin_left: f64,
+        host_margin_right: f64,
+        inline_x_override: Option<f64>,
+        nested_split: Option<&NestedTableSplit>,
+        para_y: Option<f64>,
+        outer_host_stored_vpos_hu: Option<i32>,
+        allow_para_top_bleed: bool,
+        clamp_header_negative_para_offset: bool,
+        physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
+        wrapper_margin_already_applied: bool,
+    ) -> f64 {
         if table.cells.is_empty() {
             if depth == 0 {
                 return y_start;
@@ -2572,6 +2630,32 @@ impl LayoutEngine {
                         } else {
                             nested_w + pad_l + pad_r
                         };
+                        // The recursive caller already includes the child's outer margin
+                        // in inner_area. Only the first native block wrapper owns this
+                        // missing inset (#6643); do not add it again while unwrapping.
+                        // Inline, cell-relative, and original HWPX placement keep their
+                        // existing margin owners. Vertical placement is independent.
+                        let wrapper_left_inset = if !wrapper_margin_already_applied
+                            && depth == 0
+                            && self.profile.get().hwp5_stored_pagination_layout()
+                            && inline_x_override.is_none()
+                            && !table.common.treat_as_char
+                            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                            && matches!(table.common.vert_rel_to, VertRelTo::Para)
+                            && matches!(
+                                table.common.horz_rel_to,
+                                HorzRelTo::Column | HorzRelTo::Para
+                            )
+                            && matches!(
+                                table.common.horz_align,
+                                HorzAlign::Left | HorzAlign::Inside
+                            )
+                            && signed_hwpunit(table.common.horizontal_offset) == 0
+                        {
+                            hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                        } else {
+                            0.0
+                        };
                         let outer_x_for_box = self.compute_table_x_position(
                             table,
                             outer_w_for_box,
@@ -2582,7 +2666,7 @@ impl LayoutEngine {
                             host_margin_right,
                             inline_x_override,
                             paper_w,
-                        );
+                        ) + wrapper_left_inset;
                         // [#6648] 안쪽 표의 바깥 여백도 셀 안 여백 안쪽에 그대로 남는다. 아래
                         // `layout_table` 호출은 상자와 같은 depth(본문이면 0)·inline 위치로 안쪽
                         // 표를 놓아 `compute_table_y_position` 의 중첩 표 분기(om_top)와
@@ -2596,7 +2680,7 @@ impl LayoutEngine {
                         // 안쪽 표가 여백을 뺀 내용 상자보다 조금 넓게 저장된 문서(exam_social:
                         // 1.4px)는 한/글처럼 오른쪽 여백으로 흘러넘기고 축소하지 않는다.
                         let inner_area = LayoutRect {
-                            x: col_area.x + pad_l + om_l,
+                            x: col_area.x + wrapper_left_inset + pad_l + om_l,
                             y: col_area.y,
                             width: (col_area.width - pad_l - pad_r - om_l - om_r).max(nested_w),
                             height: col_area.height,
@@ -2605,7 +2689,7 @@ impl LayoutEngine {
                         // 글자처럼 상자는 x 를 줄 배치가 준 inline_x_override 로 받으므로 그 값도 옮긴다.
                         let inner_inline_x = inline_x_override.map(|x| x + pad_l + om_l);
 
-                        let y_end = self.layout_table(
+                        let y_end = self.layout_table_with_wrapper_margin(
                             tree,
                             col_node,
                             nested,
@@ -2630,6 +2714,7 @@ impl LayoutEngine {
                             clamp_header_negative_para_offset,
                             false,
                             None,
+                            true,
                         );
 
                         // The unwrapped child determines the minimum visual content height, but it
@@ -4547,12 +4632,16 @@ impl LayoutEngine {
         if let Some(img_fill) = border_style.and_then(|bs| bs.image_fill.as_ref()) {
             if let Some(img_bytes) = find_bin_data_bytes(bin_data_content, img_fill.bin_data_id) {
                 let img_id = tree.next_id();
+                // [#6895] `ImageNode` 는 **화면 순서**를 담고 `ResolvedImageFill` 은 이진
+                // 순서를 담는다. 종전엔 그대로 옮겨 담아 칸 배경 그림의 밝기·명암이
+                // 반대로 그려졌다(그림 채움 `hp:pic` 축과 달리 이 축은 맞바꿈이 필요하다).
+                let (img_bright, img_contrast) = img_fill.display_brightness_contrast();
                 let img_node = RenderNode::new(
                     img_id,
                     RenderNodeType::Image(ImageNode {
                         fill_mode: Some(img_fill.fill_mode),
-                        brightness: img_fill.brightness,
-                        contrast: img_fill.contrast,
+                        brightness: img_bright,
+                        contrast: img_contrast,
                         effect: img_fill.effect,
                         ..ImageNode::new(img_fill.bin_data_id, Some(img_bytes))
                     }),

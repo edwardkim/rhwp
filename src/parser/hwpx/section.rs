@@ -97,7 +97,7 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
 /// 열린 필드를 중첩 목록으로 물려주지 않는다 — 그렇게 하면 글상자 안 종료 마커가 바깥
 /// 문단의 필드를 닫는 짝으로 잘못 묶인다.
 fn link_orphan_field_ends_recursive(paragraphs: &mut [Paragraph]) {
-    link_orphan_field_ends(paragraphs);
+    link_orphan_field_ends(paragraphs, &mut Vec::new());
     for para in paragraphs.iter_mut() {
         for control in para.controls.iter_mut() {
             link_orphan_field_ends_in_control(control);
@@ -147,9 +147,7 @@ fn link_orphan_field_ends_in_control(control: &mut Control) {
 /// HWPX fieldEnd는 beginIDRef와 fieldid만 보관하므로, HWP5 PARA_TEXT로 다시 쓸 때 필요한
 /// field control fourcc는 앞 문단의 fieldBegin에서 찾아야 한다. 짝을 찾지 못한 종료 마커는
 /// 그대로 남긴다. 임의의 필드 종류를 만들어 내는 것보다 보존 실패를 명시하는 편이 안전하다.
-fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
-    let mut open_fields: Vec<(u32, u32)> = Vec::new();
-
+fn link_orphan_field_ends(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u32, u32)>) {
     for para in paragraphs.iter_mut() {
         for orphan in &mut para.orphan_field_ends {
             let Some((field_id, ctrl_id)) = open_fields.last().copied() else {
@@ -181,6 +179,29 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
                 open_fields.push((field.field_id, field.ctrl_id));
             }
         }
+    }
+}
+
+/// [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커를 잇는다.
+///
+/// [`link_orphan_field_ends_recursive`] 는 구역 하나를 파싱한 끝에 걸리므로 열린 필드
+/// 스택이 구역과 함께 버려진다. 그런데 HWPX 의 `section*.xml` 은 **한 본문 흐름을 나눠
+/// 담은 것**이라 누름틀이 구역 경계를 넘는다 — 재난안전실 36455713 은 `section0` 에서
+/// 연 `CLICK_HERE`('본문') 를 `section1` 에서 닫는다. 그 종료 마커는 `begin_ctrl_id` 가
+/// 0 으로 남고, HWP5 저장기의 두 방출 지점이 모두 `begin_ctrl_id != 0` 을 요구하므로
+/// 끝 표시가 사라진다(한/글 집계 빈 `CtrlID` 3→2). 끝이 없는 누름틀은 문단 나머지를
+/// 필드 안으로 삼킨다.
+///
+/// 그래서 구역 **최상위** 문단 목록만 하나의 스택으로 다시 훑는다. 이미 짝을 지은
+/// 마커에는 같은 값이 다시 들어갈 뿐이라(`begin_id_ref` 가 이미 그 필드를 가리킨다)
+/// 구역 안에서 닫힌 필드의 결과는 바뀌지 않는다.
+///
+/// 컨테이너(표 칸·글상자·각주…) 목록은 건드리지 않는다 — 필드는 컨테이너 경계를 넘지
+/// 못하고, 그 목록들은 이미 자기 스택으로 짝을 지었다.
+pub fn link_orphan_field_ends_across_sections(sections: &mut [Section]) {
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    for section in sections.iter_mut() {
+        link_orphan_field_ends(&mut section.paragraphs, &mut open_fields);
     }
 }
 
@@ -670,6 +691,19 @@ fn parse_paragraph_body(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"markpenBegin" | b"markpenEnd" => {
+                        if local == b"markpenEnd" {
+                            text_parts.push(MARKPEN_END_PART.to_string());
+                        } else {
+                            let color = ce
+                                .attributes()
+                                .flatten()
+                                .find(|a| a.key.as_ref().as_bytes() == b"color")
+                                .map(|a| attr_str(&a))
+                                .unwrap_or_default();
+                            text_parts.push(format!("{MARKPEN_BEGIN_PART_PREFIX}{color}"));
+                        }
+                    }
                     b"run" => {
                         // 런 시작: charPrIDRef 읽기
                         for attr in ce.attributes().flatten() {
@@ -835,6 +869,19 @@ fn parse_paragraph_body(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"markpenBegin" | b"markpenEnd" => {
+                        if local == b"markpenEnd" {
+                            text_parts.push(MARKPEN_END_PART.to_string());
+                        } else {
+                            let color = ce
+                                .attributes()
+                                .flatten()
+                                .find(|a| a.key.as_ref().as_bytes() == b"color")
+                                .map(|a| attr_str(&a))
+                                .unwrap_or_default();
+                            text_parts.push(format!("{MARKPEN_BEGIN_PART_PREFIX}{color}"));
+                        }
+                    }
                     b"run" => {
                         // self-closing 빈 run (예: <hp:run charPrIDRef="42"/>)
                         // 빈 paragraph 의 char_shape 가 누락되어 default(id=0) 로
@@ -982,6 +1029,16 @@ fn parse_paragraph_body(
                     ignore: part.as_str() == TITLE_MARK_PART_IGNORE,
                 });
                 utf16_pos += 8;
+            }
+            // [#6956] 형광펜 표지 — 위치만 싣고 축은 건드리지 않는다.
+            p if p.starts_with(MARKPEN_BEGIN_PART_PREFIX) || p == MARKPEN_END_PART => {
+                para.markpen_marks
+                    .push(crate::model::paragraph::MarkpenMark {
+                        char_idx: visual_text.chars().count(),
+                        color: (p != MARKPEN_END_PART)
+                            .then(|| p[MARKPEN_BEGIN_PART_PREFIX.len()..].to_string()),
+                        utf16_pos: Some(utf16_pos),
+                    });
             }
             "\u{0012}" => {
                 // [Task #1050] AUTO_NUMBER (0x12) — HWP PARA_TEXT 정합:
@@ -1993,6 +2050,11 @@ fn parse_lineseg_element(e: &quick_xml::events::BytesStart) -> LineSeg {
 ///
 /// 표시는 텍스트가 아니라 8유닛 슬롯이라 `visual_text` 에 실리지 않는다. 표(`\u{0002}`)
 /// 처럼 조각 하나를 통째로 차지하는 마커로 두고, 문단 조립 루프가 위치만 걷어 간다.
+/// [#6956] 형광펜 여는 표지 sentinel 접두어. 뒤에 색 문자열이 붙는다.
+const MARKPEN_BEGIN_PART_PREFIX: &str = "\u{0007}B";
+/// [#6956] 형광펜 닫는 표지 sentinel.
+const MARKPEN_END_PART: &str = "\u{0007}E";
+
 const TITLE_MARK_PART_IGNORE: &str = "\u{0008}1";
 /// `text_parts` 안의 제목 차례 표시 센티널 — `ignore="0"` 쪽.
 const TITLE_MARK_PART_KEEP: &str = "\u{0008}0";
@@ -2006,6 +2068,7 @@ fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
     Ok(parts
         .into_iter()
         .filter(|p| p != TITLE_MARK_PART_IGNORE && p != TITLE_MARK_PART_KEEP)
+        .filter(|p| !p.starts_with(MARKPEN_BEGIN_PART_PREFIX) && p.as_str() != MARKPEN_END_PART)
         .collect())
 }
 
@@ -2078,6 +2141,24 @@ fn read_text_content_with_tabs(
                         saw_nb_space_element = true;
                     }
                     b"fwSpace" => text.push('\u{2007}'),
+                    // [#6956] 형광펜 표지. 글자 축을 소비하지 않으므로 `text` 에 넣지
+                    // 않고 sentinel part 로 위치만 끊어 둔다(`titleMark` 선례).
+                    b"markpenBegin" | b"markpenEnd" => {
+                        if !text.is_empty() {
+                            parts.push(std::mem::take(&mut text));
+                        }
+                        if local == b"markpenEnd" {
+                            parts.push(MARKPEN_END_PART.to_string());
+                        } else {
+                            let color = ce
+                                .attributes()
+                                .flatten()
+                                .find(|a| a.key.as_ref().as_bytes() == b"color")
+                                .map(|a| attr_str(&a))
+                                .unwrap_or_default();
+                            parts.push(format!("{MARKPEN_BEGIN_PART_PREFIX}{color}"));
+                        }
+                    }
                     // 소프트 하이픈 — 줄바꿈 자리에서만 보인다. 리터럴 '-' 와 구별해야
                     // 저장 왕복에서 단어가 갈라지지 않는다(ParaList XML schema.xml:291).
                     b"hyphen" => text.push('\u{00AD}'),
@@ -4239,8 +4320,13 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                                             val.chars().filter(|c| c.is_ascii_digit()).collect();
                                         img_fill.bin_data_id = num.parse().unwrap_or(0);
                                     }
-                                    b"bright" => img_fill.brightness = parse_i8(&attr),
-                                    b"contrast" => img_fill.contrast = parse_i8(&attr),
+                                    // [#6895] HWPX 속성명은 이진 HWP5 `FILL_INFO` 와
+                                    // 반대 순서다. 공통 `ImageFill` 은 이진 저장 순서를
+                                    // 쓰므로 여기서 정규화한다 — `header.rs` 와 동형.
+                                    // 종전엔 이 자리만 맞바꾸지 않아, 같은 구조체가
+                                    // 출처에 따라 반대 뜻을 담았다.
+                                    b"bright" => img_fill.contrast = parse_i8(&attr),
+                                    b"contrast" => img_fill.brightness = parse_i8(&attr),
                                     b"effect" => {
                                         img_fill.effect = match attr_str(&attr).as_str() {
                                             "GRAY_SCALE" => 1,
@@ -5689,6 +5775,8 @@ fn hwpx_part_utf16_width(s: &str, axis_5251: bool) -> u32 {
     match s {
         "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
         TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
+        // [#6956] 형광펜 표지는 글자 축을 소비하지 않는다.
+        p if p.starts_with(MARKPEN_BEGIN_PART_PREFIX) || p == MARKPEN_END_PART => 0,
         PAGE_FOOTER_SLOT_PART => {
             if axis_5251 {
                 0
@@ -6830,6 +6918,8 @@ fn calc_utf16_len_from_parts(parts: &[String]) -> u32 {
             // 경계가 offsets 축과 어긋났다 (143E 각주 run 경계 2 → 정답 9).
             "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
             TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
+            // [#6956] 형광펜 표지는 글자 축을 소비하지 않는다.
+            p if p.starts_with(MARKPEN_BEGIN_PART_PREFIX) || p == MARKPEN_END_PART => 0,
             PAGE_FOOTER_SLOT_PART => 8,
             _ => s.chars().map(hwpx_char_utf16_width).sum(),
         })
@@ -10434,8 +10524,15 @@ mod tests {
             .expect("imgBrush 는 ImageFill 을 남겨야 함");
 
         assert_eq!(img.bin_data_id, 3, "binaryItemIDRef 가 보존돼야 함");
-        assert_eq!(img.brightness, 10, "bright 가 보존돼야 함");
-        assert_eq!(img.contrast, -5, "contrast 가 보존돼야 함");
+        // [#6895] `ImageFill` 은 이진 HWP5 저장 순서를 담는다 — HWPX 속성명과 반대다.
+        // 종전엔 이 자리만 정규화를 안 해 같은 구조체가 출처에 따라 반대 뜻을 담았다.
+        assert_eq!(
+            img.display_brightness_contrast(),
+            (10, -5),
+            "화면 순서로 bright/contrast 가 보존돼야 함"
+        );
+        assert_eq!(img.brightness, -5, "이진 1번 바이트 = 화면 contrast");
+        assert_eq!(img.contrast, 10, "이진 2번 바이트 = 화면 bright");
         assert_eq!(img.effect, 1, "effect=GRAY_SCALE 가 보존돼야 함");
         assert_eq!(
             img.fill_mode,

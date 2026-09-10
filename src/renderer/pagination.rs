@@ -658,7 +658,8 @@ pub fn find_inline_control_target_page(
     ctrl_idx: usize,
     para: &Paragraph,
 ) -> Option<(usize, usize)> {
-    let target_line = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)?;
+    let target_line = tac_object_owning_line_seg_index(para, ctrl_idx)
+        .or_else(|| crate::renderer::layout::control_line_seg_index(para, ctrl_idx))?;
 
     // 1) 현재(마지막) 페이지의 current_items 검사 — 박스 line 이 여기 있으면 None (= 현재)
     let in_current = current_items.iter().any(|item| match item {
@@ -694,6 +695,44 @@ pub fn find_inline_control_target_page(
         }
     }
     None
+}
+
+/// TAC 개체가 소유한 저장 줄을 **기하**로 짚는다 — 저장 `line_height` 가 개체의 흐름
+/// 높이와 같은 줄이 그 개체의 줄이다.
+///
+/// [#6972] 글자 위치 투영(`control_line_seg_index`)은 개체가 문단의 모든 글자 **앞**에
+/// 있을 때 첫 글자의 줄, 곧 개체 줄의 **다음** 줄을 돌려준다(컨트롤 문자 0, 첫 글자
+/// offset 0 이면 `p >= start_txt` 가 `0 >= 0` 으로 참). 그러면 문단이 쪽으로 갈릴 때
+/// 전면 크기 TAC 그림이 자기 줄이 없는 뒤 조각으로 라우팅돼 **두 쪽에 그려진다**
+/// (56288 1쪽 표지 그림). 같은 quirk 를 #6078 도 기하로 피해 갔다.
+///
+/// 같은 높이의 줄이 둘 이상이면(#2004 이미지 스택) 모호하므로 쓰지 않는다 — 그때는
+/// 종전 글자 위치 투영으로 되돌아간다.
+fn tac_object_owning_line_seg_index(para: &Paragraph, ctrl_idx: usize) -> Option<usize> {
+    /// 8px @96dpi. `line_owning_tac_object_height_px` 의 하한과 같은 자리다.
+    const MIN_OBJECT_LINE_HU: i32 = 600;
+
+    if para.line_segs.len() < 2 {
+        return None;
+    }
+    let ctrl = para.controls.get(ctrl_idx)?;
+    if !is_routable_treat_as_char_picture_or_shape(ctrl) {
+        return None;
+    }
+    let height_hu = crate::renderer::tac_object_flow_height_hu(ctrl)?;
+    if height_hu < MIN_OBJECT_LINE_HU {
+        return None;
+    }
+    let mut owner = None;
+    for (idx, seg) in para.line_segs.iter().enumerate() {
+        if seg.line_height == height_hu {
+            if owner.is_some() {
+                return None;
+            }
+            owner = Some(idx);
+        }
+    }
+    owner
 }
 
 /// 페이지로 분할된 문단에서 해당 줄을 소유한 쪽으로 다시 배치해야 하는 인라인 개체인가.

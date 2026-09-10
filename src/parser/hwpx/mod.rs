@@ -554,6 +554,10 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         }
     }
 
+    // [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커를 잇는다 — 구역 하나를 파싱하는
+    // 동안에는 앞 구역에서 열린 필드를 볼 수 없다.
+    section::link_orphan_field_ends_across_sections(&mut sections);
+
     // [Task #1608] (제거) 과거 Task #554 의 HWP3-origin tolerance 부여는
     // head version == "1.4" 오탐지로 네이티브 HWPX 전반에 부당 적용되어 삭제했다.
     // 상세 사유는 위 hwpml_version 파싱부 주석 참조.

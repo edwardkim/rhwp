@@ -56,7 +56,6 @@ import {
   DEFAULT_CANVAS2D_LAYER_COUNT,
   DEFAULT_RETAINED_SURFACE_PIXEL_BUDGET,
   planRenderSurfaceBudget,
-  resolveSettledVisibleEffectiveDpr,
   type RenderSurfaceBudgetPlan,
   type RenderSurfaceDecision,
 } from './render-surface-budget.ts';
@@ -95,7 +94,6 @@ interface ScrollMotion {
 
 type RenderSurfacePlanPhase = 'default' | 'scrolling' | 'scroll-settled';
 
-const MIN_SETTLED_VISIBLE_OVERLAP_CSS_PX = 8;
 
 interface PageSurfaceBundle extends PageSurfaceCacheEntry {
   mainCanvas: HTMLCanvasElement;
@@ -131,6 +129,10 @@ export class CanvasView {
   private pageRenderScheduler: PageRenderScheduler;
   private nextSurfaceLeaseId = 0;
   private renderWorkGeneration = 0;
+  /** 줌 앵커 이동이 뒤늦게 통지한 동일 viewport는 이미 정착 계획에 포함되어 있다. */
+  private settledZoomViewport: {
+    x: number; y: number; width: number; height: number; zoom: number; generation: number;
+  } | null = null;
   /** 아직 active surface가 없는 선택 prefetch만 담는다. active DPR 전환은 plan 예약에 포함된다. */
   private pendingPrefetchSurfaceReservations = new Map<number, number>();
   private lastScrollSample: { x: number; y: number; at: number } | null = null;
@@ -159,6 +161,8 @@ export class CanvasView {
   private suppressResizeScrollAnchor = false;
   private lastPageSize: { width: number; height: number } | null = null;
   private disposed = false;
+  /** 비동기 renderer 선택이 supersede돼도 중단된 줌의 전체 갱신 책임은 승계한다. */
+  private zoomRefreshRequired = false;
 
   constructor(
     private container: HTMLElement,
@@ -195,8 +199,9 @@ export class CanvasView {
         // [#6902] 사용자가 한 번이라도 스크롤했으면 보존할 읽던 자리가 생긴다 —
         // 문서 교체용 앵커 억제를 그때 거둔다(억제가 다음 리사이즈까지 남지 않게).
         this.suppressResizeScrollAnchor = false;
-        if (!this.viewportManager.isZoomAnimating()) this.updateVisiblePages('scroll');
+        if (!this.isZoomPreviewActive()) this.updateVisiblePages('scroll');
       }),
+      eventBus.on('zoom-raster-ready', generation => this.onZoomRasterReady(generation)),
       eventBus.on('viewport-resize', () => this.onViewportResize()),
       eventBus.on('zoom-changed', (zoom, anchor) => {
         if (this.applyingPageViewSettingsTransaction) return;
@@ -463,6 +468,7 @@ export class CanvasView {
     backendChanged: boolean;
   } | null> {
     if (this.disposed) return null;
+    this.zoomRefreshRequired = this.viewportManager.cancelPendingZoomRaster() || this.zoomRefreshRequired;
     const epoch = ++this.rendererSelectionEpoch;
     this.rendererSession.invalidateDocument({ resetResources });
     await Promise.resolve();
@@ -481,6 +487,7 @@ export class CanvasView {
   }
 
   private applyRendererSelection(selection: RendererSessionSelection): boolean {
+    this.zoomRefreshRequired = this.viewportManager.cancelPendingZoomRaster() || this.zoomRefreshRequired;
     const decisionChanged = this.activeRendererDecisionKey !== selection.diagnostics.decisionKey;
     if (decisionChanged) this.pageSurfaceLru?.clear();
     const changed = this.pageRenderer.configure(
@@ -496,7 +503,7 @@ export class CanvasView {
     if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
     this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
     this.eventBus.emit('renderer-selection-changed', selection.diagnostics);
-    return changed;
+    return changed || this.zoomRefreshRequired;
   }
 
   /** DEV baseline이 pool 소유권을 바꾸지 않고 현재 페이지를 즉시 다시 그린다. */
@@ -532,7 +539,7 @@ export class CanvasView {
     // 않아, 첫 로딩 중 스크롤바 등장(clientWidth −15px) 같은 재계산 뒤에 신·구 좌표계가
     // 공존했다. 활성 페이지 전체에 현재 좌표를 재적용한다. 줌 애니메이션 중에는 preview
     // 변환(scale 동반)이 위치를 관리하므로 그 경로를 재사용한다.
-    if (this.viewportManager.isZoomAnimating()) {
+    if (this.isZoomPreviewActive()) {
       this.updateRenderedPageZoomPreview();
     } else {
       this.repositionActivePages();
@@ -557,22 +564,46 @@ export class CanvasView {
 
   /** [#3377] 이미 렌더된 페이지의 캔버스와 오버레이를 현재 레이아웃 좌표로 재배치한다. */
   private repositionActivePages(): void {
+    const zoom = this.viewportManager.getZoom();
     for (const pageIdx of this.canvasPool.activePages) {
       const canvas = this.canvasPool.getCanvas(pageIdx);
-      if (canvas) this.positionPageElement(canvas, pageIdx);
+      const renderedZoom = Number(canvas?.dataset.rhwpRenderedZoom);
+      const previewScale = Number.isFinite(renderedZoom) && renderedZoom > 0 && renderedZoom !== zoom
+        ? zoom / renderedZoom : null;
+      const position = (element: HTMLElement) => {
+        if (previewScale !== null) this.applyZoomPreviewBox(element, pageIdx, previewScale);
+        else this.positionPageElement(element, pageIdx);
+      };
+      // 정착 뒤 queue가 기다리는 구 bitmap도 개별 raster가 끝날 때까지 현재 page box에 맞춘다.
+      if (canvas) position(canvas);
       this.scrollContent.querySelectorAll<HTMLElement>(
         `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"], [data-rhwp-hf-edit-page="${pageIdx}"]`,
-      ).forEach((element) => this.positionPageElement(element, pageIdx));
+      ).forEach(position);
     }
   }
 
   /** 호출 이유별 동기 계약을 보존하며 보이는 페이지를 갱신한다. */
   private updateVisiblePages(reason: VisibilityUpdateReason = 'strict'): void {
+    if (reason === 'strict' && this.viewportManager.isZoomRasterPending()) {
+      this.viewportManager.finishPendingZoomRaster();
+      // ready는 이제 visible을 예약한다. strict 호출은 이어서 최신 surface를 동기 완료한다.
+    }
+    // 줌이 유발한 scroll/이전 settle callback은 quiet 대기를 우회하지 않는다.
+    if ((reason === 'scroll' || reason === 'scroll-settled') && this.isZoomPreviewActive()) return;
     const scrollY = this.viewportManager.getScrollY();
     const scrollX = this.viewportManager.getScrollX();
     const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
     const isScroll = reason === 'scroll';
+    const settled = this.settledZoomViewport;
+    if (isScroll && settled && settled.generation === this.renderWorkGeneration
+      && settled.x === scrollX && settled.y === scrollY
+      && settled.width === vpWidth && settled.height === vpHeight
+      && settled.zoom === this.viewportManager.getZoom()) return;
+    // 실제 이동/resize/strict 갱신은 중복 알림이 아니며 기존 스크롤·화질 계약을 따른다.
+    this.settledZoomViewport = null;
     const isScrollSettled = reason === 'scroll-settled';
+    const isZoomSettled = reason === 'zoom-settled';
+    const deferVisible = isScroll || isScrollSettled || isZoomSettled;
     if (!isScroll) {
       this.pageRenderScheduler.cancelAll();
       this.lastScrollSample = null;
@@ -612,15 +643,16 @@ export class CanvasView {
     this.currentRetainedPages = prefetchPages;
     this.updateActivePageSnapshot();
     this.refreshRenderSurfacePlan(
-      !isScroll && !isScrollSettled,
+      !deferVisible,
       isScroll ? 'scrolling' : isScrollSettled ? 'scroll-settled' : 'default',
     );
     this.reconcilePageSurfaceBudget();
+    if (isZoomSettled) this.trimOffscreenZoomSurfaces(visibleSet);
     for (const bundle of detachedBundles) this.pageSurfaceLru.put(bundle);
     this.reconcilePageSurfaceBudget();
 
-    if (!isScroll && !isScrollSettled) {
-      // 초기/줌/resize/편집/strict는 기존처럼 visible 전체를 응답 전에 동기 렌더한다.
+    if (!deferVisible) {
+      // 초기/resize/편집/strict는 visible 전체를 응답 전에 동기 렌더한다.
       for (const pageIdx of visiblePages) {
         if (!this.canvasPool.has(pageIdx)) this.renderPage(pageIdx);
       }
@@ -636,12 +668,13 @@ export class CanvasView {
           scrollY + vpHeight / 2,
         )
       : null;
-    const visibleWork = isScroll || isScrollSettled
+    const visibleWork = deferVisible
       ? this.buildVisibleRenderWork(
           visiblePages,
           centerPage,
           generation,
-          isScrollSettled,
+          isScrollSettled || isZoomSettled,
+          isZoomSettled,
         )
       : [];
     const adjacentPages = prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx));
@@ -663,8 +696,15 @@ export class CanvasView {
       visibleWork,
       prefetchWork,
       isScroll,
+      { yieldAfterVisible: isZoomSettled },
     );
     this.renderHeaderFooterEditOverlays();
+    if (isZoomSettled && generation === this.renderWorkGeneration) {
+      this.settledZoomViewport = {
+        x: scrollX, y: scrollY, width: vpWidth, height: vpHeight,
+        zoom: this.viewportManager.getZoom(), generation,
+      };
+    }
   }
 
   private sampleScrollMotion(scrollX: number, scrollY: number): ScrollMotion {
@@ -694,6 +734,7 @@ export class CanvasView {
     centerPage: number | null,
     generation: number,
     preferViewportCenter = false,
+    preferMissing = false,
   ): PageRenderWork[] {
     const focusedVisible = this.editingPageIndex !== null
       && visiblePages.includes(this.editingPageIndex)
@@ -703,7 +744,8 @@ export class CanvasView {
       const descriptor = this.pageSurfaceDescriptor(pageIdx);
       if (!descriptor) return [];
       const canvas = this.canvasPool.getCanvas(pageIdx);
-      if (canvas?.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey) return [];
+      if (canvas?.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey
+        && !this.isPageZoomPreview(canvas)) return [];
       const focusPriority = preferViewportCenter
         ? pageIdx === centerPage
           ? 0
@@ -716,7 +758,11 @@ export class CanvasView {
       return [this.createPageRenderWork(
         pageIdx,
         descriptor.lookupKey,
-        focusPriority,
+        // zoom은 빈 visible부터 채운다. 스크롤의 기존 focus/중심 우선순위는 유지한다.
+        preferMissing
+          ? (canvas ? 2 : 0) + (pageIdx === centerPage ? 0 : 1)
+            + Math.abs(pageIdx - (centerPage ?? pageIdx)) / (this.pages.length + 1)
+          : focusPriority,
         'visible',
         generation,
       )];
@@ -753,7 +799,8 @@ export class CanvasView {
       if (!descriptor) return [];
       const canvas = this.canvasPool.getCanvas(pageIdx);
       if (
-        canvas?.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey
+        (canvas?.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey
+          && !this.isPageZoomPreview(canvas))
         || (!canvas && this.pageSurfaceLru.hasLookup(descriptor.lookupKey))
       ) return [];
       const workClass: PageRenderWorkClass = canvas
@@ -838,7 +885,10 @@ export class CanvasView {
       rasterKey,
       workClass,
       isValid: () => {
-        if (this.disposed || generation !== this.renderWorkGeneration) {
+        // 새 입력은 첫 zoom-changed frame보다 먼저 pending/animating을 바꾼다.
+        // 그 틈에는 구 zoom/key/작업 세대가 같아도 raster를 시작하면 안 된다.
+        // 거부한 작업은 최신 정착에서 다시 만들며 기존 surface/image job은 유지한다.
+        if (this.disposed || generation !== this.renderWorkGeneration || this.isZoomPreviewActive()) {
           if (workClass === 'prefetch') this.releasePrefetchSurfaceReservation(pageIdx);
           return false;
         }
@@ -863,11 +913,17 @@ export class CanvasView {
     };
   }
 
+  private isPageZoomPreview(canvas: HTMLCanvasElement): boolean {
+    const renderedZoom = Number(canvas.dataset.rhwpRenderedZoom);
+    return Number.isFinite(renderedZoom) && renderedZoom > 0
+      && renderedZoom !== this.viewportManager.getZoom();
+  }
+
   private renderScheduledPage(pageIdx: number, rasterKey: string): void {
     if (this.pageSurfaceDescriptor(pageIdx)?.lookupKey !== rasterKey) return;
     const canvas = this.canvasPool.getCanvas(pageIdx);
     if (canvas) {
-      if (canvas.dataset.rhwpSurfaceCacheLookupKey === rasterKey) {
+      if (canvas.dataset.rhwpSurfaceCacheLookupKey === rasterKey && !this.isPageZoomPreview(canvas)) {
         this.applySurfaceDecisionDiagnostics(pageIdx, canvas);
       } else if (!this.renderCanvas(pageIdx, canvas)) {
         this.discardActivePageSurface(pageIdx);
@@ -1051,6 +1107,10 @@ export class CanvasView {
     // 눈금자는 순수 스크롤의 viewport fallback이 아니라 마지막 편집 focus를 따른다.
     // current-page-changed와 렌더 가시성은 위 active snapshot 계약을 계속 사용한다.
     this.eventBus.emit('focused-page-changed', pageIndex);
+    if (this.viewportManager.isZoomRasterPending()) {
+      this.viewportManager.finishPendingZoomRaster();
+      return;
+    }
     this.refreshRenderSurfacePlan(true);
     this.refreshPendingPageRenderWork();
   }
@@ -1158,27 +1218,6 @@ export class CanvasView {
       this.previousEffectiveDpr.clear();
       this.renderSurfaceEnvironmentKey = environmentKey;
     }
-    const settledVisiblePages = phase === 'scroll-settled'
-      ? this.materiallyVisiblePages()
-      : [];
-    const settledVisibleSet = new Set(settledVisiblePages);
-    const settledVisibleDpr = phase === 'scroll-settled'
-      ? resolveSettledVisibleEffectiveDpr({
-          pages: settledVisiblePages.flatMap((pageIndex) => {
-            const page = this.pages[pageIndex];
-            if (!page) return [];
-            return [{
-              width: page.width,
-              height: page.height,
-              layerCount: this.pageRenderer.getCanvasSurfaceLayerCount(pageIndex),
-              focused: this.editingPageIndex === pageIndex,
-            }];
-          }),
-          zoom: this.viewportManager.getZoom(),
-          rawDpr,
-          layerCount,
-        })
-      : null;
     const plan = planRenderSurfaceBudget({
       pages: this.currentRetainedPages.flatMap((pageIndex) => {
         const page = this.pages[pageIndex];
@@ -1193,8 +1232,10 @@ export class CanvasView {
           distanceFromFocus: Math.abs(pageIndex - focusPage),
           lockedEffectiveDpr: phase === 'scrolling'
             ? this.activeSurfaceRequestedDpr(pageIndex)
-            : settledVisibleDpr !== null && settledVisibleSet.has(pageIndex)
-              ? settledVisibleDpr
+            // 정착·줌·편집·resize 뒤 읽는 쪽은 예산이나 편집 focus와 무관하게 보호한다.
+            // mandatory 초과 비용은 원장에 남기고 offscreen/cache/prefetch에서만 절감한다.
+            : visibleSet.has(pageIndex)
+              ? rawDpr
               : undefined,
         }];
       }),
@@ -1243,7 +1284,9 @@ export class CanvasView {
         || Math.abs(beforeScale - afterScale) > 0.001;
       const canvas = this.canvasPool.getCanvas(pageIndex);
       if (!canvas) continue;
-      if (changed) {
+      const renderedZoom = Number(canvas.dataset.rhwpRenderedZoom);
+      const staleZoom = Number.isFinite(renderedZoom) && renderedZoom > 0 && renderedZoom !== zoom;
+      if (changed || staleZoom) {
         // raster에 실패한 쪽을 active로 남기면 다음 visibility 갱신이 has()로 건너뛰어
         // 빈 canvas가 그대로 보인다. 이미 붙어 있던 surface의 실패 계약에 맞춘다.
         if (!this.renderCanvas(pageIndex, canvas)) this.discardActivePageSurface(pageIndex);
@@ -1259,26 +1302,6 @@ export class CanvasView {
     const canvas = this.canvasPool.getCanvas(pageIndex);
     const value = Number(canvas?.dataset.rhwpRequestedDpr);
     return Number.isFinite(value) && value > 0 ? value : undefined;
-  }
-
-  /** 1px짜리 경계 노출을 정착 화질 승격 대상으로 세지 않는다. */
-  private materiallyVisiblePages(): number[] {
-    const scrollX = this.viewportManager.getScrollX();
-    const scrollY = this.viewportManager.getScrollY();
-    const viewport = this.viewportManager.getViewportSize();
-    const viewportRight = scrollX + viewport.width;
-    const viewportBottom = scrollY + viewport.height;
-    const layoutWidth = Math.max(viewport.width, this.virtualScroll.getTotalWidth());
-    return this.currentVisiblePages.filter((pageIndex) => {
-      const left = this.virtualScroll.getPageLeftResolved(pageIndex, layoutWidth);
-      const top = this.virtualScroll.getPageOffset(pageIndex);
-      const right = left + this.virtualScroll.getPageWidth(pageIndex);
-      const bottom = top + this.virtualScroll.getPageHeight(pageIndex);
-      const overlapX = Math.min(right, viewportRight) - Math.max(left, scrollX);
-      const overlapY = Math.min(bottom, viewportBottom) - Math.max(top, scrollY);
-      return overlapX >= MIN_SETTLED_VISIBLE_OVERLAP_CSS_PX
-        && overlapY >= MIN_SETTLED_VISIBLE_OVERLAP_CSS_PX;
-    });
   }
 
   private applySurfaceDecisionDiagnostics(pageIdx: number, canvas: HTMLCanvasElement): void {
@@ -1432,6 +1455,58 @@ export class CanvasView {
     this.renderGridOverlay(bundle.pageIndex, bundle.mainCanvas);
   }
 
+  /** 기존 active surface와 다음 raster 중 큰 비용을 같은 원장에 예약한다. */
+  private activePageSurfaceReservation(pageIdx: number, estimatedPixels: number, lookupKey: string): number {
+    const canvas = this.canvasPool.getCanvas(pageIdx);
+    if (!canvas) return 0;
+    const actualPixels = Number(canvas.dataset.rhwpActualSurfacePixels);
+    const renderedZoom = Number(canvas.dataset.rhwpRenderedZoom);
+    const staleZoom = Number.isFinite(renderedZoom) && renderedZoom > 0
+      && renderedZoom !== this.viewportManager.getZoom();
+    const knownActual = Number.isFinite(actualPixels) && actualPixels > 0;
+    // in-place 전환은 old+new 복제 대신 큰 쪽을 예약한다. 축소 중 구 preview도 실제 비용이다.
+    return staleZoom && knownActual
+      ? Math.max(actualPixels, estimatedPixels)
+      : canvas.dataset.rhwpSurfaceCacheLookupKey === lookupKey && knownActual ? actualPixels : estimatedPixels;
+  }
+
+  /** 줌 preview 보존이 offscreen의 retained-transition admission 우회가 되지 않게 한다. */
+  private trimOffscreenZoomSurfaces(visiblePages: ReadonlySet<number>): void {
+    const snapshot = this.pageSurfaceLru.snapshot();
+    let reservedPixels = snapshot.reservedPixels;
+    if (reservedPixels <= snapshot.pixelBudget) return;
+    const first = this.currentVisiblePages[0] ?? 0;
+    const last = this.currentVisiblePages[this.currentVisiblePages.length - 1] ?? first;
+    const distance = (page: number) => Math.max(first - page, page - last, 0);
+    const optionalPages = this.canvasPool.activePages
+      .filter(page => !visiblePages.has(page))
+      .sort((a, b) => distance(b) - distance(a) || b - a);
+    for (const pageIdx of optionalPages) {
+      if (reservedPixels <= snapshot.pixelBudget) break;
+      const descriptor = this.pageSurfaceDescriptor(pageIdx);
+      if (!descriptor) continue;
+      reservedPixels -= this.activePageSurfaceReservation(
+        pageIdx, descriptor.estimatedPixelCount, descriptor.lookupKey,
+      );
+      this.cancelPendingTextEditRefresh(pageIdx);
+      this.cancelTextEditStaticLayerVerification(pageIdx);
+      const bundle = this.detachCompletedPageSurface(pageIdx);
+      if (bundle) {
+        // 예산 초과분은 LRU에 다시 넣지 않는다. focus/문서 상태가 아닌 bitmap 소유권만 반환한다.
+        this.disposeCachedPageSurface(bundle);
+      } else {
+        const canvas = this.canvasPool.getCanvas(pageIdx);
+        const elements = canvas ? this.pageSurfaceElements(pageIdx, canvas) : [];
+        this.discardActivePageSurface(pageIdx);
+        // 미완료 layer도 DOM 제거/GC에만 의존하지 않고 backing store를 명시 반환한다.
+        for (const element of elements) {
+          if (element instanceof HTMLCanvasElement) { element.width = 0; element.height = 0; }
+        }
+      }
+    }
+    this.reconcilePageSurfaceBudget();
+  }
+
   private reconcilePageSurfaceBudget(): void {
     const lru = this.pageSurfaceLru;
     if (!lru) return;
@@ -1447,11 +1522,9 @@ export class CanvasView {
       if (!descriptor) continue;
       const activeCanvas = this.canvasPool.getCanvas(decision.pageIndex);
       if (activeCanvas) {
-        const exactTarget = activeCanvas.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey;
-        const actualPixels = Number(activeCanvas.dataset.rhwpActualSurfacePixels);
-        reservedPixels += exactTarget && Number.isFinite(actualPixels) && actualPixels > 0
-          ? actualPixels
-          : descriptor.estimatedPixelCount;
+        reservedPixels += this.activePageSurfaceReservation(
+          decision.pageIndex, descriptor.estimatedPixelCount, descriptor.lookupKey,
+        );
       } else if (visiblePages.has(decision.pageIndex) && !lru.hasLookup(descriptor.lookupKey)) {
         reservedPixels += descriptor.estimatedPixelCount;
       }
@@ -1617,6 +1690,7 @@ export class CanvasView {
       this.rendererFallbackScheduled = false;
       if (this.disposed || !this.rendererSession.isCurrent(selection)) return;
       this.applyRendererSelection(selection);
+      this.recalcLayout();
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
       this.releaseAllRenderedPages();
@@ -1628,6 +1702,14 @@ export class CanvasView {
   /** 뷰포트 리사이즈 처리 */
   private onViewportResize(): void {
     const nextViewport = this.viewportManager.getViewportSize();
+    const deferZoomResize = this.isZoomPreviewActive();
+    if (deferZoomResize
+      && nextViewport.width === this.layoutViewportSize.width
+      && nextViewport.height === this.layoutViewportSize.height) return;
+    // 자동 열 전환의 scrollbar는 폭과 높이 모두를 바꿀 수 있다. preview 도중에는
+    // 실제 창 resize도 좌표만 바로 맞추고, 최신 visible의 raster는 마지막 줌 정착에 맡긴다.
+    const zoomInterrupted = deferZoomResize
+      ? false : this.viewportManager.cancelPendingZoomRaster();
     if (this.pages.length === 0) {
       this.layoutViewportSize = nextViewport;
       this.updateVisiblePages('resize');
@@ -1681,7 +1763,12 @@ export class CanvasView {
       );
     }
 
-    if (wasGrid || isGrid) {
+    if (deferZoomResize) {
+      this.cancelPendingPrefetch();
+      return;
+    }
+
+    if (wasGrid || isGrid || zoomInterrupted) {
       // 그리드 관련 변경 시 전체 재렌더링
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
@@ -1746,19 +1833,34 @@ export class CanvasView {
 
     this.eventBus.emit('zoom-level-display', zoom);
 
-    if (this.viewportManager.isZoomAnimating()) {
+    if (this.isZoomPreviewActive()) {
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
       this.cancelPendingPrefetch();
-      this.updateRenderedPageZoomPreview();
+      // recalcLayout()이 이미 새 geometry로 preview를 적용했다. 앵커 scroll 복원은
+      // 콘텐츠 내부의 preview 좌표를 바꾸지 않으므로 같은 요소를 다시 순회하지 않는다.
       return;
     }
 
-    // 모든 Canvas 재렌더링
+    this.renderSettledZoom();
+  }
+
+  private isZoomPreviewActive(): boolean {
+    return this.viewportManager.isZoomAnimating() || this.viewportManager.isZoomRasterPending();
+  }
+
+  private onZoomRasterReady(generation: unknown): void {
+    if (this.disposed || this.pages.length === 0 || this.viewportManager.isZoomAnimating()
+      || !this.viewportManager.isCurrentZoomRasterReady(generation)) return;
+    // geometry/앵커/눈금자를 재통지하지 않고 최신 geometry의 최종 raster만 실행한다.
+    this.renderSettledZoom();
+  }
+
+  private renderSettledZoom(): void {
+    // 기존 bitmap은 개별 갱신까지 preview로 유지한다. 새 visible부터 기존 scheduler로
+    // 나눠 그리며 전체 surface/LRU를 지우거나 image job을 일괄 취소하지 않는다.
     this.cancelPendingTextEditRefresh();
     this.cancelTextEditStaticLayerVerification();
-    this.releaseAllRenderedPages();
-    this.pageRenderer.cancelAll();
     this.updateVisiblePages('zoom-settled');
   }
 
@@ -1794,6 +1896,8 @@ export class CanvasView {
 
   /** 편집 후 보이는 페이지를 재렌더링한다 */
   refreshPages(): void {
+    this.viewportManager.cancelPendingZoomRaster();
+    this.zoomRefreshRequired = false;
     if (this.pages.length === 0) return;
 
     // 페이지 정보 재수집 (페이지 수/크기가 변경될 수 있음)
@@ -1820,6 +1924,10 @@ export class CanvasView {
   /** 텍스트 입력처럼 좁은 변경은 page info 재수집 없이 해당 페이지 canvas만 다시 그린다. */
   private refreshInvalidatedPage(payload: unknown): void {
     if (this.pages.length === 0) return;
+    if (this.viewportManager.isZoomRasterPending()) {
+      this.refreshPages();
+      return;
+    }
     // 부분 revision 계약이 없으므로 편집/undo/redo는 detached bundle 전체를 무효화한다.
     this.pageSurfaceLru.clear();
 
@@ -1972,6 +2080,8 @@ export class CanvasView {
 
   /** 리소스를 정리한다 */
   private reset(): void {
+    this.viewportManager.cancelPendingZoomRaster();
+    this.zoomRefreshRequired = false;
     const hadActivePage = this.activePageSnapshot !== null;
     const hadFocusedPage = this.editingPageIndex !== null;
     this.cancelPendingTextEditRefresh();
@@ -1996,6 +2106,7 @@ export class CanvasView {
   }
 
   private releaseAllRenderedPages(): void {
+    this.settledZoomViewport = null;
     this.cancelPendingPrefetch();
     this.pageSurfaceLru?.clear();
     this.pageRenderer.resetImageRetryState();
@@ -2106,6 +2217,7 @@ export class CanvasView {
     const viewChanged = !pageArrangementsEqual(this.pageArrangement, next.arrangement)
       || !movementUnchanged;
     if (!viewChanged && !next.zoom) return false;
+    const zoomInterrupted = this.viewportManager.cancelPendingZoomRaster();
 
     if (this.pages.length === 0) {
       this.pageArrangement = next.arrangement;
@@ -2160,7 +2272,7 @@ export class CanvasView {
       }
     }
     const zoomChanged = this.viewportManager.getZoom() !== previousZoom;
-    const layoutChanged = viewChanged || zoomChanged;
+    const layoutChanged = viewChanged || zoomChanged || zoomInterrupted;
 
     if (layoutChanged) this.recalcLayout();
 
@@ -2186,7 +2298,7 @@ export class CanvasView {
       this.eventBus.emit('zoom-level-display', this.viewportManager.getZoom());
     }
 
-    if (layoutChanged && (zoomChanged || previousTopology !== nextTopology)) {
+    if (layoutChanged && (zoomInterrupted || zoomChanged || previousTopology !== nextTopology)) {
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
       this.cancelPendingPrefetch();

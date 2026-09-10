@@ -96,6 +96,128 @@ function work(
   };
 }
 
+test('zoom visible 뒤 retained는 다음 frame 경계를 거친 별도 task에서 실행한다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host);
+  const output: number[] = [];
+  scheduler.setDesiredWork(1, [work(0, 0, output)], [
+    work(1, 0, output, { workClass: 'retained-transition' }),
+  ], false, { yieldAfterVisible: true });
+  host.runFrame();
+  assert.deepEqual(output, [0]);
+  assert.equal(host.timers.size, 0, '다음 frame보다 먼저 실행 가능한 0ms timer를 만들지 않는다');
+  assert.equal(scheduler.snapshot().idleScheduled, true, '양보 frame도 미완료 deferred 작업이다');
+  host.runFrame();
+  assert.deepEqual(output, [0], 'rAF 안에서 retained raster를 실행하지 않는다');
+  assert.equal(host.timers.size, 1);
+  host.runTimer();
+  assert.deepEqual(output, [0, 1]);
+  assert.equal(scheduler.snapshot().idleScheduled, false);
+});
+
+for (const kind of ['prefetch', 'retained-transition'] as const) {
+  for (const idle of [true, false]) {
+    test(`zoom 양보: ${kind}, idle=${idle}에서도 기존 deferred 정책을 유지한다`, () => {
+      const host = new FakeHost();
+      if (!idle) host.requestIdle = undefined;
+      const scheduler = new PageRenderScheduler(host);
+      const output: number[] = [];
+      scheduler.setDesiredWork(1, [work(0, 0, output)], [work(1, 0, output, { workClass: kind })],
+        false, { yieldAfterVisible: true });
+      host.runFrame();
+      assert.equal(host.timers.size + host.idles.size, 0);
+      host.runFrame();
+      if (kind === 'prefetch' && idle) host.runIdle();
+      else host.runTimer();
+      assert.deepEqual(output, [0, 1]);
+    });
+  }
+}
+
+test('여러 visible slice가 끝난 뒤 한 번만 양보하고 retained는 한 task에 한 쪽이다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host);
+  const output: number[] = [];
+  scheduler.setDesiredWork(1, [0, 1, 2].map(p => work(p, p, output, { host, costMs: 5 })),
+    [3, 4].map(p => work(p, p, output, { workClass: 'retained-transition' })),
+    false, { yieldAfterVisible: true });
+  for (let i = 0; i < 3; i++) host.runFrame();
+  assert.deepEqual(output, [0, 1, 2]);
+  assert.equal(host.frames.size, 1);
+  assert.equal(host.timers.size, 0);
+  host.runFrame();
+  host.runTimer();
+  assert.deepEqual(output, [0, 1, 2, 3]);
+  assert.equal(host.frames.size, 0);
+  host.runTimer();
+  assert.deepEqual(output, [0, 1, 2, 3, 4]);
+});
+
+for (const missing of ['visible', 'retained', 'valid-visible'] as const) {
+  test(`${missing} 없음: 실행할 필요가 없는 frame 양보를 추가하지 않는다`, () => {
+    const host = new FakeHost();
+    const scheduler = new PageRenderScheduler(host);
+    const output: number[] = [];
+    scheduler.setDesiredWork(1,
+      missing === 'visible' ? [] : [work(0, 0, output, { valid: () => missing !== 'valid-visible' })],
+      missing === 'retained' ? [] : [work(1, 0, output, { workClass: 'retained-transition' })],
+      false, { yieldAfterVisible: true });
+    if (host.frames.size) host.runFrame();
+    assert.equal(host.frames.size, 0);
+    if (missing !== 'retained') host.runTimer();
+    assert.deepEqual(output, missing === 'retained' ? [0] : [1]);
+  });
+}
+
+for (const replacement of ['cancel', 'scroll', 'zoom'] as const) {
+  test(`frame 양보 중 ${replacement}: 캡처된 구 callback도 새 큐를 실행하지 못한다`, () => {
+    const host = new FakeHost();
+    const scheduler = new PageRenderScheduler(host);
+    const output: number[] = [];
+    scheduler.setDesiredWork(1, [work(0, 0, output)],
+      [work(1, 0, output, { workClass: 'retained-transition' })], false, { yieldAfterVisible: true });
+    host.runFrame();
+    const stale = [...host.frames.values()][0];
+    if (replacement === 'cancel') scheduler.cancelAll();
+    else scheduler.setDesiredWork(2, [work(2, 0, output)], [], replacement === 'scroll',
+      { yieldAfterVisible: replacement === 'zoom' });
+    stale();
+    if (host.frames.size) host.runFrame();
+    assert.deepEqual(output, replacement === 'cancel' ? [0] : [0, 2]);
+    assert.equal(host.frames.size + host.timers.size + host.idles.size, 0);
+  });
+}
+
+test('visible 실행 도중 같은 generation 재요청도 구 frame 양보 정책을 물려주지 않는다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host);
+  const output: number[] = [];
+  const first = work(0, 0, output);
+  first.run = () => {
+    output.push(0);
+    scheduler.setDesiredWork(1, [], [work(2, 0, output, { workClass: 'retained-transition' })], false);
+  };
+  scheduler.setDesiredWork(1, [first], [work(1, 0, output)], false, { yieldAfterVisible: true });
+  host.runFrame();
+  assert.equal(host.frames.size, 0);
+  host.runTimer();
+  assert.deepEqual(output, [0, 2]);
+});
+
+test('zoom 마지막 visible 실패는 새 frame 대기나 무한 retry를 만들지 않는다', () => {
+  const host = new FakeHost();
+  const scheduler = new PageRenderScheduler(host);
+  const output: number[] = [];
+  const failed = work(0, 0, output);
+  failed.run = () => { throw new Error('failed'); };
+  scheduler.setDesiredWork(1, [failed], [work(1, 0, output, { workClass: 'retained-transition' })],
+    false, { yieldAfterVisible: true });
+  assert.throws(() => host.runFrame(), /failed/);
+  assert.equal(host.frames.size, 0);
+  host.runTimer();
+  assert.deepEqual(output, [1]);
+});
+
 for (const mode of ['frame', 'fast-path', 'idle', 'timeout'] as const) {
   for (const failurePoint of ['run', 'isValid'] as const) {
     test(`${mode} ${failurePoint} 예외를 전달해도 다음 page dispatch는 살아 있다`, () => {

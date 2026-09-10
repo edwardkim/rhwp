@@ -858,6 +858,10 @@ fn parse_sections_strict(
         }
     }
 
+    // [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커를 잇는다 — 구역 하나를 파싱하는
+    // 동안에는 앞 구역에서 열린 필드를 볼 수 없다.
+    body_text::link_orphan_field_ends_across_sections(&mut sections);
+
     Ok(sections)
 }
 
@@ -970,6 +974,9 @@ fn parse_hwp_with_lenient(
             }
         }
     }
+
+    // [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커 — strict 경로와 같다.
+    body_text::link_orphan_field_ends_across_sections(&mut sections);
 
     // BinData 로드 시도
     let bin_data_content = load_bin_data_content_lenient(

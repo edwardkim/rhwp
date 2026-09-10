@@ -501,6 +501,93 @@ fn cell_cut_window(
     }
 }
 
+/// [#6924] 쪽 조각이 **소유한** clip 하단 글줄을 담도록 그 셀 clip 을 미리 넓힌다.
+///
+/// `suppress_bottom_clipped_text_residue`(#2007)는 clip 바닥에 6px 미만으로 걸친 글줄을
+/// "다음 조각이 온전히 그릴 것" 이라 보고 지운다. 그 전제는 확인되지 않은 채였고, 소유자가
+/// 없는 줄까지 지워 **문서에서 통째로 사라졌다** — 렌더 트리에는 정상 좌표로 남는데 SVG 에
+/// 한 자도 나가지 않는다(148751598 1쪽 31자 · 148738070 1쪽 38자 · 156060125 6쪽 ·
+/// 1490000 vietnam 114쪽 · 1342000 edu 377쪽. 한컴 2024 정답지가 다섯 곳 모두 그 줄을 그린다).
+///
+/// 소속은 컷 부기가 이미 안다(`partial_table_page_contains_cell_position`). 소유한 줄이면
+/// 여기서 clip 을 그 줄 아랫변까지 넓혀 둔다 — 그러면 줄이 더는 바닥에 "걸치지" 않아
+/// 억제 조건 자체가 성립하지 않는다. 억제 로직은 건드리지 않는다.
+///
+/// **형제 셀과 부딪치면 넓히지 않는다.** 소유한 줄이라도 이웃 셀 내용 위로 나가면 두 글자
+/// 모두 못 읽는다(edu 82쪽 Cell3↔Cell10 · 152쪽 Cell13↔Cell24 실측: 겹침 94→97). 그런 줄은
+/// 종전대로 억제에 맡긴다 — 행 높이 축의 별개 결함이라 여기서 풀 문제가 아니다.
+type FragmentCellFlowBottoms = std::collections::HashMap<crate::renderer::render_tree::NodeId, f64>;
+
+fn expand_fragment_cell_clip_for_owned_bottom_lines(
+    table_node: &mut RenderNode,
+    owns_line: &dyn Fn(
+        &crate::renderer::render_tree::TableCellNode,
+        &crate::renderer::render_tree::TextLineNode,
+    ) -> bool,
+) -> FragmentCellFlowBottoms {
+    use crate::renderer::render_tree::RenderNodeType;
+    let mut flow_bottoms = FragmentCellFlowBottoms::new();
+    let cell_boxes: Vec<(usize, crate::renderer::render_tree::BoundingBox)> = table_node
+        .children
+        .iter()
+        .enumerate()
+        .filter(|(_, c)| matches!(c.node_type, RenderNodeType::TableCell(_)))
+        .map(|(i, c)| (i, c.bbox))
+        .collect();
+    for (idx, cell) in table_node.children.iter_mut().enumerate() {
+        let RenderNodeType::TableCell(meta) = &cell.node_type else {
+            continue;
+        };
+        if !meta.clip || !meta.page_fragment {
+            continue;
+        }
+        let meta = meta.clone();
+        let clip_bottom = cell.bbox.y + cell.bbox.height;
+        let mut wanted_bottom = clip_bottom;
+        for line in &cell.children {
+            if !line.visible {
+                continue;
+            }
+            let RenderNodeType::TextLine(tl) = &line.node_type else {
+                continue;
+            };
+            let line_bottom = line.bbox.y + line.bbox.height;
+            // clip 바닥을 걸치는 줄만 대상 — 완전히 안이거나 완전히 밖인 줄은 다른 축이다.
+            if line.bbox.y >= clip_bottom || line_bottom <= clip_bottom {
+                continue;
+            }
+            if !owns_line(&meta, tl) {
+                continue;
+            }
+            wanted_bottom = wanted_bottom.max(line_bottom);
+        }
+        if wanted_bottom <= clip_bottom {
+            continue;
+        }
+        // 형제 셀 충돌 검사 — 넓힌 상자가 다른 셀과 겹치면 포기한다.
+        let grown = crate::renderer::render_tree::BoundingBox::new(
+            cell.bbox.x,
+            cell.bbox.y,
+            cell.bbox.width,
+            wanted_bottom - cell.bbox.y,
+        );
+        let collides = cell_boxes.iter().any(|(other_idx, other)| {
+            *other_idx != idx
+                && grown.x < other.x + other.width
+                && other.x < grown.x + grown.width
+                && grown.y < other.y + other.height
+                && other.y < grown.y + grown.height
+        });
+        if collides {
+            continue;
+        }
+        // 이 증가는 글줄의 표시용 클립이다. 부모 표의 흐름 높이는 기존 하단을 쓴다.
+        flow_bottoms.insert(cell.id, clip_bottom);
+        cell.bbox.height = wanted_bottom - cell.bbox.y;
+    }
+    flow_bottoms
+}
+
 impl LayoutEngine {
     /// [#4128] 이 PartialTable 페이지 조각에 `cell` 의 대상 위치가 실제로 렌더되는가.
     /// pagination 메타데이터(행 범위 + 유닛 컷)와 memoize 된 `cell_units` 만 사용하며
@@ -4149,6 +4236,38 @@ impl LayoutEngine {
         // after the fragment cell loop. Preserve direct nested outer vertical
         // borders in the horizontal clip without widening the RowBreak
         // continuation viewport (issue2007 p2-p3).
+        // [#6924] 이 조각이 어떤 글줄을 **소유**하는지는 컷 부기가 이미 안다
+        // (`partial_table_page_contains_cell_position`). 그 판정을 clip 보정까지 날라
+        // 소유하지 않는 줄만 지우게 한다 — 소유한 줄을 지우면 다시 그릴 조각이 없어
+        // 문서에서 사라진다(148751598 1쪽 31자 · 148738070 1쪽 38자 · 156060125 6쪽).
+        let owns_line = |cell_meta: &crate::renderer::render_tree::TableCellNode,
+                         line: &crate::renderer::render_tree::TextLineNode|
+         -> bool {
+            let (Some(cell_idx), Some(para_index), Some(line_index)) =
+                (cell_meta.model_cell_index, line.para_index, line.line_index)
+            else {
+                // 좌표를 모르면 판정하지 않는다 — 종전 계약(억제) 그대로 둔다.
+                return false;
+            };
+            let Some(cell) = table.cells.get(cell_idx as usize) else {
+                return false;
+            };
+            self.partial_table_page_contains_cell_position(
+                table,
+                cell,
+                start_row,
+                end_row,
+                start_cut,
+                end_cut,
+                is_block_split,
+                Some((para_index, line_index as usize, true)),
+                styles,
+            )
+        };
+        // 아래 정리 단계가 글줄을 숨기기 전에 표시용 클립을 확보해야 한다.
+        // 이미 visible=false가 된 줄을 나중에 클립만 넓혀 복구할 수는 없다.
+        let owned_line_flow_bottoms =
+            expand_fragment_cell_clip_for_owned_bottom_lines(&mut table_node, &owns_line);
         extend_completed_nested_table_border_clips(
             tree,
             &mut table_node,
@@ -4190,6 +4309,7 @@ impl LayoutEngine {
                 physical_page_bottom: f64,
                 logical_table_bottom: f64,
                 terminal_long_child_clip_only: bool,
+                owned_line_flow_bottoms: &FragmentCellFlowBottoms,
             ) -> f64 {
                 let clipped_cell = matches!(
                     node.node_type,
@@ -4199,10 +4319,14 @@ impl LayoutEngine {
                 // bottom stroke. That clip is not new parent-row flow. Start clipped
                 // cells at the logical RowBreak bottom; only direct drawings proven to
                 // end on this page may extend the outer table bbox.
+                let flow_bottom = owned_line_flow_bottoms
+                    .get(&node.id)
+                    .copied()
+                    .unwrap_or(node.bbox.y + node.bbox.height);
                 let mut b = if clipped_cell && terminal_long_child_clip_only {
-                    (node.bbox.y + node.bbox.height).min(logical_table_bottom)
+                    flow_bottom.min(logical_table_bottom)
                 } else {
-                    node.bbox.y + node.bbox.height
+                    flow_bottom
                 };
                 if clipped_cell {
                     for child in &node.children {
@@ -4225,6 +4349,7 @@ impl LayoutEngine {
                                 physical_page_bottom,
                                 logical_table_bottom,
                                 terminal_long_child_clip_only,
+                                owned_line_flow_bottoms,
                             );
                             if drawing_bottom <= physical_page_bottom + 0.5 {
                                 b = b.max(drawing_bottom);
@@ -4239,6 +4364,7 @@ impl LayoutEngine {
                         physical_page_bottom,
                         logical_table_bottom,
                         terminal_long_child_clip_only,
+                        owned_line_flow_bottoms,
                     ));
                 }
                 b
@@ -4252,6 +4378,7 @@ impl LayoutEngine {
                         physical_page_bottom,
                         logical_table_bottom,
                         terminal_long_child_clip_only,
+                        &owned_line_flow_bottoms,
                     )
                 })
                 .fold(table_node.bbox.y + table_node.bbox.height, f64::max);

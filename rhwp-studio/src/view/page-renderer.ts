@@ -22,6 +22,7 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
+import { imageCropSourceRect } from './image-crop-scale.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -86,7 +87,6 @@ const IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500;
 // 순수 SVG 차트/OLE는 prefetch 대상 data URL이 없을 수 있다. 첫 paint가 시작한
 // 이미지 decode를 빠르게 반영하되, 일반 이미지처럼 전역 반복 재렌더는 피한다.
 const RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = [0, 32, 96, 240] as const;
-const HWP_UNITS_PER_CSS_PIXEL = 75;
 
 export class PageRenderer {
   private reRenderJobs = new Map<number, ReRenderJob>();
@@ -1125,7 +1125,10 @@ export class PageRenderer {
       return;
     }
     const retryKey = this.buildImageRetryKey(pageIdx, imageCount, rawSvgCount, policy);
-    if (retryKey !== null && this.imageRetryCounts.get(pageIdx) === retryKey) return;
+    // 완료된 decode만 재사용한다. 같은 그림이어도 이전 bitmap의 job이 아직 대기 중이면
+    // 새 canvas/scale을 대상으로 교체해야 구 배율 callback이 최신 surface를 덮지 않는다.
+    if (retryKey !== null && this.imageRetryCounts.get(pageIdx) === retryKey
+      && !this.reRenderJobs.has(pageIdx)) return;
 
     this.cancelReRender(pageIdx);
     if (retryKey === null) this.imageRetryCounts.delete(pageIdx);
@@ -1165,6 +1168,10 @@ export class PageRenderer {
 
     // 자체 prefetch로 실제 decode를 마친 경우에만 fallback보다 먼저 다시 그린다.
     queueMicrotask(() => {
+      // 취소/교체된 microtask 자체는 큐에서 제거할 수 없다. 완료뿐 아니라 시작도
+      // 현재 job/token에 한정해 구 요청이 새 문서의 layer 조회·decode를 만들지 않게 한다.
+      if (job.completed || this.reRenderJobs.get(pageIdx) !== job
+        || this.prefetchRequestTokens.get(pageIdx) !== prefetchRequestToken) return;
       this.prefetchLayerImages(pageIdx, rawSvgCount, prefetchRequestToken)
         .then((decoded) => {
           if (decoded) finish();
@@ -1397,6 +1404,8 @@ export class PageRenderer {
     this.prefetchRequestTokens.delete(pageIdx);
     const job = this.reRenderJobs.get(pageIdx);
     if (job) {
+      // 미완료 job의 취소는 decode 완료가 아니다. 같은 그림의 다음 요청을 허용한다.
+      this.imageRetryCounts.delete(pageIdx);
       job.completed = true;
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
@@ -1406,7 +1415,8 @@ export class PageRenderer {
 
   /** 모든 지연 재렌더링을 취소한다 */
   cancelAll(): void {
-    for (const job of this.reRenderJobs.values()) {
+    for (const [pageIdx, job] of this.reRenderJobs) {
+      this.imageRetryCounts.delete(pageIdx);
       job.completed = true;
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
@@ -1572,8 +1582,18 @@ function applyFlowImageCrop(
   frameWidth: number = image.bbox.width,
   frameHeight: number = image.bbox.height,
 ): void {
-  const crop = image.crop;
-  if (!crop || element.naturalWidth <= 0 || element.naturalHeight <= 0) {
+  // [#6954] 잘라 올 창은 CanvasKit 백엔드와 **같은 함수**가 정한다 — 축척 폴백(rust
+  // `compute_image_crop_src` 와 같은 사슬)도, "자를 것이 있나" 판정도 그 안에 있다.
+  // 종전에는 둘 다 여기 따로 있어서 갈렸다: `originalSizeHu` 가 없으면 96dpi 상수로
+  // 떨어져 원본의 다른 창을 잘라 왔고(그만큼 확대), 자를 것이 없는 그림도 소수점 창으로
+  // 다시 표본화해 CanvasKit 의 통짜 그리기와 파리티가 벌어졌다.
+  const source = imageCropSourceRect(
+    element.naturalWidth,
+    element.naturalHeight,
+    image.crop ?? undefined,
+    image.originalSizeHu,
+  );
+  if (!source) {
     element.style.left = '0';
     element.style.top = '0';
     element.style.width = '100%';
@@ -1581,22 +1601,10 @@ function applyFlowImageCrop(
     return;
   }
 
-  const scaleXHu = image.originalSizeHu
-    ? image.originalSizeHu[0] / element.naturalWidth
-    : HWP_UNITS_PER_CSS_PIXEL;
-  const scaleYHu = image.originalSizeHu
-    ? image.originalSizeHu[1] / element.naturalHeight
-    : HWP_UNITS_PER_CSS_PIXEL;
-  const sourceLeft = crop.left / scaleXHu;
-  const sourceTop = crop.top / scaleYHu;
-  const sourceWidth = (crop.right - crop.left) / scaleXHu;
-  const sourceHeight = (crop.bottom - crop.top) / scaleYHu;
-  if (sourceWidth <= 0 || sourceHeight <= 0) return;
-
-  const scaleX = (frameWidth * displayScale) / sourceWidth;
-  const scaleY = (frameHeight * displayScale) / sourceHeight;
-  element.style.left = `${-sourceLeft * scaleX}px`;
-  element.style.top = `${-sourceTop * scaleY}px`;
+  const scaleX = (frameWidth * displayScale) / source.width;
+  const scaleY = (frameHeight * displayScale) / source.height;
+  element.style.left = `${-source.x * scaleX}px`;
+  element.style.top = `${-source.y * scaleY}px`;
   element.style.width = `${element.naturalWidth * scaleX}px`;
   element.style.height = `${element.naturalHeight * scaleY}px`;
 }

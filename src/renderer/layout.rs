@@ -587,6 +587,8 @@ type ParaFloatLanes = std::collections::HashMap<usize, FloatLaneSet>;
 
 #[derive(Debug, Clone, Copy)]
 struct VisibleFloatExclusion {
+    /// Fixed page geometry survives paragraph cursor advancement/backtracking.
+    fixed_textbox: bool,
     /// visible host 문단의 양수 offset 자리차지 표가 후속 본문을 밀어내야 하는 y 구간.
     top: f64,
     bottom: f64,
@@ -645,6 +647,7 @@ fn square_picture_side_wrap_exclusion(
         return None;
     }
     Some(VisibleFloatExclusion {
+        fixed_textbox: false,
         top: bbox.y,
         bottom: bbox.y + bbox.height,
         owner_para: para_index,
@@ -2959,7 +2962,9 @@ pub struct LayoutEngine {
     table_nested_text_flag_scan_count: std::cell::Cell<usize>,
 }
 
+mod anchor_box_flow;
 mod border_rendering;
+mod fixed_textbox_flow;
 mod paragraph_layout;
 mod picture_footnote;
 mod shape_layout;
@@ -6643,6 +6648,25 @@ impl LayoutEngine {
             std::collections::HashMap::new();
         let mut para_float_lanes: ParaFloatLanes = std::collections::HashMap::new();
         let mut visible_float_exclusions: Vec<VisibleFloatExclusion> = Vec::new();
+        // Fixed-position textboxes do not depend on the paragraph cursor. Paint
+        // them once before flow layout so following tables see their grown bounds.
+        // Blank anchor paragraphs must not consume these object heights again.
+        self.layout_column_shapes_pass(
+            tree,
+            &mut col_node,
+            paper_images,
+            col_content,
+            page_content,
+            paragraphs,
+            composed,
+            styles,
+            bin_data_content,
+            layout,
+            col_area,
+            &para_start_y,
+            Some(&mut visible_float_exclusions),
+        );
+        fixed_textbox_flow::merge_fixed_bands(&mut visible_float_exclusions);
         // [Task #1151 v9 결함 D] paragraph 단위 inline picture 가로 분배 cursor state.
         // 같은 paragraph 의 sibling tac=true picture 들이 가로로 inline 분배 (한컴 native 정합).
         let mut para_inline_state: std::collections::HashMap<
@@ -7626,7 +7650,8 @@ impl LayoutEngine {
                         }
                     }
                 }
-                visible_float_exclusions.retain(|zone| y_offset < zone.bottom - 0.5);
+                visible_float_exclusions
+                    .retain(|zone| zone.fixed_textbox || y_offset < zone.bottom - 0.5);
                 // [Task #1794] 잉크-겹침 프로브를 HWP5 소스에도 적용 — 자리차지 표의
                 // exclusion zone 과 문단 첫 줄 잉크가 겹치면 소스 포맷과 무관하게 표
                 // 아래로 밀어야 한다 (seoul_0765: HWPX 직파스와 HWP5 재파스의 표 앵커
@@ -8474,6 +8499,7 @@ impl LayoutEngine {
             layout,
             col_area,
             &para_start_y,
+            None,
         );
 
         // [#4568] 앞 쪽에서 쪽 하단에 잘린 overlay 표의 잔여 행을 이 단 최상단에
@@ -8745,8 +8771,44 @@ impl LayoutEngine {
     /// 노드와 모든 자손의 y 를 dy 만큼 이동한다.
     fn translate_subtree_y(node: &mut RenderNode, dy: f64) {
         node.bbox.y += dy;
+        Self::translate_node_payload_y(node, dy);
         for child in node.children.iter_mut() {
             Self::translate_subtree_y(child, dy);
+        }
+    }
+
+    /// [#6921] `bbox` 말고 **자기 좌표**를 들고 다니는 노드의 y 도 같이 옮긴다.
+    ///
+    /// 백엔드는 노드마다 다른 것을 읽는다. `Rectangle`·`Ellipse`·`Image`·글자는
+    /// `node.bbox` 로 그리지만, `Line` 은 `x1/y1–x2/y2` 를, `Path` 는 `commands` 의
+    /// 절대 좌표를 그대로 경로로 삼는다(`svg.rs` 의 `draw_line`·`draw_path_with_gradient`).
+    /// bbox 만 옮기면 그 둘은 **옮기기 전 자리에 그려지고 bbox 만 따로 논다.**
+    ///
+    /// 148733091 12쪽: `vertAlign` 정렬이 꼬리말을 `dy = 23.88px` 내리는데 문단 테두리
+    /// 이중선의 bbox 만 `1031.8` 로 가고 방출은 `1007.92` 에 남았다. 그 자리는 아직 본문
+    /// 영역(바닥 `1009.2`) 안이라 선이 본문 마지막 글줄을 가로질렀다.
+    /// 한/글 정본(engine 2020)은 같은 선을 `1028.2` 에 그린다.
+    fn translate_node_payload_y(node: &mut RenderNode, dy: f64) {
+        match &mut node.node_type {
+            RenderNodeType::Line(line) => {
+                line.y1 += dy;
+                line.y2 += dy;
+            }
+            RenderNodeType::Path(path) => {
+                for cmd in path.commands.iter_mut() {
+                    match cmd {
+                        PathCommand::MoveTo(_, y) | PathCommand::LineTo(_, y) => *y += dy,
+                        PathCommand::CurveTo(_, y1, _, y2, _, y) => {
+                            *y1 += dy;
+                            *y2 += dy;
+                            *y += dy;
+                        }
+                        PathCommand::ArcTo(_, _, _, _, _, _, y) => *y += dy,
+                        PathCommand::ClosePath => {}
+                    }
+                }
+            }
+            _ => {}
         }
     }
 
@@ -9715,12 +9777,17 @@ impl LayoutEngine {
                 mt.map(|measured| measured.total_height),
                 declared_height,
             ) && is_current_empty_para_float
-                && native_empty_host_physical_outer_box_paint_inset(
+                && (native_empty_host_physical_outer_box_paint_inset(
                     self.profile.get().hwp5_stored_pagination_layout(),
                     para,
                     t,
                     paragraphs.get(para_index + 1),
-                );
+                ) || anchor_box_flow::offset_table_has_stored_outer_box(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    para,
+                    t,
+                    paragraphs.get(para_index + 1),
+                ));
             let physical_outer_box_paint_inset_y = if physical_outer_box_paint_inset {
                 hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
             } else {
@@ -10316,6 +10383,10 @@ impl LayoutEngine {
                             .max(para_y_for_table + visible_outer_top_px + v_off.max(0.0));
                         let mut floor = table_y_start;
                         for zone in visible_float_exclusions.iter() {
+                            // Fixed textboxes use a full-height intersection probe below.
+                            if zone.fixed_textbox {
+                                continue;
+                            }
                             if natural_top + 0.5 >= zone.top && natural_top < zone.bottom {
                                 // 빈-host(text 없는) float 은 자기 offset 이 선행 exclusion 에
                                 // 흡수되어 표끼리 붙는다. zone 하단 아래로 그 offset 만큼 띄워
@@ -10340,7 +10411,21 @@ impl LayoutEngine {
                                 floor = floor.max(zone.bottom + restore);
                             }
                         }
-                        floor
+                        let table_height = mt
+                            .map(|measured| measured.total_height)
+                            .unwrap_or_else(|| hwpunit_to_px(t.common.height as i32, self.dpi));
+                        let gap = if is_current_visible_para_float {
+                            0.0
+                        } else {
+                            v_off.max(0.0)
+                        };
+                        fixed_textbox_flow::table_floor(
+                            visible_float_exclusions,
+                            natural_top.max(floor),
+                            table_height,
+                            gap,
+                        )
+                        .map_or(floor, |fixed_floor| floor.max(fixed_floor))
                     } else {
                         table_y_start
                     };
@@ -10707,6 +10792,7 @@ impl LayoutEngine {
                             .paragraph_float_placements
                             .get(&(para_index, control_index));
                         visible_float_exclusions.push(VisibleFloatExclusion {
+                            fixed_textbox: false,
                             top: placement.map_or(table_visual_top, |p| col_area.y + p.table_top),
                             bottom: placement.map_or(
                                 table_visual_end + margin_bottom_px + host_line_spacing_px,
@@ -13158,6 +13244,19 @@ impl LayoutEngine {
                             ) {
                                 result_y = saved_y_offset;
                             }
+                            // A co-anchored fixed title needs the otherwise
+                            // empty host's content line. Keep ordinary BehindText
+                            // logo hosts on the legacy path described above.
+                            if self.profile.get().hwp5_stored_pagination_layout() {
+                                if let Some(floor) = anchor_box_flow::backdrop_title_host_floor(
+                                    para,
+                                    &pic.common,
+                                    pic_y,
+                                    self.dpi,
+                                ) {
+                                    result_y = result_y.max(floor.min(saved_y_offset));
+                                }
+                            }
                             // [Task #959] horz_rel_to=Column 의 picture 가 col_area 우측을
                             // 초과하는 위치에 emit 되면 한컴 viewer 는 column flow 에
                             // reservation 하지 않음. rhwp 는 cursor 를 picture height 만큼
@@ -13789,6 +13888,7 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         col_area: &LayoutRect,
         para_start_y: &std::collections::HashMap<usize, f64>,
+        mut fixed_exclusions: Option<&mut Vec<VisibleFloatExclusion>>,
     ) {
         let mut shape_render_items: Vec<(i32, usize, usize, f64, Alignment)> = Vec::new();
         for item in &col_content.items {
@@ -13841,6 +13941,10 @@ impl LayoutEngine {
             let ctrl = paragraphs
                 .get(para_index)
                 .and_then(|p| p.controls.get(control_index));
+            let fixed_textbox = ctrl.is_some_and(fixed_textbox_flow::is_fixed_flow_textbox);
+            if fixed_textbox != fixed_exclusions.is_some() {
+                continue;
+            }
             let is_paper_based = ctrl
                 .map(|ctrl| {
                     let common = match ctrl {
@@ -14013,6 +14117,18 @@ impl LayoutEngine {
                     &overflow_map,
                     false,
                 );
+                if let (Some(exclusions), Some(Control::Shape(shape))) =
+                    (fixed_exclusions.as_deref_mut(), ctrl)
+                {
+                    fixed_textbox_flow::reserve_painted_bounds(
+                        exclusions,
+                        &temp_parent,
+                        shape.common(),
+                        para_index,
+                        col_area,
+                        self.dpi,
+                    );
+                }
                 if let Some(layer) = ctrl.and_then(|ctrl| match ctrl {
                     Control::Shape(shape) => Some(Self::render_layer_from_common(
                         shape.common(),

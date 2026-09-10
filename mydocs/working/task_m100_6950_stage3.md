@@ -5,10 +5,9 @@
 - 선행: [Stage 2](task_m100_6950_stage2.md) §9의 시각 판정 통과·작은 용지 실험 범위 제외.
 - Stage 2 확정 커밋: `390d81e74d77a1541ab838b204263a07a2d0a972`.
 - 작업 브랜치: `task_m100_6950`.
-- 상태: **SVG·WASM 승인, 전체 nextest 9,410/9,410 통과 — 잔여 B 확인으로 최종 제출 보류**.
-  #6025 배치 회귀와 신규 fixture 기준선 미등록은 해소했다(§19~21).
-  B의 빈 문단 후속 흐름은 현재 출력에도 남아 있으며, 최종 lint·Native Skia는 그 정정 뒤 수행한다(§22).
-  원격 변경 없음.
+- 상태: **시각 승인·전체 nextest 9,414/9,414·로컬 Render Diff 통과 후 PR 제출 준비**.
+  §28~30에서 잔여 회귀를 해소했다. 메인테이너가 커밋·push·Open PR 및 최신 devel 충돌
+  해결을 승인했다. §31의 통합 후보 재검증·최종 lint·Native Skia를 완료하기 전 원격 제출하지 않는다.
 
 ## 1. 최신 base와 병합 사전 검사
 
@@ -1748,3 +1747,19 @@ GitHub runner에서 실제 성공한 것으로 보고하지 않는다. 로컬 WS
 설치 폰트와 GitHub ubuntu-latest 환경의 차이, 추후 PR merge base 변경은 원격 실행에서
 최종 확인해야 한다. 원격 workflow dispatch·push·PR은 수행하지 않았다.
 제품 코드·테스트·baseline은 이번 검증으로 변경하지 않았다.
+
+## 31. 최신 devel 통합 및 제출 전 검증
+
+- 시각 승인 후보를 `716624893ef23453db724aa18c921416dcc37627`에 커밋해 보존했다.
+- 최초 simulation의 base는 `4e0ce92830`이며, 충돌 해결 방침 승인 뒤 다시 fetch한
+  최신 base는 `2a780e0d298` 접두의 PR #6990 병합 결과다(정확한 SHA는 merge parent로 보존).
+- 양쪽 source·오늘할일 기록을 보존한다는 메인테이너 승인에 따라 실제 merge를 수행했다.
+- `layout.rs`: #6950 확정 배치의 좌표·공간 예약을 유지하며 legacy 배치 경로의
+  #6985 고정 글상자 전체 높이 교차 검사와 `fixed_textbox` 식별을 보존했다.
+- `table_layout.rs`: #6950 `resolved_table_top`과 #6643 `wrapper_margin_already_applied`는
+  서로 다른 책임이므로 모두 전달한다. 재귀 unwrap에는 확정 원점 없음(`None`)과
+  이미 반영한 여백(`true`)을 함께 전달한다.
+- 오늘할일은 날짜 제목 하나 아래 양쪽 이슈별 기록을 보존했다.
+- 새 base에는 renderer·Studio·fixture 변경이 있으므로 §29~30 결과를 통합 후보의
+  검증으로 재사용하지 않는다. 기존 리뷰 워크트리·공유 target에서 순차 재검증한다.
+  baseline 상향이나 회귀 은폐는 허용하지 않는다.
