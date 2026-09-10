@@ -77,3 +77,32 @@ cargo nextest run --cargo-profile release-test --target-dir target/pr-review --t
 - 사용할 파일은 `mydocs/pr/assets/pr_6979_20260910/pr6979-p006-review.png` 1개다. 게시 시 해당 파일이 포함된 실제 commit SHA를 사용하여 `https://raw.githubusercontent.com/edwardkim/rhwp/<asset-commit-sha>/mydocs/pr/assets/pr_6979_20260910/pr6979-p006-review.png`로 고정한다.
 - 코멘트 초안: "PR #6979에서 원본 HWP 블록 래퍼의 왼쪽 바깥 여백을 보정했습니다. 6쪽 수평 오차는 1.85px에서 0.03px로 감소했고 전체 회귀는 9,383 passed / 46 skipped였습니다. 세로 오차와 페이지 내용 배치 차이는 남아 있어 #6643은 열어 둡니다. 아래 대표 증적과 merge/CI 식별 정보를 참고해 주세요."
 - [시각 검증 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pr_review/visual_fixture_evidence.md)를 함께 연결한다. UTF-8 본문 파일을 `--body-file`로 게시하고 당시 API 응답에서 본문·이미지 링크를 확인한다. 게시 승인 및 실제 후속처리는 별도 단계다.
+
+## 최종 PR CI 및 merge 후 확정 기록 (2026-09-10)
+
+이 절은 위 PR 생성 당시의 CI 대기·merge 미실행 상태를 갱신한다. 로컬 검증의 코드·바이너리 SHA와 관측값은 그대로 유효한 당시 기록이며, 통합 head에서 로컬 테스트를 재실행했다는 의미는 아니다.
+
+- 최종 PR head: `9197ae2106f97fba8763af09836419f125fc3747`. 기존 `66acdbf38b32b168950bc4fbf40d0014e3eaa293`에 devel `0d36da4096fab2fef0e0a654e466fa449330d7a6`을 병합한 commit이다. #6962의 기존 upstream 변경과 오늘할일 내용이 함께 들어왔으며 이를 되돌리지 않았다.
+- 최신 head의 대기·실패 검사 없음과 `MERGEABLE/CLEAN`을 확인하고 `--match-head-commit`으로 해당 SHA를 고정하여 일반 merge했다. 관리자 우회나 강제 push는 사용하지 않았다.
+- 실제 merge: `9fd43f73b3cee477ef4fbb029db3873d0459767a`, 2026-09-10 05:28:59 UTC (14:28:59 KST).
+- [CI / Build & Test](https://github.com/edwardkim/rhwp/actions/runs/34440109569): 성공. Lint, Native Skia, archive A/B/C/D 빌드 및 회귀 실행 성공.
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34440109541): Rust 포함 분석 완료, 실패·대기 없음.
+- [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34440109342): Canvas visual diff 성공.
+- [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34440109561), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34440109575): workflow 성공, 해당 실행 worker는 정책상 skip. 실행된 회귀 통과와 혼동하지 않는다.
+- [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/34441174244): 최종 success.
+- Frontend gates, 독립 WASM Build, Workflow promotion 및 devel용 duration refresh 등의 skip은 실제 실행 결과와 구분한다.
+- 원 코드 PR의 merge SHA가 `upstream/devel`에 포함됨을 확인했고 로컬 devel을 fast-forward했다. 대표 PNG가 해당 tree에 존재함도 확인했다.
+- 후속 문서 처리: **후속 기록 PR 필요**. review·대표 PNG·오늘할일은 원 PR에 이미 포함됐으며 이 archive review의 merge 뒤 확정값만 문서 전용 PR로 보완한다. collaborator 절차에 따라 오늘할일을 반복 갱신하지 않고 새 asset이나 로그도 추가하지 않는다.
+- Merge commit의 [devel CI](https://github.com/edwardkim/rhwp/actions/runs/34441242161), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34441242192) 등은 이 기록 작성 시 진행 중이었다. 최종 PR CI 성공과 별개이며 후속처리 결과 코멘트에서 실제 확인 시점의 상태를 구분한다.
+
+### 확정된 merge 후 코멘트 계획
+
+1. 이 후속 기록 PR 완료와 최종 devel 동기화 뒤 관련 issue와 원 PR의 기존 코멘트를 조회한다. 같은 merge SHA·증적 코멘트가 있으면 중복 게시하지 않는다.
+2. [#6643](https://github.com/edwardkim/rhwp/issues/6643)은 수평 보정만으로 전체 문제가 해결되지 않아 닫지 않는다. 상태를 확인하고 제보에 감사하며, [PR #6979](https://github.com/edwardkim/rhwp/pull/6979) 및 위 실제 merge SHA·PR CI 링크를 남긴다.
+3. [Visual Sweep GitHub merge comment 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 연결한다. 157쪽 중 sweep 10쪽, flagged 0/10, pixelmatch 92.03058%, 내용 픽셀 중심 자동 일치율 보조값 8.25289%를 기록한다. 이는 사람 판정 정확도가 아니며 높은 값일수록 유사하고 낮은 값은 차이 검토가 필요하다. 폰트·래스터 및 페이지 내용 대응 차이 때문에 전체 fidelity 성공으로 해석하지 않는다.
+4. 6쪽의 x 오차 1.85px → 0.03px 개선과 남은 y -0.95px, rhwp 146쪽 ↔ 기준 PDF 145쪽의 y -7.55px 차이를 명시한다. 이전 후보는 Column-only 수정본이며 upstream 별도 baseline이 아니었음을 유지한다.
+5. 실제 merge SHA에 고정한 아래 대표 PNG 1개를 Markdown 이미지로 직접 표시한다. 다른 작업 asset, raw PNG, 임시 로그를 게시하지 않는다.
+6. 후속 문서 PR 및 devel CI는 원 코드 PR CI와 구분하여 실제 확인 결과를 적는다. UTF-8 본문 파일을 `--body-file`로 게시하고 API에서 줄바꿈·본문·이미지 URL을 확인한다.
+7. 게시 뒤 이번 작업 소유의 `fix/6643-wrapper-margin-20260910`과 문서 후속 브랜치만 정리한다. 원격 브랜치는 사용자의 상시 승인 범위에서 삭제한다. 기본 `/home/tsjang/rhwp`와 공유 `target/pr-review`는 유지하며, 별도 전용 worktree는 현재 없다.
+
+![PR #6979 6쪽 대표 증적](https://raw.githubusercontent.com/edwardkim/rhwp/9fd43f73b3cee477ef4fbb029db3873d0459767a/mydocs/pr/assets/pr_6979_20260910/pr6979-p006-review.png)
