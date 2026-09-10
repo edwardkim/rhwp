@@ -2583,41 +2583,15 @@ impl DocumentCore {
 
         let bf_json = self.build_border_fill_json_by_id(table.border_fill_id);
 
-        // raw_ctrl_data에서 표 크기 & 바깥 여백 추출 (parse_common_obj_attr 정합)
-        // [0..4]=flags, [4..8]=v_offset, [8..12]=h_offset, [12..16]=width, [16..20]=height
-        let rd = &table.raw_ctrl_data;
-        let table_width = if rd.len() >= common_obj_offsets::WIDTH.end {
-            u32::from_le_bytes(rd[common_obj_offsets::WIDTH].try_into().unwrap())
-        } else {
-            0
-        };
-        let table_height = if rd.len() >= common_obj_offsets::HEIGHT.end {
-            u32::from_le_bytes(rd[common_obj_offsets::HEIGHT].try_into().unwrap())
-        } else {
-            0
-        };
-        // outer_margin: [24..32] (parse_common_obj_attr 정합)
-        // [20..24]=z_order, [24..26]=left, [26..28]=right, [28..30]=top, [30..32]=bottom
-        let outer_left = if rd.len() >= common_obj_offsets::MARGIN_LEFT.end {
-            i16::from_le_bytes(rd[common_obj_offsets::MARGIN_LEFT].try_into().unwrap())
-        } else {
-            0
-        };
-        let outer_right = if rd.len() >= common_obj_offsets::MARGIN_RIGHT.end {
-            i16::from_le_bytes(rd[common_obj_offsets::MARGIN_RIGHT].try_into().unwrap())
-        } else {
-            0
-        };
-        let outer_top = if rd.len() >= common_obj_offsets::MARGIN_TOP.end {
-            i16::from_le_bytes(rd[common_obj_offsets::MARGIN_TOP].try_into().unwrap())
-        } else {
-            0
-        };
-        let outer_bottom = if rd.len() >= common_obj_offsets::MARGIN_BOTTOM.end {
-            i16::from_le_bytes(rd[common_obj_offsets::MARGIN_BOTTOM].try_into().unwrap())
-        } else {
-            0
-        };
+        // #6950: 속성 조회는 조판·편집과 같은 공통 IR을 읽는다.
+        // raw_ctrl_data는 저장용 원본이며 HWPX와 일부 HWP 표에서는 비어 있다.
+        let common = &table.common;
+        let table_width = common.width;
+        let table_height = common.height;
+        let outer_left = common.margin.left;
+        let outer_right = common.margin.right;
+        let outer_top = common.margin.top;
+        let outer_bottom = common.margin.bottom;
 
         // 캡션 정보
         let caption_json = if let Some(ref cap) = table.caption {
@@ -2673,29 +2647,12 @@ impl DocumentCore {
             crate::model::shape::HorzAlign::Inside => "Inside",
             crate::model::shape::HorzAlign::Outside => "Outside",
         };
-        // CommonObjAttr: flags/v_offset/h_offset
-        let vert_offset = if rd.len() >= common_obj_offsets::V_OFFSET.end {
-            i32::from_le_bytes(rd[common_obj_offsets::V_OFFSET].try_into().unwrap())
-        } else {
-            0
-        };
-        let horz_offset = if rd.len() >= common_obj_offsets::H_OFFSET.end {
-            i32::from_le_bytes(rd[common_obj_offsets::H_OFFSET].try_into().unwrap())
-        } else {
-            0
-        };
+        // HwpUnit은 u32 저장형이지만 위치 오프셋의 JSON 계약은 부호 있는 값이다.
+        let vert_offset = common.vertical_offset as i32;
+        let horz_offset = common.horizontal_offset as i32;
         let restrict_in_page = (table.attr >> 13) & 0x01 != 0;
         let allow_overlap = (table.attr >> 14) & 0x01 != 0;
-        // prevent_page_break: CommonObjAttr::PREVENT_PAGE_BREAK
-        let keep_with_anchor = if rd.len() >= common_obj_offsets::PREVENT_PAGE_BREAK.end {
-            i32::from_le_bytes(
-                rd[common_obj_offsets::PREVENT_PAGE_BREAK]
-                    .try_into()
-                    .unwrap(),
-            ) != 0
-        } else {
-            false
-        };
+        let keep_with_anchor = common.prevent_page_break != 0;
 
         Ok(format!(
             "{{\"cellSpacing\":{},\"paddingLeft\":{},\"paddingRight\":{},\"paddingTop\":{},\"paddingBottom\":{},\"pageBreak\":{},\"repeatHeader\":{},{},\"tableWidth\":{},\"tableHeight\":{},\"outerLeft\":{},\"outerRight\":{},\"outerTop\":{},\"outerBottom\":{}{},\"treatAsChar\":{},\"textWrap\":\"{}\",\"vertRelTo\":\"{}\",\"vertAlign\":\"{}\",\"horzRelTo\":\"{}\",\"horzAlign\":\"{}\",\"vertOffset\":{},\"horzOffset\":{},\"restrictInPage\":{},\"allowOverlap\":{},\"keepWithAnchor\":{}}}",

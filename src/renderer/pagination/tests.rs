@@ -146,6 +146,7 @@ fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
