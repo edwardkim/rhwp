@@ -55,6 +55,7 @@ function input(overrides = {}) {
       files: [{ filename: "src/lib.rs", status: "modified" }],
     }],
     workflowRuns: [candidate()],
+    fullLaneRunIds: ["123"],
     ...overrides,
   };
 }

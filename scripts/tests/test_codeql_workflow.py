@@ -86,7 +86,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
     def test_green_analyze_jobs_cannot_reuse_a_failed_security_check(self) -> None:
         outputs = self._run_preflight("failure")
         self.assertEqual(outputs["fast_pass"], "false")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(
             outputs["reason"],
             "security-check-not-green:CodeQL:failure",
@@ -95,19 +95,19 @@ class CodeQLWorkflowTests(unittest.TestCase):
     def test_green_analyze_jobs_and_early_security_check_remain_reusable(self) -> None:
         outputs = self._run_preflight("success")
         self.assertEqual(outputs["fast_pass"], "true")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(outputs["reason"], "codeql-checks-green")
 
     def test_green_analyze_jobs_and_neutral_security_summary_remain_reusable(self) -> None:
         outputs = self._run_preflight("neutral")
         self.assertEqual(outputs["fast_pass"], "true")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(outputs["reason"], "codeql-checks-green")
 
     def test_green_analyze_jobs_cannot_reuse_a_skipped_security_summary(self) -> None:
         outputs = self._run_preflight("skipped")
         self.assertEqual(outputs["fast_pass"], "false")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(
             outputs["reason"],
             "security-check-not-green:CodeQL:skipped",
@@ -349,12 +349,12 @@ const endpoints = {
   listForRef: Symbol('listForRef'),
 };
 const commits = {
-  'review-record': {
-    parents: [{ sha: 'code-candidate' }],
+  'dddddddddddddddddddddddddddddddddddddddd': {
+    parents: [{ sha: 'cccccccccccccccccccccccccccccccccccccccc' }],
     files: [{ filename: 'mydocs/working/review.md', status: 'modified' }],
   },
-  'code-candidate': {
-    parents: [{ sha: 'base-sha' }],
+  'cccccccccccccccccccccccccccccccccccccccc': {
+    parents: [{ sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' }],
     files: [{ filename: 'src/lib.rs', status: 'modified' }],
   },
 };
@@ -370,7 +370,7 @@ const github = {
     },
     checks: { listForRef: endpoints.listForRef },
     repos: {
-      getCommit: async ({ ref }) => ({ data: commits[ref] }),
+      getCommit: async ({ ref }) => ({ data: { sha: ref, ...commits[ref] } }),
     },
   },
   paginate: async (endpoint, params) => {
@@ -381,14 +381,14 @@ const github = {
       ];
     }
     if (endpoint === endpoints.listCommits) {
-      return [{ sha: 'code-candidate' }, { sha: 'review-record' }];
+      return [{ sha: 'cccccccccccccccccccccccccccccccccccccccc' }, { sha: 'dddddddddddddddddddddddddddddddddddddddd' }];
     }
     if (endpoint === endpoints.listWorkflowRuns) {
       return [{
         id: 3790,
         path: '.github/workflows/codeql.yml',
         event: 'pull_request',
-        head_sha: 'code-candidate',
+        head_sha: 'cccccccccccccccccccccccccccccccccccccccc',
         head_branch: 'feature-3790',
         head_repository: { id: 7 },
         status: 'completed',
@@ -433,8 +433,8 @@ const context = {
     pull_request: {
       number: 4310,
       created_at: '2026-08-09T00:00:00Z',
-      base: { sha: 'base-sha' },
-      head: { ref: 'feature-3790', repo: { id: 7 } },
+      base: { sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' },
+      head: { sha: 'dddddddddddddddddddddddddddddddddddddddd', ref: 'feature-3790', repo: { id: 7 } },
     },
   },
 };

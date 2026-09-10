@@ -160,6 +160,8 @@ jobs:
               per_page: 100,
             });
             const reviewOnlyCandidates = [];
+            const candidatesContainingBase = new Set();
+            let baseMergeCandidateIndex = -1;
             let codeCandidateSha = '';
             let newerTailCommit = null;
             let baseMergeBridge = null;
@@ -185,6 +187,12 @@ jobs:
                   sourceParentSha: sourceParent.sha,
                 };
                 newerTailCommit = { parents: [{ sha: sourceParent.sha }] };
+                // The merge can itself have a green run; do not only search its source parent.
+                baseMergeCandidateIndex = reviewOnlyCandidates.length;
+                for (const candidateSha of reviewOnlyCandidates) {
+                  candidatesContainingBase.add(candidateSha);
+                }
+                candidatesContainingBase.add(commit.sha);
                 core.info(`including current-base update merge bridge ${commit.sha}`);
                 continue;
               }
@@ -225,6 +233,9 @@ jobs:
               }
               reviewOnlyCandidates.push(codeCandidateSha);
             }
+            if (baseMergeBridge) {
+              reviewOnlyCandidates.splice(baseMergeCandidateIndex, 0, baseMergeBridge.mergeSha);
+            }
 
             const candidateRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
               owner: context.repo.owner,
@@ -255,7 +266,7 @@ jobs:
                 setResult(false, 'review-tail-candidate-run-unavailable');
                 return;
               }
-              if (baseMergeBridge) {
+              if (baseMergeBridge && !candidatesContainingBase.has(candidateSha)) {
                 setPendingBaseMergeResult(
                   `proptest-run-green:${latestCandidateRun.conclusion}`,
                   candidateSha,

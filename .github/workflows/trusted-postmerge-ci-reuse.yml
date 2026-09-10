@@ -239,6 +239,7 @@ jobs:
             let classifyReviewOnlyCommit;
             let evaluateTrustedPostMergeReuse;
             let frontendOnlyCiRunIsReusable;
+            let fullLaneWorkflowJobsAreGreen;
             let classifyChanges;
             let currentBaseReviewBridgeSource;
             let selectTrustedPostMergeCandidate;
@@ -249,14 +250,14 @@ jobs:
             let trustedPullRequestWorkflowRun;
             const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
             try {
-              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable,
+              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable, fullLaneWorkflowJobsAreGreen,
                 currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
                 verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree, verifyReviewOnlyBaseAdvance,
                 trustedPullRequestSource, trustedPullRequestWorkflowRun } = await import(pathToFileURL(path.join(
                 process.env.GITHUB_WORKSPACE,
                 'scripts/verify-trusted-postmerge-ci-reuse.mjs',
               )).href));
-              if ([currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
+              if ([currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate, fullLaneWorkflowJobsAreGreen,
                 verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree,
                 trustedPullRequestSource, trustedPullRequestWorkflowRun].some((fn) => typeof fn !== 'function')) {
                 throw new Error('trusted base has no review-bridge verifier');
@@ -503,7 +504,7 @@ jobs:
                   }
                 }
               }
-              const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
+              const requireFullLaneEvidence = ["ci.yml", "codeql.yml", "adapter-diff.yml", "proptest-roundtrip.yml"]
                 .includes(process.env.WORKFLOW_FILE) || isFork;
               const reviewOnlyWorker = {
                 "proptest-roundtrip.yml": {
@@ -519,6 +520,13 @@ jobs:
               if (requireFullLaneEvidence) {
                 for (const workflowRun of workflowRuns) {
                   if (!matchesRun(workflowRun) || workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
+                    continue;
+                  }
+                  const jobs = await github.paginate(
+                    github.rest.actions.listJobsForWorkflowRun,
+                    { owner, repo, run_id: workflowRun.id, filter: "latest", per_page: 100 },
+                  );
+                  if (!fullLaneWorkflowJobsAreGreen(process.env.WORKFLOW_FILE, jobs)) {
                     continue;
                   }
                   if (process.env.WORKFLOW_FILE === "ci.yml") {
@@ -538,20 +546,24 @@ jobs:
                     }
                     continue;
                   }
-                  const jobs = await github.paginate(
-                    github.rest.actions.listJobsForWorkflowRun,
-                    { owner, repo, run_id: workflowRun.id, per_page: 100 },
-                  );
-                  const executed = reviewOnlyWorker
-                    ? [reviewOnlyWorker.preflight, reviewOnlyWorker.worker].every((name) => jobs.some((job) => (
-                      job.name === name && job.status === 'completed' && job.conclusion === 'success'
-                    )))
-                    : jobs.some((job) => (
-                    /^Analyze \(.+\)$/.test(job.name || "")
-                    && job.status === "completed"
-                    && job.conclusion === "success"
-                  ));
-                  if (executed) {
+                  if (process.env.WORKFLOW_FILE === "codeql.yml") {
+                    const checks = await github.paginate(github.rest.checks.listForRef, {
+                      owner, repo, ref: workflowRun.head_sha, filter: "latest", per_page: 100,
+                    });
+                    const startedAt = Date.parse(workflowRun.run_started_at || workflowRun.created_at);
+                    const securityCheck = checks.filter((check) => (
+                      check.app?.slug === "github-advanced-security" && check.name === "CodeQL"
+                      && check.head_sha === workflowRun.head_sha
+                    )).sort((a, b) => Date.parse(b.started_at || "") - Date.parse(a.started_at || "")
+                      || Number(b.id) - Number(a.id))[0];
+                    if (!Number.isFinite(startedAt) || !securityCheck
+                      || !Number.isFinite(Date.parse(securityCheck.started_at || ""))
+                      || Date.parse(securityCheck.started_at) < startedAt
+                      || securityCheck.status !== "completed" || securityCheck.conclusion !== "success") {
+                      continue;
+                    }
+                  }
+                  {
                     fullLaneRunIds.push(String(workflowRun.id));
                     const artifacts = await github.paginate(
                       github.rest.actions.listWorkflowRunArtifacts,
