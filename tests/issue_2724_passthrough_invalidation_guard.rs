@@ -100,6 +100,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "hyperlink.rs",
+        "replace_hyperlink_text_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "표시 문자열 교체 후보의 raw_stream 및 페이지 무효화를 공통 commit helper에 위임한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
         "remove_hyperlink_native",
         Exempt::DelegatesTo("commit_hyperlink_paragraph"),
         "표시 글자를 보존한 제거 후보를 공통 commit helper로 적용한다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
