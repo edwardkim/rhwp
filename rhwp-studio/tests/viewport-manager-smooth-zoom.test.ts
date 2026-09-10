@@ -464,11 +464,11 @@ test('CanvasView scales existing pages during zoom and rerenders only after sett
 
   assert.match(
     source,
-    /eventBus\.on\('viewport-scroll', \(\) => \{[\s\S]*?if \(!this\.viewportManager\.isZoomAnimating\(\)\) this\.updateVisiblePages\('scroll'\);[\s\S]*?\}\)/,
+    /eventBus\.on\('viewport-scroll', \(\) => \{[\s\S]*?if \(!this\.isZoomPreviewActive\(\)\) this\.updateVisiblePages\('scroll'\);[\s\S]*?\}\)/,
   );
   assert.match(
     source,
-    /if \(this\.viewportManager\.isZoomAnimating\(\)\) \{[\s\S]*?this\.cancelPendingPrefetch\(\);[\s\S]*?this\.updateRenderedPageZoomPreview\(\);[\s\S]*?return;/,
+    /if \(this\.isZoomPreviewActive\(\)\) \{[\s\S]*?this\.cancelPendingPrefetch\(\);[\s\S]*?return;/,
   );
   assert.match(source, /dataset\.rhwpRenderedZoom = String\(zoom\)/);
 });

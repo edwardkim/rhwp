@@ -69,7 +69,7 @@ test('[#3315] 판정 재료가 없으면 재사용 조기 반환이 일어나지
   // `null` 키로 `Map.get(pageIdx) === null` 비교가 우연히 맞는 일이 없도록 명시적으로 가른다.
   assert.match(
     renderer,
-    /if \(retryKey !== null && this\.imageRetryCounts\.get\(pageIdx\) === retryKey\) return;/,
+    /if \(retryKey !== null && this\.imageRetryCounts\.get\(pageIdx\) === retryKey\s*&& !this\.reRenderJobs\.has\(pageIdx\)\) return;/,
     'null 키에서는 조기 반환하지 않아야 한다 — 판정할 수 없으면 안전망을 돌려야 한다',
   );
   // 그리고 null 키는 기록하지 않는다 — 기록하면 다음 렌더가 그 값과 비교해 버린다.

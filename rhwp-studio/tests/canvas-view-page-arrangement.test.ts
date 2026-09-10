@@ -193,6 +193,8 @@ test('실제 CanvasView zoom 경로는 자동 열 commit과 Canvas pool 단일 �
       setScrollLeft: (value: number) => { scrollLeft = value; },
       setScrollTop: (value: number) => { scrollTop = value; },
       isZoomAnimating: () => false,
+      isZoomRasterPending: () => false,
+      cancelPendingZoomRaster: () => false,
     };
     const canvasPool = new CanvasPool();
     const view = Object.create(CanvasView.prototype) as Record<string, unknown>;
@@ -216,6 +218,7 @@ test('실제 CanvasView zoom 경로는 자동 열 commit과 Canvas pool 단일 �
     view.removeHeaderFooterEditOverlays = () => undefined;
     view.removeAllGridOverlays = () => undefined;
     view.updateVisiblePages = () => {
+      if (canvasPool.has(0)) return;
       const canvas = canvasPool.acquire(0);
       (scrollContent.appendChild as (canvas: HTMLCanvasElement) => HTMLCanvasElement)(canvas);
     };
@@ -254,7 +257,8 @@ test('실제 CanvasView zoom 경로는 자동 열 commit과 Canvas pool 단일 �
     assertSingleCanvasOwnership();
 
     assert.equal(layoutCommitCount, 4, '초기 1회와 zoom event당 1회만 레이아웃 commit');
-    assert.equal(removeCount, 3, 'settled zoom마다 기존 Canvas를 반환한 뒤 하나만 다시 할당');
+    assert.equal(removeCount, 0, 'settled zoom은 기존 Canvas를 유지하며 중복 할당하지 않는다');
+    assert.equal(canvasPool.getCanvas(0), initialCanvas);
 
     view.cancelPendingPrefetch = () => undefined;
     view.currentVisiblePages = [0];
