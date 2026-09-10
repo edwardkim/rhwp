@@ -35,8 +35,8 @@ Studio 출력물이다. 화면은 링크 표시의 증거이며, 실제 이동·
 Viewer는 기존 macOS 앱을 사용했고 브라우저의 개인 탭·즐겨찾기 화면은 게시하지 않았다.
 
 - [Studio](../pr/assets/issue6984/rhwp-link.png)
-- [한글 Viewer](../pr/assets/issue6984/viewer-document.png)
-- [PDF 미리보기](../pr/assets/issue6984/pdf-link.png)
+- [한글 Viewer](../pr/assets/issue6984/viewer-document.jpg)
+- [PDF 미리보기](../pr/assets/issue6984/pdf-link.jpg)
 
 ## 검증
 
