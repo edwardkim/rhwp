@@ -1,12 +1,12 @@
 # PR #6991 검토: 검증된 current-base merge와 문서 후속 커밋의 CI 재사용
 
-## 판정: 로컬 검토 승인, GitHub CI 완료 전 머지 보류
+## 판정: 승인
 
 - 대상: [PR #6991](https://github.com/edwardkim/rhwp/pull/6991), [Issue #6815](https://github.com/edwardkim/rhwp/issues/6815).
 - 기준 devel: `2a780e0d296846df577866eba6ac8f388527551b`.
 - 검증 코드: `0462bdf826fea5065ee77c5cb5645e1b67c56f98`.
 - 경로: collaborator self-review. 저장소 owner를 reviewer로 자동 지정하지 않았다.
-- 로컬 계약 검증에서 미해결 실패는 없다. 최신 GitHub required check와 실제 운영 재사용 성공은 아직 확인하지 않았으므로 머지 또는 이슈 전체 종료를 승인한 기록이 아니다.
+- 로컬 계약 검증과 최종 head `ffbaf8301ad84ffedafc68922e1ba5446cbe2a06`의 GitHub CI가 모두 성공했다. `MERGEABLE / CLEAN`을 다시 확인하고 사용자 승인에 따라 일반 merge commit으로 병합했다. #6815의 후속 운영 재사용 검증은 별도이며 이슈 전체 종료를 의미하지 않는다.
 
 ## 원인과 보정 범위
 
@@ -51,3 +51,19 @@ CI 정책 변경 범위이므로 Rust 전체 회귀·WASM 빌드·문서 시각 
 - 기존 #6815 코멘트를 갱신하여 동일 내용의 중복 코멘트를 만들지 않는다. 종료 조건을 충족하기 전에는 이슈를 열린 상태로 유지한다.
 - UTF-8 body-file 방식으로 게시하고 API로 본문을 다시 확인한다. 시각 변경이 없으므로 무관한 PNG/PDF를 첨부하지 않는다.
 - post_merge.md의 gate 충족 뒤에만 이 작업의 local/upstream `fix/6815-green-merge-review-tail-20260910` 및 전용 worktree를 정리한다. 기본 작업공간·다른 작업은 보존한다.
+
+## 병합 후 실제 상태 (2026-09-10)
+
+- 병합 시각: 2026-09-10 12:04:28 UTC (21:04:28 KST).
+- merge SHA: `ec822767ae52926479e8fe58bc7003b4e6c82cba`. 기본 작업공간 devel을 이 SHA까지 fast-forward했다.
+- 최종 PR CI: [CI](https://github.com/edwardkim/rhwp/actions/runs/34473215496), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34473215463), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34473215366), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34473215461), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34473215551), [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/34474548088)가 성공했다. 실행된 A/B/C/D build·test worker, Lint, Native Skia, Frontend package 및 CodeQL 세 언어 분석도 성공했다.
+- devel CI: [CI](https://github.com/edwardkim/rhwp/actions/runs/34474675555), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34474675431), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34474675435), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34474675516), [Close Issues](https://github.com/edwardkim/rhwp/actions/runs/34474675163)가 모두 success로 완료됐다. 각 실행의 SHA와 push 이벤트, 실행된 필수 worker 성공 및 정책상 skip을 API로 확인했다. CI timing 갱신도 성공했다.
+- 이번 최초 적용 PR의 post-merge는 Full이었다. 실제 로그는 `Trusted base has no compatible verifier; running full. trusted base has no review-bridge verifier`로, 병합 전 신뢰 base에 새 verifier 계약이 없는 경우의 안전한 fallback이다. 후속 코드 PR의 재사용 성공으로 해석하지 않는다.
+- PR closing issue references는 비어 있다. #6815는 후속 운영 검증을 위해 OPEN을 유지한다.
+- 사용자 지시에 따라 이 리뷰와 오늘할일의 병합 후 상태 보완은 별도 문서 전용 [PR #6993](https://github.com/edwardkim/rhwp/pull/6993)으로 제출했다. source/test/workflow 및 검증 로그를 섞지 않았다. #6993의 최종 head CI와 devel 반영 후 중복 없는 코멘트 및 승인된 branch/worktree 정리를 수행한다.
+
+## #6992를 이용한 후속 CI 검증 가능성
+
+#6992의 현재 head `dc3ec1becdf250949d99faa64296c150195a6c77`는 renderer와 테스트를 바꾸는 단일 코드 커밋이며 실행 정책 변경은 없다. 본문은 #4068 전체 해결이 아니라 안 잘린 중첩 셀의 세로 정렬 오판만 보정한다고 명시한다. 최신 CI와 직접 시각 검토를 마치기 전에는 수용으로 판정하지 않는다.
+
+이 PR은 실제 코드 변경의 Full CI 및 일반 post-merge 재사용을 관찰할 후보가 될 수 있다. 다만 현재 이력에는 이번 결함의 핵심인 current-base merge 뒤 문서 trailing 구간이 없다. 해당 경로까지 검증하려면 실제 기준선 통합이 필요한 단계에서 정확한 base를 부모로 둔 merge 후보의 Full 성공과, 그 이후 문서-only head의 preflight 후보 SHA·heavy skip·최종 aggregate를 확인해야 한다. 검증을 위해 contributor 이력을 임의 재작성하거나 성공을 가정하지 않는다. 운영 사례가 부족하면 #6815를 열어 두고 로컬 계약 검증과 구분한다.
