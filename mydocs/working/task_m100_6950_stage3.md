@@ -1039,3 +1039,11 @@ baseline 축, 빈 문단 후속 흐름과 최종 Rust/WASM/workspace·Native Ski
   `fragment-origin-wasm-verify.mjs`, `fragment-origin-wasm-verify.json`.
 - 메인테이너는 기존 Studio 탭에서 강력 새로고침 후 샘플을 다시 열어1쪽을 확인한다.
   SVG 시각 판정은 통과, **Studio/WASM 시각 판정은 대기**다. 전체 회귀 게이트 완료를 뜻하지 않는다.
+
+### 19.5 메인테이너 WASM 조판 판정 통과
+
+메인테이너가 §19.4의 WASM 확인 후 **“wasm 조판 판정 통과”**를 통보했다.
+소스 `9d928ff27`, WASM `fb1d46401f0bd3a2295a21c7246961705311ea14c2b6359c633616e9ac536445`의
+#6025 첫 표 위치 보정은 SVG·Studio/WASM 양쪽 시각 판정이 통과했다.
+이 기록으로 §19.3~19.4의 당시 판정 대기 상태를 갱신한다.
+이번 보정의 시각 검증 완료이며, #6950 전체 회귀·잔여 검증이나 PR 제출 완료를 의미하지 않는다.
