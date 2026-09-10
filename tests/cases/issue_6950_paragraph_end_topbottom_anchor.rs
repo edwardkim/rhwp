@@ -114,42 +114,6 @@ fn table(items: &[&RenderNode], pi: usize, ci: usize) -> (f64, f64) {
 }
 
 #[test]
-fn relocated_tail_host_keeps_its_declared_table_offset() {
-    let bytes = std::fs::read(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/synam-001.hwp"),
-    )
-    .unwrap();
-    let core = DocumentCore::from_bytes(&bytes).unwrap();
-    let para = &core.document().sections[0].paragraphs[224];
-    let Control::Table(source) = &para.controls[0] else {
-        panic!("tail table");
-    };
-    assert_eq!(para.control_text_positions()[0], para.text.chars().count());
-    assert_eq!(source.common.vertical_offset, 1050);
-    let tree = core.build_page_render_tree(29).unwrap();
-    let mut items = Vec::new();
-    body_items(&tree.root, &mut items);
-    let host = items
-        .iter()
-        .find(|n| {
-            matches!(&n.node_type,
-        RenderNodeType::TextLine(line) if line.para_index == Some(224))
-        })
-        .unwrap();
-    let (top, _) = table(&items, 224, 0);
-    let relative_top = rhwp::renderer::hwpunit_to_px(
-        source.common.vertical_offset as i32 + source.outer_margin_top as i32,
-        96.0,
-    );
-    assert!(
-        (top - host.bbox.y - relative_top).abs() < 0.1,
-        "final host y={} must remain the anchor: table={top}, declared relative top={relative_top}",
-        host.bbox.y
-    );
-    assert_eq!(core.page_count(), 35);
-}
-
-#[test]
 fn paragraph_text_table_and_following_text_do_not_overlap() {
     let core = core();
     let tree = core.build_page_render_tree(0).expect("1쪽");

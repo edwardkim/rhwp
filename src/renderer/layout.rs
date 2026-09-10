@@ -8533,12 +8533,7 @@ impl LayoutEngine {
 
         // [#4533 ④-a] 자리차지 표 앵커 줄 재배치 — 테두리 병합 전에 수행해
         // 테두리가 이동된 줄 박스를 따라가게 한다.
-        self.relocate_float_anchor_lines_below_band(
-            &mut col_node,
-            paragraphs,
-            col_content,
-            col_area.y,
-        );
+        self.relocate_float_anchor_lines_below_band(&mut col_node, paragraphs);
 
         // 문단 테두리/배경 연속 그룹 병합 렌더링 — #2120 추출
         self.render_para_border_groups(tree, composed, &mut col_node, styles, col_area);
@@ -8562,8 +8557,6 @@ impl LayoutEngine {
         &self,
         col_node: &mut RenderNode,
         paragraphs: &[Paragraph],
-        col_content: &ColumnContent,
-        column_y: f64,
     ) {
         // HWPX 도 한글이 저장한 `<hp:linesegarray>` 사다리를 갖는 문서는 같은
         // 서명이 성립한다(영월군 21296471: 앵커 pi5 렌더 237.7 vs 사다리 562.2,
@@ -8640,36 +8633,6 @@ impl LayoutEngine {
             let delta = target - y;
             if delta > 2.0 {
                 Self::translate_subtree_y(&mut col_node.children[child_idx], delta);
-                // A resolved text-tail table is attached to this host line, not
-                // to the earlier flow cursor. When the existing ladder pass
-                // relocates that line, carry its owned box to the same final
-                // anchor. Use the planned anchor (not the pre-relocation text
-                // node y): paint may already have drifted from the typeset origin.
-                // Whole boxes only; continuation fragments own page-local anchors.
-                let mut moved_owned_tail = false;
-                for node in &mut col_node.children {
-                    let RenderNodeType::Table(table) = &node.node_type else {
-                        continue;
-                    };
-                    let Some(ci) = table.control_index.filter(|_| table.para_index == Some(pi))
-                    else {
-                        continue;
-                    };
-                    let Some(placement) = col_content.paragraph_float_placements.get(&(pi, ci))
-                    else {
-                        continue;
-                    };
-                    if !col_content.items.iter().any(|item| {
-                        matches!(item,
-                        PageItem::Table { para_index, control_index }
-                            if *para_index == pi && *control_index == ci)
-                    }) {
-                        continue;
-                    }
-                    let anchor_shift = target - (column_y + placement.anchor_y);
-                    Self::translate_subtree_y(node, anchor_shift);
-                    moved_owned_tail = true;
-                }
                 // [#4533 ⑤-a 잔여] hwpx 는 한글이 앵커 줄 공간을 밴드 위에서
                 // 소비하지 않는다 — 밴드 상단 = 문단 상단(원 앵커 줄 y) +
                 // vertOffset + outMargin_top. 한글 2022 PDF 테두리 실측 3표본:
@@ -8677,7 +8640,7 @@ impl LayoutEngine {
                 // +0.6px. native HWP5 는 앵커 줄 소비가 실물과 일치(상주시
                 // 실측: 공통 −4.4px 바이어스뿐)하므로 제외. 단일 자리차지 표
                 // 한정, 상향 이동만(멱등).
-                if profile.hwpx_stored_layout() && !moved_owned_tail {
+                if profile.hwpx_stored_layout() {
                     let bands: Vec<(f64, f64)> = para
                         .controls
                         .iter()
