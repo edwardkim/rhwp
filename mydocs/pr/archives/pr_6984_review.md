@@ -155,3 +155,12 @@ base `37bd46a72`에는 #6979·#6962 기록이 이미 있고 이 작업의 이전
 수동 충돌 해소는 이 Markdown 한 파일뿐이며 제품·테스트 충돌은 없었다.
 로컬 전체 검증은 앞서 명시한 `b05cadb0e` 결과이고, base 병합 후 통합 결과는 최신 PR CI가 검증한다.
 이후 head의 required checks와 mergeable 상태를 다시 확인하며 아직 원격 CI 성공·병합을 주장하지 않는다.
+
+## 링크 끝 이어 쓰기 후속 수정
+
+사용자 재현에 따라 링크 끝 삽입 시 범위를 늘리지 않고 링크 밖의 원래 모양을 유지하도록
+수정했다. 링크 내부 삽입은 계속 범위를 확장한다. native 링크 회귀 14개, 실제 WASM 11그룹,
+Chrome UI 실제 이어 쓰기·고치기·지우기·undo/redo, PDF 저장 왕복과 주석 검증을 통과했다.
+전체 Rust 9,407개, 필수 fmt/3종 Clippy/workspace build/manifest,
+native-skia 주 lib 3,930개·보조 lib 182개, placeholder 2개·직접 PDF 4개를 통과했다.
+[단계 11의 재현 화면과 검증 범위](../../working/task_m100_6963_stage11.md)를 따른다.

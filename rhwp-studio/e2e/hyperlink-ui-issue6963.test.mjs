@@ -38,6 +38,22 @@ await runTest('#6963 hyperlink editor UI', async ({ page }) => {
   const props = () => page.evaluate(() => window.__wasm.getCharPropertiesAt(0, 0, 0));
   assert.equal((await props()).textColor.toLowerCase(), '#0000ff');
   assert.equal((await props()).underline, true);
+  // 등록 직후 끝 캐럿의 실제 키 입력은 링크/색/밑줄을 이어받지 않는다.
+  await page.keyboard.type('XYZ');
+  const appended = await page.evaluate(() => ({
+    context: window.__wasm.getHyperlinkContext({ section: 0, para: 0, cellPath: [] }),
+    props: window.__wasm.getCharPropertiesAt(0, 0, 9),
+  }));
+  assert.equal(appended.context.text, '한컴 링크 테스트XYZ');
+  assert.equal(appended.context.links[0].text, '한컴 링크 테스트');
+  assert.equal(appended.context.links[0].end, 9);
+  assert.equal(appended.props.textColor.toLowerCase(), '#000000');
+  assert.equal(appended.props.underline, false);
+  await page.screenshot({ path: resolve(output, 'typing-after-link.png') });
+  // 이어 쓴 텍스트만 지워 기존 링크 편집·방문·undo 시나리오를 계속한다.
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');
   const point = await page.evaluate(() => {
     const ih = window.__inputHandler;
     const r = window.__wasm.getSelectionRects(0, 0, 0, 0, 2)[0];

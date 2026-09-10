@@ -513,3 +513,66 @@ fn replace_display_text_keeps_adjacent_fields_and_roundtrips() {
         assert_eq!(core.hyperlinks_native(&target).unwrap(), before);
     }
 }
+
+#[test]
+fn typing_after_link_keeps_original_format_and_excludes_new_text() {
+    let mut core = blank("가나다");
+    let target = HyperlinkTarget::body(0, 0);
+    let original_shape = core.document().sections[0].paragraphs[0].char_shape_id_at(0);
+    core.insert_hyperlink_native(&target, 0, 3, "https://www.hancom.com")
+        .unwrap();
+    core.apply_char_format_native(
+        0,
+        0,
+        0,
+        3,
+        r##"{"textColor":"#0000ff","underlineType":"Bottom","underlineColor":"#0000ff"}"##,
+    )
+    .unwrap();
+    // 방문 색으로 바꾸어도 링크 밖의 복원 서식은 유지되어야 한다.
+    core.apply_char_format_native(
+        0,
+        0,
+        0,
+        3,
+        r##"{"textColor":"#800080","underlineColor":"#800080"}"##,
+    )
+    .unwrap();
+    let reopened = roundtrips(&core);
+    for mut candidate in std::iter::once(core).chain(reopened) {
+        // 한글 조합 갱신과 같은 같은 위치의 delete/insert 경로.
+        candidate
+            .replace_body_text_local_native(0, 0, 3, 0, "ㄱ")
+            .unwrap();
+        candidate
+            .replace_body_text_local_native(0, 0, 3, 1, "가")
+            .unwrap();
+        candidate.insert_text_native(0, 0, 4, "나😀").unwrap();
+        let reopened = roundtrips(&candidate);
+        for result in std::iter::once(candidate).chain(reopened) {
+            let link = &result.hyperlinks_native(&target).unwrap()[0];
+            assert_eq!((link.start, link.end, link.text.as_str()), (0, 3, "가나다"));
+            let para = &result.document().sections[0].paragraphs[0];
+            assert_eq!(para.text, "가나다가나😀");
+            assert_eq!(para.char_shape_id_at(3), original_shape);
+            assert_eq!(para.char_shape_id_at(5), original_shape);
+        }
+    }
+}
+
+#[test]
+fn typing_inside_link_still_extends_its_range() {
+    let mut core = blank("가나다");
+    let target = HyperlinkTarget::body(0, 0);
+    core.insert_hyperlink_native(&target, 0, 3, "https://www.hancom.com")
+        .unwrap();
+    core.insert_text_native(0, 0, 1, "😀").unwrap();
+    let reopened = roundtrips(&core);
+    for result in std::iter::once(core).chain(reopened) {
+        let link = &result.hyperlinks_native(&target).unwrap()[0];
+        assert_eq!(
+            (link.start, link.end, link.text.as_str()),
+            (0, 4, "가😀나다")
+        );
+    }
+}

@@ -1,6 +1,6 @@
 //! 문단 (Paragraph, CharRun, LineSeg, RangeTag)
 
-use super::control::{Control, CTRL_CHAR_CODE_UNITS};
+use super::control::{Control, FieldType, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
 /// 문자 offset 단위의 글자 모양 복원 구간. IR의 UTF-16 위치와 구분한다.
@@ -832,6 +832,13 @@ impl Paragraph {
             (self.controls.len() as u32) * 8
         };
         let char_offset = effective_char_offset;
+        // 링크의 끝은 이어 쓰기 위치다. 내부 삽입만 링크 범위를 늘린다.
+        let at_hyperlink_end = self.field_ranges.iter().any(|range| {
+            range.start_char_idx < range.end_char_idx
+                && range.end_char_idx == char_offset
+                && matches!(self.controls.get(range.control_idx),
+                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+        });
 
         // 새 텍스트의 UTF-16 총 길이
         let new_chars: Vec<char> = new_text.chars().collect();
@@ -864,7 +871,7 @@ impl Paragraph {
         for cs in &mut self.char_shapes {
             if cs.start_pos > utf16_insert_pos {
                 cs.start_pos += utf16_delta;
-            } else if cs.start_pos == utf16_insert_pos && cs.start_pos > 0 {
+            } else if cs.start_pos == utf16_insert_pos && cs.start_pos > 0 && !at_hyperlink_end {
                 cs.start_pos += utf16_delta;
             }
         }
@@ -894,7 +901,9 @@ impl Paragraph {
             if fr.start_char_idx > char_offset {
                 fr.start_char_idx += inserted_len;
             }
-            if fr.end_char_idx >= char_offset {
+            let is_hyperlink = matches!(self.controls.get(fr.control_idx),
+                Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink);
+            if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !is_hyperlink) {
                 fr.end_char_idx += inserted_len;
             }
         }
@@ -1910,6 +1919,13 @@ impl Paragraph {
             return Ok(());
         };
 
+        // 링크가 문단 끝까지 있어도 링크 밖의 원래 서식을 남긴다.
+        // 이어 쓰기와 방문 색 변경이 링크 색/밑줄을 다음 입력으로 전파하지 않게 한다.
+        let preserve_link_end = self.field_ranges.iter().any(|range| {
+            range.end_char_idx == end
+                && matches!(self.controls.get(range.control_idx),
+                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+        });
         // 새 CharShapeRef 배열을 구축
         let mut new_refs: Vec<CharShapeRef> = Vec::new();
 
@@ -1956,7 +1972,7 @@ impl Paragraph {
                 }
 
                 // 범위 뒷부분 복원 (utf16_end < seg_end, 텍스트 범위 내일 때만)
-                if utf16_end < seg_end && utf16_end < text_utf16_end {
+                if utf16_end < seg_end && (utf16_end < text_utf16_end || preserve_link_end) {
                     new_refs.push(CharShapeRef {
                         start_pos: utf16_end,
                         char_shape_id: csr.char_shape_id,
