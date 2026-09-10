@@ -23150,7 +23150,82 @@ impl TypesetEngine {
                         )
                     })
                 };
-                if let Some(source_tail_cut) = source_tail_cut {
+                if let Some(mut source_tail_cut) = source_tail_cut {
+                    // [#6973] 파생 문단 꼬리 확장은 **저장된 물리 쪽 경계**를 넘지 않는다.
+                    //
+                    // 저장 `lineseg` 의 vpos 되감김(양수 → 0)은 한/글이 그 행 안에서 쪽을
+                    // 끊은 자리다. 83818 행 13 은 두 셀 모두 12줄이고 `li=9` 에서 되감긴다 —
+                    // 앞 9줄이 8쪽, 뒤 3줄이 9쪽이다. 그런데 `stored_source_frame` 은
+                    //   ① `row_has_single_visible_source_cell`  가시 셀 정확히 1개
+                    //   ② `direct_hwpx_cell_has_declared_stored_frame`  프레임 span ≤ 선언 cellSz
+                    // 를 함께 요구한다. 신·구조문대비표는 두 열이 다 글자를 가져 ①이 거짓이고,
+                    // 이 문서는 선언 높이가 **전 행 2416HU(한 줄 규모)** 로 유지되지 않아 행 13 의
+                    // span `21560 + 6440 = 28000HU` 가 ②를 구조적으로 통과할 수 없다. 그래서
+                    // 꼬리가 상한 없는 파생 경로(`paragraph_tail_cut_for_row`)로 떨어져 문단
+                    // 끝(12줄)까지 당기고, 잔여 299.8px 에 388.3px 를 실어 본문을 108.9px
+                    // 넘기면서 쪽 하나를 잃는다(한/글 2020 9쪽 · rhwp 8쪽).
+                    //
+                    // `paragraph_tail_cut_for_row` 는 이미 `stored_frame_break_before` 유닛에서
+                    // 멈추려 한다. 그 표지가 위 관문에 걸려 서지 않을 때 원시 되감김 인덱스로
+                    // 같은 의도를 세운다.
+                    //
+                    // ⭐⭐ 적용 조건은 **가시 셀이 둘 이상이고 전부 같은 줄 인덱스에서 되감기는
+                    // 것**이다. 독립된 두 셀이 같은 자리를 적었다는 것이 writer-local 커서
+                    // (②가 걸러내던 것)와 갈리는 증거이며, ①의 **정확한 여집합**이라 가시 셀
+                    // 1개인 기존 계약(#3930·#3931·#5584·#5801·#6025·#6549·#6790)은 이 분기에
+                    // 들어오지 않는다.
+                    //
+                    // ⚠ 크기·비율 축으로는 갈리지 않는다 — 편람 r=4(정상)의 잔여 초과 +81.8px 와
+                    // 83818 r=13(결함)의 +88.5px 는 6.7px 차이다. 그래서 잔여 기준 수용 판정
+                    // (지정 시험 10/54 실패)·이월 분기(12/54 실패)·되감김 무조건 클립(편람
+                    // 384→385)이 모두 깨졌다. 갈리는 것은 **저장 증거의 일치** 하나다.
+                    let stored_rewinds = layout_engine.row_stored_rewind_line_indices(table, r);
+                    let mirrored_stored_rewind = {
+                        let visible = layout_engine.row_visible_source_cell_flags(table, r, styles);
+                        let visible_indices: Vec<usize> = visible
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, shown)| **shown)
+                            .map(|(idx, _)| idx)
+                            .collect();
+                        visible_indices.len() >= 2
+                            && visible_indices
+                                .iter()
+                                .all(|idx| stored_rewinds.get(*idx).copied().flatten().is_some())
+                            && {
+                                let first = stored_rewinds[visible_indices[0]];
+                                visible_indices
+                                    .iter()
+                                    .all(|idx| stored_rewinds[*idx] == first)
+                            }
+                    };
+                    if mirrored_stored_rewind {
+                        let mut clipped = source_tail_cut.end_cut.clone();
+                        let mut clipped_any = false;
+                        for (idx, rewind) in stored_rewinds.iter().enumerate() {
+                            let Some(rewind) = *rewind else { continue };
+                            let Some(end) = clipped.get(idx).copied() else {
+                                continue;
+                            };
+                            let pre = res.end_cut.get(idx).copied().unwrap_or(0);
+                            if pre <= rewind && rewind < end {
+                                clipped[idx] = rewind;
+                                clipped_any = true;
+                            }
+                        }
+                        if clipped_any {
+                            let clipped_total = layout_engine.row_cut_content_height(
+                                table,
+                                r,
+                                row_start_cut,
+                                &clipped,
+                                styles,
+                            );
+                            source_tail_cut.end_cut = clipped;
+                            source_tail_cut.consumed_height = (clipped_total - padding).max(0.0);
+                            source_tail_cut.fully_consumed = false;
+                        }
+                    }
                     // [#5584 ②] 중간 행 갈래는 near-miss(행 대부분을 담고 마지막
                     // 한 유닛 규모만 부족)에 한정한다 — ① 확장 ≤24px(한 유닛 규모)
                     // ② 확장 전 소비가 확장의 3배 이상(행을 거의 다 담은 상태).

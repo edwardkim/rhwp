@@ -12815,6 +12815,69 @@ impl LayoutEngine {
             })
     }
 
+    /// 행의 셀별 "보이는 소스 셀인가" 표지 — 열 순서로 정렬한 셀 순서다.
+    ///
+    /// `row_has_single_visible_source_cell` 과 같은 가시성 정의를 쓰되 개수만 세지 않고
+    /// 어느 셀인지 남긴다. 두 열이 같은 물리 경계를 적어 둔 신·구조문대비표를 가르려면
+    /// 셀 단위 표지가 필요하다(`#6973`).
+    pub(crate) fn row_visible_source_cell_flags(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<bool> {
+        let mut cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells
+            .iter()
+            .map(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .any(|unit| !unit.empty_spacer && unit.vis_start < unit.vis_end)
+            })
+            .collect()
+    }
+
+    /// 행의 저장 `lineseg` 에서 **첫 vpos 되감김 줄**의 셀별 인덱스.
+    ///
+    /// 되감김(양수 vpos → 0)은 한/글이 그 행 안에서 쪽을 끊은 자리다. 이 함수는 프로필·
+    /// 선언 높이 같은 **수용 조건을 보지 않고** 저장 데이터가 적어 둔 자리 자체를 돌려준다 —
+    /// 수용은 호출부가 판정한다(`#6973`). 인덱스는 셀 안 문단을 가로질러 누적한 줄 번호라
+    /// 컷 인덱스(`end_cut`)와 같은 축이다.
+    pub(crate) fn row_stored_rewind_line_indices(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+    ) -> Vec<Option<usize>> {
+        let mut cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells
+            .iter()
+            .map(|cell| {
+                let mut line_index = 0usize;
+                let mut found = None;
+                for paragraph in &cell.paragraphs {
+                    for (li, pair) in paragraph.line_segs.windows(2).enumerate() {
+                        if found.is_none() && pair[0].vertical_pos > 0 && pair[1].vertical_pos == 0
+                        {
+                            found = Some(line_index + li + 1);
+                        }
+                    }
+                    line_index += paragraph.line_segs.len();
+                }
+                found
+            })
+            .collect()
+    }
+
     /// Return whether a row records an in-paragraph return from a positive
     /// stored vertical position to the top of a new physical frame.  This is
     /// source pagination data, not a measured-height heuristic.
