@@ -4,7 +4,7 @@
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::{control::Control, paragraph::LineSeg, shape::TextWrap};
-use rhwp::renderer::float_placement::ParagraphFloatPlacement;
+use rhwp::renderer::float_placement::{ParagraphFloatFlow, ParagraphFloatPlacement};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 fn core() -> DocumentCore {
@@ -37,6 +37,7 @@ fn first_fragment_uses_paragraph_reference_not_text_or_outer_box() {
             table.outer_margin_top = margin;
             table.common.vertical_offset = 4129;
             let whole = ParagraphFloatPlacement {
+                flow: ParagraphFloatFlow::NextLine,
                 anchor_y: 100.0 + spacing,
                 stored_host_origin: None,
                 table_top: 100.0 + spacing + 4129.0 / 75.0 + f64::from(margin) / 75.0,
@@ -55,6 +56,80 @@ fn first_fragment_uses_paragraph_reference_not_text_or_outer_box() {
                 excluded.table_top, 250.0,
                 "resolve exclusions after origin conversion"
             );
+        }
+    }
+}
+
+#[test]
+fn paragraph_completion_uses_occupied_end_once_in_either_emission_order() {
+    // Algorithm contract, not a Hancom oracle or fixed sample coordinate.
+    for origin in [0.0, 100.0, 300.0] {
+        let placement = ParagraphFloatPlacement {
+            flow: ParagraphFloatFlow::NextLine,
+            anchor_y: origin + 10.0,
+            stored_host_origin: None,
+            table_top: origin + 30.0,
+            occupied_bottom: origin + 130.0,
+        };
+        for spacing_after in [0.0, 5.0, 20.0] {
+            let expected = origin + 130.0 + spacing_after;
+            assert_eq!(
+                placement.paragraph_end(origin + 20.0, spacing_after),
+                expected
+            );
+            assert_eq!(placement.paragraph_end(expected, spacing_after), expected);
+            assert_eq!(
+                placement.paragraph_end(expected + 10.0, spacing_after),
+                expected + 10.0
+            );
+        }
+    }
+}
+
+#[test]
+fn floating_band_consumes_flow_only_when_the_tail_line_has_insufficient_space() {
+    let core = core();
+    let Control::Table(mut table) = core.document().sections[0].paragraphs[1].controls[0].clone()
+    else {
+        panic!("table")
+    };
+    for width_hu in [7200, 14400, 24000] {
+        table.common.width = width_hu;
+        for margin in [0, 283, 900] {
+            table.outer_margin_left = margin;
+            table.outer_margin_right = margin;
+            let width = rhwp::renderer::hwpunit_to_px(width_hu as i32, 96.0)
+                + rhwp::renderer::hwpunit_to_px(i32::from(margin), 96.0)
+                + rhwp::renderer::hwpunit_to_px(i32::from(margin), 96.0);
+            for top in [40.0, 230.0, 600.0] {
+                let placement = ParagraphFloatPlacement {
+                    flow: ParagraphFloatFlow::Exclusion,
+                    anchor_y: 10.0,
+                    stored_host_origin: None,
+                    table_top: top,
+                    occupied_bottom: top + 100.0,
+                };
+                for remaining in [None, Some(f64::NAN), Some(width), Some(width + 1.0)] {
+                    let floating = placement.with_tail_line_space(remaining, &table, 96.0);
+                    assert_eq!(floating, placement, "a band is not a consumed line");
+                    assert_eq!(floating.paragraph_end(30.0, 5.0), 30.0);
+                }
+                let wrapped = placement.with_tail_line_space(Some(width - 1.0), &table, 96.0);
+                assert_eq!(wrapped.flow, ParagraphFloatFlow::NextLine);
+                assert_eq!(
+                    wrapped.table_top, top,
+                    "flow ownership must not move the table"
+                );
+                assert_eq!(wrapped.paragraph_end(30.0, 5.0), top + 105.0);
+                assert_eq!(
+                    wrapped.for_first_fragment(&table, 0.0, 20.0, 96.0).flow,
+                    wrapped.flow
+                );
+                assert_eq!(
+                    wrapped.clear_occupied_bands([top..top + 110.0]).flow,
+                    wrapped.flow
+                );
+            }
         }
     }
 }
@@ -411,6 +486,41 @@ fn paragraph_text_table_and_following_text_do_not_overlap() {
 }
 
 #[test]
+fn tail_table_closes_its_paragraph_before_successor_line_advance() {
+    let core = core();
+    let paragraphs = &core.document().sections[0].paragraphs;
+    let Control::Table(source) = &paragraphs[1].controls[0] else {
+        panic!("tail table")
+    };
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut items = Vec::new();
+    body_items(&tree.root, &mut items);
+    let (_, bottom) = table(&items, 1, 0);
+    let first_line = |pi| {
+        items
+            .iter()
+            .find(|node| {
+                matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(pi) && line.line_index == Some(0))
+            })
+            .unwrap()
+            .bbox
+            .y
+    };
+    let empty_top = first_line(2);
+    let body_top = first_line(3);
+    assert!(
+        (empty_top - bottom - source.outer_margin_bottom as f64 / 75.0).abs() < 0.02,
+        "next paragraph starts after the completed table: bottom={bottom}, next={empty_top}"
+    );
+    let line = &paragraphs[2].line_segs[0];
+    let advance = (line.line_height + line.line_spacing.max(0)) as f64 / 75.0;
+    assert!((body_top - empty_top - advance).abs() < 0.02,
+        "successor consumes its own line advance: empty={empty_top}, body={body_top}, advance={advance}");
+    assert_eq!(core.page_count(), 3);
+}
+
+#[test]
 fn preceding_tables_and_page_count_are_preserved() {
     let core = core();
     assert_eq!(core.page_count(), 3, "한컴 PDF와 같은 3쪽");
@@ -453,6 +563,7 @@ fn anchor_origin_translation_is_applied_once() {
 #[test]
 fn occupied_bands_move_the_box_not_the_anchor_and_are_order_independent() {
     let placement = ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::Exclusion,
         anchor_y: 20.0,
         stored_host_origin: None,
         table_top: 50.0,

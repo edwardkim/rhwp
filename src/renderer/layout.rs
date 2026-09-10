@@ -6736,6 +6736,12 @@ impl LayoutEngine {
         // 1차 패스: 표, 문단, 텍스트 렌더링 (글상자 제외)
         let mut square_beside_band: Option<(f64, i32, i32)> = None;
         let col_w_hu = px_to_hwpunit(col_area.width, self.dpi);
+        let paragraph_last_items: std::collections::HashMap<_, _> = col_content
+            .items
+            .iter()
+            .enumerate()
+            .map(|(index, item)| (item.para_index(), index))
+            .collect();
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             // vpos 기반 y_offset 보정
             let item_para = match item {
@@ -8182,6 +8188,25 @@ impl LayoutEngine {
                     if next_is_lane && new_y > _y_in + advance + 0.5 {
                         new_y = _y_in + advance;
                         square_beside_band = Some((band_bottom, lane_left_hu, lane_right_hu));
+                    }
+                }
+            }
+            // #6950: paragraph completion owns the union of text flow and the
+            // resolved trailing object, independently of their emission order.
+            // Only the final item closes the paragraph. Following paragraphs,
+            // including empty ones, consume their own line advances afterwards.
+            if paragraph_last_items.get(&item_para) == Some(&item_ordinal) {
+                let spacing_after = paragraphs
+                    .get(item_para)
+                    .and_then(|para| styles.para_styles.get(para.para_shape_id as usize))
+                    .map_or(0.0, |style| style.spacing_after);
+                for (&(owner, _), placement) in &col_content.paragraph_float_placements {
+                    if owner == item_para
+                        && placement.flow == super::float_placement::ParagraphFloatFlow::NextLine
+                    {
+                        new_y =
+                            col_area.y + placement.paragraph_end(new_y - col_area.y, spacing_after);
+                        hcursor.min_flow_floor = hcursor.min_flow_floor.max(new_y);
                     }
                 }
             }

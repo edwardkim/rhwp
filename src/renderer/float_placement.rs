@@ -21,6 +21,9 @@ use super::page_layout::LayoutRect;
 /// 예약과 출력이 같은 결과를 사용하므로 renderer에서 원점을 다시 더하지 않는다.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ParagraphFloatPlacement {
+    /// Geometry alone does not consume paragraph flow. A floating exclusion may
+    /// leave room for following text above it.
+    pub flow: ParagraphFloatFlow,
     pub anchor_y: f64,
     /// Validated single-line stored host origin, shared with text creation.
     /// None keeps the existing flowing-host contract (including continuations).
@@ -28,6 +31,13 @@ pub struct ParagraphFloatPlacement {
     /// 표와 캡션을 함께 담는 배치 상자의 상단. 위 캡션은 이 상자 안에서 배치한다.
     pub table_top: f64,
     pub occupied_bottom: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ParagraphFloatFlow {
+    Exclusion,
+    /// The trailing object cannot fit in the host line's remaining inline space.
+    NextLine,
 }
 
 /// 실제 재조판에서 확정한 호스트 줄. 문자 위치는 `Paragraph.text`의 scalar 축,
@@ -40,6 +50,43 @@ pub struct ParagraphHostLine {
 }
 
 impl ParagraphFloatPlacement {
+    /// Close a paragraph only after its text and logically trailing objects have
+    /// been placed. The object reservation already includes its outer margins;
+    /// paragraph spacing-after belongs after the resulting occupied line box.
+    /// Repeated consumers must not add that reservation a second time.
+    pub fn paragraph_end(self, text_flow_end: f64, spacing_after: f64) -> f64 {
+        match self.flow {
+            ParagraphFloatFlow::Exclusion => text_flow_end,
+            ParagraphFloatFlow::NextLine => text_flow_end.max(self.occupied_bottom + spacing_after),
+        }
+    }
+
+    /// Only a measured inline-space miss may turn a geometric reservation into
+    /// paragraph flow. Unknown host widths keep the existing exclusion behavior.
+    pub fn with_tail_line_space(
+        mut self,
+        remaining_width: Option<f64>,
+        table: &Table,
+        dpi: f64,
+    ) -> Self {
+        let width = hwpunit_to_px(table.common.width as i32, dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_left), dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_right), dpi);
+        self.flow = if remaining_width.is_some_and(|remaining| {
+            dpi.is_finite()
+                && dpi > 0.0
+                && remaining.is_finite()
+                && width.is_finite()
+                && width > 0.0
+                && width > remaining
+        }) {
+            ParagraphFloatFlow::NextLine
+        } else {
+            ParagraphFloatFlow::Exclusion
+        };
+        self
+    }
+
     /// First fragments use the paragraph reference before spacing-before, not
     /// the whole-object outer-margin box. Keep the text anchor unchanged, and
     /// place the border (or top caption) below the actual last host line.
@@ -188,6 +235,7 @@ impl ParagraphFloatPlacement {
             .iter()
             .all(|v| v.is_finite())
             .then_some(Self {
+                flow: ParagraphFloatFlow::Exclusion,
                 anchor_y,
                 stored_host_origin: None,
                 table_top,
@@ -255,6 +303,7 @@ impl ParagraphFloatPlacement {
             .iter()
             .all(|v| v.is_finite())
             .then_some(Self {
+                flow: ParagraphFloatFlow::Exclusion,
                 anchor_y,
                 stored_host_origin: None,
                 table_top,

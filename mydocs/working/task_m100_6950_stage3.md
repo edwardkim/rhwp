@@ -1300,3 +1300,451 @@ Native Skia 검증과 원격 push/PR은 수행하지 않았다.
 비교 자료의 run manifest는 실제 생성에 사용한 nextest CLI 해시를 그대로 보존한다.
 review worktree의 fmt 검사 통과. 검사 추가 후 manifest drift는 `--prepare` 재실행으로
 동기화하고 `--check` 통과를 확인했다. 파생 파일은 source 제출 대상에 포함하지 않는다.
+
+## 24. 문단 끝 표의 종료 위치를 후속 문단에 전달
+
+### 24.1 메인테이너 재확정과 착수
+
+pi=1 시작 위치는 한컴과 동일하다는 시각 판정을 받았다. 다만 §23은 텍스트 없는 표 문단의
+기존 조건을 확대한 것이었고, 일반 문단 종료 계약을 구현했다는 설명에는 미치지 못했다.
+메인테이너는 pi=1의 줄 끝 표가 너비 때문에 다음 줄에서 조판되어도 같은 문단의 마지막
+개체이며, 표 조판 완료 위치에서 문단을 종료한 뒤 다음 문단의 줄간격을 처리하라고 확정했다.
+수정 진행을 승인받았다. 승인 기준 코드는 `e1c8660b9`다.
+
+현재 페이지 항목은 표와 텍스트의 논리 순서와 다른 출력 순서를 가질 수 있다. 표의 점유 하단이
+이미 `ParagraphFloatPlacement`에 있어도 후행 host 텍스트 처리 뒤의 cursor는 글줄 끝으로
+돌아가 있었다. pi=2를 충돌 회피의 예외에서 빼는 것만으로 이 종료 책임을 대신하지 않는다.
+
+- 실제 fixture 신규 검사 수정 전 실패: 표 하단805.266667px, pi=2 시작617.146667px.
+- 증적: `output/6950/stage3/paragraph-closure-red.log`(1실행/1실패).
+- 별도 빈 문단을 만들어 입력하지 않았다. 기존 pi=2의 줄높이1200+줄간격672HU를 사용한다.
+
+### 24.2 구현 책임
+
+- `ParagraphFloatPlacement::paragraph_end`: 텍스트 흐름 끝과 표 점유 하단+문단 아래 간격의
+  합집합 끝을 반환한다. 점유 하단은 바깥 여백을 이미 포함하며 반복 호출로 재가산하지 않는다.
+- typeset: 문단의 텍스트·컨트롤 처리가 완료되는 경계에서 공통 종료 계산을 소비한다.
+  완료된 문단 끝 표 이후의 문단은 저장 위치 보정으로 순차 cursor보다 위로 역행하지 않는다.
+- layout: 단 내 마지막 소유 항목 인덱스를 사전 계산하고, 그 항목 처리 후 같은 종료 계산을
+  소비한다. 문단 종료 floor는 다음 문단의 잉크 유무와 무관하게 순차 진행량을 보호한다.
+- 기존 빈 문단 충돌 회피 조건은 그대로다. 파일명·pi번호·텍스트 없음 여부를 새 종료 분기의
+  키로 쓰지 않는다. 문단 끝 표로 이미 확정된 배치 결과의 소유 관계로 완료 시점을 판단한다.
+- 실제 문서 검사에 pi=1 표→pi=2→pi=3 연결을 추가하고, 종료 계산의 멱등성·원점 이동·
+  문단 아래 간격은 합성 IR이 아닌 순수 계산 계약으로 별도 검사한다. 한컴 정답지로 주장하지 않는다.
+
+### 24.3 검증 결과와 시각 판정 요청
+
+- 집중 nextest **49/49 PASS**, 0실패. #6950 및 #6147/#6312/#6025/#6797/#6860/
+  #6879/#6718 보호 검사를 포함한다. 로그: `output/6950/stage3/paragraph-closure-focused.log`.
+- 일반 SVG **3쪽**, `overflowCellLines=0`. 원본 HWPX와 한컴2024 PDF는 수정하지 않았다.
+- 기존 승인 위치 보존: pi=1 첫 줄500.666667px, 표626.64..805.266667px.
+- pi=2 빈 문단 시작617.146667→809.04px. 표 하단805.266667px에 바깥 아래 여백
+  283HU/75=3.773333px를 소비한 위치다.
+- pi=3 시작809.04→834.00px. pi=2의 줄높이1200HU와 줄간격672HU를 합한
+  24.96px가 반영된다. 문단 번호나 이 좌표를 제품 코드의 조건으로 사용하지 않는다.
+- review worktree의 fmt 검사 통과. fmt 이후 파생 harness drift가 검출되어 같은 원본으로
+  `--prepare`를 다시 실행한 뒤 manifest `--check` 통과를 확인했다. 파생물은 제출하지 않는다.
+
+시각 확인 자료:
+
+- 일반 SVG: `output/6950/stage3/paragraph-closure-svg/20260909-para-table_001.svg`
+- 디버그 SVG: `output/6950/stage3/paragraph-closure-debug-svg/20260909-para-table_001.svg`
+- 좌표 덤프: `output/6950/stage3/paragraph-closure-extents.txt`
+- 표준 비교: `output/6950/stage3/paragraph-closure-visual/para-table/` 아래
+  `compare/compare_001.png`, `overlay/overlay_001.png`, `review/review_001.png`.
+- 기존 PDF와 webfont/Chrome146,96dpi 비교. 페이지1 `pixel_match_percent=80.62248`,
+  `visual_accuracy_proxy_percent=6.16762`. 페이지 전체의 잉크 위치·형태 차이를 포함하는
+  보조 수치이며 이번 문단 간격의 합격 점수가 아니다. 비교 이미지에서도 페이지 전체 차이는 남는다.
+
+메인테이너에게 pi=1 표 아래의 pi=2 빈 문단과 pi=3 본문 간격 판정을 요청한다.
+WASM은 이전 빌드를 유지한다. 전체 회귀·최종 lint 묶음·Native Skia 검증과 원격 push/PR은
+아직 수행하지 않았으며 이번 집중 통과로 대체하지 않는다.
+
+## 25. 문단 종료 보정 시각 승인 후 전체 회귀
+
+메인테이너가 §24 SVG의 시각 판정을 통과시키고 전체 회귀 실행을 지시했다.
+현재 task HEAD `e1c8660b9`에 §24의 미커밋 제품3파일·테스트1파일을 포함한 후보가 대상이다.
+review worktree와 이4파일의 SHA-256 일치를 확인했다. 기존 기준선·기대값은 바꾸지 않는다.
+같은 Stage 3 검증이며 새 단계나 원격 작업을 시작하지 않는다.
+
+현재 CPU16개, 가용 메모리28GiB, 동시 Cargo/Rust 작업 없음, 공유 target 여유372GiB를
+확인해 Cargo4 jobs / nextest8 threads로 실행한다. 기존 review worktree와 고정 공유 target을
+재사용하며 manifest 검사와 diff 검사를 통과했다. 신규 샘플 보안 검사 입력도 전달한다.
+
+```bash
+CARGO_BUILD_JOBS=4 \
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/hwpx/20260909-para-table.hwpx"]' \
+RHWP_IR_SWEEP_DETAIL='20260909-para-table.hwpx' \
+cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp-shared-review-target \
+  --tests --test-threads 8 --no-fail-fast
+```
+
+로그: `output/6950/stage3/paragraph-closure-full.log`.
+시간·자원: `output/6950/stage3/paragraph-closure-full-time.txt`.
+### 25.1 최종 결과 — 전체 회귀 미통과
+
+| 항목 | 직전 전체 (§21) | 이번 |
+| --- | ---: | ---: |
+| 실행 | 9,410 | 9,413 |
+| 통과 | 9,410 | 9,409 |
+| 실패 | 0 | **4** |
+| 건너뜀 (실행 수 외) | 46 | 46 |
+
+- nextest 종료100. 빌드5분34초, 검사401.450초, 전체11분58.71초.
+  최대 RSS4,529,972KiB, swap0. nextest 버전·설정 경고는 이전 실행과 같은 환경 경고다.
+- 이전9,410개와 suite 번호를 제외한 crate+test 이름으로 대조했다. 누락0개, 추가3개이며
+  추가한 문단 종료 검사3개는 모두 PASS다. 대조 증적:
+  `output/6950/stage3/paragraph-closure-full-delta.json`.
+- #6950 배치·속성 검사, #6025 기존 핀, 신규 문서1건을 전달한 보안3종 검사 모두 PASS.
+  IR 왕복 전수83.776초 PASS. slow3개는 모두 완료했으며 timeout 실패가 아니다.
+- 실행 후 review manifest·diff 검사 PASS. 기준선·기존 기대값과 제품 코드는 이번 실행 중
+  변경하지 않았다. main/review의 제품3파일·테스트1파일은 동일 후보다.
+
+### 25.2 실패4검사와 실제 대상2문서
+
+| 대상 | 실패 검사 | 검출 내용 |
+| --- | --- | --- |
+| `samples/issue1510_coanchored_float_tables.hwp` | `oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14`, `issue_1510::issue_1510_coanchored_visible_para_float_tables_stay_on_one_page` | 같은 쪽수 변화를 중복 검출. 한컴 PDF·기준1쪽 → 현재2쪽 |
+| 같은 HWP | `issue_1510::issue_1510_visible_para_float_tables_apply_offsets_without_text_overlap` | 양수 세로 offset 표 위에 남아야 하는 `filler paragraph 07`의 하단582.4px가 표 상단362.7px보다 아래로 내려감 |
+| `samples/issue1510_coanchored_float_tables.hwpx` | `issue_1510::issue_1510_hwpx_unsigned_negative_offset_and_visible_flow_match_two_page_baseline` | 2쪽 단언은 통과했으나 1쪽에 있어야 하는 `filler paragraph 29`가 그 쪽에서 발견되지 않음 |
+
+이4검사는 §21 기준 `b841ee549`에서 모두 통과했으므로 이번 누적 문단 종료 변경 이후의
+신규 검출이다. 4개의 독립 결함이나 새 fixture 기준선 미등록으로 해석하지 않는다.
+현재 로그와 `tests/issue_1510.rs`에서 같은 문단에 연결된 복수의 문단 기준 floating 표와
+후속 본문의 흐름이 영향 대상임을 확인했다. 다만 §23/§24 중 최초 발생 변경과 정확한
+원인 분기는 아직 격리하지 않았으므로 특정 helper 하나의 원인으로 단정하지 않는다.
+
+다음은 두 실제 샘플의 원본 컨트롤 앵커·세로 offset·문단 종료/후속 흐름을 확인하고,
+직전 승인 변경들을 구분해 회귀 발생 지점을 좁히는 절차다. #6950 원본의 승인 배치를
+보존해야 하며 기준선 증가나 `#1510` 파일명 조건으로 통과시키지 않는다.
+
+이번 전체 회귀 실행 요청은 완료했지만 결과는 **미통과**다. 시각 승인 자체는 보존하되
+PR 준비 완료로 처리하지 않는다. 이번 턴에는 제품 추가 정정·WASM 갱신·원격 작업을 하지 않았다.
+
+## 26. #1510 메인테이너 비교용 WASM 빌드
+
+메인테이너가 두 실패 샘플을 한컴편집기와 직접 비교하기 위해 WASM 빌드를 지시했다.
+§25와 같은 `e1c8660b9`+미커밋 후보를 사용한다. 제품·샘플·기준선은 추가 수정하지 않는다.
+이번 빌드 성공을 #1510 회귀 해소나 전체 검증 통과로 해석하지 않는다.
+
+- 표준 `docker compose --env-file .env.docker run --rm wasm` 실행.
+- 기존 `.env.docker`와 named volume을 재사용하고 7700 Vite 서버를 유지한다.
+- 로그: `output/6950/stage3/paragraph-closure-wasm-build.log`.
+- 빌드 후 확인: `output/6950/stage3/paragraph-closure-wasm-verify.mjs`로 두 #1510
+  샘플과 #6950 원본을 실제 WASM에서 로드·전쪽 SVG 생성한다. HTTP WASM과 디스크 산출물,
+  HTTP sample과 원본의 해시 일치를 확인한다. 브라우저 시각 판정은 메인테이너가 수행한다.
+- 빌드 exit0, wasm-pack6분54초(Rust3분59초 포함). `pkg` 소유자 `edward:edward` 유지.
+- 실제 WASM에서 #1510 HWP2쪽·HWPX2쪽, #6950 원본3쪽을 로드하고 전쪽 SVG 생성 성공.
+  HWP의2쪽은 회귀 재현 결과이지 정답지 일치 판정이 아니다.
+- WASM SHA-256:
+  `ad4cd6f055235f1493315cc0ff2b351217bd44a3d87d587ff27de0d247e28d67`.
+  Vite가 변환한 JS는 현재 `pkg/rhwp_bg.wasm`을 참조하며, 실제 HTTP200 응답 해시도 동일하다.
+  세 sample의 HTTP200 응답과 원본 파일 해시도 각각 일치한다.
+- 검증 결과: `output/6950/stage3/paragraph-closure-wasm-verify.json`.
+- 비교 URL: `http://localhost:7700/?url=/samples/issue1510_coanchored_float_tables.hwp`,
+  `http://localhost:7700/?url=/samples/issue1510_coanchored_float_tables.hwpx`.
+  기존 탭은 강력 새로고침 후 다시 연다. 브라우저 내 시각 판정은 아직 수행하지 않았다.
+
+## 27. #1510 메인테이너 관찰과 흐름 소비 설계 정정
+
+메인테이너가 첫 표의 문단 위 기준59.96mm 위치는 정상이고, 후속 본문이 표 위 공간을
+사용하다가 표 구간에서만 아래로 이어지는 기존 동작을 복구해야 한다고 확인했다.
+
+원본 HWP의 pi=0 첫 표(ci=2)는 문단 기준 세로16996HU(59.958mm), 자리차지,
+글자처럼 취급=false다. 같은 문단의 후행 표 ci=3/4는 각각 음수/0 세로 offset을 갖는다.
+pi=1의 저장 첫 줄 vpos는0이다. 이 원본값은 자동 줄바꿈 여부의 단독 증거로 쓰지 않는다.
+
+코드 확인 결과:
+
+- 기존 typeset `place_table_with_text`의 양수-offset visible float 경로는 표의
+  `top..bottom`을 배제 구간으로 등록하고 텍스트 흐름은 따로 진행했다.
+- 기존 layout의 `visible_float_exclusions`도 현재 텍스트 위치/높이가 표 구간과
+  충돌할 때만 표 아래로 진행한다. 표 위 공간 사용 자체를 금지하지 않는다.
+- §24의 추가 문단 종료 루프는 확정 표 배치가 있다는 이유만으로
+  `current_height`·`min_flow_floor`를 표 하단으로 상승시켰다. 이 때문에 정상적인
+  표 위의 후속 텍스트 진행을 앞단에서 차단한다. 배치 좌표와 흐름 소비를 혼동한 설계다.
+- `ParagraphFloatPlacement`의 기존 생성 조건은 텍스트 뒤 컨트롤의 위치/세로 기하를
+  확인하지만, 그 표가 너비 부족으로 줄을 차지했다는 사실 전체를 증명하지 않는다.
+  따라서 이 타입 존재 여부를 문단 종료량 소비 조건으로 삼은 것이 부적절했다.
+
+표 위치를 유지하면서 두 흐름 계약을 분리하는 정정 설계를 구현계획 §5.9에 보완했다.
+현재 제품/WASM은 메인테이너가 확인한 실패 후보 그대로 보존한다. 정정 설계 승인 뒤
+구현·집중 검증·SVG 재판정을 진행하며, 여기서 기존 코드가 복구됐다고 보고하지 않는다.
+
+## 28. 승인된 §5.9 구현 — floating 배제 구간과 문단 종료량 분리
+
+메인테이너의 후속 승인을 받아 구현했다. 이번 절편의 목적은 #1510의 정상 표 좌표를
+유지하면서 표 위 본문 진행을 복구하고, 승인된 #6950의 줄 끝 표·후속 문단 간격을 보존하는 것이다.
+
+### 28.1 구현과 적용 경계
+
+- `ParagraphFloatPlacement.flow`에 `Exclusion`(본문이 도달할 때 회피할 영역)과
+  `NextLine`(호스트 줄의 잔여 폭이 부족한 후행 표)을 분리했다. 세로 배치 생성만으로는
+  `Exclusion`이며, 배치 정보의 존재를 문단 종료량 소비 증거로 사용하지 않는다.
+- 현재 frame에서 사용하는 composed/recomposed 마지막 줄의 폰트·장평·자간별 측정 폭과
+  인라인 개체 폭을 문단 가용 폭에서 뺀다. 표 너비와 좌우 바깥 여백이 잔여 폭을 초과할 때만
+  `NextLine`으로 전달한다. 파일명, 형식 이름, 표 개수,59.96mm 임계값으로 분기하지 않는다.
+- 이 판단은 기존의 텍스트 끝 컨트롤·양수 문단 상대 offset·호스트 줄 아래 배치 검사를
+  통과한 표에 연결된다. 임의의 floating 표 전체를 인라인 표로 재분류하지 않는다.
+- 명시적 줄바꿈 또는 탭 정지점의 확정 폭을 이 경로에서 얻지 못한 경우 새 흐름 소비를
+  추정하지 않는다. 탭 배치를 재구현하거나 저장 줄/원본 속성을 수정하지 않는다.
+- typeset의 문단 종료·후속 vpos 역행 방지와 layout의 종료 floor는 `NextLine`만 소비한다.
+  `Exclusion`은 기존 `visible_float_exclusions`가 실제 충돌 시점에 회피한다.
+- 표·셀의 페인트 좌표 계산, 원점 복구, 선행 배제 구간 회피는 변경하지 않았다.
+  첫 조각·이월 조각에도 흐름 분류를 전달한다. 빈 문단 예외를 전역 삭제하지 않았다.
+
+### 28.2 집중 검사
+
+최종 실행 `output/6950/stage3/float-flow-focused-complete.log`:
+
+- **53실행/53통과/0실패**, 선택되지 않은1825검사는 미실행이다. 전체 회귀 통과가 아니다.
+- #1510 기존7검사, 정답지 쪽수 partition14, #6950 조판·속성 바인딩, #6025·#6312·
+  #2439·#6797·#6718 보호 검사를 실제 실행 목록에서 확인했다.
+- 새 알고리즘 검사는 폭이 정확히 맞음/부족/확정 불가, 표 폭·좌우 여백·세로 위치 변화,
+  문단 종료의 멱등성과 조각/배제 구간 처리 시 분류 보존을 확인한다.
+  이것은 계산 계약 검사이며 새 한컴 정답 문서를 생성한 것이 아니다.
+- 기존 fixture와 정답지 기대값은 변경하지 않았다.
+- `cargo fmt --all -- --check`, review의 manifest `--check`, source unit tier `--check`,
+  주 브랜치 `git diff --check` 통과. 파생 suite/manifest는 review 전용이다.
+- 첫 컴파일에서 함수 모듈 경로 오기가 발생해 올바른 기존 helper 경로로 정정했다.
+  `float-flow-compile-error.log`에 보존했다. 이후 엔진/선택 target 빌드4분00초와44검사를
+  실행했으나, `--prepare`의 suite 재배치 때문에 일부 보호 검사가 선택되지 않았음을 발견했다.
+  현재 배치를 다시 조회해 최종53검사를 실행했다(추가 target 빌드26.33초, 검사0.490초).
+  44와53을 합산하지 않는다.
+
+### 28.3 수정 전후 기하
+
+좌표는 `dump-extents`의 화면 px, 소수 첫째 자리 표시다.
+
+| 확인 항목 | 수정 전 | 수정 후 |
+| --- | --- | --- |
+| #1510 HWP 전체 쪽수 | 2 | 1 |
+| 첫 A 표 상단..하단 | 362.7..437.3 | 362.7..437.3 (유지) |
+| filler01 상단 | 441.1 | 219.8 (표 위 흐름 복구) |
+| filler07 하단 | 582.4 | 361.1 (A 표 앞) |
+| filler08 상단 | 590.4 | 441.1 (A 표 뒤) |
+| #1510 HWPX 전체 쪽수 | 2 | 2 |
+| HWPX filler29 귀속 | 2쪽 | 1쪽 (기존 계약 복구) |
+
+두 형식 모두 세 표의 상단·하단·x·폭 기록은 수정 전후 동일하다.
+HWP의 음수/0 offset 표 사이에 출력되던 `LAYOUT_TABLE_OVERLAP` 경고도 수정 전후 동일하다.
+이번 표 위 본문 흐름 회귀와 이 기존 경고를 혼동하지 않는다.
+
+#6950 원본은 **3쪽 SVG 전체와 전체 extents가 기존 시각 승인본 `paragraph-closure-*`와
+바이트 동일**이다. pi=1 시작500.666667px, 후행 표626.64..805.266667px,
+pi=2 빈 줄809.04px, pi=3 시작834.00px를 보존했다.
+전후 extents 공통 SHA-256은 `7978f74cf7f045a8e5fd503bd9bec44e5df3b3011749970dc3ee82a76738bc93`다.
+
+### 28.4 시각 재판정 자료
+
+원본 HWP/HWPX와 Hancom2024 PDF는 기존 파일을 그대로 사용했다. 새 PDF를 생성하지 않았다.
+아래 모든 경로의 기준은 `/home/edward/mygithub/rhwp/`다.
+
+- HWP SVG: `output/6950/stage3/float-flow-after-hwp/issue1510_coanchored_float_tables.svg`
+- HWPX 1쪽 SVG: `output/6950/stage3/float-flow-after-hwpx/issue1510_coanchored_float_tables_001.svg`
+  (같은 폴더에 `_002.svg`도 보존)
+- 디버깅 SVG: `output/6950/stage3/float-flow-debug-hwp/`, `float-flow-debug-hwpx/`
+- #6950 보존 SVG: `output/6950/stage3/float-flow-after-target/`
+- 전후 좌표: `output/6950/stage3/float-flow-{before,after}-{hwp,hwpx}-extents.txt`
+
+프로젝트 표준 visual sweep을 두 형식의 실제1쪽에 실행했다. HWP 단일 SVG 파일명의
+`issue1510` 숫자를 도구가 추출해 비교 파일은 `_1510.png`다. **물리1510쪽이 아니라1쪽**이며,
+HWPX는 `_001.png`다. 한 페이지 선택 실행의 `svg_pages=1`을 HWPX 전체 쪽수로 보고하지 않는다.
+
+| 대상 | compare | overlay | review | pixel match | 내용 픽셀 보조 일치율 |
+| --- | --- | --- | --- | --- | --- |
+| HWP 1쪽 | `output/6950/stage3/float-flow-visual/1510-hwp/compare/compare_1510.png` | `output/6950/stage3/float-flow-visual/1510-hwp/overlay/overlay_1510.png` | `output/6950/stage3/float-flow-visual/1510-hwp/review/review_1510.png` | 96.31587% | 8.43461% |
+| HWPX 1쪽 | `output/6950/stage3/float-flow-visual/1510-hwpx/compare/compare_001.png` | `output/6950/stage3/float-flow-visual/1510-hwpx/overlay/overlay_001.png` | `output/6950/stage3/float-flow-visual/1510-hwpx/review/review_001.png` | 96.47994% | 8.02344% |
+
+각 review PNG를 열어 본문이 표 전후로 이어지는 위치를 확인했다. 자동 후보0/1이어도
+글꼴·잉크 위치 차이가 남는다. 낮은 보조값 자체를 시각 합격으로 해석하지 않는다.
+후속 메인테이너 직접 판정은 아래 §28.5에 기록한다.
+
+source/CLI SHA-256은 `output/6950/stage3/float-flow-source-build.sha256`에 보존했다.
+주 브랜치와 review의3개 Rust source·기존 test source는 동일하다.
+WASM은 아직 이전 후보이므로 현재 Studio에서 이 수정 결과를 확인할 수 없다.
+SVG 재판정 후 Docker WASM 확인·전체 회귀 순서로 진행한다. 이번 절편에서는 커밋·원격
+push·PR을 수행하지 않았으며 PR 제출용 전체 Clippy 묶음도 아직 재실행 전이다.
+
+### 28.5 메인테이너 시각 판정 통과와 형식별 쪽수 기준
+
+메인테이너가 이번 수정 후 HWP와 HWPX 모두 한컴편집기와 동일하게 조판됨을 확인했다.
+또한 한컴편집기에서도 이 샘플의 **HWP는1쪽, HWPX는2쪽**임을 직접 확인했다.
+따라서 두 형식 모두 이번 표 전후 본문 흐름의 시각 판정 통과로 기록한다.
+
+이 샘플의 보호 기준은 HWP↔HWPX의 쪽수 일치가 아니라 **각 입력과 그 입력에 대한 한컴
+출력의 일치**다. 형식 간 쪽수를 같게 만들 목적으로 정상 출력을 보정하지 않는다.
+이 관측만으로 HWP/HWPX 형식 전체의 일반적 차이나 한컴 내부 구현 원인을 단정하지 않는다.
+쪽수 차이의 상세 원인은 별도 조사 전까지 미확정이다.
+
+이번 피드백 반영은 문서 기록만이며 제품 코드·WASM·기존 테스트 기대값은 변경하지 않았다.
+남은 순서는 Docker WASM 빌드·확인 후 전체 회귀 재실행이다.
+
+## 29. 형식별 기준 유지 확인 후 전체 회귀 재실행
+
+### 29.1 기존 회귀·래칫 기준 확인
+
+메인테이너가 한컴의 HWP1쪽/HWPX2쪽 차이가 회귀·래칫에도 반영돼야 한다고 지시했다.
+확인 결과 기존 `tests/issue_1510.rs`가 각각1쪽/2쪽과 본문 쪽 귀속을 단언한다.
+`tests/fixtures/oracle_page_count_baseline.tsv`도 확장자를 포함한 경로별로
+HWP는 정답1/기준1, HWPX는 정답2/기준2를 보존한다. 두 쪽수를 하나의 허용 집합으로
+합친 것이 아니다. 따라서 테스트·기준선·정답지 선택 코드를 변경하지 않았다.
+
+현재 분배에서 HWP는 page-count partition14, HWPX는 partition6이다.
+기존7검사와 이 두 partition을 재실행해9/9통과했다.
+로그: `output/6950/stage3/float-flow-format-ratchet-check.log`.
+
+### 29.2 전체 실행 대상과 조건
+
+메인테이너가 전체 회귀를 먼저 다시 실행하도록 지시했다. WASM을 교체하지 않고
+시각 승인된 §28의 현재 Rust 후보에 대해 전체 nextest를 실행한다.
+
+- 주 브랜치 `task_m100_6950`, HEAD `e1c8660b9`와 미커밋 제품3파일·테스트1파일.
+- 기존 `/home/edward/mygithub/rhwp-6950-review`를 재사용한다. 위4파일은 주 브랜치와
+  바이트 동일하고, base 이후의 다른 제품 변경 누락이 없음을 확인했다.
+- 준비된 review manifest `--check`, `cargo fmt --all -- --check`, diff 검사 통과.
+- CPU16개, 가용 메모리28GiB, 동시 Cargo 작업 없음, target 여유372GiB를 확인해
+  Cargo4 jobs/nextest8 threads를 유지했다. 신규 샘플1건의 보안 검사 입력도 유지했다.
+
+```bash
+CARGO_BUILD_JOBS=4 \
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/hwpx/20260909-para-table.hwpx"]' \
+RHWP_IR_SWEEP_DETAIL='20260909-para-table.hwpx' \
+cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp-shared-review-target \
+  --tests --test-threads 8 --no-fail-fast
+```
+
+로그: `output/6950/stage3/float-flow-full.log`.
+시간·자원: `output/6950/stage3/float-flow-full-time.txt`.
+직전 전체 결과와의 대조는 suite 재배치를 제외한 crate+test 식별자로 수행한다.
+
+### 29.3 최종 결과 — 전체 회귀 통과
+
+| 항목 | 직전 전체 (§25) | 이번 |
+| --- | ---: | ---: |
+| 실행 | 9,413 | 9,414 |
+| 통과 | 9,409 | **9,414** |
+| 실패 | 4 | **0** |
+| 건너뜀 (실행 수 외) | 46 | 46 |
+
+- nextest 종료0. 전체 경과9분46.27초(`/usr/bin/time`), 테스트 실행357.981초.
+  최대 RSS4,539,968KiB, swap0. 기존 nextest 버전·설정 경고는 남지만 검사 실패가 아니다.
+- 직전9,413개 중 누락0개. 추가1개는
+  `floating_band_consumes_flow_only_when_the_tail_line_has_insufficient_space`이며 PASS다.
+- 직전 실패한 #1510 HWP 쪽수·표 전후 본문·HWPX 본문 귀속3검사와 쪽수 partition14가
+  모두 FAIL→PASS로 전환됐다. 다른 기존 검사에 신규 실패는 없다.
+- 쪽수 래칫16개 partition 모두 PASS. HWP1쪽/HWPX2쪽의 기존 기준은 변경하지 않았다.
+- 신규 #6950 샘플1건을 입력한 보안3종 검사 PASS. IR 필드 전수 왕복87.868초 PASS.
+  대형 CellBreak 표 분할 성능 검사172.914초 PASS. 장시간 표시3개는 모두 완료했으며
+  건너뛰거나 타임아웃 처리하지 않았다.
+
+대조 증적은 `output/6950/stage3/float-flow-full-delta.json`이다.
+`compare-nextest-runs.mjs`는 실제 실행 결과의 crate+test 식별자 수를 시작 건수와 대조하고,
+nextest 마지막 실패 요약의 중복 출력을 제거한다. suite 번호 변화 때문에 누락/추가를
+잘못 집계하지 않았다.
+
+실행 후 source3파일·test1파일·CLI SHA-256을 §28 증적과 대조해 모두 일치했다.
+review manifest `--check`와 diff 검사도 통과했다. 종료 점검 중 주 checkout에서
+manifest `--check`를 잘못 호출해 미준비 파생 suite의 drift가 출력된 적이 있다.
+읽기 전용 검사였으며 파일을 재생성하지 않았다. 실제 전체 검증을 실행한 review 경로에서
+다시 확인해 통과했고, 이 경로 혼동을 제품 회귀 또는 전체 테스트 실패로 집계하지 않는다.
+
+이번 실행에서는 제품 코드·기준선·기존 테스트 기대값·WASM을 변경하지 않았다.
+시각 판정과 전체 native 회귀는 통과했으며, 현재 수정 후보의 Docker WASM 빌드·확인과
+PR 제출 전 나머지 검증 게이트는 아직 별도 절차로 남아 있다. 커밋·push·PR은 수행하지 않았다.
+
+## 30. CI Render Diff 사전 검증 (2026-09-10)
+
+### 30.1 대상과 실행 조건
+
+메인테이너 요청에 따라 현재 후보가 CI Render Diff를 통과할 수 있는지 확인했다.
+`gh api`로 원격 `devel`의 `.github/workflows/render-diff.yml`을 조회했고,
+로컬 파일과 Git blob `c65103e3368b1ece08cafee146e65f1c54e652c5`가 일치했다.
+검증 대상은 §29의 HEAD와 미커밋 제품3파일·테스트1파일이며, source 해시는
+전체 회귀 실행 당시와 동일하다. 리뷰 워크트리와 주 checkout의 해당 파일도 바이트 동일하다.
+
+- 기존 `/home/edward/mygithub/rhwp-6950-review`에서 검증했다. 새로운 브랜치·워크트리는 만들지 않았다.
+- WASM은 Docker `wasm` 서비스에서 `scripts/wasm-pack-locked.sh --target web --dev`로
+  빌드했다. CI와 같은 dev profile이며 완료2분00초, pkg 소유권은 edward로 유지했다.
+  주 checkout의 `pkg/`를 갱신하고 리뷰 워크트리에 동일 산출물을 복사했다.
+- native CLI는 리뷰 워크트리에서 `cargo build --locked --features native-skia --bin rhwp
+  --target-dir /home/edward/mygithub/rhwp-shared-review-target`로 빌드했다. 완료1분59초.
+- Node22.18.0, Chromium build1660786 (`152.0.7946.0`)을 사용했다.
+  리뷰 워크트리에서 `npm ci`를 실행했다. 주 Studio의 오래된 의존성
+  (`@types/chrome`0.2.7, `puppeteer-core`25.9.0)은 건드리지 않았다.
+  검증 설치본은 lockfile에 맞는 각각0.2.8, 25.10.0이다.
+- 기본 fixture, max-pages1, full-suite0, Direct PDF gate 활성화, 허용차이0.02,
+  direct fallback raster DPI144를 CI와 동일하게 유지했다. Canvas 허용차이는0.0005다.
+- 검증 서버는7701을 사용했다. 메인테이너의7700 서버 PID60726은 유지했고,
+  검증 종료 후7701 서버는 harness가 종료했다.
+
+WASM SHA-256: `9458322ea31ae05d54f743328ccef71a3ab7abc2e6833b7151b6f94d9bec3a78`.
+native-Skia CLI SHA-256: `3a77f7ee54051add23ea8ada8c943528d4fc53a4cbd9e57fb50ec483eb60bb27`.
+증적: `output/6950/stage3/render-diff-binaries.sha256`.
+
+리뷰 워크트리의 `rhwp-studio`에서 실행한 본 검사:
+
+```bash
+env PATH="/home/edward/.nvm/versions/node/v22.18.0/bin:$PATH" \
+  CHROME_PATH=/home/edward/.cache/puppeteer/chromium/linux-1660786/chrome-linux/chrome \
+  VITE_PORT=7701 RHWP_RENDER_DIFF_FILES='' RHWP_RENDER_DIFF_MAX_PAGES=1 \
+  RHWP_RENDER_DIFF_ALL=0 RHWP_RENDER_DIFF_WRITE_IMAGES=0 \
+  RHWP_RENDER_DIFF_PDF=1 RHWP_RENDER_DIFF_PDF_WRITE_IMAGES=1 \
+  RHWP_RENDER_DIFF_DIRECT_PDF=1 RHWP_RENDER_DIFF_DIRECT_PDF_GATE=1 \
+  RHWP_RENDER_DIFF_DIRECT_PDF_MAX_RATIO=0.02 \
+  RHWP_RENDER_DIFF_DIRECT_PDF_RASTER_DPI=144 \
+  RHWP_RENDER_DIFF_RHWP_BIN=/home/edward/mygithub/rhwp-shared-review-target/debug/rhwp \
+  npm run e2e:render-diff:ci
+```
+
+같은 Node·Chromium 환경에서 리뷰 워크트리 루트의 다음 검사도 실행했다.
+
+```bash
+python3 scripts/renderer_baseline.py --profiles screen --browser-mode headless \
+  --readiness-only \
+  --output /home/edward/mygithub/rhwp/output/6950/stage3/render-diff-readiness
+```
+
+### 30.2 결과 — 로컬 CI 게이트 모두 통과
+
+| 검사 | 결과 |
+| --- | --- |
+| CI 지정 JS8파일 syntax·Python compile | PASS |
+| native/CanvasKit provenance self-test | PASS |
+| renderer contract·CanvasKit font coverage | PASS |
+| Canvas legacy/layer 비교 | 3/3 PASS |
+| Direct PDF / SVG compatibility PDF 비교 | 3/3 PASS |
+| CanvasKit readiness (시각·backend·성능·이미지) | 8/8 PASS, 누락0 |
+
+Canvas 차이: KTX0.01761%, biz_plan0%, tac-case-001 0% (허용0.05%).
+Direct PDF 차이: biz_plan1.15895%, tac-case-001 0.39037%, kps-ai0.67672%
+(허용2%). 두 실행 모두 종료0이며 기준선·기대값·임계치를 수정하지 않았다.
+
+보고용 Browser Canvas / compatibility PDF 비교는4건 warn, error0이다.
+이 경로는 기존 CI 설계상 report-only이며 Direct PDF gate와 다르다.
+실제 보고서에 browser96dpi 크기(794×1123 등)와 PDF72dpi 크기(596×842 등)가
+다르게 기록돼 있다. 이 결과를 한컴 조판 회귀 또는 무경고 통과로 해석하지 않는다.
+
+readiness 초기 로딩에서 `바탕체` 준비 오류·2d context 오류가 로그에 출력됐다.
+최종 gate에서는8건 모두 실제 backend가 CanvasKit이고 `renderError=null`,
+blockers 없음, visual parity·성능 검사가 통과했다. 초기 로그를 숨기거나 오류가
+전혀 없었다고 기록하지 않는다. 발생 원인의 확정 조사는 이번 검증에서 하지 않았다.
+`npm ci`의 의존성 보안 알림5건(낮음1·중간1·높음3)도 남겼으며 자동 수정하지 않았다.
+
+증적:
+
+- `output/6950/stage3/render-diff-ci-local.log`
+- `output/6950/stage3/render-diff-ci-artifacts/summary.md`
+- `output/6950/stage3/render-diff-ci-artifacts/pdf-summary.md` 및 원본 JSON·PDF·PNG
+- `output/6950/stage3/render-diff-readiness.log`
+- `output/6950/stage3/render-diff-readiness/baseline-report.md`
+- `output/6950/stage3/render-diff-readiness/browser/browser-baseline-report.json`
+- `output/6950/stage3/render-diff-{wasm-build,native-build,npm-ci}.log`
+
+**판정:** 현재 후보는 CI Render Diff job의 기본 검증 조건을 로컬에서 통과했다.
+GitHub runner에서 실제 성공한 것으로 보고하지 않는다. 로컬 WSL2·Rust1.93.1·
+설치 폰트와 GitHub ubuntu-latest 환경의 차이, 추후 PR merge base 변경은 원격 실행에서
+최종 확인해야 한다. 원격 workflow dispatch·push·PR은 수행하지 않았다.
+제품 코드·테스트·baseline은 이번 검증으로 변경하지 않았다.

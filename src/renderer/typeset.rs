@@ -5662,6 +5662,9 @@ pub(crate) struct DumpFormattedParagraphHeight {
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
 #[derive(Debug, Clone)]
 struct FormattedParagraph {
+    /// Measured remaining inline space on the composed tail line. None means
+    /// that this path has no reliable width result (not an implicit overflow).
+    tail_line_remaining_width: Option<f64>,
     /// frame이 실제로 재조판한 줄만 보존한다. Some이면 source 줄로 되돌아가지 않는다.
     computed_host_lines: Option<Vec<super::float_placement::ParagraphHostLine>>,
     /// 총 높이 (spacing 포함)
@@ -9788,6 +9791,21 @@ impl TypesetEngine {
                         });
                     }
                     _ => {}
+                }
+            }
+            // #6950: text and its tail table may be emitted in paint order rather
+            // than logical order. Finish the paragraph after ALL its controls;
+            // post-text must not return flow to a position above its own table.
+            let spacing_after = styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map_or(0.0, |style| style.spacing_after);
+            for (&(owner, _), placement) in &st.paragraph_float_placements {
+                if owner == para_idx
+                    && placement.flow == super::float_placement::ParagraphFloatFlow::NextLine
+                {
+                    st.current_height = placement.paragraph_end(st.current_height, spacing_after);
+                    st.ladder_band_floor = st.ladder_band_floor.max(st.current_height);
                 }
             }
             // [Task #1007] variant vpos reset 감지용 prev_para_idx 갱신
@@ -16742,7 +16760,16 @@ impl TypesetEngine {
         }
         // 렌더의 min_flow_floor는 floor뿐 아니라 직전 순차 cursor도 보호한다.
         // 회피한 표 이후 분할기만 저장 vpos로 되감으면 쪽 fit와 출력이 갈라진다.
-        if !st.inline_placements.is_empty() || !st.inline_flow_plans.is_empty() {
+        if !st.inline_placements.is_empty()
+            || !st.inline_flow_plans.is_empty()
+            || st
+                .paragraph_float_placements
+                .iter()
+                .any(|(&(owner, _), placement)| {
+                    owner < para_idx
+                        && placement.flow == super::float_placement::ParagraphFloatFlow::NextLine
+                })
+        {
             y = y.max(st.current_height);
         }
         // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
@@ -17398,7 +17425,39 @@ impl TypesetEngine {
                     })
                     .collect()
             });
+        let tail_line_remaining_width = (|| {
+            if !para.controls.iter().any(|control| {
+                matches!(control, Control::Table(table) if is_para_topbottom_float(&table.common))
+            }) {
+                return None;
+            }
+            let comp = composed?;
+            let line = comp.lines.last()?;
+            // Tabs need their resolved tab-stop positions, not font advances.
+            // Do not manufacture a line miss from an unsupported measurement.
+            if line.has_line_break || line.runs.iter().any(|run| run.text.contains('\t')) {
+                return None;
+            }
+            let cw = column_width_px?;
+            let style = para_style?;
+            let available =
+                cw - super::equation_tac_flow::paragraph_effective_margin_left(
+                    style.margin_left,
+                    style.indent,
+                    comp.lines.len() - 1,
+                ) - style.margin_right;
+            let text_width = super::composer::estimate_composed_line_width(line, styles);
+            let inline_width: f64 = comp
+                .tac_controls
+                .iter()
+                .filter(|(position, _, _)| *position >= line.char_start)
+                .map(|(_, width, _)| hwpunit_to_px(*width, self.dpi))
+                .sum();
+            let remaining = available - text_width - inline_width;
+            (available.is_finite() && available > 0.0 && remaining.is_finite()).then_some(remaining)
+        })();
         FormattedParagraph {
+            tail_line_remaining_width,
             computed_host_lines,
             total_height,
             line_heights,
@@ -25055,6 +25114,8 @@ impl TypesetEngine {
             })
             .flatten()
             .map(|placement| {
+                let placement =
+                    placement.with_tail_line_space(fmt.tail_line_remaining_width, table, self.dpi);
                 // A stored ladder must have a known origin in THIS column, not
                 // a default zero or a base recovered from already painted nodes.
                 let frame = (para.line_segs.len() == 1
@@ -26613,6 +26674,7 @@ impl TypesetEngine {
                 } else {
                     // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
                     super::float_placement::ParagraphFloatPlacement {
+                        flow: original.flow,
                         anchor_y: st.current_height,
                         stored_host_origin: None,
                         table_top: st.current_height + host_before_overhead,
@@ -28307,6 +28369,7 @@ mod issue_3780_line_advance_oob {
 
     fn fp(lines: usize) -> FormattedParagraph {
         FormattedParagraph {
+            tail_line_remaining_width: None,
             computed_host_lines: None,
             total_height: 0.0,
             line_heights: vec![10.0; lines],
