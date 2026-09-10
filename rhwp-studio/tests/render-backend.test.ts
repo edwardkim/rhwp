@@ -673,7 +673,7 @@ test('CanvasView gives visible work precedence over deferred prefetch work', () 
   );
   assert.match(
     codeOnly(source),
-    /const visibleWork = isScroll[\s\S]*?buildVisibleRenderWork[\s\S]*?const prefetchWork = this\.buildPrefetchRenderWork[\s\S]*?pageRenderScheduler\.setDesiredWork/,
+    /const visibleWork = deferVisible[\s\S]*?buildVisibleRenderWork[\s\S]*?const prefetchWork = this\.buildPrefetchRenderWork[\s\S]*?pageRenderScheduler\.setDesiredWork/,
   );
   assert.match(scheduler, /if \(this\.visible\.size > 0\) \{[\s\S]*?this\.cancelDeferredTask\(\)/);
   assert.match(scheduler, /const DEFAULT_IDLE_TIMEOUT_MS = 1000/);
