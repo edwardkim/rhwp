@@ -108,6 +108,7 @@ fn page_with_paragraph_fragment(start_line: usize, end_line: usize) -> PageConte
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
