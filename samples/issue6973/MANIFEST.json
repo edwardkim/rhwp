@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6973,
+  "title": "감정평가 및 감정평가사에 관한 법률 시행규칙 일부개정령(안) 신·구조문대비표",
+  "entries": [
+    {
+      "path": "samples/issue6973/83818-appraisal-rules-amendment.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6973",
+      "originalFilename": "83818_(법령안) 감정평가 및 감정평가사에 관한 법률 시행규칙 일부개정령(안).hwpx",
+      "bytes": 64492,
+      "sha256": "79b24b98874723f0d7952a772ec9b16b5cacc7d0c91438c700679addde2ba9b5",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8808"
+      },
+      "referenceEngine": "2020",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert, engine_profile=2020, backend hwp-managed-direct-dll-host). 응답 pdf_page_count=9, 260,345 bytes. 같은 9쪽을 한/글 2020 COM 두 경로(page_oracle_worker.ps1 · 직접 COM PageCount)로도 확인했다.",
+      "contract": "파생 문단 꼬리 확장(paragraph_tail_cut_for_row)은 저장 lineseg 의 물리 되감김을 넘지 않는다 — 가시 셀이 둘 이상이고 전부 같은 줄 인덱스에서 되감기는 행에 한한다. 행 13 은 두 셀 모두 12줄이고 li=9 에서 되감기므로 꼬리는 9줄에서 멈추고 뒤 3줄이 9쪽으로 간다.",
+      "referencePdf": "pdf/83818-appraisal-rules-amendment-2020.pdf",
+      "referencePdfSha256": "5e51c3a98b18959cea44be10b87328c492b43ab2dfdf6679e859f212add0c7ba",
+      "referencePdfBytes": 260345
+    }
+  ]
+}
