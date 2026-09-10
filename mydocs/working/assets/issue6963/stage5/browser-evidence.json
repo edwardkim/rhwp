@@ -1,0 +1,731 @@
+{
+  "browser": "Chrome/152.0.7977.83",
+  "uri": "https://example.com/한글?q=1&lang=ko#부분",
+  "text": "한컴 링크 😀",
+  "before": {
+    "links": [
+      {
+        "end": 7,
+        "fieldId": 1,
+        "start": 0,
+        "text": "한컴 링크 😀",
+        "uri": "https://example.com/한글?q=1&lang=ko#부분"
+      }
+    ],
+    "text": "한컴 링크 😀"
+  },
+  "formats": {
+    "hwp": {
+      "bytes": 13312,
+      "reopened": {
+        "links": [
+          {
+            "end": 7,
+            "fieldId": 1,
+            "start": 0,
+            "text": "한컴 링크 😀",
+            "uri": "https://example.com/한글?q=1&lang=ko#부분"
+          }
+        ],
+        "text": "한컴 링크 😀"
+      }
+    },
+    "hwpx": {
+      "bytes": 7540,
+      "reopened": {
+        "links": [
+          {
+            "end": 7,
+            "fieldId": 1,
+            "start": 0,
+            "text": "한컴 링크 😀",
+            "uri": "https://example.com/한글?q=1&lang=ko#부분"
+          }
+        ],
+        "text": "한컴 링크 😀"
+      }
+    }
+  },
+  "pdfs": {
+    "studio-hwp": [
+      {
+        "uri": "https://example.com/%ED%95%9C%EA%B8%80?q=1&lang=ko#%EB%B6%80%EB%B6%84",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 132.2948455810547,
+        "width": 71.73159790039062,
+        "height": 13.3330078125
+      }
+    ],
+    "studio-hwpx": [
+      {
+        "uri": "https://example.com/%ED%95%9C%EA%B8%80?q=1&lang=ko#%EB%B6%80%EB%B6%84",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 132.2948455810547,
+        "width": 71.73159790039062,
+        "height": 13.3330078125
+      }
+    ],
+    "multiline": [
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 132.2948455810547,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 153.62767028808594,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 174.96047973632812,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 196.29330444335938,
+        "width": 576.5571899414062,
+        "height": 13.332992553710938
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 217.62612915039062,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 238.9589385986328,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 260.291748046875,
+        "width": 575.8938598632812,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 281.62457275390625,
+        "width": 576.5571899414062,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 302.9573669433594,
+        "width": 576.3838500976562,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 324.2901916503906,
+        "width": 577.0638427734375,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 345.623046875,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 366.9558410644531,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 388.2886657714844,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 409.6214904785156,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 430.95428466796875,
+        "width": 575.8938598632812,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 452.287109375,
+        "width": 576.5571899414062,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 473.61993408203125,
+        "width": 576.3838500976562,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 494.9527282714844,
+        "width": 577.0638427734375,
+        "height": 13.333038330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 516.2855834960938,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 537.6183471679688,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 558.9512329101562,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 580.2839965820312,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 601.6168212890625,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 622.94970703125,
+        "width": 576.5571899414062,
+        "height": 13.33294677734375
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 644.282470703125,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 665.6152954101562,
+        "width": 577.0638427734375,
+        "height": 13.33294677734375
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 686.9481201171875,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 708.2809448242188,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 729.6137084960938,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 750.9465942382812,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 772.2794189453125,
+        "width": 575.8938598632812,
+        "height": 13.33294677734375
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 793.6121826171875,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 814.945068359375,
+        "width": 576.3838500976562,
+        "height": 13.33294677734375
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 836.27783203125,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 857.6106567382812,
+        "width": 575.8938598632812,
+        "height": 13.33294677734375
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 878.9434814453125,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 900.2763061523438,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 921.6090698242188,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 942.9419555664062,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 964.2747802734375,
+        "width": 576.5571899414062,
+        "height": 13.33294677734375
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 0,
+        "x": 113.38392639160156,
+        "y": 985.6075439453125,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 132.2947998046875,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 153.627685546875,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 174.96044921875,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 196.2933349609375,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 217.6260986328125,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 238.958984375,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 260.291748046875,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 281.62451171875,
+        "width": 576.3838500976562,
+        "height": 13.3331298828125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 302.9573974609375,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 324.2901611328125,
+        "width": 575.8938598632812,
+        "height": 13.3331298828125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 345.623046875,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 366.955810546875,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 388.2886962890625,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 409.6214599609375,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 430.954345703125,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 452.287109375,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 473.619873046875,
+        "width": 577.0638427734375,
+        "height": 13.3331298828125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 494.9527587890625,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 516.28564453125,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 537.618408203125,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 558.951171875,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 580.283935546875,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 601.6168212890625,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 622.94970703125,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 644.282470703125,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 665.615234375,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 686.9481201171875,
+        "width": 576.5571899414062,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 708.281005859375,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 729.61376953125,
+        "width": 577.0638427734375,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 750.946533203125,
+        "width": 575.8938598632812,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 772.2794189453125,
+        "width": 576.5571899414062,
+        "height": 13.3328857421875
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 793.6121826171875,
+        "width": 576.3838500976562,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://example.com/multiline",
+        "page": 1,
+        "x": 113.38392639160156,
+        "y": 814.945068359375,
+        "width": 460.8555908203125,
+        "height": 13.3330078125
+      }
+    ],
+    "textmail": [
+      {
+        "uri": "http://www.hancom.co.kr",
+        "page": 0,
+        "x": 549.9800415039062,
+        "y": 162.539306640625,
+        "width": 119.34381103515625,
+        "height": 13.3330078125
+      }
+    ],
+    "lh": [
+      {
+        "uri": "https://apply.lh.or.kr",
+        "page": 1,
+        "x": 369.3244323730469,
+        "y": 423.6744384765625,
+        "width": 115.533203125,
+        "height": 14.666259765625
+      },
+      {
+        "uri": "https://apply.lh.or.kr/LH/index.html#MN::CLCC_MN_0010:",
+        "page": 7,
+        "x": 432.2695617675781,
+        "y": 442.1669921875,
+        "width": 135.74337768554688,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "https://apply.lh.or.kr",
+        "page": 10,
+        "x": 222.44796752929688,
+        "y": 610.58984375,
+        "width": 118.88140869140625,
+        "height": 13.3330078125
+      },
+      {
+        "uri": "http://www.lh.or.kr)",
+        "page": 28,
+        "x": 336.69854736328125,
+        "y": 215.43359375,
+        "width": 77.33145141601562,
+        "height": 13.33203125
+      }
+    ]
+  },
+  "oracles": {
+    "textmail": {
+      "pdf": "pdf/basic/Textmail-2022.pdf",
+      "uris": [
+        "http://www.hancom.co.kr"
+      ]
+    },
+    "lh": {
+      "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+      "uris": [
+        "https://apply.lh.or.kr/",
+        "https://apply.lh.or.kr/LH/index.html#MN::CLCC_MN_0010:"
+      ]
+    }
+  },
+  "viewerClick": {
+    "viewer": "Chrome built-in PDF viewer",
+    "url": "https://example.com/%ED%95%9C%EA%B8%80?q=1&lang=ko#%EB%B6%80%EB%B6%84",
+    "x": 390,
+    "y": 142,
+    "externalRequest": "intercepted with local test response"
+  }
+}

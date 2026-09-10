@@ -95,6 +95,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `pdf-render-diff-report.mjs` | 상시 | active | Report-only visual diff between browser Canvas output and SVG-deri | — | npm+CI | legacy-name |
 | `plugin-lifecycle.test.mjs` | 상시 | active | 플러그인 호스트 — allowlist·트랜잭션 1스냅샷·롤백·unload 회수 | — | npm e2e:plugin-lifecycle |  |
 | `print-pdf-issue3126.test.mjs` | 상시 | active | #3126 same-origin iframe 인쇄/PDF UX, 상태 불변, #2524/#2525 browser PDF 회귀 | render-p35-font-native-bitmap.hwpx, hwpx/hwpx-02.hwpx | 수동 | native dialog는 Chrome/Edge 수동 절차 병행 |
+| `hyperlink-pdf-issue6963.test.mjs` | 상시 | active | #6963 링크 dialog, HWP/HWPX 저장·재열기, Chromium PDF URI·영역 및 뷰어 클릭 | 새 문서, basic/Textmail.hwp, hwpx_sample2.hwpx | 수동 | full Chrome headless, PYTHON의 pypdf 필요; native picker/print만 캡처 |
 | `probe-image-repaint-issue3315.mjs` | 진단 | active | Issue #3315 Track 4 종결 측정 — 그림 1장 문서의 타이핑·`document-changed`·개체 이동 비용을 그림 없음과 대조 (#2520 프로브 형식, 브리지 메서드별 내역 포함) | images/tiger01.jpg | npm e2e:issue-3315-perf | 시간 수치는 비-CI 진단 |
 | `probe-input-perf-issue3137.mjs` | 진단 | active | Issue #3137 거대 표 셀 입력의 mutation·cursor update·focused repaint·operation·2-rAF·long task 성능 매트릭스 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | npm e2e:issue-3137-perf | 시간 수치는 비-CI, 문서·cursor·focused repaint·flush 계약만 hard assertion |
 | `pr2260-vscode-zoom-menu.test.mjs` | 상시 | active | [PR #2260 검증] rhwp-vscode 배율 메뉴 — 호스트 Chrome CDP 로 webview 하네스 구동. | — | 수동 |  |
