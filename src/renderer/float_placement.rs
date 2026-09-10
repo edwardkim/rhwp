@@ -892,7 +892,22 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     if !stored_layout || !para.text.is_empty() {
         return None;
     }
-    stored_anchor_band_host_line_from_ladder(para, control_index, next_plain_text_vpos(next_para))
+    // 편집으로 무효화된 저장 시작점은 문단 종료 진행량의 증거가 아니다.
+    // 그런 문단은 현재 재조판 흐름을 사용하고 원본 사다리를 다시 더하지 않는다.
+    if para.stored_text_partition_is_dirty()
+        || next_para.is_some_and(Paragraph::stored_text_partition_is_dirty)
+    {
+        return None;
+    }
+    // #6950: 문단 종료는 현재 문단의 마지막 개체에서 한 번 소비한다.
+    // 다음 문단에 표가 있더라도 그 문단의 시작과 현재 문단의 종료 계약은
+    // 사라지지 않는다. 다음 저장 시작점은 진행량의 증거로만 사용하며,
+    // 표 개수나 다음 문단의 controls.is_empty()로 종료량을 결정하지 않는다.
+    stored_anchor_band_host_line_from_ladder(
+        para,
+        control_index,
+        next_text_paragraph_vpos(next_para),
+    )
 }
 
 /// [#6312] 글이 있는 자리차지 host 문단의 저장 사다리가 host 줄만 증언하면
@@ -932,7 +947,15 @@ pub(crate) fn stored_visible_anchor_band_host_line_advance_from_vpos(
 
 fn next_plain_text_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
     let next = next_para?;
-    if !para_has_non_whitespace_text(next) || !next.controls.is_empty() {
+    if !next.controls.is_empty() {
+        return None;
+    }
+    next_text_paragraph_vpos(Some(next))
+}
+
+fn next_text_paragraph_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
+    let next = next_para?;
+    if !para_has_non_whitespace_text(next) {
         return None;
     }
     next.line_segs
@@ -973,8 +996,8 @@ fn stored_anchor_band_host_line_from_ladder(
     if last_float != Some(control_index) {
         return None;
     }
-    // 다음이 개체 없는 일반 본문 문단일 때만 — 앵커 스택(다음도 빈 앵커)의 줄간격은
-    // 개체-개체 간격이라 이미 #1133 이 보존한다.
+    // 다음 본문 문단의 저장 시작점과 현재 문단의 종료 진행량을 대조한다.
+    // 앵커 스택(다음도 빈 앵커)의 줄간격은 #1133 이 보존하므로 호출부에서 제외한다.
     let next_vpos = next_plain_text_vpos?;
 
     // [#6312] 사다리 등식은 재조판 좌표가 아니라 원본 저장 vpos 로 본다.

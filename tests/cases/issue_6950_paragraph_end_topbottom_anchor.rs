@@ -329,6 +329,51 @@ fn table(items: &[&RenderNode], pi: usize, ci: usize) -> (f64, f64) {
 }
 
 #[test]
+fn object_only_paragraph_finishes_once_before_a_text_and_table_paragraph() {
+    let core = core();
+    let paragraphs = &core.document().sections[0].paragraphs;
+    let host = &paragraphs[0];
+    assert!(host.text.is_empty());
+    assert_eq!(host.line_segs.len(), 1);
+    assert!(
+        !paragraphs[1].controls.is_empty(),
+        "successor includes a table"
+    );
+    let line = &host.line_segs[0];
+    let advance = line.line_height + line.line_spacing.max(0);
+    assert_eq!(
+        paragraphs[1].line_segs[0].vertical_pos - line.vertical_pos,
+        advance
+    );
+    let Control::Table(last) = &host.controls[4] else {
+        panic!("last table")
+    };
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut items = Vec::new();
+    body_items(&tree.root, &mut items);
+    let a = table(&items, 0, 2);
+    let b = table(&items, 0, 3);
+    let c = table(&items, 0, 4);
+    assert!((b.0 - a.1).abs() < 0.02, "no paragraph end between objects");
+    assert!((c.0 - b.1).abs() < 0.02, "no paragraph end between objects");
+    let next = items
+        .iter()
+        .find(|n| {
+            matches!(&n.node_type,
+        RenderNodeType::TextLine(l) if l.para_index == Some(1) && l.line_index == Some(0))
+        })
+        .unwrap();
+    let expected_gap = (advance as f64 + last.outer_margin_bottom as f64) / 75.0;
+    assert!(
+        (next.bbox.y - c.1 - expected_gap).abs() < 0.02,
+        "paragraph termination once: table bottom={}, next={}, expected gap={expected_gap}",
+        c.1,
+        next.bbox.y
+    );
+    assert_eq!(core.page_count(), 3);
+}
+
+#[test]
 fn paragraph_text_table_and_following_text_do_not_overlap() {
     let core = core();
     let tree = core.build_page_render_tree(0).expect("1쪽");
