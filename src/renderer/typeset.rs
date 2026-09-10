@@ -25045,11 +25045,19 @@ impl TypesetEngine {
                 }
             })
             .flatten()
-            .map(|placement| {
+            .map(|mut placement| {
                 if table.common.allow_overlap {
                     return placement;
                 }
                 let outer_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                // A zero-offset co-anchored float consumes flow without adding a
+                // visible exclusion. Preserve that occupied floor before publishing
+                // a final placement; consulting only the exclusion list loses it.
+                if has_preceding_coanchored_float {
+                    let shift = (st.current_height + outer_top - placement.table_top).max(0.0);
+                    placement.table_top += shift;
+                    placement.occupied_bottom += shift;
+                }
                 placement.clear_occupied_bands(
                     st.visible_float_exclusions
                         .iter()

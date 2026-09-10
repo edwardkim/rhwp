@@ -37,6 +37,25 @@ pub struct ParagraphHostLine {
 }
 
 impl ParagraphFloatPlacement {
+    /// This result owns a control following text on the paragraph's last logical
+    /// line, not every paragraph-relative object drawn below some stored rows.
+    /// Paragraph boundaries already live in the IR; an internal hard break ends
+    /// the preceding text line even when the control has the same scalar offset.
+    /// Missing character mapping is not evidence of a tail attachment.
+    fn text_tail_control_position(para: &Paragraph, control_index: usize) -> Option<usize> {
+        let text_len = para.text.chars().count();
+        if text_len == 0 || para.char_offsets.len() != text_len {
+            return None;
+        }
+        let position = *para.control_text_positions().get(control_index)?;
+        (position == text_len
+            && para.text.rsplit('\n').next().is_some_and(|line| {
+                line.chars()
+                    .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
+            }))
+        .then_some(position)
+    }
+
     /// 저장 LineSeg 대신 현재 frame에서 계산된 줄로 앵커를 결정한다.
     /// 모든 호스트 줄이 표보다 앞서는 계약만 소유하며, 혼합 배치를 임의로
     /// 본문 뒤 배치로 바꾸지 않는다. source의 UTF-16 위치/높이는 읽지 않는다.
@@ -49,6 +68,7 @@ impl ParagraphFloatPlacement {
         table_height: f64,
         dpi: f64,
     ) -> Option<Self> {
+        let char_pos = Self::text_tail_control_position(para, control_index)?;
         if !dpi.is_finite()
             || dpi <= 0.0
             || !table_height.is_finite()
@@ -72,10 +92,6 @@ impl ParagraphFloatPlacement {
             .windows(2)
             .any(|pair| pair[1].char_start < pair[0].char_start || pair[1].top < pair[0].top)
         {
-            return None;
-        }
-        let char_pos = *para.control_text_positions().get(control_index)?;
-        if char_pos > text_len {
             return None;
         }
         let anchor = lines
@@ -131,6 +147,7 @@ impl ParagraphFloatPlacement {
         table_height: f64,
         dpi: f64,
     ) -> Option<Self> {
+        Self::text_tail_control_position(para, control_index)?;
         if !dpi.is_finite()
             || dpi <= 0.0
             || !table_height.is_finite()
