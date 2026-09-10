@@ -68,13 +68,11 @@ https://example.com/%ED%95%9C%EA%B8%80?q=1&lang=ko#%EB%B6%80%EB%B6%84
   DOM과 주석의 일치**이며 한컴과 문서 레이아웃이 일치한다는 뜻이 아니다.
 - 새 문서와 Textmail에서 링크 group을 제거한 별도 PDF를 생성했다. 제거본의 주석은
   0개이며, Poppler 144dpi 이미지 비교는 두 경우 모두 **변경 픽셀 0**이다.
-- Textmail p1, LH p8, 긴 링크 p2의 렌더링을
-  [페이지 비교 이미지](assets/issue6963/stage5/pdf-pages.png)로 확인했다.
+- Textmail p1, LH p8, 긴 링크 p2의 렌더링 이미지를 직접 열어 확인했다.
 
-기계 증적:
-[브라우저 저장·재열기·클릭](assets/issue6963/stage5/browser-evidence.json),
-[PDF 주석·한컴 geometry 비교](assets/issue6963/stage5/pdf-validation.json),
-[픽셀 비교](assets/issue6963/stage5/visual-validation.json).
+PR 준비 시 원시 JSON·중간 페이지 비교 이미지는
+`output/issue6963-pr-preparation/intermediate/stage5/`로 옮겼다. 영구 기록은 위의
+명령·수치·판정과 대표 PDF 뷰어 화면이며, 원시 결과는 아래 명령으로 재생성한다.
 
 ## 재현
 

@@ -64,7 +64,8 @@ Skia 의존성 다운로드가 샌드박스 DNS 제한으로 실패한 검증은
 
 ## 한컴 샘플과 시각 증거
 
-[검증 JSON](assets/issue6963/stage3/validation.json)은 주소·SHA-256·영역·CLI 결과를 기록한다.
+주소·영역·CLI 결과는 아래에 요약했다. 원시 검증 JSON은 PR 준비 시
+`output/issue6963-pr-preparation/intermediate/stage3/validation.json`으로 옮겼다.
 한컴 PDF와의 비교 이미지는 같은 페이지 좌표를 잘라 클릭 영역을 빨간색으로 표시했다.
 
 | 입력 및 기준 PDF | 보존 URI | 결과 |

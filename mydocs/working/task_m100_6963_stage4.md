@@ -49,7 +49,8 @@ Mac은 기존 플랫폼 단축키 처리 규칙을 따르며 한글 IME의 `ㅗ`
   모달 DOM과 InputHandler의 외곽만 테스트 드라이버로 대체하며 command와 snapshot/history,
   WASM 브리지·Rust 편집·HWP/HWPX 직렬화는 실제 구현을 실행한다.
 
-[WASM 시나리오 결과](assets/issue6963/stage4/wasm-command-validation.json):
+WASM 시나리오 10개를 모두 통과했다. 원시 결과 JSON은 PR 준비 시
+`output/issue6963-pr-preparation/intermediate/stage4/`로 옮겼다.
 
 1. 무선택 삽입·잘못된 URL의 원자 복원·snapshot undo/redo.
 2. 동일 주소 무기록·주소 수정 undo/redo.
@@ -91,7 +92,7 @@ Browser 도구의 실제 UI 조작으로 다음을 확인했다.
 - 글자 선택 후 삽입 시 표시 글자 읽기 전용, undo 뒤 원래 선택 문자열 복원.
 - 취소 후 편집 입력 요소로 포커스 복원. 취소 이후에도 redo가 유지됨.
 - 링크 편집 세션 뒤 새로 만들기를 실행하면 저장하지 않은 변경사항 경고가 나타남.
-  [경고 DOM 기록](assets/issue6963/stage4/unsaved-warning.txt)을 남기고 취소해 문서를 유지했다.
+  경고를 확인한 뒤 취소해 문서를 유지했다. 원시 DOM 기록은 위 임시 경로에 보관했다.
 
 ![Studio 하이퍼링크 편집 대화상자](assets/issue6963/stage4/hyperlink-dialog.jpg)
 
