@@ -810,3 +810,70 @@ librsvg 래스터 이미지에서도 대상 두 문단이 테두리 안에 있�
 남은 두 실패의 원인 확인을 먼저 하고, B의 빈 문단 후속 흐름을 마무리한 뒤 변경 범위에 맞춰
 검증해야 한다. Native Skia3종과 전체 Rust lint 묶음은 이번 nextest 실행으로 대체되지 않는다.
 현재 Studio/WASM은 메인테이너가 승인한 소스를 유지하며 제품 코드·기대값·원격 상태를 바꾸지 않았다.
+
+## 17. #6025 시각 확인과 표 속성 조회 결함 — 2026-09-10
+
+### 17.1 좌표 핀 실패와 실제 쪽 귀속의 구분
+
+메인테이너는 한컴에디터와 rhwp의 조판이 동일하다고 확인했다. 현재 코드의 1쪽 SVG에는
+‘라. 국민행복기금…’이 실제로 존재하며 text y=1084.32px다. 기존 검사는 1050..1070px의
+글자만 수집하므로 이 문구를 놓친다. 그 구간은 y=1062.9867px의 ‘있는자로서…경우’다.
+총4쪽 단언도 통과했다. 이 실패를 곧바로 문구의 2쪽 이월 또는 조판 회귀라고 해석하지 않는다.
+기존 검사 기대값은 변경하지 않았으며 핀의 적정성 판정은 별도로 남는다.
+
+- 디버깅 SVG: `output/6950/stage3/issue6025-debug-svg/3232693_employment_support_criteria_001.svg`.
+- 일반 SVG: `output/6950/stage3/issue6025-native-svg/3232693_employment_support_criteria_001.svg`.
+
+### 17.2 메인테이너가 발견한 위치 속성 0 표시
+
+대상은 같은 문서 section0/para1/control0의 28행×1열 표다.
+
+| 경로 | 가로/세로 오프셋(HU) | 폭/높이(HU) |
+| --- | --- | --- |
+| HWPX `hp:pos`, `hp:sz` | 709 / 4129 | 47199 / 69352 |
+| 수정 전 CLI dump의 공통 IR | 709 / 4129 | 47199 / 69352 |
+| 수정 전 실제 `pkg`의 `getTableProperties(0,1,0)` | 0 / 0 | 0 / 0 |
+
+위치는 약2.50mm / 14.57mm다. 파서가 원본값을 버린 것이 아니라 속성 조회 API가
+`raw_ctrl_data`만 읽고 데이터가 없으면 0을 반환한다. Studio는 이 JSON 값을 표시한다.
+raw가 없는 HWPX·일부 HWP 표에서도 공통 IR에는 원본 기하가 있으므로 조회의 원천이 잘못됐다.
+
+발생 계보: #6950 시작 기준 `13c92feb67`과 수정 전 `48bc5fc23` 사이의
+`src/document_core/commands/table_ops.rs`, `src/parser/` diff는 없다.
+시작 기준 getter의 위치 raw 읽기는 blame상 `bacb7484f23`(2026-05-26), 0 fallback은
+`ea564999e1e`(2026-05-18)에서 온다. 따라서 이번 수정이 도입한 회귀로 판정하지 않고
+**이번 검증에서 발견한 기존 조회 결함**으로 기록한다. 메인테이너는 #6950 안의 수정을 승인했다.
+오래된 기준선을 별도로 빌드한 결과라고 주장하지 않는다.
+
+### 17.3 수정과 검증 범위
+
+- 위치·크기·바깥 여백·앵커 유지 조회를 `table.common`에서 읽는다. 위치는 `as i32`로
+  기존 JSON의 음수 오프셋 계약을 유지한다. 조회에서 raw를 합성하거나 IR을 변경하지 않는다.
+- 파서·조판·serializer·표 setter는 이번 절편에서 변경하지 않는다.
+- 회귀 source: `tests/cases/issue_6950_table_properties_ir.rs`.
+  공개 WASM wrapper를 native integration에서 호출해 실제 fixture의 HWP/HWPX,
+  raw 유무, 음수/0 편집 후 조회, 조회 전후 컨트롤 IR 불변을 검사한다.
+- 수정 전 제품 코드에서 신규3개 모두 실패했다(원본709 대신0, 편집-709 대신0,
+  raw가 없는 HWP의 공통 기하 불일치). 로그: `output/6950/stage3/table-properties-before.log`.
+- 수정 후 focused 검사와 Docker WASM 재빌드를 진행한다. 이번 절편으로 기존 전체 회귀2개나
+  B/C 잔여를 완료 처리하지 않으며, 검사 기대값·원본 fixture·원격 상태는 변경하지 않는다.
+
+### 17.4 수정 후 실행 결과
+
+- review worktree의 동일 source로 신규3개 모두 PASS(수정 전3 FAIL → 수정 후3 PASS).
+  native 빌드5분31초, 검사0.118초. 로그: `output/6950/stage3/table-properties-after.log`.
+- review worktree 전체 fmt check와 suite manifest check 통과. 파생 suite는 제출하지 않는다.
+- native root Clippy `--locked -- -D warnings` 통과(29.43초).
+  로그: `output/6950/stage3/table-properties-clippy.log`.
+- Docker `docker compose --env-file .env.docker run --rm wasm` 성공(6분51초).
+  실제 새 `pkg`에서 `getTableProperties(0,1,0)`의 위치709/4129, 크기47199/69352,
+  바깥 여백141을 단언했다. Studio의 한 자리 표시 기준으로 위치2.5mm/14.6mm다.
+- 같은 Node/WASM 조건에서 수정 전후 #6025의4쪽 및 #6950 원본의3쪽 SVG SHA-256이
+  **7/7 모두 동일**하다. 속성 조회 수정으로 실제 조판이 이동하지 않았음을 확인했다.
+  이는 한컴 시각 재판정을 대신하지 않는다.
+- 새 WASM SHA-256: `1d2367a67e1cb02fd132bbbeea9d61f7c68b993b19fa139b3052d262a6f6ea1d`.
+  기존7700 Vite의 `/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm` HTTP 응답 해시도 일치한다.
+  개발 서버는 재시작하지 않았다. 브라우저 속성창 자체의 최종 확인은 메인테이너에게 요청한다.
+- 증적: `output/6950/stage3/table-properties-wasm-build.log`,
+  `output/6950/stage3/table-properties-wasm-verify.json`(API 응답·쪽별 SVG 해시).
+- 전체 nextest·Native Skia·WASM/workspace Clippy는 이번 focused 검사와 빌드로 대체하지 않는다.
