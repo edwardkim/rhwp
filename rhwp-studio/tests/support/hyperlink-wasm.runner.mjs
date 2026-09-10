@@ -12,6 +12,7 @@ const src = join(root, 'src');
 const repo = join(root, '..');
 const dialogModule = 'data:text/javascript,' + encodeURIComponent(`
 export let current;
+export function confirmHyperlinkEdit(edit) { edit(); }
 export class HyperlinkDialog {
   constructor(initial, apply) { this.initial = initial; this.apply = apply; current = this; }
   show() {}
@@ -84,6 +85,8 @@ assert.equal(s.history.canUndo(), false);
 dialog.apply({ kind: 'save', text: '한컴 링크 😀', uri });
 assert.equal(context(s).links[0].uri, uri);
 assert.equal(context(s).links[0].text, '한컴 링크 😀');
+assert.equal(s.wasm.getCharPropertiesAt(0, 0, 0).textColor.toLowerCase(), '#0000ff');
+assert.equal(s.wasm.getCharPropertiesAt(0, 0, 0).underline, true);
 s.undo(); assert.deepEqual(context(s), initial);
 s.redo(); assert.equal(context(s).links.length, 1);
 results.push('무선택 삽입·실패 원자 복원·실제 snapshot undo/redo');
@@ -102,6 +105,9 @@ results.push('동일 주소 무기록·주소 수정 undo/redo');
 for (const method of ['exportHwp', 'exportHwpx']) {
   const reopened = new HwpDocument(doc[method]());
   assert.deepEqual(JSON.parse(reopened.getHyperlinkContext(JSON.stringify(body))), context(s), method);
+  const props = JSON.parse(reopened.getCharPropertiesAt(0, 0, 0));
+  assert.equal(props.textColor.toLowerCase(), '#0000ff', method);
+  assert.equal(props.underline, true, method);
   reopened.free();
 }
 results.push('Studio bridge 편집 후 HWP/HWPX 저장 왕복');

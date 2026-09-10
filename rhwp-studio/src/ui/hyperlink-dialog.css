@@ -1,0 +1,30 @@
+.dialog-wrap.dialog-hyperlink {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 108px;
+  max-width: calc(100vw - 24px);
+}
+.dialog-hyperlink > .dialog-title { grid-column: 1 / -1; }
+.dialog-hyperlink > .dialog-body { padding: 20px 14px 18px 20px; min-width: 0; }
+.dialog-hyperlink > .dialog-footer {
+  padding: 20px 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+}
+.dialog-hyperlink .dialog-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+.dialog-hyperlink .dialog-label { flex: 0 0 92px; width: auto; text-align: left; }
+.dialog-hyperlink .dialog-input { min-width: 0; flex: 1; text-align: left; width: 100%; }
+.dialog-hyperlink-target { border: 0; padding: 0; margin: 22px 0 0; min-width: 0; }
+.dialog-hyperlink-target legend { padding: 0 0 12px; font-weight: 600; }
+.dialog-hyperlink-panel { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border-color, #ccc); border-radius: 3px; padding: 20px; }
+.dialog-hyperlink-panel > .dialog-input { flex: none; width: 100%; box-sizing: border-box; }
+.dialog-hyperlink #hyperlink-error { min-height: 1em; margin: 12px 0 0; color: #df6464; }
+.dialog-hyperlink-confirm-body { white-space: pre-line; padding: 28px 24px !important; line-height: 1.65; }
+@media (max-width: 520px) {
+  .dialog-wrap.dialog-hyperlink { display: block; }
+  .dialog-hyperlink > .dialog-footer { flex-direction: row; justify-content: flex-end; padding: 0 16px 16px; }
+  .dialog-hyperlink .dialog-label { flex-basis: 86px; }
+}

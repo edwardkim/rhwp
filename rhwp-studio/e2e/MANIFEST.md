@@ -144,3 +144,5 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `unsupported-format-error.test.mjs` | 상시 | active | 미지원 문서 오류 알림 후 정상 문서 재로드 | field-01.hwp | 수동 |  |
 | `zoom-fit-mode-persistence.test.mjs` | 상시 | active | 쪽 맞춤/폭 맞춤 선택 저장과 문서 로드 시 복원 — 새 문서 쪽 크기로 재계산, 수치 배율은 맞춤 해제 | 2010-01-06.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:zoom-fit-mode |  |
 | `zoom-dialog-transaction.test.mjs` | 상시 | active | #6109 사용자 배율 오류·ARIA·Enter/Escape/취소와 배치+이동+배율 단일 transaction — 최종 상태 `recalcLayout()` 1회 | — | npm e2e:zoom-dialog-transaction | dev server 필요 — run-with-vite.mjs 경유 |
+
+| `hyperlink-ui-issue6963.test.mjs` | 상시 | active | #6963 한컴형 링크 UI·우클릭·방문 색·undo/redo·드래그 선택 | 새 문서 | 수동 | 실제 WASM 필요 |

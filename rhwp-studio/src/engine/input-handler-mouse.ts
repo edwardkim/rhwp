@@ -1,6 +1,7 @@
 /** input-handler mouse methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { hyperlinkAtPointer, hoverHyperlink, rememberHyperlinkClick, followHyperlinkClick } from './input-handler-hyperlink';
 import type { ContextMenuItem } from '@/ui/context-menu';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
@@ -267,6 +268,7 @@ function promoteCellSelectionDragCandidate(this: any, e: MouseEvent): boolean {
 }
 
 export function onClick(this: any, e: MouseEvent): void {
+  rememberHyperlinkClick(this, e);
   if ((this.wasm?.pageCount ?? 0) <= 0) {
     return;
   }
@@ -1474,6 +1476,20 @@ export function onContextMenu(this: any, e: MouseEvent): void {
     ? this.getTableContextMenuItems()
     : this.getDefaultContextMenuItems();
 
+  const hyperlinkHit = hyperlinkAtPointer(this, e);
+  if (hyperlinkHit) {
+    this.cursor.clearSelection();
+    this.cursor.moveTo(hyperlinkHit.position);
+    this.cursor.resetPreferredX();
+    this.updateCaret();
+    this.selectionRenderer.clear();
+    items = [...items, { type: 'separator' },
+      { type: 'command', commandId: 'hyperlink:edit', label: '하이퍼링크 고치기...' },
+      { type: 'command', commandId: 'hyperlink:remove', label: '하이퍼링크 지우기' }];
+    this.contextMenu.show(e.clientX, e.clientY, items);
+    return;
+  }
+
   // 누름틀 필드 내부이면 필드 메뉴 항목 추가
   try {
     const fi = this.wasm.getFieldInfoAt(this.cursor.getPosition());
@@ -1805,6 +1821,8 @@ export function onMouseMove(this: any, e: MouseEvent): void {
     return;
   }
 
+  if (hoverHyperlink(this, e)) return;
+
   // 표 경계선 hover 감지 (RAF throttle)
   if (this.tableResizeRenderer) {
     if (this.resizeHoverRafId) return;
@@ -1914,7 +1932,12 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   }
 }
 
-export function onMouseUp(this: any, _e: MouseEvent): void {
+export function onMouseUp(this: any, e: MouseEvent): void {
+  try { finishMouseUp.call(this, e); }
+  finally { followHyperlinkClick(this, e); }
+}
+
+function finishMouseUp(this: any, _e: MouseEvent): void {
   // 그림 배치 모드 마우스업 → 삽입 실행
   if (this.imagePlacementMode && this.imagePlacementDrag && this.imagePlacementData) {
     this.finishImagePlacement(_e);
@@ -2003,6 +2026,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
   // 사용자 의도적 scrollbar drag (drag-during-scroll 패턴) 영역 의 caret 원본 위치 자동 복귀
   // 결함 발동.
   this.updateCaret(true);
+
 }
 
 

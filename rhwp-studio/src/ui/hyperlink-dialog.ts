@@ -1,4 +1,5 @@
 import { ModalDialog } from './dialog';
+import './hyperlink-dialog.css';
 
 export type HyperlinkEdit = { kind: 'save'; uri: string; text: string } | { kind: 'remove' };
 
@@ -10,10 +11,11 @@ export class HyperlinkDialog extends ModalDialog {
   constructor(
     private initial: { text: string; uri: string; existing: boolean; canInsertText: boolean },
     private apply: (edit: HyperlinkEdit) => void,
-  ) { super('하이퍼링크', 440); }
+  ) { super(initial.existing ? '하이퍼링크 고치기' : '하이퍼링크', 560); }
 
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
+    body.className = 'dialog-hyperlink-body';
     const input = (label: string, id: string): HTMLInputElement => {
       const row = document.createElement('div');
       row.className = 'dialog-row';
@@ -25,39 +27,46 @@ export class HyperlinkDialog extends ModalDialog {
       field.className = 'dialog-input';
       field.id = id;
       field.type = 'text';
-      field.style.flex = '1';
-      field.style.textAlign = 'left';
       row.append(name, field);
       body.append(row);
       return field;
     };
-    this.textInput = input('표시할 글자', 'hyperlink-text');
+    this.textInput = input('표시할 문자열', 'hyperlink-text');
     this.textInput.value = this.initial.text;
     this.textInput.readOnly = !this.initial.canInsertText;
-    this.uriInput = input('웹 주소', 'hyperlink-uri');
+    if (this.textInput.readOnly) this.textInput.title = '표시할 문자열은 문서에서 직접 편집할 수 있습니다.';
+    const targets = document.createElement('fieldset');
+    targets.className = 'dialog-hyperlink-target';
+    const legend = document.createElement('legend');
+    legend.textContent = '연결 대상';
+    targets.append(legend);
+    const panel = document.createElement('div');
+    panel.className = 'dialog-hyperlink-panel';
+    const webLabel = document.createElement('label');
+    webLabel.htmlFor = 'hyperlink-uri';
+    webLabel.textContent = '웹 주소';
+    panel.append(webLabel);
+    this.uriInput = document.createElement('input');
+    this.uriInput.className = 'dialog-input';
+    this.uriInput.id = 'hyperlink-uri';
+    this.uriInput.type = 'url';
+    this.uriInput.setAttribute('aria-label', '웹 주소');
     this.uriInput.placeholder = 'https://example.com';
     this.uriInput.value = this.initial.uri;
-    const hint = document.createElement('p');
-    hint.textContent = 'http:// 또는 https://로 시작하는 주소를 입력하세요.';
-    body.append(hint);
+    panel.append(this.uriInput);
+    targets.append(panel);
+    body.append(targets);
     this.error = document.createElement('p');
     this.error.setAttribute('role', 'alert');
     this.error.id = 'hyperlink-error';
     this.uriInput.setAttribute('aria-describedby', this.error.id);
     body.append(this.error);
-    if (this.initial.existing) {
-      const remove = document.createElement('button');
-      remove.className = 'dialog-btn';
-      remove.textContent = '연결 해제';
-      remove.addEventListener('click', () => { if (this.submit({ kind: 'remove' })) this.hide(); });
-      body.append(remove);
-    }
     return body;
   }
 
-  private submit(edit: HyperlinkEdit): boolean {
+  protected onConfirm(): boolean {
     try {
-      this.apply(edit);
+      this.apply({ kind: 'save', uri: this.uriInput.value.trim(), text: this.textInput.value });
       return true;
     } catch (error) {
       this.error.textContent = error instanceof Error ? error.message : String(error);
@@ -65,16 +74,46 @@ export class HyperlinkDialog extends ModalDialog {
     }
   }
 
-  protected onConfirm(): boolean {
-    return this.submit({ kind: 'save', uri: this.uriInput.value, text: this.textInput.value });
-  }
-
   override show(): void {
     super.show();
+    this.dialog.classList.add('dialog-hyperlink');
     this.dialog.setAttribute('role', 'dialog');
     this.dialog.setAttribute('aria-modal', 'true');
-    this.dialog.setAttribute('aria-label', '하이퍼링크');
+    this.dialog.setAttribute('aria-label', this.initial.existing ? '하이퍼링크 고치기' : '하이퍼링크');
+    const confirm = this.dialog.querySelector<HTMLButtonElement>('.dialog-btn-primary')!;
+    confirm.textContent = this.initial.existing ? '고치기' : '넣기';
+    const update = () => { confirm.disabled = !this.uriInput.value.trim() || !this.textInput.value.trim(); };
+    this.uriInput.addEventListener('input', update);
+    this.textInput.addEventListener('input', update);
+    update();
     this.uriInput.focus();
     this.uriInput.select();
   }
+}
+
+class ExistingHyperlinkDialog extends ModalDialog {
+  private accepted = false;
+  constructor(private edit: () => void, private cancel: () => void) { super('하이퍼링크', 390); }
+  protected createBody(): HTMLElement {
+    const body = document.createElement('div');
+    body.className = 'dialog-hyperlink-confirm-body';
+    body.textContent = '하이퍼링크가 이미 입력되어 있습니다.\n하이퍼링크를 고칠까요?';
+    return body;
+  }
+  protected onConfirm(): void { this.accepted = true; }
+  override show(): void {
+    super.show();
+    this.dialog.setAttribute('role', 'alertdialog');
+    this.dialog.setAttribute('aria-label', '하이퍼링크');
+    this.dialog.querySelector('.dialog-btn-primary')!.textContent = '고침';
+  }
+  override hide(): void {
+    super.hide();
+    if (this.accepted) this.edit();
+    else this.cancel();
+  }
+}
+
+export function confirmHyperlinkEdit(edit: () => void, cancel: () => void): void {
+  new ExistingHyperlinkDialog(edit, cancel).show();
 }

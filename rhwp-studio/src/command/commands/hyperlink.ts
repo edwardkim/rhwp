@@ -1,6 +1,6 @@
 import type { CommandDef } from '../types';
-import { HyperlinkDialog } from '@/ui/hyperlink-dialog';
-import { hyperlinkRange, selectedHyperlink } from '@/core/hyperlink';
+import { HyperlinkDialog, confirmHyperlinkEdit } from '@/ui/hyperlink-dialog';
+import { hyperlinkRange, selectedHyperlink, applyHyperlinkFormat } from '@/core/hyperlink';
 import { showToast } from '@/ui/toast';
 
 export const hyperlinkCommand: CommandDef = {
@@ -11,7 +11,7 @@ export const hyperlinkCommand: CommandDef = {
   opensDialog: true,
   canExecute: ctx => ctx.hasDocument && ctx.isEditable && !ctx.isFormMode
     && !ctx.inCellSelectionMode && !ctx.inPictureObjectSelection && !ctx.inTableObjectSelection,
-  execute(services) {
+  execute(services, params) {
     const ih = services.getInputHandler();
     if (!ih) return;
     try {
@@ -24,7 +24,7 @@ export const hyperlinkCommand: CommandDef = {
       const existing = selectedHyperlink(context.links, start, end);
       const canInsertText = !existing && start === end;
       const text = existing?.text ?? Array.from(context.text).slice(start, end).join('');
-      const dialog = new HyperlinkDialog({ text, uri: existing?.uri ?? '', existing: !!existing, canInsertText }, edit => {
+      const applyEdit = (edit: import('@/ui/hyperlink-dialog').HyperlinkEdit) => {
         if (services.wasm.documentGeneration !== generation || services.getInputHandler() !== ih || !services.getContext().isEditable
           || services.getContext().isFormMode || !ih.canEditHyperlink()) {
           throw new Error('편집 상태가 바뀌었습니다. 대화상자를 닫고 다시 열어 주세요.');
@@ -46,6 +46,7 @@ export const hyperlinkCommand: CommandDef = {
             if (edit.kind === 'remove') {
               if (!existing) return null;
               wasm.removeHyperlink(target, existing.fieldId);
+              applyHyperlinkFormat(wasm, target, existing.start, existing.end, null);
             } else if (existing) {
               if (!wasm.updateHyperlink(target, existing.fieldId, edit.uri)) return null;
             } else {
@@ -61,6 +62,7 @@ export const hyperlinkCommand: CommandDef = {
               }
               // 문자열 삽입 뒤 필드 검증이 실패해도 snapshot이 전체 작업을 복원한다.
               wasm.insertHyperlink(target, start, linkEnd, edit.uri);
+              applyHyperlinkFormat(wasm, target, start, linkEnd, '#0000ff');
               applied = true;
               return { ...pos, charOffset: linkEnd };
             }
@@ -69,11 +71,31 @@ export const hyperlinkCommand: CommandDef = {
           },
         });
         if (!applied) throw new Error('하이퍼링크를 적용할 수 없습니다. 편집 모드를 확인해 주세요.');
-      });
-      dialog.afterClose = () => ih.focus();
-      dialog.show();
+      };
+      if (params?.action === 'remove') {
+        if (existing) applyEdit({ kind: 'remove' });
+        ih.focus();
+        return;
+      }
+      const open = () => {
+        if (services.wasm.documentGeneration !== generation || services.getInputHandler() !== ih) return;
+        const dialog = new HyperlinkDialog({ text, uri: existing?.uri ?? '', existing: !!existing, canInsertText }, applyEdit);
+        dialog.afterClose = () => ih.focus();
+        dialog.show();
+      };
+      if (existing && params?.action !== 'edit') confirmHyperlinkEdit(open, () => ih.focus());
+      else open();
     } catch (error) {
       showToast({ message: error instanceof Error ? error.message : String(error) });
     }
   },
+};
+
+export const editHyperlinkCommand: CommandDef = {
+  ...hyperlinkCommand, id: 'hyperlink:edit', label: '하이퍼링크 고치기', shortcutLabel: undefined,
+  execute: services => hyperlinkCommand.execute(services, { action: 'edit' }),
+};
+export const removeHyperlinkCommand: CommandDef = {
+  ...hyperlinkCommand, id: 'hyperlink:remove', label: '하이퍼링크 지우기', shortcutLabel: undefined, opensDialog: false,
+  execute: services => hyperlinkCommand.execute(services, { action: 'remove' }),
 };

@@ -1,5 +1,5 @@
 import type { CommandDef } from '../types';
-import { hyperlinkCommand } from './hyperlink';
+import { hyperlinkCommand, editHyperlinkCommand, removeHyperlinkCommand } from './hyperlink';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
 import { ChartDataDialog } from '@/ui/chart-data-dialog';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
@@ -320,6 +320,8 @@ export const insertCommands: CommandDef[] = [
     },
   },
   hyperlinkCommand,
+  editHyperlinkCommand,
+  removeHyperlinkCommand,
   {
     id: 'insert:bookmark',
     opensDialog: true,

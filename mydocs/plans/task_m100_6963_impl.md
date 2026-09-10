@@ -97,3 +97,10 @@ Studio에서 HTTP/HTTPS 텍스트 링크를 삽입·수정·제거하고 HWP/HWP
 - [InsertHyperlink 액션 예제](https://forum.developer.hancom.com/t/topic/2291/2)
 - [PDF 32000-1:2008](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf)
   §12.5.6.5, §12.6.4.7.
+
+
+## 사용자 직접 테스트 후 UX 보완
+
+한컴 캡처 기반 링크 서식·방문 색·클릭 열기·기존 링크 확인·우클릭 고치기/지우기를
+[단계 7](../working/task_m100_6963_stage7.md)에 구현·검증했다. 후속 피드백에 따라
+연결 대상은 웹 주소만 노출한다. 이번 로컬 보완은 기존 원격 PR head와 구분한다.
