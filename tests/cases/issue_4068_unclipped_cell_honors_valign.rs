@@ -34,6 +34,13 @@
 use std::path::PathBuf;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::model::document::Section;
+use rhwp::model::page::PageDef;
+use rhwp::model::paragraph::{LineSeg, Paragraph};
+use rhwp::model::shape::{TextWrap, VertRelTo};
+use rhwp::model::style::ParaShape;
+use rhwp::model::table::{Cell, Table, VerticalAlign};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 /// 중첩 표를 담은 정식 회귀 입력 — 그림 칸과 글자 칸이 한 행에 나란히 있다.
@@ -48,6 +55,182 @@ const NESTED_DEPTH_42065: usize = 3;
 
 fn sample(rel: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(rel)
+}
+
+// 선언 높이가 부모 셀의 남은 영역보다 큰 중첩 표의 제한 계약.
+// 문단 기준 자리차지 표는 vertOffset을 따른다. 후속 문단이 있으면
+// 그 오프셋을 부모의 흐름 높이에 중복 가산하지 않는 #6697 계약을 사용한다.
+fn parent_clip_fixture(align: VerticalAlign, offset: u32) -> RenderNode {
+    let line = LineSeg {
+        line_height: 800,
+        text_height: 800,
+        baseline_distance: 680,
+        segment_width: 18000,
+        ..Default::default()
+    };
+    let mut nested = Table {
+        row_count: 1,
+        col_count: 1,
+        cells: vec![Cell {
+            col_span: 1,
+            row_span: 1,
+            width: 18000,
+            height: 10000,
+            vertical_align: align,
+            paragraphs: vec![Paragraph {
+                text: "VISIBLE".to_owned(),
+                char_count: 7,
+                char_offsets: (0..=7).collect(),
+                line_segs: vec![line.clone()],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    nested.common.width = 18000;
+    nested.common.height = 10000;
+    nested.common.text_wrap = TextWrap::TopAndBottom;
+    nested.common.vert_rel_to = VertRelTo::Para;
+    nested.common.vertical_offset = offset;
+    nested.rebuild_grid();
+    let mut outer = Table {
+        row_count: 1,
+        col_count: 1,
+        cells: vec![Cell {
+            col_span: 1,
+            row_span: 1,
+            width: 30000,
+            height: 12000,
+            paragraphs: vec![
+                Paragraph {
+                    text: "ANCHOR".to_owned(),
+                    char_count: 6,
+                    char_offsets: (0..=6).collect(),
+                    line_segs: vec![line],
+                    controls: vec![Control::Table(Box::new(nested))],
+                    ..Default::default()
+                },
+                Paragraph {
+                    text: "TAIL".to_owned(),
+                    char_count: 4,
+                    char_offsets: (0..=4).collect(),
+                    line_segs: vec![LineSeg {
+                        vertical_pos: 10800,
+                        line_height: 800,
+                        text_height: 800,
+                        baseline_distance: 680,
+                        segment_width: 30000,
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    outer.common.width = 30000;
+    outer.common.height = 12000;
+    outer.common.treat_as_char = true;
+    outer.rebuild_grid();
+    let mut section = Section::default();
+    section.section_def.page_def = PageDef {
+        width: 59529,
+        height: 84189,
+        margin_left: 8504,
+        margin_right: 8504,
+        margin_top: 5668,
+        margin_bottom: 4252,
+        ..Default::default()
+    };
+    section.paragraphs.push(Paragraph {
+        controls: vec![Control::Table(Box::new(outer))],
+        ..Default::default()
+    });
+    // 기본 글자 모양/글꼴도 갖춘 문서에서 출발해야 TextLine이 생성된다.
+    // 스타일이 비어 있는 Document::default()는 정렬 반례 입력이 아니다.
+    let mut core = DocumentCore::new_empty();
+    let mut doc = core.document().clone();
+    doc.doc_info.para_shapes = vec![ParaShape::default()];
+    doc.sections = vec![section];
+    core.set_document(doc);
+    core.build_page_render_tree(0)
+        .expect("부모 clip 반례 렌더")
+        .root
+}
+
+fn outer_clip(node: &RenderNode) -> Option<(f64, f64)> {
+    if let RenderNodeType::TableCell(cell) = &node.node_type {
+        assert!(cell.clip, "paint가 실제 적용하는 부모 clip이어야 한다");
+        return Some((node.bbox.y, node.bbox.y + node.bbox.height));
+    }
+    node.children.iter().find_map(outer_clip)
+}
+
+#[test]
+fn parent_viewport_trims_nested_cell_before_alignment() {
+    let top_root = parent_clip_fixture(VerticalAlign::Top, 10000);
+    let top = nested_cell_contents(&top_root, 2);
+    assert_eq!(top.len(), 1);
+    for align in [VerticalAlign::Center, VerticalAlign::Bottom] {
+        let root = parent_clip_fixture(align, 10000);
+        let (parent_top, parent_bottom) = outer_clip(&root).expect("부모 셀");
+        let cells = nested_cell_contents(&root, 2);
+        assert_eq!(cells.len(), 1);
+        let cell = cells[0];
+        assert!(cell.cell_y >= root.bbox.y);
+        assert!(cell.cell_y + cell.cell_h <= root.bbox.y + root.bbox.height);
+        assert!(cell.cell_y >= parent_top && cell.cell_y < parent_bottom);
+        // 선언된 10000HU 전체가 아닌 실제 가시 높이를 정렬 전에 사용한다.
+        // 부모 밖까지 펼쳐진 셀에 정렬 몫을 계산한다는 정적 반례는 성립하지 않는다.
+        assert!(cell.cell_h < 10000.0 / 75.0 - 0.5);
+        assert!(
+            (cell.cell_y + cell.cell_h - parent_bottom).abs() < 0.01,
+            "{align:?}: 셀 하단이 부모 viewport에 맞아야 한다: {cell:?}, parent={parent_top}..{parent_bottom}"
+        );
+        let line_height = 800.0 / 75.0;
+        assert!(cell.first_line_y >= parent_top);
+        assert!(
+            cell.first_line_y + line_height <= parent_bottom + 0.01,
+            "{align:?}: 첫 줄 전체가 부모 clip 안에 남아야 한다: {cell:?}"
+        );
+        let expected = (cell.cell_h - line_height)
+            / if align == VerticalAlign::Center {
+                2.0
+            } else {
+                1.0
+            };
+        assert!(
+            (cell.offset() - top[0].offset() - expected).abs() < 0.01,
+            "{align:?}: 선언 높이가 아닌 가시 높이로 정렬해야 한다: {cell:?}, expected={expected}"
+        );
+    }
+}
+
+#[test]
+fn a_fully_parent_contained_cell_keeps_center_and_bottom_alignment() {
+    let top_root = parent_clip_fixture(VerticalAlign::Top, 0);
+    let top = nested_cell_contents(&top_root, 2);
+    assert_eq!(top.len(), 1);
+    let mut offsets = Vec::new();
+    for align in [VerticalAlign::Center, VerticalAlign::Bottom] {
+        let root = parent_clip_fixture(align, 0);
+        let (parent_top, parent_bottom) = outer_clip(&root).expect("부모 셀");
+        let cells = nested_cell_contents(&root, 2);
+        assert_eq!(cells.len(), 1);
+        let cell = cells[0];
+        assert!(cell.cell_y >= parent_top && cell.cell_y + cell.cell_h <= parent_bottom);
+        offsets.push(cell.offset() - top[0].offset());
+    }
+    assert!(
+        offsets[0] > 1.0,
+        "Center 정렬 여유가 있어야 한다: {offsets:?}"
+    );
+    assert!(
+        (offsets[1] - 2.0 * offsets[0]).abs() < 0.01,
+        "Bottom은 Center의 두 배 여유: {offsets:?}"
+    );
 }
 
 /// 한 칸이 그린 첫 글줄의 상단과 그 칸의 상단.
