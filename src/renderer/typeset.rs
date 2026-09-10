@@ -21768,6 +21768,15 @@ impl TypesetEngine {
             is_last_table && tac_table_count <= 1 && has_post_text && !pre_text_exists;
         if should_add_post_text {
             let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
+            if let Some(origin) = st
+                .paragraph_float_placements
+                .get(&(para_idx, ctrl_idx))
+                .and_then(|placement| placement.stored_host_origin)
+            {
+                // The host was resolved before fit, even though its text item is
+                // emitted after the floating table. Consume that same origin.
+                st.current_height = origin;
+            }
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
             // 다중 co-anchored float host 로 한정 — 단일 표 host post-text 는 기존
             // 앵커 유지(#1549) 경로로 남긴다.
@@ -25045,6 +25054,55 @@ impl TypesetEngine {
                 }
             })
             .flatten()
+            .map(|placement| {
+                // A stored ladder must have a known origin in THIS column, not
+                // a default zero or a base recovered from already painted nodes.
+                let frame = (para.line_segs.len() == 1
+                    && para.controls.len() == 1
+                    && st.col_count == 1
+                    && !st.vpos_ladder_dirty
+                    && !st.profile.session_edited()
+                    && fmt.computed_host_lines.is_none())
+                .then(|| {
+                    let PageItem::FullParagraph { para_index: first } = st.current_items.first()?
+                    else {
+                        return None;
+                    };
+                    let chain = paragraphs_all.get(*first..=para_idx)?;
+                    let mut previous = None;
+                    for host in chain {
+                        if host.stored_text_partition_is_dirty() || host.line_segs.is_empty() {
+                            return None;
+                        }
+                        for line in &host.line_segs {
+                            if is_synthetic_line_seg(line)
+                                || previous.is_some_and(|vpos| line.vertical_pos < vpos)
+                            {
+                                return None;
+                            }
+                            previous = Some(line.vertical_pos);
+                        }
+                    }
+                    // A continuation has no full paragraph origin in this frame.
+                    if st.current_items.iter().any(|item| {
+                        matches!(item, PageItem::PartialTable { .. } | PageItem::Shape { .. })
+                    }) {
+                        return None;
+                    }
+                    Some(chain.first()?.line_segs.first()?.vertical_pos)
+                })
+                .flatten();
+                match (frame, paragraphs_all.get(para_idx + 1)) {
+                    (Some(base), Some(next)) => placement.with_stored_band_origin(
+                        para,
+                        next,
+                        base,
+                        st.vpos_col_anchor,
+                        self.dpi,
+                    ),
+                    _ => placement,
+                }
+            })
             .map(|mut placement| {
                 if table.common.allow_overlap {
                     return placement;
@@ -26531,6 +26589,7 @@ impl TypesetEngine {
                     // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
                     super::float_placement::ParagraphFloatPlacement {
                         anchor_y: st.current_height,
+                        stored_host_origin: None,
                         table_top: st.current_height + host_before_overhead,
                         occupied_bottom: st.current_height + host_before_overhead,
                     }

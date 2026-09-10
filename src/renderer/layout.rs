@@ -7945,6 +7945,28 @@ impl LayoutEngine {
                 y_offset = y_offset.max(floor);
             }
             // [#5699 H1] 표 아이템의 시작 y — 아래 페인트 높이 산출용.
+            // A validated stored host and its tail table share the origin fixed
+            // before pagination fit. Generate text here; do not relocate a painted
+            // table tree (line/path coordinates need not live in node.bbox).
+            if matches!(
+                item,
+                PageItem::FullParagraph { .. } | PageItem::PartialParagraph { start_line: 0, .. }
+            ) {
+                if let Some(origin) = col_content.paragraph_float_placements.iter().find_map(
+                    |(&(pi, _), placement)| {
+                        (pi == item_para)
+                            .then_some(placement.stored_host_origin)
+                            .flatten()
+                    },
+                ) {
+                    let spacing_before = styles
+                        .para_styles
+                        .get(paragraphs[item_para].para_shape_id as usize)
+                        .map(|style| style.spacing_before)
+                        .unwrap_or(0.0);
+                    y_offset = col_area.y + origin - spacing_before;
+                }
+            }
             let item_start_y_for_band = y_offset;
             let (mut new_y, was_tac) = self.layout_column_item(
                 tree,
@@ -8533,7 +8555,11 @@ impl LayoutEngine {
 
         // [#4533 ④-a] 자리차지 표 앵커 줄 재배치 — 테두리 병합 전에 수행해
         // 테두리가 이동된 줄 박스를 따라가게 한다.
-        self.relocate_float_anchor_lines_below_band(&mut col_node, paragraphs);
+        self.relocate_float_anchor_lines_below_band(
+            &mut col_node,
+            paragraphs,
+            &col_content.paragraph_float_placements,
+        );
 
         // 문단 테두리/배경 연속 그룹 병합 렌더링 — #2120 추출
         self.render_para_border_groups(tree, composed, &mut col_node, styles, col_area);
@@ -8557,6 +8583,10 @@ impl LayoutEngine {
         &self,
         col_node: &mut RenderNode,
         paragraphs: &[Paragraph],
+        placements: &std::collections::HashMap<
+            (usize, usize),
+            super::float_placement::ParagraphFloatPlacement,
+        >,
     ) {
         // HWPX 도 한글이 저장한 `<hp:linesegarray>` 사다리를 갖는 문서는 같은
         // 서명이 성립한다(영월군 21296471: 앵커 pi5 렌더 237.7 vs 사다리 562.2,
@@ -8580,6 +8610,12 @@ impl LayoutEngine {
             .collect();
         for w in 0..lines.len() {
             let (child_idx, pi, vpos, y, _) = lines[w];
+            if placements
+                .iter()
+                .any(|(&(host, _), placement)| host == pi && placement.stored_host_origin.is_some())
+            {
+                continue; // Already generated from the shared, pre-fit origin.
+            }
             let Some(para) = paragraphs.get(pi) else {
                 continue;
             };

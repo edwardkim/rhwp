@@ -16,6 +16,83 @@ fn core() -> DocumentCore {
     DocumentCore::from_bytes(&bytes).expect("원본 로드")
 }
 
+fn stored_band_core() -> DocumentCore {
+    let bytes = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/synam-001.hwp"),
+    )
+    .expect("existing stored-band fixture");
+    DocumentCore::from_bytes(&bytes).expect("parse stored-band fixture")
+}
+
+#[test]
+fn stored_band_origin_requires_measured_successor_agreement_and_valid_source() {
+    let core = stored_band_core();
+    let paragraphs = &core.document().sections[0].paragraphs;
+    let host = &paragraphs[224];
+    let next = &paragraphs[225];
+    let Control::Table(table) = &host.controls[0] else { panic!("table") };
+    let placement = ParagraphFloatPlacement::from_stored_host(
+        host, table, 0, 0.0, table.common.height as f64 / 75.0, 96.0,
+    ).unwrap();
+    let resolved = placement.with_stored_band_origin(host, next, 0, 20.0, 96.0);
+    let translated = placement.with_stored_band_origin(host, next, 0, 120.0, 96.0);
+    assert!(resolved.stored_host_origin.is_some());
+    assert!((translated.anchor_y - resolved.anchor_y - 100.0).abs() < 1e-8);
+    assert!((translated.table_top - resolved.table_top - 100.0).abs() < 1e-8);
+    assert!((translated.occupied_bottom - resolved.occupied_bottom - 100.0).abs() < 1e-8);
+    let mut different_step = next.clone();
+    different_step.line_segs[0].vertical_pos += 100;
+    assert_eq!(placement.with_stored_band_origin(host, &different_step, 0, 20.0, 96.0), placement);
+    let mut dirty = next.clone();
+    dirty.invalidate_layout_inputs();
+    assert_eq!(placement.with_stored_band_origin(host, &dirty, 0, 20.0, 96.0), placement);
+    let mut synthetic = next.clone();
+    synthetic.line_segs[0].tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    assert_eq!(placement.with_stored_band_origin(host, &synthetic, 0, 20.0, 96.0), placement);
+    assert_eq!(placement.with_stored_band_origin(host, next, host.line_segs[0].vertical_pos + 1, 20.0, 96.0), placement);
+}
+
+#[test]
+fn stored_tail_table_paints_border_and_cell_content_from_the_same_origin() {
+    let core = stored_band_core();
+    let host = &core.document().sections[0].paragraphs[224];
+    let Control::Table(source) = &host.controls[0] else { panic!("table") };
+    let tree = core.build_page_render_tree(29).expect("page 30");
+    let mut items = Vec::new();
+    body_items(&tree.root, &mut items);
+    let title = items.iter().find(|node| matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(224))).unwrap();
+    let table = items.iter().find(|node| matches!(&node.node_type,
+        RenderNodeType::Table(table) if table.para_index == Some(224))).unwrap();
+    // Relative source contract, not a hard-coded Hancom page coordinate.
+    let expected_top = title.bbox.y
+        + (source.common.vertical_offset as f64 + source.outer_margin_top as f64) / 75.0;
+    assert!((table.bbox.y - expected_top).abs() < 0.02,
+        "host-relative offset: table={} expected={expected_top}", table.bbox.y);
+    let bottom = table.bbox.y + table.bbox.height;
+    let mut lines = Vec::new();
+    let mut text = Vec::new();
+    fn geometry<'a>(node: &'a RenderNode, lines: &mut Vec<(f64, f64)>, text: &mut Vec<&'a RenderNode>) {
+        match &node.node_type {
+            RenderNodeType::Line(line) => lines.push((line.y1, line.y2)),
+            RenderNodeType::TextLine(_) => text.push(node),
+            _ => {}
+        }
+        for child in &node.children { geometry(child, lines, text); }
+    }
+    geometry(table, &mut lines, &mut text);
+    assert!(lines.len() >= 4, "actual SVG line geometry, not just border bboxes");
+    assert!(lines.iter().any(|&(a,b)| (a - expected_top).abs() < 0.02 && (b - expected_top).abs() < 0.02));
+    assert!(lines.iter().any(|&(a,b)| (a - bottom).abs() < 0.02 && (b - bottom).abs() < 0.02));
+    assert!(lines.iter().all(|&(a,b)| a >= expected_top - 0.02 && b >= expected_top - 0.02 && a <= bottom + 0.02 && b <= bottom + 0.02));
+    assert_eq!(text.len(), 2, "both cell paragraphs survive");
+    assert!(text.iter().all(|line| line.bbox.y >= expected_top && line.bbox.y + line.bbox.height <= bottom));
+    let following = items.iter().find(|node| matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(225))).unwrap();
+    assert!(following.bbox.y + 0.02 >= bottom + source.outer_margin_bottom as f64 / 75.0,
+        "following paragraph preserves the occupied bottom");
+}
+
 #[test]
 fn paragraph_start_controls_are_not_reclassified_as_text_tail_anchors() {
     use rhwp::renderer::float_placement::ParagraphHostLine;
@@ -194,6 +271,7 @@ fn anchor_origin_translation_is_applied_once() {
 fn occupied_bands_move_the_box_not_the_anchor_and_are_order_independent() {
     let placement = ParagraphFloatPlacement {
         anchor_y: 20.0,
+        stored_host_origin: None,
         table_top: 50.0,
         occupied_bottom: 100.0,
     };

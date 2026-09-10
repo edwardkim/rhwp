@@ -22,6 +22,9 @@ use super::page_layout::LayoutRect;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ParagraphFloatPlacement {
     pub anchor_y: f64,
+    /// Validated single-line stored host origin, shared with text creation.
+    /// None keeps the existing flowing-host contract (including continuations).
+    pub stored_host_origin: Option<f64>,
     /// 표와 캡션을 함께 담는 배치 상자의 상단. 위 캡션은 이 상자 안에서 배치한다.
     pub table_top: f64,
     pub occupied_bottom: f64,
@@ -37,6 +40,58 @@ pub struct ParagraphHostLine {
 }
 
 impl ParagraphFloatPlacement {
+    /// Recover a stored host only when the next source row accounts for exactly
+    /// this measured band. A raw vpos by itself is not a page-layout oracle.
+    /// The caller supplies a continuous, unedited column source frame; no painted
+    /// node or successor's rendered position participates in this decision.
+    pub fn with_stored_band_origin(
+        mut self,
+        para: &Paragraph,
+        next: &Paragraph,
+        frame_vpos: i32,
+        frame_origin: f64,
+        dpi: f64,
+    ) -> Self {
+        use crate::model::paragraph::LineSeg;
+        let ([host], Some(successor)) = (para.line_segs.as_slice(), next.line_segs.first()) else {
+            return self;
+        };
+        if para.controls.len() != 1
+            || para.stored_text_partition_is_dirty()
+            || next.stored_text_partition_is_dirty()
+            || [host, successor]
+                .iter()
+                .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+            || successor.vertical_pos <= host.vertical_pos
+            || host.vertical_pos < frame_vpos
+            || !next.controls.is_empty()
+            || !frame_origin.is_finite()
+            || !dpi.is_finite()
+            || dpi <= 0.0
+        {
+            return self;
+        }
+        let source_advance =
+            (i64::from(successor.vertical_pos) - i64::from(host.vertical_pos)) as f64 * dpi
+                / 7200.0;
+        let measured_advance = self.occupied_bottom - self.anchor_y;
+        // One HWPUNIT permits integer source rounding, not a visual tolerance.
+        if (source_advance - measured_advance).abs() > dpi / 7200.0 {
+            return self;
+        }
+        let origin = frame_origin
+            + (i64::from(host.vertical_pos) - i64::from(frame_vpos)) as f64 * dpi / 7200.0;
+        if !origin.is_finite() || origin < self.anchor_y {
+            return self; // Never rewind already consumed flow into an earlier band.
+        }
+        let shift = origin - self.anchor_y;
+        self.anchor_y = origin;
+        self.stored_host_origin = Some(origin);
+        self.table_top += shift;
+        self.occupied_bottom += shift;
+        self
+    }
+
     /// This result owns a control following text on the paragraph's last logical
     /// line, not every paragraph-relative object drawn below some stored rows.
     /// Paragraph boundaries already live in the IR; an internal hard break ends
@@ -113,6 +168,7 @@ impl ParagraphFloatPlacement {
             .all(|v| v.is_finite())
             .then_some(Self {
                 anchor_y,
+                stored_host_origin: None,
                 table_top,
                 occupied_bottom,
             })
@@ -179,6 +235,7 @@ impl ParagraphFloatPlacement {
             .all(|v| v.is_finite())
             .then_some(Self {
                 anchor_y,
+                stored_host_origin: None,
                 table_top,
                 occupied_bottom,
             })
