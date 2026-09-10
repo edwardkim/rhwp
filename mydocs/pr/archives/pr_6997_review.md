@@ -16,6 +16,7 @@
 사용자 지시에 따라 같은 PR에서 실제 지침에 반영했다.
 
 - 루트 CLAUDE.md: AGENTS 자동 import, 역할별 정본, 독립적인 기대값과 원인/반례/출력 비교 완료 기준.
+- 일반 기여자의 MCP 접근을 전제하지 않고 필요한 한컴 버전별 PDF 직접 출력/첨부와 생성 환경 기록을 명시했다.
 - contributor SKILL.md: 현재 CONTRIBUTING과 역할별 검토 절차를 우선하는 활성 라우터.
 - 활성 자식 8개: 분석, 구현 범위, 검증, 시각 증거, 예외, 템플릿, 순서와 반복 오류 방지.
 - native Clippy/related test만으로 완료하는 규칙, --generate 제출 절차, 첫 체크박스 fmt 강제,
@@ -31,22 +32,40 @@ commit 항목 480개와 변경 파일 목록을 수집했다.
 25건은 제품 오류 건수가 아니라 동작/안전성/시험/증적 보정 확인 하한이다.
 Claude 표기만으로 실제 모델 실행이나 결함 책임을 단정하지 않았다.
 
-이번 지침 변경에 대해 빌드/회귀/Clippy/시각 산출, Markdown 링크/공백 검사,
-스킬 router/계약 검사와 실제 Claude 세션의 지침 준수 검증은 실행하지 않았다.
-기존 문구에 의존하는 계약 테스트와의 호환성도 미확인이다.
+로컬 빌드/회귀/Clippy/시각 산출, Markdown 링크/공백 검사와 실제 Claude 세션의 지침 준수 검증은 실행하지 않았다.
+원격 CI 검증은 아래와 같이 완료했으며 로컬 미실행 항목과 구분한다.
+
+- 검증 head: 96cae42c34d33c8fb61dc973926bf3b7a79df613.
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/34488792970): Build & Test, Lint (fmt, clippy, WASM check),
+  Native Skia, Frontend package, Archive A/B/C/D 전체 회귀 job이 모두 성공했다.
+- [Skill router gate](https://github.com/edwardkim/rhwp/actions/runs/34488792579),
+  [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34488793336),
+  [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34488793054),
+  [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/34488793248)이 성공했다.
+- 이전 9b762d6d2 및 6508db816의 Archive C는 fmt 명령 표기 계약에서 실패했다.
+  96cae42c3에서 테스트 코드를 바꾸지 않고 명령/참조 안내를 보완했으며 새 Archive C job이 성공했다.
+- 2026-09-10 확인 시 최신 head는 MERGEABLE/CLEAN, 성공 31개와 정책상 skipped 5개였고 실패/대기 검사는 없었다.
+  이 값은 작성 시점 참고값이며 문서 후속 commit 이후 최신 head를 다시 확인한다.
+
 자동 import와 지침 보강은 동작 개선을 위한 조치이며 오류 방지의 강제 실행 장치는 아니다.
 
 ## 최종 판정과 후속 조건
 
-- 판정: 머지 보류. 실제 지침 보정은 반영했으나 관련 문서/스킬 검증 결과는 미확인이다.
-- 해제 조건: 변경 범위에 맞는 문서/스킬 검증과 최신 head required CI, mergeability 확인.
-- 사용자 요청 범위는 실제 지침 수정과 기존 PR 반영이며 이번 단계에서 merge하지 않는다.
-- 이번 보정에 대한 검증 완료 SHA는 없다. 최초 감사 SHA를 보정본의 검증 SHA로 사용하지 않는다.
+- 판정: 승인. 위 head의 원격 CI 성공과 실제 지침 보정 범위를 근거로 한다.
+- 작업지시자가 CI 완료 후 merge와 후속 처리를 재지시했고 이번 PR 전용 원격 branch 정리도 승인했다.
+- 로컬 문서 링크/공백 검사는 여전히 미실행이다. 이를 통과로 바꾸어 기록하지 않으며,
+  실제 Claude 세션의 행동 개선까지 검증됐다고 주장하지 않는다.
+- merge 전 조건: 이 기록을 포함한 최신 head의 required CI 성공, mergeability와 head SHA 재확인.
+- 이 commit은 검증 head 뒤의 review/오늘할일 기록만 변경한다. 제품 코드와 검증 스킬은 다시 바꾸지 않는다.
 
 ## Merge 후 comment 및 후속 처리 계획
 
 새 PNG/PDF나 제품 시각 검증 수치를 만들지 않는다.
 과거 원 PR에 추가 comment를 게시하거나 이미 끝난 issue를 다시 종료하지 않는다.
-실제 merge 승인 후 merge SHA와 최신 head CI를 기록하고 devel 동기화 및 승인된 branch 정리를 수행한다.
+merge 뒤 PR comment에 merge SHA, 위 CI 근거, 최종 문서 head의 CI와 로컬 검사 미실행을 구분해 기록한다.
+연결된 종료 대상 issue가 없으면 과거 감사 대상 PR/issue를 다시 닫지 않는다.
+review/오늘할일은 PR head에 이미 포함하므로 archive 이동과 별도 기록 PR을 반복하지 않는다.
+devel을 upstream/devel로 fast-forward한 뒤 같은 merge/증거의 중복 comment가 없을 때만 게시한다.
+이번 작업의 정확한 local/remote branch만 정리하고 기본 작업공간과 공유 target은 보존한다.
 이번 PR의 감사/self-review/오늘할일을 재사용하며 같은 기록만을 위한 추가 문서 PR은 만들지 않는다.
 공유 target과 기존 증적은 보존한다.
