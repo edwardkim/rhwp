@@ -283,6 +283,9 @@ jobs:
                   reason: `codeql-workflow-not-completed:${workflowRun.status}`,
                 };
               }
+              if (workflowRun.conclusion !== 'success') {
+                return { state: 'failed', reason: `workflow-not-success:${workflowRun.conclusion}` };
+              }
               const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
                 owner,
                 repo,
@@ -430,8 +433,11 @@ jobs:
               }
 
               const reviewOnlyCandidates = [];
+              const candidatesContainingBase = new Set();
+              let baseMergeCandidateIndex = -1;
               let codeCandidateSha = '';
               let baseMergeBridge = null;
+              let expectedSha = pr.head.sha;
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -441,6 +447,10 @@ jobs:
                   ref: sha,
                 });
                 const parents = commit.parents || [];
+                if (sha !== expectedSha || commit.sha !== sha) {
+                  setResult(false, 'review-tail-parent-mismatch');
+                  return;
+                }
                 if (isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
                   if (baseMergeBridge) {
                     setResult(false, `multiple-current-base-update-merges:${sha}`);
@@ -448,6 +458,13 @@ jobs:
                   }
                   const sourceParent = parents.find((parent) => parent.sha !== pr.base.sha);
                   baseMergeBridge = { mergeSha: sha, sourceParentSha: sourceParent.sha };
+                  expectedSha = sourceParent.sha;
+                  // The merge can itself have a green run; do not only search its source parent.
+                  baseMergeCandidateIndex = reviewOnlyCandidates.length;
+                  for (const candidateSha of reviewOnlyCandidates) {
+                    candidatesContainingBase.add(candidateSha);
+                  }
+                  candidatesContainingBase.add(sha);
                   core.info(`including current-base update merge bridge ${sha}`);
                   continue;
                 }
@@ -461,8 +478,9 @@ jobs:
 
                 const reviewOnly = files.every((file) => isAllowedReviewPath(file));
                 if (reviewOnly) {
-                  if (parents.length === 1) {
+                  if (parents.length === 1 && /^[0-9a-f]{40}$/.test(parents[0]?.sha || '')) {
                     reviewOnlyCandidates.push(sha);
+                    expectedSha = parents[0].sha;
                     continue;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
@@ -480,11 +498,14 @@ jobs:
               if (codeCandidateSha) {
                 reviewOnlyCandidates.push(codeCandidateSha);
               }
+              if (baseMergeBridge) {
+                reviewOnlyCandidates.splice(baseMergeCandidateIndex, 0, baseMergeBridge.mergeSha);
+              }
 
               for (const candidateSha of reviewOnlyCandidates) {
                 const result = await codeqlResult(candidateSha, pr);
                 if (result.state === 'green') {
-                  if (baseMergeBridge) {
+                  if (baseMergeBridge && !candidatesContainingBase.has(candidateSha)) {
                     setPendingBaseMergeResult(
                       'codeql-checks-green',
                       candidateSha,

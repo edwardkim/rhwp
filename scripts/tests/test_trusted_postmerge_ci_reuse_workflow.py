@@ -61,7 +61,7 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("trustedPullRequestWorkflowRun(", collect)
         self.assertIn("pr.head.repo.id !== summary.head.repo.id", collect)
         self.assertIn('.includes(process.env.WORKFLOW_FILE) || isFork', collect)
-        self.assertIn("[reviewOnlyWorker.preflight, reviewOnlyWorker.worker].every", collect)
+        self.assertIn("fullLaneWorkflowJobsAreGreen(process.env.WORKFLOW_FILE, jobs)", collect)
         self.assertIn("verifyForkPostMergeTree(process.env.GITHUB_WORKSPACE", collect)
         self.assertIn("tested.parents[0] !== baseParent", collect)
         self.assertIn("forkMergeTreeEvidenceByRunId", collect)
