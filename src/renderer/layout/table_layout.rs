@@ -7835,6 +7835,22 @@ impl LayoutEngine {
             // Top으로 수렴시킨다. 다만 p11처럼 호출자가 전한 `col_area`가 직전
             // 조각까지 포함할 수 있으므로, 실제 페이지 viewport에서도 같은 판정을
             // 한다. 일반 완전 셀 및 최상위 표(depth=0)는 영향이 없다.
+            // [#4068] 실제 클립은 page bbox 다(위 주석 참조). 호출자가 넘긴
+            // `col_area` 가 직전 조각까지 포함해 낡아 있으면, 페이지 안에 **온전히**
+            // 들어간 중첩 셀까지 "잘렸다"고 오판해 선언된 Center/Bottom 을 Top 으로
+            // 무너뜨린다. 그러면 칸 내용이 정렬 몫만큼 위로 붙는다.
+            //
+            //   hwpx_sample2 19쪽 중첩 표(1행2열, 선언 valign=Center)
+            //     셀 961.80..1063.40 · page bbox 0.00..1122.50  → 안 잘린다
+            //     그런데 parentvp=true 로 Top 강제 → 글자가 정렬 몫 1.88px 위로
+            //
+            // 안 잘린 칸은 잘림 수렴의 대상이 아니다. 아래 `cell_clipped_by_page_viewport`
+            // 는 종전대로 남아 **진짜** 페이지 잘림을 계속 Top 으로 수렴시킨다.
+            let page_bbox = tree.page_bbox();
+            let page_view_top = page_bbox.y;
+            let page_view_bottom = page_bbox.y + page_bbox.height;
+            let cell_fits_inside_page_viewport =
+                cell_y >= page_view_top - 0.5 && cell_y + cell_h <= page_view_bottom + 0.5;
             let parent_view_top = col_area.y;
             let parent_view_bottom = col_area.y + col_area.height;
             let cell_intersects_parent_viewport =
@@ -7842,15 +7858,13 @@ impl LayoutEngine {
             let cell_clipped_by_parent_viewport = depth > 0
                 && !table.common.treat_as_char
                 && col_area.height > 0.5
+                && !cell_fits_inside_page_viewport
                 && cell_intersects_parent_viewport
                 && (cell_y < parent_view_top - 0.5 || cell_y + cell_h > parent_view_bottom + 0.5);
             // nested continuation은 부모 `col_area`가 이전 페이지의 logical
             // viewport를 포함한 채 호출될 수 있다. 렌더 트리의 page bbox는 실제
             // SVG/Canvas clip이므로, 그 밖으로 나간 셀은 그 logical viewport 안에
             // 있더라도 Center/Bottom 기준으로 배치하면 안 된다.
-            let page_bbox = tree.page_bbox();
-            let page_view_top = page_bbox.y;
-            let page_view_bottom = page_bbox.y + page_bbox.height;
             let cell_intersects_page_viewport =
                 cell_y < page_view_bottom - 0.5 && cell_y + cell_h > page_view_top + 0.5;
             let cell_clipped_by_page_viewport = depth > 0
