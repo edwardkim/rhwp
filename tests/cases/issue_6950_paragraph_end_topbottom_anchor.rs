@@ -16,6 +16,78 @@ fn core() -> DocumentCore {
     DocumentCore::from_bytes(&bytes).expect("원본 로드")
 }
 
+#[test]
+fn paragraph_start_controls_are_not_reclassified_as_text_tail_anchors() {
+    use rhwp::renderer::float_placement::ParagraphHostLine;
+    for (sample, pi) in [
+        ("samples/synam-001.hwp", 229),
+        ("samples/issue6797/156160455-social-pig-farm-income.hwp", 70),
+        ("samples/issue6267/kdt_result_para_float_table.hwpx", 8),
+    ] {
+        let bytes = std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample))
+            .expect("existing control-position fixture");
+        let core = DocumentCore::from_bytes(&bytes).expect("parse fixture");
+        let para = &core.document().sections[0].paragraphs[pi];
+        let Control::Table(table) = &para.controls[0] else {
+            panic!("fixture table");
+        };
+        assert_eq!(para.control_text_positions()[0], 0, "{sample}");
+        assert!(!para.text.is_empty());
+        assert!(
+            ParagraphFloatPlacement::from_stored_host(para, table, 0, 0.0, 100.0, 96.0).is_none(),
+            "{sample}: source control precedes text, even when its offset is below all stored rows"
+        );
+        let lines = [ParagraphHostLine {
+            char_start: 0,
+            top: 0.0,
+            height: 1.0,
+        }];
+        assert!(
+            ParagraphFloatPlacement::from_computed_host(para, table, 0, 0.0, &lines, 100.0, 96.0)
+                .is_none(),
+            "{sample}: recomposition does not change logical control order"
+        );
+    }
+}
+
+#[test]
+fn a_control_after_a_hard_break_is_not_a_width_wrapped_text_tail() {
+    use rhwp::renderer::float_placement::ParagraphHostLine;
+    // In-memory contract test, not a synthetic Hancom oracle document.
+    let core = core();
+    let mut para = core.document().sections[0].paragraphs[1].clone();
+    let Control::Table(table) = &para.controls[0] else {
+        panic!("fixture table");
+    };
+    let table = table.clone();
+    let lines = [
+        ParagraphHostLine {
+            char_start: 0,
+            top: 0.0,
+            height: 10.0,
+        },
+        ParagraphHostLine {
+            char_start: 2,
+            top: 30.0,
+            height: 10.0,
+        },
+    ];
+    para.text = "A\n".into();
+    para.char_offsets = vec![0, 1];
+    assert!(
+        ParagraphFloatPlacement::from_computed_host(&para, &table, 0, 0.0, &lines, 100.0, 96.0)
+            .is_none(),
+        "the explicit break already ended the text line before the control"
+    );
+    para.text = "A\nB".into();
+    para.char_offsets = vec![0, 1, 2];
+    assert!(
+        ParagraphFloatPlacement::from_computed_host(&para, &table, 0, 0.0, &lines, 100.0, 96.0)
+            .is_some(),
+        "an earlier hard break does not exclude a control after text on the last line"
+    );
+}
+
 fn body_items<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
     match &node.node_type {
         RenderNodeType::Table(_) | RenderNodeType::TextLine(_) => {
