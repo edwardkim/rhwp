@@ -74,3 +74,13 @@ Rust/parser/renderer/layout/WASM/Studio source 및 sample 변경은 없다. 렌�
 - smoke는 autoOpen=false이므로 다운로드 감지·편집 후 저장 회귀 테스트를 대체하지 않는다.
   기존 다운로드 E2E와 Firefox/사용자 저장 검증을 보완하는 결과다.
 - 로그: `/private/tmp/pr6965-chrome-smoke.log`.
+
+
+## 게시 리뷰 검토 후 보정 (2026-09-10)
+
+- 보정 코드: `ca3e305dd` — 두 종류의 slash를 경로 구분자로 취급한다는 의도를 `document-filename.js`에 명시했다. 실행 로직은 동일하다.
+- `node --test rhwp-shared/sw/*.test.js rhwp-chrome/sw/*.test.mjs rhwp-firefox/sw/*.test.mjs`: 171/171 통과. 로그 `/private/tmp/pr6965-correction-tests.log`.
+- 현재 콘텐츠 스크립트의 `open-hwp` 요청에는 filename이 없다. raw 입력이라는 이유만으로 동작 변경을 회귀가 아니라고 판단할 수는 없다.
+- Safari sanitizer는 중간 공백을 보존한다. 직접 실행한 결과는 `신청서SW 개인_1.hwp`이며 브라우저 간 차이는 기존 별도 범위다.
+- 오늘할일/review_impl의 조건부 적용 판단은 유지한다. 이번 보정만을 위해 base를 갱신하거나 결합 구현 문서를 중복 생성하지 않았다.
+- 사용자 요청으로 보정 push 및 PR 보정 코멘트 게시를 진행한다. ready 전환·merge는 이번 요청 범위에 포함하지 않는다.
