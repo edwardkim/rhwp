@@ -148,16 +148,28 @@ fn textpos_values(xml: &str) -> Vec<u32> {
     out
 }
 
-/// 방출되지 않는 `secd`·`cold` 두 슬롯만큼 축을 내려야 한다 — 48 이 아니라 32.
+/// 방출되지 않는 슬롯만큼 축을 내려야 한다 — 이 픽스처는 `secd`·`cold` 둘에
+/// [#6869] 이 접는 `pgnp` 셋을 더해 다섯이므로 표는 48 이 아니라 **8** 이다.
+///
+/// [#6869] 기대값을 32 → 8 로 옮겼다. 이 픽스처는 구역 첫 문단에 `pgnp` 를 **넷** 두고
+/// 종전에는 그 넷이 모두 방출된다고 보아 `secd`·`cold` 두 슬롯만 뺐다(48−16=32).
+/// 그런데 한컴은 같은 문단의 쪽번호 위치 컨트롤을 **하나로 접는다** — 이 픽스처의 출처인
+/// `02502`(156465025)를 한컴 2024 로 HWPX 저장하면 `hp:pageNum` 이 문서 전체에 **1개**이고
+/// 그 문단 `textpos` 는 `0/8` 이다. `#6869` 수정 뒤 rhwp 산출도 같은 값이며, 그 산출을
+/// 한컴이 다시 열면 **9쪽**으로 원본과 일치한다(정답지 실측).
+///
+/// 즉 `#5943` 이 세운 "방출하지 않은 슬롯만큼 내린다" 계약은 그대로이고, 접히는 슬롯이
+/// 셋 늘어 총 다섯이 된 것뿐이다. 실문서 `02502` 의 `textpos` 는 수정 전후 모두 `0/8` 로
+/// 바뀌지 않았다 — 이 픽스처만 pgnp 넷을 유지한다고 가정하고 있었다.
 #[test]
 fn section_first_paragraph_line_seg_rebases_to_the_hwpx_axis() {
     let xml = section_xml(&section_first_paragraph_document());
     let positions = textpos_values(&xml);
 
     assert!(
-        positions.contains(&32),
+        positions.contains(&8),
         "구역 첫 문단 lineseg 가 HWPX 축으로 내려오지 않았다 (#5943 회귀). \
-         `secd`·`cold` 는 HWPX 문단 축을 차지하지 않으므로 표는 48 이 아니라 32 다. \
+         `secd`·`cold` 와 접힌 `pgnp` 셋은 HWPX 문단 축을 차지하지 않으므로 표는 8 이다. \
          실측 textpos={positions:?}\n{xml}"
     );
     assert!(
