@@ -10348,7 +10348,7 @@ impl LayoutEngine {
                     } else {
                         table_y_start
                     };
-                    let table_y_start = if let Some(seal_line) = tac_receipt_seal_line {
+                    if let Some(seal_line) = tac_receipt_seal_line {
                         let line_top = table_y_start;
                         push_tac_receipt_seal_line(
                             tree,
@@ -10363,8 +10363,7 @@ impl LayoutEngine {
                         table_y_start + seal_line.shift_px
                     } else {
                         table_y_start
-                    };
-                    table_y_start
+                    }
                 };
                 let allow_para_top_bleed =
                     is_current_visible_para_float && signed_hwpunit(t.common.vertical_offset) < 0;
