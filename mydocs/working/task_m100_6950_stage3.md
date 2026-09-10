@@ -1110,3 +1110,16 @@ baseline 축, 빈 문단 후속 흐름과 최종 Rust/WASM/workspace·Native Ski
   상세 필드 의미와 실측을 확인한 경우에만 등록하는 `local_validation.md`의 IR sweep 절차에 따른다.
 - **이번 턴에는 baseline을 변경하지 않았다.** 등록 승인 후 해당 관문과 전체 회귀를 확인한다.
   기존 전체 검사 실패를 자동으로 PASS 처리하지 않는다.
+
+## 21. 신규 샘플 기준선 등록과 전체 회귀 재검증
+
+메인테이너가 §20의 실측3행 등록과 회귀 검증 진행을 승인했다.
+`tests/fixtures/ir_field_sweep_baseline.tsv`에 `hwpx / 20260909-para-table.hwpx`의
+중첩 셀254·셀95·본문38건만 사전순으로 추가했다. 상세 값·샘플 해시·정규화의 원인 계보는
+§20에 기록했다. 다른 샘플·검사기·제품 코드·기존 기대값은 변경하지 않았다.
+
+기존 review worktree와 공유 target을 재사용한다. 미커밋 제품3파일은 현재 task의 커밋본과
+바이트 동일함을 먼저 확인했으며, 이를 보존하는 최신 task 커밋으로 review 기준을 맞춘다.
+CPU16개, 메모리 available28GiB, 동시 Cargo 작업 없음 확인 후 이전 전체 실행과 같은
+Cargo2 jobs / nextest8 threads를 사용한다. 새 샘플 보안 검사 입력도 동일 문서1건으로 전달한다.
+전체 검증 결과는 실행 완료 후 별도로 기록하며, 기준선 등록만으로 PASS 처리하지 않는다.
