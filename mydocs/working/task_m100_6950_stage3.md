@@ -5,7 +5,7 @@
 - 선행: [Stage 2](task_m100_6950_stage2.md) §9의 시각 판정 통과·작은 용지 실험 범위 제외.
 - Stage 2 확정 커밋: `390d81e74d77a1541ab838b204263a07a2d0a972`.
 - 작업 브랜치: `task_m100_6950`.
-- 상태: **전체 회귀 검증 미통과 — PR 준비 보류**. 메인테이너가 문서 양쪽 보존 병합을
+- 상태: **정정 A 집중 검증 통과, 전체 회귀·B/C 미완료 — PR 준비 보류**. 메인테이너가 문서 양쪽 보존 병합을
   승인했고 Docker 연결도 복구됐지만, 전체 회귀 23개 검사 실패와 대표 기존 문서 4건의
   base 대비 악화를 확인했다(§5). 원격 변경 없음.
 
@@ -429,3 +429,89 @@ pi=3의 시작 vpos57163은55291+1200+672다. 현재 후보 extents에서는 pi=
 `tests/cases/issue_6950_paragraph_end_topbottom_anchor.rs`의 기존 후속 본문 비겹침 검사는
 이 빈 문단의 위치와 진행량까지 보장하지 못했다. 수정계획에서 그 누락을 보완한다.
 이번 작업은 문서 갱신과 원본·기존 출력 확인까지이며 제품·테스트·WASM은 변경하지 않았다.
+
+## 11. 정정 A — 적용 경계와 선행 점유 복구
+
+### 11.1 승인·소스와 구조 근거
+
+메인테이너가 수정계획 A~C를 승인했다. 승인 기록을 `e04dfff80`으로 보존한 뒤
+회귀 보호 테스트 `bf39eb882`, 제품 정정 `b737f09b911d0df97b66eca2ee352861a77c9e0f`를
+로컬 커밋했다. 원격 push·PR 생성은 수행하지 않았다.
+
+기존 WASM의 `getParagraphLength`·`getControlTextPositions`로 실제 IR의 연결 위치를
+확인하고 신규 native 테스트에서도 고정했다. 위치는 `Paragraph.text`의 scalar 문자 축이다.
+
+| 원본 문단 | 텍스트 길이 | 컨트롤 위치 | 이번 판별 |
+| --- | ---: | --- | --- |
+| synam001 pi229 | 8 | 0 | 문단 시작 — 텍스트 끝 앵커 규칙에서 제외 |
+| #6797 pi70 | 50 | 0 | 문단 시작 — 동일 |
+| #6267 pi8 | 143 | 0 | 문단 시작 — 동일 |
+| #6950 pi1 | 174 | 174 | 텍스트 끝 — 새 규칙 유지 |
+| #2439 zero-offset pi0 | 23 | 0,0,23,23 | 끝의 표이지만 선행 표의 점유 하한도 필요 |
+
+`synam001`의 관찰을 단순히 문단 문자열에 `\n`이 있다는 뜻으로 해석하지 않는다.
+HWP 파서에서 0x000A는 문단 내부 줄바꿈이며 0x000D는 문단 종료다. 문단 시작에
+붙은 표가 저장 offset 때문에 글줄 아래에 보인다는 사실만으로 텍스트 끝 표라고
+판정했던 적용 범위를 정정했다.
+
+- `float_placement.rs`: 저장·재조판 양쪽에서 실제 끝 연결과 마지막 논리 줄의 텍스트를
+  확인한다. 문자 매핑이 없거나, 명시적 줄바꿈 직후의 빈 줄에 놓인 컨트롤이면 이 배치
+  계약이 소유하지 않는다. 앞쪽에 줄바꿈이 있더라도 마지막 줄에 텍스트가 있으면 일괄 제외하지 않는다.
+- `typeset.rs`: 같은 문단의 선행 표가 이미 소비한 흐름과 outer-top을 확정 상자의 하한에
+  포함한다. offset=0인 표가 exclusion 목록에 없다는 이유로 점유를 잃지 않게 했다.
+- 문서명·쪽번호 분기, 기존 테스트 기대값 완화, 기준 원장 갱신은 없다.
+
+### 11.2 검증
+
+기존 review worktree를 명시적 커밋으로 전환하고 공유 target을 재사용했다.
+generated suite·manifest는 review 검증용으로만 준비했으며 소스 커밋에 포함하지 않았다.
+
+1. `bf39eb882`(제품은 수정 전): 신규 2개 테스트 **2 failed**. 문단 시작 오인과
+   명시적 줄바꿈 직후 컨트롤 오인에서 각각 실패했다. RED 로그:
+   `output/6950/stage3/correction-a-red-focused.log`.
+2. `b737f09b9`: #6950 전체17개 **17 passed**.
+   `correction-a-green-contract.log`, 컴파일4분22초/검사0.235초.
+3. 기존 #2439, #6797, #6267, synam001, #6718, #6879, #6860 집중 검사 **27 passed**.
+   `correction-a-green-regressions.log`, 추가 suite 컴파일1분18초/검사0.185초.
+4. `cargo fmt --all -- --check`, `git diff --check` 통과.
+
+총44개 집중 통과다. 이전 전체23개 실패 중 #2439·#6267·#6797 두 개·synam001의
+**5개 실패 검사를 재실행해 통과**했으며, 나머지18개는 아직 이 정정본에서 재실행하지 않았다.
+전체 회귀나 이번 소스의 필수 Clippy 묶음·Native Skia·Docker WASM 통과로 확대하지 않는다.
+권장 nextest 버전 및 `report-skipped` 키 경고는 앞선 환경과 같으며 실제 검사 실패와 구분한다.
+
+첫 RED 명령은 suite를 지정하지 않아 불필요한 전체 target 빌드가 시작됐다. 해당 작업 소유
+프로세스만 중단하고 `--test regression_suite_026`으로 재실행했다. 중단 실행은 검사 결과에서
+제외했다. 이후 focused 명령은 suite를 명시했다.
+
+### 11.3 실제 문서 대조와 남은 차이
+
+수정본의 `release-test/rhwp`를 사용했다. CLI SHA-256:
+`aeab794501ab774ca22fc9f7919c2d8a33590f6f9fcd3ccd1c97306fc9f41a9c`.
+`output/6950/stage3/trace-regression.mjs correction-a b737f09b911d0df97b66eca2ee352861a77c9e0f
+/home/edward/mygithub/rhwp-shared-review-target/release-test/rhwp`로 기존6건만 다시 대조했다.
+증적은 `trace-correction-a/`; metadata에 코드·바이너리·입력 해시를 보존했다.
+
+| 대상 | 정정 전 → 정정 A | 판정 |
+| --- | --- | --- |
+| #2439 zero-offset | 뒤 표176.0..256.0 →214.5..294.5px | 선행 표136.0..210.7px 아래로 복구. extents는 base와 동일 |
+| #2439 반복 서식 | 11쪽 →10쪽 | extents·anomaly는 base와 동일 |
+| #6797 7쪽 | 두 번째 표174.8..340.5 →296.8..462.5px | 첫 표181.5..294.9px 뒤로 복구. extents·pages·anomaly base 동일 |
+| #6267 | 2쪽 분할 →기존1쪽 통째 | extents·pages·anomaly base 동일 |
+| synam001 30쪽 pi229 | 표925.1..978.1 →945.9..998.9px | 제목930.2..942.2px와 함께 해당 위치 base 복구 |
+| 원본 #6950 | 표603.8..782.4px·3쪽 유지 | extents·pages·anomaly가 승인된 수정 전 후보와 동일 |
+
+**잔여를 숨기지 않는다.** synam001 전체 extents가 base와 동일한 것은 아니다.
+pi224 표 상단은 base633.2px, 정정 A629.5px로 차이가 남는다. 30쪽 pi229 복구와
+구분하여 정정 C에서 연결 위치·실제 host 하한을 재검토한다. #2439의 출력 extents는
+같지만 typeset `usedHeight`는 zero-offset에서+7.5467px, 반복 서식의 두 단에서
+각+3.7733px 차이가 남는다. 바깥 여백 소비의 중복 여부를 B/C에서 확인하며 정상 차이라고
+확정하지 않는다. anomaly 동일만으로 이를 무시하지 않는다.
+
+원본 #6950의 빈 문단 pi2 상단590.5px와 후속 pi3 상단786.2px도 아직 그대로다.
+정정 B의 `표 → 빈 문단 → 다음 본문` 흐름 교정은 미구현이며 이 이슈 안에서 계속 처리한다.
+
+synam001 30쪽 SVG는 `output/6950/stage3/correction-a-svg/synam-001_030.svg`에
+canonical layer backend·`--font-style`로 내보냈다(35쪽 중1쪽, overflowCellLines0).
+Studio의 기존 WASM은 이번 정정본으로 교체하지 않았다. 이 SVG 생성은 메인테이너의
+새 시각 판정을 대신하지 않는다. 다음 실행 순서는 승인된 정정 B, 남은 차이와 전체 게이트 C다.
