@@ -5,9 +5,9 @@
 - 선행: [Stage 2](task_m100_6950_stage2.md) §9의 시각 판정 통과·작은 용지 실험 범위 제외.
 - Stage 2 확정 커밋: `390d81e74d77a1541ab838b204263a07a2d0a972`.
 - 작업 브랜치: `task_m100_6950`.
-- 상태: **정정 A 집중 검증 통과, 전체 회귀·B/C 미완료 — PR 준비 보류**. 메인테이너가 문서 양쪽 보존 병합을
-  승인했고 Docker 연결도 복구됐지만, 전체 회귀 23개 검사 실패와 대표 기존 문서 4건의
-  base 대비 악화를 확인했다(§5). 원격 변경 없음.
+- 상태: **30쪽 SVG·WASM 시각 판정 통과, 전체 회귀 재실행 2개 실패 — PR 준비 보류**.
+  이전23개 실패 중21개가 통과했고 신규 실패는 없다(§16). #6025 배치 검사와 신규 fixture의
+  IR 왕복 차이가 남았다. B의 빈 문단 후속 흐름과 나머지 C 검증은 미완료다. 원격 변경 없음.
 
 ## 1. 최신 base와 병합 사전 검사
 
@@ -742,3 +742,71 @@ librsvg 래스터 이미지에서도 대상 두 문단이 테두리 안에 있�
   `samples/synam-001.hwp`를 다시 열어30쪽(pi224)을 확인한다. 브라우저가 이미 로드한 과거 WASM은
   HTTP 검증만으로 교체되지 않는다.
 - 제품 코드 변경·원격 push·PR은 없다. B/C 잔여 작업은 그대로 유지한다.
+
+## 16. WASM 시각 승인 후 전체 회귀 재실행
+
+2026-09-10 메인테이너가30쪽 문제가 WASM에서도 해결됐음을 확인하고 전체 회귀 재실행을 지시했다.
+
+- 대상: `9c0fdec0a` (`d1138fa23`과 제품 소스 동일), 기존 `rhwp-6950-review` worktree.
+- 시작 전 main/review tracked diff0, 실행 중 Cargo/Rust 작업 없음. CPU16개, RAM31GiB 중
+  available28GiB. 기존 공유 target을 유지하고 Cargo2 jobs / nextest8 threads로 실행한다.
+- review worktree에서 suite prepare·manifest check·fmt check 통과.
+- 이전 전체 실행과 같은 명령·신규 샘플 보안 검사 입력을 사용한다.
+  `CARGO_BUILD_JOBS=2 RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/hwpx/20260909-para-table.hwpx"]'`
+  `cargo nextest run --locked --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp-shared-review-target --tests --test-threads 8 --no-fail-fast`.
+- 로그: `output/6950/stage3/nextest-full-rerun.log`.
+- 시간/자원: `output/6950/stage3/nextest-full-rerun-time.txt`.
+- 상태: **실행 완료, exit100**. 이전 `nextest-all.log`의23개 실패와 검사 이름 기준으로 대조했다.
+  판정 기준·baseline·제품 코드는 이번 실행을 위해 변경하지 않았다.
+
+### 16.1 전체 결과
+
+| 구분 | 이전 §5 | 이번 |
+| --- | ---: | ---: |
+| 실행 | 9,401 | 9,405 |
+| 통과 | 9,378 | 9,403 |
+| 실패 | 23 | 2 |
+| 건너뜀(실행 수 외) | 46 | 46 |
+
+이번 추가4개는 정정 A와 생성 전 원점 교정에서 추가한 검사다. #6950의19개 모두 통과했다.
+이전 실패23개를 이름으로 대조한 결과21개는 실제 PASS, 2개는 다시 FAIL이다.
+미실행으로 사라진 이전 실패나 신규 실패는 없다. suite 재배정으로 binary 번호가 달라졌으므로
+`regression_suite_NNN` 번호가 아니라 검사 이름으로 비교했다.
+
+- 회복된 직접 검사11개: #2439, #3738, #6854, #6267, #6797 두 개, #5941, #1789,
+  #2097, #6764, synam001.
+- 회복된 코퍼스 검사10개: text_overlap partitions1/10/12/14/7/11/3,
+  overflow_cell partition3, off_canvas partition12, oracle_page_count partition11.
+- 빌드8분32초, 검사363.577초, 전체 wall14분33.57초. 최대 RSS4,330,900KiB, swap0.
+- slow2개는 통과 검사이며 timeout 실패가 아니다. nextest 권장 버전·`report-skipped` 경고는
+  이전 환경과 같고 실제 실패2개와 구분한다.
+- 실행 후 manifest check·diff check 통과, review worktree tracked diff0.
+
+### 16.2 남은 실패 — #6025의 1쪽 말미 배치
+
+- 검사: `issue_6025_cell_fragment_budget_pin::issue_6025_la_line_stays_on_first_page`.
+- 입력: `samples/issue6025/3232693_employment_support_criteria.hwpx`.
+- 총4쪽 단언은 통과했지만, 1쪽 y=1050..1070px에서 기대하는 ‘라. 국민행복기금…’ 문구가
+  검출되지 않았다. 그 구간에서 읽힌 문구는 ‘있는자로서서민금융진흥원장으로부터확인서를발급받은경우’다.
+- 함께 출력된 진단: page0/pi1 PartialTable 하단1093.5px, 본문 하단1084.7px, 초과8.8px.
+- 이전 실행과 실패 단언·진단 값이 같다. **이번 pi224 보완으로 새로 발생한 실패는 아니지만**,
+  #6950 이전 devel에도 존재하던 결함으로 확정한 것은 아니다. 정확한 이동 원인·회귀 경계와
+  실제 한컴 배치는 별도 확인이 필요하다. 이 검사만으로 문구가2쪽으로 이동했다고 단정하지 않는다.
+
+### 16.3 남은 실패 — 신규 HWPX fixture의 IR 왕복 차이
+
+- 검사: `ir_field_sweep_baseline::ir_field_sweep_does_not_regress`.
+- 입력: `samples/hwpx/20260909-para-table.hwpx`.
+- 증가한3개 경로는 이전 실행과 동일하다. 공통 접두사 `sections[].paragraphs[]` 아래에서:
+  - `controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]`: 0→254.
+  - `controls[].cells[].paragraphs[].raw_header_extra[]`: 0→95.
+  - `raw_header_extra[]`: 0→38.
+- 렌더 위치 단언이 아니라 IR 필드 왕복 비교 실패다. 실제 정보 손실인지 허용 가능한 정규화인지
+  아직 확정하지 않았으며, baseline 등록·갱신이나 검사 완화는 하지 않았다.
+
+### 16.4 다음 판단에 필요한 작업
+
+이번 전체 실행 요청은 완료했다. 전체 회귀는 아직 통과하지 않았으므로 PR 준비 보류를 유지한다.
+남은 두 실패의 원인 확인을 먼저 하고, B의 빈 문단 후속 흐름을 마무리한 뒤 변경 범위에 맞춰
+검증해야 한다. Native Skia3종과 전체 Rust lint 묶음은 이번 nextest 실행으로 대체되지 않는다.
+현재 Studio/WASM은 메인테이너가 승인한 소스를 유지하며 제품 코드·기대값·원격 상태를 바꾸지 않았다.
