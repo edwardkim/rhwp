@@ -19805,7 +19805,8 @@ impl TypesetEngine {
         // 발행되지 않아 렌더에서 통째로 사라지고(제목 미노출), 텍스트 높이가
         // 흐름에 안 실려 다음 표가 위로 붙는다(표 틀어짐). 단축 진입 시 host
         // 텍스트를 한 번 발행하도록 문단 단위로 추적한다.
-        let mut host_text_emitted = false;
+        let mut decoration_host_text_pending = false;
+        let mut flow_table_owns_host_text = false;
         for (order_pos, ctrl_idx) in ctrl_order.iter().copied().enumerate() {
             let ctrl = &para.controls[ctrl_idx];
             match ctrl {
@@ -20047,20 +20048,15 @@ impl TypesetEngine {
                         // PartialParagraph = 텍스트 줄만이고 표는 Shape 가 따로
                         // 그리므로 중복 렌더는 없다(place_table_with_text 의 pre-text
                         // 발행과 같은 계약).
-                        if !host_text_emitted && para_has_non_whitespace_text(para) {
-                            let total_lines = fmt.line_heights.len();
-                            if total_lines > 0 {
-                                st.current_items.push(PageItem::PartialParagraph {
-                                    para_index: para_idx,
-                                    start_line: 0,
-                                    end_line: total_lines,
-                                });
-                                st.current_height += fmt.line_advances_sum(0..total_lines);
-                            }
-                            host_text_emitted = true;
-                        }
+                        // Defer host text until every co-anchored table has
+                        // computed its anchor and overlay continuation bounds.
+                        decoration_host_text_pending = true;
                         continue;
                     }
+                    // Ordinary/TAC table paths already own host text, including
+                    // their deferred emission and layout fallback. Do not add a
+                    // second full-range PartialParagraph for mixed controls.
+                    flow_table_owns_host_text = true;
                     let is_column_top = st.current_height < 1.0;
                     let ft = self.format_table(
                         para,
@@ -20315,6 +20311,24 @@ impl TypesetEngine {
                     );
                 }
                 _ => {}
+            }
+        }
+
+        // Decoration-only table hosts have no ordinary table text owner. Emit
+        // once after the control loop, before paragraph height reconciliation,
+        // so this advance cannot affect a sibling decoration table's anchor.
+        if decoration_host_text_pending
+            && !flow_table_owns_host_text
+            && para_has_non_whitespace_text(para)
+        {
+            let total_lines = fmt.line_heights.len();
+            if total_lines > 0 {
+                st.current_items.push(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 0,
+                    end_line: total_lines,
+                });
+                st.current_height += fmt.line_advances_sum(0..total_lines);
             }
         }
 
