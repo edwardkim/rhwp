@@ -107,3 +107,14 @@ DOM과 CanvasKit의 이미지 크롭 좌표 계약을 검토했다. 갱신한 WA
 - 보정 후 전체 회귀: `cargo nextest run --locked --cargo-profile release-test --tests --no-fail-fast --test-threads 8`, **9,414개 통과 / 실패 0개 / skip 46개 / 300.371초**. IR sweep은 FAST 제한 없이 전수 실행해 70.711초에 통과했다. 이 실행에는 마지막 briefing fixture·회귀 및 신규 sample 3개 security sweep도 포함됐다.
 - 같은 전용 target에서 fmt, native Clippy, WASM32 lib Clippy, workspace build, workspace all-target Clippy, manifest, Rust unit tier 검사를 모두 다시 통과했다. source-side 기준선은 4,205 tests / 298 modules로 유지했다.
 - 로컬 최종 검증은 완료됐지만 기존 실패 CI를 성공으로 간주하지 않는다. 보정 push 뒤 새 PR head CI를 확인한 다음에만 merge 및 후속처리를 진행한다. 임시 probe·로그는 커밋하지 않는다.
+
+
+## CI 완료 후 문서 trailing 기록 (2026-09-10)
+
+- 실제 원격 code head는 `cc11b55e69656450a57629f2b7a2122732b08dc9`이다. `4f4e3f2e02ab3c0067cb09c3bb50e84d859a962c`에 최신 devel `4e0ce9283086ddd33e3660cf3927db8175384a43`을 merge한 기존 원격 커밋을 그대로 보존한다. 로컬 rebase 이력을 강제로 덮어쓰지 않았다.
+- 위 head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/34468254010), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34468253850), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34468253715), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34468253961), [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/34468253906) 실행이 모두 success로 완료됐다. CI의 실행된 archive A/B/C/D worker, Lint, Native Skia, Frontend package gate 및 CodeQL의 JS/TS·Python·Rust worker도 성공했다. [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/34469557687)도 success이며 `MERGEABLE / CLEAN`을 확인했다.
+- 별도 WASM Build, Frontend unit gates, Workflow promotion preflight, PR의 nextest duration refresh는 skip이었다. 실행하지 않은 worker를 성공 실행으로 표현하지 않는다.
+- 최신 devel 위에서 로컬 검증한 `0f7cafeb17ca00f872c08bef6a1aae722e100776`과 실제 원격 code head 사이에는 mydocs 외 파일 차이가 없음을 확인했다. 해당 통합 내용에서 전체 회귀 **9,415개 통과 / 실패 0개 / skip 46개 / 285.183초 / 8 threads**, IR 전수 sweep 69.964초 통과, fmt·native/WASM/workspace Clippy·workspace build·manifest·tier 재통과를 기록한다.
+- 이전 9,414개 및 9,413개 실행은 이전 시점의 이력이며 최신 실행 결과와 구분한다. 기존 시각 증적은 앞 절에 기록한 실제 산출 시점·페이지·한계 그대로다. rebase 또는 devel merge 뒤 재촬영했다고 주장하지 않는다.
+- 이번 trailing commit은 개별 리뷰 8개와 오늘할일 1개, 총 9개 Markdown만 변경한다. source/test/workflow/golden/baseline/sample/PDF/PNG/로그는 변경하지 않는다. 문서 push 뒤 최신 head의 required check는 merge 전 별도 확인 대상이다.
+- 후속 코멘트의 문서 비교 방법 정본은 [Visual Sweep GitHub merge comment 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)다. 개별 리뷰 direct link는 실행 결과 기록이며 방법 정본을 대신하지 않는다. 실제 merge SHA 고정 raw 이미지와 앞 절의 페이지·수치·사람 판정을 함께 게시하고, 기존 같은 결과의 코멘트는 중복 등록하지 않고 수정한다.
