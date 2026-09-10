@@ -64,3 +64,13 @@ export function applyHyperlinkFormat(wasm: import('./wasm-bridge').WasmBridge, t
     wasm.applyCharFormatInCellByPath(target.section, target.para, path, start, end, props);
   } else wasm.applyCharFormat(target.section, target.para, start, end, props);
 }
+
+/** 미리 열기는 입력 주소만 검증하고 문서·방문 색을 변경하지 않는다. */
+export function webHyperlinkUrl(value: string): string | null {
+  const uri = value.trim();
+  if (!/^https?:\/\//i.test(uri) || /[\s\\\x00-\x1f\x7f]/.test(uri)) return null;
+  try {
+    const url = new URL(uri);
+    return url.hostname && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}

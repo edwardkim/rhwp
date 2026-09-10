@@ -12,9 +12,27 @@ await runTest('#6963 hyperlink editor UI', async ({ page }) => {
   await page.waitForSelector('#hyperlink-text');
   assert.equal(await page.$eval('.dialog-btn-primary', el => el.textContent), '넣기');
   assert.equal(await page.$eval('.dialog-btn-primary', el => el.disabled), true);
+  assert.equal(await page.$$eval('[role="tab"]', tabs => tabs.map(t => t.textContent).join(',')), '웹 주소');
+  assert.equal(await page.$eval('#hyperlink-preview', el => el.disabled), true);
   await page.type('#hyperlink-text', '한컴 링크 테스트');
   await page.type('#hyperlink-uri', 'https://example.com/한글?q=1#부분');
+  const beforePreview = await page.evaluate(() => ({ context: window.__wasm.getHyperlinkContext({ section: 0, para: 0, cellPath: [] }), dirty: window.__documentState.isDirty() }));
+  await page.evaluate(() => {
+    window.__previewRecord = {};
+    window.open = (url, target) => {
+      Object.assign(window.__previewRecord, { url, target });
+      return { set opener(value) { window.__previewRecord.opener = value; }, location: { replace(value) { window.__previewRecord.destination = value; } } };
+    };
+  });
+  await page.click('#hyperlink-preview');
+  assert.equal(await page.evaluate(() => window.__previewRecord.destination), 'https://example.com/%ED%95%9C%EA%B8%80?q=1#%EB%B6%80%EB%B6%84');
+  assert.equal(await page.evaluate(() => window.__previewRecord.opener), null);
+  assert.deepEqual(await page.evaluate(() => ({ context: window.__wasm.getHyperlinkContext({ section: 0, para: 0, cellPath: [] }), dirty: window.__documentState.isDirty() })), beforePreview);
+  assert.ok(await page.$('#hyperlink-text'), 'preview keeps dialog open');
   await page.screenshot({ path: resolve(output, 'insert-dialog.png') });
+  await page.evaluate(() => document.documentElement.dataset.themeEffective = 'light');
+  await page.screenshot({ path: resolve(output, 'insert-dialog-light.png') });
+  await page.evaluate(() => document.documentElement.dataset.themeEffective = 'dark');
   await page.click('.dialog-btn-primary');
   await page.waitForSelector('#hyperlink-text', { hidden: true });
   const props = () => page.evaluate(() => window.__wasm.getCharPropertiesAt(0, 0, 0));

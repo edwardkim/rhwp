@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hyperlinkTarget, hyperlinkRange, selectedHyperlink } from '../src/core/hyperlink.ts';
+import { hyperlinkTarget, hyperlinkRange, selectedHyperlink, webHyperlinkUrl } from '../src/core/hyperlink.ts';
 
 const pos = { sectionIndex: 0, paragraphIndex: 3, charOffset: 2 };
 test('하이퍼링크 주소는 중첩 셀 전체 경로를 보존한다', () => {
@@ -33,4 +33,11 @@ test('인접 링크 경계·여러 링크 선택·링크 밖 범위를 구분한
   assert.equal(selectedHyperlink(links, 1, 2)?.fieldId, 1);
   assert.throws(() => selectedHyperlink(links, 1, 4));
   assert.throws(() => selectedHyperlink(links, 4, 6));
+});
+
+test('웹 주소 미리 열기는 HTTP/HTTPS만 허용하고 한글 query와 fragment를 보존한다', () => {
+  assert.equal(webHyperlinkUrl(' https://example.com/한글?q=1#부분 '), 'https://example.com/%ED%95%9C%EA%B8%80?q=1#%EB%B6%80%EB%B6%84');
+  for (const uri of ['', 'javascript:alert(1)', 'file:///tmp/a', 'https://user:pw@example.com', 'https://', 'https://example.com/a b', 'https://example.com/\\evil']) {
+    assert.equal(webHyperlinkUrl(uri), null, uri);
+  }
 });
