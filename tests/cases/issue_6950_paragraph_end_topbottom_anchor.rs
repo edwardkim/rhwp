@@ -563,8 +563,8 @@ fn computed_frame_placement_reaches_paint_and_following_flow() {
 #[test]
 fn split_computed_host_publishes_fragment_local_placements() {
     use rhwp::renderer::{
-        composer::compose_section, height_measurer::HeightMeasurer,
-        pagination::PageItem, style_resolver::resolve_styles, typeset::TypesetEngine,
+        composer::compose_section, height_measurer::HeightMeasurer, pagination::PageItem,
+        style_resolver::resolve_styles, typeset::TypesetEngine,
     };
     let core = core();
     let doc = core.document();
@@ -579,28 +579,48 @@ fn split_computed_host_publishes_fragment_local_placements() {
         let mut page = section.section_def.page_def.clone();
         page.height = page.margin_top + page.margin_bottom + 18000;
         let width = rhwp::renderer::hwpunit_to_px(
-            (page.width - page.margin_left - page.margin_right) as i32, 96.0,
+            (page.width - page.margin_left - page.margin_right) as i32,
+            96.0,
         );
         let composed = compose_section(&section);
         let measured = HeightMeasurer::new(96.0).measure_section(
-            &section.paragraphs, &composed, &styles, Some(width),
+            &section.paragraphs,
+            &composed,
+            &styles,
+            Some(width),
         );
         let pages = TypesetEngine::new(96.0).typeset_section(
-            &section.paragraphs, &composed, &styles, &page, &Default::default(),
-            0, &measured.tables, false, &Default::default(),
+            &section.paragraphs,
+            &composed,
+            &styles,
+            &page,
+            &Default::default(),
+            0,
+            &measured.tables,
+            false,
+            &Default::default(),
         );
         let mut fragments = 0;
         for column in pages.pages.iter().flat_map(|p| &p.column_contents) {
             for item in &column.items {
-                if let PageItem::PartialTable { para_index: 0, control_index: 0,
-                    is_continuation, .. } = item {
+                if let PageItem::PartialTable {
+                    para_index: 0,
+                    control_index: 0,
+                    is_continuation,
+                    ..
+                } = item
+                {
                     fragments += 1;
-                    let placement = column.paragraph_float_placements.get(&(0, 0))
+                    let placement = column
+                        .paragraph_float_placements
+                        .get(&(0, 0))
                         .expect("분할 표도 현재 단의 확정 배치를 전달해야 한다");
                     assert!(placement.occupied_bottom > placement.table_top);
                     if *is_continuation {
-                        assert!(placement.table_top.abs() < 0.1,
-                            "다음 단에 이전 앵커 거리 재적용 금지: {placement:?}");
+                        assert!(
+                            placement.table_top.abs() < 0.1,
+                            "다음 단에 이전 앵커 거리 재적용 금지: {placement:?}"
+                        );
                     } else {
                         assert!(placement.anchor_y > 0.0);
                         assert!(placement.table_top > placement.anchor_y);
@@ -608,7 +628,10 @@ fn split_computed_host_publishes_fragment_local_placements() {
                 }
             }
         }
-        assert!(fragments >= 2, "실제 분할 경로를 검증해야 한다: {fragments}, {pages:?}");
+        assert!(
+            fragments >= 2,
+            "실제 분할 경로를 검증해야 한다: {fragments}, {pages:?}"
+        );
     }
 }
 
@@ -628,15 +651,22 @@ fn split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame() {
             let mut doc = core.document().clone();
             let mut host = doc.sections[0].paragraphs[1].clone();
             host.invalidate_layout_inputs();
-            if without_source_rows { host.line_segs.clear(); }
+            if without_source_rows {
+                host.line_segs.clear();
+            }
             doc.sections[0].paragraphs = vec![host];
             core.set_document(doc.clone());
             let before = core.build_page_render_tree(0).unwrap();
             let mut before_items = Vec::new();
             body_items(&before.root, &mut before_items);
-            let expected_lines = before_items.iter().filter(|n| matches!(
-                &n.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)
-            )).count();
+            let expected_lines = before_items
+                .iter()
+                .filter(|n| {
+                    matches!(
+                        &n.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)
+                    )
+                })
+                .count();
             let page = &mut doc.sections[0].section_def.page_def;
             page.height = page.margin_top + page.margin_bottom + body_height;
             core.set_document(doc);
@@ -652,25 +682,38 @@ fn split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame() {
                     &n.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)
                 )).collect();
                 host_lines += lines.len();
-                let host_bottom = lines.iter().map(|n| n.bbox.y + n.bbox.height)
+                let host_bottom = lines
+                    .iter()
+                    .map(|n| n.bbox.y + n.bbox.height)
                     .fold(body_top, f64::max);
                 for node in &items {
                     if matches!(&node.node_type, RenderNodeType::Table(t)
-                        if t.para_index == Some(0) && t.control_index == Some(0)) {
+                        if t.para_index == Some(0) && t.control_index == Some(0))
+                    {
                         fragments += 1;
-                        assert!(node.bbox.y >= host_bottom - 0.1,
-                            "본문 {body_height} / 쪽 {page}: 호스트 {host_bottom}, 표 {:?}", node.bbox);
-                        assert!(node.bbox.y + node.bbox.height <= body_bottom + 0.5,
-                            "본문 {body_height}, 쪽 {page}, 표 {:?}, 하한 {body_bottom}", node.bbox);
+                        assert!(
+                            node.bbox.y >= host_bottom - 0.1,
+                            "본문 {body_height} / 쪽 {page}: 호스트 {host_bottom}, 표 {:?}",
+                            node.bbox
+                        );
+                        assert!(
+                            node.bbox.y + node.bbox.height <= body_bottom + 0.5,
+                            "본문 {body_height}, 쪽 {page}, 표 {:?}, 하한 {body_bottom}",
+                            node.bbox
+                        );
                         if page > 0 {
-                            let Control::Table(target) = &core.document().sections[0].paragraphs[0].controls[0] else {
+                            let Control::Table(target) =
+                                &core.document().sections[0].paragraphs[0].controls[0]
+                            else {
                                 panic!("표");
                             };
                             // 첫 조각 전체 이월은 첫 조각의 위 바깥 여백을 유지한다.
                             // 이미 시작한 표의 연속 조각에는 이 첫 여백도 반복하지 않는다.
                             let first_margin = if fragments == 1 {
                                 rhwp::renderer::hwpunit_to_px(target.outer_margin_top as i32, 96.0)
-                            } else { 0.0 };
+                            } else {
+                                0.0
+                            };
                             assert!((node.bbox.y - body_top - first_margin).abs() < 0.5,
                                 "새 쪽 앵커 거리 재적용 금지: {:?}, 본문 {body_top}, 첫 여백 {first_margin}", node.bbox);
                         }
