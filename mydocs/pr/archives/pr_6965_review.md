@@ -59,3 +59,18 @@ Rust/parser/renderer/layout/WASM/Studio source 및 sample 변경은 없다. 렌�
 - merge 전 조건: review 기록을 포함한 최신 head의 GitHub required checks 통과,
   mergeability 재확인, 사용자의 ready 전환 및 merge 승인.
 - 이 판정은 GitHub approve 또는 merge가 아니다. 현재 승인된 원격 조치는 push와 draft 생성이다.
+
+
+## 추가 Chrome packaged smoke 검증
+
+- 검증 head: `a20442ea2133ebc0ba7732e37dc6c3ee3d2730e0` (기존 PR source 변경 없이 실행)
+- 실행: `PUPPETEER_EXECUTABLE_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' npm --prefix rhwp-chrome run test:e2e:smoke`
+- 결과: production build 성공, page-budget/proxy 계약 4/4 통과,
+  `PASS: viewer/options/print/service worker/content script` 확인, exit 0.
+- 로컬 Chrome을 headless·격리 프로필로 실행했으며 기존 pkg WASM을 재사용했다.
+- MV3 background 시작과 메시지 정책, HWP3 문서 canvas, 다크 아이콘 자산,
+  settings hydration, print.html 로드, content script 배지를 확인했다.
+  console/page/worker 오류와 예상 밖 탭은 관측되지 않았다.
+- smoke는 autoOpen=false이므로 다운로드 감지·편집 후 저장 회귀 테스트를 대체하지 않는다.
+  기존 다운로드 E2E와 Firefox/사용자 저장 검증을 보완하는 결과다.
+- 로그: `/private/tmp/pr6965-chrome-smoke.log`.

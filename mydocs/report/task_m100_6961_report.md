@@ -75,3 +75,18 @@ BiDi Page.url()은 확장 탭을 about:blank로 표시하여 실제 location.hre
 `6e957ebfed0fa3f527026244c72fc6ddca0bc943`이며, 이후 기록 commit도 같은 branch에 push한다.
 생성 후 API에서 base/head/draft와 한글 본문을 재확인했다. CI는 작성 시점 실행 중이며,
 ready 전환·merge·issue close·배포는 수행하지 않았다.
+
+
+## 추가 Chrome packaged smoke 검증
+
+- 검증 head: `a20442ea2133ebc0ba7732e37dc6c3ee3d2730e0` (기존 PR source 변경 없이 실행)
+- 실행: `PUPPETEER_EXECUTABLE_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' npm --prefix rhwp-chrome run test:e2e:smoke`
+- 결과: production build 성공, page-budget/proxy 계약 4/4 통과,
+  `PASS: viewer/options/print/service worker/content script` 확인, exit 0.
+- 로컬 Chrome을 headless·격리 프로필로 실행했으며 기존 pkg WASM을 재사용했다.
+- MV3 background 시작과 메시지 정책, HWP3 문서 canvas, 다크 아이콘 자산,
+  settings hydration, print.html 로드, content script 배지를 확인했다.
+  console/page/worker 오류와 예상 밖 탭은 관측되지 않았다.
+- smoke는 autoOpen=false이므로 다운로드 감지·편집 후 저장 회귀 테스트를 대체하지 않는다.
+  기존 다운로드 E2E와 Firefox/사용자 저장 검증을 보완하는 결과다.
+- 로그: `/private/tmp/pr6965-chrome-smoke.log`.

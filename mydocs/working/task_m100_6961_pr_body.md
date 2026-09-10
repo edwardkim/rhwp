@@ -32,3 +32,10 @@ Closes #6961
 사용자 승인에 따라 draft로 제출한다. ready 전환·merge·배포는 별도 단계다.
 
 관련 PR: #6966. [작성자 검토 기록](https://github.com/edwardkim/rhwp/blob/codex/issue-6961-download-filename/mydocs/pr/archives/pr_6965_review.md).
+
+
+## 추가 Chrome smoke
+
+- `a20442ea2133ebc0ba7732e37dc6c3ee3d2730e0`에서 `npm --prefix rhwp-chrome run test:e2e:smoke` 통과.
+- production build, 보조 계약 4/4, 실제 Chrome headless의 viewer/options/print/service worker/content script 모두 PASS.
+- 기존 다운로드 E2E에 추가한 검증이며, 소스 수정 없이 실행했다. 기존 WASM 재사용.
