@@ -45,6 +45,29 @@ description: rhwp 저장소의 기여 구현과 PR 제출 절차를 안내합니
 
 ## 증빙과 완료
 
+### Rust 게이트와 제출 경계
+
+Rust 변경의 포맷 검사는 `cargo fmt --all -- --check`를 사용한다.
+`cargo fmt --check`는 이 workspace 전체 검사에 대한 낡은 축약 안내이므로 대신 사용하지 않는다.
+포맷 성공만으로 제출 검증이 끝나는 것은 아니다. `cargo clippy -- -D warnings` 한 줄도
+native/WASM/workspace-all-targets 세 Clippy 단계와 범위별 회귀를 대체하지 않는다.
+전체 실행 순서와 인자는 CONTRIBUTING 및 활성 검증 자식을 따른다.
+
+- `newline_style = Unix` 설정을 지킨다. Windows `autocrlf`와 sparse checkout의 누락 member가
+  검사에 영향을 주면 환경 문제로 구분하고 검사 성공으로 처리하지 않는다.
+- 브랜치 기준은 `upstream/devel`이며 isolation worktree 등 격리 방식은 현재 기여 절차를 따른다.
+  사용자 변경과 다른 작업의 worktree를 보존하고 `git add -A` 대신 파일 경로를 지정한다.
+- 새 CLI, DocumentCore 또는 gym 변경은 이슈의 승인 범위와 해당 아키텍처 계약으로 판단한다.
+  과거 스킬 고도화 작업의 비범위를 모든 기여의 영구 금지로 확대하지 않는다.
+- 규모와 역할에 따라 `mydocs/working/` 결과 기록을 사용한다. 외부 기여자에게 내부 review나
+  오늘할일 작성을 일괄 요구하지 않는다.
+- 한국어 PR 본문은 실제 줄바꿈이 있는 UTF-8 파일을 `--body-file`로 전달한다.
+  `closes #<번호>`는 issue 전체를 해결한 경우에만 사용한다.
+- 첫 체크박스는 현재 PR 템플릿의 범위별 검증/SHA 일치 항목을 따른다. fmt 전용 항목으로 바꾸지 않는다.
+  `noci` 등 검사 미발행과 실제 CI `FAILURE`를 구분하고 둘 다 성공으로 추정하지 않는다.
+
+### 선택적 작업 영수증
+
 문서 편집의 캡슐 경로는 AGENTS의 권장 기능이며 모든 기여의 강제 제출 조건이 아니다.
 사용하는 경우 기존 명령 `rhwp replay --plan-json <계획> --capsule work.capsule.json --json`,
 `rhwp audit <폴더> --json`, `rhwp lineage <머리캡슐> --json`의 현재 CLI 계약을 따른다.
@@ -52,3 +75,19 @@ description: rhwp 저장소의 기여 구현과 PR 제출 절차를 안내합니
 미실행 검사를 통과로 표시하지 않는다. 검증 실패를 숨기려고 경고를 억제하거나 기대값을 출력에 맞추지 않는다.
 필수 게이트가 미완이면 준비 완료로 선언하지 않으며, 명시적인 검증 제한이 있으면 그 제한과 미완료 상태를 기록한다.
 지침 자체는 게시나 merge 권한을 부여하지 않는다.
+
+## 과거 자료의 탐색 경로
+
+아래는 이전 기여 절차의 참조 경로를 보존하는 역사 자료 색인이다. 활성 자식 문서와 현재
+CONTRIBUTING을 먼저 읽으며, 아래 자료의 과거 예외나 명령을 현행 필수 게이트로 적용하지 않는다.
+특히 과거 `replay --capsule` 축약 표기보다 위의 계획 입력을 포함한 현재 CLI 계약을 따른다.
+
+| 과거 자료의 주제 | 참조 경로 |
+| --- | --- |
+| 이슈 접수 | [issue-first.md](references/issue-first.md) |
+| 브랜치 격리 | [branch-isolation.md](references/branch-isolation.md), [isolation-worktree.md](references/isolation-worktree.md) |
+| 명시적인 파일 staging | [staging-named-files.md](references/staging-named-files.md) |
+| 포맷과 줄바꿈 | [fmt-hard-gate.md](references/fmt-hard-gate.md), [rustfmt-unix.md](references/rustfmt-unix.md) |
+| 영수증과 결과 기록 | [work-receipt-pointers.md](references/work-receipt-pointers.md), [working-doc.md](references/working-doc.md) |
+| PR 본문 전달 | [korean-pr.md](references/korean-pr.md) |
+| 과거 요청 분류와 레시피 | [decision-tree.md](references/decision-tree.md), [recipe-index.md](references/recipe-index.md), [command-field-catalog.md](references/command-field-catalog.md) |
