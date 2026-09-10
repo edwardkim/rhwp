@@ -716,3 +716,29 @@ librsvg 래스터 이미지에서도 대상 두 문단이 테두리 안에 있�
 미실행**이다. 기존 anomaly가 없어졌다는 뜻도 아니다. B의 빈 문단 후속 흐름과 C의 전체 영향
 검증은 계속 남아 있다. 원격 push·PR은 수행하지 않았다. pi224의 간격에 대한 메인테이너
 시각 재검토를 요청한다.
+
+### 14.4 메인테이너 시각 판정
+
+2026-09-10 메인테이너가 이번 수정의 **시각 판정 통과**를 확정하고 WASM 빌드를 지시했다.
+이는 pi224 생성 전 원점 교정의 승인이다. 빈 문단 후속 흐름(B)과 전체 영향 검증(C)의
+완료로 확대하지 않는다.
+
+## 15. 시각 승인 코드의 Docker WASM 빌드
+
+- 빌드 기준: `task_m100_6950`, `a23668daa41c800f0f7b2ee276721ae1d4f05d6f`.
+- 제품 소스는 시각 승인 대상 `d1138fa23`과 같다. 빌드 전 worktree는 clean이었다.
+- 표준 명령: `docker compose --env-file .env.docker run --rm wasm`.
+- 로그: `output/6950/stage3/pi224-prepaint-wasm-build.log`.
+- 기존 Docker named-volume cache와 `.env.docker`를 재사용한다. 실행 중인 Studio7700 서버는 유지한다.
+- 상태: **빌드 성공**(exit0). wasm-pack 보고6분30초, Rust release 컴파일3분42초.
+- `pkg/rhwp.js`, `rhwp_bg.wasm`, `rhwp.d.ts` 갱신. 소유자는 모두 `edward:edward`다.
+- WASM 크기:10,451,918bytes. SHA-256:
+  `530b191b249d246c86d3732bdc5119b4a6a2aefeed706be62ab58ecacdfeb287`.
+- Node `WebAssembly.compile` 성공(479 exports). 이는 모듈 컴파일 검증이며 브라우저 전체 조판
+  시나리오 실행을 대신하지 않는다.
+- `http://127.0.0.1:7700/`과 JS/WASM HTTP200 확인. Vite가 변환한 JS의 WASM URL은 현재
+  저장소의 `pkg/rhwp_bg.wasm`을 가리킨다. HTTP로 받은 WASM은 디스크 산출물과 바이트·hash 동일하다.
+- Studio 서버를 재시작하거나 다른 checkout으로 전환하지 않았다. 기존 탭은 강력 새로고침 후
+  `samples/synam-001.hwp`를 다시 열어30쪽(pi224)을 확인한다. 브라우저가 이미 로드한 과거 WASM은
+  HTTP 검증만으로 교체되지 않는다.
+- 제품 코드 변경·원격 push·PR은 없다. B/C 잔여 작업은 그대로 유지한다.
