@@ -17063,8 +17063,22 @@ impl TypesetEngine {
                 }
                 let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());
                 let line_has_tac_control = line_has_tac_control(para, comp, line_idx);
+                // [#6972] 저장 줄 높이가 TAC 개체 하나의 흐름 높이와 같으면 그 줄은
+                // 개체가 **소유한 줄**이지 빈 guide 줄이 아니다. composer 가 두 줄에
+                // 같은 char_start 를 실으면 `tac_control_indices_for_line` 의 char-range
+                // 매핑이 [start, start) 로 비어 `line_has_tac_control` 이 거짓이 되고,
+                // 전면 크기 TAC 그림 줄(56288 1쪽: 72347HU = 964.6px)이 통째로 0 이 된다.
+                // 렌더는 같은 줄을 964.6px 로 그리므로 조판만 어긋나 뒤 개체가 그림 위로
+                // 올라온다. 소유 판정은 `line_owning_tac_object_height_px` 하나로 한다(#4333).
+                let line_owns_tac_object = crate::renderer::line_owning_tac_object_height_px(
+                    para,
+                    hwpunit_to_px(line.line_height, self.dpi),
+                    self.dpi,
+                )
+                .is_some();
                 let empty_tac_guide_line = runs_all_whitespace
                     && !line_has_tac_control
+                    && !line_owns_tac_object
                     && comp
                         .lines
                         .get(line_idx + 1)
