@@ -636,8 +636,8 @@ fn issue_1692_so_sueop_header_footer_page5_matches_reference_contract() {
     let hwpx_header = first_header_paragraph(&hwpx_model, "수업용소설해설");
     assert_eq!(
         hwp3_model.doc_info.para_shapes[hwp3_header.para_shape_id as usize].alignment,
-        Alignment::Justify,
-        "HWP3 원본 머리말은 단일 줄 Justify이며 렌더 단계에서 머리말 폭으로 분배해야 한다"
+        Alignment::Split,
+        "HWP3 머리말의 마지막 줄 분배는 파서에서 Split으로 정규화해야 한다"
     );
     assert_eq!(
         hwpx_model.doc_info.para_shapes[hwpx_header.para_shape_id as usize].alignment,

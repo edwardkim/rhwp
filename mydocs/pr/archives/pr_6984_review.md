@@ -132,3 +132,12 @@ https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/as
 - 실제 merge SHA에 asset이 존재하는지 확인하고 UTF-8 without BOM 본문 파일을 `--body-file`로
   게시한다. API로 한글·이미지 링크·BOM·문자 치환 여부를 재조회한다. 이 문서는 게시 예약이나
   댓글·issue close의 선승인이 아니다.
+
+## 제출 후 오늘할일 충돌 해소
+
+검토 문서 추가 뒤 `mydocs/orders/20260910.md`의 add/add 충돌을 확인했다.
+base `37bd46a72`에는 #6979·#6962 기록이 이미 있고 이 작업의 이전 분기에는 없었다.
+같은 base를 병합해 기존 두 작업의 기록 전체와 새 #6963 항목을 함께 보존했다.
+수동 충돌 해소는 이 Markdown 한 파일뿐이며 제품·테스트 충돌은 없었다.
+로컬 전체 검증은 앞서 명시한 `b05cadb0e` 결과이고, base 병합 후 통합 결과는 최신 PR CI가 검증한다.
+이후 head의 required checks와 mergeable 상태를 다시 확인하며 아직 원격 CI 성공·병합을 주장하지 않는다.

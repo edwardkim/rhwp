@@ -671,12 +671,15 @@ fn convert_para_shape_with_layout_contract(
     ps.spacing_after = hwp3_para_spacing_to_ir(hwp3_ps.margin_bottom, use_password_layout_contract);
     ps.spacing_before = hwp3_para_spacing_to_ir(hwp3_ps.margin_top, use_password_layout_contract);
     ps.alignment = match hwp3_ps.align {
-        0 => crate::model::style::Alignment::Justify,
+        0 | 6 => crate::model::style::Alignment::Justify,
         1 => crate::model::style::Alignment::Left,
         2 => crate::model::style::Alignment::Right,
         3 => crate::model::style::Alignment::Center,
         4 => crate::model::style::Alignment::Distribute,
-        5 => crate::model::style::Alignment::Split,
+        // [#6864] HWP3 정렬 필드는 0..=7이다. SO-SUEOP의 원값 7은
+        // 한컴 HWPX에서 DISTRIBUTE_SPACE로 변환된다. 6(sample11)은
+        // JUSTIFY이므로 머리말 전체를 Split으로 바꾸면 안 된다.
+        5 | 7 => crate::model::style::Alignment::Split,
         _ => crate::model::style::Alignment::Justify,
     };
 
@@ -686,7 +689,8 @@ fn convert_para_shape_with_layout_contract(
     // 전수에서 예외 0 으로 확인한 규칙이다(07615: JUSTIFY→KEEP 2,988·기타→BREAK
     // 711, 교차검증 문서: 822/1,576). 배선하지 않으면 h2x 산출이 전량
     // BREAK_WORD 로 나가 본문 줄바꿈이 정답지와 어긋난다.
-    if matches!(ps.alignment, crate::model::style::Alignment::Justify) {
+    // 원값 7의 공백 분배도 한컴 변환본에서는 KEEP_WORD를 유지한다.
+    if matches!(ps.alignment, crate::model::style::Alignment::Justify) || hwp3_ps.align == 7 {
         ps.attr1 |= 1 << 7;
     }
 
