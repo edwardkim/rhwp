@@ -93,3 +93,15 @@
 - 실제 증적 범위: 1쪽 1개 페이지를 대조했다. pixel match 83.6115%, 내용 픽셀 중심 일치율 16.95508%, flagged 0이다. 소유된 하단 범례가 실제 SVG에 한 번만 그려지는 것을 확인했다. 범례의 프레임 밖 위치와 문단 간격 등 devel에도 있던 전체 페이지 차이는 남아 있으며, 이번 PR의 하단 줄 누락 방지 계약과 구분한다.
 - 대표 이미지 안정 경로: [pr6980-p001.png](../assets/pr_6959_6983_planet6897_20260910/pr6980-p001.png). 코멘트에는 `![PR #6980 검증 pr6980-p001.png](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr_6959_6983_planet6897_20260910/pr6980-p001.png)` 형식으로 이미지를 직접 표시한다.
 - 코멘트 작성 시 실제 merge SHA로 placeholder를 치환하고 UTF-8 body file과 `--body-file`을 사용한다. 기존 같은 통합 결과 코멘트가 있으면 새로 등록하지 않고 수정하며, 게시·수정 뒤 API로 본문을 재조회한다. PR/devel CI 완료와 관련 issue의 실제 상태를 확인한 뒤 `post_merge.md`에 따라 후속 처리한다.
+
+
+## CI 실패 원인 보정 및 전체 회귀 재검증 (2026-09-10)
+
+- [PR #6990](https://github.com/edwardkim/rhwp/pull/6990)의 최초 head `3450f1e5c78ed6fea133b7514c01245873c0edc2`에서 [Archive C IR sweep](https://github.com/edwardkim/rhwp/actions/runs/34465371486/job/102835336153)이 실패했다. 마지막 briefing 샘플 추가 뒤 집중 필터에 IR sweep을 넣지 않은 검증 누락이었다.
+- 대상 원본: `samples/issue6924/148751598-briefing.hwp`, SHA-256 `03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610`.
+- 수정 전 devel `37bd46a72f9fd9ffd709e35244df79c00e789780` 빌드와 통합 후보 빌드에서 같은 파일의 raw 왕복은 발산 0건, rebuild 왕복은 상세 값까지 동일한 3건이었다. 비교 결과가 바이트 단위로 같음을 확인했다.
+- 원인: 기존 `src/serializer/control.rs`는 빈 그림 extra에 한컴 호환 18바이트 꼬리를 보강하고, 없는 `img_dim`을 crop 크기로 채운다. `raw_picture_extra.len: 0 -> 18`, `img_dim[0]: 0 -> 224460`, `img_dim[1]: 0 -> 49680`은 이번 제품 변경으로 생긴 손실이 아닌 기존 정규화다.
+- 보정 커밋: `5dacee15f837f8b6253d241a4fcbbbf83d2284e7`. IR 원장에 이 신규 샘플의 `img_dim[] = 2`, `raw_picture_extra.len = 1` 두 행만 등록했다. 기존 sample의 기준선 상향, 기존 행 재생성, 제품 코드·시각 asset 변경은 없다.
+- 보정 후 전체 회귀: `cargo nextest run --locked --cargo-profile release-test --tests --no-fail-fast --test-threads 8`, **9,414개 통과 / 실패 0개 / skip 46개 / 300.371초**. IR sweep은 FAST 제한 없이 전수 실행해 70.711초에 통과했다. 이 실행에는 마지막 briefing fixture·회귀 및 신규 sample 3개 security sweep도 포함됐다.
+- 같은 전용 target에서 fmt, native Clippy, WASM32 lib Clippy, workspace build, workspace all-target Clippy, manifest, Rust unit tier 검사를 모두 다시 통과했다. source-side 기준선은 4,205 tests / 298 modules로 유지했다.
+- 로컬 최종 검증은 완료됐지만 기존 실패 CI를 성공으로 간주하지 않는다. 보정 push 뒤 새 PR head CI를 확인한 다음에만 merge 및 후속처리를 진행한다. 임시 probe·로그는 커밋하지 않는다.
