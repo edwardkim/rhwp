@@ -1752,7 +1752,7 @@ GitHub runner에서 실제 성공한 것으로 보고하지 않는다. 로컬 WS
 
 - 시각 승인 후보를 `716624893ef23453db724aa18c921416dcc37627`에 커밋해 보존했다.
 - 최초 simulation의 base는 `4e0ce92830`이며, 충돌 해결 방침 승인 뒤 다시 fetch한
-  최신 base는 `2a780e0d298` 접두의 PR #6990 병합 결과다(정확한 SHA는 merge parent로 보존).
+  최신 base는 `2a780e0d296846df577866eba6ac8f388527551b`의 PR #6990 병합 결과다.
 - 양쪽 source·오늘할일 기록을 보존한다는 메인테이너 승인에 따라 실제 merge를 수행했다.
 - `layout.rs`: #6950 확정 배치의 좌표·공간 예약을 유지하며 legacy 배치 경로의
   #6985 고정 글상자 전체 높이 교차 검사와 `fixed_textbox` 식별을 보존했다.
@@ -1763,3 +1763,84 @@ GitHub runner에서 실제 성공한 것으로 보고하지 않는다. 로컬 WS
 - 새 base에는 renderer·Studio·fixture 변경이 있으므로 §29~30 결과를 통합 후보의
   검증으로 재사용하지 않는다. 기존 리뷰 워크트리·공유 target에서 순차 재검증한다.
   baseline 상향이나 회귀 은폐는 허용하지 않는다.
+
+통합 commit: `f2a8f3ac5b13e80932300b08e3a67613a199697a`.
+리뷰 워크트리의 이전 미커밋4파일은 `716624893`의 파일과 바이트 동일함을 확인했고,
+해당 commit에 보존된 사본만 복원한 뒤 통합 commit으로 전환했다. 다른 WIP는 없었다.
+통합 시점 원격의 `scripts/renderer_baseline_manifest.json`에는 CRLF가 있어 첫 parent
+대비 공백 검사에서 경고가 출력됐다. 원격 파일은 변경하지 않았으며 **upstream/devel 대비
+PR diff**의 공백 검사는 통과했다. 파생 suite는 리뷰 워크트리에서만 준비했다.
+
+### 31.1 통합 검증 중 발견한 정합 문제와 조치
+
+새 base의 `issue_6972_tac_fullpage_picture_page_ownership` 테스트가 `PageContent`
+구조를 직접 초기화하면서 #6950의 `paragraph_float_placements`를 누락해
+workspace all-target Clippy에서 E0063이 발생했다. 새 필드의 빈 초기값만 추가한
+`a653d23ddfb08a65e88569a9f85b37389f41d500`으로 보완했다. 테스트 기대값은 바꾸지 않았다.
+
+이 한 줄로 source weight가 달라져 manifest 검사에서 파생 harness 배정 drift도 발견됐다.
+기존 manifest의 `renderHarness` 결과와 실제 파일의 내용은 같았지만, 현재 source로 다시
+산출하는 배정과는 달랐다. 리뷰 워크트리에서 `--prepare`를 다시 수행한 뒤
+fmt check·native/WASM/workspace Clippy·workspace build·manifest check를 순차 재실행해 통과했다.
+제품 코드로 우회하거나 파생 파일을 제출하지 않았다.
+
+source-side unit tier 검사도 4,205 tests / 298 modules로 통과했다.
+원본 샘플 해시는 이슈 등록 당시 `cbf2ee7235861e93011d80834bfc49525349f6776c929b98ebd4f06003581d07`과 같다.
+제출 checkout과 리뷰 워크트리의 변경된 source·test·sample·PDF 파일은 `cmp`로 동일함을 확인했다.
+SVG 6개 동일성의 파일별 해시는 `output/6950/stage3/pr-svg-equality.txt`에 기록했다.
+
+### 31.2 통합 후보 전체 회귀
+
+`a653d23dd`와 동일한 source·test로 `pr-validate.sh`를 실행했다.
+`RHWP_SECURITY_SWEEP_SAMPLES_JSON`에는 이번 PR의 신규 문서 한 건만 지정했다.
+
+- fmt·세 Clippy·workspace build·manifest·unit tier: PASS.
+- 전체 nextest: **9,444 passed / 0 failed / 46 skipped**, 실행376.931초.
+  통합 후 컴파일을 포함한 wall time은842.93초다.
+- 마지막 대형 셀 분할 검사와 IR 필드 전수 검사를 포함해 모두 완료했다.
+- nextest0.9.137이 권장0.9.140보다 낮다는 알림과 CI duration 전용
+  `junit.report-skipped` 키를 무시한다는 경고가 있었다. 검사 실패는 아니다.
+- 증적: `output/6950/stage3/pr-validation-sequence-r3.log`,
+  `pr-nextest-all.log` 및 `pr-{clippy-native,clippy-wasm,workspace-build,clippy-workspace,manifest,unit-tier}.log`.
+
+Native Skia `--lib`는 root와 기본 workspace member 합계4,112 passed / 0 failed /
+13 ignored로 완료했다. `issue_2225_missing_picture_placeholder`는2/2 통과했다.
+직접 PDF 회귀는4/4 통과했다. 관련 로그는 `pr-skia-{lib,picture,pdf}.log`이며 순차 검증 스크립트는 종료0이다.
+
+### 31.3 검증 중 원격 전진의 영향 확인
+
+검증 중 #6991이 `ec822767ae52926479e8fe58bc7003b4e6c82cba`로 병합됐다.
+`merge-tree`는 충돌 없음이었고 `61eb331b0a92a7c19e46e36d273ac1e1e4af2746`으로
+최신 devel을 반영했다. 변경은 CI 재사용 정책·그 검사·문서16파일이다.
+`a653d23dd..61eb331b0`의 Rust source/crates/tests/Cargo/Studio/renderer baseline 입력
+차이는0이다. 따라서 완료한 조판 전체 회귀를 다시 실행하지 않는다.
+Render Diff workflow에서도 preflight의 후보 선택만 바뀌었으며 실제 렌더 검사 조건은 동일하다.
+
+CI delta 자체는 Python unittest56/56, Node test291/291을 통과했다.
+증적: `pr-latest-merge-tree.txt`, `pr-latest-ci-{python,node}.log`.
+리뷰 워크트리의 #6972 초기값 보완은 main의 `a653d23dd` 사본과 동일함을 확인한 뒤
+committed 상태의 최신 통합 HEAD로 전환했다. 남은 리뷰 WIP는 없다.
+
+### 31.4 최신 통합 후보의 Render Diff — 완료
+
+`61eb331b0`의 Docker dev WASM과 Native Skia CLI를 새로 빌드해 리뷰 환경에서 사용했다.
+Node22.18.0·Chromium1660786·CI 기본 fixture 및 §30.1과 같은 허용치를 유지했다.
+검증 서버는7701이며 메인테이너7700 서버는 재시작하지 않았다.
+
+- JS8파일 syntax·Python compile·native diff self-test·renderer contract·font coverage: PASS.
+- Canvas3/3: KTX0.01761%, 나머지0%; 허용0.05%.
+- Direct PDF3/3: biz_plan1.15895%, tac-case-001 0.39037%, kps-ai0.67672%; 허용2%.
+- CanvasKit readiness8/8 PASS, failed0. 최종 backend·시각·성능 기준을 충족했다.
+- Browser Canvas/PDF 비교는 report-only4warn/0error로 기존과 같았다.
+  readiness 초기 폰트·context 오류와 image-crop의 cursor 위치 경고를 로그에 보존했다.
+  검증 성공을 무경고·한컴 전체 fidelity 일치로 확대하지 않는다.
+- WASM SHA-256: `765f13bfbf3aeb8b952e8a6c2c8ef212ddf3c5b19ef8b08c40a84710a88fc380`.
+- Native CLI SHA-256: `e6513f2ab18378a7ef6aa4262d3d399b03f392195d7e13e50856eedecf106802`.
+
+증적: `output/6950/stage3/pr-render-validation-sequence.log`, `pr-render-validate.sh`,
+`pr-wasm-build.log`, `pr-native-skia-build.log`, `pr-render-binaries.sha256`,
+`pr-render-diff.log`, `pr-render-diff-artifacts/{summary,pdf-summary}.md`,
+`pr-render-readiness.log`, `pr-render-readiness/baseline-report.md` 및 browser JSON.
+
+**판정:** 최신 통합 후보는 필수 로컬 게이트를 모두 통과했다. 승인 범위에 따라 커밋·push·Open PR을 진행한다.
+GitHub CI 성공·self-review 확정·병합·이슈 close는 아직 수행한 것으로 기록하지 않는다.
