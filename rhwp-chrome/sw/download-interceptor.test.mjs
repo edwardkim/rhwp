@@ -792,8 +792,8 @@ for (const [url, expectedTabs] of [
       assert.equal(calls.tabsCreate.length, expectedTabs);
       assert.equal(item.url, url);
       assert.equal(item.filename, '/Downloads/saved.hwp');
-      if (calls.cancel) assert.deepEqual(calls.cancel, []);
-      if (calls.erase) assert.deepEqual(calls.erase, []);
+      assert.deepEqual(calls.cancel, []);
+      assert.deepEqual(calls.erase, []);
     });
   });
 }

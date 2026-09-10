@@ -1,7 +1,7 @@
 /**
  * Packaged Firefox download → edit → save/save-as regression (#6964).
  * Build rhwp-firefox first; reuse Puppeteer from `npm ci --prefix rhwp-chrome`.
- * FIREFOX_EXECUTABLE_PATH=/path/to/firefox node rhwp-firefox/e2e/download-save.test.mjs
+ * FIREFOX_EXECUTABLE_PATH=/path/to/firefox npm --prefix rhwp-firefox run test:e2e:download
  * RHWP_FIREFOX_DIST optionally selects a combined-fix package.
  * RHWP_EXPECT_BASENAME=1 additionally checks #6961 when testing both fixes together.
  * Uses an isolated profile, loopback fixture, and automatic download directory;
