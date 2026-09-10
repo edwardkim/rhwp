@@ -1396,6 +1396,48 @@ fn render_control_slot_tracked(
 /// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
 /// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
 /// 그 문단부터 본문을 통째 폐기하는 트리거다.
+/// 문자와 개체 슬롯을 같은 UTF-16 축에서 보며, 형광펜 자체는 축을 소비하지 않는다.
+struct PositionedMarkpens<'a> {
+    marks: Vec<(u32, &'a crate::model::paragraph::MarkpenMark)>,
+    next: usize,
+}
+
+impl PositionedMarkpens<'_> {
+    fn flush(
+        &mut self,
+        position: u32,
+        splitter: &mut RunSplitter,
+        text: &mut String,
+        para: &Paragraph,
+        cursor: &mut InlineCursor<'_>,
+    ) {
+        if !self
+            .marks
+            .get(self.next)
+            .is_some_and(|(pos, _)| *pos <= position)
+        {
+            return;
+        }
+        flush_text_fragment(&mut splitter.content, text, &para.tab_extended, cursor);
+        while let Some(&(pos, mark)) = self.marks.get(self.next) {
+            if pos > position {
+                break;
+            }
+            splitter.cut_before(pos);
+            splitter.content.push_str("<hp:t>");
+            match &mark.color {
+                Some(color) => splitter.content.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => splitter.content.push_str("<hp:markpenEnd/>"),
+            }
+            splitter.content.push_str("</hp:t>");
+            self.next += 1;
+        }
+    }
+}
+
 fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32, Vec<u32>) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
@@ -1415,6 +1457,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         && para.orphan_field_ends.is_empty()
         // 표시만 있고 텍스트가 없는 문단도 8유닛을 점유한다 — 여기서 빠지면 축이 밀린다.
         && para.title_marks.is_empty()
+        && para.markpen_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
         return (String::new(), true, 0, Vec::new());
@@ -1616,6 +1659,16 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     let axis_faithful = slots.iter().all(|c| emits_hwpx_slot_xml(c));
 
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
+    cursor.markpen_marks = &[];
+    let mut markpens = PositionedMarkpens {
+        marks: para
+            .markpen_marks
+            .iter()
+            .map(|m| (m.stream_position(para), m))
+            .collect(),
+        next: 0,
+    };
+    markpens.marks.sort_by_key(|(pos, _)| *pos);
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
@@ -1634,6 +1687,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1739,6 +1799,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1803,6 +1870,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1863,6 +1937,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1886,6 +1967,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             splitter.cut_before(char_pos);
         }
 
+        markpens.flush(char_pos, &mut splitter, &mut text_buf, para, &mut cursor);
         text_buf.push(c);
         let width = char_utf16_width(c);
         if char_pos >= expected_utf16_pos {
@@ -1966,6 +2048,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
+        markpens.flush(
+            expected_utf16_pos,
+            &mut splitter,
+            &mut text_buf,
+            para,
+            &mut cursor,
+        );
         render_control_slot_tracked(
             &mut splitter.content,
             slots[slot_idx],
@@ -2006,6 +2095,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             field_end_emitted[i] = true;
         }
     }
+    markpens.flush(u32::MAX, &mut splitter, &mut text_buf, para, &mut cursor);
     (
         splitter.finish(),
         axis_faithful,

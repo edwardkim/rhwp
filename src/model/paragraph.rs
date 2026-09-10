@@ -385,6 +385,84 @@ pub struct MarkpenMark {
     pub char_idx: usize,
     /// 여는 표지의 색. `None` 이면 닫는 표지다.
     pub color: Option<String>,
+    /// 확장 제어를 포함한 HWP5 UTF-16 위치. 표 앞뒤의 같은 char_idx를 구분한다.
+    pub utf16_pos: Option<u32>,
+}
+
+impl MarkpenMark {
+    pub(crate) fn stream_position(&self, para: &Paragraph) -> u32 {
+        self.utf16_pos.unwrap_or_else(|| {
+            para.char_offsets
+                .get(self.char_idx)
+                .copied()
+                .unwrap_or_else(|| {
+                    para.text
+                        .chars()
+                        .take(self.char_idx)
+                        .map(|c| c.len_utf16() as u32)
+                        .sum()
+                })
+        })
+    }
+}
+
+impl Paragraph {
+    /// 한컴 2022 실측: 종류 2, 하위 24비트는 COLORREF(BGR), 끝 위치는 exclusive.
+    pub(crate) fn import_markpen_range_tags(&mut self) {
+        self.markpen_marks = self
+            .range_tags
+            .iter()
+            .filter(|r| r.tag >> 24 == 2)
+            .flat_map(|r| {
+                let color = format!(
+                    "#{:02X}{:02X}{:02X}",
+                    r.tag & 255,
+                    (r.tag >> 8) & 255,
+                    (r.tag >> 16) & 255
+                );
+                [(r.start, Some(color)), (r.end, None)]
+            })
+            .map(|(pos, color)| MarkpenMark {
+                char_idx: self.char_offsets.partition_point(|&offset| offset < pos),
+                color,
+                utf16_pos: Some(pos),
+            })
+            .collect();
+        self.markpen_marks.sort_by_key(|m| m.utf16_pos);
+    }
+
+    pub(crate) fn effective_markpen_range_tags(&self) -> Vec<RangeTag> {
+        if self.markpen_marks.is_empty() {
+            return self.range_tags.clone();
+        }
+        let mut ranges: Vec<_> = self
+            .range_tags
+            .iter()
+            .filter(|r| r.tag >> 24 != 2)
+            .cloned()
+            .collect();
+        let mut open = Vec::new();
+        for mark in &self.markpen_marks {
+            let pos = mark.stream_position(self);
+            if let Some(color) = &mark.color {
+                let rgb = color
+                    .strip_prefix('#')
+                    .filter(|s| s.len() == 6)
+                    .and_then(|s| u32::from_str_radix(s, 16).ok());
+                open.push((pos, rgb));
+            } else if let Some((start, Some(rgb))) = open.pop() {
+                if pos >= start {
+                    let bgr = ((rgb & 255) << 16) | (rgb & 0xff00) | ((rgb >> 16) & 255);
+                    ranges.push(RangeTag {
+                        start,
+                        end: pos,
+                        tag: 0x0200_0000 | bgr,
+                    });
+                }
+            }
+        }
+        ranges
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
@@ -749,6 +827,13 @@ impl Paragraph {
         if shift == 0 {
             return;
         }
+        for mark in &mut self.markpen_marks {
+            if let Some(pos) = &mut mark.utf16_pos {
+                if *pos >= insert_pos {
+                    *pos += shift;
+                }
+            }
+        }
         // 문단 시작(pos 0)에 고정된 첫 스타일은 유지(insert_text_at 과 동일).
         for cs in &mut self.char_shapes {
             if cs.start_pos > insert_pos || (cs.start_pos == insert_pos && cs.start_pos > 0) {
@@ -855,6 +940,17 @@ impl Paragraph {
         let new_chars: Vec<char> = new_text.chars().collect();
         let utf16_delta: u32 = new_chars.iter().map(|c| Self::char_stream_len(*c)).sum();
 
+        for mark in &mut self.markpen_marks {
+            if mark.char_idx >= char_offset {
+                mark.char_idx += new_chars.len();
+            }
+            if let Some(pos) = &mut mark.utf16_pos {
+                if *pos >= utf16_insert_pos {
+                    *pos += utf16_delta;
+                }
+            }
+        }
+
         // 1. 텍스트 삽입
         self.text.insert_str(byte_offset, new_text);
 
@@ -959,6 +1055,21 @@ impl Paragraph {
             .map(|c| Self::char_stream_len(*c))
             .sum();
         let utf16_end = utf16_start + utf16_delta;
+
+        for mark in &mut self.markpen_marks {
+            mark.char_idx = if mark.char_idx >= del_end {
+                mark.char_idx - (del_end - char_offset)
+            } else {
+                mark.char_idx.min(char_offset)
+            };
+            if let Some(pos) = &mut mark.utf16_pos {
+                *pos = if *pos >= utf16_end {
+                    *pos - utf16_delta
+                } else {
+                    (*pos).min(utf16_start)
+                };
+            }
+        }
 
         // 1. 텍스트 삭제
         self.text.drain(byte_start..byte_end);
@@ -1133,6 +1244,7 @@ impl Paragraph {
             .map(|m| MarkpenMark {
                 char_idx: m.char_idx - split_pos,
                 color: m.color.clone(),
+                utf16_pos: m.utf16_pos.map(|pos| pos.saturating_sub(utf16_split)),
             })
             .collect();
         self.markpen_marks.retain(|m| m.char_idx < split_pos);
@@ -1423,6 +1535,12 @@ impl Paragraph {
         }
 
         // 2-1. 제목 차례 표시 결합 — 문자 인덱스 축이라 앞 문단 길이만큼 민다.
+        self.markpen_marks
+            .extend(other.markpen_marks.iter().map(|m| MarkpenMark {
+                char_idx: m.char_idx + self_text_len,
+                color: m.color.clone(),
+                utf16_pos: m.utf16_pos.map(|pos| pos + utf16_end),
+            }));
         for m in &other.title_marks {
             self.title_marks.push(TitleMark {
                 char_idx: m.char_idx + self_text_len,

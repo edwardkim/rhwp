@@ -1,3 +1,6 @@
+# #6921 신규 공개 샘플: base 37bd46a72f9f와 통합 bb5dc4b00fc1의 전 페이지 overflow가 동일(6건).
+# 기존 세 문서의 증가분은 기준선을 올리지 않고 #6924 클립의 본문 하단 경계를 보정한다.
+issue6921/148733091-briefing-stenographic-record.hwp	6
 156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	1
 2022년 국립국어원 업무계획.hwp	1
 2025 행정업무운영 편람(최종).hwp	91
@@ -203,3 +206,5 @@ task3307/issue3307_outline_number.hwpx	2
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	3
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	4
 한글문서파일형식_5.0_revision1.3.hwp	8
+# New fixture: devel 37bd46a72f9fd9ffd709e35244df79c00e789780 measured count; no existing ceiling raised.
+issue6924/148751598-briefing.hwp	3

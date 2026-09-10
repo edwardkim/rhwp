@@ -370,6 +370,7 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
         i += 1;
     }
 
+    para.import_markpen_range_tags();
     Ok(para)
 }
 

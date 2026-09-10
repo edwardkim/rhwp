@@ -691,6 +691,19 @@ fn parse_paragraph_body(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"markpenBegin" | b"markpenEnd" => {
+                        if local == b"markpenEnd" {
+                            text_parts.push(MARKPEN_END_PART.to_string());
+                        } else {
+                            let color = ce
+                                .attributes()
+                                .flatten()
+                                .find(|a| a.key.as_ref().as_bytes() == b"color")
+                                .map(|a| attr_str(&a))
+                                .unwrap_or_default();
+                            text_parts.push(format!("{MARKPEN_BEGIN_PART_PREFIX}{color}"));
+                        }
+                    }
                     b"run" => {
                         // 런 시작: charPrIDRef 읽기
                         for attr in ce.attributes().flatten() {
@@ -856,6 +869,19 @@ fn parse_paragraph_body(
                 let cname = ce.name();
                 let local = local_name(cname.as_ref());
                 match local {
+                    b"markpenBegin" | b"markpenEnd" => {
+                        if local == b"markpenEnd" {
+                            text_parts.push(MARKPEN_END_PART.to_string());
+                        } else {
+                            let color = ce
+                                .attributes()
+                                .flatten()
+                                .find(|a| a.key.as_ref().as_bytes() == b"color")
+                                .map(|a| attr_str(&a))
+                                .unwrap_or_default();
+                            text_parts.push(format!("{MARKPEN_BEGIN_PART_PREFIX}{color}"));
+                        }
+                    }
                     b"run" => {
                         // self-closing 빈 run (예: <hp:run charPrIDRef="42"/>)
                         // 빈 paragraph 의 char_shape 가 누락되어 default(id=0) 로
@@ -1011,6 +1037,7 @@ fn parse_paragraph_body(
                         char_idx: visual_text.chars().count(),
                         color: (p != MARKPEN_END_PART)
                             .then(|| p[MARKPEN_BEGIN_PART_PREFIX.len()..].to_string()),
+                        utf16_pos: Some(utf16_pos),
                     });
             }
             "\u{0012}" => {

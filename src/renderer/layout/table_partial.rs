@@ -515,14 +515,17 @@ fn cell_cut_window(
 /// **형제 셀과 부딪치면 넓히지 않는다.** 소유한 줄이라도 이웃 셀 내용 위로 나가면 두 글자
 /// 모두 못 읽는다(edu 82쪽 Cell3↔Cell10 · 152쪽 Cell13↔Cell24 실측: 겹침 94→97). 그런 줄은
 /// 종전대로 억제에 맡긴다 — 행 높이 축의 별개 결함이라 여기서 풀 문제가 아니다.
+type FragmentCellFlowBottoms = std::collections::HashMap<crate::renderer::render_tree::NodeId, f64>;
+
 fn expand_fragment_cell_clip_for_owned_bottom_lines(
     table_node: &mut RenderNode,
     owns_line: &dyn Fn(
         &crate::renderer::render_tree::TableCellNode,
         &crate::renderer::render_tree::TextLineNode,
     ) -> bool,
-) {
+) -> FragmentCellFlowBottoms {
     use crate::renderer::render_tree::RenderNodeType;
+    let mut flow_bottoms = FragmentCellFlowBottoms::new();
     let cell_boxes: Vec<(usize, crate::renderer::render_tree::BoundingBox)> = table_node
         .children
         .iter()
@@ -577,8 +580,11 @@ fn expand_fragment_cell_clip_for_owned_bottom_lines(
         if collides {
             continue;
         }
+        // 이 증가는 글줄의 표시용 클립이다. 부모 표의 흐름 높이는 기존 하단을 쓴다.
+        flow_bottoms.insert(cell.id, clip_bottom);
         cell.bbox.height = wanted_bottom - cell.bbox.y;
     }
+    flow_bottoms
 }
 
 impl LayoutEngine {
@@ -4250,7 +4256,10 @@ impl LayoutEngine {
                 styles,
             )
         };
-        expand_fragment_cell_clip_for_owned_bottom_lines(&mut table_node, &owns_line);
+        // 아래 정리 단계가 글줄을 숨기기 전에 표시용 클립을 확보해야 한다.
+        // 이미 visible=false가 된 줄을 나중에 클립만 넓혀 복구할 수는 없다.
+        let owned_line_flow_bottoms =
+            expand_fragment_cell_clip_for_owned_bottom_lines(&mut table_node, &owns_line);
         extend_completed_nested_table_border_clips(
             tree,
             &mut table_node,
@@ -4292,6 +4301,7 @@ impl LayoutEngine {
                 physical_page_bottom: f64,
                 logical_table_bottom: f64,
                 terminal_long_child_clip_only: bool,
+                owned_line_flow_bottoms: &FragmentCellFlowBottoms,
             ) -> f64 {
                 let clipped_cell = matches!(
                     node.node_type,
@@ -4301,10 +4311,14 @@ impl LayoutEngine {
                 // bottom stroke. That clip is not new parent-row flow. Start clipped
                 // cells at the logical RowBreak bottom; only direct drawings proven to
                 // end on this page may extend the outer table bbox.
+                let flow_bottom = owned_line_flow_bottoms
+                    .get(&node.id)
+                    .copied()
+                    .unwrap_or(node.bbox.y + node.bbox.height);
                 let mut b = if clipped_cell && terminal_long_child_clip_only {
-                    (node.bbox.y + node.bbox.height).min(logical_table_bottom)
+                    flow_bottom.min(logical_table_bottom)
                 } else {
-                    node.bbox.y + node.bbox.height
+                    flow_bottom
                 };
                 if clipped_cell {
                     for child in &node.children {
@@ -4327,6 +4341,7 @@ impl LayoutEngine {
                                 physical_page_bottom,
                                 logical_table_bottom,
                                 terminal_long_child_clip_only,
+                                owned_line_flow_bottoms,
                             );
                             if drawing_bottom <= physical_page_bottom + 0.5 {
                                 b = b.max(drawing_bottom);
@@ -4341,6 +4356,7 @@ impl LayoutEngine {
                         physical_page_bottom,
                         logical_table_bottom,
                         terminal_long_child_clip_only,
+                        owned_line_flow_bottoms,
                     ));
                 }
                 b
@@ -4354,6 +4370,7 @@ impl LayoutEngine {
                         physical_page_bottom,
                         logical_table_bottom,
                         terminal_long_child_clip_only,
+                        &owned_line_flow_bottoms,
                     )
                 })
                 .fold(table_node.bbox.y + table_node.bbox.height, f64::max);

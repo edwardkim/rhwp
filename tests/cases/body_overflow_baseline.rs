@@ -140,7 +140,7 @@ fn partition_dump_path(path: &str, part: usize) -> String {
 
 /// 문서 하나의 전 페이지를 스캔해 **본문 바닥을 공차 넘게 벗어난** 노드 수를 센다.
 ///
-/// 로드·렌더 실패는 이 게이트의 관심사가 아니다(파싱 회귀는 기존 스위트가 잡는다).
+/// 읽지 못한 문서는 None이다. 페이지 렌더 실패를 0건으로 세어 감소로 위장하지 않는다.
 fn count_doc(path: &Path) -> Option<u64> {
     let bytes = std::fs::read(path).ok()?;
     let doc = DocumentCore::from_bytes(&bytes).ok()?;
@@ -151,9 +151,7 @@ fn count_doc(path: &Path) -> Option<u64> {
     let page_count = doc.page_count();
     let mut total = 0u64;
     for page in 0..page_count {
-        let Ok(tree) = doc.build_page_render_tree(page) else {
-            continue;
-        };
+        let tree = doc.build_page_render_tree(page).ok()?;
         total += scan_page(page, &tree.root, page_count, &opts)
             .overflow
             .iter()
@@ -164,7 +162,18 @@ fn count_doc(path: &Path) -> Option<u64> {
 }
 
 fn body_overflow_does_not_grow_partition(part: usize) {
-    let buckets = partition_samples(collect_samples(), PARTITIONS);
+    let all_samples = collect_samples();
+    let baseline = load_baseline();
+    let all_rels: BTreeSet<_> = all_samples.iter().map(|(_, rel)| rel.as_str()).collect();
+    let absent: Vec<_> = baseline
+        .keys()
+        .filter(|rel| !all_rels.contains(rel.as_str()))
+        .collect();
+    assert!(
+        absent.is_empty(),
+        "baseline 샘플이 삭제되거나 누락됨: {absent:?}"
+    );
+    let buckets = partition_samples(all_samples, PARTITIONS);
     let samples = buckets
         .into_iter()
         .nth(part)
@@ -174,7 +183,6 @@ fn body_overflow_does_not_grow_partition(part: usize) {
         "body-overflow partition {part} 이 비어 있음"
     );
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
-    let baseline = load_baseline();
 
     let workers = std::thread::available_parallelism()
         .map(|n| n.get())
@@ -267,7 +275,7 @@ fn body_overflow_does_not_grow_partition(part: usize) {
         .collect();
     assert!(
         missing.is_empty(),
-        "baseline 에 있으나 샘플에 없는 문서 — 행을 정리할 것: {missing:?}"
+        "baseline 샘플의 로드 또는 페이지 렌더 실패: {missing:?}"
     );
 }
 
