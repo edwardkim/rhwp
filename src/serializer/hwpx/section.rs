@@ -1439,6 +1439,8 @@ impl PositionedMarkpens<'_> {
 }
 
 fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32, Vec<u32>) {
+    // [#6869] 쪽번호 위치 컨트롤은 **문단당 하나만** 낸다 — 상태를 문단마다 연다.
+    ctx.para_page_num_pos_emitted = false;
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -2394,7 +2396,15 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             out.push_str("</hp:ctrl>");
         }
         Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
-        Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::PageNumberPos(pn) => {
+            // [#6869] 같은 문단의 두 번째 이후 쪽번호 위치 컨트롤은 내지 않는다.
+            // XML 을 한 글자도 내지 않으므로 `render_control_slot_tracked` 가 이 슬롯을
+            // "HWP5 축에만 있는 슬롯" 으로 세고, `#5943` 의 `textpos` 보정이 그대로 걸린다.
+            if !ctx.para_page_num_pos_emitted {
+                ctx.para_page_num_pos_emitted = true;
+                out.push_str(&render_page_num(pn));
+            }
+        }
         Control::PageNumCtrl(pnc) => out.push_str(&format!(
             r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
             pnc.page_starts_on.as_hwpx()
