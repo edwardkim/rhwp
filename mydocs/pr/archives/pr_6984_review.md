@@ -8,7 +8,21 @@
   `dev_environment_guide.md`, `edit_command_review_checklist.md`, 문서·Git 절차.
 - 작성자 self PR로 reviewer는 지정하지 않았다. GitHub approve event는 아니다.
 
-## 대상과 범위
+## 2026-09-10 후속 UI·표시 문자열 갱신 검증
+
+이하 최초 제출 기록 이후의 제품·테스트 검증 후보는 `fd06747f6`이다.
+사용자 요청에 따라 설명 문자열은 이번 PR에서 제외하고, 표시 문자열 편집·웹 탭·미리보기·
+방문 표시·컨텍스트 메뉴·주소 전용 호버를 포함한다.
+전체 Rust nextest 9,405개, Studio Node 1,502개가 통과했다.
+필수 fmt/3종 Clippy/workspace build/manifest, native-skia lib(주 lib 3,930개),
+placeholder 2개·직접 PDF 4개, TypeScript/Vite build와 unit tier 정책 검사도 통과했다.
+검증은 별도 review worktree에서 수행했고 generated suite는 source PR에 포함하지 않았다.
+동일 HWPX를 Studio·macOS 한글 Viewer에서 열고 그 문서의 PDF를 미리보기에서 확인했다.
+Viewer는 사용자 승인 후 한 번 허용하여 실제 한컴 홈페이지 이동까지 확인했다.
+[단계 10 증거 및 재현](../../working/task_m100_6963_stage10.md)을 따른다.
+최신 devel과 merge-tree 충돌 없음. 이 기록은 GitHub approve·merge 승인이 아니다.
+
+## 최초 제출 대상과 범위
 
 | 항목 | 확인값 |
 | --- | --- |

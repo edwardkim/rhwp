@@ -1,0 +1,26 @@
+{
+  "input": "hyperlink-preservation.hwpx",
+  "pdf": "hyperlink-preservation.pdf",
+  "sha256": {
+    "hyperlink-preservation.hwpx": "f556dd449ddfd77e19e006214280f3dc5c4d36096d65fbfaaf1a58e7a989ac28",
+    "hyperlink-preservation.pdf": "4172302dcec7998f13583c2c6fd98aadea9a83335156f15fb08f490e0eef8b38"
+  },
+  "pages": 1,
+  "annotations": [
+    {
+      "page": 1,
+      "subtype": "/Link",
+      "action": {
+        "/Type": "/Action",
+        "/S": "/URI",
+        "/URI": "https://www.hancom.com/"
+      },
+      "rect": [
+        84.747955,
+        732.39911,
+        172.49583,
+        742.89886
+      ]
+    }
+  ]
+}
