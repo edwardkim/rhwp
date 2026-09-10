@@ -87,6 +87,24 @@ enum Exempt {
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "hyperlink.rs",
+        "insert_hyperlink_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "검증한 필드 삽입 후보를 공통 commit helper에 넘긴다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "update_hyperlink_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "주소가 바뀐 경우에만 공통 commit helper로 적용한다. helper가 구역 raw_stream을 무효화하며 동일 주소는 무변경이다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "remove_hyperlink_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "표시 글자를 보존한 제거 후보를 공통 commit helper로 적용한다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+    ),
+    (
         "commands/object_ops/table.rs",
         "delete_cell_picture_control_by_path_native",
         Exempt::DelegatesTo("delete_cell_control_by_path_native"),
