@@ -5,7 +5,7 @@
 - 작성일: 2026-09-10
 - 작성자·담당자: edwardkim (메인테이너 자체 PR)
 - base: devel / source: task_m100_6950 / milestone: v1.0.0
-- 상태: Open 제출. 로컬 검증 완료, **GitHub CI·정식 self-review 확정·병합 승인 대기**.
+- 상태: Open. 코드 후보 CI 성공 확인·메인테이너 승인에 따른 self-review 완료. **문서 후속 HEAD 검증·병합 승인 대기**.
 - 제출 후보: `e4f2b1a38`.
 - 검증 제품: `a653d23ddfb08a65e88569a9f85b37389f41d500`.
 - 최신 base 통합: `61eb331b0a92a7c19e46e36d273ac1e1e4af2746`,
@@ -61,9 +61,71 @@ ink_match8.435%는 보조 지표로, 글꼴·텍스트의 픽셀 차이를 포�
 
 ## 다음 조건과 merge 후 comment 계획
 
-- 최신 PR head의 GitHub required checks를 확인한다. 로컬 성공으로 원격 CI를 대체하지 않는다.
-- CI 성공 뒤 메인테이너 승인에 따라 정식 self-review를 확정한다.
+- 문서 후속 HEAD의 GitHub required checks를 다시 확인한다. 코드 후보 성공만으로 후속 HEAD를 성공 처리하지 않는다.
 - 병합 방식·병합·이슈 close는 후속 승인 전 실행하지 않는다.
 - 병합 후 승인된 comment에는 #6950의 해결 규칙과 #1510 HWP1쪽/HWPX2쪽 보호 결과,
   위 시각 지표의 한계, 실제 merge SHA의 `mydocs/pr/assets/pr_6994_20260910/issue1510-hwp-physical-p1.png`
   raw 이미지 링크를 넣는다. 현재는 계획만 기록하며 comment를 게시하지 않는다.
+
+## 정식 self-review — 2026-09-10 21:37 KST
+
+자체 PR 경로(`collaborator_self_merge`)에 intake·local validation·visual fixture·대형 PR·
+review-only 지침을 적용했다. 외부 reviewer assign이나 자신의 PR에 GitHub approve 이벤트를
+시도하지 않는다. 메인테이너의 이번 승인은 self-review 진행이며 병합 승인과 구분한다.
+
+검토 HEAD는 `ed64c1af9da218a02f63eb2edea5c3eefd52e4ca`다.
+확인 당시33파일, +5,474/-288, 57commits였다. 추가분은 문서3,039줄·source1,151줄·
+tests1,284줄이며, 단계별 작업·통합 이력이 누적된 PR이다. 최종 base 대비 diff로 검토해
+이미 base에 반영된 CI 변경을 이번 PR의 제품 변경으로 세지 않았다.
+
+### 코드 및 보호 불변식 재검토
+
+- `ParagraphFloatPlacement`의 단 상대 좌표를 전체 표·첫 조각·후속 frame에서 공유하고,
+  새 frame에는 이전 앵커 거리를 재가산하지 않는 전달 경로를 확인했다.
+- `NextLine`의 문단 종료는 max 합성으로 중복 소비를 방지한다. `Exclusion`은 뒤 문단을
+  표 아래로 강제 이동시키지 않는다. stored-host 원점 복구는 단일 control·유효한 연속
+  저장 줄·진행량 일치에 제한돼 HashMap 순서에 따라 서로 다른 원점을 고르지 않는다.
+- 명시적 개행·탭·미확정 너비는 폭 부족의 증거로 조작하지 않는다. 무저장/재조판 줄에
+  오래된 저장 좌표를 덧씌우지 않는 분기와 NO_LS 본문의 잉크 높이 probe를 확인했다.
+- `resolved_table_top`은 표·캡션·내용 생성 전에 적용된다. 이미 paint한 트리의 bbox만
+  옮기는 실패 구현은 최종 diff에 없다. #6985·#6643의 독립 보정도 유지됐다.
+- 속성 조회는 공통 IR의 부호 있는 offset·0값·여백을 읽으며 raw를 합성하지 않는다.
+  새 integration source의25+3개 test 함수, 관련 기존 회귀와 전체 실행 근거를 대조했다.
+- baseline 추가는 신규 원본의 raw 헤더 차이3행뿐이다. 기존 쪽수·시각 임계치를 완화하지
+  않았다. `61eb331b0..ed64c1af9`에는 source/test/sample/PDF/Studio/Cargo 변경이 없다.
+
+### 실제 GitHub CI 완료 증거
+
+다음은 모두 위 **동일 HEAD**의 completed/success를 직접 조회한 결과다.
+
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/34476075873): Build & Test, Archive A/B/C/D,
+  Lint, Native Skia, frontend package 성공.
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34476075865): Rust·Python·JavaScript 분석 성공,
+  별도 GHAS CodeQL check도 success.
+- [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34476075502): Canvas visual diff 성공.
+- [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34476075796) 및
+  [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34476075660) 성공.
+- CI Impact Policy success. 확인 시 pending/failure 없음, MERGEABLE/CLEAN.
+  별도 WASM Build·frontend unit 등 skipped 항목은 실제 실행 성공으로 기록하지 않는다.
+
+### 시각 근거 고정과 한계
+
+대표 PNG를 다시 직접 열어 표 위 filler01~07과 표 아래 filler08 이후 흐름을 확인했다.
+이미 기록된 메인테이너 원본·SVG·WASM 판정과 통합 SVG6개 동일성 증거를 함께 사용한다.
+정확한 입력/대표 증적 SHA-256:
+
+- 원본 `samples/hwpx/20260909-para-table.hwpx`:
+  `cbf2ee7235861e93011d80834bfc49525349f6776c929b98ebd4f06003581d07`
+- 기준 `pdf/hwpx/20260909-para-table-2024.pdf`:
+  `c24244980c2c428b06575a1d948349a0971ba168898956a2bbfcccda816dc5ad`
+- 위 대표 PNG: `7b61fef189dfb9271e1112f19cb26465a0901274eea0803a54751b68c235df5c`
+
+이 검토에서 추가 차단 결함은 발견하지 못했다. 코드 규모에 따른 영향 위험은 넓은 회귀와
+실문서 판정으로 확인했지만, 미측정 전면 성능·모든 표 분할 정책·로그 경고 해소까지 보증하지 않는다.
+
+## 최종 판정
+
+- **판정: 승인** — 검토 범위 내 추가 코드 보정 사항 없음.
+- 원격 조치: 이 결과·오늘할일·최종 보고서만 동일 branch의 문서 후속 commit으로 제출한다.
+- merge 전 조건: 문서 후속 HEAD의 required checks 성공, 최신 mergeability 재확인,
+  **메인테이너의 별도 병합 승인**. issue close·branch/worktree 삭제는 아직 수행하지 않는다.

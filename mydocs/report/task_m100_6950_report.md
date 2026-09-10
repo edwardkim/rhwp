@@ -3,7 +3,7 @@
 - Issue: [#6950](https://github.com/edwardkim/rhwp/issues/6950)
 - 작성일: 2026-09-10
 - 브랜치: `task_m100_6950`
-- 상태: 필수 로컬 검증 완료, [Open PR #6994](https://github.com/edwardkim/rhwp/pull/6994) 제출. 원격 CI 확인 대기.
+- 상태: [Open PR #6994](https://github.com/edwardkim/rhwp/pull/6994)의 `ed64c1af9` CI 성공 확인·self-review 승인. 문서 후속 HEAD 검증·별도 병합 승인 대기.
 - 상세 이력: [Stage 1](../working/task_m100_6950_stage1.md),
   [Stage 2](../working/task_m100_6950_stage2.md), [Stage 3](../working/task_m100_6950_stage3.md)
 
@@ -89,7 +89,9 @@ readiness의 초기 폰트·context·커서 경고도 로그에 보존했다. �
 ## 5. 남은 조건과 한계
 
 - 검증 완료 후보 `e4f2b1a38`을 push해 PR #6994를 생성했다. archive 제출 검증 기록·오늘할일·대표 PNG를 같은 PR에 포함한다.
-- self-review 확정·병합·이슈 close는 최신 GitHub CI 확인 및 메인테이너의 후속 승인 절차다.
+- `ed64c1af9`의 CI·CodeQL·Render Diff·Adapter·Proptest 성공 후 메인테이너 승인에 따라
+  [self-review](../pr/archives/pr_6994_review.md)를 완료했다. 추가 차단 결함은 발견하지 못했다.
+  문서 후속 HEAD 검증·병합·이슈 close는 별도 후속 절차로 남아 있다.
 - 시각 지표는 폰트·래스터 차이를 포함하며 전체 fidelity의 합격 점수가 아니다.
 - 성능은 공개 회귀 검사로 확인하며 동일 환경 전후의 전면적 성능 비교는 별도 측정하지 않았다.
 - parser·serializer의 모든 표 정책이나 #6929·#6946·#6870의 해결까지 주장하지 않는다.
