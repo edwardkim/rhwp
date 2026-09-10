@@ -78,14 +78,15 @@ Studio에서 HTTP/HTTPS 텍스트 링크를 삽입·수정·제거하고 HWP/HWP
 
 ## 검증 및 원격 작업 절차
 
-현재 작업은 collaborator의 신규 내부 구현이다. PR 채번 이전이므로 오늘할일과 PR review 문서는
-생성하지 않는다. 관련 절차는 `manual/pr_review/collaborator_self_merge.md`를 따른다.
+현재 작업은 collaborator의 신규 내부 구현이다. 승인 후 [PR #6984](https://github.com/edwardkim/rhwp/pull/6984)를
+생성했고, 채번 뒤 오늘할일과 archive self-review를 같은 PR의 후속 문서 commit에 포함한다.
+관련 절차는 `manual/pr_review/collaborator_self_merge.md`를 따른다.
 
 - 개발 중: 해당 기능 focused Rust test, TypeScript/관련 Node test, WASM 및 실제 브라우저 확인.
 - Rust test source는 `tests/cases/`에 작성하고 파생 suite는 review worktree에서만 준비한다.
 - PR 준비: `manual/pr_review/local_validation.md` 4.3의 Rust lint 전체 묶음,
   변경 범위에 해당하는 release-test/Native Skia/WASM/Studio 회귀 및 시각 증적.
-- 사용자 승인 범위는 이슈 등록·착수·로컬 구현이다. remote push, PR 생성, merge는 별도 승인 단계다.
+- 사용자 승인으로 이슈 등록·구현·검증·remote push·PR 생성을 마쳤다. 최신 CI와 merge 판단은 남아 있다.
 - 기본 HTTP/HTTPS의 로컬 여정은 검증했으나, 배포·모든 브라우저/컨텍스트 지원 완료로 표시하지 않는다.
 
 ## 참고

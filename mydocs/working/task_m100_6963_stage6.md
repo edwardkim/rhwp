@@ -3,7 +3,7 @@
 - Issue: [#6963](https://github.com/edwardkim/rhwp/issues/6963)
 - 실행일: 2026-09-10
 - 최초 검증 후보: `1a3d72617`; 분류 가드 보정 후보: `b05cadb0e` (제품 코드 불변)
-- 상태: 보정 후보의 필수 로컬 통합 검증·PR 본문 준비 완료. 원격 push·PR 생성 승인 대기.
+- 상태: 필수 로컬 통합 검증 완료. 승인 후 [PR #6984](https://github.com/edwardkim/rhwp/pull/6984) 생성, 최신 CI·병합 판단 대기.
 
 ## 적용 절차와 환경
 
@@ -11,7 +11,9 @@ base route: `collaborator_self_merge.md`.
 modifiers: `local_validation.md`, `visual_fixture_evidence.md`.
 loaded documents: `pr_review_workflow.md`, `pr_review/README.md` 및 위 자식 문서,
 `dev_environment_guide.md`, `edit_command_review_checklist.md`.
-PR 번호가 없어 번호 기반 review·오늘할일은 생성하지 않았다.
+최초 로컬 준비 때는 PR 번호가 없어 review·오늘할일을 만들지 않았다. 승인된 게시로 #6984를 받은 뒤
+[archive self-review](../pr/archives/pr_6984_review.md)와 [오늘할일](../orders/20260910.md)을 후속 문서 commit에 포함한다.
+게시 단계에서 intake, 대형 PR 예외, review-only fast-pass 보조 절차도 추가로 읽었다.
 
 macOS Apple Silicon, 논리 CPU 12개, 메모리 24GiB에서 nextest 기본 동시성을 사용한다.
 Cargo 작업은 전용 review worktree의 고정 `target/pr-review`에서 순차 실행한다.
@@ -127,8 +129,8 @@ URI·영역 보존이 이번 범위다. 신규 mailto·파일·내부 책갈피 
 bare `createEmpty()`의 최소 IR 저장 문제는 실제 Studio의 `createBlankDocument()` 경로와
 분리한 잔여 제약이다. 한컴과 전체 조판이 일치한다고 주장하지 않는다.
 
-push·PR 생성·merge는 아직 실행하지 않았다. 본문과 제목은 ignored
+승인 후 upstream 작업 브랜치에 push하고 devel 대상 Open PR #6984를 생성했다. 본문과 제목 원본은 ignored
 `output/issue6963-pr-preparation/pr-body.md`, `pr-title.txt`에 준비했다.
 검증한 제품·테스트 후보는 `b05cadb0e`이며, 후속 커밋은 문서·중간 증적 정리만 포함한다.
-원격 push·PR 생성의 승인을 받은 뒤 게시한다. 사용자 원래 checkout의 `samples/exam_eng.pdf` 변경은
+GitHub CI는 진행 중이고 merge는 미실행이다. 사용자 원래 checkout의 `samples/exam_eng.pdf` 변경은
 그대로 보존한다.
