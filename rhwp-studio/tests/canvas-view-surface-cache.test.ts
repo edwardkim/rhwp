@@ -268,7 +268,6 @@ test('surface plan 재래스터가 실패한 쪽은 active surface를 놓아 다
         getCanvasSurfaceLayerCount: () => 4,
       },
       viewportManager: { getZoom: () => 1 },
-      materiallyVisiblePages: () => [0, 1],
       pageSurfaceDescriptor: () => null,
       reconcilePageSurfaceBudget: () => undefined,
       applySurfaceDecisionDiagnostics: () => undefined,

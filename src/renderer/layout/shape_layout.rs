@@ -2597,6 +2597,38 @@ impl LayoutEngine {
         textbox_node.bbox.height = new_bottom - new_top;
     }
 
+    /// 비인라인 글상자: 절대배치 자식 도형(하단 장식 등)이 박스 세로를 넘으면
+    /// 한글은 박스를 내용 높이에 맞춰 늘린다(재현 문서 B 글상자 실측 —
+    /// 원본 박스가 선언보다 34px 큼). 텍스트 줄 초과는 대상이 아니다(연결
+    /// 글상자 오버플로 관행 보존).
+    fn expand_textbox_to_object_children(
+        shape_node: &mut RenderNode,
+        textbox_node: &mut RenderNode,
+        bottom_padding: f64,
+    ) {
+        let object_bottom = textbox_node
+            .children
+            .iter()
+            .filter(|c| !matches!(c.node_type, RenderNodeType::TextLine(_)))
+            .map(|c| {
+                let own = c.bbox.y + c.bbox.height;
+                Self::max_descendant_bottom(c).map_or(own, |d| d.max(own))
+            })
+            .fold(f64::NEG_INFINITY, f64::max);
+        if !object_bottom.is_finite() {
+            return;
+        }
+        let textbox_bottom = textbox_node.bbox.y + textbox_node.bbox.height;
+        if object_bottom > textbox_bottom {
+            textbox_node.bbox.height = object_bottom - textbox_node.bbox.y;
+        }
+        let shape_bottom = shape_node.bbox.y + shape_node.bbox.height;
+        let required_shape_bottom = object_bottom + bottom_padding;
+        if required_shape_bottom > shape_bottom {
+            shape_node.bbox.height = required_shape_bottom - shape_node.bbox.y;
+        }
+    }
+
     fn expand_inline_textbox_to_content(
         shape_node: &mut RenderNode,
         textbox_node: &mut RenderNode,
@@ -2857,6 +2889,11 @@ impl LayoutEngine {
                         margin_bottom,
                     );
                 } else {
+                    Self::expand_textbox_to_object_children(
+                        shape_node,
+                        &mut textbox_node,
+                        margin_bottom,
+                    );
                     Self::relax_textbox_clip_to_content(&mut textbox_node);
                 }
                 shape_node.children.push(textbox_node);
@@ -2919,6 +2956,11 @@ impl LayoutEngine {
                         margin_bottom,
                     );
                 } else {
+                    Self::expand_textbox_to_object_children(
+                        shape_node,
+                        &mut textbox_node,
+                        margin_bottom,
+                    );
                     Self::relax_textbox_clip_to_content(&mut textbox_node);
                 }
                 shape_node.children.push(textbox_node);
@@ -3378,14 +3420,23 @@ impl LayoutEngine {
                             inline_x += child_w;
                             (x, inline_obj_y)
                         } else {
-                            // 절대 위치 도형
+                            // 절대 위치 도형 — 세로 기준이 Para(앵커 문단)이면 글상자
+                            // 상단이 아니라 앵커 문단의 시작 y 에서 오프셋을 적용한다.
+                            let anchor_y = if matches!(
+                                child_common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Para
+                            ) {
+                                para_start_y
+                            } else {
+                                base_y
+                            };
                             (
                                 base_x
                                     + hwpunit_to_px(
                                         child_common.horizontal_offset as i32,
                                         self.dpi,
                                     ),
-                                base_y
+                                anchor_y
                                     + hwpunit_to_px(child_common.vertical_offset as i32, self.dpi),
                             )
                         };
@@ -3642,6 +3693,11 @@ impl LayoutEngine {
                     margin_bottom,
                 );
             } else {
+                Self::expand_textbox_to_object_children(
+                    shape_node,
+                    &mut textbox_node,
+                    margin_bottom,
+                );
                 Self::relax_textbox_clip_to_content(&mut textbox_node);
             }
             shape_node.children.push(textbox_node);

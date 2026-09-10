@@ -1125,7 +1125,10 @@ export class PageRenderer {
       return;
     }
     const retryKey = this.buildImageRetryKey(pageIdx, imageCount, rawSvgCount, policy);
-    if (retryKey !== null && this.imageRetryCounts.get(pageIdx) === retryKey) return;
+    // 완료된 decode만 재사용한다. 같은 그림이어도 이전 bitmap의 job이 아직 대기 중이면
+    // 새 canvas/scale을 대상으로 교체해야 구 배율 callback이 최신 surface를 덮지 않는다.
+    if (retryKey !== null && this.imageRetryCounts.get(pageIdx) === retryKey
+      && !this.reRenderJobs.has(pageIdx)) return;
 
     this.cancelReRender(pageIdx);
     if (retryKey === null) this.imageRetryCounts.delete(pageIdx);
@@ -1165,6 +1168,10 @@ export class PageRenderer {
 
     // 자체 prefetch로 실제 decode를 마친 경우에만 fallback보다 먼저 다시 그린다.
     queueMicrotask(() => {
+      // 취소/교체된 microtask 자체는 큐에서 제거할 수 없다. 완료뿐 아니라 시작도
+      // 현재 job/token에 한정해 구 요청이 새 문서의 layer 조회·decode를 만들지 않게 한다.
+      if (job.completed || this.reRenderJobs.get(pageIdx) !== job
+        || this.prefetchRequestTokens.get(pageIdx) !== prefetchRequestToken) return;
       this.prefetchLayerImages(pageIdx, rawSvgCount, prefetchRequestToken)
         .then((decoded) => {
           if (decoded) finish();
@@ -1397,6 +1404,8 @@ export class PageRenderer {
     this.prefetchRequestTokens.delete(pageIdx);
     const job = this.reRenderJobs.get(pageIdx);
     if (job) {
+      // 미완료 job의 취소는 decode 완료가 아니다. 같은 그림의 다음 요청을 허용한다.
+      this.imageRetryCounts.delete(pageIdx);
       job.completed = true;
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
@@ -1406,7 +1415,8 @@ export class PageRenderer {
 
   /** 모든 지연 재렌더링을 취소한다 */
   cancelAll(): void {
-    for (const job of this.reRenderJobs.values()) {
+    for (const [pageIdx, job] of this.reRenderJobs) {
+      this.imageRetryCounts.delete(pageIdx);
       job.completed = true;
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
