@@ -180,6 +180,94 @@ fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
 }
 
 #[test]
+fn tac_full_page_picture_routes_to_the_page_holding_its_own_stored_line() {
+    use crate::model::control::Control;
+    use crate::model::image::Picture;
+    use crate::renderer::page_layout::PageLayoutInfo;
+
+    // [#6972] 56288 규제영향분석서 문단 0 의 형상 — 전면 표지 그림이 첫 저장 줄을
+    // 통째로 소유하고, 문단의 유일한 글자는 둘째 줄에 있다.
+    const PICTURE_HU: i32 = 72347;
+    let mut picture = Picture::default();
+    picture.common.treat_as_char = true;
+    picture.common.height = PICTURE_HU as crate::model::HwpUnit;
+    let para = Paragraph {
+        text: "< 규제 개요 >".to_string(),
+        char_offsets: (8..17).collect(),
+        controls: vec![Control::Picture(Box::new(picture))],
+        line_segs: vec![
+            LineSeg {
+                text_start: 0,
+                line_height: PICTURE_HU,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 8,
+                line_height: 1500,
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    // 글자 위치 투영은 개체가 모든 글자 앞에 있으면 **다음** 줄을 가리킨다 —
+    // 이 quirk 자체는 #6078 이 기록한 그대로이고, 여기서 잠근다.
+    assert_eq!(
+        crate::renderer::layout::control_line_seg_index(&para, 0),
+        Some(1),
+        "글자 위치 투영의 알려진 quirk 가 유지되어야 이 회귀의 전제가 성립한다"
+    );
+
+    let layout = PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), 96.0);
+    let first_page = PageContent {
+        page_index: 0,
+        page_number: 1,
+        page_number_restarted: false,
+        section_index: 0,
+        layout,
+        column_contents: vec![ColumnContent {
+            column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
+            items: vec![PageItem::PartialParagraph {
+                para_index: 0,
+                start_line: 0,
+                end_line: 1,
+            }],
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: Vec::new(),
+            used_height: 0.0,
+            wrap_anchors: Default::default(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+        }],
+        active_header: None,
+        active_footer: None,
+        page_number_pos: None,
+        page_hide: None,
+        footnotes: Vec::new(),
+        active_master_page: None,
+        extra_master_pages: Vec::new(),
+        ladder_band_tables: Vec::new(),
+    };
+    // 조판이 둘째 줄까지 온 시점 — 그림을 여기 두면 표지가 두 쪽에 그려진다.
+    let current_items = vec![PageItem::PartialParagraph {
+        para_index: 0,
+        start_line: 1,
+        end_line: 2,
+    }];
+
+    assert_eq!(
+        find_inline_control_target_page(&[first_page], &current_items, 0, 0, &para),
+        Some((0, 0)),
+        "전면 TAC 그림은 자기 저장 줄이 있는 첫 쪽으로 라우팅해야 한다"
+    );
+}
+
+#[test]
 fn page_bottom_text_box_fit_keeps_line_even_when_advance_overflows() {
     let paginator = Paginator::with_default_dpi();
     let styles = ResolvedStyleSet::default();

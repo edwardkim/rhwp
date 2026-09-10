@@ -1333,13 +1333,19 @@ pub(crate) fn tac_object_flow_height_px(
     ctrl: &crate::model::control::Control,
     dpi: f64,
 ) -> Option<f64> {
+    tac_object_flow_height_hu(ctrl).map(|height_hu| hwpunit_to_px(height_hu, dpi))
+}
+
+/// [`tac_object_flow_height_px`] 와 같은 값의 HWPUNIT 판. 저장 `LineSeg.line_height`
+/// 와 직접 견주는 자리는 dpi 를 거치지 않아야 반올림 없이 같은 줄을 짚는다.
+#[inline]
+pub(crate) fn tac_object_flow_height_hu(ctrl: &crate::model::control::Control) -> Option<i32> {
     use crate::model::control::Control;
-    let height_hu = match ctrl {
-        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-        Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
-        _ => return None,
-    };
-    Some(hwpunit_to_px(height_hu, dpi))
+    match ctrl {
+        Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
+        Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
+        _ => None,
+    }
 }
 
 /// 저장 줄 높이가 문단의 인라인 개체 하나로 설명될 때, 그 개체의 흐름 높이(px).
