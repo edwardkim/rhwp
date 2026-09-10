@@ -57,9 +57,10 @@ CI 정책 변경 범위이므로 Rust 전체 회귀·WASM 빌드·문서 시각 
 - 병합 시각: 2026-09-10 12:04:28 UTC (21:04:28 KST).
 - merge SHA: `ec822767ae52926479e8fe58bc7003b4e6c82cba`. 기본 작업공간 devel을 이 SHA까지 fast-forward했다.
 - 최종 PR CI: [CI](https://github.com/edwardkim/rhwp/actions/runs/34473215496), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34473215463), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34473215366), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34473215461), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34473215551), [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/34474548088)가 성공했다. 실행된 A/B/C/D build·test worker, Lint, Native Skia, Frontend package 및 CodeQL 세 언어 분석도 성공했다.
-- devel CI: [CI](https://github.com/edwardkim/rhwp/actions/runs/34474675555), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34474675431), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34474675435), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34474675516)는 작성 시점 실행 중이다. [Close Issues](https://github.com/edwardkim/rhwp/actions/runs/34474675163)는 성공했다. 최종 결과 전에는 후속처리 완료로 기록하지 않는다.
+- devel CI: [CI](https://github.com/edwardkim/rhwp/actions/runs/34474675555), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34474675431), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/34474675435), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34474675516), [Close Issues](https://github.com/edwardkim/rhwp/actions/runs/34474675163)가 모두 success로 완료됐다. 각 실행의 SHA와 push 이벤트, 실행된 필수 worker 성공 및 정책상 skip을 API로 확인했다. CI timing 갱신도 성공했다.
+- 이번 최초 적용 PR의 post-merge는 Full이었다. 실제 로그는 `Trusted base has no compatible verifier; running full. trusted base has no review-bridge verifier`로, 병합 전 신뢰 base에 새 verifier 계약이 없는 경우의 안전한 fallback이다. 후속 코드 PR의 재사용 성공으로 해석하지 않는다.
 - PR closing issue references는 비어 있다. #6815는 후속 운영 검증을 위해 OPEN을 유지한다.
-- 사용자 지시에 따라 이 리뷰와 오늘할일의 병합 후 상태 보완은 별도 문서 전용 PR로 제출한다. source/test/workflow 및 검증 로그를 섞지 않는다.
+- 사용자 지시에 따라 이 리뷰와 오늘할일의 병합 후 상태 보완은 별도 문서 전용 [PR #6993](https://github.com/edwardkim/rhwp/pull/6993)으로 제출했다. source/test/workflow 및 검증 로그를 섞지 않았다. #6993의 최종 head CI와 devel 반영 후 중복 없는 코멘트 및 승인된 branch/worktree 정리를 수행한다.
 
 ## #6992를 이용한 후속 CI 검증 가능성
 
