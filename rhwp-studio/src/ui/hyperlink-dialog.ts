@@ -35,8 +35,6 @@ export class HyperlinkDialog extends ModalDialog {
     };
     this.textInput = input('표시할 문자열', 'hyperlink-text');
     this.textInput.value = this.initial.text;
-    this.textInput.readOnly = !this.initial.canInsertText;
-    if (this.textInput.readOnly) this.textInput.title = '표시할 문자열은 문서에서 직접 편집할 수 있습니다.';
     const targets = document.createElement('fieldset');
     targets.className = 'dialog-hyperlink-target';
     const legend = document.createElement('legend');

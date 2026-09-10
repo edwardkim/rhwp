@@ -33,8 +33,8 @@ export const hyperlinkCommand: CommandDef = {
         if (JSON.stringify(services.wasm.getHyperlinkContext(target)) !== JSON.stringify(context)) {
           throw new Error('문서 내용이 바뀌었습니다. 대화상자를 닫고 다시 열어 주세요.');
         }
-        if (edit.kind === 'save' && existing?.uri === edit.uri) return;
-        if (edit.kind === 'save' && canInsertText && (!edit.text || /[\r\n\t\x00-\x1f\x7f]/.test(edit.text))) {
+        if (edit.kind === 'save' && existing?.uri === edit.uri && existing.text === edit.text) return;
+        if (edit.kind === 'save' && (canInsertText || edit.text !== text) && (!edit.text.trim() || /[\r\n\t\x00-\x1f\x7f]/.test(edit.text))) {
           throw new Error('표시할 글자를 한 줄로 입력해 주세요.');
         }
         let applied = false;
@@ -48,7 +48,8 @@ export const hyperlinkCommand: CommandDef = {
               wasm.removeHyperlink(target, existing.fieldId);
               applyHyperlinkFormat(wasm, target, existing.start, existing.end, null);
             } else if (existing) {
-              if (!wasm.updateHyperlink(target, existing.fieldId, edit.uri)) return null;
+              wasm.updateHyperlink(target, existing.fieldId, edit.uri);
+              if (edit.text !== text) wasm.replaceHyperlinkText(target, existing.fieldId, edit.text);
             } else {
               let linkEnd = end;
               if (canInsertText) {
@@ -61,13 +62,17 @@ export const hyperlinkCommand: CommandDef = {
                 linkEnd = start + Array.from(edit.text).length;
               }
               // 문자열 삽입 뒤 필드 검증이 실패해도 snapshot이 전체 작업을 복원한다.
-              wasm.insertHyperlink(target, start, linkEnd, edit.uri);
+              const fieldId = wasm.insertHyperlink(target, start, linkEnd, edit.uri);
+              if (!canInsertText && edit.text !== text) {
+                wasm.replaceHyperlinkText(target, fieldId, edit.text);
+                linkEnd = start + Array.from(edit.text).length;
+              }
               applyHyperlinkFormat(wasm, target, start, linkEnd, '#0000ff');
               applied = true;
               return { ...pos, charOffset: linkEnd };
             }
             applied = true;
-            return { ...pos, charOffset: existing?.end ?? end };
+            return { ...pos, charOffset: existing && edit.kind === 'save' ? existing.start + Array.from(edit.text).length : existing?.end ?? end };
           },
         });
         if (!applied) throw new Error('하이퍼링크를 적용할 수 없습니다. 편집 모드를 확인해 주세요.');

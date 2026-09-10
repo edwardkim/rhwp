@@ -3431,6 +3431,11 @@ export class WasmBridge {
     return this.doc.updateHyperlinkEx(JSON.stringify({ target, fieldId, uri }));
   }
 
+  replaceHyperlinkText(target: HyperlinkTarget, fieldId: number, text: string): boolean {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.replaceHyperlinkTextEx(JSON.stringify({ target, fieldId, text }));
+  }
+
   removeHyperlink(target: HyperlinkTarget, fieldId: number): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     this.doc.removeHyperlinkEx(JSON.stringify({ target, fieldId }));

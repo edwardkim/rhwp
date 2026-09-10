@@ -476,3 +476,40 @@ fn unknown_schemes_survive_neighbor_edit_and_bad_nested_paths_fail_atomically() 
         assert_eq!(links[1].uri, "https://example.org/new");
     }
 }
+
+#[test]
+fn replace_display_text_keeps_adjacent_fields_and_roundtrips() {
+    let mut core = blank("앞가나다뒤");
+    let target = HyperlinkTarget::body(0, 0);
+    let ids: Vec<_> = (1..4)
+        .map(|i| {
+            core.insert_hyperlink_native(&target, i, i + 1, "https://example.com")
+                .unwrap()
+        })
+        .collect();
+    for text in ["새로운😀문자열", "짧", "다시 늘림"] {
+        assert!(core
+            .replace_hyperlink_text_native(&target, ids[1], text)
+            .unwrap());
+        let expected = core.hyperlinks_native(&target).unwrap();
+        assert_eq!(expected[0].text, "가");
+        assert_eq!(expected[1].text, text);
+        assert_eq!(expected[2].text, "다");
+        assert_eq!(expected[0].end, expected[1].start);
+        assert_eq!(expected[1].end, expected[2].start);
+        assert_eq!(expected.iter().map(|l| l.field_id).collect::<Vec<_>>(), ids);
+        assert!(!core
+            .replace_hyperlink_text_native(&target, ids[1], text)
+            .unwrap());
+        for reopened in roundtrips(&core) {
+            assert_eq!(reopened.hyperlinks_native(&target).unwrap(), expected);
+        }
+    }
+    let before = core.hyperlinks_native(&target).unwrap();
+    for invalid in ["", " ", "두\n줄", "탭\t"] {
+        assert!(core
+            .replace_hyperlink_text_native(&target, ids[1], invalid)
+            .is_err());
+        assert_eq!(core.hyperlinks_native(&target).unwrap(), before);
+    }
+}

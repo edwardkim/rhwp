@@ -209,6 +209,74 @@ impl DocumentCore {
         Ok(true)
     }
 
+    /// 표시 문자열만 교체한다. 필드 ID·주소·부가 정보와 인접 필드 범위를 보존한다.
+    pub fn replace_hyperlink_text_native(
+        &mut self,
+        target: &HyperlinkTarget,
+        field_id: u32,
+        text: &str,
+    ) -> Result<bool, HwpError> {
+        if text.trim().is_empty() || text.chars().any(char::is_control) {
+            return Err(invalid("표시할 글자를 한 줄로 입력해 주세요"));
+        }
+        self.validate_hyperlink_paragraph(target)?;
+        let mut candidate = self.hyperlink_paragraph(target)?.clone();
+        let (range_idx, _) = find_link(&candidate, field_id)?;
+        let ranges = candidate.field_ranges.clone();
+        let range = &ranges[range_idx];
+        let start = range.start_char_idx;
+        let end = range.end_char_idx;
+        if ranges
+            .iter()
+            .enumerate()
+            .any(|(idx, r)| idx != range_idx && start < r.end_char_idx && r.start_char_idx < end)
+        {
+            return Err(invalid("겹치는 필드의 표시 문자열은 수정할 수 없습니다"));
+        }
+        let old: String = candidate
+            .text
+            .chars()
+            .skip(start)
+            .take(end - start)
+            .collect();
+        if old == text {
+            return Ok(false);
+        }
+        let raw_start = raw_boundary(&candidate, start);
+        let shape = candidate
+            .char_shapes
+            .iter()
+            .rev()
+            .find(|s| s.start_pos <= raw_start)
+            .cloned();
+        let new_len = text.chars().count();
+        // 먼저 삽입하여 빈 필드로 축소되는 중간 상태를 피한다.
+        candidate.insert_text_at(start, text);
+        candidate.delete_text_at(start + new_len, end - start);
+        // 경계 삽입의 일반 규칙이 이전 링크 끝까지 늘리지 않도록 정본에서 복원한다.
+        for (idx, original) in ranges.into_iter().enumerate() {
+            let mut adjusted = original;
+            if idx == range_idx {
+                adjusted.end_char_idx = start + new_len;
+            } else if adjusted.start_char_idx >= end {
+                adjusted.start_char_idx = adjusted.start_char_idx - (end - start) + new_len;
+                adjusted.end_char_idx = adjusted.end_char_idx - (end - start) + new_len;
+            }
+            candidate.field_ranges[idx] = adjusted;
+        }
+        // 새 글자는 기존 링크 첫 글자의 서식을 이어받는다.
+        if let Some(mut shape) = shape {
+            shape.start_pos = raw_start;
+            candidate.char_shapes.retain(|s| s.start_pos != raw_start);
+            candidate.char_shapes.push(shape);
+            candidate.char_shapes.sort_by_key(|s| s.start_pos);
+        }
+        super::queries::field_query::rebuild_char_offsets(&mut candidate);
+        candidate.stored_text_partition_dirty = true;
+        self.commit_hyperlink_paragraph(target, candidate, field_id)?;
+        Ok(true)
+    }
+
     /// 링크의 시작/끝 마커만 제거한다. 표시 문자열과 글자 서식은 남긴다.
     pub fn remove_hyperlink_native(
         &mut self,

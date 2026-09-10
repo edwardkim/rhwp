@@ -57,7 +57,7 @@ await runTest('#6963 hyperlink editor UI', async ({ page }) => {
     };
   });
   await page.mouse.move(point.x, point.y);
-  assert.match(await page.$eval('#scroll-container', el => el.title), /https:\/\/example.com/);
+  assert.equal(await page.$eval('#scroll-container', el => el.title), 'https://example.com/한글?q=1#부분');
   await page.mouse.click(point.x, point.y);
   await page.waitForFunction(() => window.__openedLinks.length === 1);
   assert.equal((await props()).textColor.toLowerCase(), '#800080');
@@ -87,10 +87,14 @@ await runTest('#6963 hyperlink editor UI', async ({ page }) => {
   await page.click('.context-menu [data-cmd="hyperlink:edit"]');
   await page.waitForSelector('#hyperlink-uri');
   assert.equal(await page.$('[role="alertdialog"]'), null);
+  assert.equal(await page.$eval('#hyperlink-text', el => el.readOnly), false);
+  await page.$eval('#hyperlink-text', el => { el.value = '바뀐 표시 문자열 😀'; el.dispatchEvent(new Event('input', { bubbles: true })); });
   await page.$eval('#hyperlink-uri', el => { el.value = 'https://example.org/updated'; el.dispatchEvent(new Event('input', { bubbles: true })); });
   await page.click('.dialog-btn-primary');
   const links = () => page.evaluate(() => window.__wasm.getHyperlinkContext({ section: 0, para: 0, cellPath: [] }).links);
   assert.equal((await links())[0].uri, 'https://example.org/updated');
+  assert.equal((await links())[0].text, '바뀐 표시 문자열 😀');
+  assert.equal((await props()).textColor.toLowerCase(), '#800080');
   await page.mouse.click(point.x, point.y, { button: 'right' });
   await page.click('.context-menu [data-cmd="hyperlink:remove"]');
   assert.equal((await links()).length, 0);
@@ -99,7 +103,7 @@ await runTest('#6963 hyperlink editor UI', async ({ page }) => {
   assert.equal((await links()).length, 1);
   await page.evaluate(() => window.__inputHandler.performRedo());
   assert.equal((await links()).length, 0);
-  assert.equal(await page.evaluate(() => window.__wasm.getHyperlinkContext({ section: 0, para: 0, cellPath: [] }).text), '한컴 링크 테스트');
+  assert.equal(await page.evaluate(() => window.__wasm.getHyperlinkContext({ section: 0, para: 0, cellPath: [] }).text), '바뀐 표시 문자열 😀');
   // 삭제한 글자 또는 빈 페이지 우클릭에는 링크 명령이 없다.
   await page.mouse.click(point.x + 300, point.y + 100, { button: 'right' });
   assert.equal(await page.$('.context-menu [data-cmd="hyperlink:remove"]'), null);

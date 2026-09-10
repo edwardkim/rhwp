@@ -93,11 +93,11 @@ results.push('무선택 삽입·실패 원자 복원·실제 snapshot undo/redo'
 
 s.cursor(2);
 const same = s.open();
-same.apply({ kind: 'save', text: '', uri });
+same.apply({ kind: 'save', text: same.initial.text, uri });
 s.undo(); assert.deepEqual(context(s), initial); // 같은 주소 적용은 undo 엔트리가 아니다.
 s.redo();
 s.cursor(2);
-s.open().apply({ kind: 'save', text: '', uri: 'https://example.com/updated#수정' });
+s.open().apply({ kind: 'save', text: context(s).links[0].text, uri: 'https://example.com/updated#수정' });
 s.undo(); assert.equal(context(s).links[0].uri, uri);
 s.redo(); assert.equal(context(s).links[0].uri, 'https://example.com/updated#수정');
 results.push('동일 주소 무기록·주소 수정 undo/redo');
@@ -120,9 +120,22 @@ s.undo(); assert.deepEqual(context(s), beforeRemove);
 s.redo(); assert.equal(context(s).links.length, 0);
 results.push('연결 해제의 문자열 보존 및 undo/redo');
 s.select(0, 2);
-s.open().apply({ kind: 'save', uri, text: '' });
+s.open().apply({ kind: 'save', uri, text: Array.from(context(s).text).slice(0, 2).join('') });
 assert.equal(context(s).links[0].text, Array.from(beforeRemove.text).slice(0, 2).join(''));
 results.push('선택 문자열 삽입');
+const beforeRename = context(s);
+s.cursor(1);
+s.open().apply({ kind: 'save', uri, text: '수정한 표시 😀 문자열' });
+assert.equal(context(s).links[0].text, '수정한 표시 😀 문자열');
+assert.equal(context(s).links[0].fieldId, beforeRename.links[0].fieldId);
+for (const method of ['exportHwp', 'exportHwpx']) {
+  const reopened = new HwpDocument(doc[method]());
+  assert.deepEqual(JSON.parse(reopened.getHyperlinkContext(JSON.stringify(body))), context(s), method);
+  reopened.free();
+}
+s.undo(); assert.deepEqual(context(s), beforeRename);
+s.redo(); assert.equal(context(s).links[0].text, '수정한 표시 😀 문자열');
+results.push('표시 문자열 실제 수정·필드 ID 보존·양식 저장·undo/redo');
 s.cursor(0);
 const stale = s.open();
 doc.insertText(0, 0, 0, '외부');
@@ -146,8 +159,17 @@ const nestedPos = { ...position, paragraphIndex: 0, parentParaIndex: 74, cellPat
 const nested = session(lh, nestedPos);
 const original = context(nested, target);
 nested.cursor(original.links[0].start);
-nested.open().apply({ kind: 'save', uri, text: '' });
+nested.open().apply({ kind: 'save', uri, text: original.links[0].text });
 assert.equal(context(nested, target).links[0].uri, uri);
+nested.undo(); assert.deepEqual(context(nested, target), original);
+nested.cursor(original.links[0].start);
+nested.open().apply({ kind: 'save', uri, text: '중첩 셀 새 이름😀' });
+assert.equal(context(nested, target).links[0].text, '중첩 셀 새 이름😀');
+for (const method of ['exportHwp', 'exportHwpx']) {
+  const reopened = new HwpDocument(lh[method]());
+  assert.deepEqual(JSON.parse(reopened.getHyperlinkContext(JSON.stringify(target))), context(nested, target), method);
+  reopened.free();
+}
 nested.undo(); assert.deepEqual(context(nested, target), original);
 nested.cursor(0);
 nested.open().apply({ kind: 'save', text: '새 링크😀 ', uri });

@@ -47,7 +47,7 @@ export function hoverHyperlink(self: any, e: MouseEvent): boolean {
   }
   const hit = hyperlinkAtPointer(self, e);
   if (!hit) return false;
-  self.container.title = `${hit.link.uri}\n클릭하여 열기 · 우클릭하여 고치기/지우기`;
+  self.container.title = hit.link.uri;
   self.container.style.cursor = 'pointer';
   self.hyperlinkHover = true;
   return true;

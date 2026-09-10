@@ -27,6 +27,14 @@ struct UpdateOptions {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct TextOptions {
+    target: HyperlinkTarget,
+    field_id: u32,
+    text: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct RemoveOptions {
     target: HyperlinkTarget,
     field_id: u32,
@@ -59,6 +67,14 @@ impl HwpDocument {
         let o: UpdateOptions = parse(options_json)?;
         self.core
             .update_hyperlink_native(&o.target, o.field_id, &o.uri)
+            .map_err(Into::into)
+    }
+
+    #[wasm_bindgen(js_name = replaceHyperlinkTextEx)]
+    pub fn replace_hyperlink_text_ex(&mut self, options_json: &str) -> Result<bool, JsValue> {
+        let o: TextOptions = parse(options_json)?;
+        self.core
+            .replace_hyperlink_text_native(&o.target, o.field_id, &o.text)
             .map_err(Into::into)
     }
 

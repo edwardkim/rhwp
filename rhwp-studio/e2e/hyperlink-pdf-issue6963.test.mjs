@@ -114,8 +114,16 @@ await runTest('#6963 Studio hyperlink save/reopen and browser PDF', async ({ pag
   await createNewDocument(page);
   await page.click('button[data-cmd="insert:hyperlink"]');
   await page.waitForSelector('#hyperlink-text');
-  await page.type('#hyperlink-text', text);
+  await page.type('#hyperlink-text', '수정하기 전 링크 문자열');
   await page.type('#hyperlink-uri', uri);
+  await page.click('.dialog-btn-primary');
+  await page.waitForSelector('#hyperlink-text', { hidden: true });
+  await page.evaluate(() => { window.__inputHandler.cursor.clearSelection(); window.__inputHandler.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 1 }); });
+  await page.click('button[data-cmd="insert:hyperlink"]');
+  await page.waitForSelector('[role="alertdialog"]');
+  await page.click('.dialog-btn-primary');
+  await page.waitForSelector('#hyperlink-text');
+  await page.$eval('#hyperlink-text', (el, value) => { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); }, text);
   await page.click('.dialog-btn-primary');
   await page.waitForSelector('#hyperlink-text', { hidden: true });
   assert.equal(await page.evaluate(() => window.__documentState.isDirty()), true);
