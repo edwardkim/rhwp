@@ -2348,6 +2348,7 @@ impl LayoutEngine {
                         false,
                         false,
                         false,
+                        None,
                     );
                 }
             }
@@ -3118,6 +3119,7 @@ impl LayoutEngine {
                     false,
                     false,
                     false,
+                    None,
                 );
                 if table_bottom > max_table_bottom {
                     max_table_bottom = table_bottom;
@@ -3174,6 +3176,7 @@ impl LayoutEngine {
                 false,
                 false,
                 false,
+                None,
             );
             if table_bottom > max_table_bottom {
                 max_table_bottom = table_bottom;
@@ -3233,6 +3236,53 @@ impl LayoutEngine {
             bin_data_content,
             wrap_anchor,
         )
+    }
+
+    /// 저장 줄이 없는 본문의 exclusion 검사도 paint와 같은 frame의 첫 줄을 쓴다.
+    /// 0 높이 probe는 줄 시작이 표 위에 있다는 이유로 실제 잉크 겹침을 놓친다.
+    /// 개체를 가진 문단은 해당 개체의 흐름 owner에 남긴다.
+    pub(crate) fn computed_plain_text_probe_height(
+        &self,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        column_width: f64,
+        line_index: usize,
+        known_square_band: bool,
+    ) -> Option<f64> {
+        if !para.line_segs.is_empty() || !para.controls.is_empty() || para.text.trim().is_empty() {
+            return None;
+        }
+        let comp = composed?;
+        let style = styles.para_styles.get(comp.para_style_id as usize);
+        let inner = column_width - style.map_or(0.0, |s| s.margin_left + s.margin_right);
+        let frame =
+            crate::renderer::composer::ParagraphBox::body_for_style(column_width, style, self.dpi);
+        let current =
+            crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band(
+                comp,
+                para,
+                frame,
+                inner,
+                styles,
+                self.dpi,
+                self.profile.get().legacy_hwp3_stored_geometry(),
+                crate::renderer::composer::StoredRowMissPolicy::Reflow,
+                &self.body_float_carve_evidence.borrow(),
+                known_square_band,
+            )?;
+        let line = current.lines.get(line_index)?;
+        let font_size = crate::renderer::composed_line_max_font_size(line, para, styles);
+        let (height, _) = crate::renderer::corrected_line_metrics(
+            hwpunit_to_px(line.line_height, self.dpi),
+            hwpunit_to_px(line.line_spacing, self.dpi),
+            font_size,
+            style.map_or(crate::model::style::LineSpacingType::Percent, |s| {
+                s.line_spacing_type
+            }),
+            style.map_or(160.0, |s| s.line_spacing),
+        );
+        (height.is_finite() && height > 0.0).then_some(height)
     }
 
     /// 문단 일부를 레이아웃하여 단 노드에 추가
@@ -3316,7 +3366,8 @@ impl LayoutEngine {
                 section_index,
                 para_index,
                 None,
-                false,
+                // 현재 frame에서 재조판한 줄에 이전 저장 vpos를 다시 적용하지 않는다.
+                recomposed.is_some(),
                 false,
                 0.0,
                 multi_col_width_hu,
@@ -4238,6 +4289,9 @@ impl LayoutEngine {
         let para_topbottom_line_vpos_base: Option<(i32, f64)> = {
             if cell_ctx.is_none() && has_para_topbottom_float {
                 para.and_then(|p| {
+                    if p.stored_text_partition_dirty {
+                        return None;
+                    }
                     let range = p.line_segs.get(start_line..end)?;
                     if range.iter().any(|seg| seg.vertical_pos > 0)
                         && range
@@ -7455,6 +7509,7 @@ impl LayoutEngine {
                                     false,
                                     false,
                                     false,
+                                    None,
                                 );
                                 // 스킵 마커 등록 (별도 Table PageItem에서 중복 렌더 방지)
                                 tree.set_inline_shape_position(
@@ -8526,6 +8581,7 @@ impl LayoutEngine {
                                         false,
                                         false,
                                         false,
+                                        None,
                                     );
                                 }
                                 tree.set_inline_shape_position(

@@ -2428,6 +2428,7 @@ impl LayoutEngine {
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
     ) -> f64 {
         self.layout_table_with_wrapper_margin(
             tree,
@@ -2453,6 +2454,7 @@ impl LayoutEngine {
             allow_para_top_bleed,
             clamp_header_negative_para_offset,
             physical_outer_box_paint_inset,
+            resolved_table_top,
             false,
         )
     }
@@ -2483,6 +2485,7 @@ impl LayoutEngine {
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
         wrapper_margin_already_applied: bool,
     ) -> f64 {
         if table.cells.is_empty() {
@@ -2710,6 +2713,7 @@ impl LayoutEngine {
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
                             false,
+                            None,
                             true,
                         );
 
@@ -3053,7 +3057,16 @@ impl LayoutEngine {
 
         // inline_x_override가 있으면 외부에서 inline 위치를 계산했으므로 x/y 기준은 유지한다.
         // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
-        let flow_table_y = if inline_x_override.is_some() {
+        let flow_table_y = if let Some(table_top) = resolved_table_top {
+            // typeset에서 fit과 예약까지 확정한 표 상단은 다시 해석하지 않는다.
+            // 위 캡션은 예약된 상자의 내부이며 표 본체 앞에 놓는다.
+            table_top
+                + if render_caption {
+                    top_caption_flow_extra(&table.caption, caption_height, caption_spacing)
+                } else {
+                    0.0
+                }
+        } else if inline_x_override.is_some() {
             y_start + inline_top_caption_offset
         } else {
             let computed_y = self.compute_table_y_position(
@@ -6987,6 +7000,7 @@ impl LayoutEngine {
                                     false,
                                     clamp_header_negative_para_offset,
                                     false,
+                                    None,
                                 );
                                 inline_x += tac_om_l + tac_w + tac_om_r;
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
@@ -7153,6 +7167,7 @@ impl LayoutEngine {
                                 false,
                                 clamp_header_negative_para_offset,
                                 false,
+                                None,
                             );
                             if !hwpx_nested_behind_text_overlay {
                                 // [#5702] 어울림(Square/Tight/Through) 중첩표는 글이 옆으로
