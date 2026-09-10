@@ -11,11 +11,19 @@ pub enum TernaryRasterOperationError {
     NoSource { cause: String },
 }
 
-type BrushOnlyRopKey = (i32, i32, i32, i32, String);
+#[derive(PartialEq)]
+struct BrushOnlyRopKey {
+    rect: [i32; 4],
+    fill: String,
+    clip_id: Option<String>,
+    clip_rect: Option<[i32; 4]>,
+}
 
 #[derive(Default)]
 pub struct BrushOnlyRopSequence {
     state: Option<BrushOnlyRopSequenceState>,
+    suppressed_elements: Vec<usize>,
+    suppressed_definitions: Vec<usize>,
 }
 
 enum BrushOnlyRopSequenceState {
@@ -26,17 +34,22 @@ enum BrushOnlyRopSequenceState {
     AwaitFinalPatInvert {
         key: BrushOnlyRopKey,
         expected_element_count: usize,
+        mask_definition_index: Option<usize>,
     },
 }
 
 impl BrushOnlyRopSequence {
-    /// Returns true only for the contiguous fallback sequence
-    /// PATINVERT(key) -> DPA -> PATINVERT(key).
+    /// Keep the middle draw until the complete idiom is known. Mask bounds
+    /// must match, apart from the narrowly recognized halftone edge padding.
+    /// Only the final PATINVERT is suppressed immediately. Confirmed masks
+    /// and their owned definitions are removed when the SVG is finalized.
     fn observe(
         &mut self,
         operation: TernaryRasterOperation,
         key: BrushOnlyRopKey,
         element_count: usize,
+        mask_definition_index: Option<usize>,
+        allow_mask_edge_delta: bool,
     ) -> bool {
         let state = std::mem::take(&mut self.state);
         match (state, operation) {
@@ -46,10 +59,20 @@ impl BrushOnlyRopSequence {
                     expected_element_count,
                 }),
                 TernaryRasterOperation::DPA,
-            ) if element_count == expected_element_count => {
+            ) if element_count == expected_element_count
+                && key.clip_id == previous_key.clip_id
+                && key.clip_rect == previous_key.clip_rect =>
+            {
+                // Keep the existing outer XOR cancellation even when DPA has
+                // an overscan rectangle. Additional mask removal uses a
+                // separate, conservative geometry/halftone check.
+                let mask_definition_index = mask_definition_index.filter(|_| {
+                    Self::mask_rect_matches(key.rect, previous_key.rect, allow_mask_edge_delta)
+                });
                 self.state = Some(BrushOnlyRopSequenceState::AwaitFinalPatInvert {
                     key: previous_key,
                     expected_element_count: element_count + 1,
+                    mask_definition_index,
                 });
                 false
             }
@@ -57,9 +80,16 @@ impl BrushOnlyRopSequence {
                 Some(BrushOnlyRopSequenceState::AwaitFinalPatInvert {
                     key: previous_key,
                     expected_element_count,
+                    mask_definition_index,
                 }),
                 TernaryRasterOperation::PATINVERT,
-            ) if key == previous_key && element_count == expected_element_count => true,
+            ) if key == previous_key && element_count == expected_element_count => {
+                if let Some(index) = mask_definition_index {
+                    self.suppressed_elements.push(element_count - 1);
+                    self.suppressed_definitions.push(index);
+                }
+                true
+            }
             (_, TernaryRasterOperation::PATINVERT) => {
                 self.state = Some(BrushOnlyRopSequenceState::AwaitDpa {
                     key,
@@ -69,6 +99,115 @@ impl BrushOnlyRopSequence {
             }
             _ => false,
         }
+    }
+
+    fn mask_rect_matches(mask: [i32; 4], paint: [i32; 4], allow_edge_delta: bool) -> bool {
+        if mask == paint {
+            return true;
+        }
+        // The issue6469 fixture has 8x8 halftone DPA rectangles whose
+        // device-space edges differ by one unit from both outer XORs.
+        // Do not extend this approximation to arbitrary masks or tiny draws.
+        if !allow_edge_delta
+            || [mask[2], mask[3], paint[2], paint[3]]
+                .iter()
+                .any(|&n| n < 8)
+        {
+            return false;
+        }
+        let edges = |[x, y, width, height]: [i32; 4]| {
+            [
+                i64::from(x),
+                i64::from(y),
+                i64::from(x) + i64::from(width),
+                i64::from(y) + i64::from(height),
+            ]
+        };
+        edges(mask)
+            .into_iter()
+            .zip(edges(paint))
+            .all(|(a, b)| a.abs_diff(b) <= 1)
+    }
+
+    fn brush_is_8x8_halftone(brush: Option<&Brush>) -> bool {
+        let Some(Brush::DIBPatternPT { brush_hatch, .. }) = brush else {
+            return false;
+        };
+        if !matches!(
+            &brush_hatch.dib_header_info,
+            BitmapInfoHeader::Info(header)
+                if header.planes == 1 && matches!(header.compression, Compression::BI_RGB)
+        ) || brush_hatch.dib_header_info.width() != 8
+            || brush_hatch.dib_header_info.height() != 8
+        {
+            return false;
+        }
+        let data = &brush_hatch.bitmap_buffer.a_data;
+        if data.len() != 32 || !matches!(data[0], 0x55 | 0xAA) {
+            return false;
+        }
+        data.chunks_exact(4)
+            .enumerate()
+            .all(|(row, bytes)| bytes[0] == if row % 2 == 0 { data[0] } else { !data[0] })
+    }
+
+    pub fn finish(self, definitions: Vec<Node>, elements: Vec<Node>) -> (Vec<Node>, Vec<Node>) {
+        // Indices are recorded in emission order. Do not remove nodes while
+        // collecting: doing so would change IDs or invalidate later indices.
+        let definitions = definitions
+            .into_iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                self.suppressed_definitions
+                    .binary_search(&index)
+                    .is_err()
+                    .then_some(node)
+            })
+            .collect();
+        let elements = elements
+            .into_iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                self.suppressed_elements
+                    .binary_search(&index)
+                    .is_err()
+                    .then_some(node)
+            })
+            .collect();
+        (definitions, elements)
+    }
+
+    /// One bit is a palette index, not proof of a black/white mask.
+    /// Palette-indexed brushes cannot be classified without resolving the DC.
+    fn brush_is_monochrome_mask(brush: Option<&Brush>) -> bool {
+        let Some(Brush::DIBPatternPT {
+            color_usage: ColorUsage::DIB_RGB_COLORS,
+            brush_hatch,
+        }) = brush
+        else {
+            return false;
+        };
+        if !matches!(
+            brush_hatch.dib_header_info.bit_count(),
+            BitCount::BI_BITCOUNT_1
+        ) {
+            return false;
+        }
+        let colors = match &brush_hatch.colors {
+            Colors::RGBQuad(colors) if colors.len() == 2 => [
+                [colors[0].red, colors[0].green, colors[0].blue],
+                [colors[1].red, colors[1].green, colors[1].blue],
+            ],
+            Colors::RGBTriple(colors) if colors.len() == 2 => [
+                [colors[0].red, colors[0].green, colors[0].blue],
+                [colors[1].red, colors[1].green, colors[1].blue],
+            ],
+            _ => return false,
+        };
+        matches!(
+            colors,
+            [[0, 0, 0], [255, 255, 255]] | [[255, 255, 255], [0, 0, 0]]
+        )
     }
 
     fn clear_if_unrelated(&mut self, operation: TernaryRasterOperation) {
@@ -87,6 +226,8 @@ pub struct TernaryRasterOperator {
     rect: BlitDestRect,
     brush: Option<Brush>,
     source: Option<Source>,
+    clip_id: Option<String>,
+    clip_rect: Option<[i32; 4]>,
 }
 
 enum Source {
@@ -101,6 +242,8 @@ impl TernaryRasterOperator {
             rect,
             brush: None,
             source: None,
+            clip_id: None,
+            clip_rect: None,
         }
     }
 
@@ -132,6 +275,21 @@ impl TernaryRasterOperator {
 
     pub fn brush(mut self, brush: Brush) -> Self {
         self.brush = brush.into();
+        self
+    }
+
+    pub fn clip(mut self, clip_id: Option<&str>, clip_rect: Option<&Rect>) -> Self {
+        self.clip_id = clip_id.map(str::to_owned);
+        // INTERSECTCLIPRECT changes the DC without issuing an SVG clip ID.
+        // Track both representations before cancelling any raster draw.
+        self.clip_rect = clip_rect.map(|rect| {
+            [
+                i32::from(rect.left),
+                i32::from(rect.top),
+                i32::from(rect.right),
+                i32::from(rect.bottom),
+            ]
+        });
         self
     }
 
@@ -251,9 +409,16 @@ impl TernaryRasterOperator {
                     ?operation,
                     "approximating brush-only TernaryRasterOperation as PATCOPY"
                 );
+                let is_mask = BrushOnlyRopSequence::brush_is_monochrome_mask(self.brush.as_ref());
+                let allow_mask_edge_delta =
+                    is_mask && BrushOnlyRopSequence::brush_is_8x8_halftone(self.brush.as_ref());
+                let mut mask_definition_index = None;
                 let fill = match Fill::from(self.brush.clone().unwrap()) {
                     Fill::Pattern { pattern } => {
                         let id = Self::issue_id(definitions);
+                        if is_mask {
+                            mask_definition_index = Some(definitions.len());
+                        }
                         definitions.push(pattern.set("id", id.as_str()));
                         url_string(format!("#{id}").as_str())
                     }
@@ -268,14 +433,19 @@ impl TernaryRasterOperator {
                 // 그림(흰 원)을 덮는다. 다만 전역 이력에서 같은 키를 찾으면 독립된
                 // 후속 draw까지 지워질 수 있으므로, 출력 요소 순서상 연속한
                 // PATINVERT → DPA → PATINVERT만 상쇄한다.
-                let key = (
-                    self.rect.x,
-                    self.rect.y,
-                    self.rect.width,
-                    self.rect.height,
-                    fill.clone(),
-                );
-                if brush_only_rop_sequence.observe(operation, key, element_count) {
+                let key = BrushOnlyRopKey {
+                    rect: [self.rect.x, self.rect.y, self.rect.width, self.rect.height],
+                    fill: fill.clone(),
+                    clip_id: self.clip_id,
+                    clip_rect: self.clip_rect,
+                };
+                if brush_only_rop_sequence.observe(
+                    operation,
+                    key,
+                    element_count,
+                    mask_definition_index,
+                    allow_mask_edge_delta,
+                ) {
                     return Ok(None);
                 }
 

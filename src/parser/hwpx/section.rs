@@ -1227,27 +1227,39 @@ fn parse_note_pr_children(
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.suffix_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.suffix_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"prefixChar" => {
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.prefix_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.prefix_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"userChar" => {
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        if let Some(c) = s.chars().next() {
-                                            shape.user_char = c;
-                                        }
+                                        // [#6872] 빈 값은 "장식 문자 없음"이다. 종전에는
+                                        // `chars().next()` 가 `None` 이라 **그냥 넘어가**
+                                        // 기본값(`)`)이 남았고, 저장본에서 `*` 가 `*)` 로
+                                        // 바뀌었다(156513948 정답지 실측). `'\0'` 은 이
+                                        // 코드베이스에서 이미 "없음"이다(HWP3
+                                        // `footnote_bracket == 0`).
+                                        shape.user_char = s.chars().next().unwrap_or('\0');
                                     }
                                 }
                                 b"supscript" => {
@@ -1256,6 +1268,9 @@ fn parse_note_pr_children(
                                 _ => {}
                             }
                         }
+                        // [#6872] 이 구역의 장식 문자는 원본이 준 값이다 — 빈 값도 포함해
+                        // 그대로 되돌려 준다(직렬화기의 템플릿 폴백을 쓰지 않는다).
+                        shape.deco_chars_from_source = true;
                     }
                     b"noteLine" => {
                         for attr in e.attributes().flatten() {
@@ -5524,6 +5539,18 @@ fn parse_ctrl_footnote(
                     note.after_decoration_letter = v;
                 }
             }
+            // [#6872] 번호 모양이 사용자 기호면 한컴은 `suffixChar` 대신 `userChar` 에
+            // 기호를 싣는다. 종전에는 이 속성을 아예 읽지 않아 값이 사라지고, 직렬화기가
+            // 기본값 `)`(0x29)를 채워 각주 표시가 `*` 에서 `*)` 로 바뀌었다.
+            b"userChar" => {
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
+                    .unwrap_or("")
+                    .parse::<u16>()
+                {
+                    note.after_decoration_letter = v;
+                    note.decoration_is_user_char = true;
+                }
+            }
             // [#2716] flag = HWP5 CTRL_FOOTNOTE numberShape(UInt4). 한컴 HWP5/HWPX 쌍
             // (3-09월_교육_통합_2023) 각주/미주 46개 전수 대조에서 바이트 단위로 일치했다.
             // 값이 0 이면 한컴이 속성 자체를 생략하므로 default 0 유지.
@@ -5580,6 +5607,16 @@ fn parse_ctrl_endnote(
                     .parse::<u16>()
                 {
                     note.after_decoration_letter = v;
+                }
+            }
+            // [#6872] footNote 와 동일 — 사용자 기호는 `userChar` 로 온다.
+            b"userChar" => {
+                if let Ok(v) = std::str::from_utf8(attr.value.as_ref().as_bytes())
+                    .unwrap_or("")
+                    .parse::<u16>()
+                {
+                    note.after_decoration_letter = v;
+                    note.decoration_is_user_char = true;
                 }
             }
             // [#2716] flag = HWP5 CTRL_ENDNOTE numberShape(UInt4). footNote 와 동일 계약.
@@ -5849,6 +5886,12 @@ fn parse_ctrl_autonum(
                                     "LATIN_SMALL" => 5,
                                     "HANGUL" => 6,
                                     "HANJA" => 7,
+                                    // [#6872] 사용자 기호. 종전에는 `_ => 0` 에 걸려
+                                    // DIGIT 으로 떨어졌고, 왕복 저장본의 각주 번호
+                                    // 모양이 사용자 기호에서 숫자로 바뀌었다.
+                                    // 코드는 `NumberFormat::UserChar` 의 서수(18)를
+                                    // 그대로 쓴다 — pageNum 이 쓰는 0..7 과 겹치지 않는다.
+                                    "USER_CHAR" => 18,
                                     _ => 0,
                                 };
                             }

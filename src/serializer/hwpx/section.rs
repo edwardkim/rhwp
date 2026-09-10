@@ -246,14 +246,21 @@ fn render_note_line_spacing(shape: &crate::model::footnote::FootnoteShape) -> (S
     (note_line, note_spacing)
 }
 
-/// FootnoteNumbering → HWPX `type` 토큰. 템플릿 계열(CONTINUOUS/EACH_COLUMN/DIGIT)과
-/// 동일한 UPPER_SNAKE 표기를 쓰며, 파서도 이 토큰을 수용한다.
+/// FootnoteNumbering → HWPX `type` 토큰.
+///
+/// [#6872] **한컴이 실제로 쓰는 토큰만 낸다.** 종전에는 `RESTART_PAGE`·`RESTART_SECTION`
+/// 을 냈는데, rhwp 파서는 그것을 수용하지만(그래서 x2x 가 자기 눈에는 무결했다) 한글은
+/// 못 알아듣고 **연속 번호로 떨어진다** — 쪽마다 1) 로 재시작하던 각주가 왕복 뒤
+/// 1) 2) 3) … 으로 이어진다(156584446 정답지 PDF 실측).
+///
+/// 코퍼스 실측이 토큰을 확정한다 — 원본 HWPX 3,391 파일의 `<hp:numbering type>` 은
+/// `CONTINUOUS` 7,640 · `ON_PAGE` 12 뿐이고 `RESTART_*` 는 **0건**이다.
 fn note_numbering_str(numbering: crate::model::footnote::FootnoteNumbering) -> &'static str {
     use crate::model::footnote::FootnoteNumbering::*;
     match numbering {
         Continue => "CONTINUOUS",
-        RestartSection => "RESTART_SECTION",
-        RestartPage => "RESTART_PAGE",
+        RestartSection => "ON_SECTION",
+        RestartPage => "ON_PAGE",
     }
 }
 
@@ -366,12 +373,24 @@ fn note_deco_char_attr(c: char, fallback: &str) -> String {
 /// [#2742] FootnoteShape → `<hp:autoNumFormat .../>`.
 /// 속성 순서는 템플릿·한컴 실물과 같이 type → userChar → prefixChar → suffixChar → supscript.
 fn render_auto_num_format(shape: &crate::model::footnote::FootnoteShape) -> String {
+    // [#6872] 번호 모양이 **사용자 기호**면 표시는 그 기호 하나로 끝난다 — 한컴도
+    // `suffixChar` 를 비운다(코퍼스 HWPX 3,418건의 노트 모양 7,778개 중 `suffixChar=""`
+    // 는 1개이고 그것이 유일한 `USER_CHAR` 다). 이때 기본값 `)` 를 채우면 표시가 `*` 에서
+    // `*)` 로 바뀐다. 숫자 계열(7,651개가 `)`)의 폴백은 그대로 둔다.
+    // Preserve explicit source emptiness for every format, including digits.
+    let suffix_fallback = if shape.deco_chars_from_source
+        || shape.number_format == crate::model::footnote::NumberFormat::UserChar
+    {
+        ""
+    } else {
+        ")"
+    };
     format!(
         r#"<hp:autoNumFormat type="{}" userChar="{}" prefixChar="{}" suffixChar="{}" supscript="{}"/>"#,
         note_number_format_str(shape.number_format),
         note_deco_char_attr(shape.user_char, ""),
         note_deco_char_attr(shape.prefix_char, ""),
-        note_deco_char_attr(shape.suffix_char, ")"),
+        note_deco_char_attr(shape.suffix_char, suffix_fallback),
         u8::from(shape.number_code_superscript),
     )
 }
@@ -2529,6 +2548,10 @@ fn render_autonum(an: &AutoNumber) -> String {
         // 형식을 "CIRCLED_DIGIT"로 표기한다(각주/미주 경로에서 실측 검증됨, #2742).
         ty = if an.format == 1 {
             "CIRCLED_DIGIT"
+        } else if an.format == 18 {
+            // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수). `page_num_format_to_str`
+            // 는 쪽 번호용 0..7 만 알아서 이 값을 DIGIT 으로 떨궜다.
+            "USER_CHAR"
         } else {
             page_num_format_to_str(an.format)
         },
@@ -3074,6 +3097,8 @@ struct NoteAttrs {
     prefix_char: u16,
     /// `after_decoration_letter` — 항상 방출.
     suffix_char: u16,
+    /// [#6872] true 면 `suffixChar` 가 아니라 `userChar` 라는 이름으로 방출한다.
+    decoration_is_user_char: bool,
     /// HWP5 `numberShape` — 0 이면 속성 생략(한컴 계약).
     number_shape: u32,
     /// HWP5 `instanceId` — 항상 방출.
@@ -3101,9 +3126,17 @@ fn render_note_attrs(attrs: &NoteAttrs) -> String {
     if attrs.prefix_char != 0 {
         out.push_str(&format!(r#" prefixChar="{}""#, attrs.prefix_char));
     }
+    // [#6872] 사용자 기호로 온 장식 문자는 같은 이름으로 되돌린다. 한컴은 번호 모양이
+    // 사용자 기호일 때 `suffixChar` 를 아예 쓰지 않으므로(156513948 각주 5개 실측),
+    // 이름을 바꿔 내보내면 표시가 `*` 에서 `*)` 로 바뀐다.
+    let deco_name = if attrs.decoration_is_user_char {
+        "userChar"
+    } else {
+        "suffixChar"
+    };
     out.push_str(&format!(
-        r#" suffixChar="{}" instId="{}""#,
-        attrs.suffix_char, attrs.inst_id
+        r#" {}="{}" instId="{}""#,
+        deco_name, attrs.suffix_char, attrs.inst_id
     ));
     out
 }
@@ -3195,6 +3228,7 @@ fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
             number: note.number,
             prefix_char: note.before_decoration_letter,
             suffix_char: note.after_decoration_letter,
+            decoration_is_user_char: note.decoration_is_user_char,
             number_shape: note.number_shape,
             inst_id: note.instance_id,
         },
@@ -3211,6 +3245,7 @@ fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
             number: note.number,
             prefix_char: note.before_decoration_letter,
             suffix_char: note.after_decoration_letter,
+            decoration_is_user_char: note.decoration_is_user_char,
             number_shape: note.number_shape,
             inst_id: note.instance_id,
         },
@@ -4480,11 +4515,11 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
 
         assert!(
-            xml.contains(r#"<hp:numbering type="RESTART_PAGE" newNum="3"/>"#),
+            xml.contains(r#"<hp:numbering type="ON_PAGE" newNum="3"/>"#),
             "각주 numbering 이 IR 값이어야 함"
         );
         assert!(
-            xml.contains(r#"<hp:numbering type="RESTART_SECTION" newNum="5"/>"#),
+            xml.contains(r#"<hp:numbering type="ON_SECTION" newNum="5"/>"#),
             "미주 numbering 이 IR 값이어야 함"
         );
         assert!(
