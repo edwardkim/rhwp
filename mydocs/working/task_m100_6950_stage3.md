@@ -1123,3 +1123,47 @@ baseline 축, 빈 문단 후속 흐름과 최종 Rust/WASM/workspace·Native Ski
 CPU16개, 메모리 available28GiB, 동시 Cargo 작업 없음 확인 후 이전 전체 실행과 같은
 Cargo2 jobs / nextest8 threads를 사용한다. 새 샘플 보안 검사 입력도 동일 문서1건으로 전달한다.
 전체 검증 결과는 실행 완료 후 별도로 기록하며, 기준선 등록만으로 PASS 처리하지 않는다.
+
+### 21.1 실행과 최종 결과
+
+- 검증 기준: `b841ee549`(제품은 SVG·WASM 승인본 `9d928ff27`과 동일).
+  main과 review는 이 커밋에 정렬했고, review tracked diff0에서 실행했다.
+- review의 suite prepare·manifest check·fmt check를 통과한 뒤 아래 명령을 실행했다.
+
+```bash
+CARGO_BUILD_JOBS=2 \
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/hwpx/20260909-para-table.hwpx"]' \
+RHWP_IR_SWEEP_DETAIL='20260909-para-table.hwpx' \
+cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp-shared-review-target \
+  --tests --test-threads 8 --no-fail-fast
+```
+
+| 항목 | 직전 전체 검사 (§16) | 이번 |
+| --- | ---: | ---: |
+| 실행 | 9,405 | 9,410 |
+| 통과 | 9,403 | 9,410 |
+| 실패 | 2 | **0** |
+| 건너뜀 (실행 수 외) | 46 | 46 |
+
+전체 exit0. 이전 실패인 #6025 좌표 핀과 IR field sweep 모두 실제 PASS로 전환됐다.
+검사 이름을 suite 번호와 분리해 대조했고, 이전9,405개 중 사라진 검사는0개, 신규 실패0개다.
+증가한5개는 첫 조각 기준점2개와 표 속성 IR 조회3개이며 모두 통과했다.
+이전23개 실패를 함께 기준으로 보면 §16에서 회복한21개도 유지되고 남은2개도 해소됐다.
+
+- 신규 문서1건을 명시적으로 전달한 보안3종 탐지 검사도 PASS(0.032초).
+- IR 왕복 전수 검사 PASS(107.742초). 기준선에는 승인된3행 외 변경이 없다.
+- slow2개 모두 PASS: IR sweep과 #2063 대형 표 분할(154.643초). timeout 실패가 아니다.
+- 빌드12분06초, 검사314.062초(약5분14초), 전체 wall17분17.56초.
+  최대 RSS4,246,248KiB, swap0. 현재 nextest0.9.137/권장0.9.140 및 `report-skipped`
+  설정 경고는 기존 환경 경고로 남았으며 검증 실패와 구분한다.
+- 실행 뒤 review의 manifest check·fmt check·diff check 통과, tracked diff0.
+- 증적: `output/6950/stage3/nextest-baseline-registered.log`,
+  `nextest-baseline-registered-time.txt`, `nextest-baseline-registered-delta.json`.
+
+### 21.2 완료 경계
+
+이번 승인 범위인 **신규 fixture 기준선 등록과 전체 nextest 회귀 재검증을 완료**했다.
+이를 Native Skia 별도3종, Rust lint 전체 묶음 또는 B의 빈 문단 후속 흐름에 관한 최종
+증적 정리까지 완료한 것으로 확장하지 않는다. 최종 제출 전에 남은 계획 항목을 대조한다.
+제품 코드·WASM·개발 서버는 이번 턴에 변경하지 않았고, 원격 push·PR 생성도 하지 않았다.
