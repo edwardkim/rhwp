@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { rustMutatingExports } from './helpers/rust-mutating-exports.ts';
 
 // [Task #2327] 계급 1(기록 옵트인) 회귀를 저작 시점에 차단하는 소스 가드.
 //
@@ -79,31 +80,6 @@ test('드리프트: 문서-변경형 브리지 공개 메서드는 모두 분류
   );
 });
 
-/**
- * [#7002] wasm_api.rs 의 `&mut self` 내보내기 — 변이 표면의 권위.
- *
- * `js_name` 이 있으면 그것을, 없으면 Rust 이름의 camelCase 를 쓴다(wasm-bindgen 기본).
- */
-function rustMutatingExports(): string[] {
-  const src = source('../src/wasm_api.rs');
-  // `#[wasm_bindgen…]` 과 그 뒤 첫 `pub fn …(&mut self` 를 한 쌍으로 집는다.
-  // 중간에 다른 `#[wasm_bindgen` 이 끼면 매치하지 않는다(속성-함수 짝 어긋남 방지).
-  const re = new RegExp(
-    String.raw`#\[wasm_bindgen([^\]]*)\]`
-    + String.raw`(?:(?!#\[wasm_bindgen)[\s\S]){0,400}?`
-    + String.raw`pub (?:async )?fn (\w+)\s*\(\s*&mut self`,
-    'g',
-  );
-  const out: string[] = [];
-  for (const m of src.matchAll(re)) {
-    const named = /js_name\s*=\s*(\w+)/.exec(m[1]);
-    const parts = m[2].split('_');
-    out.push(named?.[1]
-      ?? parts[0] + parts.slice(1).map((w) => w[0].toUpperCase() + w.slice(1)).join(''));
-  }
-  return out;
-}
-
 test('[#7002] Rust `&mut self` 내보내기에 대응하는 브리지 메서드는 모두 분류돼야 한다', () => {
   // MUTATING_VERB 는 손으로 유지하는 동사 목록인데 드리프트 시험의 **감사 대상을
   // 정하는 필터**라, 동사에 안 걸리는 이름은 분류를 요구받지 않는다. 실제로 저널·
@@ -111,7 +87,7 @@ test('[#7002] Rust `&mut self` 내보내기에 대응하는 브리지 메서드�
   // 무관하게 Rust 쪽 변이 표면을 권위로 삼아 같은 사각이 다시 생기지 않게 한다.
   const classified = new Set([...MUTATING, ...EXCLUDED]);
   const bridge = new Set(bridgePublicMethods());
-  const unclassified = [...new Set(rustMutatingExports())]
+  const unclassified = [...new Set(rustMutatingExports(source('../src/wasm_api.rs')))]
     .filter((n) => bridge.has(n))
     .filter((n) => !classified.has(n))
     .sort();
