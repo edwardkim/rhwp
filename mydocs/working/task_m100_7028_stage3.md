@@ -47,7 +47,8 @@ Docker WASM → review worktree prepare·fmt → native Clippy → WASM Clippy �
 - Studio 자동 확인 1차에서 캐시를 끈 HTTP WASM과 로컬 산출물의 해시 일치, 문서 6쪽 로드,
   첫 쪽 대각선 1개까지 확인했다. 다음 `svg.includes('직렬')` 검사는 실패했다. SVG 태그 분리를
   고려하지 않은 문자열 검사이므로 글자 누락으로 판정하지 않고 XML 텍스트 조회로 보정했다.
-- 재확인에서는 Chrome 새 탭 응답이 지연됐다. 따라서 **최종 브라우저 6쪽 기하 검증과 화면
+- 재확인에서는 Chrome 새 탭 초기화의 `Network.enable`이 timeout으로 종료됐다
+  (`output/7028/stage3/studio.log`). 따라서 **최종 브라우저 6쪽 기하 검증과 화면
   캡처는 통과로 기록하지 않는다.** 메인테이너의 대각선 확인과 native 6쪽 증적은 별도로 유효하다.
   사용자 기존 탭·브라우저를 재시작하지 않는다. `output/7028/studio-check.mjs`는 로컬 확인용이며
   제품 변경이나 회귀 suite가 아니다.
