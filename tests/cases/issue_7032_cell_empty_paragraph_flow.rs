@@ -221,7 +221,9 @@ fn fragment(
         end_cut: cut.map(|(_, e)| vec![e; 2]).unwrap_or_default(),
         is_block_split: false,
         row_cursor_is_nested: false,
-        end_row_height_override: None,
+        // Hold the physical frame constant when comparing alignment. A natural
+        // cut otherwise sizes the fragment to consumed content, unlike uncut.
+        end_row_height_override: cut.map(|_| measured.tables[0].row_heights[0]),
         start_row_height_override: None,
     }];
     LayoutEngine::new(96.0).build_render_tree(
@@ -249,6 +251,10 @@ fn full_atom_window_preserves_uncut_alignment_and_spacing() {
             for spacing in [false, true] {
                 let uncut = fragment(None, align, percent, spacing);
                 let cut = fragment(Some((0, 4)), align, percent, spacing);
+                assert_near(
+                    header(&uncut.root).bbox.height,
+                    header(&cut.root).bbox.height,
+                );
                 let a = paragraph_lines(header(&uncut.root));
                 let b = paragraph_lines(header(&cut.root));
                 assert_eq!((a.len(), b.len()), (4, 4));
@@ -264,8 +270,17 @@ fn full_atom_window_preserves_uncut_alignment_and_spacing() {
 #[test]
 fn cut_window_emits_only_owned_empty_paragraphs_once() {
     use rhwp::model::table::VerticalAlign::Top;
+    let reference = core(false);
+    let para_shape = source_cell(&reference).paragraphs[0].para_shape_id as usize;
+    let advance =
+        f64::from(reference.document().doc_info.para_shapes[para_shape].line_spacing) / 2.0 * 96.0
+            / 7200.0;
+    let first = fragment(Some((0, 1)), Top, false, false);
+    let origin = paragraph_lines(header(&first.root))[0].bbox.y - header(&first.root).bbox.y;
     for (start, end) in [(0, 1), (0, 2), (1, 3), (2, 4), (3, 4), (4, 4)] {
         let tree = fragment(Some((start, end)), Top, false, false);
+        assert!(matches!(&header(&tree.root).node_type,
+            RenderNodeType::TableCell(c) if c.page_fragment));
         let lines = paragraph_lines(header(&tree.root));
         let owners: Vec<_> = lines
             .iter()
@@ -281,6 +296,14 @@ fn cut_window_emits_only_owned_empty_paragraphs_once() {
             (start..end).collect::<Vec<_>>(),
             "cut {start}..{end}"
         );
+        if let Some(first) = lines.first() {
+            // Paragraphs outside the window must not consume vertical space.
+            assert_near(first.bbox.y - header(&tree.root).bbox.y, origin);
+        }
+        for pair in lines.windows(2) {
+            // Consecutive selected atoms consume exactly one line advance each.
+            assert_near(pair[1].bbox.y - pair[0].bbox.y, advance);
+        }
         for line in lines {
             assert!(nodes(line).iter().any(
                 |n| matches!(&n.node_type, RenderNodeType::TextRun(r) if r.cell_context.is_some())
@@ -297,7 +320,7 @@ fn last_empty_cell_paragraph_uses_em_without_trailing_spacing() {
     let fs = reference.document().doc_info.char_shapes[para.char_shapes[0].char_shape_id as usize]
         .base_size;
     let expected = f64::from(fs) * 96.0 / 7200.0;
-    for cut in [None, Some((0, 4)), Some((3, 4))] {
+    for cut in [None, Some((0, 4)), Some((3, 4)), Some((0, 1))] {
         let tree = fragment(cut, Top, false, false);
         let lines = paragraph_lines(header(&tree.root));
         assert_near(lines.last().unwrap().bbox.height, expected);
