@@ -119,3 +119,49 @@ visual sweep ink 정확도나 합격 기준이 아니다. 로그는 `build.log`,
 메인테이너에게 1·2·6쪽 시각 판정을 요청한다. 이후 Docker WASM/Studio 및 전체 영향 회귀·OVR·Clippy 3종·
 workspace/Native Skia 검증을 진행한다. 이번 focused 통과는 그 전체 게이트를 대체하지 않는다.
 원격 push·PR 생성·GitHub 상태 변경은 하지 않았다.
+
+## 6. 메인테이너 피드백 — 선 확인, 빈 문단의 텍스트 진행 누락
+
+메인테이너는 대각선 렌더링을 확인했다. 동시에 편집자가 빈 두 줄 후 세 번째 줄에
+`직렬`을 배치하려 했으나 Studio가 이를 무시한다고 지적했다. **대각선 확인만 기록하며
+셀 전체 시각 판정 통과나 Stage 3 승인을 의미하지 않는다.**
+
+현재 저장소 원본의 SHA-256은 앞서 사용한 값과 같다. native `dump -s 0 -p 4`와 CFB
+`BodyText/Section0` 원시 레코드를 함께 확인했다.
+
+- 첫 셀 LIST_HEADER(record 24)는 문단 수 **2**를 선언한다.
+- record 25 PARA_HEADER: char_count=1, ParaShape=53. 다음 record 26은 CharShape=37이다.
+  이 빈 문단에는 PARA_TEXT와 PARA_LINE_SEG가 없다. 문단 자체는 존재한다.
+- record 27 PARA_HEADER: char_count=3, ParaShape=53. record 28 PARA_TEXT의 UTF-16 값은
+  `[51649, 47148, 13]`, 즉 `직렬\r`이다. 별도의 선행 줄바꿈은 없다.
+- native IR 요약도 `paras=2 text="|직렬"`이다. 따라서 이 저장본에서 확정할 수 있는 것은
+  **빈 문단 1개 + 글자 문단 1개**이며, 메인테이너가 설명한 빈 두 줄과는 구분한다.
+  편집 중인 다른 저장본 여부나 한컴 UI 줄 수의 의미는 미확인이다. 임의로 두 문단을 보충하지 않는다.
+
+누락 경로:
+
+1. `composer.rs::compose_lines`: LINE_SEG 없음 + text 비어 있음이면 빈 줄 목록을 반환한다.
+2. `recompose_cell_lines_in_frame`: 합성 줄 목록이 비어 있으면 조기 반환한다.
+3. `table_partial.rs::layout_partial_table_cells`: 온전한 셀에서도 이 문단의 줄 범위가
+   `(0,0)`이 되어 `start_line >= end_line` 분기에 걸리고 y 진행 없이 continue한다.
+4. 반면 `table_layout.rs::calc_para_lines_height`에는 빈 줄 목록인 문단도 글꼴·줄간격으로
+   높이를 계산하는 경로가 있다. **측정에는 존재하고 표시 진행에서는 사라지는 불일치**다.
+
+Stage 1·2의 첫 셀 RenderTree는 선을 제외하면 동일하다. 두 출력 모두 셀 y=225.3,
+높이=52.4px, `직렬` TextLine y=235.3px이며 child는 pi=1 하나뿐이다. 빈 pi=0의 줄 노드는 없다.
+따라서 이번 대각선 연결로 새로 발생한 회귀가 아니라 이미 존재하던 텍스트 배치 문제다.
+과거 최초 유입 시점을 확정하는 bisect는 하지 않았다.
+
+수정 방향은 텍스트를 특정 px만큼 내리는 것이 아니라 **실제 빈 문단의 줄 진행을 측정과
+렌더링이 동일하게 소비하도록 하는 것**이다. 저장 LINE_SEG 유무, 순수 빈 문단과 control-only
+문단, 온전한 셀과 실제 cut 범위를 구분해야 한다. 기존 #2146의 선언 셀 높이와 Fixed 줄간격
+보호 조건도 함께 검증해야 한다. 이번 응답에서는 원인 조사만 했으며 제품 코드·테스트·WASM은
+변경하지 않았다. 구현 범위 확대와 수정 계획은 메인테이너 결정 후 진행한다.
+
+## 7. 범위 확정 및 완료 절차 승인
+
+메인테이너는 빈 문단 텍스트 문제를 별도 이슈로 분리하고 #7028의 완료 절차를 진행하도록
+지시했다. [후속 #7032](https://github.com/edwardkim/rhwp/issues/7032)를 등록하고 담당 edwardkim,
+v1.0.0, bug/layout/rendering 및 한글 본문을 API 재조회로 확인했다. #7032 구현은 이번 변경에
+추가하지 않는다. 대각선 렌더링은 메인테이너 확인 완료이며, 기존 텍스트 차이는 #7032로 남긴다.
+다음은 Stage 3 Docker WASM·전체 회귀·최종 lint 검증이다. 원격 push·PR·병합은 별도 승인 대상이다.
