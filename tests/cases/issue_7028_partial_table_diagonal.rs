@@ -116,6 +116,21 @@ fn real_header_diagonal_is_present_once_on_all_six_pages() {
             1,
             "duplicate or stray diagonal"
         );
+        let svg = core.render_page_svg_native(page).expect("SVG export");
+        let diagonal_count = svg
+            .split("<line ")
+            .skip(1)
+            .filter(|part| {
+                let tag = part.split('>').next().unwrap();
+                let coord = |key: &str| {
+                    let needle = format!("{key}=\"");
+                    let rest = &tag[tag.find(&needle).expect("line coordinate") + needle.len()..];
+                    rest.split('"').next().unwrap().parse::<f64>().unwrap()
+                };
+                (coord("x2") - coord("x1")).abs() > 1.0 && (coord("y2") - coord("y1")).abs() > 1.0
+            })
+            .count();
+        assert_eq!(diagonal_count, 1, "SVG p{}", page + 1);
     }
 }
 
@@ -198,4 +213,51 @@ fn inactive_zone_does_not_disable_a_cell_diagonal() {
         })
     });
     assert_diagonal(&core.build_page_render_tree(0).unwrap().root, 0, 0);
+}
+
+#[test]
+fn complete_rowspan_keeps_its_whole_cell_diagonal() {
+    let core = variant(|d| {
+        let c = table_mut(d)
+            .cells
+            .iter_mut()
+            .find(|c| c.row == 6 && c.col == 2)
+            .unwrap();
+        assert_eq!(c.row_span, 2);
+        c.border_fill_id = 13;
+    });
+    assert_diagonal(&core.build_page_render_tree(0).unwrap().root, 6, 2);
+}
+
+#[test]
+fn cut_row_and_straddling_rowspan_do_not_gain_fragment_diagonals() {
+    // Existing sample has a split row=9 and a rowspan 6..11 crossing p1/p2.
+    // Only the diagonal property is varied; no synthetic paper size is introduced.
+    for (row, col) in [(9, 2), (6, 0)] {
+        let core = variant(|d| {
+            table_mut(d)
+                .cells
+                .iter_mut()
+                .find(|c| c.row == row && c.col == col)
+                .unwrap()
+                .border_fill_id = 13;
+        });
+        let mut instances = 0;
+        for p in 0..core.page_count() {
+            let tree = core.build_page_render_tree(p).unwrap();
+            if cell_box(&tree.root, row, col).is_some() {
+                instances += 1;
+                assert_eq!(
+                    diagonals(&tree.root).len(),
+                    1,
+                    "only intact header may emit: r{row}c{col}, p{p}"
+                );
+                assert_diagonal(&tree.root, 0, 0);
+            }
+        }
+        assert!(
+            instances >= 2,
+            "negative case must actually cross a page boundary"
+        );
+    }
 }
