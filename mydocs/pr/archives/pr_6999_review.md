@@ -137,7 +137,7 @@ serializer 구조 보존 변경이므로 renderer 자체의 visual sweep 점수�
 현재는 한컴 복구 실측 보고만 읽었으며 직접 변환·시각 대조는 미실행이다. 없는 PDF/PNG나
 시각 통과 수치를 기록하지 않는다. 병합 comment는 아직 계획·게시하지 않는다.
 보완 후보의 저장 계약과 최신 CI를 재검증한 뒤, 필요한 원본·한컴 출력 증적을 재사용하거나
-보완한다. 시각 대조를 수행하면 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
+보완한다. 시각 대조를 수행하면 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
 
 ## 최종 판정
 
@@ -247,3 +247,41 @@ Controller는 성공했고 CI의 lint·archive A/B/C/D가 실제 실행되고 �
 - 결과: **보정된 head 승인**. 검토 문서 반영과 최종 head 재확인 후 merge commit 병합을
   요청할 수 있다. 이번 self-review는 로컬 문서 판정이며 GitHub approve·comment·추가 push·
   merge·issue close는 수행하지 않았다. 이 기록 자체를 원격 승인으로 해석하지 않는다.
+
+### 최종 병합 확인 (2026-09-11 14:55:40 KST)
+
+메인테이너의 검토 기록 반영·최종 CI 후 병합 승인을 받아 review 2개 문서를
+`e59f18811d6e5d1e93dc166545dbf01f227a49d2`로 push했다. 문서 후행 CI
+[34567690994](https://github.com/edwardkim/rhwp/actions/runs/34567690994), CodeQL
+[34567690977](https://github.com/edwardkim/rhwp/actions/runs/34567690977), Adapter
+`34567691315`, Proptest `34567690967` 모두 success를 확인했다. heavy skip과 최종
+Build & Test·CI Impact Policy 성공을 구분해 확인했다.
+
+exact head를 고정한 `gh pr merge --merge --admin --match-head-commit`으로 병합했다.
+merge commit은 `fad12365147f86ed01b7d76f3c90f02437b9b081`, 부모는 기존 devel
+`6806950b1`과 최종 PR head `e59f18811`이다. API MERGED 및 fetch한 devel 반영을 확인했다.
+
+#6869는 아직 OPEN으로 자동 종료되지 않았다. #6871은 미검증 사례 때문에 OPEN을 유지한다.
+archive·오늘할일·로컬 devel 동기화·종료 근거 게시·검토 worktree 정리는 아직 수행하지 않았으며
+후속 절차로 남긴다. 병합 완료와 후속 처리 완료를 구분한다.
+
+## 승인된 병합 후 운영 기록
+
+- 메인테이너가 archive·오늘할일 반영, devel 동기화, #6869 종료 근거 게시 및 이번 검토
+  branch/worktree 정리를 승인했다. 후속 문서는 option M(메인테이너 운영 기록 직접 반영)으로
+  처리하며 제품 코드·테스트·샘플·CI 변경을 섞지 않는다.
+- merge `fad12365147f86ed01b7d76f3c90f02437b9b081` 확인 후 local devel을 remote devel로
+  fast-forward했다. 본 문서는 병합 후 확정값을 보완하여 active 경로에서 archive로 이동했다.
+- #6869는 이 기록 준비 시점 OPEN이다. 이 운영 기록 push와 devel 동기화 확인 뒤 종료·근거
+  comment를 게시한다. #6871은 다섯째 사례의 한컴 재검증이 남아 OPEN 유지한다.
+- 코드 후보 Full CI `34564676991` 및 문서 후행 CI `34567690994`가 성공했다.
+  local 9459/9459와 focused 16/16 통과, CodeQL Rust 실제 성공 및 GHAS neutral 경고를
+  구분한다. 별도의 시각 검증 통과나 전체 언어 무경고로 확대하지 않는다.
+- PR 종료 comment에는 감사, merge SHA, 원 기여 이력 보존, 문단 스코프 보정, 위 검증과
+  #6871 잔여 범위를 게시한다. issue/PR/commit은 GitHub direct link로 연결하며 별도 이미지
+  판정을 하지 않았으므로 임시 PNG를 시각 증적으로 게시하지 않는다.
+- 검토 output(약 15 MiB)은 소실시키지 않고 주 작업공간 `output/pr6999-review/`로 옮겨
+  보존한 뒤 이번 clean review worktree와 local branch를 제거한다. 앞 절의 검토 worktree
+  기준 output 경로는 이 보존 경로에서 확인한다. 공유 캐시
+  `/home/edward/mygithub/rhwp-shared-review-target`, 미완료 #6996 worktree 및 contributor
+  fork branch는 삭제 대상이 아니다.

@@ -4,7 +4,7 @@
 - 관련 이슈: #6869, #6871
 - 선행 검토: [pr_6999_review.md](pr_6999_review.md)
 - 메인테이너 결정: 기여자에게 재작업을 요청하는 대신 우리 쪽에서 보정 후 병합한다.
-- 현재 단계: S1~S4 및 self-review 완료. 검토 기록 반영·최종 CI 확인 후 merge commit 병합을 승인받음.
+- 현재 단계: 검토 기록 반영·최종 CI·merge commit 병합 완료. archive·devel sync·종료 기록·정리 후속 절차 대기.
 
 ## 1. 경로와 고정 기준
 
@@ -82,7 +82,7 @@ rework 문서 외에 `collaborator_external_pr.md`를 읽었으며, 그 문서�
 - #6869·#5943 focused test 및 최신 devel 형광펜 저장 회귀를 실행한다.
 - review 검증 환경에서 manifest `--prepare` 후 fmt, native Clippy, WASM32 lib Clippy,
   workspace build, workspace all-target Clippy를 순차 실행한다. 명령의 정본은
-  [local_validation 4.3](../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)이다.
+  [local_validation 4.3](../../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)이다.
 - 새 code head이므로 기존 녹색 CI를 재사용하지 않는다. focused 결과 보고 후 전체 회귀 승인
   게이트에 따라 `--locked` release-test 전체 nextest를 실행한다. 공유 review target은 이동하거나
   삭제하지 않고 Cargo 명령은 순차 실행한다. 파생 suite/manifest는 제출하지 않는다.
@@ -238,3 +238,42 @@ S1~S2 로컬 통합·구현 승인을 받았다. 원격 push/comment 및 최종 
 코드·테스트·baseline·샘플은 추가 변경하지 않는다. source fork SHA와 최신 devel을 재확인하고,
 문서 링크·diff·merge simulation·LFS 판독 후 정상 push한다. 최신 trailing head의 required check가
 성공하기 전에는 병합하지 않는다. #6871은 종료하지 않으며, 병합 후 정리 절차는 별도로 보고한다.
+
+## 10. 병합 완료 (2026-09-11 14:55:40 KST)
+
+- review 2개 문서만 `e59f18811d6e5d1e93dc166545dbf01f227a49d2`로 커밋·push했다.
+  두 문서 링크 검사·diff check·merge-tree·LFS 비대상 판독·dry-run을 통과했다.
+- 해당 exact head의 CI `34567690994`, CodeQL `34567690977`, Adapter `34567691315`,
+  Proptest `34567690967`이 모두 success다. 문서 후행 fast-pass로 heavy job은 skip,
+  Build & Test와 CI Impact Policy success를 직접 확인했다.
+- 최신 devel `6806950b1`, PR head `e59f18811`, OPEN/MERGEABLE/CLEAN 재확인 뒤
+  `gh pr merge 6999 --merge --admin --match-head-commit e59f18811d6e5d1e93dc166545dbf01f227a49d2`
+  (`--repo edwardkim/rhwp`)로 승인된 병합을 수행했다.
+- PR MERGED, merge SHA `fad12365147f86ed01b7d76f3c90f02437b9b081`를 확인했다.
+  Git fetch에서도 devel이 같은 SHA이며 부모가 `6806950b1`과 `e59f18811`인 정상 merge commit이다.
+- #6869와 #6871은 조회 시 모두 OPEN이었다. #6871은 계획대로 유지하며, #6869 종료와
+  근거 comment는 운영 기록 반영·devel sync 이후 후속 절차에서 처리한다.
+- 검토 문서는 PR에 포함되어 병합됐다. merge 뒤 확정된 값과 archive/오늘할일은 maintainer
+  운영 기록으로 반영할 대상이다. 이번 승인 범위에서 직접 devel 기록 push·close·comment·
+  worktree/branch 삭제는 하지 않았다. 공유 target과 #6996 미완료 검토는 보존한다.
+
+## 승인된 병합 후 운영 기록
+
+- 메인테이너가 archive·오늘할일 반영, devel 동기화, #6869 종료 근거 게시 및 이번 검토
+  branch/worktree 정리를 승인했다. 후속 문서는 option M(메인테이너 운영 기록 직접 반영)으로
+  처리하며 제품 코드·테스트·샘플·CI 변경을 섞지 않는다.
+- merge `fad12365147f86ed01b7d76f3c90f02437b9b081` 확인 후 local devel을 remote devel로
+  fast-forward했다. 본 문서는 병합 후 확정값을 보완하여 active 경로에서 archive로 이동했다.
+- #6869는 이 기록 준비 시점 OPEN이다. 이 운영 기록 push와 devel 동기화 확인 뒤 종료·근거
+  comment를 게시한다. #6871은 다섯째 사례의 한컴 재검증이 남아 OPEN 유지한다.
+- 코드 후보 Full CI `34564676991` 및 문서 후행 CI `34567690994`가 성공했다.
+  local 9459/9459와 focused 16/16 통과, CodeQL Rust 실제 성공 및 GHAS neutral 경고를
+  구분한다. 별도의 시각 검증 통과나 전체 언어 무경고로 확대하지 않는다.
+- PR 종료 comment에는 감사, merge SHA, 원 기여 이력 보존, 문단 스코프 보정, 위 검증과
+  #6871 잔여 범위를 게시한다. issue/PR/commit은 GitHub direct link로 연결하며 별도 이미지
+  판정을 하지 않았으므로 임시 PNG를 시각 증적으로 게시하지 않는다.
+- 검토 output(약 15 MiB)은 소실시키지 않고 주 작업공간 `output/pr6999-review/`로 옮겨
+  보존한 뒤 이번 clean review worktree와 local branch를 제거한다. 앞 절의 검토 worktree
+  기준 output 경로는 이 보존 경로에서 확인한다. 공유 캐시
+  `/home/edward/mygithub/rhwp-shared-review-target`, 미완료 #6996 worktree 및 contributor
+  fork branch는 삭제 대상이 아니다.
