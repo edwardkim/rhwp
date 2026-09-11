@@ -3570,6 +3570,32 @@ impl DocumentCore {
         out
     }
 
+    /// [#7005] 칸 안 도형(사각형·직선·타원·path)의 칸 좌표 JSON.
+    ///
+    /// `ole_layout_context_json` 과 같은 계약이다 — **`cellPath` 가 정본**이고 단일 레벨
+    /// 스칼라는 studio 하위호환이다. 도형 노드는 `CellContext` 대신 #1138 의 평평한 3필드를
+    /// 들고 있으므로 그것으로 1단계 경로를 만든다. 셋은 같은 `table_cell_ref` 에서 함께
+    /// 오므로 전부 있거나 전부 없다.
+    ///
+    /// 종전에는 스칼라만 방출해 studio 의 `hasCellPath` 가 거짓이 됐고, `getObjectProperties`
+    /// 가 본문 API 로 떨어져 던지면서 칸 안 도형의 마우스 조작이 전부 막혔다. 선택 토글도
+    /// `cellPath` 로 개체를 구분하므로 같은 문단의 두 도형을 같은 것으로 봤다.
+    fn shape_cell_context_json(
+        cell_index: Option<usize>,
+        cell_para_index: Option<usize>,
+        outer_table_control_index: Option<usize>,
+    ) -> String {
+        let (Some(cei), Some(cpi), Some(otci)) =
+            (cell_index, cell_para_index, outer_table_control_index)
+        else {
+            return String::new();
+        };
+        format!(
+            ",\"cellIdx\":{cei},\"cellParaIdx\":{cpi},\"outerTableControlIdx\":{otci}\
+             ,\"cellPath\":[{{\"controlIndex\":{otci},\"cellIndex\":{cei},\"cellParaIndex\":{cpi}}}]"
+        )
+    }
+
     /// 컨트롤(표, 이미지 등) 레이아웃 정보 (네이티브 에러 타입)
     pub fn get_page_control_layout_native(&self, page_num: u32) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -3903,20 +3929,15 @@ impl DocumentCore {
                         rect_node.control_index,
                     ) {
                         // [Task #1138] 표 셀 안 사각형: cellIdx/cellParaIdx/outerTableControlIdx
-                        let cell_str = match (rect_node.cell_index, rect_node.cell_para_index) {
-                            (Some(cei), Some(cpi)) => {
-                                format!(",\"cellIdx\":{},\"cellParaIdx\":{}", cei, cpi)
-                            }
-                            _ => String::new(),
-                        };
-                        let outer_table_str = match rect_node.outer_table_control_index {
-                            Some(otci) => format!(",\"outerTableControlIdx\":{}", otci),
-                            None => String::new(),
-                        };
+                        let cell_str = DocumentCore::shape_cell_context_json(
+                            rect_node.cell_index,
+                            rect_node.cell_para_index,
+                            rect_node.outer_table_control_index,
+                        );
                         controls.push(format!(
-                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
+                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                            si, pi, ci, cell_str, outer_table_str, layer_str
+                            si, pi, ci, cell_str, layer_str
                         ));
                         // [Task #1171] return 하지 않고 자식으로 재귀 — 사각형 글상자(text_box)
                         // 안 중첩 picture/도형이 cellPath(cell_index=0 sentinel)로 수집되도록 한다.
@@ -3931,21 +3952,16 @@ impl DocumentCore {
                         line_node.control_index,
                     ) {
                         // [Task #1138] 표 셀 안 직선
-                        let cell_str = match (line_node.cell_index, line_node.cell_para_index) {
-                            (Some(cei), Some(cpi)) => {
-                                format!(",\"cellIdx\":{},\"cellParaIdx\":{}", cei, cpi)
-                            }
-                            _ => String::new(),
-                        };
-                        let outer_table_str = match line_node.outer_table_control_index {
-                            Some(otci) => format!(",\"outerTableControlIdx\":{}", otci),
-                            None => String::new(),
-                        };
+                        let cell_str = DocumentCore::shape_cell_context_json(
+                            line_node.cell_index,
+                            line_node.cell_para_index,
+                            line_node.outer_table_control_index,
+                        );
                         controls.push(format!(
-                            "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
+                            "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
                             line_node.x1, line_node.y1, line_node.x2, line_node.y2,
-                            si, pi, ci, cell_str, outer_table_str, layer_str
+                            si, pi, ci, cell_str, layer_str
                         ));
                         return;
                     }
@@ -3957,20 +3973,15 @@ impl DocumentCore {
                         ell_node.control_index,
                     ) {
                         // [Task #1138] 표 셀 안 타원
-                        let cell_str = match (ell_node.cell_index, ell_node.cell_para_index) {
-                            (Some(cei), Some(cpi)) => {
-                                format!(",\"cellIdx\":{},\"cellParaIdx\":{}", cei, cpi)
-                            }
-                            _ => String::new(),
-                        };
-                        let outer_table_str = match ell_node.outer_table_control_index {
-                            Some(otci) => format!(",\"outerTableControlIdx\":{}", otci),
-                            None => String::new(),
-                        };
+                        let cell_str = DocumentCore::shape_cell_context_json(
+                            ell_node.cell_index,
+                            ell_node.cell_para_index,
+                            ell_node.outer_table_control_index,
+                        );
                         controls.push(format!(
-                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
+                            "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                             node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                            si, pi, ci, cell_str, outer_table_str, layer_str
+                            si, pi, ci, cell_str, layer_str
                         ));
                         return;
                     }
@@ -3982,29 +3993,24 @@ impl DocumentCore {
                         path_node.control_index,
                     ) {
                         // [Task #1138] 표 셀 안 path (다각형/곡선/연결선)
-                        let cell_str = match (path_node.cell_index, path_node.cell_para_index) {
-                            (Some(cei), Some(cpi)) => {
-                                format!(",\"cellIdx\":{},\"cellParaIdx\":{}", cei, cpi)
-                            }
-                            _ => String::new(),
-                        };
-                        let outer_table_str = match path_node.outer_table_control_index {
-                            Some(otci) => format!(",\"outerTableControlIdx\":{}", otci),
-                            None => String::new(),
-                        };
+                        let cell_str = DocumentCore::shape_cell_context_json(
+                            path_node.cell_index,
+                            path_node.cell_para_index,
+                            path_node.outer_table_control_index,
+                        );
                         if let Some((x1, y1, x2, y2)) = path_node.connector_endpoints {
                             // 연결선: 선 선택 방식 (시작/끝 좌표 포함)
                             controls.push(format!(
-                                "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
+                                "{{\"type\":\"line\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"x1\":{:.1},\"y1\":{:.1},\"x2\":{:.1},\"y2\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                                 node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
                                 x1, y1, x2, y2,
-                                si, pi, ci, cell_str, outer_table_str, layer_str
+                                si, pi, ci, cell_str, layer_str
                             ));
                         } else {
                             controls.push(format!(
-                                "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}{}}}",
+                                "{{\"type\":\"shape\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"secIdx\":{},\"paraIdx\":{},\"controlIdx\":{}{}{}}}",
                                 node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
-                                si, pi, ci, cell_str, outer_table_str, layer_str
+                                si, pi, ci, cell_str, layer_str
                             ));
                         }
                         return;
