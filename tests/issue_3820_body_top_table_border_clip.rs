@@ -131,15 +131,27 @@ fn issue_3820_p33_table_frame_is_paint_only_inset() {
         .map(|line| line.y1)
         .fold(f64::NEG_INFINITY, f64::max);
 
+    // [#4068 재판정] 종전 핀(bottom 269.2x · inset 0HU)은 **한/글이 아니라 당시 rhwp 의
+    // 동작**을 굳힌 값이었다. 한/글 2020 정본 PDF 의 p33 괘선을 다시 재면 이 표는
+    // 상단 85.03 · 바닥 270.90 이고, 종전 값은 둘 다 `outer_margin_top`(140HU=1.87px)
+    // 만큼 위였다.
+    //
+    //   종전   상단 83.20 (Δ −1.83)   바닥 269.24 (Δ −1.66)
+    //   현재   상단 85.00 (Δ −0.03)   바닥 271.11 (Δ +0.21)
+    //
+    // 원인은 `paragraph_layout.rs` 의 TAC 표 배치에서 베이스라인-하단 식이 줄 상단
+    // 위로 올라갈 때(이 표는 tbl_h 210.75 > baseline 여유 182.31 이라 raw=56.59)
+    // 종전 `.max(current_y)` 가 선언된 위 바깥여백을 같이 버린 것이다.
+    // 같은 파일의 successor 계약(283HU)은 정본과 0.05px 로 일치하므로 그대로 둔다.
     assert!(
-        (269.20..=269.30).contains(&table_bottom),
+        (271.05..=271.15).contains(&table_bottom),
         "p33 table bbox changed: bottom={table_bottom}",
     );
     assert!(
         (bottom_line_y - table_bottom).abs() <= 0.5,
         "p33 bottom frame must remain on source geometry: line={bottom_line_y} table={table_bottom}",
     );
-    assert_body_top_frame_contract(&core, 32, 428, 0);
+    assert_body_top_frame_contract(&core, 32, 428, 140);
 }
 
 #[test]

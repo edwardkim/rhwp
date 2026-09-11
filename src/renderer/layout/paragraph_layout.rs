@@ -3092,7 +3092,21 @@ impl LayoutEngine {
                 let tbl_y = self
                     .tac_table_stored_outer_band_top(para, tbl, current_y)
                     .unwrap_or_else(|| {
-                        (current_y + baseline_dist + om_bottom - tbl_h).max(current_y)
+                        let raw = current_y + baseline_dist + om_bottom - tbl_h;
+                        if raw < current_y {
+                            // [#3820] 베이스라인-하단 식이 줄 상단 **위로** 올라가면
+                            // (표가 줄의 baseline 여유보다 크다) 그 모델은 성립하지
+                            // 않는다. 종전 `.max(current_y)` 는 그때 선언된 위 바깥
+                            // 여백을 조용히 버렸다. 한/글은 줄 상단 + `om_top` 에 둔다.
+                            //
+                            //   간장 기증자 보고서 33쪽 5행11열 (om_top=140HU)
+                            //     cur_y 83.16 · base 182.31 · om_b 1.87 · tbl_h 210.75
+                            //     raw 56.59 < cur_y  → 종전 83.16 / 한/글 괘선 85.03
+                            //     cur_y + om_top = 85.03  (정확 일치)
+                            current_y + hwpunit_to_px(tbl.outer_margin_top as i32, self.dpi)
+                        } else {
+                            raw
+                        }
                     });
 
                 let table_bottom = self.layout_table(
@@ -5162,7 +5176,30 @@ impl LayoutEngine {
                 }
                 let step =
                     hwpunit_to_px(next.vertical_pos - seg.vertical_pos, self.dpi) - line_spacing_px;
-                (step > 0.0 && step < line_height && (max_fs <= 0.0 || step + 0.5 >= max_fs))
+                // [#6928] 줄 바닥은 **글자 높이**(`max_fs`)로 지켜 왔는데, 글자처럼 취급
+                // 개체(그림·표)가 줄 높이를 정하는 줄에는 글리프가 없어 `max_fs` 가 0 이다.
+                // 그래서 저장 사다리가 주는 작은 걸음이 무방비로 통과하고, 뒤 내용이 그
+                // 개체 위로 포개진다 — 148769979 1쪽: 배너 그림 높이 107.1px 인 줄의
+                // 저장 걸음이 2.7px 라 표·엠바고·로고가 전부 106px 위로 올라왔다.
+                //
+                // 그런 줄의 바닥은 개체가 정한 줄 높이 자체다. `step < line_height` 와 함께
+                // 걸리므로 이 줄은 저장 걸음을 쓰지 않고 `line_height` 로 전진한다.
+                let line_has_as_char_object = composed.inline_controls.iter().any(|c| {
+                    c.line_index == line_idx
+                        && matches!(
+                            c.control_type,
+                            crate::renderer::composer::InlineControlType::Table
+                                | crate::renderer::composer::InlineControlType::Shape
+                        )
+                });
+                let flow_floor = if line_has_as_char_object {
+                    max_fs.max(line_height)
+                } else {
+                    max_fs
+                };
+                (step > 0.0
+                    && step < line_height
+                    && (flow_floor <= 0.0 || step + 0.5 >= flow_floor))
                     .then_some(step)
             });
             let flow_step = stored_line_advance.unwrap_or(line_height);
