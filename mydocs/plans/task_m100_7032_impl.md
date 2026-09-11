@@ -4,7 +4,7 @@
 - 작성일: 2026-09-11 (KST)
 - 브랜치: `task_m100_7032`
 - 선행 조사: [Stage 1](../working/task_m100_7032_stage1.md), commit `1d70bbb18`
-- 상태: **Stage 2 R1 시각 판정 및 R2 완료. Stage 3 lint·Native Skia·Docker WASM PASS. 신규 HWPX 기준선 등록 후 전체 nextest 9,490 PASS / 0 FAIL / 46 skipped.** [Stage 3 증적](../working/task_m100_7032_stage3.md)의 clipping 원본 부재·Docker 산출물 시각 판정 제약은 유지한다. 다음은 최종 보고·PR 준비이며 전체 작업 종료는 아니다.
+- 상태: **Stage 2 구현 및 Stage 3 전체 nextest 9,490 PASS / 0 FAIL / 46 skipped, lint·Native Skia·Docker WASM 완료. Stage 4 최종 보고·PR 준비 완료, 제출 승인 대기.** [결과보고서](../report/task_m100_7032_report.md)와 [Stage 4](../working/task_m100_7032_stage4.md)를 따른다. clipping 원본 부재·Docker 산출물 직접 시각 판정·통합 후 검증 경계는 유지하며 전체 작업 종료는 아니다.
 
 ## 1. 확정한 수정 원리
 
