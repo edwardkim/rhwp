@@ -1375,6 +1375,7 @@ impl LayoutEngine {
                 })
                 .collect();
             let empty_owners = cut_units
+                .filter(|_| empty_paragraphs.iter().any(|&empty| empty))
                 .map(|(su, eu)| self.cell_cut_empty_paragraph_owners(cell, table, styles, su, eu));
             let owns_empty_paragraph = |pi: usize| {
                 empty_paragraphs[pi] && empty_owners.as_ref().is_none_or(|owners| owners[pi])
