@@ -34,6 +34,14 @@ function parseArgs(args) {
   return options;
 }
 
+function measurementSource(measurement) {
+  return Object.fromEntries([
+    "run_id", "ref", "sha", "run_attempt", "repository", "repository_id",
+    "pull_number", "head_repository_id", "head_sha", "head_ref",
+  ].filter((field) => typeof measurement[field] === "string" && measurement[field].length > 0)
+    .map((field) => [field, measurement[field]]));
+}
+
 export function refreshDurationPolicy(policy, measurements) {
   if (policy.schema_version === 2) {
     if (
@@ -92,11 +100,7 @@ export function refreshDurationPolicy(policy, measurements) {
       fallback_seconds_per_test: policy.fallback_seconds_per_test,
       parallelism_factor: parsedPolicy.parallelismFactor,
       measurement_sources: Object.fromEntries(measurements
-        .map((measurement) => [measurement.archive_label, {
-          run_id: measurement.run_id,
-          ref: measurement.ref,
-          sha: measurement.sha,
-        }])
+        .map((measurement) => [measurement.archive_label, measurementSource(measurement)])
         .sort(([left], [right]) => left.localeCompare(right))),
       targets: Object.fromEntries(Object.entries(targets).sort(([left], [right]) => left.localeCompare(right))),
       cases: Object.fromEntries(Object.entries(cases).sort(([left], [right]) => left.localeCompare(right))),
@@ -137,11 +141,7 @@ export function refreshDurationPolicy(policy, measurements) {
     schema_version: 1,
     fallback_seconds: policy.fallback_seconds,
     measurement_sources: Object.fromEntries(measurements
-      .map((measurement) => [measurement.archive_label, {
-        run_id: measurement.run_id ?? null,
-        ref: measurement.ref ?? null,
-        sha: measurement.sha ?? null,
-      }])
+      .map((measurement) => [measurement.archive_label, measurementSource(measurement)])
       .sort(([left], [right]) => left.localeCompare(right))),
     targets: Object.fromEntries(Object.entries(durations).sort(([left], [right]) => left.localeCompare(right))),
   };

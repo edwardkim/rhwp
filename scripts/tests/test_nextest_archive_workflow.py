@@ -191,9 +191,13 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("github.ref == 'refs/heads/devel'", runner)
         self.assertIn("github.event_name == 'pull_request'", runner)
         self.assertIn(
-            "github.event.pull_request.head.repo.full_name == github.repository",
+            "github.event.pull_request.base.repo.id == github.repository_id",
             runner,
         )
+        self.assertIn("github.repository == 'edwardkim/rhwp'", runner)
+        self.assertIn("github.event.pull_request.base.ref == 'devel'", runner)
+        self.assertIn("-attempt-${{ github.run_attempt }}-", runner)
+        self.assertNotIn("github.event.pull_request.head.repo.full_name == github.repository", runner)
         self.assertIn("inputs.archive_label == 'b'", runner)
         self.assertIn("inputs.archive_label == 'c'", runner)
         self.assertIn("inputs.archive_label == 'd'", runner)
