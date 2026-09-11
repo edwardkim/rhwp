@@ -62,7 +62,7 @@ fn fields_in_source() -> BTreeMap<String, usize> {
     collect_model_files(&dir, &dir, &mut files);
     for (file, path) in files {
         let text = std::fs::read_to_string(&path).expect("모델 파일 읽기");
-        for (i, line) in text.lines().enumerate() {
+        for line in text.lines() {
             let t = line.trim_start();
             if !t.starts_with("pub raw_") {
                 continue;
@@ -76,7 +76,6 @@ fn fields_in_source() -> BTreeMap<String, usize> {
             if name.is_empty() || name.contains(' ') {
                 continue;
             }
-            let _ = i;
             *out.entry(format!("{name}@{file}")).or_insert(0) += 1;
         }
     }
