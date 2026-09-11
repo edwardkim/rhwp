@@ -404,26 +404,6 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     // ── 위임 ───────────────────────────────────────────────────────────────
     (
-        "commands/document.rs",
-        "export_hwp_with_adapter",
-        Exempt::DelegatesTo("convert_if_hwpx_source"),
-        "저장 직전 어댑터 변환. IR 변경은 전부 어댑터 안에서 일어나며 그쪽이 \
-         `raw_stream_dirty` 를 세운다.",
-    ),
-    (
-        "commands/document.rs",
-        "export_hwp_with_adapter_with_password",
-        Exempt::DelegatesTo("convert_if_hwpx_source"),
-        "암호 HWP 저장도 평문 저장과 같은 HWPX-to-HWP 어댑터만 IR을 변경한다. \
-         어댑터가 `raw_stream_dirty` 를 세우고, 비밀번호 직렬화는 IR을 변경하지 않는다.",
-    ),
-    (
-        "commands/document.rs",
-        "serialize_hwp_with_verify",
-        Exempt::DelegatesTo("export_hwp_with_adapter"),
-        "export 후 재로드 검증만 수행. 자체 IR 변경 없음.",
-    ),
-    (
         "commands/table_ops.rs",
         "paste_table_cells_transposed_as_new_table_native",
         Exempt::DelegatesTo("create_table_native"),
