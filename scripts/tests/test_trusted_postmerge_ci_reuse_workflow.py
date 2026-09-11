@@ -54,6 +54,24 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("identity[4] === String(workflowRun.run_attempt)", workflow)
         self.assertIn("artifact.expired !== true", workflow)
 
+    def test_stale_event_base_requires_both_upstream_ancestry_proofs(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        capture = workflow.split("- name: Capture PR merge-tree evidence", 1)[1].split(
+            "- name: Upload PR merge-tree evidence", 1
+        )[0]
+        for guard in (
+            "parents[1] !== pullRequest.head.sha",
+            "await ancestor(pullRequest.base.sha, parents[0])",
+            "await ancestor(parents[0], currentBase)",
+            "comparison.status !== 'ahead'",
+            "comparison.base_commit?.sha !== base",
+            "comparison.merge_base_commit?.sha !== base",
+            "branch.name !== 'devel'",
+            "event_base_sha: pullRequest.base.sha",
+        ):
+            self.assertIn(guard, capture)
+        self.assertNotIn("ref: process.env.CALLER_REF", capture)
+
     def test_fork_collection_requires_trusted_run_and_independent_tree_proof(self) -> None:
         workflow = REUSABLE.read_text(encoding="utf-8")
         collect = workflow.split("async function collectEvidence()", 1)[1]
