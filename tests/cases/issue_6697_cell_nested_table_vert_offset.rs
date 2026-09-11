@@ -28,7 +28,7 @@ use rhwp::model::page::PageDef;
 use rhwp::model::paragraph::{LineSeg, Paragraph};
 use rhwp::model::shape::{TextWrap, VertRelTo};
 use rhwp::model::style::ParaShape;
-use rhwp::model::table::{Cell, Table};
+use rhwp::model::table::{Cell, Table, VerticalAlign};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const LINE_H: i32 = 800;
@@ -77,6 +77,10 @@ fn nested_float_table(offset: u32) -> Table {
 
 /// 바깥 1×1 표 — 그 칸의 문단이 글자와 중첩 표를 함께 갖는다.
 fn document(offset: u32) -> Document {
+    document_with_valign(offset, VerticalAlign::Top)
+}
+
+fn document_with_valign(offset: u32, valign: VerticalAlign) -> Document {
     let mut doc = Document::default();
     doc.doc_info.para_shapes = vec![ParaShape::default()];
 
@@ -110,6 +114,7 @@ fn document(offset: u32) -> Document {
             height: NESTED_H + 8000,
             paragraphs: vec![host],
             apply_inner_margin: true,
+            vertical_align: valign,
             ..Default::default()
         }],
         ..Default::default()
@@ -151,8 +156,12 @@ fn collect_tables(node: &RenderNode, out: &mut Vec<(bool, f64)>) {
 }
 
 fn nested_top(offset: u32) -> f64 {
+    nested_top_with_valign(offset, VerticalAlign::Top)
+}
+
+fn nested_top_with_valign(offset: u32, valign: VerticalAlign) -> f64 {
     let mut core = DocumentCore::new_empty();
-    core.set_document(document(offset));
+    core.set_document(document_with_valign(offset, valign));
     let tree = core
         .build_page_render_tree(0)
         .expect("render tree 생성 실패");
@@ -196,5 +205,26 @@ fn negative_vert_offset_does_not_lift_the_nested_table() {
         (negative - zero).abs() <= 1.0,
         "음수 vertOffset 은 적용하지 않는다 — u32 를 부호 없이 읽으면 표가 위로 튄다 \
          (오프셋 0 {zero:.1} vs 음수 {negative:.1})"
+    );
+}
+
+/// `valign=Center` 칸에서는 리드가 **절반만** 표를 내린다.
+///
+/// 렌더는 표를 리드만큼 내리고, 세로 정렬용 콘텐츠 높이도 리드만큼 커져 중앙이
+/// 리드의 절반만큼 위로 오르기 때문이다. 콘텍츠 높이가 리드를 모르면 표만 전량
+/// 내려가 아래 여백이 리드만큼 줄어든다(재현 문서: 한/글 위/아래 여백 95/67px 인
+/// 칸이 rhwp 123.6/37.3px — 표 위치는 일치, 블록만 리드/2 처짐).
+#[test]
+fn center_aligned_cell_moves_nested_table_by_half_the_lead() {
+    let zero = nested_top_with_valign(0, VerticalAlign::Center);
+    let offset = nested_top_with_valign(OFFSET_HU, VerticalAlign::Center);
+    let lead = f64::from(OFFSET_HU) / 75.0;
+    let moved = offset - zero;
+    assert!(
+        (moved - lead / 2.0).abs() <= 1.0,
+        "valign=Center 칸의 자리차지 중첩 표는 리드의 절반만 내려가야 한다 — 세로 정렬용 \
+         콘텐츠 높이가 리드를 모르면 전량 내려간다 (기대 +{:.1}px, 실제 +{moved:.1}px; \
+         오프셋 0 일 때 {zero:.1}, 오프셋 {OFFSET_HU}HU 일 때 {offset:.1})",
+        lead / 2.0
     );
 }
