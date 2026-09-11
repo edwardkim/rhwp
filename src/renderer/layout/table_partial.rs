@@ -1498,16 +1498,13 @@ impl LayoutEngine {
                     start_unit > 0 || end_unit < unit_len
                 }) || line_ranges.as_ref().is_some_and(|ranges| {
                     ranges.iter().enumerate().any(|(i, &(s, e))| {
+                        if empty_paragraphs[i] {
+                            return !owns_empty_paragraph(i);
+                        }
                         let total = composed_store
                             .eager_slice()
                             .get(i)
-                            .map(|c| {
-                                if empty_paragraphs[i] {
-                                    1
-                                } else {
-                                    c.lines.len()
-                                }
-                            })
+                            .map(|c| c.lines.len())
                             .unwrap_or(0);
                         s != 0 || e != total
                     })
@@ -1565,6 +1562,21 @@ impl LayoutEngine {
                         {
                             let para_style = styles.para_styles.get(para.para_shape_id as usize);
                             let is_last_para = pi + 1 == para_count;
+                            if empty_paragraphs[pi] {
+                                if owns_empty_paragraph(pi) {
+                                    total += self.calc_para_lines_height(
+                                        &comp.lines,
+                                        para,
+                                        false,
+                                        false,
+                                        pi,
+                                        para_count,
+                                        para_style,
+                                        styles,
+                                    );
+                                }
+                                continue;
+                            }
                             if start == 0 && end > 0 && pi > 0 {
                                 total += para_style.map(|s| s.spacing_before).unwrap_or(0.0);
                             }
@@ -1711,7 +1723,9 @@ impl LayoutEngine {
                                 .iter()
                                 .any(|control| matches!(control, Control::Table(_)))
                         });
-                    if owns_empty_paragraph(i) || s < e || selected_zero_width_table_fragment {
+                    if owns_empty_paragraph(i)
+                        || (!empty_paragraphs[i] && (s < e || selected_zero_width_table_fragment))
+                    {
                         last_idx = i;
                     }
                 }
