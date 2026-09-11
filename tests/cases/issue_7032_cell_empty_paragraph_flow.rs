@@ -295,7 +295,7 @@ fn last_empty_cell_paragraph_uses_em_without_trailing_spacing() {
     let reference = core(false);
     let para = &source_cell(&reference).paragraphs[0];
     let fs = reference.document().doc_info.char_shapes[para.char_shapes[0].char_shape_id as usize]
-        .height;
+        .base_size;
     let expected = f64::from(fs) * 96.0 / 7200.0;
     for cut in [None, Some((0, 4)), Some((3, 4))] {
         let tree = fragment(cut, Top, false, false);
