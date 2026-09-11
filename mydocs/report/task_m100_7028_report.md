@@ -4,7 +4,8 @@
 - 일자: 2026-09-11 (KST), 작업 브랜치 `task_m100_7028`.
 - 검증 후보: `4592264c007a4f6616f38d7fda30784f7936fc51`.
 - 승인: 메인테이너 대각선 확인 및 빈 문단 문제 분리·이번 타스크 완료 절차 진행 지시.
-- 상태: 구현·로컬 Rust 검증 완료, 결과보고서 검토 요청. 원격 push·PR·CI·병합은 미수행.
+- 상태: 메인테이너 결과보고서·push·PR 승인 후 [PR #7036](https://github.com/edwardkim/rhwp/pull/7036)
+  Open 생성 완료. CI·self-review·병합은 후속 확인 대상이다.
 
 ## 1. 해결한 문제
 
@@ -70,9 +71,23 @@ SHA-256: `9ddc53befe22db3cba060e6a69944ea6b560b7107143cb1aea07ff67ce97c9a5`.
 
 ## 5. 남은 완료 절차
 
-1. 결과보고서 검토 및 원격 push·PR 생성 승인.
-2. 제출 직전 최신 base/head 확인, 필요한 동기화와 영향 검증 후 devel 대상 PR 생성.
-3. CI 확인·self-review·승인된 병합 절차 후 #7028 종료 및 로컬 후속 정리.
+1. **완료**: 결과보고서·push·PR 생성 승인, `task_m100_7028` 원격 push 및 devel 대상 PR #7036 생성.
+2. **완료**: assignee edwardkim, milestone v1.0.0, bug/layout/rendering 적용 및 API 재조회.
+   게시된 본문 한글·이슈 참조·BOM/치환 문자 없음 확인.
+3. **대기**: CI 확인·self-review·승인된 병합 절차 후 #7028 종료 및 로컬 후속 정리.
+
+제출 head는 `d59e83c798d1fef800575b648a1ef71781376791`이며 전체 검증 후보 이후 차이는
+`mydocs/` 문서뿐이다. 제출 직전 최신 `upstream/devel`은 `376c6b605c6be3b735bf6b8b9464fcd16b833a10`으로,
+PR #7033·#7034 변경이 추가됐다. 병합 시뮬레이션 tree `cde8c4554b2f3985a81397313235e40646211e3d`는
+충돌이 없고 diff 검사도 통과했다. 그 통합 tree의 전체 실행 결과를 이전 로컬 결과로 대체하지 않으며,
+PR CI에서 별도로 확인한다. GitHub 작성 시점 `MERGEABLE` / `BLOCKED`는 병합 승인이나 CI 성공이 아니다.
+
+기본 경로는 `collaborator_self_merge`, 보조는 `intake_and_review`, `local_validation`,
+`visual_fixture_evidence`, `rework_and_exceptions`다. diff 1,000줄 초과는 대부분 단계 문서이며,
+대형 PR 규칙대로 즉시 admin merge하지 않는다. 최신 devel에서 추가한 동작 기반 회귀 지침도 확인했다.
+신규 9개 검사는 실제 렌더 경로를 호출하며 수정 전 실패·보호 반례는 Stage 2에 기록했다.
+PR 번호 기반 self-review 판정은 CI 이후 별도로 수행한다. 이 생성 기록은 로컬 문서 commit으로
+보존하고, 현재 code CI를 중복 실행시키지 않도록 후속 review 기록과 함께 push한다.
 
 #7028은 아직 OPEN이다. #7032 등록을 이유로 대각선 구현의 통합·CI 절차를 생략하지 않는다.
 현재 브라우저 자동 검증의 미완료 항목은 후속 검토에서 명시적으로 확인한다.
