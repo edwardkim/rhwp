@@ -26,8 +26,9 @@ last_verified: 2026-08-30
 
 작업지시자가 PR 병합과 `merge 후 후속 처리`를 함께 승인한 경우, 7번은 선택 보고가 아니라 완료 전 실행
 게이트다. 해당 PR만을 위해 만든 clean한 local branch와 local worktree의 제거는 별도 승인 없이 이 단계에서
-수행한다. 원격 branch 삭제나 기본 작업공간·공유 산출물·사용자 또는 다른 도구 소유 대상의 삭제는 포함하지
-않는다.
+수행한다. 이번 작업에서 원본 저장소에 만든 PR 전용 임시 원격 head branch도 7.7의 안전 조건을
+충족하면 별도 승인 질문 없이 자동 정리한다. 기본 작업공간·공유 산출물·사용자 또는 다른 도구 소유 대상과
+contributor fork branch의 삭제는 포함하지 않는다.
 
 ## 7.5 renderer golden 선행조건
 
@@ -241,13 +242,23 @@ git branch -D <local-docs-branch>
 git fetch upstream --prune
 ~~~
 
-해당 작업에서 만들지 않았거나 존재하지 않는 placeholder 명령은 실행하지 않는다. PR head repository가
-원본 edwardkim/rhwp이고, current collaborator가 이번 작업에서 만든 exact head branch일 때만 작업지시자
-승인 뒤 upstream remote branch를 삭제한다. contributor fork의 head branch나 같은 이름의 다른 upstream
-branch를 삭제하지 않는다.
+해당 작업에서 만들지 않았거나 존재하지 않는 placeholder 명령은 실행하지 않는다. PR 병합과 후속 처리
+승인은 이번 작업에서 만든 PR 전용 임시 upstream head branch의 삭제까지 포함한다. 아래 조건을 모두
+충족하면 별도 승인 질문 없이 자동 삭제한다.
+
+- PR이 실제 MERGED이고 필수 post-merge CI와 comment·issue 처리가 완료되어야 한다.
+- PR head repository가 `edwardkim/rhwp`이며 이번 작업에서 만든 exact `headRefName`이어야 한다.
+- merge SHA가 최신 `upstream/devel`에 포함되고 기본 작업공간이 clean이며 관련 활성 작업이 없어야 한다.
+- `main`, `devel`, 저장소 기본 branch, 보호 branch, 다른 OPEN PR 또는 다른 작업이 사용하는 branch는 제외한다.
+- 삭제 직전 remote SHA가 병합한 PR의 최종 `headRefOid`와 같은지 확인한다. 다른 SHA로 전진했으면 삭제하지
+  않고 새 작업 가능성을 보고한다. 이미 삭제되었으면 재삭제하지 않고 부재를 기록한다.
+- contributor fork, 사용자·다른 도구 소유 branch 및 명시적으로 보존하라는 branch는 자동 정리하지 않는다.
+
+조회와 삭제 사이에 새 push가 생겨도 지워지지 않도록 exact ref와 예상 SHA를 지정한 lease로 삭제한다.
+안전 조건을 충족하지 못하면 유지 사유를 보고하며, 단순히 별도 정리 승인을 기다리기 위해 남기지 않는다.
 
 ~~~bash
-git push upstream --delete <headRefName>
+git push --force-with-lease=refs/heads/<headRefName>:<headRefOid> upstream :refs/heads/<headRefName>
 ~~~
 
 삭제 뒤에는 다음을 모두 확인한다.

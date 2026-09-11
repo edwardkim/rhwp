@@ -75,6 +75,30 @@ local Cargo 성공만으로 candidate의 GitHub Actions를 대체하지 않는�
 collaborator가 contributor code를 local에서 검증한 뒤 review·오늘할일만 같은 source head에 추가하는 경우도
 이 A 경로다. local 검증 결과와 candidate SHA, 재사용한 Build & Test URL을 review 문서에 기록한다.
 
+### A.0 검토 중 base 전진과 오늘할일 갱신
+
+다른 PR이 `devel`에 병합될 때마다 검토 중인 source branch에 `upstream/devel`을
+반복 merge하거나 rebase하지 않는다. 이미 CI를 통과한 code head는 유지한다.
+불필요한 동기화는 새 head와 병합 계보를 만들어 full CI 재실행 또는 재사용 실패를
+유발할 수 있다. current-base bridge 지원은 예외 처리이지 반복 동기화의 권장이 아니다.
+
+PR review와 오늘할일만 추가하는 경우에는 다음 순서를 따른다.
+
+1. 최신 `upstream/devel`을 fetch하거나 API로 조회한다. remote-tracking ref를 갱신하는
+   fetch와 source branch에 변경을 적용하는 merge/rebase를 구분한다.
+2. 최신 `upstream/devel`의 해당 오늘할일 파일만 읽는다. 다른 작업의 기록을 보존하고
+   현재 branch에만 있는 기록도 누락하지 않도록 합쳐, 이번 PR의 실제 검증 결과를 추가한다.
+   최신 파일을 통째로 덮어써 branch 고유 기록을 지우지 않는다.
+3. 검증된 code head 위에 PR review·오늘할일 등 허용된 기록만 single-parent trailing
+   commit으로 추가한다. 최신 devel의 source/test/workflow 변경은 함께 가져오지 않는다.
+4. staged diff가 의도한 문서·기록 범위뿐인지 확인하고 push한 뒤, 새 head의 required check와
+   실제 fast-pass 판정을 확인한다. 문서-only라는 이유만으로 CI 통과나 재사용을 가정하지 않는다.
+
+실제 병합 충돌, branch protection의 필수 최신화 조건 또는 명시적인 코드 통합 지시가 있을
+때만 동기화 필요성을 별도로 판단한다. 문서 충돌이면 문서 범위에서 해결하고, 코드 동기화가
+필요하면 변경 범위와 검증 영향을 먼저 보고한 뒤 필요한 검증을 적용한다. 오래된 기록에 적힌
+`devel 동기화`를 매번 source branch merge를 수행하라는 상시 지시로 해석하지 않는다.
+
 ### A.1 CI 실행 정책을 바꾼 PR의 trusted 재사용
 
 PR 전체 변경에 `.github/workflows/**`, `.github/actions/**`, CI impact classifier·policy 또는
