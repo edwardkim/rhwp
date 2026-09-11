@@ -5,7 +5,8 @@
 - 검증 후보: `4592264c007a4f6616f38d7fda30784f7936fc51`.
 - 승인: 메인테이너 대각선 확인 및 빈 문단 문제 분리·이번 타스크 완료 절차 진행 지시.
 - 상태: 메인테이너 결과보고서·push·PR 승인 후 [PR #7036](https://github.com/edwardkim/rhwp/pull/7036)
-  Open 생성 완료. CI·self-review·병합은 후속 확인 대상이다.
+  Open 생성 완료. 제출 candidate CI 성공, 메인테이너 승인에 따라
+  [self-review](../pr/archives/pr_7036_review.md) 완료. 후행 문서 head CI·병합 승인은 별도다.
 
 ## 1. 해결한 문제
 
@@ -74,7 +75,8 @@ SHA-256: `9ddc53befe22db3cba060e6a69944ea6b560b7107143cb1aea07ff67ce97c9a5`.
 1. **완료**: 결과보고서·push·PR 생성 승인, `task_m100_7028` 원격 push 및 devel 대상 PR #7036 생성.
 2. **완료**: assignee edwardkim, milestone v1.0.0, bug/layout/rendering 적용 및 API 재조회.
    게시된 본문 한글·이슈 참조·BOM/치환 문자 없음 확인.
-3. **대기**: CI 확인·self-review·승인된 병합 절차 후 #7028 종료 및 로컬 후속 정리.
+3. **완료**: 제출 candidate CI 6개 workflow 성공 확인 및 self-review, 집중 회귀 9개 재통과.
+4. **대기**: 후행 문서 head의 CI 확인·승인된 병합 절차 후 #7028 종료 및 로컬 후속 정리.
 
 제출 head는 `d59e83c798d1fef800575b648a1ef71781376791`이며 전체 검증 후보 이후 차이는
 `mydocs/` 문서뿐이다. 제출 직전 최신 `upstream/devel`은 `376c6b605c6be3b735bf6b8b9464fcd16b833a10`으로,
