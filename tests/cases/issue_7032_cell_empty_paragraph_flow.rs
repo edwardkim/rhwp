@@ -142,3 +142,164 @@ fn hwp_header_text_origin_matches_stored_hwpx_control() {
         }
     }
 }
+
+// Internal rendering contract, not a serialized Hancom fixture or a pagination
+// oracle: retain A4 and supply explicit canonical paragraph-atom cut windows.
+fn fragment(
+    cut: Option<(usize, usize)>,
+    align: rhwp::model::table::VerticalAlign,
+    percent: bool,
+    spacing: bool,
+) -> rhwp::renderer::render_tree::PageRenderTree {
+    use rhwp::model::{
+        page::{ColumnDef, PageDef},
+        paragraph::Paragraph,
+        table::TablePageBreak,
+    };
+    use rhwp::renderer::{
+        composer::compose_paragraph,
+        height_measurer::HeightMeasurer,
+        layout::LayoutEngine,
+        pagination::{PageItem, Paginator},
+        style_resolver::resolve_styles,
+    };
+    let core = core(false);
+    let mut doc = core.document().clone();
+    let para_shape = source_cell(&core).paragraphs[0].para_shape_id as usize;
+    if percent {
+        doc.doc_info.para_shapes[para_shape].line_spacing_type =
+            rhwp::model::style::LineSpacingType::Percent;
+        doc.doc_info.para_shapes[para_shape].line_spacing = 160;
+    }
+    if spacing {
+        doc.doc_info.para_shapes[para_shape].spacing_before = 300;
+        doc.doc_info.para_shapes[para_shape].spacing_after = 450;
+    }
+    let Control::Table(mut table) = doc.sections[0].paragraphs[4].controls[0].clone() else {
+        unreachable!()
+    };
+    table.cells.truncate(2);
+    table.row_count = 1;
+    table.col_count = 2;
+    table.repeat_header = false;
+    table.page_break = TablePageBreak::CellBreak;
+    table.common.treat_as_char = false;
+    table.common.width = table.cells.iter().map(|c| c.width).sum();
+    table.common.height = 12000;
+    let empty = table.cells[0].paragraphs[0].clone();
+    let text = table.cells[0].paragraphs[1].clone();
+    for cell in &mut table.cells {
+        cell.is_header = false;
+        cell.height = 12000;
+        cell.vertical_align = align;
+        // empty, empty, text, empty: one canonical atom per paragraph.
+        cell.paragraphs = vec![empty.clone(), empty.clone(), text.clone(), empty.clone()];
+    }
+    let paragraphs = vec![Paragraph {
+        controls: vec![Control::Table(table)],
+        ..Default::default()
+    }];
+    let styles = resolve_styles(&doc.doc_info, 96.0);
+    let composed = paragraphs.iter().map(compose_paragraph).collect::<Vec<_>>();
+    let measured = HeightMeasurer::new(96.0).measure_section(&paragraphs, &composed, &styles, None);
+    let mut pages = Paginator::new(96.0).paginate_with_measured(
+        &paragraphs,
+        &measured,
+        &PageDef::default(),
+        &ColumnDef::default(),
+        0,
+        &styles.para_styles,
+    );
+    let page = &mut pages.pages[0];
+    page.column_contents[0].items = vec![PageItem::PartialTable {
+        para_index: 0,
+        control_index: 0,
+        start_row: 0,
+        end_row: 1,
+        is_continuation: false,
+        start_cut: cut.map(|(s, _)| vec![s; 2]).unwrap_or_default(),
+        end_cut: cut.map(|(_, e)| vec![e; 2]).unwrap_or_default(),
+        is_block_split: false,
+        row_cursor_is_nested: false,
+        end_row_height_override: None,
+        start_row_height_override: None,
+    }];
+    LayoutEngine::new(96.0).build_render_tree(
+        page,
+        &paragraphs,
+        &[],
+        &[],
+        &composed,
+        &styles,
+        &Default::default(),
+        &[],
+        None,
+        &measured.tables,
+        None,
+        0,
+        &[],
+    )
+}
+
+#[test]
+fn full_atom_window_preserves_uncut_alignment_and_spacing() {
+    use rhwp::model::table::VerticalAlign::{Bottom, Center, Top};
+    for align in [Top, Center, Bottom] {
+        for percent in [false, true] {
+            for spacing in [false, true] {
+                let uncut = fragment(None, align, percent, spacing);
+                let cut = fragment(Some((0, 4)), align, percent, spacing);
+                let a = paragraph_lines(header(&uncut.root));
+                let b = paragraph_lines(header(&cut.root));
+                assert_eq!((a.len(), b.len()), (4, 4));
+                for (a, b) in a.iter().zip(&b) {
+                    assert_near(a.bbox.y, b.bbox.y);
+                    assert_near(a.bbox.height, b.bbox.height);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn cut_window_emits_only_owned_empty_paragraphs_once() {
+    use rhwp::model::table::VerticalAlign::Top;
+    for (start, end) in [(0, 1), (0, 2), (1, 3), (2, 4), (3, 4), (4, 4)] {
+        let tree = fragment(Some((start, end)), Top, false, false);
+        let lines = paragraph_lines(header(&tree.root));
+        let owners: Vec<_> = lines
+            .iter()
+            .map(|n| {
+                let RenderNodeType::TextLine(l) = &n.node_type else {
+                    unreachable!()
+                };
+                l.para_index.unwrap()
+            })
+            .collect();
+        assert_eq!(
+            owners,
+            (start..end).collect::<Vec<_>>(),
+            "cut {start}..{end}"
+        );
+        for line in lines {
+            assert!(nodes(line).iter().any(
+                |n| matches!(&n.node_type, RenderNodeType::TextRun(r) if r.cell_context.is_some())
+            ));
+        }
+    }
+}
+
+#[test]
+fn last_empty_cell_paragraph_uses_em_without_trailing_spacing() {
+    use rhwp::model::table::VerticalAlign::Top;
+    let reference = core(false);
+    let para = &source_cell(&reference).paragraphs[0];
+    let fs = reference.document().doc_info.char_shapes[para.char_shapes[0].char_shape_id as usize]
+        .height;
+    let expected = f64::from(fs) * 96.0 / 7200.0;
+    for cut in [None, Some((0, 4)), Some((3, 4))] {
+        let tree = fragment(cut, Top, false, false);
+        let lines = paragraph_lines(header(&tree.root));
+        assert_near(lines.last().unwrap().bbox.height, expected);
+    }
+}
