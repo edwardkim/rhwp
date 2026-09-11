@@ -1157,16 +1157,17 @@ fn test_compute_image_crop_src_no_crop_full_image() {
 
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
-    // 좌·상단을 잘라낸 케이스: top=oh/5, left=ow/4 → 우하단 영역.
-    // imgDim 부재 → 적응 폴백(#3239): right/bottom(4000, 2500)이 전체 좌표
-    // 범위 = 디코딩 400×250px 에 대응 (10 HU/px).
+    // [#7015] 좌·상단을 **둘 다** 잘라낸 케이스. 적응 폴백(#3239)은 `right`/`bottom`
+    // 이 전체 좌표 범위라는 가정 위에 서는데, `left > 0` · `top > 0` 이면 두 값 다
+    // 자르기 경계일 뿐이라 그 가정이 성립하지 않는다. 전체 범위를 확인할 축이 하나도
+    // 없으므로 [Task #477] 표준 75 HU/px 로 떨어진다.
     let (sx, sy, sw, sh) = compute_image_crop_src((1000, 500, 4000, 2500), None, 400.0, 250.0);
-    // src_x = 1000/10 = 100, src_y = 500/10 = 50
-    // src_w = 3000/10 = 300, src_h = 2000/10 = 200
-    assert!((sx - 100.0).abs() < 0.01);
-    assert!((sy - 50.0).abs() < 0.01);
-    assert!((sw - 300.0).abs() < 0.01);
-    assert!((sh - 200.0).abs() < 0.01);
+    // src_x = 1000/75 = 13.33, src_y = 500/75 = 6.67
+    // src_w = 3000/75 = 40.0,  src_h = 2000/75 = 26.67
+    assert!((sx - 13.333).abs() < 0.01);
+    assert!((sy - 6.667).abs() < 0.01);
+    assert!((sw - 40.0).abs() < 0.01);
+    assert!((sh - 26.667).abs() < 0.01);
 }
 
 #[test]

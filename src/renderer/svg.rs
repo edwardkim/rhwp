@@ -4091,9 +4091,32 @@ pub(crate) fn compute_image_crop_src(
         .map(|(w, h)| (w as f64 / img_w_px, h as f64 / img_h_px))
         .filter(|(sx, sy)| sx.is_finite() && sy.is_finite() && *sx > 0.0 && *sy > 0.0)
         .or_else(|| {
-            (cr > 0 && cb > 0 && img_w_px > 0.0 && img_h_px > 0.0)
-                .then(|| (cr as f64 / img_w_px, cb as f64 / img_h_px))
-                .filter(|(sx, sy)| sx.is_finite() && sy.is_finite() && *sx > 0.0 && *sy > 0.0)
+            // [#7015] 적응 폴백은 `right`/`bottom` 이 **전체 좌표 범위**라는 가정 위에
+            // 선다. 그 가정은 그 축을 자르지 않았을 때만 성립하므로, 축마다 따로 본다 —
+            // `left > 0` 이면 x 축, `top > 0` 이면 y 축의 `right`/`bottom` 은 자르기
+            // 경계이지 전체 범위가 아니다.
+            //
+            // 30442 권익위 권고문 3쪽 실측: crop `(0, 20745, 88560, 45453)`, 디코딩
+            // 1181×945. x 축은 `88560 / 1181 = 75.0` 으로 표준과 정확히 일치하는데
+            // (= 전체 범위), y 축을 같은 식으로 보면 `45453 / 945 = 48.1` 이라 배율이
+            // 36% 작아진다. 그 결과 자르기 창이 `y 431.3..945.0` 으로 아래로 밀려
+            // 로고(잉크 `y 324..562`)의 위쪽 107행이 잘리고 아래 383행은 흰 여백만
+            // 들어왔다 — "로고가 절반만 보인다".
+            //
+            // 한 축만 전체 범위가 확인되면 그 배율을 두 축에 쓴다(HWP5 crop 좌표는
+            // 등방이다). 둘 다 확인되지 않으면 아래 표준 75 HU/px 로 떨어진다.
+            // `#3239` 의 200dpi 스캔 픽스처는 `left = top = 0` 이라 종전과 같이
+            // 두 축 모두 적응 배율을 쓴다.
+            let axis_scale = |crop_start: i32, crop_end: i32, img_px: f64| {
+                (crop_start == 0 && crop_end > 0 && img_px > 0.0)
+                    .then(|| crop_end as f64 / img_px)
+                    .filter(|scale| scale.is_finite() && *scale > 0.0)
+            };
+            match (axis_scale(cl, cr, img_w_px), axis_scale(ct, cb, img_h_px)) {
+                (Some(sx), Some(sy)) => Some((sx, sy)),
+                (Some(scale), None) | (None, Some(scale)) => Some((scale, scale)),
+                (None, None) => None,
+            }
         })
         .unwrap_or((HU_PER_PX, HU_PER_PX));
     let src_x = cl as f64 / scale_x;
