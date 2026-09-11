@@ -2,7 +2,7 @@
 
 - 선행: [Stage 2](task_m100_7032_stage2.md) R1 시각 판정 및 R2 focused 완료
 - 승인: 메인테이너의 “다음 절차 진행을 승인합니다.”
-- 상태: **신규 HWPX의 기존 문단 ID 재부여 특성 2행 등록 승인·반영 완료. 전체 회귀 재검증 중. WASM 준비 완료.**
+- 상태: **신규 HWPX 기준선 2행 등록 후 전체 nextest 9,490 PASS / 0 FAIL / 46 skipped. WASM 준비 완료.** clipping 외부 원본 부재와 새 Docker 산출물의 메인테이너 시각 판정 여부는 아래 제약을 유지한다.
 - 소스 기준: `532b74fc5` (Stage 2 구현), Stage 3 시작 문서 commit으로 review HEAD를 고정한다.
 - 검증 worktree: `/home/edward/mygithub/rhwp-review-7032`
 - 고정 Cargo target: `/home/edward/mygithub/rhwp-shared-review-target`
@@ -133,12 +133,13 @@ checkout의 `pkg/`에 복사했고, 실행 중인 Studio 서버(7700)는 재시�
 - 브라우저 새로고침 후 두 원본 파일을 다시 열어 첫 셀의 빈 줄·`직렬` 위치와 후속 쪽 반복 제목셀을
   메인테이너가 확인할 수 있다. R1 시각 판정은 이미 통과했지만 이번 Docker 산출물의 시각 판정은 미수행이다.
 
-## 다음 승인 대상
+## 등록 전 권고 — 아래에서 승인·완료
 
 1. IR baseline에 이 신규 HWPX의 실측 2행(1,432 / 24)만 등록한다.
 2. baseline 변경 후 전체 회귀를 다시 실행하고, 통과하면 최종 보고·PR 준비 단계로 넘어간다.
 
-현재 전체 회귀를 PASS로 간주하지 않는다. clipping 외부 원본 부재도 별도 미검증으로 유지한다.
+등록 전 첫 전체 회귀의 1 FAIL을 PASS로 간주하지 않는다. 등록 후 최종 결과는 아래에 별도로 기록한다.
+clipping 외부 원본 부재는 미검증으로 유지한다.
 원격 push·PR 생성·병합은 수행하지 않았다.
 
 ## 신규 샘플 등록 승인 및 재검증
@@ -152,3 +153,18 @@ checkout의 `pkg/`에 복사했고, 실행 중인 Studio 서버(7700)는 재시�
 등록 commit을 review HEAD로 고정하고 새 샘플 보안 입력을 유지하여 전체 nextest를 재실행한다.
 로그는 `output/7032/stage3/nextest-registered.log`다. 직전 lint·Native Skia·WASM 검증과
 제품/Rust test 소스가 동일하므로 그 결과는 유지하며, 재검증 결과는 완료 후 기록한다.
+
+### 등록 후 최종 결과
+
+- 등록 commit 및 검증 review HEAD: `4b74cf032`.
+- 전체 nextest: **9,490 PASS / 0 FAIL / 46 skipped**, exit 0.
+  최적화 빌드 4분 35초, 테스트 실행 422.106초. 느린 검사 8건도 모두 PASS다.
+- 마지막 IR 왕복 검사도 89.182초에 PASS. 신규 HWPX의 보안 검사와 #7032 회귀 7건도 PASS다.
+- `ir-registered.tsv`와 등록 전 `ir-current.tsv`가 바이트 단위로 동일하다.
+  실제 재저장 동작을 바꾼 것이 아니라, 확인된 기존 문단 ID 재부여 특성을 새 샘플 기준으로 등록했다.
+- 최종 suite manifest check PASS(`manifest-registered.log`). 생성 suite·manifest는 stage하지 않았다.
+- 직전 검증 HEAD `63fe746c7` 대비 `src`, `tests/cases`, `Cargo.toml`, `Cargo.lock` 변경 없음.
+  따라서 이미 통과한 Rust lint·Native Skia·Docker WASM 증적과 Studio 제공 산출물을 유지한다.
+
+이번 승인 범위인 신규 샘플 등록과 전체 회귀 재확인을 완료했다. 다음은 최종 보고·PR 준비 절차다.
+원격 push·PR 생성·병합은 아직 수행하지 않았다.
