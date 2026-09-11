@@ -19,10 +19,10 @@ export const studioRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(studioRoot, '..');
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
-export function spawnNpm(args, extraEnv = {}, stdio = 'inherit') {
+export function spawnNpm(args, extraEnv = {}) {
   return spawn(npmCmd, args, {
     cwd: studioRoot,
-    stdio,
+    stdio: 'inherit',
     // win32 의 npm 은 npm.cmd 다 — Node 20+ 부터 .cmd 직접 spawn 이 EINVAL 로
     // 거절되므로 shell 경유로 띄운다(인자는 공백·메타문자 없는 고정값뿐이다).
     shell: process.platform === 'win32',
@@ -33,10 +33,10 @@ export function spawnNpm(args, extraEnv = {}, stdio = 'inherit') {
   });
 }
 
-export function spawnStudioCommand(command, args, extraEnv = {}, stdio = 'inherit') {
+export function spawnStudioCommand(command, args, extraEnv = {}) {
   return spawn(command, args, {
     cwd: studioRoot,
-    stdio,
+    stdio: 'inherit',
     env: {
       ...process.env,
       ...extraEnv,
