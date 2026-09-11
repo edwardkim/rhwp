@@ -7012,6 +7012,16 @@ impl HwpDocument {
         self.discard_snapshot_native(id)
     }
 
+    /// undo 스냅샷 저장소의 축출 상한. studio 예산의 유일한 출처다 (#7002 후속).
+    ///
+    /// studio 는 이 값에서 예산(`상한 - 2`)을 계산한다. 상수를 양쪽에 두면 순 Rust
+    /// 변경에서 frontend 레인이 skip 되어 드리프트가 CI 를 통과했다 — 값을 내보내
+    /// 사본을 없앤다.
+    #[wasm_bindgen(js_name = snapshotCapacity)]
+    pub fn snapshot_capacity(&self) -> u32 {
+        DocumentCore::MAX_SNAPSHOTS as u32
+    }
+
     /// 삭제 직전 문단 범위 원본을 조각으로 보관한다 (#5769).
     ///
     /// 반드시 `deleteRangeNative` 호출 **전**에 불린다. 반환 조각 ID 는

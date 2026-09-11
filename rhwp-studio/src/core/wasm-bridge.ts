@@ -3063,6 +3063,19 @@ export class WasmBridge {
     this.doc.discardSnapshot(id);
   }
 
+  /**
+   * [#7002 후속] 코어의 undo 스냅샷 축출 상한. 예산의 유일한 출처다.
+   *
+   * 구형 WASM(내보내기 없음)에서는 `null` 을 돌려준다 — 호출부가 종전 기본값으로
+   * 물러설 수 있게 한다. 상수를 studio 에 복제하지 않는 것이 이 메서드의 목적이다.
+   */
+  snapshotCapacity(): number | null {
+    if (!this.doc) return null;
+    const fn = (this.doc as any).snapshotCapacity;
+    if (typeof fn !== 'function') return null;
+    return fn.call(this.doc);
+  }
+
   // ─── [#5769] 삭제 조각(fragment) API ──────────────────
 
   captureDeleteRange(sectionIdx: number, startPara: number, endPara: number): number {
