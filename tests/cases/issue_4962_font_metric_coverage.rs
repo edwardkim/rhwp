@@ -402,15 +402,24 @@ fn public_blank_derived_document_keeps_all_non_applicable_width_sources_out_of_c
     let (_, value) = coverage(&core);
     assert_reconciled(&value);
     assert_private_data_absent(&value);
+    // [#7017] `U+F081C` 는 더 이상 `notApplicable`(`hwpPuaFiller`) 이 아니다.
+    //
+    // 한/글은 이 글자를 반각 점선(`┈`)으로 **그리고 폭을 준다** — 렌더러도
+    // `hancom_pua` 표를 따라 그렇게 그렸는데 측정만 0 이었다. 0폭 규칙이 그 문서
+    // (`samples/복학원서.hwp`)의 한/글 2020 정본과 5.15px 어긋남이 확인돼 걷혔고,
+    // 이제 다른 `hancom_pua` 괘선 조각과 같이 폴백 0.5em(`heuristicHalfwidth`)으로
+    // 측정된다. 즉 **실제로 재는 글자**이므로 coverage 대장에 들어가는 것이 맞다.
+    //
+    //   coverage 1 → 2 · notApplicable 6 → 5 · hwpPuaFiller → heuristicHalfwidth
     assert_eq!(count(&value, "/counts/layoutCharacters"), 7);
-    assert_eq!(count(&value, "/counts/coverageCharacters"), 1);
-    assert_eq!(count(&value, "/counts/notApplicableCharacters"), 6);
+    assert_eq!(count(&value, "/counts/coverageCharacters"), 2);
+    assert_eq!(count(&value, "/counts/notApplicableCharacters"), 5);
 
     let expected = BTreeMap::from([
         ("clusterContinuation".to_string(), 2),
         ("figureSpace".to_string(), 1),
         ("heuristicFullwidth".to_string(), 1),
-        ("hwpPuaFiller".to_string(), 1),
+        ("heuristicHalfwidth".to_string(), 1),
         ("inlineObjectPlaceholder".to_string(), 1),
         ("tabAdvance".to_string(), 1),
     ]);
