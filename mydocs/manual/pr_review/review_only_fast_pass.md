@@ -86,13 +86,19 @@ PR review와 오늘할일만 추가하는 경우에는 다음 순서를 따른�
 
 1. 최신 `upstream/devel`을 fetch하거나 API로 조회한다. remote-tracking ref를 갱신하는
    fetch와 source branch에 변경을 적용하는 merge/rebase를 구분한다.
-2. 최신 `upstream/devel`의 해당 오늘할일 파일만 읽는다. 다른 작업의 기록을 보존하고
-   현재 branch에만 있는 기록도 누락하지 않도록 합쳐, 이번 PR의 실제 검증 결과를 추가한다.
-   최신 파일을 통째로 덮어써 branch 고유 기록을 지우지 않는다.
+2. [공통 절차 3.2.1](../pr_review_workflow.md#321-최신-devel-오늘할일을-보존하는-trailing-기록)에 따라
+   source와 최신 `upstream/devel`의 오늘할일 변경 구간을 비교한다. 최신 파일 전체나 다른 PR의 항목을
+   source에 복사하지 않는다. source 고유 기록을 유지하고 양쪽에서 변경되지 않은 section 경계에
+   이번 PR의 실제 검증 결과만 추가한다. 기존 base 기록의 보존은 최종 merge tree에서 확인한다.
 3. 검증된 code head 위에 PR review·오늘할일 등 허용된 기록만 single-parent trailing
    commit으로 추가한다. 최신 devel의 source/test/workflow 변경은 함께 가져오지 않는다.
-4. staged diff가 의도한 문서·기록 범위뿐인지 확인하고 push한 뒤, 새 head의 required check와
-   실제 fast-pass 판정을 확인한다. 문서-only라는 이유만으로 CI 통과나 재사용을 가정하지 않는다.
+4. diff가 의도한 문서·기록 범위뿐인지 확인하고 **push 전에** 고정한 base/head의 `git merge-tree
+   --write-tree` 종료 코드 0, merge tree의 공백·변경 문서 링크·오늘할일 기록 보존 검사를 통과시킨다.
+   동일 EOF append나 add/add 충돌이면 이번 항목의 위치를 문서 범위에서 보정하고 다시 검사한다.
+   실패·미검증 상태에서는 push하지 않는다.
+5. push 직전 원격 base/head의 변경 여부를 재조회한다. 변경됐으면 공통 절차 3.2.1에 따라 재검증한다.
+   push 뒤 새 head의 mergeability, required check와 실제 fast-pass 판정을 확인한다.
+   문서-only라는 이유만으로 충돌 없음·CI 통과·재사용을 가정하지 않는다.
 
 실제 병합 충돌, branch protection의 필수 최신화 조건 또는 명시적인 코드 통합 지시가 있을
 때만 동기화 필요성을 별도로 판단한다. 문서 충돌이면 문서 범위에서 해결하고, 코드 동기화가
