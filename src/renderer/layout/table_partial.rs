@@ -1843,15 +1843,32 @@ impl LayoutEngine {
                         .chars()
                         .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n');
 
+                // #7032: an uncut cell owns its real empty paragraphs even when
+                // composition emits no lines. Reuse the paragraph fallback's
+                // eligibility/metrics; do not invent a line or discard its caret.
+                // Actual cut windows retain their existing unit ownership here.
+                let uncut_empty_paragraph = cut_units.is_none()
+                    && start_line == 0
+                    && end_line == 0
+                    && !self.profile.get().hwp3_layout()
+                    && super::paragraph_layout::empty_no_lineseg_paragraph_metrics(
+                        para,
+                        styles,
+                        styles.para_styles.get(para.para_shape_id as usize),
+                        false,
+                        self.dpi,
+                    )
+                    .is_some();
+
                 // [Task #993] 컷 범위 밖 문단은 이전/다음 페이지 소속 — 이 페이지에서
-                // 스킵한다. cell_line_ranges_from_cut 이 가시 유닛만 범위에 넣으므로
-                // (중첩 표/빈 문단 포함) start_line>=end_line 이면 비가시가 확정이다.
+                // 스킵한다. cut이 없는 빈 문단은 합성 줄 수로 비가시를 판정하지 않는다.
                 // content_y_accum 은 가시 콘텐츠만 추적하므로 스킵 시 전진하지 않는다.
                 if start_line >= end_line
                     && mixed_nested_split.is_none()
                     && nested_cursor_split.is_none()
                     && !visible_non_inline_controls
                     && !uncut_control_only_nested_table
+                    && !uncut_empty_paragraph
                 {
                     continue;
                 }

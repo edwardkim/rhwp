@@ -576,7 +576,7 @@ fn paragraph_active_text_style(
 /// `compose_paragraph()` 는 렌더러 내부 안내용 400HU 줄을 남기지만, HWP5 원본의
 /// 빈 문단 높이는 그 값이 아니라 글자 모양과 ParaShape 줄간격에서 결정된다.
 /// HWP3 변환본만 기존 page-count 계약을 위해 작은 글꼴 cap을 유지한다.
-fn empty_no_lineseg_paragraph_metrics(
+pub(super) fn empty_no_lineseg_paragraph_metrics(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
