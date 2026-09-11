@@ -59,6 +59,7 @@ interface QueuedWork {
 }
 
 type DeferredTask =
+  | { kind: 'frame'; id: number }
   | { kind: 'idle'; id: number }
   | { kind: 'timeout'; id: number };
 
@@ -93,6 +94,9 @@ export class PageRenderScheduler {
   private readonly timeoutFallbackDelayMs: number;
   private readonly scrollSettleDelayMs: number;
   private generation = 0;
+  private desiredVersion = 0;
+  private yieldAfterVisible = false;
+  private needsFrameYield = false;
   private sequence = 0;
   private visible = new Map<number, QueuedWork>();
   private prefetch = new Map<number, QueuedWork>();
@@ -136,7 +140,12 @@ export class PageRenderScheduler {
     visible: readonly PageRenderWork[],
     prefetch: readonly PageRenderWork[],
     allowVisibleFastPath: boolean,
+    options: { yieldAfterVisible?: boolean } = {},
   ): void {
+    this.desiredVersion += 1;
+    this.yieldAfterVisible = options.yieldAfterVisible ?? false;
+    this.needsFrameYield = false;
+    if (this.deferredTask?.kind === 'frame') this.cancelDeferredTask();
     this.generation = generation;
     this.visible = this.replaceQueue(this.visible, visible, generation);
     this.prefetch = this.replaceQueue(this.prefetch, prefetch, generation);
@@ -165,6 +174,9 @@ export class PageRenderScheduler {
   }
 
   cancelAll(): void {
+    this.desiredVersion += 1;
+    this.yieldAfterVisible = false;
+    this.needsFrameYield = false;
     this.visible.clear();
     this.prefetch.clear();
     if (this.frameId !== null) {
@@ -202,6 +214,7 @@ export class PageRenderScheduler {
       visibleQueued: this.visible.size,
       prefetchQueued: this.prefetch.size,
       frameScheduled: this.frameId !== null,
+      // deferred 소유권: idle/timeout뿐 아니라 줌 visible 뒤 양보 frame도 포함한다.
       idleScheduled: this.deferredTask !== null,
       scrollSettleScheduled: this.scrollSettleTimerId !== null,
       visibleSlices: this.visibleSlices,
@@ -246,6 +259,7 @@ export class PageRenderScheduler {
       return;
     }
     this.visibleSlices += 1;
+    const version = this.desiredVersion;
     const startedAt = this.host.now();
     let executed = 0;
     try {
@@ -259,13 +273,19 @@ export class PageRenderScheduler {
         queued.work.run();
         executed += 1;
         this.visibleExecuted += 1;
+        if (version !== this.desiredVersion) break;
         if (this.host.now() - startedAt >= this.visibleSliceBudgetMs) break;
       }
     } finally {
       // 예외는 호출자에게 전달하되, 실패 page 하나가 나머지 queue의 진행을 막지 않는다.
       // takeNext에서 제거한 실패 page를 즉시 재시도하지 않아 오류 루프도 만들지 않는다.
       if (this.visible.size > 0) this.ensureFrame();
-      else this.ensureDeferredTask();
+      else {
+        if (version === this.desiredVersion && executed > 0 && this.yieldAfterVisible) {
+          this.needsFrameYield = true;
+        }
+        this.ensureDeferredTask();
+      }
     }
   }
 
@@ -275,6 +295,20 @@ export class PageRenderScheduler {
       || this.visible.size > 0
       || this.prefetch.size === 0
     ) return;
+
+    if (this.needsFrameYield) {
+      this.needsFrameYield = false;
+      const version = this.desiredVersion;
+      const task: DeferredTask = { kind: 'frame', id: 0 };
+      task.id = this.host.requestFrame(() => {
+        if (this.deferredTask !== task || version !== this.desiredVersion) return;
+        this.deferredTask = null;
+        // repaint 완료를 보증하지 않는다. 이 rAF에서는 다음 task 예약만 수행한다.
+        this.ensureDeferredTask();
+      });
+      this.deferredTask = task;
+      return;
+    }
 
     // 이미 붙어 있는 surface의 target DPR 전환은 speculative allocation이 아니다. 한 task에
     // 한 쪽만 처리해 입력 기회를 남기되, 다음 idle frame을 기다리는 불필요한 공백은 두지 않는다.
@@ -363,7 +397,8 @@ export class PageRenderScheduler {
     const task = this.deferredTask;
     this.deferredTask = null;
     if (!task) return;
-    if (task.kind === 'idle') this.host.cancelIdle?.(task.id);
+    if (task.kind === 'frame') this.host.cancelFrame(task.id);
+    else if (task.kind === 'idle') this.host.cancelIdle?.(task.id);
     else this.host.clearTimeout(task.id);
   }
 }

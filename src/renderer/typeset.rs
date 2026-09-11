@@ -174,6 +174,9 @@ impl TableContinuationCursor {
 
 /// [#2424] continuation loop 진입 전에 한번 계산하는 owned 준비 상태.
 struct BlockTableContinuationPreparedState {
+    /// 현재 host frame에서 확정한 좌표. 다른 단으로 진행하면 앵커 거리는 소진된다.
+    host_placement: Option<super::float_placement::ParagraphFloatPlacement>,
+    host_frame: (usize, u16, u64),
     row_count: usize,
     cell_spacing: f64,
     can_intra_split: bool,
@@ -1146,6 +1149,8 @@ struct TypesetState {
     inline_placements:
         std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
     inline_flow_plans: std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
+    paragraph_float_placements:
+        std::collections::HashMap<(usize, usize), super::float_placement::ParagraphFloatPlacement>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
@@ -4749,6 +4754,7 @@ impl TypesetState {
             side_wrap_exclusions: std::collections::BTreeMap::new(),
             inline_placements: std::collections::HashMap::new(),
             inline_flow_plans: std::collections::HashMap::new(),
+            paragraph_float_placements: std::collections::HashMap::new(),
             inline_box_flow_bottom: 0.0,
             deferred_table_controls: Vec::new(),
             deferred_next_page_square_pictures: Vec::new(),
@@ -5266,6 +5272,7 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
+            paragraph_float_placements: std::mem::take(&mut self.paragraph_float_placements),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5353,6 +5360,7 @@ impl TypesetState {
             overlay_cuts: std::mem::take(&mut self.current_column_overlay_cuts),
             inline_placements: std::mem::take(&mut self.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
+            paragraph_float_placements: std::mem::take(&mut self.paragraph_float_placements),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5654,6 +5662,11 @@ pub(crate) struct DumpFormattedParagraphHeight {
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
 #[derive(Debug, Clone)]
 struct FormattedParagraph {
+    /// Measured remaining inline space on the composed tail line. None means
+    /// that this path has no reliable width result (not an implicit overflow).
+    tail_line_remaining_width: Option<f64>,
+    /// frame이 실제로 재조판한 줄만 보존한다. Some이면 source 줄로 되돌아가지 않는다.
+    computed_host_lines: Option<Vec<super::float_placement::ParagraphHostLine>>,
     /// 총 높이 (spacing 포함)
     total_height: f64,
     /// 줄별 콘텐츠 높이 (line_height만)
@@ -9778,6 +9791,21 @@ impl TypesetEngine {
                         });
                     }
                     _ => {}
+                }
+            }
+            // #6950: text and its tail table may be emitted in paint order rather
+            // than logical order. Finish the paragraph after ALL its controls;
+            // post-text must not return flow to a position above its own table.
+            let spacing_after = styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map_or(0.0, |style| style.spacing_after);
+            for (&(owner, _), placement) in &st.paragraph_float_placements {
+                if owner == para_idx
+                    && placement.flow == super::float_placement::ParagraphFloatFlow::NextLine
+                {
+                    st.current_height = placement.paragraph_end(st.current_height, spacing_after);
+                    st.ladder_band_floor = st.ladder_band_floor.max(st.current_height);
                 }
             }
             // [Task #1007] variant vpos reset 감지용 prev_para_idx 갱신
@@ -16732,7 +16760,16 @@ impl TypesetEngine {
         }
         // 렌더의 min_flow_floor는 floor뿐 아니라 직전 순차 cursor도 보호한다.
         // 회피한 표 이후 분할기만 저장 vpos로 되감으면 쪽 fit와 출력이 갈라진다.
-        if !st.inline_placements.is_empty() || !st.inline_flow_plans.is_empty() {
+        if !st.inline_placements.is_empty()
+            || !st.inline_flow_plans.is_empty()
+            || st
+                .paragraph_float_placements
+                .iter()
+                .any(|(&(owner, _), placement)| {
+                    owner < para_idx
+                        && placement.flow == super::float_placement::ParagraphFloatFlow::NextLine
+                })
+        {
             y = y.max(st.current_height);
         }
         // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
@@ -17063,8 +17100,22 @@ impl TypesetEngine {
                 }
                 let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());
                 let line_has_tac_control = line_has_tac_control(para, comp, line_idx);
+                // [#6972] 저장 줄 높이가 TAC 개체 하나의 흐름 높이와 같으면 그 줄은
+                // 개체가 **소유한 줄**이지 빈 guide 줄이 아니다. composer 가 두 줄에
+                // 같은 char_start 를 실으면 `tac_control_indices_for_line` 의 char-range
+                // 매핑이 [start, start) 로 비어 `line_has_tac_control` 이 거짓이 되고,
+                // 전면 크기 TAC 그림 줄(56288 1쪽: 72347HU = 964.6px)이 통째로 0 이 된다.
+                // 렌더는 같은 줄을 964.6px 로 그리므로 조판만 어긋나 뒤 개체가 그림 위로
+                // 올라온다. 소유 판정은 `line_owning_tac_object_height_px` 하나로 한다(#4333).
+                let line_owns_tac_object = crate::renderer::line_owning_tac_object_height_px(
+                    para,
+                    hwpunit_to_px(line.line_height, self.dpi),
+                    self.dpi,
+                )
+                .is_some();
                 let empty_tac_guide_line = runs_all_whitespace
                     && !line_has_tac_control
+                    && !line_owns_tac_object
                     && comp
                         .lines
                         .get(line_idx + 1)
@@ -17358,7 +17409,70 @@ impl TypesetEngine {
             vpos_metric.map(|v| metric.min(v)).unwrap_or(metric)
         };
 
+        // 표 없는 일반 본문에는 배치용 줄 사본을 만들지 않는다.
+        let computed_host_lines = recomposed
+            .as_ref()
+            .filter(|_| {
+                para.controls.iter().any(|control| {
+                    matches!(control,
+                Control::Table(table) if is_para_topbottom_float(&table.common))
+                })
+            })
+            .map(|comp| {
+                // 높이 보정이 줄 수를 바꾼 다른 owner의 결과를 문자 경계에 억지로 zip하지 않는다.
+                if comp.lines.len() != line_heights.len() || comp.lines.len() != line_spacings.len()
+                {
+                    return Vec::new();
+                }
+                let mut top = 0.0;
+                comp.lines
+                    .iter()
+                    .enumerate()
+                    .map(|(i, line)| {
+                        let resolved = super::float_placement::ParagraphHostLine {
+                            char_start: line.char_start,
+                            top,
+                            height: line_heights[i],
+                        };
+                        top += line_heights[i] + line_spacings[i];
+                        resolved
+                    })
+                    .collect()
+            });
+        let tail_line_remaining_width = (|| {
+            if !para.controls.iter().any(|control| {
+                matches!(control, Control::Table(table) if is_para_topbottom_float(&table.common))
+            }) {
+                return None;
+            }
+            let comp = composed?;
+            let line = comp.lines.last()?;
+            // Tabs need their resolved tab-stop positions, not font advances.
+            // Do not manufacture a line miss from an unsupported measurement.
+            if line.has_line_break || line.runs.iter().any(|run| run.text.contains('\t')) {
+                return None;
+            }
+            let cw = column_width_px?;
+            let style = para_style?;
+            let available =
+                cw - super::equation_tac_flow::paragraph_effective_margin_left(
+                    style.margin_left,
+                    style.indent,
+                    comp.lines.len() - 1,
+                ) - style.margin_right;
+            let text_width = super::composer::estimate_composed_line_width(line, styles);
+            let inline_width: f64 = comp
+                .tac_controls
+                .iter()
+                .filter(|(position, _, _)| *position >= line.char_start)
+                .map(|(_, width, _)| hwpunit_to_px(*width, self.dpi))
+                .sum();
+            let remaining = available - text_width - inline_width;
+            (available.is_finite() && available > 0.0 && remaining.is_finite()).then_some(remaining)
+        })();
         FormattedParagraph {
+            tail_line_remaining_width,
+            computed_host_lines,
             total_height,
             line_heights,
             line_spacings,
@@ -19786,6 +19900,13 @@ impl TypesetEngine {
             .find(|&i| matches!(para.controls[i], Control::Table(_)));
 
         let mut break_after_current_table = false;
+        // [#703 잔여] 데코레이션(글앞/글뒤) 표 단축은 표만 방출하고 흐름을 0
+        // 소비했다. host 문단에 제목 등 가시 텍스트가 있으면 그 텍스트가
+        // 발행되지 않아 렌더에서 통째로 사라지고(제목 미노출), 텍스트 높이가
+        // 흐름에 안 실려 다음 표가 위로 붙는다(표 틀어짐). 단축 진입 시 host
+        // 텍스트를 한 번 발행하도록 문단 단위로 추적한다.
+        let mut decoration_host_text_pending = false;
+        let mut flow_table_owns_host_text = false;
         for (order_pos, ctrl_idx) in ctrl_order.iter().copied().enumerate() {
             let ctrl = &para.controls[ctrl_idx];
             match ctrl {
@@ -20014,8 +20135,28 @@ impl TypesetEngine {
                         }
                         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
                         st.overlay_shape_shortcut_para = Some(para_idx);
+                        // [#703 잔여] host 문단의 가시 텍스트(제목 등)를 흐름 문단으로
+                        // 방출한다. 종전에는 표만 방출하고 `continue` 해서 이 텍스트를
+                        // 위한 PageItem 이 어디에서도 발행되지 않아 렌더에서 통째로
+                        // 사라졌고(제목 미노출), 텍스트 높이가 흐름에 실리지 않아 뒤
+                        // 문단·표가 제목 자리로 올라붙었다(표 겹침).
+                        //
+                        // 방출은 **표 배치와 흐름 전진을 모두 끝낸 뒤**여야 한다 —
+                        // 이 표의 앵커(위 anchor_y)는 vert=Para 의 문단 시작 기준
+                        // 좌표라, 텍스트를 먼저 전진시키면 글앞으로 표가 제목 높이만큼
+                        // 아래로 밀려 본문표를 파고든다(실측 +44px 겹침).
+                        // PartialParagraph = 텍스트 줄만이고 표는 Shape 가 따로
+                        // 그리므로 중복 렌더는 없다(place_table_with_text 의 pre-text
+                        // 발행과 같은 계약).
+                        // Defer host text until every co-anchored table has
+                        // computed its anchor and overlay continuation bounds.
+                        decoration_host_text_pending = true;
                         continue;
                     }
+                    // Ordinary/TAC table paths already own host text, including
+                    // their deferred emission and layout fallback. Do not add a
+                    // second full-range PartialParagraph for mixed controls.
+                    flow_table_owns_host_text = true;
                     let is_column_top = st.current_height < 1.0;
                     let ft = self.format_table(
                         para,
@@ -20270,6 +20411,24 @@ impl TypesetEngine {
                     );
                 }
                 _ => {}
+            }
+        }
+
+        // Decoration-only table hosts have no ordinary table text owner. Emit
+        // once after the control loop, before paragraph height reconciliation,
+        // so this advance cannot affect a sibling decoration table's anchor.
+        if decoration_host_text_pending
+            && !flow_table_owns_host_text
+            && para_has_non_whitespace_text(para)
+        {
+            let total_lines = fmt.line_heights.len();
+            if total_lines > 0 {
+                st.current_items.push(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 0,
+                    end_line: total_lines,
+                });
+                st.current_height += fmt.line_advances_sum(0..total_lines);
             }
         }
 
@@ -21428,9 +21587,17 @@ impl TypesetEngine {
             let table_bottom = v_off_px + table_total_height;
             st.current_height += pre_height.max(table_bottom);
         } else if is_visible_para_float {
+            // 통째 배치의 fit 판정에서 확정한 결과를 그대로 소비한다.
+            // 이월 뒤에는 이전 단의 원점으로 배치를 재생성하지 않는다.
+            let resolved = st
+                .paragraph_float_placements
+                .get(&(para_idx, ctrl_idx))
+                .copied();
             let v_off_px = hwpunit_to_px(signed_vertical_offset, self.dpi);
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-            let table_top = if signed_vertical_offset > 0 {
+            let table_top = if let Some(placement) = resolved {
+                placement.table_top
+            } else if signed_vertical_offset > 0 {
                 // [#6879] 세로 기준점은 앵커 줄이다 — layout 이 같은 값을 더하므로
                 // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다. layout 과 **같은**
                 // 게이트(TAC 형제 유무)를 써야 배치와 예약이 갈리지 않는다.
@@ -21472,6 +21639,15 @@ impl TypesetEngine {
                 para_start_height + outer_top_px + v_off_px
             };
             let table_bottom = table_top + table_total_height.max(0.0);
+            let table_bottom = if let Some(mut placement) = resolved {
+                placement.occupied_bottom += table_top - placement.table_top;
+                placement.table_top = table_top;
+                st.paragraph_float_placements
+                    .insert((para_idx, ctrl_idx), placement);
+                placement.occupied_bottom
+            } else {
+                table_bottom
+            };
             if signed_vertical_offset > 0 {
                 if table_bottom > table_top + 0.5 {
                     st.visible_float_exclusions.push(VisibleFloatExclusion {
@@ -21710,6 +21886,15 @@ impl TypesetEngine {
             is_last_table && tac_table_count <= 1 && has_post_text && !pre_text_exists;
         if should_add_post_text {
             let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
+            if let Some(origin) = st
+                .paragraph_float_placements
+                .get(&(para_idx, ctrl_idx))
+                .and_then(|placement| placement.stored_host_origin)
+            {
+                // The host was resolved before fit, even though its text item is
+                // emitted after the floating table. Consume that same origin.
+                st.current_height = origin;
+            }
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
             // 다중 co-anchored float host 로 한정 — 단일 표 host post-text 는 기존
             // 앵커 유지(#1549) 경로로 남긴다.
@@ -24945,13 +25130,134 @@ impl TypesetEngine {
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
             st.defer_host_line_item_para = Some(para_idx);
         }
-        if st.current_height + whole_fit_table_total <= available
+        let whole_placement_height =
+            if let Some((source_top, source_bottom)) = saved_table_source_frame {
+                source_bottom - source_top
+            } else if let Some(advance) = single_row_object_height_advance {
+                advance
+            } else if is_para_topbottom_float(&table.common)
+                && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
+            {
+                ft.effective_height
+            } else {
+                table_total
+            };
+        let unconstrained_host_placement = para_has_non_whitespace_text(para)
+            .then(|| {
+                let text_origin = placement_para_start_height
+                    + if placement_para_start_height > 0.0 {
+                        fmt.spacing_before
+                    } else {
+                        0.0
+                    };
+                if let Some(lines) = &fmt.computed_host_lines {
+                    super::float_placement::ParagraphFloatPlacement::from_computed_host(
+                        para,
+                        table,
+                        ctrl_idx,
+                        text_origin,
+                        lines,
+                        whole_placement_height,
+                        self.dpi,
+                    )
+                } else {
+                    super::float_placement::ParagraphFloatPlacement::from_stored_host(
+                        para,
+                        table,
+                        ctrl_idx,
+                        text_origin,
+                        whole_placement_height,
+                        self.dpi,
+                    )
+                }
+            })
+            .flatten()
+            .map(|placement| {
+                let placement =
+                    placement.with_tail_line_space(fmt.tail_line_remaining_width, table, self.dpi);
+                // A stored ladder must have a known origin in THIS column, not
+                // a default zero or a base recovered from already painted nodes.
+                let frame = (para.line_segs.len() == 1
+                    && para.controls.len() == 1
+                    && st.col_count == 1
+                    && !st.vpos_ladder_dirty
+                    && !st.profile.session_edited()
+                    && fmt.computed_host_lines.is_none())
+                .then(|| {
+                    let PageItem::FullParagraph { para_index: first } = st.current_items.first()?
+                    else {
+                        return None;
+                    };
+                    let chain = paragraphs_all.get(*first..=para_idx)?;
+                    let mut previous = None;
+                    for host in chain {
+                        if host.stored_text_partition_is_dirty() || host.line_segs.is_empty() {
+                            return None;
+                        }
+                        for line in &host.line_segs {
+                            if is_synthetic_line_seg(line)
+                                || previous.is_some_and(|vpos| line.vertical_pos < vpos)
+                            {
+                                return None;
+                            }
+                            previous = Some(line.vertical_pos);
+                        }
+                    }
+                    // A continuation has no full paragraph origin in this frame.
+                    if st.current_items.iter().any(|item| {
+                        matches!(item, PageItem::PartialTable { .. } | PageItem::Shape { .. })
+                    }) {
+                        return None;
+                    }
+                    Some(chain.first()?.line_segs.first()?.vertical_pos)
+                })
+                .flatten();
+                match (frame, paragraphs_all.get(para_idx + 1)) {
+                    (Some(base), Some(next)) => placement.with_stored_band_origin(
+                        para,
+                        next,
+                        base,
+                        st.vpos_col_anchor,
+                        self.dpi,
+                    ),
+                    _ => placement,
+                }
+            });
+        let constrain_host_placement =
+            |mut placement: super::float_placement::ParagraphFloatPlacement, st: &TypesetState| {
+                if table.common.allow_overlap {
+                    return placement;
+                }
+                let outer_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                // A zero-offset co-anchored float consumes flow without adding a
+                // visible exclusion. Preserve that occupied floor before publishing
+                // a final placement; consulting only the exclusion list loses it.
+                if has_preceding_coanchored_float {
+                    let shift = (st.current_height + outer_top - placement.table_top).max(0.0);
+                    placement.table_top += shift;
+                    placement.occupied_bottom += shift;
+                }
+                placement.clear_occupied_bands(
+                    st.visible_float_exclusions
+                        .iter()
+                        .map(|zone| zone.top..zone.bottom + outer_top),
+                )
+            };
+        let resolved_host_placement =
+            unconstrained_host_placement.map(|p| constrain_host_placement(p, st));
+        let legacy_whole_fits = st.current_height + whole_fit_table_total <= available
             || fits_after_overlay_shapes
             || single_row_object_height_advance.is_some()
             || declared_table_whole_fits
             || saved_host_line_after_stack_fits
-            || saved_table_source_frame.is_some()
-        {
+            || saved_table_source_frame.is_some();
+        // 예약 구간의 하단으로 fit을 판정한다. current_height는 앵커 줄이
+        // 아니므로 여기에 표 높이만 더하면 뒤 줄의 앵커 거리가 예산에서 빠진다.
+        if resolved_host_placement.map_or(legacy_whole_fits, |p| p.occupied_bottom <= available) {
+            if let Some(placement) = resolved_host_placement {
+                st.paragraph_float_placements
+                    .insert((para_idx, ctrl_idx), placement);
+            }
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
                 eprintln!(
@@ -24973,17 +25279,7 @@ impl TypesetEngine {
                 table,
                 fmt,
                 placement_para_start_height,
-                if let Some((source_top, source_bottom)) = saved_table_source_frame {
-                    source_bottom - source_top
-                } else if let Some(advance) = single_row_object_height_advance {
-                    advance
-                } else if is_para_topbottom_float(&table.common)
-                    && (para_has_non_whitespace_text(para) || hwpx_noninline_tac_measured_fit)
-                {
-                    ft.effective_height
-                } else {
-                    table_total
-                },
+                whole_placement_height,
                 is_first_placed,
                 is_last_placed,
                 ft.strict_following_plain_text_fit,
@@ -25393,6 +25689,55 @@ impl TypesetEngine {
         }
 
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인).
+        let host_frame = (
+            st.pages.len(),
+            st.current_column,
+            st.current_zone_y_offset.to_bits(),
+        );
+        // The first fragment's border is paragraph-relative, whereas a whole
+        // object's placement includes its outer-margin box. Convert before
+        // exclusions, and share this result with both the row budget and paint.
+        let fragment_host_placement = unconstrained_host_placement
+            .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
+            .map(|placement| {
+                let applied_before = if placement_para_start_height > 0.0 {
+                    fmt.spacing_before
+                } else {
+                    0.0
+                };
+                let host_line_height = fmt.computed_host_lines.as_ref().map_or_else(
+                    || {
+                        para.line_segs
+                            .last()
+                            .map_or(0.0, |line| hwpunit_to_px(line.line_height, self.dpi))
+                    },
+                    |lines| lines.last().map_or(0.0, |line| line.height),
+                );
+                constrain_host_placement(
+                    placement.for_first_fragment(table, applied_before, host_line_height, self.dpi),
+                    st,
+                )
+            });
+        if fragment_host_placement.is_some() && !st.pre_emitted_host_paras.contains(&para_idx) {
+            // 첫 조각과 이월 모두 같은 계산 줄을 소비한다. 저장 줄로 재측정하지 않는다.
+            let already_emitted = st.current_items.iter().any(|item| {
+                matches!(item,
+                PageItem::FullParagraph { para_index }
+                | PageItem::PartialParagraph { para_index, start_line: 0, .. }
+                if *para_index == para_idx)
+            });
+            if !already_emitted {
+                st.current_items.push(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 0,
+                    end_line: fmt.line_heights.len(),
+                });
+                let host_h = fmt.line_advances_sum(0..fmt.line_heights.len());
+                st.current_height = st.current_height.max(placement_para_start_height + host_h);
+                st.pre_emitted_host_heights.insert(para_idx, host_h);
+            }
+            st.pre_emitted_host_paras.insert(para_idx);
+        }
         // Task #398: rowspan>1 셀이 행 0의 시작점이면 블록 전체 높이로 판정.
         // [Task #1046 Stage 2] 첫(비연속) fragment 의 렌더러 y_start 점프 — host_spacing.before
         // 와 문단 기준 양수 vertical_offset — 를 잔여공간에서 차감한다.
@@ -25426,8 +25771,25 @@ impl TypesetEngine {
             };
             host_before + vert_off + fragment_outer_bottom
         };
-        let remaining_on_page =
-            (table_available - st.current_height - first_frag_overhead).max(0.0);
+        let remaining_on_page = fragment_host_placement.map_or_else(
+            || (table_available - st.current_height - first_frag_overhead).max(0.0),
+            |p| {
+                (table_available
+                    - p.table_top
+                    - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                    - table
+                        .caption
+                        .as_ref()
+                        .filter(|cap| {
+                            matches!(cap.direction, CaptionDirection::Top)
+                                && ft.caption_height > 0.0
+                        })
+                        .map_or(0.0, |cap| {
+                            ft.caption_height + hwpunit_to_px(cap.spacing as i32, self.dpi)
+                        }))
+                .max(0.0)
+            },
+        );
         let (first_block_start, first_block_end, first_block_h) = if row_count > 0 {
             mt.row_block_for(0)
         } else {
@@ -25788,6 +26150,8 @@ impl TypesetEngine {
         #[cfg(target_arch = "wasm32")]
         let continuation_fragment_budget = usize::MAX;
         let prepared = BlockTableContinuationPreparedState {
+            host_placement: fragment_host_placement,
+            host_frame,
             row_count,
             cell_spacing: cs,
             can_intra_split,
@@ -26362,6 +26726,34 @@ impl TypesetEngine {
             } else {
                 page_avail
             };
+            let fragment_placement = prepared.host_placement.map(|original| {
+                if !is_continuation && prepared.host_frame ==
+                    (st.pages.len(), st.current_column, st.current_zone_y_offset.to_bits()) {
+                    original
+                } else {
+                    // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
+                    super::float_placement::ParagraphFloatPlacement {
+                        flow: original.flow,
+                        anchor_y: st.current_height,
+                        stored_host_origin: None,
+                        table_top: st.current_height + host_before_overhead,
+                        occupied_bottom: st.current_height + host_before_overhead,
+                    }
+                }
+            });
+            let page_avail = fragment_placement.map_or(page_avail, |p| {
+                let boundary = if is_continuation || prepared.host_frame !=
+                    (st.pages.len(), st.current_column, st.current_zone_y_offset.to_bits()) {
+                    st.available_height() - st.layout.pagination_tolerance_px
+                } else {
+                    first_fragment_actual_footnote_boundary.unwrap_or(table_available)
+                };
+                (boundary - p.table_top - caption_extra
+                    - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                    - if !is_continuation && start_cut.is_empty() {
+                        first_fragment_painted_row_footer_guard
+                    } else { 0.0 }).max(0.0)
+            });
 
             // RowBreak 표의 common.height가 전체 표가 아니라 첫 physical fragment를
             // 저장할 수 있다. 저장 anchor가 현재 flow와 같고 declared bottom이 이
@@ -26780,6 +27172,22 @@ impl TypesetEngine {
             // [Task #1022] walk 가 consumed 에 분할 행 기여까지 누적하므로
             // partial_height = consumed + header_overhead 로 단일화.
             let partial_height: f64 = consumed + header_overhead;
+            let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
+                if let Some(mut placement) = fragment_placement {
+                    placement.occupied_bottom = placement.table_top + owner_height
+                        + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                    st.paragraph_float_placements.insert((para_idx, ctrl_idx), placement);
+                    st.current_height = placement.occupied_bottom
+                        + if terminal { host_spacing_after_only } else { 0.0 };
+                    if terminal {
+                        st.visible_float_exclusions.push(VisibleFloatExclusion {
+                            para_index: para_idx,
+                            top: placement.table_top,
+                            bottom: placement.occupied_bottom,
+                        });
+                    }
+                }
+            };
 
             // [Task #1046 Stage 2 진단] walk 결과 — fragment 경계/소비 높이. 동작 불변.
             if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
@@ -26869,6 +27277,7 @@ impl TypesetEngine {
                         + host_spacing_after_only
                         + terminal_nested_child_host_line_spacing;
                 }
+                commit_fragment(st, caption_extra + partial_height + bottom_caption_extra, true);
                 if queue_table_footnotes {
                     self.register_queued_table_footnotes(
                         st,
@@ -26946,6 +27355,7 @@ impl TypesetEngine {
                 + vert_offset_overhead
                 + partial_height
                 + fragment_outer_bottom_overhead;
+            commit_fragment(st, caption_extra + partial_height, false);
             // 큰 RowBreak 표가 기존 각주를 이미 가진 page에서 시작할 때에는 첫 fragment의
             // cell-footnote를 같은 lane에 섞지 않는다. 그 page의 기존 각주(표 25의
             // 105·106)를 보존하고, 표가 이어지는 fresh page에서 cell-footnote를 순서대로
@@ -28018,6 +28428,8 @@ mod issue_3780_line_advance_oob {
 
     fn fp(lines: usize) -> FormattedParagraph {
         FormattedParagraph {
+            tail_line_remaining_width: None,
+            computed_host_lines: None,
             total_height: 0.0,
             line_heights: vec![10.0; lines],
             line_spacings: vec![2.0; lines],
@@ -29021,6 +29433,8 @@ mod tests {
     #[test]
     fn issue2424_block_table_context_owns_step_lifecycle() {
         let prepared = BlockTableContinuationPreparedState {
+            host_placement: None,
+            host_frame: (0, 0, 0.0_f64.to_bits()),
             row_count: 3,
             cell_spacing: 0.0,
             can_intra_split: true,
@@ -29131,6 +29545,7 @@ mod tests {
                 overlay_cuts: Vec::new(),
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
+                paragraph_float_placements: Default::default(),
             }],
             active_header: None,
             active_footer: None,

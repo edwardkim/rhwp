@@ -2428,6 +2428,7 @@ impl LayoutEngine {
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
     ) -> f64 {
         self.layout_table_with_wrapper_margin(
             tree,
@@ -2453,6 +2454,7 @@ impl LayoutEngine {
             allow_para_top_bleed,
             clamp_header_negative_para_offset,
             physical_outer_box_paint_inset,
+            resolved_table_top,
             false,
         )
     }
@@ -2483,6 +2485,7 @@ impl LayoutEngine {
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
         wrapper_margin_already_applied: bool,
     ) -> f64 {
         if table.cells.is_empty() {
@@ -2710,6 +2713,7 @@ impl LayoutEngine {
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
                             false,
+                            None,
                             true,
                         );
 
@@ -3053,7 +3057,16 @@ impl LayoutEngine {
 
         // inline_x_override가 있으면 외부에서 inline 위치를 계산했으므로 x/y 기준은 유지한다.
         // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
-        let flow_table_y = if inline_x_override.is_some() {
+        let flow_table_y = if let Some(table_top) = resolved_table_top {
+            // typeset에서 fit과 예약까지 확정한 표 상단은 다시 해석하지 않는다.
+            // 위 캡션은 예약된 상자의 내부이며 표 본체 앞에 놓는다.
+            table_top
+                + if render_caption {
+                    top_caption_flow_extra(&table.caption, caption_height, caption_spacing)
+                } else {
+                    0.0
+                }
+        } else if inline_x_override.is_some() {
             y_start + inline_top_caption_offset
         } else {
             let computed_y = self.compute_table_y_position(
@@ -4619,12 +4632,16 @@ impl LayoutEngine {
         if let Some(img_fill) = border_style.and_then(|bs| bs.image_fill.as_ref()) {
             if let Some(img_bytes) = find_bin_data_bytes(bin_data_content, img_fill.bin_data_id) {
                 let img_id = tree.next_id();
+                // [#6895] `ImageNode` 는 **화면 순서**를 담고 `ResolvedImageFill` 은 이진
+                // 순서를 담는다. 종전엔 그대로 옮겨 담아 칸 배경 그림의 밝기·명암이
+                // 반대로 그려졌다(그림 채움 `hp:pic` 축과 달리 이 축은 맞바꿈이 필요하다).
+                let (img_bright, img_contrast) = img_fill.display_brightness_contrast();
                 let img_node = RenderNode::new(
                     img_id,
                     RenderNodeType::Image(ImageNode {
                         fill_mode: Some(img_fill.fill_mode),
-                        brightness: img_fill.brightness,
-                        contrast: img_fill.contrast,
+                        brightness: img_bright,
+                        contrast: img_contrast,
                         effect: img_fill.effect,
                         ..ImageNode::new(img_fill.bin_data_id, Some(img_bytes))
                     }),
@@ -6983,6 +7000,7 @@ impl LayoutEngine {
                                     false,
                                     clamp_header_negative_para_offset,
                                     false,
+                                    None,
                                 );
                                 inline_x += tac_om_l + tac_w + tac_om_r;
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
@@ -7149,6 +7167,7 @@ impl LayoutEngine {
                                 false,
                                 clamp_header_negative_para_offset,
                                 false,
+                                None,
                             );
                             if !hwpx_nested_behind_text_overlay {
                                 // [#5702] 어울림(Square/Tight/Through) 중첩표는 글이 옆으로
@@ -7831,6 +7850,22 @@ impl LayoutEngine {
             // Top으로 수렴시킨다. 다만 p11처럼 호출자가 전한 `col_area`가 직전
             // 조각까지 포함할 수 있으므로, 실제 페이지 viewport에서도 같은 판정을
             // 한다. 일반 완전 셀 및 최상위 표(depth=0)는 영향이 없다.
+            // [#4068] 실제 클립은 page bbox 다(위 주석 참조). 호출자가 넘긴
+            // `col_area` 가 직전 조각까지 포함해 낡아 있으면, 페이지 안에 **온전히**
+            // 들어간 중첩 셀까지 "잘렸다"고 오판해 선언된 Center/Bottom 을 Top 으로
+            // 무너뜨린다. 그러면 칸 내용이 정렬 몫만큼 위로 붙는다.
+            //
+            //   hwpx_sample2 19쪽 중첩 표(1행2열, 선언 valign=Center)
+            //     셀 961.80..1063.40 · page bbox 0.00..1122.50  → 안 잘린다
+            //     그런데 parentvp=true 로 Top 강제 → 글자가 정렬 몫 1.88px 위로
+            //
+            // 안 잘린 칸은 잘림 수렴의 대상이 아니다. 아래 `cell_clipped_by_page_viewport`
+            // 는 종전대로 남아 **진짜** 페이지 잘림을 계속 Top 으로 수렴시킨다.
+            let page_bbox = tree.page_bbox();
+            let page_view_top = page_bbox.y;
+            let page_view_bottom = page_bbox.y + page_bbox.height;
+            let cell_fits_inside_page_viewport =
+                cell_y >= page_view_top - 0.5 && cell_y + cell_h <= page_view_bottom + 0.5;
             let parent_view_top = col_area.y;
             let parent_view_bottom = col_area.y + col_area.height;
             let cell_intersects_parent_viewport =
@@ -7838,15 +7873,13 @@ impl LayoutEngine {
             let cell_clipped_by_parent_viewport = depth > 0
                 && !table.common.treat_as_char
                 && col_area.height > 0.5
+                && !cell_fits_inside_page_viewport
                 && cell_intersects_parent_viewport
                 && (cell_y < parent_view_top - 0.5 || cell_y + cell_h > parent_view_bottom + 0.5);
             // nested continuation은 부모 `col_area`가 이전 페이지의 logical
             // viewport를 포함한 채 호출될 수 있다. 렌더 트리의 page bbox는 실제
             // SVG/Canvas clip이므로, 그 밖으로 나간 셀은 그 logical viewport 안에
             // 있더라도 Center/Bottom 기준으로 배치하면 안 된다.
-            let page_bbox = tree.page_bbox();
-            let page_view_top = page_bbox.y;
-            let page_view_bottom = page_bbox.y + page_bbox.height;
             let cell_intersects_page_viewport =
                 cell_y < page_view_bottom - 0.5 && cell_y + cell_h > page_view_top + 0.5;
             let cell_clipped_by_page_viewport = depth > 0

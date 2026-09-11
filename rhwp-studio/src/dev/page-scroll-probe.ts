@@ -5,6 +5,10 @@ import type { EventBus } from '../core/event-bus';
 import type { PageInfo } from '../core/types';
 import type { RenderSurfaceDecision } from '../view/render-surface-budget';
 import { clampRenderScale } from '../view/render-backend';
+import { ZoomSessionObservation } from './zoom-session-observation';
+import { SurfaceMemoryObservation } from './surface-memory-observation';
+import { probeZoomInputState, probeZoomRasterPending } from './probe-zoom-compat';
+import { budgetProbeBoundaries, budgetProbePage } from './budget-probe-boundaries';
 import { admittedRetainedPages, currentImageRequest, flowImageState, imageCompletion, observeBoundary, renderSchedulerSettled, ScrollObservation, surfacePixels, viewportApplied,
   type BoundaryObservation, type ObservedViewport } from './scroll-observation';
 
@@ -76,6 +80,39 @@ export function installPageScrollProbe(
   const vm = canvasView.getViewportManager();
   const vs = canvasView.getVirtualScroll();
   const trace = new ScrollObservation();
+  const pinchSession = new ZoomSessionObservation();
+  const memoryEnabled = new URLSearchParams(location.search).get('scrollProbeMemory') === '1';
+  const memory = memoryEnabled ? new SurfaceMemoryObservation() : null;
+  const sampleMemory = (boundary: string) => {
+    if (!memory || !enabled) return;
+    const seen = new Set<HTMLCanvasElement>();
+    const pixels = (canvas: HTMLCanvasElement) => {
+      if (seen.has(canvas)) return 0;
+      seen.add(canvas); return canvas.width * canvas.height;
+    };
+    const active = cv.canvasPool.activePages.map(page => {
+      const main = cv.canvasPool.getCanvas(page)!;
+      const overlays = [...document.querySelectorAll<HTMLCanvasElement>(`canvas[data-rhwp-overlay-page="${page}"]`)];
+      return { page, visible: cv.currentVisiblePages.includes(page), focused: page === cv.editingPageIndex,
+        pixels: [main, ...overlays].reduce((sum, c) => sum + pixels(c), 0) };
+    });
+    memory.observe({ at: performance.now(), boundary, zoom: vm.getZoom(), active,
+      activePixels: active.reduce((sum, p) => sum + p.pixels, 0),
+      idlePixels: cv.canvasPool.available.reduce((sum, c) => sum + pixels(c), 0),
+      cachedPixels: cv.pageSurfaceLru.snapshot().cachedPixels });
+  };
+  const abEnabled = new URLSearchParams(location.search).get('scrollProbeAB') === '1';
+  const budgetDetail = new URLSearchParams(location.search).get('scrollProbeBudget') === '1';
+  const abVariant = new URLSearchParams(location.search).get('abVariant') ?? 'unspecified';
+  let recordingScenario = 'manual';
+  let coldArmed = false;
+  let coldLoading = false;
+  let lastExport: unknown = null;
+  let pinchFrameId = 0;
+  const pinchState = () => ({
+    zoom: vm.getZoom(), animating: vm.isZoomAnimating(), columns: vs.getColumns(),
+    ...probeZoomInputState(vm),
+  });
   let restores: (() => void)[] = [];
   let enabled = false;
   let batch = false;
@@ -88,6 +125,7 @@ export function installPageScrollProbe(
   let rulerFrame: { zoom: number; at: number } | null = null;
   const errors: { at: number; boundary: string; message: string }[] = [];
   const longTasks: { at: number; ms: number }[] = [];
+  const layoutSamples: { at: number; traceId: number | null; zoom: number; width: number; height: number }[] = [];
   const images = new Map<number, { scope: string; kind: 'none' | 'pending' | 'decoded' | 'cached' | 'failed' }>();
   const flowImages = new Map<number, { layer: HTMLElement; images: HTMLImageElement[] }>();
   let contentEpoch = 0;
@@ -96,26 +134,30 @@ export function installPageScrollProbe(
   const viewport = (): ObservedViewport => ({ scope: scope(), zoom: vm.getZoom(), x: vm.getScrollX(), y: vm.getScrollY() });
   let applied: ObservedViewport | null = null;
   // 동일 runner에서 off/on 모두 구독한다. 원 메서드 복원 상태에서도 scroll rAF ack를 기다려야 한다.
-  const subscriptions = ['viewport-scroll', 'viewport-resize', 'zoom-changed', 'document-view-loaded', 'page-view-settings-changed']
+  const subscriptions = ['viewport-scroll', 'viewport-resize', 'zoom-changed', 'zoom-raster-ready', 'document-view-loaded', 'page-view-settings-changed']
     .map(event => events.on(event, () => { applied = viewport(); }));
   subscriptions.push(events.on('document-page-invalidated', () => {
     contentEpoch++; applied = viewport(); images.clear(); flowImages.clear();
     trace.finish('interrupted', 'content invalidated');
+    pinchSession.interrupt(now(), 'content invalidated');
   }));
   const diagnostic = (error: unknown, boundary = 'observer') => {
     if (errors.length === 128) errors.shift();
     errors.push({ at: now(), boundary, message: String(error) });
   };
+  const recordLongTasks = (entries: PerformanceEntry[]) => {
+    if (!enabled) return;
+    for (const e of entries) {
+      pinchSession.longTask(scope(), e.startTime, e.duration);
+      if (trace.id === null) continue;
+      if (e.startTime < activeAt) continue;
+      if (longTasks.length === 256) longTasks.shift();
+      longTasks.push({ at: e.startTime, ms: e.duration });
+    }
+  };
   const observer = typeof PerformanceObserver !== 'undefined'
     && PerformanceObserver.supportedEntryTypes.includes('longtask')
-    ? new PerformanceObserver(list => {
-      if (!enabled || trace.id === null) return;
-      for (const e of list.getEntries()) {
-        if (e.startTime < activeAt) continue;
-        if (longTasks.length === 256) longTasks.shift();
-        longTasks.push({ at: e.startTime, ms: e.duration });
-      }
-    }) : null;
+    ? new PerformanceObserver(list => recordLongTasks(list.getEntries())) : null;
   observer?.observe({ type: 'longtask' });
 
   // cached state/dataset only. No page-info/render-tree query or DOM geometry scan in hot paths.
@@ -125,7 +167,9 @@ export function installPageScrollProbe(
     const decision = cv.renderSurfaceDecisions.get(page);
     if (!canvas || !info || !decision || !canvas.parentElement) return false;
     const scale = clampRenderScale(info, vm.getZoom() * decision.effectiveDpr);
-    return Math.abs(Number(canvas.dataset.rhwpRenderScale) - scale) < 0.000001;
+    // clamp 때문에 physical scale이 우연히 같아도 구 zoom preview는 최신 완료가 아니다.
+    return Math.abs(Number(canvas.dataset.rhwpRenderedZoom) - vm.getZoom()) < 0.000001
+      && Math.abs(Number(canvas.dataset.rhwpRenderScale) - scale) < 0.000001;
   };
   const pending = (page: number) => cv.pageRenderer.reRenderJobs.has(page);
   const flowState = (page: number) => {
@@ -137,7 +181,7 @@ export function installPageScrollProbe(
     cv.currentRetainedPages,
     page => cv.canvasPool.getCanvas(page) !== undefined,
   );
-  const stable = () => viewportApplied(viewport(), applied) && !vm.isZoomAnimating() && cv.currentVisiblePages.length > 0
+  const stable = () => viewportApplied(viewport(), applied) && !vm.isZoomAnimating() && !probeZoomRasterPending(vm) && cv.currentVisiblePages.length > 0
     && cv.currentVisiblePages.every(p => rendered(p) && !pending(p))
     && admittedRetained().every(p => rendered(p) && !pending(p))
     && renderSchedulerSettled(cv.pageRenderScheduler.snapshot());
@@ -146,7 +190,7 @@ export function installPageScrollProbe(
     const id = trace.id;
     if (id === null || scope() !== activeScope) return;
     const at = now();
-    if (vm.isZoomAnimating() || !viewportApplied(viewport(), applied) || !geometry) return;
+    if (vm.isZoomAnimating() || probeZoomRasterPending(vm) || !viewportApplied(viewport(), applied) || !geometry) return;
     const visible = cv.currentVisiblePages;
     if (visible.some(rendered)) trace.mark(id, 'visibleFirst', at);
     const ready = (page: number) => rendered(page) && !pending(page) && flowState(page) === 'ready'
@@ -194,7 +238,18 @@ export function installPageScrollProbe(
   };
 
   const observe = (name: string, call: BoundaryObservation) => {
-    const page = /^(wasm\.|raster\.|page\.|pool\.|image\.)/.test(name) && typeof call.args[0] === 'number' ? call.args[0] : null;
+    sampleMemory(name);
+    if (name === 'geometry.layout') {
+      if (layoutSamples.length >= 64) layoutSamples.shift();
+      layoutSamples.push({ at: call.startedAt, traceId: call.token, zoom: vm.getZoom(), ...vm.getViewportSize() });
+    }
+    if (name === 'zoom.cancel' && !call.failed && call.result !== true) return;
+    const page = budgetProbePage(name, call.args)
+      ?? (/^(wasm\.|raster\.|page\.|pool\.|image\.)/.test(name) && typeof call.args[0] === 'number' ? call.args[0] : null);
+    if (pinchSession.recording) {
+      pinchSession.span(scope(), name, call.startedAt, call.endedAt, page, pinchState());
+      if (call.failed) pinchSession.interrupt(call.endedAt, name);
+    }
     const units = name === 'visibility.snapshot'
       ? Number((call.result as { queryStats?: { pagesExamined?: number } } | null)?.queryStats?.pagesExamined ?? 0)
       : 0;
@@ -204,6 +259,7 @@ export function installPageScrollProbe(
       contentEpoch++;
       images.clear(); flowImages.clear();
       trace.finish('interrupted', name);
+      pinchSession.interrupt(call.endedAt, name);
       if (name === 'document.refresh') applied = viewport();
     }
     if (name === 'geometry.zoom' || name === 'visibility.update') {
@@ -241,7 +297,16 @@ export function installPageScrollProbe(
   };
 
   const boundaries: [object, string, string][] = [
-    [vm, 'setZoom', 'zoom.set'], [vm, 'smoothZoomTo', 'zoom.smooth'],
+    [vm, 'setZoom', 'zoom.set'],
+    [vm, typeof (vm as unknown as Record<string, unknown>).applySmoothZoomTo === 'function'
+      ? 'applySmoothZoomTo' : 'smoothZoomTo', 'zoom.smooth'],
+    [vm, 'cancelPendingZoomRaster', 'zoom.cancel'], [vm, 'finishPendingZoomRaster', 'zoom.flush'],
+    [cv, 'onZoomRasterReady', 'zoom.ready'], [cv, 'renderSettledZoom', 'zoom.raster'],
+    // #6040 post-stack baseline: inclusive spans; do not sum nested geometry times.
+    [cv, 'recalcLayout', 'geometry.layout'], [vs, 'setPageDimensions', 'geometry.dimensions'],
+    [cv, 'onViewportResize', 'geometry.resize'],
+    [cv, 'updateRenderedPageZoomPreview', 'geometry.preview'],
+    [cv, 'releaseAllRenderedPages', 'page.releaseAll'],
     [vs, 'getVisibilitySnapshot', 'visibility.snapshot'],
     [cv, 'updateVisiblePages', 'visibility.update'], [cv, 'refreshRenderSurfacePlan', 'budget.refresh'],
     [cv, 'renderCanvas', 'raster.main'], [cv, 'renderPage', 'page.render'],
@@ -257,9 +322,17 @@ export function installPageScrollProbe(
     [wasm, 'renderPageToCanvasFiltered', 'wasm.layerRaster'],
     [wasm, 'getPageInfo', 'wasm.pageInfo'],
     [ruler, 'update', 'ruler.update'],
+    ...budgetProbeBoundaries(budgetDetail, cv, cv.pageRenderer, wasm, cv.pageSurfaceLru),
   ];
+  const optionalBoundaries = new Set(['zoom.cancel', 'zoom.flush', 'zoom.ready', 'zoom.raster',
+    ...budgetProbeBoundaries(budgetDetail, cv, cv.pageRenderer, wasm, cv.pageSurfaceLru).map(([, , name]) => name)]);
+  const unavailableBoundaries = boundaries.filter(([target, key, name]) => optionalBoundaries.has(name)
+    && typeof (target as Record<string, unknown>)[key] !== 'function').map(([, , name]) => name);
   const setEnabled = (next: boolean) => {
     if (next === enabled) return;
+    pinchSession.interrupt(now(), 'observation toggled');
+    if (pinchFrameId) cancelAnimationFrame(pinchFrameId);
+    pinchFrameId = 0;
     trace.finish('interrupted', 'observation toggled');
     if (frameId) cancelAnimationFrame(frameId);
     frameId = 0;
@@ -267,8 +340,11 @@ export function installPageScrollProbe(
     restores = []; images.clear(); flowImages.clear(); enabled = false;
     if (next) {
       try {
-        for (const [target, key, name] of boundaries) restores.push(observeBoundary(target, key, now,
-          () => trace.id, call => observe(name, call), diagnostic));
+        for (const [target, key, name] of boundaries) {
+          if (unavailableBoundaries.includes(name)) continue;
+          restores.push(observeBoundary(target, key, now,
+            () => trace.id, call => observe(name, call), diagnostic));
+        }
         enabled = true;
       } catch (error) {
         for (const restore of restores.reverse()) restore();
@@ -286,14 +362,19 @@ export function installPageScrollProbe(
     ${[34, 50, 100, 200].map(n => `<button data-zoom="${n}">${n}% 줌</button>`).join('')}
     <button data-top>처음으로</button><button data-step>다음 행</button><button data-bench>왕복 20회</button>
     <button data-overhead>관찰 비용 A/B</button><button data-read>관찰 결과</button><button data-clear>기록 초기화</button>
+    <button data-pinch-start>연속 핀치 시작</button><button data-pinch-stop>연속 핀치 종료</button>
+    ${memoryEnabled ? '<button data-memory>메모리 검사</button>' : ''}
+    ${abEnabled ? '<button data-cold>새 문서 + 첫 진입 기록</button><button data-warm>현재 구간 기록</button><button data-download>JSON 저장</button>' : ''}
     <output aria-label="관찰 상태">준비</output><details><summary>Stage 1 JSON</summary><pre style="max-height:45vh;max-width:95vw;overflow:auto;user-select:text"></pre></details>`;
   document.body.append(panel);
   const status = (message: string) => { panel.querySelector('output')!.textContent = message; };
   const show = (value: unknown) => {
+    lastExport = value;
     panel.querySelector('pre')!.textContent = JSON.stringify(value, null, 2);
     panel.querySelector('details')!.open = true;
   };
   const snapshot = () => {
+    sampleMemory('snapshot');
     const pages = cv.canvasPool.activePages.map(page => {
       const main = cv.canvasPool.getCanvas(page)!;
       const overlays = [...document.querySelectorAll<HTMLCanvasElement>(`canvas[data-rhwp-overlay-page="${page}"]`)];
@@ -311,6 +392,13 @@ export function installPageScrollProbe(
     return { enabled, browser: navigator.userAgent, dpr: devicePixelRatio, viewport: { width: innerWidth, height: innerHeight },
       targetViewport: viewport(), appliedViewport: applied,
       pageCount: wasm.pageCount, layoutPageCount: cv.pages.length, scope: scope(), zoom: vm.getZoom(),
+      zoomInput: probeZoomInputState(vm), layoutSamples: layoutSamples.map(sample => ({ ...sample })),
+      observationCapabilities: { unavailableBoundaries, budgetDetail: budgetDetail ? 'nested-boundaries-v1' : null,
+        zoomInputState: typeof (vm as unknown as Record<string, unknown>).getZoomInputState === 'function',
+        zoomRasterPending: typeof (vm as unknown as Record<string, unknown>).isZoomRasterPending === 'function' },
+      ...(abEnabled ? { ab: { variant: abVariant, scenario: recordingScenario, adapter: 'cold-scroll-v1',
+        startBoundary: recordingScenario === 'cold' ? 'document-view-loaded (after initial synchronous view setup)' : 'manual',
+        note: 'URL variant is a label, not SHA proof. Cold is fresh document surfaces, not OS/network cold. Frame bitmap presence is not compositor paint.' } } : {}),
       columns: vs.getColumns(), focused: cv.editingPageIndex, visible: cv.currentVisiblePages, retained: cv.currentRetainedPages,
       scroll: { x: vm.getScrollX(), y: vm.getScrollY() }, pages, pool, activePixels, idlePoolPixels: surfacePixels(pool),
       detachedCache: cache,
@@ -318,6 +406,9 @@ export function installPageScrollProbe(
       totalAllocatedPixels: activePixels + surfacePixels(pool) + cache.cachedPixels,
       pendingImages: cv.pageRenderer.reRenderJobs.size,
       pendingPrefetch: scheduler.prefetchQueued, traces: trace.snapshot(), errors, longTasks,
+      pinchSession: pinchSession.snapshot(),
+      surfaceMemory: memory?.snapshot() ?? null,
+      longTasksSupported: observer !== null,
       note: 'RGBA 환산=actual pixels×4; not GPU/RSS. Timings are known-render-work/next-frame opportunities, not compositor presentation. Focus sharp requires observed decode/no-image evidence. Bounds/readback only on explicit snapshot.' };
   };
   const nextFrame = () => new Promise<number>(resolve => requestAnimationFrame(() => resolve(now())));
@@ -340,6 +431,99 @@ export function installPageScrollProbe(
     catch (error) { diagnostic(error, 'scenario'); status(`실패: ${error}`); show(snapshot()); }
     finally { batch = false; }
   };
+  const pinchTick = () => {
+    pinchFrameId = 0;
+    if (disposed || !enabled || !pinchSession.recording) return;
+    sampleMemory('frame');
+    const scheduler = abEnabled ? cv.pageRenderScheduler.snapshot() : null;
+    pinchSession.frame(scope(), now(), { ...pinchState(), ...(scheduler ? {
+      scrollY: vm.getScrollY(), visiblePages: [...cv.currentVisiblePages],
+      missingBitmapPages: cv.currentVisiblePages.filter(p => !cv.canvasPool.getCanvas(p)?.parentElement),
+      currentRasterPages: cv.currentVisiblePages.filter(rendered),
+      visibleQueued: scheduler.visibleQueued, prefetchQueued: scheduler.prefetchQueued,
+      pendingImages: cv.pageRenderer.reRenderJobs.size,
+    } : {}) });
+    if (pinchSession.recording) pinchFrameId = requestAnimationFrame(pinchTick);
+    else status('핀치 기록 중단/20초 상한 — 관찰 결과에서 확인');
+  };
+  const startRecording = (scenario: string) => {
+    if (!enabled || batch) { status('관찰 on·다른 측정 완료 후 시작'); return; }
+    if (pinchSession.recording) return;
+    recordingScenario = scenario;
+    lastExport = null;
+    if (pinchFrameId) cancelAnimationFrame(pinchFrameId);
+    pinchSession.start(scope(), now());
+    panel.querySelector('details')!.open = false;
+    status('핀치 기록 중 (최대 20초) — 조작 후 종료');
+    pinchFrameId = requestAnimationFrame(pinchTick);
+  };
+  panel.querySelector<HTMLButtonElement>('[data-pinch-start]')!.onclick = () => startRecording('manual');
+  panel.querySelector<HTMLButtonElement>('[data-memory]')?.addEventListener('click', () => void run(async () => {
+    const index = Number(panel.querySelector<HTMLSelectElement>('[aria-label="기준선 문서"]')!.value);
+    await loadFixture(FIXTURES[index][1]);
+    events.emit('page-view-settings-changed', { arrangement: { kind: 'auto' }, pageMovement: { direction: 'vertical', wheelHorizontal: false } });
+    vm.smoothZoomTo(1); await waitStable();
+    memory!.clear(); sampleMemory('start100');
+    const checkpoints: unknown[] = [];
+    for (const percent of [200, 500, 100, 34, 100]) {
+      vm.smoothZoomTo(percent / 100); await waitStable(); sampleMemory(`settled${percent}`);
+      checkpoints.push({ phase: `zoom${percent}`, memory: memory!.snapshot() });
+    }
+    move(rowStep()); await waitStable(); vm.smoothZoomTo(2); await waitStable();
+    sampleMemory('unfocused200'); checkpoints.push({ phase: 'unfocused200', memory: memory!.snapshot() });
+    await loadFixture(FIXTURES[index][1]); vm.smoothZoomTo(1); await waitStable();
+    sampleMemory('document-reload100'); checkpoints.push({ phase: 'document-reload100', memory: memory!.snapshot() });
+    show({ kind: 'surface-memory-scenario-v1', variant: abVariant, checkpoints, evidence: snapshot() });
+  }));
+  if (abEnabled) {
+    subscriptions.push(events.on('document-view-loaded', () => {
+      if (!coldArmed) return;
+      coldArmed = false;
+      begin('cold-first-view');
+      startRecording('cold');
+      status(`${abVariant}: 첫 진입 기록 중 — 바로 축소·스크롤 후 연속 핀치 종료`);
+    }));
+    panel.querySelector<HTMLButtonElement>('[data-cold]')!.onclick = () => void (async () => {
+      if (coldLoading || batch) return;
+      coldLoading = true;
+      try {
+        setEnabled(true);
+        pinchSession.interrupt(now(), 'new cold trial');
+        trace.clear(); errors.length = 0; longTasks.length = 0; layoutSamples.length = 0;
+        if (pinchFrameId) cancelAnimationFrame(pinchFrameId);
+        pinchFrameId = 0;
+        panel.querySelector('details')!.open = false;
+        vm.setZoom(1); vm.setScrollTop(0);
+        const kind = panel.querySelector<HTMLSelectElement>('[aria-label="검증 배치"]')!.value;
+        events.emit('page-view-settings-changed', { arrangement: kind === 'four' ? { kind: 'multiple', columns: 4, rows: 2 } : { kind }, pageMovement: { direction: 'vertical', wheelHorizontal: false } });
+        status('새 문서 여는 중 — 첫 화면 구성 직후 자동 기록');
+        coldArmed = true;
+        const index = Number(panel.querySelector<HTMLSelectElement>('[aria-label="기준선 문서"]')!.value);
+        await loadFixture(FIXTURES[index][1]);
+        if (coldArmed) throw new Error('document-view-loaded not observed');
+      } catch (error) {
+        coldArmed = false; pinchSession.interrupt(now(), 'cold load failed');
+        diagnostic(error, 'cold-open'); status(`실패: ${error}`); show(snapshot());
+      } finally { coldLoading = false; }
+    })();
+    panel.querySelector<HTMLButtonElement>('[data-warm]')!.onclick = () => startRecording('warm-manual');
+    panel.querySelector<HTMLButtonElement>('[data-download]')!.onclick = () => {
+      if (!lastExport) { status('먼저 기록을 종료하거나 관찰 결과를 표시하세요'); return; }
+      const url = URL.createObjectURL(new Blob([JSON.stringify(lastExport, null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a'); link.href = url;
+      const safe = (s: string) => s.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
+      link.download = `rhwp-${safe(abVariant)}-${safe(recordingScenario)}-${Date.now()}.json`;
+      link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+  }
+  panel.querySelector<HTMLButtonElement>('[data-pinch-stop]')!.onclick = () => {
+    if (observer) recordLongTasks(observer.takeRecords());
+    pinchSession.stop(now(), stable());
+    if (pinchFrameId) cancelAnimationFrame(pinchFrameId);
+    pinchFrameId = 0;
+    status('핀치 기록 종료 — 렌더 완료 판정과 별개');
+    show(snapshot());
+  };
   panel.querySelector<HTMLButtonElement>('[data-open]')!.onclick = () => void run(async () => {
     trace.finish('interrupted', 'fixture change');
     const index = Number(panel.querySelector<HTMLSelectElement>('[aria-label="기준선 문서"]')!.value);
@@ -356,7 +540,13 @@ export function installPageScrollProbe(
   panel.querySelector<HTMLButtonElement>('[data-top]')!.onclick = () => { begin('probe-scroll-top'); move(0); };
   panel.querySelector<HTMLButtonElement>('[data-step]')!.onclick = () => { begin('probe-scroll-row'); move(vm.getScrollY() + rowStep()); };
   panel.querySelector<HTMLButtonElement>('[data-read]')!.onclick = () => show(snapshot());
-  panel.querySelector<HTMLButtonElement>('[data-clear]')!.onclick = () => { trace.clear(); errors.length = 0; longTasks.length = 0; status('기록 초기화'); };
+  panel.querySelector<HTMLButtonElement>('[data-clear]')!.onclick = () => {
+    memory?.clear();
+    trace.clear(); pinchSession.clear(); errors.length = 0; longTasks.length = 0; layoutSamples.length = 0;
+    if (pinchFrameId) cancelAnimationFrame(pinchFrameId);
+    pinchFrameId = 0;
+    status('기록 초기화');
+  };
   panel.querySelector<HTMLButtonElement>('[data-bench]')!.onclick = () => void run(async () => {
     const step = rowStep(); move(step * 2); await waitStable(); trace.clear();
     const samples = [];
@@ -382,10 +572,16 @@ export function installPageScrollProbe(
   });
   const capture = (event: Event) => {
     if (!enabled || batch || panel.contains(event.target as Node)) return;
-    if (event instanceof WheelEvent) begin(event.ctrlKey || event.metaKey ? 'user-zoom-wheel' : 'user-plain-wheel');
+    if (event instanceof WheelEvent) {
+      if (pinchSession.recording) pinchSession.input(scope(), now(), {
+        eventTimestamp: event.timeStamp, deltaX: event.deltaX, deltaY: event.deltaY,
+        deltaMode: event.deltaMode, ctrlKey: event.ctrlKey, metaKey: event.metaKey, trusted: event.isTrusted,
+      }, pinchState());
+      begin(event.ctrlKey || event.metaKey ? 'user-zoom-wheel' : 'user-plain-wheel');
+    }
     else if (event instanceof KeyboardEvent && ['PageDown', 'PageUp'].includes(event.key)) begin('user-page-key');
   };
-  document.addEventListener('wheel', capture, true);
+  document.addEventListener('wheel', capture, { capture: true, passive: true });
   document.addEventListener('keydown', capture, true);
   setEnabled(true);
   return () => {

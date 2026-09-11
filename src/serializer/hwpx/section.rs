@@ -941,6 +941,10 @@ pub(crate) struct InlineCursor<'a> {
     pub tab_idx: usize,
     /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
     pub title_marks: &'a [TitleMark],
+    /// [#6956] 문단의 형광펜 표지 전체 (문자 인덱스 오름차순)
+    pub markpen_marks: &'a [crate::model::paragraph::MarkpenMark],
+    /// 다음에 방출할 `markpen_marks` 인덱스
+    pub markpen_idx: usize,
     /// [#5537] `title_marks[i]` 가 **앞(닫히는) run 소유**인가 — char_shapes 경계
     /// 유닛이 표시 끝 유닛과 일치하면 원본은 표시까지를 앞 run 에 뒀다는 증거다.
     /// 비어 있으면 전부 false(종전 동작: 다음 run 머리 방출).
@@ -965,6 +969,21 @@ pub(crate) struct InlineCursor<'a> {
 impl InlineCursor<'_> {
     /// 현재 문자 위치에 걸린 제목 차례 표시를 전부 방출한다.
     fn flush_marks_at_cursor(&mut self, t_xml: &mut String, buf: &mut String) {
+        // [#6956] 형광펜 표지 — 제목 차례 표시와 같은 자리에서 순서대로 흘린다.
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
         while let Some(m) = self.title_marks.get(self.mark_idx) {
             if m.char_idx > self.char_idx {
                 break;
@@ -994,6 +1013,24 @@ impl InlineCursor<'_> {
 
     /// [#5537] 조각 말미에서 닫히는 run 소유의 표시만 방출한다 — 나머지는
     /// 종전대로 다음 run 머리에서 flush 된다(한컴 실측 두 형태 공존).
+    /// [#6956] 조각 말미에서 현재 문자 위치에 걸린 형광펜 표지를 마저 낸다.
+    fn flush_markpen_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
+    }
+
     fn flush_prev_owned_marks_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
         while self.has_pending_prev_owned_mark() {
             let m = &self.title_marks[self.mark_idx];
@@ -1095,6 +1132,9 @@ pub(crate) fn render_hp_t_content(
     // [#5537] 조각 말미 — 닫히는 run 소유의 표시(경계 유닛 = 표시 끝 유닛)는 여기서
     // 방출한다. 다음 run 머리로 넘기면 재파싱 char_shapes 경계가 8유닛 무너진다.
     cursor.flush_prev_owned_marks_at_fragment_end(&mut t_xml, &mut buf);
+    // [#6956] 형광펜 닫는 표지는 런 **끝**에 오는 것이 한컴 실측 형태다. 문자 루프는
+    // 글자 **앞**에서만 흘리므로 여기서 현재 위치에 걸린 것을 마저 낸다.
+    cursor.flush_markpen_at_fragment_end(&mut t_xml, &mut buf);
     flush_buf(&mut t_xml, &mut buf);
     t_xml.push_str("</hp:t>");
     t_xml
@@ -1381,6 +1421,48 @@ fn render_control_slot_tracked(
 /// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
 /// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
 /// 그 문단부터 본문을 통째 폐기하는 트리거다.
+/// 문자와 개체 슬롯을 같은 UTF-16 축에서 보며, 형광펜 자체는 축을 소비하지 않는다.
+struct PositionedMarkpens<'a> {
+    marks: Vec<(u32, &'a crate::model::paragraph::MarkpenMark)>,
+    next: usize,
+}
+
+impl PositionedMarkpens<'_> {
+    fn flush(
+        &mut self,
+        position: u32,
+        splitter: &mut RunSplitter,
+        text: &mut String,
+        para: &Paragraph,
+        cursor: &mut InlineCursor<'_>,
+    ) {
+        if !self
+            .marks
+            .get(self.next)
+            .is_some_and(|(pos, _)| *pos <= position)
+        {
+            return;
+        }
+        flush_text_fragment(&mut splitter.content, text, &para.tab_extended, cursor);
+        while let Some(&(pos, mark)) = self.marks.get(self.next) {
+            if pos > position {
+                break;
+            }
+            splitter.cut_before(pos);
+            splitter.content.push_str("<hp:t>");
+            match &mark.color {
+                Some(color) => splitter.content.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => splitter.content.push_str("<hp:markpenEnd/>"),
+            }
+            splitter.content.push_str("</hp:t>");
+            self.next += 1;
+        }
+    }
+}
+
 fn render_runs(
     para: &Paragraph,
     ctx: &mut SerializeContext,
@@ -1405,6 +1487,7 @@ fn render_runs(
         && para.orphan_field_ends.is_empty()
         // 표시만 있고 텍스트가 없는 문단도 8유닛을 점유한다 — 여기서 빠지면 축이 밀린다.
         && para.title_marks.is_empty()
+        && para.markpen_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
         return (String::new(), true, 0, Vec::new(), Vec::new());
@@ -1524,6 +1607,8 @@ fn render_runs(
         .collect();
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
+        markpen_marks: &para.markpen_marks,
+        markpen_idx: 0,
         mark_owned_by_prev: &mark_owned_by_prev,
         // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
@@ -1606,6 +1691,16 @@ fn render_runs(
     let axis_faithful = slots.iter().all(|c| emits_hwpx_slot_xml(c));
 
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
+    cursor.markpen_marks = &[];
+    let mut markpens = PositionedMarkpens {
+        marks: para
+            .markpen_marks
+            .iter()
+            .map(|m| (m.stream_position(para), m))
+            .collect(),
+        next: 0,
+    };
+    markpens.marks.sort_by_key(|(pos, _)| *pos);
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
@@ -1626,6 +1721,13 @@ fn render_runs(
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1732,6 +1834,13 @@ fn render_runs(
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1797,6 +1906,13 @@ fn render_runs(
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1858,6 +1974,13 @@ fn render_runs(
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
@@ -1882,6 +2005,7 @@ fn render_runs(
             splitter.cut_before(char_pos);
         }
 
+        markpens.flush(char_pos, &mut splitter, &mut text_buf, para, &mut cursor);
         text_buf.push(c);
         let width = char_utf16_width(c);
         if char_pos >= expected_utf16_pos {
@@ -1962,6 +2086,13 @@ fn render_runs(
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
+        markpens.flush(
+            expected_utf16_pos,
+            &mut splitter,
+            &mut text_buf,
+            para,
+            &mut cursor,
+        );
         render_control_slot_tracked(
             &mut splitter.content,
             slots[slot_idx],
@@ -2003,6 +2134,7 @@ fn render_runs(
             field_end_emitted[i] = true;
         }
     }
+    markpens.flush(u32::MAX, &mut splitter, &mut text_buf, para, &mut cursor);
     (
         splitter.finish(),
         axis_faithful,

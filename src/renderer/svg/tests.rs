@@ -1022,8 +1022,11 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let mut image = ImageNode::new(1, Some(png));
     image.fill_mode = Some(ImageFillMode::FitToSize);
-    image.brightness = -50;
-    image.contrast = 70;
+    // [#6895] `ImageNode` 의 두 필드는 **화면 순서**다 — 한컴 워터마크 프리셋은
+    // 밝기 70 · 대비 −50 이다. 종전 값 `(-50, 70)` 은 이진 저장 순서였는데, 채움
+    // 그림이 `ImageNode` 로 갈 때 이진 순서가 그대로 새던 시절의 흔적이다.
+    image.brightness = 70;
+    image.contrast = -50;
     image.effect = crate::model::image::ImageEffect::RealPic;
     let bbox = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
     let mut renderer = SvgRenderer::new();
@@ -1033,8 +1036,12 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
 
     let output = renderer.output();
     assert!(
-        !output.contains("rhwp-img-bc-b-50c70"),
+        !output.contains("rhwp-img-bc-b70c-50"),
         "RealPic background watermark fill should preserve source color without brightness/contrast filter: {output}"
+    );
+    assert!(
+        !output.contains("rhwp-img-bc-b-50c70"),
+        "이진 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
     );
     assert!(
         !output.contains("rhwp-realpic-watermark-tone"),

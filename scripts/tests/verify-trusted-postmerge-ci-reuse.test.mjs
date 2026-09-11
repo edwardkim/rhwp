@@ -1,3 +1,4 @@
+import "./verify-trusted-postmerge-green-merge.test.mjs";
 import assert from "node:assert/strict";
 import "./verify-trusted-postmerge-base-advance.test.mjs";
 import test from "node:test";
@@ -61,6 +62,7 @@ function input(overrides = {}) {
       files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
     }],
     workflowRuns: [candidate()],
+    fullLaneRunIds: ["123"],
     ...overrides,
   };
 }
@@ -156,7 +158,7 @@ test("reuses the preceding full CI through a linear review-only tail", () => {
         ],
       },
     ],
-    workflowRuns: [candidate({ id: 456, head_sha: code })],
+    workflowRuns: [candidate(), candidate({ id: 456, head_sha: code })],
     fullLaneRunIds: ["456"],
   }));
   assert.deepEqual(result, {
@@ -261,7 +263,7 @@ test("fails closed when an intermediate full review candidate lacks merge-tree e
         files: [{ filename: "mydocs/pr/archives/pr_6279_review.md", status: "added" }],
       },
     ],
-    workflowRuns: [candidate({ id: 456, head_sha: reviewed })],
+    workflowRuns: [candidate(), candidate({ id: 456, head_sha: reviewed })],
     fullLaneRunIds: ["456"],
   }));
   assert.equal(
@@ -645,4 +647,10 @@ test("실제 Git tree 대조는 fork의 문서 trailing만 허용하고 source �
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("worker evidence is mandatory even when workflow status is green", () => {
+  const data = input();
+  delete data.fullLaneRunIds;
+  assert.equal(evaluateTrustedPostMergeReuse(data).reason, "candidate-full-lane-evidence-unavailable");
 });

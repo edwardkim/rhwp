@@ -653,6 +653,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         has_para_text,
         tab_extended,
         title_marks,
+        markpen_marks,
         numbering_restart,
         // 저장 LineSeg의 편집 후 provenance — 내용 비교는 line_segs가 담당한다.
         stored_text_partition_dirty: _,
@@ -684,6 +685,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
     f!(has_para_text);
     f!(tab_extended);
     f!(title_marks);
+    f!(markpen_marks);
     f!(numbering_restart);
 
     sweep_controls(&format!("{base}.controls"), controls, &b.controls, out);

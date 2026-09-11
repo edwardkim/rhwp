@@ -1,53 +1,31 @@
-# clippy 와 관련 cargo test
+# 변경 범위별 검증
 
-fmt 게이트를 닫은 뒤에 린트와 시험을 닫는다. 순서는 같은 checkout 에서
-동시에 돌리지 않는다 (`local_validation.md`).
+명령과 필수 범위의 정본은 [CONTRIBUTING.md](../../../../CONTRIBUTING.md)다.
+메인터너 검토에서는 [local_validation.md](../../../../mydocs/manual/pr_review/local_validation.md)의
+4.3과 기존 증거 재사용 절차를 함께 적용한다. 두 역할의 생략 조건을 혼용하지 않는다.
 
-## clippy
+## Rust
 
-```bash
-cargo clippy -- -D warnings
-```
+- Rust source 변경은 fmt, native/WASM/workspace-all-targets의 세 Clippy 단계와
+  범위표의 focused/전체 회귀를 따른다. native Clippy 한 줄이나 관련 테스트만으로 전체 게이트를 대신하지 않는다.
+- Rust test/baseline helper, renderer/layout, Studio 혼합 변경은 각각 정본의 추가 게이트를 적용한다.
+  문서만 바꾼 경우에 Rust 전체 검증을 무조건 강제하지 않는다.
+- 제출 source SHA를 고정한 review worktree에서 파생 integration suite를 준비한다.
+  이 절차는 메인터너만의 권한이 아니라 CONTRIBUTING의 기여자 검증 경로이기도 하다.
+- 파생 suite 준비는 `node scripts/rust-test-suite-manifest.mjs --prepare`를 사용한다.
+  이어지는 순차 lint/build/test와 manifest `--check`는 정본의 순서와 인자를 따른다.
+- `tests/cases/` 원본만 제출하며 파생 suite/manifest와 진단 inventory를 stage하지 않는다.
+  Cargo target registry 갱신은 별도 메인터너 절차이며 일반 기여에서 `--sync-cargo-targets`를 쓰지 않는다.
+- source-side test 변경은 `node scripts/rust-unit-test-tiers.mjs --check`를 따른다.
+  진단용 `--generate`를 제출 필수 단계로 바꾸지 않는다.
+- 동일 Cargo target을 쓰는 빌드/검증은 동시에 실행하지 않는다. 출력 공백을 실패로 간주하지 않는다.
 
-경고 한 건도 실패다. `-A` 로 숨기거나 이 스킬 범위 밖 파일을 대량
-재포맷하지 않는다.
+## 의미 있는 테스트 결과
 
-워크스페이스가 크면 변경 crate 에 한정할 수 있다. 한정했다면 PR 본문에
-명령과 사유를 적는다. 기본은 위의 한 줄이다.
+수정 전 실패와 수정 후 독립적인 기대값 충족을 확인한다.
+fixture 누락의 조용한 return, 잘못된 필터로 0건 실행, 중단된 작업은 통과가 아니다.
+시간 부족으로 필수 전체 회귀를 focused test로 대체하지 않는다.
 
-## 관련 cargo test
-
-```bash
-# 이 스킬 계약
-cargo test --test agent_contributor_skill_contract -- --nocapture
-python -m unittest scripts.tests.test_agent_contributor
-```
-
-`tests/cases/` 에 새 원본을 넣었으면
-
-```bash
-node scripts/rust-test-suite-manifest.mjs --generate
-node scripts/rust-test-suite-manifest.mjs --check
-```
-
-`tests/generated/` · `tests/suites/manifest.json` · `Cargo.toml` generated
-블록은 수기 수정하지 않는다.
-
-`src/` 의 `#[cfg(test)]` 줄 번호가 바뀌면
-`node scripts/rust-unit-test-tiers.mjs --generate` 도 실행한다.
-이 스킬 파동은 `src/` 를 건드리지 않으므로 보통 불필요하다.
-
-## 범위별 기본 (`local_validation.md` §4.3)
-
-| 변경 | 최소 |
-|------|------|
-| mydocs 만 | `git diff --check`, 링크. Cargo 생략 가능 (사유 기록) |
-| Rust | focused test + fmt + clippy. 가능하면 release-test 전체 |
-| renderer/layout | 위 + 시각 근거 |
-| 스킬·계약만 | 이 절의 두 시험 + fmt + clippy |
-
-전체 `cargo nextest run --tests` 는 CONTRIBUTING 권장이다. 시간이 없어
-관련 시험만 돌렸으면 PR 본문에 **실행한 명령**을 적는다.
-
-예제: [11_clippy_deny_warnings.md](../examples/11_clippy_deny_warnings.md),
-[12_related_cargo_test.md](../examples/12_related_cargo_test.md).
+스킬 변경은 현재 skill router/계약과 변경 범위에 맞는 검사를 선정한다.
+고정된 generated suite 번호나 근거 없는 동일 검사 3회 반복을 영구 게이트로 복제하지 않는다.
+검사를 실행하지 않았거나 실행 권한이 제한되면 그 사실과 미완료 범위를 기록하고 통과를 주장하지 않는다.

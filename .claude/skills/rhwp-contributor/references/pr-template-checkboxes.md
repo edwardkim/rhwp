@@ -1,28 +1,17 @@
-# PR 템플릿 — 첫 체크박스 = fmt 게이트
+# PR 템플릿과 완료 표시
 
-`.github/pull_request_template.md` 의 **테스트** 절 첫 칸이
-`cargo fmt --all -- --check` 통과다. 에이전트는 그 칸을 가장 먼저 채운다.
+[현재 PR 템플릿](../../../../.github/pull_request_template.md)을 그대로 기준으로 삼는다.
+첫 체크박스는 변경 범위의 필수 검증과 제출/검증 SHA 일치에 관한 항목이며,
+이 스킬이 fmt 전용 항목으로 교체하거나 순서를 강제하지 않는다.
 
-devel 템플릿이 아직 `cargo test` 를 첫 칸에 두고 있어도, 이 스킬은
-첫 칸을 fmt 게이트로 해석하고 본문에 명시적으로 적는다.
-템플릿을 fmt 첫 칸으로 고치는 열린 PR 이 있으면 그 파일을 가로채지 않는다.
+- 적용되는 항목만 실제 결과에 따라 체크한다. 미실행, 실패와 해당 없음은 서로 구분한다.
+- 실행 명령, 대상 source SHA와 성공/실패를 기록한다. 검증 뒤 코드가 바뀌면 이전 검증으로
+  새 source의 항목을 체크하지 않는다.
+- Rust, Studio, 렌더링, 문서와 스킬은 현재 범위표에 맞는 결과를 적는다.
+  related test만 실행한 결과를 전체 회귀 통과로 표시하지 않는다.
+- 생성 suite/manifest, 진단 로그와 무관한 증적을 제출 파일에 섞지 않는다.
+- 해결하지 못한 부분과 비범위를 명시한다. issue 전체 완료일 때만 종료 키워드를 사용한다.
+- 캡슐은 해당 작업에서 사용한 경우 기록하며 일반 기여의 강제 제출 조건으로 만들지 않는다.
 
-## 본문에 적을 첫 칸
-
-```markdown
-## 테스트
-
-- [x] `cargo fmt --all -- --check` 통과 (PR 생성·push 직전 필수. `cargo fmt --check` 만으로는 부족)
-- [ ] `cargo clippy -- -D warnings` 통과
-- [ ] 관련 `cargo test` 통과 (`agent_contributor_skill_contract` / `test_agent_contributor`)
-- [ ] 시각 근거 (렌더/레이아웃이 아니면 N/A)
-- [ ] 작업 증빙 `rhwp replay --capsule` (해당 시)
-```
-
-첫 칸이 비어 있으면 이 스킬은 PR 을 완주로 보지 않는다.
-
-## 낡은 칸
-
-`- [ ] cargo fmt --check` 를 그대로 복사하지 마라. 명령이 틀렸다.
-
-예제: [17_pr_first_checkbox_fmt.md](../examples/17_pr_first_checkbox_fmt.md).
+메인터너 self-review와 오늘할일 기록은 PR review workflow의 역할별 요구 사항이다.
+외부 기여자에게 동일한 내부 문서 작성을 일괄 요구하지 않는다.
