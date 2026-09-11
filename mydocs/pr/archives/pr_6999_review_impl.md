@@ -4,7 +4,7 @@
 - 관련 이슈: #6869, #6871
 - 선행 검토: [pr_6999_review.md](pr_6999_review.md)
 - 메인테이너 결정: 기여자에게 재작업을 요청하는 대신 우리 쪽에서 보정 후 병합한다.
-- 현재 단계: 검토 기록 반영·최종 CI·merge commit 병합 완료. archive·devel sync·종료 기록·정리 후속 절차 대기.
+- 현재 단계: 병합·archive·devel sync·종료 근거 게시·전용 branch/worktree 정리 완료. #6871은 OPEN 유지.
 
 ## 1. 경로와 고정 기준
 
@@ -277,3 +277,17 @@ S1~S2 로컬 통합·구현 승인을 받았다. 원격 push/comment 및 최종 
   기준 output 경로는 이 보존 경로에서 확인한다. 공유 캐시
   `/home/edward/mygithub/rhwp-shared-review-target`, 미완료 #6996 worktree 및 contributor
   fork branch는 삭제 대상이 아니다.
+
+## 후속 절차 완료 확인
+
+- 운영 기록 `38179cc3c`를 devel에 반영하고 동기화했다. #6869는 2026-09-11 14:56:02 KST
+  자동 종료됐으므로 수동 close를 중복하지 않았다.
+- [#6869 종료 근거](https://github.com/edwardkim/rhwp/issues/6869#issuecomment-5630437275)와
+  [PR 병합 결과](https://github.com/edwardkim/rhwp/pull/6999#issuecomment-5630437463)를 게시했다.
+  API 재조회로 작성자·본문 일치·한글/BOM/치환 문자 이상 없음을 확인했다.
+- `/home/edward/mygithub/rhwp-review-6999` worktree, `review/planet6897-pr6999` local branch,
+  `upstream/pr6999-head` local tracking ref를 제거하고 잔여 없음까지 확인했다.
+- 검토 output은 주 작업공간 `output/pr6999-review/`에 보존했다. 파생 integration suite·manifest는
+  제거된 worktree의 재생성 가능한 산출물이었다. 원본 source·검토 문서는 Git/archive에 남아 있다.
+- #6996 worktree의 미커밋 검토 자료, 공유 review target, contributor fork branch는 그대로 유지했다.
+  #6871은 OPEN이다. 이번 PR 후속 처리는 완료됐으며 해당 잔여 사례는 별도 판단 대상으로 남는다.

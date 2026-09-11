@@ -285,3 +285,12 @@ archive·오늘할일·로컬 devel 동기화·종료 근거 게시·검토 work
   기준 output 경로는 이 보존 경로에서 확인한다. 공유 캐시
   `/home/edward/mygithub/rhwp-shared-review-target`, 미완료 #6996 worktree 및 contributor
   fork branch는 삭제 대상이 아니다.
+
+## 최종 후속 상태
+
+- #6869 CLOSED(자동 종료 확인), #6871 OPEN 유지.
+- [종료 근거 댓글](https://github.com/edwardkim/rhwp/issues/6869#issuecomment-5630437275) 및
+  [병합 결과 댓글](https://github.com/edwardkim/rhwp/pull/6999#issuecomment-5630437463) 게시·API 재확인 완료.
+- 운영 기록 `38179cc3c`를 devel에 반영하고 동기화했다.
+- #6999 전용 worktree·local branch·local PR tracking ref 제거 완료.
+  output은 `output/pr6999-review/`에 보존했고, #6996 검토·공유 cache·fork branch는 유지했다.
