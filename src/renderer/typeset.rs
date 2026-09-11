@@ -23179,38 +23179,54 @@ impl TypesetEngine {
                     // 83818 r=13(결함)의 +88.5px 는 6.7px 차이다. 그래서 잔여 기준 수용 판정
                     // (지정 시험 10/54 실패)·이월 분기(12/54 실패)·되감김 무조건 클립(편람
                     // 384→385)이 모두 깨졌다. 갈리는 것은 **저장 증거의 일치** 하나다.
-                    let stored_rewinds = layout_engine.row_stored_rewind_line_indices(table, r);
-                    let mirrored_stored_rewind = {
-                        let visible = layout_engine.row_visible_source_cell_flags(table, r, styles);
-                        let visible_indices: Vec<usize> = visible
+                    // 저장 되감김을 **CellUnit 경계로 투영해** 받는다 — 저장 `LineSeg`
+                    // 번호와 `end_cut` 은 같은 축이 아니다(좌우 분할 줄 병합·중첩 표 전개,
+                    // PR #6996 검토 지적). 투영이 성립하지 않는 줄은 목록에 아예 없다.
+                    let stored_rewinds =
+                        layout_engine.row_stored_rewind_unit_indices(table, r, styles);
+                    let visible = layout_engine.row_visible_source_cell_flags(table, r, styles);
+                    let visible_indices: Vec<usize> = visible
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, shown)| **shown)
+                        .map(|(idx, _)| idx)
+                        .collect();
+                    // 이 컷 안에서 **현재 위치 이후 첫 경계**를 셀마다 고른다. 첫 되감김만
+                    // 보면 컷이 그 자리를 이미 지난 뒤의 경계를 놓친다(같은 검토 지적).
+                    let boundary_for = |idx: usize| -> Option<usize> {
+                        let pre = res.end_cut.get(idx).copied().unwrap_or(0);
+                        let end = source_tail_cut.end_cut.get(idx).copied()?;
+                        stored_rewinds
+                            .get(idx)?
                             .iter()
-                            .enumerate()
-                            .filter(|(_, shown)| **shown)
-                            .map(|(idx, _)| idx)
-                            .collect();
-                        visible_indices.len() >= 2
-                            && visible_indices
-                                .iter()
-                                .all(|idx| stored_rewinds.get(*idx).copied().flatten().is_some())
-                            && {
-                                let first = stored_rewinds[visible_indices[0]];
-                                visible_indices
-                                    .iter()
-                                    .all(|idx| stored_rewinds[*idx] == first)
-                            }
+                            .copied()
+                            .find(|rewind| pre <= *rewind && *rewind < end)
                     };
-                    if mirrored_stored_rewind {
+                    // 독립된 두 셀 이상이 **같은 unit 경계**를 적었을 때만 물리 경계로 본다.
+                    let mirrored_boundary: Option<usize> = if visible_indices.len() >= 2 {
+                        let first = boundary_for(visible_indices[0]);
+                        match first {
+                            Some(b)
+                                if visible_indices
+                                    .iter()
+                                    .all(|idx| boundary_for(*idx) == Some(b)) =>
+                            {
+                                Some(b)
+                            }
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    };
+                    if let Some(boundary) = mirrored_boundary {
                         let mut clipped = source_tail_cut.end_cut.clone();
                         let mut clipped_any = false;
-                        for (idx, rewind) in stored_rewinds.iter().enumerate() {
-                            let Some(rewind) = *rewind else { continue };
-                            let Some(end) = clipped.get(idx).copied() else {
-                                continue;
-                            };
-                            let pre = res.end_cut.get(idx).copied().unwrap_or(0);
-                            if pre <= rewind && rewind < end {
-                                clipped[idx] = rewind;
-                                clipped_any = true;
+                        for idx in &visible_indices {
+                            if let Some(end) = clipped.get(*idx).copied() {
+                                if boundary < end {
+                                    clipped[*idx] = boundary;
+                                    clipped_any = true;
+                                }
                             }
                         }
                         if clipped_any {

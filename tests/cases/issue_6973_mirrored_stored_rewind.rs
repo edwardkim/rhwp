@@ -29,6 +29,15 @@
 //! (33.6px)이 8쪽 잔여를 잡아먹는다. 예산 대 실측 어긋남(`#6923`·`#6976` 단계 3)의 몫이라
 //! 이 시험은 쪽수와 초과 상한만 계약한다.
 //!
+//! ⭐ **번호 축**: 저장 `LineSeg` 번호와 컷 인덱스(`end_cut`)는 같은 축이 아니다 — 좌우 분할
+//! `LineSeg` 는 한 `CellUnit` 으로 합쳐지고 중첩 표는 한 문단을 여러 unit 으로 전개한다
+//! (PR #6996 검토 지적). 그래서 되감김 줄을 `cell_unit_ordinal_for` 로 unit 번호로 옮기고,
+//! 그 unit 이 **그 줄에서 시작할 때만**(`vis_start == 줄`) 경계로 인정한다. 투영이 성립하지
+//! 않으면 경계를 만들지 않는다.
+//!
+//! ⭐ **반복 경계**: 셀의 첫 되감김만 보지 않는다. 현재 컷(`res.end_cut`) **이후 첫 경계**를
+//! 고르므로 한 셀이 여러 물리 쪽에 걸쳐도 매 경계가 보호된다.
+//!
 //! 기준: 한/글 2020(저장 버전) **9쪽** — `pdf/83818-appraisal-rules-amendment-2020.pdf`
 //! (`hwp2024Convert` engine 2020, `pdf_page_count=9`)와 한/글 2020 COM 두 경로가 일치한다.
 
@@ -120,17 +129,17 @@ fn both_cells_record_the_same_frame_rewind_line() {
         .find(|table| table.row_count == 15 && table.col_count == 2)
         .expect("15행 × 2열 신·구조문대비표");
 
-    let rewinds: Vec<Option<usize>> = table
+    let rewinds: Vec<Vec<usize>> = table
         .cells
         .iter()
         .filter(|cell| cell.row == 13 && cell.row_span == 1)
         .map(|cell| {
+            let mut found: Vec<usize> = Vec::new();
             let mut line_index = 0usize;
-            let mut found = None;
             for paragraph in &cell.paragraphs {
                 for (li, pair) in paragraph.line_segs.windows(2).enumerate() {
-                    if found.is_none() && pair[0].vertical_pos > 0 && pair[1].vertical_pos == 0 {
-                        found = Some(line_index + li + 1);
+                    if pair[0].vertical_pos > 0 && pair[1].vertical_pos == 0 {
+                        found.push(line_index + li + 1);
                     }
                 }
                 line_index += paragraph.line_segs.len();
@@ -141,7 +150,26 @@ fn both_cells_record_the_same_frame_rewind_line() {
 
     assert_eq!(
         rewinds,
-        vec![Some(9), Some(9)],
-        "행 13 의 두 셀이 같은 줄(li=9)에서 되감겨야 한다 — #6973 정답지"
+        vec![vec![9], vec![9]],
+        "행 13 의 두 셀이 같은 줄(li=9)에서 한 번씩 되감겨야 한다 — #6973 정답지"
     );
+
+    // 이 셀들은 문단 하나에 control 이 없어 줄 번호와 unit 번호가 1:1 이다.
+    // 그 사실 자체를 고정한다 — 축이 어긋나면 투영이 경계를 만들지 않아야 한다.
+    for cell in table
+        .cells
+        .iter()
+        .filter(|cell| cell.row == 13 && cell.row_span == 1)
+    {
+        assert_eq!(cell.paragraphs.len(), 1, "행 13 셀은 단일 문단");
+        assert!(
+            cell.paragraphs[0].controls.is_empty(),
+            "행 13 셀 문단에는 control 이 없다 — 줄↔unit 1:1 전제"
+        );
+        assert_eq!(
+            cell.paragraphs[0].line_segs.len(),
+            12,
+            "행 13 셀의 저장 줄 수"
+        );
+    }
 }
