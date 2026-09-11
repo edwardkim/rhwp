@@ -111,6 +111,20 @@ pub struct SerializeContext {
     /// 원본 content.hpf 는 Chart 파트를 나열하지 않으므로 manifest·3-way
     /// 단언 대상 밖이다.
     pub chart_entries: Vec<ChartPartEntry>,
+    /// [#6869] 이 문단에서 `hp:pageNum` 을 이미 냈는가.
+    ///
+    /// HWP5 는 같은 문단에 쪽번호 위치(`pngp`) 컨트롤을 여러 개 담을 수 있고 rhwp 파서는
+    /// 그것을 그대로 보존한다(156532689 문단 179 는 **9개**). 그런데 HWPX 로 그 9개를
+    /// 그대로 내면 **한글이 그 문서에서 멈춘다**(정답지 실측: 20분 타임아웃, 이슈는
+    /// 44쪽→12쪽으로 관측). 한컴 자신이 같은 문서를 HWPX 로 저장하면 문단당 하나로
+    /// 접는다(문서 전체 23 → 5).
+    ///
+    /// 접은 슬롯은 **축에서도 빠져야 한다** — 컨트롤만 지우고 `textpos` 를 그대로 두면
+    /// 오히려 축이 더 어긋나 여전히 멈춘다(실측). `render_control_slot_tracked` 가
+    /// "아무것도 방출하지 않은 슬롯" 으로 세어 `#5943` 의 축 보정이 그대로 걸리도록,
+    /// 접을 때는 **XML 을 한 글자도 내지 않는다**.
+    /// `render_runs`의 호출 스코프에서만 사용하며, 중첩 문단 종료 시 부모 상태를 복원한다.
+    pub(crate) para_page_num_pos_emitted: bool,
     /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
     para_id_counter: u32,
     /// HWP3 전용 Hyperlink control을 HWPX `fieldBegin`으로 승격할 때 쓰는 ID.
@@ -163,6 +177,7 @@ impl Default for SerializeContext {
             bin_data_map: HashMap::new(),
             bin_seq_to_storage: HashMap::new(),
             chart_entries: Vec::new(),
+            para_page_num_pos_emitted: false,
             para_id_counter: 0,
             generated_hyperlink_id: u32::MAX,
             sub_list_depth: 0,
