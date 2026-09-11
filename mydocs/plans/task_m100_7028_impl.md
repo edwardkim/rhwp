@@ -3,7 +3,8 @@
 - 이슈: https://github.com/edwardkim/rhwp/issues/7028
 - 근거: [수행계획](task_m100_7028.md), [Stage 1 조사](../working/task_m100_7028_stage1.md).
 - 소스 기준: `b59323de0448df0a42bcb9cdd12cb80d51fe83d2`.
-- 상태: **2026-09-11 메인테이너 구현계획 승인 완료. Stage 2 진행.**
+- 상태: **2026-09-11 메인테이너 구현계획 승인 완료. Stage 2 구현·focused 검증 완료.**
+  [Stage 2 결과](../working/task_m100_7028_stage2.md)의 6쪽 SVG 시각 판정 대기.
 
 ## 1. 구현할 규칙
 
