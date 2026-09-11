@@ -3092,7 +3092,21 @@ impl LayoutEngine {
                 let tbl_y = self
                     .tac_table_stored_outer_band_top(para, tbl, current_y)
                     .unwrap_or_else(|| {
-                        (current_y + baseline_dist + om_bottom - tbl_h).max(current_y)
+                        let raw = current_y + baseline_dist + om_bottom - tbl_h;
+                        if raw < current_y {
+                            // [#3820] 베이스라인-하단 식이 줄 상단 **위로** 올라가면
+                            // (표가 줄의 baseline 여유보다 크다) 그 모델은 성립하지
+                            // 않는다. 종전 `.max(current_y)` 는 그때 선언된 위 바깥
+                            // 여백을 조용히 버렸다. 한/글은 줄 상단 + `om_top` 에 둔다.
+                            //
+                            //   간장 기증자 보고서 33쪽 5행11열 (om_top=140HU)
+                            //     cur_y 83.16 · base 182.31 · om_b 1.87 · tbl_h 210.75
+                            //     raw 56.59 < cur_y  → 종전 83.16 / 한/글 괘선 85.03
+                            //     cur_y + om_top = 85.03  (정확 일치)
+                            current_y + hwpunit_to_px(tbl.outer_margin_top as i32, self.dpi)
+                        } else {
+                            raw
+                        }
                     });
 
                 let table_bottom = self.layout_table(
