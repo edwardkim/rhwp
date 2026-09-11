@@ -113,8 +113,9 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   // [#7002] 지연 쪽나눔 진행 API — 조판은 파생 상태다. 문서 IR 을 바꾸지 않는다.
   'beginDeferredPagination', 'stepDeferredPagination',
   'flushDeferredPagination', 'cancelDeferredPagination',
-  // [#7002] 직렬화 산출 — 코어 호출(export_hwp_with_adapter_snapshot)이 `&self` 라
-  // 문서를 바꾸지 않는다. wasm 래퍼의 `&mut self` 는 불필요한 것이다.
+  // [#7002] 직렬화 산출 — 저장 어댑터는 `prepare_hwp_export_snapshot`(document.rs:1598)
+  // 이 뜬 **사본**에 적용되고 live 문서는 그대로다. 세 경로의 `&mut self` 는 실제로
+  // 필요 없는 것이며(좁히는 것은 별건), 지금도 문서를 바꾸지 않는다.
   'exportHwp', 'exportHwpVerify', 'exportHwpWithPassword',
   // [#7002 · #4180] 저장 직전 캐럿 스탬프. doc_properties.caret_* 와 DocInfo raw_stream 을
   // surgical update 하므로 **저장 바이트를 바꾼다**. 그럼에도 제외인 이유는 편집이 아니라
