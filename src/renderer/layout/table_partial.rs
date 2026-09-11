@@ -12,11 +12,11 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit};
 use super::border_rendering::{
-    build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
-    render_transparent_borders,
+    build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_cell_diagonal,
+    render_edge_borders, render_transparent_borders,
 };
 use super::table_layout::{
-    calc_nested_split_rows, effective_margin_left_line,
+    border_style_has_diagonal, calc_nested_split_rows, effective_margin_left_line,
     expand_page_fragment_clip_to_own_text_lines, extend_completed_nested_table_border_clips,
     native_terminal_child_host_line_spacing, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
 };
@@ -29,7 +29,53 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CaptionDirection, CommonObjAttr, HorzRelTo};
 use crate::model::style::{Alignment, BorderLine};
+use crate::model::table::{Cell, Table};
 use crate::renderer::float_placement::native_multirow_internal_reset_rowbreak_anchor_advance_hu;
+
+/// A repeated header is a complete cell instance, not a clipped continuation.
+/// Check source-row coverage rather than the table's continuation flag or a content clip.
+fn partial_cell_has_complete_rows(cell: &Cell, render_rows: &[usize]) -> bool {
+    let row = cell.row as usize;
+    let span = cell.row_span as usize;
+    span > 0
+        && render_rows
+            .iter()
+            .position(|&r| r == row)
+            .is_some_and(|start| {
+                render_rows.get(start..start + span).is_some_and(|rows| {
+                    rows.iter()
+                        .enumerate()
+                        .all(|(offset, &r)| r == row + offset)
+                })
+            })
+}
+
+/// #7028 does not introduce fragment-level zone geometry. Preserve the old output
+/// only for cells touched by an active zone; unrelated cells remain eligible.
+fn partial_cell_intersects_diagonal_zone(
+    cell: &Cell,
+    table: &Table,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    table.zones.iter().any(|zone| {
+        let sr = zone.start_row as usize;
+        let er = (zone.end_row as usize + 1).min(table.row_count as usize);
+        let sc = zone.start_col as usize;
+        let ec = (zone.end_col as usize + 1).min(table.col_count as usize);
+        sr < er
+            && sc < ec
+            && (cell.row as usize) < er
+            && sr < cell.row as usize + cell.row_span as usize
+            && (cell.col as usize) < ec
+            && sc < cell.col as usize + cell.col_span as usize
+            && zone.border_fill_id.checked_sub(1).is_some_and(|idx| {
+                styles
+                    .border_styles
+                    .get(idx as usize)
+                    .is_some_and(border_style_has_diagonal)
+            })
+    })
+}
 
 /// 인라인으로 재분류된 부동 그림이 유지해야 할 문단 기준 가로 오프셋(px).
 ///
@@ -1086,6 +1132,20 @@ impl LayoutEngine {
                 None
             };
 
+            // #7028: resolve once before horizontal/vertical text paths diverge.
+            // Use the grid box, not the content clip that can expand later. Actual
+            // cut/height-override cells retain their existing diagonal behavior.
+            let cell_diagonals = border_style
+                .filter(|bs| border_style_has_diagonal(bs))
+                .filter(|_| {
+                    !is_in_split_row
+                        && !height_override_clip
+                        && partial_cell_has_complete_rows(cell, render_rows)
+                        && !partial_cell_intersects_diagonal_zone(cell, table, styles)
+                })
+                .map(|bs| render_cell_diagonal(tree, bs, cell_x, cell_y, cell_w, cell_h))
+                .unwrap_or_default();
+
             // 셀 배경
             self.render_cell_background(
                 tree,
@@ -1572,6 +1632,7 @@ impl LayoutEngine {
                     }
                 }
                 table_node.children.push(cell_node);
+                table_node.children.extend(cell_diagonals);
                 continue;
             }
 
@@ -3290,6 +3351,7 @@ impl LayoutEngine {
             }
 
             table_node.children.push(cell_node);
+            table_node.children.extend(cell_diagonals);
         }
     }
 
