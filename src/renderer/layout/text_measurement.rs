@@ -1119,13 +1119,9 @@ pub(crate) fn char_width_decision<'a>(
             negative_spacing_clamped: false,
         };
     }
-    if c == '\u{FFFC}' || c == '\u{F081C}' {
+    if c == '\u{FFFC}' {
         return CharWidthDecision {
-            width_source: if c == '\u{FFFC}' {
-                "inlineObjectPlaceholder"
-            } else {
-                "hwpPuaFiller"
-            },
+            width_source: "inlineObjectPlaceholder",
             base_width_px: 0.0,
             final_width_px: 0.0,
             metric: None,
