@@ -110,12 +110,38 @@ jobs:
               if (
                 commit.sha !== mergeSha
                 || parents.length !== 2
-                || parents[0] !== pullRequest.base.sha
+                || !/^[0-9a-f]{40}$/.test(parents[0] || '')
                 || parents[1] !== pullRequest.head.sha
                 || !/^[0-9a-f]{40}$/.test(treeSha)
               ) {
                 core.warning('PR merge ref does not match the event base/head pair; no evidence will be published.');
                 return;
+              }
+              // Event payload base can lag behind the immutable merge actually
+              // tested by this run. Never substitute the current PR merge ref.
+              // Accept a stale event base only with two upstream ancestry proofs.
+              if (parents[0] !== pullRequest.base.sha) {
+                const ancestor = async (base, head) => {
+                  if (base === head) return;
+                  const { data: comparison } = await github.rest.repos.compareCommits({
+                    ...context.repo, base, head,
+                  });
+                  if (comparison.status !== 'ahead'
+                    || comparison.base_commit?.sha !== base
+                    || comparison.merge_base_commit?.sha !== base) {
+                    throw new Error('PR tested base ancestry is not proven');
+                  }
+                };
+                await ancestor(pullRequest.base.sha, parents[0]);
+                const { data: branch } = await github.rest.repos.getBranch({
+                  ...context.repo, branch: 'devel',
+                });
+                const currentBase = branch.commit?.sha;
+                if (branch.name !== 'devel' || !/^[0-9a-f]{40}$/.test(currentBase || '')) {
+                  throw new Error('Upstream devel identity is unavailable');
+                }
+                await ancestor(parents[0], currentBase);
+                core.info(`Verified stale PR event base: event_base=${pullRequest.base.sha} tested_base=${parents[0]} current_base=${currentBase}`);
               }
               const artifactName = isFork
                 ? `trusted-postmerge-fork-merge-tree-v1-${pullRequest.number}-${repositoryId}-${pullRequest.head.repo.id}-${runAttempt}-${mergeSha}-${treeSha}`
@@ -130,6 +156,7 @@ jobs:
                 workflow_file: process.env.WORKFLOW_FILE,
                 run_id: String(context.runId),
                 merge_sha: mergeSha,
+                event_base_sha: pullRequest.base.sha,
                 parents,
                 tree_sha: treeSha,
               }, null, 2)}\n`);
