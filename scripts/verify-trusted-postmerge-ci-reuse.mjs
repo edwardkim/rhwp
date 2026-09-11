@@ -72,6 +72,7 @@ function enforcementPathChanged(files) {
     || path === "scripts/select-nextest-archive-targets.mjs"
     || path === "scripts/collect-nextest-target-durations.mjs"
     || path === "scripts/refresh-nextest-target-duration-policy.mjs"
+    || path === "scripts/trusted-postmerge-duration-evidence.mjs"
     || path === "scripts/verify-trusted-postmerge-ci-reuse.mjs"
     || path === "tests/suites/nextest-target-duration-policy.json"
   ));
@@ -355,7 +356,8 @@ function latestCandidateRun(runs, pullRequest, repository, candidateSha, reposit
     trustedPullRequestWorkflowRun(run, pullRequest, repository, repositoryId, workflowFile)
     && run?.head_sha === candidateSha
     && timestamp(run.created_at) >= createdAt
-    && timestamp(run.updated_at) <= mergedAt
+    // Do not hide a newer rerun just because it completed after the merge.
+    // Select it first, then reject non-pre-merge evidence at the caller.
   ));
   if (matches.length === 0) {
     return null;
@@ -575,6 +577,10 @@ export function evaluateTrustedPostMergeReuse(input) {
     || finalHeadCandidate.conclusion !== "success") {
     return denied("final-head-pr-workflow-not-successful");
   }
+  if (!Number.isFinite(timestamp(finalHeadCandidate.updated_at))
+    || timestamp(finalHeadCandidate.updated_at) > timestamp(pullRequest.merged_at)) {
+    return denied("final-head-pr-workflow-not-completed-before-merge");
+  }
   const exactMergeTreeEvidence = hasExactMergeTreeEvidence(
     input,
     finalHeadCandidate,
@@ -694,6 +700,10 @@ export function evaluateTrustedPostMergeReuse(input) {
     // A newer failed or incomplete candidate must not be hidden by older green runs.
     if (candidate.status !== "completed" || candidate.conclusion !== "success") {
       return denied("latest-pr-workflow-candidate-not-successful");
+    }
+    if (!Number.isFinite(timestamp(candidate.updated_at))
+      || timestamp(candidate.updated_at) > timestamp(pullRequest.merged_at)) {
+      return denied("latest-pr-workflow-candidate-not-completed-before-merge");
     }
     if (!hasFullLaneEvidence(input, candidate)) {
       continue;
