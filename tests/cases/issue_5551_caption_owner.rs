@@ -338,3 +338,65 @@ fn wrapped_lines_share_ordinal_and_metadata_does_not_change_svg() {
         assert_eq!(counts.get(&(pi, 1)), Some(&1));
     }
 }
+
+#[test]
+fn inherited_footer_controls_expose_source_not_layout_sentinel() {
+    for shift in [false, true] {
+        let mut core = DocumentCore::from_bytes(include_bytes!(
+            "../../samples/issue5802/hf_cross_section_inherit.hwp"
+        ))
+        .unwrap();
+        if shift {
+            let mut doc = core.document().clone();
+            let mut leading = doc.sections[0].clone();
+            leading.paragraphs = vec![text("BODY WITHOUT A HEADER OR FOOTER")];
+            doc.sections.insert(0, leading);
+            core.set_document(doc);
+            core.repaginate_if_needed();
+        }
+        let expected_section = usize::from(shift);
+        let mut groups = 0;
+        for page in 0..core.page_count() {
+            let mut tree = core.build_page_render_tree(page).unwrap();
+            let controls: Value =
+                serde_json::from_str(&core.get_page_control_layout_native(page).unwrap()).unwrap();
+            for control in controls["controls"].as_array().unwrap() {
+                assert!(
+                    control["secIdx"].as_u64().unwrap() < core.document().sections.len() as u64
+                );
+                if control["type"] != "group" || control.get("headerFooter").is_none() {
+                    continue;
+                }
+                groups += 1;
+                assert_eq!(control["secIdx"], expected_section);
+                assert_eq!(control["headerFooter"]["kind"], "footer");
+                let outer_pi = control["headerFooter"]["outerParaIdx"].as_u64().unwrap() as usize;
+                let outer_ci =
+                    control["headerFooter"]["outerControlIdx"].as_u64().unwrap() as usize;
+                assert!(matches!(
+                    core.document().sections[expected_section].paragraphs[outer_pi].controls
+                        [outer_ci],
+                    Control::Footer(_)
+                ));
+                // stableIndex remains a paint key, not a document section address.
+                assert_eq!(control["stableIndex"][0], u32::MAX);
+            }
+            let mut with_source = rhwp::renderer::svg::SvgRenderer::new();
+            with_source.render_tree(&tree);
+            fn remove_source(node: &mut RenderNode) {
+                node.header_footer_source = None;
+                for child in &mut node.children {
+                    remove_source(child);
+                }
+            }
+            remove_source(&mut tree.root);
+            let mut without_source = rhwp::renderer::svg::SvgRenderer::new();
+            without_source.render_tree(&tree);
+            assert_eq!(with_source.output(), without_source.output());
+        }
+        assert_eq!(
+            groups, 2,
+            "both original and inherited footer must be tested"
+        );
+    }
+}

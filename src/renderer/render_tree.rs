@@ -162,6 +162,9 @@ pub struct RenderNode {
     /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
     #[serde(skip)]
     pub control_code: ControlCode,
+    /// Public source provenance, separate from header/footer layout cache keys.
+    #[serde(skip)]
+    pub header_footer_source: Option<(usize, HeaderFooterImageRef)>,
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize)]
@@ -183,6 +186,7 @@ impl RenderNode {
             visible: true,
             editor_only: false,
             control_code: ControlCode::Automatic,
+            header_footer_source: None,
         }
     }
 

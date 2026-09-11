@@ -6,7 +6,7 @@ import type { ObjectResizeTarget } from './command';
 import { PictureResizeJournal } from './picture-resize-journal';
 import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
 import { computeRotationRecord } from './object-drag-record';
-import { isMasterPageDecoration } from './picture-hit-policy';
+import { isMasterPageDecoration, isSupportedPictureControl } from './picture-hit-policy';
 import { clearObjectEditingPage, summarizeObjectSelection } from './object-selection-page';
 import type { CellPathLike } from '@/core/types';
 import { showToast } from '@/ui/toast';
@@ -217,7 +217,7 @@ export function findPictureAtClick(this: any,
   pageIdx: number, pageX: number, pageY: number,
 ): PictureObjectRef | null {
   try {
-    const layout = this.wasm.getPageControlLayout(pageIdx);
+    const layout = { controls: this.wasm.getPageControlLayout(pageIdx).controls.filter(isSupportedPictureControl) };
     // [Task #1171] picture 우선: 클릭이 컨테이너 Shape(글상자) 와 그 안의 nested picture
     // (cellPath 동반 image/equation) 둘 다에 들어가면 picture 를 우선 선택한다.
     // collect_controls 가 Shape 를 자식 picture 보다 먼저 방출하므로, 이 우선 패스가 없으면
@@ -354,7 +354,7 @@ export function findPictureBbox(this: any,
   try {
     const pageCount = this.wasm.pageCount;
     for (let p = 0; p < pageCount; p++) {
-      const layout = this.wasm.getPageControlLayout(p);
+      const layout = { controls: this.wasm.getPageControlLayout(p).controls.filter(isSupportedPictureControl) };
       for (const ctrl of layout.controls) {
         if (matchesControlRef(ctrl, { ...ref, type: matchType } as PictureObjectRef, layoutType)) {
           // 표 셀 내 수식: cellIdx/cellParaIdx도 매칭
@@ -435,7 +435,7 @@ export function renderPictureObjectSelection(this: any): void {
     const zoom = this.viewportManager.getZoom();
     const pageCount = this.wasm.pageCount;
     for (let p = 0; p < pageCount; p++) {
-      const layout = this.wasm.getPageControlLayout(p);
+      const layout = { controls: this.wasm.getPageControlLayout(p).controls.filter(isSupportedPictureControl) };
       for (const ctrl of layout.controls) {
         if (matchesControlRef(ctrl, ref as PictureObjectRef, layoutType)) {
           // 표 셀 내 수식: cellIdx/cellParaIdx도 매칭
