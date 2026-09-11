@@ -231,7 +231,8 @@ fn complete_rowspan_keeps_its_whole_cell_diagonal() {
 
 #[test]
 fn cut_row_and_straddling_rowspan_do_not_gain_fragment_diagonals() {
-    // Existing sample has a split row=9 and a rowspan 6..11 crossing p1/p2.
+    // Row 9 has end-cut metadata but finishes on p1 (no second instance).
+    // The rowspan 6..11 actually crosses p1/p2. Do not equate cut with repetition.
     // Only the diagonal property is varied; no synthetic paper size is introduced.
     for (row, col) in [(9, 2), (6, 0)] {
         let core = variant(|d| {
@@ -243,10 +244,18 @@ fn cut_row_and_straddling_rowspan_do_not_gain_fragment_diagonals() {
                 .border_fill_id = 13;
         });
         let mut instances = 0;
+        let mut page_fragments = 0;
         for p in 0..core.page_count() {
             let tree = core.build_page_render_tree(p).unwrap();
             if cell_box(&tree.root, row, col).is_some() {
                 instances += 1;
+                page_fragments += nodes(&tree.root)
+                    .iter()
+                    .filter(|n| {
+                        matches!(&n.node_type, RenderNodeType::TableCell(c)
+                        if c.row == row && c.col == col && c.page_fragment)
+                    })
+                    .count();
                 assert_eq!(
                     diagonals(&tree.root).len(),
                     1,
@@ -256,8 +265,16 @@ fn cut_row_and_straddling_rowspan_do_not_gain_fragment_diagonals() {
             }
         }
         assert!(
-            instances >= 2,
-            "negative case must actually cross a page boundary"
+            page_fragments > 0,
+            "r{row}c{col} must exercise fragment metadata"
         );
+        if row == 6 {
+            assert!(
+                instances >= 2,
+                "rowspan must actually cross a page boundary"
+            );
+        } else {
+            assert_eq!(instances, 1, "completed end-cut row is not repeated");
+        }
     }
 }
