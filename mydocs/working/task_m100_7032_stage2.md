@@ -3,7 +3,7 @@
 - 일자: 2026-09-11 (KST)
 - 승인 근거: 메인테이너의 구현계획 승인
 - 계획: [구현계획서](../plans/task_m100_7032_impl.md)
-- 현재 범위: **R1 구현·focused 검증 및 메인테이너 시각 판정 통과. R2 미완료.**
+- 현재 범위: **R1 시각 판정 및 R2 구현·focused 검증 완료. Stage 3 전체 검증은 미실행.**
 
 ## R1 변경 원리
 
@@ -73,11 +73,98 @@ controls가 있는 문단, `char_count=0`, 저장 LINE_SEG가 있는 문단, HWP
 이는 제시한 SVG 결과에 대한 판정이며, 개별 페이지를 모두 직접 열어 확인했다는 추가 주장은 하지 않는다.
 Studio의 기존 WASM은 교체하지 않았으므로 WASM 시각 검증 통과를 의미하지 않는다.
 
-## 남은 승인 범위
+## R1 완료 시점의 후속 범위
 
-R1에서 실제 cut 창의 의미를 변경하지 않는다. **R2는 미완료**이며, 현재 선택된 빈 atom의
+R1에서 실제 cut 창의 의미를 변경하지 않았다. 당시 **R2는 미완료**였으며, 현재 선택된 빈 atom의
 높이·가시 마지막 문단·split 여부를 일관되게 판정하는 구현과 창 안/밖·마지막/연속 빈 문단
-반례 검증이 남아 있다. R1의 실제 샘플 통과를 전체 구현 완료로 간주하지 않는다.
+반례 검증이 남아 있었다. 아래 R2에서 처리했다. R1의 실제 샘플 통과를 전체 구현 완료로 간주하지 않았다.
 
-R1 SVG/PDF 대조 및 메인테이너 판정은 완료했다. 다음은 승인된 계획의 R2이며,
-이후 Stage 3 전체 검증·Docker WASM 순서다.
+R1 SVG/PDF 대조 및 메인테이너 판정 이후 승인된 R2를 수행했다.
+
+## R2 — 분할 창의 빈 문단 소유권과 메트릭
+
+메인테이너의 “다음 절차 진행을 승인합니다.”에 따라 수행했다. 최종 제품·테스트 검증 SHA는
+`532b74fc5`이며, R1 승인 기준은 `cb4563233`이다.
+
+### 원인과 수정
+
+1. 분할 원장의 빈 문단 atom은 `(0,1)`을 소유하지만 물리 `ComposedLine` 수는 0이다.
+   종전 비교는 모든 atom이 선택된 셀도 실제로 잘린 것으로 판정하여 Center/Bottom을 Top으로 바꿨다.
+2. cut 콘텐츠 높이 합산에서 합성 줄만 순회하여 선택된 빈 문단 높이가 빠졌다.
+3. 실제 셀 마지막 빈 문단의 기존 fallback은 Fixed 간격 전체를 줄 박스로 사용했지만,
+   기존 셀 높이 측정은 마지막 문단의 글꼴 em만 소비했다.
+
+`cell_cut_empty_paragraph_owners`는 **기존 cached CellUnit 창**에서 빈 콘텐츠 atom만 선택한다.
+control/중첩/gap-only 유닛을 빈 문단 소유권으로 사용하지 않는다. 실제 빈 문단 대상 판정과 결합해
+미선택 문단은 노드·캐럿·y를 소비하지 않고 선택 문단만 기존 배치 함수로 전달한다.
+가시 마지막 문단·split 여부·cut 콘텐츠 높이·tail 정렬 높이도 같은 소유권을 사용한다.
+
+높이는 기존 `calc_para_lines_height`를 재사용한다. 마지막 가시 빈 문단의 실제 배치는
+cell context에 한해 글꼴 em과 trailing spacing 0으로 맞췄다. body/HWP3 fallback은 유지한다.
+원장 생성·분할 예산·페이지네이션 정책·파서·IR·전역 composer는 변경하지 않았다.
+빈 문단이 없는 셀에서는 추가 빈 atom 탐색을 건너뛴다.
+
+### 계약 테스트와 RED 재확인
+
+원본의 문단·스타일을 재사용하는 **메모리 내부 IR 계약 테스트**다. 파일로 저장하거나 한컴에서 생성한
+정상 샘플로 주장하지 않는다. A4 페이지에 실제 `PartialTable` item과 cut 창을 전달하여 production
+렌더러를 실행한다. 창 안/밖, 연속 빈 문단, 마지막 빈 문단, 완전 소진한 빈 창, 노드·캐럿·y를 검사한다.
+
+- 창: `[0,1)`, `[0,2)`, `[1,3)`, `[2,4)`, `[3,4)`, `[4,4)`.
+- 전체 창 `[0,4)`와 uncut 비교: Top/Center/Bottom × Fixed/Percent × 문단 전후 간격 유무 = 12조합.
+- 마지막 문단의 em 박스: uncut, 전체 창, 마지막 빈 문단 단독, 첫 빈 문단만 선택된 창.
+- 비교 시 물리 셀 높이는 기존 `end_row_height_override`로 동일하게 고정하고 높이 자체도 assert한다.
+  자연 cut의 콘텐츠 높이로 작아진 상자와 uncut 상자의 정렬 차이를 버그로 오판하지 않기 위해서다.
+
+초기 테스트의 CharShape 필드명(`height` → `base_size`) 컴파일 오류와 물리 프레임 비교 조건을
+정정했다. 정정된 **동일 테스트**를 review worktree의 R1 소스 `cb4563233`에 적용해 다시 실행했다.
+`r2-corrected-red.log`: 5 통과·2 실패. 동일 프레임에서도 정렬 실패(46.83px vs 3.68px), 마지막 빈
+문단 높이 실패(18.88px vs 13.33px)가 재현됐다. 선택/미선택 소유권 검사는 R1에서도 통과했다.
+즉 새로 고친 문제와 이미 작동하던 보호 동작을 구분했다. 이 진단용 테스트 변경은 복원 후
+review worktree를 최종 SHA로 다시 전환했다.
+
+### 최종 검증
+
+모두 `/home/edward/mygithub/rhwp-review-7032`에서 파생 suite를 새로 준비한 뒤 순차 실행했다.
+고정 target은 `/home/edward/mygithub/rhwp-shared-review-target`이다. 공통 명령:
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/run-rust-test.mjs --cargo-test <case-name> -- \
+  --target-dir /home/edward/mygithub/rhwp-shared-review-target
+```
+
+| case | 실제 결과 |
+| --- | --- |
+| `issue_7032_cell_empty_paragraph_flow` | 7 통과 (R1 4개 + R2 3개; 내부 조합 포함) |
+| `issue_7028_partial_table_diagonal` | 9 통과 |
+| `issue_2146_no_ls_label_cell_declared_height` | 1 통과 |
+| `issue_6110_cell_empty_para_float_anchor` | 1 통과 |
+| `issue_6660_empty_para_line_not_added_to_object_height` | 1 통과 |
+| `issue_6035_cell_row_line_split_keep` | 1 통과 |
+| `issue_6035_cell_split_empty_band` | 2 통과 |
+| `issue_2279_layout_oracles` | 3 통과·기존 ignore 1 유지 |
+
+**합계 25 통과·1 ignored.** #2279 ignored는 `#5193` 프레임 이관에 따른 기존
+`issue_2279_nested_cell_units_split_r27_not_r26`이며, 이번에 추가하거나 해제하지 않았다.
+통과 건수에 포함하지 않는다. 로그는 `output/7032/r2-final-<case-name>.log`에 있다.
+
+- `cargo fmt --all -- --check`: 통과 (`r2-final-fmt.log`).
+- prepared manifest `--check`: 통과 (`r2-final-manifest.log`).
+- `node --test scripts/tests/rust-test-suite-manifest.test.mjs`: 23/23 통과 (`r2-manifest-policy-tests.log`).
+- source-side `#[cfg(test)]` 변경 없음. generated suite/manifest는 커밋하지 않음.
+- 전체 release-test, 세 Clippy, Native Skia 게이트, Docker WASM은 **아직 실행하지 않았다**.
+
+### R1 시각 결과 보존
+
+최종 native로 HWP와 HWPX를 `export-svg --font-style`로 다시 내보냈다.
+
+- HWP: `output/7032/r2-after-hwp/`, R1 `r1-after-hwp/svg/`와 6쪽 각각 `cmp` 동일.
+- HWPX: `output/7032/r2-after-hwpx/`, R1 `r1-after-hwpx/`와 `diff -rq` 동일.
+- 합계 **12개 SVG 바이트 동일**. R1에서 승인된 실제 출력이 바뀌지 않았으므로 새 시각 통과를
+  임의 선언하지 않고 기존 메인테이너 판정의 보존 증거로 기록한다.
+
+## 다음 단계
+
+Stage 3 전체 회귀·순차 lint·Native Skia·Docker WASM 및 Studio 확인을 진행해야 한다.
+원격 push·PR·병합·이슈 close는 수행하지 않았으며, 이번 focused 결과만으로 완료 처리하지 않는다.
