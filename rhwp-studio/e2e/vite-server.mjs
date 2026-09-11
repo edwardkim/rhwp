@@ -1,157 +1,99 @@
 /**
- * Vite dev server 기동·대기·종료의 공용 헬퍼.
+ * Vite dev server 기동·종료의 공용 헬퍼.
  *
- * run-render-diff.mjs 와 run-with-vite.mjs 가 같은 기동 계약(포트 탐색 →
- * 127.0.0.1 바인딩 → readiness 폴링 → SIGTERM 뒤 5초 안에 SIGKILL)을 쓰도록
- * run-render-diff.mjs 에서 추출했다. 로그는 target/rhwp-studio-vite*.log 에
- * 남기고, 서버가 readiness 전에 죽으면 로그 내용을 함께 던진다.
+ * 서버는 **이 프로세스 안에서** 돈다 — vite 의 Node API(`createServer`)가 포트 선택·
+ * readiness·종료를 모두 책임진다. 종전에는 `node vite.js` 를 자식으로 띄우고 포트를
+ * 직접 스캔한 뒤 HTTP 로 readiness 를 폴링하고 SIGTERM/SIGKILL·taskkill 로 트리를
+ * 정리했는데, 그 전부가 라이브러리가 이미 하는 일이었다. 자식 프로세스 설계의 근거였던
+ * win32 `.cmd` EINVAL 도 spawn 을 안 하면 성립하지 않는다.
+ *
+ * 로그는 `target/rhwp-studio-vite*.log` 에 그대로 남긴다 — CI 가 아티팩트로 올린다
+ * (`.github/workflows/render-diff.yml`). in-process 라 stdout 으로도 보이지만, 기존
+ * 아티팩트 계약을 깨지 않도록 `customLogger` 로 파일에도 쓴다.
+ *
+ * 테스트 명령 자체는 여전히 자식 프로세스다 — `spawnIn` 이 그 몫이다.
  */
 
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
-import net from 'node:net';
 import path from 'node:path';
-import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
+import { createLogger, createServer } from 'vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const studioRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(studioRoot, '..');
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
-export function spawnNpm(args, extraEnv = {}) {
-  return spawn(npmCmd, args, {
-    cwd: studioRoot,
-    stdio: 'inherit',
-    // win32 의 npm 은 npm.cmd 다 — Node 20+ 부터 .cmd 직접 spawn 이 EINVAL 로
-    // 거절되므로 shell 경유로 띄운다(인자는 공백·메타문자 없는 고정값뿐이다).
-    shell: process.platform === 'win32',
-    env: {
-      ...process.env,
-      ...extraEnv,
-    },
-  });
-}
-
-export function spawnStudioCommand(command, args, extraEnv = {}) {
+/**
+ * studio 루트에서 명령을 자식으로 띄운다.
+ *
+ * win32 의 npm 은 `npm.cmd` 이고 Node 20.12+ 는 `.cmd` 직접 spawn 을 EINVAL 로 거절하므로
+ * 그때만 shell 을 경유한다(인자는 공백·메타문자 없는 고정값뿐이다).
+ */
+export function spawnIn(command, args, extraEnv = {}) {
   return spawn(command, args, {
     cwd: studioRoot,
     stdio: 'inherit',
-    env: {
-      ...process.env,
-      ...extraEnv,
-    },
+    shell: process.platform === 'win32' && command.endsWith('.cmd'),
+    env: { ...process.env, ...extraEnv },
   });
+}
+
+export function spawnNpm(args, extraEnv = {}) {
+  return spawnIn(npmCmd, ['run', ...args], extraEnv);
 }
 
 export function viteLogPath(suffix = '') {
   return path.join(repoRoot, 'target', `rhwp-studio-vite${suffix}.log`);
 }
 
-function waitForExit(child, signal) {
-  return new Promise((resolve) => {
-    child.once('exit', () => resolve());
-    child.kill(signal);
-  });
-}
-
-export async function stopServer(child) {
-  if (child.exitCode !== null || child.signalCode) {
-    return;
-  }
-  if (process.platform === 'win32' && child.pid) {
-    // shell 경유로 띄운 자식(cmd.exe 래퍼)은 SIGTERM 으로 트리가 정리되지 않는다.
-    await new Promise((resolve) => {
-      spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' })
-        .once('exit', resolve);
-    });
-    return;
-  }
-  await Promise.race([
-    waitForExit(child, 'SIGTERM'),
-    delay(5000).then(async () => {
-      if (child.exitCode === null && !child.signalCode) {
-        await waitForExit(child, 'SIGKILL');
-      }
-    }),
-  ]);
-}
-
-export async function waitForServer(url, child, logPath, timeoutMs = 30000) {
-  const deadline = Date.now() + timeoutMs;
-  let lastError = null;
-
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null || child.signalCode) {
-      const log = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : '';
-      throw new Error(`Vite dev server exited before ${url} became ready.\n${log}`);
-    }
-    try {
-      const response = await fetch(url);
-      if (response.ok) {
-        return;
-      }
-      lastError = new Error(`server responded with status ${response.status}`);
-    } catch (error) {
-      lastError = error;
-    }
-    await delay(500);
-  }
-
-  const log = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : '';
-  throw new Error(`${lastError?.message || `timed out waiting for ${url}`}\n${log}`);
-}
-
-export async function findAvailablePort(startPort, attempts = 20) {
-  for (let port = startPort; port < startPort + attempts; port += 1) {
-    const available = await new Promise((resolve) => {
-      const server = net.createServer();
-      server.once('error', () => resolve(false));
-      server.listen(port, '127.0.0.1', () => {
-        server.close(() => resolve(true));
-      });
-    });
-    if (available) {
-      return port;
-    }
-  }
-  throw new Error(`failed to find an available port starting at ${startPort}`);
-}
-
 /**
- * vite dev server 를 기동한다. npm.cmd 경유가 아니라 node 로 vite.js 를 직접
- * 띄운다 — win32 에서 .cmd spawn 은 EINVAL 로 거절되고 shell 우회는 트리
- * 종료(SIGTERM)를 망가뜨리기 때문. readiness 대기와 로그 핸들 닫기는 호출자의
- * 몫으로 남긴다(waitForServer · 반환 객체의 stop()).
+ * vite dev server 를 이 프로세스에서 띄운다.
+ *
+ * 반환 `url` 은 **origin 만** 담는다 — `resolvedUrls.local[0]` 은 base 가 붙어 끝에
+ * 슬래시가 있고, 호출부가 `${url}/path` 로 이어 붙이면 `//path` 가 되어 dev server 의
+ * SPA 폴백이 index.html 을 돌려준다(조용히 엉뚱한 응답).
  */
 export async function startViteDevServer({
   preferredPort = Number(process.env.VITE_PORT || '7700'),
   logPath = viteLogPath(),
 } = {}) {
-  const port = await findAvailablePort(preferredPort);
-  const url = `http://127.0.0.1:${port}`;
   fs.mkdirSync(path.dirname(logPath), { recursive: true });
   const logFile = fs.openSync(logPath, 'w');
-  const viteJs = path.join(studioRoot, 'node_modules', 'vite', 'bin', 'vite.js');
-  const child = spawn(
-    process.execPath,
-    [viteJs, '--host', '127.0.0.1', '--port', String(port), '--strictPort'],
-    {
-      cwd: studioRoot,
-      stdio: ['ignore', logFile, logFile],
-      env: {
-        ...process.env,
-        BROWSER: 'none',
-      },
-    },
-  );
+  const write = (msg) => fs.writeSync(logFile, `${msg}
+`);
+  const base = createLogger('info', { allowClearScreen: false });
+  const logger = {
+    ...base,
+    info: (msg, opts) => { write(msg); base.info(msg, opts); },
+    warn: (msg, opts) => { write(msg); base.warn(msg, opts); },
+    error: (msg, opts) => { write(msg); base.error(msg, opts); },
+  };
+
+  const server = await createServer({
+    root: studioRoot,
+    configFile: path.join(studioRoot, 'vite.config.ts'),
+    customLogger: logger,
+    server: { host: '127.0.0.1', port: preferredPort },
+  });
+  await server.listen();
+  server.printUrls();
+
+  const resolved = server.resolvedUrls?.local?.[0];
+  if (!resolved) {
+    await server.close();
+    fs.closeSync(logFile);
+    throw new Error(`vite dev server 가 주소를 내놓지 않았다 (로그: ${logPath})`);
+  }
+  const url = new URL(resolved).origin;
+
   return {
     url,
-    port,
-    child,
+    port: server.config.server.port,
     logPath,
     async stop() {
-      await stopServer(child);
+      await server.close();
       fs.closeSync(logFile);
     },
   };

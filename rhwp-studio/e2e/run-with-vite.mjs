@@ -3,17 +3,13 @@
  *
  *   node e2e/run-with-vite.mjs -- <command...>
  *
- * 서버는 VITE_PORT(기본 7700)부터 비어 있는 포트를 택해 127.0.0.1 에 바인딩하고
- * readiness 를 기다린 뒤, VITE_URL 환경변수를 주입해 명령을 실행한다. 명령의
- * 종료 코드를 그대로 전파하며 성공·실패와 무관하게 서버를 끝낸다. 이미 같은
- * 포트로 떠 있는 dev server 가 있으면 다음 포트를 택하므로 로컬에서 겹치지 않는다.
+ * 서버는 VITE_PORT(기본 7700)부터 비어 있는 포트를 vite 가 직접 골라 127.0.0.1 에
+ * 바인딩한다. listen 이 끝나면 이미 받을 준비가 된 상태라 별도 readiness 폴링이 없다.
+ * VITE_URL 환경변수를 주입해 명령을 실행하고, 명령의 종료 코드를 그대로 전파하며
+ * 성공·실패와 무관하게 서버를 끝낸다.
  */
 
-import {
-  spawnStudioCommand,
-  startViteDevServer,
-  waitForServer,
-} from './vite-server.mjs';
+import { spawnIn, startViteDevServer } from './vite-server.mjs';
 
 const argv = process.argv.slice(2);
 if (argv[0] === '--') {
@@ -27,8 +23,7 @@ if (argv.length === 0) {
 let exitCode = 1;
 const server = await startViteDevServer();
 try {
-  await waitForServer(server.url, server.child, server.logPath);
-  const child = spawnStudioCommand(argv[0], argv.slice(1), { VITE_URL: server.url });
+  const child = spawnIn(argv[0], argv.slice(1), { VITE_URL: server.url });
   exitCode = await new Promise((resolve, reject) => {
     child.once('error', reject);
     child.once('exit', (code, signal) => {
