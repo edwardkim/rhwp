@@ -123,6 +123,7 @@ pub struct SerializeContext {
     /// 오히려 축이 더 어긋나 여전히 멈춘다(실측). `render_control_slot_tracked` 가
     /// "아무것도 방출하지 않은 슬롯" 으로 세어 `#5943` 의 축 보정이 그대로 걸리도록,
     /// 접을 때는 **XML 을 한 글자도 내지 않는다**.
+    /// `render_runs`의 호출 스코프에서만 사용하며, 중첩 문단 종료 시 부모 상태를 복원한다.
     pub(crate) para_page_num_pos_emitted: bool,
     /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
     para_id_counter: u32,
