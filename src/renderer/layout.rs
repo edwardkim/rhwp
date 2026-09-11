@@ -5388,13 +5388,19 @@ impl LayoutEngine {
         tree.root.children.push(header_node);
     }
 
-    /// [Task #825] header/footer 노드 안 모든 ImageNode 에 header_footer_ref 부여
-    /// + para_index 정규화 (usize::MAX - i → i).
+    /// Preserve source provenance without rewriting shape layout/cache keys.
+    /// Images retain their existing header/footer editing address normalization.
     fn propagate_header_footer_ref(
         node: &mut RenderNode,
         outer_ref: &crate::renderer::render_tree::HeaderFooterImageRef,
         section_index: usize,
     ) {
+        node.header_footer_source = Some((section_index, outer_ref.clone()));
+        // CaptionOwner currently describes body controls, not an HF subList.
+        // Do not publish an internal key (or a fabricated body address) as owner.
+        if let RenderNodeType::TextLine(line) = &mut node.node_type {
+            line.caption_owner = None;
+        }
         if let RenderNodeType::Image(img) = &mut node.node_type {
             // TAC 경로 인코딩 회복: para_index 가 MAX 근처면 usize::MAX - i 로 저장된 것.
             if let Some(pi) = img.para_index {
@@ -12997,6 +13003,12 @@ impl LayoutEngine {
                                 &mut self.auto_counter.borrow_mut(),
                                 bin_data_content,
                                 Some(cell_ctx),
+                                CaptionOwner::new(
+                                    Some(page_content.section_index),
+                                    Some(para_index),
+                                    Some(control_index),
+                                    CaptionControlKind::Image,
+                                ),
                             );
                             // [Task #864 Stage F] caption 이 차지한 영역까지 result_y 진행.
                             // 미진행 시 다음 paragraph 가 caption 위에 그려져 겹침

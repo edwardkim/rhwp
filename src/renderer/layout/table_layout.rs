@@ -3446,6 +3446,12 @@ impl LayoutEngine {
                     &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx,
+                    CaptionOwner::new(
+                        Some(section_index),
+                        table_meta.map(|(pi, _)| pi),
+                        table_meta.map(|(_, ci)| ci),
+                        CaptionControlKind::Table,
+                    ),
                 );
             }
         }
@@ -6352,6 +6358,12 @@ impl LayoutEngine {
                                     &mut self.auto_counter.borrow_mut(),
                                     bin_data_content,
                                     cell_context.clone(),
+                                    CaptionOwner::new(
+                                        Some(section_index),
+                                        cell_context.as_ref().map(|c| c.parent_para_index),
+                                        Some(ctrl_idx),
+                                        CaptionControlKind::Image,
+                                    ),
                                 );
                             }
                             if matches!(pic.common.text_wrap, TextWrap::TopAndBottom) {

@@ -27,7 +27,9 @@ rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator�
 
 소스, 테스트, CI workflow, golden/baseline, 기존 샘플 변경은 maintainer라도 일반 PR과 최신 CI를
 기본으로 한다. GitHub review, comment, push, ready 전환, merge, close는 각각 작업지시자의 명시 승인을
-받은 뒤에만 수행한다.
+받은 뒤에만 수행한다. PR 병합과 후속 처리가 승인되면 해당 작업 전용 local branch/worktree 및 원본 저장소의
+임시 원격 head branch 정리는 `post_merge.md` 7.7의 안전 조건을 확인한 뒤 별도 승인 질문 없이 수행한다.
+기본·보호 branch, 다른 작업의 branch 및 contributor fork는 자동 삭제 대상이 아니다.
 
 Rust source 또는 Rust test/baseline helper가 바뀐 PR은 `local_validation.md` 4.3의 Rust lint 묶음
 (format, native Clippy, WASM32 Clippy, workspace all-target Clippy)을 **PR 생성 전에** 통과해야 한다.
@@ -68,6 +70,14 @@ PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의
 Draft는 WIP 공유나 조기 검토가 필요하고 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만
 사용한다. 정확한 생성 순서와 승인 게이트는 [문서와 Git 워크플로우](codex/docs_and_git_workflow.md#internal-task-pr-approval)를
 따른다.
+
+### 1.3 문서 trailing commit을 위한 반복 동기화 금지
+
+다른 PR의 `devel` 병합이나 오늘할일 갱신만을 이유로 검토 중인 source branch에
+`upstream/devel`을 반복 merge/rebase하지 않는다. CI를 통과한 code head를 유지하고,
+최신 devel의 해당 오늘할일 파일만 읽어 기존 기록을 보존한 문서-only trailing commit을
+추가한다. 실제 충돌·branch protection의 필수 최신화·명시적인 코드 통합 지시는 별도로
+판단하며, 상세 순서는 [review-only의 base 전진 처리](pr_review/review_only_fast_pass.md#a0-검토-중-base-전진과-오늘할일-갱신)를 따른다.
 
 ## 2. 필수 라우팅
 

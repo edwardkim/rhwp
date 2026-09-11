@@ -162,6 +162,9 @@ pub struct RenderNode {
     /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
     #[serde(skip)]
     pub control_code: ControlCode,
+    /// Public source provenance, separate from header/footer layout cache keys.
+    #[serde(skip)]
+    pub header_footer_source: Option<(usize, HeaderFooterImageRef)>,
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize)]
@@ -183,6 +186,7 @@ impl RenderNode {
             visible: true,
             editor_only: false,
             control_code: ControlCode::Automatic,
+            header_footer_source: None,
         }
     }
 
@@ -251,10 +255,14 @@ impl RenderNode {
             RenderNodeType::Body { .. } => ("Body", String::new()),
             RenderNodeType::Column(c) => ("Column", format!(",\"col\":{}", c)),
             RenderNodeType::FootnoteArea => ("FootnoteArea", String::new()),
-            RenderNodeType::TextLine(tl) => (
-                "TextLine",
-                format!(",\"pi\":{}", tl.para_index.unwrap_or(0)),
-            ),
+            RenderNodeType::TextLine(tl) => {
+                let mut extra = format!(",\"pi\":{}", tl.para_index.unwrap_or(0));
+                if let Some(owner) = &tl.caption_owner {
+                    extra.push_str(",\"captionOwner\":");
+                    extra.push_str(&serde_json::to_string(owner).expect("integer caption address"));
+                }
+                ("TextLine", extra)
+            }
             RenderNodeType::TextRun(tr) => {
                 let mut extra = format!(
                     ",\"text\":{},\"pi\":{}",
@@ -782,9 +790,49 @@ impl PageBackgroundImage {
     }
 }
 
+/// Source control address for a caption, independent of its text and placement.
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CaptionOwner {
+    pub sec_idx: usize,
+    pub para_idx: usize,
+    pub control_idx: usize,
+    pub control_kind: CaptionControlKind,
+    pub caption_ordinal: usize,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum CaptionControlKind {
+    Table,
+    Image,
+    Shape,
+}
+
+impl CaptionOwner {
+    /// Missing provenance must not become a fabricated zero address.
+    pub fn new(
+        section_index: Option<usize>,
+        para_index: Option<usize>,
+        control_index: Option<usize>,
+        control_kind: CaptionControlKind,
+    ) -> Option<Self> {
+        Some(Self {
+            sec_idx: section_index?,
+            para_idx: para_index?,
+            control_idx: control_index?,
+            control_kind,
+            caption_ordinal: 0,
+        })
+    }
+}
+
 /// 텍스트 줄 노드
 #[derive(Debug, Clone, Serialize)]
 pub struct TextLineNode {
+    /// Optional source ownership; ordinary body lines keep their existing JSON.
+    #[serde(rename = "captionOwner", skip_serializing_if = "Option::is_none")]
+    pub caption_owner: Option<CaptionOwner>,
     /// 줄 높이 (px)
     pub line_height: f64,
     /// 베이스라인 위치 (줄 상단으로부터, px)
@@ -803,6 +851,7 @@ impl TextLineNode {
     /// 기본 생성 (문단 식별 정보 없음)
     pub fn new(line_height: f64, baseline: f64) -> Self {
         Self {
+            caption_owner: None,
             line_height,
             baseline,
             section_index: None,
@@ -826,6 +875,7 @@ impl TextLineNode {
             para_index: Some(para_index),
             line_index: None,
             vpos: None,
+            caption_owner: None,
         }
     }
 
@@ -845,6 +895,7 @@ impl TextLineNode {
             para_index: Some(para_index),
             line_index: Some(line_index),
             vpos: Some(vpos),
+            caption_owner: None,
         }
     }
 }
