@@ -99,4 +99,31 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   // restoreSectionRaw 는 passthrough 를 되살리지만 SetSectionPropsCommand.undo 단일
   // 경로로 고정돼 있어(restoreDeleteFragment 와 같은 취급) 제외한다. 히스토리 밖 직접 호출 금지.
   'captureSectionRaw', 'restoreSectionRaw', 'discardSectionRaw',
+  // [#7002] 스냅샷 API — 위 두 저널의 선례이면서 정작 분류가 빠져 있었다
+  // (이 파일의 restoreDeleteFragment 주석이 SnapshotCommand.undo 의 restoreSnapshot 을
+  // 근거로 인용한다). save·discard 는 저장소 적재·해제라 IR 비변경이고,
+  // restoreSnapshot 은 CommandHistory.undo 단일 경로로 고정돼 같은 취급이다.
+  'saveSnapshot', 'restoreSnapshot', 'discardSnapshot',
+  // [#7002] 그림 변환 저널 API — capture·discard 는 IR 비변경.
+  // swapPictureTransform 은 IR 을 바꾸지만 두 경로 다 히스토리 항목을 만들지 않는다:
+  // PictureTransformResizeCommand.execute/undo(Command 안) 와
+  // PictureResizeJournal.cancel(드래그 취소·실패의 원상 복귀 — 되돌릴 편집이 없다).
+  // 위 두 저널과 달리 '단일 경로 고정' 이 아니므로 근거를 따로 적는다.
+  'capturePictureTransform', 'swapPictureTransform', 'discardPictureTransform',
+  // [#7002] 지연 쪽나눔 진행 API — 조판은 파생 상태다. 문서 IR 을 바꾸지 않는다.
+  'beginDeferredPagination', 'stepDeferredPagination',
+  'flushDeferredPagination', 'cancelDeferredPagination',
+  // [#7002] 직렬화 산출 — 저장 어댑터는 `prepare_hwp_export_snapshot`(document.rs:1598)
+  // 이 뜬 **사본**에 적용되고 live 문서는 그대로다. 세 경로의 `&mut self` 는 실제로
+  // 필요 없는 것이며(좁히는 것은 별건), 지금도 문서를 바꾸지 않는다.
+  'exportHwp', 'exportHwpVerify', 'exportHwpWithPassword',
+  // [#7002 · #4180] 저장 직전 캐럿 스탬프. doc_properties.caret_* 와 DocInfo raw_stream 을
+  // surgical update 하므로 **저장 바이트를 바꾼다**. 그럼에도 제외인 이유는 편집이 아니라
+  // 저장 흐름(onBeforeExport)의 일부이기 때문이다 — 되돌릴 사용자 편집이 없다.
+  'setCaretPosition',
+  // [#7002] 내부 클립보드 적재 — 문서는 읽기만 하고 복사본을 코어 버퍼에 담는다.
+  'copySelection', 'copySelectionInCell', 'copySelectionInCellByPath',
+  'copySelectionInHeaderFooter', 'copyControl', 'copyTableCellsTransposed',
+  // [#7002] 조회 — 본문은 읽기뿐인데 `*_mut` 접근자를 거치느라 `&mut self` 가 됐다.
+  'getCellCharPropertiesAtByPath', 'getCharShapeRunsInCellByPath',
 ];

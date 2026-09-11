@@ -171,12 +171,15 @@ impl DocumentCore {
             )));
         }
 
-        // [start] 자리의 삭제 후 잔여(병합) 문단을 원본으로 교체 + 나머지 원본 재삽입
-        let mut restored: Vec<Paragraph> = Vec::with_capacity(frag.pre_para_count);
-        restored.extend_from_slice(&section.paragraphs[..frag.start_para]);
-        restored.extend(frag.captured_paras.iter().cloned());
-        restored.extend_from_slice(&section.paragraphs[frag.start_para + 1..]);
-        section.paragraphs = restored;
+        // [start] 자리의 삭제 후 잔여(병합) 문단을 캡처한 원본 범위로 통째 교체.
+        // 주변 문단을 깊은 복사하지 않고 캡처분만 clone 한다. 주소 안정성은 기대하지
+        // 않는다 — 여러 문단으로 교체하면 뒤 원소가 밀리고 용량이 모자라면 재할당된다.
+        // 포인터 키 캐시(composer.rs SingleLineOverflowCache)는 아래
+        // rebuild_derived_state -> invalidate_page_tree_cache -> clear_layout_caches 가 비운다.
+        section.paragraphs.splice(
+            frag.start_para..=frag.start_para,
+            frag.captured_paras.iter().cloned(),
+        );
 
         // 꼬리 줄 좌표 저널 복원 — recalculate_section_vpos 의 덮어쓰기를 되돌린다
         for (offset, segs) in frag.tail_line_segs.iter().enumerate() {
