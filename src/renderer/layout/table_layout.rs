@@ -4298,7 +4298,7 @@ impl LayoutEngine {
     /// #674 보정(fs×줄간격% 대체)이 저장 줄에도 적용되어 셀 행높이가 부풀었다
     /// (39607: 행별 +3.8~+76.8px, 표 합계 +335.5px → 다쪽 표 쪽수 밀림).
     /// 보정은 line_segs 부재 폴백(400HU 합성 줄, #671/#674 원 목적)에만 유지.
-    fn calc_para_lines_height(
+    pub(super) fn calc_para_lines_height(
         &self,
         lines: &[crate::renderer::composer::ComposedLine],
         para: &Paragraph,
@@ -14422,6 +14422,34 @@ impl LayoutEngine {
             }
         }
         ranges
+    }
+
+    /// Empty paragraphs own content atoms, not physical ComposedLines. Gap-only
+    /// units and nested/control units must not grant an empty paragraph owner.
+    pub(super) fn cell_cut_empty_paragraph_owners(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+    ) -> Vec<bool> {
+        let units = self.cell_units(cell, table, styles);
+        let mut owners = vec![false; cell.paragraphs.len()];
+        for unit in units.iter().take(end_unit).skip(start_unit) {
+            if unit.empty_spacer
+                && unit.vis_start == 0
+                && unit.vis_end == 1
+                && unit.nested_row.is_none()
+                && unit.nested_table_fragment.is_none()
+                && unit.non_inline_control_range.is_none()
+            {
+                if let Some(owner) = owners.get_mut(unit.para_idx) {
+                    *owner = true;
+                }
+            }
+        }
+        owners
     }
 
     pub(crate) fn cell_cut_contains_non_inline_control_units(

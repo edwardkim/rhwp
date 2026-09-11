@@ -576,7 +576,7 @@ fn paragraph_active_text_style(
 /// `compose_paragraph()` 는 렌더러 내부 안내용 400HU 줄을 남기지만, HWP5 원본의
 /// 빈 문단 높이는 그 값이 아니라 글자 모양과 ParaShape 줄간격에서 결정된다.
 /// HWP3 변환본만 기존 page-count 계약을 위해 작은 글꼴 cap을 유지한다.
-fn empty_no_lineseg_paragraph_metrics(
+pub(super) fn empty_no_lineseg_paragraph_metrics(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
@@ -6152,7 +6152,17 @@ impl LayoutEngine {
                         self.dpi,
                     )
                 })
-                .map(|(line_height, line_spacing, _)| (line_height, line_spacing))
+                .map(|(line_height, line_spacing, font_size)| {
+                    // #7032: cell measurement omits trailing spacing on its
+                    // last visible empty paragraph and uses the glyph em box.
+                    // Preserve body/HWP3 fallback contracts.
+                    if cell_ctx.is_some() && is_last_cell_para && !self.profile.get().hwp3_layout()
+                    {
+                        (font_size, 0.0)
+                    } else {
+                        (line_height, line_spacing)
+                    }
+                })
                 .unwrap_or((hwpunit_to_px(400, self.dpi), 0.0));
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
