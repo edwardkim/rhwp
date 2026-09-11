@@ -3658,7 +3658,12 @@ impl DocumentCore {
                                 si, pi, ci
                             )
                         }
-                        _ => String::new(),
+                        // A known section is still valid when a nested control
+                        // lacks the complete paragraph/control address (#5551).
+                        _ => table_node
+                            .section_index
+                            .map(|si| format!(",\"secIdx\":{si}"))
+                            .unwrap_or_default(),
                     };
 
                     // 셀 정보 수집
@@ -3695,7 +3700,10 @@ impl DocumentCore {
                                 si, pi, ci
                             )
                         }
-                        _ => String::new(),
+                        _ => eq_node
+                            .section_index
+                            .map(|si| format!(",\"secIdx\":{si}"))
+                            .unwrap_or_default(),
                     };
                     let cell_coords = match (eq_node.cell_index, eq_node.cell_para_index) {
                         (Some(ci), Some(cpi)) => {
@@ -3734,7 +3742,10 @@ impl DocumentCore {
                                 si, pi, ci
                             )
                         }
-                        _ => String::new(),
+                        _ => image_node
+                            .section_index
+                            .map(|si| format!(",\"secIdx\":{si}"))
+                            .unwrap_or_default(),
                     };
                     // Task #516 결함 3: hit-test 정합 (옵션 3-C) — wrap 모드 노출.
                     // BehindText 그림은 텍스트 영역 위에서는 hit-test 후순위 처리.
@@ -9076,6 +9087,42 @@ mod tests {
         let json = core
             .get_page_control_layout_native(0)
             .expect("control layout for page 0");
+
+        // #5551: a partial control address must not discard its known section.
+        // Exercise the production query with an incomplete cached render node;
+        // this is a serialization boundary input, not a Hancom fixture claim.
+        fn remove_image_control_index(
+            node: &mut crate::renderer::render_tree::RenderNode,
+        ) -> Option<usize> {
+            if let crate::renderer::render_tree::RenderNodeType::Image(image) = &mut node.node_type
+            {
+                if let Some(section) = image.section_index {
+                    image.control_index = None;
+                    return Some(section);
+                }
+            }
+            node.children
+                .iter_mut()
+                .find_map(remove_image_control_index)
+        }
+        let mut partial_tree = core.build_page_tree_cached(0).unwrap();
+        let expected_section = remove_image_control_index(&mut partial_tree.root)
+            .expect("fixture has an image with source section");
+        core.page_tree_cache.borrow_mut()[0] = Some(partial_tree);
+        let partial: serde_json::Value =
+            serde_json::from_str(&core.get_page_control_layout_native(0).unwrap()).unwrap();
+        assert!(
+            partial["controls"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|control| {
+                    control["type"] == "image"
+                        && control["secIdx"] == expected_section
+                        && control.get("controlIdx").is_none()
+                }),
+            "known section disappeared with a missing control index: {partial}"
+        );
 
         // 신규 필드가 노출됨
         assert!(json.contains("\"plane\":"), "plane 필드 누락: {json}");

@@ -12997,6 +12997,12 @@ impl LayoutEngine {
                                 &mut self.auto_counter.borrow_mut(),
                                 bin_data_content,
                                 Some(cell_ctx),
+                                CaptionOwner::new(
+                                    Some(page_content.section_index),
+                                    Some(para_index),
+                                    Some(control_index),
+                                    CaptionControlKind::Image,
+                                ),
                             );
                             // [Task #864 Stage F] caption 이 차지한 영역까지 result_y 진행.
                             // 미진행 시 다음 paragraph 가 caption 위에 그려져 겹침
