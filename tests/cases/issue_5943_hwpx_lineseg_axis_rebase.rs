@@ -219,10 +219,17 @@ fn a_plain_paragraph_axis_is_untouched() {
     );
 }
 
-/// HWPX 출처의 `textpos` 는 이미 HWPX 축이므로 건드리지 않는다.
+/// HWPX 출처에서는 `secd`·`cold` 몫을 **다시 빼지 않는다**.
 ///
-/// 같은 IR 을 출처만 HWPX 로 바꿔 낸다 — 재기준화가 무조건 걸리면 48 이 32 로 내려가
-/// HWPX 왕복이 고정점을 잃는다.
+/// 그 둘은 HWPX 축에 원래 없어서 HWPX 출처의 `textpos` 에는 이미 빠져 있다 — 또 빼면
+/// 왕복이 고정점을 잃는다(`aift.hwpx` 문단 0: `textpos 24 → 8`).
+///
+/// [#6871] 반면 `#6869` 가 접는 **중복 쪽번호**는 HWPX 축에 분명히 있던 자리라 출처와
+/// 무관하게 빠져야 한다. 이 픽스처는 `pgnp` 를 넷 두므로 셋이 접혀 48 − 24 = **24** 가
+/// 되고, `secd`·`cold` 몫 16 은 **빼지 않아** 8 이 되지 않는다. 두 성질을 함께 고정한다.
+///
+/// 근거(실측): `156730118`(s39 `02482`)은 원본 HWPX 를 한글이 1쪽으로 폐기하고, 컨트롤만
+/// 접고 축을 두어도 마찬가지인데, 접기 + 축 보정을 함께 하면 **2쪽으로 정상 개봉**한다.
 #[test]
 fn an_hwpx_source_keeps_its_own_axis() {
     let mut doc = section_first_paragraph_document();
@@ -230,7 +237,12 @@ fn an_hwpx_source_keeps_its_own_axis() {
 
     let positions = textpos_values(&section_xml(&doc));
     assert!(
-        positions.contains(&48),
-        "HWPX 출처의 textpos 를 또 내렸다 — 이미 HWPX 축인 값이라 왕복이 깨진다.          실측 textpos={positions:?}"
+        positions.contains(&24),
+        "접은 쪽번호 슬롯 셋(24)만 빠져야 한다. 실측 textpos={positions:?}"
+    );
+    assert!(
+        !positions.contains(&8),
+        "HWPX 출처인데 `secd`·`cold` 몫 16 까지 또 뺐다 — 이미 HWPX 축인 값이라 왕복이 \
+         깨진다. 실측 textpos={positions:?}"
     );
 }
