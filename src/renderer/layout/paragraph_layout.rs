@@ -6152,7 +6152,17 @@ impl LayoutEngine {
                         self.dpi,
                     )
                 })
-                .map(|(line_height, line_spacing, _)| (line_height, line_spacing))
+                .map(|(line_height, line_spacing, font_size)| {
+                    // #7032: cell measurement omits trailing spacing on its
+                    // last visible empty paragraph and uses the glyph em box.
+                    // Preserve body/HWP3 fallback contracts.
+                    if cell_ctx.is_some() && is_last_cell_para && !self.profile.get().hwp3_layout()
+                    {
+                        (font_size, 0.0)
+                    } else {
+                        (line_height, line_spacing)
+                    }
+                })
                 .unwrap_or((hwpunit_to_px(400, self.dpi), 0.0));
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(

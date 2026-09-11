@@ -1354,6 +1354,31 @@ impl LayoutEngine {
             };
             let line_ranges: Option<Vec<(usize, usize)>> = cut_units
                 .map(|(su, eu)| self.cell_line_ranges_from_cut(cell, table, styles, su, eu));
+            // #7032: composition intentionally emits zero lines for text="".
+            // Keep the existing empty-paragraph eligibility and unit ledger;
+            // neither the cut policy nor the global composer is changed here.
+            let empty_paragraphs: Vec<bool> = cell
+                .paragraphs
+                .iter()
+                .map(|para| {
+                    cell.text_direction == 0
+                        && !self.profile.get().hwp3_layout()
+                        && para.text.is_empty()
+                        && super::paragraph_layout::empty_no_lineseg_paragraph_metrics(
+                            para,
+                            styles,
+                            styles.para_styles.get(para.para_shape_id as usize),
+                            false,
+                            self.dpi,
+                        )
+                        .is_some()
+                })
+                .collect();
+            let empty_owners = cut_units
+                .map(|(su, eu)| self.cell_cut_empty_paragraph_owners(cell, table, styles, su, eu));
+            let owns_empty_paragraph = |pi: usize| {
+                empty_paragraphs[pi] && empty_owners.as_ref().is_none_or(|owners| owners[pi])
+            };
             // 셀 내 텍스트 높이 (분할 행이면 줄 범위 내만 계산)
             // spacing_before: 셀 첫 문단 제외, spacing_after: 셀 마지막 문단 제외
             let split_para_count = cell.paragraphs.len();
@@ -1372,6 +1397,21 @@ impl LayoutEngine {
                 {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let is_last_para = pi + 1 == split_para_count;
+                    if empty_paragraphs[pi] {
+                        if owns_empty_paragraph(pi) {
+                            total += self.calc_para_lines_height(
+                                &comp.lines,
+                                para,
+                                false,
+                                false,
+                                pi,
+                                split_para_count,
+                                para_style,
+                                styles,
+                            );
+                        }
+                        continue;
+                    }
                     // spacing_before: 셀 첫 문단(pi==0) 제외
                     if start == 0 && end > 0 && pi > 0 {
                         let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
@@ -1461,7 +1501,13 @@ impl LayoutEngine {
                         let total = composed_store
                             .eager_slice()
                             .get(i)
-                            .map(|c| c.lines.len())
+                            .map(|c| {
+                                if empty_paragraphs[i] {
+                                    1
+                                } else {
+                                    c.lines.len()
+                                }
+                            })
                             .unwrap_or(0);
                         s != 0 || e != total
                     })
@@ -1665,7 +1711,7 @@ impl LayoutEngine {
                                 .iter()
                                 .any(|control| matches!(control, Control::Table(_)))
                         });
-                    if s < e || selected_zero_width_table_fragment {
+                    if owns_empty_paragraph(i) || s < e || selected_zero_width_table_fragment {
                         last_idx = i;
                     }
                 }
@@ -1772,6 +1818,9 @@ impl LayoutEngine {
             };
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
+                if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
+                    continue;
+                }
                 if collapse_stored_wrap_spacers
                     && stored_nested_table_empty_wrap_spacer(cell, cp_idx)
                 {
@@ -1843,23 +1892,6 @@ impl LayoutEngine {
                         .chars()
                         .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n');
 
-                // #7032: an uncut cell owns its real empty paragraphs even when
-                // composition emits no lines. Reuse the paragraph fallback's
-                // eligibility/metrics; do not invent a line or discard its caret.
-                // Actual cut windows retain their existing unit ownership here.
-                let uncut_empty_paragraph = cut_units.is_none()
-                    && start_line == 0
-                    && end_line == 0
-                    && !self.profile.get().hwp3_layout()
-                    && super::paragraph_layout::empty_no_lineseg_paragraph_metrics(
-                        para,
-                        styles,
-                        styles.para_styles.get(para.para_shape_id as usize),
-                        false,
-                        self.dpi,
-                    )
-                    .is_some();
-
                 // [Task #993] 컷 범위 밖 문단은 이전/다음 페이지 소속 — 이 페이지에서
                 // 스킵한다. cut이 없는 빈 문단은 합성 줄 수로 비가시를 판정하지 않는다.
                 // content_y_accum 은 가시 콘텐츠만 추적하므로 스킵 시 전진하지 않는다.
@@ -1868,7 +1900,7 @@ impl LayoutEngine {
                     && nested_cursor_split.is_none()
                     && !visible_non_inline_controls
                     && !uncut_control_only_nested_table
-                    && !uncut_empty_paragraph
+                    && !owns_empty_paragraph(cp_idx)
                 {
                     continue;
                 }
