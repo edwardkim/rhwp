@@ -7797,15 +7797,19 @@ impl LayoutEngine {
                     if let Some(seg) = last_para.line_segs.last() {
                         let mut last_end = seg.vertical_pos.saturating_add(seg.line_height);
                         // 마지막 문단에 중첩 표가 있고 lh가 표 높이보다 작으면 보정
+                        // [#6697 후속] 마지막 문단의 문단 기준 어울림 표는 리드만큼 더
+                        // 내려가 그려진다 — `nested_bottom` 과 같은 조건으로 싣는다.
+                        let mut lead_px = 0.0;
                         for ctrl in &last_para.controls {
                             if let Control::Table(t) = ctrl {
                                 let table_h = t.common.height as i32;
                                 if table_h > seg.line_height {
                                     last_end += table_h - seg.line_height;
                                 }
+                                lead_px += para_relative_float_table_lead(t, self.dpi);
                             }
                         }
-                        hwpunit_to_px(last_end, self.dpi)
+                        hwpunit_to_px(last_end, self.dpi) + lead_px
                     } else {
                         0.0
                     }
@@ -8324,12 +8328,26 @@ impl LayoutEngine {
             .iter()
             .enumerate()
             .map(|(pidx, p)| {
+                // [#6697 후속] 문단 기준 어울림 중첩 표의 `vertOffset` 리드는 렌더
+                // (`nested_y`)와 흐름 계상(`cell_units_uncached`)이 이미 싣는데, 세로
+                // 정렬용 콘텐츠 높이가 그 몫을 모르면 표는 리드만큼 내려가고 콘텐츠
+                // 블록은 제자리라 `valign=Center` 칸의 아래 여백만 리드만큼 줄어든다
+                // (재현 문서 `valign=Center` 칸: 한/글 위/아래 여백 95/67px, rhwp
+                // 123.6/37.3px — 표 자체 위치는 한/글과 일치). 흐름 계상과 **같은
+                // 조건**(호스트가 칸의 마지막 문단)으로 싣는다 — 뒤 형제 문단이 있을 때
+                // 그 몫을 싣지 않는 계약(59043 `□ 편익`)은 그대로다.
+                let host_is_cell_last_para = pidx + 1 == paragraphs.len();
                 let nested_h: f64 = p
                     .controls
                     .iter()
                     .map(|ctrl| {
                         if let Control::Table(t) = ctrl {
                             self.calc_nested_table_height(t, styles)
+                                + if host_is_cell_last_para {
+                                    para_relative_float_table_lead(t, self.dpi)
+                                } else {
+                                    0.0
+                                }
                         } else {
                             0.0
                         }
