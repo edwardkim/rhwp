@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { codeOnly } from './support/source-guard.ts';
+import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
 
 // [Task #2328] 스냅샷 상한 정합 + 예외 안전 스택 이동 소스 가드.
 //
@@ -152,29 +152,26 @@ test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 여유를 뺀 값�
   // [Task #5769] after 지연 저장 이후 execute 의 순간 저장은 before 하나(+1)이고 undo 의
   // 순간 저장도 +1 이라 여유 2 는 그대로 충분하다 — 상수는 Rust MAX_SNAPSHOTS 와
   // 양방향 결합이므로 여유가 남는다고 좁히지 않는다.
-  assert.match(history, /^const WASM_MAX_SNAPSHOTS = 100;/m,
-    'WASM MAX_SNAPSHOTS(document.rs) 미러 상수가 있어야 함');
-  assert.match(history, /^const SNAPSHOT_ID_BUDGET = WASM_MAX_SNAPSHOTS - 2;/m,
-    '예산은 MAX - 2 (순간 +2 여유) 여야 함 — MAX 와 같으면 orphan 회귀');
-  // [#6332] 상수 결합의 studio 레인 절반 — 리터럴 pin 만으로는 결합 자체가 검증되지
-  // 않아, Rust store 상한이 studio 피크 동시 참조 수를 항상 덮는지 document.rs 를
-  // 직접 읽어 기계 검증한다. 피크는 예산(W-2) + 순간 저장 1 = W-1 이다 — #5769 이후
-  // before/after 저장은 서로 다른 시점이고 각 저장 사이에 예산 강제가 돈다(위 주석과
-  // 동일 사실). 가드는 미러 관습대로 동치 이상(MAX >= W, 여유 1)을 요구한다.
-  // rust 레인 절반(순 Rust 변경은 이 파일이 안 돎)은
-  // tests/cases/issue_6332_snapshot_budget_coupling.rs 가 담당한다.
-  // 선언 앵커는 줄 시작(^…/m) — 주석 속 인용의 첫-매치 오염을 막는다.
-  const documentRs = source('../src/document_core/commands/document.rs');
-  const rustMax = Number(/^\s*const MAX_SNAPSHOTS: usize = (\d+);/m.exec(documentRs)?.[1]);
-  const wasmMax = Number(/^const WASM_MAX_SNAPSHOTS = (\d+);/m.exec(history)?.[1]);
-  assert.ok(Number.isInteger(rustMax),
-    'document.rs 의 MAX_SNAPSHOTS 선언 줄을 찾지 못함 — 선언 형태가 바뀌었으면 이 가드를 갱신');
-  assert.ok(Number.isInteger(wasmMax), 'history.ts 의 WASM_MAX_SNAPSHOTS 선언 줄을 찾지 못함');
-  assert.ok(rustMax >= wasmMax,
-    `Rust MAX_SNAPSHOTS(${rustMax}) < studio WASM_MAX_SNAPSHOTS(${wasmMax}) — 피크 동시 참조(${wasmMax}-1)를 덮지 못해 참조 중 스냅샷이 무통보 축출된다 (#2328/#6332)`);
+  // [#7002 후속] 상한의 출처는 `DocumentCore::MAX_SNAPSHOTS` 하나이고 브리지의
+  // `snapshotCapacity()` 로 들어온다. 종전에는 studio 가 같은 숫자를 복제해 두고
+  // 두 레인에서 소스를 대조했는데(#6332), 사본이 없어졌으므로 대조할 것도 없다.
+  // 대신 **예산이 브리지에서 파생된다**는 사실 자체를 핀한다 — 누가 다시 리터럴로
+  // 되돌리면 여기서 깨진다.
+  const budgetFn = functionBodyFrom(history, 'function snapshotIdBudget');
+  assert.match(budgetFn, /wasm\.snapshotCapacity\(\)/,
+    '예산은 브리지의 snapshotCapacity() 에서 파생돼야 함 — 상수 복제 금지');
+  assert.match(budgetFn, /BUDGET_HEADROOM/,
+    '예산 = 상한 - 여유. 여유를 인라인 숫자로 흩뿌리지 않는다');
+  assert.match(history, /^const BUDGET_HEADROOM = 2;/m,
+    '순간 +2 여유 — 예산이 상한과 같으면 orphan 회귀(#2328)');
+  // 폴백은 조회 불가(문서 미로드·구형 WASM)일 때만 쓰인다. 값 자체는 계약이 아니지만
+  // 폴백이 사라지면 undefined 산술로 NaN 예산이 되므로 존재는 핀한다.
+  assert.match(history, /^const FALLBACK_MAX_SNAPSHOTS = 100;/m,
+    '조회 불가 시 폴백 상한이 있어야 함');
   // 예산 강제 헬퍼: 예산 초과 시 undo 스택 front 를 shift + discard.
   const block = methodBlock(history, 'enforceSnapshotBudget(wasm: WasmBridge): void {');
-  assert.match(block, /liveSnapshotIds\(\)\s*>\s*SNAPSHOT_ID_BUDGET/, '예산 초과 판정');
+  assert.match(block, /liveSnapshotIds\(\)\s*>\s*budget/, '예산 초과 판정');
+  assert.match(block, /snapshotIdBudget\(wasm\)/, '예산은 호출 시점에 브리지에서 받는다');
   assert.match(block, /this\.undoStack\.length\s*>\s*1/, 'front 축출은 최소 1개 보존(length>1) 가드');
   assert.match(block, /this\.undoStack\.shift\(\)/, 'front 축출(shift)');
   assert.match(block, /discard\?\.\(wasm\)/, '축출 시 스냅샷 discard');
