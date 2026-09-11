@@ -12847,6 +12847,94 @@ impl LayoutEngine {
             })
     }
 
+    /// 행의 셀별 "보이는 소스 셀인가" 표지 — 열 순서로 정렬한 셀 순서다.
+    ///
+    /// `row_has_single_visible_source_cell` 과 같은 가시성 정의를 쓰되 개수만 세지 않고
+    /// 어느 셀인지 남긴다. 두 열이 같은 물리 경계를 적어 둔 신·구조문대비표를 가르려면
+    /// 셀 단위 표지가 필요하다(`#6973`).
+    pub(crate) fn row_visible_source_cell_flags(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<bool> {
+        let mut cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells
+            .iter()
+            .map(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .any(|unit| !unit.empty_spacer && unit.vis_start < unit.vis_end)
+            })
+            .collect()
+    }
+
+    /// 행의 저장 `lineseg` 되감김을 **CellUnit 경계로 투영한** 셀별 목록.
+    ///
+    /// 되감김(양수 vpos → 0)은 한/글이 그 행 안에서 쪽을 끊은 자리다. 이 함수는 프로필·
+    /// 선언 높이 같은 **수용 조건을 보지 않고** 저장 데이터가 적어 둔 자리 자체를 돌려준다 —
+    /// 수용은 호출부가 판정한다(`#6973`).
+    ///
+    /// ⭐ **번호 축을 반드시 옮긴다.** 저장 `LineSeg` 번호와 컷 인덱스(`end_cut`)는 같은 축이
+    /// 아니다 — 같은 물리 줄의 좌우 분할 `LineSeg` 는 하나의 `CellUnit` 으로 합쳐질 수 있고,
+    /// 중첩 표는 한 문단이 여러 unit 으로 전개된다(PR #6996 검토 지적). 그래서 되감김이
+    /// 시작하는 `(문단, 줄)` 을 `cell_unit_ordinal_for` 로 unit 번호로 바꾸고, **그 unit 이
+    /// 실제로 그 줄에서 시작할 때만**(`vis_start == 줄`) 경계로 인정한다. 합쳐진 줄·중첩
+    /// atom 처럼 unit 이 되감김 줄 한가운데를 덮으면 경계를 만들지 않는다.
+    ///
+    /// 되감김이 여럿이면 **모두** 돌려준다 — 호출부가 현재 컷 이후의 경계를 고를 수 있어야
+    /// 반복되는 물리 쪽 경계도 보호된다(같은 검토 지적).
+    pub(crate) fn row_stored_rewind_unit_indices(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<Vec<usize>> {
+        let mut cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells
+            .iter()
+            .map(|cell| {
+                let units = self.cell_units(cell, table, styles);
+                let mut found: Vec<usize> = Vec::new();
+                for (para_idx, paragraph) in cell.paragraphs.iter().enumerate() {
+                    for (li, pair) in paragraph.line_segs.windows(2).enumerate() {
+                        if pair[0].vertical_pos <= 0 || pair[1].vertical_pos != 0 {
+                            continue;
+                        }
+                        let rewind_line = li + 1;
+                        let Some(unit_idx) =
+                            self.cell_unit_ordinal_for(cell, table, styles, para_idx, rewind_line)
+                        else {
+                            continue;
+                        };
+                        // 투영이 성립하는 경우만 — unit 이 그 줄에서 **시작**해야 컷 경계가 된다.
+                        let Some(unit) = units.get(unit_idx) else {
+                            continue;
+                        };
+                        if unit.para_idx != para_idx || unit.vis_start != rewind_line {
+                            continue;
+                        }
+                        if !found.contains(&unit_idx) {
+                            found.push(unit_idx);
+                        }
+                    }
+                }
+                found.sort_unstable();
+                found
+            })
+            .collect()
+    }
+
     /// Return whether a row records an in-paragraph return from a positive
     /// stored vertical position to the top of a new physical frame.  This is
     /// source pagination data, not a measured-height heuristic.

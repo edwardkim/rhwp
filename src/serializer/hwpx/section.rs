@@ -763,8 +763,13 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
-    let (runs_xml, position_axis_intact, serialized_axis_end, mut hwp5_only_slot_positions) =
-        render_runs(para, ctx);
+    let (
+        runs_xml,
+        position_axis_intact,
+        serialized_axis_end,
+        mut hwp5_only_slot_positions,
+        collapsed_slot_positions,
+    ) = render_runs(para, ctx);
 
     // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
     // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
@@ -801,12 +806,23 @@ pub(crate) fn render_paragraph_parts(
     // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
     // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
     // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
-    let hwp5_only_units = if ctx.line_segs_on_hwpx_axis {
+    if ctx.line_segs_on_hwpx_axis {
         hwp5_only_slot_positions.clear();
-        0
-    } else {
-        8 * hwp5_only_slot_positions.len() as u32
-    };
+    }
+    // [#6871] 우리가 **접은** 슬롯은 출처와 무관하게 축에서 뺀다.
+    //
+    // 위 게이트가 다루는 `secd`·`cold` 는 HWPX 축에 **원래 없던** 자리라, HWPX 출처면
+    // 이미 빠져 있어 다시 빼면 왕복이 깨진다. 반면 `#6869` 가 접는 중복 쪽번호는 원본
+    // HWPX 축에 **분명히 있던** 자리다 — 접고도 빼지 않으면 `textpos` 가 방출 축보다
+    // 길어져 한글이 파일을 열지 못한다.
+    //
+    // 실측(156730118, s39 `02482`): 원본은 한글이 1쪽으로 폐기하고 컨트롤만 접은 산출도
+    // 마찬가지인데, 접기 + 축 −16 을 함께 하면 **2쪽으로 정상 개봉**한다. `#6871` 의 네
+    // 문서가 모두 이 형상(한 문단에 쪽번호 3개)이다.
+    hwp5_only_slot_positions.extend(collapsed_slot_positions);
+    hwp5_only_slot_positions.sort_unstable();
+    hwp5_only_slot_positions.dedup();
+    let hwp5_only_units = 8 * hwp5_only_slot_positions.len() as u32;
     let serializable_line_segs = para.serializable_line_segs();
     let rebased_line_segs: Option<Vec<LineSeg>> =
         (!hwp5_only_slot_positions.is_empty() && !serializable_line_segs.is_empty()).then(|| {
@@ -1379,11 +1395,20 @@ fn render_control_slot_tracked(
     ctx: &mut SerializeContext,
     hwp5_pos: u32,
     hwp5_only_slot_positions: &mut Vec<u32>,
+    collapsed_slot_positions: &mut Vec<u32>,
 ) {
     let before = out.len();
+    // [#6871] 이 슬롯이 **우리가 접은 것**인지 미리 안다 — 두 번째 이후 쪽번호 위치.
+    let collapses_here =
+        matches!(control, Control::PageNumberPos(_)) && ctx.para_page_num_pos_emitted;
     render_control_slot(out, control, ctx);
     if out.len() == before {
-        hwp5_only_slot_positions.push(hwp5_pos);
+        if collapses_here {
+            // [#6871] **출처와 무관하게** 축에서 빼야 한다 — 아래 호출부 주석.
+            collapsed_slot_positions.push(hwp5_pos);
+        } else {
+            hwp5_only_slot_positions.push(hwp5_pos);
+        }
     }
 }
 
@@ -1438,7 +1463,22 @@ impl PositionedMarkpens<'_> {
     }
 }
 
-fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32, Vec<u32>) {
+fn render_runs(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
+    // [#6869/#6871] 표·머리말 등 자식 문단도 같은 context로 재귀 호출된다.
+    // 본체의 조기 반환을 포함해 문단 종료 뒤에는 부모의 방출 상태로 돌아가야 한다.
+    let parent_page_num_pos_emitted = std::mem::replace(&mut ctx.para_page_num_pos_emitted, false);
+    let result = render_runs_in_paragraph_scope(para, ctx);
+    ctx.para_page_num_pos_emitted = parent_page_num_pos_emitted;
+    result
+}
+
+fn render_runs_in_paragraph_scope(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -1460,7 +1500,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         && para.markpen_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
-        return (String::new(), true, 0, Vec::new());
+        return (String::new(), true, 0, Vec::new(), Vec::new());
     }
 
     let mut splitter = RunSplitter::new(para);
@@ -1605,6 +1645,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             slot_count == 0 || marker_count >= slot_count,
             0,
             Vec::new(),
+            Vec::new(),
         );
     }
 
@@ -1650,6 +1691,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             marker_count >= shortfall || text_unshifted_and_in_range,
             0,
             Vec::new(),
+            Vec::new(),
         );
     }
 
@@ -1675,6 +1717,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     // [#5943] XML 을 한 글자도 내지 않은 슬롯의 **HWP5 축** 위치. 저장 lineseg 의
     // `textpos` 를 HWPX 축으로 내릴 때 쓴다 — 아래 `render_control_slot_tracked` 주석.
     let mut hwp5_only_slot_positions: Vec<u32> = Vec::new();
+    // [#6871] 우리가 접은 슬롯(중복 쪽번호)의 위치 — 출처와 무관하게 축에서 뺀다.
+    let mut collapsed_slot_positions: Vec<u32> = Vec::new();
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
     // [Task #1556] 고아 fieldEnd 방출 추적.
     let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
@@ -1700,6 +1744,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
@@ -1812,6 +1857,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
@@ -1883,6 +1929,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1950,6 +1997,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -2061,6 +2109,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             ctx,
             expected_utf16_pos,
             &mut hwp5_only_slot_positions,
+            &mut collapsed_slot_positions,
         );
         let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
@@ -2101,6 +2150,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         axis_faithful,
         expected_utf16_pos,
         hwp5_only_slot_positions,
+        collapsed_slot_positions,
     )
 }
 
@@ -2394,7 +2444,15 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             out.push_str("</hp:ctrl>");
         }
         Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
-        Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::PageNumberPos(pn) => {
+            // [#6869] 같은 문단의 두 번째 이후 쪽번호 위치 컨트롤은 내지 않는다.
+            // XML 을 한 글자도 내지 않으므로 `render_control_slot_tracked` 가 이 슬롯을
+            // "HWP5 축에만 있는 슬롯" 으로 세고, `#5943` 의 `textpos` 보정이 그대로 걸린다.
+            if !ctx.para_page_num_pos_emitted {
+                ctx.para_page_num_pos_emitted = true;
+                out.push_str(&render_page_num(pn));
+            }
+        }
         Control::PageNumCtrl(pnc) => out.push_str(&format!(
             r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
             pnc.page_starts_on.as_hwpx()

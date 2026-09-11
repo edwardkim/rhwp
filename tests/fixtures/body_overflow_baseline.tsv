@@ -208,3 +208,7 @@ task3307/issue3307_outline_number.hwpx	2
 한글문서파일형식_5.0_revision1.3.hwp	8
 # New fixture: devel 37bd46a72f9fd9ffd709e35244df79c00e789780 measured count; no existing ceiling raised.
 issue6924/148751598-briefing.hwp	3
+# #6973 신규 공개 샘플: 이 PR 이 추가한 fixture 의 측정값이다. 수정 전에도 같은 1건이었고
+# (초과 108.9px) 수정 뒤 17.7px 로 줄었다 — 이 래칫은 px 이 아니라 노드 수를 세므로 개선이
+# 이 행에 나타나지 않는다. 남는 17.7px 은 #6923(예산 대 실측) 축이다. 기존 상한은 올리지 않았다.
+issue6973/83818-appraisal-rules-amendment.hwpx	1

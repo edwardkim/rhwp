@@ -385,6 +385,22 @@ fn has_visible_text(s: &str) -> bool {
     s.chars().any(|c| !c.is_whitespace())
 }
 
+/// Empty paragraph carriers reserve cursor/line height without painting content.
+/// Keep whitespace, display substitutions, shading, borders and object children checked.
+fn is_empty_text_carrier(node: &RenderNode) -> bool {
+    matches!(node.node_type, RenderNodeType::TextLine(_))
+        && !node.children.is_empty()
+        && node.children.iter().all(|child| {
+            matches!(&child.node_type, RenderNodeType::TextRun(run)
+                if run.text.is_empty()
+                    && run.display_or_text().is_empty()
+                    && run.border_fill_id == 0
+                    && crate::model::color::char_shade(run.style.shade_color).is_none()
+                    && run.style.tab_leaders.is_empty())
+                && child.children.is_empty()
+        })
+}
+
 /// `TextRun` bbox 를 **글자 상자**로 좁힌다.
 ///
 /// 노드 bbox 는 줄 상자(전진폭 × 줄높이)이지 글리프 잉크가 아니다. 줄높이는 줄 간격을
@@ -625,7 +641,9 @@ fn walk(
             next_off_canvas_suppress = true;
         }
         if !suppress && type_allowed(label, opts) {
-            check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
+            if !is_empty_text_carrier(node) {
+                check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
+            }
             if is_overlap_candidate(node) {
                 flow_out.push(FlowCandidate {
                     path: path.clone(),
