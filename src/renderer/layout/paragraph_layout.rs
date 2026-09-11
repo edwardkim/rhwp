@@ -2678,6 +2678,43 @@ impl LayoutEngine {
         let text_seg_index = (0..para.line_segs.len()).find(|idx| *idx != table_seg_index);
         let table_seg = para.line_segs.get(table_seg_index);
         let text_seg = text_seg_index.and_then(|idx| para.line_segs.get(idx));
+
+        // [#7018] 표가 **자기 저장 줄**을 갖는 형상인가 — 표 seg 의 `textpos` 가 본문 끝이면
+        // 한/글은 표에 줄 하나를 통째로 줬다는 뜻이고, 그 앞 텍스트는 표 줄이 아니라
+        // **자기 줄**에 앉는다. 이때 텍스트 런에 표 줄의 baseline 을 쓰면 글자가 그 차이만큼
+        // 아래로 내려가 표와 겹친다.
+        //
+        // 실측(2769535 2쪽 `  마. 행정박물류` + 자리차지 표):
+        //   seg[0] vpos=39764 lh=1200 bl=1020   ← 글자 줄  (baseline 13.6px)
+        //   seg[1] vpos=41924 lh=15792 bl=13423 ← 표 줄    (baseline 179.0px, textpos=11=본문 끝)
+        // 종전에는 글자 런이 179.0px 를 받아 baseline 이 605.8+179.0=784.8 에 찍혔다.
+        // 한/글 2020 오라클 잉크는 605.5..620.5 이고, seg[0] 로 계산한 619.4 와 맞는다.
+        //
+        // 표가 글자 사이에 진짜로 끼어드는 인라인 형상은 표 seg 의 `textpos` 가 본문 끝보다
+        // 작으므로 이 판정에 걸리지 않고 종전 동작을 그대로 유지한다.
+        let table_owns_its_line = text_seg.is_some() && {
+            // 표 컨트롤이 앉은 글자 위치와 표 seg 의 시작이 같으면, 그 저장 줄은 표에서
+            // 시작한다 = 표가 줄을 통째로 가졌다는 뜻이다. 표가 글자 사이에 진짜로 끼어드는
+            // 인라인 형상은 그 줄이 표보다 **앞**에서 시작하므로 여기 걸리지 않는다.
+            let ctrl_char_pos = inline_tables
+                .first()
+                .and_then(|(ci, _)| para.control_text_positions().get(*ci).copied());
+            match ctrl_char_pos {
+                Some(pos) => {
+                    let utf16_pos = u32::try_from(
+                        para.text
+                            .chars()
+                            .take(pos)
+                            .map(char::len_utf16)
+                            .sum::<usize>(),
+                    )
+                    .unwrap_or(u32::MAX);
+                    let seg_start = para.line_seg_text_start(table_seg_index);
+                    seg_start > 0 && seg_start >= utf16_pos
+                }
+                None => false,
+            }
+        };
         let line_height = if let Some(ls) = table_seg {
             hwpunit_to_px(ls.line_height, self.dpi)
         } else {
@@ -2807,7 +2844,7 @@ impl LayoutEngine {
                                 let run_ts =
                                     resolved_to_text_style(styles, current_cs_id, first_lang);
                                 let run_width = estimate_text_width(&run_text, &run_ts);
-                                let run_bbox_h = if wrapped_below_table {
+                                let run_bbox_h = if wrapped_below_table || table_owns_its_line {
                                     text_line_baseline
                                 } else {
                                     baseline_dist
@@ -2859,7 +2896,7 @@ impl LayoutEngine {
                                 ..Default::default()
                             };
                             let sup_w = estimate_text_width(&fn_text, &sup_ts);
-                            let run_bbox_h = if wrapped_below_table {
+                            let run_bbox_h = if wrapped_below_table || table_owns_its_line {
                                 text_line_baseline
                             } else {
                                 baseline_dist
@@ -2927,7 +2964,7 @@ impl LayoutEngine {
                         let cs_changed = cs_id != current_cs_id;
 
                         // 줄바꿈된 텍스트의 BoundingBox 높이: 표 줄 vs 텍스트 줄
-                        let run_bbox_h = if wrapped_below_table {
+                        let run_bbox_h = if wrapped_below_table || table_owns_its_line {
                             text_line_baseline
                         } else {
                             baseline_dist
