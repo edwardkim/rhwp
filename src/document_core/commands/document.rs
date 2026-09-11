@@ -1610,7 +1610,7 @@ impl DocumentCore {
     ///
     /// HWPX 원본의 단일 BOTH pageBorderFill은 HWP 저장에는 세 record로 materialize하고,
     /// live IR에는 반영하지 않는다.
-    pub fn export_hwp_with_adapter(&mut self) -> Result<Vec<u8>, HwpError> {
+    pub fn export_hwp_with_adapter(&self) -> Result<Vec<u8>, HwpError> {
         self.prepare_hwp_export_snapshot().serialize()
     }
 
@@ -1677,7 +1677,7 @@ impl DocumentCore {
     /// 일반 HWP 저장과 마찬가지로 HWPX 출처는 반드시 adapter를 먼저 통과한다. 암호화만
     /// 별도 serializer로 우회하면 차트·그림 HWPX IR이 HWP5 계약으로 정규화되지 않는다.
     pub fn export_hwp_with_adapter_with_password(
-        &mut self,
+        &self,
         password: &[u8],
     ) -> Result<Vec<u8>, HwpError> {
         self.prepare_hwp_export_snapshot()
@@ -1700,7 +1700,7 @@ impl DocumentCore {
     ///
     /// 1회 paginate + 1회 직렬화 + 1회 from_bytes (paginate 포함). 작은 문서 ~수 ms,
     /// 큰 문서 수백 ms 가능.
-    pub fn serialize_hwp_with_verify(&mut self) -> Result<HwpExportVerification, HwpError> {
+    pub fn serialize_hwp_with_verify(&self) -> Result<HwpExportVerification, HwpError> {
         let page_count_before = self.page_count();
         let bytes = self.export_hwp_with_adapter()?;
         let bytes_len = bytes.len();

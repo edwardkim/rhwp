@@ -6736,7 +6736,7 @@ impl HwpDocument {
     /// 자동 적용하여 한컴 호환성과 자기 재로드 페이지 보존을 보장한다 (#178).
     /// HWP 출처는 어댑터가 no-op 이므로 기존 동작과 동일.
     #[wasm_bindgen(js_name = exportHwp)]
-    pub fn export_hwp(&mut self) -> Result<Vec<u8>, JsValue> {
+    pub fn export_hwp(&self) -> Result<Vec<u8>, JsValue> {
         self.export_hwp_with_adapter_snapshot()
             .map_err(|e| e.into())
     }
@@ -6758,7 +6758,7 @@ impl HwpDocument {
     /// browser UI는 암호를 저장하지 않고 저장 시점에만 전달한다. HWPX 출처 문서는 일반
     /// HWP 저장과 동일하게 HWPX-to-HWP adapter를 먼저 적용한다.
     #[wasm_bindgen(js_name = exportHwpWithPassword)]
-    pub fn export_hwp_with_password_wasm(&mut self, password: &str) -> Result<Vec<u8>, JsValue> {
+    pub fn export_hwp_with_password_wasm(&self, password: &str) -> Result<Vec<u8>, JsValue> {
         self.export_hwp_with_adapter_with_password(password.as_bytes())
             .map_err(|e| e.into())
     }
@@ -6828,7 +6828,7 @@ impl HwpDocument {
     /// 본 함수는 검증 메타데이터만 반환하며 bytes 자체는 별도 호출 (`exportHwp`) 로 받아야 한다.
     /// 검증과 실제 사용을 분리하여 호출자가 결과에 따라 다른 동작을 취할 수 있도록 한다.
     #[wasm_bindgen(js_name = exportHwpVerify)]
-    pub fn export_hwp_verify(&mut self) -> Result<String, JsValue> {
+    pub fn export_hwp_verify(&self) -> Result<String, JsValue> {
         let v = self.serialize_hwp_with_verify().map_err(JsValue::from)?;
         Ok(format!(
             "{{\"bytesLen\":{},\"pageCountBefore\":{},\"pageCountAfter\":{},\"recovered\":{}}}",
