@@ -1467,8 +1467,18 @@ fn render_runs(
     para: &Paragraph,
     ctx: &mut SerializeContext,
 ) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
-    // [#6869] 쪽번호 위치 컨트롤은 **문단당 하나만** 낸다 — 상태를 문단마다 연다.
-    ctx.para_page_num_pos_emitted = false;
+    // [#6869/#6871] 표·머리말 등 자식 문단도 같은 context로 재귀 호출된다.
+    // 본체의 조기 반환을 포함해 문단 종료 뒤에는 부모의 방출 상태로 돌아가야 한다.
+    let parent_page_num_pos_emitted = std::mem::replace(&mut ctx.para_page_num_pos_emitted, false);
+    let result = render_runs_in_paragraph_scope(para, ctx);
+    ctx.para_page_num_pos_emitted = parent_page_num_pos_emitted;
+    result
+}
+
+fn render_runs_in_paragraph_scope(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
