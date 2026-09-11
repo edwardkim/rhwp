@@ -12,7 +12,7 @@ last_verified: 2026-09-11
 - 기준 commit: `376c6b605c6be3b735bf6b8b9464fcd16b833a10`
 - 1차 보정 기준 commit: `4198c6df4`
 - 작업 브랜치: `fix/5551-caption-owner-20260911`
-- **단계 판정: 추가 보정 후 집중 테스트·새 WASM의 실제 PageRenderTree 검증 통과. 전체 회귀는 사용자 지시에 따라 PR 직전에 한 번 수행한다.**
+- **단계 판정: 추가 보정 및 PR 준비용 로컬 검증 통과. 전체 회귀는 PR 준비 단계에서 한 번 실행했다. 원격 PR 생성·CI 검증은 미실행이다.**
 - 아래 1~6절은 1차 보정의 검증 기록이다. 추가 보정 이후의 통과 결과가 아니다.
 
 ## 1. 전체 회귀
@@ -240,10 +240,83 @@ SVG 해시 일치는 이번 메타데이터 보정으로 렌더 출력이 바뀌
 `stage1-browser-baseline.json`, `stage2-browser-results.json`, `stage2-browser.log`에 있다.
 이 로그·중간 JSON·임시 검증 스크립트는 커밋하지 않는다.
 
-### 미실행 및 다음 게이트
+### 집중 검증 시점의 미실행 및 다음 게이트
+
+다음은 12절 집중 검증 당시 상태다. 이후 PR 준비 단계의 실제 실행 결과는 13절에 기록한다.
 
 - **전체 회귀는 이번 Stage 2에서 실행하지 않았다. 사용자 지시에 따라 PR 직전에 한 번 수행한다.**
 - Native Skia 별도 feature 검증, Rust Clippy 전체 묶음, Studio 전체 브라우저 E2E는 이번 실행에 포함하지 않았다.
 - Studio 선택·연결선 방어 로직은 Node 집중 테스트로 검증했다. 실제 Chrome 검증은 새 WASM의
   PageRenderTree·컨트롤 주소·렌더 출력 범위이며 Studio UI의 클릭·삭제 E2E까지 수행한 것은 아니다.
 - 원격 push, PR 생성, merge, 이슈 close는 수행하지 않았다.
+
+## 13. 커밋 후 PR 준비 검증
+
+사용자 지시에 따라 Stage 2 코드·결과보고와 절차 보완을 먼저 `888725201`로 커밋한 뒤
+PR 준비 검증을 수행했다. 아래 결과는 이 코드 commit을 대상으로 하며 이후 소스 수정은 없다.
+이 절의 결과 기록은 문서 변경만 해당한다.
+
+### 적용 경로와 범위
+
+- base route: `collaborator_self_merge.md`.
+- modifiers: `intake_and_review.md`, `local_validation.md`, `visual_fixture_evidence.md`,
+  `rework_and_exceptions.md`의 1,000줄 초과 PR 경계.
+- 본인 PR 준비이므로 reviewer를 자동 지정하지 않는다.
+- 최신 `upstream/devel`을 fetch했고 기준 tip은 `d408532ce`였다.
+  `git merge-tree --write-tree HEAD upstream/devel`은 exit 0으로 텍스트 병합 충돌이 없었다.
+  작업 브랜치에 rebase/merge하지는 않았으므로 전체 회귀 대상은 `888725201`이며
+  최신 devel을 합친 가상 후보의 런타임 검증이라고 표현하지 않는다.
+
+### 실제 검증 결과
+
+| 항목 | 결과 |
+| --- | --- |
+| `cargo fmt --all -- --check` | 통과 |
+| native root Clippy (`-D warnings`) | 통과 |
+| WASM32 lib Clippy (`-D warnings`) | 통과 |
+| workspace build | 통과 |
+| workspace all-target Clippy (`-D warnings`) | 통과 |
+| 파생 suite 정합성 | 재준비 후 통과: 1,259 sources / 28 suites + 20 exceptions |
+| source-side test 계약 | 통과: 4,205 tests / 298 modules, 기준선 상향 없음 |
+| Native Skia lib | rhwp 3,930개 통과·13개 ignored, 함께 실행된 workspace lib 182개 통과 |
+| Native Skia placeholder | 2개 통과 |
+| Native Skia direct PDF | 4개 통과 |
+| default-feature 전체 회귀 | **9,479개 통과·46개 skip·실패 0**, 8 thread, 한 번 실행 |
+| Markdown 내부 링크 | CONTRIBUTING·Stage 1·Stage 2 세 문서 통과 |
+| whitespace | `git diff --check upstream/devel...HEAD` 통과 |
+
+전체 회귀 명령과 최종 요약:
+
+```sh
+CARGO_TARGET_DIR=target/review-5551-20260911 CARGO_BUILD_JOBS=8 \
+  cargo nextest run --locked --cargo-profile release-test --tests \
+  --test-threads 8 --no-fail-fast
+```
+
+```text
+Summary [365.225s] 9479 tests run: 9479 passed (2 slow), 46 skipped
+```
+
+365.225초는 테스트 실행 시간이며 빌드 시간을 포함하지 않는다. 마지막 대형 표 테스트까지
+완료하고 exit 0을 확인했다. skip·ignored는 통과 수에 합산하지 않았다.
+
+처음 suite 계약 검사에서 28개 generated harness drift가 보고됐다. 소스나 baseline을
+완화하지 않고 `node scripts/rust-test-suite-manifest.mjs --prepare`로 검증용 하네스를
+다시 준비한 뒤 suite 계약·포맷 검사를 통과했다. generated 파일은 커밋하지 않는다.
+
+새 WASM·Chrome의 PageRenderTree 검증, TypeScript·Studio 전체 테스트 결과는 12절을
+재사용한다. 그 검증 뒤 제품 코드 변경은 없었다. 새 WASM SHA-256은
+`96a7e033501d3765f6ea11626755d7ef1dd277da8940e7b53d9e2d912a2b3dd7`이다.
+
+### PR 준비 상태
+
+- 해결 대상은 #5551의 본문 캡션 소유자 계약과 함께 요청된 알려진 구역 주소 보존이다.
+- 머리말·꼬리말 subList 캡션 소유 구조 확장과 Studio 전체 클릭·삭제 브라우저 E2E는
+  이번 완료 범위로 주장하지 않는다. 지원하지 않는 소유 주소는 추정 없이 생략한다.
+- 사용자-visible 페이지 배치 변경을 주장하지 않으며 새 기준 PDF나 visual sweep을 추가하지 않았다.
+  42페이지 보정 전후 SVG 동일성과 실제 Canvas 렌더 실행을 메타데이터 보정의 무변경 근거로 사용했다.
+- PR 제목·본문 초안은 `/tmp/rhwp-5551-validation/pr-body.md`에 준비한다.
+  아직 없는 PR 번호로 `pr_N_review.md`나 오늘할일을 미리 만들지 않는다.
+- remote push와 PR 생성 뒤 채번된 번호로 self-review·오늘할일을 같은 PR의 trailing commit에
+  추가하고 최신 head CI를 확인해야 한다. 이번 요청에서는 원격 변경을 수행하지 않았다.
+- 검증 로그와 중간 산출물은 `/tmp/rhwp-5551-validation/pr-*.log`에만 보관하고 커밋에서 제외한다.
