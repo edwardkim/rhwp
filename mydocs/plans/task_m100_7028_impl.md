@@ -3,7 +3,7 @@
 - 이슈: https://github.com/edwardkim/rhwp/issues/7028
 - 근거: [수행계획](task_m100_7028.md), [Stage 1 조사](../working/task_m100_7028_stage1.md).
 - 소스 기준: `b59323de0448df0a42bcb9cdd12cb80d51fe83d2`.
-- 상태: **구현계획 승인 대기. 제품 코드 미변경.**
+- 상태: **2026-09-11 메인테이너 구현계획 승인 완료. Stage 2 진행.**
 
 ## 1. 구현할 규칙
 
