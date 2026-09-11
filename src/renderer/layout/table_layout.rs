@@ -6943,13 +6943,42 @@ impl LayoutEngine {
                                 };
                                 let om_top_hu = i64::from(nested_table.outer_margin_top);
                                 let om_bottom_hu = i64::from(nested_table.outer_margin_bottom);
+                                // [#7049] `lh = h + om` 인 표 전용 줄만이라는 위 계약대로
+                                // 양쪽을 본다 — `paragraph_layout` 의 `stored_lh_covers_om`
+                                // 과 같은 술어의 형제다. 한쪽만 고치면 `#2032`/`#2075` 의
+                                // "동일 로직" 함정을 그대로 밟는다.
+                                let band_hu = i64::from(nested_table.common.height)
+                                    + om_top_hu
+                                    + om_bottom_hu;
+                                // 그리고 그 줄이 **이 표 전용**이어야 한다 —
+                                // `paragraph_layout` 의 `line_tac_table_count` 와 같은 조건.
+                                // 이 경로에는 composer 결과가 없으므로 저장 사다리로 센다:
+                                // 컨트롤의 문자 위치를 `LineSeg.text_start` 구간에 넣어
+                                // 소속 줄을 구하고, **같은 줄**의 TAC 표만 센다. 문단 단위로
+                                // 세면 다른 줄의 표까지 끌어들여 이 줄의 사실을 왜곡한다.
+                                let ctrl_positions = para.control_text_positions();
+                                let stored_line_of = |ci: usize| {
+                                    let pos = ctrl_positions.get(ci).copied().unwrap_or(0);
+                                    para.line_segs
+                                        .iter()
+                                        .rposition(|seg| (seg.text_start as usize) <= pos)
+                                        .unwrap_or(0)
+                                };
+                                let own_line = stored_line_of(ctrl_idx);
+                                let line_tac_table_count = para
+                                    .controls
+                                    .iter()
+                                    .enumerate()
+                                    .filter(|(ci, c)| {
+                                        matches!(c, Control::Table(t) if t.common.treat_as_char)
+                                            && stored_line_of(*ci) == own_line
+                                    })
+                                    .count();
                                 let table_anchor_y = if nested_table.common.height < 0x8000_0000
                                     && om_top_hu + om_bottom_hu > 0
-                                    && i64::from(host_seg_lh)
-                                        >= i64::from(nested_table.common.height)
-                                            + om_top_hu
-                                            + om_bottom_hu
-                                            - 10
+                                    && line_tac_table_count <= 1
+                                    && (band_hu - 10..=band_hu + 10)
+                                        .contains(&i64::from(host_seg_lh))
                                 {
                                     table_anchor_y
                                         + hwpunit_to_px(
