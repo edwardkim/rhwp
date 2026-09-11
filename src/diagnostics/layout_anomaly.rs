@@ -411,14 +411,29 @@ fn is_empty_text_carrier(node: &RenderNode) -> bool {
 /// 렌더에는 겹친 글자가 하나도 없다. 예 — 줄 상자 높이 16.0px, 행 간격 11.73px,
 /// 보고된 세로 겹침 4.27px. 그 4.27 은 줄 간격이지 글자가 아니다.
 ///
-/// 보이는 세로 범위는 글리프의 em 상자이고 그 높이는 `font_size` 다. 줄 상자보다 크지
-/// 않으므로 중앙 기준으로 좁힌다 — baseline 위치를 가정하지 않으려는 선택이다
-/// (렌더 트리에 baseline 필드가 없다). 가로는 그대로 둔다: 전진폭은 글자가 실제로
-/// 차지하는 가로 범위와 사실상 같다.
+/// 보이는 세로 범위는 글리프의 em 상자이고 그 높이는 `font_size` 다. 가로는 그대로
+/// 둔다: 전진폭은 글자가 실제로 차지하는 가로 범위와 사실상 같다.
 ///
-/// 이것은 근사다. 정확히 하려면 폰트 메트릭의 ascent/descent 로 잉크 상자를 계산해야
-/// 한다. 다만 지금 근사는 "줄 간격을 글자 겹침으로 세지 않는다" 는 점에서 종전보다
-/// 엄밀하고, 방향이 한쪽(위양성 감소)이라 결함을 놓치는 쪽으로는 틀리지 않는다.
+/// [#7023] 그 em 상자를 **baseline 에 맞춰** 놓는다. 종전에는 줄 상자 **중앙**에
+/// 놓았고, 그 선택의 이유로 "렌더 트리에 baseline 필드가 없다" 를 적어 두었다.
+/// 그런데 `TextRunNode::baseline` 은 존재하고(`bbox.y` 로부터의 거리), SVG 는 바로
+/// 그 값으로 글자를 찍는다.
+///
+/// 중앙 가정은 방향이 한쪽이 아니다 — 줄 상자가 부풀수록 띠가 잉크에서 `(h − em)/2`
+/// 만큼 멀어져 **위음성을 만든다**. 2769535 2쪽 실측: 상자 `h=179.0` · `em=16` 인
+/// 줄에서 띠는 `y 687.3..703.3` 인데 실제 잉크는 `y 771.2..784.8` 이라 81.5px 어긋난다.
+///
+/// 그 어긋남이 실제 위음성이 되는 자리는 `1480000-201900042` 96쪽이다 — 줄 간격
+/// 10.7px 에 글꼴 16px 라 두 본문 줄의 em 상자가 3.3px 겹치는데, 위쪽 줄의 상자가
+/// em 보다 커서 중앙 기준 띠가 잉크를 벗어나 세 짝이 전부 침묵했다(문서 2 → 5건).
+///
+/// baseline 아래로 두는 몫은 `1 − 0.85` 다 — 글꼴 기준으로 baseline 을 복원하는
+/// `renderer::corrected_line_baseline_for_source` 가 쓰는 것과 같은 비율이고,
+/// 같은 문서들의 실측(정상 줄 `baseline = y + 0.85·h`, 오차 0.03px)과 맞는다.
+///
+/// 이것은 여전히 근사다. 정확히 하려면 폰트 메트릭의 ascent/descent 로 잉크 상자를
+/// 계산해야 한다. 다만 "줄 간격을 글자 겹침으로 세지 않는다"(원래 목적,
+/// `hwpx/hancom-hwp/hwpx-02.hwp` 2쪽 71건 위양성)는 그대로 유지된다.
 fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
     let RenderNodeType::TextRun(run) = &node.node_type else {
         return node.bbox;
@@ -428,9 +443,25 @@ fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
     if !em.is_finite() || em <= 0.0 || em >= node.bbox.height {
         return node.bbox;
     }
-    let inset = (node.bbox.height - em) / 2.0;
-    BoundingBox::new(node.bbox.x, node.bbox.y + inset, node.bbox.width, em)
+    // baseline 이 없거나(0.0 기본값) 상자 밖이면 **종전 중앙 기준**으로 떨어진다.
+    // 근거가 없을 때 좁히기를 아예 끄면 이 함수가 막으려던 줄 간격 오탐이 되살아난다
+    // (`hwpx-02.hwp` 2쪽 71건). 중앙은 틀린 자리지만 `h ≈ em` 인 흔한 줄에서는
+    // baseline 기준과 거의 같고, 어긋남이 커지는 구간은 `baseline` 이 있는 실제
+    // 렌더 트리가 덮는다.
+    let baseline = run.baseline;
+    let top = if baseline.is_finite() && baseline > 0.0 && baseline <= node.bbox.height {
+        node.bbox.y + baseline - em * GLYPH_BAND_ASCENT_RATIO
+    } else {
+        node.bbox.y + (node.bbox.height - em) / 2.0
+    };
+    BoundingBox::new(node.bbox.x, top, node.bbox.width, em)
 }
+
+/// em 상자에서 baseline 위쪽이 차지하는 몫.
+///
+/// `renderer::corrected_line_baseline_for_source` 가 글꼴 기준 baseline 을
+/// `max_fs * 0.85` 로 복원하는 것과 같은 비율이다.
+const GLYPH_BAND_ASCENT_RATIO: f64 = 0.85;
 
 /// text-overlap 후보 — 보이는 글자가 있는 `TextRun` 이고, 한컴 글자겹침
 /// 컨트롤이 아니며, 면적이 있는 bbox 를 가진다. 표·이미지·도형은 여기
