@@ -1,3 +1,4 @@
+import { isBodyControl } from './picture-hit-policy';
 import { WasmBridge } from '@/core/wasm-bridge';
 import { isCharFormatError, CharFormatRecoveryError } from '@/core/char-format-error';
 import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
@@ -1740,7 +1741,7 @@ export class InputHandler {
     sec: number, paragraphIndex: number,
   ): { sec: number; ppi: number; ci: number } | null {
     try {
-      const layout = this.wasm.getPageControlLayout(pageIdx);
+      const layout = { controls: this.wasm.getPageControlLayout(pageIdx).controls.filter(isBodyControl) };
       const isNearBorder = (x: number, y: number, w: number, h: number): boolean => {
         return isPointNearBoxBorder(pageX, pageY, { x, y, width: w, height: h });
       };

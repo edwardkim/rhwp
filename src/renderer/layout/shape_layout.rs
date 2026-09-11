@@ -1012,6 +1012,12 @@ impl LayoutEngine {
                 &mut self.auto_counter.borrow_mut(),
                 bin_data_content,
                 None,
+                CaptionOwner::new(
+                    Some(section_index),
+                    Some(para_index),
+                    Some(control_index),
+                    CaptionControlKind::Shape,
+                ),
             );
         }
     }

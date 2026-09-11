@@ -1,3 +1,4 @@
+import { isBodyControl } from './picture-hit-policy';
 /** input-handler table methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -588,7 +589,7 @@ export function finishImagePlacement(this: any, e: MouseEvent): void {
         paperOffsetXHu = 0;
         paperOffsetYHu = 0;
         try {
-          const layout = this.wasm.getPageControlLayout(pageIdx);
+          const layout = { controls: this.wasm.getPageControlLayout(pageIdx).controls.filter(isBodyControl) };
           const shape = layout.controls.find((ctrl: any) =>
             ctrl.type === 'shape' &&
             ctrl.secIdx === sec &&

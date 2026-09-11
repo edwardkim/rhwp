@@ -66,6 +66,10 @@ jobs:
           FILTERSET: ${{ inputs.filterset }}
           PARTITION: ${{ inputs.partition }}
           RHWP_SECURITY_SWEEP_SAMPLES_JSON: ${{ inputs.security_sweep_samples_json }}
+          DURATION_PULL_NUMBER: ${{ github.event.pull_request.number }}
+          DURATION_HEAD_REPOSITORY_ID: ${{ github.event.pull_request.head.repo.id }}
+          DURATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DURATION_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
           partition_args=()
@@ -114,14 +118,14 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-      # Same-repository PR artifact is only a short-lived candidate. It cannot
-      # update the policy until a trusted post-merge verifier accepts its exact
-      # workflow run, merge lineage, and artifact provenance.
-      - name: Upload same-repository PR B/C/D target durations
-        if: ${{ success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
+      # Upstream-run same-repository and fork PRs may publish untrusted metrics.
+      # This read-only job cannot update the policy. The trusted post-merge
+      # verifier binds the exact PR/run/attempt/tree and validates JSON before use.
+      - name: Upload upstream PR B/C/D target durations
+        if: ${{ success() && github.event_name == 'pull_request' && github.repository == 'edwardkim/rhwp' && github.event.pull_request.base.repo.id == github.repository_id && github.event.pull_request.base.ref == 'devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}
+          name: nextest-target-durations-${{ github.run_id }}-attempt-${{ github.run_attempt }}-${{ inputs.archive_label }}
           path: target-durations-${{ inputs.archive_label }}.json
           retention-days: 3
           if-no-files-found: error

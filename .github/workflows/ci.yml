@@ -1623,30 +1623,24 @@ jobs:
 
       - name: Download trusted PR Archive B duration measurement
         if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ needs.preflight.outputs.postmerge_source_run_id }}
-        run: >-
-          gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
-          --name "nextest-target-durations-${SOURCE_RUN_ID}-b" --dir duration-b
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: trusted-postmerge-durations-${{ github.run_id }}-${{ github.run_attempt }}-b
+          path: duration-b
 
       - name: Download trusted PR Archive C duration measurement
         if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ needs.preflight.outputs.postmerge_source_run_id }}
-        run: >-
-          gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
-          --name "nextest-target-durations-${SOURCE_RUN_ID}-c" --dir duration-c
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: trusted-postmerge-durations-${{ github.run_id }}-${{ github.run_attempt }}-c
+          path: duration-c
 
       - name: Download trusted PR Archive D duration measurement
         if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ needs.preflight.outputs.postmerge_source_run_id }}
-        run: >-
-          gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
-          --name "nextest-target-durations-${SOURCE_RUN_ID}-d" --dir duration-d
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: trusted-postmerge-durations-${{ github.run_id }}-${{ github.run_attempt }}-d
+          path: duration-d
 
       - name: Refresh duration policy data branch
         shell: bash

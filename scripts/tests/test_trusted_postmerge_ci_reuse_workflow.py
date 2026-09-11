@@ -118,7 +118,8 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("listJobsForWorkflowRun", workflow)
         self.assertIn("fullLaneRunIds", workflow)
         self.assertIn('"ci.yml", "codeql.yml"', workflow)
-        self.assertIn('`nextest-target-durations-${workflowRun.id}-${label}`', workflow)
+        self.assertIn('selectDurationArtifacts(', workflow)
+        self.assertIn('validateDurationReports(reports,', workflow)
         self.assertIn("never checks out or executes", workflow)
         self.assertIn("the merged PR head", workflow)
         self.assertIn("Capture PR merge-tree evidence", workflow)
@@ -156,6 +157,41 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("postmerge_source_run_id", ci)
         self.assertIn("Download trusted PR Archive B duration measurement", ci)
         self.assertIn("Download trusted PR Archive C duration measurement", ci)
+
+    def test_fork_upload_remains_read_only_and_attempt_bound(self) -> None:
+        runner = (REPO_ROOT / ".github/workflows/run-nextest-archives.yml").read_text(encoding="utf-8")
+        upload = runner.split("- name: Upload upstream PR B/C/D target durations", 1)[1].split("# Only successful devel", 1)[0]
+        self.assertIn("github.repository == 'edwardkim/rhwp'", upload)
+        self.assertIn("github.event.pull_request.base.repo.id == github.repository_id", upload)
+        self.assertIn("github.event.pull_request.base.ref == 'devel'", upload)
+        self.assertNotIn("head.repo.full_name == github.repository", upload)
+        self.assertIn("-attempt-${{ github.run_attempt }}-", upload)
+        self.assertIn("contents: read", runner)
+        self.assertNotIn("contents: write", runner)
+
+    def test_privileged_refresh_consumes_only_normalized_current_run_data(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        ci = CI_WORKFLOW.read_text(encoding="utf-8")
+        for label in ("b", "c", "d"):
+            name = f"trusted-postmerge-durations-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}-{label}"
+            self.assertIn(name, workflow)
+            self.assertIn(name, ci)
+        self.assertIn("decodeDurationArtifact(response.data, label)", workflow)
+        self.assertIn("scripts/trusted-postmerge-duration-evidence.mjs", workflow)
+        self.assertIn("validated-duration-publication-failed", workflow)
+        self.assertIn("steps.finalize.outputs.reuse", workflow)
+        block = ci.split("- name: Download trusted PR Archive B duration measurement", 1)[1].split("- name: Refresh duration policy data branch", 1)[0]
+        self.assertNotIn("gh run download", block)
+
+    def test_codeql_neutral_is_not_a_substitute_for_language_success(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        codeql = WORKFLOWS["codeql"].read_text(encoding="utf-8")
+        self.assertIn("new Set(['success', 'neutral'])", workflow)
+        self.assertIn("new Set(['success', 'neutral'])", codeql)
+        self.assertLess(workflow.index("if (!fullLaneWorkflowJobsAreGreen("), workflow.index("const allowedSecurityConclusions"))
+        self.assertIn("securityCheck.status !== \"completed\"", workflow)
+        self.assertIn("check.app?.slug === \"github-advanced-security\"", workflow)
+        self.assertIn("check.head_sha === workflowRun.head_sha", workflow)
 
     def test_direct_review_only_reuse_requires_the_exact_skipped_worker(self) -> None:
         workflow = REUSABLE.read_text(encoding="utf-8")
