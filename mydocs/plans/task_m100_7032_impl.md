@@ -4,7 +4,7 @@
 - 작성일: 2026-09-11 (KST)
 - 브랜치: `task_m100_7032`
 - 선행 조사: [Stage 1](../working/task_m100_7032_stage1.md), commit `1d70bbb18`
-- 상태: **Stage 2 R1 시각 판정 및 R2 완료. Stage 3 lint·Native Skia·Docker WASM PASS, 전체 회귀 9,489 PASS / 1 FAIL.** 실패는 구현 전과 같은 신규 HWPX 문단 ID 재부여이며, 실측 기준선 2행 등록 승인을 기다린다. [Stage 3 증적](../working/task_m100_7032_stage3.md)을 참고한다. 전체 작업 완료는 아니다.
+- 상태: **Stage 2 R1 시각 판정 및 R2 완료. Stage 3 lint·Native Skia·Docker WASM PASS.** 신규 HWPX의 기존 문단 ID 재부여 기준선 2행을 메인테이너 승인에 따라 등록하고 전체 회귀를 재검증 중이다. [Stage 3 증적](../working/task_m100_7032_stage3.md)을 참고한다. 전체 작업 완료는 아니다.
 
 ## 1. 확정한 수정 원리
 

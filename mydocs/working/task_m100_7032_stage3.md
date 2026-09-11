@@ -2,7 +2,7 @@
 
 - 선행: [Stage 2](task_m100_7032_stage2.md) R1 시각 판정 및 R2 focused 완료
 - 승인: 메인테이너의 “다음 절차 진행을 승인합니다.”
-- 상태: **Stage 3 검증·원인 대조 완료. 전체 회귀는 1 FAIL이며 IR 기준선 2행 등록 승인 대기. WASM 준비 완료.**
+- 상태: **신규 HWPX의 기존 문단 ID 재부여 특성 2행 등록 승인·반영 완료. 전체 회귀 재검증 중. WASM 준비 완료.**
 - 소스 기준: `532b74fc5` (Stage 2 구현), Stage 3 시작 문서 commit으로 review HEAD를 고정한다.
 - 검증 worktree: `/home/edward/mygithub/rhwp-review-7032`
 - 고정 Cargo target: `/home/edward/mygithub/rhwp-shared-review-target`
@@ -140,3 +140,15 @@ checkout의 `pkg/`에 복사했고, 실행 중인 Studio 서버(7700)는 재시�
 
 현재 전체 회귀를 PASS로 간주하지 않는다. clipping 외부 원본 부재도 별도 미검증으로 유지한다.
 원격 push·PR 생성·병합은 수행하지 않았다.
+
+## 신규 샘플 등록 승인 및 재검증
+
+메인테이너가 “새로 추가된 샘플이기 때문에 신규 등록해서 처리하세요”로 승인했다.
+위 대조에서 확인한 hwpx lane 2행(셀 문단 1,432 / 본문 문단 24)만
+`tests/fixtures/ir_field_sweep_baseline.tsv`에 사전순으로 등록했다.
+등록은 원래 정상인 HWPX 렌더링을 수정한 것이 아니다. 기존 저장기의 문단 ID 재부여를
+새 샘플의 검사 기준으로 기록한 것이다. 제품 코드·검사기·다른 샘플 기준값은 변경하지 않았다.
+
+등록 commit을 review HEAD로 고정하고 새 샘플 보안 입력을 유지하여 전체 nextest를 재실행한다.
+로그는 `output/7032/stage3/nextest-registered.log`다. 직전 lint·Native Skia·WASM 검증과
+제품/Rust test 소스가 동일하므로 그 결과는 유지하며, 재검증 결과는 완료 후 기록한다.
