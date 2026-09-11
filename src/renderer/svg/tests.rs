@@ -1168,6 +1168,17 @@ fn test_compute_image_crop_src_offset_top_left() {
     assert!((sy - 6.667).abs() < 0.01);
     assert!((sw - 40.0).abs() < 0.01);
     assert!((sh - 26.667).abs() < 0.01);
+
+    // #7015 실물 입력의 축을 바꿔, 가로만 자를 때도 확인된 세로 배율을 사용한다.
+    // 기준 크기의 한 축이 0이면 유효한 imgDim으로 취급하지 않고 같은 폴백을 탄다.
+    for reference in [None, Some((0, 88560)), Some((45453, 0))] {
+        let (x, y, width, height) =
+            compute_image_crop_src((20745, 0, 45453, 88560), reference, 945.0, 1181.0);
+        assert!((x - 276.64685).abs() < 0.001, "reference={reference:?}");
+        assert!(y.abs() < 0.001, "reference={reference:?}");
+        assert!((width - 329.49580).abs() < 0.001, "reference={reference:?}");
+        assert!((height - 1181.0).abs() < 0.001, "reference={reference:?}");
+    }
 }
 
 #[test]
