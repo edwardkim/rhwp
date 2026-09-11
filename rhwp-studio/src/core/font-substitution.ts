@@ -247,6 +247,44 @@ function formatCssFontFamilies(families: string[]): string {
     .join(', ');
 }
 
+/**
+ * CSS `font-family` 목록 문자열을 이름 배열로 가른다. (#6600)
+ *
+ * 엔진이 주는 체인은 인용 방식이 섞여 있다 — 앞쪽 설치 별칭은 `"..."`, 뒤쪽 generic
+ * 체인은 `'...'`, 맨 끝 `sans-serif` 는 무인용이다. 셋을 모두 받는다.
+ */
+export function parseCssFontFamilyList(familyPart: string): string[] {
+  const BACKSLASH = String.fromCharCode(92);
+  const out: string[] = [];
+  let current = '';
+  let quote: string | null = null;
+  let escaped = false;
+  const flush = () => {
+    const name = current.trim();
+    if (name) out.push(name);
+    current = '';
+  };
+  for (const ch of familyPart) {
+    if (escaped) { current += ch; escaped = false; continue; }
+    if (ch === BACKSLASH) { escaped = true; continue; }
+    if (quote) {
+      if (ch === quote) quote = null;
+      else current += ch;
+      continue;
+    }
+    if (ch === '"' || ch === "'") { quote = ch; continue; }
+    if (ch === ',') { flush(); continue; }
+    current += ch;
+  }
+  flush();
+  return out;
+}
+
+/** 이름 배열을 CSS `font-family` 목록 문자열로 되돌린다. generic 이름은 인용하지 않는다. */
+export function formatCssFontFamilyList(families: readonly string[]): string {
+  return formatCssFontFamilies([...families]);
+}
+
 function pushUniqueFontFamily(families: string[], fontName: string): void {
   const name = fontName.trim();
   if (!name) return;
