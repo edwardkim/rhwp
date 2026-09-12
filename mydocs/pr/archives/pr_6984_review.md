@@ -59,8 +59,13 @@
   `target/pr-review`에서 Cargo 명령을 순차 실행했다. nextest test threads는 8개다.
 - 신규 화면의 빨간 밑줄/초록색, 같은 문자열·위치·굵기를 직접 판독했다. 합성 입력의
   사용자 편집 계약 증거이며 한컴 전체 조판과의 일치나 전수 visual sweep 근거는 아니다.
-- 새 보조 엔트리를 가진 파일의 한컴 Viewer 추가 확인은 Mac 잠금으로 미실행했다.
-  이전 Viewer 증거를 이번 새 보조 엔트리의 호환성 확인으로 확대하지 않는다.
+- 잠금 해제 후 새 보조 엔트리를 가진 `unlink-before.hwp`/`.hwpx`와 해제 후
+  `unlink-restored.hwp`/`.hwpx`를 한컴 Viewer에서 각각 직접 열었다. 읽기·복구 오류 없이
+  적용본의 파란 밑줄, 해제본의 빨간 밑줄·초록색과 문자열을 확인했다.
+  HWP 링크 클릭은 Viewer 보안 확인창까지 확인했다. ‘한 번 허용’은 자동 승인 검토가
+  구체적 경고 수락 승인 부족으로 차단했으며, 브라우저 이동은 사용자 승인 대기다.
+  Viewer 읽기 확인을 외부 프로그램에서의 편집·재저장 시 보조 정보 보존 검증으로 확대하지 않는다.
+  [Viewer 화면·해시](../assets/issue6984/viewer-unlink-evidence.json)를 따른다.
 - 기존 PR 본문의 PDF·한컴 Viewer 등 스크린샷 6장을 보존한다. 최신 head CI와
   독립 최종 리뷰·별도 병합 승인은 원격 반영 후 남는 조건이다.
 
@@ -71,6 +76,13 @@
 ‘하이퍼링크 지우기’ 후 원래 빨간 밑줄·초록색 복원:
 
 ![원래 혼합 서식 복원](../assets/issue6984/unlink-restored.jpg)
+
+추가 한컴 Viewer 확인(같은 입력 파일):
+
+| 형식 | 링크 적용 상태 | Studio에서 해제 후 저장 |
+| --- | --- | --- |
+| HWP | ![HWP 링크](../assets/issue6984/viewer-unlink-before-hwp.jpg) | ![HWP 복원](../assets/issue6984/viewer-unlink-restored-hwp.jpg) |
+| HWPX | ![HWPX 링크](../assets/issue6984/viewer-unlink-before-hwpx.jpg) | ![HWPX 복원](../assets/issue6984/viewer-unlink-restored-hwpx.jpg) |
 
 재현: [적용 HWP](../assets/issue6984/unlink-before.hwp),
 [적용 HWPX](../assets/issue6984/unlink-before.hwpx),

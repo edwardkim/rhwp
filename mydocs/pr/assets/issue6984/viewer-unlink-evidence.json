@@ -1,0 +1,30 @@
+{
+  "date": "2026-09-13",
+  "source_commit": "4a66e22d9fad86879f554983917f5db697c69168",
+  "verified_test_candidate": "560a4a1dbf38c33ccccef33ae7577fd6013a65fa",
+  "viewer": "com.haansoft.HancomOfficeViewer.Mac",
+  "result": "All four committed HWP/HWPX files opened without parse/repair errors. Linked text blue and underlined; Studio-unlinked text red with underline + green without underline. Text and appearance visually inspected.",
+  "external_link_execution": "HWP click reached Viewer security prompt; one-time permission action blocked by automatic approval review pending explicit user consent. Browser destination not verified.",
+  "not_verified": [
+    "Viewer cannot verify edit/re-save preservation of rhwp private metadata.",
+    "Hancom original-format editing behavior not verified by this read-only Viewer check."
+  ],
+  "artifacts": [
+    {
+      "file": "viewer-unlink-before-hwp.jpg",
+      "sha256": "42eecdbd184d877daad8f211383e0eea5ea38368a9e88d1331d1b641bbe24a0f"
+    },
+    {
+      "file": "viewer-unlink-before-hwpx.jpg",
+      "sha256": "eb7d7bb2064437a4424d4eb65878e8ad3fe65b3af00a4c75240b7d1d3d7732fd"
+    },
+    {
+      "file": "viewer-unlink-restored-hwp.jpg",
+      "sha256": "422c4fdda8f59b5fa1a3313823349e1e69eabe739d9350432600d942709883ac"
+    },
+    {
+      "file": "viewer-unlink-restored-hwpx.jpg",
+      "sha256": "923c903a9505a7c66b4d258e55bb3f30ef5a535a6f208466d740b45113cbc03c"
+    }
+  ]
+}
