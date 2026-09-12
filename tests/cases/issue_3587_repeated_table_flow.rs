@@ -13,12 +13,22 @@ fn load(name: &str) -> DocumentCore {
     DocumentCore::from_bytes(&std::fs::read(&path).expect("required real fixture")).unwrap()
 }
 
-fn collect_tables(node: &RenderNode, in_column: bool, out: &mut Vec<(usize, usize)>) {
+type PlacedTable = ((usize, usize), [f64; 4]);
+
+fn collect_tables(node: &RenderNode, in_column: bool, out: &mut Vec<PlacedTable>) {
     if in_column {
         if let RenderNodeType::Table(t) = &node.node_type {
             if let (Some(pi), Some(ci)) = (t.para_index, t.control_index) {
                 if pi >= 12 {
-                    out.push((pi, ci));
+                    out.push((
+                        (pi, ci),
+                        [
+                            node.bbox.x,
+                            node.bbox.y,
+                            node.bbox.x + node.bbox.width,
+                            node.bbox.y + node.bbox.height,
+                        ],
+                    ));
                 }
             }
             return; // 셀 내부의 표는 본문 형제 표 순서에 섞지 않는다.
@@ -33,11 +43,24 @@ fn collect_tables(node: &RenderNode, in_column: bool, out: &mut Vec<(usize, usiz
 fn assert_owner_order(doc: &DocumentCore, blocks: usize) {
     let mut order = Vec::new();
     for page in 0..doc.page_count() {
+        let mut placed = Vec::new();
         collect_tables(
             &doc.build_page_render_tree(page).unwrap().root,
             false,
-            &mut order,
+            &mut placed,
         );
+        for (i, (a, ab)) in placed.iter().enumerate() {
+            for (b, bb) in placed.iter().skip(i + 1) {
+                let dx = ab[2].min(bb[2]) - ab[0].max(bb[0]);
+                let dy = ab[3].min(bb[3]) - ab[1].max(bb[1]);
+                assert!(
+                    dx <= 1.0 || dy <= 1.0,
+                    "쪽 {}의 표 {a:?}/{b:?} 겹침 {dx:.1}×{dy:.1}px",
+                    page + 1
+                );
+            }
+        }
+        order.extend(placed.iter().map(|t| t.0));
     }
     for pi in 12..12 + blocks {
         for ci in 0..3 {
