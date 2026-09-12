@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-09-12
 ---
 
 # 로컬 사전 검증
@@ -304,6 +304,10 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
 | Rust test/baseline helper | 모든 Rust lint 묶음, 관련 focused test, snapshot 결정성, 최신 PR head CI |
 | 기존 golden/baseline/fixture data만 변경 | 관련 focused test, snapshot 결정성, 최신 PR head CI. Rust helper도 함께 바꾸면 바로 위 행의 lint 묶음을 추가 |
+
+렌더링 baseline·golden·래칫 허용치 변경은 위 테스트 통과만으로 수용하지 않는다.
+[조판 규칙과 기준값 변경 증거](visual_fixture_evidence.md#조판-규칙과-기준값-변경-증거)를 확인하고,
+역할에 관계없이 [공통 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)에 근거와 판정을 남긴다.
 
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와

@@ -10,6 +10,7 @@
 | `AGENTS.md` | 조판 수정 공통 원칙을 구현 근거, 공통 결과, 증거·기준값, 완료 보고로 구체화하고 review 절차 연결 |
 | `CLAUDE.md` | `@AGENTS.md` 유지, 중복 렌더링 지침을 정본 포인터로 정리하고 일반 파서·저장·검증 규칙 보존 |
 | `mydocs/manual/pr_review_workflow.md` | 공통 계약에서 접수 단계의 원칙 준수 검토를 필수로 연결 |
+| `mydocs/manual/pr_review/README.md` | 모든 기본 경로에 공통 준수 검토가 적용됨을 선택표 진입점에 명시 |
 | `mydocs/manual/pr_review/intake_and_review.md` | 모든 정식 review의 적용 여부 판정, 적용 대상의 원칙별 코드·증거 표와 최종 판정 연결 |
 | `mydocs/manual/pr_review/visual_fixture_evidence.md` | 줄 구성 사례의 합성/한컴 증거 구분, baseline·golden·래칫 변경의 독립 근거와 시각 판정 |
 | `mydocs/manual/pr_review/local_validation.md` | baseline 검증 경로에서 증거·허용치 심사 연결; 기존 명령·검증 게이트 유지 |
