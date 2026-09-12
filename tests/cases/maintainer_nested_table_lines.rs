@@ -29,6 +29,7 @@ fn nested(height: u32) -> Control {
     Control::Table(Box::new(table))
 }
 fn height(mut para: Paragraph) -> f64 {
+    let native_stored = para.hwpx_axis_shift == 0;
     let width = para
         .line_segs
         .first()
@@ -45,10 +46,10 @@ fn height(mut para: Paragraph) -> f64 {
     };
     let mut table = Table {
         row_count: 1,
-        col_count: 1,
+        col_count: 2,
         ..Default::default()
     };
-    table.common.width = width;
+    table.common.width = width * 2;
     table.common.height = 1;
     table.common.treat_as_char = false;
     table.common.text_wrap = TextWrap::TopAndBottom;
@@ -61,6 +62,15 @@ fn height(mut para: Paragraph) -> f64 {
         paragraphs: vec![para],
         ..Default::default()
     }];
+    // Use a real two-cell host, so the unrelated 1x1 wrapper shortcut is not selected.
+    table.cells.push(Cell {
+        col: 1,
+        row_span: 1,
+        col_span: 1,
+        width,
+        height: 1,
+        ..Default::default()
+    });
     table.rebuild_grid();
     let section = Section {
         paragraphs: vec![Paragraph {
@@ -72,6 +82,7 @@ fn height(mut para: Paragraph) -> f64 {
     let styles = resolve_styles(&Document::default().doc_info, 96.0);
     let composed = compose_section(&section);
     HeightMeasurer::new(96.0)
+        .with_native_hwp5(native_stored)
         .measure_section(&section.paragraphs, &composed, &styles, Some(300.0))
         .tables[0]
         .total_height
@@ -134,6 +145,10 @@ fn text_free_controls_keep_distinct_raw_slots() {
     p.char_offsets.clear();
     p.char_count = 17;
     p.line_segs[1].text_start = 8;
+    for seg in &mut p.line_segs {
+        seg.line_height = 750;
+        seg.baseline_distance = 600;
+    }
     assert!(
         height(p) >= 140.0,
         "raw slots 0 and 8 belong to separate stored rows"
