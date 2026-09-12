@@ -1,7 +1,7 @@
 # #3587 Stage 2 — 기본 구현 재개, A1 표 생성 신원
 
 - 날짜: 2026-09-12
-- 상태: A1·A2 구현 및 집중 검증 완료. A의 지원 경계·split 통합과 #3587 전체는 미완료.
+- 상태: A1·A2·A3 구현 및 집중 검증 완료. A4 저장 경계 및 #3587 전체는 미완료.
 - 승인: 기여자 템플릿이 없어도 작업 브랜치로 돌아가 기본 구현 진행.
 - 계획: [구현계획 A](../plans/task_m100_3587_impl.md)
 
@@ -117,3 +117,59 @@ Studio 7700 서버와 배포된 WASM은 변경하지 않는다. 기여자 실제
 
 다음 절편은 A의 남은 split 할당 및 복제 지원 경계(선택 붙여넣기·Form/ClickHere)를 점검하는 순서다.
 그 결과로 A 완료 여부를 판정한 뒤 B의 경계 보존 블록 설계를 확정한다. 원격 게시·push·PR·이슈 종료는 하지 않았다.
+
+## 6. A3 — 표 분할과 선택 붙여넣기 통합
+
+### 구현 결과
+
+- 제품 변경 commit: `3ffed9f7e8`. 표 분할의 원본 ID/행 번호 해시를 없애고
+  A1의 문서 전체 미사용 ID 할당을 사용한다. 뒤 표의 common/raw만 같은 새 ID를 받는다.
+  앞 표 ID, 이동하는 셀·내부 문단·컨트롤 ID, zone 분할, 캡션 소유권, 사이 빈 문단은 유지한다.
+- 본문·셀·cellPath 선택 붙여넣기 모두 A2의 staged 두 단계 신원/참조 재매핑을 사용한다.
+  필드에만 적용되던 별도 max+1 재채번과 중복 순회 helper를 제거했다.
+  원본/clipboard를 수정하지 않고 생성되는 복제본에만 적용한다.
+- 셀 붙여넣기의 `raw_stream` 무효화는 목적지 검사·삽입 성공 뒤로 옮겼다.
+  잘못된 셀 주소 때문에 실패하는 요청이 원본 raw를 지우지 않도록 한다.
+- 커서 위치, 문단 split/merge, 빈 Enter, cascade, reflow 알고리즘은 변경하지 않았다.
+  선택 붙여넣기는 여전히 커서 편집 API이며 B의 완전한 문단 블록 삽입 API를 구현한 것이 아니다.
+- 전치 표 clipboard, HTML import, foreign paste는 이 통합 대상이 아니다.
+  path API 검사는 이번 신규 계약에서 깊이 1을 사용하며 임의 깊이 전체 검증으로 확대 해석하지 않는다.
+
+### 검증 기록
+
+- 테스트 원본: `tests/cases/issue_3587_split_and_selection_identity.rs`.
+- 제품 변경 전 최종 RED `83e7083717`: **6개 중 2 PASS / 4 FAIL**.
+  표 분할 해시가 이미 사용 중인 ID와 충돌하고, 선택 붙여넣기 3경로가 표 ID를 복사하는 것을 검출했다.
+  이동 문단 보존·잘못된 분할 거절은 기존에도 통과했다.
+- 최초 본문 선택 반례는 fixture를 직접 구성한 뒤 composed cache를 준비하지 않아 실패했다.
+  HWP 저장·재열기로 fixture를 초기화하고 실제 문단 split API를 사용하도록 정정했다.
+  split API의 선택 metadata 인자 누락도 테스트 코드에서 정정했다. 이 두 준비 오류는 제품 RED에 세지 않는다.
+- 제품 변경 후 `3ffed9f7e8`: 위 계약 **6 PASS**, A2 **8 PASS**, A1 **5 PASS**,
+  기존 ClickHere 편집/선택 붙여넣기 **13 PASS**, CLI 표 분할 **4 PASS**,
+  #852 Form 저장 **5 PASS**, 표 속성 **4 PASS**, 셀 경계 편집 **2 PASS**.
+  합계 **47 PASS / 0 FAIL**. 각 로그는 `output/3587/a3/<검사명>.log`.
+- 추가 테스트 commit `c82d6f73a0`: 선택 복제본의 HWP/HWPX 저장·재열기 ID 보존,
+  잘못된 목적지의 raw·문서·clipboard·event 불변을 보강했다. **7/7 PASS**.
+  기존 #2299 편집 vpos/리셋 보호 **8/8 PASS**. 제품 source는 `3ffed9f7e8`과 같다.
+  신규 6개 실행을 최종 7개로 대체해 중복 제외 시 이번 절편 집중 검증 **56 PASS / 0 FAIL**이다.
+  준비된 review worktree의 전체 fmt 및 manifest `--check`도 PASS.
+  최종 로그: `identity-final.log`, `issue_2299_edit_vpos_reset_preserve.log`,
+  `fmt-final.log`, `manifest-final.log` (모두 `output/3587/a3/`).
+- 새 suite/manifest는 기존 `rhwp-review-3587`에서만 준비했다. source PR에 파생물을 추가하지 않는다.
+  전체 회귀·PR 전 3종 Clippy·Docker WASM·한컴 시각 검증은 이번 절편에서 수행하지 않는다.
+
+### Form/ClickHere 원인 계보와 다음 경계
+
+정적 코드/이력 조사 결과, 복제본 IR의 ID를 분리해도 HWP 저장기에서 ID를 덮어쓰는 별도 문제가 있다.
+`serializer/control.rs`의 ClickHere 분기는 앞선 Form이 하나라도 있으면 동일 seed+Form 수로
+필드 ID를 생성한다. 필드 출력은 Form 수를 증가시키지 않으므로 여러 ClickHere가 같은 값을 받을 수 있다.
+Form 자체도 `common.attr == 0`일 때 seed+order가 명시적 common ID보다 우선한다.
+
+도입 commit은 `a6ff3d6c16` (#852, 2026-05-20)이다. 당시 form-01/02의 한컴 변환 정답지 및
+스크립트 호환을 확보하려고 적용했고, 해당 한컴 검증 기록이 남아 있다.
+이번 #852 기존 검사 5 PASS는 그 계약이 유지된다는 뜻이지, 복제 후 ID가 유지된다는 증거는 아니다.
+
+이번에 serializer를 임의 변경하지 않았다. [구현계획 A4 제안](../plans/task_m100_3587_impl.md)의
+기존 정답지 보존 + 명시적 신원 우선 + 미지정 신원 충돌 방지 검증을 다음 승인 대상으로 한다.
+Form 이름·스크립트까지 자동 재작성하는 확대 구현은 제안하지 않는다.
+따라서 A 전체 완료와 B 진입은 아직 선언하지 않는다. 원격 push/게시/PR도 수행하지 않았다.
