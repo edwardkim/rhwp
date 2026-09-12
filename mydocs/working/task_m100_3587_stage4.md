@@ -2,8 +2,8 @@
 
 - 일자: 2026-09-12
 - 승인: 메인테이너 「B 구현계획서를 승인합니다」.
-- 상태: **B1 자원 사전검사 절편 구현·집중 검증 완료. B1 전체와 B2/B3는 미완료.**
-- 제품/테스트 검증 SHA: `b1de53c326` (`task_m100_3587`).
+- 상태: **B1 자원·지원 종류·참조 경계 사전검사 절편 구현·집중 검증 완료. 공유 자원 검사를 포함한 B1 전체와 B2/B3는 미완료.**
+- 최신 제품/테스트 검증 SHA: `f56e831dcb` (`task_m100_3587`). 최초 자원 절편 SHA는 `b1de53c326`.
 - 근거: [승인된 B 계획](../plans/task_m100_3587_impl_b.md), [A 통합 결과](task_m100_3587_stage3.md).
 
 ## 1. 이번 절편
@@ -70,7 +70,7 @@ B 테스트 컴파일 2분 10초, 실행 0.011초. A 테스트 컴파일 9.83초
 한컴 시각 검증은 이번 B 코드에서 아직 실행하지 않았으며, 이전 A의 전체 통과로 갈음하지 않는다.
 원격 push 또는 PR 전에는 규정된 전체 lint 묶음을 수행해야 한다.
 
-## 4. 남은 승인 범위
+## 4. 자원 절편 직후 남았던 범위 (후속은 §5 이후)
 
 - B1: 종류/안전 raw 슬롯 지원표, 최초 문제의 typed path, 필드/연결선 양방향 경계 검사,
   중복 참조 검사, 공유 자원 존재 검사. 현재 budget 함수는 이것들의 대체물이 아니다.
@@ -88,6 +88,7 @@ B 테스트 컴파일 2분 10초, 실행 0.011초. A 테스트 컴파일 9.83초
 | --- | --- | --- |
 | 일반 문단 | 빈 문단·Page/Column break 유지. Section/MultiColumn 및 raw break bit 0/1 거부 | `parser/body_text.rs::parse_para_header` |
 | 문단 raw 헤더 | 없음 또는 10 bytes(ID 슬롯 6..10), 12 bytes 중 변경추적 값 0 허용. 기타 확장/변경추적 거부 | `serializer/body_text.rs`의 instanceId/변경추적 기록 |
+| 문단 range tag | 초기 strict profile은 tag kind/data의 확장 의미·참조 재매핑을 보증하지 않으므로 비어 있지 않으면 거부 | `model/paragraph.rs::RangeTag`, 기존 A remapper의 미해석 범위 |
 | 표·수식 common raw | 없음 또는 36/40 bytes, 이후 길이가 맞는 UTF-16 설명문까지 허용. 선택 prevent_page_break가 없고 빈 설명문 길이만 있는 38 bytes도 허용. common 미해석 tail 및 표 레코드 미해석 tail 거부 | `parser/control/shape.rs::parse_common_obj_attr`, `commands/object_ops/table.rs`의 기존 생성기, `clone_identity/remap.rs` |
 | 셀 LIST_HEADER raw | 없음, 폭+zero padding 13 bytes, 또는 고정 필드명 marker/UTF-16 이름/zero trailer의 완전한 형태 허용. 그 밖은 거부 | `serializer/control.rs::build_cell_list_extra` (model의 필드명 offset 주석보다 실제 writer/parser의 15/17 사용) |
 | 기본 도형/그룹/글상자 | 모델링된 소유 구조 순회. 미해석 connector/polygon tail, textbox LIST_HEADER tail은 초기 거부 | `model/shape.rs`, `identity/walk.rs` |
@@ -100,3 +101,71 @@ B 테스트 컴파일 2분 10초, 실행 0.011초. A 테스트 컴파일 9.83초
 읽기 전용 사전검사는 포맷 유효성 전체를 인증하지 않는다. 지원 경계 밖의 실제 샘플은 오류 경로와
 종류를 기록하고, 통과시키기 위해 payload를 지우지 않는다. 이 절편에서는 참조 폐쇄성까지 검증하며,
 공유 스타일/BinData의 존재 및 전체 저장 검증은 후속으로 남긴다.
+
+### 5.1 참조 판정 방식
+
+- 새 `validate_paragraph_block_native`는 성공 시 비용 정보를 반환하며 삽입하지 않는다.
+  실패는 `ParagraphBlockValidationError {code, path, detail}`이다. path는 요청 원형 시작을
+  기준으로 한 상대 소유 경로이며 section은 요청의 section_index다. 일반 DSEL 주소나 영구 ID가 아니다.
+- 필드의 고유 begin ID와 공유 fieldid는 별개다. 같은 이름과 공유 fieldid를 이유로 중복 오류를 내지 않는다.
+- 같은 문단의 FieldRange는 control index/문자 범위/내부 슬롯 범위를 검사한다. 다문단 종료 마커는
+  동일 소유 문단 목록의 뒤 문단에서 끝나야 한다. 셀/글상자/캡션 경계를 넘어 닫는 필드는 거부한다.
+- 원문 전체에서 해당 begin ID의 소유자와 종료 마커를 확인한다. 블록 안 end→밖 begin뿐 아니라
+  안 begin→밖 end, 누락/복수 end, 원문의 중복 begin도 거부한다.
+- 연결선은 A remapper와 같은 common ID/legacy alias/drawing ID 집합으로 대상을 찾는다.
+  같은 객체가 여러 alias를 갖는 것은 중복이 아니며 다른 객체가 같은 참조 번호를 가지면 모호하다.
+  안에서 밖을 참조하거나 밖 연결선이 안 객체를 참조하는 경계는 strict API에서 거부한다.
+- 원문은 기존 bounded owned walker로 검사한다. 원형 관련 ID만 원장에 보관하고, 소유자는
+  첫 소유자+중복 여부만 기록하여 원문의 중복 개수에 비례한 집합을 만들지 않는다.
+  소유 노드와 별도로 FieldRange/OrphanFieldEnd 레코드도 max_document_nodes로 제한한다.
+- 이번 단계는 비용용 원문 순회와 참조용 원문 순회가 각각 있다. B2의 ID 예약/검사 통합 시
+  재사용할 수 있으나 현재 단일 원문 순회라고 보고하지 않는다.
+
+### 5.2 첫 검증에서 발견한 누락
+
+`c32c8475d1`에서 신규 16건 중 15 PASS / 1 FAIL. 실패는 기존 `create_table_native`가 생성한
+표를 지원 검사에서 거부한 것이다. `commands/object_ops/table.rs`는 common fixed 36 bytes 뒤에
+빈 설명문의 길이 2 bytes를 넣은 38-byte raw를 생성한다. 파서도 선택 prevent_page_break를
+읽을 4 bytes가 없으면 빈 설명문을 읽는다. 최초 지원표에 이 선택 필드 조합이 누락되었다.
+
+원본 생성기·기대값을 변경하지 않고 이 레코드 형식을 지원표에 보완했다. 이와 함께 실제 writer에
+정의된 셀/이름 전용 CTRL_DATA 형식과 unknown tail의 경계 계약 2건을 추가했다.
+정정 소스는 `125272a5e6`이며 최종 재검증 결과를 아래에 기록한다.
+
+### 5.3 검증 실행 경로 정정과 최종 후보
+
+이후 제가 종전 suite 번호를 고정해 실행한 명령은 자동 재배정 결과와 달라 **0건 실행 / exit 4**로
+끝났다(`focused-final.log`). 이 실행은 통과 증거에 포함하지 않는다. 현재 manifest를 한 번 도출해
+`buildCaseIndex`에서 `issue_3587_` source 6개를 선택하고, 그 target들을 중복 제거해 nextest에
+전달하도록 실행 명령을 정정했다. 단일 source는 기존 `run-rust-test.mjs`로 같은 방식으로 실행할 수 있다.
+앞으로 이 타스크에서 generated suite 번호를 고정해 재사용하지 않는다.
+
+`125272a5e6`의 동적 선택 실행은 신규 18 + 이전 예산 10 + A 25 = **53 PASS / 0 FAIL**이며
+native Clippy도 PASS였다. 이후 초기 strict 범위가 문단 range tag의 미확인 확장까지 포함하도록
+보완하고 경계 테스트 1건을 추가했다. 최종 제품/테스트 후보는 `f56e831dcb`다.
+이 후보는 직전 53건 결과로 갈음하지 않고 동일 SHA에서 재검증한다.
+
+최종 `f56e831dcb`의 동일 SHA review worktree에서 재검증을 완료했다.
+
+| 검사 | 최종 결과 | 로그 (`output/3587/b1-references/`, Git 제외) |
+| --- | --- | --- |
+| 현재 manifest의 관련 source 6개를 선택한 nextest | **54 PASS / 0 FAIL**, 868 filtered/skipped, 실행 0.255초 | `focused-final2.log` |
+| native Clippy `--locked … -- -D warnings` | PASS, 28.32초 | `clippy-native-final2.log` |
+| fmt 적용 및 `--check` | PASS, 검증 후 tracked 변경 없음 | 로컬 실행 |
+| manifest `--prepare` / `--check` | PASS, review worktree에서만 파생물 준비 | `prepare-final2.log`, `manifest-final2.log` |
+
+54건은 신규 지원/참조 계약 19건 + 기존 예산 10건 + A 계약 25건이다. 전체 회귀 테스트 숫자가
+아니며, nextest 0.9.137과 권장 0.9.140의 버전 차이 경고는 남아 있다. 이번 후보의
+WASM/workspace Clippy·전체 nextest·Docker WASM·한컴 시각 검증은 수행하지 않았다.
+전체 B 완료 또는 PR 제출 가능 판정이 아닌 이번 읽기 전용 절편의 집중 검증 결과다.
+
+### 5.4 이 절편 뒤 남은 작업
+
+1. 공유 스타일/BinData 존재 검사와 실제 두 블록의 지원 경계 대조. 현재 API 설명처럼 지원/참조
+   검사 성공이 모든 자원·저장 호환성을 인증하지는 않는다.
+2. 사본 생성 1/10/100회 실측과 구조 예산 대조. 현재까지의 숫자는 집중 테스트 결과다.
+3. B2 실제 반복 삽입: 공유 ID allocator, 사본별 참조 map, 표 reflow 출처, 단일 commit 및 이벤트.
+4. B3 HWP/HWPX 저장/재열기와 사람에게 제공할 실제 결과물. C/D 및 PR 작업은 별도 승인 범위다.
+
+이 절편은 삽입/붙여넣기/조판 코드를 변경하지 않는다. source worktree의 기존 A 코드와 증적,
+별도 review worktree 및 고정 target cache를 보존한다.
