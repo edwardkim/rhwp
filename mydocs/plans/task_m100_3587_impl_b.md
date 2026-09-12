@@ -1,0 +1,157 @@
+# #3587 B 구현계획 — 완전한 문단 블록의 경계 보존 반복
+
+- 작성: 2026-09-12
+- 상태: **승인 요청. B 제품 구현 미착수.**
+- 상위 계약: [구현계획 §2·§5](task_m100_3587_impl.md)
+- 선행 결과: [A 구현](../working/task_m100_3587_stage2.md), [A 통합 검증](../working/task_m100_3587_stage3.md)
+- 조사 코드: `04fd9bcd57` (A 최종 제품·테스트와 동일)
+
+## 1. 이번 묶음의 결과물
+
+같은 구역의 완전한 문단 묶음을 지정한 경계에 0/1/N회 복제하는 **native core 연산**을 만든다.
+텍스트·표·글상자를 함께 복제하고, 원형과 앞뒤 기존 문단 및 빈 Enter를 보존한다.
+기존 clipboard와 커서 상태를 사용하지 않는다. 데이터 채우기·WASM/run/MCP 공개는 C,
+다른 문서의 스타일·자원 이식은 D다. 이번 B만으로 전체 자동화 완료를 선언하지 않는다.
+
+## 2. 기존 구현을 그대로 연결할 수 없는 이유
+
+1. `commands/clipboard.rs::paste_internal_native`는 목적 문단을 분할하고 복사본의 처음과 끝을
+   양옆 문단에 합친다. `paste_control_native`는 후속 빈 문단을 추가한다. 둘 다 기존 대화형
+   편집 계약이므로 바꾸지 않고, 블록 API는 완전한 문단 배열을 한 번 삽입한다.
+2. A의 `clone_identity/remap.rs::reidentify_clipboard`는 호출마다 문서 예약 집합을 새로 만든다.
+   원문에 아직 삽입하지 않은 N개 사본에 반복 호출하면 사본끼리 같은 ID를 받을 수 있다.
+   반대로 N개를 하나의 참조 map에 넣으면 원형의 같은 ID가 중복되어 참조가 모호해진다.
+   **할당기는 요청 전체가 공유하고, 내부 참조 map은 복제본마다 분리**해야 한다.
+3. `begin_batch_native`는 기존 이벤트를 지우며 페이지네이션만 지연한다. rollback이 아니다.
+   `save_snapshot_native`도 저장소 예산·ID를 소비하므로 내부 오류 복구용으로 호출하지 않는다.
+4. `Paragraph`는 text 외에도 field_ranges, orphan_field_ends, char_offsets, raw/provenance를 가진다.
+   text만 복제하거나 직렬화 JSON으로 왕복하면 `serde(skip)` 정보가 소실된다.
+5. 편집된 표의 reflow 출처는 `RenderNormalizationState::text_reflowed_tables`의 Box 신원에 있다.
+   원본 문단 이동은 Box를 보존하지만 사본에는 명시적 출처 승계가 필요하다.
+   현재 `inherit_text_reflowed_table_controls`는 적용 뒤 오류를 반환할 수 있고 snapshot 경로 수집도
+   본문 직접 표만 순회한다. 이를 그대로 호출해 원자성·중첩 승계를 완료했다고 하지 않는다.
+
+## 3. 입력·결과 계약
+
+제안 API: `repeat_paragraph_block_native(request) -> Result<RepeatParagraphBlockResult, HwpError>`.
+JSON 문자열 대신 Rust 요청/결과 타입을 사용하고 C 어댑터에서 같은 타입을 직렬화한다.
+
+- 요청: `section_index`, `source_start`, `source_end`, `insert_before`, `count`, `limits`.
+- 원형 `[source_start, source_end)`는 비어 있지 않은 완전한 문단 범위다.
+- 목적지는 **호출 전 좌표**로 `0..=section.paragraphs.len()`이다. len은 구역 끝이다.
+- `source_start < insert_before < source_end`는 거부한다. start/end 경계는 허용한다.
+- `count=0`은 주소·옵션의 형식/범위 검사 후 성공하는 no-op이다. 복제·ID 검사·캐시 무효화·
+  이벤트 추가·clipboard 변경을 하지 않는다. 원형 내용의 지원 여부는 실제 복제를 요청할 때 검사한다.
+- 먼저 원형을 고정한 후 N개를 생성한다. 삽입으로 이동한 문단에서 다음 원형을 다시 읽지 않는다.
+- 결과: 생성 총 범위 `[insert_before, insert_before + count * block_len)`, 사본별 범위,
+  원형의 이동 후 범위, 원형 상대 경로 → 사본 경로 대응. 경로는 이 연산 직후의 주소이며 영구 ID가 아니다.
+- 상대 경로는 `paragraph/control/cell/textbox/caption/group-child` 등의 **타입 있는 단계 배열**로
+  나타낸다. 셀 내부와 도형 자식 번호를 같은 정수 하나로 섞지 않는다. 이 타입은 복제 소유 트리를
+  표현하며 기존 DSEL/cellPath 지원 범위를 자동 확장하지 않는다. C가 지원 가능한 주소로 변환한다.
+- BEFORE/원형/AFTER와 기존 빈 문단의 텍스트·서식 참조·컨트롤 순서·명시적 개행은 보존한다.
+  삽입에 따른 뒤 문단의 실제 y/페이지 이동은 정상 reflow다. 좌표 불변을 약속하지 않는다.
+
+## 4. 지원 경계 — 버리지 말고 사전 거부
+
+첫 버전의 중심은 텍스트, 표/중첩 표, 기본 도형·그룹·글상자, 그림, 수식, ClickHere다.
+같은 문서의 스타일·BinData를 공유하며 DocInfo를 새로 붙이지 않는다.
+
+- 소유 트리 안의 각 컨트롤 종류를 명시적으로 match한다. 새 enum이 추가되면 검토하도록
+  포괄 `_ => 성공`은 쓰지 않는다. 각 종류의 참조·저장 지원을 실제 검사한 후 허용한다.
+- SectionDef/ColumnDef, Header/Footer 및 구역/쪽 설정 컨트롤은 초기 거부한다.
+  문단 자체의 section/multicolumn 경계도 거부한다. 명시적 Page/Column break는 보존하여 검증한다.
+- Unknown, OLE/차트의 불명 참조, 변경추적/opaque 확장 등 재매핑 의미를 보증하지 못하는 구조는
+  최초 문제 경로·종류를 포함해 거부한다. 일반 raw 보존 바이트가 있다는 이유만으로 전부 거부하지는
+  않되, 안전하다고 확인한 슬롯과 해석하지 못한 payload의 구별을 구현 전에 표로 고정한다.
+- Form의 name/스크립트 연결과 메모/각주 등의 복제 의미는 A의 ID 성공만으로 지원 처리하지 않는다.
+  B 초기 지원 목록에 넣으려면 독립 저장·참조 검증을 추가한다. 그렇지 않으면 명시적 unsupported다.
+- ClickHere의 다문단 begin/end가 블록 안에서 완결되는지 검사한다. 경계 밖의 필드 begin/end와
+  연결선 참조는 초기 strict API에서 거부한다. A의 기존 clipboard는 외부 참조 보존 계약을 유지한다.
+  블록 안의 end만 확인하지 않고 원문에서 대응 begin/end를 함께 조사하여, end가 블록 밖에
+  남는 열린 begin도 거부한다.
+- 같은 이름의 ClickHere는 허용하되 결과 상대 경로로 구별한다. 이름을 임의로 바꾸지 않는다.
+- 원본의 기존 중복 ID는 수정하지 않는다. 사본 내 참조가 유일하게 해결되지 않으면 실패한다.
+
+이 지원표를 이유로 원형에서 컨트롤을 제거하거나 손상 입력을 정상 성공으로 숨기지 않는다.
+실물 `table-in-tbox.hwp`에서 거부되는 부분이 나오면 정확한 이유를 보고하고, 샘플 통과를 위해
+자동으로 지원 범위를 넓히지 않는다.
+
+## 5. 자원 예산과 비용 검증
+
+반복 한도는 한컴 포맷의 한도가 아니라 자동화 요청의 방어 정책이다. 기존 한도를 그대로 빌려
+메모리 안전이 입증됐다고 하지 않는다. 현재 코드의 참고값은 HWP5 표/셀 파서 깊이 64,
+그룹 깊이 256, HTML paste 2,000,000 bytes/깊이 16, BinData 한 개 256 MiB다.
+모두 목적이 달라 B의 전체 복제 예산을 대신하지 못한다.
+
+**제안 기본값 = 최초 hard ceiling** (호출자는 낮출 수만 있음):
+
+| 항목 | 한도 | 계산 대상 |
+| --- | ---: | --- |
+| 사본 수 | 1,000 | count |
+| 새 본문 문단 | 10,000 | block_len × count |
+| 새 소유 노드 | 100,000 | 문단·컨트롤·도형·셀·캡션 등의 노드 × count |
+| 복제 소유 트리 깊이 | 64 | 문단→컨트롤→셀/글상자/그룹 자식의 실제 경로 |
+| 복제 구조 예산 | 32 MiB | 문자열 UTF-8·raw bytes·배열 원소 저장폭·노드 고정폭의 보수적 합계 × count |
+| 결과 대응표 | 8 MiB | 경로 단계 수와 사본 수로 사전 산정 |
+| 원문 예약/참조 검사 | 1,000,000 노드 | 전체 문서 ID 수집도 무제한 순회하지 않음 |
+
+곱셈·덧셈은 checked arithmetic이다. `len/capacity`와 allocator overhead를 혼동하지 않도록
+구조 예산을 **RSS 상한이 아닌 논리적 요청 예산**이라고 명시한다. 모든 Vec/String/raw 배열과
+그룹/셀 내부를 포함하고, 재귀 `Clone` 전에 깊이를 검사한다. 공유 BinData는 로드/복제하지 않으며
+존재/참조만 확인한다. 반환 대응표도 사본 생성 전에 예산을 검사한다.
+
+기존 Stage 1 측정을 재사용하면 전체 문서의 문단 수는 표 샘플 139, 글상자 샘플 284다.
+이 수치는 원형 블록의 비용 또는 모든 소유 노드 수가 아니다. 현재 B 메모리/시간은 **미계측**이며
+위 숫자는 실측 성능 보장이 아닌 보수적 정책 제안이다.
+B1에서 두 실물 샘플의 실제 블록에 대해 1/10/100회 추정 크기와 실제 생성 시간·메모리를 함께
+기록한다. 기존 IR을 불필요하게 전수 재계측하지 않는다. 정상 블록을 한도가 막거나 비용 모델에
+누락이 있으면 한도/모델 수정 이유를 보고하며, 무제한 옵션을 추가하지 않는다.
+
+## 6. 파일별 설계와 적용 원자성
+
+| 파일 | 책임 |
+| --- | --- |
+| `src/document_core/commands/paragraph_block.rs` (신규) | 요청 검증·원형 snapshot·사본 생성·단일 삽입 orchestration |
+| `src/document_core/commands/paragraph_block/validation.rs` (필요 시) | 지원표·경계/참조 완결성·예산 검사. 조판 규칙 없음 |
+| `src/document_core/mod.rs` 및 `commands/mod.rs` | 요청·결과·typed path의 공개 연결과 모듈 등록 |
+| `src/document_core/commands/clone_identity/remap.rs` | 요청 공유 allocator를 받을 내부 진입점 분리. 기존 clipboard wrapper 계약 유지 |
+| `src/model/identity.rs`, `identity/walk.rs` | 예약/소유 순회 재사용. bounded read-only 순회와 경로 생성은 기존 방문순서와 일치 |
+| `src/document_core/queries/rendering.rs` | 필요한 경우만 복제 표 reflow 출처 승계 helper. 새 조판 정책은 추가하지 않음 |
+| `tests/cases/issue_3587_paragraph_block_*.rs` | 공개 core 실행으로 경계·반복·ID·오류/저장 계약 검사 |
+
+처리 순서:
+
+1. 읽기 전용 주소·예산·지원/참조 검사. 원형을 아직 clone하지 않는다.
+2. 원문 ID 예약을 한 번 만들고 원형 snapshot을 확보한다. 사본별 참조 map, 공통 allocator로
+   ID/내부 참조를 재작성한다. 생성 경로·표 reflow 출처·반환값도 staging에서 완성한다.
+3. 문단 삽입 공간 등 회복 가능한 할당 실패는 `try_reserve`로 문서 변경 전에 처리한다.
+   commit 뒤 실패할 수 있는 바인딩/검증/문자열 응답 조립을 남기지 않는다.
+4. 원래 문단과 Box를 그대로 유지한 채 한 번의 splice로 새 문단을 넣는다.
+   해당 구역 raw 캐시·주소 캐시를 무효화하고 기존 편집기 경로로 구역 재구성/페이지네이션한다.
+   외부 batch 상태는 바꾸지 않으며 batch 중에는 기존 규칙대로 pagination을 지연한다.
+5. 성공 이벤트는 한 번만 추가한다. clipboard/cascade·snapshot store를 건드리지 않는다.
+
+`Result::Err`를 반환하는 모든 경로는 commit 전이어야 한다. commit 뒤 fallible helper가 꼭 필요하면
+그 helper를 staging으로 옮기거나 전체 영향을 복구하는 설계를 먼저 보완한다.
+OOM abort·프로세스 종료까지 복구된다는 보장은 하지 않는다. 표의 저장 프레임/LineSeg는 임의로
+초기화하지 않으며 원형·사본의 출처 의미를 살려야 한다. 원문 전체를 clone해 cache/Box 신원을
+바꾸는 방식도 기본 적용 경로로 사용하지 않는다.
+
+## 7. 검증과 진행 묶음
+
+- **B1 계약·예산·실패 경계:** 주소/end/start/count0, checked overflow, 한도±1, 깊이,
+  불명 컨트롤, 필드 경계/참조 오류. 실패 전후 IR·raw·clipboard·이벤트·batch·snapshot 불변.
+- **B2 블록 생성 통합:** 1/2/N, 앞/뒤/끝 삽입, 반복 원형 고정, 연속 호출 무충돌,
+  빈 문단 0/1/2개 및 표 전후 Enter, 중첩 표·글상자·내부 그림·필드/연결선 대응.
+  다른 사본만 편집/삭제 후 원형과 나머지 사본 보존. 기존 A 집중 검증도 재실행한다.
+- **B3 저장·사용 결과:** 실제 HWP와 독립 HWPX가 있는 경우 각각 재사용하고 HWP/HWPX 저장·재열기.
+  합성 입력은 API 계약 증거로만 사용한다. 원형과 결과 문서를 메인테이너가 확인할 수 있게
+  output 아래 제공한다. 시각 배치와 ID·참조 계약은 별도로 판정한다.
+
+BEFORE/AFTER 구조 비교에서 위치 재계산·새 ID 슬롯만 명시적으로 분리한다. 넓은 필드 제외 목록으로
+빈 문단/제어문자/서식 변경을 숨기지 않는다. 0건 실행을 통과로 세지 않는다.
+source 수정 후에는 동일 SHA의 review worktree에서 검증하고, B 종료 시 범위별 통합 게이트를
+수행한다. C/D·원격 push·PR은 이 계획 승인에 포함하지 않는다.
+
+**승인 요청:** 위 B 계약·초기 지원 경계·예산 제안과 B1→B2→B3 순서. A 통합 검증의 미해결
+실패가 있다면 먼저 분류·해결하며, 이 문서 작성만으로 B 구현 진입을 승인받았다고 해석하지 않는다.
