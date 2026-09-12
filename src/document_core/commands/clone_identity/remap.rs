@@ -1,12 +1,12 @@
 //! Assign identities on a detached clipboard tree, then reconnect owned refs.
 use std::collections::BTreeMap;
 
-use super::{
+use crate::error::HwpError;
+use crate::model::identity::{
     paragraph_ids, subject_alias, used_instance_ids,
     walk::{walk, Node},
     Allocator,
 };
-use crate::error::HwpError;
 use crate::model::{
     control::Control,
     document::Document,

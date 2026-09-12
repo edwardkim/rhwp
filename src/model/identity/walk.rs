@@ -6,7 +6,7 @@ use crate::model::{
     shape::{Caption, ShapeObject},
 };
 
-pub(super) enum Node<'a> {
+pub(crate) enum Node<'a> {
     Paragraph(&'a mut Paragraph),
     Control(&'a mut Control),
     Shape(&'a mut ShapeObject),
@@ -22,7 +22,7 @@ fn caption<'a>(stack: &mut Vec<Node<'a>>, value: Option<&'a mut Caption>) {
     }
 }
 
-pub(super) fn walk(
+pub(crate) fn walk(
     paras: &mut [Paragraph],
     mut visit: impl FnMut(&mut Node<'_>) -> Result<(), HwpError>,
 ) -> Result<(), HwpError> {

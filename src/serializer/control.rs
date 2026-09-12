@@ -115,15 +115,9 @@ pub fn serialize_control(
             // 필드 컨트롤 직렬화 (표 154)
             // ctrl_id(4) + 속성(4) + 기타속성(1) + command_len(2) + command(가변) + id(4)
             //
-            // [Task #852 Stage 2.5] ClickHere 의 field_id 는 정답지 패턴 (form 마지막 +1) 우선.
-            // form_order_counter 가 form 다음 ClickHere 시점에 5 (form 0..4 다음) → instance_id =
-            // 0x7dcd59d6 + 5 = 0x7dcd59db (정답지와 일치).
-            let field_id =
-                if matches!(f.field_type, FieldType::ClickHere) && peek_form_order_counter() > 0 {
-                    0x7dcd_59d6u32.wrapping_add(peek_form_order_counter())
-                } else {
-                    f.field_id
-                };
+            // field_id is the explicit field-begin identity, not Form order.
+            // Replacing it at save time breaks cloned field references (#3587).
+            let field_id = f.field_id;
             let ctrl_id = if matches!(f.field_type, FieldType::Memo) {
                 tags::FIELD_UNKNOWN
             } else {
@@ -2966,11 +2960,6 @@ fn next_form_order() -> u32 {
     })
 }
 
-/// 현재 카운터 값 조회 (다음 Form 직렬화 시 사용될 order). Form 5 개 직렬화 직후 = 5.
-fn peek_form_order_counter() -> u32 {
-    FORM_ORDER_COUNTER.with(|c| c.get())
-}
-
 /// 양식 개체 직렬화 — CTRL_HEADER (46 bytes) + HWPTAG_FORM_OBJECT 자식
 ///
 /// 정답지 `samples/form-01.hwp` reverse engineering 결과를 기반으로 작성.
@@ -3011,7 +3000,7 @@ fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Recor
     } else {
         order as i32
     };
-    let instance_id = if from_hwp5_header {
+    let instance_id = if from_hwp5_header || c.instance_id != 0 {
         c.instance_id
     } else {
         0x7dcd_59d6u32.wrapping_add(order)
