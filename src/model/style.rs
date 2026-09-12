@@ -554,7 +554,7 @@ pub struct Style {
 }
 
 /// 테두리/배경 (HWPTAG_BORDER_FILL)
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct BorderFill {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -638,7 +638,7 @@ impl CenterLine {
 }
 
 /// 테두리선 정보
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct BorderLine {
     /// 선 종류
     pub line_type: BorderLineType,
@@ -692,7 +692,7 @@ pub enum BorderLineType {
 }
 
 /// 대각선 정보
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct DiagonalLine {
     /// 대각선 선 종류 코드. BorderLineType의 HWP/HWPX 코드와 같은 값을 사용한다.
     pub diagonal_type: u8,
@@ -703,7 +703,7 @@ pub struct DiagonalLine {
 }
 
 /// 채우기 정보
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct Fill {
     /// 채우기 종류
     pub fill_type: FillType,
@@ -728,7 +728,7 @@ pub enum FillType {
 }
 
 /// 단색 채우기
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct SolidFill {
     /// 배경색
     pub background_color: ColorRef,
@@ -739,7 +739,7 @@ pub struct SolidFill {
 }
 
 /// 그러데이션 채우기
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct GradientFill {
     /// 유형 (1: 줄무늬, 2: 원형, 3: 원뿔형, 4: 사각형)
     pub gradient_type: i16,
@@ -760,7 +760,7 @@ pub struct GradientFill {
 }
 
 /// 이미지 채우기
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct ImageFill {
     /// 채우기 유형
     pub fill_mode: ImageFillMode,
