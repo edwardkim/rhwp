@@ -22,6 +22,11 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 검토 head의 코드·증거와 대조한다. 비해당도 이유를 적는다. maintainer 일반, collaborator self,
 collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
+검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
+모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,
+실제로 실행한 파일과 commit의 내용이 같은지 확인한다. `korea_downloads`, 임시 output 또는 외부 첨부에만
+있는 파일로 검증을 완료 처리하지 않는다. 기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
+
 rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator가 매개하는 외부 PR을
 구분한다. 권한과 변경 위치가 다르므로 한 경로의 예외를 다른 경로에 일반화하지 않는다.
 
