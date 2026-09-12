@@ -12,6 +12,9 @@ mod note;
 mod picture;
 mod shape;
 mod table;
+mod table_creation;
+
+pub use table_creation::{TableColumnWidths, TableCreationOptions};
 
 /// 도형 최소 크기 (HWPUNIT).
 /// 0으로 내려가면 Rectangle은 x_coords=[0,0,0,0]이 되고,

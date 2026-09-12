@@ -2466,20 +2466,22 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
             let Some(key) = optional.get("when").and_then(|v| v.as_str()) else {
                 return tool_error("MCP optionalArgs.when 정의가 올바르지 않습니다".into());
             };
-            // 존재 여부만으로는 부족하다. `--dry-run` 같은 presence 플래그는 값이 없어
-            // "있으면 켜짐" 이므로, `dryRun: false` 를 존재로 세면 **끄라고 보낸 요청이
-            // 켜는 요청이 된다**. JSON 의 false/null 은 "그 축을 쓰지 않음" 으로 읽는다.
-            match args.get(key) {
-                None | Some(serde_json::Value::Null) | Some(serde_json::Value::Bool(false)) => {
-                    continue;
-                }
-                Some(_) => {}
-            }
             let Some(template) = optional.get("args").and_then(|v| v.as_array()) else {
                 return tool_error(format!(
                     "MCP optionalArgs.{key}.args 정의가 올바르지 않습니다"
                 ));
             };
+            // presence 플래그(dryRun:false)는 생략하지만, 값을 받는 옵션
+            // (--repeat-header {repeatHeader})의 false는 명시적 끄기이므로 전달한다.
+            let value_placeholder = format!("{{{key}}}");
+            let consumes_value = template
+                .iter()
+                .any(|v| v.as_str() == Some(&value_placeholder));
+            match args.get(key) {
+                None | Some(serde_json::Value::Null) => continue,
+                Some(serde_json::Value::Bool(false)) if !consumes_value => continue,
+                Some(_) => {}
+            }
             match substitute_args(template, args) {
                 // [#3835] `cli.args` 에 POSIX `--` 옵션 종결자가 있으면(예: hwp_search 의
                 // `{query}` 앞) 선택 인자를 그 **앞**에 끼워 넣는다. 뒤에 붙이면 이미
