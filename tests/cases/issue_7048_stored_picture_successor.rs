@@ -184,3 +184,41 @@ fn issue_7048_table_first_fragment_keeps_the_footer_clear() {
         assert_eq!(fragment_count, 2);
     }
 }
+
+#[test]
+fn issue_7048_stored_picture_does_not_rewind_across_measured_picture_flow() {
+    fn collect<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    for path in [REDUCED, FULL] {
+        let core = DocumentCore::from_bytes(&bytes(path)).unwrap();
+        let mut found = false;
+        for page in 0..core.page_count() {
+            let tree = core.build_page_render_tree(page).unwrap();
+            let mut nodes = Vec::new();
+            collect(&tree.root, &mut nodes);
+            let image = nodes.iter().find(|node| matches!(&node.node_type,
+                RenderNodeType::Image(image) if image.section_index == Some(4) && image.para_index == Some(209)));
+            let Some(image) = image else {
+                continue;
+            };
+            let heading = nodes.iter().find(|node| matches!(&node.node_type,
+                RenderNodeType::TextRun(run) if run.para_index == Some(208) && run.text.contains("미만인 제품")))
+                .expect("the preceding heading must remain on the picture page");
+            assert!(
+                image.bbox.y >= heading.bbox.y + heading.bbox.height,
+                "stored picture must not cover measured-flow heading: {:?} / {:?}",
+                image.bbox,
+                heading.bbox
+            );
+            found = true;
+        }
+        assert!(
+            found,
+            "full and reduced fixtures must preserve the figure section"
+        );
+    }
+}

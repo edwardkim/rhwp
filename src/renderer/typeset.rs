@@ -9272,6 +9272,20 @@ impl TypesetEngine {
                                 })
                             {
                                 let saved = paragraphs.get(para_idx + 1).and_then(|next| {
+                                    // An earlier picture with measured flow leaves
+                                    // the column's painted origin outside this
+                                    // stored reservation contract. Do not resume
+                                    // absolute saved coordinates midway through
+                                    // that chain and paint over preceding text.
+                                    let unresolved_picture_flow = st.current_items.iter().any(|item| {
+                                        let PageItem::Shape { para_index: owner, control_index } = item else { return false; };
+                                        if *owner == para_idx { return false; }
+                                        let Some(Control::Picture(picture)) = paragraphs.get(*owner).and_then(|p| p.controls.get(*control_index)) else { return false; };
+                                        !picture.common.treat_as_char
+                                            && picture.common.text_wrap == crate::model::shape::TextWrap::TopAndBottom
+                                            && !st.paragraph_float_placements.get(&(*owner, *control_index)).is_some_and(|placement| matches!(placement.flow, super::float_placement::ParagraphFloatFlow::StoredPicture { .. }))
+                                    });
+                                    if unresolved_picture_flow { return None; }
                                     let host_style = styles.para_styles.get(para.para_shape_id as usize)?;
                                     let next_style = styles.para_styles.get(next.para_shape_id as usize)?;
                                     // The first stored line may retain its paragraph's
