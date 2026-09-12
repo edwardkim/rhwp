@@ -832,10 +832,11 @@ impl Paragraph {
             (self.controls.len() as u32) * 8
         };
         let char_offset = effective_char_offset;
-        // 링크의 끝은 이어 쓰기 위치다. 내부 삽입만 링크 범위를 늘린다.
-        let at_hyperlink_end = self.field_ranges.iter().any(|range| {
+        // 링크의 시작은 링크 안, 끝은 이어 쓰기 위치다. 두 경계 모두 현재 위치의
+        // 서식 run을 유지한다(시작: 링크 서식, 끝: 복원된 일반 서식).
+        let at_hyperlink_boundary = self.field_ranges.iter().any(|range| {
             range.start_char_idx < range.end_char_idx
-                && range.end_char_idx == char_offset
+                && (range.start_char_idx == char_offset || range.end_char_idx == char_offset)
                 && matches!(self.controls.get(range.control_idx),
                     Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
         });
@@ -871,7 +872,8 @@ impl Paragraph {
         for cs in &mut self.char_shapes {
             if cs.start_pos > utf16_insert_pos {
                 cs.start_pos += utf16_delta;
-            } else if cs.start_pos == utf16_insert_pos && cs.start_pos > 0 && !at_hyperlink_end {
+            } else if cs.start_pos == utf16_insert_pos && cs.start_pos > 0 && !at_hyperlink_boundary
+            {
                 cs.start_pos += utf16_delta;
             }
         }

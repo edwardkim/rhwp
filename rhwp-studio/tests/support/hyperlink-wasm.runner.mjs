@@ -32,7 +32,7 @@ registerHooks({ resolve(specifier, context, next) {
 const { initSync, HwpDocument } = await import(pathToFileURL(join(repo, 'pkg/rhwp.js')));
 initSync({ module: readFileSync(join(repo, 'pkg/rhwp_bg.wasm')) });
 const { WasmBridge } = await import(pathToFileURL(join(src, 'core/wasm-bridge.ts')));
-const { SnapshotCommand } = await import(pathToFileURL(join(src, 'engine/command.ts')));
+const { SnapshotCommand, DeleteTextCommand, InsertTextCommand } = await import(pathToFileURL(join(src, 'engine/command.ts')));
 const { CommandHistory } = await import(pathToFileURL(join(src, 'engine/history.ts')));
 const { hyperlinkCommand } = await import(pathToFileURL(join(src, 'command/commands/hyperlink.ts')));
 const dialogs = await import(dialogModule);
@@ -208,6 +208,86 @@ assert.throws(() => boxDoc.insertHyperlinkEx(JSON.stringify({ target: boxTarget,
 assert.throws(() => boxDoc.updateHyperlinkEx(JSON.stringify({ target: boxTarget, fieldId: 0.5, uri })));
 assert.deepEqual(context(box, boxTarget), safe);
 results.push('WASM JSON 경계의 누락·음수·잘못된 경로·비정수 ID 거부');
+
+// PR #6984: undo는 보통 타이핑과 달리 삭제 전 링크 범위·서식을 복구해야 한다.
+function assertSavedContext(document, current, target) {
+  for (const method of ['exportHwp', 'exportHwpx']) {
+    const reopened = new HwpDocument(document[method]());
+    assert.deepEqual(JSON.parse(reopened.getHyperlinkContext(JSON.stringify(target))), current, method);
+    reopened.free();
+  }
+}
+function deleteAndRestore(document, currentSession, target, pos, offset, count) {
+  const before = context(currentSession, target);
+  const cmd = new DeleteTextCommand({ ...pos, charOffset: offset }, count, 'backward');
+  currentSession.history.execute(cmd, currentSession.wasm);
+  const deleted = context(currentSession, target);
+  assert.notDeepEqual(deleted, before);
+  for (let cycle = 0; cycle < 3; cycle++) {
+    currentSession.history.undo(currentSession.wasm);
+    assert.deepEqual(context(currentSession, target), before);
+    assertSavedContext(document, before, target);
+    currentSession.history.redo(currentSession.wasm);
+    assert.deepEqual(context(currentSession, target), deleted);
+  }
+  currentSession.history.undo(currentSession.wasm);
+}
+for (const text of ['링크', '가', 'A😀']) {
+  const document = HwpDocument.createEmpty();
+  document.createBlankDocument();
+  const edit = session(document, position);
+  edit.open().apply({ kind: 'save', text, uri });
+  const len = Array.from(text).length;
+  deleteAndRestore(document, edit, body, position, len - 1, 1);
+  deleteAndRestore(document, edit, body, position, 0, len);
+  assert.equal(edit.wasm.getCharPropertiesAt(0, 0, 0).textColor.toLowerCase(), '#0000ff');
+  assert.equal(edit.wasm.getCharPropertiesAt(0, 0, 0).underline, true);
+  document.free();
+}
+results.push('링크 마지막/전체/한 글자/astral 삭제: 3회 undo·redo 및 매 undo HWP/HWPX 왕복');
+
+const chainDoc = HwpDocument.createEmpty();
+chainDoc.createBlankDocument();
+const chain = session(chainDoc, position);
+chain.open().apply({ kind: 'save', text: '링크', uri });
+const chainBefore = context(chain);
+chain.history.execute(new DeleteTextCommand({ ...position, charOffset: 1 }, 1, 'backward', undefined, 10), chain.wasm);
+chain.history.execute(new DeleteTextCommand(position, 1, 'backward', undefined, 20), chain.wasm);
+chain.undo();
+assert.equal(context(chain).links[0].text, '링');
+chain.undo();
+assert.deepEqual(context(chain), chainBefore);
+chain.redo(); chain.redo(); chain.undo(); chain.undo();
+assert.deepEqual(context(chain), chainBefore);
+// 링크 뒤 일반 글자는 계속 링크 밖이며 일반 삭제의 300ms 병합은 유지한다.
+chain.history.execute(new InsertTextCommand({ ...position, charOffset: 2 }, '뒤쪽'), chain.wasm);
+chain.history.execute(new DeleteTextCommand({ ...position, charOffset: 3 }, 1, 'backward', undefined, 30), chain.wasm);
+chain.history.execute(new DeleteTextCommand({ ...position, charOffset: 2 }, 1, 'backward', undefined, 40), chain.wasm);
+chain.undo();
+assert.equal(context(chain).text, '링크뒤쪽');
+assert.equal(context(chain).links[0].text, '링크');
+assert.equal(chain.wasm.getCharPropertiesAt(0, 0, 2).underline, false);
+results.push('연속 링크 삭제별 정확한 복원·링크 뒤 일반 삭제 병합 및 바깥 서식 유지');
+
+const nestedLink = context(nested, target).links[0];
+deleteAndRestore(lh, nested, target, nestedPos, nestedLink.end - 1, 1);
+const boxLink = context(box, boxTarget).links[0];
+deleteAndRestore(boxDoc, box, boxTarget, boxPos, boxLink.end - 1, 1);
+results.push('실제 한컴 중첩 셀·글상자 링크 삭제 undo·redo 및 HWP/HWPX 왕복');
+
+const startDoc = HwpDocument.createEmpty();
+startDoc.createBlankDocument();
+const startSession = session(startDoc, position);
+startSession.open().apply({ kind: 'save', text: '링크', uri });
+startSession.history.execute(new InsertTextCommand(position, 'X'), startSession.wasm);
+assert.equal(context(startSession).links[0].text, 'X링크');
+assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).textColor.toLowerCase(), '#0000ff');
+assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).underline, true);
+assertSavedContext(startDoc, context(startSession), body);
+startSession.undo(); startSession.redo();
+assert.equal(context(startSession).links[0].text, 'X링크');
+assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).underline, true);
+results.push('링크 시작 입력의 링크 서식·범위, undo·redo 및 HWP/HWPX 왕복');
 
 const out = process.env.RHWP_HYPERLINK_EVIDENCE_DIR;
 if (out) {

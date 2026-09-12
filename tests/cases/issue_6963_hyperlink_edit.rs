@@ -576,3 +576,71 @@ fn typing_inside_link_still_extends_its_range() {
         );
     }
 }
+
+#[test]
+fn typing_at_link_start_inherits_link_style() {
+    for (text, start, adjacent) in [
+        ("링크뒤", 0, false),
+        ("앞링크뒤", 1, false),
+        ("앞링크뒤", 1, true),
+    ] {
+        let mut core = blank(text);
+        let target = HyperlinkTarget::body(0, 0);
+        if adjacent {
+            core.insert_hyperlink_native(&target, 0, 1, "https://example.org")
+                .unwrap();
+            core.apply_char_format_native(
+                0,
+                0,
+                0,
+                1,
+                r##"{"textColor":"#551a8b","underlineType":"Bottom"}"##,
+            )
+            .unwrap();
+        }
+        let id = core
+            .insert_hyperlink_native(&target, start, start + 2, "https://example.com")
+            .unwrap();
+        core.apply_char_format_native(0, 0, start, start + 2,
+            r##"{"textColor":"#0000ff","underlineType":"Bottom","underlineColor":"#0000ff","bold":true}"##).unwrap();
+        let link_shape = core.document().sections[0].paragraphs[0].char_shape_id_at(start);
+        core.insert_text_native(0, 0, start, "X").unwrap();
+        let reopened = roundtrips(&core);
+        for result in std::iter::once(core).chain(reopened) {
+            let links = result.hyperlinks_native(&target).unwrap();
+            let link = links.iter().find(|link| link.field_id == id).unwrap();
+            assert_eq!(
+                (link.start, link.end, link.text.as_str()),
+                (start, start + 3, "X링크")
+            );
+            assert_eq!(
+                result.document().sections[0].paragraphs[0].char_shape_id_at(start),
+                link_shape
+            );
+            if adjacent {
+                assert_eq!(
+                    (links[0].start, links[0].end, links[0].text.as_str()),
+                    (0, 1, "앞")
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn delete_fragment_restores_link_range() {
+    let mut core = blank("링크");
+    let target = HyperlinkTarget::body(0, 0);
+    core.insert_hyperlink_native(&target, 0, 2, "https://example.com")
+        .unwrap();
+    let before = core.hyperlinks_native(&target).unwrap();
+    let fragment = core.capture_delete_range_native(0, 0, 0).unwrap();
+    core.delete_text_native(0, 0, 1, 1).unwrap();
+    core.restore_delete_fragment_native(fragment).unwrap();
+    let raw = core.hyperlinks_native(&target).unwrap();
+    let saved: Vec<_> = roundtrips(&core)
+        .iter()
+        .map(|r| r.hyperlinks_native(&target).unwrap())
+        .collect();
+    assert_eq!((raw, saved), (before.clone(), vec![before.clone(), before]));
+}

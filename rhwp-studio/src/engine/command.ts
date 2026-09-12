@@ -7,6 +7,7 @@ import type {
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef, CellProperties } from '@/core/types';
 import type { HeaderFooterTextPosition, CellBlockSelectionState } from './cursor';
 import type { CharShapeRun } from '@/core/types';
+import { hyperlinkTarget } from '../core/hyperlink';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
@@ -708,6 +709,7 @@ export class DeleteTextCommand implements EditCommand {
 
   /** undo용 삭제된 텍스트 (execute 시 보존) */
   private deletedText: string;
+  private fragmentId: number | null = null;
   private lastMutationEffects: TextMutationEffects = NO_TEXT_MUTATION_EFFECTS;
 
   constructor(
@@ -727,7 +729,25 @@ export class DeleteTextCommand implements EditCommand {
     if (!this.deletedText) {
       this.deletedText = doGetTextRange(wasm, this.position, this.count);
     }
-    this.lastMutationEffects = deleteTextWithMutationEffects(wasm, this.position, this.count);
+    // 링크 글자 삭제는 범위·서식 경계를 잃으므로 일반 재삽입으로 반전할 수 없다.
+    // 기존 문단 조각은 상위 문단의 셀/중첩 셀/글상자까지 함께 보존한다.
+    // 캡션은 hyperlinkTarget의 지원 대상이 아니며 기존 문자 역연산을 유지한다.
+    const isCaption = this.position.cellIndex === 65534
+      || this.position.cellPath?.some(entry => entry.cellIndex === 65534);
+    if (!isCaption && this.count > 0) {
+      const target = hyperlinkTarget(this.position);
+      const context = wasm.getHyperlinkContext(target);
+      if (context.links.some(link => this.position.charOffset < link.end
+        && link.start < this.position.charOffset + this.count)) {
+        this.fragmentId = wasm.captureDeleteRange(target.section, target.para, target.para);
+      }
+    }
+    try {
+      this.lastMutationEffects = deleteTextWithMutationEffects(wasm, this.position, this.count);
+    } catch (error) {
+      this.discard(wasm);
+      throw error;
+    }
     return { ...this.position };
   }
 
@@ -743,13 +763,27 @@ export class DeleteTextCommand implements EditCommand {
 
   undo(wasm: WasmBridge): DocumentPosition {
     this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
-    doInsertTextImmediate(wasm, this.position, this.deletedText);
+    if (this.fragmentId !== null) {
+      wasm.restoreDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+    } else {
+      doInsertTextImmediate(wasm, this.position, this.deletedText);
+    }
     const restoredLen = this.deletedText.length;
     return { ...this.position, charOffset: this.position.charOffset + restoredLen };
   }
 
+  discard(wasm: WasmBridge): void {
+    if (this.fragmentId !== null) {
+      wasm.discardDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+    }
+  }
+
   mergeWith(other: EditCommand): EditCommand | null {
     if (!(other instanceof DeleteTextCommand)) return null;
+    // 각 조각은 삭제 직전 문단 전체를 복원한다. 서로 다른 시점과 합치지 않는다.
+    if (this.fragmentId !== null || other.fragmentId !== null) return null;
     if (other.direction !== this.direction) return null;
     if (other.timestamp - this.timestamp > 300) return null;
     // 같은 문단/셀 확인
