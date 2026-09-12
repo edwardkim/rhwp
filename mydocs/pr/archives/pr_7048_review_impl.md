@@ -7,6 +7,13 @@ last_verified: 2026-09-12
 
 # PR #7048 — 누적 체리픽 적용·후속 계획
 
+- 통합 경로: [통합 PR #7060](https://github.com/edwardkim/rhwp/pull/7060), `integration/nondraft-7040-7053-20260912` → `devel`.
+- 전체 로컬 실행의 code candidate는 `c15686421`이다. 이후 `d382e6cf61e2efcd1feb1520524261ecacf29076`는 진단 함수의
+  보정 전 설명을 바로잡은 Rust 문서 주석 변경뿐이며, prepare·fmt·세 Clippy·workspace build·manifest 8단계를 다시 통과했다.
+- 원격 상태: 통합 PR을 생성했으며 최신 제출 head의 Full CI를 확인 중이다. 성공한 최신 head를 고정해 merge하고
+  post-merge CI·devel·관련 issue 및 원 PR 종료·소유 branch 정리를 확인한다. 이 기록은 merge 전 시점의 상태다.
+
+
 ## 렌더링 보류 사유 해결 완료 — 2026-09-12
 
 - 최종 code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`, branch `review/nondraft-7040-7053-20260912`.
@@ -15,8 +22,8 @@ last_verified: 2026-09-12
 - 최종 판정 **메인터너 보정 후 수용 가능**. [검토·전체 검증·잔여 차이](pr_7048_review.md)를 따른다.
 - 검증 입력 19개 모두 Git blob과 동일하다. 기존 원본·PDF 17개와 새 합성 HWPX 2개를 보존했다.
 - `Summary [   0.705s] 42 tests run: 42 passed (1 leaky), 9537 skipped`, `Summary [ 329.734s] 9533 tests run: 9533 passed (3 slow, 1 leaky), 46 skipped`. Rust lint·Native Skia·WASM 및 8종 42쪽 parity 완료.
-- GitHub 통합 PR 생성·최신 head CI·merge·원 PR/이슈 후속 처리는 아직 실행하지 않았다.
-  원격 merge 전 조건과 comment/close 계획은 검토 문서에 기록했다.
+- GitHub 통합 PR 생성 완료. 최신 head CI·merge·원 PR/이슈 후속 처리의 실제 완료는 원격 상태와 후속 comment로 확인한다.
+  merge 전 조건과 comment/close 계획은 검토 문서에 기록했다.
 
 <details>
 <summary>이전 적용 단계와 검증 후보 이력</summary>

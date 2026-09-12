@@ -7,6 +7,13 @@ last_verified: 2026-09-12
 
 # PR #7050 — 누적 체리픽 검토
 
+- 통합 경로: [통합 PR #7060](https://github.com/edwardkim/rhwp/pull/7060), `integration/nondraft-7040-7053-20260912` → `devel`.
+- 전체 로컬 실행의 code candidate는 `c15686421`이다. 이후 `d382e6cf61e2efcd1feb1520524261ecacf29076`는 진단 함수의
+  보정 전 설명을 바로잡은 Rust 문서 주석 변경뿐이며, prepare·fmt·세 Clippy·workspace build·manifest 8단계를 다시 통과했다.
+- 원격 상태: 통합 PR을 생성했으며 최신 제출 head의 Full CI를 확인 중이다. 성공한 최신 head를 고정해 merge하고
+  post-merge CI·devel·관련 issue 및 원 PR 종료·소유 branch 정리를 확인한다. 이 기록은 merge 전 시점의 상태다.
+
+
 ## 최종 판정
 
 **메인터너 보정 후 수용 가능**. 이 판정은 아래 통합 code candidate의 해당 PR 변경 범위에 대한 것이다.
