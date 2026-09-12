@@ -7,10 +7,14 @@ use rhwp::{
     model::{
         bin_data::{BinDataBytes, BinDataContent, BinDataResolver},
         control::Control,
+        document::DocInfo,
         image::Picture,
         paragraph::{CharShapeRef, Paragraph},
         shape::{RectangleShape, ShapeObject, TextBox},
-        style::{BorderFill, Fill, HeadType, ImageFill, Numbering},
+        style::{
+            BorderFill, CharShape, Fill, Font, HeadType, ImageFill, Numbering, ParaShape, Style,
+            TabDef,
+        },
     },
 };
 use std::sync::Arc;
@@ -18,6 +22,17 @@ use std::sync::Arc;
 fn core() -> DocumentCore {
     let mut c = DocumentCore::new_empty();
     c.create_blank_document_native().unwrap();
+    // The shipped blank has extra styles and nonzero font/border/numbering IDs.
+    // Use an explicit one-entry graph for isolated resource contract tests.
+    c.document_mut().doc_info = DocInfo {
+        font_faces: vec![vec![Font::default()]; 7],
+        char_shapes: vec![CharShape::default()],
+        para_shapes: vec![ParaShape::default()],
+        styles: vec![Style::default()],
+        tab_defs: vec![TabDef::default()],
+        ..Default::default()
+    };
+    c.document_mut().bin_data_content.clear();
     c.document_mut().sections[0].paragraphs = vec![Paragraph::default(); 3];
     c
 }
@@ -172,6 +187,7 @@ fn font_definition_and_embedded_storage_are_distinct_from_image_ordinals() {
 #[test]
 fn numbering_sentinel_and_builtin_outline_are_not_missing_resources() {
     let mut c = core();
+    c.document_mut().doc_info.numberings.clear();
     c.document_mut().doc_info.para_shapes[0].head_type = HeadType::Outline;
     c.document_mut().sections[0]
         .section_def
@@ -232,6 +248,21 @@ fn repository_blocks_are_observed_without_editing_or_claiming_support() {
             "BLOCK_OBSERVATION {}",
             serde_json::json!({"file": file, "section": 0, "start": pi, "end": pi+1, "result": result})
         );
+        if file.ends_with("labnote-001.hwp") {
+            let paragraphs = &c.document().sections[0].paragraphs;
+            println!("LABNOTE_BODY_PARAGRAPHS {}", paragraphs.len());
+            for (pi, para) in paragraphs.iter().enumerate().take(16) {
+                r.source_start = pi;
+                r.source_end = pi + 1;
+                r.insert_before = pi + 1;
+                println!(
+                    "LABNOTE_CANDIDATE {}",
+                    serde_json::json!({"start": pi, "end": pi+1,
+                    "controls": para.controls.len(), "text": para.text.chars().take(30).collect::<String>(),
+                    "result": c.validate_paragraph_block_native(&r)})
+                );
+            }
+        }
         // This assertion proves read-only operation, NOT acceptance or visual fidelity.
         assert_eq!(format!("{:?}", c.document()), before);
     }
