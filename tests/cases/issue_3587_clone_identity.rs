@@ -128,3 +128,63 @@ fn allocation_is_deterministic_and_invalid_destination_does_not_mutate_document(
         .is_err());
     assert_eq!(first.export_hwp_native().unwrap(), before);
 }
+
+#[test]
+fn group_textbox_caption_header_and_master_page_identities_are_reserved() {
+    use rhwp::model::control::Field;
+    use rhwp::model::header_footer::{Header, MasterPage};
+    use rhwp::model::paragraph::Paragraph;
+    use rhwp::model::shape::{Caption, GroupShape, RectangleShape, ShapeObject, TextBox};
+
+    let mut core = blank();
+    create(&mut core, false);
+    let template = tables(&core)[0].clone();
+    let para_with = |control| Paragraph {
+        controls: vec![control],
+        ..Default::default()
+    };
+    let table_para = |id: u32| {
+        let mut table = template.clone();
+        table.common.instance_id = id;
+        table.raw_ctrl_data[32..36].copy_from_slice(&(id + 1).to_le_bytes());
+        para_with(Control::Table(Box::new(table)))
+    };
+    let field = Field {
+        instance_id: Some(4),
+        memo_paragraphs: vec![table_para(5)],
+        ..Default::default()
+    };
+    let mut rectangle = RectangleShape::default();
+    rectangle.common.instance_id = 2;
+    rectangle.drawing.inst_id = 3;
+    rectangle.drawing.text_box = Some(TextBox {
+        paragraphs: vec![para_with(Control::Field(field))],
+        ..Default::default()
+    });
+    rectangle.drawing.caption = Some(Caption {
+        paragraphs: vec![table_para(7)],
+        ..Default::default()
+    });
+    let mut group = GroupShape::default();
+    group.common.instance_id = 1;
+    group.children.push(ShapeObject::Rectangle(rectangle));
+    let section = &mut core.document_mut().sections[0];
+    section.paragraphs[0].controls = vec![
+        Control::Shape(Box::new(ShapeObject::Group(group))),
+        Control::Header(Box::new(Header {
+            paragraphs: vec![table_para(11)],
+            ..Default::default()
+        })),
+    ];
+    section.section_def.master_pages.push(MasterPage {
+        paragraphs: vec![table_para(9)],
+        ..Default::default()
+    });
+    let original = serde_json::to_value(&section.paragraphs[0]).unwrap();
+    create(&mut core, false);
+    assert!(tables(&core).last().unwrap().common.instance_id > 12);
+    assert_eq!(
+        serde_json::to_value(&core.document().sections[0].paragraphs[0]).unwrap(),
+        original
+    );
+}
