@@ -11,7 +11,8 @@ mod commands;
 pub use commands::paragraph_block::{
     ParagraphBlockBudget, ParagraphBlockCopy, ParagraphBlockLimits, ParagraphBlockMapping,
     ParagraphBlockPathStep, ParagraphBlockValidationError, RepeatParagraphBlockRequest,
-    RepeatParagraphBlockResult,
+    RepeatParagraphBlockResult, TemplateBinding, TemplateFillPreview, TemplateFillRequest,
+    TemplateFillTarget,
 };
 pub mod converters;
 pub(crate) mod html_table_import;

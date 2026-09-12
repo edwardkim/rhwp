@@ -3,9 +3,10 @@
 - 작성: 2026-09-12
 - 상태: **2026-09-12 B1/B2 구현, B2 잔여 조합·B3 저장 재열기·1/10/100회 비용 계측 완료.
   [Stage 8](../working/task_m100_3587_stage8.md)에서 B 종료 통합 자동 검증 완료
-  (전체 nextest 9,579 PASS, Rust lint·Native Skia 3종 PASS), 결과 승인 대기다.
+  (전체 nextest 9,579 PASS, Rust lint·Native Skia 3종 PASS), 메인테이너 결과 승인.
   Studio 재편집 Enter 경계 결함은 #7065로 분리했으며 이번 B에서 추가 수정하지 않는다.
-  #3587 전체 완료·C 진입·PR 제출 가능 판정은 아직 하지 않았다.**
+  [C 상세계획](task_m100_3587_impl_c.md)이 승인되어 C1 선검증 절편을 완료했다. 실제 채우기는 미완료다.
+  #3587 전체 완료·PR 제출 가능 판정은 아직 하지 않았다.**
 - 진행 기록: [Stage 4 — B1](../working/task_m100_3587_stage4.md), [Stage 5 — B2](../working/task_m100_3587_stage5.md)
 - 상위 계약: [구현계획 §2·§5](task_m100_3587_impl.md)
 - 선행 결과: [A 구현](../working/task_m100_3587_stage2.md), [A 통합 검증](../working/task_m100_3587_stage3.md)

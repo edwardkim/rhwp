@@ -13,7 +13,7 @@ use crate::{
 use serde::Serialize;
 
 /// Source-relative owned path. These are not DSEL addresses or persistent IDs.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 #[serde(tag = "kind", content = "index", rename_all = "camelCase")]
 pub enum ParagraphBlockPathStep {
     Paragraph(usize),
@@ -75,6 +75,20 @@ enum SourceNode<'a> {
 struct Located<'a> {
     node: SourceNode<'a>,
     path: Vec<ParagraphBlockPathStep>,
+}
+
+/// Reuse the bounded ownership walk for template selection; paths stay source-relative.
+pub(super) fn paragraphs<'a>(
+    paragraphs: &'a [Paragraph],
+    request: &RepeatParagraphBlockRequest,
+) -> Result<Vec<(Vec<ParagraphBlockPathStep>, &'a Paragraph)>, ParagraphBlockValidationError> {
+    Ok(support::inspect(paragraphs, request)?
+        .into_iter()
+        .filter_map(|located| match located.node {
+            SourceNode::Paragraph(p) => Some((located.path, p)),
+            _ => None,
+        })
+        .collect())
 }
 
 impl DocumentCore {

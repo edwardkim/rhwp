@@ -2,8 +2,10 @@
 mod budget;
 mod owned;
 mod repeat;
+mod template;
 mod validation;
 pub use repeat::{ParagraphBlockCopy, ParagraphBlockMapping, RepeatParagraphBlockResult};
+pub use template::{TemplateBinding, TemplateFillPreview, TemplateFillRequest, TemplateFillTarget};
 pub use validation::{ParagraphBlockPathStep, ParagraphBlockValidationError};
 
 use crate::{document_core::DocumentCore, error::HwpError};
