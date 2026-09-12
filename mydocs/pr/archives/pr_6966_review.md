@@ -86,3 +86,18 @@ Rust/parser/renderer/layout/WASM/Studio source 및 sample 변경은 없다. 렌�
 - Chrome 완료 이벤트의 복구 보장은 반례가 있다. 실제 Chrome 152.0.7977.83에서 자연 다운로드 이벤트와 최초 session 상태 쓰기 지연을 조합했을 때 현재 코드·수정 전 base 모두 대조군 3/3 탭 1, 지연군 3/3 탭 0이었다. 파일 바이트는 보존됐다. 일반 환경의 자연 발생 빈도는 미확인이다.
 - 재현 코드·근거·검증 한계를 [별도 이슈 #6988](https://github.com/edwardkim/rhwp/issues/6988)에 등록했다. 이번 PR에 Chrome 동시성 구조 변경을 추가하지 않았다.
 - 사용자 요청으로 보정 push 및 PR 보정 코멘트 게시를 진행한다. ready 전환·merge는 이번 요청 범위에 포함하지 않는다.
+
+
+## 재검토 및 병합 준비 (2026-09-12)
+
+- 사용자가 두 PR의 기록 갱신·push·CI 복구·Ready 전환·순차 병합과 병합 후 이슈/comment/로컬 검토 정리를 승인했다.
+- 재검토 head: `526ce2331f01174d687cd36d3a398762b6858389`. 새로운 제품 코드 결함은 발견하지 못했다.
+- 해당 head에서 `node --test rhwp-shared/sw/*.test.js rhwp-chrome/sw/*.test.mjs rhwp-firefox/sw/*.test.mjs`를 실행해 **148/148 통과**했다.
+- 두 PR head 결합 tree `ba5c093a2a97f193e941203f621bcbf7c0a81422`에서 같은 테스트 **188/188**, Chrome·Firefox production build, `node --test scripts/frontend-extension-dist.test.mjs` **3/3**을 통과했다. 기존 pkg WASM과 설치된 Node 의존성을 재사용했다.
+- 최신 fetch `upstream/devel` `f537df5ea`와 각 PR의 merge-tree 및 diff whitespace 검사는 통과했다. 결합 tree의 실행 검증을 최신 devel까지 합친 실행 검증으로 주장하지 않는다.
+- 이번 재검토에서 실제 브라우저 E2E·OS 네이티브 저장 대화상자는 재실행하지 않았다. 앞선 실제 브라우저·사용자 검증 기록은 참고 증거로 확인했다. Rust/WASM/Studio 실행 소스·렌더 출력 변경이 없어 Rust 전체 회귀와 visual sweep은 대상 밖이다.
+- 앞선 CI 관찰 시 두 PR은 Draft였고 `CI Impact Policy`가 `workflow-not-success:CI:cancelled`로 실패했다. 이는 CI 취소의 집계 결과이며 제품 테스트 실패로 판단하지 않았다. 이 실패 상태에서는 병합을 보류한다.
+- 이 후행 기록 commit을 포함한 **최신 head의 CI·CodeQL·CI Impact Policy 성공 확인 후에만** 기존 코드 수용 판정에 따라 병합한다. 이후 첫 PR 병합으로 base가 전진하면 두 번째 PR의 mergeability와 CI를 재확인한다.
+- 두 수정은 함께 배포해야 한다. Chrome의 기존 상태 저장 경합은 별도 [#6988](https://github.com/edwardkim/rhwp/issues/6988) 범위로 남는다.
+- review/report는 이미 archive review 및 이슈별 보고서로 PR에 포함되어 있다. 오늘할일·결합 review_impl의 생략 판단은 앞선 기록을 유지한다. 병합 확정 SHA와 issue 종료·CI 최종 근거는 병합 후 각 PR/issue comment에 남기며 별도 문서 PR을 만들지 않는다.
+- 원격 source branch 삭제는 이번 정리 범위에 포함하지 않는다. 기본 작업공간의 `samples/exam_eng.pdf` 변경과 무관한 작업공간·공유 cache를 보존한다.
