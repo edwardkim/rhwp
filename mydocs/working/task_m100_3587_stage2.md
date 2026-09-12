@@ -1,7 +1,7 @@
 # #3587 Stage 2 — 기본 구현 재개, A1 표 생성 신원
 
 - 날짜: 2026-09-12
-- 상태: A1·A2·A3 구현 및 집중 검증 완료. A4 저장 경계 및 #3587 전체는 미완료.
+- 상태: A1~A4 구현·집중 검증 완료. A 통합 검증과 B 상세 설계 확정이 남으며 #3587 전체는 미완료.
 - 승인: 기여자 템플릿이 없어도 작업 브랜치로 돌아가 기본 구현 진행.
 - 계획: [구현계획 A](../plans/task_m100_3587_impl.md)
 
@@ -173,3 +173,65 @@ Form 자체도 `common.attr == 0`일 때 seed+order가 명시적 common ID보다
 기존 정답지 보존 + 명시적 신원 우선 + 미지정 신원 충돌 방지 검증을 다음 승인 대상으로 한다.
 Form 이름·스크립트까지 자동 재작성하는 확대 구현은 제안하지 않는다.
 따라서 A 전체 완료와 B 진입은 아직 선언하지 않는다. 원격 push/게시/PR도 수행하지 않았다.
+
+## 7. A4 — Form/ClickHere 저장 신원 보존
+
+메인테이너의 A4 승인으로 진행했다. 기존 한컴 호환을 버리는 전면 serializer 개편이 아니라,
+명시적 신원의 보존과 미지정 Form 신원의 할당을 분리하는 변경이다.
+
+### 실제 재현과 구현
+
+- 제품 수정 전 `f37a08f03c`: 새 계약 **4개 중 1 PASS / 3 FAIL**.
+  실제 form-01의 ClickHere를 선택 복사·두 번 붙여넣기한 IR ID는 `[2110609883, 3, 2]`인데
+  HWP 저장·재열기 후 `[2110609883, 2110609883, 2110609883]`으로 바뀌었다.
+  명시적 Form ID 덮어쓰기와 뒤 구역에 있는 ID와의 충돌도 별도로 검출했다.
+  원본 HWP Form의 ID 0 보존은 수정 전부터 통과했다.
+- `serializer/control.rs`: ClickHere field_id와 Form common.instance_id를 레코드에 그대로 쓴다.
+  레코드 출력 단계에서 Form 등장 순서로 필드 ID를 생성하거나 개체 ID를 덮어쓰지 않는다.
+- `serializer/form_identity.rs`: 문서 저장 진입에서 필요한 구역만 복제한다.
+  **HWP 헤더 출처 판별 attr가 0이고 instance_id도 0인 Form만** 새 신원을 받는다.
+  attr가 있는 원본 HWP Form의 ID 0과 명시적 비-0 ID는 보존한다.
+  유효한 원본 raw 재사용 경로도 그대로 둔다.
+- 미지정 신원에는 종전 seed+order를 우선 후보로 사용하되 문서 전체 사용 ID와 충돌하면
+  공통 allocator의 미사용 양수 ID를 받는다. 우선 후보는 호환 정책일 뿐 유일성 증명이 아니다.
+  이후 구역·raw 재사용 구역의 신원도 예약하고, 출력 문서 하나에서 같은 allocator를 공유한다.
+- 공통 소유 트리 순회·예약·할당을 `model/identity.rs`와 `model/identity/walk.rs`로 옮겼다.
+  편집과 저장은 동일 규칙을 소비하며 serializer가 document_core 명령에 의존하지 않는다.
+  clipboard의 참조 재매핑은 기존 commands 계층에 남는다.
+- 원본 Document와 clipboard는 수정하지 않는다. ID 후보를 못 구하면 저장 오류를 반환한다.
+  section 합성 사본은 산출 전용이며 원본 전체 재채번/저장은 수행하지 않는다.
+
+### 검증 및 지원 경계
+
+- 테스트 원본: `tests/cases/issue_3587_form_save_identity.rs`.
+- 실물 form-01/02 HWP와 HWPX 각각을 입력으로 선택 복사·반복 붙여넣기를 수행하고,
+  HWP/HWPX 저장·재열기 후 ClickHere의 신원과 채워진 값을 검사한다.
+- Form 명시적 ID 보존, 다른 구역과의 충돌 회피, 원본 HWP ID 0 유지,
+  무편집 저장의 이름·크기·caption·text 및 종전 비충돌 ID 보존을 별개 계약으로 검사한다.
+  인위적으로 ID를 바꾼 입력과 추가 구역은 신원 계약 반례이며 한컴 시각 정답지가 아니다.
+- 첫 제품 commit `b594111f6e`: 신규 **4 PASS**, #852 **5 PASS**, #6266 **2 PASS**,
+  #258 **13 PASS**, A1 **5 PASS**, A2 **8 PASS**, A3 **7 PASS** — **44 PASS / 0 FAIL**.
+- 최종 제품 source commit은 `15e13c7960`이다. 원본 raw 재사용 경로와 하위 레코드 writer의
+  신원 투명성을 보강했으며, 무편집 계약을 추가해 같은 검사를 다시 실행했다.
+  증적 위치는 `output/3587/a4/`이며 이 보강 직후 로그는 `final-<검사명>.log`다.
+- 무편집 속성 비교를 보강하던 중 HWPX ComboBox의 빈 selectedValue와 HWP의 첫 목록 항목
+  표시값(`계절 선택`) 차이를 검출했다. 수정 전 `f37a08f03c`와 현재 `build_type_set`의
+  기존 fallback 코드를 대조해 이 경로를 변경하지 않았음을 확인했다.
+  포맷이 다른 IR 슬롯의 동일성 가정 대신 기존 form-01/02 HWP 정답지를 기대값으로 사용한다.
+  정정 테스트 commit `3fc090bc76`, 재검증 로그 접두사는 `verified-`다.
+  ID 일치·중복 검사나 기존 정답지/baseline은 완화하지 않았다.
+- **최종 검증 head `3fc090bc76`**: 신규 **5 PASS**, #852 **5 PASS**, #6266 **2 PASS**,
+  #258 **13 PASS**, A1 **5 PASS**, A2 **8 PASS**, A3 **7 PASS** — **45 PASS / 0 FAIL**.
+  준비된 review worktree의 `cargo fmt --all -- --check`와 manifest `--check` PASS.
+  `fmt-verified.log`·`manifest-verified.log`에 보존했다. source-side cfg(test)는 변경하지 않았다.
+- Form의 name·groupName·TabOrder·스크립트 이벤트/이름은 자동 재작성하지 않는다.
+  같은 이름의 Form 복제로 스크립트 업무 동작이 독립해진다고 주장하지 않는다.
+  HWPX Form에서 제공하지 않는 신원 슬롯까지 보존했다고 해석하지 않는다.
+- 기존 #852 검사는 Scripts/DefaultJScript 정답지 바이트도 대조한다.
+  이를 새 복제 문서의 한컴 직접 시각/스크립트 실행 판정으로 확대하지 않는다.
+- 원본 raw 재사용은 추가 신원 순회를 생략한다. 재생성 구역에는 소유 트리 판별 순회가
+  추가되고 미지정 Form이 있을 때만 구역 사본/문서 전체 예약 집합을 만든다.
+  대형 문서 성능 영향은 아직 계측하지 않았으며 비용 0으로 주장하지 않는다.
+- 전체 회귀·3종 Clippy·Docker WASM·신규 한컴 시각 검증·원격 push/PR은 미실행이다.
+  B/C/D는 시작하지 않았다. 다음 절차는 A 묶음 통합 검증과 B의 문단 블록 경계 보존
+  상세 설계 확정이다. A4 집중 검사 성공만으로 #3587 완료나 PR 제출 가능 판정을 하지 않는다.
