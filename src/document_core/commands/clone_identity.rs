@@ -41,7 +41,11 @@ fn reserve_raw(used: &mut BTreeSet<u32>, slot: Option<&[u8]>) {
 /// Unknown opaque payloads are not decoded here; this does not certify arbitrary
 /// block cloning. No persisted counter can become stale after a direct IR edit.
 pub(super) fn next_instance_id(document: &Document) -> Result<u32, HwpError> {
-    allocate(&mut used_instance_ids(document))
+    Allocator {
+        used: used_instance_ids(document),
+        next: 1,
+    }
+    .id()
 }
 
 fn used_instance_ids(document: &Document) -> BTreeSet<u32> {
@@ -179,17 +183,34 @@ fn subject_alias(common_id: u32) -> u32 {
     }
 }
 
-fn allocate(used: &mut BTreeSet<u32>) -> Result<u32, HwpError> {
-    // First unused positive ID, deterministic even with sparse IDs or u32::MAX.
-    let mut candidate = 1u32;
-    for occupied in used.range(1..) {
-        if *occupied != candidate {
-            break;
+struct Allocator {
+    used: BTreeSet<u32>,
+    next: u64,
+}
+
+impl Allocator {
+    fn id(&mut self) -> Result<u32, HwpError> {
+        // First unused positive ID. The cursor is shared for an entire clone,
+        // avoiding repeated rescans from 1 for every nested object.
+        while self.next <= u32::MAX as u64 {
+            let candidate = self.next as u32;
+            self.next += 1;
+            if self.used.insert(candidate) {
+                return Ok(candidate);
+            }
         }
-        candidate = candidate.checked_add(1).ok_or_else(|| {
-            HwpError::RenderError("object instance identity space exhausted".into())
-        })?;
+        Err(HwpError::RenderError(
+            "object instance identity space exhausted".into(),
+        ))
     }
-    used.insert(candidate);
-    Ok(candidate)
+
+    fn common(&mut self) -> Result<u32, HwpError> {
+        loop {
+            let candidate = self.id()?;
+            // Do not introduce an alias that can capture another object's ref.
+            if self.used.insert(subject_alias(candidate)) {
+                return Ok(candidate);
+            }
+        }
+    }
 }

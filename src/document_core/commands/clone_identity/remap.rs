@@ -1,9 +1,10 @@
 //! Assign identities on a detached clipboard tree, then reconnect owned refs.
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use super::{
     paragraph_ids, subject_alias, used_instance_ids,
     walk::{walk, Node},
+    Allocator,
 };
 use crate::error::HwpError;
 use crate::model::{
@@ -42,36 +43,6 @@ impl ReferenceMap {
             None => {}
         }
         Ok(())
-    }
-}
-
-struct Allocator {
-    used: BTreeSet<u32>,
-    next: u64,
-}
-
-impl Allocator {
-    fn id(&mut self) -> Result<u32, HwpError> {
-        while self.next <= u32::MAX as u64 {
-            let candidate = self.next as u32;
-            self.next += 1;
-            if self.used.insert(candidate) {
-                return Ok(candidate);
-            }
-        }
-        Err(HwpError::RenderError(
-            "object instance identity space exhausted".into(),
-        ))
-    }
-
-    fn common(&mut self) -> Result<u32, HwpError> {
-        loop {
-            let candidate = self.id()?;
-            // Do not introduce an alias that can capture another object's ref.
-            if self.used.insert(subject_alias(candidate)) {
-                return Ok(candidate);
-            }
-        }
     }
 }
 
