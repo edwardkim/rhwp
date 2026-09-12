@@ -24457,11 +24457,11 @@ impl TypesetEngine {
                         .controls
                         .iter()
                         .filter_map(|control| match control {
-                            Control::Table(t) if is_para_topbottom_float(&t.common) => Some(
-                                raw_table_ctrl_height_px(t, self.dpi).unwrap_or_else(|| {
+                            Control::Table(t) if is_para_topbottom_float(&t.common) => {
+                                Some(raw_table_ctrl_height_px(t, self.dpi).unwrap_or_else(|| {
                                     hwpunit_to_px(t.common.height as i32, self.dpi).max(0.0)
-                                }),
-                            ),
+                                }))
+                            }
                             _ => None,
                         })
                         .sum();
