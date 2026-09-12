@@ -341,17 +341,14 @@ fn group_caption_nested_table_image_and_equation_keep_owned_paths_and_resources(
         ],
         ..Default::default()
     });
-    let resources = serde_json::to_value(&c.document().doc_info).unwrap();
+    let resources = format!("{:?}", c.document().doc_info);
     let before = format!("{:?}", c.document().sections[0].paragraphs[pi]);
     let result = c.repeat_paragraph_block_native(&request(pi, 2)).unwrap();
     assert_eq!(
         format!("{:?}", c.document().sections[0].paragraphs[pi]),
         before
     );
-    assert_eq!(
-        serde_json::to_value(&c.document().doc_info).unwrap(),
-        resources
-    );
+    assert_eq!(format!("{:?}", c.document().doc_info), resources);
     assert_eq!(c.document().bin_data_content.len(), usize::from(image_id));
     for copy in &result.copies {
         assert!(copy.mappings.iter().any(|m| m.source
