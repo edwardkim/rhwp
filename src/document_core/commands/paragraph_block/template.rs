@@ -208,6 +208,7 @@ impl DocumentCore {
                 let para =
                     super::template_edit::paragraph(copy, path(&binding.target), &mut tables)?;
                 let value = &request.records[index][&binding.key];
+                let target_style = para.char_shape_id_at(range.start);
                 // Existing text also feeds char/offset scratch arrays. Payload alone
                 // does not bound editing a long field with a short replacement.
                 let mut working = estimated;
@@ -237,6 +238,16 @@ impl DocumentCore {
                         para.insert_text_at(range.start, value);
                         para.replace_line_segs(Vec::new());
                     }
+                }
+                // Deletion intentionally keeps the surviving right run's style.
+                // A template replacement instead inherits the selected start style,
+                // while range application preserves the unselected right neighbor.
+                if let Some(style) = target_style {
+                    para.apply_char_shape_range(
+                        range.start,
+                        range.start + value.chars().count(),
+                        style,
+                    );
                 }
             }
             let cost = super::owned::source(

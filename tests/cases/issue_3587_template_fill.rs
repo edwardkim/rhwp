@@ -311,3 +311,40 @@ fn core_for_first_copy(r: &TemplateFillRequest) {
     c.repeat_and_fill_paragraph_block_native(r).unwrap();
     assert_eq!(c.document().sections[0].paragraphs[3].text, "a".repeat(100));
 }
+
+#[test]
+fn replacement_inherits_target_style_without_leaking_into_right_neighbor() {
+    use rhwp::model::paragraph::CharShapeRef;
+    let mut c = core();
+    let style = c.document().doc_info.char_shapes[0].clone();
+    c.document_mut().doc_info.char_shapes.push(style);
+    let mut p = Paragraph::default();
+    p.insert_text_at(0, "AB");
+    p.char_shapes = vec![
+        CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        },
+        CharShapeRef {
+            start_pos: 1,
+            char_shape_id: 1,
+        },
+    ];
+    c.document_mut().sections[0].paragraphs[1] = p;
+    let mut r = request();
+    r.bindings[0].target = TemplateFillTarget::TextRange {
+        path: vec![Step::Paragraph(0)],
+        start: 0,
+        end: 1,
+    };
+    c.repeat_and_fill_paragraph_block_native(&r).unwrap();
+    for (pi, value) in [(3, "첫😀번째"), (5, "두번째\n본문")] {
+        let p = &c.document().sections[0].paragraphs[pi];
+        assert_eq!(p.text, format!("{value}B"));
+        for index in 0..value.chars().count() {
+            assert_eq!(p.char_shape_id_at(index), Some(0));
+        }
+        assert_eq!(p.char_shape_id_at(value.chars().count()), Some(1));
+    }
+    assert_eq!(c.document().sections[0].paragraphs[1].text, "AB");
+}
