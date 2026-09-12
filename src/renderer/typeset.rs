@@ -711,6 +711,13 @@ struct DeferredTableControl {
     para_start_height: f64,
 }
 
+#[derive(Clone, Copy)]
+enum DeferredTableFlushPoint {
+    BeforeTableParagraph(usize),
+    AfterTableParagraph(usize),
+    SectionEnd,
+}
+
 /// 다음 physical page의 본문 시작에 배치할 non-TAC Square picture control.
 ///
 /// 그림은 float라 본문 높이를 소비하지 않지만, native HWP5는 anchor 문단이 page tail에
@@ -7614,6 +7621,20 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            // 후속 본문이 사이에 없는 새 표 문단은 이전 묶음의 일부가 아니다.
+            // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
+            // 저장 vpos를 적용하기 전이어야 이전 표가 새 문단 뒤로 밀리지 않는다.
+            // 제목/본문이 사이에 있는 float 흐름은 기존 후행 flush 계약을 유지한다.
+            if !st.deferred_table_controls.is_empty() && self.paragraph_has_table(para) {
+                self.flush_deferred_table_controls(
+                    &mut st,
+                    paragraphs,
+                    composed,
+                    styles,
+                    measured_tables,
+                    DeferredTableFlushPoint::BeforeTableParagraph(para_idx),
+                );
+            }
             // [#6132] 저장 vpos 가 쪽 본문을 넘고 바로 다음 문단이 되감기면,
             // 한글은 이 문단부터 다음 쪽에 둔 것이다. 다만 그 형상만으로는 부족하다 —
             // 같은 형상이 문단을 쪽 안에 그대로 두는 문서들에도 흔하게 나온다
@@ -9047,7 +9068,7 @@ impl TypesetEngine {
                     composed,
                     styles,
                     measured_tables,
-                    Some(para_idx),
+                    DeferredTableFlushPoint::AfterTableParagraph(para_idx),
                 );
                 Issue2424TypesetProfile::add(
                     &mut issue2424_prof.deferred_flush,
@@ -9849,7 +9870,7 @@ impl TypesetEngine {
             composed,
             styles,
             measured_tables,
-            None,
+            DeferredTableFlushPoint::SectionEnd,
         );
         Issue2424TypesetProfile::add(
             &mut issue2424_prof.deferred_flush,
@@ -19461,7 +19482,7 @@ impl TypesetEngine {
         composed: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
         measured_tables: &[MeasuredTable],
-        trigger_para_idx: Option<usize>,
+        flush_point: DeferredTableFlushPoint,
     ) {
         if st.deferred_table_controls.is_empty() {
             return;
@@ -19470,7 +19491,17 @@ impl TypesetEngine {
         let pending = std::mem::take(&mut st.deferred_table_controls);
         let mut remaining = Vec::new();
         for deferred in pending {
-            if trigger_para_idx.is_some_and(|idx| idx <= deferred.para_index) {
+            let keep_pending = match flush_point {
+                DeferredTableFlushPoint::BeforeTableParagraph(idx) => {
+                    idx <= deferred.para_index
+                        || paragraphs[deferred.para_index + 1..idx]
+                            .iter()
+                            .any(para_has_visible_text)
+                }
+                DeferredTableFlushPoint::AfterTableParagraph(idx) => idx <= deferred.para_index,
+                DeferredTableFlushPoint::SectionEnd => false,
+            };
+            if keep_pending {
                 remaining.push(deferred);
                 continue;
             }
