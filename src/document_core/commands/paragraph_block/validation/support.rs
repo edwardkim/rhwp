@@ -85,6 +85,9 @@ impl<'a> Scan<'a, '_> {
         self.raw_empty(&c.raw_extra, "common tail")?;
         let valid = match raw.len() {
             0 | 36 | 40 => true,
+            // Legacy writer omits optional prevent_page_break and writes an
+            // empty UTF-16 description length after the 36-byte common header.
+            38 => raw[36..] == [0, 0],
             n if n >= 42 => n == 42 + usize::from(u16::from_le_bytes([raw[40], raw[41]])) * 2,
             _ => false,
         };
@@ -125,11 +128,29 @@ impl<'a> Scan<'a, '_> {
         {
             return Err(self.unsupported("paragraph raw extension/change tracking"));
         }
-        if p.ctrl_data_records
-            .iter()
-            .any(|data| data.as_ref().is_some_and(|v| !v.is_empty()))
-        {
-            return Err(self.unsupported("uninterpreted CTRL_DATA payload"));
+        for (index, data) in p.ctrl_data_records.iter().enumerate() {
+            let Some(data) = data.as_ref().filter(|data| !data.is_empty()) else {
+                continue;
+            };
+            // Same exact name-only ParameterSet as serializer::control. It has
+            // no object identity/reference; do not accept additional items/tails.
+            let name = match p.controls.get(index) {
+                Some(Control::Field(f)) if f.field_type == FieldType::ClickHere => {
+                    f.ctrl_data_name.as_deref()
+                }
+                _ => None,
+            };
+            let supported = name.is_some_and(|name| {
+                data.len() >= 12
+                    && data[..10] == [0x1b, 2, 1, 0, 0, 0, 0, 0x40, 1, 0]
+                    && data.len() == 12 + usize::from(u16::from_le_bytes([data[10], data[11]])) * 2
+                    && name.encode_utf16().eq(data[12..]
+                        .chunks_exact(2)
+                        .map(|b| u16::from_le_bytes([b[0], b[1]])))
+            });
+            if !supported {
+                return Err(self.unsupported("uninterpreted CTRL_DATA payload"));
+            }
         }
         self.keep(SourceNode::Paragraph(p));
         for (i, c) in p.controls.iter().enumerate() {
@@ -157,7 +178,22 @@ impl<'a> Scan<'a, '_> {
                 self.common(&t.common, &t.raw_ctrl_data)?;
                 self.raw_empty(&t.raw_table_record_extra, "table record tail")?;
                 for (i, cell) in t.cells.iter().enumerate() {
-                    self.at(Step::Cell(i), |s| s.paras(&cell.paragraphs))?;
+                    self.at(Step::Cell(i), |s| {
+                        let raw = &cell.raw_list_extra;
+                        // serializer::control::build_cell_list_extra: ordinary
+                        // cell = width(4) + nine zero bytes; named cell adds the
+                        // fixed property marker, UTF-16 name and zero trailer.
+                        let ordinary = raw.len() == 13 && raw[4..].iter().all(|b| *b == 0);
+                        let named = raw.len() >= 25
+                            && raw[4..15] == [0xff, 0x1b, 2, 1, 0, 0, 0, 0, 0x40, 1, 0]
+                            && raw.len()
+                                == 25 + usize::from(u16::from_le_bytes([raw[15], raw[16]])) * 2
+                            && raw[raw.len() - 8..].iter().all(|b| *b == 0);
+                        if !raw.is_empty() && !ordinary && !named {
+                            return Err(s.unsupported("cell LIST_HEADER extension"));
+                        }
+                        s.paras(&cell.paragraphs)
+                    })?;
                 }
                 self.caption(t.caption.as_ref())
             }

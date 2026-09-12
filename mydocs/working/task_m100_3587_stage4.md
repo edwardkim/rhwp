@@ -88,11 +88,13 @@ B 테스트 컴파일 2분 10초, 실행 0.011초. A 테스트 컴파일 9.83초
 | --- | --- | --- |
 | 일반 문단 | 빈 문단·Page/Column break 유지. Section/MultiColumn 및 raw break bit 0/1 거부 | `parser/body_text.rs::parse_para_header` |
 | 문단 raw 헤더 | 없음 또는 10 bytes(ID 슬롯 6..10), 12 bytes 중 변경추적 값 0 허용. 기타 확장/변경추적 거부 | `serializer/body_text.rs`의 instanceId/변경추적 기록 |
-| 표·수식 common raw | 없음 또는 36/40 bytes, 이후 길이가 맞는 UTF-16 설명문까지 허용. common 미해석 tail 및 표 레코드 미해석 tail 거부 | `parser/control/shape.rs::parse_common_obj_attr`, `clone_identity/remap.rs` |
+| 표·수식 common raw | 없음 또는 36/40 bytes, 이후 길이가 맞는 UTF-16 설명문까지 허용. 선택 prevent_page_break가 없고 빈 설명문 길이만 있는 38 bytes도 허용. common 미해석 tail 및 표 레코드 미해석 tail 거부 | `parser/control/shape.rs::parse_common_obj_attr`, `commands/object_ops/table.rs`의 기존 생성기, `clone_identity/remap.rs` |
+| 셀 LIST_HEADER raw | 없음, 폭+zero padding 13 bytes, 또는 고정 필드명 marker/UTF-16 이름/zero trailer의 완전한 형태 허용. 그 밖은 거부 | `serializer/control.rs::build_cell_list_extra` (model의 필드명 offset 주석보다 실제 writer/parser의 15/17 사용) |
 | 기본 도형/그룹/글상자 | 모델링된 소유 구조 순회. 미해석 connector/polygon tail, textbox LIST_HEADER tail은 초기 거부 | `model/shape.rs`, `identity/walk.rs` |
 | 그림 | payload 없음 또는 알려진 5/17/18 bytes, own ID 1..5 및 크기/alpha 보존. 기타 확장 거부 | `parser/control/shape.rs` 그림 extra 파싱 |
 | ClickHere | begin ID와 종료 마커의 소유/순서/범위 검사. shared fieldid는 unique ID와 구별. 이름은 변경하지 않음 | `model/paragraph.rs::FieldRange/OrphanFieldEnd`, `clone_identity/remap.rs` |
-| ClickHere 확장 | raw parameter XML/비어 있지 않은 parameters 및 CTRL_DATA payload는 아직 의미 검증 전이므로 거부 | `model/control.rs::Field`의 HWP/HWPX 보존 경계 |
+| ClickHere 이름 | 이름만 포함한 단일 ParameterSet의 고정 헤더/길이/UTF-16 이름이 IR 이름과 일치하면 CTRL_DATA 허용. 추가 항목/tail은 거부 | `serializer/control.rs`의 `0x021b/0x4000` 이름 기록 |
+| ClickHere 확장 | raw parameter XML/비어 있지 않은 parameters 및 위 이름 형식 외 CTRL_DATA payload는 아직 의미 검증 전이므로 거부 | `model/control.rs::Field`의 HWP/HWPX 보존 경계 |
 | 그 밖의 컨트롤 | Section/Column/Header/Footer/쪽 설정·Form·각주/메모·Unknown·OLE/Chart·기타 필드/책갈피 등은 명시적 미지원 | B 계획 §4 |
 
 읽기 전용 사전검사는 포맷 유효성 전체를 인증하지 않는다. 지원 경계 밖의 실제 샘플은 오류 경로와

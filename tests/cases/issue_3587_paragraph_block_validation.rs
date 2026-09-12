@@ -277,7 +277,7 @@ fn zero_copies_skip_unsupported_content_but_not_bad_addresses() {
         .push(Control::Unknown(Default::default()));
     let mut r = request();
     r.count = 0;
-    assert!(c.validate_paragraph_block_native(&r).is_ok());
+    c.validate_paragraph_block_native(&r).unwrap();
     r.insert_before = 2;
     assert!(c.validate_paragraph_block_native(&r).is_err());
 }
@@ -335,4 +335,62 @@ fn success_and_rejection_leave_editor_and_clipboard_unchanged() {
     assert_eq!(c.serialize_event_log(), events);
     assert_eq!(c.get_clipboard_text_native(), clipboard);
     assert!(c.has_internal_clipboard_native());
+}
+
+#[test]
+fn name_only_ctrl_data_is_preserved_but_extra_items_are_rejected() {
+    let mut c = core();
+    add_closed(&mut c, 1, 10);
+    let name: Vec<u16> = "same-name".encode_utf16().collect();
+    let mut raw = vec![0x1b, 2, 1, 0, 0, 0, 0, 0x40, 1, 0];
+    raw.extend_from_slice(&(name.len() as u16).to_le_bytes());
+    for ch in name {
+        raw.extend_from_slice(&ch.to_le_bytes());
+    }
+    c.document_mut().sections[0].paragraphs[1].ctrl_data_records = vec![Some(raw)];
+    let before = format!("{:?}", c.document());
+    c.validate_paragraph_block_native(&request()).unwrap();
+    assert_eq!(format!("{:?}", c.document()), before);
+    c.document_mut().sections[0].paragraphs[1].ctrl_data_records[0]
+        .as_mut()
+        .unwrap()
+        .push(0);
+    assert_eq!(code(&c), "unsupported");
+}
+
+#[test]
+fn table_common_and_cell_raw_boundaries_follow_existing_writer() {
+    let mut c = core();
+    c.create_table_native(0, 1, 0, 1, 1).unwrap();
+    let (pi, ci) = c.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(pi, p)| {
+            p.controls
+                .iter()
+                .position(|x| matches!(x, Control::Table(_)))
+                .map(|ci| (pi, ci))
+        })
+        .unwrap();
+    let mut r = request();
+    r.source_start = pi;
+    r.source_end = pi + 1;
+    r.insert_before = pi;
+    for len in [36, 38, 40, 42] {
+        let Control::Table(t) = &mut c.document_mut().sections[0].paragraphs[pi].controls[ci]
+        else {
+            panic!()
+        };
+        t.raw_ctrl_data = vec![0; len];
+        t.cells[0].raw_list_extra = vec![0; 13];
+        c.validate_paragraph_block_native(&r).unwrap();
+    }
+    let Control::Table(t) = &mut c.document_mut().sections[0].paragraphs[pi].controls[ci] else {
+        panic!()
+    };
+    t.cells[0].raw_list_extra.push(1);
+    let err = c.validate_paragraph_block_native(&r).unwrap_err();
+    assert_eq!(err.code, "unsupported");
+    assert_eq!(err.path.last(), Some(&Step::Cell(0)));
 }
