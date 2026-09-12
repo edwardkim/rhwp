@@ -302,15 +302,16 @@ fn editing_and_deleting_one_table_copy_leaves_original_and_other_copy_intact() {
     let created: Value =
         serde_json::from_str(&core.create_table_native(0, 0, 0, 2, 2).unwrap()).unwrap();
     let src = created["paraIdx"].as_u64().unwrap() as usize;
-    core.copy_control_native(0, src, &[], 0).unwrap();
+    let ci = created["controlIdx"].as_u64().unwrap() as usize;
+    core.copy_control_native(0, src, &[], ci).unwrap();
     let first = paste(&mut core);
     let second = paste(&mut core);
-    let original = serde_json::to_value(control(&core, src, 0)).unwrap();
+    let original = serde_json::to_value(control(&core, src, ci)).unwrap();
     let other = serde_json::to_value(control(&core, second, 0)).unwrap();
     core.insert_text_in_cell_native(0, first, 0, 0, 0, 0, "independent")
         .unwrap();
     assert_eq!(
-        serde_json::to_value(control(&core, src, 0)).unwrap(),
+        serde_json::to_value(control(&core, src, ci)).unwrap(),
         original
     );
     assert_eq!(
@@ -319,7 +320,7 @@ fn editing_and_deleting_one_table_copy_leaves_original_and_other_copy_intact() {
     );
     core.delete_control_native(0, first, 0).unwrap();
     assert_eq!(
-        serde_json::to_value(control(&core, src, 0)).unwrap(),
+        serde_json::to_value(control(&core, src, ci)).unwrap(),
         original
     );
     let remaining = core.document().sections[0]
