@@ -213,6 +213,8 @@ struct BlockTableContinuationPreparedState {
     /// 다음 host의 양수 vpos rewind가 현재 RowBreak 표의 continuation source
     /// page를 가리키는지 여부. page-top reset은 표 종료이므로 포함하지 않는다.
     source_next_positive_rewind: bool,
+    /// Both stored fragment heights independently prove this whole-row boundary.
+    source_cellbreak_row_end: Option<usize>,
     /// 고정 선언 높이보다 실측 내용이 크게 넘치는 native HWP5 RowBreak 표가 마지막
     /// continuation fragment에서 URL 각주를 붙일 때의 실제 경계 완화 여부.
     relax_terminal_table_footnote_fit: bool,
@@ -9263,6 +9265,42 @@ impl TypesetEngine {
                             }
                             // [Task #1052] 글상자 내 각주 수집 (engine.rs:1376-1398 동등)
                             st.register_side_wrap_picture(para_idx, ctrl_idx, para, None, styles);
+                            if self.profile.get().hwp5_stored_pagination_layout()
+                                && !self.profile.get().session_edited()
+                                && st.current_items.iter().any(|item| {
+                                    matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
+                                })
+                            {
+                                let saved = paragraphs.get(para_idx + 1).and_then(|next| {
+                                    let host_style = styles.para_styles.get(para.para_shape_id as usize)?;
+                                    let next_style = styles.para_styles.get(next.para_shape_id as usize)?;
+                                    // The first stored line may retain its paragraph's
+                                    // spacing-before at column top. That is an inset,
+                                    // not the origin of the source coordinate system.
+                                    let first_para = st.current_items.iter().find_map(|item| {
+                                        match item {
+                                            PageItem::FullParagraph { para_index } => paragraphs.get(*para_index),
+                                            _ => None,
+                                        }
+                                    })?;
+                                    let first_before = styles.para_styles.get(first_para.para_shape_id as usize)?.spacing_before;
+                                    let base = st.vpos_page_base.unwrap_or(0);
+                                    let retained_before = first_before.max(0.0).min(hwpunit_to_px(base.max(0), self.dpi));
+                                    let frame_vpos = base - crate::renderer::px_to_hwpunit(retained_before, self.dpi);
+                                    super::float_placement::stored_picture_successor_placement(
+                                        para, next, host_style.spacing_before,
+                                        next_style.spacing_before, frame_vpos, self.dpi,
+                                    )
+                                });
+                                if let Some(placement) = saved.filter(|p| {
+                                    p.occupied_bottom <= st.available_height()
+                                        && p.anchor_y <= st.current_height
+                                }) {
+                                    st.paragraph_float_placements.insert((para_idx, ctrl_idx), placement);
+                                    st.current_height = placement.paragraph_end(st.current_height, 0.0);
+                                    continue;
+                                }
+                            }
                             // footnote-tbox-01.hwpx 의 글상자 안 각주 본문이 페이지 하단 영역
                             // 에 누락되는 결함 정정. engine.rs (legacy) 는 이미 처리하나
                             // typeset.rs (main, default) 만 누락 — feedback_image_renderer_paths_separate.
@@ -26281,6 +26319,13 @@ impl TypesetEngine {
                             - st.current_bottom_fixed_exclusion
                     }),
             source_next_positive_rewind: next_rewinds_after_table && !next_starts_new_page,
+            source_cellbreak_row_end: (self.profile.get().hwp5_stored_pagination_layout()
+                && !self.profile.get().session_edited())
+            .then(|| paragraphs_all.get(para_idx + 1))
+            .flatten()
+            .and_then(|next| {
+                super::float_placement::stored_cellbreak_fragment_row_end(table, para, next)
+            }),
             // 표 25처럼 저장 table 높이 안에는 들어가지만 셀 원문은 그보다 훨씬 긴
             // HWP5 RowBreak 표는 PDF가 마지막 continuation 표와 URL 각주 사이에
             // 일반 40px safety margin을 두지 않는다. 이 예외는 셀 각주가 많은
@@ -26851,6 +26896,9 @@ impl TypesetEngine {
             // fragment bound 안에 있을 때만 source frame을 행 경계 후보로 쓴다.
             // host spacing과 paint inset은 source object 좌표가 아니므로 섞지 않는다.
             let source_first_fragment_flow_bottom = table_available;
+            let scan_row_count = if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
+                prepared.source_cellbreak_row_end.unwrap_or(row_count)
+            } else { row_count };
             let saved_first_fragment_source_frame = if !is_continuation
                 && cursor_row == 0
                 && start_cut.is_empty()
@@ -27070,7 +27118,7 @@ impl TypesetEngine {
                 &start_cut,
                 BlockRowScanVars {
                     cursor_row,
-                    row_count,
+                    row_count: scan_row_count,
                     cs,
                     can_intra_split,
                     is_continuation,
@@ -27203,7 +27251,7 @@ impl TypesetEngine {
                             &start_cut,
                             BlockRowScanVars {
                                 cursor_row,
-                                row_count,
+                                row_count: scan_row_count,
                                 cs,
                                 can_intra_split,
                                 is_continuation,
@@ -29551,6 +29599,7 @@ mod tests {
             budget_para_start_height: 0.0,
             first_fragment_actual_footnote_boundary: None,
             source_next_positive_rewind: false,
+            source_cellbreak_row_end: None,
             relax_terminal_table_footnote_fit: false,
         };
         let flow_layout =

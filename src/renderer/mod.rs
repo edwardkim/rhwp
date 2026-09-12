@@ -1916,15 +1916,17 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     {
         return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
     }
-    // KoPub Batang uses "바탕체" in the family name, but it is a proportional
-    // serif publication face, not the Windows fixed-width BatangChe face.
-    if font_family.contains("KoPub바탕체") || lower.contains("kopub batang") {
+    // BatangChe is fixed-width serif. Its stored glyph advances are replayed
+    // independently of the paint fallback; choosing a sans coding face here
+    // discards the source's serif appearance without preserving layout better.
+    if font_family.contains("바탕체")
+        || lower.contains("batangche")
+        || lower.contains("kopub batang")
+    {
         return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
     }
     if font_family.contains("굴림체")
-        || font_family.contains("바탕체")
         || lower.contains("gulimche")
-        || lower.contains("batangche")
         || lower.contains("coding")
         || lower.contains("courier")
         || lower.contains("mono")
@@ -2971,7 +2973,8 @@ mod tests {
             .starts_with("'Noto Sans KR ExtraLight','Malgun Gothic'"));
         // 고정폭 계열
         assert_eq!(generic_fallback("굴림체"), mono);
-        assert_eq!(generic_fallback("바탕체"), mono);
+        assert_eq!(generic_fallback("바탕체"), serif);
+        assert_eq!(generic_fallback("BatangChe"), serif);
         assert_eq!(generic_fallback("Courier New"), mono);
         assert_eq!(generic_fallback("D2Coding ligature"), mono);
         assert_eq!(generic_fallback("Noto Sans Mono"), mono);

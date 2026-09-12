@@ -17,7 +17,7 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
-/// 문단 상대 자리차지 표의 확정된 세로 배치. 모든 값은 단 상대 px다.
+/// 문단 상대 자리차지 개체의 확정된 세로 배치. 모든 값은 단 상대 px다.
 /// 예약과 출력이 같은 결과를 사용하므로 renderer에서 원점을 다시 더하지 않는다.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ParagraphFloatPlacement {
@@ -33,11 +33,16 @@ pub struct ParagraphFloatPlacement {
     pub occupied_bottom: f64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ParagraphFloatFlow {
     Exclusion,
     /// The trailing object cannot fit in the host line's remaining inline space.
     NextLine,
+    /// The saved successor line starts at the picture's occupied bottom. Its
+    /// spacing-before is already inside that reservation, not an extra gap.
+    StoredPicture {
+        next_flow_y: f64,
+    },
 }
 
 /// 실제 재조판에서 확정한 호스트 줄. 문자 위치는 `Paragraph.text`의 scalar 축,
@@ -49,6 +54,137 @@ pub struct ParagraphHostLine {
     pub height: f64,
 }
 
+/// Recover an empty picture host's saved flow only when two independent source
+/// records agree: the picture frame ends exactly at the successor's line top.
+/// A zero-width host line belongs to the blocking object, not a second text line
+/// to append below it. Missing/stale lines, explicit breaks and edited sessions
+/// must keep measured flow (the caller supplies the stored-layout capability).
+pub fn stored_picture_successor_placement(
+    para: &Paragraph,
+    successor: &Paragraph,
+    spacing_before: f64,
+    successor_spacing_before: f64,
+    frame_vpos: i32,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let next = successor.line_segs.first()?;
+    let common = &picture.common;
+    if para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || !successor.controls.is_empty()
+        || successor.column_type != crate::model::paragraph::ColumnBreakType::None
+        || host.tag & 0x8000_0000 != 0
+        || next.tag & 0x8000_0000 != 0
+        || host.segment_width != 0
+        || host.line_height <= 0
+        || next.line_height <= 0
+        || common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || common.margin.top != 0
+        || picture.caption.is_some()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !spacing_before.is_finite()
+        || !successor_spacing_before.is_finite()
+    {
+        return None;
+    }
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let anchor_y = host_y - spacing_before;
+    let top = anchor_y + hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    let bottom =
+        top + hwpunit_to_px(height, dpi) + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
+    let next_y = hwpunit_to_px(next.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    // The allowance is one integer HWPUNIT of rounding, not pixel slack.
+    if anchor_y < 0.0 || height <= 0 || (bottom - next_y).abs() > dpi / 7200.0 {
+        return None;
+    }
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::StoredPicture {
+            next_flow_y: next_y - successor_spacing_before,
+        },
+        anchor_y,
+        stored_host_origin: Some(host_y),
+        table_top: top,
+        occupied_bottom: bottom,
+    })
+}
+
+/// A saved CellBreak table can store its first fragment height in common.height.
+/// Accept that boundary only when BOTH fragments close in source units: a whole
+/// row prefix equals the frame, and the remaining rows plus repeated header end
+/// at the following paragraph's reset LINESEG. This is not a page-height clamp.
+pub fn stored_cellbreak_fragment_row_end(
+    table: &Table,
+    host: &Paragraph,
+    successor: &Paragraph,
+) -> Option<usize> {
+    let [line] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let next = successor.line_segs.first()?;
+    if table.page_break != TablePageBreak::CellBreak
+        || table.common.treat_as_char
+        || table.common.text_wrap != TextWrap::TopAndBottom
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.caption.is_some()
+        || table.cell_spacing != 0
+        || table.outer_margin_top != 0
+        || table.outer_margin_bottom != 0
+        || host.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || line.segment_width != 0
+        || line.tag & 0x8000_0000 != 0
+        || next.tag & 0x8000_0000 != 0
+        || next.vertical_pos <= 0
+        || next.vertical_pos >= line.vertical_pos
+        || !successor.controls.is_empty()
+    {
+        return None;
+    }
+    let heights = (0..table.row_count)
+        .map(|row| {
+            table
+                .cells
+                .iter()
+                .filter(|cell| cell.row == row && cell.row_span == 1)
+                .map(|cell| i64::from(cell.height))
+                .max()
+                .filter(|h| *h > 0 && *h <= i64::from(i32::MAX))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    let mut prefix = 0_i64;
+    let end = heights.iter().position(|height| {
+        prefix += height;
+        prefix == i64::from(table.common.height)
+    })? + 1;
+    if end >= heights.len()
+        || table.cells.iter().any(|cell| {
+            usize::from(cell.row) < end && usize::from(cell.row) + usize::from(cell.row_span) > end
+        })
+    {
+        return None;
+    }
+    let header_height: i64 = if table.repeat_header {
+        table
+            .leading_header_rows()
+            .iter()
+            .map(|&row| heights[row])
+            .sum()
+    } else {
+        0
+    };
+    let tail: i64 = heights[end..].iter().sum::<i64>() + header_height;
+    (tail == i64::from(next.vertical_pos)).then_some(end)
+}
+
 impl ParagraphFloatPlacement {
     /// Close a paragraph only after its text and logically trailing objects have
     /// been placed. The object reservation already includes its outer margins;
@@ -58,6 +194,7 @@ impl ParagraphFloatPlacement {
         match self.flow {
             ParagraphFloatFlow::Exclusion => text_flow_end,
             ParagraphFloatFlow::NextLine => text_flow_end.max(self.occupied_bottom + spacing_after),
+            ParagraphFloatFlow::StoredPicture { next_flow_y } => next_flow_y,
         }
     }
 

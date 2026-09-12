@@ -146,11 +146,13 @@ test('canonical v2 registry and migration are deterministic query models', () =>
     v2Registry: actualRegistry,
   });
 
-  assert.deepEqual(actualRegistry, expectedRegistry);
+  const changes = expectedRegistry.appliedChangeSets.map(reference => readJson(path.join(ROOT, reference.path)));
+  const paths = new Map(expectedRegistry.appliedChangeSets.map(reference => [reference.changeSetId, reference.path]));
+  assert.deepEqual(reduceRegistryV2(actualRegistry, changes, { root: ROOT, changeSetPaths: paths }), expectedRegistry);
   assert.deepEqual(actualMigration, expectedMigration);
   assert.deepEqual(validateRegistryV2(expectedRegistry, ROOT), []);
   assert.deepEqual(
-    validateMigrationV1ToV2(expectedMigration, v1Registry, expectedRegistry, ROOT),
+    validateMigrationV1ToV2(expectedMigration, v1Registry, actualRegistry, ROOT),
     [],
   );
 });

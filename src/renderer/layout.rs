@@ -8282,6 +8282,15 @@ impl LayoutEngine {
                     .map_or(0.0, |style| style.spacing_after);
                 for (&(owner, _), placement) in &col_content.paragraph_float_placements {
                     if owner == item_para
+                        && matches!(
+                            placement.flow,
+                            super::float_placement::ParagraphFloatFlow::StoredPicture { .. }
+                        )
+                    {
+                        new_y =
+                            col_area.y + placement.paragraph_end(new_y - col_area.y, spacing_after);
+                    }
+                    if owner == item_para
                         && placement.flow == super::float_placement::ParagraphFloatFlow::NextLine
                     {
                         new_y =
