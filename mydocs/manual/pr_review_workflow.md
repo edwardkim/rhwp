@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-09-12
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -15,6 +15,12 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 선택표가 가리키는 자식 문서를 **작업 전에** 모두 읽는다.
 
 ## 1. 공통 계약
+
+모든 정식 PR review는 역할·작성자·PR 규모와 관계없이
+[조판 원칙 준수 검토](pr_review/intake_and_review.md#27-조판-원칙-준수-검토)를 공통 항목으로 기록한다.
+실제 diff와 PR 주장을 근거로 적용 여부를 먼저 판단하고, 적용 대상은 `AGENTS.md`의 공통 조판 원칙을
+검토 head의 코드·증거와 대조한다. 비해당도 이유를 적는다. maintainer 일반, collaborator self,
+collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
 
 rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator가 매개하는 외부 PR을
 구분한다. 권한과 변경 위치가 다르므로 한 경로의 예외를 다른 경로에 일반화하지 않는다.
