@@ -24449,6 +24449,10 @@ impl TypesetEngine {
         let saved_host_line_after_stack_fits = host_line_trails_float_stack
             && has_preceding_coanchored_float
             && table_total <= available
+            // 저장 스택 구제는 셀 실측 팽창을 보완할 뿐 이미 소비한 공간을 되감지
+            // 않는다. 통째 이월된 앞 표가 있는 쪽에는 연속 조각이 없을 수도 있으므로,
+            // 선언 높이로도 현재 잔여 공간을 넘으면 정상 이월/분할 경로를 따라야 한다.
+            && st.current_height + declared_object_total <= available
             && !page_has_table_continuation;
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(

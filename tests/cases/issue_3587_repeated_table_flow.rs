@@ -95,6 +95,7 @@ fn original_table_growth_preserves_sibling_order() {
 fn hancom_copies_keep_owner_order_after_enter() {
     for (name, blocks) in [("labnote-001-cp-01.hwp", 2), ("labnote-001-cp-02.hwp", 3)] {
         for edited in 12..12 + blocks {
+            eprintln!("한컴 복사 입력={name}, 편집 문단={edited}");
             let mut doc = load(name);
             assert_owner_order(&doc, blocks);
             grow(&mut doc, edited);
