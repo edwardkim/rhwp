@@ -9,6 +9,37 @@ last_verified: 2026-09-12
 
 ## 최종 판정
 
+**승인**. 이 판정은 아래 통합 code candidate의 해당 PR 변경 범위에 대한 것이다.
+최신 통합 PR head의 CI·mergeability를 확인한 뒤 병합하며, 원 PR의 녹색 CI를 통합 검증으로 대신하지 않는다.
+
+## 최종 통합 후보 검증 — 2026-09-12
+
+- branch `review/nondraft-7040-7053-20260912`, code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`.
+- 원 PR head `6db3b169663f6cb68c4c4c25370112348d74b1e7`. 통합 PR 준비 직전 재조회에서 원 head 변경 없음,
+  non-draft·OPEN·MERGEABLE·CLEAN, 실패/대기 check 없음. 이후 원격 상태는 merge 직전에 재확인한다.
+- PAGE/TOTAL_PAGE를 런 단위로 함께 치환하는 원 변경을 유지했다. 기존 1쪽 재현본과 새 12쪽 정·역순 합성 HWPX로 검증했다.
+- #7048의 본문·꼬리말 충돌, 잘못된 표 분할과 바탕체 대체도 함께 보정했다.
+  [최종 원인·실행 명령·시각 증거·잔여 차이](pr_7048_review.md)를 따른다.
+- 최종 후보를 새로 실행한 결과: 집중 42 PASS, 전체 9,533 PASS / 46 skipped,
+  Native Skia lib 4,112 PASS / 13 ignored, placeholder 2 PASS, direct PDF 4 PASS.
+  Rust lint 3종·unit-tier·manifest·WASM 진단 빌드 모두 exit 0, Native/WASM 8종 42쪽 MATCH.
+- 최종 CLI로 언어·issue2083·issue2470·쪽필드의 첫 쪽 visual sweep을 다시 실행했다(exit 0).
+  대표 PNG 4장은 아래 직접 확인한 기존 asset과 byte 동일했다. 자동 후보 0/4, metric도 동일했다.
+  output: `/tmp/rhwp-7048-render-fix/visual-accepted-originals/`.
+- [공통 입력 커밋 확인](../../manual/pr_review/intake_and_review.md#28-검증-입력-커밋-확인): **충족**.
+  [실제 검증 입력 19개와 해시](pr_7048_review.md#검증-입력과-재현)를 위 source commit의 blob과 대조했다.
+  쪽필드 재현본과 두 변형은 합성 계약 증거이며 법령 원문 자체를 검증했다고 주장하지 않는다.
+- 아래 원 변경의 공통 조판 원칙 판정은 현재 후보에도 적용했다. 정상 한컴 다중 줄 변형과
+  절대 y·전체 PDF 일치 등 미검증/잔여 범위를 수용 범위에 추가하지 않았다.
+- 원격 후속 계획: 통합 PR 최신 head CI 성공 후 merge, devel·post-merge CI 확인,
+  관련 issue와 원 PR에 아래 comment 계획의 실제 검증·merge SHA를 게시하고 원 PR을 close한다.
+  원 contributor history와 fork branch를 변경하지 않는다.
+
+<details>
+<summary>앞선 후보의 검토 이력 — 아래 SHA·판정·수치는 당시 기록</summary>
+
+## 최종 판정
+
 **승인(개별 변경)**. 통합 보정 후보의 로컬 검증도 완료했다.
 원 head 단독 승인으로 해석하지 않는다. 최신 integration head의 GitHub CI는 merge 전 조건이다.
 #7048의 진단 동작 검증과 미해결 한컴 렌더링 일치 판정은 구분하며, 이 기록에서 통합 merge를 완료 처리하지 않는다.
@@ -325,5 +356,8 @@ Synthetic PAGE/TOTAL_PAGE order variants: 2 documents x 12 pages.
 - 이미지 URL: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7053_integrated_fields_review_p001.png`.
 - UTF-8 Markdown 파일로 `gh pr comment 7053 --body-file <파일>` 게시 후 API로 실제 본문을 확인한다.
 - 원본 통합·CI·merge 확인 전 #7053/#6986을 닫지 않는다. 출처 fork branch를 삭제하지 않는다.
+
+</details>
+
 
 </details>

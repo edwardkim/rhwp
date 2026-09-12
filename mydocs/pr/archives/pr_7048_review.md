@@ -9,7 +9,7 @@ last_verified: 2026-09-12
 
 ## 최종 판정
 
-**머지 보류 — 남은 최종 검증 진행 중**. 렌더링 보류 사유의 구현 수정과 원본 시각 검증은 완료했다. 하단 문단·꼬리말 충돌 두 곳과
+**메인터너 보정 후 수용 가능**. 하단 문단·꼬리말 충돌 두 곳과
 `바탕체`의 고딕 대체 경로를 수정했다. 원 source만 승인하거나 통합 merge를 완료했다는 뜻은 아니다.
 최신 통합 head의 GitHub CI는 원격 병합 전 별도로 확인한다.
 
@@ -73,32 +73,89 @@ last_verified: 2026-09-12
 | 90 ↔ 89 | 94.232% | 17.934% | 그림 4-6·4-7 앞 소제목 보존; 위치 차이 잔존 |
 
 위 지표는 배경과 글꼴 래스터 차이를 포함한 보조값이다. 같은 physical page를 전제한 자동 후보
-집계를 수정된 본문 대응의 합격 건수로 이월하지 않았다. 임시 `remap-all.py`는 정본의
+집계를 수정된 본문 대응의 합격 건수로 이월하지 않았다. 임시 `remap-chain.py`는 정본의
 `make_compares`, `make_overlay_compares`, `make_review_panels`를 호출하고 PDF 축의 쪽 번호만
 실제 대응 쪽으로 표시한다. 이미지 내용·좌표·지표 계산을 바꾸지 않는다.
 
 ### 검증 기록
 
-사용자 요청에 따라 PR 검토 문서를 먼저 갱신했다. 아래는 갱신 시점에 실제 완료된 결과다.
-macOS arm64 / Rust 1.93.1 / 검토 전용 `target/pr-review`, code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`.
+macOS arm64 / Rust 1.93.1 / 검토 전용 `target/pr-review`에서 최종 code candidate를 검증했다.
+[범위별 로컬 게이트](../../manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)를 적용했다.
 
-- prepare·fmt·fmt check·native Clippy·WASM32 Clippy·workspace build·workspace all-target Clippy·manifest check: 모두 exit 0.
-- source-side font fallback 테스트에 대한 `node scripts/rust-unit-test-tiers.mjs --check`: exit 0.
+- prepare → fmt → fmt check → native Clippy → WASM32 Clippy → workspace build → workspace all-target Clippy → manifest check: 모두 exit 0. Clippy는 `--locked`, `-D warnings`다.
+- source-side font fallback 테스트 수정에 따른 `node scripts/rust-unit-test-tiers.mjs --check`: exit 0.
 - 집중 nextest: `Summary [   0.705s] 42 tests run: 42 passed (1 leaky), 9537 skipped`; exit 0.
 - 전체 nextest: `Summary [ 329.734s] 9533 tests run: 9533 passed (3 slow, 1 leaky), 46 skipped`; exit 0.
 - Native Skia workspace lib: **4,112 PASS / 13 ignored / 0 FAIL**, exit 0.
-- Font registry/projection/webfont 스크립트 46 PASS, Studio 1,661 PASS / 2 skipped / 0 FAIL, standalone `tsc --noEmit` exit 0.
-- **진행/대기**: Native Skia placeholder·direct PDF, 공식 WASM 빌드, native↔WASM 원본/변형 8종 42쪽 비교.
-  이 항목은 아직 최종 후보의 성공으로 기록하지 않는다. 완료 결과와 판정을 같은 문서에 갱신한다.
-- 현재 보류 해제 조건: 위 미완료 검증의 최종 exit 0과 직접 결과 확인. 원격 merge 전에는 별도로 최신 head CI를 확인한다.
+  placeholder `Summary [   1.025s] 2 tests run: 2 passed, 149 skipped`, direct PDF `Summary [   0.754s] 4 tests run: 4 passed, 184 skipped`; 각각 exit 0.
+- WASM: 공식 `scripts/wasm-pack-locked.sh --target web --out-dir <검증경로>/wasm-pkg --no-opt`, exit 0.
+  최적화를 생략한 WASM 진단 빌드이며 최적화 배포 빌드로 기록하지 않는다.
+- native↔WASM: 기존 입력 4종 첫 쪽, 화학 전체·축소본의 변경 7쪽씩, 커밋된 field 변형 12쪽씩,
+  **8종 / 42쪽 MATCH**. field 변형의 24개 실제 표시값도 정·역순 현재 쪽/전체 12를 확인했다.
+  Node WASM 직접 실행이며 editor 브라우저 E2E는 아니다.
+- Font registry/projection/webfont 스크립트: **46 PASS / 0 FAIL**.
+  Studio 테스트: **1,661 PASS / 2 skipped / 0 FAIL**. standalone `tsc --noEmit`: exit 0.
+  이후 변경은 Rust 적용 계약·회귀와 검증 입력이므로 이 JavaScript/TypeScript 결과의 source는 동일하다.
+- generated suite·manifest는 stage하지 않았다. 사용자의 다른 target·worktree는 삭제하지 않았다.
 
-첫 전체 실행에서 font registry 역사 봉인 가정과 대형 문서의 304→299쪽 부작용을 찾아 수정했다.
-저장 좌표가 맞닿는 것만으로 실제 텍스트 흐름을 회수하지 않으며, 기존 대형 문서 304쪽 기준을 유지한다.
+첫 전체 실행에서 발견한 font registry 역사 봉인 가정과 대형 문서 304→299쪽 부작용을 고쳤다.
+역사 봉인을 현재 정책으로 덮지 않고, 기록된 공급 replacement 하나만 의미 차이로 검증한다.
+저장 좌표가 맞닿는 것만으로 실제 텍스트 흐름을 회수하지 않으며, 기존 대형 문서 304쪽 기준도 유지한다.
 이후 visual sweep에서 발견한 앞 소제목 가림도 공통 흐름 연속성 조건과 실제 원본 회귀로 수정했다.
-위 집중·전체 결과는 그 수정까지 포함한 현재 후보를 새로 실행한 결과다. 중간 실패를 성공으로 세지 않았다.
+중간 후보의 통과 결과를 최종 후보에 이월하지 않고 Rust 묶음·전체·Native Skia·WASM을 다시 실행했다.
 
-원시 로그·순차 명령: `/tmp/rhwp-7048-render-fix/validation-complete/`, `validate-complete.py`.
-[진행 상태와 완료 결과 JSON](../assets/pr7048_render_fix_validation.json)에 완료 단계와 미완료 단계를 구분했다.
+원시 로그와 순차 명령: `/tmp/rhwp-7048-render-fix/validation-complete/`, `validate-complete.py`.
+전체 회귀 명령은 `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast`이며,
+`RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 커밋된 `samples/issue6986/cell-page-and-total-page-in-one-run.hwpx`를 명시했다.
+새 fixture 두 개는 `tests/fixtures/issue6986/`의 별도 합성 입력이다.
+source SHA·실행 명령별 결과·지표는 이 검토 Markdown에 보존한다. 임시 분석 JSON과 실행 로그는 commit에 포함하지 않는다.
+
+<details>
+<summary>최종 후보의 주요 실행 명령 — 각각 exit 0</summary>
+
+아래 명령은 저장소 루트에서 실행했다. Rust lint 순서는 앞서 연결한 정본과 동일하다.
+`accepted-rhwp`는 해당 workspace build 직후 보관한 CLI다. WASM 출력 경로는 아래 parity의 `--pkg`와 같다.
+
+```bash
+cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast \
+  -E 'test(/issue_5941_tail_overflow_drift_gate|issue_4966_font_rule_projection|issue_7048|issue_7023|issue_6782|issue_5734_cell_float|maintainer_nested_table_lines|issue_7008|issue_7049|issue_6986|layout_anomaly_glyph_band/)'
+
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue6986/cell-page-and-total-page-in-one-run.hwpx"]' \
+  cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast
+
+cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir target/pr-review --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --target-dir target/pr-review --features native-skia
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web \
+  --out-dir /tmp/rhwp-7048-render-fix/validation-complete/wasm-pkg --no-opt
+
+node scripts/svg_native_wasm_diff.mjs --rhwp /tmp/rhwp-7048-render-fix/accepted-rhwp \
+  --pkg /tmp/rhwp-7048-render-fix/validation-complete/wasm-pkg --keep-match --pages 0 \
+  samples/21_언어_기출_편집가능본.hwp samples/issue2083_hide_fill_page.hwpx \
+  samples/issue2470/36382471_masked.hwpx samples/issue6986/cell-page-and-total-page-in-one-run.hwpx \
+  --out /tmp/rhwp-7048-render-fix/parity-complete-originals
+node scripts/svg_native_wasm_diff.mjs --rhwp /tmp/rhwp-7048-render-fix/accepted-rhwp \
+  --pkg /tmp/rhwp-7048-render-fix/validation-complete/wasm-pkg --keep-match --pages 14,55,56,86,87,88,89 \
+  samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp \
+  samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp \
+  --out /tmp/rhwp-7048-render-fix/parity-complete-chemical
+node scripts/svg_native_wasm_diff.mjs --rhwp /tmp/rhwp-7048-render-fix/accepted-rhwp \
+  --pkg /tmp/rhwp-7048-render-fix/validation-complete/wasm-pkg --keep-match \
+  tests/fixtures/issue6986/page-total-page-12-pages.hwpx \
+  tests/fixtures/issue6986/total-page-page-12-pages.hwpx \
+  --out /tmp/rhwp-7048-render-fix/parity-complete-fields
+
+node --test scripts/tests/font_rule_registry_v2.test.mjs scripts/tests/font_rule_projection_gen.test.mjs scripts/tests/rasterize-svg-webfonts.test.mjs
+npm --prefix rhwp-studio test
+rhwp-studio/node_modules/.bin/tsc --noEmit -p rhwp-studio/tsconfig.json
+```
+
+parity의 `--pages`는 0-based이며 위 visual sweep 표의 쪽수는 1-based다.
+정순 field의 실제 표시값은 `-1/12-`부터 `-12/12-`, 역순은 `-12/1-`부터 `-12/12-`까지
+24개 모두 출력 SVG에서 별도로 확인했다. 첫 줄의 뒤쪽에 있는 다른 텍스트와 분리해 검사했다.
+
+</details>
+
 
 
 ### 공통 조판 원칙 준수
@@ -117,10 +174,45 @@ macOS arm64 / Rust 1.93.1 / 검토 전용 `target/pr-review`, code candidate `c1
 ### 검증 입력과 재현
 
 직접 시각 검증·OVR5·집중 원본·native/WASM 비교에 사용한 **19개 파일**은 모두 저장소의 커밋된 blob과
-byte 동일함을 확인했다. [입력 목록과 SHA-256](../assets/pr7048_validation_inputs.json)을 따른다.
+byte 동일함을 확인했다. 아래 목록에 실제 사용 경로·출처·역할·SHA-256을 기록했다.
 화학 문서의 전체·축소 HWP와 기준 PDF 2개를 포함한 원본 17개는 기존에 추적 중이었다.
 임시로만 존재하던 다중 쪽 HWPX 2개는 `tests/fixtures/issue6986/`에 추가하고 출처·변형 방법·hash를
 함께 기록했다. 최종 검증은 저장소 입력을 사용하며 korea_downloads나 임시 fixture에 의존하지 않는다.
+
+[공통 검증 입력 커밋 확인](../../manual/pr_review/intake_and_review.md#28-검증-입력-커밋-확인): **충족**.
+아래 19개 파일은 모두 `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`의 Git blob을 읽어 실제 검증 파일과
+byte·크기·SHA-256을 대조했다. 문서 전용 commit 뒤에도 같은 내용이다. 기존 자료의 수집 출처와
+한컴 PDF 메타데이터는 아래 원본 검토 이력과 각 sample의 출처 기록을 유지한다.
+새 HWPX의 [생성 출처·변형 계약](../../../tests/fixtures/issue6986/README.md)은 별도로 남겼으며,
+이 합성 입력 두 개에 독립 한컴 PDF가 있다고 주장하지 않는다.
+
+<details>
+<summary>검증 입력 19개: 저장소 경로·역할·크기·SHA-256</summary>
+
+| 저장소 경로 | 출처·역할 | bytes | SHA-256 |
+| --- | --- | ---: | --- |
+| [samples/KTX.hwp](../../../samples/KTX.hwp) | 기존 OVR5 입력 | 163,840 | `b6c1492152f53e8dd7d4bbbb4faca88866bb8458e9018c70c936cd469ea6fab3` |
+| [samples/exam_math.hwp](../../../samples/exam_math.hwp) | 기존 OVR5 입력 | 770,048 | `e40e3d675373c8efb3a844fc71f209600d3b0db987a04b3808b8e74a6b1671fe` |
+| [samples/21_언어_기출_편집가능본.hwp](../../../samples/21_언어_기출_편집가능본.hwp) | 기존 OVR5·원본 출력 비교 입력 | 435,200 | `905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15` |
+| [samples/aift.hwp](../../../samples/aift.hwp) | 기존 OVR5 입력 | 5,724,672 | `a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c` |
+| [samples/biz_plan.hwp](../../../samples/biz_plan.hwp) | 기존 OVR5 입력 | 33,792 | `8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1` |
+| [samples/issue2083_hide_fill_page.hwpx](../../../samples/issue2083_hide_fill_page.hwpx) | 기존 #2083 원본 출력 비교 입력 | 208,382 | `7758c15c57b1ef14fda6e6d29409ae3425f344931f2901641af84a40ef413d2e` |
+| [samples/issue2470/36382471_masked.hwpx](../../../samples/issue2470/36382471_masked.hwpx) | 기존 #2470 원본 출력 비교 입력 | 16,310 | `43572dad5e17395aa02d1b0000b736b8467278931086604776ef30393dd0f54b` |
+| [samples/issue6986/cell-page-and-total-page-in-one-run.hwpx](../../../samples/issue6986/cell-page-and-total-page-in-one-run.hwpx) | 기존 #6986 합성 재현본·변형 출처 | 4,422 | `0bae4669b776cad8e17c440ca2d6bb8f2b838990a42569fa5aaf58a340790c67` |
+| [samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp](../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp) | 기존 #6782 축소본, 회귀·본문 비교 | 193,536 | `4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0` |
+| [samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp](../../../samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp) | 기존 #6782 전체 원본, 그림·본문 비교 | 6,521,856 | `398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860` |
+| [samples/issue5941/1490000-201600081_roadmap_research.hwp](../../../samples/issue5941/1490000-201600081_roadmap_research.hwp) | 기존 #5941 대형 문서 304쪽 회귀 | 3,923,456 | `a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9` |
+| [pdf/21_언어_기출_편집가능본-2022.pdf](../../../pdf/21_언어_기출_편집가능본-2022.pdf) | 기존 한컴 2022 기준 PDF | 851,275 | `f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72` |
+| [pdf/issue2083_hide_fill_page-hwpx-2020.pdf](../../../pdf/issue2083_hide_fill_page-hwpx-2020.pdf) | 기존 #2083 한컴 2020 기준 PDF | 202,151 | `00b37911e4a74410e5a6181a20a636b700bcaa950e885a12dc4d99bb91348c94` |
+| [pdf/issue2470/36382471_masked-hwpx-2020.pdf](../../../pdf/issue2470/36382471_masked-hwpx-2020.pdf) | 기존 #2470 한컴 2020 기준 PDF | 51,691 | `c742f264ecab461c86f10198164a762a95dfe8aea71f6fb8c94b13f9041038e1` |
+| [pdf/cell-page-and-total-page-in-one-run-2020.pdf](../../../pdf/cell-page-and-total-page-in-one-run-2020.pdf) | 기존 #6986 한컴 2020 기준 PDF | 10,584 | `26c0b17ab8ae3916b5825a18f873c6436a32695d397e7d11fad2693c8b816887` |
+| [pdf/1480000-201900042-chemical-labeling-standards-2020.pdf](../../../pdf/1480000-201900042-chemical-labeling-standards-2020.pdf) | 기존 #6782 축소본 한컴 2020 PDF | 1,119,717 | `32e0e6d41d53b755b3dc4bcc31937e8b4f0921b282c2e5d3633a3f3617761912` |
+| [pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf](../../../pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf) | 기존 #6782 전체본 한컴 2020 PDF | 2,208,597 | `f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79` |
+| [tests/fixtures/issue6986/page-total-page-12-pages.hwpx](../../../tests/fixtures/issue6986/page-total-page-12-pages.hwpx) | 이번 추가: #6986 정순 12쪽 합성 입력 | 5,429 | `d5c3da31e596da4659d0619b0b79b1246a35d5a89d6a5574d526645818951578` |
+| [tests/fixtures/issue6986/total-page-page-12-pages.hwpx](../../../tests/fixtures/issue6986/total-page-page-12-pages.hwpx) | 이번 추가: #6986 역순 12쪽 합성 입력 | 5,428 | `3addd24fa544d339aaf0d150ee341b7867b2274ca93799b06343412342f23487` |
+
+</details>
+
 
 최종 workspace build에서 보관한 debug CLI `accepted-rhwp`의 SHA-256은
 `dee4529ae24906435e5711db851522770e80bdf0bcc70d60c8e7f3f805c532f6`다. 시각 스윕에 쓴 `chain-rhwp`와 전체 104쪽 SVG·render tree가 byte 동일함을 확인했다.
@@ -139,10 +231,10 @@ PDF raster는 96dpi이며 위 표의 실제 PDF 쪽을 `pdftoppm -f N -l N -r 96
 
 ### 대표 이미지와 후속 계획
 
-동일 전체 원본의 수정 전 패널:
+동일 전체 원본으로 생성한 수정 전 패널:
 [본문·꼬리말 수정 전](../assets/pr7048_render_fix_before_rhwp015_pdf016_review.png),
 [표 분할 수정 전](../assets/pr7048_render_fix_before_rhwp056_pdf057_review.png).
-아래는 현재 후보의 직접 확인 결과다.
+아래는 최종 후보다.
 
 ![본문과 꼬리말](../assets/pr7048_render_fix_rhwp015_pdf016_review.png)
 
@@ -154,6 +246,21 @@ PDF raster는 96dpi이며 위 표의 실제 PDF 쪽을 `pdftoppm -f N -l N -r 96
 [88↔87](../assets/pr7048_render_fix_rhwp088_pdf087_review.png),
 [89↔88](../assets/pr7048_render_fix_rhwp089_pdf088_review.png),
 [90↔89](../assets/pr7048_render_fix_rhwp090_pdf089_review.png).
+
+### Merge 후 contributor PR comment 계획
+
+- [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 direct link한다.
+- 최종 전체 원본의 내용 대응 7쪽을 검토했다. 내용 대응 기준 자동 후보 수는 재산출하지 않았으며,
+  동일 물리 쪽을 비교한 최초 자동 후보 집계를 이 7쪽의 합격 수치로 사용하지 않는다.
+- 위 표의 실제 pixel/ink 지표, 기준선 0.04px 차이·겹침 2→0·첫 조각 22행과
+  잔여 104 대 103쪽·캡션 이월을 함께 적는다. 대표 이미지는 본문/꼬리말과 표 분할의 before/after이며,
+  남은 5쪽의 패널은 검토 문서에 연결한다.
+- 실제 merge SHA가 확정되고 asset이 devel에 존재한 뒤 아래 형식으로 PNG를 직접 표시한다.
+
+~~~markdown
+![본문·꼬리말 보정](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7048_render_fix_rhwp015_pdf016_review.png)
+![표 분할 보정](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7048_render_fix_rhwp056_pdf057_review.png)
+~~~
 
 실제 통합 merge 후 보정 SHA·검증 수치·내용 대응·잔여 차이를 원 #7048 PR에 `--body-file`로
 설명하고, 위 자산은 실제 merge SHA에 고정한 raw GitHub URL로 링크한다. 게시 뒤 API로 본문과

@@ -7,6 +7,18 @@ last_verified: 2026-09-12
 
 # PR #7053 — 누적 체리픽 적용·후속 계획
 
+## 최종 통합 단계 — 2026-09-12
+
+- 최종 code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`; [현재 검토·판정](pr_7053_review.md).
+- 집중 42·전체 9,533·Native Skia 및 WASM 검증 완료, Native/WASM 8종 42쪽 MATCH.
+- #7048의 렌더링 보류 사유를 보정했고 검증 입력 19개를 커밋과 대조했다.
+- 통합 PR 생성 → 최신 head CI → merge → post-merge CI·devel 동기화 → issue/원 PR 후속 처리 → 소유 branch 정리 순서다.
+  원 source CI와 별도로 통합 head를 확인한다. 아직 merge·close 완료를 기록하지 않는다.
+
+<details>
+<summary>이전 적용 순서와 후보 이력</summary>
+
+
 - [검토 결과](pr_7053_review.md), 원 source `6db3b169663f6cb68c4c4c25370112348d74b1e7`.
 - 작업 branch `review/nondraft-7040-7053-20260912`, base `ea5d1ff70b1d50301d1e6fdd26248e9d9c10c1fa`.
 - code candidate `522a2e80db04cbd84264406ccb8bdd33a21dcc55`. 주 작업공간 `/Users/tsjang/rhwp`에서 순차 적용했다.
@@ -59,3 +71,6 @@ last_verified: 2026-09-12
 - `6b0c396b5`에서 음성 대조를 설명하는 테스트 주석만 정정하고 Rust lint 묶음을 재확인했다.
 - 원격 integration PR 생성·CI·merge 및 원 PR/이슈 후속 처리는 아직 실행하지 않았다.
   review 기록을 별도 docs-only PR로 분리하지 않으며, 원 source history와 다른 worktree를 유지했다.
+
+
+</details>

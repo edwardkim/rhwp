@@ -7,15 +7,16 @@ last_verified: 2026-09-12
 
 # PR #7048 — 누적 체리픽 적용·후속 계획
 
-## 현재 상태 — 렌더링 보정 완료, 최종 검증 진행 중
+## 렌더링 보류 사유 해결 완료 — 2026-09-12
 
-- code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`, branch `review/nondraft-7040-7053-20260912`.
-- 본문/꼬리말 겹침 2→0, 표 분할·바탕체 대체·앞 소제목 가림을 수정했다.
-- 집중 42 PASS, 전체 9,533 PASS / 46 skipped, 필수 Rust lint와 Native Skia lib 4,112 PASS.
-- Native Skia placeholder·direct PDF, WASM 빌드·8종 42쪽 parity 결과는 진행/대기다.
-- 검증 입력 19개 모두 커밋된 blob과 동일하다. 임시 HWPX 2개도 저장소에 추가했다.
-- [현재 검토·시각 증거·잔여 검증](pr_7048_review.md)을 먼저 갱신했다. 남은 검증 후 최종 판정을 확정한다.
-- 원격 PR 생성·CI·merge·원 PR/이슈 종료는 미실행이다.
+- 최종 code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`, branch `review/nondraft-7040-7053-20260912`.
+- 원 source는 보존하고 그림 흐름·CellBreak 경계·바탕체 serif 대체를 메인터너 commit으로 보정했다.
+- 본문/꼬리말 겹침 2→0, 하단 기준선 한컴과 0.04px 차이. 7쪽을 본문 대응 PDF와 직접 비교했다.
+- 최종 판정 **메인터너 보정 후 수용 가능**. [검토·전체 검증·잔여 차이](pr_7048_review.md)를 따른다.
+- 검증 입력 19개 모두 Git blob과 동일하다. 기존 원본·PDF 17개와 새 합성 HWPX 2개를 보존했다.
+- `Summary [   0.705s] 42 tests run: 42 passed (1 leaky), 9537 skipped`, `Summary [ 329.734s] 9533 tests run: 9533 passed (3 slow, 1 leaky), 46 skipped`. Rust lint·Native Skia·WASM 및 8종 42쪽 parity 완료.
+- GitHub 통합 PR 생성·최신 head CI·merge·원 PR/이슈 후속 처리는 아직 실행하지 않았다.
+  원격 merge 전 조건과 comment/close 계획은 검토 문서에 기록했다.
 
 <details>
 <summary>이전 적용 단계와 검증 후보 이력</summary>
