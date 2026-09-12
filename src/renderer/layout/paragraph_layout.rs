@@ -6206,6 +6206,30 @@ impl LayoutEngine {
                         (line_height, line_spacing)
                     }
                 })
+                .or_else(|| {
+                    // [#7062] 저장 LINE_SEG 없이 TAC(글자처럼) 개체만 앵커한 문단은
+                    // 빈 문단이 아니다. 400HU(5.3px) 고정 advance 는 개체 높이를 통째로
+                    // 버려 뒤 내용이 개체 한가운데 겹쳐 그려진다(156060125 2쪽: 그림
+                    // 548.1..948.1 안쪽 553.4 에서 뒤 표가 시작).
+                    // typeset(`format_paragraph_for_flow`)·측정(`height_measurer`)이
+                    // 이미 쓰는 #2287 합성을 **같은 헬퍼·같은 가용 폭**으로 불러
+                    // 세 경로의 문단 전진값을 일치시킨다. 이 폴백은 줄 노드를 하나만
+                    // 만드는 자리라 합성 줄들의 높이·줄간격 합을 그 한 줄에 싣는다 —
+                    // 전진 총량은 두 측정 경로와 같고, 개체 자체는 별도 노드로 그려진다.
+                    let avail = {
+                        let margin_l = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                        let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                        (col_area.width - margin_l - margin_r).max(0.0)
+                    };
+                    para.and_then(|p| {
+                        crate::renderer::tac_object_stack_line_metrics(p, self.dpi, Some(avail))
+                    })
+                    .map(|metrics| {
+                        let height: f64 = metrics.iter().map(|(h, _)| *h).sum();
+                        let spacing: f64 = metrics.iter().map(|(_, s)| *s).sum();
+                        (height, spacing)
+                    })
+                })
                 .unwrap_or((hwpunit_to_px(400, self.dpi), 0.0));
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
