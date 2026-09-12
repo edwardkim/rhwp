@@ -54,6 +54,26 @@ await runTest('#6963 hyperlink editor UI', async ({ page }) => {
   await page.keyboard.press('Backspace');
   await page.keyboard.press('Backspace');
   await page.keyboard.press('Backspace');
+  // 양방향 삭제 키는 링크 전체 삭제를 확인하고 한 번의 Undo로 주소·서식을 복구한다.
+  const deletionContext = () => page.evaluate(() => window.__wasm.getHyperlinkContext({ section: 0, para: 0, cellPath: [] }));
+  const beforeDeletion = await deletionContext();
+  for (const [navigation, key] of [['End', 'Backspace'], ['Home', 'Delete']]) {
+    await page.keyboard.press(navigation);
+    await page.keyboard.press(key);
+    await page.waitForSelector('[role="alertdialog"][aria-label="지우기"]');
+    assert.equal(await page.$eval('.dialog-body', el => el.textContent), '[하이퍼링크]를 지울까요?');
+    assert.deepEqual(await deletionContext(), beforeDeletion);
+    await page.keyboard.press('Escape');
+    assert.deepEqual(await deletionContext(), beforeDeletion);
+    await page.keyboard.press(key);
+    await page.click('.dialog-btn-primary');
+    assert.equal((await deletionContext()).text, '');
+    assert.equal((await deletionContext()).links.length, 0);
+    await page.evaluate(() => window.__inputHandler.performUndo());
+    assert.deepEqual(await deletionContext(), beforeDeletion);
+    assert.equal((await props()).textColor.toLowerCase(), '#0000ff');
+    assert.equal((await props()).underline, true);
+  }
   const point = await page.evaluate(() => {
     const ih = window.__inputHandler;
     const r = window.__wasm.getSelectionRects(0, 0, 0, 0, 2)[0];
