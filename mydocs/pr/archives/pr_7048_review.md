@@ -9,6 +9,163 @@ last_verified: 2026-09-12
 
 ## 최종 판정
 
+**진단 보정 검증 완료 / 렌더링 수용 판정 보류**. 내용 대응을 바로잡아도 한컴 PDF와 하단 문단·꼬리말 차이가 남는다.
+원 head 단독 승인으로 해석하지 않는다. 최신 integration head의 GitHub CI는 merge 전 조건이다.
+#7048의 진단 동작 검증과 미해결 한컴 렌더링 일치 판정은 구분하며, 이 기록에서 통합 merge를 완료 처리하지 않는다.
+
+## 메인터너 보정 검증 — 2026-09-12
+
+- 작업 branch: `review/nondraft-7040-7053-20260912`, 기준 `upstream/devel` `ea5d1ff70b1d50301d1e6fdd26248e9d9c10c1fa`.
+- 생산 코드·회귀 보정 `8099aa8b2`, 측정 회귀 입력 보정 `6456aff3a`; 최종 실행 후보 **`6456aff3a0ee3fea70a12a7d167192e094e971fc`**.
+- #7050 최신 source `de3301a03891ff2a9287f907f6944a38cf59720b`는 `78f2a85b1`에 이미 포함됐다.
+  원 contributor history는 유지하고 보정 commit을 별도로 더했다. 아래 과거 검토의 보류 사유는 이 보정으로 재판정한다.
+- 원 PR CI 네 건은 성공했다. #7050의 별도 CodeQL Rust도 마지막 조회에서 완료·성공했다.
+  새 메인터너 후보의 GitHub CI·PR 생성·merge는 아직 실행하지 않았다. 원 source CI를 새 후보 CI로 이월하지 않는다.
+
+### 이번 후보의 실제 검증
+
+macOS arm64 / Rust 1.93.1 / review 전용 `target/pr-review`. 소유·공유 상태와 기존 Cargo 작업 부재를
+확인하고 실행했다. shared target과 다른 worktree는 삭제하지 않았다.
+
+- 파생 suite 준비 → fmt → fmt check → native Clippy → WASM32 Clippy → workspace build →
+  workspace all-target Clippy → manifest check를 순차 통과했다. 모든 Clippy는 `--locked`, `-D warnings`다.
+- 집중 nextest: `Summary [   0.386s] 25 tests run: 25 passed, 9548 skipped`; exit 0.
+- 전체 nextest: `Summary [ 433.012s] 9527 tests run: 9527 passed (5 slow, 1 leaky), 46 skipped`; exit 0. 새 fixture를 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 명시했고 코퍼스 래칫도 통과했다.
+- Native Skia lib: **4,112 PASS / 0 FAIL / 13 ignored**, exit 0.
+  placeholder **2 PASS**, direct PDF **4 PASS**, 각각 exit 0.
+- WASM: 공식 `scripts/wasm-pack-locked.sh --target web --out-dir <검증경로>/wasm-pkg --no-opt`, exit 0.
+  Docker daemon 연결 불가로 사용한 native 진단 경로이며, 최적화 배포 빌드 통과를 뜻하지 않는다.
+- native↔WASM SVG: 원본 4종의 첫 쪽, 화학 표시기준 15쪽, PAGE/TOTAL_PAGE 정·역순 변형 각 12쪽,
+  **7종 / 29쪽 모두 MATCH**, 각 실행 exit 0. Node WASM 직접 실행이며 브라우저 editor E2E는 아니다.
+- source-side `#[cfg(test)]` 변경은 없어 unit-tier 추가 gate는 비해당. generated suite·manifest는 stage하지 않았다.
+
+재현 명령은 아래 과거 검토의 lint/full/Native 명령과 같으며, focused 식에
+`maintainer_nested_table_lines|`를 추가했다. 새 WASM/시각 출력과 전체 원시 로그는
+`/tmp/rhwp-maintainer-validation`에 보관했다. 실제 실행 명령의 전체 순서는
+`/tmp/rhwp-maintainer-validate.py`, 결과는 `results.jsonl`의 각 단계 마지막 완료값이다.
+중간 테스트 입력 실패를 성공으로 세지 않았으며, 2-cell host로 수정한 최종 후보에서 전체를 재실행했다.
+이후 `6b0c396b5`에서 기존 body/footer 검사도 옛 진단에서 통과한다는 사실을 테스트 주석에 정정했다.
+테스트 본문·생산 동작은 그대로이고 Rust lint 8단계를 다시 통과했다(`final-lint-results.json`).
+
+### Visual sweep 수정 전후 비교
+
+[Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 적용했다.
+사용한 debug CLI의 SHA-256은 `1e2b7bdacca1c41ddab986ad423f364b47fb9b54d4142d0679143d3405b8a8ee`다.
+`8099aa8b2`에서 빌드했으며 뒤의 `6456aff3a`는 테스트 입력만 바꿔 생산 source가 동일하다.
+release CLI나 최적화 배포 WASM을 사용한 것으로 기록하지 않는다.
+
+- 비교 전: 보관한 최초 누적 후보 `522a2e80db04cbd84264406ccb8bdd33a21dcc55`.
+  비교 후: 위 최종 보정 후보. 이 비교에는 #7050 최신 source 갱신도 들어간다.
+  비교 전을 upstream/devel 또는 직전 `71213f7e6`으로 잘못 표기하지 않는다.
+- 원본 5종 **126쪽의 SVG·render tree가 byte 단위로 동일**했다.
+  언어 15쪽, issue2083 4쪽, issue2470 2쪽, 쪽필드 1쪽, 화학 표시기준 104쪽이다.
+  별도로 raster한 공통 첫 쪽 4장의 본문 PNG pixel도 동일했다. 126쪽 모두를 육안 검토했다는 뜻은 아니다.
+- 한컴 PDF와 직접 연 대표 review PNG는 **5장**이다. compare/overlay/review 산출은
+  `<검증경로>/visual/<key>/{compare,overlay,review}`, 화학 문서 최종 내용 대응 패널은 `visual7048-mapped/review_015.png`다.
+- 별도 OVR5의 **142쪽 / 48개 객체**, 페이지 수·geometry 변경 0건(기본 2px 비교 허용치).
+  KTX 27쪽/9개, exam_math 20쪽/9개, 언어 15쪽/3개, aift 74쪽/27개, biz_plan 6쪽/0개.
+  `tools/object_visual_regression.py`의 추출·비교 함수를 두 보관 CLI로 실행했다.
+  biz_plan은 검출 객체가 없어 객체 배치 검증 범위가 비어 있다. 한컴 fidelity 전체 통과 수치가 아니다.
+
+| 대표 화면 | 직접 확인 쪽 | 자동 후보 | pixel match | ink proxy | 판정 범위 |
+| --- | --- | --- | --- | --- | --- |
+| #7040 언어 | 1 | 0 | 88.134% | 12.610% | 머리 표 괘선이 본문 위, 성명 상자 절대 y·글꼴 차이 잔존 |
+| #7050 issue2083 | 1 | 0 | 94.586% | 21.890% | 두 표 하단 상대 간격 18.2px, 한컴 18.22px; 절대 y 차이 잔존 |
+| #7050 issue2470 | 1 | 0 | 96.079% | 30.866% | 두 표 하단 상대 간격 6.2px, 한컴 6.23px; 글꼴·로고 차이 잔존 |
+| #7053 쪽필드 | 1 | 0 | 99.527% | 13.692% | 두 쪽필드 모두 1/1 표시, 선·글자 폭 차이 잔존 |
+| #7048 화학 표시기준 | rhwp 15 ↔ PDF 16 | 자동 후보 재산출 안 함 | 97.902% | 11.679% | 내용 대응 보정 후에도 하단 문단 y·꼬리말 충돌·글꼴 차이 잔존 |
+
+자동 후보 0은 해당 heuristic의 결과다. #7048 최초 rhwp15↔PDF15 패널은 본문이 대응하지 않아
+사용자 지적 뒤 최종 증적에서 제외했다. 본문 내용으로 PDF16을 찾아 재비교했으며, 하단 두 문단이
+약 40px 낮고 꼬리말과 겹치는 실제 차이와 글꼴 차이가 남는다. 이 패널을 렌더링 합격 증거로 쓰지 않는다.
+기존 rhwp 96 ↔ 한컴 95쪽의 내용 대응 패널도 과거 증거로 보존했다.
+
+사용자 지적 뒤 `upstream/devel` `ea5d1ff70`의 생산 source로 별도 CLI를 빌드해 추가 대조했다.
+화학 표시기준 **104쪽 전체 render tree와 `export-svg --font-style` 출력이 보정 후보와 동일**했다.
+따라서 하단 문단·꼬리말 충돌은 기존 renderer 결함이며 이번 진단 보정으로 새로 발생하지 않았다.
+base CLI SHA-256은 `6bb96cf2947a846899c0aabd7f3bbcc32ffea125c018aa2892bcd6627e7128f4`다.
+독립 기준 출력은 `devel-chemical/`, 재현 script와 source 복원·재빌드 결과는
+`/tmp/rhwp-maintainer-validation/compare-devel.py`, `devel-comparison.json`에 보관했다.
+최초 SVG 비교의 `--font-style` 옵션 차이는 동일 옵션으로 재실행해 제거했다.
+
+PDF16은 `pdftotext -layout`에서 본문 내용으로 찾고 `pdftoppm -f 16 -l 16 -r 96 -png -singlefile`로
+추출했다. 최종 패널은 canonical `make_compares`, `make_overlay_compares`, `make_review_panels`를
+현재 rhwp15 PNG/PDF16 PNG 쌍으로 실행했다. 임시 wrapper `remap-7048.py`는 PDF 축 라벨을 실제 16쪽으로
+표시하며, 이미지 내용·좌표·지표 계산은 바꾸지 않는다.
+
+```bash
+python3 scripts/visual_sweep.py --rhwp-bin /tmp/rhwp-maintainer-validation/maintainer-rhwp \
+  --out /tmp/rhwp-maintainer-validation/visual --page 1 \
+  --file-target pr7040-21 samples/21_언어_기출_편집가능본.hwp pdf/21_언어_기출_편집가능본-2022.pdf \
+  --file-target pr7050-2083 samples/issue2083_hide_fill_page.hwpx pdf/issue2083_hide_fill_page-hwpx-2020.pdf \
+  --file-target pr7050-2470 samples/issue2470/36382471_masked.hwpx pdf/issue2470/36382471_masked-hwpx-2020.pdf \
+  --file-target pr7053 samples/issue6986/cell-page-and-total-page-in-one-run.hwpx pdf/cell-page-and-total-page-in-one-run-2020.pdf
+python3 scripts/visual_sweep.py --rhwp-bin /tmp/rhwp-maintainer-validation/maintainer-rhwp \
+  --out /tmp/rhwp-maintainer-validation/visual7048 --page 15 --key pr7048-15 \
+  --hwp samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp \
+  --pdf pdf/1480000-201900042-chemical-labeling-standards-2020.pdf
+```
+
+### 보류 사유 보정
+
+앞뒤 U+0020/U+3000 공백을 고정 em 폭으로 빼던 코드를 renderer와 같은
+`replay_positions_for(display_or_text())`로 바꿨다. 유효한 글리프 위치, 잘못된/비유한 위치의 fallback,
+표시 문자열 변경을 함께 처리하고 비공백 쪽 bbox 끝은 보존한다.
+같은 글리프 배치의 좁은/넓은/전각/뒤 공백과 표시 문자열 경계 테스트를 추가했다.
+
+physical 96쪽을 모든 환경에서 전제한 fixture 회귀는 내용으로 찾는 실제 본문/꼬리말 충돌 검사와
+결정적 baseline 3쌍 검사로 분리했다. 본문/꼬리말은 기존 진단도 검출하므로 이것만을 red/green
+증거로 쓰지 않는다. 기존 devel 진단 모듈을 임시 하네스에 그대로 넣으면 새 baseline 3쌍 테스트가
+**0 대 3으로 실패**, 현재 모듈은 통과했다. `71213f7e6` 고정 em 공백 진단에서는 추가한
+앞/뒤 공백 테스트 2개가 실패했고 최종 후보의 전체 glyph-band 10개는 통과했다.
+
+기존 TSV 두 행의 **2→5는 contributor 변경 그대로 보존**했다. 이번 보정에서 추가로 올리지 않았다.
+원 source `b0d657d75`의 [CI 34665904362](https://github.com/edwardkim/rhwp/actions/runs/34665904362)
+Archive C 로그에서 `issue_7023_crowded_body_lines_are_detected` PASS(본문 ≥3쌍), Archive B에서
+text-overlap 전수 partition PASS를 직접 확인했다. 기존 2건에 추가 baseline 띠 3쌍을 허용한 출처다.
+해당 PR의 좌표 설명과 별개로, 같은 최종 render tree에 `ea5d1ff70` 진단과 현재 진단을 적용한
+Mac 대조에서는 두 문서 모두 **2→2, 104쪽**이었다. 원본 104쪽 SVG·render tree도 보정 전후 동일해
+renderer 악화를 허용하려고 기준을 높인 것이 아니다. source CI 결과를 현재 Mac의 5건 실측으로 쓰지 않는다.
+
+현재 실제 검출 2건은 physical 15·56쪽 본문/꼬리말이다. 15쪽 교차 영역 44.0×12.92px,
+56쪽 5.47×11.32px. 기존 renderer 겹침·페이지 수 104 대 한컴 103은 이번 diagnostics 수정의 해결 범위가 아니다.
+
+### 보정 후 공통 조판 원칙 준수
+
+[공통 준수 검토](../../manual/pr_review/intake_and_review.md#27-조판-원칙-준수-검토)를 재적용했다.
+
+| 항목 | 판정 | 근거 |
+| --- | --- | --- |
+| 구현 근거와 일반성 | 충족 | 고정 em 공백 차감 대신 실제 renderer replay 계약 |
+| 측정·배치 일관성 | 충족 | 진단과 SVG의 유효 위치/fallback 일치 |
+| 줄 소속과 점유 높이 | 비해당 | 진단만 변경; renderer 배치 불변 |
+| 사례와 증거의 독립성 | 충족 | 실물 충돌 + baseline/공백 음성 대조를 구분 |
+| 기준값 변경 | 근거 확인 | 원 CI 실제 3쌍·전수 PASS, Mac 2→2; 추가 완화 없음 |
+| 주장과 검증 범위 | 충족 | 환경별 관측과 기존 renderer 문제를 구분 |
+
+### 최종 대표 이미지
+
+![PR 7048 보정 후보 직접 비교](../assets/pr7048_maintainer_rhwp15_pdf16_review.png)
+
+- 최종 SHA-256 `c8e8fe60455f2d5e8cfb7c501f4bb53e287392515dd3ac5351c7da23a058fe73`. 원본/PDF provenance는 아래 이력의 동일 입력을 사용했다.
+
+### Merge 후 contributor PR comment 계획
+
+실제 통합 merge 후 위 직접 확인 페이지·후보 수·지표·잔여 차이와 원 PR 적용/보정 SHA를
+`--body-file`로 게시하고 API로 본문과 이미지 URL을 재조회한다. 원 PR은 통합 PR/merge를 링크한 뒤 닫는다.
+대표 이미지는 다음처럼 merge SHA에 고정한다.
+
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7048_maintainer_rhwp15_pdf16_review.png`
+
+최신 integration head CI와 적용 대상 원 PR head를 merge 전에 다시 확인한다. 이 검토 기록 자체는
+GitHub approve/comment/close/push/merge 수행이 아니며, owner reviewer 자동 지정도 하지 않았다.
+
+<details>
+<summary>보정 전 검토 이력 — 당시 후보와 실패를 보존하며 현재 판정에는 이월하지 않음</summary>
+
+
+## 보정 전 판정
+
 **머지 보류**. 아래 구현·검증 blocker를 해소하기 전 이 변경을 수용하지 않는다.
 
 | 항목 | 확인값 |
@@ -177,7 +334,7 @@ rustc --edition=2021 /tmp/rhwp-nondraft-review-20260912-YtWNPm/review_probes.rs 
 - 원본 `samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp`, SHA-256 `4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0`.
 - 기준 `pdf/1480000-201900042-chemical-labeling-standards-2020.pdf`, 1119717 bytes, SHA-256 `32e0e6d41d53b755b3dc4bcc31937e8b4f0921b282c2e5d3633a3f3617761912`, SHA-1 `a93593ec3798add8577bb4469c7be55c8ab43619`. Creator:         Hwp 2022 0.0.0.0; Producer:        Hancom PDF 1.3.0.550; Pages:           103; PDF version:     1.6.
 
-![PR 7048 직접 확인 패널](../assets/pr7048_integrated_rhwp96_pdf95_review.png)
+![PR 7048 직접 확인 패널](https://raw.githubusercontent.com/edwardkim/rhwp/71213f7e6b91a69eec6553936c1265caeb222b0d/mydocs/pr/assets/pr7048_integrated_rhwp96_pdf95_review.png)
 
 - 원 산출: `/tmp/rhwp-nondraft-review-20260912-YtWNPm/visual7048-mapped/review_096.png`; 최종 SHA-256 `f73bc1cd697eb4768b28e5b4162823fb280b306a24f863b63ead1f5411b18788`.
 - 내용 대응을 보정한 rhwp 96 ↔ PDF 95: pixel match 86.041%, ink match 9.967%. 최초 96↔96 지표는 수용 근거에서 제외했다.
@@ -194,3 +351,5 @@ Synthetic PAGE/TOTAL_PAGE order variants: 2 documents x 12 pages.
 
 현재 판정은 보류다. 이 기록을 GitHub approve/merge/close로 해석하지 않는다.
 구체적인 위반 위치·실행 결과·미검증 범위를 보완 요청 근거로 사용하고, 수정 head에서 다시 검토한다.
+
+</details>

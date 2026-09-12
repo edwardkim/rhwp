@@ -33,7 +33,7 @@ last_verified: 2026-09-12
 - 이전 5개 적용표는 최초 검증 후보의 이력이다. 현재 #7050은 새 source로 대체됐다.
 - 최신 후보의 로컬 테스트/시각 실행은 미수행이며 source CI 34677890610의 최종 SUCCESS를 확인했다.
 
-## 단계와 다음 조건
+## 보정 전 단계 기록
 
 1. 완료: non-draft 4건 분류, 원 PR reviewer 지정, head fetch, 최신 devel 위 기능 5개 적용.
 2. 완료: 실제 diff·이슈/기존 리뷰·공통 조판 원칙 검토, 집중/전체 검증과 직접 증적 확인.
@@ -48,3 +48,14 @@ last_verified: 2026-09-12
 기존 실패나 임의 수정으로 원 source를 강제 rewrite하지 않는다. source head가 바뀌면 새 SHA를 고정하고
 변경 범위 검증을 다시 한다. 현재 검토 branch와 원격 조회 ref는 후속 보완을 위해 유지한다.
 다른 작업의 worktree, 공유 target, 기존 사용자 파일은 보존했다.
+
+## 메인터너 보정 완료와 남은 원격 단계
+
+- `8099aa8b2`에서 원 source와 분리해 raw 컨트롤 축·줄 그룹·진단 replay 폭을 보정했다.
+- `6456aff3a`에서 실제 셀 측정 경로를 타도록 회귀 입력을 보완했다. 최종 code candidate는 `6456aff3a0ee3fea70a12a7d167192e094e971fc`다.
+- 집중 25 PASS, 전체 9,527 PASS / 46 skipped, Native Skia·WASM·7종 29쪽 parity를 완료했다.
+- 직접 visual sweep 5장, 원본 5종 126쪽 before/after 불변, OVR5 142쪽/48개 객체 변화 0건.
+  원본의 기존 한컴 차이·합성 입력과 정상 문서의 증거 구분은 [현재 검토](pr_7053_review.md)에 기록했다.
+- `6b0c396b5`에서 음성 대조를 설명하는 테스트 주석만 정정하고 Rust lint 묶음을 재확인했다.
+- 원격 integration PR 생성·CI·merge 및 원 PR/이슈 후속 처리는 아직 실행하지 않았다.
+  review 기록을 별도 docs-only PR로 분리하지 않으며, 원 source history와 다른 worktree를 유지했다.
