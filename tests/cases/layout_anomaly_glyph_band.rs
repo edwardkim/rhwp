@@ -247,3 +247,122 @@ fn runless_line_is_not_a_candidate() {
     ]);
     assert_eq!(n, 0, "무런 줄이 후보로 새면 유령 겹침이 생긴다");
 }
+
+fn text_pair_count(first: RenderNode, second: RenderNode) -> usize {
+    let a = first.bbox;
+    let b = second.bbox;
+    let root = page_root(vec![
+        line_with_runs(a.x, a.y, a.width, a.height, vec![first]),
+        line_with_runs(b.x, b.y, b.width, b.height, vec![second]),
+    ]);
+    scan_page(0, &root, 2, &AnomalyOptions::default())
+        .text_overlap
+        .len()
+}
+
+fn replay_run(text: &str, positions: Vec<f64>, x: f64, y: f64) -> RenderNode {
+    let width = *positions.last().expect("advance");
+    let mut node = run(text, x, y, width, 20.0, 20.0);
+    if let RenderNodeType::TextRun(tr) = &mut node.node_type {
+        tr.baseline = 17.0;
+        tr.layout_positions = Some(positions);
+    }
+    node
+}
+
+#[test]
+fn space_trimming_uses_visible_glyph_replay_positions() {
+    // 가 is at x=14 in each representation. A fixed 0.5em trim would put it at 30.
+    let neighbor = replay_run("나", vec![0.0, 10.0], 14.0, 102.0);
+    for (text, positions, x) in [
+        ("  가", vec![0.0, 2.0, 4.0, 24.0], 10.0),
+        ("가", vec![0.0, 20.0], 14.0),
+        ("\u{3000}가", vec![0.0, 4.0, 24.0], 10.0),
+    ] {
+        assert_eq!(
+            text_pair_count(replay_run(text, positions, x, 100.0), neighbor.clone()),
+            1,
+            "{text:?}"
+        );
+    }
+    // A genuinely wide leading space is not ink: x=10..40 is empty.
+    assert_eq!(
+        text_pair_count(
+            replay_run(" 가", vec![0.0, 30.0, 50.0], 10.0, 100.0),
+            neighbor
+        ),
+        0
+    );
+}
+
+#[test]
+fn trailing_space_does_not_erase_the_last_visible_glyph() {
+    let neighbor = replay_run("나", vec![0.0, 10.0], 24.0, 102.0);
+    assert_eq!(
+        text_pair_count(
+            replay_run("가  ", vec![0.0, 20.0, 22.0, 24.0], 10.0, 100.0),
+            neighbor
+        ),
+        1
+    );
+    let beyond_ink = replay_run("나", vec![0.0, 10.0], 32.0, 102.0);
+    assert_eq!(
+        text_pair_count(
+            replay_run("가  ", vec![0.0, 20.0, 30.0, 40.0], 10.0, 100.0),
+            beyond_ink
+        ),
+        0
+    );
+}
+
+#[test]
+fn invalid_positions_and_changed_display_text_use_the_render_fallback() {
+    let neighbor = replay_run("나", vec![0.0, 10.0], 32.0, 102.0);
+    let mut plain = run("  가", 10.0, 100.0, 40.0, 20.0, 20.0);
+    if let RenderNodeType::TextRun(tr) = &mut plain.node_type {
+        tr.baseline = 17.0;
+    }
+    let expected = text_pair_count(plain.clone(), neighbor.clone());
+    for invalid in [
+        vec![0.0],
+        vec![0.0, f64::NAN, 4.0, 40.0],
+        vec![0.0, 10.0, 2.0, 40.0],
+    ] {
+        let mut node = plain.clone();
+        if let RenderNodeType::TextRun(tr) = &mut node.node_type {
+            tr.layout_positions = Some(invalid);
+        }
+        assert_eq!(text_pair_count(node, neighbor.clone()), expected);
+    }
+    if let RenderNodeType::TextRun(tr) = &mut plain.node_type {
+        tr.text = " ".into();
+        tr.display_text = Some("  가".into());
+        tr.layout_positions = Some(vec![0.0, 40.0]);
+    }
+    assert_eq!(text_pair_count(plain, neighbor), expected);
+}
+
+#[test]
+fn baseline_bands_detect_three_pairs_hidden_by_centering() {
+    // Isolate the original #7023 failure class from platform-dependent pagination.
+    let mut lines = Vec::new();
+    for pair in 0..3 {
+        let x = 100.0 * pair as f64;
+        let mut a = run("가", x, 0.0, 20.0, 80.0, 20.0);
+        let mut b = run("나", x, 50.0, 20.0, 20.0, 20.0);
+        if let RenderNodeType::TextRun(tr) = &mut a.node_type {
+            tr.baseline = 70.0;
+        }
+        if let RenderNodeType::TextRun(tr) = &mut b.node_type {
+            tr.baseline = 17.0;
+        }
+        lines.push(line_with_runs(x, 0.0, 20.0, 80.0, vec![a]));
+        lines.push(line_with_runs(x, 50.0, 20.0, 20.0, vec![b]));
+    }
+    assert_eq!(
+        scan_page(0, &page_root(lines), 6, &AnomalyOptions::default())
+            .text_overlap
+            .len(),
+        3
+    );
+}

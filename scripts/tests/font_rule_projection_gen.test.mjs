@@ -82,7 +82,7 @@ test('five backend projections are deterministic and close all 830 registry rule
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
   assert.equal(first.manifest.summary.activeRuleCount, 830);
-  assert.equal(first.manifest.summary.retiredRuleCount, 0);
+  assert.equal(first.manifest.summary.retiredRuleCount, 1);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
     'canvas2d-webfont': 153,
@@ -95,7 +95,10 @@ test('five backend projections are deterministic and close all 830 registry rule
       output.projectionId,
       output.projectionSha256,
     ]).sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))),
-    SEALED_PROJECTION_SHA256,
+    { ...SEALED_PROJECTION_SHA256,
+      // Approved BatangChe supply replacement; the other four planes remain sealed.
+      'canvas2d-webfont': 'b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245',
+    },
   );
 });
 
@@ -212,7 +215,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
   assert.equal(bundle.manifest.summary.activeRuleCount, 829);
-  assert.equal(bundle.manifest.summary.retiredRuleCount, 1);
+  assert.equal(bundle.manifest.summary.retiredRuleCount, 2);
 });
 
 test('check detects missing, manually edited and unexpected generated outputs', () => {
@@ -329,4 +332,15 @@ test('CLI rejects caller-selected output paths', () => {
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /fixed checkout-root output paths/);
+});
+
+test('BatangChe supply retains serif paint without changing its metric rule', () => {
+  const registry = readRegistry();
+  const active = registry.rules.filter(rule => rule.status === 'active' && rule.sourceFace === '바탕체');
+  const supply = active.find(rule => rule.projections[0].id === 'canvas2d-webfont');
+  assert.equal(supply.supply.sourceUrl, 'fonts/NotoSerifKR-Regular.woff2');
+  assert.equal(supply.supply.fontFamily, '바탕체');
+  const metric = active.find(rule => rule.projections[0].id === 'rust-layout-metric');
+  assert.equal(metric.targetFaceOrPolicy, 'BatangChe');
+  assert.equal(supply.lifecycle.predecessorRuleIds.length, 1);
 });

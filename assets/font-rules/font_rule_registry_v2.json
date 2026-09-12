@@ -1,5 +1,11 @@
 {
-  "appliedChangeSets": [],
+  "appliedChangeSets": [
+    {
+      "changeSetId": "issue-7023.batangche-serif-supply",
+      "path": "assets/font-rules/changes/issue-7023-batangche-serif-supply.json",
+      "sha256": "3056d9ec90a57a7d27926586fd2ec6bb92fc0303c233cf341eec6d71349a80ac"
+    }
+  ],
   "evidenceRecords": [
     {
       "evidenceId": "evidence.issue-5955.sealed-v1-registry",
@@ -8,6 +14,14 @@
       "parentEvidenceIds": [],
       "sha256": "f549ca3a8807be712cc197daf14d96abb1e5f075ac55f1d9142db67c1a56681a",
       "source": "assets/font-rules/font_rule_registry.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7023.batangche-serif-supply",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Repository font strategy: BatangChe is serif mono; bundled Noto Serif KR is the documented serif substitute.",
+      "parentEvidenceIds": [],
+      "sha256": "53faff78ddc02507b67da7f4d6a932dc5f0959002dea08cb85dcdc2211467768",
+      "source": "mydocs/tech/font_fallback_strategy.md"
     }
   ],
   "issue": 5955,
@@ -25609,15 +25623,18 @@
         "w1RuleId": "rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-7023.batangche-serif-supply"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-7023.batangche-serif-supply",
+        "retirementReason": "BatangChe serif source was supplied with sans D2Coding; preserve serif paint and leave stored metric selection unchanged.",
+        "successorRuleIds": [
+          "rule.studio-supply.batangche-serif.canvas2d"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -25633,7 +25650,7 @@
       "selectionTupleSha256": "771648faa32faf6ceff935d6e6a0cd5f84ca24471d4381b1ddc5940238ca993a",
       "sourceBoundaryId": "studio-supply.font-list",
       "sourceFace": "바탕체",
-      "status": "active",
+      "status": "retired",
       "supply": {
         "external": false,
         "fontFamily": "바탕체",
@@ -43212,9 +43229,53 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "read approved exact PostScript faces in one batch without persistent byte caching"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-unknown"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7023.batangche-serif-supply"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7023.batangche-serif-supply",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 32,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.studio-supply.batangche-serif.canvas2d",
+      "selectionTupleSha256": "0807211e5cad1eaa1ac33f77e3b7a365f93d3f2a1e796cb2792de71dbd4ea49e",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "바탕체",
+      "status": "active",
+      "supply": {
+        "external": false,
+        "fontFamily": "바탕체",
+        "format": "woff2",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "fonts/NotoSerifKR-Regular.woff2",
+        "unicodeRange": null
+      },
+      "targetFaceOrPolicy": "'fonts/NotoSerifKR-Regular.woff2'"
     }
   ],
-  "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
+  "rulesSha256": "ee040c0456763c443e0915c7923ccf0ca74c48af352a130fc7df21d890be11f6",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -43234,7 +43295,7 @@
       "rust-layout-metric": 67,
       "rust-layout-name": 171
     },
-    "retiredRuleCount": 0,
-    "ruleCount": 830
+    "retiredRuleCount": 1,
+    "ruleCount": 831
   }
 }

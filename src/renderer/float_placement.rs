@@ -17,7 +17,7 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
-/// 문단 상대 자리차지 표의 확정된 세로 배치. 모든 값은 단 상대 px다.
+/// 문단 상대 자리차지 개체의 확정된 세로 배치. 모든 값은 단 상대 px다.
 /// 예약과 출력이 같은 결과를 사용하므로 renderer에서 원점을 다시 더하지 않는다.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ParagraphFloatPlacement {
@@ -33,11 +33,16 @@ pub struct ParagraphFloatPlacement {
     pub occupied_bottom: f64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ParagraphFloatFlow {
     Exclusion,
     /// The trailing object cannot fit in the host line's remaining inline space.
     NextLine,
+    /// The saved successor line starts at the picture's occupied bottom. Its
+    /// spacing-before is already inside that reservation, not an extra gap.
+    StoredPicture {
+        next_flow_y: f64,
+    },
 }
 
 /// 실제 재조판에서 확정한 호스트 줄. 문자 위치는 `Paragraph.text`의 scalar 축,
@@ -49,6 +54,142 @@ pub struct ParagraphHostLine {
     pub height: f64,
 }
 
+/// Recover an empty picture host's saved flow only when an empty successor
+/// spacer with positive spacing-before starts exactly at the picture frame end.
+/// That spacer proves the reserved before-gap belongs to the object boundary.
+/// A text successor, or a line without such a gap, does not prove exclusive
+/// ownership of paragraph flow merely by touching the picture geometrically.
+/// A zero-width host line belongs to the blocking object, not a second text line
+/// to append below it. Missing/stale lines, explicit breaks and edited sessions
+/// must keep measured flow (the caller supplies the stored-layout capability).
+pub fn stored_picture_successor_placement(
+    para: &Paragraph,
+    successor: &Paragraph,
+    spacing_before: f64,
+    successor_spacing_before: f64,
+    frame_vpos: i32,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let next = successor.line_segs.first()?;
+    let common = &picture.common;
+    if para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || !successor.text.is_empty()
+        || !successor.controls.is_empty()
+        || successor.column_type != crate::model::paragraph::ColumnBreakType::None
+        || host.tag & 0x8000_0000 != 0
+        || next.tag & 0x8000_0000 != 0
+        || host.segment_width != 0
+        || host.line_height <= 0
+        || next.line_height <= 0
+        || common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || common.margin.top != 0
+        || picture.caption.is_some()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !spacing_before.is_finite()
+        || !successor_spacing_before.is_finite()
+        || successor_spacing_before <= 0.0
+    {
+        return None;
+    }
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let anchor_y = host_y - spacing_before;
+    let top = anchor_y + hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    let bottom =
+        top + hwpunit_to_px(height, dpi) + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
+    let next_y = hwpunit_to_px(next.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    // The allowance is one integer HWPUNIT of rounding, not pixel slack.
+    if anchor_y < 0.0 || height <= 0 || (bottom - next_y).abs() > dpi / 7200.0 {
+        return None;
+    }
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::StoredPicture {
+            next_flow_y: next_y - successor_spacing_before,
+        },
+        anchor_y,
+        stored_host_origin: Some(host_y),
+        table_top: top,
+        occupied_bottom: bottom,
+    })
+}
+
+/// A saved CellBreak table can store its first fragment height in common.height.
+/// Accept that boundary only when BOTH fragments close in source units: a whole
+/// row prefix equals the frame, and the remaining rows plus repeated header end
+/// at the following paragraph's reset LINESEG. This is not a page-height clamp.
+pub fn stored_cellbreak_fragment_row_end(
+    table: &Table,
+    host: &Paragraph,
+    successor: &Paragraph,
+) -> Option<usize> {
+    let [line] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let next = successor.line_segs.first()?;
+    if table.page_break != TablePageBreak::CellBreak
+        || table.common.treat_as_char
+        || table.common.text_wrap != TextWrap::TopAndBottom
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.caption.is_some()
+        || table.cell_spacing != 0
+        || table.outer_margin_top != 0
+        || table.outer_margin_bottom != 0
+        || host.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || line.segment_width != 0
+        || line.tag & 0x8000_0000 != 0
+        || next.tag & 0x8000_0000 != 0
+        || next.vertical_pos <= 0
+        || next.vertical_pos >= line.vertical_pos
+        || !successor.controls.is_empty()
+    {
+        return None;
+    }
+    let heights = (0..table.row_count)
+        .map(|row| {
+            table
+                .cells
+                .iter()
+                .filter(|cell| cell.row == row && cell.row_span == 1)
+                .map(|cell| i64::from(cell.height))
+                .max()
+                .filter(|h| *h > 0 && *h <= i64::from(i32::MAX))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    let mut prefix = 0_i64;
+    let end = heights.iter().position(|height| {
+        prefix += height;
+        prefix == i64::from(table.common.height)
+    })? + 1;
+    if end >= heights.len()
+        || table.cells.iter().any(|cell| {
+            usize::from(cell.row) < end && usize::from(cell.row) + usize::from(cell.row_span) > end
+        })
+    {
+        return None;
+    }
+    let header_height: i64 = if table.repeat_header {
+        table
+            .leading_header_rows()
+            .iter()
+            .map(|&row| heights[row])
+            .sum()
+    } else {
+        0
+    };
+    let tail: i64 = heights[end..].iter().sum::<i64>() + header_height;
+    (tail == i64::from(next.vertical_pos)).then_some(end)
+}
+
 impl ParagraphFloatPlacement {
     /// Close a paragraph only after its text and logically trailing objects have
     /// been placed. The object reservation already includes its outer margins;
@@ -58,6 +199,7 @@ impl ParagraphFloatPlacement {
         match self.flow {
             ParagraphFloatFlow::Exclusion => text_flow_end,
             ParagraphFloatFlow::NextLine => text_flow_end.max(self.occupied_bottom + spacing_after),
+            ParagraphFloatFlow::StoredPicture { next_flow_y } => next_flow_y,
         }
     }
 
@@ -539,26 +681,112 @@ pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
     value as i32
 }
 
-/// [#6787] 이 문단의 중첩 표들이 **가로 오프셋으로 나란히** 놓이는 무리인가.
+/// [#7008] 문단의 중첩 표가 **어느 줄에 속하는가** — `para.controls` 와 같은 길이로,
+/// 표가 아닌 컨트롤 자리는 `None`.
 ///
-/// 문단-기준(`VertRelTo::Para`) 자리차지(`TopAndBottom`) 비-TAC 표들이 각자
-/// `horzOffset` 을 갖고 **가로로 겹치지 않으면** 한/글은 같은 y 에 놓는다
-/// (`#6494` 의 칸 안 짝). 하나라도 조건을 벗어나면 종전대로 세로 적층으로 본다.
+/// 줄 소속을 추측하지 않는다. 저장 `LINE_SEG` 사다리가 있으면 **그 소속을 보존**하고
+/// (컨트롤 시작과 줄 시작을 같은 원시 UTF-16 축으로 정규화한다),
+/// 사다리가 없는 문단은 `None` 을 돌려 호출자가 재조판 경로로 가게 한다.
+///
+/// 이 매핑이 있으면 문단 높이는 "줄별 점유 높이의 합" 으로 계산된다 — 같은 줄의 표를
+/// 세로로 합산하지 않고, 여러 줄이면 각 줄이 제 몫을 낸다.
+pub(crate) fn para_nested_table_line_indices(para: &Paragraph) -> Option<Vec<Option<usize>>> {
+    let lines = stored_control_line_indices(para)?;
+    Some(
+        para.controls
+            .iter()
+            .zip(lines)
+            .map(|(ctrl, line)| matches!(ctrl, Control::Table(_)).then_some(line))
+            .collect(),
+    )
+}
+
+/// 저장 줄과 컨트롤은 모두 PARA_TEXT UTF-16 축에서 비교한다.
+/// visible character 위치로 투영하면 한 갭 안의 서로 다른 컨트롤 시작이 소실된다.
+pub(crate) fn stored_control_line_indices(para: &Paragraph) -> Option<Vec<usize>> {
+    if para.line_segs.is_empty() || crate::renderer::para_has_no_stored_line_segs(para) {
+        return None;
+    }
+    Some(
+        para.control_utf16_positions()
+            .into_iter()
+            .map(|pos| {
+                (0..para.line_segs.len())
+                    .rfind(|&li| para.line_seg_text_start(li) <= pos)
+                    .unwrap_or(0)
+            })
+            .collect(),
+    )
+}
+
+/// 측정과 셀 배치가 함께 소비하는 중첩 표의 저장 줄 그룹.
+/// 저장 줄이 없으면 TAC의 같은 줄 소속을 가정하지 않고 종전 적층 폴백을 유지한다.
+pub(crate) struct NestedTableGroup {
+    pub(crate) line: Option<usize>,
+    pub(crate) controls: Vec<usize>,
+    pub(crate) side_by_side: bool,
+}
+
+pub(crate) fn nested_table_groups(para: &Paragraph) -> Vec<NestedTableGroup> {
+    let lines = para_nested_table_line_indices(para);
+    let mut groups: Vec<NestedTableGroup> = Vec::new();
+    for (ci, ctrl) in para.controls.iter().enumerate() {
+        if !matches!(ctrl, Control::Table(_)) {
+            continue;
+        }
+        let line = lines.as_ref().and_then(|v| v[ci]);
+        if let Some(group) = groups.iter_mut().find(|g| g.line == line) {
+            group.controls.push(ci);
+        } else {
+            groups.push(NestedTableGroup {
+                line,
+                controls: vec![ci],
+                side_by_side: false,
+            });
+        }
+    }
+    for group in &mut groups {
+        let tables: Vec<&Table> = group
+            .controls
+            .iter()
+            .filter_map(|&ci| match &para.controls[ci] {
+                Control::Table(t) => Some(t.as_ref()),
+                _ => None,
+            })
+            .collect();
+        group.side_by_side = if group.line.is_some() {
+            line_nested_table_group_is_side_by_side(&tables)
+        } else {
+            para_float_group_is_side_by_side(para)
+        };
+    }
+    groups
+}
+
+/// [#6787] 한 **줄**에 놓인 중첩 표들이 나란히 놓이는 무리인가 — 즉 그 줄이 예약해야 할
+/// 높이가 합이 아니라 **최댓값**인가.
+///
+/// 나란히 놓이는 길은 둘이다.
+///
+/// - **글줄 안 순서**(`#7008`) — 글자처럼 취급되는 표는 글줄 흐름에 참여하므로, 같은
+///   줄에 있다는 것 자체가 나란함이다. 오프셋을 쓰지 않는다.
+/// - **가로 오프셋**(`#6787`) — 문단-기준(`VertRelTo::Para`) 자리차지(`TopAndBottom`)
+///   비-TAC 표들이 각자 `horzOffset` 을 갖고 **가로로 겹치지 않으면** 한/글은 같은 y 에
+///   놓는다(`#6494` 의 칸 안 짝). 하나라도 조건을 벗어나면 세로 적층으로 본다.
 ///
 /// ⭐ **측정(`height_measurer`)과 배치(`table_layout`)가 이 하나의 판정을 함께 쓴다** —
 /// 두 축이 문자 그대로 같은 함수를 부르므로 발동 조건이 갈리는 일이 구조적으로 없다.
 /// (그 비대칭이 `#6787` 의 실제 결함이었다.)
-/// 종전에는 측정만 `horzOffset == 0` 을 무리의 시작으로 인정하고 배치는 `> 0` 만
-/// 레인에 넣어, 첫 표 오프셋이 0 인 무리에서 측정은 최대 높이만 예약하고 배치는
-/// 세로로 쌓아 뒤 표가 칸 밖으로 사라졌다. 또 배치는 표를 순차 처리하며 뒤 표가
-/// 조건에 걸리면 앞 표의 레인을 되돌리지 못했다 — 문단 단위 사전 판정으로 두 축을
-/// 함께 닫는다.
-pub(crate) fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
+pub(crate) fn line_nested_table_group_is_side_by_side(tables: &[&Table]) -> bool {
+    if tables.len() < 2 {
+        return false;
+    }
+    // 글자처럼 취급되는 표들은 같은 줄에 있다는 사실만으로 나란하다.
+    if tables.iter().all(|table| table.common.treat_as_char) {
+        return true;
+    }
     let mut spans: Vec<(i32, i32)> = Vec::new();
-    for ctrl in &para.controls {
-        let Control::Table(table) = ctrl else {
-            continue;
-        };
+    for table in tables {
         if !para_float_group_member_is_eligible(table) {
             return false;
         }
@@ -566,12 +794,23 @@ pub(crate) fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
         let width = table.common.width.min(i32::MAX as u32) as i32;
         spans.push((start, start.saturating_add(width)));
     }
-    if spans.len() < 2 {
-        return false;
-    }
     spans.sort_unstable();
     // 가로 구간이 하나라도 겹치면 나란히 놓을 수 없다.
     spans.windows(2).all(|w| w[0].1 <= w[1].0 + 1)
+}
+
+/// 저장 사다리가 없어 줄 소속을 모르는 문단의 폴백 — 문단 전체를 한 무리로 본다.
+pub(crate) fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
+    let tables: Vec<&Table> = para
+        .controls
+        .iter()
+        .filter_map(|ctrl| match ctrl {
+            Control::Table(table) => Some(table.as_ref()),
+            _ => None,
+        })
+        .collect();
+    tables.iter().all(|t| !t.common.treat_as_char)
+        && line_nested_table_group_is_side_by_side(&tables)
 }
 
 /// 나란히 무리의 자격 — 무리 판정과 레인 배치가 **같은 술어**를 쓴다.

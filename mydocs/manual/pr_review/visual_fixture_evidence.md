@@ -61,6 +61,13 @@ PR 또는 관련 issue 본문·comment에 첨부된 HWP/HWPX/PDF/PNG와 외부�
 내려받아 samples/issueN 또는 samples/prN 아래에 안정적인 이름으로 보존한다. 원본 첨부를 output에만
 두거나 기준 PDF라는 이유만으로 pdf에만 두지 않는다.
 
+위 보존은 로컬 복사로 끝내지 않는다. **검증에 사용한 HWP/HWPX/PDF를 검토 대상 commit에 포함**하고
+[공통 입력 확인](intake_and_review.md#28-검증-입력-커밋-확인)에서 실제 실행 파일과 commit의 동일성을 점검한다.
+`korea_downloads` 등 다운로드 폴더는 원본 탐색·수집 경로이며 최종 재현 경로가 아니다.
+이미 추적 중인 같은 내용의 원본·기준 PDF는 기존 경로를 사용하고 사본을 다시 추가하지 않는다.
+파일로 검증에 사용한 축소본·합성 HWPX도 정식 sample 또는 목적에 맞는 `tests/fixtures/`에 포함하고,
+원본 출처·변형 방법·해시와 검증 범위를 기록한다. 정식 sample은 기존 manifest·baseline 등록 절차를 따른다.
+
 본문 첨부 PDF는 먼저 `pdfinfo`로 `Creator`, `Producer`, PDF version, 페이지 수와 페이지 크기를
 확인한다. **한컴에서 직접 출력한 PDF와 MCP로 변환한 PDF 모두 기준 자료로 인정한다.**
 예를 들어 `Creator: Hwp 2024 13.0.0.3901` 또는 `Creator: Hwp 2022 12.0.0.4605`와
@@ -129,6 +136,8 @@ PR review 기준 PDF 파일명은 engine bucket 기준으로 끝낸다. `hancom-
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
 - 파일 하나가 50 MiB 미만인 MCP 산출 PDF는 `pdf/**`에 일반 Git blob으로 commit 가능한 장기 증적이다.
   상한을 넘는 PDF는 그대로 커밋하지 않고 축소 fixture·페이지 발췌·외부 증적 방식을 먼저 합의한다.
+  외부 증적만으로 공통 입력 커밋 항목을 `충족`으로 쓰지 않는다. 승인된 예외가 있으면 그 사유·보존 방식·
+  미충족 범위를 명시하고, 축소본·발췌본을 채택했다면 커밋된 대체 입력으로 직접 검증한 범위만 판정한다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
 - 원격 service는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 - 원본 크기와 예상 페이지 수를 먼저 확인한다. 페이지가 많거나 거대·중첩 표, 성능 sample은
@@ -199,8 +208,9 @@ PR 검증 과정에서 생성됐다는 이유만으로 output 디렉터리 전�
 
 | 구분 | 커밋 기준 |
 | --- | --- |
+| 검증 입력 HWP/HWPX | 실제 사용한 원본과 파일로 만든 합성·축소 변형을 포함한다. 기존 commit에 같은 내용이 있으면 재사용한다. 개인 다운로드·임시 폴더에만 두지 않는다. |
 | 최종 대표 PNG | PR·이슈 코멘트에서 직접 표시할 비교 패널, 전후 화면 또는 잔여 문제 증명에 꼭 필요한 이미지만 포함한다. |
-| 최종 기준 PDF | 재사용 조건을 충족하는 한컴 첨부본은 PDF 1.4/1.6 여부와 무관하게 원래 보존 경로에서 재사용하고 동일 사본을 추가하지 않는다. 새 MCP 산출본은 위 크기 제한에 따라 `pdf/`에 보존한다. 원본 기준 PDF를 임시 raster와 함께 제외하지 않는다. |
+| 최종 기준 PDF | 재사용 조건을 충족하는 한컴 첨부본은 PDF 1.4/1.6 여부와 무관하게 원래 보존 경로에서 재사용하고 동일 사본을 추가하지 않는다. 새 MCP 산출본은 위 크기 제한에 따라 `pdf/`에 보존한다. 수용 근거로 쓴 PDF의 commit 포함을 확인하고, 원본 기준 PDF를 임시 raster와 함께 제외하지 않는다. |
 | 중간 PNG | 페이지별 원시 raster, 중복 compare·overlay·review, contact sheet, 탐색용·실패한 캡처 등 최종 코멘트에 사용하지 않는 이미지는 제외한다. |
 | 생성 SVG·JSON | export SVG, render-tree JSON, 분석·metric JSON, run manifest, MCP 응답 JSON 등 검증 중간 산출물은 제외한다. |
 | 실행 로그 | build·test·lint·WASM·Studio·회귀 검증의 `.log` 및 그 밖의 원시 실행 로그는 제외한다. 통과 사실만으로 로그 파일을 첨부하지 않는다. |
