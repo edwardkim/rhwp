@@ -5,7 +5,9 @@
   [B 종료 통합 자동 검증](../working/task_m100_3587_stage8.md) 완료, 메인테이너 결과 승인.
   전체 nextest 9,579 PASS 및 Rust lint·Native Skia 3종 PASS. Docker WASM과 Studio
   검증을 수행했으며 Enter 경계 결함은 메인테이너 결정으로 #7065에 분리했다.
-  [C 상세계획](task_m100_3587_impl_c.md)은 승인되었고 C1 선검증 절편을 완료했다. 실제 채우기는 미완료다.
+  [C 상세계획](task_m100_3587_impl_c.md)은 승인되었고 C1 선검증과 복사본별 native 채우기를 구현했다.
+  [Stage 10](../working/task_m100_3587_stage10.md)에서 집중 100건·기존 필드 14건·Rust lint 3종 통과.
+  고정 양식 채우기·편의 선택은 아직 남아 있다.
   C2/C3·D 제품 구현과 Gym은 미착수.
   9,523 PASS는 Stage 3의 A 당시 결과다.**
 - 근거: [승인된 수행계획](task_m100_3587.md), [Stage 1 조사](../working/task_m100_3587_stage1.md)
