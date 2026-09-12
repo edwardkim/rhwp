@@ -6,7 +6,79 @@
 > 확인 후 표시 문자열 전체와 필드를 함께 삭제한다. 사용자가 로컬 동작을 확인하고
 > PR 반영·코멘트 게시를 승인했다. 병합 승인은 별도다.
 
-## 2026-09-13 최종 리뷰 후보
+## 2026-09-13 원래 글자 모양 복원 보정
+
+- 직전 원격 head: `549a4e099560519ac8aa05c32bbd147c7c9ee33e`.
+- 제품·테스트·화면 증거: `4a66e22d9fad86879f554983917f5db697c69168`.
+- 저장 무효화 위임 가드 포함 검증 후보: `560a4a1dbf38c33ccccef33ae7577fd6013a65fa`.
+- 기존 작성자 self-review 경로를 유지했다. 사용자가 서식 결함 보정과 보정 코멘트 게시를
+  승인했다. F11·편집→고치기·Enter 진입 경로는 별도 후속 이슈로 분리할 것을 권고하며
+  이번 보정에는 포함하지 않는다. 이 기록은 GitHub approve event나 병합 승인이 아니다.
+
+### 결함·근거·보정 범위
+
+[한컴 2024 속성 없애기 도움말](https://help.hancom.com/hoffice130/ko-KR/Hwp/insert/hyperlink/hyperlink%28delete%29.htm)은
+우클릭 ‘하이퍼링크 지우기’ 후 원래 글자 모양으로 돌아가는 동작을 설명한다.
+기존 Studio는 검정색·밑줄 없음으로 덮어써 빨간 밑줄 등 원래 서식을 잃었다.
+이것은 기존 해제 기능의 결함이며 미구현 기능 제외 항목이 아니다.
+
+- 링크 적용 전에 범위별 글자색·밑줄 종류·밑줄 색을 보존하고 해제할 때 이 세 속성만
+  복원한다. 혼합 서식과 방문색을 처리하고 이후 바꾼 굵기·기울임은 유지한다.
+- 공통 문자 삽입·삭제와 문단 분할에 복원 범위를 연결했다. 표시 문자열 전체 교체는
+  기존 링크 첫 글자의 원래 서식을 이어받는다. 링크 앞뒤 입력·Delete/Backspace 전체 삭제
+  확인 계약은 유지한다. 해제는 기존 snapshot 명령에서 실행되어 Undo/Redo 대상이다.
+- 원래 서식은 rhwp 전용 HWP stream `/RhwpHyperlinkFormat`과 HWPX entry
+  `META-INF/rhwp-hyperlink-format.json`에 저장한다. 표준 필드 Command와 미정의 한컴
+  ParameterSet ID를 변경하지 않는다. 링크 ID·현재 문자열/Command 해시·길이를 검증하며
+  중복 레코드 ID, 잘못된 정보, 16 MiB 초과 보조 정보는 복원에 사용하지 않는다.
+  저장 시 현재 필드에서 재생성하고 마지막 링크 해제 후 보조 정보를 제거한다.
+- 복원 정보가 없는 기존 외부 링크는 연결만 해제하고 현재 서식을 유지한다. 외부 프로그램이
+  보조 정보를 제거하고 재저장하면 원래 서식 복원을 보장하지 않는다. 이는 한컴 자체의
+  원래 서식 저장 규약을 구현했다는 주장이 아니다.
+- 본문·중첩 표 셀·글상자, Unicode 편집·부분 삭제 Undo, URI/표시 문자열 수정,
+  HWP/HWPX 저장 재열기와 교차 형식 왕복을 검증했다.
+
+### 검증 및 증거
+
+- 필수 prepare, fmt 및 fmt check, native/WASM32/workspace all-target Clippy
+  (`--locked`, `-D warnings`), workspace build, manifest check, unit tier 검사 통과.
+- 전체 nextest: **9,569 passed / 46 skipped / 0 failed (159.316초)**. 첫 실행은 저장 무효화 가드의 새 API 분류 누락 1건으로
+  실패했다. 실제 `commit_hyperlink_paragraph` 위임 경로를 등록하고 전체를 재실행했다.
+  Pending 상한·허용치·baseline을 완화하지 않았다.
+- Native Skia: **주 lib 3,930 passed / 13 ignored, 보조 lib 182 passed, placeholder 2/2, 직접 PDF 4/4 통과**.
+- 실제 WASM·Studio command/history **21개 묶음 통과**. fresh WASM 빌드 통과,
+  SHA-256 `8a16f13268ff4c2db10dcb13eb99a806c548b364a14e2c8087a2c543f337f89b`.
+  뒤따른 가드 커밋은 테스트 레지스트리만 변경하며 제품·WASM 소스는 동일하다.
+- Studio `npm test`: **1,666 passed / 2 skipped / 0 failed**. `npm run build` 통과.
+- 실제 Chrome UI E2E: 혼합 서식 텍스트의 도구모음 삽입·우클릭 해제·Undo/Redo,
+  기존 경계·Delete/Backspace 확인/취소/전체 삭제·방문 표시 검증 통과.
+- 실제 브라우저 저장·재열기·PDF 뷰어 클릭 E2E: **5 PDF / 34쪽 / 81 주석** 통과,
+  DOM 대비 주석 사각형 최대 차이 **0.380280pt**. 최초 호출은 시스템 Python에 pypdf가
+  없어 검증 단계에서 실패했고 설치된 runtime `PYTHON`을 지정해 전체 E2E를 재실행했다.
+- 원시 로그: `/private/tmp/pr6984-format-gates/`. 고정 review worktree와
+  `target/pr-review`에서 Cargo 명령을 순차 실행했다. nextest test threads는 8개다.
+- 신규 화면의 빨간 밑줄/초록색, 같은 문자열·위치·굵기를 직접 판독했다. 합성 입력의
+  사용자 편집 계약 증거이며 한컴 전체 조판과의 일치나 전수 visual sweep 근거는 아니다.
+- 새 보조 엔트리를 가진 파일의 한컴 Viewer 추가 확인은 Mac 잠금으로 미실행했다.
+  이전 Viewer 증거를 이번 새 보조 엔트리의 호환성 확인으로 확대하지 않는다.
+- 기존 PR 본문의 PDF·한컴 Viewer 등 스크린샷 6장을 보존한다. 최신 head CI와
+  독립 최종 리뷰·별도 병합 승인은 원격 반영 후 남는 조건이다.
+
+링크 적용 상태:
+
+![링크 적용 상태](../assets/issue6984/unlink-before.jpg)
+
+‘하이퍼링크 지우기’ 후 원래 빨간 밑줄·초록색 복원:
+
+![원래 혼합 서식 복원](../assets/issue6984/unlink-restored.jpg)
+
+재현: [적용 HWP](../assets/issue6984/unlink-before.hwp),
+[적용 HWPX](../assets/issue6984/unlink-before.hwpx),
+[해제 HWP](../assets/issue6984/unlink-restored.hwp),
+[해제 HWPX](../assets/issue6984/unlink-restored.hwpx),
+[전체 파일 해시·WASM 해시](../assets/issue6984/unlink-format-evidence.json).
+
+## 2026-09-13 이전 리뷰 후보 — 경계·삭제 보정
 
 - 기존 원격 head: `065bda2307db18eafa8394a360289c8558ffcc7b`.
 - 이번 코드·테스트 후보: `6c6c5c49949c2bc505807f9a8ebbfe21988d1934`.
