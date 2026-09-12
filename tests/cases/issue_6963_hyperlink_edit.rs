@@ -578,7 +578,7 @@ fn typing_inside_link_still_extends_its_range() {
 }
 
 #[test]
-fn typing_at_link_start_inherits_link_style() {
+fn typing_at_link_start_stays_outside_link() {
     for (text, start, adjacent) in [
         ("링크뒤", 0, false),
         ("앞링크뒤", 1, false),
@@ -586,6 +586,7 @@ fn typing_at_link_start_inherits_link_style() {
     ] {
         let mut core = blank(text);
         let target = HyperlinkTarget::body(0, 0);
+        let original_shape = core.document().sections[0].paragraphs[0].char_shape_id_at(start);
         if adjacent {
             core.insert_hyperlink_native(&target, 0, 1, "https://example.org")
                 .unwrap();
@@ -606,16 +607,26 @@ fn typing_at_link_start_inherits_link_style() {
         let link_shape = core.document().sections[0].paragraphs[0].char_shape_id_at(start);
         core.insert_text_native(0, 0, start, "X").unwrap();
         let reopened = roundtrips(&core);
-        for result in std::iter::once(core).chain(reopened) {
+        for (format, result) in ["memory", "hwp", "hwpx"]
+            .into_iter()
+            .zip(std::iter::once(core).chain(reopened))
+        {
             let links = result.hyperlinks_native(&target).unwrap();
             let link = links.iter().find(|link| link.field_id == id).unwrap();
             assert_eq!(
                 (link.start, link.end, link.text.as_str()),
-                (start, start + 3, "X링크")
+                (start + 1, start + 3, "링크"),
+                "{text} {adjacent} {format}"
+            );
+            assert_eq!(
+                result.document().sections[0].paragraphs[0].char_shape_id_at(start + 1),
+                link_shape
             );
             assert_eq!(
                 result.document().sections[0].paragraphs[0].char_shape_id_at(start),
-                link_shape
+                original_shape,
+                "{text} {adjacent} {format}: {:?}",
+                result.document().sections[0].paragraphs[0].char_shapes
             );
             if adjacent {
                 assert_eq!(

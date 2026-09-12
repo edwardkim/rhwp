@@ -832,14 +832,41 @@ impl Paragraph {
             (self.controls.len() as u32) * 8
         };
         let char_offset = effective_char_offset;
-        // 링크의 시작은 링크 안, 끝은 이어 쓰기 위치다. 두 경계 모두 현재 위치의
-        // 서식 run을 유지한다(시작: 링크 서식, 끝: 복원된 일반 서식).
-        let at_hyperlink_boundary = self.field_ranges.iter().any(|range| {
+        // 링크 경계에 삽입하는 글자는 링크 밖에 둔다. 시작 경계에서는 링크의
+        // 서식 run을 뒤로 밀고, 끝 경계에서는 복원된 일반 서식 run을 유지한다.
+        let hyperlink_starts = self
+            .field_ranges
+            .iter()
+            .filter(|range| {
+                range.start_char_idx < range.end_char_idx
+                    && range.start_char_idx == char_offset
+                    && matches!(self.controls.get(range.control_idx),
+                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+            })
+            .count() as u32;
+        let at_hyperlink_start = hyperlink_starts > 0;
+        let at_hyperlink_end = self.field_ranges.iter().any(|range| {
             range.start_char_idx < range.end_char_idx
-                && (range.start_char_idx == char_offset || range.end_char_idx == char_offset)
+                && range.end_char_idx == char_offset
                 && matches!(self.controls.get(range.control_idx),
                     Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
         });
+
+        // 범위뿐 아니라 FIELD_BEGIN의 raw 슬롯도 새 글자 뒤에 있어야 한다.
+        // 그렇지 않으면 HWPX 저장 시 기존 선행 갭에서 BEGIN을 먼저 방출해
+        // 링크 밖에 입력한 글자가 다시 링크에 포함된다.
+        let preceding_text_end = if char_offset == 0 {
+            0
+        } else {
+            self.char_offsets[char_offset - 1] + Self::char_stream_len(text_chars[char_offset - 1])
+        };
+        let begin_units = hyperlink_starts * 8;
+        let utf16_insert_pos =
+            if at_hyperlink_start && utf16_insert_pos >= preceding_text_end + begin_units {
+                utf16_insert_pos - begin_units
+            } else {
+                utf16_insert_pos
+            };
 
         // 새 텍스트의 UTF-16 총 길이
         let new_chars: Vec<char> = new_text.chars().collect();
@@ -872,7 +899,9 @@ impl Paragraph {
         for cs in &mut self.char_shapes {
             if cs.start_pos > utf16_insert_pos {
                 cs.start_pos += utf16_delta;
-            } else if cs.start_pos == utf16_insert_pos && cs.start_pos > 0 && !at_hyperlink_boundary
+            } else if cs.start_pos == utf16_insert_pos
+                && cs.start_pos > 0
+                && (!at_hyperlink_end || at_hyperlink_start)
             {
                 cs.start_pos += utf16_delta;
             }
@@ -900,11 +929,15 @@ impl Paragraph {
         // 5-1. field_ranges: 삽입 지점 이후의 char 인덱스 시프트
         let inserted_len = new_chars.len();
         for fr in &mut self.field_ranges {
-            if fr.start_char_idx > char_offset {
-                fr.start_char_idx += inserted_len;
-            }
             let is_hyperlink = matches!(self.controls.get(fr.control_idx),
                 Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink);
+            if fr.start_char_idx > char_offset
+                || (is_hyperlink
+                    && fr.start_char_idx == char_offset
+                    && fr.start_char_idx < fr.end_char_idx)
+            {
+                fr.start_char_idx += inserted_len;
+            }
             if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !is_hyperlink) {
                 fr.end_char_idx += inserted_len;
             }
@@ -1857,7 +1890,23 @@ impl Paragraph {
                 .chars()
                 .nth(last_idx)
                 .map_or(1, |c| c.len_utf16() as u32);
-        let utf16_end = self.char_offsets.get(end).copied().unwrap_or(text_end);
+        // 링크 서식은 마지막 표시 글자까지만 적용한다. FIELD_END와 다음
+        // FIELD_BEGIN 사이의 갭까지 칠하면 인접 링크 사이의 일반 서식이 사라진다.
+        let ends_hyperlink = self.field_ranges.iter().any(|range| {
+            range.end_char_idx == end
+                && matches!(self.controls.get(range.control_idx),
+                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+        });
+        let utf16_end = if ends_hyperlink {
+            *self.char_offsets.get(end - 1)?
+                + self
+                    .text
+                    .chars()
+                    .nth(end - 1)
+                    .map_or(1, Self::char_stream_len)
+        } else {
+            self.char_offsets.get(end).copied().unwrap_or(text_end)
+        };
         (utf16_start < utf16_end).then_some((utf16_start, utf16_end, text_end))
     }
 

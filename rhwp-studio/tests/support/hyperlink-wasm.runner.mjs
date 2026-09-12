@@ -280,14 +280,26 @@ startDoc.createBlankDocument();
 const startSession = session(startDoc, position);
 startSession.open().apply({ kind: 'save', text: '링크', uri });
 startSession.history.execute(new InsertTextCommand(position, 'X'), startSession.wasm);
-assert.equal(context(startSession).links[0].text, 'X링크');
-assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).textColor.toLowerCase(), '#0000ff');
-assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).underline, true);
+assert.equal(context(startSession).links[0].text, '링크');
+assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).textColor.toLowerCase(), '#000000');
+assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).underline, false);
+assert.equal(context(startSession).links[0].start, 1);
+assert.equal(context(startSession).text, 'X링크');
 assertSavedContext(startDoc, context(startSession), body);
+for (const method of ['exportHwp', 'exportHwpx']) {
+  const reopened = new HwpDocument(startDoc[method]());
+  const outside = JSON.parse(reopened.getCharPropertiesAt(0, 0, 0));
+  const inside = JSON.parse(reopened.getCharPropertiesAt(0, 0, 1));
+  assert.equal(outside.textColor.toLowerCase(), '#000000', method);
+  assert.equal(outside.underline, false, method);
+  assert.equal(inside.textColor.toLowerCase(), '#0000ff', method);
+  assert.equal(inside.underline, true, method);
+  reopened.free();
+}
 startSession.undo(); startSession.redo();
-assert.equal(context(startSession).links[0].text, 'X링크');
-assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).underline, true);
-results.push('링크 시작 입력의 링크 서식·범위, undo·redo 및 HWP/HWPX 왕복');
+assert.equal(context(startSession).links[0].text, '링크');
+assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).underline, false);
+results.push('링크 시작 입력의 일반 서식·링크 바깥 범위, undo·redo 및 HWP/HWPX 왕복');
 
 const out = process.env.RHWP_HYPERLINK_EVIDENCE_DIR;
 if (out) {
