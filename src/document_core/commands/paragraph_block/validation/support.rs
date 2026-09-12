@@ -104,6 +104,11 @@ impl<'a> Scan<'a, '_> {
         Ok(())
     }
     fn para(&mut self, p: &'a Paragraph) -> Result<(), Error> {
+        // RangeTag's kind/data namespace can carry extension semantics. No
+        // identity remap contract exists for it in the initial strict profile.
+        if !p.range_tags.is_empty() {
+            return Err(self.unsupported("unvalidated paragraph range tags"));
+        }
         if p.ctrl_data_records.len()
             > self.request.limits.max_structure_bytes
                 / self.request.count

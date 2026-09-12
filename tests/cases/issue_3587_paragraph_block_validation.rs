@@ -394,3 +394,21 @@ fn table_common_and_cell_raw_boundaries_follow_existing_writer() {
     assert_eq!(err.code, "unsupported");
     assert_eq!(err.path.last(), Some(&Step::Cell(0)));
 }
+
+#[test]
+fn unvalidated_range_tags_and_field_parameter_extensions_are_rejected() {
+    let mut c = core();
+    c.document_mut().sections[0].paragraphs[1]
+        .range_tags
+        .push(Default::default());
+    assert_eq!(code(&c), "unsupported");
+    c.document_mut().sections[0].paragraphs[1]
+        .range_tags
+        .clear();
+    add_closed(&mut c, 1, 10);
+    let Control::Field(f) = &mut c.document_mut().sections[0].paragraphs[1].controls[0] else {
+        panic!()
+    };
+    f.raw_parameters_xml = Some("<parameters/>".into());
+    assert_eq!(code(&c), "unsupported");
+}
