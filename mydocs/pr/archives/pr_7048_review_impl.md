@@ -7,6 +7,20 @@ last_verified: 2026-09-12
 
 # PR #7048 — 누적 체리픽 적용·후속 계획
 
+## 현재 상태 — 렌더링 보정 완료, 최종 검증 진행 중
+
+- code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`, branch `review/nondraft-7040-7053-20260912`.
+- 본문/꼬리말 겹침 2→0, 표 분할·바탕체 대체·앞 소제목 가림을 수정했다.
+- 집중 42 PASS, 전체 9,533 PASS / 46 skipped, 필수 Rust lint와 Native Skia lib 4,112 PASS.
+- Native Skia placeholder·direct PDF, WASM 빌드·8종 42쪽 parity 결과는 진행/대기다.
+- 검증 입력 19개 모두 커밋된 blob과 동일하다. 임시 HWPX 2개도 저장소에 추가했다.
+- [현재 검토·시각 증거·잔여 검증](pr_7048_review.md)을 먼저 갱신했다. 남은 검증 후 최종 판정을 확정한다.
+- 원격 PR 생성·CI·merge·원 PR/이슈 종료는 미실행이다.
+
+<details>
+<summary>이전 적용 단계와 검증 후보 이력</summary>
+
+
 - [검토 결과](pr_7048_review.md), 원 source `429993db938324677f9d94fa8001600b6c51746b`.
 - 작업 branch `review/nondraft-7040-7053-20260912`, base `ea5d1ff70b1d50301d1e6fdd26248e9d9c10c1fa`.
 - code candidate `522a2e80db04cbd84264406ccb8bdd33a21dcc55`. 주 작업공간 `/Users/tsjang/rhwp`에서 순차 적용했다.
@@ -59,3 +73,6 @@ last_verified: 2026-09-12
 - `6b0c396b5`에서 음성 대조를 설명하는 테스트 주석만 정정하고 Rust lint 묶음을 재확인했다.
 - 원격 integration PR 생성·CI·merge 및 원 PR/이슈 후속 처리는 아직 실행하지 않았다.
   review 기록을 별도 docs-only PR로 분리하지 않으며, 원 source history와 다른 worktree를 유지했다.
+
+
+</details>

@@ -1,0 +1,121 @@
+{
+  "kind": "pr-7048-validation-inputs",
+  "sourceCommit": "c15686421dc6914c5bdf8cc0f80d8930bee46dc1",
+  "scope": "Direct visual, OVR5, focused source fixtures and native/WASM parity. Full test corpus remains defined by the repository test suites.",
+  "files": [
+    {
+      "path": "samples/KTX.hwp",
+      "bytes": 163840,
+      "sha256": "b6c1492152f53e8dd7d4bbbb4faca88866bb8458e9018c70c936cd469ea6fab3",
+      "committedBlob": "f5517f5d42c87aab2fd87cb21dd9585786c3a85d"
+    },
+    {
+      "path": "samples/exam_math.hwp",
+      "bytes": 770048,
+      "sha256": "e40e3d675373c8efb3a844fc71f209600d3b0db987a04b3808b8e74a6b1671fe",
+      "committedBlob": "26f121e800b7b6497c9fbe2e576f25652a54b74e"
+    },
+    {
+      "path": "samples/21_언어_기출_편집가능본.hwp",
+      "bytes": 435200,
+      "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
+      "committedBlob": "e17044941fd84b0577df4caa1c4095e2653d7ea0"
+    },
+    {
+      "path": "samples/aift.hwp",
+      "bytes": 5724672,
+      "sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c",
+      "committedBlob": "dbc92dccde8f909786275ea8b01d27d13fc17078"
+    },
+    {
+      "path": "samples/biz_plan.hwp",
+      "bytes": 33792,
+      "sha256": "8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1",
+      "committedBlob": "279664c364c95470835856dcbaa15d3030c7dad1"
+    },
+    {
+      "path": "samples/issue2083_hide_fill_page.hwpx",
+      "bytes": 208382,
+      "sha256": "7758c15c57b1ef14fda6e6d29409ae3425f344931f2901641af84a40ef413d2e",
+      "committedBlob": "df09eaf6e7976179309540e7c554cb794a95505f"
+    },
+    {
+      "path": "samples/issue2470/36382471_masked.hwpx",
+      "bytes": 16310,
+      "sha256": "43572dad5e17395aa02d1b0000b736b8467278931086604776ef30393dd0f54b",
+      "committedBlob": "d46c982bcbc33c04bf917a6dd30cc77868e294a5"
+    },
+    {
+      "path": "samples/issue6986/cell-page-and-total-page-in-one-run.hwpx",
+      "bytes": 4422,
+      "sha256": "0bae4669b776cad8e17c440ca2d6bb8f2b838990a42569fa5aaf58a340790c67",
+      "committedBlob": "0da4dda4842d8c3fb7289928a7502c8bd152061c"
+    },
+    {
+      "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "bytes": 193536,
+      "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "committedBlob": "eb1c8c4d6571b92e830ad8d58bab92bba6abb10b"
+    },
+    {
+      "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "bytes": 6521856,
+      "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "committedBlob": "e0817afd59259754901f8c942e12343dd938802c"
+    },
+    {
+      "path": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+      "bytes": 3923456,
+      "sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+      "committedBlob": "ae3adc94f92b90f4dff84794d42db3feaa4de0a5"
+    },
+    {
+      "path": "pdf/21_언어_기출_편집가능본-2022.pdf",
+      "bytes": 851275,
+      "sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72",
+      "committedBlob": "8145f043f646c67243e0c9aa73ceb04f342903ca"
+    },
+    {
+      "path": "pdf/issue2083_hide_fill_page-hwpx-2020.pdf",
+      "bytes": 202151,
+      "sha256": "00b37911e4a74410e5a6181a20a636b700bcaa950e885a12dc4d99bb91348c94",
+      "committedBlob": "96dc415febb9d9280523a95c3df9ffbf08ae8e15"
+    },
+    {
+      "path": "pdf/issue2470/36382471_masked-hwpx-2020.pdf",
+      "bytes": 51691,
+      "sha256": "c742f264ecab461c86f10198164a762a95dfe8aea71f6fb8c94b13f9041038e1",
+      "committedBlob": "f2020082d7723c3fc5c8a32c1a9f166bc7ed9deb"
+    },
+    {
+      "path": "pdf/cell-page-and-total-page-in-one-run-2020.pdf",
+      "bytes": 10584,
+      "sha256": "26c0b17ab8ae3916b5825a18f873c6436a32695d397e7d11fad2693c8b816887",
+      "committedBlob": "df9656efc6b7c40d8721fa165fc4bea8d95e2385"
+    },
+    {
+      "path": "pdf/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "bytes": 1119717,
+      "sha256": "32e0e6d41d53b755b3dc4bcc31937e8b4f0921b282c2e5d3633a3f3617761912",
+      "committedBlob": "330dc8865c3a92273a6ffcccb24492950956ff6e"
+    },
+    {
+      "path": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "bytes": 2208597,
+      "sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "committedBlob": "07c117cef8cf3c4aae1ed73dca5b230c0d99f3e6"
+    },
+    {
+      "path": "tests/fixtures/issue6986/page-total-page-12-pages.hwpx",
+      "bytes": 5429,
+      "sha256": "d5c3da31e596da4659d0619b0b79b1246a35d5a89d6a5574d526645818951578",
+      "committedBlob": "287c3f4ee8e71a0618504878cfa703268b20b770"
+    },
+    {
+      "path": "tests/fixtures/issue6986/total-page-page-12-pages.hwpx",
+      "bytes": 5428,
+      "sha256": "3addd24fa544d339aaf0d150ee341b7867b2274ca93799b06343412342f23487",
+      "committedBlob": "fbee795867dd5abe5e895705ff88ee441f006679"
+    }
+  ]
+}

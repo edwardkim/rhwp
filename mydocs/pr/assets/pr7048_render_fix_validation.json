@@ -1,0 +1,294 @@
+{
+  "sourceCommit": "c15686421dc6914c5bdf8cc0f80d8930bee46dc1",
+  "status": "verification-in-progress",
+  "completedStages": [
+    {
+      "name": "prepare",
+      "exit": 0,
+      "seconds": 0.57
+    },
+    {
+      "name": "fmt",
+      "exit": 0,
+      "seconds": 5.62
+    },
+    {
+      "name": "fmt-check",
+      "exit": 0,
+      "seconds": 5.6
+    },
+    {
+      "name": "clippy-native",
+      "exit": 0,
+      "seconds": 15.89
+    },
+    {
+      "name": "clippy-wasm",
+      "exit": 0,
+      "seconds": 13.72
+    },
+    {
+      "name": "workspace-build",
+      "exit": 0,
+      "seconds": 18.07
+    },
+    {
+      "name": "freeze-cli",
+      "exit": 0,
+      "seconds": 0.1
+    },
+    {
+      "name": "clippy-workspace",
+      "exit": 0,
+      "seconds": 27.41
+    },
+    {
+      "name": "manifest-check",
+      "exit": 0,
+      "seconds": 0.43
+    },
+    {
+      "name": "unit-tier",
+      "exit": 0,
+      "seconds": 0.69
+    },
+    {
+      "name": "focused",
+      "exit": 0,
+      "seconds": 390.24
+    },
+    {
+      "name": "full",
+      "exit": 0,
+      "seconds": 330.66
+    },
+    {
+      "name": "native-lib",
+      "exit": 0,
+      "seconds": 144.8
+    },
+    {
+      "name": "native-placeholder",
+      "exit": 0,
+      "seconds": 123.76
+    },
+    {
+      "name": "native-pdf",
+      "exit": 0,
+      "seconds": 6.68
+    }
+  ],
+  "focused": "Summary [   0.705s] 42 tests run: 42 passed (1 leaky), 9537 skipped",
+  "full": "Summary [ 329.734s] 9533 tests run: 9533 passed (3 slow, 1 leaky), 46 skipped",
+  "nativeLib": {
+    "passed": 4112,
+    "ignored": 13,
+    "failed": 0
+  },
+  "pending": [
+    "native-placeholder",
+    "native-pdf",
+    "wasm",
+    "native-WASM parity 8 documents / 42 pages"
+  ],
+  "anomaly": [
+    {
+      "sample": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "pageCount": 104,
+      "textOverlapCount": 0,
+      "overflowCount": 28,
+      "overlapCount": 1,
+      "emptyPageCount": 6,
+      "offCanvasCount": 0
+    },
+    {
+      "sample": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "pageCount": 104,
+      "textOverlapCount": 0,
+      "overflowCount": 28,
+      "overlapCount": 1,
+      "emptyPageCount": 6,
+      "offCanvasCount": 0
+    }
+  ],
+  "ovr5": [
+    {
+      "sample": "KTX.hwp",
+      "before_pages": 27,
+      "after_pages": 27,
+      "before_objects": 9,
+      "after_objects": 9,
+      "size_page_changes": [],
+      "xy_changes": []
+    },
+    {
+      "sample": "exam_math.hwp",
+      "before_pages": 20,
+      "after_pages": 20,
+      "before_objects": 9,
+      "after_objects": 9,
+      "size_page_changes": [],
+      "xy_changes": []
+    },
+    {
+      "sample": "21_언어_기출_편집가능본.hwp",
+      "before_pages": 15,
+      "after_pages": 15,
+      "before_objects": 3,
+      "after_objects": 3,
+      "size_page_changes": [],
+      "xy_changes": []
+    },
+    {
+      "sample": "aift.hwp",
+      "before_pages": 74,
+      "after_pages": 74,
+      "before_objects": 27,
+      "after_objects": 27,
+      "size_page_changes": [],
+      "xy_changes": []
+    },
+    {
+      "sample": "biz_plan.hwp",
+      "before_pages": 6,
+      "after_pages": 6,
+      "before_objects": 0,
+      "after_objects": 0,
+      "size_page_changes": [],
+      "xy_changes": []
+    }
+  ],
+  "sameOutputAsViewedCli": [
+    {
+      "output": "accepted-svg",
+      "pages": 104,
+      "changed": []
+    },
+    {
+      "output": "accepted-tree",
+      "pages": 104,
+      "changed": []
+    }
+  ],
+  "visualPages": [
+    {
+      "rhwp": 15,
+      "pdf": 16,
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 96.71445,
+        "worst_pixel_match_percent": 96.71445,
+        "average_ink_match_percent": 46.6919,
+        "worst_ink_match_percent": 46.6919,
+        "average_visual_accuracy_proxy_percent": 46.6919,
+        "worst_visual_accuracy_proxy_percent": 46.6919,
+        "worst_pages": [
+          15
+        ]
+      }
+    },
+    {
+      "rhwp": 56,
+      "pdf": 57,
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.82327,
+        "worst_pixel_match_percent": 89.82327,
+        "average_ink_match_percent": 33.10875,
+        "worst_ink_match_percent": 33.10875,
+        "average_visual_accuracy_proxy_percent": 33.10875,
+        "worst_visual_accuracy_proxy_percent": 33.10875,
+        "worst_pages": [
+          56
+        ]
+      }
+    },
+    {
+      "rhwp": 57,
+      "pdf": 58,
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 88.35803,
+        "worst_pixel_match_percent": 88.35803,
+        "average_ink_match_percent": 32.09281,
+        "worst_ink_match_percent": 32.09281,
+        "average_visual_accuracy_proxy_percent": 32.09281,
+        "worst_visual_accuracy_proxy_percent": 32.09281,
+        "worst_pages": [
+          57
+        ]
+      }
+    },
+    {
+      "rhwp": 87,
+      "pdf": 86,
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.73078,
+        "worst_pixel_match_percent": 95.73078,
+        "average_ink_match_percent": 39.45125,
+        "worst_ink_match_percent": 39.45125,
+        "average_visual_accuracy_proxy_percent": 39.45125,
+        "worst_visual_accuracy_proxy_percent": 39.45125,
+        "worst_pages": [
+          87
+        ]
+      }
+    },
+    {
+      "rhwp": 88,
+      "pdf": 87,
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.27084,
+        "worst_pixel_match_percent": 92.27084,
+        "average_ink_match_percent": 30.25623,
+        "worst_ink_match_percent": 30.25623,
+        "average_visual_accuracy_proxy_percent": 30.25623,
+        "worst_visual_accuracy_proxy_percent": 30.25623,
+        "worst_pages": [
+          88
+        ]
+      }
+    },
+    {
+      "rhwp": 89,
+      "pdf": 88,
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.27388,
+        "worst_pixel_match_percent": 95.27388,
+        "average_ink_match_percent": 35.97636,
+        "worst_ink_match_percent": 35.97636,
+        "average_visual_accuracy_proxy_percent": 35.97636,
+        "worst_visual_accuracy_proxy_percent": 35.97636,
+        "worst_pages": [
+          89
+        ]
+      }
+    },
+    {
+      "rhwp": 90,
+      "pdf": 89,
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.23201,
+        "worst_pixel_match_percent": 94.23201,
+        "average_ink_match_percent": 17.93362,
+        "worst_ink_match_percent": 17.93362,
+        "average_visual_accuracy_proxy_percent": 17.93362,
+        "worst_visual_accuracy_proxy_percent": 17.93362,
+        "worst_pages": [
+          90
+        ]
+      }
+    }
+  ]
+}

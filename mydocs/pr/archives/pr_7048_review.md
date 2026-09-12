@@ -9,6 +9,163 @@ last_verified: 2026-09-12
 
 ## 최종 판정
 
+**머지 보류 — 남은 최종 검증 진행 중**. 렌더링 보류 사유의 구현 수정과 원본 시각 검증은 완료했다. 하단 문단·꼬리말 충돌 두 곳과
+`바탕체`의 고딕 대체 경로를 수정했다. 원 source만 승인하거나 통합 merge를 완료했다는 뜻은 아니다.
+최신 통합 head의 GitHub CI는 원격 병합 전 별도로 확인한다.
+
+## 렌더링 보류 사유 해결 — 2026-09-12
+
+- 검토 branch: `review/nondraft-7040-7053-20260912`.
+- 첫 보정: `4deab2a709e28e4252511c48cb44417ee329bb30`, 적용 계약 보완 `6c358f209`.
+- 최종 code candidate: **`c15686421dc6914c5bdf8cc0f80d8930bee46dc1`**. 검증 중 찾은 앞 소제목 가림도 이 commit에서 수정했다.
+- 비교 전: 문서 commit `fe5dfdd49`의 생산 코드와 같은 보관 CLI(`8099aa8b2` 빌드).
+  `upstream/devel`을 이번 직전 후보라고 부르지 않는다. #7050 최신 `de3301a038` 적용도 유지했다.
+- 검증 원본은 축소본뿐 아니라 BinData가 보존된
+  `samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp`와 기존 한컴 2020 PDF다.
+  축소본의 1×1 대체 이미지를 원본 그림 검증에 사용하지 않았다.
+
+### 원인과 수정
+
+| 보류 사유 | 원인 | 이번 수정·독립 근거 |
+| --- | --- | --- |
+| 하단 문단이 약 41.6px 내려가 꼬리말과 충돌 | 그림 뒤 호스트 줄과 다음 빈 문단의 앞 간격을 중복 소비 | 그림의 물리 하단과 다음 저장 LINESEG의 시작이 일치할 때 조판이 확정한 원점·끝을 배치가 함께 사용 |
+| 다른 쪽의 표가 꼬리말을 덮음 | CellBreak 표의 첫 조각에 원본보다 두 행을 더 넣음 | 첫 22행 합 42,741HU = common.height, 나머지 행 + 반복 제목행 = 다음 문단 vpos 16,262HU라는 두 식이 모두 성립할 때 원본 행 경계로 분할 |
+| 명조인 바탕체가 고딕으로 보임 | 바탕체 부재 시 GulimChe/D2Coding 고딕 대체·공급 | serif paint fallback과 Noto Serif KR 공급으로 수정. BatangChe layout metric은 유지하고 v2 lifecycle reducer로 기존 공급 rule을 retire/replace |
+
+그림 계약은 양수 앞 간격을 가진 **빈 후속 문단**이 예약 간격을 독립적으로 증명할 때만 적용한다.
+현재 단에 앞선 non-inline TopAndBottom 그림의 흐름이 아직 이 공통 배치 계약으로 닫히지 않았다면
+중간부터 저장 절대 좌표로 재진입하지 않는다. 실제 텍스트·인라인 그림·유효 줄 폭·합성/누락/불일치 LINESEG·명시적 쪽 나눔을
+배제한다. 표 계약은 온전한 행 경계와 양쪽 조각의 저장 높이를 검산하며 rowspan이 경계를 가르면
+적용하지 않는다. 편집 세션은 기존 재조판 경로를 사용한다. 파일명·PI·행 번호를 생산 분기에 넣거나,
+본문/꼬리말 좌표를 강제로 클램프하거나, 오류를 허용하도록 기존 TSV 한도를 올리지 않았다.
+
+### 직접 확인한 결과
+
+- 축소본과 전체 원본 모두 본문 글자 겹침 **2 → 0건**, `layout-anomaly --json` 전수 스캔.
+- 내용 대응 rhwp 15 ↔ 한컴 PDF 16: 하단 두 문단의 기준선 **974.68 / 1020.28px**,
+  한컴 **974.72 / 1020.32px**. 각각 차이 **0.04px**다. 꼬리말과 겹치지 않는다.
+- rhwp 56 ↔ PDF 57: 첫 표 조각이 source row 0–21에서 끝난다. `품목별 특성`과 `사용방법`
+  행은 반복 제목행과 함께 다음 쪽(rhwp 57 ↔ PDF 58)으로 넘어가며 한컴의 분할과 일치한다.
+- 104쪽 중 render tree 변경 **7쪽**, 나머지 **97쪽 byte 동일**. 7쪽 전부 직접 화면으로 확인했다.
+- OVR5 별도 **142쪽 / 48개 객체**: 페이지·크기·x/y 변화 0건(2px 검사 허용치).
+  객체가 없는 biz_plan은 객체 배치 검증으로 세지 않는다.
+
+총 쪽수 **104 대 103**, 일부 쪽번호·글자 폭·상단 그림 정렬의 기존 차이는 남아 있다.
+`그림 4-5` 캡션은 여전히 rhwp 90쪽으로 이월되며, PDF 88쪽과 다르다.
+전체 스캔의 overflow 28건·object overlap 1건·empty page 6건도 이번 수용으로 종료하지 않는다.
+전체 문서의 한컴 픽셀 일치가 완료됐다고 판정하지 않는다. 이번 수용 대상은 위의 중복 흐름,
+잘못된 표 분할, 글꼴 계열 대체이며 기존 원본 전체의 페이지네이션 과제를 종료하지 않는다.
+
+### Visual sweep — 실제 본문 대응
+
+[정본 Visual Sweep](../../manual/verification/visual_sweep_guide.md)을 실행하고, 본문을 비교하여
+기준 PDF 쪽을 매핑했다. 자동 5-gram 대응 후보를 읽고 7장의 compare/overlay/review PNG로
+내용을 직접 확인했다. 서로 다른 본문을 가진 동일 physical page 패널은 최종 증거에서 제외한다.
+
+| rhwp ↔ PDF | pixel match | ink proxy | 확인 |
+| --- | --- | --- | --- |
+| 15 ↔ 16 | 96.714% | 46.692% | 전체 그림과 하단 문단·꼬리말 분리 |
+| 56 ↔ 57 | 89.823% | 33.109% | 첫 조각의 마지막 행·표 하단 |
+| 57 ↔ 58 | 88.358% | 32.093% | 이월 두 행·반복 제목행·뒤 표 |
+| 87 ↔ 86 | 95.731% | 39.451% | 그림 4-1과 캡션 |
+| 88 ↔ 87 | 92.271% | 30.256% | 그림 4-2·4-3과 캡션 |
+| 89 ↔ 88 | 95.274% | 35.976% | 그림 4-4·4-5; 4-5 캡션 이월 잔존 |
+| 90 ↔ 89 | 94.232% | 17.934% | 그림 4-6·4-7 앞 소제목 보존; 위치 차이 잔존 |
+
+위 지표는 배경과 글꼴 래스터 차이를 포함한 보조값이다. 같은 physical page를 전제한 자동 후보
+집계를 수정된 본문 대응의 합격 건수로 이월하지 않았다. 임시 `remap-all.py`는 정본의
+`make_compares`, `make_overlay_compares`, `make_review_panels`를 호출하고 PDF 축의 쪽 번호만
+실제 대응 쪽으로 표시한다. 이미지 내용·좌표·지표 계산을 바꾸지 않는다.
+
+### 검증 기록
+
+사용자 요청에 따라 PR 검토 문서를 먼저 갱신했다. 아래는 갱신 시점에 실제 완료된 결과다.
+macOS arm64 / Rust 1.93.1 / 검토 전용 `target/pr-review`, code candidate `c15686421dc6914c5bdf8cc0f80d8930bee46dc1`.
+
+- prepare·fmt·fmt check·native Clippy·WASM32 Clippy·workspace build·workspace all-target Clippy·manifest check: 모두 exit 0.
+- source-side font fallback 테스트에 대한 `node scripts/rust-unit-test-tiers.mjs --check`: exit 0.
+- 집중 nextest: `Summary [   0.705s] 42 tests run: 42 passed (1 leaky), 9537 skipped`; exit 0.
+- 전체 nextest: `Summary [ 329.734s] 9533 tests run: 9533 passed (3 slow, 1 leaky), 46 skipped`; exit 0.
+- Native Skia workspace lib: **4,112 PASS / 13 ignored / 0 FAIL**, exit 0.
+- Font registry/projection/webfont 스크립트 46 PASS, Studio 1,661 PASS / 2 skipped / 0 FAIL, standalone `tsc --noEmit` exit 0.
+- **진행/대기**: Native Skia placeholder·direct PDF, 공식 WASM 빌드, native↔WASM 원본/변형 8종 42쪽 비교.
+  이 항목은 아직 최종 후보의 성공으로 기록하지 않는다. 완료 결과와 판정을 같은 문서에 갱신한다.
+- 현재 보류 해제 조건: 위 미완료 검증의 최종 exit 0과 직접 결과 확인. 원격 merge 전에는 별도로 최신 head CI를 확인한다.
+
+첫 전체 실행에서 font registry 역사 봉인 가정과 대형 문서의 304→299쪽 부작용을 찾아 수정했다.
+저장 좌표가 맞닿는 것만으로 실제 텍스트 흐름을 회수하지 않으며, 기존 대형 문서 304쪽 기준을 유지한다.
+이후 visual sweep에서 발견한 앞 소제목 가림도 공통 흐름 연속성 조건과 실제 원본 회귀로 수정했다.
+위 집중·전체 결과는 그 수정까지 포함한 현재 후보를 새로 실행한 결과다. 중간 실패를 성공으로 세지 않았다.
+
+원시 로그·순차 명령: `/tmp/rhwp-7048-render-fix/validation-complete/`, `validate-complete.py`.
+[진행 상태와 완료 결과 JSON](../assets/pr7048_render_fix_validation.json)에 완료 단계와 미완료 단계를 구분했다.
+
+
+### 공통 조판 원칙 준수
+
+[공통 검토](../../manual/pr_review/intake_and_review.md#27-조판-원칙-준수-검토)를 최종 code candidate에 적용했다.
+
+| 항목 | 판정 | 확인 근거 |
+| --- | --- | --- |
+| 구현 근거와 일반성 | 충족 | 그림/LINESEG의 독립 경계와 실제 빈 간격 문단, 표 양쪽 조각의 HU 합. 파일명·PI·픽셀 clamp 분기 없음 |
+| 측정·배치 일관성 | 충족 | 조판의 ParagraphFloatPlacement를 layout이 소비. 앞 그림이 측정 흐름이면 저장 원점 재진입 금지. 첫 표 scan과 각주 refit에 같은 row end 적용 |
+| 줄 소속과 점유 높이 | 충족 | native HWP stored / 편집 세션 구분. 실제 텍스트·합성/누락/불일치 LineSeg는 기존 재조판 유지. 후속 앞 간격 중복 소비 제거 |
+| 사례와 증거의 독립성 | 충족 | 전체·축소 원본과 한컴 PDF, 저장값 불일치/rowspan 반례, 소제목 가림 음성 대조. 합성 다중 쪽 field는 별도 계약 증거 |
+| 기준값 변경 | 충족 | TSV 2→5는 원 contributor 변경 그대로이며 이번 추가 완화 없음. 겹침 재현 검사를 비겹침 회귀로 전환. 한컴 기준선 974.72/1020.32px 및 source 행 경계로 새 회귀 검증 |
+| 주장과 검증 범위 | 충족 | 아래 실행 결과와 19개 저장소 입력 SHA-256. 원 source CI를 후보 CI로 이월하지 않음. 전체 PDF 페이지네이션·일부 캡션 위치와 editor E2E는 완료 주장 제외 |
+
+### 검증 입력과 재현
+
+직접 시각 검증·OVR5·집중 원본·native/WASM 비교에 사용한 **19개 파일**은 모두 저장소의 커밋된 blob과
+byte 동일함을 확인했다. [입력 목록과 SHA-256](../assets/pr7048_validation_inputs.json)을 따른다.
+화학 문서의 전체·축소 HWP와 기준 PDF 2개를 포함한 원본 17개는 기존에 추적 중이었다.
+임시로만 존재하던 다중 쪽 HWPX 2개는 `tests/fixtures/issue6986/`에 추가하고 출처·변형 방법·hash를
+함께 기록했다. 최종 검증은 저장소 입력을 사용하며 korea_downloads나 임시 fixture에 의존하지 않는다.
+
+최종 workspace build에서 보관한 debug CLI `accepted-rhwp`의 SHA-256은
+`dee4529ae24906435e5711db851522770e80bdf0bcc70d60c8e7f3f805c532f6`다. 시각 스윕에 쓴 `chain-rhwp`와 전체 104쪽 SVG·render tree가 byte 동일함을 확인했다.
+다른 빌드의 성공이나 중간 그림 조건을 최종 후보의 결과로 혼용하지 않는다.
+
+```bash
+python3 scripts/visual_sweep.py --rhwp-bin /tmp/rhwp-7048-render-fix/accepted-rhwp \
+  --out /tmp/rhwp-7048-render-fix/visual-chain --pages 15,56,57,87-90 --key chemical-full \
+  --hwp samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp \
+  --pdf pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf
+```
+
+PDF raster는 96dpi이며 위 표의 실제 PDF 쪽을 `pdftoppm -f N -l N -r 96 -png -singlefile`로 추출했다.
+최종 대응 패널은 `mapped-chain/`에 보관했다. 앞의 최초 물리 쪽 오대응·축소 그림 패널은 아래 과거
+검토의 이력이며 현재 승인 증거가 아니다.
+
+### 대표 이미지와 후속 계획
+
+동일 전체 원본의 수정 전 패널:
+[본문·꼬리말 수정 전](../assets/pr7048_render_fix_before_rhwp015_pdf016_review.png),
+[표 분할 수정 전](../assets/pr7048_render_fix_before_rhwp056_pdf057_review.png).
+아래는 현재 후보의 직접 확인 결과다.
+
+![본문과 꼬리말](../assets/pr7048_render_fix_rhwp015_pdf016_review.png)
+
+![표의 첫 조각](../assets/pr7048_render_fix_rhwp056_pdf057_review.png)
+
+나머지 직접 확인 증거:
+[57↔58](../assets/pr7048_render_fix_rhwp057_pdf058_review.png),
+[87↔86](../assets/pr7048_render_fix_rhwp087_pdf086_review.png),
+[88↔87](../assets/pr7048_render_fix_rhwp088_pdf087_review.png),
+[89↔88](../assets/pr7048_render_fix_rhwp089_pdf088_review.png),
+[90↔89](../assets/pr7048_render_fix_rhwp090_pdf089_review.png).
+
+실제 통합 merge 후 보정 SHA·검증 수치·내용 대응·잔여 차이를 원 #7048 PR에 `--body-file`로
+설명하고, 위 자산은 실제 merge SHA에 고정한 raw GitHub URL로 링크한다. 게시 뒤 API로 본문과
+이미지 링크를 확인하고 통합 PR/merge를 연결한 뒤 원 PR을 닫는다. 이 기록 자체는 원격 push,
+PR 생성, merge, comment 또는 close 실행이 아니다.
+
+
+<details>
+<summary>렌더러 수정 전 검토 이력 — 아래 판정·후보·수치는 당시 기록</summary>
+
+## 최종 판정
+
 **진단 보정 검증 완료 / 렌더링 수용 판정 보류**. 내용 대응을 바로잡아도 한컴 PDF와 하단 문단·꼬리말 차이가 남는다.
 원 head 단독 승인으로 해석하지 않는다. 최신 integration head의 GitHub CI는 merge 전 조건이다.
 #7048의 진단 동작 검증과 미해결 한컴 렌더링 일치 판정은 구분하며, 이 기록에서 통합 merge를 완료 처리하지 않는다.
@@ -351,5 +508,8 @@ Synthetic PAGE/TOTAL_PAGE order variants: 2 documents x 12 pages.
 
 현재 판정은 보류다. 이 기록을 GitHub approve/merge/close로 해석하지 않는다.
 구체적인 위반 위치·실행 결과·미검증 범위를 보완 요청 근거로 사용하고, 수정 head에서 다시 검토한다.
+
+</details>
+
 
 </details>
