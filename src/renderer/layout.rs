@@ -2067,6 +2067,12 @@ fn para_has_visible_textless_float_shape_item(
             let is_float_shape = match ctrl {
                 Control::Picture(pic) => !pic.common.treat_as_char,
                 Control::Shape(shape) => !shape.common().treat_as_char,
+                // [#7047] 데코레이션(글앞/글뒤) 표 host 도 같은 축이다 — `#703` 단축이
+                // 그 표를 `PageItem::Shape` 로 내므로 이 술어의 item 대조가 성립하고,
+                // 전진량은 아래 `advance_line` 의 저장 사다리 증언이 정한다. 표를
+                // 빼 두면 host 줄 높이가 흐름에서 통째로 빠져 뒤따르는 개체가 그만큼
+                // 위에 놓인다(임대차계약서양식 3쪽: 6.0px · 15.3px).
+                Control::Table(table) => !table.common.treat_as_char,
                 _ => false,
             };
             is_float_shape
@@ -2203,6 +2209,104 @@ fn textless_host_ladder_line_advance(
         return Some(false);
     }
     None
+}
+
+/// [#7047] 빈 개체 host 가 **또 다른 빈 개체 host** 로 이어지는 사다리의 전진량.
+///
+/// 이 형상의 종전 간격은 `line_spacing` 뿐이다 — `#1133` 이 "빈 앵커 스택의 줄간격은
+/// 표-표 사이 간격"이라고 보존하는 경로이고, `#6147` 의 사다리 증언은
+/// `next_text_paragraph_vpos` 가 **다음 문단에 실제 글자**를 요구해 이 형상에서 침묵한다.
+///
+/// 그런데 저장 사다리는 그 문단이 줄 상자와 문단 간격까지 전진했다고 증언한다. 임대차
+/// 계약서양식(#7047) 3쪽 표 host 둘이 각각 줄간격만 전진해 아래 개체가 10.0px · 19.3px
+/// 위에 놓였다(host 에 글자 한 자를 넣는 돌연변이로 같은 값이 그대로 복구됨).
+///
+/// ```text
+///   host      저장 델타 = 줄높이 + 줄간격 + host 뒤간격 + 다음 앞간격   종전
+///   rec#947         886 =   450 +  136 +   0 +  300                  136
+///   rec#1041       1794 =  1150 +  344 +   0 +  300                  344
+/// ```
+///
+/// 등식이 **1 HWPUNIT 안에서** 성립할 때만 델타를 쓴다. 사다리가 표-표 간격만 증언하는
+/// 문서(`#1133` 의 원래 대상)는 등식이 깨져 종전 경로가 그대로 남는다 — 광역 규칙이 아닌
+/// 문단 단위 자기 게이트다.
+///
+/// 반환값에서 host 의 `문단 뒤 간격` 을 뺀다 — 호출부가 그 값을 이미 `y_offset` 에
+/// 더했으므로, 합이 저장 델타와 정확히 같아진다.
+fn stored_empty_anchor_stack_advance_hu(
+    stored_layout: bool,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    para_index: usize,
+) -> Option<i32> {
+    if !stored_layout {
+        return None;
+    }
+    let host = paragraphs.get(para_index)?;
+    let next = paragraphs.get(para_index + 1)?;
+    // 두 문단 모두 **글자 없는 부동 개체 전용 앵커**여야 한다.
+    if !para_is_floating_anchor_without_text(host) || !para_is_floating_anchor_without_text(next) {
+        return None;
+    }
+    let synth = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    // (vertical_pos, line_height, line_spacing) — 합성 사다리는 저장 증거가 아니다.
+    let real_first = |p: &Paragraph| -> Option<(i32, i32, i32)> {
+        p.line_segs
+            .iter()
+            .find(|s| s.tag & synth == 0 && s.line_height > 0)
+            .map(|s| (s.vertical_pos, s.line_height, s.line_spacing))
+    };
+    let (host_vpos, host_line_height, host_line_spacing) = real_first(host)?;
+    let (next_vpos, _, _) = real_first(next)?;
+    let delta = next_vpos - host_vpos;
+    if delta <= 0 {
+        return None;
+    }
+    let spacing_hu = |pi: usize, after: bool| -> i32 {
+        paragraphs
+            .get(pi)
+            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+            .map(|ps| {
+                let px = if after {
+                    ps.spacing_after
+                } else {
+                    ps.spacing_before
+                };
+                ((px * 7200.0 / dpi).round() as i32).max(0)
+            })
+            .unwrap_or(0)
+    };
+    let host_spacing_after = spacing_hu(para_index, true);
+    let expected = host_line_height
+        + host_line_spacing.max(0)
+        + host_spacing_after
+        + spacing_hu(para_index + 1, false);
+    if (delta - expected).abs() > 1 {
+        return None;
+    }
+    Some((delta - host_spacing_after).max(0))
+}
+
+/// 글자가 없고 보이는 개체가 전부 비-TAC 부동 개체인 앵커 문단인가.
+fn para_is_floating_anchor_without_text(para: &Paragraph) -> bool {
+    if para_has_visible_text(para) {
+        return false;
+    }
+    let mut saw_float = false;
+    for control in &para.controls {
+        let common = match control {
+            Control::Table(table) => &table.common,
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => continue,
+        };
+        if common.treat_as_char {
+            return false;
+        }
+        saw_float = true;
+    }
+    saw_float
 }
 
 fn textless_infront_para_host_requires_line_advance(para: &Paragraph) -> bool {
@@ -9011,6 +9115,12 @@ impl LayoutEngine {
                             let cm = match c {
                                 Control::Picture(pic) => &pic.common,
                                 Control::Shape(shape) => shape.common(),
+                                // [#7047] 데코레이션(글앞/글뒤) **표** host 도 사다리에
+                                // 묻는다 — `#703` 단축이 흐름을 0 소비해 이 문단의 줄이
+                                // 통째로 빠지는데, 전진 여부의 판정 근거는 그림·도형
+                                // host 와 똑같이 저장 델타다. 표를 빼 두면 질의가 아예
+                                // 돌지 않아 휴리스틱이 "전진 없음"으로 답한다.
+                                Control::Table(table) => &table.common,
                                 _ => return false,
                             };
                             !cm.treat_as_char
@@ -11694,10 +11804,35 @@ impl LayoutEngine {
                         );
                         tot > 1.0 && gap >= tot * 0.85 && host_lh < tot * 0.25
                     })();
+                    // [#7047] 빈 개체 host 가 **또 다른 빈 개체 host** 로 이어지는 사다리.
+                    //
+                    // 그 형상에서 종전 간격은 `line_spacing` 뿐인데(#1133 의 표-표 간격),
+                    // 저장 사다리는 `줄높이 + 줄간격 + host 뒤간격 + 다음 앞간격` 전량을
+                    // 증언한다. 임대차계약서양식 3쪽 실측 — 표 host 둘이 각각 줄간격만
+                    // 전진해 아래 개체가 10.0px · 19.3px 위에 놓였다.
+                    //
+                    // ```text
+                    //   rec#947   저장 델타  886 =  450 + 136 + 0 + 300     rhwp 136 뿐
+                    //   rec#1041  저장 델타 1794 = 1150 + 344 + 0 + 300     rhwp 344 뿐
+                    // ```
+                    //
+                    // 등식이 **1 HWPUNIT 안에서** 성립할 때만 델타를 쓴다 — 사다리가
+                    // 표-표 간격만 증언하는 문서(#1133 원래 대상)는 등식이 깨져 종전
+                    // 경로가 그대로 유지된다. 자기 게이트라 광역 규칙이 아니다.
+                    let stored_anchor_stack_gap = stored_empty_anchor_stack_advance_hu(
+                        self.profile.get().hwp5_stored_pagination_layout()
+                            || self.profile.get().hwpx_stored_layout(),
+                        paragraphs,
+                        styles,
+                        self.dpi,
+                        para_index,
+                    );
                     let gap = if square_reserved_above {
                         // [#4533 ⑥] 위-예약 Square: 앵커·후속 문단 vpos 가 동일
                         // (붕괴 사다리) — 후행 간격도 사다리가 0 으로 증언한다.
                         0
+                    } else if let Some(ladder_gap) = stored_anchor_stack_gap {
+                        ladder_gap
                     } else if suppress_empty_anchor_spacing {
                         0
                     } else if is_current_empty_para_float {
