@@ -1,5 +1,6 @@
 //! Strict source support and reference closure, separate from insertion and paste.
 mod references;
+mod resources;
 mod support;
 
 use super::{ParagraphBlockBudget, RepeatParagraphBlockRequest};
@@ -77,7 +78,8 @@ struct Located<'a> {
 
 impl DocumentCore {
     /// Validate supported controls and field/connector closure without editing.
-    /// Resource/style existence and save compatibility are NOT certified here.
+    /// Also checks modeled shared resource references without loading BinData.
+    /// Resource bytes, opaque DocInfo payloads and save compatibility are not certified.
     pub fn validate_paragraph_block_native(
         &self,
         request: &RepeatParagraphBlockRequest,
@@ -109,6 +111,7 @@ impl DocumentCore {
         let nodes = support::inspect(paragraphs, request)?;
         let budget = self.paragraph_block_budget_native(request)?;
         references::validate(self.document(), &nodes, request.limits.max_document_nodes)?;
+        resources::validate(self.document(), &nodes, request)?;
         Ok(budget)
     }
 }
