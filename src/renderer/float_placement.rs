@@ -54,8 +54,11 @@ pub struct ParagraphHostLine {
     pub height: f64,
 }
 
-/// Recover an empty picture host's saved flow only when two independent source
-/// records agree: the picture frame ends exactly at the successor's line top.
+/// Recover an empty picture host's saved flow only when an empty successor
+/// spacer with positive spacing-before starts exactly at the picture frame end.
+/// That spacer proves the reserved before-gap belongs to the object boundary.
+/// A text successor, or a line without such a gap, does not prove exclusive
+/// ownership of paragraph flow merely by touching the picture geometrically.
 /// A zero-width host line belongs to the blocking object, not a second text line
 /// to append below it. Missing/stale lines, explicit breaks and edited sessions
 /// must keep measured flow (the caller supplies the stored-layout capability).
@@ -76,6 +79,7 @@ pub fn stored_picture_successor_placement(
     let next = successor.line_segs.first()?;
     let common = &picture.common;
     if para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || !successor.text.is_empty()
         || !successor.controls.is_empty()
         || successor.column_type != crate::model::paragraph::ColumnBreakType::None
         || host.tag & 0x8000_0000 != 0
@@ -93,6 +97,7 @@ pub fn stored_picture_successor_placement(
         || dpi <= 0.0
         || !spacing_before.is_finite()
         || !successor_spacing_before.is_finite()
+        || successor_spacing_before <= 0.0
     {
         return None;
     }

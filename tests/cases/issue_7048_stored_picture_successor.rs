@@ -82,6 +82,10 @@ fn issue_7048_saved_picture_boundary_requires_independent_source_agreement() {
     let mut stale = next.clone();
     stale.line_segs[0].vertical_pos += 75;
     assert!(resolve(para, &stale).is_none());
+    let mut text_successor = next.clone();
+    text_successor.text = "actual following text owns its own line flow".into();
+    assert!(resolve(para, &text_successor).is_none());
+    assert!(stored_picture_successor_placement(para, next, 8.0, 0.0, 0, 96.0).is_none());
     let mut broken = para.clone();
     broken.line_segs.clear();
     assert!(resolve(&broken, next).is_none());
