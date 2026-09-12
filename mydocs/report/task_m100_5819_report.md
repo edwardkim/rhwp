@@ -99,7 +99,9 @@ cargo nextest run --locked --cargo-profile release-test \
   `LAYOUT_OVERFLOW`를 검증하거나 해결했다고 주장하지 않는다.
 - 기존 관련 이슈 #3608, #4994, #4995의 전체 범위를 이 변경으로 완료 처리하지 않는다.
 - #5819 assignee는 `jangster77`로 지정했다. [PR #7068](https://github.com/edwardkim/rhwp/pull/7068)을
-  devel 대상 Open PR로 생성했다. 이슈 상태는 OPEN이며 실제 사용자 템플릿의 적용 범위 확인과 PR 통합은 남아 있다.
+  devel 대상 Open PR로 생성하고 `Closes #5819`로 연결했다. 요청 옵션은 구현·검증했으며,
+  이슈 작성자가 별도 관찰 대상으로 명시한 overflow를 추가 종료 조건으로 두지 않는다.
+  이슈 상태는 병합 전 OPEN이며 devel 병합 후 종료 여부를 확인한다. 실제 사용자 템플릿 검증은 별도 범위다.
 
 ## 완료 시점의 devel 전진 확인
 

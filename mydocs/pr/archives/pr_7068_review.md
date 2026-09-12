@@ -15,7 +15,7 @@ last_verified: 2026-09-13
 | 항목 | 작성 시점 확인 내용 |
 | --- | --- |
 | PR | [#7068](https://github.com/edwardkim/rhwp/pull/7068) |
-| 관련 이슈 | [#5819](https://github.com/edwardkim/rhwp/issues/5819), Refs로 연결; 자동 종료하지 않음 |
+| 관련 이슈 | [#5819](https://github.com/edwardkim/rhwp/issues/5819), Closes로 연결; devel 병합 후 종료 확인 |
 | 작성자 / 검토자 | jangster77 / jangster77 self-review; reviewer 미지정 |
 | base / branch | devel / fix/5819-insert-table-options |
 | 최초 제출 후보 | `728452ca673d02dadc3be831d8e26eeeab0ab2f2` |
@@ -105,10 +105,13 @@ HWP/HWPX는 파생 출력이며 원본 테스트 코드와 입력 fixture를 PR 
 
 - 표 셀·글상자 내부 필드와 필드 문단 내부의 문자 위치 삽입은 지원하지 않는다.
 - 비공개 235쪽 템플릿의 이미지 보존·성능·198/199/204쪽 LAYOUT_OVERFLOW는 미검증이다.
-  #5819와 관련 #3608/#4994/#4995 전체를 자동 완료 처리하지 않는다.
+  이슈 작성자는 overflow를 별도 관찰 대상으로 명시했다. 이는 #5819의 완료 조건이 아니다.
+  요청한 표 생성 옵션은 구현·검증했으므로 PR은 `Closes #5819`로 연결한다. 관련 #3608/#4994/#4995의
+  전체 범위나 위 미검증 시나리오까지 해결했다고 주장하지 않는다.
 - 현재 승인된 원격 작업은 PR 생성과 같은 PR의 검토 기록이다. 본 기록·오늘할일·보고서 갱신을
   문서-only commit으로 추가하며 push 전 최신 base 병합 tree·링크·기존 오늘할일 보존을 검사한다.
 - 최종 head의 CI·mergeability를 확인한다. 병합은 최신 required CI와 별도 작업지시자 승인 후이며,
-  후속 처리는 해당 시점에 post_merge 절차를 적용한다.
+  후속 처리는 해당 시점에 post_merge 절차를 적용한다. 기본 branch가 main이므로 devel 병합 후
+  #5819 상태를 확인하고, OPEN이면 후속 처리에서 종료한다.
 
 상세 명령·정정 이력은 [결과 보고서](../../report/task_m100_5819_report.md)를 참조한다.
