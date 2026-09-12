@@ -404,6 +404,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     // ── 위임 ───────────────────────────────────────────────────────────────
     (
+        "commands/object_ops/table.rs",
+        "create_table_native",
+        Exempt::DelegatesTo("create_table_with_options_native"),
+        "[#5819] 기본 옵션을 전달하는 래퍼. 공통 표 생성 함수가 구역 raw_stream을 무효화한다.",
+    ),
+    (
         "commands/table_ops.rs",
         "paste_table_cells_transposed_as_new_table_native",
         Exempt::DelegatesTo("create_table_native"),

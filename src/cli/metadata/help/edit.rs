@@ -139,6 +139,14 @@ pub(super) fn print() {
     println!();
     println!("      --rows/--cols             행·열 수 (1 이상, 열은 256 이하)");
     println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
+    println!("      --at-field <이름>         유일한 본문 필드의 문단 바로 뒤에 삽입, 필드 보존 (좌표와 배타적)");
+    println!(
+        "      --widths <목록>           열별 HWPUNIT 또는 합계 100% (예: 2000,3000 / 40%,60%)"
+    );
+    println!("      --alignments <목록>       열별 left,center,right (생략 시 문단 서식 상속)");
+    println!(
+        "      --repeat-header <bool>    첫 행을 반복 머리행으로 지정 (기본 true, false로 해제)"
+    );
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_table.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
