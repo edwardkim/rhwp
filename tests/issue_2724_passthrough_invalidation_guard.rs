@@ -107,6 +107,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
         "hyperlink.rs",
         "remove_hyperlink_native",
+        Exempt::DelegatesTo("remove_hyperlink_with_format_native"),
+        "서식 복원 없이 필드만 제거하는 호환 래퍼. 복원 옵션을 받는 제거 경로와 공통 commit helper를 거쳐 무효화한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "remove_hyperlink_with_format_native",
         Exempt::DelegatesTo("commit_hyperlink_paragraph"),
         "표시 글자를 보존한 제거 후보를 공통 commit helper로 적용한다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
     ),
