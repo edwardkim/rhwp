@@ -78,3 +78,23 @@ B 테스트 컴파일 2분 10초, 실행 0.011초. A 테스트 컴파일 9.83초
 - B2: 공유 allocator·사본별 map·단일 삽입·원본 Box/표 reflow 출처 보존·오류 무변경.
 - B3: HWP/HWPX 저장·native 및 WASM/한컴 사용 검증.
 - 기존 clipboard/조판 코드는 수정하지 않았다. 원격 push/PR/게시도 하지 않는다.
+
+## 5. 후속 절편 — 지원표와 참조 경계 (구현 전 고정)
+
+메인테이너의 다음 절차 승인에 따라 strict 사전검사를 추가한다. 삽입 구현은 아직 별도다.
+검사는 문단/컨트롤/셀/글상자/캡션/그룹 자식의 typed path를 오류에 제공한다.
+
+| 대상 | 첫 지원 범위 / 거부 조건 | 코드 근거 |
+| --- | --- | --- |
+| 일반 문단 | 빈 문단·Page/Column break 유지. Section/MultiColumn 및 raw break bit 0/1 거부 | `parser/body_text.rs::parse_para_header` |
+| 문단 raw 헤더 | 없음 또는 10 bytes(ID 슬롯 6..10), 12 bytes 중 변경추적 값 0 허용. 기타 확장/변경추적 거부 | `serializer/body_text.rs`의 instanceId/변경추적 기록 |
+| 표·수식 common raw | 없음 또는 36/40 bytes, 이후 길이가 맞는 UTF-16 설명문까지 허용. common 미해석 tail 및 표 레코드 미해석 tail 거부 | `parser/control/shape.rs::parse_common_obj_attr`, `clone_identity/remap.rs` |
+| 기본 도형/그룹/글상자 | 모델링된 소유 구조 순회. 미해석 connector/polygon tail, textbox LIST_HEADER tail은 초기 거부 | `model/shape.rs`, `identity/walk.rs` |
+| 그림 | payload 없음 또는 알려진 5/17/18 bytes, own ID 1..5 및 크기/alpha 보존. 기타 확장 거부 | `parser/control/shape.rs` 그림 extra 파싱 |
+| ClickHere | begin ID와 종료 마커의 소유/순서/범위 검사. shared fieldid는 unique ID와 구별. 이름은 변경하지 않음 | `model/paragraph.rs::FieldRange/OrphanFieldEnd`, `clone_identity/remap.rs` |
+| ClickHere 확장 | raw parameter XML/비어 있지 않은 parameters 및 CTRL_DATA payload는 아직 의미 검증 전이므로 거부 | `model/control.rs::Field`의 HWP/HWPX 보존 경계 |
+| 그 밖의 컨트롤 | Section/Column/Header/Footer/쪽 설정·Form·각주/메모·Unknown·OLE/Chart·기타 필드/책갈피 등은 명시적 미지원 | B 계획 §4 |
+
+읽기 전용 사전검사는 포맷 유효성 전체를 인증하지 않는다. 지원 경계 밖의 실제 샘플은 오류 경로와
+종류를 기록하고, 통과시키기 위해 payload를 지우지 않는다. 이 절편에서는 참조 폐쇄성까지 검증하며,
+공유 스타일/BinData의 존재 및 전체 저장 검증은 후속으로 남긴다.

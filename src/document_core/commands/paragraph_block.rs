@@ -2,6 +2,8 @@
 //! This is not an insertion API or a certification of reference closure.
 mod budget;
 mod owned;
+mod validation;
+pub use validation::{ParagraphBlockPathStep, ParagraphBlockValidationError};
 
 use crate::{document_core::DocumentCore, error::HwpError};
 use serde::{Deserialize, Serialize};

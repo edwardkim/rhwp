@@ -11,7 +11,7 @@ use crate::{
     },
 };
 
-enum Node<'a> {
+pub(super) enum Node<'a> {
     Paras(&'a [Paragraph]),
     Controls(&'a [Control]),
     Shapes(&'a [ShapeObject]),
@@ -69,11 +69,18 @@ impl Walk {
         Ok(())
     }
 
-    fn walk(&mut self, root: Node<'_>) -> Result<(), HwpError> {
+    fn walk(
+        &mut self,
+        root: Node<'_>,
+        visitor: &mut impl FnMut(&Node<'_>) -> Result<(), HwpError>,
+    ) -> Result<(), HwpError> {
         // Slice cursors queue one sibling at a time: no allocation proportional
         // to a wide table's cell count before the node budget has been checked.
         let mut stack = vec![(root, 1usize)];
         while let Some((node, depth)) = stack.pop() {
+            stack
+                .try_reserve(4)
+                .map_err(|_| super::invalid("owned traversal allocation failed"))?;
             macro_rules! slice {
                 ($slice:expr, $cursor:ident, $item:ident) => {{
                     if let Some((first, rest)) = $slice.split_first() {
@@ -94,6 +101,7 @@ impl Walk {
                 _ => {}
             }
             self.visit(depth)?;
+            visitor(&node)?;
             let child_depth = depth
                 .checked_add(1)
                 .ok_or_else(|| super::invalid("owned depth overflow"))?;
@@ -220,11 +228,19 @@ pub(super) fn source(paras: &[Paragraph], nodes: usize, depth: usize) -> Result<
         max_depth: depth,
         source: true,
     };
-    walk.walk(Node::Paras(paras))?;
+    walk.walk(Node::Paras(paras), &mut |_| Ok(()))?;
     Ok(walk.cost)
 }
 
 pub(super) fn document(document: &Document, max_nodes: usize) -> Result<usize, HwpError> {
+    inspect_document(document, max_nodes, |_| Ok(()))
+}
+
+pub(super) fn inspect_document(
+    document: &Document,
+    max_nodes: usize,
+    mut visitor: impl FnMut(&Node<'_>) -> Result<(), HwpError>,
+) -> Result<usize, HwpError> {
     let mut walk = Walk {
         cost: Cost::default(),
         max_nodes,
@@ -234,8 +250,11 @@ pub(super) fn document(document: &Document, max_nodes: usize) -> Result<usize, H
     for section in &document.sections {
         // Charge even an empty section so a broad section list is bounded too.
         walk.visit(1)?;
-        walk.walk(Node::Paras(&section.paragraphs))?;
-        walk.walk(Node::Masters(&section.section_def.master_pages))?;
+        walk.walk(Node::Paras(&section.paragraphs), &mut visitor)?;
+        walk.walk(
+            Node::Masters(&section.section_def.master_pages),
+            &mut visitor,
+        )?;
     }
     Ok(walk.cost.nodes)
 }
