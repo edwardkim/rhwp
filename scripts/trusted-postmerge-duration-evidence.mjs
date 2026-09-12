@@ -4,7 +4,9 @@ const LIMIT = 8 * 1024 * 1024;
 const LABELS = ["b", "c", "d"];
 const ID = /^[1-9][0-9]*$/;
 const SHA = /^[0-9a-f]{40}$/;
-const NAME = /^[A-Za-z_][A-Za-z0-9_:]*$/;
+// JUnit preserves Rust Unicode identifiers. Keep this a data-only identifier
+// path, not an arbitrary string: reject empty segments and invisible controls.
+const NAME = /^(?!.*\p{Default_Ignorable_Code_Point})[_\p{XID_Start}][_\p{XID_Continue}]*(?:::[_\p{XID_Start}][_\p{XID_Continue}]*)*$/u;
 const fail = (message) => { throw new Error(`duration-evidence: ${message}`); };
 const record = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
