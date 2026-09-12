@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-09-12
 ---
 
 # 로컬 사전 검증
@@ -305,6 +305,10 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | Rust test/baseline helper | 모든 Rust lint 묶음, 관련 focused test, snapshot 결정성, 최신 PR head CI |
 | 기존 golden/baseline/fixture data만 변경 | 관련 focused test, snapshot 결정성, 최신 PR head CI. Rust helper도 함께 바꾸면 바로 위 행의 lint 묶음을 추가 |
 
+렌더링 baseline·golden·래칫 허용치 변경은 위 테스트 통과만으로 수용하지 않는다.
+[조판 규칙과 기준값 변경 증거](visual_fixture_evidence.md#조판-규칙과-기준값-변경-증거)를 확인하고,
+역할에 관계없이 [공통 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)에 근거와 판정을 남긴다.
+
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
 무관한 Node 테스트까지 glob으로 섞지 않는다.
@@ -321,6 +325,26 @@ python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'
 이 묶음은 archive consumer, CI impact, CodeQL, adapter, proptest, reusable workflow의
 상호 계약을 함께 검사한다. 따라서 새 archive label이나 reusable input을 추가한 PR은
 GitHub CI에서가 아니라 PR을 열기 전에 누락된 consumer를 발견해야 한다.
+
+### 4.3.0.0 상수·정책·호출 경로 변경의 동작 기반 회귀 검증
+
+상수의 출처, 예산·축출 정책, fallback 또는 bridge·setter 같은 실제 호출 경로를 변경할 때는
+소스 문자열·정규식 검사만으로 기능 검증을 대체하지 않는다. 소스 가드는 선언·배선의 보조 계약이며,
+핵심 동작은 변경된 제품 진입점을 직접 호출해 확인한다. 테스트 안에 제품 구현을 복사한 대역만
+실행하거나 입력 상수 자체의 순서를 검사한 결과를 제품 경로 검증으로 기록하지 않는다.
+
+- 입력값이 바뀌면 결과가 계약대로 달라지는지 검사한다. 예산은 서로 다른 정상 상한에서
+  실제 execute/undo/redo와 축출·최근 참조 보존·복원 결과를 확인한다.
+- 조회 불가·구형 API fallback, 경계값, 실패 뒤 상태와 기존 정상 동작 보존을 함께 확인한다.
+  대역을 사용한 범위와 실제 WASM·브라우저를 실행한 범위를 구분한다.
+- 기존 결함 또는 최소 잘못된 구현으로 되돌리면 해당 검사가 실패하는 음성 대조를 남긴다.
+  격리된 임시 사본이나 메모리 내 변이를 사용하고 사용자의 작업 트리를 되돌리지 않는다.
+- 기존 source guard를 삭제·대체할 때는 새 동작 검사가 같은 실패 계급을 실제로 검출함을 확인한다.
+  CI가 녹색이라는 이유만으로 삭제 전 보호 범위가 유지됐다고 추정하지 않는다.
+- 예: 스냅샷 상한 100·50·조회 불가 fallback에서 제품 history 경로를 실행해 축출과 복원을 검사한다.
+  폰트 체인 수정은 파서만이 아니라 실제 치환 함수 또는 설치된 canvas font setter의 출력 순서를 검사한다.
+- 명령, 정상/음성 대조 결과, 미실행 범위는 테스트가 완료된 뒤 개별 PR review에 기록한다.
+  실행 전 문서는 계획 또는 잠정 검토로만 취급하며 완료·승인 결과를 미리 작성하지 않는다.
 
 ### 4.3.0 PR 검토의 GitHub Full CI 재사용
 
@@ -488,7 +512,9 @@ python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe
 주장하지 않는다. 입력 없이 반환된 테스트의 성공과 실제 문서 검사를 구분한다.
 
 검토 base 대비 `samples/`의 추가·복사·수정·이동 문서를 확인하고, 해당 HWP/HWPX/HML의
-현재 경로를 JSON 배열로 전달한다. 아직 커밋하지 않은 이 작업 소유 fixture도 목록에 포함한다.
+현재 경로를 JSON 배열로 전달한다. 검증 중에는 아직 커밋하지 않은 이 작업 소유 fixture도 목록에 포함한다.
+수용 판정 전에는 [공통 입력 커밋 확인](intake_and_review.md#28-검증-입력-커밋-확인)에 따라 해당 파일을
+검토 대상 commit에 포함하고 실제 검증한 내용과 동일함을 확인한다. 검증 중 입력 허용을 미커밋 상태의 수용으로 해석하지 않는다.
 아래 경로는 예시이므로 실제 검토 대상 전체로 교체한다. 공백·한글이 있는 경로도 JSON 문자열로
 보존하며 셸 공백 분할로 목록을 만들지 않는다.
 

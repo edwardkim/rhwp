@@ -36,6 +36,9 @@ function fixture(cell = false) {
   const flags = { apply: false, restore: new Set(), capture: false, batchFailures: new Set() };
   let batches = 0;
   const wasm = {
+    // [#7002 후속] 예산은 코어 상한에서 파생된다(history.ts snapshotIdBudget).
+    // 이 더블은 스냅샷을 쓰지 않지만 execute 가 예산 강제를 거치므로 값이 필요하다.
+    snapshotCapacity: () => 100,
     getParagraphLength: () => 3,
     getCharShapeRuns: (_, p) => {
       if (flags.capture) throw new Error('capture failure');

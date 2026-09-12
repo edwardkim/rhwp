@@ -79,6 +79,7 @@ for (const reason of ['scroll', 'scroll-settled'] as const) {
           pages: Array.from({ length: 5 }, () => ({ width: 1000, height: 1400 })),
           pageMovement: { direction: 'vertical', wheelHorizontal: false },
           viewportManager: {
+            isZoomAnimating: () => false, isZoomRasterPending: () => false,
             getScrollX: () => 0, getScrollY: () => 0, getZoom: () => 0.75,
             getViewportSize: () => ({ width: 1600, height: 1800 }),
           },
@@ -102,7 +103,7 @@ for (const reason of ['scroll', 'scroll-settled'] as const) {
           renderSurfaceDecisions: new Map(), previousEffectiveDpr: new Map(), renderSurfaceEnvironmentKey: null,
           pendingPrefetchSurfaceReservations: new Map(), eventBus: { emit: () => undefined },
           reconcilePageSurfaceBudget: () => undefined, renderHeaderFooterEditOverlays: () => undefined,
-          materiallyVisiblePages: () => visible, renderCanvas: render, renderPage: render,
+          renderCanvas: render, renderPage: render,
         });
         view.refreshRenderSurfacePlan(false, 'scroll-settled');
         surfaces.get(0)!.dataset.rhwpSurfaceCacheLookupKey = view.pageSurfaceDescriptor(0).lookupKey;
@@ -148,7 +149,7 @@ test('scroll fast path가 throw해도 정착 복구와 남은 visible frame은 �
     Object.assign(view, {
       pages: [{ width: 100, height: 200 }, { width: 100, height: 200 }],
       pageMovement: { direction: 'vertical', wheelHorizontal: false },
-      viewportManager: { getScrollX: () => 0, getScrollY: () => 0, getViewportSize: () => ({ width: 800, height: 600 }) },
+      viewportManager: { isZoomAnimating: () => false, isZoomRasterPending: () => false, getScrollX: () => 0, getScrollY: () => 0, getViewportSize: () => ({ width: 800, height: 600 }) },
       virtualScroll: { getVisibilitySnapshot: () => ({ visiblePages: [0, 1], prefetchPages: [0, 1] }), getPageAtPoint: () => 0 },
       canvasPool: { activePages: [], has: () => false, getCanvas: () => undefined },
       pageSurfaceLru: { put: () => true, hasLookup: () => false },
@@ -197,6 +198,7 @@ test('실제 CanvasView update 경계는 많은 scroll visible만 분할하고 i
     view.pages = Array.from({ length: 4 }, () => ({ width: 100, height: 200 }));
     view.pageMovement = { direction: 'vertical', wheelHorizontal: false };
     view.viewportManager = {
+      isZoomAnimating: () => false, isZoomRasterPending: () => false,
       getScrollX: () => 0,
       getScrollY: () => 100,
       getViewportSize: () => ({ width: 800, height: 600 }),
@@ -275,6 +277,7 @@ test('실제 CanvasView scroll 경계도 1·2 visible은 동기 fast path를 유
       pages: [{ width: 100, height: 200 }, { width: 100, height: 200 }],
       pageMovement: { direction: 'vertical', wheelHorizontal: false },
       viewportManager: {
+        isZoomAnimating: () => false, isZoomRasterPending: () => false,
         getScrollX: () => 0,
         getScrollY: () => 100,
         getViewportSize: () => ({ width: 800, height: 600 }),
@@ -327,6 +330,7 @@ test('CanvasView는 scroll 중 surface를 유지하고 정착 승격은 center-f
       pages: Array.from({ length: 3 }, () => ({ width: 100, height: 200 })),
       pageMovement: { direction: 'vertical', wheelHorizontal: false },
       viewportManager: {
+        isZoomAnimating: () => false, isZoomRasterPending: () => false,
         getScrollX: () => 0,
         getScrollY: () => 100,
         getViewportSize: () => ({ width: 800, height: 600 }),
@@ -412,7 +416,6 @@ test('CanvasView planner는 scroll 중 실제 requested DPR을 잠그고 정착 
         getCanvasSurfaceLayerCount: () => 4,
       },
       viewportManager: { getZoom: () => 1 },
-      materiallyVisiblePages: () => [0, 1],
       pageSurfaceDescriptor: () => null,
       reconcilePageSurfaceBudget: () => undefined,
     });
@@ -430,6 +433,63 @@ test('CanvasView planner는 scroll 중 실제 requested DPR을 잠그고 정착 
     );
   } finally {
     if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
+    else Reflect.deleteProperty(globalThis, 'window');
+    await vite.close();
+  }
+});
+
+test('읽기 visible은 64M 초과·고배율·이전 저화질에도 클릭 없이 raw DPR을 유지한다', async () => {
+  const vite = await createServer({
+    root: fileURLToPath(new URL('..', import.meta.url)), appType: 'custom',
+    logLevel: 'silent', server: { middlewareMode: true },
+  });
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    for (const backend of ['canvas2d', 'canvaskit']) {
+      for (const rawDpr of [1, 1.5, 2, 3]) {
+        Object.defineProperty(globalThis, 'window', { configurable: true, value: { devicePixelRatio: rawDpr } });
+        for (const zoom of [0.34, 1, 2, 2.11, 3]) {
+          const view = Object.create(CanvasView.prototype) as Record<string, any>;
+          const surfaces = [1, 2].map(() => ({ dataset: { rhwpRequestedDpr: '1' } }));
+          Object.assign(view, {
+            pages: Array.from({ length: 4 }, () => ({ width: 1122.5, height: 1587.4 })),
+            currentVisiblePages: [1, 2], currentRetainedPages: [0, 1, 2, 3], editingPageIndex: 0,
+            activePageSnapshot: { pageIndex: 1, source: 'viewport' },
+            renderSurfaceDecisions: new Map(), previousEffectiveDpr: new Map([[1, 1], [2, 1]]),
+            renderSurfaceEnvironmentKey: `${rawDpr}:${backend === 'canvas2d' ? 4 : 1}:screen`,
+            pendingPrefetchSurfaceReservations: new Map(),
+            canvasPool: { activePages: [1, 2], getCanvas: (page: number) => surfaces[page - 1] },
+            pageRenderer: {
+              getBackend: () => backend, getRenderProfile: () => 'screen',
+              getCanvasSurfaceLayerCount: () => backend === 'canvas2d' ? 3 : 1,
+            },
+            viewportManager: { getZoom: () => zoom },
+            pageSurfaceDescriptor: () => null, reconcilePageSurfaceBudget() {},
+          });
+          const dprs = () => [1, 2].map(page => view.renderSurfaceDecisions.get(page).effectiveDpr);
+          view.refreshRenderSurfacePlan(false, 'scrolling');
+          assert.deepEqual(dprs(), [1, 1], '움직이는 동안 현재 bitmap을 다시 그리지 않는다');
+          for (const phase of ['scroll-settled', 'default']) {
+            view.refreshRenderSurfacePlan(false, phase);
+            assert.deepEqual(dprs(), [rawDpr, rawDpr], `${backend}/${rawDpr}/${zoom}/${phase}: 읽기 화질 보호`);
+            assert.equal(view.editingPageIndex, 0, '읽기 보호가 커서를 옮기지 않는다');
+            assert.equal(view.renderSurfaceDecisions.get(0).effectiveDpr, rawDpr, '편집 쪽 보호 유지');
+          }
+          if (rawDpr > 1 && view.renderSurfacePlan.fullQualityRetainedSurfacePixels > 40_000_000) {
+            assert(view.renderSurfaceDecisions.get(3).effectiveDpr < rawDpr, '화면 밖 선택 쪽의 예산 절감은 유지');
+          }
+          for (const surface of surfaces) surface.dataset.rhwpRequestedDpr = String(rawDpr);
+          view.refreshRenderSurfacePlan(false, 'scrolling');
+          assert.deepEqual(dprs(), [rawDpr, rawDpr], '완료된 고화질도 다음 스크롤에서 유지');
+          view.editingPageIndex = 1;
+          view.refreshRenderSurfacePlan(false, 'default');
+          assert.deepEqual(dprs(), [rawDpr, rawDpr], '클릭해도 다른 visible 화질이 내려가지 않는다');
+        }
+      }
+    }
+  } finally {
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow);
     else Reflect.deleteProperty(globalThis, 'window');
     await vite.close();
   }
@@ -454,6 +514,7 @@ test('scroll exact LRU hit는 raster queue 없이 retained working set에 모두
       pages: Array.from({ length: 4 }, () => ({ width: 100, height: 200 })),
       pageMovement: { direction: 'vertical', wheelHorizontal: false },
       viewportManager: {
+        isZoomAnimating: () => false, isZoomRasterPending: () => false,
         getScrollX: () => 0,
         getScrollY: () => 100,
         getViewportSize: () => ({ width: 800, height: 600 }),

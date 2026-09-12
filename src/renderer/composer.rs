@@ -3140,9 +3140,13 @@ fn split_composed_line_by_width(
 ///
 /// 단일 룰 (분기/허용오차 없음): 비-PUA 텍스트는 fallback 으로 동일 동작.
 pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
-    // Issue #677: U+F081C 는 HWP TAC filler 이며 text_measurement 경로에서
-    // 시각 폭 0으로 처리해야 한다. display_text 로 바꾸면 이 0폭 규칙을
-    // 우회하므로 원문을 유지한다.
+    // [#7017] U+F081C 는 `expand_pua_display_text` 가 **지우는**(continue) 글자라,
+    // `display_text` 로 측정하면 글자 수가 줄어 폭이 모자란다. 원문을 유지해 글자
+    // 수를 보존한다 — 폭은 `text_measurement` 가 다른 `hancom_pua` 괘선 조각과 같이
+    // 폴백 0.5em 으로 잰다(렌더가 `┈` 를 그리는 전진폭과 같다).
+    //
+    // 종전 주석은 "0폭 규칙을 우회하지 않으려고" 라고 적었는데, 그 0폭 규칙 자체가
+    // #7017 에서 한/글 정본과 어긋남이 확인돼 사라졌다.
     if run.text.contains('\u{F081C}') {
         return &run.text;
     }

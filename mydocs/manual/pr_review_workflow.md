@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-09-12
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -16,6 +16,17 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 
 ## 1. 공통 계약
 
+모든 정식 PR review는 역할·작성자·PR 규모와 관계없이
+[조판 원칙 준수 검토](pr_review/intake_and_review.md#27-조판-원칙-준수-검토)를 공통 항목으로 기록한다.
+실제 diff와 PR 주장을 근거로 적용 여부를 먼저 판단하고, 적용 대상은 `AGENTS.md`의 공통 조판 원칙을
+검토 head의 코드·증거와 대조한다. 비해당도 이유를 적는다. maintainer 일반, collaborator self,
+collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가 이 검토를 대체하지 않는다.
+
+검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
+모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,
+실제로 실행한 파일과 commit의 내용이 같은지 확인한다. `korea_downloads`, 임시 output 또는 외부 첨부에만
+있는 파일로 검증을 완료 처리하지 않는다. 기존에 커밋된 동일 파일은 재사용하며 중복 사본을 추가하지 않는다.
+
 rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator가 매개하는 외부 PR을
 구분한다. 권한과 변경 위치가 다르므로 한 경로의 예외를 다른 경로에 일반화하지 않는다.
 
@@ -27,7 +38,9 @@ rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator�
 
 소스, 테스트, CI workflow, golden/baseline, 기존 샘플 변경은 maintainer라도 일반 PR과 최신 CI를
 기본으로 한다. GitHub review, comment, push, ready 전환, merge, close는 각각 작업지시자의 명시 승인을
-받은 뒤에만 수행한다.
+받은 뒤에만 수행한다. PR 병합과 후속 처리가 승인되면 해당 작업 전용 local branch/worktree 및 원본 저장소의
+임시 원격 head branch 정리는 `post_merge.md` 7.7의 안전 조건을 확인한 뒤 별도 승인 질문 없이 수행한다.
+기본·보호 branch, 다른 작업의 branch 및 contributor fork는 자동 삭제 대상이 아니다.
 
 Rust source 또는 Rust test/baseline helper가 바뀐 PR은 `local_validation.md` 4.3의 Rust lint 묶음
 (format, native Clippy, WASM32 Clippy, workspace all-target Clippy)을 **PR 생성 전에** 통과해야 한다.
@@ -68,6 +81,15 @@ PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의
 Draft는 WIP 공유나 조기 검토가 필요하고 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만
 사용한다. 정확한 생성 순서와 승인 게이트는 [문서와 Git 워크플로우](codex/docs_and_git_workflow.md#internal-task-pr-approval)를
 따른다.
+
+### 1.3 문서 trailing commit을 위한 반복 동기화 금지
+
+다른 PR의 `devel` 병합이나 오늘할일 갱신만을 이유로 검토 중인 source branch에
+`upstream/devel`을 반복 merge/rebase하지 않는다. CI를 통과한 code head를 유지하고,
+최신 devel의 해당 오늘할일 변경 구간을 읽되 전체 파일이나 다른 PR 기록을 source branch에
+복사하지 않는다. 변경되지 않은 경계에 이번 기록만 추가하고, 3.2.1의 **push 전 병합·링크 검증**을
+통과한 문서-only trailing commit만 push한다. 실제 충돌·branch protection의 필수 최신화·명시적인 코드 통합 지시는 별도로
+판단하며, 상세 순서는 [review-only의 base 전진 처리](pr_review/review_only_fast_pass.md#a0-검토-중-base-전진과-오늘할일-갱신)를 따른다.
 
 ## 2. 필수 라우팅
 
@@ -193,8 +215,39 @@ source에 없는 archive link를 도입하거나 today add/add 충돌과 불필�
    변경 구간을 확인한다.
 2. contributor source에 이미 있는 오늘할일은 보존하고, 현재 PR의 항목만 위 diff에서 변경되지 않은 section
    경계에 추가한다. 최신 `devel`의 다른 PR 기록을 source branch에 복사하지 않는다.
-3. trailing 문서 commit을 만든 뒤 최신 `upstream/devel`에서 merge simulation을 수행한다. merge tree의
-   `git diff --check`와 변경한 오늘할일·review 문서의 Markdown 링크 검사가 모두 통과해야 한다.
+3. trailing 문서 commit을 **로컬에만** 만든 뒤 정확한 base/head SHA를 고정하여 merge simulation을
+   수행한다. **remote push 전에** 충돌 없는 종료 코드 0, merge tree의 `git diff --check`, 변경한
+   오늘할일·review 문서의 Markdown 링크 검사가 모두 통과해야 한다. 검사하는 링크 대상은 source
+   checkout이 아니라 실제 merge tree다. 실패·미실행·결과를 확인할 수 없는 경우 push하지 않는다.
+4. merge tree의 오늘할일에 최신 base의 기존 기록과 이번 PR 기록이 함께 있고 삭제·중복이 없는지
+   확인한다. 새 파일의 add/add와 기존 파일의 동일 EOF append 모두 충돌할 수 있다. 최신 파일을 읽었거나
+   두 내용을 문자열로 합쳤다는 사실, staged whitespace 통과, 이전 head의 `MERGEABLE`은 대체 증거가 아니다.
+5. push 직전에 원격 base SHA와 원 PR head가 검사 기준에서 바뀌지 않았는지 다시 조회한다. base가
+   전진했으면 새 base를 fetch하고 위 simulation·링크·기록 보존 검사를 다시 수행한다. contributor head가
+   바뀌었으면 덮어쓰지 않고 새 head 기준으로 기록을 정렬한다. push 뒤에는 새 head의 GitHub mergeability와
+   required CI를 확인한다. 검사 이후의 원격 변경까지 영구적으로 충돌이 없다고 보장하지 않는다.
+
+병합 시뮬레이션의 최소 실행 형태는 다음과 같다. `--write-tree`는 source branch나 작업 파일을 병합하지
+않고 Git object만 계산한다. 종료 코드를 무시하거나 파이프의 마지막 명령 성공으로 덮지 않는다.
+
+```sh
+git fetch upstream devel
+base_sha=$(git rev-parse upstream/devel)
+head_sha=$(git rev-parse HEAD)
+if ! merge_result=$(git merge-tree --write-tree "$base_sha" "$head_sha"); then
+  printf '%s\n' "$merge_result" >&2
+  exit 1  # 충돌 또는 계산 오류: push 금지
+fi
+merge_tree=$(printf '%s\n' "$merge_result" | sed -n '1p')
+git diff --check "$base_sha" "$merge_tree" -- mydocs || exit 1
+# 이어서 merge_tree의 변경 문서 링크 및 오늘할일 기록 보존을 검사한다.
+# push 직전 원격 base/head SHA를 재조회해 기준이 달라졌으면 다시 검증한다.
+```
+
+`base SHA / local trailing head SHA / merge tree SHA / 충돌·공백·링크·기록 보존 결과`를 상태 보고 또는
+검토 기록에 남긴다. GitHub에서 DIRTY가 된 뒤 고치는 것은 이 사전 게이트의 정상 절차가 아니다.
+오늘할일 충돌만 있으면 source의 기존 기록을 유지하고 이번 항목을 양쪽에서 변경되지 않은 다른 section
+경계로 옮겨 다시 검사한다. CI를 재사용하려고 충돌을 무시하거나 다른 작업의 항목을 삭제하지 않는다.
 
 이 방식은 source history를 선형으로 유지하면서, 실제 merge tree에는 최신 `devel`의 기존 오늘 기록과
 현재 PR 기록이 함께 남는지 확인한다. 변경되지 않은 경계를 찾을 수 없거나 simulation이 충돌하면 source에

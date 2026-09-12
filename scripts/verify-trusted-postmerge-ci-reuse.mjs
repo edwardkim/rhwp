@@ -72,6 +72,7 @@ function enforcementPathChanged(files) {
     || path === "scripts/select-nextest-archive-targets.mjs"
     || path === "scripts/collect-nextest-target-durations.mjs"
     || path === "scripts/refresh-nextest-target-duration-policy.mjs"
+    || path === "scripts/trusted-postmerge-duration-evidence.mjs"
     || path === "scripts/verify-trusted-postmerge-ci-reuse.mjs"
     || path === "tests/suites/nextest-target-duration-policy.json"
   ));
@@ -79,6 +80,9 @@ function enforcementPathChanged(files) {
 
 function allowedReviewOnlyFile(file) {
   if (!file || typeof file.filename !== "string") {
+    return false;
+  }
+  if (file.previous_filename && !file.previous_filename.startsWith("mydocs/")) {
     return false;
   }
   if (file.filename.startsWith("mydocs/")) {
@@ -208,13 +212,19 @@ function verifyPostMergeTree(repository, identity, requireBridge) {
     || final.parents[0].sha !== baseSha) {
     throw new Error("review-bridge-base-mismatch");
   }
-  const paths = git("diff", "--name-only", "-z", "--no-renames", "--no-ext-diff",
-    "--no-textconv", "--ignore-submodules=none", tested.treeSha, final.treeSha, "--")
-    .split("\0").filter(Boolean);
-  if (!paths.every(path => path.startsWith("mydocs/")
-    && path !== "mydocs/tech/text-ir-v2.md"
-    && path !== "mydocs/tech/canvaskit-parity-implementation.md")) {
-    throw new Error("review-bridge-non-review-tree-change");
+  const fields = git("diff", "--raw", "--no-abbrev", "-z", "--no-renames", "--no-ext-diff",
+    "--no-textconv", "--ignore-submodules=none", tested.treeSha, final.treeSha, "--").split("\0");
+  if (fields.pop() !== "" || fields.length % 2 !== 0) {
+    throw new Error("review-bridge-incomplete-tree-diff");
+  }
+  for (let index = 0; index < fields.length; index += 2) {
+    const path = fields[index + 1];
+    if (!/^:(000000|100644) (000000|100644) [0-9a-f]{40} [0-9a-f]{40} [AMD]$/.test(fields[index])
+      || !path.startsWith("mydocs/")
+      || path === "mydocs/tech/text-ir-v2.md"
+      || path === "mydocs/tech/canvaskit-parity-implementation.md") {
+      throw new Error("review-bridge-non-review-tree-change");
+    }
   }
   return { baseSha, ...(requireBridge ? { bridgeSha } : {}), mergeSha, candidateSha, testedMergeSha,
     testedTreeSha: tested.treeSha, finalTreeSha: final.treeSha };
@@ -346,7 +356,8 @@ function latestCandidateRun(runs, pullRequest, repository, candidateSha, reposit
     trustedPullRequestWorkflowRun(run, pullRequest, repository, repositoryId, workflowFile)
     && run?.head_sha === candidateSha
     && timestamp(run.created_at) >= createdAt
-    && timestamp(run.updated_at) <= mergedAt
+    // Do not hide a newer rerun just because it completed after the merge.
+    // Select it first, then reject non-pre-merge evidence at the caller.
   ));
   if (matches.length === 0) {
     return null;
@@ -405,6 +416,25 @@ export function frontendOnlyCiRunIsReusable(impact, jobs) {
   return expected.size === 0;
 }
 
+// Workflow success alone is not proof that the required workers actually ran.
+export function fullLaneWorkflowJobsAreGreen(workflowFile, jobs) {
+  const required = {
+    "ci.yml": ["CI preflight", "Build & Test", "Lint (fmt, clippy, WASM check)"],
+    "codeql.yml": ["CodeQL preflight", "Analyze (javascript-typescript)", "Analyze (python)", "Analyze (rust)"],
+    "adapter-diff.yml": ["adapter inter-diff preflight", "adapter inter-diff"],
+    "proptest-roundtrip.yml": ["Proptest preflight", "prop roundtrip"],
+  }[workflowFile];
+  if (!required || !Array.isArray(jobs) || jobs.length === 0
+    || jobs.some((job) => job?.status !== "completed"
+      || !["success", "skipped"].includes(job.conclusion))) {
+    return false;
+  }
+  return required.every((name) => {
+    const matches = jobs.filter((job) => job.name === name);
+    return matches.length === 1 && matches[0].conclusion === "success";
+  });
+}
+
 function hasFrontendOnlyEvidence(input, run) {
   const runId = String(run?.id || "");
   return Array.isArray(input?.frontendOnlyRunIds)
@@ -414,7 +444,7 @@ function hasFrontendOnlyEvidence(input, run) {
 
 function hasFullLaneEvidence(input, run) {
   if (!Array.isArray(input?.fullLaneRunIds)) {
-    return true;
+    return false;
   }
   const runId = String(run?.id || "");
   return runId !== "" && input.fullLaneRunIds.some((id) => String(id) === runId);
@@ -543,6 +573,14 @@ export function evaluateTrustedPostMergeReuse(input) {
     input.repositoryId,
     input.workflowFile,
   );
+  if (!finalHeadCandidate || finalHeadCandidate.status !== "completed"
+    || finalHeadCandidate.conclusion !== "success") {
+    return denied("final-head-pr-workflow-not-successful");
+  }
+  if (!Number.isFinite(timestamp(finalHeadCandidate.updated_at))
+    || timestamp(finalHeadCandidate.updated_at) > timestamp(pullRequest.merged_at)) {
+    return denied("final-head-pr-workflow-not-completed-before-merge");
+  }
   const exactMergeTreeEvidence = hasExactMergeTreeEvidence(
     input,
     finalHeadCandidate,
@@ -659,14 +697,18 @@ export function evaluateTrustedPostMergeReuse(input) {
       continue;
     }
     foundCandidateRun = true;
+    // A newer failed or incomplete candidate must not be hidden by older green runs.
+    if (candidate.status !== "completed" || candidate.conclusion !== "success") {
+      return denied("latest-pr-workflow-candidate-not-successful");
+    }
+    if (!Number.isFinite(timestamp(candidate.updated_at))
+      || timestamp(candidate.updated_at) > timestamp(pullRequest.merged_at)) {
+      return denied("latest-pr-workflow-candidate-not-completed-before-merge");
+    }
     if (!hasFullLaneEvidence(input, candidate)) {
       continue;
     }
     foundFullLaneCandidate = true;
-    if (candidate.status !== "completed" || candidate.conclusion !== "success") {
-      unsuccessfulCandidate = true;
-      continue;
-    }
     if (isFork && !hasForkCandidateTreeEvidence(input, candidate, pullRequest, baseParent, mergeTreeSha)) {
       missingIntermediateCandidateEvidence = true;
       continue;

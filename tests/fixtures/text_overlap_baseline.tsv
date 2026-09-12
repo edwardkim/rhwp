@@ -129,8 +129,8 @@ issue6697/80550-agricultural-machinery-act-amendment.hwpx	38
 issue6718/27469-child-allowance-retroactive-support.hwp	2
 issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	23
 issue6776/78494-virtual-convergence-industry-decree.hwpx	4
-issue6782/1480000-201900042-chemical-labeling-standards.hwp	2
-issue6782/1480000-201900042-chemical-product-labeling-study.hwp	2
+issue6782/1480000-201900042-chemical-labeling-standards.hwp	5
+issue6782/1480000-201900042-chemical-product-labeling-study.hwp	5
 issue6790/17544911-sericulture-training-criteria.hwp	0
 issue6793/1611000-201000141-small-air-transport-study.hwp	16
 issue6795/1341000-201100013-cyber-university-application.hwp	35
@@ -166,3 +166,5 @@ task2430/1382000_domestic_violence_survey.hwp	18
 task3307/issue3307_outline_number.hwpx	3
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	58
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	223
+# New fixture: devel 37bd46a72f9fd9ffd709e35244df79c00e789780 measured count; no existing ceiling raised.
+issue6924/148751598-briefing.hwp	1

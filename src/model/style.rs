@@ -554,7 +554,7 @@ pub struct Style {
 }
 
 /// 테두리/배경 (HWPTAG_BORDER_FILL)
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct BorderFill {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -638,7 +638,7 @@ impl CenterLine {
 }
 
 /// 테두리선 정보
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct BorderLine {
     /// 선 종류
     pub line_type: BorderLineType,
@@ -692,7 +692,7 @@ pub enum BorderLineType {
 }
 
 /// 대각선 정보
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct DiagonalLine {
     /// 대각선 선 종류 코드. BorderLineType의 HWP/HWPX 코드와 같은 값을 사용한다.
     pub diagonal_type: u8,
@@ -703,7 +703,7 @@ pub struct DiagonalLine {
 }
 
 /// 채우기 정보
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct Fill {
     /// 채우기 종류
     pub fill_type: FillType,
@@ -728,7 +728,7 @@ pub enum FillType {
 }
 
 /// 단색 채우기
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct SolidFill {
     /// 배경색
     pub background_color: ColorRef,
@@ -739,7 +739,7 @@ pub struct SolidFill {
 }
 
 /// 그러데이션 채우기
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct GradientFill {
     /// 유형 (1: 줄무늬, 2: 원형, 3: 원뿔형, 4: 사각형)
     pub gradient_type: i16,
@@ -760,18 +760,40 @@ pub struct GradientFill {
 }
 
 /// 이미지 채우기
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct ImageFill {
     /// 채우기 유형
     pub fill_mode: ImageFillMode,
-    /// 밝기
+    /// HWP5 이진 `FILL_INFO` 의 **첫 바이트** — 화면 `contrast` 다. [`Self::display_brightness_contrast`] 참조.
     pub brightness: i8,
-    /// 명암
+    /// HWP5 이진 `FILL_INFO` 의 **둘째 바이트** — 화면 `bright` 다. [`Self::display_brightness_contrast`] 참조.
     pub contrast: i8,
     /// 그림 효과
     pub effect: u8,
     /// BinData ID 참조
     pub bin_data_id: u16,
+}
+
+impl ImageFill {
+    /// 화면·HWPX 속성 순서의 `(bright, contrast)`.
+    ///
+    /// `ImageFill` 의 두 필드는 **HWP5 이진 `FILL_INFO` 의 저장 순서**를 그대로 담는다.
+    /// 그 순서는 HWPX 속성 이름과 반대다 — 이진 1번 바이트가 HWPX `contrast`, 2번
+    /// 바이트가 HWPX `bright` 다. `#6895` 에서 한/글 오라클로 확인했다:
+    ///
+    /// ```text
+    ///   원본 HWPX               bright="50"  contrast="-15"
+    ///   한/글이 HWP5 로 저장     이진 1번 = -15 · 2번 = 50
+    ///   한/글이 다시 HWPX 로     bright="50"  contrast="-15"   (보존)
+    /// ```
+    ///
+    /// 그래서 **화면·HWPX 로 나갈 때는 반드시 이 함수를 거친다.** 필드를 곧바로
+    /// 쓰면 두 값이 뒤바뀐다(저장마다 뒤집히고, 칸 배경 그림은 색조가 반대로 그려졌다).
+    /// [`crate::renderer::render_tree::PageBackgroundImage::display_brightness_contrast`]
+    /// 와 같은 계약이다.
+    pub const fn display_brightness_contrast(&self) -> (i8, i8) {
+        (self.contrast, self.brightness)
+    }
 }
 
 /// 이미지 채우기 유형

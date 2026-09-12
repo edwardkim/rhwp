@@ -75,6 +75,36 @@ local Cargo 성공만으로 candidate의 GitHub Actions를 대체하지 않는�
 collaborator가 contributor code를 local에서 검증한 뒤 review·오늘할일만 같은 source head에 추가하는 경우도
 이 A 경로다. local 검증 결과와 candidate SHA, 재사용한 Build & Test URL을 review 문서에 기록한다.
 
+### A.0 검토 중 base 전진과 오늘할일 갱신
+
+다른 PR이 `devel`에 병합될 때마다 검토 중인 source branch에 `upstream/devel`을
+반복 merge하거나 rebase하지 않는다. 이미 CI를 통과한 code head는 유지한다.
+불필요한 동기화는 새 head와 병합 계보를 만들어 full CI 재실행 또는 재사용 실패를
+유발할 수 있다. current-base bridge 지원은 예외 처리이지 반복 동기화의 권장이 아니다.
+
+PR review와 오늘할일만 추가하는 경우에는 다음 순서를 따른다.
+
+1. 최신 `upstream/devel`을 fetch하거나 API로 조회한다. remote-tracking ref를 갱신하는
+   fetch와 source branch에 변경을 적용하는 merge/rebase를 구분한다.
+2. [공통 절차 3.2.1](../pr_review_workflow.md#321-최신-devel-오늘할일을-보존하는-trailing-기록)에 따라
+   source와 최신 `upstream/devel`의 오늘할일 변경 구간을 비교한다. 최신 파일 전체나 다른 PR의 항목을
+   source에 복사하지 않는다. source 고유 기록을 유지하고 양쪽에서 변경되지 않은 section 경계에
+   이번 PR의 실제 검증 결과만 추가한다. 기존 base 기록의 보존은 최종 merge tree에서 확인한다.
+3. 검증된 code head 위에 PR review·오늘할일 등 허용된 기록만 single-parent trailing
+   commit으로 추가한다. 최신 devel의 source/test/workflow 변경은 함께 가져오지 않는다.
+4. diff가 의도한 문서·기록 범위뿐인지 확인하고 **push 전에** 고정한 base/head의 `git merge-tree
+   --write-tree` 종료 코드 0, merge tree의 공백·변경 문서 링크·오늘할일 기록 보존 검사를 통과시킨다.
+   동일 EOF append나 add/add 충돌이면 이번 항목의 위치를 문서 범위에서 보정하고 다시 검사한다.
+   실패·미검증 상태에서는 push하지 않는다.
+5. push 직전 원격 base/head의 변경 여부를 재조회한다. 변경됐으면 공통 절차 3.2.1에 따라 재검증한다.
+   push 뒤 새 head의 mergeability, required check와 실제 fast-pass 판정을 확인한다.
+   문서-only라는 이유만으로 충돌 없음·CI 통과·재사용을 가정하지 않는다.
+
+실제 병합 충돌, branch protection의 필수 최신화 조건 또는 명시적인 코드 통합 지시가 있을
+때만 동기화 필요성을 별도로 판단한다. 문서 충돌이면 문서 범위에서 해결하고, 코드 동기화가
+필요하면 변경 범위와 검증 영향을 먼저 보고한 뒤 필요한 검증을 적용한다. 오래된 기록에 적힌
+`devel 동기화`를 매번 source branch merge를 수행하라는 상시 지시로 해석하지 않는다.
+
 ### A.1 CI 실행 정책을 바꾼 PR의 trusted 재사용
 
 PR 전체 변경에 `.github/workflows/**`, `.github/actions/**`, CI impact classifier·policy 또는
@@ -110,43 +140,19 @@ all-review-only-no-code-impact fast-pass를 즉시 선택한다. candidate의 �
 
 따라서 순수 문서·review 기준 자료 PR에 A 경로의 candidate-check 조회 조건을 잘못 적용하지 않는다.
 
-### B.1 `devel` 병합 후 worker 재사용
+### B.1 병합 후에는 검증 workflow를 시작하지 않는다
 
-Adapter inter-diff와 Proptest roundtrip은 `devel` push에도 required check 이름을 유지한다. PR event가
-아닌 push에는 PR payload가 없으므로, 일반 preflight는 단독으로 review-only 판정을 하지 않고 Full로
-닫힌다. 다만 trusted post-merge controller가 아래를 모두 확인한 같은 저장소 PR이면 worker를 다시
-실행하지 않는다.
+#7070부터 CI·CodeQL·Adapter inter-diff·Proptest roundtrip은 main/devel branch push를 구독하지
+않는다. Oracle advisory도 devel push에서 실행하지 않는다. review-only 여부나 재사용 증거에
+따라 병합 후 Full CI로 돌아가는 경로는 없다. 검증은 병합 전 PR에서 완료한다.
 
-1. merge commit이 유일한 `devel` 대상 PR에 대응하고, merge tree와 PR head tree가 일치한다.
-2. PR 전체 파일과 linear PR commit이 모두 B 경로 허용 범위다.
-3. 해당 PR head의 성공한 `pull_request` workflow run에서 해당 preflight는 success이고 worker는
-   실제로 `skipped`였다.
+`Refresh nextest target duration data`만 devel push에서 duration 메타데이터를 갱신한다.
+PR의 성공 B/C/D worker와 그 worker의 실제 attempt에 묶인 artifact를 검증하며, 자료가 없거나
+불일치하면 갱신을 보류한다. 이전 Full candidate는 최종 head까지 linear review-only 변경으로
+이어질 때만 시간 추정 자료로 사용한다. 이는 PR 승인이나 병합 tree 검증을 대신하지 않는다.
+자세한 실행 경계는 [GitHub 운영 정책](../github_operations.md#병합-후-자동-실행-정책-7070)을 따른다.
 
-direct push, fork PR, PR 식별 불명확, merge tree 불일치, workflow·CI policy 변경, 비허용 파일, merge
-commit 또는 worker-skip 증거 누락은 재사용하지 않고 Full 실행한다.
-
-### B.2 Full candidate 뒤 문서 merge의 post-merge 재사용
-
-코드 PR의 문서-only trailing 사이에 current-base 충돌 해소 merge가 있으면, CI/CodeQL의 공통
-post-merge verifier가 다음 조건에서만 이전 Full 검증을 재사용한다.
-
-- source 부모 + 최종 devel base 부모 순서의 bridge 한 개이며, 그 앞뒤 commit 계보가 연속이다.
-- 최종 head workflow가 성공했고, 선택한 이전 Full 실행의 PR/branch/repository/SHA/time이 일치한다.
-- CI는 만료되지 않은 B/C/D duration artifact, CodeQL은 실제 분석 성공 증거를 요구한다.
-- Full 실행에 속한 immutable merge-tree artifact의 base/head/tree를 Git 객체와 대조한다.
-- 그 실제 검사 tree와 최종 merge tree 차이는 `mydocs/**` 문서뿐이다.
-  `mydocs/tech/text-ir-v2.md`, `mydocs/tech/canvaskit-parity-implementation.md`는 실행 계약이므로 제외한다.
-
-단순히 부모가 둘이거나 PR fast-pass aggregate가 green이라는 이유로 승인하지 않는다. base의 신뢰
-검증 코드가 객체를 fetch/diff하며 PR head를 checkout/실행하지 않는다. 코드·테스트·기준 PDF 변경,
-stale base, 복수 bridge, 목록 잘림, fetch 실패, 증거 불일치는 Full로 닫는다.
-정상 재사용 시 초기 Full run의 duration artifact로 timing을 갱신하며 required check 이름은 유지한다.
-
-재사용 정책 자체를 바꾸는 PR은 Full 대상이다. trusted verifier는 병합 전 base에서 로드하므로 최초
-적용 PR의 post-merge도 Full일 수 있다. 지원 완료는 이후 코드 PR의 문서 merge 사례에서 실제
-`reuse=true`, CI/CodeQL heavy skip, duration 재사용을 확인한 뒤 판단한다.
-
-## Full CI fallback
+## PR 검증의 Full CI fallback
 
 다음 중 하나면 fast-pass로 단정하지 않고 workflow의 full CI 결과를 기다린다.
 

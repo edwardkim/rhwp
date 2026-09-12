@@ -12,11 +12,11 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit};
 use super::border_rendering::{
-    build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
-    render_transparent_borders,
+    build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_cell_diagonal,
+    render_edge_borders, render_transparent_borders,
 };
 use super::table_layout::{
-    calc_nested_split_rows, effective_margin_left_line,
+    border_style_has_diagonal, calc_nested_split_rows, effective_margin_left_line,
     expand_page_fragment_clip_to_own_text_lines, extend_completed_nested_table_border_clips,
     native_terminal_child_host_line_spacing, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
 };
@@ -29,7 +29,53 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{CaptionDirection, CommonObjAttr, HorzRelTo};
 use crate::model::style::{Alignment, BorderLine};
+use crate::model::table::{Cell, Table};
 use crate::renderer::float_placement::native_multirow_internal_reset_rowbreak_anchor_advance_hu;
+
+/// A repeated header is a complete cell instance, not a clipped continuation.
+/// Check source-row coverage rather than the table's continuation flag or a content clip.
+fn partial_cell_has_complete_rows(cell: &Cell, render_rows: &[usize]) -> bool {
+    let row = cell.row as usize;
+    let span = cell.row_span as usize;
+    span > 0
+        && render_rows
+            .iter()
+            .position(|&r| r == row)
+            .is_some_and(|start| {
+                render_rows.get(start..start + span).is_some_and(|rows| {
+                    rows.iter()
+                        .enumerate()
+                        .all(|(offset, &r)| r == row + offset)
+                })
+            })
+}
+
+/// #7028 does not introduce fragment-level zone geometry. Preserve the old output
+/// only for cells touched by an active zone; unrelated cells remain eligible.
+fn partial_cell_intersects_diagonal_zone(
+    cell: &Cell,
+    table: &Table,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    table.zones.iter().any(|zone| {
+        let sr = zone.start_row as usize;
+        let er = (zone.end_row as usize + 1).min(table.row_count as usize);
+        let sc = zone.start_col as usize;
+        let ec = (zone.end_col as usize + 1).min(table.col_count as usize);
+        sr < er
+            && sc < ec
+            && (cell.row as usize) < er
+            && sr < cell.row as usize + cell.row_span as usize
+            && (cell.col as usize) < ec
+            && sc < cell.col as usize + cell.col_span as usize
+            && zone.border_fill_id.checked_sub(1).is_some_and(|idx| {
+                styles
+                    .border_styles
+                    .get(idx as usize)
+                    .is_some_and(border_style_has_diagonal)
+            })
+    })
+}
 
 /// 인라인으로 재분류된 부동 그림이 유지해야 할 문단 기준 가로 오프셋(px).
 ///
@@ -65,6 +111,7 @@ struct PartialTableHostContext<'a> {
     repeat_fragment_outer_margin: bool,
     pre_emitted_host_height: f64,
     host_line_spacing: f64,
+    resolved_table_top: Option<f64>,
 }
 
 /// Returns the content table inside transparent, empty 1×1 wrapper tables.
@@ -498,6 +545,93 @@ fn cell_cut_window(
         }
         None => (su, eu),
     }
+}
+
+/// [#6924] 쪽 조각이 **소유한** clip 하단 글줄을 담도록 그 셀 clip 을 미리 넓힌다.
+///
+/// `suppress_bottom_clipped_text_residue`(#2007)는 clip 바닥에 6px 미만으로 걸친 글줄을
+/// "다음 조각이 온전히 그릴 것" 이라 보고 지운다. 그 전제는 확인되지 않은 채였고, 소유자가
+/// 없는 줄까지 지워 **문서에서 통째로 사라졌다** — 렌더 트리에는 정상 좌표로 남는데 SVG 에
+/// 한 자도 나가지 않는다(148751598 1쪽 31자 · 148738070 1쪽 38자 · 156060125 6쪽 ·
+/// 1490000 vietnam 114쪽 · 1342000 edu 377쪽. 한컴 2024 정답지가 다섯 곳 모두 그 줄을 그린다).
+///
+/// 소속은 컷 부기가 이미 안다(`partial_table_page_contains_cell_position`). 소유한 줄이면
+/// 여기서 clip 을 그 줄 아랫변까지 넓혀 둔다 — 그러면 줄이 더는 바닥에 "걸치지" 않아
+/// 억제 조건 자체가 성립하지 않는다. 억제 로직은 건드리지 않는다.
+///
+/// **형제 셀과 부딪치면 넓히지 않는다.** 소유한 줄이라도 이웃 셀 내용 위로 나가면 두 글자
+/// 모두 못 읽는다(edu 82쪽 Cell3↔Cell10 · 152쪽 Cell13↔Cell24 실측: 겹침 94→97). 그런 줄은
+/// 종전대로 억제에 맡긴다 — 행 높이 축의 별개 결함이라 여기서 풀 문제가 아니다.
+type FragmentCellFlowBottoms = std::collections::HashMap<crate::renderer::render_tree::NodeId, f64>;
+
+fn expand_fragment_cell_clip_for_owned_bottom_lines(
+    table_node: &mut RenderNode,
+    owns_line: &dyn Fn(
+        &crate::renderer::render_tree::TableCellNode,
+        &crate::renderer::render_tree::TextLineNode,
+    ) -> bool,
+) -> FragmentCellFlowBottoms {
+    use crate::renderer::render_tree::RenderNodeType;
+    let mut flow_bottoms = FragmentCellFlowBottoms::new();
+    let cell_boxes: Vec<(usize, crate::renderer::render_tree::BoundingBox)> = table_node
+        .children
+        .iter()
+        .enumerate()
+        .filter(|(_, c)| matches!(c.node_type, RenderNodeType::TableCell(_)))
+        .map(|(i, c)| (i, c.bbox))
+        .collect();
+    for (idx, cell) in table_node.children.iter_mut().enumerate() {
+        let RenderNodeType::TableCell(meta) = &cell.node_type else {
+            continue;
+        };
+        if !meta.clip || !meta.page_fragment {
+            continue;
+        }
+        let meta = meta.clone();
+        let clip_bottom = cell.bbox.y + cell.bbox.height;
+        let mut wanted_bottom = clip_bottom;
+        for line in &cell.children {
+            if !line.visible {
+                continue;
+            }
+            let RenderNodeType::TextLine(tl) = &line.node_type else {
+                continue;
+            };
+            let line_bottom = line.bbox.y + line.bbox.height;
+            // clip 바닥을 걸치는 줄만 대상 — 완전히 안이거나 완전히 밖인 줄은 다른 축이다.
+            if line.bbox.y >= clip_bottom || line_bottom <= clip_bottom {
+                continue;
+            }
+            if !owns_line(&meta, tl) {
+                continue;
+            }
+            wanted_bottom = wanted_bottom.max(line_bottom);
+        }
+        if wanted_bottom <= clip_bottom {
+            continue;
+        }
+        // 형제 셀 충돌 검사 — 넓힌 상자가 다른 셀과 겹치면 포기한다.
+        let grown = crate::renderer::render_tree::BoundingBox::new(
+            cell.bbox.x,
+            cell.bbox.y,
+            cell.bbox.width,
+            wanted_bottom - cell.bbox.y,
+        );
+        let collides = cell_boxes.iter().any(|(other_idx, other)| {
+            *other_idx != idx
+                && grown.x < other.x + other.width
+                && other.x < grown.x + grown.width
+                && grown.y < other.y + other.height
+                && other.y < grown.y + grown.height
+        });
+        if collides {
+            continue;
+        }
+        // 이 증가는 글줄의 표시용 클립이다. 부모 표의 흐름 높이는 기존 하단을 쓴다.
+        flow_bottoms.insert(cell.id, clip_bottom);
+        cell.bbox.height = wanted_bottom - cell.bbox.y;
+    }
+    flow_bottoms
 }
 
 impl LayoutEngine {
@@ -998,6 +1132,20 @@ impl LayoutEngine {
                 None
             };
 
+            // #7028: resolve once before horizontal/vertical text paths diverge.
+            // Use the grid box, not the content clip that can expand later. Actual
+            // cut/height-override cells retain their existing diagonal behavior.
+            let cell_diagonals = border_style
+                .filter(|bs| border_style_has_diagonal(bs))
+                .filter(|_| {
+                    !is_in_split_row
+                        && !height_override_clip
+                        && partial_cell_has_complete_rows(cell, render_rows)
+                        && !partial_cell_intersects_diagonal_zone(cell, table, styles)
+                })
+                .map(|bs| render_cell_diagonal(tree, bs, cell_x, cell_y, cell_w, cell_h))
+                .unwrap_or_default();
+
             // 셀 배경
             self.render_cell_background(
                 tree,
@@ -1206,6 +1354,32 @@ impl LayoutEngine {
             };
             let line_ranges: Option<Vec<(usize, usize)>> = cut_units
                 .map(|(su, eu)| self.cell_line_ranges_from_cut(cell, table, styles, su, eu));
+            // #7032: composition intentionally emits zero lines for text="".
+            // Keep the existing empty-paragraph eligibility and unit ledger;
+            // neither the cut policy nor the global composer is changed here.
+            let empty_paragraphs: Vec<bool> = cell
+                .paragraphs
+                .iter()
+                .map(|para| {
+                    cell.text_direction == 0
+                        && !self.profile.get().hwp3_layout()
+                        && para.text.is_empty()
+                        && super::paragraph_layout::empty_no_lineseg_paragraph_metrics(
+                            para,
+                            styles,
+                            styles.para_styles.get(para.para_shape_id as usize),
+                            false,
+                            self.dpi,
+                        )
+                        .is_some()
+                })
+                .collect();
+            let empty_owners = cut_units
+                .filter(|_| empty_paragraphs.iter().any(|&empty| empty))
+                .map(|(su, eu)| self.cell_cut_empty_paragraph_owners(cell, table, styles, su, eu));
+            let owns_empty_paragraph = |pi: usize| {
+                empty_paragraphs[pi] && empty_owners.as_ref().is_none_or(|owners| owners[pi])
+            };
             // 셀 내 텍스트 높이 (분할 행이면 줄 범위 내만 계산)
             // spacing_before: 셀 첫 문단 제외, spacing_after: 셀 마지막 문단 제외
             let split_para_count = cell.paragraphs.len();
@@ -1224,6 +1398,21 @@ impl LayoutEngine {
                 {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     let is_last_para = pi + 1 == split_para_count;
+                    if empty_paragraphs[pi] {
+                        if owns_empty_paragraph(pi) {
+                            total += self.calc_para_lines_height(
+                                &comp.lines,
+                                para,
+                                false,
+                                false,
+                                pi,
+                                split_para_count,
+                                para_style,
+                                styles,
+                            );
+                        }
+                        continue;
+                    }
                     // spacing_before: 셀 첫 문단(pi==0) 제외
                     if start == 0 && end > 0 && pi > 0 {
                         let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
@@ -1310,6 +1499,9 @@ impl LayoutEngine {
                     start_unit > 0 || end_unit < unit_len
                 }) || line_ranges.as_ref().is_some_and(|ranges| {
                     ranges.iter().enumerate().any(|(i, &(s, e))| {
+                        if empty_paragraphs[i] {
+                            return !owns_empty_paragraph(i);
+                        }
                         let total = composed_store
                             .eager_slice()
                             .get(i)
@@ -1371,6 +1563,21 @@ impl LayoutEngine {
                         {
                             let para_style = styles.para_styles.get(para.para_shape_id as usize);
                             let is_last_para = pi + 1 == para_count;
+                            if empty_paragraphs[pi] {
+                                if owns_empty_paragraph(pi) {
+                                    total += self.calc_para_lines_height(
+                                        &comp.lines,
+                                        para,
+                                        false,
+                                        false,
+                                        pi,
+                                        para_count,
+                                        para_style,
+                                        styles,
+                                    );
+                                }
+                                continue;
+                            }
                             if start == 0 && end > 0 && pi > 0 {
                                 total += para_style.map(|s| s.spacing_before).unwrap_or(0.0);
                             }
@@ -1484,6 +1691,7 @@ impl LayoutEngine {
                     }
                 }
                 table_node.children.push(cell_node);
+                table_node.children.extend(cell_diagonals);
                 continue;
             }
 
@@ -1516,7 +1724,9 @@ impl LayoutEngine {
                                 .iter()
                                 .any(|control| matches!(control, Control::Table(_)))
                         });
-                    if s < e || selected_zero_width_table_fragment {
+                    if owns_empty_paragraph(i)
+                        || (!empty_paragraphs[i] && (s < e || selected_zero_width_table_fragment))
+                    {
                         last_idx = i;
                     }
                 }
@@ -1623,6 +1833,9 @@ impl LayoutEngine {
             };
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
+                if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
+                    continue;
+                }
                 if collapse_stored_wrap_spacers
                     && stored_nested_table_empty_wrap_spacer(cell, cp_idx)
                 {
@@ -1695,14 +1908,14 @@ impl LayoutEngine {
                         .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n');
 
                 // [Task #993] 컷 범위 밖 문단은 이전/다음 페이지 소속 — 이 페이지에서
-                // 스킵한다. cell_line_ranges_from_cut 이 가시 유닛만 범위에 넣으므로
-                // (중첩 표/빈 문단 포함) start_line>=end_line 이면 비가시가 확정이다.
+                // 스킵한다. cut이 없는 빈 문단은 합성 줄 수로 비가시를 판정하지 않는다.
                 // content_y_accum 은 가시 콘텐츠만 추적하므로 스킵 시 전진하지 않는다.
                 if start_line >= end_line
                     && mixed_nested_split.is_none()
                     && nested_cursor_split.is_none()
                     && !visible_non_inline_controls
                     && !uncut_control_only_nested_table
+                    && !owns_empty_paragraph(cp_idx)
                 {
                     continue;
                 }
@@ -2978,6 +3191,7 @@ impl LayoutEngine {
                                                 repeat_fragment_outer_margin: false,
                                                 pre_emitted_host_height: 0.0,
                                                 host_line_spacing: 0.0,
+                                                resolved_table_top: None,
                                             },
                                             section_index,
                                             styles,
@@ -3042,6 +3256,7 @@ impl LayoutEngine {
                                             false,
                                             clamp_header_negative_para_offset,
                                             false,
+                                            None,
                                         )
                                     };
                                     let visible_table_h = mixed_nested_split
@@ -3200,6 +3415,7 @@ impl LayoutEngine {
             }
 
             table_node.children.push(cell_node);
+            table_node.children.extend(cell_diagonals);
         }
     }
 
@@ -3236,6 +3452,7 @@ impl LayoutEngine {
         enclosing_cell_ctx: Option<&CellContext>,
         clamp_header_negative_para_offset: bool,
         probe: Option<&PartialTableCellProbe>,
+        resolved_table_top: Option<f64>,
     ) -> f64 {
         let para = match paragraphs.get(para_index) {
             Some(p) => p,
@@ -3279,6 +3496,7 @@ impl LayoutEngine {
                 repeat_fragment_outer_margin,
                 pre_emitted_host_height,
                 host_line_spacing,
+                resolved_table_top,
             },
             section_index,
             styles,
@@ -3345,6 +3563,7 @@ impl LayoutEngine {
             repeat_fragment_outer_margin,
             pre_emitted_host_height,
             host_line_spacing,
+            resolved_table_top,
         } = host;
 
         // [Issue #4326] Pagination can deliberately use the rows of a transparent
@@ -3476,7 +3695,9 @@ impl LayoutEngine {
         } else {
             None
         };
-        let y_start = if is_para_flow_table {
+        let y_start = if let Some(top) = resolved_table_top {
+            top
+        } else if is_para_flow_table {
             let prev_table_end = col_node
                 .children
                 .iter()
@@ -4141,6 +4362,38 @@ impl LayoutEngine {
         // after the fragment cell loop. Preserve direct nested outer vertical
         // borders in the horizontal clip without widening the RowBreak
         // continuation viewport (issue2007 p2-p3).
+        // [#6924] 이 조각이 어떤 글줄을 **소유**하는지는 컷 부기가 이미 안다
+        // (`partial_table_page_contains_cell_position`). 그 판정을 clip 보정까지 날라
+        // 소유하지 않는 줄만 지우게 한다 — 소유한 줄을 지우면 다시 그릴 조각이 없어
+        // 문서에서 사라진다(148751598 1쪽 31자 · 148738070 1쪽 38자 · 156060125 6쪽).
+        let owns_line = |cell_meta: &crate::renderer::render_tree::TableCellNode,
+                         line: &crate::renderer::render_tree::TextLineNode|
+         -> bool {
+            let (Some(cell_idx), Some(para_index), Some(line_index)) =
+                (cell_meta.model_cell_index, line.para_index, line.line_index)
+            else {
+                // 좌표를 모르면 판정하지 않는다 — 종전 계약(억제) 그대로 둔다.
+                return false;
+            };
+            let Some(cell) = table.cells.get(cell_idx as usize) else {
+                return false;
+            };
+            self.partial_table_page_contains_cell_position(
+                table,
+                cell,
+                start_row,
+                end_row,
+                start_cut,
+                end_cut,
+                is_block_split,
+                Some((para_index, line_index as usize, true)),
+                styles,
+            )
+        };
+        // 아래 정리 단계가 글줄을 숨기기 전에 표시용 클립을 확보해야 한다.
+        // 이미 visible=false가 된 줄을 나중에 클립만 넓혀 복구할 수는 없다.
+        let owned_line_flow_bottoms =
+            expand_fragment_cell_clip_for_owned_bottom_lines(&mut table_node, &owns_line);
         extend_completed_nested_table_border_clips(
             tree,
             &mut table_node,
@@ -4182,6 +4435,7 @@ impl LayoutEngine {
                 physical_page_bottom: f64,
                 logical_table_bottom: f64,
                 terminal_long_child_clip_only: bool,
+                owned_line_flow_bottoms: &FragmentCellFlowBottoms,
             ) -> f64 {
                 let clipped_cell = matches!(
                     node.node_type,
@@ -4191,10 +4445,14 @@ impl LayoutEngine {
                 // bottom stroke. That clip is not new parent-row flow. Start clipped
                 // cells at the logical RowBreak bottom; only direct drawings proven to
                 // end on this page may extend the outer table bbox.
+                let flow_bottom = owned_line_flow_bottoms
+                    .get(&node.id)
+                    .copied()
+                    .unwrap_or(node.bbox.y + node.bbox.height);
                 let mut b = if clipped_cell && terminal_long_child_clip_only {
-                    (node.bbox.y + node.bbox.height).min(logical_table_bottom)
+                    flow_bottom.min(logical_table_bottom)
                 } else {
-                    node.bbox.y + node.bbox.height
+                    flow_bottom
                 };
                 if clipped_cell {
                     for child in &node.children {
@@ -4217,6 +4475,7 @@ impl LayoutEngine {
                                 physical_page_bottom,
                                 logical_table_bottom,
                                 terminal_long_child_clip_only,
+                                owned_line_flow_bottoms,
                             );
                             if drawing_bottom <= physical_page_bottom + 0.5 {
                                 b = b.max(drawing_bottom);
@@ -4231,6 +4490,7 @@ impl LayoutEngine {
                         physical_page_bottom,
                         logical_table_bottom,
                         terminal_long_child_clip_only,
+                        owned_line_flow_bottoms,
                     ));
                 }
                 b
@@ -4244,6 +4504,7 @@ impl LayoutEngine {
                         physical_page_bottom,
                         logical_table_bottom,
                         terminal_long_child_clip_only,
+                        &owned_line_flow_bottoms,
                     )
                 })
                 .fold(table_node.bbox.y + table_node.bbox.height, f64::max);
@@ -4291,6 +4552,12 @@ impl LayoutEngine {
                     &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx.clone(),
+                    CaptionOwner::new(
+                        Some(section_index),
+                        Some(node_para_index),
+                        Some(node_control_index),
+                        CaptionControlKind::Table,
+                    ),
                 );
             }
         }
@@ -4310,6 +4577,12 @@ impl LayoutEngine {
                     &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx.clone(),
+                    CaptionOwner::new(
+                        Some(section_index),
+                        Some(node_para_index),
+                        Some(node_control_index),
+                        CaptionControlKind::Table,
+                    ),
                 );
             }
         }
@@ -4342,6 +4615,12 @@ impl LayoutEngine {
                     &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx.clone(),
+                    CaptionOwner::new(
+                        Some(section_index),
+                        Some(node_para_index),
+                        Some(node_control_index),
+                        CaptionControlKind::Table,
+                    ),
                 );
             }
         }

@@ -1,3 +1,5 @@
+import "./verify-trusted-postmerge-green-merge.test.mjs";
+import "./trusted-postmerge-duration-evidence.test.mjs";
 import assert from "node:assert/strict";
 import "./verify-trusted-postmerge-base-advance.test.mjs";
 import test from "node:test";
@@ -61,6 +63,7 @@ function input(overrides = {}) {
       files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
     }],
     workflowRuns: [candidate()],
+    fullLaneRunIds: ["123"],
     ...overrides,
   };
 }
@@ -156,7 +159,7 @@ test("reuses the preceding full CI through a linear review-only tail", () => {
         ],
       },
     ],
-    workflowRuns: [candidate({ id: 456, head_sha: code })],
+    workflowRuns: [candidate(), candidate({ id: 456, head_sha: code })],
     fullLaneRunIds: ["456"],
   }));
   assert.deepEqual(result, {
@@ -261,7 +264,7 @@ test("fails closed when an intermediate full review candidate lacks merge-tree e
         files: [{ filename: "mydocs/pr/archives/pr_6279_review.md", status: "added" }],
       },
     ],
-    workflowRuns: [candidate({ id: 456, head_sha: reviewed })],
+    workflowRuns: [candidate(), candidate({ id: 456, head_sha: reviewed })],
     fullLaneRunIds: ["456"],
   }));
   assert.equal(
@@ -589,6 +592,22 @@ test("fork 최신 rerun 실패를 이전 green run으로 대체하지 않는다"
   assert.equal(evaluateTrustedPostMergeReuse(data).reuse, false);
 });
 
+for (const conclusion of ["success", "failure", "cancelled", null]) {
+  test(`merge 이후 최신 rerun을 이전 성공으로 우회하지 않는다: ${conclusion}`, () => {
+    for (const data of [input(), forkInput()]) {
+      data.workflowRuns.push({ ...data.workflowRuns[0], id: 124, run_attempt: 2,
+        status: conclusion ? "completed" : "in_progress", conclusion,
+        updated_at: "2026-08-27T10:04:00Z" });
+      assert.equal(evaluateTrustedPostMergeReuse(data).reuse, false);
+    }
+  });
+}
+
+test("duration 신뢰 helper 변경은 enforcement fast-pass 대상이 아니다", () => {
+  const data = input(); data.pullFiles.push({ filename: "scripts/trusted-postmerge-duration-evidence.mjs" });
+  assert.equal(evaluateTrustedPostMergeReuse(data).reason, "pr-changes-ci-enforcement-surface");
+});
+
 for (const mutate of [
   d => { d.forkMergeTreeEvidenceByRunId = {}; },
   d => { d.forkMergeTreeEvidenceByRunId[456].baseSha = oldBase; },
@@ -645,4 +664,10 @@ test("실제 Git tree 대조는 fork의 문서 trailing만 허용하고 source �
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("worker evidence is mandatory even when workflow status is green", () => {
+  const data = input();
+  delete data.fullLaneRunIds;
+  assert.equal(evaluateTrustedPostMergeReuse(data).reason, "candidate-full-lane-evidence-unavailable");
 });

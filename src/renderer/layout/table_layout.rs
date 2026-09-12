@@ -2428,6 +2428,7 @@ impl LayoutEngine {
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
     ) -> f64 {
         self.layout_table_with_wrapper_margin(
             tree,
@@ -2453,6 +2454,7 @@ impl LayoutEngine {
             allow_para_top_bleed,
             clamp_header_negative_para_offset,
             physical_outer_box_paint_inset,
+            resolved_table_top,
             false,
         )
     }
@@ -2483,6 +2485,7 @@ impl LayoutEngine {
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
+        resolved_table_top: Option<f64>,
         wrapper_margin_already_applied: bool,
     ) -> f64 {
         if table.cells.is_empty() {
@@ -2710,6 +2713,7 @@ impl LayoutEngine {
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
                             false,
+                            None,
                             true,
                         );
 
@@ -3053,7 +3057,16 @@ impl LayoutEngine {
 
         // inline_x_override가 있으면 외부에서 inline 위치를 계산했으므로 x/y 기준은 유지한다.
         // 단, Top 캡션은 표 본문 위의 별도 영역이므로 표 본문 y 에 캡션 높이만큼 반영한다.
-        let flow_table_y = if inline_x_override.is_some() {
+        let flow_table_y = if let Some(table_top) = resolved_table_top {
+            // typeset에서 fit과 예약까지 확정한 표 상단은 다시 해석하지 않는다.
+            // 위 캡션은 예약된 상자의 내부이며 표 본체 앞에 놓는다.
+            table_top
+                + if render_caption {
+                    top_caption_flow_extra(&table.caption, caption_height, caption_spacing)
+                } else {
+                    0.0
+                }
+        } else if inline_x_override.is_some() {
             y_start + inline_top_caption_offset
         } else {
             let computed_y = self.compute_table_y_position(
@@ -3433,6 +3446,12 @@ impl LayoutEngine {
                     &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx,
+                    CaptionOwner::new(
+                        Some(section_index),
+                        table_meta.map(|(pi, _)| pi),
+                        table_meta.map(|(_, ci)| ci),
+                        CaptionControlKind::Table,
+                    ),
                 );
             }
         }
@@ -4279,7 +4298,7 @@ impl LayoutEngine {
     /// #674 보정(fs×줄간격% 대체)이 저장 줄에도 적용되어 셀 행높이가 부풀었다
     /// (39607: 행별 +3.8~+76.8px, 표 합계 +335.5px → 다쪽 표 쪽수 밀림).
     /// 보정은 line_segs 부재 폴백(400HU 합성 줄, #671/#674 원 목적)에만 유지.
-    fn calc_para_lines_height(
+    pub(super) fn calc_para_lines_height(
         &self,
         lines: &[crate::renderer::composer::ComposedLine],
         para: &Paragraph,
@@ -4619,12 +4638,16 @@ impl LayoutEngine {
         if let Some(img_fill) = border_style.and_then(|bs| bs.image_fill.as_ref()) {
             if let Some(img_bytes) = find_bin_data_bytes(bin_data_content, img_fill.bin_data_id) {
                 let img_id = tree.next_id();
+                // [#6895] `ImageNode` 는 **화면 순서**를 담고 `ResolvedImageFill` 은 이진
+                // 순서를 담는다. 종전엔 그대로 옮겨 담아 칸 배경 그림의 밝기·명암이
+                // 반대로 그려졌다(그림 채움 `hp:pic` 축과 달리 이 축은 맞바꿈이 필요하다).
+                let (img_bright, img_contrast) = img_fill.display_brightness_contrast();
                 let img_node = RenderNode::new(
                     img_id,
                     RenderNodeType::Image(ImageNode {
                         fill_mode: Some(img_fill.fill_mode),
-                        brightness: img_fill.brightness,
-                        contrast: img_fill.contrast,
+                        brightness: img_bright,
+                        contrast: img_contrast,
                         effect: img_fill.effect,
                         ..ImageNode::new(img_fill.bin_data_id, Some(img_bytes))
                     }),
@@ -5630,16 +5653,12 @@ impl LayoutEngine {
             // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
             let mut prior_float_table_stacked = false;
             let mut rendered_top_and_bottom_non_inline = false;
-            // [#6787] 같은 칸 문단의 문단-기준 자리차지 중첩 표들이 **가로 오프셋으로
-            // 나란히** 놓이는 무리(`#6494` 의 칸 안 짝). 앞 표가 쓴 x 끝과 그 줄 상단.
-            //
-            // ⚠ 무리 판정은 **컨트롤 루프에 들어가기 전에 문단 단위로 한 번** 한다 —
-            // 측정(`height_measurer`)과 같은 함수다. 표를 순차 처리하며 판정하면 뒤
-            // 표가 조건에 걸렸을 때 앞 표의 레인을 되돌릴 수 없고, 측정은 최대 높이만
-            // 예약했는데 배치는 세로로 쌓는 어긋남이 생긴다.
-            let cell_float_group_side_by_side =
-                crate::renderer::float_placement::para_float_group_is_side_by_side(para);
-            let mut cell_float_lane: Option<(f64, f64)> = None;
+            // 높이 측정과 동일한 저장 줄 그룹으로 레인을 소유한다.
+            // 다른 줄의 표가 앞 줄의 나란한 배치에 섞이지 않는다.
+            let nested_groups = crate::renderer::float_placement::nested_table_groups(para);
+            let stored_control_lines =
+                crate::renderer::float_placement::stored_control_line_indices(para);
+            let mut cell_float_lanes = vec![None; nested_groups.len()];
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 match ctrl {
@@ -6335,6 +6354,12 @@ impl LayoutEngine {
                                     &mut self.auto_counter.borrow_mut(),
                                     bin_data_content,
                                     cell_context.clone(),
+                                    CaptionOwner::new(
+                                        Some(section_index),
+                                        cell_context.as_ref().map(|c| c.parent_para_index),
+                                        Some(ctrl_idx),
+                                        CaptionControlKind::Image,
+                                    ),
                                 );
                             }
                             if matches!(pic.common.text_wrap, TextWrap::TopAndBottom) {
@@ -6801,6 +6826,12 @@ impl LayoutEngine {
                         // ⚠ 자격 술어는 무리 판정과 **같은 함수**를 쓴다. 종전에는
                         // 여기서만 `off > 0` 을 요구해, 첫 표 오프셋이 0 인 무리에서
                         // 측정(최대 높이)과 배치(세로 적층)가 어긋났다.
+                        let group_index = nested_groups
+                            .iter()
+                            .position(|g| g.controls.contains(&ctrl_idx));
+                        let cell_float_group_side_by_side =
+                            group_index.is_some_and(|i| nested_groups[i].side_by_side);
+                        let cell_float_lane = group_index.and_then(|i| cell_float_lanes[i]);
                         let cell_float_lane_x = (cell_float_group_side_by_side
                             && crate::renderer::float_placement::
                                 para_float_group_member_is_eligible(nested_table))
@@ -6914,13 +6945,33 @@ impl LayoutEngine {
                                 };
                                 let om_top_hu = i64::from(nested_table.outer_margin_top);
                                 let om_bottom_hu = i64::from(nested_table.outer_margin_bottom);
+                                // [#7049] `lh = h + om` 인 표 전용 줄만이라는 위 계약대로
+                                // 양쪽을 본다 — `paragraph_layout` 의 `stored_lh_covers_om`
+                                // 과 같은 술어의 형제다. 한쪽만 고치면 `#2032`/`#2075` 의
+                                // "동일 로직" 함정을 그대로 밟는다.
+                                let band_hu = i64::from(nested_table.common.height)
+                                    + om_top_hu
+                                    + om_bottom_hu;
+                                // 그리고 그 줄이 **이 표 전용**이어야 한다 —
+                                // `paragraph_layout` 의 `line_tac_table_count` 와 같은 조건.
+                                // 이 경로에는 composer 결과가 없으므로 저장 사다리로 센다:
+                                // 컨트롤의 문자 위치를 `LineSeg.text_start` 구간에 넣어
+                                // 소속 줄을 구하고, **같은 줄**의 TAC 표만 센다. 문단 단위로
+                                // 세면 다른 줄의 표까지 끌어들여 이 줄의 사실을 왜곡한다.
+                                let own_line =
+                                    stored_control_lines.as_ref().map(|lines| lines[ctrl_idx]);
+                                let line_tac_table_count =
+                                    stored_control_lines.as_ref().map(|lines| {
+                                        para.controls.iter().enumerate().filter(|(ci, c)| {
+                                        matches!(c, Control::Table(t) if t.common.treat_as_char)
+                                            && Some(lines[*ci]) == own_line
+                                    }).count()
+                                    });
                                 let table_anchor_y = if nested_table.common.height < 0x8000_0000
                                     && om_top_hu + om_bottom_hu > 0
-                                    && i64::from(host_seg_lh)
-                                        >= i64::from(nested_table.common.height)
-                                            + om_top_hu
-                                            + om_bottom_hu
-                                            - 10
+                                    && line_tac_table_count.is_some_and(|count| count <= 1)
+                                    && (band_hu - 10..=band_hu + 10)
+                                        .contains(&i64::from(host_seg_lh))
                                 {
                                     table_anchor_y
                                         + hwpunit_to_px(
@@ -6983,6 +7034,7 @@ impl LayoutEngine {
                                     false,
                                     clamp_header_negative_para_offset,
                                     false,
+                                    None,
                                 );
                                 inline_x += tac_om_l + tac_w + tac_om_r;
                                 // para_y는 TAC 표 높이만큼 갱신 (같은 문단 내 다음 표도 같은 y)
@@ -7149,6 +7201,7 @@ impl LayoutEngine {
                                 false,
                                 clamp_header_negative_para_offset,
                                 false,
+                                None,
                             );
                             if !hwpx_nested_behind_text_overlay {
                                 // [#5702] 어울림(Square/Tight/Through) 중첩표는 글이 옆으로
@@ -7179,7 +7232,8 @@ impl LayoutEngine {
                                     let lane_bottom = cell_float_lane
                                         .map(|(top, _)| (top + advance).max(para_y))
                                         .unwrap_or(nested_y + advance);
-                                    cell_float_lane = Some((
+                                    cell_float_lanes
+                                        [group_index.expect("float lane has a group")] = Some((
                                         nested_y,
                                         x + hwpunit_to_px(
                                             nested_table.common.width.min(i32::MAX as u32) as i32,
@@ -7778,15 +7832,19 @@ impl LayoutEngine {
                     if let Some(seg) = last_para.line_segs.last() {
                         let mut last_end = seg.vertical_pos.saturating_add(seg.line_height);
                         // 마지막 문단에 중첩 표가 있고 lh가 표 높이보다 작으면 보정
+                        // [#6697 후속] 마지막 문단의 문단 기준 어울림 표는 리드만큼 더
+                        // 내려가 그려진다 — `nested_bottom` 과 같은 조건으로 싣는다.
+                        let mut lead_px = 0.0;
                         for ctrl in &last_para.controls {
                             if let Control::Table(t) = ctrl {
                                 let table_h = t.common.height as i32;
                                 if table_h > seg.line_height {
                                     last_end += table_h - seg.line_height;
                                 }
+                                lead_px += para_relative_float_table_lead(t, self.dpi);
                             }
                         }
-                        hwpunit_to_px(last_end, self.dpi)
+                        hwpunit_to_px(last_end, self.dpi) + lead_px
                     } else {
                         0.0
                     }
@@ -7831,6 +7889,22 @@ impl LayoutEngine {
             // Top으로 수렴시킨다. 다만 p11처럼 호출자가 전한 `col_area`가 직전
             // 조각까지 포함할 수 있으므로, 실제 페이지 viewport에서도 같은 판정을
             // 한다. 일반 완전 셀 및 최상위 표(depth=0)는 영향이 없다.
+            // [#4068] 실제 클립은 page bbox 다(위 주석 참조). 호출자가 넘긴
+            // `col_area` 가 직전 조각까지 포함해 낡아 있으면, 페이지 안에 **온전히**
+            // 들어간 중첩 셀까지 "잘렸다"고 오판해 선언된 Center/Bottom 을 Top 으로
+            // 무너뜨린다. 그러면 칸 내용이 정렬 몫만큼 위로 붙는다.
+            //
+            //   hwpx_sample2 19쪽 중첩 표(1행2열, 선언 valign=Center)
+            //     셀 961.80..1063.40 · page bbox 0.00..1122.50  → 안 잘린다
+            //     그런데 parentvp=true 로 Top 강제 → 글자가 정렬 몫 1.88px 위로
+            //
+            // 안 잘린 칸은 잘림 수렴의 대상이 아니다. 아래 `cell_clipped_by_page_viewport`
+            // 는 종전대로 남아 **진짜** 페이지 잘림을 계속 Top 으로 수렴시킨다.
+            let page_bbox = tree.page_bbox();
+            let page_view_top = page_bbox.y;
+            let page_view_bottom = page_bbox.y + page_bbox.height;
+            let cell_fits_inside_page_viewport =
+                cell_y >= page_view_top - 0.5 && cell_y + cell_h <= page_view_bottom + 0.5;
             let parent_view_top = col_area.y;
             let parent_view_bottom = col_area.y + col_area.height;
             let cell_intersects_parent_viewport =
@@ -7838,15 +7912,13 @@ impl LayoutEngine {
             let cell_clipped_by_parent_viewport = depth > 0
                 && !table.common.treat_as_char
                 && col_area.height > 0.5
+                && !cell_fits_inside_page_viewport
                 && cell_intersects_parent_viewport
                 && (cell_y < parent_view_top - 0.5 || cell_y + cell_h > parent_view_bottom + 0.5);
             // nested continuation은 부모 `col_area`가 이전 페이지의 logical
             // viewport를 포함한 채 호출될 수 있다. 렌더 트리의 page bbox는 실제
             // SVG/Canvas clip이므로, 그 밖으로 나간 셀은 그 logical viewport 안에
             // 있더라도 Center/Bottom 기준으로 배치하면 안 된다.
-            let page_bbox = tree.page_bbox();
-            let page_view_top = page_bbox.y;
-            let page_view_bottom = page_bbox.y + page_bbox.height;
             let cell_intersects_page_viewport =
                 cell_y < page_view_bottom - 0.5 && cell_y + cell_h > page_view_top + 0.5;
             let cell_clipped_by_page_viewport = depth > 0
@@ -8291,12 +8363,26 @@ impl LayoutEngine {
             .iter()
             .enumerate()
             .map(|(pidx, p)| {
+                // [#6697 후속] 문단 기준 어울림 중첩 표의 `vertOffset` 리드는 렌더
+                // (`nested_y`)와 흐름 계상(`cell_units_uncached`)이 이미 싣는데, 세로
+                // 정렬용 콘텐츠 높이가 그 몫을 모르면 표는 리드만큼 내려가고 콘텐츠
+                // 블록은 제자리라 `valign=Center` 칸의 아래 여백만 리드만큼 줄어든다
+                // (재현 문서 `valign=Center` 칸: 한/글 위/아래 여백 95/67px, rhwp
+                // 123.6/37.3px — 표 자체 위치는 한/글과 일치). 흐름 계상과 **같은
+                // 조건**(호스트가 칸의 마지막 문단)으로 싣는다 — 뒤 형제 문단이 있을 때
+                // 그 몫을 싣지 않는 계약(59043 `□ 편익`)은 그대로다.
+                let host_is_cell_last_para = pidx + 1 == paragraphs.len();
                 let nested_h: f64 = p
                     .controls
                     .iter()
                     .map(|ctrl| {
                         if let Control::Table(t) = ctrl {
                             self.calc_nested_table_height(t, styles)
+                                + if host_is_cell_last_para {
+                                    para_relative_float_table_lead(t, self.dpi)
+                                } else {
+                                    0.0
+                                }
                         } else {
                             0.0
                         }
@@ -12796,6 +12882,94 @@ impl LayoutEngine {
             })
     }
 
+    /// 행의 셀별 "보이는 소스 셀인가" 표지 — 열 순서로 정렬한 셀 순서다.
+    ///
+    /// `row_has_single_visible_source_cell` 과 같은 가시성 정의를 쓰되 개수만 세지 않고
+    /// 어느 셀인지 남긴다. 두 열이 같은 물리 경계를 적어 둔 신·구조문대비표를 가르려면
+    /// 셀 단위 표지가 필요하다(`#6973`).
+    pub(crate) fn row_visible_source_cell_flags(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<bool> {
+        let mut cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells
+            .iter()
+            .map(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .any(|unit| !unit.empty_spacer && unit.vis_start < unit.vis_end)
+            })
+            .collect()
+    }
+
+    /// 행의 저장 `lineseg` 되감김을 **CellUnit 경계로 투영한** 셀별 목록.
+    ///
+    /// 되감김(양수 vpos → 0)은 한/글이 그 행 안에서 쪽을 끊은 자리다. 이 함수는 프로필·
+    /// 선언 높이 같은 **수용 조건을 보지 않고** 저장 데이터가 적어 둔 자리 자체를 돌려준다 —
+    /// 수용은 호출부가 판정한다(`#6973`).
+    ///
+    /// ⭐ **번호 축을 반드시 옮긴다.** 저장 `LineSeg` 번호와 컷 인덱스(`end_cut`)는 같은 축이
+    /// 아니다 — 같은 물리 줄의 좌우 분할 `LineSeg` 는 하나의 `CellUnit` 으로 합쳐질 수 있고,
+    /// 중첩 표는 한 문단이 여러 unit 으로 전개된다(PR #6996 검토 지적). 그래서 되감김이
+    /// 시작하는 `(문단, 줄)` 을 `cell_unit_ordinal_for` 로 unit 번호로 바꾸고, **그 unit 이
+    /// 실제로 그 줄에서 시작할 때만**(`vis_start == 줄`) 경계로 인정한다. 합쳐진 줄·중첩
+    /// atom 처럼 unit 이 되감김 줄 한가운데를 덮으면 경계를 만들지 않는다.
+    ///
+    /// 되감김이 여럿이면 **모두** 돌려준다 — 호출부가 현재 컷 이후의 경계를 고를 수 있어야
+    /// 반복되는 물리 쪽 경계도 보호된다(같은 검토 지적).
+    pub(crate) fn row_stored_rewind_unit_indices(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<Vec<usize>> {
+        let mut cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells
+            .iter()
+            .map(|cell| {
+                let units = self.cell_units(cell, table, styles);
+                let mut found: Vec<usize> = Vec::new();
+                for (para_idx, paragraph) in cell.paragraphs.iter().enumerate() {
+                    for (li, pair) in paragraph.line_segs.windows(2).enumerate() {
+                        if pair[0].vertical_pos <= 0 || pair[1].vertical_pos != 0 {
+                            continue;
+                        }
+                        let rewind_line = li + 1;
+                        let Some(unit_idx) =
+                            self.cell_unit_ordinal_for(cell, table, styles, para_idx, rewind_line)
+                        else {
+                            continue;
+                        };
+                        // 투영이 성립하는 경우만 — unit 이 그 줄에서 **시작**해야 컷 경계가 된다.
+                        let Some(unit) = units.get(unit_idx) else {
+                            continue;
+                        };
+                        if unit.para_idx != para_idx || unit.vis_start != rewind_line {
+                            continue;
+                        }
+                        if !found.contains(&unit_idx) {
+                            found.push(unit_idx);
+                        }
+                    }
+                }
+                found.sort_unstable();
+                found
+            })
+            .collect()
+    }
+
     /// Return whether a row records an in-paragraph return from a positive
     /// stored vertical position to the top of a new physical frame.  This is
     /// source pagination data, not a measured-height heuristic.
@@ -14271,6 +14445,34 @@ impl LayoutEngine {
             }
         }
         ranges
+    }
+
+    /// Empty paragraphs own content atoms, not physical ComposedLines. Gap-only
+    /// units and nested/control units must not grant an empty paragraph owner.
+    pub(super) fn cell_cut_empty_paragraph_owners(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+    ) -> Vec<bool> {
+        let units = self.cell_units(cell, table, styles);
+        let mut owners = vec![false; cell.paragraphs.len()];
+        for unit in units.iter().take(end_unit).skip(start_unit) {
+            if unit.empty_spacer
+                && unit.vis_start == 0
+                && unit.vis_end == 1
+                && unit.nested_row.is_none()
+                && unit.nested_table_fragment.is_none()
+                && unit.non_inline_control_range.is_none()
+            {
+                if let Some(owner) = owners.get_mut(unit.para_idx) {
+                    *owner = true;
+                }
+            }
+        }
+        owners
     }
 
     pub(crate) fn cell_cut_contains_non_inline_control_units(

@@ -50,8 +50,7 @@ export class CellSelectionRenderer {
 
       const div = document.createElement('div');
       const pageOffset = this.virtualScroll.getPageOffset(cell.pageIndex);
-      const pageDisplayWidth = this.virtualScroll.getPageWidth(cell.pageIndex);
-      const pageLeft = (contentWidth - pageDisplayWidth) / 2;
+      const pageLeft = this.virtualScroll.getPageLeftResolved(cell.pageIndex, contentWidth);
 
       div.className = 'cell-selection-highlight';
       div.style.cssText =
@@ -74,8 +73,7 @@ export class CellSelectionRenderer {
       if (focusCell) {
         const marker = document.createElement('div');
         const pageOffset = this.virtualScroll.getPageOffset(focusCell.pageIndex);
-        const pageDisplayWidth = this.virtualScroll.getPageWidth(focusCell.pageIndex);
-        const pageLeft = (contentWidth - pageDisplayWidth) / 2;
+        const pageLeft = this.virtualScroll.getPageLeftResolved(focusCell.pageIndex, contentWidth);
         marker.className = phase === 1
           ? 'cell-selection-phase-marker cell-selection-phase-marker--single'
           : 'cell-selection-phase-marker cell-selection-phase-marker--range';

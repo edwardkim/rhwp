@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-09-12
 ---
 
 # PR review 조건별 가이드 선택표
@@ -16,6 +16,11 @@ last_verified: 2026-07-25
 2. **무엇을 바꾸고 현재 어느 단계인가**로 보조 경로를 추가한다.
 3. 상태를 바꾸기 전에 선택 결과와 읽은 문서를 보고한다.
 4. 새 head가 생기거나 merge 단계로 넘어가면 선택표를 다시 확인한다.
+
+모든 기본 경로는 [조판 원칙 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)를 공통 항목으로
+기록한다. 실제 변경이 비해당이면 이유를 남기고, 적용 대상은 검토 head의 코드·증거로 판정한다.
+또한 [검증 입력 커밋 확인](intake_and_review.md#28-검증-입력-커밋-확인)을 공통으로 기록한다.
+HWP/HWPX/PDF를 검증에 사용하면 실제 실행 파일과 검토 대상 commit의 일치를 확인한다.
 
 | 문서 | 읽는 시점 |
 | --- | --- |

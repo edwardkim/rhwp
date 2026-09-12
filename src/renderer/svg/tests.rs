@@ -1022,8 +1022,11 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let mut image = ImageNode::new(1, Some(png));
     image.fill_mode = Some(ImageFillMode::FitToSize);
-    image.brightness = -50;
-    image.contrast = 70;
+    // [#6895] `ImageNode` 의 두 필드는 **화면 순서**다 — 한컴 워터마크 프리셋은
+    // 밝기 70 · 대비 −50 이다. 종전 값 `(-50, 70)` 은 이진 저장 순서였는데, 채움
+    // 그림이 `ImageNode` 로 갈 때 이진 순서가 그대로 새던 시절의 흔적이다.
+    image.brightness = 70;
+    image.contrast = -50;
     image.effect = crate::model::image::ImageEffect::RealPic;
     let bbox = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
     let mut renderer = SvgRenderer::new();
@@ -1033,8 +1036,12 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
 
     let output = renderer.output();
     assert!(
-        !output.contains("rhwp-img-bc-b-50c70"),
+        !output.contains("rhwp-img-bc-b70c-50"),
         "RealPic background watermark fill should preserve source color without brightness/contrast filter: {output}"
+    );
+    assert!(
+        !output.contains("rhwp-img-bc-b-50c70"),
+        "이진 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
     );
     assert!(
         !output.contains("rhwp-realpic-watermark-tone"),
@@ -1150,16 +1157,28 @@ fn test_compute_image_crop_src_no_crop_full_image() {
 
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
-    // 좌·상단을 잘라낸 케이스: top=oh/5, left=ow/4 → 우하단 영역.
-    // imgDim 부재 → 적응 폴백(#3239): right/bottom(4000, 2500)이 전체 좌표
-    // 범위 = 디코딩 400×250px 에 대응 (10 HU/px).
+    // [#7015] 좌·상단을 **둘 다** 잘라낸 케이스. 적응 폴백(#3239)은 `right`/`bottom`
+    // 이 전체 좌표 범위라는 가정 위에 서는데, `left > 0` · `top > 0` 이면 두 값 다
+    // 자르기 경계일 뿐이라 그 가정이 성립하지 않는다. 전체 범위를 확인할 축이 하나도
+    // 없으므로 [Task #477] 표준 75 HU/px 로 떨어진다.
     let (sx, sy, sw, sh) = compute_image_crop_src((1000, 500, 4000, 2500), None, 400.0, 250.0);
-    // src_x = 1000/10 = 100, src_y = 500/10 = 50
-    // src_w = 3000/10 = 300, src_h = 2000/10 = 200
-    assert!((sx - 100.0).abs() < 0.01);
-    assert!((sy - 50.0).abs() < 0.01);
-    assert!((sw - 300.0).abs() < 0.01);
-    assert!((sh - 200.0).abs() < 0.01);
+    // src_x = 1000/75 = 13.33, src_y = 500/75 = 6.67
+    // src_w = 3000/75 = 40.0,  src_h = 2000/75 = 26.67
+    assert!((sx - 13.333).abs() < 0.01);
+    assert!((sy - 6.667).abs() < 0.01);
+    assert!((sw - 40.0).abs() < 0.01);
+    assert!((sh - 26.667).abs() < 0.01);
+
+    // #7015 실물 입력의 축을 바꿔, 가로만 자를 때도 확인된 세로 배율을 사용한다.
+    // 기준 크기의 한 축이 0이면 유효한 imgDim으로 취급하지 않고 같은 폴백을 탄다.
+    for reference in [None, Some((0, 88560)), Some((45453, 0))] {
+        let (x, y, width, height) =
+            compute_image_crop_src((20745, 0, 45453, 88560), reference, 945.0, 1181.0);
+        assert!((x - 276.64685).abs() < 0.001, "reference={reference:?}");
+        assert!(y.abs() < 0.001, "reference={reference:?}");
+        assert!((width - 329.49580).abs() < 0.001, "reference={reference:?}");
+        assert!((height - 1181.0).abs() < 0.001, "reference={reference:?}");
+    }
 }
 
 #[test]

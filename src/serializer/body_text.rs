@@ -395,8 +395,9 @@ fn serialize_paragraph_with_msb(
     }
 
     // PARA_RANGE_TAG
-    if !para.range_tags.is_empty() {
-        let data = serialize_para_range_tag(&para.range_tags);
+    let range_tags = para.effective_markpen_range_tags();
+    if !range_tags.is_empty() {
+        let data = serialize_para_range_tag(&range_tags);
         records.push(Record {
             tag_id: tags::HWPTAG_PARA_RANGE_TAG,
             level: base_level + 1,
@@ -523,7 +524,8 @@ fn serialize_para_header_with_mask(
 
     // count 필드는 실제 데이터 기반으로 항상 재생성 (편집 후 불일치 방지)
     w.write_u16(num_char_shapes as u16).unwrap();
-    w.write_u16(para.range_tags.len() as u16).unwrap();
+    w.write_u16(para.effective_markpen_range_tags().len() as u16)
+        .unwrap();
     w.write_u16(num_line_segs as u16).unwrap();
 
     // instanceId + 추가 바이트: raw_header_extra에서 복원

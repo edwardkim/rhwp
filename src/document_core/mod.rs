@@ -8,6 +8,7 @@ pub(crate) use helpers::*;
 
 pub mod builders;
 mod commands;
+pub use commands::{TableColumnWidths, TableCreationOptions};
 pub mod converters;
 pub(crate) mod html_table_import;
 /// 한글 클립보드 문서모델(hwpjson) → HWPX 변환

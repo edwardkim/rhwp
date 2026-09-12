@@ -293,6 +293,10 @@ hwp5rb	issue6598/2744465_fingerprint_appraisal.hwp	sections[].paragraphs[].contr
 hwp5rb	issue6795/1341000-201100013-cyber-university-application.hwp	sections[].paragraphs[].controls[].img_dim[]	2
 hwp5rb	issue6795/1341000-201100013-cyber-university-application.hwp	sections[].paragraphs[].controls[].raw_picture_extra.len	1
 hwp5rb	issue6795/1341000-201100013-cyber-university-application.hwp	sections[].paragraphs[].controls[][].drawing.text_box.raw_list_header_extra.len	2
+hwp5rb	issue6921/148733091-briefing-stenographic-record.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue6921/148733091-briefing-stenographic-record.hwp	sections[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue6924/148751598-briefing.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].img_dim[]	2
+hwp5rb	issue6924/148751598-briefing.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].raw_picture_extra.len	1
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
@@ -401,9 +405,14 @@ hwpx	2025년 1분기 해외직접투자 보도자료f.hwpx	sections[].paragraphs
 hwpx	2025년 1분기 해외직접투자 보도자료f.hwpx	sections[].paragraphs[].raw_header_extra[]	317
 hwpx	2025년 2분기 해외직접투자 (최종).hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	4409
 hwpx	2025년 2분기 해외직접투자 (최종).hwpx	sections[].paragraphs[].raw_header_extra[]	317
+hwpx	20260909-para-table.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	254
+hwpx	20260909-para-table.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	95
+hwpx	20260909-para-table.hwpx	sections[].paragraphs[].raw_header_extra[]	38
 hwpx	2026_oss_rst.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	16
 hwpx	2026_oss_rst.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	221
 hwpx	2026_oss_rst.hwpx	sections[].paragraphs[].raw_header_extra[]	19
+hwpx	21761835_jeonjik_exemption_table.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	1432
+hwpx	21761835_jeonjik_exemption_table.hwpx	sections[].paragraphs[].raw_header_extra[]	24
 hwpx	[2027] 온새미로 1 본교재.hwpx	sections[].paragraphs[].controls[].cells[].paragraphs[].raw_header_extra[]	464
 hwpx	[2027] 온새미로 1 본교재.hwpx	sections[].paragraphs[].controls[].text_box.paragraphs[].raw_header_extra[]	21
 hwpx	[2027] 온새미로 1 본교재.hwpx	sections[].paragraphs[].raw_header_extra[]	2011

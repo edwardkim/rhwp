@@ -137,7 +137,7 @@ fn public_trace_record(font_name: &str, alt_type: u8, text: &str) -> serde_json:
 }
 
 #[test]
-fn sealed_v1_and_current_v2_projection_semantics_match() {
+fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v1 = sealed_v1_registry();
     let v2 = registry();
     let v1_rules = v1["rules"].as_array().expect("sealed v1 rules");
@@ -145,9 +145,9 @@ fn sealed_v1_and_current_v2_projection_semantics_match() {
 
     assert_eq!(v1_rules.len(), 830);
     assert_eq!(v2["summary"]["activeRuleCount"], 830);
-    assert_eq!(v2["summary"]["retiredRuleCount"], 0);
+    assert_eq!(v2["summary"]["retiredRuleCount"], 1);
 
-    let v1_semantics: BTreeMap<_, _> = v1_rules
+    let mut expected_semantics: BTreeMap<_, _> = v1_rules
         .iter()
         .map(|rule| {
             let rule_id = rule["ruleId"].as_str().expect("sealed v1 ruleId");
@@ -157,6 +157,37 @@ fn sealed_v1_and_current_v2_projection_semantics_match() {
             (rule_id.to_owned(), semantic_rule(rule, source_boundary_id))
         })
         .collect();
+    // The v1 seal remains historical. Only the independently recorded supply
+    // replacement may change current semantics; every other rule stays sealed.
+    let change: serde_json::Value = serde_json::from_str(include_str!(
+        "../../assets/font-rules/changes/issue-7023-batangche-serif-supply.json"
+    ))
+    .expect("recorded BatangChe supply change");
+    assert_eq!(change["operations"].as_array().unwrap().len(), 1);
+    let operation = &change["operations"][0];
+    assert_eq!(operation["type"], "retire-and-replace");
+    let retired_id = operation["retiredRuleId"].as_str().unwrap();
+    let mut replacement = operation["replacementRule"].clone();
+    replacement["status"] = "active".into();
+    replacement["projections"] = serde_json::json!([replacement["projection"]]);
+    let replacement_id = replacement["ruleId"].as_str().unwrap();
+    let retired = v2_rules
+        .iter()
+        .find(|rule| rule["ruleId"] == retired_id)
+        .unwrap();
+    assert_eq!(retired["status"], "retired");
+    let mut historical_semantics = semantic_rule(retired, source_boundary(retired));
+    historical_semantics["status"] = "active".into();
+    assert_eq!(
+        expected_semantics.remove(retired_id),
+        Some(historical_semantics)
+    );
+    assert!(expected_semantics
+        .insert(
+            replacement_id.to_owned(),
+            semantic_rule(&replacement, source_boundary(&replacement)),
+        )
+        .is_none());
     let v2_semantics: BTreeMap<_, _> = v2_rules
         .iter()
         .filter(|rule| rule["status"] == "active")
@@ -168,7 +199,7 @@ fn sealed_v1_and_current_v2_projection_semantics_match() {
             )
         })
         .collect();
-    assert_eq!(v2_semantics, v1_semantics);
+    assert_eq!(v2_semantics, expected_semantics);
 
     for projection in [
         "rust-layout-name",
@@ -186,7 +217,14 @@ fn sealed_v1_and_current_v2_projection_semantics_match() {
                     .iter()
                     .any(|entry| entry["id"] == projection)
             })
-            .map(|rule| rule["ruleId"].as_str().expect("sealed v1 ruleId"))
+            .map(|rule| {
+                let id = rule["ruleId"].as_str().expect("sealed v1 ruleId");
+                if id == retired_id {
+                    replacement_id
+                } else {
+                    id
+                }
+            })
             .collect();
         let v2_rule_ids: Vec<_> = projection_rules(&v2, projection)
             .into_iter()

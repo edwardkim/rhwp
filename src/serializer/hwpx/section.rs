@@ -763,8 +763,13 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
-    let (runs_xml, position_axis_intact, serialized_axis_end, mut hwp5_only_slot_positions) =
-        render_runs(para, ctx);
+    let (
+        runs_xml,
+        position_axis_intact,
+        serialized_axis_end,
+        mut hwp5_only_slot_positions,
+        collapsed_slot_positions,
+    ) = render_runs(para, ctx);
 
     // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
     // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
@@ -801,12 +806,23 @@ pub(crate) fn render_paragraph_parts(
     // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
     // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
     // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
-    let hwp5_only_units = if ctx.line_segs_on_hwpx_axis {
+    if ctx.line_segs_on_hwpx_axis {
         hwp5_only_slot_positions.clear();
-        0
-    } else {
-        8 * hwp5_only_slot_positions.len() as u32
-    };
+    }
+    // [#6871] 우리가 **접은** 슬롯은 출처와 무관하게 축에서 뺀다.
+    //
+    // 위 게이트가 다루는 `secd`·`cold` 는 HWPX 축에 **원래 없던** 자리라, HWPX 출처면
+    // 이미 빠져 있어 다시 빼면 왕복이 깨진다. 반면 `#6869` 가 접는 중복 쪽번호는 원본
+    // HWPX 축에 **분명히 있던** 자리다 — 접고도 빼지 않으면 `textpos` 가 방출 축보다
+    // 길어져 한글이 파일을 열지 못한다.
+    //
+    // 실측(156730118, s39 `02482`): 원본은 한글이 1쪽으로 폐기하고 컨트롤만 접은 산출도
+    // 마찬가지인데, 접기 + 축 −16 을 함께 하면 **2쪽으로 정상 개봉**한다. `#6871` 의 네
+    // 문서가 모두 이 형상(한 문단에 쪽번호 3개)이다.
+    hwp5_only_slot_positions.extend(collapsed_slot_positions);
+    hwp5_only_slot_positions.sort_unstable();
+    hwp5_only_slot_positions.dedup();
+    let hwp5_only_units = 8 * hwp5_only_slot_positions.len() as u32;
     let serializable_line_segs = para.serializable_line_segs();
     let rebased_line_segs: Option<Vec<LineSeg>> =
         (!hwp5_only_slot_positions.is_empty() && !serializable_line_segs.is_empty()).then(|| {
@@ -925,6 +941,10 @@ pub(crate) struct InlineCursor<'a> {
     pub tab_idx: usize,
     /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
     pub title_marks: &'a [TitleMark],
+    /// [#6956] 문단의 형광펜 표지 전체 (문자 인덱스 오름차순)
+    pub markpen_marks: &'a [crate::model::paragraph::MarkpenMark],
+    /// 다음에 방출할 `markpen_marks` 인덱스
+    pub markpen_idx: usize,
     /// [#5537] `title_marks[i]` 가 **앞(닫히는) run 소유**인가 — char_shapes 경계
     /// 유닛이 표시 끝 유닛과 일치하면 원본은 표시까지를 앞 run 에 뒀다는 증거다.
     /// 비어 있으면 전부 false(종전 동작: 다음 run 머리 방출).
@@ -949,6 +969,21 @@ pub(crate) struct InlineCursor<'a> {
 impl InlineCursor<'_> {
     /// 현재 문자 위치에 걸린 제목 차례 표시를 전부 방출한다.
     fn flush_marks_at_cursor(&mut self, t_xml: &mut String, buf: &mut String) {
+        // [#6956] 형광펜 표지 — 제목 차례 표시와 같은 자리에서 순서대로 흘린다.
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
         while let Some(m) = self.title_marks.get(self.mark_idx) {
             if m.char_idx > self.char_idx {
                 break;
@@ -978,6 +1013,24 @@ impl InlineCursor<'_> {
 
     /// [#5537] 조각 말미에서 닫히는 run 소유의 표시만 방출한다 — 나머지는
     /// 종전대로 다음 run 머리에서 flush 된다(한컴 실측 두 형태 공존).
+    /// [#6956] 조각 말미에서 현재 문자 위치에 걸린 형광펜 표지를 마저 낸다.
+    fn flush_markpen_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
+    }
+
     fn flush_prev_owned_marks_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
         while self.has_pending_prev_owned_mark() {
             let m = &self.title_marks[self.mark_idx];
@@ -1079,6 +1132,9 @@ pub(crate) fn render_hp_t_content(
     // [#5537] 조각 말미 — 닫히는 run 소유의 표시(경계 유닛 = 표시 끝 유닛)는 여기서
     // 방출한다. 다음 run 머리로 넘기면 재파싱 char_shapes 경계가 8유닛 무너진다.
     cursor.flush_prev_owned_marks_at_fragment_end(&mut t_xml, &mut buf);
+    // [#6956] 형광펜 닫는 표지는 런 **끝**에 오는 것이 한컴 실측 형태다. 문자 루프는
+    // 글자 **앞**에서만 흘리므로 여기서 현재 위치에 걸린 것을 마저 낸다.
+    cursor.flush_markpen_at_fragment_end(&mut t_xml, &mut buf);
     flush_buf(&mut t_xml, &mut buf);
     t_xml.push_str("</hp:t>");
     t_xml
@@ -1339,11 +1395,20 @@ fn render_control_slot_tracked(
     ctx: &mut SerializeContext,
     hwp5_pos: u32,
     hwp5_only_slot_positions: &mut Vec<u32>,
+    collapsed_slot_positions: &mut Vec<u32>,
 ) {
     let before = out.len();
+    // [#6871] 이 슬롯이 **우리가 접은 것**인지 미리 안다 — 두 번째 이후 쪽번호 위치.
+    let collapses_here =
+        matches!(control, Control::PageNumberPos(_)) && ctx.para_page_num_pos_emitted;
     render_control_slot(out, control, ctx);
     if out.len() == before {
-        hwp5_only_slot_positions.push(hwp5_pos);
+        if collapses_here {
+            // [#6871] **출처와 무관하게** 축에서 빼야 한다 — 아래 호출부 주석.
+            collapsed_slot_positions.push(hwp5_pos);
+        } else {
+            hwp5_only_slot_positions.push(hwp5_pos);
+        }
     }
 }
 
@@ -1356,7 +1421,64 @@ fn render_control_slot_tracked(
 /// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
 /// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
 /// 그 문단부터 본문을 통째 폐기하는 트리거다.
-fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32, Vec<u32>) {
+/// 문자와 개체 슬롯을 같은 UTF-16 축에서 보며, 형광펜 자체는 축을 소비하지 않는다.
+struct PositionedMarkpens<'a> {
+    marks: Vec<(u32, &'a crate::model::paragraph::MarkpenMark)>,
+    next: usize,
+}
+
+impl PositionedMarkpens<'_> {
+    fn flush(
+        &mut self,
+        position: u32,
+        splitter: &mut RunSplitter,
+        text: &mut String,
+        para: &Paragraph,
+        cursor: &mut InlineCursor<'_>,
+    ) {
+        if !self
+            .marks
+            .get(self.next)
+            .is_some_and(|(pos, _)| *pos <= position)
+        {
+            return;
+        }
+        flush_text_fragment(&mut splitter.content, text, &para.tab_extended, cursor);
+        while let Some(&(pos, mark)) = self.marks.get(self.next) {
+            if pos > position {
+                break;
+            }
+            splitter.cut_before(pos);
+            splitter.content.push_str("<hp:t>");
+            match &mark.color {
+                Some(color) => splitter.content.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => splitter.content.push_str("<hp:markpenEnd/>"),
+            }
+            splitter.content.push_str("</hp:t>");
+            self.next += 1;
+        }
+    }
+}
+
+fn render_runs(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
+    // [#6869/#6871] 표·머리말 등 자식 문단도 같은 context로 재귀 호출된다.
+    // 본체의 조기 반환을 포함해 문단 종료 뒤에는 부모의 방출 상태로 돌아가야 한다.
+    let parent_page_num_pos_emitted = std::mem::replace(&mut ctx.para_page_num_pos_emitted, false);
+    let result = render_runs_in_paragraph_scope(para, ctx);
+    ctx.para_page_num_pos_emitted = parent_page_num_pos_emitted;
+    result
+}
+
+fn render_runs_in_paragraph_scope(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -1375,9 +1497,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         && para.orphan_field_ends.is_empty()
         // 표시만 있고 텍스트가 없는 문단도 8유닛을 점유한다 — 여기서 빠지면 축이 밀린다.
         && para.title_marks.is_empty()
+        && para.markpen_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
-        return (String::new(), true, 0, Vec::new());
+        return (String::new(), true, 0, Vec::new(), Vec::new());
     }
 
     let mut splitter = RunSplitter::new(para);
@@ -1494,6 +1617,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         .collect();
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
+        markpen_marks: &para.markpen_marks,
+        markpen_idx: 0,
         mark_owned_by_prev: &mark_owned_by_prev,
         // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
@@ -1519,6 +1644,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             splitter.finish(),
             slot_count == 0 || marker_count >= slot_count,
             0,
+            Vec::new(),
             Vec::new(),
         );
     }
@@ -1565,6 +1691,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             marker_count >= shortfall || text_unshifted_and_in_range,
             0,
             Vec::new(),
+            Vec::new(),
         );
     }
 
@@ -1574,12 +1701,24 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     let axis_faithful = slots.iter().all(|c| emits_hwpx_slot_xml(c));
 
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
+    cursor.markpen_marks = &[];
+    let mut markpens = PositionedMarkpens {
+        marks: para
+            .markpen_marks
+            .iter()
+            .map(|m| (m.stream_position(para), m))
+            .collect(),
+        next: 0,
+    };
+    markpens.marks.sort_by_key(|(pos, _)| *pos);
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
     // [#5943] XML 을 한 글자도 내지 않은 슬롯의 **HWP5 축** 위치. 저장 lineseg 의
     // `textpos` 를 HWPX 축으로 내릴 때 쓴다 — 아래 `render_control_slot_tracked` 주석.
     let mut hwp5_only_slot_positions: Vec<u32> = Vec::new();
+    // [#6871] 우리가 접은 슬롯(중복 쪽번호)의 위치 — 출처와 무관하게 축에서 뺀다.
+    let mut collapsed_slot_positions: Vec<u32> = Vec::new();
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
     // [Task #1556] 고아 fieldEnd 방출 추적.
     let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
@@ -1592,12 +1731,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
@@ -1697,12 +1844,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
@@ -1761,12 +1916,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1821,12 +1984,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1844,6 +2015,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             splitter.cut_before(char_pos);
         }
 
+        markpens.flush(char_pos, &mut splitter, &mut text_buf, para, &mut cursor);
         text_buf.push(c);
         let width = char_utf16_width(c);
         if char_pos >= expected_utf16_pos {
@@ -1924,12 +2096,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
+        markpens.flush(
+            expected_utf16_pos,
+            &mut splitter,
+            &mut text_buf,
+            para,
+            &mut cursor,
+        );
         render_control_slot_tracked(
             &mut splitter.content,
             slots[slot_idx],
             ctx,
             expected_utf16_pos,
             &mut hwp5_only_slot_positions,
+            &mut collapsed_slot_positions,
         );
         let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
@@ -1964,11 +2144,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             field_end_emitted[i] = true;
         }
     }
+    markpens.flush(u32::MAX, &mut splitter, &mut text_buf, para, &mut cursor);
     (
         splitter.finish(),
         axis_faithful,
         expected_utf16_pos,
         hwp5_only_slot_positions,
+        collapsed_slot_positions,
     )
 }
 
@@ -2262,7 +2444,15 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             out.push_str("</hp:ctrl>");
         }
         Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
-        Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::PageNumberPos(pn) => {
+            // [#6869] 같은 문단의 두 번째 이후 쪽번호 위치 컨트롤은 내지 않는다.
+            // XML 을 한 글자도 내지 않으므로 `render_control_slot_tracked` 가 이 슬롯을
+            // "HWP5 축에만 있는 슬롯" 으로 세고, `#5943` 의 `textpos` 보정이 그대로 걸린다.
+            if !ctx.para_page_num_pos_emitted {
+                ctx.para_page_num_pos_emitted = true;
+                out.push_str(&render_page_num(pn));
+            }
+        }
         Control::PageNumCtrl(pnc) => out.push_str(&format!(
             r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
             pnc.page_starts_on.as_hwpx()

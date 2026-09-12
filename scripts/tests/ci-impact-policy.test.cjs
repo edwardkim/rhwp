@@ -486,7 +486,7 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   const workflows = path.join(__dirname, '..', '..', '.github', 'workflows');
   function triggerItems(filename, start, end) {
     const workflow = fs.readFileSync(path.join(workflows, filename), 'utf8');
-    const block = workflow.split(start, 2)[1].split(end, 1)[0];
+    const block = (workflow.split(start, 2)[1] || '').split(end, 1)[0];
     return Array.from(
       block.matchAll(/^      - ['"]?([^'"\n]+)['"]?$/gm),
       (match) => match[1],
@@ -568,7 +568,6 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
     ...CI_FRONTEND_JOBS,
     'Build & Test',
     'resolve-nextest-duration-policy',
-    'refresh-nextest-target-duration-data',
   ]);
   assert.deepEqual(
     [...new Set(Object.values(CI_AUDITED_JOB_IDS))].sort(),
@@ -1106,4 +1105,48 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
   assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '6');
+});
+
+test('#7069 completed workflow with nonterminal lint is pending until evidence converges', () => {
+  const files = [{ filename: 'src/lib.rs', status: 'modified' }];
+  const input = policyInput({ files, classification: classificationFor(files) });
+  const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+  const lint = workflows.CI.jobs.find((entry) => entry.name === CI_RUST_JOBS[0]);
+  const observed = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/ci-impact-policy/issue7069-lint-snapshot.json'), 'utf8'));
+  assert.equal(observed.run.conclusion, 'success');
+  assert.ok(observed.lint.steps.every((s) => s.status === 'completed' && s.conclusion === 'success'));
+  Object.assign(lint, { status: observed.lint.status, conclusion: observed.lint.conclusion, steps: observed.lint.steps });
+  assert.deepEqual(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }), {
+    publish: 'true', conclusion: 'pending',
+    reason: 'CI:pending-job:Lint (fmt, clippy, WASM check):in_progress',
+  });
+  lint.status = 'completed'; lint.conclusion = 'success';
+  assert.equal(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }).conclusion, 'success');
+  for (const conclusion of ['failure', 'cancelled', 'timed_out', 'skipped', '']) {
+    lint.conclusion = conclusion;
+    assert.equal(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }).conclusion, 'failure');
+  }
+});
+
+test('#7069 completed CodeQL job with a pending analysis step blocks approval', () => {
+  const input = policyInput(); const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+  const entry = workflows.CodeQL.jobs.find((j) => j.name === CODEQL_JOBS['javascript-typescript']);
+  const analysis = entry.steps.find((s) => s.name === 'Perform CodeQL Analysis');
+  analysis.status = 'in_progress'; analysis.conclusion = '';
+  const result = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(result.conclusion, 'pending');
+  assert.match(result.reason, /pending-step/);
+});
+
+test('#7069 collection identity failures and exhausted snapshots cannot pass', () => {
+  const input = policyInput(); const policy = determinePolicy(input);
+  for (const [field, value, expected] of [
+    ['collectionFailure', 'job-evidence-identity-mismatch', 'failure'],
+    ['collectionPendingReason', 'workflow-snapshot-changed', 'pending'],
+  ]) {
+    const workflows = workflowEvidence(policy); workflows.CI[field] = value;
+    assert.equal(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }).conclusion, expected);
+  }
 });

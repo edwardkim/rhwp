@@ -3,12 +3,14 @@
 // - URL 파라미터로 파일 경로 전달
 
 import { resolveDocumentUrl } from './document-url-resolver.js';
+import { documentFilename } from './document-filename.js';
 
 function buildViewerUrl(viewerBase, options = {}) {
   const params = new URLSearchParams();
 
   if (options.url) params.set('url', resolveDocumentUrl(options.url));
-  if (options.filename) params.set('filename', options.filename);
+  const filename = documentFilename(options.filename);
+  if (filename) params.set('filename', filename);
 
   const query = params.toString();
   return query ? `${viewerBase}?${query}` : viewerBase;

@@ -368,6 +368,27 @@ impl DocumentCore {
         row_count: u16,
         col_count: u16,
     ) -> Result<String, HwpError> {
+        self.create_table_with_options_native(
+            section_idx,
+            para_idx,
+            char_offset,
+            row_count,
+            col_count,
+            &super::TableCreationOptions::default(),
+        )
+    }
+
+    /// 표 생성과 동시에 열 너비·정렬·반복 머리행을 적용한다.
+    /// 기존 create_table_native의 기본값은 바꾸지 않는다.
+    pub fn create_table_with_options_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        row_count: u16,
+        col_count: u16,
+        options: &super::TableCreationOptions,
+    ) -> Result<String, HwpError> {
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::style::{
             BorderFill, BorderLine, BorderLineType, CenterLine, DiagonalLine, Fill,
@@ -403,7 +424,9 @@ impl DocumentCore {
                 .max(7200) as u32;
 
         // --- 2. 한컴 기본값 기반 셀 생성 (blank_h_saved.hwp 참조) ---
-        let col_width = content_width / col_count as u32;
+        let col_widths = options
+            .widths(col_count, content_width)
+            .map_err(HwpError::RenderError)?;
         // 한컴 기본: 셀 패딩 L=510 R=510 T=141 B=141
         let cell_pad = crate::model::Padding {
             left: 510,
@@ -415,7 +438,7 @@ impl DocumentCore {
         let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
         // 한컴 기본: 행 렌더링 높이 = padding_top + line_height(1000) + padding_bottom
         let rendered_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
-        let total_width = col_width * col_count as u32;
+        let total_width: u32 = col_widths.iter().sum();
         let total_height = rendered_row_height * row_count as u32;
 
         // BorderFill: 실선 테두리가 있는 기존 항목 재사용, 없으면 새로 생성
@@ -458,18 +481,38 @@ impl DocumentCore {
         let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
         let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
         let default_para_shape_id: u16 = current_para.para_shape_id;
+        let para_shape_ids: Vec<u16> = (0..col_count)
+            .map(|col| {
+                options
+                    .column_alignments
+                    .as_ref()
+                    .map_or(default_para_shape_id, |alignments| {
+                        self.document.find_or_create_para_shape(
+                            default_para_shape_id,
+                            &crate::model::style::ParaShapeMods {
+                                alignment: Some(alignments[usize::from(col)]),
+                                ..Default::default()
+                            },
+                        )
+                    })
+            })
+            .collect();
 
         // 셀 목록 생성
         let mut cells = Vec::with_capacity((row_count as usize) * (col_count as usize));
         for r in 0..row_count {
             for c in 0..col_count {
+                let col_width = col_widths[usize::from(c)];
                 let mut cell = Cell::new_empty(c, r, col_width, cell_height, cell_border_fill_id);
+                if options.repeat_header.is_some() {
+                    cell.set_header(r == 0 && options.repeat_header == Some(true));
+                }
                 cell.padding = cell_pad;
                 cell.vertical_align = crate::model::table::VerticalAlign::Center; // 한컴 기본값
                                                                                   // 셀 문단 보정: char_count_msb, raw_header_extra, para/char shape
                 for cp in &mut cell.paragraphs {
                     cp.char_count_msb = true;
-                    cp.para_shape_id = default_para_shape_id;
+                    cp.para_shape_id = para_shape_ids[usize::from(c)];
                     // Cell::new_empty() 의 문단은 char_shapes 가 비어 있고, 저장기는 그것을
                     // charPrIDRef="0" 으로 쓴다. 아래 raw_header_extra 가 n_char_shapes=1 을
                     // 주장하는 것과도 어긋난다. 표를 삽입한 문단의 글자모양을 상속한다.
@@ -554,8 +597,13 @@ impl DocumentCore {
             zones: Vec::new(),
             cells,
             cell_grid: Vec::new(),
-            page_break: TablePageBreak::None,
-            repeat_header: false,
+            page_break: if options.repeat_header.is_some() {
+                // HWPX CELL은 저장소 공통 IR의 RowBreak에 대응한다.
+                TablePageBreak::RowBreak
+            } else {
+                TablePageBreak::None
+            },
+            repeat_header: options.repeat_header.unwrap_or(false),
             caption: None,
             common: crate::model::shape::CommonObjAttr {
                 treat_as_char: false,
@@ -574,7 +622,10 @@ impl DocumentCore {
             outer_margin_bottom: 283,
             raw_ctrl_data,
             raw_ctrl_seal: None,
-            raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
+            raw_table_record_attr: options.repeat_header.map_or(0x00000006, |repeat| {
+                // 새 표도 HWP5 저장기의 raw TABLE 레코드 우선 계약을 지킨다.
+                2 | (u32::from(repeat) << 2) // HWPX CELL (HWP5 RowBreak) + repeatHeader
+            }),
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
         };

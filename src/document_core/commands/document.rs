@@ -1610,7 +1610,7 @@ impl DocumentCore {
     ///
     /// HWPX 원본의 단일 BOTH pageBorderFill은 HWP 저장에는 세 record로 materialize하고,
     /// live IR에는 반영하지 않는다.
-    pub fn export_hwp_with_adapter(&mut self) -> Result<Vec<u8>, HwpError> {
+    pub fn export_hwp_with_adapter(&self) -> Result<Vec<u8>, HwpError> {
         self.prepare_hwp_export_snapshot().serialize()
     }
 
@@ -1677,7 +1677,7 @@ impl DocumentCore {
     /// 일반 HWP 저장과 마찬가지로 HWPX 출처는 반드시 adapter를 먼저 통과한다. 암호화만
     /// 별도 serializer로 우회하면 차트·그림 HWPX IR이 HWP5 계약으로 정규화되지 않는다.
     pub fn export_hwp_with_adapter_with_password(
-        &mut self,
+        &self,
         password: &[u8],
     ) -> Result<Vec<u8>, HwpError> {
         self.prepare_hwp_export_snapshot()
@@ -1700,7 +1700,7 @@ impl DocumentCore {
     ///
     /// 1회 paginate + 1회 직렬화 + 1회 from_bytes (paginate 포함). 작은 문서 ~수 ms,
     /// 큰 문서 수백 ms 가능.
-    pub fn serialize_hwp_with_verify(&mut self) -> Result<HwpExportVerification, HwpError> {
+    pub fn serialize_hwp_with_verify(&self) -> Result<HwpExportVerification, HwpError> {
         let page_count_before = self.page_count();
         let bytes = self.export_hwp_with_adapter()?;
         let bytes_len = bytes.len();
@@ -2302,6 +2302,18 @@ impl DocumentCore {
 
     /// 현재 Document를 클론하여 스냅샷 저장소에 보관한다.
     /// 반환값: 스냅샷 ID (u32)
+    /// undo 스냅샷 저장소의 축출 상한 — **이 값이 유일한 출처다**.
+    ///
+    /// [Task #2328] studio 히스토리(`rhwp-studio/src/engine/history.ts`)의 예산은
+    /// 이 상한에서 파생된다(`상한 - 2`). 종전에는 studio 가 같은 숫자를 따로 들고
+    /// 있어 주석으로만 결합돼 있었고, 순 Rust 변경은 frontend 두 레인이 모두 skip
+    /// 되므로 상한을 낮추고 studio 를 잊어도 CI 가 그린이었다(#6332 가 그 사각을
+    /// 양 레인 소스 대조로 막았다). 값을 브리지로 내보내 사본 자체를 없앤다.
+    ///
+    /// 상한이 studio 의 피크 동시 참조 밑으로 내려가면 참조 중인 스냅샷이 무통보
+    /// 축출돼 undo 예외가 재발한다(#2328).
+    pub const MAX_SNAPSHOTS: usize = 100;
+
     pub fn save_snapshot_native(&mut self) -> u32 {
         let id = self.next_snapshot_id;
         self.next_snapshot_id += 1;
@@ -2310,13 +2322,9 @@ impl DocumentCore {
             self.document.clone(),
             self.text_reflowed_table_paths_for_snapshot(),
         ));
-        // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거.
-        // [Task #2328] studio 히스토리(rhwp-studio/src/engine/history.ts 의
-        // WASM_MAX_SNAPSHOTS)와 양방향 결합. 이 값을 studio 예산(MAX-2)보다 낮추면
-        // studio 가 참조 중인 오래된 undo 스냅샷이 무통보 축출돼 undo 예외가
-        // 재발한다. 변경 시 반드시 studio 상수도 함께 갱신한다.
-        const MAX_SNAPSHOTS: usize = 100;
-        while self.snapshot_store.len() > MAX_SNAPSHOTS {
+        // 초과 시 가장 오래된 스냅샷 제거. 상한은 `Self::MAX_SNAPSHOTS` 하나뿐이고
+        // studio 는 `snapshotCapacity()` 로 그 값을 받아 예산을 계산한다(#7002 후속).
+        while self.snapshot_store.len() > Self::MAX_SNAPSHOTS {
             self.snapshot_store.remove(0);
         }
         id

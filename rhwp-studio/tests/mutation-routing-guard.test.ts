@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { rustMutatingExports } from './helpers/rust-mutating-exports.ts';
 
 // [Task #2327] 계급 1(기록 옵트인) 회귀를 저작 시점에 차단하는 소스 가드.
 //
@@ -76,6 +77,30 @@ test('드리프트: 문서-변경형 브리지 공개 메서드는 모두 분류
     `WasmBridge 신규(?) 뮤테이터가 분류되지 않음: ${unclassified.join(', ')}\n` +
       `→ mutation-method-registry.ts 의 MUTATING_METHODS(기록 대상) 또는 ` +
       `EXCLUDED_NON_DOCUMENT(문서 비변경 사유)에 추가하라.`,
+  );
+});
+
+test('[#7002] Rust `&mut self` 내보내기에 대응하는 브리지 메서드는 모두 분류돼야 한다', () => {
+  // MUTATING_VERB 는 손으로 유지하는 동사 목록인데 드리프트 시험의 **감사 대상을
+  // 정하는 필터**라, 동사에 안 걸리는 이름은 분류를 요구받지 않는다. 실제로 저널·
+  // 스냅샷·지연조판·내보내기·캐럿 14개가 그렇게 빠져 있었다(#7002). 여기서는 동사와
+  // 무관하게 Rust 쪽 변이 표면을 권위로 삼아 같은 사각이 다시 생기지 않게 한다.
+  const classified = new Set([...MUTATING, ...EXCLUDED]);
+  const bridge = new Set(bridgePublicMethods());
+  const unclassified = [...new Set(rustMutatingExports(source('../src/wasm_api.rs')))]
+    .filter((n) => bridge.has(n))
+    .filter((n) => !classified.has(n))
+    .sort();
+  assert.deepEqual(
+    unclassified,
+    [],
+    [
+      `wasm_api.rs 의 \`&mut self\` 내보내기인데 분류되지 않은 브리지 메서드: `
+        + unclassified.join(', '),
+      '→ mutation-method-registry.ts 의 MUTATING_METHODS 또는 EXCLUDED_NON_DOCUMENT 에 '
+        + '사유와 함께 추가하라.',
+      '`&mut self` 가 불필요한 래퍼라면 그 사실을 사유에 적는다.',
+    ].join(' '),
   );
 });
 

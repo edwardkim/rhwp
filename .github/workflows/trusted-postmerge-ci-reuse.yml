@@ -50,10 +50,10 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      reuse: ${{ steps.evaluate.outputs.reuse || steps.defaults.outputs.reuse }}
-      reason: ${{ steps.evaluate.outputs.reason || steps.defaults.outputs.reason }}
-      source_run_id: ${{ steps.evaluate.outputs.source_run_id || '' }}
-      refresh_duration_data: ${{ steps.evaluate.outputs.refresh_duration_data || 'false' }}
+      reuse: ${{ steps.finalize.outputs.reuse || 'false' }}
+      reason: ${{ steps.finalize.outputs.reason || 'reuse-finalization-unavailable' }}
+      source_run_id: ${{ steps.finalize.outputs.source_run_id || '' }}
+      refresh_duration_data: ${{ steps.finalize.outputs.refresh_duration_data || 'false' }}
     steps:
       - name: Default to full verification
         id: defaults
@@ -110,12 +110,38 @@ jobs:
               if (
                 commit.sha !== mergeSha
                 || parents.length !== 2
-                || parents[0] !== pullRequest.base.sha
+                || !/^[0-9a-f]{40}$/.test(parents[0] || '')
                 || parents[1] !== pullRequest.head.sha
                 || !/^[0-9a-f]{40}$/.test(treeSha)
               ) {
                 core.warning('PR merge ref does not match the event base/head pair; no evidence will be published.');
                 return;
+              }
+              // Event payload base can lag behind the immutable merge actually
+              // tested by this run. Never substitute the current PR merge ref.
+              // Accept a stale event base only with two upstream ancestry proofs.
+              if (parents[0] !== pullRequest.base.sha) {
+                const ancestor = async (base, head) => {
+                  if (base === head) return;
+                  const { data: comparison } = await github.rest.repos.compareCommits({
+                    ...context.repo, base, head,
+                  });
+                  if (comparison.status !== 'ahead'
+                    || comparison.base_commit?.sha !== base
+                    || comparison.merge_base_commit?.sha !== base) {
+                    throw new Error('PR tested base ancestry is not proven');
+                  }
+                };
+                await ancestor(pullRequest.base.sha, parents[0]);
+                const { data: branch } = await github.rest.repos.getBranch({
+                  ...context.repo, branch: 'devel',
+                });
+                const currentBase = branch.commit?.sha;
+                if (branch.name !== 'devel' || !/^[0-9a-f]{40}$/.test(currentBase || '')) {
+                  throw new Error('Upstream devel identity is unavailable');
+                }
+                await ancestor(parents[0], currentBase);
+                core.info(`Verified stale PR event base: event_base=${pullRequest.base.sha} tested_base=${parents[0]} current_base=${currentBase}`);
               }
               const artifactName = isFork
                 ? `trusted-postmerge-fork-merge-tree-v1-${pullRequest.number}-${repositoryId}-${pullRequest.head.repo.id}-${runAttempt}-${mergeSha}-${treeSha}`
@@ -130,6 +156,7 @@ jobs:
                 workflow_file: process.env.WORKFLOW_FILE,
                 run_id: String(context.runId),
                 merge_sha: mergeSha,
+                event_base_sha: pullRequest.base.sha,
                 parents,
                 tree_sha: treeSha,
               }, null, 2)}\n`);
@@ -217,6 +244,7 @@ jobs:
           ref: ${{ steps.source-base.outputs.sha }}
           sparse-checkout: |
             scripts/verify-trusted-postmerge-ci-reuse.mjs
+            scripts/trusted-postmerge-duration-evidence.mjs
             scripts/ci-impact-classifier.cjs
           sparse-checkout-cone-mode: false
 
@@ -239,6 +267,7 @@ jobs:
             let classifyReviewOnlyCommit;
             let evaluateTrustedPostMergeReuse;
             let frontendOnlyCiRunIsReusable;
+            let fullLaneWorkflowJobsAreGreen;
             let classifyChanges;
             let currentBaseReviewBridgeSource;
             let selectTrustedPostMergeCandidate;
@@ -247,21 +276,29 @@ jobs:
             let verifyReviewOnlyBaseAdvance;
             let trustedPullRequestSource;
             let trustedPullRequestWorkflowRun;
+            let selectDurationArtifacts;
+            let decodeDurationArtifact;
+            let validateDurationReports;
             const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
             try {
-              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable,
+              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse, frontendOnlyCiRunIsReusable, fullLaneWorkflowJobsAreGreen,
                 currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
                 verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree, verifyReviewOnlyBaseAdvance,
                 trustedPullRequestSource, trustedPullRequestWorkflowRun } = await import(pathToFileURL(path.join(
                 process.env.GITHUB_WORKSPACE,
                 'scripts/verify-trusted-postmerge-ci-reuse.mjs',
               )).href));
-              if ([currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate,
+              if ([currentBaseReviewBridgeSource, selectTrustedPostMergeCandidate, fullLaneWorkflowJobsAreGreen,
                 verifyPostMergeReviewBridgeTree, verifyForkPostMergeTree,
                 trustedPullRequestSource, trustedPullRequestWorkflowRun].some((fn) => typeof fn !== 'function')) {
                 throw new Error('trusted base has no review-bridge verifier');
               }
               if (process.env.WORKFLOW_FILE === 'ci.yml') {
+                ({ selectDurationArtifacts, decodeDurationArtifact, validateDurationReports } = await import(pathToFileURL(path.join(
+                  process.env.GITHUB_WORKSPACE, 'scripts/trusted-postmerge-duration-evidence.mjs',
+                )).href));
+                if ([selectDurationArtifacts, decodeDurationArtifact, validateDurationReports]
+                  .some((fn) => typeof fn !== 'function')) throw new Error('trusted duration validator unavailable');
                 ({ classifyChanges } = require(path.join(
                   process.env.GITHUB_WORKSPACE, 'scripts/ci-impact-classifier.cjs',
                 )));
@@ -503,7 +540,7 @@ jobs:
                   }
                 }
               }
-              const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
+              const requireFullLaneEvidence = ["ci.yml", "codeql.yml", "adapter-diff.yml", "proptest-roundtrip.yml"]
                 .includes(process.env.WORKFLOW_FILE) || isFork;
               const reviewOnlyWorker = {
                 "proptest-roundtrip.yml": {
@@ -516,9 +553,17 @@ jobs:
                 },
               }[process.env.WORKFLOW_FILE];
               const fullLaneRunIds = [];
+              const durationArtifactsByRunId = {};
               if (requireFullLaneEvidence) {
                 for (const workflowRun of workflowRuns) {
                   if (!matchesRun(workflowRun) || workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
+                    continue;
+                  }
+                  const jobs = await github.paginate(
+                    github.rest.actions.listJobsForWorkflowRun,
+                    { owner, repo, run_id: workflowRun.id, filter: "latest", per_page: 100 },
+                  );
+                  if (!fullLaneWorkflowJobsAreGreen(process.env.WORKFLOW_FILE, jobs)) {
                     continue;
                   }
                   if (process.env.WORKFLOW_FILE === "ci.yml") {
@@ -526,32 +571,45 @@ jobs:
                       github.rest.actions.listWorkflowRunArtifacts,
                       { owner, repo, run_id: workflowRun.id, per_page: 100 },
                     );
-                    const expected = new Set(["b", "c", "d"].map((label) => (
-                      `nextest-target-durations-${workflowRun.id}-${label}`
-                    )));
-                    const available = new Set(artifacts
-                      .filter((artifact) => artifact.expired !== true)
-                      .map((artifact) => artifact.name));
-                    if ([...expected].every((name) => available.has(name))) {
+                    await recordMergeTreeEvidence(workflowRun, artifacts);
+                    try {
+                      durationArtifactsByRunId[String(workflowRun.id)] = selectDurationArtifacts(
+                        artifacts, workflowRun, pr, repositoryId,
+                      );
                       fullLaneRunIds.push(String(workflowRun.id));
-                      await recordMergeTreeEvidence(workflowRun, artifacts);
+                    } catch (error) {
+                      core.warning(`CI candidate ${workflowRun.id}: duration evidence rejected: ${error.message}`);
                     }
                     continue;
                   }
-                  const jobs = await github.paginate(
-                    github.rest.actions.listJobsForWorkflowRun,
-                    { owner, repo, run_id: workflowRun.id, per_page: 100 },
-                  );
-                  const executed = reviewOnlyWorker
-                    ? [reviewOnlyWorker.preflight, reviewOnlyWorker.worker].every((name) => jobs.some((job) => (
-                      job.name === name && job.status === 'completed' && job.conclusion === 'success'
-                    )))
-                    : jobs.some((job) => (
-                    /^Analyze \(.+\)$/.test(job.name || "")
-                    && job.status === "completed"
-                    && job.conclusion === "success"
-                  ));
-                  if (executed) {
+                  if (process.env.WORKFLOW_FILE === "codeql.yml") {
+                    // Match codeql.yml PR preflight: every language Analyze job
+                    // must already have succeeded above. A completed GHAS neutral
+                    // aggregate is not a language verdict or full alert coverage;
+                    // retain its identity/attempt checks and never accept skipped.
+                    const allowedSecurityConclusions = new Set(['success', 'neutral']);
+                    const checks = await github.paginate(github.rest.checks.listForRef, {
+                      owner, repo, ref: workflowRun.head_sha, filter: "latest", per_page: 100,
+                    });
+                    const startedAt = Date.parse(workflowRun.run_started_at || workflowRun.created_at);
+                    const securityCheck = checks.filter((check) => (
+                      check.app?.slug === "github-advanced-security" && check.name === "CodeQL"
+                      && check.head_sha === workflowRun.head_sha
+                    )).sort((a, b) => Date.parse(b.started_at || "") - Date.parse(a.started_at || "")
+                      || Number(b.id) - Number(a.id))[0];
+                    if (!Number.isFinite(startedAt) || !securityCheck
+                      || !Number.isFinite(Date.parse(securityCheck.started_at || ""))
+                      || Date.parse(securityCheck.started_at) < startedAt
+                      || securityCheck.status !== "completed"
+                      || !allowedSecurityConclusions.has(securityCheck.conclusion)) {
+                      core.warning(`CodeQL candidate ${workflowRun.id}: GHAS evidence rejected (${securityCheck?.status || 'missing'}/${securityCheck?.conclusion || 'missing'})`);
+                      continue;
+                    }
+                    if (securityCheck.conclusion === "neutral") {
+                      core.info(`CodeQL candidate ${workflowRun.id}: accepting neutral GHAS check ${securityCheck.id} after all language analyses succeeded`);
+                    }
+                  }
+                  {
                     fullLaneRunIds.push(String(workflowRun.id));
                     const artifacts = await github.paginate(
                       github.rest.actions.listWorkflowRunArtifacts,
@@ -670,6 +728,7 @@ jobs:
                 forkMergeTreeEvidenceByRunId,
                 reviewOnlyBaseAdvanceByRunId,
                 frontendOnlyRunIds,
+                durationArtifactsByRunId,
               };
               if (requireFullLaneEvidence) {
                 evidence.fullLaneRunIds = fullLaneRunIds;
@@ -681,8 +740,9 @@ jobs:
             }
 
             let result;
+            let evidence;
             try {
-              const evidence = await collectEvidence();
+              evidence = await collectEvidence();
               result = evaluateTrustedPostMergeReuse({
                 eventName: process.env.CALLER_EVENT_NAME,
                 ref: process.env.CALLER_REF,
@@ -704,28 +764,29 @@ jobs:
             if (result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true') {
               if (result.refreshDurationData !== false) {
                 try {
-                  const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
-                    owner,
-                    repo,
-                    run_id: Number(result.sourceRunId),
-                    per_page: 100,
-                  });
-                  const expected = new Set([
-                    `nextest-target-durations-${result.sourceRunId}-b`,
-                    `nextest-target-durations-${result.sourceRunId}-c`,
-                    `nextest-target-durations-${result.sourceRunId}-d`,
-                  ]);
-                  const available = new Set(artifacts
-                        .filter((artifact) => artifact.expired !== true)
-                        .map((artifact) => artifact.name));
-                  if (![...expected].every((name) => available.has(name))) {
-                    result = {
-                      reuse: false,
-                      reason: 'candidate-duration-artifacts-unavailable',
-                      sourceRunId: '',
-                      pullNumber: '',
-                    };
+                  const selected = evidence.durationArtifactsByRunId?.[String(result.sourceRunId)];
+                  const run = evidence.workflowRuns.find((item) => String(item.id) === String(result.sourceRunId));
+                  const pr = evidence.pullRequests.find((item) => String(item.number) === String(result.pullNumber));
+                  const tested = evidence.mergeTreeEvidenceByRunId[String(result.sourceRunId)];
+                  if (!selected || !run || !pr || !tested) throw new Error('candidate-duration-artifacts-unavailable');
+                  const reports = [];
+                  for (const { label, artifact } of selected) {
+                    const response = await github.rest.actions.downloadArtifact({
+                      owner, repo, artifact_id: artifact.id, archive_format: 'zip', request: { timeout: 15000 },
+                    });
+                    reports.push(decodeDurationArtifact(response.data, label));
                   }
+                  const normalized = validateDurationReports(reports, {
+                    run, pr, repositoryId, testedMergeSha: tested.sha, legacy: selected[0].legacy,
+                  });
+                  const fs = require('node:fs');
+                  const directory = fs.mkdtempSync(path.join(process.env.RUNNER_TEMP, 'trusted-postmerge-durations-'));
+                  for (const report of normalized) fs.writeFileSync(
+                    path.join(directory, `target-durations-${report.archive_label}.json`),
+                    `${JSON.stringify(report)}\n`, { flag: 'wx' },
+                  );
+                  core.setOutput('duration_path', directory);
+                  core.info(`Validated duration JSON for PR ${pr.number}, run ${run.id}, attempt ${run.run_attempt}`);
                 } catch (error) {
                   core.warning(`Could not inspect candidate duration artifacts; running full. ${error.message}`);
                   result = {
@@ -744,3 +805,57 @@ jobs:
               result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true'
                 && result.refreshDurationData !== false ? 'true' : 'false');
             core.info(`reuse=${result.reuse} reason=${result.reason} source_run_id=${result.sourceRunId || 'none'} refresh_duration_data=${result.reuse && process.env.REQUIRE_DURATION_ARTIFACTS === 'true' && result.refreshDurationData !== false}`);
+
+      # Only normalized JSON is handed to the write-capable metrics job.
+      - name: Publish validated Archive B duration measurement
+        id: publish-duration-b
+        if: ${{ steps.evaluate.outputs.reuse == 'true' && steps.evaluate.outputs.refresh_duration_data == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trusted-postmerge-durations-${{ github.run_id }}-${{ github.run_attempt }}-b
+          path: ${{ steps.evaluate.outputs.duration_path }}/target-durations-b.json
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Publish validated Archive C duration measurement
+        id: publish-duration-c
+        if: ${{ steps.evaluate.outputs.reuse == 'true' && steps.evaluate.outputs.refresh_duration_data == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trusted-postmerge-durations-${{ github.run_id }}-${{ github.run_attempt }}-c
+          path: ${{ steps.evaluate.outputs.duration_path }}/target-durations-c.json
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Publish validated Archive D duration measurement
+        id: publish-duration-d
+        if: ${{ steps.evaluate.outputs.reuse == 'true' && steps.evaluate.outputs.refresh_duration_data == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trusted-postmerge-durations-${{ github.run_id }}-${{ github.run_attempt }}-d
+          path: ${{ steps.evaluate.outputs.duration_path }}/target-durations-d.json
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Finalize reuse after validated evidence publication
+        id: finalize
+        if: ${{ always() }}
+        env:
+          REUSE: ${{ steps.evaluate.outputs.reuse || 'false' }}
+          REASON: ${{ steps.evaluate.outputs.reason || steps.defaults.outputs.reason || 'reuse-evaluation-unavailable' }}
+          SOURCE_RUN_ID: ${{ steps.evaluate.outputs.source_run_id || '' }}
+          REFRESH: ${{ steps.evaluate.outputs.refresh_duration_data || 'false' }}
+          PUBLISH_B: ${{ steps.publish-duration-b.outcome }}
+          PUBLISH_C: ${{ steps.publish-duration-c.outcome }}
+          PUBLISH_D: ${{ steps.publish-duration-d.outcome }}
+        run: |
+          if [[ "$REUSE" == 'true' && "$REFRESH" == 'true' && ( "$PUBLISH_B" != 'success' || "$PUBLISH_C" != 'success' || "$PUBLISH_D" != 'success' ) ]]; then
+            REUSE=false
+            REASON=validated-duration-publication-failed
+          fi
+          if [[ "$REUSE" != 'true' ]]; then
+            SOURCE_RUN_ID=''
+            REFRESH=false
+          fi
+          printf 'reuse=%s\nreason=%s\nsource_run_id=%s\nrefresh_duration_data=%s\n' \
+            "$REUSE" "$REASON" "$SOURCE_RUN_ID" "$REFRESH" >> "$GITHUB_OUTPUT"

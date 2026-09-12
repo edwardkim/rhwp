@@ -577,6 +577,7 @@ export interface ControlLayoutItem {
   /** 각주/미주 내부 컨트롤인 경우 원본 위치 */
   noteRef?: NoteControlRef;
   outerTableControlIdx?: number;
+  /** Source HF subList; secIdx is its owning section, not the displayed page section. */
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
   /**
    * [Task #1280 v2] 렌더 정렬키 — 겹침 클릭 시 "최상단 개체" 판정용.
@@ -593,6 +594,8 @@ export interface ControlLayoutItem {
    * (`doc_path_for_node`, render_tree.rs). `next_id()` 카운터에도, layer 유무에 따라
    * 서로 다른 자릿수 공간을 쓰던 예전 패킹된 u32 에도 의존하지 않는다. 사전식 비교
    * (`compareLexArrays`, input-handler-picture.ts) 로 정렬한다.
+   * HF nodes can retain internal sentinel components here. Use secIdx plus
+   * headerFooter for source ownership; stableIndex is only a paint ordering key.
    */
   stableIndex?: number[];
   /** [Task #1280 v2] 텍스트 어울림 모드(이미지뿐 아니라 shape/line/group에도 노출). */
