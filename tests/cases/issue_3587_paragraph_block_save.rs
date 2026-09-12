@@ -43,7 +43,13 @@ fn content(value: &Value, ledger: &mut Vec<Value>) {
                     ])).collect::<Vec<_>>()}),
                 );
             }
-            for child in o.values() {
+            for (key, child) in o {
+                // SectionDef can be materialized in a new first paragraph by
+                // serialize_section (#1915). Its master-page paragraphs belong
+                // to the section, verified separately by section_content.
+                if key == "SectionDef" {
+                    continue;
+                }
                 content(child, ledger);
             }
         }
@@ -57,8 +63,26 @@ fn content(value: &Value, ledger: &mut Vec<Value>) {
 }
 fn paragraph_content(p: &Paragraph) -> Vec<Value> {
     let mut result = Vec::new();
+    result.push(json!({"controlKinds":p.controls.iter().filter(|c| !matches!(c,Control::SectionDef(_)))
+        .map(|c| serde_json::to_value(c).unwrap().as_object().unwrap().keys().next().unwrap().clone()).collect::<Vec<_>>()}));
     content(&serde_json::to_value(p).unwrap(), &mut result);
     result
+}
+fn section_content(c: &DocumentCore) -> Value {
+    Value::Array(
+        c.document()
+            .sections
+            .iter()
+            .map(|s| {
+                let mut masters = Vec::new();
+                content(
+                    &serde_json::to_value(&s.section_def.master_pages).unwrap(),
+                    &mut masters,
+                );
+                json!({"page":s.section_def.page_def,"masterContent":masters})
+            })
+            .collect(),
+    )
 }
 fn table_ids(c: &DocumentCore) -> Vec<u32> {
     c.document().sections[0]
@@ -97,11 +121,17 @@ fn real_blocks_save_both_formats_without_losing_paragraphs_or_table_ids() {
                 .map(paragraph_content)
                 .collect();
             let expected_ids = table_ids(&c);
+            let expected_sections = section_content(&c);
             for (format, output) in [
                 ("hwp", c.export_hwp_native().unwrap()),
                 ("hwpx", c.export_hwpx_native().unwrap()),
             ] {
                 let reopened = DocumentCore::from_bytes(&output).unwrap();
+                assert_eq!(
+                    section_content(&reopened),
+                    expected_sections,
+                    "section contract {path} {format}"
+                );
                 let actual: Vec<_> = reopened.document().sections[0]
                     .paragraphs
                     .iter()
@@ -215,11 +245,11 @@ fn block_cost_and_artifacts() {
     assert!([1, 10, 100].contains(&count));
     let mut c = load(path);
     let r = request(pi, count);
-    let rss_before = memory_kib("VmRSS:");
-    let hwm_before = memory_kib("VmHWM:");
     let began = Instant::now();
     let budget = c.validate_paragraph_block_native(&r);
     let preflight_us = began.elapsed().as_micros();
+    let rss_before = memory_kib("VmRSS:");
+    let hwm_before = memory_kib("VmHWM:");
     let began = Instant::now();
     let result = c.repeat_paragraph_block_native(&r);
     let repeat_us = began.elapsed().as_micros();
