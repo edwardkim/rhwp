@@ -16,29 +16,32 @@ last_verified: 2026-09-12
 | 원 PR / 이슈 | [#7050](https://github.com/edwardkim/rhwp/pull/7050) / [#7049](https://github.com/edwardkim/rhwp/issues/7049) |
 | 작성자 / reviewer | lpaiu-cs / jangster77; 원 PR reviewer 선행 지정 완료 |
 | base / draft | devel / false |
-| 원 source head | `f26c0cae6b7f5a9506a6228b2ecea39cb04d5b6f` |
-| 규모 | 3 files, +216 / -7 |
-| mergeability | 조사 시 MERGEABLE / CLEAN; volatile 참고값 |
+| 원 source head | `de3301a03891ff2a9287f907f6944a38cf59720b` |
+| 규모 | 3 files, +246 / -7 |
+| mergeability | 종료 조회 시 MERGEABLE / UNSTABLE; 별도 CodeQL Rust 진행 중인 volatile 참고값 |
 | 검토 경로 | collaborator_external_pr 체리픽 통합 + intake_and_review + local_validation + multi_pr_update_branch + visual_fixture_evidence |
 | 구현 계획 | [원 PR별 적용·후속 계획](pr_7050_review_impl.md) |
 
 실제 diff로 범위를 판단했다. `src/renderer/layout/paragraph_layout.rs`, `src/renderer/layout/table_layout.rs`, `tests/cases/issue_7049_inline_tac_table_baseline.rs`.
 문서 전용 PR이 아니며, renderer/진단 또는 관련 기준값에 영향이 있어 공통 조판 검토를 적용했다.
-원 PR CI는 모두 성공했으며 아래에서 재사용 근거까지 구분한다.
+원 PR CI와 head 갱신 상태, 재사용 근거는 아래에 구분한다.
 원격 head는 종료 전 재확인했으며 갱신됐다면 기존 판정을 최신 head에 이월하지 않는다.
 
 ## 원 PR 최신 head CI
 
-GitHub Actions를 2026-09-12에 다시 조회했다. 원 PR 4건의 최신 CI는 모두 **SUCCESS**다.
+GitHub Actions를 2026-09-12에 다시 조회했다. 대상 4건의 최신 **CI workflow는 모두 SUCCESS**다.
+작업 중 갱신된 #7050 head `de3301a03891ff2a9287f907f6944a38cf59720b`도 CI 완료를 확인했다.
+마지막 check-rollup 조회에서 #7050의 별도 CodeQL `Analyze (rust)`는 진행 중이었고 실패 check는 없었다.
+CI workflow 성공과 모든 별도 check 완료를 구분한다.
 
 | 원 PR | 최신 head CI | 실행 또는 재사용 근거 |
 | --- | --- | --- |
 | #7040 | [34674768254](https://github.com/edwardkim/rhwp/actions/runs/34674768254) | head `6b675ac94`에서 Lint·Native Skia·Build & Test 성공 |
 | #7048 | [34672055783](https://github.com/edwardkim/rhwp/actions/runs/34672055783) | `b0d657d75`의 [성공 CI 34665904362](https://github.com/edwardkim/rhwp/actions/runs/34665904362) 재사용 |
-| #7050 | [34672053443](https://github.com/edwardkim/rhwp/actions/runs/34672053443) | `e28ba0dc7`의 [성공 CI 34659681269](https://github.com/edwardkim/rhwp/actions/runs/34659681269) 재사용 |
+| #7050 | [34677890610](https://github.com/edwardkim/rhwp/actions/runs/34677890610) | 새 head `de3301a03`에서 Lint·Native Skia·Archive A/B/C/D·Build & Test 성공 |
 | #7053 | [34672052090](https://github.com/edwardkim/rhwp/actions/runs/34672052090) | `5e83a52d5`의 [성공 CI 34670322954](https://github.com/edwardkim/rhwp/actions/runs/34670322954) 재사용 |
 
-세 재사용 경로는 preflight의 `direct-source-build-and-test-green:success`와
+#7048·#7053의 재사용 경로는 preflight의 `direct-source-build-and-test-green:success`와
 `current-base-merge-tree-match`를 확인했다. 재사용 원본 run의 Lint·Native Skia·Archive A/B/C/D·
 Build & Test도 모두 성공했다. 최신 head의 worker skip은 이 검증된 재사용 경로이며 누락으로 판정하지 않는다.
 이후 아래 로컬 누적 후보의 실패는 원 PR CI와 구분한다. CI 녹색을 취소하거나 단독 source 실패로 바꾸어
@@ -46,18 +49,24 @@ Build & Test도 모두 성공했다. 최신 head의 worker skip은 이 검증된
 
 ## 발견 사항과 해제 조건
 
-### P1 — ‘표 전용 줄’을 문단 전체 표 개수로 판정한다
+### 갱신 확인 — 문단 전체 표 개수 지적은 해소됐다
 
-`src/renderer/layout/paragraph_layout.rs:7575-7586`과 `table_layout.rs:6957-6971`은
-`para.controls`의 TAC 표를 모두 세어 `<=1`일 때만 저장 밴드 앵커를 적용한다.
-같은 문단에 각자 다른 저장 줄을 독점하는 표가 두 개면 두 줄 모두 전용 줄이어도 이 조건이 거짓이다.
-현재 표와 같은 줄의 텍스트/다른 인라인 요소 소속도 판정하지 않는다.
-따라서 문단당 표 개수는 줄 독점의 필요충분 조건이 아니며, 다른 줄의 표 존재가 현재 줄 앵커를 바꾼다.
-새 테스트의 전용 줄 보호 사례는 문단 표 하나뿐이어서 이 반례를 보호하지 않는다.
-이 항목은 코드 규칙 위반이며 다중 줄 정상 한컴 문서의 실행 회귀를 검출한 것으로 표현하지 않는다.
+새 head는 `paragraph_layout.rs:7580-7598`에서 실제 composed line의 char 구간으로 TAC 표를 센다.
+종전 ‘문단 전체 표 수’ 지적은 최신 head에 적용하지 않는다. 저장 사다리 경로도 줄별로 세도록 변경됐다.
 
-해제 조건: 현재 배치할 표의 실제 줄 소속과 그 줄의 요소/메트릭으로 앵커를 결정하고,
-서로 다른 줄의 전용 표·같은 줄 혼재·개행·폭 부족 사례를 독립 증거로 구분해 검증한다.
+### P1 — 저장 줄 경로가 서로 다른 문자 위치 축을 직접 비교한다
+
+새 `table_layout.rs:6959-6965`는 `control_text_positions()`의 텍스트 character 위치를
+컨트롤 슬롯을 포함한 `LineSeg.text_start` UTF-16 위치와 직접 비교한다.
+이는 [#7040 최소 좌표 계약](pr_7040_review.md)의 반례와 같은 식이다.
+원시 표 시작 `[0,9]`, 저장 줄 시작 `[0,9]`, `text="AB"`, `char_offsets=[8,17]`이면
+표의 character 위치는 `[0,1]`이다. 새 `stored_line_of` 식은 두 표를 모두 줄 0으로 분류한다.
+따라서 실제로 서로 다른 줄의 표도 count 2가 되어 저장 밴드 분기가 배제된다.
+이것은 코드/모델 계약 분석이며 최신 후보 전체 렌더링에서 새로 실행한 회귀 증거는 아니다.
+
+해제 조건: 컨트롤과 저장 줄 시작을 동일한 축으로 정규화하고 HWPX 보정도 같은 계약으로 처리한다.
+저장 사다리와 composer 구간의 줄 소속을 구분해 다중 줄·컨트롤 슬롯 경계를 검증한다.
+현재 새 테스트 source는 이전 head와 같아서 이 축 차이 반례가 추가로 보호됐다고 볼 수 없다.
 
 ### 측정·배치 및 clamp 경계의 필수 증거 부족
 
@@ -70,7 +79,7 @@ Build & Test도 모두 성공했다. 최신 head의 worker skip은 이 검증된
 
 ## 직접 확인한 개선과 한계
 
-새 테스트 4개는 통과했다. 같은 줄 상대 하단 간격은 실제 통합 출력에서도 개선 목표와 맞는다.
+이전 후보 `522a2e80d`에서 새 테스트 4개는 통과했다. 아래 시각 수치도 그 후보의 결과다. 같은 줄 상대 하단 간격은 실제 통합 출력에서도 개선 목표와 맞는다.
 
 | 원본 | 통합 표 2개의 y·높이(px) | 하단 간격 | PR이 제시한 한컴 기준 |
 | --- | --- | --- | --- |
@@ -86,14 +95,19 @@ Build & Test도 모두 성공했다. 최신 head의 worker skip은 이 검증된
 
 | 항목 | 판정 | 근거 |
 | --- | --- | --- |
-| 구현 근거와 일반성 | 미충족 | 문단 전체 표 수는 현재 줄 독점의 근거가 아님 |
+| 구현 근거와 일반성 | 미충족 | 문단 전체 개수는 수정됨; 저장 줄 경로의 character/UTF-16 축 혼용은 남음 |
 | 측정·배치 일관성 | 미검증 | 두 배치 경로와 측정이 공통 줄 메트릭을 소비하는 증거 없음 |
-| 줄 소속과 점유 높이 | 미충족 | 다른 줄 표까지 현재 줄의 앵커 조건에 포함 |
+| 줄 소속과 점유 높이 | 미충족 | 저장 줄 매핑의 축 혼용으로 다른 줄 표를 같은 줄로 셀 수 있음 |
 | 사례와 증거의 독립성 | 미검증 | 기존 4개 테스트 통과; 다중 줄·재조판·clamp 경계 증거 부족 |
 | 기준값 변경 | 비해당 | baseline/golden/허용치 변경 없음 |
 | 주장과 검증 범위 | 충족 | 상대 간격 개선과 절대 y/형제 경로 미검증을 분리 |
 
 ## 검증 환경과 결과
+
+아래 실행 수치·이미지는 코드 후보 `522a2e80d`의 결과다. 이후 #7050의 새 head를
+`-x`로 적용한 최신 후보는 `78f2a85b103a287c4def67221ff94b3b4e7ed298`다. 두 Rust 파일만 달라졌고 테스트 source는 같다.
+최신 후보의 로컬 빌드·전체 테스트·시각 출력은 재실행하지 않았으며 이전 결과를 이월해 성공으로 주장하지 않는다.
+사용자 지시에 따라 #7050 새 source CI의 최종 SUCCESS를 확인했다.
 
 - macOS arm64, logical CPU 10, RAM 32 GiB, Rust 1.93.1, 기본 nextest 동시성.
 - 기준 devel `ea5d1ff70b1d50301d1e6fdd26248e9d9c10c1fa`; 실제 코드 검증 head `522a2e80db04cbd84264406ccb8bdd33a21dcc55`.

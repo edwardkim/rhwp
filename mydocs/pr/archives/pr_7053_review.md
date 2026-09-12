@@ -24,21 +24,24 @@ last_verified: 2026-09-12
 
 실제 diff로 범위를 판단했다. `samples/issue6986/cell-page-and-total-page-in-one-run.hwpx`, `src/renderer/layout.rs`, `tests/cases/issue_6986_page_and_total_page_in_one_run.rs`.
 문서 전용 PR이 아니며, renderer/진단 또는 관련 기준값에 영향이 있어 공통 조판 검토를 적용했다.
-원 PR CI는 모두 성공했으며 아래에서 재사용 근거까지 구분한다.
+원 PR CI와 head 갱신 상태, 재사용 근거는 아래에 구분한다.
 원격 head는 종료 전 재확인했으며 갱신됐다면 기존 판정을 최신 head에 이월하지 않는다.
 
 ## 원 PR 최신 head CI
 
-GitHub Actions를 2026-09-12에 다시 조회했다. 원 PR 4건의 최신 CI는 모두 **SUCCESS**다.
+GitHub Actions를 2026-09-12에 다시 조회했다. 대상 4건의 최신 **CI workflow는 모두 SUCCESS**다.
+작업 중 갱신된 #7050 head `de3301a03891ff2a9287f907f6944a38cf59720b`도 CI 완료를 확인했다.
+마지막 check-rollup 조회에서 #7050의 별도 CodeQL `Analyze (rust)`는 진행 중이었고 실패 check는 없었다.
+CI workflow 성공과 모든 별도 check 완료를 구분한다.
 
 | 원 PR | 최신 head CI | 실행 또는 재사용 근거 |
 | --- | --- | --- |
 | #7040 | [34674768254](https://github.com/edwardkim/rhwp/actions/runs/34674768254) | head `6b675ac94`에서 Lint·Native Skia·Build & Test 성공 |
 | #7048 | [34672055783](https://github.com/edwardkim/rhwp/actions/runs/34672055783) | `b0d657d75`의 [성공 CI 34665904362](https://github.com/edwardkim/rhwp/actions/runs/34665904362) 재사용 |
-| #7050 | [34672053443](https://github.com/edwardkim/rhwp/actions/runs/34672053443) | `e28ba0dc7`의 [성공 CI 34659681269](https://github.com/edwardkim/rhwp/actions/runs/34659681269) 재사용 |
+| #7050 | [34677890610](https://github.com/edwardkim/rhwp/actions/runs/34677890610) | 새 head `de3301a03`에서 Lint·Native Skia·Archive A/B/C/D·Build & Test 성공 |
 | #7053 | [34672052090](https://github.com/edwardkim/rhwp/actions/runs/34672052090) | `5e83a52d5`의 [성공 CI 34670322954](https://github.com/edwardkim/rhwp/actions/runs/34670322954) 재사용 |
 
-세 재사용 경로는 preflight의 `direct-source-build-and-test-green:success`와
+#7048·#7053의 재사용 경로는 preflight의 `direct-source-build-and-test-green:success`와
 `current-base-merge-tree-match`를 확인했다. 재사용 원본 run의 Lint·Native Skia·Archive A/B/C/D·
 Build & Test도 모두 성공했다. 최신 head의 worker skip은 이 검증된 재사용 경로이며 누락으로 판정하지 않는다.
 이후 아래 로컬 누적 후보의 실패는 원 PR CI와 구분한다. CI 녹색을 취소하거나 단독 source 실패로 바꾸어
@@ -90,6 +93,11 @@ PDF를 열고 webfont sweep 패널을 직접 확인해 첫 칸의 현재쪽/총�
 | 주장과 검증 범위 | 충족 | 이번 review의 exact SHA·실제 실행/한계로 판단; 원문의 자리표시자는 사용 안 함 |
 
 ## 검증 환경과 결과
+
+아래 실행 수치·이미지는 코드 후보 `522a2e80d`의 결과다. 이후 #7050의 새 head를
+`-x`로 적용한 최신 후보는 `78f2a85b103a287c4def67221ff94b3b4e7ed298`다. 두 Rust 파일만 달라졌고 테스트 source는 같다.
+최신 후보의 로컬 빌드·전체 테스트·시각 출력은 재실행하지 않았으며 이전 결과를 이월해 성공으로 주장하지 않는다.
+사용자 지시에 따라 #7050 새 source CI의 최종 SUCCESS를 확인했다.
 
 - macOS arm64, logical CPU 10, RAM 32 GiB, Rust 1.93.1, 기본 nextest 동시성.
 - 기준 devel `ea5d1ff70b1d50301d1e6fdd26248e9d9c10c1fa`; 실제 코드 검증 head `522a2e80db04cbd84264406ccb8bdd33a21dcc55`.
