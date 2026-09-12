@@ -24446,13 +24446,31 @@ impl TypesetEngine {
                 }
             )
         });
-        let saved_host_line_after_stack_fits = host_line_trails_float_stack
+        // 저장 앵커는 스택 전체의 source frame이다. 셀 실측 때문에 앞 표 높이가
+        // 늘어나는 #2813 구제는 보존하되, 앞 문단에 밀려 host 시작점 자체가 옮겨진
+        // 경우까지 같은 frame으로 간주하지 않는다. 현재 표만 current_height에 더하면
+        // 실측 팽창과 host 이동을 구분하지 못하므로 선언 스택 전체와 host 원점을 쓴다.
+        let saved_stack_fits_host_origin = host_line_trails_float_stack
+            && single_line_visible_bounds_px(para, st.vpos_page_base.unwrap_or(0), self.dpi)
+                .is_some_and(|bounds| {
+                    let declared_stack_height: f64 = para
+                        .controls
+                        .iter()
+                        .filter_map(|control| match control {
+                            Control::Table(t) if is_para_topbottom_float(&t.common) => Some(
+                                raw_table_ctrl_height_px(t, self.dpi).unwrap_or_else(|| {
+                                    hwpunit_to_px(t.common.height as i32, self.dpi).max(0.0)
+                                }),
+                            ),
+                            _ => None,
+                        })
+                        .sum();
+                    declared_stack_height > 0.0
+                        && para_start_height + declared_stack_height <= bounds.0
+                });
+        let saved_host_line_after_stack_fits = saved_stack_fits_host_origin
             && has_preceding_coanchored_float
             && table_total <= available
-            // 저장 스택 구제는 셀 실측 팽창을 보완할 뿐 이미 소비한 공간을 되감지
-            // 않는다. 통째 이월된 앞 표가 있는 쪽에는 연속 조각이 없을 수도 있으므로,
-            // 선언 높이로도 현재 잔여 공간을 넘으면 정상 이월/분할 경로를 따라야 한다.
-            && st.current_height + declared_object_total <= available
             && !page_has_table_continuation;
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
