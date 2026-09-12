@@ -2045,6 +2045,7 @@ fn parse_object_control_char(
         controls,
         ctrl_data_records,
         use_password_layout_contract,
+        ..
     } = scan;
     let header_val1 = match body_cursor.read_u32::<LittleEndian>() {
         Ok(v) => v,
@@ -2400,6 +2401,7 @@ fn parse_field_control_char(
         controls,
         ctrl_data_records,
         use_password_layout_contract,
+        ..
     } = scan;
     match ch {
         18..=21 => {
@@ -3087,6 +3089,11 @@ pub(crate) fn parse_paragraph_list(
         para.text = text_string;
         para.controls = controls;
         para.ctrl_data_records = ctrl_data_records;
+        // [#4680] HWP3 문단 레코드의 `style_index` 는 지금까지 읽고 버려졌다. 그래서
+        // `DocInfo` 에 스타일을 다 써놓고 **모든 문단이 0번을 가리켰다**(07615 실측
+        // 3,699/3,699). 한/글은 같은 문서에서 10종을 쓴다. 스타일 풀은 HWP3 등장
+        // 순서대로 쌓이므로 인덱스가 그대로 대응한다.
+        para.style_id = para_info.style_index;
         para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
         strip_hwp3_single_tac_visual_marker(&mut para);
 
