@@ -3,6 +3,7 @@ mod budget;
 mod owned;
 mod repeat;
 mod template;
+mod template_edit;
 mod validation;
 pub use repeat::{ParagraphBlockCopy, ParagraphBlockMapping, RepeatParagraphBlockResult};
 pub use template::{TemplateBinding, TemplateFillPreview, TemplateFillRequest, TemplateFillTarget};

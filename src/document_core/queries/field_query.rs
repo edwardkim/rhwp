@@ -1070,6 +1070,15 @@ impl DocumentCore {
             sec.raw_stream = None;
         }
         let para = self.get_para_mut_at_location(location)?;
+        Self::replace_field_text_model(para, field_range_index, value)
+    }
+
+    /// Shared model-only operation for editor fields and detached template copies.
+    pub(crate) fn replace_field_text_model(
+        para: &mut Paragraph,
+        field_range_index: usize,
+        value: &str,
+    ) -> Result<(), HwpError> {
         let fr = para
             .field_ranges
             .get(field_range_index)

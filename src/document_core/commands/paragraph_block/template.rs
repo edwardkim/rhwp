@@ -1,4 +1,4 @@
-//! Read-only compilation of copy-local fill targets. No mutation or layout acceptance.
+//! Copy-local fill preflight and detached model edits followed by one insertion.
 use super::{
     validation, ParagraphBlockBudget, ParagraphBlockPathStep as Step,
     ParagraphBlockValidationError as Error, RepeatParagraphBlockRequest,
@@ -157,6 +157,109 @@ fn select<'a>(binding: &'a TemplateBinding, para: &Paragraph) -> Result<Selectio
 }
 
 impl DocumentCore {
+    /// Fill detached copies, then insert once. Any returned error leaves this core unchanged.
+    /// This does not fill the source or flatten cell paragraphs, and does not use clipboard.
+    pub fn repeat_and_fill_paragraph_block_native(
+        &mut self,
+        request: &TemplateFillRequest,
+    ) -> Result<super::RepeatParagraphBlockResult, crate::error::HwpError> {
+        let preview = self
+            .validate_template_fill_native(request)
+            .map_err(|e| super::invalid(e.to_string()))?;
+        if request.block.count == 0 {
+            return self.repeat_paragraph_block_prepared(&request.block, preview.block, |_, _| {
+                Ok(Vec::new())
+            });
+        }
+        // Bound scalar/UTF-16 scratch arrays as well as payload before cloning/editing.
+        // This is a conservative working-structure budget, not a process RSS promise.
+        let mut estimated = preview.block.structure_bytes;
+        let scratch = preview
+            .replacement_text_bytes
+            .checked_mul(32)
+            .ok_or_else(|| super::invalid("fill derived size overflow"))?;
+        add_budget(
+            &mut estimated,
+            scratch,
+            request.block.limits.max_structure_bytes,
+        )
+        .map_err(|e| super::invalid(e.to_string()))?;
+        let source = &self.document.sections[request.block.section_index].paragraphs
+            [request.block.source_start..request.block.source_end];
+        let paras: HashMap<_, _> = validation::paragraphs(source, &request.block)
+            .map_err(|e| super::invalid(e.to_string()))?
+            .into_iter()
+            .collect();
+        let mut edits = Vec::new();
+        for binding in &request.bindings {
+            let p = paras
+                .get(path(&binding.target))
+                .ok_or_else(|| super::invalid("validated fill target disappeared"))?;
+            let selection = select(binding, p).map_err(|e| super::invalid(e.to_string()))?;
+            edits.push((binding, selection.range));
+        }
+        // All coordinates refer to the input. Right-to-left edits preserve later anchors.
+        edits.sort_by(|a, b| b.1.start.cmp(&a.1.start));
+        let mut measured = 0;
+        let mut work_bytes = 0;
+        self.repeat_paragraph_block_prepared(&request.block, preview.block, |copy, index| {
+            let mut tables = Vec::new();
+            for (binding, range) in &edits {
+                let para =
+                    super::template_edit::paragraph(copy, path(&binding.target), &mut tables)?;
+                let value = &request.records[index][&binding.key];
+                // Existing text also feeds char/offset scratch arrays. Payload alone
+                // does not bound editing a long field with a short replacement.
+                let mut working = estimated;
+                let existing_scratch = para
+                    .text
+                    .len()
+                    .checked_mul(32)
+                    .ok_or_else(|| super::invalid("fill existing text size overflow"))?;
+                add_budget(
+                    &mut working,
+                    existing_scratch,
+                    request.block.limits.max_structure_bytes,
+                )
+                .map_err(|e| super::invalid(format!("fill copy {index}: {e}")))?;
+                add_budget(
+                    &mut work_bytes,
+                    para.text.len(),
+                    request.block.limits.max_structure_bytes,
+                )
+                .map_err(|e| super::invalid(format!("fill copy {index}: {e}")))?;
+                match &binding.target {
+                    TemplateFillTarget::Field {
+                        field_range_index, ..
+                    } => Self::replace_field_text_model(para, *field_range_index, value)?,
+                    TemplateFillTarget::TextRange { .. } => {
+                        para.delete_text_at(range.start, range.end - range.start);
+                        para.insert_text_at(range.start, value);
+                        para.replace_line_segs(Vec::new());
+                    }
+                }
+            }
+            let cost = super::owned::source(
+                copy,
+                request.block.limits.max_nodes / request.block.count,
+                request.block.limits.max_depth,
+            )?;
+            let bytes = super::budget::measure(
+                copy,
+                1,
+                request.block.limits.max_structure_bytes,
+                cost.skipped_bytes,
+            )?;
+            add_budget(
+                &mut measured,
+                bytes,
+                request.block.limits.max_structure_bytes,
+            )
+            .map_err(|e| super::invalid(format!("fill copy {index}: {e}")))?;
+            Ok(tables)
+        })
+    }
+
     /// Validate all records and source-local selections without cloning or editing IR.
     /// This is a preflight only: no copies, generated IDs, files or layout are produced.
     pub fn validate_template_fill_native(

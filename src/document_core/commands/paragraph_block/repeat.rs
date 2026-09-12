@@ -1,5 +1,6 @@
 use super::{
-    invalid, owned, validation, ParagraphBlockPathStep as Step, RepeatParagraphBlockRequest,
+    invalid, owned, validation, ParagraphBlockBudget, ParagraphBlockPathStep as Step,
+    RepeatParagraphBlockRequest,
 };
 use crate::{
     document_core::{DocumentCore, TableTextReflowKey},
@@ -68,6 +69,16 @@ impl DocumentCore {
         let budget = self
             .validate_paragraph_block_native(request)
             .map_err(|e| invalid(e.to_string()))?;
+        self.repeat_paragraph_block_prepared(request, budget, |_, _| Ok(Vec::new()))
+    }
+
+    /// The callback only edits detached copies. It cannot observe or mutate this core.
+    pub(super) fn repeat_paragraph_block_prepared(
+        &mut self,
+        request: &RepeatParagraphBlockRequest,
+        budget: ParagraphBlockBudget,
+        mut fill: impl FnMut(&mut [Paragraph], usize) -> Result<Vec<TableTextReflowKey>, HwpError>,
+    ) -> Result<RepeatParagraphBlockResult, HwpError> {
         let mut result = RepeatParagraphBlockResult {
             section_index: request.section_index,
             inserted: request.insert_before..budget.inserted_end,
@@ -104,6 +115,7 @@ impl DocumentCore {
             // The original remains immutably borrowed for every copy. No JSON roundtrip.
             let mut copy = source.to_vec();
             super::super::clone_identity::reidentify_with_allocator(&mut copy, &mut allocator)?;
+            inherited.extend(fill(&mut copy, copy_index)?);
             let copied_tables = table_keys(&copy, request)?;
             if copied_tables.len() != source_tables.len() {
                 return Err(invalid("copied table ownership mismatch"));
