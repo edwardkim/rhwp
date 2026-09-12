@@ -17,6 +17,7 @@ pub(super) fn inspect<'a>(
     let mut scan = Scan {
         path: vec![],
         nodes: vec![],
+        paths: None,
         visited: 0,
         path_bytes: 0,
         request,
@@ -25,9 +26,26 @@ pub(super) fn inspect<'a>(
     Ok(scan.nodes)
 }
 
+pub(crate) fn paths(
+    paras: &[Paragraph],
+    request: &RepeatParagraphBlockRequest,
+) -> Result<Vec<Vec<Step>>, Error> {
+    let mut scan = Scan {
+        path: vec![],
+        nodes: vec![],
+        paths: Some(Vec::new()),
+        visited: 0,
+        path_bytes: 0,
+        request,
+    };
+    scan.paras(paras)?;
+    Ok(scan.paths.unwrap())
+}
+
 struct Scan<'a, 'r> {
     path: Vec<Step>,
     nodes: Vec<Located<'a>>,
+    paths: Option<Vec<Vec<Step>>>,
     visited: usize,
     path_bytes: usize,
     request: &'r RepeatParagraphBlockRequest,
@@ -61,11 +79,17 @@ impl<'a> Scan<'a, '_> {
             ));
         }
         self.path.push(step);
+        if let Some(paths) = &mut self.paths {
+            paths.push(self.path.clone());
+        }
         let result = operation(self);
         self.path.pop();
         result
     }
     fn keep(&mut self, node: SourceNode<'a>) {
+        if self.paths.is_some() {
+            return;
+        }
         self.nodes.push(Located {
             node,
             path: self.path.clone(),

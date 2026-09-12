@@ -2,6 +2,7 @@
 mod references;
 mod resources;
 mod support;
+pub(super) use support::paths;
 
 use super::{ParagraphBlockBudget, RepeatParagraphBlockRequest};
 use crate::{

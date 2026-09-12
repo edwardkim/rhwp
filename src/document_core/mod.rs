@@ -9,8 +9,9 @@ pub(crate) use helpers::*;
 pub mod builders;
 mod commands;
 pub use commands::paragraph_block::{
-    ParagraphBlockBudget, ParagraphBlockLimits, ParagraphBlockPathStep,
-    ParagraphBlockValidationError, RepeatParagraphBlockRequest,
+    ParagraphBlockBudget, ParagraphBlockCopy, ParagraphBlockLimits, ParagraphBlockMapping,
+    ParagraphBlockPathStep, ParagraphBlockValidationError, RepeatParagraphBlockRequest,
+    RepeatParagraphBlockResult,
 };
 pub mod converters;
 pub(crate) mod html_table_import;

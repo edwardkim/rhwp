@@ -1,8 +1,9 @@
-//! Read-only request budgeting for whole-paragraph block automation (#3587).
-//! This is not an insertion API or a certification of reference closure.
+//! Whole-paragraph block automation with read-only preflight and staged insertion.
 mod budget;
 mod owned;
+mod repeat;
 mod validation;
+pub use repeat::{ParagraphBlockCopy, ParagraphBlockMapping, RepeatParagraphBlockResult};
 pub use validation::{ParagraphBlockPathStep, ParagraphBlockValidationError};
 
 use crate::{document_core::DocumentCore, error::HwpError};

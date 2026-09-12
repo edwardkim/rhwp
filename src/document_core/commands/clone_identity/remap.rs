@@ -55,6 +55,14 @@ pub(crate) fn reidentify_clipboard(
     let mut used = used_instance_ids(doc);
     used.extend(paragraph_ids(paras)); // clipboard can outlive cut/source deletion
     let mut allocator = Allocator { used, next: 1 };
+    reidentify_with_allocator(paras, &mut allocator)
+}
+
+/// A request owns the allocator; each copy owns its reference maps.
+pub(crate) fn reidentify_with_allocator(
+    paras: &mut [Paragraph],
+    allocator: &mut Allocator,
+) -> Result<(), HwpError> {
     let mut subjects = ReferenceMap::default();
     let mut fields = ReferenceMap::default();
 
@@ -71,14 +79,14 @@ pub(crate) fn reidentify_clipboard(
                     &mut table.common,
                     &mut table.raw_ctrl_data,
                     &mut table.raw_ctrl_seal,
-                    &mut allocator,
+                    allocator,
                 )?,
-                Control::Picture(pic) => remap_picture(pic, &mut allocator, &mut subjects)?,
+                Control::Picture(pic) => remap_picture(pic, allocator, &mut subjects)?,
                 Control::Equation(eq) => remap_common_raw(
                     &mut eq.common,
                     &mut eq.raw_ctrl_data,
                     &mut eq.raw_ctrl_seal,
-                    &mut allocator,
+                    allocator,
                 )?,
                 Control::Form(form) => form.common.instance_id = allocator.common()?,
                 Control::Footnote(note) => note.instance_id = allocator.id()?,
@@ -94,7 +102,7 @@ pub(crate) fn reidentify_clipboard(
             },
             Node::Shape(shape) => {
                 if let ShapeObject::Picture(pic) = shape {
-                    remap_picture(pic, &mut allocator, &mut subjects)?;
+                    remap_picture(pic, allocator, &mut subjects)?;
                 } else {
                     let old_common = shape.common().instance_id;
                     let old_drawing = shape.drawing().map(|d| d.inst_id);

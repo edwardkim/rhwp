@@ -222,13 +222,22 @@ impl Walk {
 }
 
 pub(super) fn source(paras: &[Paragraph], nodes: usize, depth: usize) -> Result<Cost, HwpError> {
+    inspect_source(paras, nodes, depth, |_| Ok(()))
+}
+
+pub(super) fn inspect_source(
+    paras: &[Paragraph],
+    nodes: usize,
+    depth: usize,
+    mut visitor: impl FnMut(&Node<'_>) -> Result<(), HwpError>,
+) -> Result<Cost, HwpError> {
     let mut walk = Walk {
         cost: Cost::default(),
         max_nodes: nodes,
         max_depth: depth,
         source: true,
     };
-    walk.walk(Node::Paras(paras), &mut |_| Ok(()))?;
+    walk.walk(Node::Paras(paras), &mut visitor)?;
     Ok(walk.cost)
 }
 

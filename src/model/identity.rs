@@ -15,6 +15,7 @@ enum Node<'a> {
     Paragraphs(&'a [Paragraph]),
     Control(&'a Control),
     Shape(&'a ShapeObject),
+    Ole(&'a crate::model::shape::OleShape),
 }
 
 fn push_caption<'a>(pending: &mut Vec<Node<'a>>, caption: Option<&'a Caption>) {
@@ -177,8 +178,29 @@ fn collect_ids(
                     ShapeObject::Ole(ole) => {
                         used.extend(ole.hwpx_ole_id);
                         push_caption(&mut pending, ole.caption.as_ref());
+                        if let Some(fallback) = &ole.chart_switch_fallback {
+                            pending.push(Node::Ole(fallback));
+                        }
                     }
                     _ => {}
+                }
+            }
+            Node::Ole(ole) => {
+                // Opaque OLE is not a clonable B source, but its modeled fallback
+                // still owns IDs that a new block must not capture.
+                used.extend([
+                    ole.common.instance_id,
+                    subject_alias(ole.common.instance_id),
+                    ole.drawing.inst_id,
+                ]);
+                used.extend(ole.hwpx_ole_id);
+                if let Some(textbox) = &ole.drawing.text_box {
+                    pending.push(Node::Paragraphs(&textbox.paragraphs));
+                }
+                push_caption(&mut pending, ole.drawing.caption.as_ref());
+                push_caption(&mut pending, ole.caption.as_ref());
+                if let Some(fallback) = &ole.chart_switch_fallback {
+                    pending.push(Node::Ole(fallback));
                 }
             }
         }
