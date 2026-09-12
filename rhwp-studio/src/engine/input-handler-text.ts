@@ -26,6 +26,7 @@ import {
 import type { TextMutationEffects } from './command';
 import type { DocumentPosition } from '@/core/types';
 import { showConfirm } from '@/ui/confirm-dialog';
+import { tryConfirmDeleteHyperlink } from './input-handler-hyperlink-delete';
 import {
   detectPlatformKind,
   getNavigationAction,
@@ -318,6 +319,8 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
     } catch { /* ignore */ }
     return;
   }
+
+  if (tryConfirmDeleteHyperlink(this, pos)) return;
 
   const { charOffset } = pos;
 

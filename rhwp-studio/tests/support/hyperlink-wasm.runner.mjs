@@ -12,6 +12,8 @@ const src = join(root, 'src');
 const repo = join(root, '..');
 const dialogModule = 'data:text/javascript,' + encodeURIComponent(`
 export let current;
+export let deletion;
+export function confirmHyperlinkDelete(remove, cancel) { deletion = { remove, cancel }; }
 export function confirmHyperlinkEdit(edit) { edit(); }
 export class HyperlinkDialog {
   constructor(initial, apply) { this.initial = initial; this.apply = apply; current = this; }
@@ -20,7 +22,7 @@ export class HyperlinkDialog {
 `);
 const toastModule = 'data:text/javascript,' + encodeURIComponent(`export function showToast(o) { throw new Error(o.message); }`);
 registerHooks({ resolve(specifier, context, next) {
-  if (specifier === '@/ui/hyperlink-dialog') return { url: dialogModule, shortCircuit: true };
+  if (specifier === '@/ui/hyperlink-dialog' || specifier === '@/ui/hyperlink-delete-dialog') return { url: dialogModule, shortCircuit: true };
   if (specifier === '@/ui/toast') return { url: toastModule, shortCircuit: true };
   if (specifier === '@wasm/rhwp.js') return { url: pathToFileURL(join(repo, 'pkg/rhwp.js')).href, shortCircuit: true };
   if (specifier.startsWith('@/')) return { url: pathToFileURL(join(src, specifier.slice(2) + '.ts')).href, shortCircuit: true };
@@ -35,6 +37,7 @@ const { WasmBridge } = await import(pathToFileURL(join(src, 'core/wasm-bridge.ts
 const { SnapshotCommand, DeleteTextCommand, InsertTextCommand } = await import(pathToFileURL(join(src, 'engine/command.ts')));
 const { CommandHistory } = await import(pathToFileURL(join(src, 'engine/history.ts')));
 const { hyperlinkCommand } = await import(pathToFileURL(join(src, 'command/commands/hyperlink.ts')));
+const { tryConfirmDeleteHyperlink } = await import(pathToFileURL(join(src, 'engine/input-handler-hyperlink-delete.ts')));
 const dialogs = await import(dialogModule);
 const results = [];
 
@@ -59,9 +62,12 @@ function session(doc, position) {
       selection = null;
     },
   };
+  const deleteHost = { wasm, canEditHyperlink: () => editable, isFormMode: () => false,
+    isActive: () => true, focusTextarea() {}, executeOperation: desc => ih.executeOperation(desc) };
   const services = { wasm, getInputHandler: () => ih, getContext: () => ({ isEditable: editable, isFormMode: false }) };
   return {
     wasm, history,
+    deleteAt(offset) { return tryConfirmDeleteHyperlink(deleteHost, { ...position, charOffset: offset }); },
     open() { hyperlinkCommand.execute(services); return dialogs.current; },
     select(start, end) { selection = { start: { ...position, charOffset: start }, end: { ...position, charOffset: end } }; },
     cursor(offset) { pos = { ...position, charOffset: offset }; selection = null; },
@@ -300,6 +306,75 @@ startSession.undo(); startSession.redo();
 assert.equal(context(startSession).links[0].text, '링크');
 assert.equal(startSession.wasm.getCharPropertiesAt(0, 0, 0).underline, false);
 results.push('링크 시작 입력의 일반 서식·링크 바깥 범위, undo·redo 및 HWP/HWPX 왕복');
+
+// 한컴 실측 확인창: 한 글자 삭제 대신 필드+표시 문자열을 하나의 undo로 지운다.
+const deleteDoc = HwpDocument.createEmpty();
+deleteDoc.createBlankDocument(); deleteDoc.insertText(0, 0, 0, '앞링크뒤');
+const deleting = session(deleteDoc, position);
+deleting.select(1, 3); deleting.open().apply({ kind: 'save', text: '링크', uri });
+deleting.history.clear(deleting.wasm);
+const beforeConfirm = context(deleting);
+assert.equal(deleting.deleteAt(0), false); // 일반 텍스트
+assert.equal(deleting.deleteAt(3), false); // 링크 뒤
+assert.equal(deleting.deleteAt(1), true); // 링크 앞 Delete
+assert.deepEqual(context(deleting), beforeConfirm); // 확인 전에는 무변경
+const firstConfirmation = dialogs.deletion;
+assert.equal(deleting.deleteAt(1), true); // repeat key: 모달 중복 방지
+assert.equal(dialogs.deletion, firstConfirmation);
+dialogs.deletion.cancel();
+assert.deepEqual(context(deleting), beforeConfirm);
+assert.equal(deleting.history.canUndo(), false);
+assert.equal(deleting.deleteAt(2), true); // 링크 안 Delete
+dialogs.deletion.remove();
+assert.equal(context(deleting).text, '앞뒤');
+assert.equal(context(deleting).links.length, 0);
+assertSavedContext(deleteDoc, context(deleting), body);
+for (let cycle = 0; cycle < 3; cycle++) {
+  deleting.undo(); assert.deepEqual(context(deleting), beforeConfirm);
+  assertSavedContext(deleteDoc, context(deleting), body);
+  deleting.redo(); assert.equal(context(deleting).text, '앞뒤');
+  assert.equal(context(deleting).links.length, 0);
+}
+deleting.undo();
+results.push('Delete 확인 전·취소 무변경, 중복 모달 차단, 전체 링크 삭제·3회 undo/redo·HWP/HWPX');
+
+// 필드 제거 뒤 텍스트 삭제 실패도 전체 snapshot으로 원자 복구한다.
+assert.equal(deleting.deleteAt(1), true);
+const originalDelete = deleting.wasm.deleteText;
+deleting.wasm.deleteText = () => { throw new Error('forced-delete-failure'); };
+assert.throws(() => dialogs.deletion.remove(), /forced-delete-failure/);
+deleting.wasm.deleteText = originalDelete;
+assert.deepEqual(context(deleting), beforeConfirm);
+assert.equal(deleting.deleteAt(1), true);
+deleteDoc.insertText(0, 0, 0, '외부');
+const changedDuringDialog = context(deleting);
+assert.throws(() => dialogs.deletion.remove(), /편집 상태가 바뀌었습니다/);
+assert.deepEqual(context(deleting), changedDuringDialog);
+assert.equal(deleting.deleteAt(3), true);
+deleting.wasm._documentGeneration += 1;
+assert.throws(() => dialogs.deletion.remove(), /편집 상태가 바뀌었습니다/);
+assert.deepEqual(context(deleting), changedDuringDialog);
+assert.equal(deleting.deleteAt(3), true);
+deleting.readOnly();
+assert.throws(() => dialogs.deletion.remove(), /편집 상태가 바뀌었습니다/);
+assert.deepEqual(context(deleting), changedDuringDialog);
+results.push('전체 삭제의 부분 실패 원자 복구·모달 중 외부 편집/문서 교체/읽기 전용 전환 차단');
+
+for (const [document, edit, address] of [[lh, nested, target], [boxDoc, box, boxTarget]]) {
+  const before = context(edit, address);
+  const link = before.links[0];
+  assert.equal(edit.deleteAt(link.start), true);
+  dialogs.deletion.remove();
+  const after = context(edit, address);
+  assert.equal(after.text, Array.from(before.text).slice(0, link.start).join('') + Array.from(before.text).slice(link.end).join(''));
+  assert.equal(after.links.some(other => other.fieldId === link.fieldId), false);
+  assertSavedContext(document, after, address);
+  edit.undo(); assert.deepEqual(context(edit, address), before);
+  assertSavedContext(document, before, address);
+  edit.redo(); assert.deepEqual(context(edit, address), after);
+  edit.undo();
+}
+results.push('한컴 중첩 셀·글상자 전체 링크 Delete 및 undo/redo·저장 왕복');
 
 const out = process.env.RHWP_HYPERLINK_EVIDENCE_DIR;
 if (out) {

@@ -218,6 +218,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/engine/input-handler-mouse.ts': 3,
   'src/engine/input-handler-picture.ts': 11,
   'src/engine/input-handler-table.ts': 7, // -2: 한컴 3모드 셀 크기 조절의 직접 WASM 호출을 executeOperation snapshot 경로로 이관 (undo 기록됨)
+  'src/engine/input-handler-hyperlink-delete.ts': 3, // #6963: removeHyperlink + 본문/셀 deleteText는 모두 deleteHyperlink snapshot 안에서 실행. 실제 WASM runner가 원자 복구·undo/redo를 검증한다.
   'src/engine/input-handler-text.ts': 11, // #2424: raw IME delete를 command 공통 typed helper로 이관
   // ── hwpctl — 의도적 미라우팅 (#3648 정책 판정, 2026-07-31) ──
   //
