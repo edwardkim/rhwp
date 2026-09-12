@@ -1100,6 +1100,26 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
                 // 모두 동일한 paragraph container이므로 같은 walker로 재귀한다.
                 if let Some(drawing) = shape.drawing_mut() {
                     walk_drawing(drawing, source_is_hwpx);
+                    // [#4680] 위 사각형 arm 과 같은 storage flip 계약을 선·다각형·
+                    // 타원·호·곡선에도 적용한다. 종전에는 사각형만 세워서 나머지
+                    // 도형이 0 으로 나갔고, 한컴은 그런 도형이 든 문서를 열지 못했다.
+                    //
+                    // 264쪽 HWP3 문서 53쪽(표 칸 안 묶음: `$con` → `$rec`·`$lin`·
+                    // `$pol`)에서 실측했다. 한/글 저장본과 우리 산출물을 레코드
+                    // 단위로 이등분해 `$lin`/`$pol` 의 `SHAPE_COMPONENT` 로 좁히고,
+                    // 다시 바이트 구간으로 좁히면 **이 4바이트 하나**가 갈림점이다
+                    // (그 구간만 한/글 값으로 바꾸면 open=True, 나머지 전부 바꿔도
+                    // 이 구간이 0 이면 open=False). 회전중심은 필요하지 않았다 —
+                    // 근거가 없는 값은 건드리지 않는다.
+                    let has_text_box = drawing.text_box.is_some();
+                    let sa = &mut drawing.shape_attr;
+                    if sa.flip == 0 {
+                        sa.flip = if has_text_box {
+                            0x0108_0000
+                        } else {
+                            0x0008_0000
+                        };
+                    }
                 }
             }
         }
