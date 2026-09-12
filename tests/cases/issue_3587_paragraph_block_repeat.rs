@@ -242,13 +242,13 @@ fn real_table_blocks_preserve_original_box_and_have_distinct_copy_ids() {
 fn successful_repeat_does_not_replace_clipboard_and_emits_one_event() {
     let mut c = core();
     let clipboard = c.get_clipboard_text_native();
-    let before: serde_json::Value = serde_json::from_str(&c.serialize_event_log()).unwrap();
     c.begin_batch_native().unwrap();
+    let before: serde_json::Value = serde_json::from_str(&c.serialize_event_log()).unwrap();
     c.repeat_paragraph_block_native(&request()).unwrap();
     let after: serde_json::Value = serde_json::from_str(&c.serialize_event_log()).unwrap();
     assert_eq!(
-        after.as_array().unwrap().len(),
-        before.as_array().unwrap().len() + 1
+        after["events"].as_array().unwrap().len(),
+        before["events"].as_array().unwrap().len() + 1
     );
     assert_eq!(c.get_clipboard_text_native(), clipboard);
     c.end_batch_native().unwrap();
