@@ -332,3 +332,74 @@ fn editing_and_deleting_one_table_copy_leaves_original_and_other_copy_intact() {
     assert_eq!(remaining.len(), 2);
     assert_eq!(serde_json::to_value(remaining[1]).unwrap(), other);
 }
+
+#[test]
+fn table_raw_identity_is_updated_without_reviving_a_stale_property_seal() {
+    for stale in [false, true] {
+        let bytes = std::fs::read("samples/hwp_table_test.hwp").unwrap();
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+        let Control::Table(source) = &mut core.document_mut().sections[0].paragraphs[3].controls[0]
+        else {
+            panic!("table")
+        };
+        assert!(source.raw_ctrl_seal.is_some());
+        if stale {
+            source.common.horizontal_offset += 147;
+        }
+        let expected_offset = source.common.horizontal_offset;
+        core.copy_control_native(0, 3, &[], 0).unwrap();
+        let dst = paste(&mut core);
+        let Control::Table(copy) = control(&core, dst, 0) else {
+            panic!("table")
+        };
+        let id = copy.common.instance_id;
+        assert_eq!(
+            u32::from_le_bytes(copy.raw_ctrl_data[32..36].try_into().unwrap()),
+            id
+        );
+        let bytes = core.export_hwp_native().unwrap();
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let Control::Table(copy) = control(&reopened, dst, 0) else {
+            panic!("table")
+        };
+        assert_eq!(copy.common.instance_id, id);
+        assert_eq!(copy.common.horizontal_offset, expected_offset);
+    }
+}
+
+#[test]
+fn picture_payload_identity_and_common_identity_both_survive_hwp_save() {
+    use rhwp::model::image::Picture;
+    let mut core = blank();
+    let mut extra = vec![42];
+    extra.extend_from_slice(&800u32.to_le_bytes());
+    extra.extend_from_slice(&[0; 4]);
+    let pic = Picture {
+        common: CommonObjAttr {
+            instance_id: 700,
+            width: 7200,
+            height: 3600,
+            ..Default::default()
+        },
+        instance_id: 800,
+        border_opacity: 42,
+        raw_picture_extra: extra.clone(),
+        ..Default::default()
+    };
+    let src = append(&mut core, host(Control::Picture(Box::new(pic))));
+    core.copy_control_native(0, src, &[], 0).unwrap();
+    let dst = paste(&mut core);
+    let Control::Picture(copy) = control(&core, dst, 0) else {
+        panic!("picture")
+    };
+    assert_ne!(copy.common.instance_id, 700);
+    assert_ne!(copy.instance_id, 800);
+    assert_eq!(copy.raw_picture_extra[0], extra[0]);
+    assert_eq!(&copy.raw_picture_extra[5..], &extra[5..]);
+    let expected = (copy.common.instance_id, copy.instance_id);
+    let reopened = DocumentCore::from_bytes(&core.export_hwp_native().unwrap()).unwrap();
+    let Control::Picture(saved) = control(&reopened, dst, 0) else {
+        panic!("picture")
+    };
+    assert_eq!((saved.common.instance_id, saved.instance_id), expected);
+}
