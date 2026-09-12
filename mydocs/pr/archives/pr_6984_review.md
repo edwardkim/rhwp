@@ -6,6 +6,79 @@
 > 확인 후 표시 문자열 전체와 필드를 함께 삭제한다. 사용자가 로컬 동작을 확인하고
 > PR 반영·코멘트 게시를 승인했다. 병합 승인은 별도다.
 
+## 2026-09-13 병합 준비 최종 검토
+
+- 검토 head: `bf06a239e6d12db4c14a0b6b85edda299b6a624a`.
+- 현재 base: `897c6a3d8d7559d314bf863c93bbe28c0d65e945` (`devel`).
+- `git merge-tree --write-tree upstream/devel HEAD`: exit 0,
+  tree `f44eb00f0e28a234a490f1bbaa251fe3237cbe16`. tree diff 공백 검사도 통과했다.
+- 작성자 self-review 경로다. 현재 HTTP/HTTPS 1차 범위에서 새 병합 차단 결함을 발견하지
+  못했다. 경계 입력, Delete/Backspace 확인·취소·Undo, 혼합 서식 복원·저장 왕복,
+  URL/Command 인코딩, 필드 범위와 출력 geometry의 공통 결과를 코드·실행 증거와 대조했다.
+- 전체 로컬 검증 후보 `560a4a1db` 이후 변경은 `mydocs/` 기록·Viewer 화면뿐이다.
+  같은 제품·테스트에 대해 이미 완료한 Rust 9,569 passed / 46 skipped, Studio 1,666
+  passed / 2 skipped, 3종 Clippy·Native Skia·실제 WASM 21그룹·UI·PDF 결과를 재사용했다.
+  검증 후 제품 변경이 없어 광범위 검사를 중복 실행하지 않았다.
+- GitHub [Full CI 34714922945](https://github.com/edwardkim/rhwp/actions/runs/34714922945)는
+  `c4d2fb1b8`에서 lint, 4개 archive/shard, Native Skia, Frontend package, aggregate가
+  실제 실행되어 성공했다. 이 head와 로컬 검증 후보의 제품·테스트는 같다.
+- [5b73fad70 CI](https://github.com/edwardkim/rhwp/actions/runs/34715563534)는 위 Full
+  candidate를, [bf06a239e CI](https://github.com/edwardkim/rhwp/actions/runs/34715755778)는
+  `5b73fad70`을 `build-and-test-green:success`로 재사용했다. 계보의 변경은 허용된
+  review-only 경로다. 현재 Build & Test·CodeQL·CI Impact Policy는 성공했다.
+- 조회 당시 `MERGEABLE / UNSTABLE`, non-Draft, OPEN이었다. 취소된 이전 정책 평가 job은
+  남아 있지만 최신 `CI Impact Policy` status는 success이며 `gh pr checks --required`의
+  Build & Test도 success다. 취소를 성공으로 바꾸어 기록하지 않는다. 이 문서의 후속 commit을
+  push하면 새 head의 required aggregate·정책 상태·mergeability를 다시 확인한다.
+
+### 조판 원칙 준수 검토
+
+| 항목 | 확인 근거 | 판정 |
+| --- | --- | --- |
+| 구현 근거와 일반성 | 한컴 도움말의 해제 계약·사용자 경계/삭제 실측·PDF URI 규격. 문서 ID 전용 분기 없음. 교차 필드·미지원 컨텍스트를 명시적으로 차단 | 충족 |
+| 측정·배치 일관성 | `hyperlinks_in_layer_tree`가 출력에 쓰는 TextRun의 `replay_positions_for`와 bbox/clip을 소비. SVG와 Skia PDF에 같은 링크 목록 전달; CSS px→PDF pt·Y축 변환은 writer에서 수행 | 충족 |
+| 줄 소속과 점유 높이 | 줄 나누기·높이 계산 규칙을 변경하지 않고 기존 출력 트리의 줄별 TextRun을 소비. 새 링크 영역을 이유로 줄 소속을 재추정하지 않음 | 비해당 |
+| 사례와 증거 독립성 | 혼합 서식·Unicode·중첩 셀/글상자·경계/실패·왕복 계약 테스트와 한컴 원본/PDF 비교를 구분. 새 저장 파일 4개는 Viewer 직접 판독·링크 실행 확인 | 충족 |
+| 기준값 변경 | 기존 baseline·golden·허용치 변경 없음. 저장 무효화 가드는 실제 helper 위임 근거로 등록했고 검사 기준을 완화하지 않음 | 비해당 |
+| 주장과 검증 범위 | source SHA와 Full CI·로컬·실제 UI/PDF/Viewer 증거를 연결. 전체 한컴 조판 일치와 외부 재저장 시 보조 정보 보존은 주장하지 않음 | 충족 |
+
+### 검증 입력 커밋 확인 — 충족
+
+아래 14개 입력·기준 파일을 검토 head의 Git blob과 실제 로컬 바이트로 대조했다.
+LFS pointer인 경우 실제 object의 SHA-256과 oid를 대조했다. 모두 일치했다.
+한컴 원본/PDF의 역할·출처는 [단계 1](../../working/task_m100_6963_stage1.md),
+합성 적용/해제 파일은 [서식 복원 증거](../assets/issue6984/unlink-format-evidence.json),
+Viewer 결과는 [Viewer 증거](../assets/issue6984/viewer-unlink-evidence.json)를 따른다.
+
+| 저장소 경로 | 실행 파일·검토 commit 내용의 SHA-256 |
+| --- | --- |
+| `samples/basic/Textmail.hwp` | `3ea41d01844dfe689c58c3aebc4193466df449b954b047c65e6289ded3e6f05c` |
+| `pdf/basic/Textmail-2022.pdf` | `c2d295531e6174142dc0222294bfc0aa0f2066d0d125d70f16c54f36ba685715` |
+| `samples/hwpx_sample2.hwpx` | `188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2` |
+| `pdf/hwpx_sample2-hwpx-2020.pdf` | `d69bf2c042f1b3f4713ad838c7d4f7817f2568cea62f1df78731086ebb8e81dc` |
+| `samples/hwp-img-001.hwp` | `0d632afcea1111c5af14413f10f91d982055a67257dc73e5e5db2c04c1c00f60` |
+| `pdf/hwp-img-001-2022.pdf` | `05b1823e949176cc5309b8788f77dee50fa841d2996804e0a6420a4ea7587250` |
+| `samples/hwpctl_Action_Table__v1.1.hwp` | `7076cb9bf6660acad61840dead62a3baeba43b8cb4afe8501777637b2f82fc0e` |
+| `pdf/hwpctl_Action_Table__v1.1-2022.pdf` | `2dd05189158df29c171ec76234ec0bb3991e00af82c64f4866e734aefca39d87` |
+| `mydocs/pr/assets/issue6984/hyperlink-preservation.hwpx` | `f556dd449ddfd77e19e006214280f3dc5c4d36096d65fbfaaf1a58e7a989ac28` |
+| `mydocs/pr/assets/issue6984/hyperlink-preservation.pdf` | `4172302dcec7998f13583c2c6fd98aadea9a83335156f15fb08f490e0eef8b38` |
+| `mydocs/pr/assets/issue6984/unlink-before.hwp` | `9e9377db638c1609f08fb53e30cde4e1709ed19bc5933f840b08ee5e3151cd5e` |
+| `mydocs/pr/assets/issue6984/unlink-before.hwpx` | `7a3c96187c3f9e3718a02b43e8aebb11f576bdcab634bbe6a3e5382ff20aaeb3` |
+| `mydocs/pr/assets/issue6984/unlink-restored.hwp` | `8d6485b58114f787b93dcf6900061a20ce38e5ee96ef98cbff4295054dba1e32` |
+| `mydocs/pr/assets/issue6984/unlink-restored.hwpx` | `97297786aeb1efb6c75eaab4c16e3153e5d6c4d97723f6b5296976e7b1dae879` |
+
+### 남는 범위와 병합 순서
+
+F11·편집→고치기·Enter는 별도 후속 기능으로 분리할 것을 권고한다. 파일·메일·책갈피
+신규 편집, scheme 없는 주소의 호환성 확대, 외부 재저장에서의 rhwp 복원 정보 보존도
+이번 HTTP/HTTPS 1차 완료 판정에 포함하지 않는다. 한컴 PDF와의 기존 배치·clipping 차이는
+아래 시각 증적 한계를 유지한다.
+
+병합 준비 판정은 승인이다. 최신 trailing head의 required check·정책 상태·mergeability와
+사용자의 명시적 병합 승인이 모두 갖춰진 뒤 일반 merge 경로를 사용한다. `--admin`이나
+보호 규칙 우회는 계획하지 않는다. 병합 후에는 이슈 #6963의 1차 완료 범위와 남는 후속
+기능을 구분해 기록하고 아래 증적 comment 계획 및 저장소 후속 절차를 적용한다.
+
 ## 2026-09-13 원래 글자 모양 복원 보정
 
 - 직전 원격 head: `549a4e099560519ac8aa05c32bbd147c7c9ee33e`.
@@ -291,11 +364,11 @@ Docker 데몬 연결이 불가해 매뉴얼이 허용한 native WASM 진단 경�
 
 ## 최종 판정
 
-**승인** — 최신 코드·테스트 후보 `6c6c5c499`의 경계 입력·양방향 삭제 확인·Undo와
-HTTP/HTTPS 편집→저장 왕복→PDF URI·클릭 영역 보존의 로컬 검증 범위다.
-작성자 self-review이며 GitHub approve event가 아니다. 사용자가 로컬 동작을 확인하고
-PR 반영·코멘트 게시·최종 리뷰 준비를 승인했다. 최신 게시 head의 required checks,
-mergeable 상태와 독립 최종 리뷰·별도 병합 승인이 남는다. 병합·issue 종료는 수행하지 않는다.
+**승인** — 최종 검토 head `bf06a239e6d12db4c14a0b6b85edda299b6a624a`의
+HTTP/HTTPS 편집·경계 입력·삭제 Undo·원래 서식 복원·저장 왕복·PDF 링크 보존 범위다.
+작성자 self-review이며 GitHub approve event 또는 병합 승인은 아니다.
+이 문서의 trailing commit에서 제품·테스트는 바꾸지 않는다. 병합 전에는 새 head의
+required CI·정책 상태·mergeability를 확인하고 사용자의 명시적 병합 승인을 받는다.
 
 ## Merge 후 contributor PR comment 계획
 
