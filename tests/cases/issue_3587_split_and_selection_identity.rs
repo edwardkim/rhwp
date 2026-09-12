@@ -40,6 +40,19 @@ fn top_ids(core: &DocumentCore) -> Vec<u32> {
         .collect()
 }
 
+fn nested_table_ids(paras: &[Paragraph], ids: &mut Vec<u32>) {
+    for para in paras {
+        for ctrl in &para.controls {
+            if let Control::Table(table) = ctrl {
+                ids.push(table.common.instance_id);
+                for cell in &table.cells {
+                    nested_table_ids(&cell.paragraphs, ids);
+                }
+            }
+        }
+    }
+}
+
 #[test]
 fn split_reserves_existing_ids_instead_of_assuming_hash_uniqueness() {
     let mut core = blank();
@@ -176,6 +189,17 @@ fn check_selection_route(route: u8) {
         serde_json::to_value(table(&core, source_pi, 0)).unwrap(),
         original
     );
+    let mut expected = Vec::new();
+    nested_table_ids(&core.document().sections[0].paragraphs, &mut expected);
+    for output in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&output).unwrap();
+        let mut saved = Vec::new();
+        nested_table_ids(&reopened.document().sections[0].paragraphs, &mut saved);
+        assert_eq!(saved, expected);
+    }
 }
 
 #[test]
@@ -191,4 +215,29 @@ fn cell_selection_paste_allocates_control_identities() {
 #[test]
 fn path_selection_paste_allocates_control_identities() {
     check_selection_route(2);
+}
+
+#[test]
+fn invalid_paste_destinations_preserve_raw_document_clipboard_and_events() {
+    let mut core = blank();
+    let (pi, ci) = create(&mut core);
+    let mut core = DocumentCore::from_bytes(&core.export_hwp_native().unwrap()).unwrap();
+    core.copy_control_native(0, pi, &[], ci).unwrap();
+    let before = core.export_hwp_native().unwrap();
+    let raw = core.document().sections[0].raw_stream.clone();
+    let events = core.serialize_event_log();
+    let clipboard = core.get_clipboard_text_native();
+    for route in 0..3 {
+        let result = match route {
+            0 => core.paste_internal_native(999, 0, 0),
+            1 => core.paste_internal_in_cell_native(0, pi, ci, 999, 0, 0),
+            _ => core.paste_internal_in_cell_by_path_native(0, pi, &[(ci, 999, 0)], 0),
+        };
+        assert!(result.is_err());
+        assert_eq!(core.document().sections[0].raw_stream, raw);
+        assert_eq!(core.export_hwp_native().unwrap(), before);
+        assert_eq!(core.serialize_event_log(), events);
+        assert_eq!(core.get_clipboard_text_native(), clipboard);
+        assert!(core.has_internal_clipboard_native());
+    }
 }
