@@ -9,6 +9,14 @@ use super::super::kerning::{
 };
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
+
+/// 글자처럼 취급 표에서 줄 기준선 **위**가 차지하는 몫.
+///
+/// [#7049] 저장 `baseline_distance / line_height` 가 세 표본 모두 정확히 `0.8500` 이고,
+/// `composer::line_breaking` 도 글꼴 기준 baseline 을 `line_height * 0.85` 로 복원한다.
+/// 그래서 하단은 `기준선 + 0.15 × 높이` 가 되고, 높이가 다른 두 표의 하단 간격은
+/// 높이차의 `0.15` 배다 — 한/글 2020 정본과 1px 안에서 맞는다.
+const TAC_TABLE_BASELINE_ASCENT_RATIO: f64 = 0.85;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{
     format_number, hwpunit_to_px, px_to_hwpunit, AutoNumberCounter, NumberFormat as NumFmt,
@@ -7509,12 +7517,35 @@ impl LayoutEngine {
                                 // p5: 저장 vpos+om_top == 한글 PDF 상단, 종전 baseline
                                 // 하단정렬식은 om_top 을 소실해 3.8px 상향). #2220 의
                                 // stored_lh_covers_om 과 동일 술어의 px 판.
+                                //
+                                // [#7049] 조건을 **같음**으로 좁힌다. 종전 `>=` 는
+                                // 밴드가 줄에 **들어가기만** 하면 발동해, 한 줄에 높이가
+                                // 다른 TAC 표가 둘 있으면 **둘 다** 이 분기로 빠져
+                                // 상단이 붙었다(결재 서식: 문서번호 상자와 결재란 상자).
+                                // 주석이 규정하는 "표 전용 줄" 은 `lh == h + om` 이다.
                                 let stored_lh_covers_om = (om_top > 0.0 || om_bottom > 0.0)
-                                    && raw_lh >= table_h + om_top + om_bottom - 0.2;
+                                    && (raw_lh - (table_h + om_top + om_bottom)).abs() <= 0.2;
                                 let table_y = if stored_lh_covers_om {
                                     y + om_top
                                 } else {
-                                    (y + baseline + om_bottom - table_h).max(y)
+                                    // [#7049] 글자처럼 취급 표는 줄의 **기준선에 앉는다** —
+                                    // 하단이 `기준선 + 0.15 × 높이` 다. 종전에는
+                                    // `기준선 + om_bottom` 이라, 여백이 같은 두 표의
+                                    // 하단 간격이 0 이 됐다(한/글은 높이차의 0.15배).
+                                    //
+                                    // 한/글 2020 정본 실측(36384689 1쪽) — 같은 `C` 로
+                                    // 두 표가 풀린다:
+                                    //
+                                    //   큰 표   270.26 = C + 0.15 × 168.7  → C = 244.96
+                                    //   짧은 표 260.83 = C + 0.15 × 105.9  → C = 244.93
+                                    //
+                                    // 0.15 는 새 상수가 아니다 — 이 레포는 저장
+                                    // `baseline_distance / line_height` 가 정확히 0.85 임을
+                                    // 이미 쓴다(`composer/line_breaking.rs` 의
+                                    // `line_height * 0.85`). 그림·도형 분기도 같은 기준선
+                                    // 정렬을 하는데 표만 예외였다.
+                                    (y + baseline - table_h * TAC_TABLE_BASELINE_ASCENT_RATIO)
+                                        .max(y)
                                 };
                                 // [Task #2212] 셀 안 인라인 TAC 표는 외곽 셀 경로를
                                 // 확장한 2단 cell_context 로 렌더해야 경로 기반 조회
