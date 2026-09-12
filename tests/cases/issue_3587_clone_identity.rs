@@ -121,10 +121,10 @@ fn allocation_is_deterministic_and_invalid_destination_does_not_mutate_document(
         create(&mut second, inline);
     }
     assert_eq!(ids(&first), ids(&second));
-    let before = serde_json::to_value(first.document()).unwrap();
+    let before = first.export_hwp_native().unwrap();
     assert!(first.create_table_native(usize::MAX, 0, 0, 2, 2).is_err());
     assert!(first
         .create_table_ex_native(0, usize::MAX, 0, 2, 2, true, None, None)
         .is_err());
-    assert_eq!(serde_json::to_value(first.document()).unwrap(), before);
+    assert_eq!(first.export_hwp_native().unwrap(), before);
 }
