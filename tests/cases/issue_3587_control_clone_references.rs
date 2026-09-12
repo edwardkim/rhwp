@@ -112,6 +112,18 @@ fn repository_table_and_textbox_copies_have_independent_owned_identities() {
                 core.export_hwpx_native().unwrap(),
             ] {
                 let reopened = DocumentCore::from_bytes(&output).unwrap();
+                let saved_original = ids(control(&reopened, pi, ci));
+                let saved_first = ids(control(&reopened, first, 0));
+                let saved_second = ids(control(&reopened, second, 0));
+                // Some format-specific identity slots are absent/zero after
+                // conversion; every identity actually retained must stay local.
+                assert!(
+                    saved_first
+                        .iter()
+                        .filter(|id| **id != 0)
+                        .all(|id| !saved_original.contains(id) && !saved_second.contains(id)),
+                    "{path}"
+                );
                 let top_id = |core: &DocumentCore, pi| match control(core, pi, 0) {
                     Control::Table(t) => t.common.instance_id,
                     Control::Shape(s) => s.common().instance_id,
