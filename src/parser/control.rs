@@ -137,6 +137,7 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         raw_parameters_xml: None,
         parameters: Default::default(),
         guide_residue: None,
+        hyperlink_format: None,
     })
 }
 

@@ -57,8 +57,8 @@ export function selectedHyperlink(links: HyperlinkInfo[], start: number, end: nu
 
 /** 링크 색/밑줄만 변경해 굵기·글꼴 등 기존 서식을 유지한다. snapshot 안에서 호출한다. */
 export function applyHyperlinkFormat(wasm: import('./wasm-bridge').WasmBridge, target: HyperlinkTarget,
-  start: number, end: number, color: string | null): void {
-  const props = JSON.stringify({ textColor: color ?? '#000000', underlineType: color ? 'Bottom' : 'None', underlineColor: color ?? '#000000' });
+  start: number, end: number, color: string): void {
+  const props = JSON.stringify({ textColor: color, underlineType: 'Bottom', underlineColor: color });
   if (target.cellPath.length) {
     const path = JSON.stringify(target.cellPath.map(([controlIndex, cellIndex, cellParaIndex]) => ({ controlIndex, cellIndex, cellParaIndex })));
     wasm.applyCharFormatInCellByPath(target.section, target.para, path, start, end, props);

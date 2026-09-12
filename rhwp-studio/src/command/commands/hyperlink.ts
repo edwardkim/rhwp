@@ -45,8 +45,7 @@ export const hyperlinkCommand: CommandDef = {
           operation: wasm => {
             if (edit.kind === 'remove') {
               if (!existing) return null;
-              wasm.removeHyperlink(target, existing.fieldId);
-              applyHyperlinkFormat(wasm, target, existing.start, existing.end, null);
+              wasm.removeHyperlink(target, existing.fieldId, true);
             } else if (existing) {
               wasm.updateHyperlink(target, existing.fieldId, edit.uri);
               if (edit.text !== text) wasm.replaceHyperlinkText(target, existing.fieldId, edit.text);

@@ -38,6 +38,8 @@ struct TextOptions {
 struct RemoveOptions {
     target: HyperlinkTarget,
     field_id: u32,
+    #[serde(default)]
+    restore_formatting: bool,
 }
 
 #[wasm_bindgen]
@@ -82,7 +84,7 @@ impl HwpDocument {
     pub fn remove_hyperlink_ex(&mut self, options_json: &str) -> Result<(), JsValue> {
         let o: RemoveOptions = parse(options_json)?;
         self.core
-            .remove_hyperlink_native(&o.target, o.field_id)
+            .remove_hyperlink_with_format_native(&o.target, o.field_id, o.restore_formatting)
             .map_err(Into::into)
     }
 }

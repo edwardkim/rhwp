@@ -118,6 +118,12 @@ impl DocumentCore {
                     > start
             })
             .unwrap_or(candidate.controls.len());
+        let original_format = crate::model::hyperlink_format::OriginalFormat::capture(
+            &candidate,
+            &self.document.doc_info.char_shapes,
+            start,
+            end,
+        );
         let end_raw = raw_boundary(&candidate, end);
         let start_raw = raw_boundary(&candidate, start);
         shift_axis(&mut candidate, end_raw, 8)?;
@@ -134,6 +140,7 @@ impl DocumentCore {
                 command,
                 ctrl_id: tags::FIELD_HYPERLINK,
                 field_id,
+                hyperlink_format: original_format.map(Box::new),
                 ..Default::default()
             }),
         );
@@ -221,7 +228,11 @@ impl DocumentCore {
         }
         self.validate_hyperlink_paragraph(target)?;
         let mut candidate = self.hyperlink_paragraph(target)?.clone();
-        let (range_idx, _) = find_link(&candidate, field_id)?;
+        let (range_idx, ctrl_idx) = find_link(&candidate, field_id)?;
+        let mut original_format = match &candidate.controls[ctrl_idx] {
+            Control::Field(f) => f.hyperlink_format.clone(),
+            _ => None,
+        };
         let ranges = candidate.field_ranges.clone();
         let range = &ranges[range_idx];
         let start = range.start_char_idx;
@@ -264,6 +275,12 @@ impl DocumentCore {
             }
             candidate.field_ranges[idx] = adjusted;
         }
+        if let Some(format) = &mut original_format {
+            format.repeat_first(new_len);
+        }
+        if let Control::Field(f) = &mut candidate.controls[ctrl_idx] {
+            f.hyperlink_format = original_format;
+        }
         // 새 글자는 기존 링크 첫 글자의 서식을 이어받는다.
         if let Some(mut shape) = shape {
             shape.start_pos = raw_start;
@@ -283,10 +300,29 @@ impl DocumentCore {
         target: &HyperlinkTarget,
         field_id: u32,
     ) -> Result<(), HwpError> {
+        self.remove_hyperlink_with_format_native(target, field_id, false)
+    }
+
+    /// Studio 속성 해제: 링크로 덮은 색/밑줄만 복원한다. 정보 없는 외부 링크는 현재 서식 유지.
+    pub fn remove_hyperlink_with_format_native(
+        &mut self,
+        target: &HyperlinkTarget,
+        field_id: u32,
+        restore_format: bool,
+    ) -> Result<(), HwpError> {
         self.validate_hyperlink_paragraph(target)?;
         let mut candidate = self.hyperlink_paragraph(target)?.clone();
         let (range_idx, ctrl_idx) = find_link(&candidate, field_id)?;
-        let range = &candidate.field_ranges[range_idx];
+        let range = candidate.field_ranges[range_idx].clone();
+        let formats = match &candidate.controls[ctrl_idx] {
+            Control::Field(f) if restore_format => f
+                .hyperlink_format
+                .as_ref()
+                .filter(|f| f.valid_for(range.end_char_idx - range.start_char_idx))
+                .map(|f| f.edits(range.start_char_idx))
+                .unwrap_or_default(),
+            _ => Vec::new(),
+        };
         let end_raw = raw_boundary(&candidate, range.end_char_idx);
         let start_raw = if range.start_char_idx == range.end_char_idx {
             end_raw
@@ -310,6 +346,17 @@ impl DocumentCore {
                 range.control_idx -= 1;
             }
         }
+        for (start, end, mods) in formats {
+            let ids = self
+                .document
+                .modified_char_shape_ids(candidate.char_shape_ids_in_range(start, end), &mods);
+            candidate.try_map_char_shape_range(start, end, |id| {
+                ids.get(&id)
+                    .copied()
+                    .ok_or_else(|| invalid("원래 링크 글자 모양을 복원할 수 없습니다"))
+            })?;
+        }
+        self.rebuild_resolved_styles();
         self.commit_hyperlink_paragraph(target, candidate, field_id)?;
         Ok(())
     }

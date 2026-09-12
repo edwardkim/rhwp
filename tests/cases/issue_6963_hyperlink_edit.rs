@@ -655,3 +655,144 @@ fn delete_fragment_restores_link_range() {
         .collect();
     assert_eq!((raw, saved), (before.clone(), vec![before.clone(), before]));
 }
+
+// 한컴 도움말의 속성 해제 계약: 링크가 덮은 색/밑줄만 원래 값으로 돌아간다.
+fn format_at(core: &DocumentCore, index: usize) -> serde_json::Value {
+    serde_json::from_str(&core.get_char_properties_at_native(0, 0, index).unwrap()).unwrap()
+}
+fn mixed_format_link() -> (DocumentCore, u32) {
+    let mut core = blank("앞가😀나다뒤");
+    core.apply_char_format_native(
+        0,
+        0,
+        1,
+        3,
+        r##"{"textColor":"#ff0000","underlineType":"Bottom","underlineColor":"#ff0000"}"##,
+    )
+    .unwrap();
+    core.apply_char_format_native(
+        0,
+        0,
+        3,
+        5,
+        r##"{"textColor":"#008000","underlineType":"None","underlineColor":"#008000"}"##,
+    )
+    .unwrap();
+    let id = core
+        .insert_hyperlink_native(
+            &HyperlinkTarget::body(0, 0),
+            1,
+            5,
+            "https://example.com/한글#링크",
+        )
+        .unwrap();
+    core.apply_char_format_native(0,0,1,5,
+        r##"{"textColor":"#800080","underlineType":"Bottom","underlineColor":"#800080","italic":true}"##).unwrap();
+    (core, id)
+}
+fn assert_restored_mixed(core: &DocumentCore) {
+    for i in 1..5 {
+        let p = format_at(core, i);
+        assert_eq!(p["textColor"], if i < 3 { "#ff0000" } else { "#008000" });
+        assert_eq!(p["underline"], i < 3);
+        assert_eq!(
+            p["underlineColor"],
+            if i < 3 { "#ff0000" } else { "#008000" }
+        );
+        assert_eq!(
+            p["italic"], true,
+            "링크 적용 후 바꾼 기울임을 되돌리지 않는다"
+        );
+    }
+    for i in [0, 5] {
+        assert_eq!(format_at(core, i)["textColor"], "#000000");
+    }
+}
+#[test]
+fn unlink_restores_mixed_original_colors_after_hwp_hwpx_and_cross_format_roundtrips() {
+    let (core, id) = mixed_format_link();
+    let mut variants = roundtrips(&core);
+    for once in roundtrips(&core) {
+        variants.extend(roundtrips(&once));
+    }
+    variants.push(core);
+    for mut reopened in variants {
+        reopened
+            .remove_hyperlink_with_format_native(&HyperlinkTarget::body(0, 0), id, true)
+            .unwrap();
+        assert_restored_mixed(&reopened);
+        assert!(rhwp::model::hyperlink_format::encode(reopened.document()).is_none());
+        for saved in roundtrips(&reopened) {
+            assert_restored_mixed(&saved);
+        }
+    }
+}
+#[test]
+fn original_format_follows_unicode_insertion_deletion_and_label_replacement() {
+    let (mut core, id) = mixed_format_link();
+    core.insert_text_native(0, 0, 2, "X").unwrap();
+    core.delete_text_native(0, 0, 3, 1).unwrap(); // 😀 삭제: 원래 빨강 run만 축소
+    for mut reopened in roundtrips(&core) {
+        reopened
+            .remove_hyperlink_with_format_native(&HyperlinkTarget::body(0, 0), id, true)
+            .unwrap();
+        assert_restored_mixed(&reopened);
+    }
+    core.replace_hyperlink_text_native(&HyperlinkTarget::body(0, 0), id, "새😀표시")
+        .unwrap();
+    core.update_hyperlink_native(
+        &HyperlinkTarget::body(0, 0),
+        id,
+        "https://example.org/changed",
+    )
+    .unwrap();
+    for mut reopened in roundtrips(&core) {
+        reopened
+            .remove_hyperlink_with_format_native(&HyperlinkTarget::body(0, 0), id, true)
+            .unwrap();
+        for i in 1..5 {
+            assert_eq!(format_at(&reopened, i)["textColor"], "#ff0000");
+            assert_eq!(format_at(&reopened, i)["underline"], true);
+        }
+    }
+}
+#[test]
+fn missing_or_stale_original_format_does_not_guess_black_on_unlink() {
+    let (mut core, id) = mixed_format_link();
+    let payload = rhwp::model::hyperlink_format::encode(core.document()).unwrap();
+    let p = &mut core.document_mut().sections[0].paragraphs[0];
+    for c in &mut p.controls {
+        if let Control::Field(f) = c {
+            f.hyperlink_format = None;
+        }
+    }
+    core.replace_hyperlink_text_native(&HyperlinkTarget::body(0, 0), id, "다른문자")
+        .unwrap();
+    rhwp::model::hyperlink_format::decode(core.document_mut(), &payload);
+    assert!(rhwp::model::hyperlink_format::encode(core.document()).is_none());
+    for mut reopened in roundtrips(&core) {
+        reopened
+            .remove_hyperlink_with_format_native(&HyperlinkTarget::body(0, 0), id, true)
+            .unwrap();
+        assert_eq!(format_at(&reopened, 1)["textColor"], "#800080");
+        assert_eq!(format_at(&reopened, 1)["underline"], true);
+    }
+}
+#[test]
+fn original_format_survives_prefix_insertion_and_split_before_link() {
+    let (mut core, id) = mixed_format_link();
+    core.insert_text_native(0, 0, 1, "X").unwrap(); // 링크 시작 바깥
+    core.split_paragraph_native(0, 0, 1, None).unwrap(); // 링크 전체가 다음 문단으로 이동
+    for mut reopened in roundtrips(&core) {
+        let target = HyperlinkTarget::body(0, 1);
+        let link = reopened.hyperlinks_native(&target).unwrap().remove(0);
+        assert_eq!((link.start, link.end), (1, 5));
+        reopened
+            .remove_hyperlink_with_format_native(&target, id, true)
+            .unwrap();
+        let p: serde_json::Value =
+            serde_json::from_str(&reopened.get_char_properties_at_native(0, 1, 1).unwrap())
+                .unwrap();
+        assert_eq!(p["textColor"], "#ff0000");
+    }
+}

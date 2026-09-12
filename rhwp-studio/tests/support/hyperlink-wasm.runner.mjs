@@ -402,6 +402,58 @@ for (const [document, edit, address] of [[lh, nested, target], [boxDoc, box, box
 }
 results.push('한컴 중첩 셀·글상자 전체 링크 Delete/Backspace 및 undo/redo·저장 왕복');
 
+// 원래 서식은 snapshot/history 뿐 아니라 두 저장 형식에서도 살아 있어야 한다.
+const formatDoc = HwpDocument.createEmpty();
+formatDoc.createBlankDocument(); formatDoc.insertText(0, 0, 0, '가😀나다');
+const formatSession = session(formatDoc, position);
+formatSession.wasm.applyCharFormat(0, 0, 0, 2, JSON.stringify({ textColor: '#ff0000', underlineType: 'Bottom', underlineColor: '#ff0000' }));
+formatSession.wasm.applyCharFormat(0, 0, 2, 4, JSON.stringify({ textColor: '#008000', underlineType: 'None', underlineColor: '#008000' }));
+formatSession.select(0, 4); formatSession.open().apply({ kind: 'save', text: '가😀나다', uri });
+// 방문색과 링크 적용 뒤의 굵기 변경: 링크가 덮은 세 속성만 복원한다.
+formatSession.wasm.applyCharFormat(0, 0, 0, 4, JSON.stringify({ textColor: '#800080', underlineColor: '#800080', bold: true }));
+const formatDelete = new CommandHistory();
+formatDelete.execute(new DeleteTextCommand({ ...position, charOffset: 1 }, 1), formatSession.wasm);
+formatDelete.undo(formatSession.wasm);
+for (const method of ['exportHwp', 'exportHwpx']) {
+  const saved = new HwpDocument(formatDoc[method]());
+  const edit = session(saved, position);
+  edit.cursor(1); edit.open().apply({ kind: 'remove' });
+  const checkFormat = () => {
+    assert.equal(context(edit).links.length, 0);
+    for (let i = 0; i < 4; i++) {
+      const props = edit.wasm.getCharPropertiesAt(0, 0, i);
+      assert.equal(props.textColor.toLowerCase(), i < 2 ? '#ff0000' : '#008000', method);
+      assert.equal(props.underline, i < 2, method);
+      assert.equal(props.underlineColor.toLowerCase(), i < 2 ? '#ff0000' : '#008000', method);
+      assert.equal(props.bold, true);
+    }
+  };
+  checkFormat(); edit.undo();
+  assert.equal(edit.wasm.getCharPropertiesAt(0, 0, 0).textColor.toLowerCase(), '#800080');
+  edit.redo(); checkFormat();
+  saved.free();
+}
+results.push('혼합 원래 색·밑줄 복원: 방문 후·HWP/HWPX 재열기·undo/redo·나중에 바꾼 굵기 유지');
+
+// 실제 중첩 셀/글상자에서도 원래 서식 정보를 텍스트와 함께 저장한다.
+for (const [document, edit, address, cursor] of [[lh, nested, target, nestedPos], [boxDoc, box, boxTarget, boxPos]]) {
+  const link = context(edit, address).links[0];
+  const path = JSON.stringify(address.cellPath.map(([controlIndex, cellIndex, cellParaIndex]) => ({ controlIndex, cellIndex, cellParaIndex })));
+  edit.wasm.removeHyperlink(address, link.fieldId); // 현재 글자 서식 유지하는 기존 코어 계약
+  edit.wasm.applyCharFormatInCellByPath(address.section, address.para, path, link.start, link.end,
+    JSON.stringify({ textColor: '#ff0000', underlineType: 'Bottom', underlineColor: '#ff0000' }));
+  edit.select(link.start, link.end); edit.open().apply({ kind: 'save', text: link.text, uri });
+  for (const method of ['exportHwp', 'exportHwpx']) {
+    const saved = new HwpDocument(document[method]()); const reopened = session(saved, cursor);
+    reopened.cursor(link.start); reopened.open().apply({ kind: 'remove' });
+    const props = reopened.wasm.getCellCharPropertiesAtByPath(address.section, address.para, path, link.start);
+    assert.equal(props.textColor.toLowerCase(), '#ff0000', method);
+    assert.equal(props.underline, true, method);
+    saved.free();
+  }
+}
+results.push('중첩 셀·글상자 원래 빨간색/밑줄: 링크 저장 후 재열기·해제');
+
 const out = process.env.RHWP_HYPERLINK_EVIDENCE_DIR;
 if (out) {
   mkdirSync(out, { recursive: true });

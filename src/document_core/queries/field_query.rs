@@ -1657,6 +1657,7 @@ fn collect_fields_from_paragraph(
                                 raw_parameters_xml: None,
                                 parameters: Default::default(),
                                 guide_residue: None,
+                                hyperlink_format: None,
                             },
                             location: loc,
                             value,
@@ -2481,6 +2482,7 @@ fn insert_click_here_field_in_para(
         raw_parameters_xml: None,
         parameters: Default::default(),
         guide_residue: None,
+        hyperlink_format: None,
     };
 
     para.controls.insert(insert_idx, Control::Field(field));
@@ -2694,6 +2696,7 @@ mod tests {
             raw_parameters_xml: None,
             parameters: Default::default(),
             guide_residue: None,
+            hyperlink_format: None,
         })
     }
 

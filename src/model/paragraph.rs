@@ -1040,6 +1040,7 @@ impl Paragraph {
             }
         }
 
+        super::hyperlink_format::text_edit(self, char_offset, char_offset, new_chars.len());
         // 5-1. field_ranges: 삽입 지점 이후의 char 인덱스 시프트
         let inserted_len = new_chars.len();
         for fr in &mut self.field_ranges {
@@ -1182,6 +1183,7 @@ impl Paragraph {
             }
         }
 
+        super::hyperlink_format::text_edit(self, char_offset, del_end, 0);
         // 5-1. field_ranges: 삭제 범위에 따라 축소/조정
         for fr in &mut self.field_ranges {
             if fr.start_char_idx >= del_end {
@@ -1403,6 +1405,19 @@ impl Paragraph {
         }
         self.range_tags = kept_range_tags;
 
+        for fr in &self.field_ranges {
+            if fr.start_char_idx < split_pos && split_pos < fr.end_char_idx {
+                if let Some(Control::Field(f)) = self.controls.get_mut(fr.control_idx) {
+                    if let Some(format) = &mut f.hyperlink_format {
+                        format.replace(
+                            split_pos - fr.start_char_idx,
+                            fr.end_char_idx - fr.start_char_idx,
+                            0,
+                        );
+                    }
+                }
+            }
+        }
         // 5-1. field_ranges 분할
         let mut new_field_ranges: Vec<FieldRange> = Vec::new();
         let mut kept_field_ranges: Vec<FieldRange> = Vec::new();

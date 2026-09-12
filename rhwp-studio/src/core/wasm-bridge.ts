@@ -3479,9 +3479,9 @@ export class WasmBridge {
     return this.doc.replaceHyperlinkTextEx(JSON.stringify({ target, fieldId, text }));
   }
 
-  removeHyperlink(target: HyperlinkTarget, fieldId: number): void {
+  removeHyperlink(target: HyperlinkTarget, fieldId: number, restoreFormatting = false): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    this.doc.removeHyperlinkEx(JSON.stringify({ target, fieldId }));
+    this.doc.removeHyperlinkEx(JSON.stringify({ target, fieldId, restoreFormatting }));
   }
 
   /** 커서 위치의 필드 범위 정보를 조회한다. */

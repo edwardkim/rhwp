@@ -1,6 +1,6 @@
 /** #6963 한컴 대화상자·기존 링크 확인·우클릭·실제 포인터 열기 및 서식 회귀. */
 import { strict as assert } from 'node:assert';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runTest, createNewDocument } from './helpers.mjs';
 
@@ -143,5 +143,54 @@ await runTest('#6963 hyperlink editor UI', async ({ page }) => {
   // 삭제한 글자 또는 빈 페이지 우클릭에는 링크 명령이 없다.
   await page.mouse.click(point.x + 300, point.y + 100, { button: 'right' });
   assert.equal(await page.$('.context-menu [data-cmd="hyperlink:remove"]'), null);
+  // 색/밑줄 fixture만 엔진에서 준비하고, 링크 삽입/해제는 실제 UI로 실행한다.
+  await page.keyboard.press('Escape');
+  await createNewDocument(page);
+  await page.evaluate(async () => {
+    const w = window.__wasm;
+    w.insertText(0, 0, 0, '빨간밑줄 초록글자');
+    w.applyCharFormat(0, 0, 0, 9, JSON.stringify({ fontSize: 2400, bold: true }));
+    w.applyCharFormat(0, 0, 0, 4, JSON.stringify({ textColor: '#ff0000', underlineType: 'Bottom', underlineColor: '#ff0000' }));
+    w.applyCharFormat(0, 0, 4, 9, JSON.stringify({ textColor: '#008000', underlineType: 'None', underlineColor: '#008000' }));
+    await window.__canvasView.loadDocument();
+    const c = window.__inputHandler.cursor;
+    c.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 0 }); c.setAnchor();
+    c.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 9 });
+  });
+  await page.click('button[data-cmd="insert:hyperlink"]');
+  await page.waitForSelector('#hyperlink-uri');
+  await page.type('#hyperlink-uri', 'https://example.com/original-format');
+  await page.click('.dialog-btn-primary');
+  await page.waitForSelector('#hyperlink-uri', { hidden: true });
+  assert.equal((await props()).textColor.toLowerCase(), '#0000ff');
+  await page.screenshot({ path: resolve(output, 'unlink-before.jpg'), type: 'jpeg', quality: 90 });
+  for (const format of ['Hwp', 'Hwpx']) {
+    const bytes = await page.evaluate(format => Array.from(window.__wasm['export' + format]()), format);
+    writeFileSync(resolve(output, 'unlink-before.' + format.toLowerCase()), Buffer.from(bytes));
+  }
+  const restorePoint = await page.evaluate(() => {
+    const ih=window.__inputHandler, vs=ih.virtualScroll;
+    const r=window.__wasm.getSelectionRects(0,0,0,0,9)[0];
+    const content=document.getElementById('scroll-content'), cr=content.getBoundingClientRect();
+    const zoom=ih.viewportManager.getZoom();
+    return {x:cr.left+vs.getPageLeftResolved(r.pageIndex,content.clientWidth)+(r.x+5)*zoom,
+      y:cr.top+vs.getPageOffset(r.pageIndex)+(r.y+r.height/2)*zoom};
+  });
+  await page.mouse.click(restorePoint.x, restorePoint.y, { button: 'right' });
+  await page.waitForSelector('.context-menu [data-cmd="hyperlink:remove"]');
+  await page.click('.context-menu [data-cmd="hyperlink:remove"]');
+  const restored = await page.evaluate(() => Array.from({length:9},(_,i)=>window.__wasm.getCharPropertiesAt(0,0,i)));
+  for(let i=0;i<9;i++) {
+    assert.equal(restored[i].textColor.toLowerCase(),i<4?'#ff0000':'#008000');
+    assert.equal(restored[i].underline,i<4);
+    assert.equal(restored[i].bold,true);
+  }
+  assert.equal((await links()).length,0);
+  await page.screenshot({ path: resolve(output, 'unlink-restored.jpg'), type: 'jpeg', quality: 90 });
+  for (const format of ['Hwp', 'Hwpx']) {
+    const bytes = await page.evaluate(format => Array.from(window.__wasm['export' + format]()), format);
+    writeFileSync(resolve(output, 'unlink-restored.' + format.toLowerCase()), Buffer.from(bytes));
+  }
+  console.log('PASS: mixed original color/underline restored through real insert and context-remove UI');
   console.log('PASS: insert style, click/visited, existing confirmation/cancel, context edit/remove, undo/redo, non-link context');
 });
