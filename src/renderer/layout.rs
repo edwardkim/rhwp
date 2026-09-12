@@ -4471,12 +4471,8 @@ impl LayoutEngine {
         comp: &mut ComposedParagraph,
         page_number: u32,
     ) {
-        self.substitute_auto_number_type_in_composed(
-            para,
-            comp,
-            crate::model::control::AutoNumberType::Page,
-            page_number,
-        );
+        // [#6986] 총쪽수도 함께 넘겨 한 번에 치환한다 — 따로 부르면 서로를 지운다.
+        self.substitute_auto_numbers_in_composed(para, comp, page_number, self.total_pages.get());
     }
 
     /// `AutoNumber(TotalPage)` 컨트롤의 placeholder 문자를 문서 총 쪽수로 치환한다.
@@ -4491,33 +4487,49 @@ impl LayoutEngine {
         comp: &mut ComposedParagraph,
         total_pages: u32,
     ) {
-        self.substitute_auto_number_type_in_composed(
+        // [#6986] 현재 쪽번호도 함께 넘겨 한 번에 치환한다.
+        self.substitute_auto_numbers_in_composed(
             para,
             comp,
-            crate::model::control::AutoNumberType::TotalPage,
+            self.current_page_number.get(),
             total_pages,
         );
     }
 
-    fn substitute_auto_number_type_in_composed(
+    /// `AutoNumber(Page)` 와 `AutoNumber(TotalPage)` 를 **한 번에** 치환한다.
+    ///
+    /// [#6986] 둘을 따로 치환하면 안 된다 — 같은 런에 두 자리가 있으면 뒤 치환이
+    /// `display_text` 를 `run.text` 에서 다시 만들면서 앞 치환을 버린다.
+    pub(crate) fn substitute_auto_numbers_in_composed(
         &self,
         para: &Paragraph,
         comp: &mut ComposedParagraph,
-        an_type: crate::model::control::AutoNumberType,
-        value: u32,
+        page_number: u32,
+        total_pages: u32,
     ) {
-        if value == 0 {
+        let mut replacements: Vec<(usize, String)> = Vec::new();
+        for (an_type, value) in [
+            (crate::model::control::AutoNumberType::Page, page_number),
+            (
+                crate::model::control::AutoNumberType::TotalPage,
+                total_pages,
+            ),
+        ] {
+            if value == 0 {
+                continue;
+            }
+            let value_str = value.to_string();
+            let mut positions = self.auto_number_placeholder_positions(para, an_type);
+            positions.sort_unstable();
+            positions.dedup();
+            replacements.extend(positions.into_iter().map(|pos| (pos, value_str.clone())));
+        }
+        if replacements.is_empty() {
             return;
         }
-
-        let value_str = value.to_string();
-
-        let mut positions = self.auto_number_placeholder_positions(para, an_type);
-        positions.sort_unstable();
-        positions.dedup();
-        for pos in positions.into_iter().rev() {
-            Self::replace_composed_char_with_display(comp, pos, &value_str);
-        }
+        replacements.sort_unstable_by_key(|(pos, _)| *pos);
+        replacements.dedup_by_key(|(pos, _)| *pos);
+        Self::replace_composed_chars_with_display(comp, &replacements);
     }
 
     fn auto_number_placeholder_positions(
@@ -4530,13 +4542,25 @@ impl LayoutEngine {
         let mut positions = Vec::new();
         let mut search_from = 0usize;
 
+        // [#6986] 종류가 다른 `AutoNumber` 도 **자리를 소비한다.**
+        //
+        // 종전에는 다른 종류를 `continue` 로 건너뛰면서 `search_from` 을 전진시키지
+        // 않았다. 그래서 한 문단에 `PAGE` 와 `TOTAL_PAGE` 가 같이 있으면, 두 번째
+        // 종류의 폴백 탐색이 0 부터 시작해 **첫 번째 컨트롤의 자리**를 집었다.
+        //
+        // 법령 HWPX 의 꼬리말 표 셀이 그 형상이다 —
+        // `<hp:t>- </hp:t><PAGE/><hp:t> / </hp:t><TOTAL_PAGE/><hp:t> -</hp:t>`.
+        // 두 치환이 같은 자리를 쓰면 나중 것이 앞 것을 덮어, 한쪽은 총쪽수가 찍히고
+        // 다른 쪽은 빈칸이 된다(`- / 187 -`). v0.8.3 에서 `TOTAL_PAGE` 치환이
+        // 들어오면서 생긴 회귀다(`e69a2d286`).
+        //
+        // 그래서 **모든** `AutoNumber` 를 순서대로 돌며 자리를 하나씩 소비하고,
+        // 그중 요청한 종류의 것만 돌려준다.
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
-            if !matches!(
-                ctrl,
-                Control::AutoNumber(an) if an.number_type == an_type
-            ) {
+            let Control::AutoNumber(an) = ctrl else {
                 continue;
-            }
+            };
+            let wanted = an.number_type == an_type;
 
             let direct_pos = ctrl_positions.get(ctrl_idx).copied().filter(|&pos| {
                 Self::is_auto_number_placeholder_at(para, &text_chars, pos)
@@ -4550,7 +4574,9 @@ impl LayoutEngine {
             });
 
             if let Some(pos) = pos {
-                positions.push(pos);
+                if wanted {
+                    positions.push(pos);
+                }
                 search_from = pos.saturating_add(1);
             }
         }
@@ -4624,37 +4650,60 @@ impl LayoutEngine {
     /// 소수 glyph advance와 다음 공백의 앵커가 어긋난다. 따라서 raw `text` 전체는
     /// 그대로 두고, 그 동일 모델 run의 `display_text`만 재구성한다. 모델 길이는
     /// 보존되며 SVG는 연속 표시 문자열의 문자별 정확한 advance를 사용한다.
-    fn replace_composed_char_with_display(
+    /// 모델 문자 위치 → 치환 문자열 목록을 **런 단위로 한 번에** 적용한다.
+    ///
+    /// [#6986] 종전에는 위치 하나마다 `display_text` 를 `run.text` 에서 **새로
+    /// 만들었다.** 그래서 같은 런에 치환 자리가 둘이면 뒤 치환이 앞 치환을 통째로
+    /// 버렸다 — 법령 HWPX 꼬리말의
+    /// `<hp:t>- </hp:t><PAGE/><hp:t> / </hp:t><TOTAL_PAGE/><hp:t> -</hp:t>` 에서
+    /// `PAGE` 치환이 사라져 `- / 187 -` 로 렌더된다(v0.8.3 회귀).
+    ///
+    /// 위치를 모아 한 번에 재구성하면 서로를 지우지 않는다.
+    fn replace_composed_chars_with_display(
         comp: &mut ComposedParagraph,
-        abs_pos: usize,
-        replacement: &str,
+        replacements: &[(usize, String)],
     ) -> bool {
+        if replacements.is_empty() {
+            return false;
+        }
+        let mut applied = false;
         for line in &mut comp.lines {
             let mut run_start = line.char_start;
             for run_idx in 0..line.runs.len() {
-                let run = &line.runs[run_idx];
-                let run_len = run.text.chars().count();
+                let run_len = line.runs[run_idx].text.chars().count();
                 let run_end = run_start + run_len;
-                if abs_pos >= run_start && abs_pos < run_end {
-                    let rel_pos = abs_pos - run_start;
-                    let mut chars = run.text.chars();
-                    let before: String = chars.by_ref().take(rel_pos).collect();
-                    let Some(_) = chars.next() else {
-                        return false;
-                    };
-                    let after: String = chars.collect();
-                    let mut display = crate::renderer::composer::expand_pua_display_text(&before);
-                    display.push_str(replacement);
-                    display.push_str(&crate::renderer::composer::expand_pua_display_text(&after));
-                    // `line.runs[run_idx].text`는 marker를 포함한 원 모델 문자열이다.
-                    // 바꾸지 않아야 char_start/offset이 표시 자릿수에 끌려가지 않는다.
+
+                let mut in_run: Vec<(usize, &str)> = replacements
+                    .iter()
+                    .filter(|(pos, _)| *pos >= run_start && *pos < run_end)
+                    .map(|(pos, rep)| (pos - run_start, rep.as_str()))
+                    .collect();
+                if !in_run.is_empty() {
+                    in_run.sort_unstable_by_key(|(rel, _)| *rel);
+                    let chars: Vec<char> = line.runs[run_idx].text.chars().collect();
+                    let mut display = String::new();
+                    let mut cursor = 0usize;
+                    for (rel, rep) in in_run {
+                        if rel >= chars.len() {
+                            continue;
+                        }
+                        let plain: String = chars[cursor..rel].iter().collect();
+                        display
+                            .push_str(&crate::renderer::composer::expand_pua_display_text(&plain));
+                        display.push_str(rep);
+                        cursor = rel + 1;
+                    }
+                    let tail: String = chars[cursor.min(chars.len())..].iter().collect();
+                    display.push_str(&crate::renderer::composer::expand_pua_display_text(&tail));
+                    // `line.runs[run_idx].text` 는 marker 를 포함한 원 모델 문자열이다.
+                    // 바꾸지 않아야 char_start/offset 이 표시 자릿수에 끌려가지 않는다.
                     line.runs[run_idx].display_text = Some(display);
-                    return true;
+                    applied = true;
                 }
                 run_start = run_end;
             }
         }
-        false
+        applied
     }
 
     /// 페이지 배경 노드를 생성하여 tree에 추가한다.
