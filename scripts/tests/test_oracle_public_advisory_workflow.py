@@ -125,11 +125,9 @@ class OraclePublicAdvisoryWorkflowTests(unittest.TestCase):
         active_triggers = self.workflow.split("permissions:\n", maxsplit=1)[0]
         self.assertIn(
             "on:\n"
-            "  # workflow_dispatch identity가 아직 기본 브랜치에 등록되지 않은 후보도\n"
-            "  # workflow 파일 자체를 바꾼 신뢰 push에서 한 번 실실행한다.\n"
+            "  # 후보 브랜치의 명시적 workflow 변경만 검증한다. devel 병합 뒤에는 실행하지 않는다 (#7070).\n"
             "  push:\n"
             "    branches:\n"
-            "      - devel\n"
             "      - 'task_m100_*'\n"
             "    paths:\n"
             "      - '.github/workflows/oracle-public-advisory.yml'\n"

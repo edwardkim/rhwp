@@ -486,7 +486,7 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   const workflows = path.join(__dirname, '..', '..', '.github', 'workflows');
   function triggerItems(filename, start, end) {
     const workflow = fs.readFileSync(path.join(workflows, filename), 'utf8');
-    const block = workflow.split(start, 2)[1].split(end, 1)[0];
+    const block = (workflow.split(start, 2)[1] || '').split(end, 1)[0];
     return Array.from(
       block.matchAll(/^      - ['"]?([^'"\n]+)['"]?$/gm),
       (match) => match[1],
@@ -568,7 +568,6 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
     ...CI_FRONTEND_JOBS,
     'Build & Test',
     'resolve-nextest-duration-policy',
-    'refresh-nextest-target-duration-data',
   ]);
   assert.deepEqual(
     [...new Set(Object.values(CI_AUDITED_JOB_IDS))].sort(),

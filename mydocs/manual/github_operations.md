@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-09-05
+last_verified: 2026-09-13
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -12,6 +12,33 @@ last_verified: 2026-09-05
 > 검토·통합은 [PR 리뷰·통합 워크플로우](pr_review_workflow.md), 실제 패키지 배포는
 > [배포 가이드](publish_guide.md)를 함께 따른다. 이 문서는 그 절차를 복제하지 않고 운영 변경의
 > 분류, 비례 검증, 적용 후 관찰과 복구를 담당한다.
+
+## 병합 후 자동 실행 정책 (#7070)
+
+검증 CI는 PR에서 완료한다. main/devel branch push는 CI·CodeQL·Adapter inter-diff·Proptest
+roundtrip을 시작하지 않으며, Oracle advisory도 devel push를 구독하지 않는다. 재사용 증거가
+없다는 이유로 병합 후 Full CI를 실행하거나 수동으로 재실행하지 않는다.
+
+`devel` push에서는 `Refresh nextest target duration data`가 실행 시간 메타데이터만 갱신한다.
+성공 PR CI의 정확한 head 또는 완전한 linear review-only 후행 변경을 확인한 후보에서 B/C/D
+실측을 읽는다. artifact의 run/repository/head/PR/tested merge와 worker별 실제 attempt를
+검증하므로 lint만 재실행한 attempt 2에서도 성공 worker attempt 1의 실측을 사용할 수 있다.
+증거 누락·만료·불일치는 갱신 보류이며 검증 CI fallback이 아니다. 기록은
+`ci-metrics/nextest-target-durations`에만 쓰고, 쓰기 전 최신 devel SHA를 확인한다.
+
+GitHub `latest` Jobs API는 부분 재실행에서 실행하지 않은 worker도 새 ID/attempt로 복사할 수 있다.
+#7068 실측에서는 B/C/D 실행 시각이 동일한 채 attempt 2로 표시되고 artifact는 attempt 1에 남았다.
+수집기는 attempt별 Jobs API의 원본과 name/run/head/status/시작·완료 시각을 모두 대조한 경우에만
+원본 attempt로 복원한다. 다른 실행 시각의 과거 성공 job으로 대체하지 않는다.
+
+
+issue close 자동화는 업무 메타데이터 처리로 유지한다. release tag 빌드, main Pages 배포,
+독립적인 정기 보안 분석, 명시적인 workflow_dispatch는 병합 후 검증 CI와 별도 목적이다.
+이 예외를 devel 병합의 중복 검증 경로로 사용하지 않는다.
+
+push trigger 제거와 새 duration workflow는 해당 변경의 devel 병합부터 적용된다. 반면
+CI Impact Policy Controller의 `pull_request_target`/`workflow_run` 배선 변경은 기본 branch
+main에 정상 release된 뒤 활성화된다. policy 모듈은 live base에서 로드하므로 이를 구분해 보고한다.
 
 ## 1. 목적과 범위
 
@@ -247,7 +274,7 @@ fast-pass로 숨기지 않고 CI 영향 분류가 fail-closed 해야 한다. 기
 현재 반복적으로 대형 참조 자료가 들어오는 경로는 `samples/**`, `pdf/**`다.
 운영 정책은 다음처럼 분리한다.
 
-- protected branch의 reference-only push는 제품 소스 CI와 CodeQL을 다시 실행하지 않는 것을 기본으로 한다.
+- protected branch push는 변경 경로와 무관하게 검증 CI와 CodeQL을 다시 실행하지 않는다.
 - PR에서는 새 참조 자산만 있는 변경을 review-only fast-pass로 판정할 수 있다.
 - 기존 sample·PDF의 수정·삭제·rename은 데이터 회귀 의미가 있을 수 있으므로 PR에서 자동 fast-pass로
   확장하지 않는다.

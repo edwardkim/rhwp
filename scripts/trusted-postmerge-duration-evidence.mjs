@@ -83,12 +83,16 @@ with zipfile.ZipFile(io.BytesIO(sys.stdin.buffer.read(limit+1))) as archive:
   }).toString("utf8"));
 }
 
-export function validateDurationReports(reports, { run, pr, repositoryId, testedMergeSha, legacy = false }) {
+export function validateDurationReports(reports, { run, pr, repositoryId, testedMergeSha, legacy = false, measurementAttempts = null }) {
   if (!Array.isArray(reports) || reports.length !== 3 || !SHA.test(testedMergeSha || "")
     || !SHA.test(run?.head_sha || "") || !ID.test(String(run?.id || ""))
     || !Number.isSafeInteger(pr?.number) || pr.number <= 0
     || !Number.isSafeInteger(run.run_attempt) || run.run_attempt <= 0
     || (legacy && (pr.head?.repo?.id !== repositoryId || run.run_attempt !== 1))) fail("invalid report context");
+  if (measurementAttempts !== null && (legacy || !record(measurementAttempts)
+    || Object.keys(measurementAttempts).sort().join(",") !== "b,c,d"
+    || LABELS.some(label => !Number.isSafeInteger(measurementAttempts[label])
+      || measurementAttempts[label] < 1 || measurementAttempts[label] > run.run_attempt))) fail("invalid measurement attempt map");
   const labels = new Set();
   const keys = { targets: new Set(), cases: new Set(), test_cases: new Set() };
   const schemas = new Set();
@@ -99,7 +103,10 @@ export function validateDurationReports(reports, { run, pr, repositoryId, tested
     schemas.add(report.schema_version);
     if (report.run_id !== String(run.id) || report.ref !== `refs/pull/${pr.number}/merge`
       || report.sha !== testedMergeSha) fail("report run/ref/tested merge SHA mismatch");
-    if (!legacy && (report.run_attempt !== String(run.run_attempt)
+    const expectedAttempt = measurementAttempts?.[report.archive_label] ?? run.run_attempt;
+    if (measurementAttempts && (legacy || !Number.isSafeInteger(expectedAttempt)
+      || expectedAttempt < 1 || expectedAttempt > run.run_attempt)) fail("invalid measurement attempt");
+    if (!legacy && (report.run_attempt !== String(expectedAttempt)
       || report.repository_id !== String(repositoryId) || report.repository !== run.repository.full_name
       || report.pull_number !== String(pr.number) || report.head_repository_id !== String(pr.head.repo.id)
       || report.head_sha !== run.head_sha || report.head_ref !== pr.head.ref)) fail("report PR/repository/attempt/head mismatch");

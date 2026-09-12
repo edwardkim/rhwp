@@ -332,9 +332,11 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn('[profile.ci-duration-observation.junit]\npath = "junit.xml"', nextest)
         self.assertNotIn('path = "target/nextest/ci-duration-observation/junit.xml"', nextest)
         self.assertIn("resolve-nextest-duration-policy:", self.ci)
-        self.assertIn("refresh-nextest-target-duration-data:", self.ci)
-        self.assertIn("ci-metrics/nextest-target-durations", self.ci)
-        self.assertIn("github.ref == 'refs/heads/devel'", self.ci)
+        refresh = (REPO_ROOT / ".github/workflows/refresh-nextest-duration.yml").read_text()
+        self.assertNotIn("refresh-nextest-target-duration-data:", self.ci)
+        self.assertIn("refresh-nextest-target-duration-data:", refresh)
+        self.assertIn("ci-metrics/nextest-target-durations", refresh)
+        self.assertIn("github.ref == 'refs/heads/devel'", refresh)
         self.assertIn("duration_policy_sha:", self.builder)
         self.assertIn(
             "duration_policy_ref='ci-metrics/nextest-target-durations'",

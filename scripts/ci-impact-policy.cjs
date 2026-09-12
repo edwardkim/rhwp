@@ -16,24 +16,7 @@ const BOOLEAN_VALUES = new Set(['true', 'false']);
 const CLASSIFICATION_STATUSES = new Set(['classified', 'full']);
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 
-const CI_PUSH_PATHS_IGNORE = [
-  'mydocs/**',
-  'samples/**',
-  'pdf/**',
-  'assets/chrome/**',
-  'assets/edge/**',
-  'assets/logo/**',
-  'assets/screenshots/**',
-  '*.md',
-  'LICENSE',
-  '.github/ISSUE_TEMPLATE/**',
-  '.github/FUNDING.yml',
-  '.github/CODE_OF_CONDUCT.md',
-  '.github/SECURITY.md',
-  '.github/pull_request_template.md',
-  '.github/dependabot.yml',
-  'rhwp-logo.*',
-];
+const CI_PUSH_PATHS_IGNORE = []; // CI push is release-tag-only; no branch push checks.
 
 const CI_PULL_REQUEST_PATHS_IGNORE = [
   'assets/chrome/**',
@@ -51,21 +34,7 @@ const CI_PULL_REQUEST_PATHS_IGNORE = [
   'rhwp-logo.*',
 ];
 
-const CODEQL_PUSH_PATHS_IGNORE = [
-  'mydocs/**',
-  'samples/**',
-  'pdf/**',
-  'assets/**',
-  '*.md',
-  'LICENSE',
-  '.github/ISSUE_TEMPLATE/**',
-  '.github/FUNDING.yml',
-  '.github/CODE_OF_CONDUCT.md',
-  '.github/SECURITY.md',
-  '.github/pull_request_template.md',
-  '.github/dependabot.yml',
-  'rhwp-logo.*',
-];
+const CODEQL_PUSH_PATHS_IGNORE = []; // CodeQL has no push trigger.
 
 const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
   'assets/**',
@@ -190,7 +159,6 @@ const CI_AUDITED_JOB_IDS = {
   'build-test-archive-c': 'build-test-archive-c',
   'build-test-archive-d': 'build-test-archive-d',
   'resolve-nextest-duration-policy': 'resolve-nextest-duration-policy',
-  'refresh-nextest-target-duration-data': 'refresh-nextest-target-duration-data',
   'test-archive-a-shard-1': 'test-archive-a-shard-1',
   'test-archive-b-shard-1': 'test-archive-b-shard-1',
   'test-archive-c-shard-1': 'test-archive-c-shard-1',
@@ -294,6 +262,7 @@ function changesEnforcementSurface(files) {
     || filename === 'scripts/ci-impact-classifier.cjs'
     || filename === 'scripts/ci-impact-policy.cjs'
     || filename === 'scripts/ci-workflow-evidence.cjs'
+    || filename === 'scripts/collect-postmerge-duration-data.mjs'
     || filename === 'scripts/verify_review_only_merge_resolution.py'
   ));
 }
@@ -1153,6 +1122,7 @@ module.exports = {
   determinePolicy,
   expectedWorkflowMap,
   fullClassification,
+  isAllowedReviewFile,
   parseStatusDescription,
   runCli,
   selectReviewOnlyCandidate,
