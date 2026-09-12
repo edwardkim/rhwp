@@ -6,6 +6,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { selectDurationArtifacts, decodeDurationArtifact, validateDurationReports } from "../trusted-postmerge-duration-evidence.mjs";
 import { refreshDurationPolicy } from "../refresh-nextest-target-duration-policy.mjs";
+import { collectDurationMeasurement } from "../collect-nextest-target-durations.mjs";
 import { durationFixture, reportZip, zipEntries } from "./helpers/postmerge-duration-fixtures.mjs";
 
 for (const options of [{ fork: true }, { fork: false }, { fork: false, legacy: true }]) {
@@ -20,6 +21,51 @@ for (const options of [{ fork: true }, { fork: false }, { fork: false, legacy: t
     assert.ok(normalized.every(r => r.run_id === "123" && r.sha === f.context.testedMergeSha));
   });
 }
+
+test("#6901 한글 Rust 이름은 JUnit부터 ZIP 소비와 policy 갱신까지 보존한다", () => {
+  const f = durationFixture();
+  const names = [
+    "issue_676_t재정통계_2010_11_single_page",
+    "정산_방어_계약",
+    "감사_보고_기계_대사_계약",
+  ];
+  f.reports.forEach((report, index) => {
+    const label = report.archive_label;
+    Object.assign(report, collectDurationMeasurement(
+      `<testcase name="case_${label}::${names[index]}" classname="rhwp::regression_suite_${label}" time="1.25" />`,
+    ));
+  });
+  const reports = f.reports.map(report => decodeDurationArtifact(reportZip(report), report.archive_label));
+  const normalized = validateDurationReports(reports, f.context);
+  assert.deepEqual(normalized.map(r => r.test_cases), f.reports.map(r => r.test_cases));
+  const policy = JSON.parse(readFileSync(new URL("../../tests/suites/nextest-target-duration-policy.json", import.meta.url), "utf8"));
+  const updated = refreshDurationPolicy(policy, normalized);
+  for (const report of normalized) {
+    for (const [name, seconds] of Object.entries(report.test_cases)) {
+      assert.equal(updated.test_cases[name], seconds);
+    }
+  }
+});
+
+for (const name of ["한글/경로", "한글\\경로", "한글 공백", "한글\n", "한글\u0000", "한글\u202e", "한글\u200d", "한글\ufe0f", "한글::", "한글::::검사", "1한글", "\u0301한글"]) {
+  test(`#6901 안전하지 않은 Unicode 이름은 거부한다: ${JSON.stringify(name)}`, () => {
+    const f = durationFixture();
+    f.reports[0].test_cases = { [`regression_suite_b::case_b::${name}`]: 1 };
+    assert.throws(() => validateDurationReports(f.reports, f.context));
+  });
+}
+
+test("#6901 Unicode case 소유 관계와 중복 방어를 유지한다", () => {
+  const f = durationFixture();
+  f.reports[0].cases = { 한글_모듈: 1 };
+  f.reports[0].test_cases = { "regression_suite_b::한글_모듈::검사": 1 };
+  assert.doesNotThrow(() => validateDurationReports(f.reports, f.context));
+  f.reports[1].cases.한글_모듈 = 1;
+  assert.throws(() => validateDurationReports(f.reports, f.context));
+  delete f.reports[1].cases.한글_모듈;
+  f.reports[0].test_cases = { "regression_suite_b::다른_모듈::검사": 1 };
+  assert.throws(() => validateDurationReports(f.reports, f.context));
+});
 
 for (const [name, mutate] of Object.entries({
   "archive 누락": f => f.artifacts.pop(),
