@@ -1,5 +1,88 @@
 # PR #6984 작성자 self-review
 
+> 2026-09-13 후속 리뷰: 아래 2026-09-10 결과는 당시 후보의 역사 기록이다.
+> 최신 계약·보정 이력은 [후속 구현·반영 계획](pr_6984_review_impl.md)을 따른다.
+> 링크 앞뒤 입력은 일반 텍스트이며, Delete와 Backspace는 삭제 대상이 링크일 때
+> 확인 후 표시 문자열 전체와 필드를 함께 삭제한다. 사용자가 로컬 동작을 확인하고
+> PR 반영·코멘트 게시를 승인했다. 병합 승인은 별도다.
+
+## 2026-09-13 최종 리뷰 후보
+
+- 기존 원격 head: `065bda2307db18eafa8394a360289c8558ffcc7b`.
+- 이번 코드·테스트 후보: `6c6c5c49949c2bc505807f9a8ebbfe21988d1934`.
+- 통합 base: `897c6a3d8d7559d314bf863c93bbe28c0d65e945`.
+- base route: `collaborator_self_merge.md`; modifiers: `intake_and_review.md`,
+  `local_validation.md`, `visual_fixture_evidence.md`, `multi_pr_update_branch.md`,
+  `rework_and_exceptions.md`. 모 문서·선택표와 위 자식 문서를 읽고 적용했다.
+- 원격 조회 시점에는 Draft였으며 최신 devel 통합 전 오늘할일 충돌이 있었다.
+  `a52775869`에서 해당 문서 양쪽 기록을 모두 보존했고 제품 코드의 수동 충돌 해소는 없었다.
+  PR 고유 diff의 공백 검사를 통과했다. devel에서 유입된 CRLF·EOF 공백은 변경하지 않았다.
+
+### 보정한 결함과 동작
+
+1. 링크 앞 경계 입력: 검정색 글자라도 실제 필드 범위에 포함되던 불일치를 수정했다.
+   새 글자는 BEGIN 슬롯 앞에 삽입하고 필드 시작·끝을 함께 옮긴다. 앞·뒤 경계에서는
+   일반 서식과 링크 밖 범위를 유지하며 내부에서만 링크를 확장한다.
+2. 삭제 Undo: 글자만 재삽입하면 필드 범위·서식이 원래대로 복구되지 않는 경로에 문단 조각을
+   보관·복원한다. 중첩 셀·글상자도 상위 문단의 구조와 함께 복구한다.
+3. Delete/Backspace 전체 삭제: 삭제 대상 글자가 링크이면 확인창을 열어 문자열·필드를
+   snapshot 한 번으로 삭제한다. 취소는 무변경이며 Undo 한 번으로 모두 복구한다.
+   확인창이 열린 동안 문서 세대·대상 내용·편집 가능 상태가 바뀌면 삭제를 거부한다.
+
+최초의 '시작 글자에 링크 색·밑줄을 적용' 방침은 사용자 피드백으로 철회했다.
+현재 판단 기준은 사용자 확정 계약과 제공한 한컴 삭제 확인 화면이다. 한컴의 모든 커서·선택
+조건을 직접 실측했다는 주장은 아니다. 선택 범위 삭제와 이미 남아 있는 빈 필드의 일괄 정리는
+이번 확인창 범위가 아니다. 기존 하이퍼링크 메뉴의 '지우기'는 표시 문자열을 유지한다.
+
+### 이번 후보의 완료 검증
+
+- `node scripts/rust-test-suite-manifest.mjs --prepare`, `cargo fmt --all`, fmt check,
+  native/WASM32/workspace all-target Clippy(`--locked`, `-D warnings`), workspace build,
+  manifest check, source-side unit tier 검사 모두 통과했다.
+- `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review
+  --tests --test-threads 8 --no-fail-fast`: **9,565 passed / 46 skipped / 0 failed**,
+  테스트 실행 156.985초. 하이퍼링크 편집·PDF 회귀를 포함한다.
+- 동일 review worktree의 고정 `target/pr-review`에서 Cargo 명령을 순차 실행했다.
+  12 logical CPU·24 GiB host에서 테스트 thread 8개를 사용했다.
+- 신규·변경 `samples/` 문서는 없어 신규 sample 보안 검사 입력 대상은 없다.
+- 원시 로그는 `/private/tmp/pr6984-final-gates/`에 보관하며 커밋하지 않는다.
+- Native Skia: 주 lib 3,930 passed / 13 ignored, 보조 lib 182 passed,
+  placeholder 2/2, 직접 PDF 4/4를 통과했다.
+- fresh WASM: `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh
+  --target web --out-dir pkg --no-opt` 통과. 기존 단계와 같은 host native 진단 경로이며,
+  Docker·wasm-opt 배포 빌드 성공으로 확대하지 않는다. WASM SHA-256:
+  `3f51bfd6f18a5827fe2586afec79341e1998988bd53c61fbd1af32190ff4e5b6`.
+- `node --experimental-transform-types --no-warnings tests/support/hyperlink-wasm.runner.mjs`:
+  실제 WASM·Studio command/history **19개 묶음 통과**. 경계·부분 삭제 Undo,
+  양방향 전체 삭제·취소·중첩 셀·글상자·저장 왕복·실패 원자 복구를 포함한다.
+- Studio `npm test`: **1,666 passed / 2 skipped / 0 failed**. `npm run build` 통과.
+- `VITE_URL=http://127.0.0.1:7794 node e2e/hyperlink-ui-issue6963.test.mjs --mode=headless`:
+  실제 키 입력·Delete/Backspace 확인/취소/전체 삭제/Undo, 클릭/방문 표시,
+  기존 링크 고치기·우클릭 해제까지 통과했다. 별도 headless Chrome을 사용했다.
+- 같은 Vite URL에서 `node e2e/hyperlink-pdf-issue6963.test.mjs --mode=headless`를 실행했다.
+  `CHROME_PATH`는 설치된 Chrome, `PYTHON`은 pypdf가 준비된 runtime Python을 지정했다.
+  실제 저장 명령·HWP/HWPX 재열기·PDF 출력·뷰어 링크 클릭, 5개 PDF·34쪽·81개 주석 검증이
+  통과했다. DOM 대비 주석 사각형 최대 오차는 0.380280pt다. 한컴 전체 배치 차이를 뜻하는
+  수치가 아니며 기존 비교 문서의 배치·clipping 잔여를 해결했다고 주장하지 않는다.
+- 리뷰·구현 기록·충돌 해소한 오늘할일 3개 문서의 내부 링크 검사와 `git diff --check`를 통과했다.
+
+### 최종 후보의 직접 UI 판독
+
+새 WASM을 불러온 새 문서에서 `링크`를 삽입하고 Home·X, End·Y를 입력했다.
+X·Y가 검정색·밑줄 없는 일반 텍스트임을 직접 확인했다. 끝에서 Backspace를 한 번 누르면
+일반 Y가 지워지고, 다음 Backspace에서 링크 확인창이 뜬다. 확인 후 X만 남았으며,
+⌘Z 후 링크 고치기에서 표시 문자열 `링크`와 주소 `https://example.com`을 재확인했다.
+
+![링크 앞뒤 일반 텍스트](../assets/issue6984/boundary-outside.jpg)
+
+![하이퍼링크 전체 삭제 확인](../assets/issue6984/delete-confirmation.jpg)
+
+- 위 이미지들은 이번 후보의 p1 직접 화면이다. 전수 visual sweep의 픽셀 점수·후보 수는
+  측정하지 않았고 한컴 전체 조판 일치 근거로 쓰지 않는다. 일반 글자와 링크의 서식·확인창
+  문구가 판독 가능함을 직접 확인했다.
+- `boundary-outside.jpg` SHA-256: `6ba7f2bb148647d44e9001a78c5a8be4903347995a9dd1076b1d10bd58edddea`.
+- `delete-confirmation.jpg` SHA-256: `41d52a320ec597d0eac1845a8e236ad417f411bb15a5ff005393e6d0b005e718`.
+
 - 검토일: 2026-09-10. GitHub 상태는 최초 제출 head 조회 시점의 참고값이다.
 - base route: `collaborator_self_merge.md`.
 - modifiers: `intake_and_review.md`, `local_validation.md`, `visual_fixture_evidence.md`,
@@ -58,8 +141,8 @@ Studio의 HTTP/HTTPS 텍스트 링크 삽입·수정·해제, undo/redo와 HWP/H
 6. 새 integration 원본은 `tests/cases/`에 있고 generated suite·manifest는 review worktree에서만
    준비했다. source-side unit test, sample, npm/editor API, CI workflow 변경은 없다.
 
-새 코드 보정이 필요한 추가 문제는 발견하지 못했다. 기존 [구현 계획](../../plans/task_m100_6963_impl.md)과
-6단계 기록이 구현·검증·제출 순서를 담고 있어 별도 `review_impl`은 만들지 않는다.
+최초 검토 때에는 새 코드 보정이 필요한 추가 문제를 발견하지 못했다. 이후 경계 입력·삭제 Undo와
+전체 삭제 UX를 보정했으며 [후속 구현·반영 계획](pr_6984_review_impl.md)에 기록했다.
 1,000줄 초과 PR이므로 이번 제출을 즉시 admin merge 근거로 사용하지 않는다.
 
 ## 로컬 검증과 GitHub 상태
@@ -122,10 +205,11 @@ Docker 데몬 연결이 불가해 매뉴얼이 허용한 native WASM 진단 경�
 
 ## 최종 판정
 
-**승인** — 명시한 HTTP/HTTPS 편집→저장 왕복→PDF URI·클릭 영역 보존의 로컬 검증 범위다.
-이는 GitHub approve나 작업지시자의 시각·merge 승인과 다르다. 최신 후속 head의 required checks,
-mergeable 상태와 작업지시자의 병합 판단이 남았다. 원격 push·PR 생성 승인은 받았고,
-merge·issue close·GitHub comment는 실행하지 않았다.
+**승인** — 최신 코드·테스트 후보 `6c6c5c499`의 경계 입력·양방향 삭제 확인·Undo와
+HTTP/HTTPS 편집→저장 왕복→PDF URI·클릭 영역 보존의 로컬 검증 범위다.
+작성자 self-review이며 GitHub approve event가 아니다. 사용자가 로컬 동작을 확인하고
+PR 반영·코멘트 게시·최종 리뷰 준비를 승인했다. 최신 게시 head의 required checks,
+mergeable 상태와 독립 최종 리뷰·별도 병합 승인이 남는다. 병합·issue 종료는 수행하지 않는다.
 
 ## Merge 후 contributor PR comment 계획
 
