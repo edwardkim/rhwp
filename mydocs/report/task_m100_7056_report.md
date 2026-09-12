@@ -35,5 +35,8 @@ Stage 1의 공백·내부 링크·추가 anchor 검사는 통과했다. 변경 �
 
 문서 지침·절차 개선이므로 제품 렌더링·Rust·WASM·fixture·baseline·CI workflow는 변경하지 않았다.
 Cargo·한컴 변환·실물 시각 검증·GitHub CI는 미실행이다. #7040을 재심사하거나 향후 에이전트의 실제 준수를
-검증한 결과로 보고하지 않는다. 이슈 등록과 본문 보완은 완료했고, remote push·PR 생성·merge·issue close는
-현재 수행하지 않았다. 기존 checkout의 오늘할일 변경과 branch는 보존했다.
+검증한 결과로 보고하지 않는다. 로컬 개선 완료 후 사용자의 PR 생성 지시에 따라
+[PR #7057](https://github.com/edwardkim/rhwp/pull/7057)을 `upstream` 작업 branch에서 `devel` 대상으로
+생성했다. [공통 준수 항목을 포함한 self-review](../pr/archives/pr_7057_review.md)와 오늘할일을 같은
+PR에 기록하며 최신 head CI·병합 검증 결과는 PR 본문을 따른다. merge·issue close는 수행하지 않았다.
+기존 checkout의 미커밋 오늘할일 변경과 branch는 보존했다.
