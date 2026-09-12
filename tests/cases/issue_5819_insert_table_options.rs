@@ -1,7 +1,7 @@
 //! #5819: CLI/MCP 표 생성 옵션의 실제 실행과 저장·재파싱 계약.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
@@ -78,7 +78,7 @@ fn assert_saved(doc: &HwpDocument, result: &Value, expected_widths: &[u32], repe
     assert_eq!(table.get_column_widths(), expected_widths);
     assert_eq!(table.common.width, expected_widths.iter().sum::<u32>());
     assert_eq!(table.repeat_header, repeat);
-    assert_eq!(table.page_break, TablePageBreak::CellBreak);
+    assert_eq!(table.page_break, TablePageBreak::RowBreak);
     assert_eq!(
         table.leading_header_rows(),
         if repeat { vec![0] } else { vec![] }
@@ -262,4 +262,52 @@ fn mcp_call_passes_options_and_false_values_to_the_cli() {
     let dry_call = messages.iter().find(|m| m["id"] == 3).unwrap();
     assert_eq!(dry_call["result"]["isError"], false, "{dry_call}");
     assert!(!dry.0.exists());
+}
+
+#[test]
+fn hwpx_xml_matches_hancom_tablecreate_defaults_and_explicit_widths() {
+    for repeat in [true, false] {
+        let out = OutputFile::new("hwpx");
+        let mut args = vec![
+            "--widths",
+            "3000,6000,9000",
+            "--at-field",
+            HWPX_ANCHOR,
+            "--verify",
+        ];
+        if !repeat {
+            args.extend(["--repeat-header", "false"]);
+        }
+        let output = run(HWPX, &args, &out);
+        assert_eq!(output.status.code(), Some(0), "{output:?}");
+        let mut zip = zip::ZipArchive::new(std::fs::File::open(&out.0).unwrap()).unwrap();
+        let mut xml = String::new();
+        zip.by_name("Contents/section0.xml")
+            .unwrap()
+            .read_to_string(&mut xml)
+            .unwrap();
+        let document = roxmltree::Document::parse(&xml).unwrap();
+        let tables: Vec<_> = document
+            .descendants()
+            .filter(|node| {
+                node.has_tag_name(("http://www.hancom.co.kr/hwpml/2011/paragraph", "tbl"))
+                    && node.attribute("rowCnt") == Some("2")
+                    && node.attribute("colCnt") == Some("3")
+            })
+            .collect();
+        assert_eq!(tables.len(), 1);
+        let table = tables[0];
+        // 독립된 외부 계약. 내부 enum 이름으로 기대값을 만들지 않는다.
+        assert_eq!(table.attribute("pageBreak"), Some("CELL"));
+        assert_eq!(
+            table.attribute("repeatHeader"),
+            Some(if repeat { "1" } else { "0" })
+        );
+        let widths: Vec<_> = table
+            .descendants()
+            .filter(|node| node.tag_name().name() == "cellSz")
+            .map(|node| node.attribute("width").unwrap().parse::<u32>().unwrap())
+            .collect();
+        assert_eq!(widths, [3000, 6000, 9000, 3000, 6000, 9000]);
+    }
 }

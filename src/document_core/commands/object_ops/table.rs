@@ -598,7 +598,8 @@ impl DocumentCore {
             cells,
             cell_grid: Vec::new(),
             page_break: if options.repeat_header.is_some() {
-                TablePageBreak::CellBreak
+                // HWPX CELL은 저장소 공통 IR의 RowBreak에 대응한다.
+                TablePageBreak::RowBreak
             } else {
                 TablePageBreak::None
             },
@@ -623,7 +624,7 @@ impl DocumentCore {
             raw_ctrl_seal: None,
             raw_table_record_attr: options.repeat_header.map_or(0x00000006, |repeat| {
                 // 새 표도 HWP5 저장기의 raw TABLE 레코드 우선 계약을 지킨다.
-                1 | (u32::from(repeat) << 2) // CELL + repeatHeader
+                2 | (u32::from(repeat) << 2) // HWPX CELL (HWP5 RowBreak) + repeatHeader
             }),
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
