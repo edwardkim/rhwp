@@ -252,6 +252,8 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
 
   const { charOffset } = pos;
 
+  if (tryConfirmDeleteHyperlink(this, pos, 'backward')) return;
+
   // 필드 경계 보호: 필드 시작 위치에서는 Backspace 차단
   try {
     const fi = this.wasm.getFieldInfoAt(pos);

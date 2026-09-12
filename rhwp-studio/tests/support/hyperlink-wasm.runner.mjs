@@ -68,6 +68,7 @@ function session(doc, position) {
   return {
     wasm, history,
     deleteAt(offset) { return tryConfirmDeleteHyperlink(deleteHost, { ...position, charOffset: offset }); },
+    backspaceAt(offset) { return tryConfirmDeleteHyperlink(deleteHost, { ...position, charOffset: offset }, 'backward'); },
     open() { hyperlinkCommand.execute(services); return dialogs.current; },
     select(start, end) { selection = { start: { ...position, charOffset: start }, end: { ...position, charOffset: end } }; },
     cursor(offset) { pos = { ...position, charOffset: offset }; selection = null; },
@@ -338,6 +339,29 @@ for (let cycle = 0; cycle < 3; cycle++) {
 deleting.undo();
 results.push('Delete 확인 전·취소 무변경, 중복 모달 차단, 전체 링크 삭제·3회 undo/redo·HWP/HWPX');
 
+// Backspace는 커서 바로 앞 글자로 대상을 정한다. 링크 끝에서도 전체 삭제를 확인한다.
+deleting.history.clear(deleting.wasm);
+assert.equal(deleting.backspaceAt(0), false); // 문단 시작
+assert.equal(deleting.backspaceAt(1), false); // 링크 앞: 삭제 대상은 일반 텍스트
+assert.equal(deleting.backspaceAt(4), false); // 링크 뒤 일반 텍스트
+assert.equal(deleting.backspaceAt(3), true); // 링크 끝
+assert.deepEqual(context(deleting), beforeConfirm);
+dialogs.deletion.cancel();
+assert.deepEqual(context(deleting), beforeConfirm);
+assert.equal(deleting.history.canUndo(), false);
+for (const offset of [3, 2]) { // 링크 끝과 내부
+  assert.equal(deleting.backspaceAt(offset), true);
+  dialogs.deletion.remove();
+  assert.equal(context(deleting).text, '앞뒤');
+  assert.equal(context(deleting).links.length, 0);
+  assertSavedContext(deleteDoc, context(deleting), body);
+  deleting.undo(); assert.deepEqual(context(deleting), beforeConfirm);
+  assertSavedContext(deleteDoc, context(deleting), body);
+  deleting.redo(); assert.equal(context(deleting).text, '앞뒤');
+  deleting.undo(); assert.deepEqual(context(deleting), beforeConfirm);
+}
+results.push('Backspace 링크 끝·내부 전체 삭제, 바깥 경계 제외, 취소·undo/redo·HWP/HWPX');
+
 // 필드 제거 뒤 텍스트 삭제 실패도 전체 snapshot으로 원자 복구한다.
 assert.equal(deleting.deleteAt(1), true);
 const originalDelete = deleting.wasm.deleteText;
@@ -361,20 +385,22 @@ assert.deepEqual(context(deleting), changedDuringDialog);
 results.push('전체 삭제의 부분 실패 원자 복구·모달 중 외부 편집/문서 교체/읽기 전용 전환 차단');
 
 for (const [document, edit, address] of [[lh, nested, target], [boxDoc, box, boxTarget]]) {
-  const before = context(edit, address);
-  const link = before.links[0];
-  assert.equal(edit.deleteAt(link.start), true);
-  dialogs.deletion.remove();
-  const after = context(edit, address);
-  assert.equal(after.text, Array.from(before.text).slice(0, link.start).join('') + Array.from(before.text).slice(link.end).join(''));
-  assert.equal(after.links.some(other => other.fieldId === link.fieldId), false);
-  assertSavedContext(document, after, address);
-  edit.undo(); assert.deepEqual(context(edit, address), before);
-  assertSavedContext(document, before, address);
-  edit.redo(); assert.deepEqual(context(edit, address), after);
-  edit.undo();
+  for (const direction of ['forward', 'backward']) {
+    const before = context(edit, address);
+    const link = before.links[0];
+    assert.equal(direction === 'forward' ? edit.deleteAt(link.start) : edit.backspaceAt(link.end), true);
+    dialogs.deletion.remove();
+    const after = context(edit, address);
+    assert.equal(after.text, Array.from(before.text).slice(0, link.start).join('') + Array.from(before.text).slice(link.end).join(''));
+    assert.equal(after.links.some(other => other.fieldId === link.fieldId), false);
+    assertSavedContext(document, after, address);
+    edit.undo(); assert.deepEqual(context(edit, address), before);
+    assertSavedContext(document, before, address);
+    edit.redo(); assert.deepEqual(context(edit, address), after);
+    edit.undo();
+  }
 }
-results.push('한컴 중첩 셀·글상자 전체 링크 Delete 및 undo/redo·저장 왕복');
+results.push('한컴 중첩 셀·글상자 전체 링크 Delete/Backspace 및 undo/redo·저장 왕복');
 
 const out = process.env.RHWP_HYPERLINK_EVIDENCE_DIR;
 if (out) {

@@ -1,4 +1,4 @@
-/** Delete로 링크 글자를 지울 때 필드와 표시 문자열을 한 단위로 제거한다. */
+/** Delete/Backspace로 링크 글자를 지울 때 필드와 표시 문자열을 한 단위로 제거한다. */
 import { hyperlinkTarget } from '@/core/hyperlink';
 import type { DocumentPosition } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
@@ -16,17 +16,21 @@ type DeleteHost = {
 };
 const pending = new WeakSet<DeleteHost>();
 
-export function tryConfirmDeleteHyperlink(self: DeleteHost, position: DocumentPosition): boolean {
+export function tryConfirmDeleteHyperlink(
+  self: DeleteHost, position: DocumentPosition, direction: 'forward' | 'backward' = 'forward',
+): boolean {
   if (pending.has(self)) return true;
   const canEdit = () => !!self.canEditHyperlink?.() && !self.isFormMode?.() && self.isActive?.() !== false;
   if (!canEdit()) return false;
   const pos = structuredClone(position);
+  const deleteOffset = pos.charOffset - (direction === 'backward' ? 1 : 0);
+  if (deleteOffset < 0) return false;
   let target, context;
   try {
     target = hyperlinkTarget(pos);
     context = self.wasm.getHyperlinkContext(target);
   } catch { return false; } // 캡션 등 신규 링크 편집의 미지원 문맥은 기존 삭제 경로를 유지한다.
-  const link = context.links.find(link => link.start <= pos.charOffset && pos.charOffset < link.end);
+  const link = context.links.find(link => link.start <= deleteOffset && deleteOffset < link.end);
   if (!link) return false;
   const generation = self.wasm.documentGeneration;
   const before = JSON.stringify(context);

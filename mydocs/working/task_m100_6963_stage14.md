@@ -1,5 +1,8 @@
 # #6963 단계 14 — 한컴 실측 기반 링크 삭제 확인
 
+> 후속 사용자 정정 반영: 아래 최초 검증에서 제외했던 Backspace도 이제 같은 전체 삭제
+> 확인 경로를 사용한다. 최신 조건·검증은 문서 끝의 'Backspace 추가 보정'을 따른다.
+
 - 기준: 로컬 `2a4ddcbcc`.
 - 사용자 제공 한컴 화면: 제목 '지우기', '[하이퍼링크]를 지울까요?', '지움'/'취소'.
 - 사용자 요청: Delete로 하이퍼링크를 지울 때 확인 후 표시 문자열 전체와 필드를 함께 삭제.
@@ -39,3 +42,22 @@
 - 이 단계는 Studio TypeScript 변경이며 단계 13에서 빌드한 WASM을 재사용했다.
   앞 단계 Rust 변경에 대한 push 전 전체 lint/release 게이트는 별도 승인 후 진행 단계에
   남아 있다. 원격 PR 반영·코멘트 게시·병합은 수행하지 않았다.
+
+## Backspace 추가 보정 (2026-09-13)
+
+- 기준 커밋 `ea012ec25` 이후 사용자 요청으로 Backspace를 같은 확인 경로에 연결했다.
+  Delete는 커서 위치, Backspace는 커서 바로 앞 글자가 링크인지 판정한다.
+  따라서 Backspace는 링크 끝·내부에서 확인창을 열고, 문단 시작이나 삭제 대상 글자가
+  링크 밖이면 기존 삭제 경로를 따른다. 선택 범위 삭제는 이번 변경에 포함하지 않는다.
+- 필드 제거·전체 문자열 삭제는 기존 snapshot을 공유하므로 취소는 무변경이며,
+  확인 후 Undo 한 번으로 주소·문자열·서식을 복구한다.
+- 실제 WASM runner 19개 묶음 통과: Backspace 끝·내부, 바깥 경계 제외, 취소,
+  undo/redo·HWP/HWPX 왕복 및 중첩 셀·글상자 양방향 삭제를 추가 검증했다.
+  `npm test` 1,502 pass / 2 skip / 0 fail, `npm run build` 통과.
+  로그는 `/private/tmp/pr6984-backspace-{wasm,node,build}.log`.
+- 최신 코드를 새로 불러온 실제 브라우저에서 링크 끝 Backspace → 취소 시 보존 →
+  다시 Backspace·지움 시 전체 삭제 → ⌘Z 복구를 확인했다. 링크 내부 Backspace에서도
+  같은 확인창을 확인했다. 증적은 `/private/tmp/pr6984-backspace-confirm.jpg`,
+  `/private/tmp/pr6984-backspace-removed.jpg`, `/private/tmp/pr6984-backspace-undo.jpg`.
+- 사용자 확인 서버는 `http://127.0.0.1:7794/`이며 새로고침 후 검증한다.
+  원격 push·코멘트 게시 승인 대기는 유지한다.
