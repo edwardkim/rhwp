@@ -33,7 +33,9 @@ pub(super) fn validate(
 ) -> Result<(), Error> {
     let mut scan = Scan {
         doc,
-        outline: doc.sections[request.section_index].outline_numbering_id,
+        outline: doc.sections[request.section_index]
+            .section_def
+            .outline_numbering_id,
         remaining: request.limits.max_document_nodes,
         seen: BTreeSet::new(),
         pending: Vec::new(),

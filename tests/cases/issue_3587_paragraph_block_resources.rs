@@ -173,9 +173,13 @@ fn font_definition_and_embedded_storage_are_distinct_from_image_ordinals() {
 fn numbering_sentinel_and_builtin_outline_are_not_missing_resources() {
     let mut c = core();
     c.document_mut().doc_info.para_shapes[0].head_type = HeadType::Outline;
-    c.document_mut().sections[0].outline_numbering_id = 0;
+    c.document_mut().sections[0]
+        .section_def
+        .outline_numbering_id = 0;
     check(&c).unwrap();
-    c.document_mut().sections[0].outline_numbering_id = 1;
+    c.document_mut().sections[0]
+        .section_def
+        .outline_numbering_id = 1;
     assert_eq!(check(&c).unwrap_err().code, "missingResource");
     let mut n = Numbering::default();
     for head in &mut n.heads {
