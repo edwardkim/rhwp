@@ -4,7 +4,8 @@
 - 승인: 메인테이너 「지금까지 분석한 표 복사 붙이기 규칙을 코드에 구현 시작합니다」.
 - 계획: [B 보완 §8](../plans/task_m100_3587_impl_b.md).
 - 선행 조사: [Stage 6](task_m100_3587_stage6.md), 진단 보존 커밋 `69e15ab42`.
-- 상태: 구현·집중 검증 진행 중. B 완료/전체 회귀/시각 통과/원격 작업 완료가 아니다.
+- 상태: 재편집 보완 구현·집중 검증·Docker WASM 및 Studio 재현 완료. 메인테이너 시각 판정 대기.
+  B 완료/전체 회귀/한컴과의 쪽 나눔 일치/원격 작업 완료가 아니다.
 
 ## 수정 전 재현
 
@@ -83,5 +84,56 @@ ignored generated suite 때문에 그 폴더의 fmt 전체 검사는 사용할 �
 
 Docker WASM 및 최종 동일 코드 검증을 계속한다. 아직 메인테이너의 신규 시각 판정이나
 B 종료 통합 게이트 통과를 뜻하지 않는다.
+
+## 최종 동일 코드 검증 — `ed147d8ac`
+
+| 검사 | 결과 | 증적 (`output/3587/b3/` 아래) |
+| --- | --- | --- |
+| review worktree `cargo fmt --all -- --check` | PASS | `reedit-fmt-final.log` |
+| native Clippy `--locked -- -D warnings` | PASS | `reedit-clippy-final.log` |
+| 집중 nextest | 98 PASS / 0 FAIL, 비대상 2,025 skip | `reedit-focused-final.log` |
+| generated integration manifest | PASS | `reedit-manifest-final.log` |
+| Docker WASM | PASS, 8분 7초 | `reedit-wasm-final.log` |
+
+이번 표는 native Clippy 한 단계의 결과다. workspace/all-targets 및 WASM Clippy,
+전체 회귀·시각 sweep을 모두 통과했다는 의미가 아니다. nextest 0.9.137과 저장소 권고
+0.9.140 차이 및 `report-skipped` 설정 경고는 실행 로그에 있으며 이번 작업에서 도구를
+업그레이드하지 않았다.
+
+### 실제 Studio 입력 확인
+
+기존 메인테이너 브라우저 탭은 변경하지 않고, 별도 headless Chrome에서
+`http://localhost:7700`의 실제 Studio를 사용했다. 각 문서를 새로 열고 원형 pi12/ci1의
+6번째 셀을 마우스로 선택한 뒤 Enter 15회를 입력했다. 셀 문단 수는 모두 1→16,
+지연 페이지네이션 완료를 확인한 뒤 표 존재·소유 순서·외곽 영역 겹침을 검사했다.
+
+| 입력 | 입력 전→후 쪽 수 | 표 존재/순서/비겹침 검사 |
+| --- | --- | --- |
+| `samples/rnote/labnote-001.hwp` | 2→4 | PASS |
+| `samples/rnote/labnote-001-cp-01.hwp` | 3→5 | PASS |
+| `samples/rnote/labnote-001-cp-02.hwp` | 4→6 | PASS |
+| `output/3587/b3/labnote-14a96c7e1/repeated.hwp` | 3→5 | PASS |
+
+각 브라우저가 실제로 수신한 WASM SHA-256은 현재 `pkg/rhwp_bg.wasm`과 모두 일치한다.
+
+`6f0c57aae5e72757d74b8a6d7c0c1ce95d05519923101f0cf3af1d81c85f881b`
+
+증적은 `final-original/`, `final-hancom-cp01/`, `final-hancom-cp02/`, `final-rhwp/`의
+쪽별 SVG와 같은 이름의 `.log`, `studio-final-summary.json`이다. `check-studio-geometry.mjs`
+및 `enter-reopen-probe.mjs`는 로컬 진단 재실행용이다. 원본/한컴 입력을 덮어쓰지 않았으며
+repo cp01/cp02는 외부 입력과 SHA-256이 계속 동일하다. native 집중 테스트는 각 사본의
+개별 편집도 검사하지만, 위 Studio 키 입력 4건은 메인테이너 재현과 같은 **원형 셀** 검사다.
+
+### 시각 판정 요청과 남은 경계
+
+cp01의 `final-hancom-cp01/page-004.svg`, `page-005.svg`를 PNG로도 변환해 직접 확인했다.
+이전 서명 표가 원형 본문 표 아래에 놓이고 다음 묶음 본문 표와 겹치지 않는다.
+다음 묶음의 제목 표는 4쪽 y=270.2px에, 본문·서명 표는 5쪽에 놓인다.
+**제목 표와 본문 표의 쪽이 나뉘는 이 결과가 한컴의 동일 Enter 편집 결과와 일치하는지는
+아직 확인하지 않았다.** 겹침 검사 성공을 한컴 동등 조판이나 메인테이너 시각 통과로 대신하지 않는다.
+
+최신 WASM으로 기존 Studio를 새로고침한 뒤 원형/사본에서 셀 줄 늘리기를 확인하도록 요청한다.
+이 판정 후 B3 저장·재편집 결과와 B 종료 게이트를 정리한다. C 내용 채우기·Gym 시뮬레이션,
+원격 push·PR·댓글은 이번 절편에서 진행하지 않았다.
 
 주의: `reedit-geometry-red.log`는 진단 실행 인자 오류로 중단한 실행이며 검증 증적에서 제외한다.
