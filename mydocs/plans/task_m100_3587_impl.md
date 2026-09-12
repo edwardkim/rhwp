@@ -1,7 +1,11 @@
 # #3587 구현계획서 — 범용 템플릿 자동화의 안전한 복제 기반
 
 - 작성: 2026-09-12
-- 상태: **2026-09-12 A1~A4 구현·통합 Rust 검증 완료(9,523 PASS / 0 FAIL). [B 상세 계획](task_m100_3587_impl_b.md) 승인 요청이며 B/C/D 구현은 미착수. Docker WASM·새 한컴 시각 검증은 미실행.**
+- 상태: **2026-09-12 A1~A4 및 승인된 B1/B2 구현 완료. B3 저장·재열기·비용 계측 이후
+  [B 종료 통합 자동 검증](../working/task_m100_3587_stage8.md) 완료, 결과 승인 대기.
+  전체 nextest 9,579 PASS 및 Rust lint·Native Skia 3종 PASS. Docker WASM과 Studio
+  검증을 수행했으며 Enter 경계 결함은 메인테이너 결정으로 #7065에 분리했다.
+  C/D와 Gym은 미착수. 9,523 PASS는 Stage 3의 A 당시 결과다.**
 - 근거: [승인된 수행계획](task_m100_3587.md), [Stage 1 조사](../working/task_m100_3587_stage1.md)
 - 기준 제품 source: `59a11f180ad1bd5cadcbbf0a6dc9d0162f4a0a21`
 
