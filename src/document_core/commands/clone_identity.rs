@@ -27,6 +27,12 @@ fn push_caption<'a>(pending: &mut Vec<Node<'a>>, caption: Option<&'a Caption>) {
     }
 }
 
+fn reserve_raw(used: &mut BTreeSet<u32>, slot: Option<&[u8]>) {
+    if let Some([a, b, c, d]) = slot {
+        used.insert(u32::from_le_bytes([*a, *b, *c, *d]));
+    }
+}
+
 /// Allocate a nonzero common object ID from the current document snapshot.
 ///
 /// Reserve drawing and field IDs as well, without conflating their reference
@@ -85,11 +91,16 @@ fn collect_ids(mut pending: Vec<Node<'_>>) -> BTreeSet<u32> {
                 Control::Picture(picture) => {
                     used.insert(picture.common.instance_id);
                     used.insert(picture.instance_id);
+                    reserve_raw(&mut used, picture.raw_picture_extra.get(1..5));
                     used.insert(subject_alias(picture.common.instance_id));
                     push_caption(&mut pending, picture.caption.as_ref());
                 }
                 Control::Equation(equation) => {
                     used.insert(equation.common.instance_id);
+                    reserve_raw(
+                        &mut used,
+                        equation.raw_ctrl_data.get(common_obj_offsets::INSTANCE_ID),
+                    );
                 }
                 Control::Form(form) => {
                     used.insert(form.common.instance_id);
@@ -141,6 +152,7 @@ fn collect_ids(mut pending: Vec<Node<'_>>) -> BTreeSet<u32> {
                     }
                     ShapeObject::Picture(picture) => {
                         used.insert(picture.instance_id);
+                        reserve_raw(&mut used, picture.raw_picture_extra.get(1..5));
                         push_caption(&mut pending, picture.caption.as_ref());
                     }
                     ShapeObject::Chart(chart) => {
