@@ -98,8 +98,8 @@ cargo nextest run --locked --cargo-profile release-test \
 - 이슈의 235쪽 실제 템플릿은 첨부되지 않아 그 문서에서의 성능·이미지 보존·198/199/204쪽
   `LAYOUT_OVERFLOW`를 검증하거나 해결했다고 주장하지 않는다.
 - 기존 관련 이슈 #3608, #4994, #4995의 전체 범위를 이 변경으로 완료 처리하지 않는다.
-- #5819 assignee는 `jangster77`로 지정했다. 원격 push·PR 생성·이슈 close는 수행하지 않았다.
-  이슈 상태는 OPEN이며 실제 사용자 템플릿의 적용 범위 확인과 PR 통합은 남아 있다.
+- #5819 assignee는 `jangster77`로 지정했다. [PR #7068](https://github.com/edwardkim/rhwp/pull/7068)을
+  devel 대상 Open PR로 생성했다. 이슈 상태는 OPEN이며 실제 사용자 템플릿의 적용 범위 확인과 PR 통합은 남아 있다.
 
 ## 완료 시점의 devel 전진 확인
 
@@ -108,3 +108,14 @@ cargo nextest run --locked --cargo-profile release-test \
 Rust/CLI/MCP 변경 경로와 겹치지 않았다. `git merge-tree --write-tree HEAD upstream/devel`은
 충돌 없이 성공했다. 작업 branch에 불필요한 merge를 추가하지 않았으며, 위 전체 회귀 결과는
 명시한 검증 head에 대한 결과다.
+
+## PR 제출 전 별도 worktree 검증
+
+제출 후보 `728452ca673d02dadc3be831d8e26eeeab0ab2f2`는 위 전체 회귀 head 이후 계획·결과 문서만
+변경했다. `/Users/tsjang/rhwp-5819-rust-review` detached worktree에서 같은 후보의 prepare,
+fmt 적용·검사, native/WASM32/all-target Clippy, workspace build, manifest·unit-tier check
+9단계를 다시 실행해 모두 exit 0을 확인했다. tracked diff는 없고 파생 suite는 커밋하지 않았다.
+전체 회귀는 원 작업 checkout의 결과이며, 별도 worktree에서는 제출 전 lint·정책 검사를 수행했다.
+
+[Self-review](../pr/archives/pr_7068_review.md)와 [오늘할일](../orders/20260913.md)을 같은 PR에 포함한다.
+최신 head CI와 병합 승인은 남은 게이트다.
