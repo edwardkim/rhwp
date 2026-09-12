@@ -146,7 +146,7 @@ fn check_selection_route(route: u8) {
     for _ in 0..2 {
         if route == 0 {
             let dst = core.document().sections[0].paragraphs.len();
-            core.split_paragraph_native(0, dst - 1, 0).unwrap();
+            core.split_paragraph_native(0, dst - 1, 0, None).unwrap();
             core.paste_internal_native(0, dst, 0).unwrap();
             inserted.push(table(&core, dst + 1, 0).common.instance_id);
         } else {
