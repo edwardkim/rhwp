@@ -32,6 +32,20 @@
 //!   표 줄 lineseg 삭제   글자 줄 값으로 폴백          관측  13.6 = 오라클
 //! ```
 //!
+//! ⭐ **판정은 문단 단위가 아니라 런별 줄 소속이다** (PR #7044 검토 반영). 종전 구현은
+//! 첫 표로 문단 단위 불린을 만들어 여러 런에 재사용했는데, 그러면 ① 마지막 run 출력 경로
+//! (`remaining_bbox_h`)에 보정이 빠지고 ② 여러 줄·여러 표 문단에서 첫 표의 판정이 다른
+//! 줄로 번질 수 있다. 지금은 런의 글자 위치가 속한 저장 줄을 찾아 그 줄의 baseline 을 쓴다.
+//!
+//! ⭐ **축**: `LineSeg.textpos` 와 `para.char_offsets` 는 같은 문단 UTF-16 축이고 **컨트롤
+//! 슬롯을 포함**한다. `para.text` 문자만 합산하면 선행 컨트롤이 있는 문단에서 어긋난다.
+//! 이 fixture 로 그 눈금이 같음을 아래 `stored_ladder_axis_matches_char_offsets` 가 잠근다.
+//!
+//! ⚠ 이 문단은 제목(`charPrIDRef=16`)과 후행 공백·표(`=17`)로 나뉜다. 제목은 글자 스타일
+//! 변경 지점에서 중간 flush 되어 다른 경로로 나오고, **후행 공백은 마지막 run 경로**로
+//! 나온다. 그래서 제목만 보는 시험은 그 경로의 누락을 못 잡는다 — 아래 시험은 두 런을
+//! 함께 단정한다.
+//!
 //! 기준: 한/글 2020(저장 버전) — `pdf/2769535-records-inspection-plan-2020.pdf`
 //! (`hwp2024Convert` engine 2020, 2쪽).
 
@@ -129,4 +143,80 @@ fn the_table_placement_is_unchanged() {
 fn page_count_matches_the_oracle() {
     let core = DocumentCore::from_bytes(&sample()).expect("문서 로드");
     assert_eq!(core.page_count(), 2, "한/글 2020 과 같은 2쪽이어야 한다");
+}
+
+/// 같은 줄의 **모든** 런이 그 줄의 baseline 을 쓴다 — 후행 공백 런까지.
+///
+/// 제목은 글자 스타일 변경으로 중간 flush 되지만 후행 공백은 마지막 run 경로로 나온다.
+/// 그 경로에 보정이 빠지면 이 시험만 빨강이 된다 (PR #7044 검토 지적 1).
+#[test]
+fn every_run_on_the_host_line_uses_that_lines_baseline() {
+    let core = DocumentCore::from_bytes(&sample()).expect("문서 로드");
+    let page = core.build_page_render_tree(1).expect("2쪽 render tree");
+    let mut host = Vec::new();
+    fn collect(node: &RenderNode, out: &mut Vec<(f64, f64, String)>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            // 호스트 줄(상단 605.8px)에 놓인 런만
+            if (node.bbox.y - 605.8).abs() <= 1.0 {
+                out.push((node.bbox.height, node.bbox.y, run.text.clone()));
+            }
+        }
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    collect(&page.root, &mut host);
+    assert!(
+        host.len() >= 2,
+        "호스트 줄에는 제목 런과 후행 공백 런이 함께 있어야 한다 — 실측 {}개: {host:?}",
+        host.len(),
+    );
+    for (h, y, text) in &host {
+        assert!(
+            (h - 13.6).abs() <= 1.0,
+            "호스트 줄 런 {text:?} (y={y:.1}) 의 상자 높이는 글자 줄 baseline 13.6px 이어야              한다 — 실측 {h:.1}px (표 줄 179.0px 이면 그 출력 경로에 보정이 빠진 것)",
+        );
+    }
+}
+
+/// 저장 사다리의 `textpos` 와 `char_offsets` 가 같은 눈금임을 잠근다 (검토 지적 3).
+///
+/// 이 문단은 본문 11 글자(제목 10 + 후행 공백 1) 뒤에 표 컨트롤이 온다. 표 줄의 `textpos`
+/// 는 11 이고 `char_offsets` 의 마지막 글자 위치도 10 이다 — 두 값이 같은 축이라는 뜻이다.
+/// `para.char_count`(20)는 컨트롤 슬롯을 포함해 본문 길이와 다르므로 이 비교의 기준이
+/// 될 수 없다.
+#[test]
+fn stored_ladder_axis_matches_char_offsets() {
+    let bytes = sample();
+    let doc = rhwp::parse_document(&bytes).expect("파싱");
+    let para = doc
+        .sections
+        .iter()
+        .flat_map(|s| s.paragraphs.iter())
+        .find(|p| p.text.contains("행정박물"))
+        .expect("호스트 문단");
+
+    assert_eq!(para.line_segs.len(), 2, "글자 줄과 표 줄 두 줄이어야 한다");
+    let text_units = para.text.chars().count();
+    assert_eq!(text_units, 11, "본문은 11 글자다 (제목 10 + 후행 공백 1)");
+    assert_eq!(
+        para.char_offsets.len(),
+        text_units,
+        "char_offsets 는 글자마다 하나다"
+    );
+    assert_eq!(
+        para.line_seg_text_start(1),
+        11,
+        "표 줄은 본문 끝에서 시작한다 — 표가 줄을 통째로 가졌다는 기록"
+    );
+    assert_eq!(
+        *para.char_offsets.last().expect("마지막 글자"),
+        10,
+        "마지막 글자의 축 위치는 10 — 표 줄 시작 11 과 같은 눈금이다"
+    );
+    assert_ne!(
+        u32::try_from(text_units).unwrap_or(0),
+        para.char_count,
+        "char_count 는 컨트롤 슬롯을 포함해 본문 길이와 다르다 — 판정 기준으로 쓸 수 없다"
+    );
 }
