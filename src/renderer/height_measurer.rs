@@ -1905,17 +1905,23 @@ impl HeightMeasurer {
             .iter()
             .enumerate()
             .map(|(pidx, p)| {
-                // [#6787] 같은 문단의 문단-기준 자리차지 중첩 표들이 **가로 오프셋으로
-                // 나란히** 놓이면 높이는 합이 아니라 **최댓값**이다(`#6494` 의 칸 안 짝).
-                // 16774617 1쪽 후보자 카드 2장(`horz=Para(1547)` / `Para(23743)`, 각
-                // 253.2px)은 서로 겹치지 않아 한/글이 같은 y 에 놓는다 — 합산하면 그 칸이
-                // 선언 251.97px 대비 854.7px 로 부풀어 표 전체가 용지를 넘고 361자가 잘린다.
-                let nested_side_by_side =
-                    crate::renderer::float_placement::para_float_group_is_side_by_side(p);
-                let nested_heights: Vec<f64> = p
+                // [#7008] 문단 높이는 **줄별 점유 높이의 합**이다. 같은 줄에 놓인 표를
+                // 세로로 합산하지 않고, 여러 줄이면 각 줄이 제 몫을 낸다.
+                //
+                // 줄 소속은 추측하지 않는다 — 저장 `LINE_SEG` 사다리가 그것을 증언하고
+                // (`para_nested_table_line_indices`), 사다리가 없는 문단만 종전처럼
+                // 문단 전체를 한 무리로 본다. 그 한 줄 무리가 나란한지는 측정과 배치가
+                // 함께 쓰는 `line_nested_table_group_is_side_by_side` 가 가른다.
+                //
+                // [#6787] 16774617 1쪽 후보자 카드 2장(`horz=Para(1547)` / `Para(23743)`,
+                // 각 253.2px)은 가로로 겹치지 않아 한/글이 같은 y 에 놓는다 — 합산하면
+                // 그 칸이 선언 251.97px 대비 854.7px 로 부풀어 361자가 잘린다.
+                let line_of = crate::renderer::float_placement::para_nested_table_line_indices(p);
+                let measured: Vec<(usize, &crate::model::table::Table, f64)> = p
                     .controls
                     .iter()
-                    .filter_map(|ctrl| {
+                    .enumerate()
+                    .filter_map(|(ci, ctrl)| {
                         if let Control::Table(nested) = ctrl {
                             let stretch =
                                 self.render_normalization.nested_table_width_scale(nested);
@@ -1926,17 +1932,39 @@ impl HeightMeasurer {
                             // [#2169] om 가산은 additive 경로(cell_controls_height)
                             // 전담 — vpos 기반 max 경로는 저장 vpos 가 배치를 이미
                             // 반영하므로 미가산 (자기-export HWPX 왕복 이중가산 방지).
-                            Some(mt.total_height.max(declared))
+                            let line = line_of
+                                .as_ref()
+                                .and_then(|v| v.get(ci).copied().flatten())
+                                .unwrap_or(0);
+                            Some((line, nested.as_ref(), mt.total_height.max(declared)))
                         } else {
                             None
                         }
                     })
                     .collect();
-                let nested_h: f64 = if nested_side_by_side {
-                    nested_heights.iter().copied().fold(0.0, f64::max)
-                } else {
-                    nested_heights.iter().sum()
-                };
+                let mut nested_h = 0.0f64;
+                let mut line_idx = 0usize;
+                while !measured.is_empty() {
+                    let group: Vec<&(usize, &crate::model::table::Table, f64)> =
+                        measured.iter().filter(|(l, _, _)| *l == line_idx).collect();
+                    if !group.is_empty() {
+                        let tables: Vec<&crate::model::table::Table> =
+                            group.iter().map(|(_, t, _)| *t).collect();
+                        let side_by_side =
+                            crate::renderer::float_placement::line_nested_table_group_is_side_by_side(
+                                &tables,
+                            );
+                        nested_h += if side_by_side {
+                            group.iter().map(|(_, _, h)| *h).fold(0.0, f64::max)
+                        } else {
+                            group.iter().map(|(_, _, h)| *h).sum::<f64>()
+                        };
+                    }
+                    line_idx += 1;
+                    if line_idx > measured.iter().map(|(l, _, _)| *l).max().unwrap_or(0) {
+                        break;
+                    }
+                }
                 if nested_h <= 0.0 {
                     0.0
                 } else {
