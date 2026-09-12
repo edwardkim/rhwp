@@ -293,6 +293,7 @@ function changesEnforcementSurface(files) {
     || filename.startsWith('.github/actions/')
     || filename === 'scripts/ci-impact-classifier.cjs'
     || filename === 'scripts/ci-impact-policy.cjs'
+    || filename === 'scripts/ci-workflow-evidence.cjs'
     || filename === 'scripts/verify_review_only_merge_resolution.py'
   ));
 }
@@ -620,6 +621,16 @@ function determinePolicy(input = {}) {
   return policy;
 }
 
+// A successful workflow can become visible before its Jobs API snapshot converges.
+// Nonterminal evidence blocks approval without claiming a completed test failed.
+const NONTERMINAL_EVIDENCE = new Set(['queued', 'in_progress', 'waiting', 'pending', 'requested']);
+function pendingEvidence(value) {
+  return NONTERMINAL_EVIDENCE.has(value.status) && !value.conclusion;
+}
+function pendingAuditReason(reason) {
+  return reason.startsWith('pending-') || reason.includes(':pending-');
+}
+
 function normalizedJobs(jobs) {
   const byName = new Map();
   for (const job of Array.isArray(jobs) ? jobs : []) {
@@ -652,6 +663,7 @@ function requireJobConclusion(byName, name, conclusion) {
   const resolved = exactJob(byName, name);
   if (resolved.error) return resolved.error;
   const job = resolved.job;
+  if (pendingEvidence(job)) return `pending-job:${name}:${job.status}`;
   if (job.status !== 'completed' || job.conclusion !== conclusion) {
     return `job-not-${conclusion}:${name}:${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
   }
@@ -667,6 +679,7 @@ function requireSafeJobConclusion(byName, name, expected) {
   if (resolved.error) return resolved.error;
   const job = resolved.job;
   const allowed = safeConclusions(expected);
+  if (pendingEvidence(job)) return `pending-job:${name}:${job.status}`;
   if (job.status !== 'completed' || !allowed.has(job.conclusion)) {
     return `job-not-${[...allowed].join('-or-')}:${name}:`
       + `${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
@@ -686,6 +699,7 @@ function requireSafeAliasedJobConclusion(byName, logicalName, expected) {
   }
   const { name, job } = matches[0];
   const allowed = safeConclusions(expected);
+  if (pendingEvidence(job)) return `pending-job:${name}:${job.status}`;
   if (job.status !== 'completed' || !allowed.has(job.conclusion)) {
     return `job-not-${[...allowed].join('-or-')}:${name}:`
       + `${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
@@ -707,6 +721,7 @@ function requireStepConclusion(job, name, conclusion) {
     return entries.length === 0 ? `missing-step:${name}` : `duplicate-step:${name}`;
   }
   const step = entries[0];
+  if (pendingEvidence(step)) return `pending-step:${name}:${step.status}`;
   if (step.status !== 'completed' || step.conclusion !== conclusion) {
     return `step-not-${conclusion}:${name}:${step.status || 'unknown'}:${step.conclusion || 'unknown'}`;
   }
@@ -723,6 +738,9 @@ function preflightFastPass(byName, jobName, checkoutStepName) {
     return { error: checkout.length === 0
       ? `missing-step:${checkoutStepName}`
       : `duplicate-step:${checkoutStepName}` };
+  }
+  if (pendingEvidence(checkout[0])) {
+    return { error: `pending-step:${checkoutStepName}:${checkout[0].status}` };
   }
   if (checkout[0].status !== 'completed') {
     return { error: `step-not-completed:${checkoutStepName}:${checkout[0].status || 'unknown'}` };
@@ -835,6 +853,9 @@ function auditCodeql(policy, jobs) {
       if (analyzeResolved.error) return `${name}:${analyzeResolved.error}`;
       const skipStep = skipResolved.step;
       const analyzeStep = analyzeResolved.step;
+      if (pendingEvidence(skipStep) || pendingEvidence(analyzeStep)) {
+        return `${name}:pending-unselected-steps:${skipStep.status}:${analyzeStep.status}`;
+      }
       if (skipStep.status !== 'completed' || analyzeStep.status !== 'completed') {
         return `${name}:unselected-steps-not-completed:`
           + `${skipStep.status || 'unknown'}:${analyzeStep.status || 'unknown'}`;
@@ -993,6 +1014,9 @@ function auditPolicyRuns(input = {}) {
     ) {
       return { publish: 'true', conclusion: 'failure', reason: `workflow-identity-mismatch:${workflow}` };
     }
+    if (evidence.collectionFailure) {
+      return { publish: 'true', conclusion: 'failure', reason: `${workflow}:${evidence.collectionFailure}` };
+    }
     if (String(run.status || '') !== 'completed') {
       pending.push(`workflow-not-completed:${workflow}:${run.status || 'unknown'}`);
       continue;
@@ -1014,7 +1038,14 @@ function auditPolicyRuns(input = {}) {
         ? auditCodeql(policy, evidence.jobs)
         : auditRenderDiff(policy, evidence.jobs);
     if (failure) {
+      if (pendingAuditReason(failure)) {
+        pending.push(`${workflow}:${failure}`);
+        continue;
+      }
       return { publish: 'true', conclusion: 'failure', reason: `${workflow}:${failure}` };
+    }
+    if (evidence.collectionPendingReason) {
+      pending.push(`${workflow}:${evidence.collectionPendingReason}`);
     }
   }
   if (pending.length > 0) {
