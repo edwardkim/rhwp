@@ -127,6 +127,8 @@ fn selection(core: &mut DocumentCore, source: Table) {
         },
         Paragraph::default(),
     ]);
+    // Refresh composed/dirty caches after constructing this internal fixture.
+    *core = DocumentCore::from_bytes(&core.export_hwp_native().unwrap()).unwrap();
     core.copy_selection_native(0, start, 0, start + 2, 0)
         .unwrap();
 }
@@ -144,9 +146,7 @@ fn check_selection_route(route: u8) {
     for _ in 0..2 {
         if route == 0 {
             let dst = core.document().sections[0].paragraphs.len();
-            core.document_mut().sections[0]
-                .paragraphs
-                .push(Paragraph::default());
+            core.split_paragraph_native(0, dst - 1, 0).unwrap();
             core.paste_internal_native(0, dst, 0).unwrap();
             inserted.push(table(&core, dst + 1, 0).common.instance_id);
         } else {
