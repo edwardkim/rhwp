@@ -45,7 +45,9 @@ test('finishLineEndpointDrag 는 끝점 이동을 executeOperation record 로 �
 });
 
 test('onMouseUp 은 직선 끝점 종료를 finishLineEndpointDrag 로 위임한다(인라인 정리 금지)', () => {
-  const body = fnBody(mouseSrc, 'export function onMouseUp');
+  const wrapper = fnBody(mouseSrc, 'export function onMouseUp');
+  assert.match(wrapper, /finishMouseUp\.call\(this, e\)/, '공통 마우스업 종료 경로로 위임');
+  const body = fnBody(mouseSrc, 'function finishMouseUp');
   assert.match(body, /if \(this\.isLineEndpointDragging\)\s*{\s*this\.finishLineEndpointDrag\(\);/,
     'onMouseUp 은 상태 인라인 초기화가 아니라 finishLineEndpointDrag 로 위임해야 함(기록 경로 확보)');
 });

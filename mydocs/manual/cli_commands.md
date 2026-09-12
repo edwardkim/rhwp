@@ -228,8 +228,8 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
   폰트 서브셋 경로를 건너뛰어 **메모리를 크게 절감**(실측 예: 124→78 MB)
   하는 대신 **PDF 의 텍스트 선택·검색 기능을 잃는다** (시각 출력 동일,
   파일 크기는 증가). 저메모리 환경(Quick Look 등)용 옵트아웃.
-- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존
-  (legacy) 경로.
+- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 `svg` backend는
+  `screen`, `direct` backend는 `print`를 사용한다.
 - `<파일>`, `<경로>`, `<family>`는 자리표시자이며 실제 입력에는 꺾쇠괄호를 쓰지 않는다.
 - 공백이 없는 값은 그대로 입력한다. 예: `--font-path ./ttfs`
 - 공백이 있는 경로/폰트명은 큰따옴표를 권장한다. 예:
@@ -254,6 +254,11 @@ rhwp export-pdf input.hwp -o out.pdf \
 - 선택한 fallback family 또는 수식 폰트가 fontdb에 없으면 warning을 출력한다.
 - direct/vector `PageLayerTree → PDF` backend는 `--backend direct`로 이미 사용 가능하다
   (`native-skia` feature 빌드 필요, 위 옵션 설명 참고).
+- 두 backend 모두 HWP5/HWPX의 본문·표 셀·글상자 텍스트 필드에 있는 HTTP/HTTPS 및
+  mailto 링크를 PDF 링크 주석으로 보존한다(#6963). 줄이나 페이지가 나뉘면 실제 출력된
+  글자 영역마다 클릭 영역을 만든다. 문서 내부 이동(GoTo), 머리말·꼬리말·각주·캡션 및
+  HWP3 링크는 아직 지원하지 않는다. 회전·세로쓰기·글자 겹침·표시값 길이가 달라지는
+  URI 링크의 출력 영역은 오류를 반환한다. Studio의 브라우저 PDF 저장은 별도 경로다.
 
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.

@@ -1202,6 +1202,39 @@ fn pdf_image_href_resolver() -> usvg::ImageHrefResolver<'static> {
 pub fn svgs_to_pdf_with_to_chunk<F>(
     svg_pages: &[String],
     export_options: &PdfExportOptions,
+    to_chunk: F,
+) -> Result<Vec<u8>, String>
+where
+    F: FnMut(
+        &usvg::Tree,
+        bool,
+    ) -> Result<(pdf_writer::Chunk, pdf_writer::Ref), svg2pdf::ConversionError>,
+{
+    svgs_to_pdf_with_links_and_to_chunk(
+        svg_pages,
+        &vec![Vec::new(); svg_pages.len()],
+        export_options,
+        to_chunk,
+    )
+}
+
+/// 페이지와 같은 순서의 링크 사각형을 PDF annotation으로 저장한다.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svgs_to_pdf_with_links(
+    svg_pages: &[String],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    options: &PdfExportOptions,
+) -> Result<Vec<u8>, String> {
+    svgs_to_pdf_with_links_and_to_chunk(svg_pages, links, options, svg2pdf_to_chunk)
+}
+
+/// 페이지 변환 실패 시 링크 귀속도 검증하는 주입점.
+#[cfg(not(target_arch = "wasm32"))]
+#[doc(hidden)]
+pub fn svgs_to_pdf_with_links_and_to_chunk<F>(
+    svg_pages: &[String],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    export_options: &PdfExportOptions,
     mut to_chunk: F,
 ) -> Result<Vec<u8>, String>
 where
@@ -1210,6 +1243,9 @@ where
         bool,
     ) -> Result<(pdf_writer::Chunk, pdf_writer::Ref), svg2pdf::ConversionError>,
 {
+    if links.len() != svg_pages.len() {
+        return Err("PDF 페이지와 링크 목록의 길이가 다릅니다".into());
+    }
     if svg_pages.is_empty() {
         return Err("페이지가 없습니다".to_string());
     }
@@ -1235,6 +1271,7 @@ where
         svg_ref: Ref,
         width: f32,
         height: f32,
+        source_index: usize,
     }
 
     let mut page_datas: Vec<PageData> = Vec::new();
@@ -1269,6 +1306,7 @@ where
             svg_ref,
             width: w,
             height: h,
+            source_index: page_index,
         });
     }
 
@@ -1312,15 +1350,43 @@ where
         let content_ref = alloc.bump();
         let svg_ref = svg_refs_remapped[i];
 
+        let page_links = super::hyperlinks::page_links(
+            &links[pd.source_index],
+            f64::from(pd.width) / 0.75,
+            f64::from(pd.height) / 0.75,
+        );
+        let annotation_refs: Vec<_> = page_links.iter().map(|_| alloc.bump()).collect();
         let mut page = pdf.page(page_ref);
         page.media_box(pdf_writer::Rect::new(0.0, 0.0, pd.width, pd.height));
         page.parent(page_tree_ref);
         page.contents(content_ref);
+        if !annotation_refs.is_empty() {
+            page.annotations(annotation_refs.iter().copied());
+        }
 
         let mut resources = page.resources();
         resources.x_objects().pair(svg_name, svg_ref);
         resources.finish();
         page.finish();
+        for (link, annotation_ref) in page_links.iter().zip(annotation_refs) {
+            let r = link.rect;
+            let mut annotation = pdf.annotation(annotation_ref);
+            annotation
+                .subtype(pdf_writer::types::AnnotationType::Link)
+                .rect(pdf_writer::Rect::new(
+                    (r.x * 0.75) as f32,
+                    pd.height - ((r.y + r.height) * 0.75) as f32,
+                    ((r.x + r.width) * 0.75) as f32,
+                    pd.height - (r.y * 0.75) as f32,
+                ))
+                .page(page_ref)
+                .border(0.0, 0.0, 0.0, None);
+            annotation
+                .action()
+                .action_type(pdf_writer::types::ActionType::Uri)
+                .uri(pdf_writer::Str(link.uri.as_bytes()));
+            annotation.finish();
+        }
 
         // 컨텐츠 스트림: SVG XObject를 페이지 크기에 맞게 배치
         let mut content = pdf_writer::Content::new();
@@ -1363,6 +1429,19 @@ pub fn layer_trees_to_pdf_with_options(
     layer_trees: &[crate::paint::PageLayerTree],
     options: &DirectPdfExportOptions,
 ) -> Result<Vec<u8>, String> {
+    layer_trees_to_pdf_with_links(layer_trees, &vec![Vec::new(); layer_trees.len()], options)
+}
+
+/// Skia PDF에도 같은 CSS px 링크 영역을 적용한다.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub fn layer_trees_to_pdf_with_links(
+    layer_trees: &[crate::paint::PageLayerTree],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    options: &DirectPdfExportOptions,
+) -> Result<Vec<u8>, String> {
+    if links.len() != layer_trees.len() {
+        return Err("PDF 페이지와 링크 목록의 길이가 다릅니다".into());
+    }
     const CSS_PX_TO_PDF_POINT: f64 = 72.0 / 96.0;
     const MAX_PDF_PAGE_DIMENSION_POINTS: f64 = 14_400.0;
 
@@ -1417,7 +1496,9 @@ pub fn layer_trees_to_pdf_with_options(
 
     {
         let mut document = skia_safe::pdf::new_document(&mut output, Some(&metadata));
-        for (tree, &(width, height)) in layer_trees.iter().zip(page_sizes.iter()) {
+        for ((tree, &(width, height)), links) in
+            layer_trees.iter().zip(page_sizes.iter()).zip(links)
+        {
             let mut page = document.begin_page((width, height), None);
             let canvas = page.canvas();
             canvas.clear(skia_safe::Color::WHITE);
@@ -1425,6 +1506,20 @@ pub fn layer_trees_to_pdf_with_options(
             renderer
                 .render_page_to_canvas_strict(canvas, tree, options.raster_dpi / 96.0)
                 .map_err(|error| format!("direct PDF page replay failed: {error}"))?;
+            for link in super::hyperlinks::page_links(links, tree.page_width, tree.page_height) {
+                let r = link.rect;
+                let mut uri = link.uri.into_bytes();
+                uri.push(0); // Skia URL annotation payload는 NUL 종료 문자열이다.
+                canvas.annotate_rect_with_url(
+                    skia_safe::Rect::from_xywh(
+                        r.x as f32,
+                        r.y as f32,
+                        r.width as f32,
+                        r.height as f32,
+                    ),
+                    &skia_safe::Data::new_copy(&uri),
+                );
+            }
             document = page.end_page();
         }
         document.close();

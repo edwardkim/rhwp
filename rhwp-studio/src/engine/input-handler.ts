@@ -4720,6 +4720,13 @@ export class InputHandler {
   /** 현재 커서 위치를 반환한다 */
   getCursorPosition(): DocumentPosition { return this.cursor.getPosition(); }
 
+  /** 별도 좌표계·개체 선택을 본문 링크 편집으로 오인하지 않도록 명시적으로 차단한다. */
+  canEditHyperlink(): boolean {
+    return !this.cursor.isInHeaderFooter() && !this.cursor.isInFootnote()
+      && !this.cursor.isInCellSelectionMode() && !this.cursor.isInPictureObjectSelection()
+      && !this.cursor.isInTableObjectSelection();
+  }
+
   /** 본문 탐색 전에 각주 전용 편집 컨텍스트를 종료한다. */
   exitFootnoteModeForBodyNavigation(): void {
     if (!this.cursor.isInFootnote()) return;

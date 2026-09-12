@@ -211,6 +211,7 @@ function mutatorCallCount(src: string): number {
 // 뮤테이션 표면 원장 (2026-07-17 동결). 이관/추가 시 이 표를 의식적으로 갱신한다.
 // 값을 낮추는 방향(이관)만 무해하며, 높이거나 신규 키 추가는 리뷰 대상이다.
 const BASELINE: Readonly<Record<string, number>> = {
+  'src/command/commands/hyperlink.ts': 7, // #6963: 삽입·주소/표시 문자열 수정·해제 및 본문/셀 글자 삽입 모두 executeOperation snapshot 내부
   'src/command/commands/edit.ts': 1,
   'src/command/commands/format.ts': 1,
   'src/command/commands/insert.ts': 16, // -3: z순서 4 호출부를 changeZOrder 헬퍼 1곳으로 합침(#2370 A)
@@ -242,6 +243,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/engine/input-handler-mouse.ts': 3,
   'src/engine/input-handler-picture.ts': 11,
   'src/engine/input-handler-table.ts': 7, // -2: 한컴 3모드 셀 크기 조절의 직접 WASM 호출을 executeOperation snapshot 경로로 이관 (undo 기록됨)
+  'src/engine/input-handler-hyperlink-delete.ts': 3, // #6963: removeHyperlink + 본문/셀 deleteText는 모두 deleteHyperlink snapshot 안에서 실행. 실제 WASM runner가 원자 복구·undo/redo를 검증한다.
   'src/engine/input-handler-text.ts': 11, // #2424: raw IME delete를 command 공통 typed helper로 이관
   // ── hwpctl — 의도적 미라우팅 (#3648 정책 판정, 2026-07-31) ──
   //

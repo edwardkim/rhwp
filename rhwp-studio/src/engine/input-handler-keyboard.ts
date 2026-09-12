@@ -498,6 +498,8 @@ export async function writeImageToClipboard(
 
 /** 코드 단축키 → 커맨드 ID 매핑 (Ctrl+K,? 형태) */
 const chordMapK: Record<string, string> = {
+  h: 'insert:hyperlink',
+  ㅗ: 'insert:hyperlink', // 한글 IME 상태
   b: 'insert:bookmark',
   ㅠ: 'insert:bookmark', // 한글 IME 상태
   n: 'format:para-num-shape',

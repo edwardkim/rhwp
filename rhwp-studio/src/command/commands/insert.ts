@@ -1,4 +1,5 @@
 import type { CommandDef } from '../types';
+import { hyperlinkCommand, editHyperlinkCommand, removeHyperlinkCommand } from './hyperlink';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
 import { ChartDataDialog } from '@/ui/chart-data-dialog';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
@@ -318,7 +319,9 @@ export const insertCommands: CommandDef[] = [
       symbolsDialog.show();
     },
   },
-  stub('insert:hyperlink', '하이퍼링크', 'icon-hyperlink', 'Ctrl+K+H'),
+  hyperlinkCommand,
+  editHyperlinkCommand,
+  removeHyperlinkCommand,
   {
     id: 'insert:bookmark',
     opensDialog: true,
