@@ -138,9 +138,20 @@ fn form_object_lands_at_paper_bottom_center() {
     );
 
     // [#6874] 캡션이 **본문 글자**로 남는다 — 종전에는 개체 속성이라 저장본에서 사라졌다.
+    //
+    // [#4680] 이 캡션의 빈칸은 원본 HWP3 의 **고정폭 빈칸(코드 31)** 이다. 파서가
+    // 그것을 일반 공백으로 눌러 쓰던 동안에는 한 런 `"- 581-13 -"` 로 보였지만, IR
+    // 규약대로 `U+2007` + `control_mask` 비트로 옮기면서 런이 나뉜다. 글자 자체는
+    // 그대로이므로 런 경계에 기대지 않고 **본문 글자 조각을 이어 붙여** 확인한다.
+    let body: String = text
+        .lines()
+        .filter(|l| l.contains("TextRun"))
+        .filter_map(|l| l.split_once('"'))
+        .filter_map(|(_, r)| r.rsplit_once('"').map(|(s, _)| s.to_string()))
+        .collect();
+    // `dump-extents` 는 비ASCII 를 `\u{...}` 로 이스케이프해 찍는다.
     assert!(
-        text.lines()
-            .any(|l| l.contains("TextRun") && l.contains("- 581-13 -")),
-        "일련번호가 본문 글자로 남지 않았다"
+        body.contains(r"-\u{2007}581-13\u{2007}-"),
+        "일련번호가 본문 글자로 남지 않았다: {body:?}"
     );
 }

@@ -985,6 +985,9 @@ struct Hwp3CharScan<'a> {
     hwp3_char_to_utf16_pos: &'a mut Vec<u32>,
     controls: &'a mut Vec<crate::model::control::Control>,
     ctrl_data_records: &'a mut Vec<Option<Vec<u8>>>,
+    /// [#4680] 이 문단이 실제로 쓴 HWP5 제어 문자 비트. 직렬화기는 "출처가 제어
+    /// 표기였는가" 를 이 비트로 판정해 하이픈·고정폭 빈칸을 리터럴과 가른다.
+    control_mask: &'a mut u32,
     use_password_layout_contract: bool,
 }
 
@@ -2562,6 +2565,7 @@ fn parse_simple_control_char(
         hwp3_char_to_utf16_pos,
         controls,
         ctrl_data_records,
+        control_mask,
         ..
     } = scan;
     match ch {
@@ -2576,7 +2580,16 @@ fn parse_simple_control_char(
             i += 1;
             char_offsets.push(utf16_len);
             utf16_len += 1;
-            text_string.push(if ch == 30 { '\u{00A0}' } else { ' ' });
+            // [#4680] 고정폭 빈칸(31)을 **일반 공백**으로 눌러 쓰면 저장본에서 HWP5
+            // 제어 문자 0x1F 가 사라지고 `control_mask` 비트 31 도 안 선다. 같은 문서의
+            // 한/글 HWP5 변환본은 `U+2007` 을 쓴다(`hwp3-sample16` 대조: 한/글만
+            // U+2007×3, 우리만 U+0020×2). IR 규약대로 가시 등가물 + 비트로 옮긴다.
+            //
+            // 묶음 빈칸(30)은 어느 쪽으로도 증거가 없어 종전 그대로 둔다.
+            if ch == 31 {
+                **control_mask |= 1u32 << 0x001F;
+            }
+            text_string.push(if ch == 30 { '\u{00A0}' } else { '\u{2007}' });
         }
         24 => {
             // [#2765] HWP3 spec §10.18 표 59: 하이픈(24) = 6 bytes 구조
@@ -2594,7 +2607,11 @@ fn parse_simple_control_char(
             i += 2;
             char_offsets.push(utf16_len);
             utf16_len += 1;
-            text_string.push('-');
+            // [#4680] 하이픈 글리프 '-'(U+002D) 를 방출하면 저장본이 HWP5 제어 문자
+            // 0x18 을 잃고 `control_mask` 비트 24 도 안 선다 — 264쪽 문서에서 한/글은
+            // 96문단에 그 비트를 세운다. IR 은 하이픈 제어를 U+00AD + 비트 24 로 쓴다.
+            **control_mask |= 1u32 << 0x0018;
+            text_string.push('\u{00AD}');
         }
         25 => {
             // [#2765] HWP3 spec §10.19 표 60: 제목/표/그림차례 표시(25) = 6 bytes 구조
@@ -2905,6 +2922,8 @@ pub(crate) fn parse_paragraph_list(
         let mut controls = Vec::new();
 
         let mut ctrl_data_records = Vec::new();
+        // [#4680] 문자 루프가 채우고 문단 조립에서 IR 로 옮긴다.
+        let mut para_control_mask: u32 = 0;
         let mut text_string = String::new();
         let mut char_offsets = Vec::with_capacity(para_info.char_count as usize);
         let mut hwp3_char_to_utf16_pos = vec![0; para_info.char_count as usize];
@@ -2940,6 +2959,7 @@ pub(crate) fn parse_paragraph_list(
                                 hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
                                 controls: &mut controls,
                                 ctrl_data_records: &mut ctrl_data_records,
+                                control_mask: &mut para_control_mask,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -2961,6 +2981,7 @@ pub(crate) fn parse_paragraph_list(
                                 hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
                                 controls: &mut controls,
                                 ctrl_data_records: &mut ctrl_data_records,
+                                control_mask: &mut para_control_mask,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -2991,6 +3012,7 @@ pub(crate) fn parse_paragraph_list(
                                 hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
                                 controls: &mut controls,
                                 ctrl_data_records: &mut ctrl_data_records,
+                                control_mask: &mut para_control_mask,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3113,6 +3135,7 @@ pub(crate) fn parse_paragraph_list(
         // 3,699/3,699). 한/글은 같은 문서에서 10종을 쓴다. 스타일 풀은 HWP3 등장
         // 순서대로 쌓이므로 인덱스가 그대로 대응한다.
         para.style_id = para_info.style_index;
+        para.control_mask = para_control_mask;
         para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
         strip_hwp3_single_tac_visual_marker(&mut para);
 
@@ -5568,12 +5591,14 @@ mod tests {
         let mut hwp3_char_to_utf16_pos = vec![0u32; 10];
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
+        let mut para_control_mask: u32 = 0;
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
             hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
+            control_mask: &mut para_control_mask,
             use_password_layout_contract: false,
         };
 
@@ -5637,12 +5662,14 @@ mod tests {
         let mut hwp3_char_to_utf16_pos = vec![0u32; 10];
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
+        let mut para_control_mask: u32 = 0;
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
             hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
+            control_mask: &mut para_control_mask,
             use_password_layout_contract: false,
         };
 
@@ -5726,12 +5753,14 @@ mod tests {
         let mut hwp3_char_to_utf16_pos = vec![0u32; 10];
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
+        let mut para_control_mask: u32 = 0;
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
             hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
+            control_mask: &mut para_control_mask,
             use_password_layout_contract: false,
         };
 
@@ -5785,12 +5814,14 @@ mod tests {
         let mut hwp3_char_to_utf16_pos = vec![0u32; 8];
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
+        let mut para_control_mask: u32 = 0;
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
             hwp3_char_to_utf16_pos: &mut hwp3_char_to_utf16_pos,
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
+            control_mask: &mut para_control_mask,
             use_password_layout_contract: false,
         };
         let mut char_shapes = Vec::new();
