@@ -152,6 +152,7 @@ jobs:
           sparse-checkout: |
             scripts/ci-impact-classifier.cjs
             scripts/ci-impact-policy.cjs
+            scripts/ci-workflow-evidence.cjs
             scripts/ci-impact-report.cjs
             scripts/verify_review_only_merge_resolution.py
           sparse-checkout-cone-mode: false
@@ -180,6 +181,10 @@ jobs:
             const { selectLatestWorkflowRun, selectReviewOnlyCandidate } = require(path.join(
               process.env.GITHUB_WORKSPACE,
               'trusted-base/scripts/ci-impact-policy.cjs',
+            ));
+            const { collectWorkflowEvidence } = require(path.join(
+              process.env.GITHUB_WORKSPACE,
+              'trusted-base/scripts/ci-workflow-evidence.cjs',
             ));
             let files = [];
             let forceFullReason = '';
@@ -300,7 +305,7 @@ jobs:
                 core.warning(`Workflow run collection failed; audit will remain pending. ${error.message}`);
               }
               async function collectRun(name, expectedPath, headSha, allowPriorBase) {
-                const run = selectLatestWorkflowRun(runs, {
+                let run = selectLatestWorkflowRun(runs, {
                   name,
                   path: expectedPath,
                   pullNumber: Number(process.env.PULL_NUMBER),
@@ -312,23 +317,19 @@ jobs:
                   allowPriorBase,
                 });
                 if (!run) return null;
-                let jobs = [];
-                let jobsCollected = false;
-                try {
-                  jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
-                    owner,
-                    repo,
-                    run_id: run.id,
-                    filter: 'latest',
-                    per_page: 100,
-                  });
-                  jobsCollected = true;
-                } catch (error) {
-                  core.warning(
-                    `Could not collect ${name} jobs after configured retries; `
-                    + `audit will remain pending. ${error.message}`,
-                  );
-                }
+                const snapshot = await collectWorkflowEvidence({
+                  run,
+                  getRun: async (id) => (await github.rest.actions.getWorkflowRun({
+                    owner, repo, run_id: id, request: { timeout: 10000 },
+                  })).data,
+                  listJobs: async (id) => github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                    owner, repo, run_id: id, filter: 'latest', per_page: 100,
+                    request: { timeout: 10000 },
+                  }),
+                  warn: (message) => core.warning(message),
+                });
+                run = snapshot.run;
+                const { jobs, jobsCollected, collectionFailure, collectionPendingReason } = snapshot;
                 const collected = {
                   run: {
                     id: run.id,
@@ -347,6 +348,8 @@ jobs:
                     createdAt: run.created_at || '',
                   },
                   jobsCollected,
+                  collectionFailure,
+                  collectionPendingReason,
                   jobs: jobs.map((job) => ({
                     id: job.id,
                     runId: job.run_id,

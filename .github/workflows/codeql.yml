@@ -1,22 +1,6 @@
 name: CodeQL
 
 on:
-  push:
-    branches: [main, devel]
-    paths-ignore:
-      - 'mydocs/**'
-      - 'samples/**'
-      - 'pdf/**'
-      - 'assets/**'
-      - '*.md'
-      - 'LICENSE'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/FUNDING.yml'
-      - '.github/CODE_OF_CONDUCT.md'
-      - '.github/SECURITY.md'
-      - '.github/pull_request_template.md'
-      - '.github/dependabot.yml'
-      - 'rhwp-logo.*'
   pull_request:
     branches: [main, devel]
     paths-ignore:
@@ -37,7 +21,7 @@ on:
   workflow_dispatch:
 
 # [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
-# cancel-in-progress 는 PR 이벤트에서만 활성화 — push/schedule(주간 cron) run 은 보존.
+# Branch push에서는 분석하지 않는다. schedule/manual 분석은 별도 명시 정책이다.
 concurrency:
   group: codeql-${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}

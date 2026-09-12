@@ -173,8 +173,8 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         ci = WORKFLOWS["ci"].read_text(encoding="utf-8")
         self.assertIn("require_duration_artifacts: true", ci)
         self.assertIn("postmerge_source_run_id", ci)
-        self.assertIn("Download trusted PR Archive B duration measurement", ci)
-        self.assertIn("Download trusted PR Archive C duration measurement", ci)
+        self.assertNotIn("Download trusted PR Archive B duration measurement", ci)
+        self.assertNotIn("refresh-nextest-target-duration-data:", ci)
 
     def test_fork_upload_remains_read_only_and_attempt_bound(self) -> None:
         runner = (REPO_ROOT / ".github/workflows/run-nextest-archives.yml").read_text(encoding="utf-8")
@@ -187,19 +187,15 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("contents: read", runner)
         self.assertNotIn("contents: write", runner)
 
-    def test_privileged_refresh_consumes_only_normalized_current_run_data(self) -> None:
-        workflow = REUSABLE.read_text(encoding="utf-8")
-        ci = CI_WORKFLOW.read_text(encoding="utf-8")
-        for label in ("b", "c", "d"):
-            name = f"trusted-postmerge-durations-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}-{label}"
-            self.assertIn(name, workflow)
-            self.assertIn(name, ci)
-        self.assertIn("decodeDurationArtifact(response.data, label)", workflow)
-        self.assertIn("scripts/trusted-postmerge-duration-evidence.mjs", workflow)
-        self.assertIn("validated-duration-publication-failed", workflow)
-        self.assertIn("steps.finalize.outputs.reuse", workflow)
-        block = ci.split("- name: Download trusted PR Archive B duration measurement", 1)[1].split("- name: Refresh duration policy data branch", 1)[0]
-        self.assertNotIn("gh run download", block)
+    def test_privileged_refresh_consumes_only_verified_worker_data(self) -> None:
+        root = CI_WORKFLOW.parents[2]
+        refresh = (root / ".github/workflows/refresh-nextest-duration.yml").read_text()
+        collector = (root / "scripts/collect-postmerge-duration-data.mjs").read_text()
+        self.assertIn("collectPostmergeDurations", refresh)
+        self.assertIn("decodeDurationArtifact(response.data, label)", collector)
+        self.assertIn("validateDurationReports(reports", collector)
+        self.assertNotIn("gh run download", refresh)
+        self.assertNotIn("trusted-postmerge-ci-reuse.yml", refresh)
 
     def test_codeql_neutral_is_not_a_substitute_for_language_success(self) -> None:
         workflow = REUSABLE.read_text(encoding="utf-8")
@@ -275,5 +271,4 @@ class FrontendOnlyPostmergeReuseWorkflowTests(frontend_unittest.TestCase):
         self.assertIn('if (result.refreshDurationData !== false)', workflow)
         self.assertIn("core.setOutput('refresh_duration_data'", workflow)
         self.assertIn("postmerge_refresh_duration_data: ${{ needs.trusted_postmerge_reuse.outputs.refresh_duration_data || 'false' }}", ci)
-        self.assertIn("needs.preflight.outputs.postmerge_reuse != 'true'", ci)
-        self.assertIn("needs.preflight.outputs.postmerge_refresh_duration_data == 'true'", ci)
+        self.assertNotIn("  refresh-nextest-target-duration-data:", ci)
