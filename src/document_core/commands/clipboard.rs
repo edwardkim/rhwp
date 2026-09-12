@@ -1160,6 +1160,24 @@ impl DocumentCore {
             None => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
 
+        // Validate before touching either the document or cascade state.
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 {} 범위 초과",
+                section_idx
+            )));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 {} 범위 초과",
+                para_idx
+            )));
+        }
+        super::clone_identity::reidentify_clipboard(
+            &self.document,
+            std::slice::from_mut(&mut clip_para),
+        )?;
+
         // [Task #1161] 떠 있는 개체(treat_as_char=false) 반복 붙여넣기 시 한컴처럼
         // cascade 오프셋을 누적해 동일 위치 겹침을 방지한다. inline(글자처럼 취급)은
         // 텍스트 흐름이 위치를 정하므로 제외(첫 붙여넣기부터 +1*step).
@@ -1176,20 +1194,6 @@ impl DocumentCore {
                 common.horizontal_offset = common.horizontal_offset.saturating_add(off);
                 self.paste_cascade_count = cascade;
             }
-        }
-
-        // 인덱스 검증
-        if section_idx >= self.document.sections.len() {
-            return Err(HwpError::RenderError(format!(
-                "구역 {} 범위 초과",
-                section_idx
-            )));
-        }
-        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
-            return Err(HwpError::RenderError(format!(
-                "문단 {} 범위 초과",
-                para_idx
-            )));
         }
 
         self.document.sections[section_idx].raw_stream = None;
