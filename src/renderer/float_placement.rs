@@ -543,31 +543,82 @@ pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
 /// 표가 아닌 컨트롤 자리는 `None`.
 ///
 /// 줄 소속을 추측하지 않는다. 저장 `LINE_SEG` 사다리가 있으면 **그 소속을 보존**하고
-/// (`control_text_positions()` 의 문자 위치를 `LineSeg.text_start` 구간에 넣는다),
+/// (컨트롤 시작과 줄 시작을 같은 원시 UTF-16 축으로 정규화한다),
 /// 사다리가 없는 문단은 `None` 을 돌려 호출자가 재조판 경로로 가게 한다.
 ///
 /// 이 매핑이 있으면 문단 높이는 "줄별 점유 높이의 합" 으로 계산된다 — 같은 줄의 표를
 /// 세로로 합산하지 않고, 여러 줄이면 각 줄이 제 몫을 낸다.
 pub(crate) fn para_nested_table_line_indices(para: &Paragraph) -> Option<Vec<Option<usize>>> {
+    let lines = stored_control_line_indices(para)?;
+    Some(
+        para.controls
+            .iter()
+            .zip(lines)
+            .map(|(ctrl, line)| matches!(ctrl, Control::Table(_)).then_some(line))
+            .collect(),
+    )
+}
+
+/// 저장 줄과 컨트롤은 모두 PARA_TEXT UTF-16 축에서 비교한다.
+/// visible character 위치로 투영하면 한 갭 안의 서로 다른 컨트롤 시작이 소실된다.
+pub(crate) fn stored_control_line_indices(para: &Paragraph) -> Option<Vec<usize>> {
     if para.line_segs.is_empty() || crate::renderer::para_has_no_stored_line_segs(para) {
         return None;
     }
-    let positions = para.control_text_positions();
-    let mut out = vec![None; para.controls.len()];
+    Some(
+        para.control_utf16_positions()
+            .into_iter()
+            .map(|pos| {
+                (0..para.line_segs.len())
+                    .rfind(|&li| para.line_seg_text_start(li) <= pos)
+                    .unwrap_or(0)
+            })
+            .collect(),
+    )
+}
+
+/// 측정과 셀 배치가 함께 소비하는 중첩 표의 저장 줄 그룹.
+/// 저장 줄이 없으면 TAC의 같은 줄 소속을 가정하지 않고 종전 적층 폴백을 유지한다.
+pub(crate) struct NestedTableGroup {
+    pub(crate) line: Option<usize>,
+    pub(crate) controls: Vec<usize>,
+    pub(crate) side_by_side: bool,
+}
+
+pub(crate) fn nested_table_groups(para: &Paragraph) -> Vec<NestedTableGroup> {
+    let lines = para_nested_table_line_indices(para);
+    let mut groups: Vec<NestedTableGroup> = Vec::new();
     for (ci, ctrl) in para.controls.iter().enumerate() {
         if !matches!(ctrl, Control::Table(_)) {
             continue;
         }
-        let pos = positions.get(ci).copied().unwrap_or(0);
-        // 이 문자를 담는 마지막 줄 — 저장 사다리가 정한 소속이다.
-        let line = para
-            .line_segs
-            .iter()
-            .rposition(|seg| (seg.text_start as usize) <= pos)
-            .unwrap_or(0);
-        out[ci] = Some(line);
+        let line = lines.as_ref().and_then(|v| v[ci]);
+        if let Some(group) = groups.iter_mut().find(|g| g.line == line) {
+            group.controls.push(ci);
+        } else {
+            groups.push(NestedTableGroup {
+                line,
+                controls: vec![ci],
+                side_by_side: false,
+            });
+        }
     }
-    Some(out)
+    for group in &mut groups {
+        let tables: Vec<&Table> = group
+            .controls
+            .iter()
+            .filter_map(|&ci| match &para.controls[ci] {
+                Control::Table(t) => Some(t.as_ref()),
+                _ => None,
+            })
+            .collect();
+        group.side_by_side = if group.line.is_some() {
+            line_nested_table_group_is_side_by_side(&tables)
+        } else {
+            para_float_group_is_side_by_side(para)
+        };
+    }
+    groups
 }
 
 /// [#6787] 한 **줄**에 놓인 중첩 표들이 나란히 놓이는 무리인가 — 즉 그 줄이 예약해야 할
@@ -616,7 +667,8 @@ pub(crate) fn para_float_group_is_side_by_side(para: &Paragraph) -> bool {
             _ => None,
         })
         .collect();
-    line_nested_table_group_is_side_by_side(&tables)
+    tables.iter().all(|t| !t.common.treat_as_char)
+        && line_nested_table_group_is_side_by_side(&tables)
 }
 
 /// 나란히 무리의 자격 — 무리 판정과 레인 배치가 **같은 술어**를 쓴다.

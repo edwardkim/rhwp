@@ -1905,65 +1905,46 @@ impl HeightMeasurer {
             .iter()
             .enumerate()
             .map(|(pidx, p)| {
-                // [#7008] 문단 높이는 **줄별 점유 높이의 합**이다. 같은 줄에 놓인 표를
-                // 세로로 합산하지 않고, 여러 줄이면 각 줄이 제 몫을 낸다.
-                //
-                // 줄 소속은 추측하지 않는다 — 저장 `LINE_SEG` 사다리가 그것을 증언하고
-                // (`para_nested_table_line_indices`), 사다리가 없는 문단만 종전처럼
-                // 문단 전체를 한 무리로 본다. 그 한 줄 무리가 나란한지는 측정과 배치가
-                // 함께 쓰는 `line_nested_table_group_is_side_by_side` 가 가른다.
-                //
-                // [#6787] 16774617 1쪽 후보자 카드 2장(`horz=Para(1547)` / `Para(23743)`,
-                // 각 253.2px)은 가로로 겹치지 않아 한/글이 같은 y 에 놓는다 — 합산하면
-                // 그 칸이 선언 251.97px 대비 854.7px 로 부풀어 361자가 잘린다.
-                let line_of = crate::renderer::float_placement::para_nested_table_line_indices(p);
-                let measured: Vec<(usize, &crate::model::table::Table, f64)> = p
+                // 저장 줄별 그룹은 배치와 공유한다. 저장 줄의 간격과 빈 줄도
+                // 점유 범위에 포함하고, NO_LS에서는 TAC 같은 줄을 추정하지 않는다.
+                let groups = crate::renderer::float_placement::nested_table_groups(p);
+                let heights: Vec<f64> = p
                     .controls
                     .iter()
-                    .enumerate()
-                    .filter_map(|(ci, ctrl)| {
+                    .map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
                             let stretch =
                                 self.render_normalization.nested_table_width_scale(nested);
                             let mt =
                                 self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
-                            // [#2148 실험] NO_LS 중첩 표 선언 신뢰 — 성장 전용 max.
-                            let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
-                            // [#2169] om 가산은 additive 경로(cell_controls_height)
-                            // 전담 — vpos 기반 max 경로는 저장 vpos 가 배치를 이미
-                            // 반영하므로 미가산 (자기-export HWPX 왕복 이중가산 방지).
-                            let line = line_of
-                                .as_ref()
-                                .and_then(|v| v.get(ci).copied().flatten())
-                                .unwrap_or(0);
-                            Some((line, nested.as_ref(), mt.total_height.max(declared)))
+                            mt.total_height
+                                .max(hwpunit_to_px(nested.common.height as i32, self.dpi))
                         } else {
-                            None
+                            0.0
                         }
                     })
                     .collect();
+                let para_top_hu = p.line_segs.first().map_or(0, |s| s.vertical_pos);
                 let mut nested_h = 0.0f64;
-                let mut line_idx = 0usize;
-                while !measured.is_empty() {
-                    let group: Vec<&(usize, &crate::model::table::Table, f64)> =
-                        measured.iter().filter(|(l, _, _)| *l == line_idx).collect();
-                    if !group.is_empty() {
-                        let tables: Vec<&crate::model::table::Table> =
-                            group.iter().map(|(_, t, _)| *t).collect();
-                        let side_by_side =
-                            crate::renderer::float_placement::line_nested_table_group_is_side_by_side(
-                                &tables,
-                            );
-                        nested_h += if side_by_side {
-                            group.iter().map(|(_, _, h)| *h).fold(0.0, f64::max)
-                        } else {
-                            group.iter().map(|(_, _, h)| *h).sum::<f64>()
-                        };
-                    }
-                    line_idx += 1;
-                    if line_idx > measured.iter().map(|(l, _, _)| *l).max().unwrap_or(0) {
-                        break;
-                    }
+                for group in groups {
+                    let height = if group.side_by_side {
+                        group
+                            .controls
+                            .iter()
+                            .map(|&ci| heights[ci])
+                            .fold(0.0, f64::max)
+                    } else {
+                        group.controls.iter().map(|&ci| heights[ci]).sum()
+                    };
+                    let bottom = if let Some(line) = group.line {
+                        let seg = &p.line_segs[line];
+                        let top =
+                            hwpunit_to_px(seg.vertical_pos.saturating_sub(para_top_hu), self.dpi);
+                        top + height
+                    } else {
+                        height
+                    };
+                    nested_h = nested_h.max(bottom);
                 }
                 if nested_h <= 0.0 {
                     0.0

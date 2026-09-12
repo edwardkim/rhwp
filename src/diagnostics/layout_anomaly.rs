@@ -464,38 +464,41 @@ fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
     BoundingBox::new(x, top, width, em)
 }
 
-/// 런 앞뒤의 **빈칸 전진폭**을 가로 범위에서 뺀다.
-///
-/// 런 bbox 의 가로는 전진폭이고, 종전 주석은 그것이 "글자가 실제로 차지하는 가로
-/// 범위와 사실상 같다" 고 적었다. 앞이 빈칸으로 시작하는 런에서는 그렇지 않다 —
-/// `복학원서.hwp` 1쪽의 `"    ※ 군필자는 …"` 런은 bbox 가 `x=60.4` 인데 첫 글리프
-/// `※` 는 `x=81.8` 이다. 빈칸 4개 × 0.5em(10.7) = 21.4px 가 그 차이다.
-///
-/// 그 21.4px 때문에 바로 왼쪽의 다른 줄(`x 56.7..70.1`)과 **상자만** 겹쳐 위양성이
-/// 났다. 빈칸 전진폭을 빼면 예측 시작 `60.4 + 21.4 = 81.8` 로 실제 글리프 위치와
-/// 정확히 맞는다.
-///
-/// 빈칸은 반각 `U+0020` 을 0.5em, 전각 `U+3000` 을 1em 으로 본다(측정 경로의
-/// `heuristicHalfwidth`/`heuristicFullwidth` 와 같은 규약). 상자를 **넓히지는
-/// 않는다** — 뺄 몫이 폭보다 크면 원래 폭을 유지한다.
+/// 렌더러의 replay 위치로 앞뒤 공백의 전진폭만 제거한다.
+/// 장평·자간·탭·유효한 layout_positions를 같은 경로로 해석한다.
+/// 표시 문자열이 달라진 필드도 backend와 같은 검증/fallback을 거친다.
 fn glyph_band_horizontal(
     run: &crate::renderer::render_tree::TextRunNode,
     x: f64,
     width: f64,
-    em: f64,
+    _em: f64,
 ) -> (f64, f64) {
     let text = run.display_or_text();
-    let space_advance = |c: char| match c {
-        ' ' => Some(em * 0.5),
-        '\u{3000}' => Some(em),
-        _ => None,
-    };
-    let lead: f64 = text.chars().map_while(space_advance).sum();
-    let trail: f64 = text.chars().rev().map_while(space_advance).sum();
-    if lead + trail >= width || !(lead + trail).is_finite() {
+    let is_space = |c: char| matches!(c, ' ' | '\u{3000}');
+    let start = text.chars().take_while(|&c| is_space(c)).count();
+    let end = text.chars().count() - text.chars().rev().take_while(|&c| is_space(c)).count();
+    if start >= end || (start == 0 && end == text.chars().count()) {
         return (x, width);
     }
-    (x + lead, width - lead - trail)
+    let positions = run.replay_positions_for(text);
+    let Some((&left, &right)) = positions.get(start).zip(positions.get(end)) else {
+        return (x, width);
+    };
+    // bbox와 전진폭의 계약이 맞지 않을 때 근거 없는 축소를 하지 않는다.
+    if !left.is_finite() || !right.is_finite() || left < 0.0 || right <= left || left >= width {
+        return (x, width);
+    }
+    // 공백 없는 쪽 끝은 원상자를 유지한다. 비공백 advance 차이까지 줄이지 않는다.
+    let left = if start == 0 { 0.0 } else { left };
+    let right = if end == text.chars().count() {
+        width
+    } else {
+        right.min(width)
+    };
+    if right <= left {
+        return (x, width);
+    }
+    (x + left, right - left)
 }
 
 /// em 상자에서 baseline 위쪽이 차지하는 몫.
