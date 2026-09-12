@@ -280,6 +280,121 @@ fn memory_kib(key: &str) -> Option<u64> {
     })
 }
 
+#[test]
+fn group_caption_nested_table_image_and_equation_keep_owned_paths_and_resources() {
+    use rhwp::{
+        document_core::ParagraphBlockPathStep as Step,
+        model::{
+            bin_data::BinDataContent,
+            control::Equation,
+            image::Picture,
+            shape::{Caption, GroupShape, RectangleShape, ShapeObject, TextBox},
+        },
+    };
+    let mut c = load("samples/hwp_table_test.hwp");
+    let table = c.document().sections[0].paragraphs[3].controls[0].clone();
+    let mut png = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::new_rgba8(1, 1)
+        .write_to(&mut png, image::ImageFormat::Png)
+        .unwrap();
+    let image_id = u16::try_from(c.document().bin_data_content.len() + 1).unwrap();
+    c.document_mut().bin_data_content.push(BinDataContent {
+        id: image_id,
+        data: png.into_inner().into(),
+        extension: "png".into(),
+    });
+    let mut picture = Picture::default();
+    picture.common.instance_id = 10001;
+    picture.instance_id = 10002;
+    picture.image_attr.bin_data_id = image_id;
+    let mut rectangle = RectangleShape::default();
+    rectangle.common.instance_id = 10003;
+    rectangle.drawing.inst_id = 10004;
+    rectangle.drawing.text_box = Some(TextBox {
+        paragraphs: vec![Paragraph {
+            controls: vec![table, Control::Picture(Box::new(picture))],
+            ..Default::default()
+        }],
+        ..Default::default()
+    });
+    let mut group = GroupShape::default();
+    group.common.instance_id = 10005;
+    group.children = vec![ShapeObject::Rectangle(rectangle)];
+    group.caption = Some(Caption {
+        paragraphs: vec![Paragraph {
+            text: "caption".into(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    });
+    let mut equation = Equation {
+        script: "x + 1".into(),
+        font_size: 1000,
+        ..Default::default()
+    };
+    equation.common.instance_id = 10006;
+    let pi = c.document().sections[0].paragraphs.len();
+    c.document_mut().sections[0].paragraphs.push(Paragraph {
+        controls: vec![
+            Control::Shape(Box::new(ShapeObject::Group(group))),
+            Control::Equation(Box::new(equation)),
+        ],
+        ..Default::default()
+    });
+    let resources = serde_json::to_value(&c.document().doc_info).unwrap();
+    let before = format!("{:?}", c.document().sections[0].paragraphs[pi]);
+    let result = c.repeat_paragraph_block_native(&request(pi, 2)).unwrap();
+    assert_eq!(
+        format!("{:?}", c.document().sections[0].paragraphs[pi]),
+        before
+    );
+    assert_eq!(
+        serde_json::to_value(&c.document().doc_info).unwrap(),
+        resources
+    );
+    assert_eq!(c.document().bin_data_content.len(), usize::from(image_id));
+    for copy in &result.copies {
+        assert!(copy.mappings.iter().any(|m| m.source
+            == vec![
+                Step::Paragraph(0),
+                Step::Control(0),
+                Step::Shape,
+                Step::GroupChild(0),
+                Step::TextBox,
+                Step::Paragraph(0),
+                Step::Control(0),
+                Step::Cell(0),
+                Step::Paragraph(0)
+            ]));
+        assert!(copy
+            .mappings
+            .iter()
+            .any(|m| m.source.contains(&Step::Caption)));
+        let controls = &c.document().sections[0].paragraphs[copy.range.start].controls;
+        let Control::Shape(s) = &controls[0] else {
+            panic!()
+        };
+        let ShapeObject::Group(g) = s.as_ref() else {
+            panic!()
+        };
+        assert_ne!(g.common.instance_id, 10005);
+        let ShapeObject::Rectangle(rect) = &g.children[0] else {
+            panic!()
+        };
+        let children = &rect.drawing.text_box.as_ref().unwrap().paragraphs[0].controls;
+        let Control::Picture(p) = &children[1] else {
+            panic!()
+        };
+        assert_eq!(p.image_attr.bin_data_id, image_id);
+        assert_ne!(p.instance_id, 10002);
+        let Control::Equation(e) = &controls[1] else {
+            panic!()
+        };
+        assert_eq!(e.script, "x + 1");
+        assert_ne!(e.common.instance_id, 10006);
+    }
+}
+
 /// One fixture/count per process. Outputs are opt-in, outside ordinary CI.
 #[test]
 #[ignore = "manual cost/artifact probe; see Stage 6 for exact invocation"]
