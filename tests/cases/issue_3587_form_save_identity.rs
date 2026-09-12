@@ -185,7 +185,9 @@ fn unchanged_form_fixtures_keep_attributes_and_legacy_nonconflicting_ids() {
                     })
                     .collect::<Vec<_>>()
             };
-            assert_eq!(attributes(saved.document()), attributes(core.document()));
+            // HWPX selectedValue="" becomes its first list item in the legacy
+            // HWP ComboBox writer. Compare the HWP oracle, not unlike IR slots.
+            assert_eq!(attributes(saved.document()), attributes(golden.document()));
             assert_eq!(core.export_hwp_native().unwrap(), bytes);
         }
     }
