@@ -2504,6 +2504,31 @@ fn parse_field_control_char(
                         hide.hide_page_num = (flags & 4) != 0;
                         hide.hide_border = (flags & 8) != 0;
                         crate::model::control::Control::PageHide(hide)
+                    } else if kind == 0 {
+                        // [#4680] 제어문자 21 의 종류 0 은 **항상 홀수쪽으로 시작**이다
+                        // (`mydocs/tech/한글문서파일구조3.0.md` §10.15 표 56: 0 = 홀수로
+                        // 시작, 1 = 감춤). 종전에는 이 자리가 catch-all 로 떨어져
+                        // `Control::Unknown { ctrl_id: 21 }` 이 됐다.
+                        //
+                        // 그 21 은 HWP5 저장에서 **구조 오염**이 된다. HWP5 의 ctrl_id 는
+                        // 네 글자 코드('pgct'·'pghd' …)이고, 저장기는 Unknown 을 개체
+                        // 제어문자 자리(0x000B)와 `CTRL_HEADER` 에 그대로 쓴다. 한글은
+                        // 그런 문단을 만나면 문서를 열지 못한다 — 264쪽 HWP3 문서
+                        // `1170000-200500003 독일의 법령체계와 입법심사기준` 이 개방 거부됐고,
+                        // 그 코드가 있는 42쪽 한 장만 뽑아도 같은 거부가 재현된다.
+                        // rhwp 자신은 산출물을 그대로 되읽으므로 자기검증으로는 안 보인다.
+                        //
+                        // 값은 같은 문서의 한/글 HWP5 저장본에서 온다 — `pgct` 4건이
+                        // 모두 payload 2(= 홀수 쪽)이고 개수도 우리 4건과 맞는다. 종류 1
+                        // (감춤)이 `pghd` 인 것도 같은 대조로 확인된다(00472: HWP3 감출
+                        // 대상 7 ↔ 한/글 `pghd` 0x23 = 머리말·꼬리말·쪽번호).
+                        // 코퍼스 HWP3 38건 전수에서 `Control::Unknown` 은 이 4건이 전부다.
+                        // 규격에 종류는 0·1 뿐이므로 그 밖의 값은 종전 경로로 둔다.
+                        crate::model::control::Control::PageNumCtrl(
+                            crate::model::control::PageNumCtrl {
+                                page_starts_on: crate::model::control::PageStartsOn::Odd,
+                            },
+                        )
                     } else {
                         crate::model::control::Control::Unknown(
                             crate::model::control::UnknownControl { ctrl_id: ch as u32 },
