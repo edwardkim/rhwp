@@ -2108,7 +2108,12 @@ fn stored_single_visual_line(para: &Paragraph) -> Option<&crate::model::paragrap
         .then_some(first)
 }
 
-fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize) -> Option<bool> {
+fn textless_host_ladder_line_advance(
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    para_index: usize,
+) -> Option<bool> {
     let cur = paragraphs.get(para_index)?;
     let next = paragraphs.get(para_index + 1)?;
     // [#6524] 물러날 대상은 "**줄**이 여럿"이지 "**조각**이 여럿"이 아니다. 종전 술어
@@ -2118,7 +2123,7 @@ fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize
     let seg = stored_single_visual_line(cur)?;
     let next_seg = next.line_segs.first()?;
     // 줄 규모는 조각들의 최대값으로 본다 — 좌·우 띠는 같은 줄이라 높이를 더하지 않는다.
-    let expected = cur
+    let line_region = cur
         .line_segs
         .iter()
         .map(|s| s.line_height)
@@ -2130,6 +2135,42 @@ fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize
             .map(|s| s.line_spacing)
             .max()
             .unwrap_or(0);
+    if line_region <= 0 {
+        return None;
+    }
+    // [#7047] 저장 델타는 줄 규모만이 아니라 **문단 간격까지** 포함한다 — 호스트의
+    // `문단 뒤 간격` + 다음 문단의 `문단 앞 간격` 이 그대로 실려 있다. 같은 파일 아래쪽
+    // `ladder_delta_px` 주석도 "저장 델타 = sb+lh+ls 전량" 이라고 적는다.
+    //
+    // 임대차계약서양식(#7047) 3쪽 빈 개체 호스트 7개 전량 실측 — 델타가 정확히 이 합이다.
+    //   rec#829  1720 = lh 1100 + ls 220 + sa 200 + sb 200
+    //   rec#847  2120 = lh 1400 + ls 420 + sa   0 + sb 300
+    //   rec#947   886 = lh  450 + ls 136 + sa   0 + sb 300
+    //   rec#958   494 = lh  150 + ls  44 + sa   0 + sb 300
+    //   rec#1041 1794 = lh 1150 + ls 344 + sa   0 + sb 300   (1052·1092 동형)
+    //
+    // 간격을 빼면 줄 높이가 작은 호스트(450·150 HU)만 `delta/expected` 가 1.51·2.55 로
+    // 커져 아래 stale 가드에 걸린다. 그러면 그 문단이 흐름을 **한 픽셀도 전진시키지
+    // 않아**, 뒤따르는 개체가 저장 사다리보다 그 델타만큼 위에 놓인다(11.8px·6.6px —
+    // 호스트에 글자를 넣는 돌연변이로 같은 값이 그대로 복구됨). 간격을 넣으면 7개 전부
+    // 비율 1.0 이 된다. stale 반례(issue_2069: 델타가 저장 피치의 2배)는 간격을 넣어도
+    // 비율 ~2.0 이라 가드가 그대로 잡는다.
+    let para_spacing_hu = |pi: usize, after: bool| -> i32 {
+        paragraphs
+            .get(pi)
+            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+            .map(|ps| {
+                let px = if after {
+                    ps.spacing_after
+                } else {
+                    ps.spacing_before
+                };
+                ((px * 7200.0 / dpi).round() as i32).max(0)
+            })
+            .unwrap_or(0)
+    };
+    let expected =
+        line_region + para_spacing_hu(para_index, true) + para_spacing_hu(para_index + 1, false);
     if expected <= 0 {
         return None;
     }
@@ -8998,7 +9039,14 @@ impl LayoutEngine {
                             .is_some_and(para_has_visible_text);
                         let has_ladder_float = has_overlay_float || has_square_float_before_text;
                         let ladder_verdict = has_ladder_float
-                            .then(|| textless_host_ladder_line_advance(paragraphs, *para_index))
+                            .then(|| {
+                                textless_host_ladder_line_advance(
+                                    paragraphs,
+                                    styles,
+                                    self.dpi,
+                                    *para_index,
+                                )
+                            })
                             .flatten();
                         // [#5929] 사다리가 **아예 없는** 문서(합성 lineseg 뿐인 기계
                         // 생성본)에서는 위 증언 경로가 통째로 침묵한다. 그때는 조판을
