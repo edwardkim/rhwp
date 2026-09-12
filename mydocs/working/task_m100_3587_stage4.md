@@ -2,7 +2,8 @@
 
 - 일자: 2026-09-12
 - 승인: 메인테이너 「B 구현계획서를 승인합니다」.
-- 상태: **B1 자원 사전검사 구현, 검증 대기. B1 전체와 B2/B3는 미완료.**
+- 상태: **B1 자원 사전검사 절편 구현·집중 검증 완료. B1 전체와 B2/B3는 미완료.**
+- 제품/테스트 검증 SHA: `b1de53c326` (`task_m100_3587`).
 - 근거: [승인된 B 계획](../plans/task_m100_3587_impl_b.md), [A 통합 결과](task_m100_3587_stage3.md).
 
 ## 1. 이번 절편
@@ -27,7 +28,7 @@
 - Form의 사용자 정의 serializer는 정렬용 Vec를 할당하므로 원형 비용 방문 전에 거부한다.
   이는 B 초기 Form 미지원 방침에 맞춘 방어이며, 다른 종류의 비용 계측 성공은 지원 승인이 아니다.
 
-## 2. 검증 계획
+## 2. 검증 계약
 
 `tests/cases/issue_3587_paragraph_block_budget.rs`의 10건:
 
@@ -42,11 +43,34 @@
 9. 1/10/100회 비용 선형성과 요청당 원문 1회 순회 비용.
 10. 실제 표/clipboard가 있는 core에서 성공·실패 모두 문서/이벤트/clipboard 보존.
 
-검증은 source를 커밋한 후 `rhwp-review-3587`의 동일 SHA에서 수행한다.
-생성 suite는 해당 worktree에서만 준비하고 `target/pr-review`를 재사용한다.
+검증은 source를 커밋한 후 `rhwp-review-3587`의 동일 SHA에서 수행했다.
+생성 suite는 해당 worktree에서만 준비하고 `target/pr-review`를 재사용했다.
 이번 예산 수치의 선형성 검사는 사본 생성 시간/RSS 계측이 아니다.
 
-## 3. 남은 승인 범위
+## 3. 실행 결과
+
+로그: Git 제외 `output/3587/b1/`. 아래 검사는 모두 `b1de53c326`의 동일 제품/테스트에서 수행했다.
+
+| 검사 | 결과 |
+| --- | --- |
+| manifest `--prepare` | PASS, review worktree에서만 실행 |
+| `cargo fmt --all` 및 `--check` | PASS, tracked source 변경 없음 |
+| `run-rust-test.mjs issue_3587_paragraph_block_budget` | **10 PASS / 0 FAIL**, 필터 제외 194건 |
+| A 4개 source의 `issue_3587_` focused nextest | **25 PASS / 0 FAIL**, 필터 제외 539건 |
+| `cargo clippy --locked --target-dir …/target/pr-review -- -D warnings` | PASS, 46.76초 |
+| manifest `--check` | PASS |
+| B 계획·본 기록 파일 단위 Markdown 링크 검사 | PASS |
+
+B 테스트 컴파일 2분 10초, 실행 0.011초. A 테스트 컴파일 9.83초, 실행 0.229초.
+이는 해당 환경의 집중 테스트 시간이지 자동화 복제 API 성능 수치가 아니다.
+두 실행의 nextest 버전 0.9.137 권장 버전 경고 및 `report-skipped` 설정 키 경고는 A 통합
+검증 때와 동일하다. 도구 설정을 이번 변경으로 수정하지 않았다.
+
+이번 절편은 제품/테스트 실패 없이 통과했다. 전체 nextest·WASM/workspace Clippy·Docker WASM·
+한컴 시각 검증은 이번 B 코드에서 아직 실행하지 않았으며, 이전 A의 전체 통과로 갈음하지 않는다.
+원격 push 또는 PR 전에는 규정된 전체 lint 묶음을 수행해야 한다.
+
+## 4. 남은 승인 범위
 
 - B1: 종류/안전 raw 슬롯 지원표, 최초 문제의 typed path, 필드/연결선 양방향 경계 검사,
   중복 참조 검사, 공유 자원 존재 검사. 현재 budget 함수는 이것들의 대체물이 아니다.
