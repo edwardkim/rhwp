@@ -16,7 +16,7 @@ last_verified: 2026-09-13
 | 관련 issue | Closes [#7069](https://github.com/edwardkim/rhwp/issues/7069), Closes [#7070](https://github.com/edwardkim/rhwp/issues/7070) |
 | 작성자 / 검토자 | jangster77 / jangster77 self-review, reviewer 미지정 |
 | base / branch | devel / fix/7069-ci-evidence-convergence |
-| 검증 후보 | `4855fffdba4d7985200fbe6ea0d90f3bb4758316` |
+| 최초 검증 후보 | `4855fffdba4d7985200fbe6ea0d90f3bb4758316` |
 | 기준 / 병합 simulation | `3f34869b9c4d15a27b181dd22c63cd0a3730d46a` / tree `044e1f598878029f00d4e0bc2afa569cb4c8bb61`, 충돌 없음 |
 | 최초 규모 | 28 files, +1309 / -295; 본 문서와 오늘할일은 문서-only 후행 변경 |
 | 생성 직후 상태 | Open, non-draft, MERGEABLE / BLOCKED, PR CI 진행 중인 시점의 참고값 |
@@ -50,7 +50,7 @@ PR 승인·병합 tree 검증의 대체물이 아니다.
 | 검증 | 결과 |
 | --- | --- |
 | Node classifier/policy/evidence/duration/reuse | 450 PASS, exit 0 |
-| Python workflow 계약 | 179 PASS, exit 0 |
+| Python workflow 계약 | 240 PASS, exit 0 |
 | actionlint 구조·expression | 변경 workflow 7개 통과 |
 | ShellCheck 포함 비교 | 기존 CI·Oracle SC2016 2건 동일; 신규 duration workflow 없음 |
 | 실제 #7068 artifact read-only 수집 | run `34702678657`, latest attempt 2, 측정 B/C/D attempt 1, provenance 통과 |
@@ -78,3 +78,11 @@ Rust 및 renderer 변경이 없으므로 Cargo, HWP/HWPX/PDF fixture, visual swe
 main/devel push 제거와 duration workflow는 devel 병합부터 적용되지만, #7069 controller 수집
 배선은 기본 branch main의 정상 release 이후 활성화된다. main 직접 push는 범위에 없다.
 코멘트·devel 동기화 후 이 PR 소유 branch/worktree만 정리하며 공유 target과 다른 작업은 보존한다.
+
+## 최초 CI 실패 보정
+
+`5a5095d58`의 lint에서 새 Node evidence 테스트의 discovery 기대 목록 누락을 발견했다.
+`test_workflow_contract_wiring.py`를 갱신하고 실제 CI의 `Validate workflow contracts` 명령을
+그대로 재실행해 exit 0을 확인했다. Python 검색 범위는 `test_*workflow*.py`로 넓혀 240 PASS를
+확인했다. 이후 변경은 workflow 계약 테스트 2개와 본 검증 기록이며 제품 코드 변경은 없다.
+새 최종 head의 CI 결과로 병합 판단해야 한다.

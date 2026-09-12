@@ -46,7 +46,7 @@ artifact 이름과 JSON의 attempt는 1이었다. latest job의 attempt만 신�
 ## 검증과 적용 경계
 
 - Node classifier/policy/evidence/duration/reuse 회귀 **450 PASS**, exit 0.
-- Python workflow 계약 **179 PASS**, exit 0.
+- Python workflow 계약 **240 PASS**, exit 0.
 - 변경 workflow actionlint 구조·expression 검사 통과. ShellCheck 포함 실행의 SC2016 두 건은
   기존 CI와 Oracle의 의도적인 single-quote 문자열에서 발생한 baseline이며 신규 workflow에는 없다.
 - 원본/복사 attempt 동일 실행, 혼합 attempt, 실행 시각 변경, identity/자료 누락·실패·만료,
@@ -57,3 +57,12 @@ push trigger 제거와 duration workflow는 devel 병합부터 적용된다. #70
 로드되지만 controller 수집 배선은 main의 정상 release 반영 후 활성화된다. 이 변경을 main에 직접
 push하거나 release를 강제하지 않는다. 운영 적용 뒤 merge SHA에 검증 workflow가 생기지 않는지와
 duration 결과를 확인해야 하며, 로컬 검사만으로 해당 운영 확인이 끝났다고 기록하지 않는다.
+
+## PR #7071 최초 CI 보정
+
+최초 trailing head `5a5095d58`의 lint는 `Validate workflow contracts`에서 실패했다.
+새 `ci-workflow-evidence.test.cjs`의 CI 실행 줄은 추가했지만, 기존 discovery 검사의 기대 목록을
+갱신하지 않은 원인이었다. 초기 로컬 패턴 `test_*workflow.py`는 `test_workflow_contract_wiring.py`와
+복수형 `workflows.py`를 놓쳤다. 기대 목록을 갱신하고 실제 CI step의 명령 전체를 그대로 실행해
+exit 0을 확인했다. 넓힌 `test_*workflow*.py` 검사도 240 PASS / exit 0이다. 이는 #7069의 API 지연과
+다른, 이번 변경의 테스트 목록 누락이며 해당 범위에서 보정했다. push guard는 `.yaml` 확장자도 검사한다.

@@ -59,7 +59,7 @@ class WorkflowContractWiringTests(unittest.TestCase):
         self.assertEqual(
             node_contract_test_files(),
             ["ci-impact-classifier.test.cjs", "ci-impact-policy.test.cjs",
-             "ci-impact-report.test.cjs"],
+             "ci-impact-report.test.cjs", "ci-workflow-evidence.test.cjs"],
         )
 
     def test_every_contract_test_is_invoked_by_ci(self):

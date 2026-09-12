@@ -9,7 +9,9 @@ WORKFLOWS = ROOT / '.github/workflows'
 class PostmergeDurationWorkflowTests(unittest.TestCase):
     def test_devel_push_subscribers_are_metadata_only(self):
         # An allowlist makes newly introduced implicit/all-branch push triggers fail too.
-        for path in WORKFLOWS.glob('*.yml'):
+        for path in WORKFLOWS.iterdir():
+            if path.suffix not in {'.yml', '.yaml'}:
+                continue
             text = path.read_text()
             match = re.search(r'^  push:(.*?)(?=^  [a-z_]+:|^\S|\Z)', text, re.M | re.S)
             if not match:
