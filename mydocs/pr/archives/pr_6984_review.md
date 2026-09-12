@@ -62,8 +62,10 @@
 - 잠금 해제 후 새 보조 엔트리를 가진 `unlink-before.hwp`/`.hwpx`와 해제 후
   `unlink-restored.hwp`/`.hwpx`를 한컴 Viewer에서 각각 직접 열었다. 읽기·복구 오류 없이
   적용본의 파란 밑줄, 해제본의 빨간 밑줄·초록색과 문자열을 확인했다.
-  HWP 링크 클릭은 Viewer 보안 확인창까지 확인했다. ‘한 번 허용’은 자동 승인 검토가
-  구체적 경고 수락 승인 부족으로 차단했으며, 브라우저 이동은 사용자 승인 대기다.
+  HWP와 HWPX 링크를 각각 클릭하고, 사용자의 추가 승인 후 ‘한 번 허용’을 실행했다.
+  두 형식 모두 Firefox의 새 Example Domain 탭이 열리고 주소
+  `example.com/original-format`에 도착한 것을 확인했다. 검증 입력 4개 파일의 해시는
+  기존 커밋 증거와 동일하며 파일을 Viewer에서 편집·재저장하지 않았다.
   Viewer 읽기 확인을 외부 프로그램에서의 편집·재저장 시 보조 정보 보존 검증으로 확대하지 않는다.
   [Viewer 화면·해시](../assets/issue6984/viewer-unlink-evidence.json)를 따른다.
 - 기존 PR 본문의 PDF·한컴 Viewer 등 스크린샷 6장을 보존한다. 최신 head CI와
