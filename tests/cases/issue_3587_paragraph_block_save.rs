@@ -101,6 +101,7 @@ fn table_ids(c: &DocumentCore) -> Vec<u32> {
 
 #[test]
 fn real_blocks_save_both_formats_without_losing_paragraphs_or_table_ids() {
+    let mut differences = Vec::new();
     for (path, pi) in [
         ("samples/hwp_table_test.hwp", 3),
         ("samples/rnote/labnote-001.hwp", 12),
@@ -127,6 +128,42 @@ fn real_blocks_save_both_formats_without_losing_paragraphs_or_table_ids() {
                 ("hwpx", c.export_hwpx_native().unwrap()),
             ] {
                 let reopened = DocumentCore::from_bytes(&output).unwrap();
+                let mut format_expected = expected.clone();
+                // HWPX section template adds exactly one default colPr when
+                // its first paragraph has no ColumnDef (#1407/#1584). Verify
+                // that metadata explicitly; do not ignore columns elsewhere.
+                if format == "hwpx"
+                    && !c.document().sections[0].paragraphs[0]
+                        .controls
+                        .iter()
+                        .any(|x| matches!(x, Control::ColumnDef(_)))
+                {
+                    let columns: Vec<_> = reopened.document().sections[0].paragraphs[0]
+                        .controls
+                        .iter()
+                        .filter_map(|x| {
+                            if let Control::ColumnDef(cd) = x {
+                                Some(cd)
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+                    assert_eq!(columns.len(), 1);
+                    let default_column = rhwp::model::page::ColumnDef {
+                        column_count: 1,
+                        same_width: true,
+                        ..Default::default()
+                    };
+                    assert_eq!(
+                        serde_json::to_value(columns[0]).unwrap(),
+                        serde_json::to_value(default_column).unwrap()
+                    );
+                    format_expected[0][0]["controlKinds"]
+                        .as_array_mut()
+                        .unwrap()
+                        .insert(0, json!("ColumnDef"));
+                }
                 assert_eq!(
                     section_content(&reopened),
                     expected_sections,
@@ -142,13 +179,26 @@ fn real_blocks_save_both_formats_without_losing_paragraphs_or_table_ids() {
                     expected.len(),
                     "{path} at={at} format={format}"
                 );
-                for (pi, (a, b)) in actual.iter().zip(&expected).enumerate() {
-                    assert_eq!(a, b, "{path} at={at} format={format} pi={pi}");
+                for (pi, (a, b)) in actual.iter().zip(&format_expected).enumerate() {
+                    if a != b {
+                        let first = a
+                            .iter()
+                            .zip(b)
+                            .position(|(x, y)| x != y)
+                            .unwrap_or(a.len().min(b.len()));
+                        differences.push(json!({"path":path,"at":at,"format":format,"pi":pi,"entry":first,
+                            "actual":a.get(first),"expected":b.get(first),"actualLen":a.len(),"expectedLen":b.len()}));
+                    }
                 }
                 assert_eq!(table_ids(&reopened), expected_ids, "{path} {format}");
             }
         }
     }
+    assert!(
+        differences.is_empty(),
+        "save contract differences: {}",
+        json!(differences)
+    );
 }
 
 #[test]
