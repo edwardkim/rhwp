@@ -17375,6 +17375,8 @@ impl TypesetEngine {
                     para,
                     self.dpi,
                     line_available_width_px(0),
+                    styles,
+                    para_style,
                 ) {
                     pairs.extend(metrics);
                 }

@@ -1449,6 +1449,8 @@ impl HeightMeasurer {
                         let margin_r = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                         (cw - margin_l - margin_r).max(0.0)
                     }),
+                    styles,
+                    para_style,
                 ) {
                     pairs.extend(metrics);
                 }

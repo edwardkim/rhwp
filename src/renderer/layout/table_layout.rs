@@ -5644,6 +5644,7 @@ impl LayoutEngine {
             };
             // [#6630] 글자처럼 그림은 문단 배치의 y 가 아니라 여기서 따로 놓이므로 첫 문단
             // 위 여백(저장 vpos 상한)을 같이 준다.
+            //
             let mut tac_img_y = para_y_before_compose + first_para_lead_px;
             // [#6114] 쪽 분할 칸에서만 폴백 TAC 그림 페인트 하단으로 흐름을 민다.
             // 일반 칸까지 밀면 칸 상자 밖 글이 아래 본문과 겹친다.

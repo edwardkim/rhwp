@@ -6,11 +6,14 @@
 //! 쓰지 않아 호스트 줄이 400HU 고정 advance(5.3px)로 떨어졌고, 뒤 표가 553.4px —
 //! 그림(548.1 .. 948.1) 안쪽 — 에서 시작했다.
 //!
-//! 정답지: `#6928` 코멘트에 기록된 한컴 2024 변환 출력(engine 2020, job
-//! `a57a69b7-357a-43f3-bf52-77a174bc5f70`, 10쪽). 그 출력의 잉크 baseline 기준
-//! 그림 상단 569.1, `※ 즉시 추진 …` 985.9 — **그림 상단 대비 +416.8**. rhwp 는 줄
-//! 상단 좌표라 baseline 오프셋(≈13.8px)을 더해 비교한다. 수정 전 rhwp 는 같은
-//! 상대값이 +10.6 이었다(그림 높이를 통째로 버린 값).
+//! 정답지: 한컴 engine 2020 출력을 같은 96dpi 래스터로 겹쳐 잰다(job
+//! `94f14dc5-422a-462a-b4e6-810ef36ff98d`, 10쪽, `Hancom PDF 1.3.0.550`). 2쪽 잉크 기준
+//! 정본은 **도해 잉크 → `※` 상자 360px** 이고, 이 수정만으로는 350px 이다 —
+//! 남는 leading 10px 은 `#7079` 가 채운다. 수정 전에는 뒤 표가 그림 한가운데였다.
+//!
+//! `#6928` 코멘트(2026-09-09)의 "그림 상단 대비 +416.8" 은 PDF glyph box 좌표와 rhwp 줄
+//! 상단을 섞어 잰 값이라 이 시험의 기준으로 쓰지 않는다 — 그 프레임에는 이 칸 위쪽에서
+//! 이미 생기는 −20px 오프셋이 함께 들어 있다.
 //!
 //! 반례(같은 문서 통제군): 1쪽 제목 표와 본문 줄, 그리고 문서 전체 쪽수(10)는
 //! 이 변경으로 움직이지 않는다 — TAC 개체가 없는 빈 문단은 종전 경로 그대로다.
@@ -102,21 +105,20 @@ fn issue_7062_paragraph_after_tac_diagram_clears_the_object() {
         after.y
     );
 
-    // 정답지 상대값: 그림 상단 → `※` 잉크 baseline +416.8 (한컴 2024 변환 출력).
-    // rhwp 는 줄 상단 좌표이므로 그 줄의 baseline 오프셋을 더해 비교한다.
-    let baseline_offset = nodes
+    // 정본 상대값: 도해 잉크 → `※` 상자 360px. 이 수정만으로는 leading 10px 이 빠진
+    // 350px 이고, 결함(겹침)과는 자릿수가 다르다. leading 은 `#7079` 가 맡는다.
+    let table = nodes
         .iter()
-        .find_map(|n| match &n.node_type {
-            RenderNodeType::TextRun(r) if r.text.contains("즉시 추진 가능한 시급한 과제부터") => {
-                Some(r.baseline)
-            }
+        .filter_map(|n| match &n.node_type {
+            RenderNodeType::Table { .. } if n.bbox.y > image.y + 100.0 => Some(n.bbox),
             _ => None,
         })
-        .expect("'※' 런 baseline");
-    let relative = (after.y + baseline_offset) - image.y;
+        .min_by(|a, b| a.y.total_cmp(&b.y))
+        .expect("그림 뒤 표");
+    let advance = table.y - image.y;
     assert!(
-        (relative - 416.8).abs() < 10.0,
-        "#7062: 그림 상단 대비 `※` baseline 은 한컴 +416.8 이어야 한다 — 결함 시 +10.6: {relative:.1}"
+        (390.0..=415.0).contains(&advance),
+        "#7062: 그림 상단 → 뒤 표는 개체 높이(400) 근처여야 한다 — 결함 시 5.3: {advance:.1}"
     );
 }
 
