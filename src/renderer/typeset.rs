@@ -24433,20 +24433,23 @@ impl TypesetEngine {
         // 저장 앵커 줄 vpos 는 이 쪽이 아니라 문단이 시작한 쪽의 좌표다. 그 값을 근거로
         // "한글이 스택을 통째로 이 쪽에 놓았다"고 보면, 조각이 이미 차지한 자리에 뒤 표를
         // 겹쳐 놓는다(1341000-201100013 31쪽 548.0 × 401.9px, 아래 표 401.9px 소실).
-        let page_starts_with_own_fragment = st.current_items.iter().any(|item| {
+        // [#3587] 이 원칙은 앞 문단의 연속 조각에도 동일하다. 재편집으로 앞 표가
+        // 늘어나 다음 host가 연속 쪽으로 밀렸다면, 다음 host의 저장 앵커 역시 현재
+        // 쪽의 잔여 공간을 증명하지 않는다. 소유 문단 일치가 아니라 현재 흐름 프레임의
+        // 연속 조각 존재로 판정해야 뒤 스택을 앞 조각/헤더 위에 강제로 겹치지 않는다.
+        let page_has_table_continuation = st.current_items.iter().any(|item| {
             matches!(
                 item,
                 PageItem::PartialTable {
-                    para_index,
                     is_continuation: true,
                     ..
-                } if *para_index == para_idx
+                }
             )
         });
         let saved_host_line_after_stack_fits = host_line_trails_float_stack
             && has_preceding_coanchored_float
             && table_total <= available
-            && !page_starts_with_own_fragment;
+            && !page_has_table_continuation;
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
                 "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",
