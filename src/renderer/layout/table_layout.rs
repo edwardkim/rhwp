@@ -6943,27 +6943,13 @@ impl LayoutEngine {
                                 };
                                 let om_top_hu = i64::from(nested_table.outer_margin_top);
                                 let om_bottom_hu = i64::from(nested_table.outer_margin_bottom);
-                                // [#7049] `lh = h + om` 인 표 전용 줄만이라는 위 계약대로
-                                // 양쪽을 본다 — `paragraph_layout` 의 `stored_lh_covers_om`
-                                // 과 같은 술어의 형제다. 한쪽만 고치면 `#2032`/`#2075` 의
-                                // "동일 로직" 함정을 그대로 밟는다.
-                                let band_hu = i64::from(nested_table.common.height)
-                                    + om_top_hu
-                                    + om_bottom_hu;
-                                // 그리고 그 줄이 **이 표 전용**이어야 한다 —
-                                // `paragraph_layout` 의 `para_tac_table_count` 와 같은 조건.
-                                let para_tac_table_count = para
-                                    .controls
-                                    .iter()
-                                    .filter(|c| {
-                                        matches!(c, Control::Table(t) if t.common.treat_as_char)
-                                    })
-                                    .count();
                                 let table_anchor_y = if nested_table.common.height < 0x8000_0000
                                     && om_top_hu + om_bottom_hu > 0
-                                    && para_tac_table_count <= 1
-                                    && (band_hu - 10..=band_hu + 10)
-                                        .contains(&i64::from(host_seg_lh))
+                                    && i64::from(host_seg_lh)
+                                        >= i64::from(nested_table.common.height)
+                                            + om_top_hu
+                                            + om_bottom_hu
+                                            - 10
                                 {
                                     table_anchor_y
                                         + hwpunit_to_px(

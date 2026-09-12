@@ -7552,54 +7552,12 @@ impl LayoutEngine {
                                 // p5: 저장 vpos+om_top == 한글 PDF 상단, 종전 baseline
                                 // 하단정렬식은 om_top 을 소실해 3.8px 상향). #2220 의
                                 // stored_lh_covers_om 과 동일 술어의 px 판.
-                                // [#7049] `lh = h + om` 인 **표 전용 줄**만이라는 위
-                                // 계약대로 양쪽을 본다. 종전 `>=` 한쪽 판정은 밴드가
-                                // 줄에 **들어가기만** 하면 발동해, 한 글줄에 높이가 다른
-                                // TAC 표가 둘 이상일 때 전부 `y + om_top` 이 되어
-                                // **상단이 붙었다**. 한/글은 그 표들을 기준선에 앉혀
-                                // 하단을 높이차의 0.15 배로 벌린다 — 한/글 2020 실측
-                                // (HWPUNIT): `36384689_…화재발생종합보고서` 높이차 4708
-                                // → 하단차 707 · `issue2083_hide_fill_page` 9135 → 1366
-                                // · `issue2470/36382471_masked` 3126 → 467. 종전 규칙은
-                                // 이 차이를 전부 0 으로 본다.
-                                //
-                                // 줄 높이를 정하는 가장 높은 표는 `lh == 밴드` 라 그대로
-                                // 이 분기에 남고, `#3386` 의 표본(`156678235` 4쪽: 한/글
-                                // 536.69 vs rhwp 537.30)도 표가 하나뿐이라 불변이다.
-                                // 그리고 그 줄이 **이 표 전용**이어야 한다 — 같은 문단에
-                                // TAC 표가 둘 이상이면 그 줄은 어느 한 표의 것이 아니다.
-                                // 세로 위치가 바깥여백과 무관하다는 것이 실측이다
-                                // (`21_언어_기출` 1쪽: 여백 283/283 과 0/0 인 두 표를 한/글이
-                                // **같은 y** 에 놓는다 — 여백이 관여하면 3.8px 벌어져야 한다).
-                                // 그러니 여백을 쓰는 이 분기는 줄을 독점한 표에만 준다.
-                                let para_tac_table_count = p
-                                    .controls
-                                    .iter()
-                                    .filter(|c| {
-                                        matches!(c, Control::Table(t) if t.common.treat_as_char)
-                                    })
-                                    .count();
                                 let stored_lh_covers_om = (om_top > 0.0 || om_bottom > 0.0)
-                                    && para_tac_table_count <= 1
-                                    && (table_h + om_top + om_bottom - 0.2
-                                        ..=table_h + om_top + om_bottom + 0.2)
-                                        .contains(&raw_lh);
+                                    && raw_lh >= table_h + om_top + om_bottom - 0.2;
                                 let table_y = if stored_lh_covers_om {
                                     y + om_top
                                 } else {
-                                    // [#7049] 글자처럼 취급되는 표는 글자처럼 기준선에
-                                    // 앉는다 — 높이의 85% 가 기준선 위, 15% 가 아래다.
-                                    // 이 레포가 이미 쓰는 비율이다(`composer/
-                                    // line_breaking.rs` 가 `baseline_distance` 를
-                                    // `line_height * 0.85` 로 계산한다).
-                                    //
-                                    // 종전 `+ om_bottom` 은 상자 하단을 기준선 바로 밑에
-                                    // 붙여, 높이가 다른 표들의 하단 간격을 좁혔다.
-                                    // 한/글 2020 실측 하단차(px) — 위 술어 교정과 함께:
-                                    //   issue2083  121.80 → 35.20 → **16.9** (한/글 18.22)
-                                    //   issue2470   41.60 → 19.40 → ** 4.9** (한/글  6.23)
-                                    //   36384689    62.80 → 22.20 → ** 8.2** (한/글  9.43)
-                                    (y + baseline - table_h * 0.85).max(y)
+                                    (y + baseline + om_bottom - table_h).max(y)
                                 };
                                 // [Task #2212] 셀 안 인라인 TAC 표는 외곽 셀 경로를
                                 // 확장한 2단 cell_context 로 렌더해야 경로 기반 조회
