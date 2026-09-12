@@ -3000,11 +3000,10 @@ fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Recor
     } else {
         order as i32
     };
-    let instance_id = if from_hwp5_header || c.instance_id != 0 {
-        c.instance_id
-    } else {
-        0x7dcd_59d6u32.wrapping_add(order)
-    };
+    // The document writer assigns missing legacy Form identities against the
+    // whole document before emitting records. This low-level writer preserves
+    // the supplied identity, including an original HWP identity of zero.
+    let instance_id = c.instance_id;
     let mut hdr = Vec::with_capacity(46);
     hdr.extend_from_slice(b"mrof"); // ctrl_id "form" little-endian
     hdr.extend_from_slice(&attr.to_le_bytes());

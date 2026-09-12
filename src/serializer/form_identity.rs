@@ -17,7 +17,7 @@ pub(super) fn prepare_section<'a>(
     document: &Document,
     allocator: &mut Option<Allocator>,
 ) -> Result<Cow<'a, Section>, SerializeError> {
-    if !identity::has_unassigned_forms(section) {
+    if section.raw_provenance_permits_reuse() || !identity::has_unassigned_forms(section) {
         return Ok(Cow::Borrowed(section));
     }
     // All sections (including raw-reused and later sections) reserve their IDs.

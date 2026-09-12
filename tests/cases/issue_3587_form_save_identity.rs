@@ -18,6 +18,14 @@ fn field_ids(core: &DocumentCore) -> Vec<u32> {
         .collect()
 }
 
+fn field_values(core: &DocumentCore) -> Vec<String> {
+    core.collect_all_fields()
+        .iter()
+        .filter(|f| f.field.field_type == FieldType::ClickHere)
+        .map(|f| f.value.clone())
+        .collect()
+}
+
 fn form_ids(doc: &Document) -> Vec<u32> {
     doc.sections
         .iter()
@@ -64,6 +72,7 @@ fn repeated_clickhere_paste_after_forms_preserves_field_identities_in_both_saves
             core.paste_internal_native(si, dst, 0).unwrap();
         }
         let expected = field_ids(&core);
+        let expected_values = field_values(&core);
         assert_eq!(expected.len(), original.len() + 2, "{path}");
         assert_eq!(&expected[..original.len()], &original);
         assert_eq!(
@@ -74,11 +83,9 @@ fn repeated_clickhere_paste_after_forms_preserves_field_identities_in_both_saves
             core.export_hwp_native().unwrap(),
             core.export_hwpx_native().unwrap(),
         ] {
-            assert_eq!(
-                field_ids(&DocumentCore::from_bytes(&output).unwrap()),
-                expected,
-                "{path}"
-            );
+            let reopened = DocumentCore::from_bytes(&output).unwrap();
+            assert_eq!(field_ids(&reopened), expected, "{path}");
+            assert_eq!(field_values(&reopened), expected_values, "{path}");
         }
         assert_eq!(field_ids(&core), expected, "saving must not mutate input");
     }
@@ -144,4 +151,42 @@ fn original_hwp_zero_form_identity_is_not_treated_as_missing() {
     }
     let saved = DocumentCore::from_bytes(&core.export_hwp_native().unwrap()).unwrap();
     assert_eq!(form_ids(saved.document()), vec![0; 5]);
+}
+
+#[test]
+fn unchanged_form_fixtures_keep_attributes_and_legacy_nonconflicting_ids() {
+    for stem in ["form-01", "form-02"] {
+        let golden = open(&format!("samples/{stem}.hwp"));
+        let expected = form_ids(golden.document());
+        for path in [
+            format!("samples/{stem}.hwp"),
+            format!("samples/hwpx/{stem}.hwpx"),
+        ] {
+            let core = open(&path);
+            let before_fields = field_ids(&core);
+            let bytes = core.export_hwp_native().unwrap();
+            let saved = DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(form_ids(saved.document()), expected, "{path}");
+            assert_eq!(field_ids(&saved), before_fields, "{path}");
+            let attributes = |doc: &Document| {
+                doc.sections
+                    .iter()
+                    .flat_map(|s| &s.paragraphs)
+                    .flat_map(|p| &p.controls)
+                    .filter_map(|c| match c {
+                        Control::Form(f) => Some((
+                            f.name.clone(),
+                            f.width,
+                            f.height,
+                            f.caption.clone(),
+                            f.text.clone(),
+                        )),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>()
+            };
+            assert_eq!(attributes(saved.document()), attributes(core.document()));
+            assert_eq!(core.export_hwp_native().unwrap(), bytes);
+        }
+    }
 }
