@@ -562,6 +562,15 @@ fn sample_ramp(colors: &[ColorRef], positions: &[f64], t: f64) -> ColorRef {
     }
 }
 
+/// 그러데이션을 펴는 띠의 최대 개수.
+///
+/// 띠 하나가 stop 두 개가 되므로 상한 64 는 stop 128 개 = PDF stitching 하위함수 127 개다.
+/// MuPDF 가 받아주는 한도(하위함수 255 개는 그려지고 399 개부터 버려진다)의 절반이다.
+/// 한/글 기본값 `step=255` 를 64 로 줄여도 한/글 2024 정본(`samples/issue2470/36382471_masked.hwpx`
+/// 1쪽 제목 띠)과 색 차이가 채널당 1 을 넘지 않는다 — 띠 하나의 색 간격이 이미 1 미만이라
+/// 그 아래로는 눈에도 출력에도 남지 않는다.
+pub const MAX_GRADIENT_BANDS: usize = 64;
+
 /// HWP 그러데이션의 `step`(띠 개수)·`step_center`(전이 위치 %)를 렌더 stop 목록으로 편다.
 ///
 /// [#6822] 한/글은 그러데이션 축을 **`step` 개의 띠**로 잘라 각 띠를 단색으로 칠하고,
@@ -577,13 +586,20 @@ fn sample_ramp(colors: &[ColorRef], positions: &[f64], t: f64) -> ColorRef {
 ///
 /// `step <= 1` 이거나 색이 둘 미만이면 띠를 만들지 않고 원본을 그대로 돌려준다 —
 /// 값이 없는 문서의 현행 동작을 바꾸지 않기 위해서다.
+///
+/// ## 띠 개수는 [`MAX_GRADIENT_BANDS`] 로 줄인다
+///
+/// 한/글 기본값 `step=255` 를 그대로 펴면 stop 이 510 개가 되고, PDF 백엔드(svg2pdf)가
+/// 그것을 `/FunctionType 3` 하위함수 509 개로 옮긴다. MuPDF 는 그 수를 거부해
+/// (`too many sub-functions in stitching function`) 셰이딩을 통째로 버리므로 칸 배경이
+/// **사라진다**. 실측 경계는 하위함수 255 개(띠 128)는 그려지고 399 개(띠 200)부터 사라진다.
 pub fn expand_gradient_steps(
     colors: &[ColorRef],
     positions: &[f64],
     step: i16,
     step_center: u8,
 ) -> (Vec<ColorRef>, Vec<f64>) {
-    let bands = step.max(0) as usize;
+    let bands = (step.max(0) as usize).min(MAX_GRADIENT_BANDS);
     if bands <= 1 || colors.len() < 2 {
         return (colors.to_vec(), positions.to_vec());
     }
