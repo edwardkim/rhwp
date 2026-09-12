@@ -308,7 +308,7 @@ fn ids_owned_by_ole_fallback_outside_source_are_reserved() {
     ole.chart_switch_fallback = Some(Box::new(fallback));
     c.document_mut().sections[0].paragraphs[0]
         .controls
-        .push(Control::Shape(Box::new(ShapeObject::Ole(ole))));
+        .push(Control::Shape(Box::new(ShapeObject::Ole(Box::new(ole)))));
     let mut rectangle = RectangleShape::default();
     rectangle.common.instance_id = 100;
     rectangle.drawing.inst_id = 200;
@@ -328,4 +328,56 @@ fn ids_owned_by_ole_fallback_outside_source_are_reserved() {
         assert!(![0, 1, 2, 3, 4].contains(&shape.common().instance_id));
         assert!(![0, 1, 2, 3, 4].contains(&shape.drawing().unwrap().inst_id));
     }
+}
+
+#[test]
+fn existing_snapshot_remains_restorable_after_success_and_rejection() {
+    let mut c = core();
+    let before = format!("{:?}", c.document());
+    let snapshot = c.save_snapshot_native();
+    c.repeat_paragraph_block_native(&request()).unwrap();
+    let mut invalid = request();
+    invalid.insert_before = usize::MAX;
+    assert!(c.repeat_paragraph_block_native(&invalid).is_err());
+    c.restore_snapshot_native(snapshot).unwrap();
+    assert_eq!(format!("{:?}", c.document()), before);
+    assert_eq!(c.save_snapshot_native(), snapshot + 1);
+}
+
+#[test]
+fn editing_one_table_copy_through_core_keeps_original_and_other_copy() {
+    let mut c =
+        DocumentCore::from_bytes(&std::fs::read("samples/hwp_table_test.hwp").unwrap()).unwrap();
+    // Mark an actual source as edited before copying; exercise the provenance
+    // inheritance path as well as subsequent public cell editing.
+    c.insert_text_in_cell_native(0, 3, 0, 0, 0, 0, "source ")
+        .unwrap();
+    c.copy_control_native(0, 3, &[], 0).unwrap();
+    let clipboard = c.get_clipboard_text_native();
+    let r = RepeatParagraphBlockRequest {
+        source_start: 3,
+        source_end: 4,
+        insert_before: 4,
+        ..request()
+    };
+    c.repeat_paragraph_block_native(&r).unwrap();
+    let original = format!("{:?}", c.document().sections[0].paragraphs[3].controls);
+    let other = format!("{:?}", c.document().sections[0].paragraphs[5].controls);
+    c.insert_text_in_cell_native(0, 4, 0, 0, 0, 0, "copy only ")
+        .unwrap();
+    assert_eq!(
+        format!("{:?}", c.document().sections[0].paragraphs[3].controls),
+        original
+    );
+    assert_eq!(
+        format!("{:?}", c.document().sections[0].paragraphs[5].controls),
+        other
+    );
+    assert_eq!(c.get_clipboard_text_native(), clipboard);
+    let Control::Table(t) = &c.document().sections[0].paragraphs[4].controls[0] else {
+        panic!()
+    };
+    assert!(t.cells[0].paragraphs[0]
+        .text
+        .starts_with("copy only source "));
 }
