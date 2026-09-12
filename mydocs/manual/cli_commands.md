@@ -1193,8 +1193,35 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 ### `edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5019)
 문단을 지정 오프셋에서 가르고 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
 
-### `edit insert-table <파일> --rows N --cols N [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5040)
-본문 좌표에 빈 표를 만든다. 코어 `create_table_native`. `--rows`/`--cols` 는 1 이상이고, 열 수는 256 이하이다.
+<a id="edit-insert-table"></a>
+
+### `edit insert-table <파일> --rows N --cols N [--section N --para N --offset N | --at-field 이름] [--widths 목록] [--alignments 목록] [--repeat-header true|false] [-o <출력>] [--dry-run] [--verify] [--json]` (#5819)
+
+본문에 빈 표를 만든다. `--rows`는 1~65535, `--cols`는 1~256이며 좌표는 0부터 시작한다.
+`--at-field`는 이름이 유일한 **본문 필드가 있는 문단 바로 뒤**에 독립된 표를 삽입한다.
+필드 이름·ID·안내문·내용을 유지하며 필드 내부를 분할하지 않는다. 좌표 옵션과 함께 쓸 수 없고,
+없는 이름·중복 이름·표 셀/글상자 내부 필드는 오류로 거부한다. 후자는 기존 본문 표 생성 명령의 범위 밖이다.
+
+| 옵션 | 계약 |
+| --- | --- |
+| `--widths 3000,6000,9000` | 열별 HWPUNIT 정수. 개수는 열 수와 같고 각 값은 양수, 합계는 2147483647 이하. 전체 표 폭은 합계다. |
+| `--widths 20%,30%,50%` | 기존 기본 표 폭에 대한 양수 비율. 합계 100%, 단위 혼용 불가. 누적 경계를 반올림해 전체 폭을 보존하며 1 HWPUNIT 미만으로 반올림되는 열은 거부한다. |
+| `--alignments left,center,right` | 열별 텍스트 문단 정렬. 개수는 열 수와 같아야 한다. 생략하면 삽입 문단의 서식을 상속한다. |
+| `--repeat-header true` | 기본값. 첫 행을 머리행으로 지정하고 `repeatHeader=1`, `pageBreak=CELL`로 생성한다. |
+| `--repeat-header false` / `--no-repeat-header` | 반복 머리행을 끈다. `pageBreak=CELL`은 유지한다. |
+
+너비를 생략하면 기존 균등 열 폭을 유지한다. 절대 너비는 페이지 폭에 맞추어 자동 축소하지 않는다.
+`--dry-run`도 실제 인메모리 생성·입력 검증을 거치며 파일 쓰기만 생략한다. JSON의 `tableParagraph`와
+`control`은 생성된 표의 실제 위치, `widths`는 확정된 HWPUNIT 너비다. `--verify`는 저장본의 IR 재파싱 비교이며
+한컴 화면·PDF 일치 판정은 아니다.
+
+```bash
+rhwp edit insert-table template.hwpx --rows 12 --cols 3 --at-field MR_LIST \
+  --widths 20%,30%,50% --alignments left,center,right -o report.hwpx --verify --json
+```
+
+MCP `hwp_insert_table`은 `atField`, `widths`, `alignments`, `repeatHeader`로 같은 옵션을 제공한다.
+`widths`와 `alignments`는 CLI와 동일한 쉼표 구분 문자열이며 `repeatHeader:false`는 명시적으로 머리행 반복을 끈다.
 
 ### `edit set-chart-data <파일> --chart N --data <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
 문서 순번 차트의 숫자 데이터를 바꾼다. 코어 `set_chart_data_by_index_native`. `--chart` 는
