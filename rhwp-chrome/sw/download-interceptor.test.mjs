@@ -771,3 +771,29 @@ test('sync read failure never authorizes automatic opening from a local true sna
     assert.deepEqual(calls.tabsCreate, [], 'sync 상태가 불명확하면 자동 탭을 열지 않아야 함');
   });
 });
+
+for (const [url, expectedTabs] of [
+  ['blob:chrome-extension://rhwp/saved-output', 0],
+  ['blob:https://example.com/external-output', 1],
+  ['blob:chrome-extension://another-extension/external-output', 1],
+  ['blob:chrome-extension://rhwp-lookalike/external-output', 1],
+  ['https://example.com/sample.hwp', 1],
+]) {
+  test(`chrome preserves external downloads and skips only its own Blob: ${url} (#6964)`, async () => {
+    const env = createChromeMock();
+    await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+      const item = { id: 6970, url, filename: '/Downloads/saved.hwp', startTime: new Date().toISOString() };
+      searchItems.set(item.id, item);
+      listeners.onCreated[0](item);
+      await flushAsyncWork();
+      listeners.onChanged[0]({ id: item.id, filename: { current: item.filename } });
+      listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, expectedTabs);
+      assert.equal(item.url, url);
+      assert.equal(item.filename, '/Downloads/saved.hwp');
+      assert.deepEqual(calls.cancel, []);
+      assert.deepEqual(calls.erase, []);
+    });
+  });
+}

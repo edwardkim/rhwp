@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node build.mjs",
+    "test:e2e:download": "node e2e/download-save.test.mjs",
     "clean": "rm -rf dist"
   },
   "devDependencies": {

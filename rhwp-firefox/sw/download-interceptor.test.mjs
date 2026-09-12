@@ -9,6 +9,8 @@ function createBrowserMock(options = {}) {
     onChanged: [],
   };
   const calls = {
+    cancel: [],
+    erase: [],
     search: [],
     sessionGet: [],
     sessionRemove: [],
@@ -69,6 +71,12 @@ function createBrowserMock(options = {}) {
 
   const browser = {
     downloads: {
+      async cancel(id) {
+        calls.cancel.push(id);
+      },
+      async erase(query) {
+        calls.erase.push(query);
+      },
       onCreated: {
         addListener(listener) {
           listeners.onCreated.push(listener);
@@ -492,5 +500,163 @@ test('memory fallback still handles a direct HWP download', async () => {
     assert.equal(calls.tabsCreate.length, 1);
     assert.deepEqual(calls.sessionGet, []);
     assert.deepEqual(calls.sessionSet, []);
+  });
+});
+
+function hwpItem(id, overrides = {}) {
+  return {
+    id, url: 'https://example.com/sample.hwp', filename: 'sample.hwp',
+    startTime: new Date().toISOString(), ...overrides,
+  };
+}
+
+for (const session of [{}, false]) {
+  test(`Firefox serializes overlapping created/changed/terminal events (session=${session !== false}) (#6964)`, async () => {
+    const env = createBrowserMock({ session });
+    const gate = Promise.withResolvers();
+    env.browser.storage.sync.get = async defaults => { await gate.promise; return defaults; };
+    await withBrowserMock(env, async ({ listeners, calls, searchItems, sessionItems }) => {
+      const item = hwpItem(6964);
+      searchItems.set(item.id, item);
+      listeners.onCreated[0](item);
+      await flushAsyncWork(); // paused after tracking, before marking handled
+      listeners.onChanged[0]({ id: item.id, filename: { current: item.filename } });
+      listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+      listeners.onCreated[0](item);
+      await flushAsyncWork();
+      gate.resolve();
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, 1);
+      if (session !== false) {
+        const state = sessionItems.get('rhwpDownloadState:6964');
+        assert.ok(state.handledAt);
+        assert.ok(state.terminalAt);
+      }
+      listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, 1, 'late terminal must retain handled state');
+    });
+  });
+}
+
+test('Firefox preserves a filename event arriving before created storage completes (#6964)', async () => {
+  const env = createBrowserMock();
+  const gate = Promise.withResolvers();
+  const set = env.browser.storage.session.set;
+  let first = true;
+  env.browser.storage.session.set = async items => {
+    if (first) { first = false; await gate.promise; }
+    await set(items);
+  };
+  await withBrowserMock(env, async ({ listeners, calls, searchItems }) => {
+    const item = hwpItem(6965, { filename: 'download', url: 'https://example.com/download' });
+    searchItems.set(item.id, { ...item, filename: 'final.hwp' });
+    listeners.onCreated[0](item);
+    listeners.onChanged[0]({ id: item.id, filename: { current: 'final.hwp' } });
+    await flushAsyncWork();
+    gate.resolve();
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
+
+test('Firefox does not block other IDs while settings are pending (#6964)', async () => {
+  const env = createBrowserMock();
+  const gate = Promise.withResolvers();
+  let first = true;
+  env.browser.storage.sync.get = async defaults => {
+    if (first) { first = false; await gate.promise; }
+    return defaults;
+  };
+  await withBrowserMock(env, async ({ listeners, calls }) => {
+    listeners.onCreated[0](hwpItem(6966));
+    await flushAsyncWork();
+    listeners.onCreated[0](hwpItem(6967));
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
+    gate.resolve();
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 2);
+  });
+});
+
+test('Firefox continues the same ID after a storage read fails (#6964)', async t => {
+  const env = createBrowserMock();
+  const get = env.browser.storage.session.get;
+  let first = true;
+  env.browser.storage.session.get = async key => {
+    if (first) { first = false; throw new Error('session temporarily unavailable'); }
+    return get(key);
+  };
+  const errors = t.mock.method(console, 'error', () => {});
+  await withBrowserMock(env, async ({ listeners, calls }) => {
+    listeners.onCreated[0](hwpItem(6968));
+    listeners.onCreated[0](hwpItem(6968));
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
+    assert.equal(errors.mock.callCount(), 1);
+  });
+});
+
+for (const [url, expectedTabs] of [
+  ['blob:moz-extension://rhwp/saved-output', 0],
+  ['blob:https://example.com/external-output', 1],
+  ['blob:moz-extension://another-extension/external-output', 1],
+  ['blob:moz-extension://rhwp-lookalike/external-output', 1],
+  ['https://example.com/sample.hwp', 1],
+]) {
+  test(`firefox preserves external downloads and skips only its own Blob: ${url} (#6964)`, async () => {
+    const env = createBrowserMock();
+    await withBrowserMock(env, async ({ listeners, calls, searchItems }) => {
+      const item = { id: 6970, url, filename: '/Downloads/saved.hwp', startTime: new Date().toISOString() };
+      searchItems.set(item.id, item);
+      listeners.onCreated[0](item);
+      await flushAsyncWork();
+      listeners.onChanged[0]({ id: item.id, filename: { current: item.filename } });
+      listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, expectedTabs);
+      assert.equal(item.url, url);
+      assert.equal(item.filename, '/Downloads/saved.hwp');
+      assert.deepEqual(calls.cancel, []);
+      assert.deepEqual(calls.erase, []);
+    });
+  });
+}
+
+test('Firefox uses receipt time for freshness even when an earlier event stalls (#6964)', async t => {
+  const env = createBrowserMock();
+  const gate = Promise.withResolvers();
+  const get = env.browser.storage.session.get;
+  let first = true;
+  env.browser.storage.session.get = async key => {
+    if (first) { first = false; await gate.promise; }
+    return get(key);
+  };
+  const receivedAt = Date.now();
+  let now = receivedAt;
+  t.mock.method(Date, 'now', () => now);
+  await withBrowserMock(env, async ({ listeners, calls }) => {
+    const item = hwpItem(6969, { startTime: new Date(receivedAt).toISOString() });
+    listeners.onCreated[0]({ ...item, filename: 'download', url: 'https://example.com/download' });
+    listeners.onCreated[0](item);
+    await flushAsyncWork();
+    now += 6000; // longer than the 5-second fresh-download window
+    gate.resolve();
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
+
+test('Firefox starts the first storage request during event delivery (#6964)', async () => {
+  const env = createBrowserMock();
+  await withBrowserMock(env, async ({ listeners, calls }) => {
+    listeners.onCreated[0](hwpItem(6971));
+    assert.deepEqual(calls.sessionGet, ['rhwpDownloadState:6971'],
+      'the first browser API call must keep the original event-delivery timing');
+    listeners.onChanged[0]({ id: 6971, state: { current: 'complete' } });
+    assert.equal(calls.sessionGet.length, 1, 'only overlapping work waits');
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
   });
 });
