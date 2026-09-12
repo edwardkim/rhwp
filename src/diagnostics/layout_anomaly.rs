@@ -438,10 +438,17 @@ fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
     let RenderNodeType::TextRun(run) = &node.node_type else {
         return node.bbox;
     };
+
     let em = run.style.font_size;
     // NaN·비유한 font_size 는 종전 `!(em > 0.0)` 처럼 원상자 유지로 처리한다.
-    if !em.is_finite() || em <= 0.0 || em >= node.bbox.height {
+    if !em.is_finite() || em <= 0.0 {
         return node.bbox;
+    }
+    let (x, width) = glyph_band_horizontal(run, node.bbox.x, node.bbox.width, em);
+    // 세로 좁히기는 줄 상자가 em 보다 클 때만 뜻이 있다 — 가로 다듬기는 그와
+    // 무관하게 적용한다(빈칸 전진폭은 줄 높이와 상관없이 잉크 밖이다).
+    if em >= node.bbox.height {
+        return BoundingBox::new(x, node.bbox.y, width, node.bbox.height);
     }
     // baseline 이 없거나(0.0 기본값) 상자 밖이면 **종전 중앙 기준**으로 떨어진다.
     // 근거가 없을 때 좁히기를 아예 끄면 이 함수가 막으려던 줄 간격 오탐이 되살아난다
@@ -454,7 +461,41 @@ fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
     } else {
         node.bbox.y + (node.bbox.height - em) / 2.0
     };
-    BoundingBox::new(node.bbox.x, top, node.bbox.width, em)
+    BoundingBox::new(x, top, width, em)
+}
+
+/// 런 앞뒤의 **빈칸 전진폭**을 가로 범위에서 뺀다.
+///
+/// 런 bbox 의 가로는 전진폭이고, 종전 주석은 그것이 "글자가 실제로 차지하는 가로
+/// 범위와 사실상 같다" 고 적었다. 앞이 빈칸으로 시작하는 런에서는 그렇지 않다 —
+/// `복학원서.hwp` 1쪽의 `"    ※ 군필자는 …"` 런은 bbox 가 `x=60.4` 인데 첫 글리프
+/// `※` 는 `x=81.8` 이다. 빈칸 4개 × 0.5em(10.7) = 21.4px 가 그 차이다.
+///
+/// 그 21.4px 때문에 바로 왼쪽의 다른 줄(`x 56.7..70.1`)과 **상자만** 겹쳐 위양성이
+/// 났다. 빈칸 전진폭을 빼면 예측 시작 `60.4 + 21.4 = 81.8` 로 실제 글리프 위치와
+/// 정확히 맞는다.
+///
+/// 빈칸은 반각 `U+0020` 을 0.5em, 전각 `U+3000` 을 1em 으로 본다(측정 경로의
+/// `heuristicHalfwidth`/`heuristicFullwidth` 와 같은 규약). 상자를 **넓히지는
+/// 않는다** — 뺄 몫이 폭보다 크면 원래 폭을 유지한다.
+fn glyph_band_horizontal(
+    run: &crate::renderer::render_tree::TextRunNode,
+    x: f64,
+    width: f64,
+    em: f64,
+) -> (f64, f64) {
+    let text = run.display_or_text();
+    let space_advance = |c: char| match c {
+        ' ' => Some(em * 0.5),
+        '\u{3000}' => Some(em),
+        _ => None,
+    };
+    let lead: f64 = text.chars().map_while(space_advance).sum();
+    let trail: f64 = text.chars().rev().map_while(space_advance).sum();
+    if lead + trail >= width || !(lead + trail).is_finite() {
+        return (x, width);
+    }
+    (x + lead, width - lead - trail)
 }
 
 /// em 상자에서 baseline 위쪽이 차지하는 몫.
