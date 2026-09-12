@@ -1042,6 +1042,50 @@ fn read_hwp3_padding_scaled(mut bytes: &[u8]) -> i16 {
     (raw * 4) as i16
 }
 
+/// 글자 모양을 문서 풀에 **중복 없이** 등록하고 그 id 를 돌려준다.
+///
+/// HWP3 은 문단마다 대표 글자 모양을, 런마다 개별 글자 모양을 **값으로** 들고 있다.
+/// 그대로 밀어 넣으면 같은 모양이 수천 벌 쌓인다 — 264쪽 문서 실측에서 13,902개가
+/// 쌓였고 고유한 것은 166개뿐이라 `DocInfo` 비압축이 1,291KB 였다(같은 문서를 한/글이
+/// 저장하면 166개·63KB). HWP5 의 글자 모양 id 는 여러 문단이 **공유하는 것이 정상**이고,
+/// 이 풀은 등록된 뒤 인덱스로 수정되지 않으므로(읽기와 push 뿐) 공유가 안전하다.
+fn intern_char_shape(
+    pool: &mut Vec<crate::model::style::CharShape>,
+    shape: crate::model::style::CharShape,
+) -> u16 {
+    if let Some(i) = pool.iter().position(|c| *c == shape) {
+        return i as u16;
+    }
+    pool.push(shape);
+    (pool.len() - 1) as u16
+}
+
+/// 문단 모양을 문서 풀에 중복 없이 등록하고 그 id 를 돌려준다.
+/// 사유와 안전성 근거는 [`intern_char_shape`] 와 같다(실측 2,784개 → 고유 691개).
+fn intern_para_shape(
+    pool: &mut Vec<crate::model::style::ParaShape>,
+    shape: crate::model::style::ParaShape,
+) -> u16 {
+    if let Some(i) = pool.iter().position(|p| *p == shape) {
+        return i as u16;
+    }
+    pool.push(shape);
+    (pool.len() - 1) as u16
+}
+
+/// 테두리/배경을 문서 풀에 중복 없이 등록하고 **0-based 인덱스**를 돌려준다.
+/// 저장되는 `border_fill_id` 는 1-based 라 호출부에서 +1 한다(실측 638개 → 고유 7개).
+fn intern_border_fill(
+    pool: &mut Vec<crate::model::style::BorderFill>,
+    fill: crate::model::style::BorderFill,
+) -> u16 {
+    if let Some(i) = pool.iter().position(|b| *b == fill) {
+        return i as u16;
+    }
+    pool.push(fill);
+    (pool.len() - 1) as u16
+}
+
 fn parse_hwp3_object_dispatch(
     body_cursor: &mut Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
@@ -1352,8 +1396,9 @@ fn parse_hwp3_object_dispatch(
                 }
             }
 
-            doc_border_fills.push(border_fill);
-            cell.border_fill_id = doc_border_fills.len() as u16; // 1-based (렌더러 규칙)
+            // 1-based (렌더러 규칙). 표 셀마다 새로 밀면 테두리가 같은 셀 수백 개가
+            // 제각각 항목을 차지한다 — 264쪽 문서 실측 638개, 고유한 것은 7개였다.
+            cell.border_fill_id = intern_border_fill(doc_border_fills, border_fill) + 1;
 
             // 중복된 스팬 계산 제거됨
 
@@ -2801,17 +2846,20 @@ pub(crate) fn parse_paragraph_list(
                     use_password_layout_contract,
                 );
                 if let Some(bf) = hwp3_para_shape_border_fill(hwp3_ps) {
-                    doc_border_fills.push(bf);
-                    ps.border_fill_id = doc_border_fills.len() as u16; // 1-based (렌더러 규칙)
+                    // 1-based (렌더러 규칙). 테두리를 먼저 정리해야 문단모양 정리가
+                    // 의미를 갖는다 — 문단마다 새 id 가 붙으면 같은 문단모양도 전부
+                    // 달라 보인다.
+                    ps.border_fill_id = intern_border_fill(doc_border_fills, bf) + 1;
                 }
-                doc_para_shapes.push(ps);
-                current_para_shape_id = (doc_para_shapes.len() - 1) as u16;
+                current_para_shape_id = intern_para_shape(doc_para_shapes, ps);
             }
         }
         let para_shape_id = current_para_shape_id;
 
-        doc_char_shapes.push(convert_char_shape(&para_info.rep_char_shape));
-        let rep_char_shape_id = (doc_char_shapes.len() - 1) as u16;
+        let rep_char_shape_id = intern_char_shape(
+            doc_char_shapes,
+            convert_char_shape(&para_info.rep_char_shape),
+        );
 
         let mut line_infos = Vec::with_capacity(para_info.line_count as usize);
         for _ in 0..para_info.line_count {
@@ -2827,8 +2875,7 @@ pub(crate) fn parse_paragraph_list(
                 if flag != 1 {
                     use crate::parser::hwp3::records::Hwp3CharShape;
                     let shape = Hwp3CharShape::read(&mut *body_cursor)?;
-                    doc_char_shapes.push(convert_char_shape(&shape));
-                    let shape_id = (doc_char_shapes.len() - 1) as u16;
+                    let shape_id = intern_char_shape(doc_char_shapes, convert_char_shape(&shape));
                     hwp3_inline_shapes.push((i as usize, shape_id));
                 }
             }

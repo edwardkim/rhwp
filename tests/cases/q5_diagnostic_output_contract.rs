@@ -63,7 +63,9 @@ fn info_human_stdout_is_byte_stable() {
     let sample = sample_path();
     assert_stdout_digest(
         &["info", sample.to_str().expect("UTF-8 sample path")],
-        "bffcbf7de3bab9ff3b05dda97815afcbfe3d953e8a85098d2ba78ef9d37284ea",
+        // [#4680] HWP3 스타일 풀 중복 제거로 두 줄이 바뀌었다 — 나머지 출력은 동일하다.
+        //   ParaShape: 119 → 16 · CharShape: 747 → 23
+        "9ce249e42a04c9d4461833568930ffbbe89f2e8262cb3982e9fa453712b884f4",
     );
 }
 
@@ -93,6 +95,9 @@ fn dump_filtered_human_stdout_is_byte_stable() {
             "--para",
             "0",
         ],
-        "45f876bb12042d4a6539780c4eaf043975fca51e21e479c80fd79e975ea8641d",
+        // [#4680] 스타일 풀 중복 제거로 `[CS] id=` · `[PS] ps_id=` 숫자만 바뀌었다.
+        // 속성이 한 글자도 다르지 않던 런 넷(id 14·16·17·18)이 이제 한 id 를 공유하고,
+        // 실제로 다른 런(bold=false)은 그대로 별개 id 를 받는다. 나머지 필드는 동일하다.
+        "9d12a0c03b8a545ad1979a4af552b28da6aa07d9a3e465dc3c0d0ce5786b7cbe",
     );
 }
