@@ -7,7 +7,8 @@
   Studio 재편집 Enter 경계 결함은 #7065로 분리했으며 이번 B에서 추가 수정하지 않는다.
   [C 상세계획](task_m100_3587_impl_c.md)이 승인되어 C1 선검증과 복사본별 native 채우기를 구현했다.
   [Stage 10](../working/task_m100_3587_stage10.md)에서 집중 100건·기존 필드 14건·Rust lint 3종 통과.
-  고정 양식 채우기·편의 선택은 아직 남아 있다.
+  [Stage 11](../working/task_m100_3587_stage11.md)에서 고정 양식 채우기·범위 내 이름/셀 좌표 선택을 구현하고
+  집중 108건·Rust lint 3종을 통과했다. C 종료 통합 검증은 아직 남아 있다.
   #3587 전체 완료·PR 제출 가능 판정은 아직 하지 않았다.**
 - 진행 기록: [Stage 4 — B1](../working/task_m100_3587_stage4.md), [Stage 5 — B2](../working/task_m100_3587_stage5.md)
 - 상위 계약: [구현계획 §2·§5](task_m100_3587_impl.md)
