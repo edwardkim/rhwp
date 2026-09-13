@@ -12,3 +12,9 @@
 | `seizure-list-candidate.hwp` | 6144 | `7032583b0fe09510d7d1e0ae6bfbf6cbad04d153199a7507fe415af5c41475de` |
 | `seizure-list-candidate.hwpx` | 11103 | `69311f338d115cddbdca89faf497f1d0284ce9d97a566c2f3a0031acbd9e4c51` |
 | `seizure-list-hancom-2020.hwpx` | 33269 | `28e95b27718f727c97ac0aca20abea5a253d4429cd92f78146205a25d74d43f9` |
+
+후보 HWP5를 다시 한컴 engine 2020으로 열어 저장한 `seizure-list-candidate-hancom-2020.hwpx`에서도 표 2개·버튼 0개·서식번호 본문 보존을 확인했다. 이는 rhwp 자체 재읽기와 별개인 h2h 검사다.
+
+| 파일 | bytes | SHA-256 |
+| --- | ---: | --- |
+| `seizure-list-candidate-hancom-2020.hwpx` | 35583 | `be66f55370f4a9db1248f59a7ad26b36c223b1bdab6bfbf4ad02182e4bad5452` |
