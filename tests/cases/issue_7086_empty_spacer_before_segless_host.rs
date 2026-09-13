@@ -135,3 +135,63 @@ fn issue_7086_page_count_unchanged() {
     // 빈 줄 하나가 살아나도 이 문서의 쪽 경계는 움직이지 않는다.
     assert_eq!(load().page_count(), 10, "#7086: 쪽수는 10 이어야 한다");
 }
+
+/// 합성 반례: 실문서 복제본의 저장 슬롯/다음 host 좌표만 바꾼다.
+/// 이 변형에는 독립 한컴 출력이 없으며, 기존 collapse 경로 보존만 검사한다.
+#[test]
+fn unrelated_stored_slots_and_stored_next_hosts_keep_the_collapse_contract() {
+    use rhwp::model::control::Control;
+    use rhwp::model::paragraph::Paragraph;
+
+    fn alter(paras: &mut [Paragraph], next_stored: bool) -> usize {
+        let mut hits = 0;
+        for pi in 1..paras.len().saturating_sub(1) {
+            if paras[pi - 1].para_shape_id == 106
+                && paras[pi].para_shape_id == 107
+                && paras[pi + 1].para_shape_id == 71
+            {
+                assert!(paras[pi + 1].line_segs.is_empty());
+                if next_stored {
+                    let seg = paras[pi].line_segs[0].clone();
+                    paras[pi + 1].line_segs.push(seg);
+                } else {
+                    // 앞 슬롯만 300HU 짧아지면 빈 문단의 독립 vpos를 입증하지 못한다.
+                    paras[pi - 1].line_segs.last_mut().unwrap().line_spacing -= 300;
+                }
+                hits += 1;
+            }
+        }
+        for p in paras {
+            for ctrl in &mut p.controls {
+                if let Control::Table(t) = ctrl {
+                    for cell in &mut t.cells {
+                        hits += alter(&mut cell.paragraphs, next_stored);
+                    }
+                }
+            }
+        }
+        hits
+    }
+
+    for next_stored in [false, true] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+        let mut doc = rhwp::parser::parse_document(&std::fs::read(path).unwrap()).unwrap();
+        let hits: usize = doc
+            .sections
+            .iter_mut()
+            .map(|section| alter(&mut section.paragraphs, next_stored))
+            .sum();
+        assert_eq!(hits, 1, "표본에서 반례 대상은 하나여야 한다");
+        let mut core = DocumentCore::new_empty();
+        core.set_document(doc);
+        let nodes = page_nodes(&core, 1);
+        assert!(
+            !nodes
+                .iter()
+                .any(|n| matches!(n.node_type, RenderNodeType::TextLine(_))
+                    && (n.bbox.height - 8.0).abs() < 0.01
+                    && (90.0..100.0).contains(&n.bbox.y)),
+            "저장 근거 없는 spacer를 보존하면 안 된다: next_stored={next_stored}"
+        );
+    }
+}
