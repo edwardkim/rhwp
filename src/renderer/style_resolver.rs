@@ -25,6 +25,13 @@ pub struct ResolvedCharStyle {
     pub font_family: String,
     /// 7개 언어 카테고리별 글꼴 이름
     pub font_families: Vec<String>,
+    /// [#7092] 언어별로 메트릭 표를 **그 글꼴 자신의 폭**으로 믿을 수 있는지
+    /// (`font_families` 와 같은 순서).
+    ///
+    /// 참은 글꼴이 TTF 로 선언되고 대체 규칙이 이름을 바꾸지 않았을 때뿐이다. HFT 는
+    /// 한/글이 자기 글리프로 그리고, 대체된 이름은 다른 글꼴의 표를 빌려 오므로 표에 적힌
+    /// 폭이 그 글꼴의 폭이라는 보장이 없다.
+    pub font_families_metric_trusted: Vec<bool>,
     /// 글꼴 크기 (px)
     pub font_size: f64,
     /// 진하게
@@ -86,6 +93,7 @@ impl Default for ResolvedCharStyle {
         Self {
             font_family: String::new(),
             font_families: Vec::new(),
+            font_families_metric_trusted: Vec::new(),
             font_size: 12.0,
             bold: false,
             italic: false,
@@ -128,6 +136,22 @@ impl ResolvedCharStyle {
             }
         }
         &self.font_family
+    }
+
+    /// [#7092] 지정 언어 카테고리의 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지.
+    /// `font_family_for_lang` 과 같은 폴백(이름이 비면 한국어 0번)을 따른다.
+    pub fn font_metric_trusted_for_lang(&self, lang_index: usize) -> bool {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_metric_trusted
+            .get(slot)
+            .copied()
+            .unwrap_or(false)
     }
 
     /// 지정 언어 카테고리의 자간(px)을 반환한다.
@@ -375,12 +399,17 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
 
     // 7개 언어 카테고리별 폰트 이름, 자간, 장평 해소
     let mut font_families = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
-        font_families.push(lookup_font_name(doc_info, lang, font_id));
+        let decision = lookup_font_name_decision(doc_info, lang, font_id);
+        let substituted = decision.substitution_boundary.is_some()
+            && decision.normalized_face != decision.requested_face;
+        font_families_metric_trusted.push(decision.alt_type == Some(1) && !substituted);
+        font_families.push(decision.css_family_chain.join(","));
 
         let spacing_percent = cs.spacings[lang] as f64;
         letter_spacings.push(font_size * spacing_percent / 100.0);
@@ -396,6 +425,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     ResolvedCharStyle {
         font_family,
         font_families,
+        font_families_metric_trusted,
         font_size,
         bold: cs.bold,
         italic: cs.italic,

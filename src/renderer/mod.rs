@@ -275,6 +275,12 @@ pub struct TextStyle {
     pub strike_color: ColorRef,
     /// 음영 색 (형광펜, 0xFFFFFF = 없음)
     pub shade_color: ColorRef,
+    /// [#7092] 이 run 의 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
+    /// (TTF 선언 · 대체 없음). 모르면 거짓 — 종전의 보수적 측정을 따른다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub font_metric_trusted: bool,
 }
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
@@ -436,6 +442,7 @@ impl Default for TextStyle {
             underline_color: 0,
             strike_color: 0,
             shade_color: 0x00FFFFFF,
+            font_metric_trusted: false,
         }
     }
 }

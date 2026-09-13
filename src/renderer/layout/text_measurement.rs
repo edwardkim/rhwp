@@ -768,6 +768,7 @@ pub(crate) fn resolved_to_text_style(
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
             font_family: cs.font_family_for_lang(lang_index).to_string(),
+            font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
             font_size: cs.font_size,
             color: cs.text_color,
             bold: cs.bold,
@@ -863,6 +864,32 @@ fn is_monospace_metric(metric: &font_metrics_data::FontMetric) -> bool {
     }
     // 표본이 충분할 때만 monospace 로 판정 (Latin 글리프가 거의 없는 폰트 오판 방지).
     count >= 16
+}
+
+/// [#7092] Latin-1 보충(U+00A0~U+00FF) 표가 **폭 정보를 담지 못한 표**인지 판정한다.
+///
+/// 메트릭 DB 는 글리프가 없는 글자를 0 으로 적으므로, 보통은 `em_size` 값도 실제
+/// 전진폭이다. 다만 표의 값이 **0 과 `em_size` 뿐**이면 글자별 폭을 재지 못한 채 채운
+/// 표라 em 을 근거로 쓸 수 없다. 메트릭 DB 570종 중 이 꼴은 20종(휴먼·안상수 계열)이다.
+fn latin1_table_is_uninformative(metric: &font_metrics_data::FontMetric) -> bool {
+    let mut seen = 0u32;
+    for range in metric.latin_ranges {
+        if range.start > 0x00FF || range.end < 0x00A0 {
+            continue;
+        }
+        for (i, &w) in range.widths.iter().enumerate() {
+            let code = range.start + i as u32;
+            if !(0x00A0..=0x00FF).contains(&code) {
+                continue;
+            }
+            seen += 1;
+            if w != 0 && w != metric.em_size {
+                return false;
+            }
+        }
+    }
+    // 표본이 없으면 판단 근거가 없다 — 종전 동작(좁힘 유지)을 택한다.
+    seen > 0
 }
 
 /// 요청 폰트의 내장 메트릭 DB 등록 여부.
@@ -1024,6 +1051,19 @@ fn measure_char_width_embedded_decision<'a>(
     c: char,
     font_size: f64,
 ) -> EmbeddedWidthDecision<'a> {
+    measure_char_width_embedded_decision_for_font(font_family, bold, italic, c, font_size, false)
+}
+
+/// [#7092] `font_metric_trusted` — 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
+/// (TTF 선언 · 대체 없음). 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
+fn measure_char_width_embedded_decision_for_font<'a>(
+    font_family: &'a str,
+    bold: bool,
+    italic: bool,
+    c: char,
+    font_size: f64,
+    font_metric_trusted: bool,
+) -> EmbeddedWidthDecision<'a> {
     let primary_name = font_family
         .split(',')
         .next()
@@ -1077,8 +1117,13 @@ fn measure_char_width_embedded_decision<'a>(
         };
         let is_halfwidth_punct = matches!(c, '\u{2018}'..='\u{2027}');
         let is_narrow_unicode_punct = matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}');
-        let is_b7_notdef_artifact =
-            c == '\u{00B7}' && glyph_w >= mm.metric.em_size && !is_monospace_metric(mm.metric);
+        // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는
+        // DB 가 0 으로 적는다. 다만 한/글 정본으로 입증된 범위는 TTF 로 선언되고 대체되지
+        // 않은 글꼴뿐이라, 그 밖(HFT · 종류 불명 · 대체됨)과 폭 정보 없는 표는 종전대로 좁힌다.
+        let is_b7_notdef_artifact = c == '\u{00B7}'
+            && glyph_w >= mm.metric.em_size
+            && !is_monospace_metric(mm.metric)
+            && (!font_metric_trusted || latin1_table_is_uninformative(mm.metric));
         if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact {
             (
                 (mm.metric.em_size as f64 * 0.3) as u16,
@@ -1177,12 +1222,13 @@ pub(crate) fn char_width_decision<'a>(
         } else {
             c
         };
-        let embedded = measure_char_width_embedded_decision(
+        let embedded = measure_char_width_embedded_decision_for_font(
             &style.font_family,
             style.bold,
             style.italic,
             c,
             font_size,
+            style.font_metric_trusted,
         );
         if let Some(w) = embedded.width_px {
             (
@@ -2632,31 +2678,46 @@ mod tests {
         }
     }
 
-    /// [U+00B7 .notdef 위장값 정정] 비례폰트(휴먼명조)에서 `·`(U+00B7) 글리프
-    /// 부재로 cmap 이 .notdef(em_size) 로 위장 → 전각 측정되던 것을 narrow 로
-    /// 정정한다. 한컴은 점 글리프를 가진 대체 폰트(바탕 ≈0.33em)로 `·` 를
-    /// 렌더하므로 한컴 PDF 정합. 고정폭 폰트(돋움체)는 영향 없음 —
-    /// test_630_middle_dot_full_width_in_registered_font 가 전각 보존을 가드.
+    /// [#7092] 가운뎃점 `·`(U+00B7) 폭은 **믿을 수 있는 표**에서만 글꼴 표를 따른다.
+    ///
+    /// 선행 가드(9d006fd03)는 전각으로 적힌 값을 모두 `.notdef` 위장으로 보고 0.3em 을
+    /// 씌웠다. 한/글 정본이 입증한 범위만 푼다.
+    ///
+    /// - **HY신명조(TTF · 대체 없음)** — 글꼴 파일이 `periodcentered`(gid 20313 · 윤곽선
+    ///   1개)를 1024/1024 로 갖고, 정본이 0.999em 이다(#7092 재현체 `·` 31회 전부 이 face).
+    ///   표를 믿는다.
+    /// - **신명 신신명조(HFT → HY신명조로 대체)** — 점선 리더 26점이 150.6px 칸에 들어간다
+    ///   (`samples/issues/2809/jubo_20260104.hwp`). 전각이면 381px 라 불가능하다 → 좁힌다.
+    /// - **휴먼명조** — 선행 가드가 한/글 PDF 로 0.33em 을 실측했다. 이 글꼴 오버레이는
+    ///   HY신명조 표를 공유했으므로 슬롯 하나(`HUMANMYEONGJO_LATIN_1`)를 갈라 그 값을 준다.
+    ///
+    /// 대체 안 된 HFT 가 전각이라는 정본은 아직 없어 그 경우는 종전대로 좁힌다.
     #[test]
-    fn test_b7_notdef_artifact_narrow_in_proportional_font() {
+    fn test_b7_advance_follows_the_font_table_only_when_trusted() {
         let m = EmbeddedTextMeasurer;
-        let style = TextStyle {
-            font_family: "휴먼명조".to_string(),
-            font_size: 20.0,
-            ratio: 1.0,
-            ..Default::default()
+        let advance = |family: &str, trusted: bool| {
+            let style = TextStyle {
+                font_family: family.to_string(),
+                font_size: 20.0,
+                ratio: 1.0,
+                font_metric_trusted: trusted,
+                ..Default::default()
+            };
+            let positions = m.compute_char_positions("가\u{00B7}나", &style);
+            assert!(positions.len() >= 3, "positions should have ≥ 3 entries");
+            (positions[2] - positions[1]) / style.font_size
         };
-        let positions = m.compute_char_positions("가\u{00B7}나", &style);
-        assert!(positions.len() >= 3, "positions should have ≥ 3 entries");
-        let dot_advance = positions[2] - positions[1];
-        // 비례폰트의 .notdef 위장 전각(≈20px) 이 아니라 narrow(0.3em ≈ 6px) 여야 함.
-        assert!(
-            dot_advance <= style.font_size * 0.4,
-            "휴먼명조의 `·` (U+00B7) 는 .notdef 위장 전각이 아니라 narrow \
-             (≤ font_size * 0.4 = {:.2}) 로 측정되어야 함, got {:.2}",
-            style.font_size * 0.4,
-            dot_advance
-        );
+        for (family, trusted, expected_em) in [
+            ("HY신명조", true, 1.0),
+            ("HY신명조", false, 0.3),
+            ("휴먼명조", true, 0.3),
+        ] {
+            let em = advance(family, trusted);
+            assert!(
+                (em - expected_em).abs() < 0.05,
+                "{family}(신뢰={trusted}) 가운뎃점 전진폭은 {expected_em}em 이어야 한다 — got {em:.3}em"
+            );
+        }
     }
 
     // Stage 4 검증으로 native tab_type 정정 (정정 2) 은 회귀 발견되어 철회.
