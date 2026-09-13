@@ -188,22 +188,51 @@ impl DocumentCore {
         if staged.is_empty() {
             return Ok(result);
         }
+        self.reserve_block_commit(request.section_index, staged.len(), inherited.len())?;
+        self.commit_block_content(
+            request.section_index,
+            request.insert_before,
+            result.inserted.clone(),
+            staged,
+            inherited,
+        );
+        Ok(result)
+    }
+
+    pub(super) fn reserve_block_commit(
+        &mut self,
+        section: usize,
+        paragraphs: usize,
+        inherited: usize,
+    ) -> Result<(), HwpError> {
         // All recoverable errors and complete return values precede mutation.
         self.render_normalization
             .text_reflowed_tables
-            .try_reserve(inherited.len())
+            .try_reserve(inherited)
             .map_err(|_| invalid("reflow provenance allocation failed"))?;
         self.event_log
             .try_reserve(1)
             .map_err(|_| invalid("event allocation failed"))?;
-        let section = &mut self.document.sections[request.section_index];
+        let section = &mut self.document.sections[section];
         section
             .paragraphs
-            .try_reserve(staged.len())
+            .try_reserve(paragraphs)
             .map_err(|_| invalid("destination allocation failed"))?;
+        Ok(())
+    }
+
+    pub(super) fn commit_block_content(
+        &mut self,
+        section_index: usize,
+        insert_before: usize,
+        inserted: Range<usize>,
+        staged: Vec<Paragraph>,
+        inherited: Vec<TableTextReflowKey>,
+    ) {
+        let section = &mut self.document.sections[section_index];
         section
             .paragraphs
-            .splice(request.insert_before..request.insert_before, staged);
+            .splice(insert_before..insert_before, staged);
         section.raw_stream = None;
         self.render_normalization
             .text_reflowed_tables
@@ -212,20 +241,19 @@ impl DocumentCore {
         // No empty paragraph insertion, style substitution or table frame reset.
         let hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
-            &mut self.document.sections[request.section_index].paragraphs,
-            request.insert_before,
-            Some(result.inserted.clone()),
+            &mut self.document.sections[section_index].paragraphs,
+            insert_before,
+            Some(inserted),
             None,
             &self.styles,
             self.dpi,
             hwp3_layout,
         );
-        self.recompose_section(request.section_index);
+        self.recompose_section(section_index);
         self.paginate_if_needed();
         self.event_log.push(DocumentEvent::ContentPasted {
-            section: request.section_index,
-            para: request.insert_before,
+            section: section_index,
+            para: insert_before,
         });
-        Ok(result)
     }
 }

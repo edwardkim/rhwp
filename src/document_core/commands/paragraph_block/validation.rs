@@ -2,6 +2,7 @@
 mod references;
 mod resources;
 mod support;
+pub(super) use resources::Resource;
 pub(super) use support::paths;
 
 use super::{ParagraphBlockBudget, RepeatParagraphBlockRequest};
@@ -170,4 +171,15 @@ pub(super) fn validate_document_block(
     references::validate(document, &nodes, request.limits.max_document_nodes)?;
     resources::validate(document, &nodes, request)?;
     Ok(budget)
+}
+
+/// Reuse exactly the resource-edge semantics of validation for foreign import.
+pub(super) fn reachable_resources(
+    document: &crate::model::document::Document,
+    request: &RepeatParagraphBlockRequest,
+) -> Result<std::collections::BTreeSet<Resource>, ParagraphBlockValidationError> {
+    let paragraphs = &document.sections[request.section_index].paragraphs
+        [request.source_start..request.source_end];
+    let nodes = support::inspect(paragraphs, request)?;
+    resources::collect(document, &nodes, request)
 }

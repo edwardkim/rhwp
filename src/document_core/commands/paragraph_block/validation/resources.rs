@@ -13,7 +13,7 @@ use crate::model::{
 use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum Resource {
+pub(crate) enum Resource {
     Style(u8),
     Para(u16),
     Char(u32),
@@ -31,6 +31,14 @@ pub(super) fn validate(
     nodes: &[Located<'_>],
     request: &RepeatParagraphBlockRequest,
 ) -> Result<(), Error> {
+    collect(doc, nodes, request).map(|_| ())
+}
+
+pub(super) fn collect(
+    doc: &Document,
+    nodes: &[Located<'_>],
+    request: &RepeatParagraphBlockRequest,
+) -> Result<BTreeSet<Resource>, Error> {
     let mut scan = Scan {
         doc,
         outline: doc.sections[request.section_index]
@@ -76,11 +84,16 @@ pub(super) fn validate(
                     scan.fill(&d.fill, path)?;
                 }
             }
+            SourceNode::Control(Control::Field(f)) => {
+                if let Some(residue) = &f.guide_residue {
+                    scan.add(Resource::Char(residue.char_shape_id), path)?;
+                }
+            }
             SourceNode::Control(_) => {} // Support profile was checked before this pass.
         }
         scan.drain(path)?;
     }
-    Ok(())
+    Ok(scan.seen)
 }
 
 struct Scan<'a> {

@@ -68,6 +68,22 @@ pub(super) fn measure(
         .ok_or_else(|| super::invalid("structure size overflow"))
 }
 
+/// The same allocation-free accounting for detached shared-resource candidates.
+pub(super) fn measure_value<T: Serialize + ?Sized>(
+    value: &T,
+    limit: usize,
+) -> Result<usize, HwpError> {
+    let mut meter = Meter {
+        bytes: 0,
+        limit,
+        depth: 0,
+    };
+    meter
+        .value(value)
+        .map_err(|e| super::invalid(e.to_string()))?;
+    Ok(meter.bytes)
+}
+
 struct Compound<'a> {
     meter: &'a mut Meter,
 }

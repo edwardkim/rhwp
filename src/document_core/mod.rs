@@ -10,12 +10,13 @@ pub mod builders;
 mod commands;
 pub use commands::paragraph_block::{
     FillTemplateRequest, FillTemplateResult, ImportParagraphBlockLimits,
-    ImportParagraphBlockPreview, ImportParagraphBlockRequest, ParagraphBlockBudget,
-    ParagraphBlockCopy, ParagraphBlockLimits, ParagraphBlockMapping, ParagraphBlockPathStep,
-    ParagraphBlockValidationError, RepeatParagraphBlockRequest, RepeatParagraphBlockResult,
-    RepeatTableRowsRequest, RepeatTableRowsResult, TemplateBinding, TemplateFillPreview,
-    TemplateFillRequest, TemplateFillTarget, TemplateOperation, TemplateOperationResult,
-    TemplateScope, TEMPLATE_REQUEST_MAX_BYTES,
+    ImportParagraphBlockPreview, ImportParagraphBlockRequest, ImportParagraphBlockResult,
+    ImportResourceCounts, ParagraphBlockBudget, ParagraphBlockCopy, ParagraphBlockLimits,
+    ParagraphBlockMapping, ParagraphBlockPathStep, ParagraphBlockValidationError,
+    RepeatParagraphBlockRequest, RepeatParagraphBlockResult, RepeatTableRowsRequest,
+    RepeatTableRowsResult, TemplateBinding, TemplateFillPreview, TemplateFillRequest,
+    TemplateFillTarget, TemplateOperation, TemplateOperationResult, TemplateScope,
+    TEMPLATE_REQUEST_MAX_BYTES,
 };
 pub use commands::{TableColumnWidths, TableCreationOptions};
 pub mod converters;

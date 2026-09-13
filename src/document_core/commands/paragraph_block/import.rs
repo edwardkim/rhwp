@@ -1,11 +1,34 @@
-//! Cross-document structural preflight. This query never imports resources or mutates a core.
+//! Cross-document preflight and staged boundary insertion.
+mod remap;
+mod resources;
 use super::{
     invalid, owned, validation, ParagraphBlockBudget, ParagraphBlockLimits,
     RepeatParagraphBlockRequest,
 };
+use super::{ParagraphBlockCopy, ParagraphBlockMapping, ParagraphBlockPathStep as Step};
+use crate::model::{
+    identity::{used_instance_ids, Allocator},
+    paragraph::Paragraph,
+};
 use crate::{document_core::DocumentCore, error::HwpError, model::document::Document};
+pub use resources::ImportResourceCounts;
 use serde::{Deserialize, Serialize};
 use std::ops::Range;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportParagraphBlockResult {
+    pub target_section: usize,
+    pub inserted: Range<usize>,
+    pub copies: Vec<ParagraphBlockCopy>,
+    pub resources: ImportResourceCounts,
+}
+
+struct PreparedImport {
+    result: ImportParagraphBlockResult,
+    resources: Option<resources::Resources>,
+    paragraphs: Vec<Paragraph>,
+}
 
 /// Request ceilings, not file-format limits or an RSS guarantee.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -83,6 +106,135 @@ pub struct ImportParagraphBlockPreview {
 }
 
 impl DocumentCore {
+    /// Full native dry-run: stage the same resources, identities and return paths as execution.
+    /// It is a snapshot query, not a persistent permit that can be applied to another head.
+    pub fn preview_paragraph_block_import_native(
+        &self,
+        source: &Document,
+        request: &ImportParagraphBlockRequest,
+    ) -> Result<ImportParagraphBlockResult, HwpError> {
+        Ok(self.prepare_paragraph_block_import(source, request)?.result)
+    }
+
+    /// No source mutation or whole-document clone. Every recoverable error precedes commit.
+    pub fn import_paragraph_block_native(
+        &mut self,
+        source: &Document,
+        request: &ImportParagraphBlockRequest,
+    ) -> Result<ImportParagraphBlockResult, HwpError> {
+        let prepared = self.prepare_paragraph_block_import(source, request)?;
+        let Some(resources) = prepared.resources else {
+            return Ok(prepared.result);
+        };
+        resources.reserve(&mut self.document)?;
+        self.reserve_block_commit(request.target_section, prepared.paragraphs.len(), 0)?;
+        let binary_changed = !resources.binaries.is_empty();
+        resources.commit(&mut self.document);
+        if binary_changed {
+            self.bump_bin_data_epoch();
+        }
+        self.rebuild_resolved_styles();
+        self.commit_block_content(
+            request.target_section,
+            request.insert_before,
+            prepared.result.inserted.clone(),
+            prepared.paragraphs,
+            Vec::new(),
+        );
+        Ok(prepared.result)
+    }
+
+    fn prepare_paragraph_block_import(
+        &self,
+        source: &Document,
+        request: &ImportParagraphBlockRequest,
+    ) -> Result<PreparedImport, HwpError> {
+        let budget = self.inspect_paragraph_block_import_native(source, request)?;
+        let mut result = ImportParagraphBlockResult {
+            target_section: request.target_section,
+            inserted: budget.inserted,
+            copies: vec![],
+            resources: ImportResourceCounts::default(),
+        };
+        if request.count == 0 {
+            return Ok(PreparedImport {
+                result,
+                resources: None,
+                paragraphs: vec![],
+            });
+        }
+        let source_request = RepeatParagraphBlockRequest {
+            section_index: request.source_section,
+            source_start: request.source_start,
+            source_end: request.source_end,
+            insert_before: request.source_end,
+            count: request.count,
+            limits: request.limits.block,
+        };
+        let reachable = validation::reachable_resources(source, &source_request)
+            .map_err(|e| invalid(e.to_string()))?;
+        let resources = resources::Resources::prepare(
+            source,
+            &self.document,
+            &reachable,
+            source.sections[request.source_section]
+                .section_def
+                .outline_numbering_id,
+            request.limits,
+        )?;
+        let original = &source.sections[request.source_section].paragraphs
+            [request.source_start..request.source_end];
+        let paths =
+            validation::paths(original, &source_request).map_err(|e| invalid(e.to_string()))?;
+        let mut allocator = Allocator {
+            used: used_instance_ids(&self.document),
+            next: 1,
+        };
+        let mut paragraphs = Vec::new();
+        paragraphs
+            .try_reserve_exact(budget.added_paragraphs)
+            .map_err(|_| invalid("import staging allocation failed"))?;
+        result
+            .copies
+            .try_reserve_exact(request.count)
+            .map_err(|_| invalid("import result allocation failed"))?;
+        for index in 0..request.count {
+            let mut copy = original.to_vec();
+            remap::paragraphs(&mut copy, &resources)?;
+            super::super::clone_identity::reidentify_with_allocator(&mut copy, &mut allocator)?;
+            let start = request.insert_before + index * original.len();
+            let mut mappings = Vec::new();
+            mappings
+                .try_reserve_exact(paths.len())
+                .map_err(|_| invalid("import mapping allocation failed"))?;
+            for path in &paths {
+                let mut destination = path.clone();
+                let Some(Step::Paragraph(p)) = destination.first_mut() else {
+                    return Err(invalid("invalid owned root"));
+                };
+                *p += start;
+                mappings.push(ParagraphBlockMapping {
+                    source: path.clone(),
+                    destination,
+                });
+            }
+            result.copies.push(ParagraphBlockCopy {
+                range: start..start + original.len(),
+                mappings,
+            });
+            paragraphs.extend(copy);
+        }
+        result.resources = resources.counts.clone();
+        // Native result is small and bounded by the existing mapping ceiling.
+        // Serialize before commit so the future transport wrapper cannot first fail after mutation.
+        serde_json::to_vec(&result).map_err(|e| invalid(e.to_string()))?;
+        Ok(PreparedImport {
+            result,
+            resources: Some(resources),
+            paragraphs,
+        })
+    }
+
     /// Inspect a foreign block without constructing/cloning a source DocumentCore.
     /// No BinData load, DocInfo write, identity allocation, clipboard or event mutation.
     pub fn inspect_paragraph_block_import_native(

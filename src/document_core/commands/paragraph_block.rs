@@ -13,6 +13,7 @@ mod template_select;
 mod validation;
 pub use import::{
     ImportParagraphBlockLimits, ImportParagraphBlockPreview, ImportParagraphBlockRequest,
+    ImportParagraphBlockResult, ImportResourceCounts,
 };
 pub use repeat::{ParagraphBlockCopy, ParagraphBlockMapping, RepeatParagraphBlockResult};
 pub use template::{TemplateBinding, TemplateFillPreview, TemplateFillRequest, TemplateFillTarget};
