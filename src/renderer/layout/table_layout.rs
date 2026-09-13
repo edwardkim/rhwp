@@ -8387,7 +8387,12 @@ impl LayoutEngine {
                 // 조건**(호스트가 칸의 마지막 문단)으로 싣는다 — 뒤 형제 문단이 있을 때
                 // 그 몫을 싣지 않는 계약(59043 `□ 편익`)은 그대로다.
                 let host_is_cell_last_para = pidx + 1 == paragraphs.len();
-                let nested_h: f64 = p
+                // [#7066] 저장 줄별 그룹은 측정(`height_measurer::cell_nested_controls_bottom`)
+                // 과 **같은 함수**로 낸다. 한 줄에 나란히 놓인 표는 그 줄이 합이 아니라
+                // 최댓값만 차지하므로, 합산하면 정렬용 콘텐츠 높이가 칸보다 커져 여유가
+                // `0` 으로 깎이고 `Center`·`Bottom` 이 상단정렬로 무너진다.
+                let groups = crate::renderer::float_placement::nested_table_groups(p);
+                let heights: Vec<f64> = p
                     .controls
                     .iter()
                     .map(|ctrl| {
@@ -8402,7 +8407,29 @@ impl LayoutEngine {
                             0.0
                         }
                     })
-                    .sum();
+                    .collect();
+                let para_top_hu = p.line_segs.first().map_or(0, |s| s.vertical_pos);
+                let mut nested_h = 0.0f64;
+                for group in groups {
+                    let height = if group.side_by_side {
+                        group
+                            .controls
+                            .iter()
+                            .map(|&ci| heights[ci])
+                            .fold(0.0, f64::max)
+                    } else {
+                        group.controls.iter().map(|&ci| heights[ci]).sum()
+                    };
+                    let bottom = if let Some(line) = group.line {
+                        let seg = &p.line_segs[line];
+                        let top =
+                            hwpunit_to_px(seg.vertical_pos.saturating_sub(para_top_hu), self.dpi);
+                        top + height
+                    } else {
+                        height
+                    };
+                    nested_h = nested_h.max(bottom);
+                }
                 if nested_h <= 0.0 {
                     0.0
                 } else {
@@ -10250,6 +10277,29 @@ impl LayoutEngine {
                     && is_empty_spacer_para
                     && matches!(p.line_segs.as_slice(), [seg] if !line_seg_is_synthetic(seg))
                     && match (p.line_segs.first(), cell.paragraphs.get(pi + 1)) {
+                        // [#7086] 다음 문단이 **저장 LINE_SEG 를 아예 갖지 않으면** 그
+                        // vpos 로는 이 빈 줄을 판정할 수 없다(비교할 좌표가 없다). 대신
+                        // **앞 문단의 저장 슬롯**이 이 문단의 vpos 에 정확히 닿는지 본다 —
+                        // 156060125 2쪽: p[16](vpos=0 lh=2982 ls=752) 의 슬롯 끝 3734 가
+                        // p[17].vpos 와 일치하고, p[18] 은 seg 가 없다. 이 빈 줄을 0 으로
+                        // 접으면 그 아래 쪽 전체가 11.8px 위로 올라간다(정본 대비 −21px 중
+                        // 큰 성분). 앞 슬롯이 어긋나면 종전대로 접는다.
+                        (Some(seg), Some(next_para))
+                            if next_para.line_segs.is_empty() && pi > 0 =>
+                        {
+                            let prev_slot_lands_here = cell.paragraphs[pi - 1]
+                                .line_segs
+                                .last()
+                                .is_some_and(|prev| {
+                                    !line_seg_is_synthetic(prev) && prev.line_height > 0 && {
+                                        let slot = i64::from(prev.vertical_pos)
+                                            + i64::from(prev.line_height)
+                                            + i64::from(prev.line_spacing.max(0));
+                                        (slot - i64::from(seg.vertical_pos)).abs() <= 2
+                                    }
+                                });
+                            seg.line_height > 0 && prev_slot_lands_here
+                        }
                         (Some(seg), Some(next_para)) if next_para.controls.is_empty() => {
                             match next_para.line_segs.first() {
                                 Some(next) if !line_seg_is_synthetic(next) => {

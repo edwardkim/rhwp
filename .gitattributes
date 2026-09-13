@@ -60,3 +60,11 @@ samples/issue6764/*.hwp -text -diff
 
 # PR #6796: original HWP bytes
 samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp -text -diff
+
+# #7078/#7091 검토의 새 반례·변환 산출물은 원본 바이트를 보존한다.
+# PDF의 xref CRLF/공백과 압축 stream은 source whitespace가 아니다.
+tests/fixtures/issue_7077/*.hwpx -text -diff
+tests/fixtures/issue_7091/*.hwp -text -diff
+tests/fixtures/issue_7091/*.hwpx -text -diff
+pdf/pr7078-*.pdf -text -diff
+pdf/pr7091-sample11-before-2020.pdf -text -diff
