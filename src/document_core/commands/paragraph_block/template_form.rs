@@ -137,9 +137,16 @@ impl DocumentCore {
         self.render_normalization
             .text_reflowed_tables
             .extend(reflowed);
-        // Regenerate affected body text with its real width, then use the existing flow.
-        for index in &result.paragraphs {
-            self.reflow_paragraph(scope.section_index, *index);
+        // Only text-edited body roots need body-width reflow. A cell/textbox edit
+        // must not reinterpret the untouched host's stored control-line geometry.
+        for root in &roots {
+            if request
+                .bindings
+                .iter()
+                .any(|binding| path(&binding.target) == [Step::Paragraph(*root)])
+            {
+                self.reflow_paragraph(scope.section_index, scope.start + root);
+            }
         }
         let hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(

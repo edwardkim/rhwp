@@ -140,6 +140,7 @@ fn invalid_overlap_missing_key_and_empty_request_preserve_state() {
 #[test]
 fn staging_growth_failure_does_not_leak_earlier_root_edits() {
     let mut c = core();
+    c.document_mut().sections[0].paragraphs[1] = para(&"a".repeat(101));
     c.document_mut().sections[0].paragraphs[3] = para(&"x".repeat(100));
     let mut r = request();
     r.scope.limits.max_structure_bytes = 800_000;
@@ -149,7 +150,7 @@ fn staging_growth_failure_does_not_leak_earlier_root_edits() {
     r.record = (0..100)
         .map(|i| (format!("k{i}"), "x".repeat(200)))
         .collect();
-    r.bindings.push(binding("first", 0, 0, 1));
+    r.bindings.push(binding("first", 0, 100, 101));
     r.record.insert("first".into(), "edited".into());
     let before = state(&c);
     let e = c.fill_template_native(&r).unwrap_err().to_string();
@@ -262,6 +263,7 @@ fn merged_covered_cell_is_not_silently_redirected() {
             row: 0,
             col: 0,
             col_span: 2,
+            row_span: 1,
             paragraphs: vec![para(""), para("")],
             ..Default::default()
         }],
@@ -302,4 +304,95 @@ fn merged_covered_cell_is_not_silently_redirected() {
     };
     assert!(t.cells[0].paragraphs[0].text.is_empty());
     assert_eq!(t.cells[0].paragraphs[1].text, "second paragraph");
+}
+
+#[test]
+fn nested_textbox_named_field_fill_keeps_empty_paragraph_and_owner_ids() {
+    use rhwp::model::shape::{RectangleShape, ShapeObject, TextBox};
+    let mut c = core();
+    let mut value = para("old");
+    field(&mut value, 80);
+    let mut shape = RectangleShape::default();
+    shape.common.instance_id = 60;
+    shape.drawing.inst_id = 70;
+    shape.drawing.text_box = Some(TextBox {
+        paragraphs: vec![Paragraph::default(), value],
+        ..Default::default()
+    });
+    c.document_mut().sections[0].paragraphs[1]
+        .controls
+        .push(Control::Shape(Box::new(ShapeObject::Rectangle(shape))));
+    let target = c
+        .template_field_target_native(&scope(), "title", None)
+        .unwrap();
+    assert!(matches!(&target, TemplateFillTarget::Field { path, .. }
+        if path == &[Step::Paragraph(0), Step::Control(0), Step::Shape, Step::TextBox, Step::Paragraph(1)]));
+    c.fill_template_native(&FillTemplateRequest {
+        scope: scope(),
+        bindings: vec![TemplateBinding {
+            key: "x".into(),
+            target,
+        }],
+        record: BTreeMap::from([("x".into(), String::new())]),
+    })
+    .unwrap();
+    let p = &c.document().sections[0].paragraphs[1];
+    assert_eq!(p.text, "A😀B");
+    let Control::Shape(s) = &p.controls[0] else {
+        panic!("shape")
+    };
+    let ShapeObject::Rectangle(s) = s.as_ref() else {
+        panic!("rectangle")
+    };
+    assert_eq!(s.common.instance_id, 60);
+    assert_eq!(s.drawing.inst_id, 70);
+    let paras = &s.drawing.text_box.as_ref().unwrap().paragraphs;
+    assert_eq!(paras.len(), 2);
+    assert!(paras.iter().all(|p| p.text.is_empty()));
+    let Control::Field(f) = &paras[1].controls[0] else {
+        panic!("field")
+    };
+    assert_eq!(f.field_id, 80);
+}
+
+#[test]
+fn convenience_resolution_errors_are_read_only_and_do_not_pick_first_match() {
+    use rhwp::model::table::{Cell, Table};
+    let mut c = core();
+    c.document_mut().sections[0].paragraphs[1]
+        .controls
+        .push(Control::Table(Box::new(Table {
+            cells: vec![
+                Cell {
+                    row_span: 1,
+                    col_span: 1,
+                    paragraphs: vec![para("")],
+                    ..Default::default()
+                },
+                Cell {
+                    row_span: 1,
+                    col_span: 1,
+                    paragraphs: vec![para("")],
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        })));
+    let before = state(&c);
+    let path = [Step::Paragraph(0), Step::Control(0)];
+    assert_eq!(
+        c.template_cell_target_native(&scope(), &path, (0, 0), 0, 0..0)
+            .unwrap_err()
+            .code,
+        "fillCell"
+    );
+    assert!(c
+        .template_cell_target_native(&scope(), &[Step::Paragraph(0)], (0, 0), 0, 0..0)
+        .is_err());
+    let mut invalid = scope();
+    invalid.limits.max_nodes = usize::MAX;
+    assert!(c
+        .template_field_target_native(&invalid, "title", None)
+        .is_err());
+    assert_eq!(state(&c), before);
 }
