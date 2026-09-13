@@ -133,34 +133,41 @@ impl DocumentCore {
         &self,
         request: &RepeatParagraphBlockRequest,
     ) -> Result<ParagraphBlockBudget, ParagraphBlockValidationError> {
-        // Address/option validation first, with count=0 semantics, before walking.
-        let no_op = RepeatParagraphBlockRequest {
-            count: 0,
-            ..request.clone()
-        };
-        let zero = self.paragraph_block_budget_native(&no_op)?;
-        if request.count == 0 {
-            return Ok(zero);
-        }
-        if request.count > request.limits.max_copies
-            || (request.source_end - request.source_start)
-                .checked_mul(request.count)
-                .is_none_or(|n| n > request.limits.max_paragraphs)
-        {
-            return Err(reject(
-                &[],
-                "budgetOrAddress",
-                "copy/paragraph budget exceeded",
-            ));
-        }
-        let paragraphs = &self.document().sections[request.section_index].paragraphs
-            [request.source_start..request.source_end];
-        // Support walk also has node/depth/path caps before any path allocations.
-        // In particular it reports Form's exact path before invoking serde costs.
-        let nodes = support::inspect(paragraphs, request)?;
-        let budget = self.paragraph_block_budget_native(request)?;
-        references::validate(self.document(), &nodes, request.limits.max_document_nodes)?;
-        resources::validate(self.document(), &nodes, request)?;
-        Ok(budget)
+        validate_document_block(self.document(), request)
     }
+}
+
+pub(super) fn validate_document_block(
+    document: &crate::model::document::Document,
+    request: &RepeatParagraphBlockRequest,
+) -> Result<ParagraphBlockBudget, ParagraphBlockValidationError> {
+    // Address/option validation first, with count=0 semantics, before walking.
+    let no_op = RepeatParagraphBlockRequest {
+        count: 0,
+        ..request.clone()
+    };
+    let zero = super::document_block_budget(document, &no_op)?;
+    if request.count == 0 {
+        return Ok(zero);
+    }
+    if request.count > request.limits.max_copies
+        || (request.source_end - request.source_start)
+            .checked_mul(request.count)
+            .is_none_or(|n| n > request.limits.max_paragraphs)
+    {
+        return Err(reject(
+            &[],
+            "budgetOrAddress",
+            "copy/paragraph budget exceeded",
+        ));
+    }
+    let paragraphs = &document.sections[request.section_index].paragraphs
+        [request.source_start..request.source_end];
+    // Support walk also has node/depth/path caps before any path allocations.
+    // In particular it reports Form's exact path before invoking serde costs.
+    let nodes = support::inspect(paragraphs, request)?;
+    let budget = super::document_block_budget(document, request)?;
+    references::validate(document, &nodes, request.limits.max_document_nodes)?;
+    resources::validate(document, &nodes, request)?;
+    Ok(budget)
 }

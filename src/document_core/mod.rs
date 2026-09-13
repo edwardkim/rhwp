@@ -9,8 +9,9 @@ pub(crate) use helpers::*;
 pub mod builders;
 mod commands;
 pub use commands::paragraph_block::{
-    FillTemplateRequest, FillTemplateResult, ParagraphBlockBudget, ParagraphBlockCopy,
-    ParagraphBlockLimits, ParagraphBlockMapping, ParagraphBlockPathStep,
+    FillTemplateRequest, FillTemplateResult, ImportParagraphBlockLimits,
+    ImportParagraphBlockPreview, ImportParagraphBlockRequest, ParagraphBlockBudget,
+    ParagraphBlockCopy, ParagraphBlockLimits, ParagraphBlockMapping, ParagraphBlockPathStep,
     ParagraphBlockValidationError, RepeatParagraphBlockRequest, RepeatParagraphBlockResult,
     RepeatTableRowsRequest, RepeatTableRowsResult, TemplateBinding, TemplateFillPreview,
     TemplateFillRequest, TemplateFillTarget, TemplateOperation, TemplateOperationResult,

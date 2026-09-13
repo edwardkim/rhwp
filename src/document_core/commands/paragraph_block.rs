@@ -1,5 +1,6 @@
 //! Whole-paragraph block automation with read-only preflight and staged insertion.
 mod budget;
+mod import;
 mod owned;
 mod repeat;
 mod rows_geometry;
@@ -10,6 +11,9 @@ mod template_operation;
 mod template_rows;
 mod template_select;
 mod validation;
+pub use import::{
+    ImportParagraphBlockLimits, ImportParagraphBlockPreview, ImportParagraphBlockRequest,
+};
 pub use repeat::{ParagraphBlockCopy, ParagraphBlockMapping, RepeatParagraphBlockResult};
 pub use template::{TemplateBinding, TemplateFillPreview, TemplateFillRequest, TemplateFillTarget};
 pub use template_form::{FillTemplateRequest, FillTemplateResult, TemplateScope};
@@ -124,83 +128,89 @@ impl DocumentCore {
         &self,
         request: &RepeatParagraphBlockRequest,
     ) -> Result<ParagraphBlockBudget, HwpError> {
-        let r = request;
-        r.limits.validate()?;
-        let section = self
-            .document
-            .sections
-            .get(r.section_index)
-            .ok_or_else(|| invalid("section index out of range"))?;
-        if r.source_start >= r.source_end || r.source_end > section.paragraphs.len() {
-            return Err(invalid(
-                "source must be a nonempty in-range paragraph interval",
-            ));
-        }
-        if r.insert_before > section.paragraphs.len()
-            || (r.source_start < r.insert_before && r.insert_before < r.source_end)
-        {
-            return Err(invalid("destination is out of range or inside the source"));
-        }
-        let added = (r.source_end - r.source_start)
-            .checked_mul(r.count)
-            .ok_or_else(|| invalid("paragraph count overflow"))?;
-        if r.count > r.limits.max_copies || added > r.limits.max_paragraphs {
-            return Err(invalid("copy/paragraph budget exceeded"));
-        }
-        let inserted_end = r
-            .insert_before
-            .checked_add(added)
-            .ok_or_else(|| invalid("destination overflow"))?;
-        let shift = if r.insert_before <= r.source_start {
-            added
-        } else {
-            0
-        };
-        let start = r
-            .source_start
-            .checked_add(shift)
-            .ok_or_else(|| invalid("source start overflow"))?;
-        let end = r
-            .source_end
-            .checked_add(shift)
-            .ok_or_else(|| invalid("source end overflow"))?;
-        // A zero-copy request does not inspect unsupported or large source content.
-        let (structure_bytes, added_nodes, owned_depth, mapping_bytes, document_nodes) =
-            if r.count == 0 {
-                (0, 0, 0, 0, 0)
-            } else {
-                let source = &section.paragraphs[r.source_start..r.source_end];
-                let cost = owned::source(source, r.limits.max_nodes / r.count, r.limits.max_depth)?;
-                let nodes = cost
-                    .nodes
-                    .checked_mul(r.count)
-                    .ok_or_else(|| invalid("owned node count overflow"))?;
-                let mappings = cost
-                    .mapping_bytes
-                    .checked_mul(r.count)
-                    .ok_or_else(|| invalid("mapping size overflow"))?;
-                if mappings > r.limits.max_mapping_bytes {
-                    return Err(invalid("mapping byte budget exceeded"));
-                }
-                let bytes = budget::measure(
-                    source,
-                    r.count,
-                    r.limits.max_structure_bytes,
-                    cost.skipped_bytes,
-                )?;
-                let document_nodes = owned::document(&self.document, r.limits.max_document_nodes)?;
-                (bytes, nodes, cost.depth, mappings, document_nodes)
-            };
-        Ok(ParagraphBlockBudget {
-            added_paragraphs: added,
-            structure_bytes,
-            added_nodes,
-            owned_depth,
-            mapping_bytes,
-            document_nodes,
-            source_start_after: start,
-            source_end_after: end,
-            inserted_end,
-        })
+        document_block_budget(&self.document, request)
     }
+}
+
+fn document_block_budget(
+    document: &crate::model::document::Document,
+    request: &RepeatParagraphBlockRequest,
+) -> Result<ParagraphBlockBudget, HwpError> {
+    let r = request;
+    r.limits.validate()?;
+    let section = document
+        .sections
+        .get(r.section_index)
+        .ok_or_else(|| invalid("section index out of range"))?;
+    if r.source_start >= r.source_end || r.source_end > section.paragraphs.len() {
+        return Err(invalid(
+            "source must be a nonempty in-range paragraph interval",
+        ));
+    }
+    if r.insert_before > section.paragraphs.len()
+        || (r.source_start < r.insert_before && r.insert_before < r.source_end)
+    {
+        return Err(invalid("destination is out of range or inside the source"));
+    }
+    let added = (r.source_end - r.source_start)
+        .checked_mul(r.count)
+        .ok_or_else(|| invalid("paragraph count overflow"))?;
+    if r.count > r.limits.max_copies || added > r.limits.max_paragraphs {
+        return Err(invalid("copy/paragraph budget exceeded"));
+    }
+    let inserted_end = r
+        .insert_before
+        .checked_add(added)
+        .ok_or_else(|| invalid("destination overflow"))?;
+    let shift = if r.insert_before <= r.source_start {
+        added
+    } else {
+        0
+    };
+    let start = r
+        .source_start
+        .checked_add(shift)
+        .ok_or_else(|| invalid("source start overflow"))?;
+    let end = r
+        .source_end
+        .checked_add(shift)
+        .ok_or_else(|| invalid("source end overflow"))?;
+    // A zero-copy request does not inspect unsupported or large source content.
+    let (structure_bytes, added_nodes, owned_depth, mapping_bytes, document_nodes) = if r.count == 0
+    {
+        (0, 0, 0, 0, 0)
+    } else {
+        let source = &section.paragraphs[r.source_start..r.source_end];
+        let cost = owned::source(source, r.limits.max_nodes / r.count, r.limits.max_depth)?;
+        let nodes = cost
+            .nodes
+            .checked_mul(r.count)
+            .ok_or_else(|| invalid("owned node count overflow"))?;
+        let mappings = cost
+            .mapping_bytes
+            .checked_mul(r.count)
+            .ok_or_else(|| invalid("mapping size overflow"))?;
+        if mappings > r.limits.max_mapping_bytes {
+            return Err(invalid("mapping byte budget exceeded"));
+        }
+        let bytes = budget::measure(
+            source,
+            r.count,
+            r.limits.max_structure_bytes,
+            cost.skipped_bytes,
+        )?;
+        let document_nodes = owned::document(document, r.limits.max_document_nodes)?;
+        (bytes, nodes, cost.depth, mappings, document_nodes)
+    };
+    Ok(ParagraphBlockBudget {
+        added_paragraphs: added,
+        structure_bytes,
+        added_nodes,
+        owned_depth,
+        mapping_bytes,
+        document_nodes,
+        source_start_after: start,
+        source_end_after: end,
+        inserted_end,
+    })
 }
