@@ -300,6 +300,8 @@ export class WasmBridge {
    * 첫 렌더 이후에 fetch 가 끝나면 뷰가 재갱신 없이는 이미지를 표시하지 못하므로,
    * main 쪽에서 뷰 갱신을 배선한다 (dirty 마킹 없는 뷰 전용 경로여야 함). */
   onExternalImagesInjected?: (injected: number) => void;
+  /** 문서 로드·새 문서·저장 이름 확정 후 알림. 메인 창만 제목 갱신을 구독한다. */
+  onFileNameChanged?: (fileName: string) => void;
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -418,6 +420,8 @@ export class WasmBridge {
       }
       throw error;
     }
+    // 알림은 문서 교체의 rollback 구간 밖에서 보낸다.
+    this.onFileNameChanged?.(this._fileName);
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
@@ -500,6 +504,7 @@ export class WasmBridge {
     }
     this._documentGeneration += 1;
     console.log(`[WasmBridge] 새 문서 생성: ${info.pageCount}페이지`);
+    this.onFileNameChanged?.(this._fileName);
     return info;
   }
 
@@ -531,8 +536,9 @@ export class WasmBridge {
   }
 
   set fileName(name: string) {
-    this._fileName = name;
     this.doc?.setFileName(name);
+    this._fileName = name;
+    this.onFileNameChanged?.(name);
   }
 
   get currentFileHandle(): FileSystemFileHandleLike | null {

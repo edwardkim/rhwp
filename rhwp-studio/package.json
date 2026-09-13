@@ -28,6 +28,7 @@
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
     "e2e:undo": "node e2e/undo-contracts.test.mjs",
     "e2e:status-page-number": "node e2e/status-page-number.test.mjs --mode=headless",
+    "e2e:document-title": "node e2e/run-with-vite.mjs -- node e2e/document-title-issue6566.test.mjs --mode=headless",
     "e2e:ruler-document-switch": "node e2e/ruler-document-switch.test.mjs --mode=headless",
     "e2e:zoom-fit-mode": "node e2e/zoom-fit-mode-persistence.test.mjs --mode=headless",
     "e2e:zoom-dialog-transaction": "node e2e/run-with-vite.mjs -- node e2e/zoom-dialog-transaction.test.mjs --mode=headless",
