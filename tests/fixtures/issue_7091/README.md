@@ -1,4 +1,4 @@
-# #7091 검토 증거 — 머지 보류
+# #7091 검토 증거 — 초기 보류와 메인터너 보정
 
 독립 정본은 `samples/hwp3-sample11-hwp5.hwp` 및
 `tests/fixtures/issue_4680/german-legislative-system-hancom-2020.hwp`이다.
@@ -8,7 +8,7 @@
 - `sample11-before.hwp`: devel `1ae5ca295` 런타임의 HWP3→HWP5 검사 산출물.
 - `sample11-candidate.hwp`, `german-candidate.hwp`: #7091을 포함한 초기 통합
   `9a39b8f6b` 런타임의 같은 변환 산출물. `c1a4d3345` 빌드와도 byte-identical 확인.
-  최종 수용 후보에는 #7091 코드를 되돌렸으므로 이 파일들은 **보류 증거**다.
+  초기 후보에서 되돌린 뒤 `64605f37d`로 재적용했다. 현재 변환 출력도 이 두 파일과 byte-identical이다.
 - `pr7091-sample11-candidate-hancom.hwpx`: 위 후보를 한컴 engine 2020에서 실제로
   열고 HWPX로 저장한 산출물. 독립 원본 정본이 아니며 PDF 성공 증거도 아니다.
 
@@ -35,12 +35,34 @@
 기존 sample11은 모든 도형이 (0,1)이었고, 후보/정본은 깊이 0~9다.
 최상위 도형의 두 ctrl_id에 대한 +4 byte 오프셋까지 적용하여 25개를 직접 검사했다.
 HWP3 원본 SVG도 sample11 151쪽·독일 법령 261쪽 전부 기준/초기 후보가 byte-identical이다.
-**이 구조·SVG 결과만으로 PDF 출력 회귀를 통과시킬 수 없다.**
+구조·SVG 검사와 별도로, 아래 개선된 서버에서 실제 PDF 출력 성공과 전후 동일성을 확인했다.
 
-현재 증거는 한컴 PDF 출력 호환성 회귀를 특정한다. HWPX 저장 성공 때문에 일반적인
+초기 증거에서는 후보의 한컴 PDF 출력 실패가 반복됐다. 아래 서버 개선 후 재검증에서는 성공했다. HWPX 저장 성공 때문에 일반적인
 문서 개방 실패로 확대하지 않는다. 내부 한컴 예외의 정확한 원인은 아직 미확정이다.
 원 PR의 Hancom 2024 COM 개방 주장을 이번 engine 2020 PDF 검증 결과로 대체하지 않는다.
 #7091·#4680을 close하거나 전체 HWP3 저장 호환성 해결로 기록하지 않는다.
 
 보류 해제: 같은 원본·한컴 버전으로 수정 전/후 PDF 출력 회귀를 해소하고, 깊이 0~9의
 독립 census·실제 최상위 레코드·HWP5 재저장·가시 출력까지 함께 재검증한다.
+
+## MCP 서버 개선 후 재검증 (2026-09-13)
+
+동일 `sample11-candidate.hwp`를 수정 없이 engine 2020 / Hancom 12.0.0.4605로 재변환했다.
+Job `03325817-45fb-4d2b-8012-c54ea9d891a9`는 148초에 성공했고 PDF는 151쪽이다.
+5·34·67·109·140초 status는 running/converting, 최종은 succeeded/completed였다.
+출력은 로컬 `pdf/pr7091-sample11-candidate-2020.pdf`(아직 미커밋), 25,612,183 bytes,
+SHA-256 `5adf04ec8f15c6e9c8d28f3d8561c75d6ec1d27a4b9e21620945799331a7ba38`다.
+서버·로컬 해시 일치 및 151쪽 전체 래스터화 성공을 확인했다.
+초기 worker 종료는 재현되지 않았다. PDF 내용의 독립 정본 대조와 최종 PR 수용 검토는 별개다.
+
+
+## 메인터너 보정 검증
+
+`64605f37d`에서 원 변경을 재적용하고 최상위 레코드 4-byte 오프셋, fixture/record 누락 실패,
+독립 한컴 census 전수 비교와 HWP5 재저장 테스트를 보강했다. 보강 Rust 테스트 3개를 실제 실행해 통과했다.
+현재 바이너리의 HWP5 산출물도 위 sample11/german candidate와 byte-identical이다.
+
+새 sample11 PDF는 기존 `pdf/pr7091-sample11-before-2020.pdf`와 151쪽 전체 72dpi 픽셀·추출 텍스트가
+같으므로 새 이름으로 중복 커밋하지 않는다. 기존 PDF를 재사용하고 새 변환 job과 해시만 기록한다.
+독립 한컴 정본과의 기존 151쪽 raster·33쪽 text 차이는 수정 전에도 같았으며 전체 충실도 해결을 주장하지 않는다.
+새 코드의 HWP3 SVG 151+261쪽도 수정 전과 동일했다. 최종 검토는 `mydocs/pr/archives/pr_7091_review.md`를 따른다.

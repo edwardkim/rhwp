@@ -1,5 +1,5 @@
 {
-  "purpose": "PR7078/7091 hold evidence, not accepted output or a fidelity oracle unless explicitly marked",
+  "purpose": "Initial PR7078/7091 hold evidence and maintainer correction outputs; independent oracles are explicitly identified and reused",
   "inputs": [
     {
       "path": "pdf/pr7078-before-original-p1.pdf",
@@ -40,6 +40,16 @@
       "path": "tests/fixtures/issue_7091/sample11-candidate.hwp",
       "bytes": 309760,
       "sha256": "49ae0c59518e307245ac897cd466ee127ba0c4e65f2792dfd9f64c840fa6cdfd"
+    },
+    {
+      "path": "pdf/pr7078-maintainer-original-p1.pdf",
+      "bytes": 246111,
+      "sha256": "7f65b1ca24567f0682d5edbaf9dca2f21c6a9a734dcc41e77b28b853eafe3d82"
+    },
+    {
+      "path": "pdf/pr7078-maintainer-contrast-p1.pdf",
+      "bytes": 247053,
+      "sha256": "f18a3a71c9d8fe56c65c0ff6dceb3625cd791ba6af62dbac9c2a2d65dbf51b94"
     }
   ],
   "reuse_existing_pdf": {
@@ -50,5 +60,37 @@
   "reuse_existing_oracle_pdf": {
     "path": "pdf/hwp3-sample11-hwp-2020.pdf",
     "reason": "Existing independent Hancom PDF for same input; current worker control success recorded by job, no duplicate oracle PDF committed."
+  },
+  "maintainer_recheck": {
+    "code_commit": "0acc011e34097b0c7ac8273d714f37b79608082f",
+    "sample11_pdf_job": "03325817-45fb-4d2b-8012-c54ea9d891a9",
+    "status": "succeeded",
+    "elapsed_seconds": 148,
+    "pages": 151,
+    "engine": "2020",
+    "hancom_version": "12.0.0.4605",
+    "candidate_input_sha256": "49ae0c59518e307245ac897cd466ee127ba0c4e65f2792dfd9f64c840fa6cdfd",
+    "output_sha256": "5adf04ec8f15c6e9c8d28f3d8561c75d6ec1d27a4b9e21620945799331a7ba38",
+    "reuse_pdf": "pdf/pr7091-sample11-before-2020.pdf",
+    "reuse_reason": "All 151 pages have identical 72dpi pixels and extracted text; no duplicate output PDF committed. Independent oracle retains existing differences."
+  },
+  "pdf_stitching_equivalence": {
+    "before_code": "2b6581b053112b348bb7af68830021aa01394dc0",
+    "after_code": "0acc011e3",
+    "renderer": "pdftoppm 96dpi",
+    "results": [
+      {
+        "key": "original",
+        "flat_sha256": "454637aabbf1bbe223ed2786044edc94c9d0943450148dfe09a3a770b6becc73",
+        "nested_sha256": "454637aabbf1bbe223ed2786044edc94c9d0943450148dfe09a3a770b6becc73",
+        "pixel_identical": true
+      },
+      {
+        "key": "contrast",
+        "flat_sha256": "a368a84a3695cd1a0b900ca26670a72edda3c376c0ca51248f72004446384315",
+        "nested_sha256": "a368a84a3695cd1a0b900ca26670a72edda3c376c0ca51248f72004446384315",
+        "pixel_identical": true
+      }
+    ]
   }
 }
