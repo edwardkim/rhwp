@@ -1,5 +1,5 @@
 {
-  "contentBundleSha256": "3ba1d6c14b7514143bff42d5e1c690b4d87f41a09ef04424395f3327f772fcaa",
+  "contentBundleSha256": "89e9f2057bfaf83498b9a5cc7cbe930be49b27b7ffff9345cfb20a20766a4b3c",
   "generatedBy": {
     "path": "scripts/font_rule_projection_gen.mjs",
     "sha256": "2070ed0d1823b54e94d89f64555fe88debeb8a16cad7342f3ab1ffba5d0d54fd"
@@ -38,13 +38,13 @@
       "ruleCount": 281
     },
     {
-      "contentSha256": "7b97c301f127301834b8765b179da5de397b9425595bd992fe58b7c1264873e5",
-      "inputSha256": "dd4604d3f12377ce8deab730d246df72e2e19e607ad11ad8973671698873873b",
+      "contentSha256": "0b96600917c7e4b78e55a77c6904c69f70cfdd0067c00d2b54a58db6887d070e",
+      "inputSha256": "6148c568b05fea9ec317759bfc7a19762f93eded557c5b5af01efbb7057ed266",
       "language": "typescript",
       "ownership": "generated-whole-file",
       "path": "rhwp-studio/src/core/generated/font-rule-projections/webfont-supply.ts",
       "projectionId": "canvas2d-webfont",
-      "projectionSha256": "730cab042d68ffb019d5867102ee8b2b8e5be41c48170ca5fc75422005e3fbee",
+      "projectionSha256": "b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245",
       "ruleCount": 153
     },
     {
@@ -58,13 +58,13 @@
       "ruleCount": 158
     }
   ],
-  "projectionBundleSha256": "090b4403832a739b7e2928fdc83741126a5cb7e05b4d3ae3fc8be17833e863a6",
+  "projectionBundleSha256": "e2b9542f714018c0cca84e7628cd66221c31fe27c6f380d9abb60af4c11134ac",
   "registry": {
     "activeRuleCount": 830,
     "path": "assets/font-rules/font_rule_registry_v2.json",
-    "retiredRuleCount": 0,
-    "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
-    "sha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16"
+    "retiredRuleCount": 1,
+    "rulesSha256": "ee040c0456763c443e0915c7923ccf0ca74c48af352a130fc7df21d890be11f6",
+    "sha256": "78cda382672ab6da2923d605c80abaac663a47dac301cc23cfeeda5bd49e8ca4"
   },
   "schema": {
     "path": "assets/font-rules/font_rule_projection_manifest.schema.json",
@@ -82,6 +82,6 @@
       "rust-layout-name": 171
     },
     "outputCount": 5,
-    "retiredRuleCount": 0
+    "retiredRuleCount": 1
   }
 }

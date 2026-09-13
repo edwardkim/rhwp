@@ -1234,7 +1234,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_apply_cell_style` | `edit apply-cell-style --json` | `path`,`table`,`row`,`col`,`style` |
 | `hwp_apply_para_format_in_cell` | `edit apply-para-format-in-cell --json` | `path`,`table`,`row`,`col`,`props` |
 | `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
-| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols` |
+| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols`; 선택 `atField`,`widths`,`alignments`,`repeatHeader` ([계약](cli_commands.md#edit-insert-table)) |
 | `hwp_insert_text_in_cell` | `edit insert-text-in-cell --json` | `path`,`table`,`row`,`col`,`text` |
 | `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
 | `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |

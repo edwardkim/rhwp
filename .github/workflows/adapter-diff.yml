@@ -8,8 +8,6 @@ name: Adapter inter-diff
 on:
   pull_request:
     branches: [main, devel]
-  push:
-    branches: [main, devel]
   workflow_dispatch:
 
 permissions:

@@ -2,6 +2,8 @@
 
 mod coordinates;
 mod grid;
+mod insert;
+pub(super) use insert::edit_insert_table;
 mod layout;
 mod structure;
 
@@ -16,5 +18,5 @@ pub(super) use layout::{
     edit_set_column_widths, edit_set_table_props,
 };
 pub(super) use structure::{
-    edit_delete_table, edit_insert_table, edit_merge_table, edit_split_table, edit_transpose_table,
+    edit_delete_table, edit_merge_table, edit_split_table, edit_transpose_table,
 };

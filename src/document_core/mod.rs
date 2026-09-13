@@ -16,6 +16,7 @@ pub use commands::paragraph_block::{
     TemplateFillRequest, TemplateFillTarget, TemplateOperation, TemplateOperationResult,
     TemplateScope, TEMPLATE_REQUEST_MAX_BYTES,
 };
+pub use commands::{TableColumnWidths, TableCreationOptions};
 pub mod converters;
 pub(crate) mod html_table_import;
 /// 한글 클립보드 문서모델(hwpjson) → HWPX 변환

@@ -7,7 +7,7 @@
 // #1516: 공통 다운로드 관찰자 상태 머신으로 과거 항목/중복 이벤트를 판정한다.
 
 import { openViewer } from './viewer-launcher.js';
-import { classifyDownload } from './download-interceptor-common.js';
+import { classifyDownload, isOwnExtensionBlobDownload } from './download-interceptor-common.js';
 import {
   DEFAULT_STATE_TTL_MS,
   evaluateDownloadChanged,
@@ -22,19 +22,36 @@ import {
 const STORAGE_PREFIX = 'rhwpDownloadState:';
 const TERMINAL_CLEANUP_MS = 30_000;
 const memoryStateFallback = new Map();
+const pendingDownloadEvents = new Map();
 
-export function setupDownloadInterceptor() {
-  browser.downloads.onCreated.addListener((item) => {
-    void handleCreated(item);
+// Serialize the entire read/update sequence, including terminal writes (#6964).
+// Different IDs remain independent; a failed event must not poison its queue.
+function enqueueDownloadEvent(id, operation) {
+  if (typeof id !== 'number') return;
+  const previous = pendingDownloadEvents.get(id);
+  // Start the first browser API call during event delivery, as before the queue.
+  const next = (previous ? previous.then(operation) : operation()).catch(err => {
+    console.error('[rhwp] 다운로드 이벤트 처리 오류:', err);
   });
-
-  browser.downloads.onChanged.addListener((delta) => {
-    void handleChanged(delta);
+  pendingDownloadEvents.set(id, next);
+  void next.then(() => {
+    if (pendingDownloadEvents.get(id) === next) pendingDownloadEvents.delete(id);
   });
 }
 
-async function handleCreated(item) {
-  const now = Date.now();
+export function setupDownloadInterceptor() {
+  browser.downloads.onCreated.addListener((item) => {
+    const receivedAt = Date.now();
+    enqueueDownloadEvent(item?.id, () => handleCreated(item, receivedAt));
+  });
+
+  browser.downloads.onChanged.addListener((delta) => {
+    const receivedAt = Date.now();
+    enqueueDownloadEvent(delta?.id, () => handleChanged(delta, receivedAt));
+  });
+}
+
+async function handleCreated(item, now) {
   const previousState = await getDownloadState(item?.id, now);
   const decision = evaluateDownloadCreated(item, previousState, now);
 
@@ -43,8 +60,7 @@ async function handleCreated(item) {
   await processDownloadCandidate(item, decision.state, { metadataFinalized: false });
 }
 
-async function handleChanged(delta) {
-  const now = Date.now();
+async function handleChanged(delta, now) {
   let state = await getDownloadState(delta?.id, now);
 
   if (state && !state.handledAt && shouldRecheckDownload(delta)) {
@@ -74,6 +90,7 @@ async function handleChanged(delta) {
 
 async function processDownloadCandidate(item, state, context) {
   if (!item || state?.handledAt) return state;
+  if (isOwnExtensionBlobDownload(item, browser.runtime.getURL(''))) return state;
   if (classifyDownload(item, context).action !== 'intercept') return state;
 
   try {

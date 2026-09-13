@@ -71,6 +71,29 @@ npm run build
 - `background.js`: `browser.*` 네임스페이스 사용 (Firefox 네이티브 Promise API)
 - `sw/download-interceptor.js`: `onDeterminingFilename` → `onCreated` (Firefox 호환)
 
+## 다운로드·저장 E2E 테스트
+
+저장소 루트에서 빌드된 확장을 실제 Firefox의 격리 프로필로 실행합니다. HWP 다운로드 후
+뷰어 1개, 편집 후 저장·다른 이름으로 저장, 저장본의 편집 내용 보존을 확인합니다.
+기존 Firefox 설치의 프로필을 사용하지 않습니다.
+
+먼저 루트 `pkg/` WASM을 [개발 환경 가이드](../mydocs/manual/dev_environment_guide.md)에 따라
+준비하고, Studio와 두 확장의 빌드·테스트 의존성을 설치합니다. Puppeteer는 Chrome 확장에
+선언된 버전을 공유하므로 `rhwp-chrome` 의존성도 필요합니다.
+
+```sh
+npm ci --prefix rhwp-studio
+PUPPETEER_SKIP_DOWNLOAD=true npm ci --prefix rhwp-chrome
+npm ci --prefix rhwp-firefox
+npm --prefix rhwp-firefox run build
+FIREFOX_EXECUTABLE_PATH=/path/to/firefox npm --prefix rhwp-firefox run test:e2e:download
+```
+
+`test:e2e:download`는 준비된 dist를 검사하며 자동으로 다시 빌드하지 않습니다.
+`RHWP_FIREFOX_DIST=/absolute/path/to/dist`로 검증할 패키지를 선택할 수 있습니다.
+파일명 수정(#6965)까지 포함된 패키지는 `RHWP_EXPECT_BASENAME=1`을 추가하면 파일명도 검사합니다.
+이 테스트는 수동 실행 진입점이며 현재 CI에 자동 연결되어 있지는 않습니다.
+
 ## 변경 이력
 
 ### v0.8.6 (2026-09-02)

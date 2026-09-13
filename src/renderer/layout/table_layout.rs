@@ -5653,16 +5653,12 @@ impl LayoutEngine {
             // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
             let mut prior_float_table_stacked = false;
             let mut rendered_top_and_bottom_non_inline = false;
-            // [#6787] 같은 칸 문단의 문단-기준 자리차지 중첩 표들이 **가로 오프셋으로
-            // 나란히** 놓이는 무리(`#6494` 의 칸 안 짝). 앞 표가 쓴 x 끝과 그 줄 상단.
-            //
-            // ⚠ 무리 판정은 **컨트롤 루프에 들어가기 전에 문단 단위로 한 번** 한다 —
-            // 측정(`height_measurer`)과 같은 함수다. 표를 순차 처리하며 판정하면 뒤
-            // 표가 조건에 걸렸을 때 앞 표의 레인을 되돌릴 수 없고, 측정은 최대 높이만
-            // 예약했는데 배치는 세로로 쌓는 어긋남이 생긴다.
-            let cell_float_group_side_by_side =
-                crate::renderer::float_placement::para_float_group_is_side_by_side(para);
-            let mut cell_float_lane: Option<(f64, f64)> = None;
+            // 높이 측정과 동일한 저장 줄 그룹으로 레인을 소유한다.
+            // 다른 줄의 표가 앞 줄의 나란한 배치에 섞이지 않는다.
+            let nested_groups = crate::renderer::float_placement::nested_table_groups(para);
+            let stored_control_lines =
+                crate::renderer::float_placement::stored_control_line_indices(para);
+            let mut cell_float_lanes = vec![None; nested_groups.len()];
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 match ctrl {
@@ -6830,6 +6826,12 @@ impl LayoutEngine {
                         // ⚠ 자격 술어는 무리 판정과 **같은 함수**를 쓴다. 종전에는
                         // 여기서만 `off > 0` 을 요구해, 첫 표 오프셋이 0 인 무리에서
                         // 측정(최대 높이)과 배치(세로 적층)가 어긋났다.
+                        let group_index = nested_groups
+                            .iter()
+                            .position(|g| g.controls.contains(&ctrl_idx));
+                        let cell_float_group_side_by_side =
+                            group_index.is_some_and(|i| nested_groups[i].side_by_side);
+                        let cell_float_lane = group_index.and_then(|i| cell_float_lanes[i]);
                         let cell_float_lane_x = (cell_float_group_side_by_side
                             && crate::renderer::float_placement::
                                 para_float_group_member_is_eligible(nested_table))
@@ -6943,13 +6945,33 @@ impl LayoutEngine {
                                 };
                                 let om_top_hu = i64::from(nested_table.outer_margin_top);
                                 let om_bottom_hu = i64::from(nested_table.outer_margin_bottom);
+                                // [#7049] `lh = h + om` 인 표 전용 줄만이라는 위 계약대로
+                                // 양쪽을 본다 — `paragraph_layout` 의 `stored_lh_covers_om`
+                                // 과 같은 술어의 형제다. 한쪽만 고치면 `#2032`/`#2075` 의
+                                // "동일 로직" 함정을 그대로 밟는다.
+                                let band_hu = i64::from(nested_table.common.height)
+                                    + om_top_hu
+                                    + om_bottom_hu;
+                                // 그리고 그 줄이 **이 표 전용**이어야 한다 —
+                                // `paragraph_layout` 의 `line_tac_table_count` 와 같은 조건.
+                                // 이 경로에는 composer 결과가 없으므로 저장 사다리로 센다:
+                                // 컨트롤의 문자 위치를 `LineSeg.text_start` 구간에 넣어
+                                // 소속 줄을 구하고, **같은 줄**의 TAC 표만 센다. 문단 단위로
+                                // 세면 다른 줄의 표까지 끌어들여 이 줄의 사실을 왜곡한다.
+                                let own_line =
+                                    stored_control_lines.as_ref().map(|lines| lines[ctrl_idx]);
+                                let line_tac_table_count =
+                                    stored_control_lines.as_ref().map(|lines| {
+                                        para.controls.iter().enumerate().filter(|(ci, c)| {
+                                        matches!(c, Control::Table(t) if t.common.treat_as_char)
+                                            && Some(lines[*ci]) == own_line
+                                    }).count()
+                                    });
                                 let table_anchor_y = if nested_table.common.height < 0x8000_0000
                                     && om_top_hu + om_bottom_hu > 0
-                                    && i64::from(host_seg_lh)
-                                        >= i64::from(nested_table.common.height)
-                                            + om_top_hu
-                                            + om_bottom_hu
-                                            - 10
+                                    && line_tac_table_count.is_some_and(|count| count <= 1)
+                                    && (band_hu - 10..=band_hu + 10)
+                                        .contains(&i64::from(host_seg_lh))
                                 {
                                     table_anchor_y
                                         + hwpunit_to_px(
@@ -7210,7 +7232,8 @@ impl LayoutEngine {
                                     let lane_bottom = cell_float_lane
                                         .map(|(top, _)| (top + advance).max(para_y))
                                         .unwrap_or(nested_y + advance);
-                                    cell_float_lane = Some((
+                                    cell_float_lanes
+                                        [group_index.expect("float lane has a group")] = Some((
                                         nested_y,
                                         x + hwpunit_to_px(
                                             nested_table.common.width.min(i32::MAX as u32) as i32,

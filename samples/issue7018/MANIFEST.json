@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 7018,
+  "title": "기록물 정수점검 및 상태점검 계획서 — 자리차지 표를 앵커한 소제목 문단",
+  "entries": [
+    {
+      "path": "samples/issue7018/2769535-records-inspection-plan.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/7018",
+      "originalFilename": "2769535_[별지 7] 기록물 정수점검 및 상태점검 계획서(제27조제1항 관련).hwpx",
+      "bytes": 23028,
+      "sha256": "3210d66f119a38e44764e0e29780d8140bc53b51f00921356fa99f6c41996f2a",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8362"
+      },
+      "referenceEngine": "2020",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert, engine_profile=2020). 2쪽, 68,592 bytes.",
+      "contract": "자리차지 표가 자기 저장 줄을 가지면(표 컨트롤 위치 == 표 lineseg 시작) 그 앞 텍스트 런은 표 줄이 아니라 자기 줄의 baseline 을 쓴다. 2쪽 문단 27 `  마. 행정박물류` 는 seg[0](bl=1020=13.6px)을 써 baseline 619.4px 에 앉아야 한다 — 표 줄 seg[1](bl=13423=179.0px)을 쓰면 784.8px 로 165.4px 내려가 표 둘째 행 글자와 겹친다.",
+      "referencePdf": "pdf/2769535-records-inspection-plan-2020.pdf",
+      "referencePdfSha256": "9b3b225082affc521ff7a8561d50c6f8c6a31fd39d092eb1595f1bedd6c41cd2",
+      "referencePdfBytes": 68592
+    }
+  ]
+}

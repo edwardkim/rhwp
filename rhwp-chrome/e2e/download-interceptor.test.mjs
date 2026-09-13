@@ -148,6 +148,7 @@ async function main() {
         '네 다운로드에서 HWP 두 건에만 viewer 탭이 생성되어야 합니다.',
       );
       process.stdout.write('PASS: XLSX 2건 탭 0, HWP 2건 download id별 탭 1\n');
+      await runOwnBlobSaveCase({ browser, downloads, downloadDir, extensionId });
     }
   } catch (error) {
     failure = new Error(`${error.message ?? error}\n${formatDownloadDiagnostics(downloads)}`, { cause: error });
@@ -234,6 +235,11 @@ async function runDownloadCase({
     `${testCase.id}가 다른 viewer 탭을 만들었습니다: ${JSON.stringify(newViewerUrls)}`,
   );
 
+  // #6961: real DownloadItem.filename is absolute; only its leaf may reach Studio.
+  for (const viewerUrl of matchingViewerUrls) {
+    assert.equal(new URL(viewerUrl).searchParams.get('filename'), testCase.suggestedFilename);
+  }
+
   const downloadItems = await worker.evaluate(async url => {
     const items = await chrome.downloads.search({});
     return items.filter(item => item.url === url).map(item => ({
@@ -254,6 +260,36 @@ async function runDownloadCase({
     suggestedFilename: begun.suggestedFilename,
     viewerCount: matchingViewerUrls.length,
   };
+}
+
+async function runOwnBlobSaveCase({ browser, downloads, downloadDir, extensionId }) {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`chrome-extension://${extensionId}/options.html`, { waitUntil: 'domcontentloaded' });
+    const beforeViewerUrls = getViewerUrls(browser, extensionId);
+    const fixture = await readFile(HWP_FIXTURE_FILE);
+    const beforeBegun = downloads.begun.length;
+    const blobUrl = await page.evaluate(bytes => {
+      const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/x-hwp' }));
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = 'own-editor-save.hwp';
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      return url;
+    }, [...fixture]);
+    const begun = await waitUntil(() => downloads.begun.slice(beforeBegun).find(event => event.url === blobUrl));
+    await waitUntil(() => downloads.progress.get(begun.guid)?.state === 'completed');
+    await delay(750);
+    assert.equal(begun.suggestedFilename, 'own-editor-save.hwp');
+    assert.deepEqual(await readFile(path.join(downloadDir, begun.suggestedFilename)), fixture);
+    assert.deepEqual(getViewerUrls(browser, extensionId), beforeViewerUrls, 'own Blob save must not open a viewer (#6964)');
+    await page.evaluate(url => URL.revokeObjectURL(url), blobUrl);
+    process.stdout.write('PASS: own extension Blob saved intact, additional viewer tabs 0\n');
+  } finally {
+    await page.close();
+  }
 }
 
 function getViewerUrls(browser, extensionId) {

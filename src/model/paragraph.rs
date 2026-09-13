@@ -1830,6 +1830,16 @@ impl Paragraph {
     /// need to reconstruct the individual starts inside that gap instead of
     /// using the visible-text position alone.
     pub(crate) fn control_utf16_positions(&self) -> Vec<u32> {
+        // A text-free raw paragraph can still contain separate 8-unit controls.
+        // Preserve their starts instead of collapsing every control to text_end=0.
+        if self.text.is_empty()
+            && self.char_offsets.is_empty()
+            && self.char_count >= (self.controls.len() as u32).saturating_mul(CTRL_CHAR_CODE_UNITS)
+        {
+            return (0..self.controls.len())
+                .map(|i| i as u32 * CTRL_CHAR_CODE_UNITS)
+                .collect();
+        }
         let text_positions = self.control_text_positions();
         let text_chars = self.text.chars().collect::<Vec<_>>();
         let text_end = self
@@ -1853,7 +1863,22 @@ impl Paragraph {
                 .char_offsets
                 .get(text_position)
                 .copied()
-                .map(|offset| offset.saturating_sub(count * CTRL_CHAR_CODE_UNITS))
+                .map(|offset| {
+                    let previous_end = text_position
+                        .checked_sub(1)
+                        .and_then(|i| self.char_offsets.get(i).zip(text_chars.get(i)))
+                        .map_or(0, |(start, ch)| *start + ch.len_utf16() as u32);
+                    // Some inputs retain a one-unit visible object marker rather
+                    // than an eight-unit gap. Its own source offset is the anchor.
+                    if count == 1
+                        && text_chars.get(text_position) == Some(&'\u{FFFC}')
+                        && offset.saturating_sub(previous_end) < CTRL_CHAR_CODE_UNITS
+                    {
+                        offset
+                    } else {
+                        offset.saturating_sub(count * CTRL_CHAR_CODE_UNITS)
+                    }
+                })
                 .unwrap_or(text_end);
             for (ordinal, raw_position) in
                 raw_positions[group_start..group_end].iter_mut().enumerate()

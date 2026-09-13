@@ -242,7 +242,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_insert_table",
-            "본문 좌표에 빈 표를 만든다. rows/cols 는 1 이상, 열은 256 이하. section/para/offset 은 0 기준. 코어 create_table_native 배선.",
+            "본문 좌표 또는 유일한 본문 필드의 문단 바로 뒤에 표를 만든다. 필드는 보존한다. widths는 쉼표로 나눈 HWPUNIT 또는 합계 100% 비율, alignments는 left/center/right. repeatHeader 기본 true. atField와 좌표 옵션은 배타적이며 중첩 필드는 지원하지 않는다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -252,6 +252,10 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                     "section": { "type": "integer", "minimum": 0 },
                     "paragraph": { "type": "integer", "minimum": 0 },
                     "offset": { "type": "integer", "minimum": 0 },
+                    "atField": { "type": "string", "minLength": 1 },
+                    "widths": { "type": "string", "description": "열 수만큼의 HWPUNIT 정수 또는 % (예: 2000,3000 / 40%,60%)" },
+                    "alignments": { "type": "string", "description": "열 수만큼의 left,center,right" },
+                    "repeatHeader": { "type": "boolean", "default": true },
                     "output": { "type": "string" },
                     "dryRun": { "type": "boolean" }
                 },
@@ -263,10 +267,14 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "section", "args": ["--section", "{section}"] },
                 { "when": "paragraph", "args": ["--para", "{paragraph}"] },
                 { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "atField", "args": ["--at-field", "{atField}"] },
+                { "when": "widths", "args": ["--widths", "{widths}"] },
+                { "when": "alignments", "args": ["--alignments", "{alignments}"] },
+                { "when": "repeatHeader", "args": ["--repeat-header", "{repeatHeader}"] },
                 { "when": "output", "args": ["-o", "{output}"] },
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
-            &["schemaVersion", "source", "section", "paragraph", "offset", "rows", "cols", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+            &["schemaVersion", "source", "section", "paragraph", "offset", "rows", "cols", "atField", "tableParagraph", "control", "widths", "repeatHeader", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_set_numbering_restart",

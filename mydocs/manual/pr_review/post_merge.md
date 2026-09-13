@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-09-13
 ---
 
 # Merge 후속 처리
@@ -13,7 +13,10 @@ last_verified: 2026-08-30
 
 ## 7. 필수 실행 순서
 
-1. 원 코드 PR merge 완료와 merge SHA를 확인한다.
+1. 원 코드 PR merge 완료와 merge SHA를 확인한다. 검증 CI는 병합 전 PR에서 완료한다.
+   병합 뒤에는 `Refresh nextest target duration data`의 성공 또는 증거 부족에 따른 갱신 보류를
+   확인한다. CI·CodeQL·Adapter·Proptest·Oracle 검증을 시작하거나 재실행하지 않는다.
+   예상 밖 실행은 트리거 회귀로 조사한다. [실행 경계](../github_operations.md#병합-후-자동-실행-정책-7070)를 따른다.
 2. review 문서·asset·오늘할일의 후속 반영 필요 여부를 결정한다.
 3. archive 이동과 오늘할일을 준비하고, maintainer 직접 반영 또는 후속 기록 PR을 완료한다.
 4. 최종 devel을 upstream/devel로 fast-forward한다.
@@ -246,7 +249,7 @@ git fetch upstream --prune
 승인은 이번 작업에서 만든 PR 전용 임시 upstream head branch의 삭제까지 포함한다. 아래 조건을 모두
 충족하면 별도 승인 질문 없이 자동 삭제한다.
 
-- PR이 실제 MERGED이고 필수 post-merge CI와 comment·issue 처리가 완료되어야 한다.
+- PR이 실제 MERGED이고 duration 갱신 결과 확인과 comment·issue 처리가 완료되어야 한다. 자료 부족으로 duration 갱신이 보류되면 그 이유를 기록하며 검증 CI를 다시 실행하지 않는다.
 - PR head repository가 `edwardkim/rhwp`이며 이번 작업에서 만든 exact `headRefName`이어야 한다.
 - merge SHA가 최신 `upstream/devel`에 포함되고 기본 작업공간이 clean이며 관련 활성 작업이 없어야 한다.
 - `main`, `devel`, 저장소 기본 branch, 보호 branch, 다른 OPEN PR 또는 다른 작업이 사용하는 branch는 제외한다.

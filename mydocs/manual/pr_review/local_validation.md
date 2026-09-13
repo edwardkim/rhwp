@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-09-12
 ---
 
 # 로컬 사전 검증
@@ -305,6 +305,10 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | Rust test/baseline helper | 모든 Rust lint 묶음, 관련 focused test, snapshot 결정성, 최신 PR head CI |
 | 기존 golden/baseline/fixture data만 변경 | 관련 focused test, snapshot 결정성, 최신 PR head CI. Rust helper도 함께 바꾸면 바로 위 행의 lint 묶음을 추가 |
 
+렌더링 baseline·golden·래칫 허용치 변경은 위 테스트 통과만으로 수용하지 않는다.
+[조판 규칙과 기준값 변경 증거](visual_fixture_evidence.md#조판-규칙과-기준값-변경-증거)를 확인하고,
+역할에 관계없이 [공통 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)에 근거와 판정을 남긴다.
+
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
 무관한 Node 테스트까지 glob으로 섞지 않는다.
@@ -508,7 +512,9 @@ python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe
 주장하지 않는다. 입력 없이 반환된 테스트의 성공과 실제 문서 검사를 구분한다.
 
 검토 base 대비 `samples/`의 추가·복사·수정·이동 문서를 확인하고, 해당 HWP/HWPX/HML의
-현재 경로를 JSON 배열로 전달한다. 아직 커밋하지 않은 이 작업 소유 fixture도 목록에 포함한다.
+현재 경로를 JSON 배열로 전달한다. 검증 중에는 아직 커밋하지 않은 이 작업 소유 fixture도 목록에 포함한다.
+수용 판정 전에는 [공통 입력 커밋 확인](intake_and_review.md#28-검증-입력-커밋-확인)에 따라 해당 파일을
+검토 대상 commit에 포함하고 실제 검증한 내용과 동일함을 확인한다. 검증 중 입력 허용을 미커밋 상태의 수용으로 해석하지 않는다.
 아래 경로는 예시이므로 실제 검토 대상 전체로 교체한다. 공백·한글이 있는 경로도 JSON 문자열로
 보존하며 셸 공백 분할로 목록을 만들지 않는다.
 

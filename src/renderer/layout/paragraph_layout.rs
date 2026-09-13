@@ -2678,6 +2678,7 @@ impl LayoutEngine {
         let text_seg_index = (0..para.line_segs.len()).find(|idx| *idx != table_seg_index);
         let table_seg = para.line_segs.get(table_seg_index);
         let text_seg = text_seg_index.and_then(|idx| para.line_segs.get(idx));
+
         let line_height = if let Some(ls) = table_seg {
             hwpunit_to_px(ls.line_height, self.dpi)
         } else {
@@ -2701,6 +2702,39 @@ impl LayoutEngine {
             } else {
                 12.0
             }
+        };
+
+        // [#7018] **런이 속한 저장 줄의 baseline 을 쓴다** — 문단 단위 판정이 아니다.
+        //
+        // 한/글은 자리차지 표를 담는 문단을 `textpos` 로 줄로 가른다. 표가 줄 하나를 통째로
+        // 가지면(`2769535` 2쪽) 그 앞 텍스트는 **자기 줄**에 앉고, 표와 같은 줄에 얹히는
+        // 진짜 인라인 형상이면 표 줄에 앉는다. 어느 쪽인지는 문단 전체에 한 번 정할 값이
+        // 아니라 **런마다** 그 런이 속한 줄로 정해진다 — 여러 텍스트 줄·여러 표가 있는
+        // 문단에서 첫 표의 판정이 다른 줄로 번지면 안 된다 (PR #7044 검토 지적 2).
+        //
+        // 축: `LineSeg.textpos` 와 `para.char_offsets` 는 같은 문단 UTF-16 축이고 **컨트롤
+        // 슬롯을 포함**한다(`char_offsets[i]` = `text[i]` 의 원본 UTF-16 인덱스). 그래서
+        // 글자 인덱스를 `char_offsets` 로 그 축에 올려 비교한다 — `para.text` 문자만
+        // 합산하면 선행 컨트롤이 있는 문단에서 어긋난다 (검토 지적 3).
+        //
+        // 실측(2769535 2쪽 `  마. 행정박물류` + 자리차지 표):
+        //   seg[0] textpos=0  bl=1020  (13.6px)   ← 글자 줄
+        //   seg[1] textpos=11 bl=13423 (179.0px)  ← 표 줄
+        // 종전에는 글자 런이 179.0px 를 받아 baseline 이 605.8+179.0=784.8 에 찍혔다.
+        // 한/글 2020 오라클 잉크는 605.5..620.5 이고 seg[0] 로 계산한 619.4 와 맞는다.
+        let stored_line_baseline_at = |char_idx: usize| -> Option<f64> {
+            if para.line_segs.len() < 2 {
+                return None;
+            }
+            let pos = *para.char_offsets.get(char_idx)?;
+            let idx = (0..para.line_segs.len())
+                .rev()
+                .find(|i| para.line_seg_text_start(*i) <= pos)?;
+            let seg = para.line_segs.get(idx)?;
+            Some(ensure_min_baseline(
+                hwpunit_to_px(seg.baseline_distance, self.dpi),
+                para_max_font_size,
+            ))
         };
         let baseline_dist = if let Some(ls) = table_seg {
             ensure_min_baseline(
@@ -2807,11 +2841,13 @@ impl LayoutEngine {
                                 let run_ts =
                                     resolved_to_text_style(styles, current_cs_id, first_lang);
                                 let run_width = estimate_text_width(&run_text, &run_ts);
-                                let run_bbox_h = if wrapped_below_table {
-                                    text_line_baseline
-                                } else {
-                                    baseline_dist
-                                };
+                                let run_bbox_h = stored_line_baseline_at(line_run_start).unwrap_or(
+                                    if wrapped_below_table {
+                                        text_line_baseline
+                                    } else {
+                                        baseline_dist
+                                    },
+                                );
                                 let run_id = tree.next_id();
                                 let run_node = RenderNode::new(
                                     run_id,
@@ -2859,11 +2895,12 @@ impl LayoutEngine {
                                 ..Default::default()
                             };
                             let sup_w = estimate_text_width(&fn_text, &sup_ts);
-                            let run_bbox_h = if wrapped_below_table {
-                                text_line_baseline
-                            } else {
-                                baseline_dist
-                            };
+                            let run_bbox_h =
+                                stored_line_baseline_at(ch_idx).unwrap_or(if wrapped_below_table {
+                                    text_line_baseline
+                                } else {
+                                    baseline_dist
+                                });
                             let marker_id = tree.next_id();
                             let marker_node = RenderNode::new(
                                 marker_id,
@@ -2927,11 +2964,13 @@ impl LayoutEngine {
                         let cs_changed = cs_id != current_cs_id;
 
                         // 줄바꿈된 텍스트의 BoundingBox 높이: 표 줄 vs 텍스트 줄
-                        let run_bbox_h = if wrapped_below_table {
-                            text_line_baseline
-                        } else {
-                            baseline_dist
-                        };
+                        let run_bbox_h = stored_line_baseline_at(line_run_start).unwrap_or(
+                            if wrapped_below_table {
+                                text_line_baseline
+                            } else {
+                                baseline_dist
+                            },
+                        );
 
                         if (cs_changed || need_wrap) && ch_idx > line_run_start {
                             // 누적된 run 출력
@@ -3009,11 +3048,15 @@ impl LayoutEngine {
                     }
 
                     // 남은 run의 BoundingBox 높이
-                    let remaining_bbox_h = if wrapped_below_table {
-                        text_line_baseline
-                    } else {
-                        baseline_dist
-                    };
+                    // [#7044 검토 지적 1] 마지막 run 도 같은 줄 소속 규칙을 쓴다. 이 문단은
+                    // 제목(`charPrIDRef=16`)과 후행 공백·표(`=17`)로 나뉘어, 제목은 스타일
+                    // 변경 시 중간 flush 로 위 경로를 타지만 후행 공백은 이 경로로 나온다.
+                    let remaining_bbox_h =
+                        stored_line_baseline_at(line_run_start).unwrap_or(if wrapped_below_table {
+                            text_line_baseline
+                        } else {
+                            baseline_dist
+                        });
 
                     // 남은 run 출력
                     if line_run_start < *e {
@@ -7509,12 +7552,69 @@ impl LayoutEngine {
                                 // p5: 저장 vpos+om_top == 한글 PDF 상단, 종전 baseline
                                 // 하단정렬식은 om_top 을 소실해 3.8px 상향). #2220 의
                                 // stored_lh_covers_om 과 동일 술어의 px 판.
+                                // [#7049] `lh = h + om` 인 **표 전용 줄**만이라는 위
+                                // 계약대로 양쪽을 본다. 종전 `>=` 한쪽 판정은 밴드가
+                                // 줄에 **들어가기만** 하면 발동해, 한 글줄에 높이가 다른
+                                // TAC 표가 둘 이상일 때 전부 `y + om_top` 이 되어
+                                // **상단이 붙었다**. 한/글은 그 표들을 기준선에 앉혀
+                                // 하단을 높이차의 0.15 배로 벌린다 — 한/글 2020 실측
+                                // (HWPUNIT): `36384689_…화재발생종합보고서` 높이차 4708
+                                // → 하단차 707 · `issue2083_hide_fill_page` 9135 → 1366
+                                // · `issue2470/36382471_masked` 3126 → 467. 종전 규칙은
+                                // 이 차이를 전부 0 으로 본다.
+                                //
+                                // 줄 높이를 정하는 가장 높은 표는 `lh == 밴드` 라 그대로
+                                // 이 분기에 남고, `#3386` 의 표본(`156678235` 4쪽: 한/글
+                                // 536.69 vs rhwp 537.30)도 표가 하나뿐이라 불변이다.
+                                // 그리고 그 줄이 **이 표 전용**이어야 한다 — 같은 줄에
+                                // TAC 표가 둘 이상이면 그 줄은 어느 한 표의 것이 아니다.
+                                // 세로 위치가 바깥여백과 무관하다는 것이 실측이다
+                                // (`21_언어_기출` 1쪽: 여백 283/283 과 0/0 인 두 표를 한/글이
+                                // **같은 y** 에 놓는다 — 여백이 관여하면 3.8px 벌어져야 한다).
+                                // 그러니 여백을 쓰는 이 분기는 줄을 독점한 표에만 준다.
+                                // 소속은 **이 줄** 로 센다 — `composed.lines[line_idx]` 의
+                                // char 구간은 텍스트·표 순서, 명시적 개행, 가용 너비가
+                                // 이미 반영된 줄 나눔 결과이고, 배치가 지금 소비하고 있는
+                                // 바로 그 구성이다. 문단 단위로 세면 다른 줄의 표까지
+                                // 끌어들여 이 줄의 사실을 왜곡한다.
+                                let line_start = comp_line.char_start;
+                                let line_end = composed
+                                    .lines
+                                    .get(line_idx + 1)
+                                    .map_or(usize::MAX, |next| next.char_start);
+                                let line_tac_table_count = composed
+                                    .tac_controls
+                                    .iter()
+                                    .filter(|(pos, _, ci)| {
+                                        (line_start..line_end).contains(pos)
+                                            && matches!(
+                                                p.controls.get(*ci),
+                                                Some(Control::Table(t))
+                                                    if t.common.treat_as_char
+                                            )
+                                    })
+                                    .count();
                                 let stored_lh_covers_om = (om_top > 0.0 || om_bottom > 0.0)
-                                    && raw_lh >= table_h + om_top + om_bottom - 0.2;
+                                    && line_tac_table_count <= 1
+                                    && (table_h + om_top + om_bottom - 0.2
+                                        ..=table_h + om_top + om_bottom + 0.2)
+                                        .contains(&raw_lh);
                                 let table_y = if stored_lh_covers_om {
                                     y + om_top
                                 } else {
-                                    (y + baseline + om_bottom - table_h).max(y)
+                                    // [#7049] 글자처럼 취급되는 표는 글자처럼 기준선에
+                                    // 앉는다 — 높이의 85% 가 기준선 위, 15% 가 아래다.
+                                    // 이 레포가 이미 쓰는 비율이다(`composer/
+                                    // line_breaking.rs` 가 `baseline_distance` 를
+                                    // `line_height * 0.85` 로 계산한다).
+                                    //
+                                    // 종전 `+ om_bottom` 은 상자 하단을 기준선 바로 밑에
+                                    // 붙여, 높이가 다른 표들의 하단 간격을 좁혔다.
+                                    // 한/글 2020 실측 하단차(px) — 위 술어 교정과 함께:
+                                    //   issue2083  121.80 → 35.20 → **16.9** (한/글 18.22)
+                                    //   issue2470   41.60 → 19.40 → ** 4.9** (한/글  6.23)
+                                    //   36384689    62.80 → 22.20 → ** 8.2** (한/글  9.43)
+                                    (y + baseline - table_h * 0.85).max(y)
                                 };
                                 // [Task #2212] 셀 안 인라인 TAC 표는 외곽 셀 경로를
                                 // 확장한 2단 cell_context 로 렌더해야 경로 기반 조회

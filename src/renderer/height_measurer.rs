@@ -1905,38 +1905,47 @@ impl HeightMeasurer {
             .iter()
             .enumerate()
             .map(|(pidx, p)| {
-                // [#6787] 같은 문단의 문단-기준 자리차지 중첩 표들이 **가로 오프셋으로
-                // 나란히** 놓이면 높이는 합이 아니라 **최댓값**이다(`#6494` 의 칸 안 짝).
-                // 16774617 1쪽 후보자 카드 2장(`horz=Para(1547)` / `Para(23743)`, 각
-                // 253.2px)은 서로 겹치지 않아 한/글이 같은 y 에 놓는다 — 합산하면 그 칸이
-                // 선언 251.97px 대비 854.7px 로 부풀어 표 전체가 용지를 넘고 361자가 잘린다.
-                let nested_side_by_side =
-                    crate::renderer::float_placement::para_float_group_is_side_by_side(p);
-                let nested_heights: Vec<f64> = p
+                // 저장 줄별 그룹은 배치와 공유한다. 저장 줄의 간격과 빈 줄도
+                // 점유 범위에 포함하고, NO_LS에서는 TAC 같은 줄을 추정하지 않는다.
+                let groups = crate::renderer::float_placement::nested_table_groups(p);
+                let heights: Vec<f64> = p
                     .controls
                     .iter()
-                    .filter_map(|ctrl| {
+                    .map(|ctrl| {
                         if let Control::Table(nested) = ctrl {
                             let stretch =
                                 self.render_normalization.nested_table_width_scale(nested);
                             let mt =
                                 self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
-                            // [#2148 실험] NO_LS 중첩 표 선언 신뢰 — 성장 전용 max.
-                            let declared = hwpunit_to_px(nested.common.height as i32, self.dpi);
-                            // [#2169] om 가산은 additive 경로(cell_controls_height)
-                            // 전담 — vpos 기반 max 경로는 저장 vpos 가 배치를 이미
-                            // 반영하므로 미가산 (자기-export HWPX 왕복 이중가산 방지).
-                            Some(mt.total_height.max(declared))
+                            mt.total_height
+                                .max(hwpunit_to_px(nested.common.height as i32, self.dpi))
                         } else {
-                            None
+                            0.0
                         }
                     })
                     .collect();
-                let nested_h: f64 = if nested_side_by_side {
-                    nested_heights.iter().copied().fold(0.0, f64::max)
-                } else {
-                    nested_heights.iter().sum()
-                };
+                let para_top_hu = p.line_segs.first().map_or(0, |s| s.vertical_pos);
+                let mut nested_h = 0.0f64;
+                for group in groups {
+                    let height = if group.side_by_side {
+                        group
+                            .controls
+                            .iter()
+                            .map(|&ci| heights[ci])
+                            .fold(0.0, f64::max)
+                    } else {
+                        group.controls.iter().map(|&ci| heights[ci]).sum()
+                    };
+                    let bottom = if let Some(line) = group.line {
+                        let seg = &p.line_segs[line];
+                        let top =
+                            hwpunit_to_px(seg.vertical_pos.saturating_sub(para_top_hu), self.dpi);
+                        top + height
+                    } else {
+                        height
+                    };
+                    nested_h = nested_h.max(bottom);
+                }
                 if nested_h <= 0.0 {
                     0.0
                 } else {
