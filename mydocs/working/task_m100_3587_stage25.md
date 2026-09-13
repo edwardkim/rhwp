@@ -37,3 +37,18 @@ MANIFEST의 각 `path`는 repository 상대 경로이며 `source`는 기존 로�
   `a9015e72c0b75a1f8a571e10db0dd2f251ded0a3`에 보존했다. 삭제하거나 주 작업 트리에 적용하지 않았다.
 - 검증 worktree는 과거 overlay 대신 통합 후보의 실제 detached HEAD로 전환한다.
 - PDF repository policy: 1,248개 검사, 크기 상한·LFS pointer 없음 PASS.
+
+## 신규 PDF 쪽수 보호
+
+정본 선택기의 `choose_canonical`과 `engine_for_product`로 신규 PDF 5개의 원본 형식·경로·
+저장 제품 엔진 대응을 확인했다. 모아찍기 입력은 없다. `pdfinfo`의 독립 PDF 쪽수는
+pi2 HWP/HWPX 각 1쪽, pi4 HWP/HWPX 각 1쪽, 연구노트 원본 2쪽이다.
+통합 후보 native `rhwp info --json`의 쪽수도 각각 1/1/1/1/2로 일치했다.
+전체 기존 원장을 재생성하지 않고 이 5개 신규 행만 oracle_page_count 원장에 추가한다.
+기존 문서의 허용치를 늘리거나 불명 회귀를 등록하지 않는다. 파일 SHA는 MANIFEST를 따른다.
+
+## Rust lint
+
+제품 후보 `451de71f9`: fmt, native/WASM32/workspace all-target Clippy, workspace build,
+manifest, unit tier 모두 PASS. 이후 README와 신규 PDF 쪽수 data 외 제품 변경은 없다.
+순차 실행 명령·시간·종료 코드는 `output/3587/submission-stage25/lint-results.json`이다.
