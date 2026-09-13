@@ -970,12 +970,42 @@ fn hancom_pdf_space_width(primary_name: &str, font_size: f64) -> Option<u16> {
         .or_else(|| hanyang_shinmyeongjo_pdf_space_width(primary_name, font_size))
 }
 
-/// [#2070] ㆍ(U+318D) 폭은 SYMBOL 폰트별: 한양신명조 = 전각(사다리 v3 실측),
-/// 명조(HY견명조 치환) 등 여타 = 반각 (80168 개정안{{7}} p9/p13 '시ㆍ도조례'
-/// 1줄 오라클, 개정안{{1}} P21 마크와 반각 양립 검증). embedded 메트릭
-/// (HY견명조 수록분)이 전각이라 룩업보다 앞서 판정하되, 함초롬(HCR) 계열은
-/// embedded 메트릭을 신뢰한다 (None 반환). [#2279] 한컴바탕/한컴돋움
-/// (Haansoft 실메트릭, ㆍ=1.0em)도 동일하게 embedded 메트릭을 신뢰한다.
+/// ㆍ(U+318D) 는 전각이다. 메트릭이 있는 글꼴은 메트릭을 믿는다(`None`).
+///
+/// [#7080] 종전에는 한양신명조를 뺀 **모든 글꼴에 `font_size * 0.5`** 를 박았다. 이 함수가
+/// 메트릭 조회보다 **앞서** 불리므로, 메트릭 DB 도 `is_cjk_char` 휴리스틱도 전각을 주는데
+/// 결과는 반각이 되는 구조였다 — `ㆍ` 하나마다 뒤 글자가 0.5 em 씩 왼쪽으로 밀린다.
+///
+/// 반각 규칙의 근거는 `#2070` 주석의 *"80168 개정안{{7}} p9/p13 '시ㆍ도조례' 1줄 오라클"*
+/// 한 줄이었다. 저장소의 한컴 정본을 전수로 재면 **반각이 한 건도 없다.**
+///
+/// ```text
+///   정본 PDF 608개(앞 6쪽)   U+318D 관측 158회 / 문서 38개
+///     0.80 em 이상  158회 = 전건
+///     반각(0.35~0.65) 0회
+///
+///   글꼴별 전진 중앙값
+///     휴먼명조 1.000(n=73) · Batang 0.992(n=61) · MalgunGothic 0.880(n=9)
+///     Dotum 1.000(n=8) · Haansoft Batang 1.001(n=6) · BatangChe 1.001(n=1)
+/// ```
+///
+/// `#2070` 이 지목한 80168 도 쪽 제한 없이 다시 읽으면 같다 — `시ㆍ도조례` 가 세 글꼴
+/// 모두 전각이다(`pdf/80168_regulatory_analysis-2022.pdf` 외 2판, 216회 전건 0.8 em 이상).
+///
+/// ```text
+///   p21  Batang        그밖에시ㆍ도조례로   adv 1.001  /W 1.001
+///   p29  MalgunGothic  에서 시ㆍ도조례로    adv 1.001  /W 1.001
+///   p78  휴먼명조       1. 시ㆍ도조례로      adv 1.001  /W 1.001
+/// ```
+///
+/// ⚠ 다만 `#2070` 이 본 것은 같은 문서번호의 **개정안 첨부**이고 위는 **규제영향분석서
+/// 첨부**다. 같은 파일이 아니므로 그 관측 자체를 반증한 것은 아니다. 그 첨부가 나오면
+/// 다시 재야 한다. 전수에서 반각이 0회인 이상 **반각을 기본값으로 둘 근거는 없다.**
+///
+/// 폴백으로 남겨 두는 이유는 메트릭이 **없는** 글꼴 때문이다 — 이 문서들이 `ㆍ` 에 태우는
+/// 사용자(USER) 슬롯 글꼴 `명조` 가 그렇다(별칭도 메트릭도 없다). 그때도 답은 전각이다.
+/// [#2279] 한컴바탕·한컴돋움과 함초롬(HCR) 계열은 종전대로 실측 메트릭을 믿는다(그쪽도
+/// `ㆍ` = 1.0 em 이라 결과는 같다).
 pub(crate) fn area_dot_fallback_width(font_family: &str, font_size: f64) -> Option<f64> {
     let fam = font_family.split(',').next().unwrap_or("").trim();
     if fam.contains("함초롬")
@@ -985,11 +1015,7 @@ pub(crate) fn area_dot_fallback_width(font_family: &str, font_size: f64) -> Opti
     {
         return None;
     }
-    Some(if fam.contains("한양신명조") {
-        font_size
-    } else {
-        font_size * 0.5
-    })
+    Some(font_size)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -1921,6 +1947,11 @@ mod tests {
         // ㆍ(U+318D): 한컴 계열은 area_dot 폴백 대신 embedded 메트릭(1.0em) 신뢰
         assert!(area_dot_fallback_width("한컴돋움", fs).is_none());
         assert!(area_dot_fallback_width("한컴바탕", fs).is_none());
+        // [#7080] 폴백이 도는 글꼴은 **전각**이다. 메트릭이 없는 글꼴(사용자 슬롯 `명조`)
+        // 에도 답은 전각이고, 그 경로가 갈려 있다는 것 자체가 계약이다.
+        assert_eq!(area_dot_fallback_width("명조", fs), Some(fs));
+        assert_eq!(area_dot_fallback_width("맑은 고딕", fs), Some(fs));
+        assert_eq!(area_dot_fallback_width("한양신명조", fs), Some(fs));
     }
 
     // ── #2430 한양·휴먼 HFT 실측 메트릭의 native/WASM 정합 보장 ──
