@@ -79,3 +79,21 @@ nextest 0.9.137/권장 0.9.140 및 해당 버전의 JUnit 설정 경고는 기�
 동일 staging 준비를 사용하는 dry-run, 전체 nextest·Native Skia·Docker WASM·실물 시각 판정과
 C 비용 계측을 진행한다. 이번 집중 검사를 C 전체 회귀 또는 Studio/한컴 시각 통과로 확대하지 않는다.
 WASM 배포 파일과 dev 서버는 갱신하지 않았고 원격 push·PR·댓글도 하지 않았다.
+
+## 파일 내보내기 후 메인테이너 판정과 별도 결함
+
+후속 요청으로 같은 값·대상을 실제 파일로 저장했다.
+
+- `output/3587/c1-form/labnote-001-stage11-filled.hwp`
+- `output/3587/c1-form/labnote-001-stage11-filled.hwpx`
+
+메인테이너는 **HWP/HWPX 모두 한컴편집기와 rhwp-studio에서 정상 열림**을 확인했다.
+이는 해당 두 산출물의 열림 판정이며, 모든 렌더링 속성이나 C 전체 통합 검증 통과를 뜻하지 않는다.
+
+동시에 rhwp-studio에서 삽입한 `😀`의 너비가 좁게 잡혀 가로로 압축되어 보이는 문제를 관측했다.
+지시에 따라 선행 검색 후 [별도 이슈 #7084](https://github.com/edwardkim/rhwp/issues/7084)로 등록했다
+(`bug`, `rhwp-studio`, `rendering`, `font`; milestone `v1.0.0`).
+이슈 본문·metadata를 게시 후 재조회했으며 한글 본문 일치와 BOM 없음을 확인했다.
+재현 파일 주소·해시·값·소유 경로와 후속 조사 항목을 남겼다.
+회귀 여부와 원인은 미확정이며, #3587의 채우기/저장 결함으로 단정하거나 이번 범위에 추가하지 않는다.
+Studio에 실제 로드된 WASM SHA는 생성 코드 SHA와 별도로 후속 조사에서 확인한다.
