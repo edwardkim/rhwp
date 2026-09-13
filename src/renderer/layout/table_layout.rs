@@ -4898,7 +4898,21 @@ impl LayoutEngine {
                     let base_y = para_stored_anchor_y.unwrap_or(anchor_y);
                     (base_y, col_area.height - (base_y - col_area.y).max(0.0))
                 }
-                crate::model::shape::VertRelTo::Paper => (0.0, page_h_approx),
+                crate::model::shape::VertRelTo::Paper => {
+                    // [#6874] 용지 기준 표의 세로 기준 높이는 **실제 용지 높이**다.
+                    // `page_h_approx` 는 상·하 여백이 같다고 가정하는데 코퍼스 10k 의
+                    // 48.0%(4,779건)가 그렇지 않다. 어긋난 문서에서는 `Bottom` 정렬이
+                    // `ref_y + ref_h - …` 로 그대로 아래로 밀린다 — 위 30mm·아래 20mm
+                    // 문서에서 1160.3px 대 실제 1122.5px = +37.8px(#6266 실측).
+                    // 가로축은 이미 같은 자리에서 실제 용지 너비를 쓴다(`HorzRelTo::Paper`).
+                    //
+                    // ⚠ 아래 쪽 맞춤 가드(`pushed + table_height <= page_h_approx`)는
+                    // 자리차지·글뒤로·글앞으로 **모든 표**가 타므로 건드리지 않는다.
+                    // 이 기준 높이를 실제로 소비하는 `VertRelTo::Paper` 표는 10k 중
+                    // 113문서·637개뿐이고, 그중 상≠하 문서는 6건(표 26개)이다.
+                    let ph = self.current_page_height.get();
+                    (0.0, if ph > 0.0 { ph } else { page_h_approx })
+                }
             };
             // Top 캡션: 표 위치를 캡션 높이만큼 아래로 이동
             let caption_top_offset = if let Some(ref cap) = table.caption {
