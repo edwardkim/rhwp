@@ -506,5 +506,7 @@ codegen-units = 16
 # [#2283] krilla-svg 마이그레이션은 하지 않기로 결정했다. 장기 방향은 Skia direct
 # 백엔드 단일화이며, 그 미지원 op 목록(gradient·pattern·shadow·connector 등)이
 # 비는 시점에 재판단한다. 그때까지 이 패치를 유지·관리한다.
+# [#7077] 동일 fork rev의 결정화 패치 위에 PDF stitching 함수 트리 보정을
+# 로컬 vendor로 포함한다. 출처·변경 범위는 vendor/svg2pdf/RHWP_PATCHES.md 참조.
 [patch.crates-io]
-svg2pdf = { git = "https://github.com/edwardkim/svg2pdf", branch = "determinism-0.13" }
+svg2pdf = { path = "vendor/svg2pdf" }
