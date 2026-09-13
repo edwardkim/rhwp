@@ -1454,18 +1454,25 @@ pub(crate) fn cell_vpos_ladder_is_intact(
 }
 
 /// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우
-/// 줄 메트릭 합성. 컨트롤 폭을 가용 폭에 greedy wrap 하여 줄별 (최대 높이, 0)
-/// 을 돌려준다.
+/// 줄 메트릭 합성. 컨트롤 폭을 가용 폭에 greedy wrap 하여 줄별
+/// (최대 높이, leading) 을 돌려준다.
 ///
 /// 한글은 글자처럼 개체를 줄박스로 취급해 그림 높이만큼 본문 흐름을 전진시키나,
 /// rhwp 는 composed lines 가 비면(빈 텍스트 + 컨트롤) 문단 높이가 0 으로 붕괴해
 /// 차트/스캔 그림 수십 장이 한 쪽에 응축된다 (미래부 정서분석 88 vs 한글 129쪽,
 /// 농촌 S-OJT 꼬리 26쪽 응축 — 10k 서베이 r14 대형 음수 델타 지배 성분).
 /// 호출부는 pairs 가 빈 경우(합성 폴백 실패 후)에만 사용한다.
+///
+/// [#7079] 두 번째 값(leading)은 **개체 높이가 아니라 호스트 문단의 글자모양·줄간격**에서
+/// 나온다 — `tac_object_stack_line_leading_px` 를 본다. 문단 전진은 `높이 + leading` 이며,
+/// 개체 잉크 위치는 유지하고 leading 을 줄 **뒤** 간격으로 소비한다. 렌더·측정·조판은
+/// 같은 높이와 간격의 합으로 다음 줄을 전진시킨다.
 pub(crate) fn tac_object_stack_line_metrics(
     para: &crate::model::paragraph::Paragraph,
     dpi: f64,
     available_width_px: Option<f64>,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
 ) -> Option<Vec<(f64, f64)>> {
     use crate::model::control::Control;
     if !para_has_no_stored_line_segs(para) {
@@ -1488,13 +1495,14 @@ pub(crate) fn tac_object_stack_line_metrics(
     if objs.is_empty() {
         return None;
     }
+    let leading = tac_object_stack_line_leading_px(para, styles, para_style);
     let avail = available_width_px.unwrap_or(f64::INFINITY).max(1.0);
     let mut lines: Vec<(f64, f64)> = Vec::new();
     let mut line_w = 0.0f64;
     let mut line_h = 0.0f64;
     for (w, h) in objs {
         if line_w > 0.0 && line_w + w > avail + 0.5 {
-            lines.push((line_h, 0.0));
+            lines.push((line_h, leading));
             line_w = 0.0;
             line_h = 0.0;
         }
@@ -1502,9 +1510,63 @@ pub(crate) fn tac_object_stack_line_metrics(
         line_h = line_h.max(h);
     }
     if line_h > 0.0 {
-        lines.push((line_h, 0.0));
+        lines.push((line_h, leading));
     }
     (!lines.is_empty()).then_some(lines)
+}
+
+/// [#7079] 합성 TAC 줄의 leading — 호스트 문단의 글자 크기와 문단 줄간격에서 나온다.
+///
+/// 저장 사다리 둘이 그 값을 못박는다. 156060125 2쪽은 `p[11] vpos=30525 lh=600 ls=0`
+/// 다음 `p[13] vpos=61874` 라 그림 문단이 30749HU 를 차지하는데 그림은 29997HU 다 —
+/// 남는 752HU 는 글자 20.0px · 150% 의 `20.0 * 0.5 = 10.0px(750HU)` 다. 156596828
+/// 1쪽은 남는 값이 720HU 이고 글자 16.0px · 160% → `16.0 * 0.6 = 9.6px(720HU)` 로
+/// 정확히 같다. 개체 높이는 29997 vs 2023 으로 14배 다른데 이 몫은 글자에서만 나온다.
+///
+/// 그 몫의 위치는 같은 96dpi 래스터에서 비교한다. 156060125 2쪽 한컴 engine 2020
+/// 출력은 앞 본문줄→도해 잉크 84px, 도해→뒤 상자 360px 이다. leading 을 개체 뒤에
+/// 두면 86px/360px, 앞에 두면 96px/350px 이므로 개체 잉크는 그대로 두고 뒤 간격에
+/// 반영한다. 서로 다른 glyph bbox·TextLine 좌표를 섞은 초기 실측은 사용하지 않는다.
+///
+/// 빈 문단 폴백(`empty_no_lineseg_paragraph_metrics`)과 같은 `corrected_line_metrics`
+/// 계약을 쓰되 줄 높이는 개체가 정하므로 간격 몫만 취한다. 글자모양·문단모양을 못 찾거나
+/// Percent 가 아닌 종류(그 계약에서 간격이 0 이거나 줄 높이에 흡수된다)는 0 이다.
+pub(crate) fn tac_object_stack_line_leading_px(
+    para: &crate::model::paragraph::Paragraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+) -> f64 {
+    // 합성 tag(`0x8000_0000`) seg 라도 **저장된 seg 가 있으면** 그 줄의 높이·baseline 이
+    // 개체 배치의 근거다 — 거기에 leading 을 얹으면 baseline 정렬 위로 개체가 밀린다
+    // (#6708 tac-img-02: 글자 264px → 158px 이동). leading 은 seg 가 아예 없어 줄을
+    // 통째로 합성한 문단에서만 나온다. `#2287` 의 높이 합성 범위는 그대로 둔다.
+    if !para.line_segs.is_empty() {
+        return 0.0;
+    }
+    let Some(char_shape_id) = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
+    else {
+        return 0.0;
+    };
+    let Some(char_style) = styles.char_styles.get(char_shape_id as usize) else {
+        return 0.0;
+    };
+    let font_size = char_style.font_size;
+    if font_size <= 0.0 {
+        return 0.0;
+    }
+    let Some(style) = para_style else {
+        return 0.0;
+    };
+    corrected_line_metrics(
+        0.0,
+        0.0,
+        font_size,
+        style.line_spacing_type,
+        style.line_spacing,
+    )
+    .1
 }
 
 /// HWPUNIT을 픽셀로 변환
@@ -2543,10 +2605,39 @@ mod tests {
         }
     }
 
+    // [#7079] 합성 TAC 줄의 leading 은 호스트 문단의 글자 크기·문단 줄간격에서 나온다.
+    // 글자모양 0번을 `font_size` px, 문단모양을 Percent `percent` 로 세운 스타일 세트.
+    fn tac_styles(
+        font_size: f64,
+        percent: f64,
+    ) -> (
+        crate::renderer::style_resolver::ResolvedStyleSet,
+        crate::renderer::style_resolver::ResolvedParaStyle,
+    ) {
+        let mut styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+        let char_style = crate::renderer::style_resolver::ResolvedCharStyle {
+            font_size,
+            ..Default::default()
+        };
+        styles.char_styles.push(char_style);
+        let para_style = crate::renderer::style_resolver::ResolvedParaStyle {
+            line_spacing_type: crate::model::style::LineSpacingType::Percent,
+            line_spacing: percent,
+            ..Default::default()
+        };
+        (styles, para_style)
+    }
+
     // [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC 그림 줄 메트릭 합성.
+    // [#7079] leading 은 문단의 글자모양에서 나오므로 실제 문서처럼 0번 글자모양을 단다.
     fn tac_picture_para(sizes_hu: &[(i32, i32)]) -> crate::model::paragraph::Paragraph {
         use crate::model::control::Control;
         let mut para = crate::model::paragraph::Paragraph::default();
+        para.char_shapes
+            .push(crate::model::paragraph::CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            });
         for (w, h) in sizes_hu {
             let mut pic = crate::model::image::Picture::default();
             pic.common.treat_as_char = true;
@@ -2561,38 +2652,111 @@ mod tests {
     fn test_tac_object_stack_single_picture_line() {
         // 590×387px 그림 1장 (미래부 정서분석 pi854 형상) — 1줄, 그림 높이.
         let para = tac_picture_para(&[(44222, 29069)]);
-        let lines = tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).unwrap();
+        let (styles, para_style) = tac_styles(20.0, 100.0);
+        let lines =
+            tac_object_stack_line_metrics(&para, 96.0, Some(661.0), &styles, Some(&para_style))
+                .unwrap();
         assert_eq!(lines.len(), 1);
         assert!((lines[0].0 - hwpunit_to_px(29069, 96.0)).abs() < 0.01);
+        // 100% 는 여분이 없다.
         assert_eq!(lines[0].1, 0.0);
+
+        // [#7079] leading 은 호스트 문단의 글자·퍼센트에서 나온다.
+        // 156060125 2쪽: 글자 20.0px · 150% → 10.0px (저장 사다리 752HU).
+        let para_fsc = tac_picture_para(&[(44852, 29997)]);
+        let (styles_fsc, ps_fsc) = tac_styles(20.0, 150.0);
+        let fsc =
+            tac_object_stack_line_metrics(&para_fsc, 96.0, Some(661.0), &styles_fsc, Some(&ps_fsc))
+                .unwrap();
+        assert!((fsc[0].0 - hwpunit_to_px(29997, 96.0)).abs() < 0.01);
+        assert!((fsc[0].1 - 10.0).abs() < 0.01, "{:?}", fsc[0]);
+
+        // 156596828 1쪽: 글자 16.0px · 160% → 9.6px (저장 사다리 720HU). 개체 높이가
+        // 14배 작아도 같은 값이다 — leading 은 개체가 아니라 글자에서 나온다.
+        let para_mafra = tac_picture_para(&[(10435, 2023)]);
+        let (styles_mafra, ps_mafra) = tac_styles(16.0, 160.0);
+        let mafra = tac_object_stack_line_metrics(
+            &para_mafra,
+            96.0,
+            Some(661.0),
+            &styles_mafra,
+            Some(&ps_mafra),
+        )
+        .unwrap();
+        assert!((mafra[0].0 - hwpunit_to_px(2023, 96.0)).abs() < 0.01);
+        assert!((mafra[0].1 - 9.6).abs() < 0.01, "{:?}", mafra[0]);
+
+        // 문단모양을 못 찾으면 종전대로 0 이다.
+        let no_style =
+            tac_object_stack_line_metrics(&para_fsc, 96.0, Some(661.0), &styles_fsc, None).unwrap();
+        assert_eq!(no_style[0].1, 0.0);
     }
 
     #[test]
     fn test_tac_object_stack_wraps_by_width() {
         // 590px 그림 3장, 가용 661px — 줄당 1장씩 3줄 (농촌 S-OJT 스택 형상).
         let para = tac_picture_para(&[(44222, 29069); 3]);
-        let lines = tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).unwrap();
+        let (styles, para_style) = tac_styles(20.0, 150.0);
+        let lines =
+            tac_object_stack_line_metrics(&para, 96.0, Some(661.0), &styles, Some(&para_style))
+                .unwrap();
         assert_eq!(lines.len(), 3);
+        // leading 은 줄마다 같은 몫이다.
+        assert!(lines.iter().all(|(_, ls)| (ls - 10.0).abs() < 0.01));
         // 300px 그림 2장, 가용 661px — 한 줄 수용.
         let para2 = tac_picture_para(&[(22000, 10000), (22000, 12000)]);
-        let lines2 = tac_object_stack_line_metrics(&para2, 96.0, Some(661.0)).unwrap();
+        let lines2 =
+            tac_object_stack_line_metrics(&para2, 96.0, Some(661.0), &styles, Some(&para_style))
+                .unwrap();
         assert_eq!(lines2.len(), 1);
         assert!((lines2[0].0 - hwpunit_to_px(12000, 96.0)).abs() < 0.01);
     }
 
     #[test]
     fn test_tac_object_stack_rejects_stored_ls_and_non_tac() {
+        let (styles, para_style) = tac_styles(20.0, 150.0);
         // 저장 LINE_SEG 보유 문단 제외 (이중 계상 방지).
         let mut para = tac_picture_para(&[(44222, 29069)]);
         para.line_segs
             .push(crate::model::paragraph::LineSeg::default());
-        assert!(tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).is_none());
+        assert!(tac_object_stack_line_metrics(
+            &para,
+            96.0,
+            Some(661.0),
+            &styles,
+            Some(&para_style)
+        )
+        .is_none());
         // 비-TAC 그림 제외 (PageItem::Shape 오버레이 경로 유지).
         let mut para2 = tac_picture_para(&[(44222, 29069)]);
         if let crate::model::control::Control::Picture(pic) = &mut para2.controls[0] {
             pic.common.treat_as_char = false;
         }
-        assert!(tac_object_stack_line_metrics(&para2, 96.0, Some(661.0)).is_none());
+        assert!(tac_object_stack_line_metrics(
+            &para2,
+            96.0,
+            Some(661.0),
+            &styles,
+            Some(&para_style)
+        )
+        .is_none());
+        // [#7079] 합성 tag seg 를 가진 문단은 높이 합성은 그대로(#2287) 두되 leading 은
+        // 0 이다 — 그 seg 의 baseline 이 개체 배치의 근거라 leading 을 얹으면 개체가
+        // 밀린다 (#6708 tac-img-02: 글자 264px → 158px).
+        let mut para3 = tac_picture_para(&[(44222, 29069)]);
+        para3.line_segs.push(crate::model::paragraph::LineSeg {
+            tag: crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY,
+            ..Default::default()
+        });
+        assert_eq!(
+            tac_object_stack_line_leading_px(&para3, &styles, Some(&para_style)),
+            0.0
+        );
+        let synth =
+            tac_object_stack_line_metrics(&para3, 96.0, Some(661.0), &styles, Some(&para_style))
+                .expect("합성 tag seg 문단도 높이 합성은 유지한다");
+        assert!((synth[0].0 - hwpunit_to_px(29069, 96.0)).abs() < 0.01);
+        assert_eq!(synth[0].1, 0.0);
     }
 
     #[test]

@@ -2176,34 +2176,28 @@ fn parse_object_control_char(
                 )));
             }
         } else if parsed_obj_type == 3 {
-            let mut form = crate::model::control::FormObject::default();
-            form.form_type = crate::model::control::FormType::PushButton;
-            form.enabled = true;
             if let Some(table) = parsed_table {
-                // [#6266] 원본 개체의 배치(기준·정렬·어울림·오프셋)를 그대로 옮긴다.
-                // 종전에는 width/height 만 읽어 배치를 버렸고, 그 결과 렌더러가 이
-                // 개체를 인라인 말고는 놓을 수 없었다.
-                form.common = table.common.clone();
-                form.width = table.common.width;
-                form.height = table.common.height;
-                if let Some(cell) = table.cells.first() {
-                    let mut text = String::new();
-                    for para in &cell.paragraphs {
-                        text.push_str(&para.text);
-                        text.push('\n');
-                    }
-                    form.caption = text.trim().to_string();
-                    form.name = form.caption.clone();
-                    if let Some(bf) =
-                        doc_border_fills.get(cell.border_fill_id.saturating_sub(1) as usize)
-                    {
-                        if let Some(ref solid) = bf.fill.solid {
-                            form.back_color = solid.background_color;
-                        }
-                    }
-                }
+                // [#6874] HWP3 obj_type=3 은 캡션을 담은 1x1 표 구조로 저장되고,
+                // 한글도 그것을 **표로** 만든다(정본 HWP3 -> HWPX 대조:
+                // `hp:tbl 2 / hp:btn 0`, 현행은 `hp:tbl 1 / hp:btn 1`).
+                //
+                // 종전에는 그 표를 버리고 `FormObject{PushButton}` 만 남겨, 캡션이
+                // 본문 글자가 아니라 개체 속성이 됐다. 코퍼스 `2955289` 는 그 때문에
+                // 표 하나와 본문 12자(`- 581-13 -`)를 통째로 잃었고, 한글이 원본에서
+                // 보여 주는 그 글자가 저장본에 없다. 바로 위 `obj_type == 1`(글상자)이
+                // 같은 이유로 이미 Table IR 을 보존한다 — `obj_type = 3` 만 버렸다.
+                //
+                // 배치는 `#6266` 이 한글 2024 COM PDF 로 잠근 계약이다. 표로 두면
+                // 세로 기준이 `VertRelTo::Paper` 경로로 가므로, 그 기준 높이를 실제
+                // 용지 높이로 바로잡는 수정(`renderer/layout/table_layout.rs` 의 같은
+                // 이슈 주석)이 **함께** 있어야 그 계약이 산다.
+                controls.push(crate::model::control::Control::Table(Box::new(table)));
+            } else {
+                let mut form = crate::model::control::FormObject::default();
+                form.form_type = crate::model::control::FormType::PushButton;
+                form.enabled = true;
+                controls.push(crate::model::control::Control::Form(Box::new(form)));
             }
-            controls.push(crate::model::control::Control::Form(Box::new(form)));
         } else if let Some(table) = parsed_table {
             controls.push(crate::model::control::Control::Table(Box::new(table)));
         } else {
@@ -2506,6 +2500,31 @@ fn parse_field_control_char(
                         hide.hide_page_num = (flags & 4) != 0;
                         hide.hide_border = (flags & 8) != 0;
                         crate::model::control::Control::PageHide(hide)
+                    } else if kind == 0 {
+                        // [#4680] 제어문자 21 의 종류 0 은 **항상 홀수쪽으로 시작**이다
+                        // (`mydocs/tech/한글문서파일구조3.0.md` §10.15 표 56: 0 = 홀수로
+                        // 시작, 1 = 감춤). 종전에는 이 자리가 catch-all 로 떨어져
+                        // `Control::Unknown { ctrl_id: 21 }` 이 됐다.
+                        //
+                        // 그 21 은 HWP5 저장에서 **구조 오염**이 된다. HWP5 의 ctrl_id 는
+                        // 네 글자 코드('pgct'·'pghd' …)이고, 저장기는 Unknown 을 개체
+                        // 제어문자 자리(0x000B)와 `CTRL_HEADER` 에 그대로 쓴다. 한글은
+                        // 그런 문단을 만나면 문서를 열지 못한다 — 264쪽 HWP3 문서
+                        // `1170000-200500003 독일의 법령체계와 입법심사기준` 이 개방 거부됐고,
+                        // 그 코드가 있는 42쪽 한 장만 뽑아도 같은 거부가 재현된다.
+                        // rhwp 자신은 산출물을 그대로 되읽으므로 자기검증으로는 안 보인다.
+                        //
+                        // 값은 같은 문서의 한/글 HWP5 저장본에서 온다 — `pgct` 4건이
+                        // 모두 payload 2(= 홀수 쪽)이고 개수도 우리 4건과 맞는다. 종류 1
+                        // (감춤)이 `pghd` 인 것도 같은 대조로 확인된다(00472: HWP3 감출
+                        // 대상 7 ↔ 한/글 `pghd` 0x23 = 머리말·꼬리말·쪽번호).
+                        // 코퍼스 HWP3 38건 전수에서 `Control::Unknown` 은 이 4건이 전부다.
+                        // 규격에 종류는 0·1 뿐이므로 그 밖의 값은 종전 경로로 둔다.
+                        crate::model::control::Control::PageNumCtrl(
+                            crate::model::control::PageNumCtrl {
+                                page_starts_on: crate::model::control::PageStartsOn::Odd,
+                            },
+                        )
                     } else {
                         crate::model::control::Control::Unknown(
                             crate::model::control::UnknownControl { ctrl_id: ch as u32 },
