@@ -15,7 +15,8 @@
   [Stage 14](../working/task_m100_3587_stage14.md)에서 C 종료 자동 검증을 완료했다.
   메인테이너가 양 형식 정상 열림을 확인하고 4쪽 간격 결함은 #7090으로 분리했다.
   후속 진행 승인으로 C 기록을 `576ff5872`에 보존하고 [D 상세계획](task_m100_3587_impl_d.md)을 작성했다.
-  D 구현계획 승인·제품 구현 및 Gym은 남아 있다.
+  이후 D 계획을 승인받아 최신 devel을 통합하고 [Stage 16](../working/task_m100_3587_stage16.md)의
+  원본/대상 분리 선검증을 구현했다. 실제 자원 이식·삽입·공개 실행 및 Gym은 남아 있다.
   9,523 PASS는 Stage 3의 A 당시 결과다.**
 - 근거: [승인된 수행계획](task_m100_3587.md), [Stage 1 조사](../working/task_m100_3587_stage1.md)
 - 기준 제품 source: `59a11f180ad1bd5cadcbbf0a6dc9d0162f4a0a21`

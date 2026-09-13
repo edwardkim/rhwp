@@ -2,7 +2,7 @@
 
 - 승인: 2026-09-13 「다음 절차 진행을 승인합니다」, [D 상세 계획](../plans/task_m100_3587_impl_d.md).
 - 계획 보존: `7149d5455`. 최신 원격 `897c6a3d8`을 작업 브랜치에 통합한 커밋: `0ba817ee6`.
-- 상태: **D1의 읽기 전용 선검증 구현, 검증 진행 중**. 실제 자원 이식·블록 삽입은 아직 구현하지 않았다.
+- 상태: **D1의 읽기 전용 선검증 구현 및 집중 검증 완료**. D1 전체 완료는 아니며 실제 자원 이식·블록 삽입은 아직 구현하지 않았다.
 
 ## D0 통합
 
@@ -34,6 +34,31 @@
 다른 길이의 원본/대상, 숫자로 겹치는 범위, 잘못된 주소·상한, count=0, 원본 서식 공간 조회,
 양쪽 합산 예산, lazy resolver 비호출, JSON 잘못된 키를 실제 공개 query로 검사한다.
 기존 A/B/C·외부 붙여넣기·원격 표 생성·passthrough guard도 통합 SHA에서 확인한다.
+
+## 검증 결과
+
+- D0 통합 커밋 `0ba817ee6`: 기존 집중 검사 **142 PASS**.
+- 선검증 구현 `4782a4ac0`, 테스트 필드명 정정 후 최종 제품·테스트 기준
+  `1b3648aac803787f8dfb683c05c6376ee9fa670f`: 집중 검사 **156 PASS, 실패 0**.
+  신규 선검증 9건과 원격 #5819 표 생성 5건을 포함한다.
+- 동일 SHA의 review worktree에서 `--prepare` 후 manifest `--check` PASS,
+  `cargo fmt --all -- --check` PASS.
+- 집중 선택식은 `test(issue_3587) | test(foreign_paste) | test(issue_5819) | test(passthrough_invalidation)`이다.
+  nextest의 `9573 skipped`는 이번 선택식에서 제외된 테스트 수이지 전체 회귀 통과 증적이 아니다.
+- 신규 테스트의 최초 컴파일에서 `CharShapeRef.position`이라는 잘못된 필드명을 사용해 실패했다.
+  실제 필드 `start_pos`로 정정했다. 정정 후 테스트는 통과했으나 파생 목록 재준비가 누락되어
+  manifest 불일치가 검출됐다. 같은 최종 SHA에서 목록을 다시 준비하고 manifest·포맷·156건을
+  모두 재실행해 통과했다. 제품 로직이나 기대값을 완화하지 않았다.
+- nextest 설치 버전 0.9.137과 저장소 권장 0.9.140의 차이는 경고로 출력됐으며 실행은 성공했다.
+
+로컬 증적: `output/3587/d0-focused.log`, `output/3587/d1-focused-r3.log`,
+`output/3587/d1-fmt-r2.log`, `output/3587/d1-manifest-r2.log`.
+review worktree는 `/home/edward/mygithub/rhwp-review-3587`, 공용 target은
+`/home/edward/mygithub/rhwp/target/pr-review`를 사용했다. 파생 suite·manifest는 커밋하지 않았다.
+
+**이번 SHA의 전체 회귀·세 Clippy 단계·Native Skia·WASM 빌드는 수행하지 않았다.**
+이전 C 결과를 이번 코드의 전체 검증 결과로 재사용하지 않는다. D 통합 검증과 push/PR 직전
+필수 게이트는 별도로 남아 있다.
 
 ## 남은 D1
 
