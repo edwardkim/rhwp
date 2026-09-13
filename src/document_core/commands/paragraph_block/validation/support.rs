@@ -4,7 +4,7 @@ use super::{
 };
 use crate::document_core::commands::paragraph_block::RepeatParagraphBlockRequest;
 use crate::model::{
-    control::{Control, FieldType},
+    control::{Control, Field, FieldType, Parameter},
     image::Picture,
     paragraph::{ColumnBreakType, Paragraph},
     shape::{Caption, CommonObjAttr, ShapeObject},
@@ -230,16 +230,22 @@ impl<'a> Scan<'a, '_> {
             Control::Picture(p) => self.picture(p),
             Control::Equation(e) => self.common(&e.common, &e.raw_ctrl_data),
             Control::Field(f) => {
-                if f.field_type != FieldType::ClickHere
+                // Hyperlink commands are inert document data here. Identity and
+                // range closure use the same Field path as ClickHere below.
+                if !matches!(f.field_type, FieldType::ClickHere | FieldType::Hyperlink)
                     || f.raw_type.is_some()
                     || !f.memo_paragraphs.is_empty()
                     || f.memo_index != 0
                     || f.memo_text_direction.is_some()
                 {
-                    return Err(self.unsupported("only plain ClickHere fields are supported"));
+                    return Err(
+                        self.unsupported("only plain ClickHere/Hyperlink fields are supported")
+                    );
                 }
-                if f.raw_parameters_xml.is_some() || !f.parameters.is_empty() {
-                    return Err(self.unsupported("unvalidated ClickHere parameters"));
+                if (f.raw_parameters_xml.is_some() || !f.parameters.is_empty())
+                    && !plain_hyperlink_parameters(f)
+                {
+                    return Err(self.unsupported("unvalidated field parameters"));
                 }
                 Ok(())
             }
@@ -291,7 +297,16 @@ impl<'a> Scan<'a, '_> {
         if let Some(d) = shape.drawing() {
             if let Some(t) = &d.text_box {
                 self.at(Step::TextBox, |s| {
-                    s.raw_empty(&t.raw_list_header_extra, "textbox LIST_HEADER tail")?;
+                    // #1058 serializer contract: reserved(8) + editable(4) +
+                    // field-name flag(1). Accept the ordinary all-zero default,
+                    // not arbitrary 13-byte data or named/form extensions.
+                    // Keep the bytes intact; HWP export writes this default for
+                    // HWPX-origin textboxes too, so reopen must remain supported.
+                    if !t.raw_list_header_extra.is_empty()
+                        && t.raw_list_header_extra.as_slice() != [0u8; 13]
+                    {
+                        return Err(s.unsupported("uninterpreted textbox LIST_HEADER tail"));
+                    }
                     s.paras(&t.paragraphs)
                 })?;
             }
@@ -299,4 +314,33 @@ impl<'a> Scan<'a, '_> {
         }
         Ok(())
     }
+}
+
+/// HWPX represents a plain hyperlink command as one named string. This is not
+/// permission to copy opaque XML: both typed data and any verbatim cache must
+/// agree with the serializer's reference-free canonical representation.
+fn plain_hyperlink_parameters(field: &Field) -> bool {
+    if field.field_type != FieldType::Hyperlink
+        || field
+            .parameters
+            .name
+            .as_deref()
+            .is_some_and(|name| !name.is_empty())
+    {
+        return false;
+    }
+    let [Parameter::String {
+        name,
+        value,
+        preserve_space: false,
+    }] = field.parameters.items.as_slice()
+    else {
+        return false;
+    };
+    name.as_deref() == Some("Command")
+        && value == &field.command
+        && field
+            .raw_parameters_xml
+            .as_ref()
+            .is_none_or(|raw| raw == &field.parameters.render_xml("parameters"))
 }

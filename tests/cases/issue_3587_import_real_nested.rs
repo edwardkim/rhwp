@@ -122,9 +122,11 @@ fn real_cell_picture_survives_foreign_import_reuse_and_both_exports() {
 }
 
 #[test]
-fn real_uninterpreted_textbox_is_rejected_without_partial_import() {
-    let source =
+fn nondefault_textbox_is_rejected_without_partial_import() {
+    let mut source =
         DocumentCore::from_bytes(&std::fs::read("samples/table-in-tbox.hwp").unwrap()).unwrap();
+    // Deliberately nondefault test input, not a replacement visual fixture.
+    textbox_mut(&mut source, 4).raw_list_header_extra[12] = 0xff;
     let mut target = target_with_source_page(&source);
     let before = (
         format!("{:?}", target.document()),
@@ -147,6 +149,274 @@ fn real_uninterpreted_textbox_is_rejected_without_partial_import() {
             target.serialize_event_log()
         )
     );
+}
+
+fn textbox(core: &DocumentCore, pi: usize) -> &rhwp::model::shape::TextBox {
+    let Control::Shape(shape) = &core.document().sections[0].paragraphs[pi].controls[0] else {
+        panic!("expected textbox shape");
+    };
+    shape.drawing().unwrap().text_box.as_ref().unwrap()
+}
+
+#[test]
+fn textbox_tail_and_hyperlink_rejection_boundaries_are_atomic() {
+    // Mutated copies are negative contract inputs, never visual artifacts.
+    for case in 0..11 {
+        let mut source =
+            DocumentCore::from_bytes(&std::fs::read("samples/table-in-tbox.hwp").unwrap()).unwrap();
+        let tb = textbox_mut(&mut source, 4);
+        let expected = match case {
+            0 => {
+                tb.raw_list_header_extra.pop();
+                "textbox LIST_HEADER tail"
+            }
+            1 => {
+                tb.raw_list_header_extra.push(0);
+                "textbox LIST_HEADER tail"
+            }
+            2 => {
+                tb.raw_list_header_extra[0] = 1;
+                "textbox LIST_HEADER tail"
+            }
+            3 => {
+                tb.raw_list_header_extra[8] = 1;
+                "textbox LIST_HEADER tail"
+            }
+            4 => {
+                tb.paragraphs[20].field_ranges.clear();
+                "fieldClosure"
+            }
+            5 => {
+                tb.paragraphs[20].field_ranges[0].end_char_idx = usize::MAX;
+                "invalidFieldRange"
+            }
+            6 => {
+                let Control::Field(f) = &mut tb.paragraphs[20].controls[0] else {
+                    unreachable!()
+                };
+                f.raw_parameters_xml = Some("<unsupported/>".into());
+                "unvalidated field parameters"
+            }
+            _ => {
+                let Control::Field(f) = &mut tb.paragraphs[20].controls[0] else {
+                    unreachable!()
+                };
+                f.parameters.items = vec![rhwp::model::control::Parameter::String {
+                    name: Some("Command".into()),
+                    value: f.command.clone(),
+                    preserve_space: false,
+                }];
+                match case {
+                    7 => f.parameters.items.push(f.parameters.items[0].clone()),
+                    8 => f.command.push_str("mismatch"),
+                    9 => f.raw_parameters_xml = Some("<hp:parameters unexpected=\"1\"/>".into()),
+                    _ => f.field_type = rhwp::model::control::FieldType::Unknown,
+                }
+                if case == 10 {
+                    "only plain ClickHere/Hyperlink"
+                } else {
+                    "unvalidated field parameters"
+                }
+            }
+        };
+        let source_before = format!("{:?}", source.document());
+        let mut target = target_with_source_page(&source);
+        let before = (
+            format!("{:?}", target.document()),
+            target.serialize_event_log(),
+        );
+        let preview = target
+            .preview_paragraph_block_import_native(source.document(), &request(4))
+            .unwrap_err();
+        let execute = target
+            .import_paragraph_block_native(source.document(), &request(4))
+            .unwrap_err();
+        assert!(
+            execute.to_string().contains(expected),
+            "case {case}: {execute}"
+        );
+        assert_eq!(preview.to_string(), execute.to_string());
+        assert_eq!(
+            before,
+            (
+                format!("{:?}", target.document()),
+                target.serialize_event_log()
+            )
+        );
+        assert_eq!(source_before, format!("{:?}", source.document()));
+    }
+}
+
+#[test]
+fn same_document_repeat_uses_the_same_textbox_hyperlink_contract() {
+    let mut core =
+        DocumentCore::from_bytes(&std::fs::read("samples/table-in-tbox.hwp").unwrap()).unwrap();
+    let expected = evidence(&core, 4);
+    let source_id = link(&core, 4).field_id;
+    let end = core.document().sections[0].paragraphs.len();
+    core.repeat_paragraph_block_native(&rhwp::document_core::RepeatParagraphBlockRequest {
+        section_index: 0,
+        source_start: 4,
+        source_end: 5,
+        insert_before: end,
+        count: 2,
+        limits: Default::default(),
+    })
+    .unwrap();
+    assert_eq!(evidence(&core, end), expected);
+    assert_eq!(evidence(&core, end + 1), expected);
+    assert_ne!(link(&core, end).field_id, source_id);
+    assert_ne!(link(&core, end + 1).field_id, source_id);
+    assert_ne!(link(&core, end).field_id, link(&core, end + 1).field_id);
+}
+
+fn textbox_mut(core: &mut DocumentCore, pi: usize) -> &mut rhwp::model::shape::TextBox {
+    let Control::Shape(shape) = &mut core.document_mut().sections[0].paragraphs[pi].controls[0]
+    else {
+        panic!("expected textbox shape");
+    };
+    shape.drawing_mut().unwrap().text_box.as_mut().unwrap()
+}
+
+fn link(core: &DocumentCore, pi: usize) -> &rhwp::model::control::Field {
+    let Control::Field(field) = &textbox(core, pi).paragraphs[20].controls[0] else {
+        panic!("expected hyperlink");
+    };
+    field
+}
+
+// Test-only owned-tree observation; IDs and format-specific raw are intentionally
+// checked separately, not erased from the source to make it importable.
+fn content_evidence(
+    value: &serde_json::Value,
+    core: &DocumentCore,
+    out: &mut Vec<serde_json::Value>,
+) {
+    match value {
+        serde_json::Value::Object(map) => {
+            if let Some(picture) = map.get("Picture") {
+                let id = picture["image_attr"]["bin_data_id"].as_u64().unwrap() as usize;
+                let bytes = core.document().bin_data_content[id - 1]
+                    .data
+                    .load_limited(1024 * 1024)
+                    .unwrap();
+                out.push(json!({"pictureBytes":bytes,"crop":picture["crop"],
+                    "width":picture["common"]["width"],"height":picture["common"]["height"]}));
+            }
+            for key in [
+                "text",
+                "command",
+                "field_type",
+                "row_count",
+                "col_count",
+                "row_span",
+                "col_span",
+            ] {
+                if let Some(value) = map.get(key) {
+                    out.push(json!({key:value}));
+                }
+            }
+            for value in map.values() {
+                content_evidence(value, core, out);
+            }
+        }
+        serde_json::Value::Array(values) => {
+            for value in values {
+                content_evidence(value, core, out);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn evidence(core: &DocumentCore, pi: usize) -> Vec<serde_json::Value> {
+    let mut out = Vec::new();
+    content_evidence(
+        &serde_json::to_value(textbox(core, pi)).unwrap(),
+        core,
+        &mut out,
+    );
+    out
+}
+
+#[test]
+fn whole_real_textbox_with_hyperlink_imports_and_survives_both_formats() {
+    let source =
+        DocumentCore::from_bytes(&std::fs::read("samples/table-in-tbox.hwp").unwrap()).unwrap();
+    let before = format!("{:?}", source.document());
+    assert_eq!(textbox(&source, 4).raw_list_header_extra, vec![0; 13]);
+    assert_eq!(textbox(&source, 4).paragraphs.len(), 21);
+    let expected = evidence(&source, 4);
+    assert_eq!(
+        expected
+            .iter()
+            .filter(|v| v.get("pictureBytes").is_some())
+            .count(),
+        8
+    );
+    assert_eq!(
+        expected
+            .iter()
+            .filter(|v| v.get("row_count").is_some())
+            .count(),
+        4
+    );
+    let mut target = target_with_source_page(&source);
+    let prefix = format!("{:?}", target.document().sections[0].paragraphs[0]);
+    let page = serde_json::to_value(&target.document().sections[0].section_def.page_def).unwrap();
+    let preview = target
+        .preview_paragraph_block_import_native(source.document(), &request(4))
+        .unwrap();
+    let result = target
+        .import_paragraph_block_native(source.document(), &request(4))
+        .unwrap();
+    assert_eq!(preview, result);
+    assert_eq!(evidence(&target, 1), expected);
+    let again = target
+        .import_paragraph_block_native(source.document(), &request(4))
+        .unwrap();
+    assert_eq!(again.resources.added, 0);
+    assert_eq!(again.resources.binaries_added, 0);
+    assert_ne!(link(&target, 1).field_id, link(&target, 2).field_id);
+    assert_eq!(
+        prefix,
+        format!("{:?}", target.document().sections[0].paragraphs[0])
+    );
+    assert_eq!(
+        page,
+        serde_json::to_value(&target.document().sections[0].section_def.page_def).unwrap()
+    );
+    for bytes in [
+        target.export_hwp_native().unwrap(),
+        target.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        for pi in [1, 2] {
+            assert_eq!(evidence(&reopened, pi), expected);
+            let a = &textbox(&source, 4).paragraphs[20].field_ranges[0];
+            let b = &textbox(&reopened, pi).paragraphs[20].field_ranges[0];
+            assert_eq!(
+                (
+                    a.start_char_idx,
+                    a.end_char_idx,
+                    a.control_idx,
+                    a.end_field_id
+                ),
+                (
+                    b.start_char_idx,
+                    b.end_char_idx,
+                    b.control_idx,
+                    b.end_field_id
+                )
+            );
+        }
+        // Default tails written during export must remain importable after reopen.
+        let mut destination = target_with_source_page(&source);
+        destination
+            .import_paragraph_block_native(reopened.document(), &request(1))
+            .unwrap();
+    }
+    assert_eq!(before, format!("{:?}", source.document()));
 }
 
 fn target_with_source_page(source: &DocumentCore) -> DocumentCore {
