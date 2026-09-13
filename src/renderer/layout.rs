@@ -9205,7 +9205,20 @@ impl LayoutEngine {
                         }) && paragraphs
                             .get(*para_index + 1)
                             .is_some_and(para_has_visible_text);
-                        let has_ladder_float = has_overlay_float || has_square_float_before_text;
+                        // 저장된 TopAndBottom 그림/도형 host도 다음 문단까지의 줄
+                        // 전진을 보존한다. 개체의 예약 높이와 앵커 문단의 줄은 별개다.
+                        // 빈 후속 문단도 유효한 저장 LineSeg가 있으면 증거가 된다.
+                        let has_top_bottom_float = para.controls.iter().any(|c| {
+                            let cm = match c {
+                                Control::Picture(pic) => &pic.common,
+                                Control::Shape(shape) => shape.common(),
+                                _ => return false,
+                            };
+                            !cm.treat_as_char && cm.text_wrap == TextWrap::TopAndBottom
+                        });
+                        let has_ladder_float = has_overlay_float
+                            || has_square_float_before_text
+                            || has_top_bottom_float;
                         let ladder_verdict = has_ladder_float
                             .then(|| {
                                 textless_host_ladder_line_advance(

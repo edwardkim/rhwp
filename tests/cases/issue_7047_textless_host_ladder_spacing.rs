@@ -205,3 +205,42 @@ fn the_title_table_line_no_longer_overlaps_the_textbox_first_line() {
         title_bottom - box_line_top
     );
 }
+
+/// 한컴 engine 2020 기준 PDF의 하단 이미지 3개는 모두 y=784.901pt에서 시작한다.
+/// TopAndBottom 그림 host 뒤의 빈 문단도 저장 사다리에 참여해야 한다. 원 통합
+/// 후보는 pi=81의 줄을 전진하지 않아 pi=83 법무부 로고만 17.9px 위에 놓였고,
+/// 보정된 글상자의 아래 테두리와 겹쳤다. 절대 좌표 보정 대신 공통 상단을 검증한다.
+#[test]
+fn footer_logos_share_the_hancom_top_and_clear_the_textbox() {
+    fn images(node: &RenderNode, out: &mut Vec<f64>) {
+        if matches!(node.node_type, RenderNodeType::Image(_)) {
+            out.push(node.bbox.y);
+        }
+        for child in &node.children {
+            images(child, out);
+        }
+    }
+    fn last_box_bottom(node: &RenderNode) -> f64 {
+        let own = if is_wide_textbox(node) {
+            node.bbox.y + node.bbox.height
+        } else {
+            0.0
+        };
+        node.children
+            .iter()
+            .map(last_box_bottom)
+            .fold(own, f64::max)
+    }
+    let root = page3();
+    let mut ys = Vec::new();
+    images(&root, &mut ys);
+    assert_eq!(ys.len(), 3, "하단의 기관 로고 세 개: {ys:?}");
+    let min = ys.iter().copied().fold(f64::INFINITY, f64::min);
+    let max = ys.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    // 한컴 이미지 rect는 같은 상단이다. 허용치는 SVG 좌표 소수 첫째 자리 반올림뿐이다.
+    assert!(max - min < 0.1, "로고 상단이 서로 갈렸다: {ys:?}");
+    assert!(
+        min > last_box_bottom(&root),
+        "기관 로고가 글상자 테두리 위에 겹쳤다: {ys:?}"
+    );
+}

@@ -42,3 +42,17 @@ last_verified: 2026-09-13
    소유 branch/ref/전용 target만 정리한다. devel push에서 CI를 추가 실행하지 않는다.
 
 현재는 검토 계획이며 테스트 통과·원격 통합·merge 완료를 주장하지 않는다.
+
+## 통합 시각 검토에서 발견한 잔여 호스트 전진 — 검증 재개
+
+- 최초 통합 code `4aa80b96a`의 전체 nextest는 9,564 PASS / 46 skipped였다.
+  이 결과만으로 수용하지 않고 하단 로고까지 before/after/한컴 PDF를 재검토했다.
+- 3쪽 법무부 로고의 그림 상단은 후보 1029.7px, 국토교통부·서울시 로고는 1047.7px다.
+  한컴 PDF의 세 이미지 rect 상단은 모두 784.901pt(1046.535px)다.
+- `TopAndBottom` 그림 host pi=81이 빈 문단 pi=82로 이어질 때 저장 LineSeg가 있는데도
+  기존 overlay/Square 전용 사다리 질의에 들어가지 않는다. 같은 빈 개체 host 전진 계열이며
+  #7089의 저장 LineSeg 없는 host 앞 spacer 변경은 포함하지 않는다.
+- 해당 저장 사다리 질의의 일반 적용 범위를 검토하고, 로고의 동일 상단·글상자와의 간격을
+  독립 한컴 출력 기준으로 회귀 고정한다. 좌표 상수·clamp·문서 ID 분기는 사용하지 않는다.
+- 앞서 native/WASM Clippy는 통과했으나 workspace build를 중단했다. 새 code head의 전체
+  검증·세 Clippy·Native Skia·WASM·시각/OVR 증거를 다시 실행하기 전에는 머지 가능으로 판정하지 않는다.
