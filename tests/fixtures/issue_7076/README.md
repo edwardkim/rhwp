@@ -13,3 +13,10 @@
 overflow_cell · text_overlap)의 모수를 흔든다.
 
 런타임 분류기는 이 파일 이름으로 분기하지 않는다.
+
+## 메인터너 기준 PDF 보존
+
+- 경로: `pdf/ship-collision-analysis-form-2020.pdf`
+- SHA-256: `fee10b0762d642a51207db8e6116246764c2b3fa52ccee9f2d2021bd0f368b9a`
+- MCP engine 2020, job `cdb01427-f4a8-47d9-beff-8ed5297647a3`, client download `success`.
+- 원본과 같은 입력의 PDF이며 한컴 생성 제품 메타데이터와 실제 시각 비교는 해당 PR archive review에 기록한다.

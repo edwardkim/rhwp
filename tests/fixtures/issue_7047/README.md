@@ -31,3 +31,10 @@ sha256 `fe295c12c5f9bd9e7e73a540c7c7ecd044f18ed58ea9826c0de5d55ba2710439`)
 
 `hwp2024Convert` engine 2020(문서 저장 세대)으로 새로 생성한 PDF 가 정본이다 — 151,946 B ·
 3쪽 · 재현 가능. 3쪽 글자 1,276자를 글자열 정렬해 좌표를 대조했다.
+
+## 메인터너 기준 PDF 보존
+
+- 경로: `pdf/housing-lease-standard-form-2020.pdf`
+- SHA-256: `f73f17d57b566d35f1641eef4ba1ab580aaf13725493b29e5ec88e7496e64e39`
+- MCP engine 2020, job `261cec43-45d6-425c-9e9c-f47c4640fa66`, client download `success`.
+- 원본과 같은 입력의 PDF이며 한컴 생성 제품 메타데이터와 실제 시각 비교는 해당 PR archive review에 기록한다.
