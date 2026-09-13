@@ -1465,8 +1465,8 @@ pub(crate) fn cell_vpos_ladder_is_intact(
 ///
 /// [#7079] 두 번째 값(leading)은 **개체 높이가 아니라 호스트 문단의 글자모양·줄간격**에서
 /// 나온다 — `tac_object_stack_line_leading_px` 를 본다. 문단 전진은 `높이 + leading` 이며,
-/// 잉크는 그 leading **아래**에 놓인다(렌더 경로는 줄 앞에서 y 를 내리고, 측정·조판 경로는
-/// 같은 합을 줄간격으로 소비한다).
+/// 개체 잉크 위치는 유지하고 leading 을 줄 **뒤** 간격으로 소비한다. 렌더·측정·조판은
+/// 같은 높이와 간격의 합으로 다음 줄을 전진시킨다.
 pub(crate) fn tac_object_stack_line_metrics(
     para: &crate::model::paragraph::Paragraph,
     dpi: f64,
@@ -1523,10 +1523,10 @@ pub(crate) fn tac_object_stack_line_metrics(
 /// 1쪽은 남는 값이 720HU 이고 글자 16.0px · 160% → `16.0 * 0.6 = 9.6px(720HU)` 로
 /// 정확히 같다. 개체 높이는 29997 vs 2023 으로 14배 다른데 이 몫은 글자에서만 나온다.
 ///
-/// 그 몫이 **어디에 놓이는가**는 한컴 출력이 답한다. 156060125 2쪽 정본(engine 2020)은
-/// 앞 본문 줄 → 그림 상단이 +35.6px(rhwp +19.0), 그림 상단 → `※` baseline 이
-/// +416.8px(rhwp +420.0) 다. 곧 모자란 곳은 **개체 앞**이고 개체 뒤 전진은 이미 맞다.
-/// 그래서 이 값은 줄 뒤 여백이 아니라 개체 잉크 **위** leading 으로 쓴다.
+/// 그 몫의 위치는 같은 96dpi 래스터에서 비교한다. 156060125 2쪽 한컴 engine 2020
+/// 출력은 앞 본문줄→도해 잉크 84px, 도해→뒤 상자 360px 이다. leading 을 개체 뒤에
+/// 두면 86px/360px, 앞에 두면 96px/350px 이므로 개체 잉크는 그대로 두고 뒤 간격에
+/// 반영한다. 서로 다른 glyph bbox·TextLine 좌표를 섞은 초기 실측은 사용하지 않는다.
 ///
 /// 빈 문단 폴백(`empty_no_lineseg_paragraph_metrics`)과 같은 `corrected_line_metrics`
 /// 계약을 쓰되 줄 높이는 개체가 정하므로 간격 몫만 취한다. 글자모양·문단모양을 못 찾거나

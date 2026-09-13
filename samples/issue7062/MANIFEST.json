@@ -12,7 +12,7 @@
       "bytes": 286720,
       "sha256": "2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb",
       "referenceEngine": "2020",
-      "referencePdfStatus": "PDF 는 저장소에 두지 않는다. 기준값은 #6928 코멘트(2026-09-09)의 hwp2024Convert engine 2020 산출(job a57a69b7-357a-43f3-bf52-77a174bc5f70, 10쪽) 실측 기록이다.",
+      "referencePdfStatus": "pdf/tac_object_host_line_height-2020.pdf에 한컴 engine 2020 산출 PDF를 커밋했다. SHA-256 f90ea6915a842ac2266f4dd737b2829bbb3b72b927b1658577f6ca8c8b9b6051.",
       "contract": "2쪽 셀 문단 pi=12 는 저장 LINE_SEG 가 없고 TAC 그림(29997HU = 400.0px) 하나만 앵커한다. 이 문단의 줄 상자는 개체 높이(400.0px)여야 하며, 400HU(5.3px) 고정 폴백을 쓰면 뒤 표·문단이 그림 한가운데(553.4px)로 올라와 427px 겹친다. 저장 사다리도 같은 말을 한다 — 앞 문단 p[11] vpos=30525, 뒤 문단 p[13] vpos=61874, 델타 31349HU = 418.0px."
     }
   ]
