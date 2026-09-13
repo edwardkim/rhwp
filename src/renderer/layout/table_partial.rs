@@ -3423,6 +3423,28 @@ impl LayoutEngine {
     ///
     /// `start_row..end_row` 범위의 행만 렌더링한다.
     /// `is_continuation`이 true이고 repeat_header인 표면 행0(제목행)을 먼저 렌더링한다.
+    /// [#7095] 본문을 통째로 담은 1×1 `RowBreak` 표의 쪽 조각인가.
+    ///
+    /// 이 형상에서 한컴은 조각 상자 상단을 본문 상단 + 표 `outer_margin_top` 에 둔다
+    /// (정본 156060125 engine 2020: 2·3·10쪽 모두 47.15px = 45.35 + 141HU).
+    /// 다중 행·열 분할 표는 이 근거가 없으므로 종전 계약을 유지한다.
+    ///
+    /// 같은 정본이 말하는 나머지 두 축(마지막이 아닌 조각의 상자를 쪽 크기로 고정,
+    /// 칸 내용을 그 상자 안에서 `valign` 배치)은 아직 열려 있다 — `#7095`.
+    fn single_cell_rowbreak_page_fragment(&self, table: &crate::model::table::Table) -> bool {
+        // 근거는 native HWP5 저장본(156060125, hancom-office-2020)이다. HWPX 계보는 조각
+        // 기하 계약이 따로 있고(`hwpx_stored_layout` 계열), 넓히면 `rowbreak-problem-pages.hwpx`
+        // 16쪽에서 칸 안 글상자가 꼬리말과 겹친다(text_overlap 1 → 2). 근거가 있는 범위로 좁힌다.
+        self.profile.get().hwp5_stored_pagination_layout()
+            && table.row_count == 1
+            && table.col_count == 1
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_partial_table(
         &self,
@@ -3753,6 +3775,20 @@ impl LayoutEngine {
             }
         } else {
             y_start + effective_vertical_offset
+        };
+        // [#7095] 본문을 통째로 담은 1×1 RowBreak 표의 조각은 상단 바깥여백을 연다.
+        //
+        // 한컴 engine 2020 정본(156060125, `pdf/tac_object_host_line_height-2020.pdf`)의
+        // 바깥 표 괘선은 2·3·10쪽 모두 **47.15px** 이고, 이는 본문 상단 45.35 +
+        // `outer_margin_top` 141HU(1.88px)다. rhwp 는 본문 상단(45.35)에 그대로 그려
+        // 조각 전체가 1.9px 위에 있었다. 비분할 경로는 이 여백을
+        // `physical_outer_box_paint_inset`(단일 단 + 측정高==선언高) 에서만 열지만,
+        // 분할 조각은 그 게이트가 성립하지 않으므로 이 형상에서 따로 연다.
+        let single_cell_page_fragment = self.single_cell_rowbreak_page_fragment(table);
+        let y_start = if single_cell_page_fragment {
+            y_start + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+        } else {
+            y_start
         };
 
         let col_count = table.col_count as usize;
