@@ -2,10 +2,11 @@
 
 - Issue: #3587 — https://github.com/edwardkim/rhwp/issues/3587
 - 작성: 2026-09-13, 브랜치 `task_m100_3587`.
-- 보고 기준 HEAD: `95cee9bfc4903b9d15231ff940252e786dfe3d9b`.
-- 제품·테스트 검증 기준: `9acd8d54fd04477ee819238ee63abd4eb7676380`.
+- 통합 검증 기준 HEAD: `dd9b539bf` (상세 명령·결과는 Stage 25).
+- 이전 D3 제품·테스트 검증 기준: `9acd8d54fd04477ee819238ee63abd4eb7676380`.
 - 상태: **승인된 A/B/C/D 기능, D3 자동 검증 및 선택적 Gym 시나리오 완료.
-  최종 보고 제출. 최신 devel 통합 검증·증적 제출 정리는 남아 있으며 PR 준비 완료는 아니다.**
+  증적 보존과 최신 devel 통합 완료, [Stage 25](../working/task_m100_3587_stage25.md)에서
+  통합 후보 최종 검증 중. PR 준비 완료는 아직 아니다.**
 - 기준 계획: [수행계획](../plans/task_m100_3587.md),
   [구현계획](../plans/task_m100_3587_impl.md),
   [공개 사용법](../manual/template_automation.md).
@@ -103,14 +104,15 @@ Gym에서 새로 확인한 앞쪽 보존은 12개 실물 문단이며, 후행 �
 
 연구노트 원본/한컴 복사본 등 `samples/rnote/` 12개는 현재 commit에 포함되어 있다.
 기존 `samples/table-in-tbox.hwp`와 `pdf/table-in-tbox-hwp-2020.pdf`도 재사용한다.
-새 최종 산출·파생 입력·기준 PDF 중 아래 자료는 현재 `output` 보관 상태다.
-**로컬에서 확인 가능하다는 사실과 PR에서 재현 가능한 증적 보존 완료는 다르다.**
+Stage 25에서 최종 검증 자료 73개 출처를 고유 파일 37개로 대응시키고, 기존 3개 재사용·
+새 문서 29개/PDF 5개 보존을 완료했다. [MANIFEST](../../samples/issue3587/MANIFEST.json)의
+`path`가 정식 경로이고 각 `source`는 기존 로컬 위치다. 실제 파일·commit bytes·SHA를 대조했다.
 
 | 증거 | 현재 위치와 판정 | 제출 상태 |
 | --- | --- | --- |
-| 제목 표/그림 가져오기 | `output/3587/d1-real-nested/pi2-import.{hwp,hwpx}`, 메인테이너 성공 | 양 형식 및 대응 새 2020 PDF 정식 보존 필요 |
-| 큰 글상자 가져오기 | `output/3587/d1-textbox/stage20/pi4-import.{hwp,hwpx}`, 한컴 정상 열림 | 양 형식 및 대응 새 2020 PDF 정식 보존 필요 |
-| Gym 최종 연구노트 | `output/3587/gym-stage24-r3/{hwp,hwpx}/LN01/labnote-filled.*`, 모두 한컴 정상 | 최종 파일·실제 파생 입력의 보존 목록 확정 필요 |
+| 제목 표/그림 가져오기 | `samples/issue3587/d-pi2-import.{hwp,hwpx}`, 메인테이너 성공 | 보존 완료, 대응 PDF `pdf/issue3587/d-pi2-import-{hwp,hwpx}-2020.pdf` |
+| 큰 글상자 가져오기 | `samples/issue3587/d-pi4-import.{hwp,hwpx}`, 한컴 정상 열림 | 보존 완료, 대응 PDF `pdf/issue3587/d-pi4-import-{hwp,hwpx}-2020.pdf` |
+| Gym 최종 연구노트 | `samples/issue3587/gym-{hwp,hwpx}-labnote-filled.*`, 모두 한컴 정상 | 단계별/파생/음성 입력도 MANIFEST에 보존·재사용 대응 |
 
 제목 표·큰 글상자의 파일/PDF SHA, 한컴 runtime·job·원본 페이지 비교는 Stage 18/20에 있다.
 큰 글상자의 HWPX PDF에서 바깥 분홍 점선 dash 차이를 관측했으므로 완전한 픽셀 동등성을 주장하지 않는다.
@@ -118,8 +120,8 @@ Gym 최종 HWP SHA는 `ed63c8da2595d7f205be32eaf534e200f58969b490dda601ff831925d
 HWPX는 `9cd132770cf3b9ffda967e0e7510ed7dd04c78e0404627f6fdb16ed43375abf8`다.
 
 [fixture 보존 규칙](../manual/pr_review/visual_fixture_evidence.md)에 따라 실제 사용한 입력과
-채택한 한컴 PDF를 정식 경로에 보존하고, 신규 검증 입력 게이트를 적용해야 한다.
-위 표는 대표 목록이지 전 단계 입력 전수 보존이 끝났다는 선언이 아니다.
+채택한 한컴 PDF를 정식 경로에 보존했다. 신규 검증 입력 게이트는 Stage 25에서 실행한다.
+위 표는 대표 목록이며 최종 수용/자동 계약에 사용한 보존 목록은 MANIFEST가 정본이다.
 실패한 조사 출력·중간 PNG/SVG/JSON·빌드 로그·output 전체는 제출하지 않는다.
 
 ## 6. 성능 영향과 별도 문제
@@ -136,28 +138,22 @@ native 실행은 preview 뒤의 따뜻한 캐시 조건이다. 절대 성능 보
 - [#7084](https://github.com/edwardkim/rhwp/issues/7084): 이모티콘 너비 축소.
 - [#7090](https://github.com/edwardkim/rhwp/issues/7090): 4쪽 표 사이 간격 소실.
 
-## 7. 최신 devel 점검과 남은 제출 순서
+## 7. 최신 devel 통합과 남은 제출 순서
 
-2026-09-13 fetch 결과 `upstream/devel`은 `897c6a3d8d`에서
-`1ae5ca295bddcb31b846affc62834a2a3023d24d`로 전진했다.
-보고 기준 후보와 비교하면 원격 전용 18개, 작업 브랜치 전용 101개 commit이다.
-`git merge-tree --write-tree upstream/devel HEAD`는 exit 0,
-결과 tree `6c6c8772860832a24a35dc25a1e90c1119b51f7c`이며 텍스트 충돌이 없다.
-현재 three-dot diff 및 가상 통합 tree의 diff whitespace 검사도 통과했다.
+2026-09-13 `upstream/devel=1ae5ca295bddcb31b846affc62834a2a3023d24d`의 추가 18개
+commit을 `ca67b5ff5`로 작업 브랜치에 통합했다. 충돌 없이 병합했으며,
+양쪽에서 바뀐 `typeset.rs` 및 HWP 변환·저장 영향 때문에 전체 검증을 다시 진행한다.
+현재 검증 후보는 신규 문서/PDF와 쪽수 5건 등록을 포함한 `dd9b539bf`다.
 
-양쪽에서 `typeset.rs`를 수정했고 원격에는 HWP 변환·저장과 다른 조판 변경이 있다.
-**충돌 없음은 통합 동작 검증 성공이 아니다. 아직 실제 merge하지 않았다.**
-보고 전 source diff는 130개 파일, +18,376/-219이며 새 integration source는
-`tests/cases/` 21개다. Cargo.toml/lock·generated suite/manifest·CI workflow·baseline은
-이번 브랜치 변경에 포함하지 않았다. 이 통계는 본 보고서 추가 이전 기준이다.
+새 integration source는 `tests/cases/` 21개다. Cargo.toml/lock·generated suite/manifest·
+CI workflow는 이번 변경에 포함하지 않는다. baseline 변경은 독립 한컴 PDF와 쪽수를 대조한
+신규 `oracle_page_count` 5행과, 수정 없는 devel/후보를 독립 대조해 동일한 기존 넘침임을 확인한
+신규 `body_overflow` 2행이다. 기존 문서의 허용치를 완화한 것이 아니다.
 
-남은 일은 기능 확장이 아니라 제출 마무리다.
-
-1. 이 결과보고서 검토와 최종 입력·PDF 보존 정리.
-2. 최신 devel을 작업 브랜치에 통합하고 정확한 제출 후보로 검증한다.
-   원격 변경과 겹치는 제품 경로가 있으므로 이전 D3 결과만으로 제출 가능 판정을 하지 않는다.
-   기존 review WIP와 고정 target을 보존하고 신규 fixture 검사·필수 lint·해당 전체 회귀를 수행한다.
-3. 검증 결과를 반영한 commit·PR 본문으로 별도 push·Open PR 승인을 요청한다.
+1. 최종 입력·PDF 보존과 최신 devel 통합: 완료.
+2. 통합 후보 집중 192건·신규 입력 보안 6건·Rust lint·Gym 재실행: 완료.
+   전체 회귀·Native Skia·Docker WASM 최종 결과는 Stage 25에서 기록한다.
+3. 검증 종료 후 commit·PR 본문으로 별도 push·Open PR 승인을 요청한다.
    생성 후 PR 번호에 맞는 review 문서·트리야지·CI·self-review·병합 절차를 따른다.
 
 이번 보고 정리의 로컬 검사:
@@ -180,7 +176,7 @@ native 실행은 preview 뒤의 따뜻한 캐시 조건이다. 절대 성능 보
 - 검증: 위 D3/Gym 결과를 이력으로 인용하되, 최신 통합 후보 SHA와 재검증 결과는 제출 전에 채운다.
 - 시각: Stage 18/20/24의 판정 범위만 인용하며 정식 보존 파일로 링크를 교체한다.
 - 제외: #7065/#7084/#7090, 원 제안 정리 API 그대로의 이식, 전체 Gym benchmark.
-- 체크리스트: 최신 제출 HEAD 검증 및 fixture 보존은 아직 미완료로 둔다.
+- 체크리스트: fixture 보존은 완료이며 최신 통합 후보의 전체 검증은 진행 중으로 둔다.
   최종 PR에는 저장소 PR 템플릿의 적용 항목별 실행 근거를 반영한다.
 - 승인 후 실행 형식(현재 실행하지 않음):
   `gh pr create --repo edwardkim/rhwp --base devel --head task_m100_3587
