@@ -3,7 +3,8 @@ use rhwp::document_core::TemplateOperation;
 use serde_json::{json, Value};
 
 pub(super) fn is_action(step: &Value) -> bool {
-    TemplateOperation::is_action(step["action"].as_str().unwrap_or(""))
+    super::import::is_action(step)
+        || TemplateOperation::is_action(step["action"].as_str().unwrap_or(""))
 }
 
 pub(super) fn parse(step: &Value) -> Result<TemplateOperation, String> {

@@ -159,7 +159,7 @@ fn envelope_carries_version_dialect_and_definition_count() {
     assert_eq!(v["schemaVersion"], "1.0", "{v}");
     // [#4378] 1.1: preconditions.inputSha256(CAS) 추가 / 1.2: 그 거부 계약을
     // exit 3 + preconditionFailed·nextCall 로 정렬 — 이력은 schema_registry.
-    assert_eq!(v["planSchemaVersion"], "1.3", "{v}");
+    assert_eq!(v["planSchemaVersion"], "1.4", "{v}");
     assert_eq!(
         v["dialect"], "https://json-schema.org/draft/2020-12/schema",
         "소비자가 파서를 고를 수 있어야 한다: {v}"

@@ -18,10 +18,11 @@ Gym 없이 native·WASM·CLI `run`·MCP `hwp_run_plan`에서 같은 문서 코�
 | `fill_template` | `FillTemplateRequest` | 기존 ID와 문단 구조를 유지하며 지정 범위만 채움 |
 | `repeat_and_fill_paragraph_block` | `TemplateFillRequest` | `[sourceStart, sourceEnd)` 문단 묶음을 복제하고 복사본별로 채움 |
 | `repeat_and_fill_table_rows` | `RepeatTableRowsRequest` | 본문 최상위 표의 완결 행 묶음 `[startRow, endRow)`을 복제·채움 |
+| `import_paragraph_block` | `ImportParagraphBlockRequest` | 다른 문서의 완결 문단 블록을 대상 경계에 가져옴. CLI에는 별도 `source`가 필요 |
 
-각 action은 `{action, request}`로 구성한다. 요청의 필드명은 camelCase이며,
+채우기/반복 action은 `{action, request}`, CLI 가져오기는 `{action, source, request}`로 구성한다. 요청의 필드명은 camelCase이며,
 정확한 스키마는 `rhwp export-plan-schema --bare`에서 얻는다. 요청의 알 수 없는 필드나
-잘못된 타입은 오류다. 계획 스키마 판번호는 `1.3`, 계획의 `planVersion`과 응답 봉투의
+잘못된 타입은 오류다. 계획 스키마 판번호는 `1.4`, 계획의 `planVersion`과 응답 봉투의
 `schemaVersion`은 계속 `1.0`이다.
 
 모든 인덱스는 **실행 전 문서의 0 기준**이다. 페이지 번호나 화면 좌표는 주소가 아니다.
@@ -57,9 +58,58 @@ Gym 없이 native·WASM·CLI `run`·MCP `hwp_run_plan`에서 같은 문서 코�
 링크 주소는 데이터로 복사하며 복제 중 접속하거나 실행하지 않는다. HWPX의 단일 `Command`
 매개변수는 기존 링크 문자열 및 표준 표현과 일치할 때만 허용하며, 미지 매개변수·양식/이름을
 가진 글상자 확장은 명시적으로 거부한다. 다른 문서 가져오기는 아래 별도 WASM 핸들 경로를 사용한다.
-CLI/MCP 계획 연결은 아직 후속 단계다.
+CLI/MCP는 아래 `import_paragraph_block` 단독 계획 경로를 사용한다.
 
 ## 먼저 dry-run, 이어서 실행
+
+### CLI/MCP 다른 문서 가져오기
+
+`run` 계획의 `steps`에는 다음 한 개만 넣는다. 인덱스는 0 기준이며 source와 대상은
+**서로 다른 파일**이다. 상대 경로는 계획 파일 위치가 아니라 프로세스 작업 폴더 기준이다.
+
+```json
+{
+  "action": "import_paragraph_block",
+  "source": {"path": "source.hwp", "sha256": "원본 파일의 64자리 SHA-256으로 교체"},
+  "request": {
+    "sourceSection": 0, "sourceStart": 12, "sourceEnd": 13,
+    "targetSection": 0, "insertBefore": 13, "count": 1
+  }
+}
+```
+
+- `source.path`는 64 MiB 이하 로컬 일반 파일이다. 이 **압축 파일 입력 상한**은
+  native의 디코딩된 바이너리/metadata 예산과 별개다. source를 한 번 읽어 그 바이트로
+  SHA-256 검증·파싱하고, 같은 문서 snapshot으로 preview와 실행을 수행한다.
+- 원본 지문 불일치: exit 3, `preconditionFailed.kind="sourceSha256"`; 실행·저장 없음.
+  경로 읽기/파싱 실패는 exit 1, 요청 문법·지원 범위·상한 위반은 exit 2다.
+  원본이 변경되면 새 내용을 확인하고 범위와 지문을 재계획한다. 지문만 자동 교체하지 않는다.
+- 기존 `preconditions.inputSha256`은 **대상** 입력의 CAS다. source 지문과 대체 관계가 아니다.
+  source는 대상 input/output과 같거나 기존 symlink/Unix hardlink로 같은 파일이면 거부한다.
+  저장 전에도 output 별칭을 확인하지만 비협조 프로세스의 경로 교체 경합까지 보장하지 않는다.
+- 거짓 `if`는 원본을 읽지 않고 건너뛴다. `count=0`은 원본 지문/주소 검증 후 core 무변경이며,
+  실행 모드의 `run`은 기존 계약대로 결과 파일을 저장한다. 파일 무기록은 `dryRun:true`다.
+- `preview[]`/`steps[]`는 `source:{path,sha256}`와 `operationResult`를 반환한다.
+  `resources`는 `operationResult.result` 안에 있다. 가져오기는 `workload`를 반환하지 않는다.
+- 다음 `fill_template` 계획은 저장 결과를 input으로, 앞 `outputSha256`을 대상 CAS로 사용한다.
+  `copies[].mappings.destination`의 첫 paragraph 인덱스에서 `inserted.start`를 빼면
+  C의 scope 상대 경로가 된다. 각 계획은 별도 저장이며 두 호출 전체 rollback은 없다.
+- MCP는 동일 계획을 기존 `hwp_run_plan`에 전달한다. 새 서비스나 Gym은 필요 없다.
+  캡슐의 계획에는 source 경로/지문이 포함되지만 외부 source 파일 자체를 자동 포장하지 않는다.
+  재실행 환경에도 같은 원본 바이트가 필요하다.
+
+실행 가능한 연구노트 가져오기→반환 경로 채우기 예제:
+
+```bash
+node mydocs/tech/investigations/issue-3587/probes/import-plan-recipe.mjs \
+  target/pr-review/release-test/rhwp output/3587/d2-cli
+```
+
+출력 폴더는 새 폴더여야 한다. 원본 HWP와 rhwp 파생 HWPX를 각각 사용하며,
+그 파생본을 한컴 독립 정답지라 하지 않는다. 이 예제의 12/13 및 셀 경로는 해당
+연구노트 입력의 주소일 뿐 엔진 규칙이나 다른 템플릿의 주소가 아니다.
+
+### 기존 채우기/복제 공통 절차
 
 dry-run은 실행과 같은 경로로 detached 사본의 채우기·ID/참조·작업량 검증까지 수행하고
 반영 직전에 버린다. 원본·raw cache·이벤트·클립보드·조판·파일은 바꾸지 않는다.
@@ -174,4 +224,4 @@ const applied = JSON.parse(target.importParagraphBlock(source, JSON.stringify({r
 출력 구조·저장 성공과 Studio의 재편집 조판은 별도 판정이다. 현재 알려진
 [#7065](https://github.com/edwardkim/rhwp/issues/7065) 재편집 페이지네이션과
 [#7084](https://github.com/edwardkim/rhwp/issues/7084) 이모티콘 폭 문제는 이 API로 해결했다고
-간주하지 않는다. 다른 문서 가져오기의 CLI/MCP 연결과 후속 Gym 평가는 별도 단계다.
+간주하지 않는다. 후속 Gym 평가는 별도 단계다.

@@ -150,7 +150,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
             "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703). 선택 필드 \
              preconditions.inputSha256 을 실으면 실행 입구에서 입력 지문을 대조해 낡은 기준을 \
              거부한다 — 실행 0·디스크 무변경·preconditionFailed+nextCall·exit 3, --dry-run 도 \
-             같은 판정 (#4378 R22). fill_template·repeat_and_fill_paragraph_block·repeat_and_fill_table_rows는 request를 받는 단독 step이며, dry-run도 동일 detached 준비를 수행한다 (#3587).",
+             같은 판정 (#4378 R22). import_paragraph_block은 source{path,sha256}+request를 받는 단독 step이며 원본 SHA 불일치는 실행/저장 없이 exit 3이다. fill_template·repeat_and_fill_paragraph_block·repeat_and_fill_table_rows는 request를 받는 단독 step이며, dry-run도 동일 detached 준비를 수행한다 (#3587).",
             &["--json", "--plan-json", "--dry-run"],
             &[
                 "schemaVersion",
@@ -165,6 +165,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "nextCall",
                 "preview",
                 "steps[].operationResult",
+                "steps[].source",
                 "steps[].workload",
                 "inputSha256",
                 "outputSha256",

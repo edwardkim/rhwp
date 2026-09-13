@@ -534,7 +534,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 |---|---|---|---|
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
 | `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
-| `steps[].operationResult` | object | 템플릿 3종의 적용 결과·원형/복사본 경로 대응표. 문서 파생 데이터로 취급한다. | `run` |
+| `steps[].operationResult` | object | 템플릿 채우기 3종 및 다른 문서 가져오기의 적용 결과·원형/복사본 경로 대응표. 문서 파생 데이터로 취급한다. | `run` |
 | `steps[].workload` | object | records·targets·replacementTextBytes 입력 작업량. 실행 시간·메모리 실측값이 아니다. | `run` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
 | `preconditionFailed` | object\|null | **CAS 판정** (#4378 R22·R24) — `{kind:"inputSha256",expected,actual}`. 계획 수립 시점의 입력 지문과 실행 시점의 실제 지문이 다르다는 뜻이고, 실행 0 · 디스크 무변경 · **exit 3**. `invalid[]` 는 비어 있다 — 계획이 무효한 게 아니라 문서가 바뀐 것이다. `--dry-run` 도 같은 판정을 낸다. `null`/부재 = 대조하지 않았거나 일치 | `run`·`edit …  --expect-sha256` |
@@ -970,6 +970,12 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 
 템플릿 action의 `preview[]`에는 `operationResult`·`workload`가 실린다. 기존 action의
 `targets`와 혼동하지 않는다. dry-run은 실제 detached 준비까지 하되 IR·파일은 변경하지 않는다.
+
+`import_paragraph_block`은 `source:{path,sha256}`와 `request`를 받는 단독 step이다.
+`preview[]`/`steps[]`에 `source`(실제 읽은 바이트의 SHA-256)와 `operationResult`를 내며
+`workload`는 없다. 자원 집계는 `operationResult.result.resources`다. 원본 지문 불일치는
+`preconditionFailed.kind=sourceSha256`, exit 3이다. 원본/대상 경로·저장·반환 경로 레시피는
+[템플릿 자동화](template_automation.md)의 CLI/MCP 가져오기를 따른다.
 
 #### `export-structure` — `structure`
 

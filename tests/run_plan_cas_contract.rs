@@ -491,7 +491,7 @@ fn plan_schema_describes_preconditions_and_bumps_version() {
     let o = run(&["export-plan-schema", "--json"]);
     assert_eq!(o.status.code(), Some(0));
     let env: serde_json::Value = serde_json::from_slice(&o.stdout).expect("봉투");
-    assert_eq!(env["planSchemaVersion"], "1.3", "minor 범프: {env}");
+    assert_eq!(env["planSchemaVersion"], "1.4", "minor 범프: {env}");
     let schema = &env["schema"];
     assert!(
         schema["$defs"]["Preconditions"]["properties"]["inputSha256"].is_object(),

@@ -1763,6 +1763,9 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
   dry-run도 동일 native 준비 경로를 실행한다. 요청·주소·WASM·MCP 계약은
   [템플릿 자동화 API](template_automation.md)를 따른다.
 - `--dry-run` 또는 계획의 `dryRun:true`는 preview 저널만 내고 파일을 쓰지 않는다.
+  `import_paragraph_block`도 단독 step이며 `source:{path,sha256}`와 native `request`를 받는다.
+  원본 한 번 읽기로 SHA-256을 검사하고 같은 바이트를 파싱한다. 원본은 대상 입력/출력과
+  별도인 64 MiB 이하 일반 파일이다. 지문 불일치는 exit 3, 읽기/파싱 실패는 exit 1이다.
   계획 문법은 `export-plan-schema --bare`로 먼저 검증한다.
 - `preconditions.inputSha256`에 입력 파일의 64자리 SHA-256을 넣으면 compare-and-swap으로
   원본 변경을 막는다. 불일치는 사용법 오류가 아니라 판정 실패(exit 3)이며, JSON에는

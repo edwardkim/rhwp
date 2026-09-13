@@ -1,10 +1,11 @@
 //! Template request schema. Native serde requests and behavioral contracts are authoritative.
 use super::*;
 
-pub(super) const ACTIONS: [&str; 3] = [
+pub(super) const ACTIONS: [&str; 4] = [
     "fill_template",
     "repeat_and_fill_paragraph_block",
     "repeat_and_fill_table_rows",
+    "import_paragraph_block",
 ];
 
 pub(super) fn extend(defs: &mut serde_json::Map<String, Value>) {
@@ -109,6 +110,51 @@ pub(super) fn extend(defs: &mut serde_json::Map<String, Value>) {
             ),
         );
     }
+    let import_limits = closed_object(
+        json!({
+            "block":r_doc("TemplateLimits","블록 구조 상한. 생략 시 기본값."),
+            "maxResourceMetadataBytes":{"type":"integer","minimum":1,"maximum":33554432,"description":"자원 metadata 준비 바이트 상한."},
+            "maxBinaryBytes":{"type":"integer","minimum":1,"maximum":67108864,"description":"디코딩·비교하는 바이너리 합계 상한."}
+        }),
+        &["maxResourceMetadataBytes", "maxBinaryBytes"],
+        "가져오기 자원 상한. 생략 시 native 기본값.",
+    );
+    let import_request = closed_object(
+        json!({
+            "sourceSection":uint("원본 구역."),"sourceStart":uint("원본 시작 문단."),"sourceEnd":uint("원본 끝 제외 문단."),
+            "targetSection":uint("대상 구역."),"insertBefore":uint("대상 문단 앞 경계."),"count":uint("가져올 복사 수. 0도 주소를 검증한다."),
+            "limits":import_limits
+        }),
+        &[
+            "sourceSection",
+            "sourceStart",
+            "sourceEnd",
+            "targetSection",
+            "insertBefore",
+            "count",
+        ],
+        "다른 문서의 완결 블록 가져오기 요청.",
+    );
+    let source = closed_object(
+        json!({
+            "path":{"type":"string","minLength":1,"description":"로컬 일반 파일, 최대 64 MiB. 상대 경로는 프로세스 작업 폴더 기준. 대상 입력/출력과 별도 파일이어야 한다."},
+            "sha256":{"type":"string","pattern":"^[0-9a-fA-F]{64}$","description":"실제 한 번 읽은 원본 바이트의 SHA-256. 불일치는 exit 3, 실행·저장 없음."}
+        }),
+        &["path", "sha256"],
+        "원본 snapshot 식별. 지문 검증과 파싱이 같은 바이트를 소비한다.",
+    );
+    defs.insert(
+        "ImportParagraphBlockStep".into(),
+        step_variant(
+            "import_paragraph_block",
+            "다른 문서의 블록 가져오기. 단독 step만 지원.",
+            json!({"request":import_request,"source":source}),
+            &["request", "source"],
+            "WASM/native와 같은 가져오기 엔진. 원본 용지 설정을 대상에 덮어쓰지 않는다.",
+        ),
+    );
+    defs.get_mut("ImportParagraphBlockStep")
+        .expect("import step")["additionalProperties"] = json!(false);
 }
 
 pub(super) fn restrict_single_step(plan: &mut Value) {

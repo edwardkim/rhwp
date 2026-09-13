@@ -214,7 +214,7 @@ fn assertions_def() -> Value {
 
 fn step_def() -> Value {
     json!({
-        "description": "편집 step 하나. `action` 이 판별자인 태그드 유니온이며, 7종 전부 \
+        "description": "편집 step 하나. `action` 이 판별자인 태그드 유니온이며, 8종 전부 \
                         선택 필드 `if`(조건절)를 받는다.",
         "oneOf": [
             r("FillFieldsStep"),
@@ -224,6 +224,7 @@ fn step_def() -> Value {
             r("FillTemplateStep"),
             r("RepeatAndFillParagraphBlockStep"),
             r("RepeatAndFillTableRowsStep"),
+            r("ImportParagraphBlockStep"),
         ],
     })
 }
@@ -408,9 +409,10 @@ fn preview_step_def() -> Value {
                           자리를 지키므로 저널 항목과 계획서 항목을 순번으로 짝지을 수 있다."),
             "action": prim(
                 "string",
-                "그 step 의 action. 기존 4종 또는 템플릿 3종이며 Step 정의를 따른다.",
+                "그 step 의 action. 기존 4종 및 템플릿/가져오기 4종이며 Step 정의를 따른다.",
             ),
             "operationResult": prim("object", "템플릿 action의 예정 적용 대상·경로 대응표. 실행 시 같은 입력에서 동일 구조를 반환한다."),
+            "source": prim("object", "가져오기 전용 {path,sha256}. 한 번 읽어 검증한 원본 파일 지문. workload 대신 result.resources에 자원 집계를 낸다."),
             "workload": prim("object", "records·targets·replacementTextBytes 입력 작업량. 메모리나 조판 비용 실측값이 아니다."),
             "skipped": json!({
                 "type": "boolean",
@@ -523,6 +525,7 @@ mod tests {
 
     /// 닫힌 객체와 그 사유 — 사유 없는 예외는 허용목록이 아니라 구멍이다.
     const CLOSED_DEFS: &[(&str, &str)] = &[
+        ("ImportParagraphBlockStep", "파일 입력 계약의 미지 옵션을 런타임과 동일하게 거부한다"),
         (
             "StepCondition",
             "실행기가 모르는 조건 키를 invalid 로 거부한다 — 스키마가 더 관대하면 통과한 계획이 실행에서 막힌다",
@@ -624,7 +627,7 @@ mod tests {
         let variants = schema["$defs"]["Step"]["oneOf"]
             .as_array()
             .expect("Step.oneOf");
-        assert_eq!(variants.len(), 7, "기존 4종과 템플릿 3종");
+        assert_eq!(variants.len(), 8, "기존 4종과 템플릿/가져오기 4종");
         let mut actions = Vec::new();
         for variant in variants {
             let name = variant["$ref"]
@@ -656,6 +659,7 @@ mod tests {
             [
                 "fill_fields",
                 "fill_template",
+                "import_paragraph_block",
                 "repeat_and_fill_paragraph_block",
                 "repeat_and_fill_table_rows",
                 "replace_text",

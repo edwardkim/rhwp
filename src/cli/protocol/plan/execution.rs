@@ -7,6 +7,7 @@ fn validate_plan_steps(
     doc: &rhwp::wasm_api::HwpDocument,
     name_counts: &std::collections::HashMap<String, usize>,
     name_values: &std::collections::HashMap<String, Vec<String>>,
+    import: Option<&super::import::PreparedImport>,
 ) -> (
     Vec<serde_json::Value>,
     Vec<serde_json::Value>,
@@ -73,7 +74,14 @@ fn validate_plan_steps(
             continue;
         }
         if super::template::is_action(step) {
-            match super::template::preview(doc, step, idx) {
+            let result = if super::import::is_action(step) {
+                import
+                    .ok_or_else(|| "import source was not prepared".to_string())
+                    .and_then(|prepared| prepared.preview(doc, idx))
+            } else {
+                super::template::preview(doc, step, idx)
+            };
+            match result {
                 Ok(value) => preview.push(value),
                 Err(reason) => {
                     invalid.push(serde_json::json!({"step":idx,"action":action,"reason":reason}))
@@ -222,6 +230,7 @@ fn execute_plan_steps(
     name_counts: &std::collections::HashMap<String, usize>,
     name_locs: &std::collections::HashMap<String, Vec<(usize, usize)>>,
     skip_reasons: &[Option<String>],
+    import: Option<&super::import::PreparedImport>,
 ) -> Result<(Vec<serde_json::Value>, Vec<(usize, usize)>), String> {
     // `edit fill-fields`·세션 경로와 같은 text-security 판정이다. 계획 실행만
     // 이 경고를 누락하면 선언적 경로가 화면상 같은 필드 이름을 침묵 속에 통과시킨다.
@@ -240,7 +249,13 @@ fn execute_plan_steps(
             continue;
         }
         if super::template::is_action(step) {
-            journal_steps.push(super::template::execute(doc, step, idx)?);
+            journal_steps.push(if super::import::is_action(step) {
+                import
+                    .ok_or("import source was not prepared")?
+                    .execute(doc, idx)?
+            } else {
+                super::template::execute(doc, step, idx)?
+            });
             continue;
         }
         match action {
@@ -586,8 +601,31 @@ pub(crate) fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i
                 .push(fi.value.clone());
         }
     }
+    // Only an executable standalone import reads a source. False conditions and
+    // malformed/mixed plans retain the normal validator's skip/usage contract.
+    let import = if steps.len() == 1
+        && super::import::is_action(&steps[0])
+        && steps[0].get("if").is_none_or(|condition| {
+            matches!(
+                evaluate_step_condition(condition, &doc, &name_counts, &name_values),
+                Ok(None)
+            )
+        }) {
+        match super::import::PreparedImport::load(&steps[0], input, output) {
+            Ok(prepared) => Some(prepared),
+            Err(super::import::Failure(mut journal, code)) => {
+                journal["schemaVersion"] = serde_json::json!(ENVELOPE_SCHEMA_VERSION);
+                journal["planVersion"] = serde_json::json!("1.0");
+                journal["input"] = serde_json::json!(input);
+                journal["output"] = serde_json::json!(output);
+                return (provenance::marked(journal, "run"), code);
+            }
+        }
+    } else {
+        None
+    };
     let (invalid, preview, skip_reasons) =
-        validate_plan_steps(steps, &doc, &name_counts, &name_values);
+        validate_plan_steps(steps, &doc, &name_counts, &name_values, import.as_ref());
     if !invalid.is_empty() {
         return (
             provenance::marked(
@@ -622,11 +660,17 @@ pub(crate) fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i
 
     // 2) 원자 실행 — 전 step 을 인메모리 IR 에만 적용한다. 디스크는 아직 무변경이라
     //    어느 step 이 실패해도 반편집 문서가 남지 않는다.
-    let (journal_steps, changed_paras) =
-        match execute_plan_steps(steps, &mut doc, &name_counts, &name_locs, &skip_reasons) {
-            Ok(result) => result,
-            Err(error) => return fail(error),
-        };
+    let (journal_steps, changed_paras) = match execute_plan_steps(
+        steps,
+        &mut doc,
+        &name_counts,
+        &name_locs,
+        &skip_reasons,
+        import.as_ref(),
+    ) {
+        Ok(result) => result,
+        Err(error) => return fail(error),
+    };
     // 3) 사후 단언 → 단 한 번 저장. 단언 실패 시 디스크 무변경 — 자연 트랜잭션.
     // [#3712] 눈검증 대상 페이지 — 편집 반영 후 조판 기준. 확정 불가면 null.
     let changed_pages = match if steps.iter().any(super::template::is_action) {
@@ -680,6 +724,11 @@ pub(crate) fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i
         let actual = sha256_hex_of(&latest);
         if actual != expected {
             return precondition_failure(expected, actual);
+        }
+    }
+    if let Some(import) = &import {
+        if let Err(e) = import.protect_output(output) {
+            return fail(e);
         }
     }
     if let Err(e) = fs::write(output, &out_bytes) {
