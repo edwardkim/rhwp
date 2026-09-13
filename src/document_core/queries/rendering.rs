@@ -1529,24 +1529,25 @@ impl DocumentCore {
     }
 
     /// PDF export for an explicit 0-based page selection with font options.
+    ///
+    /// [#7076] 프로필을 안 받는 이 갈래도 **`Print`** 로 그린다 — PDF 는 인쇄 등가
+    /// 출력이다. 종전에는 `render_page_svg_native`(= layer 경로 `Screen`)를 불러
+    /// `#3375` 의 `editor_only` 억제가 스위치 미점화로 무력했고, 값 없는 누름틀
+    /// 안내문이 공식 별지 서식의 빈칸에 그대로 인쇄됐다. 바로 아래 direct 백엔드
+    /// (`render_pages_pdf_direct_native*`)는 처음부터 모든 층이 `Print` 였다 —
+    /// 두 백엔드의 계약을 같게 맞춘다. 화면용 PDF 가 필요하면
+    /// `render_pages_pdf_native_with_profile_and_options` 에 `Screen` 을 명시한다.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn render_pages_pdf_native_with_options(
         &self,
         page_nums: &[u32],
         options: &crate::renderer::pdf::PdfExportOptions,
     ) -> Result<Vec<u8>, HwpError> {
-        if page_nums.is_empty() {
-            return Err(HwpError::RenderError(
-                "PDF export requires at least one page".to_string(),
-            ));
-        }
-
-        let mut svg_pages = Vec::with_capacity(page_nums.len());
-        for &page_num in page_nums {
-            svg_pages.push(self.render_page_svg_native(page_num)?);
-        }
-        crate::renderer::pdf::svgs_to_pdf_with_options(&svg_pages, options)
-            .map_err(HwpError::RenderError)
+        self.render_pages_pdf_native_with_profile_and_options(
+            page_nums,
+            RenderProfile::Print,
+            options,
+        )
     }
 
     /// PDF export using the layered SVG compatibility path for an explicit output profile.
