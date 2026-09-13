@@ -1,5 +1,5 @@
 """Reproduce #6936's PDF operator/text/visual evidence. Requires pypdf, pymupdf, Pillow.
-Run from repository root: python mydocs/pr/assets/issue_6936/inspect_pdf.py
+Run from repository root: python samples/issue6936/inspect_pdf.py --out-dir /tmp/rhwp-6936-pdf-evidence
 """
 from collections import Counter
 import hashlib
@@ -10,8 +10,12 @@ from PIL import Image, ImageDraw
 from pypdf import PdfReader
 from pypdf.generic import ContentStream
 
-ROOT = Path(__file__).resolve().parents[4]
-OUT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--out-dir', required=True, type=Path)
+OUT = parser.parse_args().out_dir
+OUT.mkdir(parents=True, exist_ok=True)
 PDFS = {
     'hancom': 'pdf/issue6936-bold-faces-2020.pdf',
     'before': 'pdf/issue6936-before.pdf',

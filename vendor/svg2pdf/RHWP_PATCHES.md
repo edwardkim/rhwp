@@ -17,4 +17,4 @@
   역순 paint는 동일한 불투명 색일 때만 결합하고, 그 밖의 역순·gradient·pattern은 기존 경로를 유지한다.
   기본 SVG→PDF 경로의 합성 굵게가 텍스트 검색·추출을 중복시키지 않게 하는 패치다.
   제품 경로 회귀는 `tests/cases/issue_6936_pdf_synthetic_bold.rs`, 한컴 및 음성 대조군 증적은
-  `samples/issue6936/README.md`와 `mydocs/pr/assets/issue_6936/pdf-analysis.json`에 있다.
+  `samples/issue6936/README.md`와 `mydocs/pr/assets/issue_6936/README.md`에 있다.

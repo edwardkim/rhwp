@@ -50,8 +50,7 @@ HWP/HWPX/기준 PDF와 세 대조 PDF 모두 Git에 포함했다. 기존 파일�
 - 함초롬돋움·함초롬바탕의 실제 Bold와 모든 일반 행에 불필요한 합성 획이 추가되지 않는다.
 - 새굴림 두 행을 제외한 모든 글자 원점은 수정 전후 동일하다. 새굴림 두 행은 원래 face의
   advance를 사용하며 최대 원점 차이는 5.200012pt다. 이를 합성 획 자체의 위치 변경으로 숨기지 않는다.
-- 전체 페이지 픽셀 동일 판정은 하지 않았다. [원본 전체 PNG](../pr/assets/issue_6936/hancom.png)와
-  [최종 전체 PNG](../pr/assets/issue_6936/after.png)를 함께 보존한다.
+- 전체 페이지 픽셀 동일 판정은 하지 않았다. 최종 비교 패널을 Git에 보존하고 전체 PNG는 임시 경로에서 재생성할 수 있다.
 
 | 결과 | 공백 제외 추출 문자 | text show 연산 | 판정 |
 | --- | ---: | ---: | --- |
@@ -60,8 +59,8 @@ HWP/HWPX/기준 PDF와 세 대조 PDF 모두 Git에 포함했다. 기존 파일�
 | stroke만 추가한 대조군 | 207 | 207 | 49자 중복, 겉모양만으로 발견할 수 없음 |
 | 최종 수정본 | 158 | 158 | 49개 합성 굵게 Tr 2, 추출 텍스트가 한컴 기준과 동일 |
 
-[PDF 분석 JSON](../pr/assets/issue_6936/pdf-analysis.json),
-[재검증 스크립트](../pr/assets/issue_6936/inspect_pdf.py),
+[PDF 측정 기록](../pr/assets/issue_6936/README.md),
+[재검증 스크립트](../../samples/issue6936/inspect_pdf.py),
 [한컴 PDF](../../pdf/issue6936-bold-faces-2020.pdf), [최종 PDF](../../pdf/issue6936-after.pdf).
 
 ## 실행한 검증
@@ -84,12 +83,12 @@ Mac에서 `win10-ted`에 설치된 해당 글꼴 파일을 읽기 전용으로 �
 | suite prepare 후 `rust-test-suite-manifest.mjs --check` | PASS |
 | PDF 추출/Tr/단일 show/행별 원점/1페이지 검사 | PASS |
 
-원본 실행 결과는 [validation.log](../pr/assets/issue_6936/validation.log)에 있다.
+원본 실행 로그는 `/private/tmp/rhwp-6936-pr-prepare-20260913/archived-evidence/validation.log`에 보관한다.
 파생 integration suite/manifest는 검증용이며 커밋하지 않았다.
 
 `font_rule_projection_baseline.test.mjs`는 7개 중 1개가 과거 W7 snapshot 불일치로 실패한다.
 수정 전 primary checkout `70bf40af2`에서도 동일한 검사와 오류를 재현했다
-([기준 devel 로그](../pr/assets/issue_6936/baseline-existing-failure.log)).
+(원본 로그: `/private/tmp/rhwp-6936-pr-prepare-20260913/archived-evidence/baseline-existing-failure.log`).
 관측된 차이는 기존 Studio webfont 공급/요청 목록이며 이번 변경의 다른 네 projection은 동일하다.
 이 실패를 통과로 기록하거나 과거 snapshot을 덮어쓰지 않았다.
 

@@ -12,7 +12,7 @@ Issue: [#6936](https://github.com/edwardkim/rhwp/issues/6936)
   정규화하고 저장한 LineSeg를 포함한다. **시각 비교의 기준 입력은 이 HWP다.**
 - `../../pdf/issue6936-bold-faces-2020.pdf`: 동일 HWP를 한컴 MCP engine 2020으로 변환한 독립 기준.
   `start → status → download`를 수행했으며 두 작업의 job ID·해시는
-  `../../mydocs/pr/assets/issue_6936/hancom-conversion.json`에 있다.
+  `../../mydocs/pr/assets/issue_6936/README.md`에 있다.
 - 최초 수제 HWPX에는 한컴 저장 LineSeg가 없어 직접 내보낸 PDF의 문단 위치가 다르다.
   HWPX는 파서·글꼴 이름 회귀에 사용하고, 이를 HWP 기준과 위치가 같은 시각 증거로 주장하지 않는다.
 
@@ -21,7 +21,7 @@ Issue: [#6936](https://github.com/edwardkim/rhwp/issues/6936)
 검증에는 `win10-ted:C:/Windows/Fonts`의 `batang.ttc`, `gulim.ttc`, `NGULIM.TTF`,
 `HANBatang.ttf`, `HANBatangB.ttf`, `HANDotum.ttf`, `HANDotumB.ttf`를 읽기 전용으로 복사해
 macOS CLI의 `--font-path`로 제공했다. 글꼴 파일 자체는 커밋하지 않는다.
-각 파일의 출처·SHA-256은 `../../mydocs/pr/assets/issue_6936/font-environment.json`에 기록한다.
+각 파일의 출처·SHA-256은 `../../mydocs/pr/assets/issue_6936/README.md`에 기록한다.
 
 한컴 기준 PDF에서 일반 face의 합성 굵게는 `Tr 2`와 `w/Tf = 2.66/133 = 0.02`를 사용한다.
 이 비율을 SVG 좌표의 글꼴 크기에 적용한다. 함초롬 두 family는 실제 Bold face를 사용하므로
@@ -53,11 +53,11 @@ HCR Dotum 치환이 없어지며 원래 글꼴 advance를 사용한다(최대 �
 PDF 구조·텍스트 추출·렌더 증적은 다음 명령으로 재생성한다(pypdf, pymupdf, Pillow 필요).
 
 ```sh
-python mydocs/pr/assets/issue_6936/inspect_pdf.py
+python samples/issue6936/inspect_pdf.py --out-dir /tmp/rhwp-6936-pdf-evidence
 ```
 
 `comparison.png`는 같은 페이지 좌표를 144 DPI로 자른 한컴/수정 전/수정 후 비교다.
-`hancom.png`, `before.png`, `stroke_only.png`, `after.png`는 전체 페이지이며 재배치하지 않았다.
+재생성한 `hancom.png`, `before.png`, `stroke_only.png`, `after.png`는 임시 경로의 전체 페이지이며 재배치하지 않았다.
 전체 페이지 픽셀 일치나 Windows 네이티브 CLI 실행을 검증했다는 뜻은 아니다.
 
 ## 입력과 기준 PDF SHA-256
