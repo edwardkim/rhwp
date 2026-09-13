@@ -1,6 +1,6 @@
 # #3587 D 구현계획 — 다른 문서의 블록을 서식·자원과 함께 가져오기
 
-- 작성: 2026-09-13. 상태: **D1 native/실물 지원과 D2 공개 연결·집중 검증 완료. [Stage 20](../working/task_m100_3587_stage20.md)은 한컴 정상 열림 승인, [Stage 21](../working/task_m100_3587_stage21.md)은 WASM 핸들, [Stage 22](../working/task_m100_3587_stage22.md)는 CLI/MCP·source 지문·가져오기/채우기 레시피다. D3 동일 최종 SHA 전체 통합 검증·비용 계측과 후속 Gym은 남아 있다.**
+- 작성: 2026-09-13. 상태: **D1 native/실물 지원, D2 공개 연결, D3 자동 통합 검증·비용 계측 완료. [Stage 20](../working/task_m100_3587_stage20.md)은 한컴 정상 열림 승인, [Stage 21](../working/task_m100_3587_stage21.md)은 WASM 핸들, [Stage 22](../working/task_m100_3587_stage22.md)는 CLI/MCP·레시피, [Stage 23](../working/task_m100_3587_stage23.md)은 전체 회귀·필수 lint·Native Skia·Docker WASM 및 1/10/100 비용 증적이다. 문서 사전 누락은 보완 후 재검증했으며 제품 변경 없이 미해결 테스트 실패 0이다. 후속 Gym과 #3587 최종 보고·PR 준비는 남아 있다.**
 - 근거: [전체 구현계획 §5 D](task_m100_3587_impl.md), [C 종료 기록](../working/task_m100_3587_stage14.md), [D 선행 조사](../working/task_m100_3587_stage15.md).
 - 작업 브랜치: `task_m100_3587`. C 종료 기록: `576ff5872`, 제품·테스트 기준: `79be4d39d`.
 - 원격 확인: `upstream/devel=897c6a3d8d7559d314bf863c93bbe28c0d65e945`. 구현 전 다시 확인한다.

@@ -318,7 +318,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 `edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
 `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 336개 필드
+### 2-2. 전수 사전 — 337개 필드
 
 `capabilities` 의 `recordFields` 고유 **328개**와 그 밖의 실측·참조 필드를 합친
 336개다. `등장 명령` 은 자기서술
@@ -535,6 +535,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
 | `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
 | `steps[].operationResult` | object | 템플릿 채우기 3종 및 다른 문서 가져오기의 적용 결과·원형/복사본 경로 대응표. 문서 파생 데이터로 취급한다. | `run` |
+| `steps[].source` | object | 다른 문서 가져오기에 사용한 원본 `{path,sha256}`. SHA-256은 실제로 읽고 파싱한 원본 바이트의 지문이다. | `run` |
 | `steps[].workload` | object | records·targets·replacementTextBytes 입력 작업량. 실행 시간·메모리 실측값이 아니다. | `run` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
 | `preconditionFailed` | object\|null | **CAS 판정** (#4378 R22·R24) — `{kind:"inputSha256",expected,actual}`. 계획 수립 시점의 입력 지문과 실행 시점의 실제 지문이 다르다는 뜻이고, 실행 0 · 디스크 무변경 · **exit 3**. `invalid[]` 는 비어 있다 — 계획이 무효한 게 아니라 문서가 바뀐 것이다. `--dry-run` 도 같은 판정을 낸다. `null`/부재 = 대조하지 않았거나 일치 | `run`·`edit …  --expect-sha256` |
