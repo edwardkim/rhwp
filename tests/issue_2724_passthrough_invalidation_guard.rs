@@ -87,6 +87,30 @@ enum Exempt {
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/paragraph_block/repeat.rs",
+        "repeat_paragraph_block_native",
+        Exempt::DelegatesTo("repeat_paragraph_block_prepared"),
+        "#3587: 준비 후 commit_paragraph_block이 삽입과 대상 구역 raw_stream 무효화를 함께 수행한다.",
+    ),
+    (
+        "commands/paragraph_block/template.rs",
+        "repeat_and_fill_paragraph_block_native",
+        Exempt::DelegatesTo("commit_paragraph_block"),
+        "#3587: detached 채우기 준비 후 공통 commit에서 삽입·구역 원본 스트림 무효화를 수행한다.",
+    ),
+    (
+        "commands/paragraph_block/template_operation.rs",
+        "apply_template_operation_json_native",
+        Exempt::DelegatesTo("execute_template_operation_native"),
+        "#3587: dry-run은 무변경 조회, 실제 실행은 typed 연산 디스패처로 위임한다.",
+    ),
+    (
+        "commands/paragraph_block/template_operation.rs",
+        "execute_template_operation_native",
+        Exempt::DelegatesTo("repeat_and_fill_paragraph_block_native"),
+        "#3587: 문단 복제는 공통 commit, 나머지 분기는 fill_template_native·repeat_and_fill_table_rows_native가 직접 구역 원본 스트림을 무효화한다. 세 경로의 저장·재열기는 issue_3587_template_plan 및 template_operation에서 검증한다.",
+    ),
+    (
         "commands/object_ops/table.rs",
         "delete_cell_picture_control_by_path_native",
         Exempt::DelegatesTo("delete_cell_control_by_path_native"),

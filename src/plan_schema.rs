@@ -531,6 +531,18 @@ mod tests {
             "FieldEqualsCondition",
             "피연산자가 name·value 둘뿐이다 — 셋째 키는 뜻이 정의돼 있지 않다",
         ),
+        (
+            "TemplateLimits",
+            "native 요청이 상한 키 오타를 거부한다 — 안전 예산의 잘못된 지정을 묵살하지 않는다",
+        ),
+        (
+            "TemplateScope",
+            "native 요청의 deny_unknown_fields와 같은 명시 대상 주소 계약을 유지한다",
+        ),
+        (
+            "TemplateBlock",
+            "복제 원형·삽입 경계·복사 수의 오타를 native 요청처럼 거부한다",
+        ),
     ];
 
     #[test]
@@ -577,6 +589,11 @@ mod tests {
         let defs = schema["$defs"].as_object().expect("$defs");
         for (name, def) in defs {
             if def["type"] != "object" {
+                continue;
+            }
+            if name == "TemplateRecord" {
+                // binding key는 사용자 정의지만 값은 문자열뿐이다. 무제약 open 객체가 아니다.
+                assert_eq!(def["additionalProperties"]["type"], "string");
                 continue;
             }
             let closed = CLOSED_DEFS.iter().find(|(n, _)| n == name);

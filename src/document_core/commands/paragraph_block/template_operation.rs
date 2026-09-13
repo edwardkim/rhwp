@@ -122,7 +122,7 @@ impl DocumentCore {
             self.execute_template_operation_native(&options.operation)?
         };
         Ok(serde_json::json!({
-            "schemaVersion": "1.0", "dryRun": options.dry_run,
+            "schemaVersion": crate::schema_registry::ENVELOPE_SCHEMA_VERSION, "dryRun": options.dry_run,
             "changedPages": null, "untrustedContent": true,
             "untrustedFields": ["operationResult"], "operationResult": result,
             "workload": workload,

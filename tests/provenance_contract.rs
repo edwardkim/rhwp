@@ -1568,6 +1568,20 @@ fn recipes() -> Vec<Recipe> {
         Recipe {
             command: "run",
             doc: Some(table.clone()),
+            args: vec![
+                s("run"),
+                s("--plan-json"),
+                plan.clone(),
+                s("--dry-run"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "run",
+            doc: Some(table.clone()),
             args: vec![s("run"), s("--plan-json"), plan, s("--json")],
             stdin: None,
             exit: 0,
