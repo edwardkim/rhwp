@@ -108,7 +108,9 @@ pub(super) fn inspect(t: &Table, r: &RepeatTableRowsRequest) -> Result<Geometry,
         return Err(invalid("rows/grid: uncovered coordinate"));
     }
     if usize::from(r.insert_before) < t.leading_header_rows().len() {
-        return Err(invalid("rows/destination: insertion would displace the leading title block"));
+        return Err(invalid(
+            "rows/destination: insertion would displace the leading title block",
+        ));
     }
     result
         .cells
@@ -150,7 +152,9 @@ pub(super) fn inspect(t: &Table, r: &RepeatTableRowsRequest) -> Result<Geometry,
         .iter()
         .try_fold(0u32, |sum, h| sum.checked_add(*h))
         .ok_or_else(|| invalid("rows/height overflow"))?;
-    let base_height = heights.iter().try_fold(0u32, |sum,h| sum.checked_add(*h))
+    let base_height = heights
+        .iter()
+        .try_fold(0u32, |sum, h| sum.checked_add(*h))
         .ok_or_else(|| invalid("rows/height overflow"))?;
     result.height = source_height
         .checked_mul(n as u32)

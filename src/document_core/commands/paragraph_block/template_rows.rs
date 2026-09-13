@@ -89,25 +89,42 @@ impl DocumentCore {
         &mut self,
         r: &RepeatTableRowsRequest,
     ) -> Result<RepeatTableRowsResult, HwpError> {
-        let PreparedRows {result,staged,old_keys,inherited} = self.prepare_table_rows(r)?;
-        let Some(staged) = staged else { return Ok(result); };
-        self.render_normalization.text_reflowed_tables.try_reserve(inherited.len())
+        let PreparedRows {
+            result,
+            staged,
+            old_keys,
+            inherited,
+        } = self.prepare_table_rows(r)?;
+        let Some(staged) = staged else {
+            return Ok(result);
+        };
+        self.render_normalization
+            .text_reflowed_tables
+            .try_reserve(inherited.len())
             .map_err(|_| invalid("rows/provenance allocation failed"))?;
-        self.event_log.try_reserve(1).map_err(|_| invalid("rows/event allocation failed"))?;
+        self.event_log
+            .try_reserve(1)
+            .map_err(|_| invalid("rows/event allocation failed"))?;
         self.document.sections[r.section_index].paragraphs[r.paragraph_index] = staged;
         self.document.sections[r.section_index].raw_stream = None;
-        for key in old_keys {self.render_normalization.text_reflowed_tables.remove(&key);}
-        self.render_normalization.text_reflowed_tables.extend(inherited);
+        for key in old_keys {
+            self.render_normalization.text_reflowed_tables.remove(&key);
+        }
+        self.render_normalization
+            .text_reflowed_tables
+            .extend(inherited);
         self.recompose_section(r.section_index);
         self.paginate_if_needed();
         self.event_log.push(DocumentEvent::TableRowInserted {
-            section:r.section_index,para:r.paragraph_index,ctrl:r.control_index,
+            section: r.section_index,
+            para: r.paragraph_index,
+            ctrl: r.control_index,
         });
         Ok(result)
     }
 
     /// All fallible model work happens under an immutable core borrow.
-    fn prepare_table_rows(&self,r: &RepeatTableRowsRequest) -> Result<PreparedRows,HwpError> {
+    fn prepare_table_rows(&self, r: &RepeatTableRowsRequest) -> Result<PreparedRows, HwpError> {
         let host = self
             .document
             .sections
@@ -154,7 +171,12 @@ impl DocumentCore {
         if count == 0 {
             validate_source_fill(&[], &inspection, &r.bindings, &r.records, costs)
                 .map_err(|e| invalid(e.to_string()))?;
-            return Ok(PreparedRows {result,staged:None,old_keys:vec![],inherited:vec![]});
+            return Ok(PreparedRows {
+                result,
+                staged: None,
+                old_keys: vec![],
+                inherited: vec![],
+            });
         }
         // Before any deep clone, bound the complete owner. Two owner-sized charges
         // cover the target staging and the temporary projection construction.
@@ -396,6 +418,11 @@ impl DocumentCore {
             final_cost.skipped_bytes,
         )?;
         cap(final_bytes, source_bytes, r.limits.max_structure_bytes)?;
-        Ok(PreparedRows {result,staged:Some(staged),old_keys,inherited})
+        Ok(PreparedRows {
+            result,
+            staged: Some(staged),
+            old_keys,
+            inherited,
+        })
     }
 }

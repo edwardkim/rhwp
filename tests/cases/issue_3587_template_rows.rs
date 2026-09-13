@@ -388,28 +388,42 @@ fn actual_labnote_data_row_round_trips_hwp_and_hwpx() {
 
 #[test]
 fn title_prefix_and_displayed_height_survive_row_growth() {
-    let mut c=core();let mut r=request();r.insert_before=0;
-    reject(&mut c,&r,"leading title block");
-    for (height,expected) in [(0,6000),(8000,12000)] {
-        let mut c=core();table_mut(&mut c).common.height=height;
+    let mut c = core();
+    let mut r = request();
+    r.insert_before = 0;
+    reject(&mut c, &r, "leading title block");
+    for (height, expected) in [(0, 6000), (8000, 12000)] {
+        let mut c = core();
+        table_mut(&mut c).common.height = height;
         c.repeat_and_fill_table_rows_native(&request()).unwrap();
-        assert_eq!(table(&c).common.height,expected);
+        assert_eq!(table(&c).common.height, expected);
     }
 }
 
 #[test]
 fn row_and_dimension_overflow_are_rejected_before_any_clone_commit() {
-    let mut c=core();table_mut(&mut c).row_count=u16::MAX;
-    reject(&mut c,&request(),"row count overflow");
-    let mut c=core();table_mut(&mut c).common.height=u32::MAX;
-    reject(&mut c,&request(),"height overflow");
+    let mut c = core();
+    table_mut(&mut c).row_count = u16::MAX;
+    reject(&mut c, &request(), "row count overflow");
+    let mut c = core();
+    table_mut(&mut c).common.height = u32::MAX;
+    reject(&mut c, &request(), "height overflow");
 }
 
 #[test]
 fn repeated_invocation_is_not_idempotent_and_empty_records_copy_all_paragraphs() {
-    let mut c=core();let mut r=request();r.bindings.clear();r.records=vec![BTreeMap::new()];
+    let mut c = core();
+    let mut r = request();
+    r.bindings.clear();
+    r.records = vec![BTreeMap::new()];
     c.repeat_and_fill_table_rows_native(&r).unwrap();
     c.repeat_and_fill_table_rows_native(&r).unwrap();
-    let t=table(&c);assert_eq!(t.row_count,6);
-    for row in [1,2,3] {let cell=t.cell_at(row,0).unwrap();assert_eq!(cell.paragraphs.len(),3);assert_eq!(cell.paragraphs[0].text,"1,0");assert!(cell.paragraphs[1].text.is_empty());}
+    let t = table(&c);
+    assert_eq!(t.row_count, 6);
+    for row in [1, 2, 3] {
+        let cell = t.cell_at(row, 0).unwrap();
+        assert_eq!(cell.paragraphs.len(), 3);
+        assert_eq!(cell.paragraphs[0].text, "1,0");
+        assert!(cell.paragraphs[1].text.is_empty());
+    }
 }
