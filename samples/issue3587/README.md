@@ -25,3 +25,8 @@ SHA가 같은 CLI/MCP/WASM 출력·중간 입력·음성 대조 파일은 한 �
 Gym 최종 `gym-hwp-labnote-filled.hwp`, `gym-hwpx-labnote-filled.hwpx`는
 메인테이너가 한컴에서 모두 정상 판정했다. 제목/본문 3건은 실험 1/2/3, 온도 21/22/23도다.
 이는 Gym 전수 벤치마크나 별도 Studio 결함 #7065/#7084/#7090의 해결 증거가 아니다.
+
+`b-table-repeated.hwp`와 `.hwpx`는 원본 `hwp_table_test.hwp`에 이미 있는 본문 하단 넘침
+1건을 유지한다. 수정 없는 devel과 제출 후보의 같은 입력 대조에서 4.7867px로 동일함을 확인했다.
+이 두 신규 경로의 body-overflow 원장 등록 근거는
+[Stage 25](../../mydocs/working/task_m100_3587_stage25.md)에 있다. 정상 시각 정답지로 쓰지 않는다.

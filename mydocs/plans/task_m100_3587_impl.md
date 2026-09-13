@@ -3,7 +3,9 @@
 - 작성: 2026-09-12
 - 현재 상태(2026-09-13): **A/B/C/D 구현·D3 자동 검증 및 Stage 24 Gym 시나리오 완료.
   양 형식의 한컴 정상 판정과 지원 제한은 [최종 결과보고서](../report/task_m100_3587_report.md)를 따른다.
-  최신 devel 통합 검증·정식 fixture/PDF 보존 후 PR 제출 절차를 진행한다. 아직 PR 준비 완료는 아니다.**
+  정식 fixture/PDF 보존과 최신 devel 통합을 완료했다.
+  [Stage 25](../working/task_m100_3587_stage25.md)에서 신규 입력 래칫 독립 대조·전체 9,729 PASS·
+  필수 lint·Native Skia·Docker WASM 검증을 완료했다. 로컬 제출 준비 완료, push·Open PR 승인 대기다.**
 - 이전 진행 기록(Stage 17 시점; 당시 남은 일은 위 현재 상태와 최종 보고서로 대체):
   **2026-09-12 A1~A4 및 승인된 B1/B2 구현 완료. B3 저장·재열기·비용 계측 이후
   [B 종료 통합 자동 검증](../working/task_m100_3587_stage8.md) 완료, 메인테이너 결과 승인.

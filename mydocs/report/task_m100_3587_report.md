@@ -2,11 +2,11 @@
 
 - Issue: #3587 — https://github.com/edwardkim/rhwp/issues/3587
 - 작성: 2026-09-13, 브랜치 `task_m100_3587`.
-- 통합 검증 기준 HEAD: `dd9b539bf` (상세 명령·결과는 Stage 25).
+- 통합 검증 기준 HEAD: `6a8aeb9ff` (상세 명령·결과는 Stage 25).
 - 이전 D3 제품·테스트 검증 기준: `9acd8d54fd04477ee819238ee63abd4eb7676380`.
 - 상태: **승인된 A/B/C/D 기능, D3 자동 검증 및 선택적 Gym 시나리오 완료.
   증적 보존과 최신 devel 통합 완료, [Stage 25](../working/task_m100_3587_stage25.md)에서
-  통합 후보 최종 검증 중. PR 준비 완료는 아직 아니다.**
+  통합 후보 최종 검증 완료. 로컬 제출 준비 완료, 원격 push·Open PR 승인 대기.**
 - 기준 계획: [수행계획](../plans/task_m100_3587.md),
   [구현계획](../plans/task_m100_3587_impl.md),
   [공개 사용법](../manual/template_automation.md).
@@ -72,6 +72,24 @@ Gym은 이 API를 이용하는 선택적 평가 도구이며 제품·CI·배포 
 자동 테스트·페이지 수만으로 한컴 시각 일치를 판정하지 않는다.
 
 ## 4. 검증 결과 — 실행 시점과 제출 후보를 구분
+
+### 최신 devel 통합 후보
+
+[Stage 25](../working/task_m100_3587_stage25.md)의 `6a8aeb9ff` 기준:
+
+| 검사 | 실제 결과 |
+| --- | --- |
+| fmt·native/WASM32/workspace all-target Clippy·workspace build·manifest·unit tier | 재검증 전부 PASS |
+| 집중 검사 | 192 PASS |
+| 신규 입력 보안 | 문서 41개 명시 입력, 6 PASS |
+| 전체 nextest 1차 | 9,727 PASS / 2 FAIL / 51 skipped, 신규 fixture의 기존 하단 넘침 미등록 |
+| 독립 devel 대조 | 원본·복제 HWP·복제 HWPX의 전체 이상 진단 JSON/로그 동일; 신규 두 경로만 등록 |
+| 전체 nextest 재실행 | **9,729 PASS / 0 FAIL / 51 skipped** |
+| Gym 재실행 | 양 형식 각 13개 검사·음성 대조 통과, 최종 두 파일 SHA가 메인테이너 판정 파일과 동일 |
+| Native Skia | root 3,930 PASS/13 ignored, 내부 crate 182 PASS, 그림 2 PASS, 직접 PDF 4 PASS |
+| Docker WASM·실제 WASM | 표준 최적화 빌드 PASS, 두 입력 형식의 가져오기·오류·저장/재열기 계약 PASS |
+
+### 이전 D3 검증 이력
 
 아래는 [D3 실행 기록](../working/task_m100_3587_stage23.md)의 제품·테스트 내용 기준이다.
 기존 review worktree의 overlay를 바이트 대조했으며 worktree의 과거 HEAD를 검증 SHA로 쓰지 않았다.
@@ -143,7 +161,7 @@ native 실행은 preview 뒤의 따뜻한 캐시 조건이다. 절대 성능 보
 2026-09-13 `upstream/devel=1ae5ca295bddcb31b846affc62834a2a3023d24d`의 추가 18개
 commit을 `ca67b5ff5`로 작업 브랜치에 통합했다. 충돌 없이 병합했으며,
 양쪽에서 바뀐 `typeset.rs` 및 HWP 변환·저장 영향 때문에 전체 검증을 다시 진행한다.
-현재 검증 후보는 신규 문서/PDF와 쪽수 5건 등록을 포함한 `dd9b539bf`다.
+현재 검증 후보는 신규 문서/PDF와 쪽수 5건 및 독립 대조한 넘침 2건 등록을 포함한 `6a8aeb9ff`다.
 
 새 integration source는 `tests/cases/` 21개다. Cargo.toml/lock·generated suite/manifest·
 CI workflow는 이번 변경에 포함하지 않는다. baseline 변경은 독립 한컴 PDF와 쪽수를 대조한
@@ -151,12 +169,12 @@ CI workflow는 이번 변경에 포함하지 않는다. baseline 변경은 독�
 신규 `body_overflow` 2행이다. 기존 문서의 허용치를 완화한 것이 아니다.
 
 1. 최종 입력·PDF 보존과 최신 devel 통합: 완료.
-2. 통합 후보 집중 192건·신규 입력 보안 6건·Rust lint·Gym 재실행: 완료.
-   전체 회귀·Native Skia·Docker WASM 최종 결과는 Stage 25에서 기록한다.
-3. 검증 종료 후 commit·PR 본문으로 별도 push·Open PR 승인을 요청한다.
+2. 통합 후보 집중 192건·신규 입력 보안 6건·Rust lint·Gym·전체 회귀·Native Skia·Docker WASM:
+   완료. 실행별 최종 결과는 Stage 25에 기록했다. 이후에는 문서만 변경했다.
+3. 로컬 문서 commit·PR 본문으로 별도 push·Open PR 승인을 요청한다.
    생성 후 PR 번호에 맞는 review 문서·트리야지·CI·self-review·병합 절차를 따른다.
 
-이번 보고 정리의 로컬 검사:
+최초 보고서 작성 단계의 로컬 검사(현재 제출 검증은 Stage 25):
 
 - `samples/rnote/` 추적 파일 12개를 `git show HEAD:<path>`와 바이트 대조해 차이 0개를 확인했다.
 - Gym 최종 두 파일 SHA를 재계산하여 Stage 24의 메인테이너 판정 대상과 일치함을 확인했다.
@@ -166,18 +184,21 @@ CI workflow는 이번 변경에 포함하지 않는다. baseline 변경은 독�
 
 현재 원격 push·PR 생성·댓글·merge·이슈 close는 수행하지 않았다.
 
-## 부록: PR 본문 초안 — 아직 제출 불가
+## 부록: PR 본문 초안 — 원격 제출 승인 대기
 
 - 제목: `feat(template): support safe block copy, fill and cross-document import (#3587)`
 - base/head: `devel` / `task_m100_3587`.
 - 관련 이슈: `Issue: #3587`. 수정된 범위의 수용·병합 근거로 종료를 판단한다.
 - 변경: A 식별자/참조 보존, B 동일 문서 반복, C 내용 채우기, D 자원 이식,
   native/WASM/CLI/MCP 연결 및 선택적 Gym 연구노트 시나리오. 표 흐름 보정도 포함한다.
-- 검증: 위 D3/Gym 결과를 이력으로 인용하되, 최신 통합 후보 SHA와 재검증 결과는 제출 전에 채운다.
-- 시각: Stage 18/20/24의 판정 범위만 인용하며 정식 보존 파일로 링크를 교체한다.
+- 검증: Stage 25의 `6a8aeb9ff` 후보 전체 9,729 PASS·필수 lint·Native Skia·Docker WASM.
+  D3 비용 결과는 이전 측정 이력으로 구분한다. 이후 문서 commit과 제품/테스트 동일성을 확인한다.
+- 시각: Stage 18/20/24의 판정 범위만 인용하며 정식 보존 문서/PDF를 사용한다.
+  Stage 25 자동 비교의 남은 차이를 완전한 시각 일치로 바꾸어 보고하지 않는다.
 - 제외: #7065/#7084/#7090, 원 제안 정리 API 그대로의 이식, 전체 Gym benchmark.
-- 체크리스트: fixture 보존은 완료이며 최신 통합 후보의 전체 검증은 진행 중으로 둔다.
-  최종 PR에는 저장소 PR 템플릿의 적용 항목별 실행 근거를 반영한다.
+- 체크리스트: fixture 보존과 최신 통합 후보 검증 완료. 원본 템플릿 형식의 적용 항목별 실행 근거,
+  최초 실패 2건의 독립 대조와 등록 근거, UI E2E/외부 clipping 미실행 범위를
+  `output/3587/submission-stage25/pr-body.md`에 준비했다.
 - 승인 후 실행 형식(현재 실행하지 않음):
   `gh pr create --repo edwardkim/rhwp --base devel --head task_m100_3587
   --title '<위 제목>' --body-file '<확정한 UTF-8 본문 파일>'`.

@@ -5,6 +5,9 @@
 - 범위: 최종 검증 입력·한컴 기준 PDF 보존, 최신 devel 통합, 필수 제출 검증.
 - 제외: 새로운 제품 기능, 별도 Studio 이슈 수정, 원격 push·PR 생성·댓글·병합·이슈 종료.
 - 검증용 기존 `rhwp-review-3587` overlay와 고정 `target/pr-review`를 보존한다.
+- host: WSL2 Linux x86_64, Rust 1.93.1, nextest 0.9.137, Node 24.15.0, Python 3.12.3.
+  nextest 권장판 0.9.140 알림과 미지원 `report-skipped` JUnit 설정 경고가 있었으며,
+  테스트 실패나 CI-duration 보고서 생성 성공으로 해석하지 않는다. 이번은 default profile 실행이다.
 
 ## 증적 선정
 
@@ -27,7 +30,7 @@ MANIFEST를 기존 파일 재사용으로 정정하고 중복 사본만 제거�
 MANIFEST의 각 `path`는 repository 상대 경로이며 `source`는 기존 로컬 증적 위치다.
 새 파일은 일반 Git blob으로 보존하고 LFS filter가 없음을 확인했다.
 
-현재 검증은 진행 중이다. 검사 종료 전에는 통과로 기록하지 않는다.
+최종 검증은 완료했다. 최초 실패와 독립 대조·보완 후 성공을 아래에서 구분한다.
 
 ## 통합
 
@@ -35,7 +38,7 @@ MANIFEST의 각 `path`는 repository 상대 경로이며 `source`는 기존 로�
 - 작업 브랜치에 merge commit `ca67b5ff53f3fc170e3e49096e531bbd423db54a`로 통합했다. 충돌 없음.
 - 기존 review overlay와 untracked 진단 seed는 stash
   `a9015e72c0b75a1f8a571e10db0dd2f251ded0a3`에 보존했다. 삭제하거나 주 작업 트리에 적용하지 않았다.
-- 검증 worktree는 과거 overlay 대신 통합 후보의 실제 detached HEAD로 전환한다.
+- 검증 worktree는 과거 overlay 대신 통합 후보의 실제 detached HEAD로 전환했다.
 - PDF repository policy: 1,248개 검사, 크기 상한·LFS pointer 없음 PASS.
 
 ## 신규 PDF 쪽수 보호
@@ -44,7 +47,7 @@ MANIFEST의 각 `path`는 repository 상대 경로이며 `source`는 기존 로�
 저장 제품 엔진 대응을 확인했다. 모아찍기 입력은 없다. `pdfinfo`의 독립 PDF 쪽수는
 pi2 HWP/HWPX 각 1쪽, pi4 HWP/HWPX 각 1쪽, 연구노트 원본 2쪽이다.
 통합 후보 native `rhwp info --json`의 쪽수도 각각 1/1/1/1/2로 일치했다.
-전체 기존 원장을 재생성하지 않고 이 5개 신규 행만 oracle_page_count 원장에 추가한다.
+전체 기존 원장을 재생성하지 않고 이 5개 신규 행만 oracle_page_count 원장에 추가했다.
 기존 문서의 허용치를 늘리거나 불명 회귀를 등록하지 않는다. 파일 SHA는 MANIFEST를 따른다.
 
 ## Rust lint
@@ -125,3 +128,45 @@ detach하고 `cargo build --locked --profile release-test --target-dir
 이후 후보로 돌아가 필수 lint·전체 회귀를 다시 수행한다. 1차 실패 기록은 보존한다.
 대형 표 #2063은 273.132초에 완료되어 161쪽 pin을 통과했다. 이전 D3 174.527초와 실행 조건·
 통합 source가 달라 이 두 시간만으로 제품 성능 증감을 단정하지 않는다.
+
+## 원장 보완 후 전체 재검증
+
+후보 `6a8aeb9ff`에서 필수 lint 묶음을 다시 순차 실행해 전부 통과했다
+(`r2/lint-results.json`). 이전 후보 대비 Rust 제품·테스트 소스 차이는 없고
+`tests/fixtures/body_overflow_baseline.tsv`의 신규 2행만 검증 데이터 변경이다.
+
+전체 nextest run `cfafe6ae-ac41-4391-8adf-9887e2a19b90`:
+**9,729 PASS / 0 FAIL / 51 skipped**, 실행 385.181초, 재빌드 포함 명령 691.856초.
+앞선 실패 partition 1/5도 모두 통과했다. 테스트 제외를 추가하거나 입력을 빼지 않았다.
+명령과 원문 로그는 `output/3587/submission-stage25/r2/regression{.log,-results.json}`에 있다.
+이번에는 IR·overflow-cell·off-canvas·text-overlap뿐 아니라 body-overflow 16분할 dump도 남겼다.
+전체 원장을 재생성하지 않았으며 다른 래칫 허용치는 그대로다.
+
+Native Skia 3종은 전부 통과했다. root lib 3,930 PASS/13 ignored, 내부 crate 182 PASS,
+그림 placeholder 2 PASS, 직접 PDF 4 PASS다. 명령별 결과는 `skia-results.json`이다.
+2026-09-13 마지막 native 검증 후 `git ls-remote upstream refs/heads/devel`로 원격이
+통합 기준 `1ae5ca295bddcb31b846affc62834a2a3023d24d` 그대로임을 재확인했다.
+Docker 표준 `docker compose --env-file .env.docker run --rm wasm`도 PASS다.
+Rust compile 4m19s, wasm-pack 전체 7m15s, Docker 명령 전체 461.742초이며 최적화를 생략하지 않았다.
+실제 `pkg/`를 Node에서 로드한 가져오기 계약은 1.439초에 PASS:
+HWP/파생 HWPX 두 입력, dry-run/실행 동일 결과, 잘못된 JSON/범위 등 오류 시 무변경,
+JS 동일 핸들 사전 거부, count=0 무변경, HWP/HWPX 저장·재열기를 확인했다.
+브라우저 UI나 새로운 한컴 시각 판정을 수행한 것으로 보고하지 않는다.
+
+- WASM SHA-256: `c31a359626b096d5f38d44fe6b1ae9a7e58093655ed4bb6c698c969a3d3e854b`.
+- JS SHA-256: `a6b6e1564d302881e7db02fd1a1b4864e65acc4b0ea737517240ac60e2fa708a`.
+- 증적: `wasm-results.json`, `wasm-contract-results.json`, `wasm-contract/result.json`.
+
+## 최종 판정과 제출 경계
+
+승인된 로컬 제출 준비를 완료했다. 제품·테스트·원장 검증 기준은
+`6a8aeb9ffac5d574e7a590ce66aba5eae9f7f374`이며 이후 변경은 보고·계획·fixture 안내 Markdown뿐이다.
+정식 보존 입력 73개 대응/37개 고유 파일은 MANIFEST SHA와 실제 Git blob 바이트가 일치한다.
+변경 Markdown 38개 링크 검사와 `git diff --check`, `git diff --check upstream/devel...HEAD`도 통과했다.
+파생 suite/manifest, pkg/output, Cargo registry/lock, workflow는 source 제출에 추가하지 않는다.
+외부 clipping controlset은 이 실행에서 검사하지 않았으며 통과로 주장하지 않는다.
+
+PR 본문 초안은 `output/3587/submission-stage25/pr-body.md`에 준비한다.
+다음은 **별도 승인 후 원격 push → devel 대상 Open PR → 트리야지·CI·self-review**다.
+현재 원격 push·PR 생성·댓글·병합·이슈 close는 수행하지 않았다.
+기존 review worktree는 제출 검증용으로 유지하고, 이전 overlay stash도 복구 가능하게 보존한다.
