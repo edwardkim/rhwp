@@ -135,7 +135,7 @@ fn source_reference_is_resolved_in_source_not_target_docinfo() {
         .char_shapes
         .push(CharShape::default());
     source.document_mut().sections[0].paragraphs[1].char_shapes = vec![CharShapeRef {
-        position: 0,
+        start_pos: 0,
         char_shape_id: 1,
     }];
     let error = target
