@@ -157,13 +157,10 @@ fn degenerate_step_values_leave_the_ramp_untouched() {
 }
 
 /// `stepCenter == 50` 은 항등 사상이어야 한다 — 임의의 띠 개수에서 균등 분포가 나온다.
-///
-/// 띠 개수는 `MAX_GRADIENT_BANDS` 로 줄여지므로 그 상한 안에서 센다 — 항등 사상이라는
-/// 성질 자체는 띠 개수와 무관하다.
 #[test]
 fn step_center_fifty_is_the_identity_warp() {
     let colors = vec![NAVY, SKY];
-    for bands in [2i16, 3, 7, 50, 64] {
+    for bands in [2i16, 3, 7, 50, 100] {
         let (_, p) = expand_gradient_steps(&colors, &[0.0, 1.0], bands, 50);
         for band in 0..bands as usize {
             let want = band as f64 / bands as f64;
