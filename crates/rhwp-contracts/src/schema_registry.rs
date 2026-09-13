@@ -55,7 +55,7 @@ pub const CAPABILITIES_SCHEMA_VERSION: &str = "1.3";
 ///   저널이 `preconditionFailed{kind,expected,actual}` + `nextCall` 을 싣는다
 ///   (#4378 R22). 계획서 **문법**은 그대로라 기존 계획서는 무수정으로 유효하다 —
 ///   minor.
-pub const PLAN_SCHEMA_VERSION: &str = "1.2";
+pub const PLAN_SCHEMA_VERSION: &str = "1.3";
 
 /// [#4509] 서명 축 — 키 파일(ed25519Key)·분리 서명(capsuleSignature)·키
 /// 등록부(keyring) **파일 형식**의 판. 봉투 축과 별개로 도는 교환 파일

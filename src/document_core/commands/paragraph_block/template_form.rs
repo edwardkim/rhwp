@@ -6,16 +6,22 @@ use super::{
     ParagraphBlockLimits, ParagraphBlockPathStep as Step, RepeatParagraphBlockRequest,
     TemplateBinding,
 };
-use crate::{document_core::DocumentCore, error::HwpError, model::event::DocumentEvent};
-use serde::Serialize;
+use crate::{
+    document_core::{DocumentCore, TableTextReflowKey},
+    error::HwpError,
+    model::{event::DocumentEvent, paragraph::Paragraph},
+};
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Explicit request-local scope. Targets use paragraph indices relative to start.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TemplateScope {
     pub section_index: usize,
     pub start: usize,
     pub end: usize,
+    #[serde(default)]
     pub limits: ParagraphBlockLimits,
 }
 
@@ -34,7 +40,8 @@ impl TemplateScope {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct FillTemplateRequest {
     pub scope: TemplateScope,
     pub bindings: Vec<TemplateBinding>,
@@ -50,13 +57,28 @@ pub struct FillTemplateResult {
     pub target_count: usize,
 }
 
+struct PreparedForm {
+    result: FillTemplateResult,
+    staged: Vec<Paragraph>,
+    roots: Vec<usize>,
+    old_keys: Vec<TableTextReflowKey>,
+    reflowed: Vec<TableTextReflowKey>,
+}
+
 impl DocumentCore {
-    /// Fill existing content atomically without reallocating IDs or using clipboard.
+    /// Prepare and discard fixed-form edits without reallocating IDs or using clipboard.
     /// An empty binding+record pair validates the scope then makes no changes.
-    pub fn fill_template_native(
-        &mut self,
+    pub fn preview_fill_template_native(
+        &self,
         request: &FillTemplateRequest,
     ) -> Result<FillTemplateResult, HwpError> {
+        Ok(self.prepare_template_form(request)?.result)
+    }
+
+    fn prepare_template_form(
+        &self,
+        request: &FillTemplateRequest,
+    ) -> Result<PreparedForm, HwpError> {
         let scope = &request.scope;
         let inspection = scope.inspection();
         let preview = self
@@ -83,7 +105,13 @@ impl DocumentCore {
             target_count: request.bindings.len(),
         };
         if roots.is_empty() {
-            return Ok(result);
+            return Ok(PreparedForm {
+                result,
+                roots,
+                staged: vec![],
+                old_keys: vec![],
+                reflowed: vec![],
+            });
         }
         // Never clone the whole Document or untouched roots in the scope.
         let source = &self.document.sections[scope.section_index].paragraphs;
@@ -114,6 +142,31 @@ impl DocumentCore {
                 .contains(old)
                 .then_some(new)
         }));
+        Ok(PreparedForm {
+            result,
+            staged,
+            roots,
+            old_keys,
+            reflowed,
+        })
+    }
+
+    /// Fill only selected owning roots, after the shared immutable preparation succeeds.
+    pub fn fill_template_native(
+        &mut self,
+        request: &FillTemplateRequest,
+    ) -> Result<FillTemplateResult, HwpError> {
+        let scope = &request.scope;
+        let PreparedForm {
+            result,
+            staged,
+            roots,
+            old_keys,
+            reflowed,
+        } = self.prepare_template_form(request)?;
+        if roots.is_empty() {
+            return Ok(result);
+        }
         let event = DocumentEvent::TemplateFilled {
             section: scope.section_index,
             paragraphs: result.paragraphs.clone(),

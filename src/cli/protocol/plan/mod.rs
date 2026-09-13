@@ -2,6 +2,7 @@ use crate::cli::protocol::*;
 
 mod condition;
 mod execution;
+mod template;
 
 pub(crate) use execution::run_plan_engine;
 

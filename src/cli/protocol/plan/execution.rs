@@ -13,6 +13,19 @@ fn validate_plan_steps(
     Vec<Option<String>>,
 ) {
     let mut invalid: Vec<serde_json::Value> = Vec::new();
+    if steps.len() != 1 {
+        for (index, step) in steps
+            .iter()
+            .enumerate()
+            .filter(|(_, s)| super::template::is_action(s))
+        {
+            invalid.push(serde_json::json!({"step":index,"action":step["action"],
+                "reason":"템플릿 action은 단독 step만 지원합니다. 여러 binding/record를 한 요청에 넣거나 저장 결과를 다음 계획의 입력으로 사용하세요."}));
+        }
+        if !invalid.is_empty() {
+            return (invalid, vec![], vec![]);
+        }
+    }
     // [#3721] 선검증이 이미 계산한 값을 미리보기로 모은다 — dry-run 은 이걸 그대로 낸다.
     // (실행 모드에서는 쓰이지 않지만, 판정자와 미리보기가 같은 계산이라 어긋날 수 없다.)
     let mut preview: Vec<serde_json::Value> = Vec::new();
@@ -57,6 +70,15 @@ fn validate_plan_steps(
             preview.push(serde_json::json!({
                 "step": idx, "action": action, "skipped": true, "reason": reason,
             }));
+            continue;
+        }
+        if super::template::is_action(step) {
+            match super::template::preview(doc, step, idx) {
+                Ok(value) => preview.push(value),
+                Err(reason) => {
+                    invalid.push(serde_json::json!({"step":idx,"action":action,"reason":reason}))
+                }
+            }
             continue;
         }
         match action {
@@ -188,7 +210,7 @@ fn validate_plan_steps(
                 invalid.push(serde_json::json!({ "step": idx, "reason": "action 이 필요합니다" }))
             }
             other => invalid.push(serde_json::json!({ "step": idx, "action": other,
-                "reason": format!("알 수 없는 action: {} (fill_fields·replace_text·set_cell·set_checkbox)", other) })),
+                "reason": format!("알 수 없는 action: {} (export-plan-schema로 지원 action을 확인하세요)", other) })),
         }
     }
     (invalid, preview, skip_reasons)
@@ -215,6 +237,10 @@ fn execute_plan_steps(
             journal_steps.push(serde_json::json!({
                 "step": idx, "action": action, "skipped": true, "reason": reason,
             }));
+            continue;
+        }
+        if super::template::is_action(step) {
+            journal_steps.push(super::template::execute(doc, step, idx)?);
             continue;
         }
         match action {
@@ -580,12 +606,16 @@ pub(crate) fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i
     // 이미 계산한 값 그대로라 "검사 결과와 실제 실행이 다를" 여지가 없다.
     if plan["dryRun"].as_bool().unwrap_or(false) {
         return (
-            serde_json::json!({
-                "schemaVersion": ENVELOPE_SCHEMA_VERSION, "planVersion": "1.0", "dryRun": true,
-                "input": input, "output": output,
-                "preview": preview, "invalid": [],
-                "assertions": { "notFoundEmpty": assert_not_found_empty, "verify": assert_verify },
-            }),
+            provenance::marked(
+                serde_json::json!({
+                    "schemaVersion": ENVELOPE_SCHEMA_VERSION, "planVersion": "1.0", "dryRun": true,
+                    "changedPages": null,
+                    "input": input, "output": output,
+                    "preview": preview, "invalid": [],
+                    "assertions": { "notFoundEmpty": assert_not_found_empty, "verify": assert_verify },
+                }),
+                "run",
+            ),
             EXIT_OK,
         );
     }
@@ -599,7 +629,11 @@ pub(crate) fn run_plan_engine(plan: &serde_json::Value) -> (serde_json::Value, i
         };
     // 3) 사후 단언 → 단 한 번 저장. 단언 실패 시 디스크 무변경 — 자연 트랜잭션.
     // [#3712] 눈검증 대상 페이지 — 편집 반영 후 조판 기준. 확정 불가면 null.
-    let changed_pages = match doc.pages_covering_paragraphs(&changed_paras) {
+    let changed_pages = match if steps.iter().any(super::template::is_action) {
+        None
+    } else {
+        doc.pages_covering_paragraphs(&changed_paras)
+    } {
         Some(pages) => serde_json::json!(pages),
         None => serde_json::Value::Null,
     };

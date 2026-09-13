@@ -19,14 +19,15 @@ use crate::{
         table::Table,
     },
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     ops::Range,
 };
 
 /// Coordinates refer to the input, not to the progressively growing table.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepeatTableRowsRequest {
     pub section_index: usize,
     pub paragraph_index: usize,
@@ -39,6 +40,7 @@ pub struct RepeatTableRowsRequest {
     pub bindings: Vec<TemplateBinding>,
     /// One record per new row group. Empty maps allow copy-only repetition.
     pub records: Vec<BTreeMap<String, String>>,
+    #[serde(default)]
     pub limits: ParagraphBlockLimits,
 }
 
@@ -83,6 +85,14 @@ struct PreparedRows {
 }
 
 impl DocumentCore {
+    /// Full detached row preparation; does not mutate even rendering provenance.
+    pub fn preview_repeat_and_fill_table_rows_native(
+        &self,
+        request: &RepeatTableRowsRequest,
+    ) -> Result<RepeatTableRowsResult, HwpError> {
+        Ok(self.prepare_table_rows(request)?.result)
+    }
+
     /// Atomic row repetition. The original table ID, rows, styles and clipboard survive.
     /// Title rows and crossing merges/zones are rejected, never silently repaired.
     pub fn repeat_and_fill_table_rows_native(

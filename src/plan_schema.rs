@@ -36,6 +36,7 @@
 use serde_json::{json, Value};
 
 use crate::schema_registry::ENVELOPE_SCHEMA_VERSION;
+mod template;
 
 /// 계획 스키마 버전 — 단일 출처는 [`crate::schema_registry`](#4329). 여기서는
 /// 재수출만 해 기존 호출부 경로를 보존한다. 봉투 schemaVersion·계획서
@@ -213,13 +214,16 @@ fn assertions_def() -> Value {
 
 fn step_def() -> Value {
     json!({
-        "description": "편집 step 하나. `action` 이 판별자인 태그드 유니온이며, 4종 전부 \
+        "description": "편집 step 하나. `action` 이 판별자인 태그드 유니온이며, 7종 전부 \
                         선택 필드 `if`(조건절)를 받는다.",
         "oneOf": [
             r("FillFieldsStep"),
             r("ReplaceTextStep"),
             r("SetCellStep"),
             r("SetCheckboxStep"),
+            r("FillTemplateStep"),
+            r("RepeatAndFillParagraphBlockStep"),
+            r("RepeatAndFillTableRowsStep"),
         ],
     })
 }
@@ -404,8 +408,10 @@ fn preview_step_def() -> Value {
                           자리를 지키므로 저널 항목과 계획서 항목을 순번으로 짝지을 수 있다."),
             "action": prim(
                 "string",
-                "그 step 의 action (fill_fields·replace_text·set_cell·set_checkbox 중 하나).",
+                "그 step 의 action. 기존 4종 또는 템플릿 3종이며 Step 정의를 따른다.",
             ),
+            "operationResult": prim("object", "템플릿 action의 예정 적용 대상·경로 대응표. 실행 시 같은 입력에서 동일 구조를 반환한다."),
+            "workload": prim("object", "records·targets·replacementTextBytes 입력 작업량. 메모리나 조판 비용 실측값이 아니다."),
             "skipped": json!({
                 "type": "boolean",
                 "description": "참이면 `if` 조건이 거짓이라 이 step 은 실행되지 않는다 — 선검증도 \
@@ -451,7 +457,7 @@ fn definition_count(schema: &Value) -> usize {
 /// `rhwp run` 계획서 전체의 JSON Schema.
 pub fn plan_schema() -> Value {
     // 정의가 늘면 json! 매크로 재귀 한도에 걸린다 — 맵으로 조립한다.
-    let defs: serde_json::Map<String, Value> = [
+    let mut defs: serde_json::Map<String, Value> = [
         ("Plan", plan_def()),
         ("Preconditions", preconditions_def()),
         ("Assertions", assertions_def()),
@@ -467,6 +473,8 @@ pub fn plan_schema() -> Value {
     .into_iter()
     .map(|(name, def)| (name.to_string(), def))
     .collect();
+    template::extend(&mut defs);
+    template::restrict_single_step(defs.get_mut("Plan").expect("Plan exists"));
 
     json!({
         "$schema": SCHEMA_DIALECT,
@@ -599,7 +607,7 @@ mod tests {
         let variants = schema["$defs"]["Step"]["oneOf"]
             .as_array()
             .expect("Step.oneOf");
-        assert_eq!(variants.len(), 4, "step 4종");
+        assert_eq!(variants.len(), 7, "기존 4종과 템플릿 3종");
         let mut actions = Vec::new();
         for variant in variants {
             let name = variant["$ref"]
@@ -628,7 +636,15 @@ mod tests {
         actions.sort();
         assert_eq!(
             actions,
-            ["fill_fields", "replace_text", "set_cell", "set_checkbox"]
+            [
+                "fill_fields",
+                "fill_template",
+                "repeat_and_fill_paragraph_block",
+                "repeat_and_fill_table_rows",
+                "replace_text",
+                "set_cell",
+                "set_checkbox"
+            ]
         );
     }
 

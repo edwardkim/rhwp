@@ -6,12 +6,16 @@ mod rows_geometry;
 mod template;
 mod template_edit;
 mod template_form;
+mod template_operation;
 mod template_rows;
 mod template_select;
 mod validation;
 pub use repeat::{ParagraphBlockCopy, ParagraphBlockMapping, RepeatParagraphBlockResult};
 pub use template::{TemplateBinding, TemplateFillPreview, TemplateFillRequest, TemplateFillTarget};
 pub use template_form::{FillTemplateRequest, FillTemplateResult, TemplateScope};
+pub use template_operation::{
+    TemplateOperation, TemplateOperationResult, TEMPLATE_REQUEST_MAX_BYTES,
+};
 pub use template_rows::{RepeatTableRowsRequest, RepeatTableRowsResult};
 pub use validation::{ParagraphBlockPathStep, ParagraphBlockValidationError};
 

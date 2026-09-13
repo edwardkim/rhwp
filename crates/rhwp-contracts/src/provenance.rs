@@ -387,6 +387,9 @@ pub const MAP: &[CommandProvenance] = &[
     CommandProvenance {
         command: "run",
         untrusted: &[
+            f("preview", "입력 문서 기준 선검증 결과와 복제 예정 경로"),
+            f("steps[].operationResult", "템플릿 연산의 문서 파생 구조·경로 결과"),
+            f("invalid[].reason", "요청 및 입력 문서의 검증 오류 설명"),
             f("steps[].oldText", "set_cell step 이 덮기 전의 셀 텍스트"),
             f(
                 "steps[].confusable[].lookalikes",

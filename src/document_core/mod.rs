@@ -13,7 +13,8 @@ pub use commands::paragraph_block::{
     ParagraphBlockLimits, ParagraphBlockMapping, ParagraphBlockPathStep,
     ParagraphBlockValidationError, RepeatParagraphBlockRequest, RepeatParagraphBlockResult,
     RepeatTableRowsRequest, RepeatTableRowsResult, TemplateBinding, TemplateFillPreview,
-    TemplateFillRequest, TemplateFillTarget, TemplateScope,
+    TemplateFillRequest, TemplateFillTarget, TemplateOperation, TemplateOperationResult,
+    TemplateScope, TEMPLATE_REQUEST_MAX_BYTES,
 };
 pub mod converters;
 pub(crate) mod html_table_import;

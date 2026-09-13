@@ -10,7 +10,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 "properties": {
                     "plan": {
                         "type": "object",
-                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…, if?:{…}}…], assertions:{ notFoundEmpty?, verify? }, dryRun?:true } — dryRun:true 면 선검증만 하고 preview 저널을 낸다(디스크 무변경). 계획을 실행 전에 검사할 때 쓴다. 전체 JSON Schema 는 hwp_export_plan_schema 참조"
+                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…, if?:{…}}…], assertions:{ notFoundEmpty?, verify? }, dryRun?:true }. 추가 action: fill_template, repeat_and_fill_paragraph_block, repeat_and_fill_table_rows는 request 객체를 받으며 단독 step만 허용한다. dryRun:true는 같은 native 준비를 끝내고 preview만 반환한다(원본·디스크 무변경). 반복 재호출은 다시 추가하며 멱등이 아니다. 정확한 request 문법은 hwp_export_plan_schema 참조. Gym 불필요."
                     }
                 },
                 "required": ["plan"],

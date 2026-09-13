@@ -4,14 +4,20 @@ use super::{
     ParagraphBlockValidationError as Error, RepeatParagraphBlockRequest,
 };
 use crate::{document_core::DocumentCore, model::paragraph::Paragraph};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap, HashSet};
 
 const MAX_TARGETS: usize = 10_000;
 const MAX_INPUT_BYTES: usize = 8 * 1024 * 1024;
 
 /// Offsets are Unicode scalar indices, like Paragraph::insert_text_at, not UTF-16.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(
+    tag = "kind",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
 pub enum TemplateFillTarget {
     TextRange {
         path: Vec<Step>,
@@ -25,13 +31,15 @@ pub enum TemplateFillTarget {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TemplateBinding {
     pub key: String,
     pub target: TemplateFillTarget,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TemplateFillRequest {
     /// Count must equal records.len(); addresses refer to the input document.
     pub block: RepeatParagraphBlockRequest,
@@ -166,16 +174,32 @@ impl DocumentCore {
         &mut self,
         request: &TemplateFillRequest,
     ) -> Result<super::RepeatParagraphBlockResult, crate::error::HwpError> {
+        let prepared = self.prepare_template_block(request)?;
+        self.commit_paragraph_block(&request.block, prepared)
+    }
+
+    /// Execute the same detached preparation as mutation, then discard it.
+    /// No ID reservation, event, reflow or document change survives this call.
+    pub fn preview_repeat_and_fill_paragraph_block_native(
+        &self,
+        request: &TemplateFillRequest,
+    ) -> Result<super::RepeatParagraphBlockResult, crate::error::HwpError> {
+        Ok(self.prepare_template_block(request)?.result)
+    }
+
+    fn prepare_template_block(
+        &self,
+        request: &TemplateFillRequest,
+    ) -> Result<super::repeat::PreparedBlock, crate::error::HwpError> {
         let preview = self
             .validate_template_fill_native(request)
             .map_err(|e| super::invalid(e.to_string()))?;
         if request.block.count == 0 {
-            return self.repeat_paragraph_block_prepared(&request.block, preview.block, |_, _| {
-                Ok(Vec::new())
-            });
+            return self
+                .prepare_paragraph_block(&request.block, preview.block, |_, _| Ok(Vec::new()));
         }
         let mut edits = FillEdits::prepare(self, &request.block, &request.bindings, &preview)?;
-        self.repeat_paragraph_block_prepared(&request.block, preview.block, |copy, index| {
+        self.prepare_paragraph_block(&request.block, preview.block, |copy, index| {
             edits
                 .apply(
                     copy,
@@ -276,18 +300,38 @@ pub(super) fn validate_source_fill(
     let paragraphs: HashMap<_, _> = validation::paragraphs(source, r)?.into_iter().collect();
     let mut selections: HashMap<&[Step], Vec<Selection<'_>>> = HashMap::new();
     let mut inspected_bytes = 0;
+    let mut diagnostics = Vec::new();
+    let mut invalid_count = 0usize;
+    let mut record_error = |e: Error| {
+        invalid_count += 1;
+        // Keep diagnostics bounded independently of the number of invalid targets.
+        if diagnostics.len() < 16 {
+            diagnostics.push(e);
+        }
+    };
     for binding in bindings {
         let p = path(&binding.target);
-        let para = paragraphs
-            .get(p)
-            .ok_or_else(|| error(p, "fillPath", "target is not a source-owned paragraph"))?;
+        let Some(para) = paragraphs.get(p) else {
+            record_error(error(
+                p,
+                "fillPath",
+                "target is not a source-owned paragraph",
+            ));
+            continue;
+        };
         // Bound repeated scans of a long paragraph across many bindings too.
         add_budget(
             &mut inspected_bytes,
             para.text.len(),
             r.limits.max_structure_bytes,
         )?;
-        let selected = select(binding, para)?;
+        let selected = match select(binding, para) {
+            Ok(selected) => selected,
+            Err(e) => {
+                record_error(e);
+                continue;
+            }
+        };
         let previous = selections.entry(selected.path).or_default();
         if previous.iter().any(|old| {
             let a = &old.range;
@@ -298,9 +342,25 @@ pub(super) fn validate_source_fill(
                 a.start < b.end && b.start < a.end
             }
         }) {
-            return Err(error(p, "fillOverlap", "fill targets overlap"));
+            record_error(error(p, "fillOverlap", "fill targets overlap"));
+            continue;
         }
         previous.push(selected);
+    }
+    if !diagnostics.is_empty() {
+        let shown = diagnostics.len();
+        let mut errors = diagnostics.into_iter();
+        let mut first = errors.next().expect("nonempty diagnostics");
+        for e in errors {
+            first.detail.push_str(&format!("; additional: {e}"));
+        }
+        if invalid_count > shown {
+            first.detail.push_str(&format!(
+                "; {} more invalid targets omitted",
+                invalid_count - shown
+            ));
+        }
+        return Err(first);
     }
     Ok(TemplateFillPreview {
         block,

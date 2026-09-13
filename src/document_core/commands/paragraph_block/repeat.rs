@@ -40,6 +40,12 @@ pub struct RepeatParagraphBlockResult {
     pub copies: Vec<ParagraphBlockCopy>,
 }
 
+pub(super) struct PreparedBlock {
+    pub result: RepeatParagraphBlockResult,
+    staged: Vec<Paragraph>,
+    inherited: Vec<TableTextReflowKey>,
+}
+
 pub(super) fn table_keys(
     paras: &[Paragraph],
     request: &RepeatParagraphBlockRequest,
@@ -77,8 +83,18 @@ impl DocumentCore {
         &mut self,
         request: &RepeatParagraphBlockRequest,
         budget: ParagraphBlockBudget,
-        mut fill: impl FnMut(&mut [Paragraph], usize) -> Result<Vec<TableTextReflowKey>, HwpError>,
+        fill: impl FnMut(&mut [Paragraph], usize) -> Result<Vec<TableTextReflowKey>, HwpError>,
     ) -> Result<RepeatParagraphBlockResult, HwpError> {
+        let prepared = self.prepare_paragraph_block(request, budget, fill)?;
+        self.commit_paragraph_block(request, prepared)
+    }
+
+    pub(super) fn prepare_paragraph_block(
+        &self,
+        request: &RepeatParagraphBlockRequest,
+        budget: ParagraphBlockBudget,
+        mut fill: impl FnMut(&mut [Paragraph], usize) -> Result<Vec<TableTextReflowKey>, HwpError>,
+    ) -> Result<PreparedBlock, HwpError> {
         let mut result = RepeatParagraphBlockResult {
             section_index: request.section_index,
             inserted: request.insert_before..budget.inserted_end,
@@ -86,7 +102,11 @@ impl DocumentCore {
             copies: Vec::new(),
         };
         if request.count == 0 {
-            return Ok(result);
+            return Ok(PreparedBlock {
+                result,
+                staged: Vec::new(),
+                inherited: Vec::new(),
+            });
         }
         // Preflight bounded the entire original owned tree and reference arrays.
         // Reuse the shared identity namespaces, reserving the document only once.
@@ -148,6 +168,26 @@ impl DocumentCore {
             });
             staged.extend(copy);
         }
+        Ok(PreparedBlock {
+            result,
+            staged,
+            inherited,
+        })
+    }
+
+    pub(super) fn commit_paragraph_block(
+        &mut self,
+        request: &RepeatParagraphBlockRequest,
+        prepared: PreparedBlock,
+    ) -> Result<RepeatParagraphBlockResult, HwpError> {
+        let PreparedBlock {
+            result,
+            staged,
+            inherited,
+        } = prepared;
+        if staged.is_empty() {
+            return Ok(result);
+        }
         // All recoverable errors and complete return values precede mutation.
         self.render_normalization
             .text_reflowed_tables
@@ -159,7 +199,7 @@ impl DocumentCore {
         let section = &mut self.document.sections[request.section_index];
         section
             .paragraphs
-            .try_reserve(budget.added_paragraphs)
+            .try_reserve(staged.len())
             .map_err(|_| invalid("destination allocation failed"))?;
         section
             .paragraphs

@@ -10,11 +10,16 @@ use crate::{
     error::HwpError,
     model::{control::Control, paragraph::Paragraph, shape::ShapeObject},
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Source-relative owned path. These are not DSEL addresses or persistent IDs.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
-#[serde(tag = "kind", content = "index", rename_all = "camelCase")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(
+    tag = "kind",
+    content = "index",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
 pub enum ParagraphBlockPathStep {
     Paragraph(usize),
     Control(usize),
