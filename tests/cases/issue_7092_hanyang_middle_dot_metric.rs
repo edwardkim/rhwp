@@ -47,6 +47,11 @@ use rhwp::document_core::DocumentCore;
 const SAMPLE_76076: &str = "samples/76076_regulatory_analysis.hwp";
 /// 정본 `pdf/80168_regulatory_analysis-2022.pdf` (2024·hwp-2024 판본 동일).
 const SAMPLE_80168: &str = "samples/80168_regulatory_analysis.hwp";
+/// 한양신명조 앵커. `·` 38개가 **전부** 이 글꼴이고, 정본
+/// `samples/21868765_별표2_보건소_분장사무.pdf` 의 Type3 `·` 도 정확히 38개다 — 1:1.
+const SAMPLE_21868765: &str = "samples/21868765_별표2_보건소_분장사무.hwp";
+/// 같은 글꼴의 둘째 앵커. 정본 `pdf/task2097/21298295_byeolpyo5_disaster-hwp-2020.pdf`.
+const SAMPLE_21298295: &str = "samples/task2097/21298295_byeolpyo5_disaster.hwp";
 
 /// 한 문서에서 `·` 의 (글꼴, 글자크기 대비 전진폭) 을 모은다. 연속 `·`(목차 점 채움)은 뺀다.
 fn middle_dot_advances(sample: &str, max_pages: u32) -> Vec<(String, f64)> {
@@ -153,5 +158,64 @@ fn other_fonts_keep_their_previous_middle_dot_width() {
     assert!(
         moved.is_empty(),
         "휴먼명조 `·` 는 이 변경의 범위 밖이라 종전 0.300 em 이어야 한다. 움직인 것: {moved:?}"
+    );
+}
+
+/// 한양신명조의 `·` 는 자기 메트릭(393/1024 = 0.3838 em)대로 전진한다.
+///
+/// 한양중고딕과 **같은 갈래, 다른 값**이다. 이 글꼴은 `0x00A0-0x00FF` 를
+/// `FONT_276_LATIN_1`(= `HYSinMyeongJo-Medium`, 윈도우 `H2MJSM.TTF`)에서 빌려 왔고 그
+/// 값은 전각이다. 수정 전에는 그 전각값 때문에 `.notdef` 좁힘이 걸려 0.300 em 이었다.
+///
+/// ```text
+///   samples/21868765_별표2_보건소_분장사무.pdf         Type3 n=38  /W 0.3842
+///   pdf/task2097/21298295_byeolpyo5_disaster-hwp-2020.pdf
+///                                                   Type3 n=19  /W 0.3840
+/// ```
+#[test]
+fn hanyang_sinmyeongjo_middle_dot_matches_its_own_metric() {
+    let hanyang = advances_for(
+        "한양신명조",
+        &[(SAMPLE_21868765, 24), (SAMPLE_21298295, 24)],
+    );
+    assert!(
+        hanyang.len() >= 20,
+        "한양신명조 `·` 를 20개 이상 봐야 한다 — 검사 대상이 0건이면 통과 증거가 아니다. got {}",
+        hanyang.len()
+    );
+    let median = hanyang[hanyang.len() / 2];
+    assert!(
+        (0.36..=0.41).contains(&median),
+        "한양신명조 `·` 전진 중앙값은 자기 메트릭 0.3838 em 이어야 한다(수정 전 0.300). got {median:.4} · 전체 {hanyang:?}"
+    );
+    let off: Vec<_> = hanyang
+        .iter()
+        .filter(|adv| !(0.31..=0.45).contains(*adv))
+        .collect();
+    assert!(
+        off.is_empty(),
+        "좁힘 값(0.300)과 갈리는 선을 벗어난 것: {off:?} (전체 {}개)",
+        hanyang.len()
+    );
+}
+
+/// 한양견명조·한양견고딕은 **손대지 않는다** — 저장소에 근거가 없다.
+///
+/// `samples/` 1,082건 전수에서 `·` 런을 그 두 글꼴로 푸는 문서가 **0개**다(한양중고딕 51
+/// 문서 637회 · 한양신명조 16문서 310회). 값을 정할 실측도 없고, 바꿔도 보이는 곳이 없다.
+/// 그 둘이 `·` 를 담은 문서가 표본에 들어오면 그때 같은 자로 재야 한다.
+#[test]
+fn kyun_families_have_no_anchored_evidence_in_the_corpus() {
+    let mut seen = 0usize;
+    for sample in [SAMPLE_76076, SAMPLE_80168, SAMPLE_21868765, SAMPLE_21298295] {
+        for (font, _) in middle_dot_advances(sample, 24) {
+            if font == "한양견명조" || font == "한양견고딕" {
+                seen += 1;
+            }
+        }
+    }
+    assert_eq!(
+        seen, 0,
+        "견 계열이 `·` 를 담은 표본이 생겼다 — 정본으로 값을 재서 이 시험과 오버레이를 함께 갱신해라"
     );
 }
