@@ -6,6 +6,12 @@
 /// 문서 변경 이벤트
 #[derive(Debug, Clone)]
 pub enum DocumentEvent {
+    /// Atomic fixed-form fill; paragraph indices are section-local owning roots.
+    TemplateFilled {
+        section: usize,
+        paragraphs: Vec<usize>,
+        targets: usize,
+    },
     // ── 텍스트 편집 ──
     TextInserted {
         section: usize,
@@ -166,6 +172,14 @@ impl DocumentEvent {
     /// 이벤트를 JSON 객체 문자열로 직렬화한다.
     pub fn to_json(&self) -> String {
         match self {
+            DocumentEvent::TemplateFilled {
+                section,
+                paragraphs,
+                targets,
+            } => format!(
+                r#"{{"type":"TemplateFilled","section":{},"paragraphs":{:?},"targets":{}}}"#,
+                section, paragraphs, targets
+            ),
             // 텍스트 편집
             DocumentEvent::TextInserted {
                 section,

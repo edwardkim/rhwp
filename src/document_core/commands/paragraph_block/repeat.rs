@@ -40,7 +40,7 @@ pub struct RepeatParagraphBlockResult {
     pub copies: Vec<ParagraphBlockCopy>,
 }
 
-fn table_keys(
+pub(super) fn table_keys(
     paras: &[Paragraph],
     request: &RepeatParagraphBlockRequest,
 ) -> Result<Vec<TableTextReflowKey>, HwpError> {

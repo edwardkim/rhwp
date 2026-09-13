@@ -4,9 +4,12 @@ mod owned;
 mod repeat;
 mod template;
 mod template_edit;
+mod template_form;
+mod template_select;
 mod validation;
 pub use repeat::{ParagraphBlockCopy, ParagraphBlockMapping, RepeatParagraphBlockResult};
 pub use template::{TemplateBinding, TemplateFillPreview, TemplateFillRequest, TemplateFillTarget};
+pub use template_form::{FillTemplateRequest, FillTemplateResult, TemplateScope};
 pub use validation::{ParagraphBlockPathStep, ParagraphBlockValidationError};
 
 use crate::{document_core::DocumentCore, error::HwpError};

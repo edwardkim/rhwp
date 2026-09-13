@@ -48,7 +48,7 @@ pub struct TemplateFillPreview {
     pub replacement_text_bytes: usize,
 }
 
-struct Selection<'a> {
+pub(super) struct Selection<'a> {
     path: &'a [Step],
     range: std::ops::Range<usize>,
 }
@@ -69,7 +69,7 @@ fn add_budget(total: &mut usize, amount: usize, limit: usize) -> Result<(), Erro
     Ok(())
 }
 
-fn path(target: &TemplateFillTarget) -> &[Step] {
+pub(super) fn path(target: &TemplateFillTarget) -> &[Step] {
     match target {
         TemplateFillTarget::TextRange { path, .. } | TemplateFillTarget::Field { path, .. } => path,
     }
@@ -80,7 +80,10 @@ fn touches(a: &std::ops::Range<usize>, b: &std::ops::Range<usize>) -> bool {
     a.start <= b.end && b.start <= a.end
 }
 
-fn select<'a>(binding: &'a TemplateBinding, para: &Paragraph) -> Result<Selection<'a>, Error> {
+pub(super) fn select<'a>(
+    binding: &'a TemplateBinding,
+    para: &Paragraph,
+) -> Result<Selection<'a>, Error> {
     let path = path(&binding.target);
     let (range, field_index) = match &binding.target {
         TemplateFillTarget::TextRange { start, end, .. } => (*start..*end, None),
@@ -171,103 +174,16 @@ impl DocumentCore {
                 Ok(Vec::new())
             });
         }
-        // Bound scalar/UTF-16 scratch arrays as well as payload before cloning/editing.
-        // This is a conservative working-structure budget, not a process RSS promise.
-        let mut estimated = preview.block.structure_bytes;
-        let scratch = preview
-            .replacement_text_bytes
-            .checked_mul(32)
-            .ok_or_else(|| super::invalid("fill derived size overflow"))?;
-        add_budget(
-            &mut estimated,
-            scratch,
-            request.block.limits.max_structure_bytes,
-        )
-        .map_err(|e| super::invalid(e.to_string()))?;
-        let source = &self.document.sections[request.block.section_index].paragraphs
-            [request.block.source_start..request.block.source_end];
-        let paras: HashMap<_, _> = validation::paragraphs(source, &request.block)
-            .map_err(|e| super::invalid(e.to_string()))?
-            .into_iter()
-            .collect();
-        let mut edits = Vec::new();
-        for binding in &request.bindings {
-            let p = paras
-                .get(path(&binding.target))
-                .ok_or_else(|| super::invalid("validated fill target disappeared"))?;
-            let selection = select(binding, p).map_err(|e| super::invalid(e.to_string()))?;
-            edits.push((binding, selection.range));
-        }
-        // All coordinates refer to the input. Right-to-left edits preserve later anchors.
-        edits.sort_by(|a, b| b.1.start.cmp(&a.1.start));
-        let mut measured = 0;
-        let mut work_bytes = 0;
+        let mut edits = FillEdits::prepare(self, &request.block, &request.bindings, &preview)?;
         self.repeat_paragraph_block_prepared(&request.block, preview.block, |copy, index| {
-            let mut tables = Vec::new();
-            for (binding, range) in &edits {
-                let para =
-                    super::template_edit::paragraph(copy, path(&binding.target), &mut tables)?;
-                let value = &request.records[index][&binding.key];
-                let target_style = para.char_shape_id_at(range.start);
-                // Existing text also feeds char/offset scratch arrays. Payload alone
-                // does not bound editing a long field with a short replacement.
-                let mut working = estimated;
-                let existing_scratch = para
-                    .text
-                    .len()
-                    .checked_mul(32)
-                    .ok_or_else(|| super::invalid("fill existing text size overflow"))?;
-                add_budget(
-                    &mut working,
-                    existing_scratch,
-                    request.block.limits.max_structure_bytes,
+            edits
+                .apply(
+                    copy,
+                    &request.records[index],
+                    request.block.limits,
+                    request.block.limits.max_nodes / request.block.count,
                 )
-                .map_err(|e| super::invalid(format!("fill copy {index}: {e}")))?;
-                add_budget(
-                    &mut work_bytes,
-                    para.text.len(),
-                    request.block.limits.max_structure_bytes,
-                )
-                .map_err(|e| super::invalid(format!("fill copy {index}: {e}")))?;
-                match &binding.target {
-                    TemplateFillTarget::Field {
-                        field_range_index, ..
-                    } => Self::replace_field_text_model(para, *field_range_index, value)?,
-                    TemplateFillTarget::TextRange { .. } => {
-                        para.delete_text_at(range.start, range.end - range.start);
-                        para.insert_text_at(range.start, value);
-                        para.replace_line_segs(Vec::new());
-                    }
-                }
-                // Deletion intentionally keeps the surviving right run's style.
-                // A template replacement instead inherits the selected start style,
-                // while range application preserves the unselected right neighbor.
-                if let Some(style) = target_style {
-                    para.apply_char_shape_range(
-                        range.start,
-                        range.start + value.chars().count(),
-                        style,
-                    );
-                }
-            }
-            let cost = super::owned::source(
-                copy,
-                request.block.limits.max_nodes / request.block.count,
-                request.block.limits.max_depth,
-            )?;
-            let bytes = super::budget::measure(
-                copy,
-                1,
-                request.block.limits.max_structure_bytes,
-                cost.skipped_bytes,
-            )?;
-            add_budget(
-                &mut measured,
-                bytes,
-                request.block.limits.max_structure_bytes,
-            )
-            .map_err(|e| super::invalid(format!("fill copy {index}: {e}")))?;
-            Ok(tables)
+                .map_err(|e| super::invalid(format!("fill copy {index}: {e}")))
         })
     }
 
@@ -277,13 +193,21 @@ impl DocumentCore {
         &self,
         request: &TemplateFillRequest,
     ) -> Result<TemplateFillPreview, Error> {
-        let r = &request.block;
+        self.validate_template_parts(&request.block, &request.bindings, &request.records)
+    }
+
+    pub(super) fn validate_template_parts(
+        &self,
+        r: &RepeatParagraphBlockRequest,
+        bindings: &[TemplateBinding],
+        records: &[BTreeMap<String, String>],
+    ) -> Result<TemplateFillPreview, Error> {
         // Validate addresses/limits even for the no-op without scanning source content.
         self.validate_paragraph_block_native(&RepeatParagraphBlockRequest {
             count: 0,
             ..r.clone()
         })?;
-        if request.records.len() != r.count || request.bindings.len() > MAX_TARGETS {
+        if records.len() != r.count || bindings.len() > MAX_TARGETS {
             return Err(error(
                 &[],
                 "fillCardinality",
@@ -295,12 +219,12 @@ impl DocumentCore {
         }
         let target_count = r
             .count
-            .checked_mul(request.bindings.len())
+            .checked_mul(bindings.len())
             .filter(|n| *n <= MAX_TARGETS)
             .ok_or_else(|| error(&[], "fillBudget", "expanded target limit exceeded"))?;
         let mut keys = HashSet::new();
         let mut input_bytes = 0;
-        for binding in &request.bindings {
+        for binding in bindings {
             let p = path(&binding.target);
             if p.len() > r.limits.max_depth {
                 return Err(error(&[], "fillBudget", "target path depth exceeded"));
@@ -312,7 +236,7 @@ impl DocumentCore {
             }
         }
         let mut fill_bytes = 0;
-        for (index, record) in request.records.iter().enumerate() {
+        for (index, record) in records.iter().enumerate() {
             if record.len() != keys.len() || record.keys().any(|key| !keys.contains(key.as_str())) {
                 return Err(error(
                     &[],
@@ -341,7 +265,7 @@ impl DocumentCore {
         let paragraphs: HashMap<_, _> = validation::paragraphs(source, r)?.into_iter().collect();
         let mut selections: HashMap<&[Step], Vec<Selection<'_>>> = HashMap::new();
         let mut inspected_bytes = 0;
-        for binding in &request.bindings {
+        for binding in bindings {
             let p = path(&binding.target);
             let para = paragraphs
                 .get(p)
@@ -372,5 +296,131 @@ impl DocumentCore {
             target_count,
             replacement_text_bytes: fill_bytes,
         })
+    }
+}
+
+/// Common detached edit program for fixed forms and repeated blocks.
+pub(super) struct FillEdits<'a> {
+    pub(super) edits: Vec<(&'a TemplateBinding, std::ops::Range<usize>)>,
+    estimated: usize,
+    measured: usize,
+    work_bytes: usize,
+}
+impl<'a> FillEdits<'a> {
+    pub(super) fn prepare(
+        core: &DocumentCore,
+        r: &RepeatParagraphBlockRequest,
+        bindings: &'a [TemplateBinding],
+        preview: &TemplateFillPreview,
+    ) -> Result<Self, crate::error::HwpError> {
+        // Bound scalar/UTF-16 scratch arrays as well as payload before cloning/editing.
+        // This is a conservative working-structure budget, not a process RSS promise.
+        let mut estimated = preview.block.structure_bytes;
+        let scratch = preview
+            .replacement_text_bytes
+            .checked_mul(32)
+            .ok_or_else(|| super::invalid("fill derived size overflow"))?;
+        add_budget(&mut estimated, scratch, r.limits.max_structure_bytes)
+            .map_err(|e| super::invalid(e.to_string()))?;
+        let source =
+            &core.document.sections[r.section_index].paragraphs[r.source_start..r.source_end];
+        let paras: HashMap<_, _> = validation::paragraphs(source, r)
+            .map_err(|e| super::invalid(e.to_string()))?
+            .into_iter()
+            .collect();
+        let mut edits = Vec::new();
+        for binding in bindings {
+            let p = paras
+                .get(path(&binding.target))
+                .ok_or_else(|| super::invalid("validated fill target disappeared"))?;
+            let selection = select(binding, p).map_err(|e| super::invalid(e.to_string()))?;
+            edits.push((binding, selection.range));
+        }
+        // All coordinates refer to the input. Right-to-left edits preserve later anchors.
+        edits.sort_by(|a, b| b.1.start.cmp(&a.1.start));
+
+        Ok(Self {
+            edits,
+            estimated,
+            measured: 0,
+            work_bytes: 0,
+        })
+    }
+
+    pub(super) fn apply(
+        &mut self,
+        copy: &mut [Paragraph],
+        record: &BTreeMap<String, String>,
+        limits: super::ParagraphBlockLimits,
+        max_nodes: usize,
+    ) -> Result<Vec<crate::document_core::TableTextReflowKey>, crate::error::HwpError> {
+        self.apply_to_roots(copy, record, limits, max_nodes, None)
+    }
+
+    pub(super) fn apply_to_roots(
+        &mut self,
+        copy: &mut [Paragraph],
+        record: &BTreeMap<String, String>,
+        limits: super::ParagraphBlockLimits,
+        max_nodes: usize,
+        roots: Option<&[usize]>,
+    ) -> Result<Vec<crate::document_core::TableTextReflowKey>, crate::error::HwpError> {
+        let mut tables = Vec::new();
+        for (binding, range) in &self.edits {
+            let mut resolved_path = path(&binding.target).to_vec();
+            if let Some(roots) = roots {
+                let Some(Step::Paragraph(root)) = resolved_path.first_mut() else {
+                    return Err(super::invalid("fill root missing"));
+                };
+                *root = roots
+                    .binary_search(root)
+                    .map_err(|_| super::invalid("fill staged root missing"))?;
+            }
+            let para = super::template_edit::paragraph(copy, &resolved_path, &mut tables)?;
+            let value = &record[&binding.key];
+            let target_style = para.char_shape_id_at(range.start);
+            // Existing text also feeds char/offset scratch arrays. Payload alone
+            // does not bound editing a long field with a short replacement.
+            let mut working = self.estimated;
+            let existing_scratch = para
+                .text
+                .len()
+                .checked_mul(32)
+                .ok_or_else(|| super::invalid("fill existing text size overflow"))?;
+            add_budget(&mut working, existing_scratch, limits.max_structure_bytes)
+                .map_err(|e| super::invalid(e.to_string()))?;
+            add_budget(
+                &mut self.work_bytes,
+                para.text.len(),
+                limits.max_structure_bytes,
+            )
+            .map_err(|e| super::invalid(e.to_string()))?;
+            match &binding.target {
+                TemplateFillTarget::Field {
+                    field_range_index, ..
+                } => DocumentCore::replace_field_text_model(para, *field_range_index, value)?,
+                TemplateFillTarget::TextRange { .. } => {
+                    para.delete_text_at(range.start, range.end - range.start);
+                    para.insert_text_at(range.start, value);
+                    para.replace_line_segs(Vec::new());
+                }
+            }
+            // Deletion intentionally keeps the surviving right run's style.
+            // A template replacement instead inherits the selected start style,
+            // while range application preserves the unselected right neighbor.
+            if let Some(style) = target_style {
+                para.apply_char_shape_range(
+                    range.start,
+                    range.start + value.chars().count(),
+                    style,
+                );
+            }
+        }
+        let cost = super::owned::source(copy, max_nodes, limits.max_depth)?;
+        let bytes =
+            super::budget::measure(copy, 1, limits.max_structure_bytes, cost.skipped_bytes)?;
+        add_budget(&mut self.measured, bytes, limits.max_structure_bytes)
+            .map_err(|e| super::invalid(e.to_string()))?;
+        Ok(tables)
     }
 }

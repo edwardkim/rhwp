@@ -9,10 +9,10 @@ pub(crate) use helpers::*;
 pub mod builders;
 mod commands;
 pub use commands::paragraph_block::{
-    ParagraphBlockBudget, ParagraphBlockCopy, ParagraphBlockLimits, ParagraphBlockMapping,
-    ParagraphBlockPathStep, ParagraphBlockValidationError, RepeatParagraphBlockRequest,
-    RepeatParagraphBlockResult, TemplateBinding, TemplateFillPreview, TemplateFillRequest,
-    TemplateFillTarget,
+    FillTemplateRequest, FillTemplateResult, ParagraphBlockBudget, ParagraphBlockCopy,
+    ParagraphBlockLimits, ParagraphBlockMapping, ParagraphBlockPathStep,
+    ParagraphBlockValidationError, RepeatParagraphBlockRequest, RepeatParagraphBlockResult,
+    TemplateBinding, TemplateFillPreview, TemplateFillRequest, TemplateFillTarget, TemplateScope,
 };
 pub mod converters;
 pub(crate) mod html_table_import;
