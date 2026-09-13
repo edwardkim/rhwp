@@ -5812,7 +5812,23 @@ impl FormattedParagraph {
         ladder_dirty: bool,
         lazy_base: bool,
     ) -> f64 {
-        if col_count > 1 {
+        // [#6970] 다단에서도 **합성(reflow) lineseg 문단은 트림하지 않는다** — 아래
+        // `#2279 ①` 이 단단 경로에 건 가드와 같은 이유다. 트림은 "저장 ladder 가 spacing 을
+        // 이미 반영하고 vpos-snap 이 좌표를 복원한다"는 전제 위에 서는데, 합성 문단에는 그
+        // ladder 가 없어 트림분이 흐름에서 그냥 소실된다.
+        //
+        // 저장 `LINE_SEG` 가 없는 2단 문서에서 그 소실이 쌓여 단 채움 회계가 무너진다 —
+        // `synth_no_ls_square_wrap.hwp` 실측: 문단 151개에서 Σ 741.6px(문단당 6~10px)를
+        // 덜 세고, 단 0 은 `usedHeight 708.9 ≤ 가용 718.1` 로 "아직 남았다"고 판단해 계속
+        // 담는다. 실제로 담은 항목 합은 1000.4px 라 282px 초과이고, 넘친 내용이 다음 단으로
+        // 가지 않고 그 자리에 그려진다(off-canvas 20 · overflow 16).
+        //
+        // 다단에서 `height_for_fit` 을 쓰는 본래 이유(#391: trailing_ls 인플레이션이 단을
+        // 조기 종료시킨다)는 **저장 ladder 가 있는 문단**에 대한 것이므로 그대로 둔다.
+        let has_authoritative_seg_for_multicolumn = para.line_segs.iter().any(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        if col_count > 1 && has_authoritative_seg_for_multicolumn {
             return self.height_for_fit;
         }
         // [#2279 ①] spacing 트림은 **비합성(authoritative) 저장 lineseg** 문단에만.
