@@ -56,7 +56,8 @@ Gym 없이 native·WASM·CLI `run`·MCP `hwp_run_plan`에서 같은 문서 코�
 블록 복제/가져오기에서 보존하지만, `target.kind: "field"`로 값을 채우는 대상은 계속 ClickHere다.
 링크 주소는 데이터로 복사하며 복제 중 접속하거나 실행하지 않는다. HWPX의 단일 `Command`
 매개변수는 기존 링크 문자열 및 표준 표현과 일치할 때만 허용하며, 미지 매개변수·양식/이름을
-가진 글상자 확장은 명시적으로 거부한다. 다른 문서 가져오기의 공개 WASM/CLI 연결은 아직 후속 단계다.
+가진 글상자 확장은 명시적으로 거부한다. 다른 문서 가져오기는 아래 별도 WASM 핸들 경로를 사용한다.
+CLI/MCP 계획 연결은 아직 후속 단계다.
 
 ## 먼저 dry-run, 이어서 실행
 
@@ -128,6 +129,40 @@ HWPX 변환이 되지는 않는다. 먼저 `rhwp export-hwpx`로 변환한 HWPX�
 다중 step 계획과 `if` 조건은 유지한다. 조건이 거짓이면 기존 계약대로 건너뛰며, 이를
 실제로 채웠다는 성공으로 해석하지 않는다.
 
+## 다른 문서의 블록 가져오기 — WASM
+
+`target.importParagraphBlock(source, optionsJson)`은 서로 다른 두 `HwpDocument` 핸들을 받는다.
+source를 소비하거나 문서 전체를 복제하지 않는다. **같은 핸들은 JS에서 호출 전에 거부해야 한다.**
+동일 핸들을 직접 넘기면 WASM borrow 검사에서 예외가 발생하며 그 핸들의 후속 사용/free도 실패할 수 있다.
+이는 native 요청 오류의 복구 계약 밖인 ABI 오사용이다. 같은 문서 복제는 기존 문단 복제 API를 사용한다.
+
+```javascript
+const request = {
+  sourceSection: 0, sourceStart: 1, sourceEnd: 2,
+  targetSection: 0, insertBefore: 1, count: 2
+};
+// 실제 두 문서에서 확인한 주소로 교체한다.
+if (target === source) throw new TypeError("원본과 대상은 서로 다른 문서 핸들이어야 합니다");
+const preview = JSON.parse(target.importParagraphBlock(source, JSON.stringify({request, dryRun: true})));
+const applied = JSON.parse(target.importParagraphBlock(source, JSON.stringify({request})));
+```
+
+원본의 완전한 문단 묶음만 가져오고, 대상의 앞뒤 문단·빈 Enter·용지 설정은 유지한다.
+스타일/이미지는 선택 블록에서 필요한 것만 이식·재사용하며 복사본 신원은 새로 배정한다.
+구역 컨트롤·미지원 참조는 조용히 버리지 않고 거부한다. 원본 문서의 용지를 자동 복사하지 않는다.
+`dryRun`은 full native 준비와 같으며, 실제 반영 권한이나 후속 snapshot에도 유효한 허가증이 아니다.
+
+응답 `operationResult.action`은 `import_paragraph_block`, `result`에는 `targetSection`,
+`inserted`, `copies`, `resources`가 있다. `copies[].mappings.source`는 선택 블록 상대 경로,
+`destination`은 삽입 직후 대상 구역 내 절대 경로다. 같은 문서 복제의 `sourceAfter`는 없다.
+`resources`는 실제 자원 준비 수치이며 실행 시간이나 RSS는 아니다. 파일 저장과 후속 내용 채우기는 별도 호출이다.
+여러 호출 전체의 원자성을 보장하지 않는다. 원본 bytes/경로는 options JSON에 넣지 않는다.
+
+요청은 `{request, dryRun?}`의 엄격한 JSON이며 최대 8 MiB다. `request.limits` 생략 시 기본값,
+지정 시 `block`(기존 블록 상한), `maxResourceMetadataBytes`(32 MiB 이하),
+`maxBinaryBytes`(64 MiB 이하)를 사용한다. `block` 생략은 기본값이며 각 상한은 낮출 수만 있다.
+바이너리 예산에는 중복 비교용 읽기도 포함된다. lazy 자원 읽기 캐시는 채워질 수 있으나 원본 의미는 불변이다.
+
 ## 안전 상한과 검증 범위
 
 요청 JSON은 최대 8 MiB이며 기본 serde 재귀 제한도 유지한다. native typed 요청도
@@ -139,4 +174,4 @@ HWPX 변환이 되지는 않는다. 먼저 `rhwp export-hwpx`로 변환한 HWPX�
 출력 구조·저장 성공과 Studio의 재편집 조판은 별도 판정이다. 현재 알려진
 [#7065](https://github.com/edwardkim/rhwp/issues/7065) 재편집 페이지네이션과
 [#7084](https://github.com/edwardkim/rhwp/issues/7084) 이모티콘 폭 문제는 이 API로 해결했다고
-간주하지 않는다. 다른 문서의 스타일·이미지를 가져오는 기능과 후속 Gym 평가는 별도 단계다.
+간주하지 않는다. 다른 문서 가져오기의 CLI/MCP 연결과 후속 Gym 평가는 별도 단계다.

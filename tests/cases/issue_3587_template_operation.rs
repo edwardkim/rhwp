@@ -180,3 +180,113 @@ fn independent_target_errors_are_reported_together_without_mutation() {
     );
     assert_eq!(before, state(&c));
 }
+
+fn import_options() -> Value {
+    json!({"request":{"sourceSection":0,"sourceStart":1,"sourceEnd":3,
+        "targetSection":0,"insertBefore":3,"count":2},"dryRun":true})
+}
+
+#[test]
+fn import_json_preview_commit_and_native_results_match_without_source_mutation() {
+    let source = core();
+    let source_before = state(&source);
+    let mut target = core();
+    let target_before = state(&target);
+    let mut options = import_options();
+    let request = serde_json::from_value(options["request"].clone()).unwrap();
+    let expected = target
+        .preview_paragraph_block_import_native(source.document(), &request)
+        .unwrap();
+    let preview: Value = serde_json::from_str(
+        &target
+            .import_paragraph_block_json_native(source.document(), &options.to_string())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(state(&target), target_before);
+    assert_eq!(
+        preview["operationResult"]["result"],
+        serde_json::to_value(expected).unwrap()
+    );
+    assert_eq!(
+        preview["operationResult"]["action"],
+        "import_paragraph_block"
+    );
+    assert_eq!(
+        preview["schemaVersion"],
+        rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION
+    );
+    assert_eq!(preview["changedPages"], Value::Null);
+    assert_eq!(preview["dryRun"], true);
+    options.as_object_mut().unwrap().remove("dryRun");
+    let actual: Value = serde_json::from_str(
+        &target
+            .import_paragraph_block_json_native(source.document(), &options.to_string())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(actual["dryRun"], false);
+    assert_eq!(actual["operationResult"], preview["operationResult"]);
+    assert_eq!(state(&source), source_before);
+    let texts: Vec<_> = target.document().sections[0]
+        .paragraphs
+        .iter()
+        .map(|p| p.text.as_str())
+        .collect();
+    assert_eq!(
+        texts,
+        ["before", "A😀B", "", "A😀B", "", "A😀B", "", "after"]
+    );
+}
+
+#[test]
+fn import_json_errors_and_zero_count_do_not_mutate_either_document() {
+    let source = core();
+    let source_before = state(&source);
+    let mut target = core();
+    let target_before = state(&target);
+    let mut cases = Vec::new();
+    for (key, value) in [("dryRun", json!("false")), ("sourceBytes", json!([]))] {
+        let mut options = import_options();
+        options[key] = value;
+        cases.push(options.to_string());
+    }
+    for (key, value) in [
+        ("sourceStart", json!(-1)),
+        ("count", json!(1001)),
+        ("insertBefore", json!(99)),
+        ("sourceEnd", json!(99)),
+        ("typo", json!(0)),
+    ] {
+        let mut options = import_options();
+        options["request"][key] = value;
+        for dry_run in [true, false] {
+            options["dryRun"] = json!(dry_run);
+            cases.push(options.to_string());
+        }
+    }
+    cases.push("{".into());
+    cases.push(" ".repeat(8 * 1024 * 1024 + 1));
+    for options in cases {
+        assert!(target
+            .import_paragraph_block_json_native(source.document(), &options)
+            .is_err());
+        assert_eq!(state(&target), target_before);
+        assert_eq!(state(&source), source_before);
+    }
+    let mut options = import_options();
+    options["request"]["count"] = json!(0);
+    options["dryRun"] = json!(false);
+    let result: Value = serde_json::from_str(
+        &target
+            .import_paragraph_block_json_native(source.document(), &options.to_string())
+            .unwrap(),
+    )
+    .unwrap();
+    assert!(result["operationResult"]["result"]["copies"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert_eq!(state(&target), target_before);
+    assert_eq!(state(&source), source_before);
+}

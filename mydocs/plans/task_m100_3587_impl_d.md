@@ -1,6 +1,6 @@
 # #3587 D 구현계획 — 다른 문서의 블록을 서식·자원과 함께 가져오기
 
-- 작성: 2026-09-13. 상태: **상세 계획 및 D0→D1 진입 승인. [Stage 16](../working/task_m100_3587_stage16.md)의 선검증 이후 [Stage 17](../working/task_m100_3587_stage17.md)에서 native 자원 이식·경계 삽입을 구현하고 집중 169건을 통과했다. D1 지원 경계 보완·실물 확인이 남아 있으며 D1 전체 완료는 아니다.**
+- 작성: 2026-09-13. 상태: **D1 native 및 실물 지원 보완 완료. [Stage 20](../working/task_m100_3587_stage20.md)의 글상자 결과도 한컴 정상 열림 확인 후 D2 진행을 승인받았다. [Stage 21](../working/task_m100_3587_stage21.md)에서 WASM 핸들 경계를 연결한다. CLI/MCP·레시피와 D3 전체 통합 검증은 남아 있다.**
 - 근거: [전체 구현계획 §5 D](task_m100_3587_impl.md), [C 종료 기록](../working/task_m100_3587_stage14.md), [D 선행 조사](../working/task_m100_3587_stage15.md).
 - 작업 브랜치: `task_m100_3587`. C 종료 기록: `576ff5872`, 제품·테스트 기준: `79be4d39d`.
 - 원격 확인: `upstream/devel=897c6a3d8d7559d314bf863c93bbe28c0d65e945`. 구현 전 다시 확인한다.
@@ -148,3 +148,15 @@ remote push·PR·댓글·merge 게시, #7090 수정 및 #3587 종료는 이번 �
   그 뒤 기존 외부 paste와 A/B/C/D 집중 검사, D3 통합 게이트로 진행한다.
 
 상태: 메인테이너의 「다음 절차를 진행하세요」로 수정 범위 승인. Stage 20에서 구현·검증한다.
+
+## 9. D2 공개 연결 진행
+
+Stage 20의 기본 글상자 및 일반 링크 가져오기 결과를 메인테이너가 한컴에서 정상 열림으로 확인하고
+다음 절차를 승인했다. D1에서 명시한 미지원 raw 참조·바이너리 충돌 등의 안전 거부는 계속 지원 제한이다.
+그 제한까지 모두 구현했다고 해석하지 않는다.
+
+공개 연결은 **WASM 핸들/JSON 계약 → CLI의 source 단일 읽기·지문/단독 action 및 스키마·MCP →
+실제 가져오기/채우기 레시피 동치 검증** 순서로 진행한다. Stage 21은 첫 묶음이다.
+`importParagraphBlock(source, optionsJson)`은 기존 `applyTemplateOperation`과 별도로 source 핸들을
+받되 같은 core import를 호출한다. 서식/ID 이식 로직을 transport에 다시 구현하지 않는다.
+전체 회귀·세 Clippy·Native Skia·비용 계측은 D3에서 최종 공통 SHA로 수행한다.

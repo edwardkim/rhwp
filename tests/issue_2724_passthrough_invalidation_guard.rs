@@ -87,6 +87,12 @@ enum Exempt {
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/paragraph_block/import_json.rs",
+        "import_paragraph_block_json_native",
+        Exempt::DelegatesTo("import_paragraph_block_native"),
+        "#3587: JSON 어댑터의 dry-run은 무변경, 실행은 native 가져오기의 DocInfo/구역 무효화 경로에 위임한다. issue_3587_template_operation과 실제 WASM import-wasm-contract에서 실패 무변경 및 저장 재열기를 검사한다.",
+    ),
+    (
         "commands/paragraph_block/import.rs",
         "import_paragraph_block_native",
         Exempt::DelegatesTo("commit_block_content"),

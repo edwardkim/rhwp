@@ -1,6 +1,7 @@
 //! Whole-paragraph block automation with read-only preflight and staged insertion.
 mod budget;
 mod import;
+mod import_json;
 mod owned;
 mod repeat;
 mod rows_geometry;
