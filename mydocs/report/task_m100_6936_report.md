@@ -5,9 +5,10 @@ Issue: [#6936](https://github.com/edwardkim/rhwp/issues/6936)
 - 확인일: 2026-09-13 KST
 - 기준: `upstream/devel` `70bf40af2a2818e72bd58b4fa66e2d4c06de2b51`
 - 작업 브랜치: `fix/6936-pdf-synthetic-bold-20260913`
-- 구현·시험·증적 커밋: `01cd447a4`
-- 판정: 기본 SVG→PDF 경로에서 문제를 재현했고 로컬 수정 및 범위별 검증을 완료했다.
-  PR 전체 게이트와 Windows 네이티브 실행까지 완료했다는 판정은 아니다.
+- 초기 구현·시험·증적 커밋: `01cd447a4`
+- PR 준비의 최종 코드 검증 커밋: `3ba6d6d3e`
+- 판정: 기본 SVG→PDF 경로의 문제를 재현·수정했고 PR 준비의 로컬 필수 게이트를 완료했다.
+  Windows 네이티브 실행 및 원격 CI는 미실행이다. 원격 push/PR 생성 전 로컬 준비 상태다.
 
 ## 재현과 원인
 
@@ -78,19 +79,94 @@ Mac에서 `win10-ted`에 설치된 해당 글꼴 파일을 읽기 전용으로 �
 | #7077 gradient/opacity mask 회귀 | 2/2 PASS |
 | font rule v2 / projection / mutation rehearsal | 45/45 PASS |
 | font projection generator check | PASS |
-| native `cargo clippy --locked --target-dir … -- -D warnings` | PASS |
+| native / WASM32 / workspace all-target Clippy (`-D warnings`) | 3종 모두 PASS |
+| `cargo build --locked --workspace` | PASS |
+| full release-test nextest | 9,749/9,749 PASS, 51 skipped |
+| Native Skia lib | 4,112 PASS, 13 ignored |
+| Native Skia 그림 placeholder / 직접 PDF export | 2/2, 4/4 PASS |
+| #4966 기존 글꼴 projection 회귀 | 3/3 PASS |
+| 실제 HWP public font trace schema/lifecycle | 새 규칙 참조 34개, traceSourceDrift/retired/replaced/dangling 0 |
+| 최종 코드 PDF 재출력 / 검증 입력 6개 Git blob 대조 | 최종 PDF 바이트 동일, 입력 SHA 모두 일치 |
 | `cargo fmt --all -- --check` | PASS |
 | suite prepare 후 `rust-test-suite-manifest.mjs --check` | PASS |
 | PDF 추출/Tr/단일 show/행별 원점/1페이지 검사 | PASS |
+| fresh WASM `--no-opt` build | PASS (로컬 진단 경로) |
+| native/WASM SVG 실제 실행 비교 | HWP 87,322 bytes, HWPX 87,430 bytes; 각각 1페이지, 바이트 동일 |
 
 원본 실행 로그는 `/private/tmp/rhwp-6936-pr-prepare-20260913/archived-evidence/validation.log`에 보관한다.
 파생 integration suite/manifest는 검증용이며 커밋하지 않았다.
 
-`font_rule_projection_baseline.test.mjs`는 7개 중 1개가 과거 W7 snapshot 불일치로 실패한다.
-수정 전 primary checkout `70bf40af2`에서도 동일한 검사와 오류를 재현했다
-(원본 로그: `/private/tmp/rhwp-6936-pr-prepare-20260913/archived-evidence/baseline-existing-failure.log`).
-관측된 차이는 기존 Studio webfont 공급/요청 목록이며 이번 변경의 다른 네 projection은 동일하다.
-이 실패를 통과로 기록하거나 과거 snapshot을 덮어쓰지 않았다.
+추가로 `scripts/tests/font_rule*.test.mjs` 전체 97개를 실행하면 93개 통과, 다음 4개가 실패한다.
+수정 전 primary checkout `70bf40af2`에서도 같은 4개 검사 실패를 재현했다.
 
-WASM Clippy, workspace build/all-target Clippy, full Rust/Native Skia/교차 호스트 검증 및 원격 CI는
-이번 로컬 개선 단계에서 실행하지 않았다. PR 준비 시 변경 범위에 해당하는 필수 게이트를 완료해야 한다.
+- `all 1,352 candidates close to one row or an approved profile split`
+- `all 830 current registry rules resolve as carried-forward active`
+- `the complete W1 rule population closes as lifecycle or historical reference-only`
+- `W7 pre-migration semantics remain equal after source ownership migration`
+
+앞의 세 검사는 과거 population/lifecycle 가정, 마지막 검사는 기존 Studio webfont 공급/요청 목록과
+W7 snapshot의 차이다. 기존 #7023 교체 이후 기준선도 실패하며 이번 추가 교체로 실제 개수는 달라지므로,
+오류의 수치까지 동일하다고 주장하지 않는다. 봉인 v1 및 W7 snapshot을 덮어쓰거나 실패를 PASS로 기록하지 않았다.
+최종 후보 로그는 `/private/tmp/rhwp-6936-pr-prepare-20260913/final/font-rules-all.log`,
+기준 devel 로그는 `/private/tmp/rhwp-6936-pr-prepare-20260913/base-font-rules-all.log`에 보관한다.
+이번 변경의 reducer·projection·mutation 검사 45개와 실제 HWP의 public trace 계약은 별도로 통과했다.
+
+최초 전체 Rust 실행에서는 글꼴 규칙의 기존 retired 개수 가정과 public trace rule ID 계약 검사 2개가
+실패했다. 새 replacement ID를 기존 candidate identity의 20자리 해시 계약에 맞추고, 기존 Rust 검사가
+명시적인 두 change set의 교체만 허용하도록 보정했다. production trace API와 봉인 v1는 변경하지 않았다.
+보정 후 필수 lint 묶음과 전체 9,749개를 다시 통과했다.
+
+최종 실행 로그는 `/private/tmp/rhwp-6936-pr-prepare-20260913/final/`에 보관한다.
+전체 nextest는 다음 명령을 사용했다. 10 logical CPU·32 GiB RAM 및 코퍼스 내부 worker를 고려해
+동시 test process를 6개로 제한했으며 새로운 입력 두 개를 security sweep에 명시했다.
+
+```sh
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue6936/bold-faces.hwp","samples/issue6936/bold-faces.hwpx"]' \
+  cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /Users/tsjang/rhwp/target/issue6936-20260913 \
+  --tests --test-threads 6 --no-fail-fast
+```
+
+native/WASM/workspace lint는 같은 전용 target에서 `local_validation.md` 4.3의 묶음을 순차 실행했다.
+추가 소요를 줄이기 위해 코드가 바뀌지 않은 최종 문서 커밋 뒤에 전체 검증을 중복 실행하지 않는다.
+
+### WASM 검사 이유와 범위
+
+PDF export 자체는 네이티브 경로다. 이번 변경에는 공통 `새굴림 → New Gulim` 이름 규칙도 포함되어
+WASM에서도 동일한 face 선택과 SVG 출력을 유지하는지 확인했다. PDF 전용 합성 stroke를 WASM에서
+검사하거나 적용한 것이 아니다. 두 입력 모두 native/WASM SVG가 바이트 단위로 같으며 각 SVG의
+New Gulim text node 26개와 PDF 전용 합성 태그 부재를 확인했다. Node에서 실제 WASM 모듈을 실행했으며,
+Studio UI 또는 Windows 브라우저를 이번 검증에서 실행했다고 주장하지 않는다.
+
+Docker 데몬 연결이 불가능해 개발 환경 안내에서 허용한 로컬 `--no-opt` 진단 경로를 사용했다.
+Rust release 빌드는 성공했지만 wasm-opt까지 수행한 표준 Docker 배포 빌드의 성공 증거는 아니다.
+
+```sh
+CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/issue6936-20260913 \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt
+node scripts/svg_native_wasm_diff.mjs \
+  samples/issue6936/bold-faces.hwp samples/issue6936/bold-faces.hwpx \
+  --rhwp /Users/tsjang/rhwp/target/issue6936-20260913/release-test/rhwp \
+  --pkg pkg --out /private/tmp/rhwp-6936-pr-prepare-20260913/final/svg-parity --keep-match
+```
+
+WASM package와 비교 SVG/JSON는 검증용이며 커밋하지 않는다. 변경 Markdown 상대 링크 검사와
+`git diff --check upstream/devel...HEAD` / `git diff --check`도 통과했다.
+최신 `upstream/devel`은 기준 SHA와 같고 merge-tree 충돌은 없다.
+
+### 남은 검증 경계
+
+Windows 네이티브 CLI 실행, 비공개 사내 코퍼스, 대규모 PDF export 시간의 전후 비교 및 원격 CI는
+미실행이다. 합성 굵게 후보 SVG에서는 usvg parse가 한 번 추가되므로 대용량 성능은 별도 관측이 필요하다.
+기울임·실제 Bold·복잡 paint 회귀와 단일 text show 보존은 실행한 범위에서 통과했다.
+
+## 공통 조판 원칙 사전 검토
+
+| 검토 항목 | 근거 | 판정 |
+| --- | --- | --- |
+| 구현 근거와 일반성 | 한컴의 `w/Tf=0.02`와 PDF Tr 2를 독립 측정했다. 실제 선택 face weight와 균일 paint를 조건으로 사용하며 파일명·문서별 분기는 없다. 실제 Bold, 혼합 span, fallback, paint 반례를 실행했다. | 충족 |
+| 측정·배치 일관성 | PDF 준비 단계는 usvg의 실제 glyph face를 조회하고 원본 문자·transform을 유지한다. 새굴림은 공통 이름 규칙과 기존 New Gulim metrics를 함께 사용한다. 다른 10개 행의 glyph 원점 변화는 0이다. | 충족 |
+| 줄 소속과 점유 높이 | 줄 소속·LineSeg·점유 높이 알고리즘을 변경하지 않는다. 새굴림 face 복원으로 해당 두 행의 advance만 달라지며 1페이지를 유지한다. | 비해당 |
+| 사례와 증거의 독립성 | 합성 계약 테스트와 별개로 한컴 저장 HWP 및 한컴 PDF를 생성하고 12개 행을 직접 대조했다. 비공개 사내 원본 코퍼스를 재현했다고 주장하지 않는다. | 충족 |
+| 기준값 변경 | 한컴 PDF와 직접 대응하는 새 HWP의 쪽수 원장 1행만 추가했다. 글꼴 교체는 명시적 change set으로 기록하며 봉인 v1와 과거 W7 baseline은 보존했다. | 충족 |
+| 주장과 검증 범위 | 코드 SHA·명령·결과 및 입력/산출 SHA를 기록한다. Windows 네이티브 실행, 사내 코퍼스 및 대규모 PDF 성능은 미검증으로 남긴다. | 충족 |
