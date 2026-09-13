@@ -2386,12 +2386,18 @@ impl HeightMeasurer {
                                         // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
                                         // 들어가 아래 흐름이 통째로 6px 밀렸다.
                                         // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
-                                        let last_line_is_object_only =
-                                            p.text.trim().is_empty() && !p.controls.is_empty();
+                                        // [#7097] 글자가 아예 없는 빈 마지막 줄도 같다.
+                                        // 그 줄 뒤에 붙일 줄이 없으므로 trailing 줄간격을
+                                        // 칸 높이에 넣을 근거가 없다 — 36382471_masked 1쪽
+                                        // 2행이 8.05px 부풀어(350.10, 한/글 342.05) 3행이
+                                        // 통째로, 2행 안쪽 글자(vertAlign=CENTER)가 절반
+                                        // 내려갔다. 보존 핀(Task #874/#1086)의 마지막 문단은
+                                        // 글자가 있어 종전 회계 그대로다.
+                                        let last_line_has_no_glyphs = p.text.trim().is_empty();
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1
                                                 && table.common.treat_as_char
-                                                && !last_line_is_object_only);
+                                                && !last_line_has_no_glyphs);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
@@ -3310,12 +3316,18 @@ impl HeightMeasurer {
                                         // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
                                         // 들어가 아래 흐름이 통째로 6px 밀렸다.
                                         // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
-                                        let last_line_is_object_only =
-                                            p.text.trim().is_empty() && !p.controls.is_empty();
+                                        // [#7097] 글자가 아예 없는 빈 마지막 줄도 같다.
+                                        // 그 줄 뒤에 붙일 줄이 없으므로 trailing 줄간격을
+                                        // 칸 높이에 넣을 근거가 없다 — 36382471_masked 1쪽
+                                        // 2행이 8.05px 부풀어(350.10, 한/글 342.05) 3행이
+                                        // 통째로, 2행 안쪽 글자(vertAlign=CENTER)가 절반
+                                        // 내려갔다. 보존 핀(Task #874/#1086)의 마지막 문단은
+                                        // 글자가 있어 종전 회계 그대로다.
+                                        let last_line_has_no_glyphs = p.text.trim().is_empty();
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1
                                                 && table.common.treat_as_char
-                                                && !last_line_is_object_only);
+                                                && !last_line_has_no_glyphs);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
