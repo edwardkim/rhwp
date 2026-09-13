@@ -91,6 +91,35 @@ pub(super) fn paragraphs<'a>(
         .collect())
 }
 
+/// Validate a detached, bounded source against the original document's references.
+/// The caller must budget the source before cloning it; this does not allocate IDs.
+pub(super) fn row_source(
+    doc: &crate::model::document::Document,
+    paras: &[Paragraph],
+    original: &crate::model::table::Table,
+    cells: &[usize],
+    request: &RepeatParagraphBlockRequest,
+) -> Result<(), ParagraphBlockValidationError> {
+    let nodes = support::inspect(paras, request)?;
+    // Closure uses actual owner addresses in the original document. A cloned
+    // projection would wrongly classify even a same-cell field end as external.
+    let mut originals = Vec::new();
+    for (relative, index) in cells.iter().enumerate() {
+        for mut located in support::inspect(&original.cells[*index].paragraphs, request)? {
+            let mut path = vec![
+                ParagraphBlockPathStep::Paragraph(0),
+                ParagraphBlockPathStep::Control(0),
+                ParagraphBlockPathStep::Cell(relative),
+            ];
+            path.append(&mut located.path);
+            located.path = path;
+            originals.push(located);
+        }
+    }
+    references::validate(doc, &originals, request.limits.max_document_nodes)?;
+    resources::validate(doc, &nodes, request)
+}
+
 impl DocumentCore {
     /// Validate supported controls and field/connector closure without editing.
     /// Also checks modeled shared resource references without loading BinData.

@@ -207,96 +207,106 @@ impl DocumentCore {
             count: 0,
             ..r.clone()
         })?;
-        if records.len() != r.count || bindings.len() > MAX_TARGETS {
-            return Err(error(
-                &[],
-                "fillCardinality",
-                "record count mismatch or too many bindings",
-            ));
-        }
-        if r.count > r.limits.max_copies {
-            return Err(error(&[], "fillBudget", "copy count limit exceeded"));
-        }
-        let target_count = r
-            .count
-            .checked_mul(bindings.len())
-            .filter(|n| *n <= MAX_TARGETS)
-            .ok_or_else(|| error(&[], "fillBudget", "expanded target limit exceeded"))?;
-        let mut keys = HashSet::new();
-        let mut input_bytes = 0;
-        for binding in bindings {
-            let p = path(&binding.target);
-            if p.len() > r.limits.max_depth {
-                return Err(error(&[], "fillBudget", "target path depth exceeded"));
-            }
-            add_budget(&mut input_bytes, std::mem::size_of_val(p), MAX_INPUT_BYTES)?;
-            add_budget(&mut input_bytes, binding.key.len(), MAX_INPUT_BYTES)?;
-            if binding.key.is_empty() || !keys.insert(binding.key.as_str()) {
-                return Err(error(p, "fillKey", "binding key is empty or duplicated"));
-            }
-        }
-        let mut fill_bytes = 0;
-        for (index, record) in records.iter().enumerate() {
-            if record.len() != keys.len() || record.keys().any(|key| !keys.contains(key.as_str())) {
-                return Err(error(
-                    &[],
-                    "fillKey",
-                    format!("record {index} has missing or extra keys"),
-                ));
-            }
-            for (key, value) in record {
-                add_budget(&mut input_bytes, key.len(), MAX_INPUT_BYTES)?;
-                add_budget(&mut input_bytes, value.len(), MAX_INPUT_BYTES)?;
-                add_budget(&mut fill_bytes, value.len(), r.limits.max_structure_bytes)?;
-            }
-        }
         let block = self.validate_paragraph_block_native(r)?;
-        let mut total = block.structure_bytes;
-        add_budget(&mut total, fill_bytes, r.limits.max_structure_bytes)?;
-        if r.count == 0 {
-            return Ok(TemplateFillPreview {
-                block,
-                target_count,
-                replacement_text_bytes: fill_bytes,
-            });
-        }
         let source =
             &self.document().sections[r.section_index].paragraphs[r.source_start..r.source_end];
-        let paragraphs: HashMap<_, _> = validation::paragraphs(source, r)?.into_iter().collect();
-        let mut selections: HashMap<&[Step], Vec<Selection<'_>>> = HashMap::new();
-        let mut inspected_bytes = 0;
-        for binding in bindings {
-            let p = path(&binding.target);
-            let para = paragraphs
-                .get(p)
-                .ok_or_else(|| error(p, "fillPath", "target is not a source-owned paragraph"))?;
-            // Bound repeated scans of a long paragraph across many bindings too.
-            add_budget(
-                &mut inspected_bytes,
-                para.text.len(),
-                r.limits.max_structure_bytes,
-            )?;
-            let selected = select(binding, para)?;
-            let previous = selections.entry(selected.path).or_default();
-            if previous.iter().any(|old| {
-                let a = &old.range;
-                let b = &selected.range;
-                if a.is_empty() || b.is_empty() {
-                    touches(a, b)
-                } else {
-                    a.start < b.end && b.start < a.end
-                }
-            }) {
-                return Err(error(p, "fillOverlap", "fill targets overlap"));
-            }
-            previous.push(selected);
+        validate_source_fill(source, r, bindings, records, block)
+    }
+}
+
+pub(super) fn validate_source_fill(
+    source: &[Paragraph],
+    r: &RepeatParagraphBlockRequest,
+    bindings: &[TemplateBinding],
+    records: &[BTreeMap<String, String>],
+    block: ParagraphBlockBudget,
+) -> Result<TemplateFillPreview, Error> {
+    if records.len() != r.count || bindings.len() > MAX_TARGETS {
+        return Err(error(
+            &[],
+            "fillCardinality",
+            "record count mismatch or too many bindings",
+        ));
+    }
+    if r.count > r.limits.max_copies {
+        return Err(error(&[], "fillBudget", "copy count limit exceeded"));
+    }
+    let target_count = r
+        .count
+        .checked_mul(bindings.len())
+        .filter(|n| *n <= MAX_TARGETS)
+        .ok_or_else(|| error(&[], "fillBudget", "expanded target limit exceeded"))?;
+    let mut keys = HashSet::new();
+    let mut input_bytes = 0;
+    for binding in bindings {
+        let p = path(&binding.target);
+        if p.len() > r.limits.max_depth {
+            return Err(error(&[], "fillBudget", "target path depth exceeded"));
         }
-        Ok(TemplateFillPreview {
+        add_budget(&mut input_bytes, std::mem::size_of_val(p), MAX_INPUT_BYTES)?;
+        add_budget(&mut input_bytes, binding.key.len(), MAX_INPUT_BYTES)?;
+        if binding.key.is_empty() || !keys.insert(binding.key.as_str()) {
+            return Err(error(p, "fillKey", "binding key is empty or duplicated"));
+        }
+    }
+    let mut fill_bytes = 0;
+    for (index, record) in records.iter().enumerate() {
+        if record.len() != keys.len() || record.keys().any(|key| !keys.contains(key.as_str())) {
+            return Err(error(
+                &[],
+                "fillKey",
+                format!("record {index} has missing or extra keys"),
+            ));
+        }
+        for (key, value) in record {
+            add_budget(&mut input_bytes, key.len(), MAX_INPUT_BYTES)?;
+            add_budget(&mut input_bytes, value.len(), MAX_INPUT_BYTES)?;
+            add_budget(&mut fill_bytes, value.len(), r.limits.max_structure_bytes)?;
+        }
+    }
+    let mut total = block.structure_bytes;
+    add_budget(&mut total, fill_bytes, r.limits.max_structure_bytes)?;
+    if r.count == 0 {
+        return Ok(TemplateFillPreview {
             block,
             target_count,
             replacement_text_bytes: fill_bytes,
-        })
+        });
     }
+    let paragraphs: HashMap<_, _> = validation::paragraphs(source, r)?.into_iter().collect();
+    let mut selections: HashMap<&[Step], Vec<Selection<'_>>> = HashMap::new();
+    let mut inspected_bytes = 0;
+    for binding in bindings {
+        let p = path(&binding.target);
+        let para = paragraphs
+            .get(p)
+            .ok_or_else(|| error(p, "fillPath", "target is not a source-owned paragraph"))?;
+        // Bound repeated scans of a long paragraph across many bindings too.
+        add_budget(
+            &mut inspected_bytes,
+            para.text.len(),
+            r.limits.max_structure_bytes,
+        )?;
+        let selected = select(binding, para)?;
+        let previous = selections.entry(selected.path).or_default();
+        if previous.iter().any(|old| {
+            let a = &old.range;
+            let b = &selected.range;
+            if a.is_empty() || b.is_empty() {
+                touches(a, b)
+            } else {
+                a.start < b.end && b.start < a.end
+            }
+        }) {
+            return Err(error(p, "fillOverlap", "fill targets overlap"));
+        }
+        previous.push(selected);
+    }
+    Ok(TemplateFillPreview {
+        block,
+        target_count,
+        replacement_text_bytes: fill_bytes,
+    })
 }
 
 /// Common detached edit program for fixed forms and repeated blocks.
@@ -313,6 +323,17 @@ impl<'a> FillEdits<'a> {
         bindings: &'a [TemplateBinding],
         preview: &TemplateFillPreview,
     ) -> Result<Self, crate::error::HwpError> {
+        let source =
+            &core.document.sections[r.section_index].paragraphs[r.source_start..r.source_end];
+        Self::prepare_source(source, r, bindings, preview)
+    }
+
+    pub(super) fn prepare_source(
+        source: &[Paragraph],
+        r: &RepeatParagraphBlockRequest,
+        bindings: &'a [TemplateBinding],
+        preview: &TemplateFillPreview,
+    ) -> Result<Self, crate::error::HwpError> {
         // Bound scalar/UTF-16 scratch arrays as well as payload before cloning/editing.
         // This is a conservative working-structure budget, not a process RSS promise.
         let mut estimated = preview.block.structure_bytes;
@@ -322,8 +343,6 @@ impl<'a> FillEdits<'a> {
             .ok_or_else(|| super::invalid("fill derived size overflow"))?;
         add_budget(&mut estimated, scratch, r.limits.max_structure_bytes)
             .map_err(|e| super::invalid(e.to_string()))?;
-        let source =
-            &core.document.sections[r.section_index].paragraphs[r.source_start..r.source_end];
         let paras: HashMap<_, _> = validation::paragraphs(source, r)
             .map_err(|e| super::invalid(e.to_string()))?
             .into_iter()
