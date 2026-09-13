@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "86907633fd02874fa0252e344c2393e8b99d2aec606dc38b984fb070e40379cd";
+    "807590ecc4fba3102fde4a2236ee091fac91b5a19851b76d61a61014a5ee4086";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "6aa9e23aba0445b1b3a56be58bb6bac41b178ed7d03a49058219b2386942a6e5";
+    "b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2854,7 +2854,7 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         metric_entry_ids: &[],
     },
     GeneratedFontRuleProjection {
-        rule_id: "rule.rust-style-resolution.new-gulim-face-identity",
+        rule_id: "rule.rust-style-resolution.100b7126dfe0ddd2d55c",
         source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",

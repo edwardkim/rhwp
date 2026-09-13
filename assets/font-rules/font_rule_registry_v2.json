@@ -8,7 +8,7 @@
     {
       "changeSetId": "issue-6936.new-gulim-face-identity",
       "path": "assets/font-rules/changes/issue-6936-new-gulim-face-identity.json",
-      "sha256": "eccf218056ecc0eee7eb046211541b640c7e163d42dc3f05c422120d2bc1e137"
+      "sha256": "3004278552553a190890b32da12006e83a51786028840309011b0d3c66f327d0"
     }
   ],
   "evidenceRecords": [
@@ -7537,7 +7537,7 @@
         "retiredBy": "issue-6936.new-gulim-face-identity",
         "retirementReason": "Preserve the original New Gulim face and its existing metrics instead of substituting HCR Dotum, so PDF synthetic bold uses the requested regular face.",
         "successorRuleIds": [
-          "rule.rust-style-resolution.new-gulim-face-identity"
+          "rule.rust-style-resolution.100b7126dfe0ddd2d55c"
         ]
       },
       "metricEntryIds": [],
@@ -43319,7 +43319,7 @@
         }
       ],
       "relationType": "style-fallback",
-      "ruleId": "rule.rust-style-resolution.new-gulim-face-identity",
+      "ruleId": "rule.rust-style-resolution.100b7126dfe0ddd2d55c",
       "selectionTupleSha256": "609917bcd2b57191e5e421ff3760255e39d6678b0528880b17192e6217952147",
       "sourceBoundaryId": "rust-style-resolution.ttf",
       "sourceFace": "새굴림",
@@ -43328,7 +43328,7 @@
       "targetFaceOrPolicy": "New Gulim"
     }
   ],
-  "rulesSha256": "ecf08d64f5508a9f765782cd088467304ee5b4063c09b207edfa5337270634ab",
+  "rulesSha256": "0c34fe1db792f658b47f13853e098d29bcfea9eae411aab84fb3e95058435e18",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"

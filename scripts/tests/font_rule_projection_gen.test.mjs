@@ -99,7 +99,7 @@ test('five backend projections are deterministic and close all 830 registry rule
       // Issue-scoped replacements preserve the sealed historical hashes above.
       'canvas2d-webfont': 'b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245',
       // #6936 changes only the New Gulim layout-name decision.
-      'rust-layout-name': '6aa9e23aba0445b1b3a56be58bb6bac41b178ed7d03a49058219b2386942a6e5',
+      'rust-layout-name': 'b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142',
     },
   );
 });

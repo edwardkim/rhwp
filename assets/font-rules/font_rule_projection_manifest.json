@@ -1,5 +1,5 @@
 {
-  "contentBundleSha256": "af00426b1c58407e14f8311b9c7e581bf38931bc6189b63a11c0dad1944fbe5d",
+  "contentBundleSha256": "3862447d9b6a0f64dfcf85261386743ce12608f2d61cef36444578b202c84b0e",
   "generatedBy": {
     "path": "scripts/font_rule_projection_gen.mjs",
     "sha256": "2070ed0d1823b54e94d89f64555fe88debeb8a16cad7342f3ab1ffba5d0d54fd"
@@ -8,13 +8,13 @@
   "kind": "font-rule-backend-projection-manifest",
   "outputs": [
     {
-      "contentSha256": "3c0dae8d3822946b7b99fd8c8b8ad523fb4791f49bb32d95859e9530578ad1b5",
-      "inputSha256": "86907633fd02874fa0252e344c2393e8b99d2aec606dc38b984fb070e40379cd",
+      "contentSha256": "ba219ad45323b6740c76872e5f49c1c1b1b86902ec77a7aa80186352229f1cfd",
+      "inputSha256": "807590ecc4fba3102fde4a2236ee091fac91b5a19851b76d61a61014a5ee4086",
       "language": "rust",
       "ownership": "generated-whole-file",
       "path": "src/renderer/font_rule_projections/layout_name.rs",
       "projectionId": "rust-layout-name",
-      "projectionSha256": "6aa9e23aba0445b1b3a56be58bb6bac41b178ed7d03a49058219b2386942a6e5",
+      "projectionSha256": "b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142",
       "ruleCount": 171
     },
     {
@@ -58,13 +58,13 @@
       "ruleCount": 158
     }
   ],
-  "projectionBundleSha256": "cbc75eb3d8229358c356632d49504b38753faaf4ee8a92aa5430e059316be781",
+  "projectionBundleSha256": "ec3d9a16a424a2b9e186bef428857a72b7d1f7e4f9a72a70ca7b6b780c7051d2",
   "registry": {
     "activeRuleCount": 830,
     "path": "assets/font-rules/font_rule_registry_v2.json",
     "retiredRuleCount": 2,
-    "rulesSha256": "ecf08d64f5508a9f765782cd088467304ee5b4063c09b207edfa5337270634ab",
-    "sha256": "5eb171fea7c972379915d31ee2ff7bc74b1160a9347424e9ad3c6a4d5df71666"
+    "rulesSha256": "0c34fe1db792f658b47f13853e098d29bcfea9eae411aab84fb3e95058435e18",
+    "sha256": "9b17f70a7bf1fe779042d6cde3df9293736fc89f5e58854dbb5170f539045b3b"
   },
   "schema": {
     "path": "assets/font-rules/font_rule_projection_manifest.schema.json",
