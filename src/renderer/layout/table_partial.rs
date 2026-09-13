@@ -280,7 +280,7 @@ pub(crate) struct PartialTableCellProbe {
     pub(crate) window_paras: (usize, usize),
 }
 
-/// [#4149] 셀 문단 compose 저장소 — windowed 프로브에서만 lazy.
+/// 셀 문단 compose 저장소 — 실제로 잘리는 가로쓰기 셀은 가시 창만 lazy 구성한다.
 ///
 /// Lazy 슬롯의 compose 결과는 Eager 경로와 동일한 변환 순서
 /// (compose → recompose_cell_lines_in_frame → recompose_stored_single_line_if_overflowing)를
@@ -1157,11 +1157,40 @@ impl LayoutEngine {
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding(cell, table);
 
-            // [#4149] windowed 프로브면 창 문단만 lazy compose. 그 외에는 종전과
-            // 동일한 순서로 전량 compose → shrink → recompose.
-            let probe_windowed = probe.is_some_and(|p| p.windowed);
+            // 실제 cut이 있는 셀은 cursor probe와 전체 렌더링이 같은 문단 창을
+            // 소비한다. 다중줄은 padding shrink의 조기 반환, split_proven은 Top
+            // 정렬을 보장하므로 창 밖의 compose/높이 합산은 결과에 쓰이지 않는다.
+            // rowspan·세로쓰기·실제로 잘리지 않는 셀은 기존 전량 경로를 유지한다.
+            let composition_window = if let Some(p) = probe.filter(|p| p.windowed) {
+                Some(p.window_paras)
+            } else if probe.is_none()
+                && cell.text_direction == 0
+                && cell.paragraphs.iter().any(|p| p.line_segs.len() >= 2)
+            {
+                match self.partial_table_cell_probe_plan(
+                    table,
+                    cell,
+                    start_row,
+                    end_row,
+                    start_cut,
+                    end_cut,
+                    is_block_split,
+                    styles,
+                    0,
+                ) {
+                    ProbeCutPlan::Cut {
+                        window_paras,
+                        split_proven: true,
+                        ..
+                    } => Some(window_paras),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+            let windowed_composition = composition_window.is_some();
             let mut composed_store: CellComposedStore;
-            if probe_windowed {
+            if windowed_composition {
                 // shrink 생략 근거: 프로브 사전 게이트가 line_segs>=2 문단 존재를
                 // 증명했고, shrunk_cell_horizontal_padding 은 그 경우 composed 를
                 // 읽지 않고 패딩을 그대로 반환한다 (조기 탈출과 동일 결과).
@@ -1343,7 +1372,7 @@ impl LayoutEngine {
             let split_para_count = cell.paragraphs.len();
             // [#4149] windowed 프로브: 아래에서 effective_align 이 Top 으로 확정되므로
             // (cell_was_split=true 사전 증명) total_content_height 는 미사용 — 0 고정.
-            let total_content_height = if probe_windowed {
+            let total_content_height = if windowed_composition {
                 0.0
             } else if let Some(ref ranges) = line_ranges {
                 let mut total = 0.0;
@@ -1447,7 +1476,7 @@ impl LayoutEngine {
             // 그대로 visible 처리한다면 (= 실제 split 적용 안 받은 cell, 예: inner-table-01.hwp
             // cell[10] '사업개요' 라벨) 원본 cell.vertical_align 을 사용한다. split 적용으로
             // line 일부가 잘린 cell 만 Top 강제.
-            let cell_was_split = if probe_windowed {
+            let cell_was_split = if windowed_composition {
                 // [#4149] windowed 프로브 사전 게이트가 증명한 값 (s>0 문단 존재 또는
                 // 창 밖 미가시 문단의 compose 줄 수 ≥ 1) — 전량 판정과 동치.
                 true
@@ -1772,22 +1801,22 @@ impl LayoutEngine {
             // 네 조건(line_ranges·mixed·nested·non-inline)이 모두 창 유닛에서만
             // 유도되므로 전량 레이아웃에서도 반드시 skip 된다 — 순회 자체를 생략한다.
             // stop_after_para 이후 문단은 캐럿 문단의 좌표에 영향이 없어 중단한다.
-            let (loop_start, loop_end_excl) = match probe {
-                Some(p) if p.windowed => {
-                    let (lo, hi) = p.window_paras;
-                    let end = hi
-                        .saturating_add(1)
-                        .min(cell.paragraphs.len())
-                        .min(p.stop_after_para.saturating_add(1));
+            let (loop_start, loop_end_excl) = match (composition_window, probe) {
+                (Some((lo, hi)), p) => {
+                    let end = hi.saturating_add(1).min(cell.paragraphs.len()).min(
+                        p.map_or(cell.paragraphs.len(), |p| {
+                            p.stop_after_para.saturating_add(1)
+                        }),
+                    );
                     (lo.min(end), end)
                 }
-                Some(p) => (
+                (None, Some(p)) => (
                     0,
                     cell.paragraphs
                         .len()
                         .min(p.stop_after_para.saturating_add(1)),
                 ),
-                None => (0, cell.paragraphs.len()),
+                (None, None) => (0, cell.paragraphs.len()),
             };
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
