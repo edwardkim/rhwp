@@ -54,7 +54,32 @@ static HANYANGJUNGGOTHIC_LATIN_0: [u16; 95] = [
     632, 596, 263, 290, 263, 456, 509, 263, 544, 535, 491, 544, 544, 263, 544, 544, 202, 202, 483,
     202, 825, 544, 553, 544, 544, 316, 491, 263, 544, 491, 711, 483, 474, 500, 316, 246, 316, 509,
 ];
-static HANYANGJUNGGOTHIC_LATIN_RANGES: [LatinRange; 7] = [
+/// [#7092] 한양중고딕의 `·`(U+00B7) — 한컴 정본 실측 390/1024 = 0.381 em.
+///
+/// 아래 `0x00A0-0x00FF` 구간은 `FONT_267_LATIN_1`(= `HYGothic-Medium`, 윈도우
+/// `H2GTRM.TTF`)에서 **빌려 온다.** 그 글꼴의 `periodcentered` 는 1024/1024 = 전각이라
+/// 이 글자만 한양 실제값과 어긋난다. 한/글은 한양 계열을 자기 글꼴로 그리고(정본 PDF 의
+/// Type3 자원), 그 `/W` 가 0.381 em 이다.
+///
+/// 근거는 문서 둘이 독립적으로 같은 값을 준다 — 두 문서 모두 `·` 런의 글꼴을 rhwp 가
+/// `한양중고딕` 으로 풀고, 같은 줄이 정본에서 Type3 로 그려진다.
+///
+/// ```text
+///   76076_regulatory_analysis  p18  '가피하게덮개·울을개방하고'   /W 0.381  전진 0.391
+///   76076_regulatory_analysis  p18  '로덮개·울등을설치하'         /W 0.381  전진 0.380
+///   80168_regulatory_analysis  Type3 n=54                       /W 0.381  전진 중앙 0.386
+/// ```
+///
+/// 같은 문서의 `휴먼명조` 는 정본에서 TrueType(`INPILL+휴먼명조`)으로 나가고 `/W` 가
+/// 1.001 em 이다 — 빌려 온 전각값이 그쪽에는 맞는다. 그래서 이 정정은 U+00B7 한 글자,
+/// 한양중고딕 한 글꼴로 한정한다. 나머지 한양 셋은 앵커된 실측이 없어 손대지 않는다.
+static HANYANGJUNGGOTHIC_B7: [u16; 1] = [390];
+static HANYANGJUNGGOTHIC_LATIN_RANGES: [LatinRange; 8] = [
+    LatinRange {
+        start: 0x00B7,
+        end: 0x00B7,
+        widths: &HANYANGJUNGGOTHIC_B7,
+    },
     LatinRange {
         start: 0x0020,
         end: 0x007E,
