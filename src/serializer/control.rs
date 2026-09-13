@@ -2549,8 +2549,11 @@ fn write_shape_component_base(
     } else if has_explicit_rendering_matrix(attr) {
         write_parsed_rendering_matrix(w, attr);
     } else {
-        let is_group_child = attr.group_level > 0;
-        let cnt: u16 = if is_group_child { 2 } else { 1 };
+        // [#4680] 쌍 개수는 그룹 깊이 + 1 이다. 한/글 HWP5 저장본 실측(264쪽 HWP3
+        // 변환본 대조): 깊이 0 → 1쌍, 1 → 2쌍, 2 → 3쌍, 3 → 4쌍. 종전에는 깊이와
+        // 무관하게 2 를 써서 두 겹 이상 중첩된 묶음의 레코드가 96바이트씩 짧았고,
+        // 한글은 그런 문서를 열지 못했다.
+        let cnt: u16 = attr.group_level.saturating_add(1);
         w.write_u16(cnt).unwrap();
         // translation matrix = identity [1, 0, 0, 0, 1, 0].
         // 그룹 자식 위치의 단일 권위는 render_tx/ty 다 (렌더러 layout_group_child_*,
@@ -2576,22 +2579,10 @@ fn write_shape_component_base(
         // rotation matrix. Hancom applies visible picture rotation from the
         // rendering rotMatrix, not only from ShapeComponentAttr.rotation_angle.
         write_matrix(w, shape_rotation_matrix(attr));
-        // 그룹 자식 (cnt=2): 두 번째 scale + rotation 세트 (identity)
-        if is_group_child {
-            // scale2 = identity
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            // rotation2 = identity
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
+        // 그룹 깊이만큼 남은 scale + rotation 쌍 (identity)
+        for _ in 0..attr.group_level {
+            write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+            write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
         }
     }
 }
@@ -2675,8 +2666,8 @@ fn shape_rotation_matrix(attr: &ShapeComponentAttr) -> [f64; 6] {
 }
 
 fn write_generated_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
-    let is_group_child = attr.group_level > 0;
-    let cnt: u16 = if is_group_child { 2 } else { 1 };
+    // [#6874] 쌍 개수는 그룹 깊이 + 1 이다 — 아래 폴백 경로와 같은 규칙.
+    let cnt: u16 = attr.group_level.saturating_add(1);
     w.write_u16(cnt).unwrap();
     write_matrix(
         w,
@@ -2691,7 +2682,7 @@ fn write_generated_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAtt
     );
     write_matrix(w, shape_scale_matrix(attr));
     write_matrix(w, shape_rotation_matrix(attr));
-    if is_group_child {
+    for _ in 0..attr.group_level {
         write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
         write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
     }
@@ -2703,7 +2694,10 @@ fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) 
     //
     // Store the parsed affine transform so reload reconstructs exactly:
     // [sx, b, tx; c, sy, ty] = [1,0,tx;0,1,ty] x I x [sx,b,0;c,sy,0]
-    w.write_u16(1).unwrap();
+    //
+    // [#6874] 쌍 개수는 그룹 깊이 + 1 이다. 종전에는 깊이와 무관하게 1 을 써서, 명시
+    // 변환을 가진 묶음 자식의 레코드가 한/글 저장본보다 96바이트씩 짧았다.
+    w.write_u16(attr.group_level.saturating_add(1)).unwrap();
     write_matrix(w, [1.0, 0.0, attr.render_tx, 0.0, 1.0, attr.render_ty]);
     write_matrix(
         w,
@@ -2717,6 +2711,10 @@ fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) 
         ],
     );
     write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+    for _ in 0..attr.group_level {
+        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+    }
 }
 
 /// 도형 채우기 직렬화 (SHAPE_COMPONENT 내부 — parse_fill과 동일한 형식)
