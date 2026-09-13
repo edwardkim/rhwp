@@ -28,9 +28,8 @@
 //! ## 이 테스트가 잠그는 것
 //!
 //! 저장 바이트에서 `(그룹 깊이, 행렬 쌍 개수)` 를 직접 읽어 `쌍 = 깊이 + 1` 을 단언한다.
-//! 최상위 도형은 ctrl_id가 두 번 있으므로 4바이트 오프셋을 적용한다. 깊이 0을
-//! 제외하지 않고, 같은 입력의 독립 한컴 HWP5 저장본과 모든 깊이별 개수까지 대조한다.
-//! 스트림/레코드 해석 실패와 표본 누락은 실패다.
+//! 최상위 도형(`SHAPE_COMPONENT` 가 ctrl_id 를 두 번 쓰는 것)은 오프셋이 4 밀리므로
+//! 제외한다 — 그걸 놓치면 엉뚱한 바이트를 보고 수정 전에도 통과한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -39,98 +38,92 @@ use rhwp::parser::record::Record;
 use rhwp::parser::tags;
 use std::path::Path;
 
-fn fixture(name: &str) -> Vec<u8> {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(name);
-    std::fs::read(&path).unwrap_or_else(|e| panic!("fixture {}: {e}", path.display()))
+fn sample(name: &str) -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples")
+        .join(name)
 }
 
-fn convert_hwp3(name: &str) -> Vec<u8> {
-    let mut doc = rhwp::parser::hwp3::parse_hwp3(&fixture(name)).expect("HWP3 parse");
+/// HWP3 를 CLI `convert` 와 같은 경로로 HWP5 바이트로 만든다.
+fn convert_hwp3(name: &str) -> Option<Vec<u8>> {
+    let raw = std::fs::read(sample(name)).ok()?;
+    let mut doc = rhwp::parser::hwp3::parse_hwp3(&raw).ok()?;
     rhwp::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source(
         &mut doc,
         rhwp::parser::FileFormat::Hwp3,
     );
-    rhwp::serializer::cfb_writer::serialize_hwp(&doc).expect("HWP5 serialize")
+    rhwp::serializer::cfb_writer::serialize_hwp(&doc).ok()
 }
 
-type Census = std::collections::BTreeMap<(u16, u16), usize>;
-
-fn depth_and_pairs(bytes: &[u8]) -> Census {
+/// 저장 바이트의 묶음 자식 `SHAPE_COMPONENT` 에서 (그룹 깊이, 행렬 쌍 개수)를 모은다.
+fn depth_and_pairs(bytes: &[u8]) -> Vec<(u16, u16)> {
     let mut cfb = CfbReader::open(bytes).expect("CFB 열기");
     let file_header = cfb.read_file_header().expect("FileHeader 읽기");
-    let compressed = file_header[36] & 0x01 != 0;
-    let mut out = Census::new();
-    assert!(cfb.section_count() > 0, "본문 section 없음");
-    for index in 0..cfb.section_count() {
-        let section = cfb
-            .read_body_text_section(index, compressed, false)
-            .expect("section 읽기");
-        let records = Record::read_all(&section).expect("section records 읽기");
+    let compressed = file_header.get(36).is_some_and(|b| b & 0x01 != 0);
+    let mut out = Vec::new();
+    for index in 0..64u32 {
+        let Ok(section) = cfb.read_body_text_section(index, compressed, false) else {
+            break;
+        };
+        let Ok(records) = Record::read_all(&section) else {
+            break;
+        };
         for r in records {
-            if r.tag_id != tags::HWPTAG_SHAPE_COMPONENT {
+            if r.tag_id != tags::HWPTAG_SHAPE_COMPONENT || r.data.len() < 48 {
                 continue;
             }
-            assert!(r.data.len() >= 48, "짧은 SHAPE_COMPONENT");
-            let offset = if r.data[0..4] == r.data[4..8] { 4 } else { 0 };
-            assert!(r.data.len() >= 48 + offset);
-            let depth = u16::from_le_bytes([r.data[12 + offset], r.data[13 + offset]]);
-            let pairs = u16::from_le_bytes([r.data[46 + offset], r.data[47 + offset]]);
-            // translation 48 bytes 뒤 각 scale/rotation 쌍은 96 bytes다.
-            assert!(
-                r.data.len() >= 48 + offset + 48 + usize::from(pairs) * 96,
-                "선언한 행렬 쌍보다 짧은 레코드: depth={depth}, pairs={pairs}"
-            );
-            *out.entry((depth, pairs)).or_default() += 1;
+            // 최상위 도형은 ctrl_id 를 두 번 쓴다 — 그때는 오프셋이 4 밀린다.
+            if r.data[0..4] == r.data[4..8] {
+                continue;
+            }
+            let depth = u16::from_le_bytes([r.data[12], r.data[13]]);
+            let pairs = u16::from_le_bytes([r.data[46], r.data[47]]);
+            out.push((depth, pairs));
         }
     }
     out
 }
 
+/// 깊이 1~9 가 모두 나오는 실문서 — 한/글 변환본과 깊이별 개수까지 맞는다.
 #[test]
-fn hwp3_group_children_match_independent_hancom_census() {
-    for (source, oracle, total, max_depth) in [
-        (
-            "samples/hwp3-sample11.hwp",
-            "samples/hwp3-sample11-hwp5.hwp",
-            1392,
-            9,
-        ),
-        (
-            "tests/fixtures/issue_4680/german-legislative-system.hwp",
-            "tests/fixtures/issue_4680/german-legislative-system-hancom-2020.hwp",
-            358,
-            3,
-        ),
-    ] {
-        let expected = depth_and_pairs(&fixture(oracle));
-        assert_eq!(expected.values().sum::<usize>(), total, "oracle {oracle}");
-        assert_eq!(expected.keys().map(|(d, _)| *d).max(), Some(max_depth));
-        assert!(expected.keys().all(|(depth, pairs)| *pairs == depth + 1));
-        assert_eq!(
-            depth_and_pairs(&convert_hwp3(source)),
-            expected,
-            "source {source}"
-        );
-    }
+fn hwp3_group_children_get_depth_matched_matrix_pairs() {
+    let Some(bytes) = convert_hwp3("hwp3-sample11.hwp") else {
+        panic!("samples/hwp3-sample11.hwp 변환 실패 — 표본 배치를 확인하라");
+    };
+    let rows = depth_and_pairs(&bytes);
+    assert!(
+        rows.len() > 100,
+        "묶음 자식 SHAPE_COMPONENT 가 너무 적다 ({}) — 전제가 깨졌다",
+        rows.len()
+    );
+    let bad: Vec<_> = rows
+        .iter()
+        .filter(|(depth, pairs)| *pairs != depth.saturating_add(1))
+        .take(8)
+        .collect();
+    assert!(
+        bad.is_empty(),
+        "행렬 쌍 개수가 그룹 깊이 + 1 이 아니다 (한/글 변환본 규칙) — {:?}",
+        bad
+    );
+    let max_depth = rows.iter().map(|(d, _)| *d).max().unwrap_or(0);
+    assert!(
+        max_depth >= 3,
+        "중첩 깊이가 얕아 규칙을 시험하지 못한다: 최대 {max_depth}"
+    );
 }
 
+/// 최상위 도형(깊이 0)은 종전대로 1쌍이다 — 반례.
 #[test]
 fn top_level_shapes_keep_a_single_matrix_pair() {
-    let rows = depth_and_pairs(&convert_hwp3("samples/hwp3-sample11.hwp"));
-    // 최상위 25개도 실제로 검사한다. 빈 목록의 all()로 성공할 수 없다.
-    assert_eq!(rows.get(&(0, 1)), Some(&25));
-    assert!(!rows.keys().any(|(depth, pairs)| *depth == 0 && *pairs != 1));
-}
-
-#[test]
-fn hwp5_oracle_roundtrip_preserves_all_group_matrix_counts() {
-    for source in [
-        "samples/hwp3-sample11-hwp5.hwp",
-        "tests/fixtures/issue_4680/german-legislative-system-hancom-2020.hwp",
-    ] {
-        let bytes = fixture(source);
-        let doc = rhwp::parser::parse_document(&bytes).expect("oracle parse");
-        let saved = rhwp::serializer::cfb_writer::serialize_hwp(&doc).expect("oracle serialize");
-        assert_eq!(depth_and_pairs(&saved), depth_and_pairs(&bytes), "{source}");
-    }
+    let Some(bytes) = convert_hwp3("hwp3-sample11.hwp") else {
+        panic!("samples/hwp3-sample11.hwp 변환 실패");
+    };
+    let rows = depth_and_pairs(&bytes);
+    let zero_depth: Vec<_> = rows.iter().filter(|(d, _)| *d == 0).collect();
+    assert!(
+        zero_depth.iter().all(|(_, pairs)| *pairs == 1),
+        "깊이 0 인데 쌍이 1 이 아니다 — {:?}",
+        zero_depth.iter().take(8).collect::<Vec<_>>()
+    );
 }

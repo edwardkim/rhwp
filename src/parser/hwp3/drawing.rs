@@ -687,7 +687,8 @@ pub fn parse_drawing_object_tree(
 ///
 /// HWP5 `SHAPE_COMPONENT` 는 이 깊이로 rendering 행렬 쌍 개수(`group_level + 1`)를
 /// 정한다. HWP3 파서가 깊이를 안 매기면 모든 자식이 0 이 되어 저장기가 쌍을 하나만
-/// 쓰고, 레코드가 한컴이 기대하는 길이보다 96바이트씩 짧아진다. 한컴 저장본과의 레코드 길이 계약을 잃는다. 같은 문서의 한/글 HWP5 저장본은 깊이 1·2·3 에 각각 쌍 2·3·4 를 쓴다.
+/// 쓰고, 레코드가 한컴이 기대하는 길이보다 96바이트씩 짧아진다. 한글은 그런 문서를
+/// 열지 못한다. 같은 문서의 한/글 HWP5 저장본은 깊이 1·2·3 에 각각 쌍 2·3·4 를 쓴다.
 fn assign_group_levels(node: &mut ShapeObject, level: u16) {
     node.shape_attr_mut().group_level = level;
     if let ShapeObject::Group(group) = node {
