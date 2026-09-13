@@ -99,6 +99,36 @@ fn physical_outer_box_paint_inset_layout_gate_requires_single_active_zone_column
 }
 
 #[test]
+fn forward_line_seg_gap_hu_preserves_forward_gap() {
+    let current = LineSeg {
+        vertical_pos: 1_000,
+        line_height: 2_000,
+        ..Default::default()
+    };
+    let next = LineSeg {
+        vertical_pos: 3_500,
+        ..Default::default()
+    };
+
+    assert_eq!(super::forward_line_seg_gap_hu(&current, &next), 500);
+}
+
+#[test]
+fn forward_line_seg_gap_hu_clamps_rewound_next_seg() {
+    let current = LineSeg {
+        vertical_pos: 10_000,
+        line_height: 7_000,
+        ..Default::default()
+    };
+    let next = LineSeg {
+        vertical_pos: 11_000,
+        ..Default::default()
+    };
+
+    assert_eq!(super::forward_line_seg_gap_hu(&current, &next), 0);
+}
+
+#[test]
 fn note_separator_length_resolves_schema_sentinels_and_absolute_hwpunit() {
     use super::{footnote_separator_length_px, note_separator_length_px};
 

@@ -82,6 +82,14 @@ fn physical_outer_box_paint_inset_layout_gate(
         && measured_total_height.is_some_and(|measured| (measured - declared_height).abs() <= 0.5)
 }
 
+fn forward_line_seg_gap_hu(
+    current: &crate::model::paragraph::LineSeg,
+    next: &crate::model::paragraph::LineSeg,
+) -> i32 {
+    let current_end = current.vertical_pos.saturating_add(current.line_height);
+    next.vertical_pos.saturating_sub(current_end).max(0)
+}
+
 /// OWPML `NoteShapeType.noteLine.length`의 수평 길이 계약을 px로 해석한다.
 ///
 /// 알 수 없는 음수만 손상 문서 호환을 위해 기존 1/3 폭 fallback으로 남긴다.
@@ -9933,8 +9941,10 @@ impl LayoutEngine {
                     if let (Some(seg), Some(next_seg)) =
                         (para.line_segs.get(seg_idx), para.line_segs.get(seg_idx + 1))
                     {
-                        let gap = next_seg.vertical_pos - (seg.vertical_pos + seg.line_height);
-                        y_offset += hwpunit_to_px(gap, self.dpi);
+                        let gap = forward_line_seg_gap_hu(seg, next_seg);
+                        if gap > 0 {
+                            y_offset += hwpunit_to_px(gap, self.dpi);
+                        }
                     }
                     return TableControlOut {
                         y_offset,
