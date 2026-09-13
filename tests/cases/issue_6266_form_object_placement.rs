@@ -15,6 +15,20 @@
 //!
 //! 배치 산식의 마지막 조각은 **바깥 여백**이다 — 이 개체의 `margin.bottom` 은
 //! 4252HWPUNIT(42.5pt)이고, 한글은 용지 하단에서 정확히 그만큼 위에 둔다.
+//!
+//! ## [#6874] 개체 종류가 Form -> Table 로 바뀌었다 — 수치 계약은 그대로다
+//!
+//! HWP3 `obj_type=3` 은 캡션을 담은 1x1 표 구조로 저장되고 한글도 그것을 표로 만든다
+//! (정본 HWP3 -> HWPX 대조: `hp:tbl 2 / hp:btn 0`). 종전 파서는 그 표를 버리고
+//! `FormObject{PushButton}` 만 남겨 `- 581-13 -` 이 본문 글자가 아니라 개체 속성이
+//! 됐고, 저장본에서 그 12자가 사라졌다. 이제 표로 보존하므로 이 테스트도 **개체 종류가
+//! 아니라 배치**를 본다 — 기대 좌표(1052.5px / 396.7px)는 한글 2024 COM PDF 실측
+//! 그대로이고 바꾸지 않았다.
+//!
+//! 표로 두면 세로 기준이 `VertRelTo::Paper` 경로로 가는데, 그 기준 높이가
+//! `col_area.y * 2 + col_area.height`(상·하 여백이 같다는 가정)이면 이 문서
+//! (위 30mm·아래 20mm)에서 +37.8px 아래로 밀린다. 같은 커밋이 그 기준을 실제 용지
+//! 높이로 바로잡아 두 계약이 함께 산다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -86,71 +100,47 @@ fn form_object_is_not_inlined_into_the_title_line() {
 
 #[test]
 fn form_object_lands_at_paper_bottom_center() {
-    let out = Command::new(rhwp_bin())
-        .args(["export-render-tree", &sample(), "-p", "0", "--stdout"])
-        .output()
-        .unwrap();
-    let json = if out.status.success() && !out.stdout.is_empty() {
-        String::from_utf8_lossy(&out.stdout).into_owned()
-    } else {
-        // `--stdout` 미지원 빌드 대비 — 임시 폴더로 내보내 읽는다.
-        let dir = std::env::temp_dir().join(format!("rhwp-6266-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        let out = Command::new(rhwp_bin())
-            .args([
-                "export-render-tree",
-                &sample(),
-                "-p",
-                "0",
-                "-o",
-                &dir.to_string_lossy(),
-            ])
-            .output()
-            .unwrap();
-        assert_eq!(out.status.code(), Some(0), "{out:?}");
-        let path = std::fs::read_dir(&dir)
-            .unwrap()
-            .filter_map(|e| e.ok())
-            .map(|e| e.path())
-            .find(|p| p.extension().is_some_and(|x| x == "json"))
-            .expect("render tree JSON 이 없다");
-        std::fs::read_to_string(path).unwrap()
-    };
-
-    // `"Form"` 노드의 bbox 를 찾는다.
-    let idx = json
-        .find("\"Form\"")
-        .expect("Form 노드가 없다 — 개체가 소실됐다");
-    let tail = &json[idx..];
-    let bbox = tail.find("\"bbox\"").expect("Form bbox 가 없다");
-    let seg = &tail[bbox..(bbox + 200).min(tail.len())];
+    // 개체는 1x1 표로 보존된다(#6874). `dump-extents` 의 표 줄은
+    //   `Table  y=A..B h=H x=X w=W  pi=P ci=C RxC`
+    // 꼴이라, 이 문서에서 유일한 `1x1` 표가 그 개체다(본문 표는 16x8).
+    let text = extents();
+    let line = text
+        .lines()
+        .map(str::trim)
+        .find(|l| l.starts_with("Table") && l.ends_with("1x1"))
+        .expect("1x1 표 노드가 없다 — 개체가 소실됐다");
+    // `y=A..B` 의 범위 표기를 공백으로 풀어 앞 값만 읽는다.
+    let flat = line.replace("..", " ");
     let num = |key: &str| -> f64 {
-        seg.split(&format!("\"{key}\""))
+        flat.split(&format!("{key}="))
             .nth(1)
-            .and_then(|r| r.trim_start().strip_prefix(':'))
-            .map(|r| {
-                r.trim_start()
-                    .trim_end_matches(|c: char| !c.is_ascii_digit() && c != '.' && c != '-')
-            })
             .and_then(|r| {
-                r.split(|c: char| !c.is_ascii_digit() && c != '.' && c != '-')
+                r.trim_start()
+                    .split(|c: char| !c.is_ascii_digit() && c != '.' && c != '-')
                     .find(|s| !s.is_empty())
                     .and_then(|s| s.parse::<f64>().ok())
             })
-            .unwrap_or_else(|| panic!("bbox.{key} 를 읽지 못했다: {seg}"))
+            .unwrap_or_else(|| panic!("{key} 를 읽지 못했다: {flat}"))
     };
     let (x, y, w) = (num("x"), num("y"), num("w"));
 
-    // 세로: 용지 하단에서 바깥 여백(4252HU = 56.7px)만큼 위 → 1052.5px.
+    // 세로: 용지 하단에서 바깥 여백(4252HU = 56.7px)만큼 위 -> 1052.5px.
     // 인라인이던 종전에는 제목 줄(161px)에 있었다.
     assert!(
         (y - 1052.5).abs() <= 6.0,
-        "양식 개체가 쪽 하단에 놓이지 않았다: y={y:.1} (기대 1052.5)"
+        "개체가 쪽 하단에 놓이지 않았다: y={y:.1} (기대 1052.5)"
     );
-    // 가로: 용지 가운데 → 중심 396.7px (한글 297.47pt).
+    // 가로: 용지 가운데 -> 중심 396.7px (한글 297.47pt).
     let center = x + w / 2.0;
     assert!(
         (center - 396.7).abs() <= 4.0,
-        "양식 개체가 용지 가운데가 아니다: center={center:.1} (기대 396.7)"
+        "개체가 용지 가운데가 아니다: center={center:.1} (기대 396.7)"
+    );
+
+    // [#6874] 캡션이 **본문 글자**로 남는다 — 종전에는 개체 속성이라 저장본에서 사라졌다.
+    assert!(
+        text.lines()
+            .any(|l| l.contains("TextRun") && l.contains("- 581-13 -")),
+        "일련번호가 본문 글자로 남지 않았다"
     );
 }
