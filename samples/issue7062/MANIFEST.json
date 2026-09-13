@@ -1,0 +1,19 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 7062,
+  "title": "금융위 보도자료 — 저장 LINE_SEG 없이 TAC 도해 그림만 앵커한 문단",
+  "entries": [
+    {
+      "path": "samples/issue7062/tac_object_host_line_height.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/7062",
+      "originalFilename": "156060125_(금융위)보도자료_금융지주 경쟁력 강화를 위한 제도개선 추진.hwp",
+      "bytes": 286720,
+      "sha256": "2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb",
+      "referenceEngine": "2020",
+      "referencePdfStatus": "pdf/tac_object_host_line_height-2020.pdf에 한컴 engine 2020 산출 PDF를 커밋했다. SHA-256 f90ea6915a842ac2266f4dd737b2829bbb3b72b927b1658577f6ca8c8b9b6051.",
+      "contract": "2쪽 셀 문단 pi=12 는 저장 LINE_SEG 가 없고 TAC 그림(29997HU = 400.0px) 하나만 앵커한다. 이 문단의 줄 상자는 개체 높이(400.0px)여야 하며, 400HU(5.3px) 고정 폴백을 쓰면 뒤 표·문단이 그림 한가운데(553.4px)로 올라와 427px 겹친다. 저장 사다리도 같은 말을 한다 — 앞 문단 p[11] vpos=30525, 뒤 문단 p[13] vpos=61874, 델타 31349HU = 418.0px."
+    }
+  ]
+}
