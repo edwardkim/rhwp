@@ -1,0 +1,591 @@
+{
+  "issue": 3587,
+  "date": "2026-09-13",
+  "note": "보존 파일은 자동 계약과 한컴 판정 범위를 구분한다. 재사용은 SHA-256 동일성이다. output 출처는 로컬 이력이고 path가 영구 경로다.",
+  "entries": [
+    {
+      "source": "output/3587/b3/labnote-14a96c7e1/original.hwp",
+      "path": "samples/rnote/labnote-001.hwp",
+      "sha256": "8401e778edc386f0a87a0df4120a2cf0733aee36c84070ddc864499bde73a1af",
+      "bytes": 11264,
+      "role": "B 반복 저장·재편집 입력",
+      "reused": true
+    },
+    {
+      "source": "output/3587/b3/labnote-14a96c7e1/repeated.hwp",
+      "path": "samples/issue3587/b-labnote-repeated.hwp",
+      "sha256": "a534a6035d0f7b97d5a949764ac0f7cf0205952eece5dfd8085f642d3b68d6b5",
+      "bytes": 9728,
+      "role": "B 반복 저장·재편집 입력",
+      "reused": false
+    },
+    {
+      "source": "output/3587/b3/labnote-14a96c7e1/repeated.hwpx",
+      "path": "samples/issue3587/b-labnote-repeated.hwpx",
+      "sha256": "b5d1f8549631d1b54758472f98c90ca70c30f5677cfff50b4a6548bcf5345b9a",
+      "bytes": 9785,
+      "role": "B 반복 저장·재편집 입력",
+      "reused": false
+    },
+    {
+      "source": "output/3587/b3/table-14a96c7e1/original.hwp",
+      "path": "samples/issue3587/b-table-original.hwp",
+      "sha256": "dc3e57d7577447ae4b47f59bdb0f499a5ac29066b62af8a650bcdd8d70eee32a",
+      "bytes": 29184,
+      "role": "B 반복 저장·재열기 입력",
+      "reused": false
+    },
+    {
+      "source": "output/3587/b3/table-14a96c7e1/repeated.hwp",
+      "path": "samples/issue3587/b-table-repeated.hwp",
+      "sha256": "24e3c9d4709b70988671e95934c9f530b8bc414ef8f129bb7a185616d4f0b122",
+      "bytes": 13824,
+      "role": "B 반복 저장·재열기 입력",
+      "reused": false
+    },
+    {
+      "source": "output/3587/b3/table-14a96c7e1/repeated.hwpx",
+      "path": "samples/issue3587/b-table-repeated.hwpx",
+      "sha256": "7c271c8532483d480c87f72d5ac4d505e6cb1fb70d0862ab76a5b230ac1cde4b",
+      "bytes": 14385,
+      "role": "B 반복 저장·재열기 입력",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c1-form/labnote-001-stage11-filled.hwp",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwp",
+      "sha256": "c8bae9677a6b4cdf6d7e79996523d7bbe04c31e61bdc8d04ef286d308ec74832",
+      "bytes": 9728,
+      "role": "C 고정 양식 채우기 최종",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c1-form/labnote-001-stage11-filled.hwpx",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwpx",
+      "sha256": "3999f78c928f709d9ac93b9efa03001168fe00935da78594242480f8816fcce4",
+      "bytes": 9029,
+      "role": "C 고정 양식 채우기 최종",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c2-rows/labnote-001-stage12-rows.hwp",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwp",
+      "sha256": "0d7965c28e1151aca04a781fc41bff872074202b571ef6102457bb3b788e623d",
+      "bytes": 9728,
+      "role": "C 완결 행 채우기 최종",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c2-rows/labnote-001-stage12-rows.hwpx",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwpx",
+      "sha256": "5c8edd2018c3744851cfcb20a903ad5c0da400da31a4584bc09e849fdfd3dd94",
+      "bytes": 9077,
+      "role": "C 완결 행 채우기 최종",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/cli-block-from-hwp.hwp",
+      "path": "samples/issue3587/c-transport-cli-block-from-hwp.hwp",
+      "sha256": "fe8de266094e76624309ef2a040df4379199fd2e8029557efefa6f94d3a44f37",
+      "bytes": 10240,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/cli-block-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-transport-cli-block-from-hwpx.hwpx",
+      "sha256": "7c02062721dadadb8e8b42d86e52781c3f8f47fe579c7b5a8c07a71842979841",
+      "bytes": 10629,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/cli-form-from-hwp.hwp",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwp",
+      "sha256": "c8bae9677a6b4cdf6d7e79996523d7bbe04c31e61bdc8d04ef286d308ec74832",
+      "bytes": 9728,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/cli-form-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwpx",
+      "sha256": "3999f78c928f709d9ac93b9efa03001168fe00935da78594242480f8816fcce4",
+      "bytes": 9029,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/cli-rows-from-hwp.hwp",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwp",
+      "sha256": "0d7965c28e1151aca04a781fc41bff872074202b571ef6102457bb3b788e623d",
+      "bytes": 9728,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/cli-rows-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwpx",
+      "sha256": "5c8edd2018c3744851cfcb20a903ad5c0da400da31a4584bc09e849fdfd3dd94",
+      "bytes": 9077,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/input-derived.hwpx",
+      "path": "samples/issue3587/c-transport-input-derived.hwpx",
+      "sha256": "b8dde3a38ecb5cb7e1995d7b57305440fd9b68f972cf965239c586881702cdcb",
+      "bytes": 8999,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/mcp-block-from-hwp.hwp",
+      "path": "samples/issue3587/c-transport-cli-block-from-hwp.hwp",
+      "sha256": "fe8de266094e76624309ef2a040df4379199fd2e8029557efefa6f94d3a44f37",
+      "bytes": 10240,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/mcp-block-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-transport-cli-block-from-hwpx.hwpx",
+      "sha256": "7c02062721dadadb8e8b42d86e52781c3f8f47fe579c7b5a8c07a71842979841",
+      "bytes": 10629,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/mcp-form-from-hwp.hwp",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwp",
+      "sha256": "c8bae9677a6b4cdf6d7e79996523d7bbe04c31e61bdc8d04ef286d308ec74832",
+      "bytes": 9728,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/mcp-form-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwpx",
+      "sha256": "3999f78c928f709d9ac93b9efa03001168fe00935da78594242480f8816fcce4",
+      "bytes": 9029,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/mcp-rows-from-hwp.hwp",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwp",
+      "sha256": "0d7965c28e1151aca04a781fc41bff872074202b571ef6102457bb3b788e623d",
+      "bytes": 9728,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/mcp-rows-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwpx",
+      "sha256": "5c8edd2018c3744851cfcb20a903ad5c0da400da31a4584bc09e849fdfd3dd94",
+      "bytes": 9077,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-block-from-hwp.hwp",
+      "path": "samples/issue3587/c-transport-cli-block-from-hwp.hwp",
+      "sha256": "fe8de266094e76624309ef2a040df4379199fd2e8029557efefa6f94d3a44f37",
+      "bytes": 10240,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-block-from-hwp.hwpx",
+      "path": "samples/issue3587/c-transport-wasm-block-from-hwp.hwpx",
+      "sha256": "8d2db8fd5ff39f8f3f23ba6eb6d942c39020ff4c2b4ef298ab9b07cb201daae7",
+      "bytes": 10627,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-block-from-hwpx.hwp",
+      "path": "samples/issue3587/c-transport-wasm-block-from-hwpx.hwp",
+      "sha256": "f2101e7223e3058c2fed42850a2c8d469dc71b892421392b18333d6c39eb6504",
+      "bytes": 8192,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-block-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-transport-cli-block-from-hwpx.hwpx",
+      "sha256": "7c02062721dadadb8e8b42d86e52781c3f8f47fe579c7b5a8c07a71842979841",
+      "bytes": 10629,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-form-from-hwp.hwp",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwp",
+      "sha256": "c8bae9677a6b4cdf6d7e79996523d7bbe04c31e61bdc8d04ef286d308ec74832",
+      "bytes": 9728,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-form-from-hwp.hwpx",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwpx",
+      "sha256": "3999f78c928f709d9ac93b9efa03001168fe00935da78594242480f8816fcce4",
+      "bytes": 9029,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-form-from-hwpx.hwp",
+      "path": "samples/issue3587/c-transport-wasm-form-from-hwpx.hwp",
+      "sha256": "f5140182e12f793c353adbf009876f70f275859361322f1e14b52d2d5cf1e28f",
+      "bytes": 7680,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-form-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-form-labnote-001-stage11-filled.hwpx",
+      "sha256": "3999f78c928f709d9ac93b9efa03001168fe00935da78594242480f8816fcce4",
+      "bytes": 9029,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-rows-from-hwp.hwp",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwp",
+      "sha256": "0d7965c28e1151aca04a781fc41bff872074202b571ef6102457bb3b788e623d",
+      "bytes": 9728,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-rows-from-hwp.hwpx",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwpx",
+      "sha256": "5c8edd2018c3744851cfcb20a903ad5c0da400da31a4584bc09e849fdfd3dd94",
+      "bytes": 9077,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-rows-from-hwpx.hwp",
+      "path": "samples/issue3587/c-transport-wasm-rows-from-hwpx.hwp",
+      "sha256": "36f8c125a60ad61a1bb1f809c3f4ea95b44445994c9663865e3becddf34938fc",
+      "bytes": 7680,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/c-integrated/wasm/wasm-rows-from-hwpx.hwpx",
+      "path": "samples/issue3587/c-rows-labnote-001-stage12-rows.hwpx",
+      "sha256": "5c8edd2018c3744851cfcb20a903ad5c0da400da31a4584bc09e849fdfd3dd94",
+      "bytes": 9077,
+      "role": "C 실제 WASM/CLI/MCP 재열기 대조; 한컴 판정은 stage14 지정 두 파일만",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d1-real-nested/pi2-import.hwp",
+      "path": "samples/issue3587/d-pi2-import.hwp",
+      "sha256": "3b8eb4b8d6ea2f569bcc02b23b65f77ac261c73152def54a998acab10607dcbe",
+      "bytes": 17408,
+      "role": "D 실물 최종; 한컴 판정 범위는 stage18/20",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d1-real-nested/pi2-import-hwp-2020.pdf",
+      "path": "pdf/issue3587/d-pi2-import-hwp-2020.pdf",
+      "sha256": "6780fb4f13ac11a279389fe9d19d251ad23dd037016c0e5da534174f023677ba",
+      "bytes": 17401,
+      "role": "한컴 기준 PDF; profile2020 runtime12.0.0.4605",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d1-real-nested/pi2-import.hwpx",
+      "path": "samples/issue3587/d-pi2-import.hwpx",
+      "sha256": "dd108e6495777f4c43fa131a09fe5145024a2837948ac5e9da45569089db8204",
+      "bytes": 12899,
+      "role": "D 실물 최종; 한컴 판정 범위는 stage18/20",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d1-real-nested/pi2-import-hwpx-2020.pdf",
+      "path": "pdf/issue3587/d-pi2-import-hwpx-2020.pdf",
+      "sha256": "e7099e713b8f80036838b320a89d1ebe91962ff9d79a376ca927c3582bc6b444",
+      "bytes": 17399,
+      "role": "한컴 기준 PDF; profile2020 runtime12.0.0.4605",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d1-textbox/stage20/pi4-import.hwp",
+      "path": "samples/issue3587/d-pi4-import.hwp",
+      "sha256": "ce63904206f5d6a10a54a4a8527bf8023db666deedcef8af2956daf41a9a30d0",
+      "bytes": 22016,
+      "role": "D 실물 최종; 한컴 판정 범위는 stage18/20",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d1-textbox/stage20/pi4-import-hwp-2020.pdf",
+      "path": "pdf/issue3587/d-pi4-import-hwp-2020.pdf",
+      "sha256": "7adc6f35364d2e9813eb5b04ceeaf4b18e8e275207532115748be897c87bcaaa",
+      "bytes": 78050,
+      "role": "한컴 기준 PDF; profile2020 runtime12.0.0.4605",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d1-textbox/stage20/pi4-import.hwpx",
+      "path": "samples/issue3587/d-pi4-import.hwpx",
+      "sha256": "88fb62281463b4b6e496d86c6d82075f177252901091c8c0ef1a969e9a23a1f9",
+      "bytes": 18670,
+      "role": "D 실물 최종; 한컴 판정 범위는 stage18/20",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d1-textbox/stage20/pi4-import-hwpx-2020.pdf",
+      "path": "pdf/issue3587/d-pi4-import-hwpx-2020.pdf",
+      "sha256": "fc81963a8b51b8fefadf310828c73510901fc7c13dab775086da3b5c97c7da50",
+      "bytes": 71368,
+      "role": "한컴 기준 PDF; profile2020 runtime12.0.0.4605",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d2-cli-final/filled.hwp",
+      "path": "samples/issue3587/d-cli-filled.hwp",
+      "sha256": "3df55f4f10db78c7fa47e2179d0b6fd6f30f78ae26d3fa482f9afe39a226e2d4",
+      "bytes": 9728,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d2-cli-final/filled.hwpx",
+      "path": "samples/issue3587/d-cli-filled.hwpx",
+      "sha256": "3753c8f66e1b692b9d6b25af07e154c2d58adc7b85838fe595a1d3113453b480",
+      "bytes": 9811,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d2-cli-final/imported.hwp",
+      "path": "samples/issue3587/b-labnote-repeated.hwp",
+      "sha256": "a534a6035d0f7b97d5a949764ac0f7cf0205952eece5dfd8085f642d3b68d6b5",
+      "bytes": 9728,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d2-cli-final/imported.hwpx",
+      "path": "samples/issue3587/d-cli-imported.hwpx",
+      "sha256": "2a0db682cd1832b29ba101859175ec84854836dfa3b07cdca121181b473660de",
+      "bytes": 9789,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d2-cli-final/source-derived.hwpx",
+      "path": "samples/issue3587/c-transport-input-derived.hwpx",
+      "sha256": "b8dde3a38ecb5cb7e1995d7b57305440fd9b68f972cf965239c586881702cdcb",
+      "bytes": 8999,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d2-cli-final/source.hwp",
+      "path": "samples/rnote/labnote-001.hwp",
+      "sha256": "8401e778edc386f0a87a0df4120a2cf0733aee36c84070ddc864499bde73a1af",
+      "bytes": 11264,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d2-cli-final/target.hwp",
+      "path": "samples/rnote/labnote-001.hwp",
+      "sha256": "8401e778edc386f0a87a0df4120a2cf0733aee36c84070ddc864499bde73a1af",
+      "bytes": 11264,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d2-cli-final/target.hwpx",
+      "path": "samples/issue3587/c-transport-input-derived.hwpx",
+      "sha256": "b8dde3a38ecb5cb7e1995d7b57305440fd9b68f972cf965239c586881702cdcb",
+      "bytes": 8999,
+      "role": "D CLI 입력·중간 가져오기·최종 채우기 재열기; 신규 한컴 시각 판정 없음",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d3/cost/labnote-derived.hwpx",
+      "path": "samples/issue3587/c-transport-input-derived.hwpx",
+      "sha256": "b8dde3a38ecb5cb7e1995d7b57305440fd9b68f972cf965239c586881702cdcb",
+      "bytes": 8999,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d3/cost/labnote-source.hwp",
+      "path": "samples/rnote/labnote-001.hwp",
+      "sha256": "8401e778edc386f0a87a0df4120a2cf0733aee36c84070ddc864499bde73a1af",
+      "bytes": 11264,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d3/cost/labnote-target.hwp",
+      "path": "samples/rnote/labnote-001.hwp",
+      "sha256": "8401e778edc386f0a87a0df4120a2cf0733aee36c84070ddc864499bde73a1af",
+      "bytes": 11264,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d3/cost/labnote-target.hwpx",
+      "path": "samples/issue3587/c-transport-input-derived.hwpx",
+      "sha256": "b8dde3a38ecb5cb7e1995d7b57305440fd9b68f972cf965239c586881702cdcb",
+      "bytes": 8999,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d3/cost/textbox-derived.hwpx",
+      "path": "samples/issue3587/d-cost-textbox-derived.hwpx",
+      "sha256": "348d322a9d816291af215396313285758dd99bb8d4e6bbfb38c1bad910e17c87",
+      "bytes": 81869,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": false
+    },
+    {
+      "source": "output/3587/d3/cost/textbox-source.hwp",
+      "path": "samples/table-in-tbox.hwp",
+      "sha256": "02b0ced8b96cec5b6e1cad6dd1926b701a2875ea9591c589e57edf7653daf4af",
+      "bytes": 163328,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d3/cost/textbox-target.hwp",
+      "path": "samples/table-in-tbox.hwp",
+      "sha256": "02b0ced8b96cec5b6e1cad6dd1926b701a2875ea9591c589e57edf7653daf4af",
+      "bytes": 163328,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d3/cost/textbox-target.hwpx",
+      "path": "samples/issue3587/d-cost-textbox-derived.hwpx",
+      "sha256": "348d322a9d816291af215396313285758dd99bb8d4e6bbfb38c1bad910e17c87",
+      "bytes": 81869,
+      "role": "D3 비용 계측 고정 입력; 반복 측정 산출 제외",
+      "reused": true
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/source-derived.hwpx",
+      "path": "samples/issue3587/c-transport-input-derived.hwpx",
+      "sha256": "b8dde3a38ecb5cb7e1995d7b57305440fd9b68f972cf965239c586881702cdcb",
+      "bytes": 8999,
+      "role": "Gym 파생 입력; 독립 한컴 원본 아님",
+      "reused": true
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwp/LN01/copied.hwp",
+      "path": "samples/issue3587/gym-hwp-copied.hwp",
+      "sha256": "27e1e8012ac589666213d194f6c87be7b853818db99b01b39487936d8ce8e383",
+      "bytes": 10240,
+      "role": "Gym 단계별 실행 입력·최종 출력; 한컴 판정은 labnote-filled만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwp/LN01/labnote-filled.hwp",
+      "path": "samples/issue3587/gym-hwp-labnote-filled.hwp",
+      "sha256": "ed63c8da2595d7f205be32eaf534e200f58969b490dda601ff831925ddc883f4",
+      "bytes": 10240,
+      "role": "Gym 단계별 실행 입력·최종 출력; 한컴 판정은 labnote-filled만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwp/LN01/seeded.hwp",
+      "path": "samples/issue3587/gym-hwp-seeded.hwp",
+      "sha256": "894ab63dadea557d3683e2f78f858fc2ddaed371f84f66cb6a3dd5c4aadb5276",
+      "bytes": 9728,
+      "role": "Gym 단계별 실행 입력·최종 출력; 한컴 판정은 labnote-filled만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwp/untouched/LN01/labnote-filled.hwp",
+      "path": "samples/rnote/labnote-001.hwp",
+      "sha256": "8401e778edc386f0a87a0df4120a2cf0733aee36c84070ddc864499bde73a1af",
+      "bytes": 11264,
+      "role": "Gym 음성 대조 입력: untouched",
+      "reused": true
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwp/without-copy/LN01/labnote-filled.hwp",
+      "path": "samples/issue3587/gym-hwp-seeded.hwp",
+      "sha256": "894ab63dadea557d3683e2f78f858fc2ddaed371f84f66cb6a3dd5c4aadb5276",
+      "bytes": 9728,
+      "role": "Gym 음성 대조 입력: without-copy",
+      "reused": true
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwp/without-final-fill/LN01/labnote-filled.hwp",
+      "path": "samples/issue3587/gym-hwp-copied.hwp",
+      "sha256": "27e1e8012ac589666213d194f6c87be7b853818db99b01b39487936d8ce8e383",
+      "bytes": 10240,
+      "role": "Gym 음성 대조 입력: without-final-fill",
+      "reused": true
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwpx/LN01/copied.hwpx",
+      "path": "samples/issue3587/gym-hwpx-copied.hwpx",
+      "sha256": "b63a7edc80f1c34457468393ab705bc95a638d137d15345d1d170d6d7303a650",
+      "bytes": 10661,
+      "role": "Gym 단계별 실행 입력·최종 출력; 한컴 판정은 labnote-filled만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwpx/LN01/labnote-filled.hwpx",
+      "path": "samples/issue3587/gym-hwpx-labnote-filled.hwpx",
+      "sha256": "9cd132770cf3b9ffda967e0e7510ed7dd04c78e0404627f6fdb16ed43375abf8",
+      "bytes": 10661,
+      "role": "Gym 단계별 실행 입력·최종 출력; 한컴 판정은 labnote-filled만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwpx/LN01/seeded.hwpx",
+      "path": "samples/issue3587/gym-hwpx-seeded.hwpx",
+      "sha256": "5a74dcfd67d0efa04f2f283a65479272bba344e3a07961c6d57b493d8b423df4",
+      "bytes": 9051,
+      "role": "Gym 단계별 실행 입력·최종 출력; 한컴 판정은 labnote-filled만",
+      "reused": false
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwpx/untouched/LN01/labnote-filled.hwpx",
+      "path": "samples/issue3587/c-transport-input-derived.hwpx",
+      "sha256": "b8dde3a38ecb5cb7e1995d7b57305440fd9b68f972cf965239c586881702cdcb",
+      "bytes": 8999,
+      "role": "Gym 음성 대조 입력: untouched",
+      "reused": true
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwpx/without-copy/LN01/labnote-filled.hwpx",
+      "path": "samples/issue3587/gym-hwpx-seeded.hwpx",
+      "sha256": "5a74dcfd67d0efa04f2f283a65479272bba344e3a07961c6d57b493d8b423df4",
+      "bytes": 9051,
+      "role": "Gym 음성 대조 입력: without-copy",
+      "reused": true
+    },
+    {
+      "source": "output/3587/gym-stage24-r3/hwpx/without-final-fill/LN01/labnote-filled.hwpx",
+      "path": "samples/issue3587/gym-hwpx-copied.hwpx",
+      "sha256": "b63a7edc80f1c34457468393ab705bc95a638d137d15345d1d170d6d7303a650",
+      "bytes": 10661,
+      "role": "Gym 음성 대조 입력: without-final-fill",
+      "reused": true
+    },
+    {
+      "source": "output/3587/d1-import/cc9f49a8f/hancom-check/labnote-001-original-2020.pdf",
+      "path": "pdf/rnote/labnote-001-hwp-2020.pdf",
+      "sha256": "64faf53a99b93ea923bf98fd6f81ffc596a4c4aa2bcfa7cef96964d3281d9ac7",
+      "bytes": 16338,
+      "role": "원본 연구노트 한컴 기준 PDF; stage17 실패 출력과 구별",
+      "reused": false
+    }
+  ]
+}
