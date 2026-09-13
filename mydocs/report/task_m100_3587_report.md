@@ -6,7 +6,8 @@
 - 이전 D3 제품·테스트 검증 기준: `9acd8d54fd04477ee819238ee63abd4eb7676380`.
 - 상태: **승인된 A/B/C/D 기능, D3 자동 검증 및 선택적 Gym 시나리오 완료.
   증적 보존과 최신 devel 통합 완료, [Stage 25](../working/task_m100_3587_stage25.md)에서
-  통합 후보 최종 검증 완료. 로컬 제출 준비 완료, 원격 push·Open PR 승인 대기.**
+  통합 후보 최종 검증 완료. PR #7101 생성·Full CI 성공, self-review 승인.
+  최종 review-only HEAD의 CI 확인과 별도 병합 승인이 남는다.**
 - 기준 계획: [수행계획](../plans/task_m100_3587.md),
   [구현계획](../plans/task_m100_3587_impl.md),
   [공개 사용법](../manual/template_automation.md).
@@ -160,7 +161,7 @@ native 실행은 preview 뒤의 따뜻한 캐시 조건이다. 절대 성능 보
 
 2026-09-13 `upstream/devel=1ae5ca295bddcb31b846affc62834a2a3023d24d`의 추가 18개
 commit을 `ca67b5ff5`로 작업 브랜치에 통합했다. 충돌 없이 병합했으며,
-양쪽에서 바뀐 `typeset.rs` 및 HWP 변환·저장 영향 때문에 전체 검증을 다시 진행한다.
+양쪽에서 바뀐 `typeset.rs` 및 HWP 변환·저장 영향 때문에 전체 검증을 다시 진행해 통과했다.
 현재 검증 후보는 신규 문서/PDF와 쪽수 5건 및 독립 대조한 넘침 2건 등록을 포함한 `6a8aeb9ff`다.
 
 새 integration source는 `tests/cases/` 21개다. Cargo.toml/lock·generated suite/manifest·
@@ -171,8 +172,10 @@ CI workflow는 이번 변경에 포함하지 않는다. baseline 변경은 독�
 1. 최종 입력·PDF 보존과 최신 devel 통합: 완료.
 2. 통합 후보 집중 192건·신규 입력 보안 6건·Rust lint·Gym·전체 회귀·Native Skia·Docker WASM:
    완료. 실행별 최종 결과는 Stage 25에 기록했다. 이후에는 문서만 변경했다.
-3. 로컬 문서 commit·PR 본문으로 별도 push·Open PR 승인을 요청한다.
-   생성 후 PR 번호에 맞는 review 문서·트리야지·CI·self-review·병합 절차를 따른다.
+3. 승인 후 [PR #7101](https://github.com/edwardkim/rhwp/pull/7101)을 생성하고 트리야지했다.
+   `ea2d3541a`의 Full CI·CodeQL·Render Diff 등 성공 후
+   [self-review](../pr/archives/pr_7101_review.md)를 수행했다. 기록을 포함한 최신 HEAD CI와
+   별도 병합 승인이 남는다.
 
 최초 보고서 작성 단계의 로컬 검사(현재 제출 검증은 Stage 25):
 
@@ -182,9 +185,10 @@ CI workflow는 이번 변경에 포함하지 않는다. baseline 변경은 독�
   mydocs/plans/task_m100_3587.md mydocs/plans/task_m100_3587_impl.md`: 3개 문서 이상 없음, exit 0.
 - `git diff --check`: PASS. 이번 절차에서는 제품·테스트·기준값을 변경하지 않았다.
 
-현재 원격 push·PR 생성·댓글·merge·이슈 close는 수행하지 않았다.
+원격 push·PR 생성·self-review는 완료했다. 이 보고서 갱신에서 별도 GitHub review/comment,
+merge·이슈 close는 수행하지 않았다.
 
-## 부록: PR 본문 초안 — 원격 제출 승인 대기
+## 부록: 최초 제출 전 PR 본문 초안 — 역사 기록
 
 - 제목: `feat(template): support safe block copy, fill and cross-document import (#3587)`
 - base/head: `devel` / `task_m100_3587`.
