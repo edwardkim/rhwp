@@ -6982,11 +6982,13 @@ mod tests {
         issue4149_assert_fast_parity("samples/hwp_table_test_saved.hwp", 400);
     }
 
-    /// [#4149] fast path 웜 지연 실측 — 브라우저 IME 시나리오(같은 좌표 반복 질의)에서
-    /// 페이지 트리 재빌드(~17ms) 없이 1ms 미만이어야 한다. 콜드 1회(유닛 메모 예열)는
-    /// 측정에서 제외한다.
+    /// [#4149] 웜 캐럿 질의는 전체 페이지 트리를 재빌드하지 않아야 한다.
+    /// #3743에서 전체 렌더도 가시 창만 compose하게 되어 두 경로의 지연 배율은
+    /// 더 이상 작업량의 대리 지표가 아니다. 기존 thread-local 카운터로 원래
+    /// 계약을 직접 검증하고, 시간은 진단값으로만 남긴다.
     #[test]
-    fn issue4149_fast_path_giant_cell_warm_latency_beats_legacy() {
+    fn issue4149_fast_path_giant_cell_warm_avoids_page_tree_builds() {
+        use crate::diagnostics::perf_counters;
         use std::time::Instant;
         let (core, host_pi, host_ci, cell_idx) = issue4128_fixture();
         // 브라우저 실측 좌표와 동일 (ppi0 ci2 cell2 para6 off5) — 픽스처가 같은 셀을 고른다.
@@ -6998,29 +7000,32 @@ mod tests {
             .expect("fast");
         assert!(fast.is_some(), "perf 대상 좌표에서 fast path 미적중");
 
-        // 절대 벽시계 기준은 러너 속도에 종속돼 CI 에서 거짓 실패한다(실측: 로컬
-        // 0.6ms/CI 1ms+). 같은 프로세스에서 legacy 대비 배율로 판정한다 — fast 의
-        // 핵심 주장은 "페이지 트리 재빌드 회피"이므로 배율이 기계 무관 신호다.
+        // 다른 테스트 스레드의 빌드는 포함하지 않는다. 공개 진입점이 legacy로
+        // 폴백하면 아래의 0-build 계약이 실패해야 한다.
         let iters = 10;
+        perf_counters::reset_thread_page_tree_builds();
         let t = Instant::now();
         for _ in 0..iters {
-            let _ = core
+            let rect = core
                 .get_cursor_rect_in_cell_native(0, host_pi, host_ci, cell_idx, 6, 5)
                 .expect("rect");
+            assert_eq!(Some(&rect), fast.as_ref());
         }
         let fast_ms = t.elapsed().as_secs_f64() * 1000.0 / iters as f64;
+        assert_eq!(perf_counters::thread_page_tree_builds(), 0);
+        perf_counters::reset_thread_page_tree_builds();
         let t = Instant::now();
         for _ in 0..iters {
-            let _ = core
+            let rect = core
                 .cursor_rect_in_cell_via_page_tree(0, host_pi, host_ci, cell_idx, 6, 5)
                 .expect("legacy rect");
+            assert_eq!(Some(&rect), fast.as_ref());
         }
         let legacy_ms = t.elapsed().as_secs_f64() * 1000.0 / iters as f64;
         eprintln!("#4149 웜 지연: fast {fast_ms:.3}ms vs legacy {legacy_ms:.3}ms/call");
         assert!(
-            fast_ms * 4.0 < legacy_ms,
-            "fast path 웜 지연 {fast_ms:.3}ms 가 legacy {legacy_ms:.3}ms 의 1/4 미만이 아니다 \
-             — 페이지 트리 재빌드 회피가 회귀했는지 확인 (로컬 실측 약 28배)"
+            perf_counters::thread_page_tree_builds() >= iters,
+            "페이지 경로의 실제 빌드를 카운터로 관측해야 한다"
         );
     }
 }
