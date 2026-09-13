@@ -54,8 +54,26 @@ impl Meter {
         let mut key = serde_json::to_value(value).map_err(|e| invalid(e.to_string()))?;
         if let Some(object) = key.as_object_mut() {
             object.remove("raw_data");
+            canonical_font_reference(object);
+            if let Some(substitute) = object
+                .get_mut("subst_font")
+                .and_then(serde_json::Value::as_object_mut)
+            {
+                canonical_font_reference(substitute);
+            }
         }
         Ok(key)
+    }
+}
+
+fn canonical_font_reference(object: &mut serde_json::Map<String, serde_json::Value>) {
+    if object.get("is_embedded") == Some(&serde_json::Value::Bool(true))
+        && object
+            .get("resolved_bin_data_id")
+            .is_some_and(serde_json::Value::is_number)
+    {
+        // Manifest spelling is source-local. The resolved target storage ID is the meaning.
+        object.remove("bin_item_id_ref");
     }
 }
 
@@ -141,7 +159,7 @@ impl Resources {
         )?;
         // The non-style graph is acyclic: binary -> font/border/tab -> char ->
         // numbering/bullet -> paragraph. Styles are resolved separately as a graph.
-        for phase in 0..7 {
+        for phase in 0..5 {
             for &resource in reachable {
                 meter.tick()?;
                 let src = &source.doc_info;

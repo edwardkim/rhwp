@@ -173,6 +173,29 @@ impl DocumentCore {
         };
         let reachable = validation::reachable_resources(source, &source_request)
             .map_err(|e| invalid(e.to_string()))?;
+        // An implicit source outline must not silently become the target section's
+        // explicit outline. Materializing the built-in definition needs its own contract.
+        if source.sections[request.source_section]
+            .section_def
+            .outline_numbering_id
+            == 0
+            && self.document.sections[request.target_section]
+                .section_def
+                .outline_numbering_id
+                != 0
+            && reachable.iter().any(|resource| match resource {
+                validation::Resource::Para(id) => {
+                    let para = &source.doc_info.para_shapes[*id as usize];
+                    para.head_type == crate::model::style::HeadType::Outline
+                        && para.numbering_id == 0
+                }
+                _ => false,
+            })
+        {
+            return Err(invalid(
+                "implicit source outline cannot inherit a different target outline",
+            ));
+        }
         let resources = resources::Resources::prepare(
             source,
             &self.document,
@@ -225,6 +248,7 @@ impl DocumentCore {
             paragraphs.extend(copy);
         }
         result.resources = resources.counts.clone();
+        super::budget::measure(&paragraphs, 1, request.limits.block.max_structure_bytes, 0)?;
         // Native result is small and bounded by the existing mapping ceiling.
         // Serialize before commit so the future transport wrapper cannot first fail after mutation.
         serde_json::to_vec(&result).map_err(|e| invalid(e.to_string()))?;
