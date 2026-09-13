@@ -13,7 +13,8 @@
 //! 0 으로 접었다. `p[18]` 은 저장 seg 가 아예 없어 애초에 비교할 vpos 가 없다 — 그래서
 //! 앞 문단의 슬롯이 이 vpos 에 닿는지로 판정하도록 좁혔다.
 //!
-//! 접히면 그 아래 쪽 전체가 11.8px 위로 올라간다. 한컴 engine 2020 출력(job
+//! 좌표는 `#7095`(조각 상단 바깥여백 1.9px)를 반영한 값이다. 접히면 그 아래 쪽 전체가
+//! 11.8px 위로 올라간다. 한컴 engine 2020 출력(job
 //! `94f14dc5-422a-462a-b4e6-810ef36ff98d`, `pdf/tac_object_host_line_height-2020.pdf`)을
 //! 96dpi 래스터로 겹쳐 재면 수정 전 −21px 이던 잉크 차가 수정 후 **−9px 로 균일**해진다
 //! (남는 −9 는 칸 첫 내용 상단 여백 축이며 이 수정 밖이다).
@@ -64,15 +65,15 @@ fn issue_7086_empty_paragraph_between_two_table_hosts_keeps_its_line() {
         })
         .expect("제목 상자(39.8px)");
     assert!(
-        (title_box.y - 47.2).abs() < 0.5,
-        "#7086: 제목 상자 위치는 불변이어야 한다: {:.1}",
+        (title_box.y - 49.1).abs() < 0.5,
+        "#7086: 제목 상자 위치(#7095 로 +1.9)는 49.1 이어야 한다: {:.1}",
         title_box.y
     );
 
     // p[17] 의 빈 줄 — 저장 lh=600 = 8.0px. 접히면 이 줄이 아예 없다.
     let spacer = nodes.iter().find_map(|n| match &n.node_type {
         RenderNodeType::TextLine(_)
-            if (n.bbox.y - 97.0).abs() < 0.5 && (n.bbox.height - 8.0).abs() < 0.5 =>
+            if (n.bbox.y - 98.9).abs() < 0.5 && (n.bbox.height - 8.0).abs() < 0.5 =>
         {
             Some(n.bbox)
         }
@@ -80,7 +81,7 @@ fn issue_7086_empty_paragraph_between_two_table_hosts_keeps_its_line() {
     });
     assert!(
         spacer.is_some(),
-        "#7086: 제목 상자와 3×3 표 사이의 빈 문단 줄(y=97.0 h=8.0)이 있어야 한다"
+        "#7086: 제목 상자와 3×3 표 사이의 빈 문단 줄(y=98.9 h=8.0)이 있어야 한다"
     );
 
     // 3×3 표는 그 빈 문단의 몫(600+284HU = 11.8px)만큼 내려간다 — 접히면 97.0 이다.
@@ -92,8 +93,8 @@ fn issue_7086_empty_paragraph_between_two_table_hosts_keeps_its_line() {
         })
         .expect("3×3 표");
     assert!(
-        (grid.y - 108.8).abs() < 0.5,
-        "#7086: 3×3 표는 97.0 + 11.8 = 108.8 에서 시작해야 한다 — 접히면 97.0: {:.1}",
+        (grid.y - 110.7).abs() < 0.5,
+        "#7086: 3×3 표는 98.9 + 11.8 = 110.7 에서 시작해야 한다 — 접히면 98.9: {:.1}",
         grid.y
     );
 }
@@ -111,8 +112,8 @@ fn issue_7086_downstream_content_shifts_by_the_same_slot() {
         .expect("도해 그림");
     // 548.1 + 11.8. 그 아래 상대 배치(#7062·#7079)는 그대로다.
     assert!(
-        (image.y - 559.9).abs() < 0.5,
-        "#7086: 도해 그림도 같은 11.8px 만큼 내려간다: {:.1}",
+        (image.y - 561.7).abs() < 0.5,
+        "#7086: 도해 그림도 같은 11.8px 만큼 내려간다(#7095 로 +1.9): {:.1}",
         image.y
     );
     let table = nodes
