@@ -5,6 +5,13 @@
 //! Both backends support single and multiple pages and are native-only.
 
 #[cfg(not(target_arch = "wasm32"))]
+#[path = "pdf_synthetic_bold.rs"]
+mod synthetic_bold;
+#[cfg(not(target_arch = "wasm32"))]
+#[doc(hidden)]
+pub use synthetic_bold::{prepare_svg_with_synthetic_bold, PdfBoldReport};
+
+#[cfg(not(target_arch = "wasm32"))]
 #[path = "pdf_synthetic_italic.rs"]
 mod synthetic_italic;
 #[cfg(not(target_arch = "wasm32"))]
@@ -1241,7 +1248,12 @@ where
 
     for (page_index, svg) in svg_pages.iter().enumerate() {
         let svg_with_fallback = apply_pdf_font_options(svg, export_options);
-        let (tree, italic_report) = parse_svg_with_synthetic_italic(&svg_with_fallback, &options)
+        let (svg_with_bold, bold_report) =
+            prepare_svg_with_synthetic_bold(&svg_with_fallback, &options)?;
+        if bold_report.unsupported_texts > 0 {
+            eprintln!("경고: PDF {}페이지의 굵게 text {}개는 혼합 글꼴/복잡한 paint로 합성하지 못했습니다.", page_index + 1, bold_report.unsupported_texts);
+        }
+        let (tree, italic_report) = parse_svg_with_synthetic_italic(&svg_with_bold, &options)
             .map_err(|e| format!("SVG 파싱 실패: {}", e))?;
         if italic_report.unsupported_texts > 0 {
             eprintln!(

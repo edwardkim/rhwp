@@ -291,6 +291,20 @@ pub fn render(
 
         content.save_state_checked()?;
         match (span.fill.as_ref(), span.stroke.as_ref()) {
+            (Some(fill), Some(stroke))
+                if matches!((fill.paint(), stroke.paint()), (usvg::Paint::Color(_), usvg::Paint::Color(_)))
+                    && (span.paint_order == PaintOrder::FillAndStroke
+                        || (fill.paint() == stroke.paint()
+                            && fill.opacity().get() == 1.0
+                            && stroke.opacity().get() == 1.0)) =>
+            {
+                // #6936: one glyph emission keeps text extraction/search exact.
+                // Reversed paint order is equivalent only for the same opaque color.
+                path::fill_and_stroke(fill, stroke, chunk, content, ctx, rc, |content| {
+                    content.set_text_rendering_mode(TextRenderingMode::FillStroke);
+                    operation(content)
+                })?;
+            }
             (Some(fill), Some(stroke)) => match span.paint_order {
                 PaintOrder::FillAndStroke => {
                     path::fill(

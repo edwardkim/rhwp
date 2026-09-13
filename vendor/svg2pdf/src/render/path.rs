@@ -196,6 +196,46 @@ pub(crate) fn stroke(
         }
     }
 
+    set_stroke_properties(content, stroke);
+
+    operation(content, stroke)?;
+
+    content.restore_state();
+
+    Ok(())
+}
+
+// PDF Tr 2 draws fill then stroke with one text-show operation. Restrict this
+// helper to solid paints: gradient/pattern masks need the existing separate passes.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn fill_and_stroke(
+    fill: &Fill,
+    stroke: &Stroke,
+    chunk: &mut Chunk,
+    content: &mut Content,
+    ctx: &mut Context,
+    rc: &mut ResourceContainer,
+    operation: impl Fn(&mut Content) -> Result<()>,
+) -> Result<()> {
+    let (Paint::Color(fill_color), Paint::Color(stroke_color)) =
+        (fill.paint(), stroke.paint())
+    else {
+        unreachable!("solid paints checked by caller")
+    };
+    content.save_state_checked()?;
+    set_opacity_gs(chunk, content, ctx, Some(stroke.opacity()), Some(fill.opacity()), rc);
+    let space = rc.add_color_space(ctx.srgb_ref());
+    content.set_fill_color_space(ColorSpaceOperand::Named(space.to_pdf_name()));
+    content.set_stroke_color_space(ColorSpaceOperand::Named(space.to_pdf_name()));
+    content.set_fill_color(fill_color.to_pdf_color());
+    content.set_stroke_color(stroke_color.to_pdf_color());
+    set_stroke_properties(content, stroke);
+    operation(content)?;
+    content.restore_state();
+    Ok(())
+}
+
+fn set_stroke_properties(content: &mut Content, stroke: &Stroke) {
     content.set_line_width(stroke.width().get());
     content.set_miter_limit(stroke.miterlimit().get());
     content.set_line_cap(stroke.linecap().to_pdf_line_cap());
@@ -206,12 +246,6 @@ pub(crate) fn stroke(
     } else {
         content.set_dash_pattern(vec![], 0.0);
     }
-
-    operation(content, stroke)?;
-
-    content.restore_state();
-
-    Ok(())
 }
 
 /// Draws a filled path into the content stream.

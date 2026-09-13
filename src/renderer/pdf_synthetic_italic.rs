@@ -87,7 +87,7 @@ fn collect_decisions(
     }
 }
 
-fn insertions(svg: &str, mut edits: Vec<(usize, String)>) -> String {
+pub(super) fn insertions(svg: &str, mut edits: Vec<(usize, String)>) -> String {
     edits.sort_by_key(|edit| edit.0);
     let extra: usize = edits.iter().map(|edit| edit.1.len()).sum();
     let mut result = String::with_capacity(svg.len() + extra);
@@ -101,7 +101,7 @@ fn insertions(svg: &str, mut edits: Vec<(usize, String)>) -> String {
     result
 }
 
-fn attribute_position(svg: &str, node: roxmltree::Node<'_, '_>) -> usize {
+pub(super) fn attribute_position(svg: &str, node: roxmltree::Node<'_, '_>) -> usize {
     // roxmltree has already validated the XML; only locate the end of its QName.
     let start = node.range().start + 1;
     start

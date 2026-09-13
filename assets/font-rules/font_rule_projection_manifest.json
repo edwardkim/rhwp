@@ -1,5 +1,5 @@
 {
-  "contentBundleSha256": "89e9f2057bfaf83498b9a5cc7cbe930be49b27b7ffff9345cfb20a20766a4b3c",
+  "contentBundleSha256": "af00426b1c58407e14f8311b9c7e581bf38931bc6189b63a11c0dad1944fbe5d",
   "generatedBy": {
     "path": "scripts/font_rule_projection_gen.mjs",
     "sha256": "2070ed0d1823b54e94d89f64555fe88debeb8a16cad7342f3ab1ffba5d0d54fd"
@@ -8,13 +8,13 @@
   "kind": "font-rule-backend-projection-manifest",
   "outputs": [
     {
-      "contentSha256": "82214cae7f427b8216b552eed715d9656cd0351fc391cfe4fe5910862eff702d",
-      "inputSha256": "aa8e2c199e4272e5c12b136d991670aad1c6400197835bed0d95b92b800364f0",
+      "contentSha256": "3c0dae8d3822946b7b99fd8c8b8ad523fb4791f49bb32d95859e9530578ad1b5",
+      "inputSha256": "86907633fd02874fa0252e344c2393e8b99d2aec606dc38b984fb070e40379cd",
       "language": "rust",
       "ownership": "generated-whole-file",
       "path": "src/renderer/font_rule_projections/layout_name.rs",
       "projectionId": "rust-layout-name",
-      "projectionSha256": "595cdcc1c8d81441c9e4585acb393e734f52e6da3e822babf0f722df2c791cee",
+      "projectionSha256": "6aa9e23aba0445b1b3a56be58bb6bac41b178ed7d03a49058219b2386942a6e5",
       "ruleCount": 171
     },
     {
@@ -58,13 +58,13 @@
       "ruleCount": 158
     }
   ],
-  "projectionBundleSha256": "e2b9542f714018c0cca84e7628cd66221c31fe27c6f380d9abb60af4c11134ac",
+  "projectionBundleSha256": "cbc75eb3d8229358c356632d49504b38753faaf4ee8a92aa5430e059316be781",
   "registry": {
     "activeRuleCount": 830,
     "path": "assets/font-rules/font_rule_registry_v2.json",
-    "retiredRuleCount": 1,
-    "rulesSha256": "ee040c0456763c443e0915c7923ccf0ca74c48af352a130fc7df21d890be11f6",
-    "sha256": "78cda382672ab6da2923d605c80abaac663a47dac301cc23cfeeda5bd49e8ca4"
+    "retiredRuleCount": 2,
+    "rulesSha256": "ecf08d64f5508a9f765782cd088467304ee5b4063c09b207edfa5337270634ab",
+    "sha256": "5eb171fea7c972379915d31ee2ff7bc74b1160a9347424e9ad3c6a4d5df71666"
   },
   "schema": {
     "path": "assets/font-rules/font_rule_projection_manifest.schema.json",
@@ -82,6 +82,6 @@
       "rust-layout-name": 171
     },
     "outputCount": 5,
-    "retiredRuleCount": 1
+    "retiredRuleCount": 2
   }
 }

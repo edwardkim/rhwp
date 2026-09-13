@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "aa8e2c199e4272e5c12b136d991670aad1c6400197835bed0d95b92b800364f0";
+    "86907633fd02874fa0252e344c2393e8b99d2aec606dc38b984fb070e40379cd";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "595cdcc1c8d81441c9e4585acb393e734f52e6da3e822babf0f722df2c791cee";
+    "6aa9e23aba0445b1b3a56be58bb6bac41b178ed7d03a49058219b2386942a6e5";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2854,12 +2854,12 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         metric_entry_ids: &[],
     },
     GeneratedFontRuleProjection {
-        rule_id: "rule.rust-style-resolution.b6c97b846cf79ce168fa",
+        rule_id: "rule.rust-style-resolution.new-gulim-face-identity",
         source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("새굴림"),
-        target_face_or_policy: "함초롬돋움",
+        target_face_or_policy: "New Gulim",
         conditions: GeneratedFontRuleConditions {
             language_slot: Some("all"),
             alt_type: None,

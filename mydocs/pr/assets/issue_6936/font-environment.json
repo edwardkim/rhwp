@@ -1,0 +1,48 @@
+{
+  "platform": "macOS arm64",
+  "source": "Locally installed Windows 10 and Hancom fonts copied read-only for verification",
+  "fonts": [
+    {
+      "file": "HANBatang.ttf",
+      "source": "win10-ted:C:/Windows/Fonts/HANBatang.ttf",
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "distributed": false
+    },
+    {
+      "file": "HANBatangB.ttf",
+      "source": "win10-ted:C:/Windows/Fonts/HANBatangB.ttf",
+      "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+      "distributed": false
+    },
+    {
+      "file": "HANDotum.ttf",
+      "source": "win10-ted:C:/Windows/Fonts/HANDotum.ttf",
+      "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+      "distributed": false
+    },
+    {
+      "file": "HANDotumB.ttf",
+      "source": "win10-ted:C:/Windows/Fonts/HANDotumB.ttf",
+      "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+      "distributed": false
+    },
+    {
+      "file": "NGULIM.TTF",
+      "source": "win10-ted:C:/Windows/Fonts/NGULIM.TTF",
+      "sha256": "871b6190046c01ccabf52c80e393af623176c1a30a86a8a297f6f1acfbdd9b43",
+      "distributed": false
+    },
+    {
+      "file": "batang.ttc",
+      "source": "win10-ted:C:/Windows/Fonts/batang.ttc",
+      "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+      "distributed": false
+    },
+    {
+      "file": "gulim.ttc",
+      "source": "win10-ted:C:/Windows/Fonts/gulim.ttc",
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+      "distributed": false
+    }
+  ]
+}

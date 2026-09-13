@@ -4,6 +4,11 @@
       "changeSetId": "issue-7023.batangche-serif-supply",
       "path": "assets/font-rules/changes/issue-7023-batangche-serif-supply.json",
       "sha256": "3056d9ec90a57a7d27926586fd2ec6bb92fc0303c233cf341eec6d71349a80ac"
+    },
+    {
+      "changeSetId": "issue-6936.new-gulim-face-identity",
+      "path": "assets/font-rules/changes/issue-6936-new-gulim-face-identity.json",
+      "sha256": "eccf218056ecc0eee7eb046211541b640c7e163d42dc3f05c422120d2bc1e137"
     }
   ],
   "evidenceRecords": [
@@ -22,6 +27,14 @@
       "parentEvidenceIds": [],
       "sha256": "53faff78ddc02507b67da7f4d6a932dc5f0959002dea08cb85dcdc2211467768",
       "source": "mydocs/tech/font_fallback_strategy.md"
+    },
+    {
+      "evidenceId": "evidence.issue-6936.hancom-new-gulim",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "New synthetic fixture samples/issue6936/bold-faces.hwp, exported by Hancom 12.0.0.4605 engine 2020. PDF embeds New Gulim for both regular and synthetic-bold lines; source font is 새굴림. No proprietary font file is distributed.",
+      "parentEvidenceIds": [],
+      "sha256": "5b0dc916098847ed3c6e3eadae468f33a9810ee58de3e91c1e2bb2f3a7e2ae12",
+      "source": "pdf/issue6936-bold-faces-2020.pdf"
     }
   ],
   "issue": 5955,
@@ -7514,15 +7527,18 @@
         "w1RuleId": "rule.rust-style-resolution.b6c97b846cf79ce168fa"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-6936.hancom-new-gulim"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-6936.new-gulim-face-identity",
+        "retirementReason": "Preserve the original New Gulim face and its existing metrics instead of substituting HCR Dotum, so PDF synthetic bold uses the requested regular face.",
+        "successorRuleIds": [
+          "rule.rust-style-resolution.new-gulim-face-identity"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -7538,7 +7554,7 @@
       "selectionTupleSha256": "44fe3470b9c8215d4ec1f139ae38d76f360da66283ceea89f47dfc34a0e2db74",
       "sourceBoundaryId": "rust-style-resolution.ttf",
       "sourceFace": "새굴림",
-      "status": "active",
+      "status": "retired",
       "supply": null,
       "targetFaceOrPolicy": "함초롬돋움"
     },
@@ -43273,9 +43289,46 @@
         "unicodeRange": null
       },
       "targetFaceOrPolicy": "'fonts/NotoSerifKR-Regular.woff2'"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-6936.hancom-new-gulim"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-6936.new-gulim-face-identity",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.rust-style-resolution.b6c97b846cf79ce168fa"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 166,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.new-gulim-face-identity",
+      "selectionTupleSha256": "609917bcd2b57191e5e421ff3760255e39d6678b0528880b17192e6217952147",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "새굴림",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "New Gulim"
     }
   ],
-  "rulesSha256": "ee040c0456763c443e0915c7923ccf0ca74c48af352a130fc7df21d890be11f6",
+  "rulesSha256": "ecf08d64f5508a9f765782cd088467304ee5b4063c09b207edfa5337270634ab",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -43295,7 +43348,7 @@
       "rust-layout-metric": 67,
       "rust-layout-name": 171
     },
-    "retiredRuleCount": 1,
-    "ruleCount": 831
+    "retiredRuleCount": 2,
+    "ruleCount": 832
   }
 }

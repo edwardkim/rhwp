@@ -1,0 +1,40 @@
+✖ W7 pre-migration semantics remain equal after source ownership migration (480.943708ms)
+✔ source provenance drift is allowed but projection semantic drift fails closed (37.857334ms)
+✔ all 30 W1 boundaries and all 1,352 candidates have an explicit disposition (3.478583ms)
+✔ five backend projections preserve the frozen pre-migration populations (5.268583ms)
+✔ active unknown rules remain explicit without cross-plane promotion (2.968667ms)
+✔ projection reordering is rejected by the frozen hash (12.916375ms)
+✔ metric anchor reordering and active-unknown deletion fail closed (28.140667ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 682.800375
+
+✖ failing tests:
+
+test at scripts/tests/font_rule_projection_baseline.test.mjs:31:1
+✖ W7 pre-migration semantics remain equal after source ownership migration (480.943708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+  + [
+  +   'font rule projection pre-migration semantics differ from current source'
+  + ]
+  - []
+
+      at TestContext.<anonymous> (file:///Users/tsjang/rhwp/scripts/tests/font_rule_projection_baseline.test.mjs:36:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.start (node:internal/test_runner/test:1096:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'font rule projection pre-migration semantics differ from current source' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

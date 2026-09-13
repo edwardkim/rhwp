@@ -82,7 +82,7 @@ test('five backend projections are deterministic and close all 830 registry rule
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
   assert.equal(first.manifest.summary.activeRuleCount, 830);
-  assert.equal(first.manifest.summary.retiredRuleCount, 1);
+  assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
     'canvas2d-webfont': 153,
@@ -96,8 +96,10 @@ test('five backend projections are deterministic and close all 830 registry rule
       output.projectionSha256,
     ]).sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))),
     { ...SEALED_PROJECTION_SHA256,
-      // Approved BatangChe supply replacement; the other four planes remain sealed.
+      // Issue-scoped replacements preserve the sealed historical hashes above.
       'canvas2d-webfont': 'b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245',
+      // #6936 changes only the New Gulim layout-name decision.
+      'rust-layout-name': '6aa9e23aba0445b1b3a56be58bb6bac41b178ed7d03a49058219b2386942a6e5',
     },
   );
 });
@@ -201,6 +203,7 @@ test('projection sequence perturbation changes only the affected projection dige
 
 test('retired rules remain in the registry but never reach runtime projections', () => {
   const changed = structuredClone(readRegistry());
+  const previousRetiredCount = changed.rules.filter(rule => rule.status === 'retired').length;
   const retired = changed.rules
     .filter(rule => rule.projections[0].id === 'canvas2d-paint')
     .sort((left, right) => left.projectionSequence - right.projectionSequence)
@@ -215,7 +218,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
   assert.equal(bundle.manifest.summary.activeRuleCount, 829);
-  assert.equal(bundle.manifest.summary.retiredRuleCount, 2);
+  assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 
 test('check detects missing, manually edited and unexpected generated outputs', () => {
