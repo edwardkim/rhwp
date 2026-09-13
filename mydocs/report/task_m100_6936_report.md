@@ -2,6 +2,9 @@
 
 Issue: [#6936](https://github.com/edwardkim/rhwp/issues/6936)
 
+아래는 PR 준비 시점의 로컬 검증 기록이다. 이후 완료된 GitHub CI와 병합 검토는
+[PR #7108 self-review](../pr/archives/pr_7108_review.md)에 기록한다.
+
 - 확인일: 2026-09-13 KST
 - 기준: `upstream/devel` `70bf40af2a2818e72bd58b4fa66e2d4c06de2b51`
 - 작업 브랜치: `fix/6936-pdf-synthetic-bold-20260913`
