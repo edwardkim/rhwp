@@ -8387,7 +8387,12 @@ impl LayoutEngine {
                 // 조건**(호스트가 칸의 마지막 문단)으로 싣는다 — 뒤 형제 문단이 있을 때
                 // 그 몫을 싣지 않는 계약(59043 `□ 편익`)은 그대로다.
                 let host_is_cell_last_para = pidx + 1 == paragraphs.len();
-                let nested_h: f64 = p
+                // [#7066] 저장 줄별 그룹은 측정(`height_measurer::cell_nested_controls_bottom`)
+                // 과 **같은 함수**로 낸다. 한 줄에 나란히 놓인 표는 그 줄이 합이 아니라
+                // 최댓값만 차지하므로, 합산하면 정렬용 콘텐츠 높이가 칸보다 커져 여유가
+                // `0` 으로 깎이고 `Center`·`Bottom` 이 상단정렬로 무너진다.
+                let groups = crate::renderer::float_placement::nested_table_groups(p);
+                let heights: Vec<f64> = p
                     .controls
                     .iter()
                     .map(|ctrl| {
@@ -8402,7 +8407,29 @@ impl LayoutEngine {
                             0.0
                         }
                     })
-                    .sum();
+                    .collect();
+                let para_top_hu = p.line_segs.first().map_or(0, |s| s.vertical_pos);
+                let mut nested_h = 0.0f64;
+                for group in groups {
+                    let height = if group.side_by_side {
+                        group
+                            .controls
+                            .iter()
+                            .map(|&ci| heights[ci])
+                            .fold(0.0, f64::max)
+                    } else {
+                        group.controls.iter().map(|&ci| heights[ci]).sum()
+                    };
+                    let bottom = if let Some(line) = group.line {
+                        let seg = &p.line_segs[line];
+                        let top =
+                            hwpunit_to_px(seg.vertical_pos.saturating_sub(para_top_hu), self.dpi);
+                        top + height
+                    } else {
+                        height
+                    };
+                    nested_h = nested_h.max(bottom);
+                }
                 if nested_h <= 0.0 {
                     0.0
                 } else {
