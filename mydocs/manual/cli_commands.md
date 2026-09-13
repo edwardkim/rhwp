@@ -1728,9 +1728,13 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
 ### `run <계획.json> | --plan-json <JSON> [--dry-run] [--json]`
 선언적 편집 계획을 전부 정적 검증한 뒤 인메모리에서 원자 실행한다. 모든 단언이 통과할 때만 한 번
 저장하므로, 사용법·계획 오류가 있으면 디스크는 바뀌지 않는다.
-- 현재 계획 step은 `fill_fields`, `replace_text`, `set_cell`, `set_checkbox`이며, 각 step에
+- 기존 계획 step은 `fill_fields`, `replace_text`, `set_cell`, `set_checkbox`이며, 각 step에
   `if` 조건(`fieldExists`, `fieldEquals`, `textFound`)을 둘 수 있다. 조건이 거짓이면 해당
   step은 `skipped:true` 저널을 남기고 건너뛴다.
+- `fill_template`, `repeat_and_fill_paragraph_block`, `repeat_and_fill_table_rows`는 `request`를
+  받는 단독 step이다. 기존 action과 섞거나 여러 템플릿 step을 넣으면 `invalid[]`로 거부한다.
+  dry-run도 동일 native 준비 경로를 실행한다. 요청·주소·WASM·MCP 계약은
+  [템플릿 자동화 API](template_automation.md)를 따른다.
 - `--dry-run` 또는 계획의 `dryRun:true`는 preview 저널만 내고 파일을 쓰지 않는다.
   계획 문법은 `export-plan-schema --bare`로 먼저 검증한다.
 - `preconditions.inputSha256`에 입력 파일의 64자리 SHA-256을 넣으면 compare-and-swap으로
