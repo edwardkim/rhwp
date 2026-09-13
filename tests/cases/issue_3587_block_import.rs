@@ -391,6 +391,18 @@ fn sparse_target_storage_collision_and_opaque_numbering_are_not_silently_repaire
 fn real_labnote_block_imports_into_another_document_and_reopens_in_both_formats() {
     let source_bytes = std::fs::read("samples/rnote/labnote-001.hwp").unwrap();
     let source = DocumentCore::from_bytes(&source_bytes).unwrap();
+    let originals: Vec<_> = source.document().sections[0].paragraphs[12]
+        .controls
+        .iter()
+        .filter_map(|c| {
+            if let Control::Table(t) = c {
+                Some(t)
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(originals.len(), 3, "the real source is a three-table block");
     let before = format!("{:?}", source.document());
     let mut target = DocumentCore::new_empty();
     target.create_blank_document_native().unwrap();
@@ -420,10 +432,72 @@ fn real_labnote_block_imports_into_another_document_and_reopens_in_both_formats(
                 }
             })
             .collect();
-        assert_eq!(tables.len(), 2);
-        assert_ne!(tables[0].common.instance_id, tables[1].common.instance_id);
-        assert_eq!(tables[0].row_count, tables[1].row_count);
-        assert_eq!(tables[0].col_count, tables[1].col_count);
+        assert_eq!(tables.len(), originals.len() * req.count);
+        let ids: std::collections::BTreeSet<_> =
+            tables.iter().map(|t| t.common.instance_id).collect();
+        assert_eq!(ids.len(), tables.len());
+        for (i, table) in tables.iter().enumerate() {
+            let original = originals[i % originals.len()];
+            assert_eq!(table.row_count, original.row_count);
+            assert_eq!(table.col_count, original.col_count);
+            let text = |t: &rhwp::model::table::Table| {
+                t.cells
+                    .iter()
+                    .map(|cell| {
+                        cell.paragraphs
+                            .iter()
+                            .map(|p| p.text.clone())
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>()
+            };
+            assert_eq!(text(table), text(original));
+        }
     }
     assert_eq!(format!("{:?}", source.document()), before);
+}
+
+#[test]
+#[ignore = "manual artifact export; set RHWP_3587_IMPORT_OUTPUT to a local output directory"]
+fn materialize_labnote_foreign_import() {
+    let output = std::path::PathBuf::from(
+        std::env::var("RHWP_3587_IMPORT_OUTPUT").expect("explicit output directory"),
+    );
+    std::fs::create_dir_all(&output).unwrap();
+    let hwp = std::fs::read("samples/rnote/labnote-001.hwp").unwrap();
+    let original = DocumentCore::from_bytes(&hwp).unwrap();
+    for (kind, bytes) in [
+        ("hwp-source", hwp),
+        (
+            "derived-hwpx-source",
+            original.export_hwpx_native().unwrap(),
+        ),
+    ] {
+        let source = DocumentCore::from_bytes(&bytes).unwrap();
+        let mut target = DocumentCore::new_empty();
+        target.create_blank_document_native().unwrap();
+        let req = ImportParagraphBlockRequest {
+            source_start: 12,
+            source_end: 13,
+            ..request()
+        };
+        let result = target
+            .import_paragraph_block_native(source.document(), &req)
+            .unwrap();
+        std::fs::write(
+            output.join(format!("{kind}.hwp")),
+            target.export_hwp_native().unwrap(),
+        )
+        .unwrap();
+        std::fs::write(
+            output.join(format!("{kind}.hwpx")),
+            target.export_hwpx_native().unwrap(),
+        )
+        .unwrap();
+        std::fs::write(
+            output.join(format!("{kind}.json")),
+            serde_json::to_vec_pretty(&result).unwrap(),
+        )
+        .unwrap();
+    }
 }
