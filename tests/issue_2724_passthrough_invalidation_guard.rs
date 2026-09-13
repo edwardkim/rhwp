@@ -87,6 +87,12 @@ enum Exempt {
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/paragraph_block/import.rs",
+        "import_paragraph_block_native",
+        Exempt::DelegatesTo("commit_block_content"),
+        "#3587: 자원 준비 후 Resources::commit은 DocInfo를 dirty로 표시하고, 공통 commit_block_content가 삽입한 구역 raw_stream을 무효화한다. 실패 무변경 및 HWP/HWPX 재열기는 issue_3587_block_import에서 검사한다.",
+    ),
+    (
         "commands/paragraph_block/repeat.rs",
         "repeat_paragraph_block_native",
         Exempt::DelegatesTo("repeat_paragraph_block_prepared"),
