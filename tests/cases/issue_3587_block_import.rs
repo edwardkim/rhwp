@@ -460,6 +460,16 @@ fn real_labnote_block_imports_into_another_document_and_reopens_in_both_formats(
 #[test]
 #[ignore = "manual artifact export; set RHWP_3587_IMPORT_OUTPUT to a local output directory"]
 fn materialize_labnote_foreign_import() {
+    materialize_labnote_import(false);
+}
+
+#[test]
+#[ignore = "manual same-page artifact export; set RHWP_3587_IMPORT_OUTPUT"]
+fn materialize_labnote_foreign_import_matching_page() {
+    materialize_labnote_import(true);
+}
+
+fn materialize_labnote_import(match_source_page: bool) {
     let output = std::path::PathBuf::from(
         std::env::var("RHWP_3587_IMPORT_OUTPUT").expect("explicit output directory"),
     );
@@ -476,6 +486,42 @@ fn materialize_labnote_foreign_import() {
         let source = DocumentCore::from_bytes(&bytes).unwrap();
         let mut target = DocumentCore::new_empty();
         target.create_blank_document_native().unwrap();
+        if match_source_page {
+            // Prepare the independent destination before import, not a repair of its output.
+            // Copy page configuration only; source content and DocInfo are not the destination.
+            let pd = &source.document().sections[0].section_def.page_def;
+            let binding = match pd.binding {
+                rhwp::model::page::BindingMethod::SingleSided => 0,
+                rhwp::model::page::BindingMethod::DuplexSided => 1,
+                rhwp::model::page::BindingMethod::TopFlip => 2,
+            };
+            let props = serde_json::json!({
+                "width": pd.width, "height": pd.height,
+                "marginLeft": pd.margin_left, "marginRight": pd.margin_right,
+                "marginTop": pd.margin_top, "marginBottom": pd.margin_bottom,
+                "marginHeader": pd.margin_header, "marginFooter": pd.margin_footer,
+                "marginGutter": pd.margin_gutter, "landscape": pd.landscape,
+                "binding": binding,
+            });
+            target.set_page_def_native(0, &props.to_string()).unwrap();
+            assert_eq!(
+                serde_json::to_value(&target.document().sections[0].section_def.page_def).unwrap(),
+                serde_json::to_value(pd).unwrap(),
+                "the source and independent destination must start with the same page settings"
+            );
+            std::fs::write(
+                output.join(format!("{kind}-blank-target.hwp")),
+                target.export_hwp_native().unwrap(),
+            )
+            .unwrap();
+            std::fs::write(
+                output.join(format!("{kind}-blank-target.hwpx")),
+                target.export_hwpx_native().unwrap(),
+            )
+            .unwrap();
+        }
+        let page_before =
+            serde_json::to_value(&target.document().sections[0].section_def.page_def).unwrap();
         let req = ImportParagraphBlockRequest {
             source_start: 12,
             source_end: 13,
@@ -484,6 +530,11 @@ fn materialize_labnote_foreign_import() {
         let result = target
             .import_paragraph_block_native(source.document(), &req)
             .unwrap();
+        assert_eq!(
+            serde_json::to_value(&target.document().sections[0].section_def.page_def).unwrap(),
+            page_before,
+            "import must preserve the destination page settings"
+        );
         std::fs::write(
             output.join(format!("{kind}.hwp")),
             target.export_hwp_native().unwrap(),
