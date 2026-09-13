@@ -313,14 +313,15 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `export-ir-schema --json` | 아니오 |
 | `export-capabilities-schema --json` | 아니오 |
 
-같은 명령이라도 모드에 따라 다르다: `run` 은 **실행 모드에서는** `untrustedContent`
-를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
-`untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
+같은 명령이라도 모드에 따라 다르다. 현재 `run`은 실행·dry-run 모두 출처 표지를 싣는다.
+이전 버전의 dry-run에는 표지가 없었으므로 키 부재를 false로 해석하지 않는다.
+`edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
+`edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 334개 필드
+### 2-2. 전수 사전 — 337개 필드
 
-`capabilities` 의 `recordFields` 고유 **325개**와 그 밖의 실측·참조 필드를 합친
-334개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **328개**와 그 밖의 실측·참조 필드를 합친
+336개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -533,6 +534,9 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 |---|---|---|---|
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
 | `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
+| `steps[].operationResult` | object | 템플릿 채우기 3종 및 다른 문서 가져오기의 적용 결과·원형/복사본 경로 대응표. 문서 파생 데이터로 취급한다. | `run` |
+| `steps[].source` | object | 다른 문서 가져오기에 사용한 원본 `{path,sha256}`. SHA-256은 실제로 읽고 파싱한 원본 바이트의 지문이다. | `run` |
+| `steps[].workload` | object | records·targets·replacementTextBytes 입력 작업량. 실행 시간·메모리 실측값이 아니다. | `run` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
 | `preconditionFailed` | object\|null | **CAS 판정** (#4378 R22·R24) — `{kind:"inputSha256",expected,actual}`. 계획 수립 시점의 입력 지문과 실행 시점의 실제 지문이 다르다는 뜻이고, 실행 0 · 디스크 무변경 · **exit 3**. `invalid[]` 는 비어 있다 — 계획이 무효한 게 아니라 문서가 바뀐 것이다. `--dry-run` 도 같은 판정을 낸다. `null`/부재 = 대조하지 않았거나 일치 | `run`·`edit …  --expect-sha256` |
 | `nextCall` | object | **다음에 그대로 부를 호출** — `{name, arguments, why}`. `name` 은 실존 명령, `arguments` 는 그 뒤에 이어 붙일 argv 조각이다. CAS 거부에서는 기대 해시를 실제 해시로 갈아 끼운 계획을 `--dry-run` 으로 재선검증하는 호출이 온다(통과하면 `--dry-run` 만 빼고 재실행, `invalid` 가 나오면 문서를 다시 읽고 재계획). MCP 오류 봉투(R72)·CLI `수복:` 줄과 같은 어휘 | `run` |
@@ -964,6 +968,15 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 담는다(`fill_fields` 면 `filledCount`·`notFound`·`ambiguous`·`confusable`).
 `invalid[]` 는 `{step, action, reason}`, `preview[]` 는
 `{step, action, targets:[{name,occurrence,sameNameCount,value}]}` 다.
+
+템플릿 action의 `preview[]`에는 `operationResult`·`workload`가 실린다. 기존 action의
+`targets`와 혼동하지 않는다. dry-run은 실제 detached 준비까지 하되 IR·파일은 변경하지 않는다.
+
+`import_paragraph_block`은 `source:{path,sha256}`와 `request`를 받는 단독 step이다.
+`preview[]`/`steps[]`에 `source`(실제 읽은 바이트의 SHA-256)와 `operationResult`를 내며
+`workload`는 없다. 자원 집계는 `operationResult.result.resources`다. 원본 지문 불일치는
+`preconditionFailed.kind=sourceSha256`, exit 3이다. 원본/대상 경로·저장·반환 경로 레시피는
+[템플릿 자동화](template_automation.md)의 CLI/MCP 가져오기를 따른다.
 
 #### `export-structure` — `structure`
 

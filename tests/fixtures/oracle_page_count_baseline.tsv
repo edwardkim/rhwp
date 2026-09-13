@@ -261,6 +261,10 @@ samples/issue2817/paper_anchor_infront_pic.hwpx	1	1
 samples/issue3239/evaluation_form_200dpi_scan.hwp	1	1
 samples/issue3257/webhangul_product_spec_v1.1.hwp	6	6
 samples/issue3460/svg_picture_repro.hwpx	3	3
+samples/issue3587/d-pi2-import.hwp	1	1
+samples/issue3587/d-pi2-import.hwpx	1	1
+samples/issue3587/d-pi4-import.hwp	1	1
+samples/issue3587/d-pi4-import.hwpx	1	1
 samples/issue3637/press_release_split_cell_nested_table.hwpx	12	13
 samples/issue3637/regulatory_impact_nested_table_escape.hwpx	31	31
 samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
@@ -480,6 +484,7 @@ samples/re-mixed-malgun-timesnew-hancom.hwp	1	1
 samples/re-multisize-10-10-empty-hancom.hwp	1	1
 samples/re-multisize-10-20-empty-hancom.hwp	1	1
 samples/re-multisize-8-14-empty-hancom.hwp	1	1
+samples/rnote/labnote-001.hwp	2	2
 samples/rowbreak-problem-pages.hwp	18	18
 samples/rowbreak-problem-pages.hwpx	18	18
 samples/shape-group-02.hwp	1	1

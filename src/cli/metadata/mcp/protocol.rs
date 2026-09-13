@@ -10,14 +10,14 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 "properties": {
                     "plan": {
                         "type": "object",
-                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…, if?:{…}}…], assertions:{ notFoundEmpty?, verify? }, dryRun?:true } — dryRun:true 면 선검증만 하고 preview 저널을 낸다(디스크 무변경). 계획을 실행 전에 검사할 때 쓴다. 전체 JSON Schema 는 hwp_export_plan_schema 참조"
+                        "description": "계획서. { planVersion:\"1.0\", input:<원본 경로>, output:<산출 경로>, steps:[{action:…, if?:{…}}…], assertions:{ notFoundEmpty?, verify? }, dryRun?:true }. import_paragraph_block은 source{path,sha256}+request를 받는 단독 step으로 원본 지문 불일치는 exit 3이며 실행/저장하지 않는다. 추가 action: fill_template, repeat_and_fill_paragraph_block, repeat_and_fill_table_rows는 request 객체를 받으며 단독 step만 허용한다. dryRun:true는 같은 native 준비를 끝내고 preview만 반환한다(원본·디스크 무변경). 반복 재호출은 다시 추가하며 멱등이 아니다. 정확한 request 문법은 hwp_export_plan_schema 참조. Gym 불필요."
                     }
                 },
                 "required": ["plan"],
             }),
             "run",
             serde_json::json!(["run", "--plan-json", "{plan}", "--json"]),
-            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview", "inputSha256", "outputSha256"],
+            &["schemaVersion", "planVersion", "input", "output", "outputFormat", "steps", "steps[].confusable", "steps[].source", "steps[].operationResult", "preconditionFailed", "nextCall", "steps[].skipped", "verify", "invalid", "changedPages", "dryRun", "preview", "inputSha256", "outputSha256"],
         ),
         tool_with_optional_args(
             "hwp_replay",

@@ -120,6 +120,7 @@ fn serialize_hwp_inner(
     // IR 형상(구역 수)이 바뀐다. 거부는 순수 HWPX 출처(x2h)에서만 관측됐다.
     let split_multi_sec_pr = doc.layout_profile().hwpx_stored_layout();
     let mut section_bytes_list = Vec::new();
+    let mut form_id_allocator = None;
     for section in &doc.sections {
         let split_starts: Vec<usize> =
             if !split_multi_sec_pr || section.raw_provenance_permits_reuse() {
@@ -139,7 +140,9 @@ fn serialize_hwp_inner(
                     .collect()
             };
         if split_starts.is_empty() {
-            section_bytes_list.push(serialize_section(section));
+            let prepared =
+                super::form_identity::prepare_section(section, doc, &mut form_id_allocator)?;
+            section_bytes_list.push(serialize_section(&prepared));
             continue;
         }
         let mut starts = Vec::with_capacity(split_starts.len() + 1);
@@ -166,7 +169,9 @@ fn serialize_hwp_inner(
                 raw_stream: None,
                 raw_provenance: None,
             };
-            section_bytes_list.push(serialize_section(&sub));
+            let prepared =
+                super::form_identity::prepare_section(&sub, doc, &mut form_id_allocator)?;
+            section_bytes_list.push(serialize_section(&prepared));
         }
     }
 

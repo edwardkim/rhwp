@@ -713,6 +713,13 @@ struct DeferredTableControl {
     para_start_height: f64,
 }
 
+#[derive(Clone, Copy)]
+enum DeferredTableFlushPoint {
+    BeforeTableParagraph(usize),
+    AfterTableParagraph(usize),
+    SectionEnd,
+}
+
 /// 다음 physical page의 본문 시작에 배치할 non-TAC Square picture control.
 ///
 /// 그림은 float라 본문 높이를 소비하지 않지만, native HWP5는 anchor 문단이 page tail에
@@ -7668,6 +7675,20 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            // 후속 본문이 사이에 없는 새 표 문단은 이전 묶음의 일부가 아니다.
+            // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
+            // 저장 vpos를 적용하기 전이어야 이전 표가 새 문단 뒤로 밀리지 않는다.
+            // 제목/본문이 사이에 있는 float 흐름은 기존 후행 flush 계약을 유지한다.
+            if !st.deferred_table_controls.is_empty() && self.paragraph_has_table(para) {
+                self.flush_deferred_table_controls(
+                    &mut st,
+                    paragraphs,
+                    composed,
+                    styles,
+                    measured_tables,
+                    DeferredTableFlushPoint::BeforeTableParagraph(para_idx),
+                );
+            }
             // [#6132] 저장 vpos 가 쪽 본문을 넘고 바로 다음 문단이 되감기면,
             // 한글은 이 문단부터 다음 쪽에 둔 것이다. 다만 그 형상만으로는 부족하다 —
             // 같은 형상이 문단을 쪽 안에 그대로 두는 문서들에도 흔하게 나온다
@@ -9101,7 +9122,7 @@ impl TypesetEngine {
                     composed,
                     styles,
                     measured_tables,
-                    Some(para_idx),
+                    DeferredTableFlushPoint::AfterTableParagraph(para_idx),
                 );
                 Issue2424TypesetProfile::add(
                     &mut issue2424_prof.deferred_flush,
@@ -9953,7 +9974,7 @@ impl TypesetEngine {
             composed,
             styles,
             measured_tables,
-            None,
+            DeferredTableFlushPoint::SectionEnd,
         );
         Issue2424TypesetProfile::add(
             &mut issue2424_prof.deferred_flush,
@@ -19567,7 +19588,7 @@ impl TypesetEngine {
         composed: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
         measured_tables: &[MeasuredTable],
-        trigger_para_idx: Option<usize>,
+        flush_point: DeferredTableFlushPoint,
     ) {
         if st.deferred_table_controls.is_empty() {
             return;
@@ -19576,7 +19597,17 @@ impl TypesetEngine {
         let pending = std::mem::take(&mut st.deferred_table_controls);
         let mut remaining = Vec::new();
         for deferred in pending {
-            if trigger_para_idx.is_some_and(|idx| idx <= deferred.para_index) {
+            let keep_pending = match flush_point {
+                DeferredTableFlushPoint::BeforeTableParagraph(idx) => {
+                    idx <= deferred.para_index
+                        || paragraphs[deferred.para_index + 1..idx]
+                            .iter()
+                            .any(para_has_visible_text)
+                }
+                DeferredTableFlushPoint::AfterTableParagraph(idx) => idx <= deferred.para_index,
+                DeferredTableFlushPoint::SectionEnd => false,
+            };
+            if keep_pending {
                 remaining.push(deferred);
                 continue;
             }
@@ -24536,20 +24567,45 @@ impl TypesetEngine {
         // 저장 앵커 줄 vpos 는 이 쪽이 아니라 문단이 시작한 쪽의 좌표다. 그 값을 근거로
         // "한글이 스택을 통째로 이 쪽에 놓았다"고 보면, 조각이 이미 차지한 자리에 뒤 표를
         // 겹쳐 놓는다(1341000-201100013 31쪽 548.0 × 401.9px, 아래 표 401.9px 소실).
-        let page_starts_with_own_fragment = st.current_items.iter().any(|item| {
+        // [#3587] 이 원칙은 앞 문단의 연속 조각에도 동일하다. 재편집으로 앞 표가
+        // 늘어나 다음 host가 연속 쪽으로 밀렸다면, 다음 host의 저장 앵커 역시 현재
+        // 쪽의 잔여 공간을 증명하지 않는다. 소유 문단 일치가 아니라 현재 흐름 프레임의
+        // 연속 조각 존재로 판정해야 뒤 스택을 앞 조각/헤더 위에 강제로 겹치지 않는다.
+        let page_has_table_continuation = st.current_items.iter().any(|item| {
             matches!(
                 item,
                 PageItem::PartialTable {
-                    para_index,
                     is_continuation: true,
                     ..
-                } if *para_index == para_idx
+                }
             )
         });
-        let saved_host_line_after_stack_fits = host_line_trails_float_stack
+        // 저장 앵커는 스택 전체의 source frame이다. 셀 실측 때문에 앞 표 높이가
+        // 늘어나는 #2813 구제는 보존하되, 앞 문단에 밀려 host 시작점 자체가 옮겨진
+        // 경우까지 같은 frame으로 간주하지 않는다. 현재 표만 current_height에 더하면
+        // 실측 팽창과 host 이동을 구분하지 못하므로 선언 스택 전체와 host 원점을 쓴다.
+        let saved_stack_fits_host_origin = host_line_trails_float_stack
+            && single_line_visible_bounds_px(para, st.vpos_page_base.unwrap_or(0), self.dpi)
+                .is_some_and(|bounds| {
+                    let declared_stack_height: f64 = para
+                        .controls
+                        .iter()
+                        .filter_map(|control| match control {
+                            Control::Table(t) if is_para_topbottom_float(&t.common) => {
+                                Some(raw_table_ctrl_height_px(t, self.dpi).unwrap_or_else(|| {
+                                    hwpunit_to_px(t.common.height as i32, self.dpi).max(0.0)
+                                }))
+                            }
+                            _ => None,
+                        })
+                        .sum();
+                    declared_stack_height > 0.0
+                        && para_start_height + declared_stack_height <= bounds.0
+                });
+        let saved_host_line_after_stack_fits = saved_stack_fits_host_origin
             && has_preceding_coanchored_float
             && table_total <= available
-            && !page_starts_with_own_fragment;
+            && !page_has_table_continuation;
         if std::env::var("RHWP_DIAG_2813").is_ok() {
             eprintln!(
                 "DIAG_2813 pi={} ci={} float={} vis_text={} segs={} real_segs={} bounds={:?} cur_h={:.1} avail={:.1} verdict={}",

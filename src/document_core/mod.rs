@@ -8,6 +8,16 @@ pub(crate) use helpers::*;
 
 pub mod builders;
 mod commands;
+pub use commands::paragraph_block::{
+    FillTemplateRequest, FillTemplateResult, ImportParagraphBlockLimits,
+    ImportParagraphBlockPreview, ImportParagraphBlockRequest, ImportParagraphBlockResult,
+    ImportResourceCounts, ParagraphBlockBudget, ParagraphBlockCopy, ParagraphBlockLimits,
+    ParagraphBlockMapping, ParagraphBlockPathStep, ParagraphBlockValidationError,
+    RepeatParagraphBlockRequest, RepeatParagraphBlockResult, RepeatTableRowsRequest,
+    RepeatTableRowsResult, TemplateBinding, TemplateFillPreview, TemplateFillRequest,
+    TemplateFillTarget, TemplateOperation, TemplateOperationResult, TemplateScope,
+    TEMPLATE_REQUEST_MAX_BYTES,
+};
 pub use commands::{TableColumnWidths, TableCreationOptions};
 pub mod converters;
 pub(crate) mod html_table_import;

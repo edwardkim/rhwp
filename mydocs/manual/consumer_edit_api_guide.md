@@ -11,6 +11,10 @@ last_verified: 2026-08-29
 읽기/렌더링 기본은 패키지 README 를 참고하고, 이 문서는 편집 API 호출과 버전 변경 대응에
 초점을 둔다.
 
+고정 양식 채우기·문단/표 행 복제는 [템플릿 자동화 API](template_automation.md)의
+`applyTemplateOperation(optionsJson)`을 사용한다. native·CLI·MCP와 같은 코어를 쓰며
+dry-run, 소유 경로와 단독 step 제한을 함께 설명한다.
+
 ## 1. 초기화와 문서 객체
 
 ```ts

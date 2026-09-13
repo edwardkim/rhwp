@@ -417,10 +417,16 @@
     },
     "run": {
       "untrusted": [
+        "preview",
+        "steps[].operationResult",
+        "invalid[].reason",
         "steps[].oldText",
         "steps[].confusable[].lookalikes"
       ],
       "origins": {
+        "preview": "입력 문서 기준 선검증 결과와 복제 예정 경로",
+        "steps[].operationResult": "템플릿 연산의 문서 파생 구조·경로 결과",
+        "invalid[].reason": "요청 및 입력 문서의 검증 오류 설명",
         "steps[].oldText": "set_cell step 이 덮기 전의 셀 텍스트",
         "steps[].confusable[].lookalikes": "fill_fields step 이 경고한 문서의 유사 필드 이름들"
       },

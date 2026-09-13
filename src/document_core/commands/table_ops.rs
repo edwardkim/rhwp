@@ -211,6 +211,9 @@ impl DocumentCore {
                 .unwrap_or(0);
         }
 
+        // 분할은 자식의 복제가 아니라 이동이다. 새로 생기는 뒤 표만 문서 전체의
+        // 미사용 ID를 받는다. 할당 실패 시 원본 표를 변경하지 않는다.
+        let back_id = super::clone_identity::next_instance_id(&self.document)?;
         let back_table = {
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
             if at_row == 0 {
@@ -270,29 +273,7 @@ impl DocumentCore {
                     z
                 })
                 .collect();
-            // 복제된 뒤 표에 고유 비-0 instance_id 를 새로 배정한다 — 같은 문서에
-            // 동일 ID 표 두 개가 생기면 한컴 재열기·객체 식별이 충돌하고, 0 은
-            // 저장소 계약(create_table_native "비-0 필수") 위반이다. 원본 ID 에
-            // 분할 인자를 섞은 해시라 연쇄 분할에서도 서로 달라진다.
-            let orig_id = if table.raw_ctrl_data.len() >= common_obj_offsets::INSTANCE_ID.end {
-                u32::from_le_bytes(
-                    table.raw_ctrl_data[common_obj_offsets::INSTANCE_ID]
-                        .try_into()
-                        .unwrap(),
-                )
-            } else {
-                table.common.instance_id
-            };
-            let back_id = {
-                let mut h = orig_id
-                    .wrapping_mul(0x9e37_79b1)
-                    .wrapping_add(at_row as u32)
-                    .wrapping_add((back.row_count as u32).wrapping_mul(0x1000));
-                if h == 0 {
-                    h = 0x7c15_4b69;
-                }
-                h
-            };
+            // 앞 표와 이동한 셀/내부 컨트롤의 신원은 유지한다.
             back.common.instance_id = back_id;
             if back.raw_ctrl_data.len() >= common_obj_offsets::INSTANCE_ID.end {
                 back.raw_ctrl_data[common_obj_offsets::INSTANCE_ID]

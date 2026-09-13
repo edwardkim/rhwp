@@ -2,7 +2,7 @@
 
 use super::super::helpers::{
     clipboard_color_to_css, clipboard_escape_html, detect_clipboard_image_mime,
-    get_textbox_from_shape, get_textbox_from_shape_mut, utf16_pos_to_char_idx,
+    get_textbox_from_shape, utf16_pos_to_char_idx,
 };
 use super::super::queries::field_query::rebuild_char_offsets;
 use crate::document_core::{ClipboardData, DocumentCore};
@@ -270,81 +270,6 @@ pub(super) fn clip_paragraph_text_range_for_clipboard(
     suffix
 }
 
-fn collect_max_clipboard_field_id(para: &Paragraph, max_id: &mut u32) {
-    for ctrl in &para.controls {
-        match ctrl {
-            Control::Field(field) => {
-                *max_id = (*max_id).max(field.field_id);
-            }
-            Control::Table(table) => {
-                for cell in &table.cells {
-                    for cell_para in &cell.paragraphs {
-                        collect_max_clipboard_field_id(cell_para, max_id);
-                    }
-                }
-                if let Some(caption) = &table.caption {
-                    for cap_para in &caption.paragraphs {
-                        collect_max_clipboard_field_id(cap_para, max_id);
-                    }
-                }
-            }
-            Control::Shape(shape) => {
-                if let Some(text_box) = get_textbox_from_shape(shape) {
-                    for tb_para in &text_box.paragraphs {
-                        collect_max_clipboard_field_id(tb_para, max_id);
-                    }
-                }
-            }
-            Control::Picture(pic) => {
-                if let Some(caption) = &pic.caption {
-                    for cap_para in &caption.paragraphs {
-                        collect_max_clipboard_field_id(cap_para, max_id);
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
-fn assign_new_clipboard_field_ids(para: &mut Paragraph, next_id: &mut u32) {
-    for ctrl in &mut para.controls {
-        match ctrl {
-            Control::Field(field) => {
-                field.field_id = (*next_id).max(1);
-                *next_id = next_id.saturating_add(1).max(1);
-            }
-            Control::Table(table) => {
-                for cell in &mut table.cells {
-                    for cell_para in &mut cell.paragraphs {
-                        assign_new_clipboard_field_ids(cell_para, next_id);
-                    }
-                }
-                if let Some(caption) = &mut table.caption {
-                    for cap_para in &mut caption.paragraphs {
-                        assign_new_clipboard_field_ids(cap_para, next_id);
-                    }
-                }
-            }
-            Control::Shape(shape) => {
-                if let Some(text_box) = get_textbox_from_shape_mut(shape) {
-                    for tb_para in &mut text_box.paragraphs {
-                        assign_new_clipboard_field_ids(tb_para, next_id);
-                    }
-                }
-            }
-            Control::Picture(pic) => {
-                if let Some(caption) = &mut pic.caption {
-                    for cap_para in &mut caption.paragraphs {
-                        assign_new_clipboard_field_ids(cap_para, next_id);
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
 impl DocumentCore {
     pub fn has_internal_clipboard_native(&self) -> bool {
         self.clipboard.is_some()
@@ -361,19 +286,6 @@ impl DocumentCore {
     /// 내부 클립보드를 초기화한다.
     pub fn clear_clipboard_native(&mut self) {
         self.clipboard = None;
-    }
-
-    fn renumber_pasted_field_ids(&self, clip_paras: &mut [Paragraph]) {
-        let mut max_id = 0u32;
-        for section in &self.document.sections {
-            for para in &section.paragraphs {
-                collect_max_clipboard_field_id(para, &mut max_id);
-            }
-        }
-        let mut next_id = max_id.saturating_add(1).max(1);
-        for para in clip_paras {
-            assign_new_clipboard_field_ids(para, &mut next_id);
-        }
     }
 
     /// 선택 영역을 내부 클립보드에 복사한다.
@@ -749,8 +661,8 @@ impl DocumentCore {
             )));
         }
 
+        super::clone_identity::reidentify_clipboard(&self.document, &mut clip_paras)?;
         self.document.sections[section_idx].raw_stream = None;
-        self.renumber_pasted_field_ids(&mut clip_paras);
 
         let clip_count = clip_paras.len();
 
@@ -941,14 +853,13 @@ impl DocumentCore {
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
         let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
-        self.renumber_pasted_field_ids(&mut clip_paras);
+        super::clone_identity::reidentify_clipboard(&self.document, &mut clip_paras)?;
 
         let (last_para_idx, merge_point) = {
             let section =
                 self.document.sections.get_mut(section_idx).ok_or_else(|| {
                     HwpError::RenderError(format!("구역 {} 범위 초과", section_idx))
                 })?;
-            section.raw_stream = None;
             let para = section.paragraphs.get_mut(parent_para_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("문단 {} 범위 초과", parent_para_idx))
             })?;
@@ -989,6 +900,7 @@ impl DocumentCore {
             self.reflow_cell_paragraph(section_idx, parent_para_idx, control_idx, cell_idx, i);
         }
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
+        self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
@@ -1015,10 +927,10 @@ impl DocumentCore {
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
         let contains_field = clipboard_paragraphs_contain_field(&clip_paras);
-        self.renumber_pasted_field_ids(&mut clip_paras);
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
+        super::clone_identity::reidentify_clipboard(&self.document, &mut clip_paras)?;
 
         let cell_para_idx = path[path.len() - 1].2;
         let (last_para_idx, merge_point) = {
@@ -1160,6 +1072,24 @@ impl DocumentCore {
             None => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
         };
 
+        // Validate before touching either the document or cascade state.
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 {} 범위 초과",
+                section_idx
+            )));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 {} 범위 초과",
+                para_idx
+            )));
+        }
+        super::clone_identity::reidentify_clipboard(
+            &self.document,
+            std::slice::from_mut(&mut clip_para),
+        )?;
+
         // [Task #1161] 떠 있는 개체(treat_as_char=false) 반복 붙여넣기 시 한컴처럼
         // cascade 오프셋을 누적해 동일 위치 겹침을 방지한다. inline(글자처럼 취급)은
         // 텍스트 흐름이 위치를 정하므로 제외(첫 붙여넣기부터 +1*step).
@@ -1176,20 +1106,6 @@ impl DocumentCore {
                 common.horizontal_offset = common.horizontal_offset.saturating_add(off);
                 self.paste_cascade_count = cascade;
             }
-        }
-
-        // 인덱스 검증
-        if section_idx >= self.document.sections.len() {
-            return Err(HwpError::RenderError(format!(
-                "구역 {} 범위 초과",
-                section_idx
-            )));
-        }
-        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
-            return Err(HwpError::RenderError(format!(
-                "문단 {} 범위 초과",
-                para_idx
-            )));
         }
 
         self.document.sections[section_idx].raw_stream = None;

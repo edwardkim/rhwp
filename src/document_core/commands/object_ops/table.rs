@@ -416,6 +416,8 @@ impl DocumentCore {
             )));
         }
 
+        let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
+
         // --- 1. 편집 영역 폭 계산 ---
         let pd = &self.document.sections[section_idx].section_def.page_def;
         let outer_margin_lr: i32 = 283 * 2; // outer_margin left + right (~2mm)
@@ -567,18 +569,6 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        // instance_id (해시 기반, 비-0 필수)
-        let instance_id: u32 = {
-            let mut h: u32 = 0x7c150000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            h = h.wrapping_add(total_height.wrapping_mul(0x1b));
-            if h == 0 {
-                h = 0x7c154b69;
-            }
-            h
-        };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
@@ -606,6 +596,7 @@ impl DocumentCore {
             repeat_header: options.repeat_header.unwrap_or(false),
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                instance_id,
                 treat_as_char: false,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
                 vert_rel_to: crate::model::shape::VertRelTo::Para,
@@ -865,6 +856,8 @@ impl DocumentCore {
 
         // ── 인라인 TAC 표 생성 ──
 
+        let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
+
         let pd = &self.document.sections[section_idx].section_def.page_def;
         let outer_margin: i16 = 283;
         let outer_margin_lr = (outer_margin * 2) as i32;
@@ -1006,16 +999,6 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        let instance_id: u32 = {
-            let mut h: u32 = 0x7c160000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            if h == 0 {
-                h = 0x7c164b69;
-            }
-            h
-        };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
@@ -1033,6 +1016,7 @@ impl DocumentCore {
             repeat_header: false,
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                instance_id,
                 treat_as_char: true,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
                 vert_rel_to: crate::model::shape::VertRelTo::Page,
