@@ -12,6 +12,10 @@ use std::{
 
 const SAMPLE: &str = "samples/rnote/labnote-001.hwp";
 
+fn rhwp_bin() -> std::ffi::OsString {
+    std::env::var_os("CARGO_BIN_EXE_rhwp").unwrap_or_else(|| env!("CARGO_BIN_EXE_rhwp").into())
+}
+
 struct TempDir(std::path::PathBuf);
 impl TempDir {
     fn new() -> Self {
@@ -45,7 +49,7 @@ fn rows() -> Value {
     }})
 }
 fn run(plan: &Value) -> (i32, Value) {
-    let out = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let out = Command::new(rhwp_bin())
         .args(["run", "--plan-json", &plan.to_string(), "--json"])
         .output()
         .unwrap();
@@ -159,7 +163,7 @@ fn mcp_existing_run_tool_executes_new_template_action() {
     let path = dir.path().join("mcp.hwpx");
     let input = input_for_format(&dir, "hwpx");
     let plan = json!({"planVersion":"1.0","input":input,"output":path,"steps":[rows()]});
-    let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let mut child = Command::new(rhwp_bin())
         .arg("mcp-serve")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
