@@ -29,11 +29,11 @@
     },
     {
       "source": "output/3587/b3/table-14a96c7e1/original.hwp",
-      "path": "samples/issue3587/b-table-original.hwp",
+      "path": "samples/hwp_table_test.hwp",
       "sha256": "dc3e57d7577447ae4b47f59bdb0f499a5ac29066b62af8a650bcdd8d70eee32a",
       "bytes": 29184,
       "role": "B 반복 저장·재열기 입력",
-      "reused": false
+      "reused": true
     },
     {
       "source": "output/3587/b3/table-14a96c7e1/repeated.hwp",
