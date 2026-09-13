@@ -107,6 +107,9 @@ pub(super) fn inspect(t: &Table, r: &RepeatTableRowsRequest) -> Result<Geometry,
     if occupied.iter().any(|v| !v) {
         return Err(invalid("rows/grid: uncovered coordinate"));
     }
+    if usize::from(r.insert_before) < t.leading_header_rows().len() {
+        return Err(invalid("rows/destination: insertion would displace the leading title block"));
+    }
     result
         .cells
         .sort_by_key(|i| (t.cells[*i].row, t.cells[*i].col));
@@ -147,9 +150,11 @@ pub(super) fn inspect(t: &Table, r: &RepeatTableRowsRequest) -> Result<Geometry,
         .iter()
         .try_fold(0u32, |sum, h| sum.checked_add(*h))
         .ok_or_else(|| invalid("rows/height overflow"))?;
+    let base_height = heights.iter().try_fold(0u32, |sum,h| sum.checked_add(*h))
+        .ok_or_else(|| invalid("rows/height overflow"))?;
     result.height = source_height
         .checked_mul(n as u32)
-        .and_then(|h| t.common.height.checked_add(h))
+        .and_then(|h| base_height.checked_add(h))
         .ok_or_else(|| invalid("rows/height overflow"))?;
     Ok(result)
 }
