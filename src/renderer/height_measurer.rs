@@ -2386,12 +2386,19 @@ impl HeightMeasurer {
                                         // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
                                         // 들어가 아래 흐름이 통째로 6px 밀렸다.
                                         // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
-                                        let last_line_is_object_only =
-                                            p.text.trim().is_empty() && !p.controls.is_empty();
+                                        //
+                                        // [#7097] 그 근거("뒤에 붙일 줄이 없다")는 **글자가
+                                        // 아예 없는** 마지막 줄에 그대로 적용된다 — 개체가
+                                        // 있든 없든 같다. 36382471_masked 1쪽 바깥 표
+                                        // `rowAddr=2` 칸의 마지막 문단이 글자도 개체도 없는
+                                        // 빈 문단이라 그 600HU(8.0px)가 행에 들어갔고,
+                                        // `vertAlign=CENTER` 인 그 칸 안 글자는 절반인 4px,
+                                        // 아래 행은 전량 8px 밀렸다(한/글 342.05 vs 350.10).
+                                        let last_line_has_no_text = p.text.trim().is_empty();
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1
                                                 && table.common.treat_as_char
-                                                && !last_line_is_object_only);
+                                                && !last_line_has_no_text);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
@@ -3310,12 +3317,19 @@ impl HeightMeasurer {
                                         // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
                                         // 들어가 아래 흐름이 통째로 6px 밀렸다.
                                         // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
-                                        let last_line_is_object_only =
-                                            p.text.trim().is_empty() && !p.controls.is_empty();
+                                        //
+                                        // [#7097] 그 근거("뒤에 붙일 줄이 없다")는 **글자가
+                                        // 아예 없는** 마지막 줄에 그대로 적용된다 — 개체가
+                                        // 있든 없든 같다. 36382471_masked 1쪽 바깥 표
+                                        // `rowAddr=2` 칸의 마지막 문단이 글자도 개체도 없는
+                                        // 빈 문단이라 그 600HU(8.0px)가 행에 들어갔고,
+                                        // `vertAlign=CENTER` 인 그 칸 안 글자는 절반인 4px,
+                                        // 아래 행은 전량 8px 밀렸다(한/글 342.05 vs 350.10).
+                                        let last_line_has_no_text = p.text.trim().is_empty();
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1
                                                 && table.common.treat_as_char
-                                                && !last_line_is_object_only);
+                                                && !last_line_has_no_text);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
