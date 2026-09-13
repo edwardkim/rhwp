@@ -2552,7 +2552,7 @@ fn write_shape_component_base(
         // [#4680] 쌍 개수는 그룹 깊이 + 1 이다. 한/글 HWP5 저장본 실측(264쪽 HWP3
         // 변환본 대조): 깊이 0 → 1쌍, 1 → 2쌍, 2 → 3쌍, 3 → 4쌍. 종전에는 깊이와
         // 무관하게 2 를 써서 두 겹 이상 중첩된 묶음의 레코드가 96바이트씩 짧았고,
-        // 한글은 그런 문서를 열지 못했다.
+        // 한컴 저장본과의 레코드 길이 계약을 잃었다.
         let cnt: u16 = attr.group_level.saturating_add(1);
         w.write_u16(cnt).unwrap();
         // translation matrix = identity [1, 0, 0, 0, 1, 0].
