@@ -302,6 +302,12 @@ Rust integration test source를 변경한 경우에는 배정 규칙의 계약 �
 )
 ```
 
+분할·이어받기 변경은 전체 integration 회귀 전에 작은 경계 검사와 영향 페이지의
+[Visual Sweep](mydocs/manual/verification/visual_sweep_guide.md)을 먼저 확인합니다.
+필요한 Native CLI는 같은 검증 worktree·SHA에서
+`cargo build --locked --profile release-test --target-dir "${rhwp_review_target_dir:?}" --bin rhwp`로 만듭니다.
+이 선행 Native 진단과 아래 최종 fresh WASM 시각 검증을 구분해 기록하세요.
+
 범위 표에서 전체 integration 회귀가 필요한 변경은 다음도 실행합니다.
 
 ```bash
@@ -688,11 +694,11 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
 
 ### 한컴 PDF 와의 일치 검증에 대해
 
-> ⚠️ **한컴 PDF 출력은 정답지가 아닙니다.**
+> **한컴 PDF는 생성 환경을 확인해 사용하는 기준 출력입니다.**
 >
 > 동일 HWP 파일도 한컴 환경 (버전 / 폰트 설치 / OS / 출력 방법) 에 따라 PDF 결과가 다릅니다. 페이지 분할까지 환경별로 달라지는 사례가 발견되었습니다 (PR #360 정황). 따라서 **"한컴 PDF 와 일치"** 만을 PR 검증 기준으로 제출하셔도 머지가 보장되지 않습니다.
 
-렌더링 영향 변경의 검증 기준 (우선순위, 실제 실행 범위는 [체크리스트](#pr-전-체크리스트) 적용):
+렌더링 영향 변경의 검증 기준 (각 항목의 실제 실행 범위는 [체크리스트](#pr-전-체크리스트) 적용):
 
 1. **결정적 자동 검증** (필수):
    - Rust 렌더링 source 변경은 위 Rust lint·전체 `cargo nextest run`·Native Skia 회귀
@@ -700,20 +706,27 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
      `node scripts/run-rust-test.mjs svg_snapshot -- --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?}"`로 선택 실행
    - Studio 렌더링 UI 변경은 해당 frontend·E2E 회귀와 fresh WASM 검증
 
-2. **시각 검증** (참고):
+2. **주장한 렌더링 동작의 직접 시각 검증** (해당 범위 필수):
    - 한컴 PDF / 한컴 화면 캡처 + rhwp SVG 비교 — **본인 환경 명시 필수** (한컴 버전, OS, 폰트 등)
-   - 페이지 분할 영향 PR 의 경우 메인테이너 환경 재검증 후 머지 결정
+   - 유효한 기존 PDF를 재사용하고, 내용으로 대응시킨 변경 전후 페이지·영역을 직접 확인
+   - 자동 검사 통과는 직접 비교를 대체하지 않으며, 메인터너 재검증 예정이라는 이유로 작성자 검증을 생략하지 않음
 
 3. **다른 렌더링 결과** (참고):
    - HTML / Canvas / VS Code 확장 등 다른 출력 경로와의 일관성
 
 ### 페이지 분할 / 페이지네이션 영향 PR 의 경우
 
-페이지 분할은 한컴 환경 의존성이 가장 큰 영역입니다. 이 영역의 PR 은 다음 절차 권장:
+페이지 분할 변경은 아래 근거를 PR 본문 또는 연결된 증적에 기록하세요.
 
 1. PR 본문에 검증 환경 명시 (한컴 버전, OS, 폰트, 출력 방법)
-2. 메인테이너 환경 재검증 후 머지 결정 (작업지시자가 직접 확인)
-3. 회귀 테스트 동봉 — 위 "회귀 테스트 가이드" 절의 관례를 따라주세요
+2. [공통 분할·이어받기 계약](AGENTS.md#분할이어받기-변경의-입증)의 호출 경로·컷 소유·요구/예약 높이와
+   예산 실패·종료 처리 근거. 적용되는 경계 테스트와 앞뒤 조각·다음 내용의 직접 비교
+3. 회귀 테스트 동봉 — 위 "회귀 테스트 가이드" 절의 관례를 따르고 수정 전 실패·수정 후 결과를 구분
+
+작은 경계 테스트와 영향 페이지의 Visual Sweep으로 보정 방향을 먼저 확인한 뒤 전체 검증을 진행하세요.
+이 선행 진단은 최종 commit의 필수 검증을 줄이는 예외가 아닙니다. 범위상 필수인 증거를 확보하지
+못하면 완료로 표시하지 말고 부족한 입력·환경·검사를 적습니다. 일반 기여자에게 메인터너 전용 MCP나
+내부 review 문서 작성을 요구하지 않으며, 기존 입력·PDF를 이름만 바꿔 다시 커밋하지 않습니다.
 
 ### 렌더링 PR 자가 검증 도구 (한컴 없이 가능)
 
@@ -752,8 +765,8 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
   [시각 검증 거버넌스](mydocs/manual/verification/visual_verification_governance.md)를 참고하세요 —
   시각 검증은 전수 절차가 아니라 **PR 의 수정 목적과 사용자에게 보이는 동작 기준으로 선택**합니다.
 - 전체 CLI 도구는 [cli_commands.md](mydocs/manual/cli_commands.md) 참조.
-- 자가 검증 통과는 회귀 없음의 증명이며, 한컴 정합의 최종 판정은 메인테이너 환경에서
-  이루어집니다.
+- 자가 검증 통과는 실행한 입력·경로·검사 범위에서의 결과입니다. 검사하지 않은 컷 경계나 본문
+  점유까지 안전하다는 증명이 아니며, 전체 회귀가 통과해도 직접 시각 비교의 결함을 해소해야 합니다.
 
 ### HWP 샘플 파일 제공
 
