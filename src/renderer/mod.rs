@@ -1323,6 +1323,21 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// NO_LS Square 감폭(합성 wrap) 상자의 fit 관용 폭 — 상자 폭의 6%.
+///
+/// fill 의 한글 계상은 내장 메트릭이 없는 글꼴(라틴 대표 글꼴에 한글 본문 등)에서
+/// 전각(1.0em) 휴리스틱으로 떨어지는데, 한글의 유효 advance 는 약 0.93~0.94em 이다
+/// (재현 역산 3건: "함께" 수용 줄 399.1px/상자 389.3, "사" 거부 줄 306.25px/305.1,
+/// 강제 개행 줄 287.5px/305.1 — 6%가 세 판정을 동시에 만족, 8%는 "사"를 과잉
+/// 수용). 관용 없이 정확히 자르면 한글이 같은 상자에 넣은 마지막 어절이 통째로
+/// 다음 줄로 밀려 줄 수가 정답과 갈라지고, 고정(반 글자) 관용은 줄이 길수록 누적
+/// 격차를 못 덮는다. 이 관용은 합성 감폭 상자의 fit 에만 쓰인다 — typeset 의
+/// col_w 와 paint 의 anchor 상자가 같은 값을 써야 두 장부가 일치한다.
+#[inline]
+pub(crate) fn synth_wrap_fit_slack_px(anchor_sw_px: f64) -> f64 {
+    anchor_sw_px * 0.06
+}
+
 /// 셀 문단의 저장 `LINE_SEG.vertical_pos` 를 절대 앵커로 신뢰할 수 있는지 판정한다.
 ///
 /// `vertical_pos == 0` 은 "셀 상단"이라는 유효한 값이면서 동시에 "앵커 없음"의

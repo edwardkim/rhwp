@@ -2467,13 +2467,17 @@ pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
 /// already-supported treat-as-character Equation flow, and width-neutral
 /// markers. Other controls have their own layout owners and must leave this
 /// transaction untouched.
-fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
+pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
     let mut non_tac_pictures = 0usize;
     for control in &para.controls {
         match control {
             Control::Picture(picture) if !picture.common.treat_as_char => {
                 non_tac_pictures += 1;
             }
+            // 글자처럼 취급 그림은 fill 이 인라인 토큰으로 폭을 계상한다
+            // (`inline_control_size_hwp`) — 사양하면 NO_LS 문단에서 인라인
+            // 아이콘 폭이 통째로 빠져 후속 텍스트가 아이콘 위에 겹친다.
+            Control::Picture(picture) if picture.common.treat_as_char => {}
             Control::Equation(equation) if equation.common.treat_as_char => {}
             other if control_is_width_neutral_marker(other) => {}
             _ => return false,
@@ -4142,6 +4146,17 @@ pub(crate) fn recalculate_section_vpos(
     // 직전 문단이 이번 편집의 변조 대상이었는가 + 직전 문단에 적용된 delta.
     let mut prev_modified = false;
     let mut prev_delta: i32 = 0;
+    // 저장 좌표계의 흐름 end — 변조 구간(신규 문단은 저장 높이 0, 편집 문단은
+    // reflow 이전 캡처)을 건너뛴 "저장" 누적이다. 변조 인접 경계의 미변조 문단이
+    // 저장 first 와 이 값의 간격(자리차지 개체 소비·의도 배치 포함)을 보존할 때
+    // 기준으로 쓴다.
+    let mut stored_flow_end: Option<i32> = match prev_idx {
+        Some(pp) if pp == start_para && !is_ignored(start_para) => {
+            start_stored_end.or(orig_prev_end)
+        }
+        Some(pp) => seg_end(&paragraphs[pp]),
+        None => None,
+    };
 
     for pi in start_para..paragraphs.len() {
         if paragraphs[pi].line_segs.is_empty() {
@@ -4179,7 +4194,34 @@ pub(crate) fn recalculate_section_vpos(
             let gap = prev_idx
                 .map(|pp| boundary_gap(&paragraphs[pp], &paragraphs[pi]))
                 .unwrap_or(0);
-            next_vpos.saturating_add(gap) - current_start
+            // 저장(비합성) first 가 저장 흐름 end 보다 스타일 gap 초과로 떨어져
+            // 있으면, 그 저장 간격은 자리차지(TopAndBottom) 개체의 세로 소비나
+            // 의도 배치가 만든 것이다(재현 문서 B: 표 인코딩 9499HU·글상자 소비
+            // 24932HU). 스타일 gap 재유도는 이 간격을 소멸시켜 후속 자리차지
+            // 표가 개체들 위로 당겨지므로, 간격을 보존한 채 변조 구간의 성장분만
+            // 이동한다. reflow 는 first 를 보존하므로 편집 문단(start_para)도
+            // 대상이다. 신규 placeholder(ignore)는 저장 좌표가 없어 재유도한다.
+            // 삭제·병합 경로는 호출자가 start_stored_end 에 "사라진 문단까지 포함한
+            // 저장 흐름 end"를 전달해 삭제분이 음수 delta 로 반영된다.
+            // (±px 왕복 절삭을 넘는 초과 간격에만 발화 — gap-abutment 재유도
+            // 핀(SO-SUEOP)과 성장 편집 핀은 기존 경로 그대로다.)
+            // 보존 대상은 **개체 규모**의 간격이다 — 스타일 gap 을 뺀 초과분이 다음
+            // 문단 첫 줄 높이에도 못 미치면(줄 하나도 못 들어가는 틈) 개체 소비가
+            // 아니라 저장 좌표의 잔차·왕복 절삭이다. 그런 틈까지 보존하면 편집 뒤
+            // 다음 문단이 저장 흐름 end 에서 그만큼 떠서 업스트림의 재유도 계약
+            // (`bulk_replace_materializes_a_current_body_partition`: 100HU 틈 →
+            // following.vpos == paragraph_flow_end)과 갈린다.
+            let first_line_height = paragraphs[pi].line_segs[0].line_height.max(1);
+            let stored_gap_preserving = (!is_ignored(pi) && is_original_lineseg)
+                .then_some(stored_flow_end)
+                .flatten()
+                .filter(|sfe| {
+                    let stored_gap = current_start.saturating_sub(*sfe);
+                    stored_gap > gap.saturating_add(2)
+                        && stored_gap.saturating_sub(gap) >= first_line_height
+                })
+                .map(|sfe| next_vpos.saturating_add(current_start - sfe) - current_start);
+            stored_gap_preserving.unwrap_or_else(|| next_vpos.saturating_add(gap) - current_start)
         } else {
             // 미변조 연속 경계 — 직전 delta 캐리로 기존 간격을 정확히 보존.
             prev_delta
@@ -4205,6 +4247,16 @@ pub(crate) fn recalculate_section_vpos(
         prev_modified = para_modified;
         prev_delta = delta;
         prev_idx = Some(pi);
+        // 저장 흐름 end 갱신 — 신규 문단(ignore)은 저장 높이 0 이라 건너뛰고,
+        // 편집 문단(start_para)은 reflow 이전 캡처를 우선한다. 미변조 문단은
+        // 이동 전(저장) end 가 그대로 저장 좌표다.
+        if is_ignored(pi) {
+            // 저장 좌표계에 없던 문단 — stored_flow_end 불변.
+        } else if pi == start_para {
+            stored_flow_end = start_stored_end.or(orig_end);
+        } else {
+            stored_flow_end = orig_end;
+        }
     }
 }
 

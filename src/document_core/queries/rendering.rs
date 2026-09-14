@@ -9001,6 +9001,7 @@ mod tests {
 
         // "page 2" 단: para 1 만 포함.
         let cc = ColumnContent {
+            banner_top_reserve: 0.0,
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,

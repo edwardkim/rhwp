@@ -583,10 +583,28 @@ pub(super) fn empty_no_lineseg_paragraph_metrics(
     hwp3_legacy_caps: bool,
     dpi: f64,
 ) -> Option<(f64, f64, f64)> {
+    // typeset 쪽 empty_paragraph_fallback_line_metrics 와
+    // 동일 완화 — 비자리차지(글앞/글뒤/어울림) 앵커 도형·그림만 가진 빈 문단도 한글은
+    // 완전한 em 줄박스를 부여한다. 두 장부(판정·그리기)가 같은 규칙을 가져야 렌더 y 와
+    // 단 경계가 일치한다.
+    let controls_flow_neutral = para.controls.iter().all(|c| {
+        let common = match c {
+            crate::model::control::Control::Picture(p) => &p.common,
+            crate::model::control::Control::Shape(s) => s.common(),
+            _ => return false,
+        };
+        !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                crate::model::shape::TextWrap::InFrontOfText
+                    | crate::model::shape::TextWrap::BehindText
+                    | crate::model::shape::TextWrap::Square
+            )
+    });
     if !para.text.trim().is_empty()
-        || !para.controls.is_empty()
+        || !(para.controls.is_empty() || controls_flow_neutral)
         || !para.line_segs.is_empty()
-        || para.char_count == 0
+        || (para.char_count == 0 && para.controls.is_empty())
     {
         return None;
     }
@@ -4963,15 +4981,24 @@ impl LayoutEngine {
                     .segment_width
                     .abs_diff(px_to_hwpunit(col_area.width - margin_right, self.dpi))
                     <= 1;
+            // NO_LS 문단의 comp_line cs/sw 는 저장 기하가 아니라 프레임 재래핑이
+            // 방금 새긴 합성값이다 — cs 가 문단 자신의 margin_left 라서 저장 기하로
+            // 읽으면 `col_x + cs` 로 여백을 한 번 먹고 아래 일반 여백 처리가 또
+            // 더한다(#5677 과 같은 이중 적용, 2×18.3px). 저장 lineseg 가 있을 때만
+            // 이 경로를 연다.
+            let stored_geometry_source = para
+                .map(|p| !crate::renderer::para_has_no_stored_line_segs(p))
+                .unwrap_or(false);
             let uses_stored_segment_geometry = physical_frame_rows
-                || (has_picture_shape_square_wrap
-                    || (line_has_inline_tac_table && !inline_tac_segment_is_paragraph_width)
-                    || precomputed_body_wrap_line
-                    || empty_stored_wrap_line
-                    || body_square_wrap_stored_line
-                    || cell_square_wrap_stored_line)
+                || (stored_geometry_source
+                    && (has_picture_shape_square_wrap
+                        || (line_has_inline_tac_table && !inline_tac_segment_is_paragraph_width)
+                        || precomputed_body_wrap_line
+                        || empty_stored_wrap_line
+                        || body_square_wrap_stored_line
+                        || cell_square_wrap_stored_line)
                     && comp_line.segment_width > 0
-                    && (line_avail_hu < col_area_w_hu - 200 || cs_significant);
+                    && (line_avail_hu < col_area_w_hu - 200 || cs_significant));
             let (effective_col_x, effective_col_w) = if uses_stored_segment_geometry {
                 let cs_px = hwpunit_to_px(comp_line.column_start, self.dpi);
                 let sw_px = hwpunit_to_px(comp_line.segment_width, self.dpi);
@@ -5169,21 +5196,63 @@ impl LayoutEngine {
             // indent가 image 쪽으로 한 번 더 돌출한다(HWP5 p127 그림 56 / p156 그림 64).
             let (line_cs_offset, line_avail_w_override) = if let Some(anchor) = wrap_anchor {
                 let seg = para.and_then(|p| p.line_segs.get(line_idx));
-                let cs = seg.map(|s| s.column_start as i32).unwrap_or(0);
-                let sw = seg.map(|s| s.segment_width as i32).unwrap_or(0);
+                // NO_LS 문단은 줄별 저장 cs/sw 가 없으므로
+                // 합성 anchor 의 존을 모든 줄에 적용한다.
+                let (cs, sw, synthetic_zone) = match seg {
+                    Some(s) => (s.column_start as i32, s.segment_width as i32, false),
+                    None => {
+                        // 줄 단위 배제 밴드: anchor 에 y 밴드가 실려 있으면 그
+                        // 밴드와 교차하는 줄에만 감폭을 적용한다(출석부 형상 —
+                        // 문단 첫 줄은 전폭, 개체 옆 줄만 회피).
+                        let in_band = anchor.band_y_range.is_none_or(|(band_top, band_bottom)| {
+                            // 눈금 오차(판정/렌더 장부 차)에 강하도록 줄 중심으로 판정.
+                            let line_center = text_y - y_start + line_height * 0.5;
+                            line_center > band_top - 2.0 && line_center < band_bottom + 2.0
+                        });
+                        if in_band {
+                            (anchor.anchor_cs, anchor.anchor_sw, true)
+                        } else {
+                            (0, 0, false)
+                        }
+                    }
+                };
                 let mr = anchor.anchor_image_margin_right;
                 let cs_px = crate::renderer::hwpunit_to_px(cs + mr, self.dpi);
-                let sw_px = if sw > 0 {
-                    Some(
-                        (crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi)
-                            - effective_margin_left
-                            - effective_margin_right)
-                            .max(0.0),
-                    )
+                if synthetic_zone {
+                    // 합성 배제 존: 한글의 문단 왼 여백은 **열 기준** 들여쓰기라,
+                    // 개체 회피 지점이 이미 여백보다 오른쪽이면 여백은 소진된다.
+                    // cs 와 margin 을 가산하면 아이콘 옆 제목이 여백만큼 한 번 더
+                    // 벌어진다(재현: 아이콘 오른쪽 +3.8 이어야 할 제목이 +22.4).
+                    // x 계산부(아래 bbox)가 margin 을 더하므로 여기서는 여백을
+                    // 넘는 초과분만 offset 으로 남긴다.
+                    let absorbed_cs = (cs_px - effective_margin_left).max(0.0);
+                    // 텍스트 시작 = col + margin_l + absorbed_cs = col + max(margin_l, cs).
+                    // 가용 폭은 배제 존 폭(sw)에서 시작이 cs 보다 오른쪽으로 밀린
+                    // 양(max(0, margin_l - cs))과 오른 여백만 뺀다.
+                    let sw_px = if sw > 0 {
+                        Some(
+                            (crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi)
+                                - (effective_margin_left - cs_px).max(0.0)
+                                - effective_margin_right)
+                                .max(0.0),
+                        )
+                    } else {
+                        None
+                    };
+                    (absorbed_cs, sw_px)
                 } else {
-                    None
-                };
-                (cs_px, sw_px)
+                    let sw_px = if sw > 0 {
+                        Some(
+                            (crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi)
+                                - effective_margin_left
+                                - effective_margin_right)
+                                .max(0.0),
+                        )
+                    } else {
+                        None
+                    };
+                    (cs_px, sw_px)
+                }
             } else {
                 (0.0, None)
             };

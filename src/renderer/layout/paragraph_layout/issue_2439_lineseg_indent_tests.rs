@@ -110,6 +110,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            banner_top_reserve: 0.0,
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,

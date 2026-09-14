@@ -412,3 +412,49 @@ fn issue_1440_page6_box_border_connect_and_dash_line_are_preserved() {
         );
     }
 }
+
+/// #6970: 저장 `LINE_SEG` 가 없는(합성 줄로 조판되는) 문서에서 Square 어울림 그림·
+/// 인라인 아이콘을 낀 다단 문단이 단 하단을 넘고 본문이 개체 위로 흐르지 않아야 한다.
+///
+/// 픽스처는 실문서 익명화본(한글 음절 순환 치환·이미지 더미화·기하 보존)으로 3쪽이
+/// 정답이다. 수정 전 `devel` 은 쪽수는 맞추면서도 `layout-anomaly` 가 offCanvas 20 ·
+/// overflow 27 · overlap 3 을 보고했고(2쪽 좌측 단 내용이 상단 배너 위로 올라가고
+/// 아이콘·텍스트·스크린샷이 서로 겹침), 엔진 스스로 `LAYOUT_OVERFLOW` 를 찍었다.
+#[test]
+fn issue_6970_no_ls_square_wrap_columns_stay_inside_body_without_overlap() {
+    use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
+    use rhwp::document_core::DocumentCore;
+
+    let bytes = read_fixture("samples/issue6970/synth_no_ls_square_wrap.hwp");
+    let doc = DocumentCore::from_bytes(&bytes).expect("#6970 fixture parse");
+    assert_eq!(doc.page_count(), 3, "#6970: 쪽수는 정답(3)과 같아야 한다");
+
+    let opts = AnomalyOptions {
+        overflow_tolerance_px: 2.0,
+        ..AnomalyOptions::default()
+    };
+    for page in 0..doc.page_count() {
+        let tree = doc
+            .build_page_render_tree(page)
+            .expect("#6970 fixture render");
+        let result = scan_page(page, &tree.root, doc.page_count(), &opts);
+        assert!(
+            result.off_canvas.is_empty(),
+            "#6970 p{}: 단 밖으로 나간 항목 {:?}",
+            page + 1,
+            result.off_canvas
+        );
+        assert!(
+            result.overflow.iter().all(|item| item.over_bottom <= 2.0),
+            "#6970 p{}: 단 하단 넘침 {:?}",
+            page + 1,
+            result.overflow
+        );
+        assert!(
+            result.overlap.is_empty(),
+            "#6970 p{}: 개체 겹침 {:?}",
+            page + 1,
+            result.overlap
+        );
+    }
+}

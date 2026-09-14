@@ -308,6 +308,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 paragraph_float_placements: Default::default(),
+                banner_top_reserve: 0.0,
             }],
             active_header: None,
             active_footer: None,

@@ -94,6 +94,10 @@ pub(crate) struct HeightCursor {
     pub vpos_page_base: Option<i32>,
     /// 지연 기준 vpos. 첫 PageItem 이 신뢰 불가할 때 sequential y 에서 역산 (#412).
     pub vpos_lazy_base: Option<i32>,
+    /// native HWP5 의 저장 vpos 는 쪽 상대 절대 좌표 —
+    /// page_base 가 소거된 상황에서도 lazy 역산(부정확 기준) 대신 base=0 페이지
+    /// 경로를 쓴다 (재현 문서 C pi4: lazy 2748 로 저장 958 대신 921 에 그려져
+    /// 꽃 장식과 겹치던 실측).
     /// 직전 배치 문단 인덱스.
     pub prev_layout_para: Option<usize>,
     /// 직전 항목이 분할 표(PartialTable)였는지 (#991).
