@@ -5519,8 +5519,12 @@ impl LayoutEngine {
             // line_tac_offsets_for_width 비어 있을 때 한정. ④ 전부 공백인
             // 줄(밑줄 친 서명란)과 밑줄 스타일 말미 공백은 보이는 콘텐츠라
             // 유지(issue_157 직선 골든 — 제외하면 우측 클립까지 이탈).
+            // [#7081] `cell_ctx.is_none()` 을 뺀다 — 칸 예외의 근거였던 `issue_1285` 는
+            // **TAC 개체가 우단을 잡는 줄**이고, 그 형상은 바로 아래
+            // `line_tac_offsets_for_width.is_empty()` 가 이미 거른다. 순수 텍스트 줄에서는
+            // 한/글도 칸 안에서 말미 공백을 빼고 정렬한다(3079571 취소신청서 1쪽,
+            // '신청하는' + 공백 5칸 — 한/글 대비 -15.02px = 5 × 6.008 ÷ 2).
             let center_excludes_trailing_ws = alignment == Alignment::Center
-                && cell_ctx.is_none()
                 && is_last_line_of_para
                 && line_tac_offsets_for_width.is_empty()
                 && comp_line
@@ -5530,10 +5534,24 @@ impl LayoutEngine {
             // [#5820] 글상자(drawText) 안 문단은 표 셀이 아니다 — 한글은 글상자
             // 안에서도 오른쪽 정렬의 말미 공백을 제외한다(156560092 글상자:
             // [로고A][로고B][공백5] RIGHT 문단 — 한글 로고 우변 여백 4.1px,
-            // 포함 시 공백 폭 32.7px 만큼 좌측 이탈). 셀 내부 포함-정렬 계약
-            // (issue_1285)은 in_textbox=false 로 그대로 유지된다.
-            let right_align_excludes_trailing_ws =
-                alignment == Alignment::Right && cell_ctx.as_ref().is_none_or(|c| c.in_textbox);
+            // 포함 시 공백 폭 32.7px 만큼 좌측 이탈).
+            //
+            // [#7081] 칸 예외를 **형상**으로 좁힌다. `issue_1285` 의 근거는 "셀 내부"가
+            // 아니라 **TAC 개체가 우단을 잡는 줄**이다(수험번호 TAC 우단 = 셀 inner 우단).
+            // 순수 텍스트 줄에서는 한/글도 칸 안에서 말미 공백을 빼고 정렬한다.
+            //
+            //   3030681 이의신청서 1쪽  '신청인(대표자)' + 공백 15칸, 칸 안 RIGHT
+            //     한/글 가시 텍스트 끝 404.8 · rhwp 307.1 + 공백 97.5 = 404.6
+            //     -> 글자가 통째로 97.56px(= 6.504 × 15) 좌측 이탈. 같은 쪽 219자의
+            //        세로 편차는 0.09px 로, 어긋난 것은 이 한 줄의 가로뿐이다.
+            //   3079571 취소신청서 1쪽  '신청하는' + 공백 5칸, 칸 안 CENTER
+            //     -15.02px = 5 × 6.008 ÷ 2 — 가운데 정렬이라 절반만 밀린다.
+            //
+            // Center 쪽은 이미 같은 가드(`line_tac_offsets_for_width.is_empty()`)를 갖고
+            // 있고, Right 에만 없었다. 두 정렬의 조건을 같은 형상으로 맞춘다.
+            let right_align_excludes_trailing_ws = alignment == Alignment::Right
+                && (cell_ctx.as_ref().is_none_or(|c| c.in_textbox)
+                    || line_tac_offsets_for_width.is_empty());
             let trailing_ws_width =
                 if right_align_excludes_trailing_ws || center_excludes_trailing_ws {
                     trailing_space_width_after_last_inline_object(
