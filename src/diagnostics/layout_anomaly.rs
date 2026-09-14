@@ -591,10 +591,48 @@ fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
             vertical_extent(child, min_y, max_bottom);
         }
     }
+    // [#7051] 가로도 합친다 — 단, 자손 **`TextRun` 의 잉크 상자**로만.
+    //
+    // 종전에는 가로를 통째로 버렸다. 근거는 *"`TextRun` 의 말미 공백 advance 등 측정 폭이
+    // 쪽 우측을 스치는 무해한 초과가 흔하다(표본 100문서 62건 위양성)"* 였고, 그 관찰은
+    // 사실이다. 다만 그 위양성의 정체는 **공백 전진폭**이고, 이 파일은 그걸 걷어내는 기계를
+    // 이미 갖고 있다 — `glyph_band_bbox` 가 앞뒤 공백의 advance 를 잘라 잉크 범위를 준다
+    // (text-overlap 이 같은 이유로 쓰고 있다). 그 상자로 합치면 위양성을 피하면서 가로 축이
+    // 살아난다.
+    //
+    // 그래서 놓치고 있던 것: `samples/hwp3-sample10-hwp5.hwp` 489쪽은 91자 한 런이 단 폭
+    // 566.9px 를 238.1px 넘어 글자가 **용지 밖 124.7px** 까지 그려지는데, `TextLine` 의
+    // bbox 는 단 폭 그대로라 검출기가 763쪽 내내 `offCanvas=0` 이었다.
+    //
+    // `TextRun` 이 아닌 자손(표 셀·도형 등)은 가로를 합치지 않는다. 그쪽은 자기 노드가 이미
+    // 검사 대상이라 따로 잡히고, 여기서 합치면 같은 초과를 두 번 세게 된다.
+    fn horizontal_ink_extent(node: &RenderNode, min_x: &mut f64, max_right: &mut f64) {
+        for child in &node.children {
+            if !child.visible || child.editor_only {
+                continue;
+            }
+            if matches!(child.node_type, RenderNodeType::TextRun(_))
+                && child.bbox.height > 0.0
+                && child.bbox.width > 0.0
+                && has_visible_text(match &child.node_type {
+                    RenderNodeType::TextRun(run) => run.display_or_text(),
+                    _ => "",
+                })
+            {
+                let ink = glyph_band_bbox(child);
+                *min_x = min_x.min(ink.x);
+                *max_right = max_right.max(ink.x + ink.width);
+            }
+            horizontal_ink_extent(child, min_x, max_right);
+        }
+    }
     let mut min_y = node.bbox.y;
     let mut max_bottom = node.bbox.y + node.bbox.height;
     vertical_extent(node, &mut min_y, &mut max_bottom);
-    BoundingBox::new(node.bbox.x, min_y, node.bbox.width, max_bottom - min_y)
+    let mut min_x = node.bbox.x;
+    let mut max_right = node.bbox.x + node.bbox.width;
+    horizontal_ink_extent(node, &mut min_x, &mut max_right);
+    BoundingBox::new(min_x, min_y, max_right - min_x, max_bottom - min_y)
 }
 
 /// 페이지 상자 밖이거나 y<0 이면 off-canvas. overflow 와 같은 허용치를 쓰되
