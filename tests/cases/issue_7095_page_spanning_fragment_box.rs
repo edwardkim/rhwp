@@ -109,13 +109,15 @@ fn issue_7095_fragment_box_opens_the_table_outer_top_margin() {
 #[test]
 fn issue_7095_last_fragment_and_downstream_contracts_hold() {
     let core = load();
-    // 마지막 조각(10쪽)은 늘리지 않는다 — 정본도 내용에 맞춰 줄어든다.
+    // 마지막 조각(10쪽)은 쪽 상자로 늘리지 않는다 — 정본도 내용에 맞춰 줄어든다(정본 아래 920.27).
+    // 비끝 조각 상자 아래(1043.72)보다 확실히 위에서 끝나야 한다.
     let last_frag = fragment_box(&page_nodes(&core, 9));
+    let last_bottom = last_frag.y + last_frag.height;
     assert!(
-        (last_frag.y - 47.2).abs() < 0.5 && last_frag.height < 400.0,
-        "#7095: 마지막 조각도 같은 상단(47.2)이고 내용에 맞춰 줄어든다: y={:.2} h={:.1}",
+        (last_frag.y - 47.2).abs() < 0.5 && last_bottom < 1000.0,
+        "#7095: 마지막 조각도 같은 상단(47.2)이고 내용에 맞춰 줄어든다: y={:.2} bottom={:.1}",
         last_frag.y,
-        last_frag.height
+        last_bottom
     );
 
     // #7079 계약: 도해 그림 → 뒤 표 간격 410.0(저장 사다리)은 이 변경과 무관하다.
@@ -142,4 +144,67 @@ fn issue_7095_last_fragment_and_downstream_contracts_hold() {
     );
 
     assert_eq!(core.page_count(), 10, "#7095: 쪽수는 10 이어야 한다");
+}
+
+fn load_sample(rel: &str) -> DocumentCore {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
+    DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open")
+}
+
+/// `para_index` 가 같은 표 노드의 상자들.
+fn tables_of_para(nodes: &[RenderNode], para: usize, rows: u16, cols: u16) -> Vec<BoundingBox> {
+    nodes
+        .iter()
+        .filter_map(|n| match &n.node_type {
+            RenderNodeType::Table(t)
+                if t.para_index == Some(para) && t.row_count == rows && t.col_count == cols =>
+            {
+                Some(n.bbox)
+            }
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn issue_7095_first_fragment_starting_at_page_top_is_pinned_too() {
+    // 30269 10쪽은 표(pi136)의 **첫** 조각인데 쪽 상단에서 시작한다. 정본 상자 아래는
+    // 본문 아래 1028.01 − 바깥 아래 여백 283HU(3.77) − 100HU(1.33) = 1022.91 이다.
+    // 수정 전에는 내용 행 높이(마지막 줄 뒤 줄간격 포함)로 끝나 1028.3, 이어짐 조건으로만
+    // 고정하면 1032.1 로 정본 상자를 9px 넘었다.
+    let core = load_sample("samples/issue6023/30269_reform_recommendation.hwp");
+    let boxes = tables_of_para(&page_nodes(&core, 9), 136, 1, 1);
+    let frag = boxes.first().expect("30269 10쪽 조각 표");
+    let bottom = frag.y + frag.height;
+    assert!(
+        (frag.y - 98.27).abs() < 1.0 && (bottom - 1022.91).abs() < 1.0,
+        "#7095: 30269 10쪽 조각 상자는 위 98.27 · 아래 1022.91 이어야 한다: y={:.2} bottom={:.2}",
+        frag.y,
+        bottom
+    );
+    assert_eq!(
+        core.page_count(),
+        22,
+        "#7095: 30269 쪽수는 정본과 같은 22 여야 한다"
+    );
+}
+
+#[test]
+fn issue_7095_multi_row_nested_table_that_fits_a_page_moves_whole() {
+    // overfill 의 칸 안 중첩 표 pi324(5×3, 약 174px)는 18쪽 잔여(표 앞 누적 863.8 / 예산 1005.4)에
+    // 들어가지 않는다. 표가 본문 높이보다 작으므로 한/글은 행 사이에서 쪼개지 않고 19쪽으로
+    // 통째로 넘긴다. 수정 전 rhwp 는 18쪽 941..1061 과 19쪽 77..131 로 나눴다.
+    let core = load_sample("samples/table_giant_cell_overfill.hwpx");
+    let p18 = tables_of_para(&page_nodes(&core, 17), 324, 5, 3);
+    let p19 = tables_of_para(&page_nodes(&core, 18), 324, 5, 3);
+    assert!(
+        p18.is_empty(),
+        "#7095: pi324 는 18쪽에 조각을 남기지 않아야 한다(통째 이동): {p18:?}"
+    );
+    let whole = p19.first().expect("#7095: pi324 는 19쪽에 있어야 한다");
+    assert!(
+        whole.height > 165.0,
+        "#7095: 19쪽의 pi324 는 잘린 조각이 아니라 표 전체여야 한다: h={:.1}",
+        whole.height
+    );
 }

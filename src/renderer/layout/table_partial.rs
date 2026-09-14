@@ -4081,10 +4081,9 @@ impl LayoutEngine {
         // 첫 조각인데 쪽 상단에서 시작하고 정본 상자도 쪽이 정한다. 쪽 **중간**에서 시작하는
         // 첫 조각은 늘리지 않는다 — 156645214 19쪽에서 내용이 정본보다 8px 아래로 밀렸다
         // (PR #7098).
-        let starts_at_body_top = (y_start
-            - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)))
-        .abs()
-            < 1.0;
+        let starts_at_body_top =
+            (y_start - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi))).abs()
+                < 1.0;
         if single_cell_page_fragment
             && starts_at_body_top
             && row_count == 1
