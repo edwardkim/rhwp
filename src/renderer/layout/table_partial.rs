@@ -3413,14 +3413,10 @@ impl LayoutEngine {
         // 근거는 native HWP5 저장본(156060125, hancom-office-2020)이다. HWPX 계보는 조각
         // 기하 계약이 따로 있고(`hwpx_stored_layout` 계열), 넓히면 `rowbreak-problem-pages.hwpx`
         // 16쪽에서 칸 안 글상자가 꼬리말과 겹친다(text_overlap 1 → 2). 근거가 있는 범위로 좁힌다.
-        self.profile.get().hwp5_stored_pagination_layout()
-            && table.row_count == 1
-            && table.col_count == 1
-            && !table.common.treat_as_char
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
+        crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
+            self.profile.get().hwp5_stored_pagination_layout(),
+            table,
+        )
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -4076,6 +4072,35 @@ impl LayoutEngine {
             if let Some(last) = end_row.checked_sub(1).filter(|r| *r < row_count) {
                 row_heights[last] = limit.max(0.0);
             }
+        }
+        // [#7095] 쪽 상단에서 시작하는 비끝 조각의 상자는 내용이 아니라 쪽이 정한다.
+        //
+        // 한/글 2020 정본(156060125 2·3쪽 · 30269 10쪽)의 조각 상자 아래는
+        // 본문 아래 − `outer_margin_bottom` − 100HU 이고 쪽마다 같다(PDF 쪽 척도 제거 후).
+        // 판정은 이어짐 여부가 아니라 **쪽 상단에서 시작하는가**다 — 30269 10쪽은 표의
+        // 첫 조각인데 쪽 상단에서 시작하고 정본 상자도 쪽이 정한다. 쪽 **중간**에서 시작하는
+        // 첫 조각은 늘리지 않는다 — 156645214 19쪽에서 내용이 정본보다 8px 아래로 밀렸다
+        // (PR #7098).
+        let starts_at_body_top = (y_start
+            - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)))
+        .abs()
+            < 1.0;
+        if single_cell_page_fragment
+            && starts_at_body_top
+            && row_count == 1
+            && end_cut.iter().any(|&unit| unit > 0)
+        {
+            let box_bottom = col_area.y + col_area.height
+                - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                - hwpunit_to_px(
+                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                    self.dpi,
+                );
+            // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
+            // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
+            // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로
+            // 잘랐으므로 보이는 줄은 상자 안에 있다.
+            row_heights[0] = (box_bottom - y_start).max(0.0);
         }
 
         // The first stored-reset fragment's composed cut includes the reset-preceding line's

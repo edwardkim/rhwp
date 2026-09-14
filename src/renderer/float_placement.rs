@@ -1338,6 +1338,36 @@ pub(crate) fn native_empty_host_cellbreak_fragment_repeats_outer_margin(
         && !has_non_whitespace_text(para)
 }
 
+/// [#7095] 본문을 통째로 담은 1×1 `RowBreak` 쪽 조각의 비끝 상자 아래 안쪽 거리 (HU).
+///
+/// 한/글 2020 정본에서 비끝 조각 상자 아래 = 본문 아래 − `outer_margin_bottom` − 이 값.
+/// 정본 PDF 는 A4 쪽을 595×841pt 로 내 내용이 0.99895 배 축소되므로 그 척도를 걷은 뒤 쟀다:
+/// 156060125 104HU · 30269 103HU(쪽 rect 척도), 위 가장자리 적합 척도로는 101HU.
+/// 156060125 한 필드 돌연변이 7종(바깥 아래 여백 · 표 안 여백 · 칸 테두리 · 쪽 위/아래 여백
+/// ±30000HU)에서 흔들리지 않는 상수라 이름 붙은 필드가 아니다.
+pub(crate) const SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU: i32 = 100;
+
+/// [#7095] 본문을 통째로 담은 1×1 `RowBreak` 표의 쪽 조각인가.
+///
+/// 이 형상에서 한/글은 조각마다 표 바깥 여백(위·아래)을 다시 열고, 비끝 조각 상자를
+/// 본문 아래에서 [`SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU`] 만큼 더 안쪽에 고정한다.
+/// 페이지네이터 예산(`typeset.rs`)과 렌더러 상자(`table_partial.rs`)가 같은 술어를 써야
+/// 컷과 그림이 어긋나지 않는다.
+///
+/// 근거는 native HWP5 저장본(156060125 · 30269)이다. HWPX 계보는 조각 기하 계약이 따로
+/// 있고(`hwpx_stored_layout` 계열), 넓히면 `rowbreak-problem-pages.hwpx` 16쪽에서 칸 안
+/// 글상자가 꼬리말과 겹친다(PR #7098 실측).
+pub(crate) fn native_single_cell_rowbreak_page_fragment(
+    native_hwp5_layout: bool,
+    table: &Table,
+) -> bool {
+    native_hwp5_layout
+        && table.row_count == 1
+        && table.col_count == 1
+        && !table.common.treat_as_char
+        && matches!(table.page_break, TablePageBreak::RowBreak)
+}
+
 /// [#6887] 문단 기준 왼쪽 정렬 어울림 표가 원점에 싣는 바깥 왼쪽 여백 (HU).
 ///
 /// 한글은 `horzRelTo="PARA"` + `horzAlign="LEFT"` 인 float 의 저장 `horzOffset` 을
