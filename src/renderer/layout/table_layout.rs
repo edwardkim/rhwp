@@ -13233,9 +13233,7 @@ impl LayoutEngine {
                 if h > 0.5 && enters_nested_table {
                     let table_end = units[j..]
                         .iter()
-                        .position(|unit| {
-                            unit.para_idx != u.para_idx || unit.nested_row.is_none()
-                        })
+                        .position(|unit| unit.para_idx != u.para_idx || unit.nested_row.is_none())
                         .map_or(units.len(), |offset| j + offset);
                     let spans_rows = units[j..table_end]
                         .iter()
