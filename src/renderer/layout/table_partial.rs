@@ -1430,6 +1430,22 @@ impl LayoutEngine {
                 }
                 total
             } else {
+                // 글자처럼 취급 개체 중 가장 큰 것. 글자 없는 문단은 담을 줄이 없어 composed
+                // 높이가 placeholder 뿐이라 이 값이 그 문단의 실제 줄 높이다 — 빼면
+                // `valign=Center` 가 개체 **상단**을 칸 중앙에 놓아 아래 칸을 침범한다(#7182).
+                // 글자가 있는 문단은 줄 높이가 개체를 이미 담으므로 max 로 얹어도 변하지
+                // 않는다. 일반 표 경로(`table_layout`)의 `max_inline_height` 와 같은 계약.
+                let max_inline_h = cell
+                    .paragraphs
+                    .iter()
+                    .flat_map(|p| p.controls.iter())
+                    .filter_map(|c| match c {
+                        Control::Picture(p) if p.common.treat_as_char => Some(p.common.height),
+                        Control::Shape(s) if s.common().treat_as_char => Some(s.common().height),
+                        _ => None,
+                    })
+                    .map(|h| hwpunit_to_px(h as i32, self.dpi))
+                    .fold(0.0f64, f64::max);
                 // 중첩 표가 있는 셀: LINE_SEG.line_height에 중첩 표 높이가 미포함되므로
                 // vpos 기반으로 전체 콘텐츠 높이를 계산
                 let has_nested = cell
@@ -1457,6 +1473,7 @@ impl LayoutEngine {
                         .max(line_h)
                         .max(nested_bottom)
                         .max(unit_content_h)
+                        .max(max_inline_h)
                         .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs))
                         .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
                 } else {
@@ -1465,6 +1482,7 @@ impl LayoutEngine {
                         &cell.paragraphs,
                         styles,
                     )
+                    .max(max_inline_h)
                     .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs))
                     .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs))
                 }
@@ -1881,6 +1899,19 @@ impl LayoutEngine {
                     )
                 });
                 let has_table_ctrl = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
+                // 같은 형상이 **그림**으로도 온다. 셀 문단이 글자 없이 그림만 들고
+                // 저장 `LINE_SEG` 가 없으면 합성 줄 수가 0 이라 아래 컷 판정이
+                // "이 쪽 소속 아님"으로 읽는다 — 표 컨트롤만 구제하면 그림은 **어느
+                // 조각에서도** 배치되지 않아 문서에서 통째로 사라진다(실문서: 14행
+                // 표 안 그림 11장 전부 미노출). 글자처럼 취급 그림도 같다 — 빈 문단
+                // 이라 실릴 글줄이 없을 뿐 한/글은 제 줄에 그린다. 셀의 행 범위
+                // 판정(위 `render_range` 가드)이 이미 소속 조각을 가렸으므로, 여기
+                // 서는 컨트롤을 소유한 문단을 흘리지 않으면 된다. 중복 방출은 아래
+                // 컨트롤 루프의 `will_render_inline` 가드가 막는다.
+                let has_picture_ctrl = para
+                    .controls
+                    .iter()
+                    .any(|c| matches!(c, Control::Picture(_)));
                 // [#3820 Stage 77] HWP5에는 내부 표 control만 있고 LINE_SEG가 전혀
                 // 없는 셀 문단이 있다(76076 p35 row 6). 이 표가 들어 있는 outer
                 // fragment가 아직 source cut을 쓰지 않는다면, `(0, 0)`은 비가시
@@ -1888,7 +1919,7 @@ impl LayoutEngine {
                 // 같이 control을 배치해야 한다. cut fragment에서는 단위 소유권을
                 // 유지해 다음 쪽 표를 앞쪽에 중복 방출하지 않는다.
                 let uncut_control_only_nested_table = cut_units.is_none()
-                    && has_table_ctrl
+                    && (has_table_ctrl || has_picture_ctrl)
                     && para
                         .text
                         .chars()
@@ -2680,8 +2711,26 @@ impl LayoutEngine {
                                                 }
                                             };
                                             let with_offset = place(v_off);
-                                            let escapes_above_cell_content =
-                                                v_off < 0.0 && with_offset + pic_h <= content_top;
+                                            // `Center` 는 이탈을 **완전** 이탈로만 보지 않는다.
+                                            // Center 공식은 음수 오프셋을 절반만 반영해 개체를
+                                            // voff/2 만큼 띄우는데, 흐름 높이 장부
+                                            // (`non_inline_control_flow_height`)는 그 음수를
+                                            // `max(voff, 0)` 으로 버린다 — 두 장부가 어긋나 개체가
+                                            // 칸 콘텐츠 상단을 넘어 뜬다(실문서 표 9 행: voff
+                                            // −45.7·−75.7px → 각 −22.9·−37.9px, 한/글 오라클은 두
+                                            // 장 모두 칸 정중앙, #7182). `Top` 은 오프셋을 그대로
+                                            // 싣는 것이 정답이라(#5734: 저장 vpos 계단의 첫 그림이
+                                            // −14.4px 로 상단을 조금 넘는 것이 한/글 배치) 종전의
+                                            // 완전 이탈 규칙을 유지한다.
+                                            let escapes_above_cell_content = v_off < 0.0
+                                                && if matches!(
+                                                    effective_align,
+                                                    VerticalAlign::Center
+                                                ) {
+                                                    with_offset < content_top - 0.5
+                                                } else {
+                                                    with_offset + pic_h <= content_top
+                                                };
                                             if escapes_above_cell_content {
                                                 place(0.0)
                                             } else {
