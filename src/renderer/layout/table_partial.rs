@@ -3761,7 +3761,12 @@ impl LayoutEngine {
         // 빈 host 저장 되감김 조각은 #3820 Stage 120(`stored_reset_paint_geometry`)이 이미
         // 칠하는 쪽에서 같은 여백을 연다 — 여기서 또 열면 표가 여백만큼 한 번 더 내려간다
         // (정책연구 보고서 168쪽 90.71 vs 정본 86.93).
-        let single_cell_page_fragment = self.single_cell_rowbreak_page_fragment(table);
+        // 근거 문서(7062·30269·정책연구 보고서·KTX·hwpctl·issue2004)는 모두 본문 최상위 조각이다.
+        // 칸 안에서 다시 조각을 그리는 중첩 1×1 표까지 열면 층마다 여백이 겹친다 — 42065
+        // 11·15쪽 점선 위 테두리가 118.27 → 122.03 으로 두 번 내려갔다(정본 120.2). 한 층만
+        // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
+        let single_cell_page_fragment =
+            self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
         let y_start = if single_cell_page_fragment && stored_reset_paint_geometry.is_none() {
             y_start + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
         } else {
