@@ -26955,12 +26955,21 @@ impl TypesetEngine {
             // typeset 의 page_avail = (table_available - cur_h) 은 두 overhead 를
             // 포함하지 않아 split 결정 시 actual 가용보다 과대 평가됨 → partial 오버플로우.
             // aift.hwp p44 pi=584: 41.6 px split_end → 실제 가용 36 px → overflow 37.6 px.
+            // [#7095] 본문을 통째로 담은 1×1 RowBreak 쪽 조각은 쪽마다 바깥 여백(위·아래)을
+            // 다시 열고, 비끝 조각 상자는 본문 아래 − 바깥 아래 여백 − 100HU 에서 끝난다
+            // (한/글 2020 정본, PDF 쪽 척도 제거 후 두 문서 101~104HU · 돌연변이 7종에서 상수).
+            // 렌더러(`table_partial.rs`)가 같은 술어로 상자를 고정하므로 예산도 같이 뺀다.
+            let single_cell_page_fragment =
+                crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    table,
+                );
             let (host_before_overhead, fragment_outer_bottom_overhead) =
                 partial_rowbreak_fragment_spacing_px(
                     table,
                     host_spacing_before,
                     is_continuation,
-                    strict_following_plain_text_fit,
+                    strict_following_plain_text_fit || single_cell_page_fragment,
                     crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
                         self.profile.get().hwp5_stored_pagination_layout(),
                         para,
@@ -26968,6 +26977,15 @@ impl TypesetEngine {
                     ),
                     self.dpi,
                 );
+            let fragment_outer_bottom_overhead = if single_cell_page_fragment {
+                fragment_outer_bottom_overhead
+                    + hwpunit_to_px(
+                        crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                        self.dpi,
+                    )
+            } else {
+                fragment_outer_bottom_overhead
+            };
             // [#6143] 오프셋이 쪽 경계에서 이미 소진된 첫 조각은 예산에서도 빼지
             // 않는다. 앵커 문단이 이 쪽에 아무것도 내지 않았고(항목 0 · host 선방출 0)
             // 표가 쪽 최상단에서 시작하면 오프셋의 기준점(문단 자리)이 이 쪽에 없다 —
