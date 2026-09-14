@@ -68,3 +68,4 @@ tests/fixtures/issue_7091/*.hwp -text -diff
 tests/fixtures/issue_7091/*.hwpx -text -diff
 pdf/pr7078-*.pdf -text -diff
 pdf/pr7091-sample11-before-2020.pdf -text -diff
+tests/fixtures/issue_7130/*.wmf -text -diff
