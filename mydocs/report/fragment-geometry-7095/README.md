@@ -5,7 +5,7 @@
 - **수정 전:** PR 기준 커밋 `042b02bad` 의 `rhwp export-svg`.
   - 바이너리는 `922946438` 을 2026-09-14 새로 빌드한 것이다(md5 `a8b9d07c…`).
   - 두 커밋 사이 변경은 `Cargo.toml`·`Cargo.lock`(의존성 자동 갱신)뿐이다. `042b02bad` 로 옮긴 뒤 `cargo build` 가 rhwp 크레이트를 다시 컴파일할 것이 없다고 판정했으므로 같은 입력의 바이너리다.
-- **수정 후:** 이 PR 의 최종 커밋 빌드(md5 `3ff0ae37…`). 첫 구현 빌드(`c865bf25…`)로 만든 두 이미지를 이 빌드로 다시 만들었고, 바이트 단위로 같았다.
+- **수정 후:** 이 PR 의 최종 커밋 빌드(md5 `2300da4f…`). 첫 구현 빌드(`c865bf25…`)로 만든 두 이미지를 이 빌드로 다시 만들었고, 바이트 단위로 같았다.
 - **정본:** `hwp2024Convert` engine 2020 으로 새로 만든 PDF.
   - 7062(`tac_object_host_line_height.hwp`, hancom-office-2010 저장)
   - 30269(`30269_reform_recommendation.hwp`)

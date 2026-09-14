@@ -23,7 +23,11 @@ const SAMPLE: &str = "samples/issue5714/1490000-200800034_vietnam_labor_report.h
 /// 조각이 소유하지만 종전에 소실되던 줄 (공백 제거 비교).
 const LOST_LINE: &str = "⑦물류⑧기타";
 /// 0-based 페이지 번호 (SVG 파일명 `_114` 는 1-based).
-const PAGE: u32 = 113;
+///
+/// [#7095] 쪽 상단 조각 예산이 바깥 여백과 100HU 를 빼면서 이 줄은 114쪽 본문 바닥 아래
+/// (y 1034.2, 본문 아래 1024.3)에서 115쪽 상단으로 옮겨 갔다. 계약은 "조각이 소유한 줄은
+/// 어느 쪽에선가 그려진다" 이므로 두 쪽을 함께 본다.
+const PAGES: [u32; 2] = [113, 114];
 
 /// SVG 는 글자마다 `<text>` 를 따로 낸다 — x 순으로 이어 붙여야 줄 내용이 된다.
 fn page_text_without_spaces(svg: &str) -> String {
@@ -63,8 +67,12 @@ fn issue6924_fragment_owned_bottom_line_is_painted() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
     let document = HwpDocument::from_bytes(&bytes).expect("parse issue5714 sample");
-    let svg = document.render_page_svg(PAGE).expect("render page");
-    let text = page_text_without_spaces(&svg);
+    let text: String = PAGES
+        .iter()
+        .map(|&page| {
+            page_text_without_spaces(&document.render_page_svg(page).expect("render page"))
+        })
+        .collect();
     assert!(
         text.contains(LOST_LINE),
         "조각이 소유한 clip 하단 글줄이 방출되지 않았다 (#6924): {LOST_LINE:?} 없음"

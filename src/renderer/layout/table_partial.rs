@@ -3783,8 +3783,11 @@ impl LayoutEngine {
         // 조각 전체가 1.9px 위에 있었다. 비분할 경로는 이 여백을
         // `physical_outer_box_paint_inset`(단일 단 + 측정高==선언高) 에서만 열지만,
         // 분할 조각은 그 게이트가 성립하지 않으므로 이 형상에서 따로 연다.
+        // 빈 host 저장 되감김 조각은 #3820 Stage 120(`stored_reset_paint_geometry`)이 이미
+        // 칠하는 쪽에서 같은 여백을 연다 — 여기서 또 열면 표가 여백만큼 한 번 더 내려간다
+        // (정책연구 보고서 168쪽 90.71 vs 정본 86.93).
         let single_cell_page_fragment = self.single_cell_rowbreak_page_fragment(table);
-        let y_start = if single_cell_page_fragment {
+        let y_start = if single_cell_page_fragment && stored_reset_paint_geometry.is_none() {
             y_start + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
         } else {
             y_start
@@ -4062,22 +4065,27 @@ impl LayoutEngine {
         let starts_at_body_top =
             (y_start - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi))).abs()
                 < 1.0;
-        if single_cell_page_fragment
-            && starts_at_body_top
-            && row_count == 1
-            && end_cut.iter().any(|&unit| unit > 0)
-        {
+        if single_cell_page_fragment && row_count == 1 && end_cut.iter().any(|&unit| unit > 0) {
             let box_bottom = col_area.y + col_area.height
                 - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
                 - hwpunit_to_px(
                     crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
                     self.dpi,
                 );
-            // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
-            // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
-            // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로
-            // 잘랐으므로 보이는 줄은 상자 안에 있다.
-            row_heights[0] = (box_bottom - y_start).max(0.0);
+            let pinned_height = (box_bottom - y_start).max(0.0);
+            if starts_at_body_top {
+                // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
+                // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
+                // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로
+                // 잘랐으므로 보이는 줄은 상자 안에 있다.
+                row_heights[0] = pinned_height;
+            } else if stored_reset_paint_geometry.is_none() {
+                // 쪽 중간에서 시작하는 비끝 조각은 늘리지는 않되(위 156645214 반례), 같은 이유로
+                // 쪽 상자 아래를 넘기지도 않는다. KTX 25쪽 `pi406` 은 위 바깥 여백을 연 뒤 내용
+                // 행 높이(뒤 줄간격 포함)로 끝나 본문 아래를 2.6px 넘었다 — 정본은 그 자리에
+                // 괘선을 그리지 않고, 줄 위치는 정본과 같은 쪽 경계에 있다.
+                row_heights[0] = row_heights[0].min(pinned_height);
+            }
         }
 
         // The first stored-reset fragment's composed cut includes the reset-preceding line's
