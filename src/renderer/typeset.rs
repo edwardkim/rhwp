@@ -27041,15 +27041,19 @@ impl TypesetEngine {
                     ),
                     self.dpi,
                 );
-            let fragment_outer_bottom_overhead = if single_cell_page_fragment {
-                fragment_outer_bottom_overhead
-                    + hwpunit_to_px(
-                        crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
-                        self.dpi,
-                    )
+            // 100HU 는 비끝 조각 상자에만 있다. 끝 조각은 내용에 맞춰 끝나므로(렌더러도
+            // 늘리지 않음) 끝 조각의 흐름 전진에서는 다시 뺀다 — 넣어 두면 다음 표가 0.2px
+            // 차로 안 들어가 쪽이 는다(rowbreak-problem-pages 14쪽 pi13 끝 조각 → pi16 · 18→19).
+            let single_cell_page_fragment_inset_px = if single_cell_page_fragment {
+                hwpunit_to_px(
+                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                    self.dpi,
+                )
             } else {
-                fragment_outer_bottom_overhead
+                0.0
             };
+            let fragment_outer_bottom_overhead =
+                fragment_outer_bottom_overhead + single_cell_page_fragment_inset_px;
             // [#6143] 오프셋이 쪽 경계에서 이미 소진된 첫 조각은 예산에서도 빼지
             // 않는다. 앵커 문단이 이 쪽에 아무것도 내지 않았고(항목 0 · host 선방출 0)
             // 표가 쪽 최상단에서 시작하면 오프셋의 기준점(문단 자리)이 이 쪽에 없다 —
@@ -27762,7 +27766,7 @@ impl TypesetEngine {
                         + vert_offset_overhead
                         + partial_height
                         + bottom_caption_extra
-                        + fragment_outer_bottom_overhead
+                        + (fragment_outer_bottom_overhead - single_cell_page_fragment_inset_px)
                         + host_spacing_after_only
                         + terminal_nested_child_host_line_spacing;
                 }

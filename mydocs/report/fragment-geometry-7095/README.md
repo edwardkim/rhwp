@@ -5,11 +5,10 @@
 - **수정 전:** PR 기준 커밋 `042b02bad` 의 `rhwp export-svg`.
   - 바이너리는 `922946438` 을 2026-09-14 새로 빌드한 것이다(md5 `a8b9d07c…`).
   - 두 커밋 사이 변경은 `Cargo.toml`·`Cargo.lock`(의존성 자동 갱신)뿐이다. `042b02bad` 로 옮긴 뒤 `cargo build` 가 rhwp 크레이트를 다시 컴파일할 것이 없다고 판정했으므로 같은 입력의 바이너리다.
-- **수정 후:** 이 PR 의 커밋 빌드(md5 `c865bf25…`).
+- **수정 후:** 이 PR 의 최종 커밋 빌드(md5 `3ff0ae37…`). 첫 구현 빌드(`c865bf25…`)로 만든 두 이미지를 이 빌드로 다시 만들었고, 바이트 단위로 같았다.
 - **정본:** `hwp2024Convert` engine 2020 으로 새로 만든 PDF.
   - 7062(`tac_object_host_line_height.hwp`, hancom-office-2010 저장)
   - 30269(`30269_reform_recommendation.hwp`)
-  - overfill(`table_giant_cell_overfill.hwpx`)
 - **이미지:** rhwp SVG 는 헤드리스 Chrome, 정본 PDF 는 PyMuPDF 로 96dpi 래스터화했고 같은 영역을 잘랐다.
 
 **정본 좌표 주의:** 한/글 PDF 는 A4 쪽을 595×841pt 로 내서 내용이 세로 0.99895 배로 줄어 찍힌다. 이미지에서는 정본 괘선이 쪽 아래쪽으로 갈수록 약 1px 위에 보인다. 아래 수치는 이 척도를 걷은 값이다.
@@ -20,8 +19,6 @@
 |---|---|
 | `7062-p2-fragment-bottom-before-after-oracle.png` | 2쪽 조각 상자 아래. 수정 전은 내용 컷(1025.9)에서 끝나고, 수정 후는 본문 아래 − 바깥 아래 여백 − 100HU(1043.72)에서 끝난다. 정본 1043.6. |
 | `30269-p10-fragment-bottom-before-after-oracle.png` | 10쪽(표의 첫 조각, 쪽 상단 시작) 상자 아래. 수정 전 1028.3, 수정 후 1023.2, 정본 1022.9. |
-| `overfill-p18-nested-table-moves-whole-before-after-oracle.png` | 18쪽 아래. 수정 전에는 중첩 표 `pi324`(5×3) 앞부분이 18쪽에 걸리고, 수정 후와 정본은 18쪽에 표가 없다. |
-| `overfill-p19-nested-table-moves-whole-before-after-oracle.png` | 19쪽 위. 수정 후와 정본은 `pi324` 머리행과 세 행이 모두 19쪽에 있다. |
 
 ## 수치 (render tree · 정본 괘선, 척도 제거)
 

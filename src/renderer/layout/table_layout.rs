@@ -13243,47 +13243,6 @@ impl LayoutEngine {
                         }
                     }
                 }
-                // [#7095] 칸 안 **다중 행** 중첩 표가 본문 높이 안에 들어가면 한/글은 행
-                // 사이에서 쪼개지 않고 표를 다음 쪽으로 통째로 넘긴다. 정본 5문서에서
-                // 쪽 경계를 넘는 중첩 표 12건이 모두 이 규칙으로 갈린다 — overfill
-                // `pi324` 5×3 · `pi462` 10×2 · `pi483` 6×2(잔여 576.6 < 표 902 ≤ 본문
-                // 1009.1)는 통째, 본문보다 긴 `pi3` 9×2 · `pi629` 70×5 · `pi20` 26×9 는
-                // 행 사이 분할. 1×1 중첩 표는 행 단위 유닛이 아니라 이 규칙 밖이다
-                // (42065 `pi96` 은 0.48쪽인데 정본도 칸 안에서 쪼갠다).
-                // 이미 이 쪽에 내용을 담은 경우에만 미룬다 — 새 쪽 첫 유닛은 진행 보장.
-                // 중첩 표의 **첫 유닛**에서만 판정한다. 칸 단위로 쪼개지는 중첩 표(overfill
-                // `pi324` 등)는 행 하나가 조각 유닛 여럿(`nested_table_fragment`)이 되므로
-                // `nested_row == Some(0)` 만으로는 첫 유닛을 못 가른다 — 앞 유닛과 비교한다.
-                let enters_nested_table = u.nested_row == Some(0)
-                    && (j == 0
-                        || units[j - 1].para_idx != u.para_idx
-                        || units[j - 1].nested_row.is_none());
-                // 바깥 행이 칸 **하나**일 때만 쓴다. 규칙의 근거 12건은 모두 단일 열 바깥 표
-                // (overfill 5×1 · 42065)였고, 두 칸 행(issue1891 2×2, 한/글 70쪽)에 걸면 한 칸의
-                // 중첩 표만 밀려 쪽이 는다(rhwp 71→72).
-                if h > 0.5 && enters_nested_table && row_cells.len() == 1 {
-                    let table_end = units[j..]
-                        .iter()
-                        .position(|unit| unit.para_idx != u.para_idx || unit.nested_row.is_none())
-                        .map_or(units.len(), |offset| j + offset);
-                    let spans_rows = units[j..table_end]
-                        .iter()
-                        .any(|unit| unit.nested_row.is_some_and(|row| row > 0));
-                    // `current_body_area` 는 조판 중 셀 유닛을 셀 때 아직 0 일 수 있다(이 함수의
-                    // `frame_floor` 주석과 같은 사정). overfill 18쪽 실측: 표 앞 누적 863.8 +
-                    // 표 163.0 > 예산 1005.4 인데 본문 높이가 0 이라 판정이 통째로 꺼져 있었다.
-                    // 이어짐 조각의 예산은 본문 높이와 같으므로 둘 중 큰 값을 쪽 크기로 쓴다.
-                    let page_height = self.current_body_area.get().3.max(avail_height);
-                    if spans_rows && page_height > 0.0 {
-                        let nested_height: f64 =
-                            units[j..table_end].iter().map(|unit| unit.height).sum();
-                        if h + nested_height > avail_height + 0.5
-                            && nested_height <= page_height + 0.5
-                        {
-                            break;
-                        }
-                    }
-                }
                 if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, avail_height)
                 {
                     break;
