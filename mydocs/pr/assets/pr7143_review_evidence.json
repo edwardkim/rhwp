@@ -1104,5 +1104,54 @@
       "maintainer_can_modify": true,
       "upstream_devel": "38af2aae3571dc9d7f43671c1ca1a2bc8f24c815"
     }
+  },
+  "direct_source_alignment": {
+    "recorded_at": "2026-09-15T00:50:30.100349+09:00",
+    "source_head": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+    "base": "38af2aae3571dc9d7f43671c1ca1a2bc8f24c815",
+    "candidate_before_alignment_docs": "155c680eb60655eb6a2d5c249693635cd5e5252c",
+    "local_branch": "codex/pr7143-review-20260914",
+    "remote": "planet6897/rhwp",
+    "remote_branch": "fix/6981-split-row-height",
+    "repository_push_permission": false,
+    "maintainer_can_modify": true,
+    "nonempty_fast_forward_dry_run": "passed",
+    "lfs_objects_in_update": false,
+    "previous_integration_head": "81d8c3b59a28c3f9bd19570baa0952c1ea6263a3",
+    "merge_tree": "0d83ff7e53a7efd0de814d2cdd19329a43b3acbf",
+    "previous_integration_tree": "0d83ff7e53a7efd0de814d2cdd19329a43b3acbf",
+    "exact_whole_tree_equal": true,
+    "replayed_commits": [
+      {
+        "before": "f4f83efa0bf6ccc8e3cabda4c9c1f7508414e1b8",
+        "after": "c6c236127bb71195129e03b8d4a26a4a254bcdd7"
+      },
+      {
+        "before": "9d1607bff0a3d6568900fc8f09853073727542d9",
+        "after": "9452fd5648014a97f05ec4994238c3df5aa04c8b"
+      },
+      {
+        "before": "ecbe4ce8212b577d319358177acf2351299c5955",
+        "after": "832afd2cf572fbd42c5d2da762cf501accc09241"
+      },
+      {
+        "before": "32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121",
+        "after": "6ad0b295090753ea73a9539803a10d11bec29e49"
+      },
+      {
+        "before": "f5f8c586d668d3789f2b3fc129b15d02469059e3",
+        "after": "f75502f5ffe0fa0d8a9ce654a5a767443ffaa305"
+      },
+      {
+        "before": "81d8c3b59a28c3f9bd19570baa0952c1ea6263a3",
+        "after": "155c680eb60655eb6a2d5c249693635cd5e5252c"
+      }
+    ],
+    "validation_scope": "Prior Rust/WASM/visual results apply to identical current-base merged code; source-only execution not claimed. New PR CI remains to be checked.",
+    "additional_changes": [
+      "mydocs/pr/archives/pr_7143_review.md",
+      "mydocs/pr/archives/pr_7143_review_impl.md",
+      "mydocs/pr/assets/pr7143_review_evidence.json"
+    ]
   }
 }

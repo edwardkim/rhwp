@@ -7,10 +7,25 @@ last_verified: 2026-09-15
 
 # PR #7143 — 분할 rowspan 셀 높이 검토
 
-**메인터너 보정 검토: 두 코드 보류 사유 해소.** 로컬 코드 `32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121`에서 focused·전체 회귀·필수 lint·Native Skia 및 fresh WASM Visual Sweep을 완료했다. 아래 판정은 이 보정 코드에 적용하며, 원격 PR head는 아직 수정하지 않았다. GitHub approve·comment·push·merge는 수행하지 않았다.
+**메인터너 보정 검토: 두 코드 보류 사유 해소.** 로컬 코드 `32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121`에서 focused·전체 회귀·필수 lint·Native Skia 및 fresh WASM Visual Sweep을 완료했다. 아래 실행 결과는 이 검증 코드에 적용한다. 사용자 지시에 따른 원 PR 직접 반영 정렬은 다음 절에 기록했다. GitHub approve·comment·merge는 수행하지 않았다.
 
 **최종 판정: 메인터너 보정 후 수용 가능.** 원 head `34e1186f4`의 두 결함을 보정 `32aa62ed8`에서
 해소하고 통합 검증했다. 원격 반영 후 해당 head의 CI와 merge 전 조건은 별도로 확인한다.
+
+## 원 PR 직접 반영 정렬 — 2026-09-15
+
+사용자가 #7143의 source branch push를 명시했다. 원 contributor head `34e1186f40f9f0b2d4d72596f3d0996b363b4f88`를 보존하고
+보정·기록·지침 6개 commit만 같은 가시성 branch에서 그 위에 재적용했다. 원 contributor commit을
+rewrite하거나 다른 devel 변경을 source에 섞지 않았다. 대상은 `planet6897/rhwp:fix/6981-split-row-height`다.
+일반 fork push 권한은 false지만 `maintainerCanModify=true`이며, LFS 대상 없음 확인 후 해당 branch의
+실제 추가 commit을 사용한 `GIT_LFS_SKIP_PUSH=1 git push --dry-run`이 성공했다.
+
+- 직접 반영 코드: `6ad0b295090753ea73a9539803a10d11bec29e49`; 문서 정렬 전 candidate: `155c680eb60655eb6a2d5c249693635cd5e5252c`.
+- 최신 devel `38af2aae3571dc9d7f43671c1ca1a2bc8f24c815`와 candidate의 merge tree: `0d83ff7e53a7efd0de814d2cdd19329a43b3acbf`.
+- 이 tree는 검증된 코드와 지침·증적을 가진 기존 `81d8c3b59a28c3f9bd19570baa0952c1ea6263a3`의 전체 tree와 정확히 같다.
+  이후 이 정렬 기록으로 달라지는 파일은 review Markdown 2개와 증적 JSON뿐이다.
+- 앞 절의 Rust·WASM·Visual Sweep은 이 동일한 통합 코드에 대한 증거다. 오래된 source base에서 별도로
+  다시 실행한 결과라고 주장하지 않는다. 직접 push 후 새 PR head의 CI 결과는 별도로 확인한다.
 
 ## 메인터너 보정 결과
 

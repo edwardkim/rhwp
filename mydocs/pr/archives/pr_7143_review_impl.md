@@ -7,7 +7,7 @@ last_verified: 2026-09-15
 
 # PR #7143 메인터너 보정 기록
 
-[검토 결과](pr_7143_review.md)의 두 보류 사유를 메인터너 코드 `32aa62ed8`까지 보정했다. 새 코드의 최종 로컬 검증을 완료했으며 원격 source 수정·새 PR·merge는 하지 않았다.
+[검토 결과](pr_7143_review.md)의 두 보류 사유를 메인터너 코드 `32aa62ed8`까지 보정했다. 새 코드의 최종 로컬 검증을 완료했다. 이후 사용자가 원 PR 직접 push를 지정해 아래와 같이 source head 위로 정렬했다.
 
 1. 시작점은 `upstream/devel` `38af2aae3` + 원 PR `34e1186f4`를 체리픽한 `codex/pr7143-review-20260914` / `4a9546f8c`다. 원 contributor commit의 출처를 보존한다.
 2. 보정 시 새 head/base를 먼저 확인한다. direct source push 경로를 선택하려면 `planet6897/rhwp`의 일반 push 권한과 이 PR의 maintainer 수정 권한, 정확한 branch의 push 가능성을 구분해 확인한다. 불가하면 현재 누적 branch에서 원본 저장소 대상 통합 PR 경로를 사용한다.
@@ -68,3 +68,15 @@ diff는 없었다. 원 PR에 최신 공통 원칙이 없었다고 설명할 수 
 상대 링크·anchor, 상충 문구 제거, 제출→검토 경로 연결 및 `git diff --check`를 확인했다.
 `check_markdown_links.py`의 수정 문서 9개 검사와 추가 내부 anchor 12개 대조를 통과했다.
 새 Rust 검증을 실행한 것으로 기록하지 않으며, 앞 절의 실행 결과는 코드 `32aa62ed8`에 대한 것이다.
+
+## 원 PR push 대상 정정 — 2026-09-15
+
+처음 push 요청을 upstream 임시 branch로 잘못 처리했다. 사용자의 대상 정정을 반영하여 같은 local
+`codex/pr7143-review-20260914`에서 contributor 원 head 위에 메인터너 commit 6개만 replay했다.
+새 source 코드 commit은 `9452fd564` → `832afd2cf5` → `6ad0b2950`, 지침 commit은 `155c680eb`다.
+재적용 candidate와 최신 devel의 merge tree가 이전 검증 대상의 전체 tree와 같은지 확인했다.
+정확한 이전/새 commit 대응과 tree는 증적 JSON의 `direct_source_alignment`에 기록한다.
+
+이번 추가 정렬 기록만 문서 commit으로 분리한다. 원 branch에는 force 없이 fast-forward push하고
+PR head와 원격 ref가 같은지 확인한다. 잘못 만든 upstream 임시 branch는 다른 PR에서 사용하지
+않음을 확인한 뒤 제거한다. 원 contributor branch와 검증 target은 보존한다.
