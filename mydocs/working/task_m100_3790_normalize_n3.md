@@ -2,7 +2,7 @@
 
 - Issue: [#3790](https://github.com/edwardkim/rhwp/issues/3790)
 - 시각: 2026-09-14 13:07 KST 기준
-- 상태: **로컬 통합 검증 완료. push·Open PR 생성 승인 대기.**
+- 상태: **최초 제출 후 CI 실패 원인 최소 보정·로컬 검증 완료. 아래 §5가 최신 상태다.**
 - 선행: [N2 구현 결과](task_m100_3790_normalize_n2.md)
 - PR 초안: [제출 본문과 명령](../plans/task_m100_3790_normalize_pr.md)
 
@@ -85,3 +85,32 @@ self-review·필요한 오늘할일 기록 → 최신 head CI 확인 → 별도 
 #3790을 OPEN으로 유지한다. PR 본문에 자동 close 키워드를 넣지 않는다.
 부작용은 `822a1f76d` 구현 범위의 revert PR로 검증·복구한다. 문서 이력을 삭제하거나 required check를
 끄지 않으며, 직접 main push/자동 재실행으로 우회하지 않는다.
+
+## 5. 2026-09-14 후속 최소 보정과 종료 범위 확정
+
+위 §1–4는 최초 PR 제출 전 기록이다. 승인 후 `b0b150081`을 push하여
+[PR #7129](https://github.com/edwardkim/rhwp/pull/7129)를 제출했다.
+[CI 34805247198](https://github.com/edwardkim/rhwp/actions/runs/34805247198)의
+`Validate workflow contracts`에서 기대 테스트 파일 목록 누락으로 실패했다.
+
+신규 `ci-impact-controller-contract.test.cjs`는 실제 CI 실행 단계에는 연결되어 있었으나,
+`test_workflow_contract_wiring.py`의 고정 기대 목록에는 없었다. 기존 로컬 명령의
+`test_*workflow.py` 패턴은 `test_workflow_contract_wiring.py`를 포함하지 않는다.
+따라서 앞의 180개 통과 기록은 해당 명령의 결과이지 CI 계약 검사 전체 통과 증거가 아니다.
+이 범위 누락은 작업자의 검증 누락이며, 해당 배선 검사는 CI에서 의도대로 결함을 검출했다.
+
+- 보정 전 `python3 -m unittest scripts.tests.test_workflow_contract_wiring`: 3개 중 1개 실패 재현.
+- 보정: 기대 목록에 신규 연결 테스트 파일명만 추가. workflow·제품 코드는 추가 변경 없음.
+- 보정 후 `.github/workflows/ci.yml`의 `jobs.lint.steps`에서 아래 두 단계의 `run`을 읽어
+  `bash -e -o pipefail -c`로 순서대로 실행했다 (`PYTHONDONTWRITEBYTECODE=1`).
+  - `Validate CI impact classifier`: 등록된 Node·Python 명령 전체 통과.
+  - `Validate workflow contracts`: 등록된 Node·Python 명령 전체 통과.
+    마지막 배선 검사 3개도 모두 통과했다.
+- 로컬 수정은 `b0b150081` 위의 테스트 목록 보정과 이번 결정 문서다.
+  원격에 보정을 push하지 않았으므로 새 CI 성공·병합·이슈 종료는 아직 아니다.
+
+작업지시자의 최종 결정에 따라 advisory와 required `Build & Test`를 유지하고 v6 정합성을
+복원한 후보가 CI·self-review·devel 병합을 통과하면 결정과 결과를 게시하고 #3790을 종료한다.
+§4의 main 활성화까지 OPEN 유지 조건은 [최종 수행계획 §8](../plans/task_m100_3790_normalize.md)로
+대체한다. main YAML 활성화는 정규 승격 시점이며 종료와 동일시하지 않는다.
+실행 횟수·순서 재설계는 추가하지 않고, 새 문제가 생길 때 후속 검토한다.
