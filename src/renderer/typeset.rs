@@ -27770,7 +27770,44 @@ impl TypesetEngine {
                 return TableContinuationIteration::Complete;
             }
 
-            // 중간 fragment 배치
+            // 최종 행의 컷이 모든 가시 유닛을 소비했다면 다음 조각은 없다.
+            // 컷을 지우면 원래 행 높이가 복원되므로 paint 컷은 그대로 보존하고,
+            // 빈 후속 페이지를 할당하기 전에 continuation만 종료한다.
+            let terminal_cut_consumed = end_row >= row_count
+                && split_end_limit > 0.0
+                && !split_end_cut.is_empty()
+                && split_block_start.is_none()
+                && !start_cut_is_block
+                && !row_cursor_is_nested
+                && end_row_height_override.is_none()
+                && mt.allows_row_break_split()
+                && caption_overhead <= 0.0
+                && !queue_table_footnotes
+                && can_intra_split
+                && layout_engine
+                    .advance_row_cut(
+                        row_geometry_table,
+                        row_count - 1,
+                        &split_end_cut,
+                        f64::MAX,
+                        styles,
+                    )
+                    .consumed_height
+                    <= 0.0
+                && layout_engine
+                    .straddle_continuation_demand(
+                        row_geometry_table,
+                        row_count - 1,
+                        row_count - 1,
+                        &split_end_cut,
+                        None,
+                        &mt.row_heights,
+                        styles,
+                        (row_count, true),
+                    )
+                    .is_none_or(|remaining| remaining <= 0.0);
+
+            // 중간 또는 내용이 완전히 소비된 최종 컷 fragment 배치
             st.current_items.push(PageItem::PartialTable {
                 para_index: para_idx,
                 control_index: ctrl_idx,
@@ -27791,6 +27828,12 @@ impl TypesetEngine {
                 + vert_offset_overhead
                 + partial_height
                 + fragment_outer_bottom_overhead;
+            if terminal_cut_consumed {
+                st.current_height += host_spacing_after_only + terminal_nested_child_host_line_spacing;
+                commit_fragment(st, caption_extra + partial_height, true);
+                continuation.finish(row_count, true);
+                return TableContinuationIteration::Complete;
+            }
             commit_fragment(st, caption_extra + partial_height, false);
             // 큰 RowBreak 표가 기존 각주를 이미 가진 page에서 시작할 때에는 첫 fragment의
             // cell-footnote를 같은 lane에 섞지 않는다. 그 page의 기존 각주(표 25의

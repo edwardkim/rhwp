@@ -298,3 +298,28 @@ fn physical_blank_band_is_not_reserved_again_on_continuation() {
     );
     assert_tables_inside_body(&tree.root, None);
 }
+
+/// 최종 컷 뒤에 내용 없는 페이지를 할당하면 378쪽에는 쪽 번호만 남는다.
+/// 마지막 표의 글자는 앞 쪽에 남고, 다음 구역 본문은 빈 쪽 없이 이어져야 한다.
+#[test]
+fn completed_terminal_cut_does_not_allocate_an_empty_page() {
+    let bytes = std::fs::read(TARGET).expect("committed curriculum fixture");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse curriculum fixture");
+    let tree = core
+        .build_page_render_tree(377)
+        .expect("render successor page");
+    fn body_has_text(node: &RenderNode) -> bool {
+        if matches!(node.node_type, RenderNodeType::Body { .. }) {
+            return !line_text(node).trim().is_empty();
+        }
+        node.children.iter().any(body_has_text)
+    }
+    assert!(
+        body_has_text(&tree.root),
+        "completed row cut left an empty successor page"
+    );
+    assert!(
+        line_text(&tree.root).contains("노동인권"),
+        "next section must follow the completed table"
+    );
+}
