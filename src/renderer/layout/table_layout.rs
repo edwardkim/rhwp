@@ -15530,6 +15530,7 @@ impl LayoutEngine {
         start_row: usize,
         end_row: usize,
         start_cut: &[usize],
+        start_row_height_override: Option<f64>,
         end_cut_is_empty: bool,
         cell_height: f64,
         resolved_row_heights: &[f64],
@@ -15542,6 +15543,7 @@ impl LayoutEngine {
             && (cell_end > end_row || (cell_end == end_row && !end_cut_is_empty));
         // HWP5 저장 pagination의 2행/2문단 계약에서는 문단 하나가 행 하나의 owner다.
         if start_cut.is_empty()
+            && start_row_height_override.is_none()
             && end_cut_is_empty
             && ((straddles_start && start_row == cell_row + 1)
                 || (straddles_end && end_row == cell_row + 1))
@@ -15571,7 +15573,13 @@ impl LayoutEngine {
                 prior_h += if measured > 0.0 { measured } else { declared };
                 prior_h += cell_spacing;
             }
-            if !start_cut.is_empty() {
+            if let Some(remaining_band) = start_row_height_override {
+                // 내용 컷으로는 이미 소비한 물리 빈 밴드를 알 수 없다. 앞 조각이
+                // 남긴 정확한 행 높이로 소비 구간을 복원해 앞 조각 eu와 이어준다.
+                prior_h += (resolved_row_heights.get(start_row).copied().unwrap_or(0.0)
+                    - remaining_band)
+                    .max(0.0);
+            } else if !start_cut.is_empty() {
                 prior_h += self.row_cut_content_height(table, start_row, &[], start_cut, styles);
             }
         }
@@ -15598,6 +15606,7 @@ impl LayoutEngine {
         row: usize,
         start_row: usize,
         start_cut: &[usize],
+        start_row_height_override: Option<f64>,
         resolved_row_heights: &[f64],
         styles: &ResolvedStyleSet,
         fragment_end: (usize, bool),
@@ -15631,15 +15640,14 @@ impl LayoutEngine {
                     start_row,
                     end_row,
                     start_cut,
+                    start_row_height_override,
                     end_cut_is_empty,
                     0.0,
                     resolved_row_heights,
                     styles,
                 );
-                let padding = cell.effective_padding(&table.padding);
+                // 보이는 내용과 상하 패딩이 이미 포함된 높이다.
                 self.cell_cut_visible_height(cell, table, styles, su, eu)
-                    + hwpunit_to_px(padding.top as i32, self.dpi)
-                    + hwpunit_to_px(padding.bottom as i32, self.dpi)
             })
             .reduce(f64::max)
     }

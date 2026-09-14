@@ -279,3 +279,22 @@ fn continuation_height_respects_varying_page_budgets() {
         "budget variants must exercise a page break transition"
     );
 }
+
+/// 한컴 2022 기준 PDF p83에는 전남부터 제주까지의 조례가 함께 있다.
+/// 앞 쪽에서 소비한 빈 행 밴드를 내용 컷만으로 재계산하면 이 행들이 밀려난다.
+#[test]
+fn physical_blank_band_is_not_reserved_again_on_continuation() {
+    let bytes = std::fs::read(TARGET).expect("committed curriculum fixture");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse curriculum fixture");
+    let tree = core.build_page_render_tree(82).expect("render page 83");
+    let text = line_text(&tree.root);
+    assert!(
+        text.contains("전라남도교육청"),
+        "Jeonnam ordinance moved out of page 83"
+    );
+    assert!(
+        text.contains("제주특별자치도교육청"),
+        "Jeju ordinance moved out of page 83"
+    );
+    assert_tables_inside_body(&tree.root, None);
+}

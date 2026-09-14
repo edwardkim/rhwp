@@ -1301,6 +1301,7 @@ impl LayoutEngine {
                     start_row,
                     render_range_end,
                     start_cut,
+                    start_row_height_override,
                     end_cut.is_empty(),
                     cell_h,
                     resolved_row_heights,
@@ -3950,6 +3951,14 @@ impl LayoutEngine {
                 }
             }
 
+            // 빈 꼬리 밴드도 이 조각의 실제 행 높이다. 걸침 셀 요구와 비교하기
+            // 전에 적용해 typeset의 누적 예약과 같은 높이 공간을 사용한다.
+            if let Some(limit) = start_row_height_override {
+                if start_row < row_count {
+                    row_heights[start_row] = limit.max(0.0);
+                }
+            }
+
             // [#6981] per-row 경로의 **이어받는 걸침 셀** 보정.
             //
             // 위 블록-합 보정은 `is_block_split` 조각만 돈다. 행별 경로에서 조각 경계가
@@ -3972,6 +3981,7 @@ impl LayoutEngine {
                         r,
                         start_row,
                         start_cut,
+                        start_row_height_override,
                         &resolved_row_heights,
                         styles,
                         (end_row, end_cut.is_empty()),
@@ -4002,11 +4012,6 @@ impl LayoutEngine {
         // 시작한다. auto layout이 내용 한 줄(23px)만으로 행을 축소한 경우에는
         // `min`이 남은 75px band를 다시 버리므로, 여기서 limit은 상한이 아니라
         // fragment-local row height다.
-        if let Some(limit) = start_row_height_override {
-            if start_row < row_count {
-                row_heights[start_row] = limit.max(0.0);
-            }
-        }
         if let Some(limit) = end_row_height_override {
             if let Some(last) = end_row.checked_sub(1).filter(|r| *r < row_count) {
                 row_heights[last] = limit.max(0.0);
