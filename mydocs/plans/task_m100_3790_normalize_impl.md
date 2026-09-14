@@ -2,8 +2,8 @@
 
 - Issue: [#3790](https://github.com/edwardkim/rhwp/issues/3790)
 - 작성일: 2026-09-14 KST
-- 상태: **2026-09-14 승인된 N2 구현·집중 검증 완료. [N2 결과](../working/task_m100_3790_normalize_n2.md) 참조.
-  N3 통합 검토·PR 준비 승인 대기.**
+- 상태: **2026-09-14 N2 및 승인된 [N3 통합 검증·PR 준비](../working/task_m100_3790_normalize_n3.md) 완료.
+  원격 push·Open PR 생성 승인 대기.**
 - 근거: [승인된 수행계획](task_m100_3790_normalize.md), [N1 재현·검증](../working/task_m100_3790_normalize_n1.md)
 - 기준 코드: `922946438fd89346a022df82e76648f88472f0cc`.
 

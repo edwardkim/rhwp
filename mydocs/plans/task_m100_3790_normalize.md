@@ -2,8 +2,8 @@
 
 - Issue: [#3790](https://github.com/edwardkim/rhwp/issues/3790)
 - 작성: 2026-09-14 KST
-- 상태: **2026-09-14 수행·구현계획 승인 및 [N2 구현·집중 검증](../working/task_m100_3790_normalize_n2.md) 완료.
-  N3 정확한 head 통합 검토·PR 준비 승인 대기. 원격 반영 미수행.**
+- 상태: **2026-09-14 승인된 [N3 통합 검증·PR 준비](../working/task_m100_3790_normalize_n3.md) 완료.
+  원격 push·Open PR 생성 승인 대기. 원격 반영 미수행.**
 - 브랜치: `task_m100_3790_normalize`
 - 기준: 최신 `upstream/devel` = `922946438fd89346a022df82e76648f88472f0cc`
 - 운영 비교 기준 `upstream/main`: `cac9b4f7cc743535cd7c00fe4f286abd67e7145b`
@@ -93,7 +93,7 @@ main 직접 push·별도 릴리즈·자동 workflow 재실행 루프.
 | N3 통합 검증·PR 준비 | 전체 관련 Node/Python·YAML 검증, 비용/증거 재사용 점검, 최종 diff·복구 방법 정리 | 정확한 head의 로컬 검증 완료 후 push·PR 승인 요청 |
 | N4 적용 확인 | 승인된 PR의 CI·self-review·병합, 실제 devel 대상 동작 확인 및 main 운영 배선 반영 여부 추적 | 구현 병합과 운영 활성화를 분리해서 보고. main 배선 미반영이면 운영 완료·이슈 close로 간주하지 않음 |
 
-현재 승인은 수행계획과 N1 진행까지다. 제품/CI 구현은 구현계획 승인 뒤 시작한다.
+수행·구현계획과 N3 진행 승인을 받았다. 원격 push·PR 생성은 별도 승인 대기다.
 단계 변경 전 기록을 커밋하며, 원격 push·PR·댓글·merge·실행 요청은 해당 승인 후에만 수행한다.
 오늘할일·PR review 문서는 최종 제출 절차 시점에 작성한다.
 
