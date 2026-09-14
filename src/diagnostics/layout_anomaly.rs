@@ -11,8 +11,16 @@
 //! 이 모듈은 렌더 **한 장**만 입력받아 그 자체의 기하가 말이 되는지 본다:
 //! 요소가 본문 여백을 벗어났는가(overflow), 페이지 상자 밖(또는 y<0)에 놓였는가
 //! (off-canvas), 겹치면 안 되는 흐름 요소끼리 겹쳤는가(overlap), 보이는 텍스트 런
-//! bbox 가 서로 교차하는가(text-overlap), 콘텐츠 없는 페이지가 문서 중간에 있는가
-//! (empty_page). overflow 와 off-canvas 는 기준 상자가 다르다 — 본문만 넘치고 쪽 안에
+//! bbox 가 서로 교차하는가(text-overlap), 글자가 자기 저장 줄의 baseline 에서
+//! 벗어났는가(stored-line-escape, #7061), 콘텐츠 없는 페이지가 문서 중간에 있는가
+//! (empty_page).
+//!
+//! 앞의 넷은 전부 **"상자를 넘었나 / 둘이 겹쳤나"** 다. 그래서 이탈이 쪽 밖으로
+//! 나가지도 다른 상자와 겹치지도 않으면 넷 다 0 이었다 — `#7018` 결함을 되돌린
+//! A/B 에서 165px 짜리 배치 이탈이 있으나 없으나 봉투가 한 글자도 다르지 않았다.
+//! stored-line-escape 는 기준을 바깥 상자가 아니라 **한/글이 저장해 둔 그 줄
+//! 자신**으로 잡아 그 빈틈을 맡는다. 이 축만 렌더 트리 밖(문서 IR)의 값을
+//! 필요로 해서 [`scan_page_with_source`] 로 들어온다. overflow 와 off-canvas 는 기준 상자가 다르다 — 본문만 넘치고 쪽 안에
 //! 남아 있으면 overflow 만, 쪽 상자(또는 음수 y)를 넘으면 off-canvas. `render-diff`가
 //! "달라졌는가"를 묻는다면 이 모듈은 "이상해 보이는가"를 묻는다 — 같은 렌더 기하 축 위의
 //! 서로 다른 질문이라 한쪽이 다른 쪽을 대신하지 않는다.
@@ -67,12 +75,21 @@ pub struct AnomalyOptions {
     /// overflow·overlap 검사 대상 노드 타입. `None` 이면 기본 검사 대상 전부.
     /// `empty_page` 는 페이지 단위 신호라 이 필터의 영향을 받지 않는다.
     pub type_filter: Option<Vec<&'static str>>,
+    /// [#7061] 저장 줄 baseline·줄 높이를 "같다"고 볼 px 허용치.
+    ///
+    /// 조절 손잡이가 아니라 **부동소수 동등 비교의 여유**다. 저장값은 HWPUNIT 정수를
+    /// 96 DPI 로 나눈 값이라 재현될 때 딱 떨어지지 않는다. 실측 분포도 이 값이
+    /// 하중을 받지 않음을 보인다 — 줄 높이를 재현한 561,314 줄에서 편차 0.5px 초과가
+    /// 625 건, 1.0px 초과가 615 건이라 그 사이에 10 건뿐이고, 10px 초과는 0 건이다.
+    pub stored_line_tolerance_px: f64,
 }
 
 /// 기본 overflow 허용치(px). `render_geom_diff::DEFAULT_MAX_DISP` 와 같은 자릿수.
 pub const DEFAULT_OVERFLOW_TOLERANCE_PX: f64 = 1.0;
 /// 기본 overlap 허용치(px, 폭·높이 각각).
 pub const DEFAULT_OVERLAP_TOLERANCE_PX: f64 = 2.0;
+/// 기본 저장 줄 동등 비교 여유(px) — [`AnomalyOptions::stored_line_tolerance_px`].
+pub const DEFAULT_STORED_LINE_TOLERANCE_PX: f64 = 0.5;
 
 impl Default for AnomalyOptions {
     fn default() -> Self {
@@ -80,6 +97,7 @@ impl Default for AnomalyOptions {
             overflow_tolerance_px: DEFAULT_OVERFLOW_TOLERANCE_PX,
             overlap_tolerance_px: DEFAULT_OVERLAP_TOLERANCE_PX,
             type_filter: None,
+            stored_line_tolerance_px: DEFAULT_STORED_LINE_TOLERANCE_PX,
         }
     }
 }
@@ -149,6 +167,81 @@ impl OverlapAnomaly {
 /// 겹침이라 후보에서 뺀다.
 pub type TextOverlapAnomaly = OverlapAnomaly;
 
+/// 글자가 자기 저장 줄(`LINE_SEG`)을 벗어나 **같은 문단의 다른 저장 줄** baseline 에
+/// 앉은 사건.
+///
+/// 다른 다섯 축은 전부 **"상자를 넘었나 / 둘이 겹쳤나"** 다. 이탈이 쪽 밖으로 나가지도,
+/// 다른 상자와 겹치지도 않으면 다섯 축이 전부 0 이다(#7061). `#7018` 결함을 되돌린 A/B
+/// 에서 165px 짜리 배치 이탈이 있으나 없으나 봉투가 한 글자도 다르지 않았다.
+///
+/// # 왜 "저장값과 다르다"가 아닌가 — 정본이 그 판정을 반증한다
+///
+/// 처음 세운 판정은 "렌더 baseline 이 저장 `baseline_distance` 와 다르면 이탈"이었다.
+/// **한/글 자신이 저장값으로 그리지 않는다.**
+///
+/// | 문서 | rhwp | 한/글 2020 정본 | 저장 `baseline_distance` |
+/// | --- | ---: | ---: | ---: |
+/// | `exam_eng.hwp` 1쪽 `①` | 494.76 | **494.08** (차 0.68) | 490.16 (차 3.92) |
+/// | `pr-1674.hwp` 23쪽 `1.` | 172.67 | **173.60** (차 0.93) | 167.47 (차 6.13) |
+/// | `tac-case-003.hwp` 1쪽 `표 다음` | 214.72 | **214.49** (차 0.23) | 238.91 (차 24.42) |
+/// | `issue6181/…` 6쪽 `회피` | 158.43 | **158.40** (차 0.03) | 161.58 (차 3.18) |
+///
+/// 네 문서 모두 rhwp 가 정본과 1px 안에서 맞고 저장값 쪽이 3~24px 틀렸다. samples 961 건
+/// 전수로도 같은 말이 나온다 — 렌더 baseline 이 저장값과 다른 줄이 **38%**(90.1만 중
+/// 34.0만)이고, 비로 봐도 단일 배율이 아니라 줄마다 갈린다(1.00 이 62.3%). 저장값과의
+/// 불일치는 신호가 아니라 **배경**이다.
+///
+/// # 그래서 무엇을 신고하나
+///
+/// 배경을 걷어내고 남는 것은 **줄 귀속이 바뀐 경우**다. 네 조건을 모두 만족해야 한다.
+///
+/// 1. 그 글자가 속한 저장 줄을 서수 추정 없이 짚을 수 있다
+///    (줄 노드 경로는 `line_index`+`vertical_pos`, 줄 노드 없는 경로는 런이 저장 줄
+///    하나 **안에 온전히** 들어간다).
+/// 2. 그 문단의 저장 `text_start` 색인 공간이 IR 문단 `text` 와 맞물린다
+///    ([`stored_text_space_matches`]).
+/// 3. 렌더 baseline 이 **자기 저장 줄 상자 밖**이다 — 이슈 제목 그대로다.
+/// 4. 그 baseline 이 같은 문단의 **다른** 저장 줄 baseline 과 일치한다.
+///
+/// 조건 3·4 가 빠지면 위 표의 네 문서가 전부 위양성으로 올라온다(각각 145·14·1·27 건).
+/// 다 걸면 devel + samples 961 건에서 **0 건**이고, `#7018` 수정 두 커밋을 되돌린
+/// 상태에서 **정확히 1 건**이 나온다 — 표가 자기 저장 줄을 가진 문단에서 앞 텍스트가
+/// 표 줄의 baseline(13,423 HU = 178.97px)을 받아 자기 줄(1,020 HU = 13.60px)에서
+/// 165.37px 아래로 떨어진 그 결함이다.
+///
+/// # 덮지 않는 것
+///
+/// `#6928` 이 보인 "표가 그림 위에 그려진다"는 글자 대 **그림**의 겹침이라 이 축이 아니다.
+/// 그쪽은 여전히 다섯 축도 이 축도 보지 못한다.
+#[derive(Debug, Clone)]
+pub struct StoredLineEscapeAnomaly {
+    /// 구조 경로 (예: `Page/Body/Column0/TextLine3`).
+    pub path: String,
+    pub section: usize,
+    pub para: usize,
+    /// 문단 안 저장 줄 서수 — 이 글자가 **속한** 줄.
+    pub line_seg_index: usize,
+    /// 이 글자가 실제로 앉은 줄의 서수 — 같은 문단의 **다른** 저장 줄.
+    pub took_line_seg_index: usize,
+    /// 줄 노드가 있었나 — `false` 면 줄 노드 없는 경로다.
+    pub from_line_node: bool,
+    /// 렌더가 실제로 쓴 baseline (줄 상자 위에서 px).
+    pub rendered_baseline: f64,
+    /// 저장 `LINE_SEG.baseline_distance` (px).
+    pub stored_baseline: f64,
+    /// 저장 `LINE_SEG.line_height` (px).
+    pub stored_line_height: f64,
+    /// 그 줄의 첫 글자 일부 (보고용).
+    pub text: String,
+}
+
+impl StoredLineEscapeAnomaly {
+    /// 저장 baseline 에서 벗어난 거리(px).
+    pub fn deviation(&self) -> f64 {
+        (self.rendered_baseline - self.stored_baseline).abs()
+    }
+}
+
 /// 문서 중간에서 콘텐츠 없는 페이지를 만난 사건. 의도된 빈 페이지(표지 뒷면,
 /// 장 구분지 등)와 기하만으로 구분할 수 없으므로 이 자체가 곧 "가능성 신호"다
 /// (별도 severity 플래그를 두지 않는다 — 존재 자체가 이미 낮은 신뢰도를 뜻한다).
@@ -165,6 +258,7 @@ pub struct PageAnomalies {
     pub off_canvas: Vec<OffCanvasAnomaly>,
     pub overlap: Vec<OverlapAnomaly>,
     pub text_overlap: Vec<TextOverlapAnomaly>,
+    pub stored_line_escape: Vec<StoredLineEscapeAnomaly>,
     pub empty_page: Option<EmptyPageAnomaly>,
 }
 
@@ -174,18 +268,21 @@ impl PageAnomalies {
             && self.off_canvas.is_empty()
             && self.overlap.is_empty()
             && self.text_overlap.is_empty()
+            && self.stored_line_escape.is_empty()
             && self.empty_page.is_none()
     }
 
     /// `--strict` 가 실패로 셀 만한 확정 신호가 있는가.
-    /// overflow·off-canvas·overlap·text-overlap 은 확정 신호. `empty_page` 는 가능성
-    /// 신호일 뿐이라 제외한다. off-canvas 는 페이지 상자 밖·음수 y, text-overlap 은
-    /// 글자 bbox 교차라 빈 쪽처럼 기하만으로 애매하지 않다.
+    /// overflow·off-canvas·overlap·text-overlap·stored-line-escape 는 확정 신호.
+    /// `empty_page` 는 가능성 신호일 뿐이라 제외한다. off-canvas 는 페이지 상자 밖·음수 y,
+    /// text-overlap 은 글자 bbox 교차, stored-line-escape 는 저장 줄을 재현한 줄에서의
+    /// baseline 불일치라 빈 쪽처럼 기하만으로 애매하지 않다.
     pub fn has_signal(&self) -> bool {
         !self.overflow.is_empty()
             || !self.off_canvas.is_empty()
             || !self.overlap.is_empty()
             || !self.text_overlap.is_empty()
+            || !self.stored_line_escape.is_empty()
     }
 }
 
@@ -213,6 +310,10 @@ impl DocAnomalies {
 
     pub fn text_overlap_count(&self) -> usize {
         self.pages.iter().map(|p| p.text_overlap.len()).sum()
+    }
+
+    pub fn stored_line_escape_count(&self) -> usize {
+        self.pages.iter().map(|p| p.stored_line_escape.len()).sum()
     }
 
     pub fn empty_page_count(&self) -> usize {
@@ -898,11 +999,238 @@ fn page_has_visible_content(node: &RenderNode) -> bool {
 
 /// 한 페이지 렌더 트리를 스캔한다. `page_count` 는 `empty_page` 가 "문서 중간"인지
 /// 판정하는 데만 쓴다(첫·마지막 쪽은 의도된 빈 쪽이 흔해 애초에 검사하지 않는다).
+/// 저장 줄 baseline 과 렌더 baseline 을 px 로 맞추는 단위. `hwpunit_to_px` 한 곳만 쓴다.
+fn stored_px(hwpunit: i32) -> f64 {
+    crate::renderer::hwpunit_to_px(hwpunit, crate::renderer::DEFAULT_DPI)
+}
+
+/// 이 줄이 글자를 담고 있나 — 빈 줄에는 이탈을 물을 대상이 없다.
+fn has_visible_run(node: &RenderNode) -> bool {
+    if !node.visible || node.editor_only {
+        return false;
+    }
+    if let RenderNodeType::TextRun(r) = &node.node_type {
+        if has_visible_text(r.display_or_text()) {
+            return true;
+        }
+    }
+    node.children.iter().any(has_visible_run)
+}
+
+fn first_visible_text(node: &RenderNode) -> String {
+    if !node.visible || node.editor_only {
+        return String::new();
+    }
+    if let RenderNodeType::TextRun(r) = &node.node_type {
+        let t = r.display_or_text();
+        if has_visible_text(t) {
+            return t.chars().take(24).collect();
+        }
+    }
+    for c in &node.children {
+        let t = first_visible_text(c);
+        if !t.is_empty() {
+            return t;
+        }
+    }
+    String::new()
+}
+
+/// 저장 `LINE_SEG.text_start` 가 이 문단의 글자 색인 공간과 맞물리나.
+///
+/// `text_start` 는 저장 당시의 UTF-16 서수이고 `TextRunNode::char_start` 는 IR 문단
+/// `text` 의 서수다. 확장 컨트롤을 세는 방식이 달라 둘이 어긋나는 문단이 있다 —
+/// `samples/tac-case-003.hwp` 의 TAC host 문단은 `text` 가 35자인데 마지막 저장 줄이
+/// `text_start=39` 에서 시작한다고 말한다. 그런 문단에서 서수로 줄을 고르면 엉뚱한
+/// 줄을 짚는다(그 문서에서 실제로 정본과 0.23px 안에서 맞는 렌더가 24.19px 이탈로
+/// 신고됐다). 색인 공간이 맞물리는 문단만 판정한다.
+fn stored_text_space_matches(para: &crate::model::paragraph::Paragraph) -> bool {
+    let len = para.text.encode_utf16().count() as u64;
+    para.line_segs
+        .last()
+        .is_some_and(|seg| u64::from(seg.text_start) <= len)
+}
+
+/// 같은 문단의 **다른** 저장 줄 중 이 baseline 과 일치하는 줄의 서수.
+///
+/// 이 축이 신고하는 것은 "저장값과 다르다"가 아니라 "**남의 저장 줄에 앉았다**"이다.
+/// 그 좁힘은 정본이 강요한 것이다 — [`StoredLineEscapeAnomaly`] 주석의 표를 본다.
+fn baseline_belongs_to_another_line(
+    para: &crate::model::paragraph::Paragraph,
+    own: usize,
+    rendered_baseline: f64,
+    tol: f64,
+) -> Option<usize> {
+    use crate::model::paragraph::LineSeg;
+    // 자기 저장 줄 **상자 안**에 있으면 이탈이 아니다.
+    //
+    // 이 조건이 없으면 "다른 줄과 값이 같다"가 우연으로 성립한다 — 한 문단의 여러 줄이
+    // 같은 `baseline_distance` 를 갖는 것은 흔하므로, 몇 px 어긋난 값이 옆 줄 값과
+    // 맞아떨어지는 일이 생긴다. `samples/issue6181/…` 27 건이 그 모양이었고, 정본은
+    // 그 줄들에서 rhwp 가 **0.03px 안에서 맞다**고 말한다(저장값 쪽이 3.18px 틀렸다).
+    let own_seg = para.line_segs.get(own)?;
+    let own_height = stored_px(own_seg.line_height);
+    if rendered_baseline >= -tol && rendered_baseline <= own_height + tol {
+        return None;
+    }
+    para.line_segs.iter().enumerate().find_map(|(k, seg)| {
+        (k != own
+            && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && (rendered_baseline - stored_px(seg.baseline_distance)).abs() <= tol)
+            .then_some(k)
+    })
+}
+
+/// [#7061] 여섯째 축 — 글자가 자기 저장 줄의 baseline 에서 벗어났나.
+///
+/// 두 경로의 게이트와 실측 근거는 [`StoredLineEscapeAnomaly`] 주석에 있다.
+fn check_stored_line_escape(
+    node: &RenderNode,
+    path: String,
+    line: Option<(u32, i32, f64, f64)>,
+    doc: &crate::model::document::Document,
+    tol: f64,
+    seen: &mut std::collections::BTreeSet<(usize, usize, usize)>,
+    out: &mut Vec<StoredLineEscapeAnomaly>,
+) {
+    use crate::model::paragraph::LineSeg;
+
+    if !node.visible || node.editor_only {
+        return;
+    }
+    let mut cur = line;
+
+    if let RenderNodeType::TextLine(l) = &node.node_type {
+        cur = match (l.line_index, l.vpos) {
+            (Some(li), Some(vp)) => Some((li, vp, node.bbox.height, l.baseline)),
+            // 저장 줄을 가리키지 않는 줄 노드는 아래 런들의 판정 근거가 되지 못한다.
+            _ => None,
+        };
+        if let (Some(si), Some(pi), Some((li, vp, rendered_h, rendered_base))) =
+            (l.section_index, l.para_index, cur)
+        {
+            let para = doc.sections.get(si).and_then(|sec| sec.paragraphs.get(pi));
+            if let Some((para, seg)) =
+                para.and_then(|pa| pa.line_segs.get(li as usize).map(|sg| (pa, sg)))
+            {
+                let stored_h = stored_px(seg.line_height);
+                let stored_base = stored_px(seg.baseline_distance);
+                // 게이트: 합성 줄이 아니고, 그 저장 줄을 가리키며(vpos), 줄 높이까지 재현했다.
+                let took = if seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && seg.vertical_pos == vp
+                    && (rendered_h - stored_h).abs() <= tol
+                    && (rendered_base - stored_base).abs() > tol
+                {
+                    baseline_belongs_to_another_line(para, li as usize, rendered_base, tol)
+                } else {
+                    None
+                };
+                if let Some(took) = took {
+                    if has_visible_run(node) && seen.insert((si, pi, li as usize)) {
+                        out.push(StoredLineEscapeAnomaly {
+                            path: path.clone(),
+                            section: si,
+                            para: pi,
+                            line_seg_index: li as usize,
+                            took_line_seg_index: took,
+                            from_line_node: true,
+                            rendered_baseline: rendered_base,
+                            stored_baseline: stored_base,
+                            stored_line_height: stored_h,
+                            text: first_visible_text(node),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    if let RenderNodeType::TextRun(r) = &node.node_type {
+        // 줄 노드 없는 경로 — 상자가 `줄 위 ~ baseline` 형상일 때만 본다.
+        if cur.is_none()
+            && node.bbox.height > 0.0
+            && (r.baseline - node.bbox.height).abs() <= tol
+            && has_visible_text(r.display_or_text())
+        {
+            if let (Some(si), Some(pi), Some(cs)) = (r.section_index, r.para_index, r.char_start) {
+                if let Some(para) = doc
+                    .sections
+                    .get(si)
+                    .and_then(|s| s.paragraphs.get(pi))
+                    .filter(|pa| stored_text_space_matches(pa))
+                {
+                    // 런이 저장 줄 **하나 안에 온전히** 들어갈 때만 그 줄의 것으로 본다.
+                    //
+                    // 시작 글자만 보면 줄 경계를 걸친 런을 앞 줄에 붙이게 된다.
+                    // `samples/tac-case-002.hwp` 의 TAC host 문단이 그 모양이었다 — 런
+                    // `tacglkj 표 다음`(23..34)이 저장 경계 31 을 넘는데 시작만 보면 표가
+                    // 있는 첫 줄(baseline 35.52px)에 속한 것으로 읽혀, 실제로는 정본과
+                    // 0.23px 안에서 맞는 렌더가 24.19px 이탈로 신고됐다.
+                    let run_end = cs as u64 + r.text.encode_utf16().count() as u64;
+                    let owner = para.line_segs.iter().enumerate().find(|(k, seg)| {
+                        let next = para
+                            .line_segs
+                            .get(k + 1)
+                            .map(|n| u64::from(n.text_start))
+                            .unwrap_or(u64::MAX);
+                        cs as u64 >= u64::from(seg.text_start) && run_end <= next
+                    });
+                    if let Some((k, seg)) = owner {
+                        let stored_base = stored_px(seg.baseline_distance);
+                        let took = if seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && (r.baseline - stored_base).abs() > tol
+                        {
+                            baseline_belongs_to_another_line(para, k, r.baseline, tol)
+                        } else {
+                            None
+                        };
+                        if let Some(took) = took {
+                            if seen.insert((si, pi, k)) {
+                                out.push(StoredLineEscapeAnomaly {
+                                    path: path.clone(),
+                                    section: si,
+                                    para: pi,
+                                    line_seg_index: k,
+                                    took_line_seg_index: took,
+                                    from_line_node: false,
+                                    rendered_baseline: r.baseline,
+                                    stored_baseline: stored_base,
+                                    stored_line_height: stored_px(seg.line_height),
+                                    text: r.display_or_text().chars().take(24).collect(),
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for (i, child) in node.children.iter().enumerate() {
+        let child_path = format!("{path}/{}{i}", node_type_label(&child.node_type));
+        check_stored_line_escape(child, child_path, cur, doc, tol, seen, out);
+    }
+}
+
 pub fn scan_page(
     page: u32,
     root: &RenderNode,
     page_count: u32,
     opts: &AnomalyOptions,
+) -> PageAnomalies {
+    scan_page_with_source(page, root, page_count, opts, None)
+}
+
+/// [#7061] `scan_page` 에 문서 IR 을 함께 준 판정.
+///
+/// 저장 줄 이탈 축만 IR 이 필요하다 — 렌더 트리에는 저장 `LINE_SEG.baseline_distance`
+/// 가 없다. `source` 가 `None` 이면 그 축만 비고 나머지 다섯은 같다.
+pub fn scan_page_with_source(
+    page: u32,
+    root: &RenderNode,
+    page_count: u32,
+    opts: &AnomalyOptions,
+    source: Option<&crate::model::document::Document>,
 ) -> PageAnomalies {
     let mut overflow = Vec::new();
     let mut off_canvas = Vec::new();
@@ -942,6 +1270,20 @@ pub fn scan_page(
     let overlap = find_overlaps(&flow, opts);
     let text_overlap = find_text_overlaps(&text, opts);
 
+    let mut stored_line_escape = Vec::new();
+    if let Some(doc) = source {
+        let mut seen = std::collections::BTreeSet::new();
+        check_stored_line_escape(
+            root,
+            "Page".to_string(),
+            None,
+            doc,
+            opts.stored_line_tolerance_px,
+            &mut seen,
+            &mut stored_line_escape,
+        );
+    }
+
     // [#6344] 콘텐츠 유무는 **페이지 전체**로 판정한다.
     //
     // 위 `walk` 는 `Body` 서브트리만 도는데, 용지 기준으로 배치된 표·도형은 `Body` 가 아니라
@@ -970,6 +1312,7 @@ pub fn scan_page(
         off_canvas,
         overlap,
         text_overlap,
+        stored_line_escape,
         empty_page,
     }
 }
@@ -981,7 +1324,7 @@ pub fn scan_document(core: &DocumentCore, opts: &AnomalyOptions) -> Result<DocAn
     let mut pages = Vec::new();
     for p in 0..page_count {
         let tree = core.build_page_render_tree(p)?;
-        let pa = scan_page(p, &tree.root, page_count, opts);
+        let pa = scan_page_with_source(p, &tree.root, page_count, opts, Some(core.document()));
         if !pa.is_empty() {
             pages.push(pa);
         }
@@ -1002,7 +1345,7 @@ use crate::schema_registry::ENVELOPE_SCHEMA_VERSION as SCHEMA_VERSION;
 const EXIT_OK: i32 = 0;
 const EXIT_RUNTIME: i32 = 1;
 const EXIT_USAGE: i32 = 2;
-/// `--strict` 가 확정 신호(overflow·off-canvas·overlap·text-overlap)를 하나라도
+/// `--strict` 가 확정 신호(overflow·off-canvas·overlap·text-overlap·stored-line-escape)를 하나라도
 /// 찾았을 때 내는 코드. `render_geom_diff::EXIT_REGRESSION` 과 같은 값 — "검출은
 /// 도구의 정상 동작"이라는 같은 계약이다. off-canvas 와 text-overlap 을 확정에 포함하는
 /// 선택은 모듈 머리말·`PageAnomalies::has_signal` 주석과 같다.
@@ -1012,7 +1355,7 @@ fn usage() -> String {
     "사용법: rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p N] [--json] [--strict] \
      [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX]\n         \
      rhwp layout-anomaly --batch <폴더> [-p N] [--json] [--strict] \
-     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX]"
+     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX] \n     [--stored-line-tolerance PX]"
         .to_string()
 }
 
@@ -1094,6 +1437,15 @@ fn parse_cli(args: &[String]) -> Result<CliOptions, String> {
                     .parse()
                     .map_err(|_| format!("--overlap-tolerance 파싱 실패: {v}"))?;
             }
+            "--stored-line-tolerance" => {
+                i += 1;
+                let v = args
+                    .get(i)
+                    .ok_or("--stored-line-tolerance 다음에 px 값 필요")?;
+                anomaly_opts.stored_line_tolerance_px = v
+                    .parse()
+                    .map_err(|_| format!("--stored-line-tolerance 파싱 실패: {v}"))?;
+            }
             "--types" => {
                 i += 1;
                 let v = args.get(i).ok_or("--types 다음에 타입 목록 필요")?;
@@ -1163,7 +1515,24 @@ fn page_json(p: &PageAnomalies) -> Value {
         "offCanvas": p.off_canvas.iter().map(overflow_json).collect::<Vec<_>>(),
         "overlap": p.overlap.iter().map(overlap_json).collect::<Vec<_>>(),
         "textOverlap": p.text_overlap.iter().map(overlap_json).collect::<Vec<_>>(),
+        "storedLineEscape": p.stored_line_escape.iter().map(stored_line_escape_json).collect::<Vec<_>>(),
         "emptyPage": p.empty_page.is_some(),
+    })
+}
+
+fn stored_line_escape_json(a: &StoredLineEscapeAnomaly) -> Value {
+    json!({
+        "path": a.path,
+        "section": a.section,
+        "para": a.para,
+        "lineSegIndex": a.line_seg_index,
+        "tookLineSegIndex": a.took_line_seg_index,
+        "fromLineNode": a.from_line_node,
+        "renderedBaseline": a.rendered_baseline,
+        "storedBaseline": a.stored_baseline,
+        "storedLineHeight": a.stored_line_height,
+        "deviation": a.deviation(),
+        "text": a.text,
     })
 }
 
@@ -1219,6 +1588,7 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
             "offCanvasCount": doc.off_canvas_count(),
             "overlapCount": doc.overlap_count(),
             "textOverlapCount": doc.text_overlap_count(),
+            "storedLineEscapeCount": doc.stored_line_escape_count(),
             "emptyPageCount": doc.empty_page_count(),
             "hasSignal": doc.has_signal(),
             "pages": pages,
@@ -1295,12 +1665,13 @@ fn run_single(opts: &CliOptions) -> i32 {
     let shown: Vec<&PageAnomalies> = doc.pages.iter().collect();
 
     println!(
-        "쪽 수: {}  overflow: {}  off-canvas: {}  overlap: {}  text-overlap: {}  empty_page(가능성): {}",
+        "쪽 수: {}  overflow: {}  off-canvas: {}  overlap: {}  text-overlap: {}           stored-line-escape: {}  empty_page(가능성): {}",
         doc.page_count,
         doc.overflow_count(),
         doc.off_canvas_count(),
         doc.overlap_count(),
         doc.text_overlap_count(),
+        doc.stored_line_escape_count(),
         doc.empty_page_count()
     );
     if shown.is_empty() {

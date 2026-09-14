@@ -263,6 +263,7 @@ fn options_of(opts: &serde_json::Value) -> AnomalyOptions {
         overflow_tolerance_px: f64_field(opts, "overflowTol"),
         overlap_tolerance_px: f64_field(opts, "overlapTol"),
         type_filter: types,
+        ..AnomalyOptions::default()
     }
 }
 
