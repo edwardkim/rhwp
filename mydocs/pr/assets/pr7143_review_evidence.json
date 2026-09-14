@@ -1,0 +1,200 @@
+{
+  "source_head": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+  "review_head": "4a9546f8c07da89acab4848f52d646377fb68081",
+  "base": "38af2aae3571dc9d7f43671c1ca1a2bc8f24c815",
+  "merge_tree": "b4f461a06d26f33badbdbed0aec0dcd6f6cd1bba",
+  "ci": {
+    "run": 34839089236,
+    "conclusion": "success",
+    "head": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+    "archive_tests_passed": 9668,
+    "archive_tests_skipped": 51
+  },
+  "focused": {
+    "command": "node scripts/run-rust-test.mjs issue_6981_split_straddle_row_height -- --cargo-profile release-test --target-dir target/pr7143-review-20260914",
+    "passed": 4,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "inputs": [
+    {
+      "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    },
+    {
+      "path": "samples/issue6803/1376496-neighborhood-facility-land-table.hwp",
+      "sha256": "2482b695bc92c0cafe661af63c54acea834b6927bf9c666bdf47299910e3801d",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    },
+    {
+      "path": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    },
+    {
+      "path": "pdf/task2287/1342000_edu_curriculum_map-2022.pdf",
+      "sha256": "6d1119be4b5043f75ba057ed9aeb06753a03eef4b82f78014bfcd02729cf05f2",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    }
+  ],
+  "info": {
+    "format": "hwp5",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": null,
+      "version": "9.1.1.3933"
+    },
+    "pageCount": 414
+  },
+  "visual": {
+    "reference_pdf_pages": 415,
+    "base_pages": 413,
+    "candidate_pages": 414,
+    "selected_pages": [
+      81,
+      82,
+      83,
+      151,
+      152,
+      153,
+      271,
+      273,
+      285,
+      287,
+      376,
+      377,
+      378,
+      379
+    ],
+    "structural_flagged": 0,
+    "analyzed_pages": 14,
+    "mapped_metrics": [
+      {
+        "page": 271,
+        "rhwp_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/rhwp_png/rhwp_271.png",
+        "pdf_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/pdf_png/pdf-273.png",
+        "overlay_png": "/private/tmp/rhwp-pr7143-review/mapped/overlay_271.png",
+        "width": 1123,
+        "height": 794,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 126001,
+        "diff_ratio": 0.14131027,
+        "pixel_match_percent": 85.86897,
+        "ink_union_pixels": 191295,
+        "ink_diff_pixels": 126001,
+        "ink_diff_ratio": 0.65867378,
+        "ink_match_percent": 34.13262,
+        "visual_accuracy_proxy_percent": 34.13262,
+        "mean_abs_channel_delta": 18.931,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          75,
+          1040,
+          744
+        ],
+        "rhwp_page": 271,
+        "pdf_page": 273
+      },
+      {
+        "page": 285,
+        "rhwp_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/rhwp_png/rhwp_285.png",
+        "pdf_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/pdf_png/pdf-287.png",
+        "overlay_png": "/private/tmp/rhwp-pr7143-review/mapped/overlay_285.png",
+        "width": 1123,
+        "height": 794,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 138837,
+        "diff_ratio": 0.15570586,
+        "pixel_match_percent": 84.42941,
+        "ink_union_pixels": 198415,
+        "ink_diff_pixels": 138837,
+        "ink_diff_ratio": 0.69973036,
+        "ink_match_percent": 30.02696,
+        "visual_accuracy_proxy_percent": 30.02696,
+        "mean_abs_channel_delta": 20.607,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          75,
+          1043,
+          744
+        ],
+        "rhwp_page": 285,
+        "pdf_page": 287
+      },
+      {
+        "page": 377,
+        "rhwp_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/rhwp_png/rhwp_377.png",
+        "pdf_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/pdf_png/pdf-378.png",
+        "overlay_png": "/private/tmp/rhwp-pr7143-review/mapped/overlay_377.png",
+        "width": 1123,
+        "height": 794,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 127627,
+        "diff_ratio": 0.14313383,
+        "pixel_match_percent": 85.68662,
+        "ink_union_pixels": 192262,
+        "ink_diff_pixels": 127627,
+        "ink_diff_ratio": 0.66381812,
+        "ink_match_percent": 33.61819,
+        "visual_accuracy_proxy_percent": 33.61819,
+        "mean_abs_channel_delta": 19.99,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          75,
+          1040,
+          744
+        ],
+        "rhwp_page": 377,
+        "pdf_page": 378
+      }
+    ],
+    "opened_review_pages": [
+      82,
+      152,
+      271,
+      285,
+      377
+    ],
+    "same_base_candidate_raster_pages": [
+      81,
+      82,
+      151,
+      152,
+      376
+    ],
+    "not_claimed": "full document fidelity or WASM execution"
+  },
+  "reproduction": {
+    "kind": "in-memory reduced IR contract, not a Hancom-generated document",
+    "source_section_zero_based": 28,
+    "source_paragraph_zero_based": 2,
+    "page_definition_unchanged": true,
+    "base_output": "84188\t4",
+    "candidate_output": "84188\t4\tp3 table_bottom=722.35 body_bottom=718.13",
+    "candidate_diagnostic": "target section=28 para=2 rows=83\nD6981S r=24 cursor_row=24 need=3.8 have=24.5 h=24.5\nD6981S r=36 cursor_row=24 need=3.8 have=373.6 h=19.8\nD6981S r=59 cursor_row=44 need=3.8 have=430.1 h=35.1\nD6981S r=66 cursor_row=66 need=3.8 have=19.8 h=19.8\nD6981R r=24 start_row=24 end_row=45 need=3.8 have=24.5\nD6981R r=36 start_row=24 end_row=45 need=3.8 have=373.6\nD6981R r=44 start_row=44 end_row=66 need=20.9 have=17.1\nD6981R r=59 start_row=44 end_row=66 need=3.8 have=416.6\nLAYOUT_OVERFLOW: page=2, sec=0, col=0, para=0, type=PartialTable, first=true, y=721.6, bottom=718.1, overflow=3.5px\nD6981R r=44 start_row=44 end_row=66 need=20.9 have=17.1\nD6981R r=59 start_row=44 end_row=66 need=3.8 have=416.6\nLAYOUT_OVERFLOW: page=2, sec=0, col=0, para=0, type=PartialTable, first=true, y=721.6, bottom=718.1, overflow=3.5px\nheight=84188 needlepage=3\nD6981R r=66 start_row=66 end_row=83 need=3.8 have=19.8\nD6981R r=82 start_row=66 end_row=83 need=3.8 have=484.6\n",
+    "table_bottom_px": 722.3466666666666,
+    "body_bottom_px": 718.1333333333333,
+    "body_overflow_px": 4.213333333333367,
+    "baseline_tolerance_px": 0.5,
+    "source": "mydocs/pr/assets/pr7143_repro_probe.rs",
+    "candidate_precise_output": "84188\t4\tp3 table_bottom=722.34666667 body_bottom=718.13333333",
+    "probe_sha256": "733923663b08cb6b43504f600cae1e37a3436f036686578eb64bdefc66538ee0"
+  },
+  "final_pr_state": {
+    "headRefOid": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "state": "OPEN"
+  }
+}
