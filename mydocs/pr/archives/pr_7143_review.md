@@ -7,10 +7,19 @@ last_verified: 2026-09-15
 
 # PR #7143 — 분할 rowspan 셀 높이 검토
 
-**메인터너 보정 검토: 두 코드 보류 사유 해소.** 로컬 코드 `32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121`에서 focused·전체 회귀·필수 lint·Native Skia 및 fresh WASM Visual Sweep을 완료했다. 아래 실행 결과는 이 검증 코드에 적용한다. 사용자 지시에 따른 원 PR 직접 반영 정렬은 다음 절에 기록했다. GitHub approve·comment·merge는 수행하지 않았다.
+**메인터너 보정 검토: 두 코드 보류 사유 해소.** 로컬 코드 `32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121`에서 focused·전체 회귀·필수 lint·Native Skia 및 fresh WASM Visual Sweep을 완료했다. 아래 실행 결과는 이 검증 코드에 적용한다. 사용자 지시에 따른 원 PR 직접 반영 정렬은 다음 절에 기록했다. 원 PR source push와 해당 head의 GitHub CI가 완료됐으며, 최종 review 기록을 trailing commit으로 반영한다. GitHub 정식 approve·merge는 이 기록의 push 및 최신 head gate 확인 뒤 수행한다.
 
-**최종 판정: 메인터너 보정 후 수용 가능.** 원 head `34e1186f4`의 두 결함을 보정 `32aa62ed8`에서
-해소하고 통합 검증했다. 원격 반영 후 해당 head의 CI와 merge 전 조건은 별도로 확인한다.
+**최종 판정: 승인.** 원 head `34e1186f4`의 두 결함을 보정 `32aa62ed8`에서 해소하고 통합 검증했다.
+원 PR에 직접 반영한 코드 `6ad0b2950`을 포함하는 원격 head `c3b3c87eb`의 필수 CI도 모두 통과했다.
+trailing 문서 head의 재사용 판정·required checks·MERGEABLE/CLEAN 확인 후 병합한다. #6981 전체 해결 판정은 아니다.
+
+## 원 PR 코드 CI 완료 및 trailing 기록 — 2026-09-15
+
+- 원격 source와 실제 PR head: `c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b`. maintainer edit으로 직접 fast-forward push 완료. 잘못 만든 upstream 임시 branch는 삭제했고 원 contributor branch를 유지한다.
+- [CI / Build & Test](https://github.com/edwardkim/rhwp/actions/runs/34864916164), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34864916195), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/34864915804), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/34864916267), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/34864916219)가 같은 head에서 completed/success다. 개별 job 결과와 PR identity는 증적 JSON의 `code_ci`에 보존한다.
+- 기존 로컬 통합 tree 검증과 별개로, 이번 원격 source head의 full CI가 완료됐다. 이후 변경은 review·오늘할일·증적만인 single-parent trailing commit이다. 이 code candidate의 결과 재사용을 최신 head에서 확인하며, heavy job skip만으로 성공을 추정하지 않는다.
+- [오늘할일](../../orders/20260915.md)을 같은 PR에 포함한다. 최신 devel merge simulation과 변경 문서 링크·공백·기존 오늘할일 보존을 push 전에 확인한다.
+- 사용자에게 CI 모니터링·merge·후속처리 전체 승인을 받았다. merge 뒤에는 duration refresh만 확인하고, devel sync·issue/PR comment·전용 target 및 local branch 정리를 진행한다. merge SHA와 실제 운영 결과는 GitHub 후속 comment에 기록한다.
 
 ## 원 PR 직접 반영 정렬 — 2026-09-15
 
@@ -77,7 +86,7 @@ rewrite하거나 다른 devel 변경을 source에 섞지 않았다. 대상은 `p
 | 로컬 검토 branch / head | `codex/pr7143-review-20260914`; 최초 체리픽 `4a9546f8c` → 최종 보정 `32aa62ed8` |
 | 최초 source merge simulation tree | `b4f461a06d26f33badbdbed0aec0dcd6f6cd1bba`; 충돌 없음, 체리픽 tree와 동일 |
 | 최초 source 규모 | 1 commit, 7 files, +437/-1; renderer 3개, 회귀 test 1개, oracle baseline, 보고서·PNG |
-| 관련 이슈 | [#6981](https://github.com/edwardkim/rhwp/issues/6981), 본문 `Fixes #6981` |
+| 관련 이슈 | [#6981](https://github.com/edwardkim/rhwp/issues/6981); 원 본문 `Fixes`는 최종 `Refs #6981`로 정정. p82·p152 전체 해결 미입증으로 OPEN 유지 |
 | 접수·원격 상태 | reviewer jangster77 지정. 최종 조회에서 source head 불변, OPEN / MERGEABLE / CLEAN. 작성 시점 참고값 |
 
 외부 PR 검토 경로에 intake/local validation/visual evidence 절차를 적용한 뒤, 사용자 요청에 따라 위 메인터너 보정을 추가했다. 전체 renderer 영향과 기준값 변경이 있어 직접 시각 검토 대상이다.
@@ -150,10 +159,15 @@ Table bbox와 엔진 소비 높이 진단은 서로 다른 계상값이므로 4.
 
 ## 보정 순서와 merge 전 조건
 
-[메인터너 보정 기록](pr_7143_review_impl.md)에 코드와 검증 순서를 정리했다. 보정된 exact head의 로컬 검증은 완료했다. 사용자 승인 범위에 따라 push한 뒤 새 원격 CI를 확인한다. 원 source CI를 보정 head CI로 대체하지 않는다.
+[메인터너 보정 기록](pr_7143_review_impl.md)에 코드와 검증 순서를 정리했다. 보정된 exact head의 로컬 검증과 원 PR 직접 반영 head `c3b3c87eb`의 full CI를 완료했다. 이 문서 뒤의 trailing head gate를 확인한 뒤 승인 범위 안에서 병합한다. 최초 source CI를 보정 head CI로 대체하지 않았다.
 
 ## Merge 후 contributor PR comment 계획
 
-현재 원격 수정·merge 전이므로 게시하지 않는다. 보정 뒤 검토 기록을 갱신하고 최신 head가 merge된 경우에만 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment), 실제 페이지·후보 수·최종 보조 지표·사람 판정 및 새 증적을 포함한다. 없는 WASM/PDF 결과를 추가하지 않는다.
+원 PR이 병합된 뒤 실제 merge SHA와 devel asset 존재를 확인하고 다음 내용을 게시한다.
 
-기존 대표 경로는 `mydocs/pr/assets/pr7143_hancom_rhwp377_pdf378.png`와 `pr7143_repro_body_overflow.png`다. 최종 증적이 devel에 반영된 후 `<merge-commit-sha>` 고정 raw image URL로 표시하고 `--body-file` 게시 뒤 API로 본문을 확인한다. 현재의 실패 PNG를 보정 후 통과 증거로 재사용하지 않는다. 이슈 close 범위와 contributor credit도 실제 해결 결과 기준으로 기록한다.
+- contributor planet6897의 원 commit을 보존한 직접 보정·merge 사실과 감사, 위 원 PR code CI 및 최종 trailing head CI 결과.
+- 로컬 focused 8, 전체 nextest 9,884 PASS / 51 skip, Native Skia 4,112 PASS / 13 ignored 및 2+4 PASS, fresh WASM 진단 package와 실제 Chrome 결과.
+- [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment). Native와 WASM 각각 p81–84,151–153,271,273,285,287,376–380의 16/16쪽 캡처, flagged=0/16. rhwp377/PDF378 전체 픽셀 일치율 85.73305%, 내용 픽셀 자동 일치율 보조값 33.74219%. 점수는 사람의 정답률이 아니며 높을수록 유사하고 낮으면 직접 검토가 필요하다.
+- 직접 확인에서 p377 목표 문구와 마지막 행을 보존하고 p378은 빈 페이지 없이 다음 구역을 시작한다. p83 전남·제주 행 이월 회귀도 해소했다. 기존 PDF 쪽·행·글꼴 차이와 #6981 p82·p152 전체 해결은 미입증이며 issue는 OPEN으로 유지한다.
+- 최종 대표 asset `mydocs/pr/assets/pr7143_maintainer_hancom_rhwp377_pdf378.png`와 필요시 `pr7143_maintainer_body_bounds.png`를 실제 merge SHA 고정 raw image URL로 표시한다. 최초 실패 PNG를 최종 통과 증거로 재사용하지 않는다.
+- 게시에는 UTF-8 파일과 `--body-file`을 사용하고 API로 본문·한국어·실제 SHA/URL을 확인한다. 같은 내용의 comment가 이미 있으면 중복 게시하지 않는다.

@@ -80,3 +80,11 @@ diff는 없었다. 원 PR에 최신 공통 원칙이 없었다고 설명할 수 
 이번 추가 정렬 기록만 문서 commit으로 분리한다. 원 branch에는 force 없이 fast-forward push하고
 PR head와 원격 ref가 같은지 확인한다. 잘못 만든 upstream 임시 branch는 다른 PR에서 사용하지
 않음을 확인한 뒤 제거한다. 원 contributor branch와 검증 target은 보존한다.
+
+## 코드 CI 및 최종 기록 — 2026-09-15
+
+원 PR head `c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b`의 CI·CodeQL·Render Diff·Adapter·Proptest가 모두 성공했다.
+[review](pr_7143_review.md)의 최종 판정을 승인으로 갱신하고 오늘할일·증적과 함께 source branch의 문서-only
+trailing commit에 포함한다. 최신 trailing head의 재사용·required aggregate와 병합 가능 상태를 확인한 뒤
+사용자의 전체 승인 범위에서 merge와 post_merge 절차를 완료한다. #6981 p82·p152까지 해결했다고
+입증하지 않았으므로 PR 본문은 `Refs #6981`이며 issue를 자동 종료하지 않는다.
