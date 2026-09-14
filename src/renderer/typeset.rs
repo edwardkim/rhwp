@@ -27019,11 +27019,15 @@ impl TypesetEngine {
             // 다시 열고, 비끝 조각 상자는 본문 아래 − 바깥 아래 여백 − 100HU 에서 끝난다
             // (한/글 2020 정본, PDF 쪽 척도 제거 후 두 문서 101~104HU · 돌연변이 7종에서 상수).
             // 렌더러(`table_partial.rs`)가 같은 술어로 상자를 고정하므로 예산도 같이 뺀다.
+            //
+            // 쪽 **상단**에서 시작하는 조각에만 쓴다. 쪽 중간에서 시작하는 첫 조각에 여백과
+            // 100HU 를 빼면 컷이 한 유닛 일러져 한/글보다 쪽이 는다(80168 29쪽 pi226 · 157→158,
+            // rowbreak-problem-pages 14쪽 pi16 · 18→19). 렌더러의 상자 고정 조건과 같은 축이다.
             let single_cell_page_fragment =
                 crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
                     self.profile.get().hwp5_stored_pagination_layout(),
                     table,
-                );
+                ) && (is_continuation || st.current_height < 0.5);
             let (host_before_overhead, fragment_outer_bottom_overhead) =
                 partial_rowbreak_fragment_spacing_px(
                     table,
