@@ -2,8 +2,8 @@
 
 - Issue: [#3790](https://github.com/edwardkim/rhwp/issues/3790)
 - 작성: 2026-09-14 KST
-- 상태: **2026-09-14 수행계획 승인 완료. [N1 조사](../working/task_m100_3790_normalize_n1.md) 완료,
-  [구현계획](task_m100_3790_normalize_impl.md) 승인 대기. 구현 미착수.**
+- 상태: **2026-09-14 수행·구현계획 승인 및 [N2 구현·집중 검증](../working/task_m100_3790_normalize_n2.md) 완료.
+  N3 정확한 head 통합 검토·PR 준비 승인 대기. 원격 반영 미수행.**
 - 브랜치: `task_m100_3790_normalize`
 - 기준: 최신 `upstream/devel` = `922946438fd89346a022df82e76648f88472f0cc`
 - 운영 비교 기준 `upstream/main`: `cac9b4f7cc743535cd7c00fe4f286abd67e7145b`
