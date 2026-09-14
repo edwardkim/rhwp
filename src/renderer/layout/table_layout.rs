@@ -13230,7 +13230,10 @@ impl LayoutEngine {
                     && (j == 0
                         || units[j - 1].para_idx != u.para_idx
                         || units[j - 1].nested_row.is_none());
-                if h > 0.5 && enters_nested_table {
+                // 바깥 행이 칸 **하나**일 때만 쓴다. 규칙의 근거 12건은 모두 단일 열 바깥 표
+                // (overfill 5×1 · 42065)였고, 두 칸 행(issue1891 2×2, 한/글 70쪽)에 걸면 한 칸의
+                // 중첩 표만 밀려 쪽이 는다(rhwp 71→72).
+                if h > 0.5 && enters_nested_table && row_cells.len() == 1 {
                     let table_end = units[j..]
                         .iter()
                         .position(|unit| unit.para_idx != u.para_idx || unit.nested_row.is_none())
