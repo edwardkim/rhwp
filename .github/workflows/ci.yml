@@ -258,6 +258,8 @@ jobs:
             }
 
             async function hasTrustedReviewReuse(pr) {
+              if (pr.base?.ref !== 'devel' || pr.base?.repo?.full_name !== `${owner}/${repo}`
+                || pr.head?.repo?.full_name !== `${owner}/${repo}`) return false;
               for (let attempt = 0; attempt < 7; attempt += 1) {
                 const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
                   owner,
@@ -269,12 +271,14 @@ jobs:
                   .filter((status) => status.context === 'CI Impact Policy')
                   .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
                 if (latest) {
-                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                  const entries = String(latest.description || '').split(';').map((part) => {
                     const separator = part.indexOf('=');
                     return separator > 0
                       ? [part.slice(0, separator), part.slice(separator + 1)]
                       : ['', ''];
-                  }));
+                  });
+                  const fields = new Map(entries);
+                  if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
                     'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
                   ];
@@ -284,7 +288,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '5'
+                    && fields.get('v') === '6'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -978,6 +982,7 @@ jobs:
         run: |
           node --test scripts/tests/ci-impact-classifier.test.cjs
           node --test scripts/tests/ci-impact-policy.test.cjs
+          node --test scripts/tests/ci-impact-controller-contract.test.cjs
           node --test scripts/tests/ci-workflow-evidence.test.cjs
           node --test scripts/tests/collect-postmerge-duration-data.test.mjs
           python3 -m unittest scripts/tests/test_postmerge_duration_workflow.py

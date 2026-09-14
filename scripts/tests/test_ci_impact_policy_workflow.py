@@ -106,11 +106,14 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
         self.assertIn("if (process.env.DECISION === 'blocked') state = 'failure'", self.workflow)
         self.assertIn("else if (noWorkflowExpected) state = 'success'", self.workflow)
         self.assertIn("new Set(['pending', 'success', 'failure'])", self.workflow)
-        self.assertIn("candidate.head.sha === run.head_sha", self.workflow)
+        self.assertIn("candidate.head?.sha === triggerHeadSha", self.workflow)
         self.assertIn("core.setOutput('trigger_head_sha', triggerHeadSha)", self.workflow)
         self.assertIn("input.currentHeadSha = process.env.CURRENT_HEAD_SHA", self.workflow)
         self.assertIn("github.rest.pulls.get({", self.workflow)
-        self.assertIn("livePull.head.sha !== process.env.HEAD_SHA", self.workflow)
+        self.assertIn("livePull.head?.sha !== process.env.HEAD_SHA", self.workflow)
+        self.assertIn("livePull.base?.ref !== 'devel'", self.workflow)
+        self.assertIn("livePull.base?.sha !== process.env.BASE_SHA", self.workflow)
+        self.assertIn("candidate.base?.repo?.full_name === `${owner}/${repo}`", self.workflow)
 
     def test_completion_audit_cannot_cancel_running_pr_head_controller(self) -> None:
         concurrency = self.workflow.split("\nconcurrency:\n", 1)[1].split("\njobs:\n", 1)[0]
@@ -179,13 +182,22 @@ class CiImpactPolicyWorkflowTests(unittest.TestCase):
     def test_workers_consume_only_exact_trusted_review_reuse_status(self) -> None:
         for workflow in (self.ci_workflow, self.codeql_workflow, self.render_workflow):
             self.assertIn("status.context === 'CI Impact Policy'", workflow)
-            self.assertIn("fields.get('v') === '5'", workflow)
+            # Producer/consumer version compatibility is executed by the Node contract suite.
+            self.assertNotIn("fields.get('v') === '5'", workflow)
             self.assertIn("fields.get('rfp') === '1'", workflow)
             self.assertIn("fields.get('b') === pr.base.sha", workflow)
             self.assertIn("run.name === 'CI Impact Policy Controller'", workflow)
             self.assertIn("run.event === 'pull_request_target'", workflow)
             self.assertIn("statuses: read", workflow)
             self.assertNotIn("skip_eligible", workflow)
+
+    def test_controller_contract_suite_is_wired_into_ci(self) -> None:
+        self.assertIn("node --test scripts/tests/ci-impact-controller-contract.test.cjs", self.ci_workflow)
+        self.assertIn("github.event.pull_request.base.ref == 'devel'", self.workflow)
+        self.assertIn("github.event.workflow_run.pull_requests[0].base.ref == 'devel'", self.workflow)
+        self.assertIn("BASE_REF: ${{ steps.resolve.outputs.base_ref }}", self.workflow)
+        self.assertIn("HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}", self.workflow)
+        self.assertIn("SCOPE_REASON:", self.workflow)
 
     def test_controller_collects_full_candidate_and_review_lineage(self) -> None:
         self.assertIn("selectReviewOnlyCandidate", self.workflow)

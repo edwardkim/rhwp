@@ -34,12 +34,20 @@ concurrency:
 jobs:
   controller:
     name: Evaluate trusted CI impact policy
+    # A single explicit non-devel link can be skipped before allocating a runner.
+    # Missing/multiple links require live resolution; source branch is NOT the PR base.
     if: >-
       ${{
-        github.event_name == 'pull_request_target'
+        (github.event_name == 'pull_request_target' && github.event.pull_request.base.ref == 'devel')
         || (
           github.event_name == 'workflow_run'
           && github.event.workflow_run.event == 'pull_request'
+          && (
+            !github.event.workflow_run.pull_requests[0]
+            || github.event.workflow_run.pull_requests[1]
+            || !github.event.workflow_run.pull_requests[0].base.ref
+            || github.event.workflow_run.pull_requests[0].base.ref == 'devel'
+          )
         )
       }}
     runs-on: ubuntu-latest
@@ -61,32 +69,81 @@ jobs:
             let pull = null;
             let mode = '';
             let triggerHeadSha = '';
+            let headRepository = '';
+            let headBranch = '';
+            core.setOutput('active', 'false');
+            function ignore(reason) {
+              core.setOutput('scope_reason', reason);
+              core.info(`CI Impact Policy inactive: ${reason}.`);
+            }
+            function matches(candidate) {
+              return candidate?.state === 'open'
+                && candidate.base?.ref === 'devel'
+                && candidate.base?.repo?.full_name === `${owner}/${repo}`
+                && /^[0-9a-f]{40}$/.test(candidate.base?.sha || '')
+                && candidate.head?.sha === triggerHeadSha
+                && candidate.head?.ref === headBranch
+                && candidate.head?.repo?.full_name === headRepository;
+            }
 
             if (context.eventName === 'pull_request_target') {
               mode = 'publish';
               const eventPull = context.payload.pull_request;
-              triggerHeadSha = eventPull.head.sha;
+              if (eventPull?.base?.ref !== 'devel'
+                || eventPull.base?.repo?.full_name !== `${owner}/${repo}`) {
+                ignore('not-devel-pr');
+                return;
+              }
+              triggerHeadSha = eventPull.head?.sha || '';
+              headRepository = eventPull.head?.repo?.full_name || '';
+              headBranch = eventPull.head?.ref || '';
+              if (!/^[0-9a-f]{40}$/.test(triggerHeadSha) || !headRepository || !headBranch
+                || !Number.isSafeInteger(eventPull.number) || eventPull.number <= 0) {
+                ignore('incomplete-event-identity');
+                return;
+              }
               const response = await github.rest.pulls.get({
                 owner,
                 repo,
                 pull_number: eventPull.number,
               });
               pull = response.data;
-              if (pull.state !== 'open' || pull.head.sha !== eventPull.head.sha) {
-                core.info(
-                  `Ignore stale policy event for PR #${eventPull.number}: `
-                  + `event=${eventPull.head.sha} live=${pull.head.sha} state=${pull.state}.`,
-                );
+              if (!matches(pull)) {
+                ignore(pull?.base?.ref !== 'devel' ? 'not-devel-pr' : 'stale-or-incomplete-pr');
                 pull = null;
               }
-            } else {
+            } else if (context.eventName === 'workflow_run') {
               mode = 'audit';
               const run = context.payload.workflow_run;
-              triggerHeadSha = run.head_sha;
-              const headRepository = run.head_repository?.full_name || '';
+              if (run?.event !== 'pull_request') {
+                ignore('not-pr-workflow');
+                return;
+              }
+              triggerHeadSha = run.head_sha || '';
+              headRepository = run.head_repository?.full_name || '';
+              headBranch = run.head_branch || '';
               const headOwner = run.head_repository?.owner?.login || headRepository.split('/')[0];
-              if (headOwner && run.head_branch && run.head_sha) {
-                const pulls = await github.paginate(github.rest.pulls.list, {
+              if (!headOwner || !headRepository || !headBranch || !/^[0-9a-f]{40}$/.test(triggerHeadSha)) {
+                ignore('incomplete-run-identity');
+                return;
+              }
+              const linked = run.pull_requests ?? [];
+              if (!Array.isArray(linked) || linked.length > 10 || linked.some((p) => (
+                !Number.isSafeInteger(p?.number) || p.number <= 0
+              ))) {
+                ignore('incomplete-or-excessive-pr-linkage');
+                return;
+              }
+              let pulls = [];
+              if (linked.length) {
+                // Explicit linkage is authoritative: never substitute another PR on this head.
+                for (const number of new Set(linked.map((p) => p.number))) {
+                  const response = await github.rest.pulls.get({ owner, repo, pull_number: number });
+                  pulls.push(response.data);
+                }
+              } else {
+                // Some fork completion events lack PR linkage. Resolve only exact live identities.
+                pulls = await github.paginate(github.rest.pulls.list, {
                   owner,
                   repo,
                   state: 'open',
@@ -94,17 +151,24 @@ jobs:
                   head: `${headOwner}:${run.head_branch}`,
                   per_page: 100,
                 });
-                pull = pulls.find((candidate) => (
-                  candidate.head.sha === run.head_sha
-                  && candidate.head.repo?.full_name === headRepository
-                )) || null;
               }
-              if (!pull) {
-                core.info(
-                  `Ignore stale or unrelated workflow ${run.id}: `
-                  + `${headRepository}:${run.head_branch}@${run.head_sha}.`,
-                );
+              const candidates = pulls.filter(matches);
+              if (candidates.length !== 1) {
+                ignore(candidates.length > 1 ? 'ambiguous-devel-pr' : 'no-matching-devel-pr');
+                return;
               }
+              pull = candidates[0];
+              if (!linked.length) {
+                const response = await github.rest.pulls.get({ owner, repo, pull_number: pull.number });
+                pull = response.data;
+              }
+              if (!matches(pull)) {
+                ignore('stale-or-retargeted-pr');
+                return;
+              }
+            } else {
+              ignore('unsupported-event');
+              return;
             }
 
             if (!pull) {
@@ -127,6 +191,7 @@ jobs:
             }
 
             core.setOutput('active', 'true');
+            core.setOutput('scope_reason', 'verified-devel-pr');
             core.setOutput('mode', mode);
             core.setOutput('pull_number', String(pull.number));
             core.setOutput('base_ref', pull.base.ref);
@@ -635,6 +700,10 @@ jobs:
           MODE: ${{ steps.resolve.outputs.mode }}
           PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
           DECISION: ${{ steps.policy.outputs.decision || 'full' }}
           CI_EXPECTED: ${{ steps.policy.outputs.ci_run_expected || 'true' }}
           CODEQL_EXPECTED: ${{ steps.policy.outputs.codeql_run_expected || 'true' }}
@@ -653,11 +722,21 @@ jobs:
               pull_number: Number(process.env.PULL_NUMBER),
             });
             const livePull = response.data;
-            if (livePull.state !== 'open' || livePull.head.sha !== process.env.HEAD_SHA) {
+            if (process.env.BASE_REF !== 'devel'
+              || !/^[0-9a-f]{40}$/.test(process.env.BASE_SHA || '')
+              || livePull.state !== 'open'
+              || livePull.base?.ref !== 'devel'
+              || livePull.base?.repo?.full_name !== `${owner}/${repo}`
+              || livePull.base?.sha !== process.env.BASE_SHA
+              || livePull.head?.sha !== process.env.HEAD_SHA
+              || livePull.head?.repo?.full_name !== process.env.HEAD_REPOSITORY
+              || livePull.head?.ref !== process.env.HEAD_BRANCH) {
               core.setOutput('stale', 'true');
+              core.setOutput('scope_reason', 'stale-or-non-devel-publication');
               core.info(
                 `Do not publish stale policy status for PR #${process.env.PULL_NUMBER}: `
-                + `resolved=${process.env.HEAD_SHA} live=${livePull.head.sha} state=${livePull.state}.`,
+                + `resolved=${process.env.HEAD_SHA}@${process.env.BASE_SHA} `
+                + `live=${livePull.head?.sha}@${livePull.base?.ref}:${livePull.base?.sha} state=${livePull.state}.`,
               );
               return;
             }
@@ -718,6 +797,7 @@ jobs:
         env:
           MODE: ${{ steps.resolve.outputs.mode }}
           ACTIVE: ${{ steps.resolve.outputs.active }}
+          SCOPE_REASON: ${{ steps.publish-status.outputs.scope_reason || steps.resolve.outputs.scope_reason }}
           PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
           BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
@@ -746,6 +826,11 @@ jobs:
             const failed = ['RESOLVE', 'CHECKOUT', 'COLLECT', 'CLASSIFY', 'INPUT', 'POLICY', 'PUBLISH']
               .filter((stage) => process.env[`OUTCOME_${stage}`] === 'failure'
                 && !(stage === 'PUBLISH' && process.env.STATUS_PUBLISHED === 'true'));
+            if (!failed.length && (process.env.ACTIVE === 'false' || process.env.STALE === 'true')) {
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+                `\n### CI Impact Policy\n\n감사·게시 제외: ${process.env.SCOPE_REASON || 'stale-or-unrelated-event'}.\n`);
+              return;
+            }
             try {
               const { createReport, loadInput } = require(path.join(
                 process.env.GITHUB_WORKSPACE, 'trusted-base/scripts/ci-impact-report.cjs',

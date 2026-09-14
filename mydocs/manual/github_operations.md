@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-09-13
+last_verified: 2026-09-14
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -301,6 +301,10 @@ CI 영향 분류와 trigger mirror는 다음 파일에 있다.
 
 ### 7.5 workflow PR의 후행 review 기록
 
+CI Impact Policy Controller의 감사 대상은 **base가 devel인 PR**이며 advisory로 유지한다.
+devel → main을 포함한 main 대상 PR, branch push, tag와 manual 실행은 감사·policy 게시 대상이
+아니다. 이 제외는 기존 main·릴리즈 CI나 Workflow promotion preflight를 없애는 정책이 아니다.
+
 workflow·action·CI impact 정책을 바꾼 PR은 PR 전체 변경 목록에 실행 정책 파일이 남으므로, 후행
 `mydocs/**` commit만 보고 자체 preflight가 검증을 생략해서는 안 된다. 기본 브랜치의
 `CI Impact Policy Controller`가 exact Full candidate, 이후 review-only 계보, current-base merge bridge,
@@ -312,9 +316,19 @@ API pagination 경계, candidate의 fast-pass 실행, failed·pending run, GHAS 
 전부 Full 실행으로 fallback한다. 상세 허용 범위와 merge bridge 규칙은
 [review-only fast-pass](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)를 따른다.
 
-이 controller는 default branch 등록형이므로 `devel` 병합은 배포 전 검증 단계다. 정상 release로 `main`에
-반영하기 전에는 live `pull_request_target` controller가 존재하지 않으며, 그 기간의 workflow PR은 계속 Full
-실행하는 것이 정상이다.
+발행 v6과 세 consumer의 지원 버전은 연결 테스트로 함께 검증한다. main 대상 PR은 trusted reuse
+조회 자체를 생략하며, devel 대상이라도 중복/누락 필드·다른 base·미지원 버전은 재사용하지 않는다.
+
+`workflow_run`의 branch 필터는 PR base가 아니다. 연결 PR이 하나이고 명확한 비devel 대상이면
+job을 skip한다. 빈/복수/불완전 연결은 live PR 신원만 확인한 뒤, 정확한 open devel PR이 아니면
+trusted checkout·감사·게시 전에 종료한다. 연결 PR 번호가 있으면 다른 같은-head PR로 대체하지
+않는다. 게시 직전에도 live head·base SHA와 repository·branch를 다시 확인한다.
+비대상 이벤트의 workflow 기록이나 최소 신원 확인 비용을 실제 정책 감사와 구분한다.
+
+이 controller는 default branch 등록형이다. main에 등록 파일이 있어도 감사 대상이 main이라는 뜻은
+아니다. #3790 정상화 및 #6819/#7069의 YAML 변경은 정상 release로 main에 반영된 뒤 활성화된다.
+devel 병합만으로 main의 배선까지 갱신되었다고 보고하지 않는다. 배포 전 구버전 controller의 한계는
+별도로 기록하며 main 직접 push나 무조건 fast-pass로 우회하지 않는다.
 
 ### 7.6 Workflow promotion preflight
 
