@@ -3999,6 +3999,49 @@ impl LayoutEngine {
                     }
                 }
             }
+
+            // [#6981] per-row 경로의 **이어받는 걸침 셀** 보정.
+            //
+            // 위 블록-합 보정은 `is_block_split` 조각만 돈다. 행별 경로에서 조각 경계가
+            // rowspan 블록 안쪽에 떨어지면, 이어받는 조각의 걸친 셀은 `#1748` 의
+            // 높이-컷으로 **남은 유닛 전부**를 받는데 그 셀이 덮는 행들의 높이는 같은
+            // 행의 `row_span==1` 셀만 보고 정해진다. 어긋난 만큼 clip 이 글자를 지운다.
+            //
+            // 실측(`samples/task2287/1342000_edu_curriculum_map.hwp` 377쪽): 셀
+            // `(62,8) row_span=2` 는 선언 51.76px 에 문단 3개(저장 사다리 vpos
+            // 0·1300·2600 HU → 내용 바닥 48.00px, 여백 1.88×2 를 더하면 51.76 — 온전하면
+            // 딱 맞는다). 그리드 행 62(30.65px)/63(21.11px) 사이에 쪽이 갈리면 앞 조각이
+            // 문단 1개를, 이어받는 조각이 문단 2개(32.55px)를 21.11px 행에 받아
+            // `선언문 작성` 이 11.4px 밖으로 나가 사라졌다.
+            //
+            // 요구 높이는 조판과 **같은 출처**(`straddle_continuation_demand`)에서 낸다.
+            if !is_block_split {
+                for r in start_row..end_row.min(row_count) {
+                    let Some((cell_row, need)) = self.straddle_continuation_demand(
+                        table,
+                        r,
+                        start_row,
+                        &resolved_row_heights,
+                        styles,
+                        Some((end_row, end_cut.is_empty())),
+                    ) else {
+                        continue;
+                    };
+                    let _ = cell_row;
+                    let have: f64 = (start_row..=r)
+                        .map(|rr| row_heights.get(rr).copied().unwrap_or(0.0))
+                        .sum::<f64>()
+                        + cell_spacing * (r - start_row) as f64;
+                    if std::env::var("RHWP_DIAG_6981").is_ok() {
+                        eprintln!(
+                            "D6981R r={r} start_row={start_row} end_row={end_row} need={need:.1} have={have:.1}"
+                        );
+                    }
+                    if need > have + 0.5 {
+                        row_heights[r] += need - have;
+                    }
+                }
+            }
         }
 
         // [#3820 Stage 76] RowBreak 표의 rowspan-연속 밴드에서 실제 셀 내용은

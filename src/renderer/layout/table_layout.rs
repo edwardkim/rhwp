@@ -15531,6 +15531,133 @@ impl LayoutEngine {
     ///
     /// 셀 인덱스는 `advance_row_cut` 과 동일하게 `row_span==1` 셀을 col
     /// 오름차순 정렬한 순서다.
+    /// [#6981] 조각 **시작에 걸친** rowspan 셀이 이어받는 조각에서 요구하는 높이(px).
+    ///
+    /// 조각 경계가 rowspan 블록 안쪽에 떨어지면 이어받는 조각의 걸친 셀은 `#1748` 의
+    /// 높이-컷(`is_rowbreak_straddle`)으로 **남은 유닛 전부**를 받는다. 그런데 그 셀이
+    /// 덮는 행들의 높이는 같은 행의 `row_span==1` 셀만 보고 정해지므로, 받은 내용이
+    /// 상자보다 클 수 있다 — clip 이 그 줄을 지워 글자가 사라진다.
+    ///
+    /// 조판(`typeset`)과 렌더(`table_partial`)가 **같은 값**을 소비해야 조각이 쪽을
+    /// 넘지 않으므로, 그 요구 높이를 여기 한 곳에서 낸다. `prior_h` 계산식은 `#1748`
+    /// 의 것과 같다 — 그래야 앞 조각이 소비한 유닛과 여기서 고르는 `su` 가 맞물린다.
+    ///
+    /// 조각 **끝**에 걸친 셀은 대상이 아니다. 그쪽 `eu` 는
+    /// `cell_units_fitting_height(prior_h + cell_h)` 로 **상자에 맞춰** 고르므로 정의상
+    /// 넘치지 않고, 손대면 행 높이와 컷이 서로를 참조하는 순환이 된다.
+    pub(crate) fn straddle_continuation_required_height(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        start_row: usize,
+        resolved_row_heights: &[f64],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+        let padding = cell.effective_padding(&table.padding);
+        let pad_top = hwpunit_to_px(padding.top as i32, self.dpi);
+        let pad_bottom = hwpunit_to_px(padding.bottom as i32, self.dpi);
+        let mut prior_h = 0.0f64;
+        for r in (cell.row as usize)..start_row {
+            let has_single_row_cells = table
+                .cells
+                .iter()
+                .any(|c| c.row as usize == r && c.row_span == 1);
+            let h = if has_single_row_cells {
+                let h = self.row_cut_content_height(table, r, &[], &[], styles);
+                if h > 0.0 {
+                    h
+                } else {
+                    resolved_row_heights.get(r).copied().unwrap_or(0.0)
+                }
+            } else {
+                resolved_row_heights.get(r).copied().unwrap_or(0.0)
+            };
+            prior_h += h + cell_spacing;
+        }
+        let start_unit = if prior_h > 0.0 {
+            self.cell_units_fitting_height(cell, table, styles, prior_h - pad_top)
+        } else {
+            0
+        };
+        self.cell_cut_visible_height(cell, table, styles, start_unit, usize::MAX)
+            + pad_top
+            + pad_bottom
+    }
+
+    /// [#6981] 이 행이 어떤 걸친 셀의 **마지막 덮는 행**이면, 그 셀이 요구하는 높이.
+    ///
+    /// 요구가 없으면 `None`. 호출자는 자기 회계로 잰 "이 조각에서 그 셀이 덮는 행들의
+    /// 높이 합"과 비교해 차액만 얹는다.
+    ///
+    /// 조판에서는 **행이 통째로 놓이는 rowspan 분기**에서만 쓴다. 일반 행 경로는 그 행
+    /// 자체가 조각 끝에서 다시 잘릴 수 있어(`end_cut`), 조판이 `None` 으로 부르면
+    /// 렌더러의 "조각 끝에도 걸친 셀은 제외"와 결론이 갈린다 — 조판만 앞서 예약해
+    /// 셀 상자가 내용보다 작아진다(`samples/issue6795/1341000-…​.hwp` 실측 2줄).
+    pub(crate) fn straddle_continuation_demand(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_row: usize,
+        resolved_row_heights: &[f64],
+        styles: &ResolvedStyleSet,
+        // 조각 끝이 확정됐으면 `(end_row, end_cut.is_empty())`. 조판처럼 아직
+        // 정하는 중이면 `None`.
+        fragment_end: Option<(usize, bool)>,
+    ) -> Option<(usize, f64)> {
+        if start_row == 0 {
+            return None;
+        }
+        if !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+                | crate::model::table::TablePageBreak::CellBreak
+        ) {
+            return None;
+        }
+        let mut demand: Option<(usize, f64)> = None;
+        for cell in table.cells.iter().filter(|c| c.row_span > 1) {
+            let cell_row = cell.row as usize;
+            let cell_end_row = cell_row + cell.row_span as usize;
+            if !(cell_row < start_row && cell_end_row > start_row) {
+                continue;
+            }
+            if cell_end_row - 1 != row {
+                continue;
+            }
+            // 조각 **끝에도 걸친** 셀은 대상이 아니다 — 그쪽은 컷이 소관이다.
+            //
+            // 되돌리려는 것은 "이 조각이 남은 내용을 다 받는데 행이 짧아서 생긴
+            // 부족분"이다. 남은 내용이 이 조각에 다 안 들어가면 컷이 잘라 다음
+            // 조각으로 넘기므로 늘릴 이유가 없고, 늘리면 조각이 통째로 쪽을 넘는다
+            // — `samples/issue6803/1376496-…​.hwp` 의 셀 `(8,0) row_span=6`(문단
+            // 67개)이 그 모양으로, 이 가드가 없으면 남은 1,140.8px 을 892.9px
+            // 행합에 요구해 표가 쪽 밖으로 나갔다.
+            //
+            // 렌더러는 조판이 확정한 `end_row`·`end_cut` 으로 그 판정을 그대로
+            // 읽는다. 조판은 아직 조각 끝을 정하는 중이라 `None` 을 주고, 대신
+            // 늘린 높이가 예산 안에 드는지로 같은 결론에 이른다.
+            if let Some((end_row, end_cut_is_empty)) = fragment_end {
+                let straddles_fragment_end = cell_row < end_row
+                    && (cell_end_row > end_row || (cell_end_row == end_row && !end_cut_is_empty));
+                if straddles_fragment_end {
+                    continue;
+                }
+            }
+            let need = self.straddle_continuation_required_height(
+                table,
+                cell,
+                start_row,
+                resolved_row_heights,
+                styles,
+            );
+            if demand.is_none_or(|(_, cur)| need > cur) {
+                demand = Some((cell_row, need));
+            }
+        }
+        demand
+    }
+
     pub(crate) fn row_cut_content_height(
         &self,
         table: &crate::model::table::Table,

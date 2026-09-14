@@ -22962,7 +22962,40 @@ impl TypesetEngine {
             let rowbreak_rowspan_row_splittable =
                 mt.allows_row_break_split() && can_intra_split && mt.is_row_splittable(r);
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
+                // [#6981] 이어받는 걸침 rowspan 셀의 요구 높이를 여기서도 얹는다.
+                //
+                // 아래 일반 행 경로(`row_total`)와 같은 출처를 쓰지만, rowspan 이 걸친
+                // 행은 이 분기에서 통째로 배치되고 `continue` 하므로 그쪽 훅에 닿지
+                // 않는다. 대상 형상(2행 rowspan 이 쪽 경계에서 갈림)은 `r == cursor_row`
+                // 라 이 분기가 유일한 경로다.
                 let h = cut_row_h[r];
+                let h = match layout_engine.straddle_continuation_demand(
+                    table,
+                    r,
+                    cursor_row,
+                    &mt.row_heights,
+                    styles,
+                    None,
+                ) {
+                    Some((_, need)) => {
+                        let have: f64 = (cursor_row..=r).map(|rr| cut_row_h[rr]).sum::<f64>()
+                            + cs * (r - cursor_row) as f64;
+                        if std::env::var("RHWP_DIAG_6981").is_ok() {
+                            eprintln!(
+                                "D6981S r={r} cursor_row={cursor_row} need={need:.1} have={have:.1} h={h:.1}"
+                            );
+                        }
+                        // 늘린 높이가 이 조각 예산 밖이면 컷이 소관 — 늘리지 않는다.
+                        // 렌더러의 "조각 끝에도 걸친 셀은 제외"와 같은 판정이다.
+                        let grown = h + (need - have).max(0.0);
+                        if r == cursor_row || consumed + cs_before + grown <= avail_for_rows {
+                            grown
+                        } else {
+                            h
+                        }
+                    }
+                    None => h,
+                };
                 if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
                     consumed += cs_before + h;
                     r += 1;
