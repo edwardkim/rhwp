@@ -27041,9 +27041,29 @@ impl TypesetEngine {
                     ),
                     self.dpi,
                 );
-            // 100HU 는 비끝 조각 상자에만 있다. 끝 조각은 내용에 맞춰 끝나므로(렌더러도
-            // 늘리지 않음) 끝 조각의 흐름 전진에서는 다시 뺀다 — 넣어 두면 다음 표가 0.2px
-            // 차로 안 들어가 쪽이 는다(rowbreak-problem-pages 14쪽 pi13 끝 조각 → pi16 · 18→19).
+            // 끝 조각의 흐름 전진에는 이 형상이 새로 연 아래 여백과 100HU 를 넣지 않는다.
+            // 둘 다 비끝 조각 상자의 계약이고, 끝 조각은 내용에 맞춰 끝나 렌더러도 그 뒤에
+            // 여백을 두지 않는다. 넣어 두면 쓰지 않는 자리를 예산에서 먹어 다음 내용이 밀린다.
+            // - rowbreak-problem-pages 14쪽: pi13 끝 조각 뒤 pi16 이 0.2px 차로 안 들어가 18→19쪽
+            // - hwpctl_API_v2.4 73쪽: pi1750 끝 조각 뒤 pi1760 13행이 74쪽으로 밀려 본문 넘침
+            //   (정본은 13행을 73쪽 992.7 에 두고, 조각 아래 괘선 393.11 뒤에 여백을 두지 않는다)
+            let terminal_outer_bottom_overhead = if single_cell_page_fragment {
+                partial_rowbreak_fragment_spacing_px(
+                    table,
+                    host_spacing_before,
+                    is_continuation,
+                    strict_following_plain_text_fit,
+                    crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                        self.profile.get().hwp5_stored_pagination_layout(),
+                        para,
+                        table,
+                    ),
+                    self.dpi,
+                )
+                .1
+            } else {
+                fragment_outer_bottom_overhead
+            };
             let single_cell_page_fragment_inset_px = if single_cell_page_fragment {
                 hwpunit_to_px(
                     crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
@@ -27766,7 +27786,7 @@ impl TypesetEngine {
                         + vert_offset_overhead
                         + partial_height
                         + bottom_caption_extra
-                        + (fragment_outer_bottom_overhead - single_cell_page_fragment_inset_px)
+                        + terminal_outer_bottom_overhead
                         + host_spacing_after_only
                         + terminal_nested_child_host_line_spacing;
                 }
