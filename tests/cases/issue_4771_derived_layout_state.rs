@@ -259,6 +259,15 @@ fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
             .expect("fixture parse");
         assert_eq!(core.page_count(), 8, "{relative}: #2004 page count");
 
+        // [#7095] native HWP5 1×1 RowBreak 조각은 표의 바깥 위 여백(283HU)을 연다. 한/글 2020
+        // 정본(새 PDF, 쪽 척도 제거)의 표 위 괘선은 4쪽 127.84 · 5~8쪽 87.04 이고, rhwp 는
+        // 127.7 · 86.9 로 맞는다(종전 123.9 · 83.1 은 여백만큼 위였다). 그림은 표와 함께
+        // 내려간다. HWPX 계보는 이 술어 밖이라 종전 좌표를 유지한다.
+        let outer_top_shift = if relative.ends_with(".hwpx") {
+            0.0
+        } else {
+            283.0 * 96.0 / 7200.0
+        };
         let first_picture_id = if relative.ends_with(".hwpx") { 6 } else { 3 };
         for (page_index, (x, y, width, height)) in expected {
             let page = core
@@ -284,7 +293,7 @@ fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
             let actual = images[0].bbox;
             for (name, actual, expected) in [
                 ("x", actual.x, x),
-                ("y", actual.y, y),
+                ("y", actual.y, y + outer_top_shift),
                 ("width", actual.width, width),
                 ("height", actual.height, height),
             ] {
