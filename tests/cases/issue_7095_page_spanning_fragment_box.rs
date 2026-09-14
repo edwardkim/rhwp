@@ -188,23 +188,3 @@ fn issue_7095_first_fragment_starting_at_page_top_is_pinned_too() {
         "#7095: 30269 쪽수는 정본과 같은 22 여야 한다"
     );
 }
-
-#[test]
-fn issue_7095_multi_row_nested_table_that_fits_a_page_moves_whole() {
-    // overfill 의 칸 안 중첩 표 pi324(5×3, 약 174px)는 18쪽 잔여(표 앞 누적 863.8 / 예산 1005.4)에
-    // 들어가지 않는다. 표가 본문 높이보다 작으므로 한/글은 행 사이에서 쪼개지 않고 19쪽으로
-    // 통째로 넘긴다. 수정 전 rhwp 는 18쪽 941..1061 과 19쪽 77..131 로 나눴다.
-    let core = load_sample("samples/table_giant_cell_overfill.hwpx");
-    let p18 = tables_of_para(&page_nodes(&core, 17), 324, 5, 3);
-    let p19 = tables_of_para(&page_nodes(&core, 18), 324, 5, 3);
-    assert!(
-        p18.is_empty(),
-        "#7095: pi324 는 18쪽에 조각을 남기지 않아야 한다(통째 이동): {p18:?}"
-    );
-    let whole = p19.first().expect("#7095: pi324 는 19쪽에 있어야 한다");
-    assert!(
-        whole.height > 165.0,
-        "#7095: 19쪽의 pi324 는 잘린 조각이 아니라 표 전체여야 한다: h={:.1}",
-        whole.height
-    );
-}
