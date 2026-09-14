@@ -1101,18 +1101,6 @@ impl LayoutEngine {
                         | crate::model::table::TablePageBreak::CellBreak
                 )
                 && (straddle_start_uncovered || straddle_end_uncovered);
-            // HWP5 저장 pagination 계약의 정확한 2행 rowspan/2문단 형상은 문단 하나가
-            // 행 하나의 저장 owner다. 여기서 일반 높이 컷을 적용하면 첫 문단의 trailing
-            // line/문단 간격이 첫 행보다 커져 양쪽 문단이 continuation에 재방출될 수
-            // 있다(76076 p18→p19). HWP5-origin HWPX에도 같은 source owner를 보존하고,
-            // 순수 HWPX·컷·중첩·다중줄 일반 rowspan에는 적용하지 않는다.
-            let native_two_row_paragraph_owner_boundary = is_rowbreak_straddle
-                && start_cut.is_empty()
-                && end_cut.is_empty()
-                && ((straddles_fragment_start && start_row == cell_row + 1)
-                    || (straddles_fragment_end && render_range_end == cell_row + 1))
-                && self.native_two_row_rowspan_paragraph_owner_boundary(cell, table, styles);
-
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
                 cell_id,
@@ -1306,56 +1294,18 @@ impl LayoutEngine {
                         .max(su);
                 }
                 Some((su, eu))
-            } else if native_two_row_paragraph_owner_boundary {
-                let su = usize::from(straddles_fragment_start);
-                let eu = if straddles_fragment_end {
-                    1
-                } else {
-                    usize::MAX
-                };
-                Some((su, eu))
             } else if is_rowbreak_straddle {
-                // [Task #1748] 높이 기반 유닛 컷. 이전 프래그먼트 소비 높이(prior_h)는
-                // 2b 오버라이드와 동일한 식으로 재계산 — 온전 행은 컷 측정
-                // (row_cut_content_height), 분할 행(start_row)은 start_cut 이전 유닛
-                // 높이. 컷 페이지가 end_cut 으로 계산한 값과 같은 식이라 경계 유닛
-                // 인덱스(컷 페이지 eu == 연속 페이지 su)가 산술적으로 일치한다.
-                let mut prior_h = 0.0f64;
-                if straddles_fragment_start {
-                    for r in cell_row..start_row {
-                        let has_single_row_cells = table
-                            .cells
-                            .iter()
-                            .any(|c| c.row as usize == r && c.row_span == 1);
-                        let h = if has_single_row_cells {
-                            let h = self.row_cut_content_height(table, r, &[], &[], styles);
-                            if h > 0.0 {
-                                h
-                            } else {
-                                resolved_row_heights.get(r).copied().unwrap_or(0.0)
-                            }
-                        } else {
-                            resolved_row_heights.get(r).copied().unwrap_or(0.0)
-                        };
-                        prior_h += h + cell_spacing;
-                    }
-                    if !start_cut.is_empty() {
-                        prior_h +=
-                            self.row_cut_content_height(table, start_row, &[], start_cut, styles);
-                    }
-                }
-                let su = if prior_h > 0.0 {
-                    self.cell_units_fitting_height(cell, table, styles, prior_h - pad_top)
-                } else {
-                    0
-                };
-                let eu = if straddles_fragment_end {
-                    self.cell_units_fitting_height(cell, table, styles, prior_h + cell_h - pad_top)
-                        .max(su)
-                } else {
-                    usize::MAX
-                };
-                Some((su, eu))
+                Some(self.rowbreak_straddle_cut_units(
+                    table,
+                    cell,
+                    start_row,
+                    render_range_end,
+                    start_cut,
+                    end_cut.is_empty(),
+                    cell_h,
+                    resolved_row_heights,
+                    styles,
+                ))
             } else {
                 None
             };
@@ -4017,17 +3967,17 @@ impl LayoutEngine {
             // 요구 높이는 조판과 **같은 출처**(`straddle_continuation_demand`)에서 낸다.
             if !is_block_split {
                 for r in start_row..end_row.min(row_count) {
-                    let Some((cell_row, need)) = self.straddle_continuation_demand(
+                    let Some(need) = self.straddle_continuation_demand(
                         table,
                         r,
                         start_row,
+                        start_cut,
                         &resolved_row_heights,
                         styles,
-                        Some((end_row, end_cut.is_empty())),
+                        (end_row, end_cut.is_empty()),
                     ) else {
                         continue;
                     };
-                    let _ = cell_row;
                     let have: f64 = (start_row..=r)
                         .map(|rr| row_heights.get(rr).copied().unwrap_or(0.0))
                         .sum::<f64>()

@@ -191,3 +191,91 @@ fn straddle_cell_whose_last_row_is_cut_again_is_not_grown() {
         "{path} 에 칸 밖 글줄이 늘었습니다(조판만 앞서 예약했습니다): {escaped:?}"
     );
 }
+
+/// 원본의 section 28 / 표 문단을 보존한 내부 IR 계약 입력이다.
+/// 별도로 한컴에서 저장하거나 PDF로 변환한 축소 문서가 아니다.
+fn isolated_curriculum_table() -> rhwp::model::document::Document {
+    let bytes = std::fs::read(TARGET).expect("committed curriculum fixture");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse curriculum fixture");
+    let mut doc = core.document().clone();
+    let section = doc.sections[28].clone();
+    let paragraph = section.paragraphs[2].clone();
+    assert!(
+        paragraph.controls.iter().any(|control| {
+            matches!(control, rhwp::model::control::Control::Table(table)
+            if table.row_count == 83 && table.cells.iter().any(|cell|
+                cell.row == 62 && cell.col == 8 && cell.row_span == 2
+                && cell.paragraphs.iter().any(|para| para.text.contains("선언문"))))
+        }),
+        "fixture source table contract changed"
+    );
+    doc.sections = vec![section];
+    doc.sections[0].paragraphs = vec![paragraph];
+    doc
+}
+
+fn assert_tables_inside_body(node: &RenderNode, body_bottom: Option<f64>) {
+    if !node.visible || node.editor_only {
+        return;
+    }
+    let body_bottom = if matches!(node.node_type, RenderNodeType::Body { .. }) {
+        Some(node.bbox.y + node.bbox.height)
+    } else {
+        body_bottom
+    };
+    if matches!(node.node_type, RenderNodeType::Table(_)) {
+        if let Some(bottom) = body_bottom {
+            assert!(
+                node.bbox.y + node.bbox.height <= bottom + 0.5,
+                "table bottom {} exceeds body bottom {bottom}",
+                node.bbox.y + node.bbox.height
+            );
+        }
+    }
+    for child in &node.children {
+        assert_tables_inside_body(child, body_bottom);
+    }
+}
+
+fn assert_continuation_document(doc: rhwp::model::document::Document) -> u32 {
+    let mut core = DocumentCore::new_empty();
+    core.set_document(doc);
+    let mut occurrences = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("render every fragment");
+        assert_tables_inside_body(&tree.root, None);
+        locate(&tree.root, None, NEEDLE, &mut occurrences);
+    }
+    assert_eq!(occurrences.len(), 1, "continuation text lost or duplicated");
+    assert!(
+        occurrences.iter().all(|(line, cell)| *line <= *cell + 0.5),
+        "continuation line must remain inside its cell: {occurrences:?}"
+    );
+    core.page_count()
+}
+
+/// PR 원안은 시작 컷에서 이미 소비한 유닛을 재예약해 p3 본문을 4.213px 넘었다.
+#[test]
+fn consumed_start_cut_does_not_grow_the_fragment_past_the_body() {
+    assert_eq!(assert_continuation_document(isolated_curriculum_table()), 4);
+}
+
+/// 본문 예산을 1px 간격으로 ±20px 바꾼다. 행·글자·rowspan은 그대로 유지하며,
+/// 여러 걸침 셀이 끝나는 조각의 높이 누적과 실제 끝 컷/이월을 함께 검사한다.
+#[test]
+fn continuation_height_respects_varying_page_budgets() {
+    let source = isolated_curriculum_table();
+    let mut counts = std::collections::BTreeSet::new();
+    for delta_hu in (-1500i32..=1500).step_by(75) {
+        let mut doc = source.clone();
+        let page = &mut doc.sections[0].section_def.page_def;
+        page.margin_bottom = (page.margin_bottom as i32 + delta_hu) as u32;
+        counts.insert(assert_continuation_document(doc));
+    }
+    assert!(
+        counts.len() > 1,
+        "budget variants must exercise a page break transition"
+    );
+}

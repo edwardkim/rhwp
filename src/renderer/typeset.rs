@@ -22962,40 +22962,20 @@ impl TypesetEngine {
             let rowbreak_rowspan_row_splittable =
                 mt.allows_row_break_split() && can_intra_split && mt.is_row_splittable(r);
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
-                // [#6981] 이어받는 걸침 rowspan 셀의 요구 높이를 여기서도 얹는다.
-                //
-                // 아래 일반 행 경로(`row_total`)와 같은 출처를 쓰지만, rowspan 이 걸친
-                // 행은 이 분기에서 통째로 배치되고 `continue` 하므로 그쪽 훅에 닿지
-                // 않는다. 대상 형상(2행 rowspan 이 쪽 경계에서 갈림)은 `r == cursor_row`
-                // 라 이 분기가 유일한 경로다.
+                // 실제로 수용한 앞 행들의 높이(consumed)를 사용한다. 이전 행의
+                // 증분까지 포함하며, 늘린 높이가 안 맞으면 원래 높이로 되돌리지 않는다.
                 let h = cut_row_h[r];
-                let h = match layout_engine.straddle_continuation_demand(
-                    table,
-                    r,
-                    cursor_row,
-                    &mt.row_heights,
-                    styles,
-                    None,
-                ) {
-                    Some((_, need)) => {
-                        let have: f64 = (cursor_row..=r).map(|rr| cut_row_h[rr]).sum::<f64>()
-                            + cs * (r - cursor_row) as f64;
-                        if std::env::var("RHWP_DIAG_6981").is_ok() {
-                            eprintln!(
-                                "D6981S r={r} cursor_row={cursor_row} need={need:.1} have={have:.1} h={h:.1}"
-                            );
-                        }
-                        // 늘린 높이가 이 조각 예산 밖이면 컷이 소관 — 늘리지 않는다.
-                        // 렌더러의 "조각 끝에도 걸친 셀은 제외"와 같은 판정이다.
-                        let grown = h + (need - have).max(0.0);
-                        if r == cursor_row || consumed + cs_before + grown <= avail_for_rows {
-                            grown
-                        } else {
-                            h
-                        }
-                    }
-                    None => h,
-                };
+                let h = layout_engine
+                    .straddle_continuation_demand(
+                        table,
+                        r,
+                        cursor_row,
+                        start_cut,
+                        &mt.row_heights,
+                        styles,
+                        (r + 1, true),
+                    )
+                    .map_or(h, |need| h.max(need - consumed - cs_before));
                 if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
                     consumed += cs_before + h;
                     r += 1;
@@ -23113,6 +23093,20 @@ impl TypesetEngine {
                 // 강제 없음).
                 layout_engine.row_cut_content_height(table, r, row_start_cut, &[], styles)
             };
+            // 온전한 행 후보에는 rowspan 잔여 내용도 예약한다. 아래에서 실제
+            // end_cut을 선택하면 row_cut_content_height로 분할 높이를 다시 측정하고,
+            // 렌더러도 같은 end_cut을 받아 잔여 전체 높이 보정을 생략한다.
+            let row_total = layout_engine
+                .straddle_continuation_demand(
+                    table,
+                    r,
+                    cursor_row,
+                    start_cut,
+                    &mt.row_heights,
+                    styles,
+                    (r + 1, true),
+                )
+                .map_or(row_total, |need| row_total.max(need - consumed - cs_before));
             // The final visible response is followed by a row without text or
             // controls. Its stored row height is authoritative for whole-row ownership;
             // browser-composed height may be larger solely because of font
