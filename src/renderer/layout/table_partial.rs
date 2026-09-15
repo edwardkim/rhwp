@@ -2293,21 +2293,16 @@ impl LayoutEngine {
                                 }
                                 if pic.common.treat_as_char {
                                     let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
-                                    // layout_composed_paragraph에서 텍스트 흐름 안에 렌더링됐는지 확인:
-                                    // 이미지 위치가 실제 run 범위에 포함될 때만 스킵
-                                    let will_render_inline =
-                                        composed.tac_controls.iter().any(|&(abs_pos, _, ci)| {
-                                            ci == ctrl_idx
-                                                && composed.lines.iter().any(|line| {
-                                                    let line_chars: usize = line
-                                                        .runs
-                                                        .iter()
-                                                        .map(|r| r.text.chars().count())
-                                                        .sum();
-                                                    abs_pos >= line.char_start
-                                                        && abs_pos < line.char_start + line_chars
-                                                })
-                                        });
+                                    // 줄 끝 그림도 inline 경로에서 그릴 수 있다. 일반 셀과
+                                    // 같이 실제 배치 기록을 확인해 보완 경로의 중복을 막는다.
+                                    let will_render_inline = tree
+                                        .get_inline_shape_position(
+                                            section_index,
+                                            cp_idx,
+                                            ctrl_idx,
+                                            Some(&cell_context),
+                                        )
+                                        .is_some();
                                     if !will_render_inline {
                                         if all_runs_empty && para.line_segs.len() > 1 {
                                             let target_line =
