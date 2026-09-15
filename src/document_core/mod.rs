@@ -9,6 +9,7 @@ pub(crate) use helpers::*;
 pub mod builders;
 mod canvas_metric_requests;
 mod canvas_metrics;
+mod font_environment;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 mod commands;
 pub use commands::paragraph_block::{
@@ -183,6 +184,7 @@ pub struct DocumentCore {
     /// 해소된 스타일 세트
     pub(crate) styles: ResolvedStyleSet,
     pub(crate) canvas_metrics: Option<canvas_metrics::CanvasMetricSession>,
+    pub(crate) font_environment: Option<crate::renderer::font_environment::FontEnvironment>,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
     /// [#2308] source IR로부터 재생성되는 revision 기반 render normalization state.
@@ -372,24 +374,25 @@ impl DocumentCore {
 
     /// 문서 정보를 JSON 문자열로 반환한다.
     pub fn get_document_info(&self) -> String {
-        use crate::renderer::style_resolver::resolve_font_substitution;
+        use crate::renderer::style_resolver::lookup_font_name_in_environment;
 
         let mut fonts = std::collections::BTreeSet::new();
         let mut font_substitutions = std::collections::BTreeSet::new();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
-            for font in lang_fonts {
-                let resolved = resolve_font_substitution(&font.name, font.alt_type, lang_idx)
-                    .unwrap_or(&font.name);
-                fonts.insert(resolved.to_string());
-                if let Some(substitute) = font
-                    .subst_font
-                    .as_ref()
-                    .filter(|substitute| !substitute.is_embedded)
-                    .filter(|substitute| !substitute.face.trim().is_empty())
-                    .filter(|substitute| substitute.face.trim() != resolved)
-                {
-                    font_substitutions
-                        .insert((resolved.to_string(), substitute.face.trim().to_string()));
+            for (font_idx, _) in lang_fonts.iter().enumerate() {
+                let decision = lookup_font_name_in_environment(
+                    &self.document.doc_info,
+                    lang_idx,
+                    font_idx as u16,
+                    self.font_environment.as_ref(),
+                );
+                if let Some(resolved) = decision.normalized_face {
+                    fonts.insert(resolved.clone());
+                    if decision.environment_profile_id.is_none() {
+                        if let Some(substitute) = decision.subst_font {
+                            font_substitutions.insert((resolved, substitute));
+                        }
+                    }
                 }
             }
         }
@@ -461,9 +464,16 @@ impl DocumentCore {
     /// Rebuild the resolved-style aggregate with the document format's style
     /// normalization. Layout provenance remains in `Document::layout_profile`
     /// and is passed separately to cache-admission consumers.
+    pub(crate) fn resolve_render_styles(&self) -> ResolvedStyleSet {
+        crate::renderer::style_resolver::resolve_styles_with_environment(
+            &self.document,
+            self.dpi,
+            self.font_environment.as_ref(),
+        )
+    }
+
     pub(crate) fn rebuild_resolved_styles(&mut self) {
-        self.styles =
-            crate::renderer::style_resolver::resolve_styles_for_document(&self.document, self.dpi);
+        self.styles = self.resolve_render_styles();
         self.styles.supplemental_metrics = self
             .canvas_metrics
             .as_ref()
@@ -497,6 +507,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
             canvas_metrics: None,
+            font_environment: None,
             composed: Vec::new(),
             render_normalization: RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,

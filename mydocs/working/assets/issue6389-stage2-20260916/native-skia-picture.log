@@ -1,0 +1,12 @@
+[RustTestSuite] issue_2225_missing_picture_placeholder -> regression_suite_020::issue_2225_missing_picture_placeholder
+[RustTestSuite] cargo nextest run --locked --test regression_suite_020 -E test(/(^|::)issue_2225_missing_picture_placeholder::/) --cargo-profile release-test --target-dir /Users/tsjang/rhwp/target/issue6389-20260916 --features native-skia
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp-issue6389-review-20260916)
+    Finished `release-test` profile [optimized] target(s) in 1m 55s
+────────────
+ Nextest run ID 6eba35cb-e4ec-4776-9ccf-c4e3decb8ccf with nextest profile: default
+    Starting 2 tests across 1 binary (184 tests skipped)
+        PASS [   0.022s] (1/2) rhwp::regression_suite_020 issue_2225_missing_picture_placeholder::issue_2225_missing_picture_placeholder_split
+        PASS [   1.020s] (2/2) rhwp::regression_suite_020 issue_2225_missing_picture_placeholder::issue_2225_export_png_defaults_to_screen_skia_profile
+────────────
+     Summary [   1.022s] 2 tests run: 2 passed, 184 skipped

@@ -179,7 +179,7 @@ class WasmSweepTests(unittest.TestCase):
             root = Path(temp)
             def fake_run(command, **kwargs):
                 if command[0] == 'node':
-                    output = Path(command[-1])
+                    output = Path(command[command.index('--out') + 1])
                     (output / 'raw_svg').mkdir(parents=True)
                     (output / 'render_tree').mkdir()
                     for page in (1, 2):
@@ -188,7 +188,7 @@ class WasmSweepTests(unittest.TestCase):
                     (output / 'manifest.json').write_text('{"pageCount":2}')
                 else:
                     # Native pagination is deliberately different: only its font CSS is used.
-                    (Path(command[-1]) / 'native.svg').write_text('<svg><style>@font-face {font-family: "A";src:local("A")}</style><text x="99">Native</text></svg>')
+                    (Path(command[command.index('-o') + 1]) / 'native.svg').write_text('<svg><style>@font-face {font-family: "A";src:local("A")}</style><text x="99">Native</text></svg>')
                 return subprocess.CompletedProcess(command, 0, '', '')
             with patch.object(SWEEP, 'run', side_effect=fake_run):
                 SWEEP.export_wasm_target(root, root / 'input.hwp', root / 'pkg', 'rhwp', root / 'out')
@@ -196,6 +196,13 @@ class WasmSweepTests(unittest.TestCase):
             self.assertIn('<text x="4">WASM</text>', svg)
             self.assertNotIn('Native', svg)
             self.assertEqual(json.loads((root / 'out/render_tree/render_tree_002.json').read_text())['bbox']['x'], 4)
+
+            environment = root / 'environment.json'
+            with patch.object(SWEEP, 'run', side_effect=fake_run) as run:
+                SWEEP.export_wasm_target(root, root / 'input.hwp', root / 'pkg', 'rhwp', root / 'out', environment)
+            for call in run.call_args_list:
+                command = call.args[0]
+                self.assertEqual(command[command.index('--font-environment') + 1], str(environment))
 
             def incomplete_run(command, **kwargs):
                 result = fake_run(command, **kwargs)

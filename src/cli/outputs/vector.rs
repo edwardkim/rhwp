@@ -319,6 +319,11 @@ fn configure_svg_document(
 }
 
 pub(crate) fn export_svg(args: &[String]) -> i32 {
+    let (filtered_args, font_environment) = match super::font_environment_args(args) {
+        Ok(options) => options,
+        Err(code) => return code,
+    };
+    let args = filtered_args.as_slice();
     let SvgExportArgs {
         file_path,
         output_dir,
@@ -357,6 +362,10 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
+    if let Err(e) = doc.set_font_environment(font_environment) {
+        eprintln!("오류: 폰트 환경 적용 실패: {e}");
+        return EXIT_RUNTIME;
+    }
 
     // [Task #741 후속] 외부 file path 그림 영역 영역 HWP file 영역 영역 같은 dir 영역
     // 영역 image 영역 영역 자동 load (basename 매칭).
@@ -496,7 +505,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
     }
 
     if json_mode {
-        let envelope = serde_json::json!({
+        let mut envelope = serde_json::json!({
             "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "format": "svg",
@@ -507,6 +516,10 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
             "overflowCellLines": overflow_cell_total,
             "pages": manifest,
         });
+        if let Some(environment) = doc.font_environment() {
+            envelope["fontEnvironment"] =
+                serde_json::to_value(environment).expect("font environment JSON");
+        }
         println!("{}", provenance::marked(envelope, "export-svg"));
     } else {
         println!("내보내기 완료: {}개 SVG 파일 → {}/", written, output_dir);
@@ -516,6 +529,11 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
 }
 
 pub(crate) fn export_render_tree(args: &[String]) -> i32 {
+    let (filtered_args, font_environment) = match super::font_environment_args(args) {
+        Ok(options) => options,
+        Err(code) => return code,
+    };
+    let args = filtered_args.as_slice();
     // [#3359] 위치 인자 파싱은 export-structure/export-text(#3349) 규약과 동일.
     let mut file_path: Option<&str> = None;
     let mut output_dir = "output".to_string();
@@ -614,6 +632,10 @@ pub(crate) fn export_render_tree(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
+    if let Err(e) = doc.set_font_environment(font_environment) {
+        eprintln!("오류: 폰트 환경 적용 실패: {e}");
+        return EXIT_RUNTIME;
+    }
 
     if allows_implicit_sibling_resources(source_format) {
         if let Some(parent) = std::path::Path::new(file_path).parent() {

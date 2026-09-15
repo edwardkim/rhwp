@@ -9,9 +9,7 @@ use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
 use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::style_resolver::{
-    resolve_styles, resolve_styles_for_document, ResolvedStyleSet,
-};
+use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(super) fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharShapeMods) -> bool {
     mods.base_size.is_some()
@@ -1025,7 +1023,7 @@ impl DocumentCore {
         // 텍스트 폭/높이에 영향을 주는 글자 모양 변경 시 LineSeg 재계산.
         // 장평/자간은 글꼴 크기처럼 줄나눔과 페이지네이션을 바꾼다.
         if char_shape_mods_affect_text_flow(&mods) {
-            let styles = resolve_styles_for_document(&self.document, self.dpi);
+            let styles = self.resolve_render_styles();
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
@@ -1092,7 +1090,7 @@ impl DocumentCore {
             )));
         }
 
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let available_box = {
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
@@ -1140,7 +1138,7 @@ impl DocumentCore {
     /// 호출자가 하고, 이 헬퍼는 파생 상태 정리만 소유한다.
     pub(crate) fn rebuild_section_deferred_in_batch(&mut self, sec_idx: usize) {
         if self.batch_mode {
-            self.styles = resolve_styles(&self.document.doc_info, self.dpi);
+            self.rebuild_resolved_styles();
             self.styles.supplemental_metrics = self
                 .canvas_metrics
                 .as_ref()
@@ -1483,7 +1481,7 @@ impl DocumentCore {
         // 사용하므로). 줄간격뿐 아니라 여백/들여쓰기/줄나눔 단위도 사용 가능 폭·토큰
         // 경계를 바꾼다 — [#4324] para_shape_mods_affect_text_flow(:16 부근) 참고.
         if para_shape_mods_affect_text_flow(&mods) {
-            let styles = resolve_styles_for_document(&self.document, self.dpi);
+            let styles = self.resolve_render_styles();
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
             let column_def = DocumentCore::find_initial_column_def(&section.paragraphs);
@@ -1540,7 +1538,7 @@ impl DocumentCore {
             )));
         }
 
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let available_box = {
             let section = &self.document.sections[sec_idx];
             let page_def = &section.section_def.page_def;
@@ -1865,7 +1863,7 @@ impl DocumentCore {
             Some(para) => para.para_shape_id,
             None => return,
         };
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let paragraph_box =
             body_paragraph_box_for_para_shape(self, sec_idx, para_shape_id, &styles);
         if let Some(para) = self
@@ -1896,7 +1894,7 @@ impl DocumentCore {
     /// 분할 1줄 그대로인 꼬리말이 본문을 절반으로 좁힌 뒤에도 렌더에서 386.7px 로 본문
     /// 오른쪽 끝(396.9px) 안에 들어온다 (samples/hwp3-sample19-hwp5.hwp).
     pub(crate) fn reflow_body_paragraphs_in_section(&mut self, sec_idx: usize) {
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let dpi = self.dpi;
         let wrap_width = self.body_wrap_width(sec_idx);
         let Some(section) = self.document.sections.get_mut(sec_idx) else {

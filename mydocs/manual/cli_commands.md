@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-08-23
+last_verified: 2026-09-16
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -1924,3 +1924,9 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
   누락된 GPU PNG, LLM 청크, 스키마/온톨로지/에이전트 매니페스트, scan/threat-scan,
   `dump-extents`, watermark 검사, 계획 실행·CAS SHA-256 저널, 영수증·감사·계보·정책 명령군,
   내부 진단 프로브를 보완했다. `layout-anomaly --json` 봉투 필드와 exit 3 판정 의미도 함께 정정했다.
+
+## 명시적 폰트 환경
+
+`export-svg`, `export-render-tree`, `export-pdf`는 `--font-environment <JSON 파일>`로
+호출자가 지정한 대체 폰트를 조판과 출력에 함께 적용한다. 기본 동작과 저장 원본은 유지하며,
+설정 형식·WASM API·Visual Sweep 연계는 [명시적 조판 폰트 환경](font_environment.md)을 따른다.

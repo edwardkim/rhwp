@@ -5,7 +5,6 @@ use crate::model::event::DocumentEvent;
 use crate::model::paragraph::{CharShapeRun, Paragraph};
 use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::style_resolver::resolve_styles_for_document;
 
 fn range_error(detail: impl std::fmt::Display) -> HwpError {
     HwpError::RenderError(format!("글자 모양 구간: {detail}"))
@@ -110,7 +109,7 @@ impl DocumentCore {
         if start == end {
             return Ok("{\"ok\":true}".into());
         }
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let section = &self.document.sections[sec];
         let columns = Self::find_initial_column_def(&section.paragraphs);
         let layout =

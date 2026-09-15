@@ -654,7 +654,8 @@ def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
     return svg[:end] + "<style>" + "\n".join(rules) + "</style>" + svg[end:]
 
 
-def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path) -> None:
+def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None) -> None:
+    environment_args = ["--font-environment", str(font_environment)] if font_environment else []
     wasm_dir = base / "wasm"
     policy_dir = base / "font_policy"
     # 이전 실행이 중간에 끝났으면 부분 SVG/JSON을 성공한 export로 사용하지 않는다.
@@ -663,11 +664,11 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
         clean_dir(folder)
     run(
         ["node", str(root / "scripts/export-wasm-for-sweep.mjs"), "--pkg", str(package),
-         "--input", str(hwp), "--out", str(wasm_dir)],
+         "--input", str(hwp), "--out", str(wasm_dir), *environment_args],
         cwd=root, log_path=base / "wasm-export.log",
     )
     run(
-        [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(policy_dir)],
+        [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(policy_dir), *environment_args],
         cwd=root, log_path=base / "font-policy.log",
     )
     policies = {page_num(path): path for path in policy_dir.glob("*.svg")}
@@ -1158,6 +1159,7 @@ def render_target(
     resume: bool,
     svg_rasterizer: str,
     wasm_pkg: Path | None = None,
+    font_environment: Path | None = None,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1198,7 +1200,16 @@ def render_target(
     ):
         directory.mkdir(parents=True, exist_ok=True)
 
+    environment_args = []
+    if font_environment is not None:
+        font_environment = resolve_input_path(root, font_environment)
+        environment_args = ["--font-environment", str(font_environment)]
     provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
+    if font_environment is not None:
+        provenance["font_environment"] = {
+            "path": str(font_environment),
+            "sha256": hashlib.sha256(font_environment.read_bytes()).hexdigest(),
+        }
     if wasm_pkg is not None:
         provenance["wasm"] = wasm_package_provenance(root, wasm_pkg)
     run_manifest = run_manifest_for_target(
@@ -1220,7 +1231,7 @@ def render_target(
     tree_log = base / "render_tree.log"
     if wasm_pkg is not None:
         if not (base / "wasm-export-complete.json").is_file():
-            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base)
+            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment)
     elif not any(svg_dir.glob("*.svg")):
         # 증적 SVG는 원 문서의 legacy face를 그대로 쓰되, `--font-style`이
         # `한양중고딕 → HY중고딕/HYGothic-Medium` 같은 설치명 alias를 @font-face
@@ -1229,13 +1240,13 @@ def render_target(
         # rasterize되는 것을 막는다. 실제 폰트 데이터는 저작권 폰트를 증적에 복제하지
         # 않도록 넣지 않고, portable 판정본은 아래 PNG review/compare로 보관한다.
         run(
-            [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(svg_dir)],
+            [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(svg_dir), *environment_args],
             cwd=root,
             log_path=export_log,
         )
     if wasm_pkg is None and not any(tree_dir.glob("*.json")):
         run(
-            [rhwp_bin, "export-render-tree", str(hwp), "-o", str(tree_dir)],
+            [rhwp_bin, "export-render-tree", str(hwp), "-o", str(tree_dir), *environment_args],
             cwd=root,
             log_path=tree_log,
         )
@@ -4932,6 +4943,7 @@ def main() -> None:
         ),
     )
     parser.add_argument("--dpi", type=int, default=96)
+    parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
     parser.add_argument(
         "--wasm-pkg", type=Path,
         help="새 WASM web package를 Chrome에서 실행해 SVG와 render tree를 비교합니다. rhwp CLI는 글꼴 별칭과 note-shape만 제공합니다.",
@@ -5019,6 +5031,7 @@ def main() -> None:
             resume=args.resume,
             svg_rasterizer=args.svg_rasterizer,
             wasm_pkg=args.wasm_pkg,
+            font_environment=args.font_environment,
         )
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")

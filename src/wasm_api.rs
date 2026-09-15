@@ -1062,6 +1062,19 @@ impl HwpDocument {
         self.core.rebuild_derived_state();
     }
 
+    /// Set an explicit layout/paint font environment. None restores the default.
+    #[wasm_bindgen(js_name = setFontEnvironment)]
+    pub fn set_font_environment_json(&mut self, json: Option<String>) -> Result<bool, JsValue> {
+        let environment = json
+            .as_deref()
+            .map(crate::renderer::font_environment::FontEnvironment::from_json)
+            .transpose()
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        self.core
+            .set_font_environment(environment)
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
     ///
     /// `mode` 는 `"default"` 또는 `"compat"` 를 받는다. 빈 문자열은 `"default"` 로 처리한다.

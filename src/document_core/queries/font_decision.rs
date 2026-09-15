@@ -13,7 +13,7 @@ use crate::renderer::render_tree::{
     PageRenderTree, RenderNode, RenderNodeType, TextLineNode, TextRunNode,
 };
 use crate::renderer::style_resolver::{
-    detect_lang_category, lookup_font_name_decision, FontSubstitutionBoundary,
+    detect_lang_category, lookup_font_name_in_environment, FontSubstitutionBoundary,
 };
 
 const DEFAULT_MAX_CHARACTERS: usize = 1024;
@@ -725,16 +725,25 @@ impl DocumentCore {
                         .char_shapes
                         .get(char_shape_id as usize)
                         .map(|shape| {
-                            lookup_font_name_decision(
+                            lookup_font_name_in_environment(
                                 &self.document.doc_info,
                                 language_slot,
                                 shape.font_ids[language_slot],
+                                self.font_environment.as_ref(),
                             )
                         })
                 });
                 let mut provenance = vec![measurement_provenance()?];
                 let mut name_steps = Vec::new();
                 if let Some(font) = &font_decision {
+                    if let Some(profile_id) = &font.environment_profile_id {
+                        name_steps.push(DecisionStep {
+                            kind: "fontEnvironment".into(),
+                            input: font.requested_face.clone(),
+                            output: font.normalized_face.clone(),
+                            reason: Some(profile_id.clone()),
+                        });
+                    }
                     if let (Some(boundary), Some(source), Some(target)) = (
                         font.substitution_boundary,
                         font.requested_face.as_deref(),
@@ -759,9 +768,12 @@ impl DocumentCore {
                             rule_id,
                         )?);
                     }
-                    if let (Some(source), Some(substitute)) =
-                        (font.normalized_face.as_deref(), font.subst_font.as_deref())
-                    {
+                    if let (Some(source), Some(substitute)) = (
+                        font.normalized_face.as_deref(),
+                        font.subst_font
+                            .as_deref()
+                            .filter(|_| font.environment_profile_id.is_none()),
+                    ) {
                         name_steps.push(DecisionStep {
                             kind: "documentSubstFont".into(),
                             input: Some(source.into()),
@@ -870,7 +882,14 @@ impl DocumentCore {
                     ),
                     layout_metric,
                     provenance,
-                    oracle: OracleDecision::not_provided(),
+                    oracle: self.font_environment.as_ref().map_or_else(
+                        OracleDecision::not_provided,
+                        |env| OracleDecision {
+                            status: "declared".into(),
+                            profile_id: Some(env.id().into()),
+                            known_limitations: vec!["Caller-declared environment; backend font availability and PDF equivalence are not verified.".into()],
+                        },
+                    ),
                 });
             }
         }

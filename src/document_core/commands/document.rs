@@ -258,6 +258,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             canvas_metrics: None,
+            font_environment: None,
             composed: Vec::new(),
             render_normalization: super::super::RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
@@ -1373,7 +1374,7 @@ impl DocumentCore {
         }
 
         // 스타일은 재해소해도 동일 결과이므로 재계산하여 borrow 충돌 회피.
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let dpi = self.dpi;
         let mut reflowed = 0usize;
         let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();

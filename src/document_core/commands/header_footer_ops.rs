@@ -17,7 +17,6 @@ use crate::model::event::DocumentEvent;
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
-use crate::renderer::style_resolver::resolve_styles_for_document;
 
 /// HeaderFooterApply → 표시 레이블
 fn apply_label(a: HeaderFooterApply) -> &'static str {
@@ -1115,7 +1114,7 @@ impl DocumentCore {
         // 있어(margin_left/right 가 0.0 으로 폴백) 여백을 무시한 폭으로 리플로우해버린다.
         // formatting.rs 의 reflow_cell_paragraph(twin, text_editing.rs)와 동일하게
         // doc_info 에서 매번 새로 resolve 한다.
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
 
         // 문단 여백 적용
         let para_shape_id =

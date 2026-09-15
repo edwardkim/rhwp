@@ -19,7 +19,7 @@ use crate::renderer::composer::{
 };
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
-use crate::renderer::style_resolver::{resolve_styles_for_document, ResolvedStyleSet};
+use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
@@ -647,6 +647,7 @@ impl DocumentCore {
         let mut staged = DocumentCore::new_empty();
         staged.document = self.document.clone();
         staged.styles = self.styles.clone();
+        staged.font_environment = self.font_environment.clone();
         staged.composed = self.composed.clone();
         staged.dpi = self.dpi;
         staged.respect_vpos_reset = self.respect_vpos_reset;
@@ -2767,7 +2768,7 @@ impl DocumentCore {
     ) {
         use crate::renderer::hwpunit_to_px;
 
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let cell_width_px = hwpunit_to_px(cell_width, self.dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
         let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
@@ -3111,7 +3112,7 @@ impl DocumentCore {
         else {
             return;
         };
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let dpi = self.dpi;
         let cell_width_px = hwpunit_to_px(cell_width, dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, dpi);
@@ -3148,7 +3149,7 @@ impl DocumentCore {
         start_para: usize,
         ignore_reset_at: Option<usize>,
     ) {
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let dpi = self.dpi;
         let is_hwp3_variant = self.document.layout_profile().hwp3_layout();
         if let Ok(paras) = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)

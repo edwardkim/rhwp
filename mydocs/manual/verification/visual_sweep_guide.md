@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-09-14
+last_verified: 2026-09-16
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -602,3 +602,11 @@ PR 리뷰/보고서에는 다음을 분리해 적는다.
 - PDF text layer가 손상되거나 추출기에 실패하면 text 기반 자동 분류를 생략할 수 있다. 이 경우
   raster overlay와 render tree를 사용하되, 문자 멀티셋 무차이를 주장하지 않는다.
 - 최종 수용 여부는 자동 sweep + 회귀 테스트 + 메인테이너 시각 판정을 함께 보고 결정한다.
+
+### 기준 PDF의 폰트 환경을 명시할 때
+
+기준 PDF가 원본 문서에 선언된 폰트 대신 다른 폰트로 생성되었다면
+`--font-environment <JSON 파일>`로 그 환경을 명시할 수 있다. Native와 `--wasm-pkg` 경로가
+동일한 설정을 사용하며, 설정 파일 해시가 달라지면 이전 `--resume` 결과는 재사용하지 않는다.
+프로필 선언과 페이지 수만으로 PDF 일치를 판정하지 않는다. 대응 페이지의 내용과 폰트를
+직접 확인한다. JSON 형식과 지원 범위는 [폰트 환경 가이드](../font_environment.md)를 따른다.

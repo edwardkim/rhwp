@@ -360,6 +360,38 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
     resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout())
 }
 
+/// The environment selects the same final face for measurement and every painter.
+pub(crate) fn resolve_styles_with_environment(
+    document: &Document,
+    dpi: f64,
+    environment: Option<&super::font_environment::FontEnvironment>,
+) -> ResolvedStyleSet {
+    let mut styles = resolve_styles_for_document(document, dpi);
+    if environment.is_some() {
+        for (style, shape) in styles
+            .char_styles
+            .iter_mut()
+            .zip(&document.doc_info.char_shapes)
+        {
+            for lang in 0..LANG_COUNT {
+                let decision = lookup_font_name_in_environment(
+                    &document.doc_info,
+                    lang,
+                    shape.font_ids[lang],
+                    environment,
+                );
+                if decision.environment_profile_id.is_some() {
+                    style.font_families[lang] = decision.css_family_chain.join(",");
+                    // A caller declaration is not independent metric verification.
+                    style.font_families_metric_trusted[lang] = false;
+                }
+            }
+            style.font_family = style.font_families[0].clone();
+        }
+    }
+    styles
+}
+
 /// [Task #1001] HWP3 → HWP5 변환본 인지하여 ParaShape spacing/margin 추가 보정.
 /// 변환본의 ParaShape 단위는 일반 HWP5 의 2배 (HwpUnitChar / HWPUNIT 의 2배 스케일)
 /// 이므로 추가 1/2 보정 적용. 호출자가 Document::is_hwp3_variant 를 전달.
@@ -557,6 +589,7 @@ impl FontSubstitutionBoundary {
 
 #[derive(Debug, Clone)]
 pub(crate) struct FontNameDecision {
+    pub(crate) environment_profile_id: Option<String>,
     pub(crate) language_slot: usize,
     pub(crate) font_id: u16,
     pub(crate) requested_face: Option<String>,
@@ -596,6 +629,7 @@ pub(crate) fn lookup_font_name_decision(
     font_id: u16,
 ) -> FontNameDecision {
     let mut decision = FontNameDecision {
+        environment_profile_id: None,
         language_slot: lang_index,
         font_id,
         requested_face: None,
@@ -636,6 +670,31 @@ pub(crate) fn lookup_font_name_decision(
                 decision.subst_font = Some(face.clone());
                 decision.css_family_chain.push(face);
             }
+        }
+    }
+    decision
+}
+
+pub(crate) fn lookup_font_name_in_environment(
+    doc_info: &DocInfo,
+    lang_index: usize,
+    font_id: u16,
+    environment: Option<&super::font_environment::FontEnvironment>,
+) -> FontNameDecision {
+    let mut decision = lookup_font_name_decision(doc_info, lang_index, font_id);
+    if decision.embedded != Some(true) {
+        if let Some((environment, target)) = environment.and_then(|env| {
+            decision
+                .requested_face
+                .as_deref()
+                .and_then(|face| env.replacement(face))
+                .map(|target| (env, target))
+        }) {
+            decision.normalized_face = Some(target.to_string());
+            decision.css_family_chain = vec![target.to_string()];
+            decision.substitution_boundary = None;
+            decision.substitution_rule_id = None;
+            decision.environment_profile_id = Some(environment.id().to_string());
         }
     }
     decision

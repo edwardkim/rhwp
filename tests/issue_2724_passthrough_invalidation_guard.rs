@@ -86,6 +86,12 @@ enum Exempt {
 ///
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
+    (
+        "font_environment.rs",
+        "set_font_environment",
+        Exempt::SessionState,
+        "#6389: 명시적 폰트 환경과 파생 조판·측정 캐시만 교체한다. issue_6389_environment_changes_measurement_and_paint_without_editing_document에서 적용·해제 전후 저장 bytes와 원본 face 보존을 검사한다.",
+    ),
     // #7084 render-session APIs do not mutate serialized document state.
     // issue_7084_canvas_metric_session checks original HWP/HWPX IR and portable SVG preservation.
     (

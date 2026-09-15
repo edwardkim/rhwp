@@ -29,6 +29,7 @@ pub(super) fn print() {
     println!("      --debug-overlay         디버그 오버레이 (문단/표 경계 + 인덱스 라벨)");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
+    println!("      --font-environment <json>  명시적 조판/출력 폰트 환경");
     println!("      --show-grid[=Nmm]       격자 오버레이 (기본: 1mm, 예: --show-grid=3mm)");
     println!("      --grid-origin=X,Y|auto  격자 종이 기준 위치 (예: --grid-origin=15mm,20mm)");
     println!("      --font-style            @font-face local() 참조 삽입 (폰트 데이터 미포함)");
@@ -46,6 +47,7 @@ pub(super) fn print() {
     println!("      --show-control-codes    조판부호 보이기 상태의 트리 생성");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
+    println!("      --font-environment <json>  명시적 조판/출력 폰트 환경");
     println!();
     println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]");
     println!("      문서 개요/조문(편·장·절·관·조·항·호·목) 계층을 중첩 JSON 트리로 추출");
