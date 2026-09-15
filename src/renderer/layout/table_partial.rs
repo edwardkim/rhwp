@@ -3401,6 +3401,24 @@ impl LayoutEngine {
     ///
     /// `start_row..end_row` 범위의 행만 렌더링한다.
     /// `is_continuation`이 true이고 repeat_header인 표면 행0(제목행)을 먼저 렌더링한다.
+    /// [#7095] 본문을 통째로 담은 1×1 `RowBreak` 표의 쪽 조각인가.
+    ///
+    /// 이 형상에서 한컴은 조각 상자 상단을 본문 상단 + 표 `outer_margin_top` 에 둔다
+    /// (정본 156060125 engine 2020: 2·3·10쪽 모두 47.15px = 45.35 + 141HU).
+    /// 다중 행·열 분할 표는 이 근거가 없으므로 종전 계약을 유지한다.
+    ///
+    /// 같은 정본이 말하는 나머지 두 축(마지막이 아닌 조각의 상자를 쪽 크기로 고정,
+    /// 칸 내용을 그 상자 안에서 `valign` 배치)은 아직 열려 있다 — `#7095`.
+    fn single_cell_rowbreak_page_fragment(&self, table: &crate::model::table::Table) -> bool {
+        // 근거는 native HWP5 저장본(156060125, hancom-office-2020)이다. HWPX 계보는 조각
+        // 기하 계약이 따로 있고(`hwpx_stored_layout` 계열), 넓히면 `rowbreak-problem-pages.hwpx`
+        // 16쪽에서 칸 안 글상자가 꼬리말과 겹친다(text_overlap 1 → 2). 근거가 있는 범위로 좁힌다.
+        crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
+            self.profile.get().hwp5_stored_pagination_layout(),
+            table,
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_partial_table(
         &self,
@@ -3732,6 +3750,28 @@ impl LayoutEngine {
         } else {
             y_start + effective_vertical_offset
         };
+        // [#7095] 본문을 통째로 담은 1×1 RowBreak 표의 조각은 상단 바깥여백을 연다.
+        //
+        // 한컴 engine 2020 정본(156060125, `pdf/tac_object_host_line_height-2020.pdf`)의
+        // 바깥 표 괘선은 2·3·10쪽 모두 **47.15px** 이고, 이는 본문 상단 45.35 +
+        // `outer_margin_top` 141HU(1.88px)다. rhwp 는 본문 상단(45.35)에 그대로 그려
+        // 조각 전체가 1.9px 위에 있었다. 비분할 경로는 이 여백을
+        // `physical_outer_box_paint_inset`(단일 단 + 측정高==선언高) 에서만 열지만,
+        // 분할 조각은 그 게이트가 성립하지 않으므로 이 형상에서 따로 연다.
+        // 빈 host 저장 되감김 조각은 #3820 Stage 120(`stored_reset_paint_geometry`)이 이미
+        // 칠하는 쪽에서 같은 여백을 연다 — 여기서 또 열면 표가 여백만큼 한 번 더 내려간다
+        // (정책연구 보고서 168쪽 90.71 vs 정본 86.93).
+        // 근거 문서(7062·30269·정책연구 보고서·KTX·hwpctl·issue2004)는 모두 본문 최상위 조각이다.
+        // 칸 안에서 다시 조각을 그리는 중첩 1×1 표까지 열면 층마다 여백이 겹친다 — 42065
+        // 11·15쪽 점선 위 테두리가 118.27 → 122.03 으로 두 번 내려갔다(정본 120.2). 한 층만
+        // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
+        let single_cell_page_fragment =
+            self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
+        let y_start = if single_cell_page_fragment && stored_reset_paint_geometry.is_none() {
+            y_start + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+        } else {
+            y_start
+        };
 
         let col_count = table.col_count as usize;
         let row_count = table.row_count as usize;
@@ -4039,6 +4079,39 @@ impl LayoutEngine {
         if let Some(limit) = end_row_height_override {
             if let Some(last) = end_row.checked_sub(1).filter(|r| *r < row_count) {
                 row_heights[last] = limit.max(0.0);
+            }
+        }
+        // [#7095] 쪽 상단에서 시작하는 비끝 조각의 상자는 내용이 아니라 쪽이 정한다.
+        //
+        // 한/글 2020 정본(156060125 2·3쪽 · 30269 10쪽)의 조각 상자 아래는
+        // 본문 아래 − `outer_margin_bottom` − 100HU 이고 쪽마다 같다(PDF 쪽 척도 제거 후).
+        // 판정은 이어짐 여부가 아니라 **쪽 상단에서 시작하는가**다 — 30269 10쪽은 표의
+        // 첫 조각인데 쪽 상단에서 시작하고 정본 상자도 쪽이 정한다. 쪽 **중간**에서 시작하는
+        // 첫 조각은 늘리지 않는다 — 156645214 19쪽에서 내용이 정본보다 8px 아래로 밀렸다
+        // (PR #7098).
+        let starts_at_body_top =
+            (y_start - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi))).abs()
+                < 1.0;
+        if single_cell_page_fragment && row_count == 1 && end_cut.iter().any(|&unit| unit > 0) {
+            let box_bottom = col_area.y + col_area.height
+                - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                - hwpunit_to_px(
+                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                    self.dpi,
+                );
+            let pinned_height = (box_bottom - y_start).max(0.0);
+            if starts_at_body_top {
+                // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
+                // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
+                // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로
+                // 잘랐으므로 보이는 줄은 상자 안에 있다.
+                row_heights[0] = pinned_height;
+            } else if stored_reset_paint_geometry.is_none() {
+                // 쪽 중간에서 시작하는 비끝 조각은 늘리지는 않되(위 156645214 반례), 같은 이유로
+                // 쪽 상자 아래를 넘기지도 않는다. KTX 25쪽 `pi406` 은 위 바깥 여백을 연 뒤 내용
+                // 행 높이(뒤 줄간격 포함)로 끝나 본문 아래를 2.6px 넘었다 — 정본은 그 자리에
+                // 괘선을 그리지 않고, 줄 위치는 정본과 같은 쪽 경계에 있다.
+                row_heights[0] = row_heights[0].min(pinned_height);
             }
         }
 

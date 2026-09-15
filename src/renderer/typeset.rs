@@ -27015,7 +27015,39 @@ impl TypesetEngine {
             // typeset 의 page_avail = (table_available - cur_h) 은 두 overhead 를
             // 포함하지 않아 split 결정 시 actual 가용보다 과대 평가됨 → partial 오버플로우.
             // aift.hwp p44 pi=584: 41.6 px split_end → 실제 가용 36 px → overflow 37.6 px.
+            // [#7095] 본문을 통째로 담은 1×1 RowBreak 쪽 조각은 쪽마다 바깥 여백(위·아래)을
+            // 다시 열고, 비끝 조각 상자는 본문 아래 − 바깥 아래 여백 − 100HU 에서 끝난다
+            // (한/글 2020 정본, PDF 쪽 척도 제거 후 두 문서 101~104HU · 돌연변이 7종에서 상수).
+            // 렌더러(`table_partial.rs`)가 같은 술어로 상자를 고정하므로 예산도 같이 뺀다.
+            //
+            // 쪽 **상단**에서 시작하는 조각에만 쓴다. 쪽 중간에서 시작하는 첫 조각에 여백과
+            // 100HU 를 빼면 컷이 한 유닛 일러져 한/글보다 쪽이 는다(80168 29쪽 pi226 · 157→158,
+            // rowbreak-problem-pages 14쪽 pi16 · 18→19). 렌더러의 상자 고정 조건과 같은 축이다.
+            let single_cell_page_fragment =
+                crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    table,
+                ) && (is_continuation || st.current_height < 0.5);
             let (host_before_overhead, fragment_outer_bottom_overhead) =
+                partial_rowbreak_fragment_spacing_px(
+                    table,
+                    host_spacing_before,
+                    is_continuation,
+                    strict_following_plain_text_fit || single_cell_page_fragment,
+                    crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                        self.profile.get().hwp5_stored_pagination_layout(),
+                        para,
+                        table,
+                    ),
+                    self.dpi,
+                );
+            // 끝 조각의 흐름 전진에는 이 형상이 새로 연 아래 여백과 100HU 를 넣지 않는다.
+            // 둘 다 비끝 조각 상자의 계약이고, 끝 조각은 내용에 맞춰 끝나 렌더러도 그 뒤에
+            // 여백을 두지 않는다. 넣어 두면 쓰지 않는 자리를 예산에서 먹어 다음 내용이 밀린다.
+            // - rowbreak-problem-pages 14쪽: pi13 끝 조각 뒤 pi16 이 0.2px 차로 안 들어가 18→19쪽
+            // - hwpctl_API_v2.4 73쪽: pi1750 끝 조각 뒤 pi1760 13행이 74쪽으로 밀려 본문 넘침
+            //   (정본은 13행을 73쪽 992.7 에 두고, 조각 아래 괘선 393.11 뒤에 여백을 두지 않는다)
+            let terminal_outer_bottom_overhead = if single_cell_page_fragment {
                 partial_rowbreak_fragment_spacing_px(
                     table,
                     host_spacing_before,
@@ -27027,7 +27059,21 @@ impl TypesetEngine {
                         table,
                     ),
                     self.dpi,
-                );
+                )
+                .1
+            } else {
+                fragment_outer_bottom_overhead
+            };
+            let single_cell_page_fragment_inset_px = if single_cell_page_fragment {
+                hwpunit_to_px(
+                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
+            let fragment_outer_bottom_overhead =
+                fragment_outer_bottom_overhead + single_cell_page_fragment_inset_px;
             // [#6143] 오프셋이 쪽 경계에서 이미 소진된 첫 조각은 예산에서도 빼지
             // 않는다. 앵커 문단이 이 쪽에 아무것도 내지 않았고(항목 0 · host 선방출 0)
             // 표가 쪽 최상단에서 시작하면 오프셋의 기준점(문단 자리)이 이 쪽에 없다 —
@@ -27740,7 +27786,7 @@ impl TypesetEngine {
                         + vert_offset_overhead
                         + partial_height
                         + bottom_caption_extra
-                        + fragment_outer_bottom_overhead
+                        + terminal_outer_bottom_overhead
                         + host_spacing_after_only
                         + terminal_nested_child_host_line_spacing;
                 }
