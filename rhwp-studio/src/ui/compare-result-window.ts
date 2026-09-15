@@ -3,6 +3,7 @@ import type { CompareSessionStore } from '@/compare/session';
 import type { CompareSession, DiffAnchor, DiffItem } from '@/compare/types';
 import { WasmBridge } from '@/core/wasm-bridge';
 
+import { t } from '../i18n/index.ts';
 type CompareSourceDocument = {
   bytes: Uint8Array;
   fileName: string;
@@ -56,9 +57,9 @@ export class CompareResultWindow {
       this.build();
       document.body.appendChild(this.wrap);
     }
-    this.titleEl.textContent = `문서 비교 상세 · ${session.left.name} ↔ ${session.right.name}`;
-    this.leftTitleEl.textContent = `왼쪽 문서: ${session.left.name}`;
-    this.rightTitleEl.textContent = `오른쪽 문서: ${session.right.name}`;
+    this.titleEl.textContent = t('dialog.compareResult.titleEl.text', { p1: session.left.name, p2: session.right.name });
+    this.leftTitleEl.textContent = t('dialog.compareResult.leftTitleEl.text', { p1: session.left.name });
+    this.rightTitleEl.textContent = t('dialog.compareResult.rightTitleEl.text', { p1: session.right.name });
     void this.focusDiff(initialIndex);
   }
 
@@ -102,7 +103,7 @@ export class CompareResultWindow {
     const head = document.createElement('div');
     head.className = 'compare-inspector-head';
     this.titleEl = document.createElement('span');
-    this.titleEl.textContent = '문서 비교 상세';
+    this.titleEl.textContent = t('dialog.compareResult.titleEl.text.x625781');
     const close = document.createElement('button');
     close.className = 'dialog-close';
     close.textContent = '\u00D7';
@@ -120,10 +121,10 @@ export class CompareResultWindow {
     const leftWrap = document.createElement('div');
     leftWrap.className = 'compare-inspector-pane';
     this.leftTitleEl = document.createElement('h4');
-    this.leftTitleEl.textContent = '왼쪽 문서';
+    this.leftTitleEl.textContent = t('dialog.compareResult.leftTitleEl.text.xc4474f');
     this.leftStatusEl = document.createElement('div');
     this.leftStatusEl.className = 'compare-inspector-page-status';
-    this.leftStatusEl.textContent = '페이지 준비 중...';
+    this.leftStatusEl.textContent = t('dialog.compareResult.leftStatusEl.text');
     this.leftCanvasWrap = document.createElement('div');
     this.leftCanvasWrap.className = 'compare-inspector-canvas-wrap';
     this.leftCanvas = document.createElement('canvas');
@@ -138,10 +139,10 @@ export class CompareResultWindow {
     const rightWrap = document.createElement('div');
     rightWrap.className = 'compare-inspector-pane';
     this.rightTitleEl = document.createElement('h4');
-    this.rightTitleEl.textContent = '오른쪽 문서';
+    this.rightTitleEl.textContent = t('dialog.compareResult.rightTitleEl.text.xa8d18e');
     this.rightStatusEl = document.createElement('div');
     this.rightStatusEl.className = 'compare-inspector-page-status';
-    this.rightStatusEl.textContent = '페이지 준비 중...';
+    this.rightStatusEl.textContent = t('dialog.compareResult.rightStatusEl.text');
     this.rightCanvasWrap = document.createElement('div');
     this.rightCanvasWrap.className = 'compare-inspector-canvas-wrap';
     this.rightCanvas = document.createElement('canvas');
@@ -158,7 +159,7 @@ export class CompareResultWindow {
     nav.className = 'compare-inspector-nav';
     const prev = document.createElement('button');
     prev.className = 'dialog-btn';
-    prev.textContent = '이전 차이';
+    prev.textContent = t('dialog.compareResult.prev.text');
     prev.addEventListener('click', () => {
       const item = this.store?.prevDiff();
       if (!item || !this.session) return;
@@ -166,7 +167,7 @@ export class CompareResultWindow {
     });
     const next = document.createElement('button');
     next.className = 'dialog-btn';
-    next.textContent = '다음 차이';
+    next.textContent = t('dialog.compareResult.next.text');
     next.addEventListener('click', () => {
       const item = this.store?.nextDiff();
       if (!item || !this.session) return;
@@ -270,7 +271,7 @@ export class CompareResultWindow {
       return ra !== rb ? ra - rb : ca - cb;
     });
     if (changed.length === 0) return { left: '(셀 텍스트 동일)', right: '(셀 텍스트 동일)' };
-    const cellLabel = (k: string) => k.replace(/^r(\d+)c(\d+)$/i, '$1행$2열');
+    const cellLabel = (k: string) => k.replace(/^r(\d+)c(\d+)$/i, t('dialog.compareResult.formatTableCprevChangedCellsOnly.text'));
     const left = changed.map((k) => `${cellLabel(k)}: ${Lm.get(k) ?? '(없음)'}`).join('\n');
     const right = changed.map((k) => `${cellLabel(k)}: ${Rm.get(k) ?? '(없음)'}`).join('\n');
     return { left, right };
@@ -371,8 +372,8 @@ export class CompareResultWindow {
   private async ensureCompareDocumentsLoaded(): Promise<void> {
     if (!this.leftSource || !this.rightSource) return;
     const token = ++this.loadingToken;
-    this.leftStatusEl.textContent = '왼쪽 문서 로딩 중...';
-    this.rightStatusEl.textContent = '오른쪽 문서 로딩 중...';
+    this.leftStatusEl.textContent = t('dialog.compareResult.leftStatusEl.text.xe80e5a');
+    this.rightStatusEl.textContent = t('dialog.compareResult.rightStatusEl.text.x1fb3cd');
     try {
       const leftKey = `${this.leftSource.fileName}:${this.leftSource.bytes.byteLength}`;
       const rightKey = `${this.rightSource.fileName}:${this.rightSource.bytes.byteLength}`;
@@ -407,12 +408,12 @@ export class CompareResultWindow {
         /* noop */
       }
       if (this.loadingToken !== token) return;
-      this.leftStatusEl.textContent = '왼쪽 문서 페이지 준비 완료';
-      this.rightStatusEl.textContent = '오른쪽 문서 페이지 준비 완료';
+      this.leftStatusEl.textContent = t('dialog.compareResult.leftStatusEl.text.x6941e3');
+      this.rightStatusEl.textContent = t('dialog.compareResult.rightStatusEl.text.xf6ad95');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      this.leftStatusEl.textContent = `페이지 로드 실패: ${msg}`;
-      this.rightStatusEl.textContent = `페이지 로드 실패: ${msg}`;
+      this.leftStatusEl.textContent = t('dialog.compareResult.leftStatusEl.text.x822528', { p1: msg });
+      this.rightStatusEl.textContent = t('dialog.compareResult.rightStatusEl.text.x822528', { p1: msg });
     }
   }
 
@@ -462,7 +463,7 @@ export class CompareResultWindow {
     item: DiffItem,
   ): void {
     if (!wasm) {
-      statusEl.textContent = '문서가 아직 로드되지 않았습니다.';
+      statusEl.textContent = t('dialog.compareResult.statusEl.text');
       marker.style.display = 'none';
       return;
     }
@@ -471,8 +472,8 @@ export class CompareResultWindow {
       const locShort = formatParagraphLocationForSide(item, side);
       const base =
         side === 'left'
-          ? '왼쪽: 스냅샷 직후 위치 정보가 없습니다. (텍스트 미리보기만 참고)'
-          : '오른쪽: 스냅샷 직후 위치 정보가 없습니다. (텍스트 미리보기만 참고)';
+          ? t('dialog.compareResult.renderSidePage.text')
+          : t('dialog.compareResult.renderSidePage.text.xf4ba2c');
       statusEl.textContent = locShort ? `${locShort} · ${base}` : base;
       const ctx = canvas.getContext('2d');
       if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -495,8 +496,8 @@ export class CompareResultWindow {
           canvas.height = Math.max(1, Math.ceil(info.height * scale));
           wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'all');
           const locShort = formatParagraphLocationForSide(item, side);
-          const pageLine = `${ea.pageIndex + 1}쪽`;
-          const contextNote = !fromDiffEngine ? ' · 직전 정렬 짝 문단 기준(마커 없음)' : '';
+          const pageLine = t('dialog.compareResult.renderSidePage.text.xe4e036', { p1: ea.pageIndex + 1 });
+          const contextNote = !fromDiffEngine ? t('dialog.compareResult.renderSidePage.text.x86b17f') : '';
           if (fromDiffEngine) {
             marker.style.display = 'block';
             marker.style.left = `${Math.max(0, Math.floor(ea.x * scale))}px`;
@@ -506,11 +507,11 @@ export class CompareResultWindow {
           } else {
             marker.style.display = 'none';
           }
-          statusEl.textContent = `${locShort ? `${locShort} · ` : ''}${pageLine} 실제 화면${contextNote}`;
+          statusEl.textContent = t('dialog.compareResult.statusEl.text.x124792', { p1: locShort ? `${locShort} · ` : '', p2: pageLine, p3: contextNote });
           wrap.scrollTop = Math.max(0, marker.offsetTop - Math.floor(wrap.clientHeight * 0.15));
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
-          statusEl.textContent = `페이지 렌더 실패: ${msg}`;
+          statusEl.textContent = t('dialog.compareResult.statusEl.text.x85cf7a', { p1: msg });
           marker.style.display = 'none';
         }
       };
@@ -519,7 +520,7 @@ export class CompareResultWindow {
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      statusEl.textContent = `페이지 렌더 실패: ${msg}`;
+      statusEl.textContent = t('dialog.compareResult.statusEl.text.x85cf7a', { p1: msg });
       marker.style.display = 'none';
     }
   }

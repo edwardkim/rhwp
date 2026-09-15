@@ -6,6 +6,7 @@ import { userSettings } from '@/core/user-settings';
 import type { FontSet } from '@/core/user-settings';
 import { getLocalFonts } from '@/core/local-fonts';
 
+import { t } from '../i18n/index.ts';
 type FontMenuCategory = 'all' | 'current' | 'document' | 'fontSets' | 'system';
 
 interface FontMenuEntry {
@@ -16,11 +17,11 @@ interface FontMenuEntry {
 const BASE_FONTS = ['함초롬바탕', '함초롬돋움', '맑은 고딕', '나눔고딕', '바탕', '돋움', '궁서'];
 
 const FONT_MENU_CATEGORIES: ReadonlyArray<{ id: FontMenuCategory; label: string }> = [
-  { id: 'all', label: '모든 글꼴' },
-  { id: 'current', label: '현재 글꼴' },
-  { id: 'document', label: '문서 글꼴' },
-  { id: 'fontSets', label: '대표 글꼴' },
-  { id: 'system', label: '시스템 글꼴' },
+  { id: 'all', label: t('dialog.toolbar.label') },
+  { id: 'current', label: t('dialog.toolbar.label.xd6736f') },
+  { id: 'document', label: t('dialog.toolbar.label.x59330b') },
+  { id: 'fontSets', label: t('dialog.toolbar.label.xfef286') },
+  { id: 'system', label: t('dialog.toolbar.label.x8a1767') },
 ];
 
 /** 서식 도구 모음 (style-bar) 컨트롤러 */
@@ -379,7 +380,7 @@ export class Toolbar {
     const actRow = document.createElement('div');
     actRow.className = 'sb-hl-palette-actions';
     const btnNone = document.createElement('button');
-    btnNone.textContent = '색 없음';
+    btnNone.textContent = t('dialog.toolbar.btnNone.text');
     btnNone.addEventListener('mousedown', (e) => {
       e.preventDefault();
     });
@@ -390,11 +391,11 @@ export class Toolbar {
       this.highlightDropdown.classList.remove('open');
     });
     const btnOther = document.createElement('button');
-    btnOther.textContent = '다른 색...';
+    btnOther.textContent = t('dialog.toolbar.btnOther.text');
     const hiddenPicker = document.createElement('input');
     hiddenPicker.type = 'color';
     hiddenPicker.tabIndex = -1;
-    hiddenPicker.setAttribute('aria-label', '형광펜 색 선택');
+    hiddenPicker.setAttribute('aria-label', t('dialog.toolbar.setupHighlightPicker.label'));
     hiddenPicker.value = this.highlightColor;
     hiddenPicker.style.cssText = 'position:absolute;width:0;height:0;opacity:0;';
     btnOther.addEventListener('mousedown', (e) => {
@@ -773,7 +774,7 @@ export class Toolbar {
     const menu = document.createElement('div');
     menu.className = 'font-picker-menu';
     menu.setAttribute('role', 'dialog');
-    menu.setAttribute('aria-label', '글꼴 목록');
+    menu.setAttribute('aria-label', t('dialog.toolbar.openFontMenu.label'));
 
     const categories = document.createElement('div');
     categories.className = 'font-picker-categories';
@@ -855,7 +856,7 @@ export class Toolbar {
     if (entries.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'font-picker-empty';
-      empty.textContent = '표시할 글꼴이 없습니다.';
+      empty.textContent = t('dialog.toolbar.empty.text');
       fragment.appendChild(empty);
     } else {
       for (const entry of entries) {

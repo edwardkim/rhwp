@@ -13,6 +13,7 @@ import { makeOption } from './dom-utils';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
 
+import { t } from '../i18n/index.ts';
 interface FormulaContext {
   sec: number;
   ppi: number;
@@ -46,18 +47,18 @@ const FUNCTIONS = [
 ];
 
 const EASY_RANGES = [
-  { value: '', label: '(선택)' },
-  { value: 'left', label: '왼쪽 (left)' },
-  { value: 'right', label: '오른쪽 (right)' },
-  { value: 'above', label: '위쪽 (above)' },
-  { value: 'below', label: '아래쪽 (below)' },
+  { value: '', label: t('dialog.formula.label') },
+  { value: 'left', label: t('dialog.formula.label.x7d8044') },
+  { value: 'right', label: t('dialog.formula.label.xe04b72') },
+  { value: 'above', label: t('dialog.formula.label.xf89383') },
+  { value: 'below', label: t('dialog.formula.label.x73df79') },
 ];
 
 const FORMATS = [
-  { value: 'default', label: '기본 형식' },
-  { value: 'integer', label: '정수' },
-  { value: 'decimal1', label: '소수 1자리' },
-  { value: 'decimal2', label: '소수 2자리' },
+  { value: 'default', label: t('dialog.formula.label.xa5b30c') },
+  { value: 'integer', label: t('dialog.formula.label.xf1039f') },
+  { value: 'decimal1', label: t('dialog.formula.label.xcb1e28') },
+  { value: 'decimal2', label: t('dialog.formula.label.xf5b781') },
 ];
 
 export class FormulaDialog extends ModalDialog {
@@ -71,7 +72,7 @@ export class FormulaDialog extends ModalDialog {
   private errorMsg!: HTMLDivElement;
 
   constructor(wasm: any, eventBus: EventBus, ctx: FormulaContext, private services?: CommandServices) {
-    super('계산식', 420);
+    super(t('dialog.formula.title'), 420);
     this.wasm = wasm;
     this.eventBus = eventBus;
     this.ctx = ctx;
@@ -82,7 +83,7 @@ export class FormulaDialog extends ModalDialog {
     body.className = 'formula-dialog-body';
 
     // 계산식 입력
-    body.appendChild(this.createRow('계산식(E):', () => {
+    body.appendChild(this.createRow(t('dialog.formula.createRow.label'), () => {
       this.formulaInput = document.createElement('input');
       this.formulaInput.type = 'text';
       this.formulaInput.className = 'formula-input';
@@ -92,10 +93,10 @@ export class FormulaDialog extends ModalDialog {
     }));
 
     // 함수 선택
-    body.appendChild(this.createRow('함수(F):', () => {
+    body.appendChild(this.createRow(t('dialog.formula.createRow.label.xe97392'), () => {
       this.funcSelect = document.createElement('select');
       this.funcSelect.className = 'formula-select';
-      this.funcSelect.appendChild(makeOption('', '(선택)'));
+      this.funcSelect.appendChild(makeOption('', t('dialog.formula.makeOption.label')));
       FUNCTIONS.forEach(f => this.funcSelect.appendChild(makeOption(f.name, `${f.name} - ${f.desc}`)));
       this.funcSelect.addEventListener('change', () => {
         const func = this.funcSelect.value;
@@ -113,7 +114,7 @@ export class FormulaDialog extends ModalDialog {
     }));
 
     // 쉬운 범위
-    body.appendChild(this.createRow('쉬운 범위(R):', () => {
+    body.appendChild(this.createRow(t('dialog.formula.createRow.label.x7dcf38'), () => {
       const sel = document.createElement('select');
       sel.className = 'formula-select';
       EASY_RANGES.forEach(r => sel.appendChild(makeOption(r.value, r.label)));
@@ -131,7 +132,7 @@ export class FormulaDialog extends ModalDialog {
     }));
 
     // 형식
-    body.appendChild(this.createRow('형식(M):', () => {
+    body.appendChild(this.createRow(t('dialog.formula.createRow.label.xb85e7a'), () => {
       this.formatSelect = document.createElement('select');
       this.formatSelect.className = 'formula-select';
       FORMATS.forEach(f => this.formatSelect.appendChild(makeOption(f.value, f.label)));
@@ -179,7 +180,7 @@ export class FormulaDialog extends ModalDialog {
     this.clearError();
 
     if (!formula || formula === '=' || formula === '@') {
-      this.showError('계산식을 입력하세요.');
+      this.showError(t('dialog.formula.showError.label'));
       return false;
     }
 
@@ -202,7 +203,7 @@ export class FormulaDialog extends ModalDialog {
       const validated = JSON.parse(validateResult);
 
       if (!validated.ok) {
-        this.showError(validated.error || '계산식에 오류가 있습니다.');
+        this.showError(validated.error || t('dialog.formula.onConfirm.label'));
         return false;
       }
 
@@ -265,7 +266,7 @@ export class FormulaDialog extends ModalDialog {
       }
       return true; // 성공 → 대화상자 닫기
     } catch (e: any) {
-      this.showError('계산식 실행 실패: ' + (e.message || e));
+      this.showError(t('dialog.formula.showError.label.xe4e00d') + (e.message || e));
       return false; // 실패 → 대화상자 유지
     }
   }

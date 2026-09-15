@@ -8,6 +8,7 @@
 import { ModalDialog } from './dialog';
 import { fileNameForFormat, type SaveFormat } from '@/command/save-target';
 
+import { t } from '../i18n/index.ts';
 export interface SaveAsDialogResult {
   fileName: string;
   configurePassword: boolean;
@@ -29,7 +30,7 @@ class SaveAsDialog extends ModalDialog {
     private readonly allowPassword: boolean,
     private readonly inheritPassword: boolean,
   ) {
-    super('다른 이름으로 저장', 380);
+    super(t('dialog.saveAs.title'), 380);
     this.defaultName = defaultName;
   }
 
@@ -38,7 +39,7 @@ class SaveAsDialog extends ModalDialog {
     body.style.padding = '16px 20px';
 
     const label = document.createElement('label');
-    label.textContent = '파일 이름(N):';
+    label.textContent = t('dialog.saveAs.label.text');
     label.style.display = 'block';
     label.style.marginBottom = '6px';
     label.style.fontSize = '13px';
@@ -67,7 +68,7 @@ class SaveAsDialog extends ModalDialog {
       note.style.fontSize = '12px';
       note.style.lineHeight = '1.5';
       note.textContent =
-        '이 문서는 암호로 보호되어 있습니다. 확인하면 암호를 다시 입력합니다. 평문 사본은 암호 없이 저장을 선택하세요.';
+        t('dialog.saveAs.note.text');
       body.appendChild(note);
     }
 
@@ -75,7 +76,7 @@ class SaveAsDialog extends ModalDialog {
       const passwordButton = document.createElement('button');
       passwordButton.type = 'button';
       passwordButton.className = 'dialog-btn';
-      passwordButton.textContent = '암호 설정...';
+      passwordButton.textContent = t('dialog.saveAs.passwordButton.text');
       passwordButton.style.marginTop = '12px';
       passwordButton.addEventListener('click', () => {
         const value = this.confirmValue();
@@ -89,7 +90,7 @@ class SaveAsDialog extends ModalDialog {
         const plaintextButton = document.createElement('button');
         plaintextButton.type = 'button';
         plaintextButton.className = 'dialog-btn';
-        plaintextButton.textContent = '암호 없이 저장';
+        plaintextButton.textContent = t('dialog.saveAs.plaintextButton.text');
         plaintextButton.style.marginTop = '8px';
         plaintextButton.addEventListener('click', () => {
           const value = this.confirmValue();

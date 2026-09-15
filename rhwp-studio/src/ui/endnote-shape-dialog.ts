@@ -6,6 +6,7 @@ import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CommandServices } from '@/command/types';
 import { applyThroughRouter } from './dialog-apply';
 
+import { t } from '../i18n/index.ts';
 type LineTypeChoice = {
   value: string;
   label: string;
@@ -20,16 +21,16 @@ type LineWidthChoice = {
 };
 
 const LINE_TYPE_CHOICES: LineTypeChoice[] = [
-  { value: '1', label: '실선', css: 'solid' },
-  { value: '2', label: '파선', css: 'dashed', dash: '9 4' },
-  { value: '3', label: '점선', css: 'dotted', dash: '1 4' },
-  { value: '4', label: '쇄선', css: 'dashed', dash: '9 4 2 4' },
-  { value: '5', label: '이점 쇄선', css: 'dashed', dash: '9 4 2 4 2 4' },
-  { value: '6', label: '긴 파선', css: 'dashed', dash: '14 5' },
-  { value: '8', label: '이중선', css: 'double' },
-  { value: '9', label: '얇고 굵은 이중선', css: 'double' },
-  { value: '10', label: '굵고 얇은 이중선', css: 'double' },
-  { value: '11', label: '삼중선', css: 'double' },
+  { value: '1', label: t('dialog.endnoteShape.label'), css: 'solid' },
+  { value: '2', label: t('dialog.endnoteShape.label.x83e6b8'), css: 'dashed', dash: '9 4' },
+  { value: '3', label: t('dialog.endnoteShape.label.x982113'), css: 'dotted', dash: '1 4' },
+  { value: '4', label: t('dialog.endnoteShape.label.x81fce4'), css: 'dashed', dash: '9 4 2 4' },
+  { value: '5', label: t('dialog.endnoteShape.label.x1b3dd1'), css: 'dashed', dash: '9 4 2 4 2 4' },
+  { value: '6', label: t('dialog.endnoteShape.label.x951654'), css: 'dashed', dash: '14 5' },
+  { value: '8', label: t('dialog.endnoteShape.label.x1f88fa'), css: 'double' },
+  { value: '9', label: t('dialog.endnoteShape.label.x932051'), css: 'double' },
+  { value: '10', label: t('dialog.endnoteShape.label.xe24f87'), css: 'double' },
+  { value: '11', label: t('dialog.endnoteShape.label.xd07f40'), css: 'double' },
 ];
 
 const LINE_WIDTH_CHOICES: LineWidthChoice[] = [
@@ -145,7 +146,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     private sectionIdx: number,
     private services?: CommandServices,
   ) {
-    super('미주', 620);
+    super(t('dialog.endnoteShape.mmToHwp.title'), 620);
   }
 
   show(): void {
@@ -170,7 +171,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     const tab = document.createElement('button');
     tab.type = 'button';
     tab.className = 'dialog-tab active';
-    tab.textContent = '미주 모양';
+    tab.textContent = t('dialog.endnoteShape.tab.text');
     tabs.appendChild(tab);
 
     body.append(
@@ -253,7 +254,7 @@ export class EndnoteShapeDialog extends ModalDialog {
   }
 
   private numberGroup(): HTMLElement {
-    const group = this.group('번호 서식');
+    const group = this.group(t('dialog.endnoteShape.group.label'));
     this.numberFormatSelect = document.createElement('select');
     this.numberFormatSelect.className = 'dialog-select';
     for (const [value, label] of [
@@ -289,23 +290,23 @@ export class EndnoteShapeDialog extends ModalDialog {
     group.append(
       this.row(this.label('번호 모양'), this.numberFormatSelect),
       this.row(this.label('앞 장식 문자'), this.prefixInput, this.label('뒤 장식 문자'), this.suffixInput),
-      this.checkboxRow(this.separatorCheck, '구분선 넣기'),
+      this.checkboxRow(this.separatorCheck, t('dialog.endnoteShape.checkboxRow.label')),
       this.pairRow(
-        '종류',
+        t('dialog.endnoteShape.pairRow.label'),
         this.linePreviewSelect(this.lineTypeSelect, this.lineTypeButton, this.lineTypeMenu),
-        '길이',
+        t('dialog.endnoteShape.numberGroup.label'),
         this.inlineControls(
           this.separatorLengthModeSelect,
           this.withUnit(this.separatorLengthInput, 'mm'),
         ),
       ),
-      this.pairRow('굵기', this.widthPreviewSelect(), '색', this.colorPicker()),
+      this.pairRow(t('dialog.endnoteShape.pairRow.label.x4482fe'), this.widthPreviewSelect(), t('dialog.endnoteShape.numberGroup.label.xa002ac'), this.colorPicker()),
     );
     return group;
   }
 
   private spacingGroup(): HTMLElement {
-    const group = this.group('여백');
+    const group = this.group(t('dialog.endnoteShape.group.label.xcd8cef'));
     this.marginTopInput = this.numberInput(0, 0, 100, 0.5);
     this.noteSpacingInput = this.numberInput(7, 0, 100, 0.5);
     this.marginBottomInput = this.numberInput(2, 0, 100, 0.5);
@@ -318,38 +319,38 @@ export class EndnoteShapeDialog extends ModalDialog {
   }
 
   private numberingGroup(): HTMLElement {
-    const group = this.group('번호 매기기');
+    const group = this.group(t('dialog.endnoteShape.group.label.xb48563'));
     this.numberingContinue = this.radio(`endnote-numbering-${this.radioNameSuffix}`, 'continue');
     this.numberingRestart = this.radio(`endnote-numbering-${this.radioNameSuffix}`, 'restartSection');
     this.numberingContinue.checked = true;
     this.numberingContinue.defaultChecked = true;
     group.append(
-      this.radioRow(this.numberingContinue, '앞 구역에 이어서'),
-      this.radioRow(this.numberingRestart, '현재 구역부터 새로 시작'),
+      this.radioRow(this.numberingContinue, t('dialog.endnoteShape.radioRow.label')),
+      this.radioRow(this.numberingRestart, t('dialog.endnoteShape.radioRow.label.x2696bd')),
     );
     return group;
   }
 
   private contentNumberGroup(): HTMLElement {
-    const group = this.group('미주 내용 번호 속성');
+    const group = this.group(t('dialog.endnoteShape.group.label.x867151'));
     const normal = this.radio(`endnote-content-number-${this.radioNameSuffix}`, 'normal');
     const small = this.radio(`endnote-content-number-${this.radioNameSuffix}`, 'small');
     normal.checked = true;
     normal.defaultChecked = true;
     small.disabled = true;
-    group.append(this.radioRow(normal, '보통'), this.radioRow(small, '작게'));
+    group.append(this.radioRow(normal, t('dialog.endnoteShape.radioRow.label.xfaa1dd')), this.radioRow(small, t('dialog.endnoteShape.radioRow.label.x595b92')));
     return group;
   }
 
   private placementGroup(): HTMLElement {
-    const group = this.group('미주 위치');
+    const group = this.group(t('dialog.endnoteShape.group.label.xe50667'));
     this.placementDocument = this.radio(`endnote-placement-${this.radioNameSuffix}`, 'documentEnd');
     this.placementSection = this.radio(`endnote-placement-${this.radioNameSuffix}`, 'sectionEnd');
     this.placementDocument.checked = true;
     this.placementDocument.defaultChecked = true;
     group.append(
-      this.radioRow(this.placementDocument, '문서의 끝'),
-      this.radioRow(this.placementSection, '구역의 끝'),
+      this.radioRow(this.placementDocument, t('dialog.endnoteShape.radioRow.label.xbdca98')),
+      this.radioRow(this.placementSection, t('dialog.endnoteShape.radioRow.label.xfe867d')),
     );
     return group;
   }
@@ -599,7 +600,7 @@ export class EndnoteShapeDialog extends ModalDialog {
 
     const custom = document.createElement('button');
     custom.type = 'button';
-    custom.textContent = '다른 색...';
+    custom.textContent = t('dialog.endnoteShape.custom.text');
     custom.style.cssText = [
       'grid-column:1 / -1;height:24px;border:1px solid var(--color-border);background:var(--color-surface);',
       'font-size:12px;color:var(--color-text);cursor:pointer;margin-top:2px;color-scheme:inherit;',

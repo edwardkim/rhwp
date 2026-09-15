@@ -4,6 +4,7 @@ import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
 import { applyThroughRouter } from './dialog-apply';
 
+import { t } from '../i18n/index.ts';
 const HWPUNIT_PER_MM = 7200 / 25.4;
 
 function hwpunitToMm(hu: number): number {
@@ -27,7 +28,7 @@ export class ColumnSettingsDialog extends ModalDialog {
   private spacingInput!: HTMLInputElement;
 
   constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number, private services?: CommandServices) {
-    super('다단 설정', 360);
+    super(t('dialog.columnSettings.mmToHwpunit.title'), 360);
     this.wasm = wasm;
     this.eventBus = eventBus;
     this.sectionIdx = sectionIdx;

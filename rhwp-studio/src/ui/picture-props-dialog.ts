@@ -25,6 +25,7 @@ import {
   type PicturePropsPatch,
 } from './picture-props-apply-model';
 
+import { t as i18nText } from '../i18n/index.ts';
 /** HWPUNIT ↔ mm 변환 상수 (1 inch = 25.4 mm = 7200 HWPUNIT) */
 const HWP_PER_MM = 7200 / 25.4; // ≈ 283.46
 
@@ -318,7 +319,7 @@ export class PicturePropsDialog {
     // 타이틀 바
     const titleBar = document.createElement('div');
     titleBar.className = 'dialog-title';
-    titleBar.textContent = '개체 속성';
+    titleBar.textContent = i18nText('dialog.pictureProps.titleBar.text');
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dialog-close';
     closeBtn.textContent = '\u00D7';
@@ -349,11 +350,11 @@ export class PicturePropsDialog {
     rightCol.className = 'cs-right-col';
     const okBtn = document.createElement('button');
     okBtn.className = 'dialog-btn dialog-btn-primary';
-    okBtn.textContent = '설정(D)';
+    okBtn.textContent = i18nText('dialog.pictureProps.okBtn.text');
     okBtn.addEventListener('click', () => this.handleOk());
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'dialog-btn';
-    cancelBtn.textContent = '취소';
+    cancelBtn.textContent = i18nText('dialog.pictureProps.cancelBtn.text');
     cancelBtn.addEventListener('click', () => this.hide());
     rightCol.appendChild(okBtn);
     rightCol.appendChild(cancelBtn);
@@ -427,12 +428,12 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 크기 ──
-    const sizeFs = this.fieldset('크기');
+    const sizeFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label'));
     panel.appendChild(sizeFs);
 
     // 너비
     const wRow = this.row();
-    wRow.appendChild(this.label('너비(W)'));
+    wRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label')));
     const widthTypeSelect = this.sizeTypeSelect();
     this.sizeLockControls.push(widthTypeSelect);
     wRow.appendChild(widthTypeSelect);
@@ -444,7 +445,7 @@ export class PicturePropsDialog {
 
     // 높이
     const hRow = this.row();
-    hRow.appendChild(this.label('높이(H)'));
+    hRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x92f62d')));
     const heightTypeSelect = this.sizeTypeSelect();
     this.sizeLockControls.push(heightTypeSelect);
     hRow.appendChild(heightTypeSelect);
@@ -453,10 +454,10 @@ export class PicturePropsDialog {
     hRow.appendChild(this.heightInput);
     hRow.appendChild(this.unit('mm'));
     // 크기 고정
-    const sfLabel = this.checkboxLabel('크기 고정(S)');
+    const sfLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label'));
     this.sizeFixedCheck = sfLabel.querySelector('input') as HTMLInputElement;
     hRow.appendChild(sfLabel);
-    const krLabel = this.checkboxLabel('비율 유지');
+    const krLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x2d078e'));
     this.keepRatioCheck = krLabel.querySelector('input') as HTMLInputElement;
     this.keepRatioCheck.checked = userSettings.getPicturePropsKeepRatio();
     this.sizeLockControls.push(this.keepRatioCheck);
@@ -495,12 +496,12 @@ export class PicturePropsDialog {
     });
 
     // ── 위치 ──
-    const posFs = this.fieldset('위치');
+    const posFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x2c24e8'));
     panel.appendChild(posFs);
 
     // 글자처럼 취급
     const tacRow = this.row();
-    const tacLabel = this.checkboxLabel('글자처럼 취급(C)');
+    const tacLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x337f9a'));
     this.treatAsCharCheck = tacLabel.querySelector('input') as HTMLInputElement;
     tacRow.appendChild(tacLabel);
     posFs.appendChild(tacRow);
@@ -509,7 +510,7 @@ export class PicturePropsDialog {
     // 본문과의 배치 (아이콘 버튼 5개) + 본문 위치 드롭다운
     const wrapRow = this.row();
     wrapRow.classList.add('pp-pos-detail');
-    wrapRow.appendChild(this.label('본문과의 배치:'));
+    wrapRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb6a301')));
     const wrapIcons = ['⬒', '⬓', '⬔', '⬕', '⬖'];
     const wrapTitles = ['자리 차지', '어울림', '빈 공간 채움', '글 뒤로', '글 앞으로'];
     this.wrapBtns = [];
@@ -523,7 +524,7 @@ export class PicturePropsDialog {
       this.wrapBtns.push(btn);
     });
     // 본문 위치(P)
-    wrapRow.appendChild(this.label('본문 위치(P):'));
+    wrapRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xdcba02')));
     this.bodyPosSelect = this.selectEl([
       ['Both', '양쪽'], ['Left', '왼쪽'], ['Right', '오른쪽'],
       ['Larger', '큰 쪽'], ['Smaller', '작은 쪽'],
@@ -536,7 +537,7 @@ export class PicturePropsDialog {
     // 가로
     const hPosRow = this.row();
     hPosRow.classList.add('pp-pos-detail');
-    hPosRow.appendChild(this.label('가로(I):'));
+    hPosRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb359dd')));
     // [Task #1282] 한컴은 자리차지(TopAndBottom) 그림의 가로 기준 칸에
     // 실제 HorzRelTo 대신 "자리 차지"를 표시한다. 저장값은 textWrap 이므로
     // OK 시에는 HorzRelTo 로 넘기지 않는다.
@@ -545,12 +546,12 @@ export class PicturePropsDialog {
       ['Paper', '종이'], ['Page', '쪽'], ['Column', '단'], ['Para', '문단'],
     ]);
     hPosRow.appendChild(this.horzRelSelect);
-    hPosRow.appendChild(this.unit('의'));
+    hPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label')));
     this.horzAlignSelect = this.selectEl([
       ['Left', '왼쪽'], ['Center', '가운데'], ['Right', '오른쪽'], ['Outside', '바깥쪽'],
     ]);
     hPosRow.appendChild(this.horzAlignSelect);
-    hPosRow.appendChild(this.unit('기준'));
+    hPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label.x63402b')));
     this.horzOffsetInput = this.numberInput();
     hPosRow.appendChild(this.horzOffsetInput);
     hPosRow.appendChild(this.unit('mm'));
@@ -560,17 +561,17 @@ export class PicturePropsDialog {
     // 세로
     const vPosRow = this.row();
     vPosRow.classList.add('pp-pos-detail');
-    vPosRow.appendChild(this.label('세로(V):'));
+    vPosRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x541874')));
     this.vertRelSelect = this.selectEl([
       ['Paper', '종이'], ['Page', '쪽'], ['Para', '문단'],
     ]);
     vPosRow.appendChild(this.vertRelSelect);
-    vPosRow.appendChild(this.unit('의'));
+    vPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label')));
     this.vertAlignSelect = this.selectEl([
       ['Top', '위'], ['Center', '가운데'], ['Bottom', '아래'],
     ]);
     vPosRow.appendChild(this.vertAlignSelect);
-    vPosRow.appendChild(this.unit('기준'));
+    vPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label.x63402b')));
     this.vertOffsetInput = this.numberInput();
     vPosRow.appendChild(this.vertOffsetInput);
     vPosRow.appendChild(this.unit('mm'));
@@ -580,11 +581,11 @@ export class PicturePropsDialog {
     // 쪽 영역 안으로 제한 / 서로 겹침 허용
     const optRow = this.row();
     optRow.classList.add('pp-pos-detail');
-    const palLabel = this.checkboxLabel('쪽 영역 안으로 제한(B)');
+    const palLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.xb3cfb0'));
     this.pageAreaLimitCheck = palLabel.querySelector('input') as HTMLInputElement;
     this.pageAreaLimitCheck.addEventListener('change', () => this.updateOverlapOption());
     optRow.appendChild(palLabel);
-    const oaLabel = this.checkboxLabel('서로 겹침 허용(L)');
+    const oaLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x1fa276'));
     this.overlapAllowCheck = oaLabel.querySelector('input') as HTMLInputElement;
     optRow.appendChild(oaLabel);
     posFs.appendChild(optRow);
@@ -593,7 +594,7 @@ export class PicturePropsDialog {
     // 개체와 조판 부호를 항상 같은 쪽에 놓기
     const spRow = this.row();
     spRow.classList.add('pp-pos-detail');
-    const spLabel = this.checkboxLabel('개체와 조판 부호를 항상 같은 쪽에 놓기(A)');
+    const spLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.xa04bbc'));
     this.samePageCheck = spLabel.querySelector('input') as HTMLInputElement;
     this.samePageCheck.disabled = true;
     spRow.appendChild(spLabel);
@@ -601,10 +602,10 @@ export class PicturePropsDialog {
     this.posDetailEls.push(spRow);
 
     // ── 개체 회전 ──
-    const rotFs = this.fieldset('개체 회전/대칭');
+    const rotFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xc60145'));
     panel.appendChild(rotFs);
     const rotRow = this.row();
-    rotRow.appendChild(this.label('회전각(E):'));
+    rotRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x92fa82')));
     this.rotationInput = this.numberInput(-360, 360, 1);
     this.rotationInput.disabled = true;
     rotRow.appendChild(this.rotationInput);
@@ -622,14 +623,14 @@ export class PicturePropsDialog {
     this.horzFlipCheck = document.createElement('input');
     this.horzFlipCheck.type = 'checkbox';
     this.horzFlipCheck.disabled = true;
-    const horzLabel = this.label('좌우 대칭');
+    const horzLabel = this.label(i18nText('dialog.pictureProps.label.label.x5358b7'));
     horzLabel.style.cursor = 'pointer';
     horzLabel.prepend(this.horzFlipCheck);
     flipRow.appendChild(horzLabel);
     this.vertFlipCheck = document.createElement('input');
     this.vertFlipCheck.type = 'checkbox';
     this.vertFlipCheck.disabled = true;
-    const vertLabel = this.label('상하 대칭');
+    const vertLabel = this.label(i18nText('dialog.pictureProps.label.label.x441a72'));
     vertLabel.style.cursor = 'pointer';
     vertLabel.style.marginLeft = '12px';
     vertLabel.prepend(this.vertFlipCheck);
@@ -637,15 +638,15 @@ export class PicturePropsDialog {
     rotFs.appendChild(flipRow);
 
     // ── 기울이기 ──
-    const skewFs = this.fieldset('기울이기');
+    const skewFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xa3bed3'));
     panel.appendChild(skewFs);
     const skewRow = this.row();
-    skewRow.appendChild(this.label('가로(Y):'));
+    skewRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x6334e3')));
     this.skewHInput = this.numberInput(0, 45, 1);
     this.skewHInput.disabled = true;
     skewRow.appendChild(this.skewHInput);
     skewRow.appendChild(this.unit('°'));
-    skewRow.appendChild(this.label('세로(U):'));
+    skewRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xd05602')));
     this.skewVInput = this.numberInput(0, 45, 1);
     this.skewVInput.disabled = true;
     skewRow.appendChild(this.skewVInput);
@@ -653,21 +654,21 @@ export class PicturePropsDialog {
     skewFs.appendChild(skewRow);
 
     // ── 기타 ──
-    const etcFs = this.fieldset('기타');
+    const etcFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x5babec'));
     panel.appendChild(etcFs);
     const etcRow = this.row();
-    etcRow.appendChild(this.label('번호 종류(N):'));
+    etcRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x7cfc6a')));
     const numTypeSelect = this.selectEl([['Picture', '그림']]);
     numTypeSelect.disabled = true;
     etcRow.appendChild(numTypeSelect);
     // 개체 보호하기
-    const protLabel = this.checkboxLabel('개체 보호하기(K)');
+    const protLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x183a35'));
     this.protectCheck = protLabel.querySelector('input') as HTMLInputElement;
     this.protectCheck.disabled = true;
     etcRow.appendChild(protLabel);
     const descBtn = document.createElement('button');
     descBtn.className = 'dialog-btn pp-desc-btn';
-    descBtn.textContent = '개체 설명문(X)...';
+    descBtn.textContent = i18nText('dialog.pictureProps.descBtn.text');
     descBtn.addEventListener('click', () => this.showDescriptionPrompt());
     etcRow.appendChild(descBtn);
     etcFs.appendChild(etcRow);
@@ -689,28 +690,28 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 바깥 여백 ──
-    const marginFs = this.fieldset('바깥 여백');
+    const marginFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xfe5981'));
     panel.appendChild(marginFs);
 
     const row1 = this.row();
-    row1.appendChild(this.label('왼쪽(L):'));
+    row1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x9b6417')));
     this.outerMarginLeftInput = this.numberInput(0);
     this.outerMarginLeftInput.value = '0.00';
     row1.appendChild(this.outerMarginLeftInput);
     row1.appendChild(this.unit('mm'));
-    row1.appendChild(this.label('위쪽(T):'));
+    row1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x56ba66')));
     this.outerMarginTopInput = this.numberInput(0);
     this.outerMarginTopInput.value = '0.00';
     row1.appendChild(this.outerMarginTopInput);
     row1.appendChild(this.unit('mm'));
     // 모두(A) — ▲▼ 화살표만 있는 동기 스피너
-    row1.appendChild(this.label('모두'));
+    row1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf7473b')));
     const syncWrap = document.createElement('div');
     syncWrap.className = 'pp-sync-arrows';
     const syncUp = document.createElement('button');
     syncUp.className = 'pp-sync-arrow-btn';
     syncUp.textContent = '▲';
-    syncUp.title = '모두 증가';
+    syncUp.title = i18nText('dialog.pictureProps.syncUp.tooltip');
     syncUp.addEventListener('click', () => {
       [this.outerMarginLeftInput, this.outerMarginRightInput,
        this.outerMarginTopInput, this.outerMarginBottomInput].forEach(inp => {
@@ -720,7 +721,7 @@ export class PicturePropsDialog {
     const syncDown = document.createElement('button');
     syncDown.className = 'pp-sync-arrow-btn';
     syncDown.textContent = '▼';
-    syncDown.title = '모두 감소';
+    syncDown.title = i18nText('dialog.pictureProps.syncDown.tooltip');
     syncDown.addEventListener('click', () => {
       [this.outerMarginLeftInput, this.outerMarginRightInput,
        this.outerMarginTopInput, this.outerMarginBottomInput].forEach(inp => {
@@ -734,12 +735,12 @@ export class PicturePropsDialog {
     marginFs.appendChild(row1);
 
     const row2 = this.row();
-    row2.appendChild(this.label('오른쪽(R):'));
+    row2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xeac67d')));
     this.outerMarginRightInput = this.numberInput(0);
     this.outerMarginRightInput.value = '0.00';
     row2.appendChild(this.outerMarginRightInput);
     row2.appendChild(this.unit('mm'));
-    row2.appendChild(this.label('아래쪽(B):'));
+    row2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x22b9f2')));
     this.outerMarginBottomInput = this.numberInput(0);
     this.outerMarginBottomInput.value = '0.00';
     row2.appendChild(this.outerMarginBottomInput);
@@ -747,7 +748,7 @@ export class PicturePropsDialog {
     marginFs.appendChild(row2);
 
     // ── 캡션 ──
-    const captionFs = this.fieldset('캡션');
+    const captionFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xdadfcc'));
     panel.appendChild(captionFs);
 
     // 가로 배치: 그리드(왼) + 속성(오)
@@ -788,7 +789,7 @@ export class PicturePropsDialog {
 
     // 크기
     const capRow1 = this.row();
-    capRow1.appendChild(this.label('크기(S):'));
+    capRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xfcf2eb')));
     this.captionSizeInput = this.numberInput(0);
     this.captionSizeInput.value = '30.00';
     this.captionSizeInput.disabled = true;
@@ -798,7 +799,7 @@ export class PicturePropsDialog {
 
     // 개체와의 간격
     const capRow2 = this.row();
-    capRow2.appendChild(this.label('개체와의 간격(G):'));
+    capRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x2fb242')));
     this.captionGapInput = this.numberInput(0);
     this.captionGapInput.value = '3.00';
     this.captionGapInput.disabled = true;
@@ -807,11 +808,11 @@ export class PicturePropsDialog {
     capRight.appendChild(capRow2);
 
     // 체크박스
-    const ceLabel = this.checkboxLabel('여백 부분까지 너비 확대(W)');
+    const ceLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x81ed32'));
     this.captionExpandCheck = ceLabel.querySelector('input') as HTMLInputElement;
     this.captionExpandCheck.disabled = true;
     capRight.appendChild(ceLabel);
-    const cslLabel = this.checkboxLabel('한 줄로 입력(O)');
+    const cslLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.xe856b3'));
     this.captionSingleLineCheck = cslLabel.querySelector('input') as HTMLInputElement;
     this.captionSingleLineCheck.disabled = true;
     capRight.appendChild(cslLabel);
@@ -831,14 +832,14 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 선 ──
-    const lineFs = this.fieldset('선');
+    const lineFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x0c12cd'));
     panel.appendChild(lineFs);
 
     const row1 = this.row();
-    row1.appendChild(this.label('색(C):'));
+    row1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb7d4ad')));
     this.lineColorInput = this.colorInput('#000000');
     row1.appendChild(this.lineColorInput);
-    row1.appendChild(this.label('종류(L):'));
+    row1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x169f35')));
     // HWP 선 종류: attr bits 0-5 (0~17)
     this.lineTypeSelect = this.selectEl([
       ['0', '선 없음'], ['1', '실선'], ['2', '파선'], ['3', '점선'],
@@ -849,13 +850,13 @@ export class PicturePropsDialog {
     lineFs.appendChild(row1);
 
     const row2 = this.row();
-    row2.appendChild(this.label('끝 모양(E):'));
+    row2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x63c00f')));
     // HWP 끝 모양: attr bits 6-9
     this.lineEndSelect = this.selectEl([
       ['0', '둥근'], ['1', '평면'],
     ]);
     row2.appendChild(this.lineEndSelect);
-    row2.appendChild(this.label('굵기(T):'));
+    row2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb55042')));
     this.lineWidthInput = this.numberInput(0, undefined, 0.01);
     this.lineWidthInput.value = '0.12';
     row2.appendChild(this.lineWidthInput);
@@ -865,18 +866,18 @@ export class PicturePropsDialog {
     if (this.objectType === 'ole') return panel;
 
     // ── 화살표 ──
-    const arrowFs = this.fieldset('화살표');
+    const arrowFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xef18fc'));
     panel.appendChild(arrowFs);
 
     const aRow1 = this.row();
-    aRow1.appendChild(this.label('시작 모양(S):'));
+    aRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf0248e')));
     // HWP 화살표 모양: attr bits 10-15 / 16-21
     this.arrowStartSelect = this.selectEl([
       ['0', '없음'], ['1', '화살표'], ['2', '열린 화살표'],
       ['3', '꼬리 화살표'], ['4', '마름모'], ['5', '원형'], ['6', '사각형'],
     ]);
     aRow1.appendChild(this.arrowStartSelect);
-    aRow1.appendChild(this.label('끝 모양(Y):'));
+    aRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x2fe41a')));
     this.arrowEndSelect = this.selectEl([
       ['0', '없음'], ['1', '화살표'], ['2', '열린 화살표'],
       ['3', '꼬리 화살표'], ['4', '마름모'], ['5', '원형'], ['6', '사각형'],
@@ -885,7 +886,7 @@ export class PicturePropsDialog {
     arrowFs.appendChild(aRow1);
 
     const aRow2 = this.row();
-    aRow2.appendChild(this.label('시작 크기(Z):'));
+    aRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf8ba95')));
     // HWP 화살표 크기: attr bits 22-25 / 26-29 (0~8)
     this.arrowStartSizeSelect = this.selectEl([
       ['0', '작은×작은'], ['1', '작은×중간'], ['2', '작은×큰'],
@@ -893,7 +894,7 @@ export class PicturePropsDialog {
       ['6', '큰×작은'], ['7', '큰×중간'], ['8', '큰×큰'],
     ]);
     aRow2.appendChild(this.arrowStartSizeSelect);
-    aRow2.appendChild(this.label('끝 크기(N):'));
+    aRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xaab0ab')));
     this.arrowEndSizeSelect = this.selectEl([
       ['0', '작은×작은'], ['1', '작은×중간'], ['2', '작은×큰'],
       ['3', '중간×작은'], ['4', '중간×중간'], ['5', '중간×큰'],
@@ -903,7 +904,7 @@ export class PicturePropsDialog {
     arrowFs.appendChild(aRow2);
 
     // ── 사각형 모서리 곡률 ──
-    const cornerFs = this.fieldset('사각형 모서리 곡률');
+    const cornerFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xa5cdc7'));
     panel.appendChild(cornerFs);
 
     const cRow = this.row();
@@ -943,7 +944,7 @@ export class PicturePropsDialog {
     cornerFs.appendChild(cRow);
 
     // ── 호 테두리 ──
-    const arcFs = this.fieldset('호 테두리');
+    const arcFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xa287ab'));
     panel.appendChild(arcFs);
 
     const arcRow = this.row();
@@ -966,14 +967,14 @@ export class PicturePropsDialog {
 
     // ── 투명도 설정 + 기타 ──
     const transRow = this.row();
-    transRow.appendChild(this.label('투명도(I):'));
+    transRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb6f582')));
     this.lineTransInput = this.numberInput(0, 100, 1);
     this.lineTransInput.value = '0';
     this.lineTransInput.disabled = true;
     transRow.appendChild(this.lineTransInput);
     transRow.appendChild(this.unit('%'));
 
-    const liLabel = this.checkboxLabel('선 굵기 내부 적용(K)');
+    const liLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x0ecf2f'));
     this.lineInnerCheck = liLabel.querySelector('input') as HTMLInputElement;
     this.lineInnerCheck.disabled = true;
     transRow.appendChild(liLabel);
@@ -991,7 +992,7 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 채우기 ──
-    const fillFs = this.fieldset('채우기');
+    const fillFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x2ce970'));
     panel.appendChild(fillFs);
 
     const radioName = 'pp-fill-type';
@@ -1025,13 +1026,13 @@ export class PicturePropsDialog {
     this.solidArea = document.createElement('div');
     this.solidArea.className = 'pp-fill-sub';
     const sRow = this.row();
-    sRow.appendChild(this.label('면 색(C):'));
+    sRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x707821')));
     this.solidFaceColor = this.colorInput('#ffffff');
     sRow.appendChild(this.solidFaceColor);
-    sRow.appendChild(this.label('무늬 색(K):'));
+    sRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x8e4aef')));
     this.solidPatColor = this.colorInput('#000000');
     sRow.appendChild(this.solidPatColor);
-    sRow.appendChild(this.label('무늬 모양(L):'));
+    sRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb8c7cc')));
     this.solidPatternSelect = this.selectEl([
       ['none', '없음'], ['hline', '수평선'], ['vline', '수직선'],
       ['dline1', '대각선1'], ['dline2', '대각선2'], ['cross', '격자'],
@@ -1057,16 +1058,16 @@ export class PicturePropsDialog {
     this.gradientArea.className = 'pp-fill-sub';
 
     const gRow1 = this.row();
-    gRow1.appendChild(this.label('시작 색(G):'));
+    gRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf61aa4')));
     this.gradStartColor = this.colorInput('#ffffff');
     gRow1.appendChild(this.gradStartColor);
-    gRow1.appendChild(this.label('끝 색(E):'));
+    gRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xd7d028')));
     this.gradEndColor = this.colorInput('#000000');
     gRow1.appendChild(this.gradEndColor);
     this.gradientArea.appendChild(gRow1);
 
     const gRow2 = this.row();
-    gRow2.appendChild(this.label('유형(T):'));
+    gRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x335bfa')));
     this.gradTypeSelect = this.selectEl([
       ['linear', '소라'], ['horizontal', '수평'], ['rdiag', '오른쪽 대각선'],
       ['ldiag', '왼쪽 대각선'], ['center', '가운데에서'], ['classic', '클래식'],
@@ -1092,26 +1093,26 @@ export class PicturePropsDialog {
     this.gradientArea.appendChild(gRow2);
 
     const gRow3 = this.row();
-    gRow3.appendChild(this.label('가로 중심(W):'));
+    gRow3.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x46b165')));
     this.gradCenterXInput = this.numberInput();
     this.gradCenterXInput.value = '0';
     gRow3.appendChild(this.gradCenterXInput);
-    gRow3.appendChild(this.label('세로 중심(X):'));
+    gRow3.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x458ecc')));
     this.gradCenterYInput = this.numberInput();
     this.gradCenterYInput.value = '0';
     gRow3.appendChild(this.gradCenterYInput);
     this.gradientArea.appendChild(gRow3);
 
     const gRow4 = this.row();
-    gRow4.appendChild(this.label('기울임(Y):'));
+    gRow4.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x39660f')));
     this.gradTiltInput = this.numberInput();
     this.gradTiltInput.value = '0';
     gRow4.appendChild(this.gradTiltInput);
-    gRow4.appendChild(this.label('번짐 정도(Z):'));
+    gRow4.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x6c6f30')));
     this.gradBlurInput = this.numberInput(0, 100);
     this.gradBlurInput.value = '0';
     gRow4.appendChild(this.gradBlurInput);
-    gRow4.appendChild(this.label('반전 중심(N):'));
+    gRow4.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xe61763')));
     this.gradReverseCenterInput = this.numberInput();
     this.gradReverseCenterInput.value = '0';
     gRow4.appendChild(this.gradReverseCenterInput);
@@ -1121,7 +1122,7 @@ export class PicturePropsDialog {
 
     // ☐ 그림(B)
     const imgHdr = this.row();
-    const imgLabel = this.checkboxLabel('그림(B)');
+    const imgLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x1fc0dd'));
     this.fillImageCheck = imgLabel.querySelector('input') as HTMLInputElement;
     imgHdr.appendChild(imgLabel);
     fillFs.appendChild(imgHdr);
@@ -1130,7 +1131,7 @@ export class PicturePropsDialog {
     this.imageArea.className = 'pp-fill-sub';
 
     const iRow1 = this.row();
-    iRow1.appendChild(this.label('그림 파일(I):'));
+    iRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x897435')));
     this.imageFileInput = document.createElement('input');
     this.imageFileInput.type = 'text';
     this.imageFileInput.className = 'dialog-input';
@@ -1142,20 +1143,20 @@ export class PicturePropsDialog {
     browseBtn.textContent = '...';
     browseBtn.disabled = true;
     iRow1.appendChild(browseBtn);
-    const embedLabel = this.checkboxLabel('문서에 포함(J)');
+    const embedLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x6921ac'));
     this.imageEmbedCheck = embedLabel.querySelector('input') as HTMLInputElement;
     this.imageEmbedCheck.disabled = true;
     iRow1.appendChild(embedLabel);
     this.imageArea.appendChild(iRow1);
 
     const iRow2 = this.row();
-    iRow2.appendChild(this.label('채우기 유형(S):'));
+    iRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x686996')));
     this.imageFillTypeSelect = this.selectEl([
       ['tile', '바둑판식으로-모두'], ['stretch', '크기에 맞추어'], ['center', '가운데로'],
     ]);
     this.imageFillTypeSelect.disabled = true;
     iRow2.appendChild(this.imageFillTypeSelect);
-    iRow2.appendChild(this.label('밝기(H):'));
+    iRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xe66ce3')));
     this.imageBrightnessInput = this.numberInput(-100, 100);
     this.imageBrightnessInput.value = '0';
     this.imageBrightnessInput.disabled = true;
@@ -1164,13 +1165,13 @@ export class PicturePropsDialog {
     this.imageArea.appendChild(iRow2);
 
     const iRow3 = this.row();
-    iRow3.appendChild(this.label('그림 효과(E):'));
+    iRow3.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x7f5940')));
     this.imageEffectSelect = this.selectEl([
       ['none', '효과 없음'], ['gray', '회색조'], ['bw', '흑백'],
     ]);
     this.imageEffectSelect.disabled = true;
     iRow3.appendChild(this.imageEffectSelect);
-    iRow3.appendChild(this.label('대비(I):'));
+    iRow3.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x96ee4b')));
     this.imageContrastInput = this.numberInput(-100, 100);
     this.imageContrastInput.value = '0';
     this.imageContrastInput.disabled = true;
@@ -1179,7 +1180,7 @@ export class PicturePropsDialog {
     this.imageArea.appendChild(iRow3);
 
     const iRow4 = this.row();
-    const wmLabel = this.checkboxLabel('워터마크 효과(M)');
+    const wmLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x7a8784'));
     this.imageWatermarkCheck = wmLabel.querySelector('input') as HTMLInputElement;
     this.imageWatermarkCheck.disabled = true;
     iRow4.appendChild(wmLabel);
@@ -1188,10 +1189,10 @@ export class PicturePropsDialog {
     fillFs.appendChild(this.imageArea);
 
     // ── 투명도 설정 ──
-    const transFs = this.fieldset('투명도 설정');
+    const transFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x7da23a'));
     panel.appendChild(transFs);
     const transRow = this.row();
-    transRow.appendChild(this.label('투명도(I):'));
+    transRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb6f582')));
     this.fillTransInput = this.numberInput(0, 100, 1);
     this.fillTransInput.value = '0';
     this.fillTransInput.disabled = true;
@@ -1228,20 +1229,20 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 글상자 여백 ──
-    const marginFs = this.fieldset('글상자 여백');
+    const marginFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x5cc50d'));
     panel.appendChild(marginFs);
 
     const lRow = this.row();
-    lRow.appendChild(this.label('왼쪽(L):'));
+    lRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x9b6417')));
     this.tbMarginLeftInput = this.numberInput(0);
     lRow.appendChild(this.tbMarginLeftInput);
     lRow.appendChild(this.unit('mm'));
-    lRow.appendChild(this.label('위쪽(T):'));
+    lRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x56ba66')));
     this.tbMarginTopInput = this.numberInput(0);
     lRow.appendChild(this.tbMarginTopInput);
     lRow.appendChild(this.unit('mm'));
     // 모두(A) 동기 스피너
-    lRow.appendChild(this.label('모두(A):'));
+    lRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x13a264')));
     const tbSyncAll = this.numberInput(0);
     tbSyncAll.className = 'dialog-input pp-sync-spinner';
     tbSyncAll.addEventListener('input', () => {
@@ -1255,23 +1256,23 @@ export class PicturePropsDialog {
     marginFs.appendChild(lRow);
 
     const rRow = this.row();
-    rRow.appendChild(this.label('오른쪽(R):'));
+    rRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xeac67d')));
     this.tbMarginRightInput = this.numberInput(0);
     rRow.appendChild(this.tbMarginRightInput);
     rRow.appendChild(this.unit('mm'));
-    rRow.appendChild(this.label('아래쪽(B):'));
+    rRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x22b9f2')));
     this.tbMarginBottomInput = this.numberInput(0);
     rRow.appendChild(this.tbMarginBottomInput);
     rRow.appendChild(this.unit('mm'));
     marginFs.appendChild(rRow);
 
     // ── 속성 ──
-    const attrFs = this.fieldset('속성');
+    const attrFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xa49da9'));
     panel.appendChild(attrFs);
 
     // 세로 정렬 (아이콘 버튼 3개)
     const vaRow = this.row();
-    vaRow.appendChild(this.label('세로 정렬:'));
+    vaRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x329463')));
     this.tbVertAlignBtns = [];
     const vaIcons = ['⬆', '⬌', '⬇'];
     const vaTitles = ['위', '가운데', '아래'];
@@ -1290,7 +1291,7 @@ export class PicturePropsDialog {
     });
 
     // 세로쓰기
-    const vwLabel = this.checkboxLabel('세로쓰기(E):');
+    const vwLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x2bb386'));
     this.tbVertWriteCheck = vwLabel.querySelector('input') as HTMLInputElement;
     this.tbVertWriteCheck.disabled = true;
     vaRow.appendChild(vwLabel);
@@ -1301,32 +1302,32 @@ export class PicturePropsDialog {
     engRow.appendChild(this.label(''));
     this.tbEngLay = document.createElement('button');
     this.tbEngLay.className = 'pp-wrap-btn pp-eng-btn';
-    this.tbEngLay.textContent = '가\nA B';
-    this.tbEngLay.title = '영문 눕힘(O)';
+    this.tbEngLay.textContent = i18nText('dialog.pictureProps.tbEngLay.text');
+    this.tbEngLay.title = i18nText('dialog.pictureProps.tbEngLay.tooltip');
     this.tbEngLay.disabled = true;
     engRow.appendChild(this.tbEngLay);
     this.tbEngStand = document.createElement('button');
     this.tbEngStand.className = 'pp-wrap-btn pp-eng-btn';
-    this.tbEngStand.textContent = '가\nA\nB';
-    this.tbEngStand.title = '영문 세움(U)';
+    this.tbEngStand.textContent = i18nText('dialog.pictureProps.tbEngStand.text');
+    this.tbEngStand.title = i18nText('dialog.pictureProps.tbEngStand.tooltip');
     this.tbEngStand.disabled = true;
     engRow.appendChild(this.tbEngStand);
     attrFs.appendChild(engRow);
 
     // 한 줄로 입력
     const slRow = this.row();
-    const slLabel = this.checkboxLabel('한 줄로 입력(S)');
+    const slLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x8a626d'));
     this.tbSingleLineCheck = slLabel.querySelector('input') as HTMLInputElement;
     this.tbSingleLineCheck.disabled = true;
     slRow.appendChild(slLabel);
     attrFs.appendChild(slRow);
 
     // ── 필드 ──
-    const fieldFs = this.fieldset('필드');
+    const fieldFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.xa2947d'));
     panel.appendChild(fieldFs);
 
     const fnRow = this.row();
-    fnRow.appendChild(this.label('필드 이름(N):'));
+    fnRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x6b595c')));
     this.tbFieldNameInput = document.createElement('input');
     this.tbFieldNameInput.type = 'text';
     this.tbFieldNameInput.className = 'dialog-input';
@@ -1336,7 +1337,7 @@ export class PicturePropsDialog {
     fieldFs.appendChild(fnRow);
 
     const fmRow = this.row();
-    const fmLabel = this.checkboxLabel('양식 모드에서 편집 가능(F)');
+    const fmLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x9d0715'));
     this.tbFormModeCheck = fmLabel.querySelector('input') as HTMLInputElement;
     this.tbFormModeCheck.disabled = true;
     fmRow.appendChild(fmLabel);
@@ -1354,7 +1355,7 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 종류 ──
-    const typeFs = this.fieldset('종류');
+    const typeFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x2ec5ae'));
     panel.appendChild(typeFs);
 
     const grid = document.createElement('div');
@@ -1407,18 +1408,18 @@ export class PicturePropsDialog {
     typeFs.appendChild(grid);
 
     // ── 그림자 ──
-    const shadowFs = this.fieldset('그림자');
+    const shadowFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x020ab1'));
     panel.appendChild(shadowFs);
 
     const cRow = this.row();
-    cRow.appendChild(this.label('그림자 색(C):'));
+    cRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x000f48')));
     this.shadowColorInput = this.colorInput('#b2b2b2');
     this.shadowColorInput.disabled = true; // 초기 비활성 (타입 선택 시 활성)
     cRow.appendChild(this.shadowColorInput);
     shadowFs.appendChild(cRow);
 
     const hRow = this.row();
-    hRow.appendChild(this.label('가로 방향 이동(H):'));
+    hRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x231da4')));
     this.shadowHInput = this.numberInput();
     this.shadowHInput.value = '0.0';
     this.shadowHInput.disabled = true;
@@ -1460,7 +1461,7 @@ export class PicturePropsDialog {
     shadowFs.appendChild(hRow);
 
     const vRow = this.row();
-    vRow.appendChild(this.label('세로 방향 이동(V):'));
+    vRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x226f81')));
     this.shadowVInput = this.numberInput();
     this.shadowVInput.value = '0.0';
     this.shadowVInput.disabled = true;
@@ -1469,10 +1470,10 @@ export class PicturePropsDialog {
     shadowFs.appendChild(vRow);
 
     // ── 투명도 설정 ──
-    const transFs = this.fieldset('투명도 설정');
+    const transFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x7da23a'));
     panel.appendChild(transFs);
     const transRow = this.row();
-    transRow.appendChild(this.label('투명도(I):'));
+    transRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb6f582')));
     this.shadowTransInput = this.numberInput(0, 100, 1);
     this.shadowTransInput.value = '0';
     this.shadowTransInput.disabled = true;
@@ -1492,7 +1493,7 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 파일 이름 ──
-    const fileFs = this.fieldset('파일 이름');
+    const fileFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x7557b5'));
     panel.appendChild(fileFs);
     const fileRow = this.row();
     // [Task #741 후속] 외부 file path 그림 영역 dialog 표시 영역. populateFromProps 영역
@@ -1502,9 +1503,9 @@ export class PicturePropsDialog {
     this.picFileNameInput.className = 'dialog-input';
     this.picFileNameInput.style.width = '280px';
     this.picFileNameInput.readOnly = true;
-    this.picFileNameInput.value = '(문서에 포함된 그림)';
+    this.picFileNameInput.value = i18nText('dialog.pictureProps.picFileNameInput.value');
     fileRow.appendChild(this.picFileNameInput);
-    const embedLabel = this.checkboxLabel('문서에 포함');
+    const embedLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x7bd407'));
     this.picEmbedCheck = embedLabel.querySelector('input') as HTMLInputElement;
     this.picEmbedCheck.checked = true;
     this.picEmbedCheck.disabled = true;
@@ -1512,22 +1513,22 @@ export class PicturePropsDialog {
     fileFs.appendChild(fileRow);
 
     // ── 확대/축소 비율 ──
-    const scaleFs = this.fieldset('확대/축소 비율');
+    const scaleFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x44ecdb'));
     panel.appendChild(scaleFs);
 
     const sxRow = this.row();
-    sxRow.appendChild(this.label('가로'));
+    sxRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x1b155a')));
     this.picScaleXInput = this.numberInput(1, 1000, 0.01);
     this.picScaleXInput.style.width = '70px';
     sxRow.appendChild(this.picScaleXInput);
     sxRow.appendChild(this.unit('%'));
     // 아이콘 버튼들
     const scalePresets = [
-      { label: '🔍', title: '원래 크기로', pct: 100 },
-      { label: '½', title: '1/2배', pct: 50 },
-      { label: '⅔', title: '2/3배', pct: 67 },
-      { label: '³⁄₂', title: '3/2배', pct: 150 },
-      { label: '×2', title: '2배', pct: 200 },
+      { label: '🔍', title: i18nText('dialog.pictureProps.buildPicturePanel.tooltip'), pct: 100 },
+      { label: '½', title: i18nText('dialog.pictureProps.buildPicturePanel.tooltip.xe5286f'), pct: 50 },
+      { label: '⅔', title: i18nText('dialog.pictureProps.buildPicturePanel.tooltip.x46454f'), pct: 67 },
+      { label: '³⁄₂', title: i18nText('dialog.pictureProps.buildPicturePanel.tooltip.x583730'), pct: 150 },
+      { label: '×2', title: i18nText('dialog.pictureProps.buildPicturePanel.tooltip.xc23701'), pct: 200 },
     ];
     for (const p of scalePresets) {
       const btn = document.createElement('button');
@@ -1546,7 +1547,7 @@ export class PicturePropsDialog {
     scaleFs.appendChild(sxRow);
 
     const syRow = this.row();
-    syRow.appendChild(this.label('세로'));
+    syRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xe59031')));
     this.picScaleYInput = this.numberInput(1, 1000, 0.01);
     this.picScaleYInput.style.width = '70px';
     this.sizeLockControls.push(this.picScaleXInput, this.picScaleYInput);
@@ -1555,13 +1556,13 @@ export class PicturePropsDialog {
     scaleFs.appendChild(syRow);
 
     const ratioRow = this.row();
-    const ratioLabel = this.checkboxLabel('가로 세로 같은 비율 유지');
+    const ratioLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x4201be'));
     this.picKeepRatioCheck = ratioLabel.querySelector('input') as HTMLInputElement;
     this.sizeLockControls.push(this.picKeepRatioCheck);
     ratioRow.appendChild(ratioLabel);
     const resetBtn = document.createElement('button');
     resetBtn.className = 'dialog-btn';
-    resetBtn.textContent = '원래 그림으로';
+    resetBtn.textContent = i18nText('dialog.pictureProps.resetBtn.text');
     resetBtn.style.marginLeft = '12px';
     resetBtn.addEventListener('click', () => {
       this.picScaleXInput.value = '100';
@@ -1593,21 +1594,21 @@ export class PicturePropsDialog {
     });
 
     // ── 그림 자르기 ──
-    const cropFs = this.fieldset('그림 자르기');
+    const cropFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x708ab5'));
     panel.appendChild(cropFs);
     const cropRow1 = this.row();
-    cropRow1.appendChild(this.label('왼쪽'));
+    cropRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x8d60c4')));
     this.picCropLeftInput = this.numberInput(0);
     this.picCropLeftInput.value = '0.00';
     cropRow1.appendChild(this.picCropLeftInput);
     cropRow1.appendChild(this.unit('mm'));
-    cropRow1.appendChild(this.label('위쪽'));
+    cropRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xa0991a')));
     this.picCropTopInput = this.numberInput(0);
     this.picCropTopInput.value = '0.00';
     cropRow1.appendChild(this.picCropTopInput);
     cropRow1.appendChild(this.unit('mm'));
     // 모두 스피너
-    cropRow1.appendChild(this.label('모두'));
+    cropRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf7473b')));
     const cropSync = this.numberInput(0);
     cropSync.className = 'dialog-input pp-sync-spinner';
     cropSync.addEventListener('input', () => {
@@ -1621,12 +1622,12 @@ export class PicturePropsDialog {
     cropFs.appendChild(cropRow1);
 
     const cropRow2 = this.row();
-    cropRow2.appendChild(this.label('오른쪽'));
+    cropRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x19b0fb')));
     this.picCropRightInput = this.numberInput(0);
     this.picCropRightInput.value = '0.00';
     cropRow2.appendChild(this.picCropRightInput);
     cropRow2.appendChild(this.unit('mm'));
-    cropRow2.appendChild(this.label('아래쪽'));
+    cropRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x5f4a61')));
     this.picCropBottomInput = this.numberInput(0);
     this.picCropBottomInput.value = '0.00';
     cropRow2.appendChild(this.picCropBottomInput);
@@ -1634,20 +1635,20 @@ export class PicturePropsDialog {
     cropFs.appendChild(cropRow2);
 
     // ── 그림 여백 ──
-    const padFs = this.fieldset('그림 여백');
+    const padFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x62cf3e'));
     panel.appendChild(padFs);
     const padRow1 = this.row();
-    padRow1.appendChild(this.label('왼쪽'));
+    padRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x8d60c4')));
     this.picPadLeftInput = this.numberInput(0);
     this.picPadLeftInput.value = '0.00';
     padRow1.appendChild(this.picPadLeftInput);
     padRow1.appendChild(this.unit('mm'));
-    padRow1.appendChild(this.label('위쪽'));
+    padRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xa0991a')));
     this.picPadTopInput = this.numberInput(0);
     this.picPadTopInput.value = '0.00';
     padRow1.appendChild(this.picPadTopInput);
     padRow1.appendChild(this.unit('mm'));
-    padRow1.appendChild(this.label('모두'));
+    padRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf7473b')));
     const padSync = this.numberInput(0);
     padSync.className = 'dialog-input pp-sync-spinner';
     padSync.addEventListener('input', () => {
@@ -1661,12 +1662,12 @@ export class PicturePropsDialog {
     padFs.appendChild(padRow1);
 
     const padRow2 = this.row();
-    padRow2.appendChild(this.label('오른쪽'));
+    padRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x19b0fb')));
     this.picPadRightInput = this.numberInput(0);
     this.picPadRightInput.value = '0.00';
     padRow2.appendChild(this.picPadRightInput);
     padRow2.appendChild(this.unit('mm'));
-    padRow2.appendChild(this.label('아래쪽'));
+    padRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x5f4a61')));
     this.picPadBottomInput = this.numberInput(0);
     this.picPadBottomInput.value = '0.00';
     padRow2.appendChild(this.picPadBottomInput);
@@ -1674,7 +1675,7 @@ export class PicturePropsDialog {
     padFs.appendChild(padRow2);
 
     // ── 그림 효과 ──
-    const effectFs = this.fieldset('그림 효과');
+    const effectFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x76a5c0'));
     panel.appendChild(effectFs);
 
     const effectMain = this.row();
@@ -1684,10 +1685,10 @@ export class PicturePropsDialog {
     const radioCol = document.createElement('div');
     radioCol.className = 'pp-effect-radios';
     const effectNames = [
-      { value: 'RealPic', label: '효과 없음' },
-      { value: 'GrayScale', label: '회색조' },
-      { value: 'BlackWhite', label: '흑백' },
-      { value: 'Original', label: '원래 그림에서' },
+      { value: 'RealPic', label: i18nText('dialog.pictureProps.buildPicturePanel.label') },
+      { value: 'GrayScale', label: i18nText('dialog.pictureProps.buildPicturePanel.label.xb248c9') },
+      { value: 'BlackWhite', label: i18nText('dialog.pictureProps.buildPicturePanel.label.xea58ad') },
+      { value: 'Original', label: i18nText('dialog.pictureProps.buildPicturePanel.label.xe06ca1') },
     ];
     this.picEffectRadios = [];
     effectNames.forEach((e) => {
@@ -1708,7 +1709,7 @@ export class PicturePropsDialog {
     const attrCol = document.createElement('div');
     attrCol.className = 'pp-effect-attrs';
     const brRow = this.row();
-    brRow.appendChild(this.label('밝기'));
+    brRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x4b520d')));
     this.picBrightnessInput = this.numberInput(-100, 100, 1);
     this.picBrightnessInput.value = '0';
     this.picBrightnessInput.style.width = '60px';
@@ -1716,14 +1717,14 @@ export class PicturePropsDialog {
     brRow.appendChild(this.unit('%'));
     attrCol.appendChild(brRow);
     const ctRow = this.row();
-    ctRow.appendChild(this.label('대비'));
+    ctRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x6053f2')));
     this.picContrastInput = this.numberInput(-100, 100, 1);
     this.picContrastInput.value = '0';
     this.picContrastInput.style.width = '60px';
     ctRow.appendChild(this.picContrastInput);
     ctRow.appendChild(this.unit('%'));
     attrCol.appendChild(ctRow);
-    const wmLabel = this.checkboxLabel('워터마크 효과');
+    const wmLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.x27b496'));
     this.picWatermarkCheck = wmLabel.querySelector('input') as HTMLInputElement;
     this.picWatermarkCheck.addEventListener('change', () => {
       if (this.picWatermarkCheck.checked) {
@@ -1732,7 +1733,7 @@ export class PicturePropsDialog {
       }
     });
     attrCol.appendChild(wmLabel);
-    const invertLabel = this.checkboxLabel('그림 반전');
+    const invertLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.xc28daf'));
     const invertCheck = invertLabel.querySelector('input') as HTMLInputElement;
     invertCheck.disabled = true;
     attrCol.appendChild(invertLabel);
@@ -1740,10 +1741,10 @@ export class PicturePropsDialog {
     effectFs.appendChild(effectMain);
 
     // ── 투명도 설정 ──
-    const transFs = this.fieldset('투명도 설정');
+    const transFs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x7da23a'));
     panel.appendChild(transFs);
     const transRow = this.row();
-    transRow.appendChild(this.label('투명도'));
+    transRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xfe7e37')));
     this.picTransparencyInput = this.numberInput(0, 100, 1);
     this.picTransparencyInput.value = '0';
     transRow.appendChild(this.picTransparencyInput);
@@ -1761,10 +1762,10 @@ export class PicturePropsDialog {
     const panel = document.createElement('div');
     panel.className = 'dialog-tab-panel';
 
-    const fs = this.fieldset('반사 효과');
+    const fs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x3469fd'));
     panel.appendChild(fs);
 
-    const noneLabel = this.checkboxLabel('반사 없음');
+    const noneLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.xadd318'));
     const noneCheck = noneLabel.querySelector('input') as HTMLInputElement;
     noneCheck.checked = true;
     fs.appendChild(noneLabel);
@@ -1783,7 +1784,7 @@ export class PicturePropsDialog {
 
     // 속성
     const sizeRow = this.row();
-    sizeRow.appendChild(this.label('크기'));
+    sizeRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x76905b')));
     const sizeSlider = document.createElement('input');
     sizeSlider.type = 'range';
     sizeSlider.className = 'pp-slider';
@@ -1795,7 +1796,7 @@ export class PicturePropsDialog {
     fs.appendChild(sizeRow);
 
     const distRow = this.row();
-    distRow.appendChild(this.label('거리'));
+    distRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xebd232')));
     const distSlider = document.createElement('input');
     distSlider.type = 'range';
     distSlider.className = 'pp-slider';
@@ -1818,10 +1819,10 @@ export class PicturePropsDialog {
     const panel = document.createElement('div');
     panel.className = 'dialog-tab-panel';
 
-    const fs = this.fieldset('네온 효과');
+    const fs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x0b0fe4'));
     panel.appendChild(fs);
 
-    const noneLabel = this.checkboxLabel('네온 없음');
+    const noneLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.xe882e2'));
     const noneCheck = noneLabel.querySelector('input') as HTMLInputElement;
     noneCheck.checked = true;
     fs.appendChild(noneLabel);
@@ -1840,14 +1841,14 @@ export class PicturePropsDialog {
 
     // 속성
     const colorRow = this.row();
-    colorRow.appendChild(this.label('색'));
+    colorRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xa002ac')));
     const colorInput = this.colorInput('#ffff00');
     colorInput.disabled = true;
     colorRow.appendChild(colorInput);
     fs.appendChild(colorRow);
 
     const transRow = this.row();
-    transRow.appendChild(this.label('투명도'));
+    transRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xfe7e37')));
     const transSlider = document.createElement('input');
     transSlider.type = 'range';
     transSlider.className = 'pp-slider';
@@ -1859,7 +1860,7 @@ export class PicturePropsDialog {
     fs.appendChild(transRow);
 
     const sizeRow = this.row();
-    sizeRow.appendChild(this.label('크기'));
+    sizeRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x76905b')));
     const sizeSlider = document.createElement('input');
     sizeSlider.type = 'range';
     sizeSlider.className = 'pp-slider';
@@ -1882,10 +1883,10 @@ export class PicturePropsDialog {
     const panel = document.createElement('div');
     panel.className = 'dialog-tab-panel';
 
-    const fs = this.fieldset('열은 테두리 효과');
+    const fs = this.fieldset(i18nText('dialog.pictureProps.fieldset.label.x45a5e7'));
     panel.appendChild(fs);
 
-    const noneLabel = this.checkboxLabel('열은 테두리 없음');
+    const noneLabel = this.checkboxLabel(i18nText('dialog.pictureProps.checkboxLabel.label.xeb2b3d'));
     fs.appendChild(noneLabel);
 
     // 6개 프리셋 버튼
@@ -1902,7 +1903,7 @@ export class PicturePropsDialog {
 
     // 크기 슬라이더
     const sizeRow = this.row();
-    sizeRow.appendChild(this.label('크기'));
+    sizeRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x76905b')));
     const sizeSlider = document.createElement('input');
     sizeSlider.type = 'range';
     sizeSlider.className = 'pp-slider';
@@ -1927,7 +1928,7 @@ export class PicturePropsDialog {
     panel.className = 'dialog-tab-panel';
     const msg = document.createElement('div');
     msg.className = 'pp-stub-msg';
-    msg.textContent = `[${name}] 탭은 추후 구현 예정입니다.`;
+    msg.textContent = i18nText('dialog.pictureProps.msg.text', { p1: name });
     panel.appendChild(msg);
     return panel;
   }
@@ -2140,7 +2141,7 @@ export class PicturePropsDialog {
         this.picFileNameInput.value = this.props.externalPath;
         this.picEmbedCheck.checked = false;
       } else {
-        this.picFileNameInput.value = '(문서에 포함된 그림)';
+        this.picFileNameInput.value = i18nText('dialog.pictureProps.picFileNameInput.value');
         this.picEmbedCheck.checked = true;
       }
     }
@@ -2491,7 +2492,7 @@ export class PicturePropsDialog {
     // 타이틀
     const titleBar = document.createElement('div');
     titleBar.className = 'dialog-title';
-    titleBar.textContent = '개체 설명문';
+    titleBar.textContent = i18nText('dialog.pictureProps.titleBar.text.x334230');
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dialog-close';
     closeBtn.textContent = '\u00D7';
@@ -2516,14 +2517,14 @@ export class PicturePropsDialog {
     errorLabel.style.color = '#c00';
     errorLabel.style.fontSize = '11px';
     errorLabel.style.display = 'none';
-    errorLabel.textContent = `개체 설명문은 ${MAX_OBJECT_DESCRIPTION_LEN}자를 넘을 수 없습니다.`;
+    errorLabel.textContent = i18nText('dialog.pictureProps.errorLabel.text', { p1: MAX_OBJECT_DESCRIPTION_LEN });
     leftCol.appendChild(errorLabel);
 
     const rightCol = document.createElement('div');
     rightCol.className = 'cs-right-col';
     const okBtn = document.createElement('button');
     okBtn.className = 'dialog-btn dialog-btn-primary';
-    okBtn.textContent = '확인(D)';
+    okBtn.textContent = i18nText('dialog.pictureProps.okBtn.text.x46efc8');
     okBtn.addEventListener('click', () => {
       if (textarea.value.length > MAX_OBJECT_DESCRIPTION_LEN) {
         errorLabel.style.display = '';
@@ -2534,7 +2535,7 @@ export class PicturePropsDialog {
     });
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'dialog-btn';
-    cancelBtn.textContent = '취소';
+    cancelBtn.textContent = i18nText('dialog.pictureProps.cancelBtn.text');
     cancelBtn.addEventListener('click', () => overlay.remove());
     rightCol.appendChild(okBtn);
     rightCol.appendChild(cancelBtn);

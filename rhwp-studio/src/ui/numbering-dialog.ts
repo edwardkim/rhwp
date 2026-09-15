@@ -31,6 +31,7 @@ import type { EventBus } from '@/core/event-bus';
 import { ModalDialog } from './dialog';
 import { BULLET_PRESETS } from '@/core/numbering-defaults';
 
+import { t as i18nText } from '../i18n/index.ts';
 /** 번호 형식 코드 (HWP 표 43) */
 const NUM_FMT = {
   DIGIT: 0,       // 1, 2, 3
@@ -54,12 +55,12 @@ interface NumberingPreset {
 
 const PRESETS: NumberingPreset[] = [
   {
-    label: '(없음)',
+    label: i18nText('dialog.numbering.label'),
     levelFormats: ['', '', '', '', '', '', ''],
     numberFormats: [0, 0, 0, 0, 0, 0, 0],
   },
   {
-    label: '1. 가. 1) 가) (1) (가) ①',
+    label: i18nText('dialog.numbering.label.x1edd7d'),
     levelFormats: ['^1.', '^2.', '^3)', '^4)', '(^5)', '(^6)', '^7'],
     numberFormats: [NUM_FMT.DIGIT, NUM_FMT.HANGUL_MIXED, NUM_FMT.DIGIT, NUM_FMT.HANGUL_MIXED, NUM_FMT.DIGIT, NUM_FMT.HANGUL_MIXED, NUM_FMT.CIRCLE_DIGIT],
   },
@@ -74,17 +75,17 @@ const PRESETS: NumberingPreset[] = [
     numberFormats: [NUM_FMT.ROMAN_UPPER, NUM_FMT.ALPHA_UPPER, NUM_FMT.DIGIT, NUM_FMT.ALPHA_LOWER, NUM_FMT.DIGIT, NUM_FMT.ALPHA_LOWER, NUM_FMT.CIRCLE_DIGIT],
   },
   {
-    label: '제1장 제1절 1. 가. 1) 가) (1)',
+    label: i18nText('dialog.numbering.label.x02f8f9'),
     levelFormats: ['제^1장', '제^2절', '^3.', '^4.', '^5)', '^6)', '(^7)'],
     numberFormats: [NUM_FMT.DIGIT, NUM_FMT.DIGIT, NUM_FMT.DIGIT, NUM_FMT.HANGUL_MIXED, NUM_FMT.DIGIT, NUM_FMT.HANGUL_MIXED, NUM_FMT.DIGIT],
   },
   {
-    label: '一 二 三 (한자)',
+    label: i18nText('dialog.numbering.label.x78f889'),
     levelFormats: ['^1', '^2', '^3', '^4', '^5', '^6', '^7'],
     numberFormats: [NUM_FMT.HANJA, NUM_FMT.HANJA, NUM_FMT.HANJA, NUM_FMT.HANJA, NUM_FMT.HANJA, NUM_FMT.HANJA, NUM_FMT.HANJA],
   },
   {
-    label: '① ② ③ (원문자)',
+    label: i18nText('dialog.numbering.label.x8452bc'),
     levelFormats: ['^1', '^2', '^3', '^4', '^5', '^6', '^7'],
     numberFormats: [NUM_FMT.CIRCLE_DIGIT, NUM_FMT.CIRCLE_DIGIT, NUM_FMT.CIRCLE_DIGIT, NUM_FMT.CIRCLE_DIGIT, NUM_FMT.CIRCLE_DIGIT, NUM_FMT.CIRCLE_DIGIT, NUM_FMT.CIRCLE_DIGIT],
   },
@@ -177,7 +178,7 @@ export class NumberingDialog extends ModalDialog {
     private wasm: WasmBridge,
     private eventBus: EventBus,
   ) {
-    super('문단 번호/글머리표', 480);
+    super(i18nText('dialog.numbering.generatePreview.title'), 480);
   }
 
   protected createBody(): HTMLElement {
@@ -189,11 +190,11 @@ export class NumberingDialog extends ModalDialog {
     tabBar.className = 'nd-tab-bar';
     const tabNumber = document.createElement('button');
     tabNumber.className = 'nd-tab active';
-    tabNumber.textContent = '문단 번호';
+    tabNumber.textContent = i18nText('dialog.numbering.tabNumber.text');
     tabNumber.addEventListener('click', () => this.switchTab('number'));
     const tabBullet = document.createElement('button');
     tabBullet.className = 'nd-tab';
-    tabBullet.textContent = '글머리표';
+    tabBullet.textContent = i18nText('dialog.numbering.tabBullet.text');
     tabBullet.addEventListener('click', () => this.switchTab('bullet'));
     tabBar.appendChild(tabNumber);
     tabBar.appendChild(tabBullet);
@@ -241,7 +242,7 @@ export class NumberingDialog extends ModalDialog {
     // (없음)
     const noneCell = document.createElement('div');
     noneCell.className = 'nd-bullet-cell';
-    noneCell.textContent = '(없음)';
+    noneCell.textContent = i18nText('dialog.numbering.noneCell.text');
     noneCell.addEventListener('click', () => {
       grid.querySelectorAll('.nd-bullet-cell').forEach(c => c.classList.remove('selected'));
       noneCell.classList.add('selected');
@@ -280,7 +281,7 @@ export class NumberingDialog extends ModalDialog {
     fmtSection.className = 'dialog-section';
     const fmtTitle = document.createElement('div');
     fmtTitle.className = 'dialog-section-title';
-    fmtTitle.textContent = '번호 형식';
+    fmtTitle.textContent = i18nText('dialog.numbering.fmtTitle.text');
     fmtSection.appendChild(fmtTitle);
 
     const radioGroup = document.createElement('div');
@@ -316,15 +317,15 @@ export class NumberingDialog extends ModalDialog {
     restartSection.className = 'dialog-section';
     const restartTitle = document.createElement('div');
     restartTitle.className = 'dialog-section-title';
-    restartTitle.textContent = '시작 번호 방식';
+    restartTitle.textContent = i18nText('dialog.numbering.restartTitle.text');
     restartSection.appendChild(restartTitle);
 
     const restartRadioGroup = document.createElement('div');
     restartRadioGroup.className = 'nd-restart-group';
     const restartModes = [
-      { value: '0', label: '앞 번호 목록에 이어(C)', checked: this.restartMode === 0 },
-      { value: '1', label: '이전 번호 목록에 이어(P)', checked: this.restartMode === 1 },
-      { value: '2', label: '새 번호 목록 시작(G)', checked: this.restartMode === 2 },
+      { value: '0', label: i18nText('dialog.numbering.buildNumberPanel.label'), checked: this.restartMode === 0 },
+      { value: '1', label: i18nText('dialog.numbering.buildNumberPanel.label.x8d587d'), checked: this.restartMode === 1 },
+      { value: '2', label: i18nText('dialog.numbering.buildNumberPanel.label.x7588d6'), checked: this.restartMode === 2 },
     ];
     for (const mode of restartModes) {
       const lbl = document.createElement('label');
@@ -356,7 +357,7 @@ export class NumberingDialog extends ModalDialog {
     startSection.className = 'nd-start-section';
     const startLabel = document.createElement('label');
     startLabel.className = 'dialog-label';
-    startLabel.textContent = '시작 번호';
+    startLabel.textContent = i18nText('dialog.numbering.startLabel.text');
     const startInput = document.createElement('input');
     startInput.type = 'number';
     startInput.className = 'dialog-input';
@@ -381,7 +382,7 @@ export class NumberingDialog extends ModalDialog {
     previewSection.className = 'nd-preview-section';
     const previewTitle = document.createElement('div');
     previewTitle.className = 'dialog-section-title';
-    previewTitle.textContent = '미리보기';
+    previewTitle.textContent = i18nText('dialog.numbering.previewTitle.text');
     this.previewEl = document.createElement('pre');
     this.previewEl.className = 'nd-preview';
     previewSection.appendChild(previewTitle);
