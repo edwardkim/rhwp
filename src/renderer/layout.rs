@@ -8442,14 +8442,26 @@ impl LayoutEngine {
                                 if !continues_this_table {
                                     return None;
                                 }
-                                // 도착 y 는 그 조각 첫 줄의 저장 vpos 다.
-                                paragraphs
-                                    .get(*next_pi)
-                                    .and_then(|p| p.line_segs.get(*start_line))
-                                    .filter(|seg| seg.vertical_pos >= 0)
-                                    .map(|seg| {
-                                        col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi)
-                                    })
+                                // prefix의 실제 배치 결과를 이어받는다. 단 상단에 저장
+                                // 절대 vpos를 더하면 선행 여백으로 이동한 표 앵커를 잃어
+                                // 첫 줄만 내려가고 suffix와 겹친다.
+                                let seg = paragraphs.get(*next_pi)?.line_segs.get(*start_line)?;
+                                let previous_line = u32::try_from(start_line - 1).ok()?;
+                                col_node.children.iter().rev().find_map(|node| {
+                                    let RenderNodeType::TextLine(line) = &node.node_type else {
+                                        return None;
+                                    };
+                                    if line.section_index != Some(page_content.section_index)
+                                        || line.para_index != Some(*next_pi)
+                                        || line.line_index != Some(previous_line)
+                                    {
+                                        return None;
+                                    }
+                                    let previous_vpos = line.vpos?;
+                                    let delta = seg.vertical_pos.checked_sub(previous_vpos)?;
+                                    (previous_vpos >= 0 && delta >= 0)
+                                        .then(|| node.bbox.y + hwpunit_to_px(delta, self.dpi))
+                                })
                             }
                             _ => None,
                         })
@@ -14095,8 +14107,13 @@ impl LayoutEngine {
             // 현재 페이지에서의 y
             let para_y = table_y_start + (abs_y_in_table - table_content_offset);
 
-            // 현재 페이지의 표 y 범위 내에서만 렌더링
-            if para_y < table_y_start - 1.0 || para_y >= table_y_end {
+            // 명시적 prefix 컷은 typeset이 이 단에 소유시킨 텍스트다. 마지막
+            // prefix 줄이 실제 표 밴드 바로 아래에 있어도 버리면 suffix가 그 줄을
+            // 다시 그리지 않아 내용이 누락된다. 전체/후속 fragment의 범위 필터는
+            // 유지하고, 첫 fragment가 소유하는 유한 prefix만 배치한다.
+            let owns_prefix =
+                wp.has_text && wp.end_line != usize::MAX && table_content_offset == 0.0;
+            if para_y < table_y_start - 1.0 || (!owns_prefix && para_y >= table_y_end) {
                 continue;
             }
 

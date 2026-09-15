@@ -54,6 +54,9 @@ samples/issue5941/1480000-201900698-native-neartop-reset.hwp -text -diff
 samples/issue6697/*.hwpx -text -diff
 samples/issue6718/*.hwp -text -diff
 
+# PR #7163 전체 사진 시각 증적: 원본 ZIP 바이트 보존
+tests/fixtures/issue_7158/*.hwpx -text -diff
+
 # Preserve the original bytes of the #6756/#6764 regression inputs.
 samples/issue6756/*.hwp -text -diff
 samples/issue6764/*.hwp -text -diff

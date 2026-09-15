@@ -116,3 +116,76 @@ fn square_wrap_continuation_tracks_the_stored_ladder() {
             .collect::<Vec<_>>()
     );
 }
+
+fn rendered_lines(doc: &DocumentCore, para: usize) -> Vec<Line> {
+    let mut lines = Vec::new();
+    let mut owning_pages = 0;
+    for page in 0..doc.page_count() {
+        let before = lines.len();
+        collect_lines(
+            &doc.build_page_render_tree(page).expect("렌더").root,
+            para,
+            &mut lines,
+        );
+        owning_pages += usize::from(lines.len() > before);
+    }
+    assert_eq!(owning_pages, 1, "이 계약의 문단은 한 쪽에 있어야 한다");
+    lines.sort_by_key(|line| line.0);
+    lines
+}
+
+fn assert_complete_ladder(doc: &DocumentCore, para: usize) {
+    let lines = rendered_lines(doc, para);
+    let expected = &doc.document().sections[0].paragraphs[para].line_segs;
+    assert_eq!(lines.len(), expected.len(), "pi={para} 줄 누락·중복");
+    for (index, line) in lines.iter().enumerate() {
+        assert_eq!(line.0 as usize, index, "pi={para} 줄 소유");
+    }
+    for pair in lines.windows(2) {
+        let drawn = pair[1].1 - pair[0].1;
+        let stored = hu_to_px(pair[1].2 - pair[0].2);
+        assert!(
+            (drawn - stored).abs() < 0.15,
+            "pi={para}: drawn={drawn}, stored={stored}"
+        );
+    }
+}
+
+#[test]
+fn continuation_and_following_paragraph_preserve_moved_anchor() {
+    use rhwp::model::control::Control;
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let source = DocumentCore::from_bytes(&bytes).unwrap();
+    let original = rendered_lines(&source, WRAP_PARA);
+    let following = rendered_lines(&source, WRAP_PARA + 1);
+    for margin_delta in [750_i16, 1500] {
+        let mut document = source.document().clone();
+        let Control::Table(table) = &mut document.sections[0].paragraphs[75].controls[0] else {
+            panic!("선행 제목 표");
+        };
+        table.outer_margin_bottom += margin_delta;
+        let mut moved = DocumentCore::new_empty();
+        moved.set_document(document);
+        assert_complete_ladder(&moved, WRAP_PARA);
+        for (before, after) in original.iter().zip(rendered_lines(&moved, WRAP_PARA)) {
+            assert!((after.1 - before.1 - hu_to_px(margin_delta as i32)).abs() < 0.15);
+        }
+        let moved_following = rendered_lines(&moved, WRAP_PARA + 1);
+        assert_eq!(following.len(), moved_following.len());
+        for (before, after) in following.iter().zip(moved_following) {
+            assert!(
+                (after.1 - before.1 - hu_to_px(margin_delta as i32)).abs() < 0.15,
+                "후속 문단도 같은 흐름 이동을 보존해야 한다"
+            );
+        }
+    }
+}
+
+#[test]
+fn all_same_page_wrap_handoffs_keep_every_line_and_its_pitch() {
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let doc = DocumentCore::from_bytes(&bytes).unwrap();
+    for para in [45, 81, 96, 104, 111, 117, 125, 139, 156, 162, 171, 186, 197] {
+        assert_complete_ladder(&doc, para);
+    }
+}
