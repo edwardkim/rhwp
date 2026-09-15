@@ -79,4 +79,8 @@ tests/fixtures/stored_inline_table_suffix/*.hwpx -text -diff
 tests/fixtures/stored_column_width_quantization/*.hwpx -text -diff
 pdf/two_digits-2020.pdf -text -diff
 pdf/stored-column-header-2020.pdf -text -diff
+tests/fixtures/stored_inline_table_suffix/*.hwp -text -diff
 tests/fixtures/stored_column_width_quantization/*.hwp -text -diff
+pdf/two-digits-wrap-2020.pdf -text -diff
+pdf/two-digits-break-2020.pdf -text -diff
+pdf/two-digits-table-wrap-2020.pdf -text -diff

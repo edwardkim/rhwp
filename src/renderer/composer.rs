@@ -1052,7 +1052,10 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             let keep_stored_boundary = post_text_clean.is_empty()
                 && line_idx + 1 < line_seg_count
                 && tac_inline_object_starts_at(para, text_end)
-                && matches!(lines.last(), Some(prev) if prev.char_start != text_start);
+                // The first stored row also owns its terminating break.
+                // Requiring a previous row creates an extra empty row before
+                // the already stored next table row (#7165).
+                && lines.last().is_none_or(|prev| prev.char_start != text_start);
 
             if !pre_text.is_empty() && !lines.is_empty() && !keep_stored_boundary {
                 // \n 앞 텍스트를 이전 ComposedLine에 합침 (한컴 방식: \n 전 전체가 한 줄)
