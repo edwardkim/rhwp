@@ -4278,6 +4278,21 @@ fn parse_hwp3_inner(
         1
     };
     section_def.footnote_shape.separator_line_width = 1;
+    // [#7174] 구분선 여백을 **HWP5 슬롯**에 배선한다. `FootnoteShape` 는 포맷별로
+    // 슬롯이 갈리고(모델 주석) HWP5 저장은 `separator_margin_bottom`(구분선 위)과
+    // `note_spacing`(구분선 아래)을 쓴다. 종전에는 각주 모양에 이 배선이 아예 없어
+    // 저장본의 구분선 여백이 0 이었다 — 구분선이 본문과 각주에 붙는다.
+    //
+    // 한/글 네이티브 HWP5 정본 실측: `FOOTNOTE_SHAPE[0]` 이 구분선 위 852 ·
+    // 아래 568 이고, 이는 `doc_info` 의 hunit 값 213·142 에 ×4 한 값과 같다.
+    if doc_info.footnote_line_margin != 0 {
+        section_def.footnote_shape.separator_margin_bottom =
+            (doc_info.footnote_line_margin as i16).saturating_mul(4);
+    }
+    if doc_info.footnote_text_margin != 0 {
+        section_def.footnote_shape.note_spacing =
+            (doc_info.footnote_text_margin as i16).saturating_mul(4);
+    }
     // [#3032] doc_info offset 108 "각주와 각주 사이의 간격"(footnote_between_margin)을
     // footnote_shape.raw_unknown("주석 사이")에 hunit ×4 = HWPUNIT 변환으로 배선한다.
     // 적용처·스케일 근거는 한컴 자체 HWP3→HWPX 변환 실측(SO-SUEOP.hwpx:
