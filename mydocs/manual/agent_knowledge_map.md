@@ -318,7 +318,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 `edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
 `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 337개 필드
+### 2-2. 전수 사전 — 339개 필드
 
 `capabilities` 의 `recordFields` 고유 **328개**와 그 밖의 실측·참조 필드를 합친
 336개다. `등장 명령` 은 자기서술
