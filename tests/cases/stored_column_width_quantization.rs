@@ -7,13 +7,14 @@ const FIXTURE: &[u8] = include_bytes!("../fixtures/stored_column_width_quantizat
 
 #[test]
 fn stored_header_survives_column_quantization_but_not_real_width_changes() {
-    for remainder in 0..4 {
+    for remainder in 0_i32..4 {
         for (width_change, dirty, same_line) in
             [(0, false, true), (-1, false, false), (0, true, false)]
         {
             let source = DocumentCore::from_bytes(FIXTURE).expect("synthetic header");
             let mut document = source.document().clone();
-            document.sections[0].section_def.page_def.width = 43200 + remainder + width_change;
+            document.sections[0].section_def.page_def.width =
+                u32::try_from(43200 + remainder + width_change).expect("positive fixture page width");
             let para = &mut document.sections[0].paragraphs[0];
             para.line_segs[0].segment_width = 36000 + remainder;
             if dirty {
