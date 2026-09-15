@@ -646,11 +646,18 @@ fn convert_para_shape_with_layout_contract(
     let mut ps = crate::model::style::ParaShape::default();
     // HWP3 여백/들여쓰기 단위는 hunit(1/1800인치)이다. 공통 ParaShape IR은
     // HWP5/HWPX와 같이 실제 HWPUNIT 값의 2배 스케일로 저장하므로 4*2를 곱한다.
-    // 일반 HWP3의 저장 왕복은 `left_margin` 원값을 보존한다. 실제 암호 HWP3
-    // fixture만 한컴 PDF/HWP5 변환본에서 음수 들여쓰기의 첫 줄을
-    // `left_margin + indent`로 해석한다는 계약이 확인됐다. 이를 전역 정규화하면
-    // 다른 HWP3 문서의 HWP5 라운드트립 x좌표가 달라진다.
-    let first_line_margin = if use_password_layout_contract && hwp3_ps.indent < 0 {
+    // [#7172] HWP3 은 음수 들여쓰기(내어쓰기) 문단에서 **후속 줄** 기준 여백을
+    // 저장한다. HWP5 `ParaShape.margin_left` 는 **첫 줄** 기준이므로 들여쓰기를
+    // 더해 옮겨야 한다. 종전에는 이 정규화를 암호 HWP3 fixture 에만 걸었다.
+    //
+    // 암호 문서가 아닌 264쪽 문서를 한/글 자신의 HWP5 변환본과 전 문단 대조하면
+    // `음수 들여쓰기 -> 여백 + 들여쓰기(0 하한)` 이 **3,699/3,699 전건 성립**하고
+    // 반례가 0 이다(들여쓰기 >= 0 인 문단은 여백이 이미 전건 일치한다). 곧 이
+    // 계약은 암호 HWP3 한정이 아니라 일반 규칙이다.
+    //
+    // 잠긴 동안 저장본은 여백을 과하게 실었고, 줄 폭이 좁아져 한/글이 같은 문서를
+    // 8쪽 더 썼다(272쪽 vs 정본 264쪽 — 이 필드만 되돌리면 263쪽).
+    let first_line_margin = if hwp3_ps.indent < 0 {
         (i32::from(hwp3_ps.left_margin) + i32::from(hwp3_ps.indent)).max(0) as u16
     } else {
         hwp3_ps.left_margin
@@ -792,7 +799,12 @@ fn hwp3_para_line_box(
     let margin_right = hwp3_ir_para_metric_to_line_box(ps.margin_right);
     let indent = hwp3_ir_para_metric_to_line_box(ps.indent);
 
-    let left = margin_left.saturating_add(indent.min(0)).max(0);
+    // [#7172] `margin_left` 는 위에서 **첫 줄 기준**으로 정규화됐다(음수 들여쓰기면
+    // `left_margin + indent`). 여기서 들여쓰기를 다시 더하면 이중 적용이 된다.
+    // 종전에는 여백이 정확히 `|들여쓰기|` 만큼 부풀어 두 오류가 상쇄됐을 뿐이다.
+    // 한/글 정본 실측(SO-SUEOP): 여백 6000 · 들여쓰기 -2000 일 때 줄 상자는
+    // `(3000, 39520)` 즉 **여백/2** 이고 들여쓰기가 섞이지 않는다.
+    let left = margin_left.max(0);
     let right = margin_right.max(0);
     let start = left.min(column_width_hu.max(0));
     let width = column_width_hu.saturating_sub(start).saturating_sub(right);
@@ -5413,25 +5425,39 @@ mod tests {
     }
 
     #[test]
-    fn hwp3_negative_indent_uses_password_contract_only_when_requested() {
-        // `한글 97 안내문` 3쪽 설명 문단: HWP3은 후속 줄 margin=2932 hunit과
-        // 내어쓰기=-2057 hunit을 저장한다. 한컴 변환 HWP5와 공통 renderer의
-        // 표현에서는 첫 줄 기준 875 hunit(=7000 HU)이어야 한다.
+    fn hwp3_negative_indent_normalizes_to_the_first_line_margin() {
+        // [#7172] HWP3 은 내어쓰기 문단에서 **후속 줄** 기준 여백을 저장하고,
+        // HWP5 `ParaShape.margin_left` 는 **첫 줄** 기준이다. `한글 97 안내문`
+        // 3쪽 설명 문단은 margin=2932 hunit · 내어쓰기=-2057 hunit 이고, 한컴
+        // 변환 HWP5 는 첫 줄 기준 875 hunit(=7000 HU)을 쓴다.
+        //
+        // 종전에는 이 정규화를 암호 fixture 에만 걸었다. 암호가 아닌 264쪽 문서를
+        // 한컴 변환본과 전 문단 대조하면 `음수 들여쓰기 -> 여백 + 들여쓰기(0 하한)`
+        // 이 3,699/3,699 전건 성립하고 반례가 0 이다. `SO-SUEOP` 도 이 정규화로
+        // 여백 불일치가 17건 -> 0건이 된다. 곧 일반 규칙이다.
         let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
         hwp3_ps.left_margin = 2932;
         hwp3_ps.indent = -2057;
 
         let ps = convert_para_shape(&hwp3_ps, &mut Vec::new());
-        assert_eq!(ps.margin_left, 23456, "일반 HWP3는 저장 left_margin을 보존");
-        assert_eq!(ps.indent, -16456);
+        assert_eq!(ps.margin_left, 7000, "첫 줄 기준 (2932-2057) hunit");
+        assert_eq!(ps.indent, -16456, "들여쓰기는 그대로 옮긴다");
         assert_eq!(ps.margin_right, 0, "오른쪽 여백은 이 정규화 범위 밖");
 
+        // 암호 경로도 같은 값이어야 한다 — 더 이상 갈리지 않는다.
         let password_ps = convert_para_shape_with_layout_contract(&hwp3_ps, &mut Vec::new(), true);
+        assert_eq!(password_ps.margin_left, ps.margin_left);
+        assert_eq!(password_ps.indent, ps.indent);
+
+        // 반례: 들여쓰기가 0 이상이면 저장 여백을 그대로 보존한다.
+        let mut plain = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        plain.left_margin = 2932;
+        plain.indent = 1000;
+        let plain_ps = convert_para_shape(&plain, &mut Vec::new());
         assert_eq!(
-            password_ps.margin_left, 7000,
-            "암호 HWP3만 첫 줄 기준으로 정규화"
+            plain_ps.margin_left, 23456,
+            "양수 들여쓰기 문단은 저장 left_margin 을 보존한다"
         );
-        assert_eq!(password_ps.indent, -16456);
     }
 
     #[test]
