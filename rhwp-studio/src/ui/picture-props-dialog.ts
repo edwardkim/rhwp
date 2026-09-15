@@ -40,14 +40,31 @@ function colorRefToHex(c: number): string {
   return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
 }
 
-/** 탭 이름 — 그림용 */
-const PICTURE_TAB_NAMES = ['기본', '여백/캡션', '선', '그림', '그림자', '반사', '네온', '열은 테두리'];
-/** 탭 이름 — 글상자용 */
-const SHAPE_TAB_NAMES = ['기본', '여백/캡션', '선', '채우기', '글상자', '그림자'];
-/** 탭 이름 — OLE용 */
-const OLE_TAB_NAMES = ['기본', '여백/캡션', '선'];
-/** 탭 이름 — 직선용 (채우기/글상자 불필요) */
-const LINE_TAB_NAMES = ['기본', '여백/캡션', '선', '그림자'];
+/** 탭 ID — 로직은 ID 로만 탭을 구분하고, 화면 글자는 PICTURE_TAB_LABELS 에서 가져온다 */
+type PictureTabId = 'basic' | 'margin' | 'line' | 'fill' | 'textbox' | 'picture' | 'shadow' | 'reflection' | 'glow' | 'softEdge';
+
+/** 탭 표시 글자 */
+const PICTURE_TAB_LABELS: Record<PictureTabId, string> = {
+  basic: '기본',
+  margin: '여백/캡션',
+  line: '선',
+  fill: '채우기',
+  textbox: '글상자',
+  picture: '그림',
+  shadow: '그림자',
+  reflection: '반사',
+  glow: '네온',
+  softEdge: '열은 테두리',
+};
+
+/** 탭 구성 — 그림용 */
+const PICTURE_TAB_IDS: PictureTabId[] = ['basic', 'margin', 'line', 'picture', 'shadow', 'reflection', 'glow', 'softEdge'];
+/** 탭 구성 — 글상자용 */
+const SHAPE_TAB_IDS: PictureTabId[] = ['basic', 'margin', 'line', 'fill', 'textbox', 'shadow'];
+/** 탭 구성 — OLE용 */
+const OLE_TAB_IDS: PictureTabId[] = ['basic', 'margin', 'line'];
+/** 탭 구성 — 직선용 (채우기/글상자 불필요) */
+const LINE_TAB_IDS: PictureTabId[] = ['basic', 'margin', 'line', 'shadow'];
 
 /**
  * 개체 설명문(description)의 안전한 상한 길이(문자 수).
@@ -384,35 +401,37 @@ export class PicturePropsDialog {
     this.panels = [];
     this.sizeLockControls = [];
 
-    const tabNames = this.objectType === 'ole' ? OLE_TAB_NAMES
-      : this.objectType === 'line' ? LINE_TAB_NAMES
-      : (this.objectType === 'shape' || this.objectType === 'group') ? SHAPE_TAB_NAMES
-      : PICTURE_TAB_NAMES;
-    tabNames.forEach((name, i) => {
+    const tabIds = this.objectType === 'ole' ? OLE_TAB_IDS
+      : this.objectType === 'line' ? LINE_TAB_IDS
+      : (this.objectType === 'shape' || this.objectType === 'group') ? SHAPE_TAB_IDS
+      : PICTURE_TAB_IDS;
+    tabIds.forEach((id, i) => {
       const btn = document.createElement('button');
       btn.className = 'dialog-tab';
-      btn.textContent = name;
+      btn.dataset.tab = id;
+      btn.textContent = PICTURE_TAB_LABELS[id];
       btn.addEventListener('click', () => this.switchTab(i));
       this.tabGroup.appendChild(btn);
       this.tabs.push(btn);
     });
 
     // 패널 생성
-    const builders: Record<string, () => HTMLDivElement> = {
-      '기본': () => this.buildBasicPanel(),
-      '여백/캡션': () => this.buildMarginCaptionPanel(),
-      '선': () => this.buildLinePanel(),
-      '채우기': () => this.buildFillPanel(),
-      '글상자': () => this.buildTextboxPanel(),
-      '그림': () => this.buildPicturePanel(),
-      '그림자': () => this.buildShadowPanel(),
-      '반사': () => this.buildReflectionPanel(),
-      '네온': () => this.buildGlowPanel(),
-      '열은 테두리': () => this.buildSoftEdgePanel(),
+    const builders: Partial<Record<PictureTabId, () => HTMLDivElement>> = {
+      basic: () => this.buildBasicPanel(),
+      margin: () => this.buildMarginCaptionPanel(),
+      line: () => this.buildLinePanel(),
+      fill: () => this.buildFillPanel(),
+      textbox: () => this.buildTextboxPanel(),
+      picture: () => this.buildPicturePanel(),
+      shadow: () => this.buildShadowPanel(),
+      reflection: () => this.buildReflectionPanel(),
+      glow: () => this.buildGlowPanel(),
+      softEdge: () => this.buildSoftEdgePanel(),
     };
-    tabNames.forEach((name) => {
-      const builder = builders[name];
-      const panel = builder ? builder() : this.buildStubPanel(name);
+    tabIds.forEach((id) => {
+      const builder = builders[id];
+      const panel = builder ? builder() : this.buildStubPanel(PICTURE_TAB_LABELS[id]);
+      panel.dataset.tab = id;
       this.panels.push(panel);
       this.body.appendChild(panel);
     });

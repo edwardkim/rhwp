@@ -5,9 +5,16 @@ import type { CommandServices } from '@/command/types';
 import { EquationEditorDialog } from './equation-editor-dialog';
 import { enableDialogDrag } from './dialog-drag';
 
-type TabName = '기본' | '여백/캡션' | '수식';
+/** 탭 ID — 로직은 ID 로만 탭을 구분하고, 화면 글자는 TAB_LABELS 에서 가져온다 */
+type TabId = 'basic' | 'margin' | 'equation';
 
-const TAB_NAMES: TabName[] = ['기본', '여백/캡션', '수식'];
+const TAB_IDS: TabId[] = ['basic', 'margin', 'equation'];
+
+const TAB_LABELS: Record<TabId, string> = {
+  basic: '기본',
+  margin: '여백/캡션',
+  equation: '수식',
+};
 
 function hwpunitToMm(hu: number): number {
   return hu * 25.4 / 7200;
@@ -176,19 +183,21 @@ export class EquationPropertiesDialog {
     this.tabs = [];
     this.panels = [];
 
-    TAB_NAMES.forEach((name, idx) => {
+    TAB_IDS.forEach((id, idx) => {
       const btn = document.createElement('button');
       btn.className = 'dialog-tab';
-      btn.textContent = name;
+      btn.dataset.tab = id;
+      btn.textContent = TAB_LABELS[id];
       btn.addEventListener('click', () => this.switchTab(idx));
       this.tabGroup.appendChild(btn);
       this.tabs.push(btn);
 
-      const panel = name === '기본'
+      const panel = id === 'basic'
         ? this.buildBasicPanel()
-        : name === '여백/캡션'
+        : id === 'margin'
           ? this.buildMarginCaptionPanel()
           : this.buildEquationPanel();
+      panel.dataset.tab = id;
       this.body.appendChild(panel);
       this.panels.push(panel);
     });

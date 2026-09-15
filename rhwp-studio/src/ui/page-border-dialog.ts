@@ -23,6 +23,7 @@ const DOC_PAPER_COLOR = 'var(--doc-paper)';
 const DOC_PREVIEW_GUIDE_STROKE = '#d0d0d0';
 
 interface TabDef {
+  id: string;
   label: string;
   builder: () => HTMLElement;
 }
@@ -86,14 +87,15 @@ export class PageBorderDialog extends ModalDialog {
     const panelWrap = document.createElement('div');
 
     const tabs: TabDef[] = [
-      { label: '테두리', builder: () => this.buildBorderTab() },
-      { label: '배경', builder: () => this.buildBackgroundTab() },
+      { id: 'border', label: '테두리', builder: () => this.buildBorderTab() },
+      { id: 'background', label: '배경', builder: () => this.buildBackgroundTab() },
     ];
 
     tabs.forEach((tab, idx) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'dialog-tab';
+      button.dataset.tab = tab.id;
       button.textContent = tab.label;
       button.addEventListener('click', () => this.switchTab(idx));
       this.tabs.push(button);
@@ -101,6 +103,7 @@ export class PageBorderDialog extends ModalDialog {
 
       const panel = document.createElement('div');
       panel.className = 'dialog-tab-panel';
+      panel.dataset.tab = tab.id;
       panel.appendChild(tab.builder());
       this.panels.push(panel);
       panelWrap.appendChild(panel);

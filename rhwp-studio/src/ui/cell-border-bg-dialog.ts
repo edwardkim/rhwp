@@ -182,6 +182,7 @@ export class CellBorderBgDialog extends ModalDialog {
       const def = tabDefs[i];
       const btn = document.createElement('button');
       btn.className = 'dialog-tab';
+      btn.dataset.tab = def.id;
       btn.textContent = def.label;
       btn.type = 'button';
       btn.addEventListener('click', () => this.switchTab(i));
@@ -190,6 +191,7 @@ export class CellBorderBgDialog extends ModalDialog {
 
       const panel = document.createElement('div');
       panel.className = 'dialog-tab-panel';
+      panel.dataset.tab = def.id;
       panel.appendChild(def.builder());
       this.panels.push(panel);
       panelContainer.appendChild(panel);
@@ -203,7 +205,7 @@ export class CellBorderBgDialog extends ModalDialog {
   }
 
   private switchTab(idx: number): void {
-    this.activeTabId = ['border', 'background', 'diagonal'][idx] ?? 'border';
+    this.activeTabId = this.tabs[idx]?.dataset.tab ?? 'border';
     for (let i = 0; i < this.tabs.length; i++) {
       this.tabs[i].classList.toggle('active', i === idx);
       this.panels[i].classList.toggle('active', i === idx);
