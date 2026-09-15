@@ -30,8 +30,8 @@ fn stored_header_survives_column_quantization_but_not_real_width_changes() {
             let runs = layout["runs"].as_array().unwrap();
             let left = runs
                 .iter()
-                .find(|r| r["text"].as_str().unwrap().contains("Left"))
-                .expect("Left");
+                .find(|r| r["text"].as_str().unwrap().contains("Left 10"))
+                .expect("Left 10");
             let right = runs
                 .iter()
                 .find(|r| r["text"].as_str().unwrap().contains("Right"))
@@ -41,6 +41,34 @@ fn stored_header_survives_column_quantization_but_not_real_width_changes() {
                 same_line,
                 "remainder={remainder}, width_change={width_change}, dirty={dirty}: {layout}"
             );
+            if same_line {
+                // The synthetic contract puts the compact label in the left quarter
+                // and all of "Right" in the right quarter of the physical column.
+                // charX measures substrings even when both labels share one run.
+                let column_left = 3600.0 / 75.0; // HWPUNIT -> px at 96 dpi.
+                let column_width = f64::from(36000 + remainder) / 75.0;
+                let left_x = left["x"].as_f64().unwrap();
+                let left_width = left["charX"]["Left 10".len()].as_f64().unwrap();
+                let right_start = right["text"].as_str().unwrap().find("Right").unwrap();
+                let right_x =
+                    right["x"].as_f64().unwrap() + right["charX"][right_start].as_f64().unwrap();
+                let right_end = right["x"].as_f64().unwrap()
+                    + right["charX"][right_start + "Right".len()]
+                        .as_f64()
+                        .unwrap();
+                // x and charX are each serialized to one decimal place.
+                assert!((left_x - column_left).abs() <= 0.2, "{layout}");
+                assert!(
+                    left_width > 0.0 && left_width <= column_width / 4.0,
+                    "left label must remain compact: {layout}"
+                );
+                assert!(
+                    right_x >= column_left + column_width * 0.75
+                        && right_end > right_x
+                        && right_end <= column_left + column_width + 0.2,
+                    "right label must stay inside the right quarter: {layout}"
+                );
+            }
         }
     }
 }
