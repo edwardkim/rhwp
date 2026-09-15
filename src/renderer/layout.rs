@@ -8418,6 +8418,45 @@ impl LayoutEngine {
                     if next_is_lane && new_y > _y_in + advance + 0.5 {
                         new_y = _y_in + advance;
                         square_beside_band = Some((band_bottom, lane_left_hu, lane_right_hu));
+                    } else if let Some(stored_y) = col_content
+                        .items
+                        .get(item_ordinal + 1)
+                        .and_then(|next| match next {
+                            // [#7158] 다음 항목이 **이 표 옆에서 이미 그려진 문단의
+                            // 나머지**인 경우. 위 `next_is_lane` 축(다음 항목 전체가
+                            // 옆 레인)과 다르다 — 여기서는 앞줄만 옆에 놓였고 나머지는
+                            // 표 아래 전폭으로 이어진다. 흐름이 표 높이를 다시 타면
+                            // 같은 문단 안에서 줄이 떨어진다(156492236 9쪽 +95.5px).
+                            PageItem::PartialParagraph {
+                                para_index: next_pi,
+                                start_line,
+                                ..
+                            } if *start_line > 0 => {
+                                let continues_this_table =
+                                    column_wrap_around_paras.iter().any(|w| {
+                                        w.para_index == *next_pi
+                                            && w.has_text
+                                            && w.end_line == *start_line
+                                            && w.table_para_index == *para_index
+                                    });
+                                if !continues_this_table {
+                                    return None;
+                                }
+                                // 도착 y 는 그 조각 첫 줄의 저장 vpos 다.
+                                paragraphs
+                                    .get(*next_pi)
+                                    .and_then(|p| p.line_segs.get(*start_line))
+                                    .filter(|seg| seg.vertical_pos >= 0)
+                                    .map(|seg| {
+                                        col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                    })
+                            }
+                            _ => None,
+                        })
+                        .filter(|y| new_y > *y + 0.5)
+                    {
+                        new_y = stored_y;
+                        square_beside_band = Some((band_bottom, lane_left_hu, lane_right_hu));
                     }
                 }
             }
