@@ -80,3 +80,24 @@ lint, Native Skia, frontend package 및 Render Diff·Adapter·Proptest가 완료
 이번 검토만으로 원 PR이나 이슈를 close하지 않는다.
 
 통합 순서·증적·후속 처리는 [처리 계획](pr_7149_review_impl.md)을 따른다.
+
+## Merge 후 contributor PR comment 계획
+
+[통합 PR #7162](https://github.com/edwardkim/rhwp/pull/7162)는 2026-09-15에
+[`b35fffd16ed740099e968e0c41b8a382113eb42c`](https://github.com/edwardkim/rhwp/commit/b35fffd16ed740099e968e0c41b8a382113eb42c)로
+병합됐다. 원 head `42d1493ff2f90642f40484fb3657f55bcb88ee39`, 체리픽 `65df76e61`,
+표기 보정 `fec435fa9`와 위 검증 결과를 원 PR의 감사·통합 완료 comment에 기록한다.
+검사 10/10, 음성 대조 9 pass/1 expected fail, TypeScript 및 frontend 1,735 pass/2 skip은
+기존 검토에서 실행한 결과이며 병합 후 재실행한 것으로 쓰지 않는다.
+
+최종 문서 head `22719f68f5c8d57b82465f1765ed6c010b577ca9`의
+[CI](https://github.com/edwardkim/rhwp/actions/runs/34957288123)와
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34957288267)은 성공했다.
+[duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/34958924820)의 실제 결과를 확인해
+게시 시 함께 기록한다. [이슈 #7148](https://github.com/edwardkim/rhwp/issues/7148)은 자동 종료됐으며,
+같은 merge·증적의 후속 comment가 없는 경우에만 검증 요약을 추가한다.
+
+이 계획이 devel에 반영되고 원 PR head가 위 SHA와 같은지 재확인한 뒤 UTF-8 파일을
+`--body-file`로 게시하고 한글·링크를 API로 확인한다. 원 PR은 체리픽 통합에 따른 종료로
+명시하고 close하며 contributor fork branch는 보존한다. 이번 변경은 검토 기록만 보완하므로
+조판 원칙·입력 fixture·시각 asset 변경은 비해당이다.
