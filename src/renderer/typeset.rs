@@ -21198,34 +21198,54 @@ impl TypesetEngine {
         // (1341000-201100013 31쪽: 548.0 × 401.9px — 아래 표 341.9px 가 안 보인다).
         // 조각이 소비한 흐름 바닥을 raw top 으로 삼으면 lane 이 available 을 넘어
         // 아래 block 경로로 되돌아가고, 한/글처럼 표가 제 쪽을 받는다(45쪽 중 28쪽).
+        //
+        // [#6946] 앞 형제가 **쪼개지지 않고 통째로** block 경로에 앉은 경우도 같다. 그
+        // 표는 lane 예약(`reserved_height`)이 available 을 넘어 여기서 거절됐고
+        // `typeset_block_table` 이 저장 사다리 fit 으로 받았으므로 `PageItem::Table` 로
+        // 나가지만 lane 에는 없다. 뒤 형제는 빈 lane 을 믿고 문단 앵커(0)에 앉아 두 표가
+        // 한 쪽에 겹친다(44529 7쪽: 903.3px + 894.5px 인데 used=924.2, 한/글은 7·8쪽).
+        // lane 으로 놓인 형제는 자기 x 범위의 lane 을 남기므로 `pushed_top` 이 이미 밀어
+        // 준다 — 그 경우는 건드리지 않도록 lane 이 없는 형제만 흐름 바닥으로 본다.
         let raw_top = {
-            let blocked_by_fragment = st.current_items.iter().any(|item| match item {
-                PageItem::PartialTable {
-                    para_index,
-                    control_index,
-                    ..
-                } if *para_index == para_idx => match para.controls.get(*control_index) {
-                    Some(Control::Table(previous)) => {
-                        let previous_width =
-                            hwpunit_to_px(signed_hwpunit(previous.common.width), self.dpi);
-                        let (previous_start, previous_end) = horizontal_range(
-                            &previous.common,
-                            previous_width,
-                            placement_ctx,
-                            self.dpi,
-                        );
+            let blocked_by_sibling = st.current_items.iter().any(|item| {
+                let (previous_ctrl, whole) = match item {
+                    PageItem::PartialTable {
+                        para_index,
+                        control_index,
+                        ..
+                    } if *para_index == para_idx => (*control_index, false),
+                    PageItem::Table {
+                        para_index,
+                        control_index,
+                    } if *para_index == para_idx && *control_index != ctrl_idx => {
+                        (*control_index, true)
+                    }
+                    _ => return false,
+                };
+                let Some(Control::Table(previous)) = para.controls.get(previous_ctrl) else {
+                    return false;
+                };
+                let previous_width = hwpunit_to_px(signed_hwpunit(previous.common.width), self.dpi);
+                let (previous_start, previous_end) =
+                    horizontal_range(&previous.common, previous_width, placement_ctx, self.dpi);
+                let overlaps = crate::renderer::float_placement::ranges_overlap(
+                    x_start,
+                    x_end,
+                    previous_start,
+                    previous_end,
+                );
+                let lane_registered = whole
+                    && lanes.lanes().iter().any(|lane| {
                         crate::renderer::float_placement::ranges_overlap(
-                            x_start,
-                            x_end,
+                            lane.x_start,
+                            lane.x_end,
                             previous_start,
                             previous_end,
                         )
-                    }
-                    _ => false,
-                },
-                _ => false,
+                    });
+                overlaps && !lane_registered
             });
-            if blocked_by_fragment {
+            if blocked_by_sibling {
                 raw_top.max(st.current_height)
             } else {
                 raw_top
