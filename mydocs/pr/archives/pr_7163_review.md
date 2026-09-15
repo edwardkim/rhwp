@@ -216,7 +216,35 @@ before CLI는 `65df76e6195e0b87471d82359eb11c437d0bf1a0` 빌드
 code candidate의 위 5개 workflow 성공을 확인한 뒤 review·오늘할일·대표 PNG만 단일 trailing commit으로 추가한다.
 최신 base와 trailing head의 merge simulation, 문서 링크와 기존 오늘할일 보존을 push 전에 검사한다.
 최종 trailing head의 required checks와 fast-pass 판정은 원격 push 뒤 별도로 확인한다.
-이번 요청 범위는 원 PR push와 기록 반영이며 merge·이슈 종료는 아직 수행하지 않았다.
+첫 trailing head `2fd22d8c59c1e21745a540460376e4c164fb0ddd`의
+[CI](https://github.com/edwardkim/rhwp/actions/runs/34967334314)와
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34967334325)은 code candidate `7bef9d6ec`의
+녹색 결과 재사용을 확인했고, Build & Test 성공·heavy worker skip·MERGEABLE/CLEAN을 확인했다.
+이후 작업지시자가 merge와 후속처리를 승인했다. 아래 comment 계획 보완도 문서-only trailing commit으로
+반영하고, 새 최종 head의 CI·mergeability를 다시 확인한 뒤 병합한다.
+
+### Merge 후 contributor PR comment 계획
+
+- 기여에 감사하고 원 contributor `4ca6cf993`, Studio 보정 `459162ca9`, 레이아웃 보정 `7bef9d6ec`,
+  실제 최종 head·merge SHA를 구분한다. [#7158](https://github.com/edwardkim/rhwp/issues/7158)의
+  같은 쪽 prefix/suffix 낙차 해소와 14쪽 첫 줄 복구를 알린다.
+- code candidate의 위 5개 workflow 성공과 최종 문서 head의 fast-pass·Build & Test 결과를 연결한다.
+  로컬 focused 3+7, 신규 원본 보안 1, Studio 20·TypeScript·세 Clippy·workspace 결과를 요약한다.
+- [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 링크한다.
+  Native 1·5·9–15·17쪽 10개(flagged=0/10), WASM 1·9·14쪽 3개(flagged=0/3)를 직접 확인했다.
+  9쪽 pixel match 85.77185% / 내용 픽셀 중심 자동 일치율 보조값 35.84638%,
+  14쪽 84.75173% / 39.85907%를 기록한다. 보조값은 높을수록 기준 PDF와 잉크 위치·형태가 비슷하며,
+  낮으면 검토가 필요하지만 사람 판정 정확도는 아니라는 설명을 붙인다.
+- 전체 원본의 사진 23개와 17쪽 Native/WASM tree 일치, 본문 넘침 관련 개선을 밝히되 일반 overflow
+  36건 및 글꼴 굵기·사진 위치/크기 세부 차이는 남았음을 명시한다. Studio Canvas 한글 정상 표시를
+  SVG sweep와 별도로 검증한 사실도 기록한다.
+- 기존 최소본은 이미지 스텁이고 전체 원본은 `tests/fixtures/issue_7158/`에 보존했음을 설명한다.
+  기존 한컴 PDF와 review 문서는 merge SHA의 blob 링크로 연결한다.
+- `mydocs/pr/assets/pr7163_wasm_p009.png`, `pr7163_wasm_p014.png`가 devel에 존재함을 확인하고
+  실제 merge SHA의 raw.githubusercontent.com URL로 두 이미지를 embed한다. 임시 경로는 게시하지 않는다.
+- [#7158](https://github.com/edwardkim/rhwp/issues/7158)의 실제 종료 여부와 duration refresh 결과를
+  확인한 뒤 게시한다. 같은 merge SHA의 기존 maintainer comment가 있으면 중복하지 않는다.
+  issue comment에도 merge·검증·자료·잔여 범위를 기록한다. 별도 검증 CI는 병합 후 실행하지 않는다.
 
 검증 바이너리 SHA-256:
 
