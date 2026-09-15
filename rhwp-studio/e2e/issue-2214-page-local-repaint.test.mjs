@@ -389,6 +389,8 @@ async function installTrace(page) {
     wrap(wasm, 'deleteTextInCellByPath', 'wasm.deleteTextInCellByPath');
     wrap(wasm, 'exportHwp', 'wasm.exportHwp');
     wrap(wasm, 'exportHwpx', 'wasm.exportHwpx');
+    wrap(wasm, 'exportHwpWithReport', 'wasm.exportHwpWithReport');
+    wrap(wasm, 'exportHwpxWithReport', 'wasm.exportHwpxWithReport');
     wrap(wasm, 'renderPageSvg', 'wasm.renderPageSvg', (args) => ({ pageIndex: args[0] }));
     // [#3412] 인쇄/PDF 경로는 b7234ed07 부터 profile 인자를 받는 변형을 쓴다.
     // 옛 이름만 계측하면 인쇄 barrier 가 렌더 이벤트를 하나도 못 본다.
@@ -2138,12 +2140,14 @@ async function preparePendingBoundary(page, format, bytes) {
   await restoreTrace(page);
   await openDocumentThroughApp(page, format, bytes);
   await moveToTarget(page);
-  await typeKeyboardOnes(page, 55);
+  const boundaryInput = process.argv.includes('--output-barriers-only') && format === 'hwpx' ? 61 : 56;
+  await typeKeyboardOnes(page, boundaryInput - 1);
   await installTrace(page);
   await page.keyboard.type('1');
   const state = await readFocusedSnapshot(page);
+  state.barrierInputCount = boundaryInput;
   assert.equal(state.pagination.pending, true, `${format} output barrier precondition`);
-  assert.equal(state.model.text.slice(-56), '1'.repeat(56), `${format} output latest text precondition`);
+  assert.equal(state.model.text.slice(-boundaryInput), '1'.repeat(boundaryInput), `${format} output latest text precondition`);
   return state;
 }
 
@@ -2167,7 +2171,7 @@ async function runSaveBarrierSmoke(page, format, bytes) {
   const trace = await collectTrace(page);
   const flush = trace.events.find((event) => event.type === 'wasm.flushDeferredPagination');
   const exportType = format === 'hwpx' ? 'wasm.exportHwpx' : 'wasm.exportHwp';
-  const exported = trace.events.find((event) => event.type === exportType);
+  const exported = trace.events.find((event) => event.type === exportType || event.type === `${exportType}WithReport`);
   assert.ok(flush, `${format} save flush event`);
   assert.ok(exported, `${format} save export event`);
   assert.ok(flush.sequence < exported.sequence, `${format} save must flush before serialization`);
@@ -2178,7 +2182,8 @@ async function runSaveBarrierSmoke(page, format, bytes) {
     `${format} save pending state`,
   );
 
-  const saved = await page.evaluate(async ({ target, sourceFormat }) => {
+  const postExportPageCount = await page.evaluate(() => window.__wasm.pageCount);
+  const saved = await page.evaluate(async ({ target, sourceFormat, inputCount }) => {
     const buffer = await window.__issue2424SavedBlob.arrayBuffer();
     const bytes = new Uint8Array(buffer);
     const info = window.__wasm.loadDocument(bytes, `issue2424-saved.${sourceFormat}`);
@@ -2201,12 +2206,25 @@ async function runSaveBarrierSmoke(page, format, bytes) {
     return {
       byteLength: bytes.byteLength,
       pageCount: info.pageCount,
-      textTail: text.slice(-56),
+      textTail: text.slice(-inputCount),
+      bytesBase64: btoa(Array.from(bytes, b => String.fromCharCode(b)).join('')),
     };
-  }, { target: TARGET, sourceFormat: format });
+  }, { target: TARGET, sourceFormat: format, inputCount: before.barrierInputCount });
+  if (process.argv.includes('--output-barriers-only')) {
+    const { bytesBase64, ...metadata } = saved;
+    const savedBytes = Buffer.from(bytesBase64, 'base64');
+    writeFileSync(path.join(OUTPUT_ROOT, `saved-reopen.${format}`), savedBytes);
+    writeJson(path.join(OUTPUT_ROOT, `${format}-save-evidence.json`), {
+      beforePageCount: before.pagination.pageCount, postExportPageCount, inputCount: before.barrierInputCount,
+      saved: metadata, sha256: sha256(savedBytes),
+      flushSequence: flush.sequence, exportSequence: exported.sequence,
+      flushCount: trace.counts.wasmFlush,
+    });
+  }
+  delete saved.bytesBase64;
   assert.ok(saved.byteLength > 0, `${format} saved bytes`);
   assert.equal(saved.pageCount, before.pagination.pageCount, `${format} saved final page count`);
-  assert.equal(saved.textTail, '1'.repeat(56), `${format} saved latest cell text`);
+  assert.equal(saved.textTail, '1'.repeat(before.barrierInputCount), `${format} saved latest cell text`);
   await restoreTrace(page);
   console.log(`  save barrier: GREEN, flush→${format} export, bytes=${saved.byteLength}`);
   return { format, saved, flushSequence: flush.sequence, exportSequence: exported.sequence };
@@ -2451,7 +2469,38 @@ async function runDiagnosticMain() {
   console.log(JSON.stringify(summary.formats, null, 2));
 }
 
-const selectedMain = process.argv.includes('--diagnose') ? runDiagnosticMain : runFocusedMain;
+async function runOutputBarriersOnly() {
+  mkdirSync(OUTPUT_ROOT, { recursive: true });
+  const browser = await launchBrowser();
+  const page = await createPage(browser, 1280, 900);
+  const results = [];
+  try {
+    await loadApp(page);
+    for (const format of ['hwp', 'hwpx']) {
+      const bytes = readFileSync(SAMPLES[format]);
+      for (const kind of format === 'hwp' ? ['save', 'print'] : ['save']) {
+        if (!cliValue('output-barrier-cases', 'hwp:save,hwp:print,hwpx:save').split(',').includes(`${format}:${kind}`)) continue;
+        try {
+          const result = kind === 'save'
+            ? await runSaveBarrierSmoke(page, format, bytes)
+            : await runPrintBarrierSmoke(page, format, bytes);
+          results.push({ format, kind, status: 'pass', result });
+        } catch (error) {
+          results.push({ format, kind, status: 'fail', error: error.stack ?? String(error) });
+        }
+        writeJson(path.join(OUTPUT_ROOT, 'output-barriers.json'), { results });
+      }
+    }
+  } finally {
+    await restoreTrace(page).catch(() => {});
+    await closePage(page).catch(() => {});
+    await closeBrowser(browser).catch(() => {});
+  }
+  assert.ok(results.every(r => r.status === 'pass'), JSON.stringify(results));
+}
+
+const selectedMain = process.argv.includes('--output-barriers-only') ? runOutputBarriersOnly
+  : process.argv.includes('--diagnose') ? runDiagnosticMain : runFocusedMain;
 selectedMain().catch((error) => {
   console.error(error);
   process.exitCode = 1;
