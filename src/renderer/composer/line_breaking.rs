@@ -103,6 +103,8 @@ pub(crate) enum BreakToken {
         idx: usize,
         width: f64,
         max_font_size: f64,
+        /// A visible object sharing this offset cannot hang beyond the row.
+        has_inline_control: bool,
     },
     /// 탭 (줄 바꿈 가능 지점, 폭은 줄 위치에 따라 동적)
     Tab { idx: usize, max_font_size: f64 },
@@ -376,11 +378,12 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             } else {
                 12.0
             };
-            let w = space_metric.space_advance(&ts) + inline_width_px_at(inline_controls, i);
+            let inline_width = inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Space {
                 idx: i,
-                width: w,
+                width: space_metric.space_advance(&ts) + inline_width,
                 max_font_size: font_size,
+                has_inline_control: inline_width > 0.0,
             });
             i += 1;
             continue;
@@ -1220,6 +1223,30 @@ fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
     width_hwp - space_savings_hwp
 }
 
+/// Hancom absorbs the first overflowing blank at the end of the row, then
+/// continues the remaining blanks on the next row (#7168). A visible inline
+/// object at that offset must instead move with its space. Both fill paths use
+/// this cut so ownership is not guessed separately during projection.
+fn overflowing_space_cut(
+    line_start: usize,
+    space_idx: usize,
+    width_hwp: i32,
+    savings_hwp: i32,
+    available_hwp: i32,
+    has_inline_control: bool,
+) -> Option<usize> {
+    if condensed_line_width_hwp(width_hwp, savings_hwp) <= available_hwp {
+        None
+    } else if !has_inline_control {
+        Some(space_idx + 1)
+    } else if space_idx > line_start {
+        Some(space_idx)
+    } else {
+        // Oversized first objects still belong to the object overflow policy.
+        None
+    }
+}
+
 // 한컴은 HWPUNIT 정수 양자화 시 미세한 반올림 차이를 허용한다.
 // 이 값 이내의 초과는 줄에 포함한다.
 //
@@ -1642,16 +1669,51 @@ fn fill_one_interval(
                 idx,
                 width,
                 max_font_size,
+                has_inline_control,
             } => {
+                let previous_line_max_fs = cursor.line_max_fs;
                 if *max_font_size > cursor.line_max_fs {
                     cursor.line_max_fs = *max_font_size;
+                }
+                let space_hwp = to_hwp(*width);
+                let space_savings = condense_space_savings_hwp(space_hwp, condense_min_space);
+                if let Some(cut) = overflowing_space_cut(
+                    cursor.line_start_idx,
+                    *idx,
+                    cursor.lw + space_hwp,
+                    cursor.line_space_savings + space_savings,
+                    eff_w(cursor.is_first_line),
+                    *has_inline_control,
+                ) {
+                    let absorbed = cut > *idx;
+                    let line = LineBreakResult {
+                        start_idx: cursor.line_start_idx,
+                        end_idx: cut,
+                        max_font_size: if absorbed {
+                            cursor.line_max_fs
+                        } else {
+                            previous_line_max_fs
+                        },
+                        has_line_break: false,
+                    };
+                    cursor.line_start_idx = cut;
+                    cursor.lw = if absorbed { 0 } else { space_hwp };
+                    cursor.line_space_savings = if absorbed { 0 } else { space_savings };
+                    cursor.line_max_fs = if absorbed { 0.0 } else { *max_font_size };
+                    cursor.is_first_line = false;
+                    cursor.last_break_token_idx = None;
+                    cursor.token_index += 1;
+                    cursor.emitted_any = true;
+                    return Some(FilledInterval {
+                        line,
+                        termination: FillTermination::IntervalFull,
+                    });
                 }
                 cursor.last_break_token_idx = Some(ti);
                 cursor.last_break_char_idx = *idx;
                 cursor.width_at_last_break = cursor.lw;
                 cursor.space_savings_at_last_break = cursor.line_space_savings;
                 cursor.fs_at_last_break = cursor.line_max_fs;
-                let space_hwp = to_hwp(*width);
                 cursor.lw += space_hwp;
                 cursor.line_space_savings +=
                     condense_space_savings_hwp(space_hwp, condense_min_space);
@@ -2007,6 +2069,7 @@ fn fill_lines_before_cursor(
                 idx,
                 width,
                 max_font_size,
+                ..
             } => {
                 if *max_font_size > line_max_fs {
                     line_max_fs = *max_font_size;
@@ -2212,11 +2275,7 @@ fn recalc_space_savings_hwp(
     let mut w = 0i32;
     for t in &tokens[..current_token_idx] {
         match t {
-            BreakToken::Space {
-                idx,
-                width,
-                max_font_size,
-            } if *idx >= new_line_start => {
+            BreakToken::Space { idx, width, .. } if *idx >= new_line_start => {
                 let space_hwp = to_hwp(*width);
                 w += condense_space_savings_hwp(space_hwp, condense_min_space);
             }
@@ -4384,6 +4443,38 @@ mod fill_cursor_tests {
     }
 
     #[test]
+    fn overflowing_object_space_moves_with_its_visible_object() {
+        let chars = ['a', ' ', 'b'];
+        let text = |start_idx, end_idx| BreakToken::Text {
+            start_idx,
+            end_idx,
+            base_width: 10.0,
+            width: 10.0,
+            max_font_size: 12.0,
+            base_char_widths: vec![10.0],
+            char_widths: vec![10.0],
+        };
+        let tokens = [
+            text(0, 1),
+            BreakToken::Space {
+                idx: 1,
+                width: 20.0,
+                max_font_size: 12.0,
+                has_inline_control: true,
+            },
+            text(2, 3),
+        ];
+        let lines = collect_one_interval_at_a_time(&tokens, &chars, 25.0, 0.0, 48.0, 0, 0, 0, true);
+        assert_eq!(
+            lines
+                .iter()
+                .map(|l| (l.start_idx, l.end_idx))
+                .collect::<Vec<_>>(),
+            vec![(0, 1), (1, 2), (2, 3)]
+        );
+    }
+
+    #[test]
     fn cursor_resumes_a_long_text_token_at_each_interval() {
         let text_chars = "abcdefghij".chars().collect::<Vec<_>>();
         let tokens = vec![BreakToken::Text {
@@ -4440,6 +4531,7 @@ mod fill_cursor_tests {
                 idx: 2,
                 width: 5.0,
                 max_font_size: 12.0,
+                has_inline_control: false,
             },
             BreakToken::Text {
                 start_idx: 3,
@@ -4475,7 +4567,26 @@ mod fill_cursor_tests {
             },
         ];
 
-        assert_cursor_matches_frozen_scalar(&tokens, &text_chars, 24.0, 0.0, 48.0, 0, 0, 0, true);
+        let actual =
+            collect_one_interval_at_a_time(&tokens, &text_chars, 24.0, 0.0, 48.0, 0, 0, 0, true);
+        assert_eq!(
+            actual
+                .iter()
+                .map(|l| (l.start_idx, l.end_idx, l.has_line_break))
+                .collect::<Vec<_>>(),
+            vec![
+                (0, 3, false),
+                (3, 4, false),
+                (4, 5, false),
+                (5, 7, true),
+                (7, 9, false)
+            ]
+        );
+        let before = fill_lines_before_cursor(&tokens, &text_chars, 24.0, 0.0, 48.0, 0, 0, 0, true);
+        assert_ne!(
+            actual, before,
+            "the frozen filler deferred the overflowing space"
+        );
     }
 }
 

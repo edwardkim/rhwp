@@ -1,0 +1,463 @@
+{
+  "engine": "2020",
+  "hancom_version": "12.0.0.4605",
+  "independent_saves": [
+    {
+      "input": "header.hwpx",
+      "input_sha256": "b0ac06d1333b9c8ea263ec184e782d58d043916b7e6b9a6f39dfdeb31102437b",
+      "output": "header-hancom-2020.hwp",
+      "output_sha256": "d660f4cd8fb90eea07b7ad742a2e121edc159e5e74df73fd5c62b2e5bea7c560",
+      "status": {
+        "job_id": "77567cf6-2445-4128-b7c7-c65c30dc5c08",
+        "status": "succeeded",
+        "phase": "completed",
+        "target": "hwp",
+        "engine": "2020",
+        "created_at": "2026-09-15T12:54:53.199Z",
+        "started_at": "2026-09-15T12:54:58.284Z",
+        "completed_at": "2026-09-15T12:55:03.627Z",
+        "expired_at": null,
+        "elapsed_seconds": 5,
+        "queue_position": null,
+        "output_bytes": 12800,
+        "delivery": {
+          "status": "not_requested",
+          "attempts": 0,
+          "output_path": null,
+          "saved_at": null,
+          "error": null
+        },
+        "result": {
+          "job_id": "77567cf6-2445-4128-b7c7-c65c30dc5c08",
+          "status": "success",
+          "engine": "2020",
+          "engine_profile": "2020",
+          "hancom_version": "12.0.0.4605",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "hwp",
+          "bytes": 12800,
+          "pdf_page_count": null,
+          "logical_page_count": null,
+          "elapsed_ms": 5341,
+          "worker_elapsed_ms": 4886,
+          "worker_bits": 32,
+          "font_scope": {
+            "mode": "session0",
+            "status": "verified",
+            "profile_source": "protected_config",
+            "session_id": 0,
+            "mapped_font_count": 2,
+            "registered_font_count": 2,
+            "failed_font_count": 0,
+            "parent_visibility": "verified",
+            "child_visibility": "verified"
+          },
+          "input_preprocess": "none",
+          "pdf_print_method": null,
+          "pdf_output_mode": ""
+        },
+        "error": null,
+        "terminal": true
+      }
+    },
+    {
+      "input": "trailing-spaces-input.hwpx",
+      "input_sha256": "baee8aa27c0eda9ef51a7a1e4e14a52a2ac3753cb0f0044919031aa24f56fc98",
+      "output": "trailing-spaces-2020.hwp",
+      "output_sha256": "41ce9015722d0730d5e21a64da80250861729f7833cfd7881c6bd605c800fb61",
+      "status": {
+        "job_id": "0ae5778f-eb8c-4611-b34a-3aa878fdbb0c",
+        "status": "succeeded",
+        "phase": "completed",
+        "target": "hwp",
+        "engine": "2020",
+        "created_at": "2026-09-15T13:00:18.082Z",
+        "started_at": "2026-09-15T13:00:29.436Z",
+        "completed_at": "2026-09-15T13:00:34.943Z",
+        "expired_at": null,
+        "elapsed_seconds": 5,
+        "queue_position": null,
+        "output_bytes": 12288,
+        "delivery": {
+          "status": "not_requested",
+          "attempts": 0,
+          "output_path": null,
+          "saved_at": null,
+          "error": null
+        },
+        "result": {
+          "job_id": "0ae5778f-eb8c-4611-b34a-3aa878fdbb0c",
+          "status": "success",
+          "engine": "2020",
+          "engine_profile": "2020",
+          "hancom_version": "12.0.0.4605",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "hwp",
+          "bytes": 12288,
+          "pdf_page_count": null,
+          "logical_page_count": null,
+          "elapsed_ms": 5504,
+          "worker_elapsed_ms": 4947,
+          "worker_bits": 32,
+          "font_scope": {
+            "mode": "session0",
+            "status": "verified",
+            "profile_source": "protected_config",
+            "session_id": 0,
+            "mapped_font_count": 2,
+            "registered_font_count": 2,
+            "failed_font_count": 0,
+            "parent_visibility": "verified",
+            "child_visibility": "verified"
+          },
+          "input_preprocess": "none",
+          "pdf_print_method": null,
+          "pdf_output_mode": ""
+        },
+        "error": null,
+        "terminal": true
+      }
+    },
+    {
+      "input": "spaces-before-break-input.hwpx",
+      "input_sha256": "fe15787f59591e41794aca84943cae997390e8aeb4fd0688df61e1d4ad23053d",
+      "output": "spaces-before-break-2020.hwp",
+      "output_sha256": "155d32290affa2b8ce6e441a32d82516d430e9739a950af41303a478984c22f7",
+      "status": {
+        "job_id": "d0a17f66-f4a6-4d1f-979d-62f891d11e98",
+        "status": "succeeded",
+        "phase": "completed",
+        "target": "hwp",
+        "engine": "2020",
+        "created_at": "2026-09-15T13:00:18.632Z",
+        "started_at": "2026-09-15T13:00:34.944Z",
+        "completed_at": "2026-09-15T13:00:40.408Z",
+        "expired_at": null,
+        "elapsed_seconds": 5,
+        "queue_position": null,
+        "output_bytes": 12800,
+        "delivery": {
+          "status": "not_requested",
+          "attempts": 0,
+          "output_path": null,
+          "saved_at": null,
+          "error": null
+        },
+        "result": {
+          "job_id": "d0a17f66-f4a6-4d1f-979d-62f891d11e98",
+          "status": "success",
+          "engine": "2020",
+          "engine_profile": "2020",
+          "hancom_version": "12.0.0.4605",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "hwp",
+          "bytes": 12800,
+          "pdf_page_count": null,
+          "logical_page_count": null,
+          "elapsed_ms": 5461,
+          "worker_elapsed_ms": 4919,
+          "worker_bits": 32,
+          "font_scope": {
+            "mode": "session0",
+            "status": "verified",
+            "profile_source": "protected_config",
+            "session_id": 0,
+            "mapped_font_count": 2,
+            "registered_font_count": 2,
+            "failed_font_count": 0,
+            "parent_visibility": "verified",
+            "child_visibility": "verified"
+          },
+          "input_preprocess": "none",
+          "pdf_print_method": null,
+          "pdf_output_mode": ""
+        },
+        "error": null,
+        "terminal": true
+      }
+    }
+  ],
+  "pdfs": [
+    {
+      "path": "pdf/stored-column-header-2020.pdf",
+      "sha256": "bb8d858c102d2ffd858c182ea721b36e3225fbc9d3a2ea289fdb411679a88368"
+    }
+  ],
+  "reuse_confirmation": {
+    "job_id": "63b0acb8-f9b6-403e-865a-33ba65dd5029",
+    "status": "succeeded",
+    "phase": "completed",
+    "target": "pdf",
+    "engine": "2020",
+    "created_at": "2026-09-15T13:13:12.079Z",
+    "started_at": "2026-09-15T13:13:22.998Z",
+    "completed_at": "2026-09-15T13:13:34.762Z",
+    "expired_at": null,
+    "elapsed_seconds": 11,
+    "queue_position": null,
+    "output_bytes": 8335,
+    "delivery": {
+      "status": "not_requested",
+      "attempts": 0,
+      "output_path": null,
+      "saved_at": null,
+      "error": null
+    },
+    "result": {
+      "job_id": "63b0acb8-f9b6-403e-865a-33ba65dd5029",
+      "status": "success",
+      "engine": "2020",
+      "engine_profile": "2020",
+      "hancom_version": "12.0.0.4605",
+      "backend": "hwp-managed-direct-dll-host",
+      "input_format": "hwp",
+      "format": "pdf",
+      "bytes": 8335,
+      "pdf_page_count": 1,
+      "logical_page_count": null,
+      "elapsed_ms": 11762,
+      "worker_elapsed_ms": 11209,
+      "worker_bits": 32,
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "input_preprocess": "none",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+    },
+    "error": null,
+    "terminal": true
+  },
+  "document_info": {
+    "tests/fixtures/stored_column_width_quantization/header-hancom-2020.hwp": {
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4605"
+      },
+      "pageCount": 1,
+      "paraCount": 1,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 12800,
+      "source": "tests/fixtures/stored_column_width_quantization/header-hancom-2020.hwp",
+      "title": "Left 10",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.1.0",
+      "warnings": []
+    },
+    "tests/fixtures/stored_column_width_quantization/header.hwpx": {
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR"
+      ],
+      "format": "hwpx",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "pageCount": 1,
+      "paraCount": 1,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 6948,
+      "source": "tests/fixtures/stored_column_width_quantization/header.hwpx",
+      "title": "Left 10",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.0.0",
+      "warnings": []
+    },
+    "tests/fixtures/stored_column_width_quantization/spaces-before-break-2020.hwp": {
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4605"
+      },
+      "pageCount": 1,
+      "paraCount": 1,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 12800,
+      "source": "tests/fixtures/stored_column_width_quantization/spaces-before-break-2020.hwp",
+      "title": "Left 10",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.1.0",
+      "warnings": []
+    },
+    "tests/fixtures/stored_column_width_quantization/spaces-before-break-input.hwpx": {
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR"
+      ],
+      "format": "hwpx",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "pageCount": 1,
+      "paraCount": 1,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 6881,
+      "source": "tests/fixtures/stored_column_width_quantization/spaces-before-break-input.hwpx",
+      "title": "Left 10",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.0.0",
+      "warnings": []
+    },
+    "tests/fixtures/stored_column_width_quantization/trailing-spaces-2020.hwp": {
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4605"
+      },
+      "pageCount": 1,
+      "paraCount": 1,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 12288,
+      "source": "tests/fixtures/stored_column_width_quantization/trailing-spaces-2020.hwp",
+      "title": "Left 10",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.1.0",
+      "warnings": []
+    },
+    "tests/fixtures/stored_column_width_quantization/trailing-spaces-input.hwpx": {
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR",
+        "Noto Sans KR"
+      ],
+      "format": "hwpx",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "pageCount": 1,
+      "paraCount": 1,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 6871,
+      "source": "tests/fixtures/stored_column_width_quantization/trailing-spaces-input.hwpx",
+      "title": "Left 10",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.0.0",
+      "warnings": []
+    }
+  }
+}
