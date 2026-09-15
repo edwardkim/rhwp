@@ -14,7 +14,8 @@ fn stored_header_survives_column_quantization_but_not_real_width_changes() {
             let source = DocumentCore::from_bytes(FIXTURE).expect("synthetic header");
             let mut document = source.document().clone();
             document.sections[0].section_def.page_def.width =
-                u32::try_from(43200 + remainder + width_change).expect("positive fixture page width");
+                u32::try_from(43200 + remainder + width_change)
+                    .expect("positive fixture page width");
             let para = &mut document.sections[0].paragraphs[0];
             para.line_segs[0].segment_width = 36000 + remainder;
             if dirty {
