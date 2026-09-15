@@ -485,21 +485,25 @@ pub(super) fn print() {
     println!("      --json: 단건은 한 줄 봉투, --batch 는 NDJSON(로드 실패도 error 레코드로 남김)");
     println!("      --json 회귀 검출은 종료 코드 3(검증 단언 실패) — 사람 모드는 종전대로 1");
     println!(
-        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
+        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--stored-line-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
     );
     println!(
-        "  layout-anomaly --batch <폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
+        "  layout-anomaly --batch <폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--stored-line-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
     );
-    println!("      렌더 한 장의 기하만으로 이상 신호 5종 탐지 — render-diff(변위)와 다른 질문");
+    println!("      렌더 한 장의 기하와 원문 저장 줄로 이상 신호 6종 탐지 — render-diff(변위)와 다른 질문");
     println!(
         "      overflow: 본문 여백(Body) 밖 / off-canvas: 페이지 상자 밖 또는 y<0 / overlap: 겹치면 안 되는 흐름 요소끼리 겹침"
     );
     println!("      text-overlap: 텍스트 런 bbox 교차(글자끼리, 표·이미지 겹침 아님) — --strict 확정 신호");
+    println!("      stored-line-escape: 저장 줄을 재현한 줄의 글자가 남의 저장 줄 baseline 에 앉음(#7061) — --strict 확정 신호");
+    println!(
+        "      --stored-line-tolerance: stored-line-escape 의 저장 줄 동등 비교 여유(px, 기본 0.5)"
+    );
     println!("      empty_page: 콘텐츠 없는 중간 쪽(첫/끝 제외) — 항상 가능성 신호, --strict 로도 실패 안 함");
     println!("      --types: overflow/overlap 검사 대상 노드 타입만 (예: Table,Image). off-canvas·text-overlap·empty_page 는 영향 없음");
     println!("      --batch: 폴더를 재귀해 .hwp/.hwpx 를 정렬 순으로 스캔. 파일별 오류는 error 레코드(DATA)");
-    println!("      --json: 단건은 한 줄 봉투(offCanvasCount·textOverlapCount·pages[].offCanvas/textOverlap), --batch 는 NDJSON. 기본 종료 코드는 0(판정=데이터)");
-    println!("      --strict: overflow·off-canvas·overlap·text-overlap 확정 신호만 exit 3 (empty_page 제외)");
+    println!("      --json: 단건은 한 줄 봉투(offCanvasCount·textOverlapCount·storedLineEscapeCount·pages[].offCanvas/textOverlap/storedLineEscape), --batch 는 NDJSON. 기본 종료 코드는 0(판정=데이터)");
+    println!("      --strict: overflow·off-canvas·overlap·text-overlap·stored-line-escape 확정 신호만 exit 3 (empty_page 제외)");
     println!("  bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]");
     println!("      단계별 처리 성능 계측 — parse/layout/render/serialize median(ms)");
     println!("      워밍업 1회 후 N회(기본 3) 반복. 파일별 크기/쪽수 + total 표 + TSV");

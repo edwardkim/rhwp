@@ -726,12 +726,14 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `strict` | bool | 확정 이상 신호를 종료 코드 3으로 취급할지. 빈 쪽 신호는 `true`여도 실패시키지 않는다 | `layout-anomaly` |
 | `overflowTolerancePx` | number | 본문 여백 밖 이탈을 overflow로 볼 최소 거리(px) | `layout-anomaly` |
 | `overlapTolerancePx` | number | 두 요소 겹침을 overlap으로 볼 최소 폭·높이(px) | `layout-anomaly` |
+| `storedLineTolerancePx` | number | stored-line-escape 에서 렌더 줄과 저장 줄을 같다고 볼 여유(px), 기본 0.5 | `layout-anomaly` |
 | `overflowCount` | number | 전 쪽에서 확정한 overflow 신호 수 | `layout-anomaly` |
 | `offCanvasCount` | number | 전 쪽에서 캔버스 완전히 밖으로 벗어난 노드 수 | `layout-anomaly` |
 | `overlapCount` | number | 전 쪽에서 확정한 overlap 신호 수 | `layout-anomaly` |
 | `textOverlapCount` | number | 전 쪽에서 확정한 text-overlap(텍스트 런 bbox 교차) 신호 수 | `layout-anomaly` |
+| `storedLineEscapeCount` | number | 전 쪽에서 확정한 stored-line-escape(저장 줄을 재현한 줄의 글자가 남의 저장 줄 baseline 에 앉음) 신호 수 | `layout-anomaly` |
 | `emptyPageCount` | number | 내용이 없는 중간 쪽 가능성 신호 수 | `layout-anomaly` |
-| `hasSignal` | bool | overflow·overlap·text-overlap 확정 신호가 하나 이상 있는가(`empty_page` 제외) | `layout-anomaly` |
+| `hasSignal` | bool | overflow·off-canvas·overlap·text-overlap·stored-line-escape 확정 신호가 하나 이상 있는가(`empty_page` 제외) | `layout-anomaly` |
 | `mode` | string | 단건 `"single"` / 배치 `"batch"` | `layout-anomaly` |
 | `types` | array\|null | `--types` 로 좁힌 노드 타입. `null` = 기본 검사 대상 전부 | `layout-anomaly` |
 
