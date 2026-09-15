@@ -1391,9 +1391,11 @@ const EXIT_ANOMALY: i32 = 3;
 
 fn usage() -> String {
     "사용법: rhwp layout-anomaly <파일.hwp|파일.hwpx> [-p N] [--json] [--strict] \
-     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX]\n         \
+     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX] \
+     [--stored-line-tolerance PX]\n         \
      rhwp layout-anomaly --batch <폴더> [-p N] [--json] [--strict] \
-     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX] \n     [--stored-line-tolerance PX]"
+     [--types Type,...] [--overflow-tolerance PX] [--overlap-tolerance PX] \
+     [--stored-line-tolerance PX]"
         .to_string()
 }
 
@@ -1620,6 +1622,7 @@ fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
             "pageFilter": opts.page,
             "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
             "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+            "storedLineTolerancePx": opts.anomaly_opts.stored_line_tolerance_px,
             "types": types_json(opts),
             "strict": opts.strict,
             "overflowCount": doc.overflow_count(),
@@ -1645,10 +1648,14 @@ fn error_envelope(source: &str, error: &str, opts: &CliOptions, elapsed_ms: u128
             "pageFilter": opts.page,
             "overflowTolerancePx": opts.anomaly_opts.overflow_tolerance_px,
             "overlapTolerancePx": opts.anomaly_opts.overlap_tolerance_px,
+            "storedLineTolerancePx": opts.anomaly_opts.stored_line_tolerance_px,
             "types": types_json(opts),
             "strict": opts.strict,
             "overflowCount": 0,
+            "offCanvasCount": 0,
             "overlapCount": 0,
+            "textOverlapCount": 0,
+            "storedLineEscapeCount": 0,
             "emptyPageCount": 0,
             "hasSignal": false,
             "pages": [],
@@ -1703,7 +1710,7 @@ fn run_single(opts: &CliOptions) -> i32 {
     let shown: Vec<&PageAnomalies> = doc.pages.iter().collect();
 
     println!(
-        "쪽 수: {}  overflow: {}  off-canvas: {}  overlap: {}  text-overlap: {}           stored-line-escape: {}  empty_page(가능성): {}",
+        "쪽 수: {}  overflow: {}  off-canvas: {}  overlap: {}  text-overlap: {}  stored-line-escape: {}  empty_page(가능성): {}",
         doc.page_count,
         doc.overflow_count(),
         doc.off_canvas_count(),

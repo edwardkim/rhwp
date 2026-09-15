@@ -27,10 +27,11 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_layout_anomaly",
-            "렌더 한 장의 기하에서 overflow·off-canvas·overlap·text-overlap·중간 빈 쪽 이상 신호를 찾는다. render-diff가 두 렌더 사이의 변위를 재는 것과 달리, 이 도구는 단일 렌더 자체가 정상적인지 판정한다. overflow는 본문 여백(Body) 밖, off-canvas는 페이지 상자 밖 또는 y<0이며, text-overlap은 텍스트 런 bbox 교차(글자끼리)만 보므로 표·이미지 겹침과 다르다. 기본은 발견 결과를 데이터로 보고 성공하며, strict를 주면 overflow·off-canvas·overlap·text-overlap 확정 신호가 있을 때 종료 코드 3을 반환한다(빈 쪽은 가능성 신호라 strict에서도 실패시키지 않는다).",
+            "렌더 한 장의 기하에서 overflow·off-canvas·overlap·text-overlap·stored-line-escape·중간 빈 쪽 이상 신호를 찾는다. render-diff가 두 렌더 사이의 변위를 재는 것과 달리, 이 도구는 단일 렌더 자체가 정상적인지 판정한다. overflow는 본문 여백(Body) 밖, off-canvas는 페이지 상자 밖 또는 y<0이며, text-overlap은 텍스트 런 bbox 교차(글자끼리)만 보므로 표·이미지 겹침과 다르다. stored-line-escape는 저장 줄을 재현한 줄의 글자가 남의 저장 줄 baseline에 앉은 경우다(상자를 넘거나 겹치지 않는 배치 이탈). 기본은 발견 결과를 데이터로 보고 성공하며, strict를 주면 overflow·off-canvas·overlap·text-overlap·stored-line-escape 확정 신호가 있을 때 종료 코드 3을 반환한다(빈 쪽은 가능성 신호라 strict에서도 실패시키지 않는다).",
             path_schema(serde_json::json!({
                 "page": { "type": "integer", "minimum": 0, "description": "특정 페이지만 검사하는 0 기준 번호. 생략하면 전체 문서" },
-                "strict": { "type": "boolean", "description": "참이면 overflow·off-canvas·overlap·text-overlap 확정 신호가 발견될 때 검증 실패(exit 3)로 처리. 빈 쪽 신호는 실패시키지 않음" },
+                "strict": { "type": "boolean", "description": "참이면 overflow·off-canvas·overlap·text-overlap·stored-line-escape 확정 신호가 발견될 때 검증 실패(exit 3)로 처리. 빈 쪽 신호는 실패시키지 않음" },
+                "storedLineTolerance": { "type": "number", "minimum": 0, "description": "stored-line-escape 판정에서 렌더 줄과 저장 줄을 같다고 볼 여유(px). 기본 0.5" },
                 "overflowTolerance": { "type": "number", "minimum": 0, "description": "본문 여백(overflow) 또는 페이지 상자(off-canvas) 밖으로 벗어난 요소를 잡을 최소 거리(px). 기본 1.0. 음수 y도 이 허용치를 쓴다" },
                 "overlapTolerance": { "type": "number", "minimum": 0, "description": "두 요소를 overlap으로 볼 최소 겹침 폭과 높이(px). 기본 2.0" },
                 "types": { "type": "string", "description": "overflow/overlap 검사 대상 노드 타입. 쉼표 구분(예: Table,Image,TextLine). off-canvas·text-overlap·empty_page 는 영향 없음" },
@@ -43,13 +44,14 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "strict", "args": ["--strict"] },
                 { "when": "overflowTolerance", "args": ["--overflow-tolerance", "{overflowTolerance}"] },
                 { "when": "overlapTolerance", "args": ["--overlap-tolerance", "{overlapTolerance}"] },
+                { "when": "storedLineTolerance", "args": ["--stored-line-tolerance", "{storedLineTolerance}"] },
                 { "when": "types", "args": ["--types", "{types}"] },
                 { "when": "batch", "args": ["--batch"] }
             ]),
             &[
                 "schemaVersion", "mode", "source", "pageCount", "pageFilter", "overflowTolerancePx",
-                "overlapTolerancePx", "types", "strict", "overflowCount", "offCanvasCount", "overlapCount",
-                "textOverlapCount",
+                "overlapTolerancePx", "storedLineTolerancePx", "types", "strict", "overflowCount",
+                "offCanvasCount", "overlapCount", "textOverlapCount", "storedLineEscapeCount",
                 "emptyPageCount", "hasSignal", "pages",
             ],
         ),
