@@ -103,6 +103,15 @@ class LabelFontTests(unittest.TestCase):
 
 
 class SelectedRasterTests(unittest.TestCase):
+    def test_singleton_document_year_is_not_the_physical_page(self) -> None:
+        svg = Path("two-digits-wrap-2020.svg")
+        tree = Path("page_2020.json")
+        pdf = Path("pdf-1.png")
+        self.assertEqual(
+            SWEEP.select_source_page_paths([svg], [tree], [pdf], [1]),
+            [(1, svg, tree, pdf)],
+        )
+
     def test_raster_paths_limits_multi_page_svg_to_requested_page(self) -> None:
         paths = [Path("rhwp_001.svg"), Path("rhwp_002.svg"), Path("rhwp_003.svg")]
 

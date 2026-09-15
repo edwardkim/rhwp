@@ -881,6 +881,7 @@ def select_source_page_paths(
     svg_paths = filter_paths_by_pages(all_svg_paths, selected_pages)
     tree_paths = filter_paths_by_pages(all_tree_paths, selected_pages)
     pdf_paths = filter_paths_by_pages(all_pdf_paths, selected_pages)
+    singleton_page: int | None = None
     if selected_pages:
         selected_groups = {
             "svg": svg_paths,
@@ -903,6 +904,7 @@ def select_source_page_paths(
             svg_paths = all_svg_paths
             tree_paths = all_tree_paths
             pdf_paths = all_pdf_paths
+            singleton_page = selected_pages[0]
         else:
             ensure_selected_pages_available(selected_pages, selected_groups)
 
@@ -914,7 +916,9 @@ def select_source_page_paths(
     pages: list[tuple[int, Path, Path, Path]] = []
     seen: set[int] = set()
     for svg_path, tree_path, pdf_path in zip(svg_paths, tree_paths, pdf_paths):
-        page = page_num(svg_path)
+        # A document stem such as "wrap-2020" is not physical page 2020.
+        # Keep fallback pairing, filenames and metrics on the requested page.
+        page = singleton_page if singleton_page is not None else page_num(svg_path)
         if page in seen:
             raise SystemExit(f"선택 페이지 번호가 중복되었습니다: {page}")
         seen.add(page)
