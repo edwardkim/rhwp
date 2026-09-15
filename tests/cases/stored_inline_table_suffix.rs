@@ -7,9 +7,9 @@ const FIXTURE: &[u8] = include_bytes!("../fixtures/stored_inline_table_suffix/tw
 
 #[test]
 fn stored_inline_tables_keep_their_side_of_a_text_line_boundary() {
-    // raw stream: table(0..8), x(8), table(9..17), h(17).
-    // Both 9 and 17 project to visible position 1, but own different tables.
-    for (second_start, expected_same_row) in [(17, true), (9, false)] {
+    // raw stream: table(0..8), "x y "(8..12), table(12..20), h(20).
+    // Both 12 and 20 project to visible position 4, but own different tables.
+    for (second_start, expected_same_row) in [(20, true), (12, false)] {
         let source = DocumentCore::from_bytes(FIXTURE).expect("synthetic HWPX");
         let mut document = source.document().clone();
         let Control::Table(outer) = &mut document.sections[0].paragraphs[1].controls[0] else {
@@ -31,6 +31,25 @@ fn stored_inline_tables_keep_their_side_of_a_text_line_boundary() {
             .filter(|c| c["type"] == "table" && c["stableIndex"].as_array().unwrap().len() > 3)
             .collect();
         assert_eq!(tables.len(), 2, "each table is emitted exactly once");
+        let outer = layout["controls"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["type"] == "table" && c["stableIndex"].as_array().unwrap().len() == 3)
+            .expect("outer table");
+        let left = outer["cells"][0]["x"].as_f64().unwrap();
+        let right = left + 28800.0 * 96.0 / 7200.0;
+        for table in &tables {
+            let cell = &table["cells"][0];
+            let x = cell["x"].as_f64().unwrap();
+            let width = cell["w"].as_f64().unwrap();
+            assert!(
+                x >= left - 0.5
+                    && x + width <= right + 0.5
+                    && width >= table["w"].as_f64().unwrap() - 0.5,
+                "stored break {second_start}: inline table must fit without clipping: {table}"
+            );
+        }
         let y = |i: usize| tables[i]["y"].as_f64().unwrap();
         assert_eq!(
             (y(0) - y(1)).abs() < 0.2,
