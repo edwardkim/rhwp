@@ -20,7 +20,7 @@ use super::tokenizer::{tokenize, Token, TokenType};
 /// 같은 취지로 상한을 둔다. 실측 디버그 스택 오버플로 임계(중첩 sqrt ≈ 144)보다
 /// 충분히 낮고, 실제 수식의 중첩 깊이(수 단계)는 넉넉히 웃돈다. 초과분은 조용히
 /// 잘라내(truncate) 유효 수식 출력은 바뀌지 않는다.
-const MAX_EQ_DEPTH: u32 = 64;
+pub(super) const MAX_EQ_DEPTH: u32 = 64;
 
 /// 수식 파서
 pub struct EqParser {

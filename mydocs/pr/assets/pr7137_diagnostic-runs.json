@@ -1,0 +1,41 @@
+[
+  {
+    "cmd": [
+      "target/nondraft-review-20260914/debug/rhwp",
+      "layout-anomaly",
+      "samples/exam_eng.hwp",
+      "-p",
+      "0",
+      "--json",
+      "--stored-line-tolerance",
+      "0.5"
+    ],
+    "exit": 0
+  },
+  {
+    "cmd": [
+      "target/nondraft-review-20260914/debug/rhwp",
+      "layout-anomaly",
+      "samples/issue7018/2769535-records-inspection-plan.hwpx",
+      "-p",
+      "1",
+      "--json",
+      "--stored-line-tolerance",
+      "0.5"
+    ],
+    "exit": 0
+  },
+  {
+    "cmd": [
+      "target/nondraft-review-20260914/debug/rhwp",
+      "layout-anomaly",
+      "samples/tac-case-003.hwp",
+      "-p",
+      "0",
+      "--json",
+      "--stored-line-tolerance",
+      "0.5"
+    ],
+    "exit": 0
+  }
+]

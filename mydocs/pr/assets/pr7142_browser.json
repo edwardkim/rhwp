@@ -1,0 +1,69 @@
+{
+  "browser": "Chrome/152.0.7977.83",
+  "results": [
+    {
+      "lang": "ko",
+      "initial": {
+        "locale": "ko",
+        "htmlLang": "ko",
+        "page": "1 / 1 쪽",
+        "section": "구역: 1 / 1",
+        "message": "새 문서.hwp — 1페이지",
+        "navigator": "ko-KR"
+      },
+      "state": {
+        "before": {
+          "mode": "수정",
+          "hf": "꼬리말 · 홀수 쪽 편집 중"
+        },
+        "preference": {
+          "locale": "en",
+          "appliesOnNextLaunch": true
+        },
+        "after": {
+          "locale": "ko",
+          "mode": "수정"
+        },
+        "stored": "en"
+      },
+      "dynamic": {
+        "html": "<button data-i18n=\"ui.sbMode.label\">삽입</button>",
+        "iconPreserved": false
+      },
+      "nextLocale": "en",
+      "errors": []
+    },
+    {
+      "lang": "en",
+      "initial": {
+        "locale": "en",
+        "htmlLang": "en",
+        "page": "Page 1 / 1",
+        "section": "Section: 1 / 1",
+        "message": "새 문서.hwp — Pages: 1",
+        "navigator": "ko-KR"
+      },
+      "state": {
+        "before": {
+          "mode": "Overwrite",
+          "hf": "Editing Footer · Odd pages"
+        },
+        "preference": {
+          "locale": "ko",
+          "appliesOnNextLaunch": true
+        },
+        "after": {
+          "locale": "en",
+          "mode": "Overwrite"
+        },
+        "stored": "ko"
+      },
+      "dynamic": {
+        "html": "<button data-i18n=\"ui.sbMode.label\">Insert</button>",
+        "iconPreserved": false
+      },
+      "nextLocale": "ko",
+      "errors": []
+    }
+  ]
+}

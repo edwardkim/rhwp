@@ -2386,12 +2386,27 @@ impl HeightMeasurer {
                                         // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
                                         // 들어가 아래 흐름이 통째로 6px 밀렸다.
                                         // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
+                                        // [#7097] 글자가 아예 없는 빈 마지막 줄도 같다.
+                                        // 그 줄 뒤에 붙일 줄이 없으므로 trailing 줄간격을
+                                        // 칸 높이에 넣을 근거가 없다 — 36382471_masked 1쪽
+                                        // 2행이 8.05px 부풀어(350.10, 한/글 342.05) 3행이
+                                        // 통째로, 2행 안쪽 글자(vertAlign=CENTER)가 절반
+                                        // 내려갔다. 보존 핀(Task #874/#1086)의 마지막 문단은
+                                        // 글자가 있어 종전 회계 그대로다.
                                         let last_line_is_object_only =
                                             p.text.trim().is_empty() && !p.controls.is_empty();
+                                        // 글자도 개체도 없는 **완전한 빈 문단**. 공백 한 칸은
+                                        // 글리프라 제외한다 — KTX.hwp 2쪽 27문단 칸의 마지막
+                                        // 문단이 `" "`(lh=1400 ls=1120)이고, 그 trailing 을
+                                        // 빼면 valign=Center 인 칸 안 글자가 절반(7.47px)
+                                        // 올라가 한컴 정본(pdf/KTX-2022.pdf)에서 멀어진다.
+                                        let last_line_is_empty =
+                                            p.text.is_empty() && p.controls.is_empty();
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1
                                                 && table.common.treat_as_char
-                                                && !last_line_is_object_only);
+                                                && !last_line_is_object_only
+                                                && !last_line_is_empty);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
@@ -3313,12 +3328,27 @@ impl HeightMeasurer {
                                         // 1424+1613, `ls=460`). 그 6.1px 이 칸 높이에
                                         // 들어가 아래 흐름이 통째로 6px 밀렸다.
                                         // 보존 핀의 마지막 문단은 글자가 있어 종전대로다.
+                                        // [#7097] 글자가 아예 없는 빈 마지막 줄도 같다.
+                                        // 그 줄 뒤에 붙일 줄이 없으므로 trailing 줄간격을
+                                        // 칸 높이에 넣을 근거가 없다 — 36382471_masked 1쪽
+                                        // 2행이 8.05px 부풀어(350.10, 한/글 342.05) 3행이
+                                        // 통째로, 2행 안쪽 글자(vertAlign=CENTER)가 절반
+                                        // 내려갔다. 보존 핀(Task #874/#1086)의 마지막 문단은
+                                        // 글자가 있어 종전 회계 그대로다.
                                         let last_line_is_object_only =
                                             p.text.trim().is_empty() && !p.controls.is_empty();
+                                        // 글자도 개체도 없는 **완전한 빈 문단**. 공백 한 칸은
+                                        // 글리프라 제외한다 — KTX.hwp 2쪽 27문단 칸의 마지막
+                                        // 문단이 `" "`(lh=1400 ls=1120)이고, 그 trailing 을
+                                        // 빼면 valign=Center 인 칸 안 글자가 절반(7.47px)
+                                        // 올라가 한컴 정본(pdf/KTX-2022.pdf)에서 멀어진다.
+                                        let last_line_is_empty =
+                                            p.text.is_empty() && p.controls.is_empty();
                                         let include_trailing_ls = !is_cell_last_line
                                             || (cell_para_count > 1
                                                 && table.common.treat_as_char
-                                                && !last_line_is_object_only);
+                                                && !last_line_is_object_only
+                                                && !last_line_is_empty);
                                         if include_trailing_ls {
                                             let trailing =
                                                 hwpunit_to_px(line.line_spacing, self.dpi);
@@ -3491,7 +3521,14 @@ impl HeightMeasurer {
                     .max()
                     .unwrap_or(0);
                 let pad = hwpunit_to_px(cell.stored_vertical_padding_hu(), self.dpi);
-                let floor = (hwpunit_to_px(content_hu as i32, self.dpi) + pad).min(row_heights[r]);
+                // 저장 위치가 줄들을 구분하지 못하면 이미 측정한 내용 높이를 지킨다.
+                // 한 줄짜리 extent를 쓰면 여러 줄이 꽉 찬 행까지 여유 공간으로 줄인다.
+                let floor = if crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs) {
+                    hwpunit_to_px(content_hu as i32, self.dpi) + pad
+                } else {
+                    content_row_floor[r]
+                }
+                .min(row_heights[r]);
                 if floor > floors[r] {
                     floors[r] = floor;
                 }

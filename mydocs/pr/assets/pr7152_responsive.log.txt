@@ -1,0 +1,2820 @@
+=== E2E: 반응형 레이아웃 테스트 ===
+
+  [browser] headless Chrome 실행
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+
+[wide-desktop] 1920x1080...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (1920/1920)
+  PASS: 서식 바 가로 overflow 없음 (1920/1920)
+  PASS: 기본 도구 외부 overflow 없음 (1920/1920)
+  PASS: 내용이 맞으면 이동 버튼 숨김
+  PASS: 내용이 맞으면 내부 overflow 없음
+  PASS: 내용이 맞으면 native 가로 스크롤 차단
+  PASS: 전체 압축 1행 (rows=1)
+  PASS: 전체 압축 높이 36px 이하 (h=36)
+  PASS: 첫 서식 콤보와 파일 텍스트의 시각적 시작축 일치
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-wide-desktop.png
+
+[desktop] 1280x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (1280/1280)
+  PASS: 서식 바 가로 overflow 없음 (1280/1280)
+  PASS: 기본 도구 외부 overflow 없음 (1280/1280)
+  PASS: 내용이 맞으면 이동 버튼 숨김
+  PASS: 내용이 맞으면 내부 overflow 없음
+  PASS: 내용이 맞으면 native 가로 스크롤 차단
+  PASS: 전체 압축 1행 (rows=1)
+  PASS: 전체 압축 높이 36px 이하 (h=36)
+  PASS: 첫 서식 콤보와 파일 텍스트의 시각적 시작축 일치
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-desktop.png
+
+[narrow-desktop] 1024x768...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (1024/1024)
+  PASS: 서식 바 가로 overflow 없음 (1024/1024)
+  PASS: 기본 도구 외부 overflow 없음 (1024/1024)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/1008)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 전체 압축 1행 (rows=1)
+  PASS: 전체 압축 높이 36px 이하 (h=36)
+  PASS: 첫 서식 콤보와 파일 텍스트의 시각적 시작축 일치
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-narrow-desktop.png
+
+[below-desktop-boundary] 1023x768...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (1023/1023)
+  PASS: 서식 바 가로 overflow 없음 (1023/1023)
+  PASS: 기본 도구 외부 overflow 없음 (1023/1023)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/1007)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 전체 압축 1행 (rows=1)
+  PASS: 전체 압축 높이 36px 이하 (h=36)
+  PASS: 첫 서식 콤보와 파일 텍스트의 시각적 시작축 일치
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-below-desktop-boundary.png
+
+[full-boundary] 962x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (962/962)
+  PASS: 서식 바 가로 overflow 없음 (962/962)
+  PASS: 기본 도구 외부 overflow 없음 (962/962)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/946)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 전체 압축 1행 (rows=1)
+  PASS: 전체 압축 높이 36px 이하 (h=36)
+  PASS: 첫 서식 콤보와 파일 텍스트의 시각적 시작축 일치
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  PASS: 서식 control 상호작용: fontSizeApplied
+  PASS: 서식 control 상호작용: charfxOpened
+  PASS: 서식 control 상호작용: charfxClosed
+  PASS: 서식 control 상호작용: highlightOpened
+  PASS: 서식 control 상호작용: highlightClosed
+  PASS: 서식 control 상호작용: highlightChanged
+  PASS: 서식 control 상호작용: colorChanged
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-full-boundary.png
+
+[compact-boundary] 961x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (961/961)
+  PASS: 서식 바 가로 overflow 없음 (961/961)
+  PASS: 기본 도구 외부 overflow 없음 (961/961)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/945)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 문단 접힘 1행 (rows=1)
+  PASS: 닫힌 panel의 문단 명령 숨김
+  PASS: 문단 더보기 표시
+  PASS: 더보기 초기 접힘
+  PASS: 닫힌 panel 접근성 트리 제외
+  PASS: ArrowDown 열기와 첫 명령 focus
+  PASS: Escape 닫기와 trigger focus 복귀
+  PASS: 외부 pointer로 panel 닫힘
+  PASS: pointer 열기와 편집기 focus 유지
+  PASS: 명령 실행 뒤 panel 닫힘
+  PASS: pointer 명령 실행 뒤 편집기 focus 유지
+  PASS: 현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지
+  PASS: paragraph disabled 상태를 trigger에 표시
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-compact-boundary.png
+
+[compact-desktop] 883x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (883/883)
+  PASS: 서식 바 가로 overflow 없음 (883/883)
+  PASS: 기본 도구 외부 overflow 없음 (883/883)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/867)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 문단 접힘 1행 (rows=1)
+  PASS: 닫힌 panel의 문단 명령 숨김
+  PASS: 문단 더보기 표시
+  PASS: 더보기 초기 접힘
+  PASS: 닫힌 panel 접근성 트리 제외
+  PASS: ArrowDown 열기와 첫 명령 focus
+  PASS: Escape 닫기와 trigger focus 복귀
+  PASS: 외부 pointer로 panel 닫힘
+  PASS: pointer 열기와 편집기 focus 유지
+  PASS: 명령 실행 뒤 panel 닫힘
+  PASS: pointer 명령 실행 뒤 편집기 focus 유지
+  PASS: 현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지
+  PASS: paragraph disabled 상태를 trigger에 표시
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-compact-desktop.png
+
+[one-row-boundary] 808x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=1)
+  PASS: page 가로 overflow 없음 (808/808)
+  PASS: 서식 바 가로 overflow 없음 (808/808)
+  PASS: 기본 도구 외부 overflow 없음 (808/808)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/792)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 문단 접힘 1행 (rows=1)
+  PASS: 닫힌 panel의 문단 명령 숨김
+  PASS: 문단 더보기 표시
+  PASS: 더보기 초기 접힘
+  PASS: 닫힌 panel 접근성 트리 제외
+  PASS: ArrowDown 열기와 첫 명령 focus
+  PASS: Escape 닫기와 trigger focus 복귀
+  PASS: 외부 pointer로 panel 닫힘
+  PASS: pointer 열기와 편집기 focus 유지
+  PASS: 명령 실행 뒤 panel 닫힘
+  PASS: pointer 명령 실행 뒤 편집기 focus 유지
+  PASS: 현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지
+  PASS: paragraph disabled 상태를 trigger에 표시
+  Layout: menu=28px toolbar=56px style=36px rows=1
+  Screenshot: e2e/screenshots/responsive-one-row-boundary.png
+
+[two-row-boundary] 807x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (807/807)
+  PASS: 서식 바 가로 overflow 없음 (807/807)
+  PASS: 기본 도구 외부 overflow 없음 (807/807)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/791)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 필드+명령 2행 (rows=2)
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-two-row-boundary.png
+
+[tablet] 768x1024...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (768/768)
+  PASS: 서식 바 가로 overflow 없음 (768/768)
+  PASS: 기본 도구 외부 overflow 없음 (768/768)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/752)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 필드+명령 2행 (rows=2)
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-tablet.png
+
+[below-tablet-boundary] 767x1024...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (767/767)
+  PASS: 서식 바 가로 overflow 없음 (767/767)
+  PASS: 기본 도구 외부 overflow 없음 (767/767)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/751)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 필드+명령 2행 (rows=2)
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-below-tablet-boundary.png
+
+[command-inline-boundary] 460x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (460/460)
+  PASS: 서식 바 가로 overflow 없음 (460/460)
+  PASS: 기본 도구 외부 overflow 없음 (460/460)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/444)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 필드+명령 2행 (rows=2)
+  PASS: 문단 명령 inline 표시
+  PASS: 더보기 숨김
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-command-inline-boundary.png
+
+[command-overflow-boundary] 459x900...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (459/459)
+  PASS: 서식 바 가로 overflow 없음 (459/459)
+  PASS: 기본 도구 외부 overflow 없음 (459/459)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/443)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 문단 접힘 2행 (rows=2)
+  PASS: 닫힌 panel의 문단 명령 숨김
+  PASS: 문단 더보기 표시
+  PASS: 더보기 초기 접힘
+  PASS: 닫힌 panel 접근성 트리 제외
+  PASS: ArrowDown 열기와 첫 명령 focus
+  PASS: Escape 닫기와 trigger focus 복귀
+  PASS: 외부 pointer로 panel 닫힘
+  PASS: pointer 열기와 편집기 focus 유지
+  PASS: 명령 실행 뒤 panel 닫힘
+  PASS: pointer 명령 실행 뒤 편집기 focus 유지
+  PASS: 현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지
+  PASS: paragraph disabled 상태를 trigger에 표시
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-command-overflow-boundary.png
+
+[mobile-wide] 412x915...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (412/412)
+  PASS: 서식 바 가로 overflow 없음 (412/412)
+  PASS: 기본 도구 외부 overflow 없음 (412/412)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/396)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 문단 접힘 2행 (rows=2)
+  PASS: 닫힌 panel의 문단 명령 숨김
+  PASS: 문단 더보기 표시
+  PASS: 더보기 초기 접힘
+  PASS: 닫힌 panel 접근성 트리 제외
+  PASS: ArrowDown 열기와 첫 명령 focus
+  PASS: Escape 닫기와 trigger focus 복귀
+  PASS: 외부 pointer로 panel 닫힘
+  PASS: pointer 열기와 편집기 focus 유지
+  PASS: 명령 실행 뒤 panel 닫힘
+  PASS: pointer 명령 실행 뒤 편집기 focus 유지
+  PASS: 현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지
+  PASS: paragraph disabled 상태를 trigger에 표시
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-mobile-wide.png
+
+[mobile-medium] 390x844...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (390/390)
+  PASS: 서식 바 가로 overflow 없음 (390/390)
+  PASS: 기본 도구 외부 overflow 없음 (390/390)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/374)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 문단 접힘 2행 (rows=2)
+  PASS: 닫힌 panel의 문단 명령 숨김
+  PASS: 문단 더보기 표시
+  PASS: 더보기 초기 접힘
+  PASS: 닫힌 panel 접근성 트리 제외
+  PASS: ArrowDown 열기와 첫 명령 focus
+  PASS: Escape 닫기와 trigger focus 복귀
+  PASS: 외부 pointer로 panel 닫힘
+  PASS: pointer 열기와 편집기 focus 유지
+  PASS: 명령 실행 뒤 panel 닫힘
+  PASS: pointer 명령 실행 뒤 편집기 focus 유지
+  PASS: 현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지
+  PASS: paragraph disabled 상태를 trigger에 표시
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-mobile-medium.png
+
+[mobile] 375x812...
+  PASS: 캔버스 존재
+  PASS: 편집 영역 표시
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 페이지 수: 1
+  PASS: 메뉴바 표시
+  PASS: 마우스 메뉴바 28px 한 줄 높이 (h=28)
+  PASS: 전체 메뉴 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글이 viewport 안에 표시
+  PASS: 기본 도구 상자 표시
+  PASS: 도구 상자 ARIA 영역 계약
+  PASS: split button menu/menuitem ARIA 계약
+  PASS: 기본 도구 상자 한 줄 높이 (h=56)
+  PASS: 기본 도구 그룹 한 줄 (rows=1)
+  PASS: 기본 도구 label 밀도 유지
+  PASS: 시작 위치 도구 track은 고유 왼쪽 padding에 정렬
+  PASS: 서식 도구 표시
+  PASS: 상태 표시줄 표시
+  PASS: 서식 바 최대 2행 (rows=2)
+  PASS: page 가로 overflow 없음 (375/375)
+  PASS: 서식 바 가로 overflow 없음 (375/375)
+  PASS: 기본 도구 외부 overflow 없음 (375/375)
+  PASS: 시작 위치는 다음 이동 버튼만 표시
+  PASS: 시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김
+  PASS: 시작 위치 다음 버튼 enabled
+  PASS: 기본 도구 내부 scroll (1210/359)
+  PASS: 내용이 넘칠 때만 native 가로 스크롤 활성화
+  PASS: 문단 접힘 2행 (rows=2)
+  PASS: 닫힌 panel의 문단 명령 숨김
+  PASS: 문단 더보기 표시
+  PASS: 더보기 초기 접힘
+  PASS: 닫힌 panel 접근성 트리 제외
+  PASS: ArrowDown 열기와 첫 명령 focus
+  PASS: Escape 닫기와 trigger focus 복귀
+  PASS: 외부 pointer로 panel 닫힘
+  PASS: pointer 열기와 편집기 focus 유지
+  PASS: 명령 실행 뒤 panel 닫힘
+  PASS: pointer 명령 실행 뒤 편집기 focus 유지
+  PASS: 현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지
+  PASS: paragraph disabled 상태를 trigger에 표시
+  PASS: 다음 버튼은 nav 간격을 포함한 divider 경계로 이동
+  PASS: 중간 위치는 양쪽 24px 이동 버튼 표시
+  PASS: 끝 버튼 퇴장은 scroll 시작과 동시에 시작
+  PASS: End로 마지막 경계 도달·다음 버튼 퇴장·오른쪽 padding 정렬
+  PASS: 가로 viewport 밖에도 split menu가 잘리지 않음
+  PASS: split menu ArrowDown 첫 항목 focus
+  PASS: split menu Escape 닫기와 arrow focus 복귀
+  PASS: Home으로 첫 group 복귀·이전 slot 접힘
+  PASS: 끝점 버튼 퇴장 뒤 viewport로 focus 보존
+  PASS: trackpad 수평 wheel로 내부 이동
+  PASS: offscreen command focus를 viewport 안에 표시
+  PASS: 머리말 mode 전환 뒤 시작 위치 재계산
+  PASS: 기본 mode 복귀 뒤 이동 상태 재계산
+  PASS: 그림 선택 전환에도 현재 scroll 위치 보존
+  PASS: contextual mode 전환 뒤 중복 divider 없음
+  PASS: 기본 도구 상자 숨김은 이동 버튼까지 포함
+  PASS: 기본 도구 상자 복귀 뒤 overflow 재계산
+  Layout: menu=28px toolbar=56px style=70px rows=2
+  Screenshot: e2e/screenshots/responsive-mobile.png
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 기존 낮은 높이 도구 영역 축약 유지
+  Screenshot: e2e/screenshots/responsive-short-ruler-375-400.png
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 기존 낮은 높이 도구 영역 축약 유지
+  Screenshot: e2e/screenshots/responsive-short-ruler-767-500.png
+  PASS: 가로·세로 눈금자와 교차 코너 상시 표시
+  PASS: 눈금자 편집 영역 grid 유지
+  PASS: 20px 눈금자 슬롯과 편집 viewport 정렬
+  PASS: 눈금자 표시로 page 가로 overflow가 생기지 않음
+  PASS: 기존 낮은 높이 도구 영역 축약 유지
+  Screenshot: e2e/screenshots/responsive-short-ruler-767-501.png
+
+[narrow-menu] 520x812...
+  PASS: 마우스 메뉴 높이 28px (h=28)
+  PASS: 파일–도구 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글 표시
+  PASS: 메뉴바 가로 overflow 없음
+
+[narrow-menu] 500x812...
+  PASS: 마우스 메뉴 높이 28px (h=28)
+  PASS: 파일–도구 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글 표시
+  PASS: 메뉴바 가로 overflow 없음
+
+[narrow-menu] 480x812...
+  PASS: 마우스 메뉴 높이 28px (h=28)
+  PASS: 파일–도구 한 줄 유지 (rows=1)
+  PASS: 파일–도구 전체 메뉴 표시
+  PASS: 기본 도구 상자 토글 표시
+  PASS: 메뉴바 가로 overflow 없음
+
+[touch-menu] 375x812...
+  PASS: 터치 메뉴 클릭 높이 40px (h=40)
+  PASS: 터치 메뉴 한 줄 유지 (rows=1)
+  PASS: 터치 환경 파일–도구 전체 메뉴 접근 가능
+  PASS: 터치 환경 기본 도구 상자 토글 표시
+
+[theme] default/light/full 962x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=default
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(250, 250, 250)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.14
+  PASS: bar 배경=rgb(240, 240, 240)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.09
+  Screenshot: e2e/screenshots/responsive-theme-default-light-full.png
+
+[theme] default/light/compact 808x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=default
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(250, 250, 250)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.14
+  PASS: bar 배경=rgb(240, 240, 240)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.09
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(250, 250, 250)
+  PASS: panel 경계=1px
+  PASS: panel contrast=12.10
+  Screenshot: e2e/screenshots/responsive-theme-default-light-compact.png
+
+[theme] default/light/inline 460x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=default
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(250, 250, 250)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.14
+  PASS: bar 배경=rgb(240, 240, 240)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.09
+  Screenshot: e2e/screenshots/responsive-theme-default-light-inline.png
+
+[theme] default/light/overflow 375x812...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=default
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(250, 250, 250)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.14
+  PASS: bar 배경=rgb(240, 240, 240)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.09
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(250, 250, 250)
+  PASS: panel 경계=1px
+  PASS: panel contrast=12.10
+  Screenshot: e2e/screenshots/responsive-theme-default-light-overflow.png
+
+[theme] default/dark/full 962x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=default
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(52, 58, 67)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.23
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  Screenshot: e2e/screenshots/responsive-theme-default-dark-full.png
+
+[theme] default/dark/compact 808x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=default
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(52, 58, 67)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.23
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(54, 60, 69)
+  PASS: panel 경계=1px
+  PASS: panel contrast=9.81
+  Screenshot: e2e/screenshots/responsive-theme-default-dark-compact.png
+
+[theme] default/dark/inline 460x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=default
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(52, 58, 67)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.23
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  Screenshot: e2e/screenshots/responsive-theme-default-dark-inline.png
+
+[theme] default/dark/overflow 375x812...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=default
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(52, 58, 67)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.23
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(54, 60, 69)
+  PASS: panel 경계=1px
+  PASS: panel contrast=9.81
+  Screenshot: e2e/screenshots/responsive-theme-default-dark-overflow.png
+
+[theme] flat/light/full 962x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=flat
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(255, 255, 255)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.46
+  PASS: bar 배경=rgb(255, 255, 255)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.63
+  Screenshot: e2e/screenshots/responsive-theme-flat-light-full.png
+
+[theme] flat/light/compact 808x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=flat
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(255, 255, 255)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.46
+  PASS: bar 배경=rgb(255, 255, 255)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.63
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(255, 255, 255)
+  PASS: panel 경계=1px
+  PASS: panel contrast=12.63
+  Screenshot: e2e/screenshots/responsive-theme-flat-light-compact.png
+
+[theme] flat/light/inline 460x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=flat
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(255, 255, 255)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.46
+  PASS: bar 배경=rgb(255, 255, 255)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.63
+  Screenshot: e2e/screenshots/responsive-theme-flat-light-inline.png
+
+[theme] flat/light/overflow 375x812...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=flat
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(255, 255, 255)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=7.46
+  PASS: bar 배경=rgb(255, 255, 255)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.63
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(255, 255, 255)
+  PASS: panel 경계=1px
+  PASS: panel contrast=12.63
+  Screenshot: e2e/screenshots/responsive-theme-flat-light-overflow.png
+
+[theme] flat/dark/full 962x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=flat
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(47, 52, 60)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.99
+  PASS: bar 배경=rgb(47, 52, 60)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.05
+  Screenshot: e2e/screenshots/responsive-theme-flat-dark-full.png
+
+[theme] flat/dark/compact 808x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=flat
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(47, 52, 60)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.99
+  PASS: bar 배경=rgb(47, 52, 60)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.05
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(54, 60, 69)
+  PASS: panel 경계=1px
+  PASS: panel contrast=9.81
+  Screenshot: e2e/screenshots/responsive-theme-flat-dark-compact.png
+
+[theme] flat/dark/inline 460x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=flat
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(47, 52, 60)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.99
+  PASS: bar 배경=rgb(47, 52, 60)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.05
+  Screenshot: e2e/screenshots/responsive-theme-flat-dark-inline.png
+
+[theme] flat/dark/overflow 375x812...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=flat
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=70px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(47, 52, 60)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=8.99
+  PASS: bar 배경=rgb(47, 52, 60)
+  PASS: bar 경계=1px
+  PASS: icon contrast=11.05
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(54, 60, 69)
+  PASS: panel 경계=1px
+  PASS: panel contrast=9.81
+  Screenshot: e2e/screenshots/responsive-theme-flat-dark-overflow.png
+
+[theme] oldschool/light/full 962x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=oldschool
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(192, 192, 192)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=4.10
+  PASS: bar 배경=rgb(192, 192, 192)
+  PASS: bar 경계=1px
+  PASS: icon contrast=6.94
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-light-full.png
+
+[theme] oldschool/light/compact 808x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=oldschool
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(192, 192, 192)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=4.10
+  PASS: bar 배경=rgb(192, 192, 192)
+  PASS: bar 경계=1px
+  PASS: icon contrast=6.94
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(192, 192, 192)
+  PASS: panel 경계=1px
+  PASS: panel contrast=6.94
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-light-compact.png
+
+[theme] oldschool/light/inline 460x900...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=oldschool
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=71px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(192, 192, 192)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=4.10
+  PASS: bar 배경=rgb(192, 192, 192)
+  PASS: bar 경계=1px
+  PASS: icon contrast=6.94
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-light-inline.png
+
+[theme] oldschool/light/overflow 375x812...
+  PASS: theme mode=light
+  PASS: effective theme=light
+  PASS: skin=oldschool
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=71px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(192, 192, 192)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=4.10
+  PASS: bar 배경=rgb(192, 192, 192)
+  PASS: bar 경계=1px
+  PASS: icon contrast=6.94
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(192, 192, 192)
+  PASS: panel 경계=1px
+  PASS: panel contrast=6.94
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-light-overflow.png
+
+[theme] oldschool/dark/full 962x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=oldschool
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(37, 41, 47)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=10.49
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-dark-full.png
+
+[theme] oldschool/dark/compact 808x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=oldschool
+  PASS: 행 수=1
+  PASS: 전체 압축 높이=36px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(37, 41, 47)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=10.49
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(54, 60, 69)
+  PASS: panel 경계=1px
+  PASS: panel contrast=9.81
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-dark-compact.png
+
+[theme] oldschool/dark/inline 460x900...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=oldschool
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=71px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(37, 41, 47)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=10.49
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-dark-inline.png
+
+[theme] oldschool/dark/overflow 375x812...
+  PASS: theme mode=dark
+  PASS: effective theme=dark
+  PASS: skin=oldschool
+  PASS: 행 수=2
+  PASS: 전체 압축 높이=71px
+  PASS: 가로 overflow 없음
+  PASS: 기본 도구 한 줄=56px
+  PASS: 기본 도구 내부 overflow 격리
+  PASS: 기본 도구 이동 버튼 표시
+  PASS: toolbar 배경=rgb(37, 41, 47)
+  PASS: toolbar 경계=1px
+  PASS: toolbar nav contrast=10.49
+  PASS: bar 배경=rgb(37, 41, 47)
+  PASS: bar 경계=1px
+  PASS: icon contrast=12.90
+  PASS: 더보기 panel 표시
+  PASS: 더보기 첫 명령 focus
+  PASS: panel 배경=rgb(54, 60, 69)
+  PASS: panel 경계=1px
+  PASS: panel contrast=9.81
+  Screenshot: e2e/screenshots/responsive-theme-oldschool-dark-overflow.png
+
+=== 결과: 2666 passed, 0 failed ===
+
+📋 HTML 보고서: ../output/e2e/responsive-report.html

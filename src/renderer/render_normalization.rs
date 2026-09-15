@@ -104,6 +104,25 @@ impl RenderNormalizationOverlay {
                     //
                     // near-fit(축소율 0.9 이상)에만 적용한다 — 본문보다 훨씬 넓은 표는
                     // 저작 의도가 다르고(가로 넘침 허용·다단 등) 기존 경로가 맡는다.
+                    //
+                    // [#7059] 위 근거(host 줄이 본문 폭)는 **축소의 증거가 아니다.** host 줄이
+                    // 본문 폭인 것은 "표가 그 줄을 오른쪽으로 넘친다"는 뜻이기도 하다. 실제로
+                    // 한/글은 이 형상에서 표를 **축소하지 않고 본문 우단을 넘겨 그린다** —
+                    // 위 표본의 정본 세 판본(`pdf/basic/BlogForm_BookReview-hwp-2020.pdf` ·
+                    // `-2022.pdf` · `pdf/BlogForm_BookReview-2020.pdf`)이 글자 단위로 같다.
+                    //
+                    //   본문 영역     22.68 .. 374.17 pt
+                    //   선언 표 폭    357.19 pt (35719 HU)
+                    //   정본 괘선     22.51 .. 379.37 pt (폭 356.86) — 본문 우단 +5.2 pt
+                    //
+                    // 갈림은 **표 첫 칸의 저장 `LINE_SEG`** 다. 표가 정말 축소됐다면 칸 안
+                    // 줄도 축소 폭이어야 한다. 위 표본은 34696 + 여백 1020 = 35716 으로 선언
+                    // 35719 에 수렴하고(축소 35149 와는 567 차이), `#7059` 가 신고한
+                    // 3194097 도 50440 + 282 = 50722 = 선언 폭이다. 둘 다 정본이 "축소 안 함"
+                    // 이다.
+                    //
+                    // 사다리가 축소 폭을 말하는 표는 종전대로 축소한다 — samples 373건 +
+                    // 행정규칙 855건에서 판정 가능한 표 30개 중 18개가 그쪽이다.
                     if hwp5_stored_pagination_layout && table.common.treat_as_char {
                         let page_def = &section.section_def.page_def;
                         let body_width = page_def
@@ -114,6 +133,7 @@ impl RenderNormalizationOverlay {
                         if body_width > 0
                             && source_width > body_width
                             && f64::from(body_width) >= f64::from(source_width) * 0.9
+                            && stored_first_cell_line_says_shrunk(table, body_width, source_width)
                         {
                             let mut top_path = path.clone();
                             top_path.target_control_index = Some(control_index);
@@ -327,6 +347,40 @@ impl RenderNormalizationOverlay {
         self.text_reflowed_tables_by_pointer
             .contains(&(table as *const Table as usize))
     }
+}
+
+/// [#7059] 표 **첫 칸의 저장 `LINE_SEG`** 가 축소된 폭을 말하는가.
+///
+/// `#6590` 의 근사-축소는 host 문단의 저장 줄이 본문 폭인 것을 근거로 삼았는데, 그것은
+/// "표가 그 줄을 오른쪽으로 넘친다"는 뜻이기도 해서 축소를 가르지 못한다. 표가 정말 축소돼
+/// 저장됐다면 **칸 안 줄**도 축소 폭이어야 한다 — 그쪽이 갈림이다.
+///
+/// 칸의 안쪽 폭은 `칸 폭 - 실효 좌우 여백`이다(`Cell::effective_padding` — 렌더·측정과 같은
+/// 단일 출처). 축소 가정의 안쪽 폭과 선언 가정의 안쪽 폭 중 저장 줄이 가까운 쪽을 고른다.
+///
+/// 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)은 저장으로 치지 않는다 — 우리가 만든 값으로
+/// 우리 규칙을 판정하면 순환이다. 저장 줄이 없으면 축소하지 않는다(근거 없음).
+fn stored_first_cell_line_says_shrunk(table: &Table, body_width: u32, source_width: u32) -> bool {
+    let Some(cell) = table.cells.iter().find(|c| c.row == 0 && c.col == 0) else {
+        return false;
+    };
+    let Some(seg) = cell
+        .paragraphs
+        .iter()
+        .find_map(|paragraph| paragraph.line_segs.first())
+    else {
+        return false;
+    };
+    if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return false;
+    }
+    let padding = cell.effective_padding(&table.padding);
+    let padding_h = i64::from(padding.left) + i64::from(padding.right);
+    let declared_inner = i64::from(cell.width) - padding_h;
+    let scale = f64::from(body_width) / f64::from(source_width);
+    let shrunk_inner = (f64::from(cell.width) * scale) as i64 - padding_h;
+    let stored = i64::from(seg.segment_width);
+    (stored - shrunk_inner).abs() < (stored - declared_inner).abs()
 }
 
 #[cfg(test)]

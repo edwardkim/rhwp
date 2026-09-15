@@ -13,7 +13,9 @@ impl TypesetEngine {
         tables: &[MeasuredTable],
     ) -> bool {
         let column = st.inline_flow_column();
-        if !inline_flow::supports(para, super::super::px_to_hwpunit(column.width, self.dpi)) {
+        if !inline_flow::supports(para, super::super::px_to_hwpunit(column.width, self.dpi))
+            && !inline_flow::supports_plain_text(para)
+        {
             return false;
         }
         if st.side_wrap_exclusions.is_empty()
@@ -44,22 +46,20 @@ impl TypesetEngine {
             } else {
                 Vec::new()
             };
-            let mut plan = inline_flow::plan(
-                para,
-                para_index,
-                styles,
-                tables,
-                &ObjectPlacementFrame {
-                    container: &container,
-                    column: &column,
-                    body: &st.layout.body_area,
-                    paper: &paper,
-                    paragraph_y: column.y + start,
-                    alignment: style.alignment,
-                    dpi: self.dpi,
-                },
-                &exclusions,
-            )?;
+            let frame = ObjectPlacementFrame {
+                container: &container,
+                column: &column,
+                body: &st.layout.body_area,
+                paper: &paper,
+                paragraph_y: column.y + start,
+                alignment: style.alignment,
+                dpi: self.dpi,
+            };
+            let mut plan = if inline_flow::supports_plain_text(para) {
+                inline_flow::plan_plain_text(para, styles, &frame, &exclusions)?
+            } else {
+                inline_flow::plan(para, para_index, styles, tables, &frame, &exclusions)?
+            };
             plan.relative_to(column.x, column.y);
             Some(plan)
         };
@@ -79,7 +79,7 @@ impl TypesetEngine {
                 return false;
             }
             st.advance_column_or_new_page();
-            let Some(candidate) = build(st, st.current_height, false) else {
+            let Some(candidate) = build(st, st.current_height, true) else {
                 return false;
             };
             if candidate.end > st.available_height() + 0.01 {

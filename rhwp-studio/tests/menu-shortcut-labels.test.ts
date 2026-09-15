@@ -197,8 +197,8 @@ test('표 줄/칸 추가·지우기 대표 메뉴에 한컴 단축키를 표시�
   assertCommandShortcut(table, 'table:delete-row-col', 'Alt+Delete');
   assert.match(table, /id: 'table:insert-row-col'[\s\S]*?label: '줄\/칸 추가하기\(I\)\.\.\.'/);
   assert.match(table, /id: 'table:delete-row-col'[\s\S]*?label: '줄\/칸 지우기\(E\)\.\.\.'/);
-  assert.match(html, /data-cmd="table:insert-row-col"[\s\S]*?<span class="md-label">줄\/칸 추가하기\(I\)\.\.\.<\/span>[\s\S]*?<span class="md-shortcut">Alt\+Enter<\/span>/);
-  assert.match(html, /data-cmd="table:delete-row-col"[\s\S]*?<span class="md-label">줄\/칸 지우기\(E\)\.\.\.<\/span>[\s\S]*?<span class="md-shortcut">Alt\+Delete<\/span>/);
+  assert.match(html, /data-cmd="table:insert-row-col"[\s\S]*?<span class="md-label"[^>]*>줄\/칸 추가하기\(I\)\.\.\.<\/span>[\s\S]*?<span class="md-shortcut">Alt\+Enter<\/span>/);
+  assert.match(html, /data-cmd="table:delete-row-col"[\s\S]*?<span class="md-label"[^>]*>줄\/칸 지우기\(E\)\.\.\.<\/span>[\s\S]*?<span class="md-shortcut">Alt\+Delete<\/span>/);
   assert.match(inputHandler, /commandId: 'table:insert-row-col'/);
   assert.match(inputHandler, /commandId: 'table:delete-row-col'/);
   assert.match(table, /id: 'table:transpose-copy'[\s\S]*?label: '행\/열 바꿈 복사'/);
@@ -207,8 +207,8 @@ test('표 줄/칸 추가·지우기 대표 메뉴에 한컴 단축키를 표시�
   assert.match(table, /id: 'table:transpose-paste'[\s\S]*?isInCellSelectionMode/);
   assert.match(table, /id: 'table:transpose-paste'[\s\S]*?transposeTableCellsInPlace/);
   assert.match(table, /id: 'table:transpose-paste'[\s\S]*?range\.startRow[\s\S]*?range\.startCol/);
-  assert.match(html, /data-cmd="table:transpose-copy"[\s\S]*?<span class="md-label">행\/열 바꿈 복사<\/span>/);
-  assert.match(html, /data-cmd="table:transpose-paste"[\s\S]*?<span class="md-label">행\/열 바꿈 붙여넣기<\/span>/);
+  assert.match(html, /data-cmd="table:transpose-copy"[\s\S]*?<span class="md-label"[^>]*>행\/열 바꿈 복사<\/span>/);
+  assert.match(html, /data-cmd="table:transpose-paste"[\s\S]*?<span class="md-label"[^>]*>행\/열 바꿈 붙여넣기<\/span>/);
   assert.match(inputHandler, /commandId: 'table:transpose-copy'/);
   assert.match(inputHandler, /commandId: 'table:transpose-paste'/);
   assert.match(inputHandler, /getDefaultContextMenuItems[\s\S]*?commandId: 'table:transpose-paste'/);

@@ -1,0 +1,2257 @@
+{
+  "source": {
+    "baseSource": "a2cc0d236f0b348e00d6ee14af1ff86323a93c67",
+    "candidateSource": "93cc4b351816ac21e51551609263e5a101347700",
+    "candidateParents": [
+      "a3fe2b102fecdb10f9283a083ff6ca93793473b9",
+      "2779217741427633f86d571064fa45caca239da7"
+    ],
+    "servingUserBuild": "05fdf52c0",
+    "baselineHarnessNote": "WASM was built at baseSource before cherry-pick. Harness is 93cc4b351; Git HEAD metadata alone is not WASM provenance. Studio src identical between base and candidate.",
+    "validationTarget": "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+    "docker": "daemon unavailable; no Docker.app/OrbStack.app on host. native locked wrapper optimized release fallback; not Docker PASS.",
+    "reviewRoute": "collaborator_self_merge; intake_and_review, local_validation, visual_fixture_evidence, review_only_fast_pass, post_merge; user authorized merge/closure and subsequent experiments in current turn."
+  },
+  "inputsAndBinaries": [
+    {
+      "path": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+      "sha256": "ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e",
+      "source": "93cc4b351816ac21e51551609263e5a101347700",
+      "committedBytesEqual": true
+    },
+    {
+      "path": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+      "sha256": "fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65",
+      "source": "93cc4b351816ac21e51551609263e5a101347700",
+      "committedBytesEqual": true
+    },
+    {
+      "path": "pdf/issue1949_giant_cell_nested_tables_perf-2020.pdf",
+      "sha256": "eba4300c90d619006d7618825f04a88b19b90ed8c8409a4c8e3048de1cd28faa",
+      "source": "93cc4b351816ac21e51551609263e5a101347700",
+      "committedBytesEqual": true
+    },
+    {
+      "path": "pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf",
+      "sha256": "ba065afdd3ace7fd6b87fe82848e6cae3d01915a1606e4d8a70e4c2153d57d73",
+      "source": "93cc4b351816ac21e51551609263e5a101347700",
+      "committedBytesEqual": true
+    },
+    {
+      "build": "baseline",
+      "wasmSha256": "8d78619ab856937e051984f4e89c6a16077694a0ce4299c3c4f7d1c900d91cd3",
+      "bytes": 11195960
+    },
+    {
+      "build": "candidate",
+      "wasmSha256": "3991a08dec1d1472a5329d7275c9ac2c9aa8da09b178f7f8d9fc62b621299d53",
+      "bytes": 11196093
+    }
+  ],
+  "validation": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "seconds": 0.7597990036010742
+    },
+    {
+      "name": "fmt-write",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exitCode": 0,
+      "seconds": 5.936145067214966
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exitCode": 0,
+      "seconds": 5.888710260391235
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "seconds": 0.6262879371643066
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 37.925516843795776
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 44.84753632545471
+    },
+    {
+      "name": "build-workspace",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review"
+      ],
+      "exitCode": 0,
+      "seconds": 0.43460583686828613
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 45.58851408958435
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "seconds": 0.4155399799346924
+    },
+    {
+      "name": "regression",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "6",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 425.46149492263794
+    },
+    {
+      "name": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "6"
+      ],
+      "exitCode": 0,
+      "seconds": 133.76689410209656
+    },
+    {
+      "name": "skia-picture",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exitCode": 0,
+      "seconds": 88.36199188232422
+    },
+    {
+      "name": "skia-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/melee/Documents/projects/forks/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exitCode": 0,
+      "seconds": 5.4203040599823
+    }
+  ],
+  "renderParity": {
+    "equal": true,
+    "pages": 460
+  },
+  "visual": {
+    "hwp": {
+      "1": {
+        "page": 1,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/rhwp_png/rhwp_001.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/pdf_png/pdf-001.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/overlay/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 93771,
+        "diff_ratio": 0.10516429,
+        "pixel_match_percent": 89.48357,
+        "ink_union_pixels": 107034,
+        "ink_diff_pixels": 93771,
+        "ink_diff_ratio": 0.8760861,
+        "ink_match_percent": 12.39139,
+        "visual_accuracy_proxy_percent": 12.39139,
+        "mean_abs_channel_delta": 16.069,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          78,
+          77,
+          673,
+          1055
+        ]
+      },
+      "2": {
+        "page": 2,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/rhwp_png/rhwp_002.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/pdf_png/pdf-002.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/overlay/overlay_002.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 92635,
+        "diff_ratio": 0.10389026,
+        "pixel_match_percent": 89.61097,
+        "ink_union_pixels": 105193,
+        "ink_diff_pixels": 92635,
+        "ink_diff_ratio": 0.88061943,
+        "ink_match_percent": 11.93806,
+        "visual_accuracy_proxy_percent": 11.93806,
+        "mean_abs_channel_delta": 15.634,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          78,
+          76,
+          673,
+          1070
+        ]
+      },
+      "38": {
+        "page": 38,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/rhwp_png/rhwp_038.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/pdf_png/pdf-038.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/overlay/overlay_038.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 93819,
+        "diff_ratio": 0.10521812,
+        "pixel_match_percent": 89.47819,
+        "ink_union_pixels": 106835,
+        "ink_diff_pixels": 93819,
+        "ink_diff_ratio": 0.87816727,
+        "ink_match_percent": 12.18327,
+        "visual_accuracy_proxy_percent": 12.18327,
+        "mean_abs_channel_delta": 15.901,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          93,
+          76,
+          673,
+          1069
+        ]
+      },
+      "115": {
+        "page": 115,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/rhwp_png/rhwp_115.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/pdf_png/pdf-115.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwp/overlay/overlay_115.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 57751,
+        "diff_ratio": 0.06476782,
+        "pixel_match_percent": 93.52322,
+        "ink_union_pixels": 65927,
+        "ink_diff_pixels": 57751,
+        "ink_diff_ratio": 0.87598404,
+        "ink_match_percent": 12.4016,
+        "visual_accuracy_proxy_percent": 12.4016,
+        "mean_abs_channel_delta": 9.709,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          125,
+          76,
+          673,
+          607
+        ]
+      }
+    },
+    "hwpx": {
+      "1": {
+        "page": 1,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/rhwp_png/rhwp_001.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/pdf_png/pdf-001.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/overlay/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 89627,
+        "diff_ratio": 0.10051679,
+        "pixel_match_percent": 89.94832,
+        "ink_union_pixels": 102807,
+        "ink_diff_pixels": 89627,
+        "ink_diff_ratio": 0.87179861,
+        "ink_match_percent": 12.82014,
+        "visual_accuracy_proxy_percent": 12.82014,
+        "mean_abs_channel_delta": 15.347,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          78,
+          77,
+          672,
+          1053
+        ]
+      },
+      "2": {
+        "page": 2,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/rhwp_png/rhwp_002.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/pdf_png/pdf-002.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/overlay/overlay_002.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 87634,
+        "diff_ratio": 0.09828164,
+        "pixel_match_percent": 90.17184,
+        "ink_union_pixels": 101184,
+        "ink_diff_pixels": 87634,
+        "ink_diff_ratio": 0.86608555,
+        "ink_match_percent": 13.39145,
+        "visual_accuracy_proxy_percent": 13.39145,
+        "mean_abs_channel_delta": 14.944,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          78,
+          76,
+          672,
+          1068
+        ]
+      },
+      "38": {
+        "page": 38,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/rhwp_png/rhwp_038.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/pdf_png/pdf-038.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/overlay/overlay_038.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 88927,
+        "diff_ratio": 0.09973174,
+        "pixel_match_percent": 90.02683,
+        "ink_union_pixels": 102700,
+        "ink_diff_pixels": 88927,
+        "ink_diff_ratio": 0.86589094,
+        "ink_match_percent": 13.41091,
+        "visual_accuracy_proxy_percent": 13.41091,
+        "mean_abs_channel_delta": 15.27,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          93,
+          76,
+          672,
+          1067
+        ]
+      },
+      "115": {
+        "page": 115,
+        "rhwp_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/rhwp_png/rhwp_115.png",
+        "pdf_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/pdf_png/pdf-115.png",
+        "overlay_png": "/Users/melee/Documents/projects/forks/rhwp/output/issue-3743-integration-20260915/visual-candidate/hwpx/overlay/overlay_115.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 54826,
+        "diff_ratio": 0.06148742,
+        "pixel_match_percent": 93.85126,
+        "ink_union_pixels": 63227,
+        "ink_diff_pixels": 54826,
+        "ink_diff_ratio": 0.86712955,
+        "ink_match_percent": 13.28705,
+        "visual_accuracy_proxy_percent": 13.28705,
+        "mean_abs_channel_delta": 9.394,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          125,
+          76,
+          672,
+          607
+        ]
+      }
+    }
+  },
+  "browserLimitations": [
+    "#2214 initial-warm x expected 231.013 +- 0.2, actual 231.3: base and candidate FAIL; later assertions unexecuted",
+    "HWP cold Enter 116 pages in both",
+    "HWP save 115 to 116 in both: #7114",
+    "2-rAF is not actual visible ink revision proof",
+    "No complete Studio snapshot/IME/Safari validation"
+  ],
+  "latestLockedAB": {
+    "baseline": {
+      "rows": 60,
+      "pageErrors": [],
+      "groups": {
+        "hwp:flow-current": {
+          "runs": [
+            {
+              "sync": 97.30000000074506,
+              "twoRaf": 374,
+              "begin": 104.90000000037253,
+              "stepCpu": 28.20000000204891,
+              "queue": 814.8999999957159
+            },
+            {
+              "sync": 98.59999999962747,
+              "twoRaf": 274.3999999994412,
+              "begin": 108.3999999994412,
+              "stepCpu": 18.20000000204891,
+              "queue": 819.9999999990687
+            },
+            {
+              "sync": 99,
+              "twoRaf": 385.59999999962747,
+              "begin": 108.20000000018626,
+              "stepCpu": 26.500000002793968,
+              "queue": 829.7999999988824
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 98.59999999962747,
+            "twoRaf": 374,
+            "begin": 108.20000000018626,
+            "stepCpu": 26.500000002793968,
+            "queue": 819.9999999990687
+          }
+        },
+        "hwp:flow-restart": {
+          "runs": [
+            {
+              "sync": 96.90000000037253,
+              "twoRaf": 435.29999999981374,
+              "begin": 211,
+              "stepCpu": 24.10000000242144,
+              "queue": 1095.7000000001863
+            },
+            {
+              "sync": 100,
+              "twoRaf": 442.3999999994412,
+              "begin": 214.80000000074506,
+              "stepCpu": 22.100000000558794,
+              "queue": 1105.7999999998137
+            },
+            {
+              "sync": 97.3999999994412,
+              "twoRaf": 433,
+              "begin": 211.29999999981374,
+              "stepCpu": 10.999999997206032,
+              "queue": 1085.0000000009313
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 97.3999999994412,
+            "twoRaf": 435.29999999981374,
+            "begin": 211.29999999981374,
+            "stepCpu": 22.100000000558794,
+            "queue": 1095.7000000001863
+          }
+        },
+        "hwp:enter-cold": {
+          "runs": [
+            {
+              "sync": 209,
+              "twoRaf": 377.8999999994412,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 215.3999999994412,
+              "twoRaf": 391.09999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 210.09999999962747,
+              "twoRaf": 379.59999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [
+            "historical page-count gate failed: expected 115, actual 116",
+            "historical page-count gate failed: expected 115, actual 116",
+            "historical page-count gate failed: expected 115, actual 116"
+          ],
+          "pages": [
+            116,
+            116,
+            116
+          ],
+          "medians": {
+            "sync": 210.09999999962747,
+            "twoRaf": 379.59999999962747,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:enter-pending": {
+          "runs": [
+            {
+              "sync": 211.90000000037253,
+              "twoRaf": 382.20000000018626,
+              "begin": 104.40000000037253,
+              "stepCpu": 0.09999999962747097,
+              "queue": 266.5
+            },
+            {
+              "sync": 214.79999999981374,
+              "twoRaf": 388.90000000037253,
+              "begin": 107.5,
+              "stepCpu": 0.10000000055879354,
+              "queue": 274.4999999990687
+            },
+            {
+              "sync": 210.70000000018626,
+              "twoRaf": 380.09999999962747,
+              "begin": 103.1000000005588,
+              "stepCpu": 0.09999999962747097,
+              "queue": 267.3999999994412
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 211.90000000037253,
+            "twoRaf": 382.20000000018626,
+            "begin": 104.40000000037253,
+            "stepCpu": 0.09999999962747097,
+            "queue": 267.3999999994412
+          }
+        },
+        "hwp:ime-enter-cold": {
+          "runs": [
+            {
+              "sync": 113.70000000018626,
+              "twoRaf": 115,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 115,
+              "twoRaf": 116.59999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 112.5,
+              "twoRaf": 113.59999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 113.70000000018626,
+            "twoRaf": 115,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:ime-enter-pending": {
+          "runs": [
+            {
+              "sync": 114.80000000074506,
+              "twoRaf": 116.6000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 113.70000000018626,
+              "twoRaf": 115.40000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 114.40000000037253,
+              "twoRaf": 116.20000000018626,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 114.40000000037253,
+            "twoRaf": 116.20000000018626,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-cold": {
+          "runs": [
+            {
+              "sync": 216.90000000037253,
+              "twoRaf": 489.90000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 213.40000000037253,
+              "twoRaf": 482.1000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 210.1000000005588,
+              "twoRaf": 476.90000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 213.40000000037253,
+            "twoRaf": 482.1000000005588,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-pending": {
+          "runs": [
+            {
+              "sync": 429.6000000005588,
+              "twoRaf": 595.6000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 434.6000000005588,
+              "twoRaf": 600.9000000003725,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 420.90000000037253,
+              "twoRaf": 579.2000000001863,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 429.6000000005588,
+            "twoRaf": 595.6000000005588,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-delete-cold": {
+          "runs": [
+            {
+              "sync": 215.09999999962747,
+              "twoRaf": 490.79999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 215.09999999962747,
+              "twoRaf": 489.5,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 213.69999999925494,
+              "twoRaf": 482.3999999994412,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 215.09999999962747,
+            "twoRaf": 489.5,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-delete-pending": {
+          "runs": [
+            {
+              "sync": 428.70000000018626,
+              "twoRaf": 594.7000000001863,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 431.30000000074506,
+              "twoRaf": 596.9000000003725,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 420.90000000037253,
+              "twoRaf": 581.5,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 428.70000000018626,
+            "twoRaf": 594.7000000001863,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:flow-current": {
+          "runs": [
+            {
+              "sync": 95.70000000018626,
+              "twoRaf": 360,
+              "begin": 97.69999999925494,
+              "stepCpu": 25.299999997019768,
+              "queue": 809.9000000031665
+            },
+            {
+              "sync": 98.70000000018626,
+              "twoRaf": 372.80000000074506,
+              "begin": 98.59999999962747,
+              "stepCpu": 34.499999998137355,
+              "queue": 823.9999999990687
+            },
+            {
+              "sync": 98.29999999981374,
+              "twoRaf": 373.19999999925494,
+              "begin": 98.79999999981374,
+              "stepCpu": 28.000000000931323,
+              "queue": 825.3000000007451
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 98.29999999981374,
+            "twoRaf": 372.80000000074506,
+            "begin": 98.59999999962747,
+            "stepCpu": 28.000000000931323,
+            "queue": 823.9999999990687
+          }
+        },
+        "hwpx:flow-restart": {
+          "runs": [
+            {
+              "sync": 97.70000000018626,
+              "twoRaf": 735.3999999994412,
+              "begin": 193,
+              "stepCpu": 31.500000000931323,
+              "queue": 1089.5000000009313
+            },
+            {
+              "sync": 99.70000000018626,
+              "twoRaf": 437.40000000037253,
+              "begin": 196.49999999906868,
+              "stepCpu": 22.200000006705523,
+              "queue": 1111.2999999960884
+            },
+            {
+              "sync": 99,
+              "twoRaf": 754.7999999998137,
+              "begin": 192.5,
+              "stepCpu": 18.399999991059303,
+              "queue": 1100.600000009872
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 99,
+            "twoRaf": 735.3999999994412,
+            "begin": 193,
+            "stepCpu": 22.200000006705523,
+            "queue": 1100.600000009872
+          }
+        },
+        "hwpx:enter-cold": {
+          "runs": [
+            {
+              "sync": 201.59999999962747,
+              "twoRaf": 373,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 202.3999999994412,
+              "twoRaf": 369.29999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 198,
+              "twoRaf": 366.79999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 201.59999999962747,
+            "twoRaf": 369.29999999981374,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:enter-pending": {
+          "runs": [
+            {
+              "sync": 201.70000000018626,
+              "twoRaf": 375.29999999981374,
+              "begin": 98.70000000018626,
+              "stepCpu": 0.09999999962747097,
+              "queue": 273.2000000011176
+            },
+            {
+              "sync": 200.40000000037253,
+              "twoRaf": 371.20000000018626,
+              "begin": 97.20000000018626,
+              "stepCpu": 0,
+              "queue": 270.59999999962747
+            },
+            {
+              "sync": 198.09999999962747,
+              "twoRaf": 367.59999999962747,
+              "begin": 95.59999999962747,
+              "stepCpu": 0,
+              "queue": 266.1000000014901
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 200.40000000037253,
+            "twoRaf": 371.20000000018626,
+            "begin": 97.20000000018626,
+            "stepCpu": 0,
+            "queue": 270.59999999962747
+          }
+        },
+        "hwpx:ime-enter-cold": {
+          "runs": [
+            {
+              "sync": 103.79999999981374,
+              "twoRaf": 105,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 102.20000000018626,
+              "twoRaf": 103.59999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 102.79999999981374,
+              "twoRaf": 104,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 102.79999999981374,
+            "twoRaf": 104,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:ime-enter-pending": {
+          "runs": [
+            {
+              "sync": 106.1000000005588,
+              "twoRaf": 107.90000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 104.69999999925494,
+              "twoRaf": 106.29999999981374,
+              "begin": 0,
+              "stepCpu": 0.19999999925494194,
+              "queue": 0.10000000055879354
+            },
+            {
+              "sync": 105.59999999962747,
+              "twoRaf": 107.29999999981374,
+              "begin": 0,
+              "stepCpu": 0.2999999998137355,
+              "queue": 0.09999999962747097
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 105.59999999962747,
+            "twoRaf": 107.29999999981374,
+            "begin": 0,
+            "stepCpu": 0.19999999925494194,
+            "queue": 0.09999999962747097
+          }
+        },
+        "hwpx:merge-cold": {
+          "runs": [
+            {
+              "sync": 201.29999999981374,
+              "twoRaf": 375.59999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 200.09999999962747,
+              "twoRaf": 366.5,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 203,
+              "twoRaf": 377.90000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 201.29999999981374,
+            "twoRaf": 375.59999999962747,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:merge-pending": {
+          "runs": [
+            {
+              "sync": 203.5,
+              "twoRaf": 475.70000000018626,
+              "begin": 98.3999999994412,
+              "stepCpu": 0,
+              "queue": 271.40000000037253
+            },
+            {
+              "sync": 202.5,
+              "twoRaf": 477.40000000037253,
+              "begin": 99.6000000005588,
+              "stepCpu": 0,
+              "queue": 274.70000000018626
+            },
+            {
+              "sync": 198.5,
+              "twoRaf": 466.09999999962747,
+              "begin": 96.69999999925494,
+              "stepCpu": 0,
+              "queue": 266.30000000074506
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 202.5,
+            "twoRaf": 475.70000000018626,
+            "begin": 98.3999999994412,
+            "stepCpu": 0,
+            "queue": 271.40000000037253
+          }
+        },
+        "hwpx:merge-delete-cold": {
+          "runs": [
+            {
+              "sync": 202.29999999981374,
+              "twoRaf": 375.09999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 202,
+              "twoRaf": 374.5,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 202,
+              "twoRaf": 377,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 202,
+            "twoRaf": 375.09999999962747,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:merge-delete-pending": {
+          "runs": [
+            {
+              "sync": 197.5,
+              "twoRaf": 466.30000000074506,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 203,
+              "twoRaf": 474.19999999925494,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 201,
+              "twoRaf": 473.8999999994412,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 201,
+            "twoRaf": 473.8999999994412,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        }
+      }
+    },
+    "candidate": {
+      "rows": 60,
+      "pageErrors": [],
+      "groups": {
+        "hwp:flow-current": {
+          "runs": [
+            {
+              "sync": 47.799999999813735,
+              "twoRaf": 281.5,
+              "begin": 107.79999999981374,
+              "stepCpu": 29.100000004284084,
+              "queue": 721.5999999968335
+            },
+            {
+              "sync": 47.10000000055879,
+              "twoRaf": 272.40000000037253,
+              "begin": 103.79999999981374,
+              "stepCpu": 19.099999996833503,
+              "queue": 714.1000000052154
+            },
+            {
+              "sync": 47.30000000074506,
+              "twoRaf": 171.6000000005588,
+              "begin": 106.29999999981374,
+              "stepCpu": 16.599999997764826,
+              "queue": 717.5
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 47.30000000074506,
+            "twoRaf": 272.40000000037253,
+            "begin": 106.29999999981374,
+            "stepCpu": 19.099999996833503,
+            "queue": 717.5
+          }
+        },
+        "hwp:flow-restart": {
+          "runs": [
+            {
+              "sync": 48.5,
+              "twoRaf": 296.5,
+              "begin": 212.79999999981374,
+              "stepCpu": 33.80000000633299,
+              "queue": 1035.1999999918044
+            },
+            {
+              "sync": 48,
+              "twoRaf": 297.70000000018626,
+              "begin": 214.79999999981374,
+              "stepCpu": 15.699999993667006,
+              "queue": 1032.3000000044703
+            },
+            {
+              "sync": 48.10000000055879,
+              "twoRaf": 298.79999999981374,
+              "begin": 213.90000000037253,
+              "stepCpu": 16.099999997764826,
+              "queue": 1032.0000000037253
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 48.10000000055879,
+            "twoRaf": 297.70000000018626,
+            "begin": 213.90000000037253,
+            "stepCpu": 16.099999997764826,
+            "queue": 1032.3000000044703
+          }
+        },
+        "hwp:enter-cold": {
+          "runs": [
+            {
+              "sync": 168.5,
+              "twoRaf": 294.40000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 169.1000000005588,
+              "twoRaf": 291.90000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 168.79999999981374,
+              "twoRaf": 293.29999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [
+            "historical page-count gate failed: expected 115, actual 116",
+            "historical page-count gate failed: expected 115, actual 116",
+            "historical page-count gate failed: expected 115, actual 116"
+          ],
+          "pages": [
+            116,
+            116,
+            116
+          ],
+          "medians": {
+            "sync": 168.79999999981374,
+            "twoRaf": 293.29999999981374,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:enter-pending": {
+          "runs": [
+            {
+              "sync": 167.79999999981374,
+              "twoRaf": 292.5,
+              "begin": 106.79999999981374,
+              "stepCpu": 0,
+              "queue": 173.80000000074506
+            },
+            {
+              "sync": 167.5,
+              "twoRaf": 293.20000000018626,
+              "begin": 106.20000000018626,
+              "stepCpu": 0.09999999962747097,
+              "queue": 173.59999999962747
+            },
+            {
+              "sync": 165.29999999981374,
+              "twoRaf": 287.5,
+              "begin": 106.40000000037253,
+              "stepCpu": 0.09999999962747097,
+              "queue": 170.8999999994412
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 167.5,
+            "twoRaf": 292.5,
+            "begin": 106.40000000037253,
+            "stepCpu": 0.09999999962747097,
+            "queue": 173.59999999962747
+          }
+        },
+        "hwp:ime-enter-cold": {
+          "runs": [
+            {
+              "sync": 115.30000000074506,
+              "twoRaf": 116.80000000074506,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 112.3999999994412,
+              "twoRaf": 113.5,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 115.40000000037253,
+              "twoRaf": 116.6000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 115.30000000074506,
+            "twoRaf": 116.6000000005588,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:ime-enter-pending": {
+          "runs": [
+            {
+              "sync": 115,
+              "twoRaf": 117,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 114.6000000005588,
+              "twoRaf": 116.20000000018626,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 110.6000000005588,
+              "twoRaf": 112.40000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 114.6000000005588,
+            "twoRaf": 116.20000000018626,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-cold": {
+          "runs": [
+            {
+              "sync": 166,
+              "twoRaf": 338.79999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 164.40000000037253,
+              "twoRaf": 337.6000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 167.80000000074506,
+              "twoRaf": 340.20000000018626,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 166,
+            "twoRaf": 338.79999999981374,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-pending": {
+          "runs": [
+            {
+              "sync": 233.70000000018626,
+              "twoRaf": 442.79999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 229.29999999981374,
+              "twoRaf": 395,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 229.79999999981374,
+              "twoRaf": 395.6000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 229.79999999981374,
+            "twoRaf": 395.6000000005588,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-delete-cold": {
+          "runs": [
+            {
+              "sync": 167.79999999981374,
+              "twoRaf": 345.90000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 165.09999999962747,
+              "twoRaf": 335.40000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 165.70000000018626,
+              "twoRaf": 336.70000000018626,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 165.70000000018626,
+            "twoRaf": 336.70000000018626,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwp:merge-delete-pending": {
+          "runs": [
+            {
+              "sync": 232.3999999994412,
+              "twoRaf": 399.69999999925494,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 224.90000000037253,
+              "twoRaf": 391.5,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 230.5,
+              "twoRaf": 396.59999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 230.5,
+            "twoRaf": 396.59999999962747,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:flow-current": {
+          "runs": [
+            {
+              "sync": 47.89999999944121,
+              "twoRaf": 270.19999999925494,
+              "begin": 97.79999999981374,
+              "stepCpu": 19.300000002607703,
+              "queue": 717.2000000001863
+            },
+            {
+              "sync": 47.5,
+              "twoRaf": 266.3999999994412,
+              "begin": 97.40000000037253,
+              "stepCpu": 15.2000000057742,
+              "queue": 714.5999999968335
+            },
+            {
+              "sync": 47.799999999813735,
+              "twoRaf": 268.29999999981374,
+              "begin": 97.1000000005588,
+              "stepCpu": 14.90000000409782,
+              "queue": 713.1999999955297
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 47.799999999813735,
+            "twoRaf": 268.29999999981374,
+            "begin": 97.40000000037253,
+            "stepCpu": 15.2000000057742,
+            "queue": 714.5999999968335
+          }
+        },
+        "hwpx:flow-restart": {
+          "runs": [
+            {
+              "sync": 48.19999999925494,
+              "twoRaf": 355.79999999981374,
+              "begin": 194.5,
+              "stepCpu": 16.700000000186265,
+              "queue": 1032.1000000005588
+            },
+            {
+              "sync": 48.700000000186265,
+              "twoRaf": 357.20000000018626,
+              "begin": 196,
+              "stepCpu": 26.09999999869615,
+              "queue": 1038.7999999988824
+            },
+            {
+              "sync": 47.799999999813735,
+              "twoRaf": 352.20000000018626,
+              "begin": 193.70000000018626,
+              "stepCpu": 14.499999999068677,
+              "queue": 1029.0999999986961
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 48.19999999925494,
+            "twoRaf": 355.79999999981374,
+            "begin": 194.5,
+            "stepCpu": 16.700000000186265,
+            "queue": 1032.1000000005588
+          }
+        },
+        "hwpx:enter-cold": {
+          "runs": [
+            {
+              "sync": 149.70000000018626,
+              "twoRaf": 269.29999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 153.09999999962747,
+              "twoRaf": 275.20000000018626,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 150.5,
+              "twoRaf": 270.1000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 150.5,
+            "twoRaf": 270.1000000005588,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:enter-pending": {
+          "runs": [
+            {
+              "sync": 152.6000000005588,
+              "twoRaf": 275.40000000037253,
+              "begin": 97.8999999994412,
+              "stepCpu": 0,
+              "queue": 173.90000000130385
+            },
+            {
+              "sync": 151.70000000018626,
+              "twoRaf": 274.90000000037253,
+              "begin": 97.6000000005588,
+              "stepCpu": 0.20000000018626451,
+              "queue": 172.09999999962747
+            },
+            {
+              "sync": 151.20000000018626,
+              "twoRaf": 273.40000000037253,
+              "begin": 96.69999999925494,
+              "stepCpu": 0.19999999925494194,
+              "queue": 172.30000000074506
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 151.70000000018626,
+            "twoRaf": 274.90000000037253,
+            "begin": 97.6000000005588,
+            "stepCpu": 0.19999999925494194,
+            "queue": 172.30000000074506
+          }
+        },
+        "hwpx:ime-enter-cold": {
+          "runs": [
+            {
+              "sync": 102.70000000018626,
+              "twoRaf": 105,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 103,
+              "twoRaf": 104.1000000005588,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 103.30000000074506,
+              "twoRaf": 104.30000000074506,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 103,
+            "twoRaf": 104.30000000074506,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:ime-enter-pending": {
+          "runs": [
+            {
+              "sync": 104.70000000018626,
+              "twoRaf": 106.5,
+              "begin": 0,
+              "stepCpu": 0.2999999998137355,
+              "queue": 0.09999999962747097
+            },
+            {
+              "sync": 104.3999999994412,
+              "twoRaf": 106.09999999962747,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 106.09999999962747,
+              "twoRaf": 108,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 104.70000000018626,
+            "twoRaf": 106.5,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:merge-cold": {
+          "runs": [
+            {
+              "sync": 151.80000000074506,
+              "twoRaf": 274.40000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 150,
+              "twoRaf": 273.30000000074506,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 151.20000000018626,
+              "twoRaf": 273.79999999981374,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 151.20000000018626,
+            "twoRaf": 273.79999999981374,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:merge-pending": {
+          "runs": [
+            {
+              "sync": 151.5,
+              "twoRaf": 320.70000000018626,
+              "begin": 98.20000000018626,
+              "stepCpu": 0,
+              "queue": 169.40000000037253
+            },
+            {
+              "sync": 149.5,
+              "twoRaf": 319.1000000005588,
+              "begin": 97.30000000074506,
+              "stepCpu": 0,
+              "queue": 169.70000000018626
+            },
+            {
+              "sync": 150.6000000005588,
+              "twoRaf": 321.70000000018626,
+              "begin": 98.29999999981374,
+              "stepCpu": 0,
+              "queue": 169.59999999962747
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 150.6000000005588,
+            "twoRaf": 320.70000000018626,
+            "begin": 98.20000000018626,
+            "stepCpu": 0,
+            "queue": 169.59999999962747
+          }
+        },
+        "hwpx:merge-delete-cold": {
+          "runs": [
+            {
+              "sync": 151.59999999962747,
+              "twoRaf": 273.5,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 149.3999999994412,
+              "twoRaf": 271,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 149.6000000005588,
+              "twoRaf": 271,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 149.6000000005588,
+            "twoRaf": 271,
+            "begin": 0,
+            "stepCpu": 0,
+            "queue": 0
+          }
+        },
+        "hwpx:merge-delete-pending": {
+          "runs": [
+            {
+              "sync": 151.1000000005588,
+              "twoRaf": 322,
+              "begin": 98.1000000005588,
+              "stepCpu": 0,
+              "queue": 169.70000000018626
+            },
+            {
+              "sync": 149.70000000018626,
+              "twoRaf": 317.40000000037253,
+              "begin": 0,
+              "stepCpu": 0,
+              "queue": 0
+            },
+            {
+              "sync": 151,
+              "twoRaf": 320.79999999981374,
+              "begin": 97.69999999925494,
+              "stepCpu": 0,
+              "queue": 169.70000000018626
+            }
+          ],
+          "failures": [],
+          "pages": [
+            115,
+            115,
+            115
+          ],
+          "medians": {
+            "sync": 151,
+            "twoRaf": 320.79999999981374,
+            "begin": 97.69999999925494,
+            "stepCpu": 0,
+            "queue": 169.70000000018626
+          }
+        }
+      }
+    },
+    "environment": {
+      "vite": "8.3.0",
+      "puppeteerCore": "25.10.0",
+      "node": "24.15.0",
+      "chrome": "152.0.7977.83",
+      "viewport": "1280x900 DPR1",
+      "method": "3 fresh-document runs/case/format; median, continuous uses per-run p95; no concurrent Cargo workload"
+    }
+  },
+  "codeCI": [
+    {
+      "conclusion": "success",
+      "databaseId": 34930982395,
+      "headSha": "93cc4b351816ac21e51551609263e5a101347700",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34930982395",
+      "workflowName": "CI Impact Policy Controller"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34930982364,
+      "headSha": "93cc4b351816ac21e51551609263e5a101347700",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34930982364",
+      "workflowName": "Render Diff"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34930982597,
+      "headSha": "93cc4b351816ac21e51551609263e5a101347700",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34930982597",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34930982584,
+      "headSha": "93cc4b351816ac21e51551609263e5a101347700",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34930982584",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34930982735,
+      "headSha": "93cc4b351816ac21e51551609263e5a101347700",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34930982735",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34930982612,
+      "headSha": "93cc4b351816ac21e51551609263e5a101347700",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34930982612",
+      "workflowName": "CodeQL"
+    }
+  ],
+  "codeChecks": [
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104261369601",
+      "name": "Build & Test",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104260497901",
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104260382781",
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104260239716",
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104260185864",
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/runs/104259862557",
+      "name": "CodeQL",
+      "state": "NEUTRAL"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259052782",
+      "name": "build-test-archive-d / Build test archive (d)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259052802",
+      "name": "build-test-archive-c / Build test archive (c)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259052771",
+      "name": "build-test-archive-b / Build test archive (b)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259017229",
+      "name": "Resolve nextest target duration policy",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259017227",
+      "name": "Frontend package gates",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259017354",
+      "name": "Native Skia tests",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259017277",
+      "name": "Lint (fmt, clippy, WASM check)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259017405",
+      "name": "build-test-archive-a / Build test archive (a)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982612/job/104259012273",
+      "name": "Analyze (rust)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982612/job/104259012250",
+      "name": "Analyze (javascript-typescript)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982612/job/104259012347",
+      "name": "Analyze (python)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259018765",
+      "name": "Workflow promotion preflight",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104259018457",
+      "name": "Frontend unit gates",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982584/job/104258989789",
+      "name": "prop roundtrip",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982597/job/104258995660",
+      "name": "adapter inter-diff",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982364/job/104258988448",
+      "name": "Canvas visual diff",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982612/job/104258976426",
+      "name": "CodeQL preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104258972466",
+      "name": "CI preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982584/job/104258967524",
+      "name": "Proptest preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982597/job/104258964439",
+      "name": "adapter inter-diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982364/job/104258937708",
+      "name": "Render Diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982612/job/104258938777",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982597/job/104258939039",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982584/job/104258938796",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982395/job/104258937710",
+      "name": "Evaluate trusted CI impact policy",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104258939201",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34930982735/job/104258939941",
+      "name": "WASM Build",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/34932006607",
+      "name": "CI Impact Policy",
+      "state": "SUCCESS"
+    }
+  ],
+  "logHashes": {
+    "validation/regression.log": "cbeb51a538ffe47a03d7197be91aaa8e9df0029fcf586e829aae1d6b1aea049e",
+    "validation/skia-pdf.log": "cf9133975fb07b077ab88b2fa132872d38b5ac7923f357d959546a3cd2c35fe6",
+    "validation/fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/fmt-write.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/skia-picture.log": "97191cda88bdc760d6b0c364bd22d97a477dbb6bd9b4e97093f486d46e28d019",
+    "validation/skia-lib.log": "ca1f268e5b31749eed5f899b9b86dd02e3c620b520bf3184ec7afe5627365562",
+    "validation/unit-tiers.log": "adc0689489cedc5888716bd1f8ebd44b071014306583e6759fc528b2019d7f32",
+    "validation/clippy-workspace.log": "12b5daa322b79859be1587de0b791aba37c0986ff4be98cde6bff7db44826f18",
+    "validation/clippy-wasm.log": "8e607834813873239212ae626f6cf8854b2ec8313e2eae5cf7161f2a2c7e361e",
+    "validation/manifest.log": "796bb3ff0c5b86015c83cd0a0ab5855267cb369e0faa3e774d70faf37a036795",
+    "validation/prepare.log": "a3cc1182c764310b641a58156d7f2294dc308c58babb19f9ff44943cf4475d82",
+    "validation/build-workspace.log": "b2c020f27a01faabb96e5d55c11fd219cf7c484c9cf34b3342bfc8444d934c89",
+    "validation/clippy-native.log": "61e44b0b5f6a85f5c8f4ec56aeec80c0093fdf7935a9b68a7ac87e49838f129a",
+    "baseline-locked-3x.log": "94e8a64aaf03a67853ef1ca16116da6197f362d13634f6e52a60b66e65f26485",
+    "candidate-locked-3x.log": "58e7f3cc59eff993ed4f09e8c7e6aa32e7d3a9dcac90b43171e67da4592bc53a"
+  }
+}

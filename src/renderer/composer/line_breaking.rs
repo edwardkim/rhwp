@@ -1413,6 +1413,22 @@ impl FillCursor {
             emitted_any: false,
         }
     }
+
+    fn replay_from_boundary(tokens: &[BreakToken], boundary: usize, first_line: bool) -> Self {
+        let mut cursor = Self::new(boundary, first_line);
+        cursor.token_index = tokens.partition_point(|token| match token {
+            BreakToken::Text { end_idx, .. } => *end_idx <= boundary,
+            BreakToken::Space { idx, .. }
+            | BreakToken::Tab { idx, .. }
+            | BreakToken::LineBreak { idx } => *idx < boundary,
+        });
+        if let Some(BreakToken::Text { start_idx, .. }) = tokens.get(cursor.token_index) {
+            if boundary > *start_idx {
+                cursor.fallback_char_idx = Some(boundary);
+            }
+        }
+        cursor
+    }
 }
 
 /// Fill all scalar intervals through the resumable greedy continuation.
@@ -2708,6 +2724,27 @@ fn layout_paragraph_in_frame_impl(
         )
         .ok()
     });
+    // 양쪽정렬의 마지막 가시 줄은 공백 분배 대상이 아니다. 들여쓴 셀의
+    // 중간 줄은 기존 반각 채움을 유지하고, 남은 문단 전체가 현재 구간에
+    // 들어가는 마지막 줄만 글꼴 공백으로 확정한다. 첫 줄에만 한정하면
+    // 다줄 문단 끝의 불필요한 줄바꿈과 다음 페이지 밀림이 남는다.
+    // 커닝은 별도 paragraph transaction이 폭을 소유하므로 그 경로는 유지한다.
+    let terminal_tokens = (space_metric == SpaceMetric::HalfCell
+        && prepared_kerning.is_none()
+        && para_style
+            .is_some_and(|style| style.alignment == crate::model::style::Alignment::Justify))
+    .then(|| {
+        tokenize_paragraph_with_regenerated_space_metric(
+            &text_chars,
+            &para.char_offsets,
+            &para.char_shapes,
+            styles,
+            english_break_unit,
+            korean_break_unit,
+            SpaceMetric::Stored,
+            &inline_controls,
+        )
+    });
     let letter_spacing_px =
         resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles);
     let fallback_font_size = if para.text.is_empty() {
@@ -2804,18 +2841,44 @@ fn layout_paragraph_in_frame_impl(
                         interval.end.saturating_sub(interval.start),
                         dpi,
                     );
-                    let filled = fill_one_interval(
-                        &tokens,
-                        &text_chars,
-                        available_width_px,
-                        indent_px,
-                        default_tab_width,
-                        korean_break_unit,
-                        condense_min_space,
-                        &letter_spacing_px,
-                        &mut cursor,
-                        kerning_break_session.as_mut(),
-                    )?;
+                    let terminal = terminal_tokens.as_ref().and_then(|terminal_tokens| {
+                        let mut replay = FillCursor::replay_from_boundary(
+                            terminal_tokens,
+                            cursor.line_start_idx,
+                            cursor.is_first_line,
+                        );
+                        let filled = fill_one_interval(
+                            terminal_tokens,
+                            &text_chars,
+                            available_width_px,
+                            indent_px,
+                            default_tab_width,
+                            korean_break_unit,
+                            condense_min_space,
+                            &letter_spacing_px,
+                            &mut replay,
+                            None,
+                        )?;
+                        (filled.termination == FillTermination::ParagraphEnd)
+                            .then_some((filled, replay))
+                    });
+                    let filled = if let Some((filled, replay)) = terminal {
+                        cursor = replay;
+                        filled
+                    } else {
+                        fill_one_interval(
+                            &tokens,
+                            &text_chars,
+                            available_width_px,
+                            indent_px,
+                            default_tab_width,
+                            korean_break_unit,
+                            condense_min_space,
+                            &letter_spacing_px,
+                            &mut cursor,
+                            kerning_break_session.as_mut(),
+                        )?
+                    };
                     let line = &filled.line;
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
                     for control in inline_controls.iter().filter(|control| {

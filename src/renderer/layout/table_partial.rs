@@ -280,7 +280,7 @@ pub(crate) struct PartialTableCellProbe {
     pub(crate) window_paras: (usize, usize),
 }
 
-/// [#4149] 셀 문단 compose 저장소 — windowed 프로브에서만 lazy.
+/// 셀 문단 compose 저장소 — 실제로 잘리는 가로쓰기 셀은 가시 창만 lazy 구성한다.
 ///
 /// Lazy 슬롯의 compose 결과는 Eager 경로와 동일한 변환 순서
 /// (compose → recompose_cell_lines_in_frame → recompose_stored_single_line_if_overflowing)를
@@ -1101,18 +1101,6 @@ impl LayoutEngine {
                         | crate::model::table::TablePageBreak::CellBreak
                 )
                 && (straddle_start_uncovered || straddle_end_uncovered);
-            // HWP5 저장 pagination 계약의 정확한 2행 rowspan/2문단 형상은 문단 하나가
-            // 행 하나의 저장 owner다. 여기서 일반 높이 컷을 적용하면 첫 문단의 trailing
-            // line/문단 간격이 첫 행보다 커져 양쪽 문단이 continuation에 재방출될 수
-            // 있다(76076 p18→p19). HWP5-origin HWPX에도 같은 source owner를 보존하고,
-            // 순수 HWPX·컷·중첩·다중줄 일반 rowspan에는 적용하지 않는다.
-            let native_two_row_paragraph_owner_boundary = is_rowbreak_straddle
-                && start_cut.is_empty()
-                && end_cut.is_empty()
-                && ((straddles_fragment_start && start_row == cell_row + 1)
-                    || (straddles_fragment_end && render_range_end == cell_row + 1))
-                && self.native_two_row_rowspan_paragraph_owner_boundary(cell, table, styles);
-
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
                 cell_id,
@@ -1169,11 +1157,40 @@ impl LayoutEngine {
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
                 self.resolve_cell_padding(cell, table);
 
-            // [#4149] windowed 프로브면 창 문단만 lazy compose. 그 외에는 종전과
-            // 동일한 순서로 전량 compose → shrink → recompose.
-            let probe_windowed = probe.is_some_and(|p| p.windowed);
+            // 실제 cut이 있는 셀은 cursor probe와 전체 렌더링이 같은 문단 창을
+            // 소비한다. 다중줄은 padding shrink의 조기 반환, split_proven은 Top
+            // 정렬을 보장하므로 창 밖의 compose/높이 합산은 결과에 쓰이지 않는다.
+            // rowspan·세로쓰기·실제로 잘리지 않는 셀은 기존 전량 경로를 유지한다.
+            let composition_window = if let Some(p) = probe.filter(|p| p.windowed) {
+                Some(p.window_paras)
+            } else if probe.is_none()
+                && cell.text_direction == 0
+                && cell.paragraphs.iter().any(|p| p.line_segs.len() >= 2)
+            {
+                match self.partial_table_cell_probe_plan(
+                    table,
+                    cell,
+                    start_row,
+                    end_row,
+                    start_cut,
+                    end_cut,
+                    is_block_split,
+                    styles,
+                    0,
+                ) {
+                    ProbeCutPlan::Cut {
+                        window_paras,
+                        split_proven: true,
+                        ..
+                    } => Some(window_paras),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+            let windowed_composition = composition_window.is_some();
             let mut composed_store: CellComposedStore;
-            if probe_windowed {
+            if windowed_composition {
                 // shrink 생략 근거: 프로브 사전 게이트가 line_segs>=2 문단 존재를
                 // 증명했고, shrunk_cell_horizontal_padding 은 그 경우 composed 를
                 // 읽지 않고 패딩을 그대로 반환한다 (조기 탈출과 동일 결과).
@@ -1306,56 +1323,19 @@ impl LayoutEngine {
                         .max(su);
                 }
                 Some((su, eu))
-            } else if native_two_row_paragraph_owner_boundary {
-                let su = usize::from(straddles_fragment_start);
-                let eu = if straddles_fragment_end {
-                    1
-                } else {
-                    usize::MAX
-                };
-                Some((su, eu))
             } else if is_rowbreak_straddle {
-                // [Task #1748] 높이 기반 유닛 컷. 이전 프래그먼트 소비 높이(prior_h)는
-                // 2b 오버라이드와 동일한 식으로 재계산 — 온전 행은 컷 측정
-                // (row_cut_content_height), 분할 행(start_row)은 start_cut 이전 유닛
-                // 높이. 컷 페이지가 end_cut 으로 계산한 값과 같은 식이라 경계 유닛
-                // 인덱스(컷 페이지 eu == 연속 페이지 su)가 산술적으로 일치한다.
-                let mut prior_h = 0.0f64;
-                if straddles_fragment_start {
-                    for r in cell_row..start_row {
-                        let has_single_row_cells = table
-                            .cells
-                            .iter()
-                            .any(|c| c.row as usize == r && c.row_span == 1);
-                        let h = if has_single_row_cells {
-                            let h = self.row_cut_content_height(table, r, &[], &[], styles);
-                            if h > 0.0 {
-                                h
-                            } else {
-                                resolved_row_heights.get(r).copied().unwrap_or(0.0)
-                            }
-                        } else {
-                            resolved_row_heights.get(r).copied().unwrap_or(0.0)
-                        };
-                        prior_h += h + cell_spacing;
-                    }
-                    if !start_cut.is_empty() {
-                        prior_h +=
-                            self.row_cut_content_height(table, start_row, &[], start_cut, styles);
-                    }
-                }
-                let su = if prior_h > 0.0 {
-                    self.cell_units_fitting_height(cell, table, styles, prior_h - pad_top)
-                } else {
-                    0
-                };
-                let eu = if straddles_fragment_end {
-                    self.cell_units_fitting_height(cell, table, styles, prior_h + cell_h - pad_top)
-                        .max(su)
-                } else {
-                    usize::MAX
-                };
-                Some((su, eu))
+                Some(self.rowbreak_straddle_cut_units(
+                    table,
+                    cell,
+                    start_row,
+                    render_range_end,
+                    start_cut,
+                    start_row_height_override,
+                    end_cut.is_empty(),
+                    cell_h,
+                    resolved_row_heights,
+                    styles,
+                ))
             } else {
                 None
             };
@@ -1392,7 +1372,7 @@ impl LayoutEngine {
             let split_para_count = cell.paragraphs.len();
             // [#4149] windowed 프로브: 아래에서 effective_align 이 Top 으로 확정되므로
             // (cell_was_split=true 사전 증명) total_content_height 는 미사용 — 0 고정.
-            let total_content_height = if probe_windowed {
+            let total_content_height = if windowed_composition {
                 0.0
             } else if let Some(ref ranges) = line_ranges {
                 let mut total = 0.0;
@@ -1496,7 +1476,7 @@ impl LayoutEngine {
             // 그대로 visible 처리한다면 (= 실제 split 적용 안 받은 cell, 예: inner-table-01.hwp
             // cell[10] '사업개요' 라벨) 원본 cell.vertical_align 을 사용한다. split 적용으로
             // line 일부가 잘린 cell 만 Top 강제.
-            let cell_was_split = if probe_windowed {
+            let cell_was_split = if windowed_composition {
                 // [#4149] windowed 프로브 사전 게이트가 증명한 값 (s>0 문단 존재 또는
                 // 창 밖 미가시 문단의 compose 줄 수 ≥ 1) — 전량 판정과 동치.
                 true
@@ -1821,22 +1801,22 @@ impl LayoutEngine {
             // 네 조건(line_ranges·mixed·nested·non-inline)이 모두 창 유닛에서만
             // 유도되므로 전량 레이아웃에서도 반드시 skip 된다 — 순회 자체를 생략한다.
             // stop_after_para 이후 문단은 캐럿 문단의 좌표에 영향이 없어 중단한다.
-            let (loop_start, loop_end_excl) = match probe {
-                Some(p) if p.windowed => {
-                    let (lo, hi) = p.window_paras;
-                    let end = hi
-                        .saturating_add(1)
-                        .min(cell.paragraphs.len())
-                        .min(p.stop_after_para.saturating_add(1));
+            let (loop_start, loop_end_excl) = match (composition_window, probe) {
+                (Some((lo, hi)), p) => {
+                    let end = hi.saturating_add(1).min(cell.paragraphs.len()).min(
+                        p.map_or(cell.paragraphs.len(), |p| {
+                            p.stop_after_para.saturating_add(1)
+                        }),
+                    );
                     (lo.min(end), end)
                 }
-                Some(p) => (
+                (None, Some(p)) => (
                     0,
                     cell.paragraphs
                         .len()
                         .min(p.stop_after_para.saturating_add(1)),
                 ),
-                None => (0, cell.paragraphs.len()),
+                (None, None) => (0, cell.paragraphs.len()),
             };
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
@@ -4039,6 +4019,58 @@ impl LayoutEngine {
                     }
                 }
             }
+
+            // 빈 꼬리 밴드도 이 조각의 실제 행 높이다. 걸침 셀 요구와 비교하기
+            // 전에 적용해 typeset의 누적 예약과 같은 높이 공간을 사용한다.
+            if let Some(limit) = start_row_height_override {
+                if start_row < row_count {
+                    row_heights[start_row] = limit.max(0.0);
+                }
+            }
+
+            // [#6981] per-row 경로의 **이어받는 걸침 셀** 보정.
+            //
+            // 위 블록-합 보정은 `is_block_split` 조각만 돈다. 행별 경로에서 조각 경계가
+            // rowspan 블록 안쪽에 떨어지면, 이어받는 조각의 걸친 셀은 `#1748` 의
+            // 높이-컷으로 **남은 유닛 전부**를 받는데 그 셀이 덮는 행들의 높이는 같은
+            // 행의 `row_span==1` 셀만 보고 정해진다. 어긋난 만큼 clip 이 글자를 지운다.
+            //
+            // 실측(`samples/task2287/1342000_edu_curriculum_map.hwp` 377쪽): 셀
+            // `(62,8) row_span=2` 는 선언 51.76px 에 문단 3개(저장 사다리 vpos
+            // 0·1300·2600 HU → 내용 바닥 48.00px, 여백 1.88×2 를 더하면 51.76 — 온전하면
+            // 딱 맞는다). 그리드 행 62(30.65px)/63(21.11px) 사이에 쪽이 갈리면 앞 조각이
+            // 문단 1개를, 이어받는 조각이 문단 2개(32.55px)를 21.11px 행에 받아
+            // `선언문 작성` 이 11.4px 밖으로 나가 사라졌다.
+            //
+            // 요구 높이는 조판과 **같은 출처**(`straddle_continuation_demand`)에서 낸다.
+            if !is_block_split {
+                for r in start_row..end_row.min(row_count) {
+                    let Some(need) = self.straddle_continuation_demand(
+                        table,
+                        r,
+                        start_row,
+                        start_cut,
+                        start_row_height_override,
+                        &resolved_row_heights,
+                        styles,
+                        (end_row, end_cut.is_empty()),
+                    ) else {
+                        continue;
+                    };
+                    let have: f64 = (start_row..=r)
+                        .map(|rr| row_heights.get(rr).copied().unwrap_or(0.0))
+                        .sum::<f64>()
+                        + cell_spacing * (r - start_row) as f64;
+                    if std::env::var("RHWP_DIAG_6981").is_ok() {
+                        eprintln!(
+                            "D6981R r={r} start_row={start_row} end_row={end_row} need={need:.1} have={have:.1}"
+                        );
+                    }
+                    if need > have + 0.5 {
+                        row_heights[r] += need - have;
+                    }
+                }
+            }
         }
 
         // [#3820 Stage 76] RowBreak 표의 rowspan-연속 밴드에서 실제 셀 내용은
@@ -4049,11 +4081,6 @@ impl LayoutEngine {
         // 시작한다. auto layout이 내용 한 줄(23px)만으로 행을 축소한 경우에는
         // `min`이 남은 75px band를 다시 버리므로, 여기서 limit은 상한이 아니라
         // fragment-local row height다.
-        if let Some(limit) = start_row_height_override {
-            if start_row < row_count {
-                row_heights[start_row] = limit.max(0.0);
-            }
-        }
         if let Some(limit) = end_row_height_override {
             if let Some(last) = end_row.checked_sub(1).filter(|r| *r < row_count) {
                 row_heights[last] = limit.max(0.0);

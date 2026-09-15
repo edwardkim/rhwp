@@ -128,7 +128,7 @@ function optionValue(args, name) {
   return index === -1 ? undefined : args[index + 1];
 }
 
-function findChrome(configured) {
+export function findChrome(configured) {
   const candidates = configured ? [configured] : [
     process.env.VISUAL_SWEEP_CHROME,
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',

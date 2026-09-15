@@ -31,6 +31,13 @@ for (const browser of ['chrome', 'firefox']) {
     assert.equal(inlineScripts.length, 0, 'viewer.html must not contain inline scripts');
     assertInlineScriptDetectorRejectsMalformedEndTags();
 
+    assert.match(viewerHtml, /<script\s+src="(?:\.\/|\/)?locale-init\.js"><\/script>/);
+    assert.equal(
+      readFileSync(path.join(distDir, 'locale-init.js'), 'utf8'),
+      readFileSync(path.join(ROOT, 'rhwp-studio/public/locale-init.js'), 'utf8'),
+      'locale bootstrap must be copied unchanged into each extension',
+    );
+
     assert.deepEqual(
       readdirSync(path.join(distDir, 'fonts')).filter((file) => file.endsWith('.woff2')).sort(),
       FONT_FILES,

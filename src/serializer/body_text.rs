@@ -515,6 +515,19 @@ fn serialize_para_header_with_mask(
         match para.column_type {
             ColumnBreakType::Section => 0x01,
             ColumnBreakType::MultiColumn => 0x02,
+            // [#4680] 합성 쪽나눔은 저장하지 않는다 — HWPX 저장기가 이미 지키는 계약이고
+            // (`serializer/hwpx/section.rs`), HWP3 파서 주석도 "합성 표시를 남겨 저장 포맷
+            // 방출에서 제외한다"고 적는다. HWP5 경로만 그 표시를 안 봤다.
+            //
+            // HWP3 파서는 저장 당시의 **자연 쪽 경계**(pgy 되돌아감·줄 break_flag)를
+            // `ColumnBreakType::Page` 로 승격해 조판에 쓴다. 그건 사용자의 명시적
+            // 쪽나눔이 아니므로 파일에 쓰면 안 된다 — 한글이 그 문서를 다시 조판할 때
+            // 강제 쪽나눔으로 읽어 쪽이 불어난다.
+            //
+            // 실측(코퍼스 `1480000-201400060`, 한글 2024): 한/글 자신의 HWP5 변환본은
+            // 그 21문단에 0 을 쓰는데 우리는 4(쪽 나누기)를 썼다. 그 바이트만 0 으로
+            // 되돌리면 우리 저장본이 50쪽 -> 45쪽이 된다(한/글 변환본은 40쪽).
+            ColumnBreakType::Page if para.page_break_synthesized => 0x00,
             ColumnBreakType::Page => 0x04,
             ColumnBreakType::Column => 0x08,
             ColumnBreakType::None => 0x00,

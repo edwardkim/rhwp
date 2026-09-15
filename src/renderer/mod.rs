@@ -282,6 +282,12 @@ pub struct TextStyle {
     pub strike_color: ColorRef,
     /// 음영 색 (형광펜, 0xFFFFFF = 없음)
     pub shade_color: ColorRef,
+    /// [#7092] 이 run 의 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
+    /// (TTF 선언 · 대체 없음). 모르면 거짓 — 종전의 보수적 측정을 따른다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub font_metric_trusted: bool,
 }
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
@@ -444,6 +450,7 @@ impl Default for TextStyle {
             underline_color: 0,
             strike_color: 0,
             shade_color: 0x00FFFFFF,
+            font_metric_trusted: false,
         }
     }
 }
@@ -1455,10 +1462,21 @@ pub(crate) fn composed_line_tac_object_height_px(
 pub(crate) fn cell_vpos_ladder_is_intact(
     paragraphs: &[crate::model::paragraph::Paragraph],
 ) -> bool {
-    paragraphs
-        .iter()
-        .enumerate()
-        .all(|(idx, para)| first_seg_vpos_is_anchor(para, idx))
+    paragraphs.iter().enumerate().all(|(idx, para)| {
+        // 0 위치 자체는 유효하다. 텍스트가 전진하는 연속 줄의 위치가 모두 0이고
+        // 같은 줄의 가로 조각이나 page/column 전환이 아닐 때만 앵커 부재로 본다.
+        // 같은 text_start의 중복과 양수 위치에서 0으로 돌아오는 저장 리셋은 보존한다.
+        first_seg_vpos_is_anchor(para, idx)
+            && !para.line_segs.windows(2).enumerate().any(|(i, pair)| {
+                let (prev, seg) = (&pair[0], &pair[1]);
+                prev.vertical_pos == 0
+                    && seg.vertical_pos == 0
+                    && seg.text_start > prev.text_start
+                    && !seg.is_first_line_of_page()
+                    && !seg.is_first_line_of_column()
+                    && !height_measurer::stored_seg_is_row_fragment(para, i + 1)
+            })
+    })
 }
 
 /// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우

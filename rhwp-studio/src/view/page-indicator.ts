@@ -30,7 +30,9 @@ export function currentPageLabel(input: PageIndicatorInput): number {
     : input.pageIndex + 1;
 }
 
+import { t } from '../i18n/index.ts';
+
 /** 상태 표시줄 문자열 (`1 / 33 쪽`) */
 export function formatPageIndicator(input: PageIndicatorInput): string {
-  return `${currentPageLabel(input)} / ${input.totalPages} 쪽`;
+  return t('ui.sbPage.text', { p1: currentPageLabel(input), p2: input.totalPages });
 }

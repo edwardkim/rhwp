@@ -30,7 +30,8 @@ CLI `rhwp layout-anomaly`, 코어 `src/diagnostics/layout_anomaly.rs`.
 ```
 render_geom_diff  (두 렌더 사이 비교)         layout_anomaly  (렌더 한 장 안의 판정)
   ─ "A 와 B 가 같은가"                          ─ "이 렌더가 정상적인 문서로 보이는가"
-  ─ maxDisp, structureMismatch                  ─ overflow / off-canvas / overlap / text-overlap / empty_page
+  ─ maxDisp, structureMismatch                  ─ overflow / off-canvas / overlap / text-overlap /
+                                                 stored-line-escape / empty_page
   ─ 라운드트립·두 파일 비교 전용                  ─ 임의의 단일 문서에 바로 적용
 ```
 
@@ -122,6 +123,66 @@ overflow 와 같다(표 하나면 표만 한 번). `off-canvas` 는 확정 신�
 빈 쪽처럼 기하만으로 애매하지도 않다 — 그래서 `--strict` 에 포함한다. 기본 종료 코드는
 여전히 0(판정=데이터)이다.
 
+### stored-line-escape
+
+앞의 넷은 전부 **"상자를 넘었나 / 둘이 겹쳤나"** 다. 그래서 이탈이 쪽 밖으로 나가지도 다른
+상자와 겹치지도 않으면 넷 다 침묵한다. `#7018` 수정 두 커밋을 되돌린 A/B 에서 165px 짜리
+배치 이탈이 있으나 없으나 `layout-anomaly` 봉투가 한 글자도 다르지 않았다(#7061).
+
+`stored-line-escape` 는 기준을 바깥 상자가 아니라 **한/글이 저장해 둔 그 줄 자신**
+(`LINE_SEG`)으로 잡는다. 이 축만 렌더 트리 밖(문서 IR)의 값을 필요로 해서 진입점이
+`scan_page_with_source` 다 — `scan_page` 로 부르면 이 축만 비고 나머지 다섯은 같다.
+
+#### 무엇을 신고하지 **않는가** — 정본이 첫 판정을 반증했다
+
+처음 세운 판정은 "렌더 baseline 이 저장 `baseline_distance` 와 다르면 이탈"이었다.
+**한/글 자신이 저장값으로 그리지 않는다.**
+
+| 문서 | rhwp | 한/글 2020 정본 | 저장 `baseline_distance` |
+| --- | ---: | ---: | ---: |
+| `exam_eng.hwp` 1쪽 `①` | 494.76 | **494.08** (차 0.68) | 490.16 (차 3.92) |
+| `pr-1674.hwp` 23쪽 `1.` | 172.67 | **173.60** (차 0.93) | 167.47 (차 6.13) |
+| `tac-case-003.hwp` 1쪽 `표 다음` | 214.72 | **214.49** (차 0.23) | 238.91 (차 24.42) |
+| `issue6181/…` 6쪽 `회피` | 158.43 | **158.40** (차 0.03) | 161.58 (차 3.18) |
+
+네 문서 모두 rhwp 가 정본과 1px 안에서 맞고 저장값 쪽이 3~24px 틀렸다. samples 961건 전수로도
+같은 말이 나온다 — 렌더 baseline 이 저장값과 다른 줄이 **38%**(90.1만 중 34.0만)이고, 비로
+봐도 단일 배율이 아니라 줄마다 갈린다(1.00 이 62.3%, 나머지는 0.30~11.30 으로 흩어짐).
+저장값과의 불일치는 신호가 아니라 **배경**이다.
+
+#### 그래서 신고하는 것 — 줄 귀속이 바뀐 경우
+
+네 조건을 모두 만족해야 한다.
+
+1. 그 글자가 속한 저장 줄을 **서수 추정 없이** 짚을 수 있다. 줄 노드 경로는
+   `TextLine.line_index` + `vertical_pos` 가 저장 줄과 맞고 **줄 높이까지 재현**했을 때,
+   줄 노드 없는 경로(TAC host 문단 등)는 런이 저장 줄 하나 **안에 온전히** 들어갈 때다.
+2. 그 문단의 저장 `text_start` 색인 공간이 IR 문단 `text` 와 맞물린다. 확장 컨트롤을 세는
+   방식이 달라 어긋나는 문단이 있다(`tac-case-003.hwp` 는 `text` 35자인데 마지막 저장 줄이
+   `text_start=39` 라고 말한다).
+3. 렌더 baseline 이 **자기 저장 줄 상자 밖**이다.
+4. 그 baseline 이 같은 문단의 **다른** 저장 줄 baseline 과 일치한다.
+
+조건 3·4 가 빠지면 위 표의 네 문서가 전부 위양성으로 올라온다(각각 145·14·1·27건).
+
+#### 실측
+
+| 대상 | 문서 | 쪽 | 신고 |
+| --- | ---: | ---: | ---: |
+| devel + `samples/` 전수 | 961 | — | **0** |
+| devel + 코퍼스 표본 | 1,986 | 14,665 | **0** |
+| `#7018` 수정 두 커밋 revert | 1 | 2 | **1** (165.37px) |
+
+허용치 `--stored-line-tolerance`(기본 0.5px)는 조절 손잡이가 아니라 부동소수 동등 비교의
+여유다. 저장값은 HWPUNIT 정수를 96 DPI 로 나눈 값이라 재현될 때 딱 떨어지지 않는다.
+
+`stored-line-escape` 는 확정 신호라 `--strict` 에 포함한다.
+
+#### 덮지 않는 것
+
+`#6928` 이 보인 "표가 TAC 그림 위에 그려진다"는 글자 대 **그림**의 겹침이라 이 축이 아니다.
+그쪽은 여전히 여섯 축 모두가 보지 못한다.
+
 ### empty_page
 
 콘텐츠(보이는 텍스트, 또는 표·이미지·도형류)가 전혀 없는 페이지가 **문서 중간**(첫 쪽도 마지막
@@ -135,7 +196,7 @@ overflow 와 같다(표 하나면 표만 한 번). `off-canvas` 는 확정 신�
 이 저장소의 다른 진단 명령(`render-diff`, `inspect hidden-text` 등)과 같은 철학이다. 탐지
 건수가 0이 아니어도 기본 종료 코드는 0이다 — anomaly 발견은 도구의 정상 동작이지 실패가 아니다.
 `--json` 은 항상 전체 판정을 봉투로 낸다. 소비자가 실패로 취급하고 싶으면 `--strict` 를 명시
-한다 — 이때도 `overflow`·`off-canvas`·`overlap`·`text-overlap`(확정 신호)만 종료 코드 3(`render-diff` 의
+한다 — 이때도 `overflow`·`off-canvas`·`overlap`·`text-overlap`·`stored-line-escape`(확정 신호)만 종료 코드 3(`render-diff` 의
 `EXIT_REGRESSION` 과 같은 값·같은 의미론)을 유발하고, `empty_page`(가능성 신호)는 `--strict`
 로도 절대 실패를 유발하지 않는다.
 

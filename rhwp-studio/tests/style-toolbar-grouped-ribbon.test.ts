@@ -35,7 +35,7 @@ test('style toolbar uses ordered field and command groups', () => {
 test('style toolbar shows its default before a document is loaded', () => {
   assert.match(
     html,
-    /<select id="style-name"[^>]*>\s*<option value="0">바탕글<\/option>\s*<\/select>/,
+    /<select id="style-name"[^>]*>\s*<option value="0"[^>]*>바탕글<\/option>\s*<\/select>/,
   );
 });
 
@@ -46,7 +46,7 @@ test('formatting surface preserves ribbon hierarchy while captions stay visually
   assert.match(html, /class="sb-ribbon-group sb-paragraph-ribbon-group"/);
 
   for (const label of ['글꼴 및 간격', '글자 모양', '색', '문단']) {
-    assert.match(html, new RegExp(`<span class="sb-ribbon-label">${label}<\\/span>`));
+    assert.match(html, new RegExp(`<span class="sb-ribbon-label"[^>]*>${label}<\\/span>`));
   }
 
   assert.match(styles, /#style-bar\s*\{[^}]*display:\s*grid;[^}]*min-height:\s*0;/s);

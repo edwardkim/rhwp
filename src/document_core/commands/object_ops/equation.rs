@@ -5,6 +5,30 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 
+/// [#7105] 수식 편집 명령이 대상이 수식이 아닐 때 낼 오류.
+///
+/// 한/글 5.x·97 계열이 `hwpeq5X.ocx` 로 저장한 수식은 native `$eqed` 컨트롤이 아니라
+/// **OLE 개체**(`Control::Shape(ShapeObject::Ole)`)다. rhwp 는 그 `Contents` 스트림의
+/// 스크립트를 읽어 렌더하지만(`shape_layout.rs` 의 `parse_equation_contents_script`),
+/// 되쓰는 경로가 없다 — `raw_contents` 는 읽기 전용이고, 편집분을 현행 문법으로 써 넣으면
+/// 한/글이 그 개체를 못 읽는다(한/글은 레거시 `\CMD … \TAB` 방언을 기대한다).
+///
+/// 그래서 이 경우만은 "수식이 아니다"가 아니라 **왜 못 고치는지**를 말한다. 개체 자체의
+/// 삭제·이동은 도형 경로(`delete-control` · `delete-shape`)로 된다.
+fn not_an_equation_error(ctrl: &Control) -> HwpError {
+    if let Control::Shape(shape) = ctrl {
+        if matches!(shape.as_ref(), crate::model::shape::ShapeObject::Ole(_)) {
+            return HwpError::RenderError(
+                "지정된 컨트롤은 OLE 개체입니다 — 한/글 5.x·97 계열이 저장한 수식을 포함해 \
+                 OLE 개체는 렌더는 되지만 아직 내용을 편집할 수 없습니다(#7105). 개체 \
+                 삭제·이동은 도형 명령(delete-control · delete-shape)을 쓰십시오."
+                    .to_string(),
+            );
+        }
+    }
+    HwpError::RenderError("지정된 컨트롤이 수식이 아닙니다".to_string())
+}
+
 impl DocumentCore {
     /// 수식 컨트롤의 속성을 조회한다 (네이티브).
     /// 표 셀 내 또는 본문의 수식 컨트롤을 찾아 불변 참조를 반환한다.
@@ -60,9 +84,7 @@ impl DocumentCore {
 
         match ctrl {
             Control::Equation(e) => Ok(e),
-            _ => Err(HwpError::RenderError(
-                "지정된 컨트롤이 수식이 아닙니다".to_string(),
-            )),
+            other => Err(not_an_equation_error(other)),
         }
     }
     /// 표 셀 내 또는 본문의 수식 컨트롤을 찾아 가변 참조를 반환한다.
@@ -117,9 +139,7 @@ impl DocumentCore {
 
         match ctrl {
             Control::Equation(e) => Ok(e),
-            _ => Err(HwpError::RenderError(
-                "지정된 컨트롤이 수식이 아닙니다".to_string(),
-            )),
+            other => Err(not_an_equation_error(other)),
         }
     }
     pub(crate) fn equation_properties_json(eq: &crate::model::control::Equation) -> String {
@@ -306,9 +326,7 @@ impl DocumentCore {
             )));
         }
         if !matches!(&para.controls[control_idx], Control::Equation(_)) {
-            return Err(HwpError::RenderError(
-                "지정된 컨트롤이 수식이 아닙니다".to_string(),
-            ));
+            return Err(not_an_equation_error(&para.controls[control_idx]));
         }
 
         let text_chars: Vec<char> = para.text.chars().collect();

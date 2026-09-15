@@ -1,5 +1,6 @@
 import type { EventBus } from '@/core/event-bus';
 import type { CursorState } from './cursor';
+import { t } from '../i18n/index.ts';
 
 export type HeaderFooterEditingMode = 'header' | 'footer';
 
@@ -13,9 +14,9 @@ export interface HeaderFooterModeState {
 export type HeaderFooterModeChangedPayload = 'none' | HeaderFooterModeState;
 
 export function headerFooterApplyToLabel(applyTo: number): string {
-  if (applyTo === 1) return '짝수 쪽';
-  if (applyTo === 2) return '홀수 쪽';
-  return '양쪽';
+  if (applyTo === 1) return t('ui.hfApplyTo.even');
+  if (applyTo === 2) return t('ui.hfApplyTo.odd');
+  return t('ui.hfApplyTo.both');
 }
 
 export function headerFooterModeState(cursor: CursorState): HeaderFooterModeChangedPayload {

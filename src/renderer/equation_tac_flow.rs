@@ -21,6 +21,17 @@ impl EquationTacLineFlow {
     }
 }
 
+/// 수식 전용 문단은 저장 줄 수가 같아도 너비에 맞춰 개체를 재배정한다.
+/// 저장 UTF-16 소유 줄 사영이 이 현재 줄 구성 결과를 덮어쓰면 안 된다.
+pub(crate) fn uses_equation_only_flow(para: &Paragraph, composed: &ComposedParagraph) -> bool {
+    !composed.tac_controls.is_empty()
+        && composed.lines.iter().all(|line| line.runs.is_empty())
+        && composed
+            .tac_controls
+            .iter()
+            .all(|(_, _, index)| matches!(para.controls.get(*index), Some(Control::Equation(_))))
+}
+
 pub(crate) fn compute_equation_only_tac_line_flow(
     para: Option<&Paragraph>,
     composed: &ComposedParagraph,

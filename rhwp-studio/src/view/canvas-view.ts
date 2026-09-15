@@ -44,6 +44,7 @@ import {
   parseHeaderFooterModeChanged,
   type HeaderFooterModeState,
 } from '@/engine/header-footer-mode.ts';
+import { t } from '../i18n/index.ts';
 import {
   headerFooterClipPath,
   resolveHeaderFooterBadgeMetrics,
@@ -1075,7 +1076,7 @@ export class CanvasView {
       layer.appendChild(region);
 
       if (isPreview) {
-        const kind = state.mode === 'header' ? '머리말' : '꼬리말';
+        const kind = state.mode === 'header' ? t('ui.tbHfLabel.header') : t('ui.tbHfLabel.footer');
         const badgeMetrics = resolveHeaderFooterBadgeMetrics(zoom);
         const badge = document.createElement('span');
         badge.className = 'hf-edit-badge';

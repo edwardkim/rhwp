@@ -122,6 +122,33 @@ test('MUTATING_METHODS 는 모두 실제 브리지 공개 메서드여야 한다
   );
 });
 
+test('EXCLUDED_NON_DOCUMENT 은 감사 대상인 이름만 담는다(낡은 면제 래칫)', () => {
+  // 제외 항목은 두 감사 경로 중 하나가 **물어보기 때문에** 필요하다 —
+  // 동사 드리프트(MUTATING_VERB) 또는 Rust `&mut self` 인벤토리(#7002).
+  // 둘 다 물지 않는 이름이 남아 있으면 그 항목은 아무것도 걸러내지 않고, 사유 문구만
+  // 과거 상태를 설명하며 썬다. 실제로 #7021 이 저장 진입점을 `&self` 로 좁힌 뒤
+  // `exportHwp*` 3종이 그 상태가 됐다.
+  //
+  // 래칫 방향은 **줄어드는 쪽**이다. 나중에 다시 `&mut self` 로 넓혀지면 드리프트
+  // 시험이 분류를 요구하므로 지워도 안전하다. 같은 계급을 Rust 쪽은
+  // tests/issue_2724_passthrough_invalidation_guard.rs 의 stale_exemptions_are_reclaimed 가 맡는다.
+  const bridge = new Set(bridgePublicMethods());
+  const rust = new Set(rustMutatingExports(source('../src/wasm_api.rs')));
+  const inert = EXCLUDED
+    .filter((n) => bridge.has(n))
+    .filter((n) => !MUTATING_VERB.test(n) && !rust.has(n))
+    .sort();
+  assert.deepEqual(
+    inert,
+    [],
+    [
+      'EXCLUDED_NON_DOCUMENT 에 감사가 물지 않는 항목이 남았다: ' + inert.join(', '),
+      '→ 동사에도 안 걸리고 Rust `&mut self` 내보내기도 아니므로 제외할 것이 없다.',
+      '목록에서 지우라(면제는 줄어드는 방향이다).',
+    ].join(' '),
+  );
+});
+
 // ── (2) 원장 트립와이어: 뮤테이션 표면 동결 ─────────────────────────────────
 
 /**

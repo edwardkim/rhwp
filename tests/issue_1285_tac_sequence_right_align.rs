@@ -124,7 +124,6 @@ fn answer_sheet_two_tac_tables_keep_inline_sequence() {
     let name_right = name_table.bbox.x + name_table.bbox.width;
     let spaces_right = spaces.bbox.x + spaces.bbox.width;
     let number_right = number_table.bbox.x + number_table.bbox.width;
-    let parent_line_right = parent_line.bbox.x + parent_line.bbox.width;
 
     // [Issue #3396] 한글은 TAC 표를 "outMargin 포함 폭의 문자"로 배치한다 —
     // 표 테두리와 인접 문자 사이에는 그 표의 outMargin 간격이 유지된다.
@@ -142,22 +141,26 @@ fn answer_sheet_two_tac_tables_keep_inline_sequence() {
          spaces_right={spaces_right:.2}, number_x={:.2}",
         number_table.bbox.x
     );
-    // [Issue #3396] 오른쪽 정렬의 실제 불변량은 "마지막 TAC 표 우단(om_r=0)이
-    // 부모 셀 inner 우단에 붙는다"이다. 저장 lineseg 시작 x(295.67)가
-    // inner_right - (콘텐츠 폭 + 성명 표 outMargin 좌/우 7.54px)와 일치해
-    // 한컴 자신도 outMargin 포함 폭으로 정렬했음을 증명한다. 종전 기준이던
-    // parent_line bbox 폭은 outMargin 미포함 추정치라 프록시로 부적합.
+    // 정본 pdf/21_언어_기출_편집가능본-2022.pdf (Hwp 2022 12.0.0.4426) 1쪽:
+    // 수험번호 표의 오른쪽 괘선 x=599.344pt = 799.125px @96dpi.
+    // 셀 끝 자체가 아니라 문단 오른쪽 여백(ParaShape 600/2 HU = 4px)을
+    // 뺀 위치에 정렬한다. 이전의 셀 끝 기대값은 표 outMargin 누락 7.55px가
+    // 줄 폭의 여백 중복 차감과 거의 상쇄되어 통과하던 값이다.
     let cell_pad = 141.0 / 7200.0 * 96.0;
     let cell_inner_right = outer_cell.bbox.x + outer_cell.bbox.width - cell_pad;
-    let _ = parent_line_right;
+    let expected_right = cell_inner_right - 600.0 / 2.0 / 7200.0 * 96.0;
     assert!(
-        (cell_inner_right - number_right).abs() <= 1.0,
-        "부모 셀 오른쪽 정렬: 수험번호 TAC 표 우단이 셀 inner 우단에 붙어야 함: \
-         cell_inner_right={cell_inner_right:.2}, number_right={number_right:.2}, \
+        (expected_right - number_right).abs() <= 1.0,
+        "부모 셀 오른쪽 정렬: 문단 오른쪽 여백은 한 번만 적용해야 함: \
+         expected_right={expected_right:.2}, number_right={number_right:.2}, \
          outer_cell={:?}, parent_line={:?}, number_table={:?}",
         outer_cell.bbox,
         parent_line.bbox,
         number_table.bbox
+    );
+    assert!(
+        (number_right - 599.344 * 96.0 / 72.0).abs() <= 1.0,
+        "수험번호 표 우단 {number_right:.2}px는 한글 2022 정본 799.125px와 일치해야 함"
     );
 }
 

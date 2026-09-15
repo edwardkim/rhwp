@@ -135,6 +135,71 @@ class SelectedRasterTests(unittest.TestCase):
         self.assertEqual(commands, [["pdftoppm", "-r", "144", "-png", "reference.pdf", "out/pdf"]])
 
 
+class WasmSweepTests(unittest.TestCase):
+    def test_font_policy_preserves_geometry_and_uses_only_font_faces(self) -> None:
+        source = '<svg width="100"><text x="12" y="34" font-family="휴먼명조">조문</text></svg>'
+        face = '@font-face { font-family: "휴먼명조"; src: local("HCR Batang"); }'
+        policy = f'<svg><style>{face} text {{display:none}}</style><text x="99">다른 본문</text></svg>'
+        result = SWEEP.apply_svg_font_policy(source, policy + policy)
+        self.assertEqual(result, source.replace('width="100">', f'width="100"><style>{face}</style>'))
+
+    def test_font_policy_does_not_replace_a_wasm_owned_face(self) -> None:
+        source = '<svg><style>@font-face {font-family:"Owned";src:url("wasm.woff2")}</style></svg>'
+        self.assertEqual(SWEEP.apply_svg_font_policy(source, '@font-face {font-family:"Owned";src:local("Other")}'), source)
+
+    def test_changed_wasm_package_invalidates_resume(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            package = root / 'pkg'
+            package.mkdir()
+            (root / 'scripts').mkdir()
+            (root / 'scripts/export-wasm-for-sweep.mjs').write_text('exporter')
+            (package / 'rhwp.js').write_text('module')
+            (package / 'rhwp_bg.wasm').write_bytes(b'first')
+            before = SWEEP.wasm_package_provenance(root, package)
+            target = SWEEP.Target('input', Path('input.hwp'), Path('reference.pdf'))
+            SWEEP.run_manifest_for_target(root / 'out', target, {'wasm': before}, 96, 32, resume=False)
+            (package / 'rhwp_bg.wasm').write_bytes(b'second')
+            after = SWEEP.wasm_package_provenance(root, package)
+            self.assertNotEqual(before, after)
+            with self.assertRaises(SystemExit):
+                SWEEP.run_manifest_for_target(root / 'out', target, {'wasm': after}, 96, 32, resume=True)
+
+    def test_wasm_export_keeps_wasm_tree_and_page_count(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            def fake_run(command, **kwargs):
+                if command[0] == 'node':
+                    output = Path(command[-1])
+                    (output / 'raw_svg').mkdir(parents=True)
+                    (output / 'render_tree').mkdir()
+                    for page in (1, 2):
+                        (output / f'raw_svg/wasm_{page:03}.svg').write_text('<svg><text x="4">WASM</text></svg>')
+                        (output / f'render_tree/render_tree_{page:03}.json').write_text('{"type":"Page","bbox":{"x":4}}')
+                    (output / 'manifest.json').write_text('{"pageCount":2}')
+                else:
+                    # Native pagination is deliberately different: only its font CSS is used.
+                    (Path(command[-1]) / 'native.svg').write_text('<svg><style>@font-face {font-family: "A";src:local("A")}</style><text x="99">Native</text></svg>')
+                return subprocess.CompletedProcess(command, 0, '', '')
+            with patch.object(SWEEP, 'run', side_effect=fake_run):
+                SWEEP.export_wasm_target(root, root / 'input.hwp', root / 'pkg', 'rhwp', root / 'out')
+            svg = (root / 'out/svg/wasm_002.svg').read_text()
+            self.assertIn('<text x="4">WASM</text>', svg)
+            self.assertNotIn('Native', svg)
+            self.assertEqual(json.loads((root / 'out/render_tree/render_tree_002.json').read_text())['bbox']['x'], 4)
+
+            def incomplete_run(command, **kwargs):
+                result = fake_run(command, **kwargs)
+                if command[0] == 'node':
+                    (Path(command[-1]) / 'render_tree/render_tree_002.json').unlink()
+                return result
+
+            with patch.object(SWEEP, 'run', side_effect=incomplete_run):
+                with self.assertRaises(SystemExit):
+                    SWEEP.export_wasm_target(root, root / 'input.hwp', root / 'pkg', 'rhwp', root / 'out')
+            self.assertFalse((root / 'out/wasm-export-complete.json').exists())
+
+
 class ResumeCheckpointTests(unittest.TestCase):
     def test_run_manifest_rejects_changed_provenance(self) -> None:
         target = SWEEP.Target("fixture", Path("source.hwp"), Path("reference.pdf"))

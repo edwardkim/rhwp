@@ -1157,7 +1157,7 @@ struct TypesetState {
     pending_body_wide_top_reserve: f64,
     /// visible text host 의 양수 offset 자리차지 표가 후속 문단을 밀어내는 구간.
     visible_float_exclusions: Vec<VisibleFloatExclusion>,
-    /// 현재 단에 실제 배치된 그림의 점유 영역. 단/쪽 전환에서 폐기한다.
+    /// 현재 쪽에 실제 배치된 그림의 점유 영역(용지 좌표). 다음 단에도 간섭할 수 있다.
     side_wrap_exclusions:
         std::collections::BTreeMap<(usize, usize), super::layout_frame::FrameExclusion>,
     inline_placements:
@@ -2252,6 +2252,13 @@ fn tac_control_indices_for_line(
     };
     if comp.tac_controls.is_empty() {
         return Vec::new();
+    }
+
+    if let Some(assign) = crate::renderer::composer::stored_tac_line_assignment(para, comp) {
+        return assign
+            .into_iter()
+            .filter_map(|(ci, owner)| (owner == line_idx).then_some(ci))
+            .collect();
     }
 
     if let Some(assign) = equation_only_tac_line_assignment(para, comp) {
@@ -5316,7 +5323,6 @@ impl TypesetState {
     fn flush_column(&mut self) {
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
-        self.side_wrap_exclusions.clear();
         self.inline_box_flow_bottom = 0.0;
         if self.current_items.is_empty()
             && self.current_column_wrap_around_paras.is_empty()
@@ -5410,7 +5416,6 @@ impl TypesetState {
 
     /// 비어있어도 flush
     fn flush_column_always(&mut self) {
-        self.side_wrap_exclusions.clear();
         self.inline_box_flow_bottom = 0.0;
         let col_content = ColumnContent {
             column_index: self.current_column,
@@ -5585,6 +5590,7 @@ impl TypesetState {
     }
 
     fn reset_for_new_page(&mut self) {
+        self.side_wrap_exclusions.clear();
         self.current_column = 0;
         self.current_height = 0.0;
         self.current_start_height = 0.0;
@@ -5824,7 +5830,23 @@ impl FormattedParagraph {
         ladder_dirty: bool,
         lazy_base: bool,
     ) -> f64 {
-        if col_count > 1 {
+        // [#6970] 다단에서도 **합성(reflow) lineseg 문단은 트림하지 않는다** — 아래
+        // `#2279 ①` 이 단단 경로에 건 가드와 같은 이유다. 트림은 "저장 ladder 가 spacing 을
+        // 이미 반영하고 vpos-snap 이 좌표를 복원한다"는 전제 위에 서는데, 합성 문단에는 그
+        // ladder 가 없어 트림분이 흐름에서 그냥 소실된다.
+        //
+        // 저장 `LINE_SEG` 가 없는 2단 문서에서 그 소실이 쌓여 단 채움 회계가 무너진다 —
+        // `synth_no_ls_square_wrap.hwp` 실측: 문단 151개에서 Σ 741.6px(문단당 6~10px)를
+        // 덜 세고, 단 0 은 `usedHeight 708.9 ≤ 가용 718.1` 로 "아직 남았다"고 판단해 계속
+        // 담는다. 실제로 담은 항목 합은 1000.4px 라 282px 초과이고, 넘친 내용이 다음 단으로
+        // 가지 않고 그 자리에 그려진다(off-canvas 20 · overflow 16).
+        //
+        // 다단에서 `height_for_fit` 을 쓰는 본래 이유(#391: trailing_ls 인플레이션이 단을
+        // 조기 종료시킨다)는 **저장 ladder 가 있는 문단**에 대한 것이므로 그대로 둔다.
+        let has_authoritative_seg_for_multicolumn = para.line_segs.iter().any(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        if col_count > 1 && has_authoritative_seg_for_multicolumn {
             return self.height_for_fit;
         }
         // [#2279 ①] spacing 트림은 **비합성(authoritative) 저장 lineseg** 문단에만.
@@ -8807,6 +8829,7 @@ impl TypesetEngine {
 
             let issue2424_branch_started = issue2424_ts_enabled.then(std::time::Instant::now);
             let mut native_hwp5_footnote_break = None;
+            let picture_host_origin = (st.pages.len(), st.current_column, st.current_height);
             if !has_table {
                 // --- 핵심: format → fits → place/split ---
                 let col_w = st
@@ -9343,7 +9366,15 @@ impl TypesetEngine {
                                 }
                             }
                             // [Task #1052] 글상자 내 각주 수집 (engine.rs:1376-1398 동등)
-                            st.register_side_wrap_picture(para_idx, ctrl_idx, para, None, styles);
+                            // NO_LS 호스트의 측정 원점만 전달한다. 저장 vpos 소유자는
+                            // 기존 저장 배치 경로에 남긴다.
+                            let host_top = (para.line_segs.is_empty()
+                                && (st.pages.len(), st.current_column)
+                                    == (picture_host_origin.0, picture_host_origin.1))
+                                .then_some(picture_host_origin.2);
+                            st.register_side_wrap_picture(
+                                para_idx, ctrl_idx, para, host_top, styles,
+                            );
                             if self.profile.get().hwp5_stored_pagination_layout()
                                 && !self.profile.get().session_edited()
                                 && st.current_items.iter().any(|item| {
@@ -22962,7 +22993,21 @@ impl TypesetEngine {
             let rowbreak_rowspan_row_splittable =
                 mt.allows_row_break_split() && can_intra_split && mt.is_row_splittable(r);
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
+                // 실제로 수용한 앞 행들의 높이(consumed)를 사용한다. 이전 행의
+                // 증분까지 포함하며, 늘린 높이가 안 맞으면 원래 높이로 되돌리지 않는다.
                 let h = cut_row_h[r];
+                let h = layout_engine
+                    .straddle_continuation_demand(
+                        table,
+                        r,
+                        cursor_row,
+                        start_cut,
+                        start_row_height_override,
+                        &mt.row_heights,
+                        styles,
+                        (r + 1, true),
+                    )
+                    .map_or(h, |need| h.max(need - consumed - cs_before));
                 if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
                     consumed += cs_before + h;
                     r += 1;
@@ -23080,6 +23125,21 @@ impl TypesetEngine {
                 // 강제 없음).
                 layout_engine.row_cut_content_height(table, r, row_start_cut, &[], styles)
             };
+            // 온전한 행 후보에는 rowspan 잔여 내용도 예약한다. 아래에서 실제
+            // end_cut을 선택하면 row_cut_content_height로 분할 높이를 다시 측정하고,
+            // 렌더러도 같은 end_cut을 받아 잔여 전체 높이 보정을 생략한다.
+            let row_total = layout_engine
+                .straddle_continuation_demand(
+                    table,
+                    r,
+                    cursor_row,
+                    start_cut,
+                    start_row_height_override,
+                    &mt.row_heights,
+                    styles,
+                    (r + 1, true),
+                )
+                .map_or(row_total, |need| row_total.max(need - consumed - cs_before));
             // The final visible response is followed by a row without text or
             // controls. Its stored row height is authoritative for whole-row ownership;
             // browser-composed height may be larger solely because of font
@@ -27787,7 +27847,44 @@ impl TypesetEngine {
                 return TableContinuationIteration::Complete;
             }
 
-            // 중간 fragment 배치
+            // 최종 행의 컷이 모든 가시 유닛을 소비했다면 다음 조각은 없다.
+            // 컷을 지우면 원래 행 높이가 복원되므로 paint 컷은 그대로 보존하고,
+            // 빈 후속 페이지를 할당하기 전에 continuation만 종료한다.
+            let terminal_cut_consumed = end_row >= row_count
+                && split_end_limit > 0.0
+                && !split_end_cut.is_empty()
+                && split_block_start.is_none()
+                && !start_cut_is_block
+                && !row_cursor_is_nested
+                && end_row_height_override.is_none()
+                && mt.allows_row_break_split()
+                && caption_overhead <= 0.0
+                && !queue_table_footnotes
+                && can_intra_split
+                && layout_engine
+                    .advance_row_cut(
+                        row_geometry_table,
+                        row_count - 1,
+                        &split_end_cut,
+                        f64::MAX,
+                        styles,
+                    )
+                    .consumed_height
+                    <= 0.0
+                && layout_engine
+                    .straddle_continuation_demand(
+                        row_geometry_table,
+                        row_count - 1,
+                        row_count - 1,
+                        &split_end_cut,
+                        None,
+                        &mt.row_heights,
+                        styles,
+                        (row_count, true),
+                    )
+                    .is_none_or(|remaining| remaining <= 0.0);
+
+            // 중간 또는 내용이 완전히 소비된 최종 컷 fragment 배치
             st.current_items.push(PageItem::PartialTable {
                 para_index: para_idx,
                 control_index: ctrl_idx,
@@ -27808,6 +27905,12 @@ impl TypesetEngine {
                 + vert_offset_overhead
                 + partial_height
                 + fragment_outer_bottom_overhead;
+            if terminal_cut_consumed {
+                st.current_height += host_spacing_after_only + terminal_nested_child_host_line_spacing;
+                commit_fragment(st, caption_extra + partial_height, true);
+                continuation.finish(row_count, true);
+                return TableContinuationIteration::Complete;
+            }
             commit_fragment(st, caption_extra + partial_height, false);
             // 큰 RowBreak 표가 기존 각주를 이미 가진 page에서 시작할 때에는 첫 fragment의
             // cell-footnote를 같은 lane에 섞지 않는다. 그 page의 기존 각주(표 25의

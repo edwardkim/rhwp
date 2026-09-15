@@ -1,0 +1,189 @@
+{
+  "source_heads": {
+    "7145": "0eefe065f2c3f18bcc00f5f2d5f3f0bb406c6939",
+    "7149": "42d1493ff2f90642f40484fb3657f55bcb88ee39"
+  },
+  "base": "4fddb1bb7244fb478ea18f927aca273f93ac7322",
+  "candidate": "65df76e6195e0b87471d82359eb11c437d0bf1a0",
+  "binary_sha256": {
+    "before": "070ead655002490560731dd84884a41f05b68357e3cea057ab73f34f19a05f25",
+    "after": "bfd079a981e4e905a388b7ea5aaff865614ec5f5924be362fa0e2212f7a97786",
+    "wasm": "7637addfe63b95f2221d6c3ec866ca58e020b736d62cf3dbeaa388131a49d069"
+  },
+  "native_page_count": 18,
+  "wasm_page_count": 18,
+  "pdf_page_count": 17,
+  "native_wasm_equal_render_tree_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "changed_svg_pages": [
+    1
+  ],
+  "page1_outside_target_table_tree_equal": true,
+  "assets": {
+    "pr7145_before_p001.png": "a4bffa2f14251232b76d9b3833f41e02d4b0306345068d836c9458fa9d1e64fe",
+    "pr7145_native_p001.png": "c273b145e30c1e77c9da602398a0ab73d599f34819f6a514a858b6f2cc9e11d2",
+    "pr7145_wasm_p001.png": "0f1d14bbc14d99a37472a4cf8765cb29f7c604b62203f6cfe541dfa604d90b64",
+    "pr7145_wasm_p001_overlay.png": "5be3f9b6bb7b73d414185afc60f6920b048e9a10e7f81db54ba156f038be519a",
+    "pr7145_wasm_p002.png": "f90cdb36707652b9f2d1333521e883e61648265e3f6e2d98fe484defb5a4420b"
+  },
+  "visual": {
+    "before": [
+      {
+        "page": 1,
+        "flags": [],
+        "pixel_match_percent": 85.2148,
+        "visual_accuracy_proxy_percent": 24.37979
+      },
+      {
+        "page": 2,
+        "flags": [],
+        "pixel_match_percent": 92.32893,
+        "visual_accuracy_proxy_percent": 31.23693
+      }
+    ],
+    "after": [
+      {
+        "page": 1,
+        "flags": [],
+        "pixel_match_percent": 89.09665,
+        "visual_accuracy_proxy_percent": 38.55483
+      },
+      {
+        "page": 2,
+        "flags": [],
+        "pixel_match_percent": 92.32893,
+        "visual_accuracy_proxy_percent": 31.23693
+      }
+    ],
+    "wasm": [
+      {
+        "page": 1,
+        "flags": [],
+        "pixel_match_percent": 89.09665,
+        "visual_accuracy_proxy_percent": 38.55483
+      },
+      {
+        "page": 2,
+        "flags": [],
+        "pixel_match_percent": 92.32893,
+        "visual_accuracy_proxy_percent": 31.23693
+      }
+    ]
+  },
+  "checks": {
+    "focused": {
+      "passed": 3,
+      "skipped": 206
+    },
+    "float_counterexamples": {
+      "passed": 9,
+      "skipped": 601
+    },
+    "frontend": {
+      "passed": 1735,
+      "skipped": 2,
+      "failed": 0
+    },
+    "guard": {
+      "passed": 10
+    },
+    "guard_negative_control": {
+      "passed": 9,
+      "failed": 1,
+      "names": [
+        "exportHwp",
+        "exportHwpVerify",
+        "exportHwpWithPassword"
+      ]
+    },
+    "ovr": {
+      "documents": 5,
+      "regressions": 0
+    },
+    "oracle_partitions": {
+      "passed": 16,
+      "skipped": 179
+    }
+  },
+  "inputs": {
+    "samples/21_언어_기출_편집가능본.hwp": {
+      "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
+      "bytes": 435200,
+      "tracked": true
+    },
+    "samples/KTX.hwp": {
+      "sha256": "b6c1492152f53e8dd7d4bbbb4faca88866bb8458e9018c70c936cd469ea6fab3",
+      "bytes": 163840,
+      "tracked": true
+    },
+    "samples/aift.hwp": {
+      "sha256": "a3e94e613a7d3dad0ee11e2df8f9572a5b7c2d704602960c2075b5fd22df995c",
+      "bytes": 5724672,
+      "tracked": true
+    },
+    "samples/biz_plan.hwp": {
+      "sha256": "8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1",
+      "bytes": 33792,
+      "tracked": true
+    },
+    "samples/exam_math.hwp": {
+      "sha256": "e40e3d675373c8efb3a844fc71f209600d3b0db987a04b3808b8e74a6b1671fe",
+      "bytes": 770048,
+      "tracked": true
+    },
+    "samples/hwpx/issue2439_page_local_float_exclusion.hwpx": {
+      "sha256": "fbd563a96f76144c04255c6c865f0a712f6b2a74468ef0062abd15474064b430",
+      "bytes": 8992,
+      "tracked": true
+    },
+    "samples/issue1549_empty_host_float_clamp.hwpx": {
+      "sha256": "36a94f0f2770154443a55dfe2baec362939af728ce4f15346d0895956672f7b6",
+      "bytes": 8050,
+      "tracked": true
+    },
+    "samples/issue1549_multipositive_float_tables.hwpx": {
+      "sha256": "f60b90c9242d37b0ede10294dbc976c68790daa87684fdab7684107b2cd0380f",
+      "bytes": 8161,
+      "tracked": true
+    },
+    "samples/issue1639_empty_host_negative_offset_float.hwpx": {
+      "sha256": "c204fbe9e4daf2f99eae9905f82da1bfbd54c72984e4711fe6e0b000e13d372b",
+      "bytes": 8136,
+      "tracked": true
+    },
+    "samples/issue1639_empty_host_positive_only_float.hwpx": {
+      "sha256": "0a5b9c730ea1c1b8b99dd5e07d1e75bc775c20dc4a76a6dc23dcb4c71b1f4d3c",
+      "bytes": 8133,
+      "tracked": true
+    },
+    "samples/issue2439_zero_offset_coanchored_float_exclusion.hwp": {
+      "sha256": "fbe318ac2fb20e42612571fe384567259b4785bc0375766c122cbc31cad828ca",
+      "bytes": 7168,
+      "tracked": true
+    },
+    "samples/issue6929/148776468_search_ad_terms_press_release.hwp": {
+      "sha256": "a05d313f34852e07305d8bf16223303d9cc00c3d9bdc0b5258f96dfcb347a43d",
+      "bytes": 495616,
+      "tracked": true
+    }
+  },
+  "typo_fix_commit": "fec435fa9"
+}

@@ -1526,6 +1526,59 @@ pub(crate) fn is_lang_neutral(ch: char) -> bool {
 }
 
 /// 문단 내 인라인 컨트롤(표/도형)의 위치를 식별한다.
+/// [#6706] 가시 문자 사이의 같은 gap에 있는 여러 개체도 저장 UTF-16 줄은 다를 수 있다.
+/// 원본 줄 구성이 유지되고 그 충돌이 실제 존재할 때 원 기록으로 개체 소유 줄을 복원한다.
+/// 재조판된 줄이나 같은 줄의 인라인 개체들은 기존 문자 범위 배정을 그대로 쓴다.
+pub(crate) fn stored_tac_line_assignment(
+    para: &Paragraph,
+    comp: &ComposedParagraph,
+) -> Option<Vec<(usize, usize)>> {
+    if super::equation_tac_flow::uses_equation_only_flow(para, comp)
+        || para.char_offsets.is_empty()
+        || comp.lines.len() != para.line_segs.len()
+        || comp.lines.len() < 2
+        || comp
+            .lines
+            .iter()
+            .zip(&para.line_segs)
+            .enumerate()
+            .any(|(i, (line, seg))| {
+                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || line.line_height != seg.line_height
+                    || line.segment_width != seg.segment_width
+                    || line.char_start
+                        != para
+                            .char_offsets
+                            .partition_point(|&offset| offset < para.line_seg_text_start(i))
+            })
+    {
+        return None;
+    }
+    let raw = para.control_utf16_positions();
+    let assignments: Vec<(usize, usize)> = comp
+        .tac_controls
+        .iter()
+        .map(|(_, _, ci)| {
+            let start = *raw.get(*ci)?;
+            let owner =
+                (0..para.line_segs.len()).rfind(|&i| para.line_seg_text_start(i) <= start)?;
+            Some((*ci, owner))
+        })
+        .collect::<Option<_>>()?;
+    let distinct_raw_rows = comp
+        .tac_controls
+        .iter()
+        .enumerate()
+        .any(|(i, (pos, _, _))| {
+            comp.tac_controls
+                .iter()
+                .enumerate()
+                .skip(i + 1)
+                .any(|(j, (other, _, _))| pos == other && assignments[i].1 != assignments[j].1)
+        });
+    distinct_raw_rows.then_some(assignments)
+}
+
 fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
     let mut result = Vec::new();
 
@@ -3702,10 +3755,10 @@ pub(crate) use line_breaking::frame_metrics_for_line;
 pub mod lineseg_compare;
 
 pub(crate) use line_breaking::{
-    is_line_end_forbidden, is_line_start_forbidden, layout_picture_band, paragraph_flow_end,
-    recalculate_section_vpos, reflow_line_segs, reflow_line_segs_after_cell_split,
-    reflow_line_segs_after_cell_text_edit, reflow_line_segs_in_stored_section, tokenize_paragraph,
-    BreakToken, StoredRowMissPolicy,
+    is_line_end_forbidden, is_line_start_forbidden, layout_paragraph_in_frame, layout_picture_band,
+    paragraph_flow_end, recalculate_section_vpos, reflow_line_segs,
+    reflow_line_segs_after_cell_split, reflow_line_segs_after_cell_text_edit,
+    reflow_line_segs_in_stored_section, tokenize_paragraph, BreakToken, StoredRowMissPolicy,
 };
 
 #[cfg(test)]

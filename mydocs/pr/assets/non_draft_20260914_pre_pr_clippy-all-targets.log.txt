@@ -1,0 +1,100 @@
+   Compiling serde_core v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling syn v3.0.3
+    Checking bitflags v2.13.1
+   Compiling num-traits v0.2.19
+    Checking regex-syntax v0.8.11
+   Compiling getrandom v0.3.4
+   Compiling rustix v1.1.4
+    Checking errno v0.3.14
+    Checking futures-task v0.3.34
+    Checking pin-project-lite v0.2.17
+    Checking png v0.18.1
+    Checking pdf-writer v0.12.1
+    Checking slab v0.4.12
+    Checking futures-core v0.3.34
+    Checking futures-util v0.3.34
+    Checking fastrand v2.5.0
+    Checking ppv-lite86 v0.2.21
+    Checking wait-timeout v0.2.1
+    Checking quick-error v1.2.3
+    Checking bit-vec v0.8.0
+   Compiling wasm-bindgen-test-macro v0.3.77
+    Checking wasm-bindgen-test-shared v0.2.127
+    Checking bit-set v0.8.0
+    Checking unarray v0.1.4
+    Checking cast v0.3.0
+    Checking nu-ansi-term v0.50.3
+    Checking oorandom v11.1.5
+    Checking utf8parse v0.2.2
+    Checking crossbeam-utils v0.8.22
+    Checking anstyle-parse v1.0.0
+    Checking aho-corasick v1.1.5
+    Checking anstyle-query v1.1.5
+    Checking is_terminal_polyfill v1.70.2
+    Checking anstyle v1.0.14
+    Checking colorchoice v1.0.5
+    Checking clap_lex v1.1.0
+    Checking crossbeam-epoch v0.9.20
+    Checking anstream v1.0.0
+    Checking js-sys v0.3.104
+    Checking jiff-core v0.1.0
+    Checking module-lattice v0.2.3
+    Checking moxcms v0.8.1
+    Checking crossbeam-deque v0.8.7
+    Checking regex-automata v0.4.18
+    Checking strsim v0.11.1
+    Checking ml-kem v0.3.2
+    Checking ml-dsa v0.1.1
+    Checking rand_core v0.9.5
+    Checking rand_chacha v0.9.0
+    Checking rand v0.9.5
+    Checking rand_xorshift v0.4.0
+    Checking jiff v0.2.35
+    Checking clap_builder v4.6.6
+    Checking rayon-core v1.13.0
+   Compiling serde_derive v1.0.229
+   Compiling bytemuck_derive v1.12.0
+   Compiling async-trait v0.1.92
+    Checking tempfile v3.27.0
+    Checking regex v1.13.1
+    Checking rusty-fork v0.3.1
+    Checking proptest v1.11.0
+    Checking env_filter v2.0.0
+    Checking rhwp-contracts v0.1.0 (/Users/tsjang/rhwp/crates/rhwp-contracts)
+   Compiling clap_derive v4.6.4
+    Checking either v1.17.0
+    Checking same-file v1.0.6
+    Checking walkdir v2.5.0
+    Checking rayon v1.12.0
+    Checking anyhow v1.0.104
+    Checking env_logger v0.11.11
+    Checking bytemuck v1.25.2
+    Checking which v8.0.6
+   Compiling rhwp-subsecond v0.0.0 (/Users/tsjang/rhwp/tools/rhwp-subsecond)
+    Checking rhwp-password-crypto v0.1.0 (/Users/tsjang/rhwp/crates/rhwp-password-crypto)
+    Checking rhwp-ooxml-chart v0.1.0 (/Users/tsjang/rhwp/crates/rhwp-ooxml-chart)
+    Checking font-types v0.11.3
+    Checking tiny-skia-path v0.11.4
+    Checking rustybuzz v0.20.1
+    Checking rgb v0.8.53
+    Checking read-fonts v0.39.2
+    Checking image v0.25.10
+    Checking clap v4.6.6
+    Checking tiny-skia v0.11.4
+    Checking serde v1.0.229
+    Checking wasm-bindgen-futures v0.4.77
+    Checking usvg v0.45.1
+    Checking wasm-bindgen-test v0.3.77
+    Checking llm-verifier-verdict-protocol v0.1.0 (/Users/tsjang/rhwp/tools/llm_verifier/verdict_protocol)
+    Checking llm-verifier-criteria-decomp v0.1.0 (/Users/tsjang/rhwp/tools/llm_verifier/criteria_decomp)
+    Checking llm-verifier-claim-bind v0.1.0 (/Users/tsjang/rhwp/tools/llm_verifier/claim_bind)
+    Checking batch-convert v0.1.0 (/Users/tsjang/rhwp/tools/batch-convert)
+    Checking resvg v0.45.1
+    Checking write-fonts v0.48.1
+    Checking skrifa v0.42.1
+    Checking subsetter v0.2.6
+    Checking svg2pdf v0.13.0 (/Users/tsjang/rhwp/vendor/svg2pdf)
+    Checking rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Checking rhwp-native-ffi v0.1.0 (/Users/tsjang/rhwp/bindings/Native)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 44.53s

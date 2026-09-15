@@ -189,7 +189,7 @@
 
 .sb-combo:focus { border-color: var(--color-focus-border); }
 
-#style-name { width: 88px; }
+#style-name { width: 88px; max-width: 100%; }
 .sb-font-lang { width: 64px; font-size: var(--font-size-sm); }
 .sb-font {
   width: 136px;
@@ -766,12 +766,19 @@
   }
 }
 
+@media (min-width: 808px) and (max-width: 827px) {
+  html[lang='en'] #style-bar {
+    padding-right: 8px;
+    padding-left: 14px;
+  }
+}
+
 /*
  * 1행 compact의 시작점. 폰트 이름은 136px로 고정하고 문단 정렬을 panel로 접는다.
  * select의 내부 여백을 포함한 첫 option 텍스트가 메뉴의 '파일' 텍스트(x≈23px)와 맞는다.
  */
 @media (min-width: 808px) {
-  #style-bar {
+  :where(html:not([lang='en'])) #style-bar {
     display: flex;
     flex-wrap: nowrap;
     min-height: 0;
@@ -782,63 +789,139 @@
     padding: var(--style-bar-full-padding-top, 3px) 8px 3px 14px;
   }
 
-  .sb-field-ribbon-group {
+  :where(html:not([lang='en'])) .sb-field-ribbon-group {
     flex: 0 0 481px;
     width: 481px;
     min-width: 481px;
     height: 29px;
   }
 
-  .sb-field-grid {
+  :where(html:not([lang='en'])) .sb-field-grid {
     grid-template-columns: 88px 64px 136px 86px 86px;
     width: 100%;
   }
 
-  .sb-field-ribbon-group .sb-field {
+  :where(html:not([lang='en'])) .sb-field-ribbon-group .sb-field {
     flex-direction: row;
     align-items: center;
     gap: 0;
   }
 
-  .sb-field-label,
-  .sb-ribbon-label {
+  :where(html:not([lang='en'])) .sb-field-label,
+  :where(html:not([lang='en'])) .sb-ribbon-label {
     display: none;
   }
 
-  .sb-command-track,
-  .sb-command-band {
+  :where(html:not([lang='en'])) .sb-command-track,
+  :where(html:not([lang='en'])) .sb-command-band {
     gap: 0;
   }
 
   /* 명령 영역과 136px 폰트 열을 모두 고정해 breakpoint에서만 레이아웃이 바뀐다. */
-  .sb-command-track {
+  :where(html:not([lang='en'])) .sb-command-track {
     flex-shrink: 0;
   }
 
-  .sb-command-group {
+  :where(html:not([lang='en'])) .sb-command-group {
     gap: 1px;
   }
 
-  .sb-field-ribbon-group,
-  .sb-character-ribbon-group,
-  .sb-color-ribbon-group,
-  .sb-paragraph-ribbon-group {
+  :where(html:not([lang='en'])) .sb-field-ribbon-group,
+  :where(html:not([lang='en'])) .sb-character-ribbon-group,
+  :where(html:not([lang='en'])) .sb-color-ribbon-group,
+  :where(html:not([lang='en'])) .sb-paragraph-ribbon-group {
     padding: 0;
     border-right: 1px solid var(--ui-border);
     border-left: 0;
   }
 
   /* 마지막 필드의 자체 테두리와 ribbon divider가 붙어 이중선처럼 보이지 않게 한다. */
-  .sb-field-ribbon-group {
+  :where(html:not([lang='en'])) .sb-field-ribbon-group {
     padding-right: 4px;
   }
 
-  #style-bar .sb-btn {
+  :where(html:not([lang='en'])) #style-bar .sb-btn {
     width: 32px;
     min-width: 32px;
   }
 
-  #style-bar .sb-has-arrow {
+  :where(html:not([lang='en'])) #style-bar .sb-has-arrow {
+    width: 42px;
+    min-width: 42px;
+  }
+}
+
+
+/* 영어 필드에 추가한 20px를 한 줄 전환에도 예약한다. */
+@media (min-width: 828px) {
+  :where(html[lang='en']) #style-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    min-height: 0;
+    align-items: center;
+    align-content: center;
+    justify-content: flex-start;
+    gap: 0;
+    padding: var(--style-bar-full-padding-top, 3px) 8px 3px 14px;
+  }
+
+  :where(html[lang='en']) .sb-field-ribbon-group {
+    flex: 0 0 501px;
+    width: 501px;
+    min-width: 501px;
+    height: 29px;
+  }
+
+  :where(html[lang='en']) .sb-field-grid {
+    grid-template-columns: 88px 84px 136px 86px 86px;
+    width: 100%;
+  }
+
+  :where(html[lang='en']) .sb-field-ribbon-group .sb-field {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+  }
+
+  :where(html[lang='en']) .sb-field-label,
+  :where(html[lang='en']) .sb-ribbon-label {
+    display: none;
+  }
+
+  :where(html[lang='en']) .sb-command-track,
+  :where(html[lang='en']) .sb-command-band {
+    gap: 0;
+  }
+
+  /* 명령 영역과 136px 폰트 열을 모두 고정해 breakpoint에서만 레이아웃이 바뀐다. */
+  :where(html[lang='en']) .sb-command-track {
+    flex-shrink: 0;
+  }
+
+  :where(html[lang='en']) .sb-command-group {
+    gap: 1px;
+  }
+
+  :where(html[lang='en']) .sb-field-ribbon-group,
+  :where(html[lang='en']) .sb-character-ribbon-group,
+  :where(html[lang='en']) .sb-color-ribbon-group,
+  :where(html[lang='en']) .sb-paragraph-ribbon-group {
+    padding: 0;
+    border-right: 1px solid var(--ui-border);
+    border-left: 0;
+  }
+
+  /* 마지막 필드의 자체 테두리와 ribbon divider가 붙어 이중선처럼 보이지 않게 한다. */
+  :where(html[lang='en']) .sb-field-ribbon-group {
+    padding-right: 4px;
+  }
+
+  :where(html[lang='en']) #style-bar .sb-btn {
+    width: 32px;
+    min-width: 32px;
+  }
+
+  :where(html[lang='en']) #style-bar .sb-has-arrow {
     width: 42px;
     min-width: 42px;
   }
@@ -848,17 +931,17 @@
  * 문단 명령은 1행 전체가 유지되지 않는 중간 폭에서 먼저 접고, 2행 최소 폭에서도 다시 접는다.
  */
 @media (max-width: 459px), (min-width: 808px) and (max-width: 961px) {
-  .sb-overflow-host {
+  :where(html:not([lang='en'])) .sb-overflow-host {
     position: relative;
     display: flex;
     align-items: center;
   }
 
-  #btn-style-overflow {
+  :where(html:not([lang='en'])) #btn-style-overflow {
     display: inline-flex;
   }
 
-  .sb-overflow-panel {
+  :where(html:not([lang='en'])) .sb-overflow-panel {
     position: absolute;
     z-index: 1000;
     top: calc(100% + 4px);
@@ -871,14 +954,88 @@
     box-shadow: var(--shadow-light);
   }
 
-  .sb-overflow-host.open .sb-overflow-panel {
+  :where(html:not([lang='en'])) .sb-overflow-host.open .sb-overflow-panel {
     display: block;
   }
 
-  .sb-overflow-panel .sb-paragraph-band,
-  .sb-overflow-panel .sb-paragraph-ribbon-group {
+  :where(html:not([lang='en'])) .sb-overflow-panel .sb-paragraph-band,
+  :where(html:not([lang='en'])) .sb-overflow-panel .sb-paragraph-ribbon-group {
     width: max-content;
     padding: 0;
     border: 0;
+  }
+}
+
+
+@media (max-width: 459px), (min-width: 828px) and (max-width: 981px) {
+  :where(html[lang='en']) .sb-overflow-host {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  :where(html[lang='en']) #btn-style-overflow {
+    display: inline-flex;
+  }
+
+  :where(html[lang='en']) .sb-overflow-panel {
+    position: absolute;
+    z-index: 1000;
+    top: calc(100% + 4px);
+    right: 0;
+    display: none;
+    padding: 4px;
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-light);
+  }
+
+  :where(html[lang='en']) .sb-overflow-host.open .sb-overflow-panel {
+    display: block;
+  }
+
+  :where(html[lang='en']) .sb-overflow-panel .sb-paragraph-band,
+  :where(html[lang='en']) .sb-overflow-panel .sb-paragraph-ribbon-group {
+    width: max-content;
+    padding: 0;
+    border: 0;
+  }
+}
+
+/* ── 언어팩: 영어 라벨 폭 보정 ──────────────────────────────────────────────
+   글꼴 적용 언어 상자의 영어 값(Font Set·Japanese)은 한국어(대표·일어)보다 20px 가량 넓다.
+   격자 둘째 칸과 부모 폭을 함께 넓힌다. 영어의 한 줄·전체 명령 경계도 위에서 20px 늦춘다. */
+html[lang='en'] .sb-field-ribbon-group {
+  width: min(496px, 100%);
+}
+
+html[lang='en'] .sb-field-grid {
+  grid-template-columns:
+    minmax(68px, 88px)
+    minmax(74px, 84px)
+    136px
+    minmax(72px, 86px)
+    minmax(72px, 86px);
+  width: min(496px, 100%);
+}
+@media (max-width: 459px) {
+  html[lang='en'] .sb-field-grid {
+    grid-template-columns:
+      minmax(54px, 1fr)
+      minmax(40px, 0.75fr)
+      136px
+      minmax(54px, 0.95fr)
+      minmax(54px, 0.95fr);
+  }
+}
+@media (min-width: 828px) {
+  html[lang='en'] .sb-field-ribbon-group {
+    flex-basis: 501px;
+    width: 501px;
+    min-width: 501px;
+  }
+  html[lang='en'] .sb-field-grid {
+    grid-template-columns: 88px 84px 136px 86px 86px;
   }
 }

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-08-08
+last_verified: 2026-09-14
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -50,6 +50,33 @@ fidelity 원장을 함께 보존해야 한다.
 `fidelity_compare`의 Python 환경과 실행 명령은
 [도구 README](../../../tools/fidelity_compare/README.md)를 따른다. 저장소 로컬 `venv/`의 공통
 계약은 그 문서가 연결하는 [개발 환경 가이드](../dev_environment_guide.md)가 정의한다.
+
+## 새 WASM 출력 비교
+
+`--wasm-pkg <폴더>`를 지정하면 `wasm-pack --target web`으로 만든 `rhwp.js`와
+`rhwp_bg.wasm`을 실제 Chrome에서 실행한다. SVG는 `renderPageSvg`, 분석용 render tree는
+**같은 WASM 문서의 `getPageRenderTree`**에서 얻는다. Native render tree를 WASM 출력의
+기하 근거로 대신 쓰지 않는다.
+
+```bash
+venv/bin/python scripts/visual_sweep.py \
+  --file-target reg80168 samples/80168_regulatory_analysis.hwp pdf/80168_regulatory_analysis-2022.pdf \
+  --rhwp-bin target/pr-review/debug/rhwp \
+  --wasm-pkg /path/to/new-web-pkg \
+  --pages 21,49,75-77,108-109 --dpi 96 --out output/wasm-review
+```
+
+CLI는 같은 원본의 `export-svg --font-style`이 만든 글꼴 별칭과 note-shape 메타데이터를 제공한다.
+Sweep은 `@font-face`만 WASM SVG에 보충하며 텍스트·좌표·그리기 노드는 수정하지 않는다.
+이후 기존 Chrome webfont rasterizer로 비교·overlay·review PNG를 생성한다. 별도 HTML에
+raw SVG만 붙이면 macOS의 legacy `휴먼명조` 등의 설치 폰트가 잘못 선택될 수 있으므로
+브라우저 증적도 이 경로로 캡처한다. PNG 제목에는 `(WASM)`을 표시한다.
+
+`wasm/raw_svg`에는 수정 전 WASM SVG, `render_tree`에는 WASM의 분석 트리를 보존한다.
+`wasm/manifest.json`은 Chrome 버전·쪽 수·원 SVG 해시를, `run_manifest.json`은 JS/WASM
+패키지와 exporter 해시를 기록한다. 패키지가 바뀌면 `--resume`은 이전 증적을 거부한다.
+WASM의 쪽 수가 Native와 달라도 Native의 페이지 구성을 강제하지 않으며, 실제 WASM SVG와
+render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패키지 빌드는 Sweep 실행 전에 완료한다.
 
 ## 필수 도구
 

@@ -232,7 +232,7 @@ pub struct CharShapeRef {
 ///
 /// **표준**: `mydocs/tech/document_ir_lineseg_standard.md` (Task #604)
 /// 모든 i32 필드는 HWPUNIT (1 inch = 7200 HWPUNIT).
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
 pub struct LineSeg {
     /// 본 줄이 차지하는 텍스트 시작 위치 (UTF-16 code unit, 문단 시작 기준)
     pub text_start: u32,

@@ -97,6 +97,87 @@ async function run() {
     check(tc, result.noOuterOverflow, '눈금자 표시로 page 가로 overflow가 생기지 않음');
   };
 
+  // Locale-specific CSS and controller media queries must agree at both transitions.
+  // Check real control rectangles: root overflow alone misses overlapping grid children.
+  for (const locale of ['ko', 'en']) {
+    for (const skin of ['default', 'flat', 'oldschool']) {
+      for (const theme of ['light', 'dark']) {
+        const page = await createPage(browser, 600, 863);
+        const tc = `locale ${locale}/${skin}/${theme}`;
+        try {
+          await primeTheme(page, skin, theme);
+          await loadApp(page, `/?lang=${locale}`);
+          await page.evaluate(() => window.__eventBus?.emit('create-new-document'));
+          const oneRow = locale === 'en' ? 828 : 808;
+          const fullRow = locale === 'en' ? 982 : 962;
+          // Ascending then descending catches stale state on both sides of each boundary.
+          for (const width of [375, 459, 460, 600, 807, 808, 827, 828, 961, 962, 981, 982, 1024, 982, 981, 828, 827, 460, 459]) {
+            await page.setViewport({ width, height: 863 });
+            await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+            const compact = width < 460 || (width >= oneRow && width < fullRow);
+            const result = await page.evaluate(() => {
+              const rect = selector => document.querySelector(selector).getBoundingClientRect();
+              const root = document.documentElement;
+              const controls = [...document.querySelectorAll('.sb-field-grid > .sb-field')].map(field => {
+                const parent = field.getBoundingClientRect();
+                const control = field.querySelector('.sb-combo, .sb-size-group, .sb-ls-group').getBoundingClientRect();
+                return control.left >= parent.left - 0.01 && control.right <= parent.right + 0.01;
+              });
+              const trigger = document.querySelector('#btn-style-overflow');
+              const panel = document.querySelector('#style-overflow-panel');
+              return {
+                locale: root.lang,
+                overflow: root.scrollWidth - root.clientWidth,
+                controlsFit: controls.length === 5 && controls.every(Boolean),
+                gap: rect('#font-lang').left - rect('#style-name').right,
+                oneRow: Math.abs(rect('.sb-field-ribbon-group').top - rect('.sb-command-track').top) < 1,
+                triggerVisible: trigger.getBoundingClientRect().width > 0,
+                panelHidden: panel.hidden,
+                finalRight: rect('#btn-align-split').right,
+                triggerRight: trigger.getBoundingClientRect().right,
+              };
+            });
+            const at = `${tc}/${width}px`;
+            check(at, result.locale === locale, `locale=${result.locale}`);
+            check(at, result.overflow <= 0, `outer overflow=${result.overflow}px`);
+            check(at, result.controlsFit && result.gap >= 3.99, `fields contained; gap=${result.gap}px`);
+            check(at, result.oneRow === (width >= oneRow), 'expected row count');
+            check(at, result.triggerVisible === compact && result.panelHidden === compact, 'CSS/controller layout agreement');
+            check(at, (compact ? result.triggerRight : result.finalRight) <= width, 'last visible command inside viewport');
+            if (compact && result.triggerVisible) {
+              await page.focus('#btn-style-overflow');
+              await page.keyboard.press('ArrowDown');
+              await page.waitForFunction(() => document.activeElement?.id === 'btn-align-left');
+              const open = await page.evaluate(() => {
+                const panel = document.querySelector('#style-overflow-panel');
+                const last = document.querySelector('#btn-align-split').getBoundingClientRect();
+                return !panel.hidden && last.width > 0 && last.right <= innerWidth && last.left >= 0;
+              });
+              check(at, open, 'keyboard opens panel with all alignment commands visible');
+              await page.keyboard.press('Escape');
+              check(at, await page.evaluate(() => document.activeElement?.id === 'btn-style-overflow'
+                && document.querySelector('#style-overflow-panel').hidden), 'Escape closes panel and returns focus');
+            }
+          }
+        } catch (err) {
+          reporter.fail(tc, err.message);
+          console.error(`FAIL ${tc}: ${err.message}`);
+          failed++;
+        } finally {
+          await closePage(page);
+        }
+      }
+    }
+  }
+
+  if (process.argv.includes('--locales-only')) {
+    console.log(`\n=== 결과: ${passed} passed, ${failed} failed ===`);
+    if (failed > 0) process.exitCode = 1;
+    reporter.generate('../output/e2e/responsive-locales-report.html');
+    await closeBrowser(browser);
+    return;
+  }
+
   for (const vp of VIEWPORTS) {
     const tc = `${vp.name} (${vp.width}x${vp.height})`;
     console.log(`\n[${vp.name}] ${vp.width}x${vp.height}...`);

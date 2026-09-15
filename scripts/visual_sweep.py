@@ -623,6 +623,71 @@ def sweep_provenance(
     }
 
 
+def wasm_package_provenance(root: Path, package: Path) -> dict[str, object]:
+    files = [package / "rhwp.js", package / "rhwp_bg.wasm"]
+    if any(not path.is_file() for path in files):
+        raise SystemExit("--wasm-pkg에는 wasm-pack --target web의 rhwp.js와 rhwp_bg.wasm이 필요합니다.")
+    exporter = root / "scripts" / "export-wasm-for-sweep.mjs"
+    return {
+        "files": [{"path": str(path.resolve()), "sha256": sha256_file(path)} for path in files],
+        "exporter_sha256": sha256_file(exporter),
+        "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+        "render_tree": "WASM getPageRenderTree",
+    }
+
+
+def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
+    """글꼴 별칭만 보충한다. WASM의 텍스트·좌표·그리기 노드는 그대로 보존한다."""
+    def family(rule: str) -> str:
+        match = re.search(r"font-family\s*:\s*([^;}]+)", rule, re.IGNORECASE)
+        return match.group(1).strip().strip("\"'").casefold() if match else ""
+
+    faces = re.compile(r"@font-face\s*\{[^{}]*\}", re.IGNORECASE)
+    declared = {family(rule) for rule in faces.findall(svg)}
+    rules = list(dict.fromkeys(rule for rule in faces.findall(policy_svg) if family(rule) not in declared))
+    if not rules:
+        return svg
+    opening = re.search(r"<svg\b[^>]*>", svg)
+    if opening is None:
+        raise SystemExit("WASM SVG root가 없습니다.")
+    end = opening.end()
+    return svg[:end] + "<style>" + "\n".join(rules) + "</style>" + svg[end:]
+
+
+def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path) -> None:
+    wasm_dir = base / "wasm"
+    policy_dir = base / "font_policy"
+    # 이전 실행이 중간에 끝났으면 부분 SVG/JSON을 성공한 export로 사용하지 않는다.
+    (base / "wasm-export-complete.json").unlink(missing_ok=True)
+    for folder in (wasm_dir, policy_dir, base / "svg", base / "render_tree"):
+        clean_dir(folder)
+    run(
+        ["node", str(root / "scripts/export-wasm-for-sweep.mjs"), "--pkg", str(package),
+         "--input", str(hwp), "--out", str(wasm_dir)],
+        cwd=root, log_path=base / "wasm-export.log",
+    )
+    run(
+        [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(policy_dir)],
+        cwd=root, log_path=base / "font-policy.log",
+    )
+    policies = {page_num(path): path for path in policy_dir.glob("*.svg")}
+    manifest = load_json_object(wasm_dir / "manifest.json", "WASM export")
+    count = manifest.get("pageCount")
+    raw = {page_num(path): path for path in (wasm_dir / "raw_svg").glob("*.svg")}
+    trees = {page_num(path): path for path in (wasm_dir / "render_tree").glob("*.json")}
+    expected = set(range(1, count + 1)) if isinstance(count, int) and count > 0 else set()
+    if not expected or set(raw) != expected or set(trees) != expected or not policies:
+        raise SystemExit("WASM SVG/render tree 페이지가 누락됐거나 글꼴 정책이 없습니다.")
+    # 별칭은 문서의 폰트 공급 계약이다. Native의 페이지 소속을 WASM에 강제하지 않는다.
+    policy = "\n".join(path.read_text(encoding="utf-8") for path in policies.values())
+    for page in sorted(expected):
+        svg = apply_svg_font_policy(raw[page].read_text(encoding="utf-8"), policy)
+        (base / "svg" / raw[page].name).write_text(svg, encoding="utf-8")
+        shutil.copyfile(trees[page], base / "render_tree" / trees[page].name)
+    # output 복사까지 끝난 경우에만 export 완료를 표시한다.
+    write_json_atomic(base / "wasm-export-complete.json", manifest)
+
+
 def run_manifest_path(base: Path) -> Path:
     return base / "run_manifest.json"
 
@@ -1088,6 +1153,7 @@ def render_target(
     *,
     resume: bool,
     svg_rasterizer: str,
+    wasm_pkg: Path | None = None,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1129,6 +1195,8 @@ def render_target(
         directory.mkdir(parents=True, exist_ok=True)
 
     provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
+    if wasm_pkg is not None:
+        provenance["wasm"] = wasm_package_provenance(root, wasm_pkg)
     run_manifest = run_manifest_for_target(
         base,
         target,
@@ -1146,7 +1214,10 @@ def render_target(
     compact_shapes = compact_note_shape(note_shape)
     export_log = base / "export.log"
     tree_log = base / "render_tree.log"
-    if not any(svg_dir.glob("*.svg")):
+    if wasm_pkg is not None:
+        if not (base / "wasm-export-complete.json").is_file():
+            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base)
+    elif not any(svg_dir.glob("*.svg")):
         # 증적 SVG는 원 문서의 legacy face를 그대로 쓰되, `--font-style`이
         # `한양중고딕 → HY중고딕/HYGothic-Medium` 같은 설치명 alias를 @font-face
         # local()로 명시한다. 렌더 위치는 rhwp가 이미 확정한 SVG 좌표를 유지하므로
@@ -1158,7 +1229,7 @@ def render_target(
             cwd=root,
             log_path=export_log,
         )
-    if not any(tree_dir.glob("*.json")):
+    if wasm_pkg is None and not any(tree_dir.glob("*.json")):
         run(
             [rhwp_bin, "export-render-tree", str(hwp), "-o", str(tree_dir)],
             cwd=root,
@@ -1244,7 +1315,8 @@ def render_target(
             cwd=root,
             verbose=False,
         )
-        compare_pages = make_compares([png], [pdf_path], compare_dir, target.key)
+        capture_label = f"{target.key} (WASM)" if wasm_pkg is not None else target.key
+        compare_pages = make_compares([png], [pdf_path], compare_dir, capture_label)
         if len(compare_pages) != 1:
             raise SystemExit(f"p{page:03d} compare 산출물을 만들지 못했습니다.")
         overlay_path = overlay_dir / f"overlay_{page:03d}.png"
@@ -1252,7 +1324,7 @@ def render_target(
             png,
             pdf_path,
             overlay_path,
-            target.key,
+            capture_label,
             page - 1,
             pixel_diff_threshold=pixel_diff_threshold,
         )
@@ -4857,6 +4929,10 @@ def main() -> None:
     )
     parser.add_argument("--dpi", type=int, default=96)
     parser.add_argument(
+        "--wasm-pkg", type=Path,
+        help="새 WASM web package를 Chrome에서 실행해 SVG와 render tree를 비교합니다. rhwp CLI는 글꼴 별칭과 note-shape만 제공합니다.",
+    )
+    parser.add_argument(
         "--svg-rasterizer",
         choices=("webfont", "rsvg"),
         default="webfont",
@@ -4909,6 +4985,9 @@ def main() -> None:
     selected_pages = parse_page_selection(args.page, args.pages)
 
     root = Path.cwd()
+    if args.wasm_pkg is not None:
+        args.wasm_pkg = resolve_input_path(root, args.wasm_pkg)
+        wasm_package_provenance(root, args.wasm_pkg)
     ensure_tools(args.svg_rasterizer)
     ensure_default_rhwp_binary_is_current(root, args.rhwp_bin)
     custom_targets = custom_targets_from_args(args)
@@ -4935,6 +5014,7 @@ def main() -> None:
             selected_pages,
             resume=args.resume,
             svg_rasterizer=args.svg_rasterizer,
+            wasm_pkg=args.wasm_pkg,
         )
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-12
+last_verified: 2026-09-15
 ---
 
 # 로컬 사전 검증
@@ -308,6 +308,11 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 렌더링 baseline·golden·래칫 허용치 변경은 위 테스트 통과만으로 수용하지 않는다.
 [조판 규칙과 기준값 변경 증거](visual_fixture_evidence.md#조판-규칙과-기준값-변경-증거)를 확인하고,
 역할에 관계없이 [공통 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)에 근거와 판정을 남긴다.
+
+분할·이어받기 변경은 [공통 입증 절차](../../../AGENTS.md#분할이어받기-변경의-입증)의 작은 경계
+검사와 영향 페이지 Visual Sweep을 먼저 수행해 수정 방향을 확인한다. 그 뒤 위 범위별 필수 검증을
+완료한다. 이 순서는 필수 검사를 줄이거나 4.3.0의 exact head CI 재사용 조건을 바꾸지 않는다.
+Native 선행 진단과 최종 fresh WASM 출력은 구분하고, 보정 코드가 바뀌면 영향 경계·시각 증적도 갱신한다.
 
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와

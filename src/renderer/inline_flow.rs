@@ -45,6 +45,8 @@ pub struct InlineFlowBox {
 /// 좌표와 높이는 같은 계산의 결과다. 확정 후 단 상대 좌표로 보관한다.
 #[derive(Debug, Clone, PartialEq)]
 pub struct InlineFlowPlan {
+    /// NO_LS 본문의 확정 frame 행. 원본 IR은 바꾸지 않고 fit와 paint에 함께 전달한다.
+    pub(crate) text_rows: Option<Vec<crate::model::paragraph::LineSeg>>,
     pub start: f64,
     pub end: f64,
     pub boxes: Vec<InlineFlowBox>,
@@ -195,6 +197,7 @@ pub(crate) fn plan(
     let mut exclusions = preceding.to_vec();
     let horizontal = frame.container.x..frame.container.x + frame.container.width;
     let mut result = InlineFlowPlan {
+        text_rows: None,
         start: frame.paragraph_y,
         end: top,
         boxes: Vec::new(),
@@ -374,4 +377,56 @@ fn row_geometry(
     let y = hwpunit_to_px(frame.top, dpi).max(top);
     let carved = y > top + 0.01 || lane.start > base.start || lane.end < base.end;
     Some((x, y, carved))
+}
+
+/// 저장 행과 자체 inline 소유자가 없는 본문만 현재 물리 frame에서 재조판한다.
+pub(crate) fn supports_plain_text(para: &Paragraph) -> bool {
+    para.line_segs.is_empty() && !para.text.trim().is_empty() && para.controls.is_empty()
+}
+
+pub(crate) fn plan_plain_text(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    placement: &ObjectPlacementFrame<'_>,
+    preceding: &[FrameExclusion],
+) -> Option<InlineFlowPlan> {
+    use super::composer::{layout_paragraph_in_frame, ParagraphBox};
+    let style = styles.para_styles.get(para.para_shape_id as usize)?;
+    if !supports_plain_text(para) || style.head_type != crate::model::style::HeadType::None {
+        return None;
+    }
+    let mut exclusions = preceding.to_vec();
+    let text_top = placement.paragraph_y + style.spacing_before;
+    let dx = px_to_hwpunit(placement.column.x, placement.dpi);
+    let dy = px_to_hwpunit(text_top, placement.dpi);
+    for e in &mut exclusions {
+        e.horizontal = e.horizontal.start.saturating_sub(dx)..e.horizontal.end.saturating_sub(dx);
+        e.vertical = e.vertical.start.saturating_sub(dy)..e.vertical.end.saturating_sub(dy);
+    }
+    let paragraph_box =
+        ParagraphBox::body_for_style(placement.column.width, Some(style), placement.dpi);
+    if !paragraph_box.is_usable() {
+        return None;
+    }
+    let mut frame = paragraph_box.frame_with(0, exclusions);
+    let rows = layout_paragraph_in_frame(para, &mut frame, styles, placement.dpi)?;
+    // 배제 없는 frame과 행이 같으면 기존 owner를 유지한다.
+    let mut clear_frame = paragraph_box.frame(0);
+    let clear_rows = layout_paragraph_in_frame(para, &mut clear_frame, styles, placement.dpi)?;
+    let same_rows = rows.len() == clear_rows.len()
+        && rows.iter().zip(&clear_rows).all(|(a, b)| {
+            a.text_start == b.text_start
+                && a.vertical_pos == b.vertical_pos
+                && a.column_start == b.column_start
+                && a.segment_width == b.segment_width
+        });
+    let end = text_top + hwpunit_to_px(frame.top, placement.dpi) + style.spacing_after;
+    Some(InlineFlowPlan {
+        start: placement.paragraph_y,
+        end,
+        boxes: Vec::new(),
+        carved: !same_rows,
+        next_row_top: end,
+        text_rows: Some(rows),
+    })
 }

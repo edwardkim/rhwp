@@ -79,7 +79,7 @@
       "path": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
       "counts": {
         "coverageCharacters": 16685,
-        "decisionUsageRows": 752,
+        "decisionUsageRows": 750,
         "excludedCharacters": 0,
         "layoutCharacters": 16872,
         "legacyUsageRows": 476,
@@ -90,24 +90,24 @@
       },
       "categories": {
         "char-miss": 642,
-        "exact-hit": 14833,
+        "exact-hit": 14837,
         "face-miss": 0,
         "heuristic": 22,
         "identity-alias-hit": 0,
-        "measured-overlay": 1188,
+        "measured-overlay": 1184,
         "metric-surrogate": 0
       },
       "widthSources": {
         "areaDotFallback": 22,
-        "embeddedMetric": 13887,
+        "embeddedMetric": 13891,
         "figureSpace": 187,
         "heuristicFullwidth": 524,
         "heuristicHalfwidth": 118,
         "metricHalfSpace": 946,
-        "metricNarrowPunctuationOverlay": 86,
+        "metricNarrowPunctuationOverlay": 82,
         "metricSpaceOverlay": 1102
       },
-      "aggregateHash": "465d4c1a5249491312cdf4c340ca0fb7f0a27275e7bb631c3bc37fd3f1f89c26",
+      "aggregateHash": "4ac4354023ecb735bce8c559ebff5316b7c6132f89f05a0db85dd7286bef3f80",
       "legacyProjectionHash": "dd91cb99ca6a5531428ab12613bcf5a99b6a3df5df90264d2eca16a3ef68d269"
     }
   ],

@@ -1,0 +1,17 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 7158,
+  "entries": [
+    {
+      "path": "tests/fixtures/issue_7158/156492236-regulatory-sandbox-full.hwpx",
+      "role": "full_document_visual_fixture",
+      "sha256": "af198ad2dff0c1ad0458d7147ca8fcf42b45b0d2e5ceb2e10353debc8250a5b9",
+      "bytes": 23230621,
+      "source": "https://github.com/edwardkim/rhwp/issues/7158",
+      "originalFilename": "156492236_220119_(보도참고자료)_규제샌드박스_시행_3주년(규제자유툭구단).hwpx",
+      "referencePdf": "pdf/156492236-regulatory-sandbox-full-2020.pdf",
+      "existingMinimalFixture": "samples/issue4090/156492236_규제샌드박스_min.hwpx",
+      "derivation": "Unmodified original; Contents XML byte-identical to existing minimal fixture. Full BinData and Preview retained."
+    }
+  ]
+}

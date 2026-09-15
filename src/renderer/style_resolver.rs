@@ -25,6 +25,13 @@ pub struct ResolvedCharStyle {
     pub font_family: String,
     /// 7개 언어 카테고리별 글꼴 이름
     pub font_families: Vec<String>,
+    /// [#7092] 언어별로 메트릭 표를 **그 글꼴 자신의 폭**으로 믿을 수 있는지
+    /// (`font_families` 와 같은 순서).
+    ///
+    /// 참은 [`metric_widths_verified_face`] 가 인정한 face 가 TTF 로 선언되고 대체 규칙이
+    /// 이름을 바꾸지 않았을 때뿐이다. HFT 는 한/글이 자기 글리프로 그리고, 대체된 이름은
+    /// 다른 글꼴의 표를 빌려 오므로 표에 적힌 폭이 그 글꼴의 폭이라는 보장이 없다.
+    pub font_families_metric_trusted: Vec<bool>,
     /// 글꼴 크기 (px)
     pub font_size: f64,
     /// 진하게
@@ -86,6 +93,7 @@ impl Default for ResolvedCharStyle {
         Self {
             font_family: String::new(),
             font_families: Vec::new(),
+            font_families_metric_trusted: Vec::new(),
             font_size: 12.0,
             bold: false,
             italic: false,
@@ -128,6 +136,22 @@ impl ResolvedCharStyle {
             }
         }
         &self.font_family
+    }
+
+    /// [#7092] 지정 언어 카테고리의 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지.
+    /// `font_family_for_lang` 과 같은 폴백(이름이 비면 한국어 0번)을 따른다.
+    pub fn font_metric_trusted_for_lang(&self, lang_index: usize) -> bool {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_metric_trusted
+            .get(slot)
+            .copied()
+            .unwrap_or(false)
     }
 
     /// 지정 언어 카테고리의 자간(px)을 반환한다.
@@ -379,12 +403,24 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
 
     // 7개 언어 카테고리별 폰트 이름, 자간, 장평 해소
     let mut font_families = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
-        font_families.push(lookup_font_name(doc_info, lang, font_id));
+        let decision = lookup_font_name_decision(doc_info, lang, font_id);
+        let substituted = decision.substitution_boundary.is_some()
+            && decision.normalized_face != decision.requested_face;
+        font_families_metric_trusted.push(
+            decision.alt_type == Some(1)
+                && !substituted
+                && decision
+                    .requested_face
+                    .as_deref()
+                    .is_some_and(metric_widths_verified_face),
+        );
+        font_families.push(decision.css_family_chain.join(","));
 
         let spacing_percent = cs.spacings[lang] as f64;
         letter_spacings.push(font_size * spacing_percent / 100.0);
@@ -400,6 +436,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     ResolvedCharStyle {
         font_family,
         font_families,
+        font_families_metric_trusted,
         font_size,
         bold: cs.bold,
         italic: cs.italic,
@@ -530,6 +567,27 @@ pub(crate) struct FontNameDecision {
     pub(crate) css_family_chain: Vec<String>,
     pub(crate) substitution_boundary: Option<FontSubstitutionBoundary>,
     pub(crate) substitution_rule_id: Option<&'static str>,
+}
+
+/// [#7092] 메트릭 표에 적힌 폭이 **그 글꼴 자신의 전진폭**임을 글꼴 파일로 확인한 face 인지.
+///
+/// 문서가 적은 `alt_type`(TTF/HFT)은 *문서의 주장*일 뿐 표의 출처를 말해 주지 않는다.
+/// `76076_regulatory_analysis.hwp` 는 `함초롬바탕` 을 `alt_type=1`(TTF)로 선언하지만 메트릭
+/// 조회는 별칭 규칙(`rule.rust-metric.1de1fcb9b17d66d599b5`)으로 **다른 글꼴인 `HCR Batang`
+/// 표**를 쓴다. 한/글 2024 정본은 그 문서의 `·` 를 0.345em 으로 그린다 — `덮개·울`(한글3+·)
+/// 37.8pt 와 `덮개·울을`(한글4+·) 49.1pt 에서 한글 전진폭 11.3pt 를 빼면 3.9pt 다. 선언을
+/// 근거로 표를 믿으면 이 글자가 전각이 되어 조각 경계가 한 행 밀린다.
+///
+/// 그래서 근거는 선언이 아니라 **글꼴 파일 실측**으로 둔다. 별칭이 같은 글꼴의 다른 이름인지
+/// (`HY신명조` → `HYSinMyeongJo-Medium`) 다른 글꼴인지(`함초롬바탕` → `HCR Batang`)는 규칙
+/// 표만으로 구분되지 않으므로, 확인한 face 만 여기에 적는다.
+///
+/// - `HY신명조` — `H2MJSM.TTF` 가 `periodcentered`(gid 20313 · 윤곽선 1개)를 1024/1024 로
+///   갖고, `#7092` 재현체의 한/글 정본이 0.999em 이다(`·` 31회 전부 이 face).
+///
+/// 새 face 를 넣으려면 그 글꼴 파일의 글리프와 한/글 출력 실측을 함께 남긴다.
+fn metric_widths_verified_face(face: &str) -> bool {
+    matches!(face.trim(), "HY신명조" | "HYSinMyeongJo-Medium")
 }
 
 pub(crate) fn lookup_font_name_decision(

@@ -1,0 +1,1555 @@
+=== E2E: 반응형 레이아웃 테스트 ===
+
+  [browser] headless Chrome 실행
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-11px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=ko
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  FAIL: outer overflow=10px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  FAIL: outer overflow=12px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  FAIL: outer overflow=10px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  FAIL: outer overflow=12px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  FAIL: outer overflow=10px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  FAIL: outer overflow=12px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  FAIL: outer overflow=10px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  FAIL: outer overflow=12px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  FAIL: outer overflow=10px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  FAIL: outer overflow=12px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-26.203125px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-6.5px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  FAIL: outer overflow=10px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  FAIL: outer overflow=12px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+  PASS: locale=en
+  PASS: outer overflow=0px
+  PASS: fields contained; gap=4px
+  FAIL: expected row count
+  FAIL: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-16px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: locale=en
+  PASS: outer overflow=0px
+  FAIL: fields contained; gap=-3.1875px
+  PASS: expected row count
+  PASS: CSS/controller layout agreement
+  PASS: last visible command inside viewport
+  PASS: keyboard opens panel with all alignment commands visible
+  PASS: Escape closes panel and returns focus
+
+=== 결과: 1410 passed, 138 failed ===
+
+📋 HTML 보고서: ../output/e2e/responsive-locales-report.html
