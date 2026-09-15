@@ -88,6 +88,26 @@ unsharded libtest 경로는 nextest 우선순위, `--no-fail-fast`, 고정 revie
 `cargo test`는 이 문서가 정확한 test target 또는 Native Skia lib 범위를 지정한 focused 명령에만
 쓴다. 실수로 전체 `cargo test`를 시작했다면 중지하고, 그 실행을 검증 결과로 기록하지 않는다.
 
+### 정책 검사의 base 고정
+
+PR 제출·검토의 manifest 및 unit-tier 검사는 `--check`만 실행하지 않고 비교 base SHA를 함께
+전달한다. 단독 검사는 현재 정책 정합성을 확인하지만 PR base 대비 증가를 모두 검출하지 않는다.
+CI와 같은 비교 범위를 사용하도록 검증 전에 최신 대상 branch를 fetch하고 SHA를 고정한다.
+
+~~~bash
+git fetch upstream devel
+rhwp_review_base_sha="$(git rev-parse upstream/devel)"
+git rev-parse "$rhwp_review_base_sha" HEAD
+~~~
+
+아래 정책 명령은 같은 셸에서 이 준비 후 실행한다. 이미 열린 PR의 base가 다르면 실제 PR base
+SHA를 fetch해 사용하고, 검증 기록에 base/head SHA를 남긴다. CI의 PR base가 전진했으면 새 base로
+정책 비교를 다시 수행한다. 단순 base 확인을 위해 source branch를 merge/rebase하지 않는다.
+manifest `--check`는 아래처럼 파생 상태를 준비한 review worktree에서만 실행하고, unit-tier는
+무생성 검사다. 기여자는 [CONTRIBUTING의 worktree 준비](../../../CONTRIBUTING.md#rust-검증-worktree-준비와-실행)에서
+고정한 `rhwp_review_base_sha`를 그대로 사용한다. 정책 실패를 감추기 위해 비교 base를 HEAD로
+바꾸거나 기준선·테스트 assertion을 완화하지 않는다.
+
 ### integration test source 추가와 자동 sharding
 
 새 회귀·계약 테스트는 `tests/cases/issue_<번호>_<설명>.rs` 또는
@@ -100,7 +120,7 @@ unsharded libtest 경로는 nextest 우선순위, `--no-fail-fast`, 고정 revie
 
 ~~~bash
 node scripts/rust-test-suite-manifest.mjs --prepare
-node scripts/rust-test-suite-manifest.mjs --check
+node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 node scripts/run-rust-test.mjs issue_1234_short_description \
   -- --cargo-profile release-test --target-dir target/pr-review
 ~~~
@@ -110,7 +130,7 @@ block은 통합 불가 예외 target이 바뀐 메인터너 전용 PR에서만 `
 검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
 함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 기여자가
 PR 전 검증으로 실행할 명령은 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`와 변경 범위의
-Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check`도
+Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"`도
 실행한다. 이 unit-tier 검사는 파생 파일을 만들지 않는다. 반면 manifest 파생 파일 일치 검사는 review
 worktree와 CI의 책임이다. 경로·crate-root·feature-gated 의존성이 탐지된 source는 기본적으로 singleton
 exception으로 보존한다. module harness 호환성을 실제 실행으로 확인한 경우에만 메인터너가
@@ -124,7 +144,7 @@ support 항목을 기준선으로 관리한다.
 
 ~~~bash
 node --test scripts/tests/rust-unit-test-tiers.test.mjs
-node scripts/rust-unit-test-tiers.mjs --check
+node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ~~~
 
 PR CI는 `github.event.pull_request.base.sha`의 integration manifest를 읽어 현재 source와
@@ -271,7 +291,7 @@ cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
   --target-dir target/pr-review -- -D warnings
 cargo build --locked --workspace --target-dir target/pr-review
 cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
-node scripts/rust-test-suite-manifest.mjs --check
+node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ```
 
 이 묶음은 CI `Lint (fmt, clippy, WASM check)`의 Format check, native root Clippy, WASM32
@@ -283,7 +303,7 @@ Clippy, workspace all-target Clippy와 대응한다. CI에만 있는 Node/Python
 추가한다. 이 검사는 파생 파일을 만들지 않는다.
 
 ```bash
-node scripts/rust-unit-test-tiers.mjs --check
+node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ```
 
 `--prepare`가 만든 `tests/generated/`와 `tests/suites/manifest.json`은 검증 증적일 뿐 source PR에

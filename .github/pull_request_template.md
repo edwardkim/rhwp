@@ -14,14 +14,14 @@ closes #
 <!-- 해당하는 항목만 선택하고 실행 명령·결과를 적어주세요. 해당 없음은 사유를 적고, 실패·미실행을 PASS로 표시하지 마세요. -->
 
 - 변경 범위: <!-- Rust / Studio 단독 / 혼합 / package / 문서 / 기타 -->
-- 검증한 commit SHA:
+- 검증한 commit SHA / 정책 비교 PR base SHA:
 - 실행 명령·결과 및 해당 없음 사유:
 
 - [ ] [변경 범위별 필수 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#pr-전-체크리스트)을 수행하고, 제출 HEAD가 검증한 commit과 같음을 확인
 - [ ] Rust source·test/baseline helper·Rust 검증 입력 변경 시: [별도 worktree 준비](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#rust-검증-worktree-준비와-실행) 후 `cargo fmt --all -- --check`, native·WASM32·workspace all-target Clippy 통과
 - [ ] Rust 변경 시: 범위에 해당하는 focused·전체 integration·Native Skia 회귀 및 시각 검증 수행
 - [ ] 새 integration test는 원본을 `tests/cases/*.rs`에만 추가했고 `tests/generated/`, `tests/suites/manifest.json`, 일반 PR의 Cargo generated test target을 포함하지 않음 (`--sync-cargo-targets` 메인터너 registry PR은 marker 블록만 예외)
-- [ ] `src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]` 변경 시: `node scripts/rust-unit-test-tiers.mjs --check` 통과 (무생성 검사)
+- [ ] `src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]` 변경 시: `node scripts/rust-unit-test-tiers.mjs --check --base-ref <검증한-PR-base-SHA>` 통과 (무생성 검사)
 - [ ] Studio 변경 시: [테스트 전용 unit 또는 fresh dev WASM package 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#프런트엔드-변경-검증) 통과, 브라우저 동작 변경 시 관련 E2E·실제 동작 확인 · 명령/결과:
 - [ ] 편집 command·Undo/Redo 변경 시: [편집 체크리스트](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/edit_command_review_checklist.md) 확인; E2E 미실행 시 사유와 대체 증적 기록
 - [ ] npm/editor 변경 시: 해당 package·embed 계약 검사 수행
@@ -40,9 +40,9 @@ closes #
 <!-- 조판 변경이 없으면 비해당 사유만 적거나 이 절을 제거하세요. 증적의 기존 표·링크를 재사용할 수 있습니다.
 분할·이어받기는 AGENTS.md의 "분할·이어받기 변경의 입증"을 적용합니다. 체크 표시나 helper 이름만으로 충족 처리하지 마세요. -->
 
-- 위반된 계약과 독립적인 기대 결과:
+- 위반된 계약, 입력 생성 방식(실제 저장본/합성·수동 수정), 독립 기준 출처·관측값과 기대 결과:
 - 호출 경로와 공통 측정·배치 결과 (분할 변경이면 컷·유닛 소유, 요구/예약 높이, 예산 실패·종료 처리):
-- 적용 경계의 수정 전 실패·수정 후 결과, 미검증·비해당 사유:
+- 적용 경계의 수정 전 실패·수정 후 결과, 저장 정보 재사용/편집 후 재조판 각각의 검증, 미검증·비해당 사유:
 - 내용으로 대응시킨 Visual Sweep 페이지·영역과 앞뒤 조각·다음 내용 확인, baseline 변경 근거:
 
 ## 성능 영향 및 측정 결과 (해당하는 경우)

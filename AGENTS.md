@@ -88,6 +88,17 @@
   대체하지 않는다. 코드가 다시 바뀌면 영향받은 경계·시각 확인도 다시 수행한다.
   제출·검토 기록에는 위 자료를 짧은 표나 기존 증적 링크로 남기며 체크 표시만으로 대체하지 않는다.
 
+### 저장 조판 정보의 유효성 확인
+
+- 저장 LineSeg·폭·캐시의 수용 조건을 바꾸기 전에 입력이 실제 저장본인지, 수동 작성·수정한
+  합성 입력인지 확인한다. 수동 메타데이터만으로 수용 조건을 완화하지 않는다. 독립적인 사양·
+  정상 생성본·기준 출력과 다르면 입력의 가정부터 재검토한다.
+- 저장 정보 재사용과 편집 후 재조판은 각각의 계약으로 검증한다. 두 경로가 공유하는 조판 규칙은
+  독립 근거로 확인하고, 한 경로의 통과를 다른 경로의 증거로 대신하지 않는다.
+- 구현 전에 `입력 생성 방식 → 독립 기준 출처와 관측값 → 기대 결과`를 짧게 기록하고,
+  검증 뒤 수정 전후 결과를 연결한다. 근거가 부족한 범위는 미검증으로 남기며 시각 개선 완료로
+  판정하지 않는다. 이 기준은 작성자·reviewer·메인터너 보정 모두에 적용한다.
+
 ### 증거와 기준값
 
 - 기대값은 수정 구현과 독립적인 근거에서 정한다. 중첩 표의 줄 구성 수정은 원본 사례와 함께 같은 줄의
@@ -118,6 +129,8 @@
   WASM 전용 cfg와 workspace member·integration target을 놓치므로 CI `Lint (fmt, clippy, WASM
   check)`의 세 Clippy 단계를 각각 확인한다.
   ```
+  git fetch upstream devel
+  rhwp_review_base_sha="$(git rev-parse upstream/devel)"
   node scripts/rust-test-suite-manifest.mjs --prepare
   cargo fmt --all
   cargo fmt --all -- --check
@@ -126,16 +139,19 @@
     --target-dir target/pr-review -- -D warnings
   cargo build --locked --workspace --target-dir target/pr-review
   cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
-  node scripts/rust-test-suite-manifest.mjs --check
+  node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
   ```
   새 integration test source를 추가한 경우 `--prepare`가 만든 파생 파일은 검증 뒤 review
   worktree에서만 복원하고 PR에 stage하지 않는다. 한 단계라도 실패하면 수정·재실행 전에는 push 또는
   PR을 만들지 않는다. 세부 범위와 예외는 `mydocs/manual/pr_review/local_validation.md`의 4.3을
   따른다.
-- **source-side test 변경 시 추가**: `src/**`의 `#[cfg(test)]`를 변경하면
-  `node scripts/rust-unit-test-tiers.mjs --check`를 실행한다. 이 검사는 source와 정책만 읽고
+- **source-side test 변경 시 추가**: `src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]`를 변경하면
+  `node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"`를 실행한다. 이 검사는 source와 정책만 읽고
   파생 inventory를 만들지 않는다. 진단용 `--generate` 결과는 `tests/generated/unit-test-tiers.json`에
   남으며 커밋하지 않는다.
+- 정책 검사에는 위에서 고정한 PR base SHA를 전달한다. `--check` 단독은 PR base 대비 증가를
+  검사하지 않아 CI와 동등하지 않다. base가 바뀌면 해당 비교를 다시 실행하고 base/head SHA를
+  기록한다. 준비·예외·기여자 경로는 [정책 base 비교](mydocs/manual/pr_review/local_validation.md#정책-검사의-base-고정)를 따른다.
 - **review·maintainer worktree와 CI 전용**: 새 integration source는 `tests/cases/` 원본만 PR에
   포함한다. `node scripts/rust-test-suite-manifest.mjs --prepare`와 manifest `--check`는
   파생 suite를 준비한 review worktree와 CI에서만 수행한다. generated suite·manifest는

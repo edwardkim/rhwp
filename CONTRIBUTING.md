@@ -235,6 +235,11 @@ rhwp_review_target_dir="${rhwp_source_dir}-review-target" &&
 )
 ```
 
+이후 정책 검사는 준비 단계의 `rhwp_review_base_sha`를 `--base-ref`로 전달합니다. `--check` 단독은
+PR base 대비 증가를 검사하지 않아 CI와 동등하지 않습니다. base/head SHA를 검증 결과에 기록하고,
+CI의 실제 PR base가 바뀌면 새 base로 정책 비교를 다시 실행합니다. source branch의 불필요한
+merge/rebase는 하지 않습니다.
+
 기여자 본인도 이 worktree에서 `--prepare`를 실행할 수 있습니다. 기본 명령은 generated suite·manifest만
 만들고 root `Cargo.toml`을 바꾸지 않습니다. `tests/generated/regression_suite_*.rs`가 없다는 오류는
 검사 준비 부족으로 인한 실패이며, 실제 포맷 diff와 구분해 기록합니다. source checkout의 이 실패를
@@ -285,7 +290,7 @@ Rust integration test source를 변경한 경우에는 배정 규칙의 계약 �
   set -eu
   cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
   test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
-  node scripts/rust-unit-test-tiers.mjs --check
+  node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 )
 ```
 
@@ -375,7 +380,7 @@ wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이�
   set -eu
   cd "${rhwp_review_dir:?먼저 1번 준비 블록을 실행하세요}"
   test "$(git rev-parse HEAD)" = "${rhwp_review_sha:?}"
-  node scripts/rust-test-suite-manifest.mjs --check
+  node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
   git diff --check "${rhwp_review_base_sha:?}...${rhwp_review_sha:?}"
   git diff --check
   git status --short
@@ -627,9 +632,10 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    하는 예외나 새 내부 crate 경계는 별도 단계에서 근거와 기준선 변경을 함께 검토합니다.
 
    ```bash
-   node scripts/rust-unit-test-tiers.mjs --check
+   node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
    ```
 
+   위 명령은 [검증 worktree 준비](#rust-검증-worktree-준비와-실행)에서 고정한 base SHA를 사용합니다.
    CI는 PR base와 현재 source를 다시 비교하고, unit-tier inventory도 source에서 메모리로 재계산한다.
    커밋된 generated harness·manifest는 거부한다. Cargo generated block은 명시적 registry 동기화에서 marker
    블록만 바꾼 경우에만 허용한다. 새 integration source는 `tests/cases/`만 허용하며, source-side 테스트는 Git
