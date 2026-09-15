@@ -81,6 +81,7 @@ fn snap_base_left(edge: i32, pitch: i32) -> i32 {
 pub struct ParagraphBox {
     horizontal: Range<i32>,
     origin_is_derivable: bool,
+    column_width_remainder: i32,
 }
 
 impl ParagraphBox {
@@ -90,6 +91,7 @@ impl ParagraphBox {
         Self {
             horizontal,
             origin_is_derivable: true,
+            column_width_remainder: 0,
         }
     }
 
@@ -116,13 +118,14 @@ impl ParagraphBox {
         // in the column solver, distinct from the paragraph's optional character
         // grid. Snapping the post-margin edges would incorrectly turn
         // 850..37418 into 852..37416 (#1440).
-        let column_width_hwp = snap_base_right(
-            crate::renderer::px_to_hwpunit(column_width_px, dpi),
-            COLUMN_WIDTH_QUANTUM_HWP,
-        );
+        let source_width_hwp = crate::renderer::px_to_hwpunit(column_width_px, dpi);
+        let column_width_hwp = snap_base_right(source_width_hwp, COLUMN_WIDTH_QUANTUM_HWP);
         let margin_left_hwp = crate::renderer::px_to_hwpunit(margin_left_px, dpi);
         let margin_right_hwp = crate::renderer::px_to_hwpunit(margin_right_px, dpi);
-        Self::column(margin_left_hwp..column_width_hwp.saturating_sub(margin_right_hwp))
+        Self {
+            column_width_remainder: source_width_hwp - column_width_hwp,
+            ..Self::column(margin_left_hwp..column_width_hwp.saturating_sub(margin_right_hwp))
+        }
     }
 
     /// [`ParagraphBox::body`] for a paragraph whose resolved style is known.
@@ -189,6 +192,7 @@ impl ParagraphBox {
         Self {
             horizontal,
             origin_is_derivable: true,
+            column_width_remainder: 0,
         }
     }
 
@@ -253,7 +257,10 @@ impl ParagraphBox {
     /// deriving another horizontal range: two expressions for one quantity are
     /// what previously let the band and body disagree.
     pub(crate) fn frame_with(&self, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
-        LayoutFrame::new(self.effective(), top, exclusions)
+        LayoutFrame {
+            column_width_remainder: self.column_width_remainder,
+            ..LayoutFrame::new(self.effective(), top, exclusions)
+        }
     }
 
     /// [`ParagraphBox::frame_with`] for a flow that models no wrap geometry.
@@ -352,6 +359,9 @@ pub(crate) struct FrameExclusion {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LayoutFrame {
     pub(crate) horizontal: Range<i32>,
+    // Only body-column construction records this loss. Content boxes and fresh
+    // fills never acquire a tolerance from a stored row's own width.
+    column_width_remainder: i32,
     pub(crate) top: i32,
     pub(crate) exclusions: Vec<FrameExclusion>,
     pub(crate) current_intervals: Vec<Range<i32>>,
@@ -374,6 +384,7 @@ impl LayoutFrame {
             horizontal,
             top,
             exclusions,
+            column_width_remainder: 0,
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
@@ -586,7 +597,26 @@ impl LayoutFrame {
         metrics_for: impl Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
     ) -> bool {
         let checkpoint = self.clone();
-        let admitted = self.admit_stored_rows(line_segs, metrics_for).is_some();
+        let mut admitted = self.admit_stored_rows(line_segs, &metrics_for).is_some();
+        if !admitted
+            && checkpoint.column_width_remainder > 0
+            && !checkpoint.models_exclusions()
+            && line_segs
+                .iter()
+                .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        {
+            // Imported rows can describe the exact column before ÷4×4. Admit
+            // only an exact match against that independently derived box;
+            // real width changes still miss. The resolver restores its original
+            // quantized checkpoint before filling dirty or rejected rows.
+            self.restore_checkpoint(checkpoint.clone());
+            self.horizontal.end = self
+                .horizontal
+                .end
+                .saturating_add(self.column_width_remainder);
+            self.column_width_remainder = 0;
+            admitted = self.admit_stored_rows(line_segs, &metrics_for).is_some();
+        }
         if !admitted {
             self.restore_checkpoint(checkpoint);
         }
@@ -823,6 +853,7 @@ mod tests {
             horizontal,
             top,
             exclusions,
+            column_width_remainder: 0,
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: 1,
