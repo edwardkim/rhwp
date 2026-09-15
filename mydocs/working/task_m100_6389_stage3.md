@@ -42,3 +42,14 @@ Issue: [#6389](https://github.com/edwardkim/rhwp/issues/6389)
   기존 Open PR 없음, 최신 base와 merge-tree exit 0을 확인했다.
 - 결과를 사용자에게 먼저 보고했다. 이 회차 문서·입력 원장·최종 검증 로그를 함께 커밋한 뒤
   upstream 작업 branch로 push하고 PR을 생성한다. PR 번호는 생성 후 기록한다.
+
+## 원격 제출과 self-review 기록
+
+- 준비 결과 commit `60a3ad32e`를 upstream 작업 branch에 push하고
+  [PR #7179](https://github.com/edwardkim/rhwp/pull/7179)를 devel 대상 Open PR로 생성했다.
+- PR API 본문이 준비한 UTF-8 Markdown과 같음을 확인했다. 작성자 self PR이므로 reviewer를 지정하지 않았다.
+- 실제 번호로 [self-review](../pr/archives/pr_7179_review.md)와
+  [오늘할일](../orders/20260916.md)을 작성했다. 기존 WASM 대표 PNG 2개를 PR assets로 이동하고
+  2단계 링크를 갱신한다. 원본·기준 HWP/PDF는 이동·복제하지 않았다.
+- 이 후속 commit은 review·오늘할일·asset 이동·보고서 링크만 포함한다. GitHub CI는 최신 head에서
+  별도 확인해야 하며 merge·issue close는 수행하지 않는다.

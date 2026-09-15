@@ -77,9 +77,9 @@ Rust 집중 test는 생성 suite의 현재 배치를 원본 test 경로로 찾�
 | 86712, KoPub돋움체 → 함초롬바탕 | 한컴 2024 PDF p28 | 양쪽 pixel 86.51529%, ink 7.62931% | 최종 face 변경 확인. 위쪽 이전 행 조각·일부 줄 경계·표 하단 위치·글자 굵기가 다르므로 **PDF 시각 일치 보류** |
 
 - [편람 Native](assets/issue6389-stage2-20260916/manual-native-p068.png) /
-  [편람 WASM](assets/issue6389-stage2-20260916/manual-wasm-p068.png)
+  [편람 WASM](../pr/assets/pr_7179_manual_wasm_p068.png)
 - [86712 Native](assets/issue6389-stage2-20260916/reflow-native-p028.png) /
-  [86712 WASM](assets/issue6389-stage2-20260916/reflow-wasm-p028.png)
+  [86712 WASM](../pr/assets/pr_7179_reflow_wasm_p028.png)
 - 각 PNG와 같은 이름의 `*-provenance.json`/`*-summary.json`에 입력·PDF·binary·WASM·환경
   SHA256와 원본 명령 산출물의 수치를 보존했다. `flagged=0`은 자동 경고가 없다는 뜻이며 시각 통과 판정이 아니다.
 - 86712는 Native/WASM render tree **65/65쪽 JSON 일치**. 편람은 **313/384쪽 JSON 일치**이며,
