@@ -3,9 +3,10 @@ import { HyperlinkDialog, confirmHyperlinkEdit } from '@/ui/hyperlink-dialog';
 import { hyperlinkRange, selectedHyperlink, applyHyperlinkFormat } from '@/core/hyperlink';
 import { showToast } from '@/ui/toast';
 
+import { t } from '../../i18n/index.ts';
 export const hyperlinkCommand: CommandDef = {
   id: 'insert:hyperlink',
-  label: '하이퍼링크',
+  label: t('command.insert.hyperlink.label'),
   icon: 'icon-hyperlink',
   shortcutLabel: 'Ctrl+K+H',
   opensDialog: true,
@@ -96,10 +97,10 @@ export const hyperlinkCommand: CommandDef = {
 };
 
 export const editHyperlinkCommand: CommandDef = {
-  ...hyperlinkCommand, id: 'hyperlink:edit', label: '하이퍼링크 고치기', shortcutLabel: undefined,
+  ...hyperlinkCommand, id: 'hyperlink:edit', label: t('command.hyperlink.edit.registryLabel'), shortcutLabel: undefined,
   execute: services => hyperlinkCommand.execute(services, { action: 'edit' }),
 };
 export const removeHyperlinkCommand: CommandDef = {
-  ...hyperlinkCommand, id: 'hyperlink:remove', label: '하이퍼링크 지우기', shortcutLabel: undefined, opensDialog: false,
+  ...hyperlinkCommand, id: 'hyperlink:remove', label: t('command.hyperlink.remove.registryLabel'), shortcutLabel: undefined, opensDialog: false,
   execute: services => hyperlinkCommand.execute(services, { action: 'remove' }),
 };

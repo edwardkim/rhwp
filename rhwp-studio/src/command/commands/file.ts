@@ -66,6 +66,7 @@ import { showToast } from '@/ui/toast';
 import { addRecentDoc, clearRecentDocs, listRecentDocs, removeRecentDoc } from '@/recent/recent-store';
 import { openRecentEntry } from '@/recent/recent-open';
 
+import { t } from '../../i18n/index.ts';
 /**
  * 파일 열기 대화상자(File System Access picker, 미지원 시 숨김 input 폴백)를 열어
  * 문서를 로드한다. `file:open` 커맨드와 "최근 문서" 메타-only 항목 재열기가 공유한다.
@@ -162,7 +163,7 @@ function createSavePayload(
 function showExportContentLoss(report: ContentLossReport): void {
   const message = buildContentLossNotice(report);
   if (!message) return;
-  showToast({ message, durationMs: 0, confirmLabel: '확인' });
+  showToast({ message, durationMs: 0, confirmLabel: t('command.file.showExportContentLoss.message') });
 }
 
 function requirePasswordSaveFormat(format: SaveFormat): Exclude<SaveFormat, 'hml'> {
@@ -239,7 +240,7 @@ function exportHtmlBasedFile(services: CommandServices, format: HtmlExportFormat
     downloadBlob(new Blob([file.content], { type: file.mimeType }), file.fileName);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    alert(`${label} 내보내기에 실패했습니다:\n${message}`);
+    alert(t('command.file.exportHtmlBasedFile.message', { p1: label, p2: message }));
   }
 }
 
@@ -370,7 +371,7 @@ async function saveAsFormat(services: CommandServices, format: SaveFormat): Prom
 function reportSaveError(scope: string, error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`[${scope}] 저장 실패:`, message);
-  alert(`파일 저장에 실패했습니다:\n${message}`);
+  alert(t('command.file.reportSaveError.message', { p1: message }));
 }
 
 export type SaveCurrentDocumentResult = 'saved' | 'cancelled' | 'failed' | 'unsupported';
@@ -507,7 +508,7 @@ function setupPrintDocument(
   viewport.content = 'width=device-width, initial-scale=1.0';
   doc.head.append(meta, viewport);
   doc.title = previewWindow
-    ? `${fileName} — 인쇄 미리보기`
+    ? t('command.file.doc.tooltip', { p1: fileName })
     : pdfPrintTitle(fileName);
   appendPrintStyle(doc, printPages);
 
@@ -530,24 +531,24 @@ function appendPrintPreviewBar(
   const bar = doc.createElement('div');
   bar.className = 'print-preview-bar';
   bar.setAttribute('role', 'toolbar');
-  bar.setAttribute('aria-label', '인쇄 미리보기 도구');
+  bar.setAttribute('aria-label', t('command.file.appendPrintPreviewBar.label'));
 
   const printButton = doc.createElement('button');
   printButton.id = 'print-btn';
   printButton.type = 'button';
   printButton.className = 'print-preview-primary';
-  printButton.textContent = '인쇄';
+  printButton.textContent = t('command.file.printButton.text');
   printButton.addEventListener('click', () => printWindow.print());
 
   const closeButton = doc.createElement('button');
   closeButton.id = 'close-btn';
   closeButton.type = 'button';
-  closeButton.textContent = '닫기';
+  closeButton.textContent = t('command.file.closeButton.text');
   closeButton.addEventListener('click', () => printWindow.close());
 
   const title = doc.createElement('span');
   title.className = 'print-preview-title';
-  title.textContent = `${fileName} — ${pageCount}쪽`;
+  title.textContent = t('command.file.title.text', { p1: fileName, p2: pageCount });
 
   bar.append(printButton, closeButton, title);
   doc.body.appendChild(bar);
@@ -597,7 +598,7 @@ let printJobActive = false;
 
 function beginPrintJob(): boolean {
   if (printJobActive) {
-    showToast({ message: '인쇄 문서를 준비하고 있습니다.', durationMs: 2500 });
+    showToast({ message: t('command.file.beginPrintJob.message'), durationMs: 2500 });
     return false;
   }
   printJobActive = true;
@@ -666,11 +667,11 @@ async function runPdfPrint(services: CommandServices): Promise<void> {
     restoreStatus = false;
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[file:print-to-pdf]', msg);
-    if (statusEl) statusEl.textContent = `PDF 준비 실패: ${msg}`;
+    if (statusEl) statusEl.textContent = t('command.file.statusEl.text', { p1: msg });
     if (dialogVisible && dialog) {
       dialog.showError(msg);
     } else {
-      showToast({ message: `PDF 준비에 실패했습니다: ${msg}`, durationMs: 5000 });
+      showToast({ message: t('command.file.runPdfPrint.message', { p1: msg }), durationMs: 5000 });
     }
   } finally {
     if (originalDocumentTitle !== null) {
@@ -725,11 +726,11 @@ async function runPrintPreview(services: CommandServices): Promise<void> {
     restoreStatus = false;
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[file:print]', msg);
-    if (statusEl) statusEl.textContent = `인쇄 미리보기 실패: ${msg}`;
+    if (statusEl) statusEl.textContent = t('command.file.statusEl.text.x2f5125', { p1: msg });
     if (err instanceof PrintPreviewBlockedError) {
-      alert('인쇄 미리보기 팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.');
+      alert(t('command.file.runPrintPreview.message'));
     } else {
-      showToast({ message: `인쇄 미리보기에 실패했습니다: ${msg}`, durationMs: 5000 });
+      showToast({ message: t('command.file.runPrintPreview.message.xc4753b', { p1: msg }), durationMs: 5000 });
     }
   } finally {
     if (!keepPreviewOpen) surface?.close();
@@ -741,7 +742,7 @@ async function runPrintPreview(services: CommandServices): Promise<void> {
 export const fileCommands: CommandDef[] = [
   {
     id: 'file:new-doc',
-    label: '새로 만들기',
+    label: t('command.file.newDoc.label'),
     icon: 'icon-new-doc',
     shortcutLabel: 'Alt+N',
     canExecute: () => true,
@@ -751,7 +752,7 @@ export const fileCommands: CommandDef[] = [
   },
   {
     id: 'file:open',
-    label: '열기',
+    label: t('command.file.open.label'),
     execute: openFileViaPicker,
   },
   {
@@ -760,14 +761,14 @@ export const fileCommands: CommandDef[] = [
     // 파일 이동/삭제(getFile 실패)는 항목 제거 + 안내. 결과 규칙은
     // recent-open.ts(openRecentEntry) — 테스트 가능한 순수 로직으로 분리.
     id: 'file:open-recent',
-    label: '최근 문서 열기',
+    label: t('command.file.openRecent.registryLabel'),
     async execute(services, params) {
       const id = typeof params?.id === 'string' ? params.id : undefined;
       if (!id) return;
       const recents = await listRecentDocs();
       const entry = recents.find((r) => r.id === id);
       if (!entry) {
-        showToast({ message: '최근 문서 정보를 찾을 수 없습니다.', durationMs: 2500 });
+        showToast({ message: t('command.file.execute.message'), durationMs: 2500 });
         return;
       }
 
@@ -785,16 +786,16 @@ export const fileCommands: CommandDef[] = [
   {
     // 최근 문서 목록 전체 삭제.
     id: 'file:clear-recent',
-    label: '최근 문서 목록 지우기',
+    label: t('command.file.clearRecent.registryLabel'),
     async execute() {
-      if (!confirm('최근 문서 목록을 모두 지우시겠습니까?')) return;
+      if (!confirm(t('command.file.execute.message.xb74439'))) return;
       await clearRecentDocs();
-      showToast({ message: '최근 문서 목록을 지웠습니다.', durationMs: 2200 });
+      showToast({ message: t('command.file.execute.message.x93673a'), durationMs: 2200 });
     },
   },
   {
     id: 'file:save',
-    label: '저장',
+    label: t('command.file.save.label'),
     icon: 'icon-save',
     shortcutLabel: 'Ctrl+S',
     canExecute: (ctx) => ctx.hasDocument,
@@ -806,7 +807,7 @@ export const fileCommands: CommandDef[] = [
     // [Task #833] 다른 이름으로 저장 — currentFileHandle 무시 + 항상 picker.
     // 출처 포맷 유지(HWPX→HWPX, HWP→HWP).
     id: 'file:save-as',
-    label: '다른 이름으로 저장',
+    label: t('command.file.saveAs.registryLabel'),
     shortcutLabel: 'Ctrl+Shift+S',
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
@@ -817,7 +818,7 @@ export const fileCommands: CommandDef[] = [
   {
     // [#1613] HWP 형식으로 저장 — 출처 무관 HWP 출력.
     id: 'file:save-as-hwp',
-    label: 'HWP 형식으로 저장',
+    label: t('command.file.saveAsHwp.registryLabel'),
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
       await saveAsFormat(services, 'hwp');
@@ -826,7 +827,7 @@ export const fileCommands: CommandDef[] = [
   {
     // [#1613] HWPX 형식으로 저장 — 출처 무관 HWPX 출력.
     id: 'file:save-as-hwpx',
-    label: 'HWPX 형식으로 저장',
+    label: t('command.file.saveAsHwpx.registryLabel'),
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
       await saveAsFormat(services, 'hwpx');
@@ -835,7 +836,7 @@ export const fileCommands: CommandDef[] = [
   {
     id: 'file:page-setup',
     opensDialog: true,
-    label: '편집 용지',
+    label: t('command.file.pageSetup.label'),
     icon: 'icon-page-setup',
     shortcutLabel: 'F7',
     canExecute: (ctx) => ctx.hasDocument,
@@ -846,7 +847,7 @@ export const fileCommands: CommandDef[] = [
   },
   {
     id: 'file:print-to-pdf',
-    label: 'PDF로 저장…',
+    label: t('command.file.printToPdf.label'),
     canExecute: (ctx) => ctx.hasDocument,
     async execute(services) {
       await runPdfPrint(services);
@@ -855,7 +856,7 @@ export const fileCommands: CommandDef[] = [
   {
     // 문서 전체를 selection HTML 조립 기반의 단일 HTML 파일로 내보낸다.
     id: 'file:export-html',
-    label: 'HTML로 내보내기',
+    label: t('command.file.exportHtml.label'),
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       exportHtmlBasedFile(services, 'html');
@@ -864,7 +865,7 @@ export const fileCommands: CommandDef[] = [
   {
     // Word 가 여는 HTML 기반 .doc 문서로 내보낸다 (OOXML 아님).
     id: 'file:export-doc',
-    label: 'Word 문서(.doc)로 내보내기',
+    label: t('command.file.exportDoc.label'),
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       exportHtmlBasedFile(services, 'doc');
@@ -872,7 +873,7 @@ export const fileCommands: CommandDef[] = [
   },
   {
     id: 'file:print',
-    label: '인쇄',
+    label: t('command.file.print.label'),
     icon: 'icon-print',
     shortcutLabel: 'Ctrl+P',
     canExecute: (ctx) => ctx.hasDocument,
@@ -883,7 +884,7 @@ export const fileCommands: CommandDef[] = [
   {
     id: 'file:about',
     opensDialog: true,
-    label: '제품 정보',
+    label: t('command.file.about.label'),
     icon: 'icon-help',
     execute() {
       new AboutDialog().show();

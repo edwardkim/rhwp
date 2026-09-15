@@ -9,6 +9,7 @@ import { syncMenuShortcutLabels } from '../src/ui/menu-shortcut-labels.ts';
 import type { CommandDef } from '../src/command/types.ts';
 import type { PlatformKind } from '../src/engine/navigation-keymap.ts';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 type TestGlobal = typeof globalThis & {
   __rhwpTestPlatformKind?: PlatformKind;
   document?: unknown;
@@ -195,14 +196,14 @@ test('표 줄/칸 추가·지우기 대표 메뉴에 한컴 단축키를 표시�
 
   assertCommandShortcut(table, 'table:insert-row-col', 'Alt+Enter');
   assertCommandShortcut(table, 'table:delete-row-col', 'Alt+Delete');
-  assert.match(table, /id: 'table:insert-row-col'[\s\S]*?label: '줄\/칸 추가하기\(I\)\.\.\.'/);
-  assert.match(table, /id: 'table:delete-row-col'[\s\S]*?label: '줄\/칸 지우기\(E\)\.\.\.'/);
+  assertShowsText(table, '줄/칸 추가하기(I)...');
+  assertShowsText(table, '줄/칸 지우기(E)...');
   assert.match(html, /data-cmd="table:insert-row-col"[\s\S]*?<span class="md-label"[^>]*>줄\/칸 추가하기\(I\)\.\.\.<\/span>[\s\S]*?<span class="md-shortcut">Alt\+Enter<\/span>/);
   assert.match(html, /data-cmd="table:delete-row-col"[\s\S]*?<span class="md-label"[^>]*>줄\/칸 지우기\(E\)\.\.\.<\/span>[\s\S]*?<span class="md-shortcut">Alt\+Delete<\/span>/);
   assert.match(inputHandler, /commandId: 'table:insert-row-col'/);
   assert.match(inputHandler, /commandId: 'table:delete-row-col'/);
-  assert.match(table, /id: 'table:transpose-copy'[\s\S]*?label: '행\/열 바꿈 복사'/);
-  assert.match(table, /id: 'table:transpose-paste'[\s\S]*?label: '행\/열 바꿈 붙여넣기'/);
+  assertShowsText(table, '행/열 바꿈 복사');
+  assertShowsText(table, '행/열 바꿈 붙여넣기');
   assert.doesNotMatch(table, /id: 'table:transpose-copy'[\s\S]*?ih\.exitCellSelectionMode\(\)/);
   assert.match(table, /id: 'table:transpose-paste'[\s\S]*?isInCellSelectionMode/);
   assert.match(table, /id: 'table:transpose-paste'[\s\S]*?transposeTableCellsInPlace/);
