@@ -65,3 +65,18 @@ test suite manifest 및 unit-tier 검사가 통과했다. 전체 회귀는 사�
 최종 fresh WASM 빌드와 visual sweep도 완료했다. 머리글·표 4경우·#6122 p6, 총 6페이지의
 Native/WASM raster는 바이트 동일하다. 대표 증적은 통합 code CI 후 같은 PR의 review trailing
 commit에 포함하며, 입력 HWP/HWPX/PDF와 이 결과보고는 보정 코드와 함께 커밋한다.
+
+## PR #7171 CI 정책 보정
+
+첫 code candidate `95d631f0a`의 CI lint job은 Clippy 전에 source-side test 총량 검사에서
+실패했다. 로컬의 `rust-unit-test-tiers.mjs --check`만으로는 PR base와의 증가를 검사하지
+못했고, CI의 `--base-ref` 비교에서 4206 > 4205 및 fill_cursor_tests 3 > 2가 검출됐다.
+
+인라인 개체가 동반된 공백 반례를 기존 공백·탭·개행 cursor 테스트에서 호출하도록 묶었다.
+assertion이나 입력은 삭제하지 않고 동일하게 실행하며 source-side 총량은 4205로 유지한다.
+기준선·정책을 완화하지 않았다. 이후 사전 검사에는
+`node scripts/rust-unit-test-tiers.mjs --check --base-ref upstream/devel`을 사용한다.
+생산 코드 변경이 없는 cfg(test) 내부 구성 보정이므로 기존 Native/WASM 시각 결과를 유지한다.
+
+보정 후 base 비교 4205 tests, 기존 cursor 테스트 2개(모든 반례 포함), fmt check,
+Native/WASM/workspace all-target Clippy, workspace build와 suite manifest 검사를 모두 통과했다.

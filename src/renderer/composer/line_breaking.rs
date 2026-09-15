@@ -4442,8 +4442,7 @@ mod fill_cursor_tests {
         frozen
     }
 
-    #[test]
-    fn overflowing_object_space_moves_with_its_visible_object() {
+    fn assert_overflowing_object_space_moves_with_its_visible_object() {
         let chars = ['a', ' ', 'b'];
         let text = |start_idx, end_idx| BreakToken::Text {
             start_idx,
@@ -4516,6 +4515,9 @@ mod fill_cursor_tests {
 
     #[test]
     fn cursor_preserves_scalar_space_tab_and_forced_break_results() {
+        // Exercise both ownership cases in the existing space-boundary contract:
+        // an overflowing blank can hang, but a visible inline object cannot.
+        assert_overflowing_object_space_moves_with_its_visible_object();
         let text_chars = "ab c\td\nxy".chars().collect::<Vec<_>>();
         let tokens = vec![
             BreakToken::Text {
