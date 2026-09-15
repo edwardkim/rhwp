@@ -10,6 +10,11 @@
 //! 저장 줄 수를 그대로 따랐고 모든 저장 줄폭이 셀 열폭 이내면 억제하지 않고
 //! 압축해 칸 안에 맞춘다. 열폭보다 넓게 기록된 사다리([sw>w] 낡은 캐시)는
 //! 증언이 성립하지 않아 종전대로 클리핑된다.
+//!
+//! 현행 face 폭은 #6484에서 임베드 CIDFont 실측 0.872em으로 수정되었다.
+//! 위 ≈0.83em은 장평·자간 적용 후 유효 폭이다. p68 KoPub 설치 환경 PDF의
+//! 줄 경계도 함께 검증해, 셀 안에 들어오더라도 재조판으로 +1줄이 생기거나
+//! 글자가 누락되는 경우를 잡는다. 대체 폰트 환경의 재조판을 검증하는 테스트는 아니다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -43,6 +48,76 @@ fn issue_6389_manual_p68_stored_ladder_cell_stays_inside_cell() {
         overflow.len(),
         overflow
     );
+
+    // 독립 기대값: pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf p68.
+    // pdftotext -bbox-layout 추출과 Visual Sweep 직접 비교로 확인한 대상 셀 16줄.
+    // PDF 단어 추출이 삽입하는 공백만 제외하고 글자·구두점·줄 경계를 모두 보존한다.
+    // 특히 세 번째(※) 문단은 종전 메트릭에서 4줄이 되었던 재조판 사례다.
+    let expected = [
+        "○ 모든 기록물은 전자적 관리를 원칙으로 하며, 전자적 형태로 생산되지 아니한 기록물도 전자적",
+        "으로 관리되도록 노력하여야 함(공공기록물법 제6조)",
+        "○ (첨부문서 분리 등록 방법) 기록물의 본문과 첨부물의 규격의 차이가 심하거나 서로 다른 기록",
+        "매체로 구성된 기록물은 전자기록생산시스템의‘분리등록’기능을 이용하여 첨부물(붙임물) 등록·",
+        "관리",
+        "※ 분리등록한 첨부물의 경우 「공공기록물법 시행규칙」[별표 1]의 서식에 따라 등록번호를 표기",
+        "하고, ‘등록번호’에는 본문의 생산(접수)등록번호에 ‘-분리연번’을 추가하여 기재(‘분리연번’은",
+        "문서등록대장 해당 기록물 건의 ‘분리등록현황’에서 확인 가능)",
+        "<예시> 해당 기록물 건의 등록번호 : 행정지원과-925",
+        "분리등록 첨부물의 등록번호 : 행정지원과-925-1",
+        "○ (붙임 파일의 압축 조건부 허용) 윈도우에 내장된 공개 압축 SW 이용 가능(반디집 7-zip 등),",
+        "단 특정 압축 포맷(.egg, .alz)은 타기관에서 열람시 제약이 발생할 수 있어 사용금지",
+        "○ (비전자기록물 관리) 전자문서에 분리등록한 비전자 첨부물(붙임물)이 있는 경우 「공공기록물법",
+        "시행규칙」 [별표 1]의 서식에 따라 등록번호를 표기하고, 관련 문서의 문서관리카드 문서",
+        "정보 또는 문서를 출력(업무관리시스템), 기록물등록대장의 해당 문서(전자문서시스템)를",
+        "출력하여 분리등록한 첨부물과 함께 보관 [출력한 문서는 원본대조필을 날인]",
+    ];
+    let target = find_target_cell(&page.root).expect("대상 셀");
+    let mut lines = Vec::new();
+    collect_lines(target, &mut lines);
+    assert_eq!(
+        lines.iter().map(|s| without_space(s)).collect::<Vec<_>>(),
+        expected
+            .iter()
+            .map(|s| without_space(s))
+            .collect::<Vec<_>>(),
+        "셀 내부 표시뿐 아니라 한컴 PDF의 줄 수·줄 경계·전체 텍스트를 유지해야 한다"
+    );
+}
+
+fn find_target_cell(node: &RenderNode) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::TableCell(_))
+        && subtree_contains(node, CELL_MARKER)
+    {
+        return Some(node);
+    }
+    node.children.iter().find_map(find_target_cell)
+}
+
+fn collect_lines(node: &RenderNode, lines: &mut Vec<String>) {
+    if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+        let mut text = String::new();
+        collect_text(node, &mut text);
+        if !text.trim().is_empty() {
+            lines.push(text);
+        }
+        return;
+    }
+    for child in &node.children {
+        collect_lines(child, lines);
+    }
+}
+
+fn collect_text(node: &RenderNode, text: &mut String) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        text.push_str(&run.text);
+    }
+    for child in &node.children {
+        collect_text(child, text);
+    }
+}
+
+fn without_space(text: &str) -> String {
+    text.chars().filter(|c| !c.is_whitespace()).collect()
 }
 
 /// 대상 셀(marker 텍스트를 담은 셀) 안 TextRun 중 칸 우변을 넘는 것을 모은다.

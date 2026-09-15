@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 91.4395,
+    "worst_pixel_match_percent": 91.4395,
+    "average_ink_match_percent": 79.25197,
+    "worst_ink_match_percent": 79.25197,
+    "average_visual_accuracy_proxy_percent": 79.25197,
+    "worst_visual_accuracy_proxy_percent": 79.25197,
+    "worst_pages": [
+      68
+    ]
+  },
+  "pages": [
+    {
+      "page": 68,
+      "rhwp_png": "/private/tmp/issue6389-sweep/issue6389/rhwp_png/rhwp_068.png",
+      "pdf_png": "/private/tmp/issue6389-sweep/issue6389/pdf_png/pdf-068.png",
+      "overlay_png": "/private/tmp/issue6389-sweep/issue6389/overlay/overlay_068.png",
+      "width": 742,
+      "height": 1006,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 746452,
+      "diff_pixels": 63900,
+      "diff_ratio": 0.08560497,
+      "pixel_match_percent": 91.4395,
+      "ink_union_pixels": 307981,
+      "ink_diff_pixels": 63900,
+      "ink_diff_ratio": 0.20748033,
+      "ink_match_percent": 79.25197,
+      "visual_accuracy_proxy_percent": 79.25197,
+      "mean_abs_channel_delta": 13.218,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        0,
+        79,
+        739,
+        929
+      ]
+    }
+  ]
+}

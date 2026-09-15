@@ -1,0 +1,21 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp-issue6389-review-20260916)
+    Finished `release-test` profile [optimized] target(s) in 1m 48s
+     Running tests/generated/regression_suite_005.rs (/Users/tsjang/rhwp/target/issue6389-20260916/release-test/deps/regression_suite_005-f1e3b3f04373a341)
+
+running 1 test
+
+thread 'issue_6389_cell_stored_ladder_compresses_to_fit::issue_6389_manual_p68_stored_ladder_cell_stays_inside_cell' (182687203) panicked at tests/generated/../cases/issue_6389_cell_stored_ladder_compresses_to_fit.rs:77:5:
+assertion `left == right` failed: 셀 내부 표시뿐 아니라 한컴 PDF의 줄 수·줄 경계·전체 텍스트를 유지해야 한다
+  left: ["○모든기록물은전자적관리를원칙으로하며,전자적형태로생산되지아니한기록물도전자적", "으로관리되도록노력하여야함(공공기록물법제6조)", "○(첨부문서분리등록방법)기록물의본문과첨부물의규격의차이가심하거나서로다른기록", "매체로구성된기록물은전자기록생산시스템의‘분리등록’기능을이용하여첨부물(붙임물)등록·", "관리", "※분리등록한첨부물의경우「공공기록물법시행규칙」[별표1]의서식에따라등록", "번호를표기하고,‘등록번호’에는본문의생산(접수)등록번호에‘-분리연번’을추", "가하여기재(‘분리연번’은문서등록대장해당기록물건의‘분리등록현황’에서확", "인가능)", "<예시>해당기록물건의등록번호:행정지원과-925", "분리등록첨부물의등록번호:행정지원과-925-1", "○(붙임파일의압축조건부허용)윈도우에내장된공개압축SW이용가능(반디집7-zip등),", "단특정압축포맷(.egg,.alz)은타기관에서열람시제약이발생할수있어사용금지", "○(비전자기록물관리)전자문서에분리등록한비전자첨부물(붙임물)이있는경우「공공기록물법", "시행규칙」[별표1]의서식에따라등록번호를표기하고,관련문서의문서관리카드문서", "정보또는문서를출력(업무관리시스템),기록물등록대장의해당문서(전자문서시스템)를", "출력하여분리등록한첨부물과함께보관[출력한문서는원본대조필을날인]"]
+ right: ["○모든기록물은전자적관리를원칙으로하며,전자적형태로생산되지아니한기록물도전자적", "으로관리되도록노력하여야함(공공기록물법제6조)", "○(첨부문서분리등록방법)기록물의본문과첨부물의규격의차이가심하거나서로다른기록", "매체로구성된기록물은전자기록생산시스템의‘분리등록’기능을이용하여첨부물(붙임물)등록·", "관리", "※분리등록한첨부물의경우「공공기록물법시행규칙」[별표1]의서식에따라등록번호를표기", "하고,‘등록번호’에는본문의생산(접수)등록번호에‘-분리연번’을추가하여기재(‘분리연번’은", "문서등록대장해당기록물건의‘분리등록현황’에서확인가능)", "<예시>해당기록물건의등록번호:행정지원과-925", "분리등록첨부물의등록번호:행정지원과-925-1", "○(붙임파일의압축조건부허용)윈도우에내장된공개압축SW이용가능(반디집7-zip등),", "단특정압축포맷(.egg,.alz)은타기관에서열람시제약이발생할수있어사용금지", "○(비전자기록물관리)전자문서에분리등록한비전자첨부물(붙임물)이있는경우「공공기록물법", "시행규칙」[별표1]의서식에따라등록번호를표기하고,관련문서의문서관리카드문서", "정보또는문서를출력(업무관리시스템),기록물등록대장의해당문서(전자문서시스템)를", "출력하여분리등록한첨부물과함께보관[출력한문서는원본대조필을날인]"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test issue_6389_cell_stored_ladder_compresses_to_fit::issue_6389_manual_p68_stored_ladder_cell_stays_inside_cell ... FAILED
+
+failures:
+
+failures:
+    issue_6389_cell_stored_ladder_compresses_to_fit::issue_6389_manual_p68_stored_ladder_cell_stays_inside_cell
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 218 filtered out; finished in 0.34s
+
+error: test failed, to rerun pass `-p rhwp --test regression_suite_005`
