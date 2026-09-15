@@ -811,7 +811,7 @@ const catalog = {
   "dialog.paraShape.cancelBtn.text": "Cancel",
   "dialog.paraShape.createFieldset.label": "Alignment",
   "dialog.paraShape.createFieldset.label.x0ad57d": "Spacing",
-  "dialog.paraShape.createFieldset.label.x47b371": "Line break basis",
+  "dialog.paraShape.createFieldset.label.x47b371": "Line breaking rules",
   "dialog.paraShape.createFieldset.label.x89510d": "First line",
   "dialog.paraShape.createFieldset.label.xcd8cef": "Margins",
   "dialog.paraShape.etcTitle.text": "Other",
