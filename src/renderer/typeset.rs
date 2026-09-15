@@ -473,10 +473,42 @@ fn empty_paragraph_fallback_line_metrics(
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
     hwp3_legacy_caps: bool,
 ) -> Option<(f64, f64)> {
+    // 글앞으로/글뒤로/어울림(비자리차지) 앵커 도형·그림만
+    // 가진 빈 문단은 한글이 텍스트 관점의 빈 문단과 동일하게 완전한 em 줄박스를
+    // 부여한다 (사용안내 실측: Square 그림 앵커 빈 문단 pi1/pi6 이 0~5.3px 로 붕괴
+    // → 한글은 27.7px(base 1300 × 160%) 부여 — PrvImage 줄 좌표 대조). 자리차지
+    // (TopAndBottom)는 흐름 소비 계약이 별도라 제외를 유지한다.
+    let controls_flow_neutral = para.controls.iter().all(|c| {
+        let common = match c {
+            Control::Picture(p) => &p.common,
+            Control::Shape(s) => s.common(),
+            _ => return false,
+        };
+        !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                crate::model::shape::TextWrap::InFrontOfText
+                    | crate::model::shape::TextWrap::BehindText
+                    | crate::model::shape::TextWrap::Square
+            )
+    });
+    // char_count == 0 배제는 순수 빈 문단(컨트롤 없음)에만 유지한다 — 글앞/글뒤
+    // 도형·그림 앵커 문단은 char_count 0 으로 저장되는 경우가 있고(사용안내 pi1/pi6
+    // 실측 0px 붕괴), 한글은 이들에도 완전한 em 줄박스를 부여한다.
+    if std::env::var("RHWP_DIAG_EMPTYP").is_ok() && !para.controls.is_empty() {
+        eprintln!(
+            "DIAG_EMPTYP text={:?} ctrls={} neutral={} segs={} cc={}",
+            para.text.chars().take(6).collect::<String>(),
+            para.controls.len(),
+            controls_flow_neutral,
+            para.line_segs.len(),
+            para.char_count,
+        );
+    }
     if !para.text.trim().is_empty()
-        || !para.controls.is_empty()
+        || !(para.controls.is_empty() || controls_flow_neutral)
         || !para.line_segs.is_empty()
-        || para.char_count == 0
+        || (para.char_count == 0 && para.controls.is_empty())
     {
         return None;
     }
@@ -1188,6 +1220,23 @@ struct TypesetState {
     /// [Task #1753] 지연 이월되는 visible-host 자리차지 표 직전에 현재 쪽 잔여 공간으로
     /// 선행 배치(prefill)된 후속 문단들 — 메인 루프에서 스킵.
     prefilled_paras: std::collections::HashSet<usize>,
+    /// 현재 쪽에서 쪽 머리 승격(배너 문단의 쪽 되감기)이 이미 일어났는가 —
+    /// 쪽당 1회(같은 쪽의 두 번째 배너 문단은 흐름에 자연 배치되어 배너가
+    /// 같은 자리에 겹쳐 그려진다).
+    page_banner_header_promoted: bool,
+    /// 쪽 머리 승격으로 뒤 순서로 밀린 잔여의 첫 문단 — 이 문단은 앞 단
+    /// 자투리에 흡수되지 않고 항상 새 단에서 시작한다.
+    banner_remainder_column_break: Option<usize>,
+    /// 잔여 단의 시작 높이 예약 — 배너가 본문 상단을 침범한 깊이(px). 잔여
+    /// 단 콘텐츠는 배너 아래에서 시작한다.
+    banner_remainder_top_reserve: f64,
+    /// 승격이 일어난 쪽의 잔여 뒤에 이어지는 다음 배너 문단 — 시각적으로
+    /// 보이지 않는 문단이므로(배너는 승격 배너와 같은 자리에 겹치고 타이틀은
+    /// 배너용 흰 글씨), 미세한 바닥 초과 시 다음 쪽으로 밀지 않고 이 쪽 끝에
+    /// 흡수한다.
+    banner_tail_absorb_para: Option<usize>,
+    /// 현재 진행 중인 단의 배너 상단 예약(px) — flush 시 ColumnContent 로 전달.
+    current_banner_top_reserve: f64,
     /// [Task #1755] 이월 전 쪽에 host 텍스트 줄을 PartialParagraph 로 pre-emit 한 문단 —
     /// layout 의 마지막 fragment 뒤 host 렌더 억제 신호(PaginationResult 로 전달).
     pre_emitted_host_paras: std::collections::HashSet<usize>,
@@ -1244,6 +1293,12 @@ struct TypesetState {
     endnote_separator_below_hu: i32,
     /// [Task #362] Square wrap 표의 column_start (HU). -1 = 비활성. 후속 같은 cs/sw paragraph 흡수용.
     wrap_around_cs: i32,
+    /// NO_LS 문서용 합성 어울림 배제 사각형들.
+    /// (x0, x1, flow_top, flow_bottom) — x 는 페이지 px, y 는 단 공통 flow 좌표(px).
+    /// Square 그림은 앵커 단 밖(다른 단 위)에 놓일 수 있으므로 페이지 공간으로 기억해
+    /// 두고, 각 문단 배치 시 현재 단과의 교차로 텍스트 존(cs/sw)을 산출한다.
+    /// 쪽이 바뀌면 비운다.
+    wrap_synth_rects: Vec<(f64, f64, f64, f64)>,
     /// [Task #362] Square wrap 표의 segment_width (HU). -1 = 비활성.
     wrap_around_sw: i32,
     /// [Task #362] Square wrap 표가 있는 paragraph 인덱스 (WrapAroundPara 에 기록).
@@ -1768,6 +1823,28 @@ fn para_is_columndef_only_separator(para: &Paragraph) -> bool {
             .all(|c| matches!(c, Control::ColumnDef(_)))
 }
 
+/// 쪽 상단 전폭 배너(BehindText·Paper 앵커·본문 시작 위 y·용지폭 85% 이상 그림)를
+/// 가진 "쪽 머리" 문단. 한글은 이 문단을 쪽 첫 단 상단에 앉히고, 같은 쪽으로
+/// 이월된 앞선 잔여 콘텐츠를 마지막 단으로 돌린다.
+fn para_is_page_banner_header(para: &Paragraph, page_def: &PageDef) -> bool {
+    para_has_visible_text(para)
+        && para.controls.iter().any(|ctrl| {
+            matches!(ctrl, Control::Picture(pic)
+                if !pic.common.treat_as_char
+                    && matches!(
+                        pic.common.text_wrap,
+                        crate::model::shape::TextWrap::BehindText
+                    )
+                    && matches!(
+                        pic.common.vert_rel_to,
+                        crate::model::shape::VertRelTo::Paper
+                    )
+                    && signed_hwpunit(pic.common.vertical_offset)
+                        < page_def.margin_top.saturating_add(page_def.margin_header) as i32
+                    && (pic.common.width as u64) * 100 >= (page_def.width as u64) * 85)
+        })
+}
+
 fn para_is_paper_page_square_empty_table_anchor(para: &Paragraph) -> bool {
     !para_has_visible_text(para)
         && para.controls.iter().any(|ctrl| {
@@ -1946,6 +2023,40 @@ fn square_float_left_lane_width(para: &Paragraph, col_w_hu: i32) -> Option<i32> 
     (lane > 0 && lane < col_w_hu && right_edge >= col_w_hu - 200).then_some(lane)
 }
 
+/// NO_LS 문단의 Square 그림들을 페이지 공간 배제
+/// 사각형으로 수집한다. 반환 튜플 = (x0, x1, flow_top, flow_bottom) — x 는 페이지 px,
+/// y 는 단 공통 flow 좌표(px, 문단 상단 = flow_y 기준). Square 그림은 가로 오프셋으로
+/// 앵커 단 밖(다른 단 위)에 놓일 수 있으므로 단이 아니라 페이지 공간으로 기억한다.
+fn synth_square_wrap_rects(
+    para: &Paragraph,
+    anchor_col_x: f64,
+    flow_y: f64,
+    dpi: f64,
+) -> Vec<(f64, f64, f64, f64)> {
+    para.controls
+        .iter()
+        .filter_map(non_tac_square_picture_common)
+        .filter_map(|cm| {
+            let w = crate::renderer::hwpunit_to_px(cm.width as i32, dpi);
+            let h = crate::renderer::hwpunit_to_px(cm.height as i32, dpi);
+            if w < 8.0 || h < 8.0 {
+                return None;
+            }
+            let ml = crate::renderer::hwpunit_to_px(cm.margin.left as i32, dpi);
+            let mr = crate::renderer::hwpunit_to_px(cm.margin.right as i32, dpi);
+            let mb = crate::renderer::hwpunit_to_px(cm.margin.bottom as i32, dpi);
+            let x0 = anchor_col_x
+                + crate::renderer::hwpunit_to_px(signed_hwpunit(cm.horizontal_offset), dpi)
+                - ml;
+            let x1 = x0 + ml + w + mr;
+            let top = flow_y
+                + crate::renderer::hwpunit_to_px(signed_hwpunit(cm.vertical_offset).max(0), dpi);
+            let bottom = top + h + mb;
+            Some((x0, x1, top, bottom))
+        })
+        .collect()
+}
+
 fn paragraph_by_global_index<'a>(
     body_paragraphs: &'a [Paragraph],
     endnote_paragraphs: &'a [Paragraph],
@@ -2062,6 +2173,7 @@ fn square_picture_wrap_anchor_for_para(
         anchor_cs: st.wrap_around_cs,
         anchor_sw: st.wrap_around_sw,
         anchor_image_margin_right,
+        band_y_range: None,
     })
 }
 
@@ -4828,6 +4940,11 @@ impl TypesetState {
             fragment_queued_table_footnotes: std::collections::HashSet::new(),
             reset_vpos_after_queued_table_footnote_page: false,
             prefilled_paras: std::collections::HashSet::new(),
+            page_banner_header_promoted: false,
+            banner_remainder_column_break: None,
+            banner_remainder_top_reserve: 0.0,
+            banner_tail_absorb_para: None,
+            current_banner_top_reserve: 0.0,
             pre_emitted_host_paras: std::collections::HashSet::new(),
             pre_emitted_host_heights: std::collections::HashMap::new(),
             skip_safety_margin_once: false,
@@ -4848,6 +4965,7 @@ impl TypesetState {
             endnote_separator_above_hu: 0,
             endnote_separator_below_hu: 0,
             wrap_around_cs: -1,
+            wrap_synth_rects: Vec::new(),
             wrap_around_sw: -1,
             wrap_around_table_para: 0,
             wrap_around_any_seg: false,
@@ -5313,6 +5431,121 @@ impl TypesetState {
     }
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
+    /// 쪽 머리 승격: 현재 쪽에 배치된 항목 전부를 걷어내고 그 문단 인덱스들을
+    /// 오름차순으로 돌려준다(재순회용). 앞 쪽에서 걸쳐 들어온 분할 조각이 있거나
+    /// 각주/미주 항목이 섞여 있으면 되감지 않고 None 을 돌려준다.
+    fn rewind_page_for_banner_header(&mut self, banner_para_idx: usize) -> Option<Vec<usize>> {
+        let diag = std::env::var("RHWP_DIAG_PGHDR").is_ok();
+        // 되감기 범위: 현재 쪽에 flush 된 단들 + 진행 중 단의 항목 전부.
+        let mut all_items: Vec<&PageItem> = Vec::new();
+        if let Some(page) = self.pages.last() {
+            for cc in &page.column_contents {
+                all_items.extend(cc.items.iter());
+            }
+        }
+        all_items.extend(self.current_items.iter());
+        let mut indices = std::collections::BTreeSet::new();
+        for item in &all_items {
+            let ok = match item {
+                PageItem::FullParagraph { para_index }
+                | PageItem::Shape { para_index, .. }
+                | PageItem::Table { para_index, .. } => {
+                    indices.insert(*para_index);
+                    true
+                }
+                PageItem::PartialParagraph {
+                    para_index,
+                    start_line,
+                    ..
+                } => {
+                    // 걸친 조각은 첫 조각(start_line==0)이 이 범위 안에 있을 때만
+                    // 통째 재배치가 가능하다 — 아니면 앞 쪽에 걸친 것.
+                    let whole_in_scope = *start_line == 0
+                        || all_items.iter().any(|it| {
+                            matches!(it, PageItem::PartialParagraph {
+                                para_index: p,
+                                start_line: 0,
+                                ..
+                            } if p == para_index)
+                        });
+                    indices.insert(*para_index);
+                    whole_in_scope
+                }
+                PageItem::PartialTable {
+                    para_index,
+                    control_index,
+                    is_continuation,
+                    ..
+                } => {
+                    let whole_in_scope = !*is_continuation
+                        || all_items.iter().any(|it| {
+                            matches!(it, PageItem::Table {
+                                para_index: p,
+                                control_index: c,
+                            } if p == para_index && c == control_index)
+                                || matches!(it, PageItem::PartialTable {
+                                    para_index: p,
+                                    control_index: c,
+                                    is_continuation: false,
+                                    ..
+                                } if p == para_index && c == control_index)
+                        });
+                    indices.insert(*para_index);
+                    whole_in_scope
+                }
+                _ => false, // 각주/미주 등 — 보수적으로 포기
+            };
+            if !ok {
+                if diag {
+                    eprintln!("DIAG_PGHDR rewind-abort item={:?}", item);
+                }
+                return None;
+            }
+        }
+        // 이월 대기 표(host 가 배너 문단보다 앞)도 회수해 재순회에 포함한다.
+        let deferred = std::mem::take(&mut self.deferred_table_controls);
+        for d in deferred {
+            if d.para_index < banner_para_idx {
+                indices.insert(d.para_index);
+            } else {
+                self.deferred_table_controls.push(d);
+            }
+        }
+        if indices.is_empty() {
+            if diag {
+                eprintln!("DIAG_PGHDR rewind-abort empty");
+            }
+            return None;
+        }
+        // 미래 문단(prefill 등)이 섞여 있으면 이중 배치 위험 — 포기.
+        if indices.iter().any(|&idx| idx >= banner_para_idx)
+            || indices.iter().any(|idx| self.prefilled_paras.contains(idx))
+        {
+            if diag {
+                eprintln!("DIAG_PGHDR rewind-abort future/prefilled {:?}", indices);
+            }
+            return None;
+        }
+        // 되감기: 이 쪽에 flush 된 단과 진행 중 단 상태를 전부 비운다.
+        if let Some(page) = self.pages.last_mut() {
+            page.column_contents.clear();
+        }
+        self.current_items.clear();
+        self.current_column_wrap_around_paras.clear();
+        self.current_column_wrap_anchors.clear();
+        self.visible_float_exclusions.clear();
+        self.wrap_synth_rects.clear();
+        self.prev_body_bottom_vpos = None;
+        self.flow_underrun = 0.0;
+        self.current_column = 0;
+        self.current_height = self.pending_body_wide_top_reserve;
+        self.current_start_height = self.current_height;
+        self.current_endnote_flow = false;
+        self.reset_vpos_cursor();
+        self.page_banner_header_promoted = true;
+        Some(indices.into_iter().collect())
+    }
+
     fn flush_column(&mut self) {
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
@@ -5338,6 +5571,7 @@ impl TypesetState {
             inline_placements: std::mem::take(&mut self.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
             paragraph_float_placements: std::mem::take(&mut self.paragraph_float_placements),
+            banner_top_reserve: std::mem::take(&mut self.current_banner_top_reserve),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5425,6 +5659,7 @@ impl TypesetState {
             inline_placements: std::mem::take(&mut self.inline_placements),
             inline_flow_plans: std::mem::take(&mut self.inline_flow_plans),
             paragraph_float_placements: std::mem::take(&mut self.paragraph_float_placements),
+            banner_top_reserve: std::mem::take(&mut self.current_banner_top_reserve),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -5535,7 +5770,11 @@ impl TypesetState {
 
     /// 새 페이지 push + 상태 리셋
     fn push_new_page(&mut self) {
+        // 쪽 머리 승격은 쪽당 1회 — 새 쪽에서 리셋.
+        self.page_banner_header_promoted = false;
         self.pages.push(self.new_page_content(Vec::new()));
+        // 합성 어울림 배제 사각형은 쪽 단위 — 새 쪽에서 비운다.
+        self.wrap_synth_rects.clear();
         self.reset_for_new_page();
         // [#3738 Stage 22] current page의 본문/각주 흐름을 먼저 확정한 뒤, tail
         // Square picture만 새 physical page의 layout item 앞에 둔다. 즉시
@@ -7038,6 +7277,7 @@ impl TypesetEngine {
                                 anchor_cs,
                                 anchor_sw,
                                 anchor_image_margin_right: image_margin_right_hu,
+                                band_y_range: None,
                             },
                         );
                     }
@@ -7191,6 +7431,7 @@ impl TypesetEngine {
                 anchor_cs: reset_seg.column_start,
                 anchor_sw: reset_seg.segment_width as i32,
                 anchor_image_margin_right: common.margin.right as i32,
+                band_y_range: None,
             },
         ))
     }
@@ -7351,6 +7592,7 @@ impl TypesetEngine {
                             anchor_cs: st.wrap_around_cs,
                             anchor_sw: st.wrap_around_sw,
                             anchor_image_margin_right: anchor_margin_right,
+                            band_y_range: None,
                         },
                     );
                 } else {
@@ -7691,7 +7933,14 @@ impl TypesetEngine {
         }
         let issue2424_loop_started = issue2424_ts_enabled.then(std::time::Instant::now);
 
-        for (para_idx, para) in paragraphs.iter().enumerate() {
+        // 쪽 머리 승격(아래)이 잔여 문단을 뒤 순서로 미룰 수 있도록, 문단 순회를
+        // 재배열 가능한 인덱스 목록으로 돈다. 승격이 없으면 문서 순서와 동일하다.
+        let mut traversal: Vec<usize> = (0..paragraphs.len()).collect();
+        let mut traversal_cursor: usize = 0;
+        while traversal_cursor < traversal.len() {
+            let para_idx = traversal[traversal_cursor];
+            traversal_cursor += 1;
+            let para = &paragraphs[para_idx];
             // [Task #1753] 지연 이월 표 직전에 선행 채움(prefill)으로 이미 배치된 문단 스킵.
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
@@ -7775,6 +8024,105 @@ impl TypesetEngine {
                             );
                         }
                         st.advance_column_or_new_page();
+                    }
+                }
+            }
+            // 쪽 머리 승격(쪽 되감기): 쪽 상단 전폭 배너 문단은 한글에서 항상 쪽의
+            // 첫 단 상단에 놓인다. 이 문단이 쪽 중간(이월 잔여가 이미 이 쪽에 깔린
+            // 위치)에 오면, 이 쪽을 되감아 배너 문단부터 다시 채우고 잔여 문단들은
+            // 다음 배너 문단 직전 순서로 미룬다 — 잔여가 쪽의 마지막 단에 놓이는
+            // 한글 실측 계약(재현 문서 E 2쪽)의 순차 모델 등가. 저장
+            // lineseg 없는 다단 문서 한정 — 저장 조판 문서는 정답지가 우선한다.
+            if std::env::var("RHWP_DIAG_PGHDR").is_ok()
+                && para_is_page_banner_header(para, page_def)
+            {
+                eprintln!(
+                    "DIAG_PGHDR gate pi={} cols={} stored_ls={} promoted={} cur_items={} page_cols={:?} fnh={:.1} ovl={} cuts={} sqp={}",
+                    para_idx,
+                    st.col_count,
+                    st.has_stored_line_segs,
+                    st.page_banner_header_promoted,
+                    st.current_items.len(),
+                    st.pages.last().map(|p| p.column_contents.len()),
+                    st.current_footnote_height,
+                    st.current_column_overlay_continuations.len(),
+                    st.current_column_overlay_cuts.len(),
+                    st.page_start_square_pictures.len()
+                );
+            }
+            if st.col_count >= 2
+                && !st.has_stored_line_segs
+                && !st.page_banner_header_promoted
+                && (!st.current_items.is_empty()
+                    || st
+                        .pages
+                        .last()
+                        .is_some_and(|page| !page.column_contents.is_empty()))
+                && st.current_footnote_height == 0.0
+                && st.current_column_overlay_continuations.is_empty()
+                && st.current_column_overlay_cuts.is_empty()
+                && st.page_start_square_pictures.is_empty()
+                && para_is_page_banner_header(para, page_def)
+            {
+                if let Some(remainder) = st.rewind_page_for_banner_header(para_idx) {
+                    // 잔여 선두의 연속 빈 문단은 쪽 경계에서 소진된 것 — 재삽입하면
+                    // 마지막 단 상단을 밀어내므로 드랍한다(한글: 잔여 단은 첫 실내용
+                    // 문단부터 시작).
+                    let first_kept = remainder
+                        .iter()
+                        .position(|&idx| {
+                            let p = &paragraphs[idx];
+                            !(p.text.is_empty() && p.controls.is_empty())
+                        })
+                        .unwrap_or(remainder.len());
+                    let remainder = &remainder[first_kept..];
+                    st.banner_remainder_column_break = remainder.first().copied();
+                    // 배너가 본문 상단을 침범한 깊이 — 잔여 단은 배너 아래에서 시작.
+                    let banner_bottom_hu = para
+                        .controls
+                        .iter()
+                        .filter_map(|ctrl| match ctrl {
+                            Control::Picture(pic)
+                                if !pic.common.treat_as_char
+                                    && matches!(
+                                        pic.common.vert_rel_to,
+                                        crate::model::shape::VertRelTo::Paper
+                                    ) =>
+                            {
+                                Some(
+                                    signed_hwpunit(pic.common.vertical_offset)
+                                        .saturating_add(pic.common.height as i32),
+                                )
+                            }
+                            _ => None,
+                        })
+                        .max()
+                        .unwrap_or(0);
+                    let body_top_hu =
+                        page_def.margin_top.saturating_add(page_def.margin_header) as i32;
+                    st.banner_remainder_top_reserve = hwpunit_to_px(
+                        banner_bottom_hu.saturating_sub(body_top_hu).max(0),
+                        self.dpi,
+                    );
+                    let insert_at = traversal[traversal_cursor..]
+                        .iter()
+                        .position(|&idx| para_is_page_banner_header(&paragraphs[idx], page_def))
+                        .map(|off| traversal_cursor + off)
+                        .unwrap_or(traversal.len());
+                    traversal.splice(insert_at..insert_at, remainder.iter().copied());
+                    // 잔여 직후의 다음 배너 문단은 이 쪽 끝에서 미세 초과 흡수 대상.
+                    st.banner_tail_absorb_para = traversal
+                        .get(insert_at + remainder.len())
+                        .copied()
+                        .filter(|&idx| para_is_page_banner_header(&paragraphs[idx], page_def));
+                    if std::env::var("RHWP_DIAG_PGHDR").is_ok() {
+                        eprintln!(
+                            "DIAG_PGHDR rewind pi={} remainder={:?} insert_at={} page={}",
+                            para_idx,
+                            remainder,
+                            insert_at,
+                            st.pages.len()
+                        );
                     }
                 }
             }
@@ -7911,6 +8259,21 @@ impl TypesetEngine {
                         && empty_table_carrier_column_break_before_page_table(
                             para_idx, para, paragraphs,
                         )));
+            // 쪽 머리 승격 잔여의 첫 문단은 앞 단 자투리에 흡수되지 않고 항상
+            // 새 단(마지막 단)에서 시작한다.
+            if st.banner_remainder_column_break == Some(para_idx) {
+                st.banner_remainder_column_break = None;
+                if !st.current_items.is_empty() {
+                    st.advance_column_or_new_page();
+                }
+                if st.current_height < st.banner_remainder_top_reserve {
+                    st.current_height = st.banner_remainder_top_reserve;
+                    st.current_start_height = st.current_height;
+                    st.current_banner_top_reserve = st.banner_remainder_top_reserve;
+                    st.reset_vpos_cursor();
+                }
+                st.banner_remainder_top_reserve = 0.0;
+            }
             if para.column_type == ColumnBreakType::Column && !suppress_floating_anchor_column_break
             {
                 if has_diff_col_def {
@@ -8831,6 +9194,89 @@ impl TypesetEngine {
                     .get(st.current_column as usize)
                     .map(|a| a.width)
                     .unwrap_or(st.layout.body_area.width);
+                // NO_LS 문서의 Square 그림 어울림 합성.
+                // 저장 lineseg 가 없으면 어울림 기계(저장 cs/sw 매칭)가 서지 않아 텍스트가
+                // 그림 위로 흐른다. 그림 사각형을 페이지 공간으로 기억해 두고(가로
+                // 오프셋으로 앵커 단 밖에 놓이는 형상 포함), 현재 단과 교차하는 NO_LS
+                // 문단을 감폭으로 측정하고 wrap_anchors 로 성형한다.
+                let para_no_ls = !para.line_segs.iter().any(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                });
+                let mut col_w = col_w;
+                let synth_col_area = st
+                    .layout
+                    .column_areas
+                    .get(st.current_column as usize)
+                    .map(|a| (a.x, a.width));
+                if st.profile.hwp5_stored_pagination_layout() && para_no_ls {
+                    if let Some((cax, _)) = synth_col_area {
+                        let rects = synth_square_wrap_rects(para, cax, st.current_height, self.dpi);
+                        st.wrap_synth_rects.extend(rects);
+                    }
+                    if let Some((cax, caw)) = synth_col_area {
+                        if !st.wrap_synth_rects.is_empty() {
+                            let cur = st.current_height;
+                            let mut cs_px: f64 = 0.0;
+                            let mut right_cut: f64 = caw;
+                            for &(x0, x1, top, bottom) in &st.wrap_synth_rects {
+                                // 시작 판정은 한 줄 높이(24px)까지 선행 허용 — 앵커 문단과
+                                // 옆 단 텍스트의 y 가 정확히 일치하지 않는 저작 형상에서
+                                // 항목 첫 줄이 미성형으로 그림과 겹치던 잔차 완화. 그보다
+                                // 아래에서 시작하는 개체는 줄 단위 밴드 배제(아래 post-format
+                                // 등록)가 담당한다 — 문단 전체 감폭은 첫 줄까지 밀어낸다.
+                                // 소형 아이콘이 문단 첫 줄보다 아래에서 시작하면 문단
+                                // 전체 감폭이 첫 줄까지 밀어낸다 — 줄 단위 밴드 배제
+                                // (post-format 등록)가 담당하도록 여기서는 제외한다.
+                                if bottom - top <= 40.0 && top > cur + 8.0 {
+                                    continue;
+                                }
+                                // 대형 개체는 문단 시작이 개체보다 위면 감폭하지 않는다 —
+                                // 개체 위에 있는 제목 줄 문단이 개체 옆으로 밀리는 오폭 방지
+                                // (선행 허용 창은 판정/그리기 눈금 오차보다 커서 위험).
+                                if bottom - top > 40.0 && top > cur {
+                                    continue;
+                                }
+                                if cur + 40.0 < top || cur >= bottom - 1.0 {
+                                    continue;
+                                }
+                                let ox0 = x0.max(cax);
+                                let ox1 = x1.min(cax + caw);
+                                if ox1 - ox0 < 8.0 {
+                                    continue;
+                                }
+                                let left_gap = ox0 - cax;
+                                let right_gap = cax + caw - ox1;
+                                if right_gap >= left_gap {
+                                    cs_px = cs_px.max(ox1 - cax + 3.8);
+                                } else {
+                                    right_cut = right_cut.min(left_gap - 3.8);
+                                }
+                            }
+                            let sw_px = (right_cut - cs_px).max(0.0);
+                            if (cs_px > 0.5 || right_cut < caw - 0.5) && sw_px >= caw * 0.25 {
+                                st.current_column_wrap_anchors.insert(
+                                    para_idx,
+                                    crate::renderer::pagination::WrapAnchorRef {
+                                        anchor_para_index: para_idx,
+                                        anchor_cs: crate::renderer::px_to_hwpunit(cs_px, self.dpi),
+                                        anchor_sw: crate::renderer::px_to_hwpunit(sw_px, self.dpi),
+                                        anchor_image_margin_right: 0,
+                                        band_y_range: None,
+                                    },
+                                );
+                                // 합성 감폭 상자는 비례 초과를 허용한다 — 계상 글자
+                                // 폭(전각 em 휴리스틱)이 한글 실측 advance 보다 넓어,
+                                // 한글이 넣은 마지막 어절이 밀려 줄 수가 정답과
+                                // 갈라진다(재현: 강제 개행 줄의 마지막 어절이 다음
+                                // 줄로 넘어가 아래 구획과 겹침).
+                                let fit_slack = crate::renderer::synth_wrap_fit_slack_px(sw_px);
+                                col_w = col_w.min(sw_px + fit_slack);
+                            }
+                        }
+                    }
+                }
+                // [#6175] devel 의 known-square-band 인자를 그대로 전달한다 —
+                // 위에서 좁힌 col_w(합성 어울림 감폭)와 함께 쓴다.
                 let formatted = self.format_paragraph_with_known_square_band(
                     para,
                     composed.get(para_idx),
@@ -8838,6 +9284,52 @@ impl TypesetEngine {
                     Some(col_w),
                     st.wrap_around_derived_band,
                 );
+                // 줄 단위 어울림 배제: 문단 시작은 개체 위이지만 뒷줄이 개체 사각형과
+                // 교차하는 형상(출석부) — 문단 전체 감폭 대신 교차 y 밴드를 anchor 에
+                // 실어 layout 이 교차하는 줄만 감폭한다.
+                if st.profile.hwp5_stored_pagination_layout()
+                    && para_no_ls
+                    && !st.current_column_wrap_anchors.contains_key(&para_idx)
+                    && !st.wrap_synth_rects.is_empty()
+                {
+                    if let Some((cax, caw)) = synth_col_area {
+                        let cur = st.current_height;
+                        let para_bottom = cur + formatted.height_for_fit;
+                        for &(x0, x1, top, bottom) in &st.wrap_synth_rects {
+                            // 소형 아이콘이 문단 첫 줄보다 아래에서 시작해 문단 안에서
+                            // 끝나는 형상만 — 문단 전체 감폭 판정과 상보.
+                            if bottom - top > 40.0 || top <= cur + 8.0 || top >= para_bottom {
+                                continue;
+                            }
+                            let ox0 = x0.max(cax);
+                            let ox1 = x1.min(cax + caw);
+                            if ox1 - ox0 < 8.0 {
+                                continue;
+                            }
+                            let left_gap = ox0 - cax;
+                            let right_gap = cax + caw - ox1;
+                            if right_gap < left_gap {
+                                continue; // 우측 개체 형상은 미지원(현행 유지)
+                            }
+                            let cs_px = ox1 - cax + 3.8;
+                            let sw_px = caw - cs_px;
+                            if sw_px < caw * 0.25 {
+                                continue;
+                            }
+                            st.current_column_wrap_anchors.insert(
+                                para_idx,
+                                crate::renderer::pagination::WrapAnchorRef {
+                                    anchor_para_index: para_idx,
+                                    anchor_cs: crate::renderer::px_to_hwpunit(cs_px, self.dpi),
+                                    anchor_sw: crate::renderer::px_to_hwpunit(sw_px, self.dpi),
+                                    anchor_image_margin_right: 0,
+                                    band_y_range: Some((top - cur, bottom - cur)),
+                                },
+                            );
+                            break;
+                        }
+                    }
+                }
                 native_hwp5_footnote_break =
                     native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
@@ -17042,6 +17534,18 @@ impl TypesetEngine {
             }
         }
         // [#2243 진단] snap 입출력 — 동작 불변.
+        if std::env::var("RHWP_DIAG_SNAPALL").is_ok() {
+            eprintln!(
+                "DIAG_SNAPALL pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={}",
+                para_idx,
+                st.current_height,
+                y,
+                st.vpos_page_base,
+                hc.vpos_lazy_base,
+                st.vpos_col_anchor,
+                st.vpos_ladder_dirty,
+            );
+        }
         if std::env::var("RHWP_DIAG_TAC").is_ok() && (y - st.current_height).abs() > 0.05 {
             eprintln!(
                 "DIAG_SNAP pi={} y_in={:.1} y_out={:.1} page_base={:?} lazy={:?} anchor={:.1}",
@@ -17770,11 +18274,12 @@ impl TypesetEngine {
         // [#2243 진단] 문단 진입 시 누적 높이 — 항목별 실소비 델타 추적용. 동작 불변.
         if std::env::var("RHWP_DIAG_FLOW").is_ok() {
             eprintln!(
-                "DIAG_FLOW pi={} cur_h={:.1} page={} items={}",
+                "DIAG_FLOW pi={} cur_h={:.1} page={} items={} ct={:?}",
                 para_idx,
                 st.current_height,
                 st.pages.len(),
-                st.current_items.len()
+                st.current_items.len(),
+                para.column_type,
             );
         }
         // [편집 세션] vert=Para 자리차지 그림의 하단 요구를 문단 fit 에 반영한다.
@@ -17980,6 +18485,25 @@ impl TypesetEngine {
                 st.current_items.push(PageItem::FullParagraph {
                     para_index: para_idx,
                 });
+                return;
+            }
+        }
+
+        // 쪽 머리 승격 쪽 끝의 두 번째 배너 문단 흡수: 이 문단은 시각적으로
+        // 보이지 않으므로(배너는 상단 승격 배너와 같은 자리에 겹치고, 타이틀은
+        // 배너용 흰 글씨), 미세한 바닥 초과로 다음 쪽에 배너를 새로 여는 대신
+        // 이 쪽 끝에 흡수한다 — 한글 실측(사용안내 3쪽 배너 없음) 정합.
+        if st.banner_tail_absorb_para == Some(para_idx) {
+            st.banner_tail_absorb_para = None;
+            if st.page_banner_header_promoted
+                && !st.current_items.is_empty()
+                && st.current_height + fmt.height_for_fit > available
+                && st.current_height <= available + 0.5
+            {
+                st.current_items.push(PageItem::FullParagraph {
+                    para_index: para_idx,
+                });
+                st.current_height = available;
                 return;
             }
         }
@@ -21243,6 +21767,7 @@ impl TypesetEngine {
             para_index: para_idx,
             control_index: ctrl_idx,
         });
+        // 단 오른쪽 밖으로 통째로 벗어난 자리차지 개체는 lane 도, 본문 세로 공간도
         lanes.place(x_start, x_end, raw_top, reserved_height);
         st.current_height = st.current_height.max(lanes.max_bottom());
         true
@@ -21741,6 +22266,8 @@ impl TypesetEngine {
         let vertical_offset = Self::get_table_vertical_offset(table);
         let is_visible_para_float =
             is_para_topbottom_float(&table.common) && para_has_non_whitespace_text(para);
+        // 단 오른쪽 밖으로 통째로 벗어난 자리차지 개체는 본문 세로 공간을 차지하지
+        // 않는다(재현 문서 D: horz=단 227.6mm, A4 폭 210mm — 화면 밖). 이 계약은
         let signed_vertical_offset = vertical_offset as i32;
         let total_lines = fmt.line_heights.len();
         // [#5871] 공백만 있는 host 문단이 두 술어 사이 틈에 빠진다 —
@@ -21953,6 +22480,8 @@ impl TypesetEngine {
             } else {
                 table_bottom
             };
+            // 단 오른쪽 밖 개체는 배제 영역도 만들지 않는다 — 배제 영역을 만들면
+            // 뒤따르는 본문 표가 그만큼 밀려 마지막 블록이 다음 쪽으로 넘어간다.
             if signed_vertical_offset > 0 {
                 if table_bottom > table_top + 0.5 {
                     st.visible_float_exclusions.push(VisibleFloatExclusion {
@@ -30050,6 +30579,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 paragraph_float_placements: Default::default(),
+                banner_top_reserve: 0.0,
             }],
             active_header: None,
             active_footer: None,

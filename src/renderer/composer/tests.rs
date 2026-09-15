@@ -41,8 +41,8 @@ fn the_frame_splits_a_fallback_run_by_char_shapes_on_both_the_body_and_the_cell_
             .iter()
             .map(|r| r.char_style_id)
             .collect::<Vec<u32>>(),
-        vec![0],
-        "전제: compose_lines 의 NO_LS fallback 은 char_shapes[0] 단일 run 을 낸다"
+        vec![0, 1],
+        "전제: compose_lines 의 NO_LS fallback 도 char_shapes 로 run 을 재분할한다"
     );
 
     let mut cell_variant = compose_paragraph(&para);

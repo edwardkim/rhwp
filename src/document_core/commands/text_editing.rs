@@ -3991,6 +3991,12 @@ impl DocumentCore {
                 && square_ole_wrap_chain_for_enter(paragraphs, prev_idx).is_some()
         };
 
+        // 병합 전 저장 흐름 end — 병합으로 사라지는 문단이 저장 좌표계에서 끝나는
+        // 지점. recalc 의 저장 간격 보존이 이 값을 기준으로 병합분을 차감해야
+        // 후속 문단 vpos 가 복원된다(재현 문서 B undo: 표 겹침 잔류).
+        let merged_flow_end = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
         // 현재 문단을 이전 문단에 병합
         let source_table_controls =
             self.text_reflowed_table_control_indices_at(section_idx, para_idx);
@@ -4045,10 +4051,14 @@ impl DocumentCore {
             .and_then(|m| m.get(prev_idx))
             .copied()
             .unwrap_or(0);
-        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
-            &self.document.sections[section_idx].paragraphs[prev_idx],
-        );
+        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처. 병합 편집은
+        // 사라진 문단까지 포함한 저장 흐름 end(merged_flow_end)가 그 지점의 저장
+        // 좌표다.
+        let stored_end_for_reset = merged_flow_end.or_else(|| {
+            crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[prev_idx],
+            )
+        });
         self.reflow_paragraph(section_idx, prev_idx);
         let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
@@ -4134,6 +4144,12 @@ impl DocumentCore {
             .text
             .chars()
             .count();
+        // 삭제 전 저장 흐름 end — 삭제 대상 문단이 저장 좌표계에서 끝나는 지점.
+        // recalc 의 저장 간격 보존이 이 값을 기준으로 삭제분을 차감해야 후속
+        // 문단 vpos 가 복원된다(재현 문서 B undo: 표 2쪽 잔류/겹침).
+        let removed_flow_end = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
         self.document.sections[section_idx].raw_stream = None;
         self.forget_text_reflowed_tables_in_paragraph_at(section_idx, para_idx);
         self.document.sections[section_idx]
@@ -4148,11 +4164,15 @@ impl DocumentCore {
             .copied()
             .unwrap_or(0);
         self.remove_composed_paragraph(section_idx, para_idx);
-        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-        let stored_end_for_reset = self.document.sections[section_idx]
-            .paragraphs
-            .get(reflow_idx)
-            .and_then(crate::renderer::composer::paragraph_flow_end);
+        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처. 삭제 편집은
+        // 삭제된 문단까지 포함한 저장 흐름 end(removed_flow_end)가 그 지점의
+        // 저장 좌표다.
+        let stored_end_for_reset = removed_flow_end.or_else(|| {
+            self.document.sections[section_idx]
+                .paragraphs
+                .get(reflow_idx)
+                .and_then(crate::renderer::composer::paragraph_flow_end)
+        });
         if reflow_idx < self.document.sections[section_idx].paragraphs.len() {
             self.reflow_paragraph(section_idx, reflow_idx);
         }

@@ -108,6 +108,7 @@ mod tests {
             section_index: 0,
             layout,
             column_contents: vec![ColumnContent {
+                banner_top_reserve: 0.0,
                 column_index: 0,
                 start_height: 0.0,
                 endnote_flow: false,

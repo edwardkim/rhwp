@@ -505,6 +505,9 @@ pub struct ColumnContent {
     /// 넘긴 행을 앵커 쪽에서도 전부 그리면(bleed) 시각적으로는 클립돼 안 보이지만
     /// render tree 에 쪽 밖 줄이 남아 `overflow_cell_baseline` 래칫에 계상된다.
     pub overlay_cuts: Vec<(usize, usize, usize)>,
+    /// 쪽 머리 승격 쪽의 잔여 단이 배너 아래에서 시작하도록 하는 상단 예약(px).
+    /// typeset 의 fit 과 layout 의 실제 y 가 같은 값을 쓰도록 여기 실어 나른다.
+    pub banner_top_reserve: f64,
 }
 
 /// [#4568] 쪽을 넘긴 overlay 표의 잔여 행 조각.
@@ -556,6 +559,10 @@ pub struct WrapAnchorRef {
     /// paragraph_layout 의 wrap_anchor 처리에서 cs px 에 +margin_right_px,
     /// sw px 에서 -margin_right_px 보정 (text 시작 위치와 가용 폭 정합).
     pub anchor_image_margin_right: i32,
+    /// 줄 단위 배제 밴드 — Some((top, bottom)) 이면 문단 시작 기준 상대 y(px)가
+    /// 이 구간과 교차하는 줄에만 anchor cs/sw 를 적용한다(출석부 형상). None 이면
+    /// 기존처럼 문단 전체에 적용.
+    pub band_y_range: Option<(f64, f64)>,
 }
 
 /// 페이지에 배치되는 개별 항목
@@ -986,6 +993,7 @@ impl PaginationResult {
                                 (((pi as i64 + offset as i64).max(0) as usize, ci), placement)
                             })
                             .collect(),
+                        banner_top_reserve: cc.banner_top_reserve,
                         zone_layout: cc.zone_layout.clone(),
                         zone_y_offset: cc.zone_y_offset,
                         wrap_around_paras: cc
@@ -1015,6 +1023,7 @@ impl PaginationResult {
                                         anchor_cs: v.anchor_cs,
                                         anchor_sw: v.anchor_sw,
                                         anchor_image_margin_right: v.anchor_image_margin_right,
+                                        band_y_range: v.band_y_range,
                                     },
                                 )
                             })

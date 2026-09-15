@@ -953,19 +953,32 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     }
                 }
             }
+            // 강제 줄바꿈(0x0A)은 문자 수와 무관하게 그 자리에서 줄을 끝낸다 —
+            // 한글은 이 문자에서 반드시 개행하므로, 무시하면 두 줄 분량이 한
+            // 줄로 이어져 열 폭을 넘는다.
+            if let Some(nl) = chars[offset..max_end].iter().position(|&c| c == '\n') {
+                end = offset + nl + 1;
+            }
             let line_text: String = chars[offset..end].iter().collect();
             let is_last_line = end >= total;
-            // [#2279] 주의: 이 폴백은 문단의 CharShapeRef 를 무시하고 단일
-            // default_style run 을 만든다 — 문단 전체가 `char_shapes[0]` 의 글꼴·
-            // 크기·**자간**으로 측정·렌더된다. 본문 경로는 이제 프레임이 소유해
-            // 이 폴백을 거치지 않는다(프레임의 fill 이 `para.char_shapes` 로
-            // 토큰화한다). 셀 경로도 #5193 으로 프레임에 합류해
-            // (`recompose_cell_lines_in_frame`) 이 폴백을 거치지 않는다 — 남은
-            // 소비자는 프레임이 관할을 사양하는 문단(자기 레이아웃 소유자를 가진
-            // control 을 든 문단)뿐이다.
-            //
-            lines.push(ComposedLine {
-                runs: split_runs_by_lang(vec![ComposedTextRun {
+            // 이 폴백(PARA_LINE_SEG 누락 문단)도 CharShapeRef 경계를 존중한다 —
+            // 종전에는 문단 전체를 `char_shapes[0]` 단일 run 으로 만들어, 첫
+            // run 이 컨트롤 문자 구간(스트림 위주 앞부분)의 모양일 때 가시
+            // 텍스트 전체가 그 모양으로 렌더됐다(제목이 15pt 흰색 bold 저장인데
+            // 10pt 검정으로 — run 경계 (0,cs_a)(24,cs_b)(26,cs_c) 에서 cs_a 적용).
+            // char_offsets 가 있으면 본문 경로와 같은 splitter 로 토큰화하고,
+            // 없으면 종전 단일 default_style run 을 유지한다.
+            let fallback_runs = if para.char_offsets.len() == total && !para.char_shapes.is_empty()
+            {
+                split_by_char_shapes(
+                    &line_text,
+                    offset,
+                    end,
+                    &para.char_offsets,
+                    &para.char_shapes,
+                )
+            } else {
+                split_runs_by_lang(vec![ComposedTextRun {
                     text: line_text,
                     char_style_id: default_style_id,
                     lang_index: 0,
@@ -974,7 +987,10 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     display_text: None,
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
-                }]),
+                }])
+            };
+            lines.push(ComposedLine {
+                runs: fallback_runs,
                 line_height: 400,
                 baseline_distance: 320,
                 segment_width: 0,
@@ -2299,7 +2315,16 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
     // owner to hand it to.
-    if !paragraph_box.is_usable() || !line_breaking::supports_cached_body_frame_controls(para) {
+    //
+    // NO_LS 문단은 예외적으로 picture-band 게이트(비-TAC 그림 1개)도 허용한다 —
+    // 저장 행이 없어 fill 이 유일한 소유자인데, Square 그림 host 라는 이유로
+    // 여기서 사양하면 45자 합성 줄바꿈이 그대로 남아 감폭된 상자 폭을 넘는다
+    // (아이콘 옆 설명 한 줄이 열 밖까지 이어지는 형상). 저장 행이 있는 문단의
+    // 소유권 계약은 종전대로 본문 게이트만 통과한다.
+    let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
+        || (crate::renderer::para_has_no_stored_line_segs(para)
+            && line_breaking::supports_picture_band_frame_controls(para));
+    if !paragraph_box.is_usable() || !frame_admits_controls {
         return None;
     }
 

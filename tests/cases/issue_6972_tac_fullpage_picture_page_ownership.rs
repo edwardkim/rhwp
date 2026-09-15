@@ -91,6 +91,7 @@ fn page_with_paragraph_fragment(start_line: usize, end_line: usize) -> PageConte
         section_index: 0,
         layout: PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), 96.0),
         column_contents: vec![ColumnContent {
+            banner_top_reserve: 0.0,
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,

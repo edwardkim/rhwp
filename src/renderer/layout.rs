@@ -1932,7 +1932,6 @@ fn native_multiline_visible_float_table_top(
             + hwpunit_to_px(table.outer_margin_top as i32, dpi),
     )
 }
-
 fn inline_equation_count(para: &Paragraph) -> usize {
     para.controls
         .iter()
@@ -6114,7 +6113,7 @@ impl LayoutEngine {
                 }
             }
 
-            let col_area = if current_zone_start_y > col_area_base.y {
+            let mut col_area = if current_zone_start_y > col_area_base.y {
                 LayoutRect {
                     x: col_area_base.x,
                     y: current_zone_start_y,
@@ -6125,6 +6124,12 @@ impl LayoutEngine {
             } else {
                 *col_area_base
             };
+            // 쪽 머리 승격 쪽의 잔여 단은 배너 아래에서 시작한다 — typeset 의
+            // fit 이 선점한 상단 예약을 실제 y 에도 동일하게 반영한다.
+            if col_content.banner_top_reserve > 0.0 {
+                col_area.y += col_content.banner_top_reserve;
+                col_area.height = (col_area.height - col_content.banner_top_reserve).max(0.0);
+            }
 
             let (col_node, y_offset) = self.build_single_column(
                 tree,
@@ -6392,6 +6397,7 @@ impl LayoutEngine {
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
             paragraph_float_placements: Default::default(),
+            banner_top_reserve: 0.0,
         };
         let page_content = PageContent {
             page_index: 0,
@@ -6930,6 +6936,7 @@ impl LayoutEngine {
                 _ => None,
             }
         });
+        // (base=0 무차별 부여는 다쪽 분할표 연속 컬럼에서 오작동 — HeightCursor 의
         // [Task #1027 Stage C] inter-item VPOS_CORR 상태머신을 HeightCursor 로 캡슐화.
         // vpos_page_base/lazy_base, prev_layout_para, prev_item_was_partial_table(#991:
         // 분할 표 직후 첫 문단은 sequential 신뢰)를 보유하며 항목 사이 vpos 보정을 위임.
@@ -9301,12 +9308,54 @@ impl LayoutEngine {
                                         .get(style_id)
                                         .map(|st| (st.spacing_before, st.spacing_after))
                                         .unwrap_or((0.0, 0.0));
-                                    lines + sb.max(0.0) + sa.max(0.0)
+                                    // typeset 은 NO_LS 빈 host 문단의 줄을 composer
+                                    // placeholder(400HU≈5.3px)가 아니라 저장 글자모양의
+                                    // 완전한 em 줄박스로 계상한다(빈 문단 fallback 무조건
+                                    // 적용, #3820). 페인트도 같은 메트릭을 써야 두 장부가
+                                    // 일치한다 — placeholder 를 그대로 세면 뒤 문단 전체가
+                                    // 그 차액만큼 위로 붙는다.
+                                    let line_part =
+                                        paragraph_layout::empty_no_lineseg_paragraph_metrics(
+                                            para,
+                                            styles,
+                                            styles.para_styles.get(style_id),
+                                            self.profile.get().hwp3_layout(),
+                                            self.dpi,
+                                        )
+                                        .map(|(lh, ls, _)| lh + ls)
+                                        .unwrap_or(lines);
+                                    line_part + sb.max(0.0) + sa.max(0.0)
                                 } else {
                                     lines
                                 }
                             });
                             return (y_offset + advance, false);
+                        }
+                        // NO_LS 문서의 Square 등 흐름
+                        // 상호작용 앵커 빈 문단은 한글이 완전한 em 줄박스를 예약한다
+                        // (사용안내 pi1/pi6 실측 27.7px — PrvImage 줄 좌표 대조).
+                        // 위 사다리 계약(Square ladder 뒤집힘 반증)은 저장 lineseg 가
+                        // 있는 문단 얘기이므로 NO_LS 한정으로만 전진을 부여한다.
+                        let para_no_ls = !para.line_segs.iter().any(|seg| {
+                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        });
+                        if para_no_ls {
+                            let para_style_id = composed
+                                .get(*para_index)
+                                .map(|c| c.para_style_id as usize)
+                                .unwrap_or(para.para_shape_id as usize);
+                            if let Some((lh, ls, _)) =
+                                paragraph_layout::empty_no_lineseg_paragraph_metrics(
+                                    para,
+                                    styles,
+                                    styles.para_styles.get(para_style_id),
+                                    self.profile.get().hwp3_layout(),
+                                    self.dpi,
+                                )
+                            {
+                                return (y_offset + lh + ls, false);
+                            }
                         }
                         return (y_offset, false);
                     }
@@ -12934,9 +12983,23 @@ impl LayoutEngine {
                         // (wrap 처리 포함) 뒤로 옮김. 그 전에는 placeholder 로 default 값 사용.
                         let _ = is_single_pic;
                         let comp = composed.get(para_index);
-                        let para_y_for_pic =
-                            para_start_y.get(&para_index).copied().unwrap_or(y_offset)
-                                + sibling_reserved_px;
+                        // sibling 자리차지 표 예약은 통짜 배치 가정이다 — 표가 분할
+                        // 이월된 쪽에서는 "문단 시작 + 전체 표 높이"가 단 하단을 넘어
+                        // tac 그림이 쪽 밖에 그려진다(재현 문서 A 셀 Enter: 로고만
+                        // 쪽 하단 밖). 그때는 흐름 y(분할 조각·후행 텍스트 뒤)로
+                        // 폴백한다.
+                        let para_y_for_pic = {
+                            let reserved_based =
+                                para_start_y.get(&para_index).copied().unwrap_or(y_offset)
+                                    + sibling_reserved_px;
+                            if sibling_reserved_px > 0.0
+                                && reserved_based > col_area.y + col_area.height + 60.0
+                            {
+                                y_offset
+                            } else {
+                                reserved_based
+                            }
+                        };
                         let default_pic_y = self.compute_tac_picture_shape_y(
                             para,
                             comp,
@@ -14347,14 +14410,29 @@ impl LayoutEngine {
                     let inline_y = self
                         .compute_tac_picture_shape_y(para, comp, styles, para_y, shape_h)
                         + hwpunit_to_px(signed_hwpunit(common.vertical_offset), self.dpi);
-                    tree.set_inline_shape_position(
-                        page_content.section_index,
-                        para_index,
-                        control_index,
-                        None,
-                        inline_x,
-                        inline_y,
-                    );
+                    // comp 줄 누적은 통짜 배치 가정이다 — host 표가 분할 이월된
+                    // 쪽에서는 표 줄 전체 높이가 누적되어 y 가 단 밖으로 나간다
+                    // (재현 문서 A 셀 Enter: 로고 1196px > 단 하단). 그때는 텍스트
+                    // 줄 렌더가 실제 줄 위치로 등록해 둔 기존 좌표를 존중한다.
+                    let stale_computed = inline_y > col_area.y + col_area.height + 60.0
+                        && tree
+                            .get_inline_shape_position(
+                                page_content.section_index,
+                                para_index,
+                                control_index,
+                                None,
+                            )
+                            .is_some();
+                    if !stale_computed {
+                        tree.set_inline_shape_position(
+                            page_content.section_index,
+                            para_index,
+                            control_index,
+                            None,
+                            inline_x,
+                            inline_y,
+                        );
+                    }
                 }
                 self.layout_shape(
                     tree,
