@@ -36,7 +36,8 @@ fn load(path: &std::path::Path) -> rhwp::model::document::Document {
 /// 탭은 본문에서 한 글자로 보이지만 HWP5 스트림에서는 **8 코드 유닛**을 차지한다
 /// (0x0009 + 확장 7). 1로 세면 탭이 든 문단마다 판정이 어긋난다.
 fn body_code_units(para: &rhwp::model::paragraph::Paragraph) -> u32 {
-    para.text
+    let text: u32 = para
+        .text
         .chars()
         .map(|c| {
             if c == '\t' {
@@ -45,7 +46,10 @@ fn body_code_units(para: &rhwp::model::paragraph::Paragraph) -> u32 {
                 c.encode_utf16(&mut [0; 2]).len() as u32
             }
         })
-        .sum()
+        .sum();
+    // [#4680] 제목 차례 표시는 글자 축을 안 쓰지만 저장본에서 8 코드유닛을 차지한다
+    // (탭과 같은 인라인 컨트롤 규칙 — 위 분기가 이미 탭을 8 로 센다).
+    text + 8 * para.title_marks.len() as u32
 }
 
 /// HWP3 파싱이 문단 종결자를 세는지 — 규약 준수.

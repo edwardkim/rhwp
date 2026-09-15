@@ -985,6 +985,9 @@ struct Hwp3CharScan<'a> {
     hwp3_char_to_utf16_pos: &'a mut Vec<u32>,
     controls: &'a mut Vec<crate::model::control::Control>,
     ctrl_data_records: &'a mut Vec<Option<Vec<u8>>>,
+    /// [#4680] 제목 차례 표시(HWP3 코드 25). **글자 축을 소비하지 않는** 부수 채널이라
+    /// `text_string` 이 아니라 여기 쌓아야 직렬화기가 8유닛 인라인 컨트롤을 낸다.
+    title_marks: &'a mut Vec<crate::model::paragraph::TitleMark>,
     /// [#4680] 이 문단이 실제로 쓴 HWP5 제어 문자 비트. 직렬화기는 "출처가 제어
     /// 표기였는가" 를 이 비트로 판정해 하이픈·고정폭 빈칸을 리터럴과 가른다.
     control_mask: &'a mut u32,
@@ -2566,6 +2569,7 @@ fn parse_simple_control_char(
         controls,
         ctrl_data_records,
         control_mask,
+        title_marks,
         ..
     } = scan;
     match ch {
@@ -2624,10 +2628,28 @@ fn parse_simple_control_char(
             // 바이트/hchar 소비량(6 bytes = 3 hchar)은 하이픈과 동일하게 유지하되,
             // text_string/char_offsets/utf16_len 은 건드리지 않아
             // char_offsets.len() == text.chars().count() 불변식을 보존한다.
+            // [#4680] 다만 **버리면 안 된다**. 한/글 변환본은 이 표식을 코드 0x0008
+            // 8유닛 인라인 컨트롤로 싣고 `control_mask` 비트 8 을 세운다(264쪽 문서
+            // 실측: 비트 8 이 125문단, `PARA_TEXT` 안 0x0008 148건 전부 `Mtit`).
+            // 통째로 빠뜨리면 이 표식 **하나만** 있던 문단은 `PARA_TEXT` 레코드째
+            // 사라져, `PARA_HEADER` 가 글자 수를 선언해 놓고 본문이 없는 자기모순
+            // 레코드가 된다. 글자 축을 안 쓰는 부수 채널이라 `title_marks` 로 보낸다.
             let mut buf = [0u8; 4];
             if let Err(_) = body_cursor.read_exact(&mut buf) {
                 return Ok((i, utf16_len, true));
             }
+            title_marks.push(crate::model::paragraph::TitleMark {
+                char_idx: text_string.chars().count(),
+                ignore: true,
+            });
+            // 이 표식은 저장본 `PARA_TEXT` 에서 **8 코드유닛**을 차지한다
+            // (직렬화기 `push_extended_ctrl` 이 코드+id+예약+코드를 쓰고 `prev_end += 8`).
+            // 글자 축은 안 쓰므로 `text_string`·`char_offsets` 는 그대로 두되 — 종전
+            // 주석이 지킨 `char_offsets.len() == text.chars().count()` 불변식은 **길이**에
+            // 관한 것이라 그대로다 — 뒤따르는 글자의 **오프셋 값**이 저장본과 어긋나지
+            // 않도록 길이만 앞세운다. 이걸 빼면 저장 왕복에서 미주 표시와 글자모양 끝
+            // 경계가 밀린다(#3495 문단 90: 0→5 · #3532 문단 340: 53→43).
+            utf16_len += 8;
             for k in 0..2usize {
                 if i + k < hwp3_char_to_utf16_pos.len() {
                     hwp3_char_to_utf16_pos[i + k] = utf16_len;
@@ -2924,6 +2946,7 @@ pub(crate) fn parse_paragraph_list(
         let mut ctrl_data_records = Vec::new();
         // [#4680] 문자 루프가 채우고 문단 조립에서 IR 로 옮긴다.
         let mut para_control_mask: u32 = 0;
+        let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
         let mut text_string = String::new();
         let mut char_offsets = Vec::with_capacity(para_info.char_count as usize);
         let mut hwp3_char_to_utf16_pos = vec![0; para_info.char_count as usize];
@@ -2960,6 +2983,7 @@ pub(crate) fn parse_paragraph_list(
                                 controls: &mut controls,
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
+                                title_marks: &mut para_title_marks,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -2982,6 +3006,7 @@ pub(crate) fn parse_paragraph_list(
                                 controls: &mut controls,
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
+                                title_marks: &mut para_title_marks,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3013,6 +3038,7 @@ pub(crate) fn parse_paragraph_list(
                                 controls: &mut controls,
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
+                                title_marks: &mut para_title_marks,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3136,7 +3162,9 @@ pub(crate) fn parse_paragraph_list(
         // 순서대로 쌓이므로 인덱스가 그대로 대응한다.
         para.style_id = para_info.style_index;
         para.control_mask = para_control_mask;
-        para.has_para_text = !para.text.is_empty() || !para.controls.is_empty();
+        para.title_marks = para_title_marks;
+        para.has_para_text =
+            !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
         strip_hwp3_single_tac_visual_marker(&mut para);
 
         let mut char_shapes = Vec::new();
@@ -5592,6 +5620,7 @@ mod tests {
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
+        let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5599,6 +5628,7 @@ mod tests {
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
+            title_marks: &mut para_title_marks,
             use_password_layout_contract: false,
         };
 
@@ -5663,6 +5693,7 @@ mod tests {
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
+        let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5670,6 +5701,7 @@ mod tests {
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
+            title_marks: &mut para_title_marks,
             use_password_layout_contract: false,
         };
 
@@ -5754,6 +5786,7 @@ mod tests {
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
+        let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5761,6 +5794,7 @@ mod tests {
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
+            title_marks: &mut para_title_marks,
             use_password_layout_contract: false,
         };
 
@@ -5815,6 +5849,7 @@ mod tests {
         let mut controls = Vec::new();
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
+        let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5822,6 +5857,7 @@ mod tests {
             controls: &mut controls,
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
+            title_marks: &mut para_title_marks,
             use_password_layout_contract: false,
         };
         let mut char_shapes = Vec::new();
