@@ -23,6 +23,7 @@ for (const mode of ['history-100', 'history-50', 'history-fallback', 'font']) {
 for (const [mode, mutation, diagnostic] of [
   ['history-50', 'fixed-budget', /CORE_EVICTION|BUDGET_EXCEEDED/],
   ['font', 'drop-engine-chain', /ENGINE_ALIAS_LOST/],
+  ['font', 'restore-excluded-face', /EXCLUDED_FACE_REINTRODUCED/],
 ]) {
   test(`기존 결함 음성 대조: ${mutation}`, () => {
     const result = run(mode, mutation);

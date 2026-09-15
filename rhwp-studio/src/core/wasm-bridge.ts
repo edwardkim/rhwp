@@ -213,6 +213,7 @@ import {
   fontFamilyCandidatesForDisplay,
   formatCssFontFamilyList,
   parseCssFontFamilyList,
+  resolveFont,
 } from './font-substitution';
 import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
@@ -258,7 +259,15 @@ function substituteCssFontFamily(cssFont: string): string {
     merged.push(name);
   };
   if (studioChain[0]) push(studioChain[0]);
-  for (const name of incoming) push(name);
+  // 표시 정책이 제외한 원 face를 엔진 체인에서 다시 넣지 않는다. 예를 들어
+  // 휴먼명조 → HY신명조 치환 후 원 face가 남으면, HY신명조가 없는 macOS에서
+  // legacy 휴먼명조를 선택해 한글이 .notdef로 그려지고 뒤의 fallback에 도달하지 않는다.
+  const primaryAllowed = resolveFont(primary, 0, 0) === primary
+    || studioChain.some(name => name.toLocaleLowerCase('en-US') === primary.toLocaleLowerCase('en-US'));
+  for (const name of incoming) {
+    if (name === primary && !primaryAllowed) continue;
+    push(name);
+  }
   for (const name of studioChain.slice(1)) push(name);
   return prefix + formatCssFontFamilyList(merged);
 }

@@ -32,9 +32,14 @@ registerHooks({
       return { ...result, source: source.replace(needle, '100') };
     }
     if (mutation === 'drop-engine-chain' && url.endsWith('/core/wasm-bridge.ts')) {
-      const needle = 'for (const name of incoming) push(name);';
+      const needle = 'push(name);\n  }\n  for (const name of studioChain.slice(1))';
       assert.ok(source.includes(needle), '음성 대조 주입 위치 누락');
-      return { ...result, source: source.replace(needle, 'push(primary);') };
+      return { ...result, source: source.replace(needle, 'push(primary);\n  }\n  for (const name of studioChain.slice(1))') };
+    }
+    if (mutation === 'restore-excluded-face' && url.endsWith('/core/wasm-bridge.ts')) {
+      const needle = 'if (name === primary && !primaryAllowed) continue;';
+      assert.ok(source.includes(needle), '음성 대조 주입 위치 누락');
+      return { ...result, source: source.replace(needle, '') };
     }
     return result;
   },
@@ -133,6 +138,7 @@ if (mode.startsWith('history-')) {
   const selected = parseCssFontFamilyList(context.font.split('px ')[1]);
   assert.equal(selected[0], fontFamilyCandidatesForDisplay('휴먼명조', 0, 0)[0], 'Studio 문서 치환 우선');
   assert.ok(selected.includes('Engine Only Face'));
+  assert.ok(!selected.includes('휴먼명조'), 'EXCLUDED_FACE_REINTRODUCED: 표시 정책이 제외한 원 face는 fallback 앞에 복귀하면 안 된다');
   context.font = '12px "A, B", "Alias", "alias", sans-serif';
   const escaped = parseCssFontFamilyList(context.font.split('px ')[1]);
   assert.ok(escaped.includes('A, B'));
