@@ -15,7 +15,7 @@
 기본 경로 `collaborator_external_pr`, 보조 경로 `intake_and_review`, `local_validation`,
 `multi_pr_update_branch`를 적용했다. 최신 upstream/devel 위에서 #7145 다음으로 `cherry-pick -x`했다.
 두 원 PR 모두 current-base merge simulation이 충돌 없이 통과했다. 기존 merged PR #3672 등 기여
-이력이 있어 첫 기여자 경로는 적용하지 않았다. 원 PR 종료·원격 코드 push·통합 PR 생성은 수행하지 않았다.
+이력이 있어 첫 기여자 경로는 적용하지 않았다. 이 절은 접수 시점 기록이며, 이후 통합 PR 제출·CI 완료 결과는 아래 갱신 절에 기록했다.
 
 ## 코드와 동작 검토
 
@@ -53,6 +53,24 @@
 테스트 이름과 주석 두 곳의 `래칥 → 래칫` 오타다. `fec435fa9`에서 수정하고 동일 테스트를
 다시 실행해 10/10 통과했다. 테스트 조건과 제품 코드는 바꾸지 않았으므로 앞서 통과한
 프런트엔드 전체 테스트·TypeScript 검사를 반복하지 않았다. 원 PR에는 push하지 않았다.
+
+## 통합 PR #7162의 제출·CI 결과
+
+[통합 PR #7162](https://github.com/edwardkim/rhwp/pull/7162)의 code candidate는
+`d4e08890695e8ff2c874024514ef761317db35a8`이다. 제출 전 전체 포맷, native·WASM32·workspace
+all-target Clippy, workspace build와 manifest 검사를 모두 통과했다.
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/34953765482)의 Build & Test, Archive A/B/C/D,
+lint, Native Skia, frontend package 및 Render Diff·Adapter·Proptest가 완료됐다.
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34953765647)은 attempt 2에서 성공했다.
+최초 Rust 분석은 945개 파일 추출 오류 0, SARIF 생성 뒤 업로드 단계에서 실패했다. 명시적인 업로드
+오류가 로그에 없어 근본 원인을 단정하지 않았고 실패 job만 재실행했다. 소스 수정은 없었다.
+정확한 check/job URL과 결과는 [CI 증적](../assets/pr7145_pr7149_ci.json)에 보존했다.
+
+2026-09-15 확인 시점에 원 candidate의 모든 check가 완료됐고 MERGEABLE/CLEAN이었다.
+오늘할일·개별 review·CI 증적만 같은 PR의 single-parent trailing commit으로 추가한다.
+사용자가 CI 완료 후 merge·후속 처리까지 승인했다. 최종 문서 head의 CI 재사용 및 최신 상태를
+다시 확인한 뒤 merge하고, merge SHA·duration refresh·이슈/원 PR 종료 결과는 GitHub 후속 comment에
+기록한다. 병합 뒤 검증 CI를 실행하지 않는다.
 
 ## 최종 판정
 

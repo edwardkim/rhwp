@@ -111,12 +111,30 @@ node scripts/run-rust-test.mjs oracle_page_count_baseline -- --cargo-profile rel
 venv/bin/python scripts/visual_sweep.py --file-target issue6929 samples/issue6929/148776468_search_ad_terms_press_release.hwp pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf --rhwp-bin <candidate-cli> --wasm-pkg <fresh-web-pkg> --pages 1-2 --dpi 96 --out <output>
 ```
 
+## 통합 PR #7162의 제출·CI 결과
+
+[통합 PR #7162](https://github.com/edwardkim/rhwp/pull/7162)의 code candidate는
+`d4e08890695e8ff2c874024514ef761317db35a8`이다. 제출 전 전체 포맷, native·WASM32·workspace
+all-target Clippy, workspace build와 manifest 검사를 모두 통과했다.
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/34953765482)의 Build & Test, Archive A/B/C/D,
+lint, Native Skia, frontend package 및 Render Diff·Adapter·Proptest가 완료됐다.
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/34953765647)은 attempt 2에서 성공했다.
+최초 Rust 분석은 945개 파일 추출 오류 0, SARIF 생성 뒤 업로드 단계에서 실패했다. 명시적인 업로드
+오류가 로그에 없어 근본 원인을 단정하지 않았고 실패 job만 재실행했다. 소스 수정은 없었다.
+정확한 check/job URL과 결과는 [CI 증적](../assets/pr7145_pr7149_ci.json)에 보존했다.
+
+2026-09-15 확인 시점에 원 candidate의 모든 check가 완료됐고 MERGEABLE/CLEAN이었다.
+오늘할일·개별 review·CI 증적만 같은 PR의 single-parent trailing commit으로 추가한다.
+사용자가 CI 완료 후 merge·후속 처리까지 승인했다. 최종 문서 head의 CI 재사용 및 최신 상태를
+다시 확인한 뒤 merge하고, merge SHA·duration refresh·이슈/원 PR 종료 결과는 GitHub 후속 comment에
+기록한다. 병합 뒤 검증 CI를 실행하지 않는다.
+
 ## 최종 판정
 
 **승인** — 기준 PDF·시각 증적·측정 정정을 포함한 로컬 통합본 기준이다. #6929의 표 시작 위치와
 제목 침범 문제는 해소됐고 제품 코드의 추가 메인터너 보정이 필요한 지적은 없다.
-최종 통합 PR 생성·merge와 원 PR/이슈 종료는 아직 수행하지 않았다. 제출할 head의 사전 검증과 CI,
-merge 전 최신 상태 및 승인 조건을 확인해야 한다. [처리 계획](pr_7145_review_impl.md)에 순서를 남겼다.
+통합 PR 생성과 code candidate CI는 위와 같이 완료했다. 최종 문서 head의 CI·merge 및 원 PR/이슈 종료는
+후속 단계이며 실제 결과를 미리 완료로 쓰지 않는다. [처리 계획](pr_7145_review_impl.md)에 순서를 남겼다.
 
 ## Merge 후 contributor PR comment 계획
 
