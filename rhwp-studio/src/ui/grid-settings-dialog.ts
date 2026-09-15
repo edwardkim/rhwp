@@ -9,6 +9,7 @@ import type {
 } from '../view/grid-settings';
 import { convertGridOffsetForOrigin, normalizeGridSettings } from '../view/grid-settings';
 
+import { t } from '../i18n/index.ts';
 /**
  * 격자 설정 대화상자 — 보기 격자와 표/개체 이동 간격을 설정한다.
  */
@@ -31,7 +32,7 @@ export class GridSettingsDialog extends ModalDialog {
     currentMoveStepMm: number,
     onConfirm: (settings: GridViewSettings, moveStepMm: number) => void,
   ) {
-    super('격자 설정', 430);
+    super(t('dialog.gridSettings.title'), 430);
     this.currentSettings = currentSettings;
     this.originBases = originBases;
     this.currentMoveStepMm = currentMoveStepMm;
@@ -49,7 +50,7 @@ export class GridSettingsDialog extends ModalDialog {
     this.visibleInput = document.createElement('input');
     this.visibleInput.type = 'checkbox';
     this.visibleInput.checked = this.currentSettings.visible;
-    body.appendChild(this.checkboxRow(this.visibleInput, '격자 보기'));
+    body.appendChild(this.checkboxRow(this.visibleInput, t('dialog.gridSettings.checkboxRow.label')));
 
     body.appendChild(this.radioGroup<GridPattern>('격자 모양', 'grid-pattern', [
       ['dots', '점'],
@@ -69,23 +70,23 @@ export class GridSettingsDialog extends ModalDialog {
       ['gridOnly', '격자에만 붙이기'],
     ], this.currentSettings.snapMode));
 
-    const spacing = this.group('격자 간격');
+    const spacing = this.group(t('dialog.gridSettings.group.label'));
     this.horizontalInput = this.numberInput(this.currentSettings.horizontalMm);
     this.horizontalInput.name = 'grid-horz';
     this.verticalInput = this.numberInput(this.currentSettings.verticalMm);
     this.verticalInput.name = 'grid-vert';
     spacing.append(
-      this.numberRow('가로', this.horizontalInput),
-      this.numberRow('세로', this.verticalInput),
+      this.numberRow(t('dialog.gridSettings.numberRow.label'), this.horizontalInput),
+      this.numberRow(t('dialog.gridSettings.numberRow.label.xe59031'), this.verticalInput),
     );
     body.appendChild(spacing);
 
     body.appendChild(this.originGroup());
 
-    const move = this.group('표/개체 이동');
+    const move = this.group(t('dialog.gridSettings.group.label.xc19b25'));
     this.moveStepInput = this.numberInput(this.currentMoveStepMm);
     this.moveStepInput.name = 'move-step';
-    move.appendChild(this.numberRow('이동 간격', this.moveStepInput));
+    move.appendChild(this.numberRow(t('dialog.gridSettings.numberRow.label.x347d50'), this.moveStepInput));
     body.appendChild(move);
 
     return body;
@@ -149,7 +150,7 @@ export class GridSettingsDialog extends ModalDialog {
   }
 
   private originGroup(): HTMLElement {
-    const fieldset = this.group('격자 기준 위치');
+    const fieldset = this.group(t('dialog.gridSettings.group.label.xd359fa'));
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px 14px;margin-bottom:8px;color:var(--color-text);';
 
@@ -175,8 +176,8 @@ export class GridSettingsDialog extends ModalDialog {
     this.offsetYInput.name = 'grid-offset-y';
     fieldset.append(
       row,
-      this.numberRow('가로', this.offsetXInput),
-      this.numberRow('세로', this.offsetYInput),
+      this.numberRow(t('dialog.gridSettings.numberRow.label'), this.offsetXInput),
+      this.numberRow(t('dialog.gridSettings.numberRow.label.xe59031'), this.offsetYInput),
     );
     return fieldset;
   }

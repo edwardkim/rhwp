@@ -46,6 +46,7 @@ import {
   type GridModel,
 } from '@/core/chart-grid-model';
 
+import { t } from '../i18n/index.ts';
 const EMPTY_CELL_NOTE =
   '원본이 빈 값(결측)이라 이 자리는 고칠 수 없습니다 — 행을 새로 넣으면 값을 쓸 수 있습니다.';
 const ABSENT_CELL_NOTE = '원본에 이 계열의 값이 없던 자리입니다.';
@@ -87,7 +88,7 @@ export class ChartDataDialog extends ModalDialog {
   private menu = new LocalContextMenu();
 
   constructor(wasm: WasmBridge, eventBus: EventBus, services?: CommandServices) {
-    super('차트 데이터 편집', 560, false);
+    super(t('dialog.chartData.sameChartAddress.title'), 560, false);
     this.wasm = wasm;
     this.eventBus = eventBus;
     this.services = services;
@@ -151,7 +152,7 @@ export class ChartDataDialog extends ModalDialog {
 
     const head = table.createTHead().insertRow();
     const corner = document.createElement('th');
-    corner.textContent = scatter ? 'X' : '카테고리';
+    corner.textContent = scatter ? 'X' : t('dialog.chartData.corner.text');
     head.appendChild(corner);
     model.series.forEach((s, si) => {
       const th = document.createElement('th');
@@ -160,10 +161,10 @@ export class ChartDataDialog extends ModalDialog {
         // 이름 칸이 없는 계열은 열지 않는다 — 열면 코어가 반드시 거부한다.
         // `계열 N` 은 표시용 대체 문구일 뿐이므로 모델에 들어가지 않는다.
         th.className = 'chart-data-series-locked';
-        th.textContent = `계열 ${si + 1}`;
+        th.textContent = t('dialog.chartData.th.text', { p1: si + 1 });
         th.title = NO_NAME_NOTE;
       } else {
-        const input = this.textInput(s.name, '계열 이름');
+        const input = this.textInput(s.name, t('dialog.chartData.textInput.label'));
         input.addEventListener('input', () => {
           this.markText(input);
           this.model = setSeriesName(this.model!, si, input.value);
@@ -183,7 +184,7 @@ export class ChartDataDialog extends ModalDialog {
         const label = model.labels[r];
         const input = scatter
           ? this.numberInput(label.text)
-          : this.textInput(label.text, scatter ? 'X 값' : '카테고리 라벨');
+          : this.textInput(label.text, scatter ? t('dialog.chartData.renderGrid.label') : t('dialog.chartData.renderGrid.label.xc19837'));
         if (label.origin === 'new') input.classList.add('chart-data-new');
         input.addEventListener('input', () => {
           if (scatter) this.markCell(input);
@@ -194,8 +195,8 @@ export class ChartDataDialog extends ModalDialog {
       } else {
         labelCell.textContent = model.labels[r].text || String(r + 1);
         labelCell.title = scatter
-          ? '계열마다 X 가 달라 한 열로 편집할 수 없습니다.'
-          : '다층 또는 계열별 카테고리라 한 열로 편집할 수 없습니다.';
+          ? t('dialog.chartData.labelCell.tooltip')
+          : t('dialog.chartData.labelCell.tooltip.x3df2db');
       }
       row.appendChild(labelCell);
 
@@ -285,19 +286,19 @@ export class ChartDataDialog extends ModalDialog {
       items.push(
         {
           type: 'command',
-          label: '위에 행 추가',
+          label: t('dialog.chartData.menuItems.label'),
           disabledReason: rowsBlocked,
           run: () => this.applyModel(insertRow(model, row)),
         },
         {
           type: 'command',
-          label: '아래에 행 추가',
+          label: t('dialog.chartData.menuItems.label.x3b565a'),
           disabledReason: rowsBlocked,
           run: () => this.applyModel(insertRow(model, row + 1)),
         },
         {
           type: 'command',
-          label: '행 삭제',
+          label: t('dialog.chartData.menuItems.label.x928e00'),
           disabledReason:
             rowsBlocked ?? (model.rowCount <= 1 ? '마지막 행은 지울 수 없습니다.' : undefined),
           run: () => this.applyModel(deleteRow(model, row)),
@@ -318,21 +319,21 @@ export class ChartDataDialog extends ModalDialog {
       items.push(
         {
           type: 'command',
-          label: '왼쪽에 계열 추가',
+          label: t('dialog.chartData.menuItems.label.x49f4ca'),
           disabledReason: candle && series === 0 ? CANDLE_NOTE : undefined,
           note: pieNote,
           run: () => this.applyModel(insertColumn(model, series)),
         },
         {
           type: 'command',
-          label: '오른쪽에 계열 추가',
+          label: t('dialog.chartData.menuItems.label.x1e0262'),
           disabledReason: candle && series === last ? CANDLE_NOTE : undefined,
           note: pieNote,
           run: () => this.applyModel(insertColumn(model, series + 1)),
         },
         {
           type: 'command',
-          label: '계열 삭제',
+          label: t('dialog.chartData.menuItems.label.xb8a829'),
           disabledReason:
             model.series.length <= 1
               ? '마지막 계열은 지울 수 없습니다.'
@@ -380,7 +381,7 @@ export class ChartDataDialog extends ModalDialog {
 
   private showInvalid(invalid: ChartInvalidEntry[] | undefined): void {
     const lines = (invalid ?? []).map((e) => e.message ?? e.reason);
-    this.showError(lines.length > 0 ? lines.join('\n') : '차트가 편집을 거부했습니다.');
+    this.showError(lines.length > 0 ? lines.join('\n') : t('dialog.chartData.showInvalid.label'));
   }
 
   private hideError(): void {
@@ -398,7 +399,7 @@ export class ChartDataDialog extends ModalDialog {
     const names = gridSeriesNames(model);
 
     if (this.hasBrokenInput()) {
-      this.showError('쓸 수 없는 값이 있습니다 — 표시된 칸을 고쳐 주세요.');
+      this.showError(t('dialog.chartData.showError.label'));
       return false;
     }
 
@@ -462,7 +463,7 @@ export class ChartDataDialog extends ModalDialog {
       return false;
     }
     if (result.outcome === 'notFound') {
-      this.showError('차트를 다시 찾지 못했습니다 — 문서가 바뀌었습니다. 다시 열어 주세요.');
+      this.showError(t('dialog.chartData.showError.label.xc15233'));
       return false;
     }
     // applied·noop(쓰기 시점 이미 같은 값) 모두 닫는다.

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const commands = readFileSync(new URL('../src/command/commands/view.ts', import.meta.url), 'utf8');
@@ -24,7 +25,7 @@ test('대화상자는 한컴 비율·쪽 모양 선택을 제공하고 저장소
     '자동', '한 쪽', '두 쪽', '맞쪽', '여러 쪽',
     '세로 방향', '가로 방향', '마우스 휠을 사용하여 좌우로 스크롤하기',
   ]) {
-    assert.ok(dialog.includes(label), `${label} 선택지가 있어야 한다`);
+    assertShowsText(dialog, label, `${label} 선택지가 있어야 한다`);
   }
   assert.match(style, /@import '\.\/styles\/zoom-dialog\.css';/);
 });

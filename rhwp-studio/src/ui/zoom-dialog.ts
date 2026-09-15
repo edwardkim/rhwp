@@ -21,6 +21,7 @@ import {
   type ZoomDialogValue,
 } from '../view/zoom-dialog-state.ts';
 
+import { t } from '../i18n/index.ts';
 const CUSTOM_ZOOM_ERROR_ID = 'zoom-dialog-custom-error';
 
 export interface ZoomDialogOptions {
@@ -45,7 +46,7 @@ export class ZoomDialog extends ModalDialog {
   private inputEnterHandler: ((event: KeyboardEvent) => void) | null = null;
 
   constructor(options: ZoomDialogOptions) {
-    super('확대/축소', 540);
+    super(t('dialog.zoom.title'), 540);
     this.initialChoice = detectZoomChoice(options.currentZoom, options.fitZooms);
     this.initialArrangement = normalizePageArrangement(options.arrangement);
     this.initialPageMovement = normalizePageMovementSettings(options.pageMovement);
@@ -57,7 +58,7 @@ export class ZoomDialog extends ModalDialog {
     this.dialog.classList.add('zoom-dialog');
     const confirm = this.dialog.querySelector<HTMLButtonElement>('.dialog-btn-primary');
     if (confirm) {
-      confirm.textContent = '설정';
+      confirm.textContent = t('dialog.zoom.confirm.text');
       this.inputEnterHandler = (event) => {
         if (event.target === this.customInput && event.key === 'Enter') {
           event.preventDefault();
@@ -116,7 +117,7 @@ export class ZoomDialog extends ModalDialog {
   }
 
   private createZoomSection(): HTMLFieldSetElement {
-    const section = this.section('비율');
+    const section = this.section(t('dialog.zoom.section.label'));
     const grid = document.createElement('div');
     grid.className = 'zoom-dialog-grid';
     const presets = document.createElement('div');
@@ -136,13 +137,13 @@ export class ZoomDialog extends ModalDialog {
       this.radioRow(
         'zoom-choice',
         'fitWidth',
-        '폭 맞춤',
+        t('dialog.zoom.radioRow.label'),
         this.initialChoice.kind === 'fitWidth',
       ),
       this.radioRow(
         'zoom-choice',
         'fitPage',
-        '쪽 맞춤',
+        t('dialog.zoom.radioRow.label.xc096df'),
         this.initialChoice.kind === 'fitPage',
       ),
     );
@@ -150,14 +151,14 @@ export class ZoomDialog extends ModalDialog {
     const customRow = this.radioRow(
       'zoom-choice',
       'custom',
-      '사용자 정의',
+      t('dialog.zoom.radioRow.label.x0b64ca'),
       this.initialChoice.kind === 'custom',
     );
     this.customInput = this.numberInput(
       this.initialChoice.kind === 'custom' ? this.initialChoice.percent : 100,
       MIN_CUSTOM_ZOOM_PERCENT,
       MAX_CUSTOM_ZOOM_PERCENT,
-      '사용자 정의 배율',
+      t('dialog.zoom.createZoomSection.label'),
     );
     this.customInput.setAttribute('aria-describedby', CUSTOM_ZOOM_ERROR_ID);
     this.customInput.setAttribute('aria-invalid', 'false');
@@ -184,20 +185,20 @@ export class ZoomDialog extends ModalDialog {
   }
 
   private createMovementSection(): HTMLFieldSetElement {
-    const section = this.section('쪽 이동');
+    const section = this.section(t('dialog.zoom.section.label.xbd5df6'));
     const options = document.createElement('div');
     options.className = 'zoom-dialog-choice-column';
     options.append(
       this.radioRow(
         'page-movement',
         'vertical',
-        '세로 방향',
+        t('dialog.zoom.radioRow.label.xec44d2'),
         this.initialPageMovement.direction === 'vertical',
       ),
       this.radioRow(
         'page-movement',
         'horizontal',
-        '가로 방향',
+        t('dialog.zoom.radioRow.label.x4d8575'),
         this.initialPageMovement.direction === 'horizontal',
       ),
     );
@@ -209,10 +210,10 @@ export class ZoomDialog extends ModalDialog {
     this.wheelHorizontalInput.checked = this.initialPageMovement.wheelHorizontal;
     this.wheelHorizontalInput.setAttribute(
       'aria-label',
-      '마우스 휠을 사용하여 좌우로 스크롤하기',
+      t('dialog.zoom.createMovementSection.label'),
     );
     const wheelText = document.createElement('span');
-    wheelText.textContent = '마우스 휠을 사용하여 좌우로 스크롤하기';
+    wheelText.textContent = t('dialog.zoom.wheelText.text');
     wheelLabel.append(this.wheelHorizontalInput, wheelText);
     options.appendChild(wheelLabel);
     section.appendChild(options);
@@ -222,7 +223,7 @@ export class ZoomDialog extends ModalDialog {
   }
 
   private createArrangementSection(): HTMLFieldSetElement {
-    const section = this.section('쪽 모양');
+    const section = this.section(t('dialog.zoom.section.label.x10c080'));
     const grid = document.createElement('div');
     grid.className = 'zoom-dialog-grid';
     const standard = document.createElement('div');
@@ -247,7 +248,7 @@ export class ZoomDialog extends ModalDialog {
     const multipleRow = this.radioRow(
       'page-arrangement',
       'multiple',
-      '여러 쪽',
+      t('dialog.zoom.radioRow.label.xf6736f'),
       this.initialArrangement.kind === 'multiple',
     );
     const columns = this.initialArrangement.kind === 'multiple'
@@ -260,13 +261,13 @@ export class ZoomDialog extends ModalDialog {
       columns,
       MIN_MULTIPLE_PAGES,
       MAX_MULTIPLE_PAGES,
-      '여러 쪽 가로 쪽 수',
+      t('dialog.zoom.numberInput.label'),
     );
     this.rowsInput = this.numberInput(
       rows,
       MIN_MULTIPLE_PAGES,
       MAX_MULTIPLE_PAGES,
-      '여러 쪽 세로 쪽 수',
+      t('dialog.zoom.numberInput.label.xc985e9'),
     );
     const multiply = document.createElement('span');
     multiply.className = 'zoom-dialog-multiply';

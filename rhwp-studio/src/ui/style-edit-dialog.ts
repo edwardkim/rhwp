@@ -28,6 +28,7 @@ import { ModalDialog } from './dialog';
 import { CharShapeDialog } from './char-shape-dialog';
 import { ParaShapeDialog } from './para-shape-dialog';
 
+import { t } from '../i18n/index.ts';
 // [Task #2866] 스타일 이름/영문 이름은 HWP5 DocInfo STYLE 레코드에서 u16 길이
 // 프리픽스로 직렬화된다(`src/serializer/doc_info.rs`의 `serialize_style` →
 // `src/serializer/byte_writer.rs`의 `write_hwp_string`, `utf16.len() as u16`).
@@ -75,7 +76,7 @@ export class StyleEditDialog extends ModalDialog {
     baseInfo?: StyleBaseInfo,
     private services?: CommandServices,
   ) {
-    super(mode === 'add' ? '스타일 추가하기' : '스타일 편집하기', 480);
+    super(mode === 'add' ? t('dialog.styleEdit.title') : t('dialog.styleEdit.title.x136817'), 480);
     this.addMode = mode === 'add';
     this.styleInfo = styleInfo ?? { id: -1, name: '새 스타일', englishName: '', type: 0, nextStyleId: 0 };
     this.baseInfo = baseInfo ?? {};
@@ -93,7 +94,7 @@ export class StyleEditDialog extends ModalDialog {
     nameGroup.className = 'se-field-group';
     const nameLabel = document.createElement('label');
     nameLabel.className = 'se-label';
-    nameLabel.textContent = '스타일 이름(N):';
+    nameLabel.textContent = t('dialog.styleEdit.nameLabel.text');
     this.nameInput = document.createElement('input');
     this.nameInput.className = 'se-field-input';
     this.nameInput.maxLength = MAX_STYLE_NAME_LEN;
@@ -105,7 +106,7 @@ export class StyleEditDialog extends ModalDialog {
     enGroup.className = 'se-field-group';
     const enLabel = document.createElement('label');
     enLabel.className = 'se-label';
-    enLabel.textContent = '영문 이름(E):';
+    enLabel.textContent = t('dialog.styleEdit.enLabel.text');
     this.enNameInput = document.createElement('input');
     this.enNameInput.className = 'se-field-input';
     this.enNameInput.maxLength = MAX_STYLE_NAME_LEN;
@@ -127,7 +128,7 @@ export class StyleEditDialog extends ModalDialog {
       typeGroup.className = 'se-field-group';
       const typeLabel = document.createElement('div');
       typeLabel.className = 'se-label';
-      typeLabel.textContent = '스타일 종류';
+      typeLabel.textContent = t('dialog.styleEdit.typeLabel.text');
       const radioGroup = document.createElement('div');
       radioGroup.className = 'se-type-radios';
 
@@ -163,7 +164,7 @@ export class StyleEditDialog extends ModalDialog {
       nextGroup.className = 'se-field-group se-next-group';
       const nextLabel = document.createElement('label');
       nextLabel.className = 'se-label';
-      nextLabel.textContent = '다음 문단에 적용할 스타일(S):';
+      nextLabel.textContent = t('dialog.styleEdit.nextLabel.text');
       this.nextStyleSelect = document.createElement('select');
       this.nextStyleSelect.className = 'se-field-select';
       this.populateNextStyleSelect();
@@ -182,13 +183,13 @@ export class StyleEditDialog extends ModalDialog {
     const btnPara = document.createElement('button');
     btnPara.type = 'button';
     btnPara.className = 'se-shape-btn';
-    btnPara.textContent = '문단 모양(T)...';
+    btnPara.textContent = t('dialog.styleEdit.btnPara.text');
     btnPara.addEventListener('click', () => this.openParaDialog());
 
     const btnChar = document.createElement('button');
     btnChar.type = 'button';
     btnChar.className = 'se-shape-btn';
-    btnChar.textContent = '글자 모양(L)...';
+    btnChar.textContent = t('dialog.styleEdit.btnChar.text');
     btnChar.addEventListener('click', () => this.openCharDialog());
 
     shapeBtns.appendChild(btnPara);
@@ -198,7 +199,7 @@ export class StyleEditDialog extends ModalDialog {
     // ── 안내 문구 ──
     const note = document.createElement('div');
     note.className = 'se-note';
-    note.textContent = '스타일 이름은 다르지만 영문 이름이 같은 경우에는 두 스타일을 같은 스타일로 인식합니다.';
+    note.textContent = t('dialog.styleEdit.note.text');
     body.appendChild(note);
 
     return body;
@@ -287,11 +288,11 @@ export class StyleEditDialog extends ModalDialog {
     const nextStyleId = this.nextStyleSelect ? (parseInt(this.nextStyleSelect.value) || 0) : this.styleInfo.nextStyleId;
 
     if (!name) {
-      alert('스타일 이름을 입력하세요.');
+      alert(t('dialog.styleEdit.onConfirm.message'));
       return false;
     }
     if (name.length > MAX_STYLE_NAME_LEN || englishName.length > MAX_STYLE_NAME_LEN) {
-      alert(`스타일 이름/영문 이름은 ${MAX_STYLE_NAME_LEN}자를 넘을 수 없습니다.`);
+      alert(t('dialog.styleEdit.onConfirm.message.xe7d6e3', { p1: MAX_STYLE_NAME_LEN }));
       return false;
     }
 
@@ -361,7 +362,7 @@ export class StyleEditDialog extends ModalDialog {
     // 확인 버튼 텍스트를 모드에 맞게 변경
     const confirmBtn = this.dialog.querySelector('.dialog-btn-primary');
     if (confirmBtn) {
-      confirmBtn.textContent = this.addMode ? '추가(D)' : '설정(D)';
+      confirmBtn.textContent = this.addMode ? t('dialog.styleEdit.confirmBtn.text') : t('dialog.styleEdit.confirmBtn.text.x595d2a');
     }
   }
 

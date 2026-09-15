@@ -6,6 +6,7 @@
  */
 import { ModalDialog } from './dialog';
 
+import { t } from '../i18n/index.ts';
 /**
  * 외부 크레이트 라이선스 정보.
  *
@@ -34,7 +35,7 @@ const THIRD_PARTY_LICENSES = [
 
 export class AboutDialog extends ModalDialog {
   constructor() {
-    super('제품 정보', 460);
+    super(t('dialog.about.title'), 460);
   }
 
   protected createBody(): HTMLElement {
@@ -50,7 +51,7 @@ export class AboutDialog extends ModalDialog {
     // 제품 한글명
     const titleKo = document.createElement('div');
     titleKo.className = 'about-product-name-ko';
-    titleKo.textContent = 'HWP 오픈소스 편집';
+    titleKo.textContent = t('dialog.about.titleKo.text');
     body.appendChild(titleKo);
 
     // 버전
@@ -69,13 +70,13 @@ export class AboutDialog extends ModalDialog {
     const notice = document.createElement('div');
     notice.className = 'about-notice';
     notice.textContent =
-      '본 제품은 한글과컴퓨터의 한글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.';
+      t('dialog.about.notice.text');
     body.appendChild(notice);
 
     // 오픈소스 라이선스
     const licenseTitle = document.createElement('div');
     licenseTitle.className = 'about-license-title';
-    licenseTitle.textContent = '오픈소스 라이선스';
+    licenseTitle.textContent = t('dialog.about.licenseTitle.text');
     body.appendChild(licenseTitle);
 
     const licenseTable = document.createElement('table');
@@ -96,7 +97,7 @@ export class AboutDialog extends ModalDialog {
     const licenseNote = document.createElement('div');
     licenseNote.className = 'about-license-note';
     licenseNote.textContent =
-      'WASM 번들에 포함되는 핵심 크레이트만 표시합니다. 전체 목록은 THIRD_PARTY_LICENSES.md를 참조하세요.';
+      t('dialog.about.licenseNote.text');
     body.appendChild(licenseNote);
 
     // 저작권
@@ -120,7 +121,7 @@ export class AboutDialog extends ModalDialog {
       footer.replaceChildren();
       const closeBtn = document.createElement('button');
       closeBtn.className = 'dialog-btn dialog-btn-primary';
-      closeBtn.textContent = '닫기';
+      closeBtn.textContent = t('dialog.about.closeBtn.text');
       closeBtn.addEventListener('click', () => this.hide());
       footer.appendChild(closeBtn);
     }

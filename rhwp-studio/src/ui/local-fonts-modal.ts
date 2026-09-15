@@ -8,6 +8,7 @@
 import type { DocumentFontStatusItem, DocumentFontStatusReport } from '@/core/document-font-status';
 import { enableDialogDrag } from './dialog-drag';
 
+import { t } from '../i18n/index.ts';
 export type LocalFontsChoice = 'detect' | 'web-substitute' | 'cancel';
 
 export interface LocalFontsModalOptions {
@@ -15,10 +16,10 @@ export interface LocalFontsModalOptions {
 }
 
 const STATUS_LABEL: Record<DocumentFontStatusItem['status'], string> = {
-  available: '사용 가능',
-  'needs-local-check': '로컬 확인 필요',
-  'web-substitute': '대체 글꼴 사용',
-  missing: '누락',
+  available: t('dialog.localFontsModal.label'),
+  'needs-local-check': t('dialog.localFontsModal.label.x65a9e1'),
+  'web-substitute': t('dialog.localFontsModal.label.x5e6b16'),
+  missing: t('dialog.localFontsModal.label.x2caa28'),
 };
 
 export class LocalFontsModal {
@@ -55,7 +56,7 @@ export class LocalFontsModal {
 
     const title = document.createElement('div');
     title.className = 'dialog-title';
-    title.textContent = '로컬 글꼴 감지';
+    title.textContent = t('dialog.localFontsModal.title.text');
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dialog-close';
     closeBtn.textContent = '\u00D7';
@@ -72,8 +73,8 @@ export class LocalFontsModal {
     const desc = document.createElement('p');
     desc.style.margin = '0 0 12px 0';
     desc.textContent = this.report.detectionMethod === 'font-presence-probe'
-      ? '현재 문서에 rhwp 기본 지원 글꼴이 아닌 글꼴이 있습니다. 원본에 가깝게 표시하기 위해, 이 문서에 필요한 글꼴이 이 기기에 설치되어 있는지 확인합니다.'
-      : '현재 문서에 rhwp 기본 지원 글꼴이 아닌 글꼴이 있습니다. 로컬 글꼴 목록을 확인하고, 목록에서 빠진 현재 문서 후보만 추가 확인하려면 감지를 허용해 주세요.';
+      ? t('dialog.localFontsModal.desc.text')
+      : t('dialog.localFontsModal.desc.text.x81cd42');
     body.appendChild(desc);
 
     const privacy = document.createElement('p');
@@ -81,8 +82,8 @@ export class LocalFontsModal {
     privacy.style.fontSize = '13px';
     privacy.style.color = 'var(--color-text-secondary)';
     privacy.textContent = this.report.detectionMethod === 'font-presence-probe'
-      ? '이 브라우저에서는 설치된 모든 글꼴 목록을 가져오지 않고, 현재 문서에 필요한 글꼴만 확인합니다. 확인 결과는 이 브라우저/확장 로컬 저장소에만 보관되며 서버로 전송하지 않습니다. 감지를 건너뛰면 대체 글꼴로 계속 표시합니다.'
-      : 'Chrome/Edge의 로컬 글꼴 목록은 일부 설치 face를 누락할 수 있어 현재 문서의 미해소 후보만 추가 확인합니다. 결과는 이 브라우저/확장 로컬 저장소에만 보관되며 서버로 전송하지 않습니다. 감지를 건너뛰면 대체 글꼴로 계속 표시합니다.';
+      ? t('dialog.localFontsModal.privacy.text')
+      : t('dialog.localFontsModal.privacy.text.x1d928d');
     body.appendChild(privacy);
 
     if (this.options.disableExternalWebFonts) {
@@ -93,7 +94,7 @@ export class LocalFontsModal {
       offlineNotice.style.borderRadius = '4px';
       offlineNotice.style.fontSize = '13px';
       offlineNotice.style.color = 'var(--color-text-secondary)';
-      offlineNotice.textContent = '외부 웹폰트 사용 안 함: 켜짐. 대체 글꼴은 외부 CDN 폰트를 요청하지 않고 번들/시스템 글꼴 기준으로 표시됩니다.';
+      offlineNotice.textContent = t('dialog.localFontsModal.offlineNotice.text');
       body.appendChild(offlineNotice);
     }
 
@@ -111,7 +112,7 @@ export class LocalFontsModal {
     for (const [label, count] of rows) {
       if (count === 0) continue;
       const li = document.createElement('li');
-      li.textContent = `${label}: ${count}개`;
+      li.textContent = t('dialog.localFontsModal.li.text', { p1: label, p2: count });
       summary.appendChild(li);
     }
     body.appendChild(summary);
@@ -119,7 +120,7 @@ export class LocalFontsModal {
     const details = document.createElement('details');
     details.style.marginTop = '8px';
     const summaryEl = document.createElement('summary');
-    summaryEl.textContent = '문서 글꼴 상태 보기';
+    summaryEl.textContent = t('dialog.localFontsModal.summaryEl.text');
     summaryEl.style.cursor = 'pointer';
     summaryEl.style.fontSize = '13px';
     summaryEl.style.color = 'var(--ui-link)';
@@ -146,7 +147,7 @@ export class LocalFontsModal {
       const more = document.createElement('div');
       more.style.color = 'var(--color-text-hint)';
       more.style.marginTop = '4px';
-      more.textContent = `... 외 ${this.report.fonts.length - maxShow}개`;
+      more.textContent = t('dialog.localFontsModal.more.text', { p1: this.report.fonts.length - maxShow });
       detailList.appendChild(more);
     }
     details.appendChild(detailList);
@@ -159,12 +160,12 @@ export class LocalFontsModal {
 
     const detectBtn = document.createElement('button');
     detectBtn.className = 'dialog-btn dialog-btn-primary';
-    detectBtn.textContent = '로컬 글꼴 감지 (권장)';
+    detectBtn.textContent = t('dialog.localFontsModal.detectBtn.text');
     detectBtn.addEventListener('click', () => this.resolve('detect'));
 
     const webBtn = document.createElement('button');
     webBtn.className = 'dialog-btn';
-    webBtn.textContent = '대체 글꼴로 보기';
+    webBtn.textContent = t('dialog.localFontsModal.webBtn.text');
     webBtn.addEventListener('click', () => this.resolve('web-substitute'));
 
     footer.appendChild(detectBtn);

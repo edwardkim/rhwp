@@ -3,6 +3,7 @@ import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 const commandSource = readFileSync(new URL('../src/command/commands/file.ts', import.meta.url), 'utf8');
 const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const bridgeSource = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
@@ -50,7 +51,7 @@ test('다른 이름·HWP·HWPX 저장은 공통 대화상자에서 암호 설정
 test('저장 대화상자는 HWP/HWPX에서만 암호 설정 action을 반환한다', () => {
   assert.match(saveAsDialogSource, /export interface SaveAsDialogResult/, '파일명과 암호 설정 선택을 함께 반환해야 합니다');
   assert.match(saveAsDialogSource, /configurePassword: boolean/, '암호 설정 여부가 명시되어야 합니다');
-  assert.match(codeOnly(saveAsDialogSource), /passwordButton\.textContent = '암호 설정\.\.\.'/, '대화상자에 암호 설정 button이 있어야 합니다');
+  assertShowsText(codeOnly(saveAsDialogSource), '암호 설정...', '대화상자에 암호 설정 button이 있어야 합니다');
   assert.match(saveAsDialogSource, /options\.allowPassword === true/, '호출자가 암호 설정 노출 여부를 제어해야 합니다');
 });
 
@@ -116,11 +117,7 @@ test('보호된 문서의 Save As 기본 확인은 평문 exporter를 고르지 
 });
 
 test('평문 사본은 명시적 보호 해제 동작에서만 만든다', () => {
-  assert.match(
-    codeOnly(saveAsDialogSource),
-    /plaintextButton\.textContent = '암호 없이 저장'/,
-    '보호된 문서에 암호 없이 저장 선택이 있어야 합니다',
-  );
+  assertShowsText(codeOnly(saveAsDialogSource), '암호 없이 저장', '보호된 문서에 암호 없이 저장 선택이 있어야 합니다');
   assert.match(
     saveAsDialogSource,
     /configurePassword: false/,

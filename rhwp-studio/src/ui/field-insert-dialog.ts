@@ -12,6 +12,7 @@ import {
   type ClickHereProps,
 } from './field-edit-dialog';
 
+import { t } from '../i18n/index.ts';
 export class FieldInsertDialog extends ModalDialog {
   private guideInput!: HTMLInputElement;
   private memoInput!: HTMLTextAreaElement;
@@ -24,7 +25,7 @@ export class FieldInsertDialog extends ModalDialog {
   onApply: ((props: ClickHereProps) => void) | null = null;
 
   constructor() {
-    super('필드 입력', 420, false);
+    super(t('dialog.fieldInsert.title'), 420, false);
   }
 
   protected createBody(): HTMLElement {
@@ -35,7 +36,7 @@ export class FieldInsertDialog extends ModalDialog {
     tabBar.className = 'dialog-tabs';
     const tab = document.createElement('button');
     tab.className = 'dialog-tab active';
-    tab.textContent = '누름틀';
+    tab.textContent = t('dialog.fieldInsert.tab.text');
     tab.type = 'button';
     tabBar.appendChild(tab);
     body.appendChild(tabBar);
@@ -45,7 +46,7 @@ export class FieldInsertDialog extends ModalDialog {
 
     const guideLabel = document.createElement('label');
     guideLabel.className = 'field-edit-label';
-    guideLabel.textContent = '입력할 내용의 안내문(P):';
+    guideLabel.textContent = t('dialog.fieldInsert.guideLabel.text');
     panel.appendChild(guideLabel);
 
     this.guideInput = document.createElement('input');
@@ -60,12 +61,12 @@ export class FieldInsertDialog extends ModalDialog {
     this.guideErrorLabel.style.color = '#c00';
     this.guideErrorLabel.style.fontSize = '11px';
     this.guideErrorLabel.style.display = 'none';
-    this.guideErrorLabel.textContent = `안내문은 ${MAX_FIELD_GUIDE_LEN}자를 넘을 수 없습니다.`;
+    this.guideErrorLabel.textContent = t('dialog.fieldInsert.guideErrorLabel.text', { p1: MAX_FIELD_GUIDE_LEN });
     panel.appendChild(this.guideErrorLabel);
 
     const memoLabel = document.createElement('label');
     memoLabel.className = 'field-edit-label';
-    memoLabel.textContent = '메모 내용(M):';
+    memoLabel.textContent = t('dialog.fieldInsert.memoLabel.text');
     panel.appendChild(memoLabel);
 
     this.memoInput = document.createElement('textarea');
@@ -79,12 +80,12 @@ export class FieldInsertDialog extends ModalDialog {
     this.memoErrorLabel.style.color = '#c00';
     this.memoErrorLabel.style.fontSize = '11px';
     this.memoErrorLabel.style.display = 'none';
-    this.memoErrorLabel.textContent = `메모 내용은 ${MAX_FIELD_MEMO_LEN}자를 넘을 수 없습니다.`;
+    this.memoErrorLabel.textContent = t('dialog.fieldInsert.memoErrorLabel.text', { p1: MAX_FIELD_MEMO_LEN });
     panel.appendChild(this.memoErrorLabel);
 
     const nameLabel = document.createElement('label');
     nameLabel.className = 'field-edit-label';
-    nameLabel.textContent = '필드 이름(N):';
+    nameLabel.textContent = t('dialog.fieldInsert.nameLabel.text');
     panel.appendChild(nameLabel);
 
     this.nameInput = document.createElement('input');
@@ -98,7 +99,7 @@ export class FieldInsertDialog extends ModalDialog {
     this.nameErrorLabel.style.color = '#c00';
     this.nameErrorLabel.style.fontSize = '11px';
     this.nameErrorLabel.style.display = 'none';
-    this.nameErrorLabel.textContent = `필드 이름은 ${MAX_FIELD_NAME_LEN}자를 넘을 수 없습니다.`;
+    this.nameErrorLabel.textContent = t('dialog.fieldInsert.nameErrorLabel.text', { p1: MAX_FIELD_NAME_LEN });
     panel.appendChild(this.nameErrorLabel);
 
     const editableRow = document.createElement('label');
@@ -153,8 +154,8 @@ export class FieldInsertDialog extends ModalDialog {
     const footer = this.dialog.querySelector('.dialog-footer');
     if (footer) {
       const buttons = footer.querySelectorAll('button');
-      if (buttons[0]) buttons[0].textContent = '넣기(D)';
-      if (buttons[1]) buttons[1].textContent = '취소';
+      if (buttons[0]) buttons[0].textContent = t('dialog.fieldInsert.show.text');
+      if (buttons[1]) buttons[1].textContent = t('dialog.fieldInsert.show.text.x14bc24');
     }
 
     // 싱글턴으로 재사용되므로 이전 삽입 값이 남지 않도록 초기 상태로 리셋한다.

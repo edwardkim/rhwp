@@ -16,6 +16,7 @@ import {
 } from '@/core/local-fonts';
 import type { EventBus } from '@/core/event-bus';
 
+import { t as i18nText } from '../i18n/index.ts';
 export class OptionsDialog extends ModalDialog {
   private showRecentCheck!: HTMLInputElement;
   private recentCountInput!: HTMLInputElement;
@@ -26,7 +27,7 @@ export class OptionsDialog extends ModalDialog {
   private pdfPrintGuidanceCheck!: HTMLInputElement;
 
   constructor(private readonly eventBus?: EventBus) {
-    super('환경 설정', 480);
+    super(i18nText('dialog.options.title'), 480);
   }
 
   protected createBody(): HTMLElement {
@@ -39,13 +40,13 @@ export class OptionsDialog extends ModalDialog {
 
     const fontTab = document.createElement('button');
     fontTab.className = 'dialog-tab active';
-    fontTab.textContent = '글꼴';
+    fontTab.textContent = i18nText('dialog.options.fontTab.text');
     fontTab.dataset.tab = 'font';
     tabs.appendChild(fontTab);
 
     const fileTab = document.createElement('button');
     fileTab.className = 'dialog-tab';
-    fileTab.textContent = '파일';
+    fileTab.textContent = i18nText('dialog.options.fileTab.text');
     fileTab.dataset.tab = 'file';
     tabs.appendChild(fileTab);
 
@@ -87,7 +88,7 @@ export class OptionsDialog extends ModalDialog {
 
     const viewTitle = document.createElement('div');
     viewTitle.className = 'dialog-section-title';
-    viewTitle.textContent = '글꼴 보기';
+    viewTitle.textContent = i18nText('dialog.options.viewTitle.text');
     viewSection.appendChild(viewTitle);
 
     // 최근 사용 글꼴 보이기
@@ -101,7 +102,7 @@ export class OptionsDialog extends ModalDialog {
 
     const recentLabel = document.createElement('label');
     recentLabel.htmlFor = 'opt-show-recent';
-    recentLabel.textContent = '최근에 사용한 글꼴 보이기';
+    recentLabel.textContent = i18nText('dialog.options.recentLabel.text');
 
     this.recentCountInput = document.createElement('input');
     this.recentCountInput.type = 'number';
@@ -112,7 +113,7 @@ export class OptionsDialog extends ModalDialog {
 
     const countLabel = document.createElement('span');
     countLabel.className = 'opt-count-label';
-    countLabel.textContent = '개';
+    countLabel.textContent = i18nText('dialog.options.countLabel.text');
 
     recentRow.appendChild(this.showRecentCheck);
     recentRow.appendChild(recentLabel);
@@ -128,17 +129,17 @@ export class OptionsDialog extends ModalDialog {
 
     const fontSetTitle = document.createElement('div');
     fontSetTitle.className = 'dialog-section-title';
-    fontSetTitle.textContent = '대표 글꼴 등록';
+    fontSetTitle.textContent = i18nText('dialog.options.fontSetTitle.text');
     fontSetSection.appendChild(fontSetTitle);
 
     const fontSetDesc = document.createElement('p');
     fontSetDesc.className = 'opt-desc';
-    fontSetDesc.textContent = '대표 글꼴은 각 언어별 글꼴을 짝지어 한 번에 적용하는 글꼴 세트입니다.';
+    fontSetDesc.textContent = i18nText('dialog.options.fontSetDesc.text');
     fontSetSection.appendChild(fontSetDesc);
 
     const fontSetBtn = document.createElement('button');
     fontSetBtn.className = 'dialog-btn opt-fontset-btn';
-    fontSetBtn.textContent = '대표 글꼴 등록하기';
+    fontSetBtn.textContent = i18nText('dialog.options.fontSetBtn.text');
     fontSetBtn.addEventListener('click', () => {
       const dlg = new FontSetDialog();
       dlg.show();
@@ -153,12 +154,12 @@ export class OptionsDialog extends ModalDialog {
 
     const localTitle = document.createElement('div');
     localTitle.className = 'dialog-section-title';
-    localTitle.textContent = '로컬 글꼴';
+    localTitle.textContent = i18nText('dialog.options.localTitle.text');
     localSection.appendChild(localTitle);
 
     const localDesc = document.createElement('p');
     localDesc.className = 'opt-desc';
-    localDesc.textContent = 'PC에 설치된 글꼴을 감지하여 글꼴 목록에 추가합니다. (Chrome/Edge는 목록 열거 후 문서에서 누락된 후보를 추가 확인, Firefox는 문서에 필요한 후보만 확인)';
+    localDesc.textContent = i18nText('dialog.options.localDesc.text');
     localSection.appendChild(localDesc);
 
     const localRow = document.createElement('div');
@@ -166,11 +167,11 @@ export class OptionsDialog extends ModalDialog {
 
     const localBtn = document.createElement('button');
     localBtn.className = 'dialog-btn opt-fontset-btn';
-    localBtn.textContent = '로컬 글꼴 감지하기';
+    localBtn.textContent = i18nText('dialog.options.localBtn.text');
 
     const resetBtn = document.createElement('button');
     resetBtn.className = 'dialog-btn opt-fontset-btn';
-    resetBtn.textContent = '감지 결과 초기화';
+    resetBtn.textContent = i18nText('dialog.options.resetBtn.text');
 
     const localStatus = document.createElement('p');
     localStatus.className = 'opt-local-status';
@@ -179,28 +180,28 @@ export class OptionsDialog extends ModalDialog {
       const state = getLocalFontState();
       localStatus.textContent = message ?? formatLocalFontStatus(state);
       resetBtn.disabled = !state.stored;
-      localBtn.textContent = state.stored ? '로컬 글꼴 재감지' : '로컬 글꼴 감지하기';
+      localBtn.textContent = state.stored ? i18nText('dialog.options.localBtn.text.x827ff8') : i18nText('dialog.options.localBtn.text');
     };
 
-    updateLocalStatus('감지 결과 확인 중...');
+    updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label'));
     void loadStoredLocalFonts().then(
       () => updateLocalStatus(),
-      () => updateLocalStatus('저장된 감지 결과를 확인하지 못했습니다.'),
+      () => updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.x562451')),
     );
 
     localBtn.addEventListener('click', async () => {
       if (!isLocalFontAccessSupported()) {
         localStatus.textContent = getLocalFontState().method === 'font-presence-probe'
-          ? '이 브라우저는 전체 로컬 글꼴 목록 감지를 지원하지 않습니다. 문서를 열 때 필요한 글꼴만 확인합니다.'
-          : '이 브라우저는 로컬 글꼴 감지를 지원하지 않습니다.';
+          ? i18nText('dialog.options.localStatus.text')
+          : i18nText('dialog.options.localStatus.text.xc0a701');
         return;
       }
       localBtn.disabled = true;
       resetBtn.disabled = true;
-      localStatus.textContent = '감지 중...';
+      localStatus.textContent = i18nText('dialog.options.localStatus.text.xfd877c');
       try {
         const fonts = await detectLocalFonts({ force: true });
-        updateLocalStatus(`${fonts.length}개 로컬 글꼴 열거 결과를 저장했습니다. 문서별 누락 후보는 문서를 열 때 추가 확인합니다.`);
+        updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.x97c46b', { p1: fonts.length }));
         this.eventBus?.emit('local-fonts-changed', { fonts, source: 'options-dialog' });
       } catch (error) {
         updateLocalStatus(describeLocalFontDetectionError(error));
@@ -211,13 +212,13 @@ export class OptionsDialog extends ModalDialog {
     resetBtn.addEventListener('click', async () => {
       localBtn.disabled = true;
       resetBtn.disabled = true;
-      localStatus.textContent = '감지 결과 초기화 중...';
+      localStatus.textContent = i18nText('dialog.options.localStatus.text.x4e6625');
       try {
         await clearStoredLocalFonts();
-        updateLocalStatus('저장된 로컬 글꼴 감지 결과를 삭제했습니다.');
+        updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.xcbeff3'));
         this.eventBus?.emit('local-fonts-changed', { fonts: [], source: 'options-dialog-clear' });
       } catch {
-        updateLocalStatus('저장된 감지 결과를 삭제하지 못했습니다.');
+        updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.x1ca5cc'));
       }
       localBtn.disabled = false;
     });
@@ -242,12 +243,12 @@ export class OptionsDialog extends ModalDialog {
 
     const saveTitle = document.createElement('div');
     saveTitle.className = 'dialog-section-title';
-    saveTitle.textContent = '복구용 임시 파일 자동 저장';
+    saveTitle.textContent = i18nText('dialog.options.saveTitle.text');
     saveSection.appendChild(saveTitle);
 
     const desc = document.createElement('p');
     desc.className = 'opt-desc';
-    desc.textContent = '대형 문서는 자동저장 시 전체 HWP 복구본을 만들기 때문에 간격을 길게 두면 편집 중 멈춤을 줄일 수 있습니다.';
+    desc.textContent = i18nText('dialog.options.desc.text');
     saveSection.appendChild(desc);
 
     this.recoveryEnabledCheck = document.createElement('input');
@@ -303,13 +304,13 @@ export class OptionsDialog extends ModalDialog {
 
     const pdfTitle = document.createElement('div');
     pdfTitle.className = 'dialog-section-title';
-    pdfTitle.textContent = 'PDF 저장';
+    pdfTitle.textContent = i18nText('dialog.options.pdfTitle.text');
     pdfSection.appendChild(pdfTitle);
 
     const pdfDesc = document.createElement('p');
     pdfDesc.className = 'opt-desc';
     pdfDesc.textContent =
-      '안내를 끄면 PDF로 저장을 선택하는 즉시 문서 준비가 시작됩니다. 준비 진행률과 오류는 계속 표시됩니다.';
+      i18nText('dialog.options.pdfDesc.text');
     pdfSection.appendChild(pdfDesc);
 
     const pdfRow = document.createElement('div');
@@ -322,7 +323,7 @@ export class OptionsDialog extends ModalDialog {
 
     const pdfLabel = document.createElement('label');
     pdfLabel.htmlFor = 'opt-pdf-print-guidance';
-    pdfLabel.textContent = 'PDF로 저장할 때 저장 방법 안내 표시';
+    pdfLabel.textContent = i18nText('dialog.options.pdfLabel.text');
 
     pdfRow.append(this.pdfPrintGuidanceCheck, pdfLabel);
     pdfSection.appendChild(pdfRow);

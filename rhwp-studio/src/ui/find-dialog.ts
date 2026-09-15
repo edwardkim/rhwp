@@ -1,6 +1,7 @@
 import type { CommandServices } from '@/command/types';
 import type { SearchResult, ReplaceResult, ReplaceAllResult } from '@/core/types';
 
+import { t } from '../i18n/index.ts';
 export type FindMode = 'find' | 'replace';
 
 /**
@@ -155,7 +156,7 @@ export class FindDialog {
     const findRow = document.createElement('div');
     findRow.className = 'find-dialog-row';
     const findLabel = document.createElement('label');
-    findLabel.textContent = '찾을 내용:';
+    findLabel.textContent = t('dialog.find.findLabel.text');
     findLabel.className = 'find-dialog-label';
     this.queryInput = document.createElement('input');
     this.queryInput.type = 'text';
@@ -171,7 +172,7 @@ export class FindDialog {
     this.replaceRow = document.createElement('div');
     this.replaceRow.className = 'find-dialog-row';
     const replaceLabel = document.createElement('label');
-    replaceLabel.textContent = '바꿀 내용:';
+    replaceLabel.textContent = t('dialog.find.replaceLabel.text');
     replaceLabel.className = 'find-dialog-label';
     this.replaceInput = document.createElement('input');
     this.replaceInput.type = 'text';
@@ -191,7 +192,7 @@ export class FindDialog {
     this.caseSensitiveCheck.id = 'find-case-sensitive';
     const caseLabel = document.createElement('label');
     caseLabel.htmlFor = 'find-case-sensitive';
-    caseLabel.textContent = ' 대소문자 구분';
+    caseLabel.textContent = t('dialog.find.caseLabel.text');
     optRow.appendChild(this.caseSensitiveCheck);
     optRow.appendChild(caseLabel);
 
@@ -206,8 +207,8 @@ export class FindDialog {
     const btnRow = document.createElement('div');
     btnRow.className = 'find-dialog-buttons';
 
-    const prevBtn = this.createButton('이전 찾기', () => this.findPrev());
-    const nextBtn = this.createButton('다음 찾기', () => this.findNext());
+    const prevBtn = this.createButton(t('dialog.find.createButton.label'), () => this.findPrev());
+    const nextBtn = this.createButton(t('dialog.find.createButton.label.xa65469'), () => this.findNext());
     btnRow.appendChild(prevBtn);
     btnRow.appendChild(nextBtn);
     this.wrap.appendChild(btnRow);
@@ -215,8 +216,8 @@ export class FindDialog {
     // 바꾸기 버튼 행
     this.replaceButtonRow = document.createElement('div');
     this.replaceButtonRow.className = 'find-dialog-buttons';
-    const replaceBtn = this.createButton('바꾸기', () => this.doReplace());
-    const replaceAllBtn = this.createButton('모두 바꾸기', () => this.doReplaceAll());
+    const replaceBtn = this.createButton(t('dialog.find.createButton.label.x51f3cf'), () => this.doReplace());
+    const replaceAllBtn = this.createButton(t('dialog.find.createButton.label.x8e3a35'), () => this.doReplaceAll());
     this.replaceButtonRow.appendChild(replaceBtn);
     this.replaceButtonRow.appendChild(replaceAllBtn);
     this.wrap.appendChild(this.replaceButtonRow);
@@ -277,7 +278,7 @@ export class FindDialog {
 
   private applyMode(): void {
     const isReplace = this.mode === 'replace';
-    this.titleLabel.textContent = isReplace ? '찾아 바꾸기' : '찾기';
+    this.titleLabel.textContent = isReplace ? t('dialog.find.titleLabel.text') : t('dialog.find.titleLabel.text.xcea914');
     this.replaceRow.style.display = isReplace ? '' : 'none';
     this.replaceButtonRow.style.display = isReplace ? '' : 'none';
   }
@@ -322,14 +323,14 @@ export class FindDialog {
       this.navigateToHit(result);
       if (result.wrapped) {
         this.statusLabel.style.color = '#0066cc';
-        this.statusLabel.textContent = forward ? '맨 마지막입니다. 처음부터 계속합니다.' : '맨 처음입니다. 끝부터 계속합니다.';
+        this.statusLabel.textContent = forward ? t('dialog.find.statusLabel.text') : t('dialog.find.statusLabel.text.x2dd4d3');
       } else {
         this.statusLabel.textContent = '';
       }
     } else {
       this.currentHit = null;
       this.statusLabel.style.color = '#c00';
-      this.statusLabel.textContent = '검색 결과 없음';
+      this.statusLabel.textContent = t('dialog.find.statusLabel.text.x88cec1');
     }
   }
 
@@ -409,7 +410,7 @@ export class FindDialog {
     }
 
     if (result.ok) {
-      this.statusLabel.textContent = `${result.count}개 바꿈`;
+      this.statusLabel.textContent = t('dialog.find.statusLabel.text.xf6f3e3', { p1: result.count });
       this.currentHit = null;
     }
   }

@@ -2,6 +2,7 @@ import { webHyperlinkUrl } from '@/core/hyperlink';
 import { ModalDialog } from './dialog';
 import './hyperlink-dialog.css';
 
+import { t } from '../i18n/index.ts';
 export type HyperlinkEdit = { kind: 'save'; uri: string; text: string } | { kind: 'remove' };
 
 export class HyperlinkDialog extends ModalDialog {
@@ -13,7 +14,7 @@ export class HyperlinkDialog extends ModalDialog {
   constructor(
     private initial: { text: string; uri: string; existing: boolean; canInsertText: boolean },
     private apply: (edit: HyperlinkEdit) => void,
-  ) { super(initial.existing ? '하이퍼링크 고치기' : '하이퍼링크', 560); }
+  ) { super(initial.existing ? t('dialog.hyperlink.title') : t('dialog.hyperlink.title.x7e4b51'), 560); }
 
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
@@ -38,17 +39,17 @@ export class HyperlinkDialog extends ModalDialog {
     const targets = document.createElement('fieldset');
     targets.className = 'dialog-hyperlink-target';
     const legend = document.createElement('legend');
-    legend.textContent = '연결 대상';
+    legend.textContent = t('dialog.hyperlink.legend.text');
     targets.append(legend);
     const tabs = document.createElement('div');
     tabs.className = 'dialog-tabs';
     tabs.setAttribute('role', 'tablist');
-    tabs.setAttribute('aria-label', '연결 대상');
+    tabs.setAttribute('aria-label', t('dialog.hyperlink.createBody.label'));
     const webTab = document.createElement('button');
     webTab.type = 'button';
     webTab.id = 'hyperlink-web-tab';
     webTab.className = 'dialog-tab active';
-    webTab.textContent = '웹 주소';
+    webTab.textContent = t('dialog.hyperlink.webTab.text');
     webTab.setAttribute('role', 'tab');
     webTab.setAttribute('aria-selected', 'true');
     webTab.setAttribute('aria-controls', 'hyperlink-web-panel');
@@ -61,13 +62,13 @@ export class HyperlinkDialog extends ModalDialog {
     panel.setAttribute('aria-labelledby', webTab.id);
     const webLabel = document.createElement('label');
     webLabel.htmlFor = 'hyperlink-uri';
-    webLabel.textContent = '웹 주소';
+    webLabel.textContent = t('dialog.hyperlink.webLabel.text');
     panel.append(webLabel);
     this.uriInput = document.createElement('input');
     this.uriInput.className = 'dialog-input';
     this.uriInput.id = 'hyperlink-uri';
     this.uriInput.type = 'url';
-    this.uriInput.setAttribute('aria-label', '웹 주소');
+    this.uriInput.setAttribute('aria-label', t('dialog.hyperlink.createBody.label.x36747b'));
     this.uriInput.placeholder = 'https://example.com';
     this.uriInput.value = this.initial.uri;
     const addressRow = document.createElement('div');
@@ -76,8 +77,8 @@ export class HyperlinkDialog extends ModalDialog {
     this.previewButton.type = 'button';
     this.previewButton.id = 'hyperlink-preview';
     this.previewButton.className = 'dialog-btn dialog-hyperlink-preview';
-    this.previewButton.title = '웹 주소 새 탭에서 열어보기';
-    this.previewButton.setAttribute('aria-label', '웹 주소 새 탭에서 열어보기');
+    this.previewButton.title = t('dialog.hyperlink.previewButton.tooltip');
+    this.previewButton.setAttribute('aria-label', t('dialog.hyperlink.createBody.label.x0091e9'));
     // 텍스트 이모지 대신 currentColor SVG로 테마와 플랫폼에 관계없이 같은 지구본을 표시한다.
     this.previewButton.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 7h14M5 17h14"/></svg>';
     this.previewButton.addEventListener('click', () => {
@@ -122,7 +123,7 @@ export class HyperlinkDialog extends ModalDialog {
     this.dialog.setAttribute('aria-modal', 'true');
     this.dialog.setAttribute('aria-label', this.initial.existing ? '하이퍼링크 고치기' : '하이퍼링크');
     const confirm = this.dialog.querySelector<HTMLButtonElement>('.dialog-btn-primary')!;
-    confirm.textContent = this.initial.existing ? '고치기' : '넣기';
+    confirm.textContent = this.initial.existing ? t('dialog.hyperlink.confirm.text') : t('dialog.hyperlink.confirm.text.x3e7b4d');
     const update = () => {
       confirm.disabled = !this.uriInput.value.trim() || !this.textInput.value.trim();
       this.previewButton.disabled = webHyperlinkUrl(this.uriInput.value) === null;
@@ -137,19 +138,19 @@ export class HyperlinkDialog extends ModalDialog {
 
 class ExistingHyperlinkDialog extends ModalDialog {
   private accepted = false;
-  constructor(private edit: () => void, private cancel: () => void) { super('하이퍼링크', 390); }
+  constructor(private edit: () => void, private cancel: () => void) { super(t('dialog.hyperlink.show.title'), 390); }
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
     body.className = 'dialog-hyperlink-confirm-body';
-    body.textContent = '하이퍼링크가 이미 입력되어 있습니다.\n하이퍼링크를 고칠까요?';
+    body.textContent = t('dialog.hyperlink.body.text');
     return body;
   }
   protected onConfirm(): void { this.accepted = true; }
   override show(): void {
     super.show();
     this.dialog.setAttribute('role', 'alertdialog');
-    this.dialog.setAttribute('aria-label', '하이퍼링크');
-    this.dialog.querySelector('.dialog-btn-primary')!.textContent = '고침';
+    this.dialog.setAttribute('aria-label', t('dialog.hyperlink.show.label'));
+    this.dialog.querySelector('.dialog-btn-primary')!.textContent = t('dialog.hyperlink.show.text');
   }
   override hide(): void {
     super.hide();

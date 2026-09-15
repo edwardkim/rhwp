@@ -7,6 +7,7 @@ import type { CommandServices } from '@/command/types';
 import { applyThroughRouter } from './dialog-apply';
 import { pageBodyViolation } from '@/core/page-body-limits';
 
+import { t as i18nText } from '../i18n/index.ts';
 const HWPUNIT_PER_MM = 7200 / 25.4; // ≈283.46
 const PAPER_PRESET_TOLERANCE_HU = 3;
 
@@ -72,7 +73,7 @@ export class PageSetupDialog extends ModalDialog {
   private scopeSelect!: HTMLSelectElement;
 
   constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number, private services?: CommandServices) {
-    super('편집 용지', 440);
+    super(i18nText('dialog.pageSetup.matchesPaperPreset.title'), 440);
     this.wasm = wasm;
     this.eventBus = eventBus;
     this.sectionIdx = sectionIdx;
@@ -88,7 +89,7 @@ export class PageSetupDialog extends ModalDialog {
     const body = document.createElement('div');
 
     // ── 용지 종류 ──
-    const paperSection = this.createSection('용지 종류');
+    const paperSection = this.createSection(i18nText('dialog.pageSetup.createSection.label'));
     const paperRow = this.row();
 
     this.paperSelect = document.createElement('select');
@@ -102,18 +103,18 @@ export class PageSetupDialog extends ModalDialog {
     }
     const customOpt = document.createElement('option');
     customOpt.value = 'custom';
-    customOpt.textContent = '사용자 정의';
+    customOpt.textContent = i18nText('dialog.pageSetup.customOpt.text');
     this.paperSelect.appendChild(customOpt);
 
     this.paperSelect.addEventListener('change', () => this.onPaperChange());
     paperRow.appendChild(this.paperSelect);
 
     const dimRow = this.row();
-    dimRow.appendChild(this.label('폭'));
+    dimRow.appendChild(this.label(i18nText('dialog.pageSetup.label.label')));
     this.widthInput = this.numberInput();
     dimRow.appendChild(this.widthInput);
     dimRow.appendChild(this.unit('mm'));
-    dimRow.appendChild(this.label('길이'));
+    dimRow.appendChild(this.label(i18nText('dialog.pageSetup.label.label.x8e03a1')));
     this.heightInput = this.numberInput();
     dimRow.appendChild(this.heightInput);
     dimRow.appendChild(this.unit('mm'));
@@ -127,7 +128,7 @@ export class PageSetupDialog extends ModalDialog {
     sectionsRow.className = 'page-setup-sections';
 
     // 용지 방향
-    const orientSection = this.createSection('용지 방향');
+    const orientSection = this.createSection(i18nText('dialog.pageSetup.createSection.label.x78ea53'));
     const orientRow = document.createElement('div');
     orientRow.className = 'dialog-icon-radio-group';
     this.landscapeRadios = [
@@ -140,7 +141,7 @@ export class PageSetupDialog extends ModalDialog {
     orientSection.appendChild(orientRow);
 
     // 제본
-    const bindSection = this.createSection('제본');
+    const bindSection = this.createSection(i18nText('dialog.pageSetup.createSection.label.x0a5a7c'));
     const bindRow = document.createElement('div');
     bindRow.className = 'dialog-icon-radio-group';
     this.bindingRadios = [
@@ -155,7 +156,7 @@ export class PageSetupDialog extends ModalDialog {
     body.appendChild(sectionsRow);
 
     // ── 용지 여백 ──
-    const marginSection = this.createSection('용지 여백');
+    const marginSection = this.createSection(i18nText('dialog.pageSetup.createSection.label.xebb638'));
     const marginGrid = document.createElement('div');
     marginGrid.className = 'margin-grid';
 
@@ -189,7 +190,7 @@ export class PageSetupDialog extends ModalDialog {
 
     // ── 적용 범위 ──
     const scopeRow = this.row();
-    scopeRow.appendChild(this.label('적용 범위'));
+    scopeRow.appendChild(this.label(i18nText('dialog.pageSetup.label.label.xb1824b')));
     this.scopeSelect = document.createElement('select');
     this.scopeSelect.className = 'dialog-select';
     this.scopeSelect.style.width = '120px';
