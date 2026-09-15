@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { assertShowsText } from './support/i18n-text.ts';
 
 // 탭은 화면 글자가 아니라 ID(data-tab)로 구분한다. 화면 글자는 표시에만 쓰이므로
 // 나중에 표시 문자열을 바꿔도(번역 등) 패널 연결·탭 선택 로직이 흔들리지 않는다. (#5852)
@@ -37,7 +38,7 @@ test('탭 화면 글자는 그대로다(한국어 동작 유지)', () => {
   for (const [file, labels] of Object.entries(TAB_DIALOGS)) {
     const src = source(file);
     for (const label of labels) {
-      assert.ok(src.includes(`'${label}'`), `${file}: 탭 글자 '${label}' 이 있어야 한다`);
+      assertShowsText(src, label, `${file}: 탭 글자 '${label}' 이 있어야 한다`);
     }
   }
 });
