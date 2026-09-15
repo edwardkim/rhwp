@@ -272,8 +272,8 @@ export class CompareResultWindow {
     });
     if (changed.length === 0) return { left: '(셀 텍스트 동일)', right: '(셀 텍스트 동일)' };
     const cellLabel = (k: string) => k.replace(/^r(\d+)c(\d+)$/i, t('dialog.compareResult.formatTableCprevChangedCellsOnly.text'));
-    const left = changed.map((k) => `${cellLabel(k)}: ${Lm.get(k) ?? '(없음)'}`).join('\n');
-    const right = changed.map((k) => `${cellLabel(k)}: ${Rm.get(k) ?? '(없음)'}`).join('\n');
+    const left = changed.map((k) => t('dialog.compareResult.formatTableCprevChangedCellsOnly.text.x7b2f84', { p1: cellLabel(k), p2: Lm.get(k) ?? t('dialog.compareResult.formatTableCprevChangedCellsOnly.param.x7c9d8e') })).join('\n');
+    const right = changed.map((k) => t('dialog.compareResult.formatTableCprevChangedCellsOnly.text.x7b2f84', { p1: cellLabel(k), p2: Rm.get(k) ?? t('dialog.compareResult.formatTableCprevChangedCellsOnly.param.x7c9d8e') })).join('\n');
     return { left, right };
   }
 

@@ -12,9 +12,9 @@ type TabId = 'basic' | 'margin' | 'equation';
 const TAB_IDS: TabId[] = ['basic', 'margin', 'equation'];
 
 const TAB_LABELS: Record<TabId, string> = {
-  basic: '기본',
-  margin: '여백/캡션',
-  equation: '수식',
+  basic: t('dialog.equationProps.tab.basic'),
+  margin: t('dialog.equationProps.tab.margin'),
+  equation: t('dialog.equationProps.tab.equation'),
 };
 
 function hwpunitToMm(hu: number): number {
