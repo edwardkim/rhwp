@@ -941,6 +941,7 @@ struct EquationTacLineVars {
 /// [#2003] run 방출 루프의 줄-스코프 읽기 스칼라 묶음.
 #[derive(Clone, Copy)]
 struct RunEmitVars {
+    stored_tac_assignment: bool,
     baseline: f64,
     raw_lh: f64,
     alignment: crate::model::style::Alignment,
@@ -5842,6 +5843,7 @@ impl LayoutEngine {
                 col_area,
                 &mut kerning_layout_session,
                 RunEmitVars {
+                    stored_tac_assignment: stored_tac_assignment.is_some(),
                     baseline,
                     raw_lh,
                     alignment,
@@ -6492,6 +6494,7 @@ impl LayoutEngine {
         st: RunEmitState,
     ) -> RunEmitState {
         let RunEmitVars {
+            stored_tac_assignment,
             baseline,
             raw_lh,
             alignment,
@@ -7009,14 +7012,16 @@ impl LayoutEngine {
                 && !next_line_starts_at_run_end;
             let run_tacs: Vec<(usize, f64, usize)> = tac_offsets_px
                 .iter()
-                .filter(|(pos, _, ci)| {
+                .filter(|(pos, _, _)| {
                     *pos >= run_char_pos
-                        && (*pos < run_char_end || (allow_end_tac && *pos == run_char_end))
+                        && (*pos < run_char_end
+                            || ((allow_end_tac
+                                || (stored_tac_assignment && is_last_run_of_line(run_idx)))
+                                && *pos == run_char_end))
                         // [#5727] 저장 lineseg 가 개체에 배정한 빈 줄이 소유한 경계
                         // TAC 는 다음 줄 run 에 다시 싣지 않는다 — 실으면 개체가 이
                         // 줄로 끌려 내려오고 텍스트가 개체 폭만큼 오른쪽으로 밀린다.
-                        && (para.and_then(|p| crate::renderer::composer::stored_tac_line_assignment(p, composed))
-                            .is_some_and(|assign| assign.iter().any(|(control, owner)| control == ci && *owner == line_idx))
+                        && (stored_tac_assignment
                             || !tac_owned_by_prior_empty_line(composed, line_idx, *pos))
                 })
                 .map(|(pos, w, ci)| (pos - run_char_pos, *w, *ci))

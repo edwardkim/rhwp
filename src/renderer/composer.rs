@@ -1526,9 +1526,9 @@ pub(crate) fn is_lang_neutral(ch: char) -> bool {
 }
 
 /// 문단 내 인라인 컨트롤(표/도형)의 위치를 식별한다.
-/// [#6706] 가시 문자 사이의 같은 gap에 있는 여러 개체도 저장 UTF-16 줄은 다를 수 있다.
+/// [#6706] 줄 끝 개체와 다음 줄 첫 글자는 같은 가시 위치로 투영될 수 있다.
 /// 원본 줄 구성이 유지되고 그 충돌이 실제 존재할 때 원 기록으로 개체 소유 줄을 복원한다.
-/// 재조판된 줄이나 같은 줄의 인라인 개체들은 기존 문자 범위 배정을 그대로 쓴다.
+/// 재조판된 줄이나 경계 충돌이 없는 인라인 개체들은 기존 문자 범위 배정을 그대로 쓴다.
 pub(crate) fn stored_tac_line_assignment(
     para: &Paragraph,
     comp: &ComposedParagraph,
@@ -1565,18 +1565,16 @@ pub(crate) fn stored_tac_line_assignment(
             Some((*ci, owner))
         })
         .collect::<Option<_>>()?;
-    let distinct_raw_rows = comp
-        .tac_controls
-        .iter()
-        .enumerate()
-        .any(|(i, (pos, _, _))| {
-            comp.tac_controls
-                .iter()
-                .enumerate()
-                .skip(i + 1)
-                .any(|(j, (other, _, _))| pos == other && assignments[i].1 != assignments[j].1)
-        });
-    distinct_raw_rows.then_some(assignments)
+    let collapsed_boundary =
+        comp.tac_controls
+            .iter()
+            .zip(&assignments)
+            .any(|((pos, _, _), (_, owner))| {
+                comp.lines
+                    .get(owner + 1)
+                    .is_some_and(|next| *pos >= next.char_start)
+            });
+    collapsed_boundary.then_some(assignments)
 }
 
 fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
