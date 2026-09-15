@@ -1,0 +1,19 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6946,
+  "title": "물류정책기본법 시행규칙 일부개정령안 — 빈 host 문단의 거의 한 쪽짜리 자리차지 표 형제",
+  "entries": [
+    {
+      "path": "samples/issue6946/44529-logistics-policy-rule-amendment.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6946",
+      "originalFilename": "44529_물류정책기본법 시행규칙 일부개정령안.hwp",
+      "bytes": 34816,
+      "sha256": "e7225ebb6d97981ffb10c98fbb6a639ef2efe77e43ca30d11d4fd172c3c2c1d6",
+      "referenceEngine": "2020",
+      "referencePdfStatus": "pdf/issue6946/44529-logistics-policy-rule-amendment-hwp-2020.pdf에 한컴 engine 2020 산출 PDF를 커밋했다(원본 lastSavedWith hancom-office-2010 8.5.8.1443 → §3.5.1 의 2020 버킷). job fd6ea8bd-fb1f-49a7-826d-1b8db7aa808c, engine_profile 2020, hancom_version 12.0.0.4605, 13쪽, SHA-256 a1b36d69d544cb68f0d9ba84391fcb366e2dacf8887e62a1eaf71ed3c2719eb1(서버 blob 검증 일치).",
+      "contract": "구역 3 문단 0 은 빈 문단이고 비-TAC 자리차지(위아래·문단 기준) 표 ci=3(24×13, 903.3px)과 ci=4(10×1, 894.5px)를 단다. 본문은 918.4px 라 두 표는 한 쪽에 함께 들어갈 수 없다. 한컴 PDF 는 13쪽이고 인쇄 7쪽은 (앞쪽) 서식만, 8쪽은 (뒤쪽) 행정정보 공동이용 동의서로 시작한다. 쪽 idx 6 에는 ci=3 만, 쪽 idx 7 에는 ci=4 가 본문 상단에서 본문 안에 놓여야 하며 어느 쪽에서도 자리차지 표 두 장이 겹치면 안 된다."
+    }
+  ]
+}
