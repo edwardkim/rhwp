@@ -232,6 +232,7 @@ fn layout_anomaly_page_filter_scopes_counts_and_strict_exit() {
         "offCanvasCount",
         "overlapCount",
         "textOverlapCount",
+        "storedLineEscapeCount",
         "emptyPageCount",
     ] {
         assert_eq!(
@@ -317,6 +318,27 @@ fn layout_anomaly_batch_json_streams_ndjson_and_keeps_failed_loads() {
     assert_eq!(failed.len(), 1, "{records:?}");
     assert_eq!(failed[0]["mode"], "batch", "{}", failed[0]);
     assert_eq!(failed[0]["hasSignal"], false, "{}", failed[0]);
+    // 실패 레코드도 성공 레코드와 같은 카운트 키를 가져야 NDJSON 소비자가 키 부재로 깨지지 않는다.
+    let ok = records
+        .iter()
+        .find(|r| r.get("error").is_none())
+        .expect("성공 레코드");
+    for key in [
+        "overflowCount",
+        "offCanvasCount",
+        "overlapCount",
+        "textOverlapCount",
+        "storedLineEscapeCount",
+        "emptyPageCount",
+        "storedLineTolerancePx",
+    ] {
+        assert!(ok.get(key).is_some(), "성공 레코드에 {key} 없음: {ok}");
+        assert!(
+            failed[0].get(key).is_some(),
+            "실패 레코드에 {key} 없음: {}",
+            failed[0]
+        );
+    }
 }
 
 #[test]
@@ -459,6 +481,7 @@ fn capabilities_declares_layout_anomaly_batch_and_types() {
         "--strict",
         "--overflow-tolerance",
         "--overlap-tolerance",
+        "--stored-line-tolerance",
     ] {
         assert!(flags.contains(&want), "{want} 선언 누락: {entry}");
     }
@@ -494,6 +517,13 @@ fn layout_anomaly_declared_flags_are_actually_accepted() {
             "--json",
         ],
         vec!["layout-anomaly", path, "--overlap-tolerance", "3", "--json"],
+        vec![
+            "layout-anomaly",
+            path,
+            "--stored-line-tolerance",
+            "1",
+            "--json",
+        ],
         vec!["layout-anomaly", path, "--types", "Table,Image", "--json"],
         vec!["layout-anomaly", "--batch", &folder, "--json"],
     ];

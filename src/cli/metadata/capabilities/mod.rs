@@ -660,7 +660,7 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
             "0": "성공",
             "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
             "2": "사용법 오류 (인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과)",
-            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호(overflow·off-canvas·overlap·text-overlap) 검출(기본은 0)",
+            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호(overflow·off-canvas·overlap·text-overlap·stored-line-escape) 검출(기본은 0)",
             "4": "--verify-pages 페이지 수 불일치 (convert/export-hwpx)",
         },
         "jsonContract": {

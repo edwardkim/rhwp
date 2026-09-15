@@ -740,7 +740,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         ),
         cmd_json(
             "layout-anomaly",
-            "렌더 한 장의 기하 이상탐지(overflow/off-canvas/overlap/text-overlap/empty_page) — render-diff(변위)와 다른 질문. overflow=본문 여백, off-canvas=페이지 상자·y<0, text-overlap=텍스트 런 bbox 교차. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
+            "렌더 한 장의 기하 이상탐지(overflow/off-canvas/overlap/text-overlap/stored-line-escape/empty_page) — render-diff(변위)와 다른 질문. overflow=본문 여백, off-canvas=페이지 상자·y<0, text-overlap=텍스트 런 bbox 교차, stored-line-escape=저장 줄을 재현한 줄의 글자가 남의 저장 줄 baseline 에 앉음. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
             &[
                 "--json",
                 "--batch",
@@ -749,6 +749,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "--types",
                 "--overflow-tolerance",
                 "--overlap-tolerance",
+                "--stored-line-tolerance",
             ],
             &[
                 "schemaVersion",
@@ -758,12 +759,14 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "pageFilter",
                 "overflowTolerancePx",
                 "overlapTolerancePx",
+                "storedLineTolerancePx",
                 "types",
                 "strict",
                 "overflowCount",
                 "offCanvasCount",
                 "overlapCount",
                 "textOverlapCount",
+                "storedLineEscapeCount",
                 "emptyPageCount",
                 "hasSignal",
                 "pages",
