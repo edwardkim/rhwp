@@ -206,11 +206,18 @@ export class ParaShapeDialog {
     // 탭 그룹
     const tabGroup = document.createElement('div');
     tabGroup.className = 'dialog-tabs';
-    const tabNames = ['기본', '확장', '탭 설정', '테두리/배경'];
-    tabNames.forEach((name, i) => {
+    // 탭은 ID 로 구분한다. 화면 글자(label)는 표시에만 쓴다.
+    const tabDefs = [
+      { id: 'basic', label: '기본' },
+      { id: 'extended', label: '확장' },
+      { id: 'tabStops', label: '탭 설정' },
+      { id: 'borderFill', label: '테두리/배경' },
+    ];
+    tabDefs.forEach(({ id, label }, i) => {
       const btn = document.createElement('button');
       btn.className = 'dialog-tab';
-      btn.textContent = name;
+      btn.dataset.tab = id;
+      btn.textContent = label;
       btn.addEventListener('click', () => this.switchTab(i));
       tabGroup.appendChild(btn);
       this.tabs.push(btn);
@@ -224,7 +231,10 @@ export class ParaShapeDialog {
     this.panels.push(this.buildExtendedPanel());
     this.panels.push(this.buildTabSettingsPanel());
     this.panels.push(this.buildBorderPanel());
-    this.panels.forEach(p => body.appendChild(p));
+    this.panels.forEach((p, i) => {
+      p.dataset.tab = tabDefs[i].id;
+      body.appendChild(p);
+    });
     leftCol.appendChild(body);
 
     // 우측 버튼 영역

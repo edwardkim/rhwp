@@ -188,6 +188,7 @@ export class TableCellPropsDialog extends ModalDialog {
       // 탭 버튼
       const btn = document.createElement('button');
       btn.className = 'dialog-tab';
+      btn.dataset.tab = def.id;
       btn.textContent = def.label;
       btn.type = 'button';
       btn.addEventListener('click', () => this.switchTab(i));
@@ -197,6 +198,7 @@ export class TableCellPropsDialog extends ModalDialog {
       // 탭 패널
       const panel = document.createElement('div');
       panel.className = 'dialog-tab-panel';
+      panel.dataset.tab = def.id;
       panel.appendChild(def.builder());
       this.panels.push(panel);
       panelContainer.appendChild(panel);
