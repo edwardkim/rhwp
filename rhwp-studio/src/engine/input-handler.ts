@@ -712,7 +712,11 @@ export class InputHandler {
     eventBus.on('create-new-document', () => {
       this.clearTableResizeRuntimeCache();
     });
-    eventBus.on('open-document-bytes', () => {
+    // [#7194] 문서 교체는 `open-document-bytes` 가 아니라 **공통 깔때기**에서 듣는다.
+    // 그 이벤트를 거치는 열기 경로는 여섯 중 하나뿐이라, 드롭·파일 input·`?url=`·
+    // 자동저장 복구·호스트 API 로 연 문서에서는 이전 문서의 칸 좌표가 그대로 남았다.
+    // `main.ts loadBytes()` 가 문서를 갈아치운 직후 이 이벤트를 낸다.
+    eventBus.on('document-swapped', () => {
       this.clearTableResizeRuntimeCache();
     });
 
