@@ -1,7 +1,7 @@
 //! 레이아웃 통합 테스트
 //!
 //! 실제 HWP 파일을 로딩하여 페이지네이션 + 레이아웃 결과를 검증한다.
-//! samples/ 디렉토리에 테스트 파일이 없으면 건너뜀.
+//! 일부 기존 테스트는 샘플 부재 시 건너뛰지만 필수 회귀 입력은 명시적으로 실패시킨다.
 
 #[cfg(test)]
 mod tests {
@@ -1651,12 +1651,14 @@ mod tests {
     /// 본 테스트: header 텍스트 baseline + ascent 와 박스 top horizontal line 간 gap
     /// 이 6 px 이상 (회귀 검출).
     #[test]
-    #[ignore]
     fn test_552_passage_box_top_gap_p2_4_6() {
-        let Some(core) = load_document("samples/21_언어_기출_편집가능본.hwp") else {
-            return;
-        };
-        let svg = core.render_page_svg_native(1).unwrap_or_default();
+        let data = std::fs::read("samples/21_언어_기출_편집가능본.hwp")
+            .expect("#552 필수 회귀 샘플 읽기 실패");
+        let core = crate::document_core::DocumentCore::from_bytes(&data)
+            .expect("#552 필수 회귀 샘플 파싱 실패");
+        let svg = core
+            .render_page_svg_native(1)
+            .expect("#552 페이지 2 SVG 렌더링 실패");
         assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
 
         // 1. [4~6] header text "[" 의 y 좌표 (우측 단 = x ≥ 575)

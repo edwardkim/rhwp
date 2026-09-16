@@ -19198,23 +19198,16 @@ fn test_task76_img_001_four_pictures() {
 
 /// 타스크 77: 이미지 셀 행이 인트라-로우 분할되지 않고 다음 페이지로 이동하는지 검증
 ///
-/// [Task #993] 컷 모델 전환으로 행 경계가 이동(페이지 1 = rows 0..3, 기존 0..2).
-/// 이미지 셀(행 2)은 여전히 인트라-분할되지 않으나(end_cut 빈 채 유지) 배치
-/// 페이지가 바뀜 — 컷 측정과 기존 MeasuredTable 측정의 행 높이 차이. 한컴 2022
-/// PDF 대조 후 기대값 재확정 예정.
+/// [Task #993] 당시 컷 모델 전환으로 행 경계가 이동하여 ignore되었던 계약이다.
+/// [Task #7195] 기존 행 경계·cut·그림 배치 assertion의 통과를 재확인하여 복귀한다.
+/// 기대값은 변경하지 않으며, 자동 계약 통과를 새 한컴 PDF 시각 판정으로 간주하지 않는다.
 #[test]
-#[ignore = "Task #993: 컷 모델 행 높이 측정 차이로 행 경계 이동 — PDF 대조 후 재확정"]
 fn test_task77_image_cell_no_intra_row_split() {
     use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
     let path = "samples/20250130-hongbo.hwp";
-    if !std::path::Path::new(path).exists() {
-        eprintln!("SKIP: {} 없음", path);
-        return;
-    }
-
-    let data = std::fs::read(path).unwrap();
-    let doc = HwpDocument::from_bytes(&data).unwrap();
+    let data = std::fs::read(path).expect("#77 필수 회귀 샘플 읽기 실패");
+    let doc = HwpDocument::from_bytes(&data).expect("#77 필수 회귀 샘플 파싱 실패");
 
     // 표6(4행×1열)의 PartialTable 페이지네이션 검증
     // 행2(이미지 셀)는 인트라-로우 분할되지 않아야 함
