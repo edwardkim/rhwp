@@ -97,21 +97,21 @@ Chrome 153.0.8010.47의 실제 WASM 인스턴스로 384쪽 SVG와 render tree를
 16줄, `x=118.7, y=469.5, w=521.6, h=407.5px`이며 수정 전 높이는 416.6px였다.
 기본 KoPub 환경의 별도 수정 전후 sweep에서는 384쪽 SVG가 모두 바이트 단위로 동일하다.
 
-PNG 20개(약 6.7 MB)를 이 문서의 [assets/issue6389_stage4](assets/issue6389_stage4/)에 보존한다.
+PNG 20개(약 6.7 MB)를 이 문서의 [../pr/assets/pr7201_review](../pr/assets/pr7201_review/)에 보존한다.
 현재 Native/WASM이 동일하므로 수정 후 중복 이미지는 추가하지 않고 실제 WASM 증적을 남긴다.
 기존 HWP/PDF를 중복 추가하지 않는다. raw SVG/tree/JSON/TSV/log, 임시 페이지 대응 PDF,
 컴파일 산출물도 커밋에서 제외한다.
 
 | 비교 쪽(rhwp / 원 PDF) | 수정 전 | 수정 후 실제 WASM |
 | --- | --- | --- |
-| 68 / 69 | [review](assets/issue6389_stage4/before_review_068.png), [overlay](assets/issue6389_stage4/before_overlay_068.png) | [review](assets/issue6389_stage4/wasm_review_068.png), [overlay](assets/issue6389_stage4/wasm_overlay_068.png) |
-| 69 / 70 | [review](assets/issue6389_stage4/before_review_069.png), [overlay](assets/issue6389_stage4/before_overlay_069.png) | [review](assets/issue6389_stage4/wasm_review_069.png), [overlay](assets/issue6389_stage4/wasm_overlay_069.png) |
-| 200 / 202 | 위 원장과 동일 입력 | [review](assets/issue6389_stage4/wasm_review_200.png), [overlay](assets/issue6389_stage4/wasm_overlay_200.png) |
-| 234 / 236 | 위 원장과 동일 입력 | [review](assets/issue6389_stage4/wasm_review_234.png), [overlay](assets/issue6389_stage4/wasm_overlay_234.png) |
-| 240 / 242 | 위 원장과 동일 입력 | [review](assets/issue6389_stage4/wasm_review_240.png), [overlay](assets/issue6389_stage4/wasm_overlay_240.png) |
-| 369 / 375 | 위 원장과 동일 입력 | [review](assets/issue6389_stage4/wasm_review_369.png), [overlay](assets/issue6389_stage4/wasm_overlay_369.png) |
-| 372 / 378 | 위 원장과 동일 입력 | [review](assets/issue6389_stage4/wasm_review_372.png), [overlay](assets/issue6389_stage4/wasm_overlay_372.png) |
-| 377 / 382 | 위 원장과 동일 입력 | [review](assets/issue6389_stage4/wasm_review_377.png), [overlay](assets/issue6389_stage4/wasm_overlay_377.png) |
+| 68 / 69 | [review](../pr/assets/pr7201_review/before_review_068.png), [overlay](../pr/assets/pr7201_review/before_overlay_068.png) | [review](../pr/assets/pr7201_review/wasm_review_068.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_068.png) |
+| 69 / 70 | [review](../pr/assets/pr7201_review/before_review_069.png), [overlay](../pr/assets/pr7201_review/before_overlay_069.png) | [review](../pr/assets/pr7201_review/wasm_review_069.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_069.png) |
+| 200 / 202 | 위 원장과 동일 입력 | [review](../pr/assets/pr7201_review/wasm_review_200.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_200.png) |
+| 234 / 236 | 위 원장과 동일 입력 | [review](../pr/assets/pr7201_review/wasm_review_234.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_234.png) |
+| 240 / 242 | 위 원장과 동일 입력 | [review](../pr/assets/pr7201_review/wasm_review_240.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_240.png) |
+| 369 / 375 | 위 원장과 동일 입력 | [review](../pr/assets/pr7201_review/wasm_review_369.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_369.png) |
+| 372 / 378 | 위 원장과 동일 입력 | [review](../pr/assets/pr7201_review/wasm_review_372.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_372.png) |
+| 377 / 382 | 위 원장과 동일 입력 | [review](../pr/assets/pr7201_review/wasm_review_377.png), [overlay](../pr/assets/pr7201_review/wasm_overlay_377.png) |
 
 원본 HWP의 `lastSavedWith`는 `hancom-office-2024 13.0.0.3622`다.
 no-ttf PDF는 389쪽, producer/creator `Hancom PDF 1.3.0.404`다.
