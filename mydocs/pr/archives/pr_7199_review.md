@@ -9,11 +9,11 @@ last_verified: 2026-09-16
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능** — 이전 줄 표의 여백이 다음 줄 표에 유입되던 P2를 해결했다.
+**승인** — 원 PR에 직접 반영한 메인터너 보정을 포함한 범위에서 이전 줄 표의 여백이 다음 줄 표에 유입되던 P2를 해결했다.
 실제 배치와 같은 저장 줄별 TAC 집합을 재사용하며, 정식 경계 테스트의 수정 전 FAIL / 보정 후 PASS를 확인했다.
 원 PR에 반영하는 보정 code commit은 `8b867277fae114f6ffdf2164e0f97e5802441893`다(기존 통합 보정 `58b970bf0`과 동일 패치). 아래 판정은 이 로컬 코드와 명시한 범위에 해당한다.
 사용자가 PR #7199에 직접 push하도록 지정하여 원 source head 위에 보정·증적 commit을 재적용했다.
-원 head CI를 보정 코드의 CI로 대체하지 않으며, 최종 push head의 CI 확인과 실제 merge는 후속 단계다.
+보정 포함 code candidate `deec7ea6f`의 Full CI를 확인했다. 오늘할일 trailing head의 최종 check와 merge는 후속 단계다.
 
 [분석·구현·검증 결과보고](pr_7199_review_impl.md)에 명령, 실행 산출물의 소스/바이너리 식별과 한계를 기록했다.
 issue2470 **1·2쪽 모두 Native/fresh WASM compare·standalone overlay·review를 재생성하고 직접 판독했다.**
@@ -85,7 +85,7 @@ GitHub review/comment 게시와 merge는 이번 push에 포함하지 않는다. 
 저장 줄 귀속과 마지막 run 끝 TAC를 보존한 집합에서 `line_table_owner`를 줄당 한 번 선택한다.
 `previous_line_table_margin_does_not_move_the_next_line_table`로 경계를 정식 테스트에 고정했다.
 원본 결재표 개선과 #7049 동반 표 하단차, #6754 혼합 객체, #6706 저장 줄 귀속을 함께 확인했다.
-로컬 해제 조건은 충족했으며 원격 보정 head CI는 아직 실행하지 않았다.
+로컬 해제 조건과 보정 포함 code candidate `deec7ea6f`의 원격 Full CI는 충족했다.
 
 ## 1차 원 PR 검토 이력 — 메인터너 보정 전
 
@@ -121,6 +121,31 @@ Docker CLI는 있으나 daemon 연결 실패였다. host dev/no-opt WASM 결과�
 
 전체 회귀는 빌드 포함 892.87초, 테스트 375.329초였다. 51 skipped는 실행 도구의 실제 집계이며
 실행하지 않은 테스트를 성공 건수에 포함하지 않았다. Docker 최적화 배포 WASM은 미실행이다.
+
+## 보정 포함 원 PR code CI 완료와 trailing 기록
+
+원 PR branch의 `deec7ea6f46d45a37f98fbeff80cacc3221df513`와 아래 run head가 모두 일치한다.
+
+| workflow | 결과 / 증거 |
+| --- | --- |
+| CI | [35082767160](https://github.com/edwardkim/rhwp/actions/runs/35082767160), Full 성공. Build & Test·archive A/B/C/D·Lint·Native Skia 성공 |
+| CodeQL | [35082767272](https://github.com/edwardkim/rhwp/actions/runs/35082767272), Rust/Python/JS 분석 성공 |
+| Render Diff | [35082766916](https://github.com/edwardkim/rhwp/actions/runs/35082766916), Canvas visual diff 성공 |
+| Adapter inter-diff | [35082767258](https://github.com/edwardkim/rhwp/actions/runs/35082767258), 성공 |
+| Proptest roundtrip | [35082767211](https://github.com/edwardkim/rhwp/actions/runs/35082767211), 성공 |
+
+확인 당시 PR은 MERGEABLE/CLEAN이었다. [오늘할일](../../orders/20260916.md)에 현재 PR의 완료 검증과
+후속 범위를 추가했다. 기존 devel의 다른 PR 기록은 source에 복사하지 않고 merge tree에서 보존을 확인한다.
+이후 변경은 이 review와 오늘할일뿐이며, 최종 trailing head의 preflight·candidate 재사용 여부·aggregate를
+별도로 확인한 뒤 merge한다. 코드·fixture·이미지는 바뀌지 않아 기존 검증을 반복 실행하지 않았다.
+
+### Issue 후속 처리 계획
+
+[#7150](https://github.com/edwardkim/rhwp/issues/7150)의 보고 범위인 1쪽 TAC 결재표 줄 하향은 해결됐으므로
+merge와 devel 반영 확인 후 실제 merge SHA·CI·증적을 한국어 comment로 남기고 completed로 종료한다.
+기존 2쪽 사진칸과 제목 두께는 해당 이슈의 해결 범위로 합치지 않는다. #7151 등 다른 이슈는 종료하지 않는다.
+merge SHA·duration 결과·issue 종료·최종 cleanup은 GitHub 후속 comment에 확정 기록한다.
+review·오늘할일·이미지가 이 PR에 포함되므로 이를 다시 담는 별도 후속 문서 PR은 만들지 않는다.
 
 ## 직접 Visual Sweep 판정 — overlay 포함
 
