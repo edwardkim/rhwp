@@ -738,7 +738,9 @@ impl SvgRenderer {
                     };
                     let mut attrs = format!("font-family=\"{}\" font-size=\"{}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"central\"",
                         escape_xml(&font_family), font_size, color);
-                    if run.style.is_visually_bold() {
+                    if let Some(w) = faux_bold_stroke_width(&run.style, font_size) {
+                        attrs.push_str(&faux_bold_stroke_attr(w, &color));
+                    } else if run.style.is_visually_bold() {
                         attrs.push_str(" font-weight=\"bold\"");
                     } else if run.style.is_medium_weight() {
                         attrs.push_str(" font-weight=\"500\"");
@@ -2555,7 +2557,9 @@ impl SvgRenderer {
             escape_xml(&font_family_str),
             inner_font_size
         );
-        if style.is_visually_bold() {
+        if let Some(w) = faux_bold_stroke_width(style, inner_font_size) {
+            font_attrs.push_str(&faux_bold_stroke_attr(w, text_color));
+        } else if style.is_visually_bold() {
             font_attrs.push_str(" font-weight=\"bold\"");
         } else if style.is_medium_weight() {
             font_attrs.push_str(" font-weight=\"500\"");
@@ -2681,7 +2685,9 @@ impl SvgRenderer {
             escape_xml(&font_family_str),
             inner_font_size
         );
-        if style.is_visually_bold() {
+        if let Some(w) = faux_bold_stroke_width(style, inner_font_size) {
+            font_attrs.push_str(&faux_bold_stroke_attr(w, text_color));
+        } else if style.is_visually_bold() {
             font_attrs.push_str(" font-weight=\"bold\"");
         } else if style.is_medium_weight() {
             font_attrs.push_str(" font-weight=\"500\"");
@@ -3324,11 +3330,16 @@ impl Renderer for SvgRenderer {
         let has_ratio = (ratio - 1.0).abs() > 0.01;
 
         // 공통 스타일 속성 구성 (fill 제외 — 그림자/원본에서 각각 설정)
+        // [#7151] 합성 볼드는 굵기를 획으로 명시한다 — 색이 fill 과 같아야 하므로
+        // 속성 자체는 fill 을 아는 `attrs_for_cluster` 에서 붙인다.
+        let faux_bold_stroke = faux_bold_stroke_width(style, font_size);
         let mut base_attrs = format!("font-size=\"{}\"", font_size);
-        if style.is_visually_bold() {
-            base_attrs.push_str(" font-weight=\"bold\"");
-        } else if style.is_medium_weight() {
-            base_attrs.push_str(" font-weight=\"500\"");
+        if faux_bold_stroke.is_none() {
+            if style.is_visually_bold() {
+                base_attrs.push_str(" font-weight=\"bold\"");
+            } else if style.is_medium_weight() {
+                base_attrs.push_str(" font-weight=\"500\"");
+            }
         }
         if style.italic {
             base_attrs.push_str(" font-style=\"italic\"");
@@ -3352,10 +3363,11 @@ impl Renderer for SvgRenderer {
                 &font_family
             };
             format!(
-                "font-family=\"{}\" {} fill=\"{}\"",
+                "font-family=\"{}\" {} fill=\"{}\"{}",
                 escape_xml(cluster_font_family),
                 base_attrs,
                 fill,
+                faux_bold_stroke.map_or_else(String::new, |w| faux_bold_stroke_attr(w, fill)),
             )
         };
 
@@ -3953,6 +3965,36 @@ fn path_bbox(commands: &[PathCommand]) -> (f64, f64, f64, f64) {
 }
 
 /// COLORREF (BGR) → SVG 색상 문자열 변환
+/// 합성 볼드 획 굵기(px) — 실제 Bold 메트릭이 없는 face 의 볼드 요청에만.
+///
+/// 한/글 2022 는 Bold face 가 없는 face 의 볼드를 PDF `2 Tr`(fill+stroke)로
+/// 내보내고 선 굵기를 **글꼴·크기 불문 `0.02 em`** 으로 준다. 표본
+/// `pdf/issue2470/36382471_masked-2022.pdf` 1쪽의 `Tr 2` run 은 전부
+/// `w / Tf` 가 0.0200 이다 — 굴림체 `1.66/83`, HY헤드라인M `3.50/175`,
+/// HY견명조 `4.34/217`. `font-weight="bold"` 만 넘기면 굵히는 양이 받는 쪽
+/// 몫이라 Chromium 은 이보다 굵게 만든다(#7151).
+///
+/// 메트릭 DB 에 Bold 항목이 있는 face 는 배치 advance 도 Bold 메트릭으로
+/// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
+/// 알 근거가 없어 건드리지 않는다.
+fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
+    /// 한/글 2022 PDF 실측 — `w / Tf`.
+    const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
+
+    if !style.bold {
+        return None;
+    }
+    let primary = super::style_resolver::primary_font_name(&style.font_family);
+    super::font_metrics_data::find_metric(primary, true, style.italic)?
+        .bold_fallback
+        .then_some(font_size * HANCOM_FAUX_BOLD_STROKE_EM)
+}
+
+/// `fill` 과 같은 색으로 합성 볼드 획을 준다 — PDF `2 Tr` 과 같은 채움 후 획.
+fn faux_bold_stroke_attr(width: f64, fill: &str) -> String {
+    format!(" stroke=\"{}\" stroke-width=\"{:.3}\"", fill, width)
+}
+
 fn color_to_svg(color: u32) -> String {
     let b = (color >> 16) & 0xFF;
     let g = (color >> 8) & 0xFF;
