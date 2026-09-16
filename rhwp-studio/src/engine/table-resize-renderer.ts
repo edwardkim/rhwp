@@ -1,6 +1,6 @@
 import { VirtualScroll } from '@/view/virtual-scroll';
 import type { CellBbox } from '@/core/types';
-import { mergeBorderCoords } from './table-border-lines';
+import { computeBorderSpans, mergeBorderCoords, type BorderSpan } from './table-border-lines';
 
 /** 경계선 종류 */
 export type BorderEdgeType = 'row' | 'col';
@@ -13,8 +13,17 @@ export interface BorderEdge {
   pageIndex: number;
 }
 
-interface RowLine { y: number; xStart: number; xEnd: number; index: number }
-interface ColLine { x: number; yStart: number; yEnd: number; index: number }
+/**
+ * 경계선이 **실제로 존재하는** 구간. 병합 칸이 있으면 한 열/행 경계가 여러 토막으로 끊긴다.
+ *
+ * [#7191] 종전에는 선마다 표 전체 범위(`minX..maxX` / `minY..maxY`) 하나만 들고 있었다.
+ * 그런데 적중 판정(`hitTestBorder`)은 칸 상자를 훑으므로, 그리는 범위와 잡는 범위가
+ * 서로 다른 출처였다 — 경계가 두 칸에만 있는데 선은 표 높이 828px 를 가로질러 그려지고,
+ * 그 구간에 마우스를 올리면 잡히지 않았다(3147199 1쪽 `x=374.0`·`x=446.5`).
+ * 이제 둘 다 칸 상자에서 나온다.
+ */
+interface RowLine { y: number; spans: BorderSpan[]; index: number }
+interface ColLine { x: number; spans: BorderSpan[]; index: number }
 
 /** 표 셀 경계선 위 hover 시 마커(하이라이트 라인)를 표시한다 */
 export class TableResizeRenderer {
@@ -53,15 +62,6 @@ export class TableResizeRenderer {
       return { rowLines: [], colLines: [], rowIndexByY: new Map(), colIndexByX: new Map() };
     }
 
-    // 표 전체 범위
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for (const b of bboxes) {
-      minX = Math.min(minX, b.x);
-      maxX = Math.max(maxX, b.x + b.w);
-      minY = Math.min(minY, b.y);
-      maxY = Math.max(maxY, b.y + b.h);
-    }
-
     const ry = (v: number) => Math.round(v * 10) / 10; // 소수점 1자리 반올림
 
     // 모든 셀의 상/하단, 좌/우측 좌표 수집
@@ -78,12 +78,18 @@ export class TableResizeRenderer {
     const rows = mergeBorderCoords(rowYs);
     const cols = mergeBorderCoords(colXs);
 
+    // [#7191] 각 경계선이 실제로 존재하는 구간을 칸 상자에서 모은다 — 적중 판정과 같은
+    // 출처다. 아래 두 루프의 인덱스 조회는 `hitTestBorder` 의 것과 한 글자도 다르지 않다.
+    const { rowSpans, colSpans } = computeBorderSpans(
+      bboxes, rows.indexByCoord, cols.indexByCoord, ry,
+    );
+
     const rowLines: RowLine[] = rows.positions.map((y, i) => ({
-      y, xStart: minX, xEnd: maxX, index: i,
+      y, spans: rowSpans.get(i) ?? [], index: i,
     }));
 
     const colLines: ColLine[] = cols.positions.map((x, i) => ({
-      x, yStart: minY, yEnd: maxY, index: i,
+      x, spans: colSpans.get(i) ?? [], index: i,
     }));
 
     return {
@@ -180,30 +186,37 @@ export class TableResizeRenderer {
     const pageLeft = this.virtualScroll.getPageLeftResolved(edge.pageIndex, contentWidth);
 
     const t = TableResizeRenderer.MARKER_THICKNESS;
-    const el = document.createElement('div');
+    const line = edge.type === 'row'
+      ? rowLines.find(l => l.index === edge.index)
+      : colLines.find(l => l.index === edge.index);
+    if (!line || line.spans.length === 0) return;
 
-    if (edge.type === 'row') {
-      const line = rowLines.find(l => l.index === edge.index);
-      if (!line) return;
-      const left = pageLeft + line.xStart * zoom;
-      const top = pageOffset + line.y * zoom - t / 2;
-      const width = (line.xEnd - line.xStart) * zoom;
-      el.style.cssText =
-        `position:absolute;` +
-        `left:${left}px;top:${top}px;` +
-        `width:${width}px;height:${t}px;` +
-        `background:${TableResizeRenderer.MARKER_COLOR};pointer-events:none;`;
-    } else {
-      const line = colLines.find(l => l.index === edge.index);
-      if (!line) return;
-      const left = pageLeft + line.x * zoom - t / 2;
-      const top = pageOffset + line.yStart * zoom;
-      const height = (line.yEnd - line.yStart) * zoom;
-      el.style.cssText =
-        `position:absolute;` +
-        `left:${left}px;top:${top}px;` +
-        `width:${t}px;height:${height}px;` +
-        `background:${TableResizeRenderer.MARKER_COLOR};pointer-events:none;`;
+    // [#7191] 경계가 실제로 있는 구간마다 하나씩 그린다. 병합 칸 때문에 한 경계가 여러
+    // 토막으로 끊기면 그 토막들만 보이고, 잡히지 않는 구간에는 선도 없다.
+    const el = document.createElement('div');
+    el.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;';
+    for (const span of line.spans) {
+      const seg = document.createElement('div');
+      if (edge.type === 'row') {
+        const left = pageLeft + span.start * zoom;
+        const top = pageOffset + (line as RowLine).y * zoom - t / 2;
+        const width = (span.end - span.start) * zoom;
+        seg.style.cssText =
+          `position:absolute;` +
+          `left:${left}px;top:${top}px;` +
+          `width:${width}px;height:${t}px;` +
+          `background:${TableResizeRenderer.MARKER_COLOR};pointer-events:none;`;
+      } else {
+        const left = pageLeft + (line as ColLine).x * zoom - t / 2;
+        const top = pageOffset + span.start * zoom;
+        const height = (span.end - span.start) * zoom;
+        seg.style.cssText =
+          `position:absolute;` +
+          `left:${left}px;top:${top}px;` +
+          `width:${t}px;height:${height}px;` +
+          `background:${TableResizeRenderer.MARKER_COLOR};pointer-events:none;`;
+      }
+      el.appendChild(seg);
     }
 
     this.layer.appendChild(el);
