@@ -7,6 +7,21 @@ last_verified: 2026-09-16
 
 # PR #7141 검토
 
+## 통합 PR #7188 code CI 완료 (2026-09-16)
+
+- 통합 PR: [#7188](https://github.com/edwardkim/rhwp/pull/7188), code candidate
+  `cb284bea10629562918b853250fc4cd78d34b601`, base `263b61a64a77a0679e9d8679c5be2e1d180cee1a`.
+- [CI Full](https://github.com/edwardkim/rhwp/actions/runs/35058993064) 성공: lint·Native Skia·
+  A/B/C/D builder/worker·Build & Test 성공을 확인했다.
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/35058993103),
+  [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/35058992860),
+  [Adapter](https://github.com/edwardkim/rhwp/actions/runs/35058993021),
+  [Proptest](https://github.com/edwardkim/rhwp/actions/runs/35058993160) 모두 성공했다.
+- 기존 로컬/Visual Sweep 검증과 보정 범위 승인을 유지한다. 지침 보완 `cb284bea1`도 포함됐다.
+  이번 후속 기록은 mydocs 문서만 변경하며 해당 trailing head의 CI·mergeability는 merge 전에 별도 확인한다.
+  이 문서에 merge 완료나 trailing CI 성공을 미리 기록하지 않는다.
+- [후속 처리 회차](../../working/task_m100_7095_6946_maintainer_stage3.md).
+
 ## 메인터너 보정 재검토 (2026-09-16)
 
 **상자 기하·예산의 부분 개선 범위에서 승인 — 초기 머지 보류 사유 해소.**
@@ -39,7 +54,7 @@ last_verified: 2026-09-16
 7개 문서 선택 **25쪽**을 Native/fresh WASM Visual Sweep으로 직접 대조했다.
 [분석·재현·컷/공간 대조와 검증 기록](../../working/task_m100_7095_6946_maintainer_stage1.md),
 [입력/소스 hash·실행 요약](../assets/pr7141_7178_maintainer_validation.json)을 함께 확인한다.
-원 PR CI나 초기 검토를 새 통합 head CI 성공으로 표기하지 않는다. 통합 PR CI는 아직 미실행이다.
+원 PR CI나 초기 검토를 새 통합 head CI 성공으로 표기하지 않는다. 통합 code CI 완료 결과는 문서 상단에 기록했다.
 
 판정은 **메인터너 보정을 포함한 로컬 누적 통합**에 대한 것이다. 보정 전 원 PR head 자체의
 GitHub approve·merge 완료를 뜻하지 않는다. 아래 초기 검토는 당시 증거를 보존한 기록이다.
@@ -196,14 +211,28 @@ PDF provenance: 모두 PDF 1.6, 595×841pt이다. 7062(10쪽)·30269(22쪽)는 C
 
 ## Merge 후 contributor PR comment 계획
 
-현재는 머지 보류다. 해제 후 최신 보정 head의 수치·판정을 갱신하고, 아래 asset이 merge SHA로 devel에 존재할 때만 comment를 게시한다. 지금 수치를 보정 후 통과 증거로 재사용하지 않는다.
+통합 PR #7188이 실제 merge되고 아래 asset이 그 merge SHA로 devel에 존재한 뒤 게시한다.
+초기 검토 수치 대신 보정 `6cdca9464`에서 만든 최종 Native/fresh WASM 7문서·25쪽 증적을 사용한다.
+25쪽 전체의 자동 flags는 0/25이며, 자동 후보가 없다는 사실을 시각 일치로 해석하지 않는다.
+대표 PNG 4개의 본문·한글·라벨·보조 수치를 trailing 기록 전에 다시 열어 확인했다.
 
 - [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 링크한다.
-- 위 실제 페이지·flags·pixel_match·내용 픽셀 보조값과 사람 판정/잔여 차이를 함께 적는다.
-- 대표 [WASM pr7141-7062 p2](../assets/pr_7141_7062_wasm_p002.png); raw URL 형식 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr_7141_7062_wasm_p002.png`.
-- 대표 [WASM pr7141-7062 p10](../assets/pr_7141_7062_wasm_p010.png); raw URL 형식 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr_7141_7062_wasm_p010.png`.
-- 대표 [WASM pr7141-30269 p10](../assets/pr_7141_30269_wasm_p010.png); raw URL 형식 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr_7141_30269_wasm_p010.png`.
+- 통합 PR/merge SHA와 code CI·최종 trailing CI, focused 80·전체 9916·Native Skia·WASM 검증을 구분한다.
+- 아래 수치는 최종 `pr7141_7178_maintainer_validation.json` 및 sweep page JSON과 대조했다.
 
-대표 이미지의 본문·라벨·한글·보조 수치를 직접 확인했다. 보조값은 사람 판정 정확도가 아니다.
+| 대상 | pixel match % | 내용 픽셀 자동 일치율 보조값 % | flags | asset |
+| --- | --- | --- | --- | --- |
+| 7062 p2 | 76.69072 | 27.87140 | 0 | [최종 WASM PNG](../assets/pr7141_maintainer_7062_p002_wasm_review.png) |
+| issue2004 p5 | 84.79188 | 31.11427 | 0 | [최종 WASM PNG](../assets/pr7141_maintainer_2004_p005_wasm_review.png) |
 
-원격 comment는 merge 승인과 실제 병합 후 UTF-8 본문 파일을 `--body-file`로 게시하고 API로 재조회한다. 이번 검토에서는 reviewer 지정 외 원격 변경·push·comment·close·merge를 수행하지 않았다.
+상자 기하·예산 보정의 부분 범위 승인이다. issue2004 p5의 약 93px 테두리 과장은 해소됐으나
+7062의 valign·p3/p10 내용 배치 차이는 남는다. #7095는 OPEN/Refs로 유지하며 전체 PDF 일치를 주장하지 않는다.
+
+수치는 자동 일치율 보조값이며 사람의 최종 판정을 대체하지 않는다. 값이 높을수록 픽셀은 더 비슷하지만
+낮은 값의 잔여 차이와 PR이 해결한 의미를 분리해 설명한다. 이미지는 다음 merge SHA 고정 URL로 표시한다.
+
+- `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7141_maintainer_7062_p002_wasm_review.png`
+- `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7141_maintainer_2004_p005_wasm_review.png`
+
+감사와 보정 내용을 UTF-8 본문 파일로 작성해 `--body-file`로 게시하고 API로 재조회한다.
+원 PR head가 검토한 SHA에서 바뀌지 않았음을 확인한 뒤 통합 반영 사유로 close하며 contributor fork branch는 보존한다.
