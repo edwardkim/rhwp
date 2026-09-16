@@ -9901,8 +9901,37 @@ impl LayoutEngine {
                             // 을 유지한다 — #677 의 이중 누적 방지는 정방향 델타
                             // 케이스에만 해당한다.
                             if seg.vertical_pos >= seg0.vertical_pos {
-                                para_top
-                                    + hwpunit_to_px(seg.vertical_pos - seg0.vertical_pos, self.dpi)
+                                // 표 다음 줄은 이미 측정·배치한 표의 흐름 끝을 기준으로
+                                // 저장 줄 사이의 간격만 이어받는다. 문단 시작에서 저장
+                                // vpos를 다시 적용하면 내용에 따라 커진 표 안으로 되감긴다.
+                                // 표와 같은 줄의 텍스트는 #677의 저장 앵커를 유지한다.
+                                let preceding_table_line = prev_tac_seg_applied
+                                    .then(|| {
+                                        para.controls.iter().enumerate().find_map(|(ci, c)| {
+                                            if !matches!(c, Control::Table(t) if t.common.treat_as_char)
+                                            {
+                                                return None;
+                                            }
+                                            let line = control_line_seg_index(para, ci)?;
+                                            (line + 1 == *start_line)
+                                                .then(|| para.line_segs.get(line))
+                                                .flatten()
+                                        })
+                                    })
+                                    .flatten();
+                                if let Some(host) = preceding_table_line {
+                                    let stored_end = i64::from(host.vertical_pos)
+                                        + i64::from(host.line_height)
+                                        + i64::from(host.line_spacing);
+                                    let gap = i64::from(seg.vertical_pos) - stored_end;
+                                    y_offset + gap as f64 * self.dpi / 7200.0
+                                } else {
+                                    para_top
+                                        + hwpunit_to_px(
+                                            seg.vertical_pos - seg0.vertical_pos,
+                                            self.dpi,
+                                        )
+                                }
                             } else {
                                 y_offset
                             }
