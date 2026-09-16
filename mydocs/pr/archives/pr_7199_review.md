@@ -249,6 +249,13 @@ Native는 위 sweep에서 `--wasm-pkg`를 빼고 `--out "$EVIDENCE/maintainer-na
 이번 직접 push 이후 최종 head CI와 merge가 완료되면 실제 merge SHA와 CI URL,
 수정된 줄 소속 계약, 실제 검증 범위와 남은 차이를 한국어로 설명하고 감사한다.
 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을
-연결하고 대표 PNG를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7199_review/wasm_review_001.png`
-형식으로 넣는다. 이번 보정 후 재실행한 지표와 남은 기존 차이를 함께 기록한다. 본문은 UTF-8 파일과
-`--body-file`로 게시한 뒤 이미지 URL·한국어·실제 head를 다시 확인한다.
+연결하고 **1·2쪽 모두** 실제 merge commit에 고정된 아래 PNG를 코멘트에 넣는다.
+
+- 1쪽 비교: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7199_review/wasm_review_001.png`
+- 2쪽 비교: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7199_review/wasm_review_002.png`
+- 1쪽 standalone overlay: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7199_review/wasm_overlay_001.png`
+- 2쪽 standalone overlay: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7199_review/wasm_overlay_002.png`
+
+이번 보정 후 재실행한 지표와 남은 기존 차이를 함께 기록한다. 특히 2쪽 사진칸 높이와 후속 본문 차이를
+생략하거나 해결됐다고 표현하지 않는다. 본문은 UTF-8 파일과 `--body-file`로 게시한 뒤
+네 이미지 URL·한국어·실제 head를 다시 확인한다.
