@@ -14526,6 +14526,34 @@ impl LayoutEngine {
         ranges
     }
 
+    /// Runtime-projected lines describe content atoms, not a stored page frame.
+    /// Their cut height must not be stretched merely because it starts a page.
+    pub(super) fn cell_cut_has_projected_lines(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+        end_unit: usize,
+    ) -> bool {
+        self.cell_units(cell, table, styles)
+            .iter()
+            .take(end_unit)
+            .skip(start_unit)
+            .any(|unit| {
+                cell.paragraphs.get(unit.para_idx).is_some_and(|para| {
+                    para.line_segs
+                        .iter()
+                        .take(unit.vis_end)
+                        .skip(unit.vis_start)
+                        .any(|line| {
+                            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                != 0
+                        })
+                })
+            })
+    }
+
     /// Empty paragraphs own content atoms, not physical ComposedLines. Gap-only
     /// units and nested/control units must not grant an empty paragraph owner.
     pub(super) fn cell_cut_empty_paragraph_owners(

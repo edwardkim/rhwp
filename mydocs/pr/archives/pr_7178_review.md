@@ -7,7 +7,33 @@ last_verified: 2026-09-16
 
 # PR #7178 검토
 
-## 최종 판정
+## 메인터너 보정 재검토 (2026-09-16)
+
+**승인 — lane 소유 혼재 경계의 머지 보류 사유 해소.**
+
+- x 교차를 예약 소유로 간주하던 추정을 제거하고 `FloatLane.control_index`를 두 배치 경로에서
+  기록·소비한다. 형제 표의 실제 예약 여부로 lane/block 경로를 구별한다.
+- 작은 lane 표 → block 표 → 후속 표를 같은 x에 놓은 편집 IR 계약에서 보정 전
+  `601.05 × 384.92px` 겹침이 재현됐고 보정 후 해소됐다. 각 표 1회 배치와 쌍별 점유를 검사한다.
+- 원본 44529 p6~9에서 p7/p8 분리와 이웃 순서를 확인했다. #6795 및 #6950 이웃 계약도 포함했다.
+  도형선·줄바꿈 등 기존 fidelity 차이는 원본 이슈 전체 해결로 확대하지 않는다.
+- 구현 일반성, 점유·배치 일관성, 혼재 경계의 증거 부족을 해소했다. cut/rowspan 계산은
+  이 수정의 적용 범위가 아니며 기존 golden/래칫은 변경하지 않았다.
+
+대표 fresh WASM 증적: [44529 p7](../assets/pr7178_maintainer_44529_p007_wasm_review.png),
+[44529 p8](../assets/pr7178_maintainer_44529_p008_wasm_review.png).
+
+최종 보정 source에서 focused **80개**, 전체 nextest **9,916개**, Native Skia lib **4,112개**,
+그림 **2개**·직접 PDF **4개**가 통과했다. fmt·Rust Clippy 3종·workspace build·suite 정책도 통과했다.
+7개 문서 선택 **25쪽**을 Native/fresh WASM Visual Sweep으로 직접 대조했다.
+[분석·재현·컷/공간 대조와 검증 기록](../../working/task_m100_7095_6946_maintainer_stage1.md),
+[입력/소스 hash·실행 요약](../assets/pr7141_7178_maintainer_validation.json)을 함께 확인한다.
+원 PR CI나 초기 검토를 새 통합 head CI 성공으로 표기하지 않는다. 통합 PR CI는 아직 미실행이다.
+
+판정은 **메인터너 보정을 포함한 로컬 누적 통합**에 대한 것이다. 보정 전 원 PR head 자체의
+GitHub approve·merge 완료를 뜻하지 않는다. 아래 초기 검토는 당시 증거를 보존한 기록이다.
+
+## 초기 검토 판정 (`a85189909`)
 
 **머지 보류**. 검토 대상은 아래 원 PR 및 누적 통합 code head다.
 이 판정은 GitHub approve·push·통합 PR 생성·merge 완료를 뜻하지 않는다.
@@ -96,7 +122,7 @@ lane 표 + block 표 + 뒤 표가 있는 혼재 경계를 실제 제품 경로�
 - code/test/fixture/baseline 메인터너 보정은 추가하지 않았다. 탐색용 임시 IR probe는 정상 한컴
   입력 계약·수정 전 음성 대조가 확정되지 않아 수용 또는 신규 회귀 증거에서 제외했다.
 
-## 공통 조판 원칙 검토
+## 초기 공통 조판 원칙 검토
 
 | 항목 | 판정 | 근거 |
 | --- | --- | --- |

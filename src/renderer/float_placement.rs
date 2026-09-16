@@ -1349,8 +1349,10 @@ pub(crate) const SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU: i32 = 100;
 
 /// [#7095] 본문을 통째로 담은 1×1 `RowBreak` 표의 쪽 조각인가.
 ///
-/// 이 형상에서 한/글은 조각마다 표 바깥 여백(위·아래)을 다시 열고, 비끝 조각 상자를
-/// 본문 아래에서 [`SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU`] 만큼 더 안쪽에 고정한다.
+/// 이 형상에서 한/글은 조각마다 표 바깥 여백(위·아래)을 다시 연다. 저장된 쪽 프레임의
+/// 비끝 조각 상자는 본문 아래에서 [`SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU`] 만큼
+/// 더 안쪽에 고정한다. 형상만으로 저장 프레임을 보장하지는 않는다. runtime 파생 줄의
+/// 내용 컷은 paint에서 출처를 확인해 내용 높이를 보존한다.
 /// 페이지네이터 예산(`typeset.rs`)과 렌더러 상자(`table_partial.rs`)가 같은 술어를 써야
 /// 컷과 그림이 어긋나지 않는다.
 ///
@@ -1366,6 +1368,14 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
         && table.col_count == 1
         && !table.common.treat_as_char
         && matches!(table.page_break, TablePageBreak::RowBreak)
+}
+
+/// Physical bottom of a nonterminal single-cell page fragment. Callers use
+/// the same column-relative boundary for row fitting and page-relative painting.
+pub(crate) fn single_cell_page_fragment_bottom(table: &Table, body_bottom: f64, dpi: f64) -> f64 {
+    body_bottom
+        - hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi)
+        - hwpunit_to_px(SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU, dpi)
 }
 
 /// [#6887] 문단 기준 왼쪽 정렬 어울림 표가 원점에 싣는 바깥 왼쪽 여백 (HU).
@@ -1836,6 +1846,8 @@ pub(crate) fn horizontal_range(
 /// A placed float lane in page/column-relative coordinates.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct FloatLane {
+    /// Control identity within the paragraph owning this lane set.
+    pub control_index: Option<usize>,
     pub x_start: f64,
     pub x_end: f64,
     pub bottom: f64,
@@ -1875,6 +1887,7 @@ impl FloatLaneSet {
 
     pub(crate) fn place(
         &mut self,
+        control_index: Option<usize>,
         x_start: f64,
         x_end: f64,
         raw_top: f64,
@@ -1882,6 +1895,7 @@ impl FloatLaneSet {
     ) -> FloatLane {
         let top = self.pushed_top(x_start, x_end, raw_top);
         let lane = FloatLane {
+            control_index,
             x_start,
             x_end,
             bottom: top + height.max(0.0),
@@ -2076,8 +2090,8 @@ mod tests {
     #[test]
     fn lane_set_does_not_push_non_overlapping_ranges() {
         let mut lanes = FloatLaneSet::new();
-        let first = lanes.place(0.0, 100.0, 10.0, 40.0);
-        let second = lanes.place(120.0, 200.0, 10.0, 20.0);
+        let first = lanes.place(None, 0.0, 100.0, 10.0, 40.0);
+        let second = lanes.place(None, 120.0, 200.0, 10.0, 20.0);
 
         assert_eq!(first.bottom, 50.0);
         assert_eq!(second.bottom, 30.0);
@@ -2087,8 +2101,8 @@ mod tests {
     #[test]
     fn lane_set_pushes_overlapping_ranges() {
         let mut lanes = FloatLaneSet::new();
-        lanes.place(0.0, 100.0, 10.0, 40.0);
-        let second = lanes.place(90.0, 160.0, 10.0, 20.0);
+        lanes.place(None, 0.0, 100.0, 10.0, 40.0);
+        let second = lanes.place(None, 90.0, 160.0, 10.0, 20.0);
 
         assert_eq!(second.bottom, 70.0);
         assert_eq!(lanes.max_bottom(), 70.0);

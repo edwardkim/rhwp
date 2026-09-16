@@ -21204,8 +21204,9 @@ impl TypesetEngine {
         // `typeset_block_table` 이 저장 사다리 fit 으로 받았으므로 `PageItem::Table` 로
         // 나가지만 lane 에는 없다. 뒤 형제는 빈 lane 을 믿고 문단 앵커(0)에 앉아 두 표가
         // 한 쪽에 겹친다(44529 7쪽: 903.3px + 894.5px 인데 used=924.2, 한/글은 7·8쪽).
-        // lane 으로 놓인 형제는 자기 x 범위의 lane 을 남기므로 `pushed_top` 이 이미 밀어
-        // 준다 — 그 경우는 건드리지 않도록 lane 이 없는 형제만 흐름 바닥으로 본다.
+        // lane 예약의 control 소유로 배치 경로를 구별한다. 가로 교차만 확인하면 앞의
+        // 작은 표 A가 남긴 lane을 block 표 B의 예약으로 오인해 뒤 표 C가 B와 겹친다.
+        // 실제 lane 형제는 pushed_top이 밀어 주고, block 형제는 흐름 바닥을 소비한다.
         let raw_top = {
             let blocked_by_sibling = st.current_items.iter().any(|item| {
                 let (previous_ctrl, whole) = match item {
@@ -21235,14 +21236,10 @@ impl TypesetEngine {
                     previous_end,
                 );
                 let lane_registered = whole
-                    && lanes.lanes().iter().any(|lane| {
-                        crate::renderer::float_placement::ranges_overlap(
-                            lane.x_start,
-                            lane.x_end,
-                            previous_start,
-                            previous_end,
-                        )
-                    });
+                    && lanes
+                        .lanes()
+                        .iter()
+                        .any(|lane| lane.control_index == Some(previous_ctrl));
                 overlaps && !lane_registered
             });
             if blocked_by_sibling {
@@ -21270,7 +21267,7 @@ impl TypesetEngine {
             para_index: para_idx,
             control_index: ctrl_idx,
         });
-        lanes.place(x_start, x_end, raw_top, reserved_height);
+        lanes.place(Some(ctrl_idx), x_start, x_end, raw_top, reserved_height);
         st.current_height = st.current_height.max(lanes.max_bottom());
         true
     }
@@ -27271,6 +27268,21 @@ impl TypesetEngine {
                     }
                 }
             });
+            // A resolved host origin is shared with paint. Single-cell fragments
+            // open their top margin here once, so the replacement budget cannot
+            // silently lose the margin that table_partial would add afterwards.
+            let single_cell_fragment_shape =
+                crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
+                    self.profile.get().hwp5_stored_pagination_layout(), table,
+                ) && std::ptr::eq(row_geometry_table, table);
+            let fragment_placement = fragment_placement.map(|mut p| {
+                if single_cell_fragment_shape && !is_continuation
+                    && prepared.host_frame == (st.pages.len(), st.current_column, st.current_zone_y_offset.to_bits())
+                {
+                    p.table_top += hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                }
+                p
+            });
             let page_avail = fragment_placement.map_or(page_avail, |p| {
                 let boundary = if is_continuation || prepared.host_frame !=
                     (st.pages.len(), st.current_column, st.current_zone_y_offset.to_bits()) {
@@ -27284,6 +27296,19 @@ impl TypesetEngine {
                         first_fragment_painted_row_footer_guard
                     } else { 0.0 }).max(0.0)
             });
+
+            // A resolved visible-host origin replaces the default budget above;
+            // retain the physical bottom inset in that replacement as well.
+            // Empty-host stored cuts keep their existing advance-height budget:
+            // its final line spacing is not painted content. Subtracting the box
+            // inset from that mid-page advance rejects valid source units
+            // (80168 157->158 pages, rowbreak-problem-pages 18->19).
+            let page_avail = if let Some(p) = fragment_placement.filter(|_| single_cell_fragment_shape) {
+                let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                    table, st.available_height(), self.dpi,
+                );
+                page_avail.min((box_bottom - p.table_top - caption_extra).max(0.0))
+            } else { page_avail };
 
             // RowBreak 표의 common.height가 전체 표가 아니라 첫 physical fragment를
             // 저장할 수 있다. 저장 anchor가 현재 flow와 같고 declared bottom이 이

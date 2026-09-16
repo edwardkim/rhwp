@@ -12029,7 +12029,13 @@ impl LayoutEngine {
             {
                 let reserved_height = (y_offset - lane_top).max(0.0);
                 let lanes = para_float_lanes.entry(para_index).or_default();
-                lanes.place(x_start, x_end, raw_top, reserved_height);
+                lanes.place(
+                    Some(control_index),
+                    x_start,
+                    x_end,
+                    raw_top,
+                    reserved_height,
+                );
                 let single_positive_empty_float_before_plain_text = para
                     .controls
                     .get(control_index)

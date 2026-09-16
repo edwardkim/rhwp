@@ -3767,7 +3767,10 @@ impl LayoutEngine {
         // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
         let single_cell_page_fragment =
             self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
-        let y_start = if single_cell_page_fragment && stored_reset_paint_geometry.is_none() {
+        let y_start = if single_cell_page_fragment
+            && stored_reset_paint_geometry.is_none()
+            && resolved_table_top.is_none()
+        {
             y_start + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
         } else {
             y_start
@@ -4093,14 +4096,27 @@ impl LayoutEngine {
             (y_start - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi))).abs()
                 < 1.0;
         if single_cell_page_fragment && row_count == 1 && end_cut.iter().any(|&unit| unit > 0) {
-            let box_bottom = col_area.y + col_area.height
-                - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                - hwpunit_to_px(
-                    crate::renderer::float_placement::SINGLE_CELL_PAGE_FRAGMENT_BOTTOM_INSET_HU,
-                    self.dpi,
-                );
+            let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                table,
+                col_area.y + col_area.height,
+                self.dpi,
+            );
             let pinned_height = (box_bottom - y_start).max(0.0);
-            if starts_at_body_top {
+            // A compatibility projection can turn a floating picture stack into
+            // independent inline atoms. Its synthetic line geometry is not a
+            // stored full-page frame (issue2004 p5: PDF ends near 931px, not 1023).
+            // Consume the same cut's line provenance instead of inferring frame
+            // ownership from the 1x1 table shape alone.
+            let projected_content = table.cells.first().is_some_and(|cell| {
+                self.cell_cut_has_projected_lines(
+                    cell,
+                    table,
+                    styles,
+                    start_cut.first().copied().unwrap_or(0),
+                    end_cut.first().copied().unwrap_or(0),
+                )
+            });
+            if starts_at_body_top && !projected_content {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
                 // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로

@@ -169,3 +169,78 @@ fn no_page_stacks_two_float_tables_on_top_of_each_other() {
         }
     }
 }
+
+/// Synthetic IR contract, not a Hancom oracle: adding an independent small lane table must
+/// not make a following block table appear lane-owned. Preserve the real front form
+/// unchanged; construct both empty neighbors with internally consistent dimensions.
+#[test]
+fn unrelated_lane_does_not_hide_a_block_siblings_occupancy() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::{
+        control::Control,
+        table::{Cell, Table, TablePageBreak},
+    };
+    let mut core = DocumentCore::from_bytes(&read(SAMPLE)).expect("document");
+    let mut document = core.document().clone();
+    let para = &mut document.sections[3].paragraphs[0];
+    let Control::Table(front) = &para.controls[3] else {
+        panic!("front form");
+    };
+    let empty_neighbor = |height| {
+        let mut common = front.common.clone();
+        common.height = height;
+        let mut table = Table {
+            common,
+            row_count: 1,
+            col_count: 1,
+            row_sizes: vec![1], // HWP row_sizes contains cell counts, not heights.
+            cells: vec![Cell::new_empty(
+                0,
+                0,
+                front.common.width,
+                height,
+                front.border_fill_id,
+            )],
+            page_break: TablePageBreak::None,
+            ..Default::default()
+        };
+        table.rebuild_grid();
+        Control::Table(Box::new(table))
+    };
+    let first = empty_neighbor(300);
+    let last = empty_neighbor(30000);
+    para.controls[4] = last;
+    para.controls.insert(3, first);
+    core.set_document(document);
+
+    let mut seen = [0; 3];
+    let dump = core.dump_page_items_json(None);
+    for page in 0..core.page_count() {
+        if dump[page as usize]["section"] != 3 {
+            continue;
+        }
+        let tree = core.build_page_render_tree(page).expect("tree");
+        let mut tables = Vec::new();
+        column_tables(&tree.root, false, &mut tables);
+        let siblings: Vec<_> = tables
+            .iter()
+            .filter(|t| t.0 == Some(0) && matches!(t.1, Some(3..=5)))
+            .collect();
+        for table in &siblings {
+            seen[table.1.unwrap() - 3] += 1;
+        }
+        for (i, a) in siblings.iter().enumerate() {
+            for b in siblings.iter().skip(i + 1) {
+                let width = a.5.min(b.5) - a.4.max(b.4);
+                let height = a.3.min(b.3) - a.2.max(b.2);
+                assert!(width <= 1.0 || height <= 1.0,
+                    "page {page}: unrelated lane allowed sibling overlap {width} x {height}: {a:?} / {b:?}");
+            }
+        }
+    }
+    assert_eq!(
+        seen,
+        [1, 1, 1],
+        "all three whole tables must be present once"
+    );
+}

@@ -7,7 +7,40 @@ last_verified: 2026-09-16
 
 # PR #7141 검토
 
-## 최종 판정
+## 메인터너 보정 재검토 (2026-09-16)
+
+**상자 기하·예산의 부분 개선 범위에서 승인 — 초기 머지 보류 사유 해소.**
+
+- P1: `valign`·기존 페이지별 내용 이동까지 해결한 것으로 주장하지 않는다. #7095를 OPEN으로
+  유지하고 통합 PR 본문·최종 squash 모두 `Refs #7095`를 사용한다. 원 commit의 closing
+  키워드를 최종 메시지에 자동 복사하지 않는다.
+- P2: 확정 host 원점에 outer-top을 한 번만 계상하고, replacement budget도 paint와 같은
+  물리 하단을 사용한다. 실제 23.76→21.88px 이중 여백 반례와 빈/텍스트 host 62개 경계에서
+  유닛 1회 표시·셀 내부·계속 원점·후속 본문을 검증했다. 저장 컷 advance의 뒤 줄간격을
+  잘못 빼는 초안은 기각하고 80168 157쪽·rowbreak 18쪽을 보호했다.
+- 추가 시각 회귀: 파생 그림 줄을 저장 쪽 프레임으로 오인하던 확대를 제거했다. 같은 컷의
+  원 문단/줄 출처를 소비하며 issue2004 p5 실제 테두리가 약 93px 늘던 문제를 해결했다.
+  [보정 전](../assets/pr7141_maintainer_2004_p005_before_compare.png) /
+  [보정 후](../assets/pr7141_maintainer_2004_p005_after_compare.png).
+- 일반성/공통 결과/분할 계약은 위 구현·음성 대조·62개 경계·실물 PDF로 보완했다.
+  합성 IR을 한컴 정답지로 승격하지 않으며 기존 golden/래칫은 변경하지 않았다.
+- 남은 fidelity: 7062의 `valign`, p3/p10 내용 이동, 저자 증적의 기존 이탈 크기 변화는
+  #7095에 남긴다. 전체 PDF 시각 일치 승인이 아니다.
+
+대표 fresh WASM 증적: [7062 p2](../assets/pr7141_maintainer_7062_p002_wasm_review.png),
+[issue2004 p5](../assets/pr7141_maintainer_2004_p005_wasm_review.png).
+
+최종 보정 source에서 focused **80개**, 전체 nextest **9,916개**, Native Skia lib **4,112개**,
+그림 **2개**·직접 PDF **4개**가 통과했다. fmt·Rust Clippy 3종·workspace build·suite 정책도 통과했다.
+7개 문서 선택 **25쪽**을 Native/fresh WASM Visual Sweep으로 직접 대조했다.
+[분석·재현·컷/공간 대조와 검증 기록](../../working/task_m100_7095_6946_maintainer_stage1.md),
+[입력/소스 hash·실행 요약](../assets/pr7141_7178_maintainer_validation.json)을 함께 확인한다.
+원 PR CI나 초기 검토를 새 통합 head CI 성공으로 표기하지 않는다. 통합 PR CI는 아직 미실행이다.
+
+판정은 **메인터너 보정을 포함한 로컬 누적 통합**에 대한 것이다. 보정 전 원 PR head 자체의
+GitHub approve·merge 완료를 뜻하지 않는다. 아래 초기 검토는 당시 증거를 보존한 기록이다.
+
+## 초기 검토 판정 (`a85189909`)
 
 **머지 보류**. 검토 대상은 아래 원 PR 및 누적 통합 code head다.
 이 판정은 GitHub approve·push·통합 PR 생성·merge 완료를 뜻하지 않는다.
@@ -104,7 +137,7 @@ p10의 큰 내용 이동은 기준 devel 바이너리에도 있었다. **신규 
 - code/test/fixture/baseline 메인터너 보정은 추가하지 않았다. 탐색용 임시 IR probe는 정상 한컴
   입력 계약·수정 전 음성 대조가 확정되지 않아 수용 또는 신규 회귀 증거에서 제외했다.
 
-## 공통 조판 원칙 검토
+## 초기 공통 조판 원칙 검토
 
 | 항목 | 판정 | 근거 |
 | --- | --- | --- |

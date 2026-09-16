@@ -40,6 +40,31 @@ use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue7062/tac_object_host_line_height.hwp";
 
+#[test]
+fn projected_picture_fragment_does_not_claim_a_stored_page_frame() {
+    let core = load_sample("samples/issue2004_cell_image_stack.hwp");
+    let nodes = page_nodes(&core, 4);
+    let frame = nodes
+        .iter()
+        .find(|node| {
+            matches!(node.node_type, RenderNodeType::Table { .. })
+                && (node.bbox.width - 635.0).abs() < 1.0
+        })
+        .expect("outer picture frame")
+        .bbox;
+    // Existing Hancom PDF p5: path y=143.121094pt under matrix(1,0,0,-1,0,841).
+    // Normalize its 841pt page to the source 84188HU: bottom = 931.48px.
+    // Allow 2px for the existing picture projection metric difference; the
+    // incorrect full-page inference moves this real printed border to 1023px.
+    let pdf_bottom = (841.0 - 143.121094) / 841.0 * (84188.0 / 75.0);
+    assert!(
+        (frame.y + frame.height - pdf_bottom).abs() < 2.0,
+        "projected content frame must end at its picture: {:?}, PDF bottom={pdf_bottom}",
+        frame
+    );
+    assert_eq!(core.page_count(), 8);
+}
+
 fn load() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open")
@@ -187,4 +212,176 @@ fn issue_7095_first_fragment_starting_at_page_top_is_pinned_too() {
         22,
         "#7095: 30269 쪽수는 정본과 같은 22 여야 한다"
     );
+}
+
+/// Edited IR flow contract, separate from the unmodified Hancom fixtures above.
+/// Page height is varied across a row-fitting boundary; every numbered unit must
+/// survive once inside its own fragment and following text must remain after it.
+#[test]
+fn fragment_budget_preserves_units_with_visible_and_empty_hosts() {
+    use rhwp::model::{
+        control::Control,
+        paragraph::Paragraph,
+        shape::TextWrap,
+        table::{Cell, Table, TablePageBreak},
+    };
+    for visible_host in [false, true] {
+        for page_height in (21000..=24000).step_by(100) {
+            let mut core = load();
+            let mut doc = core.document().clone();
+            doc.sections.truncate(1);
+            let section = &mut doc.sections[0];
+            section.section_def.page_def.height = page_height;
+            section.section_def.page_def.margin_top = 1500;
+            section.section_def.page_def.margin_bottom = 1500;
+            section.section_def.page_def.margin_header = 0;
+            section.section_def.page_def.margin_footer = 0;
+            let make_para = |text: String| {
+                let mut p = Paragraph::new_empty();
+                p.char_count = text.encode_utf16().count() as u32 + 1;
+                p.char_offsets = (0..text.len() as u32).collect(); // ASCII contract markers
+                p.text = text;
+                p.invalidate_layout_inputs();
+                p
+            };
+            let mut cell = Cell::new_empty(0, 0, 30000, 60000, 0);
+            cell.paragraphs = (0..40).map(|i| make_para(format!("UNIT{i:02}"))).collect();
+            let mut table = Table {
+                row_count: 1,
+                col_count: 1,
+                row_sizes: vec![1],
+                cells: vec![cell],
+                page_break: TablePageBreak::RowBreak,
+                outer_margin_top: 141,
+                outer_margin_bottom: 900,
+                ..Default::default()
+            };
+            table.common.width = 30000;
+            table.common.height = 60000;
+            table.common.vertical_offset = if visible_host { 6000 } else { 0 };
+            table.common.text_wrap = TextWrap::TopAndBottom;
+            table.common.vert_rel_to = rhwp::model::shape::VertRelTo::Para;
+            table.rebuild_grid();
+            let mut host = make_para(if visible_host {
+                "HOST".into()
+            } else {
+                String::new()
+            });
+            host.char_count += 8; // table control follows the host text
+            host.controls = vec![Control::Table(Box::new(table))];
+            if visible_host {
+                assert_eq!(
+                    host.control_text_positions(),
+                    vec![4],
+                    "visible-host placement must own the text-tail control"
+                );
+            }
+            section.paragraphs = vec![host, make_para("AFTER".into())];
+            core.set_document(doc);
+            let mut found = vec![0; 40];
+            let mut last_table = None;
+            let mut following = None;
+            fn inspect(
+                n: &RenderNode,
+                page: u32,
+                bounds: Option<BoundingBox>,
+                found: &mut [usize],
+                last: &mut Option<(u32, f64)>,
+                after: &mut Option<(u32, f64)>,
+            ) {
+                let bounds = if matches!(n.node_type, RenderNodeType::TableCell(_)) {
+                    Some(n.bbox)
+                } else {
+                    bounds
+                };
+                if matches!(n.node_type, RenderNodeType::Table(_)) {
+                    *last = Some((page, n.bbox.y + n.bbox.height));
+                }
+                if let RenderNodeType::TextRun(t) = &n.node_type {
+                    if let Some(index) = t
+                        .text
+                        .strip_prefix("UNIT")
+                        .and_then(|s| s.parse::<usize>().ok())
+                    {
+                        found[index] += 1;
+                        let cell = bounds.expect("unit must stay in a cell");
+                        assert!(
+                            n.bbox.y >= cell.y - 0.5
+                                && n.bbox.y + n.bbox.height <= cell.y + cell.height + 0.5,
+                            "unit {} escapes page {} cell {:?}: {:?}",
+                            index,
+                            page,
+                            cell,
+                            n.bbox
+                        );
+                    }
+                    if t.text == "AFTER" {
+                        *after = Some((page, n.bbox.y));
+                    }
+                }
+                for child in &n.children {
+                    inspect(child, page, bounds, found, last, after);
+                }
+            }
+            let dump = core.dump_page_items_json(None);
+            for page in 0..core.page_count() {
+                let nodes = page_nodes(&core, page);
+                let continuation = dump[page as usize]["columns"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .flat_map(|column| column["items"].as_array().unwrap())
+                    .any(|item| item["kind"] == "partialTable" && item["isContinuation"] == true);
+                if continuation {
+                    let body = nodes
+                        .iter()
+                        .find(|n| matches!(n.node_type, RenderNodeType::Body { .. }))
+                        .unwrap();
+                    let frame = nodes
+                        .iter()
+                        .find(|n| matches!(n.node_type, RenderNodeType::Table(_)))
+                        .unwrap();
+                    assert!((frame.bbox.y - body.bbox.y - 141.0 / 75.0).abs() < 0.05,
+                        "host {visible_host}, height {page_height}, page {page}: continuation opens top margin once: body {:?}, table {:?}", body.bbox, frame.bbox);
+                }
+                inspect(
+                    &core.build_page_render_tree(page).unwrap().root,
+                    page,
+                    None,
+                    &mut found,
+                    &mut last_table,
+                    &mut following,
+                );
+            }
+            assert!(
+                found.iter().all(|&n| n == 1),
+                "host {visible_host}, height {page_height}: units {found:?}"
+            );
+            let last = last_table.expect("table");
+            let after = following.expect("following paragraph survives");
+            assert!(
+                after.0 > last.0 || (after.0 == last.0 && after.1 >= last.1 - 0.5),
+                "following {after:?} precedes table end {last:?}"
+            );
+        }
+    }
+}
+
+/// Stored mid-page cut advance includes a trailing blank interval. It is not
+/// interchangeable with the physical border height. Independent committed PDFs
+/// have 157 and 18 pages; subtracting the inset again produces 158 and 19.
+#[test]
+fn stored_midpage_cut_keeps_its_last_source_unit() {
+    for (source, pages) in [
+        ("samples/80168_regulatory_analysis.hwp", 157),
+        ("samples/rowbreak-problem-pages.hwp", 18),
+    ] {
+        let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(source)).unwrap();
+        let core = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(
+            core.page_count(),
+            pages,
+            "{source}: do not cut a source unit early by counting unpainted trailing space twice"
+        );
+    }
 }
