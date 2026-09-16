@@ -7836,25 +7836,52 @@ impl LayoutEngine {
                                     .lines
                                     .get(line_idx + 1)
                                     .map_or(usize::MAX, |next| next.char_start);
-                                let line_tac_table_count = composed
+                                // [#7150] 줄을 **소유한** 표 — 저장 lh 가 그 표의
+                                // `h + om_top + om_bottom` 과 같은 표다. 줄 높이를 정한
+                                // 것이 그 표이므로 한/글은 그것을 `줄상단 + om_top` 에
+                                // 고정하고, 같은 줄의 다른 표를 거기서 유도한 기준선에
+                                // 앉힌다. 소유자는 줄당 최대 하나다(같은 lh 를 두 표가
+                                // 만족하면 높이도 여백도 같아 결과가 같다).
+                                let line_owner = composed
                                     .tac_controls
                                     .iter()
-                                    .filter(|(pos, _, ci)| {
-                                        (line_start..line_end).contains(pos)
-                                            && matches!(
-                                                p.controls.get(*ci),
-                                                Some(Control::Table(t))
-                                                    if t.common.treat_as_char
-                                            )
-                                    })
-                                    .count();
+                                    .filter(|(pos, _, _)| (line_start..line_end).contains(pos))
+                                    .find_map(|(_, _, ci)| match p.controls.get(*ci) {
+                                        Some(Control::Table(t2)) if t2.common.treat_as_char => {
+                                            let h =
+                                                hwpunit_to_px(t2.common.height as i32, self.dpi);
+                                            let mt =
+                                                hwpunit_to_px(t2.outer_margin_top as i32, self.dpi);
+                                            let mb = hwpunit_to_px(
+                                                t2.outer_margin_bottom as i32,
+                                                self.dpi,
+                                            );
+                                            ((mt > 0.0 || mb > 0.0)
+                                                && (h + mt + mb - 0.2..=h + mt + mb + 0.2)
+                                                    .contains(&raw_lh))
+                                            .then_some((h, mt))
+                                        }
+                                        _ => None,
+                                    });
                                 let stored_lh_covers_om = (om_top > 0.0 || om_bottom > 0.0)
-                                    && line_tac_table_count <= 1
                                     && (table_h + om_top + om_bottom - 0.2
                                         ..=table_h + om_top + om_bottom + 0.2)
                                         .contains(&raw_lh);
                                 let table_y = if stored_lh_covers_om {
                                     y + om_top
+                                } else if let Some((owner_h, owner_om_top)) = line_owner {
+                                    // [#7150] 소유자가 `y + owner_om_top` 에 앉으면 그 상자
+                                    // 하단이 `기준선 + 0.15×owner_h` 이므로 공유 기준선은
+                                    // `y + owner_om_top + 0.85×owner_h` 다. 이 표를 거기에
+                                    // 앉히면 `y + owner_om_top + 0.85×(owner_h − table_h)`.
+                                    // 자기 여백이 들어가지 않는 것이 실측과 맞는다
+                                    // (#7049 의 `21_언어_기출`: 여백 283/283 과 0/0 인 두
+                                    // 상자를 한/글이 같은 y 에 놓는다).
+                                    //
+                                    // 저장 기준선을 쓰던 종전 식은 소유자의 om_top 을
+                                    // 잃어 줄 전체가 `0.85×(om_top+om_bottom) − om_top`
+                                    // 만큼 내려앉았다 — issue2470 1쪽 결재표 1.31px.
+                                    (y + owner_om_top + (owner_h - table_h) * 0.85).max(y)
                                 } else {
                                     // [#7049] 글자처럼 취급되는 표는 글자처럼 기준선에
                                     // 앉는다 — 높이의 85% 가 기준선 위, 15% 가 아래다.
