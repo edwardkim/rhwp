@@ -122,3 +122,16 @@ Native `maintainer-native/{issue2470,issue6706}`, WASM
 issue2470 2쪽의 기존 사진칸 높이 및 후속 본문, 글꼴·색상 등 명시한 시각 차이는 남는다.
 최적화 Docker WASM, 원격 보정 head CI, 원격 push/merge는 이번 로컬 보정에서 수행하지 않았다.
 분석·수정·검증·이 결과보고를 함께 커밋하고 확정 code SHA를 검토 문서에 연결한다.
+
+
+## 원 PR push 대상 정정 결과
+
+사용자가 PR #7199 자체에 push하도록 지정했다. 잘못 선택한 upstream 통합 branch의 commit을
+원 contributor source head `5356d0c0a` 위에 이력을 보존하여 재적용했다. 보정 commit은
+`8b867277fae114f6ffdf2164e0f97e5802441893`, 증적 재적용 head는 `7d7c577b60b75dbffff0360dc69456696f8a693b`다.
+
+재적용 head와 최신 `upstream/devel=6cd3c0692`의 merge tree가 앞서 검증한 `677d5110d` tree
+`6d636cfc84f2b42af66220e086cdf1f3629f1a22`와 정확히 일치한다. 기존 검증은 이 동일한
+current-base merge 결과의 증거이며 source-only 전체 검증을 새로 실행한 것은 아니다.
+이후 두 보고서에 push 대상과 이 provenance만 정정했다. 코드·fixture·overlay는 변경하지 않았다.
+원 source ref와 API head 일치, maintainer 수정 허용, LFS 비대상, push dry-run 성공을 확인했다.

@@ -11,9 +11,9 @@ last_verified: 2026-09-16
 
 **메인터너 보정 후 수용 가능** — 이전 줄 표의 여백이 다음 줄 표에 유입되던 P2를 해결했다.
 실제 배치와 같은 저장 줄별 TAC 집합을 재사용하며, 정식 경계 테스트의 수정 전 FAIL / 보정 후 PASS를 확인했다.
-보정 code commit은 `58b970bf0a60e3577ff19a6b508e2a24c0d1e000`다. 아래 판정은 이 로컬 코드와 명시한 범위에 해당한다.
-원 PR의 원격 head에는 아직 보정을 push하지 않았으며, 원 head CI를 보정 코드의 CI로 대체하지 않는다.
-원격 최종 head CI 확인과 실제 merge는 후속 단계다.
+원 PR에 반영하는 보정 code commit은 `8b867277fae114f6ffdf2164e0f97e5802441893`다(기존 통합 보정 `58b970bf0`과 동일 패치). 아래 판정은 이 로컬 코드와 명시한 범위에 해당한다.
+사용자가 PR #7199에 직접 push하도록 지정하여 원 source head 위에 보정·증적 commit을 재적용했다.
+원 head CI를 보정 코드의 CI로 대체하지 않으며, 최종 push head의 CI 확인과 실제 merge는 후속 단계다.
 
 [분석·구현·검증 결과보고](pr_7199_review_impl.md)에 명령, 실행 산출물의 소스/바이너리 식별과 한계를 기록했다.
 issue2470 **1·2쪽 모두 Native/fresh WASM compare·standalone overlay·review를 재생성하고 직접 판독했다.**
@@ -30,14 +30,29 @@ issue2470 **1·2쪽 모두 Native/fresh WASM compare·standalone overlay·review
 | 원 CI base | `8d45f242baa1a565357aaa38e9f459595b1e756c` |
 | 최신 통합 base | `6cd3c0692a3ed9def7f7e7af1ea03cad0c1a0aaa` |
 | 최초 체리픽 code head | `ca0db01b2f8d9e6fc73e290d32f9d1f7fc9a3282` |
-| 메인터너 보정 code head | `58b970bf0a60e3577ff19a6b508e2a24c0d1e000` |
+| 원 PR에 반영할 보정 code head | `8b867277fae114f6ffdf2164e0f97e5802441893` |
+| 앞서 로컬 검증한 통합 code head | `58b970bf0a60e3577ff19a6b508e2a24c0d1e000` |
 | 로컬 branch | `codex/pr7199-review-20260916` |
 | 적용 | `cherry-pick -x`, 충돌 없음, 원본 작성자/메시지 보존 |
 | 원 PR 변경 | renderer 1파일 + 실물 focused test 1파일, +174/-11 |
 | 원격 상태 재확인 | OPEN, non-draft, MERGEABLE/CLEAN, source head 불변 |
 
 route: collaborator_external_pr + intake_and_review + local_validation + visual_fixture_evidence.
-원격 push·리뷰 게시·merge는 하지 않았다. source CI를 최신 통합 head의 CI라고 표기하지 않는다.
+사용자의 직접 push 지시에 따라 `lpaiu-cs/rhwp:fix/7150-tac-line-owner-anchor`를 갱신한다.
+GitHub review/comment 게시와 merge는 이번 push에 포함하지 않는다. source CI를 보정 head의 CI라고 표기하지 않는다.
+
+### 원 PR 브랜치로 push 대상 정정
+
+- 처음 `upstream/codex/pr7199-review-20260916`에 push한 것은 대상 선택 오류였다.
+- 원 contributor head `5356d0c0a3f1c6e687993defc5831c3e28f3cf6d`는 그대로 보존했다.
+- 이 head 위에 리뷰/fixture, 메인터너 코드, 최종 증적 commit을 `cherry-pick -x`로 재적용했다.
+- 재적용 head `7d7c577b60b75dbffff0360dc69456696f8a693b`와 `upstream/devel=6cd3c0692`의 `git merge-tree --write-tree`는
+  `6d636cfc84f2b42af66220e086cdf1f3629f1a22`다. 앞서 전체 검증한 `677d5110d`의 tree와 **완전히 같다**.
+  따라서 기존 전체 회귀·lint·Native/fresh WASM·overlay 증거는 이 동일한 current-base merge tree의 증거로 연결한다.
+  오래된 base의 source-only 실행을 새로 수행했다고 주장하지 않는다.
+- source 이후 변경 파일 전부 LFS filter 비대상이며 LFS pending object도 없었다.
+  `GIT_LFS_SKIP_PUSH=1 git push --dry-run`은 성공했다. 실제 push는 fast-forward이며 force-push하지 않는다.
+- 위 tree 확인 이후 추가한 변경은 이 문서와 구현 보고서의 경로·SHA·증거 연결 설명뿐이다.
 
 ## 해결된 P2 — 보정 전 실제 줄 배정을 재사용하지 않는 소유자 탐색
 
@@ -231,7 +246,7 @@ Native는 위 sweep에서 `--wasm-pkg`를 빼고 `--out "$EVIDENCE/maintainer-na
 
 ## Merge 후 contributor PR comment 계획
 
-현재는 로컬 보정 완료 상태이며 원격 게시·merge는 하지 않았다. 최종 head CI와 merge 후 실제 merge SHA와 CI URL,
+이번 직접 push 이후 최종 head CI와 merge가 완료되면 실제 merge SHA와 CI URL,
 수정된 줄 소속 계약, 실제 검증 범위와 남은 차이를 한국어로 설명하고 감사한다.
 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을
 연결하고 대표 PNG를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7199_review/wasm_review_001.png`
