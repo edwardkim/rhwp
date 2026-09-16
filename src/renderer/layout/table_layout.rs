@@ -3676,27 +3676,6 @@ impl LayoutEngine {
         out
     }
 
-    fn resolve_row_heights_for_content(
-        &self,
-        table: &crate::model::table::Table,
-        col_count: usize,
-        row_count: usize,
-        measured_table: Option<&MeasuredTable>,
-        styles: &ResolvedStyleSet,
-        relaxed_pad: bool,
-    ) -> Vec<f64> {
-        self.resolve_row_heights_with_common_fit(
-            table,
-            col_count,
-            row_count,
-            measured_table,
-            styles,
-            false,
-            relaxed_pad,
-            false,
-        )
-    }
-
     /// [Task #2211] 셀의 전 문단이 저장 LINE_SEG 를 보유하는지 — 보유 셀은
     /// 한컴이 저장 시 셀 h 를 콘텐츠에 맞춰 확정했으므로 행 성장 판정에서
     /// 저장 지오메트리를 그대로 신뢰한다 (#2112 계보). 합성 seg(tag bit31)는
@@ -10734,20 +10713,14 @@ impl LayoutEngine {
                     let nt = nested_tables[0];
                     let ncol = nt.col_count as usize;
                     let nrow = nt.row_count as usize;
-                    // 분할 컷은 저장된 표 높이보다 실제 콘텐츠 높이를 기준으로 잡아야
-                    // page-larger 중첩 표가 한컴처럼 행 단위로 이어진다.
-                    // [#2148/#2169] NO_LS 중첩 표(왕복 synthetic 포함)만 선언-fit
-                    // (fit_row_heights_to_common_height, 성장 전용) — 저장 lineseg
-                    // 문서는 #1073 콘텐츠 기준 유지 (자기-export HWPX 왕복 정합).
-                    let nt_all_no_ls = nt
-                        .cells
-                        .iter()
-                        .all(|c| c.paragraphs.iter().all(|p| p.line_segs.is_empty()));
-                    let rhs = if nt_all_no_ls {
-                        self.resolve_row_heights(nt, ncol, nrow, None, styles, true)
-                    } else {
-                        self.resolve_row_heights_for_content(nt, ncol, nrow, None, styles, true)
-                    };
+                    // [#7140] 행 유닛은 페인트가 쓰는 행 높이(`resolve_row_heights`)로 센다.
+                    // 렌더러는 통째 배치(`layout_table`)든 조각(`table_partial`)이든 행 합이
+                    // 선언 표 높이보다 작으면 마지막 행을 선언까지 늘려 그린다(성장 전용).
+                    // 유닛이 내용 높이만 세면 그 늘어난 몫이 쪽 예산에서 빠진다 — overfill
+                    // `pi324` 5×3 은 내용 행 합 149.8px 에 선언 174.0px 이라 19쪽 표 조각이
+                    // 본문 바닥을 4.0px 넘었다. 내용이 선언보다 긴 page-larger 표(#1073)에는
+                    // 맞춤이 아무것도 더하지 않으므로 행 단위 분할은 그대로다.
+                    let rhs = self.resolve_row_heights(nt, ncol, nrow, None, styles, true);
                     let ncs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
                     let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
                     let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
@@ -11063,11 +11036,15 @@ impl LayoutEngine {
                             // 증거만으로 계상한다(등식 없는 host 는 종전대로).
                             let native_stored_ladder =
                                 self.profile.get().hwp5_stored_pagination_layout();
-                            if (self.profile.get().hwpx_stored_layout()
+                            // [#7140] 등식 증거가 있으면 HWPX 도 쪽 스케일 틀 전제 없이
+                            // 계상한다. issue3637 래퍼(선언 572px)는 그 전제에서 빠져
+                            // pi16·pi17 호스트의 ls 500HU(6.67px)가 각각 누락됐고, 유닛 합이
+                            // 페인트보다 13.3px 짧아 30쪽이 29쪽 마지막 줄을 다시 그렸다.
+                            // 증거 없는 1×1 래퍼 폴백만 종전 쪽 프레임 전제를 유지한다.
+                            let hwpx_page_frame = self.profile.get().hwpx_stored_layout()
                                 && cell_has_page_scale_frame_reset
-                                && cell_ladder_uniform_exact)
-                                || native_stored_ladder
-                            {
+                                && cell_ladder_uniform_exact;
+                            if self.profile.get().hwpx_stored_layout() || native_stored_ladder {
                                 if let Some(seg) =
                                     p.line_segs.iter().find(|seg| !line_seg_is_synthetic(seg))
                                 {
@@ -11100,7 +11077,7 @@ impl LayoutEngine {
                                         Some(delta) if delta >= 0 => (delta - slot).abs() <= 2,
                                         // 증거가 없을 때의 1×1 래퍼 폴백은 HWPX
                                         // 저장 형상 전용이다 — HWP5 는 등식만 본다.
-                                        _ => wrapper_shape && !native_stored_ladder,
+                                        _ => wrapper_shape && hwpx_page_frame,
                                     };
                                     if charge {
                                         uh += hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
@@ -16082,6 +16059,38 @@ impl LayoutEngine {
             max_padding = max_padding.max(pad_top + pad_bottom);
         }
         max_padding
+    }
+
+    /// [#7140] 비종결 컷에서 `row_cut_content_height` 가 유닛 합 위에 더하는 mixed nested
+    /// 첫 가시 유닛 예약(`mixed_nested_flow_extra_from_cut`)의 행 최댓값.
+    ///
+    /// 컷 예산이 이 몫을 빼지 않으면 조각의 물리 높이가 본문을 넘는다 — 예약은 컷 시점에
+    /// 이미 정해져 있으므로(시작 컷의 첫 가시 유닛) 예산과 소비가 같은 값을 쓸 수 있다.
+    pub(crate) fn row_cut_mixed_nested_reserve(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut row_cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .collect();
+        row_cells.sort_by_key(|c| c.col);
+        let mut reserve = 0.0f64;
+        for (i, cell) in row_cells.iter().enumerate() {
+            let units = self.cell_units(cell, table, styles);
+            let su = start_cut.get(i).copied().unwrap_or(0).min(units.len());
+            if su + 1 >= units.len() {
+                continue;
+            }
+            let hi = units.len() - 1;
+            reserve =
+                reserve.max(self.mixed_nested_flow_extra_from_cut(cell, table, styles, su, hi));
+        }
+        reserve
     }
 
     fn has_stored_square_picture_flow_in_row(

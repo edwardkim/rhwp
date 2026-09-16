@@ -23417,7 +23417,15 @@ impl TypesetEngine {
             } else {
                 mt.max_padding_for_row(r)
             };
-            let mut budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            // [#7140] 조각이 쪽에서 차지하는 높이(`row_cut_content_height`)는 유닛 합 위에
+            // mixed nested 첫 가시 유닛을 한 번 더 예약한다. 예산이 그 몫을 빼지 않으면 컷이
+            // 예산 안이어도 조각은 본문을 넘고, 이어받는 행(`r == cursor_row`)은 아래 재시도
+            // 진입 조건 셋이 모두 거짓이라 그 넘침이 그대로 수용된다(issue3637 26·29쪽).
+            // 측정과 배치가 같은 값을 쓰도록 예산에서도 같은 예약을 뺀다.
+            let mixed_nested_reserve =
+                layout_engine.row_cut_mixed_nested_reserve(table, r, row_start_cut, styles);
+            let mut budget =
+                (avail_for_rows - consumed - cs_before - padding - mixed_nested_reserve).max(0.0);
             let native_hwp5_internal_reset_row_tail = st.profile.hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && mt.allows_row_break_split()
