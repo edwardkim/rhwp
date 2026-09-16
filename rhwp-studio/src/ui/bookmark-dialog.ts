@@ -194,7 +194,7 @@ export class BookmarkDialog {
     rName.type = 'radio'; rName.name = 'bm-sort'; rName.value = 'name';
     rName.addEventListener('change', () => { this.sortMode = 'name'; this.refreshList(); });
     radioName.appendChild(rName);
-    radioName.appendChild(document.createTextNode(' 이름(A)'));
+    radioName.appendChild(document.createTextNode(t('dialog.bookmark.build.text')));
 
     const radioPos = document.createElement('label');
     radioPos.className = 'bm-radio';
@@ -202,7 +202,7 @@ export class BookmarkDialog {
     rPos.type = 'radio'; rPos.name = 'bm-sort'; rPos.value = 'position'; rPos.checked = true;
     rPos.addEventListener('change', () => { this.sortMode = 'position'; this.refreshList(); });
     radioPos.appendChild(rPos);
-    radioPos.appendChild(document.createTextNode(' 위치(P)'));
+    radioPos.appendChild(document.createTextNode(t('dialog.bookmark.build.text.xf5e9d1')));
 
     sortRow.appendChild(radioName);
     sortRow.appendChild(radioPos);

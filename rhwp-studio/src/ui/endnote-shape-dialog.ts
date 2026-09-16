@@ -264,9 +264,9 @@ export class EndnoteShapeDialog extends ModalDialog {
       ['lowerRoman', 'i,ii,iii'],
       ['upperAlpha', 'A,B,C'],
       ['lowerAlpha', 'a,b,c'],
-      ['hangulSyllable', '가,나,다'],
+      ['hangulSyllable', t('dialog.endnoteShape.numberGroup.label.x2a24e2')],
       ['hangulJamo', 'ㄱ,ㄴ,ㄷ'],
-      ['hangulDigit', '일,이,삼'],
+      ['hangulDigit', t('dialog.endnoteShape.numberGroup.label.x700d18')],
       ['hanjaDigit', '一,二,三'],
     ]) {
       const option = document.createElement('option');
@@ -288,8 +288,8 @@ export class EndnoteShapeDialog extends ModalDialog {
     this.buildColorControl();
 
     group.append(
-      this.row(this.label('번호 모양'), this.numberFormatSelect),
-      this.row(this.label('앞 장식 문자'), this.prefixInput, this.label('뒤 장식 문자'), this.suffixInput),
+      this.row(this.label(t('dialog.endnoteShape.label.label')), this.numberFormatSelect),
+      this.row(this.label(t('dialog.endnoteShape.label.label.x0e3dab')), this.prefixInput, this.label(t('dialog.endnoteShape.label.label.x52b60a')), this.suffixInput),
       this.checkboxRow(this.separatorCheck, t('dialog.endnoteShape.checkboxRow.label')),
       this.pairRow(
         t('dialog.endnoteShape.pairRow.label'),
@@ -311,9 +311,9 @@ export class EndnoteShapeDialog extends ModalDialog {
     this.noteSpacingInput = this.numberInput(7, 0, 100, 0.5);
     this.marginBottomInput = this.numberInput(2, 0, 100, 0.5);
     group.append(
-      this.row(this.label('구분선 위'), this.withUnit(this.marginTopInput, 'mm')),
-      this.row(this.label('미주 사이'), this.withUnit(this.noteSpacingInput, 'mm')),
-      this.row(this.label('구분선 아래'), this.withUnit(this.marginBottomInput, 'mm')),
+      this.row(this.label(t('dialog.endnoteShape.label.label.x18d59b')), this.withUnit(this.marginTopInput, 'mm')),
+      this.row(this.label(t('dialog.endnoteShape.label.label.xbe46f6')), this.withUnit(this.noteSpacingInput, 'mm')),
+      this.row(this.label(t('dialog.endnoteShape.label.label.x1aae4d')), this.withUnit(this.marginBottomInput, 'mm')),
     );
     return group;
   }

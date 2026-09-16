@@ -181,18 +181,18 @@ export class StyleDialog extends ModalDialog {
 
       // 문단 모양 정보
       if (style?.type === 0) {
-        this.addInfoSection('문단 모양 정보', this.buildParaInfo(detail.paraProps));
+        this.addInfoSection(t('dialog.style.addInfoSection.label'), this.buildParaInfo(detail.paraProps));
       }
 
       // 글자 모양 정보
-      this.addInfoSection('글자 모양 정보', this.buildCharInfo(detail.charProps));
+      this.addInfoSection(t('dialog.style.addInfoSection.label.xf8d412'), this.buildCharInfo(detail.charProps));
 
       // 번호/글머리표 정보
       const headType = detail.paraProps?.headType ?? 'None';
       const headLabel: Record<string, string> = {
         None: '없음', Outline: '개요', Number: '번호', Bullet: '글머리표',
       };
-      this.addInfoSection('문단 번호/글머리표 정보', `종류: ${headLabel[headType] ?? headType}`);
+      this.addInfoSection(t('dialog.style.addInfoSection.label.xbf2f06'), t('dialog.style.addInfoSection.label.xaea26f', { p1: headLabel[headType] ?? headType }));
     } catch {
       this.infoPanel.textContent = t('dialog.style.infoPanel.text');
     }

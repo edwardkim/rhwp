@@ -949,7 +949,7 @@ export class PicturePropsDialog {
     this.cornerCustomRadio.type = 'radio';
     this.cornerCustomRadio.name = 'corner-mode';
     crLabel.appendChild(this.cornerCustomRadio);
-    crLabel.appendChild(document.createTextNode(' 곡률 지정(J):'));
+    crLabel.appendChild(document.createTextNode(i18nText('dialog.pictureProps.buildLinePanel.text')));
     cRow.appendChild(crLabel);
     this.cornerCustomInput = this.numberInput(0, 100, 1);
     this.cornerCustomInput.value = '0';
@@ -1025,7 +1025,7 @@ export class PicturePropsDialog {
     this.fillNoneRadio.name = radioName;
     this.fillNoneRadio.checked = true;
     noneLabel.appendChild(this.fillNoneRadio);
-    noneLabel.appendChild(document.createTextNode(' 색 채우기 없음(V)'));
+    noneLabel.appendChild(document.createTextNode(i18nText('dialog.pictureProps.buildFillPanel.text')));
     noneRow.appendChild(noneLabel);
     fillFs.appendChild(noneRow);
 
@@ -1036,7 +1036,7 @@ export class PicturePropsDialog {
     this.fillSolidRadio.type = 'radio';
     this.fillSolidRadio.name = radioName;
     solidLabel.appendChild(this.fillSolidRadio);
-    solidLabel.appendChild(document.createTextNode(' 색(O)'));
+    solidLabel.appendChild(document.createTextNode(i18nText('dialog.pictureProps.buildFillPanel.text.x42d477')));
 
     const solidHdr = this.row();
     solidHdr.appendChild(solidLabel);
@@ -1067,7 +1067,7 @@ export class PicturePropsDialog {
     this.fillGradientRadio.type = 'radio';
     this.fillGradientRadio.name = radioName;
     gradLabel.appendChild(this.fillGradientRadio);
-    gradLabel.appendChild(document.createTextNode(' 그러데이션(B)'));
+    gradLabel.appendChild(document.createTextNode(i18nText('dialog.pictureProps.buildFillPanel.text.xf34cee')));
 
     const gradHdr = this.row();
     gradHdr.appendChild(gradLabel);

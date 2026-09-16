@@ -193,7 +193,7 @@ export class TableCreateDialog {
     icon.style.marginRight = '4px';
     icon.textContent = '\u229E';
     footer.appendChild(icon);
-    footer.appendChild(document.createTextNode('표 만들기...'));
+    footer.appendChild(document.createTextNode(i18nText('dialog.tableCreate.build.text')));
     footer.addEventListener('mouseenter', () => { footer.style.background = 'var(--color-accent-bg)'; });
     footer.addEventListener('mouseleave', () => { footer.style.background = ''; });
     footer.addEventListener('click', () => {

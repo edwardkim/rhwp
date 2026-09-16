@@ -408,12 +408,12 @@ export function buildBorderTab(
   bdTypeSelect.className = 'dialog-select';
   bdTypeSelect.style.width = '100px';
   for (const [val, lbl] of [
-    ['0', '선 없음'], ['1', '실선'], ['2', '파선'], ['3', '점선'],
-    ['4', '일점쇄선'], ['5', '이점쇄선'], ['6', '긴 파선'], ['7', '동그라미'],
-    ['8', '이중선'], ['9', '가는선+굵은선'], ['10', '굵은선+가는선'],
-    ['11', '삼중선'], ['12', '물결'], ['13', '이중 물결'],
-    ['14', '두꺼운 3D'], ['15', '두꺼운 3D(반대)'],
-    ['16', '3D 단선'], ['17', '3D 단선(반대)'],
+    ['0', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label')], ['1', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x4a9e5f')], ['2', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x83e6b8')], ['3', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x982113')],
+    ['4', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.xcff873')], ['5', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.xe3ee0f')], ['6', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x951654')], ['7', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x6ca21a')],
+    ['8', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x1f88fa')], ['9', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x488e04')], ['10', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x0c024d')],
+    ['11', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.xd07f40')], ['12', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.xe02fd0')], ['13', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x124523')],
+    ['14', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x827f85')], ['15', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x175451')],
+    ['16', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x1ad018')], ['17', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x745d42')],
   ] as const) {
     const o = document.createElement('option');
     o.value = val; o.textContent = lbl;
@@ -522,7 +522,7 @@ export function buildBorderTab(
   const bgFillSelect = document.createElement('select');
   bgFillSelect.className = 'dialog-select';
   bgFillSelect.style.width = '100px';
-  for (const [val, lbl] of [['none', '색 없음'], ['solid', '색 지정']] as const) {
+  for (const [val, lbl] of [['none', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x5ab3b7')], ['solid', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x013035')]] as const) {
     const o = document.createElement('option');
     o.value = val; o.textContent = lbl;
     bgFillSelect.appendChild(o);
@@ -556,7 +556,7 @@ export function buildBorderTab(
   // 폴백되고, collectMods 가 0!=-1 을 변경으로 오인하여 fillType=solid 를 강제
   // 주입 → 여백만 바꾸거나 확인만 눌러도 의도치 않은 배경/테두리가 생성됐다.
   for (const [val, lbl] of [
-    ['-1', '없음'], ['1', '━'], ['2', '┃'],
+    ['-1', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x696251')], ['1', '━'], ['2', '┃'],
     ['3', '╲'], ['4', '╱'], ['5', '┼'], ['6', '╳'],
   ] as const) {
     const o = document.createElement('option');

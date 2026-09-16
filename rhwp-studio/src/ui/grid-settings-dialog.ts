@@ -52,19 +52,19 @@ export class GridSettingsDialog extends ModalDialog {
     this.visibleInput.checked = this.currentSettings.visible;
     body.appendChild(this.checkboxRow(this.visibleInput, t('dialog.gridSettings.checkboxRow.label')));
 
-    body.appendChild(this.radioGroup<GridPattern>('격자 모양', 'grid-pattern', [
+    body.appendChild(this.radioGroup<GridPattern>(t('dialog.gridSettings.radioGroup.label'), 'grid-pattern', [
       ['dots', '점'],
       ['horizontal', '가로선'],
       ['vertical', '세로선'],
       ['both', '가로/세로선'],
     ], this.currentSettings.pattern));
 
-    body.appendChild(this.radioGroup<GridLayer>('격자 위치', 'grid-layer', [
+    body.appendChild(this.radioGroup<GridLayer>(t('dialog.gridSettings.radioGroup.label.xaa4389'), 'grid-layer', [
       ['behindText', '글 뒤'],
       ['inFrontOfText', '글 앞'],
     ], this.currentSettings.layer));
 
-    body.appendChild(this.radioGroup<GridSnapMode>('격자 방식', 'grid-snap-mode', [
+    body.appendChild(this.radioGroup<GridSnapMode>(t('dialog.gridSettings.radioGroup.label.x4ff439'), 'grid-snap-mode', [
       ['free', '상관 없이'],
       ['magnetic', '자석 효과'],
       ['gridOnly', '격자에만 붙이기'],
@@ -155,8 +155,8 @@ export class GridSettingsDialog extends ModalDialog {
     row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px 14px;margin-bottom:8px;color:var(--color-text);';
 
     for (const [value, labelText] of [
-      ['page', '쪽'],
-      ['paper', '종이'],
+      ['page', t('dialog.gridSettings.originGroup.label')],
+      ['paper', t('dialog.gridSettings.originGroup.label.xd3445e')],
     ] as [GridOrigin, string][]) {
       const label = document.createElement('label');
       label.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:13px;color:var(--color-text);';

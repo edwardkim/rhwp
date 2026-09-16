@@ -194,7 +194,7 @@ export class PageSetupDialog extends ModalDialog {
     this.scopeSelect = document.createElement('select');
     this.scopeSelect.className = 'dialog-select';
     this.scopeSelect.style.width = '120px';
-    for (const [val, text] of [['all', '문서 전체'], ['new-section', '새 구역으로']] as const) {
+    for (const [val, text] of [['all', i18nText('dialog.pageSetup.createBody.label')], ['new-section', i18nText('dialog.pageSetup.createBody.label.x3c151b')]] as const) {
       const opt = document.createElement('option');
       opt.value = val;
       opt.textContent = text;

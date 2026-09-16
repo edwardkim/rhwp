@@ -449,7 +449,7 @@ export class CellBorderBgDialog extends ModalDialog {
     this.bgNoneRadio.checked = true;
     this.bgNoneRadio.addEventListener('change', () => this.updateBgPreview());
     noneRow.appendChild(this.bgNoneRadio);
-    noneRow.appendChild(document.createTextNode(' 채우기 없음'));
+    noneRow.appendChild(document.createTextNode(i18nText('dialog.cellBorderBg.buildBackgroundTab.text')));
     fillSection.appendChild(noneRow);
 
     const colorRow = this.row();
@@ -458,7 +458,7 @@ export class CellBorderBgDialog extends ModalDialog {
     this.bgColorRadio.name = 'cellBgFill';
     this.bgColorRadio.addEventListener('change', () => this.updateBgPreview());
     colorRow.appendChild(this.bgColorRadio);
-    colorRow.appendChild(document.createTextNode(' 색(Q)'));
+    colorRow.appendChild(document.createTextNode(i18nText('dialog.cellBorderBg.buildBackgroundTab.text.xfec1dd')));
     fillSection.appendChild(colorRow);
 
     // 면색 + 무늬색 + 무늬모양
@@ -911,7 +911,7 @@ export class CellBorderBgDialog extends ModalDialog {
     radioGroup.className = 'dialog-radio-group';
     const radios: HTMLInputElement[] = [];
 
-    for (const [val, text] of [['selected', '선택된 셀(S)'], ['all', '모든 셀(E)']] as const) {
+    for (const [val, text] of [['selected', i18nText('dialog.cellBorderBg.buildScopeSection.label')], ['all', i18nText('dialog.cellBorderBg.buildScopeSection.label.x124fac')]] as const) {
       const lbl = document.createElement('label');
       const inp = document.createElement('input');
       inp.type = 'radio';
