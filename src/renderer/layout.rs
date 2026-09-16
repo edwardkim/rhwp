@@ -12467,8 +12467,41 @@ impl LayoutEngine {
                 let ps_id = comp
                     .map(|c| c.para_style_id as usize)
                     .unwrap_or(para.para_shape_id as usize);
+                // 같은 문단의 후속 텍스트가 남으면 그 마지막 PP가 문단 뒤 간격을
+                // 적용한다. 표에서 미리 더하면 문단 내부 간격으로 중복 소비된다.
+                // 공백뿐인 PP는 위에서 건너뛰므로 문단 종료를 넘겨주지 않는다.
+                let has_text_tail =
+                    control_line_seg_index(para, control_index).is_some_and(|line| {
+                        page_content.column_contents.iter().any(|column| {
+                            column.items.iter().any(|item| {
+                                let PageItem::PartialParagraph {
+                                    para_index: owner,
+                                    start_line,
+                                    end_line,
+                                } = item
+                                else {
+                                    return false;
+                                };
+                                *owner == para_index
+                                    && *start_line > line
+                                    && comp
+                                        .and_then(|c| c.lines.get(*start_line..*end_line))
+                                        .is_some_and(|lines| {
+                                            lines.iter().any(|line| {
+                                                line.runs.iter().any(|run| {
+                                                    run.text.chars().any(|c| {
+                                                        !c.is_whitespace()
+                                                            && c > '\u{001F}'
+                                                            && c != '\u{FFFC}'
+                                                    })
+                                                })
+                                            })
+                                        })
+                            })
+                        })
+                    });
                 if let Some(ps) = styles.para_styles.get(ps_id) {
-                    if ps.spacing_after > 0.0 {
+                    if ps.spacing_after > 0.0 && !has_text_tail {
                         y_offset += ps.spacing_after;
                     }
                 }

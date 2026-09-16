@@ -13,16 +13,51 @@ fn collect(node: &RenderNode, nodes: &mut Vec<RenderNode>) {
 }
 
 fn render(name: &str) -> Vec<RenderNode> {
+    render_with_spacing_after(name, None)
+}
+
+fn render_with_spacing_after(name: &str, spacing_after: Option<i32>) -> Vec<RenderNode> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/stored-table-text-tail")
         .join(name);
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("fixture"))
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).expect("fixture"))
         .expect("parse synthetic document");
+    if let Some(spacing_after) = spacing_after {
+        let mut doc = core.document().clone();
+        let host = &mut doc.sections[0].paragraphs[1];
+        let mut shape = doc.doc_info.para_shapes[host.para_shape_id as usize].clone();
+        shape.spacing_after = spacing_after;
+        host.para_shape_id = doc.doc_info.para_shapes.len() as u16;
+        doc.doc_info.para_shapes.push(shape);
+        core.set_document(doc);
+    }
     assert_eq!(core.page_count(), 1, "{name}");
     let tree = core.build_page_render_tree(0).expect("render");
     let mut nodes = Vec::new();
     collect(&tree.root, &mut nodes);
     nodes
+}
+
+#[test]
+fn paragraph_after_spacing_does_not_move_its_own_text_tail() {
+    for profile in ["native", "pure"] {
+        for count in [2, 8] {
+            for gap in [0, 600] {
+                let name = format!("{profile}-{count}-{gap}.hwpx");
+                let mut positions = Vec::new();
+                for spacing in [0, 600, 1200] {
+                    let nodes = render_with_spacing_after(&name, Some(spacing));
+                    positions.push(text(&nodes, "Footer").y);
+                }
+                for y in &positions[1..] {
+                    assert!(
+                        (y - positions[0]).abs() < 0.5,
+                        "{name}: paragraph after-spacing must follow its own Footer: {positions:?}"
+                    );
+                }
+            }
+        }
+    }
 }
 
 fn text(nodes: &[RenderNode], expected: &str) -> BoundingBox {
