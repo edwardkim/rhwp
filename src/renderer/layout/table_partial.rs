@@ -3402,18 +3402,16 @@ impl LayoutEngine {
         }
     }
 
-    /// 표의 일부 행만 레이아웃한다 (페이지 분할).
-    ///
-    /// `start_row..end_row` 범위의 행만 렌더링한다.
-    /// `is_continuation`이 true이고 repeat_header인 표면 행0(제목행)을 먼저 렌더링한다.
     /// [#7095] 본문을 통째로 담은 1×1 `RowBreak` 표의 쪽 조각인가.
     ///
     /// 이 형상에서 한컴은 조각 상자 상단을 본문 상단 + 표 `outer_margin_top` 에 둔다
     /// (정본 156060125 engine 2020: 2·3·10쪽 모두 47.15px = 45.35 + 141HU).
     /// 다중 행·열 분할 표는 이 근거가 없으므로 종전 계약을 유지한다.
     ///
-    /// 같은 정본이 말하는 나머지 두 축(마지막이 아닌 조각의 상자를 쪽 크기로 고정,
-    /// 칸 내용을 그 상자 안에서 `valign` 배치)은 아직 열려 있다 — `#7095`.
+    /// 마지막이 아닌 조각의 상자를 쪽이 정하는 축은 같은 술어로 아래에서 닫는다.
+    /// 칸 내용을 그 상자 안에서 `valign` 으로 배치하는 축은 아직 열려 있다 — `#7095`.
+    /// 쪽 경계로 잘리는 칸은 `effective_align` 이 `Top` 이라(이 파일 위쪽 #4042),
+    /// 고정한 상자 아래에 빈 밴드가 남는다(7062 2쪽 1025.8..1043.9).
     fn single_cell_rowbreak_page_fragment(&self, table: &crate::model::table::Table) -> bool {
         // 근거는 native HWP5 저장본(156060125, hancom-office-2020)이다. HWPX 계보는 조각
         // 기하 계약이 따로 있고(`hwpx_stored_layout` 계열), 넓히면 `rowbreak-problem-pages.hwpx`
@@ -3424,6 +3422,10 @@ impl LayoutEngine {
         )
     }
 
+    /// 표의 일부 행만 레이아웃한다 (페이지 분할).
+    ///
+    /// `start_row..end_row` 범위의 행만 렌더링한다.
+    /// `is_continuation`이 true이고 repeat_header인 표면 행0(제목행)을 먼저 렌더링한다.
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_partial_table(
         &self,
