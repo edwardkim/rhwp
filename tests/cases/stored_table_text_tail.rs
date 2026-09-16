@@ -88,6 +88,16 @@ fn stored_text_tail_follows_the_measured_table_and_preserves_the_line_gap() {
                 );
                 if count == 8 {
                     assert!(table.height > 80.5, "fixture must grow beyond 6000 HU");
+                } else {
+                    // The saved table line is 6000 HU high, with no outer margins.
+                    // Its following line starts at 7000 + gap, the table line at 1000.
+                    // The preceding 1000 HU blank line must not become a trailing gap.
+                    assert!((table.height - 80.0).abs() < 0.5, "{name}");
+                    let expected_gap = f64::from(gap) * 96.0 / 7200.0;
+                    assert!(
+                        (footer.y - table.y - table.height - expected_gap).abs() < 0.5,
+                        "{name}: preserve the explicit saved table-to-text gap"
+                    );
                 }
                 positions.push(footer.y);
             }
