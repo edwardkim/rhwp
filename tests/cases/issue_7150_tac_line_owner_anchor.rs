@@ -134,3 +134,34 @@ fn issue_7150_body_rows_are_untouched() {
         "바깥 표 기하는 불변이어야 한다 — got y={y:.2} h={h:.2} (기대 117.10 / 914.20)"
     );
 }
+
+/// 저장 UTF-16 줄 경계에서 이전 줄 끝 표와 다음 줄 첫 표가 같은 가시 위치로
+/// 투영되더라도, 다른 줄의 여백을 현재 줄 기준선에 사용하면 안 된다.
+/// fixture는 합성 계약 진단이며 한컴 재저장/PDF 오라클이 아니다.
+#[test]
+fn previous_line_table_margin_does_not_move_the_next_line_table() {
+    let fixtures = "tests/fixtures/issue7150_cross_line_owner";
+    let original = by_width(
+        &format!("{fixtures}/previous_line_margin_140.hwpx"),
+        0,
+        240.0,
+        270.0,
+    );
+    let changed = by_width(
+        &format!("{fixtures}/previous_line_margin_240.hwpx"),
+        0,
+        240.0,
+        270.0,
+    );
+    assert_eq!(original.len(), 2, "두 줄의 작은 표가 한 번씩 있어야 한다");
+    assert_eq!(changed.len(), 2, "여백 변경으로 표가 누락/중복되면 안 된다");
+    let next_line_y = |tables: &[(f64, f64, f64, f64)]| {
+        tables.iter().map(|t| t.1).fold(f64::NEG_INFINITY, f64::max)
+    };
+    let before = next_line_y(&original);
+    let after = next_line_y(&changed);
+    assert!(
+        (before - after).abs() < 0.1,
+        "이전 줄의 여백 배분만 바꾸면 다음 줄 표는 불변이어야 한다: {before:.3} → {after:.3}"
+    );
+}

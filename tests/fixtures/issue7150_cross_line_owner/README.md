@@ -35,5 +35,7 @@ venv/bin/python mydocs/pr/assets/pr7199_review/check_cross_line_owner.py /path/t
 
 - devel `6cd3c0692`: 둘째 줄 y=320.0/320.0px, PASS.
 - PR #7199 적용 `ca0db01b2`: y=318.7/320.0px, FAIL(exit 1).
+- 메인터너 보정 후: y=320.0/320.0px, PASS(exit 0). 동일 불변성은 정식 Rust
+  `issue_7150_tac_line_owner_anchor::previous_line_table_margin_does_not_move_the_next_line_table`로도 검사한다.
 
 원본 실물의 한컴 PDF 시각 대조와 이 합성 불변성 진단은 [리뷰](../../../mydocs/pr/archives/pr_7199_review.md)에서 구분했다.
