@@ -405,17 +405,7 @@ impl CfbReader {
             .or_else(|_| self.read_stream_raw("\u{0005}HwpSummaryInformation"))
             .or_else(|_| self.read_stream_raw("HwpSummaryInformation"))
             .unwrap_or_default();
-        if raw.len() < 16 {
-            return false;
-        }
-        // UTF-16LE 디코딩
-        let utf16: Vec<u16> = raw
-            .chunks_exact(2)
-            .map(|c| u16::from_le_bytes([c[0], c[1]]))
-            .collect();
-        let s = String::from_utf16_lossy(&utf16);
-        // HWP3 시대 (1990-2003) 의 년 검출 — HWP5 도입 (2007년) 이전
-        (1990..=2003).any(|y| s.contains(&format!("{}년", y)))
+        hwp_summary_indicates_hwp3_era(&raw)
     }
 }
 
@@ -1260,6 +1250,25 @@ pub fn decompress_stream_prefix(data: &[u8], n: usize) -> Result<Vec<u8>, CfbErr
         return Ok(output);
     }
     prefix(flate2::read::ZlibDecoder::new(data), n)
+}
+
+/// [#7035] `HwpSummaryInformation` 원문에서 HWP3 시대(1990~2003) 년 표기를 찾는다.
+///
+/// 같은 판정을 정상 `CfbReader` 와 lenient 경로가 함께 쓰도록 바이트 단위로 뽑았다 —
+/// 한쪽만 이 신호를 갖고 다른 쪽이 비율 휴리스틱만 쓰면 같은 문서가 파싱 경로에 따라
+/// 다른 조판 예산을 받는다.
+pub fn hwp_summary_indicates_hwp3_era(raw: &[u8]) -> bool {
+    if raw.len() < 16 {
+        return false;
+    }
+    // UTF-16LE 디코딩
+    let utf16: Vec<u16> = raw
+        .chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect();
+    let text = String::from_utf16_lossy(&utf16);
+    // HWP3 시대 (1990-2003) 의 년 검출 — HWP5 도입 (2007년) 이전
+    (1990..=2003).any(|y| text.contains(&format!("{}년", y)))
 }
 
 #[cfg(test)]
