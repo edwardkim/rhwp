@@ -2010,10 +2010,11 @@ pub(crate) fn no_ls_short_label_cell(
 /// 실폭 판정이 무의미하므로 호출부(셀 방향을 아는 곳)에서 걸러야 한다
 /// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)은 불변.
 ///
-/// [#5952] `※`/`☞` 유의사항 bullet의 저장 2~3줄이 각 `segment_width`에서 셀
-/// 내폭과 같지만 합성 행이 ×1.10을 넘으면 Hangul 분할을 복원한다. 행정업무운영
-/// 편람 61쪽의 유의사항 상자가 그 경우다. 일반 다중행 본문, 끝의 빈 저장 행,
-/// 단순한 폭 불일치는 저장 분할을 보존한다.
+/// [#5952] `※`/`☞` 유의사항 bullet의 저장 2~3줄이 한 줄로 합성되었고 각
+/// `segment_width`가 셀 내폭과 같지만 합성 행이 ×1.10을 넘으면 분할을 복원한다.
+/// [#6389] 이미 다중행인 결과에는 개입하지 않는다. 대체 글꼴의 추정 폭 차이를
+/// 저장 줄 붕괴로 오인하면 정상 줄 경계를 파괴한다. 저장 정보의 유효성 판단은
+/// 선행 프레임 경로, 보존한 줄의 폭 조정은 paragraph layout의 공통 경로가 맡는다.
 pub fn recompose_stored_single_line_if_overflowing(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -2039,7 +2040,7 @@ fn recompose_stored_single_line_if_overflowing_cached(
     dpi: f64,
     cache: Option<&SingleLineOverflowCache>,
 ) {
-    if composed.lines.is_empty() || cell_inner_width_px <= 0.0 {
+    if composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
         return;
     }
     let authentic_stored = !para.line_segs.is_empty()
@@ -2068,9 +2069,6 @@ fn recompose_stored_single_line_if_overflowing_cached(
         if over {
             reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
         }
-        return;
-    }
-    if composed.lines.len() != 1 {
         return;
     }
     let stored_single = para.line_segs.len() == 1 && authentic_stored;
