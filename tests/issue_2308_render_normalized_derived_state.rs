@@ -376,7 +376,7 @@ fn issue_2308_empty_host_paragraph_keeps_block_nested_table_content() {
 /// `… 등의 사고`까지 그리고, p82는 동일 문장을 재paint하지 않고 `를 예방…`으로
 /// 이어 간다. p34의 우측 border 보호와 이 p81/p82 owner 계약을 함께 고정한다.
 ///
-/// # [#5193] 셀 재조판 이관 후 실패 — 0.55% 폭 추정 잔차, 옮기지 않는다
+/// # [#5193 당시 기록] 셀 재조판 이관 후 실패 — 0.55% 폭 추정 잔차
 ///
 /// 이 핀은 한컴 2024 PDF 가 직접 판정한다 (`pdftotext -layout -f 81 -l 82
 /// samples/issue1891/76076_regulatory_analysis-2024.pdf`):
@@ -403,6 +403,11 @@ fn issue_2308_empty_host_paragraph_keeps_block_nested_table_content() {
 /// `line_contains_text` 로 계약을 바로잡았다 — **그 assertion 은 통과한다.** 그래서
 /// 아래 두 테스트로 나눈다. 하나에 묶어 `#[ignore]` 하면 고쳐 놓은 계약이 영영
 /// 실행되지 않고, `line_contains_text` 는 재귀 호출 말고는 호출자가 없어진다.
+///
+/// #7195 재검증: 위 38245HU는 부모의 내용 폭이 아니라 여백 포함 전폭이었다.
+/// 유효 좌우510HU를 뺀37225HU로 owner projection을 교정하면 PDF 줄 소유가
+/// 복원된다. p82의 `를 ` / `예방함으로써 산업재해` / ` 감소`는 서로 다른
+/// TextRun이므로 p81과 동일하게 한 TextLine의 텍스트를 검사한다.
 fn short_rowbreak_child_core() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
     let bytes = fs::read(path).expect("read #2195 authority fixture");
@@ -434,18 +439,14 @@ fn issue_2308_short_rowbreak_child_uses_owner_content_box_only() {
     );
 }
 
-/// The one assertion the frame does not satisfy — the 0.55% width residual
-/// documented above. Ignored on its own so it cannot take the repaired p81
-/// contract down with it.
-#[ignore = "#5193: 프레임 이관 후 이 wrap 핀만 실패. 핀은 한컴 PDF 가 판정하므로 \
-            옮기지 않는다 — 프레임이 `를`를 210 HWPUNIT(상자의 0.55%) 여유로 p81 에 \
-            싣는 폭 추정 잔차. 위 주석에 판정 피연산자 기록."]
+/// Keep the PDF-owned continuation on one line, across character-style runs.
+// #7195: 작업지시자의 WASM 시각 판정 및 집중 검사 통과 후 상시 검사 복귀.
 #[test]
 fn issue_2308_short_rowbreak_child_wraps_where_the_authority_pdf_wraps() {
     let core = short_rowbreak_child_core();
     let p82 = core.build_page_render_tree(81).expect("render HWP PDF p82");
     assert!(
-        contains_text(&p82.root, "를 예방함으로써 산업재해 감소"),
+        line_contains_text(&p82.root, "를 예방함으로써 산업재해 감소"),
         "p82 must begin the continuation after the p81-owned `사고`"
     );
 }

@@ -211,7 +211,19 @@ impl RenderNormalizationOverlay {
                             source_width,
                         );
                     if keeps_legacy_near_fit_projection || short_rowbreak_child_projection {
-                        let effective_width = cell.width;
+                        // An owner-derived viewport starts at the host cell's
+                        // padded origin. Its width must therefore be the same
+                        // content box, not the unpadded border-box width.
+                        // Resolve table-default versus per-cell margins through
+                        // the shared model rule (including explicit zero).
+                        // Keep this in the overlay so measurement, fragment
+                        // composition and paint consume the same width scale.
+                        let padding = cell.effective_padding(&owner_table.padding);
+                        let effective_width = (i64::from(cell.width)
+                            - i64::from(padding.left)
+                            - i64::from(padding.right))
+                        .clamp(0, i64::from(u32::MAX))
+                            as u32;
                         let table_pointer = nested.as_ref() as *const Table as usize;
                         let projection = previous
                             .nested_table_widths_by_path
@@ -253,10 +265,10 @@ impl RenderNormalizationOverlay {
         }
     }
 
-    /// Native HWP5 `RowBreak` parent의 마지막 1×1 child만 parent cell 폭으로
-    /// 투영한다. 이 source 형상은 `76076_regulatory_analysis` p81에서 child의
-    /// 저장 폭(36,572HU)보다 parent cell 폭(38,245HU)을 line-wrap viewport로
-    /// 사용하는 한컴 PDF 계약이다. 일반 near-fit nested table에는 적용하지 않는다.
+    /// Native HWP5 `RowBreak` parent의 마지막 1×1 child에 owner 기반 폭을 선택하는
+    /// 기존 호환 조건. 실제 viewport는 collect_nested_tables에서 유효 안 여백을
+    /// 제외한다. 76076 p81의 38,245HU는 content box가 아니라 parent cell 전폭이다.
+    /// 일반 near-fit nested table에는 적용하지 않는다.
     fn is_native_short_rowbreak_child_near_fit(
         owner: &Table,
         host_cell: &Cell,

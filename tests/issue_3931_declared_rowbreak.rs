@@ -267,7 +267,11 @@ fn issue_3931_pi23_stored_reset_splits_across_adjacent_pages() {
 }
 
 #[test]
+#[ignore = "#7195 maintainer-approved deferral to #7009: HWP page count 384 vs 385; retain geometry contracts"]
 fn issue_3931_keeps_pr4763_hwp_page_count_contract() {
+    // 2026-09-16 작업지시자 승인: 이번 #7195에서는 이 쪽수 실패만 제외한다.
+    // #7009의 기준 출력/쪽수 추적과 연결하되, 현재 385쪽의 원인이 같다고 단정하지 않는다.
+    // 분류 및 수용 기준 확정 후 ignore를 해제한다. 기대384 및 나머지 geometry 검사는 유지.
     let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
     // [#5751] 383(한컴 2020 기준) → 385. 한글 2022 는 이 문서를 384쪽으로 조판하므로
     // 갱신 전후 모두 오차 1 이다. 모듈 주석의 근거 참조.
