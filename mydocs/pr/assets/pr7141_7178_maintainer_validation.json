@@ -791,5 +791,9 @@
     "focused_RHWP_SECURITY_SWEEP_SAMPLES_JSON": [
       "samples/issue6946/44529-logistics-policy-rule-amendment.hwp"
     ]
-  }
+  },
+  "validated_runtime_commit": "6cdca94640bc411d215f070aea06a436aaab8f0c",
+  "runtime_equivalent_additional_head": "4670dce74b455e4a050c10c14ba282f27c20ff64",
+  "additional_source_commit": "d2403022946af730d2110b17f7d03d750fb75ca1",
+  "post_validation_delta": "Documentation and whole-line Rust comments only; non-comment source equality verified."
 }

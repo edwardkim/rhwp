@@ -1,7 +1,7 @@
 # PR #7141 누적 체리픽 검토 실행 기록
 
 - 기준 `263b61a64a77a0679e9d8679c5be2e1d180cee1a` → branch `codex/pr7141-7175-7178-20260916`.
-- 순서 #7141 → #7175 → #7178, 최종 code `21164e71a8a84c6204edcad58723f154256587da`.
+- 순서 #7141 → #7175 → #7178, 초기 code `21164e71a8a84c6204edcad58723f154256587da`.
 - 결과와 보류 해제 조건: [개별 review](pr_7141_review.md).
 - 원 contributor history를 재작성하지 않고 기본 작업공간에서 기능 commit만 `-x`로 적용했다.
 - 초기 체리픽은 충돌·별도 production/test 보정 없이 완료했다. 이후 메인터너 보정은 아래 별도 회차로 구분한다.
@@ -37,3 +37,12 @@
 파생 그림 조각의 프레임을 보정했다. 원 contributor commit은 수정하지 않았다.
 최종 source의 focused 80개가 통과했고, 전체 회귀·lint·fresh WASM 검증 결과는 단계 기록에서
 확인한다. 초기 원 PR CI와 보정 후 로컬 검증/향후 통합 CI를 구별한다.
+
+## 최종 추가 증적 적용
+
+- 원 PR head `d2403022946af730d2110b17f7d03d750fb75ca1` → local
+  `4670dce74b455e4a050c10c14ba282f27c20ff64` (`-x`, 원 저자·날짜·Co-Author 보존).
+- 현재 원 PR source commit은 #7141 10개 + #7175 2개 + #7178 1개 = 13개다.
+  devel merge commit은 제외한다. 메인터너 보정은 별도 `6cdca9464`다.
+- 추가분은 문서·주석뿐이다. 주석 제외 실행 코드 동일성, fmt와 whitespace를 확인했다.
+  [2회차](../../working/task_m100_7095_6946_maintainer_stage2.md)에 결과를 기록한다.
