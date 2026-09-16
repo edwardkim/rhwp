@@ -3,7 +3,51 @@
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
-use std::path::Path;
+use std::io::{Cursor, Read, Write};
+
+const FIXTURE: &[u8] = include_bytes!("../../samples/stored-table-text-tail/native-8-0.hwpx");
+
+fn fixture_bytes(profile: &str, count: usize, gap: i32) -> Vec<u8> {
+    let mut source = zip::ZipArchive::new(Cursor::new(FIXTURE)).expect("fixture ZIP");
+    let mut output = zip::ZipWriter::new(Cursor::new(Vec::new()));
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).expect("fixture entry");
+        let name = entry.name().to_owned();
+        // 계보 표식은 파싱에도 영향을 주므로 문서 모델을 만든 뒤 지우지 않는다.
+        if profile == "pure" && name == rhwp::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH {
+            continue;
+        }
+        if name == "Contents/section0.xml" {
+            let mut xml = String::new();
+            entry.read_to_string(&mut xml).expect("section XML");
+            let parsed = roxmltree::Document::parse(&xml).expect("fixture XML");
+            let cell = parsed
+                .descendants()
+                .find(|n| n.has_tag_name("subList"))
+                .expect("cell");
+            let paragraphs: Vec<_> = cell.children().filter(|n| n.has_tag_name("p")).collect();
+            assert_eq!(paragraphs.len(), 8, "base fixture cell paragraphs");
+            let removed: Vec<_> = paragraphs.iter().skip(count).map(|n| n.range()).collect();
+            for range in removed.into_iter().rev() {
+                xml.replace_range(range, "");
+            }
+            let footer_position = "vertpos=\"7000\"";
+            assert_eq!(
+                xml.matches(footer_position).count(),
+                1,
+                "saved Footer position"
+            );
+            xml = xml.replacen(footer_position, &format!("vertpos=\"{}\"", 7000 + gap), 1);
+            output
+                .start_file(name, zip::write::SimpleFileOptions::default())
+                .expect("section entry");
+            output.write_all(xml.as_bytes()).expect("section contents");
+        } else {
+            output.raw_copy_file(entry).expect("copy unchanged entry");
+        }
+    }
+    output.finish().expect("fixture ZIP finish").into_inner()
+}
 
 fn collect(node: &RenderNode, nodes: &mut Vec<RenderNode>) {
     nodes.push(node.clone());
@@ -12,16 +56,14 @@ fn collect(node: &RenderNode, nodes: &mut Vec<RenderNode>) {
     }
 }
 
-fn render(name: &str) -> Vec<RenderNode> {
-    render_with_spacing_after(name, None)
-}
-
-fn render_with_spacing_after(name: &str, spacing_after: Option<i32>) -> Vec<RenderNode> {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("samples/stored-table-text-tail")
-        .join(name);
-    let mut core = DocumentCore::from_bytes(&std::fs::read(path).expect("fixture"))
+fn render(profile: &str, count: usize, gap: i32, spacing_after: Option<i32>) -> Vec<RenderNode> {
+    let name = format!("{profile}-{count}-{gap}");
+    let mut core = DocumentCore::from_bytes(&fixture_bytes(profile, count, gap))
         .expect("parse synthetic document");
+    assert_eq!(
+        core.document().layout_profile().hwp5_origin_hwpx(),
+        profile == "native"
+    );
     if let Some(spacing_after) = spacing_after {
         let mut doc = core.document().clone();
         let host = &mut doc.sections[0].paragraphs[1];
@@ -43,10 +85,10 @@ fn paragraph_after_spacing_does_not_move_its_own_text_tail() {
     for profile in ["native", "pure"] {
         for count in [2, 8] {
             for gap in [0, 600] {
-                let name = format!("{profile}-{count}-{gap}.hwpx");
+                let name = format!("{profile}-{count}-{gap}");
                 let mut positions = Vec::new();
                 for spacing in [0, 600, 1200] {
-                    let nodes = render_with_spacing_after(&name, Some(spacing));
+                    let nodes = render(profile, count, gap, Some(spacing));
                     positions.push(text(&nodes, "Footer").y);
                 }
                 for y in &positions[1..] {
@@ -77,8 +119,8 @@ fn stored_text_tail_follows_the_measured_table_and_preserves_the_line_gap() {
         for count in [2, 8] {
             let mut positions = Vec::new();
             for gap in [0, 600] {
-                let name = format!("{profile}-{count}-{gap}.hwpx");
-                let nodes = render(&name);
+                let name = format!("{profile}-{count}-{gap}");
+                let nodes = render(profile, count, gap, None);
                 let tables: Vec<_> = nodes
                     .iter()
                     .filter(|node| matches!(node.node_type, RenderNodeType::Table { .. }))
