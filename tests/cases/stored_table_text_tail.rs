@@ -51,13 +51,34 @@ fn stored_text_tail_follows_the_measured_table_and_preserves_the_line_gap() {
                 assert_eq!(tables.len(), 1, "{name}");
                 let table = tables[0].bbox;
                 let footer = text(&nodes, "Footer");
-                for index in 1..=count {
-                    let cell_text = text(&nodes, &format!("Cell {index}"));
-                    assert!(cell_text.y >= table.y - 0.5, "{name}");
-                    assert!(
-                        cell_text.y + cell_text.height <= table.y + table.height + 0.5,
-                        "{name} cell {index} must remain visible"
-                    );
+                for index in 0..count {
+                    // Native shaping may split one cell paragraph into several runs.
+                    // Use its document ownership, not a particular run boundary.
+                    let cell_runs: Vec<_> = nodes
+                        .iter()
+                        .filter_map(|node| match &node.node_type {
+                            RenderNodeType::TextRun(run)
+                                if run.cell_context.as_ref().is_some_and(|context| {
+                                    context
+                                        .path
+                                        .last()
+                                        .is_some_and(|owner| owner.cell_para_index == index)
+                                }) =>
+                            {
+                                Some((node.bbox, run.text.as_str()))
+                            }
+                            _ => None,
+                        })
+                        .collect();
+                    let content: String = cell_runs.iter().map(|(_, text)| *text).collect();
+                    assert_eq!(content, format!("Cell {}", index + 1), "{name}");
+                    for (bbox, _) in cell_runs {
+                        assert!(bbox.y >= table.y - 0.5, "{name}");
+                        assert!(
+                            bbox.y + bbox.height <= table.y + table.height + 0.5,
+                            "{name} cell {index} must remain visible"
+                        );
+                    }
                 }
                 assert!(
                     footer.y >= table.y + table.height - 0.5,
