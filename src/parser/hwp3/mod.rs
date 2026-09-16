@@ -991,6 +991,9 @@ struct Hwp3CharScan<'a> {
     /// [#4680] 이 문단이 실제로 쓴 HWP5 제어 문자 비트. 직렬화기는 "출처가 제어
     /// 표기였는가" 를 이 비트로 판정해 하이픈·고정폭 빈칸을 리터럴과 가른다.
     control_mask: &'a mut u32,
+    /// [#7170] HWP3 인라인 탭이 담은 탭 폭과 점끌기 여부. 한글은 문단 `TabDef` 가 아니라
+    /// 이 인라인 값으로 차례의 점선을 그리므로, HWP5 탭 확장으로 옮겨야 한다.
+    tab_extended: &'a mut Vec<[u16; 7]>,
     use_password_layout_contract: bool,
 }
 
@@ -2570,6 +2573,7 @@ fn parse_simple_control_char(
         ctrl_data_records,
         control_mask,
         title_marks,
+        tab_extended,
         ..
     } = scan;
     match ch {
@@ -2673,6 +2677,30 @@ fn parse_simple_control_char(
                     hwp3_char_to_utf16_pos[i + k] = utf16_len;
                 }
             }
+            // [#7170] 탭 폭과 점끌기 여부를 HWP5 인라인 탭 확장으로 옮긴다. 종전에는
+            // 둘 다 읽고 버려서, HWP3 에서 온 문단이 저장본에서 탭 폭 0 · 채움 없음이
+            // 됐다 — 차례의 점선이 통째로 사라진다.
+            //
+            // 한글은 문단 `TabDef` 가 아니라 이 인라인 값으로 점선을 그린다. 같은 문서의
+            // 한글 HWP5 변환본은 `TAB_DEF` 가 우리와 동일한데 인라인만 다르고, 채움만
+            // 싣고 폭을 0 으로 두면 한글 출력이 한 글자도 바뀌지 않는다.
+            //
+            // 정본의 확장은 `[폭_lo, 폭_hi, 0x0003, 0, 0, 0, 0x0009]` 형상이다. 폭은
+            // 112/112 가 4의 배수여서 hunit x 4 = HWPUNIT 환산과 부합한다. `ext[2]` 의
+            // 저바이트가 채움 종류(3 = 점선), 고바이트가 탭 종류인데 정본이 고바이트
+            // 0(미지정)을 쓰므로 그대로 둔다 — 종류는 `TabDef` 가 정한다.
+            let tab_width_hunit = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
+            let tab_dot_fill = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
+            let tab_width_hwpunit = (tab_width_hunit as u32).saturating_mul(4);
+            tab_extended.push([
+                (tab_width_hwpunit & 0xFFFF) as u16,
+                (tab_width_hwpunit >> 16) as u16,
+                if tab_dot_fill != 0 { 3 } else { 0 },
+                0,
+                0,
+                0,
+                0x0009,
+            ]);
             i += 3;
             char_offsets.push(utf16_len);
             // [Task #1950] HWP5 시멘틱: 탭은 PARA_TEXT 에서 8 code-unit
@@ -2947,6 +2975,7 @@ pub(crate) fn parse_paragraph_list(
         // [#4680] 문자 루프가 채우고 문단 조립에서 IR 로 옮긴다.
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut text_string = String::new();
         let mut char_offsets = Vec::with_capacity(para_info.char_count as usize);
         let mut hwp3_char_to_utf16_pos = vec![0; para_info.char_count as usize];
@@ -2984,6 +3013,7 @@ pub(crate) fn parse_paragraph_list(
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
                                 title_marks: &mut para_title_marks,
+                                tab_extended: &mut para_tab_extended,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3007,6 +3037,7 @@ pub(crate) fn parse_paragraph_list(
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
                                 title_marks: &mut para_title_marks,
+                                tab_extended: &mut para_tab_extended,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3039,6 +3070,7 @@ pub(crate) fn parse_paragraph_list(
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
                                 title_marks: &mut para_title_marks,
+                                tab_extended: &mut para_tab_extended,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3163,6 +3195,21 @@ pub(crate) fn parse_paragraph_list(
         para.style_id = para_info.style_index;
         para.control_mask = para_control_mask;
         para.title_marks = para_title_marks;
+        // [#7170] 폭과 채움이 **둘 다 비면** 그 확장은 직렬화기의 "데이터 없음"
+        // 마커(`[0,…,0,0x0009]`)와 글자 그대로 같아진다. HWP5 파서는 그 마커를 일부러
+        // IR 에 싣지 않으므로(#1892), 그런 탭을 실으면 재파스에서 확장 하나가 사라지고
+        // **뒤 탭의 확장이 순번으로 밀린다** — 직렬화는 `	` 순번으로 확장을 꺼낸다.
+        //
+        // 그래서 그런 탭이 하나라도 있는 문단은 통째로 싣지 않고 종전 동작을 유지한다.
+        // 한 문단 안에서 일부만 싣는 절충은 순번 계약을 깬다. 표본 264쪽 문서의 탭
+        // 112개는 전부 폭이 0 이 아니라 이 갈래를 타지 않는다.
+        if para_tab_extended
+            .iter()
+            .any(|ext| ext[..6].iter().all(|&v| v == 0))
+        {
+            para_tab_extended.clear();
+        }
+        para.tab_extended = para_tab_extended;
         para.has_para_text =
             !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
         strip_hwp3_single_tac_visual_marker(&mut para);
@@ -5621,6 +5668,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5629,6 +5677,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
 
@@ -5694,6 +5743,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5702,6 +5752,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
 
@@ -5787,6 +5838,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5795,6 +5847,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
 
@@ -5850,6 +5903,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5858,6 +5912,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
         let mut char_shapes = Vec::new();
