@@ -906,6 +906,22 @@ fn apply_hwp3_encrypted_flag(
     }
 }
 
+/// [#7174] HWP3 `doc_info` offset 110 "각주 옵션"을 각주/미주 **번호의 닫는 장식 문자**로
+/// 읽는다. 스펙(한글문서파일구조3.0.md:244)의 타입은 `echar` 이고 설명은
+/// "`')'` = 각주 번호에 `')'` 를 붙임, 0 = 안 붙임" — 즉 바이트 값이 곧 장식 문자이며
+/// 플래그가 아니다. 코퍼스 HWP3 38건은 전부 `41`(=`)`) 이라 두 해석의 차이가 드러나지
+/// 않지만, 스펙 타입을 따라 문자로 읽는다. 장식이 될 수 없는 바이트(제어문자·비 ASCII)는
+/// "안 붙임"으로 떨어뜨려 본문에 제어문자가 새지 않게 한다.
+///
+/// 각주 모양의 뒤 장식(`suffix_char`)과 본문에 남은 리터럴 제거가 **같은 값**을 봐야
+/// 번호가 한 번만 그려지므로 두 곳이 이 함수를 공유한다.
+fn hwp3_note_number_suffix_char(doc_info: &Hwp3DocInfo) -> char {
+    match doc_info.footnote_bracket {
+        0x20..=0x7e => doc_info.footnote_bracket as char,
+        _ => '\0',
+    }
+}
+
 fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote::FootnoteShape {
     use crate::model::footnote::{
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
@@ -4278,6 +4294,31 @@ fn parse_hwp3_inner(
         1
     };
     section_def.footnote_shape.separator_line_width = 1;
+    // [#7174] 각주 번호의 **닫는 장식 문자**와 **시작 번호**를 각주 모양에 배선한다.
+    //
+    // 종전에는 둘 다 배선이 없어 저장본의 `FOOTNOTE_SHAPE` 가 뒤 장식 0 · 시작 번호 0
+    // 으로 나갔다. 한글은 본문의 각주 참조 번호를 이 두 값으로 그리므로, 원본이
+    // `1)` 로 보여 주던 참조가 저장본에서 `1` 이 된다 — 264쪽 표본에서 정확히 230개의
+    // `)` 가 사라진다(각주 230개). 각주 **영역**의 번호는 이 값이 아니라 자동 번호
+    // (`atno`) 컨트롤 자신의 장식 필드로 그려지므로 여기서 겹쳐 그려지지 않는다.
+    //
+    // 기대값의 출처는 한글 자신의 HWP5 변환본이다 — `FOOTNOTE_SHAPE[0]` 의 뒤 장식
+    // `41`(=`)`), 시작 번호 `1`. 둘 다 원본 `doc_info` 의 값과 그대로 같다(offset 110
+    // = 41, offset 100 = 1).
+    //
+    // offset 110 은 스펙(한글문서파일구조3.0.md:244)에서 타입이 `echar` 이고
+    // "`')'` = 각주 번호에 `')'` 를 붙임, 0 = 안 붙임" 이다. 즉 **바이트 값이 곧 장식
+    // 문자**이며 플래그가 아니다. 코퍼스 HWP3 38건은 전부 `41` 이라 두 해석의 차이가
+    // 드러나지 않지만, 스펙 타입을 따라 문자로 읽는다. 장식이 될 수 없는 바이트
+    // (제어문자·비 ASCII)는 "안 붙임"으로 떨어뜨려 본문에 제어문자가 새지 않게 한다.
+    section_def.footnote_shape.suffix_char = hwp3_note_number_suffix_char(&doc_info);
+    // offset 100 "각주시작번호"(스펙 240행). HWP5 의 시작 번호는 1 부터이므로 0 은
+    // "지정 없음" 으로 보고 1 로 떨어뜨린다. 코퍼스 38건은 전부 1 이다.
+    section_def.footnote_shape.start_number = if doc_info.footnote_start_number != 0 {
+        doc_info.footnote_start_number
+    } else {
+        1
+    };
     // [#3032] doc_info offset 108 "각주와 각주 사이의 간격"(footnote_between_margin)을
     // footnote_shape.raw_unknown("주석 사이")에 hunit ×4 = HWPUNIT 변환으로 배선한다.
     // 적용처·스케일 근거는 한컴 자체 HWP3→HWPX 변환 실측(SO-SUEOP.hwpx:
@@ -4401,6 +4442,9 @@ struct Hwp3NoteFixupState {
     footnote_number: u16,
     endnote_number: u16,
     has_endnote: bool,
+    /// [#7174] 주석 본문에 리터럴로 남은 번호 장식 문자. 각주 모양의 뒤 장식과 **같은
+    /// 값**이라야 번호가 한 번만 그려진다.
+    number_suffix: char,
 }
 
 fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3DocInfo) {
@@ -4409,6 +4453,7 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3D
         footnote_number: doc.doc_properties.footnote_start_num.max(1),
         endnote_number: doc.doc_properties.endnote_start_num.max(1),
         has_endnote: false,
+        number_suffix: hwp3_note_number_suffix_char(doc_info),
     };
 
     for section in &mut doc.sections {
@@ -4601,6 +4646,91 @@ fn normalize_hwp3_note_line_vpos(paragraph: &mut crate::model::paragraph::Paragr
     }
 }
 
+/// [#7174] HWP3 는 각주/미주 번호의 닫는 장식을 **주석 본문의 첫 글자**로 저장한다.
+/// HWP5 는 그 장식을 각주 모양(`FOOTNOTE_SHAPE`)이 번호와 함께 그리므로, 리터럴을 그대로
+/// 두면 주석 영역 번호가 `1))` 로 두 번 그려진다.
+///
+/// 264쪽 표본(`1170000-200500003_D0150004-1-001`, 각주 230개)을 한글로 열어 실측한
+/// 값이다. 각주 모양에 뒤 장식을 배선하기 전/후와 정본(한글 자신의 HWP5 변환본)의
+/// 추출 글자 수다.
+///
+/// ```text
+///   정본            283,780자    본문 참조 `1)` · 주석 영역 `1)`
+///   배선 전         283,556자    본문 참조 `1`  · 주석 영역 `1)`  (`)` 230개 부족)
+///   배선만          284,016자    본문 참조 `1)` · 주석 영역 `1))` (`)` 230개 과잉)
+/// ```
+///
+/// 대상을 양쪽에서 잠근다 — 문서가 장식을 켰고(`suffix`), 첫 글자가 **자동 번호의
+/// 8유닛 자리표시자**이며(`char_offsets` 가 `0, 8` 로 시작), 그 다음 글자가 바로 그
+/// 장식 문자일 때만 한 글자를 뗀다. 범위 정보를 가진 문단(구역 태그·필드·제목 표시·
+/// 형광펜)은 건드리지 않는다 — 이 문단들에는 해당 채널이 없고, 있으면 오프셋을 함께
+/// 옮겨야 해서 이 수정의 범위가 아니다.
+fn strip_hwp3_note_number_suffix_literal(
+    paragraphs: &mut [crate::model::paragraph::Paragraph],
+    suffix: char,
+) {
+    use crate::model::control::{AutoNumberType, Control};
+
+    if suffix == '\0' {
+        return;
+    }
+    let Some(para) = paragraphs.first_mut() else {
+        return;
+    };
+    if !matches!(
+        para.controls.first(),
+        Some(Control::AutoNumber(an))
+            if matches!(an.number_type, AutoNumberType::Footnote | AutoNumberType::Endnote)
+    ) {
+        return;
+    }
+    if !para.range_tags.is_empty()
+        || !para.field_ranges.is_empty()
+        || !para.title_marks.is_empty()
+        || !para.markpen_marks.is_empty()
+    {
+        return;
+    }
+    // 자리표시자는 글자 하나지만 저장본에서 확장 컨트롤 8 코드유닛을 차지한다(#3504).
+    // 그 형상이 아니면 자동 번호 자리가 아니므로 손대지 않는다.
+    if para.char_offsets.len() < 2 || para.char_offsets[0] != 0 || para.char_offsets[1] != 8 {
+        return;
+    }
+    let mut chars = para.text.chars();
+    if chars.next().is_none() {
+        return;
+    }
+    if chars.next() != Some(suffix) {
+        return;
+    }
+
+    let removed_at = para.char_offsets[1];
+    let removed_units = suffix.len_utf16() as u32;
+
+    let mut text = String::with_capacity(para.text.len());
+    for (idx, ch) in para.text.chars().enumerate() {
+        if idx != 1 {
+            text.push(ch);
+        }
+    }
+    para.text = text;
+    para.char_offsets.remove(1);
+    for offset in para.char_offsets.iter_mut().skip(1) {
+        *offset = offset.saturating_sub(removed_units);
+    }
+    para.char_count = para.char_count.saturating_sub(removed_units);
+    for shape in &mut para.char_shapes {
+        if shape.start_pos > removed_at {
+            shape.start_pos = shape.start_pos.saturating_sub(removed_units);
+        }
+    }
+    for seg in &mut para.line_segs {
+        if seg.text_start > removed_at {
+            seg.text_start = seg.text_start.saturating_sub(removed_units);
+        }
+    }
+}
+
 fn fixup_hwp3_notes_in_controls(
     controls: &mut [crate::model::control::Control],
     state: &mut Hwp3NoteFixupState,
@@ -4614,6 +4744,10 @@ fn fixup_hwp3_notes_in_controls(
                 state.footnote_number = state.footnote_number.saturating_add(1);
                 footnote.after_decoration_letter = ')' as u16;
                 footnote.number_shape = 0;
+                strip_hwp3_note_number_suffix_literal(
+                    &mut footnote.paragraphs,
+                    state.number_suffix,
+                );
                 fixup_hwp3_notes_in_paragraphs(&mut footnote.paragraphs, state);
             }
             Control::Endnote(endnote) => {
@@ -4622,6 +4756,7 @@ fn fixup_hwp3_notes_in_controls(
                 state.endnote_number = state.endnote_number.saturating_add(1);
                 endnote.after_decoration_letter = ')' as u16;
                 endnote.number_shape = 0;
+                strip_hwp3_note_number_suffix_literal(&mut endnote.paragraphs, state.number_suffix);
                 for paragraph in &mut endnote.paragraphs {
                     normalize_hwp3_note_line_vpos(paragraph);
                 }
