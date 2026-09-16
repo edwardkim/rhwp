@@ -54,5 +54,7 @@ test('문서 전환 이벤트도 표 resize 런타임 캐시 정리 helper를 �
   const events = constructorEventsBlock();
 
   assert.match(events, /create-new-document'[\s\S]*clearTableResizeRuntimeCache\(\)/, '새 문서에서 캐시 정리 필요');
-  assert.match(events, /open-document-bytes'[\s\S]*clearTableResizeRuntimeCache\(\)/, '문서 열기에서 캐시 정리 필요');
+  // [#7194] 문서 열기는 `open-document-bytes` 가 아니라 공통 깔때기(`loadBytes`)가 내는
+  // `document-swapped` 로 듣는다 — 그 이벤트를 거치는 열기 경로는 여섯 중 하나뿐이었다.
+  assert.match(events, /document-swapped'[\s\S]*clearTableResizeRuntimeCache\(\)/, '문서 열기에서 캐시 정리 필요');
 });
