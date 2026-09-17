@@ -524,20 +524,22 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        // [32..36] instance_id (DIFF-7 수정: 해시 기반 유니크 값 생성)
-        // 정상 HWP 파일에서는 instance_id가 고유한 비-0 값을 가짐
+        // [32..36] instance_id — 공용 할당기로 받은 고유 개체 id.
+        //
+        // [#7231] 종전에는 행·열 수와 셀 수·전체 폭·높이로 만든 해시를 썼다. 크기가 같은
+        // 표끼리 같은 값이 나오고, `common.instance_id` 는 0 으로 남아 HWPX `<hp:tbl id>`
+        // 가 `"0"` 이 됐다. `model/identity.rs` 의 주석이 그 함정을 적어 뒀다 —
+        // *"dimensions, clock time and wrapping hashes cannot establish uniqueness"*.
+        //
+        // 이 함수는 HTML 하나에 표가 여러 개면 **반복 호출**되고, 만든 표는 아직
+        // `self.document` 에 들어가지 않은 `paragraphs` 에 쌓인다. 그래서 문서의 사용
+        // 집합에 이번 붙여넣기 분(`paragraph_ids`)까지 더해 예약한다.
         let instance_id: u32 = {
-            // 행/열 수, 셀 수, 총 폭/높이를 조합한 간단한 해시
-            let mut h: u32 = 0x7c150000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            h = h.wrapping_add(total_height.wrapping_mul(0x1b));
-            h ^= cells.len() as u32 * 0x4b69;
-            if h == 0 {
-                h = 0x7c154b69;
-            } // 절대 0이 되지 않도록
-            h
+            let mut used = crate::model::identity::used_instance_ids(&self.document);
+            used.extend(crate::model::identity::paragraph_ids(paragraphs));
+            crate::model::identity::Allocator { used, next: 1 }
+                .id()
+                .unwrap_or(0)
         };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
         // [36..38] desc_len = 0
@@ -619,6 +621,9 @@ impl DocumentCore {
                 horz_align: crate::model::shape::HorzAlign::Left,
                 width: total_width,
                 height: total_height,
+                // [#7231] IR 과 raw 가 같은 값을 갖는다 — HWPX 저장기는 이 필드를,
+                // HWP5 쪽은 `raw_ctrl_data` 를 읽는다.
+                instance_id,
                 ..Default::default()
             },
             outer_margin_left: outer_margin,
