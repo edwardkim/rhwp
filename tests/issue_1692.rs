@@ -544,31 +544,25 @@ fn issue_1692_so_sueop_hwp3_endnotes_follow_hwpx_numbering_and_width() {
     let hwp3_shape = &hwp3_doc.sections[0].section_def.endnote_shape;
     let hwpx_shape = &hwpx_doc.sections[0].section_def.endnote_shape;
     assert_eq!(hwp3_shape.suffix_char, hwpx_shape.suffix_char);
-    // [Task #2772 후속] HWP3 doc_info.footnote_line_margin(hunit=1/1800in)이
-    // separator_margin_top(HWPUNIT=1/7200in)으로 배선된 이후, 이 값은 더 이상
-    // 하드코딩된 864가 아니라 SO-SUEOP.hwp 자체에 저장된 실측치(213 hunit → 852)다.
-    // SO-SUEOP.hwpx는 별도로 저장된 aboveLine="864" 값을 갖고 있어 두 샘플이 서로
-    // 다른 시점/도구로 생성된 탓에 비트 단위로 일치하지 않는다(0.12in vs 0.1183in,
-    // 차이 12 HWPUNIT ≈ 0.04mm). 두 포맷이 "같은 문서"의 각주 분리선 여백을 각자의
-    // 정밀도로 보존하는지만 근접값으로 검증한다. 완전 동일 저장을 요구하려면
-    // SO-SUEOP.hwp/.hwpx 샘플 쌍을 동일 여백으로 재생성해야 한다.
-    let separator_margin_top_diff =
-        (hwp3_shape.separator_margin_top as i32 - hwpx_shape.separator_margin_top as i32).abs();
-    assert!(
-        separator_margin_top_diff <= 16,
-        "HWP3/HWPX separator_margin_top must be within HWP3 hunit rounding tolerance: hwp3={} hwpx={}",
-        hwp3_shape.separator_margin_top,
-        hwpx_shape.separator_margin_top
+    // [Task #2772·#3054 → #7174] 종전에는 HWP3 가 **각주** 여백(213·142 hunit → 852·568)을
+    // 미주 모양에 물려줘 HWPX 정본(aboveLine 864 · belowLine 576)과 12·8 HWPUNIT 어긋났고,
+    // 그 차이를 "샘플 쌍의 저장 시점 차이"로 보고 근접값(±16)으로만 봤다.
+    //
+    // 한/글 2020 이 같은 HWP3 원본을 변환한 정본을 보면 그 해석이 틀렸다 —
+    // 미주 여백은 문서 값이 아니라 한/글 기본값 864·576 이고(HWP3 문서 정보에는 미주
+    // 전용 여백 필드가 없다), 두 포맷이 같은 값을 말한다. 이제 **정확히 일치**를 요구한다.
+    //
+    // 슬롯은 포맷마다 다르다(HWPX 는 `separator_margin_top`, HWP5 는
+    // `separator_margin_bottom`). 그래서 슬롯을 흡수하는 정규화 접근자로 비교한다.
+    assert_eq!(
+        hwp3_shape.separator_above_margin_hu(),
+        hwpx_shape.separator_above_margin_hu(),
+        "HWP3/HWPX 미주 '구분선 위' 여백이 같아야 한다 (한/글 기본값 864)"
     );
-    // [Task #3054 후속] note_spacing 도 같은 이유로 근접값 검증 — SO-SUEOP.hwp 는
-    // footnote_text_margin=142 hunit(→568 HWPUNIT), .hwpx 는 belowLine=576 을
-    // 저장하고 있다(차이 8 HWPUNIT ≈ 0.03mm, 샘플 쌍의 저장 시점 차이).
-    let note_spacing_diff = (hwp3_shape.note_spacing as i32 - hwpx_shape.note_spacing as i32).abs();
-    assert!(
-        note_spacing_diff <= 16,
-        "HWP3/HWPX note_spacing must be within HWP3 hunit rounding tolerance: hwp3={} hwpx={}",
-        hwp3_shape.note_spacing,
-        hwpx_shape.note_spacing
+    assert_eq!(
+        hwp3_shape.separator_below_margin_hu(),
+        hwpx_shape.separator_below_margin_hu(),
+        "HWP3/HWPX 미주 '구분선 아래' 여백이 같아야 한다 (한/글 기본값 576)"
     );
     assert_eq!(
         hwp3_shape.separator_line_width,
