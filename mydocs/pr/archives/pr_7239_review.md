@@ -7,7 +7,7 @@ last_verified: 2026-09-17
 
 # PR #7239 검토
 
-**최종 판정: 머지 보류.** 아래 실행 결함을 해소하기 전에는 통합 PR 제출 준비 완료 또는 승인으로 판정하지 않는다.
+**보정 후 판정: 기존 실행 결함 해소, 최종 통합 검증 대기.** 아래 발견 사항은 보정 전 기록이다. 후단의 보정 결과·실제 증적을 함께 본다. 통합 전체 승인은 #7242·#7243 보류 사항과 최종 게이트 해소 전까지 보류한다.
 
 - 원 PR: [#7239](https://github.com/edwardkim/rhwp/pull/7239), source `f5169220e8a165eb6c9344357d2d83e8a422ef52`.
 - 접수 시점: OPEN/non-draft/devel, MERGEABLE/CLEAN. [원 head CI](https://github.com/edwardkim/rhwp/actions/runs/35212978619) 성공은 확인했으나 통합 후 결과와 다르다.
@@ -186,3 +186,35 @@ BASELINE/MAX를 검사한다. 결과를 확인한 뒤 이 회차를 커밋한다
 - overflow-checks가 켜진 test profile에서 새 경계 테스트는 보정 전 `1519:20 attempt to add with overflow`로 실패했다. 보정 후 TOP/BOTTOM 양 극값, 정상 좌표와 BASELINE 대조를 모두 실행하고 글자 A의 SVG 보존까지 통과했다.
 - 원 fuzz 10입력 aggregate와 새 경계 검사: **2 passed**. 기존 WMF/EMF golden: **1 passed**, baseline 변경 없음.
 - 이 회차는 패닉 반례를 해결한 코드 후보다. 최종 통합 head의 lint·전체 회귀·Native/fresh WASM Visual Sweep은 후속 회차에서 수행하므로 아직 최종 승인이 아니다.
+
+## 최종 통합 후보와 시각 증거
+
+- code head: `75a48488676d79a0357ba1cae6c863ac2120b668`, base `236a601da803b53429e9090eef652c661dd3bfe2`.
+- Native SHA256: `46d87aedbeca44eb31a31ddccd2c6b7e8deebd4008bc2bbe98598af67bdc8ca9`.
+- fresh WASM SHA256: `6488efc93f6635ef0fe193e09d7982cfd48231d99679007cd8d3116f61c2dbc5`, JS `a7353a7603b7e07db2d33ff93fff6b213ea79e01da91c190cbb607e752c6b5a7`.
+- Mac arm64/Rust 1.93.1, 별도 verify checkout의 source/test를 위 head와 바이트 대조했다. review target은 `target/pr7239-7240-review-20260917`. Docker 표준 경로 대신 host `scripts/wasm-pack-locked.sh --target web --out-dir <scratch>/wasm-final --no-opt`를 실행했다. wasm-opt 통과로 주장하지 않는다.
+- `venv/bin/python scripts/visual_sweep.py --file-target <key> <입력> <PDF> --rhwp-bin <scratch>/rhwp-current --pages <아래 쪽> --dpi 96 --out <scratch>/native-sweep`, WASM은 `--wasm-pkg <scratch>/wasm-final` 추가. 최종 head로 재캡처한 compare·standalone overlay·review를 직접 판독했다.
+- 전체 nextest·Native Skia 3종은 이번 후보에서 미실행이다. #7242 시각 보류 사유가 있어 지침의 작은 경계/영향 페이지 확인을 먼저 완료했고, 대규모 회귀를 통과 근거로 대신하지 않는다. 최종 승인·PR 제출 준비 완료가 아니다.
+
+### 보정 후 판정
+
+기존 `META_TEXTOUT` 오버플로 보류 사유는 `7521c08c8`로 해소했다. 원 fuzz와 양 극값·정상 좌표 대조는 test profile에서 통과했고 golden은 바뀌지 않았다. 실물 transistor 문서는 base와 11쪽 SVG가 모두 바이트 동일하다. 영향 WMF 회로도가 있는 2·5쪽의 Native/WASM raster도 서로 동일하며 PDF와 회로·배선을 직접 대조했다. 기존 수식 글꼴·표 선/글꼴 차이는 남으며 이 PR의 패닉 방어를 문서 전체 PDF 일치로 보고하지 않는다.
+
+### 직접 판독한 PNG
+
+| 입력·쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| wmf p2 | [compare](../assets/pr7239_review/native_wmf_compare_002.png) · [overlay](../assets/pr7239_review/native_wmf_overlay_002.png) · [review](../assets/pr7239_review/native_wmf_review_002.png) | [compare](../assets/pr7239_review/wasm_wmf_compare_002.png) · [overlay](../assets/pr7239_review/wasm_wmf_overlay_002.png) · [review](../assets/pr7239_review/wasm_wmf_review_002.png) |
+| wmf p5 | [compare](../assets/pr7239_review/native_wmf_compare_005.png) · [overlay](../assets/pr7239_review/native_wmf_overlay_005.png) · [review](../assets/pr7239_review/native_wmf_review_005.png) | [compare](../assets/pr7239_review/wasm_wmf_compare_005.png) · [overlay](../assets/pr7239_review/wasm_wmf_overlay_005.png) · [review](../assets/pr7239_review/wasm_wmf_review_005.png) |
+
+Merge 후 코멘트에는 위 **모든 영향 페이지**의 compare·overlay·review 링크를 실제 merge SHA의 raw URL로 치환한다. 대표 review만 넣고 standalone overlay를 빠뜨리지 않는다. 지금은 remote push/comment/merge를 수행하지 않았다.
+
+### 최종 head 공통 검증 결과
+
+- fmt check, Native Clippy, WASM32 lib Clippy, workspace build, workspace all-target Clippy(`-D warnings`), suite manifest base 비교: **모두 통과**.
+- 최종 head focused 재실행: WMF fuzz **2**, golden **1**, column core **7**, column CLI **4**, 기존 page-break **11**, stored tail **3**, scaffold height **2** — **30 passed / 0 failed**. 각 원본에 `node scripts/run-rust-test.mjs <module>`를 test profile로 실행했다.
+- Native/fresh WASM **각 9쪽** compare·standalone overlay·review, 총 18쪽 직접 확인. PNG 54개와 #7242 base 대조 PNG 6개를 개별 PR asset 경로에 보존했다. 총 60개이며 원 입력과 기준 PDF를 연결했다.
+- test source·수치 baseline·허용치를 통과 목적으로 완화하지 않았다. source-side unit test 변경은 없어 unit-tier 비교는 비해당이다.
+- 문서별 metadata 및 로컬 링크 검사, `git diff --check` 통과. 불필요한 log/JSON/TSV는 Git에 추가하지 않는다.
+
+- 새 sample 3개(`stored-table-text-tail/native-8-0`, `issue7234/short_table_cell_row_height`, `issue7234/tall_table_cell_row_height`)의 hidden-text/injection/unicode 검사: **1 passed**. `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 실제 대상을 지정해 실행했다.

@@ -7,7 +7,7 @@ last_verified: 2026-09-17
 
 # PR #7240 검토
 
-**최종 판정: 머지 보류.** 아래 실행 결함을 해소하기 전에는 통합 PR 제출 준비 완료 또는 승인으로 판정하지 않는다.
+**보정 후 판정: 기존 실행 결함 해소, 최종 통합 검증 대기.** 아래 발견 사항은 보정 전 기록이다. 후단의 보정 결과·실제 증적을 함께 본다. 통합 전체 승인은 #7242·#7243 보류 사항과 최종 게이트 해소 전까지 보류한다.
 
 - 원 PR: [#7240](https://github.com/edwardkim/rhwp/pull/7240), source `3276bb635d66e11e7fa16f5f83173e7a944f0e60`.
 - 접수 시점: OPEN/non-draft/devel, CONFLICTING/DIRTY. [원 head CI](https://github.com/edwardkim/rhwp/actions/runs/35212983067) 성공은 확인했으나 통합 후 결과와 다르다.
@@ -185,3 +185,41 @@ CLI/MCP의 `offset=0`은 기존 문단 속성 설정으로 유지하되, Studio�
 - CLI 첫 재실행은 suite 준비 전이라 0 tests였으며 증거에서 제외했다. `--prepare` 후 실제 4개 실행/통과를 확인했다.
 - 합성 page 경계 테스트는 파서 계약과 같은 `raw=0, enum=Page, synthesized=true`로 준비했다. 명시 raw=4를 합성이라고 표기한 부적절한 초기 입력을 독립 계약에 맞게 정정했다.
 - 최종 통합 lint·전체 회귀·Native/fresh WASM 및 사용자 경로 검증은 후속 회차에서 완료한다. 아직 최종 승인이 아니다.
+
+## 최종 통합 후보와 시각 증거
+
+- code head: `75a48488676d79a0357ba1cae6c863ac2120b668`, base `236a601da803b53429e9090eef652c661dd3bfe2`.
+- Native SHA256: `46d87aedbeca44eb31a31ddccd2c6b7e8deebd4008bc2bbe98598af67bdc8ca9`.
+- fresh WASM SHA256: `6488efc93f6635ef0fe193e09d7982cfd48231d99679007cd8d3116f61c2dbc5`, JS `a7353a7603b7e07db2d33ff93fff6b213ea79e01da91c190cbb607e752c6b5a7`.
+- Mac arm64/Rust 1.93.1, 별도 verify checkout의 source/test를 위 head와 바이트 대조했다. review target은 `target/pr7239-7240-review-20260917`. Docker 표준 경로 대신 host `scripts/wasm-pack-locked.sh --target web --out-dir <scratch>/wasm-final --no-opt`를 실행했다. wasm-opt 통과로 주장하지 않는다.
+- `venv/bin/python scripts/visual_sweep.py --file-target <key> <입력> <PDF> --rhwp-bin <scratch>/rhwp-current --pages <아래 쪽> --dpi 96 --out <scratch>/native-sweep`, WASM은 `--wasm-pkg <scratch>/wasm-final` 추가. 최종 head로 재캡처한 compare·standalone overlay·review를 직접 판독했다.
+- 전체 nextest·Native Skia 3종은 이번 후보에서 미실행이다. #7242 시각 보류 사유가 있어 지침의 작은 경계/영향 페이지 확인을 먼저 완료했고, 대규모 회귀를 통과 근거로 대신하지 않는다. 최종 승인·PR 제출 준비 완료가 아니다.
+
+### 보정 후 판정
+
+기존 두 보류 결함은 `df1b1de7f`로 해소했다. 첫 문단 사용자 명령은 분할과 다음 문단 커서를 복원했고, CLI offset 0은 속성 setter로 분리했다. 양 순서의 쪽/단 비트와 합성 쪽 경계의 비저장을 HWPX/HWP 재열기로 확인했다.
+
+Chrome의 fresh WASM `insertColumnBreak`에서 첫 문단·일반 문단 시작·빈 문단·반복·중간 5개를 실행했다. 문단 +1(반복 +2), 텍스트 보존, 커서 +1/offset 0, HWPX/HWP 재열기 모두 통과했다. Studio가 호출하는 실제 WASM 진입점 검증이며 키보드 UI·Undo/Redo 자동화까지 실행한 것으로 세지 않는다. 사용자 명령 구현은 기준 devel 분할 경로를 복원했으며 snapshot/Undo 코드는 바꾸지 않았다.
+
+편집 산출물 [column_start.hwpx](../../../tests/fixtures/pr7240_review/column_start.hwpx)는 기존 outline 입력의 구역0/문단3/offset0 CLI 명령으로 생성했다. SHA256 `b12bcdebd7d94bf1e31a5cc40e3ed932b0a8aaa89fca32113f55205392748152`. 새 단 속성 산출물이므로 기존 파일을 단순 이름 변경한 복제가 아니다. 한컴 변환 job `53f9caba-badb-4832-90e5-374a2320d677`, start→status succeeded→download, engine2020/Hancom11.0.0.9136, input_preprocess none, [PDF](../../../pdf/pr7240/column-start-2020.pdf) 2쪽, SHA256 `ce13a60d3c94151b759c8843d309204bdb62b59442f3cae543c7c11fc87d3cc1`.
+
+Native/fresh WASM은 2쪽 구성이 PDF와 일치하고 대상 제목 앞 추가 빈 문단 없이 다음 쪽으로 이동한다. 재열기 파일을 기준 devel로 열어도 같은 SVG이므로 남은 개요 번호 `1.Second` 대 PDF `2. Second`, 글꼴/간격 차이를 이번 보정의 새 회귀로 세지 않는다. 전체 개요 번호 정합성까지 해소했다고 주장하지 않는다.
+
+### 직접 판독한 PNG
+
+| 입력·쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| column p1 | [compare](../assets/pr7240_review/native_column_compare_001.png) · [overlay](../assets/pr7240_review/native_column_overlay_001.png) · [review](../assets/pr7240_review/native_column_review_001.png) | [compare](../assets/pr7240_review/wasm_column_compare_001.png) · [overlay](../assets/pr7240_review/wasm_column_overlay_001.png) · [review](../assets/pr7240_review/wasm_column_review_001.png) |
+| column p2 | [compare](../assets/pr7240_review/native_column_compare_002.png) · [overlay](../assets/pr7240_review/native_column_overlay_002.png) · [review](../assets/pr7240_review/native_column_review_002.png) | [compare](../assets/pr7240_review/wasm_column_compare_002.png) · [overlay](../assets/pr7240_review/wasm_column_overlay_002.png) · [review](../assets/pr7240_review/wasm_column_review_002.png) |
+
+Merge 후 코멘트에는 위 **모든 영향 페이지**의 compare·overlay·review 링크를 실제 merge SHA의 raw URL로 치환한다. 대표 review만 넣고 standalone overlay를 빠뜨리지 않는다. 지금은 remote push/comment/merge를 수행하지 않았다.
+
+### 최종 head 공통 검증 결과
+
+- fmt check, Native Clippy, WASM32 lib Clippy, workspace build, workspace all-target Clippy(`-D warnings`), suite manifest base 비교: **모두 통과**.
+- 최종 head focused 재실행: WMF fuzz **2**, golden **1**, column core **7**, column CLI **4**, 기존 page-break **11**, stored tail **3**, scaffold height **2** — **30 passed / 0 failed**. 각 원본에 `node scripts/run-rust-test.mjs <module>`를 test profile로 실행했다.
+- Native/fresh WASM **각 9쪽** compare·standalone overlay·review, 총 18쪽 직접 확인. PNG 54개와 #7242 base 대조 PNG 6개를 개별 PR asset 경로에 보존했다. 총 60개이며 원 입력과 기준 PDF를 연결했다.
+- test source·수치 baseline·허용치를 통과 목적으로 완화하지 않았다. source-side unit test 변경은 없어 unit-tier 비교는 비해당이다.
+- 문서별 metadata 및 로컬 링크 검사, `git diff --check` 통과. 불필요한 log/JSON/TSV는 Git에 추가하지 않는다.
+
+- 새 sample 3개(`stored-table-text-tail/native-8-0`, `issue7234/short_table_cell_row_height`, `issue7234/tall_table_cell_row_height`)의 hidden-text/injection/unicode 검사: **1 passed**. `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 실제 대상을 지정해 실행했다.
