@@ -2,12 +2,39 @@
 kind: snapshot
 status: historical
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-17
+last_verified: 2026-09-18
 ---
 
 # PR #7239 검토
 
-**보정 후 판정: 기존 실행 결함 해소, 최종 통합 검증 대기.** 아래 발견 사항은 보정 전 기록이다. 후단의 보정 결과·실제 증적을 함께 본다. 통합 전체 승인은 #7242·#7243 보류 사항과 최종 게이트 해소 전까지 보류한다.
+## 현재 최종 판정 — 2026-09-18
+
+**승인 — 메인터너 보정이 포함된 통합 코드의 #7239 변경 범위.** 원 contributor head를
+그대로 승인하거나 네 PR 전체의 병합을 승인한다는 뜻은 아니다. 아래 초기 발견 사항과
+검증 대기 문구는 당시 기록이며, 현재 판정은 이 절을 따른다.
+
+META_TEXTOUT의 TOP/BOTTOM 덧셈 overflow를 보정했다. overflow checks가 켜진
+프로필에서 반례의 수정 전 실패·수정 후 통과와 정상 WMF/EMF golden 보존을 확인했다.
+보정 commit은 `7521c08c8`다. 경계·시각 검증 후보 `75a484886`부터 최신 코드까지
+WMF converter 제품 경로가 변경되지 않았음을 Git diff로 확인했다.
+기존 수식 글꼴·표 선/글꼴 차이는 해결 범위 밖으로 기록한다.
+
+### 최신 공통 검증과 증거 범위
+
+- 검토 코드: `bb401f0a7b97424b2a602fedf8b12129ca615f98`, 기준: `236a601da803b53429e9090eef652c661dd3bfe2`.
+- 브랜치: `codex/pr7239-7240-review-20260917`. 이번 갱신은 검토 문서만 변경한다.
+- 위 코드의 전체 회귀 **10,021 passed / 50 skipped / 0 failed**, Native Skia 라이브러리
+  **4,112 passed / 13 ignored**, 그림 회귀 **2 passed**, 직접 PDF **4 passed**를 확인했다.
+  fmt·Native/WASM32/workspace Clippy·workspace build·suite manifest 검사도 모두 통과했다.
+  실제 명령·source/binary hash·최신 9문서 시각 증거는
+  [#7242 최종 실행·증적](pr_7242_review.md#최종-실행증적)에 연결한다.
+- 위 결과는 이전 코드 보정 회차에서 완료한 실행이다. 이번 문서 회차에서 Rust 검사나 Visual Sweep을
+  재실행한 것으로 세지 않는다. 각 PR의 아래 과거 캡처는 기록된 후보의 증거이며, 최신 head 캡처로
+  이름을 바꾸거나 9문서 재캡처에 포함됐다고 표현하지 않는다.
+- 원격 CI·mergeability는 이번 문서 회차에서 조회하지 않았다. 통합본을 제출·병합하려면
+  #7243 보류 해소와 제출할 최종 head의 CI·mergeability 확인이 필요하다.
+
+## 원 PR 접수 및 과거 회차 기록
 
 - 원 PR: [#7239](https://github.com/edwardkim/rhwp/pull/7239), source `f5169220e8a165eb6c9344357d2d83e8a422ef52`.
 - 접수 시점: OPEN/non-draft/devel, MERGEABLE/CLEAN. [원 head CI](https://github.com/edwardkim/rhwp/actions/runs/35212978619) 성공은 확인했으나 통합 후 결과와 다르다.
@@ -162,13 +189,14 @@ CLI/MCP 단 나눔 계약 3 = **9 PASS**였다. 이는 별도 probe로 재현한
 
 ## Merge 후 contributor PR comment 계획
 
-현재 **머지 보류**이므로 merge/close 또는 승인 코멘트를 게시하지 않는다.
-[Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)에
-따른 직접 캡처는 아직 없고, 이전 PR의 PNG·수치를 이 head 증적으로 재사용하지 않는다.
-blocker 수정 뒤 실제 Native/fresh WASM compare·standalone overlay·review, 페이지·후보 수·pixel/ink 지표와
-사람의 판정을 이 기록에 추가하고 merge SHA에 고정한 대표 이미지 목록을 확정해야 한다.
-그 뒤 사용자 승인·최신 head CI·실제 merge가 완료됐을 때만 한국어 감사와 범위/잔여 문제,
-실제 CI URL·이미지를 UTF-8 파일+`--body-file`로 게시하고 재조회한다.
+#7239 개별 변경은 위 통합 코드에서 승인했으나, #7243 보류가 남아 현재 통합본의
+merge/close·승인 코멘트는 게시하지 않는다. 실제 merge 뒤에는 아래 직접 판독한 PNG의
+모든 영향 페이지에 대해 Native/fresh WASM compare·standalone overlay·review를
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7239_review/<파일명>`
+형식으로 연결한다. 각 이미지의 실제 캡처 후보와 검증 범위를 함께 밝힌다.
+[Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을
+연결하고, 실제 merge SHA·CI URL·보정 이유·잔여 차이·기여 감사를 한국어 UTF-8 파일과
+`--body-file`로 게시한 뒤 한국어·이미지 URL·실제 head를 재조회한다.
 
 원격 source push·PR 생성·GitHub comment·merge·close는 이번 검토에서 수행하지 않았다.
 reviewer 지정만 원격 metadata에 반영했다. 오늘할일은 최종 제출 준비 단계에서 작성한다.
