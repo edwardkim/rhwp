@@ -12581,6 +12581,31 @@ impl LayoutEngine {
     /// 두 줄짜리 고아 쪽을 만든다.
     ///
     /// 문단이 끝나지 않으므로 `spacing_after` 는 더하지 않는다 — 줄간격만 트림한다.
+    /// 컷 선택과 예약/paint가 동일한 유닛 범위의 끝 간격을 소비한다.
+    fn native_saved_reset_cut_trailing_trim(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        start_cut: usize,
+        end_cut: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let trim =
+            self.native_multirow_saved_reset_trailing_trim(table, cell, units, end_cut, styles);
+        if trim > 0.0 || start_cut != 0 || end_cut == 0 || end_cut > units.len() {
+            return trim;
+        }
+        self.native_intra_para_saved_reset_trailing_trim(
+            table,
+            cell,
+            units,
+            end_cut,
+            units[..end_cut - 1].iter().map(|u| u.height).sum(),
+            units[end_cut - 1].height,
+        )
+    }
+
     fn native_intra_para_saved_reset_trailing_trim(
         &self,
         table: &crate::model::table::Table,
@@ -13790,27 +13815,14 @@ impl LayoutEngine {
                     // 물리 쪽 경계에서 제외하면 예산에 들어가는 경우, 그 줄까지
                     // 현 조각에 넣고 다음 문단 hard break 직전에서 멈춘다. source
                     // frame tail 흡수보다 먼저 적용해 본문 하단 침범을 피한다.
-                    let trailing_trim = self.native_multirow_saved_reset_trailing_trim(
+                    let trailing_trim = self.native_saved_reset_cut_trailing_trim(
                         table,
                         cell,
                         &units,
+                        start,
                         j + 1,
                         styles,
                     );
-                    // [#7203] 문단 안 저장 되감김도 같은 계약을 받는다. 위 문단 경계
-                    // 트림이 0 인 경우에만 묻는다 — 두 신호가 겹칠 수는 없다.
-                    let trailing_trim = if trailing_trim > 0.0 {
-                        trailing_trim
-                    } else {
-                        self.native_intra_para_saved_reset_trailing_trim(
-                            table,
-                            cell,
-                            &units,
-                            j + 1,
-                            h,
-                            u.height,
-                        )
-                    };
                     if trailing_trim > 0.0 && h + u.height - trailing_trim <= avail_height + 0.5 {
                         h += (u.height - trailing_trim).max(0.0);
                         j += 1;
@@ -14676,7 +14688,7 @@ impl LayoutEngine {
             let trailing_trim = if end_cut.is_empty() {
                 0.0
             } else {
-                self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles)
+                self.native_saved_reset_cut_trailing_trim(table, cell, &units, su, eu, styles)
             };
             let content: f64 =
                 (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0);
@@ -14721,7 +14733,7 @@ impl LayoutEngine {
         let su = start_unit.min(units.len());
         let eu = end_unit.clamp(su, units.len());
         let trailing_trim =
-            self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles);
+            self.native_saved_reset_cut_trailing_trim(table, cell, &units, su, eu, styles);
         let content: f64 =
             (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0);
         if content <= 0.0 {
@@ -16159,7 +16171,7 @@ impl LayoutEngine {
             let trailing_trim = if is_whole_row {
                 0.0
             } else {
-                self.native_multirow_saved_reset_trailing_trim(table, cell, &units, eu, styles)
+                self.native_saved_reset_cut_trailing_trim(table, cell, &units, su, eu, styles)
             };
             let content: f64 =
                 (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0)

@@ -1642,7 +1642,7 @@ fn native_empty_topbottom_rewind_anchor_saved_para_y(
 /// reset 뒤 continuation까지 합산하므로, 일반 y cursor로 그리면 첫 fragment가
 /// 기존 각주 아래로 밀린다. typeset이 이 형상만 fragment scan으로 보낸 뒤, layout도
 /// 같은 anchor에서 첫 조각을 paint해야 페이지네이터/렌더러 좌표가 일치한다.
-fn native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
+pub(crate) fn native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
     native_hwp5_layout: bool,
     para: &Paragraph,
     prev_para: Option<&Paragraph>,

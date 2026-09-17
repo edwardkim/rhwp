@@ -213,6 +213,8 @@ struct BlockTableContinuationPreparedState {
     /// 다음 host의 양수 vpos rewind가 현재 RowBreak 표의 continuation source
     /// page를 가리키는지 여부. page-top reset은 표 종료이므로 포함하지 않는다.
     source_next_positive_rewind: bool,
+    /// Paint와 공유하는 저장 첫 조각 원점(단 위쪽 기준).
+    first_fragment_saved_offset: Option<f64>,
     /// Both stored fragment heights independently prove this whole-row boundary.
     source_cellbreak_row_end: Option<usize>,
     /// 고정 선언 높이보다 실측 내용이 크게 넘치는 native HWP5 RowBreak 표가 마지막
@@ -26987,6 +26989,18 @@ impl TypesetEngine {
                             - st.current_bottom_fixed_exclusion
                     }),
             source_next_positive_rewind: next_rewinds_after_table && !next_starts_new_page,
+            first_fragment_saved_offset: {
+                let column = st.inline_flow_column();
+                crate::renderer::layout::native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
+                    self.profile.get().hwp5_stored_pagination_layout(),
+                    para,
+                    para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i)),
+                    paragraphs_all.get(para_idx + 1),
+                    table,
+                    &column,
+                    self.dpi,
+                ).map(|top| top - column.y)
+            },
             source_cellbreak_row_end: (self.profile.get().hwp5_stored_pagination_layout()
                 && !self.profile.get().session_edited())
             .then(|| paragraphs_all.get(para_idx + 1))
@@ -27368,6 +27382,14 @@ impl TypesetEngine {
                     self.profile.get().hwp5_stored_pagination_layout(),
                     table,
                 ) && (is_continuation || st.current_height < 0.5);
+            // 저장된 첫 조각의 원점은 paint와 같은 값으로 예약한다.
+            // trailing trim으로 얻은 컷만 공유하고 이전 flow 원점을 유지하면
+            // 실제 표 상자와 페이지 예산이 서로 다른 높이를 소비한다.
+            if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
+                if let Some(offset) = prepared.first_fragment_saved_offset {
+                    st.current_height = offset;
+                }
+            }
             let (host_before_overhead, fragment_outer_bottom_overhead) =
                 partial_rowbreak_fragment_spacing_px(
                     table,
@@ -30384,6 +30406,7 @@ mod tests {
             budget_para_start_height: 0.0,
             first_fragment_actual_footnote_boundary: None,
             source_next_positive_rewind: false,
+            first_fragment_saved_offset: None,
             source_cellbreak_row_end: None,
             relax_terminal_table_footnote_fit: false,
         };

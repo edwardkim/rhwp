@@ -32,9 +32,8 @@
 //! 2. 그 줄이 이어받는 조각에서 **사라지거나 겹치지 않는다** — 유닛 보존.
 //! 3. 조각이 커져도 본문 바닥을 넘지 않으며, **뒤따르는 표**(문단 1296)가 넘치지 않는다.
 //!    수정 전에는 그 표가 본문 바닥을 10.05px 넘었다.
-//! 4. 같은 문서의 다른 분할 자리차지 표(문단 1342)는 **불변**이다. 그 표는 같은 종류의
-//!    되감김 경계를 예산이 넉넉해 이미 맞추고 있었다(12유닛 256.0px, 예산 278.4px) —
-//!    트림은 이미 맞던 경계를 움직이지 않는다.
+//! 4. 넉넉한 예산으로 이미 12유닛을 수용하던 문단 1342도 끝 줄간격을 상자에 더하지 않는다.
+//!    PDF 55쪽 괘선은 731.04~982.61px(251.57px)이다. 컷/이어받기 내용은 불변이다.
 //!
 //! # 발화 조건 — 되감김만으로는 부족하다
 //!
@@ -43,11 +42,8 @@
 //! 깼다. 그래서 트림은 위 선언 높이 동일성(조각 상자 == `common.height`)을 함께
 //! 요구한다 — 문서 자신이 그 되감김을 자기 첫 물리 조각의 경계로 확인해 준 경우만이다.
 //!
-//! # 잠그지 않는 것
-//!
-//! 조각 상자의 **아래변**은 아직 정본보다 2.8px 낮다(수정 후 1004.30, 정본 환산
-//! 1001.48). 컷·글자 위치와 달리 상자 높이 계산은 이 트림을 소비하지 않는다 —
-//! `#7203` 에 남겨 둔다.
+//! 메인터너 보정: 첫 조각의 상자 높이도 저장 4482 HU와 독립 PDF 높이로 검사한다.
+//! 컷에 적용한 끝 간격을 예약 높이/paint가 함께 소비해야 한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -158,8 +154,8 @@ fn the_continuation_neither_repeats_nor_drops_the_moved_unit() {
     let (_, tail_h) = table_box(&core, 52, 1274);
     // 유닛 하나(1600 HU = 21.33px)가 이어받는 조각에서 첫 조각으로 옮겨진다.
     assert!(
-        (first_h - 62.60).abs() <= 0.6,
-        "첫 조각 높이 {first_h:.2} — 세 줄 조각은 62.60px 다 (수정 전 46.70)",
+        (first_h - 4482.0 / 75.0).abs() <= 0.6,
+        "첫 조각 높이 {first_h:.2} — 세 줄 조각은 저장된 4482 HU(59.76px)와 같아야 한다",
     );
     assert!(
         (tail_h - 314.73).abs() <= 0.6,
@@ -199,15 +195,15 @@ fn neither_the_fragment_nor_the_following_table_overflows_the_body() {
     );
 }
 
-/// 예산이 넉넉해 이미 맞던 되감김 경계는 움직이지 않는다 — 문단 1342.
+/// 예산 실패 여부와 무관하게 같은 컷은 같은 높이를 예약하고 그린다 — 문단 1342.
 #[test]
-fn a_boundary_already_at_the_stored_rewind_is_unchanged() {
+fn an_already_selected_boundary_uses_the_same_trimmed_box() {
     let core = core();
     let (first_top, first_h) = table_box(&core, 54, 1342);
     let (tail_top, tail_h) = table_box(&core, 55, 1342);
     assert!(
-        (first_top - 731.80).abs() <= 0.6 && (first_h - 260.00).abs() <= 0.6,
-        "문단 1342 첫 조각 ({first_top:.2}, {first_h:.2}) — 불변 계약은 (731.80, 260.00)",
+        (first_top - 731.80).abs() <= 0.6 && (first_h - (982.61 - 731.04)).abs() <= 0.6,
+        "문단 1342 첫 조각 ({first_top:.2}, {first_h:.2}) — 독립 PDF 괘선은 (731.04, 251.57), 컷은 12유닛",
     );
     assert!(
         (tail_top - 136.00).abs() <= 0.6 && (tail_h - 145.30).abs() <= 0.6,
@@ -219,4 +215,38 @@ fn a_boundary_already_at_the_stored_rewind_is_unchanged() {
 #[test]
 fn the_page_count_matches_the_oracle() {
     assert_eq!(core().page_count(), 105, "한/글 정답지 105쪽과 같아야 한다",);
+}
+
+/// 마지막 조각 뒤 column.usedHeight는 paint한 끝점과 같아야 한다.
+/// 두 조각은 각각 좁은 예산/넉넉한 예산 경로이며 다음 쪽 컷을 함께 잠근다.
+#[test]
+fn reserved_bottom_matches_painted_bottom_and_continuation_cuts() {
+    let core = core();
+    for (page, para, cut) in [(51u32, 1274usize, 3usize), (54, 1342, 12)] {
+        let pages = core.dump_page_items_json(Some(page));
+        let info = &pages[0];
+        let column = &info["columns"][0];
+        let last = column["items"].as_array().unwrap().last().unwrap();
+        assert_eq!(last["paraIndex"], para);
+        assert_eq!(last["endCut"][0], cut);
+        let reserved_bottom =
+            info["bodyArea"]["y"].as_f64().unwrap() + column["usedHeight"].as_f64().unwrap();
+        let (top, height) = table_box(&core, page, para);
+        assert!(
+            (reserved_bottom - top - height).abs() < 0.5,
+            "문단 {para}: 예약 끝 {reserved_bottom:.3} != 실제 끝 {:.3}",
+            top + height
+        );
+        let next = core.dump_page_items_json(Some(page + 1));
+        let continuation = next[0]["columns"][0]["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|item| item["paraIndex"] == para && item["kind"] == "partialTable")
+            .unwrap();
+        assert_eq!(
+            continuation["startCut"][0], cut,
+            "앞 조각 다음 유닛부터 이어받는다"
+        );
+    }
 }
