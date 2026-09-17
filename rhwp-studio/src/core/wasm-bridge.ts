@@ -1984,6 +1984,23 @@ export class WasmBridge {
     return JSON.parse(this.doc.resizeTableCells(sec, parentPara, controlIdx, JSON.stringify(updates)));
   }
 
+  /**
+   * [#7189] 중첩 표의 셀 크기를 셀 경로로 조절한다.
+   *
+   * 평면 `resizeTableCells` 는 `(sec, ppi, ci)` 로 **최외곽** 표만 가리킨다. 중첩 표 경계를
+   * 잡고 드래그하면 안쪽 셀 번호가 바깥 표에 적용되므로 경로 API 를 써야 한다.
+   * 깊이 1 경로는 엔진이 평면 경로에 위임한다.
+   */
+  resizeTableCellsByPath(
+    sec: number, parentPara: number, pathJson: string,
+    updates: TableCellResizeUpdate[],
+  ): { ok: boolean } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(
+      (this.doc as any).resizeTableCellsByPath(sec, parentPara, pathJson, JSON.stringify(updates)),
+    );
+  }
+
   moveTableOffset(sec: number, parentPara: number, controlIdx: number, deltaH: number, deltaV: number): { ok: boolean; ppi: number; ci: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.moveTableOffset(sec, parentPara, controlIdx, deltaH, deltaV));
