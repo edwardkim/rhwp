@@ -306,8 +306,8 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         bottom: 141,
     };
     let col_width = (content_width / col_count as u32).max(1);
-    let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
     let rendered_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
+    let cell_height: u32 = rendered_row_height;
     let total_width = col_width * col_count as u32;
     let total_height = rendered_row_height * row_count as u32;
 
