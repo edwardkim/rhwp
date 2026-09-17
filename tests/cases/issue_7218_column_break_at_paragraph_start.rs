@@ -91,8 +91,10 @@ fn a_column_break_at_paragraph_start_does_not_split_the_paragraph() {
 #[test]
 fn a_column_break_at_paragraph_start_keeps_the_other_break_axes() {
     let mut core = core();
-    core.insert_page_break_native(0, HEADING_PARA, 0)
-        .expect("쪽 나눔 삽입");
+    // #7241 이후 사용자 쪽 나눔 명령은 문단을 분할한다. 이 검사는 기존 문단의
+    // 두 속성 축 보존을 검사하므로 CLI/MCP의 명시적 속성 setter로 준비한다.
+    core.mark_page_break_at_paragraph_start_native(0, HEADING_PARA)
+        .expect("문단 앞 쪽 나눔 속성 설정");
     core.insert_column_break_native(0, HEADING_PARA, 0)
         .expect("단 나눔 삽입");
 
