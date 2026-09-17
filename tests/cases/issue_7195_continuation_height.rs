@@ -26,6 +26,69 @@ fn normalized(s: &str) -> String {
 }
 
 #[test]
+fn giant_continuation_nested_origin_preserves_owned_empty_lines() {
+    // Source paragraphs 639..652 are real empty lines (1200HU line boxes,
+    // 720HU line spacing), not zero-height controls. A paragraph-relative
+    // nested table must not rewind over the lines owned by the same fragment.
+    fn check(node: &RenderNode, body_bottom: f64) -> usize {
+        let mut found = 0;
+        if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            for (index, child) in node.children.iter().enumerate() {
+                if !matches!(&child.node_type, RenderNodeType::Table(t) if t.para_index == Some(652))
+                {
+                    continue;
+                }
+                let lines: Vec<_> = node.children[..index]
+                    .iter()
+                    .filter(|n| matches!(n.node_type, RenderNodeType::TextLine(_)))
+                    .collect();
+                if lines.is_empty() {
+                    continue;
+                }
+                assert!(lines.iter().all(|line| normalized(&text(line)).is_empty()));
+                let bottom = lines
+                    .iter()
+                    .map(|line| line.bbox.y + line.bbox.height)
+                    .fold(f64::NEG_INFINITY, f64::max);
+                assert!(
+                    child.bbox.y >= bottom - 0.5,
+                    "nested top {} rewinds over owned empty lines ending at {bottom}",
+                    child.bbox.y
+                );
+                assert!(
+                    child.bbox.y + child.bbox.height <= body_bottom + 0.5,
+                    "nested frame exceeds physical body: {:?}, body bottom {body_bottom}",
+                    child.bbox
+                );
+                found += 1;
+            }
+        }
+        found
+            + node
+                .children
+                .iter()
+                .map(|child| check(child, body_bottom))
+                .sum::<usize>()
+    }
+    let bytes = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/table_giant_cell_overfill.hwpx"),
+    )
+    .expect("sample");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse");
+    let mut found = 0;
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).expect("render");
+        let body = find_body(&tree.root).expect("body");
+        found += check(body, body.bbox.y + body.bbox.height);
+    }
+    assert_eq!(
+        found, 1,
+        "exercise the fragment owning both empty lines and the nested table"
+    );
+}
+
+#[test]
 fn single_row_source_frame_keeps_its_last_line_without_overflow() {
     fn table43(n: &RenderNode) -> Option<&RenderNode> {
         if matches!(&n.node_type, RenderNodeType::Table(t) if t.para_index == Some(43)) {

@@ -3029,7 +3029,11 @@ impl LayoutEngine {
                                             para_y
                                         }
                                     } else {
-                                        inner_area.y
+                                        // Empty paragraphs can own line boxes without
+                                        // visible glyphs. Keep their already-laid-out
+                                        // flow advance, as the unsplit cell path does;
+                                        // absence of visible text is not a cell-top anchor.
+                                        para_y_before_lines
                                     };
                                     let available_h =
                                         (inner_area.height - (nested_y - inner_area.y)).max(0.0);
