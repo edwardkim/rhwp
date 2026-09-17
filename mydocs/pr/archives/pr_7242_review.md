@@ -7,9 +7,174 @@ last_verified: 2026-09-18
 
 # PR #7242 검토
 
-**검토 승인 — 공개 입력 정상화와 표 뒤 흐름 검증의 보류 사유 해소. 최종 통합 head CI는 별도 확인.** #7239·#7240 통합 후보에 누적 적용했다.
+**검토 승인 — 표·Footer 위치와 남은 글자·문단 테두리 보류 사유를 메인터너 보정으로 해소.** #7239·#7240 통합 후보에 누적 적용했다.
 
-최신 판정은 아래 2026-09-18 회차를 따른다. 그 뒤의 기존 기록·실패 PNG는 수정 전 이력이며 삭제하지 않는다.
+최신 판정은 아래 renderer 보정 회차를 따른다. 이전 입력 정상화만으로 범위를 좁혀 승인한 판정은 이번 판정으로 대체한다. 기존 기록·실패 PNG는 수정 전 이력으로 보존한다.
+
+## 2026-09-18 후속 보정 — 실제 테두리 누락·잘림 수정
+
+### 원인, 공통 소유 범위와 수정
+
+입력 교체로 Footer 위치가 맞아도 표 줄의 글자 테두리와 문단 외곽선의 차이는 남아 있었다.
+이전 회차의 범위를 좁힌 승인은 이 차이의 해결 증거가 아니었다. 이번에는 정상 저장된
+같은 파일·같은 PDF를 유지하고 renderer를 수정한다.
+
+1. `standalone_table_char_border_fill`이 **문단 전체에 글자가 있는지**로 표 장식을 생략했다.
+   실제 표 소속 저장 줄과 Footer 줄이 다른데도 표의 글자 테두리가 누락됐다.
+   실제 배치가 사용하는 `control_line_seg_index`로 소속 줄을 선택하고, 그 줄의
+   인접 공백만 같은 글자 테두리 범위에 포함한다. 같은 줄의 가시 텍스트·복수 개체 등
+   기존 별도 줄 소유 경로를 추가 장식하지 않는다.
+2. 표 제어 뒤 글자의 위치로 스타일을 조회하면 뒤 공백의 스타일이 표의 스타일을 가렸다.
+   `control_utf16_positions`의 **원 제어 슬롯**으로 글자모양을 조회한다. 테두리 없는 공백은
+   장식 확장을 중단하되 표 자체의 테두리는 유지한다.
+3. `para_border_ranges`가 같은 문단의 text/table/text 조각도 `border_connect`로 판단했다.
+   이 속성은 서로 다른 문단의 연결 조건이다. 동일 문단 조각은 같은 외곽선으로 합친다.
+4. 58개 공백뿐인 저장 줄을 정렬 공통의 자동 음수 자간 처리로 본문 폭 384px에 압축했다.
+   실제 문단 정렬은 **LEFT**다. 자동 줄바꿈으로 소비된 공백 전용 중간 줄은 자연 공백 폭을
+   유지한다. 문단 끝·강제 개행의 공백은 작성한 내용이므로 원래 줄 폭 맞춤 계약을 유지한다.
+   명시적인 양쪽/배분 정렬과 인라인 개체 줄의 기존 규칙도 변경하지 않는다.
+
+생산·소비 연결: 원 제어 슬롯의 글자 스타일 + 실제 저장 줄의 공백 advance → paint 전용
+`TableCharBorder` → 최종 물리 표 bbox를 사용하는 `paint_standalone_table_char_border`.
+장식 폭·여백을 행 높이/예약 높이에 되먹이지 않는다. 문단 범위는 기존 text/table layout의
+실제 점유 끝을 수집한 뒤 같은 문단 소유끼리 합친다. 공백 줄의 추가 자간은 실제 TextRun
+advance와 글자 테두리가 함께 소비한다. 표 높이·Footer 기준선·문단 뒤 간격은 기존 검사로 보존한다.
+분할 컷·행 예약·이월 결정은 바꾸지 않는다.
+
+빈 선행 문단의 테두리 생성 순서도 조사했으나, 이 입력은 수정 전에도 테두리가 존재했다.
+해당 실험 변경은 제외했다. 빈 문단 검사는 정상 대조군이며 결함을 검출한 검사로 세지 않는다.
+
+### 독립 PDF 증거와 수정 전후 검사
+
+[동일 한컴 PDF](../../../pdf/pr7242/native-8-0-2020.pdf)의 vector stroke 좌표를 96dpi로 환산했다.
+표 글자 테두리는 x=48..446.08, 하단 y=331.133px이며 **표 자체 외곽** y=312.417px와 구분한다.
+표 줄의 두 공백을 포함하고, 그 뒤 58개 공백 줄의 글자 테두리 폭은 387.36px다.
+문단 외곽은 y=127.175..365.687px다. 별도 글꼴/가느다란 stroke의 래스터 차이를
+테두리 누락과 혼동하지 않고, PDF 좌표 오차 1px 이내로 검사한다.
+
+- 기존 검사를 포함한 최초 9개 중 테두리 소유·원 제어 슬롯·같은 문단 외곽선 **3개는 수정 전 FAIL**, 수정 후 PASS.
+  기존 4개와 가시 텍스트가 같은 줄인 반례·빈 문단 정상 대조는 통과했다.
+- 공백 폭 검사는 별도로 **수정 전 FAIL(width=384px) → 수정 후 PASS**를 확인했다.
+- 실행 명령: `node scripts/run-rust-test.mjs stored_table_text_tail`. 최초 수정 전 실행은
+  `c877f6e48`의 renderer 3파일을 검증 checkout에 넣고 같은 검사를 실행했다.
+  빌드는 성공했으며 실제 테두리 assertion으로 실패했고, 보정 소스 복원 후 재실행했다.
+- 최종 `stored_table_text_tail`: **12 passed**. 기존 #7200의 단독 표 장식 여백·장식 끔,
+  중첩 표/셀 정렬 대조 `stored_nested_content_flow`: 최종 전체 nextest에서 **7 passed**.
+- 기존 샘플·PDF·수치 baseline·허용치는 이번 회차에서 바꾸지 않았다. 이전 불일치 입력은
+  원 PR head 및 이전 회차에 기록한 Git SHA로 보존한다. 잘못된 LineSeg의 일반 자동 복구를
+  구현했다고 주장하지 않는다.
+
+### 전체 회귀에서 검출한 반례와 추가 보정
+
+첫 전체 실행은 **10,018 passed / 1 failed / 50 skipped**였다. 실패한
+`svg_snapshot::issue_157_page_1`은 공백으로 만든 밑줄 끝점이 747→748px로 길어진 실제 회귀다.
+독립 기준 `pdf/hwpx/issue_157-2022.pdf` 2쪽은 x2=559.859pt, 즉 746.479px이므로
+이번 변경이 오차를 키웠다. 해당 golden은 갱신하지 않았다.
+
+잘못된 가정은 공백만 있으면 모두 같은 폭 계약이라는 것이었다. 자동 줄바꿈이 소비한
+구분 공백과 문단 끝·강제 개행의 작성 공백을 기존 `is_last_line_of_para`/`has_forced_break`로
+구분했다. 후자는 종전 줄 폭 맞춤을 유지한다. 공개 #157의 최종 SVG 밑줄 좌표 검사도 추가해
+748px에서 **FAIL → 747px에서 PASS**를 확인했다. #7242의 중간 공백 줄 폭은 보존된다.
+이 중간 후보의 focused는 11개 통과였다. 추가 보정은 아래 최종 검증과 시각 증거에 포함했다.
+
+저장 줄 정보가 없는 개체 전용 문단도 별도로 대조했다. 빈 문자열과 `U+FFFC`는 모두
+개체만 있는 문단인데, 새 fallback의 `trim().is_empty()`는 자리표시자를 가시 텍스트로
+잘못 분류했다. 기존 비가시 제어 문자·자리표시자 계약을 유지하도록 수정했다.
+정식 테스트에 넣은 동일 검사 본문을 변경 전 debug 라이브러리에 직접 연결해 실행했을 때
+빈 문자열은 통과하고 `U+FFFC`의 글자 테두리가 누락되어 **1 failed**였다.
+이 경계까지 추가한 최종 focused 검사 **12개가 통과**했다. 아래 최종 공통 검증과 캡처는
+이 마지막 보완까지 포함한 source를 사용한다. 두 번째 중간 후보의 10,020 passed 및
+Native Skia 통과는 마지막 변경의 검증으로 재사용하지 않는다.
+
+### 최종 실행·증적
+
+- 검증 source: `c877f6e48` 위의 이번 renderer 3파일·정식 test 변경. 검증 checkout의
+  `src/`, `crates/`, `tests/cases/`, `Cargo.toml`, `Cargo.lock`을 작업 브랜치와 바이트 대조했다.
+  검증 checkout의 오래된 Git HEAD를 이번 source SHA로 사용하지 않는다.
+- base: `236a601da803b53429e9090eef652c661dd3bfe2`, branch:
+  `codex/pr7239-7240-review-20260917`. Mac arm64, `DEVELOPER_DIR=/Library/Developer/CommandLineTools`,
+  `CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/pr7239-7240-review-20260917`.
+- 새 Native binary SHA256: `91e84d346e42592e9c45fd2c2116ea796718cac64845b9d213b1e435aecfce0a`.
+- fresh WASM SHA256: `d96c54eeed2fca9f98841db65e91a1301a603ea4c4c040cd981e9a4c9583dc59`;
+  JS `a7353a7603b7e07db2d33ff93fff6b213ea79e01da91c190cbb607e752c6b5a7`.
+  `scripts/wasm-pack-locked.sh --target web --out-dir <scratch>/wasm-border-final --no-opt` 성공.
+  host 빌드이며 wasm-opt 실행으로 보고하지 않는다.
+- 보안 회귀의 추가 문서 입력은 지침에 따라
+  `RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/stored-table-text-tail/native-8-0.hwpx"]'`로 지정했다.
+최종 필수 검증은 모두 exit 0이다. 이전 중간 후보의 통과 결과를 재사용하지 않았다.
+
+| 명령·검사 | 최종 결과 |
+| --- | --- |
+| `cargo fmt --all -- --check` | 통과 |
+| `cargo clippy --locked -- -D warnings` | 통과 |
+| `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` | 통과 |
+| `cargo build --locked --workspace` | 통과 |
+| `cargo clippy --locked --workspace --all-targets -- -D warnings` | 통과 |
+| `node scripts/rust-test-suite-manifest.mjs --check --base-ref 236a601da803b53429e9090eef652c661dd3bfe2` | 통과 |
+| `cargo nextest run --locked --cargo-profile release-test --tests --no-fail-fast` | **10,021 passed / 50 skipped / 0 failed** |
+| `cargo test --locked --profile release-test --features native-skia --lib` | **4,112 passed / 13 ignored / 0 failed** (workspace 라이브러리 합계) |
+| `node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir <review-target> --features native-skia` | **2 passed** |
+| `node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --target-dir <review-target> --features native-skia` | **4 passed** |
+
+`<review-target>`은 위의 전용 target 경로다. 문서 메타데이터·로컬 증적 링크·`git diff --check`도
+통과했다. 로그·JSON·TSV·generated suite는 커밋하지 않는다. 기존 입력·PDF·golden·래칫을
+변경하지 않고 코드·정식 검사·검토 기록·최종 PNG만 이번 보정 커밋에 포함한다.
+
+코드·test SHA256:
+
+| 파일 | SHA256 |
+| --- | --- |
+| `src/renderer/layout.rs` | `b685c9a0b39d4f214e4693c2c2e5f3ee205efaf03d92693b7153fb61c375b38d` |
+| `src/renderer/layout/table_layout.rs` | `0ffe465c96a48dbcd0001238af7adf8c3dec10eb504e16f6e4ee231934562718` |
+| `src/renderer/layout/paragraph_layout.rs` | `b8f55e6593370a2cbf1f39ffe362bcc6db6347529ccab6168a2096b2e6afcbd7` |
+| `tests/cases/stored_table_text_tail.rs` | `c7243f63f234e1b41831cca28a24f68c6669b9b8ee1ef6bd54ea67a0a36c189b` |
+
+최종 코드로 Native/fresh WASM 각 9문서·9쪽의 compare·standalone overlay·review를 재생성했다.
+각 페이지의 review 또는 overlay를 직접 판독했다. Native 명령은 다음과 같고,
+WASM 실행에는 `--wasm-pkg <scratch>/wasm-border-final`을 추가했다.
+
+```sh
+venv/bin/python scripts/visual_sweep.py --file-target <key> <input> <pdf> \
+  --rhwp-bin <scratch>/rhwp-border-final --pages <page> --dpi 96 \
+  --out <scratch>/border-final-native/<key>
+```
+
+| 입력·PDF·쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| [issue157](../../../samples/hwpx/issue_157.hwpx) / [PDF](../../../pdf/hwpx/issue_157-2022.pdf) p2 | [compare](../assets/pr7242_review/native_border_issue157_compare_002.png) · [overlay](../assets/pr7242_review/native_border_issue157_overlay_002.png) · [review](../assets/pr7242_review/native_border_issue157_review_002.png) | [compare](../assets/pr7242_review/wasm_border_issue157_compare_002.png) · [overlay](../assets/pr7242_review/wasm_border_issue157_overlay_002.png) · [review](../assets/pr7242_review/wasm_border_issue157_review_002.png) |
+| [tail](../../../samples/stored-table-text-tail/native-8-0.hwpx) / [PDF](../../../pdf/pr7242/native-8-0-2020.pdf) p1 | [compare](../assets/pr7242_review/native_border_tail_compare_001.png) · [overlay](../assets/pr7242_review/native_border_tail_overlay_001.png) · [review](../assets/pr7242_review/native_border_tail_review_001.png) | [compare](../assets/pr7242_review/wasm_border_tail_compare_001.png) · [overlay](../assets/pr7242_review/wasm_border_tail_overlay_001.png) · [review](../assets/pr7242_review/wasm_border_tail_review_001.png) |
+| [real_tail](../../../samples/issue6044/156513948.hwpx) / [PDF](../../../pdf/pr6940-156513948-source-2020.pdf) p20 | [compare](../assets/pr7242_review/native_border_real_tail_compare_020.png) · [overlay](../assets/pr7242_review/native_border_real_tail_overlay_020.png) · [review](../assets/pr7242_review/native_border_real_tail_review_020.png) | [compare](../assets/pr7242_review/wasm_border_real_tail_compare_020.png) · [overlay](../assets/pr7242_review/wasm_border_real_tail_overlay_020.png) · [review](../assets/pr7242_review/wasm_border_real_tail_review_020.png) |
+| [width_top](../../../samples/stored-nested-content-flow/width-top.hwp) / [PDF](../../../pdf/pr7200/width-top-recomposed-2020.pdf) p1 | [compare](../assets/pr7242_review/native_border_width_top_compare_001.png) · [overlay](../assets/pr7242_review/native_border_width_top_overlay_001.png) · [review](../assets/pr7242_review/native_border_width_top_review_001.png) | [compare](../assets/pr7242_review/wasm_border_width_top_compare_001.png) · [overlay](../assets/pr7242_review/wasm_border_width_top_overlay_001.png) · [review](../assets/pr7242_review/wasm_border_width_top_review_001.png) |
+| [margin-min-700](../../../tests/fixtures/pr7200_hancom_recomposed/margin-min-700.hwp) / [PDF](../../../pdf/pr7200/margin-min-700-2020.pdf) p1 | [compare](../assets/pr7242_review/native_border_margin-min-700_compare_001.png) · [overlay](../assets/pr7242_review/native_border_margin-min-700_overlay_001.png) · [review](../assets/pr7242_review/native_border_margin-min-700_review_001.png) | [compare](../assets/pr7242_review/wasm_border_margin-min-700_compare_001.png) · [overlay](../assets/pr7242_review/wasm_border_margin-min-700_overlay_001.png) · [review](../assets/pr7242_review/wasm_border_margin-min-700_review_001.png) |
+| [margin-min-800](../../../tests/fixtures/pr7200_hancom_recomposed/margin-min-800.hwp) / [PDF](../../../pdf/pr7200/margin-min-800-2020.pdf) p1 | [compare](../assets/pr7242_review/native_border_margin-min-800_compare_001.png) · [overlay](../assets/pr7242_review/native_border_margin-min-800_overlay_001.png) · [review](../assets/pr7242_review/native_border_margin-min-800_review_001.png) | [compare](../assets/pr7242_review/wasm_border_margin-min-800_compare_001.png) · [overlay](../assets/pr7242_review/wasm_border_margin-min-800_overlay_001.png) · [review](../assets/pr7242_review/wasm_border_margin-min-800_review_001.png) |
+| [margin-both-1000](../../../tests/fixtures/pr7200_hancom_recomposed/margin-both-1000.hwp) / [PDF](../../../pdf/pr7200/margin-both-1000-2020.pdf) p1 | [compare](../assets/pr7242_review/native_border_margin-both-1000_compare_001.png) · [overlay](../assets/pr7242_review/native_border_margin-both-1000_overlay_001.png) · [review](../assets/pr7242_review/native_border_margin-both-1000_review_001.png) | [compare](../assets/pr7242_review/wasm_border_margin-both-1000_compare_001.png) · [overlay](../assets/pr7242_review/wasm_border_margin-both-1000_overlay_001.png) · [review](../assets/pr7242_review/wasm_border_margin-both-1000_review_001.png) |
+| [margin-both-2000](../../../tests/fixtures/pr7200_hancom_recomposed/margin-both-2000.hwp) / [PDF](../../../pdf/pr7200/margin-both-2000-2020.pdf) p1 | [compare](../assets/pr7242_review/native_border_margin-both-2000_compare_001.png) · [overlay](../assets/pr7242_review/native_border_margin-both-2000_overlay_001.png) · [review](../assets/pr7242_review/native_border_margin-both-2000_review_001.png) | [compare](../assets/pr7242_review/wasm_border_margin-both-2000_compare_001.png) · [overlay](../assets/pr7242_review/wasm_border_margin-both-2000_overlay_001.png) · [review](../assets/pr7242_review/wasm_border_margin-both-2000_review_001.png) |
+| [host-char-border-off](../../../tests/fixtures/pr7200_hancom_recomposed/host-char-border-off.hwpx) / [PDF](../../../pdf/pr7200/host-char-border-off-2020.pdf) p1 | [compare](../assets/pr7242_review/native_border_host-char-border-off_compare_001.png) · [overlay](../assets/pr7242_review/native_border_host-char-border-off_overlay_001.png) · [review](../assets/pr7242_review/native_border_host-char-border-off_review_001.png) | [compare](../assets/pr7242_review/wasm_border_host-char-border-off_compare_001.png) · [overlay](../assets/pr7242_review/wasm_border_host-char-border-off_overlay_001.png) · [review](../assets/pr7242_review/wasm_border_host-char-border-off_review_001.png) |
+
+직접 판독 결과: 공개 tail의 8개 셀 내용, 표 외곽, 표 줄 두 공백까지의 글자 테두리,
+연속 문단 외곽선과 Footer가 유지된다. 이번에 누락·분리됐던 두 테두리를 복구했다.
+Footer baseline은 354.213px(PDF 354.489px), 표 하단은 312.160px(PDF 약 312.417px),
+표 글자 테두리 하단은 331.040px(PDF 331.133px)다. 공백 58자의 폭은
+386.667px(PDF 장식 폭 387.360px)으로 본문 폭 384px에 잘리지 않는다.
+얇은 선의 진하기·글리프·부분적인 subpixel 차이는 남고 전체 화소 일치를 주장하지 않는다.
+
+6개 #7200 대조군에서는 표 장식 여백과 장식 끔의 적용 경계를 함께 확인했다.
+`host-char-border-off`의 기존 글줄/표 하단 위치 차이는 남아 있으며, 전체 PDF 일치 대조군으로
+표현하지 않는다. 실제 문서 156513948 20쪽은 표 이후 주석이 겹치지 않고 유지되지만
+기존 글꼴·셀 안 숫자 위치·테두리·쪽 번호 차이가 남는다. 자동 ink match는 승인 기준이 아니다.
+이번 #7242 테두리 결함의 해결과 이들 문서의 전체 fidelity 완료를 구분한다.
+#157은 밑줄 끝점 747px로 기존 golden을 보존했고, Native/WASM에서 주주총회 참석장·위임장의
+내용과 표·밑줄 배치를 확인했다. 기존 글꼴·일부 표 위치 차이는 남는다. #157 외 8페이지는
+추가 문단 끝 보정 전후의 재캡처 review PNG가 화소 기준으로 동일하다.
+최종 PNG 54개는 개체 자리표시자 fallback 보완 뒤의 binary/package로도 전부 재생성했다.
+저장 줄을 가진 위 9페이지는 직전 판독 이미지와 화소가 같으며, 공개 tail의 최종 Native overlay와
+fresh WASM review도 다시 직접 확인했다. 저장 줄 없는 경계는 정식 회귀 검사로 별도 확인했다.
+
+**최종 판정: #7242 검토 승인.** 정상 공개 입력의 표·Footer 위치와 글자/문단 테두리 누락·잘림을
+해소했고, 변경 전 실패·변경 후 통과 및 정상 대조군을 확인했다. 최종 소스의 전체 회귀,
+Native Skia, lint와 fresh WASM 시각 증거까지 완료했다. 남은 글꼴·래스터·다른 기존 문서의
+세부 위치 차이는 위에 명시했다. 임의의 잘못된 저장 정보 자동 복구나 통합 PR 전체 승인으로
+범위를 확대하지 않는다. 이번 회차는 로컬 메인터너 보정이며 원격 push·comment·merge 결과가 아니다.
 
 ## 2026-09-18 메인터너 보정 — 공개 샘플 자체의 정상화
 
@@ -126,7 +291,7 @@ PDF 좌표 검사가 표 실제 외곽·후속 글줄을 입증한다. 수동 �
 
 ## Merge 후 contributor PR comment 계획
 
-2026-09-18 표의 `fixed_` compare·overlay·review 12개를 최종 증거로 사용한다. 이전 실패 PNG는 보정 전 설명에만 연결한다. 통합 PR의 최종 head CI와 merge가 끝나면 실제 merge SHA·CI URL, 원 기여와 메인터너 보정, 검증 범위·남은 차이를 한국어로 설명하고 감사한다. [Visual Sweep 정본](../../../mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 최종 Native/fresh WASM compare·standalone overlay·review PNG를 merge SHA raw URL로 본문에 표시한다. 비공개 검증 자료를 공개 자료로 바꾸어 쓰지 않는다. UTF-8 본문 파일과 `--body-file`로 게시하고 원문과 이미지 URL을 다시 확인한다. 관련 공개 issue는 없어 임의 종료하지 않는다.
+최상단 후속 renderer 보정 표의 `border_` compare·overlay·review 54개를 최종 증거로 사용한다. `fixed_` 12개는 입력 정상화 단계의 이전 증거다. 이전 실패 PNG는 보정 전 설명에만 연결한다. 통합 PR의 최종 head CI와 merge가 끝나면 실제 merge SHA·CI URL, 원 기여와 메인터너 보정, 검증 범위·남은 차이를 한국어로 설명하고 감사한다. [Visual Sweep 정본](../../../mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 최종 Native/fresh WASM compare·standalone overlay·review PNG를 merge SHA raw URL로 본문에 표시한다. 비공개 검증 자료를 공개 자료로 바꾸어 쓰지 않는다. UTF-8 본문 파일과 `--body-file`로 게시하고 원문과 이미지 URL을 다시 확인한다. 관련 공개 issue는 없어 임의 종료하지 않는다.
 
 ## 최종 통합 후보와 시각 증거
 

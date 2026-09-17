@@ -6587,7 +6587,10 @@ impl LayoutEngine {
                     } else {
                         last_sig.is_some() && last_sig == cur_sig
                     };
-                    if same_visual && connects(last.10) && (y_start - last.4) < 30.0 {
+                    if same_visual
+                        && (last.10 == para_idx || connects(last.10))
+                        && (y_start - last.4) < 30.0
+                    {
                         last.4 = y_end;
                         last.6 = bottom_inset;
                         // 그룹의 partial_end 는 마지막 range 의 값으로 갱신.

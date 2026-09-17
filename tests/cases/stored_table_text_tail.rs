@@ -363,3 +363,219 @@ fn hancom_saved_tail_preserves_pdf_baseline_after_the_table() {
     );
     assert!(footer.y > table.y + table.height);
 }
+
+#[test]
+fn hancom_saved_object_row_keeps_its_character_border() {
+    let mut core = DocumentCore::from_bytes(FIXTURE).expect("Hancom saved fixture");
+    let tree = core.build_page_render_tree(0).expect("render");
+    let mut nodes = Vec::new();
+    collect(&tree.root, &mut nodes);
+    let table = nodes
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::Table { .. }))
+        .unwrap();
+    // Hancom PDF stroke center: x=36..334.56pt, bottom=248.35pt.
+    // The row contains the table and two spaces, not the later Footer.
+    // One pixel covers the two 0.32px decoration edges and PDF quantization.
+    assert!(
+        table
+            .children
+            .iter()
+            .any(|n| matches!(n.node_type, RenderNodeType::Line(_))
+                && (n.bbox.y - 248.35 * 4.0 / 3.0).abs() < 1.0
+                && (n.bbox.width - (334.56 - 36.0) * 4.0 / 3.0).abs() < 1.0),
+        "missing object-row character border with its two trailing spaces"
+    );
+}
+
+fn saved_fixture_nodes() -> Vec<RenderNode> {
+    let mut core = DocumentCore::from_bytes(FIXTURE).unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut nodes = Vec::new();
+    collect(&tree.root, &mut nodes);
+    nodes
+}
+
+#[test]
+fn empty_saved_paragraph_keeps_its_physical_border() {
+    let nodes = saved_fixture_nodes();
+    // The empty section paragraph still owns a full physical line and border.
+    assert!(
+        nodes
+            .iter()
+            .any(|n| matches!(n.node_type, RenderNodeType::Rectangle(_))
+                && (n.bbox.x - 48.0).abs() < 0.5
+                && (n.bbox.width - 384.0).abs() < 0.5
+                && (n.bbox.y - 104.619).abs() < 0.5
+                && (n.bbox.height - 22.556).abs() < 0.5),
+        "empty leading paragraph border must follow its fallback line height"
+    );
+}
+
+#[test]
+fn one_paragraph_keeps_one_border_across_table_and_text_items() {
+    let nodes = saved_fixture_nodes();
+    // One paragraph split into text/table/text page items remains one outline,
+    // even with border_connect=false (that flag connects different paragraphs).
+    assert!(
+        nodes
+            .iter()
+            .any(|n| matches!(n.node_type, RenderNodeType::Rectangle(_))
+                && (n.bbox.x - 48.0).abs() < 0.5
+                && (n.bbox.width - 384.0).abs() < 0.5
+                && (n.bbox.y - 127.175).abs() < 0.5
+                && (n.bbox.y + n.bbox.height - 365.687).abs() < 0.5),
+        "same-paragraph fragments must keep one paragraph outline"
+    );
+}
+
+#[test]
+fn object_row_border_does_not_take_ownership_of_visible_text_on_the_same_row() {
+    let mut core = DocumentCore::from_bytes(FIXTURE).unwrap();
+    let mut doc = core.document().clone();
+    let host = &mut doc.sections[0].paragraphs[1];
+    let table_index = host
+        .controls
+        .iter()
+        .position(|c| matches!(c, rhwp::model::control::Control::Table(_)))
+        .unwrap();
+    let index = host.control_text_positions()[table_index];
+    let mut chars: Vec<_> = host.text.chars().collect();
+    assert_eq!(chars[index], ' ', "first space beside the object");
+    chars[index] = 'A';
+    host.text = chars.into_iter().collect();
+    core.set_document(doc);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut nodes = Vec::new();
+    collect(&tree.root, &mut nodes);
+    let table = nodes
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::Table { .. }))
+        .unwrap();
+    assert!(
+        !table
+            .children
+            .iter()
+            .any(|n| matches!(n.node_type, RenderNodeType::Line(_))
+                && n.bbox.width > table.bbox.width + 1.0
+                && n.bbox.y > table.bbox.y + table.bbox.height + 1.0),
+        "mixed text/object row must not receive a second object-only character border"
+    );
+}
+
+#[test]
+fn unbordered_trailing_space_does_not_erase_the_object_border() {
+    let mut core = DocumentCore::from_bytes(FIXTURE).unwrap();
+    let mut doc = core.document().clone();
+    let mut plain = doc.doc_info.char_shapes[0].clone();
+    plain.border_fill_id = 0;
+    let id = doc.doc_info.char_shapes.len() as u32;
+    doc.doc_info.char_shapes.push(plain);
+    // Two spaces follow the table's raw [15,23) control slot. Changing their
+    // style must stop decoration extension, not steal the table's own style.
+    doc.sections[0].paragraphs[1]
+        .char_shapes
+        .push(rhwp::model::paragraph::CharShapeRef {
+            start_pos: 23,
+            char_shape_id: id,
+        });
+    core.set_document(doc);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut nodes = Vec::new();
+    collect(&tree.root, &mut nodes);
+    let table = nodes
+        .iter()
+        .find(|n| matches!(n.node_type, RenderNodeType::Table { .. }))
+        .unwrap();
+    let border = table
+        .children
+        .iter()
+        .find(|n| {
+            matches!(n.node_type, RenderNodeType::Line(_))
+                && n.bbox.width > 100.0
+                && n.bbox.y > table.bbox.y + table.bbox.height + 1.0
+        })
+        .expect("the table keeps its own character decoration");
+    assert!(
+        (border.bbox.width - table.bbox.width).abs() < 0.5,
+        "unbordered spaces must not extend the table's border: {:?}",
+        border.bbox
+    );
+}
+
+#[test]
+fn saved_whitespace_row_keeps_its_character_border_width() {
+    let nodes = saved_fixture_nodes();
+    let spaces = nodes
+        .iter()
+        .find(|n| {
+            matches!(&n.node_type,
+        RenderNodeType::TextRun(run) if run.cell_context.is_none() && run.text == " ".repeat(58))
+        })
+        .expect("saved 58-space row between table and Footer");
+    // Hancom character border: x=36..326.52pt. Do not squeeze the stored
+    // whitespace row to the 288pt paragraph frame merely to hide overflow.
+    assert!(
+        (spaces.bbox.width - (326.52 - 36.0) * 4.0 / 3.0).abs() < 1.0,
+        "whitespace decoration width {:?}",
+        spaces.bbox
+    );
+}
+
+#[test]
+fn whitespace_only_paragraph_keeps_its_pdf_underline_extent() {
+    // Unlike the soft-wrapped separator row in FIXTURE, these spaces are a
+    // complete paragraph used as a rule. Its line-fit contract still applies.
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(include_bytes!(
+        "../../samples/hwpx/issue_157.hwpx"
+    ))
+    .expect("public whitespace underline fixture");
+    let svg = doc.render_page_svg_native(1).expect("second page");
+    let svg = roxmltree::Document::parse(&svg).expect("SVG XML");
+    let x2 = svg
+        .descendants()
+        .filter(|n| n.has_tag_name("line"))
+        .find_map(|n| {
+            let y1 = n.attribute("y1")?.parse::<f64>().ok()?;
+            let x2 = n.attribute("x2")?.parse::<f64>().ok()?;
+            ((y1 - 411.07).abs() < 1.0 && x2 > 700.0).then_some(x2)
+        })
+        .expect("whitespace paragraph underline");
+    // pdf/hwpx/issue_157-2022.pdf p2: x2=559.859008789pt.
+    // One pixel covers the integer endpoint emitted by the underline painter.
+    assert!(
+        (x2 - 559.859008789 * 4.0 / 3.0).abs() < 1.0,
+        "paragraph-end spaces keep their fitted underline: {x2}"
+    );
+}
+
+#[test]
+fn object_only_placeholder_keeps_border_without_stored_rows() {
+    for text in ["", "\u{fffc}"] {
+        let mut core = DocumentCore::from_bytes(FIXTURE).unwrap();
+        let mut doc = core.document().clone();
+        let host = &mut doc.sections[0].paragraphs[1];
+        host.text = text.into();
+        host.char_offsets.clear();
+        host.line_segs.clear();
+        core.set_document(doc);
+        let tree = core.build_page_render_tree(0).unwrap();
+        let mut nodes = Vec::new();
+        collect(&tree.root, &mut nodes);
+        let table = nodes
+            .iter()
+            .find(|n| matches!(n.node_type, RenderNodeType::Table { .. }))
+            .unwrap();
+        // Both encodings denote an object-only paragraph, not visible text.
+        // The existing character decoration extends past the physical table.
+        assert!(
+            table
+                .children
+                .iter()
+                .any(|n| matches!(n.node_type, RenderNodeType::Line(_))
+                    && n.bbox.width >= table.bbox.width
+                    && n.bbox.y > table.bbox.y + table.bbox.height + 1.0),
+            "object-only carrier {text:?} must retain its character border"
+        );
+    }
+}

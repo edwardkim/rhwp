@@ -38,6 +38,14 @@ const ROW_CUT_CAPACITY_FP_EPSILON_PX: f64 = 0.1;
 /// 한 쪽에 들어가므로 [#6114] TAC 그림 높이 회계를 적용하지 않는다.
 const PAGE_SCALE_CELL_HEIGHT_PX: f64 = 800.0;
 
+/// Paint-only extent of the character border owned by an object row.
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct TableCharBorder {
+    fill_id: u16,
+    before: f64,
+    after: f64,
+}
+
 /// [#2424 프로파일] 분할 표 컷 프리미티브 실측 카운터 — `RHWP_2424_PROFILE` 전용, 동작 불변.
 /// 프로세스 누적이며 `RHWP_2424_STEP_PROFILE` 출력(typeset.rs)이 스냅샷을 읽는다.
 pub(crate) static ISSUE2424_ADVANCE_ROW_CUT_CALLS: std::sync::atomic::AtomicU64 =
@@ -2408,21 +2416,18 @@ impl LayoutEngine {
             .fold(0.0f64, f64::max)
     }
 
-    /// A standalone object run has one border owner. Mixed text/object runs
-    /// require joining at the line/run level and are not decorated a second time.
+    /// A stored object row owns its character border and adjacent spaces.
+    /// Visible text on another row is irrelevant; mixed visible text/object
+    /// rows remain with their line owner and are not decorated a second time.
     pub(super) fn standalone_table_char_border_fill(
         para: Option<&Paragraph>,
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
-    ) -> u16 {
+    ) -> TableCharBorder {
         let Some(para) = para else {
-            return 0;
+            return TableCharBorder::default();
         };
         if !table.common.treat_as_char
-            || para
-                .text
-                .chars()
-                .any(|c| c > '\u{001f}' && c != '\u{fffc}' && !c.is_whitespace())
             || para
                 .controls
                 .iter()
@@ -2438,28 +2443,26 @@ impl LayoutEngine {
                 .count()
                 != 1
         {
-            return 0;
+            return TableCharBorder::default();
         }
         let Some(ci) = para
             .controls
             .iter()
             .position(|c| matches!(c, Control::Table(_)))
         else {
-            return 0;
+            return TableCharBorder::default();
         };
-        let char_id = if let Some(raw) = para.empty_control_stream_position(ci) {
+        // The object owns the style at its raw control slot. The next visible
+        // character can start a different run after the eight-unit control.
+        let char_id = para.control_utf16_positions().get(ci).and_then(|raw| {
             para.char_shapes
                 .iter()
                 .rev()
-                .find(|s| s.start_pos <= raw)
+                .find(|shape| shape.start_pos <= *raw)
                 .or_else(|| para.char_shapes.first())
-                .map(|s| s.char_shape_id)
-        } else {
-            para.control_text_positions()
-                .get(ci)
-                .and_then(|&p| para.char_shape_id_at(p))
-        };
-        char_id
+                .map(|shape| shape.char_shape_id)
+        });
+        let fill_id = char_id
             .and_then(|id| styles.char_styles.get(id as usize))
             .filter(|style| {
                 style.border_fill_id > 0
@@ -2472,7 +2475,69 @@ impl LayoutEngine {
                             })
                         })
             })
-            .map_or(0, |style| style.border_fill_id)
+            .map_or(0, |style| style.border_fill_id);
+        if fill_id == 0 {
+            return TableCharBorder::default();
+        }
+        let mut border = TableCharBorder {
+            fill_id,
+            ..Default::default()
+        };
+        // The stored/composed row owns the decoration. Text on another row of
+        // the same paragraph must not suppress the table's character border.
+        let composed = crate::renderer::composer::compose_paragraph_in_context(para, styles);
+        let Some(line) =
+            super::control_line_seg_index(para, ci).and_then(|line| composed.lines.get(line))
+        else {
+            // No saved row: preserve the standalone-object contract. A raw
+            // control or U+FFFC is an object marker, not visible paragraph text.
+            return if para
+                .text
+                .chars()
+                .all(|ch| ch <= '\u{001f}' || ch == '\u{fffc}' || ch.is_whitespace())
+            {
+                border
+            } else {
+                TableCharBorder::default()
+            };
+        };
+        if line
+            .runs
+            .iter()
+            .flat_map(|run| run.text.chars())
+            .any(|ch| ch > '\u{001f}' && ch != '\u{fffc}' && !ch.is_whitespace())
+        {
+            // Mixed visible text/object rows are painted by their line owner.
+            return TableCharBorder::default();
+        }
+        let position = para.control_text_positions()[ci];
+        let mut index = line.char_start;
+        let mut before = Vec::new();
+        let mut after = Vec::new();
+        for run in &line.runs {
+            let matching_border = styles
+                .char_styles
+                .get(run.char_style_id as usize)
+                .is_some_and(|style| style.border_fill_id == fill_id);
+            for ch in run.text.chars() {
+                if ch != '\u{fffc}' && ch > '\u{001f}' {
+                    let width = (matching_border && ch == ' ').then(|| {
+                        super::estimate_text_width_unrounded(" ", &run.text_style(styles))
+                    });
+                    if index < position {
+                        before.push(width);
+                    } else {
+                        after.push(width);
+                    }
+                }
+                index += 1;
+            }
+        }
+        // A differently decorated space breaks the run; do not bridge it to
+        // a later space just because that later run has the same border ID.
+        border.before = before.into_iter().rev().map_while(|width| width).sum();
+        border.after = after.into_iter().map_while(|width| width).sum();
+        border
     }
 
     fn paint_standalone_table_char_border(
@@ -2481,10 +2546,10 @@ impl LayoutEngine {
         node: &mut RenderNode,
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
-        border_fill_id: u16,
+        border: TableCharBorder,
         bounds: BoundingBox,
     ) {
-        let Some(style) = styles.border_styles.get(usize::from(border_fill_id) - 1) else {
+        let Some(style) = styles.border_styles.get(usize::from(border.fill_id) - 1) else {
             return;
         };
         // Hancom 2020 independent PDFs: vertical character-decoration margins
@@ -2501,8 +2566,8 @@ impl LayoutEngine {
                 top.max(MIN_DECORATION_MARGIN_HU) + bottom.max(MIN_DECORATION_MARGIN_HU),
                 self.dpi,
             );
-        let x = bounds.x;
-        let right = x + bounds.width;
+        let x = bounds.x - border.before;
+        let right = bounds.x + bounds.width + border.after;
         for (index, x1, y1, x2, y2) in [
             (0, x, y, x, y + height),
             (1, right, y, right, y + height),
@@ -2548,7 +2613,7 @@ impl LayoutEngine {
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
         resolved_table_top: Option<f64>,
-        host_char_border_fill_id: u16,
+        host_char_border_fill_id: TableCharBorder,
     ) -> f64 {
         self.layout_table_with_wrapper_margin(
             tree,
@@ -2607,7 +2672,7 @@ impl LayoutEngine {
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
         resolved_table_top: Option<f64>,
-        host_char_border_fill_id: u16,
+        host_char_border_fill_id: TableCharBorder,
         wrapper_margin_already_applied: bool,
     ) -> f64 {
         // [#6929] 진입 시점의 단 상태 — 이후 이 함수가 자식을 붙이므로 먼저 찍어 둔다.
@@ -2625,7 +2690,7 @@ impl LayoutEngine {
         // controls.len() == 1 가드는 두지 않는다 — exam_social.hwp pi=15 (PR #681)
         // 처럼 정렬 마커 등 다른 control 이 동거하는 케이스에서 unwrap + 외곽선 분기를
         // 모두 보존해야 하므로 find_map 으로 첫 nested table 만 추출한다.
-        if host_char_border_fill_id == 0
+        if host_char_border_fill_id.fill_id == 0
             && table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1
@@ -2843,7 +2908,7 @@ impl LayoutEngine {
                             clamp_header_negative_para_offset,
                             false,
                             None,
-                            0,
+                            TableCharBorder::default(),
                             true,
                         );
 
@@ -3514,7 +3579,7 @@ impl LayoutEngine {
 
         // Object character decoration uses the final physical table box. Its
         // minimum decoration margins must never feed row height or flow advance.
-        if nested_split.is_none() && host_char_border_fill_id > 0 {
+        if nested_split.is_none() && host_char_border_fill_id.fill_id > 0 {
             self.paint_standalone_table_char_border(
                 tree,
                 &mut table_node,

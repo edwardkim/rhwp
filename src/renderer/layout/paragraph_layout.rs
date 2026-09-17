@@ -5681,6 +5681,18 @@ impl LayoutEngine {
                 // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
                 // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
                 ((available_width - total_text_width).max(0.0), 0.0, 0.0)
+            } else if runs_all_whitespace
+                && !is_last_line_of_para
+                && !has_forced_break
+                && line_tac_offsets_for_width.is_empty()
+                && !needs_justify
+                && !needs_distribute
+            {
+                // Soft wrapping can consume a row of separator spaces beyond
+                // the frame. Keep their decoration advances instead of fitting
+                // them like glyphs. Paragraph-end/forced-break spaces remain
+                // authored content and retain the normal line-fit contract.
+                (0.0, 0.0, 0.0)
             } else {
                 compute_line_extra_spacing(
                     comp_line,
