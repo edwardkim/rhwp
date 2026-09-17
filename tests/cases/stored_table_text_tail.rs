@@ -31,33 +31,72 @@ fn fixture_bytes(profile: &str, count: usize, gap: i32, with_shape: bool) -> Vec
             for range in removed.into_iter().rev() {
                 xml.replace_range(range, "");
             }
-            let footer_position = "vertpos=\"7000\"";
-            assert_eq!(
-                xml.matches(footer_position).count(),
-                1,
-                "saved Footer position"
+            // 공개 샘플은 한컴 정상 저장본이다. 아래부터는 PDF 기준 입력이 아니라
+            // 작은 선언 표가 자라는 경우의 저장 흐름 계약을 메모리에서 만든다.
+            // 실제 파일의 4줄/셀 줄 메트릭을 수동 정보로 덮어쓴 사실을 숨기지 않는다.
+            let parsed = roxmltree::Document::parse(&xml).expect("fixture XML");
+            let ranges: Vec<_> = parsed
+                .descendants()
+                .filter(|n| n.has_tag_name("linesegarray"))
+                .map(|n| n.range())
+                .collect();
+            for range in ranges.into_iter().rev() {
+                xml.replace_range(range, "");
+            }
+            assert_eq!(xml.matches("height=\"12872\"").count(), 1);
+            xml = xml.replacen("height=\"12872\"", "height=\"6000\"", 1);
+            let saved_tail = format!("<hp:t>{}Footer</hp:t>", " ".repeat(70));
+            let split_tail = format!(
+                "<hp:t>{}</hp:t></hp:run><hp:run charPrIDRef=\"0\"><hp:t>Footer</hp:t>",
+                " ".repeat(2)
             );
-            xml = xml.replacen(footer_position, &format!("vertpos=\"{}\"", 7000 + gap), 1);
+            assert_eq!(xml.matches(&saved_tail).count(), 1);
+            xml = xml.replacen(&saved_tail, &split_tail, 1);
+            let parsed = roxmltree::Document::parse(&xml).expect("fixture XML");
+            let host_end = parsed
+                .root_element()
+                .children()
+                .filter(|n| n.has_tag_name("p"))
+                .nth(1)
+                .expect("host")
+                .range()
+                .end
+                - "</hp:p>".len();
+            let rows = format!(
+                r#"<hp:linesegarray><hp:lineseg textpos="0" vertpos="0" vertsize="1000" textheight="1000" baseline="850" spacing="0" horzpos="0" horzsize="28800" flags="393216"/><hp:lineseg textpos="15" vertpos="1000" vertsize="6000" textheight="6000" baseline="5100" spacing="0" horzpos="0" horzsize="28800" flags="393216"/><hp:lineseg textpos="25" vertpos="{}" vertsize="1000" textheight="1000" baseline="850" spacing="0" horzpos="0" horzsize="28800" flags="393216"/></hp:linesegarray>"#,
+                7000 + gap
+            );
+            xml.insert_str(host_end, &rows);
+            let parsed = roxmltree::Document::parse(&xml).expect("fixture XML");
+            let first_end = parsed
+                .root_element()
+                .children()
+                .find(|n| n.has_tag_name("p"))
+                .expect("section paragraph")
+                .range()
+                .end
+                - "</hp:p>".len();
+            xml.insert_str(first_end, r#"<hp:linesegarray><hp:lineseg textpos="0" vertpos="0" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="42520" flags="393216"/></hp:linesegarray>"#);
             if with_shape {
                 // The rectangle is another body item owned by the table's paragraph.
                 // Keep its eight-unit control slot in the saved text-position axis.
                 assert_eq!(xml.matches("textpos=\"25\"").count(), 1);
                 xml = xml.replacen("textpos=\"25\"", "textpos=\"33\"", 1);
                 xml = xml.replacen(
-                    "</ns1:tbl>",
-                    r#"</ns1:tbl><ns1:rect id="101" zOrder="1" numberingType="PICTURE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" ratio="0">
-<ns1:offset x="0" y="0"/><ns1:orgSz width="6000" height="1500"/><ns1:curSz width="6000" height="1500"/>
-<ns1:rotationInfo angle="0" centerX="3000" centerY="750" rotateimage="1"/>
-<ns1:sz width="6000" widthRelTo="ABSOLUTE" height="1500" heightRelTo="ABSOLUTE" protect="0"/>
-<ns1:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="18000"/>
-<ns1:outMargin left="0" right="0" top="0" bottom="0"/>
-<ns1:pt0 x="0" y="0"/><ns1:pt1 x="6000" y="0"/><ns1:pt2 x="6000" y="1500"/><ns1:pt3 x="0" y="1500"/>
-</ns1:rect>"#,
+                    "</hp:tbl>",
+                    r#"</hp:tbl><hp:rect id="101" zOrder="1" numberingType="PICTURE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" ratio="0">
+<hp:offset x="0" y="0"/><hp:orgSz width="6000" height="1500"/><hp:curSz width="6000" height="1500"/>
+<hp:rotationInfo angle="0" centerX="3000" centerY="750" rotateimage="1"/>
+<hp:sz width="6000" widthRelTo="ABSOLUTE" height="1500" heightRelTo="ABSOLUTE" protect="0"/>
+<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="18000"/>
+<hp:outMargin left="0" right="0" top="0" bottom="0"/>
+<hp:pt0 x="0" y="0"/><hp:pt1 x="6000" y="0"/><hp:pt2 x="6000" y="1500"/><hp:pt3 x="0" y="1500"/>
+</hp:rect>"#,
                     1,
                 );
                 xml = xml.replacen(
-                    "</ns0:sec>",
-                    r#"<ns1:p id="0" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><ns1:run charPrIDRef="0"><ns1:t>Following</ns1:t></ns1:run></ns1:p></ns0:sec>"#,
+                    "</hs:sec>",
+                    r#"<hp:p id="0" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="0"><hp:t>Following</hp:t></hp:run></hp:p></hs:sec>"#,
                     1,
                 );
             }
@@ -68,6 +107,15 @@ fn fixture_bytes(profile: &str, count: usize, gap: i32, with_shape: bool) -> Vec
         } else {
             output.raw_copy_file(entry).expect("copy unchanged entry");
         }
+    }
+    if profile == "native" {
+        output
+            .start_file(
+                rhwp::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
+                zip::write::SimpleFileOptions::default(),
+            )
+            .expect("synthetic native profile marker");
+        output.write_all(b"1").expect("marker contents");
     }
     output.finish().expect("fixture ZIP finish").into_inner()
 }
@@ -210,6 +258,10 @@ fn stored_text_tail_follows_the_measured_table_and_preserves_the_line_gap() {
                 assert_eq!(tables.len(), 1, "{name}");
                 let table = tables[0].bbox;
                 let footer = text(&nodes, "Footer");
+                // 15 leading spaces + the eight-unit table + two spaces = textpos 25.
+                // Footer itself starts the saved tail row; no fourth line is needed.
+                assert!((footer.x - table.x).abs() < 0.5, "{name}: {footer:?}");
+                assert!(footer.x + footer.width <= table.x + table.width + 0.5);
                 for index in 0..count {
                     // Native shaping may split one cell paragraph into several runs.
                     // Use its document ownership, not a particular run boundary.
@@ -269,8 +321,7 @@ fn stored_text_tail_follows_the_measured_table_and_preserves_the_line_gap() {
 /// 수동 줄 정보의 기하 검사와 별도로 한컴 정상 저장본의 PDF 좌표를 검사한다.
 #[test]
 fn hancom_saved_tail_preserves_pdf_baseline_after_the_table() {
-    let bytes = include_bytes!("../../samples/stored-table-text-tail/hancom-resaved.hwpx");
-    let mut core = DocumentCore::from_bytes(bytes).expect("Hancom saved control");
+    let mut core = DocumentCore::from_bytes(FIXTURE).expect("Hancom saved public fixture");
     let host = &core.document().sections[0].paragraphs[1];
     assert_eq!(host.line_segs.len(), 4, "Hancom's actual text partition");
     assert_eq!(host.line_segs[3].text_start, 83);

@@ -2,12 +2,104 @@
 kind: snapshot
 status: historical
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-17
+last_verified: 2026-09-18
 ---
 
 # PR #7242 검토
 
-**머지 보류 — 공개 입력의 PDF 시각 증거 미충족.** #7239·#7240 통합 후보에 누적 적용했다.
+**검토 승인 — 공개 입력 정상화와 표 뒤 흐름 검증의 보류 사유 해소. 최종 통합 head CI는 별도 확인.** #7239·#7240 통합 후보에 누적 적용했다.
+
+최신 판정은 아래 2026-09-18 회차를 따른다. 그 뒤의 기존 기록·실패 PNG는 수정 전 이력이며 삭제하지 않는다.
+
+## 2026-09-18 메인터너 보정 — 공개 샘플 자체의 정상화
+
+### 원인과 수정
+
+수동 합성 원본의 누락된 호스트 줄과 셀 메트릭이 PDF와 큰 위치 차이를 만들었다.
+유효하지 않은 저장 정보를 수용하도록 renderer 조건을 완화하지 않는다. 독립적으로
+재저장·재변환까지 완료한 한컴 파일을 **기존 `native-8-0.hwpx` 경로에 적용**했다.
+정상 대조군만 추가한 이전 회차와 달리, 이제 제출·검증 대상 파일 자체가 정상 저장본이다.
+중복 `hancom-resaved.hwpx`는 제거했다. 이름만 바꾼 새 파일이나 중복 PDF는 추가하지 않았다.
+
+- 교체 전 SHA256: `8f569cf88da9b719db5d593d8c5e7afcdb38140f28957a754b1e5939743530c5`.
+- 교체 후 SHA256: `3aa0379ab1b4d158800d33c73ae26eed909e5f08e3614dca228044780c8c5e64`.
+- 이전 원본: commit `086078148db2a9f66b21c98a2f3d356c40365fec`의 동일 경로.
+  원 PR head `03ba57cb804610e899a3e6e1ce2cb3cfcb21df6e`에도 바이트가 동일한 원본이 남아 있다.
+  아래 `native_tail_*`/`wasm_tail_*` 실패 증거도 유지한다.
+- 한컴 재저장 job 및 원본/정상본의 동일 PDF raster 확인은 아래 이전 회차에 기록되어 있다.
+  PDF는 `pdf/pr7242/native-8-0-2020.pdf`를 재사용했다.
+- 경계 테스트는 정상 파일에서 수동 LineSeg·작은 선언 높이를 **메모리 안에서 생성**한다.
+  native/pure, 2/8문단, gap, 문단 뒤 간격, 도형 공존의 기존 assertion을 유지했다.
+  공개 샘플을 직접 읽는 PDF 좌표 검사는 그대로 유지하며 경로만 통일했다.
+- 메모리 경계 입력에서만 표 뒤 공백을 70→2개로 줄여, 15자+표 제어 8단위+2자 뒤의
+  `textpos=25`가 Footer 자체의 시작이 되도록 했다. 공개 파일의 70개 공백·4줄은 보존한다.
+  가로 시작점 assertion 추가 후 보정 전 **1 fail / 3 pass**(x399), 보정 후 **4 pass**다.
+  이는 테스트 입력 구성의 수정 전후 증거이며 renderer 결함을 고쳤다는 증거가 아니다.
+- `oracle_page_count_baseline.tsv`에 기존 공개 경로의 PDF 1쪽/rhwp 1쪽 한 행을 추가했다.
+  새 로그성 TSV가 아니라 CI가 소비하는 기존 페이지 수 회귀 원장이다. 허용치 완화는 없다.
+
+이는 입력과 검증 설계의 메인터너 보정이다. renderer 소스 변경은 없다. 교체 전의 잘못된
+저장 정보를 자동 재조판하는 기능까지 고쳤다고 주장하지 않는다. 진단 중 한컴 줄 정보와
+낮춘 선언 높이를 혼합한 파일도 만들었으나, 그 합성 입력의 8.43px 높이 차이를 근거로
+기존 문서에 영향을 주는 마지막 줄간격 정책을 바꾸지 않았다. 해당 진단 파일은 커밋하지 않는다.
+
+### 독립 기대값과 실제 결과
+
+| 항목 | 교체 전 공개 입력 | 정상 저장본의 base → 통합 코드 | 한컴 PDF |
+| --- | --- | --- | --- |
+| 호스트 줄 | 수동 3줄, textpos 83 누락 | 실제 4줄, 마지막 textpos 83 | Footer가 네 번째 글줄 |
+| Footer | x399, y310.0 text bbox | 기준선 367.92 → 354.2133px | 기준선 354.4891px |
+| 표 실제 외곽 | 높이 170.7px, 위치 불일치 | bbox y140.5333 / h171.6267, base와 동일 | 외곽 y140.77..312.42px |
+| 페이지·내용 | 1쪽 | 1쪽, Cell 1..8 및 Footer 유지 | 1쪽 |
+
+PDF 좌표 검사는 이전 회차에 base `layout.rs`에서 의도한 기준선 assertion으로 FAIL,
+통합 코드에서 PASS를 확인했다. 이번 교체 파일은 그때 검증한 정상본과 바이트가 동일하며
+동일 assertion을 기존 샘플 경로에 적용했다. 이번에도 base/통합 binary의 같은 입력을
+대조해 표 bbox는 동일하고 Footer text bbox가 y356.6→342.9px로 이동함을 재확인했다.
+
+문단/문자 테두리의 일부 길이·위치와 글꼴 raster 차이는 남는다. 표 자체와 문단 테두리를
+구분해 판독했으며 전체 화소 일치로 보고하지 않는다. #7242의 표 뒤 글줄 흐름 계약과
+공개 입력의 정상성에 대한 증거다. 비공개 원 실패 문서까지 검증했다는 뜻은 아니다.
+
+### 이번 회차 검증과 증적
+
+제품 코드: `086078148db2a9f66b21c98a2f3d356c40365fec`와 동일.
+변경 대상은 공개 입력·테스트 helper·문서·PNG이며 renderer diff는 없다.
+Native SHA256 `4467723c7a604d708a4aefb6e7cefdaacae2ca5391c46555a32ce6a1c78a0ac0`,
+fresh WASM SHA256 `8dc9187e1a4b884f127d11e0c4c496cacbcbec57ebeac521980247a095be9b3b`.
+이 제품 소스로 이전 회차에 새로 빌드한 산출물을 사용했고 이번 입력으로 **캡처는 다시 실행**했다.
+이번 회차에 WASM 빌드를 또 실행했다고 기록하지 않는다.
+
+명령: `venv/bin/python scripts/visual_sweep.py --file-target tail samples/stored-table-text-tail/native-8-0.hwpx pdf/pr7242/native-8-0-2020.pdf --rhwp-bin <scratch>/rhwp-isolation-final26 --pages 1 --dpi 96 --out <scratch>/...`.
+WASM은 같은 명령에 `--wasm-pkg <scratch>/wasm-recovery-26`을 추가했다.
+실물 대조는 `samples/issue6044/156513948.hwpx`, `pdf/pr6940-156513948-source-2020.pdf`, 20쪽이다.
+compare·standalone overlay·review를 직접 확인하고 아래에 보존한다.
+
+| 입력·쪽 | Native | WASM |
+| --- | --- | --- |
+| 정상화한 공개 입력 p1 | [compare](../assets/pr7242_review/native_fixed_tail_compare_001.png) · [overlay](../assets/pr7242_review/native_fixed_tail_overlay_001.png) · [review](../assets/pr7242_review/native_fixed_tail_review_001.png) | [compare](../assets/pr7242_review/wasm_fixed_tail_compare_001.png) · [overlay](../assets/pr7242_review/wasm_fixed_tail_overlay_001.png) · [review](../assets/pr7242_review/wasm_fixed_tail_review_001.png) |
+| 실물 대조 p20 | [compare](../assets/pr7242_review/native_fixed_real_tail_compare_020.png) · [overlay](../assets/pr7242_review/native_fixed_real_tail_overlay_020.png) · [review](../assets/pr7242_review/native_fixed_real_tail_review_020.png) | [compare](../assets/pr7242_review/wasm_fixed_real_tail_compare_020.png) · [overlay](../assets/pr7242_review/wasm_fixed_real_tail_overlay_020.png) · [review](../assets/pr7242_review/wasm_fixed_real_tail_review_020.png) |
+
+- `node scripts/run-rust-test.mjs stored_table_text_tail`: 최종 **4 passed**.
+- fmt, Native Clippy, WASM lib Clippy, workspace build, workspace all-target Clippy 및
+  suite manifest의 고정 base `236a601da` 비교: **모두 통과**.
+- release-test 코퍼스 필터(IR/overflow-cell/off-canvas/text-overlap/oracle/security):
+  **69 passed / 0 failed**, 96.570초(컴파일 제외). 보안 입력 환경변수에 교체한 공개 경로를 명시했다.
+- oracle 원장 새 행을 포함한 재실행: **16 passed**, exit 0. partition 13에 nextest LEAK 표시가
+  1회 있었고 해당 partition만 재실행해 **1 passed / LEAK 없음**, exit 0을 확인했다.
+  프로세스 정리 경고의 원인까지 해결했다고 주장하지 않는다. 공개 파일의 `page_count() == 1`도 위 focused에서 통과했다.
+- 같은 입력의 Native SVG 반복 출력이 바이트 동일했다. Visual Sweep은 Native/WASM 각 2쪽,
+  compare·standalone overlay·review **12 PNG**를 새로 생성했다.
+- clipping 원장의 외부 controlset에는 이 샘플이 없어 해당 게이트의 통과를 주장하지 않는다.
+- 전체 10,013개 및 Native Skia 통과는 제품 코드가 같은 이전 `086078148` 회차의 기록이며,
+  이번에는 변경 범위인 fixture/test helper의 관련 검사와 lint를 실행했다. 전체 회귀를 재실행했다고 쓰지 않는다.
+- 최종 head의 원격 CI는 push/PR 이후 확인할 항목이다. 이 회차에서 원격 push·comment·merge는 하지 않았다.
+
+**판정: #7242 검토 승인.** 제출된 공개 샘플 자체를 정상화했고, 같은 경로를 직접 읽는
+PDF 좌표 검사가 표 실제 외곽·후속 글줄을 입증한다. 수동 계약 입력도 줄 시작점이 맞도록
+보정했다. 이것이 이전의 단순 대조군 추가와 다른 보류 해제 근거다. 임의의 잘못된 입력의
+자동 복구, 전체 화소 일치, 비공개 문서 검증 또는 통합 PR 전체 승인을 뜻하지 않는다.
+원격 최종 CI·다른 통합 PR의 판정은 해당 절차에서 별도로 확인한다.
 
 ## 접수·적용 범위
 
@@ -34,7 +126,7 @@ last_verified: 2026-09-17
 
 ## Merge 후 contributor PR comment 계획
 
-통합 PR의 최종 head CI와 merge가 끝나면 실제 merge SHA·CI URL, 원 기여와 메인터너 보정, 검증 범위·남은 차이를 한국어로 설명하고 감사한다. [Visual Sweep 정본](../../../mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 최종 Native/fresh WASM compare·standalone overlay·review PNG를 merge SHA raw URL로 본문에 표시한다. 비공개 검증 자료를 공개 자료로 바꾸어 쓰지 않는다. UTF-8 본문 파일과 `--body-file`로 게시하고 원문과 이미지 URL을 다시 확인한다. 관련 공개 issue는 없어 임의 종료하지 않는다.
+2026-09-18 표의 `fixed_` compare·overlay·review 12개를 최종 증거로 사용한다. 이전 실패 PNG는 보정 전 설명에만 연결한다. 통합 PR의 최종 head CI와 merge가 끝나면 실제 merge SHA·CI URL, 원 기여와 메인터너 보정, 검증 범위·남은 차이를 한국어로 설명하고 감사한다. [Visual Sweep 정본](../../../mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 최종 Native/fresh WASM compare·standalone overlay·review PNG를 merge SHA raw URL로 본문에 표시한다. 비공개 검증 자료를 공개 자료로 바꾸어 쓰지 않는다. UTF-8 본문 파일과 `--body-file`로 게시하고 원문과 이미지 URL을 다시 확인한다. 관련 공개 issue는 없어 임의 종료하지 않는다.
 
 ## 최종 통합 후보와 시각 증거
 
