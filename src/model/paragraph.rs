@@ -2085,8 +2085,8 @@ impl Paragraph {
         }
         let slot_boundary = |slots_start: u32, slots_end: u32| {
             slots_start > slots_end
-                || (slots_end - slots_start) % CTRL_CHAR_CODE_UNITS != 0
-                || (pos - slots_start) % CTRL_CHAR_CODE_UNITS == 0
+                || !(slots_end - slots_start).is_multiple_of(CTRL_CHAR_CODE_UNITS)
+                || (pos - slots_start).is_multiple_of(CTRL_CHAR_CODE_UNITS)
         };
         if pos < first {
             return slot_boundary(0, first);
