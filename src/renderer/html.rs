@@ -217,13 +217,8 @@ impl HtmlRenderer {
             }
             RenderNodeType::Image(img) => {
                 if let Some(ref data) = img.data {
-                    self.draw_image(
-                        data,
-                        node.bbox.x,
-                        node.bbox.y,
-                        node.bbox.width,
-                        node.bbox.height,
-                    );
+                    let paint = img.paint_bbox(&node.bbox);
+                    self.draw_image(data, paint.x, paint.y, paint.width, paint.height);
                 } else {
                     self.output.push_str(&format!(
                         "<div class=\"hwp-image\" style=\"position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;background:#eee;\"></div>\n",

@@ -1294,6 +1294,8 @@ impl LayoutEngine {
                                     outer_table_control_index: enclosing_ctx
                                         .map(|(_, _, _, table_ci)| table_ci),
                                     cell_context: cell_ctx.clone(),
+                                    content_inset:
+                                        crate::renderer::layout::utils::picture_content_inset(pic),
                                 }),
                                 BoundingBox::new(pic_x, pic_y, fit_w, fit_h),
                             );

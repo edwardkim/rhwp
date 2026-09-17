@@ -1040,7 +1040,8 @@ impl WebCanvasRenderer {
     }
 
     fn render_image(&mut self, bbox: &BoundingBox, img: &ImageNode, restore_transform: bool) {
-        let eff_bbox = img.transform.effective_image_bbox(bbox);
+        // [#7193] 그림은 틀(bbox)에서 안쪽 여백을 뺀 자리에 그린다.
+        let eff_bbox = img.transform.effective_image_bbox(&img.paint_bbox(bbox));
         self.open_shape_transform(&img.transform, &eff_bbox);
         if img.data.is_none() && img.external_path.is_some() {
             self.ctx.set_fill_style_str("#f0f0f0");

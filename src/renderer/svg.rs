@@ -886,7 +886,10 @@ impl SvgRenderer {
             }
             RenderNodeType::Image(img) => {
                 // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                let eff_bbox = img.transform.effective_image_bbox(&node.bbox);
+                // [#7193] 그림은 틀(node.bbox)에서 안쪽 여백을 뺀 자리에 그린다.
+                let eff_bbox = img
+                    .transform
+                    .effective_image_bbox(&img.paint_bbox(&node.bbox));
                 self.open_shape_transform(&img.transform, &eff_bbox);
                 self.render_image_node(img, &eff_bbox);
             }

@@ -1454,6 +1454,12 @@ pub struct ImageNode {
     /// 투영(`CellContext::last_image_indices`)으로 유지(하위호환). 본문 picture 는 `None`.
     #[serde(default)]
     pub cell_context: Option<CellContext>,
+    /// [#7193] 그림 안쪽 여백 — 노드 bbox(개체 틀) 크기에 대한 비율
+    /// `[left, top, right, bottom]`. 틀은 흐름·선택 기준으로 그대로 두고, 그림 자체는
+    /// 이 여백을 뺀 자리에 그린다. 페인터는 [`ImageNode::paint_bbox`] 로 소비한다.
+    /// `None` 이면 틀 전체에 그린다.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_inset: Option<[f64; 4]>,
 }
 
 /// [Task #825] 머리말/꼬리말 안 그림의 outer 위치 + 종류.
@@ -1510,7 +1516,24 @@ impl ImageNode {
             cell_para_index: None,
             outer_table_control_index: None,
             cell_context: None,
+            content_inset: None,
         }
+    }
+
+    /// [#7193] 개체 틀(`frame`) 안에서 그림이 실제로 그려질 사각형.
+    ///
+    /// 한/글은 그림 틀(`hp:sz`) 안쪽 여백(`hp:inMargin`)을 뺀 자리에 그림을 그린다.
+    /// 모든 페인터가 이 한 계산을 거쳐야 백엔드마다 그리는 자리가 갈리지 않는다.
+    pub fn paint_bbox(&self, frame: &BoundingBox) -> BoundingBox {
+        let Some([left, top, right, bottom]) = self.content_inset else {
+            return *frame;
+        };
+        BoundingBox::new(
+            frame.x + frame.width * left,
+            frame.y + frame.height * top,
+            frame.width * (1.0 - left - right),
+            frame.height * (1.0 - top - bottom),
+        )
     }
 }
 

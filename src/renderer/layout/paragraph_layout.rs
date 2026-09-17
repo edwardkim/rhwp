@@ -9612,6 +9612,7 @@ fn make_picture_image_node(
             text_wrap: (!pic.common.treat_as_char).then_some(pic.common.text_wrap),
             transform: extract_shape_transform(&pic.shape_attr),
             external_path: pic.image_attr.external_path.clone(),
+            content_inset: crate::renderer::layout::utils::picture_content_inset(pic),
             ..ImageNode::new(bin_data_id, image_data)
         }),
         bbox,
