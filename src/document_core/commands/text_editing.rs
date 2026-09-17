@@ -3797,6 +3797,59 @@ impl DocumentCore {
         )))
     }
 
+    /// [#7218] 문단 **시작**에 쪽 나눔을 건다 — 문단을 가르지 않고 그 문단의
+    /// `column_type` 만 `Page` 로 바꾼다.
+    ///
+    /// `insert_page_break_native` 는 offset 과 관계없이 문단을 갈라, offset 0 이면 앞쪽에
+    /// 원 문단 모양(개요 수준 포함)을 물려받은 **빈 문단**이 남는다. 개요 제목 앞이면 한글이
+    /// 그 빈 문단에도 번호를 붙여 번호가 비어 보이고 뒤 번호가 밀린다. 문단 수와 텍스트·
+    /// 문단 모양은 그대로다. 이미 쪽·구역 나눔이 있는 문단에는 아무것도 하지 않는다
+    /// (반복 호출이 누적되지 않는다).
+    ///
+    /// 반환: 속성을 새로 걸었으면 `true`.
+    pub fn mark_page_break_at_paragraph_start_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<bool, HwpError> {
+        use crate::model::paragraph::ColumnBreakType;
+
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과",
+                section_idx
+            )));
+        }
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과",
+                para_idx
+            )));
+        }
+        let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        if matches!(
+            para.column_type,
+            ColumnBreakType::Page | ColumnBreakType::Section
+        ) {
+            return Ok(false);
+        }
+
+        self.document.sections[section_idx].raw_stream = None;
+        let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        para.column_type = ColumnBreakType::Page;
+        para.raw_break_type = 0x04;
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok(true)
+    }
+
     /// 단 나누기 삽입 (Ctrl+Shift+Enter)
     /// 커서 위치에서 문단을 분리하고 새 문단에 단 나누기 설정.
     /// 1단 문서에서는 쪽 나누기와 동일하게 동작.
