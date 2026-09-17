@@ -23571,9 +23571,14 @@ impl TypesetEngine {
             // partner has an explicit source fragment boundary.  Let the
             // row-cut walk retain it; ordinary and multi-owner rows keep the
             // measured whole-row fast path.
-            if !single_visible_source_frame && consumed + cs_before + row_total <= avail_for_rows
-                || strict_nonterminal_rounding_fit
-                || source_frame_whole_row_fits
+            let declared_source_frame = row_start_cut.is_empty()
+                && !self.render_normalization.table_text_reflowed(table)
+                && layout_engine.row_has_declared_stored_frame(table, r);
+            if !declared_source_frame
+                && ((!single_visible_source_frame
+                    && consumed + cs_before + row_total <= avail_for_rows)
+                    || strict_nonterminal_rounding_fit
+                    || source_frame_whole_row_fits)
             {
                 // 행 전체가 예산 안에 들어감.
                 bleed_absorbed_row_height = None;
@@ -26347,20 +26352,71 @@ impl TypesetEngine {
                 }
             })
             .collect();
-        // #3820의 narrow whole-row contract: first fragment에서 행을 통째로 남길
-        // 때만 renderer의 paint footprint를 함께 본다. 부분 행의 line/cell cut은
-        // `cut_row_h`가 표현하는 실제 content offset을 그대로 써야 다음 fragment의
-        // 재개 위치가 변하지 않는다.
-        let whole_row_fit_h: Vec<f64> = if native_hwp5_rewinding_rowbreak_uses_painted_row_footprint
-        {
-            cut_row_h
+        // 온전한 행을 받는 경로는 실제 paint footprint를 예약한다. 셀 선언
+        // 높이에 비해 패딩이 과대하면 내용 컷은 축소된 패딩을 쓰지만, 전체 행은
+        // MeasuredTable의 콘텐츠+패딩 높이를 그린다(#7234). 부분 컷 좌표는 유지한다.
+        // 중첩 표 등 컷 높이를 실제 배치에도 쓰는 행은 같은 owner 판정으로 제외한다.
+        let painted_row_heights = layout_engine.resolve_row_heights_trusting_declared(
+            row_geometry_table,
+            row_geometry_table.col_count as usize,
+            row_count,
+            Some(mt),
+            styles,
+            row_geometry_table.common.treat_as_char,
+            false,
+        );
+        // 선언 높이가 첫 저장 조각만 나타내는 표는 전체 MeasuredTable 높이를
+        // 행별 예약으로 되돌려 넣을 수 없다. 전체 행의 paint 합과 선언 object
+        // 상자가 일치할 때만 같은 온전한 표의 패딩 차이라고 입증된다.
+        let declared_whole_table_matches_paint = row_geometry_table.common.height > 0
+            && (painted_row_heights
                 .iter()
-                .zip(&mt.row_heights)
-                .map(|(cut, painted)| cut.max(*painted))
-                .collect()
-        } else {
-            cut_row_h.clone()
-        };
+                .zip(&cut_row_h)
+                .enumerate()
+                .map(|(row, (painted, cut))| {
+                    // 중첩 행은 아래 paint에서도 내용 컷 높이를 소비한다. 서로 다른
+                    // 소유자의 높이를 모두 MeasuredTable로 합치면 짧은 중첩 꼬리가
+                    // 있는 표의 앞 행까지 과예약한다(76076 p81).
+                    if layout_engine
+                        .whole_fragment_row_uses_measured_height(row_geometry_table, row)
+                    {
+                        *painted
+                    } else {
+                        *cut
+                    }
+                })
+                .sum::<f64>()
+                + cs * row_count.saturating_sub(1) as f64
+                - hwpunit_to_px(row_geometry_table.common.height as i32, self.dpi))
+            .abs()
+                <= 0.1;
+        let whole_row_fit_h: Vec<f64> = cut_row_h
+            .iter()
+            .zip(&painted_row_heights)
+            .enumerate()
+            .map(|(row, (cut, painted))| {
+                let padding_explains_drift = layout_engine
+                    .whole_row_height_diff_is_padding_reduction(
+                        row_geometry_table,
+                        row,
+                        *cut,
+                        *painted,
+                    );
+                if native_hwp5_rewinding_rowbreak_uses_painted_row_footprint {
+                    // 기존 저장 rewind 경로는 MeasuredTable의 물리 행 높이를 소비한다.
+                    // 패딩 축소 복구와 무관한 행을 새 resolve 결과로 바꾸지 않는다.
+                    cut.max(mt.row_heights[row])
+                } else if declared_whole_table_matches_paint
+                    && padding_explains_drift
+                    && layout_engine
+                        .whole_fragment_row_uses_measured_height(row_geometry_table, row)
+                {
+                    cut.max(*painted)
+                } else {
+                    *cut
+                }
+            })
+            .collect();
         // p106은 paint footprint 기준 row 0–3이 body bottom보다 3.9px 앞에서
         // 끝나지만, 한컴은 다음 row를 continuation으로 소유한다. 이 4px은 native
         // HWP5 stored-rewind first fragment의 footer-local slack이며 전역 safety

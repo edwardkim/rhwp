@@ -2,7 +2,7 @@
 //!
 //! 페이지 수 pin(issue_1891)만으로는 같은 쪽수 안에서 되돌아가는 회귀를 잡지 못하므로
 //! (maintainer 리뷰 P1), 각 수정의 관측 가능한 페이지-내 배치를 render tree 로 고정한다.
-//! 기준 문서: `samples/86712_regulatory_analysis.hwp` (규제영향분석서, 한글 2022 = 65쪽).
+//! 기준 문서: `samples/86712_regulatory_analysis.hwp` (규제영향분석서, 한컴 2024 13.0.0.3901 = 64쪽).
 //! 페이지 인덱스는 0-based (`build_page_render_tree(N)` = N+1쪽).
 
 use std::fs;
@@ -75,6 +75,17 @@ fn find_paintable_text(
         (None, None) => None,
     };
 
+    if matches!(node.node_type, RenderNodeType::TextLine(_))
+        && clip.as_ref().is_none_or(|clip| clip.intersects(&node.bbox))
+    {
+        let mut text = String::new();
+        collect_subtree_text(node, &mut text);
+        let normalized: String = text.chars().filter(|c| !c.is_whitespace()).collect();
+        let expected: String = needle.chars().filter(|c| !c.is_whitespace()).collect();
+        if normalized.contains(&expected) {
+            return true;
+        }
+    }
     if let RenderNodeType::TextRun(run) = &node.node_type {
         let paints_inside_clip = clip.as_ref().is_none_or(|clip| clip.intersects(&node.bbox));
         if paints_inside_clip && run.text.contains(needle) {
@@ -138,101 +149,126 @@ fn collect_text_ys(node: &RenderNode, x_min: f64, y_range: (f64, f64), out: &mut
     }
 }
 
-/// [수정 1] 1×1 래퍼 중첩 셀 유닛화 (`nested_table_mixed_fragment_heights`) —
-/// r27 근거설명(25문단 + 3×12/5×4 내부표)의 프래그먼트가 2단계 중첩 표·빈 문단
-/// 줄박스·셀 말미 줄간격을 포함해야 한다 (-448px 과소 회귀 검출).
-///
-/// 회귀 시그니처(수정 전): pi=172 분할이 rows=26..28 로 물러나 p29 에 산식 r26
-/// ("2891017" = 편익산식입력9)이 다시 렌더된다. 또한 3×12 내부 표를 현재 쪽
-/// 하단 clip 아래에서 소비하면 p29가 5×4 표부터 시작한다.
-///
-/// # [#5193] 셀 재조판 이관 후 실패 — 핀은 옳고, 이 핀이 서 있던 높이가 틀렸다
-///
-/// 이 테스트의 쪽 배정은 한컴 2024 PDF
-/// (`samples/issue1891/86712_regulatory_analysis-2024.pdf`)가 직접 뒷받침한다 —
-/// PDF p28이 `편익 수혜자`를 시작하고 p29가 `88.2` 표를 싣는다. **핀을 프레임
-/// 값으로 옮기면 안 된다**: 프레임 경로는 `편익 수혜자`를 p27로, `88.2`를 p28로
-/// 올려 세 assertion 을 PDF 와 반대로 만든다.
-///
-/// 실패 원인은 줄바꿈 잔차가 아니다. 문제의 셀(산식 표 r23~r26 c2,
-/// `(2030년 기본형건축비 - …) * 주택면적 * 가구수 * 이자율`)은 **칠해지는 폭에서
-/// 두 경로가 글자까지 동일**하다. 갈라지는 곳은 측정이 쓰는 더 좁은 두 번째
-/// 폭이다:
-///
-/// ```text
-/// w=204.45px (paint)     폐기 경로 4줄   프레임 4줄   (본문 동일)
-/// w=192.85px (measure)   폐기 경로 5줄   프레임 4줄
-///
-/// 측정 폭 192.85px = 14464 HWPUNIT 에서의 판정
-///   `-`     pen 13457  glyph  667  sum 14124  over  −340  → 프레임 수용(폐기 경로는 거부)
-///   `2029`  pen 14822  glyph 2584  sum 17406  over +2942  → 거부, 줄0 = "(2030년 기본형건축비 - "
-/// ```
-///
-/// 한컴 PDF p27은 이 셀을 **4줄**로 찍는다. 즉 프레임의 행높이(85.7px)가 맞고
-/// 폐기 경로의 5줄 측정(106.5px)이 틀렸다. 그런데 그 틀린 측정이 이 쪽 나눔을
-/// 지탱하고 있었다 — 산식 표 네 행(2032~2035)이 각각 20.8px 한 줄씩 줄면 p27에
-/// 83.2px 이 남고, 거기로 r27 근거설명의 첫 유닛이 들어간다.
-///
-/// 즉 이 핀은 **보상 오차 위에 서 있던 옳은 기대값**이다. 오차를 고치면 상류의
-/// 다른 문제가 드러난다 — 한컴 p27은 `□편익` 표 전체부터 시작하는데 rhwp p27은
-/// 편익 표 중간에서 시작한다. 그 상류 차이는 #2279/#2308 소관이지 #5193 이 아니다.
-///
-/// 함께 기록: 측정 내폭(192.85)이 렌더 내폭(204.45)보다 **11.6px 좁다.** 두 경로
-/// 모두에 있던 선행 결함이고, 바로 이것이 "측정에서는 줄바꿈이 갈리는데 렌더에서는
-/// 안 갈리는" 상태를 가능하게 한다.
-#[ignore = "#5193: 프레임 이관으로 실패. 핀은 한컴 PDF 가 뒷받침하므로 옮기지 않는다 — \
-            폐기 경로의 5줄 측정(PDF 는 4줄)이 이 쪽 나눔을 지탱하고 있었다. 위 주석 참조."]
+/// 정상 한컴 2024 저장본과 직접 변환한 PDF(64쪽)의 실제 이어받기 계약.
+/// p25의 근거설명은 p26 첫 두 줄로 이어지고, 편익 근거설명은 p27에서 시작한다.
+/// 기존 65쪽 PDF/NO_LS 변형 입력의 p28·p29 핀은 이 원본의 oracle이 아니다.
 #[test]
-fn issue_2279_nested_cell_units_split_r27_not_r26() {
+fn issue_2279_saved_nested_frame_keeps_source_page_ownership() {
     let core = core();
-    // PDF p27에는 r27 근거설명이 아직 시작하지 않는다. 남은 공간에 wrapper의
-    // 앞 조각만 넣으면 scalar child가 실제 잉크를 앞 쪽으로 누출한다.
+    assert_eq!(core.page_count(), 64, "정상 원본 한컴 2024 PDF 64쪽");
+    assert!(page_contains_paintable_text(&core, 24, "비용부담자"));
+    assert!(!page_contains_paintable_text(
+        &core,
+        24,
+        "구성 승인 시점부터"
+    ));
     assert!(
-        !page_contains_paintable_text(&core, 26, "편익 수혜자"),
-        "p27에 r27 근거설명이 조기 노출 — fresh-page defer 회귀"
+        page_contains_paintable_text(&core, 25, "구성 승인 시점부터"),
+        "p26의 저장 이어받기 두 줄이 누락되거나 앞 쪽으로 잘못 소유됨"
     );
-    // p28(0-based 27)는 r27의 앞 문단 묶음을 실제로 paint한다.
-    assert!(
-        page_contains_paintable_text(&core, 27, "편익 수혜자"),
-        "p28에 r27 콘텐츠 첫 유닛 부재 — 1×1 중첩 셀 유닛화 회귀 (rows=0..27 로 후퇴)"
-    );
-    // p28의 남은 공간에는 3×12 내부 표와 뒤의 출처/설명/5×4 표 묶음 전체가
-    // 들어가지 않는다. 첫 표만 clip 아래에서 소비하면 안 된다.
-    assert!(
-        !page_contains_paintable_text(&core, 27, "88.2"),
-        "p28에 3×12 내부 표가 부분 진입 — nested block을 fresh page로 이월해야 함"
-    );
-    // p29(0-based 28): r27 continuation 만 — 산식 행(r26)이 다시 걸치면 회귀.
-    // 주의: "2891017"(콤마 없음)은 산식 필드 전용 — r27 내부 5×4 표의 값
-    // "2,891,017"(콤마)과 구분된다.
-    assert!(
-        !page_contains_paintable_text(&core, 28, "2891017"),
-        "p29에 산식 r26(편익산식입력9) 재등장 — cut 유닛 과소(-448) 회귀"
-    );
-    assert!(
-        page_contains_paintable_text(&core, 28, "88.2"),
-        "p29에 3×12 내부 표 부재 — p28 하단 clip 소비 회귀"
-    );
-    assert!(
-        table_contains_text_sequence(
-            &core
-                .build_page_render_tree(28)
-                .expect("render tree p29")
-                .root,
-            5,
-            4,
-            "주민대표단 구성",
-        ),
-        "p29에 3×12 표 뒤 5×4 내부 표 부재 — r27 block 순서 회귀"
-    );
+    assert!(!page_contains_paintable_text(&core, 25, "편익 수혜자"));
+    assert!(page_contains_paintable_text(&core, 26, "편익 수혜자"));
+    assert!(!page_contains_paintable_text(&core, 26, "88.2"));
+    assert!(page_contains_paintable_text(&core, 27, "88.2"));
+    assert!(table_contains_text_sequence(
+        &core.build_page_render_tree(27).expect("p28").root,
+        5,
+        4,
+        "주민대표단 구성"
+    ));
 }
 
-/// [수정 2] 본문 NO_LS 폴백의 글자모양 보존 + 전체-문단 재래핑 렌더
-/// (재래핑 후 end_line 확장) —
-/// 혼합 크기 문단(pi22: "ㅇ "=15pt + 본문 14pt)의 마지막 줄이 렌더에서 소실되지
-/// 않아야 한다 (측정 4줄 fit vs 렌더 3줄 발산 회귀 검출).
+/// 직접 한컴 PDF p26/p27에서 산식은 두 줄씩 나뉜다. 앞쪽에 두 줄이
+/// 있는데도 orphan 보호가 끝줄을 되감아 1+3줄로 바꾸면 p27 표 머리까지 밀린다.
 #[test]
-fn issue_2279_body_rewrap_keeps_paragraph_tail() {
+fn issue_2279_saved_equation_split_keeps_two_lines_on_each_page() {
+    for sample in [
+        "samples/86712_regulatory_analysis.hwp",
+        "samples/issue1891/86712_regulatory_analysis.hwpx",
+    ] {
+        let bytes = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap();
+        let doc = DocumentCore::from_bytes(&bytes).unwrap();
+        fn cell_text(node: &RenderNode, row: u16, col: u16) -> Option<String> {
+            if let RenderNodeType::TableCell(cell) = &node.node_type {
+                if cell.row == row && cell.col == col {
+                    fn text(n: &RenderNode, out: &mut String) {
+                        if let RenderNodeType::TextRun(run) = &n.node_type {
+                            out.push_str(&run.text);
+                        }
+                        for child in &n.children {
+                            text(child, out);
+                        }
+                    }
+                    let mut out = String::new();
+                    text(node, &mut out);
+                    return Some(out);
+                }
+            }
+            node.children.iter().find_map(|n| cell_text(n, row, col))
+        }
+        let page26 = doc.build_page_render_tree(25).unwrap();
+        let text26 = cell_text(&page26.root, 26, 2).expect("2035 formula cell");
+        assert!(
+            text26.contains("2032년 기본형건축비)"),
+            "{sample}: first two lines"
+        );
+        assert!(
+            !text26.contains("주택면적"),
+            "{sample}: third line belongs to p27: {text26}"
+        );
+        let page27 = doc.build_page_render_tree(26).unwrap();
+        let text27 = cell_text(&page27.root, 26, 2).expect("continued 2035 formula cell");
+        assert!(
+            text27.contains("주택면적") && text27.contains("이자율"),
+            "{sample}: last two lines: {text27}"
+        );
+    }
+    let core = core();
+    assert!(page_contains_paintable_text(
+        &core,
+        25,
+        "2032년 기본형건축비)"
+    ));
+    assert!(!page_contains_paintable_text(
+        &core,
+        26,
+        "2032년 기본형건축비)"
+    ));
+    assert!(table_contains_text_sequence(
+        &core.build_page_render_tree(26).expect("p27").root,
+        3,
+        12,
+        "구 분"
+    ));
+}
+
+/// 직접 PDF p28의 정성 편익 설명 첫 조각과 p29의 이어받기.
+/// 작은 선언 프레임의 저장 reset을 버리면 p28은 비고 p29에는 글자가 겹친다.
+#[test]
+fn issue_2279_small_saved_frame_preserves_qualitative_benefit_pages() {
+    let core = core();
+    assert!(page_contains_paintable_text(
+        &core,
+        27,
+        "정비사업 후 조기 입주"
+    ));
+    assert!(page_contains_paintable_text(&core, 27, "빠른 입주에 따른"));
+    assert!(!page_contains_paintable_text(
+        &core,
+        28,
+        "정비사업 후 조기 입주"
+    ));
+    assert!(page_contains_paintable_text(
+        &core,
+        28,
+        "노후계획도시는 조성 후"
+    ));
+}
+
+/// 정상 저장본의 혼합 글자 크기 본문 문단 마지막 줄이 누락되지 않아야 한다.
+/// 한컴 직접 PDF p10의 마지막 본문 줄과 대조한다. NO_LS 재조판 증거로 사용하지 않는다.
+#[test]
+fn issue_2279_saved_body_keeps_paragraph_tail() {
     let core = core();
     assert!(
         page_contains(&core, 9, "규정하려는 것임"),
@@ -240,51 +276,82 @@ fn issue_2279_body_rewrap_keeps_paragraph_tail() {
     );
 }
 
-/// [수정 3] 재래핑 줄별 pitch (#5193 이후 `frame_metrics_for_line` 의 행별 metric) —
-/// p10 본문(내어쓰기 ㅇ-불릿 문단들, 한글 실측 pitch 29.9px)의 인접 줄 간격
-/// 중앙값이 30px 근처여야 한다. 회귀(문단 최대 fs 상속) 시 32.0 으로 복귀.
+/// 정상 저장본 p10의 14pt 본문 줄 간격: 한컴 PDF 22.32~22.44pt
+/// (96dpi 29.76~29.92px). 15pt 첫 줄의 24pt 간격과 구별한다.
 #[test]
-fn issue_2279_per_line_pitch_uses_line_max_font_size() {
+fn issue_2279_saved_body_preserves_line_pitch() {
     let core = core();
     let tree = core.build_page_render_tree(9).expect("render tree p10");
-    // 본문 불릿 문단 영역 (표 제외: y 140~660, 들여쓰기 본문 x>=100)
+    // 정상 원본의 첫 본문 문단, 둘째 줄 이후. PDF 원점 y=146.70~258.66pt.
     let mut ys = Vec::new();
-    collect_text_ys(&tree.root, 100.0, (140.0, 660.0), &mut ys);
+    collect_text_ys(&tree.root, 90.0, (190.0, 350.0), &mut ys);
     ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
     ys.dedup_by(|a, b| (*a - *b).abs() < 3.0);
     let mut gaps: Vec<f64> = ys.windows(2).map(|w| w[1] - w[0]).collect();
     // 문단 사이 간격(빈 줄 포함, > 34px)은 제외 — 줄 pitch 만.
     gaps.retain(|g| *g > 20.0 && *g < 34.0);
     assert!(
-        gaps.len() >= 8,
+        gaps.len() == 5,
         "pitch 표본 부족 ({}개) — 페이지 구성 변화 시 창 조정 필요: {ys:?}",
         gaps.len()
     );
     gaps.sort_by(|a, b| a.partial_cmp(b).unwrap());
     let median = gaps[gaps.len() / 2];
     assert!(
-        (28.5..31.5).contains(&median),
-        "본문 줄 pitch 중앙값 {median:.2}px — 줄별 pitch(≈29.9, 한글 실측) 회귀 (32.0 = 문단 최대 fs 상속)"
+        (29.76..=29.93).contains(&median),
+        "본문 줄 pitch 중앙값 {median:.2}px — 정상 원본 PDF의 29.76~29.92px와 불일치"
     );
 }
 
-/// [수정 4] RowBreak float 선언-이월의 문단 단위 증거 판정 (`saved_span`) —
-/// pi30 표(4×3 RowBreak, host 저장 LS 없음, 측정 비적합)는 한글처럼 행 분할되어
-/// 머리 행(r0~r1: 대안명/규제대안1)이 p10 에 남아야 한다. 회귀(구역 전역
-/// has_stored_line_segs 판정) 시 표 전체가 p11 로 이월된다.
+/// 정상 원본의 대안 표 전체가 p10에 위치한다. 이전 NO_LS 변형본의
+/// p10/p11 분할 기대값을 폐기하고 직접 변환 PDF p10/p11로 교체했다.
 #[test]
-fn issue_2279_rowbreak_float_splits_without_host_line_segs() {
+fn issue_2279_saved_alternatives_table_stays_on_page_ten() {
     let core = core();
-    assert!(
-        page_contains(&core, 9, "대안명"),
-        "p10에 pi30 표 머리 행 부재 — saved_span 판정 회귀 (통째 이월)"
-    );
-    assert!(
-        page_contains(&core, 9, "주민대표단의 법적"),
-        "p10에 규제대안1 내용 부재 — RowBreak float 분할 회귀"
-    );
-    assert!(
-        page_contains(&core, 10, "준 준용"),
-        "p11에 잔여 행(규제대안2: 기존 기준 준용) 부재 — 분할 구조 변화"
-    );
+    for text in ["대안명", "주민대표단의 법적", "준 준용", "단원선출"] {
+        assert!(
+            page_contains_paintable_text(&core, 9, text),
+            "p10 대안 표 내용 누락: {text}"
+        );
+    }
+    assert!(!page_contains_paintable_text(&core, 10, "준 준용"));
+}
+
+/// 정상 원본의 법령 비교표는 PDF p4~8·32~33의 본문 안에서 끝난다.
+/// 저장 frame 끝의 줄 뒤 간격과 이어받기에서 소비한 빈 꼬리를 표 높이에
+/// 다시 더하면 p6 표가 629px 늘고, 보이는 내용이 없는 셀도 페이지 밖으로 커진다.
+#[test]
+fn issue_2279_saved_comparison_table_fragments_stay_inside_body() {
+    fn bounds(node: &RenderNode, body_bottom: &mut Option<f64>, table_bottom: &mut f64) {
+        if matches!(node.node_type, RenderNodeType::Body { .. }) {
+            *body_bottom = Some(node.bbox.y + node.bbox.height);
+        }
+        if matches!(node.node_type, RenderNodeType::Table(_)) {
+            *table_bottom = table_bottom.max(node.bbox.y + node.bbox.height);
+        }
+        for child in &node.children {
+            bounds(child, body_bottom, table_bottom);
+        }
+    }
+    for sample in [
+        "samples/86712_regulatory_analysis.hwp",
+        "samples/issue1891/86712_regulatory_analysis.hwpx",
+    ] {
+        let doc = DocumentCore::from_bytes(
+            &fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap(),
+        )
+        .unwrap();
+        for page in [3, 4, 5, 6, 7, 25, 31, 32] {
+            let tree = doc.build_page_render_tree(page).unwrap();
+            let (mut body_bottom, mut table_bottom) = (None, 0.0);
+            bounds(&tree.root, &mut body_bottom, &mut table_bottom);
+            assert!(table_bottom > 0.0, "comparison table must exist");
+            assert!(
+                table_bottom <= body_bottom.unwrap() + 0.5,
+                "{sample} p{}: table bottom {table_bottom} exceeds body {:?}",
+                page + 1,
+                body_bottom,
+            );
+        }
+    }
 }

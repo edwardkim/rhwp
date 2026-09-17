@@ -3993,34 +3993,7 @@ impl LayoutEngine {
                     // 있으므로(rowbreak-problem-pages p7 pi=21 r2, 기존 회귀
                     // 테스트) 종전 재계산을 유지한다.
                     if su.is_empty() && eu.is_empty() && measured_table.is_some() {
-                        let row_has_nested = table.cells.iter().any(|c| {
-                            c.row as usize == r
-                                && c.row_span == 1
-                                && c.paragraphs.iter().any(|p| {
-                                    p.controls.iter().any(|ct| matches!(ct, Control::Table(_)))
-                                })
-                        });
-                        let row_has_stored_square_picture_flow = table.cells.iter().any(|cell| {
-                            cell.row as usize == r
-                                && cell.row_span == 1
-                                && cell.paragraphs.iter().enumerate().any(|(para_idx, para)| {
-                                    para.controls.iter().enumerate().any(|(control_idx, _)| {
-                                        stored_square_picture_has_adjacent_text(
-                                            cell,
-                                            para_idx,
-                                            control_idx,
-                                        )
-                                    })
-                                })
-                        });
-                        if !row_has_nested
-                            || (self.profile.get().hwp5_stored_pagination_layout()
-                                && matches!(
-                                    table.page_break,
-                                    crate::model::table::TablePageBreak::RowBreak
-                                )
-                                && row_has_stored_square_picture_flow)
-                        {
+                        if self.whole_fragment_row_uses_measured_height(table, r) {
                             continue;
                         }
                     }

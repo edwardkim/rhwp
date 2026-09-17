@@ -11,8 +11,7 @@
 //! **화소 동일**이다(한/글에서 셀 높이는 최소 높이) — 같은 문서를 한/글로 HWP 재저장해도 셀
 //! h=282 를 유지하므로 저장값 자체는 한/글과 호환되고, 이 변경은 rhwp 조판 정합을 위한 것이다.
 //!
-//! 엔진 쪽 규칙(여백 합 == 셀 높이에서 컷과 측정의 불일치)은 이 테스트 범위가 아니다 —
-//! #7234 코멘트의 코퍼스 A/B 참조.
+//! 메인터너 보정은 기존 입력도 같은 PDF 경계에서 나누고 전체 행·후속 문단을 보존하는지 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -121,5 +120,113 @@ fn issue_7234_scaffold_tall_table_first_fragment_stays_inside_body() {
     assert!(
         !runs.iter().any(|t| t == "47"),
         "47행은 2쪽으로 가야 한다(한/글)"
+    );
+}
+
+#[test]
+fn issue_7234_existing_minimum_height_rows_fit_the_painted_fragment() {
+    for bytes in [
+        include_bytes!("../../samples/issue7216/tall_table_after.hwpx").as_slice(),
+        include_bytes!("../../samples/issue7234/tall_table_cell_row_height.hwpx").as_slice(),
+    ] {
+        let core = rhwp::document_core::DocumentCore::from_bytes(bytes).expect("existing table");
+        assert_eq!(core.page_count(), 2);
+        let mut all_numbers = Vec::new();
+        for page_index in 0..2 {
+            let tree = core.build_page_render_tree(page_index).expect("page");
+            let bottom = body_bottom(&tree.root).expect("body");
+            let mut painted_bottom = f64::MIN;
+            max_bottom(
+                &tree.root,
+                |n| matches!(n, RenderNodeType::TableCell(_)),
+                &mut painted_bottom,
+            );
+            assert!(
+                painted_bottom <= bottom + 0.5,
+                "page {page_index}: painted bottom {painted_bottom} exceeds body {bottom}"
+            );
+            let mut runs = Vec::new();
+            collect_runs(&tree.root, &mut runs);
+            fn first_column_numbers(node: &RenderNode, out: &mut Vec<usize>) {
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    if run.cell_context.as_ref().is_some_and(|context| {
+                        context.path.len() == 1 && context.path[0].cell_index % 3 == 0
+                    }) {
+                        if let Ok(value) = run.text.trim().parse() {
+                            out.push(value);
+                        }
+                    }
+                }
+                for child in &node.children {
+                    first_column_numbers(child, out);
+                }
+            }
+            let mut numbers = Vec::new();
+            first_column_numbers(&tree.root, &mut numbers);
+            if page_index == 0 {
+                // Same-content Hancom PDF: 46 is the final first-page row.
+                assert_eq!(numbers.last(), Some(&46));
+            } else {
+                assert_eq!(numbers.first(), Some(&47));
+                assert!(runs.iter().any(|text| text.contains("표 다음 문단")));
+            }
+            all_numbers.extend(numbers);
+        }
+        assert_eq!(
+            all_numbers,
+            (1..=60).collect::<Vec<_>>(),
+            "no omitted or duplicated rows"
+        );
+    }
+}
+
+#[test]
+fn issue_7234_content_cut_fit_must_not_accept_an_overfull_whole_row() {
+    let mut doc = build_scaffold(&parse_scaffold_str(&spec(3)).expect("spec"));
+    for paragraph in &mut doc.sections[0].paragraphs {
+        for control in &mut paragraph.controls {
+            if let Control::Table(table) = control {
+                for cell in &mut table.cells {
+                    cell.height = 282;
+                }
+            }
+        }
+    }
+    let mut core =
+        rhwp::document_core::DocumentCore::from_bytes(&serialize_hwpx(&doc).unwrap()).unwrap();
+    let first = core.build_page_render_tree(0).unwrap();
+    fn table_top(node: &RenderNode) -> Option<f64> {
+        if matches!(node.node_type, RenderNodeType::Table { .. }) {
+            return Some(node.bbox.y);
+        }
+        node.children.iter().find_map(table_top)
+    }
+    let old_bottom = body_bottom(&first.root).unwrap();
+    // Header + row 1 consume 2*(1000+282) HU. Leave 16px: the old 15.2133px
+    // content-cut height fits here, but the real 17.0933px whole row does not.
+    let new_bottom = table_top(&first.root).unwrap() + 2.0 * 1282.0 / 75.0 + 16.0;
+    doc.sections[0].section_def.page_def.height -=
+        ((old_bottom - new_bottom) * 75.0).round() as u32;
+    core = rhwp::document_core::DocumentCore::from_bytes(&serialize_hwpx(&doc).unwrap()).unwrap();
+    let first = core.build_page_render_tree(0).unwrap();
+    let mut painted_bottom = f64::MIN;
+    max_bottom(
+        &first.root,
+        |n| matches!(n, RenderNodeType::TableCell(_)),
+        &mut painted_bottom,
+    );
+    assert!(
+        painted_bottom <= body_bottom(&first.root).unwrap() + 0.5,
+        "content-only fit accepted a whole row outside the body"
+    );
+    let mut runs = Vec::new();
+    collect_runs(&first.root, &mut runs);
+    assert!(
+        runs.iter().any(|text| text == "1"),
+        "first fragment: {runs:?}"
+    );
+    assert!(
+        !runs.iter().any(|text| text == "2"),
+        "second data row must move"
     );
 }

@@ -118,9 +118,14 @@ fn issue_3820_p4_keeps_saved_rowbreak_body_with_its_first_fragment() {
         text,
     );
     let p4_bottom = owned_table_bottom(&p4.root, 15, 0).expect("p4 table bottom");
+    // samples/issue1891/76076_regulatory_analysis-2024.pdf p4의 실제 세로
+    // 테두리 끝은 776.630pt = 1035.507px(96dpi)이다. 종전 1040..1052px
+    // 핀은 PDF 바깥을 정답으로 허용했고, 저장 reset 뒤 줄간격을 제거한 올바른
+    // 조각을 거부했다. 기존 rhwp/PDF 원점 차이(약 1.7px) 안에서 직접 대조한다.
+    let pdf_bottom = 776.630 * 96.0 / 72.0;
     assert!(
-        (1_040.0..=1_052.0).contains(&p4_bottom),
-        "p4 RowBreak fragment bottom={p4_bottom:.1}px; the saved body fragment must fill the PDF footer band"
+        (p4_bottom - pdf_bottom).abs() <= 2.0,
+        "p4 RowBreak fragment bottom={p4_bottom:.2}px differs from Hancom PDF {pdf_bottom:.2}px"
     );
 
     // The source-owned p5 tail prevents this allowance from expanding p4 until
