@@ -1131,7 +1131,10 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
         .line_segs
         .iter()
         .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)?;
-    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    // [#7198] 저장 사다리는 줄간격을 **부호 그대로** 담는다. 음수 줄간격을 0 으로 깎으면
+    // `next - host == lh + ls` 인 사다리가 등식에서 떨어져, host 줄 전진과 양수 offset 이
+    // 흐름에서 빠진다(156467175 1쪽: 448 != 1500, 제목이 한글보다 11.7px 위).
+    let advance = host_seg.line_height + host_seg.line_spacing;
     if advance <= 0 {
         return None;
     }
@@ -1160,7 +1163,7 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
 /// 이미 갭을 인코딩한다는 전제), 그래서 밴드 바로 아래 첫 본문 문단이 개체에 딱 붙는다.
 ///
 /// 억제가 옳은 문단과 아닌 문단은 **저장 사다리가 가른다** — `next.vpos - host.vpos` 가
-/// 정확히 `lh + max(ls, 0)` 이면 한글이 개체 높이를 접고 host 줄 advance 만 흐름에
+/// 정확히 `lh + ls`(줄간격 부호 그대로, #7198) 이면 한글이 개체 높이를 접고 host 줄 advance 만 흐름에
 /// 계상했다는 뜻이라, 그 줄은 별도로 더해야 할 실 흐름이다(= #1147 의 "vpos 가 이미
 /// 갭을 인코딩" 전제가 성립하지 않는 문단). 델타가 개체 높이를 품은 일반 물리 사다리는
 /// 등식이 깨져 자연 배제된다 — #2439 의 [#2808] 판별자와 같은 축이다.
@@ -1297,7 +1300,8 @@ fn stored_anchor_band_host_line_from_ladder(
         .iter()
         .enumerate()
         .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)?;
-    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    // [#7198] 줄간격은 부호 그대로 — `native_empty_host_rowbreak_line_advance_hu` 와 같은 축.
+    let advance = host_seg.line_height + host_seg.line_spacing;
     if advance <= 0 {
         return None;
     }
