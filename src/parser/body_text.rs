@@ -1109,6 +1109,7 @@ fn parse_column_def_ctrl(ctrl_data: &[u8]) -> ColumnDef {
     // bit 10-11: 단 방향
     cd.direction = match (attr >> 10) & 0x03 {
         1 => ColumnDirection::RightToLeft,
+        2 => ColumnDirection::Mirror,
         _ => ColumnDirection::LeftToRight,
     };
     // bit 12: 단 너비 동일 여부

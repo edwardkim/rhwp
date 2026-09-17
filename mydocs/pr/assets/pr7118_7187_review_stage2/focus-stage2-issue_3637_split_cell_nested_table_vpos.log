@@ -1,0 +1,10 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 9.03s
+     Running tests/generated/regression_suite_018.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_018-8f61f9bfe800814b)
+
+running 1 test
+LAYOUT_OVERFLOW: page=3, sec=0, col=0, para=5, type=PartialTable, first=true, y=1054.0, bottom=1046.9, overflow=7.0px
+LAYOUT_OVERFLOW: page=7, sec=0, col=0, para=5, type=PartialTable, first=true, y=1051.5, bottom=1046.9, overflow=4.6px
+test issue_3637_split_cell_nested_table_vpos::nested_table_snap_stays_inside_the_split_cell ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 202 filtered out; finished in 0.12s

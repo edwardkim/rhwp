@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "key": "pr7184",
+  "provenance": {
+    "hwp": {
+      "path": "samples/table_giant_cell_overfill.hwpx",
+      "sha256": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4"
+    },
+    "pdf": {
+      "path": "pdf/table_giant_cell_overfill-hwpx-2024.pdf",
+      "sha256": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be"
+    },
+    "git_head": "2a2089bf71e7a42286e0643a3fb517b7047c7320",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr7118-7187-20260916/release-test/rhwp",
+      "path": "target/pr7118-7187-20260916/release-test/rhwp",
+      "sha256": "86d65451125c52f82befabba62f30de78a81ed4e80d0d7387e15c231f0fb2999"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    18,
+    19,
+    20,
+    21,
+    47,
+    48
+  ],
+  "requested_page_shards": [
+    [
+      18,
+      19,
+      20,
+      21,
+      47,
+      48
+    ]
+  ],
+  "run_state": "complete"
+}

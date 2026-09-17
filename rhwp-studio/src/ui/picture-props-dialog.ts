@@ -46,16 +46,16 @@ type PictureTabId = 'basic' | 'margin' | 'line' | 'fill' | 'textbox' | 'picture'
 
 /** 탭 표시 글자 */
 const PICTURE_TAB_LABELS: Record<PictureTabId, string> = {
-  basic: '기본',
-  margin: '여백/캡션',
-  line: '선',
-  fill: '채우기',
-  textbox: '글상자',
-  picture: '그림',
-  shadow: '그림자',
-  reflection: '반사',
-  glow: '네온',
-  softEdge: '열은 테두리',
+  basic: i18nText('dialog.pictureProps.tab.basic'),
+  margin: i18nText('dialog.pictureProps.tab.margin'),
+  line: i18nText('dialog.pictureProps.tab.line'),
+  fill: i18nText('dialog.pictureProps.tab.fill'),
+  textbox: i18nText('dialog.pictureProps.tab.textbox'),
+  picture: i18nText('dialog.pictureProps.tab.picture'),
+  shadow: i18nText('dialog.pictureProps.tab.shadow'),
+  reflection: i18nText('dialog.pictureProps.tab.reflection'),
+  glow: i18nText('dialog.pictureProps.tab.glow'),
+  softEdge: i18nText('dialog.pictureProps.tab.softEdge'),
 };
 
 /** 탭 구성 — 그림용 */

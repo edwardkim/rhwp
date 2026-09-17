@@ -2604,6 +2604,7 @@ fn render_col_pr_ctrl(cd: &ColumnDef) -> String {
     };
     let layout = match cd.direction {
         ColumnDirection::RightToLeft => "RIGHT",
+        ColumnDirection::Mirror => "MIRROR",
         ColumnDirection::LeftToRight => "LEFT",
     };
     let mut out = format!(

@@ -1,0 +1,8 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 6.92s
+     Running tests/generated/regression_suite_019.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_019-a3080e89b34377a9)
+
+running 1 test
+test issue_4129_mixed_nested_scan_budget::giant_cell_paginate_scan_budget_holds ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 202 filtered out; finished in 0.19s

@@ -1,0 +1,21 @@
+   Compiling rhwp v0.8.6 (/private/tmp/rhwp-stage2-red-20260916)
+    Finished `release-test` profile [optimized] target(s) in 7.57s
+     Running tests/generated/regression_suite_012.rs (/Users/tsjang/rhwp/target/pr7118-7187-20260916/release-test/deps/regression_suite_012-81c2f47ea8b0ee0e)
+
+running 1 test
+
+thread 'issue_1440_onsamiro_picture_wrap::issue_6970_mirror_columns_and_square_paragraph_keep_source_geometry' (189326706) panicked at tests/generated/../issue_1440_onsamiro_picture_wrap.rs:478:5:
+assertion `left == right` failed
+  left: "LeftToRight"
+ right: "Mirror"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test issue_1440_onsamiro_picture_wrap::issue_6970_mirror_columns_and_square_paragraph_keep_source_geometry ... FAILED
+
+failures:
+
+failures:
+    issue_1440_onsamiro_picture_wrap::issue_6970_mirror_columns_and_square_paragraph_keep_source_geometry
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 194 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rhwp --test regression_suite_012`

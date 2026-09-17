@@ -1,0 +1,62 @@
+{
+  "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp": {
+    "sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799",
+    "bytes": 243200,
+    "already_tracked": true
+  },
+  "pdf/synth_no_ls_square_wrap-2020.pdf": {
+    "sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110",
+    "bytes": 575393,
+    "already_tracked": true
+  },
+  "samples/table_giant_cell_overfill.hwpx": {
+    "sha256": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4",
+    "bytes": 534016,
+    "already_tracked": true
+  },
+  "pdf/table_giant_cell_overfill-hwpx-2024.pdf": {
+    "sha256": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be",
+    "bytes": 510623,
+    "already_tracked": true
+  },
+  "samples/issue3637/regulatory_impact_nested_table_escape.hwpx": {
+    "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+    "bytes": 322323,
+    "already_tracked": true
+  },
+  "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf": {
+    "sha256": "4628627c8d6e41dea85aa022232221da982e28538e6a514a24b8ca1af3f21699",
+    "bytes": 527388,
+    "already_tracked": true
+  },
+  "samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp": {
+    "sha256": "38ae1f429341c1ced270204dc365ca3df0acc38a22b5495239667e02a4450456",
+    "bytes": 24576,
+    "already_tracked": true
+  },
+  "pdf/rowbreak_cell_picture_only_paragraph-2020.pdf": {
+    "sha256": "a5393b28fd4696a66dea4a4f2c855504e91287104082ef741221c4949fd6259e",
+    "bytes": 162625,
+    "already_tracked": true
+  },
+  "samples/issue2004_cell_image_stack.hwp": {
+    "sha256": "c633fd086323075ab25777d8ee10357869d037bd17c9e74d444d5b8297c40d50",
+    "bytes": 2396160,
+    "already_tracked": true
+  },
+  "pdf/issue2004_cell_image_stack-hwp-2020.pdf": {
+    "sha256": "b5e2f962620d8d7cdd2ec8b10571c53fbe959eb9ce7b3428ff09a595f12fee90",
+    "bytes": 903153,
+    "already_tracked": true
+  },
+  "samples/basic/issue2007_nested_cell_pagination_42065.hwp": {
+    "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "bytes": 51712,
+    "already_tracked": true
+  },
+  "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf": {
+    "sha256": "450aae3be8ea99721d3af1fb8772b7771c7a7b818e015c18d16e07fe4348702c",
+    "bytes": 624352,
+    "already_tracked": true
+  }
+}

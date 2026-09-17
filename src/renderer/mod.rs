@@ -1324,6 +1324,26 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// 합성 Square 구간은 시작 위치까지의 왼쪽 여백을 이미 차지한다.
+/// 이를 본문 상자의 폭으로 환산해 측정과 배치가 같은 프레임을 사용하게 하며,
+/// 글꼴별 임의 허용 폭은 더하지 않는다.
+pub(crate) fn synthetic_wrap_column_width(
+    column_width: f64,
+    margin_left: f64,
+    anchor: Option<&pagination::WrapAnchorRef>,
+    dpi: f64,
+) -> f64 {
+    let Some(anchor) = anchor.filter(|a| a.band_y_range.is_none() && a.anchor_sw > 0) else {
+        return column_width;
+    };
+    let start = hwpunit_to_px(anchor.anchor_cs + anchor.anchor_image_margin_right, dpi);
+    let width = hwpunit_to_px(
+        (anchor.anchor_sw - anchor.anchor_image_margin_right).max(0),
+        dpi,
+    );
+    column_width.min(width + margin_left.min(start))
+}
+
 /// 셀 문단의 저장 `LINE_SEG.vertical_pos` 를 절대 앵커로 신뢰할 수 있는지 판정한다.
 ///
 /// `vertical_pos == 0` 은 "셀 상단"이라는 유효한 값이면서 동시에 "앵커 없음"의

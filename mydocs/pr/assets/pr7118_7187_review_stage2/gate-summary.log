@@ -1,0 +1,12 @@
+START fmt
+END fmt 0
+START clippy-host
+END clippy-host 0
+START clippy-wasm
+END clippy-wasm 0
+START workspace-build
+END workspace-build 0
+START clippy-workspace
+END clippy-workspace 0
+START suite-policy
+END suite-policy 1

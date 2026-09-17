@@ -2526,13 +2526,17 @@ pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
 /// already-supported treat-as-character Equation flow, and width-neutral
 /// markers. Other controls have their own layout owners and must leave this
 /// transaction untouched.
-fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
+pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
     let mut non_tac_pictures = 0usize;
     for control in &para.controls {
         match control {
             Control::Picture(picture) if !picture.common.treat_as_char => {
                 non_tac_pictures += 1;
             }
+            // 글자처럼 취급 그림은 fill 이 인라인 토큰으로 폭을 계상한다
+            // (`inline_control_size_hwp`) — 사양하면 NO_LS 문단에서 인라인
+            // 아이콘 폭이 통째로 빠져 후속 텍스트가 아이콘 위에 겹친다.
+            Control::Picture(picture) if picture.common.treat_as_char => {}
             Control::Equation(equation) if equation.common.treat_as_char => {}
             other if control_is_width_neutral_marker(other) => {}
             _ => return false,

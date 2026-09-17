@@ -20,3 +20,18 @@
 `hancom-2020`은 원본을 한컴 MCP engine 2020으로 저장한 독립 기준(HWP5)이며 job `da6841d8-6e2b-4f43-aa11-71848ca0cf3f`다.
 후보 저장본의 한컴 개방 검증 PDF는 `pdf/german-legislative-system-candidate-2020.pdf`(326쪽)에 보존한다.
 원본과의 페이지 일치 증거가 아니라 저장본을 열어 출력할 수 있다는 증거다. #4680 전체 완료를 주장하지 않는다.
+
+## 2026-09-16 열린 PR 누적 검토
+
+원본과 한컴 HWP5 기준은 위 파일을 그대로 재사용했다.
+`german-legislative-system-open-pr-review.hwp`는 #7180/#7181/#7185/#7187 등을
+누적한 code `2a2089bf7`의 `rhwp convert` 산출(371,200 bytes)이다.
+SHA-256: `bcf47583f2a7da1c8e8d4624d262abf417f0d0ab4eebf9bca23964809c0f772b`.
+기존 candidate와 다른 변환 결과이며 원본을 이름만 바꾼 사본이 아니다.
+
+- 원본 MCP 2020 PDF: `pdf/german-legislative-system-2020.pdf`, 264쪽.
+- 이번 저장본 MCP 2020 PDF: `pdf/german-legislative-system-review-2020.pdf`, 264쪽.
+- 필드 비교·직접 시각 판정·잔여 범위는
+  [검토 회차](../../../mydocs/working/task_m100_6970_open_pr_stage1.md)에 기록했다.
+- 두 PDF와 입력의 전체 해시는
+  [fixture manifest](../../../mydocs/pr/assets/pr7118_7187_review/fixture-manifest.json)에 있다.

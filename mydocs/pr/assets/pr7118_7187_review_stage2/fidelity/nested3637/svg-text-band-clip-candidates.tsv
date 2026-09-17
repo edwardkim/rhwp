@@ -1,0 +1,20 @@
+page	x	baseline_y	font_size	band_top	band_bottom	edges	clipped_top_px	clipped_bottom_px	visible_height_ratio	clip_ids	clip_rect	text	note
+26	478.0	758.5	12.0	748.9	760.9	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-355	467.9,727.2,524.2,758.4	소	candidate only; visible glyph band is partially cut by SVG clip
+26	490.0	758.5	12.0	748.9	760.9	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-355	467.9,727.2,524.2,758.4	매	candidate only; visible glyph band is partially cut by SVG clip
+26	502.0	758.5	12.0	748.9	760.9	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-355	467.9,727.2,524.2,758.4	업	candidate only; visible glyph band is partially cut by SVG clip
+26	534.3	758.5	12.0	748.9	760.9	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-360	524.2,727.2,580.5,758.4	창	candidate only; visible glyph band is partially cut by SVG clip
+26	546.3	758.5	12.0	748.9	760.9	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-360	524.2,727.2,580.5,758.4	고	candidate only; visible glyph band is partially cut by SVG clip
+26	558.3	758.5	12.0	748.9	760.9	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-360	524.2,727.2,580.5,758.4	업	candidate only; visible glyph band is partially cut by SVG clip
+30	478.0	521.2	12.0	511.6	523.6	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-515	467.9,489.9,524.2,521.1	소	candidate only; visible glyph band is partially cut by SVG clip
+30	490.0	521.2	12.0	511.6	523.6	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-515	467.9,489.9,524.2,521.1	매	candidate only; visible glyph band is partially cut by SVG clip
+30	502.0	521.2	12.0	511.6	523.6	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-515	467.9,489.9,524.2,521.1	업	candidate only; visible glyph band is partially cut by SVG clip
+30	534.3	521.2	12.0	511.6	523.6	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-520	524.2,489.9,580.5,521.1	창	candidate only; visible glyph band is partially cut by SVG clip
+30	546.3	521.2	12.0	511.6	523.6	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-520	524.2,489.9,580.5,521.1	고	candidate only; visible glyph band is partially cut by SVG clip
+30	558.3	521.2	12.0	511.6	523.6	bottom	0.0	2.5	0.793	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-520	524.2,489.9,580.5,521.1	업	candidate only; visible glyph band is partially cut by SVG clip
+30	650.6	1038.5	13.3	1027.9	1041.2	bottom	0.0	9.5	0.284	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-764	642.5,1010.5,697.7,1031.6	할	candidate only; visible glyph band is partially cut by SVG clip
+30	663.5	1038.5	13.3	1027.9	1041.2	bottom	0.0	9.5	0.284	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-764	642.5,1010.5,697.7,1031.6	인	candidate only; visible glyph band is partially cut by SVG clip
+30	676.5	1038.5	13.3	1027.9	1041.2	bottom	0.0	9.5	0.284	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-764	642.5,1010.5,697.7,1031.6	율	candidate only; visible glyph band is partially cut by SVG clip
+30	371.8	1041.1	13.3	1030.4	1043.7	bottom	0.0	12.1	0.093	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-730	350.8,1010.5,425.8,1031.6	폐	candidate only; visible glyph band is partially cut by SVG clip
+30	384.7	1041.1	13.3	1030.4	1043.7	bottom	0.0	12.1	0.093	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-730	350.8,1010.5,425.8,1031.6	기	candidate only; visible glyph band is partially cut by SVG clip
+30	446.8	1041.1	13.3	1030.4	1043.7	bottom	0.0	12.1	0.093	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-739	425.8,1010.5,500.8,1031.6	폐	candidate only; visible glyph band is partially cut by SVG clip
+30	459.8	1041.1	13.3	1030.4	1043.7	bottom	0.0	12.1	0.093	body-clip-3,cell-clip-8,cell-clip-10,cell-clip-739	425.8,1010.5,500.8,1031.6	기	candidate only; visible glyph band is partially cut by SVG clip

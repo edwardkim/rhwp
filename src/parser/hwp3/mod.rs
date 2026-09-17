@@ -646,11 +646,18 @@ fn convert_para_shape_with_layout_contract(
     let mut ps = crate::model::style::ParaShape::default();
     // HWP3 여백/들여쓰기 단위는 hunit(1/1800인치)이다. 공통 ParaShape IR은
     // HWP5/HWPX와 같이 실제 HWPUNIT 값의 2배 스케일로 저장하므로 4*2를 곱한다.
-    // 일반 HWP3의 저장 왕복은 `left_margin` 원값을 보존한다. 실제 암호 HWP3
-    // fixture만 한컴 PDF/HWP5 변환본에서 음수 들여쓰기의 첫 줄을
-    // `left_margin + indent`로 해석한다는 계약이 확인됐다. 이를 전역 정규화하면
-    // 다른 HWP3 문서의 HWP5 라운드트립 x좌표가 달라진다.
-    let first_line_margin = if use_password_layout_contract && hwp3_ps.indent < 0 {
+    // [#7172] HWP3 은 음수 들여쓰기(내어쓰기) 문단에서 **후속 줄** 기준 여백을
+    // 저장한다. HWP5 `ParaShape.margin_left` 는 **첫 줄** 기준이므로 들여쓰기를
+    // 더해 옮겨야 한다. 종전에는 이 정규화를 암호 HWP3 fixture 에만 걸었다.
+    //
+    // 암호 문서가 아닌 264쪽 문서를 한/글 자신의 HWP5 변환본과 전 문단 대조하면
+    // `음수 들여쓰기 -> 여백 + 들여쓰기(0 하한)` 이 **3,699/3,699 전건 성립**하고
+    // 반례가 0 이다(들여쓰기 >= 0 인 문단은 여백이 이미 전건 일치한다). 곧 이
+    // 계약은 암호 HWP3 한정이 아니라 일반 규칙이다.
+    //
+    // 잠긴 동안 저장본은 여백을 과하게 실었고, 줄 폭이 좁아져 한/글이 같은 문서를
+    // 8쪽 더 썼다(272쪽 vs 정본 264쪽 — 이 필드만 되돌리면 263쪽).
+    let first_line_margin = if hwp3_ps.indent < 0 {
         (i32::from(hwp3_ps.left_margin) + i32::from(hwp3_ps.indent)).max(0) as u16
     } else {
         hwp3_ps.left_margin
@@ -792,7 +799,12 @@ fn hwp3_para_line_box(
     let margin_right = hwp3_ir_para_metric_to_line_box(ps.margin_right);
     let indent = hwp3_ir_para_metric_to_line_box(ps.indent);
 
-    let left = margin_left.saturating_add(indent.min(0)).max(0);
+    // [#7172] `margin_left` 는 위에서 **첫 줄 기준**으로 정규화됐다(음수 들여쓰기면
+    // `left_margin + indent`). 여기서 들여쓰기를 다시 더하면 이중 적용이 된다.
+    // 종전에는 여백이 정확히 `|들여쓰기|` 만큼 부풀어 두 오류가 상쇄됐을 뿐이다.
+    // 한/글 정본 실측(SO-SUEOP): 여백 6000 · 들여쓰기 -2000 일 때 줄 상자는
+    // `(3000, 39520)` 즉 **여백/2** 이고 들여쓰기가 섞이지 않는다.
+    let left = margin_left.max(0);
     let right = margin_right.max(0);
     let start = left.min(column_width_hu.max(0));
     let width = column_width_hu.saturating_sub(start).saturating_sub(right);
@@ -906,6 +918,22 @@ fn apply_hwp3_encrypted_flag(
     }
 }
 
+/// [#7174] HWP3 `doc_info` offset 110 "각주 옵션"을 각주/미주 **번호의 닫는 장식 문자**로
+/// 읽는다. 스펙(한글문서파일구조3.0.md:244)의 타입은 `echar` 이고 설명은
+/// "`')'` = 각주 번호에 `')'` 를 붙임, 0 = 안 붙임" — 즉 바이트 값이 곧 장식 문자이며
+/// 플래그가 아니다. 코퍼스 HWP3 38건은 전부 `41`(=`)`) 이라 두 해석의 차이가 드러나지
+/// 않지만, 스펙 타입을 따라 문자로 읽는다. 장식이 될 수 없는 바이트(제어문자·비 ASCII)는
+/// "안 붙임"으로 떨어뜨려 본문에 제어문자가 새지 않게 한다.
+///
+/// 각주 모양의 뒤 장식(`suffix_char`)과 본문에 남은 리터럴 제거가 **같은 값**을 봐야
+/// 번호가 한 번만 그려지므로 두 곳이 이 함수를 공유한다.
+fn hwp3_note_number_suffix_char(doc_info: &Hwp3DocInfo) -> char {
+    match doc_info.footnote_bracket {
+        0x20..=0x7e => doc_info.footnote_bracket as char,
+        _ => '\0',
+    }
+}
+
 fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote::FootnoteShape {
     use crate::model::footnote::{
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
@@ -991,6 +1019,9 @@ struct Hwp3CharScan<'a> {
     /// [#4680] 이 문단이 실제로 쓴 HWP5 제어 문자 비트. 직렬화기는 "출처가 제어
     /// 표기였는가" 를 이 비트로 판정해 하이픈·고정폭 빈칸을 리터럴과 가른다.
     control_mask: &'a mut u32,
+    /// [#7170] HWP3 인라인 탭이 담은 탭 폭과 점끌기 여부. 한글은 문단 `TabDef` 가 아니라
+    /// 이 인라인 값으로 차례의 점선을 그리므로, HWP5 탭 확장으로 옮겨야 한다.
+    tab_extended: &'a mut Vec<[u16; 7]>,
     use_password_layout_contract: bool,
 }
 
@@ -2570,6 +2601,7 @@ fn parse_simple_control_char(
         ctrl_data_records,
         control_mask,
         title_marks,
+        tab_extended,
         ..
     } = scan;
     match ch {
@@ -2673,6 +2705,30 @@ fn parse_simple_control_char(
                     hwp3_char_to_utf16_pos[i + k] = utf16_len;
                 }
             }
+            // [#7170] 탭 폭과 점끌기 여부를 HWP5 인라인 탭 확장으로 옮긴다. 종전에는
+            // 둘 다 읽고 버려서, HWP3 에서 온 문단이 저장본에서 탭 폭 0 · 채움 없음이
+            // 됐다 — 차례의 점선이 통째로 사라진다.
+            //
+            // 한글은 문단 `TabDef` 가 아니라 이 인라인 값으로 점선을 그린다. 같은 문서의
+            // 한글 HWP5 변환본은 `TAB_DEF` 가 우리와 동일한데 인라인만 다르고, 채움만
+            // 싣고 폭을 0 으로 두면 한글 출력이 한 글자도 바뀌지 않는다.
+            //
+            // 정본의 확장은 `[폭_lo, 폭_hi, 0x0003, 0, 0, 0, 0x0009]` 형상이다. 폭은
+            // 112/112 가 4의 배수여서 hunit x 4 = HWPUNIT 환산과 부합한다. `ext[2]` 의
+            // 저바이트가 채움 종류(3 = 점선), 고바이트가 탭 종류인데 정본이 고바이트
+            // 0(미지정)을 쓰므로 그대로 둔다 — 종류는 `TabDef` 가 정한다.
+            let tab_width_hunit = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
+            let tab_dot_fill = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
+            let tab_width_hwpunit = (tab_width_hunit as u32).saturating_mul(4);
+            tab_extended.push([
+                (tab_width_hwpunit & 0xFFFF) as u16,
+                (tab_width_hwpunit >> 16) as u16,
+                if tab_dot_fill != 0 { 3 } else { 0 },
+                0,
+                0,
+                0,
+                0x0009,
+            ]);
             i += 3;
             char_offsets.push(utf16_len);
             // [Task #1950] HWP5 시멘틱: 탭은 PARA_TEXT 에서 8 code-unit
@@ -2947,6 +3003,7 @@ pub(crate) fn parse_paragraph_list(
         // [#4680] 문자 루프가 채우고 문단 조립에서 IR 로 옮긴다.
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut text_string = String::new();
         let mut char_offsets = Vec::with_capacity(para_info.char_count as usize);
         let mut hwp3_char_to_utf16_pos = vec![0; para_info.char_count as usize];
@@ -2984,6 +3041,7 @@ pub(crate) fn parse_paragraph_list(
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
                                 title_marks: &mut para_title_marks,
+                                tab_extended: &mut para_tab_extended,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3007,6 +3065,7 @@ pub(crate) fn parse_paragraph_list(
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
                                 title_marks: &mut para_title_marks,
+                                tab_extended: &mut para_tab_extended,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3039,6 +3098,7 @@ pub(crate) fn parse_paragraph_list(
                                 ctrl_data_records: &mut ctrl_data_records,
                                 control_mask: &mut para_control_mask,
                                 title_marks: &mut para_title_marks,
+                                tab_extended: &mut para_tab_extended,
                                 use_password_layout_contract,
                             },
                         )?;
@@ -3163,6 +3223,21 @@ pub(crate) fn parse_paragraph_list(
         para.style_id = para_info.style_index;
         para.control_mask = para_control_mask;
         para.title_marks = para_title_marks;
+        // [#7170] 폭과 채움이 **둘 다 비면** 그 확장은 직렬화기의 "데이터 없음"
+        // 마커(`[0,…,0,0x0009]`)와 글자 그대로 같아진다. HWP5 파서는 그 마커를 일부러
+        // IR 에 싣지 않으므로(#1892), 그런 탭을 실으면 재파스에서 확장 하나가 사라지고
+        // **뒤 탭의 확장이 순번으로 밀린다** — 직렬화는 `	` 순번으로 확장을 꺼낸다.
+        //
+        // 그래서 그런 탭이 하나라도 있는 문단은 통째로 싣지 않고 종전 동작을 유지한다.
+        // 한 문단 안에서 일부만 싣는 절충은 순번 계약을 깬다. 표본 264쪽 문서의 탭
+        // 112개는 전부 폭이 0 이 아니라 이 갈래를 타지 않는다.
+        if para_tab_extended
+            .iter()
+            .any(|ext| ext[..6].iter().all(|&v| v == 0))
+        {
+            para_tab_extended.clear();
+        }
+        para.tab_extended = para_tab_extended;
         para.has_para_text =
             !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
         strip_hwp3_single_tac_visual_marker(&mut para);
@@ -4278,6 +4353,46 @@ fn parse_hwp3_inner(
         1
     };
     section_def.footnote_shape.separator_line_width = 1;
+    // [#7174] 구분선 여백을 **HWP5 슬롯**에 배선한다. `FootnoteShape` 는 포맷별로
+    // 슬롯이 갈리고(모델 주석) HWP5 저장은 `separator_margin_bottom`(구분선 위)과
+    // `note_spacing`(구분선 아래)을 쓴다. 종전에는 각주 모양에 이 배선이 아예 없어
+    // 저장본의 구분선 여백이 0 이었다 — 구분선이 본문과 각주에 붙는다.
+    //
+    // 한/글 네이티브 HWP5 정본 실측: `FOOTNOTE_SHAPE[0]` 이 구분선 위 852 ·
+    // 아래 568 이고, 이는 `doc_info` 의 hunit 값 213·142 에 ×4 한 값과 같다.
+    if doc_info.footnote_line_margin != 0 {
+        section_def.footnote_shape.separator_margin_bottom =
+            (doc_info.footnote_line_margin as i16).saturating_mul(4);
+    }
+    if doc_info.footnote_text_margin != 0 {
+        section_def.footnote_shape.note_spacing =
+            (doc_info.footnote_text_margin as i16).saturating_mul(4);
+    }
+    // [#7174] 각주 번호의 **닫는 장식 문자**와 **시작 번호**를 각주 모양에 배선한다.
+    //
+    // 종전에는 둘 다 배선이 없어 저장본의 `FOOTNOTE_SHAPE` 가 뒤 장식 0 · 시작 번호 0
+    // 으로 나갔다. 한글은 본문의 각주 참조 번호를 이 두 값으로 그리므로, 원본이
+    // `1)` 로 보여 주던 참조가 저장본에서 `1` 이 된다 — 264쪽 표본에서 정확히 230개의
+    // `)` 가 사라진다(각주 230개). 각주 **영역**의 번호는 이 값이 아니라 자동 번호
+    // (`atno`) 컨트롤 자신의 장식 필드로 그려지므로 여기서 겹쳐 그려지지 않는다.
+    //
+    // 기대값의 출처는 한글 자신의 HWP5 변환본이다 — `FOOTNOTE_SHAPE[0]` 의 뒤 장식
+    // `41`(=`)`), 시작 번호 `1`. 둘 다 원본 `doc_info` 의 값과 그대로 같다(offset 110
+    // = 41, offset 100 = 1).
+    //
+    // offset 110 은 스펙(한글문서파일구조3.0.md:244)에서 타입이 `echar` 이고
+    // "`')'` = 각주 번호에 `')'` 를 붙임, 0 = 안 붙임" 이다. 즉 **바이트 값이 곧 장식
+    // 문자**이며 플래그가 아니다. 코퍼스 HWP3 38건은 전부 `41` 이라 두 해석의 차이가
+    // 드러나지 않지만, 스펙 타입을 따라 문자로 읽는다. 장식이 될 수 없는 바이트
+    // (제어문자·비 ASCII)는 "안 붙임"으로 떨어뜨려 본문에 제어문자가 새지 않게 한다.
+    section_def.footnote_shape.suffix_char = hwp3_note_number_suffix_char(&doc_info);
+    // offset 100 "각주시작번호"(스펙 240행). HWP5 의 시작 번호는 1 부터이므로 0 은
+    // "지정 없음" 으로 보고 1 로 떨어뜨린다. 코퍼스 38건은 전부 1 이다.
+    section_def.footnote_shape.start_number = if doc_info.footnote_start_number != 0 {
+        doc_info.footnote_start_number
+    } else {
+        1
+    };
     // [#3032] doc_info offset 108 "각주와 각주 사이의 간격"(footnote_between_margin)을
     // footnote_shape.raw_unknown("주석 사이")에 hunit ×4 = HWPUNIT 변환으로 배선한다.
     // 적용처·스케일 근거는 한컴 자체 HWP3→HWPX 변환 실측(SO-SUEOP.hwpx:
@@ -4401,6 +4516,9 @@ struct Hwp3NoteFixupState {
     footnote_number: u16,
     endnote_number: u16,
     has_endnote: bool,
+    /// [#7174] 주석 본문에 리터럴로 남은 번호 장식 문자. 각주 모양의 뒤 장식과 **같은
+    /// 값**이라야 번호가 한 번만 그려진다.
+    number_suffix: char,
 }
 
 fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3DocInfo) {
@@ -4409,6 +4527,7 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3D
         footnote_number: doc.doc_properties.footnote_start_num.max(1),
         endnote_number: doc.doc_properties.endnote_start_num.max(1),
         has_endnote: false,
+        number_suffix: hwp3_note_number_suffix_char(doc_info),
     };
 
     for section in &mut doc.sections {
@@ -4601,6 +4720,91 @@ fn normalize_hwp3_note_line_vpos(paragraph: &mut crate::model::paragraph::Paragr
     }
 }
 
+/// [#7174] HWP3 는 각주/미주 번호의 닫는 장식을 **주석 본문의 첫 글자**로 저장한다.
+/// HWP5 는 그 장식을 각주 모양(`FOOTNOTE_SHAPE`)이 번호와 함께 그리므로, 리터럴을 그대로
+/// 두면 주석 영역 번호가 `1))` 로 두 번 그려진다.
+///
+/// 264쪽 표본(`1170000-200500003_D0150004-1-001`, 각주 230개)을 한글로 열어 실측한
+/// 값이다. 각주 모양에 뒤 장식을 배선하기 전/후와 정본(한글 자신의 HWP5 변환본)의
+/// 추출 글자 수다.
+///
+/// ```text
+///   정본            283,780자    본문 참조 `1)` · 주석 영역 `1)`
+///   배선 전         283,556자    본문 참조 `1`  · 주석 영역 `1)`  (`)` 230개 부족)
+///   배선만          284,016자    본문 참조 `1)` · 주석 영역 `1))` (`)` 230개 과잉)
+/// ```
+///
+/// 대상을 양쪽에서 잠근다 — 문서가 장식을 켰고(`suffix`), 첫 글자가 **자동 번호의
+/// 8유닛 자리표시자**이며(`char_offsets` 가 `0, 8` 로 시작), 그 다음 글자가 바로 그
+/// 장식 문자일 때만 한 글자를 뗀다. 범위 정보를 가진 문단(구역 태그·필드·제목 표시·
+/// 형광펜)은 건드리지 않는다 — 이 문단들에는 해당 채널이 없고, 있으면 오프셋을 함께
+/// 옮겨야 해서 이 수정의 범위가 아니다.
+fn strip_hwp3_note_number_suffix_literal(
+    paragraphs: &mut [crate::model::paragraph::Paragraph],
+    suffix: char,
+) {
+    use crate::model::control::{AutoNumberType, Control};
+
+    if suffix == '\0' {
+        return;
+    }
+    let Some(para) = paragraphs.first_mut() else {
+        return;
+    };
+    if !matches!(
+        para.controls.first(),
+        Some(Control::AutoNumber(an))
+            if matches!(an.number_type, AutoNumberType::Footnote | AutoNumberType::Endnote)
+    ) {
+        return;
+    }
+    if !para.range_tags.is_empty()
+        || !para.field_ranges.is_empty()
+        || !para.title_marks.is_empty()
+        || !para.markpen_marks.is_empty()
+    {
+        return;
+    }
+    // 자리표시자는 글자 하나지만 저장본에서 확장 컨트롤 8 코드유닛을 차지한다(#3504).
+    // 그 형상이 아니면 자동 번호 자리가 아니므로 손대지 않는다.
+    if para.char_offsets.len() < 2 || para.char_offsets[0] != 0 || para.char_offsets[1] != 8 {
+        return;
+    }
+    let mut chars = para.text.chars();
+    if chars.next().is_none() {
+        return;
+    }
+    if chars.next() != Some(suffix) {
+        return;
+    }
+
+    let removed_at = para.char_offsets[1];
+    let removed_units = suffix.len_utf16() as u32;
+
+    let mut text = String::with_capacity(para.text.len());
+    for (idx, ch) in para.text.chars().enumerate() {
+        if idx != 1 {
+            text.push(ch);
+        }
+    }
+    para.text = text;
+    para.char_offsets.remove(1);
+    for offset in para.char_offsets.iter_mut().skip(1) {
+        *offset = offset.saturating_sub(removed_units);
+    }
+    para.char_count = para.char_count.saturating_sub(removed_units);
+    for shape in &mut para.char_shapes {
+        if shape.start_pos > removed_at {
+            shape.start_pos = shape.start_pos.saturating_sub(removed_units);
+        }
+    }
+    for seg in &mut para.line_segs {
+        if seg.text_start > removed_at {
+            seg.text_start = seg.text_start.saturating_sub(removed_units);
+        }
+    }
+}
+
 fn fixup_hwp3_notes_in_controls(
     controls: &mut [crate::model::control::Control],
     state: &mut Hwp3NoteFixupState,
@@ -4614,6 +4818,10 @@ fn fixup_hwp3_notes_in_controls(
                 state.footnote_number = state.footnote_number.saturating_add(1);
                 footnote.after_decoration_letter = ')' as u16;
                 footnote.number_shape = 0;
+                strip_hwp3_note_number_suffix_literal(
+                    &mut footnote.paragraphs,
+                    state.number_suffix,
+                );
                 fixup_hwp3_notes_in_paragraphs(&mut footnote.paragraphs, state);
             }
             Control::Endnote(endnote) => {
@@ -4622,6 +4830,7 @@ fn fixup_hwp3_notes_in_controls(
                 state.endnote_number = state.endnote_number.saturating_add(1);
                 endnote.after_decoration_letter = ')' as u16;
                 endnote.number_shape = 0;
+                strip_hwp3_note_number_suffix_literal(&mut endnote.paragraphs, state.number_suffix);
                 for paragraph in &mut endnote.paragraphs {
                     normalize_hwp3_note_line_vpos(paragraph);
                 }
@@ -5413,25 +5622,39 @@ mod tests {
     }
 
     #[test]
-    fn hwp3_negative_indent_uses_password_contract_only_when_requested() {
-        // `한글 97 안내문` 3쪽 설명 문단: HWP3은 후속 줄 margin=2932 hunit과
-        // 내어쓰기=-2057 hunit을 저장한다. 한컴 변환 HWP5와 공통 renderer의
-        // 표현에서는 첫 줄 기준 875 hunit(=7000 HU)이어야 한다.
+    fn hwp3_negative_indent_normalizes_to_the_first_line_margin() {
+        // [#7172] HWP3 은 내어쓰기 문단에서 **후속 줄** 기준 여백을 저장하고,
+        // HWP5 `ParaShape.margin_left` 는 **첫 줄** 기준이다. `한글 97 안내문`
+        // 3쪽 설명 문단은 margin=2932 hunit · 내어쓰기=-2057 hunit 이고, 한컴
+        // 변환 HWP5 는 첫 줄 기준 875 hunit(=7000 HU)을 쓴다.
+        //
+        // 종전에는 이 정규화를 암호 fixture 에만 걸었다. 암호가 아닌 264쪽 문서를
+        // 한컴 변환본과 전 문단 대조하면 `음수 들여쓰기 -> 여백 + 들여쓰기(0 하한)`
+        // 이 3,699/3,699 전건 성립하고 반례가 0 이다. `SO-SUEOP` 도 이 정규화로
+        // 여백 불일치가 17건 -> 0건이 된다. 곧 일반 규칙이다.
         let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
         hwp3_ps.left_margin = 2932;
         hwp3_ps.indent = -2057;
 
         let ps = convert_para_shape(&hwp3_ps, &mut Vec::new());
-        assert_eq!(ps.margin_left, 23456, "일반 HWP3는 저장 left_margin을 보존");
-        assert_eq!(ps.indent, -16456);
+        assert_eq!(ps.margin_left, 7000, "첫 줄 기준 (2932-2057) hunit");
+        assert_eq!(ps.indent, -16456, "들여쓰기는 그대로 옮긴다");
         assert_eq!(ps.margin_right, 0, "오른쪽 여백은 이 정규화 범위 밖");
 
+        // 암호 경로도 같은 값이어야 한다 — 더 이상 갈리지 않는다.
         let password_ps = convert_para_shape_with_layout_contract(&hwp3_ps, &mut Vec::new(), true);
+        assert_eq!(password_ps.margin_left, ps.margin_left);
+        assert_eq!(password_ps.indent, ps.indent);
+
+        // 반례: 들여쓰기가 0 이상이면 저장 여백을 그대로 보존한다.
+        let mut plain = crate::parser::hwp3::records::Hwp3ParaShape::default();
+        plain.left_margin = 2932;
+        plain.indent = 1000;
+        let plain_ps = convert_para_shape(&plain, &mut Vec::new());
         assert_eq!(
-            password_ps.margin_left, 7000,
-            "암호 HWP3만 첫 줄 기준으로 정규화"
+            plain_ps.margin_left, 23456,
+            "양수 들여쓰기 문단은 저장 left_margin 을 보존한다"
         );
-        assert_eq!(password_ps.indent, -16456);
     }
 
     #[test]
@@ -5621,6 +5844,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5629,6 +5853,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
 
@@ -5694,6 +5919,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5702,6 +5928,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
 
@@ -5787,6 +6014,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5795,6 +6023,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
 
@@ -5850,6 +6079,7 @@ mod tests {
         let mut ctrl_data_records = Vec::new();
         let mut para_control_mask: u32 = 0;
         let mut para_title_marks: Vec<crate::model::paragraph::TitleMark> = Vec::new();
+        let mut para_tab_extended: Vec<[u16; 7]> = Vec::new();
         let mut scan = Hwp3CharScan {
             text_string: &mut text_string,
             char_offsets: &mut char_offsets,
@@ -5858,6 +6088,7 @@ mod tests {
             ctrl_data_records: &mut ctrl_data_records,
             control_mask: &mut para_control_mask,
             title_marks: &mut para_title_marks,
+            tab_extended: &mut para_tab_extended,
             use_password_layout_contract: false,
         };
         let mut char_shapes = Vec::new();

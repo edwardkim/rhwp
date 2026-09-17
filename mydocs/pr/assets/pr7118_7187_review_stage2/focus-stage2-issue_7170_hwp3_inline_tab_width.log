@@ -1,0 +1,10 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 5.95s
+     Running tests/generated/regression_suite_011.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_011-62e61382f8c8bf6b)
+
+running 3 tests
+test issue_7170_hwp3_inline_tab_width::hwp3_inline_tab_count_matches_the_tab_characters ... ok
+test issue_7170_hwp3_inline_tab_width::hwp3_inline_tab_fill_follows_the_document ... ok
+test issue_7170_hwp3_inline_tab_width::hwp3_inline_tab_carries_its_width ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.08s

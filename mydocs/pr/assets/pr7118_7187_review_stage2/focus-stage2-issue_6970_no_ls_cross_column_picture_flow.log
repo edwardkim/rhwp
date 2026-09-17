@@ -1,0 +1,9 @@
+    Finished `release-test` profile [optimized] target(s) in 0.11s
+     Running tests/generated/regression_suite_024.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_024-fbd9e35d6a0cc6aa)
+
+running 3 tests
+test issue_6970_no_ls_cross_column_picture_flow::issue_6970_empty_wrap_lane_does_not_justify_final_heading ... ok
+test issue_6970_no_ls_cross_column_picture_flow::issue_6970_no_ls_text_avoids_previous_column_pictures_on_same_page ... ok
+test issue_6970_no_ls_cross_column_picture_flow::issue_6970_behind_text_pictures_do_not_reserve_a_side_lane ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 196 filtered out; finished in 0.01s

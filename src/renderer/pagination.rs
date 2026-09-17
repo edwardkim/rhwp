@@ -556,6 +556,10 @@ pub struct WrapAnchorRef {
     /// paragraph_layout 의 wrap_anchor 처리에서 cs px 에 +margin_right_px,
     /// sw px 에서 -margin_right_px 보정 (text 시작 위치와 가용 폭 정합).
     pub anchor_image_margin_right: i32,
+    /// 줄 단위 배제 밴드 — Some((top, bottom)) 이면 문단 시작 기준 상대 y(px)가
+    /// 이 구간과 교차하는 줄에만 anchor cs/sw 를 적용한다(출석부 형상). None 이면
+    /// 기존처럼 문단 전체에 적용.
+    pub band_y_range: Option<(f64, f64)>,
 }
 
 /// 페이지에 배치되는 개별 항목
@@ -1015,6 +1019,7 @@ impl PaginationResult {
                                         anchor_cs: v.anchor_cs,
                                         anchor_sw: v.anchor_sw,
                                         anchor_image_margin_right: v.anchor_image_margin_right,
+                                        band_y_range: v.band_y_range,
                                     },
                                 )
                             })

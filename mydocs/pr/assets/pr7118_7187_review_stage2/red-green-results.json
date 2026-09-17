@@ -1,0 +1,77 @@
+[
+  {
+    "name": "red-mirror",
+    "cwd": "/private/tmp/rhwp-stage2-red-20260916",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_012",
+      "issue_6970_mirror_columns_and_square_paragraph_keep_source_geometry",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 101,
+    "expected": 101
+  },
+  {
+    "name": "red-terminal",
+    "cwd": "/private/tmp/rhwp-stage2-red-20260916",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr7118-7187-20260916",
+      "--lib",
+      "test_advance_row_cut_multi_cell",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 101,
+    "expected": 101
+  },
+  {
+    "name": "green-terminal",
+    "cwd": "/Users/tsjang/rhwp",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr7118-7187-20260916",
+      "--lib",
+      "test_advance_row_cut_multi_cell",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "expected": 0
+  },
+  {
+    "name": "build-final-cli",
+    "cwd": "/Users/tsjang/rhwp",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr7118-7187-20260916",
+      "--bin",
+      "rhwp"
+    ],
+    "exit_code": 0,
+    "expected": 0
+  }
+]

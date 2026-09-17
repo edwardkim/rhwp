@@ -1,0 +1,210 @@
+{
+  "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp": {
+    "bytes": 243200,
+    "sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799",
+    "sha1": "f487552e918ba7e039ea8faa09c8059d848d971f"
+  },
+  "samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp": {
+    "bytes": 24576,
+    "sha256": "38ae1f429341c1ced270204dc365ca3df0acc38a22b5495239667e02a4450456",
+    "sha1": "d113d42b46190ee6eabde67c948e7d7eac830218"
+  },
+  "samples/table_giant_cell_overfill.hwpx": {
+    "bytes": 534016,
+    "sha256": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4",
+    "sha1": "8f02a2638a170fefea6f2b33604d1e78a58ba6ba"
+  },
+  "samples/task1718/table_giant_cell_overfill.hwp": {
+    "bytes": 589312,
+    "sha256": "eb630b0bb9ae67c539323b5d1944a52fc7b61cecd8805adbf152064a306f9a61",
+    "sha1": "6444a9715b451dda34c8f5b5747a15d1c0d3cf2e"
+  },
+  "samples/issue2004_cell_image_stack.hwp": {
+    "bytes": 2396160,
+    "sha256": "c633fd086323075ab25777d8ee10357869d037bd17c9e74d444d5b8297c40d50",
+    "sha1": "36fcbbc6fca9619c0cc4f630742251a17b5055d4"
+  },
+  "tests/fixtures/issue_4680/german-legislative-system.hwp": {
+    "bytes": 545110,
+    "sha256": "543d67cdb4d84b876949cef4f4ec7435b99716d6fa7feebde57b024c88d40559",
+    "sha1": "6fd4569dd5a37e993784c5c604f85a96dae3d977"
+  },
+  "tests/fixtures/issue_4680/german-legislative-system-hancom-2020.hwp": {
+    "bytes": 538112,
+    "sha256": "84bcec55e53692a935dafec0ff509f878b278c9f833e59a3f4c9be1a444444b6",
+    "sha1": "f8359825e2bdfb3c5b573b1e065008c281fa84bc"
+  },
+  "tests/fixtures/issue_4680/german-legislative-system-open-pr-review.hwp": {
+    "bytes": 371200,
+    "sha256": "bcf47583f2a7da1c8e8d4624d262abf417f0d0ab4eebf9bca23964809c0f772b",
+    "sha1": "8c335a97afa866ada53214f734c8f7f3dab7458a"
+  },
+  "pdf/synth_no_ls_square_wrap-2020.pdf": {
+    "bytes": 575393,
+    "sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110",
+    "sha1": "0a0954fd37fea5c98a19a8127a40c64e692018c5",
+    "pdf_info": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "3",
+      "File size": "575393 bytes",
+      "PDF version": "1.6"
+    }
+  },
+  "pdf/rowbreak_cell_picture_only_paragraph-2020.pdf": {
+    "bytes": 162625,
+    "sha256": "a5393b28fd4696a66dea4a4f2c855504e91287104082ef741221c4949fd6259e",
+    "sha1": "2d290f9c422da812539cced42f0db0d6ef519c0b",
+    "pdf_info": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "4",
+      "File size": "162625 bytes",
+      "PDF version": "1.6"
+    }
+  },
+  "pdf/table_giant_cell_overfill-hwpx-2024.pdf": {
+    "bytes": 510623,
+    "sha256": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be",
+    "sha1": "a8ca740ff3ec98d0f787fc9f070d76029257dafb",
+    "pdf_info": {
+      "Creator": "Hwp 2024 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "48",
+      "File size": "510623 bytes",
+      "PDF version": "1.6"
+    }
+  },
+  "pdf/issue2004_cell_image_stack-hwp-2020.pdf": {
+    "bytes": 903153,
+    "sha256": "b5e2f962620d8d7cdd2ec8b10571c53fbe959eb9ce7b3428ff09a595f12fee90",
+    "sha1": "8879557ea459150016b1558717e534fc3db9ed76",
+    "pdf_info": {
+      "Creator": "Hwp 2022 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "8",
+      "File size": "903153 bytes",
+      "PDF version": "1.6"
+    }
+  },
+  "pdf/german-legislative-system-2020.pdf": {
+    "bytes": 2466718,
+    "sha256": "3e0d4570a412c9e927d1ecb14d3cd84cc6a962c51d7ddeb1d90a435f3605028c",
+    "sha1": "1b206661e7a1406a8a4f45ebe6e2a42cce9b112d",
+    "pdf_info": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "264",
+      "File size": "2466718 bytes",
+      "PDF version": "1.6"
+    }
+  },
+  "pdf/german-legislative-system-review-2020.pdf": {
+    "bytes": 2389946,
+    "sha256": "8a8542c9cc765c7673e8ca78ab178b34ce3d6f934ebb188db9d3872019b6e4f4",
+    "sha1": "5c23393f24933185bda91c451834bd74360451b6",
+    "pdf_info": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "264",
+      "File size": "2389946 bytes",
+      "PDF version": "1.6"
+    }
+  },
+  "samples/SO-SUEOP.hwp": {
+    "bytes": 112481,
+    "sha256": "b5e410d4972b988240eb79f462c75ab3f92ce3415af6ed7f411906cc7498396c",
+    "sha1": "59fbf28c78fc5f3e6098c6efbbeb64c64df44807",
+    "usage": "focused case issue_7172_hwp3_hanging_indent_margin"
+  },
+  "samples/issue2004_cell_image_stack.hwpx": {
+    "bytes": 2341799,
+    "sha256": "e91cf067de71c6c567e27974415bc67462f3e777997d41853db949fea4265fa7",
+    "sha1": "958d6b2f6b55dd95c4a9148f63fa727fd0df8fdc",
+    "usage": "focused case issue_4771_derived_layout_state"
+  },
+  "samples/누름틀-2024.hwpx": {
+    "bytes": 13597,
+    "sha256": "a762e165576050cf491cca6b00c941db97cd6730e3a8a34944a7cc15e72e1012",
+    "sha1": "206607cff0d9c80c50908fd6cf254837b82fe836",
+    "usage": "focused case issue_4771_derived_layout_state"
+  },
+  "samples/issue6946/44529-logistics-policy-rule-amendment.hwp": {
+    "bytes": 34816,
+    "sha256": "e7225ebb6d97981ffb10c98fbb6a639ef2efe77e43ca30d11d4fd172c3c2c1d6",
+    "sha1": "5da947ec772731c8d8f2eeca28f3b5f37e92ea8a",
+    "usage": "focused case issue_6946_block_seated_float_sibling_gets_its_own_page"
+  },
+  "samples/[2027] 온새미로 1 본교재.hwp": {
+    "bytes": 734720,
+    "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+    "sha1": "69cc0c40cf2f3cf0691dc3a2f6224bb41220fda3",
+    "usage": "focused case issue_1440_onsamiro_picture_wrap"
+  },
+  "samples/[2027] 온새미로 1 본교재.hwpx": {
+    "bytes": 862784,
+    "sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+    "sha1": "cb1702f443fddbcb154c4e82f8adf8d69594175d",
+    "usage": "focused case issue_1440_onsamiro_picture_wrap"
+  },
+  "samples/issue1892_hwp3_drawing_group_roundtrip.hwp": {
+    "bytes": 26112,
+    "sha256": "ab6bb4e80c4b0f4228e62bbb3d180229e5cef5f52b20fddee8849bf1c7b4c438",
+    "sha1": "613ba8662bbbaf8188bfc050473f6ffb3878decf",
+    "usage": "focused case issue_1892"
+  },
+  "samples/issue1892_hwp3_tab_roundtrip.hwp": {
+    "bytes": 6375,
+    "sha256": "7c7457de8fb74f23d2305bb4870e412138494fb0aef1af2258af181ac5aec8c0",
+    "sha1": "aca2e20c0c373e44cd4818209cdb5d9c25ab2b31",
+    "usage": "focused case issue_1892"
+  },
+  "samples/hwp3-sample10.hwp": {
+    "bytes": 945360,
+    "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+    "sha1": "1d7b93078d7a48c403d4f3575e4e548260dc2d0b",
+    "usage": "focused case issue_7170_hwp3_inline_tab_width"
+  },
+  "samples/hwp3-sample16.hwp": {
+    "bytes": 2949937,
+    "sha256": "559fd94860cf836d5800436d56055c23a73e59eedef3da273a5ba365e6ed9e16",
+    "sha1": "d5c5606d731df09c2ae1b37f58a8fb54450bce38",
+    "usage": "focused case issue_7170_hwp3_inline_tab_width"
+  },
+  "samples/issue7062/tac_object_host_line_height.hwp": {
+    "bytes": 286720,
+    "sha256": "2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb",
+    "sha1": "ed7962e59ec3aee036d68e0daeae78bbebce42be",
+    "usage": "focused case issue_7095_page_spanning_fragment_box"
+  },
+  "samples/issue6023/30269_reform_recommendation.hwp": {
+    "bytes": 470016,
+    "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+    "sha1": "64b555fe7baa7ee8286fd4593bded4d598c29191",
+    "usage": "focused case issue_7095_page_spanning_fragment_box"
+  },
+  "samples/80168_regulatory_analysis.hwp": {
+    "bytes": 218624,
+    "sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22",
+    "sha1": "bebce726906daadaef21d27df0de1c6178c6ae5d",
+    "usage": "focused case issue_7095_page_spanning_fragment_box"
+  },
+  "samples/rowbreak-problem-pages.hwp": {
+    "bytes": 553984,
+    "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "sha1": "3f206eca3e8d9e343e6638e072f72316a56d7120",
+    "usage": "focused case issue_7095_page_spanning_fragment_box"
+  },
+  "samples/SO-SUEOP.hwpx": {
+    "bytes": 134304,
+    "sha256": "ebbd6f5c86d6eda195bb9c4ba1fc35b329432dcc5ef1dc0fffbfb4542fce74b8",
+    "sha1": "3dcef1fbb5b2bd7e70f7ade99afbe27e1ead80e1",
+    "usage": "focused case issue_1692"
+  },
+  "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp": {
+    "bytes": 418304,
+    "sha256": "7bc60801fea62f29e65df08268267fba3aa75343522cfb4af93bfa98863f6d9a",
+    "sha1": "90d7b48116ac7129cf40fec980b86d5017b2c925",
+    "usage": "focused case cell_square_picture_anchor"
+  }
+}

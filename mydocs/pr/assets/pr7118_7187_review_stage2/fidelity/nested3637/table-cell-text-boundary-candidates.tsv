@@ -1,0 +1,6 @@
+page	pi	ci	rows	cols	row	col	candidate_kind	cell_bbox	node_type	line_bbox	text_bbox	edges	edge_clearance_px	max_overflow_px	left_px	right_px	top_px	bottom_px	text	note
+30	17	0	18	3	1	0	line_boundary_overflow	215.6,-518.4,95.1,22.8	TextLine	222.4,-500.9,81.5,12.0	222.4,-500.9,81.5,12.0	bottom	0.0	6.7	0.0	0.0	0.0	6.7	painted line	candidate only; line crosses Cell or visible-ending natural width exceeds it
+30	17	0	18	3	1	1	line_boundary_overflow	310.7,-518.4,192.0,22.8	TextLine	317.5,-504.5,178.4,12.0	317.5,-504.5,178.4,12.0	bottom	0.0	3.1	0.0	0.0	0.0	3.1	painted line	candidate only; line crosses Cell or visible-ending natural width exceeds it
+30	17	0	18	3	1	2	line_boundary_overflow	502.6,-518.4,192.0,22.8	TextLine	509.4,-504.5,178.4,12.0	509.4,-504.5,178.4,12.0	bottom	0.0	3.1	0.0	0.0	0.0	3.1	painted line	candidate only; line crosses Cell or visible-ending natural width exceeds it
+30	40	0	13	7	0	2	line_boundary_overflow	350.8,1010.5,75.0,64.0	TextLine	357.6,1064.4,61.4,13.3	357.6,1064.4,61.4,13.3	bottom	0.0	3.2	0.0	0.0	0.0	3.2	painted line	candidate only; line crosses Cell or visible-ending natural width exceeds it
+30	40	0	13	7	0	3	line_boundary_overflow	425.8,1010.5,75.0,64.0	TextLine	432.6,1064.4,61.4,13.3	432.6,1064.4,61.4,13.3	bottom	0.0	3.2	0.0	0.0	0.0	3.2	painted line	candidate only; line crosses Cell or visible-ending natural width exceeds it

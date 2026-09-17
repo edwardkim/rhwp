@@ -1,0 +1,16 @@
+[RustTestSuite] issue_7095_page_spanning_fragment_box -> regression_suite_019::issue_7095_page_spanning_fragment_box
+[RustTestSuite] cargo nextest run --locked --test regression_suite_019 -E test(/(^|::)issue_7095_page_spanning_fragment_box::/) --cargo-profile release-test --target-dir /Users/tsjang/rhwp/target/pr7118-7187-20260916 --no-fail-fast
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/private/tmp/rhwp-open-pr-ab-20260916)
+    Finished `release-test` profile [optimized] target(s) in 2m 23s
+────────────
+ Nextest run ID 855b07d2-e430-4fca-85cb-57bb8d723c3b with nextest profile: default
+    Starting 6 tests across 1 binary (192 tests skipped)
+        PASS [   0.026s] (1/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame
+        PASS [   0.040s] (2/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_last_fragment_and_downstream_contracts_hold
+        PASS [   0.041s] (3/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_first_fragment_starting_at_page_top_is_pinned_too
+        PASS [   0.049s] (4/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_fragment_box_opens_the_table_outer_top_margin
+        PASS [   0.164s] (5/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::stored_midpage_cut_keeps_its_last_source_unit
+        PASS [   1.250s] (6/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::fragment_budget_preserves_units_with_visible_and_empty_hosts
+────────────
+     Summary [   1.251s] 6 tests run: 6 passed, 192 skipped

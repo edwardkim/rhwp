@@ -1,0 +1,12 @@
+    Finished `release-test` profile [optimized] target(s) in 0.12s
+     Running tests/generated/regression_suite_009.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_009-97580b56b9e7e734)
+
+running 6 tests
+test issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame ... ok
+test issue_7095_page_spanning_fragment_box::issue_7095_last_fragment_and_downstream_contracts_hold ... ok
+test issue_7095_page_spanning_fragment_box::issue_7095_fragment_box_opens_the_table_outer_top_margin ... ok
+test issue_7095_page_spanning_fragment_box::issue_7095_first_fragment_starting_at_page_top_is_pinned_too ... ok
+test issue_7095_page_spanning_fragment_box::stored_midpage_cut_keeps_its_last_source_unit ... ok
+test issue_7095_page_spanning_fragment_box::fragment_budget_preserves_units_with_visible_and_empty_hosts ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 208 filtered out; finished in 1.31s

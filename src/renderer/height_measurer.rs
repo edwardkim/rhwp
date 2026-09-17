@@ -182,6 +182,7 @@ fn stored_square_picture_wrap_anchor_for_control(
         anchor_cs: first_seg.column_start as i32,
         anchor_sw: first_seg.segment_width as i32,
         anchor_image_margin_right: common.margin.right as i32,
+        band_y_range: None,
     };
     if target_para_idx.is_some_and(|target_idx| target_idx != target) {
         return None;
@@ -1203,14 +1204,31 @@ impl HeightMeasurer {
                     })
                     .fold(prev_extent, f64::max);
                 prev_extent = para_extent;
+                // 저장 lineseg 없는 빈 셀 문단의 글자처럼취급
+                // 그림은 줄 높이에 실릴 곳이 없어 셀이 선언 높이로 붕괴하고, 렌더는
+                // 셀 클립(33px)에 그림(188px)이 잘려 나간다(사용안내 설치 스크린샷
+                // 1·2·3 실측). 이 형상 한정으로 그림 높이를 셀 시각 바닥에 계상한다.
+                let para_no_ls_empty = p.text.trim().is_empty()
+                    && !p.line_segs.iter().any(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    });
+                let tac_bottom = |common: &CommonObjAttr| -> f64 {
+                    if para_no_ls_empty && common.treat_as_char {
+                        hwpunit_to_px(common.height as i32, self.dpi)
+                    } else {
+                        0.0
+                    }
+                };
                 let object_bottom = p
                     .controls
                     .iter()
                     .map(|ctrl| match ctrl {
-                        Control::Picture(pic) => self.cell_wrap_object_visual_bottom(&pic.common),
-                        Control::Shape(shape) => {
-                            self.cell_wrap_object_visual_bottom(shape.common())
-                        }
+                        Control::Picture(pic) => self
+                            .cell_wrap_object_visual_bottom(&pic.common)
+                            .max(tac_bottom(&pic.common)),
+                        Control::Shape(shape) => self
+                            .cell_wrap_object_visual_bottom(shape.common())
+                            .max(tac_bottom(shape.common())),
                         _ => 0.0,
                     })
                     .fold(0.0f64, f64::max);

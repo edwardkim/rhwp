@@ -7,6 +7,7 @@ import { CompareDialog } from '@/ui/compare-dialog';
 import { CompareSessionStore } from '@/compare/session';
 import { canExecuteFormatPaste } from '../format-paste-availability';
 
+import { t } from '../../i18n/index.ts';
 /** 검색 대화상자 싱글톤 — 열려 있으면 재사용 */
 let findDialogInstance: FindDialog | null = null;
 /** 싱글톤: 문서 이력 관리 대화상자 */
@@ -19,7 +20,7 @@ let compareSessionStore: CompareSessionStore | null = null;
 export const editCommands: CommandDef[] = [
   {
     id: 'edit:undo',
-    label: '되돌리기',
+    label: t('command.edit.undo.label'),
     icon: 'icon-undo',
     shortcutLabel: 'Ctrl+Z',
     canExecute: (ctx) => ctx.hasDocument && ctx.canUndo,
@@ -29,7 +30,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:redo',
-    label: '다시 실행',
+    label: t('command.edit.redo.label'),
     icon: 'icon-redo',
     shortcutLabel: 'Ctrl+Shift+Z',
     canExecute: (ctx) => ctx.hasDocument && ctx.canRedo,
@@ -39,7 +40,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:cut',
-    label: '오려 두기',
+    label: t('command.edit.cut.label'),
     icon: 'icon-cut',
     shortcutLabel: 'Ctrl+X',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode && (ctx.hasSelection || ctx.inPictureObjectSelection || ctx.inTableObjectSelection),
@@ -49,7 +50,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:copy',
-    label: '복사하기',
+    label: t('command.edit.copy.label'),
     icon: 'icon-copy',
     shortcutLabel: 'Ctrl+C',
     canExecute: (ctx) => ctx.hasDocument && (ctx.hasSelection || ctx.inPictureObjectSelection || ctx.inTableObjectSelection),
@@ -59,7 +60,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:paste',
-    label: '붙이기',
+    label: t('command.edit.paste.label'),
     icon: 'icon-paste',
     shortcutLabel: 'Ctrl+V',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode,
@@ -69,7 +70,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:format-copy',
-    label: '모양 복사',
+    label: t('command.edit.formatCopy.label'),
     icon: 'icon-format-copy',
     shortcutLabel: 'Alt+C',
     canExecute: (ctx) => ctx.hasDocument,
@@ -79,7 +80,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:format-paste',
-    label: '모양 붙여넣기',
+    label: t('command.edit.formatPaste.label'),
     icon: 'icon-format-copy',
     canExecute: canExecuteFormatPaste,
     execute(services) {
@@ -88,7 +89,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:delete',
-    label: '지우기',
+    label: t('command.edit.delete.label'),
     icon: 'icon-delete',
     shortcutLabel: 'Ctrl+E',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode && (ctx.hasSelection || ctx.inPictureObjectSelection || ctx.inTableObjectSelection),
@@ -98,7 +99,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:select-all',
-    label: '모두 선택',
+    label: t('command.edit.selectAll.label'),
     icon: 'icon-select-all',
     shortcutLabel: 'Ctrl+A',
     canExecute: (ctx) => ctx.hasDocument,
@@ -109,7 +110,7 @@ export const editCommands: CommandDef[] = [
   {
     id: 'edit:find',
     opensDialog: true,
-    label: '찾기(F)',
+    label: t('command.edit.find.label'),
     icon: 'icon-find',
     shortcutLabel: 'Ctrl+F',
     canExecute: (ctx) => ctx.hasDocument,
@@ -125,7 +126,7 @@ export const editCommands: CommandDef[] = [
   {
     id: 'edit:find-replace',
     opensDialog: true,
-    label: '찾아 바꾸기(E)',
+    label: t('command.edit.findReplace.label'),
     icon: 'icon-find-replace',
     shortcutLabel: 'Ctrl+F2',
     canExecute: (ctx) => ctx.hasDocument,
@@ -141,7 +142,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'edit:find-again',
-    label: '다시 찾기(X)',
+    label: t('command.edit.findAgain.label'),
     shortcutLabel: 'Ctrl+L',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -167,7 +168,7 @@ export const editCommands: CommandDef[] = [
   {
     id: 'edit:compare-documents',
     opensDialog: true,
-    label: '문서 비교',
+    label: t('command.edit.compareDocuments.label'),
     shortcutLabel: 'Alt+Shift+V',
     canExecute: () => true,
     execute(services) {
@@ -183,7 +184,7 @@ export const editCommands: CommandDef[] = [
   {
     id: 'edit:document-history',
     opensDialog: true,
-    label: '문서 이력 관리',
+    label: t('command.edit.documentHistory.label'),
     shortcutLabel: 'Ctrl+Shift+H',
     canExecute: () => true,
     execute(services) {
@@ -201,7 +202,7 @@ export const editCommands: CommandDef[] = [
   {
     id: 'edit:goto',
     opensDialog: true,
-    label: '찾아가기(G)',
+    label: t('command.edit.goto.label'),
     shortcutLabel: 'Alt+G',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -212,7 +213,7 @@ export const editCommands: CommandDef[] = [
   {
     id: 'field:edit',
     opensDialog: true,
-    label: '누름틀 고치기(E)...',
+    label: t('command.field.edit.registryLabel'),
     shortcutLabel: 'Ctrl+M,K',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode && ctx.inField,
     execute(services) {
@@ -265,7 +266,7 @@ export const editCommands: CommandDef[] = [
   },
   {
     id: 'field:remove',
-    label: '누름틀 지우기(J)',
+    label: t('command.field.remove.registryLabel'),
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode && ctx.inField,
     execute(services) {
       const ih = services.getInputHandler();

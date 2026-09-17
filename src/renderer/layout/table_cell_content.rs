@@ -1083,7 +1083,11 @@ impl LayoutEngine {
                         &cell.paragraphs,
                         styles,
                     ))
-                    .max(self.calc_nested_controls_bottom_height(&cell.paragraphs, styles))
+                    .max(self.calc_nested_controls_bottom_height(
+                        &composed_paras,
+                        &cell.paragraphs,
+                        styles,
+                    ))
             } else {
                 self.calc_composed_paras_content_height(&composed_paras, &cell.paragraphs, styles)
             };

@@ -1811,6 +1811,7 @@ fn parse_col_pr(e: &quick_xml::events::BytesStart) -> ColumnDef {
             b"layout" => {
                 cd.direction = match attr_str(&attr).as_str() {
                     "RIGHT" => ColumnDirection::RightToLeft,
+                    "MIRROR" => ColumnDirection::Mirror,
                     _ => ColumnDirection::LeftToRight,
                 };
             }

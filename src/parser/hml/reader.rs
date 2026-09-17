@@ -1773,6 +1773,7 @@ fn parse_column_type(value: Option<&str>) -> ColumnType {
 fn parse_column_direction(value: Option<&str>) -> ColumnDirection {
     match value {
         Some("Right") => ColumnDirection::RightToLeft,
+        Some("Mirror") => ColumnDirection::Mirror,
         _ => ColumnDirection::LeftToRight,
     }
 }

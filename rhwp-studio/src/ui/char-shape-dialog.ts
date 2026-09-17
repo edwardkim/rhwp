@@ -215,9 +215,9 @@ export class CharShapeDialog {
     tabGroup.className = 'dialog-tabs';
     // 탭은 ID 로 구분한다. 화면 글자(label)는 표시에만 쓴다.
     const tabDefs = [
-      { id: 'basic', label: '기본' },
-      { id: 'extended', label: '확장' },
-      { id: 'borderFill', label: '테두리/배경' },
+      { id: 'basic', label: i18nText('dialog.charShape.tab.basic') },
+      { id: 'extended', label: i18nText('dialog.charShape.tab.extended') },
+      { id: 'borderFill', label: i18nText('dialog.charShape.tab.borderFill') },
     ];
     tabDefs.forEach(({ id, label }, i) => {
       const btn = document.createElement('button');

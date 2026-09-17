@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "c426fdec-baee-4e99-913d-ab8581648537",
+  "output_path": "/Users/tsjang/rhwp/pdf/rowbreak_cell_picture_only_paragraph-2020.pdf",
+  "output_filename": "rowbreak_cell_picture_only_paragraph-2020.pdf",
+  "size": 162625,
+  "sha256": "a5393b28fd4696a66dea4a4f2c855504e91287104082ef741221c4949fd6259e",
+  "server": {
+    "job_id": "c426fdec-baee-4e99-913d-ab8581648537",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "rowbreak_cell_picture_only_paragraph.hwp",
+    "output_filename": "rowbreak_cell_picture_only_paragraph-2020.pdf",
+    "size": 162625,
+    "sha256": "a5393b28fd4696a66dea4a4f2c855504e91287104082ef741221c4949fd6259e",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 4,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 19868,
+    "worker_elapsed_ms": 19300,
+    "worker_bits": 32,
+    "input_preprocess": "none"
+  }
+}

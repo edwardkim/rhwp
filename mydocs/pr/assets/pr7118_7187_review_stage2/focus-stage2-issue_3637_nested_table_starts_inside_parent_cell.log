@@ -1,0 +1,10 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 7.87s
+     Running tests/generated/regression_suite_002.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_002-13dd0a6adeb9a30e)
+
+running 1 test
+LAYOUT_OVERFLOW: page=14, sec=0, col=0, para=118, type=Table, first=false, y=1068.2, bottom=1046.9, overflow=21.3px
+LAYOUT_TABLE_OVERLAP: page=14, sec=0, para_a=111, para_b=118, a=75.6~1191.7, b=991.0~1068.2, overlap=200.7px
+test issue_3637_nested_table_starts_inside_parent_cell::nested_table_starts_inside_its_parent_cell ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.21s

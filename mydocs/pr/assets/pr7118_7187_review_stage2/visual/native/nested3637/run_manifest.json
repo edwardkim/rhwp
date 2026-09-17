@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "key": "nested3637",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62"
+    },
+    "pdf": {
+      "path": "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+      "sha256": "4628627c8d6e41dea85aa022232221da982e28538e6a514a24b8ca1af3f21699"
+    },
+    "git_head": "788ab292b9f4cbaaff62420a18cd05181b1f902d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "path": "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "sha256": "9b4ef7ea3cc120293b5bda39f5c72d0fc6eb5f9e9a7e41e34c864f98e95abde1"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    26,
+    27,
+    28,
+    29,
+    30
+  ],
+  "requested_page_shards": [
+    [
+      26,
+      27,
+      28,
+      29,
+      30
+    ]
+  ],
+  "run_state": "complete"
+}

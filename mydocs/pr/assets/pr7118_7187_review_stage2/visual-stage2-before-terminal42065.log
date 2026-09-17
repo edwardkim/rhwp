@@ -1,0 +1,12 @@
+== terminal42065 ==
++ /private/tmp/rhwp-review-open-20260916/rhwp-candidate dump-note-shape /Users/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp
++ /private/tmp/rhwp-review-open-20260916/rhwp-candidate export-svg /Users/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp --font-style -o /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065/terminal42065/svg
++ /private/tmp/rhwp-review-open-20260916/rhwp-candidate export-render-tree /Users/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp -o /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065/terminal42065/render_tree
+SVG export pages: 17
++ pdftoppm -f 15 -l 15 -r 96 -png /Users/tsjang/rhwp/pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065/terminal42065/pdf_png/pdf
++ pdftoppm -f 16 -l 16 -r 96 -png /Users/tsjang/rhwp/pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065/terminal42065/pdf_png/pdf
++ pdftoppm -f 17 -l 17 -r 96 -png /Users/tsjang/rhwp/pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065/terminal42065/pdf_png/pdf
++ pdftotext -bbox-layout /Users/tsjang/rhwp/pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065/terminal42065/pdf_bbox.html
+Selected pages: [15, 16, 17]
+Raster PNG pages: rhwp=3, pdf=3
+summary: /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065/summary.json

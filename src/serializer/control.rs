@@ -549,9 +549,11 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
         // bit 2-9: 단 개수
         a |= (cd.column_count as u16 & 0xFF) << 2;
         // bit 10-11: 단 방향
-        if cd.direction == ColumnDirection::RightToLeft {
-            a |= 1 << 10;
-        }
+        a |= match cd.direction {
+            ColumnDirection::LeftToRight => 0,
+            ColumnDirection::RightToLeft => 1 << 10,
+            ColumnDirection::Mirror => 2 << 10,
+        };
         // bit 12: 단 너비 동일
         if cd.same_width {
             a |= 1 << 12;

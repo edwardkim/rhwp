@@ -412,3 +412,174 @@ fn issue_1440_page6_box_border_connect_and_dash_line_are_preserved() {
         );
     }
 }
+
+/// #6970: 저장 `LINE_SEG` 가 없는(합성 줄로 조판되는) 문서에서 Square 어울림 그림·
+/// 인라인 아이콘을 낀 다단 문단이 단 하단을 넘고 본문이 개체 위로 흐르지 않아야 한다.
+///
+/// 픽스처는 실문서 익명화본(한글 음절 순환 치환·이미지 더미화·기하 보존)으로 3쪽이
+/// 정답이다. 수정 전 `devel` 은 쪽수는 맞추면서도 `layout-anomaly` 가 offCanvas 20 ·
+/// overflow 27 · overlap 3 을 보고했고(2쪽 좌측 단 내용이 상단 배너 위로 올라가고
+/// 아이콘·텍스트·스크린샷이 서로 겹침), 엔진 스스로 `LAYOUT_OVERFLOW` 를 찍었다.
+#[test]
+fn issue_6970_no_ls_square_wrap_columns_stay_inside_body_without_overlap() {
+    use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
+    use rhwp::document_core::DocumentCore;
+
+    let bytes = read_fixture("tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp");
+    let doc = DocumentCore::from_bytes(&bytes).expect("#6970 fixture parse");
+    assert_eq!(doc.page_count(), 3, "#6970: 쪽수는 정답(3)과 같아야 한다");
+
+    let opts = AnomalyOptions {
+        overflow_tolerance_px: 2.0,
+        ..AnomalyOptions::default()
+    };
+    for page in 0..doc.page_count() {
+        let tree = doc
+            .build_page_render_tree(page)
+            .expect("#6970 fixture render");
+        let result = scan_page(page, &tree.root, doc.page_count(), &opts);
+        assert!(
+            result.off_canvas.is_empty(),
+            "#6970 p{}: 단 밖으로 나간 항목 {:?}",
+            page + 1,
+            result.off_canvas
+        );
+        assert!(
+            result.overflow.iter().all(|item| item.over_bottom <= 2.0),
+            "#6970 p{}: 단 하단 넘침 {:?}",
+            page + 1,
+            result.overflow
+        );
+        assert!(
+            result.overlap.is_empty(),
+            "#6970 p{}: 개체 겹침 {:?}",
+            page + 1,
+            result.overlap
+        );
+    }
+}
+
+/// HWP 5.0 사양 표 139의 단 방향 2는 맞쪽이다. 독립 기준인 한컴 PDF에서는
+/// 짝수인 2쪽의 77번 문단이 69번 문단 왼쪽에 놓이고, 100번 문단은 한 줄에
+/// 겹치지 않고 서로 다른 두 줄을 차지한다.
+#[test]
+fn issue_6970_mirror_columns_and_square_paragraph_keep_source_geometry() {
+    let bytes = read_fixture("tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp");
+    let source = rhwp::parser::parse_document(&bytes).expect("parse source");
+    let columns = source.sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|c| {
+            if let Control::ColumnDef(columns) = c {
+                Some(columns)
+            } else {
+                None
+            }
+        })
+        .expect("source columns");
+    assert_eq!((columns.raw_attr >> 10) & 3, 2);
+    assert_eq!(format!("{:?}", columns.direction), "Mirror");
+    let core = rhwp::document_core::DocumentCore::from_bytes(&bytes).expect("open");
+    let page = core.build_page_render_tree(1).expect("second page");
+    let mut nodes = Vec::new();
+    collect_nodes(&page.root, &mut nodes);
+    let lines = |pi| {
+        nodes.iter().filter(|node| {
+        matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(pi))
+    }).map(|node| node.bbox.clone()).collect::<Vec<_>>()
+    };
+    assert!(lines(77)[0].x < lines(69)[0].x, "even page column order");
+    let wrapped = lines(100);
+    assert_eq!(
+        wrapped.len(),
+        2,
+        "Hancom PDF p2 has two lines beside the picture"
+    );
+    assert!(
+        wrapped[0].y + wrapped[0].height <= wrapped[1].y,
+        "distinct line boxes"
+    );
+    assert!(
+        wrapped[1].y + wrapped[1].height <= lines(102)[0].y,
+        "following paragraph preserved"
+    );
+}
+
+#[test]
+fn issue_6970_mirror_direction_survives_hwp_and_hwpx_save() {
+    let bytes = read_fixture("tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp");
+    let mut source = rhwp::parser::parse_document(&bytes).expect("parse source");
+    // 원본 0x1808 값을 그대로 통과시키지 않고 속성을 재구성하는 저장 경로를 검사한다.
+    source.sections[0].raw_stream = None;
+    for control in &mut source.sections[0].paragraphs[0].controls {
+        if let Control::ColumnDef(columns) = control {
+            columns.raw_attr = 0;
+        }
+    }
+    for saved in [
+        rhwp::serializer::serialize_document(&source).expect("save HWP"),
+        rhwp::serializer::hwpx::serialize_hwpx(&source).expect("save HWPX"),
+    ] {
+        let reparsed = rhwp::parser::parse_document(&saved).expect("reopen");
+        let direction = reparsed.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|c| {
+                if let Control::ColumnDef(columns) = c {
+                    Some(format!("{:?}", columns.direction))
+                } else {
+                    None
+                }
+            })
+            .expect("saved columns");
+        assert_eq!(direction, "Mirror");
+    }
+}
+
+#[test]
+fn issue_6970_source_column_direction_preserves_rectangles_and_page_parity() {
+    use rhwp::model::page::{ColumnDef, ColumnDirection, PageDef};
+    use rhwp::renderer::page_layout::PageLayoutInfo;
+
+    for direction in [
+        ColumnDirection::LeftToRight,
+        ColumnDirection::RightToLeft,
+        ColumnDirection::Mirror,
+    ] {
+        let columns = ColumnDef {
+            column_count: 3,
+            same_width: true,
+            spacing: 300,
+            direction,
+            ..Default::default()
+        };
+        let page = PageDef {
+            width: 59528,
+            height: 84188,
+            margin_left: 3000,
+            margin_right: 3000,
+            ..Default::default()
+        };
+        let mut layout = PageLayoutInfo::from_page_def_for_page(&page, &columns, 96.0, 1);
+        let total: f64 = layout.column_areas.iter().map(|r| r.width).sum();
+        for number in [1, 2, 2, 3, 4, 1] {
+            layout.apply_page_number_margins(&page, number);
+            let reversed = direction == ColumnDirection::RightToLeft
+                || (direction == ColumnDirection::Mirror && number.is_multiple_of(2));
+            assert_eq!(
+                layout.column_areas[0].x > layout.column_areas[2].x,
+                reversed
+            );
+            assert!(
+                (layout.column_areas.iter().map(|r| r.width).sum::<f64>() - total).abs() < 0.001
+            );
+            for area in &layout.column_areas {
+                assert!(
+                    area.x >= layout.body_area.x
+                        && area.x + area.width
+                            <= layout.body_area.x + layout.body_area.width + 0.001
+                );
+            }
+        }
+    }
+}

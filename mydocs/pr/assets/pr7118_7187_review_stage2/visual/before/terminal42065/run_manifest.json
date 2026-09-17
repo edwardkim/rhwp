@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "key": "terminal42065",
+  "provenance": {
+    "hwp": {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    "pdf": {
+      "path": "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf",
+      "sha256": "450aae3be8ea99721d3af1fb8772b7771c7a7b818e015c18d16e07fe4348702c"
+    },
+    "git_head": "788ab292b9f4cbaaff62420a18cd05181b1f902d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/private/tmp/rhwp-review-open-20260916/rhwp-candidate",
+      "path": "/private/tmp/rhwp-review-open-20260916/rhwp-candidate",
+      "sha256": "84fe916132f07e2e4445c5952870b2471dd7288c859b0fa5363a3e4ef8aee7d4"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    15,
+    16,
+    17
+  ],
+  "requested_page_shards": [
+    [
+      15,
+      16,
+      17
+    ]
+  ],
+  "run_state": "complete"
+}

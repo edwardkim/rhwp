@@ -1,0 +1,42 @@
+{
+  "base": "8d45f242baa1a565357aaa38e9f459595b1e756c",
+  "starting_head": "788ab292b9f4cbaaff62420a18cd05181b1f902d",
+  "branch": "codex/open-pr-review-20260916",
+  "source_files_sha256": {
+    "src/document_core/commands/text_editing.rs": "683b179865c228a6959e44bf75c205ca9079c0d4db7bf089f5f1a6939878b66e",
+    "src/document_core/queries/rendering.rs": "41f4e8aa2be10b2af0260b2181aacce0b280562f08ba05e15b6cd4390d72fcc1",
+    "src/model/page.rs": "265c3dbcb8f01983cd21b96e339237b9e7a504abce50c2edffee0e23fc45d45b",
+    "src/parser/body_text.rs": "7ff8583ab9383033c77dc9863d72f411f08f27cb6beaf5d431fb221368903b64",
+    "src/parser/hml/reader.rs": "3d305b9d0973cfeef75cdd3c9ebd145a7b122119dfacbf33ca0cb13e95953dab",
+    "src/parser/hwpx/section.rs": "b52214061e6884d9aec1454ec68e34e177a31c7454343d777e4f5210bc581ac9",
+    "src/renderer/composer.rs": "fadf43c338e314badec571306caf25b6625b88c049a884de30d679bfd616cf03",
+    "src/renderer/composer/line_breaking.rs": "3c206ca61425b3f235c6c7514f50274b7d835d5b5c33bf37e00ed0b7c7dde79b",
+    "src/renderer/layout.rs": "3b47d614351f89352f206356b13f020ad6df2b8869ea77bbe30ab4562527dc2e",
+    "src/renderer/layout/integration_tests.rs": "64fa53e74249b21039ba61eaef3e52aba1218e2bd7a5c09025a7a0698af7ea1e",
+    "src/renderer/layout/paragraph_layout.rs": "057109b194cda0d969b892d43a0a2cd98d8535022b71abba477691ea619fd902",
+    "src/renderer/layout/paragraph_layout/issue_2439_lineseg_indent_tests.rs": "c20ccfc7c7e31aa99e705ef19be9ed60e2f733549c993d60d08f4e3a5f72baef",
+    "src/renderer/layout/table_layout.rs": "2f681126bfadaf896e8f0d8f680289348bd12849272180bc46371833058322b1",
+    "src/renderer/layout/tests.rs": "4960773215a4e5f78c1ed35510b31e7e8500a8a53d056c4c10a186a061510719",
+    "src/renderer/mod.rs": "0fe787af965d537610e9a4cb01378f1f29eef0ae06194dee09d939a616b40c22",
+    "src/renderer/page_layout.rs": "a144a173647800ac2a0693be747af5ad19704a0a8470ca23b91dc14f762eadd8",
+    "src/renderer/page_number.rs": "624180e0d91db24c829c83a63c2791715a351fa9091e45dba17cc291d56b2fa7",
+    "src/renderer/pagination.rs": "46de5ed96c94677141e078df8c070595bb893b64268ab20e179b454ce76908f1",
+    "src/renderer/pagination/state.rs": "adeadb52571dc08e06feb312eb1a268cad2c469a0b3a0506197a629ed9b350ee",
+    "src/renderer/pagination/tests.rs": "74beb91f886f4d3fe43553b8eff61ddf3645a565da913ddb29858e16aa9bc3d7",
+    "src/renderer/typeset.rs": "5ea99c3b3542fc7d736a6c47892f860754091effb9fda4f9da3c3c6a2e5f2da8",
+    "src/serializer/control.rs": "d5beb9cdd727549aae615bf7289154867d5fbccec0be449f3b3dee568102af2a",
+    "src/serializer/hml/body.rs": "a609e2f0bcaad1093629bd6355c8e2f83e3fb175919af322204e8d4ad582be8a",
+    "src/serializer/hwpx/section.rs": "0e2b3fb2609986ffd66fc7288ae1b272c44fd33a3e097918720b350af543e3f5",
+    "tests/cases/issue_6972_tac_fullpage_picture_page_ownership.rs": "489d64c2556f9537eca29779a1b30d3b4e882b7ef98f1c6eac866711d6b342a6",
+    "tests/issue_1440_onsamiro_picture_wrap.rs": "514a6f8f6932060dd4253ecbe18657b340a979ce36535135da9a1176233193fc"
+  },
+  "cli_sha256": "9b4ef7ea3cc120293b5bda39f5c72d0fc6eb5f9e9a7e41e34c864f98e95abde1",
+  "environment": {
+    "host": "macOS arm64",
+    "developer_dir": "/Library/Developer/CommandLineTools",
+    "cargo_target_dir": "target/pr7118-7187-20260916",
+    "logical_cpus": 10,
+    "memory_gib": 32,
+    "docker": "daemon unavailable; native --no-opt is diagnostic fallback"
+  }
+}

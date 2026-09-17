@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "116648a0-09bb-44db-a770-17f21429c6a2",
+  "output_path": "/Users/tsjang/rhwp/pdf/synth_no_ls_square_wrap-2020.pdf",
+  "output_filename": "synth_no_ls_square_wrap-2020.pdf",
+  "size": 575393,
+  "sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110",
+  "server": {
+    "job_id": "116648a0-09bb-44db-a770-17f21429c6a2",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "synth_no_ls_square_wrap.hwp",
+    "output_filename": "synth_no_ls_square_wrap-2020.pdf",
+    "size": 575393,
+    "sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 3,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 36744,
+    "worker_elapsed_ms": 34573,
+    "worker_bits": 32,
+    "input_preprocess": "none"
+  }
+}

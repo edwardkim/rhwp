@@ -1,0 +1,8 @@
+    Finished `release-test` profile [optimized] target(s) in 0.10s
+     Running tests/generated/regression_suite_026.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_026-26c8687883e201b8)
+
+running 2 tests
+test issue_6970_multicolumn_synth_ladder_fill::no_column_holds_more_than_it_can ... ok
+test issue_6970_multicolumn_synth_ladder_fill::multicolumn_synth_ladder_column_counts_what_it_holds ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 193 filtered out; finished in 0.01s

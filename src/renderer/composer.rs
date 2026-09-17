@@ -911,6 +911,12 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
     }
 }
 
+// 저장 줄의 실제 점유 높이. 줄 구성과 저장 줄 소속 재사용 판정이 같은
+// 메트릭을 비교해야 글자 테두리로 높아진 정상 줄을 재조판 줄로 오인하지 않는다.
+fn stored_line_box_height(seg: &LineSeg) -> i32 {
+    seg.line_height.max(seg.text_height)
+}
+
 /// 문단의 텍스트를 줄별로 분할하고, 각 줄 내에서 CharShapeRef 경계에 따라 분할한다.
 fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     if para.line_segs.is_empty() {
@@ -953,19 +959,32 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     }
                 }
             }
+            // 강제 줄바꿈(0x0A)은 문자 수와 무관하게 그 자리에서 줄을 끝낸다 —
+            // 한글은 이 문자에서 반드시 개행하므로, 무시하면 두 줄 분량이 한
+            // 줄로 이어져 열 폭을 넘는다.
+            if let Some(nl) = chars[offset..max_end].iter().position(|&c| c == '\n') {
+                end = offset + nl + 1;
+            }
             let line_text: String = chars[offset..end].iter().collect();
             let is_last_line = end >= total;
-            // [#2279] 주의: 이 폴백은 문단의 CharShapeRef 를 무시하고 단일
-            // default_style run 을 만든다 — 문단 전체가 `char_shapes[0]` 의 글꼴·
-            // 크기·**자간**으로 측정·렌더된다. 본문 경로는 이제 프레임이 소유해
-            // 이 폴백을 거치지 않는다(프레임의 fill 이 `para.char_shapes` 로
-            // 토큰화한다). 셀 경로도 #5193 으로 프레임에 합류해
-            // (`recompose_cell_lines_in_frame`) 이 폴백을 거치지 않는다 — 남은
-            // 소비자는 프레임이 관할을 사양하는 문단(자기 레이아웃 소유자를 가진
-            // control 을 든 문단)뿐이다.
-            //
-            lines.push(ComposedLine {
-                runs: split_runs_by_lang(vec![ComposedTextRun {
+            // 이 폴백(PARA_LINE_SEG 누락 문단)도 CharShapeRef 경계를 존중한다 —
+            // 종전에는 문단 전체를 `char_shapes[0]` 단일 run 으로 만들어, 첫
+            // run 이 컨트롤 문자 구간(스트림 위주 앞부분)의 모양일 때 가시
+            // 텍스트 전체가 그 모양으로 렌더됐다(제목이 15pt 흰색 bold 저장인데
+            // 10pt 검정으로 — run 경계 (0,cs_a)(24,cs_b)(26,cs_c) 에서 cs_a 적용).
+            // char_offsets 가 있으면 본문 경로와 같은 splitter 로 토큰화하고,
+            // 없으면 종전 단일 default_style run 을 유지한다.
+            let fallback_runs = if para.char_offsets.len() == total && !para.char_shapes.is_empty()
+            {
+                split_by_char_shapes(
+                    &line_text,
+                    offset,
+                    end,
+                    &para.char_offsets,
+                    &para.char_shapes,
+                )
+            } else {
+                split_runs_by_lang(vec![ComposedTextRun {
                     text: line_text,
                     char_style_id: default_style_id,
                     lang_index: 0,
@@ -974,7 +993,10 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     display_text: None,
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
-                }]),
+                }])
+            };
+            lines.push(ComposedLine {
+                runs: fallback_runs,
                 line_height: 400,
                 baseline_distance: 320,
                 segment_width: 0,
@@ -1131,7 +1153,10 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             {
                 line_seg.text_height
             } else {
-                line_seg.line_height
+                // 글자 테두리 등으로 텍스트 점유 높이가 명목 줄 높이를 넘을 수
+                // 있다. 한컴 저장 줄(1000/1056/632)은 1688HU씩 전진한다.
+                // 공통 구성 결과에 점유 높이를 싣고 측정과 paint가 함께 소비한다.
+                stored_line_box_height(line_seg)
             };
 
             let mut push_segment = |segment_start: usize, segment_end: usize, has_break: bool| {
@@ -1547,7 +1572,7 @@ pub(crate) fn stored_tac_line_assignment(
             .enumerate()
             .any(|(i, (line, seg))| {
                 seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                    || line.line_height != seg.line_height
+                    || line.line_height != stored_line_box_height(seg)
                     || line.segment_width != seg.segment_width
                     || line.char_start
                         != para
@@ -1994,10 +2019,11 @@ pub(crate) fn no_ls_short_label_cell(
 /// 실폭 판정이 무의미하므로 호출부(셀 방향을 아는 곳)에서 걸러야 한다
 /// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)은 불변.
 ///
-/// [#5952] `※`/`☞` 유의사항 bullet의 저장 2~3줄이 각 `segment_width`에서 셀
-/// 내폭과 같지만 합성 행이 ×1.10을 넘으면 Hangul 분할을 복원한다. 행정업무운영
-/// 편람 61쪽의 유의사항 상자가 그 경우다. 일반 다중행 본문, 끝의 빈 저장 행,
-/// 단순한 폭 불일치는 저장 분할을 보존한다.
+/// [#5952] `※`/`☞` 유의사항 bullet의 저장 2~3줄이 한 줄로 합성되었고 각
+/// `segment_width`가 셀 내폭과 같지만 합성 행이 ×1.10을 넘으면 분할을 복원한다.
+/// [#6389] 이미 다중행인 결과에는 개입하지 않는다. 대체 글꼴의 추정 폭 차이를
+/// 저장 줄 붕괴로 오인하면 정상 줄 경계를 파괴한다. 저장 정보의 유효성 판단은
+/// 선행 프레임 경로, 보존한 줄의 폭 조정은 paragraph layout의 공통 경로가 맡는다.
 pub fn recompose_stored_single_line_if_overflowing(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -2023,7 +2049,7 @@ fn recompose_stored_single_line_if_overflowing_cached(
     dpi: f64,
     cache: Option<&SingleLineOverflowCache>,
 ) {
-    if composed.lines.is_empty() || cell_inner_width_px <= 0.0 {
+    if composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
         return;
     }
     let authentic_stored = !para.line_segs.is_empty()
@@ -2052,9 +2078,6 @@ fn recompose_stored_single_line_if_overflowing_cached(
         if over {
             reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
         }
-        return;
-    }
-    if composed.lines.len() != 1 {
         return;
     }
     let stored_single = para.line_segs.len() == 1 && authentic_stored;
@@ -2353,7 +2376,22 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
     // owner to hand it to.
-    if !paragraph_box.is_usable() || !line_breaking::supports_cached_body_frame_controls(para) {
+    //
+    // NO_LS 문단은 예외적으로 picture-band 게이트(비-TAC 그림 1개)도 허용한다 —
+    // 저장 행이 없어 fill 이 유일한 소유자인데, Square 그림 host 라는 이유로
+    // 여기서 사양하면 45자 합성 줄바꿈이 그대로 남아 감폭된 상자 폭을 넘는다
+    // (아이콘 옆 설명 한 줄이 열 밖까지 이어지는 형상). 저장 행이 있는 문단의
+    // 소유권 계약은 종전대로 본문 게이트만 통과한다.
+    let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
+        || (crate::renderer::para_has_no_stored_line_segs(para)
+            && (known_square_band
+                || para.controls.iter().any(|control| {
+                    matches!(control, crate::model::control::Control::Picture(picture)
+                    if !picture.common.treat_as_char
+                    && picture.common.text_wrap == crate::model::shape::TextWrap::Square)
+                }))
+            && line_breaking::supports_picture_band_frame_controls(para));
+    if !paragraph_box.is_usable() || !frame_admits_controls {
         return None;
     }
 

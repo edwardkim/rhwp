@@ -1,0 +1,40 @@
+[RustTestSuite] issue_7095_page_spanning_fragment_box -> regression_suite_019::issue_7095_page_spanning_fragment_box
+[RustTestSuite] cargo nextest run --locked --test regression_suite_019 -E test(/(^|::)issue_7095_page_spanning_fragment_box::/) --cargo-profile release-test --target-dir /Users/tsjang/rhwp/target/pr7118-7187-20260916 --no-fail-fast
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/private/tmp/rhwp-open-pr-ab-20260916)
+   Compiling rhwp-password-crypto v0.1.0 (/private/tmp/rhwp-open-pr-ab-20260916/crates/rhwp-password-crypto)
+   Compiling svg2pdf v0.13.0 (/private/tmp/rhwp-open-pr-ab-20260916/vendor/svg2pdf)
+   Compiling rhwp-ooxml-chart v0.1.0 (/private/tmp/rhwp-open-pr-ab-20260916/crates/rhwp-ooxml-chart)
+   Compiling rhwp-contracts v0.1.0 (/private/tmp/rhwp-open-pr-ab-20260916/crates/rhwp-contracts)
+    Finished `release-test` profile [optimized] target(s) in 2m 53s
+────────────
+ Nextest run ID 62af63f8-9204-40d7-977a-18108b1fac6b with nextest profile: default
+    Starting 6 tests across 1 binary (192 tests skipped)
+        FAIL [   0.030s] (1/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame
+  stdout ───
+
+    running 1 test
+    test issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame ... FAILED
+
+    failures:
+
+    failures:
+        issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame' (188918104) panicked at tests/generated/../cases/issue_7095_page_spanning_fragment_box.rs:60:5:
+    projected content frame must end at its picture: BoundingBox { x: 75.58666666666667, y: 86.92000000000002, width: 634.9866666666667, height: 850.8799999999999 }, PDF bottom=931.4788638656837
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.059s] (2/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_first_fragment_starting_at_page_top_is_pinned_too
+        PASS [   0.060s] (3/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_last_fragment_and_downstream_contracts_hold
+        PASS [   0.062s] (4/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_fragment_box_opens_the_table_outer_top_margin
+        PASS [   0.274s] (5/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::stored_midpage_cut_keeps_its_last_source_unit
+        PASS [   2.029s] (6/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::fragment_budget_preserves_units_with_visible_and_empty_hosts
+────────────
+     Summary [   2.031s] 6 tests run: 5 passed, 1 failed, 192 skipped
+        FAIL [   0.030s] (1/6) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame
+error: test run failed
