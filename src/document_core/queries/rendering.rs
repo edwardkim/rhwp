@@ -2434,7 +2434,15 @@ impl DocumentCore {
                             if key.is_none() {
                                 self.cacheable = false;
                             }
-                            self.write_image(*bbox, clip, image, resolved.as_deref(), data, key);
+                            // [#7193] 그리는 자리는 틀에서 그림 안쪽 여백을 뺀 사각형이다.
+                            self.write_image(
+                                image.paint_bbox(bbox),
+                                clip,
+                                image,
+                                resolved.as_deref(),
+                                data,
+                                key,
+                            );
                         }
                     }
                 }
@@ -2636,7 +2644,8 @@ impl DocumentCore {
 
             buf.push('{');
             buf.push_str("\"bbox\":");
-            write_bbox(buf, bbox);
+            // [#7193] 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
+            write_bbox(buf, image.paint_bbox(&bbox));
             buf.push_str(",\"mime\":");
             write_json_str(buf, mime);
             buf.push_str(",\"base64\":");
