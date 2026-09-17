@@ -11,7 +11,9 @@ status: active
 - 검증 기록 head: `b502715ea`. PR base: `fcbd00e0fabc4b309a887357033f92e2d511cd75`.
 - 상태: 구현·조사 결과와 로컬 검사 실행은 정리했으나, **전체 회귀 실패로 제출·merge 준비 완료는 아니다**.
   이번 승인으로 실패를 예외 승인하거나 #7195의 종료 조건을 충족한 것으로 처리하지 않는다.
-- 현재 PR 없음. 원격 push·댓글·PR 생성·merge·이슈 close는 수행하지 않았다.
+- 보고서 준비 당시 PR 없음. 이후 실패 공개 목적의 승인으로
+  [Draft PR #7222](https://github.com/edwardkim/rhwp/pull/7222)을 `369fb09514`에서 게시했다.
+  [접수 기록](../pr/archives/pr_7222_review.md)은 머지 보류이며 Ready·merge·이슈 close는 미실행이다.
 
 ## 1. 해결 범위
 
