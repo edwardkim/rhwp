@@ -52,3 +52,39 @@ fn wmf_fuzz_regression_inputs_do_not_panic() {
         .collect();
     assert!(panicked.is_empty(), "WMF 변환이 패닉한 입력: {panicked:?}");
 }
+
+/// META_TEXTOUT와 META_EXTTEXTOUT는 같은 TOP/BOTTOM 기준점 보정을 쓴다.
+/// 파일의 i16 좌표에 ascent/descent를 더하는 경계와 정상 범위를 함께 검사한다.
+#[test]
+fn textout_vertical_alignment_handles_both_i16_limits() {
+    let seed = include_bytes!("../fixtures/pr7239_review/textout_baseline_i16_max.wmf");
+    for (align, y) in [
+        (0u16, i16::MAX),
+        (8, i16::MIN),
+        (0, 100),
+        (8, 100),
+        (24, i16::MAX),
+    ] {
+        let mut bytes = seed.to_vec();
+        let mut pos = 18; // 표준 WMF header
+        while u16::from_le_bytes(bytes[pos + 4..pos + 6].try_into().unwrap()) != 0x0521 {
+            pos += u32::from_le_bytes(bytes[pos..pos + 4].try_into().unwrap()) as usize * 2;
+        }
+        // 한 글자와 WORD padding 뒤에 YStart가 있다.
+        bytes[pos + 10..pos + 12].copy_from_slice(&y.to_le_bytes());
+        let mut alignment = 4u32.to_le_bytes().to_vec();
+        alignment.extend_from_slice(&0x012eu16.to_le_bytes());
+        alignment.extend_from_slice(&align.to_le_bytes());
+        bytes.splice(pos..pos, alignment);
+        let words = bytes.len() as u32 / 2;
+        bytes[6..10].copy_from_slice(&words.to_le_bytes());
+        let svg = WMFConverter::new(bytes.as_slice(), SVGPlayer::new())
+            .run()
+            .unwrap_or_else(|e| panic!("align={align}, y={y}: {e}"));
+        let svg = String::from_utf8(svg).unwrap();
+        assert!(
+            svg.contains(">A</text>"),
+            "글자를 숨기지 않아야 한다: {svg}"
+        );
+    }
+}

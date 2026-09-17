@@ -172,3 +172,17 @@ blocker 수정 뒤 실제 Native/fresh WASM compare·standalone overlay·review,
 
 원격 source push·PR 생성·GitHub comment·merge·close는 이번 검토에서 수행하지 않았다.
 reviewer 지정만 원격 metadata에 반영했다. 오늘할일은 최종 제출 준비 단계에서 작성한다.
+
+## 메인터너 보정 회차 1 — 분석
+
+승인된 후속 보정으로 META_TEXTOUT의 TOP/BOTTOM 덧셈을 형제 ExtTextOut과 같은
+포화 덧셈으로 맞춘다. i16 범위 내 정상 연산은 같고, MIN/MAX에서 wrap 또는 panic을
+막는다. 최소 WMF를 정식 회귀에서 읽어 TOP/MAX, BOTTOM/MIN, 정상 TOP/BOTTOM,
+BASELINE/MAX를 검사한다. 결과를 확인한 뒤 이 회차를 커밋한다.
+
+### 회차 1 결과보고
+
+- `META_TEXTOUT`의 TOP/BOTTOM 기준점 덧셈을 `META_EXTTEXTOUT`와 같은 안전 산술로 통일했다.
+- overflow-checks가 켜진 test profile에서 새 경계 테스트는 보정 전 `1519:20 attempt to add with overflow`로 실패했다. 보정 후 TOP/BOTTOM 양 극값, 정상 좌표와 BASELINE 대조를 모두 실행하고 글자 A의 SVG 보존까지 통과했다.
+- 원 fuzz 10입력 aggregate와 새 경계 검사: **2 passed**. 기존 WMF/EMF golden: **1 passed**, baseline 변경 없음.
+- 이 회차는 패닉 반례를 해결한 코드 후보다. 최종 통합 head의 lint·전체 회귀·Native/fresh WASM Visual Sweep은 후속 회차에서 수행하므로 아직 최종 승인이 아니다.

@@ -1516,8 +1516,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let point = {
             let point = PointS {
                 x: record.x_start,
-                y: record.y_start
-                    + match self.context_current.text_align_vertical {
+                y: record
+                    .y_start
+                    .saturating_add(match self.context_current.text_align_vertical {
                         // [Task #965 / PR #918 Stage 33-A] META_TEXTOUT 의 y 도 동일.
                         // ext_text_out 의 baseline 보정과 일관성 유지.
                         VerticalTextAlignmentMode::VTA_TOP => {
@@ -1530,7 +1531,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
                         }
                         VerticalTextAlignmentMode::VTA_BASELINE => 0,
                         _ => 0,
-                    },
+                    }),
             };
 
             let point = if self.context_current.text_align_update_cp {
