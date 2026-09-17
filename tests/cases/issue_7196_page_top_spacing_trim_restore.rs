@@ -145,8 +145,7 @@ fn negative_percent_tac_hosts_preserve_the_three_page_physical_layout() {
     );
     let last_table = items
         .iter()
-        .filter(|(kind, _, _)| *kind == "Table")
-        .last()
+        .rfind(|(kind, _, _)| *kind == "Table")
         .expect("photo table");
     assert!(
         (last_table.1.y - 811.0).abs() <= 1.5,
