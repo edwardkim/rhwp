@@ -12,8 +12,16 @@ impl crate::wmf::parser::META_ESCAPE {
         let (_, c) = crate::wmf::parser::read_variable(buf, start as usize)?;
         record_size.consume(c);
 
+        // [fuzz] `start` 가 `byte_count` 를 넘는 레코드는 색 표 길이가 음수라 잘못된 레코드다.
+        let color_table_len = byte_count.checked_sub(start).ok_or_else(|| {
+            crate::wmf::parser::ParseError::UnexpectedPattern {
+                cause: format!(
+                    "The start `{start:#06X}` field must not exceed byte_count `{byte_count:#06X}`",
+                ),
+            }
+        })?;
         let (color_table_buffer, c) =
-            crate::wmf::parser::read_variable(buf, (byte_count - start) as usize)?;
+            crate::wmf::parser::read_variable(buf, color_table_len as usize)?;
         record_size.consume(c);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;

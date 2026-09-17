@@ -205,8 +205,8 @@ impl DeviceContext {
             .to_device(f32::from(point.x), f32::from(point.y));
 
         PointS {
-            x: x as i16 + self.drawing_position.x,
-            y: y as i16 + self.drawing_position.y,
+            x: (x as i16).saturating_add(self.drawing_position.x),
+            y: (y as i16).saturating_add(self.drawing_position.y),
         }
     }
 
@@ -227,8 +227,9 @@ impl DeviceContext {
         BlitDestRect {
             x: ix0.min(ix1),
             y: iy0.min(iy1),
-            width: (ix1 - ix0).abs(),
-            height: (iy1 - iy0).abs(),
+            // [fuzz] f32→i32 변환은 극단 배율에서 i32 끝값으로 포화되어 차가 넘칠 수 있다.
+            width: i32::try_from(ix1.abs_diff(ix0)).unwrap_or(i32::MAX),
+            height: i32::try_from(iy1.abs_diff(iy0)).unwrap_or(i32::MAX),
             flip_x: ix1 < ix0,
             flip_y: iy1 < iy0,
         }
@@ -298,8 +299,9 @@ impl Window {
     }
 
     pub fn ext(mut self, x: i16, y: i16) -> Self {
-        self.x = x.abs();
-        self.y = y.abs();
+        // [fuzz] 파일 값 `i16::MIN` 의 `abs()` 는 넘친다 — 크기는 포화시키고 방향은 아래 플래그가 든다.
+        self.x = x.saturating_abs();
+        self.y = y.saturating_abs();
         self.ext_explicitly_set = true;
         self.x_inverted = x < 0;
         self.y_inverted = y < 0;
@@ -339,6 +341,6 @@ impl Window {
         // 변환 (Task #864). viewBox 도 이 device 공간 (0, 0, ext_x, ext_y) 으로 정합.
         // (Task #860 Stage D 의 (origin_x, origin_y, ...) 변경 revert — image 와 text
         // 의 좌표 공간이 mismatch 였던 본질을 정정.)
-        (0, 0, self.x.abs(), self.y.abs())
+        (0, 0, self.x.saturating_abs(), self.y.saturating_abs())
     }
 }

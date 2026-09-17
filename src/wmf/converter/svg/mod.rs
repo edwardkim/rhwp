@@ -92,8 +92,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let vb_y = i32::from(raw_vb_y);
         let mut vb_w_i32 = i32::from(vb_w);
         let mut vb_h_i32 = i32::from(vb_h);
-        let mut vb_right = vb_x + vb_w_i32;
-        let mut vb_bottom = vb_y + vb_h_i32;
+        // [fuzz] 요소 좌표는 포화된 i32 끝값일 수 있다 — 합·차를 포화시킨다.
+        let mut vb_right = vb_x.saturating_add(vb_w_i32);
+        let mut vb_bottom = vb_y.saturating_add(vb_h_i32);
         for elem in elements.iter() {
             if let Some(mx) = element_max_x(elem) {
                 if mx > vb_right {
@@ -106,8 +107,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 }
             }
         }
-        vb_w_i32 = vb_right - vb_x;
-        vb_h_i32 = vb_bottom - vb_y;
+        vb_w_i32 = vb_right.saturating_sub(vb_x);
+        vb_h_i32 = vb_bottom.saturating_sub(vb_y);
         // 사용 안 함 (호환성)
         let _ = (&mut vb_w, &mut vb_h);
 
@@ -598,18 +599,19 @@ impl crate::wmf::converter::Player for SVGPlayer {
             point
         };
         let (rx, ry) = (
-            (record.right_rect - record.left_rect) / 2,
-            (record.bottom_rect - record.top_rect) / 2,
+            rect_half_extent(record.left_rect, record.right_rect),
+            rect_half_extent(record.top_rect, record.bottom_rect),
         );
         let center = self.context_current.point_s_to_absolute_point(&PointS {
-            x: record.left_rect + rx,
-            y: record.top_rect + ry,
+            x: record.left_rect.saturating_add(rx),
+            y: record.top_rect.saturating_add(ry),
         });
         // Start and end vectors relative to the center of the ellipse
-        let start_dx = f32::from(start.x - center.x);
-        let start_dy = f32::from(start.y - center.y);
-        let end_dx = f32::from(end.x - center.x);
-        let end_dy = f32::from(end.y - center.y);
+        // [fuzz] i16 뺄셈은 끝값에서 넘친다 — 부동소수로 옮긴 뒤 뺀다.
+        let start_dx = f32::from(start.x) - f32::from(center.x);
+        let start_dy = f32::from(start.y) - f32::from(center.y);
+        let end_dx = f32::from(end.x) - f32::from(center.x);
+        let end_dy = f32::from(end.y) - f32::from(center.y);
 
         // Calculate cross product to determine if the arc is larger than 180
         // degrees. Invert the sign because upper-left is origin.
@@ -641,15 +643,15 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ))]
     fn chord(mut self, record_number: usize, record: META_CHORD) -> Result<Self, PlayError> {
         // Calculate ellipse center and radii from bounding rectangle
-        let rx = (record.right_rect - record.left_rect) / 2;
-        let ry = (record.bottom_rect - record.top_rect) / 2;
+        let rx = rect_half_extent(record.left_rect, record.right_rect);
+        let ry = rect_half_extent(record.top_rect, record.bottom_rect);
         if rx == 0 || ry == 0 {
             info!("META_CHORD is skipped because rx or ry is zero.");
             return Ok(self);
         }
         let center = self.context_current.point_s_to_absolute_point(&PointS {
-            x: record.left_rect + rx,
-            y: record.top_rect + ry,
+            x: record.left_rect.saturating_add(rx),
+            y: record.top_rect.saturating_add(ry),
         });
 
         // Convert radial endpoints from WMF coordinates to SVG absolute
@@ -707,8 +709,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ))]
     fn ellipse(mut self, record_number: usize, record: META_ELLIPSE) -> Result<Self, PlayError> {
         let (rx, ry) = (
-            (record.right_rect - record.left_rect) / 2,
-            (record.bottom_rect - record.top_rect) / 2,
+            rect_half_extent(record.left_rect, record.right_rect),
+            rect_half_extent(record.top_rect, record.bottom_rect),
         );
 
         if rx == 0 || ry == 0 {
@@ -732,8 +734,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let fill_rule = self.context_current.poly_fill_rule();
         let point = {
             let point = self.context_current.point_s_to_absolute_point(&PointS {
-                x: record.left_rect + rx,
-                y: record.top_rect + ry,
+                x: record.left_rect.saturating_add(rx),
+                y: record.top_rect.saturating_add(ry),
             });
 
             self.context_current = self.context_current.extend_window(&point);
@@ -799,7 +801,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     self.context_current.drawing_position.y
                 } else {
                     record.y
-                } + match self.context_current.text_align_vertical {
+                }
+                // [fuzz] i16 기준점에 세로 정렬 보정을 더하면 끝값에서 넘친다 — 포화시킨다.
+                .saturating_add(match self.context_current.text_align_vertical {
                     // [Task #965 / PR #918 Stage 33-A] WMF 의 ExtTextOut y 는
                     // text_align_vertical 에 따라 reference point 가 결정된다:
                     //   VTA_BASELINE (default): y 가 baseline — 그대로 사용
@@ -810,17 +814,17 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     // -font.height 만큼 y 를 더했던 것은 잘못된 보정으로, 텍스트가 박스
                     // 하단으로 baseline shift 되는 원인).
                     VerticalTextAlignmentMode::VTA_TOP => {
-                        let em = font.height.abs();
+                        let em = font.height.saturating_abs();
                         (em as f64 * 0.8) as i16
                     }
                     VerticalTextAlignmentMode::VTA_BOTTOM => {
-                        let em = font.height.abs();
+                        let em = font.height.saturating_abs();
                         -((em as f64 * 0.2) as i16)
                     }
                     VerticalTextAlignmentMode::VTA_BASELINE => 0,
                     // VTA_CENTER / VTA_LEFT: 드물게 사용; baseline 과 동일 처리
                     _ => 0,
-                },
+                }),
             };
 
             let point = if self.context_current.text_align_update_cp {
@@ -929,8 +933,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 let mut tspan = Node::new("tspan").add(Node::new_text(s));
 
                 if dx != 0 {
-                    let excess_dx = (font.height.abs() / 2) * i16::try_from(s.width()).unwrap_or(0);
-                    let dx = core::cmp::max(dx - excess_dx, 0);
+                    let excess_dx = (font.height.saturating_abs() / 2)
+                        .saturating_mul(i16::try_from(s.width()).unwrap_or(0));
+                    let dx = core::cmp::max(dx.saturating_sub(excess_dx), 0);
 
                     tspan = tspan.set("dx", dx);
                 }
@@ -950,9 +955,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         if self.context_current.text_align_update_cp {
-            let dx = (font.height.abs() / 2) * i16::try_from(text_content.width()).unwrap_or(0);
+            let dx = (font.height.saturating_abs() / 2)
+                .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0));
             let point = PointS {
-                x: point.x + dx,
+                x: point.x.saturating_add(dx),
                 y: point.y,
             };
             self.context_current = self.context_current.drawing_position(point);
@@ -1133,10 +1139,13 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
         let fill_rule = self.context_current.poly_fill_rule();
         let (rx, ry) = (
-            (record.right_rect - record.left_rect) / 2,
-            (record.bottom_rect - record.top_rect) / 2,
+            rect_half_extent(record.left_rect, record.right_rect),
+            rect_half_extent(record.top_rect, record.bottom_rect),
         );
-        let (center_x, center_y) = (record.left_rect + rx, record.top_rect + ry);
+        let (center_x, center_y) = (
+            record.left_rect.saturating_add(rx),
+            record.top_rect.saturating_add(ry),
+        );
 
         let ellipse = Node::new("ellipse")
             .set("fill", fill.as_str())
@@ -1412,8 +1421,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .set("fill-rule", fill_rule.as_str())
             .set("x", tl.x)
             .set("y", tl.y)
-            .set("height", br.y - tl.y)
-            .set("width", br.x - tl.x);
+            .set("height", br.y.saturating_sub(tl.y))
+            .set("width", br.x.saturating_sub(tl.x));
         let rect = stroke.set_props(rect);
 
         self.push_element(record_number, rect);
@@ -1432,8 +1441,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record: META_ROUNDRECT,
     ) -> Result<Self, PlayError> {
         let (width, height) = (
-            record.right_rect - record.left_rect,
-            record.bottom_rect - record.top_rect,
+            record.right_rect.saturating_sub(record.left_rect),
+            record.bottom_rect.saturating_sub(record.top_rect),
         );
 
         if width == 0 || height == 0 {
@@ -1512,11 +1521,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
                         // [Task #965 / PR #918 Stage 33-A] META_TEXTOUT 의 y 도 동일.
                         // ext_text_out 의 baseline 보정과 일관성 유지.
                         VerticalTextAlignmentMode::VTA_TOP => {
-                            let em = font.height.abs();
+                            let em = font.height.saturating_abs();
                             (em as f64 * 0.8) as i16
                         }
                         VerticalTextAlignmentMode::VTA_BOTTOM => {
-                            let em = font.height.abs();
+                            let em = font.height.saturating_abs();
                             -((em as f64 * 0.2) as i16)
                         }
                         VerticalTextAlignmentMode::VTA_BASELINE => 0,
@@ -2313,7 +2322,7 @@ fn element_max_x(elem: &Node) -> Option<i32> {
     let x = parse_attr_i32(&s, "x").unwrap_or(0);
     let w = parse_attr_i32(&s, "width").unwrap_or(0);
     if w > 0 {
-        Some(x + w)
+        Some(x.saturating_add(w))
     } else {
         None
     }
@@ -2326,12 +2335,12 @@ fn element_max_y(elem: &Node) -> Option<i32> {
     let y = parse_attr_i32(&s, "y").unwrap_or(0);
     let h = parse_attr_i32(&s, "height").unwrap_or(0);
     if h > 0 {
-        return Some(y + h);
+        return Some(y.saturating_add(h));
     }
     // text element: y + font-size (approx)
     if s.starts_with("<text ") {
         if let Some(fs) = parse_attr_i32(&s, "font-size") {
-            return Some(y + fs);
+            return Some(y.saturating_add(fs));
         }
     }
     None
@@ -2344,4 +2353,11 @@ fn parse_attr_i32(s: &str, attr: &str) -> Option<i32> {
     let val_start = start + needle.len();
     let val_end = s[val_start..].find('"')?;
     s[val_start..val_start + val_end].parse().ok()
+}
+
+/// [fuzz] 사각형 두 변 사이 반지름 `(to - from) / 2`. 파일의 `i16` 끝값에서 뺄셈이 넘치지 않게
+/// `i32` 로 계산하고 `i16` 범위로 포화시킨다.
+fn rect_half_extent(from: i16, to: i16) -> i16 {
+    let half = (i32::from(to) - i32::from(from)) / 2;
+    i16::try_from(half).unwrap_or(if half < 0 { i16::MIN } else { i16::MAX })
 }
