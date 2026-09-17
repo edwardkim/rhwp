@@ -24210,28 +24210,11 @@ impl TypesetEngine {
                 } else {
                     0.0
                 };
-                // Native HWP5 can record `common.height` through the leading
-                // header row while the first physical fragment continues into
-                // the next body row.  The stored frame's unused physical space
-                // authorizes that next row only; admit the exact CellUnit
-                // capacity overfill selected there, rather than turning the
-                // entire frame slack into a general tolerance.
-                let saved_first_fragment_next_row_cut = !is_continuation
-                    && cursor_row == 0
-                    && r > cursor_row
-                    && row_start_cut.is_empty()
-                    && source_first_fragment_overflow_allowance > 0.0
-                    && source_first_fragment_row_end == Some(r);
-                let saved_first_fragment_next_row_cut_overflow =
-                    if saved_first_fragment_next_row_cut {
-                        (res.consumed_height - budget).max(0.0)
-                    } else {
-                        0.0
-                    };
+                // A cut into the next row must fit the physical row area.
+                // Its own capacity overfill is not an independent allowance,
+                // even when the declared first frame ends at the header row.
                 let split_row_overflow_tolerance = if uses_source_frame_tail {
                     stored_frame_tail_overflow
-                } else if saved_first_fragment_next_row_cut {
-                    saved_first_fragment_next_row_cut_overflow
                 } else if source_first_fragment_overflow_allowance > 0.0
                     && source_first_fragment_row_end == Some(r + 1)
                 {
@@ -24243,11 +24226,10 @@ impl TypesetEngine {
                 } else {
                     0.1
                 };
-                if (r > cursor_row
-                    || mixed_nested_owner_guard
-                    || native_split_continuation_row_tail)
-                    && split_candidate_rows_height > avail_for_rows + split_row_overflow_tolerance
-                {
+                // A continuation has the same physical row budget as a fresh
+                // fragment. Test its painted footprint too; source advancement
+                // alone does not prove that the selected fragment fits.
+                if split_candidate_rows_height > avail_for_rows + split_row_overflow_tolerance {
                     // 보이는 조각은 orphan 기준을 통과해도 row-area 예산은 넘을 수 있다.
                     // [#2070] 종전에는 즉시 통이월했으나, advance_row_cut 이 예산을
                     // 수 px 초과하는 컷을 고른 경우(80168 pi=936: budget 903.1 에
@@ -24255,27 +24237,33 @@ impl TypesetEngine {
                     // 한글은 같은 자리에서 조각 분할을 시작한다(PDF p108). 초과분만큼
                     // 예산을 줄여 한 번 재시도하고, 그래도 초과면 종전대로 이월한다.
                     let over = split_candidate_rows_height - avail_for_rows;
-                    // Ordinary overfill requires only the measured excess.
-                    // The guarded mixed-nested form has an additional physical
-                    // tail that is absent from `advance_row_cut`'s logical
-                    // height; reserve it too, so the next page begins at the
-                    // first omitted source unit rather than one line late.
+                    // The strict walk no longer absorbs units beyond capacity.
+                    // For ordinary rows, retain that capacity and reserve only
+                    // physical height absent from the logical cut. Subtracting
+                    // the absorbed excess again discards otherwise fitting lines.
+                    // The mixed-nested guard retains its separate owner-tail
+                    // retry contract; it is not an ordinary text-row cut.
                     let painted_tail = (split_total - res.consumed_height - padding).max(0.0);
                     let retry_uses_painted_tail =
                         mixed_nested_owner_guard || native_split_continuation_row_tail;
+                    // `budget` already excludes the mixed-nested reservation.
+                    // This retry instead reserves the measured painted tail,
+                    // which includes that same space. Start from the original
+                    // content capacity so the reservation is not charged twice.
+                    // The strict walk must not re-extend to a stored frame; the
+                    // candidate below is remeasured before it is accepted.
                     let retry_budget = if retry_uses_painted_tail {
-                        (budget - over - painted_tail - 0.5).max(0.0)
+                        (content_budget - over - painted_tail - 0.5).max(0.0)
                     } else {
-                        (budget - over - 0.5).max(0.0)
+                        (content_budget - painted_tail).max(0.0)
                     };
-                    let (res2, retry_budget) = layout_engine
-                        .advance_row_cut_with_mixed_nested_reserve(
-                            table,
-                            r,
-                            row_start_cut,
-                            retry_budget,
-                            styles,
-                        );
+                    let res2 = layout_engine.advance_row_cut_within_capacity(
+                        table,
+                        r,
+                        row_start_cut,
+                        retry_budget,
+                        styles,
+                    );
                     let mut retried = false;
                     if !res2.fully_consumed {
                         let split_total2 = layout_engine.row_cut_content_height(
@@ -24288,8 +24276,6 @@ impl TypesetEngine {
                         let cand2 = consumed + cs_before + split_total2;
                         let retry_split_row_overflow_tolerance = if uses_source_frame_tail {
                             stored_frame_tail_overflow
-                        } else if saved_first_fragment_next_row_cut {
-                            (res2.consumed_height - retry_budget).max(0.0)
                         } else if source_first_fragment_overflow_allowance > 0.0
                             && source_first_fragment_row_end == Some(r + 1)
                         {

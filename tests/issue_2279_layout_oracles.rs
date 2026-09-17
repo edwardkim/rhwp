@@ -2,7 +2,8 @@
 //!
 //! 페이지 수 pin(issue_1891)만으로는 같은 쪽수 안에서 되돌아가는 회귀를 잡지 못하므로
 //! (maintainer 리뷰 P1), 각 수정의 관측 가능한 페이지-내 배치를 render tree 로 고정한다.
-//! 기준 문서: `samples/86712_regulatory_analysis.hwp` (규제영향분석서, 한글 2022 = 65쪽).
+//! 입력: `samples/86712_regulatory_analysis.hwp`. #7195에서 메인테이너가 수용한
+//! 한컴과의 표 분할 차이는 절대 쪽수 대신 내용 소유권과 실제 경계로 보호한다.
 //! 페이지 인덱스는 0-based (`build_page_render_tree(N)` = N+1쪽).
 
 use std::fs;
@@ -123,110 +124,241 @@ fn collect_subtree_text(node: &RenderNode, out: &mut String) {
     }
 }
 
-fn collect_text_ys(node: &RenderNode, x_min: f64, y_range: (f64, f64), out: &mut Vec<f64>) {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if !run.text.trim().is_empty()
-            && node.bbox.x >= x_min
-            && node.bbox.y >= y_range.0
-            && node.bbox.y <= y_range.1
-        {
-            out.push(node.bbox.y);
-        }
+fn collect_body_lines<'a>(node: &'a RenderNode, pi: usize, out: &mut Vec<&'a RenderNode>) {
+    // 셀/글상자의 로컬 문단 번호를 본문 문단 번호와 혼동하지 않는다.
+    if matches!(
+        node.node_type,
+        RenderNodeType::Table(_) | RenderNodeType::TextBox
+    ) {
+        return;
+    }
+    if matches!(&node.node_type, RenderNodeType::TextLine(line)
+        if line.section_index == Some(0) && line.para_index == Some(pi))
+    {
+        out.push(node);
     }
     for c in &node.children {
-        collect_text_ys(c, x_min, y_range, out);
+        collect_body_lines(c, pi, out);
     }
 }
 
-/// [수정 1] 1×1 래퍼 중첩 셀 유닛화 (`nested_table_mixed_fragment_heights`) —
-/// r27 근거설명(25문단 + 3×12/5×4 내부표)의 프래그먼트가 2단계 중첩 표·빈 문단
-/// 줄박스·셀 말미 줄간격을 포함해야 한다 (-448px 과소 회귀 검출).
+/// #7195 작업지시자 시각 판정(2026-09-16):
+/// 21쪽의 표를 한 페이지에 담는 rhwp 배치를 수용했다. 따라서 한컴 PDF의
+/// 절대 p27~29를 강제하지 않는다. 과거 측정 폭/보상 오차 조사는
+/// mydocs/working/task_m100_7195_stage2.md 및 Git 이력에 보존한다.
 ///
-/// 회귀 시그니처(수정 전): pi=172 분할이 rows=26..28 로 물러나 p29 에 산식 r26
-/// ("2891017" = 편익산식입력9)이 다시 렌더된다. 또한 3×12 내부 표를 현재 쪽
-/// 하단 clip 아래에서 소비하면 p29가 5×4 표부터 시작한다.
-///
-/// # [#5193] 셀 재조판 이관 후 실패 — 핀은 옳고, 이 핀이 서 있던 높이가 틀렸다
-///
-/// 이 테스트의 쪽 배정은 한컴 2024 PDF
-/// (`samples/issue1891/86712_regulatory_analysis-2024.pdf`)가 직접 뒷받침한다 —
-/// PDF p28이 `편익 수혜자`를 시작하고 p29가 `88.2` 표를 싣는다. **핀을 프레임
-/// 값으로 옮기면 안 된다**: 프레임 경로는 `편익 수혜자`를 p27로, `88.2`를 p28로
-/// 올려 세 assertion 을 PDF 와 반대로 만든다.
-///
-/// 실패 원인은 줄바꿈 잔차가 아니다. 문제의 셀(산식 표 r23~r26 c2,
-/// `(2030년 기본형건축비 - …) * 주택면적 * 가구수 * 이자율`)은 **칠해지는 폭에서
-/// 두 경로가 글자까지 동일**하다. 갈라지는 곳은 측정이 쓰는 더 좁은 두 번째
-/// 폭이다:
-///
-/// ```text
-/// w=204.45px (paint)     폐기 경로 4줄   프레임 4줄   (본문 동일)
-/// w=192.85px (measure)   폐기 경로 5줄   프레임 4줄
-///
-/// 측정 폭 192.85px = 14464 HWPUNIT 에서의 판정
-///   `-`     pen 13457  glyph  667  sum 14124  over  −340  → 프레임 수용(폐기 경로는 거부)
-///   `2029`  pen 14822  glyph 2584  sum 17406  over +2942  → 거부, 줄0 = "(2030년 기본형건축비 - "
-/// ```
-///
-/// 한컴 PDF p27은 이 셀을 **4줄**로 찍는다. 즉 프레임의 행높이(85.7px)가 맞고
-/// 폐기 경로의 5줄 측정(106.5px)이 틀렸다. 그런데 그 틀린 측정이 이 쪽 나눔을
-/// 지탱하고 있었다 — 산식 표 네 행(2032~2035)이 각각 20.8px 한 줄씩 줄면 p27에
-/// 83.2px 이 남고, 거기로 r27 근거설명의 첫 유닛이 들어간다.
-///
-/// 즉 이 핀은 **보상 오차 위에 서 있던 옳은 기대값**이다. 오차를 고치면 상류의
-/// 다른 문제가 드러난다 — 한컴 p27은 `□편익` 표 전체부터 시작하는데 rhwp p27은
-/// 편익 표 중간에서 시작한다. 그 상류 차이는 #2279/#2308 소관이지 #5193 이 아니다.
-///
-/// 함께 기록: 측정 내폭(192.85)이 렌더 내폭(204.45)보다 **11.6px 좁다.** 두 경로
-/// 모두에 있던 선행 결함이고, 바로 이것이 "측정에서는 줄바꿈이 갈리는데 렌더에서는
-/// 안 갈리는" 상태를 가능하게 한다.
-#[ignore = "#5193: 프레임 이관으로 실패. 핀은 한컴 PDF 가 뒷받침하므로 옮기지 않는다 — \
-            폐기 경로의 5줄 측정(PDF 는 4줄)이 이 쪽 나눔을 지탱하고 있었다. 위 주석 참조."]
+/// 기존 계약의 의미(산식 재등장 금지, 근거설명과 다음 쪽 내부 표의 소유,
+/// 3×12 뒤 5×4 표 보존)는 상대 페이지와 실제 표시 영역으로 계속 검사한다.
+/// 새 구현의 총 페이지 수를 기대값으로 복사한 계약이 아니다.
 #[test]
-fn issue_2279_nested_cell_units_split_r27_not_r26() {
+fn issue_2279_nested_cell_units_preserve_relative_fragment_ownership() {
     let core = core();
-    // PDF p27에는 r27 근거설명이 아직 시작하지 않는다. 남은 공간에 wrapper의
-    // 앞 조각만 넣으면 scalar child가 실제 잉크를 앞 쪽으로 누출한다.
-    assert!(
-        !page_contains_paintable_text(&core, 26, "편익 수혜자"),
-        "p27에 r27 근거설명이 조기 노출 — fresh-page defer 회귀"
+    let pages_for = |needle: &str| {
+        (0..core.page_count())
+            .filter(|page| page_contains_paintable_text(&core, *page, needle))
+            .collect::<Vec<_>>()
+    };
+    let formula = pages_for("2891017");
+    let rationale = pages_for("편익 수혜자");
+    let data = pages_for("88.2");
+    assert_eq!(formula.len(), 1, "산식 행은 한 쪽에서만 표시: {formula:?}");
+    assert_eq!(rationale.len(), 1, "근거설명 시작 중복/누락: {rationale:?}");
+    assert_eq!(data.len(), 1, "3×12 표의 값 중복/누락: {data:?}");
+    assert_eq!(
+        formula[0] + 1,
+        rationale[0],
+        "산식 다음 조각에서 근거설명 시작"
     );
-    // p28(0-based 27)는 r27의 앞 문단 묶음을 실제로 paint한다.
-    assert!(
-        page_contains_paintable_text(&core, 27, "편익 수혜자"),
-        "p28에 r27 콘텐츠 첫 유닛 부재 — 1×1 중첩 셀 유닛화 회귀 (rows=0..27 로 후퇴)"
+    assert_eq!(
+        rationale[0] + 1,
+        data[0],
+        "내부 표는 근거설명 다음 조각에서 표시"
     );
-    // p28의 남은 공간에는 3×12 내부 표와 뒤의 출처/설명/5×4 표 묶음 전체가
-    // 들어가지 않는다. 첫 표만 clip 아래에서 소비하면 안 된다.
+
+    // 동일 쪽 내 재방출도 거부한다. 쉼표가 있는 원문 값 2,891,017과
+    // 산식 전용 2891017은 의도적으로 구별한다.
+    for (page, needle) in [
+        (formula[0], "2891017"),
+        (rationale[0], "편익 수혜자"),
+        (data[0], "88.2"),
+    ] {
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("render marker page");
+        let mut text = String::new();
+        collect_subtree_text(&tree.root, &mut text);
+        assert_eq!(
+            text.matches(needle).count(),
+            1,
+            "같은 쪽 source 중복: {needle}"
+        );
+    }
+
+    let tree = core
+        .build_page_render_tree(data[0])
+        .expect("render nested tables");
+    assert!(table_contains_text_sequence(&tree.root, 3, 12, "88.2"));
+    assert!(table_contains_text_sequence(
+        &tree.root,
+        5,
+        4,
+        "주민대표단 구성"
+    ));
+    let mut boxes = Vec::new();
+    collect_nested_table_bounds(&tree.root, None, &mut boxes);
+    assert_eq!(boxes.len(), 2, "3×12 및 5×4 표는 각각 한 번 온전히 표시");
+    assert_eq!((boxes[0].0, boxes[0].1), (3, 12));
+    assert_eq!((boxes[1].0, boxes[1].1), (5, 4));
     assert!(
-        !page_contains_paintable_text(&core, 27, "88.2"),
-        "p28에 3×12 내부 표가 부분 진입 — nested block을 fresh page로 이월해야 함"
-    );
-    // p29(0-based 28): r27 continuation 만 — 산식 행(r26)이 다시 걸치면 회귀.
-    // 주의: "2891017"(콤마 없음)은 산식 필드 전용 — r27 내부 5×4 표의 값
-    // "2,891,017"(콤마)과 구분된다.
-    assert!(
-        !page_contains_paintable_text(&core, 28, "2891017"),
-        "p29에 산식 r26(편익산식입력9) 재등장 — cut 유닛 과소(-448) 회귀"
-    );
-    assert!(
-        page_contains_paintable_text(&core, 28, "88.2"),
-        "p29에 3×12 내부 표 부재 — p28 하단 clip 소비 회귀"
-    );
-    assert!(
-        table_contains_text_sequence(
-            &core
-                .build_page_render_tree(28)
-                .expect("render tree p29")
-                .root,
-            5,
-            4,
-            "주민대표단 구성",
-        ),
-        "p29에 3×12 표 뒤 5×4 내부 표 부재 — r27 block 순서 회귀"
+        boxes[0].2.y + boxes[0].2.height <= boxes[1].2.y + 0.5,
+        "3×12 표 다음에 5×4 표가 겹침 없이 배치"
     );
 }
 
+/// 관심 내부 표의 전체 외곽이 Body 및 부모 셀 clip 안에 있는지 검사한다.
+/// 일부 글자만 clip과 교차해도 성공하는 substring oracle의 빈틈을 보완한다.
+fn collect_nested_table_bounds(
+    node: &RenderNode,
+    parent_clip: Option<BoundingBox>,
+    out: &mut Vec<(u16, u16, BoundingBox)>,
+) {
+    let own_clip = match &node.node_type {
+        RenderNodeType::Body { .. } => Some(node.bbox),
+        RenderNodeType::TableCell(cell) if cell.clip => Some(node.bbox),
+        RenderNodeType::TextBox => Some(node.bbox),
+        _ => None,
+    };
+    let clip = match (parent_clip, own_clip) {
+        (Some(a), Some(b)) => Some(clipped_intersection(a, b).expect("nonempty parent clip")),
+        (a, b) => a.or(b),
+    };
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if matches!((table.row_count, table.col_count), (3, 12) | (5, 4)) {
+            let b = node.bbox;
+            let c = clip.expect("nested table must have a body/owner");
+            assert!(
+                node.visible
+                    && b.x >= c.x - 0.5
+                    && b.y >= c.y - 0.5
+                    && b.x + b.width <= c.x + c.width + 0.5
+                    && b.y + b.height <= c.y + c.height + 0.5,
+                "내부 표를 clip 아래에서 소비하지 않음: table={b:?}, clip={c:?}"
+            );
+            out.push((table.row_count, table.col_count, b));
+        }
+    }
+    for child in &node.children {
+        collect_nested_table_bounds(child, clip, out);
+    }
+}
+
+/// #7195 작업지시자가 한컴의 분할 대신 수용한 21쪽 마지막 표.
+/// source pi109의 표를 한 번에 배치하되, 모든 셀과 원문 및 본문 경계를 보존한다.
+/// 절대21쪽이나 전체64쪽을 고정하지 않아 앞쪽의 유효한 조판 변화는 허용한다.
+#[test]
+fn issue_2279_fitting_cost_benefit_table_stays_whole() {
+    assert_fitting_table_stays_whole(&core(), 109, (10, 8));
+}
+
+fn assert_fitting_table_stays_whole(core: &DocumentCore, pi: usize, shape: (u16, u16)) {
+    use rhwp::model::control::Control;
+    let Control::Table(source) = &core.document().sections[0].paragraphs[pi].controls[0] else {
+        panic!("표 source pi={pi}");
+    };
+    assert_eq!((source.row_count, source.col_count), shape);
+    let normalize = |s: &str| s.chars().filter(|c| !c.is_whitespace()).collect::<String>();
+    let mut expected = source
+        .cells
+        .iter()
+        .map(|c| {
+            (
+                c.row,
+                c.col,
+                c.row_span,
+                c.col_span,
+                c.paragraphs
+                    .iter()
+                    .map(|p| normalize(&p.text))
+                    .collect::<String>(),
+            )
+        })
+        .collect::<Vec<_>>();
+    expected.sort();
+    fn collect<'a>(node: &'a RenderNode, pi: usize, out: &mut Vec<&'a RenderNode>) {
+        if matches!(&node.node_type, RenderNodeType::Table(t)
+            if t.para_index == Some(pi))
+        {
+            out.push(node);
+        }
+        if matches!(
+            node.node_type,
+            RenderNodeType::Table(_) | RenderNodeType::TextBox
+        ) {
+            return;
+        }
+        for child in &node.children {
+            collect(child, pi, out);
+        }
+    }
+    fn find_body(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Body { .. }) {
+            return Some(node);
+        }
+        node.children.iter().find_map(find_body)
+    }
+    fn assert_cell_lines(node: &RenderNode, owner: BoundingBox) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            assert!(
+                node.visible
+                    && node.bbox.y >= owner.y - 0.5
+                    && node.bbox.y + node.bbox.height <= owner.y + owner.height + 0.5,
+                "글줄이 셀 밖에서 소비되면 안 됨: {:?}, owner={owner:?}",
+                node.bbox
+            );
+        }
+        for child in &node.children {
+            assert_cell_lines(child, owner);
+        }
+    }
+    let mut occurrences = 0;
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).expect("render");
+        let mut tables = Vec::new();
+        collect(&tree.root, pi, &mut tables);
+        for table in tables {
+            occurrences += 1;
+            let b = find_body(&tree.root).expect("body").bbox;
+            let t = table.bbox;
+            assert!(
+                table.visible && t.y >= b.y - 0.5 && t.y + t.height <= b.y + b.height + 0.5,
+                "한 번에 배치한 표도 본문 안에 있어야 함: p{}, {t:?}, {b:?}",
+                page + 1
+            );
+            let mut actual = Vec::new();
+            for child in &table.children {
+                if let RenderNodeType::TableCell(cell) = &child.node_type {
+                    assert!(child.visible);
+                    assert_cell_lines(child, child.bbox);
+                    let mut content = String::new();
+                    collect_subtree_text(child, &mut content);
+                    actual.push((
+                        cell.row,
+                        cell.col,
+                        cell.row_span,
+                        cell.col_span,
+                        normalize(&content),
+                    ));
+                }
+            }
+            actual.sort();
+            assert_eq!(actual, expected, "전체 셀/원문을 한 조각에 보존");
+        }
+    }
+    assert_eq!(
+        occurrences, 1,
+        "수용된 표를 불필요하게 분할하거나 중복/누락하지 않음"
+    );
+}
 /// [수정 2] 본문 NO_LS 폴백의 글자모양 보존 + 전체-문단 재래핑 렌더
 /// (재래핑 후 end_line 확장) —
 /// 혼합 크기 문단(pi22: "ㅇ "=15pt + 본문 14pt)의 마지막 줄이 렌더에서 소실되지
@@ -240,51 +372,70 @@ fn issue_2279_body_rewrap_keeps_paragraph_tail() {
     );
 }
 
-/// [수정 3] 재래핑 줄별 pitch (#5193 이후 `frame_metrics_for_line` 의 행별 metric) —
-/// p10 본문(내어쓰기 ㅇ-불릿 문단들, 한글 실측 pitch 29.9px)의 인접 줄 간격
-/// 중앙값이 30px 근처여야 한다. 회귀(문단 최대 fs 상속) 시 32.0 으로 복귀.
+/// 교체 입력의 저장 글줄 계약. 원본 15pt/14pt와 160%를 독립 기대값으로 사용한다.
+/// TextRun의 x/분할 개수나 페이지 내 고정 창이 아니라 본문 문단의 인접 TextLine을 검사한다.
+/// NO_LS 경로와 동일하다고 주장하지 않는다.
 #[test]
 fn issue_2279_per_line_pitch_uses_line_max_font_size() {
     let core = core();
-    let tree = core.build_page_render_tree(9).expect("render tree p10");
-    // 본문 불릿 문단 영역 (표 제외: y 140~660, 들여쓰기 본문 x>=100)
-    let mut ys = Vec::new();
-    collect_text_ys(&tree.root, 100.0, (140.0, 660.0), &mut ys);
-    ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    ys.dedup_by(|a, b| (*a - *b).abs() < 3.0);
-    let mut gaps: Vec<f64> = ys.windows(2).map(|w| w[1] - w[0]).collect();
-    // 문단 사이 간격(빈 줄 포함, > 34px)은 제외 — 줄 pitch 만.
-    gaps.retain(|g| *g > 20.0 && *g < 34.0);
-    assert!(
-        gaps.len() >= 8,
-        "pitch 표본 부족 ({}개) — 페이지 구성 변화 시 창 조정 필요: {ys:?}",
-        gaps.len()
-    );
-    gaps.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let median = gaps[gaps.len() / 2];
-    assert!(
-        (28.5..31.5).contains(&median),
-        "본문 줄 pitch 중앙값 {median:.2}px — 줄별 pitch(≈29.9, 한글 실측) 회귀 (32.0 = 문단 최대 fs 상속)"
-    );
+    for pi in [20, 21, 22] {
+        let source = &core.document().sections[0].paragraphs[pi];
+        let style = &core.document().doc_info.para_shapes[source.para_shape_id as usize];
+        assert_eq!(
+            style.line_spacing_type,
+            rhwp::model::style::LineSpacingType::Percent
+        );
+        assert_eq!(style.line_spacing, 160);
+        assert!(source.line_segs.len() >= 3, "mixed-size source lines");
+        let mut count = 0;
+        let mut content = String::new();
+        for page in 0..core.page_count() {
+            let tree = core.build_page_render_tree(page).expect("render body");
+            let mut lines = Vec::new();
+            collect_body_lines(&tree.root, pi, &mut lines);
+            for line in &lines {
+                collect_subtree_text(line, &mut content);
+            }
+            // 페이지 경계는 pitch가 아니다. 동일 페이지의 동일 문단만 대조한다.
+            for pair in lines.windows(2) {
+                let RenderNodeType::TextLine(line) = &pair[0].node_type else {
+                    unreachable!()
+                };
+                let index = line.line_index.expect("source line index") as usize;
+                let seg = &source.line_segs[index];
+                let size_hu = if index == 0 { 1500 } else { 1400 };
+                assert_eq!(seg.line_height, size_hu);
+                assert_eq!(seg.line_spacing, size_hu * 60 / 100);
+                let expected = f64::from(size_hu) * 96.0 / 7200.0 * 1.6;
+                let actual = pair[1].bbox.y - pair[0].bbox.y;
+                assert!(
+                    (actual - expected).abs() < 0.1,
+                    "pi={pi} line={index} pitch {actual} != source {expected}"
+                );
+                count += 1;
+            }
+        }
+        assert_eq!(
+            count,
+            source.line_segs.len() - 1,
+            "all adjacent source lines checked"
+        );
+        let normalize = |s: &str| s.chars().filter(|c| !c.is_whitespace()).collect::<String>();
+        assert_eq!(
+            normalize(&content),
+            normalize(&source.text),
+            "source exactly once"
+        );
+    }
 }
 
-/// [수정 4] RowBreak float 선언-이월의 문단 단위 증거 판정 (`saved_span`) —
-/// pi30 표(4×3 RowBreak, host 저장 LS 없음, 측정 비적합)는 한글처럼 행 분할되어
-/// 머리 행(r0~r1: 대안명/규제대안1)이 p10 에 남아야 한다. 회귀(구역 전역
-/// has_stored_line_segs 판정) 시 표 전체가 p11 로 이월된다.
+/// 사용자 교체본의 pi30은 저장 LS가 있으며 전체 표가 본문에 들어간다.
+/// 원래 NO_LS 회귀는 cases/issue_7195_no_ls_rowbreak_contract.rs의 합성 경계로 분리한다.
 #[test]
-fn issue_2279_rowbreak_float_splits_without_host_line_segs() {
+fn issue_2279_saved_alternatives_table_preserves_all_cells() {
     let core = core();
-    assert!(
-        page_contains(&core, 9, "대안명"),
-        "p10에 pi30 표 머리 행 부재 — saved_span 판정 회귀 (통째 이월)"
-    );
-    assert!(
-        page_contains(&core, 9, "주민대표단의 법적"),
-        "p10에 규제대안1 내용 부재 — RowBreak float 분할 회귀"
-    );
-    assert!(
-        page_contains(&core, 10, "준 준용"),
-        "p11에 잔여 행(규제대안2: 기존 기준 준용) 부재 — 분할 구조 변화"
-    );
+    assert!(!core.document().sections[0].paragraphs[30]
+        .line_segs
+        .is_empty());
+    assert_fitting_table_stays_whole(&core, 30, (4, 3));
 }

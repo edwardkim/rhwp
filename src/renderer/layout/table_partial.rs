@@ -3029,7 +3029,11 @@ impl LayoutEngine {
                                             para_y
                                         }
                                     } else {
-                                        inner_area.y
+                                        // Empty paragraphs can own line boxes without
+                                        // visible glyphs. Keep their already-laid-out
+                                        // flow advance, as the unsplit cell path does;
+                                        // absence of visible text is not a cell-top anchor.
+                                        para_y_before_lines
                                     };
                                     let available_h =
                                         (inner_area.height - (nested_y - inner_area.y)).max(0.0);
@@ -3084,8 +3088,6 @@ impl LayoutEngine {
                                             offset_within_start: split.offset_within_start,
                                             content_offset: split.content_offset,
                                             force_source_start_cut: split.force_source_start_cut,
-                                            replay_terminal_boundary_unit: split
-                                                .replay_terminal_boundary_unit,
                                             terminal: split.terminal,
                                             recursive_cut: split.recursive_cut.clone(),
                                         })
@@ -3098,8 +3100,6 @@ impl LayoutEngine {
                                             offset_within_start: split.offset_within_start,
                                             content_offset: split.content_offset,
                                             force_source_start_cut: split.force_source_start_cut,
-                                            replay_terminal_boundary_unit: split
-                                                .replay_terminal_boundary_unit,
                                             terminal: split.terminal,
                                             recursive_cut: split.recursive_cut.clone(),
                                         })
@@ -3137,7 +3137,6 @@ impl LayoutEngine {
                                             flow_height: vis_h,
                                             content_offset: 0.0,
                                             force_source_start_cut: false,
-                                            replay_terminal_boundary_unit: false,
                                             // [#3658] per-중첩행 컷 경로도 마지막 유닛까지
                                             // 포함한 컷(end_cut=[])이면 종료 조각이다.
                                             terminal: cut_units
