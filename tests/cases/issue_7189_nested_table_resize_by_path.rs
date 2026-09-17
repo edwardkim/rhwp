@@ -230,3 +230,29 @@ fn an_empty_path_is_refused() {
     );
     assert!(result.is_err(), "빈 경로는 거부해야 한다");
 }
+
+#[test]
+fn resize_limit_properties_belong_to_the_same_nested_table() {
+    let (core, path) = nested_core();
+    for (idx, width) in [(0, INNER_LEFT_WIDTH), (1, INNER_RIGHT_WIDTH)] {
+        let json = core
+            .get_cell_properties_by_cell_path_native(0, 0, &path, idx)
+            .unwrap();
+        let props: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(props["width"], width);
+        assert_eq!(props["height"], 3000);
+    }
+    let outer: serde_json::Value = serde_json::from_str(
+        &core
+            .get_cell_properties_by_cell_path_native(0, 0, &path[..1], 0)
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(outer["width"], OUTER_CELL_WIDTH);
+    assert!(core
+        .get_cell_properties_by_cell_path_native(0, 0, &path, 2)
+        .is_err());
+    assert!(core
+        .get_cell_properties_by_cell_path_native(0, 0, &[], 0)
+        .is_err());
+}

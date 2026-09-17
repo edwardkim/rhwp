@@ -1215,6 +1215,27 @@ impl DocumentCore {
             }
         };
 
+        self.cell_properties_json(table, cell_idx, use_effective_border_fill)
+    }
+
+    /// 크기 변경과 같은 cellPath의 표에서 셀 속성을 읽는다.
+    pub fn get_cell_properties_by_cell_path_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        cell_idx: usize,
+    ) -> Result<String, HwpError> {
+        let table = self.resolve_table_by_path(section_idx, parent_para_idx, path)?;
+        self.cell_properties_json(table, cell_idx, true)
+    }
+
+    fn cell_properties_json(
+        &self,
+        table: &crate::model::table::Table,
+        cell_idx: usize,
+        use_effective_border_fill: bool,
+    ) -> Result<String, HwpError> {
         let cell = table
             .cells
             .get(cell_idx)
