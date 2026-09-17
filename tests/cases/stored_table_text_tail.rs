@@ -265,3 +265,50 @@ fn stored_text_tail_follows_the_measured_table_and_preserves_the_line_gap() {
         }
     }
 }
+
+/// 수동 줄 정보의 기하 검사와 별도로 한컴 정상 저장본의 PDF 좌표를 검사한다.
+#[test]
+fn hancom_saved_tail_preserves_pdf_baseline_after_the_table() {
+    let bytes = include_bytes!("../../samples/stored-table-text-tail/hancom-resaved.hwpx");
+    let mut core = DocumentCore::from_bytes(bytes).expect("Hancom saved control");
+    let host = &core.document().sections[0].paragraphs[1];
+    assert_eq!(host.line_segs.len(), 4, "Hancom's actual text partition");
+    assert_eq!(host.line_segs[3].text_start, 83);
+    assert_eq!(core.page_count(), 1);
+    let tree = core.build_page_render_tree(0).expect("render");
+    let mut nodes = Vec::new();
+    collect(&tree.root, &mut nodes);
+    let (footer, baseline) = nodes
+        .iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run)
+                if run.para_index == Some(1)
+                    && run.cell_context.is_none()
+                    && run.text == "          Footer" =>
+            {
+                Some((node.bbox, node.bbox.y + run.baseline))
+            }
+            _ => None,
+        })
+        .expect("Footer text run");
+    // Hancom PDF: Footer baseline y=265.866821pt, run x=36.24pt (10 leading spaces).
+    // Half a pixel covers 600-dpi PDF quantization and font metric rounding.
+    assert!(
+        (baseline - 265.866821 * 96.0 / 72.0).abs() < 0.5,
+        "Footer baseline {baseline} must not add the preceding blank row"
+    );
+    assert!((footer.x - 36.24 * 96.0 / 72.0).abs() < 0.5);
+    let tables: Vec<_> = nodes
+        .iter()
+        .filter(|n| matches!(n.node_type, RenderNodeType::Table { .. }))
+        .collect();
+    assert_eq!(tables.len(), 1);
+    let table = tables[0].bbox;
+    // PDF table perimeter, separate from the surrounding paragraph border.
+    assert!((table.y - 140.77).abs() < 0.5, "table top {table:?}");
+    assert!(
+        (table.y + table.height - 312.42).abs() < 0.5,
+        "table bottom {table:?}"
+    );
+    assert!(footer.y > table.y + table.height);
+}

@@ -73,3 +73,41 @@ Merge 후 코멘트에는 위 **모든 영향 페이지**의 compare·overlay·r
 - 문서별 metadata 및 로컬 링크 검사, `git diff --check` 통과. 불필요한 log/JSON/TSV는 Git에 추가하지 않는다.
 
 - 새 sample 3개(`stored-table-text-tail/native-8-0`, `issue7234/short_table_cell_row_height`, `issue7234/tall_table_cell_row_height`)의 hidden-text/injection/unicode 검사: **1 passed**. `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 실제 대상을 지정해 실행했다.
+
+## 메인터너 보정 회차 — 한컴 정상 저장 대조군과 원본 가정 검증
+
+분석: 원 합성 입력을 다시 PDF로 변환한 job `ebf51a0c-107f-41e6-97d1-5741cb05baf4`는
+engine 2020/Hancom 11.0.0.9136에서 성공했다. 새 PDF와 기존 PDF의 96dpi raster SHA256이
+`959db583a1de4d482d105d0fe30573190a2eb92b69711f3688c172a9d7a05875`로 동일하므로 기존 PDF를 재사용한다.
+원본 `native-8-0.hwpx`의 텍스트는 표 앞 15개, 뒤 70개 공백과 Footer이며 수동 저장한 3줄에는
+실제 줄바꿈 한 줄이 빠졌다. 한컴 재저장에서는 textpos 0/15/25/83의 4줄이 된다.
+셀 내부의 실제 8줄 메트릭도 추가되며 표 높이는 6000→12872 HU로 바뀐다.
+
+수정 범위: 원본과 기존 실패 PNG는 유지한다. 단순 이름 변경 복제가 아닌 한컴이 실제 다시
+계산·저장한 `samples/stored-table-text-tail/hancom-resaved.hwpx`를 독립 대조군으로 추가한다.
+원본→HWP job `d4852d00-9b82-471d-9fa7-e2c24731272b`, HWP→HWPX job
+`0047a7ab-79f3-45d2-a160-fdcd3a6a165b`, 모두 engine 2020, preprocess none, 성공 상태를 확인했다.
+한컴 PDF의 Footer 기준선 265.866821pt, x=86.28pt와 실제 표 외곽 y=140.77..312.42px를
+정식 회귀 검사의 독립 기대값으로 추가한다. 기존 보고의 큰 외곽 상자는 표 테두리와 문단
+테두리를 혼동했으므로 구분한다. 합성 원본의 잘못된 저장 줄을 엔진이 복원했다고 주장하지 않는다.
+
+결과: 정상 저장 대조군도 PDF로 재변환(job `6a75daf6-716f-40b3-9b87-96fac5c121ae`, 성공)해
+기존 PDF와 raster가 동일함을 확인했다. 중복 PDF는 추가하지 않았다. Native/fresh WASM의
+표 실제 외곽과 Footer 기준선은 PDF와 0.5px 이내다. 기존 코드의 Footer 기준선 367.92px에서
+#7242 적용 후 354.2133px로 바뀌며 한컴 PDF 354.4891px에 맞는다. 페이지 수 1쪽, 셀 텍스트
+8개와 공백 뒤 Footer의 네 번째 글줄을 보존했다. 문자/문단 테두리의 일부 기존 차이는 남는다.
+
+| 정상 저장 대조군 1쪽 | compare | overlay | review |
+| --- | --- | --- | --- |
+| Native | [비교](../assets/pr7242_review/native_hancom_compare_001.png) | [겹침](../assets/pr7242_review/native_hancom_overlay_001.png) | [직접 판독](../assets/pr7242_review/native_hancom_review_001.png) |
+| fresh WASM | [비교](../assets/pr7242_review/wasm_hancom_compare_001.png) | [겹침](../assets/pr7242_review/wasm_hancom_overlay_001.png) | [직접 판독](../assets/pr7242_review/wasm_hancom_review_001.png) |
+
+실행 binary/package는 위 source head의 제품 코드와 동일하다(이번 회차는 fixture·검사·증적 추가).
+대조군에서 원 PR의 표 뒤 흐름 보정은 확인했으나 **원 합성 파일 자체의 자동 재조판 불일치는
+아직 해소하지 않았다**. 정상 대조군 통과를 원본의 해결로 바꾸어 판정하지 않는다.
+
+실제 실행: 새 PDF 기준선 검사만 `src/renderer/layout.rs`를 base `236a601da`로 되돌린
+별도 verify checkout에서 실행해 **1 failed**(Footer baseline 367.92)를 확인했다. 제품 소스를
+복구한 뒤 원 모듈 전체 **4 passed**. 임계값·baseline 완화는 없다. Native/fresh WASM 대조군
+compare·overlay·review를 새로 산출하고 직접 판독했다. 원본 합성 입력 불일치가 남으므로
+이 회차는 정상 저장 경로의 증거 보완이며 전체 보류 해제로 표시하지 않는다.
