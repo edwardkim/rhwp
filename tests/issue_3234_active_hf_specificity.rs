@@ -20,15 +20,26 @@ const ODD_MARK: &str = "홀수머리말";
 const BOTH_MARK: &str = "양쪽머리말";
 const EVEN_MARK: &str = "짝수머리말";
 
+/// 구역 `section` 을 `pages` 쪽이 되도록 문단을 더한다.
+///
+/// [#7218] 종전에는 `insert_page_break_native(0, i, 0)` 을 반복해 쪽을 만들었다. 그
+/// 호출은 문단 시작에서 문단을 갈라 빈 문단을 남기는 **결함 동작**에 기대고 있었다.
+/// 이제 문단 시작의 쪽 나눔은 그 문단 자신의 속성이므로, 쪽마다 문단을 만든 뒤 그
+/// 문단 앞에서 쪽을 나눈다 — 사용자 흐름과 같은 순서다.
+fn add_pages(doc: &mut HwpDocument, section: usize, pages: usize) {
+    for i in 1..pages {
+        doc.insert_paragraph_native(section, i).expect("문단 추가");
+        doc.insert_page_break_native(section, i, 0)
+            .expect("page break");
+    }
+}
+
 /// `pages` 쪽 문서를 만들고, 머리말을 `order` 순서대로 생성해 각자 표식을 넣는다.
 fn doc_with_headers(pages: usize, order: &[(u8, &str)]) -> HwpDocument {
     let mut doc = HwpDocument::create_empty();
     doc.create_blank_document_native().expect("blank");
     doc.insert_text_native(0, 0, 0, "본문").expect("text");
-    for i in 0..pages - 1 {
-        doc.insert_page_break_native(0, i, if i == 0 { 2 } else { 0 })
-            .expect("page break");
-    }
+    add_pages(&mut doc, 0, pages);
     for (apply_to, mark) in order {
         doc.create_header_footer_native(0, true, *apply_to)
             .expect("create header");
@@ -46,10 +57,7 @@ fn doc_two_sections(first_pages: usize, order: &[(u8, &str)]) -> HwpDocument {
     let mut doc = HwpDocument::create_empty();
     doc.create_blank_document_native().expect("blank");
     doc.insert_text_native(0, 0, 0, "본문").expect("text");
-    for i in 0..first_pages - 1 {
-        doc.insert_page_break_native(0, i, if i == 0 { 2 } else { 0 })
-            .expect("구역 0 쪽 나누기");
-    }
+    add_pages(&mut doc, 0, first_pages);
 
     // 구역 1 = 구역 0 복제 (구역 나누기 편집 API 가 없어 IR 로 만든다)
     let mut ir = doc.document().clone();

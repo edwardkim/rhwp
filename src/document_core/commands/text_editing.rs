@@ -3717,6 +3717,11 @@ impl DocumentCore {
 
     /// 강제 쪽 나누기 삽입 (Ctrl+Enter)
     /// 커서 위치에서 문단을 분할하고, 새 문단에 ColumnBreakType::Page를 설정한다.
+    ///
+    /// [#7218] 문단 **시작**(`char_offset == 0`)에서는 문단을 가르지 않는다. HWPX
+    /// `hp:p/@pageBreak` 와 HWP5 문단 헤더 break 비트(0x04)는 *그 문단 앞에서* 쪽을
+    /// 넘기라는 **break-before** 속성이므로, "문단 P 앞에 쪽 나눔" 의 결과는 P 자신이
+    /// 그 속성을 갖는 것이다. 새 문단은 필요하지 않다.
     pub fn insert_page_break_native(
         &mut self,
         section_idx: usize,
@@ -3739,6 +3744,59 @@ impl DocumentCore {
         }
 
         self.document.sections[section_idx].raw_stream = None;
+
+        // [#7218] 문단 시작에서는 대상 문단 자신에게 break-before 속성만 준다.
+        //
+        // 종전에는 offset 과 무관하게 `split_at` 을 불러, offset 0 이면 원 문단의
+        // ParaShape·스타일·개요 수준을 그대로 물려받은 **빈 문단**이 앞에 남았다. 개요
+        // 문단 앞에 쓰면 한/글이 그 빈 문단에도 개요 번호를 매겨 항목 하나가 비어 보이고
+        // 뒤 번호가 밀린다. 문단 수가 늘어 이후 좌표 편집도 한 칸씩 어긋났다.
+        //
+        // 저장소 정본 HWPX 85개 실측: `pageBreak="1"` 문단 712개 중 664개(93%)가 글자를
+        // 가진 내용 문단이다 — 한/글도 이 속성을 내용 문단에 붙인다.
+        if char_offset == 0 {
+            {
+                let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+                para.column_type = ColumnBreakType::Page;
+                // 다른 축의 break 비트(구역 0x01·다단 0x02)를 지우지 않는다. 파서도 같은
+                // 규칙으로 축을 bitwise 합성한다(`parser/hwpx/section.rs` 스펙 표 59).
+                para.raw_break_type |= 0x04;
+                // 사용자가 명시한 쪽나눔이므로 합성 표시를 지운다 — 그 표시가 남으면
+                // HWP5 저장기가 이 바이트를 버린다(`serializer/body_text.rs` #4680).
+                para.page_break_synthesized = false;
+            }
+
+            // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+            );
+            self.reflow_paragraph(section_idx, para_idx);
+
+            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                para_idx,
+                Some(para_idx..para_idx + 1),
+                stored_end_for_reset,
+                &self.styles,
+                self.dpi,
+                doc_hwp3_layout,
+            );
+
+            self.recompose_section(section_idx);
+            self.paginate_if_needed();
+            self.invalidate_page_tree_cache();
+
+            // 구조 분할이 아니라 문단 자신의 속성 변경이다.
+            self.event_log.push(DocumentEvent::ParaFormatChanged {
+                section: section_idx,
+                para: para_idx,
+            });
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":0",
+                para_idx
+            )));
+        }
 
         // 문단 분리
         let new_para =
