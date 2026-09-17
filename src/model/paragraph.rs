@@ -106,6 +106,10 @@ pub struct Paragraph {
     pub has_para_text: bool,
     /// TAB 확장 데이터 (라운드트립 보존용)
     /// 각 탭 문자의 7 code unit (탭 너비, 종류 등) — text 내 '\t' 순서와 1:1 대응
+    ///
+    /// [#7170] 저장 데이터가 없는 탭은 **자리표(`tab_ext_is_placeholder`)로 자리를 채운다.**
+    /// 항목을 건너뛰면 그 뒤 탭의 확장이 순번으로 밀려 남의 폭·채움을 쓴다 — 소비자는
+    /// 자리표를 만나면 문단 `TabDef` 기준 `find_next_tab_stop` 으로 다시 계산한다.
     pub tab_extended: Vec<[u16; 7]>,
     /// 제목 차례 표시 (`<hp:t>` 안의 `<hp:titleMark/>`, HWP5 인라인 `Mtit`/`Mign`)
     ///
@@ -405,6 +409,23 @@ impl MarkpenMark {
         })
     }
 }
+
+/// 저장 데이터가 없는 인라인 탭의 자리표인가 (#7170).
+///
+/// 두 서식기 모두 "데이터 없음"을 폭 0 으로 적는다 — HWP5 이진은
+/// `[0, 0, 0, 0, 0, 0, 0x0009]`, HWPX 는 `<hp:tab width="0" leader="0" type="1"/>`.
+/// 한컴이 만든 실제 탭은 폭 0 이 될 수 없어(시각 효과가 없다) 안전한 신호다.
+/// 종전에는 두 파서가 이 항목을 **버려서** 뒤 탭의 확장이 순번으로 밀렸다 —
+/// 자리만 채우고 소비자가 이 술어로 걸러 `TabDef` 기준 재계산을 택한다.
+pub fn tab_ext_is_placeholder(ext: &[u16; 7]) -> bool {
+    ext[0] == 0
+        && ext[1] == 0
+        && (ext[2] == 0 || ext[2] == 0x0100)
+        && ext[3..6].iter().all(|&v| v == 0)
+}
+
+/// 위 자리표의 정본 표기 — HWP5 이진 서식기가 내는 "데이터 없음" 마커와 같다.
+pub const TAB_EXT_PLACEHOLDER: [u16; 7] = [0, 0, 0, 0, 0, 0, 0x0009];
 
 impl Paragraph {
     /// 한컴 2022 실측: 종류 2, 하위 24비트는 COLORREF(BGR), 끝 위치는 exclusive.

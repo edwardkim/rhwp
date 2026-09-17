@@ -1496,7 +1496,11 @@ pub(crate) fn resolve_last_tab_pending(
     available_width: f64,
 ) -> Option<(f64, u8, u8)> {
     // 1) inline_tabs 가 마지막 \t 를 커버하는 경우: ext[2] 고바이트로 종류 판정
-    if last_inline_idx < tab_extended.len() {
+    //    [#7170] 자리표는 저장 데이터가 아니다 — 커버하지 않는 것으로 보고 2)로 내려간다.
+    if tab_extended
+        .get(last_inline_idx)
+        .is_some_and(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext))
+    {
         let inline_type = ((tab_extended[last_inline_idx][2] >> 8) & 0xFF) as u8;
         match inline_type {
             // 1=LEFT (explicit), 0=unspecified → cross-run pending 없음 (본 수정의 핵심)
@@ -1575,7 +1579,11 @@ pub(crate) fn resolve_intra_run_right_tab(
     // inline_tabs 가 LEFT 를 명시하면 대상이 아니다 (`resolve_last_tab_pending` 과 같은 규칙).
     let tab_ordinal = chars[..tab_idx].iter().filter(|c| **c == '\t').count();
     let inline_idx = inline_tab_base + tab_ordinal;
-    if inline_idx < tab_extended.len() {
+    // [#7170] 자리표는 저장 데이터가 아니다 — 위와 같은 규칙으로 건너뛴다.
+    if tab_extended
+        .get(inline_idx)
+        .is_some_and(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext))
+    {
         match ((tab_extended[inline_idx][2] >> 8) & 0xFF) as u8 {
             2 | 3 => {}
             _ => return (full_width, layout_positions),

@@ -356,8 +356,14 @@ fn compute_char_positions_walk(
             continue;
         }
         if c == '\t' {
-            if tab_char_idx < style.inline_tabs.len() {
-                let ext = &style.inline_tabs[tab_char_idx];
+            // [#7170] 자리표(저장 폭 없음)는 저장값이 아니다 — 순번만 소비하고 아래
+            // `TabDef` 기준 재계산으로 내려간다. 폭 0 을 결과 위치로 읽으면 탭이
+            // 무폭이 된다(#1892).
+            let stored_ext = style
+                .inline_tabs
+                .get(tab_char_idx)
+                .filter(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext));
+            if let Some(ext) = stored_ext {
                 x = inline_tab_x(i, x, ext, &chars, &cluster_len, &char_width);
                 tab_char_idx += 1;
             } else if has_custom_tabs {
