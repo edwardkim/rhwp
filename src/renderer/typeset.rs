@@ -6091,6 +6091,43 @@ fn spacing_trim_restorable(paragraphs: &[Paragraph], para_idx: usize) -> bool {
     false
 }
 
+/// [#7196] 다음 문단 경계가 `#6031` 철회(dirty)에 걸려 트림 복원이 막히는가.
+///
+/// `#2279 ①` 트림은 다음 저장 anchor 의 vpos-snap 이 좌표를 되돌린다는 전제인데,
+/// HWPX 저장 레이아웃에서 다음 문단이 굵은 문단 위 간격(> 5px)을 가졌고 그 경계의 저장
+/// 사다리가 그 간격을 담지 않았으면(`stored_ladder_encodes_spacing_before` 거짓) `#6031` 이
+/// 그 스냅을 되돌리고 사다리를 dirty 로 만든다. 그러면 이 문단에서 깎은 문단 위 간격과
+/// 끝 줄 간격이 영영 복원되지 않아 조판이 렌더보다 짧게 센다 — 156760012 10쪽 첫 문단
+/// pi=66: 트림 52.3px(sb 26.7 + ls 25.6) 미복원, 쪽 말미 표가 본문 바닥 +18.3px 넘침.
+/// 판정식·게이트(`hwpx_stored_layout`, `!hwp3_layout`, sb > 5px)는 `#6031` 과 같게 둔다.
+fn next_boundary_reverts_spacing_trim(
+    hwpx_stored_non_hwp3: bool,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    para_idx: usize,
+    dpi: f64,
+) -> bool {
+    if !hwpx_stored_non_hwp3 {
+        return false;
+    }
+    let next_idx = para_idx + 1;
+    let Some(next) = paragraphs.get(next_idx) else {
+        return false;
+    };
+    // `format_paragraph` 의 spacing_before 산출과 같은 축 — 저장 줄이 없는 텍스트 문단은 0.
+    let spacing_before_px = if next.line_segs.is_empty() && !next.text.is_empty() {
+        0.0
+    } else {
+        styles
+            .para_styles
+            .get(next.para_shape_id as usize)
+            .map(|style| style.spacing_before)
+            .unwrap_or(0.0)
+    };
+    spacing_before_px > 5.0
+        && !stored_ladder_encodes_spacing_before(paragraphs, next_idx, spacing_before_px, dpi)
+}
+
 /// [#2279 OMIT-eager] 저장 ladder 의 spacing-누락(OMIT) 서명 사전 판별.
 ///
 /// #2383 의 lazy 판별(빈 host 문단의 표 성장 시점)은 첫 검출 지점 이전의
@@ -18592,7 +18629,15 @@ impl TypesetEngine {
                 para,
                 st.col_count,
                 trim_spacing_before_for_flow,
-                st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                st.vpos_ladder_dirty
+                    || !spacing_trim_restorable(paragraphs, para_idx)
+                    || next_boundary_reverts_spacing_trim(
+                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                        paragraphs,
+                        styles,
+                        para_idx,
+                        self.dpi,
+                    ),
                 st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
             );
             if std::env::var("RHWP_DIAG_ADV").is_ok() {
@@ -18612,7 +18657,15 @@ impl TypesetEngine {
                     para,
                     st.col_count,
                     trim_spacing_before_for_flow,
-                    st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                    st.vpos_ladder_dirty
+                        || !spacing_trim_restorable(paragraphs, para_idx)
+                        || next_boundary_reverts_spacing_trim(
+                            st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                            paragraphs,
+                            styles,
+                            para_idx,
+                            self.dpi,
+                        ),
                     st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
                 );
             st.current_height += advance;
@@ -18676,7 +18729,15 @@ impl TypesetEngine {
                     para,
                     st.col_count,
                     trim_spacing_before_for_flow,
-                    st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                    st.vpos_ladder_dirty
+                        || !spacing_trim_restorable(paragraphs, para_idx)
+                        || next_boundary_reverts_spacing_trim(
+                            st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                            paragraphs,
+                            styles,
+                            para_idx,
+                            self.dpi,
+                        ),
                     false,
                 );
                 st.current_height += advance;
@@ -18833,7 +18894,15 @@ impl TypesetEngine {
                 para,
                 st.col_count,
                 trim_spacing_before_for_flow,
-                st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                st.vpos_ladder_dirty
+                    || !spacing_trim_restorable(paragraphs, para_idx)
+                    || next_boundary_reverts_spacing_trim(
+                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                        paragraphs,
+                        styles,
+                        para_idx,
+                        self.dpi,
+                    ),
                 false,
             );
             st.vpos_prev_trimmed_sb_px = trimmed_sb_gate
@@ -18841,7 +18910,15 @@ impl TypesetEngine {
                     para,
                     st.col_count,
                     trim_spacing_before_for_flow,
-                    st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs, para_idx),
+                    st.vpos_ladder_dirty
+                        || !spacing_trim_restorable(paragraphs, para_idx)
+                        || next_boundary_reverts_spacing_trim(
+                            st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                            paragraphs,
+                            styles,
+                            para_idx,
+                            self.dpi,
+                        ),
                     false,
                 );
             st.current_height += advance;
@@ -22763,7 +22840,15 @@ impl TypesetEngine {
                 next,
                 st.col_count,
                 trim_sb,
-                st.vpos_ladder_dirty || !spacing_trim_restorable(paragraphs_all, next_idx),
+                st.vpos_ladder_dirty
+                    || !spacing_trim_restorable(paragraphs_all, next_idx)
+                    || next_boundary_reverts_spacing_trim(
+                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                        paragraphs_all,
+                        styles,
+                        next_idx,
+                        self.dpi,
+                    ),
                 false,
             );
             st.prefilled_paras.insert(next_idx);
