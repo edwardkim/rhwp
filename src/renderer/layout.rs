@@ -8595,9 +8595,17 @@ impl LayoutEngine {
             if was_tac {
                 if let Some(para) = paragraphs.get(item_para) {
                     if let Some(seg) = para.line_segs.first() {
-                        if seg.line_spacing < 0 {
-                            // 표 시작 y와 시각적 높이 저장 (Percent 전환 시 비교용)
-                            let ps = styles.para_styles.get(para.para_shape_id as usize);
+                        let ps = styles.para_styles.get(para.para_shape_id as usize);
+                        if seg.line_spacing < 0
+                            && ps.is_some_and(|s| {
+                                matches!(
+                                    s.line_spacing_type,
+                                    crate::model::style::LineSpacingType::Fixed
+                                )
+                            })
+                        {
+                            // 고정 줄간격에서만 후속 줄의 개체 겹침을 해소한다.
+                            // Percent의 음수 간격은 문서가 의도한 줄 전진이다.
                             let sa = ps.map(|s| s.spacing_after).unwrap_or(0.0);
                             fix_table_start_y = y_offset
                                 - hwpunit_to_px(seg.line_height + seg.line_spacing, self.dpi)

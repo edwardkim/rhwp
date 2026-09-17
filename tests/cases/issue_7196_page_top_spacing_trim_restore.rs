@@ -119,3 +119,61 @@ fn issue_7196_attachment_table_starts_next_page_without_body_overflow() {
         );
     }
 }
+
+/// 독립 한컴 2020 PDF 3쪽. 음수 Percent TAC host와 양수 줄간격 TAC 표가
+/// 한 문서에 섞여 있어, 트림 복원을 고치며 앞쪽 표를 다음 쪽으로 밀면 안 된다.
+#[test]
+fn negative_percent_tac_hosts_preserve_the_three_page_physical_layout() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+        "tests/fixtures/planet_review_20260917/156676190_[교육부 02-27(목) 조간보도자료] 2026년 국립대 임대형 민자사업(BTL) 기숙사 추진.hwpx"
+    );
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("read counterexample")).expect("open");
+    assert_eq!(core.page_count(), 3, "동일 원문의 한컴 2020 기준 PDF는 3쪽");
+    let tree = core.build_page_render_tree(0).expect("page 1");
+    let page_body = body(&tree.root).expect("body");
+    let mut items = Vec::new();
+    flow_items(page_body, &mut items);
+    let first_body = items
+        .iter()
+        .find(|(kind, _, text)| *kind == "TextLine" && squash(text).starts_with("교육부("))
+        .expect("first body line");
+    assert!(
+        (first_body.1.y - 371.8).abs() <= 1.0,
+        "원문 vertpos 20799 HU / PDF 첫 본문 줄: {:?}",
+        first_body.1
+    );
+    let last_table = items
+        .iter()
+        .filter(|(kind, _, _)| *kind == "Table")
+        .last()
+        .expect("photo table");
+    assert!(
+        (last_table.1.y - 811.0).abs() <= 1.5,
+        "PDF 사진 표 윗변 811px: {:?}",
+        last_table.1
+    );
+    for (kind, bbox, text) in &items {
+        assert!(
+            bbox.y + bbox.height <= page_body.bbox.y + page_body.bbox.height + 0.5,
+            "{kind} {text:?}: 본문 바닥을 넘음 {bbox:?}"
+        );
+    }
+    let second = core.build_page_render_tree(1).expect("page 2");
+    let mut second_items = Vec::new();
+    flow_items(body(&second.root).expect("second body"), &mut second_items);
+    let (_, first_box, first_text) = &second_items[0];
+    assert!(squash(first_text).starts_with("박성민"));
+    // 원본 pi8 vertpos=1500 HU, PDF 2쪽 첫 줄 top=114.47px.
+    assert!(
+        (first_box.y - 114.47).abs() <= 1.0,
+        "쪽 위 문단 간격 보존: {first_box:?}"
+    );
+    let first_seg = &core.document().sections[0].paragraphs[0].line_segs[0];
+    assert_eq!(
+        first_seg.line_height,
+        2994 + 283 + 283,
+        "개체 줄 상자는 상하 바깥여백을 포함"
+    );
+    assert_eq!(first_seg.line_spacing, -600, "1500 HU 글자모양에 60% 간격");
+}

@@ -4247,9 +4247,18 @@ impl LayoutEngine {
                 // para_index==0 클램프를 저장 증거 기반으로 일반화하되, 누적축 vpos
                 // 인코딩(vpos ≫ sb)은 쪽-상대 증거가 아니므로 종전(트림) 유지.
                 let vpos0_px = para
-                    .and_then(|p| p.line_segs.first())
-                    .filter(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
-                    .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
+                    .and_then(|p| p.line_segs.first().map(|ls| (p, ls)))
+                    .filter(|(_, ls)| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                    .map(|(p, ls)| {
+                        // 누락 개체 줄 보충 때문에 재사다리화한 좌표는 쪽-상대 증거가
+                        // 아니다. 정규화 전에 보존한 원본 첫 줄 위치로 간격을 판독한다.
+                        let source_vpos = p
+                            .source_line_seg_vertical_pos
+                            .as_ref()
+                            .and_then(|positions| positions.first().copied())
+                            .unwrap_or(ls.vertical_pos);
+                        hwpunit_to_px(source_vpos, self.dpi)
+                    })
                     .unwrap_or(0.0);
                 if vpos0_px > 0.0 && vpos0_px <= spacing_before + 0.5 {
                     y += vpos0_px;

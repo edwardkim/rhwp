@@ -20255,13 +20255,37 @@ impl TypesetEngine {
                 })
             })
             .flatten();
-        let height_for_fit = if has_tac {
+        // 실제 TAC 배치가 사용하는 소유 줄 상자는 바깥여백을 이미 포함한다.
+        // pre-flush에서 fmt와 여백을 다시 더하면 실제로 들어가는 표를 먼저 이월한다.
+        let owned_single_tac_frame =
+            (st.profile.hwpx_stored_layout() && tac_count == 1 && fmt.line_heights.len() == 1)
+                .then(|| {
+                    para.controls.iter().enumerate().find_map(|(ci, control)| {
+                        let Control::Table(table) = control else {
+                            return None;
+                        };
+                        crate::renderer::composer::owned_rowbreak_tac_height(para, ci).filter(
+                            |height| {
+                                i64::from(*height)
+                                    >= i64::from(table.common.height)
+                                        + i64::from(table.outer_margin_top)
+                                        + i64::from(table.outer_margin_bottom)
+                            },
+                        )
+                    })
+                })
+                .flatten()
+                .map(|height| hwpunit_to_px(height, self.dpi));
+        let height_for_fit = if let Some(height) = owned_single_tac_frame {
+            let base = height + fmt.spacing_before;
+            session_grown_tac_total.map_or(base, |grown| base.max(grown))
+        } else if has_tac {
             // 글자처럼 취급되는 표는 **바깥 여백(위·아래)까지 쪽 예산을 차지**한다.
             // 한컴 저장 lineseg 의 vertsize 가 `표 선언높이 + outMargin.top + outMargin.bottom`
             // 이다(본 문서 TAC 개체 18/18 일치, 2248+283+283=2814). 이 항이 빠져 쪽마다
             // 566 HU 씩 덜 쌓였고, 소제목 표가 앞 쪽 바닥에 남아 이후 쪽이 통째로 밀렸다.
-            // 🔴 줄 높이(`inline_control_*`) 자체에 더하면 흐름 좌표까지 이중 가산돼
-            //    조판이 크게 어긋난다(실측 82.3% → 54.0%). **수용 판정 값에만** 더한다.
+            // 소유 줄이 상하 여백까지 담는 경로는 위에서 한 번만 계상한다.
+            // 그 증거가 없는 저장 줄은 기존 수용 판정의 여백 보충을 유지한다.
             let tac_outer_margin_px: f64 = para
                 .controls
                 .iter()
@@ -22593,7 +22617,7 @@ impl TypesetEngine {
         // TAC 표: trailing line_spacing 복원 (Paginator place_table_fits:777-783 동일)
         // has_post_text는 tac_table_count와 무관하게 텍스트 줄 존재 여부만 확인
         let is_tac = self.is_effective_tac_table(para, table, fmt);
-        if is_tac && fmt.total_height > fmt.height_for_fit && !has_post_text {
+        if is_tac && !has_post_text {
             st.current_height += fmt.total_height - fmt.height_for_fit;
         }
         // [#2243 진단] 배치 종료 시 누적 — 동작 불변.
@@ -22602,9 +22626,9 @@ impl TypesetEngine {
                 "DIAG_TAC_END pi={} cur_h={:.1} trailing_fired={} has_post_text={} delta={:.1}",
                 para_idx,
                 st.current_height,
-                is_tac && fmt.total_height > fmt.height_for_fit && !has_post_text,
+                is_tac && !has_post_text,
                 has_post_text,
-                (fmt.total_height - fmt.height_for_fit).max(0.0),
+                fmt.total_height - fmt.height_for_fit,
             );
         }
         if strict_following_plain_text_fit && is_last_placed {
