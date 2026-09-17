@@ -15,7 +15,7 @@ use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::{common_obj_offsets, CommonObjAttr};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::Padding;
-use crate::scaffold::schema::{Block, PageSize, ScaffoldSpec};
+use crate::scaffold::schema::{Block, CellAlignSpec, PageSize, ScaffoldSpec};
 
 // 글자 모양 ID (doc_info.char_shapes 인덱스).
 const CS_NORMAL: u32 = 0;
@@ -74,8 +74,27 @@ pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
                     .paragraphs
                     .push(make_text_para(text, PS_NORMAL, CS_NORMAL));
             }
-            Block::Table { rows } => {
-                if let Some(table_para) = build_table_paragraph(rows, content_width) {
+            Block::Table { rows, cell_align } => {
+                // [#7232] 셀 문단의 정렬은 열마다 정한다. 편집 경로
+                // `DocumentCore::create_table_native` 가 `column_alignments` 를
+                // `find_or_create_para_shape` 로 옮기는 것과 같은 방식이다 —
+                // 지정이 없으면 본문과 같은 `PS_NORMAL`(양쪽 정렬)을 그대로 쓴다.
+                let col_count = rows.iter().map(|r| r.len()).max().unwrap_or(0).max(1);
+                let cell_para_shape_ids: Vec<u16> = (0..col_count)
+                    .map(|col| match cell_align {
+                        None => PS_NORMAL,
+                        Some(spec) => doc.find_or_create_para_shape(
+                            PS_NORMAL,
+                            &crate::model::style::ParaShapeMods {
+                                alignment: Some(spec.for_column(col).to_alignment()),
+                                ..Default::default()
+                            },
+                        ),
+                    })
+                    .collect();
+                if let Some(table_para) =
+                    build_table_paragraph(rows, content_width, &cell_para_shape_ids)
+                {
                     doc.sections[0].paragraphs.push(table_para);
                     // 표 문단 뒤에는 평문 문단이 온다(한컴 표준 구조 + 다음 표와의 경계).
                     doc.sections[0].paragraphs.push(Paragraph::new_empty());
@@ -252,7 +271,7 @@ fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragra
 
 /// 셀 내부 문단을 만든다. `create_table_native` 의 셀 문단 보정과 정합
 /// (char_count_msb=true, raw_header_extra 10바이트, seg_width=셀폭-좌우패딩).
-fn make_cell_para(text: &str, col_width: u32) -> Paragraph {
+fn make_cell_para(text: &str, col_width: u32, para_shape_id: u16) -> Paragraph {
     let (char_offsets, utf16_len) = utf16_offsets(text);
     let seg_w = (col_width as i32) - 141 - 141; // 셀 폭 - 좌우 패딩
     let mut raw_header_extra = vec![0u8; 10];
@@ -277,7 +296,7 @@ fn make_cell_para(text: &str, col_width: u32) -> Paragraph {
             tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
             ..Default::default()
         }],
-        para_shape_id: PS_NORMAL,
+        para_shape_id,
         style_id: 0,
         has_para_text: !text.is_empty(),
         raw_header_extra,
@@ -290,7 +309,12 @@ fn make_cell_para(text: &str, col_width: u32) -> Paragraph {
 ///
 /// 구조 조립은 `DocumentCore::create_table_native`
 /// (`src/document_core/commands/object_ops/table.rs`)의 균일 그리드 경로와 정합한다.
-fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Paragraph> {
+/// `cell_para_shape_ids` 는 열 수만큼의 셀 문단 모양 id 다([#7232] `cell_align`).
+fn build_table_paragraph(
+    rows: &[Vec<String>],
+    content_width: u32,
+    cell_para_shape_ids: &[u16],
+) -> Option<Paragraph> {
     let row_count = rows.len();
     if row_count == 0 {
         return None;
@@ -323,7 +347,11 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
             let mut cell = Cell::new_empty(c, r, col_width, cell_height, BF_SOLID);
             cell.padding = cell_pad;
             cell.vertical_align = VerticalAlign::Center;
-            cell.paragraphs = vec![make_cell_para(text, col_width)];
+            let para_shape_id = cell_para_shape_ids
+                .get(c as usize)
+                .copied()
+                .unwrap_or(PS_NORMAL);
+            cell.paragraphs = vec![make_cell_para(text, col_width, para_shape_id)];
             cell.raw_list_extra = Vec::new();
             cells.push(cell);
         }
