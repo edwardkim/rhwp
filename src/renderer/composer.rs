@@ -2134,7 +2134,130 @@ fn recompose_stored_single_line_if_overflowing_cached(
     if !over {
         return;
     }
+    // [#6802] 넘친 것이 점 채움(리더)뿐이면 저장 한 줄이 옳다 — 한/글도 자른다.
+    if composed
+        .lines
+        .first()
+        .is_some_and(|line| line_overflow_is_leader_fill(line, styles, cell_inner_width_px))
+    {
+        return;
+    }
     reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
+}
+
+/// 차례 점 채움(리더)에 쓰이는 문자. 마침표·가운뎃점 계열만 본다.
+fn is_leader_char(c: char) -> bool {
+    matches!(
+        c,
+        '.' | '\u{00B7}' | '\u{2024}' | '\u{2025}' | '\u{2026}' | '\u{2027}' | '\u{22EF}'
+    )
+}
+
+/// 채움으로 인정하는 최소 연속 길이 — 문장의 마침표·말줄임표를 채움으로 오인하지 않는다.
+const MIN_LEADER_RUN: usize = 4;
+
+/// [#6802] 저장 한 줄을 지킨 뒤, 상자를 넘는 **채움 글자만** 한/글처럼 잘라 낸다.
+///
+/// 한/글 2020 정본(`1400000-200600006` 2쪽)은 차례 줄을 한 줄로 두고 점을 상자 안에서
+/// 끊는다 — 점이 쪽 번호 칸이나 용지 밖으로 이어지지 않는다. 자르는 것은 `display_text`
+/// 뿐이라 `text`(문서 좌표·추출·편집)는 그대로 남는다. 채움이 아닌 글자는 건드리지 않는다.
+fn trim_leader_fill_overflow(
+    composed: &mut ComposedParagraph,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    if inner_width_px <= 0.0 {
+        return;
+    }
+    for line in &mut composed.lines {
+        let mut width = estimate_composed_line_width(line, styles);
+        if width <= inner_width_px || !line_overflow_is_leader_fill(line, styles, inner_width_px) {
+            continue;
+        }
+        for run_idx in (0..line.runs.len()).rev() {
+            if width <= inner_width_px {
+                break;
+            }
+            let style = line.runs[run_idx].text_style(styles);
+            let run = &mut line.runs[run_idx];
+            let text = run.display_text.as_deref().unwrap_or(&run.text);
+            let chars: Vec<char> = text.chars().collect();
+            let trailing = chars
+                .iter()
+                .rev()
+                .take_while(|c| is_leader_char(**c))
+                .count();
+            if trailing == 0 {
+                continue;
+            }
+            let unit = estimate_text_width(&chars[chars.len() - 1].to_string(), &style).max(0.01);
+            let needed = ((width - inner_width_px) / unit).ceil().max(0.0) as usize;
+            let drop = needed.min(trailing);
+            if drop == 0 {
+                continue;
+            }
+            let kept: String = chars[..chars.len() - drop].iter().collect();
+            width -= unit * drop as f64;
+            run.display_text = Some(kept);
+        }
+    }
+}
+
+/// [#6802] 점 채움(리더)만 넘치는 저장 한 줄은 **부실 저장이 아니다**.
+///
+/// 옛 차례 표는 제목 뒤를 점 문자로 직접 채워 한 줄을 만든다
+/// (`1400000-200600006` 2쪽: `Ⅰ. 사업개요 ․․․․․…`, `․` = U+2024). 그 점 개수는
+/// **한/글의 메트릭으로** 줄을 꽉 채우도록 정해져 있어서, 우리 추정 폭이 조금만 넓어도
+/// 저장 한 줄이 셀 폭을 크게 넘는 것처럼 보인다. 그때 `#2291` 의 부실 저장 재래핑이
+/// 발동하면 한 줄짜리 문단이 네 줄로 접히고, 뒤 문단들의 저장 `vertical_pos` 위에
+/// 그대로 겹쳐 그려진다(그 문서: text-overlap 4건 · 표가 본문을 362.9px 초과).
+///
+/// 한/글은 그 줄을 한 줄로 두고 **넘치는 점을 자른다**. 채움 문자를 걷어낸 내용 폭이
+/// 셀 안에 들어가면 저장 줄이 옳다고 보고 종전의 `segment_width` 클립에 맡긴다.
+///
+/// `#2291` 의 반례(`task2287` r183 c8: 점 없는 본문 76자가 저장 1줄)는 채움 런이 없어
+/// 이 갈래를 타지 않는다 — 그쪽은 종전대로 재래핑한다.
+pub(crate) fn line_overflow_is_leader_fill(
+    line: &ComposedLine,
+    styles: &ResolvedStyleSet,
+    inner_width_px: f64,
+) -> bool {
+    fn strip_leader_runs(text: &str) -> (String, bool) {
+        let chars: Vec<char> = text.chars().collect();
+        let mut kept = String::with_capacity(text.len());
+        let mut found = false;
+        let mut i = 0;
+        while i < chars.len() {
+            if is_leader_char(chars[i]) {
+                let mut j = i;
+                while j < chars.len() && is_leader_char(chars[j]) {
+                    j += 1;
+                }
+                if j - i >= MIN_LEADER_RUN {
+                    found = true;
+                    i = j;
+                    continue;
+                }
+                kept.extend(&chars[i..j]);
+                i = j;
+                continue;
+            }
+            kept.push(chars[i]);
+            i += 1;
+        }
+        (kept, found)
+    }
+
+    let mut found_leader = false;
+    let mut content_width = 0.0f64;
+    for run in &line.runs {
+        let (kept, found) = strip_leader_runs(effective_text_for_metrics(run));
+        found_leader |= found;
+        if !kept.is_empty() {
+            content_width += estimate_text_width(&kept, &run.text_style(styles));
+        }
+    }
+    found_leader && content_width <= inner_width_px
 }
 
 fn reflow_cell_line_ignoring_stored_segs(
@@ -2266,11 +2389,18 @@ pub(crate) fn stored_rows_are_stale(
     // 1줄 ≈4.5× 과밀). **이 경계는 압축 상한에서 나온 값이지 맞춰 넣은 상수가
     // 아니다.** 빈 문단은 run 이 없어 이 판정이 발화하지 않는데, 폭을 넘길 텍스트
     // 자체가 없으므로 정상이다(전체 run-less 조합 8,345건 중 99.6%가 빈 문단).
-    if composed
-        .lines
-        .iter()
-        .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.8)
-    {
+    // [#6802] 넘친 것이 **점 채움(리더)** 뿐인 줄은 부실 저장이 아니다 — 옛 차례 표는
+    // 제목 뒤를 점 문자로 직접 채워 한 줄을 만들고(`1400000-200600006` 2쪽:
+    // `Ⅰ. 사업개요 ․․․․․…`), 그 점 개수는 한/글 메트릭 기준이라 우리 추정 폭에서는
+    // 쉽게 1.8× 를 넘는다. 여기서 재래핑하면 저장이 한 줄로 둔 문단이 네 줄로 접혀
+    // 뒤 문단들의 저장 `vertical_pos` 위에 겹쳐 그려진다(그 문서 2쪽 text-overlap 4건).
+    // 한/글은 그 줄을 한 줄로 두고 넘치는 점을 자른다. 채움을 걷어낸 내용이 상자 안에
+    // 들어갈 때만 저장을 믿는다 — `#2525`(hwpx-02 p5 135자)·`#2291`(task2287 r183c8
+    // 76자)처럼 채움 없이 넘치는 줄은 종전대로 부실 저장이다.
+    if composed.lines.iter().any(|l| {
+        estimate_composed_line_width(l, styles) > inner_width_px * 1.8
+            && !line_overflow_is_leader_fill(l, styles, inner_width_px)
+    }) {
         return true;
     }
     // [#6102] **비말미** 저장 줄의 과밀: 이어지는 줄이 있는데도 자기 폭(저장
@@ -2791,6 +2921,9 @@ pub fn recompose_cell_lines_in_frame(
     if let Some(rebuilt) = rebuilt {
         *composed = rebuilt;
     }
+    // [#6802] 저장 한 줄을 지킨 줄의 넘치는 채움(리더)은 여기서 끊는다 — 측정(높이)과
+    // 배치(페인트)가 같은 이 함수를 타므로 두 경로가 같은 줄을 본다.
+    trim_leader_fill_overflow(composed, inner_width_px, styles);
 }
 
 /// 저장 `LINE_SEG`가 없는 들여쓴 셀 문단의 구간별 자간을 안전하게
