@@ -16355,6 +16355,7 @@ impl LayoutEngine {
         let lo = start_unit.min(units.len());
         let hi = end_unit.min(units.len()).max(lo);
         let mut extra = 0.0;
+        let mut recursive_parent_padding = 0.0f64;
         // [#4129 회귀 가드] 실제 유닛 방문 횟수 집계 — run-walk 는 호출당 ≤2×U.
         // per-para 재스캔(O(P×U))류가 되살아나면 통합 테스트의 스캔 총량 상한이
         // 폭발한다. 반환 직전 한 번에 프로세스 카운터로 누적한다.
@@ -16409,6 +16410,9 @@ impl LayoutEngine {
             if total <= 0.5 || offset <= 0.5 {
                 continue;
             }
+            // 비가시 tail도 부모가 이미 예약한 공간이다. paint 대상에서 제거하기
+            // 전의 합을 자식 물리 상자와 대조해야 같은 빈 줄을 두 번 더하지 않는다.
+            let reserved_flow: f64 = visible_units.iter().map(|(height, _)| *height).sum();
             while visible_units.last().is_some_and(|(_, trailing)| *trailing) {
                 visible_units.pop();
             }
@@ -16464,6 +16468,46 @@ impl LayoutEngine {
                 .is_some_and(|child| {
                     self.native_terminal_rowbreak_child_source_cursor_eligible(table, cell, child)
                 });
+            // 재귀 유닛은 자식 내용만 투영한다. 실제 자식 RowCut 상자에는 안 여백도
+            // 있으므로 같은 컷으로 측정한 물리 높이와 내용 합의 차이를 부모 예약에
+            // 포함한다. 첫 가시 줄을 다시 더하는 scalar 보정과는 별개다.
+            if authoritative_recursive_run {
+                if let Some(child) = cell.paragraphs[para_idx]
+                    .controls
+                    .iter()
+                    .find_map(|control| {
+                        if let Control::Table(child) = control {
+                            Some(child.as_ref())
+                        } else {
+                            None
+                        }
+                    })
+                {
+                    if let Some(cut) = self
+                        .mixed_nested_split_from_cut(cell, table, styles, lo, hi, para_idx)
+                        .and_then(|split| split.recursive_cut)
+                    {
+                        let child_height = self.row_cut_content_height(
+                            child,
+                            0,
+                            &cut.start_cut,
+                            &cut.end_cut,
+                            styles,
+                        );
+                        extra += (child_height - reserved_flow).max(0.0);
+                        // 자식의 실제 상자가 셀 최소 높이를 늘린 경우 부모 행도
+                        // 측정 단계와 같은 원래 안 여백을 예약한다. 선언 높이에
+                        // 종속된 paint padding guard를 전역 변경하지 않는다.
+                        let raw = cell.effective_padding(&table.padding);
+                        let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+                        recursive_parent_padding = recursive_parent_padding.max(
+                            hwpunit_to_px(i32::from(raw.top) + i32::from(raw.bottom), self.dpi)
+                                - top
+                                - bottom,
+                        );
+                    }
+                }
+            }
             // 재귀 투영 run은 `mixed_nested_split_from_cut`의 child RowCut이
             // source cursor와 viewport를 이미 함께 소유한다. 여기에 scalar
             // continuation 보정을 다시 더하면 부모 행만 첫 가시 유닛만큼 커져
@@ -16505,7 +16549,7 @@ impl LayoutEngine {
 
         crate::diagnostics::perf_counters::MIXED_NESTED_UNITS_SCANNED
             .fetch_add(issue4129_visited, std::sync::atomic::Ordering::Relaxed);
-        extra
+        extra + recursive_parent_padding.max(0.0)
     }
 
     /// RowBreak/CellBreak의 경계 rowspan 셀이 소유하는 유닛 범위.
@@ -18588,7 +18632,18 @@ mod row_cut_tests {
                 native_recursive,
             ));
             let styles = ResolvedStyleSet::default();
-            let nested = rowbreak_table(vec![cell(0, 0, vec![visible_text_para(6, 0)])]);
+            // 이 검사의 부모 투영 캐시는 줄당 10px다. 자식 LineSeg도
+            // 같은 750 HU로 구성해야 물리 컷에 가짜 16px 줄을 섞지 않는다.
+            let mut child_para = visible_text_para(6, 0);
+            for (index, seg) in child_para.line_segs.iter_mut().enumerate() {
+                seg.vertical_pos = index as i32 * 750;
+                seg.line_height = 750;
+            }
+            let nested = rowbreak_table(vec![cell(0, 0, vec![child_para])]);
+            assert!(eng
+                .cell_units(&nested.cells[0], &nested, &styles)
+                .iter()
+                .all(|unit| (unit.height - 10.0).abs() < 0.001));
             let host = Paragraph {
                 controls: vec![Control::Table(Box::new(nested))],
                 ..Default::default()

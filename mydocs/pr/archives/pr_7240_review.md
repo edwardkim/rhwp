@@ -21,18 +21,16 @@ text editing·HWPX writer 제품 경로가 변경되지 않았음을 Git diff로
 
 ### 최신 공통 검증과 증거 범위
 
-- 검토 코드: `bb401f0a7b97424b2a602fedf8b12129ca615f98`, 기준: `236a601da803b53429e9090eef652c661dd3bfe2`.
-- 브랜치: `codex/pr7239-7240-review-20260917`. 이번 갱신은 검토 문서만 변경한다.
-- 위 코드의 전체 회귀 **10,021 passed / 50 skipped / 0 failed**, Native Skia 라이브러리
-  **4,112 passed / 13 ignored**, 그림 회귀 **2 passed**, 직접 PDF **4 passed**를 확인했다.
-  fmt·Native/WASM32/workspace Clippy·workspace build·suite manifest 검사도 모두 통과했다.
-  실제 명령·source/binary hash·최신 9문서 시각 증거는
-  [#7242 최종 실행·증적](pr_7242_review.md#최종-실행증적)에 연결한다.
-- 위 결과는 이전 코드 보정 회차에서 완료한 실행이다. 이번 문서 회차에서 Rust 검사나 Visual Sweep을
-  재실행한 것으로 세지 않는다. 각 PR의 아래 과거 캡처는 기록된 후보의 증거이며, 최신 head 캡처로
-  이름을 바꾸거나 9문서 재캡처에 포함됐다고 표현하지 않는다.
-- 원격 CI·mergeability는 이번 문서 회차에서 조회하지 않았다. 통합본을 제출·병합하려면
-  #7243 보류 해소와 제출할 최종 head의 CI·mergeability 확인이 필요하다.
+- #7243의 이어받기 높이 보류 사유도 메인터너 보정으로 해소했다. 네 PR의 보정된 통합 코드에
+  대한 개별 검토가 모두 승인 상태다. 원 contributor head를 그대로 승인한 것으로 표현하지 않는다.
+- 최신 제품 소스·binary hash·정확한 명령·시각 범위는
+  [#7243 최종 실행·증적](pr_7243_review.md#최종-실행증적)을 따른다.
+  전체 회귀 **10,023 passed / 50 skipped**, Native Skia lib **4,112 passed / 13 ignored**,
+  그림 **2 passed**, 직접 PDF **4 passed**, fmt·Clippy·build·manifest를 모두 통과했다.
+- #7239 WMF와 #7240 명령 경로는 이번 보정에서 변경하지 않았다. 아래 원 PR 시각 증거의
+  캡처 후보와 이번 #7243 Native/fresh WASM 34쪽 캡처를 구분한다.
+- 브랜치 `codex/pr7239-7240-review-20260917`, 고정 base `236a601da803b53429e9090eef652c661dd3bfe2`.
+  제출할 최종 head의 원격 CI·mergeability는 별도 확인해야 하며 이번에 push·merge하지 않았다.
 
 ## 원 PR 접수 및 과거 회차 기록
 
@@ -189,8 +187,8 @@ CLI/MCP 단 나눔 계약 3 = **9 PASS**였다. 이는 별도 probe로 재현한
 
 ## Merge 후 contributor PR comment 계획
 
-#7240 개별 변경은 위 통합 코드에서 승인했으나, #7243 보류가 남아 현재 통합본의
-merge/close·승인 코멘트는 게시하지 않는다. 실제 merge 뒤에는 아래 직접 판독한 PNG의
+#7240과 #7243의 보정된 통합 코드 검토를 승인했다. 최종 head CI와 실제 merge 전에
+merge/close 완료 코멘트를 게시하지 않는다. 실제 merge 뒤에는 아래 직접 판독한 PNG의
 모든 영향 페이지에 대해 Native/fresh WASM compare·standalone overlay·review를
 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7240_review/<파일명>`
 형식으로 연결한다. 각 이미지의 실제 캡처 후보와 검증 범위를 함께 밝힌다.

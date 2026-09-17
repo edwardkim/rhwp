@@ -9,45 +9,201 @@ last_verified: 2026-09-18
 
 ## 현재 최종 판정 — 2026-09-18
 
-**머지 보류 — 기존 넘침은 해소했으나, 정상 86712의 잔여 시각 차이와 최신 통합 코드의
-시각 수용 근거를 확정하지 못했다.** 기존 282 HU 입력의 91.08px 넘침을 미해결로 반복하지
-않는다. 정상 원본 교체, 파생 HWPX·PDF·회귀 기준 정정과 후보 26의 본문 하단 회귀 복구는
-`086078148`에 포함됐다. #7242의 입력 정상화·테두리 보정은 별도로 완료되어 승인 상태다.
+**검토 승인 — 중첩 표 이어받기의 물리 높이 누락을 메인터너 보정으로 해결했다.**
+정상 86712 p26의 첫 표 높이·후속 표 간격을 저장 메트릭 및 각 형식의 직접 한컴 PDF와
+대조했다. p28의 비가시 빈 줄을 중복 예약하지 않으며 p29까지 내용 소유와 표 외곽을 보존한다.
+기존 282 HU 입력의 91.08px 넘침 해결, 정상 원본 교체와 #7242 테두리 보정도 유지된다.
+원격 최종 head의 CI·mergeability는 별도 확인 대상이며 이 문서 갱신이 merge 완료를 뜻하지 않는다.
 
-### 해결한 항목과 남은 보류 조건
+### 후속 메인터너 보정 — 원인과 실제 소비 경로
 
-| 항목 | 현재 판단과 근거 |
+분석 → 코드 수정·검증 → 결과보고 → 커밋 순서로 진행했다. 작업 시작 head는
+`eed2a223e3b47e22f0c0b92f1a0c6fb048c4d48f`이며 제품 기준은 `bb401f0a7`이다.
+검토 브랜치는 `codex/pr7239-7240-review-20260917`, 고정 통합 base는
+`236a601da803b53429e9090eef652c661dd3bfe2`다. base의 제품 소스도 별도로 빌드해 같은
+정상 입력으로 비교했다. base p26은 pi161 이어받기 조각 자체가 빠지고 다음 pi172 표가
+y=120px에서 시작한다. 이를 정상 출력이라고 간주해 통합 보정을 일괄 되돌리지 않았다.
+
+원인: 부모의 재귀 투영 유닛은 자식 내용의 높이를 예약하지만, 실제 자식 RowCut의 안 여백은
+그 합에 포함되지 않는다. 부모 셀의 선언 최소 높이가 여백 합과 같을 때의 축소 패딩도
+성장한 조각의 예약에 그대로 남았다. 결과적으로 자식 조각·빈 Enter·부모 여백의 물리 높이가
+부모 외곽과 다음 표로 전달되지 않았다.
+
+| 값의 전달 | 실제 적용 경로 |
 | --- | --- |
-| 기존 282 HU 입력의 91.08px 넘침 | 해소. 기존·새 긴/짧은 표를 함께 검사했으며 새 fixture 통과로 대체하지 않음 |
-| 정상 86712 및 파생 HWPX의 줄 소실·분할·하단 넘침 | 해소. 후보 26에서 64쪽, 2+2줄 소유, 본문 하단 넘침 0 확인 |
-| 정상 HWP p26 표 높이·후속 표 시작 | PDF 대비 약 8px 차이가 남음. 원인과 동일 정상 입력의 기준 devel 대비 변화를 확정해야 함 |
-| 그 밖의 위치·글꼴·우측 넘침 | 후보 26에서 1·2·30·31·49·50쪽 우측 13.52px 초과와 글꼴 차이 기록. 하단 넘침 0을 전체 overflow 0으로 승격하지 않음 |
-| 최신 코드의 #7243 시각 증거 | 후보 26의 34쪽 캡처와 `bb401f0a7`의 #7242 관련 9쪽 캡처를 구분. 후자는 정상 86712·기존/새 scaffold 표의 재캡처를 포함하지 않음 |
+| 내용 소유 | `cell_units`의 재귀 투영 유닛과 `mixed_nested_split_from_cut`의 실제 자식 시작·끝 컷 |
+| 요구 높이 | `mixed_nested_flow_extra_from_cut`에서 같은 컷의 `row_cut_content_height`와 이미 예약한 유닛 합을 대조 |
+| 부모 예약 | 자식 물리 높이의 부족분 및 성장한 부모 셀의 원래 안 여백 부족분을 한 번만 더함 |
+| 예산·컷 | `row_cut_mixed_nested_reserve` → `advance_row_cut_with_mixed_nested_reserve`가 추가 공간을 뺀 예산으로 컷을 재선택 |
+| 실제 배치 | `row_cut_content_height` → `table_partial.rs::layout_partial_table_resolved`가 같은 높이로 부분 행과 후속 흐름을 배치 |
+| 적용 범위 | native/HWP5 저장 조판 프로필의 전부 재귀인 중첩 run, 내용 offset이 있는 continuation. scalar fallback·첫 조각·전체 행 경로는 유지 |
 
-보류 해제에는 동일 정상 HWP/HWPX·기준 PDF로 p26과 앞뒤 분할·후속 표를 최신 통합 코드와
-기준 devel에서 대조하고, 약 8px 차이와 우측 넘침이 이번 변경의 회귀인지 원래 차이인지
-근거를 남겨야 한다. 적용되는 결함은 보정하고 영향 페이지의 Native/fresh WASM
-compare·standalone overlay·review를 다시 판독한다. 기존 차이라는 분류만으로 승인하지 않고,
-변경 범위의 수용 조건과 남길 후속 범위를 명시한다. 구현을 바꾸면 영향 검사와 필수 검증도
-새 코드에 맞춰 갱신한다. #7234 전체 종료는 별도 범위 대조 전까지 확정하지 않는다.
+보이지 않는 trailing 유닛도 이미 물리 공간을 예약하므로, paint 대상에서 제거하기 **전**의 합과
+자식 상자를 비교한다. 초안에서 제거 후의 합을 썼을 때 p28의 하단 1.3px 넘침을 재현했으며,
+이중 예약을 제거해 해소했다. 전역 `vertical_padding_is_abnormal`의 `>=`를 `>`로 바꾸는
+가설은 76076·kps·terminal child 회귀를 발생시켜 폐기했다. 전역 paint 패딩 규칙과 기존 검사
+기대값·허용치는 그대로 유지했다. 문서 ID 분기나 화면 위치를 맞추는 고정 px 보정은 추가하지 않았다.
 
-### 최신 공통 검증과 증거 범위
+### 독립 근거와 보류 항목의 해소
 
-- 검토 코드: `bb401f0a7b97424b2a602fedf8b12129ca615f98`, 기준: `236a601da803b53429e9090eef652c661dd3bfe2`.
-- 브랜치: `codex/pr7239-7240-review-20260917`. 이번 갱신은 검토 문서만 변경한다.
-- 위 코드의 전체 회귀 **10,021 passed / 50 skipped / 0 failed**, Native Skia 라이브러리
-  **4,112 passed / 13 ignored**, 그림 회귀 **2 passed**, 직접 PDF **4 passed**를 확인했다.
-  fmt·Native/WASM32/workspace Clippy·workspace build·suite manifest 검사도 모두 통과했다.
-  실제 명령·source/binary hash·최신 9문서 시각 증거는
-  [#7242 최종 실행·증적](pr_7242_review.md#최종-실행증적)에 연결한다.
-- 위 결과는 이전 코드 보정 회차에서 완료한 실행이다. 이번 문서 회차에서 Rust 검사나 Visual Sweep을
-  재실행한 것으로 세지 않는다. 각 PR의 아래 과거 캡처는 기록된 후보의 증거이며, 최신 head 캡처로
-  이름을 바꾸거나 9문서 재캡처에 포함됐다고 표현하지 않는다.
-- 원격 CI·mergeability는 이번 문서 회차에서 조회하지 않았다. 통합본을 제출·병합하려면
-  #7243 보류 해소와 제출할 최종 head의 CI·mergeability 확인이 필요하다.
+정상 HWP와 파생 HWPX, 각 직접 한컴 2024 PDF는 아래 기존 tracked 경로를 그대로 재사용했다.
+새 이름의 입력·PDF 복사본을 추가하지 않았다.
 
-아래 최초 검토·중간 후보의 판정은 당시 기록이다. **최종 후보 26** 절의 34쪽 시각 증거와
-당시 hash·수치를 보존하되, 현재 최종 판정과 최신 공통 검증은 이 절을 따른다.
+- [정상 HWP](../../../samples/86712_regulatory_analysis.hwp) / [HWP 기준 PDF](../../../pdf/86712_regulatory_analysis-hwp-2024.pdf)
+- [정상 파생 HWPX](../../../samples/issue1891/86712_regulatory_analysis.hwpx) / [HWPX 기준 PDF](../../../pdf/86712_regulatory_analysis-hwpx-2024.pdf)
+
+| 대상 | 보정 전 | 최종 보정 / 독립 기준 |
+| --- | --- | --- |
+| p26 첫 표 조각 높이 | 61.88px | 68.613px. 저장 값 `(100+1800+1200)+282+1300+446=5128 HU` = 68.373px, PDF 외곽 68.245px. bbox 선 두께를 포함하는 검사 차이 <0.5px |
+| p26 첫 표→후속 표 거리 | 약 109.5px | 약 116.3px. PDF `193.868−77.515=116.353px`, 오차 <0.6px |
+| p28→29 | 중첩 표 끝·후속 표 예약 확인 필요 | p28 본문 내 수용, p29 마지막 내용과 외곽 보존. 빈 tail의 중복 예약 없음 |
+| 전체 쪽·문자 소유 | 정상 64쪽 | HWP/HWPX 각각 64쪽 유지. HWP 64쪽 PDF↔SVG reference-only / SVG-only 문자 0, owner-sequence·셀 경계·글자 clip 후보 0 |
+| 하단 넘침·겹침 | 후보 26에서 복구 | 최종 HWP/HWPX 모두 overBottom·textOverlap·offCanvas 0 |
+| 우측 6쪽 | 본문 오른쪽을 13.52px 초과 | 물리 쪽 **2·3·30·31·49·50**. PDF도 x=733.045px까지 그려 본문 끝 x=718.12px를 넘는다. rhwp 표 끝 x=731.64px와 대응하며 본문 경계로 clamp할 결함이 아님 |
+| 다른 정상 입력 | 전역 패딩 변경 시 회귀 | 전역 변경 폐기 후 76076·kps·기존/새 긴·짧은 표·#7242 입력 8문서 198쪽 SVG가 보정 전후 바이트 동일 |
+
+`layout-anomaly`의 page는 0-based다. 과거 이 문서의 우측 넘침 첫 두 쪽 `1·2`는
+**물리 2·3쪽**으로 바로잡는다. 우측 overflow 6건을 숨기거나 전체 overflow 0이라고 보고하지 않는다.
+
+[새 정식 회귀 검사](../../../tests/cases/issue_7243_nested_fragment_padding.rs)는 정상 HWP/HWPX
+각각 p26 실제 표 bbox와 후속 표 간격, p28 실제 표의 본문 내 수용을 검사한다. 핵심 높이 검사는
+보정 전 두 형식 모두 61.88px로 실패했고 보정 후 통과했다. 기존 선언 높이·패딩 helper의 계산을
+그대로 기대값으로 복사하지 않고 저장 줄 메트릭·빈 Enter·직접 PDF를 사용했다.
+
+남은 차이: p26 공통 표 원점은 rhwp y=75.600 / PDF y=77.515px이고, 자형·선 굵기 및 일부
+행 위치 차이가 있다. 이번 수용 기준은 자식 내용 소유, 표 조각의 독립 물리 높이, 후속 흐름 간격,
+본문 수용, 정상 대조군 무회귀다. 약 8px의 후속 표 위치 차이를 단순히 기존 차이로 분류한 것이 아니라
+공통 회계를 수정하고 위 기준으로 확인했다. 글꼴·공통 원점까지 문서 전체 화소 일치로 주장하지 않는다.
+#7234 전체 범위 종료는 별도 대조 전까지 `Refs #7234`로 유지한다.
+
+### 최종 실행·증적
+
+- 제품 소스: `eed2a223e` + 이번 `table_layout.rs` 보정. 별도 verify checkout과 main의 제품 파일
+  **1,217개가 바이트 동일**함을 확인했다. verify checkout의 과거 detached HEAD를 검증 head로 사용하지 않는다.
+- `table_layout.rs` SHA-256: `1ec0a5d784402c912e2ff5373040ae2b017223ea66e6d7a80ca2743871700aa3`
+- 새 회귀 검사 SHA-256: `4419fda58d1da342a72238d371a25606765a2dba3d6b9288545761a093bd9717`
+- Native binary SHA-256: `23eedc9fe66c5fb58328c163ad9535c203107cfcdd104479478722fc2129177e`
+- fresh WASM SHA-256: `a7dd6280db6a425410fbda78d9f5f8b3f6bed7ab093bf313126b205c658d9263`
+- WASM JS SHA-256: `a7353a7603b7e07db2d33ff93fff6b213ea79e01da91c190cbb607e752c6b5a7`
+- base binary SHA-256: `a88bda745006db44bd207115cb7d97f9af8a0f0bb3087c29be221b20a26db00a`
+- Mac arm64, `DEVELOPER_DIR=/Library/Developer/CommandLineTools`, review 전용
+  `CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/pr7239-7240-review-20260917` 사용.
+  `scripts/wasm-pack-locked.sh --target web --out-dir <scratch>/wasm-final --no-opt`로
+  fresh 패키지를 만들었다. wasm-opt 실행으로 기록하지 않는다.
+
+| 검사 | 실제 최종 결과 |
+| --- | --- |
+| focused 10개 모듈 | 50 passed / 0 failed. 마지막 p28 assertion은 아래 전체 회귀에서 최종 파일로 확인 |
+| 전체 release-test nextest | **10,023 passed / 50 skipped / 0 failed**, exit 0 |
+| Native Skia lib | **4,112 passed / 13 ignored / 0 failed**, exit 0 |
+| Native Skia 누락 이미지 / 직접 PDF | **2 passed / 4 passed**, 각각 exit 0 |
+| fmt·Native/WASM32/workspace Clippy·workspace build | 모두 exit 0, Clippy `-D warnings` |
+| suite manifest·unit-tier 고정 base 비교 | exit 0 |
+| fresh WASM | 빌드 exit 0, 아래 34쪽 실제 브라우저 캡처 |
+
+전체 nextest는 컴파일 포함 652.63초에 완료했다.
+focused 모듈은 `issue_7243_nested_fragment_padding`, `issue_7234_scaffold_table_cell_height`,
+`issue_5751_dense_table_row_growth`, `issue_2279_layout_oracles`,
+`issue_2308_render_normalized_derived_state`, `issue_3820_rowbreak_rowspan_band`,
+`issue_3128_terminal_nested_table_geometry`, `issue_1156_rowbreak_fragment_fit`,
+`issue_2097_rowbreak_midpage_declared_fits`, `issue_rowbreak_chart_overlap`이다.
+
+
+새 p28 assertion 추가 뒤 생성 harness의 source drift가 검출되어 verify checkout에서
+`node scripts/rust-test-suite-manifest.mjs --prepare` 후 고정 base `--check`를 다시 통과했다.
+생성 harness·manifest·임시 log/JSON/TSV는 커밋하지 않는다. 기존 `test_advance_row_cut_multi_cell`의 자식 합성 LineSeg가 부모 캐시의 10px 계약과 달리
+16px였던 불일치를 정정했다. 자식도 750 HU(10px)로 만들고 실제 유닛 높이를 assertion으로
+확인한다. 0/10/24px 추가 예약 기대값, 예산 상한, 유닛 누락·중복/종료 검사는 그대로 유지했다.
+실제 자식 높이를 읽게 된 첫 전체 실행은 10,022 passed / 1 failed / 50 skipped였다.
+이 검사 1개가 실패한 증거를 보존했고, 입력 정정 후
+전체 검증을 재실행했다. unit-tier는 고정 base 대비 검사하며 새 source-side test 증가는 없다.
+이 마지막 변경은 `#[cfg(test)]` 내부뿐이다. 시각 캡처 후 제품 코드 바이트는 바뀌지 않았으므로
+기록된 Native/fresh WASM은 동일 제품 소스의 증거다.
+
+```sh
+node scripts/run-rust-test.mjs <focused module> -- --target-dir "$CARGO_TARGET_DIR" --no-fail-fast
+cargo fmt --all -- --check
+cargo clippy --locked -- -D warnings
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
+cargo build --locked --workspace
+cargo clippy --locked --workspace --all-targets -- -D warnings
+node scripts/rust-test-suite-manifest.mjs --check --base-ref 236a601da803b53429e9090eef652c661dd3bfe2
+node scripts/rust-unit-test-tiers.mjs --check --base-ref 236a601da803b53429e9090eef652c661dd3bfe2
+cargo nextest run --locked --cargo-profile release-test --tests --no-fail-fast
+cargo test --locked --profile release-test --features native-skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir "$CARGO_TARGET_DIR" --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --target-dir "$CARGO_TARGET_DIR" --features native-skia
+```
+
+전수 후보 수집 명령은 아래와 같다. 원장·로그는 임시 검증 경로에 두고 본 문서에 결과를 기록한다.
+
+```sh
+RHWP_BIN=<최종-Native> venv/bin/python tools/fidelity_compare/fidelity_compare.py 0 63 \
+  --source samples/86712_regulatory_analysis.hwp \
+  --reference-pdf pdf/86712_regulatory_analysis-hwp-2024.pdf \
+  --label pr7243-normal-hwp --reference-grade '한컴 2024 직접 변환 PDF' \
+  --text-only --export-all-svg --layout-ledger --out-dir <scratch>/fidelity-final
+venv/bin/python scripts/visual_sweep.py --file-target <key> <입력> <기준-PDF> \
+  --rhwp-bin <최종-Native> --pages <아래-쪽-목록> --dpi 96 --out <scratch>/final-native-sweep
+# WASM은 같은 명령에 --wasm-pkg <scratch>/wasm-final 및 별도 --out을 지정한다.
+```
+
+Visual Sweep은 같은 입력/PDF와 `--dpi 96 --rhwp-bin <최종 Native>`를 사용하고 WASM에는
+`--wasm-pkg <fresh pkg>`를 추가했다. HWP/HWPX 각각 64쪽의 보정 전후 SVG에서 변경된 쪽은
+**26·28·29쪽뿐**이다. 이 쪽과 인접 분할·우측 경계·기존 정상 대조군을 포함해 Native/fresh WASM
+각각 34쪽을 재캡처했다. 이전 후보 PNG는 그대로 보존하고 이번 PNG는 아래 별도 최종 경로에 둔다.
+
+34쌍 모두 그리기 노드의 텍스트·좌표·속성이 동일하고 **26/34쌍은 PNG도 동일**하다.
+나머지 8쌍의 페이지별/문서 전체 font-face 공급 차이는 기존과 같이 구분한다. 자동 flag는 두
+backend 모두 0이지만 판정 근거를 flag나 흰 배경 pixel match로 대신하지 않았다.
+직접 판독한 핵심 p26·28·29의 내용 픽셀 일치율은 Native/WASM 각각 **9.04%·11.20%·12.18%**다.
+p26의 높이·후속 표, p28→29의 이어받기·빈 줄·본문 바닥, 76076 마지막 조각, 기존 긴 표 47행과
+뒤 문단, #7242 표·Footer, 우측 표 경계를 직접 확인했다. PNG 204개와 base/보정 전 대조 6개,
+총 **210개(52.6 MiB)**를 보존한다. 글꼴 차이에 민감한 위 점수를 전체 시각 정확도로 해석하지 않는다.
+
+| 입력·쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| 정상 HWP p2 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_002.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_002.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_002.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_002.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_002.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_002.png) |
+| 정상 HWP p3 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_003.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_003.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_003.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_003.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_003.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_003.png) |
+| 정상 HWP p25 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_025.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_025.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_025.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_025.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_025.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_025.png) |
+| 정상 HWP p26 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_026.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_026.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_026.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_026.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_026.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_026.png) |
+| 정상 HWP p27 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_027.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_027.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_027.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_027.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_027.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_027.png) |
+| 정상 HWP p28 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_028.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_028.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_028.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_028.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_028.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_028.png) |
+| 정상 HWP p29 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_029.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_029.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_029.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_029.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_029.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_029.png) |
+| 정상 HWP p30 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_030.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_030.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_030.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_030.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_030.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_030.png) |
+| 정상 HWP p31 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_031.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_031.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_031.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_031.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_031.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_031.png) |
+| 정상 HWP p49 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_049.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_049.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_049.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_049.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_049.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_049.png) |
+| 정상 HWP p50 | [compare](../assets/pr7243_review/final_20260918/native_corrected_86712_compare_050.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_86712_overlay_050.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_86712_review_050.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_86712_compare_050.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_86712_overlay_050.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_86712_review_050.png) |
+| 정상 HWPX p10 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_010.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_010.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_010.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_010.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_010.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_010.png) |
+| 정상 HWPX p25 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_025.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_025.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_025.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_025.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_025.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_025.png) |
+| 정상 HWPX p26 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_026.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_026.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_026.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_026.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_026.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_026.png) |
+| 정상 HWPX p27 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_027.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_027.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_027.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_027.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_027.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_027.png) |
+| 정상 HWPX p28 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_028.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_028.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_028.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_028.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_028.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_028.png) |
+| 정상 HWPX p29 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_029.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_029.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_029.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_029.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_029.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_029.png) |
+| 정상 HWPX p33 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_033.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_033.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_033.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_033.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_033.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_033.png) |
+| 정상 HWPX p34 | [compare](../assets/pr7243_review/final_20260918/native_corrected_hwpx_compare_034.png) · [overlay](../assets/pr7243_review/final_20260918/native_corrected_hwpx_overlay_034.png) · [review](../assets/pr7243_review/final_20260918/native_corrected_hwpx_review_034.png) | [compare](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_compare_034.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_overlay_034.png) · [review](../assets/pr7243_review/final_20260918/wasm_corrected_hwpx_review_034.png) |
+| 76076 p4 | [compare](../assets/pr7243_review/final_20260918/native_original_76076_compare_004.png) · [overlay](../assets/pr7243_review/final_20260918/native_original_76076_overlay_004.png) · [review](../assets/pr7243_review/final_20260918/native_original_76076_review_004.png) | [compare](../assets/pr7243_review/final_20260918/wasm_original_76076_compare_004.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_original_76076_overlay_004.png) · [review](../assets/pr7243_review/final_20260918/wasm_original_76076_review_004.png) |
+| 76076 p33 | [compare](../assets/pr7243_review/final_20260918/native_original_76076_compare_033.png) · [overlay](../assets/pr7243_review/final_20260918/native_original_76076_overlay_033.png) · [review](../assets/pr7243_review/final_20260918/native_original_76076_review_033.png) | [compare](../assets/pr7243_review/final_20260918/wasm_original_76076_compare_033.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_original_76076_overlay_033.png) · [review](../assets/pr7243_review/final_20260918/wasm_original_76076_review_033.png) |
+| 76076 p34 | [compare](../assets/pr7243_review/final_20260918/native_original_76076_compare_034.png) · [overlay](../assets/pr7243_review/final_20260918/native_original_76076_overlay_034.png) · [review](../assets/pr7243_review/final_20260918/native_original_76076_review_034.png) | [compare](../assets/pr7243_review/final_20260918/wasm_original_76076_compare_034.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_original_76076_overlay_034.png) · [review](../assets/pr7243_review/final_20260918/wasm_original_76076_review_034.png) |
+| 76076 p81 | [compare](../assets/pr7243_review/final_20260918/native_original_76076_compare_081.png) · [overlay](../assets/pr7243_review/final_20260918/native_original_76076_overlay_081.png) · [review](../assets/pr7243_review/final_20260918/native_original_76076_review_081.png) | [compare](../assets/pr7243_review/final_20260918/wasm_original_76076_compare_081.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_original_76076_overlay_081.png) · [review](../assets/pr7243_review/final_20260918/wasm_original_76076_review_081.png) |
+| 76076 p82 | [compare](../assets/pr7243_review/final_20260918/native_original_76076_compare_082.png) · [overlay](../assets/pr7243_review/final_20260918/native_original_76076_overlay_082.png) · [review](../assets/pr7243_review/final_20260918/native_original_76076_review_082.png) | [compare](../assets/pr7243_review/final_20260918/wasm_original_76076_compare_082.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_original_76076_overlay_082.png) · [review](../assets/pr7243_review/final_20260918/wasm_original_76076_review_082.png) |
+| kps-ai p37 | [compare](../assets/pr7243_review/final_20260918/native_kps_ai_compare_037.png) · [overlay](../assets/pr7243_review/final_20260918/native_kps_ai_overlay_037.png) · [review](../assets/pr7243_review/final_20260918/native_kps_ai_review_037.png) | [compare](../assets/pr7243_review/final_20260918/wasm_kps_ai_compare_037.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_kps_ai_overlay_037.png) · [review](../assets/pr7243_review/final_20260918/wasm_kps_ai_review_037.png) |
+| kps-ai p38 | [compare](../assets/pr7243_review/final_20260918/native_kps_ai_compare_038.png) · [overlay](../assets/pr7243_review/final_20260918/native_kps_ai_overlay_038.png) · [review](../assets/pr7243_review/final_20260918/native_kps_ai_review_038.png) | [compare](../assets/pr7243_review/final_20260918/wasm_kps_ai_compare_038.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_kps_ai_overlay_038.png) · [review](../assets/pr7243_review/final_20260918/wasm_kps_ai_review_038.png) |
+| 기존 긴 표 p1 | [compare](../assets/pr7243_review/final_20260918/native_old_tall_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/native_old_tall_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/native_old_tall_review_001.png) | [compare](../assets/pr7243_review/final_20260918/wasm_old_tall_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_old_tall_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/wasm_old_tall_review_001.png) |
+| 기존 긴 표 p2 | [compare](../assets/pr7243_review/final_20260918/native_old_tall_compare_002.png) · [overlay](../assets/pr7243_review/final_20260918/native_old_tall_overlay_002.png) · [review](../assets/pr7243_review/final_20260918/native_old_tall_review_002.png) | [compare](../assets/pr7243_review/final_20260918/wasm_old_tall_compare_002.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_old_tall_overlay_002.png) · [review](../assets/pr7243_review/final_20260918/wasm_old_tall_review_002.png) |
+| 기존 짧은 표 p1 | [compare](../assets/pr7243_review/final_20260918/native_old_short_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/native_old_short_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/native_old_short_review_001.png) | [compare](../assets/pr7243_review/final_20260918/wasm_old_short_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_old_short_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/wasm_old_short_review_001.png) |
+| 새 긴 표 p1 | [compare](../assets/pr7243_review/final_20260918/native_tall_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/native_tall_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/native_tall_review_001.png) | [compare](../assets/pr7243_review/final_20260918/wasm_tall_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_tall_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/wasm_tall_review_001.png) |
+| 새 긴 표 p2 | [compare](../assets/pr7243_review/final_20260918/native_tall_compare_002.png) · [overlay](../assets/pr7243_review/final_20260918/native_tall_overlay_002.png) · [review](../assets/pr7243_review/final_20260918/native_tall_review_002.png) | [compare](../assets/pr7243_review/final_20260918/wasm_tall_compare_002.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_tall_overlay_002.png) · [review](../assets/pr7243_review/final_20260918/wasm_tall_review_002.png) |
+| 새 짧은 표 p1 | [compare](../assets/pr7243_review/final_20260918/native_short_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/native_short_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/native_short_review_001.png) | [compare](../assets/pr7243_review/final_20260918/wasm_short_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_short_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/wasm_short_review_001.png) |
+| #7242 원 입력 p1 | [compare](../assets/pr7243_review/final_20260918/native_canonical_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/native_canonical_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/native_canonical_review_001.png) | [compare](../assets/pr7243_review/final_20260918/wasm_canonical_compare_001.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_canonical_overlay_001.png) · [review](../assets/pr7243_review/final_20260918/wasm_canonical_review_001.png) |
+| #6044 실물 p20 | [compare](../assets/pr7243_review/final_20260918/native_real_tail_compare_020.png) · [overlay](../assets/pr7243_review/final_20260918/native_real_tail_overlay_020.png) · [review](../assets/pr7243_review/final_20260918/native_real_tail_review_020.png) | [compare](../assets/pr7243_review/final_20260918/wasm_real_tail_compare_020.png) · [overlay](../assets/pr7243_review/final_20260918/wasm_real_tail_overlay_020.png) · [review](../assets/pr7243_review/final_20260918/wasm_real_tail_review_020.png) |
+
+수정 전과 고정 base의 같은 정상 HWP p26 대조:
+- before: [compare](../assets/pr7243_review/final_20260918/before_normal_hwp_compare_026.png) · [overlay](../assets/pr7243_review/final_20260918/before_normal_hwp_overlay_026.png) · [review](../assets/pr7243_review/final_20260918/before_normal_hwp_review_026.png)
+- base: [compare](../assets/pr7243_review/final_20260918/base_normal_hwp_compare_026.png) · [overlay](../assets/pr7243_review/final_20260918/base_normal_hwp_overlay_026.png) · [review](../assets/pr7243_review/final_20260918/base_normal_hwp_review_026.png)
+
+최초 검토와 중간 후보 기록은 아래에 역사로 보존한다. 과거의 약 8px 차이·보류 판정을
+현재 판정으로 읽지 않으며, 이번 실행 범위와 최종 PNG는 위 기록을 따른다.
 
 ## 접수·체리픽
 
@@ -77,7 +233,19 @@ renderer 파일이 바뀌지 않아도 생성한 선언 높이가 행 분할과 
 
 ## Merge 후 contributor PR comment 계획
 
-실제 통합 merge·최종 CI가 완료된 경우 기여 감사와 적용 SHA, 새 scaffold 산출물 개선과 메인터너의 기존 282 HU 입력 복구를 구분해 한국어로 설명한다. 최초 검토의 91.08px 넘침은 후속 보정으로 해소됐으므로 미해결이라고 반복하지 않는다. 정상 86712 교체·회귀 검사 정정과 실제 남은 시각 차이도 명시하고, 이슈 종료 여부는 최종 해결 범위를 대조해 결정한다. [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결하고 긴 표 1·2쪽과 짧은 표 1쪽의 Native/fresh WASM compare·overlay·review PNG를 merge SHA raw URL로 본문에 포함한다. UTF-8 파일과 `--body-file`로 게시 후 한국어·이미지 URL·실제 head를 검증한다. contributor fork branch를 삭제하지 않는다.
+실제 통합 merge·최종 head CI가 완료된 뒤 기여 감사·적용 SHA·CI URL·원 PR과 메인터너의 보정
+범위를 한국어로 설명한다. 기존 282 HU 입력의 91.08px 넘침은 해결됐다고 기록하고, 정상 입력
+복구 및 이번 중첩 RowCut 예약 높이 보정을 구분한다. #7234는 전체 범위 대조 전까지 종료하지 않는다.
+[Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다.
+
+이번 **최종 실행·증적** 표의 최신 PNG를 실제 merge SHA의 다음 URL로 변환한다.
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7243_review/final_20260918/<파일명>`
+정상 HWP/HWPX의 26·28·29쪽 Native/fresh WASM standalone overlay는 본문에서 실제 이미지로
+보이게 넣고 compare·review도 연결한다. 기존/새 긴 표 1·2쪽, 짧은 표 1쪽과 정상 대조군은
+위 표의 모든 증적 링크를 제공한다. 대표 한 장만 넣고 나머지 overlay를 생략하지 않는다.
+남은 글꼴·공통 원점 차이, PDF도 가진 우측 표 경계, 정확한 검증 범위를 함께 설명한다.
+UTF-8 파일과 `--body-file`로 게시한 뒤 한국어·이미지 URL·실제 head를 재조회한다.
+contributor fork branch를 삭제하지 않는다. 이번 로컬 보정 회차에서 원격 게시·push·merge는 수행하지 않았다.
 
 ## 최종 통합 후보와 시각 증거
 
