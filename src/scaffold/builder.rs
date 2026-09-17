@@ -366,8 +366,14 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         zones: Vec::new(),
         cells,
         cell_grid: Vec::new(),
-        page_break: TablePageBreak::None,
-        repeat_header: false,
+        // [#7216] scaffold 는 내용 길이를 모른 채 표를 만든다 — 쪽 경계에서 나뉘어야 한다.
+        // `None`(나누지 않음)이면 한글이 긴 표를 통째로 두어 본문 아래로 넘친 행이 사라진다
+        // (한글 2020 PDF 실측: 60행 표가 '설명 53' 에서 끊김). 한글 새 표의 사실상 기본값인
+        // HWPX `pageBreak="CELL" repeatHeader="1"`(코퍼스 HWPX 표 20,405개 중 13,299개)을
+        // 따른다. HWPX `CELL` 은 IR `RowBreak` 이고 HWP5 TABLE attr 0x02, 제목 반복은 0x04 —
+        // 아래 `raw_table_record_attr` 0x06 과 같은 값이다.
+        page_break: TablePageBreak::RowBreak,
+        repeat_header: true,
         caption: None,
         common: CommonObjAttr {
             treat_as_char: false,
@@ -386,7 +392,7 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         outer_margin_bottom: outer_margin,
         raw_ctrl_data,
         raw_ctrl_seal: None,
-        raw_table_record_attr: 0x0000_0006, // bit1=셀분리금지, bit2=repeat_header
+        raw_table_record_attr: 0x0000_0006, // bits 0-1 = 2(나눔, 행 단위 = HWPX CELL), bit2 = repeat_header
         raw_table_record_extra: Vec::new(),
     };
     table.rebuild_grid();

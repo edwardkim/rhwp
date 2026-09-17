@@ -215,3 +215,7 @@ issue6924/148751598-briefing.hwp	3
 # (초과 108.9px) 수정 뒤 17.7px 로 줄었다 — 이 래칫은 px 이 아니라 노드 수를 세므로 개선이
 # 이 행에 나타나지 않는다. 남는 17.7px 은 #6923(예산 대 실측) 축이다. 기존 상한은 올리지 않았다.
 issue6973/83818-appraisal-rules-amendment.hwpx	1
+# #7216 scaffold 60행 표 증적(수정 전/후 산출물): base fcbd00e0f 와 수정본의 overflow 가 동일(각 1건, 1쪽 첫 조각 +91.1px).
+# 한/글 2020 PDF 는 47행에서 쪽을 나눠 넘침이 없다 — rhwp 조판의 별도 결함이며 이 행은 그 값을 고정만 한다.
+issue7216/tall_table_before.hwpx	1
+issue7216/tall_table_after.hwpx	1
