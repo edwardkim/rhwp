@@ -2031,21 +2031,82 @@ impl Paragraph {
         if raw_text_start == 0 || self.hwpx_axis_shift == 0 {
             return raw_text_start;
         }
-        let lifted = raw_text_start + self.hwpx_axis_shift;
-        // 올린 값이 **문단 끝을 넘으면** 그 줄은 올릴 값이 아니었다. `char_count` 는
-        // 출처와 무관하게 언제나 HWP5 축이고 줄은 문단 안에서 시작하므로, 넘는다는
-        // 것은 그 `text_start` 가 이미 HWP5 축이었다는 직접 증거다 — 보정폭은 파서가
-        // 만들어 넣은 슬롯 수에서 오지만, 그 슬롯을 세어 `textpos` 를 적는 생산자도
-        // 있다(`issue5595_rotated_picture_topbottom.hwpx` 문단 0: 컨트롤 3개에
-        // `cc=25`, 둘째 줄 `ts=24` — 이미 24 를 세고 있어 40 으로 올리면 문단 끝을
-        // 15 넘는다). 끝 마커를 가리키는 `text_start == char_count` 는 정상이므로
-        // 판정은 `>` 다(`line_segs_within_text` 와 같은 경계). 축 증거가 없는 합성 IR
-        // (`char_count == 0`)에는 이 판정을 걸지 않는다 — #5563 비교 축과 같은 규약.
-        if self.char_count > 0 && lifted > self.char_count {
+        if self.stored_text_starts_on_hwp5_axis() {
             raw_text_start
         } else {
-            lifted
+            raw_text_start + self.hwpx_axis_shift
         }
+    }
+
+    /// [#5961·#7190] 이 문단의 저장 `text_start` 들이 이미 HWP5 축인지.
+    ///
+    /// 보정폭은 파서가 만들어 넣은 슬롯 수에서 오지만, 그 슬롯까지 세어 `textpos` 를 적는
+    /// 생산자도 있다(같은 한/글 2020 저장본끼리도 갈린다). 그런 문단에서 올려 보면 줄이
+    /// 보정폭만큼 늦게 끊긴다. 축은 문단 하나에 하나이므로 **문단 단위**로 판정한다 —
+    /// 줄마다 따로 판정하면 한 문단에 두 축이 섞여 줄 시작이 거꾸로 가기도 한다
+    /// (36294034 `[0, 95, 93]`).
+    ///
+    /// 어느 한 줄이라도 올린 값이 줄이 시작할 수 없는 자리면 그 문단은 이미 HWP5 축이다.
+    /// - **문단 끝을 넘는다.** `char_count` 는 언제나 HWP5 축이고 줄은 문단 안에서
+    ///   시작한다(`issue5595_rotated_picture_topbottom.hwpx` 문단 0: `cc=25`, `ts=24` 를
+    ///   40 으로 올리면 15 넘는다). 끝 마커를 가리키는 `== char_count` 는 정상이다.
+    /// - **글자·컨트롤 슬롯의 경계가 아니다**(원래 값은 경계). 3011411 문단 0 은 `ts=82`
+    ///   를 90 으로 올리면 그림 컨트롤 슬롯 89..97 의 한가운데다. 한/글 PDF 도 82 에서 끊는다.
+    ///
+    /// 축 증거가 없는 합성 IR(`char_count == 0`)에는 판정을 걸지 않는다 — #5563 비교 축과
+    /// 같은 규약.
+    fn stored_text_starts_on_hwp5_axis(&self) -> bool {
+        if self.char_count == 0 {
+            return false;
+        }
+        self.line_segs.iter().any(|seg| {
+            let raw = seg.text_start;
+            if raw == 0 {
+                return false;
+            }
+            let lifted = raw + self.hwpx_axis_shift;
+            lifted > self.char_count
+                || (!self.is_hwp5_slot_boundary(lifted) && self.is_hwp5_slot_boundary(raw))
+        })
+    }
+
+    /// [#7190] HWP5 축 위치 `pos` 가 글자·컨트롤 슬롯의 경계인지.
+    ///
+    /// 글자는 `char_offsets` 에서 시작해 폭 1(BMP)·2(보충평면)·8(탭 등)을 차지하고, 두 글자
+    /// 사이 남는 자리는 8유닛 컨트롤 슬롯이다. 폭을 확정할 수 없는 자리는 경계로 본다 —
+    /// 불확실하면 증거로 쓰지 않는다.
+    fn is_hwp5_slot_boundary(&self, pos: u32) -> bool {
+        let offsets = &self.char_offsets;
+        let (Some(&first), Some(&last)) = (offsets.first(), offsets.last()) else {
+            return true;
+        };
+        if pos >= self.char_count.saturating_sub(1) || offsets.binary_search(&pos).is_ok() {
+            return true;
+        }
+        let slot_boundary = |slots_start: u32, slots_end: u32| {
+            slots_start > slots_end
+                || (slots_end - slots_start) % CTRL_CHAR_CODE_UNITS != 0
+                || (pos - slots_start) % CTRL_CHAR_CODE_UNITS == 0
+        };
+        if pos < first {
+            return slot_boundary(0, first);
+        }
+        if pos > last {
+            let width = match self.text.chars().last() {
+                Some('\t') => CTRL_CHAR_CODE_UNITS,
+                Some(ch) => ch.len_utf16() as u32,
+                None => return true,
+            };
+            let end = self.char_count.saturating_sub(1);
+            return pos >= last + width && slot_boundary(last + width, end);
+        }
+        let next = offsets.partition_point(|&off| off < pos);
+        let (start, end) = (offsets[next - 1], offsets[next]);
+        let width = match (end - start) % CTRL_CHAR_CODE_UNITS {
+            0 => CTRL_CHAR_CODE_UNITS,
+            w => w,
+        };
+        pos >= start + width && slot_boundary(start + width, end)
     }
 
     /// `char_offsets` 중 UTF-16 위치 `utf16_pos` 이상인 첫 번째 codepoint 의
