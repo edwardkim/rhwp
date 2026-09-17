@@ -10,6 +10,7 @@
 
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
+use crate::model::identity::{used_instance_ids, Allocator};
 use crate::model::page::PageDef;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::{common_obj_offsets, CommonObjAttr};
@@ -48,6 +49,13 @@ pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
 
     let content_width = content_width_of(&doc.sections[0].section_def.page_def);
 
+    // [#7231] 개체 id 할당기 — 커서를 문서 전체에서 공유해 표마다 1 부터 재검색하지 않는다
+    // (`model/identity.rs` 의 계약). scaffold 는 무에서 만들므로 처음 사용 집합은 비어 있다.
+    let mut ids = Allocator {
+        used: used_instance_ids(&doc),
+        next: 1,
+    };
+
     // 문서 제목 — 가운데 정렬 제목 문단.
     if let Some(title) = spec
         .title
@@ -75,7 +83,15 @@ pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
                     .push(make_text_para(text, PS_NORMAL, CS_NORMAL));
             }
             Block::Table { rows } => {
-                if let Some(table_para) = build_table_paragraph(rows, content_width) {
+                // [#7231] 표마다 고유한 개체 id 를 공용 할당기로 받는다.
+                //
+                // 종전에는 행·열 수와 전체 폭·높이로 만든 해시를 `raw_ctrl_data` 에만 써서
+                // ① `common.instance_id` 가 0 으로 남아 HWPX `<hp:tbl id>` 가 전부 `"0"`,
+                // ② 크기가 같은 표끼리 raw 쪽 id 도 같았다. `model/identity.rs` 의 주석이
+                // 그 함정을 이미 적어 뒀다 — *"dimensions, clock time and wrapping hashes
+                // cannot establish uniqueness"*. 편집 경로가 쓰는 같은 할당기를 쓴다.
+                let instance_id = ids.id().unwrap_or(0);
+                if let Some(table_para) = build_table_paragraph(rows, content_width, instance_id) {
                     doc.sections[0].paragraphs.push(table_para);
                     // 표 문단 뒤에는 평문 문단이 온다(한컴 표준 구조 + 다음 표와의 경계).
                     doc.sections[0].paragraphs.push(Paragraph::new_empty());
@@ -290,7 +306,13 @@ fn make_cell_para(text: &str, col_width: u32) -> Paragraph {
 ///
 /// 구조 조립은 `DocumentCore::create_table_native`
 /// (`src/document_core/commands/object_ops/table.rs`)의 균일 그리드 경로와 정합한다.
-fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Paragraph> {
+/// `instance_id` 는 호출자가 공용 할당기(`model/identity.rs`)로 받은 고유 개체 id 다.
+/// `0` 은 "배정 없음" 을 뜻한다 — id 공간이 소진된 경우만 그렇게 들어온다.
+fn build_table_paragraph(
+    rows: &[Vec<String>],
+    content_width: u32,
+    instance_id: u32,
+) -> Option<Paragraph> {
     let row_count = rows.len();
     if row_count == 0 {
         return None;
@@ -342,17 +364,9 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
     raw_ctrl_data[common_obj_offsets::MARGIN_RIGHT].copy_from_slice(&outer_margin.to_le_bytes());
     raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
     raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM].copy_from_slice(&outer_margin.to_le_bytes());
-    let instance_id: u32 = {
-        let mut h: u32 = 0x7c15_0000;
-        h = h.wrapping_add(row_count_u16 as u32 * 0x1000);
-        h = h.wrapping_add(col_count_u16 as u32 * 0x100);
-        h = h.wrapping_add(total_width);
-        h = h.wrapping_add(total_height.wrapping_mul(0x1b));
-        if h == 0 {
-            h = 0x7c15_4b69;
-        }
-        h
-    };
+    // [#7231] IR 과 raw 가 같은 값을 갖는다 — HWPX 저장기는 `common.instance_id` 를,
+    // HWP5 쪽은 `raw_ctrl_data` 를 읽는다. 두 곳이 어긋나면 같은 표가 형식마다 다른 id 로
+    // 저장된다(`model/identity.rs` 가 두 namespace 를 함께 예약하는 이유다).
     raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
     let mut table = Table {
@@ -384,6 +398,7 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
             horz_align: crate::model::shape::HorzAlign::Left,
             width: total_width,
             height: total_height,
+            instance_id,
             ..Default::default()
         },
         outer_margin_left: outer_margin,
