@@ -2753,15 +2753,21 @@ fn parse_simple_control_char(
             let tab_width_hunit = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
             let tab_dot_fill = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
             let tab_width_hwpunit = (tab_width_hunit as u32).saturating_mul(4);
-            tab_extended.push([
-                (tab_width_hwpunit & 0xFFFF) as u16,
-                (tab_width_hwpunit >> 16) as u16,
-                if tab_dot_fill != 0 { 3 } else { 0 },
-                0,
-                0,
-                0,
-                0x0009,
-            ]);
+            // [#7170] 폭·채움이 둘 다 비면 저장값이 없는 탭이다 — 자리표로 실어 순번을
+            // 지키고, 소비자가 `TabDef` 기준으로 다시 계산한다.
+            tab_extended.push(if tab_width_hwpunit == 0 && tab_dot_fill == 0 {
+                crate::model::paragraph::TAB_EXT_PLACEHOLDER
+            } else {
+                [
+                    (tab_width_hwpunit & 0xFFFF) as u16,
+                    (tab_width_hwpunit >> 16) as u16,
+                    if tab_dot_fill != 0 { 3 } else { 0 },
+                    0,
+                    0,
+                    0,
+                    0x0009,
+                ]
+            });
             i += 3;
             char_offsets.push(utf16_len);
             // [Task #1950] HWP5 시멘틱: 탭은 PARA_TEXT 에서 8 code-unit
@@ -3257,19 +3263,11 @@ pub(crate) fn parse_paragraph_list(
         para.control_mask = para_control_mask;
         para.title_marks = para_title_marks;
         // [#7170] 폭과 채움이 **둘 다 비면** 그 확장은 직렬화기의 "데이터 없음"
-        // 마커(`[0,…,0,0x0009]`)와 글자 그대로 같아진다. HWP5 파서는 그 마커를 일부러
-        // IR 에 싣지 않으므로(#1892), 그런 탭을 실으면 재파스에서 확장 하나가 사라지고
-        // **뒤 탭의 확장이 순번으로 밀린다** — 직렬화는 `	` 순번으로 확장을 꺼낸다.
-        //
-        // 그래서 그런 탭이 하나라도 있는 문단은 통째로 싣지 않고 종전 동작을 유지한다.
-        // 한 문단 안에서 일부만 싣는 절충은 순번 계약을 깬다. 표본 264쪽 문서의 탭
-        // 112개는 전부 폭이 0 이 아니라 이 갈래를 타지 않는다.
-        if para_tab_extended
-            .iter()
-            .any(|ext| ext[..6].iter().all(|&v| v == 0))
-        {
-            para_tab_extended.clear();
-        }
+        // 마커(`[0,…,0,0x0009]`)와 글자 그대로 같아진다. 종전에는 재파스에서 그 항목이
+        // 사라져 뒤 탭의 확장이 순번으로 밀렸고, 그래서 그런 탭이 하나라도 있는 문단은
+        // 통째로 싣지 않았다 — 같은 문단의 **멀쩡한 탭까지** 폭·채움을 잃었다.
+        // 이제 두 파서가 마커를 자리표로 실어 순번을 지키므로(`tab_ext_is_placeholder`)
+        // 문단을 버리지 않고 그대로 싣는다.
         para.tab_extended = para_tab_extended;
         para.has_para_text =
             !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();

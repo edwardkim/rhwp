@@ -1074,7 +1074,12 @@ pub(crate) fn render_hp_t_content(
                 let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(cursor.tab_idx)
                 {
                     cursor.tab_idx += 1;
-                    (ext[0] as u32, ext[2] & 0x00ff, (ext[2] >> 8) & 0x00ff)
+                    if crate::model::paragraph::tab_ext_is_placeholder(ext) {
+                        // [#7170] 자리표는 파서가 알아보는 마커 표기로 되돌린다.
+                        (TAB_NO_DATA_WIDTH_MARKER, 0u16, 1u16)
+                    } else {
+                        (ext[0] as u32, ext[2] & 0x00ff, (ext[2] >> 8) & 0x00ff)
+                    }
                 } else {
                     (TAB_NO_DATA_WIDTH_MARKER, 0u16, 1u16)
                 };
@@ -4433,7 +4438,7 @@ mod tests {
     /// `tab_extended` 항목을 만들지 않는다 — 렌더러가 실제 `TabDef` 기준으로 탭 정지를
     /// 다시 계산하게 한다.
     #[test]
-    fn issue4403_implicit_tab_stays_empty_after_hwpx_roundtrip() {
+    fn issue4403_implicit_tab_stays_a_placeholder_after_hwpx_roundtrip() {
         use crate::parser::hwpx::section::parse_hwpx_section;
 
         let mut para = Paragraph::default();
@@ -4455,9 +4460,17 @@ mod tests {
         let reparsed = parse_hwpx_section(&xml).unwrap();
         let reparsed_para = &reparsed.paragraphs[0];
         assert_eq!(reparsed_para.text, "I.소설의 이해\t3");
+        // [#7170] 마커는 버리지 않고 자리표로 싣는다 — 버리면 그 뒤 탭의 확장이
+        // 순번으로 밀린다. 저장 폭이 아니라는 판정은 `tab_ext_is_placeholder` 가 준다.
+        assert_eq!(
+            reparsed_para.tab_extended.len(),
+            1,
+            "탭 1개의 자리표가 남아야 함: {:?}",
+            reparsed_para.tab_extended
+        );
         assert!(
-            reparsed_para.tab_extended.is_empty(),
-            "width=0 마커 재파싱 후 tab_extended 는 비어 있어야 함(원본과 동일): {:?}",
+            crate::model::paragraph::tab_ext_is_placeholder(&reparsed_para.tab_extended[0]),
+            "width=0 마커는 자리표로 읽혀야 함: {:?}",
             reparsed_para.tab_extended
         );
     }
