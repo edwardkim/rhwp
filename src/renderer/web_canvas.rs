@@ -3464,7 +3464,8 @@ impl WebCanvasRenderer {
     ) {
         let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
         match mode {
-            ImageFillMode::Zoom => {
+            // [#7235] 채우기 유형 15(NONE)도 종횡비를 지켜 영역에 맞춘다.
+            ImageFillMode::Zoom | ImageFillMode::None => {
                 let (img_w, img_h) = match parse_image_dimensions_canvas(data) {
                     Some((w, h)) if w > 0 && h > 0 => (w as f64, h as f64),
                     _ => {
@@ -3484,7 +3485,7 @@ impl WebCanvasRenderer {
                 self.draw_image(data, x, y, w, h);
                 self.ctx.restore();
             }
-            ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
+            ImageFillMode::FitToSize | ImageFillMode::Total => {
                 // crop이 있으면 source rect 기반 drawImage 사용
                 if let Some(crop_rect) = crop {
                     if let Some((img_w, img_h)) = parse_image_dimensions_canvas(data) {

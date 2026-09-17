@@ -1919,13 +1919,14 @@ impl SvgRenderer {
         match img.fill_mode {
             // Total(HWPX "TOTAL")은 바이너리 채우기 유형 5(크기에 맞추어)의 HWPX
             // 표기로, FitToSize 와 같은 의미다 — 영역 전체로 늘려 채운다.
-            ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
+            ImageFillMode::FitToSize | ImageFillMode::Total => {
                 self.output.push_str(&format!(
                     "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"none\" href=\"{}\"/>\n",
                     bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
                 ));
             }
-            ImageFillMode::Zoom => {
+            // [#7235] 채우기 유형 15(NONE)도 한컴은 종횡비를 지켜 영역에 맞춘다.
+            ImageFillMode::Zoom | ImageFillMode::None => {
                 // [#6310] 칸/영역에 맞춰 종횡비를 지키며 축소(contain). TILE 원본 픽셀
                 // 배치가 아니다.
                 self.output.push_str(&format!(
@@ -2156,7 +2157,9 @@ impl SvgRenderer {
         let fill_mode = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
 
         match fill_mode {
-            ImageFillMode::Zoom => {
+            // [#7235] 채우기 유형 15(NONE): 한컴은 원래 픽셀 크기로 두지 않고 종횡비를
+            // 지켜 칸에 맞춘다(Zoom 과 같은 배치).
+            ImageFillMode::Zoom | ImageFillMode::None => {
                 self.output.push_str(&format!(
                     "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"xMidYMid meet\" href=\"{}\"/>\n",
                     bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
