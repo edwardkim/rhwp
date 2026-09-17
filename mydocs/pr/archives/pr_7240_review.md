@@ -172,3 +172,16 @@ blocker 수정 뒤 실제 Native/fresh WASM compare·standalone overlay·review,
 
 원격 source push·PR 생성·GitHub comment·merge·close는 이번 검토에서 수행하지 않았다.
 reviewer 지정만 원격 metadata에 반영했다. 오늘할일은 최종 제출 준비 단계에서 작성한다.
+
+## 메인터너 보정 회차 2 — 분석
+
+CLI/MCP의 `offset=0`은 기존 문단 속성 설정으로 유지하되, Studio의 Ctrl+Shift+Enter는 기존 사용자 명령처럼 분할한다. 별도 column setter를 만들고 CLI에서만 연결한다. 쪽/단 직교 속성을 HWPX writer가 함께 저장하도록 보완하고, 양쪽 명령 순서·HWP/HWPX 재열기·시작 위치 사용자 명령을 검사한다. 원 PR의 속성 검사는 setter를 직접 검증하며 사용자 명령 계약과 혼동하지 않는다.
+
+### 회차 2 결과보고
+
+- 사용자 `insert_column_break_native`는 기존 분할 경로로 복원했다. CLI/MCP의 offset 0은 별도 `mark_column_break_at_paragraph_start_native`를 호출하며 봉투에 `paragraphDelta`/`columnBreakParagraph`를 제공한다.
+- HWPX writer가 Page/Column enum 하나만 보지 않고 독립적인 raw 0x04/0x08을 함께 저장한다. 합성 페이지 경계는 저장하지 않는다. column setter는 기존 explicit Page 우선순위와 enum-only legacy 쪽 속성도 보존한다.
+- 수정 전 새 반례: 시작 위치 사용자 명령 **5≠6 문단**, HWPX 두 속성 **08≠0c**로 각각 실패. 수정 후 코어 **7 passed**, 실제 CLI **4 passed**, 기존 page-break 대조 **11 passed**.
+- CLI 첫 재실행은 suite 준비 전이라 0 tests였으며 증거에서 제외했다. `--prepare` 후 실제 4개 실행/통과를 확인했다.
+- 합성 page 경계 테스트는 파서 계약과 같은 `raw=0, enum=Page, synthesized=true`로 준비했다. 명시 raw=4를 합성이라고 표기한 부적절한 초기 입력을 독립 계약에 맞게 정정했다.
+- 최종 통합 lint·전체 회귀·Native/fresh WASM 및 사용자 경로 검증은 후속 회차에서 완료한다. 아직 최종 승인이 아니다.

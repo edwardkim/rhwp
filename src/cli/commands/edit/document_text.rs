@@ -559,8 +559,22 @@ pub(super) fn edit_insert_column_break(args: &[String]) -> i32 {
         );
         return EXIT_USAGE;
     }
+    let at_paragraph_start = offset == 0;
+    let paragraph_delta: u32 = if at_paragraph_start { 0 } else { 1 };
+    let column_break_paragraph = if at_paragraph_start {
+        para_arg
+    } else {
+        para_arg + 1
+    };
     if !dry_run {
-        if let Err(e) = doc.insert_column_break_native(sec, para, offset) {
+        let result = if at_paragraph_start {
+            doc.mark_column_break_at_paragraph_start_native(sec, para)
+                .map(|_| ())
+        } else {
+            doc.insert_column_break_native(sec, para, offset)
+                .map(|_| ())
+        };
+        if let Err(e) = result {
             eprintln!("오류: 단 나눔 삽입 실패 - {e}");
             return EXIT_RUNTIME;
         }
@@ -577,7 +591,9 @@ pub(super) fn edit_insert_column_break(args: &[String]) -> i32 {
         serde_json::json!({
             "section": section_arg,
             "paragraph": para_arg,
-            "offset": offset_arg
+            "offset": offset_arg,
+            "paragraphDelta": paragraph_delta,
+            "columnBreakParagraph": column_break_paragraph
         }),
         &[(sec, para)],
         &format!(

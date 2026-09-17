@@ -216,7 +216,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_insert_column_break",
-            "[#5019] 문단을 지정 오프셋에서 가르고 새 문단에 단 나눔을 넣는다. 코어 insert_column_break_native 배선.",
+            "[#5019·#7218] 문단을 지정 오프셋에서 가르고 새 문단에 단 나눔을 넣는다. offset 0이면 문단을 가르지 않고 그 문단 앞 단 나눔 속성을 설정한다. 봉투 paragraphDelta·columnBreakParagraph로 문단 좌표 변화를 알린다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {

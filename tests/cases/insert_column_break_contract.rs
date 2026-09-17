@@ -94,3 +94,33 @@ fn mcp_declared() {
         .iter()
         .any(|t| t["name"] == "hwp_insert_column_break"));
 }
+
+#[test]
+fn cli_start_sets_a_property_without_inserting_a_paragraph() {
+    let src = sample();
+    let before = para_count(Path::new(&src));
+    let out = temp("start");
+    let output = run(&[
+        "edit",
+        "insert-column-break",
+        &src,
+        "--para",
+        "3",
+        "--offset",
+        "0",
+        "-o",
+        out.to_str().unwrap(),
+        "--json",
+    ]);
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(para_count(&out), before);
+    let doc = HwpDocument::from_bytes(&std::fs::read(&out).unwrap()).unwrap();
+    assert_eq!(
+        doc.document().sections[0].paragraphs[3].raw_break_type & 8,
+        8
+    );
+    let envelope: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(envelope["paragraphDelta"], 0, "{envelope}");
+    assert_eq!(envelope["columnBreakParagraph"], 3, "{envelope}");
+    std::fs::remove_file(out).unwrap();
+}

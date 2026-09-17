@@ -695,17 +695,20 @@ pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> Stri
     // 합성 쪽나눔(파서가 자연 쪽 경계에서 승격, HWP3)은 문서 내용이 아니라 조판
     // 힌트라 저장하지 않는다. 저장하면 한글 재조판의 자연 경계와 이중 작용해
     // 빈 쪽을 만든다(07615: 합성 138건이 264→329쪽 부풀림, 중화 시 264쪽 복원).
-    let page_break = if matches!(p.column_type, ColumnBreakType::Page) && !p.page_break_synthesized
+    let page_break = if (matches!(p.column_type, ColumnBreakType::Page)
+        || p.raw_break_type & 0x04 != 0)
+        && !p.page_break_synthesized
     {
         1
     } else {
         0
     };
-    let column_break = if matches!(p.column_type, ColumnBreakType::Column) {
-        1
-    } else {
-        0
-    };
+    let column_break =
+        if matches!(p.column_type, ColumnBreakType::Column) || p.raw_break_type & 0x08 != 0 {
+            1
+        } else {
+            0
+        };
     format!(
         r#"<hp:p id="{}" paraPrIDRef="{}" styleIDRef="{}" pageBreak="{}" columnBreak="{}" merged="0">"#,
         id, p.para_shape_id, style_id_ref, page_break, column_break,

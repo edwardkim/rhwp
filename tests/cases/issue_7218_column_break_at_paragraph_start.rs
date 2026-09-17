@@ -1,9 +1,4 @@
-//! [Issue #7218 형제] `insert-column-break`(`#5019`)도 문단 시작에서 문단을 갈랐다.
-//!
-//! `insert_column_break_native` 가 `char_offset` 과 관계없이 항상 `split_at(char_offset)`
-//! 으로 문단을 갈랐다. `char_offset == 0` 이면 앞쪽이 원 문단의 ParaShape·스타일·개요
-//! 수준을 그대로 물려받은 **빈 문단**으로 남는다. 쪽 나눔과 같은 결함이라 같은 계약으로
-//! 닫는다(`issue_7218_page_break_at_paragraph_start.rs`).
+//! CLI/MCP 문단 앞 단 나눔 속성과 Studio 사용자 분할 명령을 분리해서 검증한다.
 //!
 //! # 기대값의 출처
 //!
@@ -60,7 +55,7 @@ fn a_column_break_at_paragraph_start_does_not_split_the_paragraph() {
     let before = paragraph_texts(&core);
     let before_shape = core.document().sections[0].paragraphs[HEADING_PARA].para_shape_id;
 
-    core.insert_column_break_native(0, HEADING_PARA, 0)
+    core.mark_column_break_at_paragraph_start_native(0, HEADING_PARA)
         .expect("단 나눔 삽입");
 
     assert_eq!(
@@ -95,7 +90,7 @@ fn a_column_break_at_paragraph_start_keeps_the_other_break_axes() {
     // 두 속성 축 보존을 검사하므로 CLI/MCP의 명시적 속성 setter로 준비한다.
     core.mark_page_break_at_paragraph_start_native(0, HEADING_PARA)
         .expect("문단 앞 쪽 나눔 속성 설정");
-    core.insert_column_break_native(0, HEADING_PARA, 0)
+    core.mark_column_break_at_paragraph_start_native(0, HEADING_PARA)
         .expect("단 나눔 삽입");
 
     let raw = core.document().sections[0].paragraphs[HEADING_PARA].raw_break_type;
@@ -119,7 +114,7 @@ fn repeating_the_column_break_at_paragraph_start_is_idempotent() {
     let before = paragraph_texts(&core);
 
     for _ in 0..3 {
-        core.insert_column_break_native(0, HEADING_PARA, 0)
+        core.mark_column_break_at_paragraph_start_native(0, HEADING_PARA)
             .expect("단 나눔 삽입");
     }
 
@@ -164,4 +159,82 @@ fn a_column_break_inside_a_paragraph_still_splits_it() {
         ColumnBreakType::None,
         "앞 조각은 단 나눔을 갖지 않는다",
     );
+}
+
+/// 0x04/0x08는 직교 속성이다. HWPX의 두 속성과 HWP 헤더 모두 보존한다.
+#[test]
+fn page_and_column_flags_survive_both_formats_and_operation_orders() {
+    for page_first in [true, false] {
+        let mut doc = core();
+        if page_first {
+            doc.mark_page_break_at_paragraph_start_native(0, HEADING_PARA)
+                .unwrap();
+        }
+        doc.mark_column_break_at_paragraph_start_native(0, HEADING_PARA)
+            .unwrap();
+        if !page_first {
+            doc.mark_page_break_at_paragraph_start_native(0, HEADING_PARA)
+                .unwrap();
+        }
+        for bytes in [
+            doc.export_hwpx_native().unwrap(),
+            doc.export_hwp_with_adapter().unwrap(),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            let para = &reopened.document().sections[0].paragraphs[HEADING_PARA];
+            assert_eq!(para.raw_break_type & 0x0c, 0x0c, "page_first={page_first}");
+            assert_eq!(para.column_type, ColumnBreakType::Page);
+        }
+    }
+}
+
+/// Studio Ctrl+Shift+Enter는 시작에서도 문단을 분리하고 뒤 조각으로 이동한다.
+#[test]
+fn user_column_break_at_section_start_splits_and_moves_the_cursor() {
+    let mut doc = core();
+    let before = paragraph_texts(&doc);
+    let result: serde_json::Value =
+        serde_json::from_str(&doc.insert_column_break_native(0, 0, 0).unwrap()).unwrap();
+    let after = paragraph_texts(&doc);
+    assert_eq!(after.len(), before.len() + 1);
+    assert!(after[0].is_empty());
+    assert_eq!(&after[1..], before.as_slice());
+    assert_eq!(result["paraIdx"], 1);
+    assert_eq!(result["charOffset"], 0);
+    for bytes in [
+        doc.export_hwpx_native().unwrap(),
+        doc.export_hwp_with_adapter().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(paragraph_texts(&reopened), after);
+        assert_eq!(
+            reopened.document().sections[0].paragraphs[1].raw_break_type & 8,
+            8
+        );
+    }
+}
+
+#[test]
+fn column_property_does_not_persist_a_synthesized_page_boundary() {
+    let mut doc = core();
+    let para = &mut doc.document_mut().sections[0].paragraphs[HEADING_PARA];
+    para.column_type = ColumnBreakType::Page;
+    para.raw_break_type = 0; // HWP3 자연 경계는 enum에만 있으며 raw 명시 비트가 없다.
+    para.page_break_synthesized = true;
+    assert!(doc
+        .mark_column_break_at_paragraph_start_native(0, HEADING_PARA)
+        .unwrap());
+    assert!(!doc
+        .mark_column_break_at_paragraph_start_native(0, HEADING_PARA)
+        .unwrap());
+    for bytes in [
+        doc.export_hwpx_native().unwrap(),
+        doc.export_hwp_with_adapter().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(
+            reopened.document().sections[0].paragraphs[HEADING_PARA].raw_break_type & 0x0c,
+            0x08
+        );
+    }
 }

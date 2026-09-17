@@ -3854,14 +3854,63 @@ impl DocumentCore {
         Ok(true)
     }
 
-    /// 단 나누기 삽입 (Ctrl+Shift+Enter)
-    /// 커서 위치에서 문단을 분리하고 새 문단에 단 나누기 설정.
-    /// 1단 문서에서는 쪽 나누기와 동일하게 동작.
-    ///
-    /// [#7218] 문단 **시작**(`char_offset == 0`)에서는 문단을 가르지 않는다. HWPX
-    /// `hp:p/@columnBreak` 와 HWP5 문단 헤더 break 비트(0x08)는 쪽 나눔(0x04)과 같은
-    /// **break-before** 속성이므로, "문단 P 앞에 단 나눔" 의 결과는 P 자신이 그 속성을
-    /// 갖는 것이다. `insert_page_break_native` 와 같은 계약이다.
+    /// CLI/MCP의 문단 앞 단 나눔 속성 설정. 사용자 분할 명령과 구분한다.
+    /// 쪽/단은 직교하는 저장 비트이며 유효 조판 분류는 파서와 같은 Page 우선이다.
+    pub fn mark_column_break_at_paragraph_start_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<bool, HwpError> {
+        use crate::model::paragraph::ColumnBreakType;
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        if para.raw_break_type & 0x08 != 0 {
+            return Ok(false);
+        }
+        self.document.sections[section_idx].raw_stream = None;
+        let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        // 예전 IR은 명시적 쪽 속성을 enum에만 보관할 수 있다.
+        // raw 비트를 만들 때 HWP writer의 enum fallback이 사라지므로 함께 보존한다.
+        if para.column_type == ColumnBreakType::Page && !para.page_break_synthesized {
+            para.raw_break_type |= 0x04;
+        }
+        para.raw_break_type |= 0x08;
+        para.column_type =
+            if para.column_type == ColumnBreakType::Page || para.raw_break_type & 0x04 != 0 {
+                ColumnBreakType::Page
+            } else {
+                ColumnBreakType::Column
+            };
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(para);
+        self.reflow_paragraph(section_idx, para_idx);
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            Some(para_idx..para_idx + 1),
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
+        );
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok(true)
+    }
+
+    /// 단 나누기 삽입 (Ctrl+Shift+Enter).
+    /// 시작 위치에서도 문단을 분리하고 새 문단에 단 나눔을 설정한다.
+    /// 1단 문서에서는 쪽 나누기와 동일하게 동작한다.
     pub fn insert_column_break_native(
         &mut self,
         section_idx: usize,
@@ -3884,55 +3933,6 @@ impl DocumentCore {
         }
 
         self.document.sections[section_idx].raw_stream = None;
-
-        // [#7218] 문단 시작에서는 대상 문단 자신에게 break-before 속성만 준다.
-        //
-        // 종전에는 offset 과 무관하게 `split_at` 을 불러, offset 0 이면 원 문단의
-        // ParaShape·스타일·개요 수준을 그대로 물려받은 **빈 문단**이 앞에 남았다.
-        // 쪽 나눔(`insert_page_break_native`)과 같은 결함이며 같은 계약으로 닫는다.
-        //
-        // 저장소 정본 HWPX 85개 실측: `columnBreak="1"` 문단 132개 중 108개(82%)가 글자를
-        // 가진 내용 문단이고, 그 앞 빈 문단은 `columnBreak="0"` 인 보통 빈 줄이다 —
-        // 한/글도 이 속성을 빈 문단에 따로 만들어 붙이지 않는다.
-        if char_offset == 0 {
-            {
-                let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
-                para.column_type = ColumnBreakType::Column;
-                // 다른 축의 break 비트(구역 0x01·다단 0x02·쪽 0x04)를 지우지 않는다.
-                para.raw_break_type |= 0x08;
-            }
-
-            // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
-            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
-                &self.document.sections[section_idx].paragraphs[para_idx],
-            );
-            self.reflow_paragraph(section_idx, para_idx);
-
-            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
-            crate::renderer::composer::recalculate_section_vpos(
-                &mut self.document.sections[section_idx].paragraphs,
-                para_idx,
-                Some(para_idx..para_idx + 1),
-                stored_end_for_reset,
-                &self.styles,
-                self.dpi,
-                doc_hwp3_layout,
-            );
-
-            self.recompose_section(section_idx);
-            self.paginate_if_needed();
-            self.invalidate_page_tree_cache();
-
-            // 구조 분할이 아니라 문단 자신의 속성 변경이다.
-            self.event_log.push(DocumentEvent::ParaFormatChanged {
-                section: section_idx,
-                para: para_idx,
-            });
-            return Ok(super::super::helpers::json_ok_with(&format!(
-                "\"paraIdx\":{},\"charOffset\":0",
-                para_idx
-            )));
-        }
 
         // 문단 분리
         let new_para =
