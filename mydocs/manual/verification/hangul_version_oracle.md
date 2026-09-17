@@ -54,6 +54,9 @@ r1과 같은 표본을 쓰려면 공유본을 받는다. 두 링크를 합쳐 **
 - https://naver.me/5yh8sh7K
 - https://naver.me/GCJhfJw2
 
+### 3.1. 위의 코퍼스를 한컴 2022 윈도우에서 PDF 출력한 데이터셋입니다.
+- https://storage.cloudxyz.org/IlYoung/hnc10k/media/branch/main/hwpdocs_10k.zip
+
 ```powershell
 $Root = 'D:\hwpdocs_10k_share'   # 압축을 푼 위치
 $files = Get-ChildItem $Root -Recurse -File -Include *.hwp,*.hwpx | Sort-Object FullName
