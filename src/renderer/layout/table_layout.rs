@@ -12670,8 +12670,8 @@ impl LayoutEngine {
         // 문단 안 되감김은 **물리 쪽 프레임**일 수도, 공간이 남은 **로컬 재시작**일
         // 수도 있다(기계 문서의 촘촘한 리셋 — `#1658` 낭비 쪽 회귀의 근거). 둘을
         // 가르는 것은 문서 자신이다: 저장 `common.height` 는 이 형상에서 **첫 물리
-        // 조각의 상자**를 담고 있으므로, 트림을 적용한 조각 상자가 그 선언 높이와
-        // 같을 때만 그 되감김이 쪽 프레임이라고 인정한다.
+        // 조각의 상자**를 담고 있으므로, 선언 하단이 마지막 줄의 잉크 뒤 간격
+        // 안에 있을 때 그 되감김을 쪽 프레임으로 인정하고 초과분만 제거한다.
         //
         //   pad 141 + 1600 + 1600 + lh 1000 + pad 141 = 4482 HU = 선언 높이  (일치)
         //   pad 141 + 1600 + 1600 + 1600    + pad 141 = 5082 HU             (트림 없이)
@@ -12685,12 +12685,16 @@ impl LayoutEngine {
         }
         let padding = hwpunit_to_px(i32::from(cell.padding.top), self.dpi)
             + hwpunit_to_px(i32::from(cell.padding.bottom), self.dpi);
-        let fragment_box = consumed_before_px + (last_unit_height_px - trim).max(0.0) + padding;
-        if (fragment_box - declared_box).abs() > 0.5 {
+        let untrimmed_box = consumed_before_px + last_unit_height_px + padding;
+        let excess = untrimmed_box - declared_box;
+        // 선언 하단이 마지막 줄의 잉크 뒤 간격 안에 있어야 한다. 마지막 간격
+        // 전부를 버리는 경우뿐 아니라 그 일부를 상자 안에 남기는 저장본도 있다
+        // (hwpctl pi176: 7879 HU, PDF 105.01px). 선언값이 잉크를 자르거나
+        // 로컬 reset 뒤 내용까지 포함하면 이 첫 물리 조각의 증거가 아니다.
+        if excess <= 0.0 || excess > trim + 0.5 {
             return 0.0;
         }
-
-        trim
+        excess.min(trim)
     }
 
     /// [#5920] 중첩 표만 든 문단 유닛에서 **상자 아래 보이지 않는 이송 여백**.

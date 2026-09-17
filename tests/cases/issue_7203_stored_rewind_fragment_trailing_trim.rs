@@ -150,6 +150,11 @@ fn stored_rewind_keeps_its_last_line_in_the_fragment() {
 #[test]
 fn the_continuation_neither_repeats_nor_drops_the_moved_unit() {
     let core = core();
+    let (_, partial_spacing_h) = table_box(&core, 11, 176);
+    assert!(
+        (partial_spacing_h - 7879.0 / 75.0).abs() < 0.5,
+        "12쪽 조각: PDF 105.01px / 저장 7879 HU, 실제 {partial_spacing_h}"
+    );
     let (_, first_h) = table_box(&core, 51, 1274);
     let (_, tail_h) = table_box(&core, 52, 1274);
     // 유닛 하나(1600 HU = 21.33px)가 이어받는 조각에서 첫 조각으로 옮겨진다.
@@ -222,7 +227,7 @@ fn the_page_count_matches_the_oracle() {
 #[test]
 fn reserved_bottom_matches_painted_bottom_and_continuation_cuts() {
     let core = core();
-    for (page, para, cut) in [(51u32, 1274usize, 3usize), (54, 1342, 12)] {
+    for (page, para, cut) in [(11u32, 176usize, 5usize), (51, 1274, 3), (54, 1342, 12)] {
         let pages = core.dump_page_items_json(Some(page));
         let info = &pages[0];
         let column = &info["columns"][0];
