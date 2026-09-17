@@ -1199,7 +1199,11 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 `--json` 봉투는 `paragraphDelta`(문단 수 변화: offset 0 이면 0, 아니면 1)와 `pageBreakParagraph`(쪽 나눔이 걸린 문단 번호)를 싣는다.
 
 ### `edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5019)
-문단을 지정 오프셋에서 가르고 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
+문단에 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
+`--offset 0`(문단 시작)이면 쪽 나눔과 **같은 계약**이다 — 문단을 가르지 않고 그 문단에만 단 나눔을 건다(#7218 형제).
+HWPX `columnBreak` 와 HWP5 비트 `0x08` 은 쪽 나눔 `0x04` 와 같은 break-before 축이다.
+이미 같은 명시적 속성이 있으면 아무것도 하지 않는다.
+`--json` 봉투는 `paragraphDelta` 와 `columnBreakParagraph`(단 나눔이 걸린 문단 번호)를 싣는다.
 
 <a id="edit-insert-table"></a>
 

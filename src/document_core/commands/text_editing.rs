@@ -3854,6 +3854,72 @@ impl DocumentCore {
         Ok(true)
     }
 
+    /// [#5019] 문단 **시작**에 단 나눔을 건다 — 문단을 가르지 않고 그 문단의
+    /// `column_type` 만 `Column` 으로 바꾼다.
+    ///
+    /// HWPX `hp:p/@columnBreak` 와 HWP5 문단 헤더 비트 `0x08` 은 쪽 나눔 `0x04` 와 같은
+    /// **break-before** 축이다(`parser/hwpx/section.rs` 스펙 표 59 주석:
+    /// `bit 0 구역 · bit 1 다단 · bit 2 쪽 · bit 3 단`). 따라서 문단 시작의 단 나눔은 그
+    /// 문단 자신의 속성이고 새 문단이 필요하지 않다.
+    ///
+    /// 저장소 정본 HWPX 85개 실측: `columnBreak="1"` 최상위 문단 132개 중 108개(82%)가
+    /// 글자를 가진 내용 문단이다. 그 앞에 빈 문단이 오는 경우도 흔하지만 그 빈 문단은
+    /// `columnBreak="0"` 인 보통 빈 줄이다 — 한/글도 이 속성용 빈 문단을 만들지 않는다.
+    ///
+    /// 다른 축의 break 비트(구역 `0x01`·다단 `0x02`·쪽 `0x04`)는 지우지 않는다. 이미 같은
+    /// 명시적 속성이 있으면 `false` 를 반환한다(반복 호출이 누적되지 않는다).
+    ///
+    /// `mark_page_break_at_paragraph_start_native` 와 같은 계약이다.
+    pub fn mark_column_break_at_paragraph_start_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<bool, HwpError> {
+        use crate::model::paragraph::ColumnBreakType;
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        if para.column_type == ColumnBreakType::Column && para.raw_break_type & 0x08 != 0 {
+            return Ok(false);
+        }
+        self.document.sections[section_idx].raw_stream = None;
+        let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        para.column_type = ColumnBreakType::Column;
+        para.raw_break_type |= 0x08;
+
+        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+        self.reflow_paragraph(section_idx, para_idx);
+
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            Some(para_idx..para_idx + 1),
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
+        );
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        // 구조 분할이 아니라 문단 자신의 속성 변경이다.
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok(true)
+    }
+
     /// 단 나누기 삽입 (Ctrl+Shift+Enter)
     /// 커서 위치에서 문단을 분리하고 새 문단에 단 나누기 설정.
     /// 1단 문서에서는 쪽 나누기와 동일하게 동작.

@@ -305,7 +305,7 @@
     },
     {
       "name": "hwp_insert_column_break",
-      "description": "[#5019] 문단을 지정 오프셋에서 가르고 새 문단에 단 나눔을 넣는다. 코어 insert_column_break_native 배선.",
+      "description": "[#5019] 문단에 단 나눔을 넣는다. 문단 시작(offset 0)이면 문단을 가르지 않고 그 문단이 단 나눔을 갖는다 — 쪽 나눔(#7218)과 같은 break-before 계약이다. 중간 오프셋은 그 자리에서 가르고 뒤 조각에 넣는다. 봉투의 paragraphDelta·columnBreakParagraph 가 문단 좌표 변화를 알린다. 코어 insert_column_break_native 배선.",
       "cli_guess": "insert-column-break"
     },
     {
