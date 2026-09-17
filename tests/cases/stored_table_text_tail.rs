@@ -83,7 +83,7 @@ fn render(
     profile: &str,
     count: usize,
     gap: i32,
-    spacing_after: Option<i32>,
+    spacing_after_hu: Option<i32>,
     with_shape: bool,
 ) -> Vec<RenderNode> {
     let name = format!("{profile}-{count}-{gap}");
@@ -93,11 +93,12 @@ fn render(
         core.document().layout_profile().hwp5_origin_hwpx(),
         profile == "native"
     );
-    if let Some(spacing_after) = spacing_after {
+    if let Some(spacing_after_hu) = spacing_after_hu {
         let mut doc = core.document().clone();
         let host = &mut doc.sections[0].paragraphs[1];
         let mut shape = doc.doc_info.para_shapes[host.para_shape_id as usize].clone();
-        shape.spacing_after = spacing_after;
+        // HWPX HwpUnitChar values are normalized to the HWP5 model's 2x scale.
+        shape.spacing_after = spacing_after_hu * 2;
         host.para_shape_id = doc.doc_info.para_shapes.len() as u16;
         doc.doc_info.para_shapes.push(shape);
         core.set_document(doc);
