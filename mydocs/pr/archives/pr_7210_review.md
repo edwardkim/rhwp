@@ -53,6 +53,122 @@ reviewer가 비교한 base는 공통 기록의 실제 Native binary다.
 
 실제 전환에 사용한 원문/PDF는 [fixture README](../../../tests/fixtures/planet_review_20260917/README.md)에 있다. Studio screenshot은 [#7211](pr_7211_review.md)과 [#7214](pr_7214_review.md)에 공유한다.
 
+## 메인터너 보정 최종 검증
+
+렌더링/UI 검증 코드 head **`54c24ebddb1a578786a6eb082c40c493dcde07f1`**,
+테스트 lint 보정 head `f94dece59`, branch
+`codex/planet-review-20260917`, base `fcbd00e0fabc4b309a887357033f92e2d511cd75`.
+원 source 12개를 유지한 채 아래 4개 보정을 누적했다. 원 PR CI의 성공과 이 로컬 누적 head의
+검증은 별개이며 아직 통합 PR·원격 CI·GitHub APPROVE·merge를 수행하지 않았다.
+
+| 보정 commit | 해결한 보류 사유 | 확인한 최종 계약 |
+| --- | --- | --- |
+| `c1c9e2047` | #7214 중첩 표 제한값이 바깥 표를 조회 | 동일 CellPath 조회/resize, 바깥 표 불변, Undo 원복 |
+| `2a9810642` | #7221·#7228 원점/예약/paint 불일치 | 첫 조각의 저장 원점과 cut 높이를 예약·실제 배치가 공유 |
+| `95eed7197` | 위 보정에서 드러난 12쪽 마지막 줄 이월 | 선언 하단이 마지막 줄간격 중간이면 초과분만 제외 |
+| `54c24ebdd` | #7225 실제 3→4쪽 회귀 | 음수 Percent 전진, 개체 여백, 소유 줄 수용 높이와 원본 vpos 보존 |
+
+#7215는 #7221·#7228 보정을 포함한 동일 head에서 era 신호·HWP3 대조·실물 20쪽을 다시 검증했다.
+다섯 보류 항목의 수용 여부는 개별 문서 상단을 따른다. 기존 조판 결함 전부를 해결하거나
+관련 이슈 전체를 종료할 근거로 확대하지 않는다.
+
+### 최종 로컬 검사
+
+실행 환경은 macOS, `DEVELOPER_DIR=/Library/Developer/CommandLineTools`,
+전용 target `target/planet-review-20260917`이다. `f94dece59`에서 새 테스트의 마지막 표 탐색을 `filter().last()`에서 동등한 `rfind()`로 바꾼 lint 보정은
+렌더링/UI 코드에 영향을 주지 않는다. 이 보정 후 fmt·workspace all-target Clippy와 해당
+#7196 case 2개가 다시 통과했으며, 전체 회귀·Skia·fresh WASM·Visual Sweep은 위 렌더링 head의 결과다.
+원시 로그는
+`/private/tmp/rhwp-planet-review-20260917`에 보관하며 commit에는 넣지 않는다.
+
+| 검사 | 실제 결과 |
+| --- | --- |
+| 최종 focused | 13 case / 41 PASS, 실패 0 |
+| 전체 nextest | 9,974 PASS / 51 skipped, exit 0; 빌드 포함 679.3초 |
+| Native Skia lib | 4,112 PASS / 13 ignored, exit 0 |
+| Native Skia 그림·직접 PDF | 각각 2 PASS / 4 PASS, 모두 exit 0 |
+| fmt·native/WASM/workspace Clippy·workspace build | 모두 exit 0; workspace Clippy의 새 테스트 `filter().last()` 경고는 `rfind()`로 정리 후 재검사 통과 |
+| suite manifest·unit tier 정책 | base `fcbd00e0f` 대비 모두 exit 0 |
+| Studio TypeScript·전체 test | 1,758 PASS / 2 skipped, tsc exit 0; UI 코드 `c1c9e2047` 이후 변경 없음 |
+| fresh WASM | 최종 head 빌드 exit 0, 4분10초 |
+| 실제 Studio 재검증 | 최종 fresh WASM에서 3026219 drag 시작, path 조회 12 / flat 조회 0, 바깥 표 불변·Undo 원복·page error 0 |
+
+재실행 명령은 저장소 루트 기준이다. Cargo 검사는 동시에 실행하지 않았다.
+
+```bash
+export DEVELOPER_DIR=/Library/Developer/CommandLineTools
+cargo nextest run --locked --cargo-profile release-test --target-dir target/planet-review-20260917 --tests --no-fail-fast
+cargo test --locked --profile release-test --target-dir target/planet-review-20260917 --features native-skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir target/planet-review-20260917 --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --target-dir target/planet-review-20260917 --features native-skia
+cargo fmt --all -- --check
+cargo clippy --locked --target-dir target/planet-review-20260917 -- -D warnings
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown --target-dir target/planet-review-20260917 -- -D warnings
+cargo build --locked --workspace --target-dir target/planet-review-20260917
+cargo clippy --locked --workspace --all-targets --target-dir target/planet-review-20260917 -- -D warnings
+CARGO_TARGET_DIR=target/planet-review-20260917 scripts/wasm-pack-locked.sh --target web --out-dir /private/tmp/rhwp-planet-review-20260917/final-wasm
+```
+
+테스트 lint 재검사에서 도우미의 재계산 suite와 기존 생성 wrapper가 달라 최초 실행은
+0개/exit 4였다. 이 결과를 성공으로 세지 않고 실제 `regression_suite_005`에서
+`-E 'test(/issue_7196_page_top_spacing_trim_restore::/)'`로 실행해 2 PASS/exit 0을 확인했다.
+
+원 sample 8개 보안 검사는 초기 실행 범위 그대로다. 전체 nextest의 환경변수 없는 성공을 새
+sample 검사로 세지 않는다. 전달한 11경로 중 `tests/fixtures/` 3개는 검사 필터에서 제외됐음을
+초기 기록에도 정정했다. 이번 보정에서 HWP/HWPX를 추가·수정하지 않았다.
+
+### 최종 Visual Sweep
+
+각 backend **15입력·28선택쪽**을 DPI 96으로 새로 캡처했다. 비교 번호가 다른 #7196은 아래
+내용 대응 overlay를 별도로 생성했다. 최종 PNG 중 Native/WASM **22/28 byte 동일**,
+6쪽(balance 4·5, hwpctl 52·57, trim 10, trim_counter 3)은 raster 차이가 남는다.
+render-tree는 27/28 동일하며 속기록 20쪽의 4개 머리말/꼬리말 `pi`만 플랫폼 `usize::MAX`
+표현(64bit/32bit)이 다르다. 그 sentinel을 구분하면 28쪽 모두 좌표·내용이 같다.
+이를 PDF 일치율로 해석하지 않는다.
+
+명령 형식:
+
+```bash
+venv/bin/python scripts/visual_sweep.py \
+  --file-target <label> <input> <reference-pdf> \
+  --rhwp-bin target/planet-review-20260917/release-test/rhwp \
+  --pages <pages> --dpi 96 --out <output>
+# WASM은 위 명령에 다음 인자를 추가
+# --wasm-pkg /private/tmp/rhwp-planet-review-20260917/final-wasm
+```
+
+입력별 정확한 경로는 아래 표와 각 개별 review의 링크를 따른다. 선택 쪽은 전체 문서 검토를
+뜻하지 않는다. compare·standalone overlay·review를 산출하고 영향 경계를 직접 판독했다.
+
+| 입력 식별자 | 선택 쪽 / 기준 PDF | 직접 판독한 개선·대조 |
+| --- | --- | --- |
+| 2983289·3184393 그림 여백 | 각 1 / issue7193 기존 PDF | 기존 그림 여백 경로 보존 |
+| 3011411·36473713 제어문자 | 각 1 / issue7190 기존 PDF | TAC 및 앞 제어문자 줄 소속 보존 |
+| 156403546·156451317 | 각 1 / issue7198 기존 PDF | 음수/양수 후속 host 대조 |
+| hwpctl_API_v2.4 | 12·13·26·52·53·55·56·57 / 기존 Hancom2020 PDF | 첫 조각과 이어받기, 마지막 코드 줄·후속 표 보존, 105쪽 유지 |
+| 148733091 속기록 | 20 / 기존 PDF | era 신호 제한 후 HWP3 대조 유지 |
+| 156760012 #7196 | 8–10 생성; **rhwp 9↔PDF 8, rhwp 10↔PDF 9**로 별도 비교 | 앞쪽 감사 문구·다음 붙임3 시작 보존; 전체 11/10쪽 차이는 남음 |
+| 156676190 반례 | 1–3 / `pdf/planet-review-20260917/156676190-2020.pdf` | 4→3쪽, 첫 본문371.8px·사진표811px·2쪽 첫 본문114.47px; 3쪽 사진 배율 잔차는 #7225 문서에 원인 기록 |
+| 3026219 중첩 표 | 1 / `pdf/planet-review-20260917/3026219-2020.pdf` | 실제 Chrome resize/Undo와 외부 표 불변 |
+| 3147199 부분 테두리 | 1 / `pdf/planet-review-20260917/3147199-2020.pdf` | hover 대조 |
+| 2025 행정업무운영 편람 | 130 / 기존 PDF | 그림 네 방향 여백 대조 |
+| 36395325 결재문서 | 4 / 기존 `pdf/task2243/` PDF | 양수 저장 줄 간격 대조, 5쪽 유지 |
+| worklife_balance_index_156607916 | 4–6 / 추가 Hancom2020 PDF | 셀 여백·표 후속 흐름 대조, 6쪽 유지 |
+
+PDF와 남는 글꼴 폭/굵기·기호·기존 표/그림 크기 차이는 유지해 기록했다. 특히 156676190
+3쪽 사진은 기존 셀 그림의 `pic_w.min(inner_area.width)` 축소 경로 때문에 선언 폭보다 작다.
+원문 선언/PDF 그림 폭을 대조해 원인을 확인했으며 이번 페이지 회귀 해결을 그 차이의 해결로
+바꾸어 보고하지 않는다. 목표 경계는 페이지 수뿐 아니라 실제 표 상자·마지막 줄·후속 내용으로
+판정했다. 중간 보정에서 발생한 hwpctl 12쪽 줄 이월과 양수 간격 대조군 5→6/6→7쪽 회귀를
+검출한 뒤 수정·철회하고 최종 head를 다시 캡처했다.
+
+추가 증거 **62 PNG**는 #7214·#7215·#7225·#7228의 `maintainer_` 경로로 보존하며 #7221은
+#7228과 같은 컷 증거를 공유한다. 원래 85 PNG는 수정 전 이력으로 보존한다.
+기존 Git HWP/HWPX를 이름 바꿔 중복 추가하지 않았다. 추가 PDF 1개는
+[fixture 출처 기록](../../../tests/fixtures/planet_review_20260917/README.md)에 저장 제품·변환
+engine·실제 빌드·SHA256을 남겼다.
+
+
 ## 통합 검토 공통 실행 기록
 
 - 기준: `upstream/devel=fcbd00e0fabc4b309a887357033f92e2d511cd75`, local devel 동기화 후 `codex/planet-review-20260917` 생성.
@@ -71,7 +187,7 @@ reviewer가 비교한 base는 공통 기록의 실제 Native binary다.
 - 원문 3개는 기존 Git 전체 HWP/HWPX/PDF의 크기·SHA-256 중복 확인 후 원래 이름으로 추가했다. [입력 provenance](../../../tests/fixtures/planet_review_20260917/README.md)에 저장 제품·SHA·MCP engine·실제 버전·PDF SHA를 기록했다.
 - 세 PDF는 MCP `start → status → download`, engine2020 / Hancom11.0.0.9136 / preprocess none으로 생성했다. PDF 1.4 등의 컨테이너 버전으로 배제하지 않는다. 기준 PDF의 페이지 수는 PDF 전체 기준이며 sweep summary의 선택 raster 수와 다르다.
 - `cargo fmt --all -- --check`, suite manifest 정책, unit-test tiers 정책: exit 0.
-- 추가/변경 원문 11개(원 PR 8개 + reviewer 입력 3개)를 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 실제 전달한 security corpus 3종 탐지 검사: 1 test PASS, 11입력 검사 완료. 첫 실행의 잘못된 test target 지정은 실행 증거에서 제외하고 실제 생성 suite `regression_suite_027`로 재실행했다.
+- 추가/변경 원문 11개 경로를 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 전달한 security corpus 3종 탐지 검사: 1 test PASS. 다만 이 검사의 경로 필터는 `samples/`만 허용하므로 실제 보안 검사 대상은 원 PR의 8개다. `tests/fixtures/`의 reviewer 입력 3개는 제외되었으며 보안 검사 완료로 계산하지 않는다. 해당 3개는 별도의 실제 파싱·시각 검증에 사용했다. 첫 실행의 잘못된 test target 지정은 실행 증거에서 제외하고 실제 생성 suite `regression_suite_027`로 재실행했다.
 - 원문/PDF/대표 compare·standalone overlay·review PNG만 보존한다. 실행 raw는 `/private/tmp/rhwp-planet-review-20260917`; log/tsv/json은 commit하지 않는다.
 - 전체 nextest, Native Skia 전체, Clippy bundle은 누적 tree에서 재실행하지 않았다. 실행 검출/계약 blocker를 해결하기 전 통합 전체 검증 완료로 보고하지 않는다. 원 PR CI의 성공도 누적 tree 승인 대신 쓰지 않는다.
 

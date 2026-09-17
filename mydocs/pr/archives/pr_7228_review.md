@@ -9,7 +9,50 @@ last_verified: 2026-09-17
 
 ## 최종 판정
 
+**승인 — 요청한 머지 보류 사유 해소(검토 변경 범위).** 컷·예약·paint의 높이를 통일하고 마지막 줄간격 일부가 남는 경계까지 검증했다. 전체 회귀·Skia·lint·fresh WASM·Visual Sweep을 완료했다. 원격 CI/merge 승인과 문서 전체 PDF 일치 판정은 별개다.
+
+## 메인터너 보정 (2026-09-17)
+
+`2a9810642`·`95eed7197`에서 컷·예약·paint가 `native_saved_reset_cut_trailing_trim`을 소비하도록 통일했다. 선언 하단이 마지막 줄의 잉크 뒤 간격 안에 있으면 그 초과분만 제거한다. 문단 경계 reset과 문단 내부 reset을 구분하며 이어받는 조각에 첫 조각 선언 높이를 재사용하지 않는다.
+
+hwpctl 12쪽 저장7879 HU =105.053px(PDF 약105.01px), 52쪽4482 HU =59.76px(PDF 약59.78px), 55쪽 약252px(PDF 약251.57px)를 확인했다. 원점 보정 직후 12쪽 마지막 코드 줄이 이월되는 회귀도 검출했고, 부분 줄간격 보정 후 `issue_6368`과 예약/paint/컷 검사가 통과했다. Native 12·13·52·53·55·56쪽 overlay에서 줄 보존을 직접 확인했다. 폰트·일부 표 테두리 잔차는 전체 PDF 일치로 보고하지 않는다.
+
+### 보정 후 증적
+
+렌더링/UI 검증 코드 head는 `54c24ebddb1a578786a6eb082c40c493dcde07f1`이다. 이후 `f94dece59`는 테스트의 동등한 역방향 탐색 보정이며 fmt·전체 target Clippy·해당 2개 테스트를 재검증했다. [최종 공통 검증](pr_7210_review.md#메인터너-보정-최종-검증)에 실행 범위와 결과를 모았다.
+
+- [maintainer_hwpctl_wasm_compare_012.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_012.png)
+- [maintainer_hwpctl_wasm_overlay_012.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_012.png)
+- [maintainer_hwpctl_wasm_review_012.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_012.png)
+- [maintainer_hwpctl_wasm_compare_013.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_013.png)
+- [maintainer_hwpctl_wasm_overlay_013.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_013.png)
+- [maintainer_hwpctl_wasm_review_013.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_013.png)
+- [maintainer_hwpctl_wasm_compare_026.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_026.png)
+- [maintainer_hwpctl_wasm_overlay_026.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_026.png)
+- [maintainer_hwpctl_wasm_review_026.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_026.png)
+- [maintainer_hwpctl_wasm_compare_052.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_052.png)
+- [maintainer_hwpctl_wasm_overlay_052.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_052.png)
+- [maintainer_hwpctl_wasm_review_052.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_052.png)
+- [maintainer_hwpctl_wasm_compare_053.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_053.png)
+- [maintainer_hwpctl_wasm_overlay_053.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_053.png)
+- [maintainer_hwpctl_wasm_review_053.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_053.png)
+- [maintainer_hwpctl_wasm_compare_055.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_055.png)
+- [maintainer_hwpctl_wasm_overlay_055.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_055.png)
+- [maintainer_hwpctl_wasm_review_055.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_055.png)
+- [maintainer_hwpctl_wasm_compare_056.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_056.png)
+- [maintainer_hwpctl_wasm_overlay_056.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_056.png)
+- [maintainer_hwpctl_wasm_review_056.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_056.png)
+- [maintainer_hwpctl_wasm_compare_057.png](../assets/pr7228_review/maintainer_hwpctl_wasm_compare_057.png)
+- [maintainer_hwpctl_wasm_overlay_057.png](../assets/pr7228_review/maintainer_hwpctl_wasm_overlay_057.png)
+- [maintainer_hwpctl_wasm_review_057.png](../assets/pr7228_review/maintainer_hwpctl_wasm_review_057.png)
+- [maintainer_hwpctl_native_overlay_052.png](../assets/pr7228_review/maintainer_hwpctl_native_overlay_052.png)
+- [maintainer_hwpctl_native_overlay_055.png](../assets/pr7228_review/maintainer_hwpctl_native_overlay_055.png)
+
+### 보정 전 판정과 증거
+
 **머지 보류** — 분할 컷에 적용한 trailing trim이 예약 높이와 실제 상자 높이에 끝까지 전달되지 않는다.
+
+**이 아래의 코드 위치·수치·보류 판정·미실행 설명과 기존 PNG는 초기 검토 `cd074a4da`의 이력이다. 현재 판정은 문서 상단과 보정 후 증적을 따른다.**
 
 [원 PR #7228](https://github.com/edwardkim/rhwp/pull/7228): 수정: 저장 사다리 되감김 경계의 조각 컷이 마지막 줄 줄간격을 요구하지 않는다 (#7203 컷 갈래)
 관련 [이슈 #7203](https://github.com/edwardkim/rhwp/issues/7203).

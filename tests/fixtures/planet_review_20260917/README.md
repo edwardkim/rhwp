@@ -13,3 +13,14 @@
 저장 제품에 따라 `engine=2020`, 실제 Hancom `11.0.0.9136`, `input_preprocess=none`이었다.
 3026219는 2쪽, 3147199는 1쪽, 156676190는 3쪽이며 EOF·SHA 검증 후 저장했다.
 변환본 자체의 존재는 PR 시각 검증 통과를 뜻하지 않는다. 실제 판정은 개별 PR review에 기록한다.
+
+## 메인터너 보정의 추가 대조 기준
+
+원문은 기존 `samples/issue6145/worklife_balance_index_156607916.hwpx`를 그대로 재사용한다
+(SHA-256 `7778e5373baf7371a7c643cf4cca73defb065a92ecc941a3e55fff34fcdd2d17`).
+`rhwp info --json`은 저장 제품 2018, 버전 `10.0.0.11529`를 보고했다.
+2026-09-17 같은 MCP의 `start → status → download`, engine 2020 / Hancom `11.0.0.9136`,
+`input_preprocess=none`으로 6쪽 PDF를 받았다(job `3acc4c0a-f310-4287-9a6e-e1a5ebe3c9b6`).
+추가 PDF는 `pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf`,
+SHA-256 `0cc7229c1d8da5ef425ef76f3ba143db17171a71449bc4e341579a18a07a47ec`다.
+원문을 새 이름으로 복제하지 않았다.

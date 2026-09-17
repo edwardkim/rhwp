@@ -9,7 +9,27 @@ last_verified: 2026-09-17
 
 ## 최종 판정
 
+**승인 — 요청한 머지 보류 사유 해소(검토 변경 범위).** 의존한 #7221·#7228 보정을 포함해 era 신호 및 HWP3 대조 검증을 완료했다. 전체 회귀·Skia·lint·fresh WASM·Visual Sweep을 완료했다. 원격 CI/merge 승인과 문서 전체 PDF 일치 판정은 별개다.
+
+## 메인터너 보정 (2026-09-17)
+
+자체 era 신호 3개와 HWP3 대조 검사는 통과했다. 의존하는 #7221·#7228의 원점·예약·paint 보정은 `2a9810642`·`95eed7197`에 누적했다. hwpctl은 105쪽을 유지하며 12쪽 마지막 코드 줄도 복구했다.
+
+의존 코드의 보정 후 최종 focused·Native/fresh WASM·전체 검증을 완료했다.  원 PR의 과거106쪽 설명을 현재 결과로 사용하지 않는다. #7035 전체 해결이나 이슈 종료는 주장하지 않는다.
+
+### 보정 후 증적
+
+렌더링/UI 검증 코드 head는 `54c24ebddb1a578786a6eb082c40c493dcde07f1`이다. 이후 `f94dece59`는 테스트의 동등한 역방향 탐색 보정이며 fmt·전체 target Clippy·해당 2개 테스트를 재검증했다. [최종 공통 검증](pr_7210_review.md#메인터너-보정-최종-검증)에 실행 범위와 결과를 모았다.
+
+- [maintainer_stenographic_wasm_compare_020.png](../assets/pr7215_review/maintainer_stenographic_wasm_compare_020.png)
+- [maintainer_stenographic_wasm_overlay_020.png](../assets/pr7215_review/maintainer_stenographic_wasm_overlay_020.png)
+- [maintainer_stenographic_wasm_review_020.png](../assets/pr7215_review/maintainer_stenographic_wasm_review_020.png)
+
+### 보정 전 판정과 증거
+
 **머지 보류** — HWP3 오인 방지 자체의 focused 검사는 통과했지만, 현재 head에 포함된 #7221·#7228의 조판 계약 미충족이 남는다.
+
+**이 아래의 코드 위치·수치·보류 판정·미실행 설명과 기존 PNG는 초기 검토 `cd074a4da`의 이력이다. 현재 판정은 문서 상단과 보정 후 증적을 따른다.**
 
 [원 PR #7215](https://github.com/edwardkim/rhwp/pull/7215): 수정: 한글97 마지막 줄 허용치에 HWP3 시대 신호를 함께 요구한다 (#7035)
 관련 [이슈 #7035](https://github.com/edwardkim/rhwp/issues/7035).

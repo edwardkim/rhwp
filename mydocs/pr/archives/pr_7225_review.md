@@ -9,7 +9,55 @@ last_verified: 2026-09-17
 
 ## 최종 판정
 
+**승인 — 요청한 머지 보류 사유 해소(검토 변경 범위).** 156676190의 3→4쪽 회귀를 Native/fresh WASM 모두 3쪽으로 복구하고 목표 경계와 정상 대조군을 검증했다. 전체 회귀·Skia·lint·fresh WASM·Visual Sweep을 완료했다. 원격 CI/merge 승인과 문서 전체 PDF 일치 판정은 별개다.
+
+## 메인터너 보정 (2026-09-17)
+
+음수 Percent 간격을 Fixed 겹침 해제와 구분하고, 합성 개체 줄에 표 상하 바깥여백을 포함했다. pre-flush는 실제 TAC 배치와 같은 소유 줄 상자를 사용해 바깥여백을 두 번 예약하지 않는다. TAC 뒤 전진에는 음수 간격도 반영하며, 쪽 위 간격 판독에는 정규화 전 원본 vpos를 사용한다.
+
+156676190은 수정 전 Native/fresh WASM 4쪽에서 최종 Native/fresh WASM 모두 3쪽으로 복구했다. 첫 본문 y≈371.8, 첫 쪽 사진 표 y≈811, 2쪽 첫 본문 y≈114.47의 독립 PDF 좌표를 정식 회귀 검사에 추가했다. 양수 간격까지 일괄 변경한 중간 시도에서 결재문서5→6·셀 여백 문서6→7을 검출했으므로 그 변경을 철회했고, 기존 저장 구역의 양수 간격 호환 동작을 보존했다. 최종 Native/fresh WASM 대조 문서는 각각 5·6쪽이다.
+
+Native overlay 1–3쪽에서 사진 누락·다음 쪽 이월과 2쪽20px 오차가 해소됐다. 3쪽의 세 표 위치는 base와 동일하며(상단98.2/순서도604.6/사진799.1px), 제목 글꼴 굵기·줄 폭·사진 배율과 PDF의 잔차는 남는다. 3쪽 사진 배율 잔차는 source 그림 폭15462/15329/16156 HU가 셀 안쪽 폭14004 HU보다 큰데 기존 셀 그림 경로가 폭을186.7px로 축소하는 데서 발생한다(`layout/table_layout.rs`의 `pic_w.min(inner_area.width)` 경로). 기준 PDF의 실제 그림 폭은206.13/204.21/215.24px로 source 선언 폭과 대응한다. 이번 #7217의 그림 자체 inMargin은 이3개 모두0이므로 그 변경의 효과가 아니다. 별도 셀 그림 확대·clipping 계약을 건드리지 않았고, 그 잔차를 해소했다고 보고하지 않는다. 이 보정은 페이지 회귀 및 예약 계약의 해결 범위이며 문서 전체 시각 일치로 확대하지 않는다. 최종 집중 검사·fresh WASM·전체 검증은 아래 공통 기록을 따른다.
+
+### 보정 후 증적
+
+렌더링/UI 검증 코드 head는 `54c24ebddb1a578786a6eb082c40c493dcde07f1`이다. 이후 `f94dece59`는 테스트의 동등한 역방향 탐색 보정이며 fmt·전체 target Clippy·해당 2개 테스트를 재검증했다. [최종 공통 검증](pr_7210_review.md#메인터너-보정-최종-검증)에 실행 범위와 결과를 모았다.
+
+- [maintainer_trim_counter_wasm_compare_001.png](../assets/pr7225_review/maintainer_trim_counter_wasm_compare_001.png)
+- [maintainer_trim_counter_wasm_overlay_001.png](../assets/pr7225_review/maintainer_trim_counter_wasm_overlay_001.png)
+- [maintainer_trim_counter_wasm_review_001.png](../assets/pr7225_review/maintainer_trim_counter_wasm_review_001.png)
+- [maintainer_trim_counter_wasm_compare_002.png](../assets/pr7225_review/maintainer_trim_counter_wasm_compare_002.png)
+- [maintainer_trim_counter_wasm_overlay_002.png](../assets/pr7225_review/maintainer_trim_counter_wasm_overlay_002.png)
+- [maintainer_trim_counter_wasm_review_002.png](../assets/pr7225_review/maintainer_trim_counter_wasm_review_002.png)
+- [maintainer_trim_counter_wasm_compare_003.png](../assets/pr7225_review/maintainer_trim_counter_wasm_compare_003.png)
+- [maintainer_trim_counter_wasm_overlay_003.png](../assets/pr7225_review/maintainer_trim_counter_wasm_overlay_003.png)
+- [maintainer_trim_counter_wasm_review_003.png](../assets/pr7225_review/maintainer_trim_counter_wasm_review_003.png)
+- [maintainer_consulting_wasm_compare_004.png](../assets/pr7225_review/maintainer_consulting_wasm_compare_004.png)
+- [maintainer_consulting_wasm_overlay_004.png](../assets/pr7225_review/maintainer_consulting_wasm_overlay_004.png)
+- [maintainer_consulting_wasm_review_004.png](../assets/pr7225_review/maintainer_consulting_wasm_review_004.png)
+- [maintainer_balance_wasm_compare_004.png](../assets/pr7225_review/maintainer_balance_wasm_compare_004.png)
+- [maintainer_balance_wasm_overlay_004.png](../assets/pr7225_review/maintainer_balance_wasm_overlay_004.png)
+- [maintainer_balance_wasm_review_004.png](../assets/pr7225_review/maintainer_balance_wasm_review_004.png)
+- [maintainer_balance_wasm_compare_005.png](../assets/pr7225_review/maintainer_balance_wasm_compare_005.png)
+- [maintainer_balance_wasm_overlay_005.png](../assets/pr7225_review/maintainer_balance_wasm_overlay_005.png)
+- [maintainer_balance_wasm_review_005.png](../assets/pr7225_review/maintainer_balance_wasm_review_005.png)
+- [maintainer_balance_wasm_compare_006.png](../assets/pr7225_review/maintainer_balance_wasm_compare_006.png)
+- [maintainer_balance_wasm_overlay_006.png](../assets/pr7225_review/maintainer_balance_wasm_overlay_006.png)
+- [maintainer_balance_wasm_review_006.png](../assets/pr7225_review/maintainer_balance_wasm_review_006.png)
+- [maintainer_trim_rhwp9_pdf8_wasm_compare.png](../assets/pr7225_review/maintainer_trim_rhwp9_pdf8_wasm_compare.png)
+- [maintainer_trim_rhwp9_pdf8_wasm_overlay.png](../assets/pr7225_review/maintainer_trim_rhwp9_pdf8_wasm_overlay.png)
+- [maintainer_trim_rhwp9_pdf8_wasm_review.png](../assets/pr7225_review/maintainer_trim_rhwp9_pdf8_wasm_review.png)
+- [maintainer_trim_rhwp10_pdf9_wasm_compare.png](../assets/pr7225_review/maintainer_trim_rhwp10_pdf9_wasm_compare.png)
+- [maintainer_trim_rhwp10_pdf9_wasm_overlay.png](../assets/pr7225_review/maintainer_trim_rhwp10_pdf9_wasm_overlay.png)
+- [maintainer_trim_rhwp10_pdf9_wasm_review.png](../assets/pr7225_review/maintainer_trim_rhwp10_pdf9_wasm_review.png)
+
+원래 #7196 입력은 최종 11쪽 / 기준 PDF 10쪽이다(보정 전 rhwp 12쪽). 내용을 다시 추적한 비교는 **rhwp 9쪽↔PDF 8쪽, rhwp 10쪽↔PDF 9쪽**이다. 앞쪽 끝의 “감사합니다”와 다음 쪽 “붙임3” 시작, 표 외곽·후속 내용을 직접 대조했다. 과거 10↔8 / 11↔9 PNG는 아래 수정 전 증거로만 보존하며 최종 판정에 재사용하지 않는다. 목표 경계의 불필요한 앞당김은 해소했지만 문서 전체 쪽수 일치를 주장하지 않는다.
+
+### 보정 전 판정과 증거
+
 **머지 보류** — 목표 경계는 개선됐지만 156676190에서 3→4쪽 회귀와 첫 페이지 그림의 다음 쪽 이동이 재현된다.
+
+**이 아래의 코드 위치·수치·보류 판정·미실행 설명과 기존 PNG는 초기 검토 `cd074a4da`의 이력이다. 현재 판정은 문서 상단과 보정 후 증적을 따른다.**
 
 [원 PR #7225](https://github.com/edwardkim/rhwp/pull/7225): 수정: 다음 경계에서 철회될 문단 간격 트림을 조판이 하지 않는다 (#7196)
 관련 [이슈 #7196](https://github.com/edwardkim/rhwp/issues/7196).

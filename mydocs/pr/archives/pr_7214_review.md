@@ -9,7 +9,30 @@ last_verified: 2026-09-17
 
 ## 최종 판정
 
+**승인 — 요청한 머지 보류 사유 해소(검토 변경 범위).** 중첩 표 제한값 조회와 크기 변경이 같은 CellPath를 사용함을 확인했다. 전체 회귀·Skia·lint·fresh WASM·Visual Sweep을 완료했다. 원격 CI/merge 승인과 문서 전체 PDF 일치 판정은 별개다.
+
+## 메인터너 보정 (2026-09-17)
+
+`c1c9e2047`에서 중첩 셀 제한 조회를 같은 셀 경로로 통일했다. native `get_cell_properties_by_cell_path_native` → WASM `getCellPropertiesByPath` → bridge → `clampCompensatedResizeDelta(TableRef)`로 전달되며 depth>1에서는 평면 조회를 사용하지 않는다.
+
+Rust 6개, 실제 clamp 호출 Studio 3개(수정 전 2 FAIL / 1 PASS), TypeScript, Studio 전체 1758 PASS / 2 skip을 확인했다. 실제 3026219 브라우저 drag는 flat 조회 0회 / path 조회 12회, 바깥 표 불변, Undo 원복, page error 0건이었다. 최종 누적 head의 fresh WASM에서도 같은 실제 drag 결과를 다시 확인했다.
+
+### 보정 후 증적
+
+렌더링/UI 검증 코드 head는 `54c24ebddb1a578786a6eb082c40c493dcde07f1`이다. 이후 `f94dece59`는 테스트의 동등한 역방향 탐색 보정이며 fmt·전체 target Clippy·해당 2개 테스트를 재검증했다. [최종 공통 검증](pr_7210_review.md#메인터너-보정-최종-검증)에 실행 범위와 결과를 모았다.
+
+- [maintainer_inner_table_wasm_compare_001.png](../assets/pr7214_review/maintainer_inner_table_wasm_compare_001.png)
+- [maintainer_inner_table_wasm_overlay_001.png](../assets/pr7214_review/maintainer_inner_table_wasm_overlay_001.png)
+- [maintainer_inner_table_wasm_review_001.png](../assets/pr7214_review/maintainer_inner_table_wasm_review_001.png)
+- [maintainer_studio_inner-hover.png](../assets/pr7214_review/maintainer_studio_inner-hover.png)
+- [maintainer_studio_inner-drag.png](../assets/pr7214_review/maintainer_studio_inner-drag.png)
+- [maintainer_studio_partial-border.png](../assets/pr7214_review/maintainer_studio_partial-border.png)
+
+### 보정 전 판정과 증거
+
 **머지 보류** — 안쪽 표 drag·Undo는 작동하지만 제한값 조회가 여전히 바깥 표 API를 사용한다.
+
+**이 아래의 코드 위치·수치·보류 판정·미실행 설명과 기존 PNG는 초기 검토 `cd074a4da`의 이력이다. 현재 판정은 문서 상단과 보정 후 증적을 따른다.**
 
 [원 PR #7214](https://github.com/edwardkim/rhwp/pull/7214): 수정: 중첩 표의 셀 크기를 셀 경로로 조절한다 (#7189)
 관련 [이슈 #7189](https://github.com/edwardkim/rhwp/issues/7189).

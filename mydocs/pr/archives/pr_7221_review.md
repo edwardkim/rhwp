@@ -9,7 +9,25 @@ last_verified: 2026-09-17
 
 ## 최종 판정
 
+**승인 — 요청한 머지 보류 사유 해소(검토 변경 범위).** 첫 조각의 저장 원점·수용 예약·실제 배치가 같은 결과를 소비하도록 보정했다. 전체 회귀·Skia·lint·fresh WASM·Visual Sweep을 완료했다. 원격 CI/merge 승인과 문서 전체 PDF 일치 판정은 별개다.
+
+## 메인터너 보정 (2026-09-17)
+
+`2a9810642`에서 첫 분할 조각의 저장 원점을 배치와 예약이 공유하도록 바꾸고, `95eed7197`에서 마지막 줄간격 일부만 저장 상자에 남는 경계도 보정했다.
+
+`PreparedState.first_fragment_saved_offset` 생산 → 첫 조각 수용 전 `st.current_height` 설정 → 공통 cut 높이 → `row_cut_content_height`/`cell_cut_visible_height`의 paint 소비를 연결했다. hwpctl 52쪽 pi1274 예약 하단과 실제 표 하단이 일치하고, 저장 4482 HU / PDF 약59.78px에 대해 실제59.76px다. 12·55쪽 대조 컷과 13·53·56쪽 이어받기에서 누락·중복 없이 105쪽을 유지했다. Native/fresh WASM의 해당 쪽을 직접 대조했다. 전체 검증 결과는 공통 기록을 따른다.
+
+### 보정 후 증적
+
+렌더링/UI 검증 코드 head는 `54c24ebddb1a578786a6eb082c40c493dcde07f1`이다. 이후 `f94dece59`는 테스트의 동등한 역방향 탐색 보정이며 fmt·전체 target Clippy·해당 2개 테스트를 재검증했다. [최종 공통 검증](pr_7210_review.md#메인터너-보정-최종-검증)에 실행 범위와 결과를 모았다.
+
+같은 입력과 컷을 검증한 [#7228 보정 후 PNG](pr_7228_review.md#보정-후-증적)를 공유한다.
+
+### 보정 전 판정과 증거
+
 **머지 보류** — PDF에 가까워진 paint top과 별개로 typeset의 원점·쪽 예산은 다른 계산을 사용한다.
+
+**이 아래의 코드 위치·수치·보류 판정·미실행 설명과 기존 PNG는 초기 검토 `cd074a4da`의 이력이다. 현재 판정은 문서 상단과 보정 후 증적을 따른다.**
 
 [원 PR #7221](https://github.com/edwardkim/rhwp/pull/7221): 수정: 쪼개진 자리차지 표 조각을 문단 상자 상단에 건다 (#7203 분할 갈래)
 관련 [이슈 #7203](https://github.com/edwardkim/rhwp/issues/7203).
