@@ -11,7 +11,7 @@
 //! | 문서 | host `lh`/`ls` | 한/글 기준선 | 저장 vpos+bl | 수정 전 rhwp 줄 위치 차 |
 //! | --- | --- | ---: | ---: | ---: |
 //! | 156403546 | 1100 / −112 | 305.9 | 306.2 | −18.9px |
-//! | 156086935 (대조군) | 1500 / +600 | 305.3 | 305.6 | 0.0 |
+//! | 156451317 (대조군) | 1200 / +480 | 285.8 | 286.0 | 0.0 |
 //!
 //! 이슈 원문서 156467175(10MB, 코퍼스 `korea_downloads/공정거래위원회`, sha256 6b6ba5d4…)는
 //! `ls=-1052` 로 같은 형상이며 수정 전 −11.7px, 수정 후 0.0 이다(한/글 기준선 271.5 / 저장
@@ -24,7 +24,7 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const NEGATIVE: &str = "samples/issue7198/156403546_negative_spacing_host_after_table.hwp";
-const POSITIVE: &str = "samples/issue7198/156086935_positive_spacing_host_after_table.hwp";
+const POSITIVE: &str = "samples/issue7198/156451317_positive_spacing_host_after_table.hwp";
 
 fn first_body_run_y(node: &RenderNode, para_index: usize) -> Option<f64> {
     if let RenderNodeType::TextRun(run) = &node.node_type {
