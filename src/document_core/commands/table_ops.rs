@@ -28,6 +28,19 @@ fn patch_raw_ctrl_field(raw: &mut [u8], range: std::ops::Range<usize>, bytes: &[
     }
 }
 
+/// [#7189] 셀 하나의 크기 조절 요청.
+///
+/// 평면 API 와 경로 API 가 같은 본문을 공유하므로 함수 안이 아니라 모듈 수준에 둔다.
+struct CellResizeUpdate {
+    cell_idx: usize,
+    width_delta: i32,
+    height_delta: i32,
+}
+
+/// 행·열별 독립 셀 경계는 HWP/HWPX 에 편집 의도를 저장할 수 없다.
+const LOCAL_RESIZE_UNSUPPORTED: &str =
+    "행\u{b7}열별 독립 셀 경계는 HWP/HWPX에 편집 의도를 저장할 수 없어 지원하지 않습니다";
+
 impl DocumentCore {
     pub(crate) fn get_table_mut(
         &mut self,
@@ -2144,84 +2157,25 @@ impl DocumentCore {
     /// 여러 셀의 width/height를 한 번에 조절한다 (네이티브).
     ///
     /// json 형식: `[{"cellIdx":0,"widthDelta":150},{"cellIdx":2,"heightDelta":-100}]`
-    pub(crate) fn resize_table_cells_native(
-        &mut self,
-        section_idx: usize,
-        parent_para_idx: usize,
-        control_idx: usize,
-        json: &str,
-    ) -> Result<String, HwpError> {
+    /// [#7189] 셀 크기 조절의 공통 본문 — 표 하나를 받아 갱신하고 리플로우 대상을 돌려준다.
+    ///
+    /// 종전에는 이 계산이 `resize_table_cells_native` 안에 통째로 있어 `(구역, 문단, 컨트롤)`
+    /// 로만 닿는 **최상위 표 전용**이었다. 중첩 표는 그 좌표계로 가리킬 수 없어 studio 의
+    /// 크기 조절이 아예 닿지 못했다. 본문을 `&mut Table` 기준으로 떼어 내 경로 변형과 공유한다.
+    ///
+    /// 반환값은 폭이 바뀐 셀의 `(셀 번호, 문단 수)` — 호출부가 평면/경로에 맞는 리플로우를 건다.
+    fn apply_cell_resize_updates(
+        table: &mut crate::model::table::Table,
+        updates: &[CellResizeUpdate],
+    ) -> Vec<(usize, usize)> {
         const MIN_CELL_SIZE: u32 = 200; // 최소 셀 크기 (HWPUNIT)
 
-        // JSON 배열을 수동 파싱: [{"cellIdx":N,"widthDelta":D,"heightDelta":D}, ...]
-        let trimmed = json.trim();
-        if !trimmed.starts_with('[') || !trimmed.ends_with(']') {
-            return Err(HwpError::RenderError("잘못된 JSON 배열 형식".to_string()));
-        }
-        let inner = &trimmed[1..trimmed.len() - 1];
-
-        // 각 {} 객체를 추출
-        struct CellUpdate {
-            cell_idx: usize,
-            width_delta: i32,
-            height_delta: i32,
-        }
-        let mut updates: Vec<CellUpdate> = Vec::new();
-        let mut force_local_resize = false;
-
-        let mut depth = 0i32;
-        let mut start = 0usize;
-        for (i, ch) in inner.char_indices() {
-            match ch {
-                '{' => {
-                    if depth == 0 {
-                        start = i;
-                    }
-                    depth += 1;
-                }
-                '}' => {
-                    depth -= 1;
-                    if depth == 0 {
-                        let obj = &inner[start..=i];
-                        // cellIdx 파싱
-                        let cell_idx = Self::parse_json_i32(obj, "cellIdx").unwrap_or(-1);
-                        if cell_idx < 0 {
-                            continue;
-                        }
-                        let width_delta = Self::parse_json_i32(obj, "widthDelta").unwrap_or(0);
-                        let height_delta = Self::parse_json_i32(obj, "heightDelta").unwrap_or(0);
-                        let local_resize = json_bool(obj, "localResize") == Some(true);
-                        force_local_resize |= local_resize;
-                        updates.push(CellUpdate {
-                            cell_idx: cell_idx as usize,
-                            width_delta,
-                            height_delta,
-                        });
-                    }
-                }
-                _ => {}
-            }
-        }
-
-        if updates.is_empty() {
-            return Ok("{\"ok\":true}".to_string());
-        }
-
-        if force_local_resize {
-            return Err(HwpError::RenderError(
-                "행·열별 독립 셀 경계는 HWP/HWPX에 편집 의도를 저장할 수 없어 지원하지 않습니다"
-                    .to_string(),
-            ));
-        }
-
-        // 셀 업데이트 적용
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         let original_width = table.common.width;
         let original_height = table.common.height;
         let original_row_height_sum: u32 = table.get_row_heights().iter().sum();
         let mut applied_width_delta: i64 = 0;
         let mut applied_height_delta: i64 = 0;
-        for update in &updates {
+        for update in updates {
             let Some(cell) = table.cells.get_mut(update.cell_idx) else {
                 continue;
             };
@@ -2274,22 +2228,164 @@ impl DocumentCore {
             }
         }
 
-        // 너비가 변경된 셀의 모든 문단에 대해 line_segs 재계산 (텍스트 리플로우)
-        let reflow_cells: Vec<(usize, usize)> = {
-            let para = &self.document.sections[section_idx].paragraphs[parent_para_idx];
-            if let Some(Control::Table(table)) = para.controls.get(control_idx) {
-                updates
-                    .iter()
-                    .filter(|u| u.width_delta != 0)
-                    .filter_map(|u| {
-                        let pc = table.cells.get(u.cell_idx)?.paragraphs.len();
-                        Some((u.cell_idx, pc))
-                    })
-                    .collect()
-            } else {
-                Vec::new()
+        updates
+            .iter()
+            .filter(|u| u.width_delta != 0)
+            .filter_map(|u| Some((u.cell_idx, table.cells.get(u.cell_idx)?.paragraphs.len())))
+            .collect()
+    }
+
+    /// 셀 크기 조절 갱신 목록을 파싱한다 — `[{"cellIdx":N,"widthDelta":D,"heightDelta":D}, ...]`.
+    fn parse_cell_resize_updates(json: &str) -> Result<(Vec<CellResizeUpdate>, bool), HwpError> {
+        let trimmed = json.trim();
+        if !trimmed.starts_with('[') || !trimmed.ends_with(']') {
+            return Err(HwpError::RenderError("잘못된 JSON 배열 형식".to_string()));
+        }
+        let inner = &trimmed[1..trimmed.len() - 1];
+
+        let mut updates: Vec<CellResizeUpdate> = Vec::new();
+        let mut force_local_resize = false;
+        let mut depth = 0i32;
+        let mut start = 0usize;
+        for (i, ch) in inner.char_indices() {
+            match ch {
+                '{' => {
+                    if depth == 0 {
+                        start = i;
+                    }
+                    depth += 1;
+                }
+                '}' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        let obj = &inner[start..=i];
+                        let cell_idx = Self::parse_json_i32(obj, "cellIdx").unwrap_or(-1);
+                        if cell_idx < 0 {
+                            continue;
+                        }
+                        let width_delta = Self::parse_json_i32(obj, "widthDelta").unwrap_or(0);
+                        let height_delta = Self::parse_json_i32(obj, "heightDelta").unwrap_or(0);
+                        let local_resize = json_bool(obj, "localResize") == Some(true);
+                        force_local_resize |= local_resize;
+                        updates.push(CellResizeUpdate {
+                            cell_idx: cell_idx as usize,
+                            width_delta,
+                            height_delta,
+                        });
+                    }
+                }
+                _ => {}
             }
+        }
+        Ok((updates, force_local_resize))
+    }
+
+    /// [#7189] 셀 경로가 가리키는 표를 가변으로 돌려준다.
+    ///
+    /// 읽기 전용 쌍둥이 `resolve_table_by_path` 와 같은 계약이다 — 경로의 **마지막** 항목이
+    /// 표여야 하고 그 표를 돌려준다. 앞부분 순회는 이미 검증된
+    /// `get_cell_paragraph_mut_by_path` 를 그대로 쓴다(표·글상자·그림 캡션을 함께 다룬다).
+    pub(crate) fn resolve_table_mut_by_cell_path(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+    ) -> Result<&mut crate::model::table::Table, HwpError> {
+        let Some(&(control_idx, _, _)) = path.last() else {
+            return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         };
+        if path.len() == 1 {
+            return self.get_table_mut(section_idx, parent_para_idx, control_idx);
+        }
+        let depth = path.len() - 1;
+        let para =
+            self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, &path[..depth])?;
+        match para.controls.get_mut(control_idx) {
+            Some(Control::Table(table)) => Ok(table),
+            _ => Err(HwpError::RenderError(format!(
+                "경로[{}]: controls[{}]가 표가 아닙니다",
+                depth, control_idx
+            ))),
+        }
+    }
+
+    /// [#7189] 중첩 표의 셀 크기를 셀 경로로 조절한다.
+    ///
+    /// 평면 API(`resize_table_cells_native`)는 `(구역, 문단, 컨트롤)` 로 최상위 표만 닿아,
+    /// studio 가 중첩 표 경계를 잡아도 그 셀 번호가 **바깥 표에 적용**됐다. 깊이 1 경로는
+    /// 평면 경로에 그대로 위임한다 — 다른 `*_by_path` 명령과 같은 규약이다.
+    pub fn resize_table_cells_by_cell_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        json: &str,
+    ) -> Result<String, HwpError> {
+        let Some(&(control_idx, _, _)) = path.last() else {
+            return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
+        };
+        if path.len() == 1 {
+            return self.resize_table_cells_native(section_idx, parent_para_idx, control_idx, json);
+        }
+
+        let (updates, force_local_resize) = Self::parse_cell_resize_updates(json)?;
+        if updates.is_empty() {
+            return Ok("{\"ok\":true}".to_string());
+        }
+        if force_local_resize {
+            return Err(HwpError::RenderError(LOCAL_RESIZE_UNSUPPORTED.to_string()));
+        }
+
+        let table = self.resolve_table_mut_by_cell_path(section_idx, parent_para_idx, path)?;
+        let reflow_cells = Self::apply_cell_resize_updates(table, &updates);
+
+        // 리플로우는 **안쪽 셀 폭**을 기준으로 해야 한다 — 바깥 표의 셀 폭이나 본문 폭으로
+        // 다시 재면 중첩 표 글줄이 제 칸을 넘는다. `reflow_cell_paragraph_by_path` 가
+        // `resolve_innermost_cell_metrics` 로 그 폭을 찾는다.
+        let depth = path.len() - 1;
+        let mut inner_path: Vec<(usize, usize, usize)> = path[..depth].to_vec();
+        inner_path.push((control_idx, 0, 0));
+        for (cell_idx, para_count) in reflow_cells {
+            for cell_para_idx in 0..para_count {
+                inner_path[depth] = (control_idx, cell_idx, cell_para_idx);
+                self.reflow_cell_paragraph_by_path(
+                    section_idx,
+                    parent_para_idx,
+                    &inner_path,
+                    cell_para_idx,
+                );
+            }
+        }
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        Ok("{\"ok\":true}".to_string())
+    }
+
+    pub(crate) fn resize_table_cells_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        json: &str,
+    ) -> Result<String, HwpError> {
+        let (updates, force_local_resize) = Self::parse_cell_resize_updates(json)?;
+
+        if updates.is_empty() {
+            return Ok("{\"ok\":true}".to_string());
+        }
+
+        if force_local_resize {
+            return Err(HwpError::RenderError(LOCAL_RESIZE_UNSUPPORTED.to_string()));
+        }
+
+        // 셀 업데이트 적용
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        let reflow_cells = Self::apply_cell_resize_updates(table, &updates);
+
+        // 너비가 변경된 셀의 모든 문단에 대해 line_segs 재계산 (텍스트 리플로우)
         self.reflow_table_cell_paragraphs(section_idx, parent_para_idx, control_idx, &reflow_cells);
 
         self.document.sections[section_idx].raw_stream = None;

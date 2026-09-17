@@ -14,10 +14,24 @@
  * 직접 불러 채움·메모 계약을 검증할 수 있다.
  */
 
+/** `hitTest` 가 주는 셀 경로 한 마디. */
+export interface CellPathStep {
+  controlIndex: number;
+  cellIndex: number;
+  cellParaIndex: number;
+}
+
 export interface TableRef {
   sec: number;
   ppi: number;
   ci: number;
+  /**
+   * [#7189] `hitTest` 의 셀 경로. 깊이 2 이상이면 **중첩 표**다.
+   *
+   * `sec/ppi/ci` 는 경로의 첫 마디, 즉 **최외곽** 표만 가리킨다. 그 값만으로 캐시를 열면
+   * 같은 쪽의 바깥 표와 안쪽 표가 서로를 덮어써, 안쪽 경계 hover 가 바깥 표의 괘선을 본다.
+   */
+  path?: readonly CellPathStep[];
 }
 
 export interface PageScopedBbox {
@@ -32,18 +46,33 @@ export interface CachedTableRef extends TableRef {
 export interface TableBboxCacheHost<B extends PageScopedBbox = PageScopedBbox> {
   wasm: {
     getTableCellBboxes(sec: number, ppi: number, ci: number, pageHint?: number): B[];
+    /** [#7189] 중첩 표 전용. 깊이 2 이상 경로에서만 부른다. */
+    getTableCellBboxesByPath(sec: number, ppi: number, pathJson: string): B[];
   };
   cachedTableRef: CachedTableRef | null;
   cachedCellBboxes: B[] | null;
   tableBboxFetchFailures: Set<string>;
 }
 
+/**
+ * [#7189] 캐시·실패 메모의 신원. 경로를 빼면 같은 쪽의 바깥/안쪽 표가 한 칸을 다툰다.
+ *
+ * 깊이 1 경로와 경로 없음은 **같은 표**다 — 평면 API 가 가리키는 최외곽 표이므로 같은
+ * 키를 써야 캐시가 쪼개지지 않는다.
+ */
+export function tableIdentity(tableRef: TableRef): string {
+  const base = `${tableRef.sec}:${tableRef.ppi}:${tableRef.ci}`;
+  const path = tableRef.path;
+  if (!path || path.length <= 1) return base;
+  return `${base}|${path.map((s) => `${s.controlIndex}.${s.cellIndex}.${s.cellParaIndex}`).join('/')}`;
+}
+
 function sameTable(a: TableRef, b: TableRef): boolean {
-  return a.sec === b.sec && a.ppi === b.ppi && a.ci === b.ci;
+  return tableIdentity(a) === tableIdentity(b);
 }
 
 function failureKey(tableRef: TableRef, pageIdx: number): string {
-  return `${tableRef.sec}:${tableRef.ppi}:${tableRef.ci}:${pageIdx}`;
+  return `${tableIdentity(tableRef)}:${pageIdx}`;
 }
 
 /** 성공한 bbox 조회를 한 번에 기록하고, 같은 범위의 과거 실패를 해제한다. */
@@ -91,7 +120,12 @@ export function ensureTableCellBboxCache<B extends PageScopedBbox>(
   }
 
   try {
-    const bboxes = host.wasm.getTableCellBboxes(tableRef.sec, tableRef.ppi, tableRef.ci, pageIdx);
+    // [#7189] 중첩 표는 평면 좌표계로 가리킬 수 없다 — 경로 API 로 물어야 안쪽 표의
+    // 괘선이 나온다. 깊이 1 은 평면 질의가 페이지 힌트까지 받으므로 그대로 둔다.
+    const path = tableRef.path;
+    const bboxes = path && path.length > 1
+      ? host.wasm.getTableCellBboxesByPath(tableRef.sec, tableRef.ppi, JSON.stringify(path))
+      : host.wasm.getTableCellBboxes(tableRef.sec, tableRef.ppi, tableRef.ci, pageIdx);
     if (bboxes && bboxes.length > 0) {
       return cacheTableCellBboxes(host, tableRef, pageIdx, bboxes);
     }

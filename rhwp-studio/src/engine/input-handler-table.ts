@@ -453,12 +453,24 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
       kind: 'snapshot',
       operationType: 'resizeTableCells',
       operation: (wasm: any) => {
-        wasm.resizeTableCells(
-          state.tableRef.sec,
-          state.tableRef.ppi,
-          state.tableRef.ci,
-          updates,
-        );
+        // [#7189] 중첩 표는 경로로 확정한다. 평면 API 는 `(sec, ppi, ci)` 로 최외곽 표만
+        // 가리켜, 안쪽 표에서 얻은 셀 번호가 **바깥 표에 적용**된다.
+        const path = state.tableRef.path;
+        if (path && path.length > 1) {
+          wasm.resizeTableCellsByPath(
+            state.tableRef.sec,
+            state.tableRef.ppi,
+            JSON.stringify(path),
+            updates,
+          );
+        } else {
+          wasm.resizeTableCells(
+            state.tableRef.sec,
+            state.tableRef.ppi,
+            state.tableRef.ci,
+            updates,
+          );
+        }
         return this.cursor.getPosition();
       },
     });
