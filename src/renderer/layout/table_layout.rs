@@ -12560,6 +12560,114 @@ impl LayoutEngine {
         (line_spacing + paragraph_spacing).min(previous_unit.height.max(0.0))
     }
 
+    /// [#7203] 저장 사다리가 **같은 문단 안에서** 되감기는 조각 경계의 트림.
+    ///
+    /// 위 `native_multirow_saved_reset_trailing_trim` 은 **문단 경계** reset 만 본다.
+    /// 한/글은 문단 중간에서도 쪽을 넘기며(`ls[i].vpos > 0` → `ls[i+1].vpos = 0`),
+    /// 그 경계의 마지막 줄도 같은 계약을 받는다 — 조각 상자는 그 줄의 **줄 높이**에서
+    /// 끝나고 뒤따르는 줄간격은 다음 쪽의 것이다.
+    ///
+    /// 문서 자신이 그렇게 말한다. `hwpctl_API_v2.4` pi=1274 의 1×1 RowBreak 칸은
+    /// 셀 줄이 `0 · 1600 · 3200` 뒤 `0` 으로 되감기고, 표의 선언 높이는 4482HU 다.
+    ///
+    /// ```text
+    ///   pad 141 + 1600 + 1600 + lh 1000 + pad 141 = 4482 HU   (= 선언 높이)
+    ///   pad 141 + 1600 + 1600 + 1600    + pad 141 = 5082 HU   (트림 없이 요구한 값)
+    /// ```
+    ///
+    /// 정본도 같다(`pdf/hwpctl_API_v2.4-hwp-2020.pdf` 52쪽): 조각 상자
+    /// `940.73~1000.51` = 59.78px = 4482HU, 안에 세 줄(빈 줄 + 코드 2줄)이 들어간다.
+    /// 트림이 없으면 세 줄이 예산을 0.32px 넘겨 마지막 줄을 잃고, 그 줄이 뒤로 밀려
+    /// 두 줄짜리 고아 쪽을 만든다.
+    ///
+    /// 문단이 끝나지 않으므로 `spacing_after` 는 더하지 않는다 — 줄간격만 트림한다.
+    fn native_intra_para_saved_reset_trailing_trim(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        end_cut: usize,
+        consumed_before_px: f64,
+        last_unit_height_px: f64,
+    ) -> f64 {
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || !matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            || end_cut == 0
+            || end_cut >= units.len()
+        {
+            return 0.0;
+        }
+
+        let previous_unit = &units[end_cut - 1];
+        let next_unit = &units[end_cut];
+        // 같은 문단의 **이웃한 두 줄**만 다룬다. 문단 경계 reset 은 위 helper 의 계약이다.
+        if !next_unit.hard_break_before
+            || next_unit.para_idx != previous_unit.para_idx
+            || previous_unit.vis_end != next_unit.vis_start
+            || previous_unit.vis_start >= previous_unit.vis_end
+        {
+            return 0.0;
+        }
+        let Some(para) = cell.paragraphs.get(previous_unit.para_idx) else {
+            return 0.0;
+        };
+        if !para.controls.is_empty() {
+            return 0.0;
+        }
+        let Some(previous_seg) = para.line_segs.get(previous_unit.vis_end - 1) else {
+            return 0.0;
+        };
+        let Some(next_seg) = para.line_segs.get(next_unit.vis_start) else {
+            return 0.0;
+        };
+        if previous_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || previous_seg.vertical_pos <= 0
+            || next_seg.vertical_pos > 0
+        {
+            return 0.0;
+        }
+
+        let trim = hwpunit_to_px(previous_seg.line_spacing.max(0), self.dpi)
+            .min(previous_unit.height.max(0.0));
+        if trim <= 0.0 {
+            return 0.0;
+        }
+
+        // 문단 안 되감김은 **물리 쪽 프레임**일 수도, 공간이 남은 **로컬 재시작**일
+        // 수도 있다(기계 문서의 촘촘한 리셋 — `#1658` 낭비 쪽 회귀의 근거). 둘을
+        // 가르는 것은 문서 자신이다: 저장 `common.height` 는 이 형상에서 **첫 물리
+        // 조각의 상자**를 담고 있으므로, 트림을 적용한 조각 상자가 그 선언 높이와
+        // 같을 때만 그 되감김이 쪽 프레임이라고 인정한다.
+        //
+        //   pad 141 + 1600 + 1600 + lh 1000 + pad 141 = 4482 HU = 선언 높이  (일치)
+        //   pad 141 + 1600 + 1600 + 1600    + pad 141 = 5082 HU             (트림 없이)
+        //
+        // 이 동일성은 컷이 **첫 조각**일 때만 성립한다(`consumed_before_px` 가 셀
+        // 시작부터 누적된 값이어야 상자가 선언 높이와 맞는다) — 이어받는 조각에는
+        // 저절로 적용되지 않는다.
+        let declared_box = hwpunit_to_px(signed_hwpunit(table.common.height), self.dpi);
+        if declared_box <= 0.0 {
+            return 0.0;
+        }
+        let padding = hwpunit_to_px(i32::from(cell.padding.top), self.dpi)
+            + hwpunit_to_px(i32::from(cell.padding.bottom), self.dpi);
+        let fragment_box = consumed_before_px + (last_unit_height_px - trim).max(0.0) + padding;
+        if (fragment_box - declared_box).abs() > 0.5 {
+            return 0.0;
+        }
+
+        trim
+    }
+
     /// [#5920] 중첩 표만 든 문단 유닛에서 **상자 아래 보이지 않는 이송 여백**.
     ///
     /// 가시 텍스트 없이 표 control 만 든 문단의 유닛 높이는
@@ -13689,6 +13797,20 @@ impl LayoutEngine {
                         j + 1,
                         styles,
                     );
+                    // [#7203] 문단 안 저장 되감김도 같은 계약을 받는다. 위 문단 경계
+                    // 트림이 0 인 경우에만 묻는다 — 두 신호가 겹칠 수는 없다.
+                    let trailing_trim = if trailing_trim > 0.0 {
+                        trailing_trim
+                    } else {
+                        self.native_intra_para_saved_reset_trailing_trim(
+                            table,
+                            cell,
+                            &units,
+                            j + 1,
+                            h,
+                            u.height,
+                        )
+                    };
                     if trailing_trim > 0.0 && h + u.height - trailing_trim <= avail_height + 0.5 {
                         h += (u.height - trailing_trim).max(0.0);
                         j += 1;
