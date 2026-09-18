@@ -1,7 +1,7 @@
 //! [#6925] 감싼 칸 안의 **빈 문단이 저장 슬롯만큼 자리를 차지한다** — 접으면 뒤 문단이
 //! 문단마다 12~17px 씩 위로 당겨져 한 쪽 안에서 67.3px 이 쌓인다.
 //!
-//! `samples/issue6925/148751598_paragraph_spacing_drift.hwp` 1쪽 본문은 전부 1행×1열
+//! `samples/issue6924/148751598-briefing.hwp` 1쪽 본문은 전부 1행×1열
 //! 감싼 표 안에 있고, 그 칸의 빈 문단은 저장 사다리가 자기 슬롯(`lh + ls`)만큼 전진한다.
 //!
 //! ```text
@@ -23,7 +23,7 @@ use std::path::Path;
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-const FIXTURE: &str = "samples/issue6925/148751598_paragraph_spacing_drift.hwp";
+const FIXTURE: &str = "samples/issue6924/148751598-briefing.hwp";
 
 /// 한/글 2020 PDF 1쪽 실측 y (px, 96dpi 환산).
 const ORACLE: &[(&str, f64)] = &[

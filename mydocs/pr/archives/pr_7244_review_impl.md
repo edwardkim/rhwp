@@ -86,7 +86,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 
 ## 검증 입력 커밋 원장
 
-아래는 최초 검토 시점 `30b9cca953848cb03dd16fcff6c7a548007ce623`의 입력 원장이다. #7251 기준 PDF는 이후 `a165bd4bf`에서 정상 재변환본으로 교체했으며 최신 해시는 개별 review에 기록했다. 나머지 원본 bytes는 유지한다. 커밋된 원본·기존 PDF를 그대로 재사용한다. #7259 신규 PDF만 같은 commit에서 추가했으며 124,290 bytes, 1쪽이다. 저장 metadata `hancom-office-2010` / `8.5.8.1677`을 확인하여 engine 2020으로 start → status(succeeded, 23초) → download했다. PDF Creator `Hwp 2020 0.0.0.0`, Producer `Hancom PDF 1.3.0.550`, 생성 KST 2026-09-18 14:54:18. PDF 1.4 버전 자체를 검토 제한으로 삼지 않는다.
+아래는 최초 검토 시점 `30b9cca953848cb03dd16fcff6c7a548007ce623`의 입력 원장이다. #7251 기준 PDF는 이후 `a165bd4bf`에서 정상 재변환본으로 교체했으며 최신 해시는 개별 review에 기록했다. #7255의 새 경로 HWP는 기존 issue6924 HWP와 동일하여 중복을 제거하고 기존 한컴 PDF를 재사용했다. 아래 두 행은 최종 정본 경로·해시로 갱신했다. 다른 원본 bytes는 유지한다. 커밋된 원본·기존 PDF를 그대로 재사용한다. #7259 신규 PDF만 같은 commit에서 추가했으며 124,290 bytes, 1쪽이다. 저장 metadata `hancom-office-2010` / `8.5.8.1677`을 확인하여 engine 2020으로 start → status(succeeded, 23초) → download했다. PDF Creator `Hwp 2020 0.0.0.0`, Producer `Hancom PDF 1.3.0.550`, 생성 KST 2026-09-18 14:54:18. PDF 1.4 버전 자체를 검토 제한으로 삼지 않는다.
 
 | 입력/기준 경로 | SHA-256 |
 | --- | --- |
@@ -106,8 +106,8 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 | [samples/issue1891_external_bindata_link.hwpx](../../../samples/issue1891_external_bindata_link.hwpx) | `ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924` |
 | [samples/issue6202/156483689-turmeric-industry-standardization.hwp](../../../samples/issue6202/156483689-turmeric-industry-standardization.hwp) | `bd24e80fda9e298ffb05dcdb64c22752a4ed78716b358076db26b2e721e41dc4` |
 | [samples/issue6800/1192000-202100017-policy-research-report.hwp](../../../samples/issue6800/1192000-202100017-policy-research-report.hwp) | `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee` |
-| [samples/issue6925/148751598_paragraph_spacing_drift-2020.pdf](../../../samples/issue6925/148751598_paragraph_spacing_drift-2020.pdf) | `5fee84cb826d29776808c28051e86ecee29b6b0dd8a51612b1a215d3d51b3d40` |
-| [samples/issue6925/148751598_paragraph_spacing_drift.hwp](../../../samples/issue6925/148751598_paragraph_spacing_drift.hwp) | `03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610` |
+| [pdf/148751598-briefing-2020.pdf](../../../pdf/148751598-briefing-2020.pdf) | `98ce52ec0a6ed25ba73070b22c743cb72d129113456ae3019f417d1b53ee9dd3` |
+| [samples/issue6924/148751598-briefing.hwp](../../../samples/issue6924/148751598-briefing.hwp) | `03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610` |
 | [samples/issue7062/tac_object_host_line_height.hwp](../../../samples/issue7062/tac_object_host_line_height.hwp) | `2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb` |
 | [samples/issue7190/3011411_tac_picture_second_line.hwpx](../../../samples/issue7190/3011411_tac_picture_second_line.hwpx) | `02053a3e690a008ba1045d3ffc151d38fd25567eb518d5e713a6ebb3b721edbd` |
 | [samples/issue7232/cell_align_justify-2020.pdf](../../../samples/issue7232/cell_align_justify-2020.pdf) | `825ebaf02e78e2eacd572638b767fd3a98e87536a303662ff7bd5bfc8367beeb` |

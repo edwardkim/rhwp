@@ -9,11 +9,33 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**승인** — 2026-09-18 통합 검토.
+**메인터너 보정 후 수용 가능** — 기존 입력·PDF 재사용 보정, 통합 최종 게이트 대기.
 
 대상 1쪽의 누적 위쪽 밀림이 개선되고 독립 PDF 위치를 검사하는 focused가 통과했다. #7253의 첫 노드 검사와 충돌하나, 빈 TextLine이 있다는 것만으로 제품 오류라고 판단하지 않는다.
 
 대상 빈 슬롯 보존 변경은 승인한다. #7253 통합 검사 충돌과 다른 보류 해결 및 최종 head CI 전 merge하지 않는다.
+
+## 메인터너 보정: 기존 입력·기준 PDF 재사용
+
+최종 입력 점검에서 신규 `samples/issue6925/148751598_paragraph_spacing_drift.hwp`가
+기존 [samples/issue6924/148751598-briefing.hwp](../../../samples/issue6924/148751598-briefing.hwp)와
+동일 Git blob임을 확인했다. 검사를 기존 경로로 통일하고 중복 HWP 및 그 경로만을 위한
+IR baseline 두 행을 제거한다. 기존 경로의 검사와 baseline은 보존한다.
+HWP SHA-256은 `03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610`로 같다.
+
+기준도 이미 검증된 [pdf/148751598-briefing-2020.pdf](../../../pdf/148751598-briefing-2020.pdf)를
+재사용한다. Creator `Hwp 2022 0.0.0.0`, PDF 1.6, 6쪽,
+SHA-256 `98ce52ec0a6ed25ba73070b22c743cb72d129113456ae3019f417d1b53ee9dd3`.
+PDF 버전·Creator 연도로 배제하지 않고 동일 원문과 정상 출력임을 확인했다.
+새 이름의 추가 PDF는 최종 diff에서 제거한다. 아래 최초 비교는 당시 PDF 기록이며
+최종 comment는 다음 기존 기준의 최신 compare·review·overlay를 사용한다.
+
+| 쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| 1 | [compare](../assets/pr7255_review/maintainer_dedup_20260918/native_compare_001.png) · [overlay](../assets/pr7255_review/maintainer_dedup_20260918/native_overlay_001.png) · [review](../assets/pr7255_review/maintainer_dedup_20260918/native_review_001.png) | [compare](../assets/pr7255_review/maintainer_dedup_20260918/wasm_compare_001.png) · [overlay](../assets/pr7255_review/maintainer_dedup_20260918/wasm_overlay_001.png) · [review](../assets/pr7255_review/maintainer_dedup_20260918/wasm_review_001.png) |
+| 2 | [compare](../assets/pr7255_review/maintainer_dedup_20260918/native_compare_002.png) · [overlay](../assets/pr7255_review/maintainer_dedup_20260918/native_overlay_002.png) · [review](../assets/pr7255_review/maintainer_dedup_20260918/native_review_002.png) | [compare](../assets/pr7255_review/maintainer_dedup_20260918/wasm_compare_002.png) · [overlay](../assets/pr7255_review/maintainer_dedup_20260918/wasm_overlay_002.png) · [review](../assets/pr7255_review/maintainer_dedup_20260918/wasm_review_002.png) |
+
+재사용 기준의 p1·p2를 직접 판독했고 Native/WASM 2/2 PNG가 동일하다. 빈 슬롯 보존의 개선과 기존 글꼴·공통 원점 차이를 구분한다. 입력 경로 변경 후 #6925 1/1, 기존 #6924 대조 2/2, IR baseline 4/4 통과(exit 0). IR 실행의 한 검사에는 nextest `leaky` 표지가 있었으며 실패로 종료되지 않았다. 불필요한 중복 입력을 제거했고 기존 경로의 검사는 유지했다.
 
 ## Metadata·체리픽 provenance
 
@@ -75,11 +97,11 @@ CLI Native SVG와 fresh WASM SVG를 각각 Chrome webfont 경로로 캡처했다
 
 ## Merge 후 contributor PR comment 계획
 
-현재 게시·merge 승인으로 간주하지 않는다. 보류 해제와 최종 head CI 및 통합 merge 이후 실제 merge SHA·통합 PR·CI URL·수정 계약·실제 검증 범위·잔여 차이를 한국어로 설명하고 기여에 감사한다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 연결한다.
+작업지시자의 PR·CI·merge·후속 처리 승인을 받았다. 최종 head CI 및 통합 merge 이후 실제 merge SHA·통합 PR·CI URL·수정 계약·실제 검증 범위·잔여 차이를 한국어로 설명하고 기여에 감사한다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 연결한다.
 
-- empty_slot: 위 p1, p2의 Native/WASM review와 **각 standalone overlay**를 코멘트에 실제 이미지로 포함한다.
+- empty_slot: 기존 기준 PDF로 다시 캡처한 `maintainer_dedup_20260918` p1, p2의 Native/WASM review와 **각 standalone overlay**를 코멘트에 실제 이미지로 포함한다.
 
-URL 형식 예: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7255_review/wasm_empty_slot_overlay_001.png`. `<merge-commit-sha>`는 게시 전 실제 값으로 치환한다. UTF-8 파일과 `gh ... --body-file`로 게시하고 API 재조회로 한국어·실제 head·모든 이미지 URL을 확인한다.
+URL 형식 예: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7255_review/maintainer_dedup_20260918/wasm_overlay_001.png`. `<merge-commit-sha>`는 게시 전 실제 값으로 치환한다. UTF-8 파일과 `gh ... --body-file`로 게시하고 API 재조회로 한국어·실제 head·모든 이미지 URL을 확인한다.
 
 ## 이슈·다음 단계
 
