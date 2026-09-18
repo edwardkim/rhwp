@@ -1,0 +1,84 @@
+---
+kind: snapshot
+status: historical
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-09-18
+---
+
+# PR #7251 검토
+
+## 최종 판정
+
+**머지 보류** — 2026-09-18 통합 검토.
+
+[P2] 2쪽 기준 PDF의 리더가 사각형 글리프로 출력되어 실제 점 채움의 독립 시각 기준으로 부적절하다. 또한 line_overflow_is_leader_fill은 내부 리더도 제거해 폭을 계산하지만 trim_leader_fill_overflow는 run 끝의 리더만 제거한다. 같은 run 안의 제목....쪽번호 조합에 대한 실제 출력 검사가 없다.
+
+정상 글리프를 가진 독립 PDF를 확보하고 run 내부·끝 리더, 제목·쪽번호가 한 run인 경계를 검증한다. overflow 판정과 실제 trim 대상이 같은 문자 구간을 사용하도록 확인한다.
+
+## Metadata·체리픽 provenance
+
+| 항목 | 값 |
+| --- | --- |
+| 원 PR | [#7251](https://github.com/edwardkim/rhwp/pull/7251) — 수정: 차례 칸의 점 채움 줄을 저장대로 한 줄로 두고 넘치는 점만 끊는다 (#6802) |
+| 작성자·reviewer | planet6897 / jangster77 (검토 전 지정) |
+| 원 base·head | `devel` / `40fd97a62606c0525f50c37f6f5b18310d04d5c7` |
+| 규모 | 4 files, +331 / -5 |
+| 조회 당시 mergeability | `MERGEABLE` / `CLEAN` — 참고 snapshot |
+| 통합 base | `18a9fa85e955c220e5eb4d0143dc918a4de6be73` |
+| 로컬 branch | `codex/planet-review-20260918` |
+| 검증 제품 코드 | `66015f64ba89618d03ce9e5ea9774a9e54860c4f` |
+| 형식·주석·PDF 보존 | `30b9cca953848cb03dd16fcff6c7a548007ce623` — 실행 의미 변경 없음 |
+
+| 적용 source commit | 로컬 commit |
+| --- | --- |
+| `40fd97a62606c0525f50c37f6f5b18310d04d5c7` | `a63d7a351b868b49c5244c9814d8792ae9f8aee0` |
+
+원 head CI는 성공/skip/neutral 상태이며 통합 head CI를 대신하지 않는다. 재조회에서 원 head가 동일함을 확인했다. [CI 1](https://github.com/edwardkim/rhwp/actions/runs/35282349689) · [CI 2](https://github.com/edwardkim/rhwp/actions/runs/35282349658) · [CI 3](https://github.com/edwardkim/rhwp/actions/runs/35282349156) · [CI 4](https://github.com/edwardkim/rhwp/actions/runs/35282349696) · [CI 5](https://github.com/edwardkim/rhwp/actions/runs/35282349657) · [CI 6](https://github.com/edwardkim/rhwp/actions/runs/35282349274)
+
+## 범위·조판 계약 검토
+
+관련 이슈: [#6802](https://github.com/edwardkim/rhwp/issues/6802). 차례 리더 때문에 저장 줄을 재래핑하지 않고 넘는 리더 display_text를 줄인다.
+
+저장 줄 수용 → 재래핑 생략 → display_text 절삭 → paint 흐름이다. 원 text는 남지만 화면에서 문자를 제거하는 분기이므로 제목·쪽번호 보존과 실제 점 채움 기준이 필요하다. 현재 3건의 대상 표본 통과만으로 모든 리더 위치를 승인하지 않는다.
+
+주요 소비 경로: [src/renderer/composer.rs](../../../src/renderer/composer.rs).
+
+파일명·문서 ID에 따른 제품 분기를 추가하지 않았다. 저장 정보/재조판·음성 대조·최종 paint 적용 범위의 미검증은 위 판정에 명시했다. 분할·이어받기가 범위에 없는 PR에는 해당 체크를 적용하지 않았다.
+
+## 실행한 검증과 한계
+
+- 통합 제품의 `issue_6802_cell_leader_fill_stored_line`: **3 tests run: 3 passed, 161 skipped**.
+- Native CLI build, fresh WASM build, 수정 후 fmt: 통과. Studio TypeScript 및 renderer 단위 검사 64개 통과.
+- 전체 기록: [공동 실행·검증·입력 원장](pr_7244_review_impl.md). 원 PR의 전체 회귀 통과는 작성자/CI 증거이고 이번 로컬 재실행으로 세지 않는다.
+- 전체 nextest·Clippy 3종·Native Skia 전체 게이트는 통합 focused/시각 보류가 확인되어 아직 실행하지 않았다. 승인 PR도 통합 최종 head의 필수 gate 완료 전 merge-ready가 아니다.
+
+2쪽의 5개 차례 항목은 단일 줄로 정리됐고 겹침은 사라졌다. PDF의 사각형 리더와 rhwp의 점은 명백히 달라, 자동 flag 0을 시각 일치로 읽지 않았다.
+
+## 검증 입력 커밋 확인
+
+**충족** — 파일로 사용한 입력/PDF는 `30b9cca953848cb03dd16fcff6c7a548007ce623`에서 실제 blob과 로컬 bytes를 대조했다. 경로·SHA-256은 [공동 입력 원장](pr_7244_review_impl.md#검증-입력-커밋-원장)에 있다. 코드가 메모리에서 생성·소비하는 문서는 별도 중복 fixture를 만들지 않았다. 기존 커밋된 HWP/HWPX/PDF를 재명명하지 않았다.
+
+## Visual Sweep 증적
+
+CLI Native SVG와 fresh WASM SVG를 각각 Chrome webfont 경로로 캡처했다. 이것은 Native Skia raster나 Studio CanvasKit 화면 캡처가 아니다. `fidelity_compare --text-only --export-all-svg --layout-ledger` 전쪽 원장을 산출해 후보를 확인했다. 아래 자동 flag와 ink-match는 보조 지표이며 시각 승인 그 자체가 아니다.
+
+| 입력 | 쪽 | Native flag / 평균 ink-match | WASM flag / 평균 ink-match |
+| --- | --- | --- | --- |
+| toc_leader | 1, 2 | 0 / 12.38% | 0 / 12.21% |
+
+| 증적 | Native | fresh WASM |
+| --- | --- | --- |
+| toc_leader p1 | [compare](../assets/pr7251_review/native_toc_leader_compare_001.png) · [overlay](../assets/pr7251_review/native_toc_leader_overlay_001.png) · [review](../assets/pr7251_review/native_toc_leader_review_001.png) | [compare](../assets/pr7251_review/wasm_toc_leader_compare_001.png) · [overlay](../assets/pr7251_review/wasm_toc_leader_overlay_001.png) · [review](../assets/pr7251_review/wasm_toc_leader_review_001.png) |
+| toc_leader p2 | [compare](../assets/pr7251_review/native_toc_leader_compare_002.png) · [overlay](../assets/pr7251_review/native_toc_leader_overlay_002.png) · [review](../assets/pr7251_review/native_toc_leader_review_002.png) | [compare](../assets/pr7251_review/wasm_toc_leader_compare_002.png) · [overlay](../assets/pr7251_review/wasm_toc_leader_overlay_002.png) · [review](../assets/pr7251_review/wasm_toc_leader_review_002.png) |
+
+## Merge 후 contributor PR comment 계획
+
+현재 게시·merge 승인으로 간주하지 않는다. 보류 해제와 최종 head CI 및 통합 merge 이후 실제 merge SHA·통합 PR·CI URL·수정 계약·실제 검증 범위·잔여 차이를 한국어로 설명하고 기여에 감사한다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 연결한다.
+
+- toc_leader: 위 p1, p2의 Native/WASM review와 **각 standalone overlay**를 코멘트에 실제 이미지로 포함한다.
+
+URL 형식 예: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7251_review/wasm_toc_leader_overlay_001.png`. `<merge-commit-sha>`는 게시 전 실제 값으로 치환한다. UTF-8 파일과 `gh ... --body-file`로 게시하고 API 재조회로 한국어·실제 head·모든 이미지 URL을 확인한다.
+
+## 이슈·다음 단계
+
+#6802 전체 종료 금지. 이번 표시 절삭의 정확한 경계를 확인한 후 판단한다. 원 PR/이슈의 원격 상태는 이번 검토로 변경하지 않았다. 충돌·실행 순서·후속 단계는 [공동 실행 기록](pr_7244_review_impl.md)을 따른다.
