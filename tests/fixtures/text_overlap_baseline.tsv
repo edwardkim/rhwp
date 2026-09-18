@@ -161,7 +161,9 @@ task2093/1192000_hydrogen_policy_research.hwp	1
 task2097/21217935_simsa_jipyo.hwp	75
 task2097/75544_pii_bunseok.hwpx	8
 task2279/36404953_gyeoljae.hwpx	1
-task2287/1342000_edu_curriculum_map.hwp	94
+# #7226: 걸침 전용 행의 이중 소유를 없애 이 문서의 겹침이 29건 줄었다
+# (devel 236a601da 실측 68 → 수정 후 39). 천장은 같은 여유를 두고 94 → 65.
+task2287/1342000_edu_curriculum_map.hwp	65
 task2430/1382000_domestic_violence_survey.hwp	18
 task3307/issue3307_outline_number.hwpx	3
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	58
