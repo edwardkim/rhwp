@@ -449,10 +449,10 @@ libtest 동시성을 현재 host에 맞춰 조정해야 하면 Cargo 옵션 뒤�
 필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
 사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
 
-## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — 코퍼스 래칫 여섯
+## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — 코퍼스 래칫 일곱
 
 samples 아래 HWP 또는 HWPX fixture를 새로 추가·교체·이동하면 renderer 변경 여부와 무관하게 PR 생성 또는
-draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 여섯이고, 그중 **넷은 `samples/` 를 스스로 훑기 때문에
+draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 일곱이고, 그중 **다섯은 `samples/` 를 스스로 훑기 때문에
 파일을 놓는 순간 "신규 발생(baseline 없음)" 으로 실패한다.**
 
 | 래칫 | fixture | 대상 선정 | 새 sample 이 즉시 걸리나 |
@@ -461,14 +461,15 @@ draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 여섯이고, �
 | `overflow_cell_baseline` | `tests/fixtures/overflow_cell_baseline.tsv` | `samples/` 전수 | **예** |
 | `off_canvas_baseline` | `tests/fixtures/off_canvas_baseline.tsv` | `samples/` 전수 | **예** |
 | `text_overlap_baseline` | `tests/fixtures/text_overlap_baseline.tsv` | `samples/` 전수 | **예** |
+| `body_overflow_baseline` | `tests/fixtures/body_overflow_baseline.tsv` | `samples/` 전수 | **예** |
 | `oracle_page_count_baseline` | `tests/fixtures/oracle_page_count_baseline.tsv` | 그 TSV 의 행만 순회 | 아니오 (아래 참조) |
 | `clipping_baseline` | `tests/fixtures/clipping_baseline.tsv` | `tests/fixtures/render_page_controlset.tsv` | 아니오 (아래 참조) |
 
-넷을 한 번에 돌리는 필터다. `oracle_page_count` 도 함께 걸어 두면 쪽수 회귀를 같이 본다.
+다섯을 한 번에 돌리는 필터다. `oracle_page_count` 도 함께 걸어 두면 쪽수 회귀를 같이 본다.
 
 ~~~bash
 cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast -E \
- 'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|oracle_page_count/)'
+ 'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|body_overflow_does_not_grow|oracle_page_count/)'
 ~~~
 
 > ⚠ **`clipping_gate.py` 는 클론만으로는 아무것도 검사하지 못한다.**
@@ -502,9 +503,9 @@ cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-r
   같다는 보장이 없으므로, **리베이스 없이 감소분으로 래칫을 조이지 않는다.** 실측만 PR 에 적는다.
 - 행을 추가·갱신하면 문서 경로·SHA-256·수치·판정 근거를 review 문서에 적는다.
 
-### `samples/` 를 훑는 넷의 dump 재생성
+### `samples/` 를 훑는 다섯의 dump 재생성
 
-`off_canvas`·`overflow_cell`·`text_overlap` 은 16개 partition test 가 병렬로 dump 를 쓰므로,
+`off_canvas`·`overflow_cell`·`text_overlap`·`body_overflow` 는 16개 partition test 가 병렬로 dump 를 쓰므로,
 지정한 경로가 아니라 `<경로>.part00-of16` 부터 `.part15-of16` 까지를 이어 붙여 비교한다.
 파일 안의 행 순서는 판정에 영향이 없다(래칫이 경로→건수 map 으로 읽는다).
 
@@ -514,6 +515,7 @@ cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-r
 | `overflow_cell_baseline` | `RHWP_OVERFLOW_CELL_DUMP` |
 | `off_canvas_baseline` | `RHWP_OFF_CANVAS_DUMP` |
 | `text_overlap_baseline` | `RHWP_TEXT_OVERLAP_DUMP` |
+| `body_overflow_baseline` | `RHWP_BODY_OVERFLOW_DUMP` |
 
 ### 정답지 PDF 를 함께 넣었다면 — `oracle_page_count_baseline`
 
