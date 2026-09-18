@@ -14313,7 +14313,9 @@ impl LayoutEngine {
                     || hwp5_page_scale_cross_para_reset
                     || shared_empty_frame;
                 if j > start
-                    && (u.hard_break_before || hwp5_page_scale_cross_para_reset || shared_empty_frame)
+                    && (u.hard_break_before
+                        || hwp5_page_scale_cross_para_reset
+                        || shared_empty_frame)
                     && (strict_saved_frame_break
                         || ((rewind_internal_hard_break_orphan
                             || !relaxed_hard_break

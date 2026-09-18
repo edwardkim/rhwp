@@ -1422,9 +1422,9 @@ impl SkiaLayerRenderer {
                                     // 510.72)로 그려진다. SVG backend 의
                                     // `ImageFillMode::Zoom | ImageFillMode::None` 팔과 같은
                                     // 결과가 되도록 여기서 contain 유형으로 해석한다.
-                                    // 쪽 배경 경로(이 파일의 다른 draw_image 호출)는 종전
-                                    // 늘려 채우기를 유지한다 — 그 축은 정답지를 확인하지
-                                    // 않았고, SVG 쪽 배경 경로도 늘려 채우기다.
+                                    // 통합된 #7244의 쪽 배경 None도 draw_image의 별도
+                                    // None 분기를 통해 contain으로 그린다. 쪽 배경의 독립
+                                    // 한컴 기준 출력 검증 여부는 PR 검토 기록에서 구분한다.
                                     image.fill_mode.map(|mode| {
                                         use crate::model::style::ImageFillMode;
                                         if mode == ImageFillMode::None {
