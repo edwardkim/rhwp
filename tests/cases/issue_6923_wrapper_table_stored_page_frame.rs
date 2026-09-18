@@ -29,17 +29,25 @@
 //! (한/글 2020 11.0.0.9136, 7쪽). 4쪽은 법조문 표(`1. 거짓·과장의표시·광고`)에서 끝나고
 //! **5쪽이 `4 기대효과 및 향후계획` 제목으로 시작**한다.
 //!
+//! ## 중첩 표의 저장 줄 소속 (같은 이슈의 둘째 축)
+//!
+//! 한/글이 저장한 사다리는 표를 소유한 줄을 따로 적는다(p69: ls[0] 49113HU 글줄 ·
+//! ls[1] 51229HU 표 밴드). 종전 렌더는 문단 첫 줄 좌표에 표를 앉혀 앞 글줄 위로
+//! 28.2px 올라왔다 — 4쪽 `□ 적용법조` 줄(735.0..753.7)과 법조문 표(740.0)가 겹쳤다
+//! (글자 겹침 13건). 정본은 그 둘을 34.8px 띄운다(줄 765.9px · 표 800.7px).
+//! 저장 델타(33.3px)를 더해 앉히면 겹침이 사라진다.
+//!
 //! ## 이 시험이 잠그지 않는 것
 //!
-//! 4쪽 `□ 적용법조` 줄과 그 아래 법조문 표가 아직 겹친다(글자 겹침 13건) — 중첩 표의 상단이
-//! 저장 줄 소속(ls[1] 683.1px)이 아니라 host 줄(ls[0] 654.8px)에서 나오는 별도 축이다.
-//! 이 이슈의 남은 범위로 두고 여기서 통과 조건으로 삼지 않는다.
+//! 같은 4쪽에서 제목 상자(선언 148.0px, 페인트 32.2px) 뒤로 **116px 빈 띠**가 남는다.
+//! 흐름 누적이 저장 사다리보다 짧게 쌓이다가(p49~p61 구간 72.8px 압축) p64 가 저장
+//! vpos 로 스냅하면서 생기는 두 높이 모델의 어긋남이며, 이 이슈의 남은 범위다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
 
-use rhwp::diagnostics::layout_anomaly::{scan_document, AnomalyOptions};
+use rhwp::diagnostics::layout_anomaly::{scan_document, scan_page, AnomalyOptions};
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
@@ -155,6 +163,19 @@ fn page5_starts_at_the_stored_page_frame() {
         text.contains("기대효과"),
         "5쪽 첫머리가 '4 기대효과 및 향후계획' 이어야 한다: {:?}",
         text.chars().take(40).collect::<String>()
+    );
+}
+
+/// 4쪽에서 글자 겹침이 없다 — 중첩 표가 자기 저장 줄에 앉는다.
+#[test]
+fn page4_has_no_text_overlap() {
+    let core = core();
+    let tree = core.build_page_render_tree(3).expect("4쪽 render tree");
+    let anomalies = scan_page(3, &tree.root, core.page_count(), &AnomalyOptions::default());
+    assert!(
+        anomalies.text_overlap.is_empty(),
+        "글자 겹침 {}건 (수정 전 13건: `□ 적용법조` 줄 위로 법조문 표가 올라왔다)",
+        anomalies.text_overlap.len()
     );
 }
 
