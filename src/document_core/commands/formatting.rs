@@ -1660,6 +1660,24 @@ impl DocumentCore {
             );
         }
 
+        // [#6639] 줄 높이·문단 간격이 바뀌면 후속 문단 시작 위치를 다시 쌓는다.
+        // 셀 텍스트 입력/삭제 경로는 reflow 뒤 recalculate_cell_paragraph_vpos_native를
+        // 호출하지만 서식 경로는 빠져 있어, 줄 간격을 낮춰도 후속 문단이 옛 위치에
+        // 남아 공백이 벌어졌다. 변경 문단부터 사다리를 다시 만들어 batch의 다음
+        // 호출·end_batch paginate가 연속 위치를 소비하게 한다. 기하에 영향 없는
+        // 변경(alignment 등)에는 멱등이라 위치가 그대로다. 간격(spacing_after/before)
+        // 만 바뀐 경우 reflow는 건너뛰어도 경계 틈이 달라지므로 무조건 재계산한다.
+        // 새 문단 모양이 생겼을 수 있어 해석 스타일을 먼저 갱신한다.
+        self.rebuild_resolved_styles();
+        self.recalculate_cell_paragraph_vpos_native(
+            sec_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
+        );
+
         // 표 dirty 마킹 — measure_section_incremental이 셀 높이를 재계산하도록
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
 
@@ -1707,6 +1725,16 @@ impl DocumentCore {
             control_idx,
             cell_idx,
             cell_para_idx,
+        );
+        // [#6639] undo 복원도 줄 높이를 되돌리므로 후속 사다리를 함께 되돌린다.
+        // 복원 대상 ID는 함수 진입 시 존재를 검증했으므로 해석 스타일이 이미 있다.
+        self.recalculate_cell_paragraph_vpos_native(
+            sec_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            None,
         );
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
