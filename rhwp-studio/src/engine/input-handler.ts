@@ -43,7 +43,7 @@ import * as _table from './input-handler-table';
 import * as _keyboard from './input-handler-keyboard';
 import * as _text from './input-handler-text';
 import * as _picture from './input-handler-picture';
-import { computeHangingIndentPx } from './hanging-indent';
+import { computeHangingIndentPx, computeHangingIndentProps } from './hanging-indent';
 import { isPageLocalTextEditCommand, type PageLocalTextEditOptions } from './input-edit-invalidation';
 import type { NavigationKeyInput } from './navigation-keymap';
 import { isPointNearBoxBorder } from './table-border-hit';
@@ -2605,6 +2605,7 @@ export class InputHandler {
         }
 
         const hangingPx = computeHangingIndentPx(cursorRect.x, firstLineStartRect.x);
+        const cellProps = this.getParaProperties();
         this.executeParaFormatCommand(
           [{
             kind: 'cell',
@@ -2614,7 +2615,11 @@ export class InputHandler {
             cellIdx: cellIndex,
             cellParaIdx: cellParaIndex,
           }],
-          { indent: -pxToRaw2x(hangingPx) },
+          computeHangingIndentProps(
+            pxToRaw2x(cellProps.marginLeft ?? 0),
+            pxToRaw2x(cellProps.indent ?? 0),
+            pxToRaw2x(hangingPx),
+          ),
         );
         return true;
       }
@@ -2628,9 +2633,14 @@ export class InputHandler {
       cursorRect ??= this.wasm.getCursorRect(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
 
       const hangingPx = computeHangingIndentPx(cursorRect.x, firstLineStartRect.x);
+      const bodyProps = this.getParaProperties();
       this.executeParaFormatCommand(
         [{ kind: 'body', sec: pos.sectionIndex, para: pos.paragraphIndex }],
-        { indent: -pxToRaw2x(hangingPx) },
+        computeHangingIndentProps(
+          pxToRaw2x(bodyProps.marginLeft ?? 0),
+          pxToRaw2x(bodyProps.indent ?? 0),
+          pxToRaw2x(hangingPx),
+        ),
       );
       return true;
     } catch (err) {
