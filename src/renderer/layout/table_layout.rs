@@ -10601,13 +10601,38 @@ impl LayoutEngine {
                                 });
                             seg.line_height > 0 && prev_slot_lands_here
                         }
-                        (Some(seg), Some(next_para)) if next_para.controls.is_empty() => {
+                        // [#6925] 다음 문단이 중첩 표를 host 해도 저장 슬롯 판정은 같다 —
+                        // 그 문단의 첫 줄 vpos 가 이 빈 줄의 슬롯 끝과 맞으면 사다리가 이
+                        // 빈 줄의 자리를 비워 둔 것이다(148751598 p[8] lh=800 ls=392,
+                        // 사다리 +1192 → p[9] 중첩 표). 종전에는 `controls.is_empty()` 로
+                        // 막혀 표 앞 빈 줄만 0 으로 접혔고 표가 15.9px 위로 올라왔다.
+                        (Some(seg), Some(next_para))
+                            if next_para.controls.is_empty()
+                                || profile.hwp5_stored_pagination_layout() =>
+                        {
                             match next_para.line_segs.first() {
                                 Some(next) if !line_seg_is_synthetic(next) => {
+                                    // [#6925] 저장 사다리가 이 빈 줄의 자리를 **정확히**
+                                    // 비워 뒀으면(다음 문단 vpos − 이 줄 vpos == lh + ls)
+                                    // 그 높이는 저자가 쓴 값이다. 한/글도 그대로 쓴다 —
+                                    // 148751598 1쪽: p[2](lh=1000 ls=492, 사다리 +1492)와
+                                    // p[4](lh=600 ls=296, +896)를 0 으로 접어 문단마다
+                                    // 12~19.9px 씩 잃고 표에 이르러 67.3px 어긋났다.
+                                    // 종전의 `full_line_box`(다음 줄 상자의 3/4 이상)는
+                                    // 그 둘을 "장식 간격"으로 떨어뜨린다.
+                                    let forward_hu =
+                                        i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
+                                    let slot_hu = i64::from(seg.line_height)
+                                        + i64::from(seg.line_spacing.max(0));
+                                    let stored_slot_is_exact = seg.line_height > 0
+                                        && next.line_height > 0
+                                        && (forward_hu - slot_hu).abs() <= 2;
                                     let full_line_box = seg.line_height > 0
                                         && next.line_height > 0
-                                        && i64::from(seg.line_height) * 4
-                                            >= i64::from(next.line_height) * 3;
+                                        && (i64::from(seg.line_height) * 4
+                                            >= i64::from(next.line_height) * 3
+                                            || (profile.hwp5_stored_pagination_layout()
+                                                && stored_slot_is_exact));
                                     // [#5880] 직접 HWPX 는 이 빈 줄의 저장 슬롯이
                                     // 정확히 lh+ls 인 경우만(±2HU) 인정한다 —
                                     // 사다리가 접힌 빈 줄을 걸러 한 쪽에 들어가는
