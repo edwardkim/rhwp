@@ -9,11 +9,37 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**머지 보류** — 2026-09-18 통합 검토.
+**메인터너 보정 진행 중 — 내부 리더 절삭과 기준 PDF 문제는 해소, 글꼴 시각 차이는 남음.**
 
-[P2] 2쪽 기준 PDF의 리더가 사각형 글리프로 출력되어 실제 점 채움의 독립 시각 기준으로 부적절하다. 또한 line_overflow_is_leader_fill은 내부 리더도 제거해 폭을 계산하지만 trim_leader_fill_overflow는 run 끝의 리더만 제거한다. 같은 run 안의 제목....쪽번호 조합에 대한 실제 출력 검사가 없다.
+2026-09-18 보정에서 overflow 판정과 실제 절삭이 같은 `leader_fill_spans`를 사용하도록
+통일했다. run 내부의 점 구간도 필요한 만큼만 줄이고 앞 제목·뒤 쪽 번호와 원문을 보존한다.
+저장 줄이 없거나 편집으로 저장 분할이 무효인 문단에는 이 절삭을 적용하지 않는다.
 
-정상 글리프를 가진 독립 PDF를 확보하고 run 내부·끝 리더, 제목·쪽번호가 한 run인 경계를 검증한다. overflow 판정과 실제 trim 대상이 같은 문자 구간을 사용하도록 확인한다.
+- `Ⅰ. 사업개요 TOC` + 점 150개 + `42`의 동일 run 및 style 경계 반례를 추가했다.
+  수정 전 5개 중 1개 실패, 수정 후 **5/5 통과**. 짧은 일반 말줄임표는 보존한다.
+- 일반 재래핑 음성 대조 #2525 **1/1**, #2291 **2/2 통과**.
+- Native Skia 포함 CLI와 fresh WASM 빌드 통과. 전체 통합 게이트는 아직 대기다.
+- 기존 입력을 engine 2020으로 재변환하고 status `succeeded` 확인 후 기존 PDF를 교체했다.
+  입력 HWP SHA-256 `e9bc5e78b412876ad3a810d01ba3b5ca5077e921f13cd15dde755c8f537bbeae`는 불변이다.
+  새 PDF SHA-256 `b7c3d5056f09cf351e5e7c7c94844dc4700e2882bf67f2432183639a213cc7fa`,
+  12쪽, 322062 bytes, 생성 KST 2026-09-18 15:26:31,
+  Creator `Hwp 2020 0.0.0.0`, Producer `Hancom PDF 1.3.0.550`.
+  MCP job `ce550d36-4d00-411e-a78a-85528856184b`; 정상 점 글리프를 직접 확인했다.
+
+새 PDF의 점 리더는 `Haansoft Batang`, rhwp 기본 환경은 문서의 `바탕체`를 사용한다.
+명시적 글꼴 대체 진단에서 점 간격이 바뀌는 것을 확인했지만, 문서 전체 글꼴 대체를 제품
+수정으로 적용하지 않았다. 기본 환경의 점 간격·기준선 차이는 남아 있으며 시각 일치나
+#6802 전체 해결로 주장하지 않는다. 아래 종전 PDF 비교는 **수정 전 기록**이다.
+
+## 보정 후 Visual Sweep
+
+새 PDF로 Native/fresh WASM p1·p2를 다시 캡처했다. CLI SVG의 Chrome raster 비교이며
+Native Skia raster 전체 일치를 뜻하지 않는다. 새 PDF를 사용한 전 12쪽 layout ledger도 산출했다.
+
+| 쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| 1 | [review](../assets/pr7251_review/maintainer_20260918/native_review_001.png) · [overlay](../assets/pr7251_review/maintainer_20260918/native_overlay_001.png) | [review](../assets/pr7251_review/maintainer_20260918/wasm_review_001.png) · [overlay](../assets/pr7251_review/maintainer_20260918/wasm_overlay_001.png) |
+| 2 | [review](../assets/pr7251_review/maintainer_20260918/native_review_002.png) · [overlay](../assets/pr7251_review/maintainer_20260918/native_overlay_002.png) | [review](../assets/pr7251_review/maintainer_20260918/wasm_review_002.png) · [overlay](../assets/pr7251_review/maintainer_20260918/wasm_overlay_002.png) |
 
 ## Metadata·체리픽 provenance
 

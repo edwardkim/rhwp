@@ -18,12 +18,13 @@
 //! ## 기대값의 출처 — 한/글 2020 정본
 //!
 //! `tests/fixtures/issue6802/1400000-200600006_toc_leader_fill-2020.pdf`
-//! (한/글 2020 11.0.0.9136 변환) 2쪽은 차례 줄을 **한 줄**로 두고 점을 상자 안에서 끊는다.
+//! (2026-09-18 engine 2020 재변환) 2쪽은 차례 줄을 **한 줄**로 두고 점을 상자 안에서 끊는다.
+//! 기존 PDF의 사각형 글리프를 정상 `Haansoft Batang` U+2024 출력으로 교체했다.
 //!
 //! | 줄 | 정본 x0..x_end (pt) | rhwp 수정 후 (pt) |
 //! | --- | --- | --- |
-//! | `Ⅰ. 사업개요 ․․․` | 56.6 .. 479.6 | 56.0 .. 476.3 |
-//! | `Ⅳ. 제안안내 및 …` | 56.6 .. 478.1 | 56.0 .. 476.4 |
+//! | `Ⅰ. 사업개요 ․․․` | 56.6 .. 482.4 | 56.0 .. 476.3 |
+//! | `Ⅳ. 제안안내 및 …` | 56.6 .. 480.8 | 56.0 .. 476.4 |
 //! | ` 서식1) 제안단체 현황` | 56.6 .. 216.6 | 56.0 .. 216.0 |
 //!
 //! 점이 쪽 번호 칸(정본 x=486.2)이나 용지 밖으로 이어지지 않는다는 것이 핵심이다 —
@@ -157,15 +158,15 @@ fn leader_dots_are_cut_inside_the_cell() {
 
     // 불변식: 점 채움 줄의 잉크는 **자기 칸 안**에서 끝난다. 수정 전 rhwp 는 점을
     // 용지 오른쪽 끝(793.5px)까지 그려 쪽 번호 칸을 덮었다. 정본(한/글 2020) 2쪽의
-    // 같은 줄은 479.6pt = 639.5px @96dpi 에서 끝난다.
+    // 같은 줄은 482.4pt = 643.2px @96dpi 에서 끝난다.
     assert!(
         widest <= cell_right + 0.5,
         "점 채움이 칸 밖으로 이어진다: 오른쪽 끝 {widest:.1}px, 칸 오른쪽 {cell_right:.1}px \
-         (정본 639.5px, 용지 793.7px)"
+         (정본 643.2px, 용지 793.7px)"
     );
     assert!(
         widest >= 600.0,
-        "점을 너무 많이 끊었다: 오른쪽 끝 {widest:.1}px (정본 639.5px)"
+        "점을 너무 많이 끊었다: 오른쪽 끝 {widest:.1}px (정본 643.2px)"
     );
 }
 
@@ -190,4 +191,93 @@ fn page_has_no_overlap_or_off_canvas() {
         "쪽 밖 요소 {}건 (수정 전 1건: 표가 용지를 311.7px 넘었다)",
         anomalies.off_canvas.len()
     );
+}
+
+/// 실제 저장 한 줄의 IR에 제목/리더/쪽번호 경계를 넣는다. 원본 파일은 변경하지 않는다.
+fn with_toc_line(text: &str, split_suffix: bool) -> DocumentCore {
+    use rhwp::model::{control::Control, paragraph::Paragraph};
+    fn change(paras: &mut [Paragraph], text: &str, split_suffix: bool) -> bool {
+        for para in paras {
+            if para.text.contains("사업개요") && para.text.contains('\u{2024}') {
+                let shape = para.char_shapes[0].char_shape_id;
+                para.text = text.to_string();
+                para.char_count = text.encode_utf16().count() as u32 + 1;
+                para.char_offsets = (0..text.chars().count() as u32).collect();
+                para.apply_char_shape_to_entire_text(shape);
+                if split_suffix {
+                    para.char_shapes.push(rhwp::model::paragraph::CharShapeRef {
+                        start_pos: text.encode_utf16().count() as u32 - 2,
+                        char_shape_id: shape,
+                    });
+                }
+                return true;
+            }
+            for control in &mut para.controls {
+                if let Control::Table(table) = control {
+                    for cell in &mut table.cells {
+                        if change(&mut cell.paragraphs, text, split_suffix) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }
+    let mut core = core();
+    let mut document = core.document().clone();
+    assert!(document.sections.iter_mut().any(|section| change(
+        &mut section.paragraphs,
+        text,
+        split_suffix
+    )));
+    core.set_document(document);
+    core
+}
+
+#[test]
+fn internal_leader_keeps_title_and_page_number_inside_the_same_cell() {
+    for split_suffix in [false, true] {
+        let text = format!("Ⅰ. 사업개요 TOC{}42", ".".repeat(150));
+        let core = with_toc_line(&text, split_suffix);
+        let tree = core.build_page_render_tree(PAGE).unwrap();
+        let (right, lines) = toc_cell_lines(&tree.root);
+        let entries: Vec<_> = lines
+            .iter()
+            .filter(|(_, _, t)| t.contains("사업개요"))
+            .collect();
+        assert_eq!(entries.len(), 1, "저장 차례 한 줄 유지");
+        let (_, painted_right, display) = entries[0];
+        assert!(
+            display.matches('.').count() < text.matches('.').count(),
+            "실제 display 리더도 줄여야 한다: {display}"
+        );
+        assert!(
+            display.starts_with("Ⅰ. 사업개요 ") && display.ends_with("42"),
+            "제목과 쪽번호 보존: {display}"
+        );
+        assert!(
+            *painted_right <= right + 0.5,
+            "내부 리더가 줄지 않아 쪽번호가 셀 밖: {painted_right} > {right}"
+        );
+        fn original(node: &RenderNode) -> String {
+            match &node.node_type {
+                RenderNodeType::TextRun(run) => run.text.clone(),
+                _ => node.children.iter().map(original).collect(),
+            }
+        }
+        assert!(
+            original(&tree.root).contains(&text),
+            "편집/추출 원문은 삭제하면 안 된다"
+        );
+    }
+}
+
+#[test]
+fn short_literal_ellipsis_is_not_removed() {
+    let text = "Ⅰ. 사업개요 ... 42";
+    let core = with_toc_line(text, false);
+    let tree = core.build_page_render_tree(PAGE).unwrap();
+    let (_, lines) = toc_cell_lines(&tree.root);
+    assert!(lines.iter().any(|(_, _, display)| display == text));
 }

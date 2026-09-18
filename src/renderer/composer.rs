@@ -2156,6 +2156,27 @@ fn is_leader_char(c: char) -> bool {
 /// 채움으로 인정하는 최소 연속 길이 — 문장의 마침표·말줄임표를 채움으로 오인하지 않는다.
 const MIN_LEADER_RUN: usize = 4;
 
+/// 판정과 출력이 같은 문자 구간을 사용한다. 인덱스는 Unicode scalar 기준이다.
+fn leader_fill_spans(chars: &[char]) -> Vec<std::ops::Range<usize>> {
+    let mut spans = Vec::new();
+    let mut start = 0;
+    while start < chars.len() {
+        if !is_leader_char(chars[start]) {
+            start += 1;
+            continue;
+        }
+        let mut end = start + 1;
+        while end < chars.len() && is_leader_char(chars[end]) {
+            end += 1;
+        }
+        if end - start >= MIN_LEADER_RUN {
+            spans.push(start..end);
+        }
+        start = end;
+    }
+    spans
+}
+
 /// [#6802] 저장 한 줄을 지킨 뒤, 상자를 넘는 **채움 글자만** 한/글처럼 잘라 낸다.
 ///
 /// 한/글 2020 정본(`1400000-200600006` 2쪽)은 차례 줄을 한 줄로 두고 점을 상자 안에서
@@ -2180,25 +2201,35 @@ fn trim_leader_fill_overflow(
             }
             let style = line.runs[run_idx].text_style(styles);
             let run = &mut line.runs[run_idx];
-            let text = run.display_text.as_deref().unwrap_or(&run.text);
-            let chars: Vec<char> = text.chars().collect();
-            let trailing = chars
-                .iter()
-                .rev()
-                .take_while(|c| is_leader_char(**c))
-                .count();
-            if trailing == 0 {
-                continue;
+            let mut chars: Vec<char> = effective_text_for_metrics(run).chars().collect();
+            // 뒤쪽부터 처리하면 앞쪽 구간의 인덱스는 변하지 않는다.
+            for span in leader_fill_spans(&chars).into_iter().rev() {
+                if width <= inner_width_px {
+                    break;
+                }
+                let current: String = chars.iter().collect();
+                let current_width = estimate_text_width(&current, &style);
+                let without = |drop: usize| -> String {
+                    chars[..span.end - drop].iter().chain(&chars[span.end..]).collect()
+                };
+                // 제목/쪽번호/다른 run은 그대로 두고 필요한 최소 채움만 줄인다.
+                // 서로 다른 리더 글리프나 자간도 전체 run 재측정으로 반영한다.
+                let mut low = 0;
+                let mut high = span.len();
+                while low < high {
+                    let middle = (low + high) / 2;
+                    let candidate_width = estimate_text_width(&without(middle), &style);
+                    if width - current_width + candidate_width <= inner_width_px {
+                        high = middle;
+                    } else {
+                        low = middle + 1;
+                    }
+                }
+                let kept = without(low);
+                width += estimate_text_width(&kept, &style) - current_width;
+                chars.drain(span.end - low..span.end);
+                run.display_text = Some(kept);
             }
-            let unit = estimate_text_width(&chars[chars.len() - 1].to_string(), &style).max(0.01);
-            let needed = ((width - inner_width_px) / unit).ceil().max(0.0) as usize;
-            let drop = needed.min(trailing);
-            if drop == 0 {
-                continue;
-            }
-            let kept: String = chars[..chars.len() - drop].iter().collect();
-            width -= unit * drop as f64;
-            run.display_text = Some(kept);
         }
     }
 }
@@ -2223,29 +2254,13 @@ pub(crate) fn line_overflow_is_leader_fill(
     inner_width_px: f64,
 ) -> bool {
     fn strip_leader_runs(text: &str) -> (String, bool) {
-        let chars: Vec<char> = text.chars().collect();
-        let mut kept = String::with_capacity(text.len());
-        let mut found = false;
-        let mut i = 0;
-        while i < chars.len() {
-            if is_leader_char(chars[i]) {
-                let mut j = i;
-                while j < chars.len() && is_leader_char(chars[j]) {
-                    j += 1;
-                }
-                if j - i >= MIN_LEADER_RUN {
-                    found = true;
-                    i = j;
-                    continue;
-                }
-                kept.extend(&chars[i..j]);
-                i = j;
-                continue;
-            }
-            kept.push(chars[i]);
-            i += 1;
+        let mut chars: Vec<char> = text.chars().collect();
+        let spans = leader_fill_spans(&chars);
+        let found = !spans.is_empty();
+        for span in spans.into_iter().rev() {
+            chars.drain(span);
         }
-        (kept, found)
+        (chars.iter().collect(), found)
     }
 
     let mut found_leader = false;
@@ -2923,7 +2938,9 @@ pub fn recompose_cell_lines_in_frame(
     }
     // [#6802] 저장 한 줄을 지킨 줄의 넘치는 채움(리더)은 여기서 끊는다 — 측정(높이)과
     // 배치(페인트)가 같은 이 함수를 타므로 두 경로가 같은 줄을 본다.
-    trim_leader_fill_overflow(composed, inner_width_px, styles);
+    if has_authoritative_line_segs && !para.stored_text_partition_is_dirty() {
+        trim_leader_fill_overflow(composed, inner_width_px, styles);
+    }
 }
 
 /// 저장 `LINE_SEG`가 없는 들여쓴 셀 문단의 구간별 자간을 안전하게
