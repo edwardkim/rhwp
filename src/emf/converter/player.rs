@@ -552,12 +552,16 @@ impl Player {
         // 클립 사각형은 `INTERSECTCLIPRECT` 시점의 좌표계에 있고 도형은 그 뒤에 걸린
         // 월드 변환을 받는다. 그래서 변환을 **안쪽**에 둔다.
         let node = &self.world_wrap(node);
+        // [#7266] 클립이 없어도 페이지 변환은 걸려야 한다 — 조기 반환이 이 변환을 건너뛰면
+        //         클립 없는 EMF 만 논리 좌표 그대로 그려져 갈래마다 좌표계가 갈린다.
         let Some((l, t, r, b)) = self.dc_stack.current().clip_rect else {
-            self.svg.push(node);
+            let wrapped = self.page_wrap(node);
+            self.svg.push(&wrapped);
             return;
         };
         if r <= l || b <= t {
-            self.svg.push(node);
+            let wrapped = self.page_wrap(node);
+            self.svg.push(&wrapped);
             return;
         }
         let key = (l, t, r, b);
@@ -572,8 +576,37 @@ impl Player {
             self.clip_ids.insert(key, id);
         }
         let id = self.clip_ids.get(&key).cloned().unwrap_or_default();
-        self.svg
-            .push(&format!("<g clip-path=\"url(#{id})\">{node}</g>"));
+        let clipped = format!("<g clip-path=\"url(#{id})\">{node}</g>");
+        let clipped = self.page_wrap(&clipped);
+        self.svg.push(&clipped);
+    }
+
+    /// [#7266] 페이지 변환(논리 → 장치)을 `<g transform="matrix(…)">` 로 감싼다.
+    ///
+    /// 종전에는 `SetMapMode`·`SetWindow*`·`SetViewport*` 를 DC 에 **담아만 두고 아무도
+    /// 쓰지 않아서**, 논리 좌표로 적힌 도형이 장치 좌표인 양 그려졌다. 156564340 의
+    /// 포스터 EMF 는 `MM_ANISOTROPIC` 에 window 37,094×52,391 / viewport 1,191×1,684 이라
+    /// `EMR_STRETCHDIBITS` 의 dest 가 31배로 커진다 — 그림의 왼쪽 위 3%만 셀에 들어와
+    /// 흰 여백만 보인다.
+    ///
+    /// 클립 사각형은 `INTERSECTCLIPRECT` 시점의 논리 좌표라, 이 변환은 클립 **바깥**이다
+    /// (안쪽의 월드 변환과 순서: 월드 → 클립 → 페이지).
+    ///
+    /// 고정 비율 map mode(`MM_LOMETRIC`..`MM_TWIPS`, 2..6)는 장치 해상도에서 비율을
+    /// 유도해야 하는데 코퍼스에 표본이 없어 종전처럼 항등으로 둔다 — 미구현이다.
+    fn page_wrap(&self, node: &str) -> String {
+        let Some(m) = page_xform(self.dc_stack.current()) else {
+            return node.to_string();
+        };
+        format!(
+            "<g transform=\"matrix({} {} {} {} {} {})\">{node}</g>",
+            fmt_f32(m[0]),
+            fmt_f32(m[1]),
+            fmt_f32(m[2]),
+            fmt_f32(m[3]),
+            fmt_f32(m[4]),
+            fmt_f32(m[5]),
+        )
     }
 
     /// [#6577 ④] 월드 변환이 걸려 있으면 도형을 `<g transform="matrix(…)">` 로 감싼다.
@@ -625,6 +658,44 @@ fn mul_xform(p: &XForm, q: &XForm) -> XForm {
         dx: p.dx * q.m11 + p.dy * q.m21 + q.dx,
         dy: p.dx * q.m12 + p.dy * q.m22 + q.dy,
     }
+}
+
+/// [#7266] DC 의 map mode + window/viewport 로 페이지 변환(논리 → 장치)을 만든다.
+///
+/// MS-EMF 2.1.21 MapMode: `MM_TEXT`(1) 은 1:1 이고, `MM_ISOTROPIC`(7)·
+/// `MM_ANISOTROPIC`(8) 만 window/viewport extent 로 비율을 정한다. `MM_ISOTROPIC` 은
+/// 두 축의 단위 크기가 같아야 하므로 절댓값이 작은 쪽 배율을 두 축에 쓰고 부호만 살린다.
+///
+/// 항등이면 `None` — 감싸는 `<g>` 를 만들지 않는다.
+fn page_xform(dc: &super::device_context::DeviceContext) -> Option<[f32; 6]> {
+    const MM_ISOTROPIC: u32 = 7;
+    const MM_ANISOTROPIC: u32 = 8;
+
+    let (mut sx, mut sy) = (1.0_f32, 1.0_f32);
+    if matches!(dc.map_mode, MM_ISOTROPIC | MM_ANISOTROPIC) {
+        if dc.window_ext.0 == 0 || dc.window_ext.1 == 0 {
+            return None;
+        }
+        sx = dc.viewport_ext.0 as f32 / dc.window_ext.0 as f32;
+        sy = dc.viewport_ext.1 as f32 / dc.window_ext.1 as f32;
+        if !sx.is_finite() || !sy.is_finite() {
+            return None;
+        }
+        if dc.map_mode == MM_ISOTROPIC {
+            let unit = sx.abs().min(sy.abs());
+            sx = unit.copysign(sx);
+            sy = unit.copysign(sy);
+        }
+    }
+    let tx = dc.viewport_org.0 as f32 - dc.window_org.0 as f32 * sx;
+    let ty = dc.viewport_org.1 as f32 - dc.window_org.1 as f32 * sy;
+
+    let identity =
+        (sx - 1.0).abs() < 1e-6 && (sy - 1.0).abs() < 1e-6 && tx.abs() < 1e-6 && ty.abs() < 1e-6;
+    if identity {
+        return None;
+    }
+    Some([sx, 0.0, 0.0, sy, tx, ty])
 }
 
 fn is_identity(x: &XForm) -> bool {

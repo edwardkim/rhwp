@@ -2370,7 +2370,8 @@ impl LayoutEngine {
                                             );
                                             rendered = true;
                                         }
-                                    } else if crate::parser::ole_container::raw_contents_is_emf(raw)
+                                    } else if let Some(contents_emf) =
+                                        crate::parser::ole_container::contents_emf_payload(raw)
                                     {
                                         let render_rect = (
                                             render_x as f32,
@@ -2379,7 +2380,7 @@ impl LayoutEngine {
                                             render_h as f32,
                                         );
                                         if let Ok(svg_fragment) =
-                                            crate::emf::convert_to_svg(raw, render_rect)
+                                            crate::emf::convert_to_svg(contents_emf, render_rect)
                                         {
                                             push_ole_raw_svg_render_node(
                                                 tree,
