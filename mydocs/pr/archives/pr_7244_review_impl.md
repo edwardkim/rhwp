@@ -128,7 +128,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 
 전수 래칫은 이 commit의 추적 `samples` 코퍼스를 읽는다. 개별 baseline 경로·계수는 [body-overflow](../../../tests/fixtures/body_overflow_baseline.tsv)와 [off-canvas](../../../tests/fixtures/off_canvas_baseline.tsv), #7252 감소분 입력 hash는 [기여자 행별 근거](../../report/6976-body-overflow-ratchet-tighten/rows.md)를 참조한다. 합성 단위 문서는 테스트 코드에서 생성·소비하며 별도 복사본을 만들지 않는다.
 
-## 남은 순서·rollback·후속 처리
+## 최초 검토 당시 순서·rollback 계획 (과거 기록)
 
 1. 개별 review의 보류 8개를 원인별로 보정하고 해당 경계·PDF/overlay를 다시 확인한다. 실패한 테스트를 단순 삭제하거나 tolerance를 확대하지 않는다.
 2. 최종 code head에서 필요한 전체 회귀·lint·Native Skia gate를 완료하고 결과를 보고한 뒤 보정 commit을 만든다.
@@ -136,7 +136,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 4. 최종 head CI를 확인하고 승인된 merge 후 실제 merge SHA와 증적 이미지가 보이는 한국어 comment를 원 PR·해당 이슈에 게시한다. 범위 밖 이슈는 닫지 않는다.
 5. post_merge.md에 따라 duration refresh 확인·devel 동기화·소유 target/worktree/임시 branch 정리를 한다. post-merge 검증 CI를 새로 실행하지 않는다.
 
-원격 push·PR 생성·comment·close·merge는 이번 검토에서 수행하지 않았다. 취소/제외 시 의존 순서 역순(#7256→#7253 등)과 공통 conflict 보정을 함께 검토하며 contributor branch를 지우지 않는다. 현재 검토 branch와 검증 target은 후속 보정을 위해 보존한다. scratch log/JSON/TSV는 커밋하지 않는다.
+최초 검토 단계에서는 원격 작업을 수행하지 않았다. 이후 push·통합 PR 생성·코드 CI 확인을 완료했으며 최신 상태는 마지막 절을 따른다. 취소/제외 시 의존 순서 역순(#7256→#7253 등)과 공통 conflict 보정을 함께 검토하며 contributor branch를 지우지 않는다. 현재 검토 branch와 검증 target은 후속 보정을 위해 보존한다. scratch log/JSON/TSV는 커밋하지 않는다.
 
 ## 메인터너 보정 1 — #7252
 
@@ -232,3 +232,19 @@ Studio는 같은 review tree에서 npm ci 후 그 tree에서 빌드한 WASM을 �
 최종 head CI와 mergeability를 확인한 뒤 merge하며, 병합 뒤에는 duration refresh만 확인한다.
 관련 source PR·issue에 실제 merge SHA의 review 및 standalone overlay를 보이게 게시하고
 source PR close, devel 동기화, 소유한 branch/worktree/전용 target 정리까지 수행한다.
+
+
+## 통합 PR #7264 code candidate CI
+
+[통합 PR #7264](https://github.com/edwardkim/rhwp/pull/7264), code candidate `8228249fcfdf04cb7c47af9b3f5d5447a645d3b9`.
+제품 코드 `88f2f00da8412c769f34ef6bc3b72bc13402557b` 이후에는 검토 문서만 추가했다.
+같은 PR source identity의 다음 GitHub Actions가 모두 성공했고 required aggregate도 확인했다.
+
+[CI Impact Policy Controller](https://github.com/edwardkim/rhwp/actions/runs/35328216417) · [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/35328216722) · [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/35328216762) · [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/35328216407) · [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/35328216692) · [CI](https://github.com/edwardkim/rhwp/actions/runs/35328216709)
+
+이번 commit은 개별 review·공동 검증 기록·오늘할일만 갱신하는 single-parent trailing 문서 commit이다.
+최종 head의 preflight·재사용 provenance·aggregate와 MERGEABLE/CLEAN을 다시 확인한 뒤 squash merge한다.
+병합 SHA와 실제 시각은 사전 기록하지 않는다. 병합 후 duration refresh만 확인하고 관련 이슈·원 PR의
+한국어 comment에 실제 merge SHA로 보이는 review/standalone overlay를 넣는다.
+#7231·#7232를 해결 범위와 대조해 종료하고 나머지 부분 개선 이슈는 열어 둔다.
+원 PR 14개를 통합 PR 링크와 함께 close하고 devel 동기화 및 소유 branch/worktree/target 정리까지 수행한다.

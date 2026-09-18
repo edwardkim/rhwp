@@ -87,8 +87,11 @@ fmt·Clippy 3종·workspace build·정책 검사, Studio 타입·단위·product
 다시 Visual Sweep했고 compare·standalone overlay·review와 남은 차이를 확인했다.
 렌더 변경이 없는 진단·scaffold ID·래칫 자체에는 별도 시각 통과를 주장하지 않는다.
 
-작업지시자의 PR 생성·CI 모니터링·merge·후속 처리 승인을 받았다. 통합 원격 최종 head의
-CI·mergeability 확인은 아직 남아 있으며 완료 전 merge하지 않는다.
+작업지시자의 PR 생성·CI 모니터링·merge·후속 처리 승인을 받았다.
+[통합 PR #7264](https://github.com/edwardkim/rhwp/pull/7264)의 code candidate
+`8228249fcfdf04cb7c47af9b3f5d5447a645d3b9` CI를 모두 확인했다.
+[원격 CI 증적](pr_7244_review_impl.md#통합-pr-7264-code-candidate-ci)의 동일 PR 실행이며,
+같은 PR의 trailing review·오늘할일 head aggregate와 mergeability를 확인한 뒤 merge한다.
 
 ## Metadata·체리픽 provenance
 
