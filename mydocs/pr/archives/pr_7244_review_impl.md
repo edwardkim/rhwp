@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 현재 판정과 범위
 
-**통합 머지 보류. 최초 승인 6개, 보류 8개 중 #7244·#7252·#7259 개별 사유 해소(최종 게이트 대기).** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
+**통합 머지 보류. 최초 승인 6개, 보류 8개 중 #7244·#7252·#7259·#7261 개별 사유 해소(최종 게이트 대기).** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
 
 | PR | source head | 로컬 적용 commit | 판정 |
 | --- | --- | --- | --- |
@@ -25,7 +25,7 @@ last_verified: 2026-09-18
 | [#7255](pr_7255_review.md) | `3380ada6d92ad2bd818d9427ddcaf793fa54cc0e` | `075d11d16` | 승인 |
 | [#7256](pr_7256_review.md) | `ee3a903d855c1fbc0eea90d8fda2331ea56a4ca8` | `3fac1a159` | 머지 보류 |
 | [#7259](pr_7259_review.md) | `91ec20dc30992961ae5e4f3dc1b3332bdf73fac7` | `2182dcadb` | 메인터너 보정 후 수용 가능 |
-| [#7261](pr_7261_review.md) | `c242af317d074a9923c7971e2e004120b4088574` | `a0859738b` | 머지 보류 |
+| [#7261](pr_7261_review.md) | `c242af317d074a9923c7971e2e004120b4088574` | `a0859738b` | 메인터너 보정 후 수용 가능 |
 | [#7262](pr_7262_review.md) | `2afaa71a1cf8bb1a7ffe0f46f481ac8df89d4afe` | `f1da7e4e3`, `66015f64b` | 머지 보류 |
 
 ## 적용 순서·conflict 처리
@@ -145,3 +145,11 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 ## 메인터너 보정 2 — #7244·#7259
 
 source crop → contain destination → 최종 paint를 SVG/WebCanvas/Skia/CanvasKit에서 일치시켰다. 쪽 배경 None은 기존 stretch를 유지한다. crop 검사 2개 수정 전 FAIL → 보정 후 crop·쪽 배경 3 PASS, 실물 6 PASS, CanvasKit raster 4 PASS, Studio 64 PASS 및 tsc PASS. Native/fresh WASM 실물 3쪽씩 재캡처는 초기 PNG와 동일하며 실제 Skia/Canvas2D/CanvasKit 9쪽의 compare·overlay·review 27 PNG를 추가했다. [#7244](pr_7244_review.md)와 [#7259](pr_7259_review.md)에 hash·이미지·본문 글꼴 잔여 차이를 구분했다. 코드·소비 경로가 바뀐 나머지 PR과 통합 전체 게이트는 아직 남아 있다.
+
+## #7261 메인터너 보정
+
+저장 host의 위여백을 공통 점유 구간으로 만들고 예약·최종 표 원점이 함께 소비한다.
+강화한 실물/비대칭 여백 2개는 수정 전 실패, 보정 후 통과했고 별도 분할 경로 3개도 통과했다.
+Native/fresh WASM 27~29쪽 캡처는 서로 동일하며 Native 27·29쪽은 수정 전 bytes와 같다.
+목표 표 윗변은 674.84→671.07px, PDF 괘선 671.27px다.
+새 제품 hash·각 overlay·남은 범위는 [#7261 검토](pr_7261_review.md)에 기록했다.

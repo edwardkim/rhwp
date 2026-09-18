@@ -9,7 +9,7 @@
 //!   수정 전  표 윗변 661.51  = 앵커 저장 자리 − 줄 높이(1000HU = 13.33px)
 //!                            앞 문단 pi=573 줄 상자 650.8 .. 664.1 을 관통한다
 //!   한/글    표 윗변 671.27  (pdf/hwpctl_API_v2.4-hwp-2020.pdf 가로 괘선 실측)
-//!   수정 후  표 윗변 674.8   = 앵커 저장 자리 (정본과 바깥여백 283HU = 3.77px 안)
+//!   수정 후  표 윗변 671.03  = 앵커 저장 자리 − 위여백 283HU (정본 괘선과 0.24px)
 //! ```
 //!
 //! 막고 있던 것은 `stored_ladder_leaves_object_room` 의 필요 공간 산식이었다. 앵커 아래에
@@ -18,8 +18,8 @@
 //! 한 개 위**에 두므로 앵커 아래로 필요한 공간은 `높이 + 아래여백 − 위여백`(= 대칭 여백이면
 //! 높이)이고, 그 값으로는 `10882 ≤ 10948` 로 들어간다.
 //!
-//! 이 검사는 "표가 앞 문단 글자를 뚫지 않는다"와 "정본과 바깥여백 안"이라는 두 계약만
-//! 고정한다 — 남은 ±바깥여백 무리는 이슈에 미해결로 남겨 둔다.
+//! 이 검사는 앞 문단 비침범과 정본 괘선 0.5px 이내 정렬, 비대칭 여백을 고정한다.
+//! 다른 페이지의 별도 표 배치는 이 시험으로 해결했다고 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -76,12 +76,51 @@ fn para_float_table_top_sits_at_the_stored_anchor_not_a_line_above() {
          (수정 전 {BEFORE_FIX_TABLE_TOP:.2})"
     );
     // 한/글은 이 표의 윗변을 앵커보다 바깥여백(283HU = 3.77px) 한 개 위에 둔다.
-    // 우리는 앵커 자리에 두므로 그 한 개 폭 안에서만 어긋난다.
+    // 실제 배치도 같은 위여백을 빼야 하며, 허용치는 PDF stroke와 box 경계 차이뿐이다.
     let delta = table_top - ORACLE_TABLE_TOP;
     assert!(
-        delta.abs() <= 4.2,
-        "표 윗변 {table_top:.2} 가 정본 {ORACLE_TABLE_TOP:.2} 에서 바깥여백 한 개를 넘어 \
+        delta.abs() <= 0.5,
+        "표 윗변 {table_top:.2} 가 정본 {ORACLE_TABLE_TOP:.2} 에서 stroke 허용치를 넘어 \
          어긋난다 (차 {delta:+.2}px, 수정 전 {:+.2}px)",
         BEFORE_FIX_TABLE_TOP - ORACLE_TABLE_TOP
     );
+}
+
+#[test]
+fn saved_anchor_subtracts_only_top_margin_with_asymmetric_margins() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE)).unwrap();
+    for (top_margin, bottom_margin) in [(283, 0), (0, 0), (141, 0)] {
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+        let mut document = core.document().clone();
+        let host = &mut document.sections[0].paragraphs[574];
+        let table = host
+            .controls
+            .iter_mut()
+            .find_map(|control| match control {
+                Control::Table(table) => Some(table),
+                _ => None,
+            })
+            .expect("stored anchor table");
+        table.outer_margin_top = top_margin;
+        table.outer_margin_bottom = bottom_margin;
+        core.set_document(document);
+        let tree = core.build_page_render_tree(27).unwrap();
+        let mut tables = Vec::new();
+        let mut line = None;
+        collect(&tree.root, &mut tables, &mut line);
+        let top = tables
+            .iter()
+            .map(|(y, _)| *y)
+            .find(|y| *y > line.unwrap().0)
+            .unwrap();
+        // Saved host vpos=40693 HU, body origin=132.2266667 px. Only the
+        // upper outer margin belongs above this anchor; bottom is reservation.
+        let expected = 674.8 - f64::from(top_margin) * 96.0 / 7200.0;
+        assert!(
+            (top - expected).abs() < 0.05,
+            "top={top}, expected={expected}, margins={top_margin}/{bottom_margin}"
+        );
+    }
 }

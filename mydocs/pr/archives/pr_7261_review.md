@@ -9,11 +9,39 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**머지 보류** — 2026-09-18 통합 검토.
+**메인터너 보정 후 수용 가능 — 개별 보류 사유 해소, 통합 최종 게이트 대기.**
 
-[P2] 수용 조건은 anchor가 위여백 뒤라고 가정하지만 최종 표 윗변은 여전히 anchor=674.80px이다. 독립 PDF 윗변 671.27px와 3.53px 다르며 테스트는 바깥여백 한 개를 허용해 통과한다. 측정 조건과 최종 원점의 같은 계약이 완결되지 않았다.
+저장 host를 기준으로 한 `(표 윗변 offset, 아래 점유 끝)`을 `stored_topbottom_object_span`으로
+한 곳에서 계산한다. 예약 조건은 점유 끝을 소비하고, 최종 `saved_top`은 같은 윗변 offset을
+소비한다. 빈 host·비인라인 TopAndBottom·저장 사다리 수용 범위는 유지한다.
 
-anchor와 바깥여백의 좌표 계약을 실제 배치까지 연결하고, 대칭·비대칭 여백 대조군 및 PDF 경계를 검증한다. 여백 크기를 허용 오차로 삼는 검사만으로 종료하지 않는다.
+- 기준 PDF p28 표 괘선 y=671.27px. 실제 표 윗변은 674.84→671.07px로 이동해
+  차이가 약 3.57→0.20px로 줄었다. export-render-tree의 소수 첫째 자리 출력은 671.1px다.
+- 기존 허용치 4.2px를 **0.5px**로 강화했다. 바깥여백 한 개를 오차로 허용하지 않는다.
+- 실제 HWP IR에서 위·아래 여백을 283/0, 0/0, 141/0HU로 바꾼 독립 대조를 추가했다.
+  입력을 중복 파일로 저장하지 않고 메모리에서 변경한다.
+- 수정 전 **2/2 실패**, 수정 후 **2/2 통과**. 위여백은 실제 원점, 아래여백은 예약만 바꾼다.
+- 별도 분할 표 경로 `issue_7203_split_float_anchors_to_paragraph_top` **3/3 통과**.
+- Native Skia 포함 CLI build 통과. fresh WASM build 및 p27~29 Visual Sweep도 완료했다. Native p27·29 PNG는 수정 전과 bytes가 동일하다.
+
+#7203의 다른 anchor 경로는 이번 수정 범위가 아니므로 이슈 전체 종료 근거로 사용하지 않는다.
+아래 최초 검토 수치와 이미지는 수정 전 기록이다.
+
+## 보정 후 Visual Sweep 증적
+
+p28의 목표 표 윗변이 PDF 괘선과 겹치는 것을 확인했다. 기존 가로 위치·글꼴 차이는 남아 있으며
+다른 anchor 경로까지 완전히 일치했다고 주장하지 않는다. Native/WASM 각각 105쪽을 유지한다.
+
+| 쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| 27 | [review](../assets/pr7261_review/maintainer_20260918/native_review_027.png) · [overlay](../assets/pr7261_review/maintainer_20260918/native_overlay_027.png) | [review](../assets/pr7261_review/maintainer_20260918/wasm_review_027.png) · [overlay](../assets/pr7261_review/maintainer_20260918/wasm_overlay_027.png) |
+| 28 | [review](../assets/pr7261_review/maintainer_20260918/native_review_028.png) · [overlay](../assets/pr7261_review/maintainer_20260918/native_overlay_028.png) | [review](../assets/pr7261_review/maintainer_20260918/wasm_review_028.png) · [overlay](../assets/pr7261_review/maintainer_20260918/wasm_overlay_028.png) |
+| 29 | [review](../assets/pr7261_review/maintainer_20260918/native_review_029.png) · [overlay](../assets/pr7261_review/maintainer_20260918/native_overlay_029.png) | [review](../assets/pr7261_review/maintainer_20260918/wasm_review_029.png) · [overlay](../assets/pr7261_review/maintainer_20260918/wasm_overlay_029.png) |
+
+| 제품 | SHA-256 |
+| --- | --- |
+| Native | `be9d03277e5c2acd243a66b4df471eac1a6f522a2d37f2a3ebac35226c585674` |
+| WASM | `804fc6cfbb66dac4ad9bf604db1090bb12883f06bed72b68e197ab5fc8a0fb39` |
 
 ## Metadata·체리픽 provenance
 
@@ -68,7 +96,7 @@ CLI Native SVG와 fresh WASM SVG를 각각 Chrome webfont 경로로 캡처했다
 
 | 증적 | Native | fresh WASM |
 | --- | --- | --- |
-| float_anchor p27 | [compare](../assets/pr7261_review/native_float_anchor_compare_027.png) · [overlay](../assets/pr7261_review/native_float_anchor_overlay_027.png) · [review](../assets/pr7261_review/native_float_anchor_review_027.png) | [compare](../assets/pr7261_review/wasm_float_anchor_compare_027.png) · [overlay](../assets/pr7261_review/wasm_float_anchor_overlay_027.png) · [review](../assets/pr7261_review/wasm_float_anchor_review_027.png) |
+| float_anchor p27 | [compare](../assets/pr7261_review/native_float_anchor_compare_027.png) · [overlay](../assets/pr7261_review/native_float_anchor_overlay_027.png) · [review](../assets/pr7261_review/native_float_anchor_review_027.png) | [compare](../assets/pr7261_review/wasm_float_anchor_compare_027.png) · [overlay](../assets/pr7261_review/maintainer_20260918/wasm_overlay_027.png) · [review](../assets/pr7261_review/wasm_float_anchor_review_027.png) |
 | float_anchor p28 | [compare](../assets/pr7261_review/native_float_anchor_compare_028.png) · [overlay](../assets/pr7261_review/native_float_anchor_overlay_028.png) · [review](../assets/pr7261_review/native_float_anchor_review_028.png) | [compare](../assets/pr7261_review/wasm_float_anchor_compare_028.png) · [overlay](../assets/pr7261_review/wasm_float_anchor_overlay_028.png) · [review](../assets/pr7261_review/wasm_float_anchor_review_028.png) |
 | float_anchor p29 | [compare](../assets/pr7261_review/native_float_anchor_compare_029.png) · [overlay](../assets/pr7261_review/native_float_anchor_overlay_029.png) · [review](../assets/pr7261_review/native_float_anchor_review_029.png) | [compare](../assets/pr7261_review/wasm_float_anchor_compare_029.png) · [overlay](../assets/pr7261_review/wasm_float_anchor_overlay_029.png) · [review](../assets/pr7261_review/wasm_float_anchor_review_029.png) |
 
@@ -78,9 +106,9 @@ CLI Native SVG와 fresh WASM SVG를 각각 Chrome webfont 경로로 캡처했다
 
 현재 게시·merge 승인으로 간주하지 않는다. 보류 해제와 최종 head CI 및 통합 merge 이후 실제 merge SHA·통합 PR·CI URL·수정 계약·실제 검증 범위·잔여 차이를 한국어로 설명하고 기여에 감사한다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 연결한다.
 
-- float_anchor: 위 p27, p28, p29의 Native/WASM review와 **각 standalone overlay**를 코멘트에 실제 이미지로 포함한다.
+- float_anchor: **보정 후** p27, p28, p29의 Native/WASM review와 **각 standalone overlay**를 코멘트에 실제 이미지로 포함한다.
 
-URL 형식 예: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7261_review/wasm_float_anchor_overlay_027.png`. `<merge-commit-sha>`는 게시 전 실제 값으로 치환한다. UTF-8 파일과 `gh ... --body-file`로 게시하고 API 재조회로 한국어·실제 head·모든 이미지 URL을 확인한다.
+URL 형식 예: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7261_review/maintainer_20260918/wasm_overlay_027.png`. `<merge-commit-sha>`는 게시 전 실제 값으로 치환한다. UTF-8 파일과 `gh ... --body-file`로 게시하고 API 재조회로 한국어·실제 head·모든 이미지 URL을 확인한다.
 
 ## 이슈·다음 단계
 

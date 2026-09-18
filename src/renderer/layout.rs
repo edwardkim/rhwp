@@ -1542,6 +1542,14 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
             .is_some_and(|height| height <= declared_height * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO)
 }
 
+/// 빈 TopAndBottom 표의 저장 host를 기준으로 한 외곽 점유 구간(HU).
+/// 저장 host는 위 바깥여백 뒤의 좌표이므로 표 윗변과 예약 끝 모두 같은 원점을 쓴다.
+fn stored_topbottom_object_span(table: &crate::model::table::Table) -> (i64, i64) {
+    let top = -(table.outer_margin_top as i64);
+    let bottom = top + table.common.height as i64 + table.outer_margin_bottom as i64;
+    (top, bottom)
+}
+
 /// 저장 host vpos를 physical paint anchor로 쓸 수 있는지 판별한다.
 ///
 /// 빈 TopAndBottom RowBreak 표는 host와 다음 문단의 저장 사다리가 **표 선언 높이와
@@ -1557,9 +1565,8 @@ fn stored_ladder_leaves_object_room(
     // [#7203 실험 A] 앵커 vpos 는 표 상자 상단이 아니라 **위 바깥여백 뒤**를 가리킨다
     // (정본 실측: 윗변 = 앵커 − 위여백). 그러면 앵커 아래로 필요한 공간은
     // 높이 + 아래여백 − 위여백 이다.
-    let need = (table.common.height as i64 + table.outer_margin_bottom as i64
-        - table.outer_margin_top as i64)
-        .max(0);
+    let (_, occupied_bottom) = stored_topbottom_object_span(table);
+    let need = occupied_bottom.max(0);
     let first_vpos = |paragraph: &Paragraph| {
         paragraph
             .line_segs
@@ -1619,7 +1626,8 @@ fn native_empty_single_topbottom_table_saved_top(
     if next_seg.vertical_pos <= seg.vertical_pos {
         return None;
     }
-    let top = col_area.y + hwpunit_to_px(seg.vertical_pos, dpi);
+    let (top_offset, _) = stored_topbottom_object_span(table);
+    let top = col_area.y + (seg.vertical_pos as f64 + top_offset as f64) * dpi / 7200.0;
     let bottom = top + hwpunit_to_px(table.common.height as i32, dpi);
     (top >= col_area.y + col_area.height * 0.5 && bottom <= col_area.y + col_area.height + 0.5)
         .then_some(top)
