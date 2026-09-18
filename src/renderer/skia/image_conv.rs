@@ -259,7 +259,7 @@ pub fn draw_image_bytes(
         draw_image_rect(crop_src, dst);
         return true;
     }
-    if matches!(mode, ImageFillMode::None) {
+    if matches!(mode, ImageFillMode::None | ImageFillMode::Zoom) {
         // [#7235] 채우기 유형 15(NONE): 종횡비를 지켜 영역 가운데에 맞춘다.
         let (source_width, source_height) = crop_src
             .map(|src| (src.width(), src.height()))
@@ -280,33 +280,6 @@ pub fn draw_image_bytes(
                 fit_height,
             ),
         );
-        return true;
-    }
-
-    // [#7235] `Zoom` 은 영역에 맞춰 종횡비를 지키며 축소해 가운데 놓는다(contain).
-    // SVG backend 는 `#6310` 부터 `preserveAspectRatio="xMidYMid meet"` 으로 그렇게
-    // 그렸는데 이 경로에는 팔이 없어 아래 **배치 모드**(원본 크기·왼쪽 위)로 떨어졌다 —
-    // 같은 노드를 PNG/PDF 와 SVG 가 다르게 그리고 있었다.
-    //
-    // 칸 배경 채우기의 `None`(이진 유형 15)도 한/글 실측이 contain 이며, 그 해석은
-    // `ImageNode` 호출부에서 이 유형으로 넘긴다. 통합된 #7244의 쪽 배경 `None`은
-    // 위의 별도 contain 경로를 따른다.
-    if mode == ImageFillMode::Zoom {
-        if is_valid_image_size(decoded_width, decoded_height) {
-            let scale = (width / decoded_width).min(height / decoded_height);
-            let fit_w = decoded_width * scale;
-            let fit_h = decoded_height * scale;
-            let fit = Rect::from_xywh(
-                x + (width - fit_w) / 2.0,
-                y + (height - fit_h) / 2.0,
-                fit_w,
-                fit_h,
-            );
-            draw_image_rect(crop_src, fit);
-        } else {
-            // 크기를 못 읽으면 영역 전체로 폴백한다(SVG 의 meet 폴백과 같은 취급).
-            draw_image_rect(crop_src, dst);
-        }
         return true;
     }
 

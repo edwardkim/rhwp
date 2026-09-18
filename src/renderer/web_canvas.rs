@@ -861,7 +861,11 @@ impl WebCanvasRenderer {
             self.draw_image_with_fill_mode(
                 render_data.as_ref(),
                 bbox,
-                Some(img.fill_mode),
+                Some(if img.fill_mode == ImageFillMode::None {
+                    ImageFillMode::FitToSize
+                } else {
+                    img.fill_mode
+                }),
                 None,
                 None,
                 None,
@@ -3473,16 +3477,26 @@ impl WebCanvasRenderer {
                         return;
                     }
                 };
-                let scale = (bbox.width / img_w).min(bbox.height / img_h);
-                let w = img_w * scale;
-                let h = img_h * scale;
+                let (sx, sy, sw, sh) = crop
+                    .map(|rect| {
+                        crate::renderer::svg::compute_image_crop_src(
+                            rect,
+                            original_size_hu,
+                            img_w,
+                            img_h,
+                        )
+                    })
+                    .unwrap_or((0.0, 0.0, img_w, img_h));
+                let scale = (bbox.width / sw).min(bbox.height / sh);
+                let w = sw * scale;
+                let h = sh * scale;
                 let x = bbox.x + (bbox.width - w) / 2.0;
                 let y = bbox.y + (bbox.height - h) / 2.0;
                 self.ctx.save();
                 self.ctx.begin_path();
                 self.ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
                 self.ctx.clip();
-                self.draw_image(data, x, y, w, h);
+                self.draw_image_cropped(data, sx, sy, sw, sh, x, y, w, h);
                 self.ctx.restore();
             }
             ImageFillMode::FitToSize | ImageFillMode::Total => {

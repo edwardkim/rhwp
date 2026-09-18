@@ -1925,10 +1925,10 @@ export class CanvasKitLayerRenderer {
       return;
     }
     // [#7235] `none`·`zoom` 은 영역에 맞춰 종횡비를 지키며 축소해 가운데 놓는다.
-    // 종횡비 기준은 그림의 고유 픽셀 크기다 — 타일 기준인 `originalSize`(HWP
+    // 종횡비 기준은 잘린 뒤의 픽셀 영역이다 — 타일 기준인 `originalSize`(HWP
     // shape_attr) 가 아니다. SVG 의 `preserveAspectRatio="xMidYMid meet"` 와 같다.
     if (canvasKitImageFillModeContains(fillMode)) {
-      const fit = canvasKitImageContainRect(op.bbox, imageWidth, imageHeight);
+      const fit = canvasKitImageContainRect(op.bbox, crop?.width ?? imageWidth, crop?.height ?? imageHeight);
       drawImage(fit.x, fit.y, fit.width, fit.height);
       return;
     }
