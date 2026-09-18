@@ -10898,6 +10898,26 @@ impl LayoutEngine {
                                 });
                             seg.line_height > 0 && prev_slot_lands_here
                         }
+                        // [#6925] 다음 문단이 개체를 품으면 그 vpos 는 개체 배치 좌표라
+                        // 빈 줄의 독립 줄박스 증거로 쓰지 않는다 — 다만 **전진이 이 빈 줄의
+                        // 슬롯과 정확히 같으면**(±2HU) 그 좌표가 곧 빈 줄 다음 자리다.
+                        // 148751598 p[8](lh=800 ls=392, 전진 1192)이 그 경우이며, 접으면
+                        // 뒤의 표가 15.9px 위로 올라간다.
+                        (Some(seg), Some(next_para))
+                            if !next_para.controls.is_empty()
+                                && profile.hwp5_stored_pagination_layout()
+                                && seg.line_height > 0 =>
+                        {
+                            next_para.line_segs.first().is_some_and(|next| {
+                                !line_seg_is_synthetic(next) && {
+                                    let forward =
+                                        i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
+                                    let slot = i64::from(seg.line_height)
+                                        + i64::from(seg.line_spacing.max(0));
+                                    (forward - slot).abs() <= 2
+                                }
+                            })
+                        }
                         (Some(seg), Some(next_para)) if next_para.controls.is_empty() => {
                             match next_para.line_segs.first() {
                                 Some(next) if !line_seg_is_synthetic(next) => {
@@ -10916,7 +10936,23 @@ impl LayoutEngine {
                                     let hwpx_exact_slot = !profile.hwpx_stored_layout()
                                         || profile.hwp5_origin_hwpx()
                                         || (forward - slot).abs() <= 2;
-                                    full_line_box
+                                    // [#6925] `full_line_box` 는 **다음 문단 높이의 75%**
+                                    // 라는 대리 지표다 — 빈 줄 자신이 얼마를 차지하는지는
+                                    // 사다리가 직접 말한다. 저장 전진이 이 문단의 슬롯
+                                    // (lh+ls)과 정확히 같으면(±2HU) 그 빈 줄은 자기 줄박스를
+                                    // 온전히 점유한 것이다. 148751598 1쪽의 빈 문단 다섯은
+                                    // 전부 정확히 일치하는데(1492/896/1788/1192/884), 그중
+                                    // 둘은 다음 줄이 커서(1000 vs 1500 · 600 vs 1500) 75%
+                                    // 규칙에 걸려 접혔고 그만큼 뒤 문단이 위로 당겨졌다
+                                    // (표에 이르러 정본 대비 −67.3px).
+                                    //
+                                    // 접힌 빈 줄은 이 검사를 통과하지 못한다 — 사다리가
+                                    // 자기 슬롯보다 덜 전진하기 때문이다. HWPX 는 종전
+                                    // `hwpx_exact_slot` 계약을 그대로 둔다.
+                                    let stored_slot_exact = profile.hwp5_stored_pagination_layout()
+                                        && seg.line_height > 0
+                                        && (forward - slot).abs() <= 2;
+                                    (full_line_box || stored_slot_exact)
                                         && hwpx_exact_slot
                                         && next.vertical_pos
                                             >= seg.vertical_pos.saturating_add(seg.line_height)
