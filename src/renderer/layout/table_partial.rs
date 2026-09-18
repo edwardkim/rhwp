@@ -291,6 +291,41 @@ enum CellComposedStore {
     Lazy(Vec<Option<ComposedParagraph>>),
 }
 
+/// [#6923] 저장 줄이 여러 개인 문단의 TAC 중첩 표가 **자기 줄**에 앉도록 하는 세로 델타.
+///
+/// 한/글이 저장한 사다리는 표를 소유한 줄을 따로 적는다(`148738070` p69:
+/// ls[0] 49113HU 글줄 · ls[1] 51229HU 표 밴드). 종전 렌더는 문단 첫 줄 좌표에 표를 앉혀
+/// 앞 글줄 위로 28.2px 올라왔다 — 정본은 그 둘을 34.8px 띄운다.
+///
+/// 조각/프레임 원점을 모르는 자리이므로 **이 조각의 첫 렌더 줄 기준 델타**만 돌려준다.
+/// 합성 lineseg(재조판 산출)나 단일 줄 문단, 소유 줄이 기준 줄보다 앞서는 경우는 `None`.
+fn stored_nested_table_line_offset_px(
+    para: &crate::model::paragraph::Paragraph,
+    control_index: usize,
+    start_line: usize,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::paragraph::LineSeg;
+    if para.line_segs.len() < 2 {
+        return None;
+    }
+    if para
+        .line_segs
+        .iter()
+        .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    {
+        return None;
+    }
+    let owner = crate::renderer::layout::control_line_seg_index(para, control_index)?;
+    let base = start_line.min(para.line_segs.len() - 1);
+    if owner <= base {
+        return None;
+    }
+    let delta = i64::from(para.line_segs.get(owner)?.vertical_pos)
+        - i64::from(para.line_segs.get(base)?.vertical_pos);
+    (delta > 0).then(|| crate::renderer::hwpunit_to_px(delta as i32, dpi))
+}
+
 impl CellComposedStore {
     fn get(
         &mut self,
@@ -3024,7 +3059,19 @@ impl LayoutEngine {
                                         para_y_before_lines + hwpunit_to_px(offset, self.dpi)
                                     } else if has_preceding_text {
                                         if table_host_line_only_fragment {
+                                            // [#6653] 은 "표는 그 줄이 시작한 자리에 놓는다" 인데
+                                            // `para_y_before_lines` 는 **문단**의 시작이다.
+                                            // [#6923] 저장 사다리가 표를 별도 줄에 적어 둔 문단
+                                            // (148738070 p69: ls[0] 글줄 49113HU · ls[1] 표
+                                            // 51229HU)에서는 그 둘이 28.2px 다르고, 문단 시작에
+                                            // 앉히면 표가 앞 글줄 위로 올라온다(4쪽: 줄
+                                            // 735.0..753.7 위에 표 740.0 — 겹침 13건).
+                                            // 저장이 말하는 **그 줄**까지의 델타를 더한다.
                                             para_y_before_lines
+                                                + stored_nested_table_line_offset_px(
+                                                    para, ctrl_idx, start_line, self.dpi,
+                                                )
+                                                .unwrap_or(0.0)
                                         } else {
                                             para_y
                                         }
