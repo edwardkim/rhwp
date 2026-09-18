@@ -491,6 +491,35 @@ fn block_cut_index(
         .position(|c| c.row == cell.row && c.col == cell.col)
 }
 
+/// [#7226] 이어받는 조각이 **같은 행 안에서** 재개하는 걸침 칸인가.
+///
+/// `RowCut`(= `start_cut`/`end_cut`)은 그 행의 `row_span == 1` 칸을 col 순서로만
+/// 색인한다(`single_row_cut_index`). 그래서 칸이 전부 걸침 칸인 행은 앞 조각이
+/// 그 행의 물리 밴드를 얼마나 소비했든 컷에 적을 자리가 없어 `start_cut` 이 빈
+/// 채로 다음 조각에 온다. 그 조각은 같은 칸을 **첫 유닛부터 다시 칠해** 두 조각이
+/// 같은 행을 소유하고 글자가 포개진다(1342000 edu 33쪽, `#6981` 잔여 축).
+///
+/// 앞 조각이 남긴 정확한 잔여 밴드(`start_row_height_override`)는 그 행에서
+/// 시작하는 걸침 칸에도 같은 뜻이다 — 소비 높이 = 선언 행 높이 − 잔여 밴드.
+/// 컷 부기가 성립하는 행(= `row_span == 1` 칸이 하나라도 있는 행)은 종전대로
+/// `start_cut` 이 소관하므로 건드리지 않는다.
+pub(crate) fn resumes_inside_own_start_row(
+    table: &crate::model::table::Table,
+    cell: &crate::model::table::Cell,
+    start_row: usize,
+    start_cut: &[usize],
+    start_row_height_override: Option<f64>,
+) -> bool {
+    start_row_height_override.is_some()
+        && start_cut.is_empty()
+        && cell.row_span > 1
+        && cell.row as usize == start_row
+        && !table
+            .cells
+            .iter()
+            .any(|c| c.row as usize == start_row && c.row_span == 1)
+}
+
 /// [#4128 추출] 행내 `row_span==1` 셀의 col 오름차순 컷 벡터 서수.
 /// `advance_row_cut` 부기와 동일한 순서 (기존 인라인 식의 명명).
 fn single_row_cut_index(
@@ -1120,8 +1149,17 @@ impl LayoutEngine {
             // 잡히지 않는다 — 그대로 두면 연속 조각이 병합 셀 내용을 처음부터
             // 재렌더한다(10857 p9: 밴드 라벨 '10·사무분장 조정' 중복, 한글은 빈
             // 칸). 컷이 있는 쪽 경계는 종전대로 cell_cut_window 가 소관한다.
-            let straddle_start_uncovered =
-                straddles_fragment_start && (!is_block_split || start_cut.is_empty());
+            let straddle_start_uncovered = (straddles_fragment_start
+                && (!is_block_split || start_cut.is_empty()))
+                // [#7226] 컷에 적을 자리가 없어 빈 `start_cut` 으로 재개한 걸침 전용
+                // 행 — 앞 조각이 소비한 밴드만큼 유닛 컷을 이어 중복 렌더를 막는다.
+                || resumes_inside_own_start_row(
+                    table,
+                    cell,
+                    start_row,
+                    start_cut,
+                    start_row_height_override,
+                );
             let straddle_end_uncovered =
                 straddles_fragment_end && (!is_block_split || end_cut.is_empty());
             // CellBreak 표의 경계 straddle rowspan 셀도 같은 기전으로 중복된다

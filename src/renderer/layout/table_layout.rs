@@ -16665,7 +16665,16 @@ impl LayoutEngine {
     ) -> (usize, usize) {
         let cell_row = cell.row as usize;
         let cell_end = cell_row + cell.row_span as usize;
-        let straddles_start = cell_row < start_row && cell_end > start_row;
+        // [#7226] 앞 행에서 걸쳐 온 칸뿐 아니라, 앞 조각이 **이 행 안에서** 멈춰
+        // 빈 컷으로 재개한 걸침 전용 행의 칸도 이미 일부 소비된 상태다.
+        let straddles_start = (cell_row < start_row && cell_end > start_row)
+            || super::table_partial::resumes_inside_own_start_row(
+                table,
+                cell,
+                start_row,
+                start_cut,
+                start_row_height_override,
+            );
         let straddles_end = cell_row < end_row
             && (cell_end > end_row || (cell_end == end_row && !end_cut_is_empty));
         // HWP5 저장 pagination의 2행/2문단 계약에서는 문단 하나가 행 하나의 owner다.
