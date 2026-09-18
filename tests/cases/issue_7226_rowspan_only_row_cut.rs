@@ -211,3 +211,153 @@ fn the_fix_does_not_add_a_page() {
         "쪽수가 변했습니다 — 이 문서의 1..144쪽은 정본(415쪽)과 오프셋 0 으로 정렬한다"
     );
 }
+
+/// Presence in the tree is not visibility: the entire final line must fit
+/// inside its owning physical cell and the body, after reservation and paint.
+#[test]
+fn the_last_owned_line_is_inside_the_reserved_cell_and_body() {
+    fn collect(
+        node: &RenderNode,
+        cell: Option<f64>,
+        body: Option<f64>,
+        out: &mut Vec<(f64, f64, f64)>,
+    ) {
+        let cell = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            Some(node.bbox.y + node.bbox.height)
+        } else {
+            cell
+        };
+        let body = if matches!(node.node_type, RenderNodeType::Body { .. }) {
+            Some(node.bbox.y + node.bbox.height)
+        } else {
+            body
+        };
+        if matches!(node.node_type, RenderNodeType::Table(_)) && line_text(node).contains(LAST_LINE)
+        {
+            let target = node.children.iter().find(|child| {
+                matches!(&child.node_type, RenderNodeType::TableCell(c) if c.row == ROW && c.col == COL)
+                    && line_text(child).contains(LAST_LINE)
+            });
+            if let Some(target) = target {
+                let target_bottom = target.bbox.y + target.bbox.height;
+                let next_top = node
+                    .children
+                    .iter()
+                    .filter_map(|child| match &child.node_type {
+                        RenderNodeType::TableCell(c) if c.col == COL && c.row >= ROW + 2 => {
+                            Some(child.bbox.y)
+                        }
+                        _ => None,
+                    })
+                    .reduce(f64::min)
+                    .expect("following row stays in the fragment");
+                assert!(
+                    target_bottom <= next_top + 0.5,
+                    "reserved tail overlaps next row"
+                );
+                assert!(
+                    node.bbox.y + node.bbox.height <= body.expect("body") + 0.5,
+                    "physical table exceeds reserved body"
+                );
+            }
+        }
+        if matches!(node.node_type, RenderNodeType::TextLine(_))
+            && line_text(node).contains(LAST_LINE)
+        {
+            out.push((
+                node.bbox.y + node.bbox.height,
+                cell.expect("owning cell"),
+                body.expect("body"),
+            ));
+        }
+        for child in &node.children {
+            collect(child, cell, body, out);
+        }
+    }
+    let core = core();
+    let (_, (page, _)) = target_fragments(&core);
+    let tree = core.build_page_render_tree(page).unwrap();
+    let mut found = Vec::new();
+    collect(&tree.root, None, None, &mut found);
+    assert_eq!(found.len(), 1, "one terminal line must be owned: {found:?}");
+    for (bottom, cell, body) in found {
+        assert!(
+            bottom <= cell + 0.5,
+            "last line bottom {bottom} exceeds physical cell {cell}"
+        );
+        assert!(
+            bottom <= body + 0.5,
+            "last line bottom {bottom} exceeds body {body}"
+        );
+    }
+}
+
+/// Keep the original table IR and vary only the body's physical budget. This
+/// is a contract test, not a separately Hancom-saved fixture or PDF oracle.
+#[test]
+fn same_row_reservation_survives_neighboring_page_budgets() {
+    use rhwp::model::control::Control;
+    let source = core();
+    let (section, paragraph) = source.document().sections.iter().find_map(|section| {
+        section.paragraphs.iter().find(|para| para.controls.iter().any(|control| {
+            matches!(control, Control::Table(table) if table.cells.iter().any(|cell|
+                cell.row == ROW && cell.col == COL && cell.paragraphs.iter().any(|p| p.text.contains(FIRST_FRAGMENT_ANCHOR))))
+        })).map(|para| (section.clone(), para.clone()))
+    }).expect("original rowspan-only table");
+    for delta in [-75i32, 0, 75] {
+        let mut document = source.document().clone();
+        document.sections = vec![section.clone()];
+        document.sections[0].paragraphs = vec![paragraph.clone()];
+        let page = &mut document.sections[0].section_def.page_def;
+        page.margin_bottom = (page.margin_bottom as i32 + delta) as u32;
+        let mut candidate = DocumentCore::new_empty();
+        candidate.set_document(document);
+        fn check(node: &RenderNode, cell: Option<f64>, body: Option<f64>, count: &mut usize) {
+            let cell = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+                Some(node.bbox.y + node.bbox.height)
+            } else {
+                cell
+            };
+            let body = if matches!(node.node_type, RenderNodeType::Body { .. }) {
+                Some(node.bbox.y + node.bbox.height)
+            } else {
+                body
+            };
+            if matches!(node.node_type, RenderNodeType::Table(_))
+                && line_text(node).contains(LAST_LINE)
+            {
+                assert!(
+                    node.bbox.y + node.bbox.height <= body.expect("body") + 0.5,
+                    "table must fit the physical page budget: table={:?}, body={body:?}",
+                    node.bbox
+                );
+            }
+            if matches!(node.node_type, RenderNodeType::TextLine(_))
+                && line_text(node).contains(LAST_LINE)
+            {
+                *count += 1;
+                assert!(
+                    node.bbox.y + node.bbox.height <= cell.expect("cell") + 0.5,
+                    "owned tail must fit its reserved cell: line={:?}, cell={cell:?}",
+                    node.bbox
+                );
+            }
+            for child in &node.children {
+                check(child, cell, body, count);
+            }
+        }
+        let mut count = 0;
+        for page in 0..candidate.page_count() {
+            check(
+                &candidate.build_page_render_tree(page).unwrap().root,
+                None,
+                None,
+                &mut count,
+            );
+        }
+        assert_eq!(
+            count, 1,
+            "last line lost or duplicated for budget delta {delta}"
+        );
+    }
+}

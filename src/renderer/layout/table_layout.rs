@@ -16770,13 +16770,11 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         fragment_end: (usize, bool),
     ) -> Option<f64> {
-        if start_row == 0
-            || !matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-                    | crate::model::table::TablePageBreak::CellBreak
-            )
-        {
+        if !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+                | crate::model::table::TablePageBreak::CellBreak
+        ) {
             return None;
         }
         let (end_row, end_cut_is_empty) = fragment_end;
@@ -16786,8 +16784,18 @@ impl LayoutEngine {
             .filter(|cell| {
                 let cell_row = cell.row as usize;
                 let cell_end = cell_row + cell.row_span as usize;
+                // The same-row resume has no RowCut slot, but its remaining
+                // physical band still owns a continuation cut. Reservation must
+                // consume exactly the same eligibility and unit window as paint.
+                let resumes_own_row = super::table_partial::resumes_inside_own_start_row(
+                    table,
+                    cell,
+                    start_row,
+                    start_cut,
+                    start_row_height_override,
+                );
                 cell.row_span > 1
-                    && cell_row < start_row
+                    && (cell_row < start_row || resumes_own_row)
                     && cell_end > start_row
                     && cell_end == row + 1
                     && (cell_end < end_row || (cell_end == end_row && end_cut_is_empty))

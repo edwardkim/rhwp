@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 현재 판정과 범위
 
-**통합 머지 보류. 최초 승인 6개, 보류 8개 중 #7244·#7252·#7253·#7256·#7259·#7261 개별 사유 해소(최종 게이트 대기).** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
+**최초 보류 8개 개별 사유 해소. 최초 승인 6개와 함께 최종 통합 게이트 대기.** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
 
 | PR | source head | 로컬 적용 commit | 판정 |
 | --- | --- | --- | --- |
@@ -19,14 +19,14 @@ last_verified: 2026-09-18
 | [#7248](pr_7248_review.md) | `050394e006d4e838d10c4c2d0e05220ad7846b66` | `c9f407ff4` | 승인 |
 | [#7249](pr_7249_review.md) | `7497b8e59d557e84d0d5cd1ee05e1a9ab77bba8b` | `fe2d59443` | 승인 |
 | [#7250](pr_7250_review.md) | `008afddffcb48912fc5c15aa5a26a27ee16dc122` | `3805d3e70` | 승인 |
-| [#7251](pr_7251_review.md) | `40fd97a62606c0525f50c37f6f5b18310d04d5c7` | `a63d7a351` | 머지 보류 |
+| [#7251](pr_7251_review.md) | `40fd97a62606c0525f50c37f6f5b18310d04d5c7` | `a63d7a351` | 개별 사유 해소·최종 게이트 대기 |
 | [#7252](pr_7252_review.md) | `8fec62e01449b2b280d739665f31ee3aaa63b989` | `9327d8712` | 개별 사유 해소·최종 게이트 대기 |
 | [#7253](pr_7253_review.md) | `af407d86707f82c570fac054a85f64a69d3df5d5` | `03fec50df` | 개별 사유 해소·최종 게이트 대기 |
 | [#7255](pr_7255_review.md) | `3380ada6d92ad2bd818d9427ddcaf793fa54cc0e` | `075d11d16` | 승인 |
 | [#7256](pr_7256_review.md) | `ee3a903d855c1fbc0eea90d8fda2331ea56a4ca8` | `3fac1a159` | 개별 사유 해소·최종 게이트 대기 |
 | [#7259](pr_7259_review.md) | `91ec20dc30992961ae5e4f3dc1b3332bdf73fac7` | `2182dcadb` | 메인터너 보정 후 수용 가능 |
 | [#7261](pr_7261_review.md) | `c242af317d074a9923c7971e2e004120b4088574` | `a0859738b` | 메인터너 보정 후 수용 가능 |
-| [#7262](pr_7262_review.md) | `2afaa71a1cf8bb1a7ffe0f46f481ac8df89d4afe` | `f1da7e4e3`, `66015f64b` | 머지 보류 |
+| [#7262](pr_7262_review.md) | `2afaa71a1cf8bb1a7ffe0f46f481ac8df89d4afe` | `f1da7e4e3`, `66015f64b` | 개별 사유 해소·최종 게이트 대기 |
 
 ## 적용 순서·conflict 처리
 
@@ -86,7 +86,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 
 ## 검증 입력 커밋 원장
 
-아래 파일의 로컬 bytes는 `30b9cca953848cb03dd16fcff6c7a548007ce623`의 실제 git blob과 모두 같다. 커밋된 원본·기존 PDF를 그대로 재사용한다. #7259 신규 PDF만 같은 commit에서 추가했으며 124,290 bytes, 1쪽이다. 저장 metadata `hancom-office-2010` / `8.5.8.1677`을 확인하여 engine 2020으로 start → status(succeeded, 23초) → download했다. PDF Creator `Hwp 2020 0.0.0.0`, Producer `Hancom PDF 1.3.0.550`, 생성 KST 2026-09-18 14:54:18. PDF 1.4 버전 자체를 검토 제한으로 삼지 않는다.
+아래는 최초 검토 시점 `30b9cca953848cb03dd16fcff6c7a548007ce623`의 입력 원장이다. #7251 기준 PDF는 이후 `a165bd4bf`에서 정상 재변환본으로 교체했으며 최신 해시는 개별 review에 기록했다. 나머지 원본 bytes는 유지한다. 커밋된 원본·기존 PDF를 그대로 재사용한다. #7259 신규 PDF만 같은 commit에서 추가했으며 124,290 bytes, 1쪽이다. 저장 metadata `hancom-office-2010` / `8.5.8.1677`을 확인하여 engine 2020으로 start → status(succeeded, 23초) → download했다. PDF Creator `Hwp 2020 0.0.0.0`, Producer `Hancom PDF 1.3.0.550`, 생성 KST 2026-09-18 14:54:18. PDF 1.4 버전 자체를 검토 제한으로 삼지 않는다.
 
 | 입력/기준 경로 | SHA-256 |
 | --- | --- |
@@ -157,3 +157,11 @@ Native/fresh WASM 27~29쪽 캡처는 서로 동일하며 Native 27·29쪽은 수
 ## #7253·#7256 메인터너 보정
 
 저장 프레임 원점·빈 슬롯·소유 줄의 가로 및 세로 위치를 함께 보정했다. 수정 전 실패를 확인한 좌표 검사 포함 8/8, 음성 대조 8/8 통과. Native/fresh WASM 3~6쪽과 대조 9~10쪽의 최신 증적·제품 해시는 [#7253](pr_7253_review.md#보정-후-visual-sweep)에 있다. 바깥 wrapper 외곽선·글꼴 잔여 차이와 최종 게이트 미실행은 유지한다.
+
+## #7251 보정 판정 보완
+
+내부 run 리더 반례와 정상 PDF 확보는 `a165bd4bf`에서 해소했다. PDF span은 제목 BatangChe / 점 Haansoft Batang이며 남은 U+2024 폭·글리프 fallback 차이를 실제 원인으로 구분했다. 유효한 한 줄·칸 내부 표시·비리더 보존의 제한된 범위에서 수용하고 #6802 전체는 OPEN 유지한다. 전체 글꼴 대체를 제품 수정이나 기본 환경 일치 증거로 쓰지 않는다.
+
+## #7262 메인터너 보정
+
+같은 행에서 재개하는 rowspan의 컷 소유권과 요구 높이 예약을 공유했다. 3.17px 잘림 반례 실패 후 5/5, #6981 8/8, #7243 2/2 통과. 32~34쪽 내용 보존과 다음 행, 정상 86712 26·28·29쪽을 Native/fresh WASM으로 재검증했다. 최신 증적·해시·남은 PDF 분할 차이는 [#7262](pr_7262_review.md#보정-후-visual-sweep)에 있다.

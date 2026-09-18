@@ -9,11 +9,57 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**머지 보류** — 2026-09-18 통합 검토.
+**메인터너 보정 후 수용 가능 — 같은 행 이어받기의 예약·clip 보류 사유 해소, 최종 통합 게이트 대기.**
 
-[P1] 중복 소유는 개선됐지만 33쪽 첫 조각의 마지막 '위한 교육 1' 줄이 clip 하단을 약 3.2px 넘는다. 직접 overlay와 SVG glyph-band 원장에서 확인했다. 한컴 16/1줄 분할 대신 14/3줄을 유지해 남은 밴드가 실제 내용 높이를 담지 못한다.
+`7215dac37` 이후 보정은 `resumes_inside_own_start_row`를 컷 생산·paint뿐 아니라
+`straddle_continuation_demand`의 예약 대상 선택에도 공유한다. `start_row=0`도 같은
+물리 밴드가 있는 경우를 배제하지 않는다. 선택된 `rowbreak_straddle_cut_units`의
+`su/eu`를 `cell_cut_visible_height`에 전달하므로 이미 소비한 앞 유닛을 재예약하지 않는다.
 
-같은 유닛 창의 실제 요구 높이와 예약 밴드를 맞추고 32→33→34쪽의 누락·중복·마지막 글자·다음 행을 확인한다. clip 완화만으로 숨기지 않는다.
+소비 경로는 다음과 같다.
+
+| 단계 | 실제 소비 지점 |
+| --- | --- |
+| 남은 행 밴드 → 컷 | `resumes_inside_own_start_row` → `rowbreak_straddle_cut_units` |
+| 컷 → 요구 높이 | `straddle_continuation_demand` → `cell_cut_visible_height` |
+| 누적 예약·예산 실패 | `typeset.rs`의 rowspan 행/일반 행 두 호출: `need - consumed - cs_before`, fit 실패 시 컷/이월 |
+| 실제 조각 | `table_partial.rs`의 같은 demand 소비 → 행 높이·셀 clip·뒤 행 위치 |
+| 종료 | typeset의 terminal cut 검사도 같은 demand 호출, 기존 다음 내용/빈 쪽 검사 유지 |
+
+- 수정 전 마지막 줄 바닥 **184.04px > 셀 바닥 180.87px**: 4개 중 해당 1개 실패.
+  수정 후 셀 바닥 약 **187.8px**로 실제 패딩까지 예약하여 전체 줄이 표시된다.
+- 실제 문서의 중복 없음·내용 보존·쪽수·마지막 줄/뒤 행/본문 검사와 ±1px 본문 예산의
+  대상 이어받기 반례를 포함하여 **5/5 통과**. 예산 반례는 원본 표 IR을 사용한 계약 검사이며
+  새 한컴 생성본이나 전 문서 PDF 일치 증거가 아니다.
+- #6981 **8/8**(41개 예산 변형·빈 물리 밴드·끝 컷·종료 포함),
+  정상 86712 관련 #7243 **2/2 통과**. clip을 풀거나 본문 바닥을 늘리지 않았다.
+- Native/fresh WASM 32~34쪽 및 정상 86712 26·28·29쪽 재캡처, **6/6 PNG 동일**.
+  정상 86712는 최초 통합 제품의 세 쪽 PNG와도 동일하다.
+- 32쪽은 변경 전과 동일하다. 추가 예약으로 뒤 행의 한 줄이 33→34쪽으로 이동했고,
+  32~34쪽 TextLine 집합은 수정 전후 누락·추가·중복 없이 같다(39/46/20 → 39/45/21줄).
+  마지막 `위한 교육 1`의 실제 표시와 후속 행을 직접 확인했다.
+- 413쪽 유지. 한컴 PDF 415쪽 및 대상 행 16/1 대 rhwp 14/3의 분할 차이는 남는다.
+  이 보정은 내용 소유·예약·clipping 해소이며 전체 페이지 분할·글꼴 일치가 아니다.
+  #7226·#6981 전체 종료를 주장하지 않는다.
+
+Native SHA-256 `9856eaa6c4fd156eb76634e2a9629e12d61f7e832bf04227a608ebf394af9b84`, fresh WASM `3e61f63a54c94212cbca6864dbbeb41e6c3690c4edcc3053ecf0dbd09ed3e52a`.
+Native CLI는 focused nextest의 release-test/native-skia 산출물이고 WASM은 별도 `--no-opt`
+빌드다. [공동 기록](pr_7244_review_impl.md)의 명령 형식과 전용 target을 사용했다.
+전체 nextest·lint·Native Skia 최종 게이트는 아직 미실행이다.
+
+## 보정 후 Visual Sweep
+
+| 입력·쪽 | Native SVG/Chrome | fresh WASM SVG/Chrome |
+| --- | --- | --- |
+| rowspan p32 | [compare](../assets/pr7262_review/maintainer_20260918/native_rowspan_compare_032.png) · [overlay](../assets/pr7262_review/maintainer_20260918/native_rowspan_overlay_032.png) · [review](../assets/pr7262_review/maintainer_20260918/native_rowspan_review_032.png) | [compare](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_compare_032.png) · [overlay](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_overlay_032.png) · [review](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_review_032.png) |
+| rowspan p33 | [compare](../assets/pr7262_review/maintainer_20260918/native_rowspan_compare_033.png) · [overlay](../assets/pr7262_review/maintainer_20260918/native_rowspan_overlay_033.png) · [review](../assets/pr7262_review/maintainer_20260918/native_rowspan_review_033.png) | [compare](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_compare_033.png) · [overlay](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_overlay_033.png) · [review](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_review_033.png) |
+| rowspan p34 | [compare](../assets/pr7262_review/maintainer_20260918/native_rowspan_compare_034.png) · [overlay](../assets/pr7262_review/maintainer_20260918/native_rowspan_overlay_034.png) · [review](../assets/pr7262_review/maintainer_20260918/native_rowspan_review_034.png) | [compare](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_compare_034.png) · [overlay](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_overlay_034.png) · [review](../assets/pr7262_review/maintainer_20260918/wasm_rowspan_review_034.png) |
+| corrected_86712 p26 | [compare](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_compare_026.png) · [overlay](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_overlay_026.png) · [review](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_review_026.png) | [compare](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_compare_026.png) · [overlay](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_overlay_026.png) · [review](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_review_026.png) |
+| corrected_86712 p28 | [compare](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_compare_028.png) · [overlay](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_overlay_028.png) · [review](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_review_028.png) | [compare](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_compare_028.png) · [overlay](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_overlay_028.png) · [review](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_review_028.png) |
+| corrected_86712 p29 | [compare](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_compare_029.png) · [overlay](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_overlay_029.png) · [review](../assets/pr7262_review/maintainer_20260918/native_corrected_86712_review_029.png) | [compare](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_compare_029.png) · [overlay](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_overlay_029.png) · [review](../assets/pr7262_review/maintainer_20260918/wasm_corrected_86712_review_029.png) |
+
+아래 Metadata 이후는 **수정 전 기록**이다. merge 후 contributor/issue comment에는
+이 절의 최신 review와 **모든 standalone overlay**를 실제 이미지로 포함한다.
 
 ## Metadata·체리픽 provenance
 
