@@ -168,3 +168,10 @@ task3307/issue3307_outline_number.hwpx	3
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	223
 # New fixture: devel 37bd46a72f9fd9ffd709e35244df79c00e789780 measured count; no existing ceiling raised.
 issue6924/148751598-briefing.hwp	1
+# [#6923] 감싼 1칸 표의 저장 쪽 프레임 컷이 이 문서의 쪽 구성을 한/글 정본에 맞추면서
+# (10쪽 첫머리 '⑨ 금융지주의 해외법인…' → 'Ⅲ. 향후 계획' = pdf/tac_object_host_line_height-2020.pdf
+# 10쪽과 일치) 그 쪽으로 옮겨 온 내용에서 **기존 축**의 겹침 2건이 드러났다.
+# 겹치는 것은 감싼 표의 마지막 줄(847.8..867.8)과 뒤따르는 별도 표(Table2, 859.7)로,
+# 이 PR 이 다루는 컷 축이 아니라 조각 말미와 다음 블록의 배치 축이다.
+# 문서 SHA-256 2cf764c89943a23eff17fb8a…
+issue7062/tac_object_host_line_height.hwp	2

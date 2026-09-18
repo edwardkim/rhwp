@@ -1698,6 +1698,14 @@ pub(super) struct CellUnit {
     /// 이 경계를 흡수하면 렌더러의 줄 좌표가 역행하므로 부모 컷에서도
     /// 반드시 보존한다. 문단 사이 reset의 orphan/sliver 완화 계약과 구분한다.
     stored_frame_break_before: bool,
+    /// [#6923] `#1488` 의 가시-텍스트 게이트를 적용하기 **전**의 vpos 되감김 사실.
+    ///
+    /// 빈 문단의 되감김은 페이지를 강제 분할하지 않는다(그 게이트는 그대로다). 다만
+    /// 한/글이 적어 둔 **쪽 프레임**이 빈 문단에 실리는 저장본이 있어(148738070:
+    /// p70 끝 68190HU → p71 vpos=0), 컷이 그 경계를 알아볼 수단이 필요하다.
+    /// 판정은 `reset_before` 와 같은 기하(겹치는 줄 상자 가드 포함)이고, 소비는
+    /// 쪽 규모 판별자와 함께 하는 곳으로 한정한다.
+    page_frame_reset_before: bool,
     vpos_gap_before: bool,
     /// 이 유닛이 속한 문단 인덱스 (셀 내). [#4149] 커서 프로브 계획이 창 문단
     /// 범위를 계산할 때 형제 모듈(table_partial)에서 읽는다.
@@ -10335,6 +10343,7 @@ impl LayoutEngine {
                         height: h,
                         hard_break_before: false,
                         stored_frame_break_before: false,
+                        page_frame_reset_before: false,
                         vpos_gap_before: false,
                         para_idx,
                         vis_start: 0,
@@ -10367,6 +10376,7 @@ impl LayoutEngine {
                     height: non_inline_h,
                     hard_break_before: false,
                     stored_frame_break_before: false,
+                    page_frame_reset_before: false,
                     vpos_gap_before: false,
                     para_idx,
                     vis_start: 0,
@@ -11244,6 +11254,7 @@ impl LayoutEngine {
                                         height: uh,
                                         hard_break_before,
                                         stored_frame_break_before,
+                                        page_frame_reset_before: hard_break_before,
                                         vpos_gap_before,
                                         para_idx: pi,
                                         vis_start: 0,
@@ -11393,6 +11404,7 @@ impl LayoutEngine {
                             height: uh,
                             hard_break_before,
                             stored_frame_break_before: false,
+                            page_frame_reset_before: false,
                             vpos_gap_before,
                             para_idx: pi,
                             vis_start: 0,
@@ -11541,6 +11553,7 @@ impl LayoutEngine {
                                 height: uh,
                                 hard_break_before,
                                 stored_frame_break_before: fragment.stored_frame_break_before,
+                                page_frame_reset_before: false,
                                 vpos_gap_before,
                                 para_idx: pi,
                                 vis_start: line_count,
@@ -11650,6 +11663,7 @@ impl LayoutEngine {
                             height: lh,
                             hard_break_before,
                             stored_frame_break_before: stored_frame_break_before(li),
+                            page_frame_reset_before: false,
                             vpos_gap_before,
                             para_idx: pi,
                             vis_start: li,
@@ -11758,6 +11772,7 @@ impl LayoutEngine {
                                 height: fragment.height,
                                 hard_break_before: fragment.hard_break_before,
                                 stored_frame_break_before: fragment.stored_frame_break_before,
+                                page_frame_reset_before: false,
                                 vpos_gap_before: false,
                                 para_idx: pi,
                                 vis_start: line_count,
@@ -11930,6 +11945,7 @@ impl LayoutEngine {
                     // 이 플래그는 absorb_tail_before_stored_frame_break 의 흡수
                     // 목표로만 쓰인다.
                     stored_frame_break_before: stored_frame_break_before_para,
+                    page_frame_reset_before: false,
                     vpos_gap_before: vpos_gap_before && !collapse_empty_rowbreak_spacer,
                     para_idx: pi,
                     vis_start: 0,
@@ -12046,6 +12062,8 @@ impl LayoutEngine {
                         // hard_break_before 는 #1488 그대로 가시 문단 한정이라
                         // 빈 문단 리셋이 쪽을 강제 분할하지는 않는다.
                         stored_frame_break_before: stored_frame_break_before(li),
+                        // [#6923] 가시-텍스트 게이트 **전**의 되감김 사실.
+                        page_frame_reset_before: hard_break_before,
                         vpos_gap_before: vpos_gap_before && !collapse_empty_rowbreak_spacer,
                         para_idx: pi,
                         vis_start: if collapse_empty_rowbreak_spacer {
@@ -12263,6 +12281,18 @@ impl LayoutEngine {
         }
 
         let _ = (pad_top, pad_bottom); // [Task #1022] cell.height 필러 제거 — row_cut_content_height 가 셀별 max(cell.height, content+pad) 로 행 단계에서 정합.
+        if std::env::var("RHWP_DIAG_6923").is_ok() && units.len() > 40 {
+            let mut cum = 0.0;
+            for (i, u) in units.iter().enumerate() {
+                cum += u.height;
+                eprintln!(
+                    "DIAG_6923 unit={i} para={} h={:.1} cum={:.1} vis={}..{} nested_row={:?} hard={} stored_frame={} mixed={} atom_lines={}",
+                    u.para_idx, u.height, cum, u.vis_start, u.vis_end, u.nested_row,
+                    u.hard_break_before, u.stored_frame_break_before, u.mixed_nested_fragment,
+                    u.vis_end.saturating_sub(u.vis_start)
+                );
+            }
+        }
         units
     }
 
@@ -13730,10 +13760,39 @@ impl LayoutEngine {
                     && row_cells.len() == 1
                     && !u.empty_spacer
                     && h >= avail_height * 0.7;
-                let strict_saved_frame_break =
-                    strict_saved_frame_break || hwpx_page_scale_cross_para_reset;
+                // [#6923] 같은 판별을 HWP5 저장 조판에도 준다. `148738070` 은 본문 전체를
+                // 1칸 RowBreak 표로 감싼 보도자료이고, 한/글이 적어 둔 쪽 경계가 **빈 문단**
+                // 의 vpos 되감김이다(p70 끝 68190HU → p71 vpos=0). 빈 문단의 되감김은
+                // `reset_before`(hard break)로 올리지 않는 계약이라(#2430: 기계 문서의 촘촘한
+                // 로컬 리셋이 쪽을 낭비했다) 컷이 그 경계를 지나쳐 다음 쪽 몫인 `4 기대효과`
+                // 제목과 5줄을 같은 쪽에 실었다 — 본문 바닥을 넘어 용지 밖까지 나갔다.
+                //
+                // 판별자는 HWPX 쪽과 같다: **되감김까지 쌓인 높이**. 진짜 쪽 프레임은 예산의
+                // 큰 몫(≥70%)을 채우고(이 문서 740.7/924.6 = 80%), 촘촘한 로컬 리셋은 h 가
+                // 작아 걸리지 않는다. 빈 문단이라도 저장 프레임 되감김이면 경계다.
+                let hwp5_page_scale_cross_para_reset = self
+                    .profile
+                    .get()
+                    .hwp5_stored_pagination_layout()
+                    && !table.common.treat_as_char
+                    && matches!(
+                        table.page_break,
+                        crate::model::table::TablePageBreak::RowBreak
+                    )
+                    && table.row_count == 1
+                    && table.col_count == 1
+                    && row_cells.len() == 1
+                    // 저장 프레임 신호는 `stored_frame_break_before` 가 아니라 **되감김
+                    // 기하**(`page_frame_reset_before`)로 읽는다. 전자는 겹치는 줄 상자
+                    // 문단(이 문서 p46→p47: 64613+1400 → 65173)도 참이라 쪽 경계가 아닌
+                    // 자리에서 컷이 끊긴다(쪽수 7→8 회귀 실측).
+                    && u.page_frame_reset_before
+                    && h >= avail_height * 0.7;
+                let strict_saved_frame_break = strict_saved_frame_break
+                    || hwpx_page_scale_cross_para_reset
+                    || hwp5_page_scale_cross_para_reset;
                 if j > start
-                    && u.hard_break_before
+                    && (u.hard_break_before || hwp5_page_scale_cross_para_reset)
                     && (strict_saved_frame_break
                         || ((rewind_internal_hard_break_orphan
                             || !relaxed_hard_break
@@ -16913,6 +16972,7 @@ mod row_cut_tests {
             height,
             hard_break_before,
             stored_frame_break_before: hard_break_before,
+            page_frame_reset_before: false,
             vpos_gap_before: false,
             para_idx,
             vis_start: 0,
@@ -16952,6 +17012,7 @@ mod row_cut_tests {
             height,
             hard_break_before: false,
             stored_frame_break_before: false,
+            page_frame_reset_before: false,
             vpos_gap_before: false,
             para_idx: 0,
             vis_start: 0,
