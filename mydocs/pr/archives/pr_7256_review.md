@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**메인터너 보정 후 개별 보류 사유 해소 — 최종 통합 게이트 대기.**
+**메인터너 보정 후 수용 가능** — 통합 로컬 필수 검증 완료. 원 PR 직접 merge가 아닌 보정 통합 head를 수용한다.
 
 2026-09-18 `746b7881e` 이후 보정은 저장 컷의 source unit에서 프레임 원점을 읽고,
 배치에서 그 원점을 끝까지 유지한다. 첫 빈 TextLine을 지우지 않고 첫 가시 내용과
@@ -31,7 +31,7 @@ PDF의 바깥 표 대비 상대 x(제목 11.11px, 조치 표 19.03px, 법조문 
 - 큰 빈 띠와 법조문 표 겹침은 해소됐다. 바깥 wrapper x 약 3.8px와 하단 p4 약 12px,
   p5 약 10px의 외곽선 차이 및 글꼴 차이는 남아 있다. 이 보정은 내부 저장 프레임·소유 줄
   계약의 승인이고 전체 PDF 픽셀 일치 또는 #6923 전체 해결 판정이 아니다.
-- 전체 nextest·lint·Native Skia 최종 게이트는 아직 미실행이다. 원격 작업은 하지 않았다.
+- 전체 nextest·lint·Native Skia 최종 게이트도 통과했다. 실행 결과는 최종 통합 검증 절을 따른다.
 
 소비 경로: `cell_units`의 시작 컷 → `stored_frame_origin_for_cut` →
 `preserve_linear_single_cell_vpos`/`frag_vpos_origin` → paragraph vpos snap →
@@ -58,6 +58,18 @@ WASM package `/private/tmp/rhwp-planet-repair-20260918/wasm-wrapper-x`를 사용
 이 절의 최신 review와 **각 standalone overlay**를 실제 이미지로 게시한다.
 #7256은 같은 파일을 링크하여 증적을 중복 저장하지 않는다.
 
+## 최종 통합 검증
+
+보정 제품 코드 `88f2f00da8412c769f34ef6bc3b72bc13402557b`. contributor 원 head는 아래 provenance에 별도 기록했다.
+[공동 최종 검증](pr_7244_review_impl.md#최종-통합-검증)의 전체 nextest, Native Skia 3종,
+fmt·Clippy 3종·workspace build·정책 검사, Studio 타입·단위·production build를 통과했다.
+원 PR head CI를 재사용한 통과 주장과 구분한다. 해당 입력은 최종 Native/fresh WASM으로
+다시 Visual Sweep했고 compare·standalone overlay·review와 남은 차이를 확인했다.
+렌더 변경이 없는 진단·scaffold ID·래칫 자체에는 별도 시각 통과를 주장하지 않는다.
+
+작업지시자의 PR 생성·CI 모니터링·merge·후속 처리 승인을 받았다. 통합 원격 최종 head의
+CI·mergeability 확인은 아직 남아 있으며 완료 전 merge하지 않는다.
+
 ## Metadata·체리픽 provenance
 
 | 항목 | 값 |
@@ -69,7 +81,7 @@ WASM package `/private/tmp/rhwp-planet-repair-20260918/wasm-wrapper-x`를 사용
 | 조회 당시 mergeability | `CONFLICTING` / `DIRTY` — 참고 snapshot |
 | 통합 base | `18a9fa85e955c220e5eb4d0143dc918a4de6be73` |
 | 로컬 branch | `codex/planet-review-20260918` |
-| 검증 제품 코드 | `66015f64ba89618d03ce9e5ea9774a9e54860c4f` |
+| 최초 검토 제품 코드 | `66015f64ba89618d03ce9e5ea9774a9e54860c4f` |
 | 형식·주석·PDF 보존 | `30b9cca953848cb03dd16fcff6c7a548007ce623` — 실행 의미 변경 없음 |
 
 | 적용 source commit | 로컬 commit |
@@ -88,12 +100,12 @@ WASM package `/private/tmp/rhwp-planet-repair-20260918/wasm-wrapper-x`를 사용
 
 파일명·문서 ID에 따른 제품 분기를 추가하지 않았다. 저장 정보/재조판·음성 대조·최종 paint 적용 범위의 미검증은 위 판정에 명시했다. 분할·이어받기가 범위에 없는 PR에는 해당 체크를 적용하지 않았다.
 
-## 실행한 검증과 한계
+## 최초 검토 검증과 한계
 
 - 통합 제품의 `issue_6923_wrapper_table_stored_page_frame`: **5 tests run: 4 passed, 1 failed, 201 skipped**.
 - Native CLI build, fresh WASM build, 수정 후 fmt: 통과. Studio TypeScript 및 renderer 단위 검사 64개 통과.
 - 전체 기록: [공동 실행·검증·입력 원장](pr_7244_review_impl.md). 원 PR의 전체 회귀 통과는 작성자/CI 증거이고 이번 로컬 재실행으로 세지 않는다.
-- 전체 nextest·Clippy 3종·Native Skia 전체 게이트는 통합 focused/시각 보류가 확인되어 아직 실행하지 않았다. 승인 PR도 통합 최종 head의 필수 gate 완료 전 merge-ready가 아니다.
+- 최초 검토 당시에는 전체 게이트가 미실행이었다. 아래 과거 기록을 최종 상태로 해석하지 않으며, 최신 결과는 최종 통합 검증 절과 공동 원장을 따른다.
 
 4쪽 법조 제목과 표의 겹침 제거는 Native에서 확인했다. PDF의 제목·본문·표 전체 위치와 큰 빈 영역은 아직 다르다. 3~6쪽 증적은 #7253과 같은 파일을 재사용한다.
 
@@ -101,7 +113,7 @@ WASM package `/private/tmp/rhwp-planet-repair-20260918/wasm-wrapper-x`를 사용
 
 **충족** — 파일로 사용한 입력/PDF는 `30b9cca953848cb03dd16fcff6c7a548007ce623`에서 실제 blob과 로컬 bytes를 대조했다. 경로·SHA-256은 [공동 입력 원장](pr_7244_review_impl.md#검증-입력-커밋-원장)에 있다. 코드가 메모리에서 생성·소비하는 문서는 별도 중복 fixture를 만들지 않았다. 기존 커밋된 HWP/HWPX/PDF를 재명명하지 않았다.
 
-## Visual Sweep 증적
+## 최초 검토 Visual Sweep 증적
 
 CLI Native SVG와 fresh WASM SVG를 각각 Chrome webfont 경로로 캡처했다. 이것은 Native Skia raster나 Studio CanvasKit 화면 캡처가 아니다. `fidelity_compare --text-only --export-all-svg --layout-ledger` 전쪽 원장을 산출해 후보를 확인했다. 아래 자동 flag와 ink-match는 보조 지표이며 시각 승인 그 자체가 아니다.
 
@@ -120,11 +132,14 @@ CLI Native SVG와 fresh WASM SVG를 각각 Chrome webfont 경로로 캡처했다
 
 ## Merge 후 contributor PR comment 계획
 
-현재 게시·merge 승인으로 간주하지 않는다. 보류 해제와 최종 head CI 및 통합 merge 이후 실제 merge SHA·통합 PR·CI URL·수정 계약·실제 검증 범위·잔여 차이를 한국어로 설명하고 기여에 감사한다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 연결한다.
+승인된 통합 PR의 최종 head CI와 실제 merge를 확인한 뒤 원 PR·관련 이슈에 한국어로
+merge SHA·CI URL·수정 계약·실제 검증 범위·남은 차이를 기록하고 기여에 감사한다.
+[Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다.
 
-- wrapper: 위 p3, p4, p5, p6의 Native/WASM review와 **각 standalone overlay**를 코멘트에 실제 이미지로 포함한다.
+- `mydocs/pr/assets/pr7253_review/maintainer_20260918/`: `native_wrapper_review_003.png`, `native_wrapper_overlay_003.png`, `wasm_wrapper_review_003.png`, `wasm_wrapper_overlay_003.png`, `native_wrapper_review_004.png`, `native_wrapper_overlay_004.png`, `wasm_wrapper_review_004.png`, `wasm_wrapper_overlay_004.png`, `native_wrapper_review_005.png`, `native_wrapper_overlay_005.png`, `wasm_wrapper_review_005.png`, `wasm_wrapper_overlay_005.png`, `native_wrapper_review_006.png`, `native_wrapper_overlay_006.png`, `wasm_wrapper_review_006.png`, `wasm_wrapper_overlay_006.png`를 실제 이미지로 포함한다.
 
-URL 형식 예: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7253_review/wasm_wrapper_overlay_003.png`. `<merge-commit-sha>`는 게시 전 실제 값으로 치환한다. UTF-8 파일과 `gh ... --body-file`로 게시하고 API 재조회로 한국어·실제 head·모든 이미지 URL을 확인한다.
+이미지는 `https://raw.githubusercontent.com/edwardkim/rhwp/<실제-merge-SHA>/<위-경로>`로 표시한다.
+UTF-8 파일과 `--body-file`로 게시하고 한국어·실제 head·이미지 URL을 API와 HTTP로 재확인한다.
 
 ## 이슈·다음 단계
 

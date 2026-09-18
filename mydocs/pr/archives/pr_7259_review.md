@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 통합 최종 게이트 대기.** 2026-09-18.
+**메인터너 보정 후 수용 가능** — 통합 로컬 필수 검증 완료. 원 PR 직접 merge가 아닌 보정 통합 head를 수용한다.
 
 `None/Zoom`의 source crop과 destination 비율을 SVG·WebCanvas·Skia·CanvasKit에서 일치시켰다. Skia 호출부의 None→Zoom 재해석을 제거하고 두 모드가 동일한 crop 기준 contain 계산을 소비한다. SVG는 맞춘 crop viewport에서 잘라낸 영역이 여백으로 새지 않도록 한다. 독립 한컴 근거가 없는 쪽 배경 None 확대는 철회해 기존 stretch를 유지했다.
 
@@ -28,6 +28,18 @@ crop 유무를 포함해 실제 backend 출력의 source/destination 사각형�
 
 </details>
 
+## 최종 통합 검증
+
+보정 제품 코드 `88f2f00da8412c769f34ef6bc3b72bc13402557b`. contributor 원 head는 아래 provenance에 별도 기록했다.
+[공동 최종 검증](pr_7244_review_impl.md#최종-통합-검증)의 전체 nextest, Native Skia 3종,
+fmt·Clippy 3종·workspace build·정책 검사, Studio 타입·단위·production build를 통과했다.
+원 PR head CI를 재사용한 통과 주장과 구분한다. 해당 입력은 최종 Native/fresh WASM으로
+다시 Visual Sweep했고 compare·standalone overlay·review와 남은 차이를 확인했다.
+렌더 변경이 없는 진단·scaffold ID·래칫 자체에는 별도 시각 통과를 주장하지 않는다.
+
+작업지시자의 PR 생성·CI 모니터링·merge·후속 처리 승인을 받았다. 통합 원격 최종 head의
+CI·mergeability 확인은 아직 남아 있으며 완료 전 merge하지 않는다.
+
 ## Metadata·체리픽 provenance
 
 | 항목 | 값 |
@@ -39,7 +51,7 @@ crop 유무를 포함해 실제 backend 출력의 source/destination 사각형�
 | 조회 당시 mergeability | `MERGEABLE` / `CLEAN` — 참고 snapshot |
 | 통합 base | `18a9fa85e955c220e5eb4d0143dc918a4de6be73` |
 | 로컬 branch | `codex/planet-review-20260918` |
-| 검증 제품 코드 | `66015f64ba89618d03ce9e5ea9774a9e54860c4f` |
+| 최초 검토 제품 코드 | `66015f64ba89618d03ce9e5ea9774a9e54860c4f` |
 | 형식·주석·PDF 보존 | `30b9cca953848cb03dd16fcff6c7a548007ce623` — 실행 의미 변경 없음 |
 
 | 적용 source commit | 로컬 commit |
@@ -63,7 +75,7 @@ ImageNode None → Skia Zoom 변환 → image_conv의 contain 사각형과 crop_
 - 통합 제품의 `issue_7235_cell_image_fill_contains`: **4 tests run: 4 passed, 187 skipped**.
 - Native CLI build, fresh WASM build, 수정 후 fmt: 통과. Studio TypeScript 및 renderer 단위 검사 64개 통과.
 - 전체 기록: [공동 실행·검증·입력 원장](pr_7244_review_impl.md). 원 PR의 전체 회귀 통과는 작성자/CI 증거이고 이번 로컬 재실행으로 세지 않는다.
-- 전체 nextest·Clippy 3종·Native Skia 전체 게이트는 통합 focused/시각 보류가 확인되어 아직 실행하지 않았다. 승인 PR도 통합 최종 head의 필수 gate 완료 전 merge-ready가 아니다.
+- 최초 검토 당시에는 전체 게이트가 미실행이었다. 아래 과거 기록을 최종 상태로 해석하지 않으며, 최신 결과는 최종 통합 검증 절과 공동 원장을 따른다.
 
 원 PR에 없던 PDF를 커밋된 1쪽 발췌 HWP에서 engine 2020으로 새로 변환했다. 로고가 보이고 가운데에 놓이지만 크기·글꼴 차이는 남는다. 64개 Studio renderer 검사는 실제 CanvasKit raster의 PDF 일치 검사가 아니다.
 
@@ -103,11 +115,15 @@ CLI Native SVG와 fresh WASM SVG를 각각 Chrome webfont 경로로 캡처했다
 
 ## Merge 후 contributor PR comment 계획
 
-현재 게시·merge 승인으로 간주하지 않는다. 보류 해제와 최종 head CI 및 통합 merge 이후 실제 merge SHA·통합 PR·CI URL·수정 계약·실제 검증 범위·잔여 차이를 한국어로 설명하고 기여에 감사한다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 연결한다.
+승인된 통합 PR의 최종 head CI와 실제 merge를 확인한 뒤 원 PR·관련 이슈에 한국어로
+merge SHA·CI URL·수정 계약·실제 검증 범위·남은 차이를 기록하고 기여에 감사한다.
+[Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다.
 
-- logo: 위 p1의 Native/WASM 및 메인터너 보정 backend review와 **각 standalone overlay**를 코멘트에 실제 이미지로 포함한다.
+- `mydocs/pr/assets/pr7259_review/`: `native_logo_review_001.png`, `native_logo_overlay_001.png`, `wasm_logo_review_001.png`, `wasm_logo_overlay_001.png`를 실제 이미지로 포함한다.
+- `mydocs/pr/assets/pr7259_review/maintainer_20260918/`: `skia_logo_review_001.png`, `skia_logo_overlay_001.png`, `canvas2d_logo_review_001.png`, `canvas2d_logo_overlay_001.png`, `canvaskit_logo_review_001.png`, `canvaskit_logo_overlay_001.png`를 실제 이미지로 포함한다.
 
-URL 형식 예: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/pr7259_review/wasm_logo_overlay_001.png`. `<merge-commit-sha>`는 게시 전 실제 값으로 치환한다. UTF-8 파일과 `gh ... --body-file`로 게시하고 API 재조회로 한국어·실제 head·모든 이미지 URL을 확인한다.
+이미지는 `https://raw.githubusercontent.com/edwardkim/rhwp/<실제-merge-SHA>/<위-경로>`로 표시한다.
+UTF-8 파일과 `--body-file`로 게시하고 한국어·실제 head·이미지 URL을 API와 HTTP로 재확인한다.
 
 ## 이슈·다음 단계
 

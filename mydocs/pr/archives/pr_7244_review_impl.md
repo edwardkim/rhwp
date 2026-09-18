@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 현재 판정과 범위
 
-**최초 보류 8개 사유를 보정한 뒤 전체 회귀에서 발견한 #7261 추가 회귀도 focused 재검증을 마쳤다. 최종 통합 게이트 재실행 중.** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
+**14개 검토 완료: 승인 5개, 메인터너 보정 후 수용 가능 9개. 통합 로컬 필수 검증 통과.** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
 
 | PR | source head | 로컬 적용 commit | 판정 |
 | --- | --- | --- | --- |
@@ -19,14 +19,14 @@ last_verified: 2026-09-18
 | [#7248](pr_7248_review.md) | `050394e006d4e838d10c4c2d0e05220ad7846b66` | `c9f407ff4` | 승인 |
 | [#7249](pr_7249_review.md) | `7497b8e59d557e84d0d5cd1ee05e1a9ab77bba8b` | `fe2d59443` | 승인 |
 | [#7250](pr_7250_review.md) | `008afddffcb48912fc5c15aa5a26a27ee16dc122` | `3805d3e70` | 승인 |
-| [#7251](pr_7251_review.md) | `40fd97a62606c0525f50c37f6f5b18310d04d5c7` | `a63d7a351` | 개별 사유 해소·최종 게이트 대기 |
-| [#7252](pr_7252_review.md) | `8fec62e01449b2b280d739665f31ee3aaa63b989` | `9327d8712` | 개별 사유 해소·최종 게이트 대기 |
-| [#7253](pr_7253_review.md) | `af407d86707f82c570fac054a85f64a69d3df5d5` | `03fec50df` | 개별 사유 해소·최종 게이트 대기 |
-| [#7255](pr_7255_review.md) | `3380ada6d92ad2bd818d9427ddcaf793fa54cc0e` | `075d11d16` | 승인 |
-| [#7256](pr_7256_review.md) | `ee3a903d855c1fbc0eea90d8fda2331ea56a4ca8` | `3fac1a159` | 개별 사유 해소·최종 게이트 대기 |
+| [#7251](pr_7251_review.md) | `40fd97a62606c0525f50c37f6f5b18310d04d5c7` | `a63d7a351` | 메인터너 보정 후 수용 가능 |
+| [#7252](pr_7252_review.md) | `8fec62e01449b2b280d739665f31ee3aaa63b989` | `9327d8712` | 메인터너 보정 후 수용 가능 |
+| [#7253](pr_7253_review.md) | `af407d86707f82c570fac054a85f64a69d3df5d5` | `03fec50df` | 메인터너 보정 후 수용 가능 |
+| [#7255](pr_7255_review.md) | `3380ada6d92ad2bd818d9427ddcaf793fa54cc0e` | `075d11d16` | 메인터너 보정 후 수용 가능 |
+| [#7256](pr_7256_review.md) | `ee3a903d855c1fbc0eea90d8fda2331ea56a4ca8` | `3fac1a159` | 메인터너 보정 후 수용 가능 |
 | [#7259](pr_7259_review.md) | `91ec20dc30992961ae5e4f3dc1b3332bdf73fac7` | `2182dcadb` | 메인터너 보정 후 수용 가능 |
 | [#7261](pr_7261_review.md) | `c242af317d074a9923c7971e2e004120b4088574` | `a0859738b` | 메인터너 보정 후 수용 가능 |
-| [#7262](pr_7262_review.md) | `2afaa71a1cf8bb1a7ffe0f46f481ac8df89d4afe` | `f1da7e4e3`, `66015f64b` | 개별 사유 해소·최종 게이트 대기 |
+| [#7262](pr_7262_review.md) | `2afaa71a1cf8bb1a7ffe0f46f481ac8df89d4afe` | `f1da7e4e3`, `66015f64b` | 메인터너 보정 후 수용 가능 |
 
 ## 적용 순서·conflict 처리
 
@@ -39,9 +39,9 @@ last_verified: 2026-09-18
 - #7259: #7244와 중복된 SVG None/Zoom 코드는 하나로 유지했다. 통합 결과와 달라진 쪽 배경 주석을 바로잡았다.
 - `30b9cca95`는 줄바꿈 형식·주석 정리와 한컴 PDF 보존이며 실행 의미 변경은 없다. 분석 → 수정·검증 → 결과보고 → 커밋 순서를 지켰다.
 
-## 실행 검증 원장
+## 최초 실행 검증 원장
 
-검증 제품은 `66015f64b`, 현재 입력 확인 commit은 `30b9cca953848cb03dd16fcff6c7a548007ce623`다. Native/WASM 빌드 후 변경은 위 형식·주석뿐이다. 빌드 후 생성된 SVG를 다시 예전 제품으로 relabel하지 않았다. 일부 sweep의 git_head는 증적 PDF 커밋 전후로 다르므로 실제 바이너리 hash를 함께 고정한다.
+최초 검증 제품은 `66015f64b`, 현재 입력 확인 commit은 `30b9cca953848cb03dd16fcff6c7a548007ce623`다. Native/WASM 빌드 후 변경은 위 형식·주석뿐이다. 빌드 후 생성된 SVG를 다시 예전 제품으로 relabel하지 않았다. 일부 sweep의 git_head는 증적 PDF 커밋 전후로 다르므로 실제 바이너리 hash를 함께 고정한다.
 
 | 검증 | 실제 결과 |
 | --- | --- |
@@ -144,7 +144,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 
 ## 메인터너 보정 2 — #7244·#7259
 
-source crop → contain destination → 최종 paint를 SVG/WebCanvas/Skia/CanvasKit에서 일치시켰다. 쪽 배경 None은 기존 stretch를 유지한다. crop 검사 2개 수정 전 FAIL → 보정 후 crop·쪽 배경 3 PASS, 실물 6 PASS, CanvasKit raster 4 PASS, Studio 64 PASS 및 tsc PASS. Native/fresh WASM 실물 3쪽씩 재캡처는 초기 PNG와 동일하며 실제 Skia/Canvas2D/CanvasKit 9쪽의 compare·overlay·review 27 PNG를 추가했다. [#7244](pr_7244_review.md)와 [#7259](pr_7259_review.md)에 hash·이미지·본문 글꼴 잔여 차이를 구분했다. 코드·소비 경로가 바뀐 나머지 PR과 통합 전체 게이트는 아직 남아 있다.
+source crop → contain destination → 최종 paint를 SVG/WebCanvas/Skia/CanvasKit에서 일치시켰다. 쪽 배경 None은 기존 stretch를 유지한다. crop 검사 2개 수정 전 FAIL → 보정 후 crop·쪽 배경 3 PASS, 실물 6 PASS, CanvasKit raster 4 PASS, Studio 64 PASS 및 tsc PASS. Native/fresh WASM 실물 3쪽씩 재캡처는 초기 PNG와 동일하며 실제 Skia/Canvas2D/CanvasKit 9쪽의 compare·overlay·review 27 PNG를 추가했다. [#7244](pr_7244_review.md)와 [#7259](pr_7259_review.md)에 hash·이미지·본문 글꼴 잔여 차이를 구분했다. 이 단계 이후 나머지 PR 보정과 통합 전체 게이트를 완료했다. 최종 결과는 아래에 기록했다.
 
 ## #7261 메인터너 보정
 
@@ -156,7 +156,7 @@ Native/fresh WASM 27~29쪽 캡처는 서로 동일하며 Native 27·29쪽은 수
 
 ## #7253·#7256 메인터너 보정
 
-저장 프레임 원점·빈 슬롯·소유 줄의 가로 및 세로 위치를 함께 보정했다. 수정 전 실패를 확인한 좌표 검사 포함 8/8, 음성 대조 8/8 통과. Native/fresh WASM 3~6쪽과 대조 9~10쪽의 최신 증적·제품 해시는 [#7253](pr_7253_review.md#보정-후-visual-sweep)에 있다. 바깥 wrapper 외곽선·글꼴 잔여 차이와 최종 게이트 미실행은 유지한다.
+저장 프레임 원점·빈 슬롯·소유 줄의 가로 및 세로 위치를 함께 보정했다. 수정 전 실패를 확인한 좌표 검사 포함 8/8, 음성 대조 8/8 통과. Native/fresh WASM 3~6쪽과 대조 9~10쪽의 최신 증적·제품 해시는 [#7253](pr_7253_review.md#보정-후-visual-sweep)에 있다. 바깥 wrapper 외곽선·글꼴 잔여 차이와 다른 시각 차이는 유지하며 최종 게이트 결과는 아래에 기록했다.
 
 ## #7251 보정 판정 보완
 
@@ -184,3 +184,51 @@ Studio 동일 제품의 타입 검사, 단위 1,760 PASS / 2 skipped, production
 추가 보정 후 전체 nextest 재실행은 **10,073 PASS / 50 skipped**였다. Native/fresh WASM
 14입력 각30쪽을 재캡처했고 기존28쪽은 backend별 직전 보정 PNG와 동일하다.
 Native Skia·lint 및 정책 검사는 순차로 이어 실행 중이다.
+
+
+## 최종 통합 검증
+
+제품 코드 `88f2f00da8412c769f34ef6bc3b72bc13402557b`, base `18a9fa85e955c220e5eb4d0143dc918a4de6be73`.
+전용 review worktree에서 실행한 product/test/fixture bytes를 이 코드 commit과 대조했다.
+검증 중 도구 호출 오류(파생 suite 준비 전 0 tests, standalone으로 잘못 요청한 IR target)는
+검증 통과로 세지 않았고 올바른 manifest/module 경로로 재실행했다.
+
+| 검증 | 결과 |
+| --- | --- |
+| release-test 전체 nextest | `Summary [ 510.375s] 10073 tests run: 10073 passed (4 slow), 50 skipped` |
+| Native Skia lib | `test result: ok. 3930 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 72.70s / test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s / test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s / test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s` |
+| Native Skia 누락 그림 / 직접 PDF | 2 / 4 PASS |
+| fmt, Native Clippy, WASM32 Clippy, workspace build/all-target Clippy | 모두 exit 0 |
+| suite manifest / source unit 정책, base 고정 | 모두 exit 0 |
+| 신규 samples 4개 보안 입력 | 명시 JSON 목록을 환경변수로 전달한 전체 검사 PASS |
+| Studio | tsc, 1,760 PASS / 2 skipped, production build exit 0 |
+| Visual Sweep | 14입력 각30쪽, Native/fresh WASM compare·overlay·review 및 전쪽 layout ledger 완료 |
+
+새 sample 보안 입력은 `cell_align_left.hwpx`, `cell_align_justify.hwpx`,
+`156086935_none_image_fill.hwp`, `156467175_press_release_header_logo_p1.hwp`의 위 원장 경로다.
+전용 `CARGO_TARGET_DIR=target/planet-review-20260918`과
+`DEVELOPER_DIR=/Library/Developer/CommandLineTools`를 사용했다.
+
+Rust 실행은 `cargo nextest run --locked --cargo-profile release-test --tests --test-threads 6 --no-fail-fast`,
+Native Skia lib 및 두 focused 모듈, `AGENTS.md`의 Clippy 세 단계·workspace build,
+정책 `--check --base-ref 18a9fa85e955c220e5eb4d0143dc918a4de6be73` 순서다.
+WASM은 같은 제품의 `scripts/wasm-pack-locked.sh --target web --out-dir <전용 경로> --no-opt`다.
+Docker가 없어 로컬 wrapper로 검증했으며 Docker release build를 실행했다고 주장하지 않는다.
+Studio는 같은 review tree에서 npm ci 후 그 tree에서 빌드한 WASM을 사용해 tsc·npm test·build를 실행했다.
+
+최종 재캡처의 기존 28쪽은 각 backend의 직전 보정 출력과 동일했다. 새로운 56345 19~20쪽을
+추가했고 29/30쌍의 rhwp PNG가 Native/WASM 동일하다. 차례 2쪽은 기존 backend별 글꼴/간격 차이가
+남아 있어 두 결과를 따로 보존한다. 픽셀 점수나 동일 hash를 한컴 PDF 전체 일치로 읽지 않는다.
+기존에 보존된 동일 PNG는 중복 추가하지 않고 개별 문서의 최신 증적을 재사용한다.
+
+| 제품 | SHA-256 |
+| --- | --- |
+| Native CLI | `4da1f1d611206a7aca9ab19be4e0833a4fcb2070cb2f90ba06b4560996ae6b8e` |
+| fresh WASM | `c6a517d19925e25410a121260659f037042fdbc51d93d980ab4825df21bd20c3` |
+
+#7231·#7232는 해당 scaffold 기능 범위 해결 후 종료 후보이며, #7190·#7174·#7170·#6802·#6976·
+#6923·#6925·#7203·#7226·#6981·#7235는 부분 개선이므로 열어 둔다.
+통합 PR code candidate CI 뒤 같은 PR에 오늘할일·CI 증적을 trailing 문서 commit으로 반영한다.
+최종 head CI와 mergeability를 확인한 뒤 merge하며, 병합 뒤에는 duration refresh만 확인한다.
+관련 source PR·issue에 실제 merge SHA의 review 및 standalone overlay를 보이게 게시하고
+source PR close, devel 동기화, 소유한 branch/worktree/전용 target 정리까지 수행한다.
