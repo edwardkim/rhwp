@@ -138,3 +138,43 @@ export function canvasKitImageFillModeTiles(fillMode: string | undefined): boole
 export function canvasKitImageFillModeStretches(fillMode: string | undefined): boolean {
   return fillMode === undefined || fillMode === 'fitToSize' || fillMode === 'total';
 }
+
+/**
+ * [#7235] 영역에 맞춰 종횡비를 지키며 축소해 가운데 놓는 채우기 유형.
+ *
+ * `none` 은 이진 채우기 유형 15 로, 배치(원본 크기) 모드가 아니다 — 한/글은 칸에 맞춰
+ * 축소한다(156467175 머리 표 칸 253.37x57.11 에서 원본 1628x563 로고가 가로 511~676px).
+ * `zoom` 은 HWPX `imgBrush mode="ZOOM"`(#6310) 으로 같은 의미다. 둘 다 종전에는 이
+ * 판정이 없어 배치 모드로 떨어져 원본 픽셀 크기를 칸 왼쪽 위에 놓고 잘렸다.
+ * SVG backend 의 `ImageFillMode::Zoom | ImageFillMode::None` 팔과 같은 결과다.
+ */
+export function canvasKitImageFillModeContains(fillMode: string | undefined): boolean {
+  return fillMode === 'zoom' || fillMode === 'none';
+}
+
+/**
+ * [#7235] contain 배치 사각형 — 종횡비를 지켜 영역 안에 넣고 가운데 맞춘다.
+ *
+ * 크기를 못 읽은 경우(0 이하·비유한)는 영역 전체를 돌려준다. SVG 의
+ * `preserveAspectRatio="xMidYMid meet"` 와 같은 기하다.
+ */
+export function canvasKitImageContainRect(
+  bbox: CanvasKitImageBounds,
+  imageWidth: number,
+  imageHeight: number,
+): { x: number; y: number; width: number; height: number } {
+  const usable = Number.isFinite(imageWidth) && Number.isFinite(imageHeight)
+    && imageWidth > 0 && imageHeight > 0;
+  if (!usable) {
+    return { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
+  }
+  const scale = Math.min(bbox.width / imageWidth, bbox.height / imageHeight);
+  const width = imageWidth * scale;
+  const height = imageHeight * scale;
+  return {
+    x: bbox.x + (bbox.width - width) / 2,
+    y: bbox.y + (bbox.height - height) / 2,
+    width,
+    height,
+  };
+}

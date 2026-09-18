@@ -1415,7 +1415,24 @@ impl SkiaLayerRenderer {
                                 let rendered = draw_image(
                                     data,
                                     effective_bbox,
-                                    image.fill_mode,
+                                    // [#7235] 칸·도형 배경 채우기의 `None`(이진 유형 15)은
+                                    // 배치(원본 크기)가 아니라 영역에 맞춘 축소·가운데다.
+                                    // 한/글 실측: 156467175 머리 표 칸 253.37x57.11 에 원본
+                                    // 1628x563 로고가 가로 511~676px(= 폭 165.16, 왼쪽
+                                    // 510.72)로 그려진다. SVG backend 의
+                                    // `ImageFillMode::Zoom | ImageFillMode::None` 팔과 같은
+                                    // 결과가 되도록 여기서 contain 유형으로 해석한다.
+                                    // 쪽 배경 경로(이 파일의 다른 draw_image 호출)는 종전
+                                    // 늘려 채우기를 유지한다 — 그 축은 정답지를 확인하지
+                                    // 않았고, SVG 쪽 배경 경로도 늘려 채우기다.
+                                    image.fill_mode.map(|mode| {
+                                        use crate::model::style::ImageFillMode;
+                                        if mode == ImageFillMode::None {
+                                            ImageFillMode::Zoom
+                                        } else {
+                                            mode
+                                        }
+                                    }),
                                     image.original_size,
                                     image.crop,
                                     image.original_size_hu,
