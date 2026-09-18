@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 현재 판정과 범위
 
-**최초 보류 8개 개별 사유 해소. 최초 승인 6개와 함께 최종 통합 게이트 대기.** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
+**최초 보류 8개 사유를 보정한 뒤 전체 회귀에서 발견한 #7261 추가 회귀도 focused 재검증을 마쳤다. 최종 통합 게이트 재실행 중.** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
 
 | PR | source head | 로컬 적용 commit | 판정 |
 | --- | --- | --- | --- |
@@ -165,3 +165,22 @@ Native/fresh WASM 27~29쪽 캡처는 서로 동일하며 Native 27·29쪽은 수
 ## #7262 메인터너 보정
 
 같은 행에서 재개하는 rowspan의 컷 소유권과 요구 높이 예약을 공유했다. 3.17px 잘림 반례 실패 후 5/5, #6981 8/8, #7243 2/2 통과. 32~34쪽 내용 보존과 다음 행, 정상 86712 26·28·29쪽을 Native/fresh WASM으로 재검증했다. 최신 증적·해시·남은 PDF 분할 차이는 [#7262](pr_7262_review.md#보정-후-visual-sweep)에 있다.
+
+
+## 추가 통합 검증 — 저장 흐름 원점과 중복 입력
+
+`227a31dfd` 전체 nextest는 10,071 PASS / 1 FAIL / 50 skipped였다. #7261 보정이 연속
+빈 표의 흐름 원점과 paint 원점을 혼동하여 56345 마지막 표를 본문 아래 15.57px로 밀었다.
+저장 사다리가 `height + outer_top + outer_bottom`과 정확히 같은 경우의 흐름 원점을
+공통 span에 반영했다. 새 반례 수정 전 FAIL, 보정 후 3/3 PASS, 분할 표 대조 3/3 PASS,
+본문 넘침 16/16 PASS. 기준값을 완화하지 않았다. 최종 전체 게이트는 다시 실행 중이다.
+
+`37777c683`은 #7255 신규 경로와 동일한 기존 HWP를 재사용하고 중복 HWP/PDF·IR 원장 두 행을
+제거한 커밋이다. #6925 1/1, #6924 대조 2/2, IR sweep 4/4(exit 0, 1 leaky 표지) 통과.
+기존 PDF 기반 p1·p2 compare·overlay·review를 같은 커밋에 보존했다.
+
+Studio 동일 제품의 타입 검사, 단위 1,760 PASS / 2 skipped, production build 통과.
+
+추가 보정 후 전체 nextest 재실행은 **10,073 PASS / 50 skipped**였다. Native/fresh WASM
+14입력 각30쪽을 재캡처했고 기존28쪽은 backend별 직전 보정 PNG와 동일하다.
+Native Skia·lint 및 정책 검사는 순차로 이어 실행 중이다.

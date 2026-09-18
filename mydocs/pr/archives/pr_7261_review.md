@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 개별 보류 사유 해소, 통합 최종 게이트 대기.**
+**메인터너 보정 후 수용 가능** — 추가 회귀 보정과 전체 nextest 통과, Native Skia·lint 최종 게이트 진행 중.
 
 저장 host를 기준으로 한 `(표 윗변 offset, 아래 점유 끝)`을 `stored_topbottom_object_span`으로
 한 곳에서 계산한다. 예약 조건은 점유 끝을 소비하고, 최종 `saved_top`은 같은 윗변 offset을
@@ -26,6 +26,41 @@ last_verified: 2026-09-18
 
 #7203의 다른 anchor 경로는 이번 수정 범위가 아니므로 이슈 전체 종료 근거로 사용하지 않는다.
 아래 최초 검토 수치와 이미지는 수정 전 기록이다.
+
+## 전체 검증에서 발견한 추가 회귀
+
+통합 `227a31dfd`의 전체 nextest는 **10,071 PASS / 1 FAIL / 50 skipped**였다.
+`body_overflow_baseline`이 기존 `samples/issue6111/56345_regulatory_impact_analysis.hwp`의
+본문 하단 넘침 0→1건을 검출했다. #7261 위여백 보정 전후 CLI로 원인을 좁혔다.
+1×1 빈 표의 저장 사다리가 선언 높이+위·아래 여백 전체를 증언하는 경우, host는 흐름 원점이다.
+여기서 위여백을 빼면 최종 paint의 문단 원점과 lane 예약 원점이 달라져 후속 표가 밀린다.
+실제로 마지막 표는 y=721.2→740.7, bottom=1062.48로 본문 하단1046.91을 15.57px 넘었다.
+
+`stored_topbottom_object_span`이 저장 advance의 정확한 등식으로 흐름 원점과 위여백 뒤의
+anchor를 구분하도록 보정한다. 임의 문서명·픽셀 허용치·baseline 완화는 추가하지 않는다.
+최종 표의 본문 수용 반례는 수정 전 실패했다. 단순히 선언 높이 대신 측정 높이로 fit을
+검사한 첫 시도는 실패를 해소하지 못해 폐기했다. 수정 후 앵커 3/3, 별도 분할 표 3/3, 본문 넘침 16/16 검사가 통과했다.
+최종 표 y는 740.7→721.2px로 복원됐고 본문 하단 넘침은 1→0건이다.
+Native/fresh WASM 각19·20쪽을 직접 비교했으며 rhwp PNG는 2/2 동일하다.
+19쪽 대조는 유지되고 20쪽 후속 표 위치가 회귀 전으로 복원됐다. 마지막 행의 글꼴·줄바꿈과
+외곽선 차이 및 rhwp20쪽/한컴21쪽은 기존 차이로 남는다. 이 전체 쪽수 차이를 해소했다고
+보고하지 않는다. 본문 넘침 래칫 허용치는 변경하지 않았다.
+
+기준은 기존 HWP에서 engine2020으로 `start → status(succeeded,17초) → download`했다.
+MCP job `3f2da355-b139-427a-a67e-4c773a6a195d`, 21쪽·369,330bytes.
+[원본 HWP](../../../samples/issue6111/56345_regulatory_impact_analysis.hwp) SHA-256
+`58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc`,
+[기준 PDF](../../../pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf) SHA-256
+`c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb`.
+PDF 추가에 따라 oracle_page_count 원장에 `21 / 20` 행을 추가했다.
+독립 devel CLI와 보정 CLI가 모두20쪽이며 기존 행의 허용치를 완화하지 않았다.
+
+| 쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| 19 | [compare](../assets/pr7261_review/maintainer_anchor_flow_20260918/native_anchor_fit_compare_019.png) · [overlay](../assets/pr7261_review/maintainer_anchor_flow_20260918/native_anchor_fit_overlay_019.png) · [review](../assets/pr7261_review/maintainer_anchor_flow_20260918/native_anchor_fit_review_019.png) | [compare](../assets/pr7261_review/maintainer_anchor_flow_20260918/wasm_anchor_fit_compare_019.png) · [overlay](../assets/pr7261_review/maintainer_anchor_flow_20260918/wasm_anchor_fit_overlay_019.png) · [review](../assets/pr7261_review/maintainer_anchor_flow_20260918/wasm_anchor_fit_review_019.png) |
+| 20 | [compare](../assets/pr7261_review/maintainer_anchor_flow_20260918/native_anchor_fit_compare_020.png) · [overlay](../assets/pr7261_review/maintainer_anchor_flow_20260918/native_anchor_fit_overlay_020.png) · [review](../assets/pr7261_review/maintainer_anchor_flow_20260918/native_anchor_fit_review_020.png) | [compare](../assets/pr7261_review/maintainer_anchor_flow_20260918/wasm_anchor_fit_compare_020.png) · [overlay](../assets/pr7261_review/maintainer_anchor_flow_20260918/wasm_anchor_fit_overlay_020.png) · [review](../assets/pr7261_review/maintainer_anchor_flow_20260918/wasm_anchor_fit_review_020.png) |
+
+[추가 보정 전20쪽 review](../assets/pr7261_review/maintainer_anchor_flow_20260918/before_native_anchor_fit_review_020.png) · [추가 보정 전 overlay](../assets/pr7261_review/maintainer_anchor_flow_20260918/before_native_anchor_fit_overlay_020.png).
 
 ## 보정 후 Visual Sweep 증적
 

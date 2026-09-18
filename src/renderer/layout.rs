@@ -1542,12 +1542,39 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
             .is_some_and(|height| height <= declared_height * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO)
 }
 
-/// 빈 TopAndBottom 표의 저장 host를 기준으로 한 외곽 점유 구간(HU).
-/// 저장 host는 위 바깥여백 뒤의 좌표이므로 표 윗변과 예약 끝 모두 같은 원점을 쓴다.
-fn stored_topbottom_object_span(table: &crate::model::table::Table) -> (i64, i64) {
-    let top = -(table.outer_margin_top as i64);
-    let bottom = top + table.common.height as i64 + table.outer_margin_bottom as i64;
-    (top, bottom)
+/// 저장 host 기준의 표 윗변과 흐름 점유 끝(HU).
+/// 다음 저장 anchor가 높이+양쪽 여백만큼 전진하면 host는 전체 흐름 상자의
+/// 원점이다. 그 경우 위여백을 빼면 paint의 문단 원점과 예약 원점이 달라져
+/// 후속 표에 여백이 다시 누적된다. 그 외 수용된 저장 anchor는 위여백 뒤다.
+fn stored_topbottom_object_span(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    table: &crate::model::table::Table,
+) -> (i64, i64) {
+    let first_vpos = |paragraph: &Paragraph| {
+        paragraph
+            .line_segs
+            .iter()
+            .find(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .map(|seg| i64::from(seg.vertical_pos))
+    };
+    let outer_box_height = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    let stored_outer_box = first_vpos(para)
+        .zip(next_para.and_then(first_vpos))
+        .is_some_and(|(current, next)| next - current == outer_box_height);
+    if stored_outer_box {
+        (0, outer_box_height)
+    } else {
+        let top = -i64::from(table.outer_margin_top);
+        (
+            top,
+            top + i64::from(table.common.height) + i64::from(table.outer_margin_bottom),
+        )
+    }
 }
 
 /// 저장 host vpos를 physical paint anchor로 쓸 수 있는지 판별한다.
@@ -1565,7 +1592,7 @@ fn stored_ladder_leaves_object_room(
     // [#7203 실험 A] 앵커 vpos 는 표 상자 상단이 아니라 **위 바깥여백 뒤**를 가리킨다
     // (정본 실측: 윗변 = 앵커 − 위여백). 그러면 앵커 아래로 필요한 공간은
     // 높이 + 아래여백 − 위여백 이다.
-    let (_, occupied_bottom) = stored_topbottom_object_span(table);
+    let (_, occupied_bottom) = stored_topbottom_object_span(para, next_para, table);
     let need = occupied_bottom.max(0);
     let first_vpos = |paragraph: &Paragraph| {
         paragraph
@@ -1626,7 +1653,7 @@ fn native_empty_single_topbottom_table_saved_top(
     if next_seg.vertical_pos <= seg.vertical_pos {
         return None;
     }
-    let (top_offset, _) = stored_topbottom_object_span(table);
+    let (top_offset, _) = stored_topbottom_object_span(para, next_para, table);
     let top = col_area.y + (seg.vertical_pos as f64 + top_offset as f64) * dpi / 7200.0;
     let bottom = top + hwpunit_to_px(table.common.height as i32, dpi);
     (top >= col_area.y + col_area.height * 0.5 && bottom <= col_area.y + col_area.height + 0.5)
