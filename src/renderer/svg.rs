@@ -2156,7 +2156,20 @@ impl SvgRenderer {
         let fill_mode = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
 
         match fill_mode {
-            ImageFillMode::Zoom => {
+            // [#7235] `None`(이진 채우기 유형 15)은 배치 모드가 아니다 — 한/글은 영역에
+            // 맞춰 종횡비를 지키며 축소해 가운데 놓는다. 즉 `Zoom` 과 같은 결과다.
+            //
+            // 정답지: 156467175 머리 표 `r=0,c=3` 칸(466.61, 100.27, 253.37×57.11)에서
+            // 원본 1628×563 로고가 한/글 출력에서 가로 511~676px 에 그려진다. 종횡비
+            // 유지 축소·가운데를 예측하면 폭 57.11×(1628/563)=165.16, 왼쪽
+            // 466.61+(253.37−165.16)/2=510.72, 오른쪽 675.88 로 세 수가 모두 맞는다.
+            // 늘려 채우기(`preserveAspectRatio="none"`)면 466.61~720.0 이라 어긋난다.
+            //
+            // 종전에는 이 팔이 없어 `_` 의 배치 모드로 떨어져 원본 픽셀 크기(1628×563)를
+            // 칸 왼쪽 위에 놓고 칸 clip 으로 잘라, 로고가 흰 여백만 남고 사라졌다.
+            // 쪽 배경 경로(`render_page_background_image`)는 같은 `None` 을 늘려 채우기로
+            // 묶어 두었다 — 그 축의 정답지는 확인하지 않았으므로 여기서 바꾸지 않는다.
+            ImageFillMode::Zoom | ImageFillMode::None => {
                 self.output.push_str(&format!(
                     "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"xMidYMid meet\" href=\"{}\"/>\n",
                     bbox.x, bbox.y, bbox.width, bbox.height, data_uri,

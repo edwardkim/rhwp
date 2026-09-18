@@ -16,6 +16,8 @@ import type { PageInfo } from '../src/core/types.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
+  canvasKitImageContainRect,
+  canvasKitImageFillModeContains,
   canvasKitImageFillModeTiles,
   canvasKitImageFillModeStretches,
   canvasKitImagePlacement,
@@ -933,6 +935,40 @@ test('CanvasKit image TOTAL fill stretches like fitToSize', () => {
   for (const mode of ['none', 'center', 'leftTop', 'tileAll']) {
     assert.equal(canvasKitImageFillModeStretches(mode), false);
   }
+});
+
+// [#7235] `none`(이진 유형 15)·`zoom` 은 배치(원본 크기) 모드가 아니다. 종전에는 이 판정이
+// 없어 둘 다 `canvasKitImagePlacement` 의 leftTop 으로 떨어져 원본 픽셀 크기를 칸 왼쪽 위에
+// 놓고 잘렸다 — 로고가 흰 여백만 남고 사라졌다.
+test('CanvasKit image NONE/ZOOM fill contains instead of placing at original size', () => {
+  for (const mode of ['none', 'zoom']) {
+    assert.equal(canvasKitImageFillModeContains(mode), true);
+    assert.equal(canvasKitImageFillModeStretches(mode), false);
+    assert.equal(canvasKitImageFillModeTiles(mode), false);
+  }
+  for (const mode of [undefined, 'fitToSize', 'total', 'center', 'leftTop', 'tileAll']) {
+    assert.equal(canvasKitImageFillModeContains(mode), false);
+  }
+});
+
+// 기대값은 한/글 출력에서 온다 — 156467175 머리 표 `r=0,c=3` 칸(466.613, 100.267,
+// 253.373x57.107)에 원본 1628x563 로고가 가로 511~676px 에 그려진다. 종횡비 유지 축소·가운데를
+// 계산하면 폭 57.107x(1628/563)=165.16, 왼쪽 510.72, 오른쪽 675.88 로 세 수가 모두 맞는다.
+test('CanvasKit contain rect matches the Hancom cell-fill geometry', () => {
+  const cell = { x: 466.6133333333333, y: 100.26666666666667, width: 253.3733333333333, height: 57.10666666666667 };
+  const fit = canvasKitImageContainRect(cell, 1628, 563);
+  assert.ok(Math.abs(fit.width - 165.16) < 0.05, `width=${fit.width}`);
+  assert.ok(Math.abs(fit.height - cell.height) < 1e-9, `height=${fit.height}`);
+  assert.ok(Math.abs(fit.x - 510.72) < 0.05, `x=${fit.x}`);
+  assert.ok(Math.abs(fit.x + fit.width - 675.88) < 0.05, `right=${fit.x + fit.width}`);
+  assert.ok(Math.abs(fit.y - cell.y) < 1e-9, `y=${fit.y}`);
+  // 원본 크기·왼쪽 위 배치(종전 동작)와 다르다.
+  assert.notEqual(Math.round(fit.width), 1628);
+  assert.notEqual(Math.round(fit.x), Math.round(cell.x));
+  // 크기를 못 읽으면 영역 전체로 폴백한다.
+  assert.deepEqual(canvasKitImageContainRect(cell, 0, 0), {
+    x: cell.x, y: cell.y, width: cell.width, height: cell.height,
+  });
 });
 
 test('GlyphOutline advanced payload gates reject richer payloads by default', () => {

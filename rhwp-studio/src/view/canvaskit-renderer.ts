@@ -60,6 +60,8 @@ import {
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
+  canvasKitImageContainRect,
+  canvasKitImageFillModeContains,
   canvasKitImageFillModeTiles,
   canvasKitImageFillModeStretches,
   canvasKitImagePlacement,
@@ -1920,6 +1922,14 @@ export class CanvasKitLayerRenderer {
     const fillMode = op.fillMode ?? 'fitToSize';
     if (canvasKitImageFillModeStretches(fillMode)) {
       drawImage(op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height);
+      return;
+    }
+    // [#7235] `none`·`zoom` 은 영역에 맞춰 종횡비를 지키며 축소해 가운데 놓는다.
+    // 종횡비 기준은 그림의 고유 픽셀 크기다 — 타일 기준인 `originalSize`(HWP
+    // shape_attr) 가 아니다. SVG 의 `preserveAspectRatio="xMidYMid meet"` 와 같다.
+    if (canvasKitImageFillModeContains(fillMode)) {
+      const fit = canvasKitImageContainRect(op.bbox, imageWidth, imageHeight);
+      drawImage(fit.x, fit.y, fit.width, fit.height);
       return;
     }
 
