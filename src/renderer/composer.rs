@@ -2210,7 +2210,10 @@ fn trim_leader_fill_overflow(
                 let current: String = chars.iter().collect();
                 let current_width = estimate_text_width(&current, &style);
                 let without = |drop: usize| -> String {
-                    chars[..span.end - drop].iter().chain(&chars[span.end..]).collect()
+                    chars[..span.end - drop]
+                        .iter()
+                        .chain(&chars[span.end..])
+                        .collect()
                 };
                 // 제목/쪽번호/다른 run은 그대로 두고 필요한 최소 채움만 줄인다.
                 // 서로 다른 리더 글리프나 자간도 전체 run 재측정으로 반영한다.

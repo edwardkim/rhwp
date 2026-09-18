@@ -10115,6 +10115,27 @@ impl LayoutEngine {
         units
     }
 
+    /// 저장 쪽 프레임에서 재개하는 컷의 원점. 가시 줄 범위 대신 같은 source unit을
+    /// 읽으므로 프레임 앞의 빈 문단도 원점과 소유권을 잃지 않는다.
+    pub(super) fn stored_frame_origin_for_cut(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        start_unit: usize,
+    ) -> Option<i32> {
+        let units = self.cell_units(cell, table, styles);
+        let unit = units.get(start_unit)?;
+        if !unit.page_frame_reset_before || !unit.stored_frame_break_before {
+            return None;
+        }
+        cell.paragraphs
+            .get(unit.para_idx)?
+            .line_segs
+            .get(unit.vis_start)
+            .map(|seg| seg.vertical_pos.max(0))
+    }
+
     /// [#4128] `(cell_para_idx, target_line)` 이 속한 `cell_units` 서수.
     /// 텍스트 줄 유닛 `(li, li+1)` / atom 유닛 `(0, line_count.max(1))` 의
     /// `vis_start..vis_end` 계약을 그대로 조회한다. 콘텐츠(비 spacer) 유닛을

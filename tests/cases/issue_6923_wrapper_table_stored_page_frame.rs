@@ -37,11 +37,14 @@
 //! (글자 겹침 13건). 정본은 그 둘을 34.8px 띄운다(줄 765.9px · 표 800.7px).
 //! 저장 델타(33.3px)를 더해 앉히면 겹침이 사라진다.
 //!
-//! ## 이 시험이 잠그지 않는 것
+//! ## 메인터너 보정: 저장 프레임과 소유 줄의 실제 원점
 //!
-//! 같은 4쪽에서 제목 상자(선언 148.0px, 페인트 32.2px) 뒤로 **116px 빈 띠**가 남는다.
-//! 흐름 누적이 저장 사다리보다 짧게 쌓이다가(p49~p61 구간 72.8px 압축) p64 가 저장
-//! vpos 로 스냅하면서 생기는 두 높이 모델의 어긋남이며, 이 이슈의 남은 범위다.
+//! 이어받는 컷의 source unit을 프레임 원점으로 쓴다. 첫 빈 문단도 공간을 점유하므로
+//! 첫 가시 제목으로 원점을 대체하지 않는다. 이것으로 앞 본문의 압축과 뒤 저장 vpos
+//! 스냅 사이에 생겼던 116px 빈 띠를 없앤다. 제목 표의 선언 높이 자체는 2414HU다.
+//! 중첩 표의 가로 원점은 자기 줄 들여쓰기와 자기 앞 텍스트만 소비한다.
+//! 독립 PDF의 세로 좌표와 wrapper 대비 가로 좌표를 아래 테스트로 확인한다.
+//! 글꼴 모양과 바깥 wrapper의 잔여 외곽선 차이를 픽셀 일치로 주장하지 않는다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -78,6 +81,11 @@ fn body_box(root: &RenderNode) -> (f64, f64) {
     (body.bbox.y, body.bbox.y + body.bbox.height)
 }
 
+fn has_visible_text(node: &RenderNode) -> bool {
+    matches!(&node.node_type, RenderNodeType::TextRun(run) if !run.display_or_text().trim().is_empty())
+        || node.children.iter().any(has_visible_text)
+}
+
 /// 감싼 칸 안의 직계 내용(줄·중첩 표)을 위에서 아래로.
 fn wrapper_cell_items(root: &RenderNode) -> Vec<(&'static str, f64, f64)> {
     fn find_cell<'a>(node: &'a RenderNode, out: &mut Option<&'a RenderNode>) {
@@ -100,7 +108,7 @@ fn wrapper_cell_items(root: &RenderNode) -> Vec<(&'static str, f64, f64)> {
     cell.children
         .iter()
         .filter_map(|child| match child.node_type {
-            RenderNodeType::TextLine(_) => {
+            RenderNodeType::TextLine(_) if has_visible_text(child) => {
                 Some(("TextLine", child.bbox.y, child.bbox.y + child.bbox.height))
             }
             RenderNodeType::Table(_) => {
@@ -197,4 +205,94 @@ fn no_off_canvas_in_the_document() {
         off.is_empty(),
         "쪽 밖 요소가 남아 있다 (수정 전 4쪽 표 12.4px): {off:?}"
     );
+}
+
+#[test]
+fn continuation_heading_boxes_follow_the_pdf_stored_frame() {
+    fn text(node: &RenderNode) -> String {
+        let mut out = match &node.node_type {
+            RenderNodeType::TextRun(run) => run.display_or_text().to_string(),
+            _ => String::new(),
+        };
+        for child in &node.children {
+            out.push_str(&text(child));
+        }
+        out
+    }
+    fn heading(node: &RenderNode, needle: &str, found: &mut Vec<f64>) {
+        if matches!(node.node_type, RenderNodeType::Table(_))
+            && node.bbox.height < 50.0
+            && text(node).contains(needle)
+        {
+            found.push(node.bbox.y);
+        }
+        for child in &node.children {
+            heading(child, needle, found);
+        }
+    }
+    let core = core();
+    // Independent Hancom PDF vector top strokes (96dpi). The PDF media box
+    // is 841pt high; the original HWP page is 84188 HU = 841.88pt. Normalize
+    // the PDF coordinate system, rather than increasing the stroke tolerance.
+    let pdf_to_source =
+        f64::from(core.document().sections[0].section_def.page_def.height) / 100.0 / 841.0;
+    for (page, needle, pdf_top) in [(3, "조치내용", 532.38), (4, "기대효과", 129.78)] {
+        let expected = pdf_top * pdf_to_source;
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut tops = Vec::new();
+        heading(&tree.root, needle, &mut tops);
+        assert_eq!(tops.len(), 1, "heading {needle}: {tops:?}");
+        assert!(
+            (tops[0] - expected).abs() < 0.5,
+            "page {} heading {needle}: top={}, PDF={expected}",
+            page + 1,
+            tops[0]
+        );
+    }
+}
+
+#[test]
+fn page5_keeps_the_empty_leading_source_slot() {
+    fn empty_line(node: &RenderNode) -> bool {
+        (matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(71))
+            && !has_visible_text(node)
+            && (node.bbox.height - 1400.0 * 96.0 / 7200.0).abs() < 0.05
+            && node.bbox.y > 98.0
+            && node.bbox.y < 102.0)
+            || node.children.iter().any(empty_line)
+    }
+    assert!(
+        empty_line(&core().build_page_render_tree(4).unwrap().root),
+        "the stored blank paragraph must retain its line box before the heading"
+    );
+}
+
+/// Independent PDF border centers, relative to the wrapper's left border.
+/// Prefix text belongs only to the object's saved line; following text and
+/// earlier lines must not shift the object. Hanging indent belongs to line 2.
+#[test]
+fn continuation_tables_follow_their_owner_line_horizontal_origin() {
+    fn table_x(node: &RenderNode, para: usize) -> Option<f64> {
+        if matches!(&node.node_type, RenderNodeType::Table(t) if t.para_index == Some(para)) {
+            return Some(node.bbox.x);
+        }
+        node.children.iter().find_map(|child| table_x(child, para))
+    }
+    let core = core();
+    let scale = f64::from(core.document().sections[0].section_def.page_def.width) / 100.0 / 595.0;
+    for (page, para, pdf_relative) in [
+        (3, 63, 11.11),
+        (3, 66, 19.03),
+        (3, 69, 22.55),
+        (4, 72, 11.11),
+    ] {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let actual = table_x(&tree.root, para).unwrap() - table_x(&tree.root, 5).unwrap();
+        let expected = pdf_relative * scale;
+        assert!(
+            (actual - expected).abs() < 0.5,
+            "page {} para {para}: relative x={actual}, PDF={expected}",
+            page + 1
+        );
+    }
 }

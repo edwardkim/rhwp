@@ -9,11 +9,54 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**머지 보류** — 2026-09-18 통합 검토.
+**메인터너 보정 후 개별 보류 사유 해소 — 최종 통합 게이트 대기.**
 
-[P1] 의존 #7253의 통합 focused 실패가 남는다. 4쪽 적용법조와 중첩 표의 겹침은 줄었지만, 위 제목과 뒤 표 사이의 큰 공백 및 PDF와의 절대 원점 차이가 남아 있다. 상대 간격만의 통과로 전체 소유·점유 계약을 승인하지 않는다.
+2026-09-18 `746b7881e` 이후 보정은 저장 컷의 source unit에서 프레임 원점을 읽고,
+배치에서 그 원점을 끝까지 유지한다. 첫 빈 TextLine을 지우지 않고 첫 가시 내용과
+1400HU 빈 슬롯의 점유를 각각 검사한다. 이어받는 셀 좌표와 표 자신의 문단 offset을
+혼동하던 제한을 제거했다. 4쪽 제목 y=445.23→532.96px, 5쪽 y≈102→129.9px로 복원했다.
+PDF 841pt를 원문 841.88pt로 정규화한 제목 원점과 **0.5px 이내**다.
 
-#7253의 빈 슬롯/분할 계약 충돌 및 4쪽 공백·원점 차이를 해결하고 실제 전체 점유와 다음 내용을 함께 대조한다.
+중첩 TAC 표는 같은 `control_line_seg_index`가 가리키는 줄의 들여쓰기와 표 앞 텍스트만
+소비한다. 뒤의 공백과 앞줄 텍스트를 전체 합산하던 가로 오프셋을 바로잡았다.
+PDF의 바깥 표 대비 상대 x(제목 11.11px, 조치 표 19.03px, 법조문 표 22.55px)를
+595→595.28pt로 정규화하여 0.5px 이내인지 정식 회귀 검사로 확인한다.
+
+- 세로 반례: 수정 전 7개 중 1개 실패 → 7/7 통과. 가로 반례: 8개 중 1개 실패 → **8/8 통과**.
+- #6013 빈 문단 프레임 **1/1**, #6653 소유 줄 **1/1**, #7095 조각 상자 **6/6 통과**.
+- 원래 source의 70% reset 호환 판별을 더 넓히지 않았다. 겹친 줄 reset과 빈 슬롯은
+  위 음성 대조 및 기존 페이지/본문 경계 검사로 구분했다. 이 비율을 일반 문서 사양으로 주장하지 않는다.
+- Native CLI는 focused nextest의 동일 release-test/native-skia 빌드 산출물이다.
+  fresh WASM `--no-opt` 및 영향 3~6쪽/대조 9~10쪽 재캡처 완료.
+- 큰 빈 띠와 법조문 표 겹침은 해소됐다. 바깥 wrapper x 약 3.8px와 하단 p4 약 12px,
+  p5 약 10px의 외곽선 차이 및 글꼴 차이는 남아 있다. 이 보정은 내부 저장 프레임·소유 줄
+  계약의 승인이고 전체 PDF 픽셀 일치 또는 #6923 전체 해결 판정이 아니다.
+- 전체 nextest·lint·Native Skia 최종 게이트는 아직 미실행이다. 원격 작업은 하지 않았다.
+
+소비 경로: `cell_units`의 시작 컷 → `stored_frame_origin_for_cut` →
+`preserve_linear_single_cell_vpos`/`frag_vpos_origin` → paragraph vpos snap →
+중첩 표의 `stored_nested_table_line_offset_px` 및 소유 줄 prefix → 최종 Table bbox.
+측정/컷은 동일 유닛을 유지하며 빈 슬롯과 clip을 삭제·완화하지 않았다.
+
+제품 SHA-256: Native `92e4cf72c32fd78fe1a9f12c16cd882e1916b4adc22ef75f1c4e17c8d533ed68`, WASM `7a0da590a0573ebeae9b2acaa97efa45b30d7d44ba0b055cc6aa96bfcb3c1cda`.
+검증 명령은 [공동 기록](pr_7244_review_impl.md)의 focused/Sweep 형식이며
+모듈 `issue_6923_wrapper_table_stored_page_frame`, target `target/planet-review-20260918`,
+WASM package `/private/tmp/rhwp-planet-repair-20260918/wasm-wrapper-x`를 사용했다.
+
+## 보정 후 Visual Sweep
+
+| 입력·쪽 | Native SVG/Chrome | fresh WASM SVG/Chrome |
+| --- | --- | --- |
+| wrapper p3 | [compare](../assets/pr7253_review/maintainer_20260918/native_wrapper_compare_003.png) · [overlay](../assets/pr7253_review/maintainer_20260918/native_wrapper_overlay_003.png) · [review](../assets/pr7253_review/maintainer_20260918/native_wrapper_review_003.png) | [compare](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_compare_003.png) · [overlay](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_overlay_003.png) · [review](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_review_003.png) |
+| wrapper p4 | [compare](../assets/pr7253_review/maintainer_20260918/native_wrapper_compare_004.png) · [overlay](../assets/pr7253_review/maintainer_20260918/native_wrapper_overlay_004.png) · [review](../assets/pr7253_review/maintainer_20260918/native_wrapper_review_004.png) | [compare](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_compare_004.png) · [overlay](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_overlay_004.png) · [review](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_review_004.png) |
+| wrapper p5 | [compare](../assets/pr7253_review/maintainer_20260918/native_wrapper_compare_005.png) · [overlay](../assets/pr7253_review/maintainer_20260918/native_wrapper_overlay_005.png) · [review](../assets/pr7253_review/maintainer_20260918/native_wrapper_review_005.png) | [compare](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_compare_005.png) · [overlay](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_overlay_005.png) · [review](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_review_005.png) |
+| wrapper p6 | [compare](../assets/pr7253_review/maintainer_20260918/native_wrapper_compare_006.png) · [overlay](../assets/pr7253_review/maintainer_20260918/native_wrapper_overlay_006.png) · [review](../assets/pr7253_review/maintainer_20260918/native_wrapper_review_006.png) | [compare](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_compare_006.png) · [overlay](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_overlay_006.png) · [review](../assets/pr7253_review/maintainer_20260918/wasm_wrapper_review_006.png) |
+| tac_control p9 | [compare](../assets/pr7253_review/maintainer_20260918/native_tac_control_compare_009.png) · [overlay](../assets/pr7253_review/maintainer_20260918/native_tac_control_overlay_009.png) · [review](../assets/pr7253_review/maintainer_20260918/native_tac_control_review_009.png) | [compare](../assets/pr7253_review/maintainer_20260918/wasm_tac_control_compare_009.png) · [overlay](../assets/pr7253_review/maintainer_20260918/wasm_tac_control_overlay_009.png) · [review](../assets/pr7253_review/maintainer_20260918/wasm_tac_control_review_009.png) |
+| tac_control p10 | [compare](../assets/pr7253_review/maintainer_20260918/native_tac_control_compare_010.png) · [overlay](../assets/pr7253_review/maintainer_20260918/native_tac_control_overlay_010.png) · [review](../assets/pr7253_review/maintainer_20260918/native_tac_control_review_010.png) | [compare](../assets/pr7253_review/maintainer_20260918/wasm_tac_control_compare_010.png) · [overlay](../assets/pr7253_review/maintainer_20260918/wasm_tac_control_overlay_010.png) · [review](../assets/pr7253_review/maintainer_20260918/wasm_tac_control_review_010.png) |
+
+아래 Metadata 이후 최초 검토 결과는 **수정 전 기록**이다. merge 후 comment에는
+이 절의 최신 review와 **각 standalone overlay**를 실제 이미지로 게시한다.
+#7256은 같은 파일을 링크하여 증적을 중복 저장하지 않는다.
 
 ## Metadata·체리픽 provenance
 
