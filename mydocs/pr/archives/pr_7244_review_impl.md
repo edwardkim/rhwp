@@ -9,7 +9,7 @@ last_verified: 2026-09-18
 
 ## 현재 판정과 범위
 
-**통합 머지 보류. 승인 6개, 머지 보류 8개.** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
+**통합 머지 보류. 최초 승인 6개, 보류 8개 중 #7252 개별 사유 해소(최종 게이트 대기).** 2026-09-18 조회 당시 planet6897의 open/non-draft PR 14개를 처리했다. reviewer jangster77을 먼저 지정했다. 주 작업공간에서 최신 upstream/devel `18a9fa85e`를 기반으로 `codex/planet-review-20260918`을 만들었다. 검증 전용 worktree는 `/Users/tsjang/rhwp-planet-verify-20260918`, 전용 target은 `target/planet-review-20260918`이다.
 
 | PR | source head | 로컬 적용 commit | 판정 |
 | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ last_verified: 2026-09-18
 | [#7249](pr_7249_review.md) | `7497b8e59d557e84d0d5cd1ee05e1a9ab77bba8b` | `fe2d59443` | 승인 |
 | [#7250](pr_7250_review.md) | `008afddffcb48912fc5c15aa5a26a27ee16dc122` | `3805d3e70` | 승인 |
 | [#7251](pr_7251_review.md) | `40fd97a62606c0525f50c37f6f5b18310d04d5c7` | `a63d7a351` | 머지 보류 |
-| [#7252](pr_7252_review.md) | `8fec62e01449b2b280d739665f31ee3aaa63b989` | `9327d8712` | 머지 보류 |
+| [#7252](pr_7252_review.md) | `8fec62e01449b2b280d739665f31ee3aaa63b989` | `9327d8712` | 개별 사유 해소·최종 게이트 대기 |
 | [#7253](pr_7253_review.md) | `af407d86707f82c570fac054a85f64a69d3df5d5` | `03fec50df` | 머지 보류 |
 | [#7255](pr_7255_review.md) | `3380ada6d92ad2bd818d9427ddcaf793fa54cc0e` | `075d11d16` | 승인 |
 | [#7256](pr_7256_review.md) | `ee3a903d855c1fbc0eea90d8fda2331ea56a4ca8` | `3fac1a159` | 머지 보류 |
@@ -137,3 +137,7 @@ CARGO_TARGET_DIR=/Users/tsjang/rhwp/target/planet-review-20260918 scripts/wasm-p
 5. post_merge.md에 따라 duration refresh 확인·devel 동기화·소유 target/worktree/임시 branch 정리를 한다. post-merge 검증 CI를 새로 실행하지 않는다.
 
 원격 push·PR 생성·comment·close·merge는 이번 검토에서 수행하지 않았다. 취소/제외 시 의존 순서 역순(#7256→#7253 등)과 공통 conflict 보정을 함께 검토하며 contributor branch를 지우지 않는다. 현재 검토 branch와 검증 target은 후속 보정을 위해 보존한다. scratch log/JSON/TSV는 커밋하지 않는다.
+
+## 메인터너 보정 1 — #7252
+
+최신 devel 동일 입력·동일 7개 넘침 좌표를 확인해 15→7 상한으로 정정했다. 보정 후 body-overflow 16/16 PASS(exit 0). [개별 근거](pr_7252_review.md)에 기록했다. 위 최초 실행 표는 수정 전 결과로 보존한다.

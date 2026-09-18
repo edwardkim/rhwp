@@ -9,11 +9,13 @@ last_verified: 2026-09-18
 
 ## 최종 판정
 
-**머지 보류** — 2026-09-18 통합 검토.
+**개별 보류 사유 해소 — 통합 최종 게이트 대기.** 2026-09-18 메인터너 보정.
 
-[P1] 통합 body_overflow 16 partition 중 1개 실패: issue1891_external_bindata_link.hwpx의 상한 6 < 실측 7. 동일 환경에서 최신 devel 제품과 통합본 모두 7이므로 현재 증거로 통합 코드 회귀라고 할 수 없다. 구 base 236a601da 실측을 최신 base에 그대로 적용한 값이 맞지 않는다.
+외부 BinData 링크 fixture의 상한을 최신 devel과 같은 **7**로 정정했다. 기존 devel의 15보다 엄격한 15→7 변경이며, 원 PR이 구 base에서 측정한 6과 구분한다. 나머지 감소 행과 정상 교체 86712 행 제거는 유지한다. 제품 코드 변경은 없다.
 
-최신 base·동일 환경 실측으로 해당 행의 근거를 갱신하고, 변화 원인 또는 환경 차이를 기록한 후 래칫을 다시 통과시킨다. 실패를 숨기려고 전체 상한을 넓히지 않는다.
+동일 입력 SHA-256 `ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924`에서 base `18a9fa85e`와 같은 제품 코드의 보존 바이너리 및 통합본을 비교했다. `overBottom > 2px`인 7개 노드의 페이지·경로·y·높이·bodyBottom·초과량이 모두 같다. 0-based page 5/6/26/37/38/45/68, 초과량 2.147/2.147/231.907/228.920/109.360/550.227/3.573px다. 최신 base에서 이미 존재하는 결과이며 이번 통합의 렌더링 증가를 허용한 변경이 아니다. 구 base의 여섯 건과 달라진 개별 과거 코드 원인은 확정하지 않았다.
+
+보정 후 `body_overflow_baseline` **16/16 PASS**, exit 0. 실행 제품은 기존 통합 제품이며 별도 visual 변경은 없다. 통합 전체가 준비되었다는 판정은 아니다.
 
 ## Metadata·체리픽 provenance
 
@@ -45,7 +47,7 @@ last_verified: 2026-09-18
 
 ## 실행한 검증과 한계
 
-- 통합 제품의 `body_overflow_baseline`: **16 tests run: 15 passed, 1 failed, 210 skipped**.
+- 최초 통합 제품: **15 PASS / 1 FAIL**. 최신 base 근거로 해당 행만 보정한 뒤 **16 PASS / 0 FAIL / 210 skipped** (32.042초).
 - Native CLI build, fresh WASM build, 수정 후 fmt: 통과. Studio TypeScript 및 renderer 단위 검사 64개 통과.
 - 전체 기록: [공동 실행·검증·입력 원장](pr_7244_review_impl.md). 원 PR의 전체 회귀 통과는 작성자/CI 증거이고 이번 로컬 재실행으로 세지 않는다.
 - 전체 nextest·Clippy 3종·Native Skia 전체 게이트는 통합 focused/시각 보류가 확인되어 아직 실행하지 않았다. 승인 PR도 통합 최종 head의 필수 gate 완료 전 merge-ready가 아니다.

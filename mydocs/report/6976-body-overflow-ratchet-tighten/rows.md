@@ -85,3 +85,13 @@
 | `task2243/36386907_gyeoljae_sewoon.hwpx` | 2 | 1 | −1 | `fe5ee0bb2818f7d046cfee92ad1bee078e91aeadbd3a87f4507ce6aaca5aa723` |
 | `task2287/1342000_edu_curriculum_map.hwp` | 84 | 83 | −1 | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
 | `정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp` | 3 | 2 | −1 | `50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113` |
+
+## 2026-09-18 메인터너 통합 기준 보정
+
+위 표는 contributor base `236a601da`의 역사적 실측이다. 최신 통합 base `18a9fa85e`에서
+`issue1891_external_bindata_link.hwpx`의 하단 초과량 > 2px는 **7건**이다. 통합 제품
+`66015f64b`에서도 같은 7개 노드의 경계와 초과량이 모두 동일하다. 따라서 이 행의 현재
+상한은 **최신 devel 15 → 7**로 조인다. 다른 84행을 완화하지 않는다.
+
+입력 SHA-256: `ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924`.
+세부 노드와 실행 결과는 [#7252 메인터너 검토](../../pr/archives/pr_7252_review.md)에 기록한다.
