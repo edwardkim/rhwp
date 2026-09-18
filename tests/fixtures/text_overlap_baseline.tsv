@@ -16,8 +16,16 @@ exam_science.hwp	3
 exam_social.hwp	4
 group-drawing-02.hwp	5
 hwp-multi-001.hwp	97
-hwp3-sample10-hwp5.hwp	147
-hwp3-sample10-hwpx.hwpx	132
+# [#7254] 배치·정렬 run 폭의 정수 반올림을 걷어낸 천장 조정 — 2행.
+#   새로 세는 짝은 전부 **수정 전에도 겹쳐 있던 짝**이다. 같은 노드 쌍을
+#   `--overlap-tolerance 0.01` 로 다시 재면 수정 전 겹침이 0.79~1.79px 로, 이 게이트의
+#   보고 기준 2.0px 아래라 세지 않았을 뿐이다(수정 후 2.03~2.83px). 수정 전 0px 이던
+#   짝이 새로 겹친 건 0건, 사라진 짝도 0건이다.
+#   같은 A/B 에서 samples 전수 1,139문서의 쪽수·overflow·off-canvas·overlap·empty-page 는
+#   한 건도 바뀌지 않았고(유일한 차이는 base 에서 TIMEOUT 이던 issue2063 가 cand 에서
+#   완주한 것), text-overlap 은 3문서가 줄고 이 2문서만 늘었다.
+hwp3-sample10-hwp5.hwp	188
+hwp3-sample10-hwpx.hwpx	173
 hwp3-sample10.hwp	189
 hwp3-sample11-hwp5.hwp	9
 hwp3-sample11-hwpx.hwpx	2

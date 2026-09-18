@@ -27,7 +27,7 @@ use crate::renderer::kerning::{
     ExactFontRegistryRegistration, ExactFontSlot, MAX_KERNING_REGISTRY_SLOTS,
 };
 use crate::renderer::layer_renderer::LayerRenderer;
-use crate::renderer::layout::{estimate_text_width, CellContext};
+use crate::renderer::layout::{estimate_text_width_exact, CellContext};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::{
     HeaderFooterRef, MasterPageRef, PageContent, PaginationResult, Paginator,
@@ -7196,7 +7196,9 @@ impl DocumentCore {
             style.extra_char_spacing = 0.0;
             style.extra_dash_advance = 0.0;
 
-            let width = estimate_text_width(&run.text, &style);
+            // [#7254] 부분 재페인트도 전체 조판과 같은 폭을 쓴다 — 여기서만
+            // 반올림하면 패치한 줄이 새로 만든 쪽과 달라진다(`#3137`·`#2214`).
+            let width = estimate_text_width_exact(&run.text, &style);
             if !width.is_finite() || width < 0.0 {
                 return None;
             }
