@@ -1554,9 +1554,12 @@ fn stored_ladder_leaves_object_room(
     next_para: Option<&Paragraph>,
     table: &crate::model::table::Table,
 ) -> bool {
-    let need = table.common.height as i64
-        + table.outer_margin_top as i64
-        + table.outer_margin_bottom as i64;
+    // [#7203 실험 A] 앵커 vpos 는 표 상자 상단이 아니라 **위 바깥여백 뒤**를 가리킨다
+    // (정본 실측: 윗변 = 앵커 − 위여백). 그러면 앵커 아래로 필요한 공간은
+    // 높이 + 아래여백 − 위여백 이다.
+    let need = (table.common.height as i64 + table.outer_margin_bottom as i64
+        - table.outer_margin_top as i64)
+        .max(0);
     let first_vpos = |paragraph: &Paragraph| {
         paragraph
             .line_segs
