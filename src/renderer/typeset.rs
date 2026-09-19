@@ -28206,8 +28206,8 @@ impl TypesetEngine {
                         is_continuation,
                         start_cut: continuation.start_cut.clone(),
                         end_cut: Vec::new(),
-                        // 끝 컷이 없으므로 끝 공간은 행 공간 기본값이다. 시작 공간은 별도로 보존한다.
-                        is_block_split: false,
+                        // 기존 블록 조각 게이트를 유지한다. 시작 컷의 공간은 별도 필드가 소유한다.
+                        is_block_split: start_cut_is_block,
                         start_cut_is_block,
                         row_cursor_is_nested,
                         end_row_height_override,
@@ -28327,10 +28327,10 @@ impl TypesetEngine {
                 is_continuation,
                 start_cut: continuation.start_cut.clone(),
                 end_cut: split_end_cut.clone(),
-                // [Task #1025] 이번 분할이 블록 분할이면 **끝 컷**이 블록 인덱스다.
-                // [#6935] 시작 컷의 공간은 따로 전한다 — 둘을 OR 로 합치면 시작이 행
-                // 공간인데 끝이 블록 공간인 조각에서 시작 쪽이 블록 서수로 읽힌다.
-                is_block_split: split_block_start.is_some(),
+                // 기존 블록 조각 게이트는 시작/끝 블록을 포함한다. 이를 끝 컷 전용으로
+                // 바꾸면 block→row 조각의 예약/배치 계약도 함께 바꿔야 한다.
+                // 시작 컷 해석에는 이 게이트 대신 start_cut_is_block을 사용한다.
+                is_block_split: split_block_start.is_some() || start_cut_is_block,
                 start_cut_is_block,
                 row_cursor_is_nested,
                 end_row_height_override,
