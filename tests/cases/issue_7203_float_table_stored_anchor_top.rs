@@ -197,3 +197,71 @@ fn an_offset_anchored_float_table_keeps_flow_placement() {
         escaped.iter().cloned().fold(f64::NEG_INFINITY, f64::max)
     );
 }
+
+/// 저장 앵커를 수용한 뒤의 표 분할과 후속 본문도 같은 물리 흐름을 소비해야 한다.
+/// 한컴 PDF 16쪽은 pi=305의 머리행만, 17쪽은 `2` 행부터 표시한다.
+/// 후속 pi=309 표 윗변은 472.76px, 18쪽 Example 글자 상단은 990.08px다.
+#[test]
+fn downstream_table_split_and_body_follow_the_oracle_pages() {
+    let page16 = page_root(SAMPLE, 15);
+    let page17 = page_root(SAMPLE, 16);
+    let tables = |root: &RenderNode| {
+        find(root, &mut |node| {
+            matches!(&node.node_type,
+            RenderNodeType::Table(table) if table.para_index == Some(305))
+        })
+        .into_iter()
+        .cloned()
+        .collect::<Vec<_>>()
+    };
+    let fragment16 = tables(&page16).into_iter().next().expect("16쪽 머리행");
+    let fragment17 = tables(&page17).into_iter().next().expect("17쪽 이어받기");
+    let has_first_data_row = |root: &RenderNode| {
+        !find(root, &mut |node| {
+            matches!(&node.node_type,
+            RenderNodeType::TextRun(run) if run.display_or_text().trim() == "2")
+        })
+        .is_empty()
+    };
+    assert!(
+        !has_first_data_row(&fragment16),
+        "16쪽에 첫 데이터 행을 미리 소비했다"
+    );
+    assert!(
+        has_first_data_row(&fragment17),
+        "17쪽 첫 데이터 행을 잃었다"
+    );
+    assert!((fragment16.bbox.height - (981.01 - 956.39)).abs() <= 1.5);
+    assert!((fragment17.bbox.height - (406.75 - 136.01)).abs() <= 1.5);
+    assert!((table_top(&page17, 309) - 472.76).abs() <= 1.5);
+
+    let page18 = page_root(SAMPLE, 17);
+    let example = find(&page18, &mut |node| {
+        matches!(&node.node_type,
+        RenderNodeType::TextRun(run) if run.display_or_text().trim() == "Example")
+    })
+    .into_iter()
+    .next()
+    .expect("18쪽 Example 제목");
+    assert!((example.bbox.y - 990.08).abs() <= 1.5);
+    let body = find(&page18, &mut |node| {
+        matches!(node.node_type, RenderNodeType::Body { .. })
+    })
+    .into_iter()
+    .next()
+    .expect("18쪽 본문");
+    assert!(example.bbox.y + example.bbox.height <= body.bbox.y + body.bbox.height);
+}
+
+/// 저장 사다리 pi186→187은 2432HU = 높이1300 + 위/아래여백566씩이다.
+/// 앞 float가 앵커보다 아래로 밀어도 실제 점유 끝에 전역 cursor를 다시 더하지 않는다.
+#[test]
+fn stored_anchor_after_a_taller_float_consumes_its_span_once() {
+    let root = page_root("samples/issue6111/56345_regulatory_impact_analysis.hwp", 10);
+    let advance = table_top(&root, 187) - table_top(&root, 186);
+    let stored_advance = (26992.0 - 24560.0) / HWPUNIT_PER_PX;
+    assert!(
+        (advance - stored_advance).abs() <= 0.2,
+        "저장 사다리 {stored_advance:.2}px 대신 {advance:.2}px를 소비했다"
+    );
+}

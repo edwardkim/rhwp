@@ -49,13 +49,7 @@ pub(crate) fn stored_topbottom_object_span(
     next_para: Option<&Paragraph>,
     table: &Table,
 ) -> (i64, i64) {
-    let outer_box_height = i64::from(table.common.height)
-        + i64::from(table.outer_margin_top)
-        + i64::from(table.outer_margin_bottom);
-    let stored_outer_box = stored_vpos(para)
-        .zip(next_para.and_then(stored_vpos))
-        .is_some_and(|(current, next)| next - current == outer_box_height);
-    if stored_outer_box {
+    if let Some(outer_box_height) = stored_topbottom_flow_advance_hu(para, next_para, table) {
         (0, outer_box_height)
     } else {
         let top = -i64::from(table.outer_margin_top);
@@ -64,6 +58,23 @@ pub(crate) fn stored_topbottom_object_span(
             top + i64::from(table.common.height) + i64::from(table.outer_margin_bottom),
         )
     }
+}
+
+/// 저장 사다리가 증명한 전체 흐름 상자의 advance. 단순 테두리 원점은
+/// 이 높이를 증명하지 않으므로 None을 반환한다. 조판 원점 선택과 최종 flow 소비가
+/// 같은 근거를 사용하며, paint 좌표 차이를 예약 높이로 오인하지 않는다.
+pub(crate) fn stored_topbottom_flow_advance_hu(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    table: &Table,
+) -> Option<i64> {
+    let outer_box_height = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    let stored_outer_box = stored_vpos(para)
+        .zip(next_para.and_then(stored_vpos))
+        .is_some_and(|(current, next)| next - current == outer_box_height);
+    stored_outer_box.then_some(outer_box_height)
 }
 
 /// 다음 저장 `vpos` 사다리가 이 개체가 점유할 높이를 실제로 비우는가 [#3925].
