@@ -32,6 +32,17 @@ CI 확인 후 merge와 후속처리를 승인했다. 아래 결과는 검증 완
   contributor history는 변경하지 않았다. 이후 사용자 승인에 따라 원 contributor head 위에 기록만
   이어 붙인다. 별도 통합 PR을 만들지 않는다.
 
+### 승인 후 원 PR 반영 준비
+
+- 로컬 검토 기록만 원 head `27f94eda` 위로 replay하여 `3fefd0b61`을 만들었다.
+  contributor commit은 다시 쓰지 않았다.
+- 원 head에는 `mydocs/orders/20260919.md`가 없어 실제 merge simulation에서 add/add 충돌이
+  발생했다. `bdb57f836`에서 current base `18f029ffa`를 한 번 병합하고 오늘할일만 충돌 해소했다.
+  기존 devel 기록을 삭제·수정하지 않고 이번 PR 항목을 앞에 추가했다.
+- 이는 `review_only_fast_pass.md`의 mydocs 한정 current-base bridge 예외다. 제품 경로는
+  검증 code SHA `7ea7da222`와 `git diff --quiet ... -- . ':(exclude)mydocs'`로 동일함을 확인했다.
+  fast-pass 성공은 push 후 preflight에서 별도로 확인하며 미리 단정하지 않는다.
+
 ## 발견 사항
 
 ### P3: 수식 속성의 방향 라벨이 크기로 번역됨
