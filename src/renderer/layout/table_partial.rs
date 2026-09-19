@@ -4465,10 +4465,13 @@ impl LayoutEngine {
 
         // Outer margins are already present in the fragment's logical reservation.  Restore them
         // only on the table/cell/frame paint subtree, for both the first and successor fragment.
-        let table_x = table_x
-            + stored_reset_paint_geometry
-                .map(|geometry| hwpunit_to_px(geometry.outer_left_hu, self.dpi))
-                .unwrap_or(0.0);
+        //
+        // [#7063] 가로는 여기서 복원하지 않는다 — 위 `compute_table_x_position` 이
+        // `topbottom_float_outer_margin_left_hu` 로 이미 싣는다. `#3820 Stage 120` 의 술어
+        // (자리차지 T&B · `HorzRelTo::Column` · `HorzAlign::Left` · 오프셋 0 ·
+        // `outer_margin_left > 0`)는 그 일반 규칙의 **부분집합**이라 둘 다 실으면 두 번 든다
+        // (p167 pi=1775 좌단이 본문 94.49 에서 98.27 이 아니라 102.04 로 갔다).
+        // 세로는 저장 사다리가 세로 outer box 만 증명하므로 그대로 복원한다.
 
         let table_y = if render_top_caption {
             y_start + caption_height + caption_spacing
