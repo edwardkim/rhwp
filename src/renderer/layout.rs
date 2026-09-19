@@ -838,7 +838,7 @@ pub struct CellContext {
 struct TableControlOut {
     y_offset: f64,
     tac_seg_applied: bool,
-    para_float_lane_info: Option<(f64, f64, f64, f64, f64)>,
+    para_float_lane_info: Option<(f64, f64, f64, f64, f64, Option<f64>)>,
     early_return: Option<(f64, bool)>,
 }
 
@@ -1542,72 +1542,12 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
             .is_some_and(|height| height <= declared_height * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO)
 }
 
-/// 저장 host 기준의 표 윗변과 흐름 점유 끝(HU).
-/// 다음 저장 anchor가 높이+양쪽 여백만큼 전진하면 host는 전체 흐름 상자의
-/// 원점이다. 그 경우 위여백을 빼면 paint의 문단 원점과 예약 원점이 달라져
-/// 후속 표에 여백이 다시 누적된다. 그 외 수용된 저장 anchor는 위여백 뒤다.
-fn stored_topbottom_object_span(
-    para: &Paragraph,
-    next_para: Option<&Paragraph>,
-    table: &crate::model::table::Table,
-) -> (i64, i64) {
-    let first_vpos = |paragraph: &Paragraph| {
-        paragraph
-            .line_segs
-            .iter()
-            .find(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            })
-            .map(|seg| i64::from(seg.vertical_pos))
-    };
-    let outer_box_height = i64::from(table.common.height)
-        + i64::from(table.outer_margin_top)
-        + i64::from(table.outer_margin_bottom);
-    let stored_outer_box = first_vpos(para)
-        .zip(next_para.and_then(first_vpos))
-        .is_some_and(|(current, next)| next - current == outer_box_height);
-    if stored_outer_box {
-        (0, outer_box_height)
-    } else {
-        let top = -i64::from(table.outer_margin_top);
-        (
-            top,
-            top + i64::from(table.common.height) + i64::from(table.outer_margin_bottom),
-        )
-    }
-}
-
-/// 저장 host vpos를 physical paint anchor로 쓸 수 있는지 판별한다.
-///
-/// 빈 TopAndBottom RowBreak 표는 host와 다음 문단의 저장 사다리가 **표 선언 높이와
-/// outer margin만큼** 실제로 전진한 경우에만 raw vpos가 물리 위치다. 이 증거가
-/// 없으면 raw vpos는 같은 쪽의 문단 좌표일 수 있다. 렌더 경로가 이를 무시하면
-/// typeset이 선택한 일반 흐름 위치와 달라져, p172 `pi=1804`처럼 표가 수백 px 아래로
-/// 그려지고 다음 table fragment가 각주 아래로 밀린다.
-fn stored_ladder_leaves_object_room(
-    para: &Paragraph,
-    next_para: Option<&Paragraph>,
-    table: &crate::model::table::Table,
-) -> bool {
-    // [#7203 실험 A] 앵커 vpos 는 표 상자 상단이 아니라 **위 바깥여백 뒤**를 가리킨다
-    // (정본 실측: 윗변 = 앵커 − 위여백). 그러면 앵커 아래로 필요한 공간은
-    // 높이 + 아래여백 − 위여백 이다.
-    let (_, occupied_bottom) = stored_topbottom_object_span(para, next_para, table);
-    let need = occupied_bottom.max(0);
-    let first_vpos = |paragraph: &Paragraph| {
-        paragraph
-            .line_segs
-            .iter()
-            .find(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            })
-            .map(|seg| seg.vertical_pos as i64)
-    };
-    match (first_vpos(para), next_para.and_then(first_vpos)) {
-        (Some(current), Some(next)) => next - current >= need,
-        _ => false,
-    }
-}
+// [#7203] `stored_topbottom_object_span` · `stored_ladder_leaves_object_room` 은
+// `renderer::stored_float_anchor` 가 정본이다 — 조판(typeset)과 렌더가 같은 값을 쓴다.
+use crate::renderer::stored_float_anchor::{
+    stored_ladder_leaves_object_room, stored_single_topbottom_top_px,
+    stored_topbottom_flow_advance_hu, stored_topbottom_object_span,
+};
 
 /// empty-host TopAndBottom 그림 표가 native HWP의 raw page vpos와 선언 높이로
 /// 현재 본문 안에 완전히 들어가는 경우의 paint anchor.
@@ -1635,29 +1575,14 @@ fn native_empty_single_topbottom_table_saved_top(
             .filter(|control| matches!(control, Control::Table(_)))
             .count()
             != 1
-        || !stored_ladder_leaves_object_room(para, next_para, table)
     {
         return None;
     }
-    let seg = para
-        .line_segs
-        .iter()
-        .find(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)?;
-    let next_seg = next_para?
-        .line_segs
-        .iter()
-        .find(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)?;
-    // vpos가 다음 문단에서 되감기면 이 표는 다음 물리 페이지의 첫 anchor일 수 있다.
-    // raw vpos를 현재 페이지 좌표로 강제하면 p14의 그림 8처럼 상단 그림이 하단에
-    // 떨어져 본문·각주와 충돌한다.
-    if next_seg.vertical_pos <= seg.vertical_pos {
-        return None;
-    }
-    let (top_offset, _) = stored_topbottom_object_span(para, next_para, table);
-    let top = col_area.y + (seg.vertical_pos as f64 + top_offset as f64) * dpi / 7200.0;
-    let bottom = top + hwpunit_to_px(table.common.height as i32, dpi);
-    (top >= col_area.y + col_area.height * 0.5 && bottom <= col_area.y + col_area.height + 0.5)
-        .then_some(top)
+    // [#7203] 원점·수용 조건은 `stored_float_anchor` 한 곳이 정한다. 종전에는 여기와
+    // typeset 이 각자 판정해, 같은 표를 두고 렌더는 저장 앵커를 쓰고 조판은 안 쓰는
+    // 구간이 생겼다.
+    stored_single_topbottom_top_px(para, next_para, table, col_area.height, dpi)
+        .map(|top| col_area.y + top)
 }
 
 /// [#6032] 직전 문단에서 저장 vpos가 **되감기면** 이 빈-host 자리차지 표는 한글이
@@ -3239,10 +3164,10 @@ pub(crate) use table_layout::border_style_has_diagonal;
 // [#4149] 셀 커서 fast path 프로브 (document_core::queries::cursor_rect 전용)
 pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
-    compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
-    extract_tab_leaders_with_extended, find_next_tab_stop, hancom_regenerated_space_width,
-    is_cjk_char, is_halfwidth_cjk_quote, resolved_letter_spacing, resolved_to_text_style,
-    split_into_clusters, trace_char_width_decisions, CharWidthDecision,
+    compute_char_positions, estimate_text_width, estimate_text_width_exact,
+    estimate_text_width_unrounded, extract_tab_leaders_with_extended, find_next_tab_stop,
+    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote, resolved_letter_spacing,
+    resolved_to_text_style, split_into_clusters, trace_char_width_decisions, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -10262,7 +10187,7 @@ impl LayoutEngine {
             .get(&(para_index, control_index))
             .filter(|_| is_tac);
         let mut tac_seg_applied = false;
-        let mut para_float_lane_info: Option<(f64, f64, f64, f64, f64)> = None;
+        let mut para_float_lane_info: Option<(f64, f64, f64, f64, f64, Option<f64>)> = None;
         if let Some(Control::Table(t)) = para.controls.get(control_index) {
             if let Some(placement) = flow_placement {
                 // metadata는 여백 포함 줄의 pen이다. inline_x_override가 있는 표 paint는
@@ -10703,6 +10628,23 @@ impl LayoutEngine {
                         .map(|hu| hwpunit_to_px(hu, self.dpi))
                         .unwrap_or(0.0)
                     });
+                    let stored_top = (!is_current_empty_square_sibling_float)
+                        .then(|| {
+                            native_empty_single_topbottom_table_saved_top(
+                                self.profile.get().hwp5_stored_pagination_layout(),
+                                para,
+                                paragraphs.get(para_index + 1),
+                                t,
+                                mt.map(|measured| measured.total_height),
+                                col_area,
+                                self.dpi,
+                            )
+                        })
+                        .flatten();
+                    let stored_flow_advance = stored_top.and_then(|_| {
+                        stored_topbottom_flow_advance_hu(para, paragraphs.get(para_index + 1), t)
+                            .map(|height| hwpunit_to_px(height as i32, self.dpi))
+                    });
                     let raw_top = if is_current_empty_square_sibling_float {
                         // 이 pair는 같은 저장 LINE_SEG의 page-relative 좌표를 공유한다.
                         // 현재 흐름 y를 쓰면 첫 표 아래에 둘째 표를 수직으로 쌓아
@@ -10715,15 +10657,7 @@ impl LayoutEngine {
                                     fragment_outer_top_px,
                                 )
                             })
-                    } else if let Some(stored_top) = native_empty_single_topbottom_table_saved_top(
-                        self.profile.get().hwp5_stored_pagination_layout(),
-                        para,
-                        paragraphs.get(para_index + 1),
-                        t,
-                        mt.map(|measured| measured.total_height),
-                        col_area,
-                        self.dpi,
-                    ) {
+                    } else if let Some(stored_top) = stored_top {
                         stored_top
                     } else {
                         empty_host_float_raw_top(
@@ -10736,7 +10670,14 @@ impl LayoutEngine {
                         .entry(para_index)
                         .or_default()
                         .pushed_top(x_start, x_end, raw_top);
-                    para_float_lane_info = Some((x_start, x_end, raw_top, lane_top, y_offset));
+                    para_float_lane_info = Some((
+                        x_start,
+                        x_end,
+                        raw_top,
+                        lane_top,
+                        y_offset,
+                        stored_flow_advance,
+                    ));
                 }
             }
             let mut table_visual_shift = 0.0;
@@ -10816,78 +10757,79 @@ impl LayoutEngine {
                     // legacy 호스트 높이/제목/앵커 보정을 다시 실행하지 않는다.
                     col_area.y + placement.table_top
                 } else {
-                    let table_y_start = if let Some((_, _, _, lane_top, _)) = para_float_lane_info {
-                        lane_top
-                    } else if let Some(g) = square_reserved_above_gap {
-                        // 예약 공간 상단 — 앵커(현재 흐름 y)에서 사다리 갭만큼 위.
-                        (y_offset - g).max(col_area.y)
-                    } else if let Some(abs_y) = paper_page_square_empty_top {
-                        abs_y
-                    } else if let Some((_, iy)) = inline_pos {
-                        iy
-                    } else if let Some(stored_host_bottom_top) =
-                        native_multiline_visible_float_table_top(
-                            self.profile.get().hwp5_stored_pagination_layout(),
+                    let table_y_start =
+                        if let Some((_, _, _, lane_top, _, _)) = para_float_lane_info {
+                            lane_top
+                        } else if let Some(g) = square_reserved_above_gap {
+                            // 예약 공간 상단 — 앵커(현재 흐름 y)에서 사다리 갭만큼 위.
+                            (y_offset - g).max(col_area.y)
+                        } else if let Some(abs_y) = paper_page_square_empty_top {
+                            abs_y
+                        } else if let Some((_, iy)) = inline_pos {
+                            iy
+                        } else if let Some(stored_host_bottom_top) =
+                            native_multiline_visible_float_table_top(
+                                self.profile.get().hwp5_stored_pagination_layout(),
+                                para,
+                                t,
+                                para_y_for_table,
+                                self.dpi,
+                            )
+                        {
+                            stored_host_bottom_top
+                        } else if is_current_visible_para_float {
+                            let v_off =
+                                hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi);
+                            if self.profile.get().hwpx_stored_layout() && v_off <= 0.0 {
+                                let flow_at_para_start =
+                                    (table_y_before - para_y_for_table).abs() < 0.5;
+                                table_y_before
+                                    + if flow_at_para_start {
+                                        visible_outer_top_px
+                                    } else {
+                                        0.0
+                                    }
+                                    + v_off.max(0.0)
+                            } else if v_off < 0.0 {
+                                para_y_for_table + visible_outer_top_px + v_off
+                            } else {
+                                para_y_for_table
+                            }
+                        } else if let Some(anchor_y) = square_anchor_y {
+                            table_visual_shift = (anchor_y - y_offset).max(0.0);
+                            anchor_y
+                        } else if !is_tac
+                            && tbl_is_square
+                            && matches!(t.common.vert_rel_to, VertRelTo::Para)
+                            && para_has_visible_text(para)
+                            && signed_hwpunit(t.common.vertical_offset) > 0
+                        {
+                            // [#5566] 가시 텍스트 host 에 앵커된 어울림(Square) 표의 문단 기준
+                            // 양수 세로 오프셋. 종전에는 이 형상이 어느 분기에도 안 걸려
+                            // 폴백(y_offset = 앵커 줄 상단)으로 떨어져 표가 host 첫 줄 텍스트
+                            // 위에 얹혔다(가로 오프셋은 tbl_inline_x 로 적용돼 세로만 소실 —
+                            // 20180108093532000 8쪽, 10k 영향 64문서). 빈 host 는 위의
+                            // para_float_lane 경로가, 저장 사다리 신호가 있는 우측 다줄 wrap 은
+                            // square_anchor_y 가 이미 정합 처리하므로 여기 오지 않는다.
+                            // 음수 오프셋은 실측이 없어 종전(무시) 동작을 유지한다.
+                            para_y_for_table
+                                + hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
+                        } else if tac_detached_line_shift > 0.0 {
+                            y_offset + tac_detached_line_shift
+                        } else if let Some(tail_top) = tac_paragraph_tail_stored_line_top(
+                            self.profile.get().hwpx_stored_layout()
+                                || self.profile.get().hwp5_stored_pagination_layout(),
+                            tac_receipt_seal_line.is_some(),
                             para,
                             t,
-                            para_y_for_table,
+                            col_area,
+                            y_offset,
                             self.dpi,
-                        )
-                    {
-                        stored_host_bottom_top
-                    } else if is_current_visible_para_float {
-                        let v_off =
-                            hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi);
-                        if self.profile.get().hwpx_stored_layout() && v_off <= 0.0 {
-                            let flow_at_para_start =
-                                (table_y_before - para_y_for_table).abs() < 0.5;
-                            table_y_before
-                                + if flow_at_para_start {
-                                    visible_outer_top_px
-                                } else {
-                                    0.0
-                                }
-                                + v_off.max(0.0)
-                        } else if v_off < 0.0 {
-                            para_y_for_table + visible_outer_top_px + v_off
+                        ) {
+                            tail_top
                         } else {
-                            para_y_for_table
-                        }
-                    } else if let Some(anchor_y) = square_anchor_y {
-                        table_visual_shift = (anchor_y - y_offset).max(0.0);
-                        anchor_y
-                    } else if !is_tac
-                        && tbl_is_square
-                        && matches!(t.common.vert_rel_to, VertRelTo::Para)
-                        && para_has_visible_text(para)
-                        && signed_hwpunit(t.common.vertical_offset) > 0
-                    {
-                        // [#5566] 가시 텍스트 host 에 앵커된 어울림(Square) 표의 문단 기준
-                        // 양수 세로 오프셋. 종전에는 이 형상이 어느 분기에도 안 걸려
-                        // 폴백(y_offset = 앵커 줄 상단)으로 떨어져 표가 host 첫 줄 텍스트
-                        // 위에 얹혔다(가로 오프셋은 tbl_inline_x 로 적용돼 세로만 소실 —
-                        // 20180108093532000 8쪽, 10k 영향 64문서). 빈 host 는 위의
-                        // para_float_lane 경로가, 저장 사다리 신호가 있는 우측 다줄 wrap 은
-                        // square_anchor_y 가 이미 정합 처리하므로 여기 오지 않는다.
-                        // 음수 오프셋은 실측이 없어 종전(무시) 동작을 유지한다.
-                        para_y_for_table
-                            + hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
-                    } else if tac_detached_line_shift > 0.0 {
-                        y_offset + tac_detached_line_shift
-                    } else if let Some(tail_top) = tac_paragraph_tail_stored_line_top(
-                        self.profile.get().hwpx_stored_layout()
-                            || self.profile.get().hwp5_stored_pagination_layout(),
-                        tac_receipt_seal_line.is_some(),
-                        para,
-                        t,
-                        col_area,
-                        y_offset,
-                        self.dpi,
-                    ) {
-                        tail_top
-                    } else {
-                        y_offset
-                    };
+                            y_offset
+                        };
                     // [Issue #1535] visible-host co-anchored float 표도 문단(아래 visible_float_exclusions
                     // 소비부)과 동일하게 선행 float 표가 점유한 세로 영역을 벗어나 배치되어야 한다.
                     // 표 배치는 기존에 exclusion 을 push 만 하고 consult 하지 않아, 연속 문단의
@@ -12259,7 +12201,8 @@ impl LayoutEngine {
                     }
                 }
             }
-            if let Some((x_start, x_end, raw_top, lane_top, global_y_before)) = para_float_lane_info
+            if let Some((x_start, x_end, raw_top, lane_top, global_y_before, stored_flow_advance)) =
+                para_float_lane_info
             {
                 let reserved_height = (y_offset - lane_top).max(0.0);
                 let lanes = para_float_lanes.entry(para_index).or_default();
@@ -12412,7 +12355,13 @@ impl LayoutEngine {
                                 }
                             })
                             .flatten();
-                    if is_native_picture_caption_float {
+                    // 저장 사다리가 전체 흐름 상자를 증명한 경우에는 그 높이가
+                    // 예약량이다. 앞 표 때문에 저장 원점과 paint 원점이 달라져도
+                    // 두 원점의 차이를 높이에 더하지 않는다. 테두리 원점만 알려진
+                    // 앵커는 기존 offset/예약 계약으로 처리한다.
+                    if let Some(advance) = stored_flow_advance {
+                        global_y_before + advance
+                    } else if is_native_picture_caption_float {
                         lanes.max_bottom()
                     } else {
                         global_y_before + reserved_height + physical_ladder_extras_px.unwrap_or(0.0)

@@ -29,46 +29,21 @@
 
 use rhwp::document_core::DocumentCore;
 
-/// 재현물은 코퍼스 문서다.
-///
-/// `hwpdocs_10k_share/prism_downloads/보건복지부/
-///  1351000-201000123_D0150004-2-002_02. 지표정의서- 주요정책부문.hwp`
-///
-/// ⚠ `.hwp` 를 `samples/` 에 넣으면 `ir_field_sweep_baseline` 이 `samples/` 전체를 스윕해
-/// 무관한 직렬화 발산을 끌고 온다. `RHWP_ISSUE5585B_SAMPLE` 로 경로를 덮어쓸 수 있다.
-fn sample() -> Option<Vec<u8>> {
-    if let Ok(path) = std::env::var("RHWP_ISSUE5585B_SAMPLE") {
-        return std::fs::read(path).ok();
-    }
-    let roots = [
-        concat!(
-            r"C:\Users\planet\hwpdocs_10k_share",
-            r"\prism_downloads\보건복지부"
-        ),
-        concat!(r"D:\hwpdocs_10k_share", r"\prism_downloads\보건복지부"),
-    ];
-    for base in roots {
-        let Ok(entries) = std::fs::read_dir(base) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if name.contains("02. 지표정의서") && name.ends_with(".hwp") {
-                return std::fs::read(entry.path()).ok();
-            }
-        }
-    }
-    None
+/// 공개 검증 원문. 개인 Windows 경로가 없을 때 성공처럼 건너뛰지 않는다.
+/// #7269에서 상단 저장 앵커 수용 범위를 넓혀도 형제 표의 흐름을 보존해야 한다.
+/// 기준 PDF: `pdf/pr7269/1351000_policy_indicators-2020.pdf` (86쪽).
+fn sample() -> Vec<u8> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/stored_float_anchor_control/1351000_policy_indicators.hwp");
+    std::fs::read(&path)
+        .unwrap_or_else(|error| panic!("검증 원문을 읽을 수 없다 ({}): {error}", path.display()))
 }
 
 /// 쪽수는 한/글 2024 와 같은 **86쪽**이어야 한다 — 형제 표마다 앵커 오프셋을 다시 물면
 /// 표 다섯 개가 쪼개져 91쪽이 된다.
 #[test]
 fn sibling_tables_do_not_recharge_the_paragraph_anchor_offset() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let pages = core.page_count();
     assert_eq!(
@@ -81,9 +56,7 @@ fn sibling_tables_do_not_recharge_the_paragraph_anchor_offset() {
 /// 65.7px 짜리 꼬리 조각 쪽이 없어야 한다 — 본문은 744.6px 다.
 #[test]
 fn no_sliver_tail_pages_remain() {
-    let Some(bytes) = sample() else {
-        return;
-    };
+    let bytes = sample();
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
 
     let mut slivers = Vec::new();

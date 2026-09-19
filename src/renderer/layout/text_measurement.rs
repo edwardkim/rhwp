@@ -442,8 +442,15 @@ fn compute_char_positions_walk(
 
 pub struct EmbeddedTextMeasurer;
 
-impl TextMeasurer for EmbeddedTextMeasurer {
-    fn estimate_text_width(&self, text: &str, style: &TextStyle) -> f64 {
+impl EmbeddedTextMeasurer {
+    /// 반올림 없는 폭 — 본 구현 전체(사용자 탭 스톱·인라인 탭 ext 포함)를 그대로 쓰고
+    /// 마지막 `round()` 만 하지 않는다.
+    ///
+    /// [#7254] `estimate_text_width` 는 이 값을 `round()` 해서 돌려준다. 곧 둘은 같은
+    /// 계산이고 차이는 마지막 반올림 하나다. `estimate_text_width_unrounded` 와 혼동하지
+    /// 말 것 — 그쪽은 줄바꿈 엔진 전용의 **다른 구현**이라 사용자 탭 스톱과 인라인 탭 ext
+    /// 데이터를 읽지 않는다.
+    fn estimate_text_width_exact(&self, text: &str, style: &TextStyle) -> f64 {
         let (font_size, _, tab_w) = style_params(style);
         let chars: Vec<char> = text.chars().collect();
         let cluster_len = build_cluster_len(&chars);
@@ -602,7 +609,13 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             }
             total += char_width(i);
         }
-        total.round()
+        total
+    }
+}
+
+impl TextMeasurer for EmbeddedTextMeasurer {
+    fn estimate_text_width(&self, text: &str, style: &TextStyle) -> f64 {
+        self.estimate_text_width_exact(text, style).round()
     }
 
     fn compute_char_positions(&self, text: &str, style: &TextStyle) -> Vec<f64> {
@@ -1392,6 +1405,22 @@ fn measure_char_width_embedded(
 /// native/WASM 공통 — SVG byte 패리티의 전제다 (#4046).
 pub(crate) fn estimate_text_width(text: &str, style: &TextStyle) -> f64 {
     default_measurer().estimate_text_width(text, style)
+}
+
+/// 텍스트 폭 — 본 구현 그대로, **마지막 반올림만 하지 않는다**.
+///
+/// [#7254] 줄 나눔(`renderer/composer/line_breaking.rs`)은 이미 반올림하지 않은 폭으로
+/// 줄을 짜는데 배치는 `estimate_text_width` 의 정수 폭을 쓰고 있었다. 그러면 같은 줄을
+/// 측정과 배치가 다른 폭으로 소비한다(`AGENTS.md` 의 "측정과 배치의 공통 결과"). run 이
+/// 한 글자면 그 글자의 전진폭 자체가 반올림 대상이라 run 경계마다 최대 ±0.5px 가 붙고,
+/// 뒤 run 들이 그만큼 밀린다. 정답지(한/글 PDF)도 소수 전진폭을 그대로 쓴다 —
+/// `Haansoft Batang` 9.952pt(13.269px)에서 `【` 전진은 13.273 = 1.0003 em 이다.
+///
+/// `estimate_text_width_unrounded` 를 대신 쓰면 안 된다. 그쪽은 줄바꿈 엔진 전용의 다른
+/// 구현이라 사용자 탭 스톱·인라인 탭 ext 데이터를 읽지 않아, 탭이 있는 줄에서 정렬 위치가
+/// 통째로 사라진다.
+pub(crate) fn estimate_text_width_exact(text: &str, style: &TextStyle) -> f64 {
+    default_measurer().estimate_text_width_exact(text, style)
 }
 
 /// 텍스트 폭 추정 (round 없이 raw px 반환)

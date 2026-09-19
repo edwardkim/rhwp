@@ -66,6 +66,7 @@ pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;
+pub(crate) mod stored_float_anchor;
 pub mod style_resolver;
 pub mod supplemental_metrics;
 pub mod svg;

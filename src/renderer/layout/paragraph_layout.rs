@@ -16,8 +16,9 @@ use super::super::{
 };
 use super::border_rendering::create_border_line_nodes;
 use super::text_measurement::{
-    compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
-    extract_tab_leaders_with_extended, find_next_tab_stop, resolved_to_text_style,
+    compute_char_positions, estimate_text_width, estimate_text_width_exact,
+    estimate_text_width_unrounded, extract_tab_leaders_with_extended, find_next_tab_stop,
+    resolved_to_text_style,
 };
 use super::utils::{
     expand_numbering_format, extract_shape_transform, find_bin_data_bytes,
@@ -7025,7 +7026,12 @@ impl LayoutEngine {
                 // 비반올림 폭을 써서 모델 한 글자 경계와 표시 끝을 같은 좌표에 둔다.
                 estimate_text_width_unrounded(effective_text_for_metrics(run), &text_style)
             } else {
-                estimate_text_width(effective_text_for_metrics(run), &text_style)
+                // [#7254] 배치 폭은 반올림하지 않는다 — 바로 위 field run 예외가 적어 둔
+                // 사유(`#3216`·`#1100`: 정수 반올림이 뒤 앵커를 실제 glyph advance 보다
+                // 앞세운다)가 일반 run 에도 그대로 적용된다. 줄 나눔은 이미 반올림하지
+                // 않은 폭으로 줄을 짜므로, 여기서 반올림하면 같은 줄을 측정과 배치가 다른
+                // 폭으로 소비한다.
+                estimate_text_width_exact(effective_text_for_metrics(run), &text_style)
             };
             // [#5679] 줄-말미 공백의 배분 여분 회수 — 자연 폭은 유지한다(한글도
             // 말미 공백 자체는 줄 상자를 넘길 수 있다). 여분이 음수(압축)여도
@@ -7409,7 +7415,8 @@ impl LayoutEngine {
                             if rel_pos > seg_start {
                                 let seg_text: String =
                                     run_chars[seg_start..rel_pos].iter().collect();
-                                let seg_w = estimate_text_width(&seg_text, &text_style);
+                                // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                                let seg_w = estimate_text_width_exact(&seg_text, &text_style);
                                 let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                                     kerning_layout_session,
                                     ExactFontSlot::new(run.char_style_id, run.lang_index),
@@ -7489,7 +7496,8 @@ impl LayoutEngine {
                         // 마지막 세그먼트 (각주 뒤 나머지 텍스트)
                         if seg_start < run_chars.len() {
                             let seg_text: String = run_chars[seg_start..].iter().collect();
-                            let seg_w = estimate_text_width(&seg_text, &text_style);
+                            // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                            let seg_w = estimate_text_width_exact(&seg_text, &text_style);
                             let trailing_space_count = line_trailing_space_by_run[run_idx]
                                 .min(run_chars.len().saturating_sub(seg_start));
                             let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
@@ -7608,7 +7616,8 @@ impl LayoutEngine {
                                 &composed.tab_extended,
                             );
                         }
-                        let seg_w = estimate_text_width(&seg_text, &seg_style);
+                        // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                        let seg_w = estimate_text_width_exact(&seg_text, &seg_style);
                         let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                             kerning_layout_session,
                             ExactFontSlot::new(run.char_style_id, run.lang_index),
@@ -8685,6 +8694,11 @@ impl LayoutEngine {
     /// [#1925 추출] 정렬/탭 계산용 est 사전 폭 추정 run 패스.
     /// 렌더 노드를 만들지 않고 run 폭·탭 진행만 시뮬레이션해, 줄의 점유 폭
     /// (`est_x`)과 추정에 포함된 tac 개체 폭 합(`included_tac_width`)을 구한다.
+    ///
+    /// [#7254] 여기서 쓰는 폭은 실제 배치가 쓰는 폭과 같아야 한다 — 이 추정은 정렬
+    /// (가운데·오른쪽·배분)의 기준 폭이다. 배치를 비반올림으로 바꾸면서 이쪽도 같이
+    /// 바꾼다. 한쪽만 바꾸면 오른쪽 정렬 줄의 우단이 반올림 잔여만큼 어긋난다
+    /// (`#1285` 답안지 수험번호 표).
     #[allow(clippy::too_many_arguments)]
     fn estimate_line_run_widths(
         &self,
@@ -8734,7 +8748,7 @@ impl LayoutEngine {
                             .rev()
                             .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
                         {
-                            let digit_w = estimate_text_width(run.text.trim(), &ts);
+                            let digit_w = estimate_text_width_exact(run.text.trim(), &ts);
                             let target =
                                 if composed.tab_extended.is_empty() && available_width > 0.0 {
                                     effective_margin_left + available_width
@@ -8849,7 +8863,7 @@ impl LayoutEngine {
                 if seg_start_est < tac_rel {
                     let seg: String = run_chars_est[seg_start_est..tac_rel].iter().collect();
                     ts.line_x_offset = est_x;
-                    est_x += estimate_text_width(&seg, &ts);
+                    est_x += estimate_text_width_exact(&seg, &ts);
                 }
                 est_x += tac_w;
                 included_tac_width_in_est += tac_w;
@@ -8883,7 +8897,7 @@ impl LayoutEngine {
                 if no_more_tabs_after_in_run && no_tabs_in_subsequent {
                     let mut ts_measure = ts.clone();
                     ts_measure.right_tab_block_width_override = None;
-                    let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                    let post_tab_w = estimate_text_width_exact(&post_tab, &ts_measure);
                     let subsequent_w = right_tab_block_width(
                         &comp_line.runs,
                         run_idx_est + 1,
@@ -8897,7 +8911,7 @@ impl LayoutEngine {
                 }
             }
             if !remaining_est.is_empty() {
-                est_x += estimate_text_width(&remaining_est, &ts);
+                est_x += estimate_text_width_exact(&remaining_est, &ts);
             }
             // run이 \t로 끝나면 다음 run에 오른쪽/가운데 탭 조정 필요 — Task #290:
             // inline_tabs(composed.tab_extended) 가 LEFT 를 명시하면 cross-run pending 을 설정하지 않는다.
@@ -8973,7 +8987,7 @@ impl LayoutEngine {
                         font_family: ts.font_family.clone(),
                         ..Default::default()
                     };
-                    est_x += estimate_text_width(&fn_text, &sup_ts);
+                    est_x += estimate_text_width_exact(&fn_text, &sup_ts);
                 }
             }
             run_char_pos_est = run_char_end_est;

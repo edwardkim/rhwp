@@ -45,7 +45,7 @@
         "recordsEmitted": 1336,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "234a429072626a8d57f988ce1be89db5cc64449bc05eaf567ab36bdb5f76384a"
+      "expectedLayoutHash": "52a2230c898761d3e4e66cf105fdb111ed508b269cf8a0d0a814c86a18568e2d"
     },
     {
       "id": "missing-face",
@@ -59,7 +59,7 @@
         "recordsEmitted": 607,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "f16dcddc9334e25747536e9fc98e13330ef2462a0dfddd4d0862f8ce25c59179"
+      "expectedLayoutHash": "4d51f0bd0ce988111f1770a934b58c4d98dc5d6e573c55de87c5b2e25c60cf78"
     },
     {
       "id": "subst-counterpart-hwp",
