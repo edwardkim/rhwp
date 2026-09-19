@@ -15617,6 +15617,7 @@ impl TypesetEngine {
                         start_cut,
                         end_cut,
                         is_block_split,
+                        start_cut_is_block,
                         row_cursor_is_nested,
                         end_row_height_override,
                         start_row_height_override,
@@ -15629,6 +15630,7 @@ impl TypesetEngine {
                         start_cut: start_cut.clone(),
                         end_cut: end_cut.clone(),
                         is_block_split: *is_block_split,
+                        start_cut_is_block: *start_cut_is_block,
                         row_cursor_is_nested: *row_cursor_is_nested,
                         end_row_height_override: *end_row_height_override,
                         start_row_height_override: *start_row_height_override,
@@ -28204,7 +28206,9 @@ impl TypesetEngine {
                         is_continuation,
                         start_cut: continuation.start_cut.clone(),
                         end_cut: Vec::new(),
+                        // 끝 컷이 비었으니 끝 공간은 무의미하다 — 시작 공간을 그대로 전한다.
                         is_block_split: start_cut_is_block,
+                        start_cut_is_block,
                         row_cursor_is_nested,
                         end_row_height_override,
                         start_row_height_override,
@@ -28323,8 +28327,11 @@ impl TypesetEngine {
                 is_continuation,
                 start_cut: continuation.start_cut.clone(),
                 end_cut: split_end_cut.clone(),
-                // [Task #1025] 이번 분할이 블록 분할이거나 start_cut 이 이미 블록 인덱스.
+                // [Task #1025] 이번 분할이 블록 분할이면 **끝 컷**이 블록 인덱스다.
+                // [#6935] 시작 컷의 공간은 따로 전한다 — 둘을 OR 로 합치면 시작이 행
+                // 공간인데 끝이 블록 공간인 조각에서 시작 쪽이 블록 서수로 읽힌다.
                 is_block_split: split_block_start.is_some() || start_cut_is_block,
+                start_cut_is_block,
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
@@ -30630,6 +30637,7 @@ mod tests {
                 start_cut: Vec::new(),
                 end_cut: Vec::new(),
                 is_block_split: false,
+                start_cut_is_block: false,
                 row_cursor_is_nested: false,
                 end_row_height_override: None,
                 start_row_height_override: None,
@@ -30643,6 +30651,7 @@ mod tests {
                 start_cut: Vec::new(),
                 end_cut: Vec::new(),
                 is_block_split: false,
+                start_cut_is_block: false,
                 row_cursor_is_nested: false,
                 end_row_height_override: None,
                 start_row_height_override: None,

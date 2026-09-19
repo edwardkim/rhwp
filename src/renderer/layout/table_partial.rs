@@ -520,6 +520,35 @@ pub(crate) fn resumes_inside_own_start_row(
             .any(|c| c.row as usize == start_row && c.row_span == 1)
 }
 
+/// [#6935] 이 조각의 **시작 컷**이 `cell` 을 실제로 가리키는가.
+///
+/// 시작 컷의 인덱스 공간에 따라 판정이 다르다.
+///
+/// - 블록 공간(`start_cut_is_block`): 컷이 블록-셀 `(row,col)` 서수라 블록에 걸친 칸도
+///   자기 자리를 갖는다 — 블록 범위와 겹치면 컷이 소관한다.
+/// - 행 공간: 컷이 시작 행의 `row_span == 1` 칸만 담는다. 그 행에서 시작하지 않는 걸친
+///   칸은 **적을 자리가 없으므로** 컷이 소관하지 않는다. 그런 칸은 `#1748` 의 높이 기반
+///   구제(`rowbreak_straddle_cut_units`)가 앞 조각 소비분을 이어 준다.
+///
+/// 종전에는 `is_block_split` 하나가 시작·끝 두 공간을 OR 로 합쳐, 시작이 행 공간인데 끝이
+/// 블록 공간인 조각에서 이 판정이 **참**이 됐다. 그러면 걸친 칸이 컷 소관으로 잡혀 높이
+/// 기반 구제가 막히고, 정작 컷에는 자리가 없어 `su = 0` 으로 떨어져 앞 조각이 그린 내용을
+/// 처음부터 다시 그렸다 (18179365 2쪽: 글자 +434, 글자 겹침 47건).
+fn start_cut_covers_cell(
+    cell_row: usize,
+    cell_end_row: usize,
+    start_row: usize,
+    start_cut: &[usize],
+    start_cut_is_block: bool,
+    split_start_block: Option<(usize, usize)>,
+) -> bool {
+    if start_cut_is_block {
+        split_start_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
+    } else {
+        !start_cut.is_empty() && cell_row == start_row
+    }
+}
+
 /// [#4128 추출] 행내 `row_span==1` 셀의 col 오름차순 컷 벡터 서수.
 /// `advance_row_cut` 부기와 동일한 순서 (기존 인라인 식의 명명).
 fn single_row_cut_index(
@@ -541,7 +570,9 @@ fn single_row_cut_index(
 fn cell_cut_window(
     table: &crate::model::table::Table,
     cell: &crate::model::table::Cell,
-    is_block_split: bool,
+    // [#6935] 시작 컷과 끝 컷은 서로 다른 인덱스 공간에서 올 수 있다.
+    start_cut_is_block: bool,
+    end_cut_is_block: bool,
     apply_start: bool,
     start_block: Option<(usize, usize)>,
     apply_end: bool,
@@ -571,37 +602,39 @@ fn cell_cut_window(
         (cell.row_span == 1 && cell.row as usize == cut_row)
             .then(|| single_row_cut_index(table, cell))
     };
-    let (su, eu) = if is_block_split {
-        let su = match (apply_start, start_block) {
+    let su = if start_cut_is_block {
+        match (apply_start, start_block) {
             (true, Some((bs, be))) => block_cut_index(table, bs, be, cell)
                 .filter(|i| *i < start_cut.len())
                 .or_else(|| row_local_cut_index(start_row_for_cut))
                 .and_then(|i| start_cut.get(i).copied())
                 .unwrap_or(0),
             _ => 0,
-        };
-        let eu = match (apply_end, end_block) {
+        }
+    } else if apply_start {
+        start_cut
+            .get(single_row_cut_index(table, cell))
+            .copied()
+            .unwrap_or(0)
+    } else {
+        0
+    };
+    let eu = if end_cut_is_block {
+        match (apply_end, end_block) {
             (true, Some((bs, be))) => block_cut_index(table, bs, be, cell)
                 .filter(|i| *i < end_cut.len())
                 .or_else(|| row_local_cut_index(end_row_for_cut))
                 .and_then(|i| end_cut.get(i).copied())
                 .unwrap_or(usize::MAX),
             _ => usize::MAX,
-        };
-        (su, eu)
+        }
+    } else if apply_end {
+        end_cut
+            .get(single_row_cut_index(table, cell))
+            .copied()
+            .unwrap_or(usize::MAX)
     } else {
-        let cut_idx = single_row_cut_index(table, cell);
-        let su = if apply_start {
-            start_cut.get(cut_idx).copied().unwrap_or(0)
-        } else {
-            0
-        };
-        let eu = if apply_end {
-            end_cut.get(cut_idx).copied().unwrap_or(usize::MAX)
-        } else {
-            usize::MAX
-        };
-        (su, eu)
+        usize::MAX
     };
     match units_len {
         Some(len) => {
@@ -720,6 +753,8 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
+        // [#6935] 시작 컷의 인덱스 공간 — 끝 컷과 다를 수 있다.
+        start_cut_is_block: bool,
         target: Option<(usize, usize, bool)>,
         styles: &ResolvedStyleSet,
     ) -> bool {
@@ -734,7 +769,7 @@ impl LayoutEngine {
             return true;
         };
         // 분할 게이트 — layout_partial_table_cells 와 동일 판정
-        let split_start_block = if is_block_split && !start_cut.is_empty() {
+        let split_start_block = if start_cut_is_block && !start_cut.is_empty() {
             Some(rowspan_block_range(table, start_row))
         } else {
             None
@@ -744,11 +779,14 @@ impl LayoutEngine {
         } else {
             None
         };
-        let is_split_start_row = if is_block_split {
-            split_start_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
-        } else {
-            !start_cut.is_empty() && cell_row == start_row
-        };
+        let is_split_start_row = start_cut_covers_cell(
+            cell_row,
+            cell_end_row,
+            start_row,
+            start_cut,
+            start_cut_is_block,
+            split_start_block,
+        );
         let is_split_end_row = if is_block_split {
             split_end_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
         } else {
@@ -770,6 +808,7 @@ impl LayoutEngine {
         let (su, eu) = cell_cut_window(
             table,
             cell,
+            start_cut_is_block,
             is_block_split,
             is_split_start_row,
             split_start_block,
@@ -798,6 +837,8 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
+        // [#6935] 시작 컷의 인덱스 공간 — 끝 컷과 다를 수 있다.
+        start_cut_is_block: bool,
         styles: &ResolvedStyleSet,
         target_para: usize,
     ) -> ProbeCutPlan {
@@ -808,7 +849,7 @@ impl LayoutEngine {
         let cell_row = cell.row as usize;
         let cell_end_row = cell_row + (cell.row_span as usize).max(1);
         // 분할 게이트 — layout_partial_table_cells 와 동일 판정
-        let split_start_block = if is_block_split && !start_cut.is_empty() {
+        let split_start_block = if start_cut_is_block && !start_cut.is_empty() {
             Some(rowspan_block_range(table, start_row))
         } else {
             None
@@ -818,11 +859,14 @@ impl LayoutEngine {
         } else {
             None
         };
-        let is_split_start_row = if is_block_split {
-            split_start_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
-        } else {
-            !start_cut.is_empty() && cell_row == start_row
-        };
+        let is_split_start_row = start_cut_covers_cell(
+            cell_row,
+            cell_end_row,
+            start_row,
+            start_cut,
+            start_cut_is_block,
+            split_start_block,
+        );
         let is_split_end_row = if is_block_split {
             split_end_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
         } else {
@@ -835,6 +879,7 @@ impl LayoutEngine {
         let (su, eu) = cell_cut_window(
             table,
             cell,
+            start_cut_is_block,
             is_block_split,
             is_split_start_row,
             split_start_block,
@@ -1009,6 +1054,8 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
+        // [#6935] 시작 컷의 인덱스 공간 — 끝 컷과 다를 수 있다.
+        start_cut_is_block: bool,
         cell_spacing: f64,
         col_count: usize,
         row_count: usize,
@@ -1104,7 +1151,7 @@ impl LayoutEngine {
             // 이 셀이 분할 행에 속하는지 판별 (clip 플래그에 사용)
             // [Task #1025] page-larger 블록 분할이면 컷이 블록-셀 인덱스 → 블록 범위
             // (rowspan-확장)와 셀 교차로 판정. 그 외는 기존 per-row 판정.
-            let split_start_block = if is_block_split && !start_cut.is_empty() {
+            let split_start_block = if start_cut_is_block && !start_cut.is_empty() {
                 Some(rowspan_block_range(table, start_row))
             } else {
                 None
@@ -1114,11 +1161,14 @@ impl LayoutEngine {
             } else {
                 None
             };
-            let is_split_start_row = if is_block_split {
-                split_start_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
-            } else {
-                !start_cut.is_empty() && cell_row == start_row
-            };
+            let is_split_start_row = start_cut_covers_cell(
+                cell_row,
+                cell_end_row,
+                start_row,
+                start_cut,
+                start_cut_is_block,
+                split_start_block,
+            );
             let is_split_end_row = if is_block_split {
                 split_end_block.is_some_and(|(s, e)| cell_row < e && cell_end_row > s)
             } else {
@@ -1150,7 +1200,7 @@ impl LayoutEngine {
             // 재렌더한다(10857 p9: 밴드 라벨 '10·사무분장 조정' 중복, 한글은 빈
             // 칸). 컷이 있는 쪽 경계는 종전대로 cell_cut_window 가 소관한다.
             let straddle_start_uncovered = (straddles_fragment_start
-                && (!is_block_split || start_cut.is_empty()))
+                && (!start_cut_is_block || start_cut.is_empty()))
                 // [#7226] 컷에 적을 자리가 없어 빈 `start_cut` 으로 재개한 걸침 전용
                 // 행 — 앞 조각이 소비한 밴드만큼 유닛 컷을 이어 중복 렌더를 막는다.
                 || resumes_inside_own_start_row(
@@ -1248,6 +1298,7 @@ impl LayoutEngine {
                     start_cut,
                     end_cut,
                     is_block_split,
+                    start_cut_is_block,
                     styles,
                     0,
                 ) {
@@ -1338,6 +1389,7 @@ impl LayoutEngine {
                 let (su, mut eu) = cell_cut_window(
                     table,
                     cell,
+                    start_cut_is_block,
                     is_block_split,
                     is_split_start_row,
                     split_start_block,
@@ -3397,6 +3449,7 @@ impl LayoutEngine {
                                             &recursive_cut.start_cut,
                                             &recursive_cut.end_cut,
                                             recursive_cut.is_block_split,
+                                            recursive_cut.start_cut_is_block,
                                             // recursive_cut의 행 cursor는 이미 이 호출의
                                             // `nested_table` 자신의 행 기준(#4069 재귀
                                             // 투영)이다. 투명 래퍼 벗기기는 별개 좌표계
@@ -3659,6 +3712,8 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
+        // [#6935] 시작 컷의 인덱스 공간 — 끝 컷과 다를 수 있다.
+        start_cut_is_block: bool,
         row_cursor_is_nested: bool,
         end_row_height_override: Option<f64>,
         start_row_height_override: Option<f64>,
@@ -3726,6 +3781,7 @@ impl LayoutEngine {
             start_cut,
             end_cut,
             is_block_split,
+            start_cut_is_block,
             row_cursor_is_nested,
             end_row_height_override,
             start_row_height_override,
@@ -3762,6 +3818,8 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         is_block_split: bool,
+        // [#6935] 시작 컷의 인덱스 공간 — 끝 컷과 다를 수 있다.
+        start_cut_is_block: bool,
         row_cursor_is_nested: bool,
         end_row_height_override: Option<f64>,
         start_row_height_override: Option<f64>,
@@ -4089,6 +4147,7 @@ impl LayoutEngine {
                         let (su, eu) = cell_cut_window(
                             table,
                             c,
+                            true,
                             true,
                             in_start,
                             start_block,
@@ -4543,6 +4602,7 @@ impl LayoutEngine {
             start_cut,
             end_cut,
             is_block_split,
+            start_cut_is_block,
             cell_spacing,
             col_count,
             row_count,
@@ -4693,6 +4753,7 @@ impl LayoutEngine {
                 start_cut,
                 end_cut,
                 is_block_split,
+                start_cut_is_block,
                 Some((para_index, line_index as usize, true)),
                 styles,
             )

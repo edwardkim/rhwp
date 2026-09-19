@@ -1894,6 +1894,9 @@ pub(crate) struct NestedTableCut {
     pub start_cut: RowCut,
     pub end_cut: RowCut,
     pub is_block_split: bool,
+    /// [#6935] 시작 컷의 인덱스 공간 — 끝 컷과 다를 수 있다. 중첩 표 컷은 단일 행
+    /// 공간이라 언제나 `false` 지만, 소비자가 두 공간을 구별해 읽도록 함께 싣는다.
+    pub start_cut_is_block: bool,
 }
 
 /// 중첩 표 부분 렌더링을 위한 행 범위 정보
@@ -15861,6 +15864,7 @@ impl LayoutEngine {
                     vec![recursive_end]
                 },
                 is_block_split: false,
+                start_cut_is_block: false,
             })
         } else {
             None
@@ -16329,6 +16333,7 @@ impl LayoutEngine {
                 start_cut,
                 end_cut,
                 is_block_split: false,
+                start_cut_is_block: false,
             }),
         })
     }

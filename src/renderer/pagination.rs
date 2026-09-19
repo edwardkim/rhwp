@@ -603,10 +603,22 @@ pub enum PageItem {
         /// [Task #993] `end_row-1`행의 끝 컷 — 이 페이지에서 보일 마지막 유닛
         /// 까지의 셀별 소비 유닛 수. 빈 Vec = 끝까지.
         end_cut: Vec<usize>,
-        /// [Task #1025] true 이면 컷이 rowspan 블록-셀 `(row,col)` 인덱스
+        /// [Task #1025] true 이면 **`end_cut`** 이 rowspan 블록-셀 `(row,col)` 인덱스
         /// (`advance_row_block_cut`). false 이면 단일 행 `row_span==1` col 인덱스
         /// (`advance_row_cut`, 기존). page-larger 셀 내부 분할에서만 true.
+        ///
+        /// [#6935] 이 플래그는 **끝 컷만** 설명한다. 시작 컷의 좌표계는
+        /// `start_cut_is_block` 이 따로 말한다 — 한 조각의 두 컷이 서로 다른 공간에서
+        /// 올 수 있기 때문이다(18179365 2쪽: 시작 `[5,9]` 는 행 4 의 행 공간,
+        /// 끝 `[4,16,3,3]` 은 블록 9..12 의 블록 공간).
         is_block_split: bool,
+        /// [#6935] true 이면 **`start_cut`** 이 블록-셀 `(row,col)` 인덱스다.
+        ///
+        /// 종전에는 `is_block_split` 하나가 두 사실을 OR 로 합쳐, 시작이 행 공간인데
+        /// 끝이 블록 공간인 조각에서 시작 쪽이 블록 서수로 읽혔다. 걸친 rowspan 셀은
+        /// 행 공간에 자리가 없어 `su = 0` 으로 떨어져 **앞 조각이 그린 내용을 처음부터
+        /// 다시 그렸다**(같은 문서 2쪽 +341자, 본문 +232.3px).
+        start_cut_is_block: bool,
         /// [Issue #4326] `start_row`/`end_row`/`start_cut`/`end_cut`이 가리키는 좌표계.
         /// true면 투명 1×1 래퍼를 벗긴 중첩 표(측정기·`row_geometry_table`이 실제로 쓰는
         /// 표) 기준이고, false면 이 항목이 참조하는 바깥 `para_index`/`control_index`
@@ -797,6 +809,7 @@ impl PageItem {
                 start_cut,
                 end_cut,
                 is_block_split,
+                start_cut_is_block,
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
@@ -809,6 +822,7 @@ impl PageItem {
                 start_cut: start_cut.clone(),
                 end_cut: end_cut.clone(),
                 is_block_split: *is_block_split,
+                start_cut_is_block: *start_cut_is_block,
                 row_cursor_is_nested: *row_cursor_is_nested,
                 end_row_height_override: *end_row_height_override,
                 start_row_height_override: *start_row_height_override,
