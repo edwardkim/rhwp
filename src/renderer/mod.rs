@@ -1501,6 +1501,61 @@ pub(crate) fn cell_vpos_ladder_is_intact(
     })
 }
 
+/// [#6923] 이 칸의 저장 사다리가 **줄 상자를 계통적으로 겹쳐** 적었는가.
+///
+/// 줄 전진(`다음 vpos − 이 vpos`)이 줄 높이보다 작은 걸음이 셋 이상이면 그 사다리의
+/// 서명이다(한두 건은 우연). `line_spacing` 이 음수인 옛 문서에서 나온다 —
+/// `148738070` 1쪽 감싼 칸: `p2 vpos 9800 lh 1400 ls −560 → p3 vpos 10640`.
+pub(crate) fn cell_uses_overlapping_line_boxes(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> bool {
+    let segs: Vec<&crate::model::paragraph::LineSeg> = paragraphs
+        .iter()
+        .flat_map(|para| para.line_segs.iter())
+        .filter(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    segs.windows(2)
+        .filter(|w| {
+            let prev_end = w[0].vertical_pos.saturating_add(w[0].line_height);
+            w[1].vertical_pos >= w[0].vertical_pos && w[1].vertical_pos < prev_end
+        })
+        .count()
+        >= 3
+}
+
+/// [#6923] 겹침 걸음 사다리에서 **빈 줄 문단이 실제로 점유하는 전진(HWPUNIT)**.
+///
+/// 저장 사다리가 이 줄의 점유를 직접 말한다 — 다음 문단의 저장 `vpos` 까지의 거리다.
+/// 겹침 사다리에서는 줄 높이(`lh`)가 점유가 아니다. 접어서 0 으로 두면 뒤따르는 내용이
+/// 그만큼 위로 올라가고(`148738070` 1쪽 중첩 표 −15.9px), 반대로 `lh` 를 쓰면 아래로
+/// 내려간다. 측정(`cell_units`)과 배치(`layout_horizontal_cell_paragraphs`)가 이 한
+/// 결과를 함께 소비한다.
+///
+/// 전진이 줄 높이를 넘으면 겹침 걸음이 아니라 평범한 줄이므로 기존 보존 경로가 판정한다.
+/// 되감김(전진 ≤ 0)도 이 규칙의 대상이 아니다.
+pub(crate) fn stored_overlap_spacer_advance_hu(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    para_idx: usize,
+) -> Option<i32> {
+    let synthetic = |seg: &crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+    };
+    let para = paragraphs.get(para_idx)?;
+    if !para.text.trim().is_empty() || !para.controls.is_empty() {
+        return None;
+    }
+    let seg = match para.line_segs.as_slice() {
+        [seg] if !synthetic(seg) && seg.line_height > 0 => seg,
+        _ => return None,
+    };
+    let next = paragraphs.get(para_idx + 1)?.line_segs.first()?;
+    if synthetic(next) {
+        return None;
+    }
+    let forward = i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
+    (forward > 0 && forward <= i64::from(seg.line_height)).then_some(forward as i32)
+}
+
 /// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우
 /// 줄 메트릭 합성. 컨트롤 폭을 가용 폭에 greedy wrap 하여 줄별
 /// (최대 높이, leading) 을 돌려준다.

@@ -296,3 +296,105 @@ fn continuation_tables_follow_their_owner_line_horizontal_origin() {
         );
     }
 }
+
+/// 1쪽에서 본문을 감싼 표(1행×1열, 머리 표보다 큰 상자)와 그 칸의 직계 내용.
+///
+/// 1쪽은 머리 표(5행×4열)가 먼저 나오므로 `wrapper_cell_items` 의 "첫 칸" 규칙을 쓸 수
+/// 없다. 감싼 표는 본문 절반을 넘는 높이로 구분한다.
+fn page1_wrapper(root: &RenderNode) -> (&RenderNode, Vec<(&'static str, f64, f64)>) {
+    fn find(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Table(_))
+            && node.bbox.height > 400.0
+            && node
+                .children
+                .iter()
+                .any(|child| matches!(child.node_type, RenderNodeType::TableCell(_)))
+        {
+            return Some(node);
+        }
+        node.children.iter().find_map(find)
+    }
+    let table = find(root).expect("1쪽 감싼 표");
+    let cell = table
+        .children
+        .iter()
+        .find(|child| matches!(child.node_type, RenderNodeType::TableCell(_)))
+        .expect("감싼 칸");
+    let items = cell
+        .children
+        .iter()
+        .filter_map(|child| match child.node_type {
+            RenderNodeType::TextLine(_) if has_visible_text(child) => {
+                Some(("TextLine", child.bbox.y, child.bbox.y + child.bbox.height))
+            }
+            RenderNodeType::Table(_) => {
+                Some(("Table", child.bbox.y, child.bbox.y + child.bbox.height))
+            }
+            _ => None,
+        })
+        .collect();
+    (table, items)
+}
+
+/// [#6923 잔여 축 A] 1쪽 중첩 표가 저장 사다리가 가리키는 자리에 앉는다.
+///
+/// 감싼 칸의 `p[2]`·`p[3]` 은 **글자가 없는 문단**이지만 저장 사다리는 그 점유를 적어
+/// 두었다 — `p[2] vpos=9800 lh=1400 ls=−560`(전진 840HU = 11.2px) ·
+/// `p[3] vpos=10640 lh=1300 ls=−948`(전진 352HU = 4.7px). 이 문서의 줄 상자는 음수
+/// `line_spacing` 으로 계통적으로 겹치므로(같은 파일 `#5585` 주석), "다음 줄이 이 줄
+/// 바닥 아래에서 시작" 을 요구하던 종전 보존 판별은 두 줄을 모두 거부했고 1칸 RowBreak
+/// 칸의 빈 줄 접기가 둘을 0 높이로 만들었다. 그래서 뒤따르는 중첩 표가 15.9px 위로
+/// 올라가 앞 문단과의 간격이 정본의 절반이 됐다.
+///
+/// 기대값은 구현이 아니라 정본에서 온다 —
+/// `tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame-2020.pdf`
+/// 1쪽을 96dpi 로 래스터해 가로 괘선 행을 읽으면 이 표의 위·아래 괘선이 **488 · 932**
+/// 다(같은 방법으로 읽은 위쪽 괘선 102·177·202·246·281·284·338 은 수정 전후 모두 일치).
+/// 수정 전 값은 472.8 · 917.8 로 15.2px · 14.2px 어긋났다.
+#[test]
+fn page1_nested_table_sits_on_its_stored_ladder_position() {
+    let core = core();
+    let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
+    let (_, items) = page1_wrapper(&tree.root);
+    let (_, top, bottom) = items
+        .iter()
+        .find(|(kind, _, _)| *kind == "Table")
+        .copied()
+        .expect("1쪽 감싼 칸 안의 중첩 표");
+    // 괘선 행 판독(±1px)과 테두리 굵기를 감안한 허용치.
+    assert!(
+        (top - 488.0).abs() <= 2.0,
+        "중첩 표 윗변 {top:.1}px — 한/글 2020 정본 괘선 488px (수정 전 472.8px)"
+    );
+    assert!(
+        (bottom - 932.0).abs() <= 2.0,
+        "중첩 표 아랫변 {bottom:.1}px — 한/글 2020 정본 괘선 932px (수정 전 917.8px)"
+    );
+}
+
+/// [#6923 잔여 축 A] 1쪽 감싼 표의 상자가 **자기 조각이 소유한 마지막 줄**을 담는다.
+///
+/// 측정(`cell_units`)만 저장 전진을 받고 배치가 받지 않으면 조각 상자는 늘어나는데
+/// 내용은 제자리라 아래 테두리가 마지막 줄 **위로** 지나간다. 수정 전에는 반대 방향으로
+/// 같은 결함이 있었다 — 상자 아래 987.9px, 칸 내용 바닥 997.8px 로 각주 마지막 줄을
+/// 테두리가 가로질렀다. 두 경로가 같은 결과를 소비하는지 이 불변식으로 고정한다.
+///
+/// 정본의 상자 아래는 1022px 로 여기보다 더 아래다(쪽 상자 고정 축, #7095). 이 검사는
+/// 그 축을 주장하지 않고 "상자가 자기 내용을 담는다" 만 고정한다.
+#[test]
+fn page1_wrapper_frame_contains_its_own_last_line() {
+    let core = core();
+    let tree = core.build_page_render_tree(0).expect("1쪽 render tree");
+
+    let (table, items) = page1_wrapper(&tree.root);
+    let frame_bottom = table.bbox.y + table.bbox.height;
+    let last_line_bottom = items
+        .iter()
+        .map(|(_, _, bottom)| *bottom)
+        .fold(f64::MIN, f64::max);
+    assert!(
+        frame_bottom + 0.5 >= last_line_bottom,
+        "감싼 표 아랫변 {frame_bottom:.1}px 가 자기 마지막 줄 바닥 {last_line_bottom:.1}px \
+         위에 있다 (수정 전 987.9 < 997.8 — 테두리가 각주 마지막 줄을 가로질렀다)"
+    );
+}
