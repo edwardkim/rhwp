@@ -2836,29 +2836,18 @@ impl LayoutEngine {
                         } else {
                             nested_w + pad_l + pad_r
                         };
-                        // The recursive caller already includes the child's outer margin
-                        // in inner_area. Only the first native block wrapper owns this
-                        // missing inset (#6643); do not add it again while unwrapping.
-                        // Inline, cell-relative, and original HWPX placement keep their
-                        // existing margin owners. Vertical placement is independent.
+                        // [#7063] 상자 테두리는 공통 원점 계산에서 여백을 받는다.
+                        // 안쪽 표의 기준 영역에도 같은 몫을 전달하되, 부모가 이미
+                        // 적용했다면 다시 더하지 않는다. 아래 inner_area에는 자식의
+                        // 여백도 포함하므로 재귀 호출은 그 소유 사실을 넘긴다.
+                        // 테두리와 자식의 여백을 따로 재가산하면 #6643이 회귀한다.
                         let wrapper_left_inset = if !wrapper_margin_already_applied
                             && depth == 0
-                            && self.profile.get().hwp5_stored_pagination_layout()
                             && inline_x_override.is_none()
-                            && !table.common.treat_as_char
-                            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-                            && matches!(table.common.vert_rel_to, VertRelTo::Para)
-                            && matches!(
-                                table.common.horz_rel_to,
-                                HorzRelTo::Column | HorzRelTo::Para
-                            )
-                            && matches!(
-                                table.common.horz_align,
-                                HorzAlign::Left | HorzAlign::Inside
-                            )
-                            && signed_hwpunit(table.common.horizontal_offset) == 0
                         {
-                            hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                            topbottom_float_outer_margin_left_hu(table)
+                                .map(|hu| hwpunit_to_px(hu, self.dpi))
+                                .unwrap_or(0.0)
                         } else {
                             0.0
                         };
@@ -2871,8 +2860,9 @@ impl LayoutEngine {
                             host_margin_left,
                             host_margin_right,
                             inline_x_override,
+                            wrapper_margin_already_applied,
                             paper_w,
-                        ) + wrapper_left_inset;
+                        );
                         // [#6648] 안쪽 표의 바깥 여백도 셀 안 여백 안쪽에 그대로 남는다. 아래
                         // `layout_table` 호출은 상자와 같은 depth(본문이면 0)·inline 위치로 안쪽
                         // 표를 놓아 `compute_table_y_position` 의 중첩 표 분기(om_top)와
@@ -3222,6 +3212,7 @@ impl LayoutEngine {
             host_margin_left,
             host_margin_right,
             inline_x_override,
+            wrapper_margin_already_applied,
             paper_w,
         );
 
@@ -5032,7 +5023,9 @@ impl LayoutEngine {
         }
     }
 
-    /// 표 수평 위치 결정
+    /// 표 수평 위치 결정.
+    /// unwrap의 기준 영역에 이미 포함된 자리차지 표 여백은 다시 더하지 않는다.
+    /// 중첩 표 자체 배치와 달리 unwrap은 부모와 같은 depth를 사용하므로 소유를 명시한다.
     pub(crate) fn compute_table_x_position(
         &self,
         table: &crate::model::table::Table,
@@ -5043,6 +5036,7 @@ impl LayoutEngine {
         host_margin_left: f64,
         host_margin_right: f64,
         inline_x_override: Option<f64>,
+        topbottom_outer_margin_already_applied: bool,
         paper_width: Option<f64>,
     ) -> f64 {
         if let Some(ix) = inline_x_override {
@@ -5098,6 +5092,7 @@ impl LayoutEngine {
                     // `outMargin.left` 만큼 안쪽이다. `#6887` 이 어울림(Square) 표
                     // 경로에서 확정한 규칙이고 이 경로만 빠져 있었다.
                     let om_l = topbottom_float_outer_margin_left_hu(table)
+                        .filter(|_| !topbottom_outer_margin_already_applied)
                         .map(|hu| hwpunit_to_px(hu, self.dpi))
                         .unwrap_or(0.0);
                     (
@@ -5118,6 +5113,7 @@ impl LayoutEngine {
                     // [#7063] 단 기준 왼쪽 정렬 자리차지 표도 같은 여백을 받는다 —
                     // 위 `#6378` 술어는 그 부분집합(원본 HWPX·RowBreak·사방 균등)이다.
                     .or_else(|| topbottom_float_outer_margin_left_hu(table))
+                    .filter(|_| !topbottom_outer_margin_already_applied)
                     .map(|hu| hwpunit_to_px(hu, self.dpi))
                     .unwrap_or(0.0);
                     (col_area.x + om_l, col_area.width)

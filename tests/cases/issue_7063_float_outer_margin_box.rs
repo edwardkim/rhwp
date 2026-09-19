@@ -154,3 +154,30 @@ fn column_relative_float_table_keeps_its_outer_margin_even_with_a_stored_offset(
         );
     }
 }
+
+/// #6643에서 이미 바로잡은 블록 wrapper의 좌단도 같은 여백을 한 번만 소비한다.
+/// 독립 기준: pdf/80168_regulatory_analysis-2022.pdf 6쪽의 세로 괘선
+/// x=79.317px, y=882.715..988.679px (PyMuPDF get_drawings, 96/72 환산).
+/// 원점 공통화가 wrapper/안쪽 표의 기존 여백에 다시 더해지면 이 정상 대조군이 실패한다.
+#[test]
+fn block_wrapper_keeps_its_pdf_left_edge_when_margin_is_already_owned() {
+    let bytes = std::fs::read(sample("samples/80168_regulatory_analysis.hwp"))
+        .expect("tracked wrapper fixture");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("wrapper document");
+    let svg = doc.render_page_svg(5).expect("wrapper page 6");
+    let xml = roxmltree::Document::parse(&svg).expect("valid SVG");
+    let left = xml
+        .descendants()
+        .filter(|n| n.has_tag_name("line"))
+        .filter_map(|n| {
+            let value = |key| n.attribute(key)?.parse::<f64>().ok();
+            let (x1, y1, x2, y2) = (value("x1")?, value("y1")?, value("x2")?, value("y2")?);
+            ((x1 - x2).abs() < 0.01 && y1.min(y2) > 840.0 && (y2 - y1).abs() > 80.0).then_some(x1)
+        })
+        .min_by(f64::total_cmp)
+        .expect("page 6 bottom table vertical borders");
+    assert!(
+        (left - 79.317).abs() < 0.4,
+        "wrapper left {left:.3}px differs from Hancom 79.317px; apply the outer margin once"
+    );
+}
